@@ -117,8 +117,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				b = new InsideBuilding;
 				b->Load(file, local);
 				b->ctx.building_id = index;
-				b->ctx.mine = INT2(b->level_shift.x * 256, b->level_shift.y * 256);
-				b->ctx.maxe = b->ctx.mine + INT2(256, 256);
+				b->ctx.mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
+				b->ctx.maxe = b->ctx.mine + Int2(256, 256);
 				++index;
 			}
 
@@ -146,8 +146,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 		if(last_visit != -1)
 		{
 			int side;
-			BOX2D spawn_area;
-			BOX2D exit_area;
+			Box2d spawn_area;
+			Box2d exit_area;
 			float spawn_dir;
 
 			if(LOAD_VERSION < V_0_3)
@@ -192,8 +192,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				b = new InsideBuilding;
 				b->Load(file, local);
 				b->ctx.building_id = index;
-				b->ctx.mine = INT2(b->level_shift.x * 256, b->level_shift.y * 256);
-				b->ctx.maxe = b->ctx.mine + INT2(256, 256);
+				b->ctx.mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
+				b->ctx.maxe = b->ctx.mine + Int2(256, 256);
 				++index;
 			}
 
@@ -219,32 +219,32 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				{
 				case 0: // from top
 					{
-						VEC2 p(float(size) + 1.f, 0.8f*size * 2);
-						exit_area = BOX2D(p.x - es, p.y + aa, p.x + es, p.y + bb);
+						Vec2 p(float(size) + 1.f, 0.8f*size * 2);
+						exit_area = Box2d(p.x - es, p.y + aa, p.x + es, p.y + bb);
 						gates = GATE_NORTH;
 						road_type = tiles[size / 2 + int(0.85f*size - 2)*size].t;
 					}
 					break;
 				case 1: // from left
 					{
-						VEC2 p(0.2f*size * 2, float(size) + 1.f);
-						exit_area = BOX2D(p.x - bb, p.y - es, p.x - aa, p.y + es);
+						Vec2 p(0.2f*size * 2, float(size) + 1.f);
+						exit_area = Box2d(p.x - bb, p.y - es, p.x - aa, p.y + es);
 						gates = GATE_WEST;
 						road_type = tiles[int(0.15f*size) + 2 + (size / 2)*size].t;
 					}
 					break;
 				case 2: // from bottom
 					{
-						VEC2 p(float(size) + 1.f, 0.2f*size * 2);
-						exit_area = BOX2D(p.x - es, p.y - bb, p.x + es, p.y - aa);
+						Vec2 p(float(size) + 1.f, 0.2f*size * 2);
+						exit_area = Box2d(p.x - es, p.y - bb, p.x + es, p.y - aa);
 						gates = GATE_SOUTH;
 						road_type = tiles[size / 2 + int(0.15f*size + 2)*size].t;
 					}
 					break;
 				case 3: // from right
 					{
-						VEC2 p(0.8f*size * 2, float(size) + 1.f);
-						exit_area = BOX2D(p.x + aa, p.y - es, p.x + bb, p.y + es);
+						Vec2 p(0.8f*size * 2, float(size) + 1.f);
+						exit_area = Box2d(p.x + aa, p.y - es, p.x + bb, p.y + es);
 						gates = GATE_EAST;
 						road_type = tiles[int(0.85f*size) - 2 + (size / 2)*size].t;
 					}
@@ -335,8 +335,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 					if(side != 2 || i < mid - 1 || i > mid)
 					{
 						Object& o = Add1(objects);
-						o.pos = VEC3(float(i) * 2 + 1.f, 1.f, int(0.15f*size) * 2 + 1.f);
-						o.rot = VEC3(0, PI, 0);
+						o.pos = Vec3(float(i) * 2 + 1.f, 1.f, int(0.15f*size) * 2 + 1.f);
+						o.rot = Vec3(0, PI, 0);
 						o.scale = 1.f;
 						o.base = oWall;
 						o.mesh = oWall->mesh;
@@ -346,8 +346,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 					if(side != 0 || i < mid - 1 || i > mid)
 					{
 						Object& o = Add1(objects);
-						o.pos = VEC3(float(i) * 2 + 1.f, 1.f, int(0.85f*size) * 2 + 1.f);
-						o.rot = VEC3(0, 0, 0);
+						o.pos = Vec3(float(i) * 2 + 1.f, 1.f, int(0.85f*size) * 2 + 1.f);
+						o.rot = Vec3(0, 0, 0);
 						o.scale = 1.f;
 						o.base = oWall;
 						o.mesh = oWall->mesh;
@@ -357,8 +357,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 					if(side != 1 || i < mid - 1 || i > mid)
 					{
 						Object& o = Add1(objects);
-						o.pos = VEC3(int(0.15f*size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
-						o.rot = VEC3(0, PI * 3 / 2, 0);
+						o.pos = Vec3(int(0.15f*size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
+						o.rot = Vec3(0, PI * 3 / 2, 0);
 						o.scale = 1.f;
 						o.base = oWall;
 						o.mesh = oWall->mesh;
@@ -368,8 +368,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 					if(side != 3 || i < mid - 1 || i > mid)
 					{
 						Object& o = Add1(objects);
-						o.pos = VEC3(int(0.85f*size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
-						o.rot = VEC3(0, PI / 2, 0);
+						o.pos = Vec3(int(0.85f*size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
+						o.rot = Vec3(0, PI / 2, 0);
 						o.scale = 1.f;
 						o.base = oWall;
 						o.mesh = oWall->mesh;
@@ -380,8 +380,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				{
 					// right top
 					Object& o = Add1(objects);
-					o.pos = VEC3(int(0.85f*size) * 2 + 1.f, 1.f, int(0.85f*size) * 2 + 1.f);
-					o.rot = VEC3(0, 0, 0);
+					o.pos = Vec3(int(0.85f*size) * 2 + 1.f, 1.f, int(0.85f*size) * 2 + 1.f);
+					o.rot = Vec3(0, 0, 0);
 					o.scale = 1.f;
 					o.base = oTower;
 					o.mesh = oTower->mesh;
@@ -389,8 +389,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				{
 					// right bottom
 					Object& o = Add1(objects);
-					o.pos = VEC3(int(0.85f*size) * 2 + 1.f, 1.f, int(0.15f*size) * 2 + 1.f);
-					o.rot = VEC3(0, PI / 2, 0);
+					o.pos = Vec3(int(0.85f*size) * 2 + 1.f, 1.f, int(0.15f*size) * 2 + 1.f);
+					o.rot = Vec3(0, PI / 2, 0);
 					o.scale = 1.f;
 					o.base = oTower;
 					o.mesh = oTower->mesh;
@@ -398,8 +398,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				{
 					// left bottom
 					Object& o = Add1(objects);
-					o.pos = VEC3(int(0.15f*size) * 2 + 1.f, 1.f, int(0.15f*size) * 2 + 1.f);
-					o.rot = VEC3(0, PI, 0);
+					o.pos = Vec3(int(0.15f*size) * 2 + 1.f, 1.f, int(0.15f*size) * 2 + 1.f);
+					o.rot = Vec3(0, PI, 0);
 					o.scale = 1.f;
 					o.base = oTower;
 					o.mesh = oTower->mesh;
@@ -407,8 +407,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				{
 					// left top
 					Object& o = Add1(objects);
-					o.pos = VEC3(int(0.15f*size) * 2 + 1.f, 1.f, int(0.85f*size) * 2 + 1.f);
-					o.rot = VEC3(0, PI * 3 / 2, 0);
+					o.pos = Vec3(int(0.15f*size) * 2 + 1.f, 1.f, int(0.85f*size) * 2 + 1.f);
+					o.rot = Vec3(0, PI * 3 / 2, 0);
 					o.scale = 1.f;
 					o.base = oTower;
 					o.mesh = oTower->mesh;
@@ -424,19 +424,19 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				{
 				case 0:
 					o.rot.y = 0;
-					o.pos = VEC3(0.5f*size * 2 + 1.f, 1.f, 0.85f*size * 2);
+					o.pos = Vec3(0.5f*size * 2 + 1.f, 1.f, 0.85f*size * 2);
 					break;
 				case 1:
 					o.rot.y = PI * 3 / 2;
-					o.pos = VEC3(0.15f*size * 2, 1.f, 0.5f*size * 2 + 1.f);
+					o.pos = Vec3(0.15f*size * 2, 1.f, 0.5f*size * 2 + 1.f);
 					break;
 				case 2:
 					o.rot.y = PI;
-					o.pos = VEC3(0.5f*size * 2 + 1.f, 1.f, 0.15f*size * 2);
+					o.pos = Vec3(0.5f*size * 2 + 1.f, 1.f, 0.15f*size * 2);
 					break;
 				case 3:
 					o.rot.y = PI / 2;
-					o.pos = VEC3(0.85f*size * 2, 1.f, 0.5f*size * 2 + 1.f);
+					o.pos = Vec3(0.85f*size * 2, 1.f, 0.5f*size * 2 + 1.f);
 					break;
 				}
 
@@ -639,9 +639,9 @@ Unit* City::FindUnit(UnitData* data, int& at_level)
 }
 
 //=================================================================================================
-bool City::IsInsideCity(const VEC3& _pos)
+bool City::IsInsideCity(const Vec3& _pos)
 {
-	INT2 tile(int(_pos.x / 2), int(_pos.z / 2));
+	Int2 tile(int(_pos.x / 2), int(_pos.z / 2));
 	if(tile.x <= int(0.15f*size) || tile.y <= int(0.15f*size) || tile.x >= int(0.85f*size) || tile.y >= int(0.85f*size))
 		return false;
 	else

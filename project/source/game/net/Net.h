@@ -143,7 +143,7 @@ enum GamePacket : byte
 			byte - budynek2
 		}
 		byte - stan
-		VEC2 - pozycja
+		Vec2 - pozycja
 		string1 - nazwa
 	}
 	byte - startowa lokacja
@@ -190,14 +190,14 @@ struct NetChange
 {
 	enum TYPE
 	{
-		UNIT_POS, // unit position/rotation/animation [int(netid)-unit, auto from Unit: VEC3-pos, float-rot, float-animation speed, byte-animation]
+		UNIT_POS, // unit position/rotation/animation [int(netid)-unit, auto from Unit: Vec3-pos, float-rot, float-animation speed, byte-animation]
 		CHANGE_EQUIPMENT, // unit changed equipped item SERVER[int(netid)-unit, byte(id)-item slot, Item-item(automaticaly set)] / CLIENT[int(id)-i_index (if slot remove, else equip)]
 		TAKE_WEAPON, // unit take/hide weapon SERVER[int(netid)-unit, bool(id)-hide, byte-type of weapon(auto)] / CLIENT[bool(id) hide, byte-type of weapon(auto)]
 		ATTACK, // unit attack SERVER[int(netid)-unit, byte(id)-type/flags, float(f[1])-speed] / CLIENT[byte(id)-type/flags, float(f[1])-speed, [(float(f[2]) - bow yspeed]]
 		CHANGE_FLAGS, // change of game flags [byte-flags (auto 0x01-bandit, 0x02-crazies attack, 0x04-anyone talking)
 		FALL, // unit falls on ground [int(netid)-unit]
 		DIE, // unit dies [int(netid)-unit]
-		SPAWN_BLOOD, // spawn blood [byte(id)-type, VEC3(pos)]
+		SPAWN_BLOOD, // spawn blood [byte(id)-type, Vec3(pos)]
 		UPDATE_HP, // update unit hp [int(netid)-unit, auto: float-hp, float-hpmax]
 		HURT_SOUND, // play unit hurt sound [int(netid)-unit]
 		DROP_ITEM, // unit drops item SERVER[int(netid)-unit] / CLIENT[int(id)-i_index, int(ile)-count]
@@ -205,9 +205,9 @@ struct NetChange
 		PICKUP_ITEM, // unit picks up item SERVER[int(netid)-unit, bool(ile)-up animation] / CLIENT[int(id)-item netid]
 		REMOVE_ITEM, // remove ground item (picked by someone) [int(id)-item netid]
 		CONSUME_ITEM, // unit consume item SERVER[int(netid)-unit, string1(Item id)-consumed item, bool(ile)-force] / CLIENT[int(id)-item index]
-		HIT_SOUND, // play hit sound [VEC3(pos), byte(id)-material, byte(ile)-material2]
+		HIT_SOUND, // play hit sound [Vec3(pos), byte(id)-material, byte(ile)-material2]
 		STUNNED, // unit get stunned [int(netid)-unit]
-		SHOOT_ARROW, // create shooted arrow [int(netid)-unit, VEC3(pos), float(f[0])-rotY, float(f[1])-speedY, float(f[2])-rotX, float(extra_f)-speed]
+		SHOOT_ARROW, // create shooted arrow [int(netid)-unit, Vec3(pos), float(f[0])-rotY, float(f[1])-speedY, float(f[2])-rotX, float(extra_f)-speed]
 		LOOT_UNIT, // player wants to loot unit [int(netid)-unit]
 		GET_ITEM, // player gets item from unit or container [int(id)-i_index, int(ile)-count]
 		GET_ALL_ITEMS, // player picks up all items from corpse/chest []
@@ -227,10 +227,10 @@ struct NetChange
 		CHANGE_LOCATION_STATE, // change location state [byte(id)-location index, byte(ile)-state(0-known,1-visited)]
 		ADD_RUMOR, // add rumor to journal [string1(rumors[id])-text]
 		TELL_NAME, // hero tells his name [int(netid)-unit]
-		HAIR_COLOR, // change unit hair color [int(netid)-unit, auto:VEC4-color]
+		HAIR_COLOR, // change unit hair color [int(netid)-unit, auto:Vec4-color]
 		ENTER_BUILDING, // player wants to enter building [byte(id)-building index]
 		EXIT_BUILDING, // player wants to exit building []
-		WARP, // warp unit or notify server about warping SERVER[int(netid)-unit, auto:char-in building, VEC3-pos, float-rot] / CLIENT[]
+		WARP, // warp unit or notify server about warping SERVER[int(netid)-unit, auto:char-in building, Vec3-pos, float-rot] / CLIENT[]
 		ADD_NOTE, // player added note to journal [string1-text (automaticaly set)]
 		REGISTER_ITEM, // register new item [auto:string1(base_item.id)-item id, string1(item2.id)-id, string1(item2.name)-name, string1(item2.desc)-description, int(item2.refid)-item refid]
 		ADD_QUEST, // added quest [id = quest, auto: int(quest.refid), string1(quest.name), string2(quest.msgs[0]), string2(quest.msgs[1]))
@@ -280,7 +280,7 @@ struct NetChange
 		TRAVEL, // leader wants to travel to location [byte(id)-location index]
 		WORLD_TIME, // change world time [auto: int-worldtime, byte-day, byte-month, byte-year]
 		USE_DOOR, // someone open/close door [int(id)-door netid, bool(ile)-is closing]
-		CREATE_EXPLOSION, // create explosion effect [string1(spell->id), VEC3(pos)]
+		CREATE_EXPLOSION, // create explosion effect [string1(spell->id), Vec3(pos)]
 		REMOVE_TRAP, // remove trap [int(id)-trap netid]
 		TRIGGER_TRAP, // trigger trap [int(id)-trap netid]
 		TRAIN_MOVE, // player is training dexterity by moving []
@@ -289,20 +289,20 @@ struct NetChange
 		CLOSE_ENCOUNTER, // close encounter message box []
 		CLOSE_PORTAL, // close portal in location []
 		CLEAN_ALTAR, // clean altar in evil quest []
-		ADD_LOCATION, // add new location [byte(id)-location index, auto: [byte(loc.type), if dungeon byte(loc.levels)], byte(loc.state), INT2(loc.pos), string1(loc.name)]
+		ADD_LOCATION, // add new location [byte(id)-location index, auto: [byte(loc.type), if dungeon byte(loc.levels)], byte(loc.state), Int2(loc.pos), string1(loc.name)]
 		REMOVE_CAMP, // remove camp [byte(id)-camp index]
 		CHANGE_AI_MODE, // change unit ai mode [int(netid)-unit, byte-mode (0x1-dont attack, 0x02-assist, 0x04-not idle, 0x08-attack team)]
 		CHANGE_UNIT_BASE, // change unit base type [int(netid)-unit, string1(unit.data.id)-base unit id]
 		CHEAT_CHANGE_LEVEL, // player used cheat to change level (<>+shift+ctrl) [bool(id)-is down]
 		CHEAT_WARP_TO_STAIRS, // player used cheat to warp to stairs (<>+shift) [bool(id)-is down]
 		CAST_SPELL, // unit casts spell [int(netid)-unit, byte(id)-attack id]
-		CREATE_SPELL_BALL, // create ball - spell effect [string1(spell->id), VEC3(pos), float(f[0])-rotY, float(f[1])-speedY), int(extra_netid)-owner]
-		SPELL_SOUND, // play spell sound [string1(spell->id), VEC3(pos)]
+		CREATE_SPELL_BALL, // create ball - spell effect [string1(spell->id), Vec3(pos), float(f[0])-rotY, float(f[1])-speedY), int(extra_netid)-owner]
+		SPELL_SOUND, // play spell sound [string1(spell->id), Vec3(pos)]
 		CREATE_DRAIN, // drain blood effect [int(netid)-unit that sucks blood]
-		CREATE_ELECTRO, // create electro effect [int(e_id)-electro netid), VEC3(pos), VEC3(f)-pos2]
-		UPDATE_ELECTRO, // update electro effect [int(e_id)-electro netid, VEC3(pos)]
-		ELECTRO_HIT, // electro hit effect [VEC3(pos)]
-		RAISE_EFFECT, // raise spell effect [VEC3(pos)]
+		CREATE_ELECTRO, // create electro effect [int(e_id)-electro netid), Vec3(pos), Vec3(f)-pos2]
+		UPDATE_ELECTRO, // update electro effect [int(e_id)-electro netid, Vec3(pos)]
+		ELECTRO_HIT, // electro hit effect [Vec3(pos)]
+		RAISE_EFFECT, // raise spell effect [Vec3(pos)]
 		REVEAL_MINIMAP, // revealing minimap [auto:vector<size:word, byte-x, byte-y>]
 		CHEAT_NOAI, // player used cheat 'noai' or notification to players [bool(id)-state]
 		END_OF_GAME, // end of game, time run out []
@@ -316,10 +316,10 @@ struct NetChange
 		DROP_GOLD, // player drops gold on group [int(id)-count]
 		HERO_LEAVE, // ai left team due too many team members [int(netid)-unit]
 		PAUSED, // game paused/resumed [bool(id)-is paused]
-		HEAL_EFFECT, // heal spell effect [VEC3(pos)]
+		HEAL_EFFECT, // heal spell effect [Vec3(pos)]
 		SECRET_TEXT, // secret letter text update [auto:string1-text]
 		PUT_GOLD, // player puts gold into container [int(ile)-count]
-		UPDATE_MAP_POS, // update position on world map [auto:VEC2-pos]
+		UPDATE_MAP_POS, // update position on world map [auto:Vec2-pos]
 		CHEAT_TRAVEL, // player used cheat for fast travel on map [byte(id)-location index]
 		CHEAT_HURT, // player used cheat 'hurt' [int(netid) - unit]
 		CHEAT_BREAK_ACTION, // player used cheat 'break_action' [int(netid)-unit]
@@ -355,7 +355,7 @@ struct NetChange
 		VEC3P vec3;
 		const Item* item2;
 	};
-	VEC3 pos;
+	Vec3 pos;
 	union
 	{
 		float extra_f;
@@ -398,7 +398,7 @@ struct NetChangePlayer
 		END_FALLBACK, // end of fallback []
 		REST, // response to rest in inn [byte(id)-days]
 		TRAIN, // response to training [byte(id)-type (0-attribute, 1-skill, 2-tournament), byte(ile)-stat type]
-		UNSTUCK, // warped player to not stuck position [VEC3(pos)]
+		UNSTUCK, // warped player to not stuck position [Vec3(pos)]
 		GOLD_RECEIVED, // message about receiving gold from another player [byte(id)-player id, int(ile)-count]
 		GAIN_STAT, // player gained attribute/skill [bool(id)-is skill; byte(ile)-count; byte(a)-what]
 		UPDATE_TRADER_GOLD, // update trader gold [int(id)-unit gold, int(ile)-count]
@@ -417,7 +417,7 @@ struct NetChangePlayer
 		Unit* unit;
 	};
 	const Item* item;
-	VEC3 pos;
+	Vec3 pos;
 };
 
 //-----------------------------------------------------------------------------

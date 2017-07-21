@@ -31,7 +31,7 @@ public:
 	virtual void FormatBox() {}
 
 	static TEX tBackground;
-	//INT2 min_size;
+	//Int2 min_size;
 	uint order;
 
 private:
@@ -39,7 +39,7 @@ private:
 
 	/*bool resizing, draging, shift_size; // zmiana rozmiaru z shiftem zrobiona tylko dla lewego dolnego rogu
 	int move_what;
-	INT2 move_offset;*/
+	Int2 move_offset;*/
 
 protected:
 	int box_state;
@@ -48,8 +48,8 @@ protected:
 	string box_text, box_text_small;
 	TEX box_img;
 	Rect box_big, box_small;
-	INT2 box_size, box_pos;
-	INT2 box_img_pos, box_img_size;
+	Int2 box_size, box_pos;
+	Int2 box_img_pos, box_img_size;
 };
 
 //-----------------------------------------------------------------------------

@@ -103,7 +103,7 @@ namespace gui
 		TreeNode* parent;
 		vector<TreeNode*> childs;
 		void* data;
-		INT2 pos;
+		Int2 pos;
 		int width, end_offset;
 		bool selected, is_dir, collapsed;
 	};
@@ -177,7 +177,7 @@ namespace gui
 		};
 
 		void CalculatePos();
-		void CalculatePos(TreeNode* node, INT2& offset, int& max_width);
+		void CalculatePos(TreeNode* node, Int2& offset, int& max_width);
 		bool CanDragAndDrop();
 		void Draw(TreeNode* node);
 		void EndEdit(bool apply, bool set_focus);
@@ -203,7 +203,7 @@ namespace gui
 		string new_name;
 		int item_height, level_offset;
 		DRAG_MODE drag;
-		INT2 total_size, area_size;
-		BOX2D clip_rect;
+		Int2 total_size, area_size;
+		Box2d clip_rect;
 	};
 }

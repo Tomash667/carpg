@@ -14,8 +14,8 @@ struct Trap
 	int state, dir, netid;
 	float time;
 	vector<Unit*>* hitted;
-	INT2 tile;
-	VEC3 pos;
+	Int2 tile;
+	Vec3 pos;
 	Object obj, obj2;
 	bool trigger; // u¿ywane u klienta w MP
 

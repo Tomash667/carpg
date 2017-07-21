@@ -13,7 +13,7 @@ extern bool g_beard_and_mustache[MAX_BEARD - 1];
 
 //-----------------------------------------------------------------------------
 // Dostêpne kolory w³osów
-extern const VEC4 g_hair_colors[];
+extern const Vec4 g_hair_colors[];
 extern const uint n_hair_colors;
 
 //-----------------------------------------------------------------------------
@@ -21,11 +21,11 @@ extern const uint n_hair_colors;
 struct Human
 {
 	int hair, beard, mustache;
-	VEC4 hair_color;
+	Vec4 hair_color;
 	float height; // 0...2
-	vector<MATRIX> mat_scale;
+	vector<Matrix> mat_scale;
 
-	VEC2 GetScale();
+	Vec2 GetScale();
 	void ApplyScale(Animesh* mesh);
 	void Save(HANDLE file);
 	void Load(HANDLE file);
@@ -36,7 +36,7 @@ struct Human
 struct HumanData
 {
 	int hair, beard, mustache;
-	VEC4 hair_color;
+	Vec4 hair_color;
 	float height;
 
 	void Get(const Human& h);

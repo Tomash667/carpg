@@ -29,7 +29,7 @@ struct SceneNode
 		F_ALPHA_TEST = 1 << 7
 	};
 
-	MATRIX mat;
+	Matrix mat;
 	union
 	{
 		Animesh* mesh;
@@ -38,7 +38,7 @@ struct SceneNode
 	AnimeshInstance* parent_ani;
 	int flags, lights, subs;
 	const TexId* tex_override;
-	VEC4 tint;
+	Vec4 tint;
 	bool billboard;
 
 	const Animesh& GetMesh() const
@@ -79,7 +79,7 @@ struct DebugSceneNode
 		Physic,
 		MaxGroup
 	} group;
-	MATRIX mat;
+	Matrix mat;
 };
 
 //-----------------------------------------------------------------------------
@@ -101,22 +101,22 @@ struct GlowNode
 struct Billboard
 {
 	TEX tex;
-	VEC3 pos;
+	Vec3 pos;
 	float size;
 };
 
 //-----------------------------------------------------------------------------
 struct Area
 {
-	VEC3 v[4];
+	Vec3 v[4];
 };
 
 //-----------------------------------------------------------------------------
 struct LightData
 {
-	VEC3 pos;
+	Vec3 pos;
 	float range;
-	VEC3 color;
+	Vec3 color;
 	float _pad;
 };
 
@@ -152,8 +152,8 @@ struct DungeonPart
 //-----------------------------------------------------------------------------
 struct NodeMatrix
 {
-	MATRIX matWorld;
-	MATRIX matCombined;
+	Matrix matWorld;
+	Matrix matCombined;
 };
 
 //-----------------------------------------------------------------------------

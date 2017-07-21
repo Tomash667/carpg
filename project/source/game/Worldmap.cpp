@@ -30,7 +30,7 @@
 #include "Team.h"
 
 extern const float TRAVEL_SPEED = 28.f;
-extern MATRIX m1, m2, m3, m4;
+extern Matrix m1, m2, m3, m4;
 
 //#define START_LOCATION L_VILLAGE
 //#define START_LOCATION2 MAGE_TOWER
@@ -126,12 +126,12 @@ void Game::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist,
 	{
 		for(uint j = 0; j < 100; ++j)
 		{
-			VEC2 pt = VEC2::Random(16.f, 600.f - 16.f);
+			Vec2 pt = Vec2::Random(16.f, 600.f - 16.f);
 			bool ok = true;
 
 			for(Location* l : locations)
 			{
-				float dist = VEC2::Distance(pt, l->pos);
+				float dist = Vec2::Distance(pt, l->pos);
 				if(dist < valid_dist)
 				{
 					ok = false;
@@ -227,7 +227,7 @@ void Game::GenerateWorld()
 	{
 		Location* loc = new OutsideLocation;
 		locations.push_back(loc);
-		loc->pos = VEC2(-1000, -1000);
+		loc->pos = Vec2(-1000, -1000);
 		loc->name = txRandomEncounter;
 		loc->state = LS_VISITED;
 		loc->image = LI_FOREST;
@@ -245,7 +245,7 @@ void Game::GenerateWorld()
 	{
 		if(!*it)
 			continue;
-		if((*it)->state == LS_UNKNOWN && VEC2::Distance(locations[startowe]->pos, (*it)->pos) <= 100.f)
+		if((*it)->state == LS_UNKNOWN && Vec2::Distance(locations[startowe]->pos, (*it)->pos) <= 100.f)
 			(*it)->state = LS_KNOWN;
 
 #ifdef START_LOCATION
@@ -402,7 +402,7 @@ void Game::GenerateWorld()
 			else
 			{
 				inside->spawn = RandomSpawnGroup(base);
-				if(VEC2::Distance(inside->pos, locations[startowe]->pos) < 100)
+				if(Vec2::Distance(inside->pos, locations[startowe]->pos) < 100)
 					inside->st = Random(3, 6);
 				else
 					inside->st = Random(3, 15);
@@ -415,7 +415,7 @@ void Game::GenerateWorld()
 		}
 		else if((*it)->type == L_CAVE || (*it)->type == L_FOREST || (*it)->type == L_ENCOUNTER)
 		{
-			if(VEC2::Distance((*it)->pos, locations[startowe]->pos) < 100)
+			if(Vec2::Distance((*it)->pos, locations[startowe]->pos) < 100)
 				(*it)->st = Random(3, 6);
 			else
 				(*it)->st = Random(3, 13);
@@ -978,7 +978,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			CreateCityMinimap();
 
 			// dodaj gracza i jego dru¿ynê
-			VEC3 spawn_pos;
+			Vec3 spawn_pos;
 			float spawn_dir;
 			GetCityEntry(spawn_pos, spawn_dir);
 			AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
@@ -1069,7 +1069,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			}
 			else
 			{
-				VEC3 pos;
+				Vec3 pos;
 				float dir;
 				GetOutsideSpawnPoint(pos, dir);
 
@@ -1237,7 +1237,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			if(!reenter)
 				ApplyTiles(camp->h, camp->tiles);
 
-			VEC3 pos;
+			Vec3 pos;
 			float dir;
 			GetOutsideSpawnPoint(pos, dir);
 
@@ -1312,7 +1312,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				quest_bandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
 				UnitData* ud = FindUnitData("guard_q_bandyci");
 				int ile = Random(4, 5);
-				pos += VEC3(sin(dir + PI) * 8, 0, cos(dir + PI) * 8);
+				pos += Vec3(sin(dir + PI) * 8, 0, cos(dir + PI) * 8);
 				for(int i = 0; i < ile; ++i)
 				{
 					Unit* u = SpawnUnitNearLocation(local_ctx, pos, *ud, &Team.leader->pos, 6, 4.f);
@@ -1336,7 +1336,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			if(!reenter)
 				ApplyTiles(forest->h, forest->tiles);
 
-			VEC3 pos;
+			Vec3 pos;
 			float dir;
 			GetOutsideSpawnPoint(pos, dir);
 			SetOutsideParams();
@@ -1508,7 +1508,7 @@ void Game::ApplyTiles(float* _h, TerrainTile* _tiles)
 	terrain->CalculateBox();
 }
 
-Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float rot, float scale, VEC3* out_point, int variant)
+Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float rot, float scale, Vec3* out_point, int variant)
 {
 	int obj_id, obj_t;
 
@@ -1520,7 +1520,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 		{
 			Object& o = Add1(ctx.objects);
 			o.mesh = stol->mesh;
-			o.rot = VEC3(0, rot, 0);
+			o.rot = Vec3(0, rot, 0);
 			o.pos = pos;
 			o.scale = 1;
 			o.base = stol;
@@ -1568,7 +1568,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 			Useable* u = new Useable;
 			ctx.useables->push_back(u);
 			u->type = U_STOOL;
-			u->pos = pos + VEC3(sin(sdir)*slen, 0, cos(sdir)*slen);
+			u->pos = pos + Vec3(sin(sdir)*slen, 0, cos(sdir)*slen);
 			u->rot = sdir;
 			u->user = nullptr;
 			if(IsOnline())
@@ -1597,7 +1597,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 
 		Object& o = Add1(ctx.objects);
 		o.mesh = obj->mesh;
-		o.rot = VEC3(0, rot, 0);
+		o.rot = Vec3(0, rot, 0);
 		o.pos = pos;
 		o.scale = scale;
 		o.base = obj;
@@ -1697,7 +1697,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const VEC3& pos, float ro
 		{
 			Object& o = Add1(ctx.objects);
 			o.mesh = obj->mesh;
-			o.rot = VEC3(0, rot, 0);
+			o.rot = Vec3(0, rot, 0);
 			o.pos = pos;
 			o.scale = scale;
 			o.base = obj;
@@ -1746,7 +1746,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			break;
 		}
 
-		o.pos = VEC3(float(it->pt.x + it->type->shift[it->rot].x) * 2, 1.f, float(it->pt.y + it->type->shift[it->rot].y) * 2);
+		o.pos = Vec3(float(it->pt.x + it->type->shift[it->rot].x) * 2, 1.f, float(it->pt.y + it->type->shift[it->rot].y) * 2);
 		terrain->SetH(o.pos);
 		o.rot.x = o.rot.z = 0.f;
 		o.scale = 1.f;
@@ -1770,8 +1770,8 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			if(!IS_SET(city->gates, GATE_SOUTH) || i < mid - 1 || i > mid)
 			{
 				Object& o = Add1(local_ctx.objects);
-				o.pos = VEC3(float(i) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f);
-				o.rot = VEC3(0, PI, 0);
+				o.pos = Vec3(float(i) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f);
+				o.rot = Vec3(0, PI, 0);
 				o.scale = 1.f;
 				o.base = oWall;
 				o.mesh = oWall->mesh;
@@ -1782,8 +1782,8 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			if(!IS_SET(city->gates, GATE_NORTH) || i < mid - 1 || i > mid)
 			{
 				Object& o = Add1(local_ctx.objects);
-				o.pos = VEC3(float(i) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f);
-				o.rot = VEC3(0, 0, 0);
+				o.pos = Vec3(float(i) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f);
+				o.rot = Vec3(0, 0, 0);
 				o.scale = 1.f;
 				o.base = oWall;
 				o.mesh = oWall->mesh;
@@ -1794,8 +1794,8 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			if(!IS_SET(city->gates, GATE_WEST) || i < mid - 1 || i > mid)
 			{
 				Object& o = Add1(local_ctx.objects);
-				o.pos = VEC3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
-				o.rot = VEC3(0, PI * 3 / 2, 0);
+				o.pos = Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
+				o.rot = Vec3(0, PI * 3 / 2, 0);
 				o.scale = 1.f;
 				o.base = oWall;
 				o.mesh = oWall->mesh;
@@ -1806,8 +1806,8 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			if(!IS_SET(city->gates, GATE_EAST) || i < mid - 1 || i > mid)
 			{
 				Object& o = Add1(local_ctx.objects);
-				o.pos = VEC3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
-				o.rot = VEC3(0, PI / 2, 0);
+				o.pos = Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
+				o.rot = Vec3(0, PI / 2, 0);
 				o.scale = 1.f;
 				o.base = oWall;
 				o.mesh = oWall->mesh;
@@ -1819,8 +1819,8 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 		{
 			// north east
 			Object& o = Add1(local_ctx.objects);
-			o.pos = VEC3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f);
-			o.rot = VEC3(0, 0, 0);
+			o.pos = Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f);
+			o.rot = Vec3(0, 0, 0);
 			o.scale = 1.f;
 			o.base = oTower;
 			o.mesh = oTower->mesh;
@@ -1829,8 +1829,8 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 		{
 			// south east
 			Object& o = Add1(local_ctx.objects);
-			o.pos = VEC3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f);
-			o.rot = VEC3(0, PI / 2, 0);
+			o.pos = Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f);
+			o.rot = Vec3(0, PI / 2, 0);
 			o.scale = 1.f;
 			o.base = oTower;
 			o.mesh = oTower->mesh;
@@ -1839,8 +1839,8 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 		{
 			// south west
 			Object& o = Add1(local_ctx.objects);
-			o.pos = VEC3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f);
-			o.rot = VEC3(0, PI, 0);
+			o.pos = Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f);
+			o.rot = Vec3(0, PI, 0);
 			o.scale = 1.f;
 			o.base = oTower;
 			o.mesh = oTower->mesh;
@@ -1849,8 +1849,8 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 		{
 			// north west
 			Object& o = Add1(local_ctx.objects);
-			o.pos = VEC3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f);
-			o.rot = VEC3(0, PI * 3 / 2, 0);
+			o.pos = Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f);
+			o.rot = Vec3(0, PI * 3 / 2, 0);
 			o.scale = 1.f;
 			o.base = oTower;
 			o.mesh = oTower->mesh;
@@ -1866,7 +1866,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o.base = oGate;
 			o.mesh = oGate->mesh;
 			o.rot.y = 0;
-			o.pos = VEC3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2);
+			o.pos = Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2);
 			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
 
 			Object& o2 = Add1(local_ctx.objects);
@@ -1886,7 +1886,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o.base = oGate;
 			o.mesh = oGate->mesh;
 			o.rot.y = PI;
-			o.pos = VEC3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2);
+			o.pos = Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2);
 			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
 
 			Object& o2 = Add1(local_ctx.objects);
@@ -1906,7 +1906,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o.base = oGate;
 			o.mesh = oGate->mesh;
 			o.rot.y = PI * 3 / 2;
-			o.pos = VEC3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f);
+			o.pos = Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f);
 			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
 
 			Object& o2 = Add1(local_ctx.objects);
@@ -1926,7 +1926,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o.base = oGate;
 			o.mesh = oGate->mesh;
 			o.rot.y = PI / 2;
-			o.pos = VEC3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f);
+			o.pos = Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f);
 			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
 
 			Object& o2 = Add1(local_ctx.objects);
@@ -1951,12 +1951,12 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			r = 1;
 
 		ProcessBuildingObjects(local_ctx, city, nullptr, b->mesh, b->inside_mesh, dir_to_rot(r), r,
-			VEC3(float(it->pt.x + b->shift[it->rot].x) * 2, 0.f, float(it->pt.y + b->shift[it->rot].y) * 2), it->type, &*it);
+			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 0.f, float(it->pt.y + b->shift[it->rot].y) * 2), it->type, &*it);
 	}
 }
 
 void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Animesh* mesh, Animesh* inside_mesh, float rot, int roti,
-	const VEC3& shift, Building* type, CityBuilding* building, bool recreate, VEC3* out_point)
+	const Vec3& shift, Building* type, CityBuilding* building, bool recreate, Vec3* out_point)
 {
 	if(mesh->attach_points.empty())
 	{
@@ -1969,10 +1969,10 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 	// x (o - obiekt, r - obrócony obiekt, p - fizyka, s - strefa, c - postaæ, m - maska œwiat³a, d - detal wokó³ obiektu, l - limited rot object)
 	// N - wariant (tylko obiekty)
 	string token;
-	MATRIX m1, m2;
+	Matrix m1, m2;
 	bool have_exit = false, have_spawn = false;
 	bool is_inside = (inside != nullptr);
-	VEC3 spawn_point;
+	Vec3 spawn_point;
 	static vector<const Animesh::Point*> details;
 
 	for(vector<Animesh::Point>::const_iterator it2 = mesh->attach_points.begin(), end2 = mesh->attach_points.end(); it2 != end2; ++it2)
@@ -2011,14 +2011,14 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 		else
 			continue;
 
-		VEC3 pos;
+		Vec3 pos;
 		if(roti != 0)
 		{
-			m2 = pt.mat * MATRIX::RotationY(rot);
-			pos = VEC3::TransformZero(m2);
+			m2 = pt.mat * Matrix::RotationY(rot);
+			pos = Vec3::TransformZero(m2);
 		}
 		else
-			pos = VEC3::TransformZero(pt.mat);
+			pos = Vec3::TransformZero(pt.mat);
 		pos += shift;
 
 		if(c == 'o' || c == 'r' || c == 'l')
@@ -2179,7 +2179,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 
 					inside = new InsideBuilding;
 					inside->level_shift = city->inside_offset;
-					inside->offset = VEC2(512.f*city->inside_offset.x + 256.f, 512.f*city->inside_offset.y + 256.f);
+					inside->offset = Vec2(512.f*city->inside_offset.x + 256.f, 512.f*city->inside_offset.y + 256.f);
 					if(city->inside_offset.x > city->inside_offset.y)
 					{
 						--city->inside_offset.x;
@@ -2205,7 +2205,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					inside->enter_area.v1.y = pos.z - h;
 					inside->enter_area.v2.x = pos.x + w;
 					inside->enter_area.v2.y = pos.z + h;
-					VEC2 mid = inside->enter_area.Midpoint();
+					Vec2 mid = inside->enter_area.Midpoint();
 					inside->enter_y = terrain->GetH(mid.x, mid.y) + 0.1f;
 					inside->type = type;
 					inside->outside_rot = rot;
@@ -2220,13 +2220,13 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 
 					if(inside_mesh)
 					{
-						VEC3 o_pos = VEC3(inside->offset.x, 0.f, inside->offset.y);
+						Vec3 o_pos = Vec3(inside->offset.x, 0.f, inside->offset.y);
 
 						Object& o = Add1(inside->ctx.objects);
 						o.base = nullptr;
 						o.mesh = inside_mesh;
 						o.pos = o_pos;
-						o.rot = VEC3(0, 0, 0);
+						o.rot = Vec3(0, 0, 0);
 						o.scale = 1.f;
 						o.require_split = true;
 
@@ -2279,7 +2279,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					door->netid = door_netid_counter++;
 
 					btTransform& tr = door->phy->getWorldTransform();
-					VEC3 pos = door->pos;
+					Vec3 pos = door->pos;
 					pos.y += 1.319f;
 					tr.setOrigin(ToVector3(pos));
 					tr.setRotation(btQuaternion(door->rot, 0, 0));
@@ -2352,8 +2352,8 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 		else if(c == 'm')
 		{
 			LightMask& mask = Add1(inside->masks);
-			mask.size = VEC2(pt.size.x, pt.size.z);
-			mask.pos = VEC2(pos.x, pos.z);
+			mask.size = Vec2(pt.size.x, pt.size.z);
+			mask.pos = Vec2(pos.x, pos.z);
 		}
 	}
 
@@ -2392,15 +2392,15 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 						token[k] = '_';
 				}
 
-				VEC3 pos;
+				Vec3 pos;
 				if(roti != 0)
 				{
-					m1 = MATRIX::RotationY(rot);
+					m1 = Matrix::RotationY(rot);
 					m2 = pt.mat * m1;
-					pos = VEC3::TransformZero(m2);
+					pos = Vec3::TransformZero(m2);
 				}
 				else
-					pos = VEC3::TransformZero(pt.mat);
+					pos = Vec3::TransformZero(pt.mat);
 				pos += shift;
 
 				cstring name;
@@ -2471,7 +2471,7 @@ void Game::SpawnUnits(City* city)
 			break;
 		}
 
-		u->pos = VEC3(float(b.unit_pt.x) * 2 + 1, 0, float(b.unit_pt.y) * 2 + 1);
+		u->pos = Vec3(float(b.unit_pt.x) * 2 + 1, 0, float(b.unit_pt.y) * 2 + 1);
 		terrain->SetH(u->pos);
 		UpdateUnitPhysics(*u, u->pos);
 		u->visual_pos = u->pos;
@@ -2503,10 +2503,10 @@ void Game::SpawnUnits(City* city)
 	{
 		for(int j = 0; j < 50; ++j)
 		{
-			INT2 pt(Random(a, b), Random(a, b));
+			Int2 pt(Random(a, b), Random(a, b));
 			if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 			{
-				SpawnUnitNearLocation(local_ctx, VEC3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *mieszkaniec, nullptr, -2, 2.f);
+				SpawnUnitNearLocation(local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *mieszkaniec, nullptr, -2, 2.f);
 				break;
 			}
 		}
@@ -2518,10 +2518,10 @@ void Game::SpawnUnits(City* city)
 	{
 		for(int j = 0; j < 50; ++j)
 		{
-			INT2 pt(Random(a, b), Random(a, b));
+			Int2 pt(Random(a, b), Random(a, b));
 			if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 			{
-				SpawnUnitNearLocation(local_ctx, VEC3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *guard, nullptr, -2, 2.f);
+				SpawnUnitNearLocation(local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *guard, nullptr, -2, 2.f);
 				break;
 			}
 		}
@@ -2568,9 +2568,9 @@ void Game::RespawnUnits(LevelContext& ctx)
 		// fizyka
 		btCapsuleShape* caps = new btCapsuleShape(u->GetUnitRadius(), max(MIN_H, u->GetUnitHeight()));
 		u->cobj = new btCollisionObject;
-		VEC3 pos = u->pos;
+		Vec3 pos = u->pos;
 		pos.y += u->GetUnitHeight();
-		btVector3 bpos(ToVector3(u->IsAlive() ? pos : VEC3(1000, 1000, 1000)));
+		btVector3 bpos(ToVector3(u->IsAlive() ? pos : Vec3(1000, 1000, 1000)));
 		bpos.setY(u->pos.y + max(MIN_H, u->GetUnitHeight()) / 2);
 		u->cobj->getWorldTransform().setOrigin(bpos);
 		u->cobj->setCollisionShape(caps);
@@ -2888,7 +2888,7 @@ void Game::GenerateDungeon(Location& _loc)
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
 			Room& r = Add1(lvl.rooms);
 			r.target = RoomTarget::Treasury;
-			r.size = INT2(7, 7);
+			r.size = Int2(7, 7);
 			r.pos.x = r.pos.y = (opcje.w - 7) / 2;
 			inside->special_room = 0;
 		}
@@ -2898,7 +2898,7 @@ void Game::GenerateDungeon(Location& _loc)
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
 			Room& r = Add1(lvl.rooms);
 			r.target = RoomTarget::Throne;
-			r.size = INT2(13, 7);
+			r.size = Int2(13, 7);
 			r.pos.x = (opcje.w - 13) / 2;
 			r.pos.y = (opcje.w - 7) / 2;
 			inside->special_room = 0;
@@ -2909,7 +2909,7 @@ void Game::GenerateDungeon(Location& _loc)
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
 			Room& r = Add1(lvl.rooms);
 			r.target = RoomTarget::PortalCreate;
-			r.size = INT2(7, 7);
+			r.size = Int2(7, 7);
 			r.pos.x = r.pos.y = (opcje.w - 7) / 2;
 			inside->special_room = 0;
 		}
@@ -2956,7 +2956,7 @@ void Game::GenerateDungeon(Location& _loc)
 				int id = mozliwe_pokoje[Rand() % mozliwe_pokoje.size()];
 				lvl.rooms[id].target = RoomTarget::Prison;
 				// dodaj drzwi
-				INT2 pt = pole_laczace(id, lvl.rooms[id].connected.front());
+				Int2 pt = pole_laczace(id, lvl.rooms[id].connected.front());
 				Pole& p = opcje.mapa[pt.x + pt.y*opcje.w];
 				p.type = DRZWI;
 				p.flags |= Pole::F_SPECJALNE;
@@ -3013,20 +3013,20 @@ void Game::GenerateDungeon(Location& _loc)
 			}
 
 			Room& r = lvl.rooms[id];
-			vector<std::pair<INT2, int> > good_pts;
+			vector<std::pair<Int2, int> > good_pts;
 
 			for(int y = 1; y < r.size.y - 1; ++y)
 			{
 				for(int x = 1; x < r.size.x - 1; ++x)
 				{
-					if(lvl.At(r.pos + INT2(x, y)).type == PUSTE)
+					if(lvl.At(r.pos + Int2(x, y)).type == PUSTE)
 					{
 						// opcje:
 						// ___ #__
 						// _?_ #?_
 						// ### ###
-#define P(xx,yy) (lvl.At(r.pos+INT2(x+xx,y+yy)).type == PUSTE)
-#define B(xx,yy) (lvl.At(r.pos+INT2(x+xx,y+yy)).type == SCIANA)
+#define P(xx,yy) (lvl.At(r.pos+Int2(x+xx,y+yy)).type == PUSTE)
+#define B(xx,yy) (lvl.At(r.pos+Int2(x+xx,y+yy)).type == SCIANA)
 
 						int dir = -1;
 
@@ -3060,7 +3060,7 @@ void Game::GenerateDungeon(Location& _loc)
 						}
 
 						if(dir != -1)
-							good_pts.push_back(std::pair<INT2, int>(r.pos + INT2(x, y), dir));
+							good_pts.push_back(std::pair<Int2, int>(r.pos + Int2(x, y), dir));
 #undef P
 #undef B
 					}
@@ -3070,9 +3070,9 @@ void Game::GenerateDungeon(Location& _loc)
 			if(good_pts.empty())
 				goto powtorz;
 
-			std::pair<INT2, int>& pt = good_pts[Rand() % good_pts.size()];
+			std::pair<Int2, int>& pt = good_pts[Rand() % good_pts.size()];
 
-			const VEC3 pos(2.f*pt.first.x + 1, 0, 2.f*pt.first.y + 1);
+			const Vec3 pos(2.f*pt.first.x + 1, 0, 2.f*pt.first.y + 1);
 			float rot = Clip(dir_to_rot(pt.second) + PI);
 
 			inside->portal->pos = pos;
@@ -3083,8 +3083,8 @@ void Game::GenerateDungeon(Location& _loc)
 	}
 	else
 	{
-		INT2 pokoj_pos;
-		generate_labirynth(lvl.map, INT2(base.size, base.size), base.room_size, lvl.staircase_up, lvl.staircase_up_dir, pokoj_pos, base.bars_chance, devmode);
+		Int2 pokoj_pos;
+		generate_labirynth(lvl.map, Int2(base.size, base.size), base.room_size, lvl.staircase_up, lvl.staircase_up_dir, pokoj_pos, base.bars_chance, devmode);
 
 		lvl.w = lvl.h = base.size;
 		Room& r = Add1(lvl.rooms);
@@ -3106,7 +3106,7 @@ void Game::GenerateDungeonObjects2()
 		Object& o = Add1(local_ctx.objects);
 		o.mesh = aSchodyGora;
 		o.pos = pt_to_pos(lvl.staircase_up);
-		o.rot = VEC3(0, dir_to_rot(lvl.staircase_up_dir), 0);
+		o.rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
 		o.scale = 1;
 		o.base = nullptr;
 	}
@@ -3119,7 +3119,7 @@ void Game::GenerateDungeonObjects2()
 		Object& o = Add1(local_ctx.objects);
 		o.mesh = (lvl.staircase_down_in_wall ? aSchodyDol2 : aSchodyDol);
 		o.pos = pt_to_pos(lvl.staircase_down);
-		o.rot = VEC3(0, dir_to_rot(lvl.staircase_down_dir), 0);
+		o.rot = Vec3(0, dir_to_rot(lvl.staircase_down_dir), 0);
 		o.scale = 1;
 		o.base = nullptr;
 	}
@@ -3134,8 +3134,8 @@ void Game::GenerateDungeonObjects2()
 			{
 				Object& o = Add1(local_ctx.objects);
 				o.mesh = aKratka;
-				o.rot = VEC3(0, 0, 0);
-				o.pos = VEC3(float(x * 2), 0, float(y * 2));
+				o.rot = Vec3(0, 0, 0);
+				o.pos = Vec3(float(x * 2), 0, float(y * 2));
 				o.scale = 1;
 				o.base = nullptr;
 			}
@@ -3143,8 +3143,8 @@ void Game::GenerateDungeonObjects2()
 			{
 				Object& o = Add1(local_ctx.objects);
 				o.mesh = aKratka;
-				o.rot = VEC3(0, 0, 0);
-				o.pos = VEC3(float(x * 2), 4, float(y * 2));
+				o.rot = Vec3(0, 0, 0);
+				o.pos = Vec3(float(x * 2), 4, float(y * 2));
 				o.scale = 1;
 				o.base = nullptr;
 			}
@@ -3154,13 +3154,13 @@ void Game::GenerateDungeonObjects2()
 				o.mesh = aNaDrzwi;
 				if(IS_SET(lvl.map[x + y*lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
 					o.mesh = aNaDrzwi2;
-				o.pos = VEC3(float(x * 2) + 1, 0, float(y * 2) + 1);
+				o.pos = Vec3(float(x * 2) + 1, 0, float(y * 2) + 1);
 				o.scale = 1;
 				o.base = nullptr;
 
 				if(czy_blokuje2(lvl.map[x - 1 + y*lvl.w].type))
 				{
-					o.rot = VEC3(0, 0, 0);
+					o.rot = Vec3(0, 0, 0);
 					int mov = 0;
 					if(lvl.rooms[lvl.map[x + (y - 1)*lvl.w].room].IsCorridor())
 						++mov;
@@ -3173,7 +3173,7 @@ void Game::GenerateDungeonObjects2()
 				}
 				else
 				{
-					o.rot = VEC3(0, PI / 2, 0);
+					o.rot = Vec3(0, PI / 2, 0);
 					int mov = 0;
 					if(lvl.rooms[lvl.map[x - 1 + y*lvl.w].room].IsCorridor())
 						++mov;
@@ -3189,7 +3189,7 @@ void Game::GenerateDungeonObjects2()
 				{
 					Door* door = new Door;
 					local_ctx.doors->push_back(door);
-					door->pt = INT2(x, y);
+					door->pt = Int2(x, y);
 					door->pos = o.pos;
 					door->rot = o.rot.y;
 					door->state = Door::Closed;
@@ -3200,7 +3200,7 @@ void Game::GenerateDungeonObjects2()
 					door->locked = LOCK_NONE;
 					door->netid = door_netid_counter++;
 					btTransform& tr = door->phy->getWorldTransform();
-					VEC3 pos = door->pos;
+					Vec3 pos = door->pos;
 					pos.y += 1.319f;
 					tr.setOrigin(ToVector3(pos));
 					tr.setRotation(btQuaternion(door->rot, 0, 0));
@@ -3257,12 +3257,12 @@ void Game::RespawnBuildingPhysics()
 			r = 1;
 
 		ProcessBuildingObjects(local_ctx, city_ctx, nullptr, b->mesh, nullptr, dir_to_rot(r), r,
-			VEC3(float(it->pt.x + b->shift[it->rot].x) * 2, 1.f, float(it->pt.y + b->shift[it->rot].y) * 2), nullptr, &*it, true);
+			Vec3(float(it->pt.x + b->shift[it->rot].x) * 2, 1.f, float(it->pt.y + b->shift[it->rot].y) * 2), nullptr, &*it, true);
 	}
 
 	for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
 	{
-		ProcessBuildingObjects((*it)->ctx, city_ctx, *it, (*it)->type->inside_mesh, nullptr, 0.f, 0, VEC3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr,
+		ProcessBuildingObjects((*it)->ctx, city_ctx, *it, (*it)->type->inside_mesh, nullptr, 0.f, 0, Vec3((*it)->offset.x, 0.f, (*it)->offset.y), nullptr,
 			nullptr, true);
 	}
 }
@@ -3271,19 +3271,19 @@ struct OutsideObject
 {
 	cstring name;
 	Obj* obj;
-	VEC2 scale;
+	Vec2 scale;
 };
 
 OutsideObject outside_objects[] = {
-	"tree", nullptr, VEC2(3,5),
-	"tree2", nullptr, VEC2(3,5),
-	"tree3", nullptr, VEC2(3,5),
-	"grass", nullptr, VEC2(1.f,1.5f),
-	"grass", nullptr, VEC2(1.f,1.5f),
-	"plant", nullptr, VEC2(1.0f,2.f),
-	"plant", nullptr, VEC2(1.0f,2.f),
-	"rock", nullptr, VEC2(1.f,1.f),
-	"fern", nullptr, VEC2(1,2)
+	"tree", nullptr, Vec2(3,5),
+	"tree2", nullptr, Vec2(3,5),
+	"tree3", nullptr, Vec2(3,5),
+	"grass", nullptr, Vec2(1.f,1.5f),
+	"grass", nullptr, Vec2(1.f,1.5f),
+	"plant", nullptr, Vec2(1.0f,2.f),
+	"plant", nullptr, Vec2(1.0f,2.f),
+	"rock", nullptr, Vec2(1.f,1.f),
+	"fern", nullptr, Vec2(1,2)
 };
 const uint n_outside_objects = countof(outside_objects);
 
@@ -3298,7 +3298,7 @@ void Game::SpawnCityObjects()
 	// well
 	if(g_have_well)
 	{
-		VEC3 pos = pt_to_pos(g_well_pt);
+		Vec3 pos = pt_to_pos(g_well_pt);
 		terrain->SetH(pos);
 		SpawnObject(local_ctx, FindObject("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, nullptr);
 	}
@@ -3307,7 +3307,7 @@ void Game::SpawnCityObjects()
 
 	for(int i = 0; i < 512; ++i)
 	{
-		INT2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
+		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
 		if(tiles[pt.x + pt.y*OutsideLocation::size].mode == TM_NORMAL &&
 			tiles[pt.x - 1 + pt.y*OutsideLocation::size].mode == TM_NORMAL &&
 			tiles[pt.x + 1 + pt.y*OutsideLocation::size].mode == TM_NORMAL &&
@@ -3318,7 +3318,7 @@ void Game::SpawnCityObjects()
 			tiles[pt.x + 1 + (pt.y - 1)*OutsideLocation::size].mode == TM_NORMAL &&
 			tiles[pt.x + 1 + (pt.y + 1)*OutsideLocation::size].mode == TM_NORMAL)
 		{
-			VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = outside_objects[Rand() % n_outside_objects];
 			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
@@ -3385,27 +3385,27 @@ void Game::GenerateForest(Location& loc)
 }
 
 OutsideObject trees[] = {
-	"tree", nullptr, VEC2(2,6),
-	"tree2", nullptr, VEC2(2,6),
-	"tree3", nullptr, VEC2(2,6)
+	"tree", nullptr, Vec2(2,6),
+	"tree2", nullptr, Vec2(2,6),
+	"tree3", nullptr, Vec2(2,6)
 };
 const uint n_trees = countof(trees);
 
 OutsideObject trees2[] = {
-	"tree", nullptr, VEC2(4,8),
-	"tree2", nullptr, VEC2(4,8),
-	"tree3", nullptr, VEC2(4,8),
-	"withered_tree", nullptr, VEC2(1,4)
+	"tree", nullptr, Vec2(4,8),
+	"tree2", nullptr, Vec2(4,8),
+	"tree3", nullptr, Vec2(4,8),
+	"withered_tree", nullptr, Vec2(1,4)
 };
 const uint n_trees2 = countof(trees2);
 
 OutsideObject misc[] = {
-	"grass", nullptr, VEC2(1.f,1.5f),
-	"grass", nullptr, VEC2(1.f,1.5f),
-	"plant", nullptr, VEC2(1.0f,2.f),
-	"plant", nullptr, VEC2(1.0f,2.f),
-	"rock", nullptr, VEC2(1.f,1.f),
-	"fern", nullptr, VEC2(1,2)
+	"grass", nullptr, Vec2(1.f,1.5f),
+	"grass", nullptr, Vec2(1.f,1.5f),
+	"plant", nullptr, Vec2(1.0f,2.f),
+	"plant", nullptr, Vec2(1.0f,2.f),
+	"rock", nullptr, Vec2(1.f,1.f),
+	"fern", nullptr, Vec2(1,2)
 };
 const uint n_misc = countof(misc);
 
@@ -3426,13 +3426,13 @@ void Game::SpawnForestObjects(int road_dir)
 	// obelisk
 	if(Rand() % (road_dir == -1 ? 10 : 15) == 0)
 	{
-		VEC3 pos;
+		Vec3 pos;
 		if(road_dir == -1)
-			pos = VEC3(127.f, 0, 127.f);
+			pos = Vec3(127.f, 0, 127.f);
 		else if(road_dir == 0)
-			pos = VEC3(127.f, 0, Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f);
+			pos = Vec3(127.f, 0, Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f);
 		else
-			pos = VEC3(Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f, 0, 127.f);
+			pos = Vec3(Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f, 0, 127.f);
 		terrain->SetH(pos);
 		pos.y -= 1.f;
 		SpawnObject(local_ctx, FindObject("obelisk"), pos, 0.f);
@@ -3440,12 +3440,12 @@ void Game::SpawnForestObjects(int road_dir)
 	else if(Rand() % 16 == 0)
 	{
 		// tree with rocks around it
-		VEC3 pos(Random(48.f, 208.f), 0, Random(48.f, 208.f));
+		Vec3 pos(Random(48.f, 208.f), 0, Random(48.f, 208.f));
 		pos.y = terrain->GetH(pos) - 1.f;
 		SpawnObject(local_ctx, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
 		for(int i = 0; i < 12; ++i)
 		{
-			VEC3 pos2 = pos + VEC3(sin(PI * 2 * i / 12)*8.f, 0, cos(PI * 2 * i / 12)*8.f);
+			Vec3 pos2 = pos + Vec3(sin(PI * 2 * i / 12)*8.f, 0, cos(PI * 2 * i / 12)*8.f);
 			pos2.y = terrain->GetH(pos2);
 			SpawnObject(local_ctx, misc[4].obj, pos2, Random(MAX_ANGLE));
 		}
@@ -3454,18 +3454,18 @@ void Game::SpawnForestObjects(int road_dir)
 	// drzewa
 	for(int i = 0; i < 1024; ++i)
 	{
-		INT2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
+		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
 		TERRAIN_TILE co = tiles[pt.x + pt.y*OutsideLocation::size].t;
 		if(co == TT_GRASS)
 		{
-			VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = trees[Rand() % n_trees];
 			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 		else if(co == TT_GRASS3)
 		{
-			VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			int co;
 			if(Rand() % 12 == 0)
@@ -3480,10 +3480,10 @@ void Game::SpawnForestObjects(int road_dir)
 	// inne
 	for(int i = 0; i < 512; ++i)
 	{
-		INT2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
+		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
 		if(tiles[pt.x + pt.y*OutsideLocation::size].t != TT_SAND)
 		{
-			VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = misc[Rand() % n_misc];
 			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
@@ -3529,20 +3529,20 @@ void Game::SpawnForestItems(int count_mod)
 		FindItem("healing_herb"), herbs
 	};
 	TerrainTile* tiles = ((OutsideLocation*)location)->tiles;
-	VEC2 region_size(2.f, 2.f);
+	Vec2 region_size(2.f, 2.f);
 	for(const ItemToSpawn& to_spawn : items_to_spawn)
 	{
 		for(int i = 0; i < to_spawn.count; ++i)
 		{
-			INT2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
+			Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
 			TERRAIN_TILE type = tiles[pt.x + pt.y*OutsideLocation::size].t;
 			if(type == TT_GRASS || type == TT_GRASS3)
-				SpawnGroundItemInsideRegion(to_spawn.item, VEC2(2.f*pt.x, 2.f*pt.y), region_size, false);
+				SpawnGroundItemInsideRegion(to_spawn.item, Vec2(2.f*pt.x, 2.f*pt.y), region_size, false);
 		}
 	}
 }
 
-void Game::GetOutsideSpawnPoint(VEC3& pos, float& dir)
+void Game::GetOutsideSpawnPoint(Vec3& pos, float& dir)
 {
 	const float dist = 40.f;
 
@@ -3551,31 +3551,31 @@ void Game::GetOutsideSpawnPoint(VEC3& pos, float& dir)
 		// east
 		dir = PI / 2;
 		if(world_dir < PI / 4)
-			pos = VEC3(256.f - dist, 0, Lerp(128.f, 256.f - dist, world_dir / (PI / 4)));
+			pos = Vec3(256.f - dist, 0, Lerp(128.f, 256.f - dist, world_dir / (PI / 4)));
 		else
-			pos = VEC3(256.f - dist, 0, Lerp(dist, 128.f, (world_dir - (7.f / 4 * PI)) / (PI / 4)));
+			pos = Vec3(256.f - dist, 0, Lerp(dist, 128.f, (world_dir - (7.f / 4 * PI)) / (PI / 4)));
 	}
 	else if(world_dir < 3.f / 4 * PI)
 	{
 		// north
 		dir = 0;
-		pos = VEC3(Lerp(dist, 256.f - dist, 1.f - ((world_dir - (1.f / 4 * PI)) / (PI / 2))), 0, 256.f - dist);
+		pos = Vec3(Lerp(dist, 256.f - dist, 1.f - ((world_dir - (1.f / 4 * PI)) / (PI / 2))), 0, 256.f - dist);
 	}
 	else if(world_dir < 5.f / 4 * PI)
 	{
 		// west
 		dir = 3.f / 2 * PI;
-		pos = VEC3(dist, 0, Lerp(dist, 256.f - dist, 1.f - ((world_dir - (3.f / 4 * PI)) / (PI / 2))));
+		pos = Vec3(dist, 0, Lerp(dist, 256.f - dist, 1.f - ((world_dir - (3.f / 4 * PI)) / (PI / 2))));
 	}
 	else
 	{
 		// south
 		dir = PI;
-		pos = VEC3(Lerp(dist, 256.f - dist, (world_dir - (5.f / 4 * PI)) / (PI / 2)), 0, dist);
+		pos = Vec3(Lerp(dist, 256.f - dist, (world_dir - (5.f / 4 * PI)) / (PI / 2)), 0, dist);
 	}
 }
 
-void Game::SpawnForestUnits(const VEC3& team_pos)
+void Game::SpawnForestUnits(const Vec3& team_pos)
 {
 	// zbierz grupy
 	static TmpUnitGroup groups[4] = {
@@ -3586,10 +3586,10 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 	};
 	UnitData* ud_hunter = FindUnitData("wild_hunter");
 	const int level = GetDungeonLevel();
-	static vector<VEC2> poss;
+	static vector<Vec2> poss;
 	poss.clear();
 	OutsideLocation* outside = (OutsideLocation*)location;
-	poss.push_back(VEC2(team_pos.x, team_pos.z));
+	poss.push_back(Vec2(team_pos.x, team_pos.z));
 
 	// ustal wrogów
 	for(int i = 0; i < 4; ++i)
@@ -3608,12 +3608,12 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
 	{
-		VEC2 pos = outside->GetRandomPos();
+		Vec2 pos = outside->GetRandomPos();
 
 		bool ok = true;
-		for(vector<VEC2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
+		for(vector<Vec2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
 		{
-			if(VEC2::Distance(pos, *it) < 24.f)
+			if(Vec2::Distance(pos, *it) < 24.f)
 			{
 				ok = false;
 				break;
@@ -3630,7 +3630,7 @@ void Game::SpawnForestUnits(const VEC3& team_pos)
 			poss.push_back(pos);
 			++added;
 
-			VEC3 pos3(pos.x, 0, pos.y);
+			Vec3 pos3(pos.x, 0, pos.y);
 
 			// postaw jednostki
 			int levels = level * 2;
@@ -3693,10 +3693,10 @@ void Game::RepositionCityUnits()
 			{
 				for(int j = 0; j < 50; ++j)
 				{
-					INT2 pt(Random(a, b), Random(a, b));
+					Int2 pt(Random(a, b), Random(a, b));
 					if(city_ctx->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 					{
-						WarpUnit(u, VEC3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
+						WarpUnit(u, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1));
 						break;
 					}
 				}
@@ -3839,20 +3839,20 @@ void Game::GenerateEncounterMap(Location& loc)
 
 void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest)
 {
-	VEC3 look_pt;
+	Vec3 look_pt;
 	switch(enc_kierunek)
 	{
 	case 0:
-		look_pt = VEC3(133.f, 0.f, 128.f);
+		look_pt = Vec3(133.f, 0.f, 128.f);
 		break;
 	case 1:
-		look_pt = VEC3(128.f, 0.f, 133.f);
+		look_pt = Vec3(128.f, 0.f, 133.f);
 		break;
 	case 2:
-		look_pt = VEC3(123.f, 0.f, 128.f);
+		look_pt = Vec3(123.f, 0.f, 128.f);
 		break;
 	case 3:
-		look_pt = VEC3(128.f, 0.f, 123.f);
+		look_pt = Vec3(128.f, 0.f, 123.f);
 		break;
 	}
 
@@ -3929,8 +3929,8 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 				group_name2 = "wagon_guards";
 				ile2 = Random(2, 3);
 				poziom2 = Random(3, 8);
-				SpawnObjectNearLocation(local_ctx, FindObject("wagon"), VEC2(128, 128), Random(MAX_ANGLE));
-				Chest* chest = (Chest*)SpawnObjectNearLocation(local_ctx, FindObject("chest"), VEC2(128, 128), Random(MAX_ANGLE), 6.f);
+				SpawnObjectNearLocation(local_ctx, FindObject("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
+				Chest* chest = (Chest*)SpawnObjectNearLocation(local_ctx, FindObject("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
 				if(chest)
 				{
 					int gold;
@@ -4037,22 +4037,22 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 	talker = nullptr;
 	float dist, best_dist;
 
-	VEC3 spawn_pos(128.f, 0, 128.f);
+	Vec3 spawn_pos(128.f, 0, 128.f);
 	if(od_tylu)
 	{
 		switch(enc_kierunek)
 		{
 		case 0:
-			spawn_pos = VEC3(140.f, 0, 128.f);
+			spawn_pos = Vec3(140.f, 0, 128.f);
 			break;
 		case 1:
-			spawn_pos = VEC3(128.f, 0.f, 140.f);
+			spawn_pos = Vec3(128.f, 0.f, 140.f);
 			break;
 		case 2:
-			spawn_pos = VEC3(116.f, 0.f, 128.f);
+			spawn_pos = Vec3(116.f, 0.f, 128.f);
 			break;
 		case 3:
-			spawn_pos = VEC3(128.f, 0.f, 116.f);
+			spawn_pos = Vec3(128.f, 0.f, 116.f);
 			break;
 		}
 	}
@@ -4062,7 +4062,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		talker = SpawnUnitNearLocation(local_ctx, spawn_pos, *esencial, &look_pt, Clamp(esencial->level.Random(), poziom / 2, poziom), 4.f);
 		talker->dont_attack = dont_attack;
 		//assert(talker->level <= poziom);
-		best_dist = VEC3::Distance(talker->pos, look_pt);
+		best_dist = Vec3::Distance(talker->pos, look_pt);
 		--ile;
 
 		if(kamien)
@@ -4086,7 +4086,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 				//assert(u->level <= poziom);
 				// ^ w czasie spotkania mo¿e wygenerowaæ silniejszych wrogów ni¿ poziom :(
 				u->dont_attack = dont_attack;
-				dist = VEC3::Distance(u->pos, look_pt);
+				dist = Vec3::Distance(u->pos, look_pt);
 				if(!talker || dist < best_dist)
 				{
 					talker = u;
@@ -4131,38 +4131,38 @@ void Game::SpawnEncounterTeam()
 {
 	assert(InRange(enc_kierunek, 0, 3));
 
-	VEC3 pos;
+	Vec3 pos;
 	float dir;
 
-	VEC3 look_pt;
+	Vec3 look_pt;
 	switch(enc_kierunek)
 	{
 	case 0:
 		if(far_encounter)
-			pos = VEC3(140.f, 0.f, 128.f);
+			pos = Vec3(140.f, 0.f, 128.f);
 		else
-			pos = VEC3(135.f, 0.f, 128.f);
+			pos = Vec3(135.f, 0.f, 128.f);
 		dir = PI / 2;
 		break;
 	case 1:
 		if(far_encounter)
-			pos = VEC3(128.f, 0.f, 140.f);
+			pos = Vec3(128.f, 0.f, 140.f);
 		else
-			pos = VEC3(128.f, 0.f, 135.f);
+			pos = Vec3(128.f, 0.f, 135.f);
 		dir = 0;
 		break;
 	case 2:
 		if(far_encounter)
-			pos = VEC3(116.f, 0.f, 128.f);
+			pos = Vec3(116.f, 0.f, 128.f);
 		else
-			pos = VEC3(121.f, 0.f, 128.f);
+			pos = Vec3(121.f, 0.f, 128.f);
 		dir = 3.f / 2 * PI;
 		break;
 	case 3:
 		if(far_encounter)
-			pos = VEC3(128.f, 0.f, 116.f);
+			pos = Vec3(128.f, 0.f, 116.f);
 		else
-			pos = VEC3(128.f, 0.f, 121.f);
+			pos = Vec3(128.f, 0.f, 121.f);
 		dir = PI;
 		break;
 	}
@@ -4212,7 +4212,7 @@ Encounter* Game::RecreateEncounter(int id)
 // znajduje poblisk¹ lokacje wktórej s¹ tacy wrogowie
 // jeœli jest pusta oczyszczona to siê tam pojawiaj¹
 // jeœli nie ma to zak³ada obóz
-int Game::GetRandomSpawnLocation(const VEC2& pos, SPAWN_GROUP group, float range)
+int Game::GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range)
 {
 	int best_ok = -1, best_empty = -1, index = settlements;
 	float ok_range, empty_range, dist;
@@ -4226,7 +4226,7 @@ int Game::GetRandomSpawnLocation(const VEC2& pos, SPAWN_GROUP group, float range
 			InsideLocation* inside = (InsideLocation*)*it;
 			if((*it)->state == LS_CLEARED || inside->spawn == group || inside->spawn == SG_BRAK)
 			{
-				dist = VEC2::Distance(pos, (*it)->pos);
+				dist = Vec2::Distance(pos, (*it)->pos);
 				if(dist <= range)
 				{
 					if(inside->spawn == group)
@@ -4266,7 +4266,7 @@ int Game::GetRandomSpawnLocation(const VEC2& pos, SPAWN_GROUP group, float range
 	return CreateCamp(pos, group, range / 2);
 }
 
-int Game::CreateCamp(const VEC2& pos, SPAWN_GROUP group, float range, bool allow_exact)
+int Game::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allow_exact)
 {
 	Camp* loc = new Camp;
 	loc->state = LS_UNKNOWN;
@@ -4307,7 +4307,7 @@ void Game::DoWorldProgress(int days)
 			group = SG_GOBLINY;
 			break;
 		}
-		CreateCamp(VEC2::Random(16.f, 600 - 16.f), group, 128.f);
+		CreateCamp(Vec2::Random(16.f, 600 - 16.f), group, 128.f);
 	}
 
 	// zanikanie questowych spotkañ
@@ -4751,7 +4751,7 @@ void Game::SpawnCampObjects()
 {
 	SpawnForestObjects();
 
-	vector<VEC2> pts;
+	vector<Vec2> pts;
 	Obj* ognisko = FindObject("campfire"),
 		*ognisko_zgaszone = FindObject("campfire_off"),
 		*namiot = FindObject("tent"),
@@ -4765,13 +4765,13 @@ void Game::SpawnCampObjects()
 
 	for(int i = 0; i < 20; ++i)
 	{
-		VEC2 pt = VEC2::Random(VEC2(96, 96), VEC2(256 - 96, 256 - 96));
+		Vec2 pt = Vec2::Random(Vec2(96, 96), Vec2(256 - 96, 256 - 96));
 
 		// sprawdŸ czy nie ma w pobli¿u ogniska
 		bool jest = false;
-		for(vector<VEC2>::iterator it = pts.begin(), end = pts.end(); it != end; ++it)
+		for(vector<Vec2>::iterator it = pts.begin(), end = pts.end(); it != end; ++it)
 		{
-			if(VEC2::Distance(pt, *it) < 16.f)
+			if(Vec2::Distance(pt, *it) < 16.f)
 			{
 				jest = true;
 				break;
@@ -4791,20 +4791,20 @@ void Game::SpawnCampObjects()
 				float kat = Random(MAX_ANGLE);
 				bool czy_namiot = (Rand() % 2 == 0);
 				if(czy_namiot)
-					SpawnObjectNearLocation(local_ctx, namiot, pt + VEC2(sin(kat), cos(kat))*Random(4.f, 5.5f), pt);
+					SpawnObjectNearLocation(local_ctx, namiot, pt + Vec2(sin(kat), cos(kat))*Random(4.f, 5.5f), pt);
 				else
-					SpawnObjectNearLocation(local_ctx, poslanie, pt + VEC2(sin(kat), cos(kat))*Random(3.f, 4.f), pt);
+					SpawnObjectNearLocation(local_ctx, poslanie, pt + Vec2(sin(kat), cos(kat))*Random(3.f, 4.f), pt);
 			}
 		}
 	}
 
 	for(int i = 0; i < 100; ++i)
 	{
-		VEC2 pt = VEC2::Random(VEC2(90, 90), VEC2(256 - 90, 256 - 90));
+		Vec2 pt = Vec2::Random(Vec2(90, 90), Vec2(256 - 90, 256 - 90));
 		bool ok = true;
-		for(vector<VEC2>::iterator it = pts.begin(), end = pts.end(); it != end; ++it)
+		for(vector<Vec2>::iterator it = pts.begin(), end = pts.end(); it != end; ++it)
 		{
-			if(VEC2::Distance(*it, pt) < 4.f)
+			if(Vec2::Distance(*it, pt) < 4.f)
 			{
 				ok = false;
 				break;
@@ -4830,7 +4830,7 @@ void Game::SpawnCampObjects()
 void Game::SpawnCampUnits()
 {
 	static TmpUnitGroup group;
-	static vector<VEC2> poss;
+	static vector<Vec2> poss;
 	poss.clear();
 	OutsideLocation* outside = (OutsideLocation*)location;
 	int level = outside->st;
@@ -4875,12 +4875,12 @@ void Game::SpawnCampUnits()
 
 	for(int added = 0, tries = 50; added < 5 && tries>0; --tries)
 	{
-		VEC2 pos = VEC2::Random(VEC2(90, 90), VEC2(256 - 90, 256 - 90));
+		Vec2 pos = Vec2::Random(Vec2(90, 90), Vec2(256 - 90, 256 - 90));
 
 		bool ok = true;
-		for(vector<VEC2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
+		for(vector<Vec2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
 		{
-			if(VEC2::Distance(pos, *it) < 8.f)
+			if(Vec2::Distance(pos, *it) < 8.f)
 			{
 				ok = false;
 				break;
@@ -4893,7 +4893,7 @@ void Game::SpawnCampUnits()
 			poss.push_back(pos);
 			++added;
 
-			VEC3 pos3(pos.x, 0, pos.y);
+			Vec3 pos3(pos.x, 0, pos.y);
 
 			// postaw jednostki
 			int levels = level * 2;
@@ -4926,13 +4926,13 @@ void Game::SpawnCampUnits()
 	}
 }
 
-Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, float rot, float range, float margin, float scale)
+Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const Vec2& pos, float rot, float range, float margin, float scale)
 {
 	bool ok = false;
 	if(obj->type == OBJ_CYLINDER)
 	{
 		global_col.clear();
-		VEC3 pt(pos.x, 0, pos.y);
+		Vec3 pt(pos.x, 0, pos.y);
 		GatherCollisionObjects(ctx, global_col, pt, obj->r + margin + range);
 		float extra_radius = range / 20;
 		for(int i = 0; i < 20; ++i)
@@ -4942,8 +4942,8 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& p
 				ok = true;
 				break;
 			}
-			pt = VEC3(pos.x, 0, pos.y);
-			pt += VEC2::RandomPoissonDiscPoint().XZ() * extra_radius;
+			pt = Vec3(pos.x, 0, pos.y);
+			pt += Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
 			extra_radius += range / 20;
 		}
 
@@ -4958,10 +4958,10 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& p
 	else
 	{
 		global_col.clear();
-		VEC3 pt(pos.x, 0, pos.y);
+		Vec3 pt(pos.x, 0, pos.y);
 		GatherCollisionObjects(ctx, global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
 		float extra_radius = range / 20;
-		BOX2D box(pos);
+		Box2d box(pos);
 		box.v1.x -= obj->size.x;
 		box.v1.y -= obj->size.y;
 		box.v2.x += obj->size.x;
@@ -4973,8 +4973,8 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& p
 				ok = true;
 				break;
 			}
-			pt = VEC3(pos.x, 0, pos.y);
-			pt += VEC2::RandomPoissonDiscPoint().XZ() * extra_radius;
+			pt = Vec3(pos.x, 0, pos.y);
+			pt += Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
 			extra_radius += range / 20;
 			box.v1.x = pt.x - obj->size.x;
 			box.v1.y = pt.z - obj->size.y;
@@ -4992,17 +4992,17 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& p
 	}
 }
 
-Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& pos, const VEC2& rot_target, float range, float margin, float scale)
+Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const Vec2& pos, const Vec2& rot_target, float range, float margin, float scale)
 {
 	if(obj->type == OBJ_CYLINDER)
-		return SpawnObjectNearLocation(ctx, obj, pos, VEC2::LookAtAngle(pos, rot_target), range, margin, scale);
+		return SpawnObjectNearLocation(ctx, obj, pos, Vec2::LookAtAngle(pos, rot_target), range, margin, scale);
 	else
 	{
 		global_col.clear();
-		VEC3 pt(pos.x, 0, pos.y);
+		Vec3 pt(pos.x, 0, pos.y);
 		GatherCollisionObjects(ctx, global_col, pt, sqrt(obj->size.x + obj->size.y) + margin + range);
 		float extra_radius = range / 20, rot;
-		BOX2D box(pos);
+		Box2d box(pos);
 		box.v1.x -= obj->size.x;
 		box.v1.y -= obj->size.y;
 		box.v2.x += obj->size.x;
@@ -5010,14 +5010,14 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& p
 		bool ok = false;
 		for(int i = 0; i < 20; ++i)
 		{
-			rot = VEC2::LookAtAngle(VEC2(pt.x, pt.z), rot_target);
+			rot = Vec2::LookAtAngle(Vec2(pt.x, pt.z), rot_target);
 			if(!Collide(global_col, box, margin, rot))
 			{
 				ok = true;
 				break;
 			}
-			pt = VEC3(pos.x, 0, pos.y);
-			pt += VEC2::RandomPoissonDiscPoint().XZ() * extra_radius;
+			pt = Vec3(pos.x, 0, pos.y);
+			pt += Vec2::RandomPoissonDiscPoint().XZ() * extra_radius;
 			extra_radius += range / 20;
 			box.v1.x = pt.x - obj->size.x;
 			box.v1.y = pt.z - obj->size.y;
@@ -5035,7 +5035,7 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const VEC2& p
 	}
 }
 
-int Game::GetClosestLocation(LOCATION type, const VEC2& pos, int target)
+int Game::GetClosestLocation(LOCATION type, const Vec2& pos, int target)
 {
 	int best = -1, index = 0;
 	float dist, best_dist;
@@ -5046,7 +5046,7 @@ int Game::GetClosestLocation(LOCATION type, const VEC2& pos, int target)
 			continue;
 		if(target != -1 && ((InsideLocation*)(*it))->target != target)
 			continue;
-		dist = VEC2::Distance((*it)->pos, pos);
+		dist = Vec2::Distance((*it)->pos, pos);
 		if(best == -1 || dist < best_dist)
 		{
 			best = index;
@@ -5057,7 +5057,7 @@ int Game::GetClosestLocation(LOCATION type, const VEC2& pos, int target)
 	return best;
 }
 
-int Game::GetClosestLocationNotTarget(LOCATION type, const VEC2& pos, int not_target)
+int Game::GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target)
 {
 	int best = -1, index = 0;
 	float dist, best_dist;
@@ -5068,7 +5068,7 @@ int Game::GetClosestLocationNotTarget(LOCATION type, const VEC2& pos, int not_ta
 			continue;
 		if(((InsideLocation*)(*it))->target == not_target)
 			continue;
-		dist = VEC2::Distance((*it)->pos, pos);
+		dist = Vec2::Distance((*it)->pos, pos);
 		if(best == -1 || dist < best_dist)
 		{
 			best = index;
@@ -5102,7 +5102,7 @@ void Game::SpawnTmpUnits(City* city)
 			else
 			{
 				// na polu treningowym
-				Unit* u = SpawnUnitNearLocation(local_ctx, VEC3(2.f*pola->unit_pt.x + 1, 0, 2.f*pola->unit_pt.y + 1), ud, nullptr, Random(2, 5), 8.f);
+				Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*pola->unit_pt.x + 1, 0, 2.f*pola->unit_pt.y + 1), ud, nullptr, Random(2, 5), 8.f);
 				if(u)
 					u->temporary = true;
 			}
@@ -5128,7 +5128,7 @@ void Game::SpawnTmpUnits(City* city)
 			else
 			{
 				// na polu treningowym
-				Unit* u = SpawnUnitNearLocation(local_ctx, VEC3(2.f*pola->unit_pt.x + 1, 0, 2.f*pola->unit_pt.y + 1), ud, nullptr, Random(2, 15), 8.f);
+				Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*pola->unit_pt.x + 1, 0, 2.f*pola->unit_pt.y + 1), ud, nullptr, Random(2, 15), 8.f);
 				if(u)
 					u->temporary = true;
 			}
@@ -5215,12 +5215,12 @@ int Game::AddLocation(Location* loc)
 	}
 }
 
-int Game::CreateLocation(LOCATION type, const VEC2& pos, float range, int target, SPAWN_GROUP spawn, bool allow_exact, int _levels)
+int Game::CreateLocation(LOCATION type, const Vec2& pos, float range, int target, SPAWN_GROUP spawn, bool allow_exact, int _levels)
 {
-	VEC2 pt = pos;
+	Vec2 pt = pos;
 	if(range < 0.f)
 	{
-		pt = VEC2::Random(16.f, 600 - 16.f);
+		pt = Vec2::Random(16.f, 600 - 16.f);
 		range = -range;
 	}
 	if(!FindPlaceForLocation(pt, range, allow_exact))
@@ -5277,21 +5277,21 @@ int Game::CreateLocation(LOCATION type, const VEC2& pos, float range, int target
 	return AddLocation(loc);
 }
 
-bool Game::FindPlaceForLocation(VEC2& pos, float range, bool allow_exact)
+bool Game::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
 {
-	VEC2 pt;
+	Vec2 pt;
 
 	if(allow_exact)
 		pt = pos;
 	else
-		pt = (pos + VEC2::RandomCirclePt(range)).Clamped(VEC2(16, 16), VEC2(600.f - 16.f, 600.f - 16.f));
+		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(16, 16), Vec2(600.f - 16.f, 600.f - 16.f));
 
 	for(int i = 0; i < 20; ++i)
 	{
 		bool valid = true;
 		for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
 		{
-			if(*it && VEC2::Distance(pt, (*it)->pos) < 24)
+			if(*it && Vec2::Distance(pt, (*it)->pos) < 24)
 			{
 				valid = false;
 				break;
@@ -5304,13 +5304,13 @@ bool Game::FindPlaceForLocation(VEC2& pos, float range, bool allow_exact)
 			return true;
 		}
 		else
-			pt = (pos + VEC2::RandomCirclePt(range)).Clamped(VEC2(16, 16), VEC2(600.f - 16.f, 600.f - 16.f));
+			pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(16, 16), Vec2(600.f - 16.f, 600.f - 16.f));
 	}
 
 	return false;
 }
 
-int Game::GetNearestLocation2(const VEC2& pos, int flags, bool not_quest, int flagi_cel)
+int Game::GetNearestLocation2(const Vec2& pos, int flags, bool not_quest, int flagi_cel)
 {
 	assert(flags);
 
@@ -5329,7 +5329,7 @@ int Game::GetNearestLocation2(const VEC2& pos, int flags, bool not_quest, int fl
 						break;
 				}
 			}
-			float dist = VEC2::Distance(pos, (*it)->pos);
+			float dist = Vec2::Distance(pos, (*it)->pos);
 			if(dist < best_dist)
 			{
 				best_dist = dist;
@@ -5430,7 +5430,7 @@ void Game::GenerateMoonwell(Location& loc)
 
 void Game::SpawnMoonwellObjects()
 {
-	VEC3 pos(128.f, 0, 128.f);
+	Vec3 pos(128.f, 0, 128.f);
 	terrain->SetH(pos);
 	pos.y -= 0.2f;
 	SpawnObject(local_ctx, FindObject("moonwell"), pos, 0.f, 1.f);
@@ -5451,20 +5451,20 @@ void Game::SpawnMoonwellObjects()
 	// drzewa
 	for(int i = 0; i < 1024; ++i)
 	{
-		INT2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
+		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
 		if(Distance(float(pt.x), float(pt.y), 64.f, 64.f) > 5.f)
 		{
 			TERRAIN_TILE co = tiles[pt.x + pt.y*OutsideLocation::size].t;
 			if(co == TT_GRASS)
 			{
-				VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
 				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(co == TT_GRASS3)
 			{
-				VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				int co;
 				if(Rand() % 12 == 0)
@@ -5480,12 +5480,12 @@ void Game::SpawnMoonwellObjects()
 	// inne
 	for(int i = 0; i < 512; ++i)
 	{
-		INT2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
+		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
 		if(Distance(float(pt.x), float(pt.y), 64.f, 64.f) > 5.f)
 		{
 			if(tiles[pt.x + pt.y*OutsideLocation::size].t != TT_SAND)
 			{
-				VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
 				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
@@ -5494,7 +5494,7 @@ void Game::SpawnMoonwellObjects()
 	}
 }
 
-void Game::SpawnMoonwellUnits(const VEC3& team_pos)
+void Game::SpawnMoonwellUnits(const Vec3& team_pos)
 {
 	// zbierz grupy
 	static TmpUnitGroup groups[4] = {
@@ -5505,10 +5505,10 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 	};
 	UnitData* ud_hunter = FindUnitData("wild_hunter");
 	int level = GetDungeonLevel();
-	static vector<VEC2> poss;
+	static vector<Vec2> poss;
 	poss.clear();
 	OutsideLocation* outside = (OutsideLocation*)location;
-	poss.push_back(VEC2(team_pos.x, team_pos.z));
+	poss.push_back(Vec2(team_pos.x, team_pos.z));
 
 	// ustal wrogów
 	for(int i = 0; i < 4; ++i)
@@ -5527,14 +5527,14 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
 	{
-		VEC2 pos = outside->GetRandomPos();
-		if(VEC2::Distance(pos, VEC2(128.f, 128.f)) < 12.f)
+		Vec2 pos = outside->GetRandomPos();
+		if(Vec2::Distance(pos, Vec2(128.f, 128.f)) < 12.f)
 			continue;
 
 		bool ok = true;
-		for(vector<VEC2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
+		for(vector<Vec2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
 		{
-			if(VEC2::Distance(pos, *it) < 24.f)
+			if(Vec2::Distance(pos, *it) < 24.f)
 			{
 				ok = false;
 				break;
@@ -5551,7 +5551,7 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 			poss.push_back(pos);
 			++added;
 
-			VEC3 pos3(pos.x, 0, pos.y);
+			Vec3 pos3(pos.x, 0, pos.y);
 
 			// postaw jednostki
 			int levels = level * 2;
@@ -5590,7 +5590,7 @@ void Game::SpawnMoonwellUnits(const VEC3& team_pos)
 	}
 }
 
-void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale, int flags)
+void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const Vec3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale, int flags)
 {
 	assert(obj);
 
@@ -5610,12 +5610,12 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 			pe->particle_life = 0.5f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
-			pe->pos_min = VEC3(0, 0, 0);
-			pe->pos_max = VEC3(0, 0, 0);
+			pe->pos_min = Vec3(0, 0, 0);
+			pe->pos_max = Vec3(0, 0, 0);
 			pe->spawn_min = 1;
 			pe->spawn_max = 3;
-			pe->speed_min = VEC3(-1, 3, -1);
-			pe->speed_max = VEC3(1, 4, 1);
+			pe->speed_min = Vec3(-1, 3, -1);
+			pe->speed_max = Vec3(1, 4, 1);
 			pe->mode = 1;
 			pe->Init();
 			ctx.pes->push_back(pe);
@@ -5637,9 +5637,9 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 				s.pos = pe->pos;
 				s.range = 5;
 				if(IS_SET(flags, SOE_MAGIC_LIGHT))
-					s.color = VEC3(0.8f, 0.8f, 1.f);
+					s.color = Vec3(0.8f, 0.8f, 1.f);
 				else
-					s.color = VEC3(1.f, 0.9f, 0.9f);
+					s.color = Vec3(1.f, 0.9f, 0.9f);
 			}
 		}
 		else if(IS_SET(obj->flags, OBJ_BLOOD_EFFECT))
@@ -5656,12 +5656,12 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 			pe->particle_life = 0.5f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
-			pe->pos_min = VEC3(0, 0, 0);
-			pe->pos_max = VEC3(0, 0, 0);
+			pe->pos_min = Vec3(0, 0, 0);
+			pe->pos_max = Vec3(0, 0, 0);
 			pe->spawn_min = 1;
 			pe->spawn_max = 3;
-			pe->speed_min = VEC3(-1, 4, -1);
-			pe->speed_max = VEC3(1, 6, 1);
+			pe->speed_min = Vec3(-1, 4, -1);
+			pe->speed_max = Vec3(1, 6, 1);
 			pe->mode = 0;
 			pe->tex = tKrew[BLOOD_RED];
 			pe->size = 0.5f;
@@ -5682,12 +5682,12 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 			pe->particle_life = 3.f;
 			pe->pos = pos;
 			pe->pos.y += obj->centery;
-			pe->pos_min = VEC3(0, 0, 0);
-			pe->pos_max = VEC3(0, 0, 0);
+			pe->pos_min = Vec3(0, 0, 0);
+			pe->pos_max = Vec3(0, 0, 0);
 			pe->spawn_min = 4;
 			pe->spawn_max = 8;
-			pe->speed_min = VEC3(-0.6f, 4, -0.6f);
-			pe->speed_max = VEC3(0.6f, 7, 0.6f);
+			pe->speed_min = Vec3(-0.6f, 4, -0.6f);
+			pe->speed_max = Vec3(0.6f, 7, 0.6f);
 			pe->mode = 0;
 			pe->tex = tWoda;
 			pe->size = 0.05f;
@@ -5709,20 +5709,20 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 		{
 			cobj->getWorldTransform().setOrigin(btVector3(pos.x, pos.y + obj->h / 2, pos.z));
 			c.type = CollisionObject::SPHERE;
-			c.pt = VEC2(pos.x, pos.z);
+			c.pt = Vec2(pos.x, pos.z);
 			c.radius = obj->r;
 		}
 		else if(obj->type == OBJ_HITBOX)
 		{
 			btTransform& tr = cobj->getWorldTransform();
-			m1 = MATRIX::RotationY(rot);
+			m1 = Matrix::RotationY(rot);
 			m2 = *obj->matrix * m1;
-			VEC3 pos2 = VEC3::TransformZero(m2);
+			Vec3 pos2 = Vec3::TransformZero(m2);
 			pos2 += pos;
 			tr.setOrigin(ToVector3(pos2));
 			tr.setRotation(btQuaternion(rot, 0, 0));
 
-			c.pt = VEC2(pos2.x, pos2.z);
+			c.pt = Vec2(pos2.x, pos2.z);
 			c.w = obj->size.x;
 			c.h = obj->size.y;
 			if(NotZero(rot))
@@ -5736,17 +5736,17 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 		}
 		else
 		{
-			m1 = MATRIX::RotationY(rot);
-			m2 = MATRIX::Translation(pos);
+			m1 = Matrix::RotationY(rot);
+			m2 = Matrix::Translation(pos);
 			// skalowanie jakimœ sposobem przechodzi do btWorldTransform i przy rysowaniu jest z³a skala (dwukrotnie u¿yta)
-			m3 = MATRIX::Scale(1.f / obj->size.x, 1.f, 1.f / obj->size.y);
+			m3 = Matrix::Scale(1.f / obj->size.x, 1.f, 1.f / obj->size.y);
 			m3 = m3 * *obj->matrix * m1 * m2;
 			cobj->getWorldTransform().setFromOpenGLMatrix(&m3._11);
-			VEC3 out_pos = VEC3::TransformZero(m3);
-			QUAT q = QUAT::CreateFromRotationMatrix(m3);
+			Vec3 out_pos = Vec3::TransformZero(m3);
+			Quat q = Quat::CreateFromRotationMatrix(m3);
 
 			float yaw = asin(-2 * (q.x*q.z - q.w*q.y));
-			c.pt = VEC2(out_pos.x, out_pos.z);
+			c.pt = Vec2(out_pos.x, out_pos.z);
 			c.w = obj->size.x;
 			c.h = obj->size.y;
 			if(NotZero(yaw))
@@ -5792,7 +5792,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 		CollisionObject& c = Add1(ctx.colliders);
 		//c.ptr = obj_ptr;
 		c.type = CollisionObject::SPHERE;
-		c.pt = VEC2(pos.x, pos.z);
+		c.pt = Vec2(pos.x, pos.z);
 		c.radius = obj->r*scale;
 
 		btCollisionObject* cobj = new btCollisionObject;
@@ -5813,8 +5813,8 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const VEC3& pos, float
 			if(strncmp(pt.name.c_str(), "camcol", 6) != 0)
 				continue;
 
-			m2 = pt.mat * MATRIX::RotationY(rot);
-			VEC3 pos2 = VEC3::TransformZero(m2) + pos;
+			m2 = pt.mat * Matrix::RotationY(rot);
+			Vec3 pos2 = Vec3::TransformZero(m2) + pos;
 
 			btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
 			shapes.push_back(shape);
@@ -5934,12 +5934,12 @@ void Game::GenerateSecretLocation(Location& loc)
 
 void Game::SpawnSecretLocationObjects()
 {
-	VEC3 pos(128.f, 0, 96.f * 2);
+	Vec3 pos(128.f, 0, 96.f * 2);
 	terrain->SetH(pos);
 	Obj* o = FindObject("tomashu_dom");
 	pos.y += 0.05f;
 	SpawnObject(local_ctx, o, pos, 0, 1.f);
-	ProcessBuildingObjects(local_ctx, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, VEC3(0, 0, 0), nullptr, nullptr, false);
+	ProcessBuildingObjects(local_ctx, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, Vec3(0, 0, 0), nullptr, nullptr, false);
 
 	pos.z = 64.f;
 	terrain->SetH(pos);
@@ -5969,21 +5969,21 @@ void Game::SpawnSecretLocationObjects()
 	// drzewa
 	for(int i = 0; i < 1024; ++i)
 	{
-		INT2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
+		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
 		if(Distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f
 			&& Distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
 		{
 			TERRAIN_TILE co = tiles[pt.x + pt.y*OutsideLocation::size].t;
 			if(co == TT_GRASS)
 			{
-				VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
 				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(co == TT_GRASS3)
 			{
-				VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				int co;
 				if(Rand() % 12 == 0)
@@ -5999,13 +5999,13 @@ void Game::SpawnSecretLocationObjects()
 	// inne
 	for(int i = 0; i < 512; ++i)
 	{
-		INT2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
+		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
 		if(Distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f
 			&& Distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
 		{
 			if(tiles[pt.x + pt.y*OutsideLocation::size].t != TT_SAND)
 			{
-				VEC3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
+				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
 				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
@@ -6018,19 +6018,19 @@ void Game::SpawnSecretLocationUnits()
 {
 	OutsideLocation* outside = (OutsideLocation*)location;
 	UnitData* golem = FindUnitData("golem_adamantine");
-	static vector<VEC2> poss;
+	static vector<Vec2> poss;
 
-	poss.push_back(VEC2(128.f, 64.f));
-	poss.push_back(VEC2(128.f, 256.f - 64.f));
+	poss.push_back(Vec2(128.f, 64.f));
+	poss.push_back(Vec2(128.f, 256.f - 64.f));
 
 	for(int added = 0, tries = 50; added < 10 && tries>0; --tries)
 	{
-		VEC2 pos = outside->GetRandomPos();
+		Vec2 pos = outside->GetRandomPos();
 
 		bool ok = true;
-		for(vector<VEC2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
+		for(vector<Vec2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
 		{
-			if(VEC2::Distance(pos, *it) < 32.f)
+			if(Vec2::Distance(pos, *it) < 32.f)
 			{
 				ok = false;
 				break;
@@ -6039,7 +6039,7 @@ void Game::SpawnSecretLocationUnits()
 
 		if(ok)
 		{
-			SpawnUnitNearLocation(local_ctx, VEC3(pos.x, 0, pos.y), *golem, nullptr, -2);
+			SpawnUnitNearLocation(local_ctx, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
 			poss.push_back(pos);
 			++added;
 		}
@@ -6050,21 +6050,21 @@ void Game::SpawnSecretLocationUnits()
 
 void Game::SpawnTeamSecretLocation()
 {
-	AddPlayerTeam(VEC3(128.f, 0.f, 66.f), PI, false, false);
+	AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI, false, false);
 }
 
 void Game::GenerateMushrooms(int days_since)
 {
 	InsideLocation* inside = (InsideLocation*)location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	INT2 pt;
-	VEC2 pos;
+	Int2 pt;
+	Vec2 pos;
 	int dir;
 	const Item* shroom = FindItem("mushroom");
 
 	for(int i = 0; i < days_since * 20; ++i)
 	{
-		pt = INT2::Random(INT2(1, 1), INT2(lvl.w - 2, lvl.h - 2));
+		pt = Int2::Random(Int2(1, 1), Int2(lvl.w - 2, lvl.h - 2));
 		if(OR2_EQ(lvl.map[pt.x + pt.y*lvl.w].type, PUSTE, KRATKA_SUFIT) && lvl.IsTileNearWall(pt, dir))
 		{
 			pos.x = 2.f*pt.x;
@@ -6133,7 +6133,7 @@ void Game::GenerateCityPickableItems()
 		{
 			if(it->base == shelves)
 			{
-				dist = VEC3::Distance(food->walk_pt, it->pos);
+				dist = Vec3::Distance(food->walk_pt, it->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -6161,7 +6161,7 @@ void Game::GenerateCityPickableItems()
 		{
 			if(it->base == shelves)
 			{
-				dist = VEC3::Distance(alch->walk_pt, it->pos);
+				dist = Vec3::Distance(alch->walk_pt, it->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -6188,11 +6188,11 @@ namespace PickableItem
 	struct Item
 	{
 		uint spawn;
-		VEC3 pos;
+		Vec3 pos;
 	};
 	LevelContext* ctx;
 	Object* o;
-	vector<BOX> spawns;
+	vector<Box> spawns;
 	vector<Item> items;
 }
 
@@ -6209,8 +6209,8 @@ void Game::PickableItemBegin(LevelContext& ctx, Object& o)
 	{
 		if(strncmp(it->name.c_str(), "spawn_", 6) == 0)
 		{
-			assert(it->type == Animesh::Point::BOX);
-			BOX box(it->mat._41, it->mat._42, it->mat._43);
+			assert(it->type == Animesh::Point::Box);
+			Box box(it->mat._41, it->mat._42, it->mat._43);
 			box.v1.x -= it->size.x - 0.05f;
 			box.v1.z -= it->size.z - 0.05f;
 			box.v2.x += it->size.x - 0.05f;
@@ -6231,9 +6231,9 @@ void Game::PickableItemAdd(const Item* item)
 	{
 		// pobierz punkt
 		uint spawn = Rand() % PickableItem::spawns.size();
-		BOX& box = PickableItem::spawns[spawn];
+		Box& box = PickableItem::spawns[spawn];
 		// ustal pozycjê
-		VEC3 pos(Random(box.v1.x, box.v2.x), box.v1.y, Random(box.v1.z, box.v2.z));
+		Vec3 pos(Random(box.v1.x, box.v2.x), box.v1.y, Random(box.v1.z, box.v2.z));
 		// sprawdŸ kolizjê
 		bool ok = true;
 		for(vector<PickableItem::Item>::iterator it = PickableItem::items.begin(), end = PickableItem::items.end(); it != end; ++it)
@@ -6263,7 +6263,7 @@ void Game::PickableItemAdd(const Item* item)
 			float rot = PickableItem::o->rot.y,
 				s = sin(rot),
 				c = cos(rot);
-			gi->pos = VEC3(pos.x*c + pos.z*s, pos.y, -pos.x*s + pos.z*c) + PickableItem::o->pos;
+			gi->pos = Vec3(pos.x*c + pos.z*s, pos.y, -pos.x*s + pos.z*c) + PickableItem::o->pos;
 			PickableItem::ctx->items->push_back(gi);
 
 			break;
@@ -6396,7 +6396,7 @@ void Game::GenerateCityMap(Location& loc)
 	if(plaza && Rand() % 4 != 0)
 	{
 		g_have_well = true;
-		g_well_pt = INT2(64, 64);
+		g_well_pt = Int2(64, 64);
 	}
 	else
 		g_have_well = false;
@@ -6568,7 +6568,7 @@ void Game::PrepareCityBuildings(City& city, vector<ToBuild>& tobuild)
 	}
 }
 
-void Game::GetCityEntry(VEC3& pos, float& rot)
+void Game::GetCityEntry(Vec3& pos, float& rot)
 {
 	if(city_ctx->entry_points.size() == 1)
 	{
@@ -6604,9 +6604,9 @@ void Game::SetExitWorldDir()
 	const float maxi = 256 - 32.f;
 	//GAME_DIR best_dir = (GAME_DIR)-1;
 	float best_dist = 999.f, dist;
-	VEC2 close_pt, pt;
+	Vec2 close_pt, pt;
 	// check right
-	dist = GetClosestPointOnLineSegment(VEC2(maxi, mini), VEC2(maxi, maxi), VEC2(Team.leader->pos.x, Team.leader->pos.z), pt);
+	dist = GetClosestPointOnLineSegment(Vec2(maxi, mini), Vec2(maxi, maxi), Vec2(Team.leader->pos.x, Team.leader->pos.z), pt);
 	if(dist < best_dist)
 	{
 		best_dist = dist;
@@ -6614,7 +6614,7 @@ void Game::SetExitWorldDir()
 		close_pt = pt;
 	}
 	// check left
-	dist = GetClosestPointOnLineSegment(VEC2(mini, mini), VEC2(mini, maxi), VEC2(Team.leader->pos.x, Team.leader->pos.z), pt);
+	dist = GetClosestPointOnLineSegment(Vec2(mini, mini), Vec2(mini, maxi), Vec2(Team.leader->pos.x, Team.leader->pos.z), pt);
 	if(dist < best_dist)
 	{
 		best_dist = dist;
@@ -6622,7 +6622,7 @@ void Game::SetExitWorldDir()
 		close_pt = pt;
 	}
 	// check bottom
-	dist = GetClosestPointOnLineSegment(VEC2(mini, mini), VEC2(maxi, mini), VEC2(Team.leader->pos.x, Team.leader->pos.z), pt);
+	dist = GetClosestPointOnLineSegment(Vec2(mini, mini), Vec2(maxi, mini), Vec2(Team.leader->pos.x, Team.leader->pos.z), pt);
 	if(dist < best_dist)
 	{
 		best_dist = dist;
@@ -6630,7 +6630,7 @@ void Game::SetExitWorldDir()
 		close_pt = pt;
 	}
 	// check top
-	dist = GetClosestPointOnLineSegment(VEC2(mini, maxi), VEC2(maxi, maxi), VEC2(Team.leader->pos.x, Team.leader->pos.z), pt);
+	dist = GetClosestPointOnLineSegment(Vec2(mini, maxi), Vec2(maxi, maxi), Vec2(Team.leader->pos.x, Team.leader->pos.z), pt);
 	if(dist < best_dist)
 	{
 		//best_dist = dist;

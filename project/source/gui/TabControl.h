@@ -24,8 +24,8 @@ namespace gui
 			string text, id;
 			Panel* panel;
 			Mode mode;
-			INT2 size;
-			BOX2D rect, close_rect;
+			Int2 size;
+			Box2d rect, close_rect;
 			bool close_hover, have_changes;
 
 		public:
@@ -60,8 +60,8 @@ namespace gui
 		void Clear();
 		void Close(Tab* tab);
 		Tab* Find(cstring id);
-		INT2 GetAreaPos() const;
-		INT2 GetAreaSize() const;
+		Int2 GetAreaPos() const;
+		Int2 GetAreaSize() const;
 		Tab* GetCurrentTab() const { return selected; }
 		Handler GetHandler() { return handler; }
 		void Select(Tab* tab, bool scroll_to = true);
@@ -78,7 +78,7 @@ namespace gui
 		vector<Tab*> tabs;
 		Tab* selected;
 		Tab* hover;
-		BOX2D line;
+		Box2d line;
 		Handler handler;
 		int height, total_width, tab_offset, tab_offset_max, allowed_size;
 		int arrow_hover; // -1-prev, 0-none, 1-next

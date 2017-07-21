@@ -7,19 +7,19 @@
 
 //---------------------------
 Animesh::KeyframeBone blendb_zero;
-MATRIX mat_zero;
-void(*AnimeshInstance::Predraw)(void*, MATRIX*, int) = nullptr;
+Matrix mat_zero;
+void(*AnimeshInstance::Predraw)(void*, Matrix*, int) = nullptr;
 
 struct AVertex
 {
-	VEC3 pos;
-	VEC3 normal;
-	VEC2 tex;
-	VEC3 tangent;
-	VEC3 binormal;
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+	Vec3 tangent;
+	Vec3 binormal;
 };
 
-const VEC3 DefaultSpecularColor(1, 1, 1);
+const Vec3 DefaultSpecularColor(1, 1, 1);
 const float DefaultSpecularIntensity = 0.2f;
 const int DefaultSpecularHardness = 10;
 
@@ -29,12 +29,12 @@ const int DefaultSpecularHardness = 10;
 void Animesh::MeshInit()
 {
 	blendb_zero.scale = 1.f;
-	blendb_zero.rot = QUAT::Identity;
-	blendb_zero.pos = VEC3::Zero;
-	mat_zero = MATRIX::Scale(blendb_zero.scale)
-		* MATRIX::Rotation(blendb_zero.rot)
-		* MATRIX::Translation(blendb_zero.pos);
-	assert(mat_zero == MATRIX::IdentityMatrix);
+	blendb_zero.rot = Quat::Identity;
+	blendb_zero.pos = Vec3::Zero;
+	mat_zero = Matrix::Scale(blendb_zero.scale)
+		* Matrix::Rotation(blendb_zero.rot)
+		* Matrix::Translation(blendb_zero.pos);
+	assert(mat_zero == Matrix::IdentityMatrix);
 };
 
 //=================================================================================================
@@ -87,15 +87,15 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		if(head.version >= 15)
 			stream.Read(cam_up);
 		else
-			cam_up = VEC3(0, 1, 0);
+			cam_up = Vec3(0, 1, 0);
 		if(!stream)
 			throw "Missing camera data.";
 	}
 	else
 	{
-		cam_pos = VEC3(1, 1, 1);
-		cam_target = VEC3(0, 0, 0);
-		cam_up = VEC3(0, 1, 0);
+		cam_pos = Vec3(1, 1, 1);
+		cam_target = Vec3(0, 0, 0);
+		cam_up = Vec3(0, 1, 0);
 	}
 
 	// ------ vertices
@@ -107,7 +107,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 	}
 	else
 	{
-		vertex_size = sizeof(VEC3);
+		vertex_size = sizeof(Vec3);
 		if(IS_SET(head.flags, ANIMESH_ANIMATED))
 		{
 			if(IS_SET(head.flags, ANIMESH_TANGENTS))
@@ -259,7 +259,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		zero_bone.parent = 0;
 		zero_bone.name = "zero";
 		zero_bone.id = 0;
-		zero_bone.mat = MATRIX::IdentityMatrix;
+		zero_bone.mat = Matrix::IdentityMatrix;
 
 		for(byte i = 1; i <= head.n_bones; ++i)
 		{
@@ -355,7 +355,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		else
 		{
 			// fallback, it was often wrong but thats the way it was (works good for PI/2 and PI*3/2, inverted for 0 and PI, bad for other)
-			p.rot = VEC3(0, p.mat.GetYaw(), 0);
+			p.rot = Vec3(0, p.mat.GetYaw(), 0);
 		}
 	}
 
@@ -427,7 +427,7 @@ void Animesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 void Animesh::SetupBoneMatrices()
 {
 	model_to_bone.resize(head.n_bones);
-	model_to_bone[0] = MATRIX::IdentityMatrix;
+	model_to_bone[0] = Matrix::IdentityMatrix;
 
 	for(word i = 1; i < head.n_bones; ++i)
 	{
@@ -506,19 +506,19 @@ int Animesh::Animation::GetFrameIndex(float time, bool& hit)
 void Animesh::KeyframeBone::Interpolate(Animesh::KeyframeBone& out, const Animesh::KeyframeBone& k,
 	const Animesh::KeyframeBone& k2, float t)
 {
-	out.rot = QUAT::Slerp(k.rot, k2.rot, t);
-	out.pos = VEC3::Lerp(k.pos, k2.pos, t);
+	out.rot = Quat::Slerp(k.rot, k2.rot, t);
+	out.pos = Vec3::Lerp(k.pos, k2.pos, t);
 	out.scale = Lerp(k.scale, k2.scale, t);
 }
 
 //=================================================================================================
 // Mno¿enie macierzy w przekszta³ceniu dla danej koœci
 //=================================================================================================
-void Animesh::KeyframeBone::Mix(MATRIX& out, const MATRIX& mul) const
+void Animesh::KeyframeBone::Mix(Matrix& out, const Matrix& mul) const
 {
-	out = MATRIX::Scale(scale)
-		* MATRIX::Rotation(rot)
-		* MATRIX::Translation(pos)
+	out = Matrix::Scale(scale)
+		* Matrix::Rotation(rot)
+		* Matrix::Translation(pos)
 		* mul;
 }
 
@@ -777,14 +777,14 @@ void AnimeshInstance::Update(float dt)
 //====================================================================================================
 // Ustawia koœci przed rysowaniem modelu
 //====================================================================================================
-void AnimeshInstance::SetupBones(MATRIX* mat_scale)
+void AnimeshInstance::SetupBones(Matrix* mat_scale)
 {
 	if(!need_update)
 		return;
 	need_update = false;
 
-	MATRIX BoneToParentPoseMat[32];
-	BoneToParentPoseMat[0] = MATRIX::IdentityMatrix;
+	Matrix BoneToParentPoseMat[32];
+	BoneToParentPoseMat[0] = Matrix::IdentityMatrix;
 	Animesh::KeyframeBone tmp_keyf;
 
 	// oblicz przekszta³cenia dla ka¿dej grupy
@@ -899,8 +899,8 @@ void AnimeshInstance::SetupBones(MATRIX* mat_scale)
 
 	// Macierze przekszta³caj¹ce ze wsp. danej koœci do wsp. modelu w ustalonej pozycji
 	// (To obliczenie nale¿a³oby po³¹czyæ z poprzednim)
-	MATRIX BoneToModelPoseMat[32];
-	BoneToModelPoseMat[0] = MATRIX::IdentityMatrix;
+	Matrix BoneToModelPoseMat[32];
+	BoneToModelPoseMat[0] = Matrix::IdentityMatrix;
 	for(word i = 1; i < ani->head.n_bones; ++i)
 	{
 		const Animesh::Bone& bone = ani->bones[i];
@@ -924,7 +924,7 @@ void AnimeshInstance::SetupBones(MATRIX* mat_scale)
 	}
 
 	// Macierze zebrane koœci - przekszta³caj¹ce z modelu do koœci w pozycji spoczynkowej * z koœci do modelu w pozycji bie¿¹cej
-	mat_bones[0] = MATRIX::IdentityMatrix;
+	mat_bones[0] = Matrix::IdentityMatrix;
 	for(word i = 1; i < ani->head.n_bones; ++i)
 		mat_bones[i] = ani->model_to_bone[i] * BoneToModelPoseMat[i];
 
@@ -1116,14 +1116,14 @@ int AnimeshInstance::GetUseableGroup(uint group)
 void AnimeshInstance::ClearBones()
 {
 	for(int i = 0; i < ani->head.n_bones; ++i)
-		mat_bones[i] = MATRIX::IdentityMatrix;
+		mat_bones[i] = Matrix::IdentityMatrix;
 	need_update = false;
 }
 
 //=================================================================================================
 // Ustawia podan¹ animacje na koniec
 //=================================================================================================
-void AnimeshInstance::SetToEnd(cstring anim, MATRIX* mat_scale)
+void AnimeshInstance::SetToEnd(cstring anim, Matrix* mat_scale)
 {
 	assert(anim);
 
@@ -1157,7 +1157,7 @@ void AnimeshInstance::SetToEnd(cstring anim, MATRIX* mat_scale)
 //=================================================================================================
 // Ustawia podan¹ animacje na koniec
 //=================================================================================================
-void AnimeshInstance::SetToEnd(Animesh::Animation* a, MATRIX* mat_scale)
+void AnimeshInstance::SetToEnd(Animesh::Animation* a, Matrix* mat_scale)
 {
 	assert(a);
 
@@ -1185,7 +1185,7 @@ void AnimeshInstance::SetToEnd(Animesh::Animation* a, MATRIX* mat_scale)
 	groups[0].state = 0;
 }
 
-void AnimeshInstance::SetToEnd(MATRIX* mat_scale)
+void AnimeshInstance::SetToEnd(Matrix* mat_scale)
 {
 	groups[0].blend_time = 0.f;
 	groups[0].state = FLAG_GROUP_ACTIVE;
@@ -1229,7 +1229,7 @@ float AnimeshInstance::Group::GetBlendT() const
 }
 
 //=================================================================================================
-// Wczytuje dane wierzcho³ków z modelu (na razie dzia³a tylko dla VEC3)
+// Wczytuje dane wierzcho³ków z modelu (na razie dzia³a tylko dla Vec3)
 //=================================================================================================
 VertexData* Animesh::LoadVertexData(StreamReader& stream)
 {
@@ -1245,13 +1245,13 @@ VertexData* Animesh::LoadVertexData(StreamReader& stream)
 		throw Format("Invalid mesh flags '%d'.", head.flags);
 
 	// skip camera data
-	stream.Skip(sizeof(VEC3) * 2);
+	stream.Skip(sizeof(Vec3) * 2);
 
 	VertexData* vd = new VertexData;
 	vd->radius = head.radius;
 
 	// read vertices
-	uint size = sizeof(VEC3) * head.n_verts;
+	uint size = sizeof(Vec3) * head.n_verts;
 	if(!stream.Ensure(size))
 		throw "Failed to read vertex data.";
 	vd->verts.resize(head.n_verts);

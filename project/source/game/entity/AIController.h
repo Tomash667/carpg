@@ -10,7 +10,7 @@ struct Object;
 //-----------------------------------------------------------------------------
 struct ObjP
 {
-	VEC3 pos;
+	Vec3 pos;
 	float rot;
 	Object* ptr;
 };
@@ -18,7 +18,7 @@ struct ObjP
 //-----------------------------------------------------------------------------
 struct AreaTarget
 {
-	VEC3 pos;
+	Vec3 pos;
 	int id;
 };
 
@@ -92,7 +92,7 @@ struct AIController
 
 	Unit* unit, *target, *alert_target, *cast_target;
 	State state;
-	VEC3 target_last_pos, alert_target_pos, start_pos;
+	Vec3 target_last_pos, alert_target_pos, start_pos;
 	bool in_combat, city_wander, goto_inn;
 	float next_attack, timer, ignore, morale, cooldown[3], last_scan, start_rot, loc_timer, shoot_yspeed;
 	Room* escape_room;
@@ -102,7 +102,7 @@ struct AIController
 	union IdleData
 	{
 		float rot;
-		VEC3 pos;
+		Vec3 pos;
 		Unit* unit;
 		Useable* useable;
 		ObjP obj;
@@ -113,9 +113,9 @@ struct AIController
 	bool change_ai_mode; // tymczasowe u serwera
 
 	// pathfinding
-	vector<INT2> pf_path, pf_local_path;
+	vector<Int2> pf_path, pf_local_path;
 	PathFindingState pf_state;
-	INT2 pf_target_tile, pf_local_target_tile;
+	Int2 pf_target_tile, pf_local_target_tile;
 	int pf_local_try;
 	float pf_timer;
 

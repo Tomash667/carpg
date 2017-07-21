@@ -410,7 +410,7 @@ void Game::SaveGame(HANDLE file)
 	ile = boss_levels.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	if(ile)
-		WriteFile(file, &boss_levels[0], sizeof(INT2)*ile, &tmp, nullptr);
+		WriteFile(file, &boss_levels[0], sizeof(Int2)*ile, &tmp, nullptr);
 	WriteFile(file, &enter_from, sizeof(enter_from), &tmp, nullptr);
 	WriteFile(file, &light_angle, sizeof(light_angle), &tmp, nullptr);
 
@@ -782,7 +782,7 @@ void Game::LoadGame(HANDLE file)
 					{
 						if(obj_it->mesh == aNaDrzwi)
 						{
-							INT2 pt = pos_to_pt(obj_it->pos);
+							Int2 pt = pos_to_pt(obj_it->pos);
 							if(IS_SET(lvl->map[pt.x + pt.y*lvl->w].flags, Pole::F_DRUGA_TEKSTURA))
 								obj_it->mesh = aNaDrzwi2;
 						}
@@ -899,7 +899,7 @@ void Game::LoadGame(HANDLE file)
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	boss_levels.resize(ile);
 	if(ile)
-		ReadFile(file, &boss_levels[0], sizeof(INT2)*ile, &tmp, nullptr);
+		ReadFile(file, &boss_levels[0], sizeof(Int2)*ile, &tmp, nullptr);
 	if(LOAD_VERSION >= V_0_2_10)
 		ReadFile(file, &enter_from, sizeof(enter_from), &tmp, nullptr);
 	else
@@ -1260,7 +1260,7 @@ void Game::LoadGame(HANDLE file)
 			{
 				if(it->base == tarcza_s)
 				{
-					dist = VEC3::Distance(it->pos, ai.idle_data.pos);
+					dist = Vec3::Distance(it->pos, ai.idle_data.pos);
 					if(!ptr || dist < best_dist)
 					{
 						ptr = &*it;
@@ -1292,7 +1292,7 @@ void Game::LoadGame(HANDLE file)
 				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 				{
 					if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !IsEnemy(*ai.unit, **it2) && IS_SET((*it2)->data->flags, F_UNDEAD) &&
-						(dist2 = VEC3::Distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
+						(dist2 = Vec3::Distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
 					{
 						best_dist2 = dist2;
 						ai.cast_target = *it2;
@@ -1305,7 +1305,7 @@ void Game::LoadGame(HANDLE file)
 				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 				{
 					if(!(*it2)->to_remove && !IsEnemy(*ai.unit, **it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f &&
-						(dist2 = VEC3::Distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
+						(dist2 = Vec3::Distance(ai.target_last_pos, (*it2)->pos)) < best_dist2 && CanSee(*ai.unit, **it2))
 					{
 						best_dist2 = dist2;
 						ai.cast_target = *it2;

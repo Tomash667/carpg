@@ -28,27 +28,27 @@ namespace FOV
 {
 	struct Line
 	{
-		bool isBelow(const INT2& point) const
+		bool isBelow(const Int2& point) const
 		{
 			return relativeSlope(point) > 0;
 		}
 
-		bool isBelowOrContains(const INT2& point) const
+		bool isBelowOrContains(const Int2& point) const
 		{
 			return relativeSlope(point) >= 0;
 		}
 
-		bool isAbove(const INT2& point) const
+		bool isAbove(const Int2& point) const
 		{
 			return relativeSlope(point) < 0;
 		}
 
-		bool isAboveOrContains(const INT2& point) const
+		bool isAboveOrContains(const Int2& point) const
 		{
 			return relativeSlope(point) <= 0;
 		}
 
-		bool doesContain(const INT2& point) const
+		bool doesContain(const Int2& point) const
 		{
 			return relativeSlope(point) == 0;
 		}
@@ -56,19 +56,19 @@ namespace FOV
 		// negative if the line is above the point.
 		// positive if the line is below the point.
 		// 0 if the line is on the point.
-		int relativeSlope(const INT2& point) const
+		int relativeSlope(const Int2& point) const
 		{
 			return (far.y - near.y)*(far.x - point.x)
 				- (far.y - point.y)*(far.x - near.x);
 		}
 
-		INT2 near, far;
+		Int2 near, far;
 	};
 
 	struct Bump
 	{
 		Bump() : parent(nullptr) {}
-		INT2 location;
+		Int2 location;
 		Bump* parent;
 	};
 
@@ -79,16 +79,16 @@ namespace FOV
 		Bump* steepBump, *shallowBump;
 	};
 
-	INT2 source, extent, quadrant;
+	Int2 source, extent, quadrant;
 	int w;
 	vector<Door*>* doors;
 	Pole* mapa;
-	vector<INT2>* reveal;
+	vector<Int2>* reveal;
 	list<Bump> steepBumps;
 	list<Bump> shallowBumps;
 	list<Field> activeFields;
 
-	inline bool findDoorBlocking(const INT2& pt)
+	inline bool findDoorBlocking(const Int2& pt)
 	{
 		for(vector<Door*>::const_iterator it = doors->begin(), end = doors->end(); it != end; ++it)
 		{
@@ -103,7 +103,7 @@ namespace FOV
 		if(x < 0 || y < 0 || x >= w || y >= w)
 			return true;
 
-		INT2 real_pt(x, y);
+		Int2 real_pt(x, y);
 		Pole& p = mapa[real_pt.x + real_pt.y*w];
 
 		return (czy_blokuje2(p) || (p.type == DRZWI && findDoorBlocking(real_pt)));
@@ -115,7 +115,7 @@ namespace FOV
 			return;
 		Pole& p = mapa[x + y*w];
 		if(!IS_SET(p.flags, Pole::F_ODKRYTE))
-			reveal->push_back(INT2(x, w - y - 1));
+			reveal->push_back(Int2(x, w - y - 1));
 	}
 
 	inline bool doesPermissiveVisit(int x, int y)
@@ -123,9 +123,9 @@ namespace FOV
 		return !fov_mask[x + 5 + (y + 5) * 11];
 	}
 
-	bool actIsBlocked(const INT2& pos)
+	bool actIsBlocked(const Int2& pos)
 	{
-		INT2 adjustedPos(pos.x*quadrant.x + source.x, pos.y*quadrant.y + source.y);
+		Int2 adjustedPos(pos.x*quadrant.x + source.x, pos.y*quadrant.y + source.y);
 		bool result = isBlocked(adjustedPos.x, adjustedPos.y);
 		if((quadrant.x * quadrant.y == 1
 			&& pos.x == 0 && pos.y != 0)
@@ -149,15 +149,15 @@ namespace FOV
 		// extremity, remove the field of view.
 		if(currentField->shallow.doesContain(currentField->steep.near)
 			&& currentField->shallow.doesContain(currentField->steep.far)
-			&& (currentField->shallow.doesContain(INT2(0, 1))
-				|| currentField->shallow.doesContain(INT2(1, 0))))
+			&& (currentField->shallow.doesContain(Int2(0, 1))
+				|| currentField->shallow.doesContain(Int2(1, 0))))
 		{
 			result = activeFields.erase(currentField);
 		}
 		return result;
 	}
 
-	void addShallowBump(const INT2& point, list<Field>::iterator currentField)
+	void addShallowBump(const Int2& point, list<Field>::iterator currentField)
 	{
 		// First, the far point of shallow is set to the new point.
 		currentField->shallow.far = point;
@@ -179,7 +179,7 @@ namespace FOV
 		}
 	}
 
-	void addSteepBump(const INT2& point, list<Field>::iterator currentField)
+	void addSteepBump(const Int2& point, list<Field>::iterator currentField)
 	{
 		currentField->steep.far = point;
 		Bump& bump = Add1(steepBumps);
@@ -197,12 +197,12 @@ namespace FOV
 		}
 	}
 
-	void visitSquare(const INT2& dest, list<Field>::iterator& currentField)
+	void visitSquare(const Int2& dest, list<Field>::iterator& currentField)
 	{
 		//LOG(Format("%d, %d", dest.x, dest.y));
 		// The top-left and bottom-right corners of the destination square.
-		INT2 topLeft(dest.x, dest.y + 1);
-		INT2 bottomRight(dest.x + 1, dest.y);
+		Int2 topLeft(dest.x, dest.y + 1);
+		Int2 bottomRight(dest.x + 1, dest.y);
 		while(currentField != activeFields.end()
 			&& currentField->steep.isBelowOrContains(bottomRight))
 		{
@@ -277,12 +277,12 @@ namespace FOV
 		activeFields.clear();
 
 		Field& field = Add1(activeFields);
-		field.shallow.near = INT2(0, 1);
-		field.shallow.far = INT2(extent.x, 0);
-		field.steep.near = INT2(1, 0);
-		field.steep.far = INT2(0, extent.y);
+		field.shallow.near = Int2(0, 1);
+		field.shallow.far = Int2(extent.x, 0);
+		field.steep.near = Int2(1, 0);
+		field.steep.far = Int2(0, extent.y);
 
-		INT2 dest(0, 0);
+		Int2 dest(0, 0);
 
 		// Visit the source square exactly once (in quadrant 1).
 		if(quadrant.x == 1 && quadrant.y == 1)
@@ -310,11 +310,11 @@ namespace FOV
 
 	void calculateFov()
 	{
-		const INT2 quadrants[4] = {
-			INT2(1, 1),
-			INT2(-1, 1),
-			INT2(-1, -1),
-			INT2(1, -1)
+		const Int2 quadrants[4] = {
+			Int2(1, 1),
+			Int2(-1, 1),
+			Int2(-1, -1),
+			Int2(1, -1)
 		};
 
 		for(int i = 0; i < 4; ++i)
@@ -401,12 +401,12 @@ namespace FOV
 	}*/
 }
 
-void Game::DungeonReveal(const INT2& tile)
+void Game::DungeonReveal(const Int2& tile)
 {
 	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
 
 	FOV::source = tile;
-	FOV::extent = INT2(5, 5);
+	FOV::extent = Int2(5, 5);
 	FOV::w = lvl.w;
 	FOV::doors = &lvl.doors;
 	FOV::mapa = lvl.map;

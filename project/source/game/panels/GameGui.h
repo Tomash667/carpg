@@ -52,21 +52,21 @@ struct SpeechBubble
 {
 	string text;
 	Unit* unit;
-	INT2 size;
+	Int2 size;
 	float time, length;
 	int skip_id;
-	VEC3 last_pos;
+	Vec3 last_pos;
 	bool visible;
 };
 
 //-----------------------------------------------------------------------------
 struct BuffImage
 {
-	VEC2 pos;
+	Vec2 pos;
 	TEX tex;
 	int id;
 
-	BuffImage(const VEC2& pos, TEX tex, int id) : pos(pos), tex(tex), id(id)
+	BuffImage(const Vec2& pos, TEX tex, int id) : pos(pos), tex(tex), id(id)
 	{
 	}
 };
@@ -84,7 +84,7 @@ public:
 	void Event(GuiEvent e) override;
 
 	void AddSpeechBubble(Unit* unit, cstring text);
-	void AddSpeechBubble(const VEC3& pos, cstring text);
+	void AddSpeechBubble(const Vec3& pos, cstring text);
 	void Reset();
 	bool UpdateChoice(DialogContext& ctx, int choices);
 	void UpdateScrollbar(int choices);
@@ -133,5 +133,5 @@ private:
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
 	cstring txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc;
-	INT2 debug_info_size, dialog_pos, dialog_size, profiler_size;
+	Int2 debug_info_size, dialog_pos, dialog_size, profiler_size;
 };

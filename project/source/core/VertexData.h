@@ -14,7 +14,7 @@ struct Face
 //-----------------------------------------------------------------------------
 struct VertexData
 {
-	vector<VEC3> verts;
+	vector<Vec3> verts;
 	vector<Face> faces;
 	float radius;
 };

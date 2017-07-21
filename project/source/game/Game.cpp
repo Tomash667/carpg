@@ -255,7 +255,7 @@ void Game::OnDraw(bool normal)
 }
 
 //=================================================================================================
-void HumanPredraw(void* ptr, MATRIX* mat, int n)
+void HumanPredraw(void* ptr, Matrix* mat, int n)
 {
 	if(n != 0)
 		return;
@@ -265,9 +265,9 @@ void HumanPredraw(void* ptr, MATRIX* mat, int n)
 	if(u->type == Unit::HUMAN)
 	{
 		int bone = u->ani->ani->GetBone("usta")->id;
-		static MATRIX mat2;
+		static Matrix mat2;
 		float val = u->talking ? sin(u->talk_timer * 6) : 0.f;
-		mat[bone] = MATRIX::RotationX(val / 5) *mat[bone];
+		mat[bone] = Matrix::RotationX(val / 5) *mat[bone];
 	}
 }
 
@@ -581,7 +581,7 @@ bool Game::Start0(bool _fullscreen, int w, int h)
 
 struct Point
 {
-	INT2 pt, prev;
+	Int2 pt, prev;
 };
 
 struct AStarSort
@@ -791,7 +791,7 @@ void Game::DoExitToMenu()
 //=================================================================================================
 // szuka œcie¿ki u¿ywaj¹c algorytmu A-Star
 // zwraca true jeœli znaleziono i w wektorze jest ta œcie¿ka, w œcie¿ce nie ma pocz¹tkowego kafelka
-bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _target_tile, vector<INT2>& _path, bool can_open_doors, bool wedrowanie, vector<INT2>* blocked)
+bool Game::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int2& _target_tile, vector<Int2>& _path, bool can_open_doors, bool wedrowanie, vector<Int2>* blocked)
 {
 	if(_start_tile == _target_tile || ctx.type == LevelContext::Building)
 	{
@@ -831,7 +831,7 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 		// apply blocked tiles
 		if(blocked)
 		{
-			for(vector<INT2>::iterator it = blocked->begin(), end = blocked->end(); it != end; ++it)
+			for(vector<Int2>::iterator it = blocked->begin(), end = blocked->end(); it != end; ++it)
 				a_map[(*it)(w)].stan = 1;
 			if(a_map[_start_tile(w)].stan == 1 || a_map[_target_tile(w)].stan == 1)
 				return false;
@@ -867,24 +867,24 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 				break;
 			}
 
-			const INT2 kierunek[4] = {
-				INT2(0,1),
-				INT2(1,0),
-				INT2(0,-1),
-				INT2(-1,0)
+			const Int2 kierunek[4] = {
+				Int2(0,1),
+				Int2(1,0),
+				Int2(0,-1),
+				Int2(-1,0)
 			};
 
-			const INT2 kierunek2[4] = {
-				INT2(1,1),
-				INT2(1,-1),
-				INT2(-1,1),
-				INT2(-1,-1)
+			const Int2 kierunek2[4] = {
+				Int2(1,1),
+				Int2(1,-1),
+				Int2(-1,1),
+				Int2(-1,-1)
 			};
 
 			for(int i = 0; i < 4; ++i)
 			{
-				const INT2& pt1 = kierunek[i] + pt.pt;
-				const INT2& pt2 = kierunek2[i] + pt.pt;
+				const Int2& pt1 = kierunek[i] + pt.pt;
+				const Int2& pt2 = kierunek2[i] + pt.pt;
 
 				if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < w - 1 && a_map[pt1(w)].stan == 0 && !m[pt1(w)].IsBlocking())
 				{
@@ -944,7 +944,7 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 		// wype³nij elementami œcie¿kê
 		_path.push_back(_target_tile);
 
-		INT2 p;
+		Int2 p;
 
 		while((p = _path.back()) != _start_tile)
 			_path.push_back(a_map[p(w)].prev);
@@ -977,7 +977,7 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 		// apply blocked tiles
 		if(blocked)
 		{
-			for(vector<INT2>::iterator it = blocked->begin(), end = blocked->end(); it != end; ++it)
+			for(vector<Int2>::iterator it = blocked->begin(), end = blocked->end(); it != end; ++it)
 				a_map[(*it)(w)].stan = 1;
 			if(a_map[_start_tile(w)].stan == 1 || a_map[_target_tile(w)].stan == 1)
 				return false;
@@ -1014,26 +1014,26 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 				break;
 			}
 
-			const INT2 kierunek[4] = {
-				INT2(0,1),
-				INT2(1,0),
-				INT2(0,-1),
-				INT2(-1,0)
+			const Int2 kierunek[4] = {
+				Int2(0,1),
+				Int2(1,0),
+				Int2(0,-1),
+				Int2(-1,0)
 			};
 
-			const INT2 kierunek2[4] = {
-				INT2(1,1),
-				INT2(1,-1),
-				INT2(-1,1),
-				INT2(-1,-1)
+			const Int2 kierunek2[4] = {
+				Int2(1,1),
+				Int2(1,-1),
+				Int2(-1,1),
+				Int2(-1,-1)
 			};
 
 			if(can_open_doors)
 			{
 				for(int i = 0; i < 4; ++i)
 				{
-					const INT2& pt1 = kierunek[i] + pt.pt;
-					const INT2& pt2 = kierunek2[i] + pt.pt;
+					const Int2& pt1 = kierunek[i] + pt.pt;
+					const Int2& pt2 = kierunek2[i] + pt.pt;
 
 					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !czy_blokuje2(m[pt1(w)]))
 					{
@@ -1079,8 +1079,8 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 			{
 				for(int i = 0; i < 4; ++i)
 				{
-					const INT2& pt1 = kierunek[i] + pt.pt;
-					const INT2& pt2 = kierunek2[i] + pt.pt;
+					const Int2& pt1 = kierunek[i] + pt.pt;
+					const Int2& pt2 = kierunek2[i] + pt.pt;
 
 					if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !czy_blokuje2(m[pt1(w)]))
 					{
@@ -1194,14 +1194,14 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 
 						if(ok && m[kierunek2[i].x + pt.pt.x + pt.pt.y*w].type == DRZWI)
 						{
-							Door* door = FindDoor(ctx, INT2(kierunek2[i].x + pt.pt.x, pt.pt.y));
+							Door* door = FindDoor(ctx, Int2(kierunek2[i].x + pt.pt.x, pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
 
 						if(ok && m[pt.pt.x + (kierunek2[i].y + pt.pt.y)*w].type == DRZWI)
 						{
-							Door* door = FindDoor(ctx, INT2(pt.pt.x, kierunek2[i].y + pt.pt.y));
+							Door* door = FindDoor(ctx, Int2(pt.pt.x, kierunek2[i].y + pt.pt.y));
 							if(door && door->IsBlocking())
 								ok = false;
 						}
@@ -1237,7 +1237,7 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 		// wype³nij elementami œcie¿kê
 		_path.push_back(_target_tile);
 
-		INT2 p;
+		Int2 p;
 
 		while((p = _path.back()) != _start_tile)
 			_path.push_back(a_map[p(w)].prev);
@@ -1250,28 +1250,28 @@ bool Game::FindPath(LevelContext& ctx, const INT2& _start_tile, const INT2& _tar
 }
 
 //=================================================================================================
-INT2 Game::RandomNearTile(const INT2& _tile)
+Int2 Game::RandomNearTile(const Int2& _tile)
 {
 	struct DoSprawdzenia
 	{
 		int ile;
-		INT2 tile[3];
+		Int2 tile[3];
 	};
-	static vector<INT2> tiles;
+	static vector<Int2> tiles;
 
 	const DoSprawdzenia allowed[] = {
-		{2, INT2(-2,0), INT2(-1,0), INT2(0,0)},
-		{1, INT2(-1,0), INT2(0,0), INT2(0,0)},
-		{3, INT2(-1,1), INT2(-1,0), INT2(0,1)},
-		{3, INT2(-1,-1), INT2(-1,0), INT2(0,-1)},
-		{2, INT2(2,0), INT2(1,0), INT2(0,0)},
-		{1, INT2(1,0), INT2(0,0), INT2(0,0)},
-		{3, INT2(1,1), INT2(1,0), INT2(0,1)},
-		{3, INT2(1,-1), INT2(1,0), INT2(0,-1)},
-		{2, INT2(0,2), INT2(0,1), INT2(0,0)},
-		{1, INT2(0,1), INT2(0,0), INT2(0,0)},
-		{2, INT2(0,-2), INT2(0,0), INT2(0,0)},
-		{1, INT2(0,-1),  INT2(0,0), INT2(0,0)}
+		{2, Int2(-2,0), Int2(-1,0), Int2(0,0)},
+		{1, Int2(-1,0), Int2(0,0), Int2(0,0)},
+		{3, Int2(-1,1), Int2(-1,0), Int2(0,1)},
+		{3, Int2(-1,-1), Int2(-1,0), Int2(0,-1)},
+		{2, Int2(2,0), Int2(1,0), Int2(0,0)},
+		{1, Int2(1,0), Int2(0,0), Int2(0,0)},
+		{3, Int2(1,1), Int2(1,0), Int2(0,1)},
+		{3, Int2(1,-1), Int2(1,0), Int2(0,-1)},
+		{2, Int2(0,2), Int2(0,1), Int2(0,0)},
+		{1, Int2(0,1), Int2(0,0), Int2(0,0)},
+		{2, Int2(0,-2), Int2(0,0), Int2(0,0)},
+		{1, Int2(0,-1),  Int2(0,0), Int2(0,0)}
 	};
 
 	bool blokuje = true;
@@ -1345,7 +1345,7 @@ INT2 Game::RandomNearTile(const INT2& _tile)
 // 3 - start tile and target tile is equal
 // 4 - target tile is blocked
 // 5 - path not found
-int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_tile, const INT2& target_tile, const Unit* _me, const Unit* _other, const void* useable, bool is_end_point)
+int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_tile, const Int2& target_tile, const Unit* _me, const Unit* _other, const void* useable, bool is_end_point)
 {
 	assert(_me);
 
@@ -1358,7 +1358,7 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	if(my_tile == target_tile)
 		return 3;
 
-	int dist = INT2::Distance(my_tile, target_tile);
+	int dist = Int2::Distance(my_tile, target_tile);
 
 	if(dist >= 32)
 		return 1;
@@ -1375,7 +1375,7 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	}
 
 	// œrodek
-	const INT2 center_tile((my_tile + target_tile) / 2);
+	const Int2 center_tile((my_tile + target_tile) / 2);
 
 	int minx = max(ctx.mine.x * 8, center_tile.x - 15),
 		miny = max(ctx.mine.y * 8, center_tile.y - 15),
@@ -1406,7 +1406,7 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	}
 
 	global_col.clear();
-	GatherCollisionObjects(ctx, global_col, BOX2D(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
+	GatherCollisionObjects(ctx, global_col, Box2d(float(minx) / 4 - 0.25f, float(miny) / 4 - 0.25f, float(maxx) / 4 + 0.25f, float(maxy) / 4 + 0.25f), &ignore);
 
 	const float r = _me->GetUnitRadius() - 0.25f / 2;
 
@@ -1414,11 +1414,11 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	{
 		for(int x = minx, x2 = 0; x < maxx; ++x, ++x2)
 		{
-			if(!Collide(global_col, BOX2D(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
+			if(!Collide(global_col, Box2d(0.25f*x, 0.25f*y, 0.25f*(x + 1), 0.25f*(y + 1)), r))
 			{
 #ifdef DRAW_LOCAL_PATH
 				if(marked == _me)
-					test_pf.push_back(std::pair<VEC2, int>(VEC2(0.25f*x, 0.25f*y), 0));
+					test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*x, 0.25f*y), 0));
 #endif
 				local_pfmap[x2 + y2*w] = false;
 			}
@@ -1427,7 +1427,7 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 		}
 	}
 
-	const INT2 target_rel(target_tile.x - minx, target_tile.y - miny),
+	const Int2 target_rel(target_tile.x - minx, target_tile.y - miny),
 		my_rel(my_tile.x - minx, my_tile.y - miny);
 
 	// target tile is blocked
@@ -1436,21 +1436,21 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 
 	// oznacz moje pole jako wolne
 	local_pfmap[my_rel(w)] = false;
-	const INT2 neis[8] = {
-		INT2(-1,-1),
-		INT2(0,-1),
-		INT2(1,-1),
-		INT2(-1,0),
-		INT2(1,0),
-		INT2(-1,1),
-		INT2(0,1),
-		INT2(1,1)
+	const Int2 neis[8] = {
+		Int2(-1,-1),
+		Int2(0,-1),
+		Int2(1,-1),
+		Int2(-1,0),
+		Int2(1,0),
+		Int2(-1,1),
+		Int2(0,1),
+		Int2(1,1)
 	};
 
 	bool jest = false;
 	for(int i = 0; i < 8; ++i)
 	{
-		INT2 pt = my_rel + neis[i];
+		Int2 pt = my_rel + neis[i];
 		if(pt.x < 0 || pt.y < 0 || pt.x > 32 || pt.y > 32)
 			continue;
 		if(!local_pfmap[pt(w)])
@@ -1469,14 +1469,14 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 	{
 		Point& pt = Add1(do_sprawdzenia);
 		pt.pt = target_rel;
-		pt.prev = INT2(0, 0);
+		pt.prev = Int2(0, 0);
 	}
 
 	APoint apt, prev_apt;
-	apt.odleglosc = apt.suma = INT2::Distance(my_rel, target_rel) * 10;
+	apt.odleglosc = apt.suma = Int2::Distance(my_rel, target_rel) * 10;
 	apt.koszt = 0;
 	apt.stan = 1;
-	apt.prev = INT2(0, 0);
+	apt.prev = Int2(0, 0);
 	a_map[target_rel(w)] = apt;
 
 	AStarSort sortownik(a_map, w);
@@ -1500,30 +1500,30 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 			break;
 		}
 
-		const INT2 kierunek[4] = {
-			INT2(0,1),
-			INT2(1,0),
-			INT2(0,-1),
-			INT2(-1,0)
+		const Int2 kierunek[4] = {
+			Int2(0,1),
+			Int2(1,0),
+			Int2(0,-1),
+			Int2(-1,0)
 		};
 
-		const INT2 kierunek2[4] = {
-			INT2(1,1),
-			INT2(1,-1),
-			INT2(-1,1),
-			INT2(-1,-1)
+		const Int2 kierunek2[4] = {
+			Int2(1,1),
+			Int2(1,-1),
+			Int2(-1,1),
+			Int2(-1,-1)
 		};
 
 		for(int i = 0; i < 4; ++i)
 		{
-			const INT2& pt1 = kierunek[i] + pt.pt;
-			const INT2& pt2 = kierunek2[i] + pt.pt;
+			const Int2& pt1 = kierunek[i] + pt.pt;
+			const Int2& pt2 = kierunek2[i] + pt.pt;
 
 			if(pt1.x >= 0 && pt1.y >= 0 && pt1.x < w - 1 && pt1.y < h - 1 && !local_pfmap[pt1(w)])
 			{
 				apt.prev = pt.pt;
 				apt.koszt = prev_apt.koszt + 10;
-				apt.odleglosc = INT2::Distance(pt1, my_rel) * 10;
+				apt.odleglosc = Int2::Distance(pt1, my_rel) * 10;
 				apt.suma = apt.odleglosc + apt.koszt;
 
 				if(a_map[pt1(w)].IsLower(apt.suma))
@@ -1542,7 +1542,7 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 			{
 				apt.prev = pt.pt;
 				apt.koszt = prev_apt.koszt + 15;
-				apt.odleglosc = INT2::Distance(pt2, my_rel) * 10;
+				apt.odleglosc = Int2::Distance(pt2, my_rel) * 10;
 				apt.suma = apt.odleglosc + apt.koszt;
 
 				if(a_map[pt2(w)].IsLower(apt.suma))
@@ -1576,8 +1576,8 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 #ifdef DRAW_LOCAL_PATH
 		if(marked == _me)
 		{
-			test_pf.push_back(std::pair<VEC2, int>(VEC2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
-			test_pf.push_back(std::pair<VEC2, int>(VEC2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
+			test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
+			test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
 		}
 #endif
 		return 5;
@@ -1586,21 +1586,21 @@ int Game::FindLocalPath(LevelContext& ctx, vector<INT2>& _path, const INT2& my_t
 #ifdef DRAW_LOCAL_PATH
 	if(marked == _me)
 	{
-		test_pf.push_back(std::pair<VEC2, int>(VEC2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
-		test_pf.push_back(std::pair<VEC2, int>(VEC2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
+		test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*my_tile.x, 0.25f*my_tile.y), 1));
+		test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*target_tile.x, 0.25f*target_tile.y), 1));
 	}
 #endif
 
 	// populate path vector (and debug drawing)
-	INT2 p = my_rel;
+	Int2 p = my_rel;
 
 	do
 	{
 #ifdef DRAW_LOCAL_PATH
 		if(marked == _me)
-			test_pf.push_back(std::pair<VEC2, int>(VEC2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
+			test_pf.push_back(std::pair<Vec2, int>(Vec2(0.25f*(p.x + minx), 0.25f*(p.y + miny)), 1));
 #endif
-		_path.push_back(INT2(p.x + minx, p.y + miny));
+		_path.push_back(Int2(p.x + minx, p.y + miny));
 		p = a_map[p(w)].prev;
 	} while(p != target_rel);
 
@@ -2315,8 +2315,8 @@ void Game::UpdateLights(vector<Light>& lights)
 	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
 	{
 		Light& s = *it;
-		s.t_pos = s.pos + VEC3::Random(VEC3(-0.05f, -0.05f, -0.05f), VEC3(0.05f, 0.05f, 0.05f));
-		s.t_color = (s.color + VEC3::Random(VEC3(-0.1f, -0.1f, -0.1f), VEC3(0.1f, 0.1f, 0.1f))).Clamped();
+		s.t_pos = s.pos + Vec3::Random(Vec3(-0.05f, -0.05f, -0.05f), Vec3(0.05f, 0.05f, 0.05f));
+		s.t_color = (s.color + Vec3::Random(Vec3(-0.1f, -0.1f, -0.1f), Vec3(0.1f, 0.1f, 0.1f))).Clamped();
 	}
 }
 
@@ -2426,7 +2426,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 			if((*it)->IsPlayer() || !(*it)->IsStanding() || !IsFriend(u, **it))
 				continue;
 
-			if(VEC3::Distance(u.pos, (*it)->pos) <= 20.f && CanSee(u, **it))
+			if(Vec3::Distance(u.pos, (*it)->pos) <= 20.f && CanSee(u, **it))
 				(*it)->ai->morale -= 2.f;
 		}
 
@@ -2443,7 +2443,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		// muzyka bossa
 		if(IS_SET(u.data->flags2, F2_BOSS))
 		{
-			if(RemoveElementTry(boss_levels, INT2(current_location, dungeon_level)))
+			if(RemoveElementTry(boss_levels, Int2(current_location, dungeon_level)))
 				SetMusic();
 		}
 
@@ -2553,7 +2553,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 					ok = true;
 					for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 					{
-						if((*it)->IsStanding() && IsEnemy(u, **it) && VEC3::Distance(u.pos, (*it)->pos) <= 20.f && CanSee(u, **it))
+						if((*it)->IsStanding() && IsEnemy(u, **it) && Vec3::Distance(u.pos, (*it)->pos) <= 20.f && CanSee(u, **it))
 						{
 							ok = false;
 							break;
@@ -2664,7 +2664,7 @@ void Game::UpdatePostEffects(float dt)
 			mod = 1.f;
 		else
 			mod = 1.f + (drunk - 0.5f) * 2;
-		e->skill = e2->skill = VEC4(1.f / wnd_size.x*mod, 1.f / wnd_size.y*mod, 0, 0);
+		e->skill = e2->skill = Vec4(1.f / wnd_size.x*mod, 1.f / wnd_size.y*mod, 0, 0);
 		// 0.1-0
 		// 1-1
 		e->power = e2->power = (drunk - 0.1f) / 0.9f;
@@ -3037,7 +3037,7 @@ void Game::SetupTrap(TaskData& task_data)
 
 	Animesh::Point* pt = trap.mesh->FindPoint("hitbox");
 	assert(pt);
-	if(pt->type == Animesh::Point::BOX)
+	if(pt->type == Animesh::Point::Box)
 	{
 		trap.rw = pt->size.x;
 		trap.h = pt->size.z;

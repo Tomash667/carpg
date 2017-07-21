@@ -148,9 +148,9 @@ struct Unit
 	Animation animation, current_animation;
 	Human* human_data;
 	LiveState live_state;
-	VEC3 pos; // pozycja postaci
-	VEC3 visual_pos; // graficzna pozycja postaci, u¿ywana w MP
-	VEC3 prev_pos, target_pos, target_pos2;
+	Vec3 pos; // pozycja postaci
+	Vec3 visual_pos; // graficzna pozycja postaci, u¿ywana w MP
+	Vec3 prev_pos, target_pos, target_pos2;
 	float rot, prev_speed, hp, hpmax, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
 	Type type;
 	int animation_state, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid;
@@ -237,7 +237,7 @@ struct Unit
 		else
 			return data->width;
 	}
-	VEC3 GetColliderPos() const
+	Vec3 GetColliderPos() const
 	{
 		if(action != A_ANIMATION2)
 			return pos;
@@ -253,21 +253,21 @@ struct Unit
 		else
 			return ani->ani->head.bbox.SizeY();
 	}
-	VEC3 GetHeadPoint() const
+	Vec3 GetHeadPoint() const
 	{
-		VEC3 pt = visual_pos;
+		Vec3 pt = visual_pos;
 		pt.y += GetUnitHeight() * 1.1f;
 		return pt;
 	}
-	VEC3 GetHeadSoundPos() const
+	Vec3 GetHeadSoundPos() const
 	{
-		VEC3 pt = visual_pos;
+		Vec3 pt = visual_pos;
 		pt.y += GetUnitHeight() * 0.9f;
 		return pt;
 	}
-	VEC3 GetUnitTextPos() const
+	Vec3 GetUnitTextPos() const
 	{
-		VEC3 pt;
+		Vec3 pt;
 		if(IsStanding())
 		{
 			pt = visual_pos;
@@ -280,10 +280,10 @@ struct Unit
 		}
 		return pt;
 	}
-	VEC3 GetEyePos() const;
+	Vec3 GetEyePos() const;
 	float CalculateMaxHp() const;
 	float GetHpp() const { return hp / hpmax; }
-	void GetBox(BOX& box) const;
+	void GetBox(Box& box) const;
 	int GetDmgType() const;
 	bool IsNotFighting() const
 	{
@@ -292,7 +292,7 @@ struct Unit
 		else
 			return (weapon_state == WS_HIDDEN);
 	}
-	VEC3 GetLootCenter() const;
+	Vec3 GetLootCenter() const;
 
 	float CalculateWeaponPros(const Weapon& weapon) const;
 	bool IsBetterWeapon(const Weapon& weapon) const;
@@ -376,9 +376,9 @@ struct Unit
 			}
 		}
 	}
-	VEC3 GetFrontPos() const
+	Vec3 GetFrontPos() const
 	{
-		return VEC3(
+		return Vec3(
 			pos.x + sin(rot + PI) * 2,
 			pos.y,
 			pos.z + cos(rot + PI) * 2);
@@ -402,9 +402,9 @@ struct Unit
 	void Save(HANDLE file, bool local);
 	void Load(HANDLE file, bool local);
 	bool FindEffect(ConsumeEffect effect, float* value);
-	VEC3 GetCenter() const
+	Vec3 GetCenter() const
 	{
-		VEC3 pt = pos;
+		Vec3 pt = pos;
 		pt.y += GetUnitHeight() / 2;
 		return pt;
 	}

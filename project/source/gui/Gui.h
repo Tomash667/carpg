@@ -27,18 +27,18 @@ struct GUI_Button
 	};
 	string text;
 	State state;
-	VEC2 pos;
-	INT2 size;
+	Vec2 pos;
+	Int2 size;
 	int id;
 	TEX img;
 
-	bool IsInside(const INT2& pt) const
+	bool IsInside(const Int2& pt) const
 	{
 		return (pt.x >= pos.x && pt.y >= pos.y && pt.x <= pos.x + size.x && pt.y <= pos.y + size.y);
 	}
-	bool IsInside(const INT2& pt, const VEC2& shift) const
+	bool IsInside(const Int2& pt, const Vec2& shift) const
 	{
-		VEC2 rpos = pos + shift;
+		Vec2 rpos = pos + shift;
 		return (pt.x >= rpos.x && pt.y >= rpos.y && pt.x <= rpos.x + size.x && pt.y <= rpos.y + size.y);
 	}
 };
@@ -75,7 +75,7 @@ struct GUI_Dialog : public GUI_Layer
 	string text;
 	DialogEvent func;
 	vector<GUI_Button> buttons;
-	INT2 size;
+	Int2 size;
 	CustomBoxData* custom;
 };
 

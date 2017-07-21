@@ -122,7 +122,7 @@ private:
 	TextBox tbClassDesc, tbInfo;
 	FlowContainer flowSkills, flowPerks;
 	// attribute/skill flow panel
-	INT2 flow_pos, flow_size;
+	Int2 flow_pos, flow_size;
 	Scrollbar flow_scroll;
 	vector<OldFlowItem> flow_items;
 	TooltipController tooltip;

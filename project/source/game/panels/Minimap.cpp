@@ -30,9 +30,9 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		if(inside->HaveDownStairs() && IS_SET(lvl.map[lvl.staircase_down(lvl.w)].flags, Pole::F_ODKRYTE))
-			GUI.DrawSprite(game.tSchodyDol, INT2(TileToPoint(lvl.staircase_down)) - INT2(16, 16), COLOR_RGBA(255, 255, 255, 180));
+			GUI.DrawSprite(game.tSchodyDol, Int2(TileToPoint(lvl.staircase_down)) - Int2(16, 16), COLOR_RGBA(255, 255, 255, 180));
 		if(inside->HaveUpStairs() && IS_SET(lvl.map[lvl.staircase_up(lvl.w)].flags, Pole::F_ODKRYTE))
-			GUI.DrawSprite(game.tSchodyGora, INT2(TileToPoint(lvl.staircase_up)) - INT2(16, 16), COLOR_RGBA(255, 255, 255, 180));
+			GUI.DrawSprite(game.tSchodyGora, Int2(TileToPoint(lvl.staircase_up)) - Int2(16, 16), COLOR_RGBA(255, 255, 255, 180));
 	}
 
 	// portale
@@ -41,7 +41,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	while(p)
 	{
 		if(!lvl || (game.dungeon_level == p->at_level && lvl->IsTileVisible(p->pos)))
-			GUI.DrawSprite(game.tMiniportal, INT2(TileToPoint(pos_to_pt(p->pos))) - INT2(24, 8), COLOR_RGBA(255, 255, 255, 180));
+			GUI.DrawSprite(game.tMiniportal, Int2(TileToPoint(pos_to_pt(p->pos))) - Int2(24, 8), COLOR_RGBA(255, 255, 255, 180));
 		p = p->next_portal;
 	}
 
@@ -53,7 +53,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 			important_items->push_back(*it);
 		else if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
-			m1 = MATRIX::Transform2D(&VEC2(16, 16), 0.f, &VEC2(0.25f, 0.25f), nullptr, 0.f, &(PosToPoint(VEC2((*it)->pos.x, (*it)->pos.z)) - VEC2(16, 16)));
+			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), nullptr, 0.f, &(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - Vec2(16, 16)));
 			GUI.DrawSpriteTransform(game.tMinibag, m1, COLOR_RGBA(255, 255, 255, 140));
 		}
 	}
@@ -61,7 +61,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	{
 		if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
-			m1 = MATRIX::Transform2D(&VEC2(16, 16), 0.f, &VEC2(0.25f, 0.25f), nullptr, 0.f, &(PosToPoint(VEC2((*it)->pos.x, (*it)->pos.z)) - VEC2(16, 16)));
+			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), nullptr, 0.f, &(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - Vec2(16, 16)));
 			GUI.DrawSpriteTransform(game.tMinibag2, m1, COLOR_RGBA(255, 255, 255, 140));
 		}
 	}
@@ -69,7 +69,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	// obrazek postaci
 	for(Unit* unit : Team.members)
 	{
-		m1 = MATRIX::Transform2D(&VEC2(16, 16), 0.f, &VEC2(0.25f, 0.25f), &VEC2(16, 16), unit->rot, &(PosToPoint(game.GetMapPosition(*unit)) - VEC2(16, 16)));
+		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit->rot, &(PosToPoint(game.GetMapPosition(*unit)) - Vec2(16, 16)));
 		GUI.DrawSpriteTransform((unit == game.pc->unit) ? game.tMiniunit : game.tMiniunit2, m1, COLOR_RGBA(255, 255, 255, 140));
 	}
 
@@ -79,7 +79,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		Unit& u = **it;
 		if((u.IsAlive() || IS_SET(u.data->flags2, F2_MARK)) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
 		{
-			m1 = MATRIX::Transform2D(&VEC2(16, 16), 0.f, &VEC2(0.25f, 0.25f), &VEC2(16, 16), (*it)->rot, &(PosToPoint(game.GetMapPosition(u)) - VEC2(16, 16)));
+			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), (*it)->rot, &(PosToPoint(game.GetMapPosition(u)) - Vec2(16, 16)));
 			GUI.DrawSpriteTransform(u.IsAlive() ? (game.IsEnemy(u, *game.pc->unit) ? game.tMiniunit3 : game.tMiniunit4) : game.tMiniunit5, m1, COLOR_RGBA(255, 255, 255, 140));
 		}
 	}
@@ -89,7 +89,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		// teksty w mieœcie
 		for(Text& text : texts)
 		{
-			INT2 pt(Convert(text.pos));
+			Int2 pt(Convert(text.pos));
 			Rect rect = { pt.x - text.size.x / 2, pt.y - text.size.y / 2, pt.x + text.size.x / 2, pt.y + text.size.y / 2 };
 			GUI.DrawText(GUI.default_font, text.text, DT_SINGLELINE, BLACK, rect);
 		}
@@ -98,7 +98,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		GUI.LineBegin();
 		for(vector<Text>::iterator it = texts.begin(), end = texts.end(); it != end; ++it)
 		{
-			VEC2 pts[2] = {
+			Vec2 pts[2] = {
 				Convert(it->pos),
 				Convert(it->anchor)
 			};
@@ -124,7 +124,7 @@ void Minimap::Update(float dt)
 				if(it == it2)
 					continue;
 
-				VEC2 pt1 = Convert(it->pos),
+				Vec2 pt1 = Convert(it->pos),
 					pt2 = Convert(it2->pos);
 				float w1 = float(it->size.x) / 2,
 					h1 = float(it->size.y) / 2,
@@ -134,7 +134,7 @@ void Minimap::Update(float dt)
 				if(RectangleToRectangle(pt1.x - w1, pt1.y - h1, pt1.x + w1, pt1.y + h1,
 					pt2.x - w2, pt2.y - h2, pt2.x + w2, pt2.y + h2))
 				{
-					VEC2 dir = it->pos - it2->pos;
+					Vec2 dir = it->pos - it2->pos;
 					dir.Normalize();
 					it->pos += dir*dt;
 				}

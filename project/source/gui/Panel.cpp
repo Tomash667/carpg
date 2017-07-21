@@ -12,7 +12,7 @@ void Panel::Draw(ControlDrawData*)
 			GUI.DrawArea(custom_color, global_pos, size);
 	}
 	else
-		GUI.DrawArea(BOX2D::Create(global_pos, size), layout->panel.background);
+		GUI.DrawArea(Box2d::Create(global_pos, size), layout->panel.background);
 
 	Container::Draw();
 }

@@ -12,7 +12,7 @@ void LoadScreen::Draw(ControlDrawData*)
 	// loadbar background
 	D3DSURFACE_DESC desc;
 	tLoadbarBg->GetLevelDesc(0, &desc);
-	INT2 pt((GUI.wnd_size.x - desc.Width) / 2, GUI.wnd_size.y - desc.Height - 16);
+	Int2 pt((GUI.wnd_size.x - desc.Width) / 2, GUI.wnd_size.y - desc.Height - 16);
 	GUI.DrawSprite(tLoadbarBg, pt);
 
 	// loadbar

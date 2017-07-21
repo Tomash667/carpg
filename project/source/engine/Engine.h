@@ -51,7 +51,7 @@ public:
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 	void PlayMusic(FMOD::Sound* music);
 	void PlaySound2d(FMOD::Sound* sound);
-	void PlaySound3d(FMOD::Sound* sound, const VEC3& pos, float smin, float smax = 0.f); // smax jest nieu¿ywane
+	void PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float smin, float smax = 0.f); // smax jest nieu¿ywane
 	void Render(bool dont_call_present = false);
 	bool Reset(bool force);
 	void SetStartingMultisampling(int multisampling, int multisampling_quality);
@@ -68,10 +68,10 @@ public:
 	// okno
 	HWND hwnd;
 	bool active, fullscreen, locked_cursor;
-	VEC2 cursor_pos;
+	Vec2 cursor_pos;
 	int mouse_wheel;
 	float fps;
-	INT2 wnd_size, real_size, mouse_dif, unlock_point, s_wnd_size, s_wnd_pos;
+	Int2 wnd_size, real_size, mouse_dif, unlock_point, s_wnd_size, s_wnd_pos;
 
 	// directx
 	IDirect3D9* d3d;

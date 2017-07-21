@@ -54,7 +54,7 @@ void MenuStrip::CalculateWidth(int min_width)
 			max_width = width;
 	}
 
-	size = INT2(max_width + (layout->menustrip.padding.x + layout->menustrip.item_padding.x) * 2,
+	size = Int2(max_width + (layout->menustrip.padding.x + layout->menustrip.item_padding.x) * 2,
 		(font->height + (layout->menustrip.item_padding.y) * 2) * items.size() + layout->menustrip.padding.y * 2);
 
 	if(size.x < min_width)
@@ -69,12 +69,12 @@ MenuStrip::~MenuStrip()
 
 void MenuStrip::Draw(ControlDrawData*)
 {
-	BOX2D area = BOX2D::Create(global_pos, size);
+	Box2d area = Box2d::Create(global_pos, size);
 	GUI.DrawArea(area, layout->menustrip.background);
 
-	VEC2 item_size((float)size.x - (layout->menustrip.padding.x) * 2,
+	Vec2 item_size((float)size.x - (layout->menustrip.padding.x) * 2,
 		(float)layout->menustrip.font->height + layout->menustrip.item_padding.y * 2);
-	area.v1 = VEC2(global_pos + layout->menustrip.padding);
+	area.v1 = Vec2(global_pos + layout->menustrip.padding);
 	area.v2 = area.v1 + item_size;
 	float offset = item_size.y;
 	Rect r;
@@ -94,7 +94,7 @@ void MenuStrip::Draw(ControlDrawData*)
 		r = Rect(area, layout->menustrip.item_padding);
 		GUI.DrawText(layout->menustrip.font, item.text, DT_LEFT, color, r);
 
-		area += VEC2(0, offset);
+		area += Vec2(0, offset);
 	}
 }
 
@@ -158,7 +158,7 @@ void MenuStrip::UpdateMouse()
 		return;
 	}
 
-	BOX2D area = BOX2D::Create(global_pos, size);
+	Box2d area = Box2d::Create(global_pos, size);
 	if(!area.IsInside(GUI.cursor_pos))
 	{
 		if(GUI.MouseMoved())
@@ -172,9 +172,9 @@ void MenuStrip::UpdateMouse()
 		return;
 	}
 
-	VEC2 item_size((float)size.x - (layout->menustrip.padding.x) * 2,
+	Vec2 item_size((float)size.x - (layout->menustrip.padding.x) * 2,
 		(float)layout->menustrip.font->height + layout->menustrip.item_padding.y * 2);
-	area.v1 = VEC2(global_pos + layout->menustrip.padding);
+	area.v1 = Vec2(global_pos + layout->menustrip.padding);
 	area.v2 = area.v1 + item_size;
 	float offset = item_size.y;
 
@@ -198,7 +198,7 @@ void MenuStrip::UpdateMouse()
 			break;
 		}
 
-		area += VEC2(0, offset);
+		area += Vec2(0, offset);
 	}
 }
 
@@ -234,7 +234,7 @@ void MenuStrip::UpdateKeyboard()
 		GUI.GetOverlay()->CloseMenu(this);
 }
 
-void MenuStrip::ShowAt(const INT2& _pos)
+void MenuStrip::ShowAt(const Int2& _pos)
 {
 	if(selected)
 		selected->hover = false;
@@ -244,7 +244,7 @@ void MenuStrip::ShowAt(const INT2& _pos)
 	Show();
 }
 
-void MenuStrip::ShowMenu(const INT2& _pos)
+void MenuStrip::ShowMenu(const Int2& _pos)
 {
 	GUI.GetOverlay()->ShowMenu(this, _pos);
 }

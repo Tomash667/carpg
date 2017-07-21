@@ -48,23 +48,23 @@ void Explo::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Electro::AddLine(const VEC3& from, const VEC3& to)
+void Electro::AddLine(const Vec3& from, const Vec3& to)
 {
 	ElectroLine& line = Add1(lines);
 
 	line.t = 0.f;
 	line.pts.push_back(from);
 
-	int steps = int(VEC3::Distance(from, to) * 10);
+	int steps = int(Vec3::Distance(from, to) * 10);
 
-	VEC3 dir = to - from;
-	const VEC3 step = dir / float(steps);
-	VEC3 prev_off(0.f, 0.f, 0.f);
+	Vec3 dir = to - from;
+	const Vec3 step = dir / float(steps);
+	Vec3 prev_off(0.f, 0.f, 0.f);
 
 	for(int i = 1; i < steps; ++i)
 	{
-		VEC3 p = from + step*(float(i) + Random(-0.25f, 0.25f));
-		VEC3 r = VEC3::Random(VEC3(-0.3f, -0.3f, -0.3f), VEC3(0.3f, 0.3f, 0.3f));
+		Vec3 p = from + step*(float(i) + Random(-0.25f, 0.25f));
+		Vec3 r = Vec3::Random(Vec3(-0.3f, -0.3f, -0.3f), Vec3(0.3f, 0.3f, 0.3f));
 		prev_off = (r + prev_off) / 2;
 		line.pts.push_back(p + prev_off);
 	}
@@ -82,7 +82,7 @@ void Electro::Save(HANDLE file)
 		count = it->pts.size();
 		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
 		if(count)
-			WriteFile(file, &it->pts[0], sizeof(VEC3)*count, &tmp, nullptr);
+			WriteFile(file, &it->pts[0], sizeof(Vec3)*count, &tmp, nullptr);
 		WriteFile(file, &it->t, sizeof(it->t), &tmp, nullptr);
 	}
 	count = hitted.size();
@@ -110,7 +110,7 @@ void Electro::Load(HANDLE file)
 		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
 		it->pts.resize(count);
 		if(count)
-			ReadFile(file, &it->pts[0], sizeof(VEC3)*count, &tmp, nullptr);
+			ReadFile(file, &it->pts[0], sizeof(Vec3)*count, &tmp, nullptr);
 		ReadFile(file, &it->t, sizeof(it->t), &tmp, nullptr);
 	}
 	ReadFile(file, &count, sizeof(count), &tmp, nullptr);

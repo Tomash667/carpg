@@ -20,9 +20,9 @@ namespace gui
 
 	private:
 		TEX tex;
-		INT2 tex_size, click_point;
+		Int2 tex_size, click_point;
 		float scale, default_scale;
-		VEC2 move;
+		Vec2 move;
 		bool clicked;
 	};
 }

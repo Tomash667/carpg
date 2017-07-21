@@ -37,7 +37,7 @@ PickItemDialog::PickItemDialog(const DialogInfo&  info) : Dialog(info)
 
 	btClose.custom = &custom_x;
 	btClose.id = Cancel;
-	btClose.size = INT2(32, 32);
+	btClose.size = Int2(32, 32);
 	btClose.parent = this;
 }
 
@@ -77,8 +77,8 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 	multiple = params.multiple;
 	size.x = params.size_min.x;
 	text = std::move(params.text);
-	flow.pos = INT2(16, 64);
-	flow.size = INT2(size.x - 32, 10000);
+	flow.pos = Int2(16, 64);
+	flow.size = Int2(size.x - 32, 10000);
 	flow.SetItems(params.items);
 	int flow_sizey = flow.GetHeight();
 	flow_sizey += 64;
@@ -88,8 +88,8 @@ void PickItemDialog::Create(PickItemDialogParams& params)
 		flow_sizey = params.size_max.y;
 	size.y = flow_sizey;
 	pos = global_pos = (GUI.wnd_size - size) / 2;
-	flow.UpdateSize(pos + INT2(16, 64), INT2(size.x - 32, size.y - 80), true);
-	btClose.pos = INT2(size.x - 48, 16);
+	flow.UpdateSize(pos + Int2(16, 64), Int2(size.x - 32, size.y - 80), true);
+	btClose.pos = Int2(size.x - 48, 16);
 	btClose.global_pos = global_pos + btClose.pos;
 	selected.clear();
 }

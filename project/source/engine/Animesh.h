@@ -41,7 +41,7 @@ struct Animesh
 		byte version, flags;
 		word n_verts, n_tris, n_subs, n_bones, n_anims, n_points, n_groups;
 		float radius;
-		BOX bbox;
+		Box bbox;
 	};
 
 	struct Submesh
@@ -52,7 +52,7 @@ struct Animesh
 		word n_ind; // odpowiednik parametru DrawIndexedPrimitive - NumVertices (tylko wyra¿ony w trójk¹tach)
 		string name;//, normal_name, specular_name;
 		TextureResource* tex, *tex_normal, *tex_specular;
-		VEC3 specular_color;
+		Vec3 specular_color;
 		float specular_intensity;
 		int specular_hardness;
 		float normal_factor, specular_factor, specular_color_factor;
@@ -73,7 +73,7 @@ struct Animesh
 	{
 		word id;
 		word parent;
-		MATRIX mat;
+		Matrix mat;
 		string name;
 		vector<word> childs;
 
@@ -82,11 +82,11 @@ struct Animesh
 
 	struct KeyframeBone
 	{
-		VEC3 pos;
-		QUAT rot;
+		Vec3 pos;
+		Quat rot;
 		float scale;
 
-		void Mix(MATRIX& out, const MATRIX& mul) const;
+		void Mix(Matrix& out, const Matrix& mul) const;
 		static void Interpolate(KeyframeBone& out, const KeyframeBone& k, const KeyframeBone& k2, float t);
 	};
 
@@ -114,27 +114,27 @@ struct Animesh
 		{
 			OTHER,
 			SPHERE,
-			BOX
+			Box
 		};
 
 		string name;
-		MATRIX mat;
-		VEC3 rot;
+		Matrix mat;
+		Vec3 rot;
 		word bone;
 		Type type;
-		VEC3 size;
+		Vec3 size;
 
 		static const uint MIN_SIZE = 73;
 
 		bool IsSphere() const { return type == SPHERE; }
-		bool IsBox() const { return type == BOX; }
+		bool IsBox() const { return type == Box; }
 	};
 
 	struct Split
 	{
-		VEC3 pos;
+		Vec3 pos;
 		float radius;
-		BOX box;
+		Box box;
 	};
 
 	Animesh();
@@ -178,11 +178,11 @@ struct Animesh
 	vector<Submesh> subs;
 	vector<Bone> bones;
 	vector<Animation> anims;
-	vector<MATRIX> model_to_bone;
+	vector<Matrix> model_to_bone;
 	vector<Point> attach_points;
 	vector<BoneGroup> groups;
 	vector<Split> splits;
-	VEC3 cam_pos, cam_target, cam_up;
+	Vec3 cam_pos, cam_target, cam_up;
 	MeshResource* res;
 };
 
@@ -290,7 +290,7 @@ struct AnimeshInstance
 	// ustawianie blendingu
 	void SetupBlending(int grupa, bool first = true);
 	// ustawianie koœci
-	void SetupBones(MATRIX* mat_scale = nullptr);
+	void SetupBones(Matrix* mat_scale = nullptr);
 	float GetProgress() const
 	{
 		return groups[0].GetProgress();
@@ -306,9 +306,9 @@ struct AnimeshInstance
 		return groups[group].GetProgress();
 	}
 	void ClearBones();
-	void SetToEnd(cstring anim, MATRIX* mat_scale = nullptr);
-	void SetToEnd(Animesh::Animation* anim, MATRIX* mat_scale = nullptr);
-	void SetToEnd(MATRIX* mat_scale = nullptr);
+	void SetToEnd(cstring anim, Matrix* mat_scale = nullptr);
+	void SetToEnd(Animesh::Animation* anim, Matrix* mat_scale = nullptr);
+	void SetToEnd(Matrix* mat_scale = nullptr);
 	void ResetAnimation();
 	void Save(HANDLE file);
 	void Load(HANDLE file);
@@ -344,11 +344,11 @@ struct AnimeshInstance
 
 	Animesh* ani;
 	bool frame_end_info, frame_end_info2, need_update;
-	vector<MATRIX> mat_bones;
+	vector<Matrix> mat_bones;
 	vector<Animesh::KeyframeBone> blendb;
 	vector<Group> groups;
 	void* ptr;
-	static void(*Predraw)(void*, MATRIX*, int);
+	static void(*Predraw)(void*, Matrix*, int);
 };
 
 typedef Animesh Mesh;

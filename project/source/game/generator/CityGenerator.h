@@ -8,7 +8,7 @@
 
 struct BuildPt
 {
-	INT2 pt;
+	Int2 pt;
 	int side; // 0 = obojêtnie, 1 = <==> szerszy, 2 ^ d³u¿szy
 };
 
@@ -27,7 +27,7 @@ enum RoadType
 struct APoint2
 {
 	int koszt, stan, dir;
-	INT2 prev;
+	Int2 prev;
 };
 
 struct APoint2Sorter
@@ -83,7 +83,7 @@ enum EntryDir
 
 struct Road2
 {
-	INT2 start, end;
+	Int2 start, end;
 	int flags;
 
 	int Length() const
@@ -112,13 +112,13 @@ public:
 	void GenerateFields();
 	void ApplyWallTiles(int gates);
 	void GenerateRoads(TERRAIN_TILE road_tile, int tries);
-	int MakeRoad(const INT2& pt, GAME_DIR dir, int road_index, int& collided_road);
-	void FillRoad(const INT2& pt, GAME_DIR dir, int dist);
-	bool MakeAndFillRoad(const INT2& pt, GAME_DIR dir, int road_index);
+	int MakeRoad(const Int2& pt, GAME_DIR dir, int road_index, int& collided_road);
+	void FillRoad(const Int2& pt, GAME_DIR dir, int dist);
+	bool MakeAndFillRoad(const Int2& pt, GAME_DIR dir, int road_index);
 	void CheckTiles(TERRAIN_TILE t);
 	void Test();
 
-	void AddRoad(const INT2& start, const INT2& end, int flags)
+	void AddRoad(const Int2& start, const Int2& end, int flags)
 	{
 		Road2& r = Add1(roads);
 		r.start = start;
@@ -135,8 +135,8 @@ private:
 	void CreateRoadPartTop(TERRAIN_TILE t, vector<EntryPoint>& entry_points);
 	void CreateRoadCenter(TERRAIN_TILE t);
 	void CreateRoad(const Rect& r, TERRAIN_TILE t);
-	void CreateCurveRoad(INT2 points[], uint count, TERRAIN_TILE t);
-	void GeneratePath(const INT2& pt);
+	void CreateCurveRoad(Int2 points[], uint count, TERRAIN_TILE t);
+	void GeneratePath(const Int2& pt);
 	void CreateEntry(vector<EntryPoint>& entry_points, EntryDir dir);
 	bool IsPointNearRoad(int x, int y);
 
@@ -148,7 +148,7 @@ private:
 	vector<APoint2> grid;
 	APoint2Sorter2 sorter;
 	vector<int> to_check;
-	vector<INT2> tmp_pts;
+	vector<Int2> tmp_pts;
 	Perlin perlin;
 	vector<Road2> roads;
 	vector<int> road_ids;

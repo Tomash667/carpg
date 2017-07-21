@@ -117,8 +117,8 @@ struct ConsoleCommand
 	};
 	union
 	{
-		VEC2 _float;
-		INT2 _int;
+		Vec2 _float;
+		Int2 _int;
 		UINT2 _uint;
 	};
 	int flags;

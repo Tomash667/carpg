@@ -6,7 +6,7 @@ struct Item;
 //-----------------------------------------------------------------------------
 struct GroundItem
 {
-	VEC3 pos;
+	Vec3 pos;
 	float rot;
 	const Item* item;
 	uint count, team_count;

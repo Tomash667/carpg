@@ -1,4 +1,4 @@
-// wykrywanie kolizji OBBOX-OBBOX
+// wykrywanie kolizji Obbox-Obbox
 // zaimportowane z bulleta, który to wzi¹³ z ODE
 
 #include "Pch.h"
@@ -73,14 +73,14 @@ static float dDOT14(const float *a, const float *b) { return dDOTpq(a, b, 1, 4);
 
 typedef float dMatrix3[4 * 3];
 
-void dLineClosestApproach(const VEC3& pa, const VEC3& ua,
-	const VEC3& pb, const VEC3& ub,
+void dLineClosestApproach(const Vec3& pa, const Vec3& ua,
+	const Vec3& pb, const Vec3& ub,
 	float *alpha, float *beta);
-void dLineClosestApproach(const VEC3& pa, const VEC3& ua,
-	const VEC3& pb, const VEC3& ub,
+void dLineClosestApproach(const Vec3& pa, const Vec3& ua,
+	const Vec3& pb, const Vec3& ub,
 	float *alpha, float *beta)
 {
-	VEC3 p;
+	Vec3 p;
 	p[0] = pb[0] - pa[0];
 	p[1] = pb[1] - pa[1];
 	p[2] = pb[2] - pa[2];
@@ -248,7 +248,7 @@ struct Result
 	{
 	}
 
-	void addContactPoint(const VEC3& normal, const VEC3& pb, float depth)
+	void addContactPoint(const Vec3& normal, const Vec3& pb, float depth)
 	{
 		if(count >= 4)
 			return;
@@ -262,33 +262,33 @@ struct Result
 		return count > 0;
 	}
 
-	VEC3 GetContact() const
+	Vec3 GetContact() const
 	{
 		assert(HasContact());
-		VEC3 mid = pt[0];
+		Vec3 mid = pt[0];
 		for(int i = 1; i < count; ++i)
 			mid += pt[i];
 		mid /= float(count);
 		return mid;
 	}
 
-	VEC3 pt[4];
+	Vec3 pt[4];
 	int count;
 };
 
-int dBoxBox2(const VEC3& p1, const dMatrix3 R1,
-	const VEC3& side1, const VEC3& p2,
-	const dMatrix3 R2, const VEC3& side2,
-	VEC3& normal, float *depth, int *return_code,
+int dBoxBox2(const Vec3& p1, const dMatrix3 R1,
+	const Vec3& side1, const Vec3& p2,
+	const dMatrix3 R2, const Vec3& side2,
+	Vec3& normal, float *depth, int *return_code,
 	int maxc, dContactGeom * /*contact*/, int /*skip*/, Result& output);
-int dBoxBox2(const VEC3& p1, const dMatrix3 R1,
-	const VEC3& side1, const VEC3& p2,
-	const dMatrix3 R2, const VEC3& side2,
-	VEC3& normal, float *depth, int *return_code,
+int dBoxBox2(const Vec3& p1, const dMatrix3 R1,
+	const Vec3& side1, const Vec3& p2,
+	const dMatrix3 R2, const Vec3& side2,
+	Vec3& normal, float *depth, int *return_code,
 	int maxc, dContactGeom * /*contact*/, int /*skip*/, Result& output)
 {
 	const float fudge_factor = float(1.05);
-	VEC3 p, pp, normalC(0.f, 0.f, 0.f);
+	Vec3 p, pp, normalC(0.f, 0.f, 0.f);
 	const float *normalR = 0;
 	float A[3], B[3], R11, R12, R13, R21, R22, R23, R31, R32, R33,
 		Q11, Q12, Q13, Q21, Q22, Q23, Q31, Q32, Q33, s, s2, l;
@@ -422,7 +422,7 @@ int dBoxBox2(const VEC3& p1, const dMatrix3 R1,
 	if(code > 6) {
 		// an edge from box 1 touches an edge from box 2.
 		// find a point pa on the intersecting edge of box 1
-		VEC3 pa;
+		Vec3 pa;
 		float sign;
 		for(i = 0; i < 3; i++) pa[i] = p1[i];
 		for(j = 0; j < 3; j++) {
@@ -431,7 +431,7 @@ int dBoxBox2(const VEC3& p1, const dMatrix3 R1,
 		}
 
 		// find a point pb on the intersecting edge of box 2
-		VEC3 pb;
+		Vec3 pb;
 		for(i = 0; i < 3; i++) pb[i] = p2[i];
 		for(j = 0; j < 3; j++) {
 			sign = (dDOT14(normal, R2 + j) > 0) ? float(-1.0) : float(1.0);
@@ -439,7 +439,7 @@ int dBoxBox2(const VEC3& p1, const dMatrix3 R1,
 		}
 
 		float alpha, beta;
-		VEC3 ua, ub;
+		Vec3 ua, ub;
 		for(i = 0; i < 3; i++) ua[i] = R1[((code)-7) / 3 + i * 4];
 		for(i = 0; i < 3; i++) ub[i] = R2[((code)-7) % 3 + i * 4];
 
@@ -450,7 +450,7 @@ int dBoxBox2(const VEC3& p1, const dMatrix3 R1,
 		{
 			//contact[0].pos[i] = float(0.5)*(pa[i]+pb[i]);
 			//contact[0].depth = *depth;
-			VEC3 pointInWorld;
+			Vec3 pointInWorld;
 
 #ifdef USE_CENTER_POINT
 			for(i = 0; i < 3; i++)
@@ -490,7 +490,7 @@ int dBoxBox2(const VEC3& p1, const dMatrix3 R1,
 
 	// nr = normal vector of reference face dotted with axes of incident box.
 	// anr = absolute values of nr.
-	VEC3 normal2, nr, anr;
+	Vec3 normal2, nr, anr;
 	if(code <= 3) {
 		normal2[0] = normal[0];
 		normal2[1] = normal[1];
@@ -536,7 +536,7 @@ int dBoxBox2(const VEC3& p1, const dMatrix3 R1,
 	}
 
 	// compute center point of incident face, in reference-face coordinates
-	VEC3 center;
+	Vec3 center;
 	if(nr[lanr] < 0) {
 		for(i = 0; i < 3; i++) center[i] = pb[i] - pa[i] + Sb[lanr] * Rb[i * 4 + lanr];
 	}
@@ -633,7 +633,7 @@ int dBoxBox2(const VEC3& p1, const dMatrix3 R1,
 			// we have less contacts than we need, so we use them all
 			for(j = 0; j < cnum; j++)
 			{
-				VEC3 pointInWorld;
+				Vec3 pointInWorld;
 				for(i = 0; i < 3; i++)
 					pointInWorld[i] = point[j * 3 + i] + pa[i];
 				output.addContactPoint(-normal, pointInWorld, -dep[j]);
@@ -644,7 +644,7 @@ int dBoxBox2(const VEC3& p1, const dMatrix3 R1,
 			// we have less contacts than we need, so we use them all
 			for(j = 0; j < cnum; j++)
 			{
-				VEC3 pointInWorld;
+				Vec3 pointInWorld;
 				for(i = 0; i < 3; i++)
 					pointInWorld[i] = point[j * 3 + i] + pa[i] - normal[i] * dep[j];
 				//pointInWorld[i] = point[j*3+i] + pa[i];
@@ -672,7 +672,7 @@ int dBoxBox2(const VEC3& p1, const dMatrix3 R1,
 			  //    for (i=0; i<3; i++) con->pos[i] = point[iret[j]*3+i] + pa[i];
 				//  con->depth = dep[iret[j]];
 
-			VEC3 posInWorld;
+			Vec3 posInWorld;
 			for(i = 0; i < 3; i++)
 				posInWorld[i] = point[iret[j] * 3 + i] + pa[i];
 			if(code < 4)
@@ -691,7 +691,7 @@ int dBoxBox2(const VEC3& p1, const dMatrix3 R1,
 	return cnum;
 }
 
-bool OrientedBoxToOrientedBox(const OBBOX& obox1, const OBBOX& obox2, VEC3* _contact)
+bool OrientedBoxToOrientedBox(const Obbox& obox1, const Obbox& obox2, Vec3* _contact)
 {
 	int skip = 0;
 	dContactGeom *contact = 0;
@@ -711,7 +711,7 @@ bool OrientedBoxToOrientedBox(const OBBOX& obox1, const OBBOX& obox2, VEC3* _con
 		R2[2 + 4 * j] = obox2.rot(j, 2);
 	}
 
-	VEC3 normal;
+	Vec3 normal;
 	float depth;
 	int return_code;
 	int maxc = 4;

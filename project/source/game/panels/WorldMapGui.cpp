@@ -88,8 +88,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 
 	// mapa
-	MATRIX mat;
-	mat = MATRIX::Transform2D(&VEC2(0, 0), 0.f, &VEC2(600.f / 512.f, 600.f / 512.f), nullptr, 0.f, nullptr);
+	Matrix mat;
+	mat = Matrix::Transform2D(&Vec2(0, 0), 0.f, &Vec2(600.f / 512.f, 600.f / 512.f), nullptr, 0.f, nullptr);
 	GUI.DrawSpriteTransform(tWorldMap, mat);
 
 	// obrazki lokacji
@@ -100,7 +100,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		Location& loc = **it;
 		if(loc.state == LS_UNKNOWN || loc.state == LS_HIDDEN)
 			continue;
-		GUI.DrawSprite(tMapIcon[loc.image], WorldPosToScreen(INT2(loc.pos.x - 16.f, loc.pos.y + 16.f)), loc.state == LS_KNOWN ? 0x70707070 : WHITE);
+		GUI.DrawSprite(tMapIcon[loc.image], WorldPosToScreen(Int2(loc.pos.x - 16.f, loc.pos.y + 16.f)), loc.state == LS_KNOWN ? 0x70707070 : WHITE);
 	}
 
 	// lokacje spotkañ
@@ -109,7 +109,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		for(vector<Encounter*>::iterator it = game.encs.begin(), end = game.encs.end(); it != end; ++it)
 		{
 			if(*it)
-				GUI.DrawSprite(tEnc, WorldPosToScreen(INT2((*it)->pos.x - 16.f, (*it)->pos.y + 16.f)));
+				GUI.DrawSprite(tEnc, WorldPosToScreen(Int2((*it)->pos.x - 16.f, (*it)->pos.y + 16.f)));
 		}
 	}
 
@@ -119,7 +119,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	if(game.current_location != -1)
 	{
 		Location& current = *game.locations[game.current_location];
-		GUI.DrawSprite(tSelected[1], WorldPosToScreen(INT2(current.pos.x - 32.f, current.pos.y + 32.f)), 0xAAFFFFFF);
+		GUI.DrawSprite(tSelected[1], WorldPosToScreen(Int2(current.pos.x - 32.f, current.pos.y + 32.f)), 0xAAFFFFFF);
 		s += Format("\n\n%s: %s", txCurrentLoc, current.name.c_str());
 		if(game.devmode && game.IsLocal())
 		{
@@ -143,7 +143,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 
 		if(game.picked_location != game.current_location)
 		{
-			float odl = VEC2::Distance(game.world_pos, picked.pos) / 600.f * 200;
+			float odl = Vec2::Distance(game.world_pos, picked.pos) / 600.f * 200;
 			int koszt = int(ceil(odl / TRAVEL_SPEED));
 			s += Format("\n\n%s: %s", txTarget, picked.name.c_str());
 			if(game.devmode && game.IsLocal())
@@ -161,12 +161,12 @@ void WorldMapGui::Draw(ControlDrawData*)
 			if(picked.state >= LS_VISITED && picked.type == L_CITY)
 				GetCityText((City&)picked, s.get_ref());
 		}
-		GUI.DrawSprite(tSelected[0], WorldPosToScreen(INT2(picked.pos.x - 32.f, picked.pos.y + 32.f)), 0xAAFFFFFF);
+		GUI.DrawSprite(tSelected[0], WorldPosToScreen(Int2(picked.pos.x - 32.f, picked.pos.y + 32.f)), 0xAAFFFFFF);
 	}
 
 	// aktualna pozycja dru¿yny w czasie podró¿y
 	if(game.world_state == WS_TRAVEL || game.world_state == WS_ENCOUNTER)
-		GUI.DrawSprite(tMover, WorldPosToScreen(INT2(game.world_pos.x - 8, game.world_pos.y + 8)), 0xBBFFFFFF);
+		GUI.DrawSprite(tMover, WorldPosToScreen(Int2(game.world_pos.x - 8, game.world_pos.y + 8)), 0xBBFFFFFF);
 
 	// szansa na spotkanie
 	if(game.devmode)
@@ -180,7 +180,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	if(game.picked_location != -1 && game.picked_location != game.current_location)
 	{
 		Location& picked = *game.locations[game.picked_location];
-		VEC2 pts[2] = { WorldPosToScreen(game.world_pos), WorldPosToScreen(picked.pos) };
+		Vec2 pts[2] = { WorldPosToScreen(game.world_pos), WorldPosToScreen(picked.pos) };
 
 		GUI.LineBegin();
 		GUI.DrawLine(pts, 1, 0xAA000000);
@@ -251,8 +251,8 @@ void WorldMapGui::Update(float dt)
 
 		// ruch po mapie
 		game.travel_time += dt;
-		const VEC2& end_pt = game.locations[game.picked_location]->pos;
-		float dist = VEC2::Distance(game.travel_start, end_pt);
+		const Vec2& end_pt = game.locations[game.picked_location]->pos;
+		float dist = Vec2::Distance(game.travel_start, end_pt);
 		if(game.travel_time > game.travel_day)
 		{
 			// min¹³ kolejny dzieñ w podró¿y
@@ -275,7 +275,7 @@ void WorldMapGui::Update(float dt)
 		else
 		{
 			// ruch
-			VEC2 dir = end_pt - game.travel_start;
+			Vec2 dir = end_pt - game.travel_start;
 			game.world_pos = game.travel_start + dir * (game.travel_time / dist * TRAVEL_SPEED * 3);
 
 			game.travel_time2 += dt;
@@ -293,7 +293,7 @@ void WorldMapGui::Update(float dt)
 						continue;
 					}
 					Location& loc = *ploc;
-					if(VEC2::Distance(game.world_pos, loc.pos) <= 32.f)
+					if(Vec2::Distance(game.world_pos, loc.pos) <= 32.f)
 					{
 						if(loc.state != LS_CLEARED)
 						{
@@ -332,7 +332,7 @@ void WorldMapGui::Update(float dt)
 					if(!*it)
 						continue;
 					Encounter& enc0 = **it;
-					if(VEC2::Distance(enc0.pos, game.world_pos) < enc0.zasieg)
+					if(Vec2::Distance(enc0.pos, game.world_pos) < enc0.zasieg)
 					{
 						if(!enc0.check_func || enc0.check_func())
 						{
@@ -529,7 +529,7 @@ void WorldMapGui::Update(float dt)
 	else if(game.world_state != WS_ENCOUNTER && !journal->visible)
 	{
 	update_worldmap:
-		VEC2 cursor_pos(float(GUI.cursor_pos.x), float(GUI.cursor_pos.y));
+		Vec2 cursor_pos(float(GUI.cursor_pos.x), float(GUI.cursor_pos.y));
 		Location* loc = nullptr;
 		float dist = 17.f, dist2;
 		int i = 0, index;
@@ -540,8 +540,8 @@ void WorldMapGui::Update(float dt)
 			{
 				if(!*it || (*it)->state == LS_UNKNOWN || (*it)->state == LS_HIDDEN)
 					continue;
-				VEC2 pt = WorldPosToScreen((*it)->pos);
-				dist2 = VEC2::Distance(pt, cursor_pos);
+				Vec2 pt = WorldPosToScreen((*it)->pos);
+				dist2 = Vec2::Distance(pt, cursor_pos);
 				if(dist2 < dist)
 				{
 					loc = *it;

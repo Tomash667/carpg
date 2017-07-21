@@ -20,7 +20,7 @@ namespace gui
 			AreaLayout header;
 			Font* font;
 			DWORD font_color;
-			INT2 padding;
+			Int2 padding;
 			int header_height;
 		} window;
 
@@ -31,8 +31,8 @@ namespace gui
 			AreaLayout button_hover;
 			AreaLayout button_down;
 			Font* font;
-			INT2 padding;
-			INT2 item_padding;
+			Int2 padding;
+			Int2 item_padding;
 			DWORD font_color;
 			DWORD font_color_hover;
 			DWORD font_color_down;
@@ -43,8 +43,8 @@ namespace gui
 			AreaLayout background;
 			AreaLayout button_hover;
 			Font* font;
-			INT2 padding;
-			INT2 item_padding;
+			Int2 padding;
+			Int2 item_padding;
 			DWORD font_color;
 			DWORD font_color_hover;
 			DWORD font_color_disabled;
@@ -64,8 +64,8 @@ namespace gui
 			AreaLayout button_next;
 			AreaLayout button_next_hover;
 			Font* font;
-			INT2 padding;
-			INT2 padding_active;
+			Int2 padding;
+			Int2 padding_active;
 			DWORD font_color;
 			DWORD font_color_hover;
 			DWORD font_color_down;
@@ -91,7 +91,7 @@ namespace gui
 			AreaLayout background;
 			AreaLayout horizontal;
 			AreaLayout vertical;
-			INT2 padding;
+			Int2 padding;
 		} split_panel;
 
 		LabelLayout* label;

@@ -112,7 +112,7 @@ check_updates(check_updates), skip_version(skip_version), game(game), event(even
 		"quit"
 	};
 
-	INT2 maxsize(0, 0);
+	Int2 maxsize(0, 0);
 
 	// stwórz przyciski
 	for(int i = 0; i < BUTTONS; ++i)
@@ -121,9 +121,9 @@ check_updates(check_updates), skip_version(skip_version), game(game), event(even
 		b.id = IdNewGame + i;
 		b.parent = this;
 		b.text = Str(names[i]);
-		b.size = GUI.default_font->CalculateSize(b.text) + INT2(24, 24);
+		b.size = GUI.default_font->CalculateSize(b.text) + Int2(24, 24);
 
-		maxsize = INT2::Max(maxsize, b.size);
+		maxsize = Int2::Max(maxsize, b.size);
 	}
 
 	// ustaw rozmiar
@@ -146,7 +146,7 @@ void MainMenu::LoadData()
 void MainMenu::Draw(ControlDrawData* /*cdd*/)
 {
 	GUI.DrawSpriteFull(tBackground, WHITE);
-	GUI.DrawSprite(tLogo, INT2(GUI.wnd_size.x - 512 - 16, 16));
+	GUI.DrawSprite(tLogo, Int2(GUI.wnd_size.x - 512 - 16, 16));
 
 	Rect r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 	r.Top() = r.Bottom() - 64;
@@ -294,7 +294,7 @@ void MainMenu::PlaceButtons()
 	{
 		if(!bt[i].visible)
 			continue;
-		bt[i].pos = bt[i].global_pos = INT2(16 + GUI.wnd_size.x - 200 + int(sin(kat)*(GUI.wnd_size.x - 200)), 100 + int(cos(kat)*GUI.wnd_size.y));
+		bt[i].pos = bt[i].global_pos = Int2(16 + GUI.wnd_size.x - 200 + int(sin(kat)*(GUI.wnd_size.x - 200)), 100 + int(cos(kat)*GUI.wnd_size.y));
 		kat += PI / 4 / count;
 	}
 	prev_devmode = game->devmode;

@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 struct Particle
 {
-	VEC3 pos, speed;
+	Vec3 pos, speed;
 	float life, gravity;
 	bool exists;
 };
@@ -21,7 +21,7 @@ struct ParticleEmitter
 	TextureResourcePtr tex;
 	float emision_interval, life, particle_life, alpha, size;
 	int emisions, spawn_min, spawn_max, max_particles, mode;
-	VEC3 pos, speed_min, speed_max, pos_min, pos_max;
+	Vec3 pos, speed_min, speed_max, pos_min, pos_max;
 	PARTICLE_OP op_size, op_alpha;
 
 	// nowe wartoœci, dla kompatybilnoœci zerowane w Init
@@ -73,7 +73,7 @@ struct ParticleEmitter
 //-----------------------------------------------------------------------------
 struct TrailParticle
 {
-	VEC3 pt1, pt2;
+	Vec3 pt1, pt2;
 	float t;
 	int next;
 	bool exists;
@@ -83,10 +83,10 @@ struct TrailParticle
 struct TrailParticleEmitter
 {
 	void Init(int maxp);
-	bool Update(float dt, VEC3* pt1, VEC3* pt2);
+	bool Update(float dt, Vec3* pt1, Vec3* pt2);
 
 	float fade, timer;
-	VEC4 color1, color2;
+	Vec4 color1, color2;
 
 	//private:
 	vector<TrailParticle> parts;

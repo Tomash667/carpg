@@ -61,7 +61,7 @@ void Label::SetFont(Font* font)
 	CalculateSize();
 }
 
-void Label::SetPadding(const INT2& padding)
+void Label::SetPadding(const Int2& padding)
 {
 	if(padding == GetPadding())
 		return;
@@ -75,7 +75,7 @@ void Label::SetText(const AnyString& s)
 	CalculateSize();
 }
 
-void Label::SetSize(const INT2& _size)
+void Label::SetSize(const Int2& _size)
 {
 	assert(!auto_size);
 	size = _size;

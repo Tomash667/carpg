@@ -10,38 +10,38 @@ RNG _RNG;
 
 const Rect Rect::Zero = { 0,0,0,0 };
 
-const VEC2 VEC2::Zero = { 0.f, 0.f };
-const VEC2 VEC2::One = { 1.f, 1.f };
-const VEC2 VEC2::UnitX = { 1.f, 0.f };
-const VEC2 VEC2::UnitY = { 0.f, 1.f };
+const Vec2 Vec2::Zero = { 0.f, 0.f };
+const Vec2 Vec2::One = { 1.f, 1.f };
+const Vec2 Vec2::UnitX = { 1.f, 0.f };
+const Vec2 Vec2::UnitY = { 0.f, 1.f };
 
-const VEC3 VEC3::Zero = { 0.f, 0.f, 0.f };
-const VEC3 VEC3::One = { 1.f, 1.f, 1.f };
-const VEC3 VEC3::UnitX = { 1.f, 0.f, 0.f };
-const VEC3 VEC3::UnitY = { 0.f, 1.f, 0.f };
-const VEC3 VEC3::UnitZ = { 0.f, 0.f, 1.f };
-const VEC3 VEC3::Up = { 0.f, 1.f, 0.f };
-const VEC3 VEC3::Down = { 0.f, -1.f, 0.f };
-const VEC3 VEC3::Right = { 1.f, 0.f, 0.f };
-const VEC3 VEC3::Left = { -1.f, 0.f, 0.f };
-const VEC3 VEC3::Forward = { 0.f, 0.f, -1.f };
-const VEC3 VEC3::Backward = { 0.f, 0.f, 1.f };
+const Vec3 Vec3::Zero = { 0.f, 0.f, 0.f };
+const Vec3 Vec3::One = { 1.f, 1.f, 1.f };
+const Vec3 Vec3::UnitX = { 1.f, 0.f, 0.f };
+const Vec3 Vec3::UnitY = { 0.f, 1.f, 0.f };
+const Vec3 Vec3::UnitZ = { 0.f, 0.f, 1.f };
+const Vec3 Vec3::Up = { 0.f, 1.f, 0.f };
+const Vec3 Vec3::Down = { 0.f, -1.f, 0.f };
+const Vec3 Vec3::Right = { 1.f, 0.f, 0.f };
+const Vec3 Vec3::Left = { -1.f, 0.f, 0.f };
+const Vec3 Vec3::Forward = { 0.f, 0.f, -1.f };
+const Vec3 Vec3::Backward = { 0.f, 0.f, 1.f };
 
-const VEC4 VEC4::Zero = { 0.f, 0.f, 0.f, 0.f };
-const VEC4 VEC4::One = { 1.f, 1.f, 1.f, 1.f };
-const VEC4 VEC4::UnitX = { 1.f, 0.f, 0.f, 0.f };
-const VEC4 VEC4::UnitY = { 0.f, 1.f, 0.f, 0.f };
-const VEC4 VEC4::UnitZ = { 0.f, 0.f, 1.f, 0.f };
-const VEC4 VEC4::UnitW = { 0.f, 0.f, 0.f, 1.f };
+const Vec4 Vec4::Zero = { 0.f, 0.f, 0.f, 0.f };
+const Vec4 Vec4::One = { 1.f, 1.f, 1.f, 1.f };
+const Vec4 Vec4::UnitX = { 1.f, 0.f, 0.f, 0.f };
+const Vec4 Vec4::UnitY = { 0.f, 1.f, 0.f, 0.f };
+const Vec4 Vec4::UnitZ = { 0.f, 0.f, 1.f, 0.f };
+const Vec4 Vec4::UnitW = { 0.f, 0.f, 0.f, 1.f };
 
-const MATRIX MATRIX::IdentityMatrix = {
+const Matrix Matrix::IdentityMatrix = {
 	1.f, 0.f, 0.f, 0.f,
 	0.f, 1.f, 0.f, 0.f,
 	0.f, 0.f, 1.f, 0.f,
 	0.f, 0.f, 0.f, 1.f
 };
 
-const QUAT QUAT::Identity = { 0.f, 0.f, 0.f, 1.f };
+const Quat Quat::Identity = { 0.f, 0.f, 0.f, 1.f };
 
 //=================================================================================================
 // Zwraca k¹t pomiêdzy dwoma punktami
@@ -86,7 +86,7 @@ float Angle(float x1, float y1, float x2, float y2)
 // Jeœli RayOrig jest wewn¹trz prostopad³oœcianu, funkcja zwraca true i OutT = 0.
 // funkcja z TFQE
 //=================================================================================================
-bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box, float *OutT)
+bool RayToBox(const Vec3 &RayOrig, const Vec3 &RayDir, const Box &Box, float *OutT)
 {
 	// removed xn, yn, zn
 	bool inside = true;
@@ -260,7 +260,7 @@ bool CircleToRectangle(float circlex, float circley, float radius, float rectx, 
 	return (dx*dx + dy*dy) <= (radius*radius);
 }
 
-bool PLANE::Intersect3Planes(const PLANE& P1, const PLANE& P2, const PLANE& P3, VEC3& OutP)
+bool Plane::Intersect3Planes(const Plane& P1, const Plane& P2, const Plane& P3, Vec3& OutP)
 {
 	float fDet;
 	float MN[9] = { P1.x, P1.y, P1.z, P2.x, P2.y, P2.z, P3.x, P3.y, P3.z };
@@ -302,7 +302,7 @@ bool PLANE::Intersect3Planes(const PLANE& P1, const PLANE& P2, const PLANE& P3, 
 	return true;
 }
 
-void FrustumPlanes::Set(const MATRIX& worldViewProj)
+void FrustumPlanes::Set(const Matrix& worldViewProj)
 {
 	// Left clipping plane
 	planes[0].x = worldViewProj._14 + worldViewProj._11;
@@ -347,38 +347,38 @@ void FrustumPlanes::Set(const MATRIX& worldViewProj)
 	planes[5].Normalize();
 }
 
-void FrustumPlanes::GetPoints(VEC3* points) const
+void FrustumPlanes::GetPoints(Vec3* points) const
 {
 	assert(points);
 
-	PLANE::Intersect3Planes(planes[4], planes[0], planes[3], points[0]);
-	PLANE::Intersect3Planes(planes[4], planes[1], planes[3], points[1]);
-	PLANE::Intersect3Planes(planes[4], planes[0], planes[2], points[2]);
-	PLANE::Intersect3Planes(planes[4], planes[1], planes[2], points[3]);
-	PLANE::Intersect3Planes(planes[5], planes[0], planes[3], points[4]);
-	PLANE::Intersect3Planes(planes[5], planes[1], planes[3], points[5]);
-	PLANE::Intersect3Planes(planes[5], planes[0], planes[2], points[6]);
-	PLANE::Intersect3Planes(planes[5], planes[1], planes[2], points[7]);
+	Plane::Intersect3Planes(planes[4], planes[0], planes[3], points[0]);
+	Plane::Intersect3Planes(planes[4], planes[1], planes[3], points[1]);
+	Plane::Intersect3Planes(planes[4], planes[0], planes[2], points[2]);
+	Plane::Intersect3Planes(planes[4], planes[1], planes[2], points[3]);
+	Plane::Intersect3Planes(planes[5], planes[0], planes[3], points[4]);
+	Plane::Intersect3Planes(planes[5], planes[1], planes[3], points[5]);
+	Plane::Intersect3Planes(planes[5], planes[0], planes[2], points[6]);
+	Plane::Intersect3Planes(planes[5], planes[1], planes[2], points[7]);
 }
 
-void FrustumPlanes::GetPoints(const MATRIX& worldViewProj, VEC3* points)
+void FrustumPlanes::GetPoints(const Matrix& worldViewProj, Vec3* points)
 {
 	assert(points);
 
-	MATRIX worldViewProjInv;
+	Matrix worldViewProjInv;
 	worldViewProj.Inverse(worldViewProjInv);
 
-	VEC3 P[] = {
-		VEC3(-1.f, -1.f, 0.f), VEC3(+1.f, -1.f, 0.f),
-		VEC3(-1.f, +1.f, 0.f), VEC3(+1.f, +1.f, 0.f),
-		VEC3(-1.f, -1.f, 1.f), VEC3(+1.f, -1.f, 1.f),
-		VEC3(-1.f, +1.f, 1.f), VEC3(+1.f, +1.f, 1.f) };
+	Vec3 P[] = {
+		Vec3(-1.f, -1.f, 0.f), Vec3(+1.f, -1.f, 0.f),
+		Vec3(-1.f, +1.f, 0.f), Vec3(+1.f, +1.f, 0.f),
+		Vec3(-1.f, -1.f, 1.f), Vec3(+1.f, -1.f, 1.f),
+		Vec3(-1.f, +1.f, 1.f), Vec3(+1.f, +1.f, 1.f) };
 
 	for(int i = 0; i < 8; ++i)
-		points[i] = VEC3::Transform(P[i], worldViewProjInv);
+		points[i] = Vec3::Transform(P[i], worldViewProjInv);
 }
 
-bool FrustumPlanes::PointInFrustum(const VEC3 &p) const
+bool FrustumPlanes::PointInFrustum(const Vec3 &p) const
 {
 	for(int i = 0; i < 6; ++i)
 	{
@@ -389,9 +389,9 @@ bool FrustumPlanes::PointInFrustum(const VEC3 &p) const
 	return true;
 }
 
-bool FrustumPlanes::BoxToFrustum(const BOX& box) const
+bool FrustumPlanes::BoxToFrustum(const Box& box) const
 {
-	VEC3 vmin;
+	Vec3 vmin;
 
 	for(int i = 0; i < 6; i++)
 	{
@@ -417,9 +417,9 @@ bool FrustumPlanes::BoxToFrustum(const BOX& box) const
 	return true;
 }
 
-bool FrustumPlanes::BoxToFrustum(const BOX2D& box) const
+bool FrustumPlanes::BoxToFrustum(const Box2d& box) const
 {
-	VEC3 vmin;
+	Vec3 vmin;
 
 	for(int i = 0; i < 6; i++)
 	{
@@ -445,21 +445,21 @@ bool FrustumPlanes::BoxToFrustum(const BOX2D& box) const
 	return true;
 }
 
-bool FrustumPlanes::BoxInFrustum(const BOX& box) const
+bool FrustumPlanes::BoxInFrustum(const Box& box) const
 {
 	if(!PointInFrustum(box.v1)) return false;
 	if(!PointInFrustum(box.v2)) return false;
-	if(!PointInFrustum(VEC3(box.v2.x, box.v1.y, box.v1.z))) return false;
-	if(!PointInFrustum(VEC3(box.v1.x, box.v2.y, box.v1.z))) return false;
-	if(!PointInFrustum(VEC3(box.v2.x, box.v2.y, box.v1.z))) return false;
-	if(!PointInFrustum(VEC3(box.v1.x, box.v1.y, box.v2.z))) return false;
-	if(!PointInFrustum(VEC3(box.v2.x, box.v1.y, box.v2.z))) return false;
-	if(!PointInFrustum(VEC3(box.v1.x, box.v2.y, box.v2.z))) return false;
+	if(!PointInFrustum(Vec3(box.v2.x, box.v1.y, box.v1.z))) return false;
+	if(!PointInFrustum(Vec3(box.v1.x, box.v2.y, box.v1.z))) return false;
+	if(!PointInFrustum(Vec3(box.v2.x, box.v2.y, box.v1.z))) return false;
+	if(!PointInFrustum(Vec3(box.v1.x, box.v1.y, box.v2.z))) return false;
+	if(!PointInFrustum(Vec3(box.v2.x, box.v1.y, box.v2.z))) return false;
+	if(!PointInFrustum(Vec3(box.v1.x, box.v2.y, box.v2.z))) return false;
 
 	return true;
 }
 
-bool FrustumPlanes::SphereToFrustum(const VEC3& sphere_center, float sphere_radius) const
+bool FrustumPlanes::SphereToFrustum(const Vec3& sphere_center, float sphere_radius) const
 {
 	sphere_radius = -sphere_radius;
 
@@ -472,7 +472,7 @@ bool FrustumPlanes::SphereToFrustum(const VEC3& sphere_center, float sphere_radi
 	return true;
 }
 
-bool FrustumPlanes::SphereInFrustum(const VEC3& sphere_center, float sphere_radius) const
+bool FrustumPlanes::SphereInFrustum(const Vec3& sphere_center, float sphere_radius) const
 {
 	for(int i = 0; i < 6; ++i)
 	{
@@ -484,7 +484,7 @@ bool FrustumPlanes::SphereInFrustum(const VEC3& sphere_center, float sphere_radi
 }
 
 // funkcja z TFQE
-bool RayToPlane(const VEC3 &RayOrig, const VEC3 &RayDir, const D3DXPLANE &Plane, float *OutT)
+bool RayToPlane(const Vec3 &RayOrig, const Vec3 &RayDir, const D3DXPLANE &Plane, float *OutT)
 {
 	// Napisane na podstawie:
 	// http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm
@@ -506,14 +506,14 @@ bool RayToPlane(const VEC3 &RayOrig, const VEC3 &RayDir, const D3DXPLANE &Plane,
 }
 
 // funkcja z TFQE
-bool RayToSphere(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _center, float _radius, float& _dist)
+bool RayToSphere(const Vec3& _ray_pos, const Vec3& _ray_dir, const Vec3& _center, float _radius, float& _dist)
 {
 	// Równanie kwadratowe.
 	// Napisane samodzielnie z ma³¹ pomoc¹:
 	// http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter1.htm
 	// link znaleziony na:
 	// http://www.realtimerendering.com/int/
-	VEC3 RayOrig_minus_SphereCenter = _ray_pos - _center;
+	Vec3 RayOrig_minus_SphereCenter = _ray_pos - _center;
 	float a = _ray_dir.Dot(_ray_dir); // ?
 	float b = 2.f * _ray_dir.Dot(RayOrig_minus_SphereCenter);
 	float c = RayOrig_minus_SphereCenter.Dot(RayOrig_minus_SphereCenter) - (_radius * _radius);
@@ -546,13 +546,13 @@ bool RayToSphere(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _center
 // funkcja z TFQE
 // kod do backface cullingu zakomentowany, lepiej daæ to jako osonn¹ funkcjê
 // zwraca ujemn¹ wartoœæ jeœli przecina promieñ od ty³u
-bool RayToTriangle(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _v1, const VEC3& _v2, const VEC3& _v3, float& _dist)
+bool RayToTriangle(const Vec3& _ray_pos, const Vec3& _ray_dir, const Vec3& _v1, const Vec3& _v2, const Vec3& _v3, float& _dist)
 {
-	VEC3 tvec, pvec, qvec;
+	Vec3 tvec, pvec, qvec;
 
 	// find vectors for two edges sharing vert0
-	VEC3 edge1 = _v2 - _v1;
-	VEC3 edge2 = _v3 - _v1;
+	Vec3 edge1 = _v2 - _v1;
+	Vec3 edge2 = _v3 - _v1;
 
 	// begin calculating determinant - also used to calculate U parameter
 	pvec = _ray_dir.Cross(edge2);
@@ -586,7 +586,7 @@ bool RayToTriangle(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _v1, 
 	return true;
 }
 
-bool LineToLine(const VEC2& start1, const VEC2& end1, const VEC2& start2, const VEC2& end2, float* t)
+bool LineToLine(const Vec2& start1, const Vec2& end1, const Vec2& start2, const Vec2& end2, float* t)
 {
 	float ua_t = (end2.x - start2.x)*(start1.y - start2.y) - (end2.y - start2.y)*(start1.x - start2.x);
 	float ub_t = (end1.x - start1.x)*(start1.y - start2.y) - (end1.y - start1.y)*(start1.x - start2.x);
@@ -626,11 +626,11 @@ bool LineToLine(const VEC2& start1, const VEC2& end1, const VEC2& start2, const 
 	}
 }
 
-bool LineToRectangle(const VEC2& start, const VEC2& end, const VEC2& rect_pos, const VEC2& rect_pos2, float* _t)
+bool LineToRectangle(const Vec2& start, const Vec2& end, const Vec2& rect_pos, const Vec2& rect_pos2, float* _t)
 {
 	assert(rect_pos.x <= rect_pos2.x && rect_pos.y <= rect_pos2.y);
 
-	const VEC2 topRight(rect_pos2.x, rect_pos.y),
+	const Vec2 topRight(rect_pos2.x, rect_pos.y),
 		bottomLeft(rect_pos.x, rect_pos2.y);
 
 	if(_t)
@@ -657,15 +657,15 @@ bool LineToRectangle(const VEC2& start, const VEC2& end, const VEC2& rect_pos, c
 	}
 }
 
-void CreateAABBOX(BOX& _out, const MATRIX& _mat)
+void CreateAABBOX(Box& _out, const Matrix& _mat)
 {
-	VEC3 v1 = VEC3::Transform(VEC3(-2, -2, -2), _mat),
-		v2 = VEC3::Transform(VEC3(2, 2, 2), _mat);
+	Vec3 v1 = Vec3::Transform(Vec3(-2, -2, -2), _mat),
+		v2 = Vec3::Transform(Vec3(2, 2, 2), _mat);
 	_out.v1 = v1;
 	_out.v2 = v2;
 }
 
-bool BoxToBox(const BOX& box1, const BOX& box2)
+bool BoxToBox(const Box& box1, const Box& box2)
 {
 	return
 		(box1.v1.x <= box2.v2.x) && (box1.v2.x >= box2.v1.x) &&
@@ -679,18 +679,18 @@ bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, floa
 }
 
 // podpierdolone z CommonLib Regedita
-void ClosestPointInBox(VEC3 *Out, const BOX &Box, const VEC3 &p)
+void ClosestPointInBox(Vec3 *Out, const Box &Box, const Vec3 &p)
 {
 	Out->x = Clamp(p.x, Box.v1.x, Box.v2.x);
 	Out->y = Clamp(p.y, Box.v1.y, Box.v2.y);
 	Out->z = Clamp(p.z, Box.v1.z, Box.v2.z);
 }
 
-bool SphereToBox(const VEC3 &SphereCenter, float SphereRadius, const BOX &Box)
+bool SphereToBox(const Vec3 &SphereCenter, float SphereRadius, const Box &Box)
 {
-	VEC3 PointInBox;
+	Vec3 PointInBox;
 	ClosestPointInBox(&PointInBox, Box, SphereCenter);
-	return VEC3::DistanceSquared(SphereCenter, PointInBox) < SphereRadius*SphereRadius;
+	return Vec3::DistanceSquared(SphereCenter, PointInBox) < SphereRadius*SphereRadius;
 }
 
 // http://www.migapro.com/circle-and-rotated-rectangle-collision-detection/
@@ -737,7 +737,7 @@ bool CircleToRotatedRectangle(float cx, float cy, float radius, float rx, float 
 	return CircleToRectangle(x, y, radius, rx, ry, w, h);
 }
 
-inline void RotateVector2DClockwise(VEC2& v, float ang)
+inline void RotateVector2DClockwise(Vec2& v, float ang)
 {
 	float t,
 		cosa = cos(ang),
@@ -751,7 +751,7 @@ inline void RotateVector2DClockwise(VEC2& v, float ang)
 // http://ragestorm.net/samples/CDRR.C
 bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2)
 {
-	VEC2 A, B,   // vertices of the rotated rr2
+	Vec2 A, B,   // vertices of the rotated rr2
 		C,      // center of rr2
 		BL, TR; // vertices of rr2 (bottom-left, top-right)
 
@@ -834,9 +834,9 @@ bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2)
 // z Real Time Collision Detection str 197
 //----------------------------------------------
 // Intersect segment S(t)=sa+t(sb-sa), 0<=t<=1 against cylinder specifiedby p, q and r
-int RayToCylinder(const VEC3& sa, const VEC3& sb, const VEC3& p, const VEC3& q, float r, float& t)
+int RayToCylinder(const Vec3& sa, const Vec3& sb, const Vec3& p, const Vec3& q, float r, float& t)
 {
-	VEC3 d = q - p, m = sa - p, n = sb - sa;
+	Vec3 d = q - p, m = sa - p, n = sb - sa;
 	float md = m.Dot(d);
 	float nd = n.Dot(d);
 	float dd = d.Dot(d);
@@ -887,16 +887,16 @@ int RayToCylinder(const VEC3& sa, const VEC3& sb, const VEC3& p, const VEC3& q, 
 
 struct MATRIX33
 {
-	VEC3 v[3];
+	Vec3 v[3];
 
-	VEC3& operator [] (int n)
+	Vec3& operator [] (int n)
 	{
 		return v[n];
 	}
 };
 
-// kolizja OOB z OOB
-bool OOBToOOB(const OOB& a, const OOB& b)
+// kolizja Oob z Oob
+bool OOBToOOB(const Oob& a, const Oob& b)
 {
 	const float EPSILON = std::numeric_limits<float>::epsilon();
 
@@ -907,9 +907,9 @@ bool OOBToOOB(const OOB& a, const OOB& b)
 		for(int j = 0; j < 3; j++)
 			R[i][j] = a.u[i].Dot(b.u[j]);
 	// Compute translation vector t
-	VEC3 t = b.c - a.c;
+	Vec3 t = b.c - a.c;
 	// Bring translation into a’s coordinate frame
-	t = VEC3(t.Dot(a.u[0]), t.Dot(a.u[2]), t.Dot(a.u[2]));
+	t = Vec3(t.Dot(a.u[0]), t.Dot(a.u[2]), t.Dot(a.u[2]));
 	// Compute common subexpressions. Add in an epsilon term to
 	// counteract arithmetic errors when two edges are parallel and
 	// their cross product is (near) null (see text for details)
@@ -968,7 +968,7 @@ bool OOBToOOB(const OOB& a, const OOB& b)
 	return true;
 }
 
-float DistanceRectangleToPoint(const VEC2& pos, const VEC2& size, const VEC2& pt)
+float DistanceRectangleToPoint(const Vec2& pos, const Vec2& size, const Vec2& pt)
 {
 	float dx = max(abs(pt.x - pos.x) - size.x / 2, 0.f);
 	float dy = max(abs(pt.y - pos.y) - size.y / 2, 0.f);
@@ -982,10 +982,10 @@ float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float 
 	return abs(y*x0 - x*y0 + x2*y1 - y2*x1) / sqrt(y*y + x*x);
 }
 
-float GetClosestPointOnLineSegment(const VEC2& A, const VEC2& B, const VEC2& P, VEC2& result)
+float GetClosestPointOnLineSegment(const Vec2& A, const Vec2& B, const Vec2& P, Vec2& result)
 {
-	VEC2 AP = P - A;       //Vector from A to P
-	VEC2 AB = B - A;       //Vector from A to B
+	Vec2 AP = P - A;       //Vector from A to P
+	Vec2 AB = B - A;       //Vector from A to B
 
 	float magnitudeAB = AB.LengthSquared(); //Magnitude of AB vector (it's length squared)
 	float ABAPproduct = AP.Dot(AB); //The DOT product of a_to_p and a_to_b
@@ -1001,110 +1001,110 @@ float GetClosestPointOnLineSegment(const VEC2& A, const VEC2& B, const VEC2& P, 
 	return PointLineDistance(P.x, P.y, A.x, A.y, B.x, B.y);
 }
 
-const VEC2 POISSON_DISC_2D[] = {
-	VEC2(-0.6271834f, -0.3647562f),
-	VEC2(-0.6959124f, -0.1932297f),
-	VEC2(-0.425675f, -0.4331925f),
-	VEC2(-0.8259574f, -0.3775373f),
-	VEC2(-0.4134415f, -0.2794108f),
-	VEC2(-0.6711653f, -0.5842927f),
-	VEC2(-0.505241f, -0.5710775f),
-	VEC2(-0.5399489f, -0.1941965f),
-	VEC2(-0.2056243f, -0.3328375f),
-	VEC2(-0.2721521f, -0.4913186f),
-	VEC2(0.009952361f, -0.4938473f),
-	VEC2(-0.3341284f, -0.7402002f),
-	VEC2(-0.009171869f, -0.1417411f),
-	VEC2(-0.05370279f, -0.3561031f),
-	VEC2(-0.2042215f, -0.1395438f),
-	VEC2(0.1491909f, -0.7528881f),
-	VEC2(-0.09437386f, -0.6736782f),
-	VEC2(0.2218135f, -0.5837499f),
-	VEC2(0.1357503f, -0.2823138f),
-	VEC2(0.1759486f, -0.4372835f),
-	VEC2(-0.8812768f, -0.1270963f),
-	VEC2(-0.5861077f, -0.7143953f),
-	VEC2(-0.4840448f, -0.8610057f),
-	VEC2(-0.1953385f, -0.9313949f),
-	VEC2(-0.3544169f, -0.1299241f),
-	VEC2(0.4259588f, -0.3359875f),
-	VEC2(0.1780135f, -0.006630601f),
-	VEC2(0.3781602f, -0.174012f),
-	VEC2(-0.6535406f, 0.07830032f),
-	VEC2(-0.4176719f, 0.006290245f),
-	VEC2(-0.2157413f, 0.1043319f),
-	VEC2(-0.3825159f, 0.1611559f),
-	VEC2(-0.04609891f, 0.1563928f),
-	VEC2(-0.2525779f, 0.3147326f),
-	VEC2(0.6283897f, -0.2800752f),
-	VEC2(0.5242329f, -0.4569906f),
-	VEC2(0.5337259f, -0.1482658f),
-	VEC2(0.4243455f, -0.6266792f),
-	VEC2(-0.8479414f, 0.08037262f),
-	VEC2(-0.5815527f, 0.3148638f),
-	VEC2(-0.790419f, 0.2343442f),
-	VEC2(-0.4226354f, 0.3095743f),
-	VEC2(-0.09465869f, 0.3677911f),
-	VEC2(0.3935578f, 0.04151043f),
-	VEC2(0.2390065f, 0.1743644f),
-	VEC2(0.02775179f, 0.01711585f),
-	VEC2(-0.3588479f, 0.4862351f),
-	VEC2(-0.7332007f, 0.3809305f),
-	VEC2(-0.5283061f, 0.5106883f),
-	VEC2(0.7347565f, -0.04643056f),
-	VEC2(0.5254471f, 0.1277963f),
-	VEC2(-0.1984853f, 0.6903372f),
-	VEC2(-0.1512452f, 0.5094652f),
-	VEC2(-0.5878937f, 0.6584677f),
-	VEC2(-0.4450369f, 0.7685395f),
-	VEC2(0.691914f, -0.552465f),
-	VEC2(0.293443f, -0.8303219f),
-	VEC2(0.5147449f, -0.8018763f),
-	VEC2(0.3373911f, -0.4752345f),
-	VEC2(-0.7731022f, 0.6132235f),
-	VEC2(-0.9054359f, 0.3877104f),
-	VEC2(0.1200563f, -0.9095488f),
-	VEC2(-0.05998399f, -0.8304204f),
-	VEC2(0.1212275f, 0.4447584f),
-	VEC2(-0.04844639f, 0.8149281f),
-	VEC2(-0.1576151f, 0.9731216f),
-	VEC2(-0.2921374f, 0.8280436f),
-	VEC2(0.8305115f, -0.3373946f),
-	VEC2(0.7025464f, -0.7087887f),
-	VEC2(-0.9783711f, 0.1895637f),
-	VEC2(-0.9950094f, 0.03602472f),
-	VEC2(-0.02693105f, 0.6184058f),
-	VEC2(-0.3686568f, 0.6363685f),
-	VEC2(0.07644552f, 0.9160427f),
-	VEC2(0.2174875f, 0.6892526f),
-	VEC2(0.09518065f, 0.2284235f),
-	VEC2(0.2566459f, 0.8855528f),
-	VEC2(0.2196656f, -0.1571368f),
-	VEC2(0.9549446f, -0.2014009f),
-	VEC2(0.4562157f, 0.7741205f),
-	VEC2(0.3333389f, 0.413012f),
-	VEC2(0.5414181f, 0.2789065f),
-	VEC2(0.7839744f, 0.2456573f),
-	VEC2(0.6805856f, 0.1255756f),
-	VEC2(0.3859844f, 0.2440029f),
-	VEC2(0.4403853f, 0.600696f),
-	VEC2(0.6249176f, 0.6072751f),
-	VEC2(0.5145468f, 0.4502719f),
-	VEC2(0.749785f, 0.4564187f),
-	VEC2(0.9864355f, -0.0429658f),
-	VEC2(0.8654963f, 0.04940263f),
-	VEC2(0.9577024f, 0.1808657f)
+const Vec2 POISSON_DISC_2D[] = {
+	Vec2(-0.6271834f, -0.3647562f),
+	Vec2(-0.6959124f, -0.1932297f),
+	Vec2(-0.425675f, -0.4331925f),
+	Vec2(-0.8259574f, -0.3775373f),
+	Vec2(-0.4134415f, -0.2794108f),
+	Vec2(-0.6711653f, -0.5842927f),
+	Vec2(-0.505241f, -0.5710775f),
+	Vec2(-0.5399489f, -0.1941965f),
+	Vec2(-0.2056243f, -0.3328375f),
+	Vec2(-0.2721521f, -0.4913186f),
+	Vec2(0.009952361f, -0.4938473f),
+	Vec2(-0.3341284f, -0.7402002f),
+	Vec2(-0.009171869f, -0.1417411f),
+	Vec2(-0.05370279f, -0.3561031f),
+	Vec2(-0.2042215f, -0.1395438f),
+	Vec2(0.1491909f, -0.7528881f),
+	Vec2(-0.09437386f, -0.6736782f),
+	Vec2(0.2218135f, -0.5837499f),
+	Vec2(0.1357503f, -0.2823138f),
+	Vec2(0.1759486f, -0.4372835f),
+	Vec2(-0.8812768f, -0.1270963f),
+	Vec2(-0.5861077f, -0.7143953f),
+	Vec2(-0.4840448f, -0.8610057f),
+	Vec2(-0.1953385f, -0.9313949f),
+	Vec2(-0.3544169f, -0.1299241f),
+	Vec2(0.4259588f, -0.3359875f),
+	Vec2(0.1780135f, -0.006630601f),
+	Vec2(0.3781602f, -0.174012f),
+	Vec2(-0.6535406f, 0.07830032f),
+	Vec2(-0.4176719f, 0.006290245f),
+	Vec2(-0.2157413f, 0.1043319f),
+	Vec2(-0.3825159f, 0.1611559f),
+	Vec2(-0.04609891f, 0.1563928f),
+	Vec2(-0.2525779f, 0.3147326f),
+	Vec2(0.6283897f, -0.2800752f),
+	Vec2(0.5242329f, -0.4569906f),
+	Vec2(0.5337259f, -0.1482658f),
+	Vec2(0.4243455f, -0.6266792f),
+	Vec2(-0.8479414f, 0.08037262f),
+	Vec2(-0.5815527f, 0.3148638f),
+	Vec2(-0.790419f, 0.2343442f),
+	Vec2(-0.4226354f, 0.3095743f),
+	Vec2(-0.09465869f, 0.3677911f),
+	Vec2(0.3935578f, 0.04151043f),
+	Vec2(0.2390065f, 0.1743644f),
+	Vec2(0.02775179f, 0.01711585f),
+	Vec2(-0.3588479f, 0.4862351f),
+	Vec2(-0.7332007f, 0.3809305f),
+	Vec2(-0.5283061f, 0.5106883f),
+	Vec2(0.7347565f, -0.04643056f),
+	Vec2(0.5254471f, 0.1277963f),
+	Vec2(-0.1984853f, 0.6903372f),
+	Vec2(-0.1512452f, 0.5094652f),
+	Vec2(-0.5878937f, 0.6584677f),
+	Vec2(-0.4450369f, 0.7685395f),
+	Vec2(0.691914f, -0.552465f),
+	Vec2(0.293443f, -0.8303219f),
+	Vec2(0.5147449f, -0.8018763f),
+	Vec2(0.3373911f, -0.4752345f),
+	Vec2(-0.7731022f, 0.6132235f),
+	Vec2(-0.9054359f, 0.3877104f),
+	Vec2(0.1200563f, -0.9095488f),
+	Vec2(-0.05998399f, -0.8304204f),
+	Vec2(0.1212275f, 0.4447584f),
+	Vec2(-0.04844639f, 0.8149281f),
+	Vec2(-0.1576151f, 0.9731216f),
+	Vec2(-0.2921374f, 0.8280436f),
+	Vec2(0.8305115f, -0.3373946f),
+	Vec2(0.7025464f, -0.7087887f),
+	Vec2(-0.9783711f, 0.1895637f),
+	Vec2(-0.9950094f, 0.03602472f),
+	Vec2(-0.02693105f, 0.6184058f),
+	Vec2(-0.3686568f, 0.6363685f),
+	Vec2(0.07644552f, 0.9160427f),
+	Vec2(0.2174875f, 0.6892526f),
+	Vec2(0.09518065f, 0.2284235f),
+	Vec2(0.2566459f, 0.8855528f),
+	Vec2(0.2196656f, -0.1571368f),
+	Vec2(0.9549446f, -0.2014009f),
+	Vec2(0.4562157f, 0.7741205f),
+	Vec2(0.3333389f, 0.413012f),
+	Vec2(0.5414181f, 0.2789065f),
+	Vec2(0.7839744f, 0.2456573f),
+	Vec2(0.6805856f, 0.1255756f),
+	Vec2(0.3859844f, 0.2440029f),
+	Vec2(0.4403853f, 0.600696f),
+	Vec2(0.6249176f, 0.6072751f),
+	Vec2(0.5145468f, 0.4502719f),
+	Vec2(0.749785f, 0.4564187f),
+	Vec2(0.9864355f, -0.0429658f),
+	Vec2(0.8654963f, 0.04940263f),
+	Vec2(0.9577024f, 0.1808657f)
 };
 const int poisson_disc_count = countof(POISSON_DISC_2D);
 
-VEC2 VEC2::RandomPoissonDiscPoint()
+Vec2 Vec2::RandomPoissonDiscPoint()
 {
 	int index = Rand() % poisson_disc_count;
-	const VEC2& pos = POISSON_DISC_2D[index];
+	const Vec2& pos = POISSON_DISC_2D[index];
 	return pos;
 }
 
-bool RayToMesh(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _obj_pos, float _obj_rot, VertexData* _vd, float& _dist)
+bool RayToMesh(const Vec3& _ray_pos, const Vec3& _ray_dir, const Vec3& _obj_pos, float _obj_rot, VertexData* _vd, float& _dist)
 {
 	assert(_vd);
 
@@ -1113,9 +1113,9 @@ bool RayToMesh(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _obj_pos,
 		return false;
 
 	// przekszta³æ promieñ o pozycjê i obrót modelu
-	MATRIX m = (MATRIX::RotationY(_obj_rot) * MATRIX::Translation(_obj_pos)).Inverse();
-	VEC3 ray_pos = VEC3::Transform(_ray_pos, m),
-		ray_dir = VEC3::TransformNormal(_ray_dir, m);
+	Matrix m = (Matrix::RotationY(_obj_rot) * Matrix::Translation(_obj_pos)).Inverse();
+	Vec3 ray_pos = Vec3::Transform(_ray_pos, m),
+		ray_dir = Vec3::TransformNormal(_ray_dir, m);
 
 	// szukaj kolizji
 	_dist = 1.01f;

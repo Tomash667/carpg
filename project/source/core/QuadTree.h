@@ -5,7 +5,7 @@ struct QuadRect
 	QuadRect()
 	{
 	}
-	QuadRect(const BOX2D& box)
+	QuadRect(const Box2d& box)
 	{
 		box.ToRectangle(x, y, w, h);
 	}
@@ -15,7 +15,7 @@ struct QuadRect
 struct QuadNode
 {
 	QuadRect rect;
-	BOX2D box;
+	Box2d box;
 	Rect grid_box;
 	QuadNode* childs[4];
 	bool leaf;
@@ -31,7 +31,7 @@ struct QuadTree
 	{
 	}
 
-	void Init(QuadNode* node, const BOX2D& box, const Rect& grid_box, int splits, float margin);
+	void Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int splits, float margin);
 
 	void List(FrustumPlanes& frustum, Nodes& nodes);
 	void ListLeafs(FrustumPlanes& frustum, Nodes& nodes);
@@ -39,7 +39,7 @@ struct QuadTree
 	// move all nodes into vector, set top to nullptr
 	void Clear(Nodes& nodes);
 
-	QuadNode* GetNode(const VEC2& pos, float radius);
+	QuadNode* GetNode(const Vec2& pos, float radius);
 
 	QuadNode* top;
 	GetQuadNode get;
@@ -50,7 +50,7 @@ struct LevelPart : QuadNode
 {
 	bool generated;
 	//vector<Object> objects;
-	vector<MATRIX> grass, grass2;
+	vector<Matrix> grass, grass2;
 };
 
 typedef vector<LevelPart*> LevelParts;

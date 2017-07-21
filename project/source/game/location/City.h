@@ -11,9 +11,9 @@
 struct CityBuilding
 {
 	Building* type;
-	INT2 pt, unit_pt;
+	Int2 pt, unit_pt;
 	int rot;
-	VEC3 walk_pt;
+	Vec3 walk_pt;
 
 	CityBuilding() {}
 	explicit CityBuilding(Building* type) : type(type) {}
@@ -53,8 +53,8 @@ struct City : public OutsideLocation
 	CityQuestState quest_mayor, quest_captain;
 	vector<CityBuilding> buildings; // when visited this contain buildings to spawn (only type), after entering it is fully filled
 	vector<InsideBuilding*> inside_buildings;
-	INT2 inside_offset;
-	VEC3 arena_pos;
+	Int2 inside_offset;
+	Vec3 arena_pos;
 	vector<EntryPoint> entry_points;
 
 	City() : quest_mayor(CityQuestState::None), quest_captain(CityQuestState::None), quest_mayor_time(-1), quest_captain_time(-1),
@@ -72,7 +72,7 @@ struct City : public OutsideLocation
 	Unit* FindUnit(UnitData* data, int& at_level) override;
 	LOCATION_TOKEN GetToken() const override { return LT_CITY; }
 
-	bool IsInsideCity(const VEC3& _pos);
+	bool IsInsideCity(const Vec3& _pos);
 	InsideBuilding* FindInsideBuilding(Building* type);
 	InsideBuilding* FindInsideBuilding(BuildingGroup* group);
 	InsideBuilding* FindInsideBuilding(BuildingGroup* group, int& index);

@@ -8,12 +8,12 @@ Slider::Slider() : hold(false), minstep(false)
 	bt[0].text = '<';
 	bt[0].id = GuiEvent_Custom;
 	bt[0].parent = this;
-	bt[0].size = INT2(32, 32);
+	bt[0].size = Int2(32, 32);
 
 	bt[1].text = '>';
 	bt[1].id = GuiEvent_Custom + 1;
 	bt[1].parent = this;
-	bt[1].size = INT2(32, 32);
+	bt[1].size = Int2(32, 32);
 }
 
 //=================================================================================================
@@ -22,7 +22,7 @@ void Slider::Draw(ControlDrawData*)
 	const int D = 150;
 
 	bt[0].global_pos = bt[0].pos = global_pos;
-	bt[1].global_pos = bt[1].pos = bt[0].pos + INT2(D, 0);
+	bt[1].global_pos = bt[1].pos = bt[0].pos + Int2(D, 0);
 
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();

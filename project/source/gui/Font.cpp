@@ -186,12 +186,12 @@ int Font::LineWidth(cstring str, bool parse_special) const
 }
 
 //=================================================================================================
-INT2 Font::CalculateSize(StringOrCstring str, int limit_width) const
+Int2 Font::CalculateSize(StringOrCstring str, int limit_width) const
 {
 	int len = str.length();
 	cstring text = str.c_str();
 
-	INT2 size(0, 0);
+	Int2 size(0, 0);
 
 	uint unused, index = 0;
 	int width;
@@ -207,10 +207,10 @@ INT2 Font::CalculateSize(StringOrCstring str, int limit_width) const
 }
 
 //=================================================================================================
-INT2 Font::CalculateSizeWrap(StringOrCstring str, const INT2& max_size, int border) const
+Int2 Font::CalculateSizeWrap(StringOrCstring str, const Int2& max_size, int border) const
 {
 	int max_width = max_size.x - border;
-	INT2 size = CalculateSize(str, max_width);
+	Int2 size = CalculateSize(str, max_width);
 	int lines = size.y / height;
 	int line_pts = size.x / height;
 	int total_pts = line_pts * lines;
@@ -321,7 +321,7 @@ bool Font::SkipSpecial(uint& in_out_index, cstring text, uint text_end) const
 }
 
 //=================================================================================================
-bool Font::HitTest(StringOrCstring str, int limit_width, int flags, const INT2& pos, uint& index, INT2& index2, Rect& rect, float& uv, const vector<FontLine>* font_lines) const
+bool Font::HitTest(StringOrCstring str, int limit_width, int flags, const Int2& pos, uint& index, Int2& index2, Rect& rect, float& uv, const vector<FontLine>* font_lines) const
 {
 	if(pos.x < 0 || pos.y < 0)
 		return false;
@@ -354,10 +354,10 @@ bool Font::HitTest(StringOrCstring str, int limit_width, int flags, const INT2& 
 				break;
 		}
 		--index;
-		rect.p1 = INT2(prev_width, 0);
-		rect.p2 = INT2(width, height);
+		rect.p1 = Int2(prev_width, 0);
+		rect.p2 = Int2(width, height);
 		uv = min(1.f, 1.f - float(width - pos.x) / (width - prev_width));
-		index2 = INT2(index, 0);
+		index2 = Int2(index, 0);
 		return true;
 	}
 
@@ -406,15 +406,15 @@ bool Font::HitTest(StringOrCstring str, int limit_width, int flags, const INT2& 
 	}
 	if(index > 0)
 		--index;
-	rect.p1 = INT2(prev_width, line * height);
-	rect.p2 = INT2(width, (line + 1) * height);
+	rect.p1 = Int2(prev_width, line * height);
+	rect.p2 = Int2(width, (line + 1) * height);
 	uv = min(1.f, 1.f - float(width - pos.x) / (width - prev_width));
-	index2 = INT2(index - line_begin, line);
+	index2 = Int2(index - line_begin, line);
 	return true;
 }
 
 //=================================================================================================
-INT2 Font::IndexToPos(uint expected_index, StringOrCstring str, int limit_width, int flags) const
+Int2 Font::IndexToPos(uint expected_index, StringOrCstring str, int limit_width, int flags) const
 {
 	assert(expected_index <= str.length());
 
@@ -442,7 +442,7 @@ INT2 Font::IndexToPos(uint expected_index, StringOrCstring str, int limit_width,
 			width += char_width;
 		}
 
-		return INT2(width, 0);
+		return Int2(width, 0);
 	}
 
 	uint line_begin, line_end;
@@ -471,14 +471,14 @@ INT2 Font::IndexToPos(uint expected_index, StringOrCstring str, int limit_width,
 				width += char_width;
 			}
 
-			return INT2(width, line * height);
+			return Int2(width, line * height);
 		}
 		++line;
 	}
 }
 
 //=================================================================================================
-INT2 Font::IndexToPos(const INT2& expected_index, StringOrCstring str, int limit_width, int flags) const
+Int2 Font::IndexToPos(const Int2& expected_index, StringOrCstring str, int limit_width, int flags) const
 {
 	assert(expected_index.x >= 0 && expected_index.y >= 0);
 
@@ -509,7 +509,7 @@ INT2 Font::IndexToPos(const INT2& expected_index, StringOrCstring str, int limit
 			width += char_width;
 		}
 
-		return INT2(width, 0);
+		return Int2(width, 0);
 	}
 
 	uint line_begin, line_end;
@@ -539,7 +539,7 @@ INT2 Font::IndexToPos(const INT2& expected_index, StringOrCstring str, int limit
 				width += char_width;
 			}
 
-			return INT2(width, line * height);
+			return Int2(width, line * height);
 		}
 		++line;
 	}
@@ -605,7 +605,7 @@ uint Font::GetLineWidth(cstring text, uint line_begin, uint line_end, bool parse
 }
 
 //=================================================================================================
-INT2 Font::IndexToPos(vector<FontLine>& font_lines, const INT2& expected_index, StringOrCstring str, int limit_width, int flags) const
+Int2 Font::IndexToPos(vector<FontLine>& font_lines, const Int2& expected_index, StringOrCstring str, int limit_width, int flags) const
 {
 	assert(expected_index.x >= 0 && expected_index.y >= 0);
 
@@ -635,7 +635,7 @@ INT2 Font::IndexToPos(vector<FontLine>& font_lines, const INT2& expected_index, 
 			width += char_width;
 		}
 
-		return INT2(width, 0);
+		return Int2(width, 0);
 	}
 
 	assert((uint)expected_index.y < font_lines.size());
@@ -658,11 +658,11 @@ INT2 Font::IndexToPos(vector<FontLine>& font_lines, const INT2& expected_index, 
 		width += char_width;
 	}
 
-	return INT2(width, expected_index.y * height);
+	return Int2(width, expected_index.y * height);
 }
 
 //=================================================================================================
-uint Font::ToRawIndex(vector<FontLine>& font_lines, const INT2& index) const
+uint Font::ToRawIndex(vector<FontLine>& font_lines, const Int2& index) const
 {
 	assert(index.x >= 0 && index.y >= 0 && index.y < (int)font_lines.size());
 	auto& line = font_lines[index.y];
@@ -671,16 +671,16 @@ uint Font::ToRawIndex(vector<FontLine>& font_lines, const INT2& index) const
 }
 
 //=================================================================================================
-INT2 Font::FromRawIndex(vector<FontLine>& font_lines, uint index) const
+Int2 Font::FromRawIndex(vector<FontLine>& font_lines, uint index) const
 {
 	uint line_index = 0;
 	for(auto& line : font_lines)
 	{
 		if(index <= line.end)
-			return INT2(index - line.begin, line_index);
+			return Int2(index - line.begin, line_index);
 		++line_index;
 	}
 
 	assert(0);
-	return INT2(0, 0);
+	return Int2(0, 0);
 }

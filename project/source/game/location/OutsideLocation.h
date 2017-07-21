@@ -38,12 +38,12 @@ struct OutsideLocation : public Location, public LevelArea
 	{
 		return _x >= 0 && _y >= 0 && _x < size && _y < size;
 	}
-	bool IsInside(const INT2& _pt) const
+	bool IsInside(const Int2& _pt) const
 	{
 		return IsInside(_pt.x, _pt.y);
 	}
-	VEC2 GetRandomPos() const
+	Vec2 GetRandomPos() const
 	{
-		return VEC2(Random(40.f, 256.f - 40.f), Random(40.f, 256.f - 40.f));
+		return Vec2(Random(40.f, 256.f - 40.f), Random(40.f, 256.f - 40.f));
 	}
 };

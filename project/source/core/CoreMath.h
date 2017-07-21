@@ -3,18 +3,18 @@
 using namespace DirectX;
 
 //-----------------------------------------------------------------------------
-struct INT2;
+struct Int2;
 struct Rect;
-struct VEC2;
-struct VEC3;
-struct VEC4;
-struct BOX2D;
-struct BOX;
-struct OBBOX;
-struct OOB;
-struct MATRIX;
-struct QUAT;
-struct PLANE;
+struct Vec2;
+struct Vec3;
+struct Vec4;
+struct Box2d;
+struct Box;
+struct Obbox;
+struct Oob;
+struct Matrix;
+struct Quat;
+struct Plane;
 
 // for ray-mesh collision
 #include "VertexData.h"
@@ -395,42 +395,42 @@ inline bool CheckedMultiplyAdd(uint a, uint b, uint c, uint& result)
 //-----------------------------------------------------------------------------
 // 2D int point
 //-----------------------------------------------------------------------------
-struct INT2
+struct Int2
 {
 	int x, y;
 
-	INT2();
-	INT2(int x, int y);
-	INT2(const INT2& i);
+	Int2();
+	Int2(int x, int y);
+	Int2(const Int2& i);
 	template<typename T, typename T2>
-	INT2(T x, T2 y);
-	explicit INT2(int xy);
-	explicit INT2(const VEC2& v);
-	explicit INT2(const VEC3& v);
+	Int2(T x, T2 y);
+	explicit Int2(int xy);
+	explicit Int2(const Vec2& v);
+	explicit Int2(const Vec3& v);
 
 	// Comparison operators
-	bool operator == (const INT2& i) const;
-	bool operator != (const INT2& i) const;
+	bool operator == (const Int2& i) const;
+	bool operator != (const Int2& i) const;
 
 	// Assignment operators
-	INT2& operator = (const INT2& i);
-	void operator += (const INT2& i);
-	void operator -= (const INT2& i);
+	Int2& operator = (const Int2& i);
+	void operator += (const Int2& i);
+	void operator -= (const Int2& i);
 	void operator *= (int a);
 	void operator /= (int a);
 
 	// Unary operators
-	INT2 operator + () const;
-	INT2 operator - () const;
+	Int2 operator + () const;
+	Int2 operator - () const;
 
 	// Binary operators
 	int operator ()(int shift) const;
-	INT2 operator + (const INT2& i) const;
-	INT2 operator - (const INT2& i) const;
-	INT2 operator * (int a) const;
-	INT2 operator * (float s) const;
-	INT2 operator / (int a) const;
-	friend INT2 operator * (int a, const INT2& i);
+	Int2 operator + (const Int2& i) const;
+	Int2 operator - (const Int2& i) const;
+	Int2 operator * (int a) const;
+	Int2 operator * (float s) const;
+	Int2 operator / (int a) const;
+	friend Int2 operator * (int a, const Int2& i);
 
 	// Methods
 	int Clamp(int d) const;
@@ -438,11 +438,11 @@ struct INT2
 	int Random() const;
 
 	// Static functions
-	static int Distance(const INT2& i1, const INT2& i2);
-	static INT2 Lerp(const INT2& i1, const INT2& i2, float t);
-	static INT2 Max(const INT2& i1, const INT2& i2);
-	static INT2 Min(const INT2& i1, const INT2& i2);
-	static INT2 Random(const INT2& i1, const INT2& i2);
+	static int Distance(const Int2& i1, const Int2& i2);
+	static Int2 Lerp(const Int2& i1, const Int2& i2, float t);
+	static Int2 Max(const Int2& i1, const Int2& i2);
+	static Int2 Min(const Int2& i1, const Int2& i2);
+	static Int2 Random(const Int2& i1, const Int2& i2);
 };
 
 //-----------------------------------------------------------------------------
@@ -458,14 +458,14 @@ struct UINT2
 //-----------------------------------------------------------------------------
 struct Rect
 {
-	INT2 p1, p2;
+	Int2 p1, p2;
 
 	Rect();
 	Rect(int x1, int y1, int x2, int y2);
-	Rect(const INT2& p1, const INT2& p2);
+	Rect(const Int2& p1, const Int2& p2);
 	Rect(const Rect& box);
-	explicit Rect(const BOX2D& box);
-	Rect(const BOX2D& box, const INT2& pad);;
+	explicit Rect(const Box2d& box);
+	Rect(const Box2d& box, const Int2& pad);;
 
 	// Comparison operators
 	bool operator == (const Rect& r) const;
@@ -473,8 +473,8 @@ struct Rect
 
 	// Assignment operators
 	Rect& operator = (const Rect& r);
-	Rect& operator += (const INT2& p);
-	Rect& operator -= (const INT2& p);
+	Rect& operator += (const Int2& p);
+	Rect& operator -= (const Int2& p);
 	Rect& operator *= (int d);
 	Rect& operator /= (int d);
 
@@ -483,19 +483,19 @@ struct Rect
 	Rect operator - () const;
 
 	// Binary operators
-	Rect operator + (const INT2& p) const;
-	Rect operator - (const INT2& p) const;
+	Rect operator + (const Int2& p) const;
+	Rect operator - (const Int2& p) const;
 	Rect operator * (int d) const;
-	Rect operator * (const VEC2& v) const;
+	Rect operator * (const Vec2& v) const;
 	Rect operator / (int d) const;
 	friend Rect operator * (int d, const Rect& r);
 
-	INT2& LeftTop() { return p1; }
-	const INT2& LeftTop() const { return p1; }
-	INT2 LeftBottom() const { return INT2(Left(), Bottom()); }
-	INT2 RightTop() const { return INT2(Right(), Top()); }
-	INT2& RightBottom() { return p2; }
-	const INT2& RightBottom() const { return p2; }
+	Int2& LeftTop() { return p1; }
+	const Int2& LeftTop() const { return p1; }
+	Int2 LeftBottom() const { return Int2(Left(), Bottom()); }
+	Int2 RightTop() const { return Int2(Right(), Top()); }
+	Int2& RightBottom() { return p2; }
+	const Int2& RightBottom() const { return p2; }
 	int SizeX() const { return p2.x - p1.x; }
 	int SizeY() const { return p2.y - p1.y; }
 	int& Left() { return p1.x; }
@@ -508,20 +508,20 @@ struct Rect
 	const int& Bottom() const { return p2.y; }
 
 	// Methods
-	bool IsInside(const INT2& pt) const;
+	bool IsInside(const Int2& pt) const;
 	Rect LeftBottomPart() const;
 	Rect LeftTopPart() const;
-	INT2 Random() const;
+	Int2 Random() const;
 	void Resize(const Rect& r);
-	void Resize(const INT2& size);
+	void Resize(const Int2& size);
 	Rect RightBottomPart() const;
 	Rect RightTopPart() const;
 	void Set(int x1, int y1, int x2, int y2);
-	void Set(const INT2& pos, const INT2& size);
-	INT2 Size() const;
+	void Set(const Int2& pos, const Int2& size);
+	Int2 Size() const;
 
 	// Static functions
-	static Rect Create(const INT2& pos, const INT2& size);
+	static Rect Create(const Int2& pos, const Int2& size);
 	static Rect Intersect(const Rect& r1, const Rect& r2);
 	static bool Intersect(const Rect& r1, const Rect& r2, Rect& result);
 
@@ -532,375 +532,375 @@ struct Rect
 //-----------------------------------------------------------------------------
 // 2D float point
 //-----------------------------------------------------------------------------
-struct VEC2 : XMFLOAT2
+struct Vec2 : XMFLOAT2
 {
-	VEC2();
-	VEC2(float x, float y);
-	VEC2(const VEC2& v);
-	VEC2(FXMVECTOR v);
-	explicit VEC2(float xy);
-	explicit VEC2(const INT2& i);
-	explicit VEC2(const XMVECTORF32& v);
+	Vec2();
+	Vec2(float x, float y);
+	Vec2(const Vec2& v);
+	Vec2(FXMVECTOR v);
+	explicit Vec2(float xy);
+	explicit Vec2(const Int2& i);
+	explicit Vec2(const XMVECTORF32& v);
 
 	operator XMVECTOR() const;
 	operator float*();
 	operator const float*() const;
 
 	// Comparison operators
-	bool operator == (const VEC2& v) const;
-	bool operator != (const VEC2& v) const;
+	bool operator == (const Vec2& v) const;
+	bool operator != (const Vec2& v) const;
 
 	// Assignment operators
-	VEC2& operator = (const VEC2& v);
-	VEC2& operator = (const XMVECTORF32& v);
-	VEC2& operator += (const VEC2& v);
-	VEC2& operator -= (const VEC2& v);
-	VEC2& operator *= (float s);
-	VEC2& operator /= (float s);
+	Vec2& operator = (const Vec2& v);
+	Vec2& operator = (const XMVECTORF32& v);
+	Vec2& operator += (const Vec2& v);
+	Vec2& operator -= (const Vec2& v);
+	Vec2& operator *= (float s);
+	Vec2& operator /= (float s);
 
 	// Unary operators
-	VEC2 operator + () const;
-	VEC2 operator - () const;
+	Vec2 operator + () const;
+	Vec2 operator - () const;
 
 	// Binary operators
-	VEC2 operator + (const VEC2& v) const;
-	VEC2 operator - (const VEC2& v) const;
-	VEC2 operator * (float s) const;
-	VEC2 operator / (float s) const;
-	friend VEC2 operator * (float s, const VEC2& v);
+	Vec2 operator + (const Vec2& v) const;
+	Vec2 operator - (const Vec2& v) const;
+	Vec2 operator * (float s) const;
+	Vec2 operator / (float s) const;
+	friend Vec2 operator * (float s, const Vec2& v);
 
 	// Methods
 	float Clamp(float f) const;
-	void Clamp(const VEC2& min, const VEC2& max);
-	void Clamp(const VEC2& min, const VEC2& max, VEC2& result) const;
-	VEC2 Clamped(const VEC2& min = VEC2(0, 0), const VEC2& max = VEC2(1, 1)) const;
-	VEC2 Clip() const;
-	void Cross(const VEC2& v, VEC2& result) const;
-	VEC2 Cross(const VEC2& v) const;
-	float Dot(const VEC2& v) const;
+	void Clamp(const Vec2& min, const Vec2& max);
+	void Clamp(const Vec2& min, const Vec2& max, Vec2& result) const;
+	Vec2 Clamped(const Vec2& min = Vec2(0, 0), const Vec2& max = Vec2(1, 1)) const;
+	Vec2 Clip() const;
+	void Cross(const Vec2& v, Vec2& result) const;
+	Vec2 Cross(const Vec2& v) const;
+	float Dot(const Vec2& v) const;
 	float DotSelf() const;
-	bool Equal(const VEC2& v) const;
-	bool InBounds(const VEC2& bounds) const;
+	bool Equal(const Vec2& v) const;
+	bool InBounds(const Vec2& bounds) const;
 	float Length() const;
 	float LengthSquared() const;
-	VEC2& Normalize();
-	void Normalize(VEC2& v) const;
-	VEC2 Normalized() const;
+	Vec2& Normalize();
+	void Normalize(Vec2& v) const;
+	Vec2 Normalized() const;
 	float Random() const;
-	VEC3 XZ(float y = 0.f) const;
+	Vec3 XZ(float y = 0.f) const;
 
 	// Static functions
-	static float Angle(const VEC2& v1, const VEC2& v2);
-	static void Barycentric(const VEC2& v1, const VEC2& v2, const VEC2& v3, float f, float g, VEC2& result);
-	static VEC2 Barycentric(const VEC2& v1, const VEC2& v2, const VEC2& v3, float f, float g);
-	static void CatmullRom(const VEC2& v1, const VEC2& v2, const VEC2& v3, const VEC2& v4, float t, VEC2& result);
-	static VEC2 CatmullRom(const VEC2& v1, const VEC2& v2, const VEC2& v3, const VEC2& v4, float t);
-	static float Distance(const VEC2& v1, const VEC2& v2);
-	static float DistanceSquared(const VEC2& v1, const VEC2& v2);
-	static void Hermite(const VEC2& v1, const VEC2& t1, const VEC2& v2, const VEC2& t2, float t, VEC2& result);
-	static VEC2 Hermite(const VEC2& v1, const VEC2& t1, const VEC2& v2, const VEC2& t2, float t);
-	static void Lerp(const VEC2& v1, const VEC2& v2, float t, VEC2& result);
-	static VEC2 Lerp(const VEC2& v1, const VEC2& v2, float t);
-	static float LookAtAngle(const VEC2& v1, const VEC2& v2);
-	static void Max(const VEC2& v1, const VEC2& v2, VEC2& result);
-	static VEC2 Max(const VEC2& v1, const VEC2& v2);
-	static void Min(const VEC2& v1, const VEC2& v2, VEC2& result);
-	static VEC2 Min(const VEC2& v1, const VEC2& v2);
-	static void MinMax(const VEC2& v1, const VEC2& v2, VEC2& min, VEC2& max);
-	static VEC2 Random(float a, float b);
-	static VEC2 Random(const VEC2& v1, const VEC2& v2);
-	static VEC2 RandomCirclePt(float r);
-	static VEC2 RandomPoissonDiscPoint();
-	static void Reflect(const VEC2& ivec, const VEC2& nvec, VEC2& result);
-	static VEC2 Reflect(const VEC2& ivec, const VEC2& nvec);
-	static void Refract(const VEC2& ivec, const VEC2& nvec, float refractionIndex, VEC2& result);
-	static VEC2 Refract(const VEC2& ivec, const VEC2& nvec, float refractionIndex);
-	static VEC2 Slerp(const VEC2& a, const VEC2& b, float t);
-	static void SmoothStep(const VEC2& v1, const VEC2& v2, float t, VEC2& result);
-	static VEC2 SmoothStep(const VEC2& v1, const VEC2& v2, float t);
-	static void Transform(const VEC2& v, const QUAT& quat, VEC2& result);
-	static VEC2 Transform(const VEC2& v, const QUAT& quat);
-	static void Transform(const VEC2& v, const MATRIX& m, VEC2& result);
-	static VEC2 Transform(const VEC2& v, const MATRIX& m);
-	static void Transform(const VEC2* varray, size_t count, const MATRIX& m, VEC2* resultArray);
-	static void Transform(const VEC2& v, const MATRIX& m, VEC4& result);
-	static void Transform(const VEC2* varray, size_t count, const MATRIX& m, VEC4* resultArray);
-	static void TransformNormal(const VEC2& v, const MATRIX& m, VEC2& result);
-	static VEC2 TransformNormal(const VEC2& v, const MATRIX& m);
-	static void TransformNormal(const VEC2* varray, size_t count, const MATRIX& m, VEC2* resultArray);
+	static float Angle(const Vec2& v1, const Vec2& v2);
+	static void Barycentric(const Vec2& v1, const Vec2& v2, const Vec2& v3, float f, float g, Vec2& result);
+	static Vec2 Barycentric(const Vec2& v1, const Vec2& v2, const Vec2& v3, float f, float g);
+	static void CatmullRom(const Vec2& v1, const Vec2& v2, const Vec2& v3, const Vec2& v4, float t, Vec2& result);
+	static Vec2 CatmullRom(const Vec2& v1, const Vec2& v2, const Vec2& v3, const Vec2& v4, float t);
+	static float Distance(const Vec2& v1, const Vec2& v2);
+	static float DistanceSquared(const Vec2& v1, const Vec2& v2);
+	static void Hermite(const Vec2& v1, const Vec2& t1, const Vec2& v2, const Vec2& t2, float t, Vec2& result);
+	static Vec2 Hermite(const Vec2& v1, const Vec2& t1, const Vec2& v2, const Vec2& t2, float t);
+	static void Lerp(const Vec2& v1, const Vec2& v2, float t, Vec2& result);
+	static Vec2 Lerp(const Vec2& v1, const Vec2& v2, float t);
+	static float LookAtAngle(const Vec2& v1, const Vec2& v2);
+	static void Max(const Vec2& v1, const Vec2& v2, Vec2& result);
+	static Vec2 Max(const Vec2& v1, const Vec2& v2);
+	static void Min(const Vec2& v1, const Vec2& v2, Vec2& result);
+	static Vec2 Min(const Vec2& v1, const Vec2& v2);
+	static void MinMax(const Vec2& v1, const Vec2& v2, Vec2& min, Vec2& max);
+	static Vec2 Random(float a, float b);
+	static Vec2 Random(const Vec2& v1, const Vec2& v2);
+	static Vec2 RandomCirclePt(float r);
+	static Vec2 RandomPoissonDiscPoint();
+	static void Reflect(const Vec2& ivec, const Vec2& nvec, Vec2& result);
+	static Vec2 Reflect(const Vec2& ivec, const Vec2& nvec);
+	static void Refract(const Vec2& ivec, const Vec2& nvec, float refractionIndex, Vec2& result);
+	static Vec2 Refract(const Vec2& ivec, const Vec2& nvec, float refractionIndex);
+	static Vec2 Slerp(const Vec2& a, const Vec2& b, float t);
+	static void SmoothStep(const Vec2& v1, const Vec2& v2, float t, Vec2& result);
+	static Vec2 SmoothStep(const Vec2& v1, const Vec2& v2, float t);
+	static void Transform(const Vec2& v, const Quat& quat, Vec2& result);
+	static Vec2 Transform(const Vec2& v, const Quat& quat);
+	static void Transform(const Vec2& v, const Matrix& m, Vec2& result);
+	static Vec2 Transform(const Vec2& v, const Matrix& m);
+	static void Transform(const Vec2* varray, size_t count, const Matrix& m, Vec2* resultArray);
+	static void Transform(const Vec2& v, const Matrix& m, Vec4& result);
+	static void Transform(const Vec2* varray, size_t count, const Matrix& m, Vec4* resultArray);
+	static void TransformNormal(const Vec2& v, const Matrix& m, Vec2& result);
+	static Vec2 TransformNormal(const Vec2& v, const Matrix& m);
+	static void TransformNormal(const Vec2* varray, size_t count, const Matrix& m, Vec2* resultArray);
 
 	// Constants
-	static const VEC2 Zero;
-	static const VEC2 One;
-	static const VEC2 UnitX;
-	static const VEC2 UnitY;
+	static const Vec2 Zero;
+	static const Vec2 One;
+	static const Vec2 UnitX;
+	static const Vec2 UnitY;
 };
 
 //-----------------------------------------------------------------------------
 // 3D float point
 //-----------------------------------------------------------------------------
-struct VEC3 : XMFLOAT3
+struct Vec3 : XMFLOAT3
 {
-	VEC3();
-	VEC3(float x, float y, float z);
-	VEC3(const VEC3& v);
-	VEC3(FXMVECTOR v);
-	explicit VEC3(const XMVECTORF32& v);
+	Vec3();
+	Vec3(float x, float y, float z);
+	Vec3(const Vec3& v);
+	Vec3(FXMVECTOR v);
+	explicit Vec3(const XMVECTORF32& v);
 
 	operator XMVECTOR() const;
 	operator float*();
 	operator const float*() const;
 
 	// Comparison operators
-	bool operator == (const VEC3& v) const;
-	bool operator != (const VEC3& v) const;
+	bool operator == (const Vec3& v) const;
+	bool operator != (const Vec3& v) const;
 
 	// Assignment operators
-	VEC3& operator = (const VEC3& v);
-	VEC3& operator = (const XMVECTORF32& v);
-	VEC3& operator += (const VEC3& v);
-	VEC3& operator -= (const VEC3& v);
-	VEC3& operator *= (float s);
-	VEC3& operator /= (float s);
+	Vec3& operator = (const Vec3& v);
+	Vec3& operator = (const XMVECTORF32& v);
+	Vec3& operator += (const Vec3& v);
+	Vec3& operator -= (const Vec3& v);
+	Vec3& operator *= (float s);
+	Vec3& operator /= (float s);
 
 	// Unary operators
-	VEC3 operator + () const;
-	VEC3 operator - () const;
+	Vec3 operator + () const;
+	Vec3 operator - () const;
 
 	// Binary operators
-	VEC3 operator + (const VEC3& v) const;
-	VEC3 operator - (const VEC3& v) const;
-	VEC3 operator * (float s) const;
-	VEC3 operator / (float s) const;
-	friend VEC3 operator * (float s, const VEC3& v);
+	Vec3 operator + (const Vec3& v) const;
+	Vec3 operator - (const Vec3& v) const;
+	Vec3 operator * (float s) const;
+	Vec3 operator / (float s) const;
+	friend Vec3 operator * (float s, const Vec3& v);
 
 	// Methods
-	void Clamp(const VEC3& min, const VEC3& max);
-	void Clamp(const VEC3& min, const VEC3& max, VEC3& result) const;
-	VEC3 Clamped(const VEC3& min = VEC3(0, 0, 0), const VEC3& max = VEC3(1, 1, 1)) const;
-	void Cross(const VEC3& V, VEC3& result) const;
-	VEC3 Cross(const VEC3& V) const;
-	float Dot(const VEC3& V) const;
-	float Dot2d(const VEC3& v) const;
+	void Clamp(const Vec3& min, const Vec3& max);
+	void Clamp(const Vec3& min, const Vec3& max, Vec3& result) const;
+	Vec3 Clamped(const Vec3& min = Vec3(0, 0, 0), const Vec3& max = Vec3(1, 1, 1)) const;
+	void Cross(const Vec3& V, Vec3& result) const;
+	Vec3 Cross(const Vec3& V) const;
+	float Dot(const Vec3& V) const;
+	float Dot2d(const Vec3& v) const;
 	float Dot2d() const;
-	bool Equal(const VEC3& v) const;
-	bool InBounds(const VEC3& bounds) const;
+	bool Equal(const Vec3& v) const;
+	bool InBounds(const Vec3& bounds) const;
 	bool IsPositive() const;
 	float Length() const;
 	float LengthSquared() const;
-	VEC3& Normalize();
-	void Normalize(VEC3& result) const;
-	VEC3 Normalized() const;
-	VEC2 XY() const;
-	VEC2 XZ() const;
+	Vec3& Normalize();
+	void Normalize(Vec3& result) const;
+	Vec3 Normalized() const;
+	Vec2 XY() const;
+	Vec2 XZ() const;
 
 	// Static functions
-	static float Angle2d(const VEC3& v1, const VEC3& v2);
-	static void Barycentric(const VEC3& v1, const VEC3& v2, const VEC3& v3, float f, float g, VEC3& result);
-	static VEC3 Barycentric(const VEC3& v1, const VEC3& v2, const VEC3& v3, float f, float g);
-	static void CatmullRom(const VEC3& v1, const VEC3& v2, const VEC3& v3, const VEC3& v4, float t, VEC3& result);
-	static VEC3 CatmullRom(const VEC3& v1, const VEC3& v2, const VEC3& v3, const VEC3& v4, float t);
-	static float Distance(const VEC3& v1, const VEC3& v2);
-	static float DistanceSquared(const VEC3& v1, const VEC3& v2);
-	static float Distance2d(const VEC3& v1, const VEC3& v2);
-	static void Hermite(const VEC3& v1, const VEC3& t1, const VEC3& v2, const VEC3& t2, float t, VEC3& result);
-	static VEC3 Hermite(const VEC3& v1, const VEC3& t1, const VEC3& v2, const VEC3& t2, float t);
-	static void Lerp(const VEC3& v1, const VEC3& v2, float t, VEC3& result);
-	static VEC3 Lerp(const VEC3& v1, const VEC3& v2, float t);
-	static float LookAtAngle(const VEC3& v1, const VEC3& v2);
-	static void Max(const VEC3& v1, const VEC3& v2, VEC3& result);
-	static VEC3 Max(const VEC3& v1, const VEC3& v2);
-	static void Min(const VEC3& v1, const VEC3& v2, VEC3& result);
-	static VEC3 Min(const VEC3& v1, const VEC3& v2);
-	static void MinMax(const VEC3& v1, const VEC3& v2, VEC3& min, VEC3& max);
-	static VEC3 Random(float a, float b);
-	static VEC3 Random(const VEC3& min, const VEC3& max);
-	static void Reflect(const VEC3& ivec, const VEC3& nvec, VEC3& result);
-	static VEC3 Reflect(const VEC3& ivec, const VEC3& nvec);
-	static void Refract(const VEC3& ivec, const VEC3& nvec, float refractionIndex, VEC3& result);
-	static VEC3 Refract(const VEC3& ivec, const VEC3& nvec, float refractionIndex);
-	static void SmoothStep(const VEC3& v1, const VEC3& v2, float t, VEC3& result);
-	static VEC3 SmoothStep(const VEC3& v1, const VEC3& v2, float t);
-	static void Transform(const VEC3& v, const QUAT& quat, VEC3& result);
-	static VEC3 Transform(const VEC3& v, const QUAT& quat);
-	static void Transform(const VEC3& v, const MATRIX& m, VEC3& result);
-	static VEC3 Transform(const VEC3& v, const MATRIX& m);
-	static void Transform(const VEC3* varray, size_t count, const MATRIX& m, VEC3* resultArray);
-	static void Transform(const VEC3& v, const MATRIX& m, VEC4& result);
-	static void Transform(const VEC3* varray, size_t count, const MATRIX& m, VEC4* resultArray);
-	static void TransformNormal(const VEC3& v, const MATRIX& m, VEC3& result);
-	static VEC3 TransformNormal(const VEC3& v, const MATRIX& m);
-	static void TransformNormal(const VEC3* varray, size_t count, const MATRIX& m, VEC3* resultArray);
-	static VEC3 TransformZero(const MATRIX& m);
+	static float Angle2d(const Vec3& v1, const Vec3& v2);
+	static void Barycentric(const Vec3& v1, const Vec3& v2, const Vec3& v3, float f, float g, Vec3& result);
+	static Vec3 Barycentric(const Vec3& v1, const Vec3& v2, const Vec3& v3, float f, float g);
+	static void CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, float t, Vec3& result);
+	static Vec3 CatmullRom(const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec3& v4, float t);
+	static float Distance(const Vec3& v1, const Vec3& v2);
+	static float DistanceSquared(const Vec3& v1, const Vec3& v2);
+	static float Distance2d(const Vec3& v1, const Vec3& v2);
+	static void Hermite(const Vec3& v1, const Vec3& t1, const Vec3& v2, const Vec3& t2, float t, Vec3& result);
+	static Vec3 Hermite(const Vec3& v1, const Vec3& t1, const Vec3& v2, const Vec3& t2, float t);
+	static void Lerp(const Vec3& v1, const Vec3& v2, float t, Vec3& result);
+	static Vec3 Lerp(const Vec3& v1, const Vec3& v2, float t);
+	static float LookAtAngle(const Vec3& v1, const Vec3& v2);
+	static void Max(const Vec3& v1, const Vec3& v2, Vec3& result);
+	static Vec3 Max(const Vec3& v1, const Vec3& v2);
+	static void Min(const Vec3& v1, const Vec3& v2, Vec3& result);
+	static Vec3 Min(const Vec3& v1, const Vec3& v2);
+	static void MinMax(const Vec3& v1, const Vec3& v2, Vec3& min, Vec3& max);
+	static Vec3 Random(float a, float b);
+	static Vec3 Random(const Vec3& min, const Vec3& max);
+	static void Reflect(const Vec3& ivec, const Vec3& nvec, Vec3& result);
+	static Vec3 Reflect(const Vec3& ivec, const Vec3& nvec);
+	static void Refract(const Vec3& ivec, const Vec3& nvec, float refractionIndex, Vec3& result);
+	static Vec3 Refract(const Vec3& ivec, const Vec3& nvec, float refractionIndex);
+	static void SmoothStep(const Vec3& v1, const Vec3& v2, float t, Vec3& result);
+	static Vec3 SmoothStep(const Vec3& v1, const Vec3& v2, float t);
+	static void Transform(const Vec3& v, const Quat& quat, Vec3& result);
+	static Vec3 Transform(const Vec3& v, const Quat& quat);
+	static void Transform(const Vec3& v, const Matrix& m, Vec3& result);
+	static Vec3 Transform(const Vec3& v, const Matrix& m);
+	static void Transform(const Vec3* varray, size_t count, const Matrix& m, Vec3* resultArray);
+	static void Transform(const Vec3& v, const Matrix& m, Vec4& result);
+	static void Transform(const Vec3* varray, size_t count, const Matrix& m, Vec4* resultArray);
+	static void TransformNormal(const Vec3& v, const Matrix& m, Vec3& result);
+	static Vec3 TransformNormal(const Vec3& v, const Matrix& m);
+	static void TransformNormal(const Vec3* varray, size_t count, const Matrix& m, Vec3* resultArray);
+	static Vec3 TransformZero(const Matrix& m);
 
 	// Constants
-	static const VEC3 Zero;
-	static const VEC3 One;
-	static const VEC3 UnitX;
-	static const VEC3 UnitY;
-	static const VEC3 UnitZ;
-	static const VEC3 Up;
-	static const VEC3 Down;
-	static const VEC3 Right;
-	static const VEC3 Left;
-	static const VEC3 Forward;
-	static const VEC3 Backward;
+	static const Vec3 Zero;
+	static const Vec3 One;
+	static const Vec3 UnitX;
+	static const Vec3 UnitY;
+	static const Vec3 UnitZ;
+	static const Vec3 Up;
+	static const Vec3 Down;
+	static const Vec3 Right;
+	static const Vec3 Left;
+	static const Vec3 Forward;
+	static const Vec3 Backward;
 };
 
 //-----------------------------------------------------------------------------
 // 4D float point
 //-----------------------------------------------------------------------------
-struct VEC4 : XMFLOAT4
+struct Vec4 : XMFLOAT4
 {
-	VEC4();
-	VEC4(float x, float y, float z, float w);
-	VEC4(const VEC4& v);
-	VEC4(const VEC3& v, float w);
-	VEC4(FXMVECTOR v);
-	explicit VEC4(const XMVECTORF32& v);
+	Vec4();
+	Vec4(float x, float y, float z, float w);
+	Vec4(const Vec4& v);
+	Vec4(const Vec3& v, float w);
+	Vec4(FXMVECTOR v);
+	explicit Vec4(const XMVECTORF32& v);
 
 	operator XMVECTOR() const;
 	operator float*();
 	operator const float*() const;
 
 	// Comparison operators
-	bool operator == (const VEC4& v) const;
-	bool operator != (const VEC4& v) const;
+	bool operator == (const Vec4& v) const;
+	bool operator != (const Vec4& v) const;
 
 	// Assignment operators
-	VEC4& operator = (const VEC4& v);
-	VEC4& operator = (const XMVECTORF32& v);
-	VEC4& operator += (const VEC4& v);
-	VEC4& operator -= (const VEC4& v);
-	VEC4& operator *= (float s);
-	VEC4& operator /= (float s);
+	Vec4& operator = (const Vec4& v);
+	Vec4& operator = (const XMVECTORF32& v);
+	Vec4& operator += (const Vec4& v);
+	Vec4& operator -= (const Vec4& v);
+	Vec4& operator *= (float s);
+	Vec4& operator /= (float s);
 
 	// Unary operators
-	VEC4 operator+ () const;
-	VEC4 operator- () const;
+	Vec4 operator+ () const;
+	Vec4 operator- () const;
 
 	// Binary operators
-	VEC4 operator + (const VEC4& v) const;
-	VEC4 operator - (const VEC4& v) const;
-	VEC4 operator * (float s) const;
-	VEC4 operator / (float s) const;
-	friend VEC4 operator * (float s, const VEC4& v);
+	Vec4 operator + (const Vec4& v) const;
+	Vec4 operator - (const Vec4& v) const;
+	Vec4 operator * (float s) const;
+	Vec4 operator / (float s) const;
+	friend Vec4 operator * (float s, const Vec4& v);
 
 	// Methods
-	void Clamp(const VEC4& vmin, const VEC4& vmax);
-	void Clamp(const VEC4& vmin, const VEC4& vmax, VEC4& result) const;
-	VEC4 Clamped(const VEC4& min = VEC4(0, 0, 0, 0), const VEC4& max = VEC4(1, 1, 1, 1)) const;
-	void Cross(const VEC4& v1, const VEC4& v2, VEC4& result) const;
-	VEC4 Cross(const VEC4& v1, const VEC4& v2) const;
-	float Dot(const VEC4& V) const;
+	void Clamp(const Vec4& vmin, const Vec4& vmax);
+	void Clamp(const Vec4& vmin, const Vec4& vmax, Vec4& result) const;
+	Vec4 Clamped(const Vec4& min = Vec4(0, 0, 0, 0), const Vec4& max = Vec4(1, 1, 1, 1)) const;
+	void Cross(const Vec4& v1, const Vec4& v2, Vec4& result) const;
+	Vec4 Cross(const Vec4& v1, const Vec4& v2) const;
+	float Dot(const Vec4& V) const;
 	float DotSelf() const;
-	bool Equal(const VEC4& v) const;
-	bool InBounds(const VEC4& Bounds) const;
+	bool Equal(const Vec4& v) const;
+	bool InBounds(const Vec4& Bounds) const;
 	float Length() const;
 	float LengthSquared() const;
-	VEC4& Normalize();
-	void Normalize(VEC4& result) const;
-	VEC4 Normalized() const;
+	Vec4& Normalize();
+	void Normalize(Vec4& result) const;
+	Vec4 Normalized() const;
 
 	// Static functions
-	static void Barycentric(const VEC4& v1, const VEC4& v2, const VEC4& v3, float f, float g, VEC4& result);
-	static VEC4 Barycentric(const VEC4& v1, const VEC4& v2, const VEC4& v3, float f, float g);
-	static void CatmullRom(const VEC4& v1, const VEC4& v2, const VEC4& v3, const VEC4& v4, float t, VEC4& result);
-	static VEC4 CatmullRom(const VEC4& v1, const VEC4& v2, const VEC4& v3, const VEC4& v4, float t);
-	static float Distance(const VEC4& v1, const VEC4& v2);
-	static float DistanceSquared(const VEC4& v1, const VEC4& v2);
-	static VEC4 FromColor(DWORD color);
-	static void Hermite(const VEC4& v1, const VEC4& t1, const VEC4& v2, const VEC4& t2, float t, VEC4& result);
-	static VEC4 Hermite(const VEC4& v1, const VEC4& t1, const VEC4& v2, const VEC4& t2, float t);
-	static void Lerp(const VEC4& v1, const VEC4& v2, float t, VEC4& result);
-	static VEC4 Lerp(const VEC4& v1, const VEC4& v2, float t);
-	static void Max(const VEC4& v1, const VEC4& v2, VEC4& result);
-	static VEC4 Max(const VEC4& v1, const VEC4& v2);
-	static void Min(const VEC4& v1, const VEC4& v2, VEC4& result);
-	static VEC4 Min(const VEC4& v1, const VEC4& v2);
-	static void Reflect(const VEC4& ivec, const VEC4& nvec, VEC4& result);
-	static VEC4 Reflect(const VEC4& ivec, const VEC4& nvec);
-	static void Refract(const VEC4& ivec, const VEC4& nvec, float refractionIndex, VEC4& result);
-	static VEC4 Refract(const VEC4& ivec, const VEC4& nvec, float refractionIndex);
-	static void SmoothStep(const VEC4& v1, const VEC4& v2, float t, VEC4& result);
-	static VEC4 SmoothStep(const VEC4& v1, const VEC4& v2, float t);
-	static void Transform(const VEC2& v, const QUAT& quat, VEC4& result);
-	static VEC4 Transform(const VEC2& v, const QUAT& quat);
-	static void Transform(const VEC3& v, const QUAT& quat, VEC4& result);
-	static VEC4 Transform(const VEC3& v, const QUAT& quat);
-	static void Transform(const VEC4& v, const QUAT& quat, VEC4& result);
-	static VEC4 Transform(const VEC4& v, const QUAT& quat);
-	static void Transform(const VEC4& v, const MATRIX& m, VEC4& result);
-	static VEC4 Transform(const VEC4& v, const MATRIX& m);
-	static void Transform(const VEC4* varray, size_t count, const MATRIX& m, VEC4* resultArray);
+	static void Barycentric(const Vec4& v1, const Vec4& v2, const Vec4& v3, float f, float g, Vec4& result);
+	static Vec4 Barycentric(const Vec4& v1, const Vec4& v2, const Vec4& v3, float f, float g);
+	static void CatmullRom(const Vec4& v1, const Vec4& v2, const Vec4& v3, const Vec4& v4, float t, Vec4& result);
+	static Vec4 CatmullRom(const Vec4& v1, const Vec4& v2, const Vec4& v3, const Vec4& v4, float t);
+	static float Distance(const Vec4& v1, const Vec4& v2);
+	static float DistanceSquared(const Vec4& v1, const Vec4& v2);
+	static Vec4 FromColor(DWORD color);
+	static void Hermite(const Vec4& v1, const Vec4& t1, const Vec4& v2, const Vec4& t2, float t, Vec4& result);
+	static Vec4 Hermite(const Vec4& v1, const Vec4& t1, const Vec4& v2, const Vec4& t2, float t);
+	static void Lerp(const Vec4& v1, const Vec4& v2, float t, Vec4& result);
+	static Vec4 Lerp(const Vec4& v1, const Vec4& v2, float t);
+	static void Max(const Vec4& v1, const Vec4& v2, Vec4& result);
+	static Vec4 Max(const Vec4& v1, const Vec4& v2);
+	static void Min(const Vec4& v1, const Vec4& v2, Vec4& result);
+	static Vec4 Min(const Vec4& v1, const Vec4& v2);
+	static void Reflect(const Vec4& ivec, const Vec4& nvec, Vec4& result);
+	static Vec4 Reflect(const Vec4& ivec, const Vec4& nvec);
+	static void Refract(const Vec4& ivec, const Vec4& nvec, float refractionIndex, Vec4& result);
+	static Vec4 Refract(const Vec4& ivec, const Vec4& nvec, float refractionIndex);
+	static void SmoothStep(const Vec4& v1, const Vec4& v2, float t, Vec4& result);
+	static Vec4 SmoothStep(const Vec4& v1, const Vec4& v2, float t);
+	static void Transform(const Vec2& v, const Quat& quat, Vec4& result);
+	static Vec4 Transform(const Vec2& v, const Quat& quat);
+	static void Transform(const Vec3& v, const Quat& quat, Vec4& result);
+	static Vec4 Transform(const Vec3& v, const Quat& quat);
+	static void Transform(const Vec4& v, const Quat& quat, Vec4& result);
+	static Vec4 Transform(const Vec4& v, const Quat& quat);
+	static void Transform(const Vec4& v, const Matrix& m, Vec4& result);
+	static Vec4 Transform(const Vec4& v, const Matrix& m);
+	static void Transform(const Vec4* varray, size_t count, const Matrix& m, Vec4* resultArray);
 
 	// Constants
-	static const VEC4 Zero;
-	static const VEC4 One;
-	static const VEC4 UnitX;
-	static const VEC4 UnitY;
-	static const VEC4 UnitZ;
-	static const VEC4 UnitW;
+	static const Vec4 Zero;
+	static const Vec4 One;
+	static const Vec4 UnitX;
+	static const Vec4 UnitY;
+	static const Vec4 UnitZ;
+	static const Vec4 UnitW;
 };
 
 //-----------------------------------------------------------------------------
 // 2d box using floats
 //-----------------------------------------------------------------------------
-struct BOX2D
+struct Box2d
 {
-	VEC2 v1, v2;
+	Vec2 v1, v2;
 
-	BOX2D();
-	BOX2D(float minx, float miny, float maxx, float maxy);
-	BOX2D(const VEC2& v1, const VEC2& v2);
-	BOX2D(const BOX2D& box);
-	BOX2D(float x, float y);
-	BOX2D(const BOX2D& box, float margin);
-	explicit BOX2D(const VEC2& v);
-	explicit BOX2D(const Rect& r);
+	Box2d();
+	Box2d(float minx, float miny, float maxx, float maxy);
+	Box2d(const Vec2& v1, const Vec2& v2);
+	Box2d(const Box2d& box);
+	Box2d(float x, float y);
+	Box2d(const Box2d& box, float margin);
+	explicit Box2d(const Vec2& v);
+	explicit Box2d(const Rect& r);
 
 	// Comparison operators
-	bool operator == (const BOX2D& b) const;
-	bool operator != (const BOX2D& b) const;
+	bool operator == (const Box2d& b) const;
+	bool operator != (const Box2d& b) const;
 
 	// Assignment operators
-	BOX2D& operator = (const BOX2D& b);
-	BOX2D& operator += (const VEC2& v);
-	BOX2D& operator -= (const VEC2& v);
-	BOX2D& operator *= (float f);
-	BOX2D& operator /= (float f);
+	Box2d& operator = (const Box2d& b);
+	Box2d& operator += (const Vec2& v);
+	Box2d& operator -= (const Vec2& v);
+	Box2d& operator *= (float f);
+	Box2d& operator /= (float f);
 
 	// Unary operators
-	BOX2D operator + () const;
-	BOX2D operator - () const;
+	Box2d operator + () const;
+	Box2d operator - () const;
 
 	// Binary operators
-	BOX2D operator + (const VEC2& v) const;
-	BOX2D operator - (const VEC2& v) const;
-	BOX2D operator * (float f) const;
-	BOX2D operator / (float f) const;
-	BOX2D operator / (const VEC2& v) const;
-	friend BOX2D operator * (float f, const BOX2D& v);
+	Box2d operator + (const Vec2& v) const;
+	Box2d operator - (const Vec2& v) const;
+	Box2d operator * (float f) const;
+	Box2d operator / (float f) const;
+	Box2d operator / (const Vec2& v) const;
+	friend Box2d operator * (float f, const Box2d& v);
 
-	static BOX2D Create(const INT2& pos, const INT2& size)
+	static Box2d Create(const Int2& pos, const Int2& size)
 	{
-		BOX2D box;
+		Box2d box;
 		box.Set(pos, size);
 		return box;
 	}
 
 	// Methods
-	VEC2 GetRandomPoint() const;
-	bool IsInside(const VEC2& v) const;
-	bool IsInside(const VEC3& v) const;
-	bool IsInside(const INT2& p) const;
+	Vec2 GetRandomPoint() const;
+	bool IsInside(const Vec2& v) const;
+	bool IsInside(const Vec3& v) const;
+	bool IsInside(const Int2& p) const;
 	bool IsValid() const;
-	VEC2 Midpoint() const;
-	VEC2 Size() const;
+	Vec2 Midpoint() const;
+	Vec2 Size() const;
 	float SizeX() const;
 	float SizeY() const;
 
-	void Set(const INT2& pos, const INT2& size)
+	void Set(const Int2& pos, const Int2& size)
 	{
 		v1.x = (float)pos.x;
 		v1.y = (float)pos.y;
@@ -908,67 +908,67 @@ struct BOX2D
 		v2.y = v1.y + (float)size.y;
 	}
 
-	void Move(const VEC2& pos)
+	void Move(const Vec2& pos)
 	{
-		VEC2 dif = pos - v1;
+		Vec2 dif = pos - v1;
 		v1 += dif;
 		v2 += dif;
 	}
 
-	VEC3 GetRandomPos3(float y = 0.f) const
+	Vec3 GetRandomPos3(float y = 0.f) const
 	{
-		return VEC3(::Random(v1.x, v2.x), y, ::Random(v1.y, v2.y));
+		return Vec3(::Random(v1.x, v2.x), y, ::Random(v1.y, v2.y));
 	}
 
-	VEC2 LeftTop() const
+	Vec2 LeftTop() const
 	{
 		return v1;
 	}
-	VEC2 RightBottom() const
+	Vec2 RightBottom() const
 	{
 		return v2;
 	}
-	VEC2 RightTop() const
+	Vec2 RightTop() const
 	{
-		return VEC2(v2.x, v1.y);
+		return Vec2(v2.x, v1.y);
 	}
-	VEC2 LeftBottom() const
+	Vec2 LeftBottom() const
 	{
-		return VEC2(v1.x, v2.y);
-	}
-
-	VEC3 LeftTop3() const
-	{
-		return VEC3(v1.x, v1.y, 0);
-	}
-	VEC3 RightTop3() const
-	{
-		return VEC3(v2.x, v1.y, 0);
-	}
-	VEC3 LeftBottom3() const
-	{
-		return VEC3(v1.x, v2.y, 0);
-	}
-	VEC3 RightBottom3() const
-	{
-		return VEC3(v2.x, v2.y, 0);
+		return Vec2(v1.x, v2.y);
 	}
 
-	BOX2D LeftBottomPart() const
+	Vec3 LeftTop3() const
 	{
-		return BOX2D(v1.x, v1.y, v1.x + (v2.x - v1.x) / 2, v1.y + (v2.y - v1.y) / 2);
+		return Vec3(v1.x, v1.y, 0);
 	}
-	BOX2D RightBottomPart() const
+	Vec3 RightTop3() const
 	{
-		return BOX2D(v1.x + (v2.x - v1.x) / 2, v1.y, v2.x, v1.y + (v2.y - v1.y) / 2);
+		return Vec3(v2.x, v1.y, 0);
 	}
-	BOX2D LeftTopPart() const
+	Vec3 LeftBottom3() const
 	{
-		return BOX2D(v1.x, v1.y + (v2.y - v1.y) / 2, v1.x + (v2.x - v1.x) / 2, v2.y);
+		return Vec3(v1.x, v2.y, 0);
 	}
-	BOX2D RightTopPart() const
+	Vec3 RightBottom3() const
 	{
-		return BOX2D(v1.x + (v2.x - v1.x) / 2, v1.y + (v2.y - v1.y) / 2, v2.x, v2.y);
+		return Vec3(v2.x, v2.y, 0);
+	}
+
+	Box2d LeftBottomPart() const
+	{
+		return Box2d(v1.x, v1.y, v1.x + (v2.x - v1.x) / 2, v1.y + (v2.y - v1.y) / 2);
+	}
+	Box2d RightBottomPart() const
+	{
+		return Box2d(v1.x + (v2.x - v1.x) / 2, v1.y, v2.x, v1.y + (v2.y - v1.y) / 2);
+	}
+	Box2d LeftTopPart() const
+	{
+		return Box2d(v1.x, v1.y + (v2.y - v1.y) / 2, v1.x + (v2.x - v1.x) / 2, v2.y);
+	}
+	Box2d RightTopPart() const
+	{
+		return Box2d(v1.x + (v2.x - v1.x) / 2, v1.y + (v2.y - v1.y) / 2, v2.x, v2.y);
 	}
 
 	void ToRectangle(float& x, float& y, float& w, float& h) const
@@ -993,47 +993,47 @@ struct BOX2D
 //-----------------------------------------------------------------------------
 // 3d float box
 //-----------------------------------------------------------------------------
-struct BOX
+struct Box
 {
-	VEC3 v1, v2;
+	Vec3 v1, v2;
 
-	BOX();
-	BOX(float minx, float miny, float minz, float maxx, float maxy, float maxz);
-	BOX(const VEC3& v1, const VEC3& v2);
-	BOX(const BOX& box);
-	BOX(float x, float y, float z);
-	explicit BOX(const VEC3& v);
+	Box();
+	Box(float minx, float miny, float minz, float maxx, float maxy, float maxz);
+	Box(const Vec3& v1, const Vec3& v2);
+	Box(const Box& box);
+	Box(float x, float y, float z);
+	explicit Box(const Vec3& v);
 
 	// Comparison operators
-	bool operator == (const BOX& b) const;
-	bool operator != (const BOX& b) const;
+	bool operator == (const Box& b) const;
+	bool operator != (const Box& b) const;
 
 	// Assignment operators
-	BOX& operator = (const BOX& b);
-	BOX& operator += (const VEC3& v);
-	BOX& operator -= (const VEC3& v);
-	BOX& operator *= (float f);
-	BOX& operator /= (float f);
+	Box& operator = (const Box& b);
+	Box& operator += (const Vec3& v);
+	Box& operator -= (const Vec3& v);
+	Box& operator *= (float f);
+	Box& operator /= (float f);
 
 	// Unary operators
-	BOX operator + () const;
-	BOX operator - () const;
+	Box operator + () const;
+	Box operator - () const;
 
 	// Binary operators
-	BOX operator + (const VEC3& v) const;
-	BOX operator - (const VEC3& v) const;
-	BOX operator * (float f) const;
-	BOX operator / (float f) const;
-	friend BOX operator * (float f, const BOX& b);
+	Box operator + (const Vec3& v) const;
+	Box operator - (const Vec3& v) const;
+	Box operator * (float f) const;
+	Box operator / (float f) const;
+	friend Box operator * (float f, const Box& b);
 
 	// Methods
-	VEC3 GetRandomPoint() const;
-	bool IsInside(const VEC3& v) const;
+	Vec3 GetRandomPoint() const;
+	bool IsInside(const Vec3& v) const;
 	bool IsValid() const;
-	VEC3 Midpoint() const;
-	VEC3 Size() const;
+	Vec3 Midpoint() const;
+	Vec3 Size() const;
 	float SizeX() const;
-	VEC2 SizeXZ() const;
+	Vec2 SizeXZ() const;
 	float SizeY() const;
 	float SizeZ() const;
 };
@@ -1041,192 +1041,192 @@ struct BOX
 //-----------------------------------------------------------------------------
 // 4x4 float matrix
 //-----------------------------------------------------------------------------
-struct MATRIX : XMFLOAT4X4
+struct Matrix : XMFLOAT4X4
 {
-	MATRIX();
-	MATRIX(float m00, float m01, float m02, float m03,
+	Matrix();
+	Matrix(float m00, float m01, float m02, float m03,
 		float m10, float m11, float m12, float m13,
 		float m20, float m21, float m22, float m23,
 		float m30, float m31, float m32, float m33);
-	MATRIX(const VEC3& v1, const VEC3& v2, const VEC3& v3);
-	MATRIX(const VEC4& v1, const VEC4& v2, const VEC4& v3, const VEC4& v4);
-	MATRIX(const MATRIX& m);
-	MATRIX(CXMMATRIX m);
+	Matrix(const Vec3& v1, const Vec3& v2, const Vec3& v3);
+	Matrix(const Vec4& v1, const Vec4& v2, const Vec4& v3, const Vec4& v4);
+	Matrix(const Matrix& m);
+	Matrix(CXMMATRIX m);
 
 	operator XMMATRIX() const;
 
 	// Comparison operators
-	bool operator == (const MATRIX& m) const;
-	bool operator != (const MATRIX& m) const;
+	bool operator == (const Matrix& m) const;
+	bool operator != (const Matrix& m) const;
 
 	// Assignment operators
-	MATRIX& operator = (const MATRIX& m);
-	MATRIX& operator += (const MATRIX& m);
-	MATRIX& operator -= (const MATRIX& m);
-	MATRIX& operator *= (const MATRIX& m);
-	MATRIX& operator *= (float s);
-	MATRIX& operator /= (float s);
-	MATRIX& operator /= (const MATRIX& m);
+	Matrix& operator = (const Matrix& m);
+	Matrix& operator += (const Matrix& m);
+	Matrix& operator -= (const Matrix& m);
+	Matrix& operator *= (const Matrix& m);
+	Matrix& operator *= (float s);
+	Matrix& operator /= (float s);
+	Matrix& operator /= (const Matrix& m);
 
 	// Unary operators
-	MATRIX operator+ () const;
-	MATRIX operator- () const;
+	Matrix operator+ () const;
+	Matrix operator- () const;
 
 	// Binary operators
-	MATRIX operator+ (const MATRIX& m) const;
-	MATRIX operator- (const MATRIX& m) const;
-	MATRIX operator* (const MATRIX& m) const;
-	MATRIX operator* (float S) const;
-	MATRIX operator/ (float S) const;
-	MATRIX operator/ (const MATRIX& m) const;
-	friend MATRIX operator * (float s, const MATRIX& m);
+	Matrix operator+ (const Matrix& m) const;
+	Matrix operator- (const Matrix& m) const;
+	Matrix operator* (const Matrix& m) const;
+	Matrix operator* (float S) const;
+	Matrix operator/ (float S) const;
+	Matrix operator/ (const Matrix& m) const;
+	friend Matrix operator * (float s, const Matrix& m);
 
 	// Methods
-	bool Decompose(VEC3& scale, QUAT& rotation, VEC3& translation);
+	bool Decompose(Vec3& scale, Quat& rotation, Vec3& translation);
 	float Determinant() const;
 	float GetYaw() const;
 	void Identity();
-	MATRIX Inverse() const;
-	void Inverse(MATRIX& result) const;
-	MATRIX Transpose() const;
-	void Transpose(MATRIX& result) const;
+	Matrix Inverse() const;
+	void Inverse(Matrix& result) const;
+	Matrix Transpose() const;
+	void Transpose(Matrix& result) const;
 
 	// Static functions
-	static MATRIX CreateBillboard(const VEC3& object, const VEC3& cameraPosition, const VEC3& cameraUp, const VEC3* cameraForward = nullptr);
-	static MATRIX CreateConstrainedBillboard(const VEC3& object, const VEC3& cameraPosition, const VEC3& rotateAxis,
-		const VEC3* cameraForward = nullptr, const VEC3* objectForward = nullptr);
-	static MATRIX CreateFromAxisAngle(const VEC3& axis, float angle);
-	static MATRIX CreateLookAt(const VEC3& position, const VEC3& target, const VEC3& up = VEC3(0, 1, 0));
-	static MATRIX CreateOrthographic(float width, float height, float zNearPlane, float zFarPlane);
-	static MATRIX CreateOrthographicOffCenter(float left, float right, float bottom, float top, float zNearPlane, float zFarPlane);
-	static MATRIX CreatePerspective(float width, float height, float nearPlane, float farPlane);
-	static MATRIX CreatePerspectiveFieldOfView(float fov, float aspectRatio, float nearPlane, float farPlane);
-	static MATRIX CreatePerspectiveOffCenter(float left, float right, float bottom, float top, float nearPlane, float farPlane);
-	static MATRIX CreateReflection(const PLANE& plane);
-	static MATRIX CreateShadow(const VEC3& lightDir, const PLANE& plane);
-	static MATRIX CreateWorld(const VEC3& position, const VEC3& forward, const VEC3& up);
-	static void Lerp(const MATRIX& M1, const MATRIX& M2, float t, MATRIX& result);
-	static MATRIX Lerp(const MATRIX& M1, const MATRIX& M2, float t);
-	static MATRIX Rotation(float yaw, float pitch, float roll);
-	static MATRIX Rotation(const VEC3& v);
-	static MATRIX Rotation(const QUAT& quat);
-	static MATRIX RotationX(float radians);
-	static MATRIX RotationY(float radians);
-	static MATRIX RotationZ(float radians);
-	static MATRIX Scale(const VEC3& scales);
-	static MATRIX Scale(float xs, float ys, float zs);
-	static MATRIX Scale(float scale);
-	static void Transform(const MATRIX& M, const QUAT& rotation, MATRIX& result);
-	static MATRIX Transform(const MATRIX& M, const QUAT& rotation);
-	static MATRIX Transform2D(const VEC2* scaling_center, float scaling_rotation, const VEC2* scaling, const VEC2* rotation_center, float rotation, const VEC2* translation);
-	static MATRIX Translation(const VEC3& position);
-	static MATRIX Translation(float x, float y, float z);
+	static Matrix CreateBillboard(const Vec3& object, const Vec3& cameraPosition, const Vec3& cameraUp, const Vec3* cameraForward = nullptr);
+	static Matrix CreateConstrainedBillboard(const Vec3& object, const Vec3& cameraPosition, const Vec3& rotateAxis,
+		const Vec3* cameraForward = nullptr, const Vec3* objectForward = nullptr);
+	static Matrix CreateFromAxisAngle(const Vec3& axis, float angle);
+	static Matrix CreateLookAt(const Vec3& position, const Vec3& target, const Vec3& up = Vec3(0, 1, 0));
+	static Matrix CreateOrthographic(float width, float height, float zNearPlane, float zFarPlane);
+	static Matrix CreateOrthographicOffCenter(float left, float right, float bottom, float top, float zNearPlane, float zFarPlane);
+	static Matrix CreatePerspective(float width, float height, float nearPlane, float farPlane);
+	static Matrix CreatePerspectiveFieldOfView(float fov, float aspectRatio, float nearPlane, float farPlane);
+	static Matrix CreatePerspectiveOffCenter(float left, float right, float bottom, float top, float nearPlane, float farPlane);
+	static Matrix CreateReflection(const Plane& plane);
+	static Matrix CreateShadow(const Vec3& lightDir, const Plane& plane);
+	static Matrix CreateWorld(const Vec3& position, const Vec3& forward, const Vec3& up);
+	static void Lerp(const Matrix& M1, const Matrix& M2, float t, Matrix& result);
+	static Matrix Lerp(const Matrix& M1, const Matrix& M2, float t);
+	static Matrix Rotation(float yaw, float pitch, float roll);
+	static Matrix Rotation(const Vec3& v);
+	static Matrix Rotation(const Quat& quat);
+	static Matrix RotationX(float radians);
+	static Matrix RotationY(float radians);
+	static Matrix RotationZ(float radians);
+	static Matrix Scale(const Vec3& scales);
+	static Matrix Scale(float xs, float ys, float zs);
+	static Matrix Scale(float scale);
+	static void Transform(const Matrix& M, const Quat& rotation, Matrix& result);
+	static Matrix Transform(const Matrix& M, const Quat& rotation);
+	static Matrix Transform2D(const Vec2* scaling_center, float scaling_rotation, const Vec2* scaling, const Vec2* rotation_center, float rotation, const Vec2* translation);
+	static Matrix Translation(const Vec3& position);
+	static Matrix Translation(float x, float y, float z);
 
 	// Constants
-	static const MATRIX IdentityMatrix;
+	static const Matrix IdentityMatrix;
 };
 
 //-----------------------------------------------------------------------------
 // Quaternion
 //-----------------------------------------------------------------------------
-struct QUAT : public XMFLOAT4
+struct Quat : public XMFLOAT4
 {
-	QUAT();
-	QUAT(float x, float y, float z, float w);
-	QUAT(const VEC3& v, float w);
-	QUAT(const QUAT& q);
-	QUAT(FXMVECTOR v);
-	explicit QUAT(const VEC4& v);
-	explicit QUAT(const XMVECTORF32& v);
+	Quat();
+	Quat(float x, float y, float z, float w);
+	Quat(const Vec3& v, float w);
+	Quat(const Quat& q);
+	Quat(FXMVECTOR v);
+	explicit Quat(const Vec4& v);
+	explicit Quat(const XMVECTORF32& v);
 
 	operator XMVECTOR() const;
 
 	// Comparison operators
-	bool operator == (const QUAT& q) const;
-	bool operator != (const QUAT& q) const;
+	bool operator == (const Quat& q) const;
+	bool operator != (const Quat& q) const;
 
 	// Assignment operators
-	QUAT& operator = (const QUAT& q);
-	QUAT& operator = (const XMVECTORF32& v);
-	QUAT& operator += (const QUAT& q);
-	QUAT& operator -= (const QUAT& q);
-	QUAT& operator *= (const QUAT& q);
-	QUAT& operator *= (float s);
-	QUAT& operator /= (const QUAT& q);
+	Quat& operator = (const Quat& q);
+	Quat& operator = (const XMVECTORF32& v);
+	Quat& operator += (const Quat& q);
+	Quat& operator -= (const Quat& q);
+	Quat& operator *= (const Quat& q);
+	Quat& operator *= (float s);
+	Quat& operator /= (const Quat& q);
 
 	// Unary operators
-	QUAT operator + () const;
-	QUAT operator - () const;
+	Quat operator + () const;
+	Quat operator - () const;
 
 	// Binary operators
-	QUAT operator + (const QUAT& q) const;
-	QUAT operator - (const QUAT& q) const;
-	QUAT operator * (const QUAT& q) const;
-	QUAT operator * (float s) const;
-	QUAT operator / (const QUAT& q) const;
-	friend QUAT operator * (float s, const QUAT& q);
+	Quat operator + (const Quat& q) const;
+	Quat operator - (const Quat& q) const;
+	Quat operator * (const Quat& q) const;
+	Quat operator * (float s) const;
+	Quat operator / (const Quat& q) const;
+	friend Quat operator * (float s, const Quat& q);
 
 	// Mathods
 	void Conjugate();
-	void Conjugate(QUAT& result) const;
-	float Dot(const QUAT& q) const;
-	void Inverse(QUAT& result) const;
+	void Conjugate(Quat& result) const;
+	float Dot(const Quat& q) const;
+	void Inverse(Quat& result) const;
 	float Length() const;
 	float LengthSquared() const;
 	void Normalize();
-	void Normalize(QUAT& result) const;
+	void Normalize(Quat& result) const;
 
 	// Static functions
-	static void Concatenate(const QUAT& q1, const QUAT& q2, QUAT& result);
-	static QUAT Concatenate(const QUAT& q1, const QUAT& q2);
-	static QUAT CreateFromAxisAngle(const VEC3& axis, float angle);
-	static QUAT CreateFromRotationMatrix(const MATRIX& M);
-	static QUAT CreateFromYawPitchRoll(float yaw, float pitch, float roll);
-	static void Lerp(const QUAT& q1, const QUAT& q2, float t, QUAT& result);
-	static QUAT Lerp(const QUAT& q1, const QUAT& q2, float t);
-	static void Slerp(const QUAT& q1, const QUAT& q2, float t, QUAT& result);
-	static QUAT Slerp(const QUAT& q1, const QUAT& q2, float t);
+	static void Concatenate(const Quat& q1, const Quat& q2, Quat& result);
+	static Quat Concatenate(const Quat& q1, const Quat& q2);
+	static Quat CreateFromAxisAngle(const Vec3& axis, float angle);
+	static Quat CreateFromRotationMatrix(const Matrix& M);
+	static Quat CreateFromYawPitchRoll(float yaw, float pitch, float roll);
+	static void Lerp(const Quat& q1, const Quat& q2, float t, Quat& result);
+	static Quat Lerp(const Quat& q1, const Quat& q2, float t);
+	static void Slerp(const Quat& q1, const Quat& q2, float t, Quat& result);
+	static Quat Slerp(const Quat& q1, const Quat& q2, float t);
 
 	// Constants
-	static const QUAT Identity;
+	static const Quat Identity;
 };
 
 //-----------------------------------------------------------------------------
 // Plane
 //-----------------------------------------------------------------------------
-struct PLANE : public XMFLOAT4
+struct Plane : public XMFLOAT4
 {
-	PLANE();
-	PLANE(float x, float y, float z, float w);
-	PLANE(const VEC3& normal, float d);
-	PLANE(const VEC3& point1, const VEC3& point2, const VEC3& point3);
-	PLANE(const VEC3& point, const VEC3& normal);
-	PLANE(FXMVECTOR v);
-	explicit PLANE(const VEC4& v);
-	explicit PLANE(const XMVECTORF32& v);
+	Plane();
+	Plane(float x, float y, float z, float w);
+	Plane(const Vec3& normal, float d);
+	Plane(const Vec3& point1, const Vec3& point2, const Vec3& point3);
+	Plane(const Vec3& point, const Vec3& normal);
+	Plane(FXMVECTOR v);
+	explicit Plane(const Vec4& v);
+	explicit Plane(const XMVECTORF32& v);
 
 	operator XMVECTOR() const;
 
 	// Comparison operators
-	bool operator == (const PLANE& p) const;
-	bool operator != (const PLANE& p) const;
+	bool operator == (const Plane& p) const;
+	bool operator != (const Plane& p) const;
 
 	// Assignment operators
-	PLANE& operator = (const PLANE& p);
+	Plane& operator = (const Plane& p);
 
 	// Methods
-	float Dot(const VEC4& v) const;
-	float DotCoordinate(const VEC3& position) const;
-	float DotNormal(const VEC3& normal) const;
+	float Dot(const Vec4& v) const;
+	float DotCoordinate(const Vec3& position) const;
+	float DotNormal(const Vec3& normal) const;
 	void Normalize();
-	void Normalize(PLANE& result) const;
+	void Normalize(Plane& result) const;
 
 	// Static functions
-	static bool Intersect3Planes(const PLANE& p1, const PLANE& p2, const PLANE& p3, VEC3& result);
-	static void Transform(const PLANE& plane, const MATRIX& M, PLANE& result);
-	static PLANE Transform(const PLANE& plane, const MATRIX& M);
-	static void Transform(const PLANE& plane, const QUAT& rotation, PLANE& result);
-	static PLANE Transform(const PLANE& plane, const QUAT& rotation);
+	static bool Intersect3Planes(const Plane& p1, const Plane& p2, const Plane& p3, Vec3& result);
+	static void Transform(const Plane& plane, const Matrix& M, Plane& result);
+	static Plane Transform(const Plane& plane, const Matrix& M);
+	static void Transform(const Plane& plane, const Quat& rotation, Plane& result);
+	static Plane Transform(const Plane& plane, const Quat& rotation);
 };
 
 //-----------------------------------------------------------------------------
@@ -1234,34 +1234,34 @@ struct PLANE : public XMFLOAT4
 //-----------------------------------------------------------------------------
 struct FrustumPlanes
 {
-	PLANE planes[6];
+	Plane planes[6];
 
 	FrustumPlanes() {}
-	explicit FrustumPlanes(const MATRIX& worldViewProj) { Set(worldViewProj); }
-	void Set(const MATRIX& worldViewProj);
+	explicit FrustumPlanes(const Matrix& worldViewProj) { Set(worldViewProj); }
+	void Set(const Matrix& worldViewProj);
 
 	// Return points on edge of frustum
-	void GetPoints(VEC3* points) const;
-	static void GetPoints(const MATRIX& worldViewProj, VEC3* points);
+	void GetPoints(Vec3* points) const;
+	static void GetPoints(const Matrix& worldViewProj, Vec3* points);
 	// Checks if point is inside frustum
-	bool PointInFrustum(const VEC3 &p) const;
+	bool PointInFrustum(const Vec3 &p) const;
 	// Checks if box collide with frustum
 	// In rare cases can return true even if it's outside!
-	bool BoxToFrustum(const BOX& box) const;
-	bool BoxToFrustum(const BOX2D& box) const;
+	bool BoxToFrustum(const Box& box) const;
+	bool BoxToFrustum(const Box2d& box) const;
 	// Checks if box is fully inside frustum
-	bool BoxInFrustum(const BOX& box) const;
+	bool BoxInFrustum(const Box& box) const;
 	// Checks if sphere collide with frustum
 	// In rare cases can return true even if it's outside!
-	bool SphereToFrustum(const VEC3& sphere_center, float sphere_radius) const;
+	bool SphereToFrustum(const Vec3& sphere_center, float sphere_radius) const;
 	// Checks if sphere is fully inside frustum
-	bool SphereInFrustum(const VEC3& sphere_center, float sphere_radius) const;
+	bool SphereInFrustum(const Vec3& sphere_center, float sphere_radius) const;
 };
 
 //-----------------------------------------------------------------------------
 struct Pixel
 {
-	INT2 pt;
+	Int2 pt;
 	byte alpha;
 
 	Pixel(int x, int y, byte alpha = 0) : pt(x, y), alpha(alpha) {}
@@ -1276,58 +1276,58 @@ struct Pixel
 //-----------------------------------------------------------------------------
 // Object oriented bounding box
 //-----------------------------------------------------------------------------
-struct OBBOX
+struct Obbox
 {
-	VEC3 pos;
-	VEC3 size;
-	MATRIX rot;
+	Vec3 pos;
+	Vec3 size;
+	Matrix rot;
 };
 // inna wersja, oka¿e siê czy lepszy algorytm
-struct OOB
+struct Oob
 {
-	VEC3 c; // œrodek
-	VEC3 u[3]; // obrót po X,Y,Z
-	VEC3 e; // po³owa rozmiaru
+	Vec3 c; // œrodek
+	Vec3 u[3]; // obrót po X,Y,Z
+	Vec3 e; // po³owa rozmiaru
 };
 
 //-----------------------------------------------------------------------------
 // KOLIZJE
 //-----------------------------------------------------------------------------
 // promieñ - AABOX
-bool RayToBox(const VEC3 &RayOrig, const VEC3 &RayDir, const BOX &Box, float *OutT);
+bool RayToBox(const Vec3 &RayOrig, const Vec3 &RayDir, const Box &Box, float *OutT);
 // promieñ - p³aszczyzna
-bool RayToPlane(const VEC3 &RayOrig, const VEC3 &RayDir, const D3DXPLANE &Plane, float *OutT);
+bool RayToPlane(const Vec3 &RayOrig, const Vec3 &RayDir, const D3DXPLANE &Plane, float *OutT);
 // promieñ - sfera
-bool RayToSphere(const VEC3& ray_pos, const VEC3& ray_dir, const VEC3& center, float radius, float& dist);
+bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist);
 // promieñ - trójk¹t
-bool RayToTriangle(const VEC3& ray_pos, const VEC3& ray_dir, const VEC3& v1, const VEC3& v2, const VEC3& v3, float& dist);
+bool RayToTriangle(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& v1, const Vec3& v2, const Vec3& v3, float& dist);
 // prostok¹t - prostok¹t
 bool RectangleToRectangle(float x1, float y1, float x2, float y2, float a1, float b1, float a2, float b2);
 // okr¹g - prostok¹t
 bool CircleToRectangle(float circlex, float circley, float radius, float rectx, float recty, float w, float h);
 // odcinek - odcinek (2d)
-bool LineToLine(const VEC2& start1, const VEC2& end1, const VEC2& start2, const VEC2& end2, float* t = nullptr);
+bool LineToLine(const Vec2& start1, const Vec2& end1, const Vec2& start2, const Vec2& end2, float* t = nullptr);
 // odcinek - prostok¹t
-bool LineToRectangle(const VEC2& start, const VEC2& end, const VEC2& rect_pos, const VEC2& rect_pos2, float* t = nullptr);
-inline bool LineToRectangle(const VEC3& start, const VEC3& end, const VEC2& rect_pos, const VEC2& rect_pos2, float* t = nullptr)
+bool LineToRectangle(const Vec2& start, const Vec2& end, const Vec2& rect_pos, const Vec2& rect_pos2, float* t = nullptr);
+inline bool LineToRectangle(const Vec3& start, const Vec3& end, const Vec2& rect_pos, const Vec2& rect_pos2, float* t = nullptr)
 {
-	return LineToRectangle(VEC2(start.x, start.z), VEC2(end.x, end.z), rect_pos, rect_pos2, t);
+	return LineToRectangle(Vec2(start.x, start.z), Vec2(end.x, end.z), rect_pos, rect_pos2, t);
 }
-inline bool LineToRectangleSize(const VEC2& start, const VEC2& end, const VEC2& rect_pos, const VEC2& rect_size, float* t = nullptr)
+inline bool LineToRectangleSize(const Vec2& start, const Vec2& end, const Vec2& rect_pos, const Vec2& rect_size, float* t = nullptr)
 {
 	return LineToRectangle(start, end, rect_pos - rect_size, rect_pos + rect_size, t);
 }
 // szeœcian - szeœcian
-bool BoxToBox(const BOX& box1, const BOX& box2);
+bool BoxToBox(const Box& box1, const Box& box2);
 // obrócony szeœcian - obrócony szeœcian
 // punkt kontaktu jest opcjonalny (jest to uœredniony wynik z maksymalnie 4 kontaktów)
-bool OrientedBoxToOrientedBox(const OBBOX& obox1, const OBBOX& obox2, VEC3* contact);
+bool OrientedBoxToOrientedBox(const Obbox& obox1, const Obbox& obox2, Vec3* contact);
 // kolizja ko³o - obrócony prostok¹t
 bool CircleToRotatedRectangle(float cx, float cy, float radius, float rx, float ry, float w, float h, float rot);
 // kolizja dwóch obróconych prostok¹tów (mo¿na by zrobiæ optymalizacje ¿e jeden tylko jest obrócony ale nie wiem jak :3)
 struct RotRect
 {
-	VEC2 center, size;
+	Vec2 center, size;
 	float rot;
 };
 bool RotatedRectanglesCollision(const RotRect& r1, const RotRect& r2);
@@ -1336,17 +1336,17 @@ inline bool CircleToCircle(float cx1, float cy1, float r1, float cx2, float cy2,
 	float r = (r1 + r2);
 	return DistanceSqrt(cx1, cy1, cx2, cy2) < r * r;
 }
-bool SphereToBox(const VEC3& pos, float radius, const BOX& box);
+bool SphereToBox(const Vec3& pos, float radius, const Box& box);
 // kolizja promienia (A->B) z cylindrem (P->Q, promieñ R)
-int RayToCylinder(const VEC3& ray_A, const VEC3& ray_B, const VEC3& cylinder_P, const VEC3& cylinder_Q, float radius, float& t);
-// kolizja OOB z OOB
-bool OOBToOOB(const OOB& a, const OOB& b);
+int RayToCylinder(const Vec3& ray_A, const Vec3& ray_B, const Vec3& cylinder_P, const Vec3& cylinder_Q, float radius, float& t);
+// kolizja Oob z Oob
+bool OOBToOOB(const Oob& a, const Oob& b);
 // odleg³oœæ punktu od prostok¹ta
-float DistanceRectangleToPoint(const VEC2& pos, const VEC2& size, const VEC2& pt);
+float DistanceRectangleToPoint(const Vec2& pos, const Vec2& size, const Vec2& pt);
 // x0,y0 - point
 float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float y2);
-float GetClosestPointOnLineSegment(const VEC2& A, const VEC2& B, const VEC2& P, VEC2& result);
-bool RayToMesh(const VEC3& _ray_pos, const VEC3& _ray_dir, const VEC3& _obj_pos, float _obj_rot, VertexData* _vd, float& _dist);
+float GetClosestPointOnLineSegment(const Vec2& A, const Vec2& B, const Vec2& P, Vec2& result);
+bool RayToMesh(const Vec3& _ray_pos, const Vec3& _ray_dir, const Vec3& _obj_pos, float _obj_rot, VertexData* _vd, float& _dist);
 
 //-----------------------------------------------------------------------------
 // POD types

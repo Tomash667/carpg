@@ -28,7 +28,7 @@ void Control::Initialize()
 	Event(GuiEvent_Initialize);
 }
 
-void Control::SetSize(const INT2& new_size)
+void Control::SetSize(const Int2& new_size)
 {
 	if(size == new_size || IsDocked())
 		return;
@@ -37,7 +37,7 @@ void Control::SetSize(const INT2& new_size)
 		Event(GuiEvent_Resize);
 }
 
-void Control::SetPosition(const INT2& new_pos)
+void Control::SetPosition(const Int2& new_pos)
 {
 	if(pos == new_pos || IsDocked())
 		return;
@@ -60,7 +60,7 @@ void Control::SetDocked(bool new_docked)
 	}
 	else
 	{
-		INT2 new_global_pos = parent->global_pos + pos;
+		Int2 new_global_pos = parent->global_pos + pos;
 		if(new_global_pos != global_pos)
 		{
 			global_pos = new_global_pos;
@@ -97,18 +97,18 @@ void Control::UpdateControl(Control* ctrl, float dt)
 	}
 }
 
-void Control::ResizeImage(TEX t, INT2& new_size, INT2& img_size, VEC2& scale)
+void Control::ResizeImage(TEX t, Int2& new_size, Int2& img_size, Vec2& scale)
 {
 	D3DSURFACE_DESC desc;
 	t->GetLevelDesc(0, &desc);
-	img_size = INT2(desc.Width, desc.Height);
-	if(new_size == INT2(0, 0))
+	img_size = Int2(desc.Width, desc.Height);
+	if(new_size == Int2(0, 0))
 	{
 		new_size = img_size;
-		scale = VEC2(1, 1);
+		scale = Vec2(1, 1);
 	}
 	else if(new_size == img_size)
-		scale = VEC2(1, 1);
+		scale = Vec2(1, 1);
 	else
-		scale = VEC2(float(new_size.x) / img_size.x, float(new_size.y) / img_size.y);
+		scale = Vec2(float(new_size.x) / img_size.x, float(new_size.y) / img_size.y);
 }

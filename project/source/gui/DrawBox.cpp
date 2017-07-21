@@ -16,11 +16,11 @@ void DrawBox::Draw(ControlDrawData*)
 
 	if(tex)
 	{
-		MATRIX m;
-		VEC2 scaled_tex_size = VEC2(tex_size) * scale;
-		VEC2 max_pos = scaled_tex_size - VEC2(size);
-		VEC2 p = VEC2(max_pos.x * -move.x / 100, max_pos.y * -move.y / 100) + VEC2(global_pos);
-		m = MATRIX::Transform2D(nullptr, 0.f, &VEC2(scale, scale), nullptr, 0.f, &p);
+		Matrix m;
+		Vec2 scaled_tex_size = Vec2(tex_size) * scale;
+		Vec2 max_pos = scaled_tex_size - Vec2(size);
+		Vec2 p = Vec2(max_pos.x * -move.x / 100, max_pos.y * -move.y / 100) + Vec2(global_pos);
+		m = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &p);
 		GUI.DrawSprite2(tex, &m, nullptr, &r);
 	}
 }
@@ -67,9 +67,9 @@ void DrawBox::Update(float dt)
 			clicked = false;
 		else
 		{
-			INT2 dif = click_point - GUI.cursor_pos;
+			Int2 dif = click_point - GUI.cursor_pos;
 			GUI.cursor_pos = click_point;
-			move -= VEC2(dif) / 2;
+			move -= Vec2(dif) / 2;
 			move.x = Clamp(move.x, 0.f, 100.f);
 			move.y = Clamp(move.y, 0.f, 100.f);
 		}
@@ -84,10 +84,10 @@ void DrawBox::SetTexture(TEX t)
 	D3DSURFACE_DESC desc;
 	tex->GetLevelDesc(0, &desc);
 
-	tex_size = INT2(desc.Width, desc.Height);
-	VEC2 sizef = VEC2(size);
-	VEC2 scale2 = VEC2(sizef.x / tex_size.x, sizef.y / tex_size.y);
+	tex_size = Int2(desc.Width, desc.Height);
+	Vec2 sizef = Vec2(size);
+	Vec2 scale2 = Vec2(sizef.x / tex_size.x, sizef.y / tex_size.y);
 	scale = min(scale2.x, scale2.y);
 	default_scale = scale;
-	move = VEC2(0, 0);
+	move = Vec2(0, 0);
 }

@@ -72,7 +72,7 @@ void Perlin::Change(int _size, int _octaves, float _freq, float _amp)
 }
 
 // return range [-sqrt(n)/2, sqrt(n)/2]
-float Perlin::Get(VEC2 pos) const
+float Perlin::Get(Vec2 pos) const
 {
 	float result = 0.0f;
 	float amp = amplitude, max_amp = 0;
@@ -117,7 +117,7 @@ float Perlin::noise1(float arg)
 }
 */
 
-float Perlin::Noise2(const VEC2& pos) const
+float Perlin::Noise2(const Vec2& pos) const
 {
 	int bx0, bx1, by0, by1, b00, b10, b01, b11;
 	float rx0, rx1, ry0, ry1, *q, sx, sy, a, b, t, u, v;

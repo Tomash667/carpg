@@ -21,12 +21,12 @@ public:
 	void OnChar(char c) override;
 
 	void AddScrollbar();
-	void Move(const INT2& global_pos);
+	void Move(const Int2& global_pos);
 	void Add(cstring str);
 	void CalculateOffset(bool center);
 	void Reset();
 	void UpdateScrollbar();
-	void UpdateSize(const INT2& pos, const INT2& size);
+	void UpdateSize(const Int2& pos, const Int2& size);
 	void SetText(cstring text);
 	const string& GetText() const { return text; }
 	void SelectAll();
@@ -46,17 +46,17 @@ public:
 
 private:
 	void ValidateNumber();
-	void GetCaretPos(const INT2& in_pos, INT2& index, INT2& pos, uint* char_index = nullptr);
-	void CalculateSelection(const INT2& new_index, const INT2& new_pos);
-	void CalculateSelection(INT2 index1, INT2 pos1, INT2 index2, INT2 pos2);
+	void GetCaretPos(const Int2& in_pos, Int2& index, Int2& pos, uint* char_index = nullptr);
+	void CalculateSelection(const Int2& new_index, const Int2& new_pos);
+	void CalculateSelection(Int2 index1, Int2 pos1, Int2 index2, Int2 pos2);
 	void DeleteSelection();
-	INT2 IndexToPos(const INT2& index);
-	uint ToRawIndex(const INT2& index);
+	Int2 IndexToPos(const Int2& index);
+	uint ToRawIndex(const Int2& index);
 	void UpdateFontLines();
 
 	string text;
 	vector<FontLine> font_lines;
-	INT2 real_size, text_size, caret_pos, select_start_pos, select_end_pos, caret_index, select_start_index, select_end_index, select_fixed_index;
+	Int2 real_size, text_size, caret_pos, select_start_pos, select_end_pos, caret_index, select_start_index, select_end_index, select_fixed_index;
 	float caret_blink, offset_move;
 	int offset, last_y_move;
 	TEX tBackground;

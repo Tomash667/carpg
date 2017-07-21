@@ -23,7 +23,7 @@ public:
 		};
 
 		int near_loc;
-		VEC3 pos;
+		Vec3 pos;
 		State state;
 	};
 
@@ -80,7 +80,7 @@ public:
 	int closed, mage_loc;
 	bool changed, told_about_boss;
 	State evil_state;
-	VEC3 pos;
+	Vec3 pos;
 	float timer;
 	Unit* cleric;
 

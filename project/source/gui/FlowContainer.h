@@ -37,7 +37,7 @@ struct FlowItem
 	Type type;
 	string text;
 	int group, id, tex_id;
-	INT2 pos, size;
+	Int2 pos, size;
 	Button::State state;
 
 	// set for section
@@ -64,8 +64,8 @@ public:
 	void Clear();
 	// set group & index only if there is selection
 	void GetSelected(int& group, int& id);
-	void UpdateSize(const INT2& pos, const INT2& size, bool visible);
-	void UpdatePos(const INT2& parent_pos);
+	void UpdateSize(const Int2& pos, const Int2& size, bool visible);
+	void UpdatePos(const Int2& parent_pos);
 	void Reposition();
 	FlowItem* Find(int group, int id);
 	void ResetScrollbar() { scroll.offset = 0.f; }
@@ -78,7 +78,7 @@ public:
 	vector<FlowItem*> items;
 	ButtonEvent on_button;
 	CustomButton* button_tex;
-	INT2 button_size;
+	Int2 button_size;
 	bool word_warp, allow_select;
 	VoidF on_select;
 	FlowItem* selected;

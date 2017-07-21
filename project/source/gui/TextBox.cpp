@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 TEX TextBox::tBox;
 static const int padding = 4;
-static const INT2 NOT_SELECTED = INT2(-1, -1);
+static const Int2 NOT_SELECTED = Int2(-1, -1);
 
 //=================================================================================================
 TextBox::TextBox(bool is_new) : Control(is_new), added(false), multiline(false), numeric(false), label(nullptr), scrollbar(nullptr), readonly(false), caret_index(-1),
@@ -38,7 +38,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 			GUI.DrawText(GUI.default_font, txt, multiline ? DT_TOP : DT_VCENTER, BLACK, r);
 		else
 		{
-			Rect r2 = Rect(r) - INT2(0, int(scrollbar->offset));
+			Rect r2 = Rect(r) - Int2(0, int(scrollbar->offset));
 			GUI.DrawText(GUI.default_font, txt, DT_TOP, BLACK, r2, &r);
 			scrollbar->Draw();
 		}
@@ -54,7 +54,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 		// not coded yet
 		assert(!label);
 
-		BOX2D* clip_rect = nullptr;
+		Box2d* clip_rect = nullptr;
 		if(cdd)
 			clip_rect = cdd->clipping;
 		int offsety = (scrollbar ? (int)scrollbar->offset : 0);
@@ -78,7 +78,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 			int select_end_line = select_end_pos.y / line_height;
 			int lines = select_end_line - select_start_line + 1;
 			Rect area, r;
-			INT2 pos = global_pos - INT2(offset, offsety) + INT2(padding, padding);
+			Int2 pos = global_pos - Int2(offset, offsety) + Int2(padding, padding);
 
 			// ...A----B
 			// C-------D
@@ -147,7 +147,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 		// carret
 		if(caret_blink >= 0.f)
 		{
-			INT2 p(global_pos.x + padding + caret_pos.x - offset, global_pos.y + padding + caret_pos.y - offsety);
+			Int2 p(global_pos.x + padding + caret_pos.x - offset, global_pos.y + padding + caret_pos.y - offsety);
 			Rect caret_rect = {
 				p.x,
 				p.y,
@@ -178,7 +178,7 @@ void TextBox::Update(float dt)
 			{
 				// set caret position, update selection
 				bool prev_focus = focus;
-				INT2 new_index, new_pos, prev_index = caret_index;
+				Int2 new_index, new_pos, prev_index = caret_index;
 				uint char_index;
 				GetCaretPos(GUI.cursor_pos, new_index, new_pos, &char_index);
 				caret_blink = 0.f;
@@ -301,7 +301,7 @@ void TextBox::Update(float dt)
 						}
 					}
 
-					INT2 new_index, new_pos;
+					Int2 new_index, new_pos;
 					GetCaretPos(GUI.cursor_pos, new_index, new_pos);
 					if(new_index != caret_index)
 					{
@@ -388,7 +388,7 @@ void TextBox::Update(float dt)
 
 			if(move != 0)
 			{
-				INT2 new_index, new_pos;
+				Int2 new_index, new_pos;
 				if(shift || select_start_index == NOT_SELECTED || move == 10 || move == -10)
 				{
 					if(!shift)
@@ -401,20 +401,20 @@ void TextBox::Update(float dt)
 						{
 							if(last_y_move == -1)
 								last_y_move = caret_pos.x;
-							INT2 check_pos = global_pos + INT2(last_y_move, caret_pos.y - GUI.default_font->height / 2 - (int)scrollbar->offset);
+							Int2 check_pos = global_pos + Int2(last_y_move, caret_pos.y - GUI.default_font->height / 2 - (int)scrollbar->offset);
 							GetCaretPos(check_pos, new_index, new_pos);
 						}
 						else
 						{
-							new_index = INT2(0, 0);
-							new_pos = INT2(0, 0);
+							new_index = Int2(0, 0);
+							new_pos = Int2(0, 0);
 							last_y_move = -1;
 						}
 						break;
 					case -1:
 						if(caret_index.x > 0)
 						{
-							new_index = INT2(caret_index.x - 1, caret_index.y);
+							new_index = Int2(caret_index.x - 1, caret_index.y);
 							uint raw_index = ToRawIndex(new_index);
 							new_pos = caret_pos;
 							new_pos.x -= GUI.default_font->GetCharWidth(text[raw_index]);
@@ -422,15 +422,15 @@ void TextBox::Update(float dt)
 						else
 						{
 							assert(caret_index.y > 0);
-							new_index = INT2(font_lines[caret_index.y - 1].count, caret_index.y - 1);
-							new_pos = INT2(font_lines[new_index.y].width, new_index.y * GUI.default_font->height);
+							new_index = Int2(font_lines[caret_index.y - 1].count, caret_index.y - 1);
+							new_pos = Int2(font_lines[new_index.y].width, new_index.y * GUI.default_font->height);
 						}
 						last_y_move = -1;
 						break;
 					case +1:
 						if((uint)caret_index.x < font_lines[caret_index.y].count)
 						{
-							new_index = INT2(caret_index.x + 1, caret_index.y);
+							new_index = Int2(caret_index.x + 1, caret_index.y);
 							uint raw_index = ToRawIndex(new_index);
 							new_pos = caret_pos;
 							new_pos.x += GUI.default_font->GetCharWidth(text[raw_index - 1]);
@@ -438,8 +438,8 @@ void TextBox::Update(float dt)
 						else
 						{
 							assert((uint)caret_index.y < font_lines.size());
-							new_index = INT2(0, caret_index.y + 1);
-							new_pos = INT2(0, new_index.y * GUI.default_font->height);
+							new_index = Int2(0, caret_index.y + 1);
+							new_pos = Int2(0, new_index.y * GUI.default_font->height);
 						}
 						last_y_move = -1;
 						break;
@@ -448,13 +448,13 @@ void TextBox::Update(float dt)
 						{
 							if(last_y_move == -1)
 								last_y_move = caret_pos.x;
-							INT2 check_pos = global_pos + INT2(last_y_move, caret_pos.y + GUI.default_font->height * 3 / 2 - (int)scrollbar->offset);
+							Int2 check_pos = global_pos + Int2(last_y_move, caret_pos.y + GUI.default_font->height * 3 / 2 - (int)scrollbar->offset);
 							GetCaretPos(check_pos, new_index, new_pos);
 						}
 						else
 						{
-							new_index = INT2(font_lines.back().count, font_lines.size() - 1);
-							new_pos = INT2(font_lines.back().width, new_index.y * GUI.default_font->height);
+							new_index = Int2(font_lines.back().count, font_lines.size() - 1);
+							new_pos = Int2(font_lines.back().width, new_index.y * GUI.default_font->height);
 							last_y_move = -1;
 						}
 						break;
@@ -488,14 +488,14 @@ void TextBox::Update(float dt)
 			// select all
 			if(Key.Shortcut(KEY_CONTROL, 'A'))
 			{
-				caret_index = INT2(0, 0);
-				caret_pos = INT2(0, 0);
+				caret_index = Int2(0, 0);
+				caret_pos = Int2(0, 0);
 				caret_blink = 0.f;
-				select_start_index = INT2(0, 0);
-				select_start_pos = INT2(0, 0);
-				select_end_index = INT2(font_lines.back().count, font_lines.size() - 1);
-				select_end_pos = INT2(font_lines.back().width, font_lines.size() * GUI.default_font->height);
-				select_fixed_index = INT2(0, 0);
+				select_start_index = Int2(0, 0);
+				select_start_pos = Int2(0, 0);
+				select_end_index = Int2(font_lines.back().count, font_lines.size() - 1);
+				select_end_pos = Int2(font_lines.back().width, font_lines.size() * GUI.default_font->height);
+				select_fixed_index = Int2(0, 0);
 			}
 
 			// copy
@@ -562,8 +562,8 @@ void TextBox::Event(GuiEvent e)
 	case GuiEvent_Resize:
 		if(scrollbar && is_new)
 		{
-			scrollbar->pos = INT2(size.x - 16, 0);
-			scrollbar->size = INT2(16, size.y);
+			scrollbar->pos = Int2(size.x - 16, 0);
+			scrollbar->size = Int2(16, size.y);
 			scrollbar->part = size.y - 8;
 			UpdateFontLines();
 		}
@@ -596,8 +596,8 @@ void TextBox::Event(GuiEvent e)
 			if(multiline)
 			{
 				scrollbar = new Scrollbar;
-				scrollbar->pos = INT2(size.x - 16, 0);
-				scrollbar->size = INT2(16, size.y);
+				scrollbar->pos = Int2(size.x - 16, 0);
+				scrollbar->size = Int2(16, size.y);
 				scrollbar->total = 0;
 				scrollbar->part = size.y - 8;
 				scrollbar->offset = 0.f;
@@ -744,15 +744,15 @@ void TextBox::AddScrollbar()
 	if(scrollbar)
 		return;
 	scrollbar = new Scrollbar;
-	scrollbar->pos = INT2(size.x + 2, 0);
-	scrollbar->size = INT2(16, size.y);
+	scrollbar->pos = Int2(size.x + 2, 0);
+	scrollbar->size = Int2(16, size.y);
 	scrollbar->total = 8;
 	scrollbar->part = size.y - 8;
 	scrollbar->offset = 0.f;
 }
 
 //=================================================================================================
-void TextBox::Move(const INT2& _global_pos)
+void TextBox::Move(const Int2& _global_pos)
 {
 	global_pos = _global_pos + pos;
 	if(scrollbar)
@@ -764,7 +764,7 @@ void TextBox::Add(cstring str)
 {
 	assert(!is_new);
 	assert(scrollbar);
-	INT2 str_size = GUI.default_font->CalculateSize(str, size.x - 8);
+	Int2 str_size = GUI.default_font->CalculateSize(str, size.x - 8);
 	bool skip_to_end = (int(scrollbar->offset) >= (scrollbar->total - scrollbar->part));
 	scrollbar->total += str_size.y;
 	if(text.empty())
@@ -792,8 +792,8 @@ void TextBox::Reset()
 		scrollbar->part = size.y - 8;
 		scrollbar->offset = 0.f;
 	}
-	caret_index = INT2(0, 0);
-	caret_pos = INT2(0, 0);
+	caret_index = Int2(0, 0);
+	caret_pos = Int2(0, 0);
 	last_y_move = -1;
 	select_start_index = NOT_SELECTED;
 }
@@ -801,18 +801,18 @@ void TextBox::Reset()
 //=================================================================================================
 void TextBox::UpdateScrollbar()
 {
-	INT2 text_size = GUI.default_font->CalculateSize(text, size.x - 8);
+	Int2 text_size = GUI.default_font->CalculateSize(text, size.x - 8);
 	scrollbar->total = text_size.y;
 }
 
 //=================================================================================================
-void TextBox::UpdateSize(const INT2& new_pos, const INT2& new_size)
+void TextBox::UpdateSize(const Int2& new_pos, const Int2& new_size)
 {
 	global_pos = pos = new_pos;
 	size = new_size;
 
-	scrollbar->global_pos = scrollbar->pos = INT2(global_pos.x + size.x - 16, global_pos.y);
-	scrollbar->size = INT2(16, size.y);
+	scrollbar->global_pos = scrollbar->pos = Int2(global_pos.x + size.x - 16, global_pos.y);
+	scrollbar->size = Int2(16, size.y);
 	scrollbar->offset = 0.f;
 	scrollbar->part = size.y - 8;
 
@@ -820,11 +820,11 @@ void TextBox::UpdateSize(const INT2& new_pos, const INT2& new_size)
 }
 
 //=================================================================================================
-void TextBox::GetCaretPos(const INT2& in_pos, INT2& out_index, INT2& out_pos, uint* char_index)
+void TextBox::GetCaretPos(const Int2& in_pos, Int2& out_index, Int2& out_pos, uint* char_index)
 {
-	const INT2 real_size_without_pad = real_size - INT2(padding, padding) * 2;
+	const Int2 real_size_without_pad = real_size - Int2(padding, padding) * 2;
 	uint index;
-	INT2 index2;
+	Int2 index2;
 	Rect rect;
 	float uv;
 
@@ -833,8 +833,8 @@ void TextBox::GetCaretPos(const INT2& in_pos, INT2& out_index, INT2& out_pos, ui
 		int local_x = in_pos.x - global_pos.x - padding + offset;
 		if(local_x < 0)
 		{
-			out_index = INT2(0, 0);
-			out_pos = INT2(0, 0);
+			out_index = Int2(0, 0);
+			out_pos = Int2(0, 0);
 			return;
 		}
 
@@ -843,7 +843,7 @@ void TextBox::GetCaretPos(const INT2& in_pos, INT2& out_index, INT2& out_pos, ui
 		else if(local_x < offset)
 			local_x = offset;
 
-		GUI.default_font->HitTest(text, real_size_without_pad.x, DT_SINGLELINE | DT_VCENTER, INT2(local_x, 0), index, index2, rect, uv, &font_lines);
+		GUI.default_font->HitTest(text, real_size_without_pad.x, DT_SINGLELINE | DT_VCENTER, Int2(local_x, 0), index, index2, rect, uv, &font_lines);
 	}
 	else
 	{
@@ -860,13 +860,13 @@ void TextBox::GetCaretPos(const INT2& in_pos, INT2& out_index, INT2& out_pos, ui
 		if(local_y > real_size_without_pad.y + offsety)
 			local_y = real_size_without_pad.y + offsety;
 
-		GUI.default_font->HitTest(text, real_size_without_pad.x, DT_LEFT, INT2(local_x, local_y), index, index2, rect, uv, &font_lines);
+		GUI.default_font->HitTest(text, real_size_without_pad.x, DT_LEFT, Int2(local_x, local_y), index, index2, rect, uv, &font_lines);
 	}
 
 	if(uv >= 0.5f)
 	{
-		out_index = INT2(index2.x + 1, index2.y);
-		out_pos = INT2(rect.p2.x, rect.p1.y);
+		out_index = Int2(index2.x + 1, index2.y);
+		out_pos = Int2(rect.p2.x, rect.p1.y);
 	}
 	else
 	{
@@ -879,7 +879,7 @@ void TextBox::GetCaretPos(const INT2& in_pos, INT2& out_index, INT2& out_pos, ui
 }
 
 //=================================================================================================
-void TextBox::CalculateSelection(const INT2& new_index, const INT2& new_pos)
+void TextBox::CalculateSelection(const Int2& new_index, const Int2& new_pos)
 {
 	if(select_start_index == NOT_SELECTED)
 	{
@@ -893,7 +893,7 @@ void TextBox::CalculateSelection(const INT2& new_index, const INT2& new_pos)
 }
 
 //=================================================================================================
-void TextBox::CalculateSelection(INT2 index1, INT2 pos1, INT2 index2, INT2 pos2)
+void TextBox::CalculateSelection(Int2 index1, Int2 pos1, Int2 index2, Int2 pos2)
 {
 	if(index1.y < index2.y || (index1.x < index2.x && index1.y == index2.y))
 	{
@@ -925,9 +925,9 @@ void TextBox::DeleteSelection()
 }
 
 //=================================================================================================
-INT2 TextBox::IndexToPos(const INT2& index)
+Int2 TextBox::IndexToPos(const Int2& index)
 {
-	const INT2 real_size_without_pad = real_size - INT2(padding, padding) * 2;
+	const Int2 real_size_without_pad = real_size - Int2(padding, padding) * 2;
 	int flags;
 	if(scrollbar)
 		flags = DT_LEFT;
@@ -990,25 +990,25 @@ void TextBox::SelectAll()
 	SetFocus();
 	if(text.empty())
 	{
-		caret_index = INT2(0, 0);
-		caret_pos = INT2(0, 0);
+		caret_index = Int2(0, 0);
+		caret_pos = Int2(0, 0);
 		select_start_index = NOT_SELECTED;
 	}
 	else
 	{
-		caret_index = INT2(font_lines.back().count, font_lines.size());
-		caret_pos = INT2(font_lines.back().width, font_lines.size() * GUI.default_font->height);
-		select_start_index = INT2(0, 0);
+		caret_index = Int2(font_lines.back().count, font_lines.size());
+		caret_pos = Int2(font_lines.back().width, font_lines.size() * GUI.default_font->height);
+		select_start_index = Int2(0, 0);
 		select_end_index = caret_index;
-		select_start_pos = INT2(0, 0);
+		select_start_pos = Int2(0, 0);
 		select_end_pos = caret_pos;
-		select_fixed_index = INT2(0, 0);
+		select_fixed_index = Int2(0, 0);
 	}
 	last_y_move = -1;
 }
 
 //=================================================================================================
-uint TextBox::ToRawIndex(const INT2& index)
+uint TextBox::ToRawIndex(const Int2& index)
 {
 	return GUI.default_font->ToRawIndex(font_lines, index);
 }
@@ -1037,7 +1037,7 @@ void TextBox::UpdateFontLines()
 		return;
 	}
 
-	text_size = INT2(max_width, height);
+	text_size = Int2(max_width, height);
 	scrollbar->UpdateTotal(text_size.y);
 	require_scrollbar = scrollbar->IsRequired();
 	if(old_require_scrollbar != require_scrollbar)
@@ -1045,7 +1045,7 @@ void TextBox::UpdateFontLines()
 	else
 	{
 		if(require_scrollbar)
-			real_size = INT2(size.x - 15, size.y);
+			real_size = Int2(size.x - 15, size.y);
 		else
 			real_size = size;
 	}

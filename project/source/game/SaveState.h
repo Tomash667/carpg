@@ -17,4 +17,4 @@ enum SAVE_VERSION
 //-----------------------------------------------------------------------------
 extern const int SAVE_VERSION;
 extern int LOAD_VERSION;
-extern const INT2 SUPPORT_LOAD_VERSION;
+extern const Int2 SUPPORT_LOAD_VERSION;

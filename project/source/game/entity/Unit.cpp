@@ -747,7 +747,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_GREEN_HAIR:
 		if(human_data)
 		{
-			human_data->hair_color = VEC4(0, 1, 0, 1);
+			human_data->hair_color = Vec4(0, 1, 0, 1);
 			if(game.IsOnline())
 			{
 				NetChange& c = Add1(game.net_changes);
@@ -971,7 +971,7 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 }
 
 //=================================================================================================
-void Unit::GetBox(BOX& _box) const
+void Unit::GetBox(Box& _box) const
 {
 	float radius = GetUnitRadius();
 	_box.v1.x = pos.x - radius;
@@ -992,7 +992,7 @@ int Unit::GetDmgType() const
 }
 
 //=================================================================================================
-VEC3 Unit::GetLootCenter() const
+Vec3 Unit::GetLootCenter() const
 {
 	Animesh::Point* point2 = ani->ani->GetPoint("centrum");
 
@@ -1000,9 +1000,9 @@ VEC3 Unit::GetLootCenter() const
 		return pos;
 
 	const Animesh::Point& point = *point2;
-	MATRIX matBone = point.mat * ani->mat_bones[point.bone];
-	matBone = matBone * (MATRIX::RotationY(rot) * MATRIX::Translation(pos));
-	VEC3 center = VEC3::TransformZero(matBone);
+	Matrix matBone = point.mat * ani->mat_bones[point.bone];
+	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(pos));
+	Vec3 center = Vec3::TransformZero(matBone);
 	return center;
 }
 
@@ -1727,7 +1727,7 @@ void Unit::Load(HANDLE file, bool local)
 		cobj->setUserPointer(this);
 		cobj->setCollisionFlags(CG_UNIT);
 		Game::Get().phy_world->addCollisionObject(cobj);
-		Game::Get().UpdateUnitPhysics(*this, IsAlive() ? pos : VEC3(1000, 1000, 1000));
+		Game::Get().UpdateUnitPhysics(*this, IsAlive() ? pos : Vec3(1000, 1000, 1000));
 	}
 	else
 		cobj = nullptr;
@@ -2170,12 +2170,12 @@ uint NAMES::n_ani_humanoid = countof(NAMES::ani_humanoid);
 int NAMES::max_attacks = countof(ani_attacks);
 
 //=================================================================================================
-VEC3 Unit::GetEyePos() const
+Vec3 Unit::GetEyePos() const
 {
 	const Animesh::Point& point = *ani->ani->GetPoint("oczy");
-	MATRIX matBone = point.mat * ani->mat_bones[point.bone];
-	matBone = matBone * (MATRIX::RotationY(rot) * MATRIX::Translation(pos));
-	VEC3 eye = VEC3::TransformZero(matBone);
+	Matrix matBone = point.mat * ani->mat_bones[point.bone];
+	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(pos));
+	Vec3 eye = Vec3::TransformZero(matBone);
 	return eye;
 }
 

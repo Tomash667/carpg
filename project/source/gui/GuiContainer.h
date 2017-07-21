@@ -36,7 +36,7 @@ public:
 	void Add(Button& button) { Add(&button); }
 	void GainFocus();
 	void LostFocus();
-	void Move(const INT2& global_pos);
+	void Move(const Int2& global_pos);
 	void CheckGiveFocus();
 
 	vector<GuiItem> items;

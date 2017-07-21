@@ -43,7 +43,7 @@ void Door::Load(HANDLE file, bool local)
 		phy->setCollisionShape(game.shape_door);
 
 		btTransform& tr = phy->getWorldTransform();
-		VEC3 pos2 = pos;
+		Vec3 pos2 = pos;
 		pos2.y += 1.319f;
 		tr.setOrigin(ToVector3(pos2));
 		tr.setRotation(btQuaternion(rot, 0, 0));

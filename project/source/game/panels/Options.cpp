@@ -202,16 +202,16 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 		"specularMap"
 	};
 
-	size = INT2(570, 460);
+	size = Int2(570, 460);
 	bts.resize(2);
 
-	INT2 offset(290, 60);
+	Int2 offset(290, 60);
 
 	for(int i = 0; i < 4; ++i)
 	{
 		check[i].id = IdFullscreen + i;
 		check[i].parent = this;
-		check[i].size = INT2(size.x - 44, 32);
+		check[i].size = Int2(size.x - 44, 32);
 		check[i].text = Str(ids[i]);
 		check[i].pos = offset;
 		offset.y += 32 + 10;
@@ -220,40 +220,40 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 	bts[0].id = IdOk;
 	bts[0].parent = this;
 	bts[0].text = Str("ok");
-	bts[0].size = GUI.default_font->CalculateSize(bts[0].text) + INT2(24, 24);
+	bts[0].size = GUI.default_font->CalculateSize(bts[0].text) + Int2(24, 24);
 
 	bts[1].id = IdControls;
 	bts[1].parent = this;
 	bts[1].text = Str("controls");
-	bts[1].size = GUI.default_font->CalculateSize(bts[1].text) + INT2(24, 24);
+	bts[1].size = GUI.default_font->CalculateSize(bts[1].text) + Int2(24, 24);
 
 	bts[0].size.x = bts[1].size.x = max(bts[0].size.x, bts[1].size.x);
-	bts[0].pos = INT2(286, 400);
-	bts[1].pos = INT2(size.x - 16 - bts[0].size.x, 400);
+	bts[0].pos = Int2(286, 400);
+	bts[1].pos = Int2(size.x - 16 - bts[0].size.x, 400);
 
-	scroll[0].pos = INT2(290, 250);
-	scroll[0].size = INT2(250, 16);
+	scroll[0].pos = Int2(290, 250);
+	scroll[0].size = Int2(250, 16);
 	scroll[0].total = 100;
 	scroll[0].part = 10;
 	scroll[0].offset = 0;
 	scroll[0].hscrollbar = true;
 
-	scroll[1].pos = INT2(290, 290);
-	scroll[1].size = INT2(250, 16);
+	scroll[1].pos = Int2(290, 290);
+	scroll[1].size = Int2(250, 16);
 	scroll[1].total = 100;
 	scroll[1].part = 10;
 	scroll[1].offset = 0;
 	scroll[1].hscrollbar = true;
 
-	scroll[2].pos = INT2(290, 330);
-	scroll[2].size = INT2(250, 16);
+	scroll[2].pos = Int2(290, 330);
+	scroll[2].size = Int2(250, 16);
 	scroll[2].total = 100;
 	scroll[2].part = 10;
 	scroll[2].offset = 0;
 	scroll[2].hscrollbar = true;
 
-	scroll[3].pos = INT2(290, 370);
-	scroll[3].size = INT2(250, 16);
+	scroll[3].pos = Int2(290, 370);
+	scroll[3].size = Int2(250, 16);
 	scroll[3].total = 100;
 	scroll[3].part = 10;
 	scroll[3].offset = 0;
@@ -261,8 +261,8 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 
 	// lista rozdzielczoœci
 	res.parent = this;
-	res.pos = INT2(20, 80);
-	res.size = INT2(250, 200);
+	res.pos = Int2(20, 80);
+	res.size = Int2(250, 200);
 	res.event_handler = DialogEvent(this, &Options::OnChangeRes);
 	LocalVector<Res*> vres;
 	uint display_modes = game->d3d->GetAdapterModeCount(game->used_adapter, DISPLAY_FORMAT);
@@ -289,8 +289,8 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 	// multisampling
 	multisampling.SetCollapsed(true);
 	multisampling.parent = this;
-	multisampling.pos = INT2(20, 327);
-	multisampling.size = INT2(250, 25);
+	multisampling.pos = Int2(20, 327);
+	multisampling.size = Int2(250, 25);
 	multisampling.event_handler = DialogEvent(this, &Options::OnChangeMultisampling);
 	multisampling.Add(new MultisamplingItem(0, 0));
 	int ms, msq;
@@ -319,8 +319,8 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 	// jêzyk
 	language.SetCollapsed(true);
 	language.parent = this;
-	language.pos = INT2(20, 383);
-	language.size = INT2(250, 25);
+	language.pos = Int2(20, 383);
+	language.size = Int2(250, 25);
 	language.event_handler = DialogEvent(this, &Options::OnChangeLanguage);
 	index = 0;
 	for(vector<LanguageMap*>::iterator it = g_languages.begin(), end = g_languages.end(); it != end; ++it, ++index)

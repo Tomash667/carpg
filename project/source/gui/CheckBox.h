@@ -24,6 +24,6 @@ public:
 	string text;
 	int id;
 	State state;
-	INT2 bt_size;
+	Int2 bt_size;
 	bool checked, radiobox;
 };

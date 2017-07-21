@@ -285,7 +285,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::GotoTower:
 		// idzie za tob¹ do pustej wie¿y
 		{
-			target_loc = game->CreateLocation(L_DUNGEON, VEC2(0, 0), -64.f, MAGE_TOWER, SG_BRAK, true, 2);
+			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_BRAK, true, 2);
 			Location& loc = *game->locations[target_loc];
 			loc.st = 1;
 			loc.state = LS_KNOWN;
@@ -371,7 +371,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			GetTargetLocation().active_quest = nullptr;
-			target_loc = game->CreateLocation(L_DUNGEON, VEC2(0, 0), -64.f, MAGE_TOWER, SG_MAGOWIE_I_GOLEMY);
+			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_MAGOWIE_I_GOLEMY);
 			Location& loc = GetTargetLocation();
 			loc.state = LS_HIDDEN;
 			loc.st = 15;

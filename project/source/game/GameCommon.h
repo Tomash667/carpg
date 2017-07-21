@@ -32,30 +32,30 @@ inline float dir_to_rot(int _dir)
 }
 
 //-----------------------------------------------------------------------------
-inline INT2 dir_to_pos(int _dir)
+inline Int2 dir_to_pos(int _dir)
 {
 	assert(InRange(_dir, 0, 4));
 
-	const INT2 k[4] = {
-		INT2(0,-1),
-		INT2(-1,0),
-		INT2(0,1),
-		INT2(1,0)
+	const Int2 k[4] = {
+		Int2(0,-1),
+		Int2(-1,0),
+		Int2(0,1),
+		Int2(1,0)
 	};
 
 	return k[_dir];
 }
 
 //-----------------------------------------------------------------------------
-inline VEC3 pt_to_pos(const INT2& _pt, float _y = 0)
+inline Vec3 pt_to_pos(const Int2& _pt, float _y = 0)
 {
-	return VEC3(float(_pt.x * 2) + 1, _y, float(_pt.y * 2) + 1);
+	return Vec3(float(_pt.x * 2) + 1, _y, float(_pt.y * 2) + 1);
 }
 
 //-----------------------------------------------------------------------------
-inline INT2 pos_to_pt(const VEC3& pos)
+inline Int2 pos_to_pt(const Vec3& pos)
 {
-	return INT2(int(floor(pos.x / 2)), int(floor(pos.z / 2)));
+	return Int2(int(floor(pos.x / 2)), int(floor(pos.z / 2)));
 }
 
 //-----------------------------------------------------------------------------
@@ -75,8 +75,8 @@ extern cstring kierunek_nazwa_s[];
 
 //-----------------------------------------------------------------------------
 KIERUNEK AngleToDir(float angle);
-KIERUNEK GetLocationDir(const VEC2& from, const VEC2& to);
-inline cstring GetLocationDirName(const VEC2& from, const VEC2& to)
+KIERUNEK GetLocationDir(const Vec2& from, const Vec2& to);
+inline cstring GetLocationDirName(const Vec2& from, const Vec2& to)
 {
 	return kierunek_nazwa[GetLocationDir(from, to)];
 }

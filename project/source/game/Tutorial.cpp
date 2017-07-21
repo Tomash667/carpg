@@ -105,22 +105,22 @@ char mapa_t3[] = {
 
 struct RoomInfo
 {
-	INT2 pos, size;
+	Int2 pos, size;
 	bool corridor;
 	int connected[2];
 };
 
 RoomInfo t_rooms[] = {
-	INT2(0,19), INT2(6,3), false, {1,-1},
-	INT2(0,14), INT2(8,5), false, {0, 2},
-	INT2(8,14), INT2(5,5), false, {1, 3},
-	INT2(13,13), INT2(7,7), false, {2, 4},
-	INT2(13,4), INT2(7,9), false, {3, 5},
-	INT2(14,0), INT2(5,5), false, {4, 6},
-	INT2(8,0), INT2(6,5), false, {5, 7},
-	INT2(10,4), INT2(3,4), true, {6, 8},
-	INT2(2,8), INT2(11,6), false, {7, 9},
-	INT2(2,1), INT2(7,7), false, {8,-1}
+	Int2(0,19), Int2(6,3), false, {1,-1},
+	Int2(0,14), Int2(8,5), false, {0, 2},
+	Int2(8,14), Int2(5,5), false, {1, 3},
+	Int2(13,13), Int2(7,7), false, {2, 4},
+	Int2(13,4), Int2(7,9), false, {3, 5},
+	Int2(14,0), Int2(5,5), false, {4, 6},
+	Int2(8,0), Int2(6,5), false, {5, 7},
+	Int2(10,4), Int2(3,4), true, {6, 8},
+	Int2(2,8), Int2(11,6), false, {7, 9},
+	Int2(2,1), Int2(7,7), false, {8,-1}
 };
 
 struct TutChestHandler : public ChestEventHandler
@@ -181,7 +181,7 @@ void Game::StartTutorial()
 	pc->unit->gold = 10;
 	notes.push_back(txTutNote);
 
-	INT2 start_tile;
+	Int2 start_tile;
 
 	// startowa lokacja
 	SingleInsideLocation* loc = new SingleInsideLocation;
@@ -235,7 +235,7 @@ void Game::StartTutorial()
 				break;
 			case '/':
 				p.type = SCHODY_GORA;
-				lvl.staircase_up = INT2(x, y);
+				lvl.staircase_up = Int2(x, y);
 				lvl.staircase_up_dir = 2;
 				break;
 			case '+':
@@ -253,7 +253,7 @@ void Game::StartTutorial()
 					tt.id = int(c - '0');
 					tt.state = (tt.id == 0 ? 1 : 0);
 					tt.text = txTut[tt.id];
-					tt.pos = VEC3(2.f*x + 1, 0, 2.f*y + 1);
+					tt.pos = Vec3(2.f*x + 1, 0, 2.f*y + 1);
 				}
 				break;
 			case 'S':
@@ -271,12 +271,12 @@ void Game::StartTutorial()
 						5 - tarcza strzelniacza [w prawo]
 						6 - cz³owiek [w dó³]*/
 					case 0:
-						start_tile = INT2(x, y);
+						start_tile = Int2(x, y);
 						break;
 					case 1:
 						{
 							Obj* o = FindObject("chest");
-							Chest* chest = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
+							Chest* chest = (Chest*)SpawnObject(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(FindItem("sword_long"));
 							chest->AddItem(FindItem("shield_wood"));
 							chest->AddItem(FindItem("al_leather"));
@@ -285,12 +285,12 @@ void Game::StartTutorial()
 						}
 						break;
 					case 2:
-						tut_dummy = VEC3(2.f*x + 1, 0, 2.f*y + 1);
+						tut_dummy = Vec3(2.f*x + 1, 0, 2.f*y + 1);
 						SpawnObject(local_ctx, FindObject("melee_target"), tut_dummy, PI / 2);
 						break;
 					case 3:
 						{
-							Unit* u = SpawnUnitNearLocation(local_ctx, VEC3(2.f*x + 1, 0, 2.f*y + 1), *FindUnitData("tut_goblin"), nullptr, 1);
+							Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*x + 1, 0, 2.f*y + 1), *FindUnitData("tut_goblin"), nullptr, 1);
 							u->rot = PI;
 							u->event_handler = &tut_unit_handler;
 						}
@@ -298,7 +298,7 @@ void Game::StartTutorial()
 					case 4:
 						{
 							Obj* o = FindObject("chest");
-							Chest* chest = (Chest*)SpawnObject(local_ctx, o, VEC3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
+							Chest* chest = (Chest*)SpawnObject(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(FindItem("bow_short"));
 							chest->AddItem(FindItem("p_hp"));
 							chest->AddItem(gold_item_ptr, Random(75, 100));
@@ -307,7 +307,7 @@ void Game::StartTutorial()
 						break;
 					case 5:
 						{
-							Object* o = SpawnObject(local_ctx, FindObject("bow_target"), VEC3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
+							Object* o = SpawnObject(local_ctx, FindObject("bow_target"), Vec3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
 							if(tut_shield)
 								tut_shield2 = o;
 							else
@@ -316,7 +316,7 @@ void Game::StartTutorial()
 						break;
 					case 6:
 						{
-							Unit* u = SpawnUnitNearLocation(local_ctx, VEC3(2.f*x + 1, 0, 2.f*y + 1), *FindUnitData("tut_czlowiek"), nullptr, 1);
+							Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*x + 1, 0, 2.f*y + 1), *FindUnitData("tut_czlowiek"), nullptr, 1);
 							u->rot = PI;
 						}
 						break;
@@ -360,7 +360,7 @@ void Game::StartTutorial()
 	// go!
 	SpawnDungeonColliders();
 	CreateDungeonMinimap();
-	AddPlayerTeam(VEC3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0, false, true);
+	AddPlayerTeam(Vec3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0, false, true);
 	location_event_handler = nullptr;
 	SetMusic();
 	main_menu->visible = false;
@@ -393,31 +393,31 @@ void Game::UpdateTutorial()
 {
 	// atakowanie manekina
 	if(pc->unit->action == A_ATTACK && pc->unit->animation_state == 1 && !pc->unit->hitted && pc->unit->ani->GetProgress2() >= pc->unit->GetAttackFrame(1)
-		&& VEC3::Distance(pc->unit->pos, tut_dummy) < 5.f)
+		&& Vec3::Distance(pc->unit->pos, tut_dummy) < 5.f)
 	{
 		Animesh::Point* hitbox, *point;
 		hitbox = pc->unit->GetWeapon().mesh->FindPoint("hit");
 		point = pc->unit->ani->ani->GetPoint(NAMES::point_weapon);
 
-		OBBOX obox1, obox2;
-		
+		Obbox obox1, obox2;
+
 		// calculate hitbox matrix
-		MATRIX m_unit = MATRIX::RotationY(pc->unit->rot) * MATRIX::Translation(pc->unit->pos);
-		MATRIX m_weapon = point->mat * pc->unit->ani->mat_bones[point->bone] * m_unit;
-		MATRIX m_hitbox = hitbox->mat * m_weapon;
+		Matrix m_unit = Matrix::RotationY(pc->unit->rot) * Matrix::Translation(pc->unit->pos);
+		Matrix m_weapon = point->mat * pc->unit->ani->mat_bones[point->bone] * m_unit;
+		Matrix m_hitbox = hitbox->mat * m_weapon;
 
 		// create weapon hitbox oriented bounding box
-		obox1.pos = VEC3::TransformZero(m_hitbox);
+		obox1.pos = Vec3::TransformZero(m_hitbox);
 		obox1.size = hitbox->size / 2;
 		obox1.rot = m_hitbox;
 
 		// create dummy oriented bounding box
 		obox2.pos = tut_dummy;
 		obox2.pos.y += 1.f;
-		obox2.size = VEC3(0.6f, 2.f, 0.6f);
-		obox2.rot = MATRIX::IdentityMatrix;
+		obox2.size = Vec3(0.6f, 2.f, 0.6f);
+		obox2.rot = Matrix::IdentityMatrix;
 
-		VEC3 hitpoint;
+		Vec3 hitpoint;
 
 		// sprawdŸ czy jest kolizja
 		if(OrientedBoxToOrientedBox(obox1, obox2, &hitpoint))
@@ -433,10 +433,10 @@ void Game::UpdateTutorial()
 			pe->spawn_max = 15;
 			pe->max_particles = 15;
 			pe->pos = hitpoint;
-			pe->speed_min = VEC3(-1, 0, -1);
-			pe->speed_max = VEC3(1, 1, 1);
-			pe->pos_min = VEC3(-0.1f, -0.1f, -0.1f);
-			pe->pos_max = VEC3(0.1f, 0.1f, 0.1f);
+			pe->speed_min = Vec3(-1, 0, -1);
+			pe->speed_max = Vec3(1, 1, 1);
+			pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
+			pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
 			pe->size = 0.3f;
 			pe->op_size = POP_LINEAR_SHRINK;
 			pe->alpha = 0.9f;
@@ -467,7 +467,7 @@ void Game::UpdateTutorial()
 	// check tutorial texts
 	for(TutorialText& text : ttexts)
 	{
-		if(text.state != 1 || VEC3::Distance(text.pos, pc->unit->pos) > 3.f)
+		if(text.state != 1 || Vec3::Distance(text.pos, pc->unit->pos) > 3.f)
 			continue;
 
 		DialogInfo info;

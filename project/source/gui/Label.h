@@ -9,7 +9,7 @@ namespace gui
 		Font* font;
 		DWORD color;
 		DWORD align;
-		INT2 padding;
+		Int2 padding;
 	};
 
 	class Label : public Control
@@ -25,7 +25,7 @@ namespace gui
 		Font* GetFont() const { return GetLayout().font; }
 		LabelLayout* GetCustomLayout() const { return custom_layout; }
 		const LabelLayout& GetLayout() const { return custom_layout ? *custom_layout : *layout->label; }
-		const INT2& GetPadding() const { return GetLayout().padding; }
+		const Int2& GetPadding() const { return GetLayout().padding; }
 		const string& GetText() const { return text; }
 		bool IsAutoSize() const { return auto_size; }
 
@@ -33,9 +33,9 @@ namespace gui
 		void SetColor(DWORD color);
 		void SetCustomLayout(LabelLayout* layout);
 		void SetFont(Font* font);
-		void SetPadding(const INT2& padding);
+		void SetPadding(const Int2& padding);
 		void SetText(const AnyString& s);
-		void SetSize(const INT2& size);
+		void SetSize(const Int2& size);
 
 	private:
 		void CalculateSize();

@@ -5,9 +5,9 @@
 //-----------------------------------------------------------------------------
 void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3)
 {
-	VEC3 v01 = v2.pos - v1.pos;
-	VEC3 v02 = v3.pos - v1.pos;
-	VEC3 normal = v01.Cross(v02).Normalize();
+	Vec3 v01 = v2.pos - v1.pos;
+	Vec3 v02 = v3.pos - v1.pos;
+	Vec3 normal = v01.Cross(v02).Normalize();
 
 	v1.normal = normal;
 	v2.normal = normal;
@@ -15,10 +15,10 @@ void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3)
 }
 
 //-----------------------------------------------------------------------------
-void CalculateNormal(VEC3& out, const VEC3& v1, const VEC3& v2, const VEC3& v3)
+void CalculateNormal(Vec3& out, const Vec3& v1, const Vec3& v2, const Vec3& v3)
 {
-	VEC3 v01 = v2 - v1;
-	VEC3 v02 = v3 - v1;
+	Vec3 v01 = v2 - v1;
+	Vec3 v02 = v3 - v1;
 
 	out = v01.Cross(v02).Normalize();
 }
@@ -50,7 +50,7 @@ void Terrain::Init(IDirect3DDevice9* dev, const TerrainOptions& o)
 	assert(dev && o.tile_size > 0.f && o.n_parts > 0 && o.tiles_per_part > 0 /*&& is_pow2(o.tex_size)*/);
 
 	device = dev;
-	pos = VEC3(0, 0, 0);
+	pos = Vec3(0, 0, 0);
 	tile_size = o.tile_size;
 	n_parts = o.n_parts;
 	n_parts2 = n_parts * n_parts;
@@ -65,20 +65,20 @@ void Terrain::Init(IDirect3DDevice9* dev, const TerrainOptions& o)
 	part_tris = tiles_per_part*tiles_per_part * 2;
 	part_verts = tiles_per_part*tiles_per_part * 6;
 	tex_size = o.tex_size;
-	box.v1 = VEC3(0, 0, 0);
+	box.v1 = Vec3(0, 0, 0);
 	box.v2.x = box.v2.z = tile_size * n_tiles;
 	box.v2.y = 0;
 
 	h = new float[hszer2];
 	parts = new Part[n_parts2];
-	VEC3 diff = box.v2 - box.v1;
+	Vec3 diff = box.v2 - box.v1;
 	diff /= float(n_parts);
 	diff.y = 0;
 	for(uint z = 0; z < n_parts; ++z)
 	{
 		for(uint x = 0; x < n_parts; ++x)
 		{
-			parts[x + z*n_parts].box.v1 = box.v1 + VEC3(diff.x*x, 0, diff.z*z);
+			parts[x + z*n_parts].box.v1 = box.v1 + Vec3(diff.x*x, 0, diff.z*z);
 			parts[x + z*n_parts].box.v2 = parts[x + z*n_parts].box.v1 + diff;
 		}
 	}
@@ -222,7 +222,7 @@ void Terrain::RebuildUv()
 
 	V(mesh->LockVertexBuffer(0, (void**)&v));
 
-#define TRI(uu,vv) v[n++].tex = VEC2(float(uu)/uv_mod, float(vv)/uv_mod)
+#define TRI(uu,vv) v[n++].tex = Vec2(float(uu)/uv_mod, float(vv)/uv_mod)
 
 	uint n = 0;
 	for(uint z = 0; z < n_tiles; ++z)
@@ -447,7 +447,7 @@ void Terrain::SmoothNormals(VTerrain* v)
 	assert(state > 0);
 	assert(v);
 
-	VEC3 normal, normal2;
+	Vec3 normal, normal2;
 	uint sum;
 
 	// 1,3         4
@@ -651,7 +651,7 @@ float Terrain::GetH(float x, float z) const
 }
 
 //=================================================================================================
-void Terrain::GetAngle(float x, float z, VEC3& angle) const
+void Terrain::GetAngle(float x, float z, Vec3& angle) const
 {
 	// sprawdŸ czy nie jest to poza map¹
 	assert(x >= 0.f && z >= 0.f);
@@ -687,42 +687,42 @@ void Terrain::GetAngle(float x, float z, VEC3& angle) const
 	float hTopRight = h[tx + 1 + (tz + 1)*hszer];
 	float hBottomLeft = h[tx + tz*hszer];
 	float hBottomRight = h[tx + 1 + tz*hszer];
-	VEC3 v1, v2, v3;
+	Vec3 v1, v2, v3;
 
 	// sprawdŸ który to trójk¹t (prawy górny czy lewy dolny)
 	if((offsetx*offsetx + offsetz*offsetz) < ((1 - offsetx)*(1 - offsetx) + (1 - offsetz)*(1 - offsetz)))
 	{
 		// lewy dolny trójk¹t
-		v1 = VEC3(tile_size*tx, hBottomLeft, tile_size*tz);
-		v2 = VEC3(tile_size*tx, hTopLeft, tile_size*(tz + 1));
-		v3 = VEC3(tile_size*(tx + 1), hBottomRight, tile_size*(tz + 1));
+		v1 = Vec3(tile_size*tx, hBottomLeft, tile_size*tz);
+		v2 = Vec3(tile_size*tx, hTopLeft, tile_size*(tz + 1));
+		v3 = Vec3(tile_size*(tx + 1), hBottomRight, tile_size*(tz + 1));
 	}
 	else
 	{
 		// prawy górny trójk¹t
-		v1 = VEC3(tile_size*tx, hTopLeft, tile_size*(tz + 1));
-		v2 = VEC3(tile_size*(tx + 1), hTopRight, tile_size*(tz + 1));
-		v3 = VEC3(tile_size*(tx + 1), hBottomRight, tile_size*tz);
+		v1 = Vec3(tile_size*tx, hTopLeft, tile_size*(tz + 1));
+		v2 = Vec3(tile_size*(tx + 1), hTopRight, tile_size*(tz + 1));
+		v3 = Vec3(tile_size*(tx + 1), hBottomRight, tile_size*tz);
 	}
 
 	// oblicz wektor normalny dla tych punktów
-	VEC3 v01 = v2 - v1;
-	VEC3 v02 = v3 - v1;
+	Vec3 v01 = v2 - v1;
+	Vec3 v02 = v3 - v1;
 	angle = v01.Cross(v02).Normalize();
 }
 
 //=================================================================================================
-float Terrain::Raytest(const VEC3& from, const VEC3& to) const
+float Terrain::Raytest(const Vec3& from, const Vec3& to) const
 {
-	VEC3 dir = to - from;
+	Vec3 dir = to - from;
 	float fout;
 
 	if(!RayToBox(from, dir, box, &fout) || fout > 1.f)
 		return -1.f;
 
-	MATRIX m = MATRIX::Translation(pos).Inverse();
-	VEC3 rayPos = VEC3::Transform(from, m),
-		rayDir = VEC3::TransformNormal(dir, m);
+	Matrix m = Matrix::Translation(pos).Inverse();
+	Vec3 rayPos = Vec3::Transform(from, m),
+		rayDir = Vec3::TransformNormal(dir, m);
 	BOOL hit;
 	DWORD face;
 	float bar1, bar2;
@@ -747,7 +747,7 @@ float Terrain::Raytest(const VEC3& from, const VEC3& to) const
 }
 
 //=================================================================================================
-void Terrain::FillGeometry(vector<Tri>& tris, vector<VEC3>& verts)
+void Terrain::FillGeometry(vector<Tri>& tris, vector<Vec3>& verts)
 {
 	uint vcount = (n_tiles + 1)*(n_tiles + 1);
 	verts.reserve(vcount);
@@ -756,7 +756,7 @@ void Terrain::FillGeometry(vector<Tri>& tris, vector<VEC3>& verts)
 	{
 		for(uint x = 0; x <= (n_tiles + 1); ++x)
 		{
-			verts.push_back(VEC3(x*tile_size, h[x + z*hszer], z*tile_size));
+			verts.push_back(Vec3(x*tile_size, h[x + z*hszer], z*tile_size));
 		}
 	}
 
@@ -777,7 +777,7 @@ void Terrain::FillGeometry(vector<Tri>& tris, vector<VEC3>& verts)
 }
 
 //=================================================================================================
-void Terrain::FillGeometryPart(vector<Tri>& tris, vector<VEC3>& verts, int px, int pz, const VEC3& offset) const
+void Terrain::FillGeometryPart(vector<Tri>& tris, vector<Vec3>& verts, int px, int pz, const Vec3& offset) const
 {
 	assert(px >= 0 && pz >= 0 && uint(px) < n_parts && uint(pz) < n_parts);
 
@@ -787,7 +787,7 @@ void Terrain::FillGeometryPart(vector<Tri>& tris, vector<VEC3>& verts, int px, i
 	{
 		for(uint x = px*tiles_per_part; x <= (px + 1)*tiles_per_part; ++x)
 		{
-			verts.push_back(VEC3(x*tile_size + offset.x, h[x + z*hszer] + offset.y, z*tile_size + offset.z));
+			verts.push_back(Vec3(x*tile_size + offset.x, h[x + z*hszer] + offset.y, z*tile_size + offset.z));
 		}
 	}
 

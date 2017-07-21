@@ -79,7 +79,7 @@ struct Location;
 //-----------------------------------------------------------------------------
 struct Portal
 {
-	VEC3 pos;
+	Vec3 pos;
 	float rot;
 	int at_level;
 	int target; // portal wyjœciowy
@@ -91,9 +91,9 @@ struct Portal
 	void Save(HANDLE file);
 	void Load(Location* loc, HANDLE file);
 
-	VEC3 GetSpawnPos() const
+	Vec3 GetSpawnPos() const
 	{
-		return pos + VEC3(sin(rot) * 2, 0, cos(rot) * 2);
+		return pos + Vec3(sin(rot) * 2, 0, cos(rot) * 2);
 	}
 };
 
@@ -107,7 +107,7 @@ struct Location : public ILevel
 {
 	LOCATION type; // typ lokacji
 	LOCATION_STATE state; // stan lokacji
-	VEC2 pos; // pozycja na mapie œwiata
+	Vec2 pos; // pozycja na mapie œwiata
 	string name; // nazwa lokacji
 	Quest_Dungeon* active_quest; // aktywne zadanie zwi¹zane z t¹ lokacj¹
 	int last_visit; // worldtime from last time when team entered location

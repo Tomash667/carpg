@@ -30,7 +30,7 @@ void Engine::AdjustWindowSize()
 {
 	if(!fullscreen)
 	{
-		Rect rect = Rect::Create(INT2(0, 0), wnd_size);
+		Rect rect = Rect::Create(Int2(0, 0), wnd_size);
 		AdjustWindowRect((RECT*)&rect, WS_OVERLAPPEDWINDOW, false);
 		real_size = rect.Size();
 	}
@@ -72,7 +72,7 @@ void Engine::ChangeMode()
 		PlaceCursor();
 	else
 		replace_cursor = true;
-	mouse_dif = INT2(0, 0);
+	mouse_dif = Int2(0, 0);
 }
 
 //=================================================================================================
@@ -466,7 +466,7 @@ void Engine::DoTick(bool update_game)
 		ShowCursor(false);
 	}
 	else
-		mouse_dif = INT2(0, 0);
+		mouse_dif = Int2(0, 0);
 
 	// update keyboard shortcuts info
 	Key.UpdateShortcuts();
@@ -482,7 +482,7 @@ void Engine::DoTick(bool update_game)
 		{
 			Rect rect;
 			GetClientRect(hwnd, (RECT*)&rect);
-			INT2 wh = rect.Size();
+			Int2 wh = rect.Size();
 			POINT pt;
 			pt.x = int(float(unlock_point.x)*wh.x / wnd_size.x);
 			pt.y = int(float(unlock_point.y)*wh.y / wnd_size.y);
@@ -558,13 +558,13 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 				PlaceCursor();
 			else
 				locked_cursor = true;
-			mouse_dif = INT2(0, 0);
+			mouse_dif = Int2(0, 0);
 		}
 		else if(locked_cursor)
 		{
 			Rect rect;
 			GetClientRect(hwnd, (RECT*)&rect);
-			INT2 wh = rect.Size();
+			Int2 wh = rect.Size();
 			POINT pt;
 			pt.x = int(float(unlock_point.x)*wh.x / wnd_size.x);
 			pt.y = int(float(unlock_point.y)*wh.y / wnd_size.y);
@@ -630,7 +630,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 				ShowCursor(false);
 				Rect rect;
 				GetClientRect(hwnd, (RECT*)&rect);
-				INT2 wh = rect.Size();
+				Int2 wh = rect.Size();
 				POINT pt;
 				GetCursorPos(&pt);
 				ScreenToClient(hwnd, &pt);
@@ -984,7 +984,7 @@ void Engine::InitWindow(cstring title)
 				rect.Left() = s_wnd_pos.x;
 			if(s_wnd_pos.y != -1)
 				rect.Top() = s_wnd_pos.y;
-			INT2 size = real_size;
+			Int2 size = real_size;
 			if(s_wnd_size.x != -1)
 				size.x = s_wnd_size.x;
 			if(s_wnd_size.y != -1)
@@ -1093,7 +1093,7 @@ void Engine::PlaySound2d(FMOD::Sound* sound)
 //=================================================================================================
 // Odtwarzanie dŸwiêku 3d
 //=================================================================================================
-void Engine::PlaySound3d(FMOD::Sound* sound, const VEC3& pos, float smin, float smax)
+void Engine::PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float smin, float smax)
 {
 	assert(sound);
 
@@ -1272,7 +1272,7 @@ void Engine::SelectResolution()
 	// dostosuj wybran¹ rozdzielczoœæ
 	if(!res_valid)
 	{
-		const INT2 defaul_res(1024, 768);
+		const Int2 defaul_res(1024, 768);
 		if(wnd_size.x != 0)
 			WARN(Format("Engine: Resolution %dx%d is not valid, defaulting to %dx%d (%d Hz).", wnd_size.x, wnd_size.y, defaul_res.x, defaul_res.y, best_hz));
 		else
@@ -1420,7 +1420,7 @@ void Engine::UnlockCursor()
 	locked_cursor = false;
 	Rect rect;
 	GetClientRect(hwnd, (RECT*)&rect);
-	INT2 wh = rect.Size();
+	Int2 wh = rect.Size();
 	POINT pt;
 	pt.x = int(float(unlock_point.x)*wh.x / wnd_size.x);
 	pt.y = int(float(unlock_point.y)*wh.y / wnd_size.y);

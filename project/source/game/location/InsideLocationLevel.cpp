@@ -18,7 +18,7 @@ InsideLocationLevel::~InsideLocationLevel()
 }
 
 //=================================================================================================
-Room* InsideLocationLevel::GetNearestRoom(const VEC3& pos)
+Room* InsideLocationLevel::GetNearestRoom(const Vec3& pos)
 {
 	if(rooms.empty())
 		return nullptr;
@@ -42,7 +42,7 @@ Room* InsideLocationLevel::GetNearestRoom(const VEC3& pos)
 }
 
 //=================================================================================================
-Room* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _enemy_pos)
+Room* InsideLocationLevel::FindEscapeRoom(const Vec3& _my_pos, const Vec3& _enemy_pos)
 {
 	Room* my_room = GetNearestRoom(_my_pos),
 		*enemy_room = GetNearestRoom(_enemy_pos);
@@ -58,7 +58,7 @@ Room* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _enem
 
 	Room* best_room = nullptr;
 	float best_dist = 0.f, dist;
-	VEC3 mid;
+	Vec3 mid;
 
 	for(vector<int>::iterator it = my_room->connected.begin(), end = my_room->connected.end(); it != end; ++it)
 	{
@@ -67,7 +67,7 @@ Room* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _enem
 
 		mid = rooms[*it].Center();
 
-		dist = VEC3::Distance(_my_pos, mid) - VEC3::Distance(_enemy_pos, mid);
+		dist = Vec3::Distance(_my_pos, mid) - Vec3::Distance(_enemy_pos, mid);
 		if(dist < best_dist)
 		{
 			best_dist = dist;
@@ -79,7 +79,7 @@ Room* InsideLocationLevel::FindEscapeRoom(const VEC3& _my_pos, const VEC3& _enem
 }
 
 //=================================================================================================
-Room* InsideLocationLevel::GetRoom(const INT2& pt)
+Room* InsideLocationLevel::GetRoom(const Int2& pt)
 {
 	word room = map[pt(w)].room;
 	if(room == (word)-1)
@@ -88,7 +88,7 @@ Room* InsideLocationLevel::GetRoom(const INT2& pt)
 }
 
 //=================================================================================================
-bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, INT2& _tile, int& _rot, bool nocol)
+bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, int& _rot, bool nocol)
 {
 	_rot = Rand() % 4;
 
@@ -365,8 +365,8 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 {
 	if(have_down_stairs)
 	{
-		Room* gora = GetNearestRoom(VEC3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
-		Room* dol = GetNearestRoom(VEC3(2.f*staircase_down.x + 1, 0, 2.f*staircase_down.y + 1));
+		Room* gora = GetNearestRoom(Vec3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
+		Room* dol = GetNearestRoom(Vec3(2.f*staircase_down.x + 1, 0, 2.f*staircase_down.y + 1));
 		int best_dist, dist;
 		Room* best = nullptr;
 
@@ -374,7 +374,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 		{
 			if(it->IsCorridor() || (no_target && it->target != RoomTarget::None))
 				continue;
-			dist = INT2::Distance(it->pos, gora->pos) + INT2::Distance(it->pos, dol->pos);
+			dist = Int2::Distance(it->pos, gora->pos) + Int2::Distance(it->pos, dol->pos);
 			if(!best || dist > best_dist)
 			{
 				best_dist = dist;
@@ -386,7 +386,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 	}
 	else
 	{
-		Room* gora = GetNearestRoom(VEC3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
+		Room* gora = GetNearestRoom(Vec3(2.f*staircase_up.x + 1, 0, 2.f*staircase_up.y + 1));
 		int best_dist, dist;
 		Room* best = nullptr;
 
@@ -394,7 +394,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 		{
 			if(it->IsCorridor() || (no_target && it->target != RoomTarget::None))
 				continue;
-			dist = INT2::Distance(it->pos, gora->pos);
+			dist = Int2::Distance(it->pos, gora->pos);
 			if(!best || dist > best_dist)
 			{
 				best_dist = dist;
@@ -436,7 +436,7 @@ int InsideLocationLevel::FindRoomId(RoomTarget target)
 }
 
 //=================================================================================================
-Door* InsideLocationLevel::FindDoor(const INT2& pt) const
+Door* InsideLocationLevel::FindDoor(const Int2& pt) const
 {
 	for(vector<Door*>::const_iterator it = doors.begin(), end = doors.end(); it != end; ++it)
 	{
@@ -447,7 +447,7 @@ Door* InsideLocationLevel::FindDoor(const INT2& pt) const
 }
 
 //=================================================================================================
-bool InsideLocationLevel::IsTileNearWall(const INT2& pt) const
+bool InsideLocationLevel::IsTileNearWall(const Int2& pt) const
 {
 	assert(pt.x > 0 && pt.y > 0 && pt.x < w - 1 && pt.y < h - 1);
 
@@ -458,7 +458,7 @@ bool InsideLocationLevel::IsTileNearWall(const INT2& pt) const
 }
 
 //=================================================================================================
-bool InsideLocationLevel::IsTileNearWall(const INT2& pt, int& dir) const
+bool InsideLocationLevel::IsTileNearWall(const Int2& pt, int& dir) const
 {
 	assert(pt.x > 0 && pt.y > 0 && pt.x < w - 1 && pt.y < h - 1);
 

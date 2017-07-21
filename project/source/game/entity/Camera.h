@@ -32,9 +32,9 @@ struct LerpBuffer
 class Camera
 {
 public:
-	VEC3 from, to, center, real_from, real_to;
-	VEC2 rot, real_rot;
-	MATRIX matViewProj, matViewInv;
+	Vec3 from, to, center, real_from, real_to;
+	Vec2 rot, real_rot;
+	Matrix matViewProj, matViewInv;
 	float dist, tmp_dist, draw_range, springiness, d;
 	FrustumPlanes frustum, frustum2;
 	byte free_rot_key;
@@ -47,6 +47,6 @@ public:
 	Camera(float springiness = 40.f);
 
 	void Reset();
-	void UpdateRot(float dt, const VEC2& new_rot);
-	void Update(float dt, const VEC3& new_from, const VEC3& new_to);
+	void UpdateRot(float dt, const Vec2& new_rot);
+	void Update(float dt, const Vec3& new_from, const Vec3& new_to);
 };

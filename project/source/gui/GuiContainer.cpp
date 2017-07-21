@@ -170,7 +170,7 @@ void GuiContainer::LostFocus()
 }
 
 //=================================================================================================
-void GuiContainer::Move(const INT2& global_pos)
+void GuiContainer::Move(const Int2& global_pos)
 {
 	for(Iter it = items.begin(), end = items.end(); it != end; ++it)
 		it->first->global_pos = global_pos + it->first->pos;

@@ -285,11 +285,11 @@ TreeView::~TreeView()
 
 void TreeView::CalculatePos()
 {
-	INT2 offset(0, 0);
+	Int2 offset(0, 0);
 	int max_width = 0;
 	CalculatePos(this, offset, max_width);
-	total_size = INT2(max_width, offset.y);
-	area_size = size - INT2(2, 2);
+	total_size = Int2(max_width, offset.y);
+	area_size = size - Int2(2, 2);
 
 	bool use_hscrollbar = false, use_vscrollbar = false;
 	if(total_size.y > area_size.y)
@@ -311,7 +311,7 @@ void TreeView::CalculatePos()
 	int size_sub = (use_hscrollbar && use_vscrollbar) ? 15 : 0;
 	if(use_hscrollbar)
 	{
-		hscrollbar.SetSize(INT2(size.x - size_sub, 16));
+		hscrollbar.SetSize(Int2(size.x - size_sub, 16));
 		hscrollbar.part = size.x - size_sub;
 		hscrollbar.visible = true;
 		hscrollbar.UpdateTotal(total_size.x);
@@ -323,7 +323,7 @@ void TreeView::CalculatePos()
 	}
 	if(use_vscrollbar)
 	{
-		vscrollbar.SetSize(INT2(16, size.y - size_sub));
+		vscrollbar.SetSize(Int2(16, size.y - size_sub));
 		vscrollbar.part = size.y - size_sub;
 		vscrollbar.visible = true;
 		vscrollbar.UpdateTotal(total_size.y);
@@ -335,7 +335,7 @@ void TreeView::CalculatePos()
 	}
 }
 
-void TreeView::CalculatePos(TreeNode* node, INT2& offset, int& max_width)
+void TreeView::CalculatePos(TreeNode* node, Int2& offset, int& max_width)
 {
 	node->pos = offset;
 	int width = node->pos.x + node->width;
@@ -353,7 +353,7 @@ void TreeView::CalculatePos(TreeNode* node, INT2& offset, int& max_width)
 
 void TreeView::Draw(ControlDrawData*)
 {
-	BOX2D box = BOX2D::Create(global_pos, size);
+	Box2d box = Box2d::Create(global_pos, size);
 	GUI.DrawArea(box, layout->tree_view.background);
 
 	if(hscrollbar.visible)
@@ -361,7 +361,7 @@ void TreeView::Draw(ControlDrawData*)
 	if(vscrollbar.visible)
 		vscrollbar.Draw();
 
-	clip_rect = BOX2D::Create(global_pos + INT2(1, 1), area_size);
+	clip_rect = Box2d::Create(global_pos + Int2(1, 1), area_size);
 	Draw(this);
 
 	if(text_box->visible)
@@ -371,7 +371,7 @@ void TreeView::Draw(ControlDrawData*)
 	}
 
 	if(drag == DRAG_MOVED)
-		GUI.DrawSprite(layout->tree_view.drag_n_drop, GUI.cursor_pos + INT2(16, 16));
+		GUI.DrawSprite(layout->tree_view.drag_n_drop, GUI.cursor_pos + Int2(16, 16));
 }
 
 void TreeView::Draw(TreeNode* node)
@@ -384,7 +384,7 @@ void TreeView::Draw(TreeNode* node)
 	{
 		// selection
 		if(node->selected || (drag == DRAG_MOVED && node == above && CanDragAndDrop()))
-			GUI.DrawArea(BOX2D::Create(global_pos + INT2(1, 1 + offsety), INT2(area_size.x, item_height)), layout->tree_view.selected, &clip_rect);
+			GUI.DrawArea(Box2d::Create(global_pos + Int2(1, 1 + offsety), Int2(area_size.x, item_height)), layout->tree_view.selected, &clip_rect);
 
 		if(node->IsDir())
 		{
@@ -404,7 +404,7 @@ void TreeView::Draw(TreeNode* node)
 				else
 					area = &layout->tree_view.button_down;
 			}
-			GUI.DrawArea(BOX2D::Create(global_pos + INT2(node->pos.x + offsetx, offsety), area->size), *area, &clip_rect);
+			GUI.DrawArea(Box2d::Create(global_pos + Int2(node->pos.x + offsetx, offsety), area->size), *area, &clip_rect);
 			offsetx += area->size.x;
 		}
 
@@ -440,13 +440,13 @@ void TreeView::Event(GuiEvent e)
 	case GuiEvent_Initialize:
 		item_height = layout->tree_view.font->height + 2;
 		level_offset = layout->tree_view.level_offset;
-		vscrollbar.size = INT2(16, size.y);
+		vscrollbar.size = Int2(16, size.y);
 		vscrollbar.part = size.y;
-		vscrollbar.pos = INT2(size.x - 16, 0);
+		vscrollbar.pos = Int2(size.x - 16, 0);
 		vscrollbar.global_pos = global_pos + vscrollbar.pos;
-		hscrollbar.size = INT2(size.x, 16);
+		hscrollbar.size = Int2(size.x, 16);
 		hscrollbar.part = size.x;
-		hscrollbar.pos = INT2(0, size.y - 16);
+		hscrollbar.pos = Int2(0, size.y - 16);
 		hscrollbar.global_pos = global_pos + hscrollbar.pos;
 		CalculatePos();
 		break;
@@ -1099,7 +1099,7 @@ void TreeView::SetAllCollapsed(bool new_collapsed)
 void TreeView::SetTextboxLocation()
 {
 	int startpos = edited->pos.x;
-	INT2 pos = global_pos + edited->pos;
+	Int2 pos = global_pos + edited->pos;
 	pos.x -= (int)hscrollbar.offset + 4;
 	pos.y -= (int)vscrollbar.offset + 2;
 	if(edited->IsDir())
@@ -1112,7 +1112,7 @@ void TreeView::SetTextboxLocation()
 	int width = GUI.default_font->CalculateSize(text_box->GetText()).x + 10;
 	if(startpos + width > area_size.x)
 		width = area_size.x - startpos;
-	INT2 new_size = INT2(width, item_height + 4);
+	Int2 new_size = Int2(width, item_height + 4);
 	if(new_size != text_box->GetSize())
 	{
 		text_box->SetSize(new_size);

@@ -78,9 +78,9 @@ struct Obj
 	Animesh* mesh;
 	OBJ_PHY_TYPE type;
 	float r, h, centery;
-	VEC2 size;
+	Vec2 size;
 	btCollisionShape* shape;
-	MATRIX* matrix;
+	Matrix* matrix;
 	int flags, flags2, alpha;
 	Obj* next_obj;
 	VariantObj* variant;
@@ -121,7 +121,7 @@ cstring GetRandomPainting();
 // Object in game
 struct Object
 {
-	VEC3 pos, rot;
+	Vec3 pos, rot;
 	float scale;
 	Animesh* mesh;
 	Obj* base;

@@ -19,45 +19,45 @@ enum VertexDeclarationId
 //-----------------------------------------------------------------------------
 struct VDefault
 {
-	VEC3 pos;
-	VEC3 normal;
-	VEC2 tex;
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
 };
 
 //-----------------------------------------------------------------------------
 struct VAnimated
 {
-	VEC3 pos;
+	Vec3 pos;
 	float weights;
 	uint indices;
-	VEC3 normal;
-	VEC2 tex;
+	Vec3 normal;
+	Vec2 tex;
 };
 
 //-----------------------------------------------------------------------------
 struct VTangent
 {
 	VTangent() {}
-	VTangent(const VEC3& pos, const VEC2& tex, const VEC3& normal, const VEC3& tangent, const VEC3& binormal) : pos(pos), normal(normal), tex(tex),
+	VTangent(const Vec3& pos, const Vec2& tex, const Vec3& normal, const Vec3& tangent, const Vec3& binormal) : pos(pos), normal(normal), tex(tex),
 		tangent(tangent), binormal(binormal) {}
 
-	VEC3 pos;
-	VEC3 normal;
-	VEC2 tex;
-	VEC3 tangent;
-	VEC3 binormal;
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+	Vec3 tangent;
+	Vec3 binormal;
 };
 
 //-----------------------------------------------------------------------------
 struct VAnimatedTangent
 {
-	VEC3 pos;
+	Vec3 pos;
 	float weights;
 	uint indices;
-	VEC3 normal;
-	VEC2 tex;
-	VEC3 tangent;
-	VEC3 binormal;
+	Vec3 normal;
+	Vec2 tex;
+	Vec3 tangent;
+	Vec3 binormal;
 };
 
 //-----------------------------------------------------------------------------
@@ -65,25 +65,25 @@ struct VTex
 {
 	VTex() {}
 	VTex(float x, float y, float z, float u, float v) : pos(x, y, z), tex(u, v) {}
-	VTex(const VEC3& pos, const VEC2& tex) : pos(pos), tex(tex) {}
+	VTex(const Vec3& pos, const Vec2& tex) : pos(pos), tex(tex) {}
 
-	VEC3 pos;
-	VEC2 tex;
+	Vec3 pos;
+	Vec2 tex;
 };
 
 //-----------------------------------------------------------------------------
 struct VColor
 {
-	VEC3 pos;
-	VEC4 color;
+	Vec3 pos;
+	Vec4 color;
 };
 
 //-----------------------------------------------------------------------------
 struct VParticle
 {
-	VEC3 pos;
-	VEC2 tex;
-	VEC4 color;
+	Vec3 pos;
+	Vec2 tex;
+	Vec4 color;
 };
 
 //-----------------------------------------------------------------------------
@@ -92,10 +92,10 @@ struct VTerrain
 	VTerrain() {}
 	VTerrain(float x, float y, float z, float u, float v, float u2, float v2) : pos(x, y, z), tex(u, v), tex2(u2, v2) {}
 
-	VEC3 pos;
-	VEC3 normal;
-	VEC2 tex;
-	VEC2 tex2;
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 tex;
+	Vec2 tex2;
 
 	static const DWORD fvf = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2;
 };
@@ -103,5 +103,5 @@ struct VTerrain
 //-----------------------------------------------------------------------------
 struct VPos
 {
-	VEC3 pos;
+	Vec3 pos;
 };

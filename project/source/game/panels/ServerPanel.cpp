@@ -20,7 +20,7 @@ enum ButtonId
 //=================================================================================================
 ServerPanel::ServerPanel(const DialogInfo& info) : Dialog(info)
 {
-	size = INT2(540, 510);
+	size = Int2(540, 510);
 	bts.resize(6);
 
 	txReady = Str("ready");
@@ -53,46 +53,46 @@ ServerPanel::ServerPanel(const DialogInfo& info) : Dialog(info)
 	txNeedSelectedPlayer = Str("needSelectedPlayer");
 	txServerText = Str("serverText");
 
-	const INT2 bt_size(180, 44);
+	const Int2 bt_size(180, 44);
 
 	bts[0].id = IdPickCharacter;
 	bts[0].parent = this;
 	bts[0].text = txPickChar; // Zmieñ postaæ
-	bts[0].pos = INT2(340, 30);
+	bts[0].pos = Int2(340, 30);
 	bts[0].size = bt_size;
 
 	bts[1].id = IdReady;
 	bts[1].parent = this;
 	bts[1].text = txReady; // Niegotowy
-	bts[1].pos = INT2(340, 80);
+	bts[1].pos = Int2(340, 80);
 	bts[1].size = bt_size;
 
 	bts[2].id = IdKick;
 	bts[2].parent = this;
 	bts[2].text = txKick; // Anuluj
-	bts[2].pos = INT2(340, 130);
+	bts[2].pos = Int2(340, 130);
 	bts[2].size = bt_size;
 
 	bts[3].id = IdLeader;
 	bts[3].parent = this;
 	bts[3].text = txSetLeader;
-	bts[3].pos = INT2(340, 180);
+	bts[3].pos = Int2(340, 180);
 	bts[3].size = bt_size;
 
 	bts[4].id = IdStart;
 	bts[4].parent = this;
 	bts[4].text = txStart;
-	bts[4].pos = INT2(340, 230);
+	bts[4].pos = Int2(340, 230);
 	bts[4].size = bt_size;
 
 	bts[5].id = IdCancel;
 	bts[5].parent = this;
 	bts[5].text = GUI.txCancel;
-	bts[5].pos = INT2(340, 280);
+	bts[5].pos = Int2(340, 280);
 	bts[5].size = bt_size;
 
-	grid.pos = INT2(10, 10);
-	grid.size = INT2(320, 300);
+	grid.pos = Int2(10, 10);
+	grid.size = Int2(320, 300);
 	grid.event = GridEvent(this, &ServerPanel::GetCell);
 	grid.selection_type = Grid::BACKGROUND;
 	grid.selection_color = COLOR_RGBA(0, 255, 0, 128);
@@ -106,8 +106,8 @@ ServerPanel::ServerPanel(const DialogInfo& info) : Dialog(info)
 	itb.max_lines = 100;
 	itb.esc_clear = false;
 	itb.lose_focus = false;
-	itb.pos = INT2(10, 320);
-	itb.size = INT2(320, 182);
+	itb.pos = Int2(10, 320);
+	itb.size = Int2(320, 182);
 	itb.event = InputEvent(this, &ServerPanel::OnInput);
 	itb.Init();
 
@@ -271,7 +271,7 @@ void ServerPanel::Event(GuiEvent e)
 				else if(info.state == PlayerInfo::IN_LOBBY)
 				{
 					game->leader_id = info.id;
-					game->AddLobbyUpdate(INT2(Lobby_ChangeLeader, 0));
+					game->AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 					AddMsg(Format(txLeaderChanged, info.name.c_str()));
 				}
 				else
@@ -514,7 +514,7 @@ void ServerPanel::PickClass(Class clas, bool ready)
 	else
 	{
 		if(game->players > 1)
-			game->AddLobbyUpdate(INT2(Lobby_UpdatePlayer, 0));
+			game->AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
 		game->CheckReady();
 	}
 }

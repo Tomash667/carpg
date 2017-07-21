@@ -31,7 +31,7 @@ struct InsideLocation : public Location
 
 	bool RemoveItemFromChest(const Item* item, int& at_level);
 	bool RemoveQuestItemFromChest(int quest_refid, int& at_level);
-	Room* FindChaseRoom(const VEC3& _pos)
+	Room* FindChaseRoom(const Vec3& _pos)
 	{
 		InsideLocationLevel& lvl = GetLevelData();
 		if(lvl.rooms.size() < 2)

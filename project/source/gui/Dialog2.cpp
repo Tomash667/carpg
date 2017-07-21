@@ -136,8 +136,8 @@ void DialogWithImage::Draw(ControlDrawData*)
 }
 
 //=================================================================================================
-void DialogWithImage::Setup(const INT2& text_size)
+void DialogWithImage::Setup(const Int2& text_size)
 {
-	img_pos = INT2(12, (max(text_size.y, img_size.y) - img_size.y) / 2);
-	text_rect = Rect::Create(INT2(img_pos.x + img_size.x + 8, 12), text_size);
+	img_pos = Int2(12, (max(text_size.y, img_size.y) - img_size.y) / 2);
+	text_rect = Rect::Create(Int2(img_pos.x + img_size.x + 8, 12), text_size);
 }

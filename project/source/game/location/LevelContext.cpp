@@ -168,16 +168,16 @@ Chest* LevelContext::FindChestInRoom(const Room& p)
 }
 
 //=================================================================================================
-Chest* LevelContext::GetRandomFarChest(const INT2& pt)
+Chest* LevelContext::GetRandomFarChest(const Int2& pt)
 {
 	vector<std::pair<Chest*, float> > far_chests;
 	float close_dist = -1.f;
-	VEC3 pos = pt_to_pos(pt);
+	Vec3 pos = pt_to_pos(pt);
 
 	// znajdü 5 najdalszych skrzyni
 	for(vector<Chest*>::iterator it = chests->begin(), end = chests->end(); it != end; ++it)
 	{
-		float dist = VEC3::Distance2d(pos, (*it)->pos);
+		float dist = Vec3::Distance2d(pos, (*it)->pos);
 		if(dist > close_dist)
 		{
 			if(far_chests.empty())

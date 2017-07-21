@@ -3,9 +3,9 @@
 //-----------------------------------------------------------------------------
 struct EntryPoint
 {
-	BOX2D spawn_area;
+	Box2d spawn_area;
 	float spawn_rot;
-	BOX2D exit_area;
+	Box2d exit_area;
 	float exit_y;
 };
 

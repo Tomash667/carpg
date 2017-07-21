@@ -7,7 +7,7 @@
 struct Blood
 {
 	BLOOD type;
-	VEC3 pos, normal;
+	Vec3 pos, normal;
 	float size, rot;
 	int lights;
 

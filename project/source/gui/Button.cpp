@@ -30,23 +30,23 @@ void Button::Draw(ControlDrawData*)
 		};
 
 		if(state == DOWN)
-			r += INT2(1, 1);
+			r += Int2(1, 1);
 
 		if(img)
 		{
-			INT2 pt = r.LeftTop();
+			Int2 pt = r.LeftTop();
 			if(state == DOWN)
 			{
 				++pt.x;
 				++pt.y;
 			}
 
-			MATRIX mat;
-			INT2 required_size = force_img_size, img_size;
-			VEC2 scale;
+			Matrix mat;
+			Int2 required_size = force_img_size, img_size;
+			Vec2 scale;
 			Control::ResizeImage(img, required_size, img_size, scale);
-			mat = MATRIX::Transform2D(&VEC2(float(img_size.x) / 2, float(img_size.y) / 2), 0.f, &scale, nullptr, 0.f,
-				&VEC2((float)r.Left(), float(r.Top() + (required_size.y - img_size.y) / 2)));
+			mat = Matrix::Transform2D(&Vec2(float(img_size.x) / 2, float(img_size.y) / 2), 0.f, &scale, nullptr, 0.f,
+				&Vec2((float)r.Left(), float(r.Top() + (required_size.y - img_size.y) / 2)));
 			GUI.DrawSprite2(img, &mat, nullptr, &r, WHITE);
 			r.Left() += img_size.x;
 		}

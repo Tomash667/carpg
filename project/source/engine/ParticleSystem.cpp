@@ -155,7 +155,7 @@ void TrailParticleEmitter::Init(int maxp)
 }
 
 //=================================================================================================
-bool TrailParticleEmitter::Update(float dt, VEC3* pt1, VEC3* pt2)
+bool TrailParticleEmitter::Update(float dt, Vec3* pt1, Vec3* pt2)
 {
 	if(first != -1 && dt > 0.f)
 	{

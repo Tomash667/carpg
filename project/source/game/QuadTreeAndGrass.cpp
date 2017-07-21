@@ -4,12 +4,12 @@
 #include "Terrain.h"
 #include "LocationHelper.h"
 
-void QuadTree::Init(QuadNode* node, const BOX2D& box, const Rect& grid_box, int splits, float margin)
+void QuadTree::Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int splits, float margin)
 {
 	if(node)
 	{
 		node->rect = QuadRect(box);
-		node->box = BOX2D(box, margin);
+		node->box = Box2d(box, margin);
 		node->grid_box = grid_box;
 		if(splits > 0)
 		{
@@ -108,7 +108,7 @@ void QuadTree::Clear(Nodes& nodes)
 	top = nullptr;
 }
 
-QuadNode* QuadTree::GetNode(const VEC2& pos, float radius)
+QuadNode* QuadTree::GetNode(const Vec2& pos, float radius)
 {
 	QuadNode* node = top;
 	const float radius_x2 = radius * 2;
@@ -146,7 +146,7 @@ QuadNode* GetLevelPart()
 void Game::InitQuadTree()
 {
 	quadtree.get = GetLevelPart;
-	quadtree.Init(nullptr, BOX2D(0, 0, 256, 256), Rect(0, 0, 128, 128), 5, 2.f);
+	quadtree.Init(nullptr, Box2d(0, 0, 256, 256), Rect(0, 0, 128, 128), 5, 2.f);
 }
 
 void Game::DrawGrass()
@@ -169,17 +169,17 @@ void Game::DrawGrass()
 		SafeRelease(vbInstancing);
 		if(vb_instancing_max < count)
 			vb_instancing_max = count;
-		V(device->CreateVertexBuffer(sizeof(MATRIX)*vb_instancing_max, D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbInstancing, nullptr));
+		V(device->CreateVertexBuffer(sizeof(Matrix)*vb_instancing_max, D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vbInstancing, nullptr));
 	}
 
 	// setup stream source for instancing
 	V(device->SetStreamSourceFreq(1, D3DSTREAMSOURCE_INSTANCEDATA | 1));
-	V(device->SetStreamSource(1, vbInstancing, 0, sizeof(MATRIX)));
+	V(device->SetStreamSource(1, vbInstancing, 0, sizeof(Matrix)));
 
 	// set effect
-	VEC4 fogColor = GetFogColor();
-	VEC4 fogParams = GetFogParams();
-	VEC4 ambientColor(0.8f, 0.8f, 0.8f, 1.f);
+	Vec4 fogColor = GetFogColor();
+	Vec4 fogParams = GetFogParams();
+	Vec4 ambientColor(0.8f, 0.8f, 0.8f, 1.f);
 	UINT passes;
 	V(eGrass->SetTechnique(techGrass));
 	V(eGrass->SetVector(hGrassFogColor, (D3DXVECTOR4*)&fogColor));
@@ -197,13 +197,13 @@ void Game::DrawGrass()
 			Animesh* mesh = FindObject(j == 0 ? "grass" : "corn")->mesh;
 
 			// setup instancing data
-			MATRIX* m;
+			Matrix* m;
 			V(vbInstancing->Lock(0, 0, (void**)&m, D3DLOCK_DISCARD));
 			int index = 0;
-			for(vector< const vector<MATRIX>* >::const_iterator it = grass_patches[j].begin(), end = grass_patches[j].end(); it != end; ++it)
+			for(vector< const vector<Matrix>* >::const_iterator it = grass_patches[j].begin(), end = grass_patches[j].end(); it != end; ++it)
 			{
-				const vector<MATRIX>& vm = **it;
-				memcpy(&m[index], &vm[0], sizeof(MATRIX)*vm.size());
+				const vector<Matrix>& vm = **it;
+				memcpy(&m[index], &vm[0], sizeof(Matrix)*vm.size());
 				index += vm.size();
 			}
 			V(vbInstancing->Unlock());
@@ -233,7 +233,7 @@ void Game::DrawGrass()
 	V(device->SetStreamSourceFreq(1, 1));
 }
 
-extern MATRIX m1, m2, m3, m4;
+extern Matrix m1, m2, m3, m4;
 
 void Game::ListGrass()
 {
@@ -245,7 +245,7 @@ void Game::ListGrass()
 	quadtree.ListLeafs(cam.frustum2, (QuadTree::Nodes&)level_parts);
 
 	OutsideLocation* outside = (OutsideLocation*)location;
-	VEC3 pos, angle;
+	Vec3 pos, angle;
 
 	for(LevelParts::iterator it = level_parts.begin(), end = level_parts.end(); it != end; ++it)
 	{
@@ -271,20 +271,20 @@ void Game::ListGrass()
 						{
 							for(int i = 0; i < 6; ++i)
 							{
-								pos = VEC3(2.f*x + Random(2.f), 0.f, 2.f*y + Random(2.f));
+								pos = Vec3(2.f*x + Random(2.f), 0.f, 2.f*y + Random(2.f));
 								terrain->GetAngle(pos.x, pos.z, angle);
 								if(angle.y < 0.7f)
 									continue;
-								part.grass.push_back(MATRIX::Scale(Random(3.f, 4.f)) * MATRIX::RotationY(Random(MAX_ANGLE)) * MATRIX::Translation(pos));
+								part.grass.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 							}
 						}
 						else
 						{
 							for(int i = 0; i < 4; ++i)
 							{
-								pos = VEC3(2.f*x + 0.1f + Random(1.8f), 0, 2.f*y + 0.1f + Random(1.8f));
+								pos = Vec3(2.f*x + 0.1f + Random(1.8f), 0, 2.f*y + 0.1f + Random(1.8f));
 								terrain->SetH(pos);
-								part.grass.push_back(MATRIX::Scale(Random(2.f, 3.f)) * MATRIX::RotationY(Random(MAX_ANGLE)) * MATRIX::Translation(pos));
+								part.grass.push_back(Matrix::Scale(Random(2.f, 3.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 							}
 						}
 					}
@@ -297,9 +297,9 @@ void Game::ListGrass()
 						{
 							for(int i = 0; i < 1; ++i)
 							{
-								pos = VEC3(2.f*x + 0.5f + Random(1.f), 0, 2.f*y + 0.5f + Random(1.f));
+								pos = Vec3(2.f*x + 0.5f + Random(1.f), 0, 2.f*y + 0.5f + Random(1.f));
 								terrain->SetH(pos);
-								part.grass2.push_back(MATRIX::Scale(Random(3.f, 4.f)) * MATRIX::RotationY(Random(MAX_ANGLE)) * MATRIX::Translation(pos));
+								part.grass2.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 							}
 						}
 					}

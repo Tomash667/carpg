@@ -40,7 +40,7 @@ struct TmpLevelContext
 //-----------------------------------------------------------------------------
 struct LightMask
 {
-	VEC2 pos, size;
+	Vec2 pos, size;
 };
 
 //-----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ struct LevelContext
 	TmpLevelContext* tmp_ctx;
 	Type type;
 	int building_id;
-	INT2 mine, maxe;
+	Int2 mine, maxe;
 	bool have_terrain, require_tmp_ctx;
 
 	void SetTmpCtx(TmpLevelContext* ctx);
@@ -87,7 +87,7 @@ struct LevelContext
 	bool FindItemInChest(const Item* item, Chest** chest, int* slot);
 	Object* FindObject(Obj* obj);
 	Chest* FindChestInRoom(const Room& p);
-	Chest* GetRandomFarChest(const INT2& pt);
+	Chest* GetRandomFarChest(const Int2& pt);
 };
 
 //-----------------------------------------------------------------------------

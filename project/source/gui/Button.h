@@ -35,7 +35,7 @@ public:
 	State state;
 	int id;
 	TEX img;
-	INT2 force_img_size;
+	Int2 force_img_size;
 	CustomButton* custom;
 	bool hold;
 

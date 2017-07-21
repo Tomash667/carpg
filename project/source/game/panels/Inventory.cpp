@@ -134,9 +134,9 @@ void Inventory::Draw(ControlDrawData*)
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
 		load = unit->GetLoad();
-		GUI.DrawItem(tItemBar, INT2(shift_x, bar_y), INT2(bar_size, 32), WHITE, 4);
-		GUI.DrawItem(tEquipped, INT2(shift_x + bar_size + 10, bar_y), INT2(int(min(1.f, load)*bar_size), 32), WHITE, 4);
-		GUI.DrawItem(tItemBar, INT2(shift_x + bar_size + 10, bar_y), INT2(bar_size, 32), WHITE, 4);
+		GUI.DrawItem(tItemBar, Int2(shift_x, bar_y), Int2(bar_size, 32), WHITE, 4);
+		GUI.DrawItem(tEquipped, Int2(shift_x + bar_size + 10, bar_y), Int2(int(min(1.f, load)*bar_size), 32), WHITE, 4);
+		GUI.DrawItem(tItemBar, Int2(shift_x + bar_size + 10, bar_y), Int2(bar_size, 32), WHITE, 4);
 	}
 	else if(mode == LOOT_OTHER)
 		bt.Draw();
@@ -153,10 +153,10 @@ void Inventory::Draw(ControlDrawData*)
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
 		// ikona z≥ota
-		GUI.DrawSprite(tGold, INT2(shift_x, bar_y));
+		GUI.DrawSprite(tGold, Int2(shift_x, bar_y));
 
 		// z≥oto
-		rect = Rect::Create(INT2(shift_x, bar_y), INT2(bar_size, 32));
+		rect = Rect::Create(Int2(shift_x, bar_y), Int2(bar_size, 32));
 		GUI.DrawText(GUI.default_font, Format("%d", unit->gold), DT_CENTER | DT_VCENTER, BLACK, rect);
 
 		// udüwig
@@ -172,7 +172,7 @@ void Inventory::Draw(ControlDrawData*)
 	for(int y = 0; y < ile_h; ++y)
 	{
 		for(int x = 0; x < ile_w; ++x)
-			GUI.DrawSprite(tItemBar, INT2(shift_x + x * 63, shift_y + y * 63));
+			GUI.DrawSprite(tItemBar, Int2(shift_x + x * 63, shift_y + y * 63));
 	}
 
 	// rysuj przedmioty
@@ -199,7 +199,7 @@ void Inventory::Draw(ControlDrawData*)
 
 		// obrazek za≥oøonego przedmiotu
 		if(i_item < 0)
-			GUI.DrawSprite(tEquipped, INT2(shift_x + x * 63, shift_y + y * 63));
+			GUI.DrawSprite(tEquipped, Int2(shift_x + x * 63, shift_y + y * 63));
 
 		// item quality icon
 		TEX icon;
@@ -212,15 +212,15 @@ void Inventory::Draw(ControlDrawData*)
 		else
 			icon = nullptr;
 		if(icon)
-			GUI.DrawSprite(icon, INT2(shift_x + x * 63, shift_y + (y + 1) * 63 - 32));
+			GUI.DrawSprite(icon, Int2(shift_x + x * 63, shift_y + (y + 1) * 63 - 32));
 
 		// obrazek przedmiotu
-		GUI.DrawSprite(item->tex, INT2(shift_x + x * 63, shift_y + y * 63));
+		GUI.DrawSprite(item->tex, Int2(shift_x + x * 63, shift_y + y * 63));
 
 		// iloúÊ
 		if(count > 1)
 		{
-			Rect rect3 = Rect::Create(INT2(shift_x + x * 63 + 2, shift_y + y * 63), INT2(64, 63));
+			Rect rect3 = Rect::Create(Int2(shift_x + x * 63 + 2, shift_y + y * 63), Int2(64, 63));
 			GUI.DrawText(GUI.default_font, Format("%d", count), DT_BOTTOM, BLACK, rect3);
 		}
 	}
@@ -254,7 +254,7 @@ void Inventory::Update(float dt)
 
 	int new_index = INDEX_INVALID;
 
-	INT2 cursor_pos = GUI.cursor_pos;
+	Int2 cursor_pos = GUI.cursor_pos;
 
 	bool have_focus = (mode == INVENTORY ? focus : mouse_focus);
 
@@ -993,8 +993,8 @@ void Inventory::Event(GuiEvent e)
 		int shift_y = 48 + (size.y - 64 - 34) % 63 / 2;
 		int bar_size = (ile_w * 63 - 8) / 2;
 		int bar_y = shift_y + ile_h * 63 + 8;
-		bt.pos = INT2(shift_x + bar_size + 10, bar_y);
-		bt.size = INT2(bar_size, 36);
+		bt.pos = Int2(shift_x + bar_size + 10, bar_y);
+		bt.size = Int2(bar_size, 36);
 		bt.global_pos = global_pos + bt.pos;
 		if(e == GuiEvent_Show)
 		{
@@ -1476,10 +1476,10 @@ void Inventory::UpdateScrollbar()
 	int shift_y = pos.y + 48 + (size.y - 64 - 34) % 63 / 2;
 	int ile = i_items->size();
 	int s = ((ile + ile_w - 1) / ile_w) * 63;
-	scrollbar.size = INT2(16, ile_h * 63);
+	scrollbar.size = Int2(16, ile_h * 63);
 	scrollbar.total = s;
 	scrollbar.part = min(s, scrollbar.size.y);
-	scrollbar.pos = INT2(shift_x + ile_w * 63 + 8 - pos.x, shift_y - pos.y);
+	scrollbar.pos = Int2(shift_x + ile_w * 63 + 8 - pos.x, shift_y - pos.y);
 	scrollbar.global_pos = global_pos + scrollbar.pos;
 	if(scrollbar.offset + scrollbar.part > scrollbar.total)
 		scrollbar.offset = float(scrollbar.total - scrollbar.part);

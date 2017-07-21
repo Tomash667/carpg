@@ -27,9 +27,9 @@ struct Door
 
 	static const int MIN_SIZE = 31;
 
-	VEC3 pos;
+	Vec3 pos;
 	float rot;
-	INT2 pt;
+	Int2 pt;
 	int locked;
 	int netid;
 	bool door2;

@@ -5,214 +5,214 @@
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_sypialnia[] = {
-	"torch", INT2(1,1),
-	"bed", INT2(2,3),
-	"wardrobe", INT2(2,3),
-	"chest", INT2(1,2),
-	"shelves", INT2(1,2),
-	"table_and_chairs", INT2(0,1)
+	"torch", Int2(1,1),
+	"bed", Int2(2,3),
+	"wardrobe", Int2(2,3),
+	"chest", Int2(1,2),
+	"shelves", Int2(1,2),
+	"table_and_chairs", Int2(0,1)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_pokoj_dowodcy[] = {
-	"torch", INT2(1,1),
-	"bed", INT2(1,1),
-	"chest", INT2(1,3),
-	"bookshelf", INT2(1,2),
-	"painting", INT2(0,3),
-	"wardrobe", INT2(1,2),
-	"gobelin", INT2(0,1),
-	"shelves", INT2(0,1)
+	"torch", Int2(1,1),
+	"bed", Int2(1,1),
+	"chest", Int2(1,3),
+	"bookshelf", Int2(1,2),
+	"painting", Int2(0,3),
+	"wardrobe", Int2(1,2),
+	"gobelin", Int2(0,1),
+	"shelves", Int2(0,1)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_tron[] = {
-	"torch", INT2(1,1),
-	"throne", INT2(1,1),
-	"chest", INT2(2,3),
-	"bookshelf", INT2(1,2),
-	"painting", INT2(0,3),
-	"wardrobe", INT2(1,2),
-	"gobelin", INT2(0,1)
+	"torch", Int2(1,1),
+	"throne", Int2(1,1),
+	"chest", Int2(2,3),
+	"bookshelf", Int2(1,2),
+	"painting", Int2(0,3),
+	"wardrobe", Int2(1,2),
+	"gobelin", Int2(0,1)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_biblioteczka[] = {
-	"torch", INT2(1,1),
-	"wardrobe", INT2(1,2),
-	"bookshelf", INT2(3,5),
-	"table_and_chairs", INT2(1,2),
-	"gobelin", INT2(0,1),
-	"painting", INT2(0,2)
+	"torch", Int2(1,1),
+	"wardrobe", Int2(1,2),
+	"bookshelf", Int2(3,5),
+	"table_and_chairs", Int2(1,2),
+	"gobelin", Int2(0,1),
+	"painting", Int2(0,2)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_magiczny[] = {
-	"torch", INT2(1,1),
-	"magic_thing", INT2(1,1),
-	"wardrobe", INT2(1,2),
-	"bookshelf", INT2(2,4),
-	"painting", INT2(0,2)
+	"torch", Int2(1,1),
+	"magic_thing", Int2(1,1),
+	"wardrobe", Int2(1,2),
+	"bookshelf", Int2(2,4),
+	"painting", Int2(0,2)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_magazyn[] = {
-	"torch", INT2(1,1),
-	"barrel", INT2(3,5),
-	"barrels", INT2(1,2),
-	"box", INT2(3,6),
-	"boxes", INT2(1,3),
-	"chest", INT2(1,2),
-	"shelves", INT2(1,2)
+	"torch", Int2(1,1),
+	"barrel", Int2(3,5),
+	"barrels", Int2(1,2),
+	"box", Int2(3,6),
+	"boxes", Int2(1,3),
+	"chest", Int2(1,2),
+	"shelves", Int2(1,2)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_skrytka[] = {
-	"torch", INT2(1,1),
-	"barrel", INT2(2,4),
-	"barrels", INT2(1,3),
-	"box", INT2(3,5),
-	"boxes", INT2(1,2),
-	"chest", INT2(1,2),
-	"table_and_chairs", INT2(0,1),
-	"gobelin", INT2(0,1)
+	"torch", Int2(1,1),
+	"barrel", Int2(2,4),
+	"barrels", Int2(1,3),
+	"box", Int2(3,5),
+	"boxes", Int2(1,2),
+	"chest", Int2(1,2),
+	"table_and_chairs", Int2(0,1),
+	"gobelin", Int2(0,1)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_sklad_piwa[] = {
-	"torch", INT2(1,1),
-	"big_barrel", INT2(1,3),
-	"barrel", INT2(1,5),
-	"barrels", INT2(1,4)
+	"torch", Int2(1,1),
+	"big_barrel", Int2(1,3),
+	"barrel", Int2(1,5),
+	"barrels", Int2(1,4)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_kapliczka[] = {
-	"torch", INT2(1,1),
-	"emblem", INT2(2,4),
-	"altar", INT2(1,1)
+	"torch", Int2(1,1),
+	"emblem", Int2(2,4),
+	"altar", Int2(1,1)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_pokoj_spotkan[] = {
-	"torch", INT2(1,1),
-	"table_and_chairs", INT2(1,2),
-	"barrel", INT2(1,3),
-	"bench_dir", INT2(1,3),
-	"painting", INT2(1,2),
-	"gobelin", INT2(0,1)
+	"torch", Int2(1,1),
+	"table_and_chairs", Int2(1,2),
+	"barrel", Int2(1,3),
+	"bench_dir", Int2(1,3),
+	"painting", Int2(1,2),
+	"gobelin", Int2(0,1)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_pokoj_treningowy[] = {
-	"torch", INT2(1,1),
-	"melee_target", INT2(1,3),
-	"bow_target", INT2(1,3),
-	"box", INT2(2,4),
-	"boxes", INT2(1,2),
-	"chest", INT2(1,2)
+	"torch", Int2(1,1),
+	"melee_target", Int2(1,3),
+	"bow_target", Int2(1,3),
+	"box", Int2(2,4),
+	"boxes", Int2(1,2),
+	"chest", Int2(1,2)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_pokoj_wyrobu[] = {
-	"torch", INT2(1,1),
-	"tanning_rack", INT2(1,2),
-	"anvil", INT2(1,1),
-	"cauldron", INT2(1,1),
-	"table_and_chairs", INT2(0,1),
-	"box", INT2(2,4),
-	"boxes", INT2(1,2),
-	"chest", INT2(1,2),
-	"shelves", INT2(1,2)
+	"torch", Int2(1,1),
+	"tanning_rack", Int2(1,2),
+	"anvil", Int2(1,1),
+	"cauldron", Int2(1,1),
+	"table_and_chairs", Int2(0,1),
+	"box", Int2(2,4),
+	"boxes", Int2(1,2),
+	"chest", Int2(1,2),
+	"shelves", Int2(1,2)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_kuchnia[] = {
-	"torch", INT2(1,1),
-	"campfire", INT2(1,1),
-	"firewood", INT2(3,5),
-	"table_and_chairs", INT2(0,1),
-	"barrels", INT2(1,3),
-	"chest", INT2(0,1),
-	"shelves", INT2(1,2)
+	"torch", Int2(1,1),
+	"campfire", Int2(1,1),
+	"firewood", Int2(3,5),
+	"table_and_chairs", Int2(0,1),
+	"barrels", Int2(1,3),
+	"chest", Int2(0,1),
+	"shelves", Int2(1,2)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_schody[] = {
-	"torch", INT2(1,1),
-	"box", INT2(1,3),
-	"gobelin", INT2(0,1)
+	"torch", Int2(1,1),
+	"box", Int2(1,3),
+	"gobelin", Int2(0,1)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_schody_swiatynia[] = {
-	"torch", INT2(1,1),
-	"box", INT2(1,3),
-	"emblem", INT2(2,4)
+	"torch", Int2(1,1),
+	"box", Int2(1,3),
+	"emblem", Int2(2,4)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_groby[] = {
-	"torch", INT2(1,1),
-	"grave", INT2(1,3),
-	"tombstone", INT2(1,4),
-	"emblem", INT2(1,3)
+	"torch", Int2(1,1),
+	"grave", Int2(1,3),
+	"tombstone", Int2(1,4),
+	"emblem", Int2(1,3)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_groby2[] = {
-	"torch", INT2(1,1),
-	"tombstone", INT2(3,5),
-	"emblem", INT2(1,3)
+	"torch", Int2(1,1),
+	"tombstone", Int2(3,5),
+	"emblem", Int2(1,3)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_pokoj_krypta[] = {
-	"torch", INT2(1,1),
-	"chest", INT2(1,2),
-	"emblem", INT2(2,4)
+	"torch", Int2(1,1),
+	"chest", Int2(1,2),
+	"emblem", Int2(2,4)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_krypta_skarb[] = {
-	"torch", INT2(1,1),
-	"chest_r", INT2(1,1),
-	"chest", INT2(1,2),
-	"emblem", INT2(1,3),
-	"box", INT2(1,3),
-	"boxes", INT2(1,2),
-	"barrel", INT2(1,2),
-	"barrels", INT2(0,1)
+	"torch", Int2(1,1),
+	"chest_r", Int2(1,1),
+	"chest", Int2(1,2),
+	"emblem", Int2(1,3),
+	"box", Int2(1,3),
+	"boxes", Int2(1,2),
+	"barrel", Int2(1,2),
+	"barrels", Int2(0,1)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_labirynt_skarb[] = {
-	"chest_r", INT2(1,1),
-	"chest", INT2(1,2),
-	"box", INT2(1,3),
-	"boxes", INT2(1,2),
-	"barrel", INT2(1,2),
-	"barrels", INT2(0,1)
+	"chest_r", Int2(1,1),
+	"chest", Int2(1,2),
+	"box", Int2(1,3),
+	"boxes", Int2(1,2),
+	"barrel", Int2(1,2),
+	"barrels", Int2(0,1)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_tut[] = {
-	"torch", INT2(1,1),
-	"gobelin", INT2(0,1),
-	"painting", INT2(0,1)
+	"torch", Int2(1,1),
+	"gobelin", Int2(0,1),
+	"painting", Int2(0,1)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_obrazy[] = {
-	"painting", INT2(10,10)
+	"painting", Int2(10,10)
 };
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_portal[] = {
-	"portal", INT2(1,1),
-	"chest_r", INT2(1,1),
-	"torch", INT2(1,1),
-	"emblem_t", INT2(2,3)
+	"portal", Int2(1,1),
+	"chest_r", Int2(1,1),
+	"torch", Int2(1,1),
+	"emblem_t", Int2(2,3)
 };
 
 //-----------------------------------------------------------------------------

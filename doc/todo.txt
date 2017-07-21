@@ -696,7 +696,7 @@ KONSOLA:
 * niepiśmienność barbarzyńcy i ew łowcy [wychowany przez wilki]
 * startowe historie postaci [zwykły zjadacz chleba]
 * możliwość startu jako mieszkaniec miasta
-* RotatedRectanglesCollision jest jakieś zbugowanie w Collide(BOX2D, bez rot), trzeba było dać -rot, trzeba sprawdzić czy działa w innych funkcjach dobrze Collide(BOX2D, rot), GenerateDungeonObjects
+* RotatedRectanglesCollision jest jakieś zbugowanie w Collide(Box2d, bez rot), trzeba było dać -rot, trzeba sprawdzić czy działa w innych funkcjach dobrze Collide(Box2d, rot), GenerateDungeonObjects
 * spotykanie tych samych bohaterów w różnych miejscach
 * odchylenie przy strzelaniu (gracz, ai, pułapki)
 * podchodzenie w czasie dialogu, wyciąganie broni, grożenie, proszenie
@@ -792,7 +792,7 @@ KONSOLA:
 * iteratory są wolniejsze dla vector więc nie ma sensu ich używać
 * lepszy ekwipunek, lepsze podnoszenie wszystkiego (aktualnie jeśli nie ma miejsca to nie sprawdza następnych przedmiotów czy się stackują)
 * więcej dźwięków (aktualnie trafienie z firebolla w tarcze traktuje jak iron<>shield.mat) może odczytywanie z pliku macierzy dźwięków
-* kolor włosów jako DWORD a nie VEC4
+* kolor włosów jako DWORD a nie Vec4
 * bardziej zautomatyzowane UI jeśli chodzi o wprowadzanie tekstu (enter_input itp)
 * rekrutowanie jako członka drużyny (udział w zyskach) lub jako najemnika (opłata+mały udział w zyskach), niektórzy członkowie drużyny mogą wymagać zapłaty za coś (np na leczenie, na spłacenie długów)
 * dialogi pomiędzy npc/bohaterami

@@ -122,13 +122,13 @@ void GameMessages::AddMessage(cstring text, float time, int type)
 	m.size.y += 6;
 
 	if(msgs.size() == 1u)
-		m.pos = VEC2(float(GUI.wnd_size.x) / 2, float(GUI.wnd_size.y) / 2);
+		m.pos = Vec2(float(GUI.wnd_size.x) / 2, float(GUI.wnd_size.y) / 2);
 	else
 	{
 		list<GameMsg>::reverse_iterator it = msgs.rbegin();
 		++it;
 		GameMsg& prev = *it;
-		m.pos = VEC2(float(GUI.wnd_size.x) / 2, prev.pos.y + prev.size.y);
+		m.pos = Vec2(float(GUI.wnd_size.x) / 2, prev.pos.y + prev.size.y);
 	}
 
 	msgs_h += m.size.y;

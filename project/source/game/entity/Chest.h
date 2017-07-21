@@ -22,7 +22,7 @@ struct ChestEventHandler
 struct Chest
 {
 	vector<ItemSlot> items;
-	VEC3 pos;
+	Vec3 pos;
 	float rot;
 	AnimeshInstance* ani;
 	ChestEventHandler* handler;

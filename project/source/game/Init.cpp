@@ -13,7 +13,7 @@
 #include "Spell.h"
 #include "Trap.h"
 
-extern void HumanPredraw(void* ptr, MATRIX* mat, int n);
+extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
 
 //=================================================================================================

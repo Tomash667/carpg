@@ -124,14 +124,14 @@ GetTextDialog* GetTextDialog::Show(const GetTextDialogParams& params)
 			&bt2 = self->bts[1];
 
 		bt1.id = Result_Cancel;
-		bt1.size = INT2(100, 40);
+		bt1.size = Int2(100, 40);
 		bt1.parent = self;
 
 		bt2.id = Result_Ok;
-		bt2.size = INT2(100, 40);
+		bt2.size = Int2(100, 40);
 		bt2.parent = self;
 
-		self->textBox.pos = INT2(25, 60);
+		self->textBox.pos = Int2(25, 60);
 	}
 
 	self->Create(params);
@@ -151,15 +151,15 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	if(!params.multiline || params.lines < 1)
 		lines = 1;
 
-	size = INT2(params.width, 180 + lines * 20);
-	textBox.size = INT2(params.width - 50, 15 + lines * 20);
+	size = Int2(params.width, 180 + lines * 20);
+	textBox.size = Int2(params.width - 50, 15 + lines * 20);
 	textBox.SetMultiline(params.multiline);
 	textBox.limit = params.limit;
 	textBox.SetText(params.input->c_str());
 
 	// ustaw przyciski
-	bt1.pos = INT2(size.x - 100 - 16, size.y - 40 - 16);
-	bt2.pos = INT2(16, size.y - 40 - 16);
+	bt1.pos = Int2(size.x - 100 - 16, size.y - 40 - 16);
+	bt2.pos = Int2(16, size.y - 40 - 16);
 	if(params.custom_names)
 	{
 		bt1.text = (params.custom_names[0] ? params.custom_names[0] : GUI.txCancel);

@@ -34,7 +34,7 @@ void Journal::Draw(ControlDrawData* /*cdd*/)
 {
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
 	GUI.DrawSpriteRect(tBook, r);
-	GUI.DrawSprite(tPage[mode], global_pos - INT2(64, 0));
+	GUI.DrawSprite(tPage[mode], global_pos - Int2(64, 0));
 
 	int x1 = page * 2, x2 = page * 2 + 1;
 
@@ -65,9 +65,9 @@ void Journal::Draw(ControlDrawData* /*cdd*/)
 
 	// strza³ki 32, 243
 	if(page != 0)
-		GUI.DrawSprite(tArrowL, INT2(rect.Left() - 8, rect.Bottom() - 8));
+		GUI.DrawSprite(tArrowL, Int2(rect.Left() - 8, rect.Bottom() - 8));
 	if(texts.back().x > x2)
-		GUI.DrawSprite(tArrowR, INT2(rect2.Right() + 8, rect.Bottom() - 8));
+		GUI.DrawSprite(tArrowR, Int2(rect2.Right() + 8, rect.Bottom() - 8));
 }
 
 //=================================================================================================
@@ -284,7 +284,7 @@ void Journal::Update(float dt)
 	{
 		if(page != 0)
 		{
-			if(PointInRect(GUI.cursor_pos, rect.LeftBottom() - INT2(8, 8), INT2(16, 16)))
+			if(PointInRect(GUI.cursor_pos, rect.LeftBottom() - Int2(8, 8), Int2(16, 16)))
 			{
 				GUI.cursor_mode = CURSOR_HAND;
 				if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
@@ -293,7 +293,7 @@ void Journal::Update(float dt)
 		}
 		if(texts.back().x > page * 2 + 1)
 		{
-			if(PointInRect(GUI.cursor_pos, rect.RightBottom() + INT2(8, -8), INT2(16, 16)))
+			if(PointInRect(GUI.cursor_pos, rect.RightBottom() + Int2(8, -8), Int2(16, 16)))
 			{
 				GUI.cursor_mode = CURSOR_HAND;
 				if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
@@ -314,7 +314,7 @@ void Journal::Event(GuiEvent e)
 		rect = Rect(32, 16, 238, 432);
 		rect2 = Rect(259, 16, 455, 431);
 
-		VEC2 scale = VEC2(size) / 512;
+		Vec2 scale = Vec2(size) / 512;
 		rect = rect * scale + global_pos;
 		rect2 = rect2 * scale + global_pos;
 
@@ -431,7 +431,7 @@ void Journal::AddEntry(cstring text, int color, bool singleline)
 	}
 
 	// ile linijek zajmuje tekst?
-	INT2 osize = GUI.default_font->CalculateSize(text, rect_w);
+	Int2 osize = GUI.default_font->CalculateSize(text, rect_w);
 	int h = osize.y / font_height + 1;
 
 	if(y + h >= rect_lines)

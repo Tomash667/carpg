@@ -564,7 +564,7 @@ void Game::ChangeReady()
 	{
 		// zmieñ info
 		if(players > 1)
-			AddLobbyUpdate(INT2(Lobby_UpdatePlayer, 0));
+			AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
 		CheckReady();
 	}
 	else
@@ -1850,14 +1850,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 						if(center_unit)
 						{
 							// get positon of unit or building entrance
-							VEC3 pos;
+							Vec3 pos;
 							if(center_unit->in_building == -1)
 								pos = center_unit->pos;
 							else
 							{
 								InsideBuilding* inside = city_ctx->inside_buildings[center_unit->in_building];
-								VEC2 p = inside->enter_area.Midpoint();
-								pos = VEC3(p.x, inside->enter_y, p.y);
+								Vec2 p = inside->enter_area.Midpoint();
+								pos = Vec3(p.x, inside->enter_y, p.y);
 							}
 
 							// warp
@@ -1867,7 +1867,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								{
 									local_ctx.units->push_back(info.u);
 									WarpNearLocation(local_ctx, *info.u, pos, 4.f, false, 20);
-									info.u->rot = VEC3::LookAtAngle(info.u->pos, pos);
+									info.u->rot = Vec3::LookAtAngle(info.u->pos, pos);
 									info.u->interp->Reset(info.u->pos, info.u->rot);
 								}
 							}
@@ -1875,7 +1875,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						else
 						{
 							// find entrance position/rotation
-							VEC3 pos;
+							Vec3 pos;
 							float rot;
 							Portal* portal;
 
@@ -1883,7 +1883,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								GetCityEntry(pos, rot);
 							else if(enter_from >= ENTER_FROM_PORTAL && (portal = location->GetPortal(enter_from)) != nullptr)
 							{
-								pos = portal->pos + VEC3(sin(portal->rot) * 2, 0, cos(portal->rot) * 2);
+								pos = portal->pos + Vec3(sin(portal->rot) * 2, 0, cos(portal->rot) * 2);
 								rot = Clip(portal->rot + PI);
 							}
 							else if(location->type == L_DUNGEON || location->type == L_CRYPT)
@@ -2342,7 +2342,7 @@ void Game::UpdateLobbyNet(float dt)
 						Format("UpdateLobbyNet: %s has disconnected.", packet->systemAddress.ToString()));
 					--players;
 					if(players > 1)
-						AddLobbyUpdate(INT2(Lobby_ChangeCount, 0));
+						AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
 					UpdateServerInfo();
 					server_panel->grid.RemoveItem(index);
 					game_players.erase(game_players.begin() + index);
@@ -2418,7 +2418,7 @@ void Game::UpdateLobbyNet(float dt)
 						info.warping = false;
 						info.buffs = 0;
 						if(players > 1)
-							AddLobbyUpdate(INT2(Lobby_ChangeCount, 0));
+							AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
 						++players;
 						UpdateServerInfo();
 					}
@@ -2445,7 +2445,7 @@ void Game::UpdateLobbyNet(float dt)
 							game_players.erase(game_players.begin() + index);
 							--players;
 							if(players > 1)
-								AddLobbyUpdate(INT2(Lobby_ChangeCount, 0));
+								AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
 							UpdateServerInfo();
 						}
 						else
@@ -2456,8 +2456,8 @@ void Game::UpdateLobbyNet(float dt)
 							LOG(Format("UpdateLobbyNet: Player %s %s.", info->name.c_str(), dis ? "disconnected" : "lost connection"));
 							if(players > 1)
 							{
-								AddLobbyUpdate(INT2(Lobby_RemovePlayer, info->id));
-								AddLobbyUpdate(INT2(Lobby_ChangeCount, 0));
+								AddLobbyUpdate(Int2(Lobby_RemovePlayer, info->id));
+								AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
 							}
 							if(leader_id == info->id)
 							{
@@ -2465,7 +2465,7 @@ void Game::UpdateLobbyNet(float dt)
 								LOG("UpdateLobbyNet: You are leader now.");
 								leader_id = my_id;
 								if(players > 1)
-									AddLobbyUpdate(INT2(Lobby_ChangeLeader, 0));
+									AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 								server_panel->AddMsg(server_panel->txYouAreLeader);
 							}
 							game_players.erase(game_players.begin() + index);
@@ -2639,7 +2639,7 @@ void Game::UpdateLobbyNet(float dt)
 								info->notes = old->notes;
 
 								if(players > 2)
-									AddLobbyUpdate(INT2(Lobby_UpdatePlayer, info->id));
+									AddLobbyUpdate(Int2(Lobby_UpdatePlayer, info->id));
 
 								LOG(Format("UpdateLobbyNet: Player %s is using loaded character.", info->name.c_str()));
 							}
@@ -2656,7 +2656,7 @@ void Game::UpdateLobbyNet(float dt)
 
 						// informacja dla pozosta³ych
 						if(players > 2)
-							AddLobbyUpdate(INT2(Lobby_AddPlayer, info->id));
+							AddLobbyUpdate(Int2(Lobby_AddPlayer, info->id));
 
 						CheckReady();
 					}
@@ -2678,7 +2678,7 @@ void Game::UpdateLobbyNet(float dt)
 					{
 						info->ready = ready;
 						if(players > 2)
-							AddLobbyUpdate(INT2(Lobby_UpdatePlayer, info->id));
+							AddLobbyUpdate(Int2(Lobby_UpdatePlayer, info->id));
 						CheckReady();
 					}
 				}
@@ -2707,9 +2707,9 @@ void Game::UpdateLobbyNet(float dt)
 					--players;
 					if(players > 1)
 					{
-						AddLobbyUpdate(INT2(Lobby_ChangeCount, 0));
+						AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
 						if(info->state == PlayerInfo::IN_LOBBY)
-							AddLobbyUpdate(INT2(Lobby_RemovePlayer, info->id));
+							AddLobbyUpdate(Int2(Lobby_RemovePlayer, info->id));
 					}
 					server_panel->grid.RemoveItem(index);
 					UpdateServerInfo();
@@ -2761,7 +2761,7 @@ void Game::UpdateLobbyNet(float dt)
 
 					// send info to other players
 					if((old_ready != info->ready || old_class != info->clas) && players > 2)
-						AddLobbyUpdate(INT2(Lobby_UpdatePlayer, info->id));
+						AddLobbyUpdate(Int2(Lobby_UpdatePlayer, info->id));
 
 					// send result
 					byte packet[2] = { ID_PICK_CHARACTER, ok };
@@ -2928,7 +2928,7 @@ void Game::UpdateLobbyNet(float dt)
 					peer->CloseConnection(it->adr, false);
 					--players;
 					if(players > 1)
-						AddLobbyUpdate(INT2(Lobby_RemovePlayer, 0));
+						AddLobbyUpdate(Int2(Lobby_RemovePlayer, 0));
 					it = game_players.erase(it);
 					end = game_players.end();
 					server_panel->grid.RemoveItem(index);
@@ -2963,7 +2963,7 @@ void Game::UpdateLobbyNet(float dt)
 					int ile = 0;
 					for(uint i = 0; i < min(lobby_updates.size(), 255u); ++i)
 					{
-						INT2& u = lobby_updates[i];
+						Int2& u = lobby_updates[i];
 						switch(u.x)
 						{
 						case Lobby_UpdatePlayer:
@@ -3216,7 +3216,7 @@ void Game::OnCreateCharacter(int id)
 		if(sv_server)
 		{
 			if(info.clas != old_class && players > 1)
-				AddLobbyUpdate(INT2(Lobby_UpdatePlayer, 0));
+				AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
 		}
 		else
 		{
@@ -3353,9 +3353,9 @@ void Game::ClearAndExitToMenu(cstring msg)
 	GUI.SimpleDialog(msg, main_menu);
 }
 
-void Game::AddLobbyUpdate(const INT2& u)
+void Game::AddLobbyUpdate(const Int2& u)
 {
-	for(INT2& update : lobby_updates)
+	for(Int2& update : lobby_updates)
 	{
 		if(update == u)
 			return;

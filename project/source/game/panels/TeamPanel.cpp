@@ -89,8 +89,8 @@ void TeamPanel::Draw(ControlDrawData*)
 	};
 	GUI.DrawText(GUI.fBig, txTeam, DT_TOP | DT_CENTER, BLACK, rect);
 
-	INT2 offset = global_pos + INT2(8, 40 - scrollbar.offset);
-	rect = Rect::Create(INT2(global_pos.x + 8, global_pos.y + 40), INT2(size.x - 52, size.y - 96));
+	Int2 offset = global_pos + Int2(8, 40 - scrollbar.offset);
+	rect = Rect::Create(Int2(global_pos.x + 8, global_pos.y + 40), Int2(size.x - 52, size.y - 96));
 
 	int pc_share = Team.GetPCShare();
 	LocalString s;
@@ -101,22 +101,22 @@ void TeamPanel::Draw(ControlDrawData*)
 	int n = 0;
 	int hitbox_counter = 0;
 	hitboxes.clear();
-	MATRIX mat;
+	Matrix mat;
 	for(Unit* u : Team.members)
 	{
 		if(!u->IsHero() || !IS_SET(u->data->flags2, F2_NO_CLASS))
 		{
 			TEX t = g_classes[(int)u->GetClass()].icon;
-			INT2 img_size;
-			VEC2 scale;
-			Control::ResizeImage(t, INT2(32, 32), img_size, scale);
-			mat = MATRIX::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &VEC2((float)offset.x, (float)offset.y));
+			Int2 img_size;
+			Vec2 scale;
+			Control::ResizeImage(t, Int2(32, 32), img_size, scale);
+			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)offset.x, (float)offset.y));
 			GUI.DrawSprite2(t, &mat, nullptr, &rect, WHITE);
 		}
 		if(u == Team.leader)
-			GUI.DrawSprite(tKorona, INT2(offset.x + 32, offset.y), WHITE, &rect);
+			GUI.DrawSprite(tKorona, Int2(offset.x + 32, offset.y), WHITE, &rect);
 		if(!u->IsStanding())
-			GUI.DrawSprite(tCzaszka, INT2(offset.x + 64, offset.y), WHITE, &rect);
+			GUI.DrawSprite(tCzaszka, Int2(offset.x + 64, offset.y), WHITE, &rect);
 
 		Rect r2 = {
 			offset.x + 96,
@@ -226,9 +226,9 @@ void TeamPanel::Event(GuiEvent e)
 			int s = 32 * Team.GetTeamSize();
 			scrollbar.total = s;
 			scrollbar.part = min(s, scrollbar.size.y);
-			scrollbar.pos = INT2(size.x - 28, 48);
+			scrollbar.pos = Int2(size.x - 28, 48);
 			scrollbar.global_pos = global_pos + scrollbar.pos;
-			scrollbar.size = INT2(16, size.y - 60 - 48);
+			scrollbar.size = Int2(16, size.y - 60 - 48);
 			if(scrollbar.offset + scrollbar.part > scrollbar.total)
 				scrollbar.offset = float(scrollbar.total - scrollbar.part);
 			if(scrollbar.offset < 0)
@@ -287,22 +287,22 @@ void TeamPanel::UpdateButtons()
 
 		bt[0].size.x = s;
 		bt[0].size.y = 48;
-		bt[0].pos = INT2(8, size.y - 58);
+		bt[0].pos = Int2(8, size.y - 58);
 		bt[0].global_pos = bt[0].pos + global_pos;
 
 		bt[1].size.x = s;
 		bt[1].size.y = 48;
-		bt[1].pos = INT2(8 + s + 4, size.y - 58);
+		bt[1].pos = Int2(8 + s + 4, size.y - 58);
 		bt[1].global_pos = bt[1].pos + global_pos;
 
 		bt[2].size.x = s;
 		bt[2].size.y = 48;
-		bt[2].pos = INT2(8 + s * 2 + 8, size.y - 58);
+		bt[2].pos = Int2(8 + s * 2 + 8, size.y - 58);
 		bt[2].global_pos = bt[2].pos + global_pos;
 
 		bt[3].size.x = s;
 		bt[3].size.y = 48;
-		bt[3].pos = INT2(8 + s * 3 + 12, size.y - 58);
+		bt[3].pos = Int2(8 + s * 3 + 12, size.y - 58);
 		bt[3].global_pos = bt[3].pos + global_pos;
 	}
 	else
@@ -311,12 +311,12 @@ void TeamPanel::UpdateButtons()
 
 		bt[0].size.x = s;
 		bt[0].size.y = 48;
-		bt[0].pos = INT2(8, size.y - 58);
+		bt[0].pos = Int2(8, size.y - 58);
 		bt[0].global_pos = bt[0].pos + global_pos;
 
 		bt[1].size.x = s;
 		bt[1].size.y = 48;
-		bt[1].pos = INT2(8 + s + 4, size.y - 58);
+		bt[1].pos = Int2(8 + s + 4, size.y - 58);
 		bt[1].global_pos = bt[1].pos + global_pos;
 	}
 }

@@ -8,8 +8,8 @@ struct GameMsg
 {
 	string msg;
 	float time, fade;
-	VEC2 pos;
-	INT2 size;
+	Vec2 pos;
+	Int2 size;
 	int type;
 };
 

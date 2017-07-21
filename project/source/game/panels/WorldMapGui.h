@@ -23,13 +23,13 @@ public:
 	void Event(GuiEvent e) override;
 
 	void LoadData();
-	INT2 WorldPosToScreen(const INT2& pt) const
+	Int2 WorldPosToScreen(const Int2& pt) const
 	{
-		return INT2(pt.x, 600 - pt.y);
+		return Int2(pt.x, 600 - pt.y);
 	}
-	VEC2 WorldPosToScreen(VEC2& pt) const
+	Vec2 WorldPosToScreen(Vec2& pt) const
 	{
-		return VEC2(pt.x, 600.f - pt.y);
+		return Vec2(pt.x, 600.f - pt.y);
 	}
 
 	MpBox* mp_box;

@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------------------
 ObjectPool<SceneNode> node_pool;
 ObjectPool<DebugSceneNode> debug_node_pool;
-extern MATRIX m1, m2, m3, m4;
+extern Matrix m1, m2, m3, m4;
 extern UINT passes;
 
 //-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ struct IBOX
 	}
 	bool IsVisible(const FrustumPlanes& f) const
 	{
-		BOX box(2.f*x, l, 2.f*y, 2.f*(x + s), t, 2.f*(y + s));
+		Box box(2.f*x, l, 2.f*y, 2.f*(x + s), t, 2.f*(y + s));
 		return f.BoxToFrustum(box);
 	}
 	IBOX GetLeftTop() const
@@ -46,17 +46,17 @@ struct IBOX
 	{
 		return IBOX(x + s / 2, y + s / 2, s / 2, l, t);
 	}
-	void PushTop(vector<INT2>& top) const
+	void PushTop(vector<Int2>& top) const
 	{
-		top.push_back(INT2(x, y));
+		top.push_back(Int2(x, y));
 		if(x < 59)
 		{
-			top.push_back(INT2(x + 1, y));
+			top.push_back(Int2(x + 1, y));
 			if(y < 59)
-				top.push_back(INT2(x + 1, y + 1));
+				top.push_back(Int2(x + 1, y + 1));
 		}
 		if(y < 59)
-			top.push_back(INT2(x, y + 1));
+			top.push_back(Int2(x, y + 1));
 	}
 };
 
@@ -100,51 +100,51 @@ void DrawBatch::Clear()
 	for(int i = 0; i < 3; ++i)
 	{
 		l.ld[i].range = 1.f;
-		l.ld[i].pos = VEC3(0, -1000, 0);
-		l.ld[i].color = VEC3(0, 0, 0);
+		l.ld[i].pos = Vec3(0, -1000, 0);
+		l.ld[i].color = Vec3(0, 0, 0);
 	}
 }
 
 //=================================================================================================
 void Game::InitScene()
 {
-	blood_v[0].tex = VEC2(0, 0);
-	blood_v[1].tex = VEC2(0, 1);
-	blood_v[2].tex = VEC2(1, 0);
-	blood_v[3].tex = VEC2(1, 1);
+	blood_v[0].tex = Vec2(0, 0);
+	blood_v[1].tex = Vec2(0, 1);
+	blood_v[2].tex = Vec2(1, 0);
+	blood_v[3].tex = Vec2(1, 1);
 	for(int i = 0; i < 4; ++i)
 		blood_v[i].pos.y = 0.f;
 
-	billboard_v[0].pos = VEC3(-1, -1, 0);
-	billboard_v[0].tex = VEC2(0, 0);
-	billboard_v[0].color = VEC4(1.f, 1.f, 1.f, 1.f);
-	billboard_v[1].pos = VEC3(-1, 1, 0);
-	billboard_v[1].tex = VEC2(0, 1);
-	billboard_v[1].color = VEC4(1.f, 1.f, 1.f, 1.f);
-	billboard_v[2].pos = VEC3(1, -1, 0);
-	billboard_v[2].tex = VEC2(1, 0);
-	billboard_v[2].color = VEC4(1.f, 1.f, 1.f, 1.f);
-	billboard_v[3].pos = VEC3(1, 1, 0);
-	billboard_v[3].tex = VEC2(1, 1);
-	billboard_v[3].color = VEC4(1.f, 1.f, 1.f, 1.f);
+	billboard_v[0].pos = Vec3(-1, -1, 0);
+	billboard_v[0].tex = Vec2(0, 0);
+	billboard_v[0].color = Vec4(1.f, 1.f, 1.f, 1.f);
+	billboard_v[1].pos = Vec3(-1, 1, 0);
+	billboard_v[1].tex = Vec2(0, 1);
+	billboard_v[1].color = Vec4(1.f, 1.f, 1.f, 1.f);
+	billboard_v[2].pos = Vec3(1, -1, 0);
+	billboard_v[2].tex = Vec2(1, 0);
+	billboard_v[2].color = Vec4(1.f, 1.f, 1.f, 1.f);
+	billboard_v[3].pos = Vec3(1, 1, 0);
+	billboard_v[3].tex = Vec2(1, 1);
+	billboard_v[3].color = Vec4(1.f, 1.f, 1.f, 1.f);
 
-	billboard_ext[0] = VEC3(-1, -1, 0);
-	billboard_ext[1] = VEC3(-1, 1, 0);
-	billboard_ext[2] = VEC3(1, -1, 0);
-	billboard_ext[3] = VEC3(1, 1, 0);
+	billboard_ext[0] = Vec3(-1, -1, 0);
+	billboard_ext[1] = Vec3(-1, 1, 0);
+	billboard_ext[2] = Vec3(1, -1, 0);
+	billboard_ext[3] = Vec3(1, 1, 0);
 
-	portal_v[0].pos = VEC3(-0.67f, -0.67f, 0);
-	portal_v[1].pos = VEC3(-0.67f, 0.67f, 0);
-	portal_v[2].pos = VEC3(0.67f, -0.67f, 0);
-	portal_v[3].pos = VEC3(0.67f, 0.67f, 0);
-	portal_v[0].tex = VEC2(0, 0);
-	portal_v[1].tex = VEC2(0, 1);
-	portal_v[2].tex = VEC2(1, 0);
-	portal_v[3].tex = VEC2(1, 1);
-	portal_v[0].color = VEC4(1, 1, 1, 0.5f);
-	portal_v[1].color = VEC4(1, 1, 1, 0.5f);
-	portal_v[2].color = VEC4(1, 1, 1, 0.5f);
-	portal_v[3].color = VEC4(1, 1, 1, 0.5f);
+	portal_v[0].pos = Vec3(-0.67f, -0.67f, 0);
+	portal_v[1].pos = Vec3(-0.67f, 0.67f, 0);
+	portal_v[2].pos = Vec3(0.67f, -0.67f, 0);
+	portal_v[3].pos = Vec3(0.67f, 0.67f, 0);
+	portal_v[0].tex = Vec2(0, 0);
+	portal_v[1].tex = Vec2(0, 1);
+	portal_v[2].tex = Vec2(1, 0);
+	portal_v[3].tex = Vec2(1, 1);
+	portal_v[0].color = Vec4(1, 1, 1, 0.5f);
+	portal_v[1].color = Vec4(1, 1, 1, 0.5f);
+	portal_v[2].color = Vec4(1, 1, 1, 0.5f);
+	portal_v[3].color = Vec4(1, 1, 1, 0.5f);
 
 	BuildDungeon();
 }
@@ -269,12 +269,12 @@ void Game::BuildDungeon()
 	const float H2U = 0.001f;
 	const float V0 = (dungeon_tex_wrap ? 2.f : 1);
 
-#define NTB_PX VEC3(1,0,0), VEC3(0,0,1), VEC3(0,-1,0)
-#define NTB_MX VEC3(-1,0,0), VEC3(0,0,-1), VEC3(0,-1,0)
-#define NTB_PY VEC3(0,1,0), VEC3(1,0,0), VEC3(0,0,-1)
-#define NTB_MY VEC3(0,-1,0), VEC3(1,0,0), VEC3(0,0,1)
-#define NTB_PZ VEC3(0,0,1), VEC3(-1,0,0), VEC3(0,-1,0)
-#define NTB_MZ VEC3(0,0,-1), VEC3(1,0,0), VEC3(0,-1,0)
+#define NTB_PX Vec3(1,0,0), Vec3(0,0,1), Vec3(0,-1,0)
+#define NTB_MX Vec3(-1,0,0), Vec3(0,0,-1), Vec3(0,-1,0)
+#define NTB_PY Vec3(0,1,0), Vec3(1,0,0), Vec3(0,0,-1)
+#define NTB_MY Vec3(0,-1,0), Vec3(1,0,0), Vec3(0,0,1)
+#define NTB_PZ Vec3(0,0,1), Vec3(-1,0,0), Vec3(0,-1,0)
+#define NTB_MZ Vec3(0,0,-1), Vec3(1,0,0), Vec3(0,-1,0)
 
 	// pod³oga
 	// 1    3
@@ -283,120 +283,120 @@ void Game::BuildDungeon()
 	// |  \ |
 	// |   \|
 	// 0    2
-	v[0] = VTangent(VEC3(L, Z, L), VEC2(0, 1), NTB_PY);
-	v[1] = VTangent(VEC3(L, Z, R), VEC2(0, 0), NTB_PY);
-	v[2] = VTangent(VEC3(R, Z, L), VEC2(1, 1), NTB_PY);
-	v[3] = VTangent(VEC3(R, Z, R), VEC2(1, 0), NTB_PY);
+	v[0] = VTangent(Vec3(L, Z, L), Vec2(0, 1), NTB_PY);
+	v[1] = VTangent(Vec3(L, Z, R), Vec2(0, 0), NTB_PY);
+	v[2] = VTangent(Vec3(R, Z, L), Vec2(1, 1), NTB_PY);
+	v[3] = VTangent(Vec3(R, Z, R), Vec2(1, 0), NTB_PY);
 
 	// sufit
-	v[4] = VTangent(VEC3(L, H, R), VEC2(0, 1), NTB_MY);
-	v[5] = VTangent(VEC3(L, H, L), VEC2(0, 0), NTB_MY);
-	v[6] = VTangent(VEC3(R, H, R), VEC2(1, 1), NTB_MY);
-	v[7] = VTangent(VEC3(R, H, L), VEC2(1, 0), NTB_MY);
+	v[4] = VTangent(Vec3(L, H, R), Vec2(0, 1), NTB_MY);
+	v[5] = VTangent(Vec3(L, H, L), Vec2(0, 0), NTB_MY);
+	v[6] = VTangent(Vec3(R, H, R), Vec2(1, 1), NTB_MY);
+	v[7] = VTangent(Vec3(R, H, L), Vec2(1, 0), NTB_MY);
 
 	// lewa
-	v[8] = VTangent(VEC3(R, D, R), VEC2(0, V0), NTB_MX);
-	v[9] = VTangent(VEC3(R, U, R), VEC2(0, 0), NTB_MX);
-	v[10] = VTangent(VEC3(R, D, L), VEC2(1, V0), NTB_MX);
-	v[11] = VTangent(VEC3(R, U, L), VEC2(1, 0), NTB_MX);
+	v[8] = VTangent(Vec3(R, D, R), Vec2(0, V0), NTB_MX);
+	v[9] = VTangent(Vec3(R, U, R), Vec2(0, 0), NTB_MX);
+	v[10] = VTangent(Vec3(R, D, L), Vec2(1, V0), NTB_MX);
+	v[11] = VTangent(Vec3(R, U, L), Vec2(1, 0), NTB_MX);
 
 	// prawa
-	v[12] = VTangent(VEC3(L, D, L), VEC2(0, V0), NTB_PX);
-	v[13] = VTangent(VEC3(L, U, L), VEC2(0, 0), NTB_PX);
-	v[14] = VTangent(VEC3(L, D, R), VEC2(1, V0), NTB_PX);
-	v[15] = VTangent(VEC3(L, U, R), VEC2(1, 0), NTB_PX);
+	v[12] = VTangent(Vec3(L, D, L), Vec2(0, V0), NTB_PX);
+	v[13] = VTangent(Vec3(L, U, L), Vec2(0, 0), NTB_PX);
+	v[14] = VTangent(Vec3(L, D, R), Vec2(1, V0), NTB_PX);
+	v[15] = VTangent(Vec3(L, U, R), Vec2(1, 0), NTB_PX);
 
 	// przód
-	v[16] = VTangent(VEC3(L, D, R), VEC2(0, V0), NTB_MZ);
-	v[17] = VTangent(VEC3(L, U, R), VEC2(0, 0), NTB_MZ);
-	v[18] = VTangent(VEC3(R, D, R), VEC2(1, V0), NTB_MZ);
-	v[19] = VTangent(VEC3(R, U, R), VEC2(1, 0), NTB_MZ);
+	v[16] = VTangent(Vec3(L, D, R), Vec2(0, V0), NTB_MZ);
+	v[17] = VTangent(Vec3(L, U, R), Vec2(0, 0), NTB_MZ);
+	v[18] = VTangent(Vec3(R, D, R), Vec2(1, V0), NTB_MZ);
+	v[19] = VTangent(Vec3(R, U, R), Vec2(1, 0), NTB_MZ);
 
 	// ty³
-	v[20] = VTangent(VEC3(R, D, L), VEC2(0, V0), NTB_PZ);
-	v[21] = VTangent(VEC3(R, U, L), VEC2(0, 0), NTB_PZ);
-	v[22] = VTangent(VEC3(L, D, L), VEC2(1, V0), NTB_PZ);
-	v[23] = VTangent(VEC3(L, U, L), VEC2(1, 0), NTB_PZ);
+	v[20] = VTangent(Vec3(R, D, L), Vec2(0, V0), NTB_PZ);
+	v[21] = VTangent(Vec3(R, U, L), Vec2(0, 0), NTB_PZ);
+	v[22] = VTangent(Vec3(L, D, L), Vec2(1, V0), NTB_PZ);
+	v[23] = VTangent(Vec3(L, U, L), Vec2(1, 0), NTB_PZ);
 
 	// niski sufit
-	v[24] = VTangent(VEC3(L, HS, R), VEC2(0, 1), NTB_MY);
-	v[25] = VTangent(VEC3(L, HS, L), VEC2(0, 0), NTB_MY);
-	v[26] = VTangent(VEC3(R, HS, R), VEC2(1, 1), NTB_MY);
-	v[27] = VTangent(VEC3(R, HS, L), VEC2(1, 0), NTB_MY);
+	v[24] = VTangent(Vec3(L, HS, R), Vec2(0, 1), NTB_MY);
+	v[25] = VTangent(Vec3(L, HS, L), Vec2(0, 0), NTB_MY);
+	v[26] = VTangent(Vec3(R, HS, R), Vec2(1, 1), NTB_MY);
+	v[27] = VTangent(Vec3(R, HS, L), Vec2(1, 0), NTB_MY);
 
 	/* niskie œciany nie s¹ u¿ywane, uv nie zaktualizowane
 	// niski sufit lewa
-	v[28] = VTangent(VEC3(R,DS,R), VEC2(0,1), NTB_MX);
-	v[29] = VTangent(VEC3(R,U,R), VEC2(0,0.5f), NTB_MX);
-	v[30] = VTangent(VEC3(R,DS,L), VEC2(1,1), NTB_MX);
-	v[31] = VTangent(VEC3(R,U,L), VEC2(1,0.5f), NTB_MX);
+	v[28] = VTangent(Vec3(R,DS,R), Vec2(0,1), NTB_MX);
+	v[29] = VTangent(Vec3(R,U,R), Vec2(0,0.5f), NTB_MX);
+	v[30] = VTangent(Vec3(R,DS,L), Vec2(1,1), NTB_MX);
+	v[31] = VTangent(Vec3(R,U,L), Vec2(1,0.5f), NTB_MX);
 
 	// niski sufit prawa
-	v[32] = VTangent(VEC3(L,DS,L), VEC2(0,1), NTB_PX);
-	v[33] = VTangent(VEC3(L,U,L), VEC2(0,0.5f), NTB_PX);
-	v[34] = VTangent(VEC3(L,DS,R), VEC2(1,1), NTB_PX);
-	v[35] = VTangent(VEC3(L,U,R), VEC2(1,0.5f), NTB_PX);
+	v[32] = VTangent(Vec3(L,DS,L), Vec2(0,1), NTB_PX);
+	v[33] = VTangent(Vec3(L,U,L), Vec2(0,0.5f), NTB_PX);
+	v[34] = VTangent(Vec3(L,DS,R), Vec2(1,1), NTB_PX);
+	v[35] = VTangent(Vec3(L,U,R), Vec2(1,0.5f), NTB_PX);
 
 	// niski sufit przód
-	v[36] = VTangent(VEC3(L,DS,R), VEC2(0,1), NTB_MZ);
-	v[37] = VTangent(VEC3(L,U,R), VEC2(0,0.5f), NTB_MZ);
-	v[38] = VTangent(VEC3(R,DS,R), VEC2(1,1), NTB_MZ);
-	v[39] = VTangent(VEC3(R,U,R), VEC2(1,0.5f), NTB_MZ);
+	v[36] = VTangent(Vec3(L,DS,R), Vec2(0,1), NTB_MZ);
+	v[37] = VTangent(Vec3(L,U,R), Vec2(0,0.5f), NTB_MZ);
+	v[38] = VTangent(Vec3(R,DS,R), Vec2(1,1), NTB_MZ);
+	v[39] = VTangent(Vec3(R,U,R), Vec2(1,0.5f), NTB_MZ);
 
 	// niski sufit ty³
-	v[40] = VTangent(VEC3(R,DS,L), VEC2(0,1), NTB_PZ);
-	v[41] = VTangent(VEC3(R,U,L), VEC2(0,0.5f), NTB_PZ);
-	v[42] = VTangent(VEC3(L,DS,L), VEC2(1,1), NTB_PZ);
-	v[43] = VTangent(VEC3(L,U,L), VEC2(1,0.5f), NTB_PZ);
+	v[40] = VTangent(Vec3(R,DS,L), Vec2(0,1), NTB_PZ);
+	v[41] = VTangent(Vec3(R,U,L), Vec2(0,0.5f), NTB_PZ);
+	v[42] = VTangent(Vec3(L,DS,L), Vec2(1,1), NTB_PZ);
+	v[43] = VTangent(Vec3(L,U,L), Vec2(1,0.5f), NTB_PZ);
 	*/
 
 	// dziura góra lewa
-	v[44] = VTangent(VEC3(R, H1D, R), VEC2(0, V0), NTB_MX);
-	v[45] = VTangent(VEC3(R, H1U, R), VEC2(0, 0), NTB_MX);
-	v[46] = VTangent(VEC3(R, H1D, L), VEC2(1, V0), NTB_MX);
-	v[47] = VTangent(VEC3(R, H1U, L), VEC2(1, 0), NTB_MX);
+	v[44] = VTangent(Vec3(R, H1D, R), Vec2(0, V0), NTB_MX);
+	v[45] = VTangent(Vec3(R, H1U, R), Vec2(0, 0), NTB_MX);
+	v[46] = VTangent(Vec3(R, H1D, L), Vec2(1, V0), NTB_MX);
+	v[47] = VTangent(Vec3(R, H1U, L), Vec2(1, 0), NTB_MX);
 
 	// dziura góra prawa
-	v[48] = VTangent(VEC3(L, H1D, L), VEC2(0, V0), NTB_PX);
-	v[49] = VTangent(VEC3(L, H1U, L), VEC2(0, 0), NTB_PX);
-	v[50] = VTangent(VEC3(L, H1D, R), VEC2(1, V0), NTB_PX);
-	v[51] = VTangent(VEC3(L, H1U, R), VEC2(1, 0), NTB_PX);
+	v[48] = VTangent(Vec3(L, H1D, L), Vec2(0, V0), NTB_PX);
+	v[49] = VTangent(Vec3(L, H1U, L), Vec2(0, 0), NTB_PX);
+	v[50] = VTangent(Vec3(L, H1D, R), Vec2(1, V0), NTB_PX);
+	v[51] = VTangent(Vec3(L, H1U, R), Vec2(1, 0), NTB_PX);
 
 	// dziura góra przód
-	v[52] = VTangent(VEC3(L, H1D, R), VEC2(0, V0), NTB_MZ);
-	v[53] = VTangent(VEC3(L, H1U, R), VEC2(0, 0), NTB_MZ);
-	v[54] = VTangent(VEC3(R, H1D, R), VEC2(1, V0), NTB_MZ);
-	v[55] = VTangent(VEC3(R, H1U, R), VEC2(1, 0), NTB_MZ);
+	v[52] = VTangent(Vec3(L, H1D, R), Vec2(0, V0), NTB_MZ);
+	v[53] = VTangent(Vec3(L, H1U, R), Vec2(0, 0), NTB_MZ);
+	v[54] = VTangent(Vec3(R, H1D, R), Vec2(1, V0), NTB_MZ);
+	v[55] = VTangent(Vec3(R, H1U, R), Vec2(1, 0), NTB_MZ);
 
 	// dziura góra ty³
-	v[56] = VTangent(VEC3(R, H1D, L), VEC2(0, V0), NTB_PZ);
-	v[57] = VTangent(VEC3(R, H1U, L), VEC2(0, 0), NTB_PZ);
-	v[58] = VTangent(VEC3(L, H1D, L), VEC2(1, V0), NTB_PZ);
-	v[59] = VTangent(VEC3(L, H1U, L), VEC2(1, 0), NTB_PZ);
+	v[56] = VTangent(Vec3(R, H1D, L), Vec2(0, V0), NTB_PZ);
+	v[57] = VTangent(Vec3(R, H1U, L), Vec2(0, 0), NTB_PZ);
+	v[58] = VTangent(Vec3(L, H1D, L), Vec2(1, V0), NTB_PZ);
+	v[59] = VTangent(Vec3(L, H1U, L), Vec2(1, 0), NTB_PZ);
 
 	// dziura dó³ lewa
-	v[60] = VTangent(VEC3(R, H2D, R), VEC2(0, V0), NTB_MX);
-	v[61] = VTangent(VEC3(R, H2U, R), VEC2(0, 0), NTB_MX);
-	v[62] = VTangent(VEC3(R, H2D, L), VEC2(1, V0), NTB_MX);
-	v[63] = VTangent(VEC3(R, H2U, L), VEC2(1, 0), NTB_MX);
+	v[60] = VTangent(Vec3(R, H2D, R), Vec2(0, V0), NTB_MX);
+	v[61] = VTangent(Vec3(R, H2U, R), Vec2(0, 0), NTB_MX);
+	v[62] = VTangent(Vec3(R, H2D, L), Vec2(1, V0), NTB_MX);
+	v[63] = VTangent(Vec3(R, H2U, L), Vec2(1, 0), NTB_MX);
 
 	// dziura dó³ prawa
-	v[64] = VTangent(VEC3(L, H2D, L), VEC2(0, V0), NTB_PX);
-	v[65] = VTangent(VEC3(L, H2U, L), VEC2(0, 0), NTB_PX);
-	v[66] = VTangent(VEC3(L, H2D, R), VEC2(1, V0), NTB_PX);
-	v[67] = VTangent(VEC3(L, H2U, R), VEC2(1, 0), NTB_PX);
+	v[64] = VTangent(Vec3(L, H2D, L), Vec2(0, V0), NTB_PX);
+	v[65] = VTangent(Vec3(L, H2U, L), Vec2(0, 0), NTB_PX);
+	v[66] = VTangent(Vec3(L, H2D, R), Vec2(1, V0), NTB_PX);
+	v[67] = VTangent(Vec3(L, H2U, R), Vec2(1, 0), NTB_PX);
 
 	// dziura dó³ przód
-	v[68] = VTangent(VEC3(L, H2D, R), VEC2(0, V0), NTB_MZ);
-	v[69] = VTangent(VEC3(L, H2U, R), VEC2(0, 0), NTB_MZ);
-	v[70] = VTangent(VEC3(R, H2D, R), VEC2(1, V0), NTB_MZ);
-	v[71] = VTangent(VEC3(R, H2U, R), VEC2(1, 0), NTB_MZ);
+	v[68] = VTangent(Vec3(L, H2D, R), Vec2(0, V0), NTB_MZ);
+	v[69] = VTangent(Vec3(L, H2U, R), Vec2(0, 0), NTB_MZ);
+	v[70] = VTangent(Vec3(R, H2D, R), Vec2(1, V0), NTB_MZ);
+	v[71] = VTangent(Vec3(R, H2U, R), Vec2(1, 0), NTB_MZ);
 
 	// dziura dó³ ty³
-	v[72] = VTangent(VEC3(R, H2D, L), VEC2(0, V0), NTB_PZ);
-	v[73] = VTangent(VEC3(R, H2U, L), VEC2(0, 0), NTB_PZ);
-	v[74] = VTangent(VEC3(L, H2D, L), VEC2(1, V0), NTB_PZ);
-	v[75] = VTangent(VEC3(L, H2U, L), VEC2(1, 0), NTB_PZ);
+	v[72] = VTangent(Vec3(R, H2D, L), Vec2(0, V0), NTB_PZ);
+	v[73] = VTangent(Vec3(R, H2U, L), Vec2(0, 0), NTB_PZ);
+	v[74] = VTangent(Vec3(L, H2D, L), Vec2(1, V0), NTB_PZ);
+	v[75] = VTangent(Vec3(L, H2U, L), Vec2(1, 0), NTB_PZ);
 
 	V(vbDungeon->Unlock());
 
@@ -511,11 +511,11 @@ void Game::ChangeDungeonTexWrap()
 }
 
 //=================================================================================================
-void Game::FillDungeonPart(INT2* _part, word* faces, int& index, word offset)
+void Game::FillDungeonPart(Int2* _part, word* faces, int& index, word offset)
 {
 	assert(_part);
 
-	_part[0] = INT2(0, 0);
+	_part[0] = Int2(0, 0);
 
 	int ile;
 
@@ -619,14 +619,14 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				if(!o.IsBillboard())
 				{
 					node->billboard = false;
-					node->mat = MATRIX::Scale(o.scale)
-						* MATRIX::Rotation(o.rot)
-						* MATRIX::Translation(o.pos);
+					node->mat = Matrix::Scale(o.scale)
+						* Matrix::Rotation(o.rot)
+						* Matrix::Translation(o.pos);
 				}
 				else
 				{
 					node->billboard = true;
-					node->mat = MATRIX::CreateLookAt(o.pos, cam.center);
+					node->mat = Matrix::CreateLookAt(o.pos, cam.center);
 				}
 				node->mesh = o.mesh;
 				int alpha = o.RequireAlphaTest();
@@ -637,7 +637,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				else
 					node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
 				node->tex_override = nullptr;
-				node->tint = VEC4(1, 1, 1, 1);
+				node->tint = Vec4(1, 1, 1, 1);
 				if(!IS_SET(node->mesh->head.flags, ANIMESH_SPLIT))
 				{
 					if(!outside)
@@ -668,7 +668,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					int i = req;
 #endif
 					{
-						VEC3 pos = VEC3::Transform(ani.splits[i].pos, node->mat);
+						Vec3 pos = Vec3::Transform(ani.splits[i].pos, node->mat);
 						const float radius = ani.splits[i].radius*o.scale;
 						if(frustum.SphereToFrustum(pos, radius))
 						{
@@ -732,7 +732,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					else
 						node->flags = SceneNode::F_ALPHA_TEST|SceneNode::F_NO_CULLING;
 					node->tex_override = nullptr;
-					node->tint = VEC4(1,1,1,1);
+					node->tint = Vec4(1,1,1,1);
 					if(!outside)
 						node->lights = GatherDrawBatchLights(ctx, node, o.pos.x, o.pos.z, o.GetRadius());
 					AddOrSplitSceneNode(node);
@@ -767,7 +767,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	// przedmioty
 	if(IS_SET(draw_flags, DF_ITEMS))
 	{
-		VEC3 pos;
+		Vec3 pos;
 		for(vector<GroundItem*>::iterator it = ctx.items->begin(), end = ctx.items->end(); it != end; ++it)
 		{
 			GroundItem& item = **it;
@@ -784,11 +784,11 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			{
 				SceneNode* node = node_pool.Get();
 				node->billboard = false;
-				node->mat = MATRIX::RotationY(item.rot) * MATRIX::Translation(pos);
+				node->mat = Matrix::RotationY(item.rot) * Matrix::Translation(pos);
 				node->mesh = mesh;
 				node->flags = 0;
 				node->tex_override = nullptr;
-				node->tint = VEC4(1, 1, 1, 1);
+				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, item.pos.x, item.pos.z, mesh->head.radius);
 				if(before_player == BP_ITEM && before_player_ptr.item == &item)
@@ -801,7 +801,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						glow.ptr = &item;
 					}
 					else
-						node->tint = VEC4(2, 2, 2, 1);
+						node->tint = Vec4(2, 2, 2, 1);
 				}
 				AddOrSplitSceneNode(node);
 			}
@@ -819,11 +819,11 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			{
 				SceneNode* node = node_pool.Get();
 				node->billboard = false;
-				node->mat = MATRIX::RotationY(use.rot) * MATRIX::Translation(use.pos);
+				node->mat = Matrix::RotationY(use.rot) * Matrix::Translation(use.pos);
 				node->mesh = mesh;
 				node->flags = 0;
 				node->tex_override = nullptr;
-				node->tint = VEC4(1, 1, 1, 1);
+				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, use.pos.x, use.pos.z, mesh->head.radius);
 				if(before_player == BP_USEABLE && before_player_ptr.useable == &use)
@@ -836,7 +836,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						glow.ptr = &use;
 					}
 					else
-						node->tint = VEC4(2, 2, 2, 1);
+						node->tint = Vec4(2, 2, 2, 1);
 				}
 				AddOrSplitSceneNode(node);
 			}
@@ -853,7 +853,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			{
 				SceneNode* node = node_pool.Get();
 				node->billboard = false;
-				node->mat = MATRIX::RotationY(chest.rot) * MATRIX::Translation(chest.pos);
+				node->mat = Matrix::RotationY(chest.rot) * Matrix::Translation(chest.pos);
 				if(!chest.ani->groups[0].anim || chest.ani->groups[0].time == 0.f)
 				{
 					node->mesh = chest.ani->ani;
@@ -867,7 +867,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					node->parent_ani = nullptr;
 				}
 				node->tex_override = nullptr;
-				node->tint = VEC4(1, 1, 1, 1);
+				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, chest.pos.x, chest.pos.z, chest.ani->ani->head.radius);
 				if(before_player == BP_CHEST && before_player_ptr.chest == &chest)
@@ -880,7 +880,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						glow.ptr = &chest;
 					}
 					else
-						node->tint = VEC4(2, 2, 2, 1);
+						node->tint = Vec4(2, 2, 2, 1);
 				}
 				AddOrSplitSceneNode(node);
 			}
@@ -897,7 +897,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			{
 				SceneNode* node = node_pool.Get();
 				node->billboard = false;
-				node->mat = MATRIX::RotationY(door.rot) * MATRIX::Translation(door.pos);
+				node->mat = Matrix::RotationY(door.rot) * Matrix::Translation(door.pos);
 				if(!door.ani->groups[0].anim || door.ani->groups[0].time == 0.f)
 				{
 					node->mesh = door.ani->ani;
@@ -911,7 +911,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					node->parent_ani = nullptr;
 				}
 				node->tex_override = nullptr;
-				node->tint = VEC4(1, 1, 1, 1);
+				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, door.pos.x, door.pos.z, door.ani->ani->head.radius);
 				if(before_player == BP_DOOR && before_player_ptr.door == &door)
@@ -924,7 +924,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						glow.ptr = &door;
 					}
 					else
-						node->tint = VEC4(2, 2, 2, 1);
+						node->tint = Vec4(2, 2, 2, 1);
 				}
 				AddOrSplitSceneNode(node);
 			}
@@ -942,7 +942,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->blood = &*it;
 				node->flags = SceneNode::F_ALPHA_BLEND | SceneNode::F_CUSTOM | SceneNode::F_NO_ZWRITE;
 				node->custom_type = CT_BLOOD;
-				node->tint = VEC4(1,1,1,1);
+				node->tint = Vec4(1,1,1,1);
 				node->dist = distance_sqrt(it->pos, camera_center);
 				draw_batch.nodes.push_back(node);*/
 				if(!outside)
@@ -964,10 +964,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				{
 					SceneNode* node = node_pool.Get();
 					node->billboard = false;
-					node->mat = MATRIX::Rotation(bullet.rot) * MATRIX::Translation(bullet.pos);
+					node->mat = Matrix::Rotation(bullet.rot) * Matrix::Translation(bullet.pos);
 					node->mesh = bullet.mesh;
 					node->flags = 0;
-					node->tint = VEC4(1, 1, 1, 1);
+					node->tint = Vec4(1, 1, 1, 1);
 					node->tex_override = nullptr;
 					if(!outside)
 						node->lights = GatherDrawBatchLights(ctx, node, bullet.pos.x, bullet.pos.z, bullet.mesh->head.radius);
@@ -981,7 +981,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					/*SceneNode* node = node_pool.Get();
 					node->tex = bullet.tex.Get();
 					node->flags = SceneNode::F_CUSTOM | SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_LIGHT | SceneNode::F_NO_ZWRITE | SceneNode::F_VERTEX_COLOR;
-					node->tint = VEC4(bullet.obj.pos, bullet.tex_size);
+					node->tint = Vec4(bullet.obj.pos, bullet.tex_size);
 					node->custom_type = CT_BILLBOARD;
 					node->dist = distance_sqrt(bullet.obj.pos, camera_center);
 					draw_batch.nodes.push_back(node);*/
@@ -1004,7 +1004,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			{
 				SceneNode* node = node_pool.Get();
 				node->billboard = false;
-				node->mat = MATRIX::Scale(trap.obj.scale) * MATRIX::Rotation(trap.obj.rot) * MATRIX::Translation(trap.obj.pos);
+				node->mat = Matrix::Scale(trap.obj.scale) * Matrix::Rotation(trap.obj.rot) * Matrix::Translation(trap.obj.pos);
 				node->mesh = trap.obj.mesh;
 				int alpha = trap.obj.RequireAlphaTest();
 				if(alpha == -1)
@@ -1014,7 +1014,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				else
 					node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
 				node->tex_override = nullptr;
-				node->tint = VEC4(1, 1, 1, 1);
+				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, trap.obj.pos.x, trap.obj.pos.z, trap.obj.mesh->head.radius);
 				AddOrSplitSceneNode(node);
@@ -1023,7 +1023,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			{
 				SceneNode* node = node_pool.Get();
 				node->billboard = false;
-				node->mat = MATRIX::Scale(trap.obj2.scale) * MATRIX::Rotation(trap.obj2.rot) * MATRIX::Translation(trap.obj2.pos);
+				node->mat = Matrix::Scale(trap.obj2.scale) * Matrix::Rotation(trap.obj2.rot) * Matrix::Translation(trap.obj2.pos);
 				node->mesh = trap.obj2.mesh;
 				int alpha = trap.obj2.RequireAlphaTest();
 				if(alpha == -1)
@@ -1033,7 +1033,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				else
 					node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
 				node->tex_override = nullptr;
-				node->tint = VEC4(1, 1, 1, 1);
+				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, trap.obj2.pos.x, trap.obj2.pos.z, trap.obj2.mesh->head.radius);
 				AddOrSplitSceneNode(node);
@@ -1056,7 +1056,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->explosion = explo;
 				node->flags = SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_LIGHT | SceneNode::F_NO_ZWRITE | SceneNode::F_CUSTOM;
 				node->custom_type = CT_EXPLOSION;
-				node->tint = VEC4(1,1,1,1.f - explo.size / explo.sizemax);
+				node->tint = Vec4(1,1,1,1.f - explo.size / explo.sizemax);
 				node->tex_override = nullptr;
 				draw_batch.nodes->push_back(node);*/
 				draw_batch.explos.push_back(&explo);
@@ -1076,7 +1076,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				if(draw_particle_sphere)
 				{
 					DebugSceneNode* debug_node = debug_node_pool.Get();
-					debug_node->mat = MATRIX::Scale(pe.radius * 2) * MATRIX::Translation(pe.pos) * cam.matViewProj;
+					debug_node->mat = Matrix::Scale(pe.radius * 2) * Matrix::Translation(pe.pos) * cam.matViewProj;
 					debug_node->type = DebugSceneNode::Sphere;
 					debug_node->group = DebugSceneNode::ParticleRadius;
 					draw_batch.debug_nodes.push_back(debug_node);
@@ -1124,10 +1124,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					{
 						const EntryPoint& e = *entry_it;
 						Area& a = Add1(draw_batch.areas);
-						a.v[0] = VEC3(e.exit_area.v1.x, e.exit_y, e.exit_area.v2.y);
-						a.v[1] = VEC3(e.exit_area.v2.x, e.exit_y, e.exit_area.v2.y);
-						a.v[2] = VEC3(e.exit_area.v1.x, e.exit_y, e.exit_area.v1.y);
-						a.v[3] = VEC3(e.exit_area.v2.x, e.exit_y, e.exit_area.v1.y);
+						a.v[0] = Vec3(e.exit_area.v1.x, e.exit_y, e.exit_area.v2.y);
+						a.v[1] = Vec3(e.exit_area.v2.x, e.exit_y, e.exit_area.v2.y);
+						a.v[2] = Vec3(e.exit_area.v1.x, e.exit_y, e.exit_area.v1.y);
+						a.v[3] = Vec3(e.exit_area.v2.x, e.exit_y, e.exit_area.v1.y);
 					}
 				}
 
@@ -1135,10 +1135,10 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				{
 					const InsideBuilding& ib = **it;
 					Area& a = Add1(draw_batch.areas);
-					a.v[0] = VEC3(ib.enter_area.v1.x, ib.enter_y, ib.enter_area.v2.y);
-					a.v[1] = VEC3(ib.enter_area.v2.x, ib.enter_y, ib.enter_area.v2.y);
-					a.v[2] = VEC3(ib.enter_area.v1.x, ib.enter_y, ib.enter_area.v1.y);
-					a.v[3] = VEC3(ib.enter_area.v2.x, ib.enter_y, ib.enter_area.v1.y);
+					a.v[0] = Vec3(ib.enter_area.v1.x, ib.enter_y, ib.enter_area.v2.y);
+					a.v[1] = Vec3(ib.enter_area.v2.x, ib.enter_y, ib.enter_area.v2.y);
+					a.v[2] = Vec3(ib.enter_area.v1.x, ib.enter_y, ib.enter_area.v1.y);
+					a.v[3] = Vec3(ib.enter_area.v2.x, ib.enter_y, ib.enter_area.v1.y);
 				}
 			}
 
@@ -1150,37 +1150,37 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				// góra
 				{
 					Area& a = Add1(draw_batch.areas);
-					a.v[0] = VEC3(33.f, H1, 256.f - 33.f);
-					a.v[1] = VEC3(33.f, H2, 256.f - 33.f);
-					a.v[2] = VEC3(256.f - 33.f, H1, 256.f - 33.f);
-					a.v[3] = VEC3(256.f - 33.f, H2, 256.f - 33.f);
+					a.v[0] = Vec3(33.f, H1, 256.f - 33.f);
+					a.v[1] = Vec3(33.f, H2, 256.f - 33.f);
+					a.v[2] = Vec3(256.f - 33.f, H1, 256.f - 33.f);
+					a.v[3] = Vec3(256.f - 33.f, H2, 256.f - 33.f);
 				}
 
 				// dó³
 				{
 					Area& a = Add1(draw_batch.areas);
-					a.v[0] = VEC3(33.f, H1, 33.f);
-					a.v[1] = VEC3(256.f - 33.f, H1, 33.f);
-					a.v[2] = VEC3(33.f, H2, 33.f);
-					a.v[3] = VEC3(256.f - 33.f, H2, 33.f);
+					a.v[0] = Vec3(33.f, H1, 33.f);
+					a.v[1] = Vec3(256.f - 33.f, H1, 33.f);
+					a.v[2] = Vec3(33.f, H2, 33.f);
+					a.v[3] = Vec3(256.f - 33.f, H2, 33.f);
 				}
 
 				// lewa
 				{
 					Area& a = Add1(draw_batch.areas);
-					a.v[0] = VEC3(33.f, H1, 33.f);
-					a.v[1] = VEC3(33.f, H2, 33.f);
-					a.v[2] = VEC3(33.f, H1, 256.f - 33.f);
-					a.v[3] = VEC3(33.f, H2, 256.f - 33.f);
+					a.v[0] = Vec3(33.f, H1, 33.f);
+					a.v[1] = Vec3(33.f, H2, 33.f);
+					a.v[2] = Vec3(33.f, H1, 256.f - 33.f);
+					a.v[3] = Vec3(33.f, H2, 256.f - 33.f);
 				}
 
 				// prawa
 				{
 					Area& a = Add1(draw_batch.areas);
-					a.v[0] = VEC3(256.f - 33.f, H1, 256.f - 33.f);
-					a.v[1] = VEC3(256.f - 33.f, H2, 256.f - 33.f);
-					a.v[2] = VEC3(256.f - 33.f, H1, 33.f);
-					a.v[3] = VEC3(256.f - 33.f, H2, 33.f);
+					a.v[0] = Vec3(256.f - 33.f, H1, 256.f - 33.f);
+					a.v[1] = Vec3(256.f - 33.f, H2, 256.f - 33.f);
+					a.v[2] = Vec3(256.f - 33.f, H1, 33.f);
+					a.v[3] = Vec3(256.f - 33.f, H2, 33.f);
 				}
 			}
 			draw_batch.area_range = 10.f;
@@ -1197,28 +1197,28 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				switch(lvl.staircase_up_dir)
 				{
 				case GDIR_DOWN:
-					a.v[0] += VEC3(-0.85f, 2.87f, 0.85f);
-					a.v[1] += VEC3(0.85f, 2.87f, 0.85f);
-					a.v[2] += VEC3(-0.85f, 0.83f, 0.85f);
-					a.v[3] += VEC3(0.85f, 0.83f, 0.85f);
+					a.v[0] += Vec3(-0.85f, 2.87f, 0.85f);
+					a.v[1] += Vec3(0.85f, 2.87f, 0.85f);
+					a.v[2] += Vec3(-0.85f, 0.83f, 0.85f);
+					a.v[3] += Vec3(0.85f, 0.83f, 0.85f);
 					break;
 				case GDIR_UP:
-					a.v[0] += VEC3(0.85f, 2.87f, -0.85f);
-					a.v[1] += VEC3(-0.85f, 2.87f, -0.85f);
-					a.v[2] += VEC3(0.85f, 0.83f, -0.85f);
-					a.v[3] += VEC3(-0.85f, 0.83f, -0.85f);
+					a.v[0] += Vec3(0.85f, 2.87f, -0.85f);
+					a.v[1] += Vec3(-0.85f, 2.87f, -0.85f);
+					a.v[2] += Vec3(0.85f, 0.83f, -0.85f);
+					a.v[3] += Vec3(-0.85f, 0.83f, -0.85f);
 					break;
 				case GDIR_RIGHT:
-					a.v[0] += VEC3(-0.85f, 2.87f, -0.85f);
-					a.v[1] += VEC3(-0.85f, 2.87f, 0.85f);
-					a.v[2] += VEC3(-0.85f, 0.83f, -0.85f);
-					a.v[3] += VEC3(-0.85f, 0.83f, 0.85f);
+					a.v[0] += Vec3(-0.85f, 2.87f, -0.85f);
+					a.v[1] += Vec3(-0.85f, 2.87f, 0.85f);
+					a.v[2] += Vec3(-0.85f, 0.83f, -0.85f);
+					a.v[3] += Vec3(-0.85f, 0.83f, 0.85f);
 					break;
 				case GDIR_LEFT:
-					a.v[0] += VEC3(0.85f, 2.87f, 0.85f);
-					a.v[1] += VEC3(0.85f, 2.87f, -0.85f);
-					a.v[2] += VEC3(0.85f, 0.83f, 0.85f);
-					a.v[3] += VEC3(0.85f, 0.83f, -0.85f);
+					a.v[0] += Vec3(0.85f, 2.87f, 0.85f);
+					a.v[1] += Vec3(0.85f, 2.87f, -0.85f);
+					a.v[2] += Vec3(0.85f, 0.83f, 0.85f);
+					a.v[3] += Vec3(0.85f, 0.83f, -0.85f);
 					break;
 				}
 			}
@@ -1229,28 +1229,28 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				switch(lvl.staircase_down_dir)
 				{
 				case GDIR_DOWN:
-					a.v[0] += VEC3(-0.85f, 0.45f, 0.85f);
-					a.v[1] += VEC3(0.85f, 0.45f, 0.85f);
-					a.v[2] += VEC3(-0.85f, -1.55f, 0.85f);
-					a.v[3] += VEC3(0.85f, -1.55f, 0.85f);
+					a.v[0] += Vec3(-0.85f, 0.45f, 0.85f);
+					a.v[1] += Vec3(0.85f, 0.45f, 0.85f);
+					a.v[2] += Vec3(-0.85f, -1.55f, 0.85f);
+					a.v[3] += Vec3(0.85f, -1.55f, 0.85f);
 					break;
 				case GDIR_UP:
-					a.v[0] += VEC3(0.85f, 0.45f, -0.85f);
-					a.v[1] += VEC3(-0.85f, 0.45f, -0.85f);
-					a.v[2] += VEC3(0.85f, -1.55f, -0.85f);
-					a.v[3] += VEC3(-0.85f, -1.55f, -0.85f);
+					a.v[0] += Vec3(0.85f, 0.45f, -0.85f);
+					a.v[1] += Vec3(-0.85f, 0.45f, -0.85f);
+					a.v[2] += Vec3(0.85f, -1.55f, -0.85f);
+					a.v[3] += Vec3(-0.85f, -1.55f, -0.85f);
 					break;
 				case GDIR_RIGHT:
-					a.v[0] += VEC3(-0.85f, 0.45f, -0.85f);
-					a.v[1] += VEC3(-0.85f, 0.45f, 0.85f);
-					a.v[2] += VEC3(-0.85f, -1.55f, -0.85f);
-					a.v[3] += VEC3(-0.85f, -1.55f, 0.85f);
+					a.v[0] += Vec3(-0.85f, 0.45f, -0.85f);
+					a.v[1] += Vec3(-0.85f, 0.45f, 0.85f);
+					a.v[2] += Vec3(-0.85f, -1.55f, -0.85f);
+					a.v[3] += Vec3(-0.85f, -1.55f, 0.85f);
 					break;
 				case GDIR_LEFT:
-					a.v[0] += VEC3(0.85f, 0.45f, 0.85f);
-					a.v[1] += VEC3(0.85f, 0.45f, -0.85f);
-					a.v[2] += VEC3(0.85f, -1.55f, 0.85f);
-					a.v[3] += VEC3(0.85f, -1.55f, -0.85f);
+					a.v[0] += Vec3(0.85f, 0.45f, 0.85f);
+					a.v[1] += Vec3(0.85f, 0.45f, -0.85f);
+					a.v[2] += Vec3(0.85f, -1.55f, 0.85f);
+					a.v[3] += Vec3(0.85f, -1.55f, -0.85f);
 					break;
 				}
 			}
@@ -1260,11 +1260,11 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		{
 			// exit from building
 			Area& a = Add1(draw_batch.areas);
-			const BOX2D& area = city_ctx->inside_buildings[ctx.building_id]->exit_area;
-			a.v[0] = VEC3(area.v1.x, 0.1f, area.v2.y);
-			a.v[1] = VEC3(area.v2.x, 0.1f, area.v2.y);
-			a.v[2] = VEC3(area.v1.x, 0.1f, area.v1.y);
-			a.v[3] = VEC3(area.v2.x, 0.1f, area.v1.y);
+			const Box2d& area = city_ctx->inside_buildings[ctx.building_id]->exit_area;
+			a.v[0] = Vec3(area.v1.x, 0.1f, area.v2.y);
+			a.v[1] = Vec3(area.v2.x, 0.1f, area.v2.y);
+			a.v[2] = Vec3(area.v1.x, 0.1f, area.v1.y);
+			a.v[3] = Vec3(area.v2.x, 0.1f, area.v1.y);
 			draw_batch.area_range = 5.f;
 		}
 	}
@@ -1275,27 +1275,27 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 		{
 			DebugSceneNode::Type type = DebugSceneNode::MaxType;
-			VEC3 scale;
+			Vec3 scale;
 			float rot = 0.f;
 
 			switch(it->type)
 			{
 			case CollisionObject::RECTANGLE:
 				{
-					scale = VEC3(it->w, 1, it->h);
+					scale = Vec3(it->w, 1, it->h);
 					type = DebugSceneNode::Box;
 				}
 				break;
 			case CollisionObject::RECTANGLE_ROT:
 				{
-					scale = VEC3(it->w, 1, it->h);
+					scale = Vec3(it->w, 1, it->h);
 					type = DebugSceneNode::Box;
 					rot = it->rot;
 				}
 				break;
 			case CollisionObject::SPHERE:
 				{
-					scale = VEC3(it->radius, 1, it->radius);
+					scale = Vec3(it->radius, 1, it->radius);
 					type = DebugSceneNode::Cylinder;
 				}
 				break;
@@ -1308,7 +1308,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				DebugSceneNode* node = debug_node_pool.Get();
 				node->type = type;
 				node->group = DebugSceneNode::Collider;
-				node->mat = MATRIX::Scale(scale) * MATRIX::RotationY(rot) * MATRIX::Translation(it->pt.x, 1.f, it->pt.y) * cam.matViewProj;
+				node->mat = Matrix::Scale(scale) * Matrix::RotationY(rot) * Matrix::Translation(it->pt.x, 1.f, it->pt.y) * cam.matViewProj;
 				draw_batch.debug_nodes.push_back(node);
 			}
 		}
@@ -1334,7 +1334,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Box;
 					node->group = DebugSceneNode::Physic;
-					node->mat = MATRIX::Scale(ToVEC3(box->getHalfExtentsWithMargin())) * m3 * cam.matViewProj;
+					node->mat = Matrix::Scale(ToVEC3(box->getHalfExtentsWithMargin())) * m3 * cam.matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -1344,7 +1344,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Capsule;
 					node->group = DebugSceneNode::Physic;
-					node->mat = MATRIX::Scale(capsule->getRadius(), capsule->getHalfHeight(), capsule->getRadius()) * m3 * cam.matViewProj;
+					node->mat = Matrix::Scale(capsule->getRadius(), capsule->getHalfHeight(), capsule->getRadius()) * m3 * cam.matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -1354,8 +1354,8 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Cylinder;
 					node->group = DebugSceneNode::Physic;
-					VEC3 v = ToVEC3(cylinder->getHalfExtentsWithoutMargin());
-					node->mat = MATRIX::Scale(v.x, v.y / 2, v.z) * m3 * cam.matViewProj;
+					Vec3 v = ToVEC3(cylinder->getHalfExtentsWithoutMargin());
+					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m3 * cam.matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -1376,7 +1376,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 							node->type = DebugSceneNode::Box;
 							node->group = DebugSceneNode::Physic;
 							compound->getChildTransform(i).getOpenGLMatrix(&m2._11);
-							node->mat = MATRIX::Scale(ToVEC3(box->getHalfExtentsWithMargin())) * m2 * m3 * cam.matViewProj;
+							node->mat = Matrix::Scale(ToVEC3(box->getHalfExtentsWithMargin())) * m2 * m3 * cam.matViewProj;
 							draw_batch.debug_nodes.push_back(node);
 						}
 					}
@@ -1409,12 +1409,12 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	// dodaj scene node
 	SceneNode* node = node_pool.Get();
 	node->billboard = false;
-	node->mat = MATRIX::RotationY(u.rot) * MATRIX::Translation(u.visual_pos);
+	node->mat = Matrix::RotationY(u.rot) * Matrix::Translation(u.visual_pos);
 	node->ani = u.ani;
 	node->flags = SceneNode::F_ANIMATED;
 	node->tex_override = u.data->GetTextureOverride();
 	node->parent_ani = nullptr;
-	node->tint = VEC4(1, 1, 1, 1);
+	node->tint = Vec4(1, 1, 1, 1);
 
 	// ustawienia œwiat³a
 	int lights = -1;
@@ -1434,7 +1434,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			glow.ptr = &u;
 		}
 		else
-			node->tint = VEC4(2, 2, 2, 1);
+			node->tint = Vec4(2, 2, 2, 1);
 	}
 	/*if(u.invisible)
 	{
@@ -1455,7 +1455,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node2->mat = node->mat;
 		node2->flags = SceneNode::F_ANIMATED;
 		node2->tex_override = armor.GetTextureOverride();
-		node2->tint = VEC4(1, 1, 1, 1);
+		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = lights;
 		/*if(u.invisible)
 		{
@@ -1473,7 +1473,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 				glow.ptr = &u;
 			}
 			else
-				node2->tint = VEC4(2, 2, 2, 1);
+				node2->tint = Vec4(2, 2, 2, 1);
 		}
 		AddOrSplitSceneNode(node2);
 	}
@@ -1523,16 +1523,16 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	if(u.used_item)
 		right_hand_item = u.used_item->mesh;
 
-	MATRIX mat_scale;
+	Matrix mat_scale;
 	if(u.human_data)
 	{
-		VEC2 scale = u.human_data->GetScale();
+		Vec2 scale = u.human_data->GetScale();
 		scale.x = 1.f / scale.x;
 		scale.y = 1.f / scale.y;
-		mat_scale = MATRIX::Scale(scale.x, scale.y, scale.x);
+		mat_scale = Matrix::Scale(scale.x, scale.y, scale.x);
 	}
 	else
-		mat_scale = MATRIX::IdentityMatrix;
+		mat_scale = Matrix::IdentityMatrix;
 
 	// broñ
 	Animesh* mesh;
@@ -1547,7 +1547,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node2->mesh = mesh;
 		node2->flags = 0;
 		node2->tex_override = nullptr;
-		node2->tint = VEC4(1, 1, 1, 1);
+		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = lights;
 		/*if(u.invisible)
 		{
@@ -1565,7 +1565,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 				glow.ptr = &u;
 			}
 			else
-				node2->tint = VEC4(2, 2, 2, 1);
+				node2->tint = Vec4(2, 2, 2, 1);
 		}
 		AddOrSplitSceneNode(node2);
 
@@ -1596,7 +1596,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node2->mesh = shield;
 		node2->flags = 0;
 		node2->tex_override = nullptr;
-		node2->tint = VEC4(1, 1, 1, 1);
+		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = lights;
 		/*if(u.invisible)
 		{
@@ -1614,7 +1614,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 				glow.ptr = &u;
 			}
 			else
-				node2->tint = VEC4(2, 2, 2, 1);
+				node2->tint = Vec4(2, 2, 2, 1);
 		}
 		AddOrSplitSceneNode(node2);
 
@@ -1644,7 +1644,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node2->mesh = right_hand_item;
 		node2->flags = 0;
 		node2->tex_override = nullptr;
-		node2->tint = VEC4(1, 1, 1, 1);
+		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = lights;
 		/*if(u.invisible)
 		{
@@ -1662,7 +1662,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 				glow.ptr = &u;
 			}
 			else
-				node2->tint = VEC4(2, 2, 2, 1);
+				node2->tint = Vec4(2, 2, 2, 1);
 		}
 		AddOrSplitSceneNode(node2);
 	}
@@ -1708,12 +1708,12 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		}
 
 		if(w_dloni)
-			m1 = MATRIX::RotationZ(-PI / 2) * point->mat * u.ani->mat_bones[point->bone];
+			m1 = Matrix::RotationZ(-PI / 2) * point->mat * u.ani->mat_bones[point->bone];
 		else
 			m1 = point->mat * u.ani->mat_bones[point->bone];
 		node2->mat = mat_scale * m1 * node->mat;
 		node2->tex_override = nullptr;
-		node2->tint = VEC4(1, 1, 1, 1);
+		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = lights;
 		/*if(u.invisible)
 		{
@@ -1731,7 +1731,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 				glow.ptr = &u;
 			}
 			else
-				node2->tint = VEC4(2, 2, 2, 1);
+				node2->tint = Vec4(2, 2, 2, 1);
 		}
 		AddOrSplitSceneNode(node2);
 	}
@@ -1892,7 +1892,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	{
 		float h = u.GetUnitHeight() / 2;
 		DebugSceneNode* debug_node = debug_node_pool.Get();
-		debug_node->mat = MATRIX::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * MATRIX::Translation(u.GetColliderPos() + VEC3(0, h, 0)) * cam.matViewProj;
+		debug_node->mat = Matrix::Scale(u.GetUnitRadius(), h, u.GetUnitRadius()) * Matrix::Translation(u.GetColliderPos() + Vec3(0, h, 0)) * cam.matViewProj;
 		debug_node->type = DebugSceneNode::Cylinder;
 		debug_node->group = DebugSceneNode::UnitRadius;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -1900,10 +1900,10 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	if(draw_hitbox)
 	{
 		float h = u.GetUnitHeight() / 2;
-		BOX box;
+		Box box;
 		u.GetBox(box);
 		DebugSceneNode* debug_node = debug_node_pool.Get();
-		debug_node->mat = MATRIX::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * MATRIX::Translation(u.pos + VEC3(0, h, 0)) * cam.matViewProj;
+		debug_node->mat = Matrix::Scale(box.SizeX() / 2, h, box.SizeZ() / 2) * Matrix::Translation(u.pos + Vec3(0, h, 0)) * cam.matViewProj;
 		debug_node->type = DebugSceneNode::Box;
 		debug_node->group = DebugSceneNode::Hitbox;
 		draw_batch.debug_nodes.push_back(debug_node);
@@ -1916,7 +1916,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 	InsideLocation* inside = (InsideLocation*)location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	BaseLocation& base = g_base_locations[inside->target];
-	BOX box;
+	Box box;
 	static vector<Light*> lights;
 	Light* light[3];
 	float range[3], dist;
@@ -1926,18 +1926,18 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 		int index = 0;
 		for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
 		{
-			box.v1 = VEC3(float(it->pos.x * 2), 0, float(it->pos.y * 2));
+			box.v1 = Vec3(float(it->pos.x * 2), 0, float(it->pos.y * 2));
 			box.v2 = box.v1;
-			box.v2 += VEC3(float(it->size.x * 2), 4, float(it->size.y * 2));
+			box.v2 += Vec3(float(it->size.x * 2), 4, float(it->size.y * 2));
 
 			if(!frustum.BoxToFrustum(box))
 				continue;
 
 			// zbierz listê œwiate³ oœwietlaj¹ce ten pokój
-			VEC2 v1(box.v1.x, box.v1.z);
-			VEC2 v2(box.v2.x, box.v2.z);
-			VEC2 ext = (v2 - v1) / 2;
-			VEC2 mid = v1 + ext;
+			Vec2 v1(box.v1.x, box.v1.z);
+			Vec2 v2(box.v2.x, box.v2.z);
+			Vec2 ext = (v2 - v1) / 2;
+			Vec2 mid = v1 + ext;
 
 			lights.clear();
 			for(vector<Light>::iterator it3 = lvl.lights.begin(), end3 = lvl.lights.end(); it3 != end3; ++it3)
@@ -2006,8 +2006,8 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 						if(!light[i])
 						{
 							l.ld[i].range = 1.f;
-							l.ld[i].pos = VEC3(0, -1000, 0);
-							l.ld[i].color = VEC3(0, 0, 0);
+							l.ld[i].pos = Vec3(0, -1000, 0);
+							l.ld[i].color = Vec3(0, 0, 0);
 						}
 						else
 						{
@@ -2020,7 +2020,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					// ustaw macierze
 					int matrix_id = draw_batch.matrices.size();
 					NodeMatrix& m = Add1(draw_batch.matrices);
-					m.matWorld = MATRIX::Translation(2.f*(it->pos.x + x), 0, 2.f*(it->pos.y + y));
+					m.matWorld = Matrix::Translation(2.f*(it->pos.x + x), 0, 2.f*(it->pos.y + y));
 					m.matCombined = m.matWorld * cam.matViewProj;
 
 					int tex_id = (IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA) ? 1 : 0);
@@ -2106,7 +2106,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 	else
 	{
 		static vector<IBOX> tocheck;
-		static vector<INT2> tiles;
+		static vector<Int2> tiles;
 
 		// podziel na kawa³ki u¿ywaj¹c pseudo quad-tree i frustum culling
 		tocheck.push_back(IBOX(0, 0, 64, -4.f, 8.f));
@@ -2131,13 +2131,13 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 		}
 
 		// dla ka¿dego pola
-		for(vector<INT2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
+		for(vector<Int2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
 		{
 			Pole& p = lvl.map[it->x + it->y*lvl.w];
 			if(p.flags == 0 || p.flags == Pole::F_ODKRYTE)
 				continue;
 
-			BOX box(2.f*it->x, -4.f, 2.f*it->y, 2.f*(it->x + 1), 8.f, 2.f*(it->y + 1));
+			Box box(2.f*it->x, -4.f, 2.f*it->y, 2.f*(it->x + 1), 8.f, 2.f*(it->y + 1));
 			if(!frustum.BoxToFrustum(box))
 				continue;
 
@@ -2190,8 +2190,8 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 				if(!light[i])
 				{
 					l.ld[i].range = 1.f;
-					l.ld[i].pos = VEC3(0, -1000, 0);
-					l.ld[i].color = VEC3(0, 0, 0);
+					l.ld[i].pos = Vec3(0, -1000, 0);
+					l.ld[i].color = Vec3(0, 0, 0);
 				}
 				else
 				{
@@ -2204,7 +2204,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			// ustaw macierze
 			int matrix_id = draw_batch.matrices.size();
 			NodeMatrix& m = Add1(draw_batch.matrices);
-			m.matWorld = MATRIX::Translation(2.f*it->x, 0, 2.f*it->y);
+			m.matWorld = Matrix::Translation(2.f*it->x, 0, 2.f*it->y);
 			m.matCombined = m.matWorld * cam.matViewProj;
 
 			int tex_id = (IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA) ? 1 : 0);
@@ -2428,8 +2428,8 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 				if(!light[i])
 				{
 					lights.ld[i].range = 1.f;
-					lights.ld[i].pos = VEC3(0, -1000, 0);
-					lights.ld[i].color = VEC3(0, 0, 0);
+					lights.ld[i].pos = Vec3(0, -1000, 0);
+					lights.ld[i].color = Vec3(0, 0, 0);
 				}
 				else
 				{
@@ -2448,11 +2448,11 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 	{
 		assert(node);
 
-		VEC3 lights_pos[3];
+		Vec3 lights_pos[3];
 		float lights_range[3] = { 0 };
-		const VEC2 obj_pos(x, z);
+		const Vec2 obj_pos(x, z);
 		bool is_split = (node && IS_SET(node->GetMesh().head.flags, ANIMESH_SPLIT));
-		VEC2 light_pos;
+		Vec2 light_pos;
 
 		for(vector<Light>::iterator it3 = ctx.lights->begin(), end3 = ctx.lights->end(); it3 != end3; ++it3)
 		{
@@ -2464,7 +2464,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 					ok = true;
 				else if(dist < it3->range + radius && dist < range[2])
 				{
-					light_pos = VEC2(it3->pos.x, it3->pos.z);
+					light_pos = Vec2(it3->pos.x, it3->pos.z);
 					float range_sum = 0.f;
 
 					// are there any masks between object and light?
@@ -2473,7 +2473,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 						if(LineToRectangleSize(obj_pos, light_pos, it4->pos, it4->size))
 						{
 							// move light to one side of mask
-							VEC2 new_pos, new_pos2;
+							Vec2 new_pos, new_pos2;
 							float new_dist[2];
 							if(it4->size.x > it4->size.y)
 							{
@@ -2487,13 +2487,13 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 								new_pos.y = it4->pos.y - it4->size.y;
 								new_pos2.y = it4->pos.y + it4->size.y;
 							}
-							new_dist[0] = VEC2::Distance(light_pos, new_pos) + VEC2::Distance(new_pos, obj_pos);
-							new_dist[1] = VEC2::Distance(light_pos, new_pos2) + VEC2::Distance(new_pos2, obj_pos);
+							new_dist[0] = Vec2::Distance(light_pos, new_pos) + Vec2::Distance(new_pos, obj_pos);
+							new_dist[1] = Vec2::Distance(light_pos, new_pos2) + Vec2::Distance(new_pos2, obj_pos);
 							if(new_dist[1] < new_dist[0])
 								new_pos = new_pos2;
 
 							// recalculate distance
-							range_sum += VEC2::Distance(light_pos, new_pos);
+							range_sum += Vec2::Distance(light_pos, new_pos);
 							dist = range_sum + Distance(x, z, new_pos.x, new_pos.y);
 							if(dist >= range[2])
 								goto next_light;
@@ -2507,8 +2507,8 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 			else
 			{
 				const Animesh& mesh = node->GetMesh();
-				light_pos = VEC2(it3->pos.x, it3->pos.z);
-				const VEC2 sub_size = mesh.splits[sub].box.SizeXZ();
+				light_pos = Vec2(it3->pos.x, it3->pos.z);
+				const Vec2 sub_size = mesh.splits[sub].box.SizeXZ();
 				dist = DistanceRectangleToPoint(obj_pos, sub_size, light_pos);
 				if(IsZero(dist))
 					ok = true;
@@ -2522,7 +2522,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 						if(LineToRectangleSize(obj_pos, light_pos, it4->pos, it4->size))
 						{
 							// move light to one side of mask
-							VEC2 new_pos, new_pos2;
+							Vec2 new_pos, new_pos2;
 							float new_dist[2];
 							if(it4->size.x > it4->size.y)
 							{
@@ -2536,13 +2536,13 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 								new_pos.y = it4->pos.y - it4->size.y;
 								new_pos2.y = it4->pos.y + it4->size.y;
 							}
-							new_dist[0] = VEC2::Distance(light_pos, new_pos) + DistanceRectangleToPoint(obj_pos, sub_size, new_pos);
-							new_dist[1] = VEC2::Distance(light_pos, new_pos2) + DistanceRectangleToPoint(obj_pos, sub_size, new_pos2);
+							new_dist[0] = Vec2::Distance(light_pos, new_pos) + DistanceRectangleToPoint(obj_pos, sub_size, new_pos);
+							new_dist[1] = Vec2::Distance(light_pos, new_pos2) + DistanceRectangleToPoint(obj_pos, sub_size, new_pos2);
 							if(new_dist[1] < new_dist[0])
 								new_pos = new_pos2;
 
 							// recalculate distance
-							range_sum += VEC2::Distance(light_pos, new_pos);
+							range_sum += Vec2::Distance(light_pos, new_pos);
 							dist = range_sum + DistanceRectangleToPoint(obj_pos, sub_size, new_pos);
 							if(dist >= range[2])
 								goto next_light;
@@ -2556,7 +2556,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 
 			if(ok)
 			{
-				float light_range = it3->range - VEC2::Distance(light_pos, VEC2(it3->pos.x, it3->pos.z));
+				float light_range = it3->range - Vec2::Distance(light_pos, Vec2(it3->pos.x, it3->pos.z));
 				if(light_range > 0)
 				{
 					if(dist < range[1])
@@ -2572,7 +2572,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 							light[0] = &*it3;
 							lights_pos[2] = lights_pos[1];
 							lights_pos[1] = lights_pos[0];
-							lights_pos[0] = VEC3(light_pos.x, it3->pos.y, light_pos.y);
+							lights_pos[0] = Vec3(light_pos.x, it3->pos.y, light_pos.y);
 							lights_range[2] = lights_range[1];
 							lights_range[1] = lights_range[0];
 							lights_range[0] = light_range;
@@ -2585,7 +2585,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 							light[2] = light[1];
 							light[1] = &*it3;
 							lights_pos[2] = lights_pos[1];
-							lights_pos[1] = VEC3(light_pos.x, it3->pos.y, light_pos.y);
+							lights_pos[1] = Vec3(light_pos.x, it3->pos.y, light_pos.y);
 							lights_range[2] = lights_range[1];
 							lights_range[1] = light_range;
 						}
@@ -2595,7 +2595,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 						// wstaw jako 2
 						range[2] = dist;
 						light[2] = &*it3;
-						lights_pos[2] = VEC3(light_pos.x, it3->pos.y, light_pos.y);
+						lights_pos[2] = Vec3(light_pos.x, it3->pos.y, light_pos.y);
 						lights_range[2] = light_range;
 					}
 				}
@@ -2613,8 +2613,8 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 				if(!light[i])
 				{
 					lights.ld[i].range = 1.f;
-					lights.ld[i].pos = VEC3(0, -1000, 0);
-					lights.ld[i].color = VEC3(0, 0, 0);
+					lights.ld[i].pos = Vec3(0, -1000, 0);
+					lights.ld[i].color = Vec3(0, 0, 0);
 				}
 				else
 				{
@@ -2729,7 +2729,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 
 	// renderuj wszystkie obiekty
 	int prev_mode = -1;
-	VEC4 glow_color;
+	Vec4 glow_color;
 	Animesh* mesh;
 
 	for(vector<GlowNode>::iterator it = draw_batch.glow_nodes.begin(), end = draw_batch.glow_nodes.end(); it != end; ++it)
@@ -2753,13 +2753,13 @@ void Game::DrawGlowingNodes(bool use_postfx)
 			}
 			if(!glow.node->parent_ani)
 			{
-				vector<MATRIX>& mat_bones = glow.node->ani->mat_bones;
+				vector<Matrix>& mat_bones = glow.node->ani->mat_bones;
 				V(eGlow->SetMatrixArray(hGlowBones, (D3DXMATRIX*)&mat_bones[0], mat_bones.size()));
 				mesh = glow.node->ani->ani;
 			}
 			else
 			{
-				vector<MATRIX>& mat_bones = glow.node->parent_ani->mat_bones;
+				vector<Matrix>& mat_bones = glow.node->parent_ani->mat_bones;
 				V(eGlow->SetMatrixArray(hGlowBones, (D3DXMATRIX*)&mat_bones[0], mat_bones.size()));
 				mesh = glow.node->mesh;
 			}
@@ -2786,14 +2786,14 @@ void Game::DrawGlowingNodes(bool use_postfx)
 		{
 			Unit& unit = *(Unit*)glow.ptr;
 			if(IsEnemy(*pc->unit, unit))
-				glow_color = VEC4(1, 0, 0, 1);
+				glow_color = Vec4(1, 0, 0, 1);
 			else if(IsFriend(*pc->unit, unit))
-				glow_color = VEC4(0, 1, 0, 1);
+				glow_color = Vec4(0, 1, 0, 1);
 			else
-				glow_color = VEC4(1, 1, 0, 1);
+				glow_color = Vec4(1, 1, 0, 1);
 		}
 		else
-			glow_color = VEC4(1, 1, 1, 1);
+			glow_color = Vec4(1, 1, 1, 1);
 
 		// ustawienia shadera
 		m1 = glow.node->mat * cam.matViewProj;
@@ -2853,7 +2853,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	const float base_range = 2.5f;
 	const float range_x = (base_range / 1024.f);// *(wnd_size.x/1024.f);
 	const float range_y = (base_range / 768.f);// *(wnd_size.x/768.f);
-	V(ePostFx->SetVector(hPostSkill, (D3DXVECTOR4*)&VEC4(range_x, range_y, 0, 0)));
+	V(ePostFx->SetVector(hPostSkill, (D3DXVECTOR4*)&Vec4(range_x, range_y, 0, 0)));
 	V(ePostFx->SetFloat(hPostPower, 1));
 
 	// ustawienia modelu
@@ -2974,7 +2974,7 @@ void Game::DrawSkybox()
 	SetNoCulling(false);
 	SetNoZWrite(true);
 
-	m2 = MATRIX::Translation(cam.center) * cam.matViewProj;
+	m2 = Matrix::Translation(cam.center) * cam.matViewProj;
 
 	V(device->SetVertexDeclaration(vertex_decl[aSkybox->vertex_decl]));
 	V(device->SetStreamSource(0, aSkybox->vb, 0, aSkybox->vertex_size));
@@ -3004,13 +3004,13 @@ void Game::DrawTerrain(const vector<uint>& parts)
 	SetNoCulling(false);
 	SetNoZWrite(false);
 
-	VEC4 fogColor = GetFogColor();
-	VEC4 fogParams = GetFogParams();
-	VEC4 lightDir = GetLightDir();
-	VEC4 lightColor = GetLightColor();
-	VEC4 ambientColor = GetAmbientColor();
+	Vec4 fogColor = GetFogColor();
+	Vec4 fogParams = GetFogParams();
+	Vec4 lightDir = GetLightDir();
+	Vec4 lightColor = GetLightColor();
+	Vec4 ambientColor = GetAmbientColor();
 
-	m1 = MATRIX::IdentityMatrix;
+	m1 = Matrix::IdentityMatrix;
 	m2 = cam.matViewProj;
 
 	V(eTerrain->SetTechnique(techTerrain));
@@ -3085,12 +3085,12 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 			if(first)
 			{
 				first = false;
-				V(e->SetVector(hSTint, (D3DXVECTOR4*)&VEC4(1, 1, 1, 1)));
+				V(e->SetVector(hSTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 				V(e->SetVector(hSAmbientColor, (D3DXVECTOR4*)&GetAmbientColor()));
 				V(e->SetVector(hSFogColor, (D3DXVECTOR4*)&GetFogColor()));
 				V(e->SetVector(hSFogParams, (D3DXVECTOR4*)&GetFogParams()));
 				V(e->SetVector(hSCameraPos, (D3DXVECTOR4*)&cam.center));
-				V(e->SetVector(hSSpecularColor, (D3DXVECTOR4*)&VEC4(1, 1, 1, 1)));
+				V(e->SetVector(hSSpecularColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 				V(e->SetFloat(hSSpecularIntensity, 0.2f));
 				V(e->SetFloat(hSSpecularHardness, 10));
 			}
@@ -3131,11 +3131,11 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 {
 	SetAlphaBlend(false);
 
-	VEC4 fogColor = GetFogColor();
-	VEC4 fogParams = GetFogParams();
-	VEC4 lightDir = GetLightDir();
-	VEC4 lightColor = GetLightColor();
-	VEC4 ambientColor = GetAmbientColor();
+	Vec4 fogColor = GetFogColor();
+	Vec4 fogParams = GetFogParams();
+	Vec4 lightDir = GetLightDir();
+	Vec4 lightColor = GetLightColor();
+	Vec4 ambientColor = GetAmbientColor();
 
 	// setup effect
 	ID3DXEffect* e = sshaders.front().e;
@@ -3304,12 +3304,12 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 		aCapsule
 	};
 
-	static VEC4 colors[DebugSceneNode::MaxGroup] = {
-		VEC4(0,0,0,1),
-		VEC4(1,1,1,1),
-		VEC4(0,1,0,1),
-		VEC4(153.f / 255,217.f / 255,164.f / 234,1.f),
-		VEC4(163.f / 255,73.f / 255,164.f / 255,1.f)
+	static Vec4 colors[DebugSceneNode::MaxGroup] = {
+		Vec4(0,0,0,1),
+		Vec4(1,1,1,1),
+		Vec4(0,1,0,1),
+		Vec4(153.f / 255,217.f / 255,164.f / 234,1.f),
+		Vec4(163.f / 255,73.f / 255,164.f / 255,1.f)
 	};
 
 	for(vector<DebugSceneNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
@@ -3346,7 +3346,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 
 	ID3DXEffect* e = GetSuperShader(GetSuperShaderId(false, false, cl_fog, false, false, !outside && cl_lighting, outside && cl_lighting))->e;
 	V(device->SetVertexDeclaration(vertex_decl[VDI_DEFAULT]));
-	V(e->SetVector(hSTint, (D3DXVECTOR4*)&VEC4(1, 1, 1, 1)));
+	V(e->SetVector(hSTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 
 	V(e->Begin(&passes, 0));
 	V(e->BeginPass(0));
@@ -3362,7 +3362,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 		const float s = blood.size,
 			r = blood.rot;
 
-		if(blood.normal.Equal(VEC3(0, 1, 0)))
+		if(blood.normal.Equal(Vec3(0, 1, 0)))
 		{
 			blood_v[0].pos.x = s * sin(r + 5.f / 4 * PI);
 			blood_v[0].pos.z = s * cos(r + 5.f / 4 * PI);
@@ -3375,8 +3375,8 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 		}
 		else
 		{
-			const VEC3 front(sin(r), 0, cos(r)), right(sin(r + PI / 2), 0, cos(r + PI / 2));
-			VEC3 v_x, v_z, v_lx, v_rx, v_lz, v_rz;
+			const Vec3 front(sin(r), 0, cos(r)), right(sin(r + PI / 2), 0, cos(r + PI / 2));
+			Vec3 v_x, v_z, v_lx, v_rx, v_lz, v_rz;
 			v_x = blood.normal.Cross(front);
 			v_z = blood.normal.Cross(right);
 			if(v_x.x > 0.f)
@@ -3407,7 +3407,7 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 		}
 
 		// setup shader
-		m1 = MATRIX::Translation(blood.pos);
+		m1 = Matrix::Translation(blood.pos);
 		m2 = m1 * cam.matViewProj;
 		V(e->SetMatrix(hSMatCombined, (D3DXMATRIX*)&m2));
 		V(e->SetMatrix(hSMatWorld, (D3DXMATRIX*)&m1));
@@ -3446,10 +3446,10 @@ void Game::DrawBillboards(const vector<Billboard>& billboards)
 		cam.matViewInv._41 = it->pos.x;
 		cam.matViewInv._42 = it->pos.y;
 		cam.matViewInv._43 = it->pos.z;
-		m1 = MATRIX::Scale(it->size) * cam.matViewInv;
+		m1 = Matrix::Scale(it->size) * cam.matViewInv;
 
 		for(int i = 0; i < 4; ++i)
-			billboard_v[i].pos = VEC3::Transform(billboard_ext[i], m1);
+			billboard_v[i].pos = Vec3::Transform(billboard_ext[i], m1);
 
 		V(eParticle->SetTexture(hParticleTex, it->tex));
 		V(eParticle->CommitChanges());
@@ -3478,7 +3478,7 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 	V(eMesh->Begin(&passes, 0));
 	V(eMesh->BeginPass(0));
 
-	VEC4 tint(1, 1, 1, 1);
+	Vec4 tint(1, 1, 1, 1);
 	TEX last_tex = nullptr;
 
 	for(vector<Explo*>::const_iterator it = explos.begin(), end = explos.end(); it != end; ++it)
@@ -3491,7 +3491,7 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 			V(eMesh->SetTexture(hMeshTex, last_tex));
 		}
 
-		m1 = MATRIX::Scale(e.size) * MATRIX::Translation(e.pos) * cam.matViewProj;
+		m1 = Matrix::Scale(e.size) * Matrix::Translation(e.pos) * cam.matViewProj;
 		tint.w = 1.f - e.size / e.sizemax;
 
 		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&m1));
@@ -3547,26 +3547,26 @@ void Game::DrawParticles(const vector<ParticleEmitter*>& pes)
 			cam.matViewInv._41 = p.pos.x;
 			cam.matViewInv._42 = p.pos.y;
 			cam.matViewInv._43 = p.pos.z;
-			m1 = MATRIX::Scale(pe.GetScale(p)) * cam.matViewInv;
+			m1 = Matrix::Scale(pe.GetScale(p)) * cam.matViewInv;
 
-			const VEC4 color(1.f, 1.f, 1.f, pe.GetAlpha(p));
+			const Vec4 color(1.f, 1.f, 1.f, pe.GetAlpha(p));
 
-			v[idx].pos = VEC3::Transform(VEC3(-1, -1, 0), m1);
-			v[idx].tex = VEC2(0, 0);
+			v[idx].pos = Vec3::Transform(Vec3(-1, -1, 0), m1);
+			v[idx].tex = Vec2(0, 0);
 			v[idx].color = color;
 
-			v[idx + 1].pos = VEC3::Transform(VEC3(-1, 1, 0), m1);
-			v[idx + 1].tex = VEC2(0, 1);
+			v[idx + 1].pos = Vec3::Transform(Vec3(-1, 1, 0), m1);
+			v[idx + 1].tex = Vec2(0, 1);
 			v[idx + 1].color = color;
 
-			v[idx + 2].pos = VEC3::Transform(VEC3(1, -1, 0), m1);
-			v[idx + 2].tex = VEC2(1, 0);
+			v[idx + 2].pos = Vec3::Transform(Vec3(1, -1, 0), m1);
+			v[idx + 2].tex = Vec2(1, 0);
 			v[idx + 2].color = color;
 
 			v[idx + 3] = v[idx + 1];
 
-			v[idx + 4].pos = VEC3::Transform(VEC3(1, 1, 0), m1);
-			v[idx + 4].tex = VEC2(1, 1);
+			v[idx + 4].pos = Vec3::Transform(Vec3(1, 1, 0), m1);
+			v[idx + 4].tex = Vec2(1, 1);
 			v[idx + 4].color = color;
 
 			v[idx + 5] = v[idx + 2];
@@ -3658,9 +3658,9 @@ void Game::DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes)
 			v[2].pos = p.pt1; // !!! tu siê czasami crashuje, p jest z³ym adresem, wiêc pewnie id te¿ jest z³e
 			v[3].pos = p.pt2;
 
-			v[0].color = VEC4::Lerp(tp.color1, tp.color2, 1.f - prev->t / tp.fade);
+			v[0].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - prev->t / tp.fade);
 			v[1].color = v[0].color;
-			v[2].color = VEC4::Lerp(tp.color1, tp.color2, 1.f - p.t / tp.fade);
+			v[2].color = Vec4::Lerp(tp.color1, tp.color2, 1.f - p.t / tp.fade);
 			v[3].color = v[2].color;
 
 			V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, v, sizeof(VColor)));
@@ -3691,22 +3691,22 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 	V(eParticle->Begin(&passes, 0));
 	V(eParticle->BeginPass(0));
 
-	const VEC4 color(0.2f, 0.2f, 1.f, 1.f);
+	const Vec4 color(0.2f, 0.2f, 1.f, 1.f);
 
-	MATRIX matPart;
+	Matrix matPart;
 	VParticle v[4] = {
-		VEC3(-1,-1,0), VEC2(0,0), color,
-		VEC3(-1, 1,0), VEC2(0,1), color,
-		VEC3(1,-1,0), VEC2(1,0), color,
-		VEC3(1, 1,0), VEC2(1,1), color
+		Vec3(-1,-1,0), Vec2(0,0), color,
+		Vec3(-1, 1,0), Vec2(0,1), color,
+		Vec3(1,-1,0), Vec2(1,0), color,
+		Vec3(1, 1,0), Vec2(1,1), color
 	};
 
-	const VEC3 pos[2] = {
-		VEC3(0,-1,0),
-		VEC3(0, 1,0)
+	const Vec3 pos[2] = {
+		Vec3(0,-1,0),
+		Vec3(0, 1,0)
 	};
 
-	VEC3 prev[2], next[2];
+	Vec3 prev[2], next[2];
 
 	for(vector<Electro*>::const_iterator it = electros.begin(), end = electros.end(); it != end; ++it)
 	{
@@ -3719,11 +3719,11 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 			cam.matViewInv._41 = it2->pts.front().x;
 			cam.matViewInv._42 = it2->pts.front().y;
 			cam.matViewInv._43 = it2->pts.front().z;
-			m2 = MATRIX::Scale(0.1f);
+			m2 = Matrix::Scale(0.1f);
 			m1 = m2 * cam.matViewInv;
 
 			for(int i = 0; i < 2; ++i)
-				prev[i] = VEC3::Transform(pos[i], m1);
+				prev[i] = Vec3::Transform(pos[i], m1);
 
 			const int ile = int(it2->pts.size());
 
@@ -3736,7 +3736,7 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 				m1 = m2 * cam.matViewInv;
 
 				for(int i = 0; i < 2; ++i)
-					next[i] = VEC3::Transform(pos[i], m1);
+					next[i] = Vec3::Transform(pos[i], m1);
 
 				// œrodek
 				v[0].pos = prev[0];
@@ -3784,8 +3784,8 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 	for(vector<Portal*>::const_iterator it = portals.begin(), end = portals.end(); it != end; ++it)
 	{
 		const Portal& portal = **it;
-		m2 = MATRIX::Rotation(portal.rot, 0, -portal_anim*PI * 2)
-			* MATRIX::Translation(portal.pos + VEC3(0, 0.67f + 0.305f, 0))
+		m2 = Matrix::Rotation(portal.rot, 0, -portal_anim*PI * 2)
+			* Matrix::Translation(portal.pos + Vec3(0, 0.67f + 0.305f, 0))
 			* cam.matViewProj;
 		V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&m2));
 		V(eParticle->CommitChanges());
@@ -3808,8 +3808,8 @@ void Game::DrawAreas(const vector<Area>& areas, float range)
 
 	V(eArea->SetTechnique(techArea));
 	V(eArea->SetMatrix(hAreaCombined, (D3DXMATRIX*)&cam.matViewProj));
-	V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&VEC4(0, 1, 0, 0.5f)));
-	VEC4 playerPos(pc->unit->pos, 1.f);
+	V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&Vec4(0, 1, 0, 0.5f)));
+	Vec4 playerPos(pc->unit->pos, 1.f);
 	playerPos.y += 0.75f;
 	V(eArea->SetVector(hAreaPlayerPos, (D3DXVECTOR4*)&playerPos));
 	V(eArea->SetFloat(hAreaRange, range));
@@ -3817,7 +3817,7 @@ void Game::DrawAreas(const vector<Area>& areas, float range)
 	V(eArea->BeginPass(0));
 
 	for(vector<Area>::const_iterator it = areas.begin(), end = areas.end(); it != end; ++it)
-		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &it->v[0], sizeof(VEC3)));
+		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &it->v[0], sizeof(Vec3)));
 
 	V(eArea->EndPass());
 	V(eArea->End());

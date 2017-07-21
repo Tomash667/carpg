@@ -15,7 +15,7 @@ public:
 	{
 		Var& AddBool(cstring name, bool& value, Action<bool> f = nullptr);
 		Var& AddInt(cstring name, int& value, Action<int>& f = nullptr);
-		Var& AddINT2(cstring name, INT2& value, Action<INT2> f = nullptr);
+		Var& AddINT2(cstring name, Int2& value, Action<Int2> f = nullptr);
 	};
 
 	Section* AddSection(cstring name);

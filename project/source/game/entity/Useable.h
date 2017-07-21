@@ -22,7 +22,7 @@ struct UseableRequest
 //-----------------------------------------------------------------------------
 struct Useable
 {
-	VEC3 pos;
+	Vec3 pos;
 	float rot;
 	Unit* user;
 	int type, refid, netid, variant;

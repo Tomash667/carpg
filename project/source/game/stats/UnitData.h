@@ -249,12 +249,12 @@ struct UnitData : public TypeItem
 	string id, mesh_id, name;
 	Animesh* mesh;
 	MATERIAL_TYPE mat;
-	INT2 level;
+	Int2 level;
 	StatProfile* stat_profile;
 	int hp_bonus, def_bonus, dmg_type, flags, flags2, flags3;
 	const int* items;
 	SpellList* spells;
-	INT2 gold, gold2;
+	Int2 gold, gold2;
 	GameDialog* dialog;
 	UNIT_GROUP group;
 	float walk_speed, run_speed, rot_speed, width, attack_range;

@@ -362,7 +362,7 @@ struct BookScheme
 
 	string id;
 	TextureResourcePtr tex;
-	INT2 size, prev, next;
+	Int2 size, prev, next;
 	vector<Rect> regions;
 };
 extern vector<BookScheme*> g_book_schemes;

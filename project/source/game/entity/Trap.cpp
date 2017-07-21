@@ -49,7 +49,7 @@ void Trap::Load(HANDLE file, bool local)
 	base = &g_traps[type];
 	hitted = nullptr;
 	obj.pos = pos;
-	obj.rot = VEC3(0, 0, 0);
+	obj.rot = Vec3(0, 0, 0);
 	obj.scale = 1.f;
 	obj.base = nullptr;
 	obj.mesh = base->mesh;

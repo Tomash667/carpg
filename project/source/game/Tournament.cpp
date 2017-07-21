@@ -45,7 +45,7 @@ bool Game::IfUnitJoinTournament(Unit& u)
 //=================================================================================================
 void Game::GenerateTournamentUnits()
 {
-	VEC3 pos = city_ctx->FindBuilding(content::BG_ARENA)->walk_pt;
+	Vec3 pos = city_ctx->FindBuilding(content::BG_ARENA)->walk_pt;
 	tournament_master = FindUnitByIdLocal("arena_master");
 
 	// przenieœ herosów przed arenê
@@ -97,10 +97,10 @@ void Game::UpdateTournament(float dt)
 			tournament_timer += dt;
 
 		// do³¹czanie cz³onków dru¿yny
-		const VEC3& walk_pt = city_ctx->FindBuilding(content::BG_ARENA)->walk_pt;
+		const Vec3& walk_pt = city_ctx->FindBuilding(content::BG_ARENA)->walk_pt;
 		for(Unit* unit : Team.members)
 		{
-			if(unit->busy == Unit::Busy_No && VEC3::Distance2d(unit->pos, tournament_master->pos) <= 16.f && !unit->dont_attack && IfUnitJoinTournament(*unit))
+			if(unit->busy == Unit::Busy_No && Vec3::Distance2d(unit->pos, tournament_master->pos) <= 16.f && !unit->dont_attack && IfUnitJoinTournament(*unit))
 			{
 				unit->busy = Unit::Busy_Tournament;
 				unit->ai->idle_action = AIController::Idle_Move;
@@ -135,7 +135,7 @@ void Game::UpdateTournament(float dt)
 				for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 				{
 					Unit& u = **it;
-					if(VEC3::Distance2d(u.pos, tournament_master->pos) < 64.f && IfUnitJoinTournament(u))
+					if(Vec3::Distance2d(u.pos, tournament_master->pos) < 64.f && IfUnitJoinTournament(u))
 					{
 						tournament_units.push_back(&u);
 						u.busy = Unit::Busy_Tournament;
@@ -266,13 +266,13 @@ void Game::UpdateTournament(float dt)
 						else if(p.second)
 							tournament_units.push_back(p.second);
 					}
-					else if(!p.first->IsStanding() || p.first->frozen != 0|| !(VEC3::Distance2d(p.first->pos, tournament_master->pos) <= 64.f || p.first->in_building == tournament_arena))
+					else if(!p.first->IsStanding() || p.first->frozen != 0 || !(Vec3::Distance2d(p.first->pos, tournament_master->pos) <= 64.f || p.first->in_building == tournament_arena))
 					{
 						tournament_state3 = 2;
 						tournament_other_fighter = p.second;
 						TournamentTalk(Format(txTour[11], p.first->GetRealName()));
 					}
-					else if(!p.second->IsStanding() || p.second->frozen != 0 || !(VEC3::Distance2d(p.second->pos, tournament_master->pos) <= 64.f || p.second->in_building == tournament_arena))
+					else if(!p.second->IsStanding() || p.second->frozen != 0 || !(Vec3::Distance2d(p.second->pos, tournament_master->pos) <= 64.f || p.second->in_building == tournament_arena))
 					{
 						tournament_state3 = 3;
 						tournament_units.push_back(p.first);
@@ -343,7 +343,7 @@ void Game::UpdateTournament(float dt)
 					if(tournament_other_fighter)
 					{
 						if(!tournament_other_fighter->IsStanding() || tournament_other_fighter->frozen != 0 ||
-							!(VEC3::Distance2d(tournament_other_fighter->pos, tournament_master->pos) <= 64.f || tournament_other_fighter->in_building == tournament_arena))
+							!(Vec3::Distance2d(tournament_other_fighter->pos, tournament_master->pos) <= 64.f || tournament_other_fighter->in_building == tournament_arena))
 						{
 							TournamentTalk(Format(txTour[13], tournament_other_fighter->GetRealName()));
 						}

@@ -157,7 +157,7 @@ void GameGui::DrawFront()
 			if(!u.IsAlive())
 				continue;
 
-			VEC3 text_pos = u.visual_pos;
+			Vec3 text_pos = u.visual_pos;
 			text_pos.y += u.GetUnitHeight();
 			if(u.IsAI())
 			{
@@ -204,14 +204,14 @@ void GameGui::DrawFront()
 		break;
 	case BP_CHEST:
 		{
-			VEC3 text_pos = game.before_player_ptr.chest->pos;
+			Vec3 text_pos = game.before_player_ptr.chest->pos;
 			text_pos.y += 0.75f;
 			GUI.DrawText3D(GUI.default_font, txChest, DT_OUTLINE, WHITE, text_pos);
 		}
 		break;
 	case BP_DOOR:
 		{
-			VEC3 text_pos = game.before_player_ptr.door->pos;
+			Vec3 text_pos = game.before_player_ptr.door->pos;
 			text_pos.y += 1.75f;
 			GUI.DrawText3D(GUI.default_font, game.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, DT_OUTLINE, WHITE, text_pos);
 		}
@@ -224,7 +224,7 @@ void GameGui::DrawFront()
 				mesh = item.item->mesh;
 			else
 				mesh = game.aWorek;
-			VEC3 text_pos = item.pos;
+			Vec3 text_pos = item.pos;
 			text_pos.y += mesh->head.bbox.v2.y;
 			cstring text;
 			if(item.count == 1)
@@ -238,7 +238,7 @@ void GameGui::DrawFront()
 		{
 			Useable& u = *game.before_player_ptr.useable;
 			BaseUsable& bu = g_base_usables[u.type];
-			VEC3 text_pos = u.pos;
+			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;
 			GUI.DrawText3D(GUI.default_font, bu.name, DT_OUTLINE, WHITE, text_pos);
 		}
@@ -287,8 +287,8 @@ void GameGui::DrawFront()
 	// dialog
 	if(game.dialog_context.dialog_mode)
 	{
-		INT2 dsize(GUI.wnd_size.x - 256 - 8, 104);
-		INT2 offset((GUI.wnd_size.x - dsize.x) / 2, 32);
+		Int2 dsize(GUI.wnd_size.x - 256 - 8, 104);
+		Int2 offset((GUI.wnd_size.x - dsize.x) / 2, 32);
 		GUI.DrawItem(tDialog, offset, dsize, 0xAAFFFFFF, 16);
 
 		Rect r = { offset.x + 6, offset.y + 6, offset.x + dsize.x - 12, offset.y + dsize.y - 4 };
@@ -297,8 +297,8 @@ void GameGui::DrawFront()
 			int off = int(scrollbar.offset);
 
 			// zaznaczenie
-			Rect r_img = Rect::Create(INT2(offset.x, offset.y + game.dialog_context.choice_selected*GUI.default_font->height - off + 6),
-				INT2(dsize.x - 16, GUI.default_font->height));
+			Rect r_img = Rect::Create(Int2(offset.x, offset.y + game.dialog_context.choice_selected*GUI.default_font->height - off + 6),
+				Int2(dsize.x - 16, GUI.default_font->height));
 			if(r_img.Bottom() >= r.Top() && r_img.Top() < r.Bottom())
 			{
 				if(r_img.Top() < r.Top())
@@ -327,7 +327,7 @@ void GameGui::DrawFront()
 				}
 			}
 			Rect r2 = r;
-			r2 -= INT2(0, off);
+			r2 -= Int2(0, off);
 			GUI.DrawText(GUI.default_font, s, 0, BLACK, r2, &r);
 
 			// pasek przewijania
@@ -351,11 +351,11 @@ void GameGui::DrawFront()
 
 	// healthbar
 	float hp_scale = float(GUI.wnd_size.x) / 800;
-	MATRIX mat;
+	Matrix mat;
 	float hpp = Clamp(game.pc->unit->hp / game.pc->unit->hpmax, 0.f, 1.f);
 	Rect part = { 0, 0, int(hpp * 256), 16 };
 	int hp_offset = (have_manabar ? 35 : 17);
-	mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(hp_scale, hp_scale), nullptr, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale*hp_offset));
+	mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(hp_scale, hp_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - hp_scale*hp_offset));
 	if(part.Right() > 0)
 		GUI.DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, &mat, &part, nullptr, WHITE);
 	GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
@@ -365,7 +365,7 @@ void GameGui::DrawFront()
 	{
 		float mpp = 1.f;
 		part.Right() = int(mpp * 256);
-		mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(hp_scale, hp_scale), nullptr, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale * 17));
+		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(hp_scale, hp_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - hp_scale * 17));
 		if(part.Right() > 0)
 			GUI.DrawSprite2(tManaBar, &mat, &part, nullptr, WHITE);
 		GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
@@ -374,7 +374,7 @@ void GameGui::DrawFront()
 	// buffs
 	for(BuffImage& img : buff_images)
 	{
-		mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(buff_scale, buff_scale), nullptr, 0.f, &img.pos);
+		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(buff_scale, buff_scale), nullptr, 0.f, &img.pos);
 		GUI.DrawSprite2(img.tex, &mat, nullptr, nullptr, WHITE);
 	}
 
@@ -384,12 +384,12 @@ void GameGui::DrawFront()
 	int img_size = 64 * GUI.wnd_size.x / 1920;
 	offset = img_size + 2;
 	scale = float(img_size) / 64;
-	INT2 spos(256.f*hp_scale + offset, GUI.wnd_size.y - offset);
+	Int2 spos(256.f*hp_scale + offset, GUI.wnd_size.y - offset);
 
 	// shortcuts
 	/*for(int i = 0; i<10; ++i)
 	{
-		mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(scale, scale), nullptr, 0.f, &VEC2(float(spos.x), float(spos.y)));
+		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(spos.x), float(spos.y)));
 		GUI.DrawSprite2(tShortcut, &mat, nullptr, nullptr, WHITE);
 		spos.x += offset;
 	}*/
@@ -411,7 +411,7 @@ void GameGui::DrawFront()
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
-			mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(scale, scale), nullptr, 0.f, &VEC2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
+			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
 			GUI.DrawSprite2(t, &mat, nullptr, nullptr, WHITE);
 			GUI.DrawSprite2(tSideButton[i], &mat, nullptr, nullptr, WHITE);
 		}
@@ -444,12 +444,12 @@ void GameGui::DrawBack()
 		}
 		else
 			text = Format("Fps: %g", FLT_1(game.fps));
-		INT2 s = GUI.default_font->CalculateSize(text);
-		if(INT2::Distance(s, debug_info_size) < 32)
-			debug_info_size = INT2::Max(s, debug_info_size);
+		Int2 s = GUI.default_font->CalculateSize(text);
+		if(Int2::Distance(s, debug_info_size) < 32)
+			debug_info_size = Int2::Max(s, debug_info_size);
 		else
 			debug_info_size = s;
-		GUI.DrawItem(tDialog, INT2(0, 0), debug_info_size + INT2(24, 24), COLOR_RGBA(255, 255, 255, 128));
+		GUI.DrawItem(tDialog, Int2(0, 0), debug_info_size + Int2(24, 24), COLOR_RGBA(255, 255, 255, 128));
 		Rect r = { 12, 12, 12 + s.x, 12 + s.y };
 		GUI.DrawText(GUI.default_font, text, DT_NOCLIP, BLACK, r);
 	}
@@ -457,9 +457,9 @@ void GameGui::DrawBack()
 	const string& str = Profiler::g_profiler.GetString();
 	if(!str.empty())
 	{
-		INT2 block_size = GUI.default_font->CalculateSize(str) + INT2(24, 24);
-		profiler_size = INT2::Max(block_size, profiler_size);
-		GUI.DrawItem(tDialog, INT2(GUI.wnd_size.x - profiler_size.x, 0), profiler_size, COLOR_RGBA(255, 255, 255, 128));
+		Int2 block_size = GUI.default_font->CalculateSize(str) + Int2(24, 24);
+		profiler_size = Int2::Max(block_size, profiler_size);
+		GUI.DrawItem(tDialog, Int2(GUI.wnd_size.x - profiler_size.x, 0), profiler_size, COLOR_RGBA(255, 255, 255, 128));
 		Rect rect = { GUI.wnd_size.x - profiler_size.x + 12, 12, GUI.wnd_size.x, GUI.wnd_size.y };
 		GUI.DrawText(GUI.default_font, str, DT_LEFT, BLACK, rect);
 	}
@@ -536,19 +536,19 @@ void GameGui::DrawSpeechBubbles()
 	{
 		SpeechBubble& sb = **it;
 
-		VEC3 pos;
+		Vec3 pos;
 		if(sb.unit)
 			pos = sb.last_pos = sb.unit->GetHeadPoint();
 		else
 			pos = sb.last_pos;
 
-		if(VEC3::Distance(game.pc->unit->visual_pos, pos) > 20.f || !game.CanSee(game.pc->unit->pos, sb.last_pos))
+		if(Vec3::Distance(game.pc->unit->visual_pos, pos) > 20.f || !game.CanSee(game.pc->unit->pos, sb.last_pos))
 		{
 			sb.visible = false;
 			continue;
 		}
 
-		INT2 pt;
+		Int2 pt;
 		if(GUI.To2dPoint(pos, pt))
 		{
 			sb.visible = true;
@@ -575,7 +575,7 @@ void GameGui::DrawSpeechBubbles()
 				else if(pt.y > GUI.wnd_size.y - sb.size.y / 2)
 					pt.y = GUI.wnd_size.y - sb.size.y / 2;
 
-				Rect rect = Rect::Create(INT2(pt.x - sb.size.x / 2, pt.y - sb.size.y / 2), sb.size);
+				Rect rect = Rect::Create(Int2(pt.x - sb.size.x / 2, pt.y - sb.size.y / 2), sb.size);
 				GUI.DrawItem(game.tBubble, rect.LeftTop(), sb.size, a1);
 				GUI.DrawText(GUI.fSmall, sb.text, DT_CENTER | DT_VCENTER, a2, rect);
 			}
@@ -620,43 +620,43 @@ void GameGui::Update(float dt)
 	buff_scale = GUI.wnd_size.x / 1024.f;
 	float off = buff_scale * 33;
 	float buf_posy = float(GUI.wnd_size.y - 5) - off - hp_scale * hp_offset;
-	INT2 buff_size(int(buff_scale * 32), int(buff_scale * 32));
+	Int2 buff_size(int(buff_scale * 32), int(buff_scale * 32));
 
 	buff_images.clear();
 
 	if(IS_SET(buffs, BUFF_POISON))
 	{
-		buff_images.push_back(BuffImage(VEC2(2, buf_posy), tBuffPoison, BUFF_POISON));
+		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffPoison, BUFF_POISON));
 		buf_posy -= off;
 	}
 
 	if(IS_SET(buffs, BUFF_ALCOHOL))
 	{
-		buff_images.push_back(BuffImage(VEC2(2, buf_posy), tBuffAlcohol, BUFF_ALCOHOL));
+		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffAlcohol, BUFF_ALCOHOL));
 		buf_posy -= off;
 	}
 
 	if(IS_SET(buffs, BUFF_ANTIMAGIC))
 	{
-		buff_images.push_back(BuffImage(VEC2(2, buf_posy), tBuffAntimagic, BUFF_ANTIMAGIC));
+		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffAntimagic, BUFF_ANTIMAGIC));
 		buf_posy -= off;
 	}
 
 	if(IS_SET(buffs, BUFF_REGENERATION))
 	{
-		buff_images.push_back(BuffImage(VEC2(2, buf_posy), tBuffRegeneration, BUFF_REGENERATION));
+		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffRegeneration, BUFF_REGENERATION));
 		buf_posy -= off;
 	}
 
 	if(IS_SET(buffs, BUFF_NATURAL))
 	{
-		buff_images.push_back(BuffImage(VEC2(2, buf_posy), tBuffNatural, BUFF_NATURAL));
+		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffNatural, BUFF_NATURAL));
 		buf_posy -= off;
 	}
 
 	if(IS_SET(buffs, BUFF_FOOD))
 	{
-		buff_images.push_back(BuffImage(VEC2(2, buf_posy), tBuffFood, BUFF_FOOD));
+		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffFood, BUFF_FOOD));
 		buf_posy -= off;
 	}
 
@@ -703,7 +703,7 @@ void GameGui::Update(float dt)
 	{
 		for(BuffImage& img : buff_images)
 		{
-			if(PointInRect(GUI.cursor_pos, INT2(img.pos), buff_size))
+			if(PointInRect(GUI.cursor_pos, Int2(img.pos), buff_size))
 			{
 				group = TooltipGroup::Buff;
 				id = img.id;
@@ -724,7 +724,7 @@ void GameGui::Update(float dt)
 		int sposy = GUI.wnd_size.y - (GUI.wnd_size.y - total) / 2 - offset;
 		for(int i = 0; i < max; ++i)
 		{
-			if(PointInRect(GUI.cursor_pos, INT2(int(float(GUI.wnd_size.x) - sidebar * offset), sposy - i * offset), INT2(img_size, img_size)))
+			if(PointInRect(GUI.cursor_pos, Int2(int(float(GUI.wnd_size.x) - sidebar * offset), sposy - i * offset), Int2(img_size, img_size)))
 			{
 				group = TooltipGroup::Sidebar;
 				id = i;
@@ -826,10 +826,10 @@ void GameGui::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
-		INT2 dsize(GUI.wnd_size.x - 256 - 8, 104);
-		INT2 offset((GUI.wnd_size.x - dsize.x) / 2, 32);
-		scrollbar.size = INT2(12, 104);
-		scrollbar.global_pos = scrollbar.pos = INT2(dsize.x + offset.x - 16, offset.y);
+		Int2 dsize(GUI.wnd_size.x - 256 - 8, 104);
+		Int2 offset((GUI.wnd_size.x - dsize.x) / 2, 32);
+		scrollbar.size = Int2(12, 104);
+		scrollbar.global_pos = scrollbar.pos = Int2(dsize.x + offset.x - 16, offset.y);
 		dialog_pos = offset;
 		dialog_size = dsize;
 		tooltip.Clear();
@@ -849,14 +849,14 @@ void GameGui::AddSpeechBubble(Unit* unit, cstring text)
 	}
 
 	// calculate size
-	INT2 s = GUI.fSmall->CalculateSize(text);
+	Int2 s = GUI.fSmall->CalculateSize(text);
 	int total = s.x;
 	int lines = 1 + total / 400;
 
 	// setup
 	unit->bubble->text = text;
 	unit->bubble->unit = unit;
-	unit->bubble->size = INT2(total / lines + 20, s.y*lines + 20);
+	unit->bubble->size = Int2(total / lines + 20, s.y*lines + 20);
 	unit->bubble->time = 0.f;
 	unit->bubble->length = 1.5f + float(strlen(text)) / 20;
 	unit->bubble->visible = false;
@@ -867,19 +867,19 @@ void GameGui::AddSpeechBubble(Unit* unit, cstring text)
 }
 
 //=================================================================================================
-void GameGui::AddSpeechBubble(const VEC3& pos, cstring text)
+void GameGui::AddSpeechBubble(const Vec3& pos, cstring text)
 {
 	assert(text);
 
 	SpeechBubble* sb = SpeechBubblePool.Get();
 
-	INT2 size = GUI.fSmall->CalculateSize(text);
+	Int2 size = GUI.fSmall->CalculateSize(text);
 	int total = size.x;
 	int lines = 1 + total / 400;
 
 	sb->text = text;
 	sb->unit = nullptr;
-	sb->size = INT2(total / lines + 20, size.y*lines + 20);
+	sb->size = Int2(total / lines + 20, size.y*lines + 20);
 	sb->time = 0.f;
 	sb->length = 1.5f + float(strlen(text)) / 20;
 	sb->visible = true;
@@ -900,8 +900,8 @@ void GameGui::Reset()
 //=================================================================================================
 bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 {
-	INT2 dsize(GUI.wnd_size.x - 256 - 8, 104);
-	INT2 offset((GUI.wnd_size.x - dsize.x) / 2, 32 + 6);
+	Int2 dsize(GUI.wnd_size.x - 256 - 8, 104);
+	Int2 offset((GUI.wnd_size.x - dsize.x) / 2, 32 + 6);
 
 	// element pod kursorem
 	int cursor_choice = -1;
@@ -975,7 +975,7 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	// aktualizacja paska przewijania
 	scrollbar.mouse_focus = focus;
 	if(Key.Focus() && PointInRect(GUI.cursor_pos, dialog_pos, dialog_size) && scrollbar.ApplyMouseWheel())
-		game.dialog_cursor_pos = INT2(-1, -1);
+		game.dialog_cursor_pos = Int2(-1, -1);
 	scrollbar.Update(0.f);
 
 	return false;
@@ -1218,8 +1218,8 @@ void GameGui::ShowPanel(OpenPanel to_open, OpenPanel open)
 void GameGui::PositionPanels()
 {
 	float scale = float(GUI.wnd_size.x) / 1024;
-	INT2 pos = INT2(int(scale * 48), int(scale * 32));
-	INT2 size = INT2(GUI.wnd_size.x - pos.x * 2, GUI.wnd_size.y - pos.x * 2);
+	Int2 pos = Int2(int(scale * 48), int(scale * 32));
+	Int2 size = Int2(GUI.wnd_size.x - pos.x * 2, GUI.wnd_size.y - pos.x * 2);
 
 	stats->global_pos = stats->pos = pos;
 	stats->size = size;
@@ -1228,15 +1228,15 @@ void GameGui::PositionPanels()
 	inventory->global_pos = inventory->pos = pos;
 	inventory->size = size;
 	inv_trade_other->global_pos = inv_trade_other->pos = pos;
-	inv_trade_other->size = INT2(size.x, (size.y - 32) / 2);
-	inv_trade_mine->global_pos = inv_trade_mine->pos = INT2(pos.x, inv_trade_other->pos.y + inv_trade_other->size.y + 16);
+	inv_trade_other->size = Int2(size.x, (size.y - 32) / 2);
+	inv_trade_mine->global_pos = inv_trade_mine->pos = Int2(pos.x, inv_trade_other->pos.y + inv_trade_other->size.y + 16);
 	inv_trade_mine->size = inv_trade_other->size;
-	minimap->size = INT2(size.y, size.y);
-	minimap->global_pos = minimap->pos = INT2((GUI.wnd_size.x - minimap->size.x) / 2, (GUI.wnd_size.y - minimap->size.y) / 2);
+	minimap->size = Int2(size.y, size.y);
+	minimap->global_pos = minimap->pos = Int2((GUI.wnd_size.x - minimap->size.x) / 2, (GUI.wnd_size.y - minimap->size.y) / 2);
 	journal->size = minimap->size;
 	journal->global_pos = journal->pos = minimap->pos;
-	mp_box->size = INT2((GUI.wnd_size.x - 32) / 2, (GUI.wnd_size.y - 64) / 4);
-	mp_box->global_pos = mp_box->pos = INT2(GUI.wnd_size.x - pos.x - mp_box->size.x, GUI.wnd_size.y - pos.x - mp_box->size.y);
+	mp_box->size = Int2((GUI.wnd_size.x - 32) / 2, (GUI.wnd_size.y - 64) / 4);
+	mp_box->global_pos = mp_box->pos = Int2(GUI.wnd_size.x - pos.x - mp_box->size.x, GUI.wnd_size.y - pos.x - mp_box->size.y);
 
 	LocalVector<GamePanel*> panels;
 	GetGamePanels(panels);

@@ -1023,7 +1023,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 						{
-							if(IsEnemy(*(*it)->unit, *pc->unit) && VEC3::Distance((*it)->unit->pos, pc->unit->pos) < ALERT_RANGE.x && CanSee(*(*it)->unit, *pc->unit))
+							if(IsEnemy(*(*it)->unit, *pc->unit) && Vec3::Distance((*it)->unit->pos, pc->unit->pos) < ALERT_RANGE.x && CanSee(*(*it)->unit, *pc->unit))
 								(*it)->morale = -10;
 						}
 					}
@@ -1318,7 +1318,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									if(sv_server)
 									{
 										leader_id = info.id;
-										AddLobbyUpdate(INT2(Lobby_ChangeLeader, 0));
+										AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 									}
 									else
 										MSG("You can't change a leader.");

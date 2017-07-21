@@ -31,11 +31,11 @@ struct Spell
 	string id, sound_cast_id, sound_hit_id, tex_id, tex_particle_id, tex_explode_id, mesh_id;
 	SOUND sound_cast, sound_hit;
 	TextureResourcePtr tex, tex_particle, tex_explode;
-	VEC2 cooldown;
+	Vec2 cooldown;
 	Type type;
 	int flags, dmg, dmg_bonus;
 	float range, size, size_particle, speed, explode_range;
-	VEC2 sound_cast_dist, sound_hit_dist;
+	Vec2 sound_cast_dist, sound_hit_dist;
 	btCollisionShape* shape;
 	Animesh* mesh;
 

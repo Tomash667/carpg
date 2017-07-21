@@ -782,9 +782,9 @@ namespace tokenizer
 		}
 
 		//===========================================================================================================================
-		void Parse(INT2& i);
+		void Parse(Int2& i);
 		void Parse(Rect& b);
-		void Parse(VEC2& v);
+		void Parse(Vec2& v);
 
 		template<typename Top, typename Action>
 		int ParseTop(int group, Action action)

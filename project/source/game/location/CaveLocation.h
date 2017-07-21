@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------------------
 struct CaveLocation : public SingleInsideLocation
 {
-	vector<INT2> holes;
+	vector<Int2> holes;
 	Rect ext;
 
 	CaveLocation()
@@ -21,7 +21,7 @@ struct CaveLocation : public SingleInsideLocation
 	void Load(HANDLE file, bool local, LOCATION_TOKEN token) override;
 	LOCATION_TOKEN GetToken() const override { return LT_CAVE; }
 
-	INT2 GetRandomTile() const
+	Int2 GetRandomTile() const
 	{
 		return ext.Random();
 	}

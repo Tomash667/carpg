@@ -74,7 +74,7 @@ void MenuBar::Update(float dt)
 				if((item != selected || item->mode != Item::Down) && (Key.Pressed(VK_LBUTTON) || GUI.MouseMoved()))
 				{
 					EnsureMenu(item);
-					item->menu->ShowMenu(INT2(item->rect.LeftBottom()));
+					item->menu->ShowMenu(Int2(item->rect.LeftBottom()));
 					selected = item;
 					selected->mode = Item::Down;
 				}
@@ -123,10 +123,10 @@ void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const 
 
 	Item* item = new Item;
 	item->text = text;
-	item->rect = BOX2D(0, 0, item_width, item_height);
-	item->rect += VEC2(layout->menubar.padding) / 2;
+	item->rect = Box2d(0, 0, item_width, item_height);
+	item->rect += Vec2(layout->menubar.padding) / 2;
 	if(!items.empty())
-		item->rect += VEC2(items.back()->rect.v2.x, 0);
+		item->rect += Vec2(items.back()->rect.v2.x, 0);
 	item->index = items.size();
 	item->items = _items;
 	items.push_back(item);
@@ -135,15 +135,15 @@ void MenuBar::AddMenu(cstring text, std::initializer_list<SimpleMenuCtor> const 
 void MenuBar::Update(bool move, bool resize)
 {
 	assert(parent);
-	INT2 prev_pos = global_pos;
+	Int2 prev_pos = global_pos;
 	if(move)
 		global_pos = parent->global_pos;
 	if(resize)
-		size = INT2(parent->size.x, layout->menubar.font->height + layout->menubar.padding.y + layout->menubar.item_padding.y * 2);
-	rect = BOX2D::Create(global_pos, size);
+		size = Int2(parent->size.x, layout->menubar.font->height + layout->menubar.padding.y + layout->menubar.item_padding.y * 2);
+	rect = Box2d::Create(global_pos, size);
 	if(move)
 	{
-		VEC2 offset = VEC2(global_pos - prev_pos);
+		Vec2 offset = Vec2(global_pos - prev_pos);
 		for(Item* item : items)
 			item->rect += offset;
 	}
@@ -167,7 +167,7 @@ void MenuBar::ChangeMenu(int offset)
 
 	// showing new menu should close the old one
 	EnsureMenu(item);
-	item->menu->ShowMenu(INT2(item->rect.LeftBottom()));
+	item->menu->ShowMenu(Int2(item->rect.LeftBottom()));
 	item->menu->SetSelectedIndex(0);
 	selected = item;
 	selected->mode = Item::Down;

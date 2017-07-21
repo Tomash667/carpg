@@ -45,61 +45,61 @@ PickFileDialog* PickFileDialog::self;
 
 PickFileDialog::PickFileDialog()
 {
-	SetAreaSize(INT2(640, 480));
+	SetAreaSize(Int2(640, 480));
 
 	list_box = new ListBox(true);
 	list_box->event_handler2 = ListBox::Handler(this, &PickFileDialog::HandleListBoxEvent);
-	list_box->SetSize(INT2(640 - 4, 480 - 100));
-	list_box->SetPosition(INT2(2, 34));
+	list_box->SetSize(Int2(640 - 4, 480 - 100));
+	list_box->SetPosition(Int2(2, 34));
 	Add(list_box);
 
 	list_extensions = new ListBox(true);
 	list_extensions->event_handler2 = ListBox::Handler(this, &PickFileDialog::HandleChangeExtension);
-	list_extensions->SetSize(INT2(640 - 406, 30));
-	list_extensions->SetPosition(INT2(404, 480 - 64));
+	list_extensions->SetSize(Int2(640 - 406, 30));
+	list_extensions->SetPosition(Int2(404, 480 - 64));
 	list_extensions->SetCollapsed(true);
 	Add(list_extensions);
 
 	tb_path = new TextBox(true);
 	tb_path->SetReadonly(true);
-	tb_path->SetSize(INT2(640 - 4, 30));
-	tb_path->SetPosition(INT2(2, 2));
+	tb_path->SetSize(Int2(640 - 4, 30));
+	tb_path->SetPosition(Int2(2, 2));
 	Add(tb_path);
 
 	tb_filename = new TextBox(true);
-	tb_filename->SetSize(INT2(400, 30));
-	tb_filename->SetPosition(INT2(2, 480 - 64));
+	tb_filename->SetSize(Int2(400, 30));
+	tb_filename->SetPosition(Int2(2, 480 - 64));
 	Add(tb_filename);
 
 	bt_select = new Button;
 	bt_select->id = SelectItem;
 	bt_select->text = "Open";
-	bt_select->SetSize(INT2(100, 30));
-	bt_select->SetPosition(INT2(640 - 212, 480 - 32));
+	bt_select->SetSize(Int2(100, 30));
+	bt_select->SetPosition(Int2(640 - 212, 480 - 32));
 	Add(bt_select);
 
 	bt_cancel = new Button;
 	bt_cancel->id = Cancel;
 	bt_cancel->text = "Cancel";
-	bt_cancel->SetSize(INT2(100, 30));
-	bt_cancel->SetPosition(INT2(640 - 102, 480 - 32));
+	bt_cancel->SetSize(Int2(100, 30));
+	bt_cancel->SetPosition(Int2(640 - 102, 480 - 32));
 	Add(bt_cancel);
 
 	draw_box = new DrawBox;
-	draw_box->SetSize(INT2(240 - 6, 480 - 100));
-	draw_box->SetPosition(INT2(404, 34));
+	draw_box->SetSize(Int2(240 - 6, 480 - 100));
+	draw_box->SetPosition(Int2(404, 34));
 	Add(draw_box);
 
 	tb_preview = new TextBox(true);
 	tb_preview->SetReadonly(true);
 	tb_preview->SetMultiline(true);
-	tb_preview->SetSize(INT2(240 - 6, 480 - 100));
-	tb_preview->SetPosition(INT2(404, 34));
+	tb_preview->SetSize(Int2(240 - 6, 480 - 100));
+	tb_preview->SetPosition(Int2(404, 34));
 	Add(tb_preview);
 
 	label_preview = new Label("Preview not available", false);
-	label_preview->SetSize(INT2(240 - 6, 480 - 100));
-	label_preview->SetPosition(INT2(404, 34));
+	label_preview->SetSize(Int2(240 - 6, 480 - 100));
+	label_preview->SetPosition(Int2(404, 34));
 	label_preview->SetAlign(DT_CENTER | DT_VCENTER);
 	Add(label_preview);
 
@@ -141,9 +141,9 @@ void PickFileDialog::Setup(const PickFileDialogOptions& options)
 	handler = options.handler;
 	preview = options.preview;
 	if(preview)
-		list_box->SetSize(INT2(400, 480 - 100));
+		list_box->SetSize(Int2(400, 480 - 100));
 	else
-		list_box->SetSize(INT2(640 - 4, 480 - 100));
+		list_box->SetSize(Int2(640 - 4, 480 - 100));
 	active_dir = root_dir;
 	ParseFilters(options.filters);
 	LoadDir(false);

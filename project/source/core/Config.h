@@ -59,7 +59,7 @@ public:
 	uint GetUint(cstring name, uint def = 0);
 	__int64 GetInt64(cstring name, int def = 0);
 	float GetFloat(cstring name, float def = 0.f);
-	INT2 GetInt2(cstring name, INT2 def = INT2(0, 0));
+	Int2 GetInt2(cstring name, Int2 def = Int2(0, 0));
 
 	GetResult TryGetInt(cstring name, int& value);
 	template<typename T>

@@ -53,7 +53,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	txTakenPerks = Str("takenPerks");
 	txCreateCharTooMany = Str("createCharTooMany");
 
-	size = INT2(600, 500);
+	size = Int2(600, 500);
 	unit = new Unit;
 	unit->type = Unit::HUMAN;
 	unit->human_data = new Human;
@@ -62,48 +62,48 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 	unit->hero = nullptr;
 	unit->used_item = nullptr;
 	unit->weapon_state = WS_HIDDEN;
-	unit->pos = unit->visual_pos = VEC3(0, 0, 0);
+	unit->pos = unit->visual_pos = Vec3(0, 0, 0);
 	unit->rot = 0.f;
 	unit->fake_unit = true;
 	unit->action = A_NONE;
 
 	btCancel.id = IdCancel;
 	btCancel.custom = &custom_x;
-	btCancel.size = INT2(32, 32);
+	btCancel.size = Int2(32, 32);
 	btCancel.parent = this;
-	btCancel.pos = INT2(size.x - 32 - 16, 16);
+	btCancel.pos = Int2(size.x - 32 - 16, 16);
 
 	btBack.id = IdBack;
 	btBack.text = Str("goBack");
-	btBack.size = INT2(100, 44);
+	btBack.size = Int2(100, 44);
 	btBack.parent = this;
-	btBack.pos = INT2(16, size.y - 60);
+	btBack.pos = Int2(16, size.y - 60);
 
 	btNext.id = IdNext;
 	btNext.text = Str("next");
-	btNext.size = INT2(100, 44);
+	btNext.size = Int2(100, 44);
 	btNext.parent = this;
-	btNext.pos = INT2(size.x - 100 - 16, size.y - 60);
+	btNext.pos = Int2(size.x - 100 - 16, size.y - 60);
 
 	btCreate.id = IdCreate;
 	btCreate.text = Str("create");
-	btCreate.size = INT2(100, 44);
+	btCreate.size = Int2(100, 44);
 	btCreate.parent = this;
-	btCreate.pos = INT2(size.x - 100 - 16, size.y - 60);
+	btCreate.pos = Int2(size.x - 100 - 16, size.y - 60);
 
 	btRandomSet.id = IdRandomSet;
 	btRandomSet.text = Str("randomSet");
-	btRandomSet.size = INT2(100, 44);
+	btRandomSet.size = Int2(100, 44);
 	btRandomSet.parent = this;
-	btRandomSet.pos = INT2(size.x / 2 - 50, size.y - 60);
+	btRandomSet.pos = Int2(size.x / 2 - 50, size.y - 60);
 
-	checkbox.bt_size = INT2(32, 32);
+	checkbox.bt_size = Int2(32, 32);
 	checkbox.checked = false;
 	checkbox.id = IdHardcore;
 	checkbox.parent = this;
 	checkbox.text = txHardcoreMode;
-	checkbox.pos = INT2(20, 350);
-	checkbox.size = INT2(200, 32);
+	checkbox.pos = Int2(20, 350);
+	checkbox.size = Int2(200, 32);
 
 	{
 		Slider& s = slider[0];
@@ -112,7 +112,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		s.maxv = MAX_HAIR - 1;
 		s.val = 0;
 		s.text = txHair;
-		s.pos = INT2(20, 100);
+		s.pos = Int2(20, 100);
 		s.parent = this;
 	}
 
@@ -123,7 +123,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		s.maxv = MAX_MUSTACHE - 1;
 		s.val = 0;
 		s.text = txMustache;
-		s.pos = INT2(20, 150);
+		s.pos = Int2(20, 150);
 		s.parent = this;
 	}
 
@@ -134,7 +134,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		s.maxv = MAX_BEARD - 1;
 		s.val = 0;
 		s.text = txBeard;
-		s.pos = INT2(20, 200);
+		s.pos = Int2(20, 200);
 		s.parent = this;
 	}
 
@@ -145,7 +145,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		s.maxv = n_hair_colors - 1;
 		s.val = 0;
 		s.text = txHairColor;
-		s.pos = INT2(20, 250);
+		s.pos = Int2(20, 250);
 		s.parent = this;
 	}
 
@@ -156,48 +156,48 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 		s.maxv = 100;
 		s.val = 50;
 		s.text = txSize;
-		s.pos = INT2(20, 300);
+		s.pos = Int2(20, 300);
 		s.parent = this;
 		s.SetHold(true);
 		s.hold_val = 25.f;
 	}
 
-	lbClasses.pos = INT2(16, 73 - 18);
-	lbClasses.size = INT2(198, 235 + 18);
-	lbClasses.SetForceImageSize(INT2(20, 20));
+	lbClasses.pos = Int2(16, 73 - 18);
+	lbClasses.size = Int2(198, 235 + 18);
+	lbClasses.SetForceImageSize(Int2(20, 20));
 	lbClasses.SetItemHeight(24);
 	lbClasses.event_handler = DialogEvent(this, &CreateCharacterPanel::OnChangeClass);
 	lbClasses.parent = this;
 
-	tbClassDesc.pos = INT2(130, 335);
-	tbClassDesc.size = INT2(341, 93);
+	tbClassDesc.pos = Int2(130, 335);
+	tbClassDesc.size = Int2(341, 93);
 	tbClassDesc.SetReadonly(true);
 	tbClassDesc.AddScrollbar();
 
-	tbInfo.pos = INT2(130, 335);
-	tbInfo.size = INT2(341, 93);
+	tbInfo.pos = Int2(130, 335);
+	tbInfo.size = Int2(341, 93);
 	tbInfo.SetReadonly(true);
 	tbInfo.SetText(Str("createCharText"));
 	tbInfo.AddScrollbar();
 
-	flow_pos = INT2(368, 73 - 18);
-	flow_size = INT2(198, 235 + 18);
-	flow_scroll.pos = INT2(flow_pos.x + flow_size.x + 2, flow_pos.y);
-	flow_scroll.size = INT2(16, flow_size.y);
+	flow_pos = Int2(368, 73 - 18);
+	flow_size = Int2(198, 235 + 18);
+	flow_scroll.pos = Int2(flow_pos.x + flow_size.x + 2, flow_pos.y);
+	flow_scroll.size = Int2(16, flow_size.y);
 	flow_scroll.total = 100;
 	flow_scroll.part = 10;
 
 	tooltip.Init(TooltipGetText(this, &CreateCharacterPanel::GetTooltip));
 
-	flowSkills.size = INT2(198, 235 + 18);
-	flowSkills.pos = INT2(16, 73 - 18);
-	flowSkills.button_size = INT2(16, 16);
+	flowSkills.size = Int2(198, 235 + 18);
+	flowSkills.pos = Int2(16, 73 - 18);
+	flowSkills.button_size = Int2(16, 16);
 	flowSkills.button_tex = custom_bt;
 	flowSkills.on_button = ButtonEvent(this, &CreateCharacterPanel::OnPickSkill);
 
-	flowPerks.size = INT2(198, 235 + 18);
-	flowPerks.pos = INT2(size.x - flowPerks.size.x - 16, 73 - 18);
-	flowPerks.button_size = INT2(16, 16);
+	flowPerks.size = Int2(198, 235 + 18);
+	flowPerks.pos = Int2(size.x - flowPerks.size.x - 16, 73 - 18);
+	flowPerks.button_size = Int2(16, 16);
 	flowPerks.button_tex = custom_bt;
 	flowPerks.on_button = ButtonEvent(this, &CreateCharacterPanel::OnPickPerk);
 }
@@ -227,13 +227,13 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	GUI.DrawText(GUI.fBig, txCharacterCreation, DT_NOCLIP | DT_CENTER, BLACK, rect0);
 
 	// character
-	GUI.DrawSprite(game->tChar, INT2(pos.x + 228, pos.y + 64));
+	GUI.DrawSprite(game->tChar, Int2(pos.x + 228, pos.y + 64));
 
 	// close button
 	btCancel.Draw();
 
 	Rect rect;
-	MATRIX mat;
+	Matrix mat;
 
 	switch(mode)
 	{
@@ -248,11 +248,11 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			tbClassDesc.Draw();
 
 			// attribute/skill flow panel
-			INT2 fpos = flow_pos + global_pos;
+			Int2 fpos = flow_pos + global_pos;
 			GUI.DrawItem(GUI.tBox, fpos, flow_size, WHITE, 8, 32);
 			flow_scroll.Draw();
 
-			rect = Rect::Create(fpos + INT2(2, 2), flow_size - INT2(4, 4));
+			rect = Rect::Create(fpos + Int2(2, 2), flow_size - Int2(4, 4));
 			Rect r = rect, part = { 0, 0, 256, 32 };
 			r.Top() += 20;
 
@@ -270,7 +270,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 				{
 					if(fi.part > 0)
 					{
-						mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &VEC2(r.LeftTop()));
+						mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
 						part.Right() = int(fi.part * 256);
 						GUI.DrawSprite2(game->tKlasaCecha, &mat, &part, &rect, WHITE);
 					}
@@ -327,7 +327,7 @@ void CreateCharacterPanel::Update(float dt)
 	UpdateUnit(dt);
 
 	// rotating unit
-	if(PointInRect(GUI.cursor_pos, INT2(pos.x + 228, pos.y + 94), INT2(128, 256)) && Key.Focus() && focus)
+	if(PointInRect(GUI.cursor_pos, Int2(pos.x + 228, pos.y + 94), Int2(128, 256)) && Key.Focus() && focus)
 	{
 		bool rotate = false;
 		if(rotating)
@@ -619,10 +619,10 @@ void CreateCharacterPanel::RenderUnit()
 
 	game->SetOutsideParams();
 
-	MATRIX matView, matProj;
-	VEC3 from = VEC3(0.f, 2.f, dist);
-	matView = MATRIX::CreateLookAt(from, VEC3(0.f, 1.f, 0.f), VEC3(0, 1, 0));
-	matProj = MATRIX::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
+	Matrix matView, matProj;
+	Vec3 from = Vec3(0.f, 2.f, dist);
+	matView = Matrix::CreateLookAt(from, Vec3(0.f, 1.f, 0.f), Vec3(0, 1, 0));
+	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 0.5f, 1.f, 5.f);
 	game->cam.matViewProj = matView * matProj;
 	game->cam.center = from;
 	game->cam.matViewInv = matView.Inverse();

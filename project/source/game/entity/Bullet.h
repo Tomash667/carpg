@@ -13,7 +13,7 @@ struct TrailParticleEmitter;
 //-----------------------------------------------------------------------------
 struct Bullet
 {
-	VEC3 pos, rot, start_pos;
+	Vec3 pos, rot, start_pos;
 	Animesh* mesh;
 	float speed, timer, attack, tex_size, yspeed, poison_attack;
 	int level, backstab;

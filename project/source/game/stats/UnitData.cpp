@@ -1201,7 +1201,7 @@ bool LoadUnit(Tokenizer& t, CRC32& crc)
 					int lvl = t.MustGetInt();
 					if(lvl < 0)
 						t.Throw("Invalid level %d.", lvl);
-					unit->level = INT2(lvl);
+					unit->level = Int2(lvl);
 					crc.Update(lvl);
 				}
 				break;
@@ -1350,7 +1350,7 @@ bool LoadUnit(Tokenizer& t, CRC32& crc)
 					int gold = t.MustGetInt();
 					if(gold < 0)
 						t.Throw("Invalid gold count %d.", gold);
-					unit->gold = unit->gold2 = INT2(gold);
+					unit->gold = unit->gold2 = Int2(gold);
 					crc.Update(gold);
 				}
 				break;

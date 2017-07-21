@@ -52,8 +52,8 @@ void OutsideLocation::ApplyContext(LevelContext& ctx)
 	ctx.require_tmp_ctx = true;
 	ctx.type = LevelContext::Outside;
 	ctx.building_id = -1;
-	ctx.mine = INT2(0, 0);
-	ctx.maxe = INT2(size, size);
+	ctx.mine = Int2(0, 0);
+	ctx.maxe = Int2(size, size);
 	ctx.tmp_ctx = nullptr;
 	ctx.masks = nullptr;
 }

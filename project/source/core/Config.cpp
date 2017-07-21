@@ -141,7 +141,7 @@ float Config::GetFloat(cstring name, float def)
 }
 
 //=================================================================================================
-INT2 Config::GetInt2(cstring name, INT2 def)
+Int2 Config::GetInt2(cstring name, Int2 def)
 {
 	Entry* e = GetEntry(name);
 	if(!e)
@@ -150,7 +150,7 @@ INT2 Config::GetInt2(cstring name, INT2 def)
 	t.FromString(e->value);
 	try
 	{
-		INT2 result;
+		Int2 result;
 		t.Next();
 		t.Parse(result);
 		t.AssertEof();

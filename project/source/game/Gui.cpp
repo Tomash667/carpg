@@ -32,7 +32,7 @@
 //=================================================================================================
 void Game::OnResize()
 {
-	cursor_pos = VEC2(float(wnd_size.x) / 2, float(wnd_size.y) / 2);
+	cursor_pos = Vec2(float(wnd_size.x) / 2, float(wnd_size.y) / 2);
 	GUI.wnd_size = wnd_size;
 	if(game_gui)
 		game_gui->PositionPanels();
@@ -55,7 +55,7 @@ void Game::UpdateGui(float dt)
 	{
 		if(cursor_allow_move)
 		{
-			cursor_pos += VEC2(float(mouse_dif.x), float(mouse_dif.y)) * mouse_sensitivity_f;
+			cursor_pos += Vec2(float(mouse_dif.x), float(mouse_dif.y)) * mouse_sensitivity_f;
 			if(cursor_pos.x < 0)
 				cursor_pos.x = 0;
 			if(cursor_pos.y < 0)
@@ -64,19 +64,19 @@ void Game::UpdateGui(float dt)
 				cursor_pos.x = float(wnd_size.x - 1);
 			if(cursor_pos.y >= wnd_size.y)
 				cursor_pos.y = float(wnd_size.y - 1);
-			unlock_point = INT2(cursor_pos);
+			unlock_point = Int2(cursor_pos);
 		}
 	}
 	else
 		unlock_point = real_size / 2;
 
 	GUI.prev_cursor_pos = GUI.cursor_pos;
-	INT2 icursor_pos = INT2(cursor_pos);
+	Int2 icursor_pos = Int2(cursor_pos);
 	GUI.cursor_pos = icursor_pos;
 	GUI.mouse_wheel = float(mouse_wheel) / WHEEL_DELTA;
 	GUI.Update(dt);
 	if(icursor_pos != GUI.cursor_pos)
-		cursor_pos = VEC2(GUI.cursor_pos);
+		cursor_pos = Vec2(GUI.cursor_pos);
 
 	exit_to_menu = false;
 }
@@ -330,7 +330,7 @@ void Game::LoadGui(FileReader& f)
 {
 	LocalVector<GamePanel*> panels;
 	game_gui->GetGamePanels(panels);
-	INT2 prev_wnd_size, _pos, _size;
+	Int2 prev_wnd_size, _pos, _size;
 	f >> prev_wnd_size;
 	for(vector<GamePanel*>::iterator it = panels->begin(), end = panels->end(); it != end; ++it)
 	{

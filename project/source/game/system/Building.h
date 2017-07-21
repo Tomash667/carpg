@@ -55,7 +55,7 @@ struct Building : public TypeItem
 	};
 
 	string id, mesh_id, inside_mesh_id, name;
-	INT2 size, shift[4];
+	Int2 size, shift[4];
 	vector<TileScheme> scheme;
 	int flags;
 	BuildingGroup* group;
@@ -70,7 +70,7 @@ struct Building : public TypeItem
 struct ToBuild
 {
 	Building* type;
-	INT2 pt, unit_pt;
+	Int2 pt, unit_pt;
 	int rot;
 	bool required;
 

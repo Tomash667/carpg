@@ -21,21 +21,21 @@ SaveLoad::SaveLoad(const DialogInfo& info) : Dialog(info), choice(0), tMiniSave(
 	txSavePlayers = Str("savePlayers");
 	txSaveName = Str("saveName");
 
-	size = INT2(610, 400);
+	size = Int2(610, 400);
 
-	bt[0].pos = INT2(238, 344);
+	bt[0].pos = Int2(238, 344);
 	bt[0].parent = this;
 	bt[0].id = IdOk;
-	bt[0].size = INT2(160, 50);
+	bt[0].size = Int2(160, 50);
 
-	bt[1].pos = INT2(238 + 160 + 16, 344);
+	bt[1].pos = Int2(238 + 160 + 16, 344);
 	bt[1].parent = this;
 	bt[1].id = IdCancel;
-	bt[1].size = INT2(160, 50);
+	bt[1].size = Int2(160, 50);
 	bt[1].text = GUI.txCancel;
 
-	textbox.pos = INT2(265, 52);
-	textbox.size = INT2(297, 88);
+	textbox.pos = Int2(265, 52);
+	textbox.size = Int2(297, 88);
 	textbox.parent = this;
 	textbox.SetMultiline(true);
 	textbox.SetReadonly(true);
@@ -54,7 +54,7 @@ void SaveLoad::Draw(ControlDrawData* /*cdd*/)
 	textbox.Draw();
 
 	// nazwy slotów
-	r = Rect::Create(global_pos + INT2(12, 76), INT2(256, 20));
+	r = Rect::Create(global_pos + Int2(12, 76), Int2(256, 20));
 	for(int i = 0; i < MAX_SAVE_SLOTS; ++i)
 	{
 		cstring text;
@@ -75,13 +75,13 @@ void SaveLoad::Draw(ControlDrawData* /*cdd*/)
 
 		GUI.DrawText(GUI.default_font, text, DT_SINGLELINE | DT_VCENTER, choice == i ? GREEN : BLACK, r);
 
-		r.Resize(INT2(4, 20));
+		r.Resize(Int2(4, 20));
 	}
 
 	// obrazek
 	if(tMiniSave)
 	{
-		Rect r2 = Rect::Create(INT2(global_pos.x + 400 - 81, global_pos.y + 42 + 103), INT2(256, 192));
+		Rect r2 = Rect::Create(Int2(global_pos.x + 400 - 81, global_pos.y + 42 + 103), Int2(256, 192));
 		GUI.DrawSpriteRect(tMiniSave, r2);
 	}
 }
@@ -94,7 +94,7 @@ void SaveLoad::Update(float dt)
 
 	if(focus && Key.Focus())
 	{
-		Rect rect = Rect::Create(INT2(global_pos.x + 12, global_pos.y + 76), INT2(256, 20));
+		Rect rect = Rect::Create(Int2(global_pos.x + 12, global_pos.y + 76), Int2(256, 20));
 
 		for(int i = 0; i < MAX_SAVE_SLOTS; ++i)
 		{

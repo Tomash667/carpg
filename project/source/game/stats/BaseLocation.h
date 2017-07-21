@@ -94,13 +94,13 @@ struct RoomStrChance
 struct BaseLocation
 {
 	cstring name;
-	INT2 levels;
+	Int2 levels;
 	int size, size_lvl, join_room, join_corridor, corridor_chance;
-	INT2 corridor_size, room_size;
+	Int2 corridor_size, room_size;
 	int options;
 	RoomStr schody, wymagany;
-	VEC3 fog_color, fog_color_lvl, ambient_color, ambient_color_lvl;
-	VEC2 fog_range, fog_range_lvl;
+	Vec3 fog_color, fog_color_lvl, ambient_color, ambient_color_lvl;
+	Vec2 fog_range, fog_range_lvl;
 	float draw_range, draw_range_lvl;
 	RoomStrChance* rooms;
 	int room_count, room_total;

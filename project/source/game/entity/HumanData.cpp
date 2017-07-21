@@ -16,9 +16,9 @@ bool g_beard_and_mustache[MAX_BEARD - 1] = {
 };
 
 //-----------------------------------------------------------------------------
-#define HEX(h) VEC4(1.f/256*(((h)&0xFF0000)>>16), 1.f/256*(((h)&0xFF00)>>8), 1.f/256*((h)&0xFF), 1.f)
+#define HEX(h) Vec4(1.f/256*(((h)&0xFF0000)>>16), 1.f/256*(((h)&0xFF00)>>8), 1.f/256*((h)&0xFF), 1.f)
 // ze strony http://www.dandwiki.com/wiki/Random_Hair_and_Eye_Color_(DnD_Other)
-const VEC4 g_hair_colors[] = {
+const Vec4 g_hair_colors[] = {
 	HEX(0x000000), // Black
 	HEX(0x808080), // Gray
 	HEX(0xD3D3D3), // Platinum
@@ -35,7 +35,7 @@ const VEC4 g_hair_colors[] = {
 const uint n_hair_colors = countof(g_hair_colors);
 // siwy 0xDED5D0
 
-VEC2 Human::GetScale()
+Vec2 Human::GetScale()
 {
 	float h = (height - 1)*0.2f + 1.f;
 	float w;
@@ -46,7 +46,7 @@ VEC2 Human::GetScale()
 	else
 		w = 1.f;
 
-	return VEC2(w, h);
+	return Vec2(w, h);
 }
 
 //=================================================================================================
@@ -58,13 +58,13 @@ void Human::ApplyScale(Animesh* mesh)
 
 	mat_scale.resize(mesh->head.n_bones);
 
-	VEC2 scale = GetScale();
-	MATRIX m = MATRIX::Scale(scale.x, scale.y, scale.x);
+	Vec2 scale = GetScale();
+	Matrix m = Matrix::Scale(scale.x, scale.y, scale.x);
 	for(int i = 0; i < mesh->head.n_bones; ++i)
 		mat_scale[i] = m;
 
 	scale.x = (scale.x + 1) / 2;
-	m = MATRIX::Scale(scale.x, scale.y, scale.x);
+	m = Matrix::Scale(scale.x, scale.y, scale.x);
 	mat_scale[4] = m;
 	mat_scale[5] = m;
 }

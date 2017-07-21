@@ -18,9 +18,9 @@ void Grid::Draw(ControlDrawData*)
 	for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it)
 	{
 		// box nag³ówka
-		GUI.DrawItem(GUI.tBox, INT2(x, y), INT2(it->width, height), BLACK, 8, 32);
+		GUI.DrawItem(GUI.tBox, Int2(x, y), Int2(it->width, height), BLACK, 8, 32);
 		// box zawartoœci
-		GUI.DrawItem(GUI.tBox, INT2(x, y + height), INT2(it->width, size.y - height), BLACK, 8, 32);
+		GUI.DrawItem(GUI.tBox, Int2(x, y + height), Int2(it->width, size.y - height), BLACK, 8, 32);
 		// tekst nag³ówka
 		if(!it->title.empty())
 		{
@@ -141,7 +141,7 @@ void Grid::Draw(ControlDrawData*)
 					}
 				}
 
-				GUI.DrawSprite(cell.img, INT2(x + (it->width - 16) / 2, y + (height - 16) / 2), WHITE, clipping);
+				GUI.DrawSprite(cell.img, Int2(x + (it->width - 16) / 2, y + (height - 16) / 2), WHITE, clipping);
 			}
 			else //if(it->type == IMGSET)
 			{
@@ -185,7 +185,7 @@ void Grid::Draw(ControlDrawData*)
 					int x2 = x + startx;
 					for(uint j = 0; j < imgset.size(); ++j)
 					{
-						GUI.DrawSprite(imgset[j], INT2(x2, y2), WHITE, clipping);
+						GUI.DrawSprite(imgset[j], Int2(x2, y2), WHITE, clipping);
 						x2 += dist;
 					}
 				}
@@ -252,8 +252,8 @@ void Grid::Update(float dt)
 //=================================================================================================
 void Grid::Init()
 {
-	scroll.pos = INT2(size.x - 16, height);
-	scroll.size = INT2(16, size.y - height);
+	scroll.pos = Int2(size.x - 16, height);
+	scroll.size = Int2(16, size.y - height);
 	scroll.total = height*items;
 	scroll.part = scroll.size.y;
 	scroll.offset = 0;
@@ -264,7 +264,7 @@ void Grid::Init()
 }
 
 //=================================================================================================
-void Grid::Move(INT2& _global_pos)
+void Grid::Move(Int2& _global_pos)
 {
 	global_pos = _global_pos + pos;
 	scroll.global_pos = global_pos + scroll.pos;

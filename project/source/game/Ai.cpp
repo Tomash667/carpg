@@ -137,7 +137,7 @@ void Game::UpdateAi(float dt)
 		{
 			if(u.look_target)
 			{
-				float dir = VEC3::LookAtAngle(u.pos, u.look_target->pos);
+				float dir = Vec3::LookAtAngle(u.pos, u.look_target->pos);
 
 				if(!Equal(u.rot, dir))
 				{
@@ -167,7 +167,7 @@ void Game::UpdateAi(float dt)
 			if((*it2)->to_remove || !(*it2)->IsAlive() || (*it2)->invisible || !IsEnemy(u, **it2))
 				continue;
 
-			dist = VEC3::Distance(u.pos, (*it2)->pos);
+			dist = Vec3::Distance(u.pos, (*it2)->pos);
 
 			if(dist < best_dist && CanSee(u, **it2))
 			{
@@ -217,7 +217,7 @@ void Game::UpdateAi(float dt)
 		MOVE_TYPE move_type = DontMove;
 		RUN_TYPE run_type = Run;
 		LOOK_AT look_at = DontLook;
-		VEC3 target_pos, look_pos;
+		Vec3 target_pos, look_pos;
 		bool look_pt_valid = false;
 		const void* path_obj_ignore = nullptr;
 		const Unit* path_unit_ignore = nullptr;
@@ -245,7 +245,7 @@ void Game::UpdateAi(float dt)
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 						{
 							if(!(*it2)->to_remove && (*it2)->live_state == Unit::DEAD && !IsEnemy(u, **it2) && IS_SET((*it2)->data->flags, F_UNDEAD) &&
-								(dist = VEC3::Distance(u.pos, (*it2)->pos)) < spell_range && CanSee(u, **it2))
+								(dist = Vec3::Distance(u.pos, (*it2)->pos)) < spell_range && CanSee(u, **it2))
 							{
 								float prio = (*it2)->hpmax - dist * 10;
 								if(prio > best_prio)
@@ -262,7 +262,7 @@ void Game::UpdateAi(float dt)
 						for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 						{
 							if(!(*it2)->to_remove && !IsEnemy(u, **it2) && !IS_SET((*it2)->data->flags, F_UNDEAD) && (*it2)->hpmax - (*it2)->hp > 100.f &&
-								(dist = VEC3::Distance(u.pos, (*it2)->pos)) < spell_range && CanSee(u, **it2))
+								(dist = Vec3::Distance(u.pos, (*it2)->pos)) < spell_range && CanSee(u, **it2))
 							{
 								float prio = (*it2)->hpmax - (*it2)->hp;
 								if(*it2 == &u)
@@ -503,7 +503,7 @@ void Game::UpdateAi(float dt)
 						else if(((u.IsFollower() && u.hero->mode == HeroData::Follow) || u.assist) && Team.leader->in_arena == -1 && u.busy != Unit::Busy_Tournament)
 						{
 							Unit* leader = Team.GetLeader();
-							dist = VEC3::Distance(u.pos, leader->pos);
+							dist = Vec3::Distance(u.pos, leader->pos);
 							if(dist >= (u.assist ? 4.f : 2.f))
 							{
 								// pod¹¿aj za liderem
@@ -578,7 +578,7 @@ void Game::UpdateAi(float dt)
 								{
 									for(Unit* unit : Team.members)
 									{
-										if(unit != &u && VEC3::Distance(unit->pos, u.pos) < 1.f)
+										if(unit != &u && Vec3::Distance(unit->pos, u.pos) < 1.f)
 										{
 											look_at = LookAtPoint;
 											look_pos = unit->pos;
@@ -641,7 +641,7 @@ void Game::UpdateAi(float dt)
 								else if(IS_SET(u.data->flags2, F2_LIMITED_ROT))
 									ai.idle_data.rot = random_rot(ai.start_rot, PI / 4);
 								else
-									ai.idle_data.rot = Clip(VEC3::LookAtAngle(u.pos, ai.idle_data.pos) + Random(-PI / 2, PI / 2));
+									ai.idle_data.rot = Clip(Vec3::LookAtAngle(u.pos, ai.idle_data.pos) + Random(-PI / 2, PI / 2));
 								ai.timer = Random(2.f, 5.f);
 							}
 							else if(ai.idle_action == AIController::Idle_Chat)
@@ -728,7 +728,7 @@ void Game::UpdateAi(float dt)
 											ai.loc_timer = ai.timer = Random(30.f, 120.f);
 											ai.idle_action = AIController::Idle_Move;
 											ai.idle_data.pos = city_ctx->buildings[Rand() % city_ctx->buildings.size()].walk_pt
-												+ VEC3::Random(VEC3(-1.f, 0, -1), VEC3(1, 0, 1));
+												+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 										}
 										else if(co == 1)
 										{
@@ -743,7 +743,7 @@ void Game::UpdateAi(float dt)
 											ai.loc_timer = ai.timer = Random(75.f, 150.f);
 											ai.idle_action = AIController::Idle_Move;
 											ai.idle_data.pos = city_ctx->FindBuilding(content::BG_TRAINING_GROUNDS)->walk_pt
-												+ VEC3::Random(VEC3(-1.f, 0, -1), VEC3(1, 0, 1));
+												+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 										}
 									}
 									else
@@ -761,11 +761,11 @@ void Game::UpdateAi(float dt)
 									// idŸ do losowego budynku
 									ai.loc_timer = ai.timer = Random(30.f, 120.f);
 									ai.idle_action = AIController::Idle_Move;
-									ai.idle_data.pos = city_ctx->buildings[Rand() % city_ctx->buildings.size()].walk_pt + VEC3::Random(VEC3(-1.f, 0, -1), VEC3(1, 0, 1));
+									ai.idle_data.pos = city_ctx->buildings[Rand() % city_ctx->buildings.size()].walk_pt + Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 									ai.city_wander = true;
 								}
 							}
-							else if(u.guard_target && VEC3::Distance(u.pos, u.guard_target->pos) > 5.f)
+							else if(u.guard_target && Vec3::Distance(u.pos, u.guard_target->pos) > 5.f)
 							{
 								ai.timer = Random(2.f, 4.f);
 								ai.idle_action = AIController::Idle_WalkNearUnit;
@@ -786,7 +786,7 @@ void Game::UpdateAi(float dt)
 									Useable& use = **it2;
 									if(!use.user && (use.type == U_IRON_VEIN || use.type == U_GOLD_VEIN))
 									{
-										float dist = VEC3::Distance(use.pos, u.pos);
+										float dist = Vec3::Distance(use.pos, u.pos);
 										if(dist < range)
 										{
 											range = dist;
@@ -832,7 +832,7 @@ void Game::UpdateAi(float dt)
 								if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
 									co = Rand() % 3;
 								else if((u.busy == Unit::Busy_Tournament || (u.IsHero() && !u.IsFollowingTeamMember() && tournament_generated)) && tournament_master &&
-									((dist = VEC3::Distance2d(u.pos, tournament_master->pos)) > 16.f || dist < 4.f))
+									((dist = Vec3::Distance2d(u.pos, tournament_master->pos)) > 16.f || dist < 4.f))
 								{
 									co = -1;
 									if(dist > 16.f)
@@ -845,7 +845,7 @@ void Game::UpdateAi(float dt)
 									{
 										ai.timer = Random(4.f, 8.f);
 										ai.idle_action = AIController::Idle_Move;
-										ai.idle_data.pos = tournament_master->pos + VEC3::Random(VEC3(-10, 0, -10), VEC3(10, 0, 10));
+										ai.idle_data.pos = tournament_master->pos + Vec3::Random(Vec3(-10, 0, -10), Vec3(10, 0, 10));
 									}
 								}
 								else if(IS_SET(u.data->flags2, F2_SIT_ON_THRONE) && !u.IsFollower())
@@ -861,7 +861,7 @@ void Game::UpdateAi(float dt)
 												*tarcza = FindObject("bow_target");
 											for(vector<Object>::iterator it2 = ctx.objects->begin(), end2 = ctx.objects->end(); it2 != end2; ++it2)
 											{
-												if((it2->base == manekin || (it2->base == tarcza && u.HaveBow())) && VEC3::Distance(it2->pos, u.pos) < 10.f)
+												if((it2->base == manekin || (it2->base == tarcza && u.HaveBow())) && Vec3::Distance(it2->pos, u.pos) < 10.f)
 													do_cw.push_back(&*it2);
 											}
 											if(!do_cw.empty())
@@ -955,7 +955,7 @@ void Game::UpdateAi(float dt)
 										for(vector<Useable*>::iterator it2 = ctx.useables->begin(), end2 = ctx.useables->end(); it2 != end2; ++it2)
 										{
 											Useable& use = **it2;
-											if(!use.user && (use.type != U_THRONE || IS_SET(u.data->flags2, F2_SIT_ON_THRONE)) && VEC3::Distance(use.pos, u.pos) < 10.f
+											if(!use.user && (use.type != U_THRONE || IS_SET(u.data->flags2, F2_SIT_ON_THRONE)) && Vec3::Distance(use.pos, u.pos) < 10.f
 												/*CanSee - niestety nie ma takiej funkcji wiêc trudno :p*/)
 											{
 												const Item* needed_item = g_base_usables[use.type].item;
@@ -1010,7 +1010,7 @@ void Game::UpdateAi(float dt)
 											if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || *it2 == &u)
 												continue;
 
-											if(VEC3::Distance(u.pos, (*it2)->pos) < 10.f && CanSee(u, **it2))
+											if(Vec3::Distance(u.pos, (*it2)->pos) < 10.f && CanSee(u, **it2))
 												close_enemies.push_back(*it2);
 										}
 										if(!close_enemies.empty())
@@ -1044,7 +1044,7 @@ void Game::UpdateAi(float dt)
 											if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || *it2 == &u)
 												continue;
 
-											if(VEC3::Distance(u.pos, (*it2)->pos) < d && CanSee(u, **it2))
+											if(Vec3::Distance(u.pos, (*it2)->pos) < d && CanSee(u, **it2))
 												close_enemies.push_back(*it2);
 										}
 										if(!close_enemies.empty())
@@ -1068,13 +1068,13 @@ void Game::UpdateAi(float dt)
 									ai.city_wander = false;
 									if(IS_SET(u.data->flags, F_AI_STAY))
 									{
-										if(VEC3::Distance(u.pos, ai.start_pos) > 2.f)
+										if(Vec3::Distance(u.pos, ai.start_pos) > 2.f)
 											ai.idle_data.pos = ai.start_pos;
 										else
-											ai.idle_data.pos = u.pos + VEC3::Random(VEC3(-2.f, 0, -2.f), VEC3(2.f, 0, 2.f));
+											ai.idle_data.pos = u.pos + Vec3::Random(Vec3(-2.f, 0, -2.f), Vec3(2.f, 0, 2.f));
 									}
 									else
-										ai.idle_data.pos = u.pos + VEC3::Random(VEC3(-5.f, 0, -5.f), VEC3(5.f, 0, 5.f));
+										ai.idle_data.pos = u.pos + Vec3::Random(Vec3(-5.f, 0, -5.f), Vec3(5.f, 0, 5.f));
 									if(city_ctx && !city_ctx->IsInsideCity(ai.idle_data.pos))
 									{
 										ai.timer = Random(2.f, 4.f);
@@ -1119,7 +1119,7 @@ void Game::UpdateAi(float dt)
 								}
 								break;
 							case AIController::Idle_Move:
-								if(VEC3::Distance2d(u.pos, ai.idle_data.pos) < u.GetUnitRadius() * 2)
+								if(Vec3::Distance2d(u.pos, ai.idle_data.pos) < u.GetUnitRadius() * 2)
 								{
 									if(ai.city_wander)
 									{
@@ -1137,7 +1137,7 @@ void Game::UpdateAi(float dt)
 								}
 								break;
 							case AIController::Idle_Look:
-								if(ai.idle_data.unit->to_remove || VEC3::Distance2d(u.pos, ai.idle_data.unit->pos) > 10.f || !CanSee(u, *ai.idle_data.unit))
+								if(ai.idle_data.unit->to_remove || Vec3::Distance2d(u.pos, ai.idle_data.unit->pos) > 10.f || !CanSee(u, *ai.idle_data.unit))
 								{
 									// skoñcz siê patrzyæ
 									ai.idle_action = AIController::Idle_Rot;
@@ -1160,7 +1160,7 @@ void Game::UpdateAi(float dt)
 								{
 									if(CanSee(u, *ai.idle_data.unit))
 									{
-										if(VEC3::Distance2d(u.pos, ai.idle_data.unit->pos) < 1.5f)
+										if(Vec3::Distance2d(u.pos, ai.idle_data.unit->pos) < 1.5f)
 										{
 											// skoñcz podchodziæ, zacznij gadaæ
 											ai.idle_action = AIController::Idle_Chat;
@@ -1219,7 +1219,7 @@ void Game::UpdateAi(float dt)
 									}
 									else
 									{
-										if(VEC3::Distance2d(u.pos, ai.target_last_pos) < 1.5f)
+										if(Vec3::Distance2d(u.pos, ai.target_last_pos) < 1.5f)
 											ai.idle_action = AIController::Idle_None;
 										else
 										{
@@ -1242,7 +1242,7 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_WalkNearUnit:
 								if(ai.idle_data.unit->IsStanding() && !ai.idle_data.unit->to_remove)
 								{
-									if(VEC3::Distance2d(u.pos, ai.idle_data.unit->pos) < 4.f)
+									if(Vec3::Distance2d(u.pos, ai.idle_data.unit->pos) < 4.f)
 										ai.idle_action = AIController::Idle_None;
 									else
 									{
@@ -1272,9 +1272,9 @@ void Game::UpdateAi(float dt)
 									Useable& use = *ai.idle_data.useable;
 									if(use.user || u.frozen)
 										ai.idle_action = AIController::Idle_None;
-									else if(VEC3::Distance2d(u.pos, use.pos) < PICKUP_RANGE)
+									else if(Vec3::Distance2d(u.pos, use.pos) < PICKUP_RANGE)
 									{
-										if(AngleDiff(Clip(u.rot + PI / 2), Clip(-VEC3::Angle2d(u.pos, ai.idle_data.useable->pos))) < PI / 4)
+										if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.useable->pos))) < PI / 4)
 										{
 											BaseUsable& base = g_base_usables[use.type];
 											const Item* needed_item = base.item;
@@ -1294,10 +1294,10 @@ void Game::UpdateAi(float dt)
 												u.target_pos = u.pos;
 												u.target_pos2 = use.pos;
 												if(g_base_usables[use.type].limit_rot == 4)
-													u.target_pos2 -= VEC3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
+													u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
 												u.timer = 0.f;
 												u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-												u.use_rot = VEC3::LookAtAngle(u.pos, u.useable->pos);
+												u.use_rot = Vec3::LookAtAngle(u.pos, u.useable->pos);
 												u.used_item = needed_item;
 												if(ai.idle_action == AIController::Idle_WalkUseEat)
 													ai.timer = -1.f;
@@ -1341,14 +1341,14 @@ void Game::UpdateAi(float dt)
 										look_at = LookAtWalk;
 										path_obj_ignore = &use;
 										if(use.GetBase()->limit_rot == 4)
-											target_pos -= VEC3(sin(use.rot), 0, cos(use.rot));
+											target_pos -= Vec3(sin(use.rot), 0, cos(use.rot));
 									}
 								}
 								break;
 							case AIController::Idle_Use:
 								break;
 							case AIController::Idle_TrainCombat:
-								if(VEC3::Distance2d(u.pos, ai.idle_data.pos) < u.GetUnitRadius() * 2 + 0.25f)
+								if(Vec3::Distance2d(u.pos, ai.idle_data.pos) < u.GetUnitRadius() * 2 + 0.25f)
 								{
 									if(ai.timer < 1.f)
 									{
@@ -1376,9 +1376,9 @@ void Game::UpdateAi(float dt)
 								break;
 							case AIController::Idle_TrainBow:
 								{
-									VEC3 pt = ai.idle_data.obj.pos;
-									pt -= VEC3(sin(ai.idle_data.obj.rot) * 5, 0, cos(ai.idle_data.obj.rot) * 5);
-									if(VEC3::Distance2d(u.pos, pt) < u.GetUnitRadius() * 2)
+									Vec3 pt = ai.idle_data.obj.pos;
+									pt -= Vec3(sin(ai.idle_data.obj.rot) * 5, 0, cos(ai.idle_data.obj.rot) * 5);
+									if(Vec3::Distance2d(u.pos, pt) < u.GetUnitRadius() * 2)
 									{
 										if(ai.timer < 1.f)
 										{
@@ -1391,7 +1391,7 @@ void Game::UpdateAi(float dt)
 										else
 										{
 											u.TakeWeapon(W_BOW);
-											float dir = VEC3::LookAtAngle(u.pos, ai.idle_data.obj.pos);
+											float dir = Vec3::LookAtAngle(u.pos, ai.idle_data.obj.pos);
 											if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f && u.frozen == 0 &&
 												CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
 											{
@@ -1419,7 +1419,7 @@ void Game::UpdateAi(float dt)
 											look_pos = ai.idle_data.obj.pos;
 											ai.in_combat = true;
 											if(u.action == A_SHOOT)
-												ai.shoot_yspeed = (ai.idle_data.obj.pos.y - u.pos.y) / (VEC3::Distance(u.pos, ai.idle_data.obj.pos) / u.GetArrowSpeed());
+												ai.shoot_yspeed = (ai.idle_data.obj.pos.y - u.pos.y) / (Vec3::Distance(u.pos, ai.idle_data.obj.pos) / u.GetArrowSpeed());
 										}
 									}
 									else
@@ -1433,7 +1433,7 @@ void Game::UpdateAi(float dt)
 								break;
 							case AIController::Idle_MoveRegion:
 							case AIController::Idle_RunRegion:
-								if(VEC3::Distance2d(u.pos, ai.idle_data.area.pos) < u.GetUnitRadius() * 2)
+								if(Vec3::Distance2d(u.pos, ai.idle_data.area.pos) < u.GetUnitRadius() * 2)
 								{
 									if(city_ctx && !IS_SET(city_ctx->flags, City::HaveExit) && ai.idle_data.area.id == -1 && u.in_building == -1)
 									{
@@ -1474,7 +1474,7 @@ void Game::UpdateAi(float dt)
 								}
 								break;
 							case AIController::Idle_Pray:
-								if(VEC3::Distance2d(u.pos, u.ai->start_pos) > 1.f)
+								if(Vec3::Distance2d(u.pos, u.ai->start_pos) > 1.f)
 								{
 									look_at = LookAtWalk;
 									move_type = MovePoint;
@@ -1491,7 +1491,7 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_MoveAway:
 								look_at = LookAtPoint;
 								look_pos = ai.idle_data.unit->pos;
-								if(VEC3::Distance2d(u.pos, ai.idle_data.unit->pos) < 2.f)
+								if(Vec3::Distance2d(u.pos, ai.idle_data.unit->pos) < 2.f)
 								{
 									move_type = MoveAway;
 									target_pos = ai.idle_data.unit->pos;
@@ -1668,7 +1668,7 @@ void Game::UpdateAi(float dt)
 						look_pos = PredictTargetPos(u, *enemy, arrow_speed);
 						look_at = LookAtPoint;
 						u.target_pos = look_pos;
-						ai.shoot_yspeed = (enemy->pos.y - u.pos.y) / (VEC3::Distance(u.pos, enemy->pos) / arrow_speed);
+						ai.shoot_yspeed = (enemy->pos.y - u.pos.y) / (Vec3::Distance(u.pos, enemy->pos) / arrow_speed);
 					}
 
 					if(u.IsHoldingBow())
@@ -1740,7 +1740,7 @@ void Game::UpdateAi(float dt)
 								if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted &&
 									(*it2)->animation_state < 2)
 								{
-									float dist = VEC3::Distance(u.pos, (*it2)->pos);
+									float dist = Vec3::Distance(u.pos, (*it2)->pos);
 									if(dist < best_dist)
 									{
 										top = *it2;
@@ -1826,7 +1826,7 @@ void Game::UpdateAi(float dt)
 					look_at = LookAtWalk;
 					run_type = Run;
 
-					if(VEC3::Distance(u.pos, ai.target_last_pos) < 1.f || ai.timer <= 0.f)
+					if(Vec3::Distance(u.pos, ai.target_last_pos) < 1.f || ai.timer <= 0.f)
 					{
 						// doszed³ do ostatniego widzianego punktu
 						if(location->outside)
@@ -1914,7 +1914,7 @@ void Game::UpdateAi(float dt)
 						ai.loc_timer = Random(5.f, 10.f);
 						ai.timer = Random(1.f, 2.f);
 					}
-					else if(VEC3::Distance(u.pos, ai.target_last_pos) < 1.f)
+					else if(Vec3::Distance(u.pos, ai.target_last_pos) < 1.f)
 					{
 						// szukaj kolejnego pokoju
 						InsideLocation* inside = (InsideLocation*)location;
@@ -1939,7 +1939,7 @@ void Game::UpdateAi(float dt)
 						if(location->outside)
 						{
 							// zaawansowane uciekanie tylko w podziemiach, na zewn¹trz uciekaj przed siebie
-							if(VEC3::Distance2d(enemy->pos, u.pos) < 3.f)
+							if(Vec3::Distance2d(enemy->pos, u.pos) < 3.f)
 							{
 								look_at = LookAtTarget;
 								move_type = MoveAway;
@@ -1971,12 +1971,12 @@ void Game::UpdateAi(float dt)
 									if((*it2)->to_remove || !(*it2)->IsStanding() || (*it2)->invisible || !IsEnemy(u, **it2))
 										continue;
 
-									if(VEC3::Distance(u.pos, (*it2)->pos) < ALERT_RANGE.x + 0.1f)
+									if(Vec3::Distance(u.pos, (*it2)->pos) < ALERT_RANGE.x + 0.1f)
 										close_enemies.push_back(*it2);
 								}
 
 								// ustal w którym pokoju s¹ wrogowie
-								VEC3 mid = close_enemies.front()->pos;
+								Vec3 mid = close_enemies.front()->pos;
 								for(vector<Unit*>::iterator it2 = close_enemies.begin() + 1, end2 = close_enemies.end(); it2 != end2; ++it2)
 									mid += (*it2)->pos;
 								mid /= (float)close_enemies.size();
@@ -2080,7 +2080,7 @@ void Game::UpdateAi(float dt)
 					{
 						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted && (*it2)->animation_state < 2)
 						{
-							float dist = VEC3::Distance(u.pos, (*it2)->pos);
+							float dist = Vec3::Distance(u.pos, (*it2)->pos);
 							if(dist < best_dist)
 							{
 								top = *it2;
@@ -2154,7 +2154,7 @@ void Game::UpdateAi(float dt)
 					{
 						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) /*&& (*it2)->action == A_ATTACK && !(*it2)->trafil && (*it2)->animation_state < 2*/)
 						{
-							float dist = VEC3::Distance(u.pos, (*it2)->pos);
+							float dist = Vec3::Distance(u.pos, (*it2)->pos);
 							if(dist < best_dist)
 							{
 								top = *it2;
@@ -2245,7 +2245,7 @@ void Game::UpdateAi(float dt)
 					look_at = LookAtPoint;
 					target_pos = look_pos = ai.cast_target->pos;
 
-					if(VEC3::Distance(u.pos, target_pos) <= 2.5f)
+					if(Vec3::Distance(u.pos, target_pos) <= 2.5f)
 					{
 						move_type = DontMove;
 
@@ -2350,7 +2350,7 @@ void Game::UpdateAi(float dt)
 				}
 				else if(run_type == WalkIfNear2 && look_at != LookAtWalk)
 				{
-					if(AngleDiff(u.rot, VEC3::LookAtAngle(u.pos, target_pos)) > PI / 4)
+					if(AngleDiff(u.rot, Vec3::LookAtAngle(u.pos, target_pos)) > PI / 4)
 					{
 						move = 0;
 						if(look_at == LookAtWalk)
@@ -2372,11 +2372,11 @@ void Game::UpdateAi(float dt)
 				u.speed = u.GetWalkSpeed();
 				u.prev_speed = (u.prev_speed + (u.speed - u.prev_speed)*dt * 3);
 				float speed = u.prev_speed * dt;
-				const float kat = VEC3::LookAtAngle(u.pos, target_pos);
+				const float kat = Vec3::LookAtAngle(u.pos, target_pos);
 
 				u.prev_pos = u.pos;
 
-				const VEC3 dir(sin(kat)*speed, 0, cos(kat)*speed);
+				const Vec3 dir(sin(kat)*speed, 0, cos(kat)*speed);
 				bool small;
 
 				if(move_type == KeepDistanceCheck)
@@ -2398,15 +2398,15 @@ void Game::UpdateAi(float dt)
 			else if(move == 1)
 			{
 				// ruch do punku (pathfinding)
-				const INT2 my_tile(u.pos / 2);
-				const INT2 target_tile(target_pos / 2);
-				const INT2 my_local_tile(u.pos.x * 4, u.pos.z * 4);
+				const Int2 my_tile(u.pos / 2);
+				const Int2 target_tile(target_pos / 2);
+				const Int2 my_local_tile(u.pos.x * 4, u.pos.z * 4);
 
 				if(my_tile != target_tile)
 				{
 					// check is it time to use pathfinding
 					if(ai.pf_state == AIController::PFS_NOT_USING ||
-						INT2::Distance(ai.pf_target_tile, target_tile) > 1 ||
+						Int2::Distance(ai.pf_target_tile, target_tile) > 1 ||
 						((ai.pf_state == AIController::PFS_WALKING || ai.pf_state == AIController::PFS_MANUAL_WALK) && target_tile != ai.pf_target_tile && ai.pf_timer <= 0.f))
 					{
 						ai.pf_timer = Random(0.2f, 0.4f);
@@ -2435,7 +2435,7 @@ void Game::UpdateAi(float dt)
 					for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
 					{
 						Door& door = **it;
-						if(door.IsBlocking() && door.state == Door::Closed && door.locked == LOCK_NONE && VEC3::Distance(door.pos, u.pos) < 1.f)
+						if(door.IsBlocking() && door.state == Door::Closed && door.locked == LOCK_NONE && Vec3::Distance(door.pos, u.pos) < 1.f)
 						{
 							// otwórz magicznie drzwi :o
 							if(!location->outside)
@@ -2447,7 +2447,7 @@ void Game::UpdateAi(float dt)
 							if(nosound && Rand() % 2 == 0)
 							{
 								// skrzypienie
-								VEC3 pos = door.pos;
+								Vec3 pos = door.pos;
 								pos.y += 1.5f;
 								PlaySound3d(sDoor[Rand() % 3], pos, 2.f, 5.f);
 							}
@@ -2464,17 +2464,17 @@ void Game::UpdateAi(float dt)
 				}
 
 				// local pathfinding
-				VEC3 move_target;
+				Vec3 move_target;
 				if(ai.pf_state == AIController::PFS_GLOBAL_DONE ||
 					ai.pf_state == AIController::PFS_GLOBAL_NOT_USED ||
 					ai.pf_state == AIController::PFS_LOCAL_TRY_WALK)
 				{
-					INT2 local_tile;
+					Int2 local_tile;
 					bool is_end_point;
 
 					if(ai.pf_state == AIController::PFS_GLOBAL_DONE)
 					{
-						const INT2& pt = ai.pf_path.back();
+						const Int2& pt = ai.pf_path.back();
 						local_tile.x = (2 * pt.x + 1) * 4;
 						local_tile.y = (2 * pt.y + 1) * 4;
 						is_end_point = (ai.pf_path.size() == 1);
@@ -2483,9 +2483,9 @@ void Game::UpdateAi(float dt)
 					{
 						local_tile.x = int(target_pos.x * 4);
 						local_tile.y = int(target_pos.z * 4);
-						if(INT2::Distance(my_local_tile, local_tile) > 32)
+						if(Int2::Distance(my_local_tile, local_tile) > 32)
 						{
-							move_target = VEC3(target_pos.x, 0, target_pos.z);
+							move_target = Vec3(target_pos.x, 0, target_pos.z);
 							goto skip_localpf;
 						}
 						else
@@ -2493,7 +2493,7 @@ void Game::UpdateAi(float dt)
 					}
 					else
 					{
-						const INT2& pt = ai.pf_path[ai.pf_path.size() - ai.pf_local_try - 1];
+						const Int2& pt = ai.pf_path[ai.pf_path.size() - ai.pf_local_try - 1];
 						local_tile.x = (2 * pt.x + 1) * 4;
 						local_tile.y = (2 * pt.y + 1) * 4;
 						is_end_point = (ai.pf_local_try + 1 == ai.pf_path.size());
@@ -2516,8 +2516,8 @@ void Game::UpdateAi(float dt)
 						else
 							ai.pf_state = AIController::PFS_WALKING_LOCAL;
 						ai.pf_local_target_tile = local_tile;
-						const INT2& pt = ai.pf_local_path.back();
-						move_target = VEC3(0.25f*pt.x + 0.125f, 0, 0.25f*pt.y + 0.125f);
+						const Int2& pt = ai.pf_local_path.back();
+						move_target = Vec3(0.25f*pt.x + 0.125f, 0, 0.25f*pt.y + 0.125f);
 					}
 					else if(ret == 4)
 					{
@@ -2529,7 +2529,7 @@ void Game::UpdateAi(float dt)
 							if(ai.pf_local_try == 4 || ai.pf_path.size() == ai.pf_local_try)
 							{
 								ai.pf_state = AIController::PFS_MANUAL_WALK;
-								move_target = VEC3(0.25f*local_tile.x + 0.125f, 0, 0.25f*local_tile.y + 0.125f);
+								move_target = Vec3(0.25f*local_tile.x + 0.125f, 0, 0.25f*local_tile.y + 0.125f);
 							}
 							else
 								move = 0;
@@ -2542,13 +2542,13 @@ void Game::UpdateAi(float dt)
 						else
 						{
 							ai.pf_state = AIController::PFS_MANUAL_WALK;
-							move_target = VEC3(0.25f*local_tile.x + 0.125f, 0, 0.25f*local_tile.y + 0.125f);
+							move_target = Vec3(0.25f*local_tile.x + 0.125f, 0, 0.25f*local_tile.y + 0.125f);
 						}
 					}
 					else
 					{
 						ai.pf_state = AIController::PFS_MANUAL_WALK;
-						move_target = VEC3(0.25f*local_tile.x + 0.125f, 0, 0.25f*local_tile.y + 0.125f);
+						move_target = Vec3(0.25f*local_tile.x + 0.125f, 0, 0.25f*local_tile.y + 0.125f);
 					}
 				}
 				else if(ai.pf_state == AIController::PFS_MANUAL_WALK)
@@ -2556,8 +2556,8 @@ void Game::UpdateAi(float dt)
 				else if(ai.pf_state == AIController::PFS_WALKING ||
 					ai.pf_state == AIController::PFS_WALKING_LOCAL)
 				{
-					const INT2& pt = ai.pf_local_path.back();
-					move_target = VEC3(0.25f*pt.x + 0.125f, 0, 0.25f*pt.y + 0.125f);
+					const Int2& pt = ai.pf_local_path.back();
+					move_target = Vec3(0.25f*pt.x + 0.125f, 0, 0.25f*pt.y + 0.125f);
 				}
 
 			skip_localpf:
@@ -2581,10 +2581,10 @@ void Game::UpdateAi(float dt)
 							run = true;
 							break;
 						case WalkIfNear:
-							run = (VEC3::Distance(u.pos, target_pos) >= 1.5f);
+							run = (Vec3::Distance(u.pos, target_pos) >= 1.5f);
 							break;
 						case WalkIfNear2:
-							run = (VEC3::Distance(u.pos, target_pos) >= 3.f);
+							run = (Vec3::Distance(u.pos, target_pos) >= 3.f);
 							break;
 						default:
 							assert(0);
@@ -2596,11 +2596,11 @@ void Game::UpdateAi(float dt)
 					u.speed = run ? u.GetRunSpeed() : u.GetWalkSpeed();
 					u.prev_speed = (u.prev_speed + (u.speed - u.prev_speed)*dt * 3);
 					float speed = u.prev_speed * dt;
-					const float kat = VEC3::LookAtAngle(u.pos, move_target) + PI;
+					const float kat = Vec3::LookAtAngle(u.pos, move_target) + PI;
 
 					u.prev_pos = u.pos;
 
-					const VEC3 dir(sin(kat)*speed, 0, cos(kat)*speed);
+					const Vec3 dir(sin(kat)*speed, 0, cos(kat)*speed);
 					bool small;
 
 					if(move_type == KeepDistanceCheck)
@@ -2614,7 +2614,7 @@ void Game::UpdateAi(float dt)
 					if(move != 0)
 					{
 						int move_state = 0;
-						//VEC3 prev = u.pos;
+						//Vec3 prev = u.pos;
 						if(CheckMove(u.pos, dir, u.GetUnitRadius(), &u, &small))
 							move_state = 1;
 						else if(try_phase && u.hero->phase /*&& CheckMovePhase(u.pos, dir, u.GetUnitRadius(), &u, &small))*/)
@@ -2638,7 +2638,7 @@ void Game::UpdateAi(float dt)
 
 							if(ai.pf_state == AIController::PFS_WALKING)
 							{
-								const INT2 new_tile(u.pos / 2);
+								const Int2 new_tile(u.pos / 2);
 								if(new_tile != my_tile)
 								{
 									if(new_tile == ai.pf_path.back())
@@ -2654,7 +2654,7 @@ void Game::UpdateAi(float dt)
 
 							if(ai.pf_state == AIController::PFS_WALKING_LOCAL || ai.pf_state == AIController::PFS_WALKING)
 							{
-								const INT2 new_tile(u.pos.x * 4, u.pos.z * 4);
+								const Int2 new_tile(u.pos.x * 4, u.pos.z * 4);
 								if(new_tile != my_local_tile)
 								{
 									if(new_tile == ai.pf_local_path.back())
@@ -2697,17 +2697,17 @@ void Game::UpdateAi(float dt)
 		}
 
 		// obrót
-		VEC3 look_pos2;
+		Vec3 look_pos2;
 		if(look_at == LookAtTarget || look_at == LookAtPoint || (look_at == LookAtWalk && look_pt_valid))
 		{
-			VEC3 look_pt;
+			Vec3 look_pt;
 			if(look_at == LookAtTarget)
 				look_pt = target_pos;
 			else
 				look_pt = look_pos;
 
 			// patrz na cel
-			float dir = VEC3::LookAtAngle(u.pos, look_pt),
+			float dir = Vec3::LookAtAngle(u.pos, look_pt),
 				dif = AngleDiff(u.rot, dir);
 
 			if(NotZero(dif))
@@ -2783,7 +2783,7 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 			|| u->ai->alert_target || u->dont_attack)
 			continue;
 
-		if(VEC3::Distance(unit.pos, u->pos) <= 20.f && CanSee(unit, *u))
+		if(Vec3::Distance(unit.pos, u->pos) <= 20.f && CanSee(unit, *u))
 		{
 			u->ai->alert_target = ai.target;
 			u->ai->alert_target_pos = ai.target_last_pos;
@@ -2851,7 +2851,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 }
 
 //=================================================================================================
-void Game::AI_HitReaction(Unit& unit, const VEC3& pos)
+void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 {
 	AIController& ai = *unit.ai;
 	switch(ai.state)
@@ -2884,7 +2884,7 @@ void Game::AI_HitReaction(Unit& unit, const VEC3& pos)
 			if(u->to_remove || &unit == u || !u->IsStanding() || u->IsPlayer() || !IsFriend(unit, *u) || u->dont_attack)
 				continue;
 
-			if((u->ai->state == AIController::Idle || u->ai->state == AIController::SearchEnemy) && VEC3::Distance(unit.pos, u->pos) <= 20.f && CanSee(unit, *u))
+			if((u->ai->state == AIController::Idle || u->ai->state == AIController::SearchEnemy) && Vec3::Distance(unit.pos, u->pos) <= 20.f && CanSee(unit, *u))
 			{
 				AIController* ai2 = u->ai;
 				ai2->target_last_pos = pos;
@@ -2934,7 +2934,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 				|| (u->player->dialog_ctx->dialog_mode || u->busy != Unit::Busy_No
 					|| !u->IsStanding() || u->player->action != PlayerController::Action_None))
 				continue;
-			float dist = VEC3::Distance(unit.pos, u->pos);
+			float dist = Vec3::Distance(unit.pos, u->pos);
 			if(dist <= 8.f || leader_mode)
 				near_units.push_back({ u, dist });
 		}
@@ -2969,7 +2969,7 @@ void Game::CheckAutoTalk(Unit& unit, float dt)
 					continue;
 
 				if(check_unit.IsAlive() && IsEnemy(talk_target, check_unit) && check_unit.IsAI() && !check_unit.dont_attack
-					&& VEC3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE.x && CanSee(check_unit, talk_target))
+					&& Vec3::Distance2d(talk_target.pos, check_unit.pos) < ALERT_RANGE.x && CanSee(check_unit, talk_target))
 				{
 					ok = false;
 					break;

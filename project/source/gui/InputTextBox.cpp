@@ -160,19 +160,19 @@ void InputTextBox::Event(GuiEvent e)
 	else if(e == GuiEvent_Moved)
 	{
 		global_pos = pos + parent->global_pos;
-		inputbox_pos = global_pos + INT2(0, textbox_size.y + 6);
+		inputbox_pos = global_pos + Int2(0, textbox_size.y + 6);
 		scrollbar.global_pos = global_pos + scrollbar.pos;
 	}
 	else if(e == GuiEvent_Resize)
 	{
 		global_pos = parent->global_pos;
 		size = parent->size;
-		textbox_size = size - INT2(18, 30);
-		inputbox_pos = global_pos + INT2(0, textbox_size.y + 6);
-		inputbox_size = INT2(textbox_size.x, 24);
-		scrollbar.pos = INT2(textbox_size.x + 2, 0);
+		textbox_size = size - Int2(18, 30);
+		inputbox_pos = global_pos + Int2(0, textbox_size.y + 6);
+		inputbox_size = Int2(textbox_size.x, 24);
+		scrollbar.pos = Int2(textbox_size.x + 2, 0);
 		scrollbar.global_pos = global_pos + scrollbar.pos;
-		scrollbar.size = INT2(16, textbox_size.y);
+		scrollbar.size = Int2(16, textbox_size.y);
 		scrollbar.part = textbox_size.y - 8;
 
 		size_t OutBegin, OutEnd, InOutIndex = 0;
@@ -230,11 +230,11 @@ void InputTextBox::OnChar(char c)
 //=================================================================================================
 void InputTextBox::Init()
 {
-	textbox_size = size - INT2(18, 30);
-	inputbox_pos = global_pos + INT2(0, textbox_size.y + 6);
-	inputbox_size = INT2(textbox_size.x, 24);
-	scrollbar.pos = INT2(textbox_size.x + 2, 0);
-	scrollbar.size = INT2(16, textbox_size.y);
+	textbox_size = size - Int2(18, 30);
+	inputbox_pos = global_pos + Int2(0, textbox_size.y + 6);
+	inputbox_size = Int2(textbox_size.x, 24);
+	scrollbar.pos = Int2(textbox_size.x + 2, 0);
+	scrollbar.size = Int2(16, textbox_size.y);
 	scrollbar.total = 0;
 	scrollbar.part = textbox_size.y - 8;
 	scrollbar.offset = 0.f;

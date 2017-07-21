@@ -271,7 +271,7 @@ void Game::KickPlayer(int index)
 		if(players > 2)
 		{
 			if(server_panel->visible)
-				AddLobbyUpdate(INT2(Lobby_ChangeLeader, 0));
+				AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 			else
 			{
 				NetChange& c = Add1(net_changes);
@@ -288,7 +288,7 @@ void Game::KickPlayer(int index)
 	if(server_panel->visible)
 	{
 		if(players > 2)
-			AddLobbyUpdate(INT2(Lobby_KickPlayer, info.id));
+			AddLobbyUpdate(Int2(Lobby_KickPlayer, info.id));
 
 		// puki co tylko dla lobby
 		CheckReady();
@@ -798,8 +798,8 @@ bool Game::ReadLevelData(BitStream& stream)
 					ERROR(Format("Read level: Invalid building id '%s' for building %d.", BUF, index));
 					return false;
 				}
-				ib.offset = VEC2(512.f*ib.level_shift.x + 256.f, 512.f*ib.level_shift.y + 256.f);
-				ProcessBuildingObjects(ib.ctx, city_ctx, &ib, ib.type->inside_mesh, nullptr, 0, 0, VEC3(ib.offset.x, 0, ib.offset.y), ib.type, nullptr, true);
+				ib.offset = Vec2(512.f*ib.level_shift.x + 256.f, 512.f*ib.level_shift.y + 256.f);
+				ProcessBuildingObjects(ib.ctx, city_ctx, &ib, ib.type->inside_mesh, nullptr, 0, 0, Vec3(ib.offset.x, 0, ib.offset.y), ib.type, nullptr, true);
 
 				// useable objects
 				if(!stream.Read(count)
@@ -1218,16 +1218,16 @@ bool Game::ReadLevelData(BitStream& stream)
 
 				TrailParticleEmitter* tpe = new TrailParticleEmitter;
 				tpe->fade = 0.3f;
-				tpe->color1 = VEC4(1, 1, 1, 0.5f);
-				tpe->color2 = VEC4(1, 1, 1, 0);
+				tpe->color1 = Vec4(1, 1, 1, 0.5f);
+				tpe->color2 = Vec4(1, 1, 1, 0);
 				tpe->Init(50);
 				local_ctx.tpes->push_back(tpe);
 				bullet.trail = tpe;
 
 				TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
 				tpe2->fade = 0.3f;
-				tpe2->color1 = VEC4(1, 1, 1, 0.5f);
-				tpe2->color2 = VEC4(1, 1, 1, 0);
+				tpe2->color1 = Vec4(1, 1, 1, 0.5f);
+				tpe2->color2 = Vec4(1, 1, 1, 0);
 				tpe2->Init(50);
 				local_ctx.tpes->push_back(tpe2);
 				bullet.trail2 = tpe2;
@@ -1263,10 +1263,10 @@ bool Game::ReadLevelData(BitStream& stream)
 					pe->spawn_max = 4;
 					pe->max_particles = 50;
 					pe->pos = bullet.pos;
-					pe->speed_min = VEC3(-1, -1, -1);
-					pe->speed_max = VEC3(1, 1, 1);
-					pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = VEC3(spell.size, spell.size, spell.size);
+					pe->speed_min = Vec3(-1, -1, -1);
+					pe->speed_max = Vec3(1, 1, 1);
+					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
+					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
 					pe->op_size = POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
@@ -1336,7 +1336,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				return false;
 			}
 			electro->lines.resize(count);
-			VEC3 from, to;
+			Vec3 from, to;
 			float t;
 			for(byte i = 0; i < count; ++i)
 			{
@@ -1635,7 +1635,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				unit.useable = FindUseable(useable_netid);
 				if(unit.useable)
 				{
-					unit.use_rot = VEC3::LookAtAngle(unit.pos, unit.useable->pos);
+					unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.useable->pos);
 					unit.useable->user = &unit;
 				}
 				else
@@ -1663,7 +1663,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	unit.cobj->setUserPointer(this);
 	unit.cobj->setCollisionFlags(CG_UNIT);
 	phy_world->addCollisionObject(unit.cobj);
-	UpdateUnitPhysics(unit, unit.IsAlive() ? unit.pos : VEC3(1000, 1000, 1000));
+	UpdateUnitPhysics(unit, unit.IsAlive() ? unit.pos : Vec3(1000, 1000, 1000));
 
 	// boss music
 	if(IS_SET(unit.data->flags2, F2_BOSS) && !boss_level_mp)
@@ -1703,7 +1703,7 @@ bool Game::ReadDoor(BitStream& stream, Door& door)
 	door.phy->setCollisionShape(shape_door);
 
 	btTransform& tr = door.phy->getWorldTransform();
-	VEC3 pos = door.pos;
+	Vec3 pos = door.pos;
 	pos.y += 1.319f;
 	tr.setOrigin(ToVector3(pos));
 	tr.setRotation(btQuaternion(door.rot, 0, 0));
@@ -1774,7 +1774,7 @@ bool Game::ReadTrap(BitStream& stream, Trap& trap)
 	}
 
 	if(type == TRAP_ARROW || type == TRAP_POISON)
-		trap.obj.rot = VEC3(0, 0, 0);
+		trap.obj.rot = Vec3(0, 0, 0);
 	else if(type == TRAP_SPEAR)
 	{
 		trap.obj2.base = nullptr;
@@ -2185,7 +2185,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 	{
 		if(!info.warping && game_state == GS_LEVEL)
 		{
-			VEC3 new_pos;
+			Vec3 new_pos;
 			float rot;
 
 			if(!stream.Read(new_pos)
@@ -2197,7 +2197,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				return true;
 			}
 
-			if(VEC3::Distance(unit.pos, new_pos) >= 10.f)
+			if(Vec3::Distance(unit.pos, new_pos) >= 10.f)
 			{
 				// too big change in distance, warp unit to old position
 				WARN(Format("UpdateServer: Invalid unit movment from %s ((%g,%g,%g) -> (%g,%g,%g)).", info.name.c_str(), unit.pos.x, unit.pos.y, unit.pos.z,
@@ -2213,8 +2213,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					if(!unit.pos.Equal(new_pos) && !location->outside)
 					{
 						// reveal minimap
-						INT2 new_tile(int(new_pos.x / 2), int(new_pos.z / 2));
-						if(INT2(int(unit.pos.x / 2), int(unit.pos.z / 2)) != new_tile)
+						Int2 new_tile(int(new_pos.x / 2), int(new_pos.z / 2));
+						if(Int2(int(unit.pos.x / 2), int(unit.pos.z / 2)) != new_tile)
 							DungeonReveal(new_tile);
 					}
 					unit.pos = new_pos;
@@ -2236,7 +2236,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		else
 		{
 			// player is warping or not in level, skip movment
-			if(!Skip(stream, sizeof(VEC3) + sizeof(float) * 2))
+			if(!Skip(stream, sizeof(Vec3) + sizeof(float) * 2))
 			{
 				ERROR(Format("UpdateServer: Broken packet ID_CONTROL(3) from %s.", info.name.c_str()));
 				StreamError();
@@ -2784,7 +2784,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
 					if(sound_volume)
 					{
-						VEC3 pos = chest->pos;
+						Vec3 pos = chest->pos;
 						pos.y += 0.5f;
 						PlaySound3d(sChestOpen, pos, 2.f, 5.f);
 					}
@@ -3159,7 +3159,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				player.action_chest->ani->Play(&player.action_chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 				if(sound_volume)
 				{
-					VEC3 pos = player.action_chest->pos;
+					Vec3 pos = player.action_chest->pos;
 					pos.y += 0.5f;
 					PlaySound3d(sChestClose, pos, 2.f, 5.f);
 				}
@@ -3430,10 +3430,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						unit.target_pos = unit.pos;
 						unit.target_pos2 = useable->pos;
 						if(g_base_usables[useable->type].limit_rot == 4)
-							unit.target_pos2 -= VEC3(sin(useable->rot)*1.5f, 0, cos(useable->rot)*1.5f);
+							unit.target_pos2 -= Vec3(sin(useable->rot)*1.5f, 0, cos(useable->rot)*1.5f);
 						unit.timer = 0.f;
 						unit.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-						unit.use_rot = VEC3::LookAtAngle(unit.pos, unit.useable->pos);
+						unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.useable->pos);
 						unit.used_item = base.item;
 						if(unit.used_item)
 						{
@@ -3561,7 +3561,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				for(AIController* ai : ais)
 				{
-					if(IsEnemy(*ai->unit, unit) && VEC3::Distance(ai->unit->pos, unit.pos) < ALERT_RANGE.x && CanSee(*ai->unit, unit))
+					if(IsEnemy(*ai->unit, unit) && Vec3::Distance(ai->unit->pos, unit.pos) < ALERT_RANGE.x && CanSee(*ai->unit, unit))
 						ai->morale = -10;
 				}
 			}
@@ -3934,7 +3934,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							in_arena = -1;
 
 						LevelContext& ctx = GetContext(*info.u);
-						VEC3 pos = info.u->GetFrontPos();
+						Vec3 pos = info.u->GetFrontPos();
 
 						for(byte i = 0; i < count; ++i)
 						{
@@ -4216,7 +4216,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						snd = sDoorClose;
 					else
 						snd = sDoor[Rand() % 3];
-					VEC3 pos = door->pos;
+					Vec3 pos = door->pos;
 					pos.y += 1.5f;
 					PlaySound3d(snd, pos, 2.f, 5.f);
 				}
@@ -4345,15 +4345,15 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 					if(!is_down)
 					{
-						INT2 tile = lvl.GetUpStairsFrontTile();
+						Int2 tile = lvl.GetUpStairsFrontTile();
 						unit.rot = dir_to_rot(lvl.staircase_up_dir);
-						WarpUnit(unit, VEC3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
+						WarpUnit(unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 					else
 					{
-						INT2 tile = lvl.GetDownStairsFrontTile();
+						Int2 tile = lvl.GetDownStairsFrontTile();
 						unit.rot = dir_to_rot(lvl.staircase_down_dir);
-						WarpUnit(unit, VEC3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
+						WarpUnit(unit, Vec3(2.f*tile.x + 1.f, 0.f, 2.f*tile.y + 1.f));
 					}
 				}
 			}
@@ -5148,7 +5148,7 @@ void Game::WriteServerChanges(BitStream& stream)
 			break;
 		case NetChange::REVEAL_MINIMAP:
 			stream.WriteCasted<word>(minimap_reveal_mp.size());
-			for(vector<INT2>::iterator it2 = minimap_reveal_mp.begin(), end2 = minimap_reveal_mp.end(); it2 != end2; ++it2)
+			for(vector<Int2>::iterator it2 = minimap_reveal_mp.begin(), end2 = minimap_reveal_mp.end(); it2 != end2; ++it2)
 			{
 				stream.WriteCasted<byte>(it2->x);
 				stream.WriteCasted<byte>(it2->y);
@@ -5375,7 +5375,7 @@ void Game::UpdateClient(float dt)
 		{
 			interpolate_timer -= dt;
 			if(interpolate_timer >= 0.f)
-				pc->unit->visual_pos = VEC3::Lerp(pc->unit->visual_pos, pc->unit->pos, (0.1f - interpolate_timer) * 10);
+				pc->unit->visual_pos = Vec3::Lerp(pc->unit->visual_pos, pc->unit->pos, (0.1f - interpolate_timer) * 10);
 			else
 				pc->unit->visual_pos = pc->unit->pos;
 		}
@@ -5518,7 +5518,7 @@ void Game::UpdateClient(float dt)
 		if(game_state == GS_LEVEL)
 		{
 			WriteBool(net_stream, true);
-			net_stream.Write((cstring)&pc->unit->pos, sizeof(VEC3));
+			net_stream.Write((cstring)&pc->unit->pos, sizeof(Vec3));
 			net_stream.Write(pc->unit->rot);
 			net_stream.Write(pc->unit->ani->groups[0].speed);
 			net_stream.WriteCasted<byte>(pc->unit->animation);
@@ -5566,7 +5566,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::UNIT_POS:
 			{
 				int netid;
-				VEC3 pos;
+				Vec3 pos;
 				float rot, ani_speed;
 				Animation ani;
 
@@ -5846,7 +5846,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::SPAWN_BLOOD:
 			{
 				byte type;
-				VEC3 pos;
+				Vec3 pos;
 				if(!stream.Read(type)
 					|| !stream.Read(pos))
 				{
@@ -5865,10 +5865,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					pe->spawn_max = 15;
 					pe->max_particles = 15;
 					pe->pos = pos;
-					pe->speed_min = VEC3(-1, 0, -1);
-					pe->speed_max = VEC3(1, 1, 1);
-					pe->pos_min = VEC3(-0.1f, -0.1f, -0.1f);
-					pe->pos_max = VEC3(0.1f, 0.1f, 0.1f);
+					pe->speed_min = Vec3(-1, 0, -1);
+					pe->speed_max = Vec3(1, 1, 1);
+					pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
+					pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
 					pe->size = 0.3f;
 					pe->op_size = POP_LINEAR_SHRINK;
 					pe->alpha = 0.9f;
@@ -6079,7 +6079,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			// play hit sound
 		case NetChange::HIT_SOUND:
 			{
-				VEC3 pos;
+				Vec3 pos;
 				MATERIAL_TYPE mat1, mat2;
 				if(!stream.Read(pos)
 					|| !stream.ReadCasted<byte>(mat1)
@@ -6137,7 +6137,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::SHOOT_ARROW:
 			{
 				int netid;
-				VEC3 pos;
+				Vec3 pos;
 				float rotX, rotY, speedY, speed;
 				if(!stream.Read(netid)
 					|| !stream.Read(pos)
@@ -6170,7 +6170,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Bullet& b = Add1(ctx.bullets);
 					b.mesh = aArrow;
 					b.pos = pos;
-					b.rot = VEC3(rotX, rotY, 0);
+					b.rot = Vec3(rotX, rotY, 0);
 					b.yspeed = speedY;
 					b.owner = nullptr;
 					b.pe = nullptr;
@@ -6184,16 +6184,16 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 					TrailParticleEmitter* tpe = new TrailParticleEmitter;
 					tpe->fade = 0.3f;
-					tpe->color1 = VEC4(1, 1, 1, 0.5f);
-					tpe->color2 = VEC4(1, 1, 1, 0);
+					tpe->color1 = Vec4(1, 1, 1, 0.5f);
+					tpe->color2 = Vec4(1, 1, 1, 0);
 					tpe->Init(50);
 					ctx.tpes->push_back(tpe);
 					b.trail = tpe;
 
 					TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
 					tpe2->fade = 0.3f;
-					tpe2->color1 = VEC4(1, 1, 1, 0.5f);
-					tpe2->color2 = VEC4(1, 1, 1, 0);
+					tpe2->color1 = Vec4(1, 1, 1, 0.5f);
+					tpe2->color2 = Vec4(1, 1, 1, 0);
 					tpe2->Init(50);
 					ctx.tpes->push_back(tpe2);
 					b.trail2 = tpe2;
@@ -6430,7 +6430,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::HAIR_COLOR:
 			{
 				int netid;
-				VEC4 hair_color;
+				Vec4 hair_color;
 				if(!stream.Read(netid)
 					|| !stream.Read(hair_color))
 				{
@@ -6460,7 +6460,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			{
 				int netid;
 				char in_building;
-				VEC3 pos;
+				Vec3 pos;
 				float rot;
 
 				if(!stream.Read(netid)
@@ -6860,10 +6860,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					unit->target_pos = unit->pos;
 					unit->target_pos2 = useable->pos;
 					if(g_base_usables[useable->type].limit_rot == 4)
-						unit->target_pos2 -= VEC3(sin(useable->rot)*1.5f, 0, cos(useable->rot)*1.5f);
+						unit->target_pos2 -= Vec3(sin(useable->rot)*1.5f, 0, cos(useable->rot)*1.5f);
 					unit->timer = 0.f;
 					unit->animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-					unit->use_rot = VEC3::LookAtAngle(unit->pos, unit->useable->pos);
+					unit->use_rot = Vec3::LookAtAngle(unit->pos, unit->useable->pos);
 					unit->used_item = base.item;
 					if(unit->used_item)
 					{
@@ -7248,7 +7248,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 								snd = sDoorClose;
 							else
 								snd = sDoor[Rand() % 3];
-							VEC3 pos = door->pos;
+							Vec3 pos = door->pos;
 							pos.y += 1.5f;
 							PlaySound3d(snd, pos, 2.f, 5.f);
 						}
@@ -7278,7 +7278,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
 						if(sound_volume)
 						{
-							VEC3 pos = chest->pos;
+							Vec3 pos = chest->pos;
 							pos.y += 0.5f;
 							PlaySound3d(sChestOpen, pos, 2.f, 5.f);
 						}
@@ -7308,7 +7308,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 						if(sound_volume)
 						{
-							VEC3 pos = chest->pos;
+							Vec3 pos = chest->pos;
 							pos.y += 0.5f;
 							PlaySound3d(sChestClose, pos, 2.f, 5.f);
 						}
@@ -7319,7 +7319,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			// create explosion effect
 		case NetChange::CREATE_EXPLOSION:
 			{
-				VEC3 pos;
+				Vec3 pos;
 				if(!ReadString1(stream)
 					|| !stream.Read(pos))
 				{
@@ -7470,7 +7470,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				{
 					if((*it)->tex == tKrew[BLOOD_RED])
 					{
-						float dist = VEC3::Distance((*it)->pos, obj.pos);
+						float dist = Vec3::Distance((*it)->pos, obj.pos);
 						if(dist < best_dist)
 						{
 							best_dist = dist;
@@ -7653,7 +7653,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::CREATE_SPELL_BALL:
 			{
 				int netid;
-				VEC3 pos;
+				Vec3 pos;
 				float rotY, speedY;
 
 				if(!ReadString1(stream)
@@ -7694,7 +7694,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Bullet& b = Add1(ctx.bullets);
 
 				b.pos = pos;
-				b.rot = VEC3(0, rotY, 0);
+				b.rot = Vec3(0, rotY, 0);
 				b.mesh = spell.mesh;
 				b.tex = spell.tex;
 				b.tex_size = spell.size;
@@ -7721,10 +7721,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					pe->spawn_max = 4;
 					pe->max_particles = 50;
 					pe->pos = b.pos;
-					pe->speed_min = VEC3(-1, -1, -1);
-					pe->speed_max = VEC3(1, 1, 1);
-					pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = VEC3(spell.size, spell.size, spell.size);
+					pe->speed_min = Vec3(-1, -1, -1);
+					pe->speed_max = Vec3(1, 1, 1);
+					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
+					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
 					pe->op_size = POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
@@ -7739,7 +7739,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			// play spell sound
 		case NetChange::SPELL_SOUND:
 			{
-				VEC3 pos;
+				Vec3 pos;
 				if(!ReadString1(stream)
 					|| !stream.Read(pos))
 				{
@@ -7796,8 +7796,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							drain.pe = ctx.pes->back();
 							drain.t = 0.f;
 							drain.pe->manual_delete = 1;
-							drain.pe->speed_min = VEC3(-3, 0, -3);
-							drain.pe->speed_max = VEC3(3, 3, 3);
+							drain.pe->speed_min = Vec3(-3, 0, -3);
+							drain.pe->speed_max = Vec3(3, 3, 3);
 						}
 					}
 				}
@@ -7807,7 +7807,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::CREATE_ELECTRO:
 			{
 				int netid;
-				VEC3 p1, p2;
+				Vec3 p1, p2;
 				if(!stream.Read(netid)
 					|| !stream.Read(p1)
 					|| !stream.Read(p2))
@@ -7831,7 +7831,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::UPDATE_ELECTRO:
 			{
 				int netid;
-				VEC3 pos;
+				Vec3 pos;
 				if(!stream.Read(netid)
 					|| !stream.Read(pos))
 				{
@@ -7848,7 +7848,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						VEC3 from = e->lines.back().pts.back();
+						Vec3 from = e->lines.back().pts.back();
 						e->AddLine(from, pos);
 					}
 				}
@@ -7857,7 +7857,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			// electro hit effect
 		case NetChange::ELECTRO_HIT:
 			{
-				VEC3 pos;
+				Vec3 pos;
 				if(!stream.Read(pos))
 				{
 					ERROR("Update client: Broken ELECTRO_HIT.");
@@ -7884,10 +7884,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						pe->spawn_max = 12;
 						pe->max_particles = 12;
 						pe->pos = pos;
-						pe->speed_min = VEC3(-1.5f, -1.5f, -1.5f);
-						pe->speed_max = VEC3(1.5f, 1.5f, 1.5f);
-						pe->pos_min = VEC3(-spell->size, -spell->size, -spell->size);
-						pe->pos_max = VEC3(spell->size, spell->size, spell->size);
+						pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+						pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+						pe->pos_min = Vec3(-spell->size, -spell->size, -spell->size);
+						pe->pos_max = Vec3(spell->size, spell->size, spell->size);
 						pe->size = spell->size_particle;
 						pe->op_size = POP_LINEAR_SHRINK;
 						pe->alpha = 1.f;
@@ -7903,7 +7903,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			// raise spell effect
 		case NetChange::RAISE_EFFECT:
 			{
-				VEC3 pos;
+				Vec3 pos;
 				if(!stream.Read(pos))
 				{
 					ERROR("Update client: Broken RAISE_EFFECT.");
@@ -7923,10 +7923,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					pe->spawn_max = 25;
 					pe->max_particles = 25;
 					pe->pos = pos;
-					pe->speed_min = VEC3(-1.5f, -1.5f, -1.5f);
-					pe->speed_max = VEC3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = VEC3(spell.size, spell.size, spell.size);
+					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
+					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
 					pe->op_size = POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
@@ -7941,7 +7941,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			// heal spell effect
 		case NetChange::HEAL_EFFECT:
 			{
-				VEC3 pos;
+				Vec3 pos;
 				if(!stream.Read(pos))
 				{
 					ERROR("Update client: Broken HEAL_EFFECT.");
@@ -7961,10 +7961,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					pe->spawn_max = 25;
 					pe->max_particles = 25;
 					pe->pos = pos;
-					pe->speed_min = VEC3(-1.5f, -1.5f, -1.5f);
-					pe->speed_max = VEC3(1.5f, 1.5f, 1.5f);
-					pe->pos_min = VEC3(-spell.size, -spell.size, -spell.size);
-					pe->pos_max = VEC3(spell.size, spell.size, spell.size);
+					pe->speed_min = Vec3(-1.5f, -1.5f, -1.5f);
+					pe->speed_max = Vec3(1.5f, 1.5f, 1.5f);
+					pe->pos_min = Vec3(-spell.size, -spell.size, -spell.size);
+					pe->pos_max = Vec3(spell.size, spell.size, spell.size);
 					pe->size = spell.size_particle;
 					pe->op_size = POP_LINEAR_SHRINK;
 					pe->alpha = 1.f;
@@ -7997,7 +7997,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						byte x, y;
 						stream.Read(x);
 						stream.Read(y);
-						minimap_reveal.push_back(INT2(x, y));
+						minimap_reveal.push_back(Int2(x, y));
 					}
 				}
 			}
@@ -8118,7 +8118,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			// update position on world map
 		case NetChange::UPDATE_MAP_POS:
 			{
-				VEC2 pos;
+				Vec2 pos;
 				if(!stream.Read(pos))
 				{
 					ERROR("Update client: Broken UPDATE_MAP_POS.");
@@ -8909,7 +8909,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 				// warped player to not stuck position
 			case NetChangePlayer::UNSTUCK:
 				{
-					VEC3 new_pos;
+					Vec3 new_pos;
 					if(!stream.Read(new_pos))
 					{
 						ERROR("Update single client: Broken UNSTUCK.");
@@ -10361,7 +10361,7 @@ void Game::InterpolatePlayers(float dt)
 }
 
 //=================================================================================================
-void EntityInterpolator::Reset(const VEC3& pos, float rot)
+void EntityInterpolator::Reset(const Vec3& pos, float rot)
 {
 	valid_entries = 1;
 	entries[0].pos = pos;
@@ -10370,7 +10370,7 @@ void EntityInterpolator::Reset(const VEC3& pos, float rot)
 }
 
 //=================================================================================================
-void EntityInterpolator::Add(const VEC3& pos, float rot)
+void EntityInterpolator::Add(const Vec3& pos, float rot)
 {
 	for(int i = MAX_ENTRIES - 1; i > 0; --i)
 		entries[i] = entries[i - 1];
@@ -10383,7 +10383,7 @@ void EntityInterpolator::Add(const VEC3& pos, float rot)
 }
 
 //=================================================================================================
-void Game::UpdateInterpolator(EntityInterpolator* e, float dt, VEC3& pos, float& rot)
+void Game::UpdateInterpolator(EntityInterpolator* e, float dt, Vec3& pos, float& rot)
 {
 	assert(e);
 
@@ -10417,7 +10417,7 @@ void Game::UpdateInterpolator(EntityInterpolator* e, float dt, VEC3& pos, float&
 					EntityInterpolator::Entry& e1 = e->entries[i - 1];
 					EntityInterpolator::Entry& e2 = e->entries[i];
 					float t = (mp_interp - e1.timer) / (e2.timer - e1.timer);
-					pos = VEC3::Lerp(e1.pos, e2.pos, t);
+					pos = Vec3::Lerp(e1.pos, e2.pos, t);
 					rot = Clip(Slerp(e1.rot, e2.rot, t));
 					return;
 				}
@@ -10494,7 +10494,7 @@ bool Game::ReadPlayerStartData(BitStream& stream)
 }
 
 //=================================================================================================
-bool Game::CheckMoveNet(Unit& unit, const VEC3& pos)
+bool Game::CheckMoveNet(Unit& unit, const Vec3& pos)
 {
 	global_col.clear();
 
@@ -10578,7 +10578,7 @@ void Game::ProcessLeftPlayers()
 							PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 						if(sound_volume)
 						{
-							VEC3 pos = unit->player->action_chest->pos;
+							Vec3 pos = unit->player->action_chest->pos;
 							pos.y += 0.5f;
 							PlaySound3d(sChestClose, pos, 2.f, 5.f);
 						}

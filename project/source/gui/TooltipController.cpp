@@ -60,7 +60,7 @@ void TooltipController::UpdateTooltip(float dt, int new_group, int new_id)
 
 		if(state == State::VISIBLE)
 		{
-			pos = GUI.cursor_pos + INT2(24, 24);
+			pos = GUI.cursor_pos + Int2(24, 24);
 			if(pos.x + size.x >= GUI.wnd_size.x)
 				pos.x = GUI.wnd_size.x - size.x - 1;
 			if(pos.y + size.y >= GUI.wnd_size.y)
@@ -89,7 +89,7 @@ void TooltipController::Draw(ControlDrawData*)
 
 	// image
 	if(img)
-		GUI.DrawSprite(img, pos + INT2(12, 12), COLOR_RGBA(255, 255, 255, a2));
+		GUI.DrawSprite(img, pos + Int2(12, 12), COLOR_RGBA(255, 255, 255, a2));
 
 	Rect r;
 
@@ -128,7 +128,7 @@ void TooltipController::FormatBox()
 
 	int w = 0, h = 0;
 
-	INT2 img_size;
+	Int2 img_size;
 	if(img)
 	{
 		D3DSURFACE_DESC desc;
@@ -145,7 +145,7 @@ void TooltipController::FormatBox()
 	// big text
 	if(!big_text.empty())
 	{
-		INT2 text_size = GUI.fBig->CalculateSize(big_text, 400);
+		Int2 text_size = GUI.fBig->CalculateSize(big_text, 400);
 		w = text_size.x;
 		h = text_size.y + 12;
 		r_big_text.Left() = 0;
@@ -161,7 +161,7 @@ void TooltipController::FormatBox()
 			h += 5;
 		else
 			h = 12;
-		INT2 text_size = GUI.default_font->CalculateSize(text, 400);
+		Int2 text_size = GUI.default_font->CalculateSize(text, 400);
 		if(text_size.x > w)
 			w = text_size.x;
 		r_text.Left() = 0;
@@ -185,7 +185,7 @@ void TooltipController::FormatBox()
 	{
 		if(h)
 			h += 5;
-		INT2 text_size = GUI.fSmall->CalculateSize(small_text, 400);
+		Int2 text_size = GUI.fSmall->CalculateSize(small_text, 400);
 		text_size.x += 12;
 		if(text_size.x > w)
 			w = text_size.x;
@@ -211,8 +211,8 @@ void TooltipController::FormatBox()
 	w += 24;
 	h += 12;
 
-	r_big_text += INT2(shift, 0);
-	r_text += INT2(shift, 0);
+	r_big_text += Int2(shift, 0);
+	r_text += Int2(shift, 0);
 
-	size = INT2(w, h);
+	size = Int2(w, h);
 }

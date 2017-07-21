@@ -28,12 +28,12 @@ namespace gui
 			struct
 			{
 				TEX tex;
-				BOX2D region;
+				Box2d region;
 				int pad; // border padding in pixels on texture
 				DWORD background_color;
 			};
 		};
-		INT2 size;
+		Int2 size;
 
 		AreaLayout() : mode(None) {}
 		AreaLayout(DWORD color) : mode(Color), color(color) {}
@@ -44,8 +44,8 @@ namespace gui
 		}
 		AreaLayout(TEX tex, DWORD background_color) : mode(TextureAndColor), tex(tex), color(WHITE), background_color(background_color),
 			region(0, 0, 1, 1), pad(0) {}
-		AreaLayout(TEX tex, const BOX2D& region) : mode(Texture), tex(tex), color(WHITE), background_color(WHITE), region(region), pad(0) {}
-		AreaLayout(TEX tex, const BOX2D& region, DWORD background_color) : mode(TextureAndColor), tex(tex), color(WHITE),
+		AreaLayout(TEX tex, const Box2d& region) : mode(Texture), tex(tex), color(WHITE), background_color(WHITE), region(region), pad(0) {}
+		AreaLayout(TEX tex, const Box2d& region, DWORD background_color) : mode(TextureAndColor), tex(tex), color(WHITE),
 			background_color(background_color), region(region), pad(0) {}
 		AreaLayout(TEX tex, const Rect& area) : mode(Texture), tex(tex), color(WHITE), background_color(WHITE), pad(0)
 		{
@@ -59,7 +59,7 @@ namespace gui
 		AreaLayout(TEX tex, int corner, int size) : mode(Item), tex(tex), size(corner, size) {}
 		AreaLayout(const AreaLayout& l) : mode(l.mode), color(l.color), size(l.size)
 		{
-			memcpy(&tex, &l.tex, sizeof(TEX) + sizeof(BOX2D) + sizeof(int) + sizeof(DWORD));
+			memcpy(&tex, &l.tex, sizeof(TEX) + sizeof(Box2d) + sizeof(int) + sizeof(DWORD));
 		}
 
 		AreaLayout& operator = (const AreaLayout& l)
@@ -67,11 +67,11 @@ namespace gui
 			mode = l.mode;
 			color = l.color;
 			size = l.size;
-			memcpy(&tex, &l.tex, sizeof(TEX) + sizeof(BOX2D) + sizeof(int) + sizeof(DWORD));
+			memcpy(&tex, &l.tex, sizeof(TEX) + sizeof(Box2d) + sizeof(int) + sizeof(DWORD));
 			return *this;
 		}
-		
-		BOX2D CalculateRegion(const INT2& pos, const INT2& region);
+
+		Box2d CalculateRegion(const Int2& pos, const Int2& region);
 
 	private:
 		void SetFromArea(const Rect* area);

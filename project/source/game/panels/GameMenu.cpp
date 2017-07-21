@@ -23,21 +23,21 @@ GameMenu::GameMenu(const DialogInfo& info) : Dialog(info), prev_can_save(true), 
 		"quit"
 	};
 
-	INT2 maxsize(0, 0);
+	Int2 maxsize(0, 0);
 
 	for(int i = 0; i < 6; ++i)
 	{
 		bt[i].id = IdReturnToGame + i;
 		bt[i].parent = this;
 		bt[i].text = Str(names[i]);
-		bt[i].size = GUI.default_font->CalculateSize(bt[i].text) + INT2(24, 24);
+		bt[i].size = GUI.default_font->CalculateSize(bt[i].text) + Int2(24, 24);
 
-		maxsize = INT2::Max(maxsize, bt[i].size);
+		maxsize = Int2::Max(maxsize, bt[i].size);
 	}
 
-	size = INT2(256 + 16, 128 + 16 + (maxsize.y + 8) * 6);
+	size = Int2(256 + 16, 128 + 16 + (maxsize.y + 8) * 6);
 
-	INT2 offset((size.x - maxsize.x) / 2, 128 + 8);
+	Int2 offset((size.x - maxsize.x) / 2, 128 + 8);
 
 	// ustaw przyciski
 	for(int i = 0; i < 6; ++i)
@@ -56,7 +56,7 @@ void GameMenu::Draw(ControlDrawData* /*cdd*/)
 	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
 	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
-	GUI.DrawSprite(tLogo, global_pos + INT2(8, 8));
+	GUI.DrawSprite(tLogo, global_pos + Int2(8, 8));
 
 	for(int i = 0; i < 6; ++i)
 		bt[i].Draw();

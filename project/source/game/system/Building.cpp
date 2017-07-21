@@ -147,7 +147,7 @@ struct BuildingSchemeHandler : public Type::CustomFieldHandler
 		building.scheme.clear();
 		t.AssertSymbol('{');
 		t.Next();
-		INT2 size(0, 0);
+		Int2 size(0, 0);
 		while(!t.IsSymbol('}'))
 		{
 			const string& line = t.MustGetString();
@@ -252,7 +252,7 @@ struct BuildingShiftHandler : public Type::CustomFieldHandler
 
 		if(building.shift[0] == building.shift[1] && building.shift[0] == building.shift[2] && building.shift[0] == building.shift[3])
 		{
-			if(building.shift[0] == INT2(0, 0))
+			if(building.shift[0] == Int2(0, 0))
 				return;
 
 			f << Format("{%d %d}", building.shift[0].x, building.shift[0].y);

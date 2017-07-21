@@ -20,9 +20,9 @@ void SplitPanel::Draw(ControlDrawData*)
 	if(use_custom_color)
 		GUI.DrawArea(custom_color, global_pos, size);
 	else
-		GUI.DrawArea(BOX2D::Create(global_pos, size), layout->panel.background);
+		GUI.DrawArea(Box2d::Create(global_pos, size), layout->panel.background);
 
-	GUI.DrawArea(BOX2D(split_global), horizontal ? layout->split_panel.horizontal : layout->split_panel.vertical);
+	GUI.DrawArea(Box2d(split_global), horizontal ? layout->split_panel.horizontal : layout->split_panel.vertical);
 
 	panel1->Draw();
 	panel2->Draw();
@@ -75,25 +75,25 @@ void SplitPanel::Update(GuiEvent e, bool resize, bool move)
 {
 	if(resize)
 	{
-		const INT2& padding = layout->split_panel.padding;
-		INT2 size_left = size;
+		const Int2& padding = layout->split_panel.padding;
+		Int2 size_left = size;
 		if(horizontal)
 		{
 			size_left.x -= splitter_size;
-			panel1->size = INT2(size_left.x / 2 - padding.x * 2, size_left.y - padding.y * 2);
+			panel1->size = Int2(size_left.x / 2 - padding.x * 2, size_left.y - padding.y * 2);
 			panel1->pos = padding;
-			split = Rect::Create(INT2(panel1->size.x + padding.x * 2, 0), INT2(splitter_size, size.y));
-			panel2->size = INT2(size_left.x - panel1->size.x - padding.x * 2, size_left.y - padding.y * 2);
-			panel2->pos = INT2(split.p1.x + padding.x, padding.y);
+			split = Rect::Create(Int2(panel1->size.x + padding.x * 2, 0), Int2(splitter_size, size.y));
+			panel2->size = Int2(size_left.x - panel1->size.x - padding.x * 2, size_left.y - padding.y * 2);
+			panel2->pos = Int2(split.p1.x + padding.x, padding.y);
 		}
 		else
 		{
 			size_left.y -= splitter_size;
-			panel1->size = INT2(size_left.x - padding.x * 2, size_left.y / 2 - padding.y * 2);
+			panel1->size = Int2(size_left.x - padding.x * 2, size_left.y / 2 - padding.y * 2);
 			panel1->pos = padding;
-			split = Rect::Create(INT2(0, panel1->size.y + padding.y), INT2(size.x, splitter_size));
-			panel2->size = INT2(size_left.x - padding.x * 2, size_left.y - panel1->size.y - padding.y * 2);
-			panel2->pos = INT2(padding.x, split.p1.y + padding.y);
+			split = Rect::Create(Int2(0, panel1->size.y + padding.y), Int2(size.x, splitter_size));
+			panel2->size = Int2(size_left.x - padding.x * 2, size_left.y - panel1->size.y - padding.y * 2);
+			panel2->pos = Int2(padding.x, split.p1.y + padding.y);
 		}
 	}
 

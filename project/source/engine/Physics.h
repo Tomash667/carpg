@@ -13,22 +13,22 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-inline VEC2 ToVEC2(const btVector3& v)
+inline Vec2 ToVEC2(const btVector3& v)
 {
-	return VEC2(v.x(), v.z());
+	return Vec2(v.x(), v.z());
 }
 
-inline VEC3 ToVEC3(const btVector3& v)
+inline Vec3 ToVEC3(const btVector3& v)
 {
-	return VEC3(v.x(), v.y(), v.z());
+	return Vec3(v.x(), v.y(), v.z());
 }
 
-inline btVector3 ToVector3(const VEC2& v)
+inline btVector3 ToVector3(const Vec2& v)
 {
 	return btVector3(v.x, 0, v.y);
 }
 
-inline btVector3 ToVector3(const VEC3& v)
+inline btVector3 ToVector3(const Vec3& v)
 {
 	return btVector3(v.x, v.y, v.z);
 }

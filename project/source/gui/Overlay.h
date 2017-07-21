@@ -22,7 +22,7 @@ namespace gui
 
 		void CloseDialog(GuiDialog* dialog);
 		void ShowDialog(GuiDialog* dialog);
-		void ShowMenu(MenuStrip* menu, const INT2& pos);
+		void ShowMenu(MenuStrip* menu, const Int2& pos);
 		void CloseMenu(MenuStrip* menu);
 		void CheckFocus(Control* ctrl, bool pressed = false);
 		void SetFocus(Control* ctrl);

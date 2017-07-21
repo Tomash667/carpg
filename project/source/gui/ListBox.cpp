@@ -38,7 +38,7 @@ void ListBox::Draw(ControlDrawData*)
 		}
 
 		// obrazek
-		GUI.DrawSprite(GUI.tDown, INT2(global_pos.x + size.x - 10, global_pos.y + (size.y - 10) / 2));
+		GUI.DrawSprite(GUI.tDown, Int2(global_pos.x + size.x - 10, global_pos.y + (size.y - 10) / 2));
 
 		// powinno byæ tu ale wtedy by³a by z³a kolejnoœæ rysowania
 		//if(menu->visible)
@@ -63,15 +63,15 @@ void ListBox::Draw(ControlDrawData*)
 		// elementy
 		Rect r = { global_pos.x + 2, global_pos.y - int(scrollbar.offset) + 2, global_pos.x + real_size.x - 2, rc.Bottom() - 2 };
 		int orig_x = global_pos.x + 2;
-		MATRIX mat;
+		Matrix mat;
 		for(GuiElement* e : items)
 		{
 			if(e->tex)
 			{
-				INT2 required_size = force_img_size, img_size;
-				VEC2 scale;
+				Int2 required_size = force_img_size, img_size;
+				Vec2 scale;
 				Control::ResizeImage(e->tex, required_size, img_size, scale);
-				mat = MATRIX::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &VEC2((float)orig_x, float(r.Top() + (item_height - required_size.y) / 2)));
+				mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)orig_x, float(r.Top() + (item_height - required_size.y) / 2)));
 				GUI.DrawSprite2(e->tex, &mat, nullptr, &rc, WHITE);
 				r.Left() = orig_x + required_size.x;
 			}
@@ -101,7 +101,7 @@ void ListBox::Update(float dt)
 					TakeFocus(true);
 				else
 				{
-					menu_strip->ShowMenu(global_pos + INT2(0, size.y));
+					menu_strip->ShowMenu(global_pos + Int2(0, size.y));
 					menu_strip->SetSelectedIndex(selected);
 				}
 			}
@@ -117,7 +117,7 @@ void ListBox::Update(float dt)
 			}
 			else if(mouse_focus && Key.Focus() && PointInRect(GUI.cursor_pos, global_pos, size) && Key.PressedRelease(VK_LBUTTON))
 			{
-				menu->global_pos = global_pos + INT2(0, size.y);
+				menu->global_pos = global_pos + Int2(0, size.y);
 				if(menu->global_pos.y + menu->size.y >= GUI.wnd_size.y)
 					menu->global_pos.y = GUI.wnd_size.y - menu->size.y;
 				menu->visible = true;
@@ -223,8 +223,8 @@ void ListBox::Event(GuiEvent e)
 	else if(e == GuiEvent_Initialize)
 	{
 		real_size = size;
-		scrollbar.pos = INT2(size.x - 16, 0);
-		scrollbar.size = INT2(16, size.y);
+		scrollbar.pos = Int2(size.x - 16, 0);
+		scrollbar.size = Int2(16, size.y);
 		scrollbar.offset = 0.f;
 		scrollbar.total = items.size()*item_height;
 		scrollbar.part = size.y - 4;
@@ -503,7 +503,7 @@ void ListBox::UpdateScrollbarVisibility()
 		return;
 	require_scrollbar = scrollbar.IsRequired();
 	if(require_scrollbar)
-		real_size = INT2(size.x - 15, size.y);
+		real_size = Int2(size.x - 15, size.y);
 	else
 		real_size = size;
 }

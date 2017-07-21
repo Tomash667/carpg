@@ -10,15 +10,15 @@ TEX Console::tBackground;
 //=================================================================================================
 Console::Console(const DialogInfo& info) : Dialog(info), added(false)
 {
-	size = INT2(GUI.wnd_size.x, GUI.wnd_size.y / 3);
+	size = Int2(GUI.wnd_size.x, GUI.wnd_size.y / 3);
 	itb.parent = this;
 	itb.max_cache = 10;
 	itb.max_lines = 100;
 	itb.esc_clear = true;
 	itb.lose_focus = false;
-	itb.pos = INT2(0, 0);
-	itb.global_pos = INT2(0, 0);
-	itb.size = INT2(GUI.wnd_size.x, GUI.wnd_size.y / 3);
+	itb.pos = Int2(0, 0);
+	itb.global_pos = Int2(0, 0);
+	itb.size = Int2(GUI.wnd_size.x, GUI.wnd_size.y / 3);
 	itb.event = InputEvent(this, &Console::OnInput);
 	itb.background = nullptr;
 	itb.Init();
@@ -71,7 +71,7 @@ void Console::Event(GuiEvent e)
 	}
 	else if(e == GuiEvent_Resize || e == GuiEvent_WindowResize)
 	{
-		size = INT2(GUI.wnd_size.x, GUI.wnd_size.y / 3);
+		size = Int2(GUI.wnd_size.x, GUI.wnd_size.y / 3);
 		itb.Event(GuiEvent_Resize);
 	}
 	else if(e == GuiEvent_Moved)

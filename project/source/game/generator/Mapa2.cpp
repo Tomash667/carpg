@@ -35,12 +35,12 @@ namespace Mapa
 
 	//-----------------------------------------------------------------------------
 	// Przesuniêcie dla tego kierunku
-	const INT2 kierunek[5] = {
-		INT2(0,-1), // DÓ£
-		INT2(-1,0), // LEWO
-		INT2(0,1), // GÓRA
-		INT2(1,0), // PRAWO
-		INT2(0,0) // BRAK
+	const Int2 kierunek[5] = {
+		Int2(0,-1), // DÓ£
+		Int2(-1,0), // LEWO
+		Int2(0,1), // GÓRA
+		Int2(1,0), // PRAWO
+		Int2(0,0) // BRAK
 	};
 
 	Pole* mapa;
@@ -82,7 +82,7 @@ namespace Mapa
 	void polacz_pokoje();
 	void rysuj();
 	bool sprawdz_pokoj(int x, int y, int w, int h);
-	void stworz_korytarz(INT2& pt, DIR dir);
+	void stworz_korytarz(Int2& pt, DIR dir);
 	void szukaj_polaczenia(int x, int y, int id);
 	void ustaw_flagi();
 	void ustaw_sciane(POLE& pole);
@@ -227,7 +227,7 @@ namespace Mapa
 			if(dir == BRAK)
 				continue;
 
-			INT2 pt(id%opcje->w, id / opcje->w);
+			Int2 pt(id%opcje->w, id / opcje->w);
 
 			// pokój czy korytarz
 			if(Rand() % 100 < opcje->korytarz_szansa)
@@ -563,12 +563,12 @@ namespace Mapa
 	//=================================================================================================
 	// Tworzy korytarz
 	//=================================================================================================
-	void stworz_korytarz(INT2& _pt, DIR dir)
+	void stworz_korytarz(Int2& _pt, DIR dir)
 	{
 		int dl = opcje->rozmiar_korytarz.Random();
 		int w, h;
 
-		INT2 pt(_pt);
+		Int2 pt(_pt);
 
 		if(dir == LEWO)
 		{
@@ -869,7 +869,7 @@ namespace Mapa
 		if(ile != 1)
 			return BRAK;
 
-		const INT2& od = kierunek[odwrotnosc[jest]];
+		const Int2& od = kierunek[odwrotnosc[jest]];
 		if(mapa[id + od.x + od.y*opcje->w].type != NIEUZYTE)
 			return BRAK;
 
@@ -931,7 +931,7 @@ bool kontynuuj_generowanie_mapy(OpcjeMapy& _opcje)
 // aktualnie najwy¿szy priorytet maj¹ schody w œcianie po œrodku œciany
 struct PosDir
 {
-	INT2 pos;
+	Int2 pos;
 	int dir, prio;
 	bool w_scianie;
 
@@ -950,7 +950,7 @@ struct PosDir
 	}
 };
 
-bool dodaj_schody(OpcjeMapy& _opcje, Room& room, INT2& _pozycja, int& _kierunek, POLE _schody, bool& _w_scianie)
+bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek, POLE _schody, bool& _w_scianie)
 {
 #define B(_xx,_yy) (czy_blokuje2(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].type))
 #define P(_xx,_yy) (!czy_blokuje21(_opcje.mapa[x+_xx+(y+_yy)*_opcje.w].type))
@@ -1210,12 +1210,12 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, INT2& _pozycja, int& _kierunek,
 #undef P
 }
 
-bool SortujPokoje(INT2& a, INT2& b)
+bool SortujPokoje(Int2& a, Int2& b)
 {
 	return a.y < b.y;
 }
 
-bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_SCHODY _gdzie, Room*& room, INT2& _pozycja, int& _kierunek, bool _gora, bool& _w_scianie)
+bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_SCHODY _gdzie, Room*& room, Int2& _pozycja, int& _kierunek, bool _gora, bool& _w_scianie)
 {
 	switch(_gdzie)
 	{
@@ -1240,11 +1240,11 @@ bool generuj_schody2(OpcjeMapy& _opcje, vector<Room*>& rooms, OpcjeMapy::GDZIE_S
 		return false;
 	case OpcjeMapy::NAJDALEJ:
 		{
-			vector<INT2> p;
-			INT2 pos = rooms[0]->CenterTile();
+			vector<Int2> p;
+			Int2 pos = rooms[0]->CenterTile();
 			int index = 1;
 			for(vector<Room*>::iterator it = rooms.begin() + 1, end = rooms.end(); it != end; ++it, ++index)
-				p.push_back(INT2(index, INT2::Distance(pos, (*it)->CenterTile())));
+				p.push_back(Int2(index, Int2::Distance(pos, (*it)->CenterTile())));
 			std::sort(p.begin(), p.end(), SortujPokoje);
 
 			while(!p.empty())
@@ -1340,9 +1340,9 @@ void rysuj_mape_konsola(Pole* _mapa, uint _w, uint _h)
 
 vector<bool> maze;
 
-int generate_labirynth2(const INT2& maze_size, const INT2& room_size, INT2& room_pos, INT2& doors)
+int generate_labirynth2(const Int2& maze_size, const Int2& room_size, Int2& room_pos, Int2& doors)
 {
-	list<INT2> drillers;
+	list<Int2> drillers;
 	maze.resize(maze_size.x * maze_size.y, false);
 	for(vector<bool>::iterator it = maze.begin(), end = maze.end(); it != end; ++it)
 		*it = false;
@@ -1360,7 +1360,7 @@ int generate_labirynth2(const INT2& maze_size, const INT2& room_size, INT2& room
 		}
 	}
 
-	INT2 start, start2;
+	Int2 start, start2;
 	int dir;
 
 	switch(Rand() % 4)
@@ -1407,7 +1407,7 @@ int generate_labirynth2(const INT2& maze_size, const INT2& room_size, INT2& room
 
 	while(!drillers.empty())
 	{
-		list<INT2>::iterator m, _m;//,temp;
+		list<Int2>::iterator m, _m;//,temp;
 		m = drillers.begin();
 		_m = drillers.end();
 		while(m != _m)
@@ -1483,21 +1483,21 @@ int generate_labirynth2(const INT2& maze_size, const INT2& room_size, INT2& room
 	maze[start.x + start.y*maze_size.x] = true;
 	maze[start2.x + start2.y*maze_size.x] = true;
 
-	doors = INT2(start.x, start.y);
+	doors = Int2(start.x, start.y);
 
 	return pc;
 }
 
-inline bool IsInside(const INT2& pt, const INT2& start, const INT2& size)
+inline bool IsInside(const Int2& pt, const Int2& start, const Int2& size)
 {
 	return (pt.x >= start.x && pt.y >= start.y && pt.x < start.x + size.x && pt.y < start.y + size.y);
 }
 
-void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, INT2& stairs, int& stairs_dir, INT2& room_pos, int kraty_szansa, bool devmode)
+void generate_labirynth(Pole*& mapa, const Int2& size, const Int2& room_size, Int2& stairs, int& stairs_dir, Int2& room_pos, int kraty_szansa, bool devmode)
 {
 	// mo¿na by daæ, ¿e nie ma centralnego pokoju
 	assert(room_size.x > 4 && room_size.y > 4 && size.x >= room_size.x * 2 + 4 && size.y >= room_size.y * 2 + 4);
-	INT2 maze_size(size.x - 2, size.y - 2), doors;
+	Int2 maze_size(size.x - 2, size.y - 2), doors;
 
 	while(generate_labirynth2(maze_size, room_size, room_pos, doors) < 600);
 
@@ -1693,7 +1693,7 @@ void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, IN
 			for(int x = 1; x < size.x - 1; ++x)
 			{
 				Pole& p = mapa[x + y*size.x];
-				if(p.type == PUSTE && !IsInside(INT2(x, y), room_pos, room_size) && Rand() % 100 < kraty_szansa)
+				if(p.type == PUSTE && !IsInside(Int2(x, y), room_pos, room_size) && Rand() % 100 < kraty_szansa)
 				{
 					int j = Rand() % 3;
 					if(j == 0)
@@ -1933,7 +1933,7 @@ namespace Cave
 	}
 };
 
-void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<INT2>& holes, Rect* ext, bool devmode)
+void generate_cave(Pole*& mapa, int size, Int2& stairs, int& stairs_dir, vector<Int2>& holes, Rect* ext, bool devmode)
 {
 	assert(InRange(size, 10, 100));
 
@@ -1955,25 +1955,25 @@ void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<
 	// schody
 	do
 	{
-		INT2 pt, dir;
+		Int2 pt, dir;
 
 		switch(Rand() % 4)
 		{
 		case 0: // dó³
-			dir = INT2(0, -1);
-			pt = INT2((Random(1, size - 2) + Random(1, size - 2)) / 2, size - 1);
+			dir = Int2(0, -1);
+			pt = Int2((Random(1, size - 2) + Random(1, size - 2)) / 2, size - 1);
 			break;
 		case 1: // lewa
-			dir = INT2(1, 0);
-			pt = INT2(0, (Random(1, size - 2) + Random(1, size - 2)) / 2);
+			dir = Int2(1, 0);
+			pt = Int2(0, (Random(1, size - 2) + Random(1, size - 2)) / 2);
 			break;
 		case 2: // góra
-			dir = INT2(0, 1);
-			pt = INT2((Random(1, size - 2) + Random(1, size - 2)) / 2, 0);
+			dir = Int2(0, 1);
+			pt = Int2((Random(1, size - 2) + Random(1, size - 2)) / 2, 0);
 			break;
 		case 3: // prawa
-			dir = INT2(-1, 0);
-			pt = INT2(size - 1, (Random(1, size - 2) + Random(1, size - 2)) / 2);
+			dir = Int2(-1, 0);
+			pt = Int2(size - 1, (Random(1, size - 2) + Random(1, size - 2)) / 2);
 			break;
 		}
 
@@ -2026,13 +2026,13 @@ dalej:
 	// losowe dziury w suficie
 	for(int count = 0, tries = 50; tries > 0 && count < 15; --tries)
 	{
-		INT2 pt(Random(1, size - 1), Random(1, size - 1));
+		Int2 pt(Random(1, size - 1), Random(1, size - 1));
 		if(mapa[pt.x + pt.y*size].type == PUSTE)
 		{
 			bool ok = true;
-			for(vector<INT2>::iterator it = holes.begin(), end = holes.end(); it != end; ++it)
+			for(vector<Int2>::iterator it = holes.begin(), end = holes.end(); it != end; ++it)
 			{
-				if(INT2::Distance(pt, *it) < 5)
+				if(Int2::Distance(pt, *it) < 5)
 				{
 					ok = false;
 					break;
@@ -2145,7 +2145,7 @@ bool Room::Read(BitStream& stream)
 // #    #    #
 // ###########
 // jeœli jest kilka takich pól to zwraca pierwsze
-INT2 pole_laczace(int pokoj1, int pokoj2)
+Int2 pole_laczace(int pokoj1, int pokoj2)
 {
 	assert(pokoj1 >= 0 && pokoj2 >= 0 && max(pokoj1, pokoj2) < (int)Mapa::opcje->rooms->size());
 
@@ -2177,12 +2177,12 @@ ok:
 		{
 			Pole& po = Mapa::mapa[x + y*Mapa::opcje->w];
 			if(po.type == PUSTE || po.type == DRZWI)
-				return INT2(x, y);
+				return Int2(x, y);
 		}
 	}
 
 	assert(0 && "Brak pola ³¹cz¹cego!");
-	return INT2(-1, -1);
+	return Int2(-1, -1);
 }
 
 void ustaw_flagi(Pole* mapa, uint wh)

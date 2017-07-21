@@ -6,8 +6,8 @@ struct CollisionObject;
 struct Game;
 
 //-----------------------------------------------------------------------------
-typedef bool (Game::*CollisionCheck)(const CollisionObject& co, const VEC3& pos, float radius) const;
-typedef bool (Game::*CollisionCheckRect)(const CollisionObject& co, const BOX2D& box) const;
+typedef bool (Game::*CollisionCheck)(const CollisionObject& co, const Vec3& pos, float radius) const;
+typedef bool (Game::*CollisionCheckRect)(const CollisionObject& co, const Box2d& box) const;
 
 //-----------------------------------------------------------------------------
 #define CAM_COLLIDER ((void*)1)
@@ -23,7 +23,7 @@ struct CollisionObject
 		RECTANGLE_ROT
 	};
 
-	VEC2 pt;
+	Vec2 pt;
 	union
 	{
 		struct
@@ -44,5 +44,5 @@ struct CollisionObject
 //-----------------------------------------------------------------------------
 struct CameraCollider
 {
-	BOX box;
+	Box box;
 };

@@ -13,7 +13,7 @@
 // Opis znaku czcionki
 struct Glyph
 {
-	BOX2D uv;
+	Box2d uv;
 	int width;
 	bool ok;
 };
@@ -91,24 +91,24 @@ struct Font
 	// oblicza szerokoœæ pojedyñczej linijki tekstu
 	int LineWidth(cstring str, bool parse_special = false) const;
 	// oblicza wysokoœæ i szerokoœæ bloku tekstu
-	INT2 CalculateSize(StringOrCstring str, int limit_width = INT_MAX) const;
-	INT2 CalculateSizeWrap(StringOrCstring str, const INT2& max_size, int border = 32) const;
+	Int2 CalculateSize(StringOrCstring str, int limit_width = INT_MAX) const;
+	Int2 CalculateSizeWrap(StringOrCstring str, const Int2& max_size, int border = 32) const;
 	// split text between lines
 	bool SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_out_index, cstring text, uint text_end, DWORD flags, int width) const;
 
 	static bool ParseGroupIndex(cstring text, uint line_end, uint& i, int& index, int& index2);
-	bool HitTest(StringOrCstring str, int limit_width, int flags, const INT2& pos, uint& index, INT2& index2, Rect& rect, float& uv,
+	bool HitTest(StringOrCstring str, int limit_width, int flags, const Int2& pos, uint& index, Int2& index2, Rect& rect, float& uv,
 		const vector<FontLine>* font_lines = nullptr) const;
 
 	// calculate position (top left corner of glyph) from index
-	INT2 IndexToPos(uint index, StringOrCstring str, int limit_width, int flags) const;
-	INT2 IndexToPos(const INT2& index, StringOrCstring str, int limit_width, int flags) const;
-	INT2 IndexToPos(vector<FontLine>& font_lines, const INT2& index, StringOrCstring str, int limit_width, int flags) const;
+	Int2 IndexToPos(uint index, StringOrCstring str, int limit_width, int flags) const;
+	Int2 IndexToPos(const Int2& index, StringOrCstring str, int limit_width, int flags) const;
+	Int2 IndexToPos(vector<FontLine>& font_lines, const Int2& index, StringOrCstring str, int limit_width, int flags) const;
 
 	// precalculate line begin/end position, width, returns max width
 	uint PrecalculateFontLines(vector<FontLine>& font_lines, StringOrCstring str, int limit_width, int flags) const;
-	uint ToRawIndex(vector<FontLine>& font_lines, const INT2& index) const;
-	INT2 FromRawIndex(vector<FontLine>& font_lines, uint index) const;
+	uint ToRawIndex(vector<FontLine>& font_lines, const Int2& index) const;
+	Int2 FromRawIndex(vector<FontLine>& font_lines, uint index) const;
 
 private:
 	bool SkipSpecial(uint& in_out_index, cstring text, uint text_end) const;

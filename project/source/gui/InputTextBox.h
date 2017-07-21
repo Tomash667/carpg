@@ -30,7 +30,7 @@ public:
 	vector<string> cache;
 	int max_lines, max_cache, input_counter, last_input_counter;
 	Scrollbar scrollbar;
-	INT2 textbox_size, inputbox_size, inputbox_pos;
+	Int2 textbox_size, inputbox_size, inputbox_pos;
 	InputEvent event;
 	TEX* background;
 	DWORD background_color;

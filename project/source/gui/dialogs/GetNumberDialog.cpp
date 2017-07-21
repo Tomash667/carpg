@@ -168,7 +168,7 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 		info.type = DIALOG_CUSTOM;
 
 		self = new GetNumberDialog(info);
-		self->size = INT2(300, 200);
+		self->size = Int2(300, 200);
 		self->bts.resize(2);
 
 		Button& bt1 = self->bts[0],
@@ -176,24 +176,24 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 
 		bt1.text = GUI.txCancel;
 		bt1.id = Result_Cancel;
-		bt1.size = INT2(100, 40);
-		bt1.pos = INT2(300 - 100 - 16, 200 - 40 - 16);
+		bt1.size = Int2(100, 40);
+		bt1.pos = Int2(300 - 100 - 16, 200 - 40 - 16);
 		bt1.parent = self;
 
 		bt2.text = GUI.txOk;
 		bt2.id = Result_Ok;
-		bt2.size = INT2(100, 40);
-		bt2.pos = INT2(16, 200 - 40 - 16);
+		bt2.size = Int2(100, 40);
+		bt2.pos = Int2(16, 200 - 40 - 16);
 		bt2.parent = self;
 
-		self->textBox.size = INT2(200, 35);
-		self->textBox.pos = INT2(50, 60);
+		self->textBox.size = Int2(200, 35);
+		self->textBox.pos = Int2(50, 60);
 		self->textBox.SetNumeric(true);
 		self->textBox.limit = 10;
 
 		Scrollbar& scroll = self->scrollbar;
-		scroll.pos = INT2(32, 100);
-		scroll.size = INT2(300 - 64, 16);
+		scroll.pos = Int2(32, 100);
+		scroll.size = Int2(300 - 64, 16);
 		scroll.total = 100;
 		scroll.part = 5;
 	}

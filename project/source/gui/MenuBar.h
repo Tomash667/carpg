@@ -16,7 +16,7 @@ namespace gui
 			};
 
 			string text;
-			BOX2D rect;
+			Box2d rect;
 			int index;
 			Mode mode;
 			vector<SimpleMenuCtor> items;
@@ -46,6 +46,6 @@ namespace gui
 		vector<Item*> items;
 		Item* selected;
 		MenuStrip::Handler handler;
-		BOX2D rect;
+		Box2d rect;
 	};
 }

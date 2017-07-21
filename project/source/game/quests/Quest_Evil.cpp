@@ -229,8 +229,8 @@ void Quest_Evil::SetProgress(int prog2)
 
 			for(int i = 0; i < 3; ++i)
 			{
-				INT2 levels = g_base_locations[l_info[i].target].levels;
-				loc[i].target_loc = game->CreateLocation(l_info[i].type, VEC2(0, 0), -128.f, l_info[i].target, l_info[i].spawn, true,
+				Int2 levels = g_base_locations[l_info[i].target].levels;
+				loc[i].target_loc = game->CreateLocation(l_info[i].type, Vec2(0, 0), -128.f, l_info[i].target, l_info[i].spawn, true,
 					Random(max(levels.x, 2), max(levels.y, 2)));
 				Location& target = *game->locations[loc[i].target_loc];
 				target.st = l_info[i].st;
@@ -327,7 +327,7 @@ void Quest_Evil::SetProgress(int prog2)
 			{
 				if((*it)->tex == game->tKrew[BLOOD_RED])
 				{
-					float dist = VEC3::Distance((*it)->pos, obj.pos);
+					float dist = Vec3::Distance((*it)->pos, obj.pos);
 					if(dist < best_dist)
 					{
 						best_dist = dist;
@@ -410,7 +410,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		{
 			if(loc[i].state != Loc::State::PortalClosed)
 			{
-				float dist = VEC2::Distance(game->world_pos, game->locations[loc[i].target_loc]->pos);
+				float dist = Vec2::Distance(game->world_pos, game->locations[loc[i].target_loc]->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -429,7 +429,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		{
 			if(loc[i].state != Loc::State::PortalClosed)
 			{
-				float dist = VEC2::Distance(game->world_pos, game->locations[loc[i].target_loc]->pos);
+				float dist = Vec2::Distance(game->world_pos, game->locations[loc[i].target_loc]->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -603,7 +603,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
 	// szukaj zwyk³ego o³tarza blisko œrodka
-	VEC3 center(float(lvl.w + 1), 0, float(lvl.h + 1));
+	Vec3 center(float(lvl.w + 1), 0, float(lvl.h + 1));
 	int best_index = -1, index = 0;
 	float best_dist = 999.f;
 	Obj* oltarz = FindObject("altar");
@@ -611,7 +611,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	{
 		if(it->base == oltarz)
 		{
-			float dist = VEC3::Distance(it->pos, center);
+			float dist = Vec3::Distance(it->pos, center);
 			if(dist < best_dist)
 			{
 				best_dist = dist;
@@ -638,12 +638,12 @@ void Quest_Evil::GenerateBloodyAltar()
 	pe->particle_life = 0.5f;
 	pe->pos = o.pos;
 	pe->pos.y += o.base->centery;
-	pe->pos_min = VEC3(0, 0, 0);
-	pe->pos_max = VEC3(0, 0, 0);
+	pe->pos_min = Vec3(0, 0, 0);
+	pe->pos_max = Vec3(0, 0, 0);
 	pe->spawn_min = 1;
 	pe->spawn_max = 3;
-	pe->speed_min = VEC3(-1, 4, -1);
-	pe->speed_max = VEC3(1, 6, 1);
+	pe->speed_min = Vec3(-1, 4, -1);
+	pe->speed_max = Vec3(1, 6, 1);
 	pe->mode = 0;
 	pe->tex = game->tKrew[BLOOD_RED];
 	pe->size = 0.5f;
@@ -651,29 +651,29 @@ void Quest_Evil::GenerateBloodyAltar()
 	game->local_ctx.pes->push_back(pe);
 
 	// dodaj krew
-	vector<INT2> path;
+	vector<Int2> path;
 	game->FindPath(game->local_ctx, lvl.staircase_up, pos_to_pt(o.pos), path);
-	for(vector<INT2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
+	for(vector<Int2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
 	{
 		if(it != path.begin())
 		{
 			Blood& b = Add1(game->local_ctx.bloods);
-			b.pos = VEC3::Random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f))
-				+ VEC3(2.f*it->x + 1 + (float(it->x) - (it - 1)->x) / 2, 0, 2.f*it->y + 1 + (float(it->y) - (it - 1)->y) / 2);
+			b.pos = Vec3::Random(Vec3(-0.5f, 0.05f, -0.5f), Vec3(0.5f, 0.05f, 0.5f))
+				+ Vec3(2.f*it->x + 1 + (float(it->x) - (it - 1)->x) / 2, 0, 2.f*it->y + 1 + (float(it->y) - (it - 1)->y) / 2);
 			b.type = BLOOD_RED;
 			b.rot = Random(MAX_ANGLE);
 			b.size = 1.f;
 			b.pos.y = 0.05f;
-			b.normal = VEC3(0, 1, 0);
+			b.normal = Vec3(0, 1, 0);
 		}
 		{
 			Blood& b = Add1(game->local_ctx.bloods);
-			b.pos = VEC3::Random(VEC3(-0.5f, 0.05f, -0.5f), VEC3(0.5f, 0.05f, 0.5f)) + VEC3(2.f*it->x + 1, 0, 2.f*it->y + 1);
+			b.pos = Vec3::Random(Vec3(-0.5f, 0.05f, -0.5f), Vec3(0.5f, 0.05f, 0.5f)) + Vec3(2.f*it->x + 1, 0, 2.f*it->y + 1);
 			b.type = BLOOD_RED;
 			b.rot = Random(MAX_ANGLE);
 			b.size = 1.f;
 			b.pos.y = 0.05f;
-			b.normal = VEC3(0, 1, 0);
+			b.normal = Vec3(0, 1, 0);
 		}
 	}
 
@@ -692,7 +692,7 @@ void Quest_Evil::GeneratePortal()
 {
 	InsideLocation* inside = (InsideLocation*)game->location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
-	VEC3 srodek(float(lvl.w), 0, float(lvl.h));
+	Vec3 srodek(float(lvl.w), 0, float(lvl.h));
 
 	// szukaj pokoju
 	static vector<std::pair<int, float> > dobre;
@@ -701,7 +701,7 @@ void Quest_Evil::GeneratePortal()
 	{
 		if(it->target == RoomTarget::None && it->size.x > 2 && it->size.y > 2)
 		{
-			float dist = VEC3::Distance2d(it->Center(), srodek);
+			float dist = Vec3::Distance2d(it->Center(), srodek);
 			dobre.push_back(std::pair<int, float>(index, dist));
 		}
 	}
@@ -728,7 +728,7 @@ void Quest_Evil::GeneratePortal()
 	dobre.clear();
 
 	Room& r = lvl.rooms[id];
-	VEC3 portal_pos = r.Center();
+	Vec3 portal_pos = r.Center();
 	r.target = RoomTarget::PortalCreate;
 	float rot = PI*Random(0, 3);
 	game->SpawnObject(game->local_ctx, FindObject("portal"), portal_pos, rot);
@@ -760,8 +760,8 @@ void Quest_Evil::WarpEvilBossToAltar()
 
 	if(u && o)
 	{
-		VEC3 warp_pos = o->pos;
-		warp_pos -= VEC3(sin(o->rot.y)*1.5f, 0, cos(o->rot.y)*1.5f);
+		Vec3 warp_pos = o->pos;
+		warp_pos -= Vec3(sin(o->rot.y)*1.5f, 0, cos(o->rot.y)*1.5f);
 		game->WarpUnit(*u, warp_pos);
 		u->ai->start_pos = u->pos;
 	}

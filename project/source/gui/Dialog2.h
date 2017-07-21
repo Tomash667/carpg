@@ -27,7 +27,7 @@ public:
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
-	virtual void Setup(const INT2& text_size) {}
+	virtual void Setup(const Int2& text_size) {}
 
 	void CloseDialog() { GUI.CloseDialog(this); }
 
@@ -62,12 +62,12 @@ public:
 	explicit DialogWithImage(const DialogInfo& info);
 
 	void Draw(ControlDrawData* cdd = nullptr) override;
-	void Setup(const INT2& text_size) override;
+	void Setup(const Int2& text_size) override;
 
-	const INT2& GetImageSize() const { return img_size; }
+	const Int2& GetImageSize() const { return img_size; }
 
 private:
 	TEX img;
-	INT2 img_size, img_pos;
+	Int2 img_size, img_pos;
 	Rect text_rect;
 };

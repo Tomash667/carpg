@@ -39,7 +39,7 @@ void GamePanel::Update(float dt)
 	/*if(!focus)
 		return;
 
-	INT2 cpos = GetCursorPos();
+	Int2 cpos = GetCursorPos();
 
 	if(resizing)
 	{
@@ -49,7 +49,7 @@ void GamePanel::Update(float dt)
 			return;
 		}
 
-		INT2 off = (cpos - move_offset);
+		Int2 off = (cpos - move_offset);
 
 		switch(move_what)
 		{
@@ -61,7 +61,7 @@ void GamePanel::Update(float dt)
 			pos += off;
 			global_pos += off;
 			size -= off;
-			if(off != INT2(0,0))
+			if(off != Int2(0,0))
 			{
 				Event(GuiEvent_Moved);
 				Event(GuiEvent_Resize);
@@ -79,7 +79,7 @@ void GamePanel::Update(float dt)
 			move_offset.x += off.x;
 			if(off.y != 0)
 				Event(GuiEvent_Moved);
-			if(off != INT2(0,0))
+			if(off != Int2(0,0))
 				Event(GuiEvent_Resize);
 			break;
 		case 2:
@@ -94,7 +94,7 @@ void GamePanel::Update(float dt)
 			move_offset.y += off.y;
 			if(off.x != 0)
 				Event(GuiEvent_Moved);
-			if(off != INT2(0,0))
+			if(off != Int2(0,0))
 				Event(GuiEvent_Resize);
 			break;
 		case 3:
@@ -117,7 +117,7 @@ void GamePanel::Update(float dt)
 						off.y = off.x = min_size.x - size.x;
 				}
 			}
-			if(off != INT2(0,0))
+			if(off != Int2(0,0))
 			{
 				size += off;
 				move_offset += off;
@@ -134,8 +134,8 @@ void GamePanel::Update(float dt)
 			return;
 		}
 
-		INT2 off = (cpos - move_offset);
-		if(off != INT2(0,0))
+		Int2 off = (cpos - move_offset);
+		if(off != Int2(0,0))
 		{
 			pos += off;
 			global_pos += off;
@@ -267,7 +267,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 				{
 					D3DSURFACE_DESC desc;
 					box_img->GetLevelDesc(0, &desc);
-					box_img_size = INT2(desc.Width, desc.Height);
+					box_img_size = Int2(desc.Width, desc.Height);
 				}
 			}
 		}
@@ -287,11 +287,11 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 
 	if(box_state == BOX_VISIBLE)
 	{
-		INT2 text_size = GUI.default_font->CalculateSize(box_text);
-		box_big = Rect::Create(INT2(0, 0), text_size);
-		INT2 size = text_size + INT2(24, 24);
-		INT2 pos2 = INT2(GUI.cursor_pos) + INT2(24, 24);
-		INT2 text_pos(12, 12);
+		Int2 text_size = GUI.default_font->CalculateSize(box_text);
+		box_big = Rect::Create(Int2(0, 0), text_size);
+		Int2 size = text_size + Int2(24, 24);
+		Int2 pos2 = Int2(GUI.cursor_pos) + Int2(24, 24);
+		Int2 text_pos(12, 12);
 
 		// uwzglêdnij rozmiar obrazka
 		if(box_img)
@@ -306,14 +306,14 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 		if(size.x < 256)
 			size.x = 256;
 
-		INT2 text_pos2(12, text_pos.y);
+		Int2 text_pos2(12, text_pos.y);
 		text_pos2.y += size.y - 12;
 		int size_y = 0;
 
 		if(!box_text_small.empty())
 		{
-			INT2 size_small = GUI.fSmall->CalculateSize(box_text_small, size.x - 24);
-			box_small = Rect::Create(INT2(0, 0), size_small);
+			Int2 size_small = GUI.fSmall->CalculateSize(box_text_small, size.x - 24);
+			box_small = Rect::Create(Int2(0, 0), size_small);
 			size_y = size_small.y;
 			size.y += size_y + 12;
 		}
@@ -323,7 +323,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 		if(pos2.y + size.y >= GUI.wnd_size.y)
 			pos2.y = GUI.wnd_size.y - size.y - 1;
 
-		box_img_pos = INT2(pos2.x + 12, pos2.y + 12);
+		box_img_pos = Int2(pos2.x + 12, pos2.y + 12);
 		box_big = Rect::Create(text_pos + pos2, text_size);
 		box_small += pos2 + text_pos2;
 		box_small.Right() = box_small.Left() + box_size.x - 24;
@@ -373,7 +373,7 @@ void GamePanelContainer::Update(float dt)
 			ctrls.back()->focus = true;
 		}
 
-		INT2 cp = GUI.cursor_pos;
+		Int2 cp = GUI.cursor_pos;
 		GamePanel* top = nullptr;
 
 		for(vector<Control*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)

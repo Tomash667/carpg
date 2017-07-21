@@ -303,7 +303,7 @@ void Game::UpdateTeamItemShares()
 						// PC owns item that NPC wants to buy
 						if(tsi.to->gold >= tsi.item->value / 2)
 						{
-							if(VEC3::Distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
+							if(Vec3::Distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
 								state = 0;
 							else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
 								dialog = FindDialog(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_buy_item" : "hero_buy_item");
@@ -319,7 +319,7 @@ void Game::UpdateTeamItemShares()
 					if(tsi.from->IsHero())
 					{
 						// NPC owns item that other NPC wants to take for credit, ask leader
-						if(VEC3::Distance2d(tsi.to->pos, Team.leader->pos) > 8.f)
+						if(Vec3::Distance2d(tsi.to->pos, Team.leader->pos) > 8.f)
 							state = 0;
 						else if(Team.leader->busy == Unit::Busy_No && Team.leader->player->action == PlayerController::Action_None)
 							dialog = FindDialog(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");
@@ -329,7 +329,7 @@ void Game::UpdateTeamItemShares()
 					else
 					{
 						// PC owns item that other NPC wants to take for credit, ask him
-						if(VEC3::Distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
+						if(Vec3::Distance2d(tsi.from->pos, tsi.to->pos) > 8.f)
 							state = 0;
 						else if(tsi.from->busy == Unit::Busy_No && tsi.from->player->action == PlayerController::Action_None)
 							dialog = FindDialog(IS_SET(tsi.to->data->flags, F_CRAZY) ? "crazy_get_item" : "hero_get_item");

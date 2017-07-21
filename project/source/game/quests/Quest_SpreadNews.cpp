@@ -20,7 +20,7 @@ void Quest_SpreadNews::Start()
 	type = QuestType::Mayor;
 	quest_id = Q_SPREAD_NEWS;
 	start_loc = game->current_location;
-	VEC2 pos = game->locations[start_loc]->pos;
+	Vec2 pos = game->locations[start_loc]->pos;
 	bool sorted = false;
 	for(uint i = 0, count = game->settlements; i < count; ++i)
 	{
@@ -29,7 +29,7 @@ void Quest_SpreadNews::Start()
 		Location& loc = *game->locations[i];
 		if(loc.type != L_CITY)
 			continue;
-		float dist = VEC2::Distance(pos, loc.pos);
+		float dist = Vec2::Distance(pos, loc.pos);
 		bool ok = false;
 		if(entries.size() < 5)
 			ok = true;

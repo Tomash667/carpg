@@ -986,7 +986,7 @@ void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags, boo
 }
 
 //=================================================================================================
-void Tokenizer::Parse(INT2& i)
+void Tokenizer::Parse(Int2& i)
 {
 	if(IsSymbol('{'))
 	{
@@ -1023,7 +1023,7 @@ void Tokenizer::Parse(Rect& b)
 }
 
 //=================================================================================================
-void Tokenizer::Parse(VEC2& v)
+void Tokenizer::Parse(Vec2& v)
 {
 	if(IsSymbol('{'))
 	{

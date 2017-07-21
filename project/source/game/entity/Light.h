@@ -3,10 +3,10 @@
 //-----------------------------------------------------------------------------
 struct Light
 {
-	VEC3 pos, color;
+	Vec3 pos, color;
 	float range;
 	// temporary
-	VEC3 t_pos, t_color;
+	Vec3 t_pos, t_color;
 
 	static const int MIN_SIZE = 28;
 

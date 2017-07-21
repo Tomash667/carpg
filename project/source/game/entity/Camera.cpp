@@ -15,7 +15,7 @@ void Camera::Reset()
 	tmp_dist = dist;
 }
 
-void Camera::UpdateRot(float dt, const VEC2& new_rot)
+void Camera::UpdateRot(float dt, const Vec2& new_rot)
 {
 	if(reset == 0)
 		d = 1.0f - exp(log(0.5f) * springiness * dt);
@@ -26,11 +26,11 @@ void Camera::UpdateRot(float dt, const VEC2& new_rot)
 	}
 
 	real_rot = new_rot;
-	rot = VEC2::Slerp(rot, real_rot, d).Clip();
+	rot = Vec2::Slerp(rot, real_rot, d).Clip();
 	tmp_dist += (dist - tmp_dist) * d;
 }
 
-void Camera::Update(float dt, const VEC3& new_from, const VEC3& new_to)
+void Camera::Update(float dt, const Vec3& new_from, const Vec3& new_to)
 {
 	real_from = new_from;
 	real_to = new_to;

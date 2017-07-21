@@ -47,7 +47,7 @@ void InfoBox::Event(GuiEvent e)
 //=================================================================================================
 void InfoBox::Show(cstring _text)
 {
-	size = GUI.default_font->CalculateSize(_text) + INT2(24, 24);
+	size = GUI.default_font->CalculateSize(_text) + Int2(24, 24);
 	text = _text;
 
 	if(!visible)

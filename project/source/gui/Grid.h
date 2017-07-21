@@ -56,7 +56,7 @@ public:
 	void Update(float dt) override;
 
 	void Init();
-	void Move(INT2& global_pos);
+	void Move(Int2& global_pos);
 	void LostFocus() { scroll.LostFocus(); }
 	void AddColumn(Type type, int width, cstring title = nullptr);
 	void AddItem();

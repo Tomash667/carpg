@@ -46,9 +46,9 @@ namespace gui
 		void Update(float dt) override;
 
 		// internal! call only from Overlay -> Move to better place
-		void ShowAt(const INT2& pos);
+		void ShowAt(const Int2& pos);
 		void ShowMenu() { ShowMenu(GUI.cursor_pos); }
-		void ShowMenu(const INT2& pos);
+		void ShowMenu(const Int2& pos);
 		void OnClose()
 		{
 			if(on_close_handler)

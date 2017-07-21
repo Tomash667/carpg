@@ -25,7 +25,7 @@ struct InsideLocationLevel : public LevelArea
 	vector<Door*> doors;
 	vector<Useable*> useables;
 	vector<Blood> bloods;
-	INT2 staircase_up, staircase_down;
+	Int2 staircase_up, staircase_down;
 	int staircase_up_dir, staircase_down_dir;
 	bool staircase_down_in_wall;
 
@@ -38,26 +38,26 @@ struct InsideLocationLevel : public LevelArea
 	{
 		return _x >= 0 && _y >= 0 && _x < w && _y < h;
 	}
-	bool IsInside(const INT2& _pt) const
+	bool IsInside(const Int2& _pt) const
 	{
 		return IsInside(_pt.x, _pt.y);
 	}
-	VEC3 GetRandomPos() const
+	Vec3 GetRandomPos() const
 	{
-		return VEC3(Random(2.f*w), 0, Random(2.f*h));
+		return Vec3(Random(2.f*w), 0, Random(2.f*h));
 	}
-	Room* GetNearestRoom(const VEC3& pos);
-	Room* FindEscapeRoom(const VEC3& my_pos, const VEC3& enemy_pos);
+	Room* GetNearestRoom(const Vec3& pos);
+	Room* FindEscapeRoom(const Vec3& my_pos, const Vec3& enemy_pos);
 	int GetRoomId(Room* room) const
 	{
 		assert(room);
 		return (int)(room - &rooms[0]);
 	}
-	INT2 GetUpStairsFrontTile() const
+	Int2 GetUpStairsFrontTile() const
 	{
 		return staircase_up + dir_to_pos(staircase_up_dir);
 	}
-	INT2 GetDownStairsFrontTile() const
+	Int2 GetDownStairsFrontTile() const
 	{
 		return staircase_down + dir_to_pos(staircase_down_dir);
 	}
@@ -65,9 +65,9 @@ struct InsideLocationLevel : public LevelArea
 	{
 		return &rooms[Rand() % rooms.size()];
 	}
-	bool GetRandomNearWallTile(const Room& pokoj, INT2& tile, int& rot, bool nocol = false);
+	bool GetRandomNearWallTile(const Room& pokoj, Int2& tile, int& rot, bool nocol = false);
 	Room& GetFarRoom(bool have_down_stairs, bool no_target = false);
-	Room* GetRoom(const INT2& pt);
+	Room* GetRoom(const Int2& pt);
 	Room* GetUpStairsRoom()
 	{
 		return GetRoom(staircase_up);
@@ -82,28 +82,28 @@ struct InsideLocationLevel : public LevelArea
 
 	void BuildRefidTable();
 
-	Pole& At(const INT2& pt)
+	Pole& At(const Int2& pt)
 	{
 		assert(IsInside(pt));
 		return map[pt(w)];
 	}
 	int FindRoomId(RoomTarget target);
-	Door* FindDoor(const INT2& pt) const;
+	Door* FindDoor(const Int2& pt) const;
 
-	bool IsTileVisible(const VEC3& pos) const
+	bool IsTileVisible(const Vec3& pos) const
 	{
-		INT2 pt = pos_to_pt(pos);
+		Int2 pt = pos_to_pt(pos);
 		return IS_SET(map[pt(w)].flags, Pole::F_ODKRYTE);
 	}
 
-	bool IsValidWalkPos(const VEC3& pos, float radius) const
+	bool IsValidWalkPos(const Vec3& pos, float radius) const
 	{
 		return !(pos.x < 2.f + radius || pos.y < 2.f + radius || pos.x > 2.f*w - 2.f - radius || pos.y > 2.f*h - 2.f - radius);
 	}
 
 	// sprawdza czy pole le¿y przy œcianie, nie uwzglêdnia na ukos, nie mo¿e byæ na krawêdzi mapy!
-	bool IsTileNearWall(const INT2& pt) const;
-	bool IsTileNearWall(const INT2& pt, int& dir) const;
+	bool IsTileNearWall(const Int2& pt) const;
+	bool IsTileNearWall(const Int2& pt, int& dir) const;
 
 	bool FindUnit(Unit* unit);
 	Unit* FindUnit(UnitData* data);

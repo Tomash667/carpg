@@ -33,13 +33,13 @@ public:
 	{
 		friend struct Terrain;
 	public:
-		const BOX& GetBox() const
+		const Box& GetBox() const
 		{
 			return box;
 		}
 
 	private:
-		BOX box;
+		Box box;
 	};
 
 	static const int DEFAULT_UV_MOD = 2;
@@ -72,9 +72,9 @@ public:
 	void CalculateBox();
 	void SmoothNormals();
 	void SmoothNormals(VTerrain* v);
-	float Raytest(const VEC3& from, const VEC3& to) const;
-	void FillGeometry(vector<Tri>& tris, vector<VEC3>& verts);
-	void FillGeometryPart(vector<Tri>& tris, vector<VEC3>& verts, int px, int pz, const VEC3& offset = VEC3(0, 0, 0)) const;
+	float Raytest(const Vec3& from, const Vec3& to) const;
+	void FillGeometry(vector<Tri>& tris, vector<Vec3>& verts);
+	void FillGeometryPart(vector<Tri>& tris, vector<Vec3>& verts, int px, int pz, const Vec3& offset = Vec3(0, 0, 0)) const;
 
 	//---------------------------
 	Part* GetPart(uint idx)
@@ -83,19 +83,19 @@ public:
 		return &parts[idx];
 	}
 	float GetH(float x, float z) const;
-	float GetH(const VEC3& _v) const
+	float GetH(const Vec3& _v) const
 	{
 		return GetH(_v.x, _v.z);
 	}
-	float GetH(const VEC2& v) const
+	float GetH(const Vec2& v) const
 	{
 		return GetH(v.x, v.y);
 	}
-	void SetH(VEC3& _v) const
+	void SetH(Vec3& _v) const
 	{
 		_v.y = GetH(_v.x, _v.z);
 	}
-	void GetAngle(float x, float z, VEC3& angle) const;
+	void GetAngle(float x, float z, Vec3& angle) const;
 	uint GetPartsCount() const
 	{
 		return n_parts2;
@@ -108,11 +108,11 @@ public:
 	{
 		return tex;
 	}
-	const BOX& GetBox() const
+	const Box& GetBox() const
 	{
 		return box;
 	}
-	const VEC3& GetPos() const
+	const Vec3& GetPos() const
 	{
 		return pos;
 	}
@@ -164,7 +164,7 @@ public:
 	{
 		return x >= 0.f && z >= 0.f && x < tiles_size && z < tiles_size;
 	}
-	bool IsInside(const VEC3& v) const
+	bool IsInside(const Vec3& v) const
 	{
 		return IsInside(v.x, v.z);
 	}
@@ -181,11 +181,11 @@ private:
 	uint tiles_per_part;
 	uint hszer, hszer2; // n_tiles+1
 	uint n_tris, n_verts, part_tris, part_verts, tex_size;
-	BOX box;
+	Box box;
 	LPD3DXMESH mesh;
 	IDirect3DDevice9* device;
 	TEX texSplat;
 	TEX tex[5];
-	VEC3 pos;
+	Vec3 pos;
 	int state;
 };

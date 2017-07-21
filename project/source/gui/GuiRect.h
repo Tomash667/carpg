@@ -31,7 +31,7 @@ public:
 		m_v2 = m_bottom / height;
 	}
 
-	void Set(const BOX2D& box, const BOX2D* uv)
+	void Set(const Box2d& box, const Box2d* uv)
 	{
 		m_left = box.v1.x;
 		m_top = box.v1.y;
@@ -53,7 +53,7 @@ public:
 		}
 	}
 
-	void Set(const INT2& pos, const INT2& size)
+	void Set(const Int2& pos, const Int2& size)
 	{
 		m_left = (float)pos.x;
 		m_right = (float)(pos.x + size.x);
@@ -61,7 +61,7 @@ public:
 		m_bottom = (float)(pos.y + size.y);
 	}
 
-	void Set(const VEC2& pos1, const VEC2& pos2, const VEC2& uv1, const VEC2& uv2)
+	void Set(const Vec2& pos1, const Vec2& pos2, const Vec2& uv1, const Vec2& uv2)
 	{
 		m_left = pos1.x;
 		m_right = pos2.x;
@@ -73,12 +73,12 @@ public:
 		m_v2 = uv2.y;
 	}
 
-	void Transform(const MATRIX& mat)
+	void Transform(const Matrix& mat)
 	{
-		VEC2 leftTop(m_left, m_top);
-		VEC2 rightBottom(m_right, m_bottom);
-		leftTop = VEC2::Transform(leftTop, mat);
-		rightBottom = VEC2::Transform(rightBottom, mat);
+		Vec2 leftTop(m_left, m_top);
+		Vec2 rightBottom(m_right, m_bottom);
+		leftTop = Vec2::Transform(leftTop, mat);
+		rightBottom = Vec2::Transform(rightBottom, mat);
 		m_left = leftTop.x;
 		m_top = leftTop.y;
 		m_right = rightBottom.x;
@@ -87,11 +87,11 @@ public:
 
 	bool Clip(const Rect& clipping)
 	{
-		BOX2D box(clipping);
+		Box2d box(clipping);
 		return Clip(box);
 	}
 
-	bool Clip(const BOX2D& clipping)
+	bool Clip(const Box2d& clipping)
 	{
 		int result = RequireClip(clipping);
 		if(result == -1)
@@ -103,7 +103,7 @@ public:
 		const float right = min(m_right, clipping.Right());
 		const float top = max(m_top, clipping.Top());
 		const float bottom = min(m_bottom, clipping.Bottom());
-		const VEC2 orig_size(m_right - m_left, m_bottom - m_top);
+		const Vec2 orig_size(m_right - m_left, m_bottom - m_top);
 		const float u = Lerp(m_u, m_u2, (left - m_left) / orig_size.x);
 		m_u2 = Lerp(m_u, m_u2, 1.f - (m_right - right) / orig_size.x);
 		m_u = u;
@@ -117,7 +117,7 @@ public:
 		return true;
 	}
 
-	int RequireClip(const BOX2D& c)
+	int RequireClip(const Box2d& c)
 	{
 		if(m_left >= c.Right() || c.Left() >= m_right || m_top >= c.Bottom() || c.Top() >= m_bottom)
 			return -1; // no intersection
@@ -126,36 +126,36 @@ public:
 		return 1; // require clip
 	}
 
-	void Populate(VParticle*& v, const VEC4& col)
+	void Populate(VParticle*& v, const Vec4& col)
 	{
-		v->pos = VEC3(m_left, m_top, 0);
+		v->pos = Vec3(m_left, m_top, 0);
 		v->color = col;
-		v->tex = VEC2(m_u, m_v);
+		v->tex = Vec2(m_u, m_v);
 		++v;
 
-		v->pos = VEC3(m_right, m_top, 0);
+		v->pos = Vec3(m_right, m_top, 0);
 		v->color = col;
-		v->tex = VEC2(m_u2, m_v);
+		v->tex = Vec2(m_u2, m_v);
 		++v;
 
-		v->pos = VEC3(m_left, m_bottom, 0);
+		v->pos = Vec3(m_left, m_bottom, 0);
 		v->color = col;
-		v->tex = VEC2(m_u, m_v2);
+		v->tex = Vec2(m_u, m_v2);
 		++v;
 
-		v->pos = VEC3(m_left, m_bottom, 0);
+		v->pos = Vec3(m_left, m_bottom, 0);
 		v->color = col;
-		v->tex = VEC2(m_u, m_v2);
+		v->tex = Vec2(m_u, m_v2);
 		++v;
 
-		v->pos = VEC3(m_right, m_top, 0);
+		v->pos = Vec3(m_right, m_top, 0);
 		v->color = col;
-		v->tex = VEC2(m_u2, m_v);
+		v->tex = Vec2(m_u2, m_v);
 		++v;
 
-		v->pos = VEC3(m_right, m_bottom, 0);
+		v->pos = Vec3(m_right, m_bottom, 0);
 		v->color = col;
-		v->tex = VEC2(m_u2, m_v2);
+		v->tex = Vec2(m_u2, m_v2);
 		++v;
 	}
 };

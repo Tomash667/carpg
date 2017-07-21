@@ -77,10 +77,10 @@ void StatsPanel::Event(GuiEvent e)
 		int sizex = (size.x - 48) / 3;
 		int sizey = size.y - 64;
 
-		flowAttribs.UpdateSize(global_pos + INT2(16, 48), INT2(sizex, 200), visible);
-		flowStats.UpdateSize(global_pos + INT2(16, 200 + 48 + 8), INT2(sizex, sizey - 200 - 8), visible);
-		flowSkills.UpdateSize(global_pos + INT2(16 + sizex + 8, 48), INT2(sizex, sizey), visible);
-		flowFeats.UpdateSize(global_pos + INT2(16 + (sizex + 8) * 2, 48), INT2(sizex, sizey), visible);
+		flowAttribs.UpdateSize(global_pos + Int2(16, 48), Int2(sizex, 200), visible);
+		flowStats.UpdateSize(global_pos + Int2(16, 200 + 48 + 8), Int2(sizex, sizey - 200 - 8), visible);
+		flowSkills.UpdateSize(global_pos + Int2(16 + sizex + 8, 48), Int2(sizex, sizey), visible);
+		flowFeats.UpdateSize(global_pos + Int2(16 + (sizex + 8) * 2, 48), Int2(sizex, sizey), visible);
 	}
 	else if(e == GuiEvent_Show)
 	{

@@ -145,17 +145,17 @@ enum class RoomTarget
 // Struktura opisuj¹ca pomieszczenie w podziemiach
 struct Room
 {
-	INT2 pos, size;
+	Int2 pos, size;
 	vector<int> connected;
 	RoomTarget target;
 
 	static const int MIN_SIZE = 19;
 
-	VEC3 Center() const
+	Vec3 Center() const
 	{
-		return VEC3(float(pos.x * 2 + size.x), 0, float(pos.y * 2 + size.y));
+		return Vec3(float(pos.x * 2 + size.x), 0, float(pos.y * 2 + size.y));
 	}
-	INT2 CenterTile() const
+	Int2 CenterTile() const
 	{
 		return pos + size / 2;
 	}
@@ -163,28 +163,28 @@ struct Room
 	{
 		return (x >= 2.f*pos.x && z >= 2.f*pos.y && x <= 2.f*(pos.x + size.x) && z <= 2.f*(pos.y + size.y));
 	}
-	bool IsInside(const VEC3& _pos) const
+	bool IsInside(const Vec3& _pos) const
 	{
 		return IsInside(_pos.x, _pos.z);
 	}
-	float Distance(const VEC3& _pos) const
+	float Distance(const Vec3& _pos) const
 	{
 		if(IsInside(_pos))
 			return 0.f;
 		else
-			return VEC3::Distance2d(_pos, Center());
+			return Vec3::Distance2d(_pos, Center());
 	}
 	float Distance(const Room& room) const
 	{
-		return VEC3::Distance2d(Center(), room.Center());
+		return Vec3::Distance2d(Center(), room.Center());
 	}
-	VEC3 GetRandomPos() const
+	Vec3 GetRandomPos() const
 	{
-		return VEC3(Random(2.f*(pos.x + 1), 2.f*(pos.x + size.x - 1)), 0, Random(2.f*(pos.y + 1), 2.f*(pos.y + size.y - 1)));
+		return Vec3(Random(2.f*(pos.x + 1), 2.f*(pos.x + size.x - 1)), 0, Random(2.f*(pos.y + 1), 2.f*(pos.y + size.y - 1)));
 	}
-	VEC3 GetRandomPos(float margin) const
+	Vec3 GetRandomPos(float margin) const
 	{
-		return VEC3(
+		return Vec3(
 			Random(2.f*(pos.x + 1) + margin, 2.f*(pos.x + size.x - 1) - margin),
 			0,
 			Random(2.f*(pos.y + 1) + margin, 2.f*(pos.y + size.y - 1) - margin));
@@ -222,7 +222,7 @@ struct OpcjeMapy
 
 	// input
 	int w, h;
-	INT2 rozmiar_pokoj, rozmiar_korytarz;
+	Int2 rozmiar_pokoj, rozmiar_korytarz;
 	int korytarz_szansa, polacz_korytarz, polacz_pokoj, kraty_szansa;
 	KSZTALT_MAPY ksztalt;
 	GDZIE_SCHODY schody_gora, schody_dol;
@@ -233,7 +233,7 @@ struct OpcjeMapy
 	vector<Room>* rooms;
 	Room* schody_gora_pokoj, *schody_dol_pokoj;
 	int schody_gora_kierunek, schody_dol_kierunek;
-	INT2 schody_gora_pozycja, schody_dol_pozycja;
+	Int2 schody_gora_pozycja, schody_dol_pozycja;
 
 	// output
 	int blad;
@@ -251,13 +251,13 @@ bool kontynuuj_generowanie_mapy(OpcjeMapy& opcje);
 bool generuj_schody(OpcjeMapy& opcje);
 void rysuj_mape_konsola(Pole* mapa, uint w, uint h);
 // zwraca pole które ³¹czy dwa pomieszczenia, zak³ada ¿e po³¹czenie istnieje!, operuje na danych u¿ytych w generuj_mape2
-INT2 pole_laczace(int pokoj1, int pokoj2);
+Int2 pole_laczace(int pokoj1, int pokoj2);
 void ustaw_flagi(Pole* mapa, uint wh);
 
 //-----------------------------------------------------------------------------
-void generate_labirynth(Pole*& mapa, const INT2& size, const INT2& room_size, INT2& stairs, int& stairs_dir, INT2& room_pos, int kratki_szansa, bool devmode);
+void generate_labirynth(Pole*& mapa, const Int2& size, const Int2& room_size, Int2& stairs, int& stairs_dir, Int2& room_pos, int kratki_szansa, bool devmode);
 
 //-----------------------------------------------------------------------------
-void generate_cave(Pole*& mapa, int size, INT2& stairs, int& stairs_dir, vector<INT2>& holes, Rect* ext, bool devmode);
+void generate_cave(Pole*& mapa, int size, Int2& stairs, int& stairs_dir, vector<Int2>& holes, Rect* ext, bool devmode);
 void regenerate_cave_flags(Pole* mapa, int size);
 void free_cave_data();

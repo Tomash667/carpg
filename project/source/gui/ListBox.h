@@ -55,7 +55,7 @@ public:
 		assert(height > 0);
 		item_height = height;
 	}
-	void SetForceImageSize(const INT2& _size)
+	void SetForceImageSize(const Int2& _size)
 	{
 		assert(_size.x >= 0 && _size.y >= 0);
 		force_img_size = _size;
@@ -66,7 +66,7 @@ public:
 	GuiElement* GetItem() const { return selected == -1 ? nullptr : items[selected]; }
 	template<typename T> T* GetItemCast() const { return (T*)GetItem(); }
 	int GetItemHeight() const { return item_height; }
-	const INT2& GetForceImageSize() const { return force_img_size; }
+	const Int2& GetForceImageSize() const { return force_img_size; }
 	vector<GuiElement*>& GetItems() { return items; }
 	template<typename T> vector<T*>& GetItemsCast() { return (vector<T*>&)items; }
 	uint GetCount() const { return items.size(); }
@@ -91,7 +91,7 @@ private:
 	vector<GuiElement*> items;
 	int selected; // index of selected item or -1, default -1
 	int item_height; // height of item, default 20
-	INT2 real_size;
-	INT2 force_img_size; // forced image size, INT2(0,0) if not forced, default INT2(0,0)
+	Int2 real_size;
+	Int2 force_img_size; // forced image size, Int2(0,0) if not forced, default Int2(0,0)
 	bool collapsed, require_scrollbar;
 };

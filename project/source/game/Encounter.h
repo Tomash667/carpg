@@ -4,7 +4,7 @@ typedef bool(*BoolFunc)();
 
 struct Encounter
 {
-	VEC2 pos;
+	Vec2 pos;
 	int szansa;
 	float zasieg;
 	bool dont_attack, timed;

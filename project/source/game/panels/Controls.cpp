@@ -276,23 +276,23 @@ enum ButtonId
 //=================================================================================================
 Controls::Controls(const DialogInfo& info) : Dialog(info), picked(-1)
 {
-	size = INT2(570 + 8 * 2, 368);
+	size = Int2(570 + 8 * 2, 368);
 	bts.resize(2);
 
-	bts[0].size = INT2(180, 44);
-	bts[0].pos = INT2(50, 316);
+	bts[0].size = Int2(180, 44);
+	bts[0].pos = Int2(50, 316);
 	bts[0].id = Button_Reset;
 	bts[0].text = Str("resetKeys");
 	bts[0].parent = this;
 
-	bts[1].size = INT2(180, 44);
-	bts[1].pos = INT2(size.x - 180 - 50, 316);
+	bts[1].size = Int2(180, 44);
+	bts[1].pos = Int2(size.x - 180 - 50, 316);
 	bts[1].id = Button_Ok;
 	bts[1].text = GUI.txOk;
 	bts[1].parent = this;
 
-	grid.size = INT2(570, 300);
-	grid.pos = INT2(8, 8);
+	grid.size = Int2(570, 300);
+	grid.pos = Int2(8, 8);
 	grid.AddColumn(Grid::TEXT, 200, Str("action"));
 	grid.AddColumn(Grid::TEXT, 175, Str("key_1"));
 	grid.AddColumn(Grid::TEXT, 175, Str("key_2"));

@@ -119,7 +119,7 @@ void Game::SetMusic()
 		return;
 	}
 
-	for(vector<INT2>::iterator it = boss_levels.begin(), end = boss_levels.end(); it != end; ++it)
+	for(vector<Int2>::iterator it = boss_levels.begin(), end = boss_levels.end(); it != end; ++it)
 	{
 		if(current_location == it->x && dungeon_level == it->y)
 		{

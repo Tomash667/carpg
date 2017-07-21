@@ -17,7 +17,7 @@ CheckBoxGroup::~CheckBoxGroup()
 
 void CheckBoxGroup::Draw(ControlDrawData*)
 {
-	BOX2D rect = BOX2D::Create(global_pos, size);
+	Box2d rect = Box2d::Create(global_pos, size);
 	GUI.DrawArea(rect, layout->check_box_group.background);
 
 	int box_height = layout->check_box_group.box.size.y;
@@ -26,13 +26,13 @@ void CheckBoxGroup::Draw(ControlDrawData*)
 	int text_x = box_x + layout->check_box_group.box.size.x + 2;
 	int text_y = global_pos.y + (row_height - layout->check_box_group.font->height) / 2;
 
-	BOX2D r;
+	Box2d r;
 	Rect re;
 	int offset = 0;
 	for(auto item : items)
 	{
-		r.v1 = VEC2((float)box_x, (float)box_y + offset);
-		r.v2 = r.v1 + VEC2(layout->check_box_group.box.size);
+		r.v1 = Vec2((float)box_x, (float)box_y + offset);
+		r.v2 = r.v1 + Vec2(layout->check_box_group.box.size);
 		GUI.DrawArea(r, item->checked ? layout->check_box_group.checked : layout->check_box_group.box);
 
 		re = Rect(text_x, text_y, global_pos.x + size.x - 2, text_y + offset + 50);
@@ -47,7 +47,7 @@ void CheckBoxGroup::Update(float dt)
 	if(!mouse_focus)
 		return;
 
-	const INT2& box_size = layout->check_box_group.box.size;
+	const Int2& box_size = layout->check_box_group.box.size;
 	int box_x = global_pos.x + 2;
 	int box_y = global_pos.y + (row_height - box_size.y) / 2;
 

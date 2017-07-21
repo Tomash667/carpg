@@ -25,6 +25,6 @@ public:
 	static TEX tex, tex2;
 	int total, part, change;
 	float offset;
-	INT2 click_pt;
+	Int2 click_pt;
 	bool clicked, hscrollbar, manual_change;
 };

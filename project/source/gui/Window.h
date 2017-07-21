@@ -23,14 +23,14 @@ namespace gui
 		void Event(GuiEvent e) override;
 		void Update(float dt) override;
 
-		INT2 GetAreaSize() const { return INT2(area.Size()); }
+		Int2 GetAreaSize() const { return Int2(area.Size()); }
 		Control* GetEventProxy() const { return event_proxy; }
 		MenuBar* GetMenu() const { return menu; }
 		const string& GetText() const { return text; }
 		ToolStrip* GetToolStrip() const { return toolstrip; }
 		bool IsBorderless() const { return borderless; }
 		bool IsFullscreen() const { return fullscreen; }
-		void SetAreaSize(const INT2& size);
+		void SetAreaSize(const Int2& size);
 		void SetEventProxy(Control* _event_proxy) { event_proxy = _event_proxy; }
 		void SetMenu(MenuBar* menu);
 		void SetText(const AnyString& s) { text = s.s; }
@@ -43,7 +43,7 @@ namespace gui
 		ToolStrip* toolstrip;
 		Control* event_proxy;
 		string text;
-		BOX2D body_rect, header_rect, area;
+		Box2d body_rect, header_rect, area;
 		bool fullscreen, borderless;
 	};
 }

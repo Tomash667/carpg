@@ -112,7 +112,7 @@ void Overlay::CloseDialog(GuiDialog* dialog)
 	dialogs_to_close.push_back(dialog);
 }
 
-void Overlay::ShowMenu(MenuStrip* menu, const INT2& _pos)
+void Overlay::ShowMenu(MenuStrip* menu, const Int2& _pos)
 {
 	assert(menu);
 	CloseMenus();
