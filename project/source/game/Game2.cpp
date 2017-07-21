@@ -7457,8 +7457,8 @@ void Game::UpdateParticles(LevelContext& ctx, float dt)
 				p.exists = true;
 				p.gravity = 9.81f;
 				p.life = pe.particle_life;
-				p.pos = pe.pos + Random(pe.pos_min, pe.pos_max);
-				p.speed = Random(pe.speed_min, pe.speed_max);
+				p.pos = pe.pos + VEC3::Random(pe.pos_min, pe.pos_max);
+				p.speed = VEC3::Random(pe.speed_min, pe.speed_max);
 			}
 
 			pe.alive += ile;
@@ -9381,9 +9381,9 @@ VEC3 Game::PredictTargetPos(const Unit& me, const Unit& target, float bullet_spe
 		VEC3 vel = target.pos - target.prev_pos;
 		vel *= 60;
 
-		float a = bullet_speed*bullet_speed - dot2d(vel);
-		float b = -2 * dot2d(vel, target.pos - me.pos);
-		float c = -dot2d(target.pos - me.pos);
+		float a = bullet_speed*bullet_speed - vel.Dot2d();
+		float b = -2 * vel.Dot2d(target.pos - me.pos);
+		float c = -(target.pos - me.pos).Dot2d();
 
 		float delta = b*b - 4 * a*c;
 		// brak rozwi¹zania, nie mo¿e trafiæ wiêc strzel w aktualn¹ pozycjê
@@ -17201,7 +17201,7 @@ void Game::GenerateSawmill(bool in_progress)
 		// generuj obiekty
 		for(int i = 0; i < 25; ++i)
 		{
-			VEC2 pt = Random(VEC2(128 - 16, 128 - 16), VEC2(128 + 16, 128 + 16));
+			VEC2 pt = VEC2::Random(VEC2(128 - 16, 128 - 16), VEC2(128 + 16, 128 + 16));
 			Obj* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
 			SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
@@ -17210,7 +17210,7 @@ void Game::GenerateSawmill(bool in_progress)
 		int ile = Random(5, 10);
 		for(int i = 0; i < ile; ++i)
 		{
-			Unit* u = SpawnUnitNearLocation(local_ctx, Random(VEC3(128 - 16, 0, 128 - 16), VEC3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
+			Unit* u = SpawnUnitNearLocation(local_ctx, VEC3::Random(VEC3(128 - 16, 0, 128 - 16), VEC3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
 			if(u)
 				u->rot = Random(MAX_ANGLE);
 		}
@@ -17235,7 +17235,7 @@ void Game::GenerateSawmill(bool in_progress)
 		// obiekty
 		for(int i = 0; i < 25; ++i)
 		{
-			VEC2 pt = Random(VEC2(128 - 16, 128 - 16), VEC2(128 + 16, 128 + 16));
+			VEC2 pt = VEC2::Random(VEC2(128 - 16, 128 - 16), VEC2(128 + 16, 128 + 16));
 			Obj* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
 			SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
@@ -17244,7 +17244,7 @@ void Game::GenerateSawmill(bool in_progress)
 		int ile = Random(5, 10);
 		for(int i = 0; i < ile; ++i)
 		{
-			Unit* u = SpawnUnitNearLocation(local_ctx, Random(VEC3(128 - 16, 0, 128 - 16), VEC3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
+			Unit* u = SpawnUnitNearLocation(local_ctx, VEC3::Random(VEC3(128 - 16, 0, 128 - 16), VEC3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
 			if(u)
 				u->rot = Random(MAX_ANGLE);
 		}

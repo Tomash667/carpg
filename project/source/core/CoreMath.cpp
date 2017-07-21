@@ -8,6 +8,8 @@ RNG _RNG;
 
 #define FLOAT_ALMOST_ZERO(F) ((absolute_cast<unsigned>(F) & 0x7f800000L) == 0)
 
+const Rect Rect::Zero = { 0,0,0,0 };
+
 const VEC2 VEC2::Zero = { 0.f, 0.f };
 const VEC2 VEC2::One = { 1.f, 1.f };
 const VEC2 VEC2::UnitX = { 1.f, 0.f };
@@ -646,7 +648,7 @@ bool LineToRectangle(const VEC2& start, const VEC2& end, const VEC2& rect_pos, c
 	}
 	else
 	{
-		if( (rect_pos, topRight, start, end))    return true;
+		if(LineToLine(rect_pos, topRight, start, end))    return true;
 		if(LineToLine(topRight, rect_pos2, start, end))   return true;
 		if(LineToLine(rect_pos2, bottomLeft, start, end)) return true;
 		if(LineToLine(bottomLeft, rect_pos, start, end))  return true;

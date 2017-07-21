@@ -19,7 +19,7 @@ void InputTextBox::Draw(ControlDrawData*)
 		GUI.DrawSpriteRect(*background, r0, background_color);
 
 		r0.Top() = inputbox_pos.y;
-		r0.Bottom() = r0.top + inputbox_size.y;
+		r0.Bottom() = r0.Top() + inputbox_size.y;
 		GUI.DrawSpriteRect(*background, r0, background_color);
 	}
 

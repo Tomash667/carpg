@@ -635,7 +635,7 @@ struct LocalVector
 
 	void Shuffle()
 	{
-		std::random_shuffle(v->begin(), v->end(), myrand);
+		std::random_shuffle(v->begin(), v->end(), MyRand);
 	}
 
 private:

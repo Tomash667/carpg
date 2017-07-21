@@ -764,12 +764,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	{
 		HWND con = GetConsoleWindow();
 		Rect rect;
-		GetWindowRect(con, &rect);
+		GetWindowRect(con, (RECT*)&rect);
 		if(con_pos_x != -1)
-			rect.left = con_pos_x;
+			rect.Left() = con_pos_x;
 		if(con_pos_y != -1)
-			rect.top = con_pos_y;
-		SetWindowPos(con, 0, rect.left, rect.top, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
+			rect.Top() = con_pos_y;
+		SetWindowPos(con, 0, rect.Left(), rect.Top(), 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
 	}
 
 	game.s_wnd_size.x = cfg.GetInt("wnd_size_x");

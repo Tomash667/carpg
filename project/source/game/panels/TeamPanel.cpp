@@ -90,10 +90,7 @@ void TeamPanel::Draw(ControlDrawData*)
 	GUI.DrawText(GUI.fBig, txTeam, DT_TOP | DT_CENTER, BLACK, rect);
 
 	INT2 offset = global_pos + INT2(8, 40 - scrollbar.offset);
-	rect.left = global_pos.x + 8;
-	rect.right = global_pos.x + size.x - 44;
-	rect.top = global_pos.y + 40;
-	rect.bottom = global_pos.y + size.y - 8 - 48;
+	rect = Rect::Create(INT2(global_pos.x + 8, global_pos.y + 40), INT2(size.x - 52, size.y - 96));
 
 	int pc_share = Team.GetPCShare();
 	LocalString s;

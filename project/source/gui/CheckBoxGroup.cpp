@@ -35,10 +35,7 @@ void CheckBoxGroup::Draw(ControlDrawData*)
 		r.v2 = r.v1 + VEC2(layout->check_box_group.box.size);
 		GUI.DrawArea(r, item->checked ? layout->check_box_group.checked : layout->check_box_group.box);
 
-		re.left = text_x;
-		re.top = text_y + offset;
-		re.right = global_pos.x + size.x - 2;
-		re.bottom = text_y + offset + 50;
+		re = Rect(text_x, text_y, global_pos.x + size.x - 2, text_y + offset + 50);
 		GUI.DrawText(layout->check_box_group.font, item->name, DT_LEFT | DT_SINGLELINE, layout->check_box_group.font_color, re);
 
 		offset += row_height;

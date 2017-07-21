@@ -57,7 +57,20 @@ namespace gui
 			SetFromArea(&area);
 		}
 		AreaLayout(TEX tex, int corner, int size) : mode(Item), tex(tex), size(corner, size) {}
+		AreaLayout(const AreaLayout& l) : mode(l.mode), color(l.color), size(l.size)
+		{
+			memcpy(&tex, &l.tex, sizeof(TEX) + sizeof(BOX2D) + sizeof(int) + sizeof(DWORD));
+		}
 
+		AreaLayout& operator = (const AreaLayout& l)
+		{
+			mode = l.mode;
+			color = l.color;
+			size = l.size;
+			memcpy(&tex, &l.tex, sizeof(TEX) + sizeof(BOX2D) + sizeof(int) + sizeof(DWORD));
+			return *this;
+		}
+		
 		BOX2D CalculateRegion(const INT2& pos, const INT2& region);
 
 	private:

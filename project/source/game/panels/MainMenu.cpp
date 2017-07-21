@@ -149,19 +149,19 @@ void MainMenu::Draw(ControlDrawData* /*cdd*/)
 	GUI.DrawSprite(tLogo, INT2(GUI.wnd_size.x - 512 - 16, 16));
 
 	Rect r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
-	r.top = r.bottom - 64;
+	r.Top() = r.Bottom() - 64;
 	GUI.DrawText(GUI.default_font, "Devmode(2013,2017) Tomashu & Leinnan", DT_CENTER | DT_BOTTOM | DT_OUTLINE, WHITE, r);
 
-	r.left = GUI.wnd_size.x - 512 - 16;
-	r.right = GUI.wnd_size.x - 16;
-	r.top = 256 + 24;
-	r.bottom = r.top + 64;
+	r.Left() = GUI.wnd_size.x - 512 - 16;
+	r.Right() = GUI.wnd_size.x - 16;
+	r.Top() = 256 + 24;
+	r.Bottom() = r.Top() + 64;
 	GUI.DrawText(GUI.default_font, Format(txVersion, VERSION_STR), DT_CENTER | DT_OUTLINE, WHITE, r);
 
-	r.left = 0;
-	r.right = GUI.wnd_size.x;
-	r.bottom = GUI.wnd_size.y - 16;
-	r.top = r.bottom - 64;
+	r.Left() = 0;
+	r.Right() = GUI.wnd_size.x;
+	r.Bottom() = GUI.wnd_size.y - 16;
+	r.Top() = r.Bottom() - 64;
 	GUI.DrawText(GUI.default_font, version_text, DT_CENTER | DT_BOTTOM | DT_OUTLINE, WHITE, r);
 
 	for(int i = 0; i < BUTTONS; ++i)

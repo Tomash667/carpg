@@ -132,13 +132,7 @@ void FlowContainer::Draw(ControlDrawData*)
 	int sizex = size.x - 16;
 
 	Rect rect;
-
-	Rect clip;
-	clip.left = global_pos.x + 2;
-	clip.right = clip.left + sizex - 2;
-	clip.top = global_pos.y + 2;
-	clip.bottom = clip.top + size.y - 2;
-
+	Rect clip = Rect::Create(global_pos + INT2(2, 2), INT2(sizex - 2, size.y - 2));
 	int offset = (int)scroll.offset;
 	DWORD flags = (word_warp ? 0 : DT_SINGLELINE) | DT_PARSE_SPECIAL;
 
@@ -146,20 +140,17 @@ void FlowContainer::Draw(ControlDrawData*)
 	{
 		if(fi->type != FlowItem::Button)
 		{
-			rect.left = global_pos.x + fi->pos.x;
-			rect.right = rect.left + fi->size.x;
-			rect.top = global_pos.y + fi->pos.y - offset;
-			rect.bottom = rect.top + fi->size.y;
+			rect = Rect::Create(global_pos + fi->pos - INT2(0, offset), fi->size);
 
 			// text above box
-			if(rect.bottom < global_pos.y)
+			if(rect.Bottom() < global_pos.y)
 				continue;
 
 			if(fi->state == Button::DOWN)
 			{
-				Rect rs = { global_pos.x + 2, rect.top, global_pos.x + sizex, rect.bottom };
+				Rect rs = { global_pos.x + 2, rect.Top(), global_pos.x + sizex, rect.Bottom() };
 				Rect out;
-				if(IntersectRect(&out, &rs, &clip))
+				if(Rect::Intersect(rs, clip, out))
 					GUI.DrawSpriteRect(GUI.tPix, out, COLOR_RGBA(0, 255, 0, 128));
 			}
 

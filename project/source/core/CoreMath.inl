@@ -272,6 +272,11 @@ inline Rect Rect::operator * (int d) const
 	return Rect(p1 * d, p2 * d);
 }
 
+inline Rect Rect::operator * (const VEC2& v) const
+{
+	return Rect(int(v.x * p1.x), int(v.y * p1.y), int(v.x * p2.x), int(v.y * p2.y));
+}
+
 inline Rect Rect::operator / (int d) const
 {
 	return Rect(p1 / d, p2 / d);
@@ -316,6 +321,11 @@ inline void Rect::Resize(const Rect& r)
 		p1.y = r.p1.y;
 	if(r.p2.y > p2.y)
 		p2.y = r.p2.y;
+}
+
+inline void Rect::Resize(const INT2& size)
+{
+	p2 += size;
 }
 
 inline Rect Rect::RightBottomPart() const
@@ -1237,11 +1247,14 @@ inline float VEC3::Dot(const VEC3& V) const
 	return XMVectorGetX(X);
 }
 
-inline float VEC3::DotSelf() const
+inline float VEC3::Dot2d(const VEC3& v) const
 {
-	XMVECTOR v1 = XMLoadFloat3(this);
-	XMVECTOR X = XMVector3Dot(v1, v1);
-	return XMVectorGetX(X);
+	return (x*v.x + z*v.z);
+}
+
+inline float VEC3::Dot2d() const
+{
+	return x*x + z*z;
 }
 
 inline bool VEC3::Equal(const VEC3& v) const
@@ -2343,6 +2356,11 @@ inline BOX2D BOX2D::operator * (float f) const
 inline BOX2D BOX2D::operator / (float f) const
 {
 	return BOX2D(v1 / f, v2 / f);
+}
+
+inline BOX2D BOX2D::operator / (const VEC2& v) const
+{
+	return BOX2D(v1.x / v.x, v1.y / v.y, v2.x / v.x, v2.y / v.y);
 }
 
 inline BOX2D operator * (float f, const BOX2D& b)

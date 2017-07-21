@@ -129,11 +129,7 @@ void DialogWithImage::Draw(ControlDrawData*)
 		bts[i].Draw();
 	}
 
-	Rect r = text_rect;
-	r.left += pos.x;
-	r.right += pos.x;
-	r.top += pos.y;
-	r.bottom += pos.y;
+	Rect r = text_rect + pos;
 	GUI.DrawText(GUI.default_font, text, DT_CENTER, BLACK, r);
 
 	GUI.DrawSprite(img, img_pos + pos);
@@ -143,8 +139,5 @@ void DialogWithImage::Draw(ControlDrawData*)
 void DialogWithImage::Setup(const INT2& text_size)
 {
 	img_pos = INT2(12, (max(text_size.y, img_size.y) - img_size.y) / 2);
-	text_rect.left = img_pos.x + img_size.x + 8;
-	text_rect.right = text_rect.left + text_size.x;
-	text_rect.top = 12;
-	text_rect.bottom = text_rect.top + text_size.y;
+	text_rect = Rect::Create(INT2(img_pos.x + img_size.x + 8, 12), text_size);
 }

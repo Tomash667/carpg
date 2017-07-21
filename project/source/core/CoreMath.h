@@ -173,7 +173,7 @@ inline void MinMax(T a, T b, T& min, T& max)
 }
 
 // Find min value from any arguments count
-template<typename T, typename T2, typename Arg>
+template<typename T, typename T2>
 inline T Min(T a, T2 b)
 {
 	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
@@ -193,7 +193,7 @@ inline T Min(T a, T2 b, Args... args)
 }
 
 // Find min value from any arguments count
-template<typename T, typename T2, typename Arg>
+template<typename T, typename T2>
 inline T Max(T a, T2 b)
 {
 	static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "T must be int or float");
@@ -486,6 +486,7 @@ struct Rect
 	Rect operator + (const INT2& p) const;
 	Rect operator - (const INT2& p) const;
 	Rect operator * (int d) const;
+	Rect operator * (const VEC2& v) const;
 	Rect operator / (int d) const;
 	friend Rect operator * (int d, const Rect& r);
 
@@ -512,6 +513,7 @@ struct Rect
 	Rect LeftTopPart() const;
 	INT2 Random() const;
 	void Resize(const Rect& r);
+	void Resize(const INT2& size);
 	Rect RightBottomPart() const;
 	Rect RightTopPart() const;
 	void Set(int x1, int y1, int x2, int y2);
@@ -522,6 +524,9 @@ struct Rect
 	static Rect Create(const INT2& pos, const INT2& size);
 	static Rect Intersect(const Rect& r1, const Rect& r2);
 	static bool Intersect(const Rect& r1, const Rect& r2, Rect& result);
+
+	// Constants
+	static const Rect Zero;
 };
 
 //-----------------------------------------------------------------------------
@@ -676,7 +681,8 @@ struct VEC3 : XMFLOAT3
 	void Cross(const VEC3& V, VEC3& result) const;
 	VEC3 Cross(const VEC3& V) const;
 	float Dot(const VEC3& V) const;
-	float DotSelf() const;
+	float Dot2d(const VEC3& v) const;
+	float Dot2d() const;
 	bool Equal(const VEC3& v) const;
 	bool InBounds(const VEC3& bounds) const;
 	bool IsPositive() const;
@@ -873,6 +879,7 @@ struct BOX2D
 	BOX2D operator - (const VEC2& v) const;
 	BOX2D operator * (float f) const;
 	BOX2D operator / (float f) const;
+	BOX2D operator / (const VEC2& v) const;
 	friend BOX2D operator * (float f, const BOX2D& v);
 
 	static BOX2D Create(const INT2& pos, const INT2& size)

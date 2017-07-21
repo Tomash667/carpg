@@ -4800,7 +4800,7 @@ void Game::SpawnCampObjects()
 
 	for(int i = 0; i < 100; ++i)
 	{
-		VEC2 pt = Random(VEC2(90, 90), VEC2(256 - 90, 256 - 90));
+		VEC2 pt = VEC2::Random(VEC2(90, 90), VEC2(256 - 90, 256 - 90));
 		bool ok = true;
 		for(vector<VEC2>::iterator it = pts.begin(), end = pts.end(); it != end; ++it)
 		{
@@ -4875,7 +4875,7 @@ void Game::SpawnCampUnits()
 
 	for(int added = 0, tries = 50; added < 5 && tries>0; --tries)
 	{
-		VEC2 pos = Random(VEC2(90, 90), VEC2(256 - 90, 256 - 90));
+		VEC2 pos = VEC2::Random(VEC2(90, 90), VEC2(256 - 90, 256 - 90));
 
 		bool ok = true;
 		for(vector<VEC2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
@@ -6064,7 +6064,7 @@ void Game::GenerateMushrooms(int days_since)
 
 	for(int i = 0; i < days_since * 20; ++i)
 	{
-		pt = Random(INT2(1, 1), INT2(lvl.w - 2, lvl.h - 2));
+		pt = INT2::Random(INT2(1, 1), INT2(lvl.w - 2, lvl.h - 2));
 		if(OR2_EQ(lvl.map[pt.x + pt.y*lvl.w].type, PUSTE, KRATKA_SUFIT) && lvl.IsTileNearWall(pt, dir))
 		{
 			pos.x = 2.f*pt.x;

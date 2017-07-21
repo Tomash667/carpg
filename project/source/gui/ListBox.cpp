@@ -53,7 +53,7 @@ void ListBox::Draw(ControlDrawData*)
 		Rect rc = { global_pos.x, global_pos.y, global_pos.x + real_size.x, global_pos.y + real_size.y };
 		if(selected != -1)
 		{
-			Rect rs = { global_pos.x + 2, global_pos.y - int(scrollbar.offset) + 2 + selected*item_height, global_pos.x + real_size.x - 2 };
+			Rect rs = { global_pos.x + 2, global_pos.y - int(scrollbar.offset) + 2 + selected*item_height, global_pos.x + real_size.x - 2, 0 };
 			rs.Bottom() = rs.Top() + item_height;
 			Rect out;
 			if(Rect::Intersect(rs, rc, out))

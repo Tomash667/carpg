@@ -297,14 +297,14 @@ void GameGui::DrawFront()
 			int off = int(scrollbar.offset);
 
 			// zaznaczenie
-			Rect r_img = { offset.x, offset.y + game.dialog_context.choice_selected*GUI.default_font->height - off + 6, offset.x + dsize.x - 16 };
-			r_img.bottom = r_img.top + GUI.default_font->height;
-			if(r_img.bottom >= r.top && r_img.top < r.bottom)
+			Rect r_img = Rect::Create(INT2(offset.x, offset.y + game.dialog_context.choice_selected*GUI.default_font->height - off + 6),
+				INT2(dsize.x - 16, GUI.default_font->height));
+			if(r_img.Bottom() >= r.Top() && r_img.Top() < r.Bottom())
 			{
-				if(r_img.top < r.top)
-					r_img.top = r.top;
-				else if(r_img.bottom > r.bottom)
-					r_img.bottom = r.bottom;
+				if(r_img.Top() < r.Top())
+					r_img.Top() = r.Top();
+				else if(r_img.Bottom() > r.Bottom())
+					r_img.Bottom() = r.Bottom();
 				GUI.DrawSpriteRect(game.tEquipped, r_img, 0xAAFFFFFF);
 			}
 
@@ -326,7 +326,8 @@ void GameGui::DrawFront()
 					s += '\n';
 				}
 			}
-			Rect r2 = { r.left, r.top - off, r.right, r.bottom - off };
+			Rect r2 = r;
+			r2 -= INT2(0, off);
 			GUI.DrawText(GUI.default_font, s, 0, BLACK, r2, &r);
 
 			// pasek przewijania
@@ -352,10 +353,10 @@ void GameGui::DrawFront()
 	float hp_scale = float(GUI.wnd_size.x) / 800;
 	MATRIX mat;
 	float hpp = Clamp(game.pc->unit->hp / game.pc->unit->hpmax, 0.f, 1.f);
-	Rect part = { 0, 0, LONG(hpp * 256), 16 };
+	Rect part = { 0, 0, int(hpp * 256), 16 };
 	int hp_offset = (have_manabar ? 35 : 17);
 	mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(hp_scale, hp_scale), nullptr, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale*hp_offset));
-	if(part.right > 0)
+	if(part.Right() > 0)
 		GUI.DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, &mat, &part, nullptr, WHITE);
 	GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
 
@@ -363,9 +364,9 @@ void GameGui::DrawFront()
 	if(have_manabar)
 	{
 		float mpp = 1.f;
-		part.right = LONG(mpp * 256);
+		part.Right() = int(mpp * 256);
 		mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(hp_scale, hp_scale), nullptr, 0.f, &VEC2(0.f, float(GUI.wnd_size.y) - hp_scale * 17));
-		if(part.right > 0)
+		if(part.Right() > 0)
 			GUI.DrawSprite2(tManaBar, &mat, &part, nullptr, WHITE);
 		GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
 	}
@@ -573,11 +574,9 @@ void GameGui::DrawSpeechBubbles()
 					pt.y = sb.size.y / 2;
 				else if(pt.y > GUI.wnd_size.y - sb.size.y / 2)
 					pt.y = GUI.wnd_size.y - sb.size.y / 2;
-				Rect rect = { pt.x - sb.size.x / 2, pt.y - sb.size.y / 2 };
-				rect.right = rect.left + sb.size.x;
-				rect.bottom = rect.top + sb.size.y;
 
-				GUI.DrawItem(game.tBubble, INT2(rect.left, rect.top), sb.size, a1);
+				Rect rect = Rect::Create(INT2(pt.x - sb.size.x / 2, pt.y - sb.size.y / 2), sb.size);
+				GUI.DrawItem(game.tBubble, rect.LeftTop(), sb.size, a1);
 				GUI.DrawText(GUI.fSmall, sb.text, DT_CENTER | DT_VCENTER, a2, rect);
 			}
 		}

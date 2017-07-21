@@ -71,7 +71,7 @@ void MultiplayerPanel::Draw(ControlDrawData*)
 	GUI.DrawText(GUI.fBig, txMultiplayerGame, DT_TOP | DT_CENTER, BLACK, r);
 
 	// tekst nick
-	r.top += 60;
+	r.Top() += 60;
 	GUI.DrawText(GUI.default_font, txNick, 0, BLACK, r);
 
 	// textbox

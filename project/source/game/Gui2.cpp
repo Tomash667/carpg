@@ -256,7 +256,7 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 	// renderuj do tekstury
 	INT2 offset(extra, extra);
 	char cbuf[2] = { 0,0 };
-	Rect rect = { 0 };
+	Rect rect = Rect::Zero;
 
 	if(outline)
 	{
@@ -275,9 +275,9 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 				for(int j = 0; j < 8; ++j)
 				{
 					const float a = float(j)*PI / 4;
-					rect.left = offset.x + int(outline*sin(a));
-					rect.top = offset.y + int(outline*cos(a));
-					dx_font->DrawTextA(sprite, cbuf, 1, &rect, DT_LEFT | DT_NOCLIP, WHITE);
+					rect.Left() = offset.x + int(outline*sin(a));
+					rect.Top() = offset.y + int(outline*cos(a));
+					dx_font->DrawTextA(sprite, cbuf, 1, (RECT*)&rect, DT_LEFT | DT_NOCLIP, WHITE);
 				}
 
 				offset.x += g.width + 2 + extra;
@@ -297,9 +297,9 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 					offset.x = extra;
 					offset.y += font->height + extra;
 				}
-				rect.left = offset.x;
-				rect.top = offset.y;
-				dx_font->DrawTextA(sprite, cbuf, 1, &rect, DT_LEFT | DT_NOCLIP, WHITE);
+				rect.Left() = offset.x;
+				rect.Top() = offset.y;
+				dx_font->DrawTextA(sprite, cbuf, 1, (RECT*)&rect, DT_LEFT | DT_NOCLIP, WHITE);
 				offset.x += g.width + 2 + extra;
 			}
 		}
@@ -1603,7 +1603,7 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 		bt2.size = default_font->CalculateSize(bt2.text) + INT2(24, 24);
 		bt2.parent = d;
 
-		bt1.size = bt2.size = Max(bt1.size, bt2.size);
+		bt1.size = bt2.size = INT2::Max(bt1.size, bt2.size);
 		min_size.x = bt1.size.x * 2 + 24 + 16;
 	}
 

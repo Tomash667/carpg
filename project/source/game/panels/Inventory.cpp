@@ -156,18 +156,16 @@ void Inventory::Draw(ControlDrawData*)
 		GUI.DrawSprite(tGold, INT2(shift_x, bar_y));
 
 		// z³oto
-		rect.left = shift_x;
-		rect.right = shift_x + bar_size;
-		rect.top = bar_y;
-		rect.bottom = rect.top + 32;
+		rect = Rect::Create(INT2(shift_x, bar_y), INT2(bar_size, 32));
 		GUI.DrawText(GUI.default_font, Format("%d", unit->gold), DT_CENTER | DT_VCENTER, BLACK, rect);
 
 		// udŸwig
-		rect.left = shift_x + bar_size + 10;
-		rect.right = rect.left + bar_size;
+		rect.Left() = shift_x + bar_size + 10;
+		rect.Right() = rect.Left() + bar_size;
 		cstring weight_str = Format(txCarryShort, float(unit->weight) / 10, float(unit->weight_max) / 10);
 		int w = GUI.default_font->LineWidth(weight_str);
-		GUI.DrawText(GUI.default_font, (w > bar_size ? Format("%g/%g", float(unit->weight) / 10, float(unit->weight_max) / 10) : weight_str), DT_CENTER | DT_VCENTER, (load > 1.f ? RED : BLACK), rect);
+		GUI.DrawText(GUI.default_font, (w > bar_size ? Format("%g/%g", float(unit->weight) / 10, float(unit->weight_max) / 10) : weight_str),
+			DT_CENTER | DT_VCENTER, (load > 1.f ? RED : BLACK), rect);
 	}
 
 	// rysuj kratki
@@ -222,9 +220,7 @@ void Inventory::Draw(ControlDrawData*)
 		// iloœæ
 		if(count > 1)
 		{
-			Rect rect3 = { shift_x + x * 63 + 2, shift_y + y * 63 };
-			rect3.right = rect3.left + 64;
-			rect3.bottom = rect3.top + 63;
+			Rect rect3 = Rect::Create(INT2(shift_x + x * 63 + 2, shift_y + y * 63), INT2(64, 63));
 			GUI.DrawText(GUI.default_font, Format("%d", count), DT_BOTTOM, BLACK, rect3);
 		}
 	}

@@ -54,10 +54,7 @@ void SaveLoad::Draw(ControlDrawData* /*cdd*/)
 	textbox.Draw();
 
 	// nazwy slotów
-	r.left = global_pos.x + 12;
-	r.right = r.left + 256;
-	r.top = global_pos.y + 12 + 64;
-	r.bottom = r.top + 20;
+	r = Rect::Create(global_pos + INT2(12, 76), INT2(256, 20));
 	for(int i = 0; i < MAX_SAVE_SLOTS; ++i)
 	{
 		cstring text;
@@ -78,16 +75,13 @@ void SaveLoad::Draw(ControlDrawData* /*cdd*/)
 
 		GUI.DrawText(GUI.default_font, text, DT_SINGLELINE | DT_VCENTER, choice == i ? GREEN : BLACK, r);
 
-		r.top = r.bottom + 4;
-		r.bottom = r.top + 20;
+		r.Resize(INT2(4, 20));
 	}
 
 	// obrazek
 	if(tMiniSave)
 	{
-		Rect r2 = { global_pos.x + 400 - 81, global_pos.y + 42 + 103,0,0 };
-		r2.right = r2.left + 256;
-		r2.bottom = r2.top + 192;
+		Rect r2 = Rect::Create(INT2(global_pos.x + 400 - 81, global_pos.y + 42 + 103), INT2(256, 192));
 		GUI.DrawSpriteRect(tMiniSave, r2);
 	}
 }
@@ -100,15 +94,11 @@ void SaveLoad::Update(float dt)
 
 	if(focus && Key.Focus())
 	{
-		Rect rect;
-		rect.left = global_pos.x + 12;
-		rect.right = rect.left + 256;
-		rect.top = global_pos.y + 12 + 64;
-		rect.bottom = rect.top + 20;
+		Rect rect = Rect::Create(INT2(global_pos.x + 12, global_pos.y + 76), INT2(256, 20));
 
 		for(int i = 0; i < MAX_SAVE_SLOTS; ++i)
 		{
-			if(PointInRect(GUI.cursor_pos, rect))
+			if(rect.IsInside(GUI.cursor_pos))
 			{
 				GUI.cursor_mode = CURSOR_HAND;
 				if(Key.PressedRelease(VK_LBUTTON) && choice != i)
@@ -127,8 +117,8 @@ void SaveLoad::Update(float dt)
 				}
 			}
 
-			rect.top = rect.bottom + 4;
-			rect.bottom = rect.top + 20;
+			rect.Top() = rect.Bottom() + 4;
+			rect.Bottom() = rect.Top() + 20;
 		}
 
 		if(Key.PressedRelease(VK_ESCAPE))

@@ -49,7 +49,7 @@ void Journal::Draw(ControlDrawData* /*cdd*/)
 				r = rect;
 			else
 				r = rect2;
-			r.top += it->y * font_height;
+			r.Top() += it->y * font_height;
 
 			const DWORD color[3] = { BLACK, RED, GREEN };
 
@@ -65,9 +65,9 @@ void Journal::Draw(ControlDrawData* /*cdd*/)
 
 	// strza³ki 32, 243
 	if(page != 0)
-		GUI.DrawSprite(tArrowL, INT2(rect.left - 8, rect.bottom - 8));
+		GUI.DrawSprite(tArrowL, INT2(rect.Left() - 8, rect.Bottom() - 8));
 	if(texts.back().x > x2)
-		GUI.DrawSprite(tArrowR, INT2(rect2.right + 8, rect.bottom - 8));
+		GUI.DrawSprite(tArrowR, INT2(rect2.Right() + 8, rect.Bottom() - 8));
 }
 
 //=================================================================================================
@@ -218,10 +218,10 @@ void Journal::Update(float dt)
 		{
 			// wybór questa
 			int co = -1;
-			if(PointInRect(GUI.cursor_pos, rect))
-				co = (GUI.cursor_pos.y - rect.top) / font_height;
-			else if(PointInRect(GUI.cursor_pos, rect2))
-				co = (GUI.cursor_pos.y - rect.top) / font_height + rect_lines;
+			if(rect.IsInside(GUI.cursor_pos))
+				co = (GUI.cursor_pos.y - rect.Top()) / font_height;
+			else if(rect2.IsInside(GUI.cursor_pos))
+				co = (GUI.cursor_pos.y - rect.Top()) / font_height + rect_lines;
 
 			if(co != -1)
 			{
@@ -249,16 +249,16 @@ void Journal::Update(float dt)
 			bool ok = false;
 			if(last_text.x % 2 == 0)
 			{
-				if(GUI.cursor_pos.x >= rect.left && GUI.cursor_pos.x <= rect.right)
+				if(GUI.cursor_pos.x >= rect.Left() && GUI.cursor_pos.x <= rect.Right())
 					ok = true;
 			}
 			else
 			{
-				if(GUI.cursor_pos.x >= rect2.left && GUI.cursor_pos.x <= rect2.right)
+				if(GUI.cursor_pos.x >= rect2.Left() && GUI.cursor_pos.x <= rect2.Right())
 					ok = true;
 			}
 
-			if(ok && GUI.cursor_pos.y >= rect.top + last_text.y*font_height && GUI.cursor_pos.y <= rect.top + (last_text.y + 1)*font_height)
+			if(ok && GUI.cursor_pos.y >= rect.Top() + last_text.y*font_height && GUI.cursor_pos.y <= rect.Top() + (last_text.y + 1)*font_height)
 			{
 				GUI.cursor_mode = CURSOR_HAND;
 				if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
@@ -284,7 +284,7 @@ void Journal::Update(float dt)
 	{
 		if(page != 0)
 		{
-			if(PointInRect(GUI.cursor_pos, INT2(rect.left - 8, rect.bottom - 8), INT2(16, 16)))
+			if(PointInRect(GUI.cursor_pos, rect.LeftBottom() - INT2(8, 8), INT2(16, 16)))
 			{
 				GUI.cursor_mode = CURSOR_HAND;
 				if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
@@ -293,7 +293,7 @@ void Journal::Update(float dt)
 		}
 		if(texts.back().x > page * 2 + 1)
 		{
-			if(PointInRect(GUI.cursor_pos, INT2(rect2.right + 8, rect.bottom - 8), INT2(16, 16)))
+			if(PointInRect(GUI.cursor_pos, rect.RightBottom() + INT2(8, -8), INT2(16, 16)))
 			{
 				GUI.cursor_mode = CURSOR_HAND;
 				if(Key.Focus() && Key.PressedRelease(VK_LBUTTON))
@@ -311,31 +311,15 @@ void Journal::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize || e == GuiEvent_Resize || e == GuiEvent_Moved)
 	{
-		rect.left = 32;
-		rect.right = 32 + 206;
-		rect.top = 16;
-		rect.bottom = 16 + 416;
+		rect = Rect(32, 16, 238, 432);
+		rect2 = Rect(259, 16, 455, 431);
 
-		rect2.left = 259;
-		rect2.right = 471 - 6;
-		rect2.top = 16;
-		rect2.bottom = 431;
+		VEC2 scale = VEC2(size) / 512;
+		rect = rect * scale + global_pos;
+		rect2 = rect2 * scale + global_pos;
 
-		float sx = float(size.x) / 512,
-			sy = float(size.y) / 512;
-
-		rect.left = global_pos.x + int(sx * rect.left);
-		rect.right = global_pos.x + int(sx * rect.right);
-		rect.top = global_pos.y + int(sy * rect.top);
-		rect.bottom = global_pos.y + int(sy * rect.bottom);
-
-		rect2.left = global_pos.x + int(sx * rect2.left);
-		rect2.right = global_pos.x + int(sx * rect2.right);
-		rect2.top = global_pos.y + int(sy * rect2.top);
-		rect2.bottom = global_pos.y + int(sy * rect2.bottom);
-
-		rect_w = abs(rect.right - rect.left);
-		rect_lines = abs(rect.bottom - rect.top) / font_height;
+		rect_w = rect.SizeX();
+		rect_lines = rect.SizeY() / font_height;
 
 		if(e == GuiEvent_Resize)
 			Build();

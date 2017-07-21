@@ -252,21 +252,17 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			GUI.DrawItem(GUI.tBox, fpos, flow_size, WHITE, 8, 32);
 			flow_scroll.Draw();
 
-			rect.left = fpos.x + 2;
-			rect.right = rect.left + flow_size.x - 4;
-			rect.top = fpos.y + 2;
-			rect.bottom = rect.top + flow_size.y - 4;
-
-			Rect r = { rect.left, rect.top, rect.right, rect.top + 20 },
-				part = { 0, 0, 256, 32 };
+			rect = Rect::Create(fpos + INT2(2, 2), flow_size - INT2(4, 4));
+			Rect r = rect, part = { 0, 0, 256, 32 };
+			r.Top() += 20;
 
 			for(OldFlowItem& fi : flow_items)
 			{
-				r.top = fpos.y + fi.y - (int)flow_scroll.offset;
+				r.Top() = fpos.y + fi.y - (int)flow_scroll.offset;
 				cstring item_text = GetText(fi.group, fi.id);
 				if(fi.section)
 				{
-					r.bottom = r.top + SECTION_H;
+					r.Bottom() = r.Top() + SECTION_H;
 					if(!GUI.DrawText(GUI.fBig, item_text, DT_SINGLELINE, BLACK, r, &rect))
 						break;
 				}
@@ -274,11 +270,11 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 				{
 					if(fi.part > 0)
 					{
-						mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &VEC2(float(r.left), float(r.top)));
-						part.right = int(fi.part * 256);
+						mat = MATRIX::Transform2D(nullptr, 0.f, &VEC2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &VEC2(r.LeftTop()));
+						part.Right() = int(fi.part * 256);
 						GUI.DrawSprite2(game->tKlasaCecha, &mat, &part, &rect, WHITE);
 					}
-					r.bottom = r.top + VALUE_H;
+					r.Bottom() = r.Top() + VALUE_H;
 					if(!GUI.DrawText(GUI.default_font, item_text, DT_SINGLELINE, BLACK, r, &rect))
 						break;
 				}

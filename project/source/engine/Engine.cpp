@@ -30,14 +30,9 @@ void Engine::AdjustWindowSize()
 {
 	if(!fullscreen)
 	{
-		Rect rect = { 0 };
-		rect.right = wnd_size.x;
-		rect.bottom = wnd_size.y;
-
-		AdjustWindowRect((Rect*)&rect, WS_OVERLAPPEDWINDOW, false);
-
-		real_size.x = abs(rect.left - rect.right);
-		real_size.y = abs(rect.top - rect.bottom);
+		Rect rect = Rect::Create(INT2(0, 0), wnd_size);
+		AdjustWindowRect((RECT*)&rect, WS_OVERLAPPEDWINDOW, false);
+		real_size = rect.Size();
 	}
 	else
 		real_size = wnd_size;
@@ -486,12 +481,11 @@ void Engine::DoTick(bool update_game)
 		if(active && locked_cursor)
 		{
 			Rect rect;
-			GetClientRect(hwnd, &rect);
-			int w = abs(rect.right - rect.left),
-				h = abs(rect.bottom - rect.top);
+			GetClientRect(hwnd, (RECT*)&rect);
+			INT2 wh = rect.Size();
 			POINT pt;
-			pt.x = int(float(unlock_point.x)*w / wnd_size.x);
-			pt.y = int(float(unlock_point.y)*h / wnd_size.y);
+			pt.x = int(float(unlock_point.x)*wh.x / wnd_size.x);
+			pt.y = int(float(unlock_point.y)*wh.y / wnd_size.y);
 			ClientToScreen(hwnd, &pt);
 			SetCursorPos(pt.x, pt.y);
 		}
@@ -569,12 +563,11 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		else if(locked_cursor)
 		{
 			Rect rect;
-			GetClientRect(hwnd, &rect);
-			int w = abs(rect.right - rect.left),
-				h = abs(rect.bottom - rect.top);
+			GetClientRect(hwnd, (RECT*)&rect);
+			INT2 wh = rect.Size();
 			POINT pt;
-			pt.x = int(float(unlock_point.x)*w / wnd_size.x);
-			pt.y = int(float(unlock_point.y)*h / wnd_size.y);
+			pt.x = int(float(unlock_point.x)*wh.x / wnd_size.x);
+			pt.y = int(float(unlock_point.y)*wh.y / wnd_size.y);
 			ClientToScreen(hwnd, &pt);
 			SetCursorPos(pt.x, pt.y);
 		}
@@ -636,14 +629,13 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			{
 				ShowCursor(false);
 				Rect rect;
-				GetClientRect(hwnd, &rect);
-				int w = abs(rect.right - rect.left),
-					h = abs(rect.bottom - rect.top);
+				GetClientRect(hwnd, (RECT*)&rect);
+				INT2 wh = rect.Size();
 				POINT pt;
 				GetCursorPos(&pt);
 				ScreenToClient(hwnd, &pt);
-				cursor_pos.x = float(pt.x)*wnd_size.x / w;
-				cursor_pos.y = float(pt.y)*wnd_size.y / h;
+				cursor_pos.x = float(pt.x)*wnd_size.x / wh.x;
+				cursor_pos.y = float(pt.y)*wnd_size.y / wh.y;
 				PlaceCursor();
 
 				if(active)
@@ -987,17 +979,17 @@ void Engine::InitWindow(cstring title)
 		{
 			// set window position from config file
 			Rect rect;
-			GetWindowRect(hwnd, &rect);
+			GetWindowRect(hwnd, (RECT*)&rect);
 			if(s_wnd_pos.x != -1)
-				rect.left = s_wnd_pos.x;
+				rect.Left() = s_wnd_pos.x;
 			if(s_wnd_pos.y != -1)
-				rect.top = s_wnd_pos.y;
+				rect.Top() = s_wnd_pos.y;
 			INT2 size = real_size;
 			if(s_wnd_size.x != -1)
 				size.x = s_wnd_size.x;
 			if(s_wnd_size.y != -1)
 				size.y = s_wnd_size.y;
-			SetWindowPos(hwnd, 0, rect.left, rect.top, size.x, size.y, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+			SetWindowPos(hwnd, 0, rect.Left(), rect.Top(), size.x, size.y, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 		}
 		else
 		{
@@ -1427,12 +1419,11 @@ void Engine::UnlockCursor()
 {
 	locked_cursor = false;
 	Rect rect;
-	GetClientRect(hwnd, &rect);
-	int w = abs(rect.right - rect.left),
-		h = abs(rect.bottom - rect.top);
+	GetClientRect(hwnd, (RECT*)&rect);
+	INT2 wh = rect.Size();
 	POINT pt;
-	pt.x = int(float(unlock_point.x)*w / wnd_size.x);
-	pt.y = int(float(unlock_point.y)*h / wnd_size.y);
+	pt.x = int(float(unlock_point.x)*wh.x / wnd_size.x);
+	pt.y = int(float(unlock_point.y)*wh.y / wnd_size.y);
 	ClientToScreen(hwnd, &pt);
 	SetCursorPos(pt.x, pt.y);
 	ShowCursor(true);

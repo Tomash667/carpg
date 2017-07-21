@@ -288,10 +288,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 	if(box_state == BOX_VISIBLE)
 	{
 		INT2 text_size = GUI.default_font->CalculateSize(box_text);
-		box_big.left = 0;
-		box_big.right = text_size.x;
-		box_big.top = 0;
-		box_big.bottom = text_size.y;
+		box_big = Rect::Create(INT2(0, 0), text_size);
 		INT2 size = text_size + INT2(24, 24);
 		INT2 pos2 = INT2(GUI.cursor_pos) + INT2(24, 24);
 		INT2 text_pos(12, 12);
@@ -316,10 +313,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 		if(!box_text_small.empty())
 		{
 			INT2 size_small = GUI.fSmall->CalculateSize(box_text_small, size.x - 24);
-			box_small.left = 0;
-			box_small.right = size_small.x;
-			box_small.top = 0;
-			box_small.bottom = size_small.y;
+			box_small = Rect::Create(INT2(0, 0), size_small);
 			size_y = size_small.y;
 			size.y += size_y + 12;
 		}
@@ -330,16 +324,9 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 			pos2.y = GUI.wnd_size.y - size.y - 1;
 
 		box_img_pos = INT2(pos2.x + 12, pos2.y + 12);
-		box_big.left = text_pos.x + pos2.x;
-		box_big.right = box_big.left + text_size.x;
-		box_big.top = text_pos.y + pos2.y;
-		box_big.bottom = box_big.top + text_size.y;
-
-		box_small.left += pos2.x + text_pos2.x;
-		box_small.right += pos2.x + text_pos2.x;
-		box_small.top += pos2.y + text_pos2.y;
-		box_small.bottom += pos2.y + text_pos2.y;
-		box_small.right = box_small.left + box_size.x - 24;
+		box_big = Rect::Create(text_pos + pos2, text_size);
+		box_small += pos2 + text_pos2;
+		box_small.Right() = box_small.Left() + box_size.x - 24;
 
 		box_size = size;
 		box_pos = pos2;

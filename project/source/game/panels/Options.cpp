@@ -365,29 +365,29 @@ void Options::Draw(ControlDrawData* /*cdd*/)
 	Rect r2 = { global_pos.x + 10, global_pos.y + 50, global_pos.x + size.x, global_pos.y + 75 };
 	GUI.DrawText(GUI.default_font, txResolution, DT_SINGLELINE, BLACK, r2);
 	// Multisampling:
-	r2.top = global_pos.y + 300;
-	r2.bottom = r2.top + 20;
+	r2.Top() = global_pos.y + 300;
+	r2.Bottom() = r2.Top() + 20;
 	GUI.DrawText(GUI.default_font, txMultisampling, DT_SINGLELINE, BLACK, r2);
 	// Jêzyk:
-	r2.top = global_pos.y + 360;
-	r2.bottom = r2.top + 20;
+	r2.Top() = global_pos.y + 360;
+	r2.Bottom() = r2.Top() + 20;
 	GUI.DrawText(GUI.default_font, txLanguage, DT_SINGLELINE, BLACK, r2);
 	// G³oœnoœæ dŸwiêku (0)
-	r2.left = global_pos.x + 290;
-	r2.top = global_pos.y + 230;
-	r2.bottom = r2.top + 20;
+	r2.Left() = global_pos.x + 290;
+	r2.Top() = global_pos.y + 230;
+	r2.Bottom() = r2.Top() + 20;
 	GUI.DrawText(GUI.default_font, Format("%s (%d)", txSoundVolume, sound_volume), DT_SINGLELINE, BLACK, r2);
 	// G³oœnoœæ muzyki (0)
-	r2.top = global_pos.y + 270;
-	r2.bottom = r2.top + 20;
+	r2.Top() = global_pos.y + 270;
+	r2.Bottom() = r2.Top() + 20;
 	GUI.DrawText(GUI.default_font, Format("%s (%d)", txMusicVolume, music_volume), DT_SINGLELINE, BLACK, r2);
 	// Czu³oœæ myszki (0)
-	r2.top = global_pos.y + 310;
-	r2.bottom = r2.top + 20;
+	r2.Top() = global_pos.y + 310;
+	r2.Bottom() = r2.Top() + 20;
 	GUI.DrawText(GUI.default_font, Format("%s (%d)", txMouseSensitivity, mouse_sensitivity), DT_SINGLELINE, BLACK, r2);
 	// Zasiêg trawy (0)
-	r2.top = global_pos.y + 350;
-	r2.bottom = r2.top + 20;
+	r2.Top() = global_pos.y + 350;
+	r2.Bottom() = r2.Top() + 20;
 	GUI.DrawText(GUI.default_font, Format("%s (%d)", txGrassRange, grass_range), DT_SINGLELINE, BLACK, r2);
 
 	// listbox z rozdzielczoœciami
