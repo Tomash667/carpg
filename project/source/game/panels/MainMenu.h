@@ -35,7 +35,7 @@ public:
 	cstring txInfoText, txUrl, txVersion;
 
 private:
-	static const uint BUTTONS = 8u;
+	static const uint BUTTONS = 7u;
 
 	void PlaceButtons();
 	void OnNewVersion(int id);

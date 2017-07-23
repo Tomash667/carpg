@@ -147,7 +147,7 @@ Obj* FindObjectTry(cstring _id, bool* is_variant)
 			return FindObjectTry("tombstone_1");
 	}
 
-	if(strcmp(_id, "Random") == 0)
+	if(strcmp(_id, "random") == 0)
 	{
 		switch(Rand() % 3)
 		{

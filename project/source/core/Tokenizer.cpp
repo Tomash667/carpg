@@ -20,7 +20,7 @@ Tokenizer::Tokenizer(int _flags) : need_sorting(false), formatter(this), seek(nu
 Tokenizer::~Tokenizer()
 {
 	if(own_string)
-		StringPool.Free(const_cast<string*>(str));
+		StringPool.SafeFree(const_cast<string*>(str));
 	delete seek;
 }
 

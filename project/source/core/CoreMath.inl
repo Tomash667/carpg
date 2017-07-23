@@ -688,6 +688,12 @@ inline float Vec2::Random() const
 	return ::Random(x, y);
 }
 
+
+inline Vec3 Vec2::XY(float _z) const
+{
+	return Vec3(x, y, _z);
+}
+
 inline Vec3 Vec2::XZ(float _y) const
 {
 	return Vec3(x, _y, y);

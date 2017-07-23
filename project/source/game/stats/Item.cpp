@@ -1576,7 +1576,7 @@ uint LoadItems(uint& out_crc, uint& errors)
 		{ "city", SK_CITY },
 		{ "else", SK_ELSE },
 		{ "chance", SK_CHANCE },
-		{ "Random", SK_RANDOM },
+		{ "random", SK_RANDOM },
 		{ "same", SK_SAME }
 	});
 

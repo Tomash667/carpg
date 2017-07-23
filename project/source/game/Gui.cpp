@@ -51,21 +51,18 @@ void Game::OnFocus(bool focus)
 void Game::UpdateGui(float dt)
 {
 	// myszka
-	if(GUI.NeedCursor())
+	if(GUI.NeedCursor() && cursor_allow_move)
 	{
-		if(cursor_allow_move)
-		{
-			cursor_pos += Vec2(float(mouse_dif.x), float(mouse_dif.y)) * mouse_sensitivity_f;
-			if(cursor_pos.x < 0)
-				cursor_pos.x = 0;
-			if(cursor_pos.y < 0)
-				cursor_pos.y = 0;
-			if(cursor_pos.x >= wnd_size.x)
-				cursor_pos.x = float(wnd_size.x - 1);
-			if(cursor_pos.y >= wnd_size.y)
-				cursor_pos.y = float(wnd_size.y - 1);
-			unlock_point = Int2(cursor_pos);
-		}
+		cursor_pos += Vec2(float(mouse_dif.x), float(mouse_dif.y)) * mouse_sensitivity_f;
+		if(cursor_pos.x < 0)
+			cursor_pos.x = 0;
+		if(cursor_pos.y < 0)
+			cursor_pos.y = 0;
+		if(cursor_pos.x >= wnd_size.x)
+			cursor_pos.x = float(wnd_size.x - 1);
+		if(cursor_pos.y >= wnd_size.y)
+			cursor_pos.y = float(wnd_size.y - 1);
+		unlock_point = Int2(cursor_pos);
 	}
 	else
 		unlock_point = real_size / 2;
@@ -103,6 +100,7 @@ void Game::PreinitGui()
 {
 	GUI.Init(device, sprite);
 	GUI.wnd_size = wnd_size;
+	GUI.cursor_pos = Int2(cursor_pos);
 
 	// font loading works only from main thread (for now...)
 	int result = AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, nullptr);

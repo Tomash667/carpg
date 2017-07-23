@@ -6345,7 +6345,7 @@ uint Game::TestGameData(bool major)
 				ERROR(Format("Test: Weapon %s: no hitbox in mesh %s.", w.id.c_str(), w.mesh_id.c_str()));
 				++errors;
 			}
-			else if(pt->size.IsPositive())
+			else if(!pt->size.IsPositive())
 			{
 				ERROR(Format("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.mesh_id.c_str()));
 				++errors;
@@ -6370,7 +6370,7 @@ uint Game::TestGameData(bool major)
 				ERROR(Format("Test: Shield %s: no hitbox in mesh %s.", s.id.c_str(), s.mesh_id.c_str()));
 				++errors;
 			}
-			else if(pt->size.IsPositive())
+			else if(!pt->size.IsPositive())
 			{
 				ERROR(Format("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.mesh_id.c_str()));
 				++errors;
@@ -6405,7 +6405,7 @@ uint Game::TestGameData(bool major)
 				{
 					for(int i = 0; i < ud.frames->attacks; ++i)
 					{
-						if(!InRange(ud.frames->extra->e[i].start, ud.frames->extra->e[i].end, 0.f, 1.f))
+						if(!InRange(0.f, ud.frames->extra->e[i].start, ud.frames->extra->e[i].end, 1.f))
 						{
 							str += Format("\tInvalid values in attack %d (%g, %g).\n", i + 1, ud.frames->extra->e[i].start, ud.frames->extra->e[i].end);
 							++errors;
@@ -6424,7 +6424,7 @@ uint Game::TestGameData(bool major)
 				{
 					for(int i = 0; i < ud.frames->attacks; ++i)
 					{
-						if(!InRange(ud.frames->t[F_ATTACK1_START + i * 2], ud.frames->t[F_ATTACK1_END + i * 2], 0.f, 1.f))
+						if(!InRange(0.f, ud.frames->t[F_ATTACK1_START + i * 2], ud.frames->t[F_ATTACK1_END + i * 2], 1.f))
 						{
 							str += Format("\tInvalid values in attack %d (%g, %g).\n", i + 1, ud.frames->t[F_ATTACK1_START + i * 2],
 								ud.frames->t[F_ATTACK1_END + i * 2]);

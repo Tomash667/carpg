@@ -704,7 +704,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		const string& clas = cfg.GetString("autopick", "");
 		if(!clas.empty())
 		{
-			if(clas == "Random")
+			if(clas == "random")
 				game.autopick_class = Class::RANDOM;
 			else
 			{
@@ -902,7 +902,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	game.next_seed = cfg.GetUint("next_seed");
 	game.force_seed_all = ToBool(cfg.GetBool3("force_seed", False));
-	LOG(Format("Random seed: %u/%u/%d", seed, game.next_seed, (game.force_seed_all ? 1 : 0)));
+	LOG(Format("random seed: %u/%u/%d", seed, game.next_seed, (game.force_seed_all ? 1 : 0)));
 	Srand(seed);
 
 	// inne

@@ -251,7 +251,7 @@ struct BuildingScriptHandler : public TypeImpl<BuildingScript>
 			{ "shuffle", SK_SHUFFLE },
 			{ "required", SK_REQUIRED },
 			{ "rand", SK_RAND },
-			{ "Random", SK_RANDOM },
+			{ "random", SK_RANDOM },
 			{ "var", SK_VAR },
 			{ "set", SK_SET },
 			{ "inc", SK_INC },

@@ -281,7 +281,7 @@ static void PrepareTokenizer(Tokenizer& t)
 		{ "class", K_CLASS },
 		{ "nickname", K_NICKNAME },
 		{ "crazy", K_CRAZY },
-		{ "Random", K_RANDOM },
+		{ "random", K_RANDOM },
 		{ "item", K_ITEM },
 		{ "perk", K_PERK },
 		{ "unit", K_UNIT },

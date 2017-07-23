@@ -524,12 +524,6 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, c
 }
 
 //=================================================================================================
-inline Vec3 VEC32(const Vec2& v)
-{
-	return Vec3(v.x, v.y, 0);
-}
-
-//=================================================================================================
 void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& default_color, Vec4& current_color,
 	int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special)
 {
@@ -748,32 +742,32 @@ void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, co
 			clip_uv.v2 += Vec2(uv_size.x*s.x, uv_size.y*s.y);
 
 			// dodaj znak do bufora
-			v->pos = VEC32(clip_pos.LeftTop());
+			v->pos = clip_pos.LeftTop().XY();
 			v->color = current_color;
 			v->tex = clip_uv.LeftTop();
 			++v;
 
-			v->pos = VEC32(clip_pos.RightTop());
+			v->pos = clip_pos.RightTop().XY();
 			v->color = current_color;
 			v->tex = clip_uv.RightTop();
 			++v;
 
-			v->pos = VEC32(clip_pos.LeftBottom());
+			v->pos = clip_pos.LeftBottom().XY();
 			v->color = current_color;
 			v->tex = clip_uv.LeftBottom();
 			++v;
 
-			v->pos = VEC32(clip_pos.RightTop());
+			v->pos = clip_pos.RightTop().XY();
 			v->color = current_color;
 			v->tex = clip_uv.RightTop();
 			++v;
 
-			v->pos = VEC32(clip_pos.RightBottom());
+			v->pos = clip_pos.RightBottom().XY();
 			v->color = current_color;
 			v->tex = clip_uv.RightBottom();
 			++v;
 
-			v->pos = VEC32(clip_pos.LeftBottom());
+			v->pos = clip_pos.LeftBottom().XY();
 			v->color = current_color;
 			v->tex = clip_uv.LeftBottom();
 			++v;
@@ -946,32 +940,32 @@ void IGUI::DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_
 			clip_uv.v2 += Vec2(uv_size.x*s.x, uv_size.y*s.y);
 
 			// dodaj znak do bufora
-			v2->pos = VEC32(clip_pos.LeftTop());
+			v2->pos = clip_pos.LeftTop().XY();
 			v2->color = col;
 			v2->tex = clip_uv.LeftTop();
 			++v2;
 
-			v2->pos = VEC32(clip_pos.RightTop());
+			v2->pos = clip_pos.RightTop().XY();
 			v2->color = col;
 			v2->tex = clip_uv.RightTop();
 			++v2;
 
-			v2->pos = VEC32(clip_pos.LeftBottom());
+			v2->pos = clip_pos.LeftBottom().XY();
 			v2->color = col;
 			v2->tex = clip_uv.LeftBottom();
 			++v2;
 
-			v2->pos = VEC32(clip_pos.RightTop());
+			v2->pos = clip_pos.RightTop().XY();
 			v2->color = col;
 			v2->tex = clip_uv.RightTop();
 			++v2;
 
-			v2->pos = VEC32(clip_pos.RightBottom());
+			v2->pos = clip_pos.RightBottom().XY();
 			v2->color = col;
 			v2->tex = clip_uv.RightBottom();
 			++v2;
 
-			v2->pos = VEC32(clip_pos.LeftBottom());
+			v2->pos = clip_pos.LeftBottom().XY();
 			v2->color = col;
 			v2->tex = clip_uv.LeftBottom();
 			++v2;
@@ -1365,32 +1359,32 @@ void IGUI::DrawSprite(TEX t, const Int2& pos, DWORD color, const Rect* clipping)
 		Box2d clip_uv(Vec2(shift.x, shift.y));
 		clip_uv.v2 += Vec2(s.x, s.y);
 
-		v->pos = VEC32(clip_pos.LeftTop());
+		v->pos = clip_pos.LeftTop().XY();
 		v->color = col;
 		v->tex = clip_uv.LeftTop();
 		++v;
 
-		v->pos = VEC32(clip_pos.RightTop());
+		v->pos = clip_pos.RightTop().XY();
 		v->color = col;
 		v->tex = clip_uv.RightTop();
 		++v;
 
-		v->pos = VEC32(clip_pos.LeftBottom());
+		v->pos = clip_pos.LeftBottom().XY();
 		v->color = col;
 		v->tex = clip_uv.LeftBottom();
 		++v;
 
-		v->pos = VEC32(clip_pos.LeftBottom());
+		v->pos = clip_pos.LeftBottom().XY();
 		v->color = col;
 		v->tex = clip_uv.LeftBottom();
 		++v;
 
-		v->pos = VEC32(clip_pos.RightTop());
+		v->pos = clip_pos.RightTop().XY();
 		v->color = col;
 		v->tex = clip_uv.RightTop();
 		++v;
 
-		v->pos = VEC32(clip_pos.RightBottom());
+		v->pos = clip_pos.RightBottom().XY();
 		v->color = col;
 		v->tex = clip_uv.RightBottom();
 		++v;
@@ -1989,32 +1983,32 @@ void IGUI::DrawSpriteTransform(TEX t, const Matrix& mat, DWORD color)
 	leftBottom = Vec2::Transform(leftBottom, mat);
 	rightBottom = Vec2::Transform(rightBottom, mat);
 
-	v->pos = VEC32(leftTop);
+	v->pos = leftTop.XY();
 	v->color = col;
 	v->tex = Vec2(0, 0);
 	++v;
 
-	v->pos = VEC32(rightTop);
+	v->pos = rightTop.XY();
 	v->color = col;
 	v->tex = Vec2(1, 0);
 	++v;
 
-	v->pos = VEC32(leftBottom);
+	v->pos = leftBottom.XY();
 	v->color = col;
 	v->tex = Vec2(0, 1);
 	++v;
 
-	v->pos = VEC32(leftBottom);
+	v->pos = leftBottom.XY();
 	v->color = col;
 	v->tex = Vec2(0, 1);
 	++v;
 
-	v->pos = VEC32(rightTop);
+	v->pos = rightTop.XY();
 	v->color = col;
 	v->tex = Vec2(1, 0);
 	++v;
 
-	v->pos = VEC32(rightBottom);
+	v->pos = rightBottom.XY();
 	v->color = col;
 	v->tex = Vec2(1, 1);
 	++v;
@@ -2035,13 +2029,13 @@ void IGUI::DrawLine(const Vec2* lines, uint count, DWORD color, bool strip)
 
 	if(strip)
 	{
-		v->pos = VEC32(*lines++);
+		v->pos = (*lines++).XY();
 		v->color = col;
 		++v;
 
 		while(ile--)
 		{
-			v->pos = VEC32(*lines++);
+			v->pos = (*lines++).XY();
 			v->color = col;
 			++v;
 		}
@@ -2050,11 +2044,11 @@ void IGUI::DrawLine(const Vec2* lines, uint count, DWORD color, bool strip)
 	{
 		while(ile--)
 		{
-			v->pos = VEC32(*lines++);
+			v->pos = (*lines++).XY();
 			v->color = col;
 			++v;
 
-			v->pos = VEC32(*lines++);
+			v->pos = (*lines++).XY();
 			v->color = col;
 			++v;
 		}
@@ -2199,32 +2193,32 @@ void IGUI::DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, D
 	leftBottom = Vec2::Transform(leftBottom, mat);
 	rightBottom = Vec2::Transform(rightBottom, mat);
 
-	v->pos = VEC32(leftTop);
+	v->pos = leftTop.XY();
 	v->color = col;
 	v->tex = uv.LeftTop();
 	++v;
 
-	v->pos = VEC32(rightTop);
+	v->pos = rightTop.XY();
 	v->color = col;
 	v->tex = uv.RightTop();
 	++v;
 
-	v->pos = VEC32(leftBottom);
+	v->pos = leftBottom.XY();
 	v->color = col;
 	v->tex = uv.LeftBottom();
 	++v;
 
-	v->pos = VEC32(leftBottom);
+	v->pos = leftBottom.XY();
 	v->color = col;
 	v->tex = uv.LeftBottom();
 	++v;
 
-	v->pos = VEC32(rightTop);
+	v->pos = rightTop.XY();
 	v->color = col;
 	v->tex = uv.RightTop();
 	++v;
 
-	v->pos = VEC32(rightBottom);
+	v->pos = rightBottom.XY();
 	v->color = col;
 	v->tex = uv.RightBottom();
 	++v;

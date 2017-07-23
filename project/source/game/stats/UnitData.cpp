@@ -1884,7 +1884,7 @@ uint LoadUnits(uint& out_crc, uint& errors)
 
 	t.AddKeywords(G_ITEM_KEYWORD, {
 		{ "chance", IK_CHANCE },
-		{ "Random", IK_RANDOM },
+		{ "random", IK_RANDOM },
 		{ "if", IK_IF },
 		{ "else", IK_ELSE },
 		{ "level", IK_LEVEL }
@@ -2308,7 +2308,7 @@ void LogItemScript(const int* script)
 			++ps;
 			b = *ps;
 			++ps;
-			s += Format("Random %d %d ", a, b);
+			s += Format("random %d %d ", a, b);
 			LogItem(s, ps);
 			s += "\n";
 			break;

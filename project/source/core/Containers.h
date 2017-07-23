@@ -263,9 +263,14 @@ inline bool IsInside(const vector<T>* v, const T& elem)
 template<typename T>
 struct ObjectPool
 {
+	ObjectPool() : destroyed(false)
+	{
+	}
+
 	~ObjectPool()
 	{
 		Cleanup();
+		destroyed = true;
 	}
 
 	T* Get()
@@ -303,20 +308,20 @@ struct ObjectPool
 		}
 	}
 
-	void Free(T* t)
+	void Free(T* e)
 	{
-		assert(t);
+		assert(e);
 #ifdef _DEBUG
-		VerifyElement(t);
+		VerifyElement(e);
 #endif
 		__if_exists(T::OnFree)
 		{
-			t->OnFree();
+			e->OnFree();
 		}
 #ifdef CHECK_POOL_LEAK
-		delete t;
+		delete e;
 #else
-		pool.push_back(t);
+		pool.push_back(e);
 #endif
 	}
 
@@ -350,27 +355,59 @@ struct ObjectPool
 #endif
 	}
 
+	void SafeFree(T* e)
+	{
+		if(!destroyed)
+			Free(e);
+		else
+		{
+			assert(e);
+			__if_exists(T::OnFree)
+			{
+				e->OnFree();
+			}
+			delete e;
+		}
+	}
+
 	void SafeFree(vector<T*>& elems)
 	{
 #ifdef _DEBUG
 		CheckDuplicates(elems);
 #endif
-		for(T* e : elems)
+		if(!destroyed)
 		{
-			if(e)
+			for(T* e : elems)
 			{
-#ifdef _DEBUG
-				VerifyElement(e);
-#endif
-				__if_exists(T::OnFree)
+				if(e)
 				{
-					e->OnFree();
-				}
-#ifdef CHECK_POOL_LEAK
-				delete e;
-#else
-				pool.push_back(e);
+#ifdef _DEBUG
+					VerifyElement(e);
 #endif
+					__if_exists(T::OnFree)
+					{
+						e->OnFree();
+					}
+#ifdef CHECK_POOL_LEAK
+					delete e;
+#else
+					pool.push_back(e);
+#endif
+				}
+			}
+		}
+		else
+		{
+			for(T* e : elems)
+			{
+				if(e)
+				{
+					__if_exists(T::OnFree)
+					{
+						e->OnFree();
+					}
+					delete e;
+				}
 			}
 		}
 		elems.clear();
@@ -383,6 +420,7 @@ struct ObjectPool
 
 private:
 	vector<T*> pool;
+	bool destroyed;
 };
 
 template<typename T>

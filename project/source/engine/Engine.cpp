@@ -18,7 +18,7 @@ extern string g_system_dir;
 Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), fmod_system(nullptr),
 phy_config(nullptr), phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), replace_cursor(false), locked_cursor(true),
 lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1, -1), s_wnd_size(-1, -1), music_ended(false), disabled_sound(false), key_callback(nullptr),
-res_freed(false), vsync(true), resMgr(ResourceManager::Get())
+res_freed(false), vsync(true), resMgr(ResourceManager::Get()), active(false), mouse_dif(0, 0)
 {
 	engine = this;
 }
@@ -67,12 +67,10 @@ void Engine::ChangeMode()
 		SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, real_size.x, real_size.y, SWP_NOMOVE | SWP_SHOWWINDOW);
 	}
 
-	// ustaw myszkę na środku
-	if(active)
-		PlaceCursor();
-	else
-		replace_cursor = true;
+	// reset cursor
+	replace_cursor = true;
 	mouse_dif = Int2(0, 0);
+	unlock_point = real_size / 2;
 }
 
 //=================================================================================================
@@ -429,7 +427,7 @@ void Engine::DoTick(bool update_game)
 	const float dt = timer.Tick();
 	assert(dt >= 0.f);
 
-	// oblicz fps
+	// calculate fps
 	frames++;
 	frame_time += dt;
 	if(frame_time >= 1.f)
@@ -439,58 +437,33 @@ void Engine::DoTick(bool update_game)
 		frame_time = 0.f;
 	}
 
-	// TODO
 	// update activity state
-	/*HWND foreground = GetForegroundWindow();
+	HWND foreground = GetForegroundWindow();
 	bool is_active = (foreground == hwnd);
 	bool was_active = active;
 	UpdateActivity(is_active);
 
 	// handle cursor movement
+	mouse_dif = Int2(0, 0);
 	if(active)
 	{
-		if(was_active)
+		if(locked_cursor)
 		{
-			POINT pt;
-			GetCursorPos(&pt);
-			ScreenToClient(hwnd, &pt);
-			INT2 dif = INT2(pt.x, pt.y) - size / 2;
-			Input.UpdateMouse(dif);
+			if(replace_cursor)
+				replace_cursor = false;
+			else if(was_active)
+			{
+				POINT pt;
+				GetCursorPos(&pt);
+				ScreenToClient(hwnd, &pt);
+				mouse_dif = Int2(pt.x, pt.y) - real_size / 2;
+			}
+			PlaceCursor();
 		}
-		POINT center = { size.x / 2, size.y / 2 };
-		ClientToScreen(hwnd, &center);
-		SetCursorPos(center.x, center.y);
-	}*/
-
-	// sprawdzanie czy okno jest aktywne
-	if(active && GetForegroundWindow() != hwnd)
-	{
-		active = false;
-		Key.ReleaseKeys();
-		ShowCursor(false);
 	}
-
-	// pozycjonowanie myszki na środku okna
-	if(active && replace_cursor)
-	{
-		PlaceCursor();
-		replace_cursor = false;
-	}
-
-	// aktualizacja myszki
-	if(active && locked_cursor)
-	{
-		POINT p;
-		GetCursorPos(&p);
-		ScreenToClient(hwnd, &p);
-		mouse_dif.x = p.x - real_size.x / 2;
-		mouse_dif.y = p.y - real_size.y / 2;
-		PlaceCursor();
-		ShowCursor(false);
-	}
-	else
-		mouse_dif = Int2(0, 0);
-
+	else if(!locked_cursor)
+		locked_cursor = true;
+	
 	// update keyboard shortcuts info
 	Key.UpdateShortcuts();
 
@@ -572,40 +545,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 	switch(msg)
 	{
-	// TODO
-	// (dez)aktywowano okno
-	case WM_ACTIVATE:
-		down = (wParam != WA_INACTIVE);
-		if(!active && down)
-		{
-			if(locked_cursor)
-				PlaceCursor();
-			else
-				locked_cursor = true;
-			mouse_dif = Int2(0, 0);
-		}
-		else if(locked_cursor)
-		{
-			Rect rect;
-			GetClientRect(hwnd, (RECT*)&rect);
-			Int2 wh = rect.Size();
-			POINT pt;
-			pt.x = int(float(unlock_point.x)*wh.x / wnd_size.x);
-			pt.y = int(float(unlock_point.y)*wh.y / wnd_size.y);
-			ClientToScreen(hwnd, &pt);
-			SetCursorPos(pt.x, pt.y);
-		}
-		if(active != down)
-		{
-			active = down;
-			OnFocus(active);
-		}
-		ShowCursor(!active);
-		if(!active)
-			Key.ReleaseKeys();
-		return 0;
-
-	// okno zosta�o zamkni�te / zniszczone
+	// okno zostało zamknięte / zniszczone
 	case WM_CLOSE:
 	case WM_DESTROY:
 		engine_shutdown = true;
@@ -649,7 +589,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		}
 		else
 		{
-			if(!locked_cursor && down)
+			if((!locked_cursor || !active) && down)
 			{
 				ShowCursor(false);
 				Rect rect;
@@ -1027,8 +967,11 @@ void Engine::InitWindow(cstring title)
 
 	// show window
 	ShowWindow(hwnd, SW_SHOWNORMAL);
-	unlock_point.x = (GetSystemMetrics(SM_CXSCREEN) - real_size.x) / 2;
-	unlock_point.y = (GetSystemMetrics(SM_CYSCREEN) - real_size.y) / 2;
+
+	// reset cursor
+	replace_cursor = true;
+	mouse_dif = Int2(0, 0);
+	unlock_point = real_size / 2;
 
 	INFO("Engine: Window created.");
 }
@@ -1500,19 +1443,20 @@ void Engine::UpdateMusic(float dt)
 //=================================================================================================
 void Engine::UpdateActivity(bool is_active)
 {
-	/*if(is_active == active)
+	if(is_active == active)
 		return;
 	active = is_active;
 	if(active)
 	{
 		ShowCursor(FALSE);
-		POINT center = { size.x / 2, size.y / 2 };
-		ClientToScreen(hwnd, &center);
-		SetCursorPos(center.x, center.y);
+		PlaceCursor();
 	}
 	else
+	{
 		ShowCursor(TRUE);
-	OnFocus(active);*/
+		Key.ReleaseKeys();
+	}
+	OnFocus(active);
 }
 
 //=================================================================================================
