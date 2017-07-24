@@ -244,9 +244,9 @@ bool LoadProfile(Tokenizer& t, Crc& crc, StatProfile** result = nullptr)
 	catch(const Tokenizer::Exception& e)
 	{
 		if(!profile->id.empty())
-			ERROR(Format("Failed to load profile '%s': %s", profile->id.c_str(), e.ToString()));
+			Error("Failed to load profile '%s': %s", profile->id.c_str(), e.ToString());
 		else
-			ERROR(Format("Failed to load profile: %s", e.ToString()));
+			Error("Failed to load profile: %s", e.ToString());
 		delete profile;
 		return false;
 	}
@@ -687,9 +687,9 @@ bool LoadItems(Tokenizer& t, Crc& crc, ItemScript** result = nullptr)
 	catch(const Tokenizer::Exception& e)
 	{
 		if(!script->id.empty())
-			ERROR(Format("Failed to load item script '%s': %s", script->id.c_str(), e.ToString()));
+			Error("Failed to load item script '%s': %s", script->id.c_str(), e.ToString());
 		else
-			ERROR(Format("Failed to load item script: %s", e.ToString()));
+			Error("Failed to load item script: %s", e.ToString());
 		delete script;
 		return false;
 	}
@@ -783,9 +783,9 @@ bool LoadSpells(Tokenizer& t, Crc& crc, SpellList** result = nullptr)
 	catch(const Tokenizer::Exception& e)
 	{
 		if(!spell_list->id.empty())
-			ERROR(Format("Failed to load spell list '%s': %s", spell_list->id.c_str(), e.ToString()));
+			Error("Failed to load spell list '%s': %s", spell_list->id.c_str(), e.ToString());
 		else
-			ERROR(Format("Failed to load spell list: %s", e.ToString()));
+			Error("Failed to load spell list: %s", e.ToString());
 		delete spell_list;
 		return false;
 	}
@@ -840,9 +840,9 @@ bool LoadSounds(Tokenizer& t, Crc& crc, SoundPack** result = nullptr)
 	catch(const Tokenizer::Exception& e)
 	{
 		if(!sound->id.empty())
-			ERROR(Format("Failed to load sound pack '%s': %s", sound->id.c_str(), e.ToString()));
+			Error("Failed to load sound pack '%s': %s", sound->id.c_str(), e.ToString());
 		else
-			ERROR(Format("Failed to load sound pack: %s", e.ToString()));
+			Error("Failed to load sound pack: %s", e.ToString());
 		delete sound;
 		return false;
 	}
@@ -996,9 +996,9 @@ bool LoadFrames(Tokenizer& t, Crc& crc, FrameInfo** result = nullptr)
 	catch(const Tokenizer::Exception& e)
 	{
 		if(!frame->id.empty())
-			ERROR(Format("Failed to load frame info '%s': %s", frame->id.c_str(), e.ToString()));
+			Error("Failed to load frame info '%s': %s", frame->id.c_str(), e.ToString());
 		else
-			ERROR(Format("Failed to load frame info: %s", frame->id.c_str(), e.ToString()));
+			Error("Failed to load frame info: %s", frame->id.c_str(), e.ToString());
 		delete frame;
 		return false;
 	}
@@ -1069,9 +1069,9 @@ bool LoadTex(Tokenizer& t, Crc& crc, TexPack** result = nullptr)
 	catch(const Tokenizer::Exception& e)
 	{
 		if(!tex->id.empty())
-			ERROR(Format("Failed to load texture pack '%s': %s", tex->id.c_str(), e.ToString()));
+			Error("Failed to load texture pack '%s': %s", tex->id.c_str(), e.ToString());
 		else
-			ERROR(Format("Failed to load texture pack: %s", e.ToString()));
+			Error("Failed to load texture pack: %s", e.ToString());
 		delete tex;
 		return false;
 	}
@@ -1122,9 +1122,9 @@ bool LoadIdles(Tokenizer& t, Crc& crc, IdlePack** result = nullptr)
 	catch(const Tokenizer::Exception& e)
 	{
 		if(!idle->id.empty())
-			ERROR(Format("Failed to load idles '%s': %s", idle->id.c_str(), e.ToString()));
+			Error("Failed to load idles '%s': %s", idle->id.c_str(), e.ToString());
 		else
-			ERROR(Format("Failed to load idles: %s", e.ToString()));
+			Error("Failed to load idles: %s", e.ToString());
 		delete idle;
 		return false;
 	}
@@ -1527,7 +1527,7 @@ bool LoadUnit(Tokenizer& t, Crc& crc)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load unit data '%s': %s", unit->id.c_str(), e.ToString()));
+		Error("Failed to load unit data '%s': %s", unit->id.c_str(), e.ToString());
 		delete unit;
 		return false;
 	}
@@ -1556,7 +1556,7 @@ bool LoadAlias(Tokenizer& t, Crc& crc)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load unit alias: %s", e.ToString()));
+		Error("Failed to load unit alias: %s", e.ToString());
 		return false;
 	}
 }
@@ -1632,7 +1632,7 @@ bool LoadGroup(Tokenizer& t, Crc& crc)
 			str = Format("Failed to load unit group '%s': %s", group->id.c_str(), e.ToString());
 		else
 			str = Format("Failed to load unit group: %s", group->id.c_str(), e.ToString());
-		ERROR(str);
+		Error(str);
 		delete group;
 		return false;
 	}
@@ -1955,7 +1955,7 @@ uint LoadUnits(uint& out_crc, uint& errors)
 						ok = false;
 					break;
 				default:
-					ERROR(Format("Invalid type %d.", type));
+					Error("Invalid type %d.", type);
 					ok = false;
 					break;
 				}
@@ -1969,7 +1969,7 @@ uint LoadUnits(uint& out_crc, uint& errors)
 			else
 			{
 				int group = G_TYPE;
-				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
+				Error(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
 				++errors;
 				skip = true;
 			}
@@ -1982,7 +1982,7 @@ uint LoadUnits(uint& out_crc, uint& errors)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load items: %s", e.ToString()));
+		Error("Failed to load items: %s", e.ToString());
 		++errors;
 	}
 
@@ -2315,7 +2315,7 @@ void LogItemScript(const int* script)
 		}
 	}
 
-	LOG(s.c_str());
+	Info(s.c_str());
 }
 
 //=================================================================================================

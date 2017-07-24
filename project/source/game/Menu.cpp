@@ -228,7 +228,7 @@ void Game::SaveLoadEvent(int id)
 			catch(cstring err)
 			{
 				err = Format("%s%s", txLoadError, err);
-				ERROR(err);
+				Error(err);
 				GUI.SimpleDialog(err, saveload);
 				mp_load = false;
 			}
@@ -621,7 +621,7 @@ void Game::OnEnterIp(int id)
 				return;
 			}
 
-			LOG(Format("Pinging %s...", server_ip.c_str()));
+			Info("Pinging %s...", server_ip.c_str());
 			info_box->Show(txConnecting);
 			net_mode = NM_CONNECT_IP;
 			net_state = 0;
@@ -659,14 +659,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 					if(net_tries == 0)
 					{
 						// czas na po³¹czenie min¹³
-						WARN("NM_CONNECT_IP(0): Connection timeout.");
+						Warn("NM_CONNECT_IP(0): Connection timeout.");
 						EndConnecting(txConnectTimeout);
 						return;
 					}
 					else
 					{
 						// pinguj kolejny raz
-						LOG(Format("Pinging %s...", net_adr.c_str()));
+						Info("Pinging %s...", net_adr.c_str());
 						peer->Ping(net_adr.c_str(), (word)mp_port, false);
 						--net_tries;
 						net_timer = T_CONNECT_PING;
@@ -684,14 +684,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 					if(msg_id != ID_UNCONNECTED_PONG)
 					{
 						// unknown packet from server
-						WARN(Format("NM_CONNECT_IP(0): Unknown server response: %u.", msg_id));
+						Warn("NM_CONNECT_IP(0): Unknown server response: %u.", msg_id);
 						StreamError();
 						continue;
 					}
 
 					if(packet->length == sizeof(RakNet::TimeMS) + 1)
 					{
-						WARN("NM_CONNECT_IP(0): Server not set SetOfflinePingResponse yet.");
+						Warn("NM_CONNECT_IP(0): Server not set SetOfflinePingResponse yet.");
 						StreamError();
 						continue;
 					}
@@ -711,14 +711,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 					if(!stream.Read(time_ms)
 						|| !stream.Read<char[2]>(sign_ca))
 					{
-						WARN("NM_CONNECT_IP(0): Broken server response.");
+						Warn("NM_CONNECT_IP(0): Broken server response.");
 						StreamError();
 						continue;
 					}
 					if(sign_ca[0] != 'C' || sign_ca[1] != 'A')
 					{
 						// invalid signature, this is not carpg server
-						WARN(Format("NM_CONNECT_IP(0): Invalid server signature 0x%x%x.", byte(sign_ca[0]), byte(sign_ca[1])));
+						Warn("NM_CONNECT_IP(0): Invalid server signature 0x%x%x.", byte(sign_ca[0]), byte(sign_ca[1]));
 						StreamError();
 						peer->DeallocatePacket(packet);
 						EndConnecting(txConnectInvalid);
@@ -734,7 +734,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						|| !stream.Read(flags)
 						|| !ReadString1(stream))
 					{
-						ERROR("NM_CONNECT_IP(0): Broken server message.");
+						Error("NM_CONNECT_IP(0): Broken server message.");
 						StreamError();
 						peer->DeallocatePacket(packet);
 						EndConnecting(txConnectInvalid);
@@ -749,7 +749,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					{
 						// version mismatch
 						cstring s = VersionToString(version);
-						ERROR(Format("NM_CONNECT_IP(0): Invalid client version '%s' vs server '%s'.", VERSION_STR, s));
+						Error("NM_CONNECT_IP(0): Invalid client version '%s' vs server '%s'.", VERSION_STR, s);
 						peer->DeallocatePacket(packet);
 						EndConnecting(Format(txConnectVersion, VERSION_STR, s));
 						return;
@@ -758,9 +758,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 					// ustaw serwer
 					max_players2 = max_players;
 					server_name2 = BUF;
-					LOG(Format("NM_CONNECT_IP(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name2.c_str(), players, max_players, flags));
+					Info("NM_CONNECT_IP(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name2.c_str(), players, max_players, flags);
 					if(IS_SET(flags, 0xFC))
-						WARN("NM_CONNECT_IP(0): Unknown server flags.");
+						Warn("NM_CONNECT_IP(0): Unknown server flags.");
 					server = packet->systemAddress;
 					enter_pswd.clear();
 
@@ -774,7 +774,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						params.limit = 16;
 						params.parent = info_box;
 						GetTextDialog::Show(params);
-						LOG("NM_CONNECT_IP(0): Waiting for password...");
+						Info("NM_CONNECT_IP(0): Waiting for password...");
 					}
 					else
 					{
@@ -786,12 +786,12 @@ void Game::GenericInfoBoxUpdate(float dt)
 							net_timer = T_CONNECT;
 							net_state = 2;
 							info_box->Show(Format(txConnectingTo, server_name2.c_str()));
-							LOG(Format("NM_CONNECT_IP(0): Connecting to server %s...", server_name2.c_str()));
+							Info("NM_CONNECT_IP(0): Connecting to server %s...", server_name2.c_str());
 						}
 						else
 						{
 							// b³¹d ³¹czenie z serwerem
-							ERROR(Format("NM_CONNECT_IP(0): Can't connect to server: raknet error %d.", result));
+							Error("NM_CONNECT_IP(0): Can't connect to server: raknet error %d.", result);
 							EndConnecting(txConnectRaknet);
 						}
 					}
@@ -817,7 +817,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							// int - wersja
 							// crc
 							// string1 - nick
-							LOG("NM_CONNECT_IP(2): Connected with server.");
+							Info("NM_CONNECT_IP(2): Connected with server.");
 							net_stream.Reset();
 							net_stream.Write(ID_HELLO);
 							net_stream.Write(VERSION);
@@ -841,7 +841,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								!stream.ReadCasted<byte>(leader_id) ||
 								!stream.ReadCasted<byte>(count))
 							{
-								ERROR("NM_CONNECT_IP(2): Broken packet ID_JOIN.");
+								Error("NM_CONNECT_IP(2): Broken packet ID_JOIN.");
 								StreamError();
 								peer->DeallocatePacket(packet);
 								EndConnecting(txCantJoin, true);
@@ -874,7 +874,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 									!stream.ReadCasted<byte>(info2.clas) ||
 									!ReadString1(stream, info2.name))
 								{
-									ERROR("NM_CONNECT_IP(2): Broken packet ID_JOIN(2).");
+									Error("NM_CONNECT_IP(2): Broken packet ID_JOIN(2).");
 									StreamError();
 									peer->DeallocatePacket(packet);
 									EndConnecting(txCantJoin, true);
@@ -884,7 +884,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								// sprawdŸ klasê
 								if(!ClassInfo::IsPickable(info2.clas) && info2.clas != Class::INVALID)
 								{
-									ERROR(Format("NM_CONNECT_IP(2): Broken packet ID_JOIN, player %s has class %d.", info2.name.c_str(), info2.clas));
+									Error("NM_CONNECT_IP(2): Broken packet ID_JOIN, player %s has class %d.", info2.name.c_str(), info2.clas);
 									StreamError();
 									peer->DeallocatePacket(packet);
 									EndConnecting(txCantJoin, true);
@@ -895,7 +895,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							// informacja o zapisie
 							if(!stream.ReadCasted<byte>(load_char))
 							{
-								ERROR("NM_CONNECT_IP(2): Broken packet ID_JOIN(4).");
+								Error("NM_CONNECT_IP(2): Broken packet ID_JOIN(4).");
 								StreamError();
 								peer->DeallocatePacket(packet);
 								EndConnecting(txCantJoin, true);
@@ -903,7 +903,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							}
 							if(load_char == 2 && !stream.ReadCasted<byte>(game_players[0].clas))
 							{
-								ERROR("NM_CONNECT_IP(2): Broken packet ID_JOIN(3).");
+								Error("NM_CONNECT_IP(2): Broken packet ID_JOIN(3).");
 								StreamError();
 								peer->DeallocatePacket(packet);
 								EndConnecting(txCantJoin, true);
@@ -917,7 +917,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							int index = GetPlayerIndex(leader_id);
 							if(index == -1)
 							{
-								ERROR(Format("NM_CONNECT_IP(2): Broken packet ID_JOIN, no player with leader id %d.", leader_id));
+								Error("NM_CONNECT_IP(2): Broken packet ID_JOIN, no player with leader id %d.", leader_id);
 								EndConnecting(txCantJoin, true);
 								return;
 							}
@@ -1042,9 +1042,9 @@ void Game::GenericInfoBoxUpdate(float dt)
 							StreamEnd();
 							peer->DeallocatePacket(packet);
 							if(reason_eng)
-								WARN(Format("NM_CONNECT_IP(2): Can't connect to server: %s.", reason_eng));
+								Warn("NM_CONNECT_IP(2): Can't connect to server: %s.", reason_eng);
 							else
-								WARN(Format("NM_CONNECT_IP(2): Can't connect to server (%d).", type));
+								Warn("NM_CONNECT_IP(2): Can't connect to server (%d).", type);
 							if(reason)
 								EndConnecting(Format("%s:\n%s", txCantJoin2, reason), true);
 							else
@@ -1054,21 +1054,21 @@ void Game::GenericInfoBoxUpdate(float dt)
 					case ID_CONNECTION_LOST:
 					case ID_DISCONNECTION_NOTIFICATION:
 						// utracono po³¹czenie z serwerem albo nas wykopano
-						WARN(msg_id == ID_CONNECTION_LOST ? "NM_CONNECT_IP(2): Lost connection with server." : "NM_CONNECT_IP(2): Disconnected from server.");
+						Warn(msg_id == ID_CONNECTION_LOST ? "NM_CONNECT_IP(2): Lost connection with server." : "NM_CONNECT_IP(2): Disconnected from server.");
 						StreamEnd();
 						peer->DeallocatePacket(packet);
 						EndConnecting(txLostConnection);
 						return;
 					case ID_INVALID_PASSWORD:
 						// podano b³êdne has³o
-						WARN("NM_CONNECT_IP(2): Invalid password.");
+						Warn("NM_CONNECT_IP(2): Invalid password.");
 						StreamEnd();
 						peer->DeallocatePacket(packet);
 						EndConnecting(txInvalidPswd);
 						return;
 					default:
 						StreamError();
-						WARN(Format("NM_CONNECT_IP(2): Unknown packet from server %u.", msg_id));
+						Warn("NM_CONNECT_IP(2): Unknown packet from server %u.", msg_id);
 						break;
 					}
 
@@ -1078,7 +1078,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				net_timer -= dt;
 				if(net_timer <= 0.f)
 				{
-					WARN("NM_CONNECT_IP(2): Connection timeout.");
+					Warn("NM_CONNECT_IP(2): Connection timeout.");
 					EndConnecting(txConnectTimeout);
 					return;
 				}
@@ -1098,7 +1098,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 				if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
 				{
-					LOG("NM_QUITTING: Server accepted disconnection.");
+					Info("NM_QUITTING: Server accepted disconnection.");
 					peer->DeallocatePacket(packet);
 					ClosePeer();
 					if(server_panel->visible)
@@ -1109,13 +1109,13 @@ void Game::GenericInfoBoxUpdate(float dt)
 					return;
 				}
 				else
-					LOG(Format("NM_QUITTING: Ignored packet %u.", msg_id));
+					Info("NM_QUITTING: Ignored packet %u.", msg_id);
 			}
 
 			net_timer -= dt;
 			if(net_timer <= 0.f)
 			{
-				WARN("NM_QUITTING: Disconnected without accepting.");
+				Warn("NM_QUITTING: Disconnected without accepting.");
 				peer->DeallocatePacket(packet);
 				ClosePeer();
 				if(server_panel->visible)
@@ -1138,7 +1138,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				if(index == -1)
 				{
 					StreamError();
-					WARN(Format("NM_QUITTING_SERVER: Ignoring packet from unconnected player %s.", packet->systemAddress.ToString()));
+					Warn("NM_QUITTING_SERVER: Ignoring packet from unconnected player %s.", packet->systemAddress.ToString());
 				}
 				else
 				{
@@ -1148,15 +1148,15 @@ void Game::GenericInfoBoxUpdate(float dt)
 					if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
 					{
 						if(info.state == PlayerInfo::IN_LOBBY)
-							LOG(Format("NM_QUITTING_SERVER: Player %s left lobby.", info.name.c_str()));
+							Info("NM_QUITTING_SERVER: Player %s left lobby.", info.name.c_str());
 						else
-							LOG(Format("NM_QUITTING_SERVER: %s left lobby.", packet->systemAddress.ToString()));
+							Info("NM_QUITTING_SERVER: %s left lobby.", packet->systemAddress.ToString());
 						--players;
 						if(players == 0)
 						{
 							StreamEnd();
 							peer->DeallocatePacket(packet);
-							LOG("NM_QUITTING_SERVER: All players disconnected from server. Closing...");
+							Info("NM_QUITTING_SERVER: All players disconnected from server. Closing...");
 							ClosePeer();
 							info_box->CloseDialog();
 							if(server_panel->visible)
@@ -1168,8 +1168,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 					}
 					else
 					{
-						LOG(Format("NM_QUITTING_SERVER: Ignoring packet from %s.",
-							info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : packet->systemAddress.ToString()));
+						Info("NM_QUITTING_SERVER: Ignoring packet from %s.",
+							info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : packet->systemAddress.ToString());
 					}
 					StreamEnd();
 				}
@@ -1178,7 +1178,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 			net_timer -= dt;
 			if(net_timer <= 0.f)
 			{
-				WARN("NM_QUITTING_SERVER: Not all players disconnected on time. Closing server...");
+				Warn("NM_QUITTING_SERVER: Not all players disconnected on time. Closing server...");
 				ClosePeer();
 				info_box->CloseDialog();
 				if(server_panel->visible)
@@ -1203,7 +1203,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				{
 				case ID_DISCONNECTION_NOTIFICATION:
 				case ID_CONNECTION_LOST:
-					LOG("NM_TRANSFER: Lost connection with server.");
+					Info("NM_TRANSFER: Lost connection with server.");
 					StreamEnd();
 					peer->DeallocatePacket(packet);
 					ClosePeer();
@@ -1231,14 +1231,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 						}
 						else
 						{
-							ERROR("NM_TRANSFER: Broken packet ID_STATE.");
+							Error("NM_TRANSFER: Broken packet ID_STATE.");
 							StreamError();
 						}
 					}
 					break;
 				case ID_WORLD_DATA:
 					{
-						LOG("NM_TRANSFER: Received world data.");
+						Info("NM_TRANSFER: Received world data.");
 
 						LoadingStep("");
 						ClearGameVarsOnNewGame();
@@ -1255,11 +1255,11 @@ void Game::GenericInfoBoxUpdate(float dt)
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							info_box->Show(txLoadedWorld);
 							LoadingStep("");
-							LOG("NM_TRANSFER: Loaded world data.");
+							Info("NM_TRANSFER: Loaded world data.");
 						}
 						else
 						{
-							ERROR("NM_TRANSFER: Failed to read world data.");
+							Error("NM_TRANSFER: Failed to read world data.");
 							StreamError();
 							peer->DeallocatePacket(packet);
 							ClearAndExitToMenu(txWorldDataError);
@@ -1279,11 +1279,11 @@ void Game::GenericInfoBoxUpdate(float dt)
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							info_box->Show(txLoadedPlayer);
 							LoadingStep("");
-							LOG("NM_TRANSFER: Loaded player start data.");
+							Info("NM_TRANSFER: Loaded player start data.");
 						}
 						else
 						{
-							ERROR("NM_TRANSFER: Failed to read player data.");
+							Error("NM_TRANSFER: Failed to read player data.");
 							StreamError();
 							peer->DeallocatePacket(packet);
 							ClearAndExitToMenu(txPlayerDataError);
@@ -1292,7 +1292,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					}
 					else
 					{
-						ERROR(Format("NM_TRANSFER: Received ID_PLAYER_START_DATA with net state %d.", net_state));
+						Error("NM_TRANSFER: Received ID_PLAYER_START_DATA with net state %d.", net_state);
 						StreamError();
 					}
 					break;
@@ -1313,24 +1313,24 @@ void Game::GenericInfoBoxUpdate(float dt)
 								current_location = loc;
 								location = locations[loc];
 								dungeon_level = level;
-								LOG(Format("NM_TRANSFER: Level change to %s (id:%d, level:%d).", location->name.c_str(), current_location, dungeon_level));
+								Info("NM_TRANSFER: Level change to %s (id:%d, level:%d).", location->name.c_str(), current_location, dungeon_level);
 								info_box->Show(txGeneratingLocation);
 							}
 							else
 							{
-								ERROR(Format("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL, invalid location %u.", loc));
+								Error("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL, invalid location %u.", loc);
 								StreamError();
 							}
 						}
 						else
 						{
-							ERROR("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL.");
+							Error("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL.");
 							StreamError();
 						}
 					}
 					else
 					{
-						ERROR(Format("NM_TRANSFER: Received ID_CHANGE_LEVEL with net state %d.", net_state));
+						Error("NM_TRANSFER: Received ID_CHANGE_LEVEL with net state %d.", net_state);
 						StreamError();
 					}
 					break;
@@ -1342,7 +1342,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						LoadingStep("");
 						if(!ReadLevelData(stream))
 						{
-							ERROR("NM_TRANSFER: Failed to read location data.");
+							Error("NM_TRANSFER: Failed to read location data.");
 							StreamError();
 							peer->DeallocatePacket(packet);
 							ClearAndExitToMenu(txLoadingLocationError);
@@ -1350,7 +1350,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						}
 						else
 						{
-							LOG("NM_TRANSFER: Loaded level data.");
+							Info("NM_TRANSFER: Loaded level data.");
 							byte b[] = { ID_READY, 2 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							LoadingStep("");
@@ -1358,7 +1358,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					}
 					else
 					{
-						ERROR(Format("NM_TRANSFER: Received ID_LEVEL_DATA with net state %d.", net_state));
+						Error("NM_TRANSFER: Received ID_LEVEL_DATA with net state %d.", net_state);
 						StreamError();
 					}
 					break;
@@ -1370,7 +1370,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						LoadingStep("");
 						if(!ReadPlayerData(stream))
 						{
-							ERROR("NM_TRANSFER: Failed to read player data.");
+							Error("NM_TRANSFER: Failed to read player data.");
 							StreamError();
 							peer->DeallocatePacket(packet);
 							ClearAndExitToMenu(txLoadingCharsError);
@@ -1378,7 +1378,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						}
 						else
 						{
-							LOG("NM_TRANSFER: Loaded player data.");
+							Info("NM_TRANSFER: Loaded player data.");
 							byte b[] = { ID_READY, 3 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							LoadingStep("");
@@ -1386,7 +1386,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					}
 					else
 					{
-						ERROR(Format("NM_TRANSFER: Received ID_PLAYER_DATA2 with net state %d.", net_state));
+						Error("NM_TRANSFER: Received ID_PLAYER_DATA2 with net state %d.", net_state);
 						StreamError();
 					}
 					break;
@@ -1395,7 +1395,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					{
 						assert(net_state == 4);
 						++net_state;
-						LOG("NM_TRANSFER: Level started.");
+						Info("NM_TRANSFER: Level started.");
 						clear_color = clear_color2;
 						game_state = GS_LEVEL;
 						load_screen->visible = false;
@@ -1417,7 +1417,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					}
 					else
 					{
-						ERROR(Format("NM_TRANSFER: Received ID_START with net state %d.", net_state));
+						Error("NM_TRANSFER: Received ID_START with net state %d.", net_state);
 						StreamError();
 					}
 					return;
@@ -1425,7 +1425,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					if(net_state == 1)
 					{
 						++net_state;
-						LOG("NM_TRANSFER: Starting at world map.");
+						Info("NM_TRANSFER: Starting at world map.");
 						clear_color = WHITE;
 						game_state = GS_WORLDMAP;
 						load_screen->visible = false;
@@ -1446,13 +1446,13 @@ void Game::GenericInfoBoxUpdate(float dt)
 					}
 					else
 					{
-						ERROR(Format("NM_TRANSFER: Received ID_START_AT_WORLDMAP with net state %d.", net_state));
+						Error("NM_TRANSFER: Received ID_START_AT_WORLDMAP with net state %d.", net_state);
 						StreamError();
 						break;
 					}
 					return;
 				default:
-					WARN(Format("NM_TRANSFER: Unknown packet %u.", msg_id));
+					Warn("NM_TRANSFER: Unknown packet %u.", msg_id);
 					StreamError();
 					break;
 				}
@@ -1472,7 +1472,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				int index = FindPlayerIndex(packet->systemAddress);
 				if(index == -1)
 				{
-					LOG(Format("NM_TRANSFER_SERVER: Ignoring packet from %s.", packet->systemAddress.ToString()));
+					Info("NM_TRANSFER_SERVER: Ignoring packet from %s.", packet->systemAddress.ToString());
 					StreamEnd();
 					continue;
 				}
@@ -1485,7 +1485,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				{
 				case ID_DISCONNECTION_NOTIFICATION:
 				case ID_CONNECTION_LOST:
-					LOG(Format("NM_TRANSFER_SERVER: Player %s left game.", info.name.c_str()));
+					Info("NM_TRANSFER_SERVER: Player %s left game.", info.name.c_str());
 					--players;
 					game_players.erase(game_players.begin() + index);
 					break;
@@ -1494,14 +1494,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 						byte type;
 						if(net_state != 2)
 						{
-							WARN(Format("NM_TRANSFER_SERVER: Unexpected packet ID_READY from %s.", info.name.c_str()));
+							Warn("NM_TRANSFER_SERVER: Unexpected packet ID_READY from %s.", info.name.c_str());
 							StreamError();
 						}
 						else if(stream.Read(type))
 						{
 							if(type == 0)
 							{
-								LOG(Format("NM_TRANSFER_SERVER: %s read world data.", info.name.c_str()));
+								Info("NM_TRANSFER_SERVER: %s read world data.", info.name.c_str());
 								net_stream2.Reset();
 								net_stream2.WriteCasted<byte>(ID_PLAYER_START_DATA);
 								WritePlayerStartData(net_stream2, info);
@@ -1509,24 +1509,24 @@ void Game::GenericInfoBoxUpdate(float dt)
 							}
 							else if(type == 1)
 							{
-								LOG(Format("NM_TRANSFER_SERVER: %s is ready.", info.name.c_str()));
+								Info("NM_TRANSFER_SERVER: %s is ready.", info.name.c_str());
 								info.ready = true;
 							}
 							else
 							{
-								WARN(Format("NM_TRANSFER_SERVER: Unknown ID_READY %u from %s.", type, info.name.c_str()));
+								Warn("NM_TRANSFER_SERVER: Unknown ID_READY %u from %s.", type, info.name.c_str());
 								StreamError();
 							}
 						}
 						else
 						{
-							WARN(Format("NM_TRANSFER_SERVER: Broken packet ID_READY from %s.", info.name.c_str()));
+							Warn("NM_TRANSFER_SERVER: Broken packet ID_READY from %s.", info.name.c_str());
 							StreamError();
 						}
 					}
 					break;
 				default:
-					WARN(Format("NM_TRANSFER_SERVER: Unknown packet from %s: %u.", info.name.c_str(), msg_id));
+					Warn("NM_TRANSFER_SERVER: Unknown packet from %s: %u.", info.name.c_str(), msg_id);
 					StreamError();
 					break;
 				}
@@ -1582,7 +1582,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					net_stream.Reset();
 					PrepareWorldData(net_stream);
 					peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
-					LOG(Format("NM_TRANSFER_SERVER: Send world data, size %d.", net_stream.GetNumberOfBytesUsed()));
+					Info("NM_TRANSFER_SERVER: Send world data, size %d.", net_stream.GetNumberOfBytesUsed());
 					net_state = 2;
 					net_timer = mp_timeout;
 					for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
@@ -1754,7 +1754,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					{
 						if(!it->ready)
 						{
-							LOG(Format("NM_TRANSFER_SERVER: Disconnecting player %s due no response.", it->name.c_str()));
+							Info("NM_TRANSFER_SERVER: Disconnecting player %s due no response.", it->name.c_str());
 							RemovePlayerOnLoad(*it);
 							it = game_players.erase(it);
 							end = game_players.end();
@@ -1776,7 +1776,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				}
 				if(ok)
 				{
-					LOG("NM_TRANSFER_SERVER: All players ready.");
+					Info("NM_TRANSFER_SERVER: All players ready.");
 					net_state = 3;
 				}
 			}
@@ -1925,7 +1925,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						{
 							net_stream.Reset();
 							PrepareLevelData(net_stream);
-							LOG(Format("NM_TRANSFER_SERVER: Generated level packet: %d.", net_stream.GetNumberOfBytesUsed()));
+							Info("NM_TRANSFER_SERVER: Generated level packet: %d.", net_stream.GetNumberOfBytesUsed());
 							info_box->Show(txWaitingForPlayers);
 						}
 					}
@@ -1944,7 +1944,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				int index = FindPlayerIndex(packet->systemAddress);
 				if(index == -1)
 				{
-					LOG(Format("NM_SERVER_SEND: Ignoring packet from %s.", packet->systemAddress.ToString()));
+					Info("NM_SERVER_SEND: Ignoring packet from %s.", packet->systemAddress.ToString());
 					StreamEnd();
 					continue;
 				}
@@ -1952,7 +1952,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				PlayerInfo& info = game_players[index];
 				if(info.left)
 				{
-					LOG(Format("NM_SERVER_SEND: Packet from %s who left game.", info.name.c_str()));
+					Info("NM_SERVER_SEND: Packet from %s who left game.", info.name.c_str());
 					StreamEnd();
 					continue;
 				}
@@ -1973,12 +1973,12 @@ void Game::GenericInfoBoxUpdate(float dt)
 						int ack;
 						if(!stream.Read(ack))
 						{
-							ERROR(Format("NM_SERVER_SEND: Broken packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str()));
+							Error("NM_SERVER_SEND: Broken packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str());
 							StreamError();
 						}
 						else if(info.state != PlayerInfo::WAITING_FOR_RESPONSE || ack != info.ack)
 						{
-							WARN(Format("NM_SERVER_SEND: Unexpected packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str()));
+							Warn("NM_SERVER_SEND: Unexpected packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str());
 							StreamError();
 						}
 						else
@@ -1987,33 +1987,33 @@ void Game::GenericInfoBoxUpdate(float dt)
 							peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
 							info.timer = mp_timeout;
 							info.state = PlayerInfo::WAITING_FOR_DATA;
-							LOG(Format("NM_SERVER_SEND: Send level data to %s.", info.name.c_str()));
+							Info("NM_SERVER_SEND: Send level data to %s.", info.name.c_str());
 						}
 					}
 					break;
 				case ID_READY:
 					if(info.state == PlayerInfo::IN_GAME || info.state == PlayerInfo::WAITING_FOR_RESPONSE)
 					{
-						ERROR(Format("NM_SERVER_SEND: Unexpected packet ID_READY from %s.", info.name.c_str()));
+						Error("NM_SERVER_SEND: Unexpected packet ID_READY from %s.", info.name.c_str());
 						StreamError();
 					}
 					else if(info.state == PlayerInfo::WAITING_FOR_DATA)
 					{
-						LOG(Format("NM_SERVER_SEND: Send player data to %s.", info.name.c_str()));
+						Info("NM_SERVER_SEND: Send player data to %s.", info.name.c_str());
 						info.state = PlayerInfo::WAITING_FOR_DATA2;
 						SendPlayerData(index);
 					}
 					else
 					{
-						LOG(Format("NM_SERVER_SEND: Player %s is ready.", info.name.c_str()));
+						Info("NM_SERVER_SEND: Player %s is ready.", info.name.c_str());
 						info.state = PlayerInfo::IN_GAME;
 					}
 					break;
 				case ID_CONTROL:
-					LOG(Format("NM_SERVER_SEND: Ignoring packet ID_CONTROL from %s.", info.name.c_str()));
+					Info("NM_SERVER_SEND: Ignoring packet ID_CONTROL from %s.", info.name.c_str());
 					break;
 				default:
-					WARN(Format("MN_SERVER_SEND: Invalid packet %d from %s.", msg_id, info.name.c_str()));
+					Warn("MN_SERVER_SEND: Invalid packet %d from %s.", msg_id, info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -2030,7 +2030,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					if(it->timer <= 0.f)
 					{
 						// czas min¹³, usuñ
-						LOG(Format("NM_SERVER_SEND: Disconnecting player %s due to no response.", it->name.c_str()));
+						Info("NM_SERVER_SEND: Disconnecting player %s due to no response.", it->name.c_str());
 						peer->CloseConnection(it->adr, true, 0, IMMEDIATE_PRIORITY);
 						players_left.push_back(it->id);
 						it->left = true;
@@ -2064,7 +2064,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							(*it2)->changed = false;
 					}
 				}
-				LOG("NM_SERVER_SEND: All players ready. Starting game.");
+				Info("NM_SERVER_SEND: All players ready. Starting game.");
 				clear_color = clear_color2;
 				game_state = GS_LEVEL;
 				info_box->CloseDialog();
@@ -2091,7 +2091,7 @@ void Game::OnEnterPassword(int id)
 	else
 	{
 		// podano has³o do serwera
-		LOG("Password entered.");
+		Info("Password entered.");
 		// po³¹cz
 		ConnectionAttemptResult result = peer->Connect(server.ToString(false), (word)mp_port, enter_pswd.c_str(), enter_pswd.length());
 		if(result == CONNECTION_ATTEMPT_STARTED)
@@ -2099,11 +2099,11 @@ void Game::OnEnterPassword(int id)
 			net_state = 2;
 			net_timer = T_CONNECT;
 			info_box->Show(Format(txConnectingTo, server_name2.c_str()));
-			LOG(Format("NM_CONNECT_IP(1): Connecting to server %s...", server_name2.c_str()));
+			Info("NM_CONNECT_IP(1): Connecting to server %s...", server_name2.c_str());
 		}
 		else
 		{
-			LOG(Format("NM_CONNECT_IP(1): Can't connect to server: raknet error %d.", result));
+			Info("NM_CONNECT_IP(1): Can't connect to server: raknet error %d.", result);
 			EndConnecting(txConnectRaknet);
 		}
 	}
@@ -2129,8 +2129,8 @@ void Game::QuickJoinIp()
 			return;
 		}
 
-		LOG(Format("Pinging %s...", server_ip.c_str()));
-		LOG("sv_online = true");
+		Info("Pinging %s...", server_ip.c_str());
+		Info("sv_online = true");
 		sv_online = true;
 		sv_server = false;
 		info_box->Show(txConnecting);
@@ -2142,7 +2142,7 @@ void Game::QuickJoinIp()
 		peer->Ping(net_adr.c_str(), (word)mp_port, false);
 	}
 	else
-		WARN("Can't quick connect to server, invalid ip.");
+		Warn("Can't quick connect to server, invalid ip.");
 }
 
 void Game::AddMultiMsg(cstring _msg)
@@ -2154,7 +2154,7 @@ void Game::AddMultiMsg(cstring _msg)
 
 void Game::Quit()
 {
-	LOG("Game: Quit.");
+	Info("Game: Quit.");
 
 	if(main_menu->check_version_thread)
 	{
@@ -2197,7 +2197,7 @@ void Game::CloseConnection(VoidF f)
 			break;
 		case NM_TRANSFER_SERVER:
 		case NM_SERVER_SEND:
-			LOG("ServerPanel: Closing server.");
+			Info("ServerPanel: Closing server.");
 
 			// zablokuj do³¹czanie
 			peer->SetMaximumIncomingConnections(0);
@@ -2207,7 +2207,7 @@ void Game::CloseConnection(VoidF f)
 			if(players > 1)
 			{
 				// roz³¹cz graczy
-				LOG("ServerPanel: Disconnecting clients.");
+				Info("ServerPanel: Disconnecting clients.");
 				const byte b[] = { ID_SERVER_CLOSE, 0 };
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				net_mode = Game::NM_QUITTING_SERVER;
@@ -2232,7 +2232,7 @@ void Game::CloseConnection(VoidF f)
 	{
 		if(sv_server)
 		{
-			LOG("ServerPanel: Closing server.");
+			Info("ServerPanel: Closing server.");
 
 			// zablokuj do³¹czanie
 			peer->SetMaximumIncomingConnections(0);
@@ -2242,7 +2242,7 @@ void Game::CloseConnection(VoidF f)
 			if(players > 1)
 			{
 				// roz³¹cz graczy
-				LOG("ServerPanel: Disconnecting clients.");
+				Info("ServerPanel: Disconnecting clients.");
 				const byte b[] = { ID_SERVER_CLOSE, 0 };
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				net_mode = Game::NM_QUITTING_SERVER;
@@ -2310,7 +2310,7 @@ void Game::UpdateLobbyNet(float dt)
 			if(ok)
 			{
 				// automatyczne uruchamianie gry, rozpocznij odliczanie
-				LOG("UpdateLobbyNet: Automatic server startup.");
+				Info("UpdateLobbyNet: Automatic server startup.");
 				autostart_count = -1;
 				sv_startup = true;
 				startup_timer = float(STARTUP_TIMER);
@@ -2319,7 +2319,7 @@ void Game::UpdateLobbyNet(float dt)
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				server_panel->bts[5].text = server_panel->txStop;
 				server_panel->AddMsg(Format(server_panel->txStarting, STARTUP_TIMER));
-				LOG(Format("UpdateLobbyNet: Starting in %d...", STARTUP_TIMER));
+				Info("UpdateLobbyNet: Starting in %d...", STARTUP_TIMER);
 			}
 		}
 
@@ -2338,7 +2338,7 @@ void Game::UpdateLobbyNet(float dt)
 				if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
 				{
 					// nie odes³a³ informacji tylko siê roz³¹czy³
-					LOG(!info->name.empty() ? Format("UpdateLobbyNet: Player %s has disconnected.", info->name.c_str()) :
+					Info(!info->name.empty() ? Format("UpdateLobbyNet: Player %s has disconnected.", info->name.c_str()) :
 						Format("UpdateLobbyNet: %s has disconnected.", packet->systemAddress.ToString()));
 					--players;
 					if(players > 1)
@@ -2350,8 +2350,8 @@ void Game::UpdateLobbyNet(float dt)
 				else
 				{
 					// nieznany komunikat od roz³¹czanego gracz, ignorujemy go
-					LOG(Format("UpdateLobbyNet: Ignoring packet from %s while disconnecting.",
-						!info->name.empty() ? info->name.c_str() : packet->systemAddress.ToString()));
+					Info("UpdateLobbyNet: Ignoring packet from %s while disconnecting.",
+						!info->name.empty() ? info->name.c_str() : packet->systemAddress.ToString());
 				}
 
 				StreamEnd();
@@ -2363,14 +2363,14 @@ void Game::UpdateLobbyNet(float dt)
 			case ID_UNCONNECTED_PING:
 			case ID_UNCONNECTED_PING_OPEN_CONNECTIONS:
 				assert(!info);
-				LOG(Format("UpdateLobbyNet: Ping from %s.", packet->systemAddress.ToString()));
+				Info("UpdateLobbyNet: Ping from %s.", packet->systemAddress.ToString());
 				break;
 			case ID_NEW_INCOMING_CONNECTION:
 				if(info)
-					WARN(Format("UpdateLobbyNet: Packet about connecting from already connected player %s.", info->name.c_str()));
+					Warn("UpdateLobbyNet: Packet about connecting from already connected player %s.", info->name.c_str());
 				else
 				{
-					LOG(Format("UpdateLobbyNet: New connection from %s.", packet->systemAddress.ToString()));
+					Info("UpdateLobbyNet: New connection from %s.", packet->systemAddress.ToString());
 
 					// ustal id dla nowego gracza
 					do
@@ -2431,8 +2431,8 @@ void Game::UpdateLobbyNet(float dt)
 					bool dis = (msg_id == ID_CONNECTION_LOST);
 					if(!info)
 					{
-						WARN(Format(dis ? "UpdateLobbyNet: Disconnect notification from unconnected address %s." :
-							"UpdateLobbyNet: Lost connection with unconnected address %s.", packet->systemAddress.ToString()));
+						Warn(dis ? "UpdateLobbyNet: Disconnect notification from unconnected address %s." :
+							"UpdateLobbyNet: Lost connection with unconnected address %s.", packet->systemAddress.ToString());
 					}
 					else
 					{
@@ -2441,7 +2441,7 @@ void Game::UpdateLobbyNet(float dt)
 						{
 							// roz³¹czy³ siê przed przyjêciem do lobby, mo¿na go usun¹æ
 							server_panel->AddMsg(Format(dis ? txDisconnected : txLost, packet->systemAddress.ToString()));
-							LOG(Format("UpdateLobbyNet: %s %s.", packet->systemAddress.ToString(), dis ? "disconnected" : "lost connection"));
+							Info("UpdateLobbyNet: %s %s.", packet->systemAddress.ToString(), dis ? "disconnected" : "lost connection");
 							game_players.erase(game_players.begin() + index);
 							--players;
 							if(players > 1)
@@ -2453,7 +2453,7 @@ void Game::UpdateLobbyNet(float dt)
 							// roz³¹czy³ siê bêd¹c w lobby
 							--players;
 							server_panel->AddMsg(Format(dis ? txLeft : txLost2, info->name.c_str()));
-							LOG(Format("UpdateLobbyNet: Player %s %s.", info->name.c_str(), dis ? "disconnected" : "lost connection"));
+							Info("UpdateLobbyNet: Player %s %s.", info->name.c_str(), dis ? "disconnected" : "lost connection");
 							if(players > 1)
 							{
 								AddLobbyUpdate(Int2(Lobby_RemovePlayer, info->id));
@@ -2462,7 +2462,7 @@ void Game::UpdateLobbyNet(float dt)
 							if(leader_id == info->id)
 							{
 								// serwer zostaje przywódc¹
-								LOG("UpdateLobbyNet: You are leader now.");
+								Info("UpdateLobbyNet: You are leader now.");
 								leader_id = my_id;
 								if(players > 1)
 									AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
@@ -2478,9 +2478,9 @@ void Game::UpdateLobbyNet(float dt)
 			case ID_HELLO:
 				// informacje od gracza
 				if(!info)
-					WARN(Format("UpdateLobbyNet: Packet ID_HELLO from unconnected client %s.", packet->systemAddress.ToString()));
+					Warn("UpdateLobbyNet: Packet ID_HELLO from unconnected client %s.", packet->systemAddress.ToString());
 				else if(info->state != PlayerInfo::WAITING_FOR_HELLO)
-					WARN(Format("UpdateLobbyNet: Packet ID_HELLO from player %s who already joined.", info->name.c_str()));
+					Warn("UpdateLobbyNet: Packet ID_HELLO from player %s who already joined.", info->name.c_str());
 				else
 				{
 					int version;
@@ -2588,7 +2588,7 @@ void Game::UpdateLobbyNet(float dt)
 					net_stream.Reset();
 					if(reason != JoinResult::Ok)
 					{
-						WARN(reason_text);
+						Warn(reason_text);
 						StreamError();
 						net_stream.Write(ID_CANT_JOIN);
 						net_stream.WriteCasted<byte>(reason);
@@ -2641,7 +2641,7 @@ void Game::UpdateLobbyNet(float dt)
 								if(players > 2)
 									AddLobbyUpdate(Int2(Lobby_UpdatePlayer, info->id));
 
-								LOG(Format("UpdateLobbyNet: Player %s is using loaded character.", info->name.c_str()));
+								Info("UpdateLobbyNet: Player %s is using loaded character.", info->name.c_str());
 							}
 							else
 								net_stream.WriteCasted<byte>(1);
@@ -2652,7 +2652,7 @@ void Game::UpdateLobbyNet(float dt)
 						info->state = PlayerInfo::IN_LOBBY;
 
 						server_panel->AddMsg(Format(server_panel->txJoined, info->name.c_str()));
-						LOG(Format("UpdateLobbyNet: Player %s (%s) joined, id: %d.", info->name.c_str(), packet->systemAddress.ToString(), info->id));
+						Info("UpdateLobbyNet: Player %s (%s) joined, id: %d.", info->name.c_str(), packet->systemAddress.ToString(), info->id);
 
 						// informacja dla pozosta³ych
 						if(players > 2)
@@ -2664,14 +2664,14 @@ void Game::UpdateLobbyNet(float dt)
 				break;
 			case ID_CHANGE_READY:
 				if(!info)
-					WARN(Format("UpdateLobbyNet: Packet ID_CHANGE_READY from unconnected client %s.", packet->systemAddress.ToString()));
+					Warn("UpdateLobbyNet: Packet ID_CHANGE_READY from unconnected client %s.", packet->systemAddress.ToString());
 				else
 				{
 					bool ready;
 
 					if(!ReadBool(stream, ready))
 					{
-						ERROR(Format("UpdateLobbyNet: Broken packet ID_CHANGE_READY from client %s.", info->name.c_str()));
+						Error("UpdateLobbyNet: Broken packet ID_CHANGE_READY from client %s.", info->name.c_str());
 						StreamError();
 					}
 					else if(ready != info->ready)
@@ -2685,25 +2685,25 @@ void Game::UpdateLobbyNet(float dt)
 				break;
 			case ID_SAY:
 				if(!info)
-					WARN(Format("UpdateLobbyNet: Packet ID_SAY from unconnected client %s.", packet->systemAddress.ToString()));
+					Warn("UpdateLobbyNet: Packet ID_SAY from unconnected client %s.", packet->systemAddress.ToString());
 				else
 					Server_Say(stream, *info, packet);
 				break;
 			case ID_WHISPER:
 				if(!info)
-					WARN(Format("UpdateLobbyNet: Packet ID_WHISPER from unconnected client %s.", packet->systemAddress.ToString()));
+					Warn("UpdateLobbyNet: Packet ID_WHISPER from unconnected client %s.", packet->systemAddress.ToString());
 				else
 					Server_Whisper(stream, *info, packet);
 				break;
 			case ID_LEAVE:
 				if(!info)
-					WARN(Format("UpdateLobbyNet: Packet ID_LEAVE from unconnected client %.", packet->systemAddress.ToString()));
+					Warn("UpdateLobbyNet: Packet ID_LEAVE from unconnected client %.", packet->systemAddress.ToString());
 				else
 				{
 					// czekano na dane a on zquitowa³ mimo braku takiej mo¿liwoœci :S
 					cstring name = info->state == PlayerInfo::WAITING_FOR_HELLO ? info->adr.ToString() : info->name.c_str();
 					server_panel->AddMsg(Format(server_panel->txPlayerLeft, name));
-					LOG(Format("UpdateLobbyNet: Player %s left lobby.", name));
+					Info("UpdateLobbyNet: Player %s left lobby.", name);
 					--players;
 					if(players > 1)
 					{
@@ -2720,7 +2720,7 @@ void Game::UpdateLobbyNet(float dt)
 				break;
 			case ID_PICK_CHARACTER:
 				if(!info || info->state != PlayerInfo::IN_LOBBY)
-					WARN(Format("UpdateLobbyNet: Packet ID_PICK_CHARACTER from player not in lobby %s.", packet->systemAddress.ToString()));
+					Warn("UpdateLobbyNet: Packet ID_PICK_CHARACTER from player not in lobby %s.", packet->systemAddress.ToString());
 				else
 				{
 					Class old_class = info->clas;
@@ -2732,11 +2732,11 @@ void Game::UpdateLobbyNet(float dt)
 						if(ReadBool(stream, info->ready))
 						{
 							ok = 1;
-							LOG(Format("Received character from '%s'.", info->name.c_str()));
+							Info("Received character from '%s'.", info->name.c_str());
 						}
 						else
 						{
-							ERROR(Format("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER from '%s'.", info->name.c_str()));
+							Error("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER from '%s'.", info->name.c_str());
 							StreamError();
 						}
 					}
@@ -2748,7 +2748,7 @@ void Game::UpdateLobbyNet(float dt)
 							"validation error"
 						};
 
-						ERROR(Format("UpdateLobbyNet: Packet ID_PICK_CHARACTER from '%s' %s.", info->name.c_str(), err[result - 1]));
+						Error("UpdateLobbyNet: Packet ID_PICK_CHARACTER from '%s' %s.", info->name.c_str(), err[result - 1]);
 						StreamError();
 					}
 
@@ -2769,7 +2769,7 @@ void Game::UpdateLobbyNet(float dt)
 				}
 				break;
 			default:
-				WARN(Format("UpdateLobbyNet: Unknown packet from %s: %u.", info ? info->name.c_str() : packet->systemAddress.ToString(), msg_id));
+				Warn("UpdateLobbyNet: Unknown packet from %s: %u.", info ? info->name.c_str() : packet->systemAddress.ToString(), msg_id);
 				StreamError();
 				break;
 			}
@@ -2840,7 +2840,7 @@ void Game::UpdateLobbyNet(float dt)
 						reason_eng = "unknown";
 					}
 
-					LOG(Format("UpdateLobbyNet: Disconnected from server: %s.", reason_eng));
+					Info("UpdateLobbyNet: Disconnected from server: %s.", reason_eng);
 					GUI.SimpleDialog(Format(txUnconnected, reason), nullptr);
 
 					server_panel->CloseDialog();
@@ -2852,18 +2852,18 @@ void Game::UpdateLobbyNet(float dt)
 			case ID_STARTUP:
 				if(packet->length != 2)
 				{
-					ERROR("UpdateLobbyNet: Broken packet ID_STARTUP.");
+					Error("UpdateLobbyNet: Broken packet ID_STARTUP.");
 					StreamError();
 				}
 				else
 				{
-					LOG(Format("UpdateLobbyNet: Starting in %d...", packet->data[1]));
+					Info("UpdateLobbyNet: Starting in %d...", packet->data[1]);
 					server_panel->AddMsg(Format(server_panel->txStartingIn, packet->data[1]));
 
 					if(packet->data[1] == 0)
 					{
 						// close lobby and wait for server
-						LOG("UpdateLobbyNet: Waiting for server.");
+						Info("UpdateLobbyNet: Waiting for server.");
 						LoadingStart(9);
 						main_menu->visible = false;
 						server_panel->CloseDialog();
@@ -2877,23 +2877,23 @@ void Game::UpdateLobbyNet(float dt)
 				}
 				break;
 			case ID_END_STARTUP:
-				LOG("UpdateLobbyNet: Startup canceled.");
+				Info("UpdateLobbyNet: Startup canceled.");
 				AddMsg(server_panel->txStartingStop);
 				break;
 			case ID_PICK_CHARACTER:
 				if(packet->length != 2)
 				{
-					ERROR("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER.");
+					Error("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER.");
 					StreamError();
 				}
 				else
 				{
 					bool ok = (packet->data[1] != 0);
 					if(ok)
-						LOG("UpdateLobbyNet: Character pick accepted.");
+						Info("UpdateLobbyNet: Character pick accepted.");
 					else
 					{
-						WARN("UpdateLobbyNet: Character pick refused.");
+						Warn("UpdateLobbyNet: Character pick refused.");
 						PlayerInfo& info = game_players[0];
 						info.ready = false;
 						info.clas = Class::INVALID;
@@ -2904,7 +2904,7 @@ void Game::UpdateLobbyNet(float dt)
 				}
 				break;
 			default:
-				WARN(Format("UpdateLobbyNet: Unknown packet: %u.", msg_id));
+				Warn("UpdateLobbyNet: Unknown packet: %u.", msg_id);
 				StreamError();
 				break;
 			}
@@ -2924,7 +2924,7 @@ void Game::UpdateLobbyNet(float dt)
 				if(it->timer <= 0.f)
 				{
 					// czas oczekiwania min¹³, zkickuj
-					LOG(Format("UpdateLobbyNet: Removed %s due to inactivity.", it->adr.ToString()));
+					Info("UpdateLobbyNet: Removed %s due to inactivity.", it->adr.ToString());
 					peer->CloseConnection(it->adr, false);
 					--players;
 					if(players > 1)
@@ -3033,7 +3033,7 @@ void Game::UpdateLobbyNet(float dt)
 			if(startup_timer <= 0.f)
 			{
 				// change server status
-				LOG("UpdateLobbyNet: Starting game.");
+				Info("UpdateLobbyNet: Starting game.");
 				sv_startup = false;
 				d = 0;
 				peer->SetMaximumIncomingConnections(0);
@@ -3046,7 +3046,7 @@ void Game::UpdateLobbyNet(float dt)
 					if(it->state != PlayerInfo::IN_LOBBY)
 					{
 						peer->CloseConnection(it->adr, true);
-						WARN(Format("UpdateLobbyNet: Disconnecting %s.", it->adr.ToString()));
+						Warn("UpdateLobbyNet: Disconnecting %s.", it->adr.ToString());
 						it = game_players.erase(it);
 						end = game_players.end();
 						--players;
@@ -3064,7 +3064,7 @@ void Game::UpdateLobbyNet(float dt)
 			}
 			if(d != -1)
 			{
-				LOG(Format("UpdateLobbyNet: Starting in %d...", d));
+				Info("UpdateLobbyNet: Starting in %d...", d);
 				server_panel->AddMsg(Format(server_panel->txStartingIn, d));
 				byte b[] = { ID_STARTUP, (byte)d };
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
@@ -3079,7 +3079,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 
 	if(!stream.Read(count))
 	{
-		ERROR("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE.");
+		Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE.");
 		return false;
 	}
 
@@ -3088,7 +3088,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 		byte type, id;
 		if(!stream.Read(type) || !stream.Read(id))
 		{
-			ERROR("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(2).");
+			Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(2).");
 			return false;
 		}
 
@@ -3099,18 +3099,18 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 				int index = GetPlayerIndex(id);
 				if(index == -1)
 				{
-					ERROR(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d.", id));
+					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d.", id);
 					return false;
 				}
 				PlayerInfo& info = game_players[index];
 				if(!ReadBool(stream, info.ready) || !stream.ReadCasted<byte>(info.clas))
 				{
-					ERROR("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3).");
+					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3).");
 					return false;
 				}
 				if(!ClassInfo::IsPickable(info.clas))
 				{
-					ERROR(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3), player %d have class %d: %s.", id, info.clas));
+					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3), player %d have class %d: %s.", id, info.clas);
 					return false;
 				}
 			}
@@ -3118,7 +3118,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 		case Lobby_AddPlayer: // dodaj gracza
 			if(!ReadString1(stream))
 			{
-				ERROR("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(4).");
+				Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(4).");
 				return false;
 			}
 			else if(id != my_id)
@@ -3134,7 +3134,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 				server_panel->grid.AddItem();
 
 				server_panel->AddMsg(Format(server_panel->txJoined, BUF));
-				LOG(Format("UpdateLobbyNet: Player %s joined lobby.", BUF));
+				Info("UpdateLobbyNet: Player %s joined lobby.", BUF);
 			}
 			break;
 		case Lobby_RemovePlayer: // usuñ gracza
@@ -3144,11 +3144,11 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 				int index = GetPlayerIndex(id);
 				if(index == -1)
 				{
-					ERROR(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d.", id));
+					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d.", id);
 					return false;
 				}
 				PlayerInfo& info = game_players[index];
-				LOG(Format("UpdateLobbyNet: Player %s %s.", info.name.c_str(), is_kick ? "was kicked" : "left lobby"));
+				Info("UpdateLobbyNet: Player %s %s.", info.name.c_str(), is_kick ? "was kicked" : "left lobby");
 				server_panel->AddMsg(Format(is_kick ? txPlayerKicked : txPlayerLeft, info.name.c_str()));
 				server_panel->grid.RemoveItem(index);
 				game_players.erase(game_players.begin() + index);
@@ -3162,11 +3162,11 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 				int index = GetPlayerIndex(id);
 				if(index == -1)
 				{
-					ERROR(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d", id));
+					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d", id);
 					return false;
 				}
 				PlayerInfo& info = game_players[index];
-				LOG(Format("%s is now leader.", info.name.c_str()));
+				Info("%s is now leader.", info.name.c_str());
 				leader_id = id;
 				if(my_id == id)
 					server_panel->AddMsg(server_panel->txYouAreLeader);
@@ -3175,7 +3175,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 			}
 			break;
 		default:
-			ERROR(Format("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, unknown change type %d.", type));
+			Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, unknown change type %d.", type);
 			return false;
 		}
 	}
@@ -3225,7 +3225,7 @@ void Game::OnCreateCharacter(int id)
 			WriteCharacterData(net_stream, info.clas, info.hd, info.cc);
 			WriteBool(net_stream, false);
 			peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
-			LOG("Character sent to server.");
+			Info("Character sent to server.");
 		}
 	}
 	else
@@ -3294,7 +3294,7 @@ void Game::OnPickServer(int id)
 			params.limit = 16;
 			params.parent = info_box;
 			GetTextDialog::Show(params);
-			LOG("OnPickServer: Waiting for password...");
+			Info("OnPickServer: Waiting for password...");
 			pick_server_panel->CloseDialog();
 		}
 		else
@@ -3309,13 +3309,13 @@ void Game::OnPickServer(int id)
 				net_tries = 1;
 				net_state = 2;
 				info_box->Show(Format(txConnectingTo, info.name.c_str()));
-				LOG(Format("OnPickServer: Connecting to server %s...", info.name.c_str()));
+				Info("OnPickServer: Connecting to server %s...", info.name.c_str());
 				pick_server_panel->CloseDialog();
 			}
 			else
 			{
 				// b³¹d ³¹czenie z serwerem
-				ERROR(Format("NM_CONNECT_IP(0): Can't connect to server: raknet error %d.", result));
+				Error("NM_CONNECT_IP(0): Can't connect to server: raknet error %d.", result);
 				EndConnecting(txConnectRaknet);
 			}
 		}
@@ -3346,7 +3346,7 @@ void Game::DeleteOldPlayers()
 void Game::ClearAndExitToMenu(cstring msg)
 {
 	assert(msg);
-	LOG("Clear game and exit to menu.");
+	Info("Clear game and exit to menu.");
 	ClearGame();
 	ClosePeer();
 	ExitToMenu();

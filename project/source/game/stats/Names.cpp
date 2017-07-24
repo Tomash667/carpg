@@ -25,7 +25,7 @@ void LoadStrArray(vector<cstring>& items, cstring name)
 	return;
 
 err:
-	ERROR(Format("Missing texts for array '%s'.", name));
+	Error("Missing texts for array '%s'.", name);
 	items.push_back("!MissingArray!");
 }
 

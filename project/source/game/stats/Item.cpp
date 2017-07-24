@@ -170,7 +170,7 @@ const Item* FindItem(cstring id, bool report, ItemListResult* lis)
 		return it2->second;
 
 	if(report)
-		WARN(Format("Missing item '%s'.", id));
+		Warn("Missing item '%s'.", id);
 
 	return nullptr;
 }
@@ -212,7 +212,7 @@ ItemListResult FindItemList(cstring id, bool report)
 	}
 
 	if(report)
-		WARN(Format("Missing item list '%s'.", id));
+		Warn("Missing item list '%s'.", id);
 
 	result.lis = nullptr;
 	return result;
@@ -283,19 +283,19 @@ void Item::Validate(uint& err)
 		if(item.name.empty())
 		{
 			++err;
-			ERROR(Format("Test: Missing item '%s' name.", item.id.c_str()));
+			Error("Test: Missing item '%s' name.", item.id.c_str());
 		}
 
 		if(item.type == IT_BOOK && item.ToBook().text.empty())
 		{
 			++err;
-			ERROR(Format("Test: Missing book '%s' text.", item.id.c_str()));
+			Error("Test: Missing book '%s' text.", item.id.c_str());
 		}
 
 		if(item.mesh_id.empty())
 		{
 			++err;
-			ERROR(Format("Test: Missing item '%s' mesh/texture.", item.id.c_str()));
+			Error("Test: Missing item '%s' mesh/texture.", item.id.c_str());
 		}
 	}
 }
@@ -723,7 +723,7 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse item '%s': %s", item->id.c_str(), e.ToString()));
+		Error("Failed to parse item '%s': %s", item->id.c_str(), e.ToString());
 		delete item;
 		return false;
 	}
@@ -776,7 +776,7 @@ bool LoadItemList(Tokenizer& t, Crc& crc)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse item list '%s': %s", lis->id.c_str(), e.ToString()));
+		Error("Failed to parse item list '%s': %s", lis->id.c_str(), e.ToString());
 		delete lis;
 		return false;
 	}
@@ -838,7 +838,7 @@ bool LoadLeveledItemList(Tokenizer& t, Crc& crc)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse leveled item list '%s': %s", lis->id.c_str(), e.ToString()));
+		Error("Failed to parse leveled item list '%s': %s", lis->id.c_str(), e.ToString());
 		delete lis;
 		return false;
 	}
@@ -1185,7 +1185,7 @@ bool LoadStock(Tokenizer& t, Crc& crc)
 			str = Format("Failed to parse stock list '%s': %s", stock->id.c_str(), e.ToString());
 		else
 			str = Format("Failed to parse stock list: %s", e.ToString());
-		ERROR(str);
+		Error(str);
 		delete stock;
 		return false;
 	}
@@ -1269,7 +1269,7 @@ bool LoadBookScheme(Tokenizer& t, Crc& crc)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse book scheme '%s': %s", scheme->id.c_str(), e.ToString()));
+		Error("Failed to parse book scheme '%s': %s", scheme->id.c_str(), e.ToString());
 		delete scheme;
 		return false;
 	}
@@ -1326,7 +1326,7 @@ bool LoadStartItems(Tokenizer& t, Crc& crc)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse starting items: %s", e.ToString()));
+		Error("Failed to parse starting items: %s", e.ToString());
 		return false;
 	}
 }
@@ -1395,7 +1395,7 @@ bool LoadBetterItems(Tokenizer& t, Crc& crc)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse better items: %s", e.ToString()));
+		Error("Failed to parse better items: %s", e.ToString());
 		return false;
 	}
 }
@@ -1428,7 +1428,7 @@ static bool LoadAlias(Tokenizer& t, Crc& crc)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load item alias: %s", e.ToString()));
+		Error("Failed to load item alias: %s", e.ToString());
 		return false;
 	}
 }
@@ -1656,7 +1656,7 @@ uint LoadItems(uint& out_crc, uint& errors)
 			else
 			{
 				int group = G_ITEM_TYPE;
-				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
+				Error(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
 				++errors;
 				skip = true;
 			}
@@ -1669,7 +1669,7 @@ uint LoadItems(uint& out_crc, uint& errors)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load items: %s", e.ToString()));
+		Error("Failed to load items: %s", e.ToString());
 		++errors;
 	}
 

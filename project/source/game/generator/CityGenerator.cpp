@@ -650,7 +650,7 @@ void CityGenerator::GenerateBuildings(vector<ToBuild>& tobuild)
 				tobuild.erase(build_it, tobuild.end());
 				break;
 			}
-			ERROR(Format("Failed to generate city map! No place for building %d!", build_it->type));
+			Error("Failed to generate city map! No place for building %d!", build_it->type);
 			return;
 		}
 
@@ -1981,7 +1981,7 @@ void CityGenerator::Test()
 				{
 					for(int m = 0; m < 2; ++m)
 					{
-						LOG(Format("Test road %d %d %d %d %d", i, j, k, l, m));
+						Info("Test road %d %d %d %d %d", i, j, k, l, m);
 						Init(tiles, h, s, s);
 						GenerateMainRoad((RoadType)i, (GAME_DIR)j, k, m == 0 ? false : true, l, points, gates, false);
 						assert(_CrtCheckMemory());

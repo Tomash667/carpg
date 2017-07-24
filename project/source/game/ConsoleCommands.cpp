@@ -819,7 +819,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									}
 								}
 
-								LOG(s.c_str());
+								Info(s.c_str());
 							}
 							else
 							{
@@ -878,7 +878,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									}
 								}
 
-								LOG(s.c_str());
+								Info(s.c_str());
 							}
 						}
 						else
@@ -920,7 +920,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									}
 								}
 
-								LOG(s.c_str());
+								Info(s.c_str());
 							}
 							else
 							{
@@ -959,7 +959,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									}
 								}
 
-								LOG(s.c_str());
+								Info(s.c_str());
 							}
 						}
 					}
@@ -1156,7 +1156,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 						catch(cstring err)
 						{
-							ERROR(err);
+							Error(err);
 							MSG(Format("Failed to load game: %s", err));
 						}
 					}
@@ -1251,7 +1251,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, sv_server ? info.adr : server, false);
 								cstring s = Format("@%s: %s", info.name.c_str(), text.c_str());
 								AddMsg(s);
-								LOG(s);
+								Info(s);
 							}
 						}
 						else
@@ -1272,7 +1272,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 						}
 						AddServerMsg(text.c_str());
-						LOG(Format("SERWER: %s", text.c_str()));
+						Info("SERWER: %s", text.c_str());
 						if(game_state == GS_LEVEL)
 							game_gui->AddSpeechBubble(pc->unit, text.c_str());
 					}
@@ -1447,7 +1447,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							server_panel->bts[4].text = server_panel->txStop;
 							cstring s = Format(server_panel->txStartingIn, STARTUP_TIMER);
 							AddMsg(s);
-							LOG(s);
+							Info(s);
 						}
 						else
 							MSG(error_text);
@@ -1464,7 +1464,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, sv_server ? UNASSIGNED_SYSTEM_ADDRESS : server, sv_server);
 						cstring s = Format("%s: %s", game_players[0].name.c_str(), text.c_str());
 						AddMsg(s);
-						LOG(s);
+						Info(s);
 					}
 					else
 						MSG("You need to enter message.");

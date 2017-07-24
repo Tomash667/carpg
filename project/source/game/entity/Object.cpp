@@ -309,7 +309,7 @@ bool Object::Read(BitStream& stream)
 		base = FindObject(BUF);
 		if(!base)
 		{
-			ERROR(Format("Missing base object '%stream'!", BUF));
+			Error("Missing base object '%stream'!", BUF);
 			return false;
 		}
 		mesh = base->mesh;

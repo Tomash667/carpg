@@ -158,7 +158,7 @@ int CreatedCharacter::Read(BitStream& stream)
 			return 1;
 		if(tp.perk >= Perk::Max)
 		{
-			ERROR(Format("Invalid perk id '%d'.", tp.perk));
+			Error("Invalid perk id '%d'.", tp.perk);
 			return 2;
 		}
 		tp.Apply(*this, true);
@@ -174,7 +174,7 @@ int CreatedCharacter::Read(BitStream& stream)
 			{
 				if(it->perk == it2->perk)
 				{
-					ERROR(Format("Multiple same perks '%s'.", info.id));
+					Error("Multiple same perks '%s'.", info.id);
 					return 3;
 				}
 			}
@@ -184,7 +184,7 @@ int CreatedCharacter::Read(BitStream& stream)
 	// check for too many sp/perks
 	if(sp < 0 || perks < 0)
 	{
-		ERROR(Format("Too many skill points (%d) / perks (%d).", -min(sp, 0), -min(perks, 0)));
+		Error("Too many skill points (%d) / perks (%d).", -min(sp, 0), -min(perks, 0));
 		return 3;
 	}
 

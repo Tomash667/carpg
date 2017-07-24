@@ -799,7 +799,7 @@ namespace tokenizer
 					}
 					else
 					{
-						ERROR(FormatUnexpected(T_KEYWORD_GROUP, &group));
+						Error(FormatUnexpected(T_KEYWORD_GROUP, &group));
 						skip = true;
 					}
 
@@ -814,7 +814,7 @@ namespace tokenizer
 			}
 			catch(const Exception& e)
 			{
-				ERROR(Format("Failed to parse top group: %s", e.ToString()));
+				Error("Failed to parse top group: %s", e.ToString());
 				++errors;
 			}
 

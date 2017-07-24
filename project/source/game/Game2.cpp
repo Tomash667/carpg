@@ -753,7 +753,7 @@ void Game::SetupCamera(float dt)
 
 void Game::LoadShaders()
 {
-	LOG("Loading shaders.");
+	Info("Loading shaders.");
 
 	eMesh = CompileShader("mesh.fx");
 	eParticle = CompileShader("particle.fx");
@@ -1280,7 +1280,7 @@ void Game::UpdateGame(float dt)
 	{
 		if(death_screen == 0)
 		{
-			LOG("Game over: all players died.");
+			Info("Game over: all players died.");
 			SetMusic(MusicType::Death);
 			CloseAllPanels(true);
 			++death_screen;
@@ -1562,8 +1562,8 @@ void Game::UpdateGame(float dt)
 			{
 				if(unit != unit2 && !IsFriend(*unit, *unit2))
 				{
-					WARN(Format("%s (%d,%d) i %s (%d,%d) are not friends!", unit->data->id.c_str(), unit->in_arena, unit->IsTeamMember() ? 1 : 0,
-						unit2->data->id.c_str(), unit2->in_arena, unit2->IsTeamMember() ? 1 : 0));
+					Warn("%s (%d,%d) i %s (%d,%d) are not friends!", unit->data->id.c_str(), unit->in_arena, unit->IsTeamMember() ? 1 : 0,
+						unit2->data->id.c_str(), unit2->in_arena, unit2->IsTeamMember() ? 1 : 0);
 					++err_count;
 				}
 			}
@@ -5211,7 +5211,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else
 				{
-					WARN(Format("DT_SPECIAL: %s", msg));
+					Warn("DT_SPECIAL: %s", msg);
 					assert(0);
 				}
 			}
@@ -5811,7 +5811,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else
 				{
-					WARN(Format("DT_SPECIAL_IF: %s", msg));
+					Warn("DT_SPECIAL_IF: %s", msg);
 					assert(0);
 				}
 			}
@@ -6326,7 +6326,7 @@ uint Game::TestGameData(bool major)
 	string str;
 	uint errors = 0;
 
-	LOG("Test: Checking items...");
+	Info("Test: Checking items...");
 
 	// bronie
 	for(Weapon* weapon : g_weapons)
@@ -6334,7 +6334,7 @@ uint Game::TestGameData(bool major)
 		const Weapon& w = *weapon;
 		if(!w.mesh)
 		{
-			ERROR(Format("Test: Weapon %s: missing mesh %s.", w.id.c_str(), w.mesh_id.c_str()));
+			Error("Test: Weapon %s: missing mesh %s.", w.id.c_str(), w.mesh_id.c_str());
 			++errors;
 		}
 		else
@@ -6342,12 +6342,12 @@ uint Game::TestGameData(bool major)
 			Animesh::Point* pt = w.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
-				ERROR(Format("Test: Weapon %s: no hitbox in mesh %s.", w.id.c_str(), w.mesh_id.c_str()));
+				Error("Test: Weapon %s: no hitbox in mesh %s.", w.id.c_str(), w.mesh_id.c_str());
 				++errors;
 			}
 			else if(!pt->size.IsPositive())
 			{
-				ERROR(Format("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.mesh_id.c_str()));
+				Error("Test: Weapon %s: invalid hitbox %g, %g, %g in mesh %s.", w.id.c_str(), pt->size.x, pt->size.y, pt->size.z, w.mesh_id.c_str());
 				++errors;
 			}
 		}
@@ -6359,7 +6359,7 @@ uint Game::TestGameData(bool major)
 		const Shield& s = *shield;
 		if(!s.mesh)
 		{
-			ERROR(Format("Test: Shield %s: missing mesh %s.", s.id.c_str(), s.mesh_id.c_str()));
+			Error("Test: Shield %s: missing mesh %s.", s.id.c_str(), s.mesh_id.c_str());
 			++errors;
 		}
 		else
@@ -6367,19 +6367,19 @@ uint Game::TestGameData(bool major)
 			Animesh::Point* pt = s.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
-				ERROR(Format("Test: Shield %s: no hitbox in mesh %s.", s.id.c_str(), s.mesh_id.c_str()));
+				Error("Test: Shield %s: no hitbox in mesh %s.", s.id.c_str(), s.mesh_id.c_str());
 				++errors;
 			}
 			else if(!pt->size.IsPositive())
 			{
-				ERROR(Format("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.mesh_id.c_str()));
+				Error("Test: Shield %s: invalid hitbox %g, %g, %g in mesh %s.", s.id.c_str(), pt->size.x, pt->size.y, pt->size.z, s.mesh_id.c_str());
 				++errors;
 			}
 		}
 	}
 
 	// postacie
-	LOG("Test: Checking units...");
+	Info("Test: Checking units...");
 	for(UnitData* ud_ptr : unit_datas)
 	{
 		UnitData& ud = *ud_ptr;
@@ -6559,7 +6559,7 @@ uint Game::TestGameData(bool major)
 		}
 
 		if(!str.empty())
-			ERROR(Format("Test: Unit %s:\n%s", ud.id.c_str(), str.c_str()));
+			Error("Test: Unit %s:\n%s", ud.id.c_str(), str.c_str());
 	}
 
 	return errors;
@@ -8064,7 +8064,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			{
 				// fix na skutek, nie na przyczynê ;(
 #ifdef _DEBUG
-				WARN(Format("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", u.GetName(), u.live_state, u.action, u.animation, u.current_animation, u.animation_state));
+				Warn("Unit %s dont have shooting animation, LS:%d A:%D ANI:%d PANI:%d ETA:%d.", u.GetName(), u.live_state, u.action, u.animation,
+					u.current_animation, u.animation_state);
 				AddGameMsg("Unit don't have shooting animation!", 5.f);
 #endif
 				goto koniec_strzelania;
@@ -9460,7 +9461,7 @@ void Game::LoadItemsData()
 			else
 			{
 				item.tex = missing_texture;
-				WARN(Format("Missing item texture '%s'.", item.mesh_id.c_str()));
+				Warn("Missing item texture '%s'.", item.mesh_id.c_str());
 				++load_errors;
 			}
 		}
@@ -9474,7 +9475,7 @@ void Game::LoadItemsData()
 				item.mesh = nullptr;
 				item.tex = missing_texture;
 				item.flags &= ~ITEM_GROUND_MESH;
-				WARN(Format("Missing item mesh '%s'.", item.mesh_id.c_str()));
+				Warn("Missing item mesh '%s'.", item.mesh_id.c_str());
 				++load_errors;
 			}
 		}
@@ -10606,7 +10607,7 @@ void Game::ChangeLevel(int gdzie)
 {
 	assert(gdzie == 1 || gdzie == -1);
 
-	LOG(gdzie == 1 ? "Changing level to lower." : "Changing level to upper.");
+	Info(gdzie == 1 ? "Changing level to lower." : "Changing level to upper.");
 
 	location_event_handler = nullptr;
 	UpdateDungeonMinimap(false);
@@ -10708,8 +10709,8 @@ void Game::ChangeLevel(int gdzie)
 			inside->generated = dungeon_level + 1;
 			inside->infos[dungeon_level].seed = RandVal();
 
-			LOG(Format("Generating location '%s', seed %u.", location->name.c_str(), RandVal()));
-			LOG(Format("Generating dungeon, level %d, target %d.", dungeon_level + 1, inside->target));
+			Info("Generating location '%s', seed %u.", location->name.c_str(), RandVal());
+			Info("Generating dungeon, level %d, target %d.", dungeon_level + 1, inside->target);
 
 			LoadingStep(txGeneratingMap);
 			GenerateDungeon(*location);
@@ -10730,7 +10731,7 @@ void Game::ChangeLevel(int gdzie)
 		net_state = 0;
 		net_stream.Reset();
 		PrepareLevelData(net_stream);
-		LOG(Format("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed()));
+		Info("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed());
 		info_box->Show(txWaitingForPlayers);
 	}
 	else
@@ -10742,7 +10743,7 @@ void Game::ChangeLevel(int gdzie)
 		game_gui->visible = true;
 	}
 
-	LOG(Format("Randomness integrity: %d", RandTmp()));
+	Info("Randomness integrity: %d", RandTmp());
 }
 
 void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon)
@@ -10838,7 +10839,7 @@ void Game::OpenDoorsByTeam(const Int2& pt)
 			}
 		}
 		else
-			WARN(Format("OpenDoorsByTeam: Can't find path from unit %s (%d,%d) to spawn point (%d,%d).", unit->data->id.c_str(), unit_pt.x, unit_pt.y, pt.x, pt.y));
+			Warn("OpenDoorsByTeam: Can't find path from unit %s (%d,%d) to spawn point (%d,%d).", unit->data->id.c_str(), unit_pt.x, unit_pt.y, pt.x, pt.y);
 	}
 }
 
@@ -13013,7 +13014,7 @@ int Game::GetRandomCity(int this_city)
 // czyszczenie gry
 void Game::ClearGame()
 {
-	LOG("Clearing game.");
+	Info("Clearing game.");
 
 	draw_batch.Clear();
 
@@ -13302,7 +13303,7 @@ void Game::RebuildMinimap()
 			break;
 		default:
 			assert(0);
-			WARN(Format("RebuildMinimap: unknown location %d.", location->type));
+			Warn("RebuildMinimap: unknown location %d.", location->type);
 			break;
 		}
 	}
@@ -13645,7 +13646,7 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal, bool from_outside)
 {
 	if(!first)
-		LOG(Format("Entering location '%s' level %d.", location->name.c_str(), dungeon_level + 1));
+		Info("Entering location '%s' level %d.", location->name.c_str(), dungeon_level + 1);
 
 	show_mp_panel = true;
 	Inventory::lock_id = LOCK_NO;
@@ -13965,7 +13966,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	{
 		secret_state = SECRET_GENERATED;
 		if(devmode)
-			LOG("Generated secret room.");
+			Info("Generated secret room.");
 
 		Room& r = inside->GetLevelData().rooms[0];
 
@@ -14061,12 +14062,12 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	OnEnterLevel();
 
 	if(!first)
-		LOG("Entered level.");
+		Info("Entered level.");
 }
 
 void Game::LeaveLevel(bool clear)
 {
-	LOG("Leaving level.");
+	Info("Leaving level.");
 
 	if(game_gui)
 		game_gui->Reset();
@@ -16074,7 +16075,7 @@ void Game::RegenerateTraps()
 	}
 
 	if(devmode)
-		LOG(Format("Traps: %d", local_ctx.traps->size()));
+		Info("Traps: %d", local_ctx.traps->size());
 }
 
 void Game::SpawnHeroesInsideDungeon()
@@ -16575,15 +16576,15 @@ void Game::InitQuests()
 
 	if(devmode)
 	{
-		LOG(Format("Quest 'Sawmill' - %s.", locations[quest_sawmill->start_loc]->name.c_str()));
-		LOG(Format("Quest 'Mine' - %s, %s.", locations[quest_mine->start_loc]->name.c_str(), locations[quest_mine->target_loc]->name.c_str()));
-		LOG(Format("Quest 'Bandits' - %s.", locations[quest_bandits->start_loc]->name.c_str()));
-		LOG(Format("Quest 'Mages' - %s.", locations[quest_mages->start_loc]->name.c_str()));
-		LOG(Format("Quest 'Orcs' - %s.", locations[quest_orcs->start_loc]->name.c_str()));
-		LOG(Format("Quest 'Goblins' - %s.", locations[quest_goblins->start_loc]->name.c_str()));
-		LOG(Format("Quest 'Evil' - %s.", locations[quest_evil->start_loc]->name.c_str()));
-		LOG(Format("Tournament - %s.", locations[tournament_city]->name.c_str()));
-		LOG(Format("Contest - %s.", locations[contest_where]->name.c_str()));
+		Info("Quest 'Sawmill' - %s.", locations[quest_sawmill->start_loc]->name.c_str());
+		Info("Quest 'Mine' - %s, %s.", locations[quest_mine->start_loc]->name.c_str(), locations[quest_mine->target_loc]->name.c_str());
+		Info("Quest 'Bandits' - %s.", locations[quest_bandits->start_loc]->name.c_str());
+		Info("Quest 'Mages' - %s.", locations[quest_mages->start_loc]->name.c_str());
+		Info("Quest 'Orcs' - %s.", locations[quest_orcs->start_loc]->name.c_str());
+		Info("Quest 'Goblins' - %s.", locations[quest_goblins->start_loc]->name.c_str());
+		Info("Quest 'Evil' - %s.", locations[quest_evil->start_loc]->name.c_str());
+		Info("Tournament - %s.", locations[tournament_city]->name.c_str());
+		Info("Contest - %s.", locations[contest_where]->name.c_str());
 	}
 }
 
@@ -16599,7 +16600,7 @@ void Game::GenerateQuestUnits()
 			quest_sawmill->sawmill_state = Quest_Sawmill::State::GeneratedUnit;
 			quest_sawmill->hd_lumberjack.Get(*u->human_data);
 			if(devmode)
-				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
@@ -16612,7 +16613,7 @@ void Game::GenerateQuestUnits()
 			u->hero->name = txQuest[272];
 			quest_mine->mine_state = Quest_Mine::State::SpawnedInvestor;
 			if(devmode)
-				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
@@ -16625,7 +16626,7 @@ void Game::GenerateQuestUnits()
 			u->hero->name = txQuest[273];
 			quest_bandits->bandits_state = Quest_Bandits::State::GeneratedMaster;
 			if(devmode)
-				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
@@ -16637,7 +16638,7 @@ void Game::GenerateQuestUnits()
 		{
 			quest_mages2->mages_state = Quest_Mages2::State::GeneratedScholar;
 			if(devmode)
-				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
@@ -16652,7 +16653,7 @@ void Game::GenerateQuestUnits()
 				quest_mages2->mages_state = Quest_Mages2::State::GeneratedOldMage;
 				quest_mages2->good_mage_name = u->hero->name;
 				if(devmode)
-					LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+					Info("Generated quest unit '%s'.", u->GetRealName());
 			}
 		}
 		else if(quest_mages2->mages_state == Quest_Mages2::State::MageLeft)
@@ -16667,7 +16668,7 @@ void Game::GenerateQuestUnits()
 				u->ApplyHumanData(quest_mages2->hd_mage);
 				quest_mages2->mages_state = Quest_Mages2::State::MageGeneratedInCity;
 				if(devmode)
-					LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+					Info("Generated quest unit '%s'.", u->GetRealName());
 			}
 		}
 	}
@@ -16682,7 +16683,7 @@ void Game::GenerateQuestUnits()
 			quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedGuard;
 			quest_orcs2->guard = u;
 			if(devmode)
-				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
@@ -16697,7 +16698,7 @@ void Game::GenerateQuestUnits()
 			u->hero->name = txQuest[274];
 			quest_goblins->goblins_state = Quest_Goblins::State::GeneratedNobleman;
 			if(devmode)
-				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
@@ -16714,7 +16715,7 @@ void Game::GenerateQuestUnits()
 			quest_evil->cleric = u;
 			quest_evil->evil_state = Quest_Evil::State::GeneratedCleric;
 			if(devmode)
-				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
@@ -16769,7 +16770,7 @@ void Game::GenerateQuestUnits()
 		{
 			quest_evil->evil_state = Quest_Evil::State::GeneratedMage;
 			if(devmode)
-				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 }
@@ -16786,7 +16787,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 			quest_goblins->messenger = u;
 			u->StartAutoTalk(true);
 			if(devmode)
-				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 
@@ -16801,7 +16802,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 			quest_goblins->goblins_state = Quest_Goblins::State::GeneratedMage;
 			u->StartAutoTalk(true);
 			if(devmode)
-				LOG(Format("Generated quest unit '%s'.", u->GetRealName()));
+				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
 }
@@ -19789,7 +19790,7 @@ void Game::PayCredit(PlayerController* player, int ile)
 	player->credit -= ile;
 	if(player->credit < 0)
 	{
-		WARN(Format("Player '%s' paid %d credit and now have %d!", player->name.c_str(), ile, player->credit));
+		Warn("Player '%s' paid %d credit and now have %d!", player->name.c_str(), ile, player->credit);
 		player->credit = 0;
 #ifdef _DEBUG
 		AddGameMsg("Player has invalid credit!", 5.f);
@@ -20651,33 +20652,33 @@ Game::BLOCK_RESULT Game::CheckBlock(Unit& hitted, float angle_dif, float attack_
 
 	k_block += Random(-5, 5);
 
-	LOG(Format("k_block: %d", k_block));
+	Info("k_block: %d", k_block);
 
 	/*return BLOCK_PERFECT;*/
 
 	if(k_block > 8)
 	{
-		LOG("BLOCK_BREAK");
+		Info("BLOCK_BREAK");
 		return BLOCK_BREAK;
 	}
 	else if(k_block > 4)
 	{
-		LOG("BLOCK_POOR");
+		Info("BLOCK_POOR");
 		return BLOCK_POOR;
 	}
 	else if(k_block > 0)
 	{
-		LOG("BLOCK_MEDIUM");
+		Info("BLOCK_MEDIUM");
 		return BLOCK_MEDIUM;
 	}
 	else if(k_block > -4)
 	{
-		LOG("BLOCK_GOOD");
+		Info("BLOCK_GOOD");
 		return BLOCK_GOOD;
 	}
 	else
 	{
-		LOG("BLOCK_PERFECT");
+		Info("BLOCK_PERFECT");
 		return BLOCK_PERFECT;
 	}
 }
@@ -21424,7 +21425,7 @@ void Game::VerifyObjects()
 			VerifyObjects(outside->objects, e);
 			if(e > 0)
 			{
-				ERROR(Format("%d errors in outside location '%s'.", e, outside->name.c_str()));
+				Error("%d errors in outside location '%s'.", e, outside->name.c_str());
 				errors += e;
 			}
 			if(l->type == L_CITY)
@@ -21436,7 +21437,7 @@ void Game::VerifyObjects()
 					VerifyObjects(ib->objects, e);
 					if(e > 0)
 					{
-						ERROR(Format("%d errors in city '%s', building '%s'.", e, city->name.c_str(), ib->type->id.c_str()));
+						Error("%d errors in city '%s', building '%s'.", e, city->name.c_str(), ib->type->id.c_str());
 						errors += e;
 					}
 				}
@@ -21455,7 +21456,7 @@ void Game::VerifyObjects()
 					VerifyObjects(lvl.objects, e);
 					if(e > 0)
 					{
-						ERROR(Format("%d errors in multi inside location '%s' at level %d.", e, m->name.c_str(), index));
+						Error("%d errors in multi inside location '%s' at level %d.", e, m->name.c_str(), index);
 						errors += e;
 					}
 					++index;
@@ -21468,7 +21469,7 @@ void Game::VerifyObjects()
 				VerifyObjects(s->objects, e);
 				if(e > 0)
 				{
-					ERROR(Format("%d errors in single inside location '%s'.", e, s->name.c_str()));
+					Error("%d errors in single inside location '%s'.", e, s->name.c_str());
 					errors += e;
 				}
 			}
@@ -21485,7 +21486,7 @@ void Game::VerifyObjects(vector<Object>& objects, int& errors)
 	{
 		if(!o.mesh && !o.base)
 		{
-			ERROR(Format("Broken object at (%g,%g,%g).", o.pos.x, o.pos.y, o.pos.z));
+			Error("Broken object at (%g,%g,%g).", o.pos.x, o.pos.y, o.pos.z);
 			++errors;
 		}
 	}
@@ -21540,7 +21541,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		if(spawned->event_handler && event->send_spawn_event)
 			spawned->event_handler->HandleUnitEvent(UnitEventHandler::SPAWN, spawned);
 		if(devmode)
-			LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn->id.c_str(), spawned->pos.x, spawned->pos.z));
+			Info("Generated unit %s (%g,%g).", event->unit_to_spawn->id.c_str(), spawned->pos.x, spawned->pos.z);
 
 		// mark near units as guards if guarded (only in dungeon)
 		if(IS_SET(spawned->data->flags2, F2_GUARDED) && lvl)
@@ -21569,7 +21570,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		if(!spawned2)
 			throw "Failed to spawn quest unit 2!";
 		if(devmode)
-			LOG(Format("Generated unit %s (%g,%g).", event->unit_to_spawn2->id.c_str(), spawned2->pos.x, spawned2->pos.z));
+			Info("Generated unit %s (%g,%g).", event->unit_to_spawn2->id.c_str(), spawned2->pos.x, spawned2->pos.z);
 		if(spawned && event->spawn_2_guard_1)
 		{
 			spawned2->dont_attack = spawned->dont_attack;
@@ -21593,7 +21594,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			{
 				best->AddItem(event->item_to_give[0], 1, true);
 				if(devmode)
-					LOG(Format("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id.c_str(), best->pos.x, best->pos.z));
+					Info("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), best->data->id.c_str(), best->pos.x, best->pos.z);
 			}
 		}
 		break;
@@ -21603,7 +21604,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		{
 			spawned->AddItem(event->item_to_give[0], 1, true);
 			if(devmode)
-				LOG(Format("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id.c_str(), spawned->pos.x, spawned->pos.z));
+				Info("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned->data->id.c_str(), spawned->pos.x, spawned->pos.z);
 		}
 		break;
 	case Quest_Dungeon::Item_GiveSpawned2:
@@ -21612,7 +21613,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		{
 			spawned2->AddItem(event->item_to_give[0], 1, true);
 			if(devmode)
-				LOG(Format("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned2->data->id.c_str(), spawned2->pos.x, spawned2->pos.z));
+				Info("Given item %s unit %s (%g,%g).", event->item_to_give[0]->id.c_str(), spawned2->data->id.c_str(), spawned2->pos.x, spawned2->pos.z);
 		}
 		break;
 	case Quest_Dungeon::Item_OnGround:
@@ -21626,7 +21627,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 				terrain->SetH(item->pos);
 			}
 			if(devmode)
-				LOG(Format("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z));
+				Info("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z);
 		}
 		break;
 	case Quest_Dungeon::Item_InTreasure:
@@ -21655,7 +21656,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			{
 				chest->AddItem(event->item_to_give[0]);
 				if(devmode)
-					LOG(Format("Generated item %s in treasure chest (%g,%g).", event->item_to_give[0]->id.c_str(), chest->pos.x, chest->pos.z));
+					Info("Generated item %s in treasure chest (%g,%g).", event->item_to_give[0]->id.c_str(), chest->pos.x, chest->pos.z);
 			}
 		}
 		break;
@@ -21676,7 +21677,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 					str += event->item_to_give[i]->id;
 				}
 				str += Format(") to chest (%g,%g).", chest->pos.x, chest->pos.z);
-				LOG(str.get_ref().c_str());
+				Info(str.get_ref().c_str());
 			}
 			else
 			{

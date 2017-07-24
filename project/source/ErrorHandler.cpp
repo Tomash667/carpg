@@ -32,28 +32,28 @@ inline void DoCrash()
 //=================================================================================================
 void TerminateHandler()
 {
-	ERROR("Terminate called. Crashing...");
+	Error("Terminate called. Crashing...");
 	DoCrash();
 }
 
 //=================================================================================================
 void UnexpectedHandler()
 {
-	ERROR("Unexpected called. Crashing...");
+	Error("Unexpected called. Crashing...");
 	DoCrash();
 }
 
 //=================================================================================================
 void PurecallHandler()
 {
-	ERROR("Called pure virtual function. Crashing...");
+	Error("Called pure virtual function. Crashing...");
 	DoCrash();
 }
 
 //=================================================================================================
 int NewHandler(size_t size)
 {
-	ERROR(Format("Out of memory, requested size %u. Crashing...", size));
+	Error("Out of memory, requested size %u. Crashing...", size);
 	DoCrash();
 	return 0;
 }
@@ -64,8 +64,8 @@ void InvalidParameterHandler(const wchar_t* expression, const wchar_t* function,
 	string* expr = ToString(expression);
 	string* func = ToString(function);
 	string* fil = ToString(file);
-	ERROR(Format("Invalid parameter passed to function '%s' (File %s, Line %u, Expression: %s). Crashing...",
-		func->c_str(), fil->c_str(), expr->c_str(), line));
+	Error("Invalid parameter passed to function '%s' (File %s, Line %u, Expression: %s). Crashing...",
+		func->c_str(), fil->c_str(), expr->c_str(), line);
 	StringPool.Free(expr);
 	StringPool.Free(func);
 	StringPool.Free(fil);
@@ -75,7 +75,7 @@ void InvalidParameterHandler(const wchar_t* expression, const wchar_t* function,
 //=================================================================================================
 void SignalHandler(int)
 {
-	ERROR("Received SIGABRT. Crashing...");
+	Error("Received SIGABRT. Crashing...");
 	DoCrash();
 }
 
@@ -111,10 +111,10 @@ cstring CodeToString(DWORD err)
 //=================================================================================================
 TextLogger* GetTextLogger()
 {
-	TextLogger* tlog = dynamic_cast<TextLogger*>(logger);
+	TextLogger* tlog = dynamic_cast<TextLogger*>(Logger::global);
 	if(tlog)
 		return tlog;
-	MultiLogger* mlog = dynamic_cast<MultiLogger*>(logger);
+	MultiLogger* mlog = dynamic_cast<MultiLogger*>(Logger::global);
 	if(mlog)
 	{
 		for(vector<Logger*>::iterator it = mlog->loggers.begin(), end = mlog->loggers.end(); it != end; ++it)
@@ -152,14 +152,14 @@ void ErrorHandler::RegisterHandler()
 //=================================================================================================
 long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 {
-	ERROR(Format("Handling crash. Code: 0x%x\nText: %s\nFlags: %d\nAddress: 0x%p\nMode: %s.", exc->ExceptionRecord->ExceptionCode,
+	Error("Handling crash. Code: 0x%x\nText: %s\nFlags: %d\nAddress: 0x%p\nMode: %s.", exc->ExceptionRecord->ExceptionCode,
 		CodeToString(exc->ExceptionRecord->ExceptionCode), exc->ExceptionRecord->ExceptionFlags, exc->ExceptionRecord->ExceptionAddress,
-		ToString(crash_mode)));
+		ToString(crash_mode));
 
 	// if disabled simply return
 	if(crash_mode == CrashMode::None)
 	{
-		ERROR("Crash mode set to none.");
+		Error("Crash mode set to none.");
 		return EXCEPTION_EXECUTE_HANDLER;
 	}
 
@@ -209,17 +209,17 @@ long ErrorHandler::HandleCrash(EXCEPTION_POINTERS* exc)
 			CloseHandle(hDumpFile);
 		}
 		else
-			ERROR(Format("Failed to save minidump (%d).", GetLastError()));
+			Error("Failed to save minidump (%d).", GetLastError());
 	}
 	else
-		WARN("Debugger is present, not creating minidump.");
+		Warn("Debugger is present, not creating minidump.");
 
 	// copy log
 	TextLogger* tlog = GetTextLogger();
 	if(tlog)
 	{
 		tlog->Flush();
-		CopyFile(tlog->path.c_str(), Format("crashes/crash%s.txt", str_time), FALSE);
+		CopyFile(tlog->GetPath().c_str(), Format("crashes/crash%s.txt", str_time), FALSE);
 	}
 
 	// copy stream
@@ -256,7 +256,7 @@ void ErrorHandler::ReadConfiguration(Config& cfg)
 		else if(result == Config::GET_INVALID || mode < 0 || mode > 2)
 		{
 			mode = 0;
-			ERROR(Format("Settings: Invalid crash mode '%s'.", cfg.GetString("crash_mode").c_str()));
+			Error("Settings: Invalid crash mode '%s'.", cfg.GetString("crash_mode").c_str());
 		}
 		switch(mode)
 		{
@@ -284,10 +284,10 @@ void ErrorHandler::ReadConfiguration(Config& cfg)
 		{
 			crash_mode = CrashMode::Normal;
 			if(result == Config::GET_INVALID)
-				ERROR(Format("Settings: Invalid crash mode '%s'.", cfg.GetString("crash_mode").c_str()));
+				Error("Settings: Invalid crash mode '%s'.", cfg.GetString("crash_mode").c_str());
 		}
 	}
-	LOG(Format("Settings: crash_mode = %s", ToString(crash_mode)));
+	Info("Settings: crash_mode = %s", ToString(crash_mode));
 
 	// stream log mode
 	Config::GetResult result = cfg.TryGetEnum<StreamLogMode>("stream_log_mode", stream_log_mode, {
@@ -299,9 +299,9 @@ void ErrorHandler::ReadConfiguration(Config& cfg)
 	{
 		stream_log_mode = StreamLogMode::Errors;
 		if(result == Config::GET_INVALID)
-			ERROR(Format("Settings: Invalid stream log mode '%s'.", cfg.GetString("stream_log_mode").c_str()));
+			Error("Settings: Invalid stream log mode '%s'.", cfg.GetString("stream_log_mode").c_str());
 	}
-	LOG(Format("Settings: stream_log_mode = %s", ToString(stream_log_mode)));
+	Info("Settings: stream_log_mode = %s", ToString(stream_log_mode));
 
 	// stream log file
 	stream_log_file = cfg.GetString("stream_log_file", "log.stream");
@@ -309,15 +309,15 @@ void ErrorHandler::ReadConfiguration(Config& cfg)
 	{
 		DWORD error = GetLastError();
 		if(stream_log_file == "log.stream")
-			ERROR(Format("Failed to open 'log.stream', error %u.", error));
+			Error("Failed to open 'log.stream', error %u.", error);
 		else
 		{
-			ERROR(Format("Invalid stream log filename '%s'. Using default.", stream_log_file.c_str()));
+			Error("Invalid stream log filename '%s'. Using default.", stream_log_file.c_str());
 			stream_log_file = "log.stream";
 			if(!stream_log.Open(stream_log_file.c_str()))
 			{
 				DWORD error = GetLastError();
-				ERROR(Format("Failed to open 'log.stream', error %u.", error));
+				Error("Failed to open 'log.stream', error %u.", error);
 			}
 		}
 	}

@@ -14,7 +14,7 @@ void CheckText(cstring text, bool talk2)
 {
 	bool have_format = (strchr(text, '$') != nullptr);
 	if(talk2 != have_format)
-		WARN(Format("Invalid dialog type for text \"%s\".", text));
+		Warn("Invalid dialog type for text \"%s\".", text);
 }
 
 enum Group
@@ -519,7 +519,7 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 	}
 	catch(Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse dialog '%s': %s", dialog->id.c_str(), e.ToString()));
+		Error("Failed to parse dialog '%s': %s", dialog->id.c_str(), e.ToString());
 		delete dialog;
 		return false;
 	}
@@ -590,7 +590,7 @@ uint LoadDialogs(uint& out_crc, uint& errors)
 			else
 			{
 				int group = G_TOP;
-				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
+				Error(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
 				skip = true;
 				++errors;
 			}
@@ -601,7 +601,7 @@ uint LoadDialogs(uint& out_crc, uint& errors)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load dialogs: %s", e.ToString()));
+		Error("Failed to load dialogs: %s", e.ToString());
 		++errors;
 	}
 
@@ -675,7 +675,7 @@ bool LoadDialogText(Tokenizer& t)
 		{
 			if(!t.exists)
 			{
-				ERROR(Format("Dialog '%s' is missing text for index %d.", dialog->id.c_str(), index));
+				Error("Dialog '%s' is missing text for index %d.", dialog->id.c_str(), index);
 				ok = false;
 			}
 			++index;
@@ -686,9 +686,9 @@ bool LoadDialogText(Tokenizer& t)
 	catch(Tokenizer::Exception& e)
 	{
 		if(dialog)
-			ERROR(Format("Failed to load dialog '%s' texts: %s", dialog->id.c_str(), e.ToString()));
+			Error("Failed to load dialog '%s' texts: %s", dialog->id.c_str(), e.ToString());
 		else
-			ERROR(Format("Failed to load dialog texts: %s", e.ToString()));
+			Error("Failed to load dialog texts: %s", e.ToString());
 		return false;
 	}
 }
@@ -701,7 +701,7 @@ void LoadDialogTexts()
 
 	if(!t.FromFile(path))
 	{
-		ERROR(Format("Failed to load language file '%s'.", path));
+		Error("Failed to load language file '%s'.", path);
 		return;
 	}
 
@@ -730,7 +730,7 @@ void LoadDialogTexts()
 			else
 			{
 				int id = 0;
-				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD, &id));
+				Error(t.FormatUnexpected(tokenizer::T_KEYWORD, &id));
 				skip = true;
 				++errors;
 			}
@@ -741,12 +741,12 @@ void LoadDialogTexts()
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load dialogs: %s", e.ToString()));
+		Error("Failed to load dialogs: %s", e.ToString());
 		++errors;
 	}
 
 	if(errors > 0)
-		ERROR(Format("Failed to load dialog texts (%d errors), check log for details.", errors));
+		Error("Failed to load dialog texts (%d errors), check log for details.", errors);
 }
 
 //=================================================================================================

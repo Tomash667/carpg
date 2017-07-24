@@ -1,6 +1,14 @@
 #include "Pch.h"
 #include "Core.h"
 
+Logger* Logger::global;
+const cstring Logger::level_names[4] = {
+	"INFO ",
+	"WARN ",
+	"ERROR",
+	"FATAL"
+};
+
 static cstring log_level_name[4] = {
 	"INFO ",
 	"WARN ",
@@ -8,32 +16,22 @@ static cstring log_level_name[4] = {
 	"FATAL"
 };
 
-void Logger::GetTime(tm& out)
+void Logger::Log(Level level, cstring msg)
 {
+	assert(msg);
 	time_t t = time(0);
-	localtime_s(&out, &t);
+	tm tm;
+	localtime_s(&tm, &t);
+	Log(level, msg, tm);
 }
 
 ConsoleLogger::~ConsoleLogger()
 {
-	Log("*** End of log.", L_INFO);
+	Info("*** End of log.");
 }
 
-void ConsoleLogger::Log(cstring text, LOG_LEVEL level)
+void ConsoleLogger::Log(Level level, cstring text, const tm& time)
 {
-	assert(text);
-
-	tm time;
-	GetTime(time);
-
-	printf("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
-	fflush(stdout);
-}
-
-void ConsoleLogger::Log(cstring text, LOG_LEVEL level, const tm& time)
-{
-	assert(text);
-
 	printf("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
 	fflush(stdout);
 }
@@ -46,23 +44,11 @@ TextLogger::TextLogger(cstring filename) : path(filename)
 
 TextLogger::~TextLogger()
 {
-	Log("*** End of log.", L_INFO);
+	Info("*** End of log.");
 }
 
-void TextLogger::Log(cstring text, LOG_LEVEL level)
+void TextLogger::Log(Level level, cstring text, const tm& time)
 {
-	assert(text);
-
-	tm time;
-	GetTime(time);
-
-	out << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
-}
-
-void TextLogger::Log(cstring text, LOG_LEVEL level, const tm& time)
-{
-	assert(text);
-
 	out << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
 }
 
@@ -76,20 +62,10 @@ MultiLogger::~MultiLogger()
 	DeleteElements(loggers);
 }
 
-void MultiLogger::Log(cstring text, LOG_LEVEL level)
+void MultiLogger::Log(Level level, cstring text, const tm& time)
 {
-	assert(text);
-
 	for(Logger* logger : loggers)
-		logger->Log(text, level);
-}
-
-void MultiLogger::Log(cstring text, LOG_LEVEL level, const tm& time)
-{
-	assert(text);
-
-	for(Logger* logger : loggers)
-		logger->Log(text, level, time);
+		logger->Log(level, text, time);
 }
 
 void MultiLogger::Flush()
@@ -103,7 +79,7 @@ void PreLogger::Apply(Logger* logger)
 	assert(logger);
 
 	for(Prelog* log : prelogs)
-		logger->Log(log->str.c_str(), log->level, log->time);
+		logger->Log(log->level, log->str.c_str(), log->time);
 
 	if(flush)
 		logger->Flush();
@@ -115,22 +91,8 @@ void PreLogger::Clear()
 	DeleteElements(prelogs);
 }
 
-void PreLogger::Log(cstring text, LOG_LEVEL level)
+void PreLogger::Log(Level level, cstring text, const tm& time)
 {
-	assert(text);
-
-	Prelog* p = new Prelog;
-	p->str = text;
-	p->level = level;
-	GetTime(p->time);
-
-	prelogs.push_back(p);
-}
-
-void PreLogger::Log(cstring text, LOG_LEVEL level, const tm& time)
-{
-	assert(text);
-
 	Prelog* p = new Prelog;
 	p->str = text;
 	p->level = level;

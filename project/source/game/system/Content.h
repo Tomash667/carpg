@@ -10,6 +10,10 @@ enum class OLD_BUILDING;
 //-----------------------------------------------------------------------------
 namespace content
 {
+	extern string system_dir;
+	extern uint errors;
+	extern uint warnings;
+
 	extern vector<Building*> buildings;
 	extern vector<BuildingGroup*> building_groups;
 	extern vector<BuildingScript*> building_scripts;
@@ -29,4 +33,6 @@ namespace content
 	BuildingScript* FindBuildingScript(const AnyString& id);
 	Building* FindOldBuilding(OLD_BUILDING type);
 	UnitData* FindUnit(const AnyString& id);
+
+	void LoadBuildings();
 }

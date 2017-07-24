@@ -80,17 +80,17 @@ void AttributeInfo::Validate(uint& err)
 		AttributeInfo& ai = g_attributes[i];
 		if(ai.attrib_id != (Attribute)i)
 		{
-			WARN(Format("Test: Attribute %s: id mismatch.", ai.id));
+			Warn("Test: Attribute %s: id mismatch.", ai.id);
 			++err;
 		}
 		if(ai.name.empty())
 		{
-			WARN(Format("Test: Attribute %s: empty name.", ai.id));
+			Warn("Test: Attribute %s: empty name.", ai.id);
 			++err;
 		}
 		if(ai.desc.empty())
 		{
-			WARN(Format("Test: Attribute %s: empty desc.", ai.id));
+			Warn("Test: Attribute %s: empty desc.", ai.id);
 			++err;
 		}
 	}

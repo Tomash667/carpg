@@ -1425,7 +1425,7 @@ bool AnimeshInstance::Read(BitStream& stream)
 				group.anim = ani->GetAnimation(BUF);
 				if(!group.anim)
 				{
-					ERROR(Format("Missing animation '%s'.", BUF));
+					Error("Missing animation '%s'.", BUF);
 					return false;
 				}
 			}

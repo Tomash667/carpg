@@ -137,7 +137,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 	Tokenizer t(Tokenizer::F_UNESCAPE);
 	if(!t.FromFile(Format("%s/music.txt", g_system_dir.c_str())))
 	{
-		ERROR("Failed to open music.txt.");
+		Error("Failed to open music.txt.");
 		++errors;
 		return 0;
 	}
@@ -188,7 +188,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 							}
 							else
 							{
-								ERROR(Format("Missing music file '%s'.", filename.c_str()));
+								Error("Missing music file '%s'.", filename.c_str());
 								++errors;
 							}
 							t.Next();
@@ -212,7 +212,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 					}
 					else
 					{
-						ERROR(Format("Missing music file '%s'.", filename.c_str()));
+						Error("Missing music file '%s'.", filename.c_str());
 						++errors;
 					}
 					t.Next();
@@ -220,7 +220,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 			}
 			catch(const Tokenizer::Exception& e)
 			{
-				ERROR(Format("Failed to parse music list: %s", e.ToString()));
+				Error("Failed to parse music list: %s", e.ToString());
 				++errors;
 				if(!t.SkipToKeywordGroup(0))
 					break;
@@ -229,7 +229,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to parse music list: %s", e.ToString()));
+		Error("Failed to parse music list: %s", e.ToString());
 		++errors;
 	}
 

@@ -1300,7 +1300,7 @@ void Unit::Save(HANDLE file, bool local)
 		{
 			if(useable->user != this)
 			{
-				WARN(Format("Invalid useable %s (%d) user %s.", useable->GetBase()->id, useable->refid, data->id.c_str()));
+				Warn("Invalid useable %s (%d) user %s.", useable->GetBase()->id, useable->refid, data->id.c_str());
 				useable = nullptr;
 				int refi = -1;
 				WriteFile(file, &refi, sizeof(refi), &tmp, nullptr);
@@ -1739,7 +1739,7 @@ void Unit::Load(HANDLE file, bool local)
 		weapon_state = WS_HIDDEN;
 		weapon_taken = W_NONE;
 		weapon_hiding = W_NONE;
-		WARN(Format("Unit '%s' had broken weapon state.", data->id.c_str()));
+		Warn("Unit '%s' had broken weapon state.", data->id.c_str());
 	}
 
 	// calculate new attributes

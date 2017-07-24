@@ -184,7 +184,7 @@ void Game::GenerateWorld()
 	else if(force_seed != 0 && force_seed_all)
 		Srand(force_seed);
 
-	LOG(Format("Generating world, seed %u.", RandVal()));
+	Info("Generating world, seed %u.", RandVal());
 
 	// generuj miasta
 	empty_locations = 0;
@@ -432,7 +432,7 @@ void Game::GenerateWorld()
 #endif
 	world_pos = locations[current_location]->pos;
 
-	LOG(Format("Randomness integrity: %d", RandTmp()));
+	Info("Randomness integrity: %d", RandTmp());
 }
 
 void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool required)
@@ -793,10 +793,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		if(l.type == L_CITY)
 		{
 			City* city = (City*)&l;
-			LOG(Format("Generating location '%s', seed %u [%d].", l.name.c_str(), RandVal(), city->citizens));
+			Info("Generating location '%s', seed %u [%d].", l.name.c_str(), RandVal(), city->citizens);
 		}
 		else
-			LOG(Format("Generating location '%s', seed %u.", l.name.c_str(), RandVal()));
+			Info("Generating location '%s', seed %u.", l.name.c_str(), RandVal());
 		l.seed = RandVal();
 		if(!l.outside)
 		{
@@ -832,7 +832,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 					if(multi->generated == 0)
 						++multi->generated;
 				}
-				LOG(Format("Generating dungeon, target %d.", inside->target));
+				Info("Generating dungeon, target %d.", inside->target);
 				GenerateDungeon(l);
 			}
 			break;
@@ -860,7 +860,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		}
 	}
 	else if(l.type != L_DUNGEON && l.type != L_CRYPT)
-		LOG(Format("Entering location '%s'.", l.name.c_str()));
+		Info("Entering location '%s'.", l.name.c_str());
 
 	city_ctx = nullptr;
 
@@ -1445,7 +1445,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		{
 			net_stream.Reset();
 			PrepareLevelData(net_stream);
-			LOG(Format("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed()));
+			Info("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed());
 		}
 		else
 			game_players[0].state = PlayerInfo::IN_GAME;
@@ -1467,8 +1467,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		OnEnterLocation();
 	}
 
-	LOG(Format("Randomness integrity: %d", RandTmp()));
-	LOG("Entered location.");
+	Info("Randomness integrity: %d", RandTmp());
+	Info("Entered location.");
 
 	return true;
 }
@@ -2750,7 +2750,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	if(open_location == -1)
 		return;
 
-	LOG("Leaving location.");
+	Info("Leaving location.");
 
 	pvp_response.ok = false;
 	tournament_generated = false;
@@ -6330,7 +6330,7 @@ void Game::GenerateDungeonFood()
 
 void Game::GenerateCityMap(Location& loc)
 {
-	LOG("Generating city map.");
+	Info("Generating city map.");
 
 	City* city = (City*)location;
 	if(!city->tiles)
@@ -6426,7 +6426,7 @@ void Game::GenerateCityMap(Location& loc)
 
 void Game::GenerateVillageMap(Location& loc)
 {
-	LOG("Generating village map.");
+	Info("Generating village map.");
 
 	City* village = (City*)location;
 	CLEAR_BIT(village->flags, City::HaveExit);

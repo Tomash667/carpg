@@ -81,7 +81,7 @@ bool Engine::ChangeMode(bool _fullscreen)
 	if(fullscreen == _fullscreen)
 		return false;
 
-	LOG(_fullscreen ? "Engine: Changing mode to fullscreen." : "Engine: Changing mode to windowed.");
+	Info(_fullscreen ? "Engine: Changing mode to fullscreen." : "Engine: Changing mode to windowed.");
 
 	fullscreen = _fullscreen;
 	ChangeMode();
@@ -98,14 +98,14 @@ bool Engine::ChangeMode(int w, int h, bool _fullscreen, int hz)
 
 	if(!CheckDisplay(w, h, hz))
 	{
-		ERROR(Format("Engine: Can't change display mode to %dx%d (%d Hz, %s).", w, h, hz, _fullscreen ? "fullscreen" : "windowed"));
+		Error("Engine: Can't change display mode to %dx%d (%d Hz, %s).", w, h, hz, _fullscreen ? "fullscreen" : "windowed");
 		return false;
 	}
 
 	if(wnd_size.x == w && wnd_size.y == h && fullscreen == _fullscreen && wnd_hz == hz)
 		return false;
 
-	LOG(Format("Engine: Resolution changed to %dx%d (%d Hz, %s).", w, h, hz, _fullscreen ? "fullscreen" : "windowed"));
+	Info("Engine: Resolution changed to %dx%d (%d Hz, %s).", w, h, hz, _fullscreen ? "fullscreen" : "windowed");
 
 	bool size_changed = (wnd_size.x != w || wnd_size.y != h);
 
@@ -198,7 +198,7 @@ bool Engine::CheckDisplay(int w, int h, int& hz)
 //=================================================================================================
 void Engine::Cleanup()
 {
-	LOG("Engine: Cleanup.");
+	Info("Engine: Cleanup.");
 
 	OnCleanup();
 
@@ -291,8 +291,8 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 				hr = D3DXCreateEffect(device, g_tmp_string.c_str(), g_tmp_string.size(), params.macros, nullptr, flags, params.pool, &effect, &errors);
 				if(FAILED(hr))
 				{
-					ERROR(Format("Engine: Failed to create effect from cache '%s' (%d).\n%s", params.cache_name, hr,
-						errors ? (cstring)errors->GetBufferPointer() : "No errors information."));
+					Error("Engine: Failed to create effect from cache '%s' (%d).\n%s", params.cache_name, hr,
+						errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
 					SafeRelease(errors);
 					SafeRelease(effect);
 				}
@@ -375,7 +375,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 		SetFileTime(f.file, nullptr, nullptr, &params.file_time);
 	}
 	else
-		WARN(Format("Engine: Failed to save effect '%s' to cache (%d).", params.cache_name, GetLastError()));
+		Warn("Engine: Failed to save effect '%s' to cache (%d).", params.cache_name, GetLastError());
 
 	// create effect from effect buffer
 	ID3DXEffect* effect = nullptr;
@@ -503,7 +503,7 @@ void Engine::EngineShutdown()
 	if(!engine_shutdown)
 	{
 		engine_shutdown = true;
-		LOG("Engine: Started closing engine...");
+		Info("Engine: Started closing engine...");
 	}
 }
 
@@ -695,7 +695,7 @@ void Engine::InitPhysics()
 	phy_broadphase = new btDbvtBroadphase;
 	phy_world = new CustomCollisionWorld(phy_dispatcher, phy_broadphase, phy_config);
 
-	INFO("Engine: Bullet physics system created.");
+	Info("Engine: Bullet physics system created.");
 }
 
 //=================================================================================================
@@ -712,7 +712,7 @@ void Engine::InitRender()
 
 	// ile jest adapterów
 	uint adapters = d3d->GetAdapterCount();
-	LOG(Format("Engine: Adapters count: %u", adapters));
+	Info("Engine: Adapters count: %u", adapters);
 
 	// pobierz informacje o adapterach
 	D3DADAPTER_IDENTIFIER9 adapter;
@@ -720,16 +720,16 @@ void Engine::InitRender()
 	{
 		hr = d3d->GetAdapterIdentifier(i, 0, &adapter);
 		if(FAILED(hr))
-			WARN(Format("Engine: Can't get info about adapter %d (%d).", i, hr));
+			Warn("Engine: Can't get info about adapter %d (%d).", i, hr);
 		else
 		{
-			LOG(Format("Engine: Adapter %d: %s, version %d.%d.%d.%d", i, adapter.Description, HIWORD(adapter.DriverVersion.HighPart),
-				LOWORD(adapter.DriverVersion.HighPart), HIWORD(adapter.DriverVersion.LowPart), LOWORD(adapter.DriverVersion.LowPart)));
+			Info("Engine: Adapter %d: %s, version %d.%d.%d.%d", i, adapter.Description, HIWORD(adapter.DriverVersion.HighPart),
+				LOWORD(adapter.DriverVersion.HighPart), HIWORD(adapter.DriverVersion.LowPart), LOWORD(adapter.DriverVersion.LowPart));
 		}
 	}
 	if(used_adapter > (int)adapters)
 	{
-		WARN(Format("Engine: Invalid adapter %d, defaulting to 0.", used_adapter));
+		Warn("Engine: Invalid adapter %d, defaulting to 0.", used_adapter);
 		used_adapter = 0;
 	}
 
@@ -745,15 +745,15 @@ void Engine::InitRender()
 	}
 	else
 	{
-		LOG(Format("Supported shader version vertex: %d.%d, pixel: %d.%d.",
+		Info("Supported shader version vertex: %d.%d, pixel: %d.%d.",
 			D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MINOR(caps.VertexShaderVersion),
-			D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion), D3DSHADER_VERSION_MINOR(caps.PixelShaderVersion)));
+			D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion), D3DSHADER_VERSION_MINOR(caps.PixelShaderVersion));
 
 		int version = min(D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion), D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion));
 		if(shader_version == -1 || shader_version > version)
 			shader_version = version;
 
-		LOG(Format("Using shader version %d.", shader_version));
+		Info("Using shader version %d.", shader_version);
 	}
 
 	// sprawdź rodzaj tekstur
@@ -780,14 +780,14 @@ void Engine::InitRender()
 		levels = min(levels, levels2);
 		if(multisampling_quality < 0 || multisampling_quality >= (int)levels)
 		{
-			WARN("Engine: Unavailable multisampling quality, changed to 0.");
+			Warn("Engine: Unavailable multisampling quality, changed to 0.");
 			multisampling_quality = 0;
 		}
 	}
 	else
 	{
-		WARN(Format("Engine: Your graphic card don't support multisampling x%d. Maybe it's only available in fullscreen mode. "
-			"Multisampling was turned off.", multisampling));
+		Warn("Engine: Your graphic card don't support multisampling x%d. Maybe it's only available in fullscreen mode. "
+			"Multisampling was turned off.", multisampling);
 		multisampling = 0;
 		multisampling_quality = 0;
 	}
@@ -820,7 +820,7 @@ void Engine::InitRender()
 
 		if(SUCCEEDED(hr))
 		{
-			LOG(Format("Engine: Created direct3d device in %s mode.", mode_str[i]));
+			Info("Engine: Created direct3d device in %s mode.", mode_str[i]);
 			break;
 		}
 	}
@@ -834,7 +834,7 @@ void Engine::InitRender()
 	if(FAILED(hr))
 		throw Format("Engine: Failed to create direct3dx sprite (%d).", hr);
 
-	INFO("Engine: Directx device created.");
+	Info("Engine: Directx device created.");
 }
 
 //=================================================================================================
@@ -845,7 +845,7 @@ void Engine::InitSound()
 	// if disabled, log it
 	if(disabled_sound)
 	{
-		INFO("Engine: Sound and music is disabled.");
+		Info("Engine: Sound and music is disabled.");
 		return;
 	}
 
@@ -860,17 +860,17 @@ void Engine::InitSound()
 	if(result != FMOD_OK)
 		throw Format("Engine: Failed to get FMOD number of drivers (%d).", result);
 	if(count == 0)
-		WARN("Engine: No sound drivers.");
+		Warn("Engine: No sound drivers.");
 	else
 	{
-		LOG(Format("Engine: Sound drivers (%d):", count));
+		Info("Engine: Sound drivers (%d):", count);
 		for(int i = 0; i < count; ++i)
 		{
 			result = fmod_system->getDriverInfo(i, BUF, 256, nullptr);
 			if(result == FMOD_OK)
-				LOG(Format("Engine: Driver %d - %s", i, BUF));
+				Info("Engine: Driver %d - %s", i, BUF);
 			else
-				ERROR(Format("Engine: Failed to get driver %d info (%d).", i, result));
+				Error("Engine: Failed to get driver %d info (%d).", i, result);
 		}
 	}
 
@@ -879,7 +879,7 @@ void Engine::InitSound()
 	FMOD_OUTPUTTYPE output;
 	fmod_system->getDriver(&driver);
 	fmod_system->getOutput(&output);
-	LOG(Format("Engine: Using driver %d and output type %d.", driver, output));
+	Info("Engine: Using driver %d and output type %d.", driver, output);
 
 	// initialize FMOD system
 	const int tries = 3;
@@ -889,7 +889,7 @@ void Engine::InitSound()
 		result = fmod_system->init(128, FMOD_INIT_NORMAL, nullptr);
 		if(result != FMOD_OK)
 		{
-			ERROR(Format("Engine: Failed to initialize FMOD system (%d).", result));
+			Error("Engine: Failed to initialize FMOD system (%d).", result);
 			Sleep(100);
 		}
 		else
@@ -900,7 +900,7 @@ void Engine::InitSound()
 	}
 	if(!ok)
 	{
-		ERROR("Engine: Failed to initialize FMOD, disabling sound!");
+		Error("Engine: Failed to initialize FMOD, disabling sound!");
 		disabled_sound = true;
 		return;
 	}
@@ -909,7 +909,7 @@ void Engine::InitSound()
 	fmod_system->createChannelGroup("default", &group_default);
 	fmod_system->createChannelGroup("music", &group_music);
 
-	INFO("Engine: FMOD sound system created.");
+	Info("Engine: FMOD sound system created.");
 }
 
 //=================================================================================================
@@ -973,7 +973,7 @@ void Engine::InitWindow(cstring title)
 	mouse_dif = Int2(0, 0);
 	unlock_point = real_size / 2;
 
-	INFO("Engine: Window created.");
+	Info("Engine: Window created.");
 }
 
 //=================================================================================================
@@ -998,7 +998,7 @@ void Engine::LogMultisampling()
 	else
 		s.pop(2);
 
-	LOG(s);
+	Info(s);
 }
 
 //=================================================================================================
@@ -1121,7 +1121,7 @@ void Engine::Render(bool dont_call_present)
 //=================================================================================================
 bool Engine::Reset(bool force)
 {
-	LOG("Engine: Reseting device.");
+	Info("Engine: Reseting device.");
 
 	// zwolnij zasoby
 	if(!res_freed)
@@ -1143,7 +1143,7 @@ bool Engine::Reset(bool force)
 			throw Format("Engine: Failed to reset directx device (%d)!", hr);
 		else
 		{
-			WARN("Failed to reset device.");
+			Warn("Failed to reset device.");
 			return false;
 		}
 	}
@@ -1234,16 +1234,16 @@ void Engine::SelectResolution()
 			str += Format(", %d", r.hz);
 	}
 	str += " Hz)";
-	LOG(str->c_str());
+	Info(str->c_str());
 
 	// dostosuj wybraną rozdzielczość
 	if(!res_valid)
 	{
 		const Int2 defaul_res(1024, 768);
 		if(wnd_size.x != 0)
-			WARN(Format("Engine: Resolution %dx%d is not valid, defaulting to %dx%d (%d Hz).", wnd_size.x, wnd_size.y, defaul_res.x, defaul_res.y, best_hz));
+			Warn("Engine: Resolution %dx%d is not valid, defaulting to %dx%d (%d Hz).", wnd_size.x, wnd_size.y, defaul_res.x, defaul_res.y, best_hz);
 		else
-			LOG(Format("Engine: Defaulting resolution to %dx%dx (%d Hz).", defaul_res.x, defaul_res.y, best_hz));
+			Info("Engine: Defaulting resolution to %dx%dx (%d Hz).", defaul_res.x, defaul_res.y, best_hz);
 		wnd_size = defaul_res;
 		wnd_hz = best_hz;
 		AdjustWindowSize();
@@ -1253,9 +1253,9 @@ void Engine::SelectResolution()
 	else if(!hz_valid)
 	{
 		if(wnd_hz != 0)
-			WARN(Format("Engine: Refresh rate %d Hz is not valid, defaulting to %d Hz.", wnd_hz, best_valid_hz));
+			Warn("Engine: Refresh rate %d Hz is not valid, defaulting to %d Hz.", wnd_hz, best_valid_hz);
 		else
-			LOG(Format("Engine: Defaulting refresh rate to %d Hz.", best_valid_hz));
+			Info("Engine: Defaulting refresh rate to %d Hz.", best_valid_hz);
 		wnd_hz = best_valid_hz;
 	}
 }
@@ -1268,7 +1268,7 @@ void Engine::SetStartingMultisampling(int _multisampling, int _multisampling_qua
 	if(_multisampling < 0 || _multisampling == 1 || _multisampling > D3DMULTISAMPLE_16_SAMPLES)
 	{
 		multisampling = 0;
-		WARN(Format("Engine: Unsupported multisampling: %d.", _multisampling));
+		Warn("Engine: Unsupported multisampling: %d.", _multisampling);
 	}
 	else
 	{
@@ -1303,13 +1303,13 @@ void Engine::ShowCursor(bool _show)
 //=================================================================================================
 // Ukrywa okno i wyświetla błąd
 //=================================================================================================
-void Engine::ShowError(cstring msg, Logger::LOG_LEVEL level)
+void Engine::ShowError(cstring msg, Logger::Level level)
 {
 	assert(msg);
 
 	ShowWindow(hwnd, SW_HIDE);
 	::ShowCursor(TRUE);
-	logger->Log(msg, level);
+	Logger::global->Log(level, msg);
 	MessageBox(nullptr, msg, nullptr, MB_OK | MB_ICONERROR | MB_APPLMODAL);
 }
 

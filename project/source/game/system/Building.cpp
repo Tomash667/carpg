@@ -377,3 +377,51 @@ Type* CreateBuildingHandler()
 {
 	return new BuildingHandler;
 }
+
+class BuildingLoader
+{
+	enum Group
+	{
+		G_TOP
+	};
+
+	enum Top
+	{
+		T_BUILDING,
+		T_BUILDING_GROUP,
+		T_BUILDING_SCRIPT
+	};
+
+public:
+	BuildingLoader()
+	{
+	}
+
+	void InitTokenizer()
+	{
+		t.AddKeywords(G_TOP, {
+			{"building", T_BUILDING},
+			{"building_group", T_BUILDING_GROUP},
+			{"building_script", T_BUILDING_SCRIPT}
+		});
+	}
+
+	void Load()
+	{
+		InitTokenizer();
+
+		cstring path = Format("%s/buildings.txt", content::system_dir.c_str());
+		if(!t.FromFile(path))
+		{
+		}
+	}
+
+private:
+	Tokenizer t;
+};
+
+void content::LoadBuildings()
+{
+	BuildingLoader loader;
+	loader.Load();
+}

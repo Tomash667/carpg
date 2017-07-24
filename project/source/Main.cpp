@@ -173,7 +173,7 @@ void LogProcessorFeatures()
 	else
 		s += "(none)";
 
-	LOG(s);
+	Info(s);
 }
 
 struct InstallScript
@@ -190,7 +190,7 @@ struct InstallScript
 //=================================================================================================
 bool RunInstallScripts()
 {
-	LOG("Reading install scripts.");
+	Info("Reading install scripts.");
 	WIN32_FIND_DATA data;
 	HANDLE find = FindFirstFile(Format("%s/install/*.txt", g_system_dir.c_str()), &data);
 	if(find == INVALID_HANDLE_VALUE)
@@ -252,7 +252,7 @@ bool RunInstallScripts()
 		}
 		catch(const Tokenizer::Exception& e)
 		{
-			WARN(Format("Unknown install script '%s': %s", data.cFileName, e.ToString()));
+			Warn("Unknown install script '%s': %s", data.cFileName, e.ToString());
 		}
 	} while(FindNextFile(find, &data));
 
@@ -280,10 +280,10 @@ bool RunInstallScripts()
 		{
 			if(!t.FromFile(path))
 			{
-				ERROR(Format("Failed to load install script '%s'.", it->filename.c_str()));
+				Error("Failed to load install script '%s'.", it->filename.c_str());
 				continue;
 			}
-			LOG(Format("Using install script %s.", it->filename.c_str()));
+			Info("Using install script %s.", it->filename.c_str());
 
 			t.Next();
 			t.AssertKeyword();
@@ -316,7 +316,7 @@ bool RunInstallScripts()
 
 				if(GetFullPathName(s2->c_str(), 512, buf2, nullptr) == 0 || strncmp(buf, buf2, len) != 0)
 				{
-					ERROR(Format("Invalid file path '%s'.", s2->c_str()));
+					Error("Invalid file path '%s'.", s2->c_str());
 					return false;
 				}
 
@@ -328,7 +328,7 @@ bool RunInstallScripts()
 		}
 		catch(cstring err)
 		{
-			ERROR(Format("Failed to parse install script '%s': %s", path, err));
+			Error("Failed to parse install script '%s': %s", path, err);
 		}
 	}
 
@@ -424,10 +424,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	time_t t = time(0);
 	tm t2;
 	localtime_s(&t2, &t);
-	LOG("CaRpg " VERSION_STR);
-	LOG(Format("Date: %04d-%02d-%02d", t2.tm_year + 1900, t2.tm_mon + 1, t2.tm_mday));
-	LOG(Format("Build date: %s", g_ctime.c_str()));
-	LOG(Format("Process ID: %d", GetCurrentProcessId()));
+	Info("CaRpg " VERSION_STR);
+	Info("Date: %04d-%02d-%02d", t2.tm_year + 1900, t2.tm_mon + 1, t2.tm_mday);
+	Info("Build date: %s", g_ctime.c_str());
+	Info("Process ID: %d", GetCurrentProcessId());
 	{
 		cstring build_type =
 #ifdef _DEBUG
@@ -435,7 +435,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #else
 			"release ";
 #endif
-		LOG(Format("Build type: %s", build_type));
+		Info("Build type: %s", build_type);
 	}
 	LogProcessorFeatures();
 
@@ -452,7 +452,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	char* cmd_line = new char[cmd_len];
 	memcpy(cmd_line, lpCmdLine, cmd_len);
 	char** argv;
-	LOG("Parsing command line.");
+	Info("Parsing command line.");
 	int argc = ParseCmdLine(cmd_line, &argv);
 	bool restarted = false;
 
@@ -461,7 +461,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		char c = argv[i][0];
 		if(c != '-' && c != '+')
 		{
-			WARN(Format("Unknown command line parameter '%s'.", argv[i]));
+			Warn("Unknown command line parameter '%s'.", argv[i]);
 			continue;
 		}
 
@@ -476,10 +476,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				{
 					++i;
 					game.cfg_file = argv[i];
-					LOG(Format("Configuration file: %s", game.cfg_file.c_str()));
+					Info("Configuration file: %s", game.cfg_file.c_str());
 				}
 				else
-					WARN("No argument for parameter '-config'!");
+					Warn("No argument for parameter '-config'!");
 			}
 			else if(strcmp(arg, "single") == 0)
 				game.quickstart = QUICKSTART_SINGLE;
@@ -509,15 +509,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				HANDLE mutex = CreateMutex(nullptr, TRUE, MUTEX_NAME);
 				if(mutex)
 				{
-					LOG("Created delay mutex.");
+					Info("Created delay mutex.");
 					game.mutex = mutex;
 				}
 				else
-					ERROR("Failed to create delay mutex.");
+					Error("Failed to create delay mutex.");
 			}
 			else if(strcmp(arg, "delay-2") == 0)
 			{
-				LOG("Waiting for delay mutex creation.");
+				Info("Waiting for delay mutex creation.");
 				HANDLE mutex;
 				while(true)
 				{
@@ -527,7 +527,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					else
 						Sleep(250);
 				}
-				LOG("Waiting for mutex.");
+				Info("Waiting for mutex.");
 				WaitForSingleObject(mutex, INFINITE);
 				CloseHandle(mutex);
 			}
@@ -536,7 +536,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if(!restarted)
 				{
 					// try to open mutex
-					LOG("Game restarted.");
+					Info("Game restarted.");
 					HANDLE mutex = OpenMutex(SYNCHRONIZE, FALSE, RESTART_MUTEX_NAME);
 					if(mutex)
 					{
@@ -548,7 +548,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 			else
-				WARN(Format("Unknown switch '%s'.", arg));
+				Warn("Unknown switch '%s'.", arg);
 		}
 	}
 
@@ -556,13 +556,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//-------------------------------------------------------------------------
 	// wczytaj plik konfiguracyjny
-	LOG("Loading config file");
+	Info("Loading config file");
 	Config& cfg = Game::Get().cfg;
 	Config::Result result = cfg.Load(game.cfg_file.c_str());
 	if(result == Config::NO_FILE)
-		LOG(Format("Config file not found '%s'.", game.cfg_file.c_str()));
+		Info("Config file not found '%s'.", game.cfg_file.c_str());
 	else if(result == Config::PARSE_ERROR)
-		ERROR(Format("Config file parse error '%s' : %s", game.cfg_file.c_str(), cfg.GetError().c_str()));
+		Error("Config file parse error '%s' : %s", game.cfg_file.c_str(), cfg.GetError().c_str());
 
 	error_handler.ReadConfiguration(cfg);
 
@@ -603,21 +603,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		const string& res = cfg.GetString("resolution", "0x0");
 		if(sscanf_s(res.c_str(), "%dx%d", &w, &h) != 2)
 		{
-			WARN(Format("Settings: Invalid resolution value '%s'.", res.c_str()));
+			Warn("Settings: Invalid resolution value '%s'.", res.c_str());
 			w = 0;
 			h = 0;
 		}
 		else
-			LOG(Format("Settings: Resolution %dx%d.", w, h));
+			Info("Settings: Resolution %dx%d.", w, h);
 	}
 
 	// refresh
 	game.wnd_hz = cfg.GetInt("refresh", 0);
-	LOG(Format("Settings: Refresh rate %d Hz.", game.wnd_hz));
+	Info("Settings: Refresh rate %d Hz.", game.wnd_hz);
 
 	// adapter
 	game.used_adapter = cfg.GetInt("adapter", 0);
-	LOG(Format("Settings: Adapter %d.", game.used_adapter));
+	Info("Settings: Adapter %d.", game.used_adapter);
 
 	// logowanie
 	log_to_file = (cfg.GetBool3("log", True) == True);
@@ -647,12 +647,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if(game.nosound || cfg.GetBool3("nosound", False) == True)
 	{
 		game.nosound = true;
-		LOG("Settings: no sound.");
+		Info("Settings: no sound.");
 	}
 	if(game.nomusic || cfg.GetBool3("nomusic", False) == True)
 	{
 		game.nomusic = true;
-		LOG("Settings: no music.");
+		Info("Settings: no music.");
 	}
 	if(game.nomusic && game.nosound)
 		game.disabled_sound = true;
@@ -714,10 +714,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					if(ClassInfo::IsPickable(ci->class_id))
 						game.autopick_class = ci->class_id;
 					else
-						WARN(Format("Settings [autopick]: Class '%s' is not pickable by players.", clas.c_str()));
+						Warn("Settings [autopick]: Class '%s' is not pickable by players.", clas.c_str());
 				}
 				else
-					WARN(Format("Settings [autopick]: Invalid class '%s'.", clas.c_str()));
+					Warn("Settings [autopick]: Invalid class '%s'.", clas.c_str());
 			}
 		}
 	}
@@ -743,10 +743,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				if(ClassInfo::IsPickable(ci->class_id))
 					game.quickstart_class = ci->class_id;
 				else
-					WARN(Format("Settings [class]: Class '%s' is not pickable by players.", clas.c_str()));
+					Warn("Settings [class]: Class '%s' is not pickable by players.", clas.c_str());
 			}
 			else
-				WARN(Format("Settings [class]: Invalid class '%s'.", clas.c_str()));
+				Warn("Settings [class]: Invalid class '%s'.", clas.c_str());
 		}
 	}
 
@@ -790,7 +790,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	game.shader_version = cfg.GetInt("cl_shader_version");
 	if(game.shader_version != -1 && game.shader_version != 2 && game.shader_version != 3)
 	{
-		WARN(Format("Settings: Unknown shader version %d.", game.shader_version));
+		Warn("Settings: Unknown shader version %d.", game.shader_version);
 		game.shader_version = -1;
 	}
 	game.vsync = cfg.GetBool("vsync", true);
@@ -809,7 +809,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			game.screenshot_format = D3DXIFF_PNG;
 		else
 		{
-			WARN(Format("Settings: Unknown screenshot format '%s'. Defaulting to jpg.", screenshot_format.c_str()));
+			Warn("Settings: Unknown screenshot format '%s'. Defaulting to jpg.", screenshot_format.c_str());
 			game.screenshot_format = D3DXIFF_JPG;
 		}
 	}
@@ -852,7 +852,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	else
 	{
-		NullLogger* l = new NullLogger;
+		Logger* l = new Logger;
 		plog.Clear();
 		logger = l;
 	}
@@ -902,7 +902,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	game.next_seed = cfg.GetUint("next_seed");
 	game.force_seed_all = ToBool(cfg.GetBool3("force_seed", False));
-	LOG(Format("random seed: %u/%u/%d", seed, game.next_seed, (game.force_seed_all ? 1 : 0)));
+	Info("random seed: %u/%u/%d", seed, game.next_seed, (game.force_seed_all ? 1 : 0));
 	Srand(seed);
 
 	// inne
@@ -916,7 +916,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		game.skip_version = StringToVersion(wersja_str.c_str());
 		if(game.skip_version == -1)
 		{
-			WARN("Settings: Invalid value for 'skip_version'.");
+			Warn("Settings: Invalid value for 'skip_version'.");
 			game.skip_version = 0;
 		}
 	}
@@ -926,7 +926,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//-------------------------------------------------------------------------
 	// rozpocznij grê
-	LOG("Starting game engine.");
+	Info("Starting game engine.");
 	bool b = game.Start0(windowed != True, w, h);
 
 	//-------------------------------------------------------------------------

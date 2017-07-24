@@ -306,7 +306,7 @@ redo:
 				}
 				else
 				{
-					WARN(Format("Tokenizer: Broken hex number at %u:%u.", s.line + 1, s.charpos + 1));
+					Warn("Tokenizer: Broken hex number at %u:%u.", s.line + 1, s.charpos + 1);
 					s.token = T_BROKEN_NUMBER;
 					return true;
 				}
@@ -430,7 +430,7 @@ void Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 		s._uint = s._int;
 	if(val > UINT_MAX)
 	{
-		WARN(Format("Tokenizer: Too big number %I64.", val));
+		Warn("Tokenizer: Too big number %I64.", val);
 		type = 0;
 	}
 	if(type == 2)
@@ -905,15 +905,15 @@ bool Tokenizer::CheckMultiKeywords()
 		if(strcmp(keywords[i].name, prev->name) == 0)
 		{
 			++errors;
-			ERROR(Format("Keyword '%s' multiple definitions (%d,%d) and (%d,%d).", prev->name, prev->id, prev->group,
-				keywords[i].id, keywords[i].group));
+			Error("Keyword '%s' multiple definitions (%d,%d) and (%d,%d).", prev->name, prev->id, prev->group,
+				keywords[i].id, keywords[i].group);
 		}
 		prev = &keywords[i];
 	}
 
 	if(errors > 0)
 	{
-		ERROR(Format("Multiple keywords %d with same id. Use F_MULTI_KEYWORDS or fix that.", errors));
+		Error("Multiple keywords %d with same id. Use F_MULTI_KEYWORDS or fix that.", errors);
 		return false;
 	}
 	else

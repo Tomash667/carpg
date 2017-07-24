@@ -239,7 +239,7 @@ void AIController::Load(HANDLE file)
 			{
 				escape_room = nullptr;
 #ifdef _DEBUG
-				WARN(Format("%s had escape_room %d.", unit->GetName(), escape_room));
+				Warn("%s had escape_room %d.", unit->GetName(), escape_room);
 				game.AddGameMsg("Unit had escape room!", 5.f);
 #endif
 			}

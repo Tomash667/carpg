@@ -41,12 +41,12 @@ void CheckStartItems(Skill skill, bool required, uint& errors)
 
 	if(!have_0)
 	{
-		ERROR(Format("Missing starting item for skill %s.", g_skills[(int)skill].id));
+		Error("Missing starting item for skill %s.", g_skills[(int)skill].id);
 		++errors;
 	}
 	if(!have_heirloom)
 	{
-		ERROR(Format("Missing heirloom item for skill %s.", g_skills[(int)skill].id));
+		Error("Missing heirloom item for skill %s.", g_skills[(int)skill].id);
 		++errors;
 	}
 }
@@ -56,12 +56,12 @@ void CheckBaseItem(cstring name, int num, uint& errors)
 {
 	if(num == 0)
 	{
-		ERROR(Format("Missing base %s.", name));
+		Error("Missing base %s.", name);
 		++errors;
 	}
 	else if(num > 1)
 	{
-		ERROR(Format("Multiple base %ss (%d).", name, num));
+		Error("Multiple base %ss (%d).", name, num);
 		++errors;
 	}
 }
@@ -152,7 +152,7 @@ bool Game::LoadRequiredStats(uint& errors)
 	Tokenizer t;
 	if(!t.FromFile(Format("%s/required.txt", g_system_dir.c_str())))
 	{
-		ERROR("Failed to open required.txt.");
+		Error("Failed to open required.txt.");
 		++errors;
 		return false;
 	}
@@ -191,12 +191,12 @@ bool Game::LoadRequiredStats(uint& errors)
 						const Item* item = FindItem(str.c_str(), false, &result);
 						if(!item)
 						{
-							ERROR(Format("Missing required item '%s'.", str.c_str()));
+							Error("Missing required item '%s'.", str.c_str());
 							++errors;
 						}
 						else if(result.lis)
 						{
-							ERROR(Format("Required item '%s' is list.", str.c_str()));
+							Error("Required item '%s' is list.", str.c_str());
 							++errors;
 						}
 					}
@@ -206,12 +206,12 @@ bool Game::LoadRequiredStats(uint& errors)
 						ItemListResult result = FindItemList(str.c_str(), false);
 						if(!result.lis)
 						{
-							ERROR(Format("Missing required item list '%s'.", str.c_str()));
+							Error("Missing required item list '%s'.", str.c_str());
 							++errors;
 						}
 						else if(result.is_leveled)
 						{
-							ERROR(Format("Required list '%s' is leveled.", str.c_str()));
+							Error("Required list '%s' is leveled.", str.c_str());
 							++errors;
 						}
 					}
@@ -221,7 +221,7 @@ bool Game::LoadRequiredStats(uint& errors)
 						Stock* stock = FindStockScript(str.c_str());
 						if(!stock)
 						{
-							ERROR(Format("Missing required item stock '%s'.", str.c_str()));
+							Error("Missing required item stock '%s'.", str.c_str());
 							++errors;
 						}
 					}
@@ -231,7 +231,7 @@ bool Game::LoadRequiredStats(uint& errors)
 						UnitData* ud = FindUnitData(str.c_str(), false);
 						if(!ud)
 						{
-							ERROR(Format("Missing required unit '%s'.", str.c_str()));
+							Error("Missing required unit '%s'.", str.c_str());
 							++errors;
 						}
 					}
@@ -248,12 +248,12 @@ bool Game::LoadRequiredStats(uint& errors)
 						UnitGroup* group = FindUnitGroup(group_id);
 						if(!group)
 						{
-							ERROR(Format("Missing required unit group '%s'.", group_id.c_str()));
+							Error("Missing required unit group '%s'.", group_id.c_str());
 							++errors;
 						}
 						else if(!group->leader && need_leader)
 						{
-							ERROR(Format("Required unit group '%s' is missing leader.", group_id.c_str()));
+							Error("Required unit group '%s' is missing leader.", group_id.c_str());
 							++errors;
 						}
 					}
@@ -263,7 +263,7 @@ bool Game::LoadRequiredStats(uint& errors)
 						Spell* spell = FindSpell(str.c_str());
 						if(!spell)
 						{
-							ERROR(Format("Missing required spell '%s'.", str.c_str()));
+							Error("Missing required spell '%s'.", str.c_str());
 							++errors;
 						}
 					}
@@ -273,7 +273,7 @@ bool Game::LoadRequiredStats(uint& errors)
 						GameDialog* dialog = FindDialog(str.c_str());
 						if(!dialog)
 						{
-							ERROR(Format("Missing required dialog '%s'.", str.c_str()));
+							Error("Missing required dialog '%s'.", str.c_str());
 							++errors;
 						}
 					}
@@ -283,7 +283,7 @@ bool Game::LoadRequiredStats(uint& errors)
 						BuildingGroup* group = content::FindBuildingGroup(str);
 						if(!group)
 						{
-							ERROR(Format("Missing required building group '%s'.", str.c_str()));
+							Error("Missing required building group '%s'.", str.c_str());
 							++errors;
 						}
 					}
@@ -293,7 +293,7 @@ bool Game::LoadRequiredStats(uint& errors)
 						Building* building = content::FindBuilding(str);
 						if(!building)
 						{
-							ERROR(Format("Missing required building '%s'.", str.c_str()));
+							Error("Missing required building '%s'.", str.c_str());
 							++errors;
 						}
 					}
@@ -303,7 +303,7 @@ bool Game::LoadRequiredStats(uint& errors)
 						BuildingScript* script = content::FindBuildingScript(str);
 						if(!script)
 						{
-							ERROR(Format("Missing required building script '%s'.", str.c_str()));
+							Error("Missing required building script '%s'.", str.c_str());
 							++errors;
 							break;
 						}
@@ -317,7 +317,7 @@ bool Game::LoadRequiredStats(uint& errors)
 							const string& id = t.MustGetItem();
 							if(!script->HaveBuilding(id))
 							{
-								ERROR(Format("Missing required building '%s' for building script '%s'.", script->id.c_str(), id.c_str()));
+								Error("Missing required building '%s' for building script '%s'.", script->id.c_str(), id.c_str());
 								++errors;
 								break;
 							}
@@ -331,7 +331,7 @@ bool Game::LoadRequiredStats(uint& errors)
 			}
 			catch(const Tokenizer::Exception& e)
 			{
-				ERROR(Format("Parse error: %s", e.ToString()));
+				Error("Parse error: %s", e.ToString());
 				++errors;
 				t.SkipToKeywordGroup(0);
 			}
@@ -339,7 +339,7 @@ bool Game::LoadRequiredStats(uint& errors)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load required entities: %s", e.ToString()));
+		Error("Failed to load required entities: %s", e.ToString());
 		++errors;
 	}
 

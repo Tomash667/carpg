@@ -1,39 +1,17 @@
 //================================================================================
 // Building group
 //================================================================================
-building_group "alchemist" {
-}
-
-building_group "arena" {
-}
-
-building_group "barracks" {
-}
-
-building_group "blacksmith" {
-}
-
-building_group "cottage" {
-}
-
-building_group "food_seller" {
-}
-
-building_group "hall" {
-}
-
-building_group "house" {
-}
-
-building_group "inn" {
-}
-
-building_group "merchant" {
-}
-
-building_group "training_grounds" {
-}
-
+building_group "alchemist"
+building_group "arena"
+building_group "barracks"
+building_group "blacksmith"
+building_group "cottage"
+building_group "food_seller"
+building_group "hall"
+building_group "house"
+building_group "inn"
+building_group "merchant"
+building_group "training_grounds"
 
 //================================================================================
 // Building
@@ -407,7 +385,7 @@ building "village_hall_old" {
 // Building script
 //================================================================================
 building_script "city" {
-	code "city_hall
+city_hall
 shuffle start
 	arena
 	merchant
@@ -422,11 +400,11 @@ set citizens = random(12,15)
 set citizens_world = citizens * 200 + random(0,199) + 100
 required off
 set count = citizens * 3
-group house"
+group house
 }
 
 building_script "village" {
-	code "village_hall
+village_hall
 set citizens = 5 + random(0,2)
 shuffle start
 	merchant
@@ -453,7 +431,5 @@ barracks
 set citizens_world = citizens * 100 + random(0,99)
 required off
 set count = citizens
-group cottage"
+group cottage
 }
-
-

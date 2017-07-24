@@ -56,7 +56,7 @@ public:
 	bool Reset(bool force);
 	void SetStartingMultisampling(int multisampling, int multisampling_quality);
 	void SetTitle(cstring title);
-	void ShowError(cstring msg, Logger::LOG_LEVEL level = Logger::L_ERROR);
+	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
 	bool Start(cstring title, bool fullscreen, uint w, uint h);
 	void StopSounds();
 	void UnlockCursor();

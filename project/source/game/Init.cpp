@@ -21,7 +21,7 @@ extern const int ITEM_IMAGE_SIZE;
 //=================================================================================================
 bool Game::InitGame()
 {
-	INFO("Game: Initializing game.");
+	Info("Game: Initializing game.");
 
 	try
 	{
@@ -37,7 +37,7 @@ bool Game::InitGame()
 		// configure game after loading and enter menu state
 		PostconfigureGame();
 
-		INFO("Game: Game initialized.");
+		Info("Game: Game initialized.");
 		return true;
 	}
 	catch(cstring err)
@@ -52,7 +52,7 @@ bool Game::InitGame()
 //=================================================================================================
 void Game::PreconfigureGame()
 {
-	INFO("Game: Preconfiguring game.");
+	Info("Game: Preconfiguring game.");
 
 	// set default render states
 	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
@@ -169,7 +169,7 @@ void Game::PreloadData()
 //=================================================================================================
 void Game::LoadSystem()
 {
-	INFO("Game: Loading system.");
+	Info("Game: Loading system.");
 	resMgr.PrepareLoadScreen2(0.1f, 12, txCreateListOfFiles);
 
 	AddFilesystem();
@@ -186,7 +186,7 @@ void Game::LoadSystem()
 //=================================================================================================
 void Game::AddFilesystem()
 {
-	INFO("Game: Creating list of files.");
+	Info("Game: Creating list of files.");
 	resMgr.AddDir("data");
 	resMgr.AddPak("data/data.pak", "KrystaliceFire");
 }
@@ -196,34 +196,34 @@ void Game::AddFilesystem()
 //=================================================================================================
 void Game::LoadDatafiles()
 {
-	INFO("Game: Loading datafiles.");
+	Info("Game: Loading datafiles.");
 	load_errors = 0;
 	uint loaded;
 
 	// items
 	resMgr.NextTask(txLoadItemsDatafile);
 	loaded = LoadItems(crc_items, load_errors);
-	INFO(Format("Game: Loaded items: %u (crc %p).", loaded, crc_items));
+	Info("Game: Loaded items: %u (crc %p).", loaded, crc_items);
 
 	// spells
 	resMgr.NextTask(txLoadSpellDatafile);
 	loaded = LoadSpells(crc_spells, load_errors);
-	INFO(Format("Game: Loaded spells: %u (crc %p).", loaded, crc_spells));
+	Info("Game: Loaded spells: %u (crc %p).", loaded, crc_spells);
 
 	// dialogs
 	resMgr.NextTask(txLoadDialogs);
 	loaded = LoadDialogs(crc_dialogs, load_errors);
-	INFO(Format("Game: Loaded dialogs: %u (crc %p).", loaded, crc_dialogs));
+	Info("Game: Loaded dialogs: %u (crc %p).", loaded, crc_dialogs);
 
 	// units
 	resMgr.NextTask(txLoadUnitDatafile);
 	loaded = LoadUnits(crc_units, load_errors);
-	INFO(Format("Game: Loaded units: %u (crc %p).", loaded, crc_units));
+	Info("Game: Loaded units: %u (crc %p).", loaded, crc_units);
 
 	// musics
 	resMgr.NextTask(txLoadMusicDatafile);
 	loaded = LoadMusicDatafile(load_errors);
-	INFO(Format("Game: Loaded music: %u.", loaded));
+	Info("Game: Loaded music: %u.", loaded);
 
 	// gametypes
 	resMgr.NextTask(txLoadingDatafiles);
@@ -240,7 +240,7 @@ void Game::LoadDatafiles()
 //=================================================================================================
 void Game::LoadLanguageFiles()
 {
-	INFO("Game: Loading language files.");
+	Info("Game: Loading language files.");
 	resMgr.NextTask(txLoadLanguageFiles);
 
 	LoadLanguageFile("menu.txt");
@@ -286,7 +286,7 @@ void Game::LoadLanguageFiles()
 //=================================================================================================
 void Game::ConfigureGame()
 {
-	INFO("Game: Configuring game.");
+	Info("Game: Configuring game.");
 	resMgr.NextTask(txConfigureGame);
 
 	InitScene();
@@ -318,7 +318,7 @@ void Game::ConfigureGame()
 //=================================================================================================
 void Game::LoadData()
 {
-	INFO("Game: Loading data.");
+	Info("Game: Loading data.");
 
 	resMgr.SetMutex(mutex);
 	mutex = nullptr;
@@ -332,7 +332,7 @@ void Game::LoadData()
 //=================================================================================================
 void Game::PostconfigureGame()
 {
-	INFO("Game: Postconfiguring game.");
+	Info("Game: Postconfiguring game.");
 
 	CreateCollisionShapes();
 	create_character->Init();
@@ -377,7 +377,7 @@ void Game::PostconfigureGame()
 		info.name = "have_errors";
 		if(required_missing)
 		{
-			ERROR(Format("Game: %d loading errors with required missing.", load_errors));
+			Error("Game: %d loading errors with required missing.", load_errors);
 			info.text = Format(txHaveErrorsCritical, load_errors);
 			info.type = DIALOG_YESNO;
 			info.event = [this](int result)
@@ -394,7 +394,7 @@ void Game::PostconfigureGame()
 		}
 		else
 		{
-			WARN(Format("Game: %d loading errors.", load_errors));
+			Warn("Game: %d loading errors.", load_errors);
 			info.text = Format(txHaveErrors, load_errors);
 			info.type = DIALOG_OK;
 			info.img = tWarning;
@@ -461,10 +461,10 @@ void Game::StartGameMode()
 					ChangeTitle();
 			}
 			else
-				WARN("Quickstart: Can't create server, no server name.");
+				Warn("Quickstart: Can't create server, no server name.");
 		}
 		else
-			WARN("Quickstart: Can't create server, no player nick.");
+			Warn("Quickstart: Can't create server, no player nick.");
 		break;
 	case QUICKSTART_JOIN_LAN:
 		if(!player_name.empty())
@@ -473,7 +473,7 @@ void Game::StartGameMode()
 			pick_server_panel->Show();
 		}
 		else
-			WARN("Quickstart: Can't join server, no player nick.");
+			Warn("Quickstart: Can't join server, no player nick.");
 		break;
 	case QUICKSTART_JOIN_IP:
 		if(!player_name.empty())
@@ -481,10 +481,10 @@ void Game::StartGameMode()
 			if(!server_ip.empty())
 				QuickJoinIp();
 			else
-				WARN("Quickstart: Can't join server, no server ip.");
+				Warn("Quickstart: Can't join server, no server ip.");
 		}
 		else
-			WARN("Quickstart: Can't join server, no player nick.");
+			Warn("Quickstart: Can't join server, no player nick.");
 		break;
 	default:
 		assert(0);

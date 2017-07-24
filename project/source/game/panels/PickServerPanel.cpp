@@ -104,14 +104,14 @@ void PickServerPanel::Update(float dt)
 				if(!stream.Read(time_ms)
 					|| !stream.Read<char[2]>(sign))
 				{
-					ERROR(Format("PickServer: Broken packet from %s.", packet->systemAddress.ToString()));
+					Error("PickServer: Broken packet from %s.", packet->systemAddress.ToString());
 					game->StreamError();
 					break;
 				}
 				if(sign[0] != 'C' || sign[1] != 'A')
 				{
-					WARN(Format("PickServer: Unknown response from %s, this is not CaRpg server (0x%x%x).",
-						packet->systemAddress.ToString(), byte(sign[0]), byte(sign[1])));
+					Warn("PickServer: Unknown response from %s, this is not CaRpg server (0x%x%x).",
+						packet->systemAddress.ToString(), byte(sign[0]), byte(sign[1]));
 					game->StreamError();
 					break;
 				}
@@ -127,7 +127,7 @@ void PickServerPanel::Update(float dt)
 					!stream.Read(flags) ||
 					!ReadString1(stream, server_name))
 				{
-					WARN(Format("PickServer: Broken response from %.", packet->systemAddress.ToString()));
+					Warn("PickServer: Broken response from %.", packet->systemAddress.ToString());
 					game->StreamError();
 					break;
 				}
@@ -143,7 +143,7 @@ void PickServerPanel::Update(float dt)
 					{
 						// update
 						found = true;
-						LOG(Format("PickServer: Updated server info %s.", it->adr.ToString()));
+						Info("PickServer: Updated server info %s.", it->adr.ToString());
 						it->name = server_name;
 						it->players = players;
 						it->max_players = players_max;
@@ -167,7 +167,7 @@ void PickServerPanel::Update(float dt)
 				if(!found)
 				{
 					// add to servers list
-					LOG(Format("PickServer: Added server info %s.", packet->systemAddress.ToString()));
+					Info("PickServer: Added server info %s.", packet->systemAddress.ToString());
 					ServerData& sd = Add1(servers);
 					sd.name = server_name;
 					sd.players = players;
@@ -190,7 +190,7 @@ void PickServerPanel::Update(float dt)
 			}
 			break;
 		default:
-			WARN(Format("PickServer: Unknown packet %d from %s.", msg_id, packet->systemAddress.ToString()));
+			Warn("PickServer: Unknown packet %d from %s.", msg_id, packet->systemAddress.ToString());
 			game->StreamError();
 			break;
 		}
@@ -261,7 +261,7 @@ void PickServerPanel::Show()
 		return;
 	}
 
-	LOG("Pinging servers.");
+	Info("Pinging servers.");
 	game->peer->Ping("255.255.255.255", (word)game->mp_port, true);
 
 	ping_timer = 1.f;

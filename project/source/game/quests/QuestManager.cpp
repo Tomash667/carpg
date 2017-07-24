@@ -269,7 +269,7 @@ bool QuestManager::Read(BitStream& stream)
 	if(!stream.Read(quest_count)
 		|| !EnsureSize(stream, QUEST_MIN_SIZE * quest_count))
 	{
-		ERROR("Read world: Broken packet for quests.");
+		Error("Read world: Broken packet for quests.");
 		return false;
 	}
 	quests.resize(quest_count);
@@ -284,7 +284,7 @@ bool QuestManager::Read(BitStream& stream)
 			!ReadString1(stream, quest->name) ||
 			!ReadStringArray<byte, word>(stream, quest->msgs))
 		{
-			ERROR(Format("Read world: Broken packet for quest %d.", index));
+			Error("Read world: Broken packet for quest %d.", index);
 			return false;
 		}
 		++index;

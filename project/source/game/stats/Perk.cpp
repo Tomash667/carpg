@@ -46,17 +46,17 @@ void PerkInfo::Validate(uint& err)
 	{
 		if(pi.perk_id != (Perk)index)
 		{
-			WARN(Format("Test: Perk %s: id mismatch.", pi.id));
+			Warn("Test: Perk %s: id mismatch.", pi.id);
 			++err;
 		}
 		if(pi.name.empty())
 		{
-			WARN(Format("Test: Perk %s: empty name.", pi.id));
+			Warn("Test: Perk %s: empty name.", pi.id);
 			++err;
 		}
 		if(pi.desc.empty())
 		{
-			WARN(Format("Test: Perk %s: empty desc.", pi.id));
+			Warn("Test: Perk %s: empty desc.", pi.id);
 			++err;
 		}
 		++index;
@@ -124,12 +124,12 @@ int TakenPerk::Apply(CreatedCharacter& cc, bool validate) const
 		{
 			if(value < 0 || value >= (int)Attribute::MAX)
 			{
-				ERROR(Format("Perk 'strength', invalid attribute %d.", value));
+				Error("Perk 'strength', invalid attribute %d.", value);
 				return 2;
 			}
 			if(cc.a[value].mod)
 			{
-				ERROR(Format("Perk 'strength', attribute %d is already modified.", value));
+				Error("Perk 'strength', attribute %d is already modified.", value);
 				return 3;
 			}
 		}
@@ -140,12 +140,12 @@ int TakenPerk::Apply(CreatedCharacter& cc, bool validate) const
 		{
 			if(value < 0 || value >= (int)Attribute::MAX)
 			{
-				ERROR(Format("Perk 'weakness', invalid attribute %d.", value));
+				Error("Perk 'weakness', invalid attribute %d.", value);
 				return 2;
 			}
 			if(cc.a[value].mod)
 			{
-				ERROR(Format("Perk 'weakness', attribute %d is already modified.", value));
+				Error("Perk 'weakness', attribute %d is already modified.", value);
 				return 3;
 			}
 		}
@@ -166,12 +166,12 @@ int TakenPerk::Apply(CreatedCharacter& cc, bool validate) const
 				{
 					if(v[i] < 0 || v[i] >= (int)Skill::MAX)
 					{
-						ERROR(Format("Perk 'skill_focus', invalid skill %d (%d).", v[i], i));
+						Error("Perk 'skill_focus', invalid skill %d (%d).", v[i], i);
 						return 2;
 					}
 					if(cc.a[v[i]].mod)
 					{
-						ERROR(Format("Perk 'skill_focus', skill %d is already modified (%d).", v[i], i));
+						Error("Perk 'skill_focus', skill %d is already modified (%d).", v[i], i);
 						return 3;
 					}
 				}
@@ -189,12 +189,12 @@ int TakenPerk::Apply(CreatedCharacter& cc, bool validate) const
 		{
 			if(value < 0 || value >= (int)Skill::MAX)
 			{
-				ERROR(Format("Perk 'talent', invalid skill %d.", value));
+				Error("Perk 'talent', invalid skill %d.", value);
 				return 2;
 			}
 			if(cc.s[value].mod)
 			{
-				ERROR(Format("Perk 'talent', skill %d is already modified.", value));
+				Error("Perk 'talent', skill %d is already modified.", value);
 				return 3;
 			}
 		}
@@ -206,7 +206,7 @@ int TakenPerk::Apply(CreatedCharacter& cc, bool validate) const
 			{
 				if(cc.s[(int)Skill::CRAFTING].mod)
 				{
-					ERROR("Perk 'crafting_tradition', skill is already modified.");
+					Error("Perk 'crafting_tradition', skill is already modified.");
 					return 3;
 				}
 			}

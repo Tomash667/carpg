@@ -26,11 +26,11 @@ void LoadLanguageFile(cstring filename)
 	Tokenizer t;
 	if(!t.FromFile(path))
 	{
-		ERROR(Format("LANG: Failed to open file \"%s\".", path));
+		Error("LANG: Failed to open file \"%s\".", path);
 		return;
 	}
 
-	LOG(Format("Reading text file \"%s\".", path));
+	Info("Reading text file \"%s\".", path);
 
 	LocalString id, str;
 
@@ -58,12 +58,12 @@ void LoadLanguageFile(cstring filename)
 			// sprawdü czy juø istnieje, dodaj jeúli nie
 			std::pair<LanguageMap::iterator, bool> const& r = g_language.insert(LanguageMap::value_type(tstr, tstr2));
 			if(!r.second)
-				WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str()));
+				Warn("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str());
 		}
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("LANG: Error while parsing file \"%s\": %s", path, e.ToString()));
+		Error("LANG: Error while parsing file \"%s\": %s", path, e.ToString());
 	}
 }
 
@@ -173,9 +173,10 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 					if(!r.second)
 					{
 						if(current_section->empty())
-							WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str()));
+							Warn("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str());
 						else
-							WARN(Format("LANG: String '[%s]%s' already exists: \"%s\"; new text: \"%s\".", current_section->c_str(), tstr.c_str(), r.first->second.c_str(), tstr2.c_str()));
+							Warn("LANG: String '[%s]%s' already exists: \"%s\"; new text: \"%s\".", current_section->c_str(), tstr.c_str(),
+								r.first->second.c_str(), tstr2.c_str());
 					}
 				}
 				else
@@ -194,7 +195,7 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 	{
 		if(clmap && !added)
 			tmp_language_map->clear();
-		ERROR(Format("Failed to load language file '%s': %s", filename, e.ToString()));
+		Error("Failed to load language file '%s': %s", filename, e.ToString());
 		return false;
 	}
 
@@ -208,7 +209,7 @@ void LoadLanguages()
 	HANDLE fhandle = FindFirstFile(Format("%s/lang/*", g_system_dir.c_str()), &data);
 	if(fhandle == INVALID_HANDLE_VALUE)
 	{
-		ERROR(Format("LoadLanguages: FindFirstFile failed (%d).", GetLastError()));
+		Error("LoadLanguages: FindFirstFile failed (%d).", GetLastError());
 		return;
 	}
 
@@ -228,7 +229,7 @@ void LoadLanguages()
 				LanguageMap::iterator it = lmap->find("dir"), end = lmap->end();
 				if(!(it != end && it->second == data.cFileName && lmap->find("englishName") != end && lmap->find("localName") != end && lmap->find("locale") != end))
 				{
-					WARN(Format("File '%s' is invalid language file.", path->c_str()));
+					Warn("File '%s' is invalid language file.", path->c_str());
 					continue;
 				}
 				g_languages.push_back(lmap);
@@ -313,11 +314,11 @@ static inline void GetStringOrEndBlock(Tokenizer& t, KEYWORD k, string& s)
 static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 {
 	cstring path = Format("%s/lang/%s/%s", g_system_dir.c_str(), g_lang_prefix.c_str(), filename);
-	LOG(Format("Reading text file \"%s\".", path));
+	Info("Reading text file \"%s\".", path);
 
 	if(!t.FromFile(path))
 	{
-		ERROR(Format("Failed to open language file '%s'.", path));
+		Error("Failed to open language file '%s'.", path);
 		return;
 	}
 
@@ -560,13 +561,13 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 				tstr2 = t.MustGetString();
 				std::pair<LanguageMap::iterator, bool> const& r = g_language.insert(LanguageMap::value_type(tstr, tstr2));
 				if(!r.second)
-					WARN(Format("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str()));
+					Warn("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str());
 			}
 		}
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load language file '%s': %s", path, e.ToString()));
+		Error("Failed to load language file '%s': %s", path, e.ToString());
 	}
 }
 

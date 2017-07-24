@@ -25,7 +25,7 @@ inline cstring StrT(cstring str, bool err = true)
 	else
 	{
 		if(err)
-			ERROR(Format("Missing text string for '%s'.", str));
+			Error("Missing text string for '%s'.", str);
 		return nullptr;
 	}
 }

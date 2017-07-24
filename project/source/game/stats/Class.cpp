@@ -43,39 +43,39 @@ void ClassInfo::Validate(uint& err)
 		if(ci.class_id != (Class)i)
 		{
 			++err;
-			WARN(Format("Test: Class %s: id mismatch.", ci.id));
+			Warn("Test: Class %s: id mismatch.", ci.id);
 		}
 		if(ci.name.empty())
 		{
 			++err;
-			WARN(Format("Test: Class %s: empty name.", ci.id));
+			Warn("Test: Class %s: empty name.", ci.id);
 		}
 		if(ci.desc.empty())
 		{
 			++err;
-			WARN(Format("Test: Class %s: empty desc.", ci.id));
+			Warn("Test: Class %s: empty desc.", ci.id);
 		}
 		if(ci.about.empty())
 		{
 			++err;
-			WARN(Format("Test: Class %s: empty about.", ci.id));
+			Warn("Test: Class %s: empty about.", ci.id);
 		}
 		if(!ci.icon)
 		{
 			++err;
-			WARN(Format("Test: Class %s: missing icon file '%s'.", ci.id, ci.icon_file));
+			Warn("Test: Class %s: missing icon file '%s'.", ci.id, ci.icon_file);
 		}
 		if(IsPickable(ci.class_id))
 		{
 			if(!ci.unit_data_id)
 			{
 				++err;
-				WARN(Format("Test: Class %s: missing unit data.", ci.id));
+				Warn("Test: Class %s: missing unit data.", ci.id);
 			}
 			else if(!ci.unit_data)
 			{
 				++err;
-				WARN(Format("Test: Class %s: invalid unit data '%s'.", ci.id, ci.unit_data_id));
+				Warn("Test: Class %s: invalid unit data '%s'.", ci.id, ci.unit_data_id);
 			}
 		}
 	}

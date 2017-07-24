@@ -81,7 +81,7 @@ bool Useable::Read(BitStream& stream)
 	user = nullptr;
 	if(type >= U_MAX)
 	{
-		ERROR(Format("Invalid useable type %d.", type));
+		Error("Invalid useable type %d.", type);
 		return false;
 	}
 	return true;

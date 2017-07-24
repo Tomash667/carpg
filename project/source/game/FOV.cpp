@@ -199,7 +199,7 @@ namespace FOV
 
 	void visitSquare(const Int2& dest, list<Field>::iterator& currentField)
 	{
-		//LOG(Format("%d, %d", dest.x, dest.y));
+		//Info("%d, %d", dest.x, dest.y);
 		// The top-left and bottom-right corners of the destination square.
 		Int2 topLeft(dest.x, dest.y + 1);
 		Int2 bottomRight(dest.x + 1, dest.y);

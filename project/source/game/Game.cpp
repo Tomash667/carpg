@@ -699,7 +699,7 @@ void Game::TakeScreenshot(bool text, bool no_gui)
 	{
 		if(text)
 			AddConsoleMsg(txSsFailed);
-		ERROR(Format("Failed to get front buffer data to save screenshot (%d)!", hr));
+		Error("Failed to get front buffer data to save screenshot (%d)!", hr);
 	}
 	else
 	{
@@ -742,7 +742,7 @@ void Game::TakeScreenshot(bool text, bool no_gui)
 
 		if(text)
 			AddConsoleMsg(Format(txSsDone, path));
-		LOG(Format("Screenshot saved to '%s'.", path));
+		Info("Screenshot saved to '%s'.", path);
 
 		back_buffer->Release();
 	}
@@ -1004,7 +1004,7 @@ bool Game::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int2& _tar
 
 			prev_apt = a_map[pt.pt(w)];
 
-			//LOG(Format("(%d,%d)->(%d,%d), K:%d D:%d S:%d", pt.prev.x, pt.prev.y, pt.pt.x, pt.pt.y, prev_apt.koszt, prev_apt.odleglosc, prev_apt.suma));
+			//Info("(%d,%d)->(%d,%d), K:%d D:%d S:%d", pt.prev.x, pt.prev.y, pt.pt.x, pt.pt.y, prev_apt.koszt, prev_apt.odleglosc, prev_apt.suma);
 
 			if(pt.pt == _target_tile)
 			{
@@ -1365,12 +1365,12 @@ int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_t
 
 	if(dist <= 0 || my_tile.x < 0 || my_tile.y < 0)
 	{
-		ERROR(Format("Invalid FindLocalPath, ctx type %d, ctx building %d, my tile %d %d, target tile %d %d, me %s (%p; %g %g %g; %d), useable %p, is end point %d.",
+		Error("Invalid FindLocalPath, ctx type %d, ctx building %d, my tile %d %d, target tile %d %d, me %s (%p; %g %g %g; %d), useable %p, is end point %d.",
 			ctx.type, ctx.building_id, my_tile.x, my_tile.y, target_tile.x, target_tile.y, _me->data->id.c_str(), _me, _me->pos.x, _me->pos.y, _me->pos.z, _me->in_building,
-			useable, is_end_point ? 1 : 0));
+			useable, is_end_point ? 1 : 0);
 		if(_other)
 		{
-			ERROR(Format("Other unit %s (%p; %g, %g, %g, %d).", _other->data->id.c_str(), _other, _other->pos.x, _other->pos.y, _other->pos.z, _other->in_building));
+			Error("Other unit %s (%p; %g, %g, %g, %d).", _other->data->id.c_str(), _other, _other->pos.x, _other->pos.y, _other->pos.z, _other->in_building);
 		}
 	}
 
@@ -1615,7 +1615,7 @@ int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_t
 void Game::SaveCfg()
 {
 	if(cfg.Save(cfg_file.c_str()) == Config::CANT_SAVE)
-		ERROR(Format("Failed to save configuration file '%s'!", cfg_file.c_str()));
+		Error("Failed to save configuration file '%s'!", cfg_file.c_str());
 }
 
 //=================================================================================================
@@ -1930,7 +1930,7 @@ void Game::LoadGameKeys()
 			int w = cfg.GetInt(s);
 			if(w == VK_ESCAPE || w < -1 || w > 255)
 			{
-				WARN(Format("Config: Invalid value for %s: %d.", s, w));
+				Warn("Config: Invalid value for %s: %d.", s, w);
 				w = -1;
 				cfg.Add(s, Format("%d", k[j]));
 			}
@@ -2841,7 +2841,7 @@ SuperShader* Game::CompileSuperShader(uint id)
 	macros[i].Definition = (shader_version == 3 ? "ps_3_0" : "ps_2_0");
 	++i;
 
-	LOG(Format("Compiling super shader: %u", id));
+	Info("Compiling super shader: %u", id);
 
 	CompileShaderParams params = { "super.fx" };
 	params.cache_name = Format("%d_super%u.fcx", shader_version, id);
@@ -2862,7 +2862,7 @@ void Game::SetupSuperShader()
 {
 	ID3DXEffect* e = sshaders[0].e;
 
-	LOG("Setting up super shader parameters.");
+	Info("Setting up super shader parameters.");
 	hSMatCombined = e->GetParameterByName(nullptr, "matCombined");
 	hSMatWorld = e->GetParameterByName(nullptr, "matWorld");
 	hSMatBones = e->GetParameterByName(nullptr, "matBones");
@@ -2887,7 +2887,7 @@ void Game::SetupSuperShader()
 //=================================================================================================
 void Game::ReloadShaders()
 {
-	LOG("Reloading shaders...");
+	Info("Reloading shaders...");
 
 	ReleaseShaders();
 
@@ -2997,7 +2997,7 @@ void Game::SetMeshSpecular()
 //=================================================================================================
 uint Game::ValidateGameData(bool major)
 {
-	LOG("Test: Validating game data...");
+	Info("Test: Validating game data...");
 
 	uint err = TestGameData(major);
 
@@ -3008,9 +3008,9 @@ uint Game::ValidateGameData(bool major)
 	PerkInfo::Validate(err);
 
 	if(err == 0)
-		LOG("Test: Validation succeeded.");
+		Info("Test: Validation succeeded.");
 	else
-		ERROR(Format("Test: Validation failed, %u errors found.", err));
+		Error("Test: Validation failed, %u errors found.", err);
 
 	return err;
 }
@@ -3151,7 +3151,7 @@ void Game::ParseConfigVar(cstring arg)
 	int index = StrCharIndex(arg, '=');
 	if(index == -1 || index == 0)
 	{
-		WARN(Format("Broken command line variable '%s'.", arg));
+		Warn("Broken command line variable '%s'.", arg);
 		return;
 	}
 
@@ -3166,14 +3166,14 @@ void Game::ParseConfigVar(cstring arg)
 	}
 	if(!var)
 	{
-		WARN(Format("Missing config variable '%.*s'.", index, arg));
+		Warn("Missing config variable '%.*s'.", index, arg);
 		return;
 	}
 
 	cstring value = arg + index + 1;
 	if(!*value)
 	{
-		WARN(Format("Missing command line variable value '%s'.", arg));
+		Warn("Missing command line variable value '%s'.", arg);
 		return;
 	}
 
@@ -3184,7 +3184,7 @@ void Game::ParseConfigVar(cstring arg)
 			bool b;
 			if(!TextHelper::ToBool(value, b))
 			{
-				WARN(Format("Value for config variable '%s' must be bool, found '%s'.", var->name, value));
+				Warn("Value for config variable '%s' must be bool, found '%s'.", var->name, value);
 				return;
 			}
 			var->new_value._bool = b;
@@ -3207,7 +3207,7 @@ void Game::SetConfigVarsFromFile()
 		case AnyVarType::Bool:
 			if(!TextHelper::ToBool(entry->value.c_str(), v.ptr->_bool))
 			{
-				WARN(Format("Value for config variable '%s' must be bool, found '%s'.", v.name, entry->value.c_str()));
+				Warn("Value for config variable '%s' must be bool, found '%s'.", v.name, entry->value.c_str());
 				return;
 			}
 			break;

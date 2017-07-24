@@ -132,7 +132,7 @@ bool Game::ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items)
 //=================================================================================================
 void Game::InitServer()
 {
-	LOG(Format("Creating server (port %d)...", mp_port));
+	Info("Creating server (port %d)...", mp_port);
 
 	if(!peer)
 		peer = RakNet::RakPeerInterface::GetInstance();
@@ -142,31 +142,31 @@ void Game::InitServer()
 	StartupResult r = peer->Startup(max_players + 4, &sd, 1);
 	if(r != RAKNET_STARTED)
 	{
-		ERROR(Format("Failed to create server: RakNet error %d.", r));
+		Error("Failed to create server: RakNet error %d.", r);
 		throw Format(txCreateServerFailed, r);
 	}
 
 	if(!server_pswd.empty())
 	{
-		LOG("Set server password.");
+		Info("Set server password.");
 		peer->SetIncomingPassword(server_pswd.c_str(), server_pswd.length());
 	}
 
 	peer->SetMaximumIncomingConnections((word)max_players + 4);
 	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
 
-	LOG("Server created. Waiting for connection.");
+	Info("Server created. Waiting for connection.");
 
 	sv_online = true;
 	sv_server = true;
 	sv_startup = false;
-	LOG("sv_online = true");
+	Info("sv_online = true");
 }
 
 //=================================================================================================
 void Game::InitClient()
 {
-	LOG("Initlializing client...");
+	Info("Initlializing client...");
 
 	if(!peer)
 		peer = RakNet::RakPeerInterface::GetInstance();
@@ -176,14 +176,14 @@ void Game::InitClient()
 	StartupResult r = peer->Startup(1, &sd, 1);
 	if(r != RAKNET_STARTED)
 	{
-		ERROR(Format("Failed to create client: RakNet error %d.", r));
+		Error("Failed to create client: RakNet error %d.", r);
 		throw Format(txInitConnectionFailed, r);
 	}
 	peer->SetMaximumIncomingConnections(0);
 
 	sv_online = true;
 	sv_server = false;
-	LOG("sv_online = true");
+	Info("sv_online = true");
 
 	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
 }
@@ -262,7 +262,7 @@ void Game::KickPlayer(int index)
 	info.state = PlayerInfo::REMOVING;
 
 	AddMsg(Format(txPlayerKicked, info.name.c_str()));
-	LOG(Format("Player %s was kicked.", info.name.c_str()));
+	Info("Player %s was kicked.", info.name.c_str());
 
 	if(leader_id == info.id)
 	{
@@ -682,7 +682,7 @@ bool Game::ReadLevelData(BitStream& stream)
 
 	if(!ReadBool(stream, mp_load))
 	{
-		ERROR("Read level: Broken packet for loading info.");
+		Error("Read level: Broken packet for loading info.");
 		return false;
 	}
 
@@ -711,7 +711,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		if(!stream.Read((char*)outside->tiles, sizeof(TerrainTile)*size11)
 			|| !stream.Read((char*)outside->h, sizeof(float)*size22))
 		{
-			ERROR("Read level: Broken packet for terrain.");
+			Error("Read level: Broken packet for terrain.");
 			return false;
 		}
 		ApplyTiles(outside->h, outside->tiles);
@@ -729,7 +729,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				|| !stream.Read(count)
 				|| !EnsureSize(stream, count * ENTRY_POINT_MIN_SIZE))
 			{
-				ERROR("Read level: Broken packet for city.");
+				Error("Read level: Broken packet for city.");
 				return false;
 			}
 			city->flags = (have_exit ? City::HaveExit : 0);
@@ -739,7 +739,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				if(!stream.Read(entry.exit_area)
 					|| !stream.Read(entry.exit_y))
 				{
-					ERROR("Read level: Broken packet for entry points.");
+					Error("Read level: Broken packet for entry points.");
 					return false;
 				}
 			}
@@ -749,7 +749,7 @@ bool Game::ReadLevelData(BitStream& stream)
 			if(!stream.Read(count)
 				|| !EnsureSize(stream, BUILDING_MIN_SIZE * count))
 			{
-				ERROR("Read level: Broken packet for buildings count.");
+				Error("Read level: Broken packet for buildings count.");
 				return false;
 			}
 			city->buildings.resize(count);
@@ -759,13 +759,13 @@ bool Game::ReadLevelData(BitStream& stream)
 					|| !stream.Read(building.pt)
 					|| !stream.ReadCasted<byte>(building.rot))
 				{
-					ERROR("Read level: Broken packet for buildings.");
+					Error("Read level: Broken packet for buildings.");
 					return false;
 				}
 				building.type = content::FindBuilding(BUF);
 				if(!building.type)
 				{
-					ERROR(Format("Read level: Invalid building id '%s'.", BUF));
+					Error("Read level: Invalid building id '%s'.", BUF);
 					return false;
 				}
 			}
@@ -775,7 +775,7 @@ bool Game::ReadLevelData(BitStream& stream)
 			if(!stream.Read(count)
 				|| !EnsureSize(stream, INSIDE_BUILDING_MIN_SIZE * count))
 			{
-				ERROR("Read level: Broken packet for inside buildings count.");
+				Error("Read level: Broken packet for inside buildings count.");
 				return false;
 			}
 			city->inside_buildings.resize(count);
@@ -789,13 +789,13 @@ bool Game::ReadLevelData(BitStream& stream)
 				if(!stream.Read(ib.level_shift)
 					|| !ReadString1(stream))
 				{
-					ERROR(Format("Read level: Broken packet for %d inside building.", index));
+					Error("Read level: Broken packet for %d inside building.", index);
 					return false;
 				}
 				ib.type = content::FindBuilding(BUF);
 				if(!ib.type || !ib.type->inside_mesh)
 				{
-					ERROR(Format("Read level: Invalid building id '%s' for building %d.", BUF, index));
+					Error("Read level: Invalid building id '%s' for building %d.", BUF, index);
 					return false;
 				}
 				ib.offset = Vec2(512.f*ib.level_shift.x + 256.f, 512.f*ib.level_shift.y + 256.f);
@@ -805,7 +805,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				if(!stream.Read(count)
 					|| !EnsureSize(stream, Useable::MIN_SIZE * count))
 				{
-					ERROR(Format("Read level: Broken packet for useable object in %d inside building.", index));
+					Error("Read level: Broken packet for useable object in %d inside building.", index);
 					return false;
 				}
 				ib.useables.resize(count);
@@ -814,7 +814,7 @@ bool Game::ReadLevelData(BitStream& stream)
 					useable = new Useable;
 					if(!useable->Read(stream))
 					{
-						ERROR(Format("Read level: Broken packet for useable object in %d inside building.", index));
+						Error("Read level: Broken packet for useable object in %d inside building.", index);
 						return false;
 					}
 				}
@@ -823,7 +823,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				if(!stream.Read(count)
 					|| !EnsureSize(stream, Unit::MIN_SIZE * count))
 				{
-					ERROR(Format("Read level: Broken packet for unit count in %d inside building.", index));
+					Error("Read level: Broken packet for unit count in %d inside building.", index);
 					return false;
 				}
 				ib.units.resize(count);
@@ -832,7 +832,7 @@ bool Game::ReadLevelData(BitStream& stream)
 					unit = new Unit;
 					if(!ReadUnit(stream, *unit))
 					{
-						ERROR(Format("Read level: Broken packet for unit in %d inside building.", index));
+						Error("Read level: Broken packet for unit in %d inside building.", index);
 						return false;
 					}
 					unit->in_building = index;
@@ -842,7 +842,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				if(!stream.Read(count)
 					|| !EnsureSize(stream, count * Door::MIN_SIZE))
 				{
-					ERROR(Format("Read level: Broken packet for door count in %d inside building.", index));
+					Error("Read level: Broken packet for door count in %d inside building.", index);
 					return false;
 				}
 				ib.doors.resize(count);
@@ -851,7 +851,7 @@ bool Game::ReadLevelData(BitStream& stream)
 					door = new Door;
 					if(!ReadDoor(stream, *door))
 					{
-						ERROR(Format("Read level: Broken packet for door in %d inside building.", index));
+						Error("Read level: Broken packet for door in %d inside building.", index);
 						return false;
 					}
 				}
@@ -860,7 +860,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				if(!stream.Read(count)
 					|| !EnsureSize(stream, count * GroundItem::MIN_SIZE))
 				{
-					ERROR(Format("Read level: Broken packet for ground item count in %d inside building.", index));
+					Error("Read level: Broken packet for ground item count in %d inside building.", index);
 					return false;
 				}
 				ib.items.resize(count);
@@ -869,7 +869,7 @@ bool Game::ReadLevelData(BitStream& stream)
 					item = new GroundItem;
 					if(!ReadItem(stream, *item))
 					{
-						ERROR(Format("Read level: Broken packet for ground item in %d inside building.", index));
+						Error("Read level: Broken packet for ground item in %d inside building.", index);
 						return false;
 					}
 				}
@@ -879,7 +879,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				if(!stream.Read(count2)
 					|| !EnsureSize(stream, count2 * Blood::MIN_SIZE))
 				{
-					ERROR(Format("Read level: Broken packet for blood count in %d inside building.", index));
+					Error("Read level: Broken packet for blood count in %d inside building.", index);
 					return false;
 				}
 				ib.bloods.resize(count2);
@@ -887,7 +887,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				{
 					if(!blood.Read(stream))
 					{
-						ERROR(Format("Read level: Broken packet for blood in %d inside building.", index));
+						Error("Read level: Broken packet for blood in %d inside building.", index);
 						return false;
 					}
 				}
@@ -896,7 +896,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				if(!stream.Read(count)
 					|| !EnsureSize(stream, count * Object::MIN_SIZE))
 				{
-					ERROR(Format("Read level: Broken packet for object count in %d inside building.", index));
+					Error("Read level: Broken packet for object count in %d inside building.", index);
 					return false;
 				}
 				ib.objects.resize(count);
@@ -904,7 +904,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				{
 					if(!object.Read(stream))
 					{
-						ERROR(Format("Read level: Broken packet for object in %d inside building.", index));
+						Error("Read level: Broken packet for object in %d inside building.", index);
 						return false;
 					}
 				}
@@ -913,7 +913,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				if(!stream.Read(count)
 					|| !EnsureSize(stream, count * Light::MIN_SIZE))
 				{
-					ERROR(Format("Read level: Broken packet for light count in %d inside building.", index));
+					Error("Read level: Broken packet for light count in %d inside building.", index);
 					return false;
 				}
 				ib.lights.resize(count);
@@ -921,7 +921,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				{
 					if(!light.Read(stream))
 					{
-						ERROR(Format("Read level: Broken packet for light in %d inside building.", index));
+						Error("Read level: Broken packet for light in %d inside building.", index);
 						return false;
 					}
 				}
@@ -934,7 +934,7 @@ bool Game::ReadLevelData(BitStream& stream)
 					|| !stream.Read(ib.xsphere_radius)
 					|| !stream.Read(ib.enter_y))
 				{
-					ERROR(Format("Read level: Broken packet for inside building %d other data.", index));
+					Error("Read level: Broken packet for inside building %d other data.", index);
 					return false;
 				}
 
@@ -949,7 +949,7 @@ bool Game::ReadLevelData(BitStream& stream)
 			CreateForestMinimap();
 		if(!stream.Read(light_angle))
 		{
-			ERROR("Read level: Broken packet for light angle.");
+			Error("Read level: Broken packet for light angle.");
 			return false;
 		}
 		SpawnOutsideBariers();
@@ -964,7 +964,7 @@ bool Game::ReadLevelData(BitStream& stream)
 			|| !stream.ReadCasted<byte>(lvl.w)
 			|| !EnsureSize(stream, lvl.w * lvl.w * sizeof(Pole)))
 		{
-			ERROR("Read level: Broken packet for inside location.");
+			Error("Read level: Broken packet for inside location.");
 			return false;
 		}
 
@@ -974,7 +974,7 @@ bool Game::ReadLevelData(BitStream& stream)
 			lvl.map = new Pole[lvl.w * lvl.h];
 		if(!stream.Read((char*)lvl.map, lvl.w * lvl.h * sizeof(Pole)))
 		{
-			ERROR("Read level: Broken packet for inside location map.");
+			Error("Read level: Broken packet for inside location map.");
 			return false;
 		}
 
@@ -983,7 +983,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		if(!stream.Read(count)
 			|| !EnsureSize(stream, count * Light::MIN_SIZE))
 		{
-			ERROR("Read level: Broken packet for inside location light count.");
+			Error("Read level: Broken packet for inside location light count.");
 			return false;
 		}
 		lvl.lights.resize(count);
@@ -991,7 +991,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		{
 			if(!light.Read(stream))
 			{
-				ERROR("Read level: Broken packet for inside location light.");
+				Error("Read level: Broken packet for inside location light.");
 				return false;
 			}
 		}
@@ -1000,7 +1000,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		if(!stream.Read(count)
 			|| !EnsureSize(stream, count * Room::MIN_SIZE))
 		{
-			ERROR("Read level: Broken packet for inside location room count.");
+			Error("Read level: Broken packet for inside location room count.");
 			return false;
 		}
 		lvl.rooms.resize(count);
@@ -1008,7 +1008,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		{
 			if(!room.Read(stream))
 			{
-				ERROR("Read level: Broken packet for inside location room.");
+				Error("Read level: Broken packet for inside location room.");
 				return false;
 			}
 		}
@@ -1017,7 +1017,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		if(!stream.Read(count)
 			|| !EnsureSize(stream, count * Trap::MIN_SIZE))
 		{
-			ERROR("Read level: Broken packet for inside location trap count.");
+			Error("Read level: Broken packet for inside location trap count.");
 			return false;
 		}
 		lvl.traps.resize(count);
@@ -1026,7 +1026,7 @@ bool Game::ReadLevelData(BitStream& stream)
 			trap = new Trap;
 			if(!ReadTrap(stream, *trap))
 			{
-				ERROR("Read level: Broken packet for inside location trap.");
+				Error("Read level: Broken packet for inside location trap.");
 				return false;
 			}
 		}
@@ -1035,7 +1035,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		if(!stream.Read(count)
 			|| !EnsureSize(stream, count * Door::MIN_SIZE))
 		{
-			ERROR("Read level: Broken packet for inside location door count.");
+			Error("Read level: Broken packet for inside location door count.");
 			return false;
 		}
 		lvl.doors.resize(count);
@@ -1044,7 +1044,7 @@ bool Game::ReadLevelData(BitStream& stream)
 			door = new Door;
 			if(!ReadDoor(stream, *door))
 			{
-				ERROR("Read level: Broken packet for inside location door.");
+				Error("Read level: Broken packet for inside location door.");
 				return false;
 			}
 		}
@@ -1056,7 +1056,7 @@ bool Game::ReadLevelData(BitStream& stream)
 			|| !stream.ReadCasted<byte>(lvl.staircase_down_dir)
 			|| !ReadBool(stream, lvl.staircase_down_in_wall))
 		{
-			ERROR("Read level: Broken packet for stairs.");
+			Error("Read level: Broken packet for stairs.");
 			return false;
 		}
 
@@ -1072,7 +1072,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	if(!stream.Read(count)
 		|| !EnsureSize(stream, count * Useable::MIN_SIZE))
 	{
-		ERROR("Read level: Broken useable object count.");
+		Error("Read level: Broken useable object count.");
 		return false;
 	}
 	local_ctx.useables->resize(count);
@@ -1081,7 +1081,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		useable = new Useable;
 		if(!useable->Read(stream))
 		{
-			ERROR("Read level: Broken useable object.");
+			Error("Read level: Broken useable object.");
 			return false;
 		}
 	}
@@ -1090,7 +1090,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	if(!stream.Read(count)
 		|| !EnsureSize(stream, count * Unit::MIN_SIZE))
 	{
-		ERROR("Read level: Broken unit count.");
+		Error("Read level: Broken unit count.");
 		return false;
 	}
 	local_ctx.units->resize(count);
@@ -1099,7 +1099,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		unit = new Unit;
 		if(!ReadUnit(stream, *unit))
 		{
-			ERROR("Read level: Broken unit.");
+			Error("Read level: Broken unit.");
 			return false;
 		}
 	}
@@ -1108,7 +1108,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	if(!stream.Read(count)
 		|| !EnsureSize(stream, count * GroundItem::MIN_SIZE))
 	{
-		ERROR("Read level: Broken ground item count.");
+		Error("Read level: Broken ground item count.");
 		return false;
 	}
 	local_ctx.items->resize(count);
@@ -1117,7 +1117,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		item = new GroundItem;
 		if(!ReadItem(stream, *item))
 		{
-			ERROR("Read level: Broken ground item.");
+			Error("Read level: Broken ground item.");
 			return false;
 		}
 	}
@@ -1127,7 +1127,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	if(!stream.Read(count2)
 		|| !EnsureSize(stream, count2 * Blood::MIN_SIZE))
 	{
-		ERROR("Read level: Broken blood count.");
+		Error("Read level: Broken blood count.");
 		return false;
 	}
 	local_ctx.bloods->resize(count2);
@@ -1135,7 +1135,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	{
 		if(!blood.Read(stream))
 		{
-			ERROR("Read level: Broken blood.");
+			Error("Read level: Broken blood.");
 			return false;
 		}
 	}
@@ -1144,7 +1144,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	if(!stream.Read(count2)
 		|| !EnsureSize(stream, count2 * Object::MIN_SIZE))
 	{
-		ERROR("Read level: Broken object count.");
+		Error("Read level: Broken object count.");
 		return false;
 	}
 	local_ctx.objects->resize(count2);
@@ -1152,7 +1152,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	{
 		if(!object.Read(stream))
 		{
-			ERROR("Read level: Broken object.");
+			Error("Read level: Broken object.");
 			return false;
 		}
 	}
@@ -1161,7 +1161,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	if(!stream.Read(count)
 		|| !EnsureSize(stream, count * Chest::MIN_SIZE))
 	{
-		ERROR("Read level: Broken chest count.");
+		Error("Read level: Broken chest count.");
 		return false;
 	}
 	local_ctx.chests->resize(count);
@@ -1170,7 +1170,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		chest = new Chest;
 		if(!ReadChest(stream, *chest))
 		{
-			ERROR("Read level: Broken chest.");
+			Error("Read level: Broken chest.");
 			return false;
 		}
 	}
@@ -1178,7 +1178,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	// portals
 	if(!location->ReadPortals(stream, dungeon_level))
 	{
-		ERROR("Read level: Broken portals.");
+		Error("Read level: Broken portals.");
 		return false;
 	}
 
@@ -1189,7 +1189,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		if(!stream.Read(count)
 			|| !EnsureSize(stream, count * Bullet::MIN_SIZE))
 		{
-			ERROR("Read level: Broken bullet count.");
+			Error("Read level: Broken bullet count.");
 			return false;
 		}
 		local_ctx.bullets->resize(count);
@@ -1204,7 +1204,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				|| !stream.Read(netid)
 				|| !ReadString1(stream))
 			{
-				ERROR("Read level: Broken bullet.");
+				Error("Read level: Broken bullet.");
 				return false;
 			}
 			if(BUF[0] == 0)
@@ -1237,7 +1237,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				Spell* spell_ptr = FindSpell(BUF);
 				if(!spell_ptr)
 				{
-					ERROR(Format("Read level: Missing spell '%s'.", BUF));
+					Error("Read level: Missing spell '%s'.", BUF);
 					return false;
 				}
 
@@ -1283,7 +1283,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				bullet.owner = FindUnit(netid);
 				if(!bullet.owner)
 				{
-					ERROR(Format("Read level: Missing bullet owner %d.", netid));
+					Error("Read level: Missing bullet owner %d.", netid);
 					return false;
 				}
 			}
@@ -1295,7 +1295,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		if(!stream.Read(count)
 			|| !EnsureSize(stream, count * Explo::MIN_SIZE))
 		{
-			ERROR("Read level: Broken explosion count.");
+			Error("Read level: Broken explosion count.");
 			return false;
 		}
 		local_ctx.explos->resize(count);
@@ -1307,7 +1307,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				|| !stream.Read(explo->size)
 				|| !stream.Read(explo->sizemax))
 			{
-				ERROR("Read level: Broken explosion.");
+				Error("Read level: Broken explosion.");
 				return false;
 			}
 
@@ -1318,7 +1318,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		if(!stream.Read(count)
 			|| !EnsureSize(stream, count * Electro::MIN_SIZE))
 		{
-			ERROR("Read level: Broken electro count.");
+			Error("Read level: Broken electro count.");
 			return false;
 		}
 		local_ctx.electros->resize(count);
@@ -1332,7 +1332,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				|| !stream.Read(count)
 				|| !EnsureSize(stream, count * Electro::LINE_MIN_SIZE))
 			{
-				ERROR("Read level: Broken electro.");
+				Error("Read level: Broken electro.");
 				return false;
 			}
 			electro->lines.resize(count);
@@ -1353,7 +1353,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	MusicType music;
 	if(!stream.ReadCasted<byte>(music))
 	{
-		ERROR("Read level: Broken music.");
+		Error("Read level: Broken music.");
 		return false;
 	}
 	if(!nomusic)
@@ -1363,7 +1363,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	byte check;
 	if(!stream.Read(check) || check != 0xFF)
 	{
-		ERROR("Read level: Broken checksum.");
+		Error("Read level: Broken checksum.");
 		return false;
 	}
 
@@ -1388,7 +1388,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	unit.data = FindUnitData(BUF, false);
 	if(!unit.data)
 	{
-		ERROR(Format("Missing base unit id '%s'!", BUF));
+		Error("Missing base unit id '%s'!", BUF);
 		return false;
 	}
 
@@ -1423,8 +1423,8 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			|| unit.human_data->mustache >= MAX_MUSTACHE
 			|| !InRange(unit.human_data->height, 0.85f, 1.15f))
 		{
-			ERROR(Format("Invalid human data (hair:%d, beard:%d, mustache:%d, height:%g).", unit.human_data->hair, unit.human_data->beard,
-				unit.human_data->mustache, unit.human_data->height));
+			Error("Invalid human data (hair:%d, beard:%d, mustache:%d, height:%g).", unit.human_data->hair, unit.human_data->beard,
+				unit.human_data->mustache, unit.human_data->height);
 			return false;
 		}
 		unit.ani = new AnimeshInstance(aHumanBase);
@@ -1453,7 +1453,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				else
 				{
 					if(item)
-						ERROR(Format("Invalid slot type (%d != %d).", ItemTypeToSlot(item->type), i));
+						Error("Invalid slot type (%d != %d).", ItemTypeToSlot(item->type), i);
 					return false;
 				}
 			}
@@ -1476,7 +1476,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		return false;
 	if(unit.live_state >= Unit::LIVESTATE_MAX)
 	{
-		ERROR(Format("Invalid live state %d.", unit.live_state));
+		Error("Invalid live state %d.", unit.live_state);
 		return false;
 	}
 
@@ -1513,7 +1513,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			return false;
 		if(unit.hero->clas >= Class::MAX)
 		{
-			ERROR(Format("Invalid hero class %d.", unit.hero->clas));
+			Error("Invalid hero class %d.", unit.hero->clas);
 			return false;
 		}
 		unit.hero->know_name = IS_SET(flags, 0x01);
@@ -1534,23 +1534,23 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			return false;
 		if(unit.player->credit < 0)
 		{
-			ERROR(Format("Invalid player %d credit %d.", unit.player->id, unit.player->credit));
+			Error("Invalid player %d credit %d.", unit.player->id, unit.player->credit);
 			return false;
 		}
 		if(unit.player->free_days < 0)
 		{
-			ERROR(Format("Invalid player %d free days %d.", unit.player->id, unit.player->free_days));
+			Error("Invalid player %d free days %d.", unit.player->id, unit.player->free_days);
 			return false;
 		}
 		if(!ClassInfo::IsPickable(unit.player->clas))
 		{
-			ERROR(Format("Invalid player %d class %d.", unit.player->id, unit.player->clas));
+			Error("Invalid player %d class %d.", unit.player->id, unit.player->clas);
 			return false;
 		}
 		PlayerInfo* info = GetPlayerInfoTry(unit.player->id);
 		if(!info)
 		{
-			ERROR(Format("Invalid player id %d.", unit.player->id));
+			Error("Invalid player id %d.", unit.player->id);
 			return false;
 		}
 		info->u = &unit;
@@ -1620,7 +1620,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				unit.used_item = FindItem(BUF);
 				if(!unit.used_item)
 				{
-					ERROR(Format("Missing used item '%s'.", BUF));
+					Error("Missing used item '%s'.", BUF);
 					return false;
 				}
 			}
@@ -1640,7 +1640,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				}
 				else
 				{
-					ERROR(Format("Missing useable %d.", useable_netid));
+					Error("Missing useable %d.", useable_netid);
 					return false;
 				}
 			}
@@ -1693,7 +1693,7 @@ bool Game::ReadDoor(BitStream& stream, Door& door)
 
 	if(door.state >= Door::Max)
 	{
-		ERROR(Format("Invalid door state %d.", door.state));
+		Error("Invalid door state %d.", door.state);
 		return false;
 	}
 
@@ -1851,14 +1851,14 @@ bool Game::ReadPlayerData(BitStream& stream)
 	int netid;
 	if(!stream.Read(netid))
 	{
-		ERROR("Read player data: Broken packet.");
+		Error("Read player data: Broken packet.");
 		return false;
 	}
 
 	Unit* unit = FindUnit(netid);
 	if(!unit)
 	{
-		ERROR(Format("Read player data: Missing unit %d.", netid));
+		Error("Read player data: Missing unit %d.", netid);
 		return false;
 	}
 	game_players[0].u = unit;
@@ -1871,7 +1871,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 	{
 		if(!ReadString1(stream))
 		{
-			ERROR(Format("Read player data: Broken item %d.", i));
+			Error("Read player data: Broken item %d.", i);
 			return false;
 		}
 		if(BUF[0])
@@ -1885,7 +1885,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 	}
 	if(!ReadItemListTeam(stream, unit->items))
 	{
-		ERROR("Read player data: Broken item list.");
+		Error("Read player data: Broken item list.");
 		return false;
 	}
 
@@ -1899,7 +1899,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 		!stream.Read(unit->gold) ||
 		!pc->Read(stream))
 	{
-		ERROR("Read player data: Broken stats.");
+		Error("Read player data: Broken stats.");
 		return false;
 	}
 
@@ -1924,7 +1924,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 	if(!stream.Read(count)
 		|| !EnsureSize(stream, sizeof(int) * count))
 	{
-		ERROR("Read player data: Broken team members.");
+		Error("Read player data: Broken team members.");
 		return false;
 	}
 	for(byte i = 0; i < count; ++i)
@@ -1933,7 +1933,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 		Unit* team_member = FindUnit(netid);
 		if(!team_member)
 		{
-			ERROR(Format("Read player data: Missing team member %d.", netid));
+			Error("Read player data: Missing team member %d.", netid);
 			return false;
 		}
 		Team.members.push_back(team_member);
@@ -1942,13 +1942,13 @@ bool Game::ReadPlayerData(BitStream& stream)
 	}
 	if(!stream.ReadCasted<byte>(leader_id))
 	{
-		ERROR("Read player data: Broken team leader.");
+		Error("Read player data: Broken team leader.");
 		return false;
 	}
 	PlayerInfo* leader_info = GetPlayerInfoTry(leader_id);
 	if(!leader_info)
 	{
-		ERROR(Format("Read player data: Missing player %d.", leader_id));
+		Error("Read player data: Missing player %d.", leader_id);
 		return false;
 	}
 	Team.leader = leader_info->u;
@@ -1966,7 +1966,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 			|| !stream.Read(unit->raise_timer)
 			|| !stream.ReadCasted<byte>(flags))
 		{
-			ERROR("Read player data: Broken multiplaye data.");
+			Error("Read player data: Broken multiplaye data.");
 			return false;
 		}
 		unit->run_attack = IS_SET(flags, 0x01);
@@ -1979,7 +1979,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 	byte check;
 	if(!stream.Read(check) || check != 0xFF)
 	{
-		ERROR("Read player data: Broken checksum.");
+		Error("Read player data: Broken checksum.");
 		return false;
 	}
 
@@ -2030,7 +2030,7 @@ void Game::UpdateServer(float dt)
 		if(player_index == -1)
 		{
 		ignore_him:
-			LOG(Format("Ignoring packet from %s.", packet->systemAddress.ToString()));
+			Info("Ignoring packet from %s.", packet->systemAddress.ToString());
 			StreamEnd();
 			continue;
 		}
@@ -2046,7 +2046,7 @@ void Game::UpdateServer(float dt)
 		{
 		case ID_CONNECTION_LOST:
 		case ID_DISCONNECTION_NOTIFICATION:
-			LOG(Format(msg_id == ID_CONNECTION_LOST ? "Lost connection with player %s." : "Player %s has disconnected.", info.name.c_str()));
+			Info(msg_id == ID_CONNECTION_LOST ? "Lost connection with player %s." : "Player %s has disconnected.", info.name.c_str());
 			players_left.push_back(info.id);
 			info.left = true;
 			info.left_reason = PlayerInfo::LEFT_QUIT;
@@ -2065,7 +2065,7 @@ void Game::UpdateServer(float dt)
 			}
 			break;
 		default:
-			WARN(Format("UpdateServer: Unknown packet from %s: %u.", info.name.c_str(), msg_id));
+			Warn("UpdateServer: Unknown packet from %s: %u.", info.name.c_str(), msg_id);
 			StreamError();
 			break;
 		}
@@ -2172,7 +2172,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 	bool move_info;
 	if(!ReadBool(stream, move_info))
 	{
-		ERROR(Format("UpdateServer: Broken packet ID_CONTROL from %s.", info.name.c_str()));
+		Error("UpdateServer: Broken packet ID_CONTROL from %s.", info.name.c_str());
 		StreamError();
 		return true;
 	}
@@ -2192,7 +2192,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				|| !stream.Read(rot)
 				|| !stream.Read(unit.ani->groups[0].speed))
 			{
-				ERROR(Format("UpdateServer: Broken packet ID_CONTROL(2) from %s.", info.name.c_str()));
+				Error("UpdateServer: Broken packet ID_CONTROL(2) from %s.", info.name.c_str());
 				StreamError();
 				return true;
 			}
@@ -2200,8 +2200,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			if(Vec3::Distance(unit.pos, new_pos) >= 10.f)
 			{
 				// too big change in distance, warp unit to old position
-				WARN(Format("UpdateServer: Invalid unit movement from %s ((%g,%g,%g) -> (%g,%g,%g)).", info.name.c_str(), unit.pos.x, unit.pos.y, unit.pos.z,
-					new_pos.x, new_pos.y, new_pos.z));
+				Warn("UpdateServer: Invalid unit movement from %s ((%g,%g,%g) -> (%g,%g,%g)).", info.name.c_str(), unit.pos.x, unit.pos.y, unit.pos.z,
+					new_pos.x, new_pos.y, new_pos.z);
 				WarpUnit(unit, unit.pos);
 				unit.interp->Add(unit.pos, rot);
 			}
@@ -2238,7 +2238,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			// player is warping or not in level, skip movement
 			if(!Skip(stream, sizeof(Vec3) + sizeof(float) * 2))
 			{
-				ERROR(Format("UpdateServer: Broken packet ID_CONTROL(3) from %s.", info.name.c_str()));
+				Error("UpdateServer: Broken packet ID_CONTROL(3) from %s.", info.name.c_str());
 				StreamError();
 				return true;
 			}
@@ -2248,7 +2248,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		Animation ani;
 		if(!stream.ReadCasted<byte>(ani))
 		{
-			ERROR(Format("UpdateServer: Broken packet ID_CONTROL(4) from %s.", info.name.c_str()));
+			Error("UpdateServer: Broken packet ID_CONTROL(4) from %s.", info.name.c_str());
 			StreamError();
 			return true;
 		}
@@ -2260,7 +2260,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 	byte changes;
 	if(!stream.Read(changes))
 	{
-		ERROR(Format("UpdateServer: Broken packet ID_CONTROL(5) from %s.", info.name.c_str()));
+		Error("UpdateServer: Broken packet ID_CONTROL(5) from %s.", info.name.c_str());
 		StreamError();
 		return true;
 	}
@@ -2272,7 +2272,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		NetChange::TYPE type;
 		if(!stream.ReadCasted<byte>(type))
 		{
-			ERROR(Format("UpdateServer: Broken packet ID_CONTROL(6) from %s.", info.name.c_str()));
+			Error("UpdateServer: Broken packet ID_CONTROL(6) from %s.", info.name.c_str());
 			StreamError();
 			return true;
 		}
@@ -2286,7 +2286,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 				if(!stream.Read(i_index))
 				{
-					ERROR(Format("Update server: Broken CHANGE_EQUIPMENT from %s.", info.name.c_str()));
+					Error("Update server: Broken CHANGE_EQUIPMENT from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(i_index >= 0)
@@ -2294,7 +2294,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					// equipping item
 					if(uint(i_index) >= unit.items.size())
 					{
-						ERROR(Format("Update server: CHANGE_EQUIPMENT from %s, invalid index %d.", info.name.c_str(), i_index));
+						Error("Update server: CHANGE_EQUIPMENT from %s, invalid index %d.", info.name.c_str(), i_index);
 						StreamError();
 						break;
 					}
@@ -2302,8 +2302,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ItemSlot& slot = unit.items[i_index];
 					if(!slot.item->IsWearableByHuman())
 					{
-						ERROR(Format("Update server: CHANGE_EQUIPMENT from %s, item at index %d (%s) is not wearable.",
-							info.name.c_str(), i_index, slot.item->id.c_str()));
+						Error("Update server: CHANGE_EQUIPMENT from %s, item at index %d (%s) is not wearable.",
+							info.name.c_str(), i_index, slot.item->id.c_str());
 						StreamError();
 						break;
 					}
@@ -2336,12 +2336,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 					if(slot < SLOT_WEAPON || slot >= SLOT_MAX)
 					{
-						ERROR(Format("Update server: CHANGE_EQUIPMENT from %s, invalid slot type %d.", info.name.c_str(), slot));
+						Error("Update server: CHANGE_EQUIPMENT from %s, invalid slot type %d.", info.name.c_str(), slot);
 						StreamError();
 					}
 					else if(!unit.slots[slot])
 					{
-						ERROR(Format("Update server: CHANGE_EQUIPMENT from %s, empty slot type %d.", info.name.c_str(), slot));
+						Error("Update server: CHANGE_EQUIPMENT from %s, empty slot type %d.", info.name.c_str(), slot);
 						StreamError();
 					}
 					else
@@ -2371,7 +2371,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!ReadBool(stream, hide)
 					|| !stream.ReadCasted<byte>(weapon_type))
 				{
-					ERROR(Format("Update server: Broken TAKE_WEAPON from %s.", info.name.c_str()));
+					Error("Update server: Broken TAKE_WEAPON from %s.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -2398,7 +2398,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!stream.Read(typeflags)
 					|| !stream.Read(attack_speed))
 				{
-					ERROR(Format("Update server: Broken ATTACK from %s.", info.name.c_str()));
+					Error("Update server: Broken ATTACK from %s.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -2465,7 +2465,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						{
 							if(!stream.Read(info.yspeed))
 							{
-								ERROR(Format("Update server: Broken ATTACK(2) from %s.", info.name.c_str()));
+								Error("Update server: Broken ATTACK(2) from %s.", info.name.c_str());
 								StreamError();
 							}
 						}
@@ -2533,12 +2533,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!stream.Read(i_index)
 					|| !stream.Read(count))
 				{
-					ERROR(Format("Update server: Broken DROP_ITEM from %s.", info.name.c_str()));
+					Error("Update server: Broken DROP_ITEM from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(count == 0)
 				{
-					ERROR(Format("Update server: DROP_ITEM from %s, count %d.", info.name.c_str(), count));
+					Error("Update server: DROP_ITEM from %s, count %d.", info.name.c_str(), count);
 					StreamError();
 				}
 				else
@@ -2550,7 +2550,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						// dropping unequipped item
 						if(i_index >= (int)unit.items.size())
 						{
-							ERROR(Format("Update server: DROP_ITEM from %s, invalid index %d (count %d).", info.name.c_str(), i_index, count));
+							Error("Update server: DROP_ITEM from %s, invalid index %d (count %d).", info.name.c_str(), i_index, count);
 							StreamError();
 							break;
 						}
@@ -2558,8 +2558,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						ItemSlot& sl = unit.items[i_index];
 						if(count > (int)sl.count)
 						{
-							ERROR(Format("Update server: DROP_ITEM from %s, index %d (count %d) have only %d count.", info.name.c_str(), i_index,
-								count, sl.count));
+							Error("Update server: DROP_ITEM from %s, index %d (count %d) have only %d count.", info.name.c_str(), i_index,
+								count, sl.count);
 							StreamError();
 							count = sl.count;
 						}
@@ -2579,7 +2579,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						ITEM_SLOT slot_type = IIndexToSlot(i_index);
 						if(!IsValid(slot_type))
 						{
-							ERROR(Format("Update server: DROP_ITEM from %s, invalid slot %d.", info.name.c_str(), slot_type));
+							Error("Update server: DROP_ITEM from %s, invalid slot %d.", info.name.c_str(), slot_type);
 							StreamError();
 							break;
 						}
@@ -2587,7 +2587,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						const Item*& slot = unit.slots[slot_type];
 						if(!slot)
 						{
-							ERROR(Format("Update server: DROP_ITEM from %s, empty slot %d.", info.name.c_str(), slot_type));
+							Error("Update server: DROP_ITEM from %s, empty slot %d.", info.name.c_str(), slot_type);
 							StreamError();
 							break;
 						}
@@ -2635,7 +2635,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR(Format("Update server: Broken PICKUP_ITEM from %s.", info.name.c_str()));
+					Error("Update server: Broken PICKUP_ITEM from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -2644,7 +2644,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				GroundItem* item = FindItemNetid(netid, &ctx);
 				if(!item)
 				{
-					ERROR(Format("Update server: PICKUP_ITEM from %s, missing item %d.", info.name.c_str(), netid));
+					Error("Update server: PICKUP_ITEM from %s, missing item %d.", info.name.c_str(), netid);
 					StreamError();
 					break;
 				}
@@ -2693,7 +2693,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int index;
 				if(!stream.Read(index))
 				{
-					ERROR(Format("Update server: Broken CONSUME_ITEM from %s.", info.name.c_str()));
+					Error("Update server: Broken CONSUME_ITEM from %s.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -2706,7 +2706,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR(Format("Update server: Broken LOOT_UNIT from %s.", info.name.c_str()));
+					Error("Update server: Broken LOOT_UNIT from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -2714,7 +2714,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				Unit* looted_unit = FindUnit(netid);
 				if(!looted_unit)
 				{
-					ERROR(Format("Update server: LOOT_UNIT from %s, missing unit %d.", info.name.c_str(), netid));
+					Error("Update server: LOOT_UNIT from %s, missing unit %d.", info.name.c_str(), netid);
 					StreamError();
 					break;
 				}
@@ -2745,7 +2745,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR(Format("Update server: Broken LOOT_CHEST from %s.", info.name.c_str()));
+					Error("Update server: Broken LOOT_CHEST from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -2753,7 +2753,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				Chest* chest = FindChest(netid);
 				if(!chest)
 				{
-					ERROR(Format("Update server: LOOT_CHEST from %s, missing chest %d.", info.name.c_str(), netid));
+					Error("Update server: LOOT_CHEST from %s, missing chest %d.", info.name.c_str(), netid);
 					StreamError();
 					break;
 				}
@@ -2803,14 +2803,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!stream.Read(i_index)
 					|| !stream.Read(count))
 				{
-					ERROR(Format("Update server: Broken GET_ITEM from %s.", info.name.c_str()));
+					Error("Update server: Broken GET_ITEM from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
 
 				if(!player.IsTrading())
 				{
-					ERROR(Format("Update server: GET_ITEM, player %s is not trading.", info.name.c_str()));
+					Error("Update server: GET_ITEM, player %s is not trading.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -2820,7 +2820,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					// getting not equipped item
 					if(i_index >= (int)player.chest_trade->size())
 					{
-						ERROR(Format("Update server: GET_ITEM from %s, invalid index %d.", info.name.c_str(), i_index));
+						Error("Update server: GET_ITEM from %s, invalid index %d.", info.name.c_str(), i_index);
 						StreamError();
 						break;
 					}
@@ -2828,7 +2828,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ItemSlot& slot = player.chest_trade->at(i_index);
 					if(count < 1 || count >(int)slot.count)
 					{
-						ERROR(Format("Update server: GET_ITEM from %s, invalid item count %d (have %d).", info.name.c_str(), count, slot.count));
+						Error("Update server: GET_ITEM from %s, invalid item count %d (have %d).", info.name.c_str(), count, slot.count);
 						StreamError();
 						break;
 					}
@@ -2896,7 +2896,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ITEM_SLOT type = IIndexToSlot(i_index);
 					if(player.action == PlayerController::Action_LootChest || type < SLOT_WEAPON || type >= SLOT_MAX || !player.action_unit->slots[type])
 					{
-						ERROR(Format("Update server: GET_ITEM from %s, invalid or empty slot %d.", info.name.c_str(), type));
+						Error("Update server: GET_ITEM from %s, invalid or empty slot %d.", info.name.c_str(), type);
 						StreamError();
 						break;
 					}
@@ -2937,14 +2937,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!stream.Read(i_index)
 					|| !stream.Read(count))
 				{
-					ERROR(Format("Update server: Broken PUT_ITEM from %s.", info.name.c_str()));
+					Error("Update server: Broken PUT_ITEM from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
 
 				if(!player.IsTrading())
 				{
-					ERROR(Format("Update server: PUT_ITEM, player %s is not trading.", info.name.c_str()));
+					Error("Update server: PUT_ITEM, player %s is not trading.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -2954,7 +2954,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					// put not equipped item
 					if(i_index >= (int)unit.items.size())
 					{
-						ERROR(Format("Update server: PUT_ITEM from %s, invalid index %d.", info.name.c_str(), i_index));
+						Error("Update server: PUT_ITEM from %s, invalid index %d.", info.name.c_str(), i_index);
 						StreamError();
 						break;
 					}
@@ -2962,7 +2962,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ItemSlot& slot = unit.items[i_index];
 					if(count < 1 || count > slot.count)
 					{
-						ERROR(Format("Update server: PUT_ITEM from %s, invalid count %u (have %u).", info.name.c_str(), count, slot.count));
+						Error("Update server: PUT_ITEM from %s, invalid count %u (have %u).", info.name.c_str(), count, slot.count);
 						StreamError();
 						break;
 					}
@@ -3037,7 +3037,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ITEM_SLOT type = IIndexToSlot(i_index);
 					if(type < SLOT_WEAPON || type >= SLOT_MAX || !unit.slots[type])
 					{
-						ERROR(Format("Update server: PUT_ITEM from %s, invalid or empty slot %d.", info.name.c_str(), type));
+						Error("Update server: PUT_ITEM from %s, invalid or empty slot %d.", info.name.c_str(), type);
 						StreamError();
 						break;
 					}
@@ -3090,7 +3090,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				if(!player.IsTrading())
 				{
-					ERROR(Format("Update server: GET_ALL_ITEM, player %s is not trading.", info.name.c_str()));
+					Error("Update server: GET_ALL_ITEM, player %s is not trading.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -3148,7 +3148,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		case NetChange::STOP_TRADE:
 			if(!player.IsTrading())
 			{
-				ERROR(Format("Update server: STOP_TRADE, player %s is not trading.", info.name.c_str()));
+				Error("Update server: STOP_TRADE, player %s is not trading.", info.name.c_str());
 				StreamError();
 				break;
 			}
@@ -3180,14 +3180,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int index;
 				if(!stream.Read(index))
 				{
-					ERROR(Format("Update server: Broken TAKE_ITEM_CREDIT from %s.", info.name.c_str()));
+					Error("Update server: Broken TAKE_ITEM_CREDIT from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
 
 				if(index < 0 || index >= (int)unit.items.size())
 				{
-					ERROR(Format("Update server: TAKE_ITEM_CREDIT from %s, invalid index %d.", info.name.c_str(), index));
+					Error("Update server: TAKE_ITEM_CREDIT from %s, invalid index %d.", info.name.c_str(), index);
 					StreamError();
 					break;
 				}
@@ -3201,8 +3201,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					ERROR(Format("Update server: TAKE_ITEM_CREDIT from %s, item %s (count %u, team count %u).", info.name.c_str(), slot.item->id.c_str(),
-						slot.count, slot.team_count));
+					Error("Update server: TAKE_ITEM_CREDIT from %s, item %s (count %u, team count %u).", info.name.c_str(), slot.item->id.c_str(),
+						slot.count, slot.team_count);
 					StreamError();
 				}
 			}
@@ -3213,12 +3213,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				byte index;
 				if(!stream.Read(index))
 				{
-					ERROR(Format("Update server: Broken IDLE from %s.", info.name.c_str()));
+					Error("Update server: Broken IDLE from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(index >= unit.data->idles->size())
 				{
-					ERROR(Format("Update server: IDLE from %s, invalid animation index %u.", info.name.c_str(), index));
+					Error("Update server: IDLE from %s, invalid animation index %u.", info.name.c_str(), index);
 					StreamError();
 				}
 				else
@@ -3243,7 +3243,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR(Format("Update server: Broken TALK from %s.", info.name.c_str()));
+					Error("Update server: Broken TALK from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -3251,7 +3251,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				Unit* talk_to = FindUnit(netid);
 				if(!talk_to)
 				{
-					ERROR(Format("Update server: TALK from %s, missing unit %d.", info.name.c_str(), netid));
+					Error("Update server: TALK from %s, missing unit %d.", info.name.c_str(), netid);
 					StreamError();
 					break;
 				}
@@ -3279,14 +3279,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				byte choice;
 				if(!stream.Read(choice))
 				{
-					ERROR(Format("Update server: Broken CHOICE from %s.", info.name.c_str()));
+					Error("Update server: Broken CHOICE from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(player.dialog_ctx->show_choices && choice < player.dialog_ctx->choices.size())
 					player.dialog_ctx->choice_selected = choice;
 				else
 				{
-					ERROR(Format("Update server: CHOICE from %s, not in dialog or invalid choice %u.", info.name.c_str(), choice));
+					Error("Update server: CHOICE from %s, not in dialog or invalid choice %u.", info.name.c_str(), choice);
 					StreamError();
 				}
 			}
@@ -3297,7 +3297,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int skip_id;
 				if(!stream.Read(skip_id))
 				{
-					ERROR(Format("Update server: Broken SKIP_DIALOG from %s.", info.name.c_str()));
+					Error("Update server: Broken SKIP_DIALOG from %s.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -3314,7 +3314,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				byte building_index;
 				if(!stream.Read(building_index))
 				{
-					ERROR(Format("Update server: Broken ENTER_BUILDING from %s.", info.name.c_str()));
+					Error("Update server: Broken ENTER_BUILDING from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(city_ctx && building_index < city_ctx->inside_buildings.size())
@@ -3327,7 +3327,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					ERROR(Format("Update server: ENTER_BUILDING from %s, invalid building index %u.", info.name.c_str(), building_index));
+					Error("Update server: ENTER_BUILDING from %s, invalid building index %u.", info.name.c_str(), building_index);
 					StreamError();
 				}
 			}
@@ -3344,7 +3344,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				ERROR(Format("Update server: EXIT_BUILDING from %s, unit not in building.", info.name.c_str()));
+				Error("Update server: EXIT_BUILDING from %s, unit not in building.", info.name.c_str());
 				StreamError();
 			}
 			break;
@@ -3359,7 +3359,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!ReadString1(stream, str))
 				{
 					info.notes.pop_back();
-					ERROR(Format("Update server: Broken ADD_NOTE from %s.", info.name.c_str()));
+					Error("Update server: Broken ADD_NOTE from %s.", info.name.c_str());
 					StreamError();
 				}
 			}
@@ -3370,7 +3370,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				byte number;
 				if(!stream.Read(number))
 				{
-					ERROR(Format("Update server: Broken RANDOM_NUMBER from %s.", info.name.c_str()));
+					Error("Update server: Broken RANDOM_NUMBER from %s.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -3395,7 +3395,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!stream.Read(useable_netid)
 					|| !stream.Read(state))
 				{
-					ERROR(Format("Update server: Broken USE_USEABLE from %s.", info.name.c_str()));
+					Error("Update server: Broken USE_USEABLE from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -3403,7 +3403,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				Useable* useable = FindUseable(useable_netid);
 				if(!useable)
 				{
-					ERROR(Format("Update server: USE_USEABLE from %s, missing useable %d.", info.name.c_str(), useable_netid));
+					Error("Update server: USE_USEABLE from %s, missing useable %d.", info.name.c_str(), useable_netid);
 					StreamError();
 					break;
 				}
@@ -3473,8 +3473,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					else
 					{
-						ERROR(Format("Update server: USE_USEABLE from %s, useable %d is used by %d (%s).", info.name.c_str(), useable_netid,
-							useable->user->netid, useable->user->data->id.c_str()));
+						Error("Update server: USE_USEABLE from %s, useable %d is used by %d (%s).", info.name.c_str(), useable_netid,
+							useable->user->netid, useable->user->data->id.c_str());
 						StreamError();
 					}
 				}
@@ -3486,7 +3486,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				GiveDmg(GetContext(unit), nullptr, unit.hpmax, unit);
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_SUICIDE without devmode.", info.name.c_str()));
+				Error("Update server: Player %s used CHEAT_SUICIDE without devmode.", info.name.c_str());
 				StreamError();
 			}
 			break;
@@ -3496,14 +3496,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				bool state;
 				if(!ReadBool(stream, state))
 				{
-					ERROR(Format("Update server: Broken CHEAT_GODMODE from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_GODMODE from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(info.devmode)
 					player.godmode = state;
 				else
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_GODMODE without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_GODMODE without devmode.", info.name.c_str());
 					StreamError();
 				}
 			}
@@ -3525,14 +3525,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				bool state;
 				if(!ReadBool(stream, state))
 				{
-					ERROR(Format("Update server: Broken CHEAT_NOCLIP from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_NOCLIP from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(info.devmode)
 					player.noclip = state;
 				else
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_NOCLIP without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_NOCLIP without devmode.", info.name.c_str());
 					StreamError();
 				}
 			}
@@ -3543,14 +3543,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				bool state;
 				if(!ReadBool(stream, state))
 				{
-					ERROR(Format("Update server: Broken CHEAT_INVISIBLE from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_INVISIBLE from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(info.devmode)
 					unit.invisible = state;
 				else
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_INVISIBLE without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_INVISIBLE without devmode.", info.name.c_str());
 					StreamError();
 				}
 			}
@@ -3567,7 +3567,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_SCARE without devmode.", info.name.c_str()));
+				Error("Update server: Player %s used CHEAT_SCARE without devmode.", info.name.c_str());
 				StreamError();
 			}
 			break;
@@ -3579,14 +3579,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!stream.Read(ignored_netid)
 					|| !stream.Read(type))
 				{
-					ERROR(Format("Update server: Broken CHEAT_KILLALL from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_KILLALL from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
 
 				if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_KILLALL without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_KILLALL without devmode.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -3599,7 +3599,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					ignored = FindUnit(ignored_netid);
 					if(!ignored)
 					{
-						ERROR(Format("Update server: CHEAT_KILLALL from %s, missing unit %d.", info.name.c_str(), ignored_netid));
+						Error("Update server: CHEAT_KILLALL from %s, missing unit %d.", info.name.c_str(), ignored_netid);
 						StreamError();
 						break;
 					}
@@ -3607,7 +3607,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 				if(!Cheat_KillAll(type, unit, ignored))
 				{
-					ERROR(Format("Update server: CHEAT_KILLALL from %s, invalid type %u.", info.name.c_str(), type));
+					Error("Update server: CHEAT_KILLALL from %s, invalid type %u.", info.name.c_str(), type);
 					StreamError();
 				}
 			}
@@ -3618,7 +3618,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int i_index;
 				if(!stream.Read(i_index))
 				{
-					ERROR(Format("Update server: Broken IS_BETTER_ITEM from %s.", info.name.c_str()));
+					Error("Update server: Broken IS_BETTER_ITEM from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -3639,13 +3639,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					else
 					{
-						ERROR(Format("Update server: IS_BETTER_ITEM from %s, invalid i_index %d.", info.name.c_str(), i_index));
+						Error("Update server: IS_BETTER_ITEM from %s, invalid i_index %d.", info.name.c_str(), i_index);
 						StreamError();
 					}
 				}
 				else
 				{
-					ERROR(Format("Update server: IS_BETTER_ITEM from %s, player is not giving items.", info.name.c_str()));
+					Error("Update server: IS_BETTER_ITEM from %s, player is not giving items.", info.name.c_str());
 					StreamError();
 				}
 			}
@@ -3663,7 +3663,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_CITIZEN without devmode.", info.name.c_str()));
+				Error("Update server: Player %s used CHEAT_CITIZEN without devmode.", info.name.c_str());
 				StreamError();
 			}
 			break;
@@ -3678,7 +3678,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_HEAL without devmode.", info.name.c_str()));
+				Error("Update server: Player %s used CHEAT_HEAL without devmode.", info.name.c_str());
 				StreamError();
 			}
 			break;
@@ -3688,12 +3688,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR(Format("Update server: Broken CHEAT_KILL from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_KILL from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_KILL without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_KILL without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -3701,7 +3701,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					Unit* target = FindUnit(netid);
 					if(!target)
 					{
-						ERROR(Format("Update server: CHEAT_KILL from %s, missing unit %d.", info.name.c_str(), netid));
+						Error("Update server: CHEAT_KILL from %s, missing unit %d.", info.name.c_str(), netid);
 						StreamError();
 					}
 					else
@@ -3715,12 +3715,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR(Format("Update server: Broken CHEAT_HEALUNIT from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_HEALUNIT from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_HEALUNIT without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_HEALUNIT without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -3728,7 +3728,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					Unit* target = FindUnit(netid);
 					if(!target)
 					{
-						ERROR(Format("Update server: CHEAT_HEALUNIT from %s, missing unit %d.", info.name.c_str(), netid));
+						Error("Update server: CHEAT_HEALUNIT from %s, missing unit %d.", info.name.c_str(), netid);
 						StreamError();
 					}
 					else
@@ -3747,7 +3747,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				Cheat_Reveal();
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_REVEAL without devmode.", info.name.c_str()));
+				Error("Update server: Player %s used CHEAT_REVEAL without devmode.", info.name.c_str());
 				StreamError();
 			}
 			break;
@@ -3761,7 +3761,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_GOTO_MAP without devmode.", info.name.c_str()));
+				Error("Update server: Player %s used CHEAT_GOTO_MAP without devmode.", info.name.c_str());
 				StreamError();
 			}
 			break;
@@ -3771,7 +3771,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				Cheat_ShowMinimap();
 			else
 			{
-				ERROR(Format("Update server: Player %s used CHEAT_SHOW_MINIMAP without devmode.", info.name.c_str()));
+				Error("Update server: Player %s used CHEAT_SHOW_MINIMAP without devmode.", info.name.c_str());
 				StreamError();
 			}
 			break;
@@ -3781,12 +3781,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int count;
 				if(!stream.Read(count))
 				{
-					ERROR(Format("Update server: Broken CHEAT_ADDGOLD from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_ADDGOLD from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_ADDGOLD without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_ADDGOLD without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -3802,17 +3802,17 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int count;
 				if(!stream.Read(count))
 				{
-					ERROR(Format("Update server: Broken CHEAT_ADDGOLD_TEAM from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_ADDGOLD_TEAM from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_ADDGOLD_TEAM without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_ADDGOLD_TEAM without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else if(count <= 0)
 				{
-					ERROR(Format("Update server: CHEAT_ADDGOLD_TEAM from %s, invalid count %d.", info.name.c_str(), count));
+					Error("Update server: CHEAT_ADDGOLD_TEAM from %s, invalid count %d.", info.name.c_str(), count);
 					StreamError();
 				}
 				else
@@ -3828,12 +3828,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					|| !stream.Read(count)
 					|| !ReadBool(stream, is_team))
 				{
-					ERROR(Format("Update server: Broken CHEAT_ADDITEM from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_ADDITEM from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_ADDITEM without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_ADDITEM without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -3843,7 +3843,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						AddItem(*info.u, item, count, is_team);
 					else
 					{
-						ERROR(Format("Update server: CHEAT_ADDITEM from %s, missing item %s or invalid count %u.", info.name.c_str(), BUF, count));
+						Error("Update server: CHEAT_ADDITEM from %s, missing item %s or invalid count %u.", info.name.c_str(), BUF, count);
 						StreamError();
 					}
 				}
@@ -3855,12 +3855,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int count;
 				if(!stream.Read(count))
 				{
-					ERROR(Format("Update server: Broken CHEAT_SKIP_DAYS from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_SKIP_DAYS from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_SKIP_DAYS without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_SKIP_DAYS without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -3873,22 +3873,22 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				byte building_index;
 				if(!stream.Read(building_index))
 				{
-					ERROR(Format("Update server: Broken CHEAT_WARP from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_WARP from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_WARP without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_WARP without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else if(unit.frozen != 0)
 				{
-					ERROR(Format("Update server: CHEAT_WARP from %s, unit is frozen.", info.name.c_str()));
+					Error("Update server: CHEAT_WARP from %s, unit is frozen.", info.name.c_str());
 					StreamError();
 				}
 				else if(!city_ctx || building_index >= city_ctx->inside_buildings.size())
 				{
-					ERROR(Format("Update server: CHEAT_WARP from %s, invalid inside building index %u.", info.name.c_str(), building_index));
+					Error("Update server: CHEAT_WARP from %s, invalid inside building index %u.", info.name.c_str(), building_index);
 					StreamError();
 				}
 				else
@@ -3912,12 +3912,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					|| !stream.Read(level)
 					|| !stream.Read(in_arena))
 				{
-					ERROR(Format("Update server: Broken CHEAT_SPAWN_UNIT from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_SPAWN_UNIT from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_SPAWN_UNIT without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_SPAWN_UNIT without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -3925,7 +3925,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					UnitData* data = FindUnitData(BUF, false);
 					if(!data)
 					{
-						ERROR(Format("Update server: CHEAT_SPAWN_UNIT from %s, invalid unit id %s.", info.name.c_str(), BUF));
+						Error("Update server: CHEAT_SPAWN_UNIT from %s, invalid unit id %s.", info.name.c_str(), BUF);
 						StreamError();
 					}
 					else
@@ -3941,7 +3941,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							Unit* spawned = SpawnUnitNearLocation(ctx, pos, *data, &unit.pos, level);
 							if(!spawned)
 							{
-								WARN(Format("Update server: CHEAT_SPAWN_UNIT from %s, no free space for unit.", info.name.c_str()));
+								Warn("Update server: CHEAT_SPAWN_UNIT from %s, no free space for unit.", info.name.c_str());
 								break;
 							}
 							else if(in_arena != -1)
@@ -3969,12 +3969,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					|| !ReadBool(stream, is_skill)
 					|| !stream.Read(value))
 				{
-					ERROR(Format("Update server: Broken %s from %s.", name, info.name.c_str()));
+					Error("Update server: Broken %s from %s.", name, info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used %s without devmode.", info.name.c_str(), name));
+					Error("Update server: Player %s used %s without devmode.", info.name.c_str(), name);
 					StreamError();
 				}
 				else if(is_skill)
@@ -3996,7 +3996,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					else
 					{
-						ERROR(Format("Update server: %s from %s, invalid skill %d.", name, info.name.c_str(), what));
+						Error("Update server: %s from %s, invalid skill %d.", name, info.name.c_str(), what);
 						StreamError();
 					}
 				}
@@ -4019,7 +4019,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					else
 					{
-						ERROR(Format("Update server: %s from %s, invalid attribute %d.", name, info.name.c_str(), what));
+						Error("Update server: %s from %s, invalid attribute %d.", name, info.name.c_str(), what);
 						StreamError();
 					}
 				}
@@ -4031,7 +4031,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				bool accepted;
 				if(!ReadBool(stream, accepted))
 				{
-					ERROR(Format("Update server: Broken PVP from %s.", info.name.c_str()));
+					Error("Update server: Broken PVP from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(pvp_response.ok && pvp_response.to == info.u)
@@ -4078,12 +4078,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				char type;
 				if(!stream.Read(type))
 				{
-					ERROR(Format("Update server: Broken LEAVE_LOCATION from %s.", info.name.c_str()));
+					Error("Update server: Broken LEAVE_LOCATION from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!Team.IsLeader(unit))
 				{
-					ERROR(Format("Update server: LEAVE_LOCATION from %s, player is not leader.", info.name.c_str()));
+					Error("Update server: LEAVE_LOCATION from %s, player is not leader.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -4113,7 +4113,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							}
 							else
 							{
-								ERROR(Format("Update server: LEAVE_LOCATION from %s, invalid type %d.", type));
+								Error("Update server: LEAVE_LOCATION from %s, invalid type %d.", type);
 								StreamError();
 								break;
 							}
@@ -4143,7 +4143,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!stream.Read(netid)
 					|| !ReadBool(stream, is_closing))
 				{
-					ERROR(Format("Update server: Broken USE_DOOR from %s.", info.name.c_str()));
+					Error("Update server: Broken USE_DOOR from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -4151,7 +4151,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				Door* door = FindDoor(netid);
 				if(!door)
 				{
-					ERROR(Format("Update server: USE_DOOR from %s, missing door %d.", info.name.c_str(), netid));
+					Error("Update server: USE_DOOR from %s, missing door %d.", info.name.c_str(), netid);
 					StreamError();
 					break;
 				}
@@ -4228,12 +4228,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				byte loc;
 				if(!stream.Read(loc))
 				{
-					ERROR(Format("Update server: Broken TRAVEL from %s.", info.name.c_str()));
+					Error("Update server: Broken TRAVEL from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!Team.IsLeader(unit))
 				{
-					ERROR(Format("Update server: LEAVE_LOCATION from %s, player is not leader.", info.name.c_str()));
+					Error("Update server: LEAVE_LOCATION from %s, player is not leader.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -4275,7 +4275,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				ERROR(Format("Update server: ENTER_LOCATION from %s, not leader or not on map.", info.name.c_str()));
+				Error("Update server: ENTER_LOCATION from %s, not leader or not on map.", info.name.c_str());
 				StreamError();
 			}
 			break;
@@ -4303,17 +4303,17 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				bool is_down;
 				if(!ReadBool(stream, is_down))
 				{
-					ERROR(Format("Update server: Broken CHEAT_CHANGE_LEVEL from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_CHANGE_LEVEL from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else if(location->outside)
 				{
-					ERROR(Format("Update server:CHEAT_CHANGE_LEVEL from %s, outside location.", info.name.c_str()));
+					Error("Update server:CHEAT_CHANGE_LEVEL from %s, outside location.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -4330,12 +4330,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				bool is_down;
 				if(!ReadBool(stream, is_down))
 				{
-					ERROR(Format("Update server: Broken CHEAT_CHANGE_LEVEL from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_CHANGE_LEVEL from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -4364,7 +4364,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				bool state;
 				if(!ReadBool(stream, state))
 				{
-					ERROR(Format("Update server: Broken CHEAT_NOAI from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_NOAI from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(info.devmode)
@@ -4379,7 +4379,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_NOAI without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_NOAI without devmode.", info.name.c_str());
 					StreamError();
 				}
 			}
@@ -4390,7 +4390,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				byte days;
 				if(!stream.Read(days))
 				{
-					ERROR(Format("Update server: Broken REST from %s.", info.name.c_str()));
+					Error("Update server: Broken REST from %s.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -4411,7 +4411,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!stream.Read(type)
 					|| !stream.Read(stat_type))
 				{
-					ERROR(Format("Update server: Broken TRAIN from %s.", info.name.c_str()));
+					Error("Update server: Broken TRAIN from %s.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -4433,7 +4433,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						}
 						if(error)
 						{
-							ERROR(Format("Update server: TRAIN from %s, invalid %d %u.", info.name.c_str(), error, stat_type));
+							Error("Update server: TRAIN from %s, invalid %d %u.", info.name.c_str(), error, stat_type);
 							StreamError();
 							break;
 						}
@@ -4454,12 +4454,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				byte id;
 				if(!stream.Read(id))
 				{
-					ERROR(Format("Update server: Broken CHANGE_LEADER from %s.", info.name.c_str()));
+					Error("Update server: Broken CHANGE_LEADER from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(leader_id != info.id)
 				{
-					ERROR(Format("Update server: CHANGE_LEADER from %s, player is not leader.", info.name.c_str()));
+					Error("Update server: CHANGE_LEADER from %s, player is not leader.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -4467,7 +4467,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					PlayerInfo* new_leader = GetPlayerInfoTry(id);
 					if(!new_leader)
 					{
-						ERROR(Format("Update server: CHANGE_LEADER from %s, invalid player id %u.", id));
+						Error("Update server: CHANGE_LEADER from %s, invalid player id %u.", id);
 						StreamError();
 						break;
 					}
@@ -4492,13 +4492,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int count;
 				if(!stream.Read(count))
 				{
-					ERROR(Format("Update server: Broken PAY_CREDIT from %s.", info.name.c_str()));
+					Error("Update server: Broken PAY_CREDIT from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(unit.gold < count || player.credit < count || count < 0)
 				{
-					ERROR(Format("Update server: PAY_CREDIT from %s, invalid count %d (gold %d, credit %d).",
-						info.name.c_str(), count, unit.gold, player.credit));
+					Error("Update server: PAY_CREDIT from %s, invalid count %d (gold %d, credit %d).",
+						info.name.c_str(), count, unit.gold, player.credit);
 					StreamError();
 				}
 				else
@@ -4515,7 +4515,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!stream.Read(netid)
 					|| !stream.Read(count))
 				{
-					ERROR(Format("Update server: Broken GIVE_GOLD from %s.", info.name.c_str()));
+					Error("Update server: Broken GIVE_GOLD from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -4523,17 +4523,17 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				Unit* target = Team.FindActiveTeamMember(netid);
 				if(!target)
 				{
-					ERROR(Format("Update server: GIVE_GOLD from %s, missing unit %d.", info.name.c_str(), netid));
+					Error("Update server: GIVE_GOLD from %s, missing unit %d.", info.name.c_str(), netid);
 					StreamError();
 				}
 				else if(target == &unit)
 				{
-					ERROR(Format("Update server: GIVE_GOLD from %s, wants to give gold to himself.", info.name.c_str()));
+					Error("Update server: GIVE_GOLD from %s, wants to give gold to himself.", info.name.c_str());
 					StreamError();
 				}
 				else if(count > unit.gold || count < 0)
 				{
-					ERROR(Format("Update server: GIVE_GOLD from %s, invalid count %d (have %d).", info.name.c_str(), count, unit.gold));
+					Error("Update server: GIVE_GOLD from %s, invalid count %d (have %d).", info.name.c_str(), count, unit.gold);
 					StreamError();
 				}
 				else
@@ -4579,7 +4579,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int count;
 				if(!stream.Read(count))
 				{
-					ERROR(Format("Update server: Broken DROP_GOLD from %s.", info.name.c_str()));
+					Error("Update server: Broken DROP_GOLD from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(count > 0 && count <= unit.gold && unit.IsStanding() && unit.action == A_NONE)
@@ -4612,7 +4612,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					ERROR(Format("Update server: DROP_GOLD from %s, invalid count %d or busy.", info.name.c_str()));
+					Error("Update server: DROP_GOLD from %s, invalid count %d or busy.", info.name.c_str());
 					StreamError();
 				}
 			}
@@ -4623,17 +4623,17 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int count;
 				if(!stream.Read(count))
 				{
-					ERROR(Format("Update server: Broken PUT_GOLD from %s.", info.name.c_str()));
+					Error("Update server: Broken PUT_GOLD from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(count < 0 || count > unit.gold)
 				{
-					ERROR(Format("Update server: PUT_GOLD from %s, invalid count %d (have %d).", info.name.c_str(), count, unit.gold));
+					Error("Update server: PUT_GOLD from %s, invalid count %d (have %d).", info.name.c_str(), count, unit.gold);
 					StreamError();
 				}
 				else if(player.action != PlayerController::Action_LootChest && player.action != PlayerController::Action_LootUnit)
 				{
-					ERROR(Format("Update server: PUT_GOLD from %s, player is not trading.", info.name.c_str()));
+					Error("Update server: PUT_GOLD from %s, player is not trading.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -4649,22 +4649,22 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				byte location_index;
 				if(!stream.Read(location_index))
 				{
-					ERROR(Format("Update server: Broken CHEAT_TRAVEL from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_TRAVEL from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_TRAVEL without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_TRAVEL without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else if(!Team.IsLeader(unit))
 				{
-					ERROR(Format("Update server: CHEAT_TRAVEL from %s, player is not leader.", info.name.c_str()));
+					Error("Update server: CHEAT_TRAVEL from %s, player is not leader.", info.name.c_str());
 					StreamError();
 				}
 				else if(location_index >= locations.size() || !locations[location_index])
 				{
-					ERROR(Format("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index));
+					Error("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index);
 					StreamError();
 				}
 				else
@@ -4695,12 +4695,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR(Format("Update server: Broken CHEAT_HURT from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_HURT from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_HURT without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_HURT without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -4710,7 +4710,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						GiveDmg(GetContext(*target), nullptr, 100.f, *target);
 					else
 					{
-						ERROR(Format("Update server: CHEAT_HURT from %s, missing unit %d.", info.name.c_str(), netid));
+						Error("Update server: CHEAT_HURT from %s, missing unit %d.", info.name.c_str(), netid);
 						StreamError();
 					}
 				}
@@ -4722,12 +4722,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR(Format("Update server: Broken CHEAT_BREAK_ACTION from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_BREAK_ACTION from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_BREAK_ACTION without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_BREAK_ACTION without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -4737,7 +4737,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						BreakAction(*target, false, true);
 					else
 					{
-						ERROR(Format("Update server: CHEAT_BREAK_ACTION from %s, missing unit %d.", info.name.c_str(), netid));
+						Error("Update server: CHEAT_BREAK_ACTION from %s, missing unit %d.", info.name.c_str(), netid);
 						StreamError();
 					}
 				}
@@ -4749,12 +4749,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR(Format("Update server: Broken CHEAT_FALL from %s.", info.name.c_str()));
+					Error("Update server: Broken CHEAT_FALL from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					ERROR(Format("Update server: Player %s used CHEAT_FALL without devmode.", info.name.c_str()));
+					Error("Update server: Player %s used CHEAT_FALL without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -4764,7 +4764,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						UnitFall(*target);
 					else
 					{
-						ERROR(Format("Update server: CHEAT_FALL from %s, missing unit %d.", info.name.c_str(), netid));
+						Error("Update server: CHEAT_FALL from %s, missing unit %d.", info.name.c_str(), netid);
 						StreamError();
 					}
 				}
@@ -4776,7 +4776,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			break;
 		// invalid change
 		default:
-			ERROR(Format("Update server: Invalid change type %u from %s.", type, info.name.c_str()));
+			Error("Update server: Invalid change type %u from %s.", type, info.name.c_str());
 			StreamError();
 			break;
 		}
@@ -4784,7 +4784,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		byte checksum = 0;
 		if(!stream.Read(checksum) || checksum != 0xFF)
 		{
-			ERROR(Format("Update server: Invalid checksum from %s (%u).", info.name.c_str(), change_i));
+			Error("Update server: Invalid checksum from %s (%u).", info.name.c_str(), change_i);
 			StreamError();
 			return true;
 		}
@@ -4799,7 +4799,7 @@ void Game::WriteServerChanges(BitStream& stream)
 	// count
 	stream.WriteCasted<word>(net_changes.size());
 	if(net_changes.size() >= 0xFFFF)
-		ERROR(Format("Too many changes %d!", net_changes.size()));
+		Error("Too many changes %d!", net_changes.size());
 
 	// changes
 	for(NetChange& c : net_changes)
@@ -5168,7 +5168,7 @@ void Game::WriteServerChanges(BitStream& stream)
 			stream.Write(total_kills);
 			break;
 		default:
-			ERROR(Format("Update server: Unknown change %d.", c.type));
+			Error("Update server: Unknown change %d.", c.type);
 			assert(0);
 			break;
 		}
@@ -5344,7 +5344,7 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				stream.Write(c.ile);
 				break;
 			default:
-				ERROR(Format("Update server: Unknown player %s change %d.", info.name.c_str(), c.type));
+				Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
 				assert(0);
 				break;
 			}
@@ -5352,7 +5352,7 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 			stream.WriteCasted<byte>(0xFF);
 		}
 		if(changes > 0xFF)
-			ERROR(Format("Update server: Too many changes for player %s.", info.name.c_str()));
+			Error("Update server: Too many changes for player %s.", info.name.c_str());
 		PatchByteApply(stream, pos, changes);
 	}
 	if(IS_SET(info.update_flags, PlayerInfo::UF_GOLD))
@@ -5409,7 +5409,7 @@ void Game::UpdateClient(float dt)
 					text = txYouDisconnected;
 					text_eng = "Update client: You have been disconnected.";
 				}
-				LOG(text_eng);
+				Info(text_eng);
 				StreamEnd();
 				peer->DeallocatePacket(packet);
 				ExitToMenu();
@@ -5427,7 +5427,7 @@ void Game::UpdateClient(float dt)
 			break;
 		case ID_SERVER_CLOSE:
 			{
-				LOG("Update client: You have been kicked out.");
+				Info("Update client: You have been kicked out.");
 				StreamEnd();
 				peer->DeallocatePacket(packet);
 				ExitToMenu();
@@ -5440,7 +5440,7 @@ void Game::UpdateClient(float dt)
 				if(!stream.Read(loc)
 					|| !stream.Read(level))
 				{
-					ERROR("Update client: Broken ID_CHANGE_LEVEL.");
+					Error("Update client: Broken ID_CHANGE_LEVEL.");
 					StreamError();
 				}
 				else
@@ -5450,7 +5450,7 @@ void Game::UpdateClient(float dt)
 					current_location = loc;
 					location = locations[loc];
 					dungeon_level = level;
-					LOG(Format("Update client: Level change to %s (%d, level %d).", location->name.c_str(), current_location, dungeon_level));
+					Info("Update client: Level change to %s (%d, level %d).", location->name.c_str(), current_location, dungeon_level);
 					info_box->Show(txGeneratingLocation);
 					LeaveLevel();
 					net_mode = NM_TRANSFER;
@@ -5500,7 +5500,7 @@ void Game::UpdateClient(float dt)
 			}
 			break;
 		default:
-			WARN(Format("UpdateClient: Unknown packet from server: %u.", msg_id));
+			Warn("UpdateClient: Unknown packet from server: %u.", msg_id);
 			StreamError();
 			break;
 		}
@@ -5542,7 +5542,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 	word changes;
 	if(!stream.Read(changes))
 	{
-		ERROR("Update client: Broken ID_CHANGES.");
+		Error("Update client: Broken ID_CHANGES.");
 		StreamError();
 		return true;
 	}
@@ -5554,7 +5554,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		NetChange::TYPE type;
 		if(!stream.ReadCasted<byte>(type))
 		{
-			ERROR("Update client: Broken ID_CHANGES(2).");
+			Error("Update client: Broken ID_CHANGES(2).");
 			StreamError();
 			return true;
 		}
@@ -5576,7 +5576,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(ani_speed)
 					|| !stream.ReadCasted<byte>(ani))
 				{
-					ERROR("Update client: Broken UNIT_POS.");
+					Error("Update client: Broken UNIT_POS.");
 					StreamError();
 					break;
 				}
@@ -5584,7 +5584,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Unit* unit = FindUnit(netid);
 				if(!unit)
 				{
-					ERROR(Format("Update client: UNIT_POS, missing unit %d.", netid));
+					Error("Update client: UNIT_POS, missing unit %d.", netid);
 					StreamError();
 				}
 				else if(unit != pc->unit)
@@ -5610,12 +5610,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.ReadCasted<byte>(type)
 					|| ReadItemAndFind(stream, item) < 0)
 				{
-					ERROR("Update client: Broken CHANGE_EQUIPMENT.");
+					Error("Update client: Broken CHANGE_EQUIPMENT.");
 					StreamError();
 				}
 				else if(!IsValid(type))
 				{
-					ERROR(Format("Update client: CHANGE_EQUIPMENT, invalid slot %d.", type));
+					Error("Update client: CHANGE_EQUIPMENT, invalid slot %d.", type);
 					StreamError();
 				}
 				else
@@ -5623,7 +5623,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* target = FindUnit(netid);
 					if(!target)
 					{
-						ERROR(Format("Update client: CHANGE_EQUIPMENT, missing unit %d.", netid));
+						Error("Update client: CHANGE_EQUIPMENT, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -5641,7 +5641,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !ReadBool(stream, hide)
 					|| !stream.ReadCasted<byte>(type))
 				{
-					ERROR("Update client: Broken TAKE_WEAPON.");
+					Error("Update client: Broken TAKE_WEAPON.");
 					StreamError();
 				}
 				else
@@ -5649,7 +5649,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: TAKE_WEAPON, missing unit %d.", netid));
+						Error("Update client: TAKE_WEAPON, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(unit != pc->unit)
@@ -5671,7 +5671,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(typeflags)
 					|| !stream.Read(attack_speed))
 				{
-					ERROR("Update client: Broken ATTACK.");
+					Error("Update client: Broken ATTACK.");
 					StreamError();
 					break;
 				}
@@ -5679,7 +5679,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Unit* unit_ptr = FindUnit(netid);
 				if(!unit_ptr)
 				{
-					ERROR(Format("Update client: ATTACK, missing unit %d.", netid));
+					Error("Update client: ATTACK, missing unit %d.", netid);
 					StreamError();
 					break;
 				}
@@ -5794,7 +5794,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				byte flags;
 				if(!stream.Read(flags))
 				{
-					ERROR("Update client: Broken CHANGE_FLAGS.");
+					Error("Update client: Broken CHANGE_FLAGS.");
 					StreamError();
 				}
 				else
@@ -5814,7 +5814,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(hp)
 					|| !stream.Read(hpmax))
 				{
-					ERROR("Update client: Broken UPDATE_HP.");
+					Error("Update client: Broken UPDATE_HP.");
 					StreamError();
 				}
 				else
@@ -5822,7 +5822,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: UPDATE_HP, missing unit %d.", netid));
+						Error("Update client: UPDATE_HP, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(unit == pc->unit)
@@ -5850,7 +5850,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(type)
 					|| !stream.Read(pos))
 				{
-					ERROR("Update client: Broken SPAWN_BLOOD.");
+					Error("Update client: Broken SPAWN_BLOOD.");
 					StreamError();
 				}
 				else
@@ -5885,7 +5885,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken HURT_SOUND.");
+					Error("Update client: Broken HURT_SOUND.");
 					StreamError();
 				}
 				else
@@ -5893,7 +5893,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: HURT_SOUND, missing unit %d.", netid));
+						Error("Update client: HURT_SOUND, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(sound_volume)
@@ -5907,7 +5907,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken DIE.");
+					Error("Update client: Broken DIE.");
 					StreamError();
 				}
 				else
@@ -5915,7 +5915,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: DIE, missing unit %d.", netid));
+						Error("Update client: DIE, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -5929,7 +5929,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken FALL.");
+					Error("Update client: Broken FALL.");
 					StreamError();
 				}
 				else
@@ -5937,7 +5937,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: FALL, missing unit %d.", netid));
+						Error("Update client: FALL, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -5951,7 +5951,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken DROP_ITEM.");
+					Error("Update client: Broken DROP_ITEM.");
 					StreamError();
 				}
 				else
@@ -5959,7 +5959,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: DROP_ITEM, missing unit %d.", netid));
+						Error("Update client: DROP_ITEM, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(unit != pc->unit)
@@ -5977,7 +5977,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				GroundItem* item = new GroundItem;
 				if(!ReadItem(stream, *item))
 				{
-					ERROR("Update client: Broken SPAWN_ITEM.");
+					Error("Update client: Broken SPAWN_ITEM.");
 					StreamError();
 					delete item;
 				}
@@ -5993,7 +5993,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(netid)
 					|| !ReadBool(stream, up_animation))
 				{
-					ERROR("Update client: Broken PICKUP_ITEM.");
+					Error("Update client: Broken PICKUP_ITEM.");
 					StreamError();
 				}
 				else
@@ -6001,7 +6001,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: PICKUP_ITEM, missing unit %d.", netid));
+						Error("Update client: PICKUP_ITEM, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(unit != pc->unit)
@@ -6020,7 +6020,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken REMOVE_ITEM.");
+					Error("Update client: Broken REMOVE_ITEM.");
 					StreamError();
 				}
 				else
@@ -6029,7 +6029,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					GroundItem* item = FindItemNetid(netid, &ctx);
 					if(!item)
 					{
-						ERROR(Format("Update client: REMOVE_ITEM, missing ground item %d.", netid));
+						Error("Update client: REMOVE_ITEM, missing ground item %d.", netid);
 						StreamError();
 					}
 					else
@@ -6055,7 +6055,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| ReadItemAndFind(stream, item) <= 0
 					|| !ReadBool(stream, force))
 				{
-					ERROR("Update client: Broken CONSUME_ITEM.");
+					Error("Update client: Broken CONSUME_ITEM.");
 					StreamError();
 				}
 				else
@@ -6063,12 +6063,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: CONSUME_ITEM, missing unit %d.", netid));
+						Error("Update client: CONSUME_ITEM, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(item->type != IT_CONSUMABLE)
 					{
-						ERROR(Format("Update client: CONSUME_ITEM, %s is not consumable.", item->id.c_str()));
+						Error("Update client: CONSUME_ITEM, %s is not consumable.", item->id.c_str());
 						StreamError();
 					}
 					else if(unit != pc->unit || force)
@@ -6085,7 +6085,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.ReadCasted<byte>(mat1)
 					|| !stream.ReadCasted<byte>(mat2))
 				{
-					ERROR("Update client: Broken HIT_SOUND.");
+					Error("Update client: Broken HIT_SOUND.");
 					StreamError();
 				}
 				else if(sound_volume)
@@ -6098,7 +6098,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken STUNNED.");
+					Error("Update client: Broken STUNNED.");
 					StreamError();
 				}
 				else
@@ -6106,7 +6106,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: STUNNED, missing unit %d.", netid));
+						Error("Update client: STUNNED, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -6146,7 +6146,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(rotX)
 					|| !stream.Read(speed))
 				{
-					ERROR("Update client: Broken SHOOT_ARROW.");
+					Error("Update client: Broken SHOOT_ARROW.");
 					StreamError();
 				}
 				else
@@ -6159,7 +6159,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						owner = FindUnit(netid);
 						if(!owner)
 						{
-							ERROR(Format("Update client: SHOOT_ARROW, missing unit %d.", netid));
+							Error("Update client: SHOOT_ARROW, missing unit %d.", netid);
 							StreamError();
 							break;
 						}
@@ -6209,7 +6209,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				byte count;
 				if(!stream.Read(count))
 				{
-					ERROR("Update client: Broken UPDATE_CREDIT.");
+					Error("Update client: Broken UPDATE_CREDIT.");
 					StreamError();
 				}
 				else
@@ -6220,7 +6220,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						if(!stream.Read(netid)
 							|| !stream.Read(credit))
 						{
-							ERROR("Update client: Broken UPDATE_CREDIT(2).");
+							Error("Update client: Broken UPDATE_CREDIT(2).");
 							StreamError();
 						}
 						else
@@ -6228,7 +6228,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							Unit* unit = FindUnit(netid);
 							if(!unit)
 							{
-								ERROR(Format("Update client: UPDATE_CREDIT, missing unit %d.", netid));
+								Error("Update client: UPDATE_CREDIT, missing unit %d.", netid);
 								StreamError();
 							}
 							else
@@ -6251,7 +6251,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(netid)
 					|| !stream.Read(animation_index))
 				{
-					ERROR("Update client: Broken IDLE.");
+					Error("Update client: Broken IDLE.");
 					StreamError();
 				}
 				else
@@ -6259,12 +6259,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: IDLE, missing unit %d.", netid));
+						Error("Update client: IDLE, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(animation_index >= unit->data->idles->size())
 					{
-						ERROR(Format("Update client: IDLE, invalid animation index %u (count %u).", animation_index, unit->data->idles->size()));
+						Error("Update client: IDLE, invalid animation index %u (count %u).", animation_index, unit->data->idles->size());
 						StreamError();
 					}
 					else
@@ -6282,7 +6282,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken HELLO.");
+					Error("Update client: Broken HELLO.");
 					StreamError();
 				}
 				else
@@ -6290,7 +6290,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: BROKEN, missing unit %d.", netid));
+						Error("Update client: BROKEN, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -6316,7 +6316,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(skip_id)
 					|| !ReadString1(stream))
 				{
-					ERROR("Update client: Broken TALK.");
+					Error("Update client: Broken TALK.");
 					StreamError();
 				}
 				else
@@ -6324,7 +6324,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: TALK, missing unit %d.", netid));
+						Error("Update client: TALK, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -6362,7 +6362,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(location_index)
 					|| !stream.Read(state))
 				{
-					ERROR("Update client: Broken CHANGE_LOCATION_STATE.");
+					Error("Update client: Broken CHANGE_LOCATION_STATE.");
 					StreamError();
 				}
 				else
@@ -6372,7 +6372,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						loc = locations[location_index];
 					if(!loc)
 					{
-						ERROR(Format("Update client: CHANGE_LOCATION_STATE, missing location %u.", location_index));
+						Error("Update client: CHANGE_LOCATION_STATE, missing location %u.", location_index);
 						StreamError();
 					}
 					else
@@ -6389,7 +6389,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::ADD_RUMOR:
 			if(!ReadString1(stream))
 			{
-				ERROR("Update client: Broken ADD_RUMOR.");
+				Error("Update client: Broken ADD_RUMOR.");
 				StreamError();
 			}
 			else
@@ -6405,7 +6405,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken TELL_NAME.");
+					Error("Update client: Broken TELL_NAME.");
 					StreamError();
 				}
 				else
@@ -6413,12 +6413,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: TELL_NAME, missing unit %d.", netid));
+						Error("Update client: TELL_NAME, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(!unit->IsHero())
 					{
-						ERROR(Format("Update client: TELL_NAME, unit %d (%s) is not a hero.", netid, unit->data->id.c_str()));
+						Error("Update client: TELL_NAME, unit %d (%s) is not a hero.", netid, unit->data->id.c_str());
 						StreamError();
 					}
 					else
@@ -6434,7 +6434,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(netid)
 					|| !stream.Read(hair_color))
 				{
-					ERROR("Update client: Broken HAIR_COLOR.");
+					Error("Update client: Broken HAIR_COLOR.");
 					StreamError();
 				}
 				else
@@ -6442,12 +6442,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: HAIR_COLOR, missing unit %d.", netid));
+						Error("Update client: HAIR_COLOR, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(unit->type != Unit::HUMAN)
 					{
-						ERROR(Format("Update client: HAIR_COLOR, unit %d (%s) is not human.", netid, unit->data->id.c_str()));
+						Error("Update client: HAIR_COLOR, unit %d (%s) is not human.", netid, unit->data->id.c_str());
 						StreamError();
 					}
 					else
@@ -6468,7 +6468,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(pos)
 					|| !stream.Read(rot))
 				{
-					ERROR("Update client: Broken WARP.");
+					Error("Update client: Broken WARP.");
 					StreamError();
 					break;
 				}
@@ -6476,7 +6476,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Unit* unit = FindUnit(netid);
 				if(!unit)
 				{
-					ERROR(Format("Update client: WARP, missing unit %d.", netid));
+					Error("Update client: WARP, missing unit %d.", netid);
 					StreamError();
 					break;
 				}
@@ -6529,7 +6529,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::REGISTER_ITEM:
 			if(!ReadString1(stream))
 			{
-				ERROR("Update client: Broken REGISTER_ITEM.");
+				Error("Update client: Broken REGISTER_ITEM.");
 				StreamError();
 			}
 			else
@@ -6538,14 +6538,14 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				base = FindItem(BUF);
 				if(!base)
 				{
-					ERROR(Format("Update client: REGISTER_ITEM, missing base item %s.", BUF));
+					Error("Update client: REGISTER_ITEM, missing base item %s.", BUF);
 					StreamError();
 					if(!SkipString1(stream) // id
 						|| !SkipString1(stream) // name
 						|| !SkipString1(stream) // desc
 						|| !Skip(stream, sizeof(int))) // refid
 					{
-						ERROR("Update client: Broken REGISTER_ITEM(2).");
+						Error("Update client: Broken REGISTER_ITEM(2).");
 					}
 				}
 				else
@@ -6556,7 +6556,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						|| !ReadString1(stream, item->desc)
 						|| !stream.Read(item->refid))
 					{
-						ERROR("Update client: Broken REGISTER_ITEM(3).");
+						Error("Update client: Broken REGISTER_ITEM(3).");
 						StreamError();
 					}
 					else
@@ -6574,7 +6574,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(refid)
 					|| !ReadString1(stream))
 				{
-					ERROR(Format("Update client: Broken %s.", name));
+					Error("Update client: Broken %s.", name);
 					StreamError();
 					break;
 				}
@@ -6590,7 +6590,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!ReadString2(stream, quest->msgs[0])
 					|| !ReadString2(stream, quest->msgs[1]))
 				{
-					ERROR(Format("Update client: Broken %s(2).", name));
+					Error("Update client: Broken %s(2).", name);
 					StreamError();
 					delete quest;
 					break;
@@ -6614,7 +6614,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(state)
 					|| !ReadString2(stream, g_tmp_string))
 				{
-					ERROR("Update client: Broken UPDATE_QUEST.");
+					Error("Update client: Broken UPDATE_QUEST.");
 					StreamError();
 					break;
 				}
@@ -6622,7 +6622,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Quest* quest = QuestManager::Get().FindQuest(refid, false);
 				if(!quest)
 				{
-					ERROR(Format("Update client: UPDATE_QUEST, missing quest %d.", refid));
+					Error("Update client: UPDATE_QUEST, missing quest %d.", refid);
 					StreamError();
 				}
 				else
@@ -6641,7 +6641,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(refid)
 					|| !ReadString1(stream))
 				{
-					ERROR("Update client: Broken RENAME_ITEM.");
+					Error("Update client: Broken RENAME_ITEM.");
 					StreamError();
 				}
 				else
@@ -6653,7 +6653,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						{
 							if(!ReadString1(stream, item->name))
 							{
-								ERROR("Update client: Broken RENAME_ITEM(2).");
+								Error("Update client: Broken RENAME_ITEM(2).");
 								StreamError();
 							}
 							found = true;
@@ -6662,7 +6662,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					if(!found)
 					{
-						ERROR(Format("Update client: RENAME_ITEM, missing quest item %d.", refid));
+						Error("Update client: RENAME_ITEM, missing quest item %d.", refid);
 						StreamError();
 						SkipString1(stream);
 					}
@@ -6678,7 +6678,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(state)
 					|| !stream.Read(count))
 				{
-					ERROR("Update client: Broken UPDATE_QUEST_MULTI.");
+					Error("Update client: Broken UPDATE_QUEST_MULTI.");
 					StreamError();
 					break;
 				}
@@ -6686,10 +6686,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Quest* quest = QuestManager::Get().FindQuest(refid, false);
 				if(!quest)
 				{
-					ERROR(Format("Update client: UPDATE_QUEST_MULTI, missing quest %d.", refid));
+					Error("Update client: UPDATE_QUEST_MULTI, missing quest %d.", refid);
 					StreamError();
 					if(!SkipStringArray<byte, byte>(stream))
-						ERROR("Update client: Broken UPDATE_QUEST_MULTI(2).");
+						Error("Update client: Broken UPDATE_QUEST_MULTI(2).");
 				}
 				else
 				{
@@ -6698,7 +6698,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						if(!ReadString2(stream, Add1(quest->msgs)))
 						{
-							ERROR(Format("Update client: Broken UPDATE_QUEST_MULTI(3) on index %u.", i));
+							Error("Update client: Broken UPDATE_QUEST_MULTI(3) on index %u.", i);
 							StreamError();
 							quest->msgs.pop_back();
 							break;
@@ -6715,7 +6715,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				byte id;
 				if(!stream.Read(id))
 				{
-					ERROR("Update client: Broken CHANGE_LEADER.");
+					Error("Update client: Broken CHANGE_LEADER.");
 					StreamError();
 				}
 				else
@@ -6737,7 +6737,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						ERROR(Format("Update client: CHANGE_LEADER, missing player %u.", id));
+						Error("Update client: CHANGE_LEADER, missing player %u.", id);
 						StreamError();
 					}
 				}
@@ -6750,7 +6750,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(player_id)
 					|| !stream.Read(number))
 				{
-					ERROR("Update client: Broken RANDOM_NUMBER.");
+					Error("Update client: Broken RANDOM_NUMBER.");
 					StreamError();
 				}
 				else if(player_id != my_id)
@@ -6760,7 +6760,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						AddMsg(Format(txRolledNumber, info->name.c_str(), number));
 					else
 					{
-						ERROR(Format("Update client: RANDOM_NUMBER, missing player %u.", player_id));
+						Error("Update client: RANDOM_NUMBER, missing player %u.", player_id);
 						StreamError();
 					}
 				}
@@ -6773,7 +6773,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(player_id)
 					|| !stream.Read(reason))
 				{
-					ERROR("Update client: Broken REMOVE_PLAYER.");
+					Error("Update client: Broken REMOVE_PLAYER.");
 					StreamError();
 				}
 				else
@@ -6781,7 +6781,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					PlayerInfo* info = GetPlayerInfoTry(player_id);
 					if(!info)
 					{
-						ERROR(Format("Update client: REMOVE_PLAYER, missing player %u.", player_id));
+						Error("Update client: REMOVE_PLAYER, missing player %u.", player_id);
 						StreamError();
 					}
 					else
@@ -6828,7 +6828,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(useable_netid)
 					|| !stream.Read(state))
 				{
-					ERROR("Update client: Broken USE_USEABLE.");
+					Error("Update client: Broken USE_USEABLE.");
 					StreamError();
 					break;
 				}
@@ -6836,7 +6836,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Unit* unit = FindUnit(netid);
 				if(!unit)
 				{
-					ERROR(Format("Update client: USE_USEABLE, missing unit %d.", netid));
+					Error("Update client: USE_USEABLE, missing unit %d.", netid);
 					StreamError();
 					break;
 				}
@@ -6844,7 +6844,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Useable* useable = FindUseable(useable_netid);
 				if(!useable)
 				{
-					ERROR(Format("Update client: USE_USEABLE, missing useable %d.", useable_netid));
+					Error("Update client: USE_USEABLE, missing useable %d.", useable_netid);
 					StreamError();
 					break;
 				}
@@ -6892,7 +6892,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken STAND_UP.");
+					Error("Update client: Broken STAND_UP.");
 					StreamError();
 				}
 				else
@@ -6900,7 +6900,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: STAND_UP, missing unit %d.", netid));
+						Error("Update client: STAND_UP, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -6910,7 +6910,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			break;
 		// game over
 		case NetChange::GAME_OVER:
-			LOG("Update client: Game over - all players died.");
+			Info("Update client: Game over - all players died.");
 			SetMusic(MusicType::Death);
 			CloseAllPanels(true);
 			++death_screen;
@@ -6926,7 +6926,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(netid)
 					|| !ReadBool(stream, free))
 				{
-					ERROR("Update client: Broken RECRUIT_NPC.");
+					Error("Update client: Broken RECRUIT_NPC.");
 					StreamError();
 				}
 				else
@@ -6934,12 +6934,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: RECRUIT_NPC, missing unit %d.", netid));
+						Error("Update client: RECRUIT_NPC, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(!unit->IsHero())
 					{
-						ERROR(Format("Update client: RECRUIT_NPC, unit %d (%s) is not a hero.", netid, unit->data->id.c_str()));
+						Error("Update client: RECRUIT_NPC, unit %d (%s) is not a hero.", netid, unit->data->id.c_str());
 						StreamError();
 					}
 					else
@@ -6962,7 +6962,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken KICK_NPC.");
+					Error("Update client: Broken KICK_NPC.");
 					StreamError();
 				}
 				else
@@ -6970,12 +6970,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: KICK_NPC, missing unit %d.", netid));
+						Error("Update client: KICK_NPC, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(!unit->IsHero() || !unit->hero->team_member)
 					{
-						ERROR(Format("Update client: KICK_NPC, unit %d (%s) is not a team member.", netid, unit->data->id.c_str()));
+						Error("Update client: KICK_NPC, unit %d (%s) is not a team member.", netid, unit->data->id.c_str());
 						StreamError();
 					}
 					else
@@ -6996,7 +6996,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken REMOVE_UNIT.");
+					Error("Update client: Broken REMOVE_UNIT.");
 					StreamError();
 				}
 				else
@@ -7004,7 +7004,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: REMOVE_UNIT, missing unit %d.", netid));
+						Error("Update client: REMOVE_UNIT, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -7021,7 +7021,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Unit* unit = new Unit;
 				if(!ReadUnit(stream, *unit))
 				{
-					ERROR("Update client: Broken SPAWN_UNIT.");
+					Error("Update client: Broken SPAWN_UNIT.");
 					StreamError();
 					delete unit;
 				}
@@ -7041,7 +7041,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(netid)
 					|| !stream.Read(state))
 				{
-					ERROR("Update client: Broken CHANGE_ARENA_STATE.");
+					Error("Update client: Broken CHANGE_ARENA_STATE.");
 					StreamError();
 				}
 				else
@@ -7049,7 +7049,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: CHANGE_ARENA_STATE, missing unit %d.", netid));
+						Error("Update client: CHANGE_ARENA_STATE, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -7067,7 +7067,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				byte type;
 				if(!stream.Read(type))
 				{
-					ERROR("Update client: Broken ARENA_SOUND.");
+					Error("Update client: Broken ARENA_SOUND.");
 					StreamError();
 				}
 				else if(sound_volume && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && GetArena()->ctx.building_id == pc->unit->in_building)
@@ -7089,7 +7089,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken SHOUT.");
+					Error("Update client: Broken SHOUT.");
 					StreamError();
 				}
 				else
@@ -7097,7 +7097,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: SHOUT, missing unit %d.", netid));
+						Error("Update client: SHOUT, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(sound_volume)
@@ -7121,7 +7121,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				byte loc;
 				if(!stream.Read(loc))
 				{
-					ERROR("Update client: Broken TRAVEL.");
+					Error("Update client: Broken TRAVEL.");
 					StreamError();
 				}
 				else
@@ -7155,7 +7155,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(new_month)
 					|| !stream.Read(new_year))
 				{
-					ERROR("Update client: Broken WORLD_TIME.");
+					Error("Update client: Broken WORLD_TIME.");
 					StreamError();
 				}
 				else
@@ -7175,7 +7175,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(netid)
 					|| !ReadBool(stream, is_closing))
 				{
-					ERROR("Update client: Broken USE_DOOR.");
+					Error("Update client: Broken USE_DOOR.");
 					StreamError();
 				}
 				else
@@ -7183,7 +7183,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Door* door = FindDoor(netid);
 					if(!door)
 					{
-						ERROR(Format("Update client: USE_DOOR, missing door %d.", netid));
+						Error("Update client: USE_DOOR, missing door %d.", netid);
 						StreamError();
 					}
 					else
@@ -7262,7 +7262,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken CHEST_OPEN.");
+					Error("Update client: Broken CHEST_OPEN.");
 					StreamError();
 				}
 				else
@@ -7270,7 +7270,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Chest* chest = FindChest(netid);
 					if(!chest)
 					{
-						ERROR(Format("Update client: CHEST_OPEN, missing chest %d.", netid));
+						Error("Update client: CHEST_OPEN, missing chest %d.", netid);
 						StreamError();
 					}
 					else
@@ -7292,7 +7292,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken CHEST_CLOSE.");
+					Error("Update client: Broken CHEST_CLOSE.");
 					StreamError();
 				}
 				else
@@ -7300,7 +7300,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Chest* chest = FindChest(netid);
 					if(!chest)
 					{
-						ERROR(Format("Update client: CHEST_CLOSE, missing chest %d.", netid));
+						Error("Update client: CHEST_CLOSE, missing chest %d.", netid);
 						StreamError();
 					}
 					else
@@ -7323,7 +7323,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!ReadString1(stream)
 					|| !stream.Read(pos))
 				{
-					ERROR("Update client: Broken CREATE_EXPLOSION.");
+					Error("Update client: Broken CREATE_EXPLOSION.");
 					StreamError();
 					break;
 				}
@@ -7331,7 +7331,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Spell* spell_ptr = FindSpell(BUF);
 				if(!spell_ptr)
 				{
-					ERROR(Format("Update client: CREATE_EXPLOSION, missing spell '%s'.", BUF));
+					Error("Update client: CREATE_EXPLOSION, missing spell '%s'.", BUF);
 					StreamError();
 					break;
 				}
@@ -7339,7 +7339,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Spell& spell = *spell_ptr;
 				if(!IS_SET(spell.flags, Spell::Explode))
 				{
-					ERROR(Format("Update client: CREATE_EXPLOSION, spell '%s' is not explosion.", BUF));
+					Error("Update client: CREATE_EXPLOSION, spell '%s' is not explosion.", BUF);
 					StreamError();
 					break;
 				}
@@ -7363,12 +7363,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken REMOVE_TRAP.");
+					Error("Update client: Broken REMOVE_TRAP.");
 					StreamError();
 				}
 				else if(!RemoveTrap(netid))
 				{
-					ERROR(Format("Update client: REMOVE_TRAP, missing trap %d.", netid));
+					Error("Update client: REMOVE_TRAP, missing trap %d.", netid);
 					StreamError();
 				}
 			}
@@ -7379,7 +7379,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken TRIGGER_TRAP.");
+					Error("Update client: Broken TRIGGER_TRAP.");
 					StreamError();
 				}
 				else
@@ -7389,7 +7389,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						trap->trigger = true;
 					else
 					{
-						ERROR(Format("Update client: TRIGGER_TRAP, missing trap %d.", netid));
+						Error("Update client: TRIGGER_TRAP, missing trap %d.", netid);
 						StreamError();
 					}
 				}
@@ -7404,7 +7404,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::ENCOUNTER:
 			if(!ReadString1(stream))
 			{
-				ERROR("Update client: Broken ENCOUNTER.");
+				Error("Update client: Broken ENCOUNTER.");
 				StreamError();
 			}
 			else
@@ -7444,7 +7444,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			}
 			else
 			{
-				ERROR("Update client: CLOSE_PORTAL, missing portal.");
+				Error("Update client: CLOSE_PORTAL, missing portal.");
 				StreamError();
 			}
 			break;
@@ -7490,7 +7490,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(location_index)
 					|| !stream.ReadCasted<byte>(type))
 				{
-					ERROR("Update client: Broken ADD_LOCATION.");
+					Error("Update client: Broken ADD_LOCATION.");
 					StreamError();
 					break;
 				}
@@ -7501,7 +7501,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					byte levels;
 					if(!stream.Read(levels))
 					{
-						ERROR("Update client: Broken ADD_LOCATION(2).");
+						Error("Update client: Broken ADD_LOCATION(2).");
 						StreamError();
 						break;
 					}
@@ -7521,7 +7521,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !ReadString1(stream, loc->name)
 					|| !stream.ReadCasted<byte>(loc->image))
 				{
-					ERROR("Update client: Broken ADD_LOCATION(3).");
+					Error("Update client: Broken ADD_LOCATION(3).");
 					StreamError();
 					delete loc;
 					break;
@@ -7538,12 +7538,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				byte camp_index;
 				if(!stream.Read(camp_index))
 				{
-					ERROR("Update client: Broken REMOVE_CAMP.");
+					Error("Update client: Broken REMOVE_CAMP.");
 					StreamError();
 				}
 				else if(camp_index >= locations.size() || !locations[camp_index] || locations[camp_index]->type != L_CAMP)
 				{
-					ERROR(Format("Update client: REMOVE_CAMP, invalid location %u.", camp_index));
+					Error("Update client: REMOVE_CAMP, invalid location %u.", camp_index);
 					StreamError();
 				}
 				else
@@ -7564,7 +7564,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(netid)
 					|| !stream.Read(mode))
 				{
-					ERROR("Update client: Broken CHANGE_AI_MODE.");
+					Error("Update client: Broken CHANGE_AI_MODE.");
 					StreamError();
 				}
 				else
@@ -7572,7 +7572,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: CHANGE_AI_MODE, missing unit %d.", netid));
+						Error("Update client: CHANGE_AI_MODE, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -7587,7 +7587,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(netid)
 					|| !ReadString1(stream))
 				{
-					ERROR("Update client: Broken CHANGE_UNIT_BASE.");
+					Error("Update client: Broken CHANGE_UNIT_BASE.");
 					StreamError();
 				}
 				else
@@ -7598,12 +7598,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit->data = ud;
 					else if(!unit)
 					{
-						ERROR(Format("Update client: CHANGE_UNIT_BASE, missing unit %d.", netid));
+						Error("Update client: CHANGE_UNIT_BASE, missing unit %d.", netid);
 						StreamError();
 					}
 					else
 					{
-						ERROR(Format("Update client: CHANGE_UNIT_BASE, missing base unit '%s'.", BUF));
+						Error("Update client: CHANGE_UNIT_BASE, missing base unit '%s'.", BUF);
 						StreamError();
 					}
 				}
@@ -7617,7 +7617,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(netid)
 					|| !stream.Read(attack_id))
 				{
-					ERROR("Update client: Broken CAST_SPELL.");
+					Error("Update client: Broken CAST_SPELL.");
 					StreamError();
 				}
 				else
@@ -7625,7 +7625,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: CAST_SPELL, missing unit %d.", netid));
+						Error("Update client: CAST_SPELL, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -7662,7 +7662,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(speedY)
 					|| !stream.Read(netid))
 				{
-					ERROR("Update client: Broken CREATE_SPELL_BALL.");
+					Error("Update client: Broken CREATE_SPELL_BALL.");
 					StreamError();
 					break;
 				}
@@ -7670,7 +7670,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Spell* spell_ptr = FindSpell(BUF);
 				if(!spell_ptr)
 				{
-					ERROR(Format("Update client: CREATE_SPELL_BALL, missing spell '%s'.", BUF));
+					Error("Update client: CREATE_SPELL_BALL, missing spell '%s'.", BUF);
 					StreamError();
 					break;
 				}
@@ -7683,7 +7683,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: CREATE_SPELL_BALL, missing unit %d.", netid));
+						Error("Update client: CREATE_SPELL_BALL, missing unit %d.", netid);
 						StreamError();
 					}
 				}
@@ -7743,7 +7743,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!ReadString1(stream)
 					|| !stream.Read(pos))
 				{
-					ERROR("Update client: Broken SPELL_SOUND.");
+					Error("Update client: Broken SPELL_SOUND.");
 					StreamError();
 					break;
 				}
@@ -7751,7 +7751,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Spell* spell_ptr = FindSpell(BUF);
 				if(!spell_ptr)
 				{
-					ERROR(Format("Update client: SPELL_SOUND, missing spell '%s'.", BUF));
+					Error("Update client: SPELL_SOUND, missing spell '%s'.", BUF);
 					StreamError();
 					break;
 				}
@@ -7769,7 +7769,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken CREATE_DRAIN.");
+					Error("Update client: Broken CREATE_DRAIN.");
 					StreamError();
 				}
 				else
@@ -7777,7 +7777,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: CREATE_DRAIN, missing unit %d.", netid));
+						Error("Update client: CREATE_DRAIN, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -7785,7 +7785,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						LevelContext& ctx = GetContext(*unit);
 						if(ctx.pes->empty())
 						{
-							ERROR("Update client: CREATE_DRAIN, missing blood.");
+							Error("Update client: CREATE_DRAIN, missing blood.");
 							StreamError();
 						}
 						else
@@ -7812,7 +7812,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(p1)
 					|| !stream.Read(p2))
 				{
-					ERROR("Update client: Broken CREATE_ELECTRO.");
+					Error("Update client: Broken CREATE_ELECTRO.");
 					StreamError();
 				}
 				else
@@ -7835,7 +7835,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(netid)
 					|| !stream.Read(pos))
 				{
-					ERROR("Update client: Broken UPDATE_ELECTRO.");
+					Error("Update client: Broken UPDATE_ELECTRO.");
 					StreamError();
 				}
 				else
@@ -7843,7 +7843,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Electro* e = FindElectro(netid);
 					if(!e)
 					{
-						ERROR(Format("Update client: UPDATE_ELECTRO, missing electro %d.", netid));
+						Error("Update client: UPDATE_ELECTRO, missing electro %d.", netid);
 						StreamError();
 					}
 					else
@@ -7860,7 +7860,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Vec3 pos;
 				if(!stream.Read(pos))
 				{
-					ERROR("Update client: Broken ELECTRO_HIT.");
+					Error("Update client: Broken ELECTRO_HIT.");
 					StreamError();
 				}
 				else
@@ -7906,7 +7906,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Vec3 pos;
 				if(!stream.Read(pos))
 				{
-					ERROR("Update client: Broken RAISE_EFFECT.");
+					Error("Update client: Broken RAISE_EFFECT.");
 					StreamError();
 				}
 				else
@@ -7944,7 +7944,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Vec3 pos;
 				if(!stream.Read(pos))
 				{
-					ERROR("Update client: Broken HEAL_EFFECT.");
+					Error("Update client: Broken HEAL_EFFECT.");
 					StreamError();
 				}
 				else
@@ -7987,7 +7987,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(count)
 					|| !EnsureSize(stream, count * sizeof(byte) * 2))
 				{
-					ERROR("Update client: Broken REVEAL_MINIMAP.");
+					Error("Update client: Broken REVEAL_MINIMAP.");
 					StreamError();
 				}
 				else
@@ -8008,7 +8008,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				bool state;
 				if(!ReadBool(stream, state))
 				{
-					ERROR("Update client: Broken CHEAT_NOAI.");
+					Error("Update client: Broken CHEAT_NOAI.");
 					StreamError();
 				}
 				else
@@ -8017,7 +8017,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			break;
 		// end of game, time run out
 		case NetChange::END_OF_GAME:
-			LOG("Update client: Game over - time run out.");
+			Info("Update client: Game over - time run out.");
 			CloseAllPanels(true);
 			koniec_gry = true;
 			death_fade = 0.f;
@@ -8030,7 +8030,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!stream.Read(count)
 					|| !EnsureSize(stream, sizeof(int) * 2 * count))
 				{
-					ERROR("Update client: Broken UPDATE_FREE_DAYS.");
+					Error("Update client: Broken UPDATE_FREE_DAYS.");
 					StreamError();
 				}
 				else
@@ -8044,7 +8044,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Unit* unit = FindUnit(netid);
 						if(!unit || !unit->IsPlayer())
 						{
-							ERROR(Format("Update client: UPDATE_FREE_DAYS, missing unit %d or is not a player (0x%p).", netid, unit));
+							Error("Update client: UPDATE_FREE_DAYS, missing unit %d or is not a player (0x%p).", netid, unit);
 							StreamError();
 							Skip(stream, sizeof(int) * 2 * (count - i - 1));
 							break;
@@ -8059,7 +8059,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::CHANGE_MP_VARS:
 			if(!ReadNetVars(stream))
 			{
-				ERROR("Update client: Broken CHANGE_MP_VARS.");
+				Error("Update client: Broken CHANGE_MP_VARS.");
 				StreamError();
 			}
 			break;
@@ -8073,7 +8073,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken HERO_LEAVE.");
+					Error("Update client: Broken HERO_LEAVE.");
 					StreamError();
 				}
 				else
@@ -8081,7 +8081,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: HERO_LEAVE, missing unit %d.", netid));
+						Error("Update client: HERO_LEAVE, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -8095,7 +8095,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				bool is_paused;
 				if(!ReadBool(stream, is_paused))
 				{
-					ERROR("Update client: Broken PAUSED.");
+					Error("Update client: Broken PAUSED.");
 					StreamError();
 				}
 				else
@@ -8109,7 +8109,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::SECRET_TEXT:
 			if(!ReadString1(stream))
 			{
-				ERROR("Update client: Broken SECRET_TEXT.");
+				Error("Update client: Broken SECRET_TEXT.");
 				StreamError();
 			}
 			else
@@ -8121,7 +8121,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Vec2 pos;
 				if(!stream.Read(pos))
 				{
-					ERROR("Update client: Broken UPDATE_MAP_POS.");
+					Error("Update client: Broken UPDATE_MAP_POS.");
 					StreamError();
 				}
 				else
@@ -8134,12 +8134,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				byte location_index;
 				if(!stream.Read(location_index))
 				{
-					ERROR("Update client: Broken CHEAT_TRAVEL.");
+					Error("Update client: Broken CHEAT_TRAVEL.");
 					StreamError();
 				}
 				else if(location_index >= locations.size() || !locations[location_index])
 				{
-					ERROR(Format("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index));
+					Error("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index);
 					StreamError();
 				}
 				else
@@ -8163,7 +8163,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken REMOVE_USED_ITEM.");
+					Error("Update client: Broken REMOVE_USED_ITEM.");
 					StreamError();
 				}
 				else
@@ -8171,7 +8171,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: REMOVE_USED_ITEM, missing unit %d.", netid));
+						Error("Update client: REMOVE_USED_ITEM, missing unit %d.", netid);
 						StreamError();
 					}
 					else
@@ -8183,7 +8183,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::GAME_STATS:
 			if(!stream.Read(total_kills))
 			{
-				ERROR("Update client: Broken GAME_STATS.");
+				Error("Update client: Broken GAME_STATS.");
 				StreamError();
 			}
 			break;
@@ -8193,7 +8193,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken USEABLE_SOUND.");
+					Error("Update client: Broken USEABLE_SOUND.");
 					StreamError();
 				}
 				else
@@ -8201,12 +8201,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						ERROR(Format("Update client: USEABLE_SOUND, missing unit %d.", netid));
+						Error("Update client: USEABLE_SOUND, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(!unit->useable)
 					{
-						ERROR(Format("Update client: USEABLE_SOUND, unit %d (%s) don't use useable.", netid, unit->data->id.c_str()));
+						Error("Update client: USEABLE_SOUND, unit %d (%s) don't use useable.", netid, unit->data->id.c_str());
 						StreamError();
 					}
 					else if(sound_volume && unit != pc->unit)
@@ -8224,7 +8224,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid;
 				if(!stream.Read(netid))
 				{
-					ERROR("Update client: Broken BREAK_ACTION.");
+					Error("Update client: Broken BREAK_ACTION.");
 					StreamError();
 				}
 				else
@@ -8234,7 +8234,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						BreakAction(*unit);
 					else
 					{
-						ERROR(Format("Update client: BREAK_ACTION, missing unit %d.", netid));
+						Error("Update client: BREAK_ACTION, missing unit %d.", netid);
 						StreamError();
 					}
 				}
@@ -8242,7 +8242,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			break;
 		// invalid change
 		default:
-			WARN(Format("Update client: Unknown change type %d.", type));
+			Warn("Update client: Unknown change type %d.", type);
 			StreamError();
 			break;
 		}
@@ -8250,7 +8250,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		byte checksum = 0;
 		if(!stream.Read(checksum) || checksum != 0xFF)
 		{
-			ERROR(Format("Update client: Invalid checksum (%u).", change_i));
+			Error("Update client: Invalid checksum (%u).", change_i);
 			StreamError();
 			return true;
 		}
@@ -8266,7 +8266,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 	byte flags;
 	if(!stream.Read(flags))
 	{
-		ERROR("Update single client: Broken ID_PLAYER_UPDATE.");
+		Error("Update single client: Broken ID_PLAYER_UPDATE.");
 		StreamError();
 		return true;
 	}
@@ -8276,7 +8276,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 	{
 		if(!stream.Read(pc->last_dmg_poison))
 		{
-			ERROR("Update single client: Broken ID_PLAYER_UPDATE at UF_POISON_DAMAGE.");
+			Error("Update single client: Broken ID_PLAYER_UPDATE at UF_POISON_DAMAGE.");
 			StreamError();
 			return true;
 		}
@@ -8288,7 +8288,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 		byte changes;
 		if(!stream.Read(changes))
 		{
-			ERROR("Update single client: Broken ID_PLAYER_UPDATE at UF_NET_CHANGES.");
+			Error("Update single client: Broken ID_PLAYER_UPDATE at UF_NET_CHANGES.");
 			StreamError();
 			return true;
 		}
@@ -8298,7 +8298,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			NetChangePlayer::TYPE type;
 			if(!stream.ReadCasted<byte>(type))
 			{
-				ERROR("Update single client: Broken ID_PLAYER_UPDATE at UF_NET_CHANGES(2).");
+				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_NET_CHANGES(2).");
 				StreamError();
 				return true;
 			}
@@ -8312,7 +8312,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					if(!stream.Read(count)
 						|| !stream.Read(team_count))
 					{
-						ERROR("Update single client: Broken PICKUP.");
+						Error("Update single client: Broken PICKUP.");
 						StreamError();
 					}
 					else
@@ -8332,7 +8332,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					bool can_loot;
 					if(!ReadBool(stream, can_loot))
 					{
-						ERROR("Update single client: Broken LOOT.");
+						Error("Update single client: Broken LOOT.");
 						StreamError();
 						break;
 					}
@@ -8347,7 +8347,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					// read items
 					if(!ReadItemListTeam(stream, *pc->chest_trade))
 					{
-						ERROR("Update single client: Broken LOOT(2).");
+						Error("Update single client: Broken LOOT(2).");
 						StreamError();
 						break;
 					}
@@ -8367,7 +8367,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					if(!ReadBool(stream, default_msg)
 						|| !stream.Read(count))
 					{
-						ERROR("Update single client: Broken GOLD_MSG.");
+						Error("Update single client: Broken GOLD_MSG.");
 						StreamError();
 					}
 					else
@@ -8385,7 +8385,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					int netid;
 					if(!stream.Read(netid))
 					{
-						ERROR("Update single client: Broken START_DIALOG.");
+						Error("Update single client: Broken START_DIALOG.");
 						StreamError();
 					}
 					else if(netid == -1)
@@ -8400,7 +8400,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						Unit* unit = FindUnit(netid);
 						if(!unit)
 						{
-							ERROR(Format("Update single client: START_DIALOG, missing unit %d.", netid));
+							Error("Update single client: START_DIALOG, missing unit %d.", netid);
 							StreamError();
 						}
 						else
@@ -8436,7 +8436,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						|| !stream.Read(escape)
 						|| !EnsureSize(stream, count))
 					{
-						ERROR("Update single client: Broken SHOW_DIALOG_CHOICES.");
+						Error("Update single client: Broken SHOW_DIALOG_CHOICES.");
 						StreamError();
 					}
 					else
@@ -8449,7 +8449,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						{
 							if(!ReadString1(stream, dialog_choices[i]))
 							{
-								ERROR(Format("Update single client: Broken SHOW_DIALOG_CHOICES at %u index.", i));
+								Error("Update single client: Broken SHOW_DIALOG_CHOICES at %u index.", i);
 								StreamError();
 								break;
 							}
@@ -8472,7 +8472,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					if(!stream.Read(netid)
 						|| !ReadItemList(stream, chest_trade))
 					{
-						ERROR("Update single client: Broken START_TRADE.");
+						Error("Update single client: Broken START_TRADE.");
 						StreamError();
 						break;
 					}
@@ -8480,7 +8480,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					Unit* trader = FindUnit(netid);
 					if(!trader)
 					{
-						ERROR(Format("Update single client: START_TRADE, missing unit %d.", netid));
+						Error("Update single client: START_TRADE, missing unit %d.", netid);
 						StreamError();
 						break;
 					}
@@ -8510,12 +8510,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						|| !stream.Read(count)
 						|| ReadItemAndFind(stream, item) <= 0)
 					{
-						ERROR("Update single client: Broken ADD_ITEMS.");
+						Error("Update single client: Broken ADD_ITEMS.");
 						StreamError();
 					}
 					else if(count <= 0 || team_count > count)
 					{
-						ERROR(Format("Update single client: ADD_ITEMS, invalid count %d or team count %d.", count, team_count));
+						Error("Update single client: ADD_ITEMS, invalid count %d or team count %d.", count, team_count);
 						StreamError();
 					}
 					else
@@ -8532,12 +8532,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						|| !stream.Read(team_count)
 						|| ReadItemAndFind(stream, item) <= 0)
 					{
-						ERROR("Update single client: Broken ADD_ITEMS_TRADER.");
+						Error("Update single client: Broken ADD_ITEMS_TRADER.");
 						StreamError();
 					}
 					else if(count <= 0 || team_count > count)
 					{
-						ERROR(Format("Update single client: ADD_ITEMS_TRADER, invalid count %d or team count %d.", count, team_count));
+						Error("Update single client: ADD_ITEMS_TRADER, invalid count %d or team count %d.", count, team_count);
 						StreamError();
 					}
 					else
@@ -8545,12 +8545,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						Unit* unit = FindUnit(netid);
 						if(!unit)
 						{
-							ERROR(Format("Update single client: ADD_ITEMS_TRADER, missing unit %d.", netid));
+							Error("Update single client: ADD_ITEMS_TRADER, missing unit %d.", netid);
 							StreamError();
 						}
 						else if(!pc->IsTradingWith(unit))
 						{
-							ERROR(Format("Update single client: ADD_ITEMS_TRADER, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str()));
+							Error("Update single client: ADD_ITEMS_TRADER, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str());
 							StreamError();
 						}
 						else
@@ -8568,12 +8568,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						|| !stream.Read(team_count)
 						|| ReadItemAndFind(stream, item) <= 0)
 					{
-						ERROR("Update single client: Broken ADD_ITEMS_CHEST.");
+						Error("Update single client: Broken ADD_ITEMS_CHEST.");
 						StreamError();
 					}
 					else if(count <= 0 || team_count > count)
 					{
-						ERROR(Format("Update single client: ADD_ITEMS_CHEST, invalid count %d or team count %d.", count, team_count));
+						Error("Update single client: ADD_ITEMS_CHEST, invalid count %d or team count %d.", count, team_count);
 						StreamError();
 					}
 					else
@@ -8581,12 +8581,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						Chest* chest = FindChest(netid);
 						if(!chest)
 						{
-							ERROR(Format("Update single client: ADD_ITEMS_CHEST, missing chest %d.", netid));
+							Error("Update single client: ADD_ITEMS_CHEST, missing chest %d.", netid);
 							StreamError();
 						}
 						else if(pc->action != PlayerController::Action_LootChest || pc->action_chest != chest)
 						{
-							ERROR(Format("Update single client: ADD_ITEMS_CHEST, chest %d is not opened by player.", netid));
+							Error("Update single client: ADD_ITEMS_CHEST, chest %d is not opened by player.", netid);
 							StreamError();
 						}
 						else
@@ -8601,12 +8601,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					if(!stream.Read(i_index)
 						|| !stream.Read(count))
 					{
-						ERROR("Update single client: Broken REMOVE_ITEMS.");
+						Error("Update single client: Broken REMOVE_ITEMS.");
 						StreamError();
 					}
 					else if(count <= 0)
 					{
-						ERROR(Format("Update single client: REMOVE_ITEMS, invalid count %d.", count));
+						Error("Update single client: REMOVE_ITEMS, invalid count %d.", count);
 						StreamError();
 					}
 					else
@@ -8621,12 +8621,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						|| !stream.Read(count)
 						|| !stream.Read(i_index))
 					{
-						ERROR("Update single client: Broken REMOVE_ITEMS_TRADER.");
+						Error("Update single client: Broken REMOVE_ITEMS_TRADER.");
 						StreamError();
 					}
 					else if(count <= 0)
 					{
-						ERROR(Format("Update single client: REMOVE_ITEMS_TRADE, invalid count %d.", count));
+						Error("Update single client: REMOVE_ITEMS_TRADE, invalid count %d.", count);
 						StreamError();
 					}
 					else
@@ -8634,12 +8634,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						Unit* unit = FindUnit(netid);
 						if(!unit)
 						{
-							ERROR(Format("Update single client: REMOVE_ITEMS_TRADER, missing unit %d.", netid));
+							Error("Update single client: REMOVE_ITEMS_TRADER, missing unit %d.", netid);
 							StreamError();
 						}
 						else if(!pc->IsTradingWith(unit))
 						{
-							ERROR(Format("Update single client: REMOVE_ITEMS_TRADER, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str()));
+							Error("Update single client: REMOVE_ITEMS_TRADER, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str());
 							StreamError();
 						}
 						else
@@ -8651,7 +8651,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			case NetChangePlayer::SET_FROZEN:
 				if(!stream.ReadCasted<byte>(pc->unit->frozen))
 				{
-					ERROR("Update single client: Broken SET_FROZEN.");
+					Error("Update single client: Broken SET_FROZEN.");
 					StreamError();
 				}
 				break;
@@ -8661,7 +8661,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					int refid;
 					if(!stream.Read(refid))
 					{
-						ERROR("Update single client: Broken REMOVE_QUEST_ITEM.");
+						Error("Update single client: Broken REMOVE_QUEST_ITEM.");
 						StreamError();
 					}
 					else
@@ -8678,7 +8678,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					bool allowed;
 					if(!ReadBool(stream, allowed))
 					{
-						ERROR("Update single client: Broken CHEATS.");
+						Error("Update single client: Broken CHEATS.");
 						StreamError();
 					}
 					else if(devmode != allowed)
@@ -8702,7 +8702,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							|| !unit.stats.Read(stream)
 							|| !ReadItemListTeam(stream, unit.items))
 						{
-							ERROR(Format("Update single client: Broken %s.", name));
+							Error("Update single client: Broken %s.", name);
 							StreamError();
 						}
 						else
@@ -8710,7 +8710,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 					else
 					{
-						ERROR(Format("Update single client: %s, player is not talking with team member.", name));
+						Error("Update single client: %s, player is not talking with team member.", name);
 						StreamError();
 						// try to skip
 						UnitStats stats;
@@ -8719,7 +8719,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							|| !stats.Read(stream)
 							|| !ReadItemListTeam(stream, items))
 						{
-							ERROR(Format("Update single client: Broken %s(2).", name));
+							Error("Update single client: Broken %s(2).", name);
 						}
 					}
 				}
@@ -8730,7 +8730,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					bool is_better;
 					if(!ReadBool(stream, is_better))
 					{
-						ERROR("Update single client: Broken IS_BETTER_ITEM.");
+						Error("Update single client: Broken IS_BETTER_ITEM.");
 						StreamError();
 					}
 					else
@@ -8743,7 +8743,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					byte player_id;
 					if(!stream.Read(player_id))
 					{
-						ERROR("Update single client: Broken PVP.");
+						Error("Update single client: Broken PVP.");
 						StreamError();
 					}
 					else
@@ -8751,7 +8751,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						PlayerInfo* info = GetPlayerInfoTry(player_id);
 						if(!info)
 						{
-							ERROR(Format("Update single client: PVP, invalid player id %u.", player_id));
+							Error("Update single client: PVP, invalid player id %u.", player_id);
 							StreamError();
 						}
 						else
@@ -8802,7 +8802,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					byte player_id;
 					if(!stream.Read(player_id))
 					{
-						ERROR("Update single client: Broken NO_PVP.");
+						Error("Update single client: Broken NO_PVP.");
 						StreamError();
 					}
 					else
@@ -8810,7 +8810,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						PlayerInfo* info = GetPlayerInfoTry(player_id);
 						if(!info)
 						{
-							ERROR(Format("Update single client: NO_PVP, invalid player id %u.", player_id));
+							Error("Update single client: NO_PVP, invalid player id %u.", player_id);
 							StreamError();
 						}
 						else
@@ -8824,12 +8824,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					byte reason;
 					if(!stream.Read(reason))
 					{
-						ERROR("Update single client: Broken CANT_LEAVE_LOCATION.");
+						Error("Update single client: Broken CANT_LEAVE_LOCATION.");
 						StreamError();
 					}
 					else if(reason >= 2)
 					{
-						ERROR(Format("Update single client: CANT_LEAVE_LOCATION, invalid reason %u.", reason));
+						Error("Update single client: CANT_LEAVE_LOCATION, invalid reason %u.", reason);
 						StreamError();
 					}
 					else
@@ -8842,7 +8842,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					int netid;
 					if(!stream.Read(netid))
 					{
-						ERROR("Update single client: Broken LOOK_AT.");
+						Error("Update single client: Broken LOOK_AT.");
 						StreamError();
 					}
 					else
@@ -8854,7 +8854,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							Unit* unit = FindUnit(netid);
 							if(!unit)
 							{
-								ERROR(Format("Update single client: LOOK_AT, missing unit %d.", netid));
+								Error("Update single client: LOOK_AT, missing unit %d.", netid);
 								StreamError();
 							}
 							else
@@ -8874,7 +8874,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					byte days;
 					if(!stream.Read(days))
 					{
-						ERROR("Update single client: Broken REST.");
+						Error("Update single client: Broken REST.");
 						StreamError();
 					}
 					else
@@ -8893,7 +8893,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					if(!stream.Read(type)
 						|| !stream.Read(stat_type))
 					{
-						ERROR("Update single client: Broken TRAIN.");
+						Error("Update single client: Broken TRAIN.");
 						StreamError();
 					}
 					else
@@ -8912,7 +8912,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					Vec3 new_pos;
 					if(!stream.Read(new_pos))
 					{
-						ERROR("Update single client: Broken UNSTUCK.");
+						Error("Update single client: Broken UNSTUCK.");
 						StreamError();
 					}
 					else
@@ -8930,19 +8930,19 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					if(!stream.Read(player_id)
 						|| !stream.Read(count))
 					{
-						ERROR("Update single client: Broken GOLD_RECEIVED.");
+						Error("Update single client: Broken GOLD_RECEIVED.");
 						StreamError();
 					}
 					else if(count <= 0)
 					{
-						ERROR(Format("Update single client: GOLD_RECEIVED, invalid count %d.", count));
+						Error("Update single client: GOLD_RECEIVED, invalid count %d.", count);
 						StreamError();
 					}
 					{
 						PlayerInfo* info = GetPlayerInfoTry(player_id);
 						if(!info)
 						{
-							ERROR(Format("Update single client: GOLD_RECEIVED, invalid player id %u.", player_id));
+							Error("Update single client: GOLD_RECEIVED, invalid player id %u.", player_id);
 							StreamError();
 						}
 						else
@@ -8963,7 +8963,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						|| !stream.Read(what)
 						|| !stream.Read(value))
 					{
-						ERROR("Update single client: Broken GAIN_STAT.");
+						Error("Update single client: Broken GAIN_STAT.");
 						StreamError();
 					}
 					else
@@ -8977,12 +8977,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					if(!stream.Read(netid)
 						|| !stream.Read(count))
 					{
-						ERROR("Update single client: Broken UPDATE_TRADER_GOLD.");
+						Error("Update single client: Broken UPDATE_TRADER_GOLD.");
 						StreamError();
 					}
 					else if(count < 0)
 					{
-						ERROR(Format("Update single client: UPDATE_TRADER_GOLD, invalid count %d.", count));
+						Error("Update single client: UPDATE_TRADER_GOLD, invalid count %d.", count);
 						StreamError();
 					}
 					else
@@ -8990,12 +8990,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						Unit* unit = FindUnit(netid);
 						if(!unit)
 						{
-							ERROR(Format("Update single client: UPDATE_TRADER_GOLD, missing unit %d.", netid));
+							Error("Update single client: UPDATE_TRADER_GOLD, missing unit %d.", netid);
 							StreamError();
 						}
 						else if(!pc->IsTradingWith(unit))
 						{
-							ERROR(Format("Update single client: UPDATE_TRADER_GOLD, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str()));
+							Error("Update single client: UPDATE_TRADER_GOLD, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str());
 							StreamError();
 						}
 						else
@@ -9009,7 +9009,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					int netid;
 					if(!stream.Read(netid))
 					{
-						ERROR("Update single client: Broken UPDATE_TRADER_INVENTORY.");
+						Error("Update single client: Broken UPDATE_TRADER_INVENTORY.");
 						StreamError();
 					}
 					else
@@ -9018,13 +9018,13 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						bool ok = true;
 						if(!unit)
 						{
-							ERROR(Format("Update single client: UPDATE_TRADER_INVENTORY, missing unit %d.", netid));
+							Error("Update single client: UPDATE_TRADER_INVENTORY, missing unit %d.", netid);
 							StreamError();
 							ok = false;
 						}
 						else if(!pc->IsTradingWith(unit))
 						{
-							ERROR(Format("Update single client: UPDATE_TRADER_INVENTORY, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str()));
+							Error("Update single client: UPDATE_TRADER_INVENTORY, unit %d (%s) is not trading with player.", netid, unit->data->id.c_str());
 							StreamError();
 							ok = false;
 						}
@@ -9032,7 +9032,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						{
 							if(!ReadItemListTeam(stream, unit->items))
 							{
-								ERROR("Update single client: Broken UPDATE_TRADER_INVENTORY(2).");
+								Error("Update single client: Broken UPDATE_TRADER_INVENTORY(2).");
 								StreamError();
 							}
 						}
@@ -9040,7 +9040,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						{
 							vector<ItemSlot> items;
 							if(!ReadItemListTeam(stream, items))
-								ERROR("Update single client: Broken UPDATE_TRADER_INVENTORY(3).");
+								Error("Update single client: Broken UPDATE_TRADER_INVENTORY(3).");
 						}
 					}
 				}
@@ -9051,12 +9051,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					byte flags;
 					if(!stream.Read(flags))
 					{
-						ERROR("Update single client: Broken PLAYER_STATS.");
+						Error("Update single client: Broken PLAYER_STATS.");
 						StreamError();
 					}
 					else if(flags == 0 || (flags & ~STAT_MAX) != 0)
 					{
-						ERROR(Format("Update single client: PLAYER_STATS, invalid flags %u.", flags));
+						Error("Update single client: PLAYER_STATS, invalid flags %u.", flags);
 						StreamError();
 					}
 					else
@@ -9065,7 +9065,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						// read to buffer
 						if(!stream.Read(BUF, sizeof(int)*set_flags))
 						{
-							ERROR("Update single client: Broken PLAYER_STATS(2).");
+							Error("Update single client: Broken PLAYER_STATS(2).");
 							StreamError();
 						}
 						else if(pc)
@@ -9095,12 +9095,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					byte count;
 					if(!stream.Read(count))
 					{
-						ERROR("Update single client: Broken ADDED_ITEMS_MSG.");
+						Error("Update single client: Broken ADDED_ITEMS_MSG.");
 						StreamError();
 					}
 					else if(count <= 1)
 					{
-						ERROR(Format("Update single client: ADDED_ITEMS_MSG, invalid count %u.", count));
+						Error("Update single client: ADDED_ITEMS_MSG, invalid count %u.", count);
 						StreamError();
 					}
 					else
@@ -9116,7 +9116,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						|| !stream.Read(what)
 						|| !stream.Read(value))
 					{
-						ERROR("Update single client: Broken STAT_CHANGED.");
+						Error("Update single client: Broken STAT_CHANGED.");
 						StreamError();
 					}
 					else
@@ -9126,7 +9126,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						case ChangedStatType::ATTRIBUTE:
 							if(what >= (byte)Attribute::MAX)
 							{
-								ERROR(Format("Update single client: STAT_CHANGED, invalid attribute %u.", what));
+								Error("Update single client: STAT_CHANGED, invalid attribute %u.", what);
 								StreamError();
 							}
 							else
@@ -9135,7 +9135,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						case ChangedStatType::SKILL:
 							if(what >= (byte)Skill::MAX)
 							{
-								ERROR(Format("Update single client: STAT_CHANGED, invalid skill %u.", what));
+								Error("Update single client: STAT_CHANGED, invalid skill %u.", what);
 								StreamError();
 							}
 							else
@@ -9144,7 +9144,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						case ChangedStatType::BASE_ATTRIBUTE:
 							if(what >= (byte)Attribute::MAX)
 							{
-								ERROR(Format("Update single client: STAT_CHANGED, invalid base attribute %u.", what));
+								Error("Update single client: STAT_CHANGED, invalid base attribute %u.", what);
 								StreamError();
 							}
 							else
@@ -9153,14 +9153,14 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						case ChangedStatType::BASE_SKILL:
 							if(what >= (byte)Skill::MAX)
 							{
-								ERROR(Format("Update single client: STAT_CHANGED, invalid base skill %u.", what));
+								Error("Update single client: STAT_CHANGED, invalid base skill %u.", what);
 								StreamError();
 							}
 							else
 								pc->SetBase((Skill)what, value);
 							break;
 						default:
-							ERROR(Format("Update single client: STAT_CHANGED, invalid change type %u.", type));
+							Error("Update single client: STAT_CHANGED, invalid change type %u.", type);
 							StreamError();
 							break;
 						}
@@ -9175,7 +9175,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					if(!stream.Read(id)
 						|| !stream.Read(value))
 					{
-						ERROR("Update single client: Broken ADD_PERK.");
+						Error("Update single client: Broken ADD_PERK.");
 						StreamError();
 					}
 					else
@@ -9183,7 +9183,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 				}
 				break;
 			default:
-				WARN(Format("Update single client: Unknown player change type %d.", type));
+				Warn("Update single client: Unknown player change type %d.", type);
 				StreamError();
 				break;
 			}
@@ -9191,7 +9191,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			byte checksum = 0;
 			if(!stream.Read(checksum) || checksum != 0xFF)
 			{
-				ERROR(Format("Update single client: Invalid checksum (%u).", change_i));
+				Error("Update single client: Invalid checksum (%u).", change_i);
 				StreamError();
 				return true;
 			}
@@ -9204,7 +9204,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 		{
 			if(!stream.Read(pc->unit->gold))
 			{
-				ERROR("Update single client: Broken ID_PLAYER_UPDATE at UF_GOLD.");
+				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_GOLD.");
 				StreamError();
 				return true;
 			}
@@ -9215,7 +9215,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 		{
 			if(!stream.Read(pc->unit->alcohol))
 			{
-				ERROR("Update single client: Broken ID_PLAYER_UPDATE at UF_GOLD.");
+				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_GOLD.");
 				StreamError();
 				return true;
 			}
@@ -9226,7 +9226,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 		{
 			if(!stream.ReadCasted<byte>(pc->player_info->buffs))
 			{
-				ERROR("Update single client: Broken ID_PLAYER_UPDATE at UF_BUFFS.");
+				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_BUFFS.");
 				StreamError();
 				return true;
 			}
@@ -9242,7 +9242,7 @@ void Game::WriteClientChanges(BitStream& stream)
 	// count
 	stream.WriteCasted<byte>(net_changes.size());
 	if(net_changes.size() > 255)
-		ERROR(Format("Update client: Too many changes %u!", net_changes.size()));
+		Error("Update client: Too many changes %u!", net_changes.size());
 
 	// changes
 	for(NetChange& c : net_changes)
@@ -9380,7 +9380,7 @@ void Game::WriteClientChanges(BitStream& stream)
 			stream.Write(c.ile);
 			break;
 		default:
-			ERROR(Format("UpdateClient: Unknown change %d.", c.type));
+			Error("UpdateClient: Unknown change %d.", c.type);
 			assert(0);
 			break;
 		}
@@ -9397,7 +9397,7 @@ void Game::Client_Say(BitStream& stream)
 	if(!stream.Read(id)
 		|| !ReadString1(stream))
 	{
-		ERROR("Client_Say: Broken packet.");
+		Error("Client_Say: Broken packet.");
 		StreamError();
 	}
 	else
@@ -9405,7 +9405,7 @@ void Game::Client_Say(BitStream& stream)
 		int index = GetPlayerIndex(id);
 		if(index == -1)
 		{
-			ERROR(Format("Client_Say: Broken packet, missing player %d.", id));
+			Error("Client_Say: Broken packet, missing player %d.", id);
 			StreamError();
 		}
 		else
@@ -9427,7 +9427,7 @@ void Game::Client_Whisper(BitStream& stream)
 	if(!stream.Read(id)
 		|| !ReadString1(stream))
 	{
-		ERROR("Client_Whisper: Broken packet.");
+		Error("Client_Whisper: Broken packet.");
 		StreamError();
 	}
 	else
@@ -9435,7 +9435,7 @@ void Game::Client_Whisper(BitStream& stream)
 		int index = GetPlayerIndex(id);
 		if(index == -1)
 		{
-			ERROR(Format("Client_Whisper: Broken packet, missing player %d.", id));
+			Error("Client_Whisper: Broken packet, missing player %d.", id);
 			StreamError();
 		}
 		else
@@ -9451,7 +9451,7 @@ void Game::Client_ServerSay(BitStream& stream)
 {
 	if(!ReadString1(stream))
 	{
-		ERROR("Client_ServerSay: Broken packet.");
+		Error("Client_ServerSay: Broken packet.");
 		StreamError();
 	}
 	else
@@ -9466,7 +9466,7 @@ void Game::Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet)
 	if(!stream.Read(id)
 		|| !ReadString1(stream))
 	{
-		ERROR(Format("Server_Say: Broken packet from %s: %s.", info.name.c_str()));
+		Error("Server_Say: Broken packet from %s: %s.", info.name.c_str());
 		StreamError();
 	}
 	else
@@ -9494,7 +9494,7 @@ void Game::Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet)
 	if(!stream.Read(id)
 		|| !ReadString1(stream))
 	{
-		ERROR(Format("Server_Whisper: Broken packet from %s.", info.name.c_str()));
+		Error("Server_Whisper: Broken packet from %s.", info.name.c_str());
 		StreamError();
 	}
 	else
@@ -9511,7 +9511,7 @@ void Game::Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet)
 			int index = GetPlayerIndex(id);
 			if(index == -1)
 			{
-				ERROR(Format("Server_Whisper: Broken packet from %s to missing player %d.", info.name.c_str(), id));
+				Error("Server_Whisper: Broken packet from %s to missing player %d.", info.name.c_str(), id);
 				StreamError();
 			}
 			else
@@ -9777,7 +9777,7 @@ int Game::ReadItemAndFind(BitStream& s, const Item*& item) const
 		item = FindQuestItemClient(BUF, quest_refid);
 		if(!item)
 		{
-			WARN(Format("Missing quest item '%s' (%d).", BUF, quest_refid));
+			Warn("Missing quest item '%s' (%d).", BUF, quest_refid);
 			return -1;
 		}
 		else
@@ -9788,7 +9788,7 @@ int Game::ReadItemAndFind(BitStream& s, const Item*& item) const
 		item = FindItem(BUF);
 		if(!item)
 		{
-			WARN(Format("Missing item '%s'.", BUF));
+			Warn("Missing item '%s'.", BUF);
 			return -1;
 		}
 		else
@@ -9964,7 +9964,7 @@ PlayerInfo* Game::FindOldPlayer(cstring nick)
 //=================================================================================================
 void Game::PrepareWorldData(BitStream& stream)
 {
-	LOG("Preparing world data.");
+	Info("Preparing world data.");
 
 	stream.Reset();
 	stream.WriteCasted<byte>(ID_WORLD_DATA);
@@ -10057,7 +10057,7 @@ bool Game::ReadWorldData(BitStream& stream)
 	if(!stream.Read(count)
 		|| !EnsureSize(stream, count))
 	{
-		ERROR("Read world: Broken packet.");
+		Error("Read world: Broken packet.");
 		return false;
 	}
 
@@ -10070,7 +10070,7 @@ bool Game::ReadWorldData(BitStream& stream)
 
 		if(!stream.ReadCasted<byte>(type))
 		{
-			ERROR(Format("Read world: Broken packet for location %u.", index));
+			Error("Read world: Broken packet for location %u.", index);
 			return false;
 		}
 
@@ -10089,12 +10089,12 @@ bool Game::ReadWorldData(BitStream& stream)
 				byte levels;
 				if(!stream.Read(levels))
 				{
-					ERROR(Format("Read world: Broken packet for dungeon location %u.", index));
+					Error("Read world: Broken packet for dungeon location %u.", index);
 					return false;
 				}
 				else if(levels == 0)
 				{
-					ERROR(Format("Read world: Location %d with 0 levels.", index));
+					Error("Read world: Location %d with 0 levels.", index);
 					return false;
 				}
 
@@ -10123,7 +10123,7 @@ bool Game::ReadWorldData(BitStream& stream)
 					|| !stream.Read(world_citizens)
 					|| !stream.Read(type))
 				{
-					ERROR(Format("Read world: Broken packet for city location %u.", index));
+					Error("Read world: Broken packet for city location %u.", index);
 					return false;
 				}
 
@@ -10135,7 +10135,7 @@ bool Game::ReadWorldData(BitStream& stream)
 			}
 			break;
 		default:
-			ERROR(Format("Read world: Unknown location type %d for location %u.", type, index));
+			Error("Read world: Unknown location type %d for location %u.", type, index);
 			return false;
 		}
 
@@ -10145,13 +10145,13 @@ bool Game::ReadWorldData(BitStream& stream)
 			|| !ReadString1(stream, loc->name)
 			|| !stream.ReadCasted<byte>(loc->image))
 		{
-			ERROR(Format("Read world: Broken packet(2) for location %u.", index));
+			Error("Read world: Broken packet(2) for location %u.", index);
 			return false;
 		}
 		loc->type = type;
 		if(loc->state > LS_CLEARED)
 		{
-			ERROR(Format("Read world: Invalid state %d for location %u.", loc->state, index));
+			Error("Read world: Invalid state %d for location %u.", loc->state, index);
 			return false;
 		}
 
@@ -10161,12 +10161,12 @@ bool Game::ReadWorldData(BitStream& stream)
 	// current location
 	if(!stream.ReadCasted<byte>(current_location))
 	{
-		ERROR("Read world: Broken packet for current location.");
+		Error("Read world: Broken packet for current location.");
 		return false;
 	}
 	if(current_location >= (int)locations.size() || !locations[current_location])
 	{
-		ERROR(Format("Read world: Invalid location %d.", current_location));
+		Error("Read world: Invalid location %d.", current_location);
 		return false;
 	}
 	world_pos = locations[current_location]->pos;
@@ -10179,7 +10179,7 @@ bool Game::ReadWorldData(BitStream& stream)
 	// rumors
 	if(!ReadStringArray<byte, word>(stream, rumors))
 	{
-		ERROR("Read world: Broken packet for rumors.");
+		Error("Read world: Broken packet for rumors.");
 		return false;
 	}
 
@@ -10190,14 +10190,14 @@ bool Game::ReadWorldData(BitStream& stream)
 		!stream.Read(worldtime) ||
 		!GameStats::Get().Read(stream))
 	{
-		ERROR("Read world: Broken packet for time.");
+		Error("Read world: Broken packet for time.");
 		return false;
 	}
 
 	// mp vars
 	if(!ReadNetVars(stream))
 	{
-		ERROR("Read world: Broken packet for mp vars.");
+		Error("Read world: Broken packet for mp vars.");
 		return false;
 	}
 
@@ -10207,7 +10207,7 @@ bool Game::ReadWorldData(BitStream& stream)
 	if(!stream.Read(quest_items_count)
 		|| !EnsureSize(stream, QUEST_ITEM_MIN_SIZE * quest_items_count))
 	{
-		ERROR("Read world: Broken packet for quest items.");
+		Error("Read world: Broken packet for quest items.");
 		return false;
 	}
 	quest_items.reserve(quest_items_count);
@@ -10216,7 +10216,7 @@ bool Game::ReadWorldData(BitStream& stream)
 		const Item* base_item;
 		if(!ReadItemSimple(stream, base_item))
 		{
-			ERROR(Format("Read world: Broken packet for quest item %u.", i));
+			Error("Read world: Broken packet for quest item %u.", i);
 			return false;
 		}
 		else
@@ -10227,7 +10227,7 @@ bool Game::ReadWorldData(BitStream& stream)
 				|| !ReadString1(stream, item->desc)
 				|| !stream.Read(item->refid))
 			{
-				ERROR(Format("Read world: Broken packet for quest item %u (2).", i));
+				Error("Read world: Broken packet for quest item %u (2).", i);
 				delete item;
 				return false;
 			}
@@ -10239,7 +10239,7 @@ bool Game::ReadWorldData(BitStream& stream)
 	// secret note text
 	if(!ReadString1(stream, GetSecretNote()->desc))
 	{
-		ERROR("Read world: Broken packet for secret note text.");
+		Error("Read world: Broken packet for secret note text.");
 		return false;
 	}
 
@@ -10247,7 +10247,7 @@ bool Game::ReadWorldData(BitStream& stream)
 	bool in_travel;
 	if(!ReadBool(stream, in_travel))
 	{
-		ERROR("Read world: Broken packet for in travel data.");
+		Error("Read world: Broken packet for in travel data.");
 		return false;
 	}
 	if(in_travel)
@@ -10259,7 +10259,7 @@ bool Game::ReadWorldData(BitStream& stream)
 			!stream.Read(travel_start) ||
 			!stream.Read(world_pos))
 		{
-			ERROR("Read world: Broken packet for in travel data (2).");
+			Error("Read world: Broken packet for in travel data (2).");
 			return false;
 		}
 	}
@@ -10268,7 +10268,7 @@ bool Game::ReadWorldData(BitStream& stream)
 	byte check;
 	if(!stream.Read(check) || check != 0xFF)
 	{
-		ERROR("Read world: Broken checksum.");
+		Error("Read world: Broken checksum.");
 		return false;
 	}
 
@@ -10486,7 +10486,7 @@ bool Game::ReadPlayerStartData(BitStream& stream)
 	byte check;
 	if(!stream.Read(check) || check != 0xFF)
 	{
-		ERROR("Read player start data: Broken checksum.");
+		Error("Read player start data: Broken checksum.");
 		return false;
 	}
 
@@ -10541,7 +10541,7 @@ void Game::ProcessLeftPlayers()
 		--players;
 		if(info.left_reason != PlayerInfo::LEFT_KICK)
 		{
-			LOG(Format("Player %s left game.", info.name.c_str()));
+			Info("Player %s left game.", info.name.c_str());
 			AddMsg(Format(txPlayerLeft, info.name.c_str()));
 		}
 
@@ -10807,9 +10807,9 @@ void Game::ClosePeer(bool wait)
 {
 	assert(peer);
 
-	LOG("Peer shutdown.");
+	Info("Peer shutdown.");
 	peer->Shutdown(wait ? I_SHUTDOWN : 0);
-	LOG("sv_online = false");
+	Info("sv_online = false");
 	if(!sv_server)
 		was_client = true;
 	net_changes.clear();
@@ -10838,7 +10838,7 @@ BitStream& Game::StreamStart(Packet* packet, StreamLogType type)
 	assert(!current_packet);
 	if(current_packet)
 	{
-		ERROR("Unclosed stream.");
+		Error("Unclosed stream.");
 		StreamError();
 	}
 

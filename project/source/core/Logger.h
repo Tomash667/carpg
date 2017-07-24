@@ -1,12 +1,11 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Loggery
-//-----------------------------------------------------------------------------
-// interfejs logera
-struct Logger
+// Base logger, don't log anything
+class Logger
 {
-	enum LOG_LEVEL
+public:
+	enum Level
 	{
 		L_INFO,
 		L_WARN,
@@ -15,68 +14,106 @@ struct Logger
 	};
 
 	virtual ~Logger() {}
-	void GetTime(tm& time);
+	virtual void Log(Level level, cstring text, const tm& time) {}
+	virtual void Flush() {}
+	void Log(Level level, cstring text);
 
-	virtual void Log(cstring text, LOG_LEVEL level) = 0;
-	virtual void Log(cstring text, LOG_LEVEL level, const tm& time) = 0;
-	virtual void Flush() = 0;
+	void Info(cstring msg)
+	{
+		Log(L_INFO, msg);
+	}
+	template<typename... Args>
+	void Info(cstring msg, const Args&... args)
+	{
+		Log(L_INFO, Format(msg, args...));
+	}
+	void Warn(cstring msg)
+	{
+		Log(L_WARN, msg);
+	}
+	template<typename... Args>
+	void Warn(cstring msg, const Args&... args)
+	{
+		Log(L_WARN, Format(msg, args...));
+	}
+	void Error(cstring msg)
+	{
+		Log(L_ERROR, msg);
+	}
+	template<typename... Args>
+	void Error(cstring msg, const Args&... args)
+	{
+		Log(L_ERROR, Format(msg, args...));
+	}
+	void Fatal(cstring msg)
+	{
+		Log(L_FATAL, msg);
+	}
+	template<typename... Args>
+	void Fatal(cstring msg, const Args&... args)
+	{
+		Log(L_FATAL, Format(msg, args...));
+	}
 
-	void Info(cstring text) { Log(text, L_INFO); }
-	void Warn(cstring text) { Log(text, L_WARN); }
-	void Error(cstring text) { Log(text, L_ERROR); }
-	void Fatal(cstring text) { Log(text, L_FATAL); }
+	static Logger* global;
+
+protected:
+	static const cstring level_names[4];
 };
 
-// pusty loger, nic nie robi
-struct NullLogger : public Logger
+//-----------------------------------------------------------------------------
+// Logger to system console window
+class ConsoleLogger : public Logger
 {
-	NullLogger() {}
-	void Log(cstring text, LOG_LEVEL level) {}
-	void Log(cstring text, LOG_LEVEL, const tm& time) {}
-	void Flush() {}
-};
-
-// loger do konsoli
-struct ConsoleLogger : public Logger
-{
+public:
 	~ConsoleLogger();
-	void Log(cstring text, LOG_LEVEL level);
-	void Log(cstring text, LOG_LEVEL level, const tm& time);
-	void Flush() {}
+
+protected:
+	void Log(Level level, cstring text, const tm& time) override;
 };
 
-// loger do pliku txt
-struct TextLogger : public Logger
+//-----------------------------------------------------------------------------
+// Logger to text file
+class TextLogger : public Logger
 {
 	std::ofstream out;
 	string path;
 
+public:
 	explicit TextLogger(cstring filename);
 	~TextLogger();
-	void Log(cstring text, LOG_LEVEL level);
-	void Log(cstring text, LOG_LEVEL level, const tm& time);
-	void Flush();
+	void Flush() override;
+	const string& GetPath() const
+	{
+		return path;
+	}
+
+protected:
+	void Log(Level level, cstring text, const tm& time) override;
 };
 
-// loger do kilku innych logerów
-struct MultiLogger : public Logger
+//-----------------------------------------------------------------------------
+// Logger to multiple loggers
+class MultiLogger : public Logger
 {
+public:
 	vector<Logger*> loggers;
 
 	~MultiLogger();
-	void Log(cstring text, LOG_LEVEL level);
-	void Log(cstring text, LOG_LEVEL level, const tm& time);
-	void Flush();
+	void Flush() override;
+
+protected:
+	void Log(Level level, cstring text, const tm& time) override;
 };
 
-// loger który przechowuje informacje przed wybraniem okreœlonego logera
-struct PreLogger : public Logger
+//-----------------------------------------------------------------------------
+// Pre logger, used before deciding where log to
+class PreLogger : public Logger
 {
-private:
 	struct Prelog
 	{
 		string str;
-		LOG_LEVEL level;
+		Level level;
 		tm time;
 	};
 
@@ -87,15 +124,50 @@ public:
 	PreLogger() : flush(false) {}
 	void Apply(Logger* logger);
 	void Clear();
-	void Log(cstring text, LOG_LEVEL level);
-	void Log(cstring text, LOG_LEVEL level, const tm& time);
-	void Flush();
+	void Flush() override;
+
+protected:
+	void Log(Level level, cstring text, const tm& time) override;
 };
 
-extern Logger* logger;
+//-----------------------------------------------------------------------------
+// Helper global functions
+inline void Info(cstring msg)
+{
+	Logger::global->Log(Logger::L_INFO, msg);
+}
+template<typename... Args>
+inline void Info(cstring msg, const Args&... args)
+{
+	Logger::global->Log(Logger::L_INFO, Format(msg, args...));
+}
 
-#define LOG(msg) logger->Info(msg)
-#define INFO(msg) logger->Info(msg)
-#define WARN(msg) logger->Warn(msg)
-#define ERROR(msg) logger->Error(msg)
-#define FATAL(msg) logger->Fatal(msg)
+inline void Warn(cstring msg)
+{
+	Logger::global->Log(Logger::L_WARN, msg);
+}
+template<typename... Args>
+inline void Warn(cstring msg, const Args&... args)
+{
+	Logger::global->Log(Logger::L_WARN, Format(msg, args...));
+}
+
+inline void Error(cstring msg)
+{
+	Logger::global->Log(Logger::L_ERROR, msg);
+}
+template<typename... Args>
+inline void Error(cstring msg, const Args&... args)
+{
+	Logger::global->Log(Logger::L_ERROR, Format(msg, args...));
+}
+
+inline void Fatal(cstring msg)
+{
+	Logger::global->Log(Logger::L_FATAL, msg);
+}
+template<typename... Args>
+inline void Fatal(cstring msg, const Args&... args)
+{
+	Logger::global->Log(Logger::L_FATAL, Format(msg, args...));
+}

@@ -194,7 +194,7 @@ void MainMenu::Update(float dt)
 		if(check_updates)
 		{
 			version_text = Str("checkingVersion");
-			LOG("Checking CaRpg version.");
+			Info("Checking CaRpg version.");
 			check_version = 1;
 			csCheckVersion.Create();
 			check_version_thread = (HANDLE)_beginthreadex(nullptr, 1024, CheckVersion, nullptr, 0, nullptr);
@@ -204,7 +204,7 @@ void MainMenu::Update(float dt)
 				csCheckVersion.Free();
 				check_version = 2;
 				version_text = Str("checkingError");
-				ERROR(Format("Failed to create version checking thread (%d).", error));
+				Error("Failed to create version checking thread (%d).", error);
 			}
 		}
 		else
@@ -224,7 +224,7 @@ void MainMenu::Update(float dt)
 					check_version = 4;
 					cstring str = VersionToString(version_new);
 					version_text = Format(Str("newVersion"), str);
-					LOG(Format("New version %s is available.", str));
+					Info("New version %s is available.", str);
 					if(version_new > skip_version)
 					{
 						// wyœwietl pytanie o pobranie nowej wersji
@@ -246,20 +246,20 @@ void MainMenu::Update(float dt)
 				{
 					check_version = 3;
 					version_text = Str("newerVersion");
-					LOG("You have newer version then available.");
+					Info("You have newer version then available.");
 				}
 				else
 				{
 					check_version = 3;
 					version_text = Str("noNewVersion");
-					LOG("No new version available.");
+					Info("No new version available.");
 				}
 			}
 			else
 			{
 				check_version = 2;
 				version_text = Format(Str("checkVersionError"), version_check_result, version_check_error);
-				ERROR(Format("Failed to check version (%d, %d).", version_check_result, version_check_error));
+				Error("Failed to check version (%d, %d).", version_check_result, version_check_error);
 			}
 		}
 		csCheckVersion.Leave();

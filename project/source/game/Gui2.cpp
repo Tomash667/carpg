@@ -102,7 +102,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	if(FAILED(hr))
 	{
 		ReleaseDC(nullptr, hdc);
-		ERROR(Format("Failed to create directx font (%s, size:%d, weight:%d, code:%d).", name, size, weight, hr));
+		Error("Failed to create directx font (%s, size:%d, weight:%d, code:%d).", name, size, weight, hr);
 		return nullptr;
 	}
 
@@ -114,7 +114,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 		DWORD error = GetLastError();
 		ReleaseDC(nullptr, hdc);
 		dx_font->Release();
-		ERROR(Format("Failed to create font (%s, size:%d, weight:%d, code:%d).", name, size, weight, error));
+		Error("Failed to create font (%s, size:%d, weight:%d, code:%d).", name, size, weight, error);
 		return nullptr;
 	}
 
@@ -126,7 +126,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 		ABC abc[256];
 		if(GetCharABCWidths(hdc, 0, 255, abc) == 0)
 		{
-			ERROR(Format("B³¹d pobierania szerokoœci znaków (%s, rozmiar:%d, waga:%d, b³¹d:%d).", name, size, weight, GetLastError()));
+			Error("B³¹d pobierania szerokoœci znaków (%s, rozmiar:%d, waga:%d, b³¹d:%d).", name, size, weight, GetLastError());
 			SelectObject(hdc, prev);
 			DeleteObject(font);
 			ReleaseDC(nullptr, hdc);
@@ -153,7 +153,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 		hr = device->CreateTexture(tex_size, tex_size, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tFontTarget, nullptr);
 		if(FAILED(hr))
 		{
-			ERROR(Format("B³¹d tworzenia tekstury render target czcionki (rozmiar:%d, b³¹d:%d).", tex_size, hr));
+			Error("B³¹d tworzenia tekstury render target czcionki (rozmiar:%d, b³¹d:%d).", tex_size, hr);
 			dx_font->Release();
 			return nullptr;
 		}
@@ -185,7 +185,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 				if(warn_once && offset.y + height > tex_size)
 				{
 					warn_once = false;
-					WARN(Format("Czcionka %s (%d) nie mieœci siê w teksturze %d.", name, size, tex_size));
+					Warn("Czcionka %s (%d) nie mieœci siê w teksturze %d.", name, size, tex_size);
 				}
 			}
 			Glyph& g = f->glyph[i];
@@ -315,7 +315,7 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 	HRESULT hr = device->CreateTexture(tex_size, tex_size, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr);
 	if(FAILED(hr))
 	{
-		ERROR(Format("B³¹d tworzenia tekstury czcionki (rozmiar: %d, b³¹d: %d).", tex_size, hr));
+		Error("B³¹d tworzenia tekstury czcionki (rozmiar: %d, b³¹d: %d).", tex_size, hr);
 		return false;
 	}
 

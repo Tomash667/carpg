@@ -364,6 +364,7 @@
     <ClCompile Include="source\game\system\Building.cpp" />
     <ClCompile Include="source\game\system\BuildingGroup.cpp" />
     <ClCompile Include="source\game\system\BuildingScript.cpp" />
+    <ClCompile Include="source\game\system\Content.cpp" />
     <ClCompile Include="source\game\system\Type.cpp" />
     <ClCompile Include="source\game\system\TypeManager.cpp" />
     <ClCompile Include="source\game\Dialogs.cpp" />

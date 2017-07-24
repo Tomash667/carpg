@@ -148,11 +148,11 @@ void TypeManager::LoadTypes(uint& _errors)
 
 void TypeManager::LoadTypes(cstring filename)
 {
-	INFO(Format("TypeManager: Parsing file '%s'.", filename));
+	Info("TypeManager: Parsing file '%s'.", filename);
 
 	if(!t.FromFile(filename))
 	{
-		ERROR(Format("TypeManager: Failed to open file '%s'.", filename));
+		Error("TypeManager: Failed to open file '%s'.", filename);
 		++errors;
 		return;
 	}
@@ -166,13 +166,13 @@ void TypeManager::LoadTypes(cstring filename)
 
 		if(file_errors >= MAX_ERRORS)
 		{
-			ERROR(Format("TypeManager: Errors limit exceeded in file '%s'.", filename));
+			Error("TypeManager: Errors limit exceeded in file '%s'.", filename);
 			++errors;
 		}
 	}
 	catch(Tokenizer::Exception& e)
 	{
-		ERROR(Format("TypeManager: Failed to parse types: %s", e.ToString()));
+		Error("TypeManager: Failed to parse types: %s", e.ToString());
 		++errors;
 	}
 }
@@ -377,7 +377,7 @@ bool TypeManager::LoadType(Type& type)
 	}
 	catch(Tokenizer::Exception& e)
 	{
-		ERROR(Format("TypeManager: Failed to parse '%s': %s", proxy.GetName(), e.ToString()));
+		Error("TypeManager: Failed to parse '%s': %s", proxy.GetName(), e.ToString());
 		++errors;
 		return false;
 	}
@@ -408,7 +408,7 @@ void TypeManager::LoadStrings(cstring filename)
 			bool ok;
 			if(type.localized_fields.empty())
 			{
-				ERROR(Format("TypeManager: Type '%s' don't have any localized fields.", type.token.c_str()));
+				Error("TypeManager: Type '%s' don't have any localized fields.", type.token.c_str());
 				t.Next();
 				ok = false;
 			}
@@ -437,7 +437,7 @@ void TypeManager::LoadStrings(cstring filename)
 	}
 	catch(Tokenizer::Exception& e)
 	{
-		ERROR(Format("TypeManager: Failed to parse types: %s", e.ToString()));
+		Error("TypeManager: Failed to parse types: %s", e.ToString());
 		++errors;
 	}
 }
@@ -452,7 +452,7 @@ bool TypeManager::LoadStringsImpl(Type& type)
 		proxy.item = type.container->Find(id);
 		if(!proxy.item)
 		{
-			ERROR(Format("TypeManager: Missing '%s %s'.", type.token.c_str(), id.c_str()));
+			Error("TypeManager: Missing '%s %s'.", type.token.c_str(), id.c_str());
 			++errors;
 			return false;
 		}
@@ -513,7 +513,7 @@ bool TypeManager::LoadStringsImpl(Type& type)
 	}
 	catch(Tokenizer::Exception& e)
 	{
-		ERROR(Format("TypeManager: Failed to parse localized '%s': %s", proxy.GetName(), e.ToString()));
+		Error("TypeManager: Failed to parse localized '%s': %s", proxy.GetName(), e.ToString());
 		++errors;
 		return false;
 	}
@@ -536,8 +536,8 @@ void TypeManager::VerifyStrings()
 					if(offset_cast<string>(item, field->offset).empty())
 					{
 						++errors;
-						WARN(Format("TypeManager: Missing localized string '%s' for '%s %s'.", field->name.c_str(), type.token.c_str(),
-							offset_cast<string>(item, id_offset).c_str()));
+						Warn("TypeManager: Missing localized string '%s' for '%s %s'.", field->name.c_str(), type.token.c_str(),
+							offset_cast<string>(item, id_offset).c_str());
 					}
 				}
 			}
@@ -569,7 +569,7 @@ void TypeManager::CalculateCrc()
 	for(Type* type : types)
 	{
 		type->CalculateCrc();
-		INFO(Format("TypeManager: Crc for %s (%p).", type->token.c_str(), type->crc));
+		Info("TypeManager: Crc for %s (%p).", type->token.c_str(), type->crc);
 	}
 	need_calculate_crc = false;
 }
@@ -631,7 +631,7 @@ bool TypeManager::LoadTypeFilelist(Tokenizer& t)
 		return true;
 	}))
 	{
-		ERROR("TypeManager: Failed to load type filelist.");
+		Error("TypeManager: Failed to load type filelist.");
 		return false;
 	}
 	else
@@ -648,7 +648,7 @@ bool TypeManager::LoadStringsFilelist(Tokenizer& t)
 		return true;
 	}))
 	{
-		ERROR("TypeManager: Failed to load language type filelist.");
+		Error("TypeManager: Failed to load language type filelist.");
 		return false;
 	}
 	else
@@ -658,12 +658,12 @@ bool TypeManager::LoadStringsFilelist(Tokenizer& t)
 void TypeManager::LogLoadedTypes()
 {
 	for(Type* type : types)
-		INFO(Format("TypeManager: Loaded %s(s): %u.", type->token.c_str(), type->loaded));
+		Info("TypeManager: Loaded %s(s): %u.", type->token.c_str(), type->loaded);
 }
 
 bool TypeManager::Save()
 {
-	INFO("TypeManager: Saving changes...");
+	Info("TypeManager: Saving changes...");
 
 	for(Type* type : types)
 		type->processed = false;
@@ -679,7 +679,7 @@ bool TypeManager::Save()
 		}
 	}
 
-	INFO(any ? "TypeManager: Saved." : "TypeManager: No changes.");
+	Info(any ? "TypeManager: Saved." : "TypeManager: No changes.");
 	return ok;
 }
 
@@ -689,7 +689,7 @@ bool TypeManager::SaveGroup(const string& file_group)
 	TextWriter f(path);
 	if(!f)
 	{
-		ERROR(Format("TypeManager: Failed to open file '%s' for writing.", path));
+		Error("TypeManager: Failed to open file '%s' for writing.", path);
 		return false;
 	}
 

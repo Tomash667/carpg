@@ -241,7 +241,7 @@ void Inventory::Update(float dt)
 		lock_timer -= dt;
 		if(lock_timer <= 0.f)
 		{
-			ERROR("IS_BETTER_ITEM timed out.");
+			Error("IS_BETTER_ITEM timed out.");
 			lock_id = LOCK_NO;
 			lock_give = false;
 		}
@@ -2144,9 +2144,9 @@ void Inventory::IsBetterItemResponse(bool is_better)
 		lock_give = false;
 
 		if(lock_index == LOCK_REMOVED)
-			WARN(Format("Inventory::IsBetterItem, item removed (%d).", lock_index));
+			Warn("Inventory::IsBetterItem, item removed (%d).", lock_index);
 		else if(game.pc->action != PlayerController::Action_GiveItems)
-			WARN("Inventory::IsBetterItem, no longer giving items.");
+			Warn("Inventory::IsBetterItem, no longer giving items.");
 		else if(!is_better)
 			GUI.SimpleDialog(txWontTakeItem, this);
 		else
@@ -2156,7 +2156,7 @@ void Inventory::IsBetterItemResponse(bool is_better)
 			{
 				// przedmiot w ekwipunku
 				if(lock_index >= (int)unit->items.size())
-					ERROR(Format("Inventory::IsBetterItem, invalid item index %d.", lock_index));
+					Error("Inventory::IsBetterItem, invalid item index %d.", lock_index);
 				else
 				{
 					ItemSlot& slot = unit->items[lock_index];
@@ -2199,12 +2199,12 @@ void Inventory::IsBetterItemResponse(bool is_better)
 				// za³o¿ony przedmiot
 				ITEM_SLOT slot_type = IIndexToSlot(lock_index);
 				if(slot_type == SLOT_INVALID)
-					ERROR(Format("Inventory::IsBetterItem, invalid slot index %d.", lock_index));
+					Error("Inventory::IsBetterItem, invalid slot index %d.", lock_index);
 				else
 				{
 					const Item*& item = unit->slots[slot_type];
 					if(!item)
-						ERROR(Format("Inventory::IsBetterItem, missing slot item %d.", slot_type));
+						Error("Inventory::IsBetterItem, missing slot item %d.", slot_type);
 					else if(!t->CanTake(item))
 						GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
 					else if(SlotRequireHideWeapon(slot_type))
@@ -2222,7 +2222,7 @@ void Inventory::IsBetterItemResponse(bool is_better)
 		}
 	}
 	else
-		ERROR(Format("Inventory::IsBetterItemResponse, inventory not locked (%d) or no give lock (%d).", lock_id, lock_give ? 1 : 0));
+		Error("Inventory::IsBetterItemResponse, inventory not locked (%d) or no give lock (%d).", lock_id, lock_give ? 1 : 0);
 }
 
 //=================================================================================================

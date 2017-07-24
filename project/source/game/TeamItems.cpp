@@ -746,7 +746,7 @@ void Game::ValidateTeamItems()
 		IVector* iv = (IVector*)&unit->items;
 		if(!iv->_Myfirst)
 		{
-			ERROR(Format("Hero '%s' items._Myfirst = nullptr!", unit->GetName()));
+			Error("Hero '%s' items._Myfirst = nullptr!", unit->GetName());
 			++errors;
 			continue;
 		}
@@ -756,7 +756,7 @@ void Game::ValidateTeamItems()
 		{
 			if(!it2->item)
 			{
-				ERROR(Format("Hero '%s' has nullptr item at index %d.", unit->GetName(), index));
+				Error("Hero '%s' has nullptr item at index %d.", unit->GetName(), index);
 				++errors;
 			}
 			else if(it2->item->IsStackable())
@@ -766,7 +766,7 @@ void Game::ValidateTeamItems()
 				{
 					if(it2->item == it3->item)
 					{
-						ERROR(Format("Hero '%s' has multiple stacks of %s, index %d and %d.", unit->GetName(), it2->item->id.c_str(), index, index2));
+						Error("Hero '%s' has multiple stacks of %s, index %d and %d.", unit->GetName(), it2->item->id.c_str(), index, index2);
 						++errors;
 						break;
 					}

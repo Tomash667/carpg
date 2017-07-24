@@ -303,7 +303,7 @@ void ServerPanel::Event(GuiEvent e)
 					bts[4].text = txStop;
 					cstring s = Format(txStartingIn, STARTUP_TIMER);
 					AddMsg(s);
-					LOG(s);
+					Info(s);
 				}
 
 				if(error_text)
@@ -361,14 +361,14 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 //=================================================================================================
 void ServerPanel::ExitLobby(VoidF f)
 {
-	LOG("ServerPanel: Exiting lobby.");
+	Info("ServerPanel: Exiting lobby.");
 
 	if(game->sv_server)
 	{
 		if(game->mp_load)
 			game->ClearGame();
 
-		LOG("ServerPanel: Closing server.");
+		Info("ServerPanel: Closing server.");
 
 		// zablokuj do³¹czanie
 		game->peer->SetMaximumIncomingConnections(0);
@@ -378,7 +378,7 @@ void ServerPanel::ExitLobby(VoidF f)
 		if(game->players > 1)
 		{
 			// roz³¹cz graczy
-			LOG("ServerPanel: Disconnecting clients.");
+			Info("ServerPanel: Disconnecting clients.");
 			const byte b[] = { ID_SERVER_CLOSE, 0 };
 			game->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			game->net_mode = Game::NM_QUITTING_SERVER;
@@ -443,14 +443,14 @@ void ServerPanel::OnInput(const string& str)
 		}
 		cstring s = Format("%s: %s", game->player_name.c_str(), str.c_str());
 		AddMsg(s);
-		LOG(s);
+		Info(s);
 	}
 }
 
 //=================================================================================================
 void ServerPanel::StopStartup()
 {
-	LOG("Startup canceled.");
+	Info("Startup canceled.");
 	AddMsg(txStartingStop);
 	game->sv_startup = false;
 	bts[4].text = txStart;
@@ -467,7 +467,7 @@ void ServerPanel::UseLoadedCharacter(bool have)
 {
 	if(have)
 	{
-		LOG("ServerPanel: Joined loaded game with existing character.");
+		Info("ServerPanel: Joined loaded game with existing character.");
 		game->autopick_class = Class::INVALID;
 		bts[0].state = Button::DISABLED;
 		bts[1].state = Button::NONE;
@@ -475,7 +475,7 @@ void ServerPanel::UseLoadedCharacter(bool have)
 	}
 	else
 	{
-		LOG("ServerPanel: Joined loaded game without loaded character.");
+		Info("ServerPanel: Joined loaded game without loaded character.");
 		AddMsg(txNotLoadedCharInfo);
 	}
 }
@@ -485,7 +485,7 @@ void ServerPanel::CheckAutopick()
 {
 	if(game->autopick_class != Class::INVALID)
 	{
-		LOG("ServerPanel: Autopicking character.");
+		Info("ServerPanel: Autopicking character.");
 		PickClass(game->autopick_class, true);
 		game->autopick_class = Class::INVALID;
 	}
@@ -503,7 +503,7 @@ void ServerPanel::PickClass(Class clas, bool ready)
 	info.ready = ready;
 	if(!game->sv_server)
 	{
-		LOG("ServerPanel: Sent pick class packet.");
+		Info("ServerPanel: Sent pick class packet.");
 		BitStream& stream = game->net_stream;
 		stream.Reset();
 		stream.WriteCasted<byte>(ID_PICK_CHARACTER);

@@ -212,7 +212,7 @@ bool LoadSpell(Tokenizer& t, Crc& crc)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load spell '%s': %s", spell->id.c_str(), e.ToString()));
+		Error("Failed to load spell '%s': %s", spell->id.c_str(), e.ToString());
 		delete spell;
 		return false;
 	}
@@ -307,7 +307,7 @@ uint LoadSpells(uint& out_crc, uint& errors)
 					}
 					catch(const Tokenizer::Exception& e)
 					{
-						ERROR(Format("Failed to load spell alias: %s", e.ToString()));
+						Error("Failed to load spell alias: %s", e.ToString());
 						++errors;
 						skip = true;
 					}
@@ -316,7 +316,7 @@ uint LoadSpells(uint& out_crc, uint& errors)
 			else
 			{
 				int g = G_TOP;
-				ERROR(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &g));
+				Error(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &g));
 				++errors;
 				skip = true;
 			}
@@ -329,7 +329,7 @@ uint LoadSpells(uint& out_crc, uint& errors)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		ERROR(Format("Failed to load spells: %s", e.ToString()));
+		Error("Failed to load spells: %s", e.ToString());
 		++errors;
 	}
 

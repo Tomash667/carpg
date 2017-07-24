@@ -100,7 +100,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 	HANDLE file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
 	{
-		ERROR(Format(txLoadOpenError, filename, GetLastError()));
+		Error(txLoadOpenError, filename, GetLastError());
 		GUI.SimpleDialog(txSaveFailed, saveload->visible ? saveload : nullptr);
 		return false;
 	}
@@ -111,7 +111,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 
 		cstring msg = Format("Game saved '%s'.", filename);
 		AddConsoleMsg(msg);
-		LOG(msg);
+		Info(msg);
 
 		SaveSlot& ss = (IsOnline() ? multi_saves[slot - 1] : single_saves[slot - 1]);
 		ss.valid = true;
@@ -149,7 +149,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 
 		if(hardcore_mode)
 		{
-			LOG("Hardcore mode, exiting to menu.");
+			Info("Hardcore mode, exiting to menu.");
 			ExitToMenu();
 			return false;
 		}
@@ -165,12 +165,12 @@ bool Game::LoadGameSlot(int slot)
 
 	cstring filename = Format(mp_load ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 
-	LOG(Format("Loading saved game '%s'.", filename));
+	Info("Loading saved game '%s'.", filename);
 
 	HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
 	{
-		ERROR(Format(txLoadOpenError, filename, GetLastError()));
+		Error(txLoadOpenError, filename, GetLastError());
 		throw txLoadFailed;
 	}
 
@@ -206,7 +206,7 @@ bool Game::LoadGameSlot(int slot)
 		s.valid = false;
 		hardcore_savename = s.text;
 
-		LOG("Hardcore mode, deleting save.");
+		Info("Hardcore mode, deleting save.");
 		DeleteFile(Format(IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
 		DeleteFile(Format(IsOnline() ? "saves/multi/%d.txt" : "saves/single/%d.txt", slot));
 		DeleteFile(Format(IsOnline() ? "saves/multi/%d.jpg" : "saves/single/%d.jpg", slot));
@@ -307,7 +307,7 @@ void Game::LoadSaveSlots()
 //=================================================================================================
 void Game::SaveGame(HANDLE file)
 {
-	LOG("Saving...");
+	Info("Saving...");
 
 	GameWriter f(file);
 
@@ -699,8 +699,8 @@ void Game::LoadGame(HANDLE file)
 			throw txLoadSP;
 	}
 
-	LOG(Format("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
-		online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0));
+	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
+		online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0);
 
 	ReadFile(file, &hardcore_mode, sizeof(hardcore_mode), &tmp, nullptr);
 	ReadFile(file, &total_kills, sizeof(total_kills), &tmp, nullptr);
@@ -919,7 +919,7 @@ void Game::LoadGame(HANDLE file)
 		Useable* u = Useable::refid_table[it->refid];
 		if(u->user != it->user)
 		{
-			WARN(Format("Invalid useable %s (%d) user %s.", u->GetBase()->id, u->refid, it->user->data->id.c_str()));
+			Warn("Invalid useable %s (%d) user %s.", u->GetBase()->id, u->refid, it->user->data->id.c_str());
 			*it->useable = nullptr;
 		}
 		else
@@ -1454,7 +1454,7 @@ void Game::LoadGame(HANDLE file)
 	ValidateTeamItems();
 #endif
 
-	LOG("Game loaded.");
+	Info("Game loaded.");
 
 	if(mp_load)
 	{
@@ -1617,7 +1617,7 @@ void Game::Quickload(bool from_console)
 	catch(cstring err)
 	{
 		err = Format("%s%s", txLoadError, err);
-		ERROR(err);
+		Error(err);
 		GUI.SimpleDialog(err, nullptr);
 	}
 }
@@ -1666,7 +1666,7 @@ void Game::RemoveUnusedAiAndCheck()
 	{
 		RemoveNullElements(ais);
 		cstring s = Format("Removed unused ais: %u.", prev_size - ais.size());
-		WARN(s);
+		Warn(s);
 #ifdef _DEBUG
 		AddGameMsg(s, 10.f);
 #endif
@@ -1694,17 +1694,17 @@ void Game::CheckUnitsAi(LevelContext& ctx, int& err_count)
 		if(u.player && u.ai)
 		{
 			++err_count;
-			ERROR(Format("Unit %s is player 0x%p and ai 0x%p.", u.data->id.c_str(), u.player, u.ai));
+			Error("Unit %s is player 0x%p and ai 0x%p.", u.data->id.c_str(), u.player, u.ai);
 		}
 		else if(u.player && u.hero)
 		{
 			++err_count;
-			ERROR(Format("Unit %s is player 0x%p and hero 0x%p.", u.data->id.c_str(), u.player, u.hero));
+			Error("Unit %s is player 0x%p and hero 0x%p.", u.data->id.c_str(), u.player, u.hero);
 		}
 		else if(!u.player && !u.ai)
 		{
 			++err_count;
-			ERROR(Format("Unit %s is neither player or ai.", u.data->id.c_str()));
+			Error("Unit %s is neither player or ai.", u.data->id.c_str());
 		}
 	}
 }
