@@ -7,7 +7,6 @@
 #include "ErrorHandler.h"
 
 //-----------------------------------------------------------------------------
-Logger* logger;
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
 cstring MUTEX_NAME = "CaRpgMutex";
 string g_system_dir, g_ctime;
@@ -412,7 +411,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// logger (w tym przypadku prelogger bo jeszcze nie wiemy gdzie to zapisywaæ)
 	PreLogger plog;
-	logger = &plog;
+	Logger::global = &plog;
 
 	// stwórz foldery na zapisy
 	CreateDirectory("saves", nullptr);
@@ -833,7 +832,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		multi->loggers.push_back(clog);
 		multi->loggers.push_back(tlog);
 		plog.Apply(multi);
-		logger = multi;
+		Logger::global = multi;
 	}
 	else if(ile == 1)
 	{
@@ -841,20 +840,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		{
 			ConsoleLogger* l = new ConsoleLogger;
 			plog.Apply(l);
-			logger = l;
+			Logger::global = l;
 		}
 		else
 		{
 			TextLogger* l = new TextLogger(log_filename.c_str());
 			plog.Apply(l);
-			logger = l;
+			Logger::global = l;
 		}
 	}
 	else
 	{
 		Logger* l = new Logger;
 		plog.Clear();
-		logger = l;
+		Logger::global = l;
 	}
 
 	//-------------------------------------------------------------------------
@@ -878,7 +877,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			ClearLanguages();
 			delete[] cmd_line;
 			delete[] argv;
-			delete logger;
+			delete Logger::global;
 			return 2;
 		}
 		else
@@ -933,7 +932,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// sprz¹tanie
 	delete[] cmd_line;
 	delete[] argv;
-	delete logger;
+	delete Logger::global;
 
 	return (b ? 0 : 1);
 }

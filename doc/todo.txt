@@ -89,7 +89,6 @@ POTRZEBA PRZYKŁADÓW:
 - xxx
 - zliczanie load_errors
 
-- unlock_point -> środek ekranu a nie okna, zmiana rozdzielczości, przesunięcie okna
 - engine refactoring (resMgr - change var name)
 
 

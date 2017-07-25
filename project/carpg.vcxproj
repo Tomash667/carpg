@@ -162,7 +162,6 @@
     <ClInclude Include="source\game\GameStats.h" />
     <ClInclude Include="source\game\quests\QuestConsts.h" />
     <ClInclude Include="source\game\system\Building.h" />
-    <ClInclude Include="source\game\system\BuildingGroup.h" />
     <ClInclude Include="source\game\system\BuildingScript.h" />
     <ClInclude Include="source\game\system\Content.h" />
     <ClInclude Include="source\game\system\Type.h" />
@@ -362,7 +361,6 @@
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
     <ClCompile Include="source\game\system\Building.cpp" />
-    <ClCompile Include="source\game\system\BuildingGroup.cpp" />
     <ClCompile Include="source\game\system\BuildingScript.cpp" />
     <ClCompile Include="source\game\system\Content.cpp" />
     <ClCompile Include="source\game\system\Type.cpp" />

@@ -378,6 +378,33 @@ Type* CreateBuildingHandler()
 	return new BuildingHandler;
 }
 
+//-----------------------------------------------------------------------------
+vector<BuildingGroup*> content::building_groups;
+
+//-----------------------------------------------------------------------------
+// Hardcoded building groups
+BuildingGroup* content::BG_INN;
+BuildingGroup* content::BG_HALL;
+BuildingGroup* content::BG_TRAINING_GROUNDS;
+BuildingGroup* content::BG_ARENA;
+BuildingGroup* content::BG_FOOD_SELLER;
+BuildingGroup* content::BG_ALCHEMIST;
+BuildingGroup* content::BG_BLACKSMITH;
+BuildingGroup* content::BG_MERCHANT;
+
+//=================================================================================================
+// Find building group by id
+//=================================================================================================
+BuildingGroup* content::FindBuildingGroup(const AnyString& id)
+{
+	for(BuildingGroup* group : building_groups)
+	{
+		if(group->id == id.s)
+			return group;
+	}
+	return nullptr;
+}
+
 class BuildingLoader
 {
 	enum Group
@@ -410,13 +437,92 @@ public:
 	{
 		InitTokenizer();
 
-		cstring path = Format("%s/buildings.txt", content::system_dir.c_str());
+		LocalString path = Format("%s/buildings.txt", content::system_dir.c_str());
 		if(!t.FromFile(path))
+		{
+			Error("Failed to open file '%s'.", path.c_str());
+			++content::errors;
+			return;
+		}
+
+		try
+		{
+			content::errors += t.ParseTop(G_TOP, [this]
+			{
+				Top top = (Top)t.GetKeywordId(G_TOP);
+				switch(top)
+				{
+				case T_BUILDING:
+					ParseBuilding();
+					break;
+				case T_BUILDING_GROUP:
+					ParseBuildingGroup();
+					break;
+				case T_BUILDING_SCRIPT:
+					ParseBuildingScript();
+					break;
+				}
+			});
+		}
+		catch(Tokenizer::Exception& e)
+		{
+			Error("Failed to parse file '%s': %s", path.c_str(), e.ToString());
+			++content::errors;
+		}
+
+		SetupBuildingGroups();
+	}
+
+private:
+
+	void ParseBuilding()
+	{
+		const string& id = t.MustGetString();
+		auto existing_building = content::FindBuilding(id);
+		if(existing_building != null)
+			t.Throw("Building '%s' already exists.", id.c_str());
+
+		Ptr<Building> building;
+		building->id = id;
+		t.Next();
+
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
 		{
 		}
 	}
 
-private:
+	void ParseBuildingGroup()
+	{
+		const string& id = t.MustGetString();
+		auto existing_building_grop = content::FindBuildingGroup(id);
+		if(existing_building_group != nullptr)
+			t.Throw("Building group '%s' already exists.", id.c_str());
+
+		auto building_group = new BuildingGroup;
+		building_group->id = id;
+		content::building_groups.push_back(building_group);
+		t.Next();
+	}
+
+	void ParseBuildingScript()
+	{
+	}
+
+	void SetupBuildingGroups()
+	{
+		content::BG_INN = content::FindBuildingGroup("inn");
+		content::BG_HALL = content::FindBuildingGroup("hall");
+		content::BG_TRAINING_GROUNDS = content::FindBuildingGroup("training_grounds");
+		content::BG_ARENA = content::FindBuildingGroup("arena");
+		content::BG_FOOD_SELLER = content::FindBuildingGroup("food_seller");
+		content::BG_ALCHEMIST = content::FindBuildingGroup("alchemist");
+		content::BG_BLACKSMITH = content::FindBuildingGroup("blacksmith");
+		content::BG_MERCHANT = content::FindBuildingGroup("merchant");
+	}
+
 	Tokenizer t;
 };
 

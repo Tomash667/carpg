@@ -489,9 +489,6 @@
     <ClCompile Include="source\game\system\Building.cpp">
       <Filter>3. game\system</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\system\BuildingGroup.cpp">
-      <Filter>3. game\system</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\system\BuildingScript.cpp">
       <Filter>3. game\system</Filter>
     </ClCompile>
@@ -1059,9 +1056,6 @@
       <Filter>1. core</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\Building.h">
-      <Filter>3. game\system</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\system\BuildingGroup.h">
       <Filter>3. game\system</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\BuildingScript.h">

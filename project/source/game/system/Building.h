@@ -1,6 +1,14 @@
 #pragma once
 
-#include "TypeItem.h"
+#include "Content.h"
+
+//-----------------------------------------------------------------------------
+// Building group
+struct BuildingGroup
+{
+	string id;
+	vector<Building*> buildings;
+};
 
 //-----------------------------------------------------------------------------
 struct BuildingGroup;

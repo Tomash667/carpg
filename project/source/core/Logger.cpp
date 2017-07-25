@@ -9,13 +9,6 @@ const cstring Logger::level_names[4] = {
 	"FATAL"
 };
 
-static cstring log_level_name[4] = {
-	"INFO ",
-	"WARN ",
-	"ERROR",
-	"FATAL"
-};
-
 void Logger::Log(Level level, cstring msg)
 {
 	assert(msg);
@@ -32,7 +25,7 @@ ConsoleLogger::~ConsoleLogger()
 
 void ConsoleLogger::Log(Level level, cstring text, const tm& time)
 {
-	printf("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
+	printf("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, level_names[level], text);
 	fflush(stdout);
 }
 
@@ -49,7 +42,7 @@ TextLogger::~TextLogger()
 
 void TextLogger::Log(Level level, cstring text, const tm& time)
 {
-	out << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, log_level_name[level], text);
+	out << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, level_names[level], text);
 }
 
 void TextLogger::Flush()
