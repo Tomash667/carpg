@@ -13,8 +13,6 @@
 #include <functional>
 #include "LocationHelper.h"
 #include "Content.h"
-#include "BuildingScript.h"
-#include "BuildingGroup.h"
 #include "QuestManager.h"
 #include "Encounter.h"
 #include "CaveLocation.h"

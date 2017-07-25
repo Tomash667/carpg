@@ -489,9 +489,6 @@
     <ClCompile Include="source\game\system\Building.cpp">
       <Filter>3. game\system</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\system\BuildingScript.cpp">
-      <Filter>3. game\system</Filter>
-    </ClCompile>
     <ClCompile Include="source\gui\Control.cpp">
       <Filter>gui</Filter>
     </ClCompile>
@@ -539,18 +536,6 @@
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest_RetrievePackage.cpp">
       <Filter>3. game\quests</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\system\Type.cpp">
-      <Filter>3. game\system</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\system\TypeManager.cpp">
-      <Filter>3. game\system</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\GameTypes.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\system\TypeVectorContainer.cpp">
-      <Filter>3. game\system</Filter>
     </ClCompile>
     <ClCompile Include="source\gui\CheckBoxGroup.cpp">
       <Filter>gui\new</Filter>
@@ -1058,9 +1043,6 @@
     <ClInclude Include="source\game\system\Building.h">
       <Filter>3. game\system</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\system\BuildingScript.h">
-      <Filter>3. game\system</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\system\Content.h">
       <Filter>3. game\system</Filter>
     </ClInclude>
@@ -1127,21 +1109,6 @@
     <ClInclude Include="source\game\quests\Quest_RetrievePackage.h">
       <Filter>3. game\quests</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\system\TypeVectorContainer.h">
-      <Filter>3. game\system</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\system\Type.h">
-      <Filter>3. game\system</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\system\TypeId.h">
-      <Filter>3. game\system</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\system\TypeManager.h">
-      <Filter>3. game\system</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\system\TypeProxy.h">
-      <Filter>3. game\system</Filter>
-    </ClInclude>
     <ClInclude Include="source\core\TextWriter.h">
       <Filter>1. core</Filter>
     </ClInclude>
@@ -1150,9 +1117,6 @@
     </ClInclude>
     <ClInclude Include="source\gui\CheckBoxGroup.h">
       <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\system\TypeItem.h">
-      <Filter>3. game\system</Filter>
     </ClInclude>
     <ClInclude Include="source\gui\Button.h">
       <Filter>gui</Filter>
@@ -1237,6 +1201,9 @@
     </ClInclude>
     <ClInclude Include="source\core\Algorithm.h">
       <Filter>1. core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\ContentLoader.h">
+      <Filter>3. game\system</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

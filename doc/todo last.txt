@@ -1,70 +1,68 @@
 carpg
 -------------
-+ dużo błędów w logach
-+ wczytaj gre - zle teksty
-+ nowa gra - kiepsko wyglada doll
-+ błąd podczas wczytywania
-+ Missing localized string 'name' for 'building house'.
-+ nowa gra -> crash GenerateCItyBuildings
-+ change controlls, can click on options
+change
+// content
+	resMgr.NextTask(txLoadingDatafiles);
+	type_manager->LoadTypes(load_errors);
+	type_manager->LogLoadedTypes();
 
-- fix options update on second frame
-ore vain -> ore vein (lang/system/object id)
-remove typemanager
-resource manager - load when required
-energy - combat
-1 skill per class
-new items - meshes
-
-col_printf("Dobra robota, powieszę tą głowę nad kominkiem. Już kiedyś wysłałem jednego bohatera w tym celu i nawet mu się udało. Tylko zapomniał przynieść tej głowy. "
-					"Dałem mu wtedy całe $y10$n sztuk złota. Ty zapewne oczekujesz większej nagrody?\n");
+- wczytaj gre - zle teksty
+- nowa gra - kiepsko wyglada doll
+- błąd podczas wczytywania
+- Missing localized string 'name' for 'building house'.
+- nowa gra -> crash GenerateCItyBuildings
 
 ============================================
 NEXT
 TECH:
 replace DT_LEFT etc
-BUG ^ w czasie spotkania może wygenerować silniejszych wrogów niż poziom :(
-breakable barrels
-gamepad support
 fix cursor_pos in engine and in gui
 standarized button positions (ok/cancel)
-multiple monitors support
+
+Collision flags fix - Collision flags are not what i was thinking they are setCollisionFlags, need to be removed
+ResetCollisionPointers - What is this used for, called but only for few location types
+more dialogs: "Najważniejsze w życiu jest zdrowie i mleko krowie!"
+Panel fadein/fadeout
+col_printf("Dobra robota, powieszę tą głowę nad kominkiem. Już kiedyś wysłałem jednego bohatera w tym celu i nawet mu się udało. Tylko zapomniał przynieść tej głowy. Dałem mu wtedy całe $y10$n sztuk złota. Ty zapewne oczekujesz większej nagrody?\n");
+
+Trainer
+	Train skill/attribute/perk.
+	skille pozwalają na szkolenie atutów/poznawanie samemu jeśli się ma trochę więcej, np 1 atut co 10 poziomów
+	
+basements in city
+debug overlay
+decals
+modability
+f5 check working directory for existance of dll ?
+
+Model tint - To allow some monsters recolors without creating new textures. Changeable in editor.
+Website fixes
+	404 not found
+		Going into not existing folder will break website http://carpg.pl/testy/
+		Going into not existing file too http://carpg.pl/test.html
+	Opacity fix:
+	> .post_wrapper:hover .postarea div.flow_hidden,.post_wrapper:hover .postarea div.flow_hidden ul.quickbuttons
+	> {
+	> 	opacity: 1;
+	> }
+
+	- -> ul.quickbuttons:hover
+	  On mobile don't hide at all.
+	- Logo from imgur.
+	- Mobile theme ?
+
+	Opacity is fixed now.
+	Index2.php for redirections
+		Add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
 
 ===============================================================================================================
-				
-actions:
-WOJ
-bull charge - jak herkules z smite
-
-LOTR
-dash
-rzut zatrutym sztyletem
-atak - krwawienie, x2 od tyłu
-ukrycie
-kradzież
-
-LOWC
-sidła - root na jeden cel
-zwierzęcy sojusznik
-kamuflaż
 
 v0.10:
-+ krwawienie
 + global play time
-+ automated test: enter tutorial, enter each level using cheats
 
 v0.20:
-+ paladyn
 + efekty ognia, lodu, kwasu, elektro ?
-+ autozapis, kontynuuj grę
 + połączenie config i linii komend, w Debug -config debug.cfg, w client_dbg -config client.cfg, wszystko idzie z configu, sekcje
-+ vs 2017
-
-EE:
-+ broken arrow, zagubiona bomba atomowa
-+ torebka czarodziejki -> jak torba przechowywania
-+ jessy, james, meow
-
 + building inside editor
 
 Y - yell, 3 opcje do wyboru

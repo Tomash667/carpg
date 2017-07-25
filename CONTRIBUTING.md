@@ -4,9 +4,9 @@
 1. Check if this bug is not already reported.
 1. Add new issue (bug).
 
-## Submiting features / ideas
+## Submiting features / ideas / enhancements
 1. Search if it isn't already added.
-2. Add new issue (feature).
+2. Add new issue (enhancement).
 
 ## Contributing a patch
 1. Submit an issue describing your proposed change to the repo in question.

@@ -7,7 +7,6 @@
 #include "Item.h"
 #include "Crc.h"
 #include "Content.h"
-#include "TypeManager.h"
 
 extern string g_system_dir;
 
@@ -2353,88 +2352,4 @@ UnitGroup* FindUnitGroup(const AnyString& id)
 UnitData* content::FindUnit(const AnyString& id)
 {
 	return FindUnitData(id.s);
-}
-
-class UnitHandler : public Type, public Type::Container
-{
-	struct Enumerator : public Type::Container::Enumerator
-	{
-		UnitDataIterator it, end;
-
-		Enumerator()
-		{
-			it = unit_datas.begin();
-			end = unit_datas.end();
-			if(it != end)
-				current = *it;
-			else
-				current = nullptr;
-		}
-
-		bool Next() override
-		{
-			if(current == nullptr)
-				return false;
-			++it;
-			if(it == end)
-			{
-				current = nullptr;
-				return false;
-			}
-			else
-			{
-				current = *it;
-				return true;
-			}
-		}
-	};
-public:
-	UnitHandler() : Type(TypeId::Unit, "unit", "Unit", "units")
-	{
-		AddId(offsetof(UnitData, id));
-
-		container = this;
-		delete_container = false;
-	}
-
-	TypeItem* Create() override
-	{
-		assert(0);
-		return nullptr;
-	}
-
-	void Destroy(TypeItem* item) override
-	{
-		assert(0);
-	}
-
-	void Add(TypeItem* item) override
-	{
-		assert(0);
-	}
-
-	Ptr<Type::Container::Enumerator> GetEnumerator() override
-	{
-		return Ptr<Type::Container::Enumerator>(new Enumerator);
-	}
-
-	uint Count() override
-	{
-		return unit_datas.size();
-	}
-
-	TypeItem* Find(const string& id) override
-	{
-		return FindUnitData(id.c_str(), false);
-	}
-
-	void Merge(vector<TypeEntity*>& new_items, vector<TypeEntity*>& removed_items)
-	{
-		assert(0);
-	}
-};
-
-Type* CreateUnitHandler()
-{
-	return new UnitHandler;
 }

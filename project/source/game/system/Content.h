@@ -17,6 +17,7 @@ namespace content
 	extern vector<Building*> buildings;
 	extern vector<BuildingGroup*> building_groups;
 	extern vector<BuildingScript*> building_scripts;
+	extern uint buildings_crc;
 
 	// Hardcoded building groups
 	extern BuildingGroup* BG_INN;
@@ -34,5 +35,11 @@ namespace content
 	Building* FindOldBuilding(OLD_BUILDING type);
 	UnitData* FindUnit(const AnyString& id);
 
+	void LoadContent();
+	void LoadStrings();
 	void LoadBuildings();
+	bool ReadCrc(BitStream& stream);
+	void WriteCrc(BitStream& stream);
+	bool GetCrc(byte type, uint& my_crc, cstring& type_crc);
+	bool ValidateCrc(byte& type, uint& my_crc, uint& player_crc, cstring& type_str);
 }

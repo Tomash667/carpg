@@ -368,8 +368,6 @@ struct ConfigVar
 
 typedef std::map<Animesh*, TEX> ItemTextureMap;
 
-class TypeManager;
-
 struct Game final : public Engine, public UnitEventHandler
 {
 	Game();
@@ -1958,9 +1956,4 @@ public:
 	Config cfg;
 	void SaveCfg();
 	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
-
-	TypeManager* type_manager;
-
-	void InitializeTypeManager();
-	void CleanupTypeManager();
 };
