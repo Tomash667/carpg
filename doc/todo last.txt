@@ -13,6 +13,7 @@ NEXT
 TECH:
 fix cursor_pos in engine and in gui
 standarized button positions (ok/cancel)
+useables are saved by type (int)
 
 Collision flags fix - Collision flags are not what i was thinking they are setCollisionFlags, need to be removed
 ResetCollisionPointers - What is this used for, called but only for few location types

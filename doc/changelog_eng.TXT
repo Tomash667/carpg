@@ -17,6 +17,7 @@ Version 0.10.0 (2017-XX-YY):
 + bow arrow speed depends on bow type & skill [Paradox Edge]
 + autowalk (key F)
 + support for missing textures and meshes for items loading
++ allow game start without sound drivers
 - fixed last item not visible in controls change panel
 - fixed orc gorush always picking shaman class for random
 - fixed orc gorush never getting more healing potions as intendent
@@ -27,6 +28,7 @@ Version 0.10.0 (2017-XX-YY):
 - fixed crash when using $ in textbox
 - fixed window focus bug
 - fixed problems with cursor when window was far from center
+- fixed "iron vain" typo
 
 --------------------------------------------------------------------------------
 Version 0.4.20 (2016-04-29):

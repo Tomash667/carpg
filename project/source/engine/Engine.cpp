@@ -860,18 +860,21 @@ void Engine::InitSound()
 	if(result != FMOD_OK)
 		throw Format("Engine: Failed to get FMOD number of drivers (%d).", result);
 	if(count == 0)
-		Warn("Engine: No sound drivers.");
-	else
 	{
-		Info("Engine: Sound drivers (%d):", count);
-		for(int i = 0; i < count; ++i)
-		{
-			result = fmod_system->getDriverInfo(i, BUF, 256, nullptr);
-			if(result == FMOD_OK)
-				Info("Engine: Driver %d - %s", i, BUF);
-			else
-				Error("Engine: Failed to get driver %d info (%d).", i, result);
-		}
+		Warn("Engine: No sound drivers.");
+		disabled_sound = true;
+		return;
+	}
+
+	// log drivers
+	Info("Engine: Sound drivers (%d):", count);
+	for(int i = 0; i < count; ++i)
+	{
+		result = fmod_system->getDriverInfo(i, BUF, 256, nullptr);
+		if(result == FMOD_OK)
+			Info("Engine: Driver %d - %s", i, BUF);
+		else
+			Error("Engine: Failed to get driver %d info (%d).", i, result);
 	}
 
 	// get info about selected driver and output device
