@@ -46,7 +46,6 @@
 #endif
 #include <Shellapi.h>
 #include <ctime>
-#include <cstdio>
 #include <vector>
 #include <list>
 #include <algorithm>

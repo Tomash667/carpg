@@ -365,7 +365,7 @@ public:
 		InitTokenizer();
 
 		ContentLoader loader;
-		loader.Load(t, "buildings.txt", G_TOP, [this](int top, const string& id)
+		bool ok = loader.Load(t, "buildings.txt", G_TOP, [this](int top, const string& id)
 		{
 			switch(top)
 			{
@@ -380,17 +380,10 @@ public:
 				break;
 			}
 		});
-		
-		LocalString path = Format("%s/buildings.txt", content::system_dir.c_str());
-		if(!t.FromFile(path))
-		{
-			Error("Failed to open file '%s'.", path.c_str());
-			++content::errors;
+		if(!ok)
 			return;
-		}
-
+		
 		SetupBuildingGroups();
-		SetupBuildings();
 		CalculateCrc();
 
 		Info("Loaded buildings (%u), groups (%u), scripts (%u) - crc %p.",
@@ -608,13 +601,14 @@ private:
 				break;
 			}
 		}
-		t.Next();
 
 		if(building->mesh_id.empty())
 			t.Throw("Building '%s' is missing mesh.", building->id.c_str());
 		if(building->scheme.empty())
 			t.Throw("Building '%s' is missing scheme.", building->id.c_str());
 
+		if(building->group)
+			building->group->buildings.push_back(building.Get());
 		content::buildings.push_back(building.Pin());
 	}
 
@@ -627,7 +621,6 @@ private:
 		auto building_group = new BuildingGroup;
 		building_group->id = id;
 		content::building_groups.push_back(building_group);
-		t.Next();
 	}
 
 	void ParseBuildingScript(const string& id)
@@ -635,12 +628,13 @@ private:
 		auto existing_building_script = content::FindBuildingScript(id);
 		if(existing_building_script)
 			t.Throw("Id must be unique.");
-
+		t.Next();
 
 		t.AssertSymbol('{');
 		t.Next();
 
 		Ptr<BuildingScript> script;
+		script->id = id;
 		DeleteElements(script->variants);
 		script->required_offset = (uint)-1;
 		variant = nullptr;
@@ -656,9 +650,7 @@ private:
 		vector<bool> if_state; // false - if block, true - else block
 		bool inline_variant = false,
 			in_shuffle = false;
-
-		t.FromString(script.code_str);
-
+		
 		while(!t.IsEof())
 		{
 			if(t.IsSymbol('}'))
@@ -673,7 +665,7 @@ private:
 					t.Next();
 				}
 				else
-					t.Unexpected();
+					break;
 			}
 
 			if(t.IsKeywordGroup(G_SCRIPT))
@@ -1071,16 +1063,7 @@ private:
 		content::BG_BLACKSMITH = content::FindBuildingGroup("blacksmith");
 		content::BG_MERCHANT = content::FindBuildingGroup("merchant");
 	}
-
-	void SetupBuildings()
-	{
-		for(auto b : content::buildings)
-		{
-			if(b->group)
-				b->group->buildings.push_back(b);
-		}
-	}
-
+	
 	void CalculateCrc()
 	{
 		Crc crc;
@@ -1124,4 +1107,11 @@ void content::LoadBuildings()
 {
 	BuildingLoader loader;
 	loader.Load();
+}
+
+void content::CleanupBuildings()
+{
+	DeleteElements(building_scripts);
+	DeleteElements(building_groups);
+	DeleteElements(buildings);
 }

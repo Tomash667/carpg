@@ -14,8 +14,9 @@ void content::LoadContent(delegate<void(Id)> callback)
 	callback(Id::Buildings);
 }
 
-void content::LoadStrings()
+void content::CleanupContent()
 {
+	CleanupBuildings();
 }
 
 bool content::ReadCrc(BitStream& stream)

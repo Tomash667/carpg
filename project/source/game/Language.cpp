@@ -7,6 +7,7 @@
 #include "Item.h"
 #include "Perk.h"
 #include "UnitData.h"
+#include "Building.h"
 
 //-----------------------------------------------------------------------------
 string g_lang_prefix;
@@ -266,7 +267,8 @@ enum KEYWORD
 	K_UNIT,
 	K_LOCATION_START,
 	K_LOCATION_END,
-	K_TEXT
+	K_TEXT,
+	K_BUILDING
 };
 
 //=================================================================================================
@@ -288,7 +290,8 @@ static void PrepareTokenizer(Tokenizer& t)
 		{ "unit", K_UNIT },
 		{ "location_start", K_LOCATION_START },
 		{ "location_end", K_LOCATION_END },
-		{ "text", K_TEXT }
+		{ "text", K_TEXT },
+		{ "building", K_BUILDING }
 	});
 }
 
@@ -547,6 +550,20 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 						ud->name = t.MustGetString();
 					}
 					break;
+				case K_BUILDING:
+					// building id = "text"
+					{
+						t.Next();
+						const string& s = t.MustGetText();
+						Building* b = content::FindBuilding(s.c_str());
+						if(!b)
+							t.Throw("Invalid building '%s'.", s.c_str());
+						t.Next();
+						t.AssertSymbol('=');
+						t.Next();
+						b->name = t.MustGetString();
+					}
+					break;
 				default:
 					t.Unexpected();
 					break;
@@ -585,6 +602,7 @@ void LoadLanguageFiles()
 	LoadLanguageFile3(t, "items.txt");
 	LoadLanguageFile3(t, "perks.txt");
 	LoadLanguageFile3(t, "units.txt");
+	LoadLanguageFile3(t, "buildings.txt");
 
 	if(txLocationStart.empty() || txLocationEnd.empty())
 		throw "Missing locations names.";

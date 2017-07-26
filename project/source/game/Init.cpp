@@ -254,8 +254,6 @@ void Game::LoadLanguageFiles()
 	::LoadLanguageFiles();
 	LoadDialogTexts();
 
-	content::LoadStrings();
-
 	GUI.SetText();
 	SetGameCommonText();
 	SetItemStatsText();

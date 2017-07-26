@@ -24,7 +24,6 @@ public:
 					return false;
 				}
 				local_id = t.MustGetString();
-				t.Next();
 
 				try
 				{
@@ -33,7 +32,7 @@ public:
 				}
 				catch(Tokenizer::Exception& e)
 				{
-					Error("Failed to parse %s '%s': %s", t.GetKeyword(top_group, top)->name, local_id.c_str(), e.ToString());
+					Error("Failed to parse %s '%s': %s", t.FindKeyword(top, top_group)->name, local_id.c_str(), e.ToString());
 					return false;
 				}
 			});

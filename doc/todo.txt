@@ -1,15 +1,4 @@
-﻿- missing localized text for building, mark as not required
-- savegame text is not quoted (0.2.11 for example - load error)
-- opcje, otwarcie sterowania pozwala klikać na scrollbary
-- can't start game, building script has 0 variants
-- Font::SplitLine, can't use both DT_SINGLE_LINE and DT_PARSE_SPECIAL 
-
-+ building script
-	+ reload
-	+ validate script
-	+ escape " on save
-	
-FAR FAR TODO:
+﻿FAR FAR TODO:
 + remove windows.h/directx/music from pch, include it per file
 + unify error messge for loading
 + toolset/menu don't lock cursor in windowed mode
@@ -82,11 +71,9 @@ POTRZEBA PRZYKŁADÓW:
 	HANDLE file = CreateFile(Format("f%u", net_stream.GetNumberOfBytesUsed()), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 	WriteFile(file, net_stream.GetData(), net_stream.GetNumberOfBytesUsed(), &tmp, nullptr);
 	CloseHandle(file);
-- crash for Paradox Edge, need full dump
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 //****************************************************
-- xxx
 - zliczanie load_errors
 
 - engine refactoring (resMgr - change var name)
@@ -163,7 +150,7 @@ POTRZEBA PRZYKŁADÓW:
 + wood supports in mine
 + indoors slopes
 + portals with textures
-+ enemies inside inside building
++ enemies inside building
 	- AI_HitReaction don't work inside
 	- CanSee
 + AI_Shout should work on units that lie on ground
@@ -180,9 +167,7 @@ POTRZEBA PRZYKŁADÓW:
 + weapons models
 + effects (burning weapon, blood crystal)
 + GAME_KEY (unlock_cursor, open_menu)
-+ shortcuts
 + new system
-	+ add ring, nackle (and write all places where changes are needed)
 	+ training attributes
 		* int - reading books
 		* wis - praying & meditation
@@ -555,17 +540,14 @@ KONSOLA:
 * komenda spawnitem
 * warianty obiektów (np. druga tekstura beczki, od razu w modelu)
 * więcej obiektów w podziemiach (piec, kominek, wiadro z wodą, studnia, kibel)
-* brak #include "Game.h" w animesh.cpp
 * quadtree dla statycznych obiektów
 * połączenie selected_target, selected_unit, before_player_ptr
 * lepszy generator przedmiotów (uwzględnianie min i max ceny)
-* autoexec dla skryptów
 * podział na particle emitter i particle emitter base
 * dwie tekstury ścian, np. dziura czy ozdoba
 * lepsze generowanie poziomów (sprawdza pf czy da się przejść albo zwiększanie rozmiaru obiektów o margines postaci wokół)
 * algorytm rot rect - rect
 * lepsza obsługa błędów w cfg (zwraca info o błędzie a nie tylko domyślną wartość)
-* brak <cstdio> <conio.h>, tylko w miejscu gdzie jest ConsoleLogger
 * + i - grup jednostek (np gobliny szybko się mnożą, magowie wolno ale są silni itp)
 * w SpawnUnitNearLocation i SpawnUnitInsideRoom można użyć jakiegoś rozkładu czy czegoś a nie losowości (poisson disc)
 * SpawnUnitInsideRoom najpierw niech zrobi GatherCollisionObjects dla pokoju a potem przekazuje dla pojedyńczych jednostek
@@ -578,7 +560,6 @@ KONSOLA:
 * obozy w jaskiniach/podziemiach/lasach itp
 * echo dla skryptów (np bind) on/off
 * elemental affinity (atut, kilka poziomów) czary żywiołu są tańsze, odporność, efekty graficzne
-* poziomy trudności
 * uwzględnianie celu w nazwie podziemi (labirynt, fort)
 * Unit::Type do data
 * podział na jednostkę na aktualnej mapie i na globalną (np animation_state, trafil i inne są tylko tymczasowe)
@@ -589,14 +570,13 @@ KONSOLA:
 * lepszy generator miasta
 * wbudowany notepad [edit]
 * kolejność inicjalizacji [parametry lini komendy -> plik konfiguracyjny -> autoexec]
-* wbudowane w język skryptowy pliku konfiguracyjne
 * konwersja configu i zapisów ze starej wersji [przykład w system.txt]
 * w pliku konfiguracyjnym ścieżki do data/saves/screenshots
 * poziomy trudności (łatwy - brak frendly fire, normalny - połowa frendly fire, trudny - pełny frendly fire)
 * celowanie magów/łuczników do niskich/wysokich postaci
 * efekt ładowania czaru w dłoni
 * lepszy system cząsteczek (obracanie)
-* wczytywanie/zwalnanie danych przy zmianie poziomu
+* zwalnanie danych przy zmianie poziomu
 * ustandaryzowane zasięgi głośności (min,max)
 * zasięg okrzyku zależny od dźwięku
 * rozbrajanie
@@ -621,7 +601,6 @@ KONSOLA:
 * um: leczenie, wspinaczka
 * więcej możliwości otwierania drzwi, fizyka, animacja
 * w wieży maga na samym dole drzwi, schody w górę
-* lepsza obsługa kursora systemowego
 * możliwość wyboru jaką klase chcesz trenować
 * wymiana pomiędzy postaciami
 * rzucanie przedmiotem w ramach handlu
@@ -662,9 +641,7 @@ KONSOLA:
 	sword block metal
 	arrow block wood
 * lepsze generowanie przedmiotów w sklepie, zapamiętywanie przez jakiś czas
-* nitka na mapie świata która wskazuje gdzie ostatnio byliśmy
 * oświetlenie na zewnątrz dla terenu, pod małym kątem jest biała trawa [na ziemie i trawie zato widać trawę pod kątem, mipmaping?]
-* podział przestrzeni dla lasu np
 * kolizje fizyki 3d
 * wieże obronne
 * potwory/bandyci/nic w jaskini/lesie
@@ -705,7 +682,6 @@ KONSOLA:
 * lepsze generowanie podziemi tak że ułożenie budynków ma sens [kuchnia,skarbiec,sypialnia,stróżówka]
 * przemieszczanie się wrogów i obozy tak jak miało być w 0.2
 * destruktor Unit
-* archivementy
 * więzienie w podziemiach, w którym mógłby być porwany
 * jakaś nakładka na Unit* (żeby można było usuwać ?)
 * generowanie postaci na pozycji / miasta na mapie zawsze działające [przesuwa tam gdzie wolne miejsce, bo używając losowości to i za 1000 razem nie trafi w to pole]
@@ -733,7 +709,6 @@ KONSOLA:
 * CAPSLOCK - przełącz pomiędzy bieganiem a chodzeniem
 * lepszy system questów [jeśli nie zaakceptujemy questa od podróżnego to na zawsze zostanie w unaccepted_quests]
 * skalowalny poziom trudności zadań [odzyskaj paczkę od słabych, normalnych, silnych wrogów]
-* parser konsoli oparty na języku skryptowym, ignorowanie nadmiarowych spacji
 * połączona obsługa zadań w EnterLocation i EnterLevel
 * system klas dla npc [np klasa drwal, i potem tylko ustawiam że to drwal 5 poziomu, bandyta któregoś, mieszkanie któregoś]
 * komendy na pozycje gracza, szybką podróż po mapie, zmienne zadań
@@ -759,16 +734,13 @@ KONSOLA:
 * naprawić delta time, teraz jak laguje to ostro spowalnia, coś kiepsko używa tej delty
 * profiler co ile czasu zajmuje żeby było widać co laguje
 * połączenie IsEnemy i IsAlly, inny system :3
-* zamiast DT_SPECIAL, DT_IF_SPECIAL - język skryptowy
 * możliwość zmiany grupy jednostki i innych danych
 * wbudowani posłańcy i inni tacy a nie że każdy quest musi dodawać własny kod do tworzenia posłańca
 * możliwość przepychania się pomiędzy ludźmi jak w assassins creed
 * losowa postać
 * charakter postaci [dobry neutralny zły]
 * flagi postaci (szalonych, chciwy, oddany, zdradliwy, rozrzutny]
-* dialogi postaci [atakować ich! uciekamy, to pułapka!]
 * domyślna tekstura
-* nie zamykanie gry z powodu braku tekstury/modelu
 * zapisywanie/wczytywanie w tutorialu, traktowanie go jak każdy inny poziom, brak zahardcodowanych rzeczy
 * mniejsze limity [dłuższy nick, więcej miejsca na teksty online, dłuższy tekst 100+]
 * można dać FindFirstFileEx aby przyspieszyć wyszukiwanie ale tylko dla windowsa 7+
@@ -813,7 +785,6 @@ KONSOLA:
 * lod modeli - kilka w jednym pliku
 * inny system trenowania umiejętności (mając mniej niż 10 dochodzi do 10, mająć mniej niż 20 dochodzi 9, itp; wszystko zależy też od umiejętności nauczyciela, atrybutów gracza)
 * ParseCommand, lepsze sprawdzanie liczb zamiast atoi/atof
-* własny język skryptowy używany do parsowania komend i w grze
 * do przeczytania o infinite game http://www.gamedev.net/page/resources/_/creative/game-design/the-infinite-game-r3045
 * kilkukrotne automatyczne dołączanie, wybierane postaci
 * używanie wektora LevelContext w mieście zamiast

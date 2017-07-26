@@ -1,29 +1,22 @@
 carpg
 -------------
-change
-// content
-	resMgr.NextTask(txLoadingDatafiles);
-	type_manager->LoadTypes(load_errors);
-	type_manager->LogLoadedTypes();
-
+don't lock cursor on load screen
 - wczytaj gre - zle teksty
 - nowa gra - kiepsko wyglada doll
 - błąd podczas wczytywania
 - Missing localized string 'name' for 'building house'.
 - nowa gra -> crash GenerateCItyBuildings
+- savegame text is not quoted (0.2.11 for example - load error)
 
 ============================================
 NEXT
 TECH:
-replace DT_LEFT etc
 fix cursor_pos in engine and in gui
 standarized button positions (ok/cancel)
 
 Collision flags fix - Collision flags are not what i was thinking they are setCollisionFlags, need to be removed
 ResetCollisionPointers - What is this used for, called but only for few location types
-more dialogs: "Najważniejsze w życiu jest zdrowie i mleko krowie!"
 Panel fadein/fadeout
-col_printf("Dobra robota, powieszę tą głowę nad kominkiem. Już kiedyś wysłałem jednego bohatera w tym celu i nawet mu się udało. Tylko zapomniał przynieść tej głowy. Dałem mu wtedy całe $y10$n sztuk złota. Ty zapewne oczekujesz większej nagrody?\n");
 
 Trainer
 	Train skill/attribute/perk.
@@ -33,9 +26,7 @@ basements in city
 debug overlay
 decals
 modability
-f5 check working directory for existance of dll ?
 
-Model tint - To allow some monsters recolors without creating new textures. Changeable in editor.
 Website fixes
 	404 not found
 		Going into not existing folder will break website http://carpg.pl/testy/
@@ -62,10 +53,3 @@ v0.10:
 
 v0.20:
 + efekty ognia, lodu, kwasu, elektro ?
-+ połączenie config i linii komend, w Debug -config debug.cfg, w client_dbg -config client.cfg, wszystko idzie z configu, sekcje
-+ building inside editor
-
-Y - yell, 3 opcje do wyboru
-	z drogi
-	no chodź tu siusiumajtku!
-	poddaje się!

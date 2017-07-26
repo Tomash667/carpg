@@ -1716,6 +1716,7 @@ void Game::OnCleanup()
 	for(auto& it : item_texture_map)
 		SafeRelease(it.second);
 
+	content::CleanupContent();
 	CleanupUnits();
 	CleanupItems();
 	CleanupSpells();

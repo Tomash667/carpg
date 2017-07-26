@@ -41,8 +41,9 @@ namespace content
 	UnitData* FindUnit(const AnyString& id);
 
 	void LoadContent(delegate<void(Id)> callback);
-	void LoadStrings();
 	void LoadBuildings();
+	void CleanupContent();
+	void CleanupBuildings();
 	bool ReadCrc(BitStream& stream);
 	void WriteCrc(BitStream& stream);
 	bool GetCrc(Id type, uint& my_crc, cstring& type_crc);
