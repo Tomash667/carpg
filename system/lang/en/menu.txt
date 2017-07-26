@@ -26,6 +26,7 @@ download = "Download"
 skip = "Skip"
 version = "Version: %s"
 versionUrl = "http://carpg.pl/en/last"
+haveErrors = "While loading game %u errors and %u warning was found. Check log for details."
 
 // menu
 menu = "Menu"

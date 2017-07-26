@@ -527,10 +527,12 @@ struct Game final : public Engine, public UnitEventHandler
 	VB vbParticle;
 	SURFACE sChar, sSave, sItemRegion;
 	static cstring txGoldPlus, txQuestCompletedGold;
-	cstring txCreateListOfFiles, txLoadItemsDatafile, txLoadMusicDatafile, txLoadLanguageFiles, txLoadShaders, txConfigureGame, txLoadGuiTextures,
+	cstring txLoadGuiTextures,
 		txLoadTerrainTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadBuildings, txLoadTraps, txLoadSpells, txLoadObjects, txLoadUnits,
-		txLoadItems, txLoadSounds, txLoadMusic, txGenerateWorld, txInitQuests, txLoadUnitDatafile, txLoadSpellDatafile, txLoadRequires, txLoadDialogs,
-		txLoadingDatafiles, txLoadingTextfiles;
+		txLoadItems, txLoadSounds, txLoadMusic, txGenerateWorld;
+	// pre
+	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings, txLoadingRequires, txLoadingShaders,
+		txLoadingDialogs, txLoadingLanguageFiles;
 	cstring txAiNoHpPot[2], txAiJoinTour[4], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],
@@ -561,7 +563,7 @@ struct Game final : public Engine, public UnitEventHandler
 	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txPlayerKicked, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txPcWasKicked,
 		txPcLeftGame, txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft;
 	cstring txYell[3];
-	cstring txHaveErrors, txHaveErrorsCritical, txHaveErrorsContinue, txHaveErrorsQuit;
+	cstring txHaveErrors;
 
 private:
 	static Game* game;
@@ -577,9 +579,8 @@ public:
 	Camera cam;
 	int start_version;
 	ItemTextureMap item_texture_map;
-	uint load_errors;
+	uint load_errors, load_warnings;
 	TEX missing_texture;
-	bool required_missing;
 
 	//---------------------------------
 	// GUI / HANDEL

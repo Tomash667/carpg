@@ -5,8 +5,7 @@ class ContentLoader
 public:
 	bool Load(Tokenizer& t, cstring filename, int top_group, delegate<void(int, const string& id)> action)
 	{
-		LocalString path = Format("%s/%s.txt", content::system_dir.c_str(), filename);
-		Info("Loading %s...", path.c_str());
+		LocalString path = Format("%s/%s", content::system_dir.c_str(), filename);
 
 		if(!t.FromFile(path))
 		{

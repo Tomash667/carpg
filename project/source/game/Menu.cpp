@@ -1025,7 +1025,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 										memcpy(&type, packet->data + 6, 1);
 										uint my_crc;
 										cstring type_str;
-										if(content::GetCrc(type, my_crc, type_str))
+										if(content::GetCrc((content::Id)type, my_crc, type_str))
 											reason_eng = Format("invalid %s crc (%p) vs server (%p)", type_str, my_crc, server_crc);
 									}
 								}
@@ -2485,7 +2485,7 @@ void Game::UpdateLobbyNet(float dt)
 					cstring reason_text = nullptr;
 					int include_extra = 0;
 					uint p_crc_items, p_crc_spells, p_crc_dialogs, p_crc_units, my_crc, player_crc;
-					byte type;
+					content::Id type;
 					cstring type_str;
 					JoinResult reason = JoinResult::Ok;
 

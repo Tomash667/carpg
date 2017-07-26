@@ -2393,15 +2393,18 @@ void IGUI::DrawNotifications()
 		if(!n)
 			continue;
 
-		const int alpha = int(255 * n->t2);
-		Int2 offset(wnd_size.x - notification_size.x - 8, 8);
+		Int2 text_size = default_font->CalculateSize(n->text, notification_size.x - 80);
+		Int2 box_size = Int2::Max(notification_size, text_size + Int2(0, 16));
 
-		DrawItem(Control::tDialog, offset, notification_size, COLOR_RGBA(255, 255, 255, alpha), 12);
+		const int alpha = int(255 * n->t2);
+		Int2 offset(wnd_size.x - box_size.x - 8, 8);
+
+		DrawItem(Control::tDialog, offset, box_size, COLOR_RGBA(255, 255, 255, alpha), 12);
 
 		if(n->icon)
 			DrawSprite(n->icon, offset + Int2(8, 8), COLOR_RGBA(255, 255, 255, alpha));
 
-		Rect rect = { offset.x + 8 + 64, offset.y + 8, offset.x + notification_size.x - 8, offset.y + notification_size.y - 8 };
+		Rect rect = { offset.x + 8 + 64, offset.y + 8, offset.x + box_size.x - 8, offset.y + box_size.y - 8 };
 		DrawText(default_font, n->text, DT_CENTER | DT_VCENTER, COLOR_RGBA(0, 0, 0, alpha), rect, &rect);
 	}
 }

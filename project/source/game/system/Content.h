@@ -10,6 +10,11 @@ enum class OLD_BUILDING;
 //-----------------------------------------------------------------------------
 namespace content
 {
+	enum class Id
+	{
+		Buildings
+	};
+
 	extern string system_dir;
 	extern uint errors;
 	extern uint warnings;
@@ -35,11 +40,11 @@ namespace content
 	Building* FindOldBuilding(OLD_BUILDING type);
 	UnitData* FindUnit(const AnyString& id);
 
-	void LoadContent();
+	void LoadContent(delegate<void(Id)> callback);
 	void LoadStrings();
 	void LoadBuildings();
 	bool ReadCrc(BitStream& stream);
 	void WriteCrc(BitStream& stream);
-	bool GetCrc(byte type, uint& my_crc, cstring& type_crc);
-	bool ValidateCrc(byte& type, uint& my_crc, uint& player_crc, cstring& type_str);
+	bool GetCrc(Id type, uint& my_crc, cstring& type_crc);
+	bool ValidateCrc(Id& type, uint& my_crc, uint& player_crc, cstring& type_str);
 }

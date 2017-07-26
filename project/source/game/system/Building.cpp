@@ -362,8 +362,6 @@ public:
 	
 	void Load()
 	{
-		Info("Loading buildings.txt");
-
 		InitTokenizer();
 
 		ContentLoader loader;

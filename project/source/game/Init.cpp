@@ -14,6 +14,7 @@
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
+extern string g_system_dir;
 
 //=================================================================================================
 // Initialize game and show loadscreen.
@@ -123,18 +124,17 @@ void Game::PreloadLanguage()
 {
 	LoadLanguageFile("preload.txt");
 
-	txCreateListOfFiles = Str("createListOfFiles");
-	txLoadItemsDatafile = Str("loadItemsDatafile");
-	txLoadUnitDatafile = Str("loadUnitDatafile");
-	txLoadSpellDatafile = Str("loadSpellDatafile");
-	txLoadMusicDatafile = Str("loadMusicDatafile");
-	txLoadRequires = Str("loadRequires");
-	txLoadLanguageFiles = Str("loadLanguageFiles");
-	txLoadShaders = Str("loadShaders");
-	txConfigureGame = Str("configureGame");
-	txLoadDialogs = Str("loadDialogs");
-	txLoadingDatafiles = Str("loadingDatafiles");
-	txLoadingTextfiles = Str("loadingTextfiles");
+	txCreatingListOfFiles = Str("creatingListOfFiles");
+	txConfiguringGame = Str("configuringGame");
+	txLoadingItems = Str("loadingItems");
+	txLoadingSpells = Str("loadingSpells");
+	txLoadingUnits = Str("loadingUnits");
+	txLoadingMusics = Str("loadingMusics");
+	txLoadingBuildings = Str("loadingBuildings");
+	txLoadingRequires = Str("loadingRequires");
+	txLoadingShaders = Str("loadingShaders");
+	txLoadingDialogs = Str("loadingDialogs");
+	txLoadingLanguageFiles = Str("loadingLanguageFiles");
 }
 
 //=================================================================================================
@@ -168,12 +168,12 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	resMgr.PrepareLoadScreen2(0.1f, 12, txCreateListOfFiles);
+	resMgr.PrepareLoadScreen2(0.1f, 11, txCreatingListOfFiles);
 
 	AddFilesystem();
 	LoadDatafiles();
 	LoadLanguageFiles();
-	resMgr.NextTask(txLoadShaders);
+	resMgr.NextTask(txLoadingShaders);
 	LoadShaders();
 	ConfigureGame();
 	resMgr.EndLoadScreenStage();
@@ -194,42 +194,51 @@ void Game::AddFilesystem()
 //=================================================================================================
 void Game::LoadDatafiles()
 {
-	Info("Game: Loading datafiles.");
+	Info("Game: Loading system.");
 	load_errors = 0;
+	load_warnings = 0;
 	uint loaded;
 
 	// items
-	resMgr.NextTask(txLoadItemsDatafile);
+	resMgr.NextTask(txLoadingItems);
 	loaded = LoadItems(crc_items, load_errors);
 	Info("Game: Loaded items: %u (crc %p).", loaded, crc_items);
 
 	// spells
-	resMgr.NextTask(txLoadSpellDatafile);
+	resMgr.NextTask(txLoadingSpells);
 	loaded = LoadSpells(crc_spells, load_errors);
 	Info("Game: Loaded spells: %u (crc %p).", loaded, crc_spells);
 
 	// dialogs
-	resMgr.NextTask(txLoadDialogs);
+	resMgr.NextTask(txLoadingDialogs);
 	loaded = LoadDialogs(crc_dialogs, load_errors);
 	Info("Game: Loaded dialogs: %u (crc %p).", loaded, crc_dialogs);
 
 	// units
-	resMgr.NextTask(txLoadUnitDatafile);
+	resMgr.NextTask(txLoadingUnits);
 	loaded = LoadUnits(crc_units, load_errors);
 	Info("Game: Loaded units: %u (crc %p).", loaded, crc_units);
 
 	// musics
-	resMgr.NextTask(txLoadMusicDatafile);
+	resMgr.NextTask(txLoadingMusics);
 	loaded = LoadMusicDatafile(load_errors);
 	Info("Game: Loaded music: %u.", loaded);
 
 	// content
-	resMgr.NextTask(txLoadingDatafiles);
-	content::LoadBuildings();
+	content::system_dir = g_system_dir;
+	content::LoadContent([this](content::Id id)
+	{
+		switch(id)
+		{
+		case content::Id::Buildings:
+			resMgr.NextTask(txLoadingBuildings);
+			break;
+		}
+	});
 
 	// required
-	resMgr.NextTask(txLoadRequires);
-	required_missing = !LoadRequiredStats(load_errors);
+	resMgr.NextTask(txLoadingRequires);
+	LoadRequiredStats(load_errors);
 }
 
 //=================================================================================================
@@ -238,14 +247,13 @@ void Game::LoadDatafiles()
 void Game::LoadLanguageFiles()
 {
 	Info("Game: Loading language files.");
-	resMgr.NextTask(txLoadLanguageFiles);
+	resMgr.NextTask(txLoadingLanguageFiles);
 
 	LoadLanguageFile("menu.txt");
 	LoadLanguageFile("stats.txt");
 	::LoadLanguageFiles();
 	LoadDialogTexts();
 
-	resMgr.NextTask(txLoadingTextfiles);
 	content::LoadStrings();
 
 	GUI.SetText();
@@ -270,12 +278,8 @@ void Game::LoadLanguageFiles()
 	txLoadSounds = Str("loadSounds");
 	txLoadMusic = Str("loadMusic");
 	txGenerateWorld = Str("generateWorld");
-	txInitQuests = Str("initQuests");
 
 	txHaveErrors = Str("haveErrors");
-	txHaveErrorsCritical = Str("haveErrorsCritical");
-	txHaveErrorsContinue = Str("haveErrorsContinue");
-	txHaveErrorsQuit = Str("haveErrorsQuit");
 }
 
 //=================================================================================================
@@ -284,7 +288,7 @@ void Game::LoadLanguageFiles()
 void Game::ConfigureGame()
 {
 	Info("Game: Configuring game.");
-	resMgr.NextTask(txConfigureGame);
+	resMgr.NextTask(txConfiguringGame);
 
 	InitScene();
 	InitSuperShader();
@@ -368,39 +372,33 @@ void Game::PostconfigureGame()
 
 	// show errors notification
 	bool start_game_mode = true;
-	if(load_errors > 0)
+	load_errors += content::errors;
+	load_warnings += content::warnings;
+	if(load_errors > 0 || load_warnings > 0)
 	{
+		// show message in release, notification in debug
+		if(load_errors > 0)
+			Error("Game: %u loading errors, %u warnings.", load_errors, load_warnings);
+		else
+			Warn("Game: %u loading warnings.", load_warnings);
+		TEX img = (load_errors > 0 ? tError : tWarning);
+		cstring text = Format(txHaveErrors, load_errors, load_warnings);
+#ifdef _DEBUG
+		GUI.AddNotification(text, img, 5.f);
+#else
 		DialogInfo info;
 		info.name = "have_errors";
-		if(required_missing)
-		{
-			Error("Game: %d loading errors with required missing.", load_errors);
-			info.text = Format(txHaveErrorsCritical, load_errors);
-			info.type = DIALOG_YESNO;
-			info.event = [this](int result)
-			{
-				if(result == BUTTON_NO)
-					StartGameMode();
-				else
-					Quit();
-			};
-			info.img = tError;
-
-			cstring names[] = { txHaveErrorsQuit, txHaveErrorsContinue };
-			info.custom_names = names;
-		}
-		else
-		{
-			Warn("Game: %d loading errors.", load_errors);
-			info.text = Format(txHaveErrors, load_errors);
-			info.type = DIALOG_OK;
-			info.img = tWarning;
-		}
+		info.text = text;
+		info.type = DIALOG_OK;
+		info.img = img;
+		info.event = [this](int result) { StartGameMode(); };
 		info.parent = main_menu;
 		info.order = ORDER_TOPMOST;
 		info.pause = false;
 		info.auto_wrap = true;
-		//GUI.ShowDialog(info);
+		GUI.ShowDialog(info);
+		start_game_mode = false;
+#endif
 	}
 
 	// save config
