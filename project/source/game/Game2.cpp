@@ -739,7 +739,7 @@ void Game::SetupCamera(float dt)
 	cam.matViewInv = matView.Inverse();
 
 	Matrix matProj2 = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
-		float(wnd_size.x) / wnd_size.y*(1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, grass_range);
+		float(wnd_size.x) / wnd_size.y*(1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, grass_range > 0.1f ? grass_range : 0.2f);
 
 	cam.center = cam.from;
 

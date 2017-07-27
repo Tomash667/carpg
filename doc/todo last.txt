@@ -1,11 +1,10 @@
 carpg
 -------------
-don't lock cursor on load screen
+- crash at closing alt+f4
+- crash at loading first save
++ don't lock cursor on load screen
 - wczytaj gre - zle teksty
-- nowa gra - kiepsko wyglada doll
-- błąd podczas wczytywania
 - Missing localized string 'name' for 'building house'.
-- nowa gra -> crash GenerateCItyBuildings
 - savegame text is not quoted (0.2.11 for example - load error)
 
 ============================================
