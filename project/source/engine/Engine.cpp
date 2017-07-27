@@ -461,7 +461,7 @@ void Engine::DoTick(bool update_game)
 			PlaceCursor();
 		}
 	}
-	else if(!locked_cursor)
+	else if(!locked_cursor && lock_on_focus)
 		locked_cursor = true;
 	
 	// update keyboard shortcuts info
@@ -589,7 +589,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		}
 		else
 		{
-			if((!locked_cursor || !active) && down)
+			if((!locked_cursor || !active) && down && lock_on_focus)
 			{
 				ShowCursor(false);
 				Rect rect;
@@ -1294,12 +1294,7 @@ void Engine::SetTitle(cstring title)
 //=================================================================================================
 void Engine::ShowCursor(bool _show)
 {
-	DWORD flag = _show ? CURSOR_SHOWING : 0;
-	CURSORINFO cInfo;
-	cInfo.cbSize = sizeof(CURSORINFO);
-	GetCursorInfo(&cInfo);
-
-	if(cInfo.flags != flag)
+	if(IsCursorVisible() != _show)
 		::ShowCursor(_show);
 }
 
@@ -1311,7 +1306,7 @@ void Engine::ShowError(cstring msg, Logger::Level level)
 	assert(msg);
 
 	ShowWindow(hwnd, SW_HIDE);
-	::ShowCursor(TRUE);
+	ShowCursor(true);
 	Logger::global->Log(level, msg);
 	MessageBox(nullptr, msg, nullptr, MB_OK | MB_ICONERROR | MB_APPLMODAL);
 }
@@ -1357,7 +1352,8 @@ bool Engine::Start(cstring title, bool _fullscreen, uint w, uint h)
 	// loop game
 	try
 	{
-		PlaceCursor();
+		if(locked_cursor && active)
+			PlaceCursor();
 		WindowLoop();
 	}
 	catch(cstring e)
@@ -1383,22 +1379,52 @@ void Engine::StopSounds()
 }
 
 //=================================================================================================
-// Uwalnianie kursora
-//=================================================================================================
-void Engine::UnlockCursor()
+// Unlock cursor - show system cursor and allow to move outside of window
+void Engine::UnlockCursor(bool _lock_on_focus)
 {
+	lock_on_focus = _lock_on_focus;
 	if(!locked_cursor)
 		return;
 	locked_cursor = false;
-	Rect rect;
-	GetClientRect(hwnd, (RECT*)&rect);
-	Int2 wh = rect.Size();
-	POINT pt;
-	pt.x = int(float(unlock_point.x)*wh.x / wnd_size.x);
-	pt.y = int(float(unlock_point.y)*wh.y / wnd_size.y);
-	ClientToScreen(hwnd, &pt);
-	SetCursorPos(pt.x, pt.y);
+
+	if(!IsCursorVisible())
+	{
+		Rect rect;
+		GetClientRect(hwnd, (RECT*)&rect);
+		Int2 wh = rect.Size();
+		POINT pt;
+		pt.x = int(float(unlock_point.x)*wh.x / wnd_size.x);
+		pt.y = int(float(unlock_point.y)*wh.y / wnd_size.y);
+		ClientToScreen(hwnd, &pt);
+		SetCursorPos(pt.x, pt.y);
+	}
+
 	ShowCursor(true);
+}
+
+//=================================================================================================
+// Lock cursor when window gets activated
+void Engine::LockCursor()
+{
+	if(locked_cursor)
+		return;
+	lock_on_focus = true;
+	locked_cursor = true;
+	if(active)
+	{
+		ShowCursor(false);
+		PlaceCursor();
+	}
+}
+
+//=================================================================================================
+// Return true if cursor is visible
+bool Engine::IsCursorVisible() const
+{
+	CURSORINFO cInfo;
+	cInfo.cbSize = sizeof(CURSORINFO);
+	GetCursorInfo(&cInfo);
+	return IS_SET(cInfo.flags, CURSOR_SHOWING);
 }
 
 //=================================================================================================
@@ -1451,12 +1477,15 @@ void Engine::UpdateActivity(bool is_active)
 	active = is_active;
 	if(active)
 	{
-		ShowCursor(FALSE);
-		PlaceCursor();
+		if(locked_cursor)
+		{
+			ShowCursor(false);
+			PlaceCursor();
+		}
 	}
 	else
 	{
-		ShowCursor(TRUE);
+		ShowCursor(true);
 		Key.ReleaseKeys();
 	}
 	OnFocus(active);

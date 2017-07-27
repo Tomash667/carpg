@@ -323,11 +323,6 @@ inline void Rect::Resize(const Rect& r)
 		p2.y = r.p2.y;
 }
 
-inline void Rect::Resize(const Int2& size)
-{
-	p2 += size;
-}
-
 inline Rect Rect::RightBottomPart() const
 {
 	return Rect(p1.x + (p2.x - p1.x) / 2, p1.y, p2.x, p1.y + (p2.y - p1.y) / 2);

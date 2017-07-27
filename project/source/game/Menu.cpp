@@ -2169,10 +2169,7 @@ void Game::Quit()
 
 void Game::DoQuit()
 {
-	exit_mode = true;
-	clearup_shutdown = true;
-	ClearGame();
-	EngineShutdown();
+	game_state = GS_QUIT;
 }
 
 void Game::CloseConnection(VoidF f)

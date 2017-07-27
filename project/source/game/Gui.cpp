@@ -74,8 +74,6 @@ void Game::UpdateGui(float dt)
 	GUI.Update(dt);
 	if(icursor_pos != GUI.cursor_pos)
 		cursor_pos = Vec2(GUI.cursor_pos);
-
-	exit_to_menu = false;
 }
 
 //=================================================================================================

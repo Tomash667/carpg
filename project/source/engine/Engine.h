@@ -59,7 +59,10 @@ public:
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
 	bool Start(cstring title, bool fullscreen, uint w, uint h);
 	void StopSounds();
-	void UnlockCursor();
+	void UnlockCursor(bool lock_on_focus = true);
+	void LockCursor();
+	bool IsCursorLocked() const { return locked_cursor; }
+	bool IsCursorVisible() const;
 	void UpdateMusic(float dt);
 
 	// ----- ZMIENNE -----
@@ -67,7 +70,7 @@ public:
 
 	// okno
 	HWND hwnd;
-	bool active, fullscreen, locked_cursor;
+	bool active, fullscreen;
 	Vec2 cursor_pos;
 	int mouse_wheel;
 	float fps;
@@ -133,5 +136,5 @@ private:
 	uint frames;
 	float frame_time;
 	Timer timer;
-	bool engine_shutdown, lost_device, res_freed, replace_cursor;
+	bool engine_shutdown, lost_device, res_freed, replace_cursor, locked_cursor, lock_on_focus;
 };

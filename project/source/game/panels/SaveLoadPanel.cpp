@@ -75,7 +75,8 @@ void SaveLoad::Draw(ControlDrawData* /*cdd*/)
 
 		GUI.DrawText(GUI.default_font, text, DT_SINGLELINE | DT_VCENTER, choice == i ? GREEN : BLACK, r);
 
-		r.Resize(Int2(4, 20));
+		r.Top() = r.Bottom() + 4;
+		r.Bottom() = r.Top() + 20;
 	}
 
 	// obrazek

@@ -1,11 +1,11 @@
 carpg
 -------------
-- crash at closing alt+f4
+- alt-f4 on worldmap = leaks, exit to menu and quit - same
 - crash at loading first save
-+ don't lock cursor on load screen
-- wczytaj gre - zle teksty
-- Missing localized string 'name' for 'building house'.
-- savegame text is not quoted (0.2.11 for example - load error)
+- po wczytyaniu zapisu 2.6.11 postać biegnie cały czas
+- w zapisie pisze żem create_character
+- w drużynie jest gorzej, hitboxy nie działając, pisze create_character
+- opis tarczy $-c zamiast koloru, wymagana siła
 
 ============================================
 NEXT
@@ -53,3 +53,5 @@ v0.10:
 
 v0.20:
 + efekty ognia, lodu, kwasu, elektro ?
+
++ emoticons on chat
