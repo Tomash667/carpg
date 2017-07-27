@@ -128,8 +128,8 @@ private:
 	vector<BuffImage> buff_images;
 	float sidebar;
 	int sidebar_state[(int)SideButtonId::Max];
-	TEX tBar, tHpBar, tPoisonedHpBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tBuffPoison, tBuffAlcohol, tBuffRegeneration, tBuffFood, tBuffNatural,
-		tBuffAntimagic;
+	TEX tBar, tHpBar, tPoisonedHpBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tBuffPoison, tBuffAlcohol,
+		tBuffRegeneration, tBuffFood, tBuffNatural, tBuffAntimagic, tBuffStamina;
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
 	cstring txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc;

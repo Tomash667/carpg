@@ -100,6 +100,7 @@ enum Property
 	P_PROFILE,
 	P_FLAGS,
 	P_HP,
+	P_STAMINA,
 	P_DEF,
 	P_ITEMS,
 	P_SPELLS,
@@ -1248,6 +1249,12 @@ bool LoadUnit(Tokenizer& t, Crc& crc)
 					t.Throw("Invalid hp bonus %d.", unit->hp_bonus);
 				crc.Update(unit->hp_bonus);
 				break;
+			case P_STAMINA:
+				unit->stamina_bonus = t.MustGetInt();
+				if(unit->stamina_bonus < 0)
+					t.Throw("Invalid stamina bonus %d.", unit->stamina_bonus);
+				crc.Update(unit->stamina_bonus);
+				break;
 			case P_DEF:
 				unit->def_bonus = t.MustGetInt();
 				if(unit->def_bonus < 0)
@@ -1664,6 +1671,7 @@ uint LoadUnits(uint& out_crc, uint& errors)
 		{ "profile", P_PROFILE },
 		{ "flags", P_FLAGS },
 		{ "hp", P_HP },
+		{ "stamina", P_STAMINA },
 		{ "def", P_DEF },
 		{ "items", P_ITEMS },
 		{ "spells", P_SPELLS },

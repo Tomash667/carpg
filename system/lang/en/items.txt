@@ -565,6 +565,7 @@ item potion_spirit {
 }
 item potion_water {
 	name "Water"
+	desc "Restores stamina."
 }
 
 //------------------------------------------------------------------------------

@@ -103,6 +103,7 @@ enum BUFF_FLAGS
 	BUFF_ALCOHOL = 1 << 3,
 	BUFF_POISON = 1 << 4,
 	BUFF_ANTIMAGIC = 1 << 5,
+	BUFF_STAMINA = 1 << 6
 };
 
 //-----------------------------------------------------------------------------
@@ -151,7 +152,7 @@ struct Unit
 	Vec3 pos; // pozycja postaci
 	Vec3 visual_pos; // graficzna pozycja postaci, u¿ywana w MP
 	Vec3 prev_pos, target_pos, target_pos2;
-	float rot, prev_speed, hp, hpmax, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
+	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
 	Type type;
 	int animation_state, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid;
 	ACTION action;
@@ -282,6 +283,7 @@ struct Unit
 	}
 	Vec3 GetEyePos() const;
 	float CalculateMaxHp() const;
+	float CalculateMaxStamina() const;
 	float GetHpp() const { return hp / hpmax; }
 	void GetBox(Box& box) const;
 	int GetDmgType() const;
@@ -328,6 +330,7 @@ struct Unit
 			return !IsOverloaded();
 	}
 	void RecalculateHp();
+	void RecalculateStamina();
 	bool CanBlock() const
 	{
 		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED && HaveShield();

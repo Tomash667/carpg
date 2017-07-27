@@ -13,7 +13,6 @@
 struct Spell;
 struct DialogEntry;
 struct GameDialog;
-class GameTypeManager;
 
 //-----------------------------------------------------------------------------
 struct ItemScript
@@ -250,7 +249,7 @@ struct UnitData
 	MATERIAL_TYPE mat;
 	Int2 level;
 	StatProfile* stat_profile;
-	int hp_bonus, def_bonus, dmg_type, flags, flags2, flags3;
+	int hp_bonus, stamina_bonus, def_bonus, dmg_type, flags, flags2, flags3;
 	const int* items;
 	SpellList* spells;
 	Int2 gold, gold2;
@@ -291,8 +290,6 @@ struct UnitData
 	}
 
 	void CopyFrom(UnitData& ud);
-
-	static void Register(GameTypeManager& gt_mgr);
 };
 
 //-----------------------------------------------------------------------------

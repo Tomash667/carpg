@@ -654,6 +654,12 @@ void GameGui::Update(float dt)
 		buf_posy -= off;
 	}
 
+	if(IS_SET(buffs, BUFF_STAMINA))
+	{
+		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffNatural, BUFF_STAMINA));
+		buf_posy -= off;
+	}
+
 	if(IS_SET(buffs, BUFF_FOOD))
 	{
 		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffFood, BUFF_FOOD));
@@ -1118,6 +1124,7 @@ void GameGui::LoadData()
 	resMgr.GetLoadedTexture("buff_jedzenie.png", tBuffFood);
 	resMgr.GetLoadedTexture("buff_naturalna.png", tBuffNatural);
 	resMgr.GetLoadedTexture("buff_antimagic.png", tBuffAntimagic);
+	resMgr.GetLoadedTexture("buff_naturalna.png", tBuffStamina);
 }
 
 //=================================================================================================

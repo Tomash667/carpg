@@ -1561,7 +1561,8 @@ uint LoadItems(uint& out_crc, uint& errors)
 		{ "dex", E_DEX },
 		{ "antimagic", E_ANTIMAGIC },
 		{ "food", E_FOOD },
-		{ "green_hair", E_GREEN_HAIR }
+		{ "green_hair", E_GREEN_HAIR },
+		{ "stamina", E_STAMINA }
 	});
 
 	t.AddKeywords(G_OTHER_TYPE, {

@@ -31,6 +31,12 @@ float Unit::CalculateMaxHp() const
 }
 
 //=================================================================================================
+float Unit::CalculateMaxStamina() const
+{
+	return 50.f + (float)data->stamina_bonus + 2.5f * Get(Attribute::END) + 2.f * Get(Attribute::DEX);
+}
+
+//=================================================================================================
 float Unit::CalculateAttack() const
 {
 	if(HaveWeapon())
@@ -688,6 +694,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_REGENERATE:
 	case E_NATURAL:
 	case E_ANTIMAGIC:
+	case E_STAMINA:
 		{
 			Effect& e = Add1(effects);
 			e.effect = item.effect;
@@ -765,7 +772,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 //=================================================================================================
 void Unit::UpdateEffects(float dt)
 {
-	float best_reg = 0.f, food_heal = 0.f, poison_dmg = 0.f, alco_sum = 0.f;
+	float best_reg = 0.f, food_heal = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f;
 
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
@@ -787,6 +794,9 @@ void Unit::UpdateEffects(float dt)
 		case E_FOOD:
 			food_heal += dt;
 			break;
+		case E_STAMINA:
+			best_stamina = it->power;
+			break;
 		}
 		if((it->time -= dt) <= 0.f)
 			_to_remove.push_back(index);
@@ -807,6 +817,13 @@ void Unit::UpdateEffects(float dt)
 			c.type = NetChange::UPDATE_HP;
 			c.unit = this;
 		}
+	}
+
+	if(best_stamina > 0.f && stamina != stamina_max)
+	{
+		stamina = min(stamina + best_stamina, stamina_max);
+		if(game.IsServer() && IsPlayer() && player != game.pc)
+			game.AddChange(NetChangePlayer::UPDATE_STAMINA, player);
 	}
 
 	if(alco_sum > 0.f)
@@ -883,6 +900,7 @@ void Unit::EndEffects(int days, int* best_nat)
 			break;
 		case E_ALCOHOL:
 		case E_ANTIMAGIC:
+		case E_STAMINA:
 			_to_remove.push_back(index);
 			break;
 		case E_NATURAL:
@@ -1084,6 +1102,14 @@ void Unit::RecalculateHp()
 }
 
 //=================================================================================================
+void Unit::RecalculateStamina()
+{
+	float p = stamina / stamina_max;
+	stamina_max = CalculateMaxStamina();
+	stamina = stamina_max * p;
+}
+
+//=================================================================================================
 float Unit::CalculateShieldAttack() const
 {
 	assert(HaveShield());
@@ -1218,6 +1244,8 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
 	WriteFile(file, &hp, sizeof(hp), &tmp, nullptr);
 	WriteFile(file, &hpmax, sizeof(hpmax), &tmp, nullptr);
+	WriteFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
+	WriteFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
 	WriteFile(file, &type, sizeof(type), &tmp, nullptr);
 	WriteFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileWriter f(file);
@@ -1415,6 +1443,16 @@ void Unit::Load(HANDLE file, bool local)
 	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
 	ReadFile(file, &hp, sizeof(hp), &tmp, nullptr);
 	ReadFile(file, &hpmax, sizeof(hpmax), &tmp, nullptr);
+	if(LOAD_VERSION >= V_CURRENT)
+	{
+		ReadFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
+		ReadFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
+	}
+	else
+	{
+		stamina_max = CalculateMaxStamina();
+		stamina = stamina_max;
+	}
 	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_10)
 	{
@@ -2423,6 +2461,9 @@ int Unit::GetBuffs() const
 		case E_ANTIMAGIC:
 			b |= BUFF_ANTIMAGIC;
 			break;
+		case E_STAMINA:
+			b |= BUFF_STAMINA;
+			break;
 		}
 	}
 
@@ -2526,8 +2567,9 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 		break;
 	case Attribute::END:
 		{
-			// hp depends on end
+			// hp/stamina depends on end
 			RecalculateHp();
+			RecalculateStamina();
 			if(!fake_unit)
 			{
 				Game& game = Game::Get();
@@ -2536,11 +2578,24 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 					NetChange& c = Add1(game.net_changes);
 					c.type = NetChange::UPDATE_HP;
 					c.unit = this;
+					if(IsPlayer() && player != game.pc)
+						game.AddChange(NetChangePlayer::UPDATE_STAMINA, player);
 				}
 			}
 		}
 		break;
 	case Attribute::DEX:
+		{
+			// stamina depends on dex
+			RecalculateStamina();
+			if(!fake_unit)
+			{
+				Game& game = Game::Get();
+				if(game.IsServer() && IsPlayer() && player != game.pc)
+					game.AddChange(NetChangePlayer::UPDATE_STAMINA, player);
+			}
+		}
+		break;
 	case Attribute::INT:
 	case Attribute::WIS:
 	case Attribute::CHA:

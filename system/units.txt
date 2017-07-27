@@ -2134,6 +2134,7 @@ unit base_zombie {
 	profile zombie
 	flags {undead dont_escape slow pierce_res25 blunt_res25 dont_open poison_res no_power_attack ignore_block backstab_res dont_eat}
 	hp 800
+	stamina 100
 	group undead
 	dmg_type blunt
 	walk_speed 1.5
@@ -2185,6 +2186,7 @@ unit base_skeleton {
 	profile skeleton
 	flags {humanoid undead dont_escape pierce_res25 blunt_weak25 poison_res bloodless backstab_res dont_eat}
 	hp 450
+	stamina 100
 	def 20
 	group undead
 	dmg_type slash
@@ -2245,6 +2247,7 @@ unit base_undead : base_human {
 	level {2 10}
 	flags | {undead dont_escape blunt_res25 poison_res gray_hair dont_eat}
 	hp 525
+	stamina 100
 	def 10
 	gold {{10 20}{40 80}}
 	group undead
@@ -2436,6 +2439,7 @@ unit base_golem {
 	mesh "golem.qmsh"
 	profile golem
 	flags {dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res}
+	stamina 100
 	group mages
 	dmg_type blunt
 	walk_speed 1.5
@@ -2762,6 +2766,7 @@ unit tomashu : base_human {
 	}
 	flags | {dont_escape tomashu leader secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat}
 	hp 750
+	stamina 100
 	def 50
 	items {
 		sword_forbidden

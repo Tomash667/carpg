@@ -1,5 +1,23 @@
-carpg
--------------
+FEATURE:
+- stamina/hp is recalculated on client, it may be different then server
+? stamina in unit (max from endurance/dexterity), regeneration
+	stamina = 50 + 2.5*end + 2*dex
+	50+125+100=275
+? water effect
++ water effect icon
++ used by runing, attacking, blocking
++ regenerates slowly when blocking, holding arrow
++ strong attack x1.5 stamina usage
++ stamina bar
++ restore on travel/sleep
+? mp update
++ visible in stats panel
++ update tooltips to include stamina
++ update readme
++ update changelog
++ update tutorial
+============================================
+DEV BUGS:
 - crash at closing alt+f4
 - crash at loading first save
 + don't lock cursor on load screen
@@ -8,8 +26,7 @@ carpg
 - savegame text is not quoted (0.2.11 for example - load error)
 
 ============================================
-NEXT
-TECH:
+NEXT:
 fix cursor_pos in engine and in gui
 standarized button positions (ok/cancel)
 useables are saved by type (int)

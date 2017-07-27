@@ -5343,6 +5343,9 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				stream.WriteCasted<byte>(c.id);
 				stream.Write(c.ile);
 				break;
+			case NetChangePlayer::UPDATE_STAMINA:
+				stream.Write(c.pc->unit->stamina);
+				break;
 			default:
 				Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
 				assert(0);
@@ -9180,6 +9183,19 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 					else
 						pc->perks.push_back(TakenPerk((Perk)id, value));
+				}
+				break;
+			// update stamina
+			case NetChangePlayer::UPDATE_STAMINA:
+				{
+					float stamina;
+					if(!stream.Read(stamina))
+					{
+						Error("Update single client: Broken UPDATE_STAMINA.");
+						StreamError();
+					}
+					else
+						pc->unit->stamina = stamina;
 				}
 				break;
 			default:

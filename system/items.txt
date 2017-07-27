@@ -1476,6 +1476,9 @@ consumable water {
 	value 1
 	mesh "woda.qmsh"
 	type drink
+	effect stamina
+	power 250
+	time 5
 	flags {not_alchemist ground_mesh}
 }
 
