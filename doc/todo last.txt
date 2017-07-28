@@ -4,18 +4,19 @@ FEATURE:
 	stamina = 50 + 2.5*end + 2*dex
 	50+125+100=275
 ? water effect
-+ water effect icon
 + used by runing, attacking, blocking
 + regenerates slowly when blocking, holding arrow
 + strong attack x1.5 stamina usage
-+ stamina bar
-+ restore on travel/sleep
+? stamina bar
+? restore on travel/sleep
 ? mp update
 + visible in stats panel
 + update tooltips to include stamina
 + update readme
 + update changelog
 + update tutorial
++ textures: stamina_bar.png, buff_stamina.png
+? testing
 ============================================
 DEV BUGS:
 - crash at closing alt+f4

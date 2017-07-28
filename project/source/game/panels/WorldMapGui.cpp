@@ -608,7 +608,7 @@ void WorldMapGui::Update(float dt)
 						game.world_pos = loc.pos;
 						if(game.open_location != -1)
 						{
-							game.LeaveLocation();
+							game.LeaveLocation(false, false);
 							game.open_location = -1;
 						}
 						if(game.IsOnline())

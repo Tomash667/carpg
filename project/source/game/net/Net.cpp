@@ -4676,7 +4676,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					world_pos = loc.pos;
 					if(open_location != -1)
 					{
-						LeaveLocation();
+						LeaveLocation(false, false);
 						open_location = -1;
 					}
 					// inform other players
@@ -8154,7 +8154,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					world_pos = loc.pos;
 					if(open_location != -1)
 					{
-						LeaveLocation();
+						LeaveLocation(false, false);
 						open_location = -1;
 					}
 				}

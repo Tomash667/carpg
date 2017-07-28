@@ -924,6 +924,8 @@ void Unit::EndEffects(int days, int* best_nat)
 	else if(hp > hpmax)
 		hp = hpmax;
 
+	stamina = stamina_max;
+
 	while(!_to_remove.empty())
 	{
 		index = _to_remove.back();
@@ -2631,19 +2633,6 @@ void Unit::RecalculateStat(Skill s, bool apply)
 	// apply effect modifiers
 	ValueBuffer buf;
 	SkillInfo& info = g_skills[id];
-	/*for(Effect2& e : effects2)
-	{
-		if(e.e->type == EffectType::Skill)
-		{
-			if(e.e->a == id)
-				buf.Add(e.e->b);
-		}
-		else if(e.e->type == EffectType::SkillPack)
-		{
-			if(e.e->a == (int)info.pack)
-				buf.Add(e.e->b);
-		}
-	}*/
 	if(IsPlayer())
 		value += buf.Get(state);
 	else
@@ -2742,13 +2731,6 @@ void Unit::CalculateStats()
 int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
 {
 	ValueBuffer buf;
-
-	/*for(const Effect2& e : effects2)
-	{
-		if(e.e->type == type && e.e->a == id)
-			buf.Add(e.e->b);
-	}*/
-
 	if(state)
 		return buf.Get(*state);
 	else
@@ -2801,13 +2783,6 @@ int Unit::Get(SubSkill ss) const
 	SubSkillInfo& info = g_sub_skills[id];
 	int v = Get(info.skill);
 	ValueBuffer buf;
-
-	/*for(const Effect2& e : effects2)
-	{
-		if(e.e->type == EffectType::SubSkill && e.e->a == id)
-			buf.Add(e.e->b);
-	}*/
-
 	return v + buf.Get();
 }
 

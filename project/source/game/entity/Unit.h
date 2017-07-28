@@ -10,6 +10,7 @@
 #include "PlayerController.h"
 #include "Useable.h"
 #include "Effect.h"
+#include "Buff.h"
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
@@ -94,25 +95,6 @@ struct Effect
 };
 
 //-----------------------------------------------------------------------------
-// MP obs³uguje max 8 buffów
-enum BUFF_FLAGS
-{
-	BUFF_REGENERATION = 1 << 0,
-	BUFF_NATURAL = 1 << 1,
-	BUFF_FOOD = 1 << 2,
-	BUFF_ALCOHOL = 1 << 3,
-	BUFF_POISON = 1 << 4,
-	BUFF_ANTIMAGIC = 1 << 5,
-	BUFF_STAMINA = 1 << 6
-};
-
-//-----------------------------------------------------------------------------
-/*struct Effect2
-{
-	EffectType type;
-	int a, b;
-};*/
-
 enum class AutoTalkMode
 {
 	No,
@@ -187,7 +169,6 @@ struct Unit
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
 	UnitStats stats, unmod_stats;
-	//vector<Effect2> effects2;
 	AutoTalkMode auto_talk;
 	float auto_talk_timer;
 	GameDialog* auto_talk_dialog;
