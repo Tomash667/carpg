@@ -158,4 +158,9 @@ public:
 		v->tex = Vec2(m_u2, m_v2);
 		++v;
 	}
+
+	Rect ToRect() const
+	{
+		return Rect((int)m_left, (int)m_top, (int)m_right, (int)m_bottom);
+	}
 };

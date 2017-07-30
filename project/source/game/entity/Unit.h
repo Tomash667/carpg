@@ -124,6 +124,14 @@ struct Unit
 		LIVESTATE_MAX
 	};
 
+	enum StaminaAction
+	{
+		SA_RESTORE_MORE,
+		SA_RESTORE,
+		SA_RESTORE_SLOW,
+		SA_DONT_RESTORE
+	};
+
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
 
@@ -146,7 +154,7 @@ struct Unit
 	const Item* used_item;
 	bool used_item_is_team;
 	vector<Effect> effects;
-	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit;
+	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, stamina_cant_run;
 	AIController* ai;
 	btCollisionObject* cobj;
 	static vector<Unit*> refid_table;
@@ -172,10 +180,11 @@ struct Unit
 	AutoTalkMode auto_talk;
 	float auto_talk_timer;
 	GameDialog* auto_talk_dialog;
+	StaminaAction stamina_action;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : ani(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE), stamina_cant_run(false) {}
 	~Unit();
 
 	float CalculateArmorDefense(const Armor* armor = nullptr);
@@ -308,7 +317,7 @@ struct Unit
 		if(IS_SET(data->flags, F_SLOW) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !run_attack) || action == A_SHOOT)
 			return false;
 		else
-			return !IsOverloaded();
+			return !IsOverloaded() && !stamina_cant_run;
 	}
 	void RecalculateHp();
 	void RecalculateStamina();

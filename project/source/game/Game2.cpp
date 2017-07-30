@@ -1308,6 +1308,7 @@ void Game::UpdateGame(float dt)
 	}
 
 	// aktualizuj gracza
+	pc->unit->stamina_action = Unit::SA_RESTORE_MORE;
 	if(pc->wasted_key != VK_NONE && Key.Up(pc->wasted_key))
 		pc->wasted_key = VK_NONE;
 	if(dialog_context.dialog_mode || pc->unit->look_target || inventory_mode > I_INVENTORY)
@@ -1822,6 +1823,15 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(moved)
 				{
 					MoveUnit(u);
+					if(run)
+					{
+						pc->unit->stamina_action = Unit::SA_DONT_RESTORE;
+						pc->unit->stamina -= dt * 5;
+						if(pc->unit->stamina < 0)
+							pc->unit->stamina_cant_run = true;
+					}
+					else
+						pc->unit->stamina_action = Unit::SA_RESTORE;
 
 					// train by moving
 					if(IsLocal())
@@ -6702,6 +6712,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 		// hp
 		u->hp = u->hpmax = u->CalculateMaxHp();
+		u->stamina = u->stamina_max = u->CalculateMaxStamina();
 
 		u->fake_unit = false;
 	}
@@ -8816,11 +8827,6 @@ Vec4 Game::GetLightColor()
 	//return Vec4(0.5f,0.5f,0.5f,1);
 }
 
-inline bool CanRemoveBullet(const Bullet& b)
-{
-	return b.remove;
-}
-
 struct BulletCallback : public btCollisionWorld::ContactResultCallback
 {
 	BulletCallback(btCollisionObject* _bullet, btCollisionObject* _ignore) : target(nullptr), hit(false), bullet(_bullet), ignore(_ignore), hit_unit(false)
@@ -9228,7 +9234,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 	}
 
 	if(deletions)
-		RemoveElements(ctx.bullets, CanRemoveBullet);
+		RemoveElements(ctx.bullets, [](const Bullet& b) { return b.remove; });
 }
 
 void Game::SpawnDungeonColliders()
@@ -16459,15 +16465,7 @@ void Game::InitQuests()
 {
 	QuestManager& quest_manager = QuestManager::Get();
 	vector<int> used;
-
-	// main quest
-	{
-		Quest* q = quest_manager.CreateQuest(Q_MAIN);
-		q->refid = quest_manager.quest_counter++;
-		q->Start();
-		quest_manager.unaccepted_quests.push_back(q);
-	}
-
+	
 	// goblins
 	quest_goblins = new Quest_Goblins;
 	quest_goblins->start_loc = GetRandomSettlement(used, 1);

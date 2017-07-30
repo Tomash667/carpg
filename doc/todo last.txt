@@ -1,23 +1,37 @@
 CURRENT:
 - stamina/hp is recalculated on client, it may be different then server
+	? calculate by player and server but server has priority
 ? stamina in unit (max from endurance/dexterity), regeneration
 	stamina = 50 + 2.5*end + 2*dex
 	50+125+100=275
-? water effect
++ restore speed
+	run,attack - don't restore
+	hold arrow,block - restore slowly
+	walk - restore normaly
+	stand,rotate - extra restore
+	account load state, armor type
 + used by runing, attacking, blocking
 + regenerates slowly when blocking, holding arrow
 + strong attack x1.5 stamina usage
 ? stamina bar
-? restore on travel/sleep
+- restore on travel/sleep, don't work atm
 ? mp update
-+ visible in stats panel
-+ update tooltips to include stamina
+	calculate stamina for player by server ??? maybe send how much they used, restored ???
 + update readme
 + update changelog
 + update tutorial
-+ textures: stamina_bar.png, buff_stamina.png
++ train dex/end from stamina
+- ai wait for stamina replenishment
 ? testing
+? mp testing
 ===============================================================================================================
 NEW:
 + remove compability with old qmsh files
 + move animesh instance to other files, fix LOAD_VERSION issue
++ file system - full path vs filename
++ buff - show remaining time
+- some gui rendering can be out of date because Update is not run (GameGui buff images etc)
++ potion of restoration (+hp/stamina)
++ split unit between global (world unit) and local (unit)
++ common code for players and ai
++ stamina can't run - verify by server

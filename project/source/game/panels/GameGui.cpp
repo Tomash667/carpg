@@ -278,8 +278,8 @@ void GameGui::DrawFront()
 
 			if(alpha)
 			{
-				GUI.DrawText3D(GUI.default_font, it->unit->GetName(), DT_OUTLINE, game.IsEnemy(*it->unit, *game.pc->unit) ? COLOR_RGBA(255, 0, 0, alpha) : COLOR_RGBA(0, 255, 0, alpha),
-					it->last_pos, max(it->unit->GetHpp(), 0.f));
+				GUI.DrawText3D(GUI.default_font, it->unit->GetName(), DT_OUTLINE,
+					game.IsEnemy(*it->unit, *game.pc->unit) ? COLOR_RGBA(255, 0, 0, alpha) : COLOR_RGBA(0, 255, 0, alpha), it->last_pos, max(it->unit->GetHpp(), 0.f));
 			}
 		}
 	}
@@ -353,22 +353,22 @@ void GameGui::DrawFront()
 	Rect part = { 0, 0, int(hpp * 256), 16 };
 	Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 35));
 	if(part.Right() > 0)
-		GUI.DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, &mat, &part, nullptr, WHITE);
-	GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
+		GUI.DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, mat, &part, nullptr, WHITE);
+	GUI.DrawSprite2(tBar, mat, nullptr, nullptr, WHITE);
 
 	// stamina bar
 	float stamina_p = game.pc->unit->stamina / game.pc->unit->stamina_max;
 	part.Right() = int(stamina_p * 256);
 	mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 17));
 	if(part.Right() > 0)
-		GUI.DrawSprite2(tManaBar, &mat, &part, nullptr, WHITE);
-	GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
+		GUI.DrawSprite2(tStaminaBar, mat, &part, nullptr, WHITE);
+	GUI.DrawSprite2(tBar, mat, nullptr, nullptr, WHITE);
 
 	// buffs
 	for(BuffImage& img : buff_images)
 	{
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(buff_scale, buff_scale), nullptr, 0.f, &img.pos);
-		GUI.DrawSprite2(img.tex, &mat, nullptr, nullptr, WHITE);
+		GUI.DrawSprite2(img.tex, mat, nullptr, nullptr, WHITE);
 	}
 
 	float scale;
@@ -405,8 +405,8 @@ void GameGui::DrawFront()
 			else
 				t = tShortcutDown;
 			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
-			GUI.DrawSprite2(t, &mat, nullptr, nullptr, WHITE);
-			GUI.DrawSprite2(tSideButton[i], &mat, nullptr, nullptr, WHITE);
+			GUI.DrawSprite2(t, mat, nullptr, nullptr, WHITE);
+			GUI.DrawSprite2(tSideButton[i], mat, nullptr, nullptr, WHITE);
 		}
 	}
 
@@ -604,7 +604,6 @@ void GameGui::Update(float dt)
 
 	const bool have_manabar = false;
 	float hp_scale = float(GUI.wnd_size.x) / 800;
-	int hp_offset = (have_manabar ? 35 : 17);
 
 	// buffs
 	int buffs;
@@ -615,7 +614,7 @@ void GameGui::Update(float dt)
 
 	buff_scale = GUI.wnd_size.x / 1024.f;
 	float off = buff_scale * 33;
-	float buf_posy = float(GUI.wnd_size.y - 5) - off - hp_scale * hp_offset;
+	float buf_posy = float(GUI.wnd_size.y - 5) - off - hp_scale * 35;
 	Int2 buff_size(int(buff_scale * 32), int(buff_scale * 32));
 
 	buff_images.clear();
@@ -626,17 +625,10 @@ void GameGui::Update(float dt)
 		if(IS_SET(buffs, buff_bit))
 		{
 			auto& info = BuffInfo::info[i];
-			buff_images.push_back(BuffImage(Vec2(2, buf_posy), info.img, buff_bit));
+			buff_images.push_back(BuffImage(Vec2(2, buf_posy), info.img, i));
 			buf_posy -= off;
 		}
 	}
-
-	//float scale;
-	int offset;
-
-	int img_size = 64 * GUI.wnd_size.x / 1920;
-	offset = img_size + 2;
-	//scale = float(img_size)/64;
 
 	// sidebar
 	int max = (int)SideButtonId::Max;
@@ -685,18 +677,23 @@ void GameGui::Update(float dt)
 		}
 
 		// for healthbar
-		/*float wnd_scale = float(GUI.wnd_size.x) / 800;
-		Matrix mat;
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 35));
-		GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
+		float wnd_scale = float(GUI.wnd_size.x) / 800;
+		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 35));
+		Rect r = GUI.GetSpriteRect(tBar, mat);
+		if(r.IsInside(GUI.cursor_pos))
+		{
+			group = TooltipGroup::Bar;
+			id = Bar::BAR_HP;
+		}
 
 		// for stamina bar
-		float stamina_p = game.pc->unit->stamina / game.pc->unit->stamina_max;
-		part.Right() = int(stamina_p * 256);
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 17));
-		if(part.Right() > 0)
-			GUI.DrawSprite2(tManaBar, &mat, &part, nullptr, WHITE);
-		GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);*/
+		r = GUI.GetSpriteRect(tBar, mat);
+		if(r.IsInside(GUI.cursor_pos))
+		{
+			group = TooltipGroup::Bar;
+			id = Bar::BAR_STAMINA;
+		}
 	}
 
 	if(anything)
@@ -707,6 +704,8 @@ void GameGui::Update(float dt)
 
 	if(sidebar > 0.f && !GUI.HaveDialog())
 	{
+		int img_size = 64 * GUI.wnd_size.x / 1920;
+		int offset = img_size + 2;
 		int total = offset * max;
 		int sposy = GUI.wnd_size.y - (GUI.wnd_size.y - total) / 2 - offset;
 		for(int i = 0; i < max; ++i)

@@ -772,8 +772,10 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 //=================================================================================================
 void Unit::UpdateEffects(float dt)
 {
+	Game& game = Game::Get();
 	float best_reg = 0.f, food_heal = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f;
 
+	// update effects timer
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
@@ -795,15 +797,15 @@ void Unit::UpdateEffects(float dt)
 			food_heal += dt;
 			break;
 		case E_STAMINA:
-			best_stamina = it->power;
+			if(it->power > best_stamina)
+				best_stamina = it->power;
 			break;
 		}
 		if((it->time -= dt) <= 0.f)
 			_to_remove.push_back(index);
 	}
 
-	Game& game = Game::Get();
-
+	// healing from food
 	if((best_reg > 0.f || food_heal > 0.f) && hp != hpmax)
 	{
 		float natural = 1.f;
@@ -819,13 +821,7 @@ void Unit::UpdateEffects(float dt)
 		}
 	}
 
-	if(best_stamina > 0.f && stamina != stamina_max)
-	{
-		stamina = min(stamina + best_stamina, stamina_max);
-		if(game.IsServer() && IsPlayer() && player != game.pc)
-			game.AddChange(NetChangePlayer::UPDATE_STAMINA, player);
-	}
-
+	// update alcohol value
 	if(alco_sum > 0.f)
 	{
 		alcohol += alco_sum*dt;
@@ -843,6 +839,7 @@ void Unit::UpdateEffects(float dt)
 			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_ALCOHOL;
 	}
 
+	// update poison damage
 	if(poison_dmg != 0.f)
 		game.GiveDmg(game.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, DMG_NO_BLOOD);
 	if(IsPlayer())
@@ -852,6 +849,33 @@ void Unit::UpdateEffects(float dt)
 		player->last_dmg_poison = poison_dmg;
 	}
 
+	// restore stamina
+	if(stamina != stamina_max && (stamina_action != SA_DONT_RESTORE || best_stamina > 0.f))
+	{
+		float stamina_restore;
+		switch(stamina_action)
+		{
+		case SA_RESTORE_MORE:
+			stamina_restore = 5.f;
+			break;
+		case SA_RESTORE:
+		default:
+			stamina_restore = 3.f;
+			break;
+		case SA_RESTORE_SLOW:
+			stamina_restore = 1.f;
+			break;
+		}
+		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt;
+		if(stamina > stamina_max)
+			stamina = stamina_max;
+		if(stamina_cant_run && stamina >= stamina_max / 5)
+			stamina_cant_run = false;
+		if(game.IsServer() && player && player != game.pc)
+			game.AddChange(NetChangePlayer::UPDATE_STAMINA, player);
+	}
+
+	// remove expired effects
 	while(!_to_remove.empty())
 	{
 		index = _to_remove.back();
@@ -1248,6 +1272,8 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &hpmax, sizeof(hpmax), &tmp, nullptr);
 	WriteFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
 	WriteFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
+	WriteFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
+	WriteFile(file, &stamina_cant_run, sizeof(stamina_cant_run), &tmp, nullptr);
 	WriteFile(file, &type, sizeof(type), &tmp, nullptr);
 	WriteFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileWriter f(file);
@@ -1449,11 +1475,15 @@ void Unit::Load(HANDLE file, bool local)
 	{
 		ReadFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
 		ReadFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
+		ReadFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
+		ReadFile(file, &stamina_cant_run, sizeof(stamina_cant_run), &tmp, nullptr);
 	}
 	else
 	{
 		stamina_max = CalculateMaxStamina();
 		stamina = stamina_max;
+		stamina_action = SA_RESTORE_MORE;
+		stamina_cant_run = false;
 	}
 	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_10)

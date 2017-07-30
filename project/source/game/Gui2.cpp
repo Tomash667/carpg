@@ -2272,9 +2272,9 @@ Dialog* IGUI::GetDialog(cstring name)
 }
 
 //=================================================================================================
-void IGUI::DrawSprite2(TEX t, const Matrix* mat, const Rect* part, const Rect* clipping, DWORD color)
+void IGUI::DrawSprite2(TEX t, const Matrix& mat, const Rect* part, const Rect* clipping, DWORD color)
 {
-	assert(t && mat);
+	assert(t);
 
 	D3DSURFACE_DESC desc;
 	t->GetLevelDesc(0, &desc);
@@ -2287,8 +2287,7 @@ void IGUI::DrawSprite2(TEX t, const Matrix* mat, const Rect* part, const Rect* c
 		rect.Set(desc.Width, desc.Height);
 
 	// transform
-	if(mat)
-		rect.Transform(*mat);
+	rect.Transform(mat);
 
 	// clipping
 	if(clipping && !rect.Clip(*clipping))
@@ -2302,6 +2301,32 @@ void IGUI::DrawSprite2(TEX t, const Matrix* mat, const Rect* part, const Rect* c
 	rect.Populate(v, col);
 	in_buffer = 1;
 	Flush();
+}
+
+//=================================================================================================
+// Rotation is generaly ignored and shouldn't be used here
+Rect IGUI::GetSpriteRect(TEX t, const Matrix& mat, const Rect* part, const Rect* clipping)
+{
+	assert(t);
+
+	D3DSURFACE_DESC desc;
+	t->GetLevelDesc(0, &desc);
+	GuiRect rect;
+
+	// set pos & uv
+	if(part)
+		rect.Set(desc.Width, desc.Height, *part);
+	else
+		rect.Set(desc.Width, desc.Height);
+
+	// transform
+	rect.Transform(mat);
+
+	// clipping
+	if(clipping && !rect.Clip(*clipping))
+		return Rect::Zero;
+
+	return rect.ToRect();
 }
 
 //=================================================================================================

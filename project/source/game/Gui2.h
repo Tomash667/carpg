@@ -215,7 +215,7 @@ public:
 	void CloseDialogs();
 	bool HavePauseDialog() const;
 	Dialog* GetDialog(cstring name);
-	void DrawSprite2(TEX t, const Matrix* mat, const Rect* part = nullptr, const Rect* clipping = nullptr, DWORD color = WHITE);
+	void DrawSprite2(TEX t, const Matrix& mat, const Rect* part = nullptr, const Rect* clipping = nullptr, DWORD color = WHITE);
 	void AddNotification(cstring text, TEX icon, float timer);
 	void DrawArea(DWORD color, const Int2& pos, const Int2& size, const Box2d* clip_rect = nullptr);
 	void DrawArea(DWORD color, const Rect& rect, const Box2d* clip_rect = nullptr)
@@ -231,6 +231,7 @@ public:
 	bool MouseMoved() const { return cursor_pos != prev_cursor_pos; }
 	void SetClipboard(cstring text);
 	cstring GetClipboard();
+	Rect GetSpriteRect(TEX t, const Matrix& mat, const Rect* part = nullptr, const Rect* clipping = nullptr);
 
 	Matrix mViewProj;
 	Int2 cursor_pos, prev_cursor_pos, wnd_size;

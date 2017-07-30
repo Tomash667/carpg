@@ -272,7 +272,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 					{
 						mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
 						part.Right() = int(fi.part * 256);
-						GUI.DrawSprite2(game->tKlasaCecha, &mat, &part, &rect, WHITE);
+						GUI.DrawSprite2(game->tKlasaCecha, mat, &part, &rect, WHITE);
 					}
 					r.Bottom() = r.Top() + VALUE_H;
 					if(!GUI.DrawText(GUI.default_font, item_text, DT_SINGLELINE, BLACK, r, &rect))
