@@ -377,7 +377,7 @@ void Quest_Mine::Save(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Mine::Load(HANDLE file)
+bool Quest_Mine::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
@@ -399,6 +399,8 @@ void Quest_Mine::Load(HANDLE file)
 
 	location_event_handler = this;
 	InitSub();
+
+	return true;
 }
 
 //=================================================================================================

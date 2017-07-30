@@ -20,7 +20,6 @@
 #include "Quest_Goblins.h"
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
-#include "Quest_Main.h"
 #include "CityGenerator.h"
 #include "Version.h"
 #include "LocationHelper.h"
@@ -5801,12 +5800,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(msg, "sekret_can_get_reward") == 0)
 				{
 					if(secret_state == SECRET_WIN)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_main_need_talk") == 0)
-				{
-					Quest* q = QuestManager::Get().FindQuestById(Q_MAIN);
-					if(current_location == q->start_loc && q->prog == 0) // oh well :3
 						++ctx.dialog_level;
 				}
 				else
@@ -18611,18 +18604,6 @@ void Game::UpdateGame2(float dt)
 			}
 
 			at_arena.clear();
-		}
-	}
-
-	// main quest
-	if(IsLocal())
-	{
-		Quest_Main* q = (Quest_Main*)QuestManager::Get().FindQuestById(Q_MAIN);
-		if(q && q->state == Quest::Hidden)
-		{
-			q->timer += dt;
-			if(q->timer >= 0.1f)
-				q->SetProgress(0);
 		}
 	}
 }

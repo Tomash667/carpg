@@ -24,7 +24,6 @@ item q_magowie_kula
 item beer
 item vodka
 item q_magowie_potion
-item q_main_letter
 item key_kopalnia
 item al_angelskin
 item q_orkowie_klucz
@@ -78,6 +77,8 @@ item frying_pan
 // spawn forest items
 item healing_herb
 item green_herb
+// pre 0.10 quest item
+item q_main_letter
 
 //------------------------------------------------------------------------------
 // Required item lists
@@ -258,7 +259,6 @@ dialog q_mages_golem
 dialog q_mages2_mage
 dialog q_mages2_boss
 dialog q_mages2_captain
-dialog q_dialog_main
 dialog q_mine_investor
 dialog q_mine_messenger
 dialog q_mine_messenger2

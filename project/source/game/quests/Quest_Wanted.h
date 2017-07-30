@@ -18,25 +18,25 @@ public:
 		Recruited
 	};
 
-	void Start();
-	GameDialog* GetDialog(int type2);
-	void SetProgress(int prog2);
-	cstring FormatString(const string& str);
-	bool IsTimedout() const;
-	bool OnTimeout(TimeoutType ttype);
-	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
-	int GetUnitEventHandlerQuestRefid()
+	void Start() override;
+	GameDialog* GetDialog(int type2) override;
+	void SetProgress(int prog2) override;
+	cstring FormatString(const string& str) override;
+	bool IsTimedout() const override;
+	bool OnTimeout(TimeoutType ttype) override;
+	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
+	void Save(HANDLE file) override;
+	bool Load(HANDLE file) override;
+	int GetUnitEventHandlerQuestRefid() override
 	{
 		return refid;
 	}
-	bool IfHaveQuestItem() const;
-	const Item* GetQuestItem()
+	bool IfHaveQuestItem() const override;
+	const Item* GetQuestItem() override
 	{
 		return &letter;
 	}
-	bool IfNeedTalk(cstring topic) const;
+	bool IfNeedTalk(cstring topic) const override;
 
 private:
 	int level, in_location;

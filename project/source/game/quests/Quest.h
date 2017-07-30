@@ -70,7 +70,7 @@ struct Quest
 	virtual const Item* GetQuestItem() { return nullptr; }
 
 	virtual void Save(HANDLE file);
-	virtual void Load(HANDLE file);
+	virtual bool Load(HANDLE file);
 
 	// to powinno byæ inline ale nie wysz³o :/
 	Location& GetStartLocation();
@@ -99,7 +99,7 @@ struct Quest_Encounter : public Quest
 	}
 
 	void Save(HANDLE file) override;
-	void Load(HANDLE file) override;
+	bool Load(HANDLE file) override;
 	void RemoveEncounter();
 };
 
@@ -153,8 +153,8 @@ struct Quest_Event
 //-----------------------------------------------------------------------------
 struct Quest_Dungeon : public Quest, public Quest_Event
 {
-	virtual void Save(HANDLE file);
-	virtual void Load(HANDLE file);
+	virtual void Save(HANDLE file) override;
+	virtual bool Load(HANDLE file) override;
 
 	// to powinno byæ inline ale nie wysz³o :/
 	Location& GetTargetLocation();

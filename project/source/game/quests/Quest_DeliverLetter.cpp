@@ -211,7 +211,7 @@ void Quest_DeliverLetter::Save(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_DeliverLetter::Load(HANDLE file)
+bool Quest_DeliverLetter::Load(HANDLE file)
 {
 	Quest::Load(file);
 
@@ -230,4 +230,6 @@ void Quest_DeliverLetter::Load(HANDLE file)
 		if(game->mp_load)
 			game->Net_RegisterItem(&letter, base_item);
 	}
+
+	return true;
 }

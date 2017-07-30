@@ -243,7 +243,7 @@ void Quest_LostArtifact::Save(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_LostArtifact::Load(HANDLE file)
+bool Quest_LostArtifact::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
@@ -258,4 +258,6 @@ void Quest_LostArtifact::Load(HANDLE file)
 
 	if(game->mp_load)
 		game->Net_RegisterItem(&quest_item, item);
+
+	return true;
 }

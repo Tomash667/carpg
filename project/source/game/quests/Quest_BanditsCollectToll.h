@@ -17,22 +17,18 @@ public:
 	};
 
 	void Start();
-	GameDialog* GetDialog(int type2);
-	void SetProgress(int prog2);
-	cstring FormatString(const string& str);
-	bool IsTimedout() const;
-	bool OnTimeout(TimeoutType ttype);
-	void Special(DialogContext& ctx, cstring msg);
-	bool IfSpecial(DialogContext& ctx, cstring msg);
-	void HandleLocationEvent(LocationEventHandler::Event event);
-	bool IfNeedTalk(cstring topic) const;
-	void Save(HANDLE file);
-	void Load(HANDLE file);
-	int GetUnitEventHandlerQuestRefid()
-	{
-		return refid;
-	}
-	int GetLocationEventHandlerQuestRefid()
+	GameDialog* GetDialog(int type2) override;
+	void SetProgress(int prog2) override;
+	cstring FormatString(const string& str) override;
+	bool IsTimedout() const override;
+	bool OnTimeout(TimeoutType ttype) override;
+	void Special(DialogContext& ctx, cstring msg) override;
+	bool IfSpecial(DialogContext& ctx, cstring msg) override;
+	void HandleLocationEvent(LocationEventHandler::Event event) override;
+	bool IfNeedTalk(cstring topic) const override;
+	void Save(HANDLE file) override;
+	bool Load(HANDLE file) override;
+	int GetLocationEventHandlerQuestRefid() override
 	{
 		return refid;
 	}
