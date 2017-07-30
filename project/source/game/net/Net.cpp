@@ -5001,7 +5001,6 @@ void Game::WriteServerChanges(BitStream& stream)
 			}
 			break;
 		case NetChange::ADD_QUEST:
-		case NetChange::ADD_QUEST_MAIN:
 			{
 				Quest* q = QuestManager::Get().FindQuest(c.id, false);
 				stream.Write(q->refid);
@@ -6567,17 +6566,14 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// added (main) quest
+		// added quest
 		case NetChange::ADD_QUEST:
-		case NetChange::ADD_QUEST_MAIN:
 			{
-				cstring name = (type == NetChange::ADD_QUEST ? "ADD_QUEST" : "ADD_QUEST_MAIN");
-
 				int refid;
 				if(!stream.Read(refid)
 					|| !ReadString1(stream))
 				{
-					Error("Update client: Broken %s.", name);
+					Error("Update client: Broken ADD_QUEST.");
 					StreamError();
 					break;
 				}
@@ -6593,7 +6589,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				if(!ReadString2(stream, quest->msgs[0])
 					|| !ReadString2(stream, quest->msgs[1]))
 				{
-					Error("Update client: Broken %s(2).", name);
+					Error("Update client: Broken ADD_QUEST(2).");
 					StreamError();
 					delete quest;
 					break;
@@ -6601,10 +6597,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 				quest->state = Quest::Started;
 				game_gui->journal->NeedUpdate(Journal::Quests, quest->quest_index);
-				if(type == NetChange::ADD_QUEST)
-					AddGameMsg3(GMS_JOURNAL_UPDATED);
-				else
-					GUI.SimpleDialog(txQuest[270], nullptr);
+				AddGameMsg3(GMS_JOURNAL_UPDATED);
 				quest_manager.quests.push_back(quest);
 			}
 			break;
@@ -10683,7 +10676,6 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::ADD_NOTE:
 	case NetChange::REGISTER_ITEM:
 	case NetChange::ADD_QUEST:
-	case NetChange::ADD_QUEST_MAIN:
 	case NetChange::UPDATE_QUEST:
 	case NetChange::RENAME_ITEM:
 	case NetChange::UPDATE_QUEST_MULTI:
