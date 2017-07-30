@@ -169,7 +169,7 @@ public:
 	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
 	zwraca false je¿eli by³ clipping od do³u (nie kontuuj tekstu w flow)
-	Znak $ oznacza jak¹œ specjaln¹ czynnoœæ (o ile nie ma flagi DT_USER_TEXT):
+	Znak $ oznacza jak¹œ specjaln¹ czynnoœæ (o ile jest ustawiona flaga DT_PARSE_SPECIAL):
 		$$ - wstaw $
 		$c? - ustaw kolor (r-czerwony, g-zielony, y-¿ó³ty, b-czarny, w-bia³y, -przywróc domyœlny)
 		$h+ - informacja o hitboxie

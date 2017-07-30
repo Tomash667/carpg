@@ -642,6 +642,7 @@ void Game::LoadGame(HANDLE file)
 	attached_sounds.clear();
 	in_tutorial = false;
 	arena_free = true;
+	autowalk = false;
 	ai_bow_targets.clear();
 	ai_cast_targets.clear();
 	load_location_quest.clear();

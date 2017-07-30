@@ -294,7 +294,7 @@ void Game::StartNewGame()
 {
 	HumanData hd;
 	hd.Get(*create_character->unit->human_data);
-	NewGameCommon(create_character->clas, create_character->name.c_str(), hd, create_character->cc, false);
+	NewGameCommon(create_character->clas, create_character->player_name.c_str(), hd, create_character->cc, false);
 }
 
 void Game::OnQuit(int id)
@@ -2169,6 +2169,7 @@ void Game::Quit()
 
 void Game::DoQuit()
 {
+	prev_game_state = game_state;
 	game_state = GS_QUIT;
 }
 

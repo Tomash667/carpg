@@ -12,7 +12,7 @@ out_width - szerokoœæ tej linijki
 in_out_index - offset w text
 text - tekst
 text_end - d³ugoœæ tekstu
-flags - flagi (uwzglêdnia tylko DT_SINGLELINE, DT_USER_TEXT, DT_PARSE_SPECIAL)
+flags - flagi (uwzglêdnia tylko DT_SINGLELINE, DT_PARSE_SPECIAL)
 width - maksymalna szerokoœæ tej linijki
 */
 bool Font::SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_out_index, cstring text, uint text_end, DWORD flags, int width) const

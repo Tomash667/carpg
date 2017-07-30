@@ -767,6 +767,7 @@ void Game::ExitToMenu()
 //=================================================================================================
 void Game::DoExitToMenu()
 {
+	prev_game_state = game_state;
 	game_state = GS_EXIT_TO_MENU;
 
 	StopSounds();

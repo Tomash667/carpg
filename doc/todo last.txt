@@ -1,22 +1,10 @@
-carpg
--------------
-- alt-f4 on worldmap = leaks, exit to menu and quit - same
-- crash at loading first save
-- po wczytyaniu zapisu 2.6.11 postać biegnie cały czas
-- w zapisie pisze żem create_character
-- w drużynie jest gorzej, hitboxy nie działając, pisze create_character
-- opis tarczy $-c zamiast koloru, wymagana siła
-
-============================================
 NEXT
 TECH:
 fix cursor_pos in engine and in gui
-standarized button positions (ok/cancel)
 useables are saved by type (int)
 
 Collision flags fix - Collision flags are not what i was thinking they are setCollisionFlags, need to be removed
 ResetCollisionPointers - What is this used for, called but only for few location types
-Panel fadein/fadeout
 
 Trainer
 	Train skill/attribute/perk.
@@ -25,7 +13,6 @@ Trainer
 basements in city
 debug overlay
 decals
-modability
 
 Website fixes
 	404 not found
@@ -53,5 +40,3 @@ v0.10:
 
 v0.20:
 + efekty ognia, lodu, kwasu, elektro ?
-
-+ emoticons on chat
