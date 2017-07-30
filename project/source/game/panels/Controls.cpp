@@ -339,6 +339,7 @@ void Controls::Update(float dt)
 		}
 
 		grid.focus = focus;
+		grid.mouse_focus = focus;
 		grid.Update(dt);
 
 		if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))

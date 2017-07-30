@@ -167,6 +167,7 @@ void TeamPanel::Update(float dt)
 		if(Key.Focus() && IsInside(GUI.cursor_pos))
 			scrollbar.ApplyMouseWheel();
 
+		scrollbar.mouse_focus = mouse_focus;
 		scrollbar.Update(dt);
 
 		if(picking && Key.Focus())

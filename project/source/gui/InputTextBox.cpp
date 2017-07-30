@@ -49,15 +49,24 @@ void InputTextBox::Update(float dt)
 	{
 		if(Key.Focus() && IsInside(GUI.cursor_pos))
 			scrollbar.ApplyMouseWheel();
+
+		bool release_key = false;
 		if(PointInRect(GUI.cursor_pos, inputbox_pos, inputbox_size))
 		{
 			GUI.cursor_mode = CURSOR_TEXT;
 			if(!focus && Key.Focus() && Key.PressedRelease(VK_LBUTTON))
 				focus = true;
 		}
-		else if(focus && Key.Focus() && Key.PressedRelease(VK_LBUTTON))
+		else if(focus && Key.Focus() && Key.Pressed(VK_LBUTTON))
+		{
 			focus = false;
+			release_key = true;
+		}
+
+		scrollbar.mouse_focus = mouse_focus;
 		scrollbar.Update(dt);
+		if(release_key)
+			Key.Released(VK_LBUTTON);
 	}
 	if(focus)
 	{

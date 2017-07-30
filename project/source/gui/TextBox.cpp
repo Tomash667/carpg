@@ -231,7 +231,10 @@ void TextBox::Update(float dt)
 			}
 		}
 		if(scrollbar && !is_new)
+		{
+			scrollbar->mouse_focus = mouse_focus;
 			scrollbar->Update(dt);
+		}
 	}
 
 	if(scrollbar && is_new)

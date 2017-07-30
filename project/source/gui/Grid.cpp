@@ -245,6 +245,7 @@ void Grid::Update(float dt)
 
 		if(IsInside(GUI.cursor_pos))
 			scroll.ApplyMouseWheel();
+		scroll.mouse_focus = mouse_focus;
 		scroll.Update(dt);
 	}
 }
