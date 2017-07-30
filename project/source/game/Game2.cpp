@@ -16460,14 +16460,6 @@ void Game::InitQuests()
 	QuestManager& quest_manager = QuestManager::Get();
 	vector<int> used;
 
-	// main quest
-	{
-		Quest* q = quest_manager.CreateQuest(Q_MAIN);
-		q->refid = quest_manager.quest_counter++;
-		q->Start();
-		quest_manager.unaccepted_quests.push_back(q);
-	}
-
 	// goblins
 	quest_goblins = new Quest_Goblins;
 	quest_goblins->start_loc = GetRandomSettlement(used, 1);
