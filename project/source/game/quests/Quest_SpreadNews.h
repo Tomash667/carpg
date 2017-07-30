@@ -23,15 +23,15 @@ public:
 		bool given;
 	};
 
-	void Start();
-	GameDialog* GetDialog(int type2);
-	void SetProgress(int prog2);
-	cstring FormatString(const string& str);
-	bool IsTimedout() const;
-	bool OnTimeout(TimeoutType ttype);
-	bool IfNeedTalk(cstring topic) const;
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Start() override;
+	GameDialog* GetDialog(int type2) override;
+	void SetProgress(int prog2) override;
+	cstring FormatString(const string& str) override;
+	bool IsTimedout() const override;
+	bool OnTimeout(TimeoutType ttype) override;
+	bool IfNeedTalk(cstring topic) const override;
+	void Save(HANDLE file) override;
+	bool Load(HANDLE file) override;
 
 private:
 	vector<Entry> entries;

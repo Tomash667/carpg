@@ -530,7 +530,7 @@ void Quest_Evil::Save(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Evil::Load(HANDLE file)
+bool Quest_Evil::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
@@ -578,6 +578,8 @@ void Quest_Evil::Load(HANDLE file)
 	}
 
 	unit_event_handler = this;
+
+	return true;
 }
 
 //=================================================================================================

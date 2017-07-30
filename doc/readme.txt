@@ -170,51 +170,22 @@ Zobacz plik changelog.txt.
 7) Komendy w konsoli
 Aby otworzyæ konsolê wciœnij ~ [tylda na lewo od 1]. Niektóre komendy s¹
 dostêpne tylko w trybie multiplayer lub tylko w lobby.
-Dostêpne komendy:
-	addgold - dodaje z³oto graczowi (addgold ile).
-	addgold_team - dodaje z³oto dru¿ynie (addgold_team ile).
-	additem - dodaje przedmiot graczowi (additem id [ile]).
-	addteam - dodaje dru¿ynowy przedmiot graczowi (addteam id [ile]).
-	cheats - tryb kodów (cheats 0/1).
-	citizen - mieszkañcy/szaleñcy nie atakuj¹ gracza ani dru¿yny.
+Dostêpne komendy bez trybu developera:
 	cmds - wyœwietla komendy i zapisuje je do pliku commands.txt, z all
 		wyœwietla te¿ te niedostêpne (cmds [all]).
+	devmode - ustawia tryb developera (devmode 0/1).
 	exit - wychodzi do menu.
-	fog - rysowanie mg³y (fog 0/1).
-	givegold - daje z³oto innej postaci (givegold nick ile).
-	godmode - tryb nieœmiertelnoœci gracza (godmode 0/1).
-	goto_map - przenosi na mapê œwiata.
-	heal - leczy gracza.
-	healunit - leczy jednostkê przed graczem.
 	help - wyœwietla informacje o komendzie (help [komenda]).
-	invisible - ai nie widzi gracza (invisible 0/1).
 	kick - wyrzuca gracza z serwera (kick nick).
-	kill - zabija jednostkê przed graczem.
-	killall - zabija wszystkie wrogie postacie na danym poziomie, z 1 zabija
-		te¿ sojuszników, z 2 w budynkach (killall [1/2]).
 	leader - zmienia przywódcê dru¿yny (leader nick).
-	lighting - oœwietlenie (lighting 0/1).
 	list - wyœwietla jednostki/przedmioty po id/nazwie, unit item unitn itemn
 		(list typ [filtr]).
-	modstat - modyfikuje statystyki gracza (modstat stat wartoœæ), u¿yj modstat
-		? aby uzyskaæ listê statystyk.
-	noai - wy³¹cza ai (noai 0/1).
-	noclip - wy³¹cza kolizje gracza (noclip 0/1).
-	playercheats - w³¹cza/wy³¹cza kody dla innego gracza w multiplayer
+	player_devmode - w³¹cza/wy³¹cza tryb developera dla innego gracza w multiplayer
 		(playercheat nick/all 0/1).
 	quit - wychodzi z gry.
 	random - losuje liczbê 1-100 lub wybiera losow¹ postaæ (random, random 
 		[warrior/hunter/rogue]).
-	reveal - ujawnia wszystkie lokacje.
-	scare - wrogowie uciekaj¹.
 	server - wyœwietla wiadomoœæ od serwera wszystkim graczom (say wiadomoœæ).
-	setstat - ustawia statystyki gracza (setstat stat wartoœæ), u¿yj setstat
-		? aby uzyskaæ listê statystyk.
-	show_minimap - odkrywa minimapê.
-	skip_days - pomija dni (skip_days [ile]).
-	spawnunit - tworzy jednostkê przed graczem (spawnunit id [poziom ile
-		arena]).
-	suicide - zabija gracza.
 	version - wyœwietla wersjê gry.
 	w/whisper - wysy³a prywatn¹ wiadomoœæ do gracza (whisper nick wiadomoœæ).
 Pe³na lista komend w readme_eng.txt.

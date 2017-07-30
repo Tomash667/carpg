@@ -25,16 +25,16 @@ public:
 		Finished
 	};
 
-	void Start();
-	GameDialog* GetDialog(int type2);
-	void SetProgress(int prog2);
-	cstring FormatString(const string& str);
-	bool IfNeedTalk(cstring topic) const;
-	bool IfSpecial(DialogContext& ctx, cstring msg);
-	void HandleLocationEvent(LocationEventHandler::Event event);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
-	int GetLocationEventHandlerQuestRefid()
+	void Start() override;
+	GameDialog* GetDialog(int type2) override;
+	void SetProgress(int prog2) override;
+	cstring FormatString(const string& str) override;
+	bool IfNeedTalk(cstring topic) const override;
+	bool IfSpecial(DialogContext& ctx, cstring msg) override;
+	void HandleLocationEvent(LocationEventHandler::Event event) override;
+	void Save(HANDLE file) override;
+	bool Load(HANDLE file) override;
+	int GetLocationEventHandlerQuestRefid() override
 	{
 		return refid;
 	}
@@ -104,18 +104,18 @@ public:
 	};
 
 	void Start();
-	GameDialog* GetDialog(int type2);
-	void SetProgress(int prog2);
-	cstring FormatString(const string& str);
-	bool IfNeedTalk(cstring topic) const;
-	bool IfQuestEvent() const;
-	bool IfSpecial(DialogContext& ctx, cstring msg);
-	void HandleLocationEvent(LocationEventHandler::Event event);
-	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
-	int GetUnitEventHandlerQuestRefid() { return refid; }
-	int GetLocationEventHandlerQuestRefid() { return refid; }
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	GameDialog* GetDialog(int type2) override;
+	void SetProgress(int prog2) override;
+	cstring FormatString(const string& str) override;
+	bool IfNeedTalk(cstring topic) const override;
+	bool IfQuestEvent() const override;
+	bool IfSpecial(DialogContext& ctx, cstring msg) override;
+	void HandleLocationEvent(LocationEventHandler::Event event) override;
+	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
+	int GetUnitEventHandlerQuestRefid() override { return refid; }
+	int GetLocationEventHandlerQuestRefid() override { return refid; }
+	void Save(HANDLE file) override;
+	bool Load(HANDLE file) override;
 	void LoadOld(HANDLE file);
 
 	OrcClass GetOrcClass() const { return orc_class; }

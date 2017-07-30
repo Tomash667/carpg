@@ -361,7 +361,10 @@ void QuestManager::LoadQuests(HANDLE file, vector<Quest*>& quests)
 
 	uint count;
 	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	quests.resize(count);
+	quests.clear();
+	quests.resize(count, nullptr);
+
+	uint quest_index = 0;
 	for(uint i = 0; i < count; ++i)
 	{
 		QUEST quest_type;
@@ -369,10 +372,19 @@ void QuestManager::LoadQuests(HANDLE file, vector<Quest*>& quests)
 
 		Quest* quest = CreateQuest(quest_type);
 		quest->quest_id = quest_type;
-		quest->quest_index = i;
-		quest->Load(file);
-		quests[i] = quest;
+		quest->quest_index = quest_index;
+		if(!quest->Load(file))
+		{
+			delete quest;
+			continue;
+		}
+
+		quests[quest_index] = quest;
+		++quest_index;
 	}
+
+	while(!quests.empty() && !quests.back())
+		quests.pop_back();
 }
 
 //=================================================================================================

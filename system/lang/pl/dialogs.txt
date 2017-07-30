@@ -1551,19 +1551,6 @@ dialog q_mages2_boss {
 }
 
 //==============================================================================
-dialog q_dialog_main_event {
-}
-
-//==============================================================================
-dialog q_dialog_main {
-	0 "Wreszcie jesteœ $player_name$! Ju¿ myœla³em ¿e siê rozmyœli³eœ."
-	1 "Proszê, o to list dziêki któremu przyjm¹ ciê na szkolenie do Akademii."
-	2 "Znajdujê siê ona na $target_dir$ od $close_name$, na pewno trafisz."
-	3 "WeŸ te¿ to z³oto na pokrycie wydatków w podró¿y."
-	4 "Powodzenia."
-}
-
-//==============================================================================
 dialog q_mine_investor {
 	0 "Witaj, jestem Marco Bartoli."
 	1 "Jesteœ zainteresowany prac¹ dla mnie?"

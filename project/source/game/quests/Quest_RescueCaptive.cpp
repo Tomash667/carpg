@@ -421,7 +421,7 @@ void Quest_RescueCaptive::Save(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_RescueCaptive::Load(HANDLE file)
+bool Quest_RescueCaptive::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
@@ -444,6 +444,8 @@ void Quest_RescueCaptive::Load(HANDLE file)
 		unit_to_spawn = FindUnitData("captive");
 		unit_dont_attack = true;
 	}
+
+	return true;
 }
 
 //=================================================================================================

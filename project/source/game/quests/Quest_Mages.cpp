@@ -178,7 +178,7 @@ bool Quest_Mages::IfSpecial(DialogContext& ctx, cstring msg)
 }
 
 //=================================================================================================
-void Quest_Mages::Load(HANDLE file)
+bool Quest_Mages::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
@@ -187,6 +187,8 @@ void Quest_Mages::Load(HANDLE file)
 		item_to_give[0] = FindItem("q_magowie_kula");
 		spawn_item = Quest_Event::Item_InTreasure;
 	}
+
+	return true;
 }
 
 //=================================================================================================
@@ -606,7 +608,7 @@ void Quest_Mages2::Save(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Mages2::Load(HANDLE file)
+bool Quest_Mages2::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
@@ -637,6 +639,8 @@ void Quest_Mages2::Load(HANDLE file)
 		unit_to_spawn2 = FindUnitData("golem_iron");
 		spawn_2_guard_1 = true;
 	}
+
+	return true;
 }
 
 //=================================================================================================

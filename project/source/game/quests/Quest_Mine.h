@@ -54,24 +54,24 @@ public:
 		GeneratedPortal
 	};
 
-	void Start();
-	GameDialog* GetDialog(int type2);
-	void SetProgress(int prog2);
-	cstring FormatString(const string& str);
-	bool IfNeedTalk(cstring topic) const;
-	bool IfSpecial(DialogContext& ctx, cstring msg);
-	void HandleLocationEvent(LocationEventHandler::Event event);
-	void HandleChestEvent(ChestEventHandler::Event event);
-	int GetLocationEventHandlerQuestRefid()
+	void Start() override;
+	GameDialog* GetDialog(int type2) override;
+	void SetProgress(int prog2) override;
+	cstring FormatString(const string& str) override;
+	bool IfNeedTalk(cstring topic) const override;
+	bool IfSpecial(DialogContext& ctx, cstring msg) override;
+	void HandleLocationEvent(LocationEventHandler::Event event) override;
+	void HandleChestEvent(ChestEventHandler::Event event) override;
+	int GetLocationEventHandlerQuestRefid() override
 	{
 		return refid;
 	}
-	int GetChestEventHandlerQuestRefid()
+	int GetChestEventHandlerQuestRefid() override
 	{
 		return refid;
 	}
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(HANDLE file) override;
+	bool Load(HANDLE file) override;
 	void LoadOld(HANDLE file);
 
 	int GetIncome(int days_passed);

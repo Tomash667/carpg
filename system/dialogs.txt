@@ -121,12 +121,6 @@ dialog alchemist
 //==============================================================================
 dialog mayor
 {
-	if special "q_main_need_talk"
-	{
-		do_once
-		do_quest "main"
-		restart
-	}
 	check_quest_timeout 0
 	if once
 	{
@@ -3609,26 +3603,6 @@ dialog q_mages2_boss
 }
 
 //==============================================================================
-dialog q_dialog_main_event
-{
-	do_once
-	do_quest "main"
-	restart
-}
-
-//==============================================================================
-dialog q_dialog_main
-{
-	talk2 0
-	talk 1
-	set_quest_progress 1
-	talk2 2
-	talk 3
-	talk 4
-	end
-}
-
-//==============================================================================
 dialog q_mine_investor
 {
 	if quest_progress 0
@@ -4590,4 +4564,3 @@ dialog q_wanted_end
 	talk2 1
 	end
 }
-

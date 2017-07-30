@@ -62,16 +62,16 @@ public:
 	};
 
 	void Start();
-	GameDialog* GetDialog(int type2);
-	void SetProgress(int prog2);
-	cstring FormatString(const string& str);
-	bool IfNeedTalk(cstring topic) const;
-	bool IfQuestEvent() const;
-	bool IfSpecial(DialogContext& ctx, cstring msg);
-	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit);
-	int GetUnitEventHandlerQuestRefid() { return refid; }
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	GameDialog* GetDialog(int type2) override;
+	void SetProgress(int prog2) override;
+	cstring FormatString(const string& str) override;
+	bool IfNeedTalk(cstring topic) const override;
+	bool IfQuestEvent() const override;
+	bool IfSpecial(DialogContext& ctx, cstring msg) override;
+	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
+	int GetUnitEventHandlerQuestRefid() override { return refid; }
+	void Save(HANDLE file) override;
+	bool Load(HANDLE file) override;
 	void LoadOld(HANDLE file);
 
 	int GetLocId(int location_id);

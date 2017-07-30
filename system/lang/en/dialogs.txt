@@ -1551,19 +1551,6 @@ dialog q_mages2_boss {
 }
 
 //==============================================================================
-dialog q_dialog_main_event {
-}
-
-//==============================================================================
-dialog q_dialog_main {
-	0 "Finally you are here $player_name$! I thought that you change your mind."
-	1 "Please, with this letter you will be accepted for training at the Academy."
-	2 "It's located to the $target_dir$ from $close_name$, I'm sure you will find it."
-	3 "Take also the gold to cover travel expenses."
-	4 "Good luck."
-}
-
-//==============================================================================
 dialog q_mine_investor {
 	0 "Hello, my name is Marco Bartoli."
 	1 "Are you interested in working for me?"

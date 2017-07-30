@@ -164,91 +164,95 @@ See changelog_eng.txt file.
 ===============================================================================
 7) Console command
 To open console press ~ [to the left from 1]. Some commands are only available
-in multiplayer on lobby.
+in multiplayer on lobby. Devmode must be activated (devmode 1).
 Available commands:
-addgold - give gold to player (addgold count).
-addgold_team - give gold to team (addgold_team count).
-additem - add item to player inventory (additem id [count]).
-addteam - add team item to player inventory (addteam id [count]).
-break_action - break unit current action ('break 1' targets self)
-cheats - cheats mode (cheats 0/1).
-citizen - citizens/crazies don't attack player or his team.
-clear - clear text.
-cmds - show commands and write them to file commands.txt, with all show
-	unavailable commands too (cmds [all]).
-dont_wander - citizens don't wander around city (dont_wander 0/1).
-draw_col - draw colliders (draw_col 0/1).
-draw_flags - set which elements of game draw (draw_flags int).
-draw_hitbox - draw weapons hitbox (draw_hitbox 0/1).
-draw_particle_sphere - draw particle extents sphere (draw_particle_sphere 0/1).
-draw_phy - draw physical colliders (draw_phy 0/1).
-draw_unit_radius - draw units radius (draw_unit_radius 0/1).
-dropgold - drop gold on ground (dropgold count).
-exit - exit to menu.
-fall - unit fall on ground for some time ('fall 1' targets self)
-fog - draw fog (fog 0/1).
-givegold - gives gold to another character (givegold nick count).
-godmode - player can't be killed (godmode 0/1).
-goto_map - transport player to world map.
-grass_range - grass draw range (grass_range 0-100).
-heal - heal player.
-healunit - heal unit in front of player.
-help - display information about command (help [command]).
-hurt - deal 100 damage to unit ('hurt 1' targets self)
-invisible - ai can't see player (invisible 0/1).
-kick - kick player from server (kick nick).
-kill - kill unit in front of player.
-killall - kills all enemy units in current level, with 1 it kills allies too,
-	with 2 kill inside buildings (killall [1/2]).
-leader - change team leader (leader nick).
-lighting - use lighting (lighting 0/1).
-list - display list of items/units sorted by id/name, unit item unitn itemn
-	(list type [filter]).
-load - load game (load 1-10).
-map2console - draw dungeon map in console.
-modstat - modify player statistics (modstat stat value), use modstat ? to get
-	list of stats.
-mp_interp - interpolation interval (mp_interp 0.f-1.f).
-mp_use_interp - set use of interpolation (mp_use_interp 0/1).
-multisampling - sets multisampling (multisampling type [quality]).
-next_seed - random seed used in next map generation.
-noai - disable ai (noai 0/1).
-noclip - turn off player collisions (noclip 0/1).
-pause - pause/unpause.
-paycredit - you pay credit with your gold, without count you pay as much as you
-	can (paycredit [count]).
-play_music - sets if play music (play_music 0/1).
-play_sound - sets if play sound (play_sound 0/1).
-playercheats - allow/disallow cheats for player in multiplayer
-	(playercheat nick/all 0/1).
-qs - pick random character, get ready and start game.
-quickload - load game from last slot.
-quicksave - save game on last slot.
-quit - quit from game.
-random - roll random number 1-100 or pick random character (random, random
-	[warrior/hunter/rogue]).
-ready - set player as ready/unready.
-resolution - show or change display resolution (resolution [w h hz]).
-reveal - reveal all locations on world map.
-s - send message to all players, short from say (say msg).
-save - save game (save 1-10 [text]).
-say - send message to all players (say msg).
-scare - enemies escape.
-screenshot - save screenshot.
-server - send message from server to all players (server msg).
-setstat - set player statistics (setstat stat value), use setstat ? to get list
-	of stats.
-shader_version - force shader version (shader_version 2/3).
-show_minimap - reveal minimap.
-skip_days - skip days [skip_days [count]).
-spawnunit - create unit in front of player (spawnunit id [level count arena]).
-speed - game speed (speed 0-10).
-start - start server.
-suicide - kill player.
-version - displays game version.
-w - send private message to player, short from whisper (w nick msg).
-warp - move player into building (warp inn/arena/soltys/townhall).
-whisper - send private message to player (whisper nick msg).
+	addgold - give gold to player (addgold count).
+	addgold_team - give gold to team (addgold_team count).
+	additem - add item to player inventory (additem id [count]).
+	addteam - add team item to player inventory (addteam id [count]).
+	break_action - break unit current action ('break 1' targets self)
+	citizen - citizens/crazies don't attack player or his team.
+	clear - clear text.
+	cmds - show commands and write them to file commands.txt, with all show
+		unavailable commands too (cmds [all]).
+	crash - crash game to death!
+	devmode - developer mode (devmode 0/1).
+	dont_wander - citizens don't wander around city (dont_wander 0/1).
+	draw_col - draw colliders (draw_col 0/1).
+	draw_flags - set which elements of game draw (draw_flags int).
+	draw_hitbox - draw weapons hitbox (draw_hitbox 0/1).
+	draw_particle_sphere - draw particle extents sphere (draw_particle_sphere 0/1).
+	draw_phy - draw physical colliders (draw_phy 0/1).
+	draw_unit_radius - draw units radius (draw_unit_radius 0/1).
+	dropgold - drop gold on ground (dropgold count).
+	exit - exit to menu.
+	fall - unit fall on ground for some time ('fall 1' targets self)
+	fog - draw fog (fog 0/1).
+	givegold - gives gold to another character (givegold nick count).
+	godmode - player can't be killed (godmode 0/1).
+	goto_map - transport player to world map.
+	grass_range - grass draw range (grass_range 0-100).
+	heal - heal player.
+	healunit - heal unit in front of player.
+	help - display information about command (help [command]).
+	hurt - deal 100 damage to unit ('hurt 1' targets self)
+	invisible - ai can't see player (invisible 0/1).
+	kick - kick player from server (kick nick).
+	kill - kill unit in front of player.
+	killall - kills all enemy units in current level, with 1 it kills allies too,
+		with 2 kill inside buildings (killall [1/2]).
+	leader - change team leader (leader nick).
+	lighting - use lighting (lighting 0/1).
+	list - display list of items/units sorted by id/name, unit item unitn itemn
+		(list type [filter]).
+	load - load game (load 1-10).
+	map2console - draw dungeon map in console.
+	modstat - modify player statistics (modstat stat value), use modstat ? to get
+		list of stats.
+	mp_interp - interpolation interval (mp_interp 0.f-1.f).
+	mp_use_interp - set use of interpolation (mp_use_interp 0/1).
+	multisampling - sets multisampling (multisampling type [quality]).
+	next_seed - random seed used in next map generation.
+	noai - disable ai (noai 0/1).
+	noclip - turn off player collisions (noclip 0/1).
+	pause - pause/unpause.
+	paycredit - you pay credit with your gold, without count you pay as much as you
+		can (paycredit [count]).
+	play_music - sets if play music (play_music 0/1).
+	play_sound - sets if play sound (play_sound 0/1).
+	player_devmode - allow/disallow developer mode for player in multiplayer
+		(playercheat nick/all 0/1).
+	qs - pick random character, get ready and start game.
+	quickload - load game from last slot.
+	quicksave - save game on last slot.
+	quit - quit from game.
+	random - roll random number 1-100 or pick random character (random, random
+		[warrior/hunter/rogue]).
+	ready - set player as ready/unready.
+	reload_shaders - reload shaders.
+	resolution - show or change display resolution (resolution [w h hz]).
+	reveal - reveal all locations on world map.
+	s - send message to all players, short from say (say msg).
+	save - save game (save 1-10 [text]).
+	say - send message to all players (say msg).
+	scare - enemies escape.
+	screenshot - save screenshot.
+	server - send message from server to all players (server msg).
+	setstat - set player statistics (setstat stat value), use setstat ? to get list
+		of stats.
+	set_seed - set randomness seed (set_seed uint).
+	shader_version - force shader version (shader_version 2/3).
+	show_minimap - reveal minimap.
+	skip_days - skip days [skip_days [count]).
+	spawnunit - create unit in front of player (spawnunit id [level count arena]).
+	speed - game speed (speed 0-10).
+	start - start server.
+	suicide - kill player.
+	tile_info - write current terrain tile info to console.
+	version - displays game version.
+	w - send private message to player, short from whisper (w nick msg).
+	warp - move player into building (warp inn/arena/hall).
+	whisper - send private message to player (whisper nick msg).
 	
 ===============================================================================
 8) Config file

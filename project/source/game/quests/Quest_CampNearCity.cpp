@@ -267,11 +267,13 @@ void Quest_CampNearCity::Save(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_CampNearCity::Load(HANDLE file)
+bool Quest_CampNearCity::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
 	ReadFile(file, &group, sizeof(group), &tmp, nullptr);
 
 	location_event_handler = this;
+
+	return true;
 }

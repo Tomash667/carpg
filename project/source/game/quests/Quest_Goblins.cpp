@@ -420,7 +420,7 @@ void Quest_Goblins::Save(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Goblins::Load(HANDLE file)
+bool Quest_Goblins::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
@@ -478,6 +478,8 @@ void Quest_Goblins::Load(HANDLE file)
 		e->text = game->txQuest[219];
 		e->timed = false;
 	}
+
+	return true;
 }
 
 //=================================================================================================

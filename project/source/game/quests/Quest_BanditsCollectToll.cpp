@@ -204,7 +204,7 @@ void Quest_BanditsCollectToll::Save(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_BanditsCollectToll::Load(HANDLE file)
+bool Quest_BanditsCollectToll::Load(HANDLE file)
 {
 	Quest_Encounter::Load(file);
 
@@ -227,4 +227,6 @@ void Quest_BanditsCollectToll::Load(HANDLE file)
 		e->zasieg = 64;
 		e->location_event_handler = this;
 	}
+
+	return true;
 }

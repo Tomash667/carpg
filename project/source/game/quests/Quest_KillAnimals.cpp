@@ -183,9 +183,11 @@ bool Quest_KillAnimals::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-void Quest_KillAnimals::Load(HANDLE file)
+bool Quest_KillAnimals::Load(HANDLE file)
 {
 	Quest_Dungeon::Load(file);
 
 	location_event_handler = this;
+
+	return true;
 }
