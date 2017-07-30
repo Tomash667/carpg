@@ -1,4 +1,4 @@
-FEATURE:
+CURRENT:
 - stamina/hp is recalculated on client, it may be different then server
 ? stamina in unit (max from endurance/dexterity), regeneration
 	stamina = 50 + 2.5*end + 2*dex
@@ -17,57 +17,5 @@ FEATURE:
 + update tutorial
 + textures: stamina_bar.png, buff_stamina.png
 ? testing
-============================================
-DEV BUGS:
-- crash at closing alt+f4
-- crash at loading first save
-+ don't lock cursor on load screen
-- wczytaj gre - zle teksty
-- Missing localized string 'name' for 'building house'.
-- savegame text is not quoted (0.2.11 for example - load error)
-
-============================================
-NEXT:
-fix cursor_pos in engine and in gui
-standarized button positions (ok/cancel)
-useables are saved by type (int)
-
-Collision flags fix - Collision flags are not what i was thinking they are setCollisionFlags, need to be removed
-ResetCollisionPointers - What is this used for, called but only for few location types
-Panel fadein/fadeout
-
-Trainer
-	Train skill/attribute/perk.
-	skille pozwalają na szkolenie atutów/poznawanie samemu jeśli się ma trochę więcej, np 1 atut co 10 poziomów
-	
-basements in city
-debug overlay
-decals
-modability
-
-Website fixes
-	404 not found
-		Going into not existing folder will break website http://carpg.pl/testy/
-		Going into not existing file too http://carpg.pl/test.html
-	Opacity fix:
-	> .post_wrapper:hover .postarea div.flow_hidden,.post_wrapper:hover .postarea div.flow_hidden ul.quickbuttons
-	> {
-	> 	opacity: 1;
-	> }
-
-	- -> ul.quickbuttons:hover
-	  On mobile don't hide at all.
-	- Logo from imgur.
-	- Mobile theme ?
-
-	Opacity is fixed now.
-	Index2.php for redirections
-		Add website index2.php for redirection [index2.php?lang=pl&last=1&ver=0.2]
-
 ===============================================================================================================
-
-v0.10:
-+ global play time
-
-v0.20:
-+ efekty ognia, lodu, kwasu, elektro ?
+NEW:

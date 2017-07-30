@@ -141,7 +141,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			s += Format(txDays, u->player->free_days);
 		}
 		s += ")$h-";
-		if(!GUI.DrawText(GUI.default_font, s->c_str(), DT_VCENTER | DT_SINGLELINE, (n == picked ? WHITE : BLACK), r2, &rect, &hitboxes, &hitbox_counter))
+		if(!GUI.DrawText(GUI.default_font, s->c_str(), DT_VCENTER | DT_SINGLELINE | DT_PARSE_SPECIAL, (n == picked ? WHITE : BLACK), r2, &rect, &hitboxes, &hitbox_counter))
 			break;
 
 		offset.y += 32;
@@ -167,6 +167,7 @@ void TeamPanel::Update(float dt)
 		if(Key.Focus() && IsInside(GUI.cursor_pos))
 			scrollbar.ApplyMouseWheel();
 
+		scrollbar.mouse_focus = mouse_focus;
 		scrollbar.Update(dt);
 
 		if(picking && Key.Focus())

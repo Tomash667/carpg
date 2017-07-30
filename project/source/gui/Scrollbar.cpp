@@ -100,9 +100,9 @@ void Scrollbar::Update(float dt)
 			}
 		}
 	}
-	else if((!is_new || mouse_focus) && Key.Pressed(VK_LBUTTON))
+	else if(mouse_focus && Key.Pressed(VK_LBUTTON))
 	{
-		if((is_new && mouse_focus) || (cpos.x >= 0 && cpos.y >= 0 && cpos.x < size.x && cpos.y < size.y))
+		if(cpos.x >= 0 && cpos.y >= 0 && cpos.x < size.x && cpos.y < size.y)
 		{
 			int pos_o = hscrollbar ? int(float(cpos.x)*total / size.x) : int(float(cpos.y)*total / size.y);
 			if(hscrollbar ? (pos_o >= offset && pos_o < offset + part) : (pos_o + 2 >= offset && pos_o + 2 < offset + part))

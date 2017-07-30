@@ -513,7 +513,6 @@ struct Rect
 	Rect LeftTopPart() const;
 	Int2 Random() const;
 	void Resize(const Rect& r);
-	void Resize(const Int2& size);
 	Rect RightBottomPart() const;
 	Rect RightTopPart() const;
 	void Set(int x1, int y1, int x2, int y2);

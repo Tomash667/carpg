@@ -2795,7 +2795,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		UpdateLocation(31, 100, false);
 	}
 
-	if(city_ctx && !exit_mode && IsLocal())
+	if(city_ctx && game_state != GS_EXIT_TO_MENU && IsLocal())
 	{
 		// opuszczanie miasta
 		BuyTeamItems();

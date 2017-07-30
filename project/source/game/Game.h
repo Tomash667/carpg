@@ -88,7 +88,9 @@ enum GAME_STATE
 	GS_MAIN_MENU,
 	GS_WORLDMAP,
 	GS_LEVEL,
-	GS_LOAD
+	GS_LOAD,
+	GS_EXIT_TO_MENU,
+	GS_QUIT
 };
 
 //-----------------------------------------------------------------------------
@@ -634,7 +636,7 @@ public:
 	bool autowalk;
 	float player_rot_buf;
 	AllowInput allow_input;
-	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp, exit_mode, exit_to_menu;
+	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp;
 	int death_screen, dungeon_level;
 	bool death_solo;
 	float death_fade, game_speed;
@@ -883,7 +885,6 @@ public:
 
 	bool hardcore_mode, hardcore_option;
 	string hardcore_savename;
-	bool clearup_shutdown;
 	const Item* crazy_give_item; // dawany przedmiot, nie trzeba zapisywaæ
 	int total_kills;
 	float grayout;

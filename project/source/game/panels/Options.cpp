@@ -85,23 +85,6 @@ public:
 	}
 };
 
-/*class LanguageItem2 : public GuiItem
-{
-public:
-	LanguageItem2(cstring text) : text(text)
-	{
-		assert(text);
-	}
-
-	cstring ToString()
-	{
-		return text;
-	}
-
-private:
-	cstring text;
-};*/
-
 //=================================================================================================
 Options::Options(const DialogInfo& info) : Dialog(info)
 {
@@ -118,82 +101,6 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 
 	txQuality = Str("quality");
 	txMsNone = Str("msNone");
-
-	/*tabControl.BeginLayoutUpdate();
-	//tabControl.Set
-
-	// -- tab gra
-	TabElement* tabGame = new TabElement("Gra");
-	FlowPanel* flowGame = new FlowPanel;
-	// jêzyk
-	LabelComboBox* cLanguage = new LabelComboBox("Jêzyk:");
-	ComboBox& cbLanguage = cLanguage->GetControl();
-	cbLanguage.Add(new LanguageItem2("Angielski"));
-	cbLanguage.Add(new LanguageItem2("Francuski"));
-	cbLanguage.Add(new LanguageItem2("Polski"));
-	flowGame->Add(cLanguage);
-	// --
-	tabGame->SetPanel(flowGame);
-	tabControl.Add(tabGame);
-
-	// -- tab grafika
-	TabElement* tabGraphics = new TabElement("Grafika");
-	FlowPanel* flowGraphics = new FlowPanel;
-	// rozdzielczoœæ
-	LabelListBox* cResolution = new LabelListBox("Rozdzielczoœæ:");
-	ListBox2& lbResolution = cResolution->GetControl();
-	lbResolution.SetSize(300, 200);
-	lbResolution.Add(new LanguageItem2("800x600"));
-	lbResolution.Add(new LanguageItem2("1024x768"));
-	lbResolution.Add(new LanguageItem2("1980x1600"));
-	flowGraphics->Add(cResolution);
-	// tryb pe³noekranowy
-	CheckBox2* cbFullscreen = new CheckBox2("Tryb pe³noekranowy");
-	flowGraphics->Add(cbFullscreen);
-	// glow
-	CheckBox2* cbGlow = new CheckBox2("Poœwiata");
-	flowGraphics->Add(cbGlow);
-	// normal map
-	CheckBox2* cbNormalMap = new CheckBox2("Normal map");
-	flowGraphics->Add(cbNormalMap);
-	// specular map
-	CheckBox2* cbSpecularMap = new CheckBox2("Specular map");
-	flowGraphics->Add(cbSpecularMap);
-	// multisampling
-	LabelComboBox* cMultisampling = new LabelComboBox("Mutlisampling");
-	ComboBox& cbMultisampling = cMultisampling->GetControl();
-	cbMultisampling.Add(new LanguageItem2("x1"));
-	cbMultisampling.Add(new LanguageItem2("x2"));
-	cbMultisampling.Add(new LanguageItem2("x4"));
-	cbMultisampling.Add(new LanguageItem2("x8"));
-	flowGraphics->Add(cMultisampling);
-	// --
-	tabGraphics->SetPanel(flowGraphics);
-	tabControl.Add(tabGraphics);
-
-	// -- dŸwiêk
-	TabElement* tabSound = new TabElement("DŸwiêk");
-	FlowPanel* flowSound = new FlowPanel;
-	// g³oœnoœæ dŸwiêku
-	flowSound->Add(new LabelSlider("G³oœnoœæ dŸwiêku"));
-	// g³oœnoœæ muzyki
-	flowSound->Add(new LabelSlider("G³oœnoœæ muzyki"));
-	// --
-	tabSound->SetPanel(flowSound);
-	tabControl.Add(tabSound);
-
-	// -- sterowanie
-	TabElement* tabControls = new TabElement("Sterowanie");
-	FlowPanel* flowControls = new FlowPanel;
-	// czu³oœæ myszki
-	flowControls->Add(new LabelSlider("Czu³oœæ myszki"));
-	// przycisk sterowanie
-	flowControls->Add(new Button2("Sterowanie", Button2::ClickEvent(this, &Options::OpenControls)));
-	// --
-	tabControls->SetPanel(flowControls);
-	tabControl.Add(tabControls);
-
-	tabControl.EndLayoutUpdate();*/
 
 	cstring ids[] = {
 		"fullscreenMode",
@@ -403,61 +310,7 @@ void Options::Draw(ControlDrawData* /*cdd*/)
 //=================================================================================================
 void Options::Update(float dt)
 {
-	// aktualizuj zmienione opcje
-	check[0].checked = game->fullscreen;
-	check[1].checked = game->cl_glow;
-	check[2].checked = game->cl_normalmap;
-	check[3].checked = game->cl_specularmap;
-	Res& re = *res.GetItemCast<Res>();
-	if(re.w != game->wnd_size.x || re.h != game->wnd_size.y || re.hz != game->wnd_hz)
-	{
-		auto& ress = res.GetItemsCast<Res>();
-		int index = 0;
-		for(vector<Res*>::iterator it = ress.begin(), end = ress.end(); it != end; ++it, ++index)
-		{
-			if((*it)->w == game->wnd_size.x && (*it)->h == game->wnd_size.y && (*it)->hz == game->wnd_hz)
-			{
-				res.SetIndex(index);
-				break;
-			}
-		}
-	}
-	MultisamplingItem& mi = *multisampling.GetItemCast<MultisamplingItem>();
-	int ms, msq;
-	game->GetMultisampling(ms, msq);
-	if(mi.level != ms || mi.quality != msq)
-	{
-		auto& multis = multisampling.GetItemsCast<MultisamplingItem>();
-		int index = 0;
-		for(vector<MultisamplingItem*>::iterator it = multis.begin(), end = multis.end(); it != end; ++it, ++index)
-		{
-			if((*it)->level == ms && (*it)->quality == msq)
-			{
-				multisampling.SetIndex(index);
-				break;
-			}
-		}
-	}
-	if(sound_volume != game->sound_volume)
-	{
-		sound_volume = game->sound_volume;
-		scroll[0].SetValue(float(sound_volume) / 100.f);
-	}
-	if(music_volume != game->music_volume)
-	{
-		music_volume = game->music_volume;
-		scroll[1].SetValue(float(music_volume) / 100.f);
-	}
-	if(mouse_sensitivity != game->mouse_sensitivity)
-	{
-		mouse_sensitivity = game->mouse_sensitivity;
-		scroll[2].SetValue(float(mouse_sensitivity) / 100.f);
-	}
-	if(grass_range != game->grass_range)
-	{
-		grass_range = (int)game->grass_range;
-		scroll[3].SetValue(float(grass_range) / 100.f);
-	}
+	SetOptions();
 
 	// aktualizuj kontrolki
 	if(multisampling.menu->visible)
@@ -510,7 +363,10 @@ void Options::Event(GuiEvent e)
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize)
 	{
 		if(e == GuiEvent_Show)
+		{
 			visible = true;
+			SetOptions();
+		}
 		pos = global_pos = (GUI.wnd_size - size) / 2;
 		for(int i = 0; i < 4; ++i)
 			check[i].global_pos = global_pos + check[i].pos;
@@ -531,6 +387,68 @@ void Options::Event(GuiEvent e)
 		res.Event(GuiEvent_LostFocus);
 	else if(e >= GuiEvent_Custom)
 		event((Id)e);
+}
+
+//=================================================================================================
+void Options::SetOptions()
+{
+	check[0].checked = game->fullscreen;
+	check[1].checked = game->cl_glow;
+	check[2].checked = game->cl_normalmap;
+	check[3].checked = game->cl_specularmap;
+
+	Res& re = *res.GetItemCast<Res>();
+	if(re.w != game->wnd_size.x || re.h != game->wnd_size.y || re.hz != game->wnd_hz)
+	{
+		auto& ress = res.GetItemsCast<Res>();
+		int index = 0;
+		for(vector<Res*>::iterator it = ress.begin(), end = ress.end(); it != end; ++it, ++index)
+		{
+			if((*it)->w == game->wnd_size.x && (*it)->h == game->wnd_size.y && (*it)->hz == game->wnd_hz)
+			{
+				res.SetIndex(index);
+				break;
+			}
+		}
+	}
+
+	MultisamplingItem& mi = *multisampling.GetItemCast<MultisamplingItem>();
+	int ms, msq;
+	game->GetMultisampling(ms, msq);
+	if(mi.level != ms || mi.quality != msq)
+	{
+		auto& multis = multisampling.GetItemsCast<MultisamplingItem>();
+		int index = 0;
+		for(vector<MultisamplingItem*>::iterator it = multis.begin(), end = multis.end(); it != end; ++it, ++index)
+		{
+			if((*it)->level == ms && (*it)->quality == msq)
+			{
+				multisampling.SetIndex(index);
+				break;
+			}
+		}
+	}
+
+	if(sound_volume != game->sound_volume)
+	{
+		sound_volume = game->sound_volume;
+		scroll[0].SetValue(float(sound_volume) / 100.f);
+	}
+	if(music_volume != game->music_volume)
+	{
+		music_volume = game->music_volume;
+		scroll[1].SetValue(float(music_volume) / 100.f);
+	}
+	if(mouse_sensitivity != game->mouse_sensitivity)
+	{
+		mouse_sensitivity = game->mouse_sensitivity;
+		scroll[2].SetValue(float(mouse_sensitivity) / 100.f);
+	}
+	if(grass_range != game->grass_range)
+	{
+		grass_range = (int)game->grass_range;
+		scroll[3].SetValue(float(grass_range) / 100.f);
+	}
 }
 
 //=================================================================================================

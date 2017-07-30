@@ -2111,8 +2111,7 @@ void IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color
 	{
 		DWORD color2 = COLOR_RGBA(255, 255, 255, (color & 0xFF000000) >> 24);
 
-		Rect r2 = r;
-		r.Bottom() += 4;
+		Rect r2(r.Left(), r.Bottom(), r.Right(), r.Bottom() + 4);
 		GUI.DrawSpriteRect(tMinihp[0], r2, color2);
 
 		r2.Right() = r2.Left() + int(hpp * r2.SizeX());

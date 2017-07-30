@@ -261,7 +261,10 @@ void Inventory::Update(float dt)
 	if(have_focus && Key.Focus() && IsInside(GUI.cursor_pos))
 		scrollbar.ApplyMouseWheel();
 	if(focus)
+	{
+		scrollbar.mouse_focus = have_focus;
 		scrollbar.Update(dt);
+	}
 
 	int shift = int(scrollbar.offset / 63)*ile_w;
 

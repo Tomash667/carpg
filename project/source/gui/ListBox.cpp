@@ -206,6 +206,7 @@ void ListBox::Update(float dt)
 		{
 			if(IsInside(GUI.cursor_pos))
 				scrollbar.ApplyMouseWheel();
+			scrollbar.mouse_focus = mouse_focus;
 			scrollbar.Update(dt);
 		}
 	}

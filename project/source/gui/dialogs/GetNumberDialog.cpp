@@ -48,6 +48,7 @@ void GetNumberDialog::Update(float dt)
 		bool moving = scrollbar.clicked;
 		float prev_offset = scrollbar.offset;
 		scrollbar.ApplyMouseWheel();
+		scrollbar.mouse_focus = mouse_focus;
 		scrollbar.Update(dt);
 		bool changed = false;
 		if(scrollbar.change != 0 || GUI.mouse_wheel != 0.f)

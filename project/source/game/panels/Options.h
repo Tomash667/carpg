@@ -5,7 +5,6 @@
 #include "CheckBox.h"
 #include "Button.h"
 #include "ListBox.h"
-//#include "TabControl.h"
 #include "Scrollbar.h"
 
 //-----------------------------------------------------------------------------
@@ -36,19 +35,16 @@ public:
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;
 
+	void SetOptions();
 	void OnChangeRes(int res_id);
 	void OnChangeMultisampling(int id);
 	void OnChangeLanguage(int id);
 	void ChangeLanguage(int id);
 
-	// new events
-	//void OpenControls();
-
 	CheckBox check[4];
 	ListBox res, multisampling, language;
 	cstring txOPTIONS, txResolution, txMultisampling, txLanguage, txMultisamplingError, txNeedRestart, txSoundVolume, txMusicVolume, txMouseSensitivity, txGrassRange;
 	string language_id;
-	//TabControl tabControl;
 	Scrollbar scroll[4];
 	int sound_volume, music_volume, mouse_sensitivity, grass_range;
 };

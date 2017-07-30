@@ -54,6 +54,8 @@ void Game::PreconfigureGame()
 {
 	Info("Game: Preconfiguring game.");
 
+	UnlockCursor(false);
+
 	// set default render states
 	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
 	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
@@ -333,6 +335,7 @@ void Game::PostconfigureGame()
 {
 	Info("Game: Postconfiguring game.");
 
+	LockCursor();
 	CreateCollisionShapes();
 	create_character->Init();
 

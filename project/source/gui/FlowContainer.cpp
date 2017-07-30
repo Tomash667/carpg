@@ -109,6 +109,8 @@ void FlowContainer::Update(float dt)
 				}
 			}
 		}
+
+		scroll.mouse_focus = mouse_focus;
 		scroll.Update(dt);
 	}
 
