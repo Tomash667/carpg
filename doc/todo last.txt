@@ -13,7 +13,6 @@ CURRENT:
 + used by runing, attacking, blocking
 + regenerates slowly when blocking, holding arrow
 + strong attack x1.5 stamina usage
-? stamina bar
 - restore on travel/sleep, don't work atm
 ? mp update
 	calculate stamina for player by server ??? maybe send how much they used, restored ???
@@ -35,3 +34,7 @@ NEW:
 + split unit between global (world unit) and local (unit)
 + common code for players and ai
 + stamina can't run - verify by server
++ Unit.cpp IsEmptySlot, use lambda
++ image near cursor for inventory when holding key (for example ctrl=1, shift=infinity)
++ starting items list, family hairloom list
++ convexSweepTest for bullets
