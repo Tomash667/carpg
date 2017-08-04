@@ -1308,7 +1308,6 @@ void Game::UpdateGame(float dt)
 	}
 
 	// aktualizuj gracza
-	pc->unit->stamina_action = Unit::SA_RESTORE_MORE;
 	if(pc->wasted_key != VK_NONE && Key.Up(pc->wasted_key))
 		pc->wasted_key = VK_NONE;
 	if(dialog_context.dialog_mode || pc->unit->look_target || inventory_mode > I_INVENTORY)
@@ -1824,14 +1823,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				{
 					MoveUnit(u);
 					if(run)
-					{
-						pc->unit->stamina_action = Unit::SA_DONT_RESTORE;
-						pc->unit->stamina -= dt * 5;
-						if(pc->unit->stamina < 0)
-							pc->unit->stamina_cant_run = true;
-					}
-					else
-						pc->unit->stamina_action = Unit::SA_RESTORE;
+						pc->unit->RemoveStamina(5.f * dt);
 
 					// train by moving
 					if(IsLocal())
@@ -6597,9 +6589,8 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	// typ
 	if(!test_unit)
 	{
-		if(IS_SET(base.flags, F_HUMAN))
+		if(base.type == UNIT_TYPE::HUMAN)
 		{
-			u->type = Unit::HUMAN;
 			if(human_data)
 				u->human_data = human_data;
 			else
@@ -6633,14 +6624,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 			u->ani = new AnimeshInstance(aHumanBase);
 		}
 		else
-		{
 			u->ani = new AnimeshInstance(base.mesh);
-
-			if(IS_SET(base.flags, F_HUMANOID))
-				u->type = Unit::HUMANOID;
-			else
-				u->type = Unit::ANIMAL;
-		}
 
 		u->animation = u->current_animation = ANI_STAND;
 		u->ani->Play("stoi", PLAY_PRIO1 | PLAY_NO_BLEND, 0);
@@ -7770,7 +7754,10 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				u.ani->frame_end_info = false;
 			}
 			if(u.action != A_POSITION)
+			{
+				u.UpdateStaminaAction();
 				continue;
+			}
 		}
 
 		// aktualizuj akcjê
@@ -8586,6 +8573,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			assert(0);
 			break;
 		}
+
+		u.UpdateStaminaAction();
 	}
 }
 
@@ -15047,7 +15036,7 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 	ctx.dialog_wait = 1.f + float(strlen(ctx.dialog_text)) / 20;
 
 	int ani;
-	if(!ctx.talker->useable && ctx.talker->type == Unit::HUMAN && Rand() % 3 != 0)
+	if(!ctx.talker->useable && ctx.talker->data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
 	{
 		ani = Rand() % 2 + 1;
 		ctx.talker->ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
@@ -19907,7 +19896,7 @@ SOUND Game::GetTalkSound(Unit& u)
 {
 	if(IS_SET(u.data->flags2, F2_XAR))
 		return sXarTalk;
-	else if(u.type == Unit::HUMAN)
+	else if(u.data->type == UNIT_TYPE::HUMAN)
 		return sTalk[Rand() % 4];
 	else if(IS_SET(u.data->flags2, F2_ORC_SOUNDS))
 		return sOrcTalk;
@@ -19926,7 +19915,7 @@ void Game::UnitTalk(Unit& u, cstring text)
 	game_gui->AddSpeechBubble(&u, text);
 
 	int ani = 0;
-	if(u.type == Unit::HUMAN && Rand() % 3 != 0)
+	if(u.data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
 	{
 		ani = Rand() % 2 + 1;
 		u.ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);

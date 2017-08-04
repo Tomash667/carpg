@@ -260,7 +260,7 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 
 	Unit* u = (Unit*)ptr;
 
-	if(u->type == Unit::HUMAN)
+	if(u->data->type == UNIT_TYPE::HUMAN)
 	{
 		int bone = u->ani->ani->GetBone("usta")->id;
 		static Matrix mat2;

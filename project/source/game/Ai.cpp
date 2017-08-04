@@ -851,7 +851,7 @@ void Game::UpdateAi(float dt)
 								}
 								else if(IS_SET(u.data->flags2, F2_SIT_ON_THRONE) && !u.IsFollower())
 									co = I_UZYJ;
-								else if(u.type == Unit::HUMAN)
+								else if(u.data->type == UNIT_TYPE::HUMAN)
 								{
 									if(!IS_SET(u.data->flags, F_AI_GUARD))
 									{
@@ -1036,7 +1036,7 @@ void Game::UpdateAi(float dt)
 									break;
 								case I_GADAJ:
 									// podejdŸ do postaci i gadaj
-									if(u.type == Unit::HUMAN)
+									if(u.data->type == UNIT_TYPE::HUMAN)
 									{
 										const float d = ((IS_SET(u.data->flags, F_AI_GUARD) || IS_SET(u.data->flags, F_AI_STAY)) ? 1.5f : 10.f);
 										close_enemies.clear();

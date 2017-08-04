@@ -1525,6 +1525,14 @@ bool LoadUnit(Tokenizer& t, Crc& crc)
 			t.Next();
 		}
 
+		// configure
+		if(IS_SET(unit->flags, F_HUMAN))
+			unit->type = UNIT_TYPE::HUMAN;
+		else if(IS_SET(unit->flags, F_HUMANOID))
+			unit->type = UNIT_TYPE::HUMANOID;
+		else
+			unit->type = UNIT_TYPE::ANIMAL;
+
 		// add
 		std::pair<UnitDataIterator, bool>& result = unit_datas.insert(unit);
 		if(!result.second)

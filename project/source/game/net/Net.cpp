@@ -516,7 +516,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	stream.Write(unit.netid);
 
 	// human data
-	if(unit.type == Unit::HUMAN)
+	if(unit.data->type == UNIT_TYPE::HUMAN)
 	{
 		stream.WriteCasted<byte>(unit.human_data->hair);
 		stream.WriteCasted<byte>(unit.human_data->beard);
@@ -526,7 +526,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	}
 
 	// items
-	if(unit.type != Unit::ANIMAL)
+	if(unit.data->type != UNIT_TYPE::ANIMAL)
 	{
 		byte zero = 0;
 		if(unit.HaveWeapon())
@@ -1391,16 +1391,9 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		Error("Missing base unit id '%s'!", BUF);
 		return false;
 	}
-
-	if(IS_SET(unit.data->flags, F_HUMAN))
-		unit.type = Unit::HUMAN;
-	else if(IS_SET(unit.data->flags, F_HUMANOID))
-		unit.type = Unit::HUMANOID;
-	else
-		unit.type = Unit::ANIMAL;
-
+	
 	// human data
-	if(unit.type == Unit::HUMAN)
+	if(unit.data->type == UNIT_TYPE::HUMAN)
 	{
 		unit.human_data = new Human;
 		if(!stream.ReadCasted<byte>(unit.human_data->hair)
@@ -1437,7 +1430,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 
 	// equipped items
-	if(unit.type != Unit::ANIMAL)
+	if(unit.data->type != UNIT_TYPE::ANIMAL)
 	{
 		for(int i = 0; i < SLOT_MAX; ++i)
 		{
@@ -6447,7 +6440,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Error("Update client: HAIR_COLOR, missing unit %d.", netid);
 						StreamError();
 					}
-					else if(unit->type != Unit::HUMAN)
+					else if(unit->data->type != UNIT_TYPE::HUMAN)
 					{
 						Error("Update client: HAIR_COLOR, unit %d (%s) is not human.", netid, unit->data->id.c_str());
 						StreamError();

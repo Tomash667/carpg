@@ -204,6 +204,7 @@ struct WeaponTypeInfo
 	cstring name;
 	float str2dmg, dex2dmg, power_speed, base_speed, dex_speed;
 	Skill skill;
+	float stamina;
 };
 extern WeaponTypeInfo weapon_type_info[];
 

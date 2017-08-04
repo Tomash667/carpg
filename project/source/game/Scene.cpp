@@ -1398,7 +1398,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		return;
 
 	// ustaw koœci
-	if(u.type == Unit::HUMAN)
+	if(u.data->type == UNIT_TYPE::HUMAN)
 		u.ani->SetupBones(&u.human_data->mat_scale[0]);
 	else
 		u.ani->SetupBones();
@@ -1737,7 +1737,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	}
 
 	// w³osy/broda/brwi u ludzi
-	if(u.type == Unit::HUMAN)
+	if(u.data->type == UNIT_TYPE::HUMAN)
 	{
 		Human& h = *u.human_data;
 

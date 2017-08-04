@@ -55,7 +55,6 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), uni
 
 	size = Int2(600, 500);
 	unit = new Unit;
-	unit->type = Unit::HUMAN;
 	unit->human_data = new Human;
 	unit->player = nullptr;
 	unit->ai = nullptr;

@@ -1239,6 +1239,9 @@
     <Text Include="..\doc\todo.txt">
       <Filter>0. doc</Filter>
     </Text>
+    <Text Include="..\doc\todo last.txt">
+      <Filter>0. doc</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="source\core\CoreMath.inl">

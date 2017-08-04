@@ -107,13 +107,6 @@ enum class AutoTalkMode
 // jednostka w grze
 struct Unit
 {
-	enum Type
-	{
-		ANIMAL,
-		HUMANOID,
-		HUMAN
-	};
-
 	enum LiveState
 	{
 		ALIVE,
@@ -126,10 +119,10 @@ struct Unit
 
 	enum StaminaAction
 	{
-		SA_RESTORE_MORE,
-		SA_RESTORE,
+		SA_DONT_RESTORE,
 		SA_RESTORE_SLOW,
-		SA_DONT_RESTORE
+		SA_RESTORE,
+		SA_RESTORE_MORE
 	};
 
 	static const int MIN_SIZE = 36;
@@ -143,7 +136,6 @@ struct Unit
 	Vec3 visual_pos; // graficzna pozycja postaci, u¿ywana w MP
 	Vec3 prev_pos, target_pos, target_pos2;
 	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
-	Type type;
 	int animation_state, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid;
 	ACTION action;
 	WeaponType weapon_taken, weapon_hiding;
@@ -217,13 +209,13 @@ struct Unit
 	float GetSphereRadius() const
 	{
 		float radius = ani->ani->head.radius;
-		if(type == HUMAN)
+		if(data->type == UNIT_TYPE::HUMAN)
 			radius *= ((human_data->height - 1)*0.2f + 1.f);
 		return radius;
 	}
 	float GetUnitRadius() const
 	{
-		if(type == HUMAN)
+		if(data->type == UNIT_TYPE::HUMAN)
 			return 0.3f * ((human_data->height - 1)*0.2f + 1.f);
 		else
 			return data->width;
@@ -239,7 +231,7 @@ struct Unit
 	}
 	float GetUnitHeight() const
 	{
-		if(type == HUMAN)
+		if(data->type == UNIT_TYPE::HUMAN)
 			return 1.73f * ((human_data->height - 1)*0.2f + 1.f);
 		else
 			return ani->ani->head.bbox.SizeY();
@@ -279,7 +271,7 @@ struct Unit
 	int GetDmgType() const;
 	bool IsNotFighting() const
 	{
-		if(type == ANIMAL)
+		if(data->type == UNIT_TYPE::ANIMAL)
 			return false;
 		else
 			return (weapon_state == WS_HIDDEN);
@@ -409,11 +401,11 @@ struct Unit
 	void ReequipItems();
 	bool CanUseWeapons() const
 	{
-		return type >= HUMANOID;
+		return data->type >= UNIT_TYPE::HUMANOID;
 	}
 	bool CanUseArmor() const
 	{
-		return type == HUMAN;
+		return data->type == UNIT_TYPE::HUMAN;
 	}
 	static Unit* GetByRefid(int _refid)
 	{
@@ -810,6 +802,9 @@ struct Unit
 			return hero->credit;
 		}
 	}
+
+	void UpdateStaminaAction();
+	void RemoveStamina(float value);
 };
 
 //-----------------------------------------------------------------------------

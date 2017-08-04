@@ -897,6 +897,8 @@ void Unit::EndEffects(int days, int* best_nat)
 		*best_nat = 0;
 
 	alcohol = 0.f;
+	stamina = stamina_max;
+
 	if(effects.empty())
 		return;
 
@@ -947,8 +949,6 @@ void Unit::EndEffects(int days, int* best_nat)
 		hp = 1.f;
 	else if(hp > hpmax)
 		hp = hpmax;
-
-	stamina = stamina_max;
 
 	while(!_to_remove.empty())
 	{
@@ -1274,7 +1274,6 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
 	WriteFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
 	WriteFile(file, &stamina_cant_run, sizeof(stamina_cant_run), &tmp, nullptr);
-	WriteFile(file, &type, sizeof(type), &tmp, nullptr);
 	WriteFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileWriter f(file);
 	stats.Save(f);
@@ -1301,7 +1300,7 @@ void Unit::Save(HANDLE file, bool local)
 	int guard_refid = (guard_target ? guard_target->refid : -1);
 	WriteFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);
 
-	assert((human_data != nullptr) == (type == HUMAN));
+	assert((human_data != nullptr) == (data->type == UNIT_TYPE::HUMAN));
 	if(human_data)
 	{
 		byte b = 1;
@@ -1485,7 +1484,11 @@ void Unit::Load(HANDLE file, bool local)
 		stamina_action = SA_RESTORE_MORE;
 		stamina_cant_run = false;
 	}
-	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
+	if(LOAD_VERSION < V_CURRENT)
+	{
+		int old_type;
+		ReadFile(file, &old_type, sizeof(old_type), &tmp, nullptr);
+	}
 	if(LOAD_VERSION < V_0_2_10)
 	{
 		int weapon, bow, shield, armor;
@@ -1650,7 +1653,7 @@ void Unit::Load(HANDLE file, bool local)
 	}
 	else
 	{
-		assert(type != HUMAN);
+		assert(data->type != UNIT_TYPE::HUMAN);
 		human_data = nullptr;
 	}
 
@@ -1956,7 +1959,7 @@ void Unit::ReequipItems()
 	}
 
 	// add item if unit have none
-	if(type == HUMANOID && !HaveWeapon())
+	if(data->type == UNIT_TYPE::HUMANOID && !HaveWeapon())
 		AddItemAndEquipIfNone(UnitHelper::GetBaseWeapon(*this));
 }
 
@@ -2935,4 +2938,71 @@ void Unit::StartAutoTalk(bool leader, GameDialog* dialog)
 		auto_talk_timer = 0.f;
 	}
 	auto_talk_dialog = dialog;
+}
+
+//=================================================================================================
+void Unit::UpdateStaminaAction()
+{
+	if(useable)
+	{
+		if(useable->GetBase()->stamina_slow_restore)
+			stamina_action = SA_RESTORE_SLOW;
+		else
+			stamina_action = SA_RESTORE_MORE;
+	}
+	else
+	{
+		switch(action)
+		{
+		case A_TAKE_WEAPON:
+		case A_PICKUP:
+		case A_POSITION:
+		case A_PAIN:
+		case A_CAST:
+		default:
+			stamina_action = SA_RESTORE;
+		case A_SHOOT:
+			if(animation_state < 2)
+				stamina_action = SA_RESTORE_SLOW;
+			else
+				stamina_action = SA_RESTORE;
+			break;
+		case A_EAT:
+		case A_DRINK:
+		case A_ANIMATION:
+		case A_ANIMATION2:
+			stamina_action = SA_RESTORE_MORE;
+			break;
+		case A_BLOCK:
+			stamina_action = SA_RESTORE_SLOW;
+			break;
+		case A_BASH:
+		case A_ATTACK:
+			stamina_action = SA_DONT_RESTORE;
+			break;
+		}
+
+		switch(animation)
+		{
+		case ANI_WALK:
+		case ANI_WALK_TYL:
+		case ANI_LEFT:
+		case ANI_RIGHT:
+		case ANI_KNEELS:
+			if(stamina_action == SA_RESTORE_MORE)
+				stamina_action = SA_RESTORE;
+			break;
+		case ANI_RUN:
+			stamina_action = SA_DONT_RESTORE;
+			break;
+		}
+	}
+}
+
+//=================================================================================================
+void Unit::RemoveStamina(float value)
+{
+	stamina -= value;
+	if(stamina < 0)
+		stamina_cant_run = true;
 }
