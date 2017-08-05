@@ -60,9 +60,12 @@ item p_hp3
 // alchemist free samples
 item p_hp
 item p_nreg
-// inn free samples
+item healing_herb
+// inn items on table/shelf
 item beer
 item vodka
+item plate
+item cup
 // cave mushrooms
 item mushroom
 // tutorial items
@@ -74,11 +77,16 @@ item bow_short
 item p_hp
 // food seller random item
 item frying_pan
+item ladle
 // spawn forest items
 item healing_herb
 item green_herb
 // pre 0.10 quest item
 item q_main_letter
+// small chance to generate on dungeon table
+item golden_cup
+item plate
+item cup
 
 //------------------------------------------------------------------------------
 // Required item lists
@@ -89,6 +97,7 @@ list orc_food
 list food_and_drink
 list ancient_armory_armors
 list contest_reward
+list treasure
 
 //------------------------------------------------------------------------------
 // Required item stock
@@ -175,6 +184,8 @@ unit guard_move
 // tutorial
 unit tut_goblin
 unit tut_czlowiek
+// encounters
+unit crazy_cook
 
 //------------------------------------------------------------------------------
 // Required unit groups

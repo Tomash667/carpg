@@ -1971,3 +1971,7 @@ dialog q_wanted_end {
 	1 "Oto twoje $reward$ sztuk z³ota."
 }
 
+//==============================================================================
+dialog crazy_cook {
+	0 "Dobrze ¿e siê spotykamy bo akurat skoñczy³o mi siê œwie¿e miêso! Hahaha!"
+}

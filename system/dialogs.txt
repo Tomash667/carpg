@@ -4564,3 +4564,11 @@ dialog q_wanted_end
 	talk2 1
 	end
 }
+
+//==============================================================================
+dialog crazy_cook
+{
+	talk 0
+	special "attack"
+	end
+}

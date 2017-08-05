@@ -37,6 +37,7 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 	txOnlyLeaderCanTravel = Str("onlyLeaderCanTravel");
 	txEncCrazyMage = Str("encCrazyMage");
 	txEncCrazyHeroes = Str("encCrazyHeroes");
+	txEncCrazyCook = Str("encCrazyCook");
 	txEncMerchant = Str("encMerchant");
 	txEncHeroes = Str("encHeroes");
 	txEncBanditsAttackTravelers = Str("encBanditsAttackTravelers");
@@ -422,8 +423,13 @@ void WorldMapGui::Update(float dt)
 									game.spotkanie = 1;
 								else if(Key.Down('B'))
 									game.spotkanie = 4;
+								else if(Key.Down('C'))
+									game.spotkanie = 9;
 							}
 							game.enc_tryb = 1;
+
+							if((game.spotkanie == 0 || game.spotkanie == 1) && Rand() % 10 == 0)
+								game.spotkanie = 9;
 
 							DialogInfo info;
 							info.event = DialogEvent(&game, &Game::Event_RandomEncounter);
@@ -459,6 +465,9 @@ void WorldMapGui::Update(float dt)
 								break;
 							case 8:
 								info.text = txEncUnk;
+								break;
+							case 9:
+								info.text = txEncCrazyCook;
 								break;
 							}
 							info.type = DIALOG_OK;

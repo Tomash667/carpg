@@ -1528,7 +1528,8 @@ uint LoadItems(uint& out_crc, uint& errors)
 		{ "not_random", ITEM_NOT_RANDOM },
 		{ "hq", ITEM_HQ },
 		{ "magical", ITEM_MAGICAL },
-		{ "unique", ITEM_UNIQUE }
+		{ "unique", ITEM_UNIQUE },
+		{ "alpha", ITEM_ALPHA }
 	});
 
 	t.AddKeywords(G_ARMOR_SKILL, {

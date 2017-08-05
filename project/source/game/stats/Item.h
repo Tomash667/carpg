@@ -41,6 +41,7 @@ enum ITEM_FLAGS
 	ITEM_HQ = 1 << 21, // high quality item icon
 	ITEM_MAGICAL = 1 << 23, // magic quality item icon
 	ITEM_UNIQUE = 1 << 24, // unique quality item icon
+	ITEM_ALPHA = 1 << 25, // item require alpha test
 };
 
 //-----------------------------------------------------------------------------

@@ -1971,3 +1971,7 @@ dialog q_wanted_end {
 	1 "Here is you reward, $reward$ gold pieces."
 }
 
+//==============================================================================
+dialog crazy_cook {
+	0 "Well we meet because I just run out of fresh meat! Hahaha!"
+}

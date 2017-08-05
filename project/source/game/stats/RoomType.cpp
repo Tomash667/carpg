@@ -217,12 +217,12 @@ ObjEntry objs_portal[] = {
 
 //-----------------------------------------------------------------------------
 RoomType g_room_types[] = {
-	"sypialnia",  objs_sypialnia, countof(objs_sypialnia), RT_POWTARZAJ,
+	"sypialnia",  objs_sypialnia, countof(objs_sypialnia), RT_REPEAT,
 	"pokoj_dowodcy", objs_pokoj_dowodcy, countof(objs_pokoj_dowodcy), 0,
 	"biblioteczka", objs_biblioteczka, countof(objs_biblioteczka), 0,
-	"magazyn", objs_magazyn, countof(objs_magazyn), RT_POWTARZAJ,
-	"skrytka", objs_skrytka, countof(objs_skrytka), RT_POWTARZAJ,
-	"sklad_piwa", objs_sklad_piwa, countof(objs_sklad_piwa), RT_POWTARZAJ,
+	"magazyn", objs_magazyn, countof(objs_magazyn), RT_REPEAT,
+	"skrytka", objs_skrytka, countof(objs_skrytka), RT_REPEAT,
+	"sklad_piwa", objs_sklad_piwa, countof(objs_sklad_piwa), RT_REPEAT,
 	"kapliczka", objs_kapliczka, countof(objs_kapliczka), 0,
 	"pokoj_spotkan", objs_pokoj_spotkan, countof(objs_pokoj_spotkan), 0,
 	"pokoj_treningowy", objs_pokoj_treningowy, countof(objs_pokoj_treningowy), 0,
@@ -233,8 +233,8 @@ RoomType g_room_types[] = {
 	"groby", objs_groby, countof(objs_groby), 0,
 	"groby2", objs_groby2, countof(objs_groby2), 0,
 	"pokoj_krypta", objs_pokoj_krypta, countof(objs_pokoj_krypta), 0,
-	"krypta_skarb", objs_krypta_skarb, countof(objs_krypta_skarb), 0,
-	"labirynt_skarb", objs_labirynt_skarb, countof(objs_labirynt_skarb), 0,
+	"krypta_skarb", objs_krypta_skarb, countof(objs_krypta_skarb), RT_TREASURE,
+	"labirynt_skarb", objs_labirynt_skarb, countof(objs_labirynt_skarb), RT_TREASURE,
 	"tut", objs_tut, countof(objs_tut), 0,
 	"magiczny", objs_magiczny, countof(objs_magiczny), 0,
 	"obrazy", objs_obrazy, countof(objs_obrazy), 0,

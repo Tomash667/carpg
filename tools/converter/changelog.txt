@@ -1,0 +1,49 @@
+CHANGELOG
+Minor updates have changes only in exporter/converer, don't affect qmsh file.
+---------------------------
+v19.1:
+* converter return 0 (success) or 1 (failed)
+* export script can run converter to export directly to qmsh file
+
+v19:
+* using euler angles in point
+* removed semicolon in matrices
+
+v18:
+* simplified exporter
+* exporting diffuse/specular material color
+* submesh split groups
+* don't export bone groups where there is no bones
+
+v17:
+* removed unused values
+* using normals from blender
+* force export tangents
+
+v16:
+* normalmap (normal_factor), specularmap (specular_factor, specular_color_factor)
+
+v15:
+* set camera Vec3 up
+
+v14:
+* point size in Vec3 not float, so they can have different dimensions
+
+v13:
+* setup camera Vec3 from, to
+* changed bone indexing to add +1
+* saving Vec3 physic mesh
+
+
+--------------------------
+TODO:
+- converter crash when no material is assigned
+- export only animations assigned to skeleton
+- better error/warning handling
+- warn when exporting object, but not assigned skeleton
+- saving options
+- split_mesh in options
+- bounding sphere center
+- bbox
+- negative scale of camera cause problems (display nothing)
+- apply mesh scale/rot/pos to mesh

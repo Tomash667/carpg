@@ -2686,6 +2686,8 @@ void Game::GenerateStockItems()
 		}
 		if(Rand() % 4 == 0)
 			InsertItemBare(chest_food_seller, FindItem("frying_pan"));
+		if(Rand() % 4 == 0)
+			InsertItemBare(chest_food_seller, FindItem("ladle"));
 		SortItems(chest_food_seller);
 	}
 }
@@ -3532,10 +3534,16 @@ void Game::SpawnForestItems(int count_mod)
 	{
 		for(int i = 0; i < to_spawn.count; ++i)
 		{
-			Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
-			TERRAIN_TILE type = tiles[pt.x + pt.y*OutsideLocation::size].t;
-			if(type == TT_GRASS || type == TT_GRASS3)
-				SpawnGroundItemInsideRegion(to_spawn.item, Vec2(2.f*pt.x, 2.f*pt.y), region_size, false);
+			for(int tries = 0; tries < 5; ++tries)
+			{
+				Int2 pt(Random(8, OutsideLocation::size - 9), Random(8, OutsideLocation::size - 9));
+				TERRAIN_TILE type = tiles[pt.x + pt.y*OutsideLocation::size].t;
+				if(type == TT_GRASS || type == TT_GRASS3)
+				{
+					SpawnGroundItemInsideRegion(to_spawn.item, Vec2(2.f*pt.x, 2.f*pt.y), region_size, false);
+					break;
+				}
+			}
 		}
 	}
 }
@@ -3854,7 +3862,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		break;
 	}
 
-	UnitData* esencial = nullptr;
+	UnitData* essential = nullptr;
 	cstring group_name = nullptr, group_name2 = nullptr;
 	bool dont_attack = false, od_tylu = false, kamien = false;
 	int ile, poziom, ile2, poziom2;
@@ -3868,7 +3876,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		{
 		case -1:
 			if(Rand() % 3 != 0)
-				esencial = FindUnitData("wild_hunter");
+				essential = FindUnitData("wild_hunter");
 			group_name = "animals";
 			break;
 		case SG_BANDYCI:
@@ -3892,7 +3900,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		switch(spotkanie)
 		{
 		case 0: // mag
-			esencial = FindUnitData("crazy_mage");
+			essential = FindUnitData("crazy_mage");
 			group_name = nullptr;
 			ile = 1;
 			poziom = Random(10, 16);
@@ -3906,7 +3914,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			break;
 		case 2: // kupiec
 			{
-				esencial = FindUnitData("merchant");
+				essential = FindUnitData("merchant");
 				group_name = "merchant_guards";
 				ile = Random(2, 4);
 				poziom = Random(3, 8);
@@ -3932,7 +3940,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 				if(chest)
 				{
 					int gold;
-					GenerateTreasure(5, 5, chest->items, gold);
+					GenerateTreasure(5, 5, chest->items, gold, false);
 					InsertItemBare(chest->items, gold_item_ptr, (uint)gold);
 					SortItems(chest->items);
 				}
@@ -3970,7 +3978,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			break;
 		case 6:
 			group_name = nullptr;
-			esencial = FindUnitData("q_magowie_golem");
+			essential = FindUnitData("q_magowie_golem");
 			poziom = 8;
 			dont_attack = true;
 			dialog = FindDialog("q_mages");
@@ -3978,7 +3986,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			break;
 		case 7:
 			group_name = nullptr;
-			esencial = FindUnitData("q_szaleni_szaleniec");
+			essential = FindUnitData("q_szaleni_szaleniec");
 			poziom = 13;
 			dont_attack = true;
 			dialog = FindDialog("q_crazies");
@@ -3998,6 +4006,14 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			}
 			else
 				ile = Random(1, 3);
+			break;
+		case 9:
+			group_name = nullptr;
+			essential = FindUnitData("crazy_cook");
+			poziom = -2;
+			dialog = essential->dialog;
+			ile = 1;
+			break;
 		}
 	}
 	else
@@ -4006,7 +4022,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		{
 		case -1:
 			if(Rand() % 3 != 0)
-				esencial = FindUnitData("wild_hunter");
+				essential = FindUnitData("wild_hunter");
 			group_name = "animals";
 			break;
 		case SG_BANDYCI:
@@ -4055,9 +4071,9 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		}
 	}
 
-	if(esencial)
+	if(essential)
 	{
-		talker = SpawnUnitNearLocation(local_ctx, spawn_pos, *esencial, &look_pt, Clamp(esencial->level.Random(), poziom / 2, poziom), 4.f);
+		talker = SpawnUnitNearLocation(local_ctx, spawn_pos, *essential, &look_pt, Clamp(essential->level.Random(), poziom / 2, poziom), 4.f);
 		talker->dont_attack = dont_attack;
 		//assert(talker->level <= poziom);
 		best_dist = Vec3::Distance(talker->pos, look_pt);
@@ -4817,7 +4833,7 @@ void Game::SpawnCampObjects()
 				int gold, level = location->st;
 				Chest* chest = (Chest*)o;
 
-				GenerateTreasure(level, 5, chest->items, gold);
+				GenerateTreasure(level, 5, chest->items, gold, false);
 				InsertItemBare(chest->items, gold_item_ptr, (uint)gold);
 				SortItems(chest->items);
 			}
@@ -6100,16 +6116,23 @@ void Game::GenerateCityPickableItems()
 	InsideBuilding* inn = city_ctx->FindInn();
 	const Item* beer = FindItem("beer");
 	const Item* vodka = FindItem("vodka");
+	const Item* plate = FindItem("plate");
+	const Item* cup = FindItem("cup");
 	for(vector<Object>::iterator it = inn->ctx.objects->begin(), end = inn->ctx.objects->end(); it != end; ++it)
 	{
 		if(it->base == table)
 		{
-			// 50% szansy na piwo
+			PickableItemBegin(inn->ctx, *it);
 			if(Rand() % 2 == 0)
 			{
-				PickableItemBegin(inn->ctx, *it);
 				PickableItemAdd(beer);
+				if(Rand() % 4 == 0)
+					PickableItemAdd(beer);
 			}
+			if(Rand() % 3 == 0)
+				PickableItemAdd(plate);
+			if(Rand() % 3 == 0)
+				PickableItemAdd(cup);
 		}
 		else if(it->base == shelves)
 		{
@@ -6177,6 +6200,8 @@ void Game::GenerateCityPickableItems()
 				PickableItemAdd(heal_pot);
 			if(Rand() % 2 == 0)
 				PickableItemAdd(FindItem("p_nreg"));
+			if(Rand() % 2 == 0)
+				PickableItemAdd(FindItem("healing_herb"));
 		}
 	}
 }
@@ -6299,19 +6324,34 @@ void Game::GenerateDungeonFood()
 	const ItemList& lis = *FindItemList(sg.orc_food ? "orc_food" : "normal_food").lis;
 	Obj* table = FindObject("table");
 	Obj* shelves = FindObject("shelves");
+	const Item* plate = FindItem("plate");
+	const Item* cup = FindItem("cup");
+	bool spawn_golden_cup = Rand() % 100 == 0;
 
 	// spawn food
 	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
 	{
 		if(it->base == table)
 		{
-			int count = Random(mod / 2, mod);
-			if(count)
+			PickableItemBegin(local_ctx, *it);
+			if(spawn_golden_cup)
 			{
-				PickableItemBegin(local_ctx, *it);
-				for(int i = 0; i < count; ++i)
-					PickableItemAdd(lis.Get());
+				spawn_golden_cup = false;
+				PickableItemAdd(FindItem("golden_cup"));
 			}
+			else
+			{
+				int count = Random(mod / 2, mod);
+				if(count)
+				{
+					for(int i = 0; i < count; ++i)
+						PickableItemAdd(lis.Get());
+				}
+			}
+			if(Rand() % 3 == 0)
+				PickableItemAdd(plate);
+			if(Rand() % 3 == 0)
+				PickableItemAdd(cup);
 		}
 		else if(it->base == shelves)
 		{

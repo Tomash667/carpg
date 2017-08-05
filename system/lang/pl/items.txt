@@ -585,12 +585,12 @@ item sausage {
 	name "Kie³basa"
 	desc "Leczy 30 punktów zdrowia po zjedzeniu."
 }
-item fish {
-	name "Ryba"
+item fish_meat {
+	name "Miêso z ryby"
 	desc "Leczy 20 punktów zdrowia po zjedzeniu."
 }
-item raw_fish {
-	name "Surowa ryba"
+item fish {
+	name "Ryba"
 	desc "Leczy 10 punktów zdrowia po zjedzeniu."
 }
 item apple {

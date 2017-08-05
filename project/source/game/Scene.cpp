@@ -786,7 +786,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->billboard = false;
 				node->mat = Matrix::RotationY(item.rot) * Matrix::Translation(pos);
 				node->mesh = mesh;
-				node->flags = 0;
+				node->flags = IS_SET(item.item->flags, ITEM_ALPHA) ? SceneNode::F_ALPHA_TEST : 0;
 				node->tex_override = nullptr;
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
@@ -799,6 +799,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						glow.node = node;
 						glow.type = GlowNode::Item;
 						glow.ptr = &item;
+						glow.alpha = IS_SET(item.item->flags, ITEM_ALPHA);
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -834,6 +835,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						glow.node = node;
 						glow.type = GlowNode::Useable;
 						glow.ptr = &use;
+						glow.alpha = false;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -878,6 +880,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						glow.node = node;
 						glow.type = GlowNode::Chest;
 						glow.ptr = &chest;
+						glow.alpha = false;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -922,6 +925,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						glow.node = node;
 						glow.type = GlowNode::Door;
 						glow.ptr = &door;
+						glow.alpha = false;
 					}
 					else
 						node->tint = Vec4(2, 2, 2, 1);
@@ -1432,6 +1436,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			glow.node = node;
 			glow.type = GlowNode::Unit;
 			glow.ptr = &u;
+			glow.alpha = false;
 		}
 		else
 			node->tint = Vec4(2, 2, 2, 1);
@@ -1471,6 +1476,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
+				glow.alpha = false;
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -1480,6 +1486,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 
 	// przedmiot w d³oni
 	Animesh* right_hand_item = nullptr;
+	int right_hand_item_flags = 0;
 	bool w_dloni = false;
 
 	switch(u.weapon_state)
@@ -1521,7 +1528,11 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	}
 
 	if(u.used_item)
+	{
 		right_hand_item = u.used_item->mesh;
+		if(IS_SET(u.used_item->flags, ITEM_ALPHA))
+			right_hand_item_flags = SceneNode::F_ALPHA_TEST;
+	}
 
 	Matrix mat_scale;
 	if(u.human_data)
@@ -1563,6 +1574,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
+				glow.alpha = false;
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -1612,6 +1624,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
+				glow.alpha = false;
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -1642,7 +1655,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node2->billboard = false;
 		node2->mat = mat_scale * point->mat * u.ani->mat_bones[point->bone] * node->mat;
 		node2->mesh = right_hand_item;
-		node2->flags = 0;
+		node2->flags = right_hand_item_flags;
 		node2->tex_override = nullptr;
 		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = lights;
@@ -1660,6 +1673,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
+				glow.alpha = IS_SET(right_hand_item_flags, SceneNode::F_ALPHA_TEST);
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -1729,6 +1743,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
+				glow.alpha = false;
 			}
 			else
 				node2->tint = Vec4(2, 2, 2, 1);
@@ -1765,6 +1780,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 				glow.node = node2;
 				glow.type = GlowNode::Unit;
 				glow.ptr = &u;
+				glow.alpha = false;
 			}
 			else
 			{
@@ -1801,6 +1817,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 					glow.node = node3;
 					glow.type = GlowNode::Unit;
 					glow.ptr = &u;
+					glow.alpha = false;
 				}
 				else
 				{
@@ -1838,6 +1855,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 					glow.node = node3;
 					glow.type = GlowNode::Unit;
 					glow.ptr = &u;
+					glow.alpha = false;
 				}
 				else
 				{
@@ -1875,6 +1893,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 					glow.node = node3;
 					glow.type = GlowNode::Unit;
 					glow.ptr = &u;
+					glow.alpha = false;
 				}
 				else
 				{
@@ -2735,6 +2754,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	for(vector<GlowNode>::iterator it = draw_batch.glow_nodes.begin(), end = draw_batch.glow_nodes.end(); it != end; ++it)
 	{
 		GlowNode& glow = *it;
+		SetAlphaTest(glow.alpha);
 
 		// animowany czy nie?
 		if(IS_SET(glow.node->flags, SceneNode::F_ANIMATED))
@@ -2806,13 +2826,29 @@ void Game::DrawGlowingNodes(bool use_postfx)
 		V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
 		V(device->SetIndices(mesh->ib));
 
-		// renderuj model
-		for(int i = 0; i < mesh->head.n_subs; ++i)
+		// render mesh
+		if(glow.alpha)
 		{
-			// this is ignored for now (to draw glow for claudron)
-			//if(IS_SET(glow.node->subs, 1<<i))
-			if(i == 0 || glow.type != GlowNode::Door)
-				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
+			// for glow need to set texture per submesh
+			for(int i = 0; i < mesh->head.n_subs; ++i)
+			{
+				if(i == 0 || glow.type != GlowNode::Door)
+				{
+					V(eGlow->SetTexture(hGlowTex, mesh->subs[i].tex->data));
+					V(eGlow->CommitChanges());
+					V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
+				}
+			}
+		}
+		else
+		{
+			V(eGlow->SetTexture(hGlowTex, tCzern));
+			V(eGlow->CommitChanges());
+			for(int i = 0; i < mesh->head.n_subs; ++i)
+			{
+				if(i == 0 || glow.type != GlowNode::Door)
+					V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
+			}
 		}
 	}
 
