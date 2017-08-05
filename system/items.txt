@@ -1555,20 +1555,20 @@ consumable sausage {
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumable fish {
+consumable fish_meat {
 	weight 0.5
 	value 7
-	mesh "fish.qmsh"
+	mesh "fish_meat.qmsh"
 	type food
 	effect food 
 	power 20
 	flags {not_alchemist not_merchant ground_mesh}
 }
 
-consumable raw_fish {
-	weight 0.5
+consumable fish {
+	weight 1.5
 	value 4
-	mesh "raw_fish.qmsh"
+	mesh "fish.qmsh"
 	type food
 	effect food 
 	power 10
@@ -1652,7 +1652,7 @@ consumable healing_herb {
 	type food
 	effect heal
 	power 100
-	flags {not_merchant ground_mesh}
+	flags {not_merchant ground_mesh alpha}
 }
 
 consumable green_herb {
@@ -1661,7 +1661,7 @@ consumable green_herb {
 	mesh "green_herb.qmsh"
 	type food
 	effect green_hair
-	flags {not_alchemist not_merchant ground_mesh}
+	flags {not_alchemist not_merchant ground_mesh alpha}
 }
 
 //------------------------------------------------------------------------------
@@ -1700,8 +1700,8 @@ other krystal {
 }
 
 other golden_bar {
-	weight 2
-	value 300
+	weight 6
+	value 600
 	mesh "golden_bar.qmsh"
 	type valuable
 	flags ground_mesh
@@ -1723,17 +1723,19 @@ other ladle {
 }
 
 other cup {
-	weight 0.1
+	weight 0.2
 	value 3
 	mesh "cup.qmsh"
 	type other
+	flags ground_mesh
 }
 
 other plate {
-	weight 0.1
+	weight 0.2
 	value 3
 	mesh "plate.qmsh"
 	type other
+	flags ground_mesh
 }
 
 other a_amulet {
@@ -2054,7 +2056,7 @@ list normal_food {
 	honeycomb
 	rice
 	sausage
-	fish
+	fish_meat
 	soup
 	stew
 }
@@ -2064,7 +2066,7 @@ list orc_food {
 	meat
 	raw_meat
 	mushroom
-	raw_fish
+	fish
 }
 
 list food_and_drink {
@@ -2076,10 +2078,10 @@ list food_and_drink {
 	rice
 	raw_meat
 	sausage
-	fish
+	fish_meat
 	soup
 	stew
-	raw_fish
+	fish
 	water
 	beer
 	vodka
@@ -2103,6 +2105,14 @@ list contest_reward {
 	p_str
 	p_end
 	p_dex
+}
+
+list treasure {
+	emerald
+	ruby
+	diamond
+	golden_bar
+	golden_cup
 }
 
 leveled_list short_blade {

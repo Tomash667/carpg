@@ -264,7 +264,7 @@ NIEU¯YTE ZASOBY:
 		* garnki
 	* bydynki
 + MarK
-	* food/ 3 zupy, 2 miêsa, 3 jagody
+	* food/ zupa, 2 miêsa, 3 jagody
 + Dim
 	* dims_arboretum.zip/
 		* drzewa

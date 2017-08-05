@@ -26,7 +26,10 @@ items goblin {
 	chance 20 bow_short
 	chance 20 shield_wood
 	chance 5 p_hp
-	random {dagger_short axe_small blunt_club}
+	if chance 50
+		frying_pan
+	else
+		random {dagger_short axe_small blunt_club}
 	chance 25 al_goblin
 	random 0 2 !orc_food
 }
@@ -2679,6 +2682,21 @@ unit crazy_rogue : base_crazy {
 	flags | {ai_train contest_50 melee_50 backstab}
 	items rogue
 	gold {{7 20}{70 200}}
+}
+
+unit crazy_cook : base_crazy {
+	level 5
+	profile warrior
+	gold {50 100}
+	flags {crazy human}
+	items {
+		frying_pan
+		al_leather_hq
+		random 5 15 raw_meat
+		random 4 6 !normal_food
+		ladle
+	}
+	dialog crazy_cook
 }
 
 //------------------------------------------------------------------------------

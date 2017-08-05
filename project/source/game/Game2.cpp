@@ -838,7 +838,8 @@ void Game::SetupShaders()
 	hGlowCombined = eGlow->GetParameterByName(nullptr, "matCombined");
 	hGlowBones = eGlow->GetParameterByName(nullptr, "matBones");
 	hGlowColor = eGlow->GetParameterByName(nullptr, "color");
-	assert(hGlowCombined && hGlowBones && hGlowColor);
+	hGlowTex = eGlow->GetParameterByName(nullptr, "texDiffuse");
+	assert(hGlowCombined && hGlowBones && hGlowColor && hGlowTex);
 
 	hGrassViewProj = eGrass->GetParameterByName(nullptr, "matViewProj");
 	hGrassTex = eGrass->GetParameterByName(nullptr, "texDiffuse");
@@ -1679,8 +1680,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			bool cancel_autowalk = (KeyPressedReleaseAllowed(GK_MOVE_FORWARD) || KeyDownAllowed(GK_MOVE_BACK));
 			if(cancel_autowalk)
 				autowalk = false;
-			else if(KeyDownAllowed(GK_AUTOWALK))
-				autowalk = true;
+			else if(KeyPressedReleaseAllowed(GK_AUTOWALK))
+				autowalk = !autowalk;
 
 			if(u.run_attack)
 			{
@@ -10010,21 +10011,8 @@ void Game::GenerateDungeonObjects()
 
 		if(!room_chests.empty())
 		{
-			int gold;
-			if(room_chests.size() == 1)
-			{
-				vector<ItemSlot>& items = room_chests.front()->items;
-				GenerateTreasure(chest_lvl, 10, items, gold);
-				InsertItemBare(items, gold_item_ptr, (uint)gold, (uint)gold);
-				SortItems(items);
-			}
-			else
-			{
-				static vector<ItemSlot> items;
-				GenerateTreasure(chest_lvl, 9 + 2 * room_chests.size(), items, gold);
-				SplitTreasure(items, gold, &room_chests[0], room_chests.size());
-			}
-
+			bool extra = IS_SET(rt->flags, RT_TREASURE);
+			GenerateDungeonTreasure(room_chests, chest_lvl, extra);
 			room_chests.clear();
 		}
 
@@ -10243,16 +10231,29 @@ void Game::GenerateDungeonObjects()
 					chest->netid = chest_netid_counter++;
 
 				SpawnObjectExtras(local_ctx, obj, pos, rot, nullptr, nullptr, 1.f, flags);
-
-				vector<ItemSlot>& items = chest->items;
-				int gold;
-				GenerateTreasure(chest_lvl, 10, items, gold);
-				InsertItemBare(items, gold_item_ptr, (uint)gold, (uint)gold);
-				SortItems(items);
+				GenerateDungeonTreasure(*local_ctx.chests, chest_lvl);
 
 				break;
 			}
 		}
+	}
+}
+
+void Game::GenerateDungeonTreasure(vector<Chest*>& chests, int level, bool extra)
+{
+	int gold;
+	if(chests.size() == 1)
+	{
+		vector<ItemSlot>& items = chests.front()->items;
+		GenerateTreasure(level, 10, items, gold, extra);
+		InsertItemBare(items, gold_item_ptr, (uint)gold, (uint)gold);
+		SortItems(items);
+	}
+	else
+	{
+		static vector<ItemSlot> items;
+		GenerateTreasure(level, 9 + 2 * chests.size(), items, gold, extra);
+		SplitTreasure(items, gold, &chests[0], chests.size());
 	}
 }
 
@@ -10280,7 +10281,7 @@ int wartosc_skarbu[] = {
 	8500 //20
 };
 
-void Game::GenerateTreasure(int level, int _count, vector<ItemSlot>& items, int& gold)
+void Game::GenerateTreasure(int level, int _count, vector<ItemSlot>& items, int& gold, bool extra)
 {
 	assert(InRange(level, 1, 20));
 
@@ -10336,6 +10337,9 @@ void Game::GenerateTreasure(int level, int _count, vector<ItemSlot>& items, int&
 
 		InsertItemBare(items, item, count, count);
 	}
+
+	if(extra)
+		InsertItemBare(items, FindItem("!treasure"));
 
 	gold = value + level * 5;
 }
@@ -13849,20 +13853,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					if(r->IsInside((*it2)->pos))
 						room_chests.push_back(*it2);
 				}
-				int gold;
-				if(room_chests.size() == 1)
-				{
-					vector<ItemSlot>& items = room_chests.front()->items;
-					GenerateTreasure(dlevel, 10, items, gold);
-					InsertItemBare(items, gold_item_ptr, (uint)gold, (uint)gold);
-					SortItems(items);
-				}
-				else
-				{
-					static vector<ItemSlot> items;
-					GenerateTreasure(dlevel, 9 + 2 * room_chests.size(), items, gold);
-					SplitTreasure(items, gold, &room_chests[0], room_chests.size());
-				}
+				GenerateDungeonTreasure(room_chests, dlevel);
 				room_chests.clear();
 			}
 
@@ -16368,6 +16359,8 @@ GroundItem* Game::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos,
 			gi->team_count = 1;
 			gi->rot = Random(MAX_ANGLE);
 			gi->pos = pt;
+			if(local_ctx.type == LevelContext::Outside)
+				terrain->SetH(gi->pos);
 			gi->item = item;
 			gi->netid = item_netid_counter++;
 			local_ctx.items->push_back(gi);
@@ -16402,6 +16395,8 @@ GroundItem* Game::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos,
 			gi->team_count = 1;
 			gi->rot = Random(MAX_ANGLE);
 			gi->pos = pt;
+			if(local_ctx.type == LevelContext::Outside)
+				terrain->SetH(gi->pos);
 			gi->item = item;
 			gi->netid = item_netid_counter++;
 			local_ctx.items->push_back(gi);
@@ -21331,45 +21326,44 @@ void Game::ShowAcademyText()
 		PushNetChange(NetChange::ACADEMY_TEXT);
 }
 
+const float price_mod_buy[] = { 1.25f, 1.0f, 0.75f };
+const float price_mod_sell[] = { 0.25f, 0.5f, 0.75f };
+const float price_mod_buy_v[] = { 1.25f, 1.0f, 0.9f };
+const float price_mod_sell_v[] = { 0.5f, 0.75f, 0.9f };
+
 int Game::GetItemPrice(const Item* item, Unit& unit, bool buy)
 {
 	assert(item);
 
 	int cha = unit.Get(Attribute::CHA);
-	float mod;
+	const float* mod_table;
 
-	if(buy)
+	if(item->type == IT_OTHER && item->ToOther().other_type == Valuable)
 	{
-		// cha 1 - 1.25
-		// cha 50 - 1.0
-		// cha 100 - 0.75
-		if(cha <= 1)
-			mod = 1.25f;
-		else if(cha < 50)
-			mod = Lerp(1.25f, 1.0f, float(cha) / 50);
-		else if(cha == 50)
-			mod = 1.f;
-		else if(cha < 100)
-			mod = Lerp(1.0f, 0.75f, float(cha - 50) / 50);
+		if(buy)
+			mod_table = price_mod_buy_v;
 		else
-			mod = 0.75f;
+			mod_table = price_mod_sell_v;
 	}
 	else
 	{
-		// cha 1 - 0.25
-		// cha 50 - 0.5
-		// cha 100 - 0.75
-		if(cha <= 1)
-			mod = 0.25f;
-		else if(cha < 50)
-			mod = Lerp(0.25f, 0.5f, float(cha) / 50);
-		else if(cha == 50)
-			mod = 0.5f;
-		else if(cha < 100)
-			mod = Lerp(0.5f, 0.75f, float(cha - 50) / 50);
+		if(buy)
+			mod_table = price_mod_buy;
 		else
-			mod = 0.75f;
+			mod_table = price_mod_sell;
 	}
+
+	float mod;
+	if(cha <= 1)
+		mod = mod_table[0];
+	else if(cha < 50)
+		mod = Lerp(mod_table[0], mod_table[1], float(cha) / 50);
+	else if(cha == 50)
+		mod = mod_table[1];
+	else if(cha < 100)
+		mod = Lerp(mod_table[1], mod_table[2], float(cha - 50) / 50);
+	else
+		mod = mod_table[2];
 
 	int price = int(mod * item->value);
 	if(price == 0 && buy)
@@ -21590,10 +21584,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 			if(lvl)
 				item = SpawnGroundItemInsideAnyRoom(*lvl, event->item_to_give[0]);
 			else
-			{
 				item = SpawnGroundItemInsideRadius(event->item_to_give[0], Vec2(128, 128), 10.f);
-				terrain->SetH(item->pos);
-			}
 			if(devmode)
 				Info("Generated item %s on ground (%g,%g).", event->item_to_give[0]->id.c_str(), item->pos.x, item->pos.z);
 		}

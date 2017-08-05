@@ -295,6 +295,9 @@ Podziêkowania za znalezione b³êdy:
 	XNautPhD
 	Zinny
 
+Modele:
+	* kaangvl - fish
+	* yd - sausage
 Tekstury:
 	* http://cgtextures.com
 	* Cube

@@ -42,7 +42,7 @@ void ParseConfig(ConversionData& cs, std::string& filename)
 //=================================================================================================
 // Przygotuj parametry do konwersji
 //=================================================================================================
-void ConvertToQmsh(std::string& filename)
+bool ConvertToQmsh(std::string& filename)
 {
 	ConversionData cs;
 	cs.gopt = GO_ONE;
@@ -100,12 +100,14 @@ void ConvertToQmsh(std::string& filename)
 		Convert(cs);
 
 		printf("Ok.\n");
+		return true;
 	}
 	catch(const Error &e)
 	{
 		string Msg;
 		e.GetMessage_(&Msg, "  ");
 		printf("B³¹d: %s\n", Msg.c_str());
+		return false;
 	}
 }
 
@@ -123,6 +125,8 @@ int main(int argc, char **argv)
 		return 0;
 	}
 	export_phy = false;
+
+	int result = 0;
 
 	for(int i=1; i<argc; ++i)
 	{
@@ -198,12 +202,13 @@ int main(int argc, char **argv)
 		else
 		{
 			string tstr(cstr);
-			ConvertToQmsh(tstr);
+			if(!ConvertToQmsh(tstr))
+				result = 1;
 			group_file.clear();
 			output_file.clear();
 			gopt = GO_ONE;
 		}
 	}
 
-	return 0;
+	return result;
 }

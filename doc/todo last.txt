@@ -27,6 +27,13 @@ CURRENT:
 NEW:
 + remove compability with old qmsh files
 + move animesh instance to other files, fix LOAD_VERSION issue
++ plant with blueberries (after collecting plant have different mesh)
++ ee: dźwięku harfy, wiatru szum, wodo, wodo zmień się w rum
+- without human flag and mesh crash when spawned, log error
++ move travel logic from worldmapgui
++ draw_flags += -= (gui, terrain, etc)
++ fix function names, Generate vs Spawn
+- what is update first GUI or game, currently game can steal key press that should go to gui
 + file system - full path vs filename
 + buff - show remaining time
 - some gui rendering can be out of date because Update is not run (GameGui buff images etc)

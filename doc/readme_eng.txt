@@ -351,6 +351,9 @@ Thanks for bug founding:
 	XNautPhD
 	Zinny
 
+Models:
+	* kaangvl - fish
+	* yd - sausage
 Textures:
 	* http://cgtextures.com
 	* Cube

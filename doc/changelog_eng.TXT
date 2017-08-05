@@ -6,6 +6,7 @@ README CHANGES:
 
 --------------------------------------------------------------------------------
 Version 0.10.0 (2017-XX-YY):
++ new items: cup, golden cup, golden bar, plate, sausage, soup, stew, fish, fish meat, healing herb, green herb, frying pan
 + loading spells from file
 + loading dialogs from file
 + loading units from file
@@ -19,6 +20,7 @@ Version 0.10.0 (2017-XX-YY):
 + support for missing textures and meshes for items loading
 + allow game start without sound drivers
 + removed main quest until it's more complete
++ support for transparent items
 - fixed last item not visible in controls change panel
 - fixed orc gorush always picking shaman class for random
 - fixed orc gorush never getting more healing potions as intendent

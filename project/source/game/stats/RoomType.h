@@ -11,8 +11,11 @@ struct ObjEntry
 
 //-----------------------------------------------------------------------------
 // Room flags
-#define RT_POWTARZAJ (1<<0)
-
+enum ROOMTYPE_FLAGS
+{
+	RT_REPEAT = 1 << 0,
+	RT_TREASURE = 1 << 1
+};
 //-----------------------------------------------------------------------------
 // Typ pomieszczenia
 struct RoomType

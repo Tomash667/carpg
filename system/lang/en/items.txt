@@ -586,12 +586,12 @@ item sausage {
 	name "Sausage"
 	desc "Heals 30 hit points after eating."
 }
-item fish {
-	name "Fish"
+item fish_meat {
+	name "Fish meat"
 	desc "Heals 20 hit points after eating."
 }
-item raw_fish {
-	name "Raw fish"
+item fish {
+	name "Fish"
 	desc "Heals 10 hit points after eating."
 }
 item apple {

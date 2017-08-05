@@ -2704,7 +2704,14 @@ bool Game::CanBuySell(const Item* item)
 {
 	assert(item);
 	if(!trader_buy[item->type])
+	{
+		if(pc->action_unit->data->id == "food_seller")
+		{
+			if(item->id == "ladle" || item->id == "frying_pan")
+				return true;
+		}
 		return false;
+	}
 	if(item->type == IT_CONSUMABLE)
 	{
 		if(pc->action_unit->data->id == "alchemist")

@@ -36,7 +36,7 @@ public:
 	Journal* journal;
 	GameMessages* game_messages;
 	cstring txGameTimeout, txWorldData, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel,
-		txEncCrazyMage, txEncCrazyHeroes, txEncMerchant, txEncHeroes, txEncBanditsAttackTravelers, txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk,
+		txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncBanditsAttackTravelers, txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk,
 		txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins;
 
 private:
