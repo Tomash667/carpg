@@ -33,6 +33,8 @@ Version 0.10.0 (2017-XX-YY):
 - fixed problems with cursor when window was far from center
 - fixed "iron vain" typo
 - fixed invalid player name
+- fixed carried inventory weight effect on run speed
+- fixed many animations speed affected by walk speed (drop item, pickup)
 
 --------------------------------------------------------------------------------
 Version 0.4.20 (2016-04-29):

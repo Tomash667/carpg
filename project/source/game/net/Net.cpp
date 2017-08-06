@@ -2604,6 +2604,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 					unit.action = A_ANIMATION;
 					unit.ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+					unit.ani->groups[0].speed = 1.f;
 					unit.ani->frame_end_info = false;
 					item->pos = unit.pos;
 					item->pos.x -= sin(unit.rot)*0.25f;
@@ -2650,6 +2651,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				unit.action = A_PICKUP;
 				unit.animation = ANI_PLAY;
 				unit.ani->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				unit.ani->groups[0].speed = 1.f;
 				unit.ani->frame_end_info = false;
 
 				// send pickup acceptation
@@ -3217,6 +3219,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				else
 				{
 					unit.ani->Play(unit.data->idles->at(index).c_str(), PLAY_ONCE, 0);
+					unit.ani->groups[0].speed = 1.f;
 					unit.ani->frame_end_info = false;
 					unit.animation = ANI_IDLE;
 					// send info to other players
@@ -3419,6 +3422,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						unit.action = A_ANIMATION2;
 						unit.animation = ANI_PLAY;
 						unit.ani->Play(base.anim, PLAY_PRIO1, 0);
+						unit.ani->groups[0].speed = 1.f;
 						unit.useable = useable;
 						unit.target_pos = unit.pos;
 						unit.target_pos2 = useable->pos;
@@ -4582,6 +4586,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					// animation
 					unit.action = A_ANIMATION;
 					unit.ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+					unit.ani->groups[0].speed = 1.f;
 					unit.ani->frame_end_info = false;
 
 					// create item
@@ -5961,6 +5966,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						unit->action = A_ANIMATION;
 						unit->ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+						unit->ani->groups[0].speed = 1.f;
 						unit->ani->frame_end_info = false;
 					}
 				}
@@ -6004,6 +6010,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit->action = A_PICKUP;
 						unit->animation = ANI_PLAY;
 						unit->ani->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+						unit->ani->groups[0].speed = 1.f;
 						unit->ani->frame_end_info = false;
 					}
 				}
@@ -6122,6 +6129,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						{
 							unit->ani->frame_end_info = false;
 							unit->ani->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+							unit->ani->groups[0].speed = 1.f;
 							unit->animation = ANI_PLAY;
 						}
 					}
@@ -6265,6 +6273,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else
 					{
 						unit->ani->Play(unit->data->idles->at(animation_index).c_str(), PLAY_ONCE, 0);
+						unit->ani->groups[0].speed = 1.f;
 						unit->ani->frame_end_info = false;
 						unit->animation = ANI_IDLE;
 					}
@@ -6330,6 +6339,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						if(animation != 0)
 						{
 							unit->ani->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+							unit->ani->groups[0].speed = 1.f;
 							unit->animation = ANI_PLAY;
 							unit->action = A_ANIMATION;
 						}
@@ -6509,6 +6519,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							pc->unit->HealPoison();
 							pc->unit->live_state = Unit::ALIVE;
 							pc->unit->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+							pc->unit->ani->groups[0].speed = 1.f;
 							pc->unit->action = A_ANIMATION;
 						}
 					}
@@ -6845,6 +6856,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					unit->action = A_ANIMATION2;
 					unit->animation = ANI_PLAY;
 					unit->ani->Play(state == 2 ? "czyta_papiery" : base.anim, PLAY_PRIO1, 0);
+					unit->ani->groups[0].speed = 1.f;
 					unit->useable = useable;
 					unit->target_pos = unit->pos;
 					unit->target_pos2 = useable->pos;
@@ -7633,6 +7645,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							unit->ani->frame_end_info = false;
 							unit->animation = ANI_PLAY;
 							unit->ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							unit->ani->groups[0].speed = 1.f;
 						}
 					}
 				}

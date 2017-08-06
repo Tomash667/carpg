@@ -983,6 +983,7 @@ void Game::UpdateAi(float dt)
 										ai.timer = Random(2.f, 5.f);
 										ai.idle_action = AIController::Idle_Animation;
 										u.ani->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
+										u.ani->groups[0].speed = 1.f;
 										u.ani->frame_end_info = false;
 										u.animation = ANI_IDLE;
 										if(IsOnline())
@@ -1175,6 +1176,7 @@ void Game::UpdateAi(float dt)
 											{
 												ani = Rand() % 2 + 1;
 												u.ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+												u.ani->groups[0].speed = 1.f;
 												u.animation = ANI_PLAY;
 												u.action = A_ANIMATION;
 											}
@@ -1291,6 +1293,7 @@ void Game::UpdateAi(float dt)
 												}
 												else
 													u.ani->Play(base.anim, PLAY_PRIO1, 0);
+												u.ani->groups[0].speed = 1.f;
 												u.useable = &use;
 												u.target_pos = u.pos;
 												u.target_pos2 = use.pos;
@@ -1628,6 +1631,7 @@ void Game::UpdateAi(float dt)
 											u.ani->frame_end_info = false;
 											u.animation = ANI_PLAY;
 											u.ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+											u.ani->groups[0].speed = 1.f;
 										}
 
 										if(IsOnline())
@@ -2226,6 +2230,7 @@ void Game::UpdateAi(float dt)
 							u.ani->frame_end_info = false;
 							u.animation = ANI_PLAY;
 							u.ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							u.ani->groups[0].speed = 1.f;
 						}
 					}
 				}
@@ -2269,6 +2274,7 @@ void Game::UpdateAi(float dt)
 								u.ani->frame_end_info = false;
 								u.animation = ANI_PLAY;
 								u.ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+								u.ani->groups[0].speed = 1.f;
 							}
 						}
 					}

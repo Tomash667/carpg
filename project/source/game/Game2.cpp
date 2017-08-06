@@ -2646,6 +2646,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				u.action = A_PICKUP;
 				u.animation = ANI_PLAY;
 				u.ani->Play(u_gory ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				u.ani->groups[0].speed = 1.f;
 				u.ani->frame_end_info = false;
 
 				if(IsLocal())
@@ -2932,6 +2933,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				int id = Rand() % u.data->idles->size();
 				pc->idle_timer = Random(0.f, 0.5f);
 				u.ani->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
+				u.ani->groups[0].speed = 1.f;
 				u.ani->frame_end_info = false;
 				u.animation = ANI_IDLE;
 
@@ -6629,6 +6631,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 		u->animation = u->current_animation = ANI_STAND;
 		u->ani->Play("stoi", PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+		u->ani->groups[0].speed = 1.f;
 
 		if(u->ani->ani->head.n_groups > 1)
 			u->ani->groups[1].state = 0;
@@ -7706,15 +7709,19 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				break;
 			case ANI_STAND:
 				u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+				u.ani->groups[0].speed = 1.f;
 				break;
 			case ANI_BATTLE:
 				u.ani->Play(NAMES::ani_battle, PLAY_PRIO1, 0);
+				u.ani->groups[0].speed = 1.f;
 				break;
 			case ANI_BATTLE_BOW:
 				u.ani->Play(NAMES::ani_battle_bow, PLAY_PRIO1, 0);
+				u.ani->groups[0].speed = 1.f;
 				break;
 			case ANI_DIE:
 				u.ani->Play(NAMES::ani_die, PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
+				u.ani->groups[0].speed = 1.f;
 				break;
 			case ANI_PLAY:
 				break;
@@ -7722,6 +7729,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				break;
 			case ANI_KNEELS:
 				u.ani->Play("kleka", PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
+				u.ani->groups[0].speed = 1.f;
 				break;
 			default:
 				assert(0);
@@ -7734,6 +7742,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		if(u.animation == ANI_IDLE && u.ani->frame_end_info)
 		{
 			u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+			u.ani->groups[0].speed = 1.f;
 			u.animation = ANI_STAND;
 		}
 
@@ -10773,6 +10782,7 @@ void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_wea
 		u.rot = rot;
 		u.animation = u.current_animation = ANI_STAND;
 		u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+		u.ani->groups[0].speed = 1.f;
 		BreakAction(u);
 		u.SetAnimationAtEnd();
 		if(u.in_building != -1)
@@ -11088,6 +11098,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			{
 				hitted.ani->frame_end_info = false;
 				hitted.ani->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+				hitted.ani->groups[0].speed = 1.f;
 				hitted.animation = ANI_PLAY;
 			}
 		}
@@ -15031,6 +15042,7 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 	{
 		ani = Rand() % 2 + 1;
 		ctx.talker->ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		ctx.talker->ani->groups[0].speed = 1.f;
 		ctx.talker->animation = ANI_PLAY;
 		ctx.talker->action = A_ANIMATION;
 	}
@@ -18314,6 +18326,7 @@ void Game::UpdateGame2(float dt)
 								(*it)->HealPoison();
 								(*it)->live_state = Unit::ALIVE;
 								(*it)->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+								(*it)->ani->groups[0].speed = 1.f;
 								(*it)->action = A_ANIMATION;
 								if((*it)->IsAI())
 									(*it)->ai->Reset();
@@ -18356,6 +18369,7 @@ void Game::UpdateGame2(float dt)
 							(*it)->HealPoison();
 							(*it)->live_state = Unit::ALIVE;
 							(*it)->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+							(*it)->ani->groups[0].speed = 1.f;
 							(*it)->action = A_ANIMATION;
 							if((*it)->IsAI())
 								(*it)->ai->Reset();
@@ -18546,6 +18560,7 @@ void Game::UpdateGame2(float dt)
 					(*it)->HealPoison();
 					(*it)->live_state = Unit::ALIVE;
 					(*it)->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+					(*it)->ani->groups[0].speed = 1.f;
 					(*it)->action = A_ANIMATION;
 					if((*it)->IsAI())
 						(*it)->ai->Reset();
@@ -19857,6 +19872,7 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 			u.action = A_ANIMATION2;
 			u.animation = ANI_PLAY;
 			u.ani->Play(bu.anim, PLAY_PRIO1, 0);
+			u.ani->groups[0].speed = 1.f;
 			u.useable = &use;
 			u.useable->user = &u;
 			u.target_pos = u.pos;
@@ -19914,6 +19930,7 @@ void Game::UnitTalk(Unit& u, cstring text)
 	{
 		ani = Rand() % 2 + 1;
 		u.ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		u.ani->groups[0].speed = 1.f;
 		u.animation = ANI_PLAY;
 		u.action = A_ANIMATION;
 	}
@@ -20715,6 +20732,7 @@ void Game::DropGold(int ile)
 	// animacja wyrzucania
 	pc->unit->action = A_ANIMATION;
 	pc->unit->ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	pc->unit->ani->groups[0].speed = 1.f;
 	pc->unit->ani->frame_end_info = false;
 
 	if(IsLocal())

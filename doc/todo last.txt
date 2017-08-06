@@ -1,28 +1,19 @@
 CURRENT:
-- stamina/hp is recalculated on client, it may be different then server
-	? calculate by player and server but server has priority
-? stamina in unit (max from endurance/dexterity), regeneration
-	stamina = 50 + 2.5*end + 2*dex
-	50+125+100=275
-? restore speed
-	run,attack - don't restore
-	hold arrow,block - restore slowly
-	walk - restore normaly
-	stand,rotate - extra restore
-+ account load state, armor type
-+ used by runing, attacking, blocking
++ [1] debug, draw units stamina bar
++ [1] train dex/end from stamina
++ [2] used by attacking, blocking
 	strong attack x1.5 stamina usage
-? restore on travel/sleep
-? mp update
++ [1] ai wait for stamina replenishment
+? {?/3] mp update
 	calculate stamina for player by server ??? maybe send how much they used, restored ???
-+ update readme
-+ update changelog
-+ update tutorial
-+ train dex/end from stamina
-+ ai wait for stamina replenishment
-? testing
-? mp testing
-+ debug, draw units stamina bar
+- [?/3] stamina/hp is recalculated on client, it may be different then server
+	? calculate by player and server but server has priority
++ [1] update readme
++ [1] update changelog
++ [1] update tutorial
+? [1] testing - combat some monsters
+? [2] mp testing
+	+ look at server stamina; player stamina, use potion; enemy stamina
 ===============================================================================================================
 NEW:
 + remove compability with old qmsh files
@@ -47,3 +38,5 @@ NEW:
 + convexSweepTest for bullets
 + weapon subtype - stamina usage
 + heavy attack - starts after holding, different animation
++ skill decrase armor speed penality, need to rethink all values (base speed, at max skill level etc)
++ more descriptive location names - tainted crypt, corrupted glade

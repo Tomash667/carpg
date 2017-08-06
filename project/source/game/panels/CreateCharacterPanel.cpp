@@ -728,24 +728,29 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			break;
 		case DA_BLOK:
 			unit->ani->Play(NAMES::ani_block, PLAY_PRIO2, 0);
+			unit->ani->groups[0].speed = 1.f;
 			t = 1.f;
 			break;
 		case DA_BOJOWY:
 			unit->ani->Play(NAMES::ani_battle, PLAY_PRIO2, 0);
+			unit->ani->groups[0].speed = 1.f;
 			t = 1.f;
 			break;
 		case DA_IDZIE:
 			unit->ani->Play(NAMES::ani_move, PLAY_PRIO2, 0);
+			unit->ani->groups[0].speed = 1.f;
 			t = 2.f;
 			break;
 		case DA_ROZGLADA:
 			unit->ani->Play("rozglada", PLAY_PRIO2 | PLAY_ONCE, 0);
+			unit->ani->groups[0].speed = 1.f;
 			t = 100.f;
 			unit->ani->frame_end_info = false;
 			break;
 		case DA_SCHOWAJ_BRON:
 			unit->ani->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2 | PLAY_ONCE | PLAY_BACK, 0);
 			unit->ani->groups[1].speed = 1.f;
+			unit->ani->groups[0].speed = 1.f;
 			t = 100.f;
 			unit->animation_state = 0;
 			unit->weapon_state = WS_HIDING;
@@ -756,6 +761,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		case DA_SCHOWAJ_LUK:
 			unit->ani->Play(NAMES::ani_take_bow, PLAY_PRIO2 | PLAY_ONCE | PLAY_BACK, 0);
 			unit->ani->groups[1].speed = 1.f;
+			unit->ani->groups[0].speed = 1.f;
 			t = 100.f;
 			unit->animation_state = 0;
 			unit->weapon_state = WS_HIDING;
@@ -765,6 +771,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 			break;
 		case DA_STOI:
 			unit->ani->Play(NAMES::ani_stand, PLAY_PRIO2, 0);
+			unit->ani->groups[0].speed = 1.f;
 			t = 2.f;
 			break;
 		case DA_STRZAL:
@@ -781,6 +788,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		case DA_WYJMIJ_BRON:
 			unit->ani->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->ani->groups[1].speed = 1.f;
+			unit->ani->groups[0].speed = 1.f;
 			t = 100.f;
 			unit->animation_state = 0;
 			unit->weapon_state = WS_TAKING;
@@ -791,6 +799,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		case DA_WYJMIJ_LUK:
 			unit->ani->Play(NAMES::ani_take_bow, PLAY_PRIO2 | PLAY_ONCE, 0);
 			unit->ani->groups[1].speed = 1.f;
+			unit->ani->groups[0].speed = 1.f;
 			t = 100.f;
 			unit->animation_state = 0;
 			unit->weapon_state = WS_TAKING;
@@ -991,6 +1000,7 @@ void CreateCharacterPanel::SetCharacter()
 {
 	anim = anim2 = DA_STOI;
 	unit->ani->Play(NAMES::ani_stand, PLAY_PRIO2 | PLAY_NO_BLEND, 0);
+	unit->ani->groups[0].speed = 1.f;
 }
 
 //=================================================================================================

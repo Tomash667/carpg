@@ -125,6 +125,16 @@ struct Unit
 		SA_RESTORE_MORE
 	};
 
+	enum LoadState
+	{
+		LS_NONE, // < 25%
+		LS_LIGHT, // < 50%
+		LS_MEDIUM, // < 75%
+		LS_HEAVY, // < 100%
+		LS_OVERLOADED, // < 200%
+		LS_MAX_OVERLOADED // >= 200%
+	};
+
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
 
@@ -607,41 +617,39 @@ struct Unit
 	void CalculateLoad() { weight_max = Get(Attribute::STR) * 15; }
 	bool IsOverloaded() const
 	{
-		return weight > weight_max;
+		return weight >= weight_max;
 	}
 	bool IsMaxOverloaded() const
 	{
-		return weight > weight_max * 2;
+		return weight >= weight_max * 2;
 	}
-	int GetLoadState() const
+	LoadState GetLoadState() const
 	{
-		if(weight < weight / 4)
-			return 0;
-		else if(weight < weight / 2)
-			return 1;
-		else if(weight < weight * 3 / 2)
-			return 2;
+		if(weight < weight_max / 4)
+			return LS_NONE;
+		else if(weight < weight_max / 2)
+			return LS_LIGHT;
+		else if(weight < weight_max * 3 / 4)
+			return LS_MEDIUM;
 		else if(weight < weight_max)
-			return 3;
+			return LS_HEAVY;
 		else if(weight < weight_max * 2)
-			return 4;
+			return LS_OVERLOADED;
 		else
-			return 5;
+			return LS_MAX_OVERLOADED;
 	}
 	float GetRunLoad() const
 	{
 		switch(GetLoadState())
 		{
-		case 0:
+		case LS_NONE:
+		case LS_LIGHT:
 			return 1.f;
-		case 1:
-			return Lerp(1.f, 0.95f, float(weight - weight / 4) / (weight / 2 - weight / 4));
-		case 2:
-			return Lerp(0.95f, 0.85f, float(weight - weight / 2) / (weight * 3 / 2 - weight / 2));
-		case 3:
-			return Lerp(0.85f, 0.7f, float(weight - weight * 3 / 2) / (weight_max - weight * 3 / 2));
-		case 4:
-		case 5:
+		case LS_MEDIUM:
+			return Lerp(1.f, 0.9f, float(weight - weight_max / 2) / (weight_max / 4));
+		case LS_HEAVY:
+			return Lerp(0.9f, 0.7f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
+		case LS_MAX_OVERLOADED:
 			return 0.f;
 		default:
 			assert(0);
@@ -652,16 +660,16 @@ struct Unit
 	{
 		switch(GetLoadState())
 		{
-		case 0:
-		case 1:
-		case 2:
+		case LS_NONE:
+		case LS_LIGHT:
+		case LS_MEDIUM:
 			return 1.f;
-		case 3:
-			return Lerp(1.f, 0.9f, float(weight - weight * 3 / 2) / (weight_max - weight * 3 / 2));
-		case 4:
-			return Lerp(0.9f, 0.f, float(weight - weight_max) / weight_max);
-		case 5:
-			return 0.f;
+		case LS_HEAVY:
+			return Lerp(1.f, 0.9f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
+		case LS_OVERLOADED:
+			return Lerp(0.9f, 0.5f, float(weight - weight_max) / weight_max);
+		case LS_MAX_OVERLOADED:
+			return 0.5f;
 		default:
 			assert(0);
 			return 0.f;
@@ -671,15 +679,15 @@ struct Unit
 	{
 		switch(GetLoadState())
 		{
-		case 0:
-		case 1:
-		case 2:
+		case LS_NONE:
+		case LS_LIGHT:
+		case LS_MEDIUM:
 			return 0.f;
-		case 3:
-			return Lerp(0.f, 0.1f, float(weight - weight * 3 / 2) / (weight_max - weight * 3 / 2));
-		case 4:
+		case LS_HEAVY:
+			return Lerp(0.f, 0.1f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
+		case LS_OVERLOADED:
 			return Lerp(0.1f, 0.25f, float(weight - weight_max) / weight_max);
-		case 5:
+		case LS_MAX_OVERLOADED:
 			return 0.25f;
 		default:
 			assert(0);

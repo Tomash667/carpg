@@ -199,6 +199,7 @@ bool Unit::DropItem(int index)
 
 	action = A_ANIMATION;
 	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	ani->groups[0].speed = 1.f;
 	ani->frame_end_info = false;
 
 	if(game.IsLocal())
@@ -262,6 +263,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 
 	action = A_ANIMATION;
 	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	ani->groups[0].speed = 1.f;
 	ani->frame_end_info = false;
 
 	if(game.IsLocal())
@@ -316,6 +318,7 @@ bool Unit::DropItems(int index, uint count)
 
 	action = A_ANIMATION;
 	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	ani->groups[0].speed = 1.f;
 	ani->frame_end_info = false;
 
 	if(game.IsLocal())
@@ -866,9 +869,27 @@ void Unit::UpdateEffects(float dt)
 			stamina_restore = 1.f;
 			break;
 		}
+		switch(GetLoadState())
+		{
+		case LS_NONE:
+		case LS_LIGHT:
+		case LS_MEDIUM:
+			break;
+		case LS_HEAVY:
+			stamina_restore -= 0.25f;
+			break;
+		case LS_OVERLOADED:
+			stamina_restore -= 1.0f;
+			break;
+		case LS_MAX_OVERLOADED:
+			stamina_restore -= 3.f;
+			break;
+		}
 		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt;
 		if(stamina > stamina_max)
 			stamina = stamina_max;
+		else if(stamina < 0.f)
+			stamina_cant_run = true;
 		if(stamina_cant_run && stamina >= stamina_max / 5)
 			stamina_cant_run = false;
 		if(game.IsServer() && player && player != game.pc)
@@ -2959,8 +2980,8 @@ void Unit::UpdateStaminaAction()
 		case A_POSITION:
 		case A_PAIN:
 		case A_CAST:
-		default:
 			stamina_action = SA_RESTORE;
+			break;
 		case A_SHOOT:
 			if(animation_state < 2)
 				stamina_action = SA_RESTORE_SLOW;
@@ -2971,6 +2992,7 @@ void Unit::UpdateStaminaAction()
 		case A_DRINK:
 		case A_ANIMATION:
 		case A_ANIMATION2:
+		default:
 			stamina_action = SA_RESTORE_MORE;
 			break;
 		case A_BLOCK:

@@ -2611,6 +2611,7 @@ void Game::UnitStandup(Unit& u)
 	if(anim)
 	{
 		u.ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+		u.ani->groups[0].speed = 1.f;
 		u.action = A_ANIMATION;
 	}
 	else
