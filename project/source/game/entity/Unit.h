@@ -137,6 +137,7 @@ struct Unit
 
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
+	static const float STAMINA_BOW_ATTACK;
 
 	AnimeshInstance* ani;
 	Animation animation, current_animation;
@@ -156,7 +157,7 @@ struct Unit
 	const Item* used_item;
 	bool used_item_is_team;
 	vector<Effect> effects;
-	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, stamina_cant_run;
+	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit;
 	AIController* ai;
 	btCollisionObject* cobj;
 	static vector<Unit*> refid_table;
@@ -186,7 +187,7 @@ struct Unit
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : ani(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE), stamina_cant_run(false) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE) {}
 	~Unit();
 
 	float CalculateArmorDefense(const Armor* armor = nullptr);
@@ -277,6 +278,7 @@ struct Unit
 	float CalculateMaxHp() const;
 	float CalculateMaxStamina() const;
 	float GetHpp() const { return hp / hpmax; }
+	float GetStaminap() const { return stamina / stamina_max; }
 	void GetBox(Box& box) const;
 	int GetDmgType() const;
 	bool IsNotFighting() const
@@ -319,7 +321,7 @@ struct Unit
 		if(IS_SET(data->flags, F_SLOW) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !run_attack) || action == A_SHOOT)
 			return false;
 		else
-			return !IsOverloaded() && !stamina_cant_run;
+			return !IsOverloaded() && stamina > 0;
 	}
 	void RecalculateHp();
 	void RecalculateStamina();

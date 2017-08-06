@@ -257,8 +257,6 @@ void Game::LoadGuiData()
 	resMgr.GetLoadedTexture("dziennik_przyciski3.png", Journal::tPage[2]);
 	resMgr.GetLoadedTexture("strzalka_l.png", Journal::tArrowL);
 	resMgr.GetLoadedTexture("strzalka_p.png", Journal::tArrowR);
-	resMgr.GetLoadedTexture("minihp.png", GUI.tMinihp[0]);
-	resMgr.GetLoadedTexture("minihp2.png", GUI.tMinihp[1]);
 	resMgr.GetLoadedTexture("box.png", IGUI::tBox);
 	resMgr.GetLoadedTexture("box2.png", IGUI::tBox2);
 	resMgr.GetLoadedTexture("pix.png", IGUI::tPix);

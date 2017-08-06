@@ -118,6 +118,7 @@ private:
 	void DrawDeathScreen();
 	void DrawEndOfGameScreen();
 	void DrawSpeechBubbles();
+	void DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha);
 	void UpdateSpeechBubbles(float dt);
 	void GetTooltip(TooltipController*, int group, int id);
 
@@ -127,7 +128,7 @@ private:
 	vector<BuffImage> buff_images;
 	float sidebar;
 	int sidebar_state[(int)SideButtonId::Max];
-	TEX tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max];
+	TEX tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2], tMinistamina;
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
 	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txStamina;

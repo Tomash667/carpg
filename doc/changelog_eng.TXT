@@ -6,6 +6,7 @@ README CHANGES:
 
 --------------------------------------------------------------------------------
 Version 0.10.0 (2017-XX-YY):
++ stamina - used by attacking, blocking
 + new items: cup, golden cup, golden bar, plate, sausage, soup, stew, fish, fish meat, healing herb, green herb, frying pan
 + loading spells from file
 + loading dialogs from file

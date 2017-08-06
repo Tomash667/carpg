@@ -703,12 +703,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else
 						MSG("You need to enter unit id!");
 					break;
-					//case CMD_SPAWNITEM:
-					//	break;
 				case CMD_HEAL:
 					if(IsLocal())
 					{
 						pc->unit->hp = pc->unit->hpmax;
+						pc->unit->stamina = pc->unit->stamina_max;
 						pc->unit->HealPoison();
 						if(IsOnline())
 						{

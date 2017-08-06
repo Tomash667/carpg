@@ -35,6 +35,7 @@ struct AIController
 		Escape,
 		Block,
 		Cast,
+		Wait,
 		State_Max
 	};
 

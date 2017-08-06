@@ -165,15 +165,11 @@ void GameGui::DrawFront()
 			if(u.IsAI())
 			{
 				AIController& ai = *u.ai;
-				GUI.DrawText3D(GUI.default_font, Format("%s (%s)\nB:%d, F:%d, LVL:%d\nA:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.level,
-					str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer, ai.unit->run_attack ? 1 : 0),
-					DT_OUTLINE, WHITE, text_pos, max((*it)->GetHpp(), 0.f));
+				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, LVL:%d\nA:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.level,
+					str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer, ai.unit->run_attack ? 1 : 0), u, text_pos, -1);
 			}
 			else
-			{
-				GUI.DrawText3D(GUI.default_font, Format("%s (%s)\nB:%d, F:%d, A:%d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.player->action),
-					DT_OUTLINE, WHITE, text_pos, max((*it)->GetHpp(), 0.f));
-			}
+				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, A:%d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.player->action), u, text_pos, -1);
 		}
 	}
 
@@ -195,14 +191,7 @@ void GameGui::DrawFront()
 				}
 			}
 			if(!dont_draw)
-			{
-				float hpp;
-				if(!u->IsAlive() && !u->IsFollower())
-					hpp = -1.f;
-				else
-					hpp = max(u->GetHpp(), 0.f);
-				GUI.DrawText3D(GUI.default_font, u->GetName(), DT_OUTLINE, WHITE, u->GetUnitTextPos(), hpp);
-			}
+				DrawUnitInfo(u->GetName(), *u, u->GetUnitTextPos(), -1);
 		}
 		break;
 	case BP_CHEST:
@@ -277,10 +266,7 @@ void GameGui::DrawFront()
 				alpha = 0;
 
 			if(alpha)
-			{
-				GUI.DrawText3D(GUI.default_font, it->unit->GetName(), DT_OUTLINE,
-					game.IsEnemy(*it->unit, *game.pc->unit) ? COLOR_RGBA(255, 0, 0, alpha) : COLOR_RGBA(0, 255, 0, alpha), it->last_pos, max(it->unit->GetHpp(), 0.f));
-			}
+				DrawUnitInfo(it->unit->GetName(), *it->unit, it->last_pos, alpha);
 		}
 	}
 
@@ -578,6 +564,55 @@ void GameGui::DrawSpeechBubbles()
 		}
 		else
 			sb.visible = false;
+	}
+}
+
+//=================================================================================================
+void GameGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
+{
+	DWORD text_color;
+	if(alpha == -1)
+	{
+		text_color = WHITE;
+		alpha = 255;
+	}
+	else if(game.IsEnemy(unit, *game.pc->unit))
+		text_color = COLOR_RGBA(255, 0, 0, alpha);
+	else
+		text_color = COLOR_RGBA(0, 255, 0, alpha);
+
+	// text
+	Rect r;
+	GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, text_color, pos, &r);
+
+	float hpp;
+	if(!unit.IsAlive() && !unit.IsFollower())
+		hpp = -1.f;
+	else
+		hpp = max(unit.GetHpp(), 0.f);
+	DWORD color = COLOR_RGBA(255, 255, 255, alpha);
+
+	if(hpp >= 0.f)
+	{
+		// hp background
+		Rect r2(r.Left(), r.Bottom(), r.Right(), r.Bottom() + 4);
+		GUI.DrawSpriteRect(tMinihp[0], r2, color);
+
+		// hp
+		int sizex = r2.SizeX();
+		r2.Right() = r2.Left() + int(hpp * sizex);
+		Rect r3 = { 0, 0, int(hpp * 64), 4 };
+		GUI.DrawSpriteRectPart(tMinihp[1], r2, r3, color);
+
+		// stamina
+		if(game.devmode)
+		{
+			float stamina = max(unit.stamina / unit.stamina_max, 0.f);
+			r2 += Int2(0, 4);
+			r3.Right() = int(stamina * 64);
+			r2.Right() = r2.Left() + int(stamina * sizex);
+			GUI.DrawSpriteRectPart(tMinistamina, r2, r3, color);
+		}
 	}
 }
 
@@ -1102,6 +1137,9 @@ void GameGui::LoadData()
 	resMgr.GetLoadedTexture("bt_active.png", tSideButton[(int)SideButtonId::Active]);
 	resMgr.GetLoadedTexture("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
 	resMgr.GetLoadedTexture("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
+	resMgr.GetLoadedTexture("minihp.png", tMinihp[0]);
+	resMgr.GetLoadedTexture("minihp2.png", tMinihp[1]);
+	resMgr.GetLoadedTexture("ministamina.png", tMinistamina);
 	BuffInfo::LoadImages(resMgr);
 }
 

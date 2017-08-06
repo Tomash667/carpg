@@ -229,9 +229,7 @@ redo:
 		else
 		{
 			char c = str->at(pos2);
-			if(c >= '0' && c <= '9')
-				ParseNumber(s, pos2, true);
-			else
+			if(!(c >= '0' && c <= '9' && ParseNumber(s, pos2, true)))
 			{
 				// nie liczba, zwróc minus
 				s.token = T_SYMBOL;
@@ -278,7 +276,7 @@ redo:
 	else if(c >= '0' && c <= '9')
 	{
 		// number
-		if(c == '0' && pos2 + 1 != str->size() && str->at(pos2 + 1) == 'x')
+		if(c == '0' && pos2 + 1 != str->size() && (str->at(pos2 + 1) == 'x' || str->at(pos2 + 1) == 'X'))
 		{
 			// hex number
 			s.pos = FindFirstOf(s, WHITESPACE_SYMBOLS_DOT, pos2);
@@ -304,10 +302,15 @@ redo:
 					num <<= 4;
 					num += c - 'a' + 10;
 				}
+				else if(c >= 'A' && c <= 'F')
+				{
+					num <<= 4;
+					num += c - 'A' + 10;
+				}
 				else
 				{
-					Warn("Tokenizer: Broken hex number at %u:%u.", s.line + 1, s.charpos + 1);
-					s.token = T_BROKEN_NUMBER;
+					// broken hex number - item
+					s.token = T_ITEM;
 					return true;
 				}
 			}
@@ -341,7 +344,7 @@ redo:
 }
 
 //=================================================================================================
-void Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
+bool Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 {
 	s.item.clear();
 	if(negative)
@@ -403,15 +406,15 @@ void Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 					s.item += str->substr(pos2);
 				else
 					s.item += str->substr(pos2, s.pos - pos2);
-				s.token = T_BROKEN_NUMBER;
-				return;
+				s.token = T_ITEM;
+				return false;
 			}
 			else if(have_dot == 1 || have_dot == 3)
 			{
 				// int dot item
 				s.pos = pos2 - 1;
 				s.item.pop_back();
-				break;
+				return true;
 			}
 		}
 
@@ -438,7 +441,12 @@ void Tokenizer::ParseNumber(SeekData& s, uint pos2, bool negative)
 	else if(type == 1)
 		s.token = T_INT;
 	else
-		s.token = T_BROKEN_NUMBER;
+	{
+		s.token = T_ITEM;
+		return false;
+	}
+
+	return true;
 }
 
 //=================================================================================================
@@ -1159,8 +1167,6 @@ cstring Tokenizer::GetTokenName(TOKEN _tt)
 		return "float";
 	case T_KEYWORD:
 		return "keyword";
-	case T_BROKEN_NUMBER:
-		return "broken number";
 	case T_KEYWORD_GROUP:
 		return "keyword group";
 	case T_NUMBER:
@@ -1189,7 +1195,6 @@ cstring Tokenizer::GetTokenValue(const SeekData& s) const
 	case T_ITEM:
 	case T_STRING:
 	case T_COMPOUND_SYMBOL:
-	case T_BROKEN_NUMBER:
 		return Format("%s '%s'", name, s.item.c_str());
 	case T_CHAR:
 		return Format("%s '%c'", name, EscapeChar(s._char));

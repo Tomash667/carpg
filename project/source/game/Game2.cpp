@@ -1823,8 +1823,6 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(moved)
 				{
 					MoveUnit(u);
-					if(run)
-						pc->unit->RemoveStamina(5.f * dt);
 
 					// train by moving
 					if(IsLocal())
@@ -2703,7 +2701,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				{
 					if(KeyUpAllowed(pc->action_key))
 					{
+						// release attack
 						u.attack_power = u.ani->groups[1].time / u.GetAttackFrame(0);
+						u.RemoveStamina(u.GetWeapon().GetInfo().stamina * (1.f + u.attack_power / 2));
 						u.animation_state = 1;
 						u.ani->groups[1].speed = u.attack_power + u.GetAttackSpeed();
 						u.attack_power += 1.f;
@@ -2724,8 +2724,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else if(u.animation_state == 2)
 				{
 					byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Down);
-					if(k != VK_NONE)
+					if(k != VK_NONE && u.stamina > 0)
 					{
+						// prepare next attack
 						u.action = A_ATTACK;
 						u.attack_id = u.GetRandomAttack();
 						u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
@@ -2750,7 +2751,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			{
 				if(KeyUpAllowed(pc->action_key))
 				{
-					// skoñcz blokowaæ
+					// stop blocking
 					u.action = A_NONE;
 					u.ani->frame_end_info2 = false;
 					u.ani->Deactivate(1);
@@ -2766,15 +2767,16 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 				else if(!u.ani->groups[1].IsBlending() && u.HaveShield())
 				{
-					if(KeyDownAllowed(GK_ATTACK_USE))
+					if(KeyDownAllowed(GK_ATTACK_USE) && u.stamina > 0)
 					{
-						// uderz tarcz¹
+						// shield bash
 						u.action = A_BASH;
 						u.animation_state = 0;
 						u.ani->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
 						u.ani->groups[1].speed = 2.f;
 						u.ani->frame_end_info2 = false;
 						u.hitted = false;
+						u.RemoveStamina(50.f);
 
 						if(IsOnline())
 						{
@@ -2793,18 +2795,19 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			else if(u.action == A_NONE && u.frozen == 0)
 			{
 				byte k = KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc->wasted_key);
-				if(k != VK_NONE)
+				if(k != VK_NONE && u.stamina > 0)
 				{
 					u.action = A_ATTACK;
 					u.attack_id = u.GetRandomAttack();
 					u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
 					if(this_frame_run)
 					{
-						// atak w biegu
+						// running attack
 						u.ani->groups[1].speed = u.GetAttackSpeed();
 						u.animation_state = 1;
 						u.run_attack = true;
 						u.attack_power = 1.5f;
+						u.RemoveStamina(u.GetWeapon().GetInfo().stamina * 1.5f);
 
 						if(IsOnline())
 						{
@@ -2820,7 +2823,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					}
 					else
 					{
-						// normalny/potê¿ny atak
+						// prepare attack
 						u.ani->groups[1].speed = u.GetPowerAttackSpeed();
 						pc->action_key = k;
 						u.animation_state = 0;
@@ -2851,9 +2854,10 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(oks != 1)
 				{
-					byte k = KeyDoReturn(GK_BLOCK, &KeyStates::Pressed);
+					byte k = KeyDoReturn(GK_BLOCK, &KeyStates::Down);
 					if(k != VK_NONE)
 					{
+						// start blocking
 						u.action = A_BLOCK;
 						u.ani->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
 						u.ani->groups[1].blend_max = (oks == 2 ? 0.33f : u.GetBlockSpeed());
@@ -2874,12 +2878,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		}
 		else
 		{
-			// atak z ³uku
+			// shoting from bow
 			if(u.action == A_SHOOT)
 			{
 				if(u.animation_state == 0 && KeyUpAllowed(pc->action_key))
 				{
 					u.animation_state = 1;
+					u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 
 					if(IsOnline())
 					{
@@ -2894,7 +2899,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			else if(u.frozen == 0)
 			{
 				byte k = KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc->wasted_key);
-				if(k != VK_NONE)
+				if(k != VK_NONE && u.stamina > 0)
 				{
 					float speed = u.GetBowAttackSpeed();
 					u.ani->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
@@ -11061,6 +11066,11 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		hitted_mat = hitted.GetShield().material;
 		blocked *= block_value;
 		dmg -= blocked;
+		float stamina = blocked;
+		stamina -= hitted.Get(Skill::SHIELD);
+		float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted.Get(Skill::SHIELD)) / 100);
+		stamina *= block_stamina_loss;
+		hitted.RemoveStamina(stamina);
 
 		// play sound
 		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
@@ -11080,26 +11090,29 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			hitted.player->Train(TrainWhat::BlockAttack, base_dmg / hitted.hpmax, attacker.level);
 
 		// pain animation & break blocking
-		if(attacker.attack_power >= 1.9f && !IS_SET(hitted.data->flags, F_DONT_SUFFER))
+		if(hitted.stamina < 0)
 		{
 			BreakAction(hitted);
 
-			if(hitted.action != A_POSITION)
-				hitted.action = A_PAIN;
-			else
-				hitted.animation_state = 1;
+			if(!IS_SET(hitted.data->flags, F_DONT_SUFFER))
+			{
+				if(hitted.action != A_POSITION)
+					hitted.action = A_PAIN;
+				else
+					hitted.animation_state = 1;
 
-			if(hitted.ani->ani->head.n_groups == 2)
-			{
-				hitted.ani->frame_end_info2 = false;
-				hitted.ani->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
-			}
-			else
-			{
-				hitted.ani->frame_end_info = false;
-				hitted.ani->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-				hitted.ani->groups[0].speed = 1.f;
-				hitted.animation = ANI_PLAY;
+				if(hitted.ani->ani->head.n_groups == 2)
+				{
+					hitted.ani->frame_end_info2 = false;
+					hitted.ani->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+				}
+				else
+				{
+					hitted.ani->frame_end_info = false;
+					hitted.ani->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+					hitted.ani->groups[0].speed = 1.f;
+					hitted.animation = ANI_PLAY;
+				}
 			}
 		}
 

@@ -1251,8 +1251,6 @@ bool LoadUnit(Tokenizer& t, Crc& crc)
 				break;
 			case P_STAMINA:
 				unit->stamina_bonus = t.MustGetInt();
-				if(unit->stamina_bonus < 0)
-					t.Throw("Invalid stamina bonus %d.", unit->stamina_bonus);
 				crc.Update(unit->stamina_bonus);
 				break;
 			case P_DEF:
@@ -1655,7 +1653,7 @@ bool LoadGroup(Tokenizer& t, Crc& crc)
 //=================================================================================================
 uint LoadUnits(uint& out_crc, uint& errors)
 {
-	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
+	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS | Tokenizer::F_JOIN_MINUS);
 	if(!t.FromFile(Format("%s/units.txt", g_system_dir.c_str())))
 		throw "Failed to open units.txt.";
 

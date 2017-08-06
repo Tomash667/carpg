@@ -650,6 +650,10 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 	case TrainWhat::Trade:
 		TrainMod(Attribute::CHA, 100.f);
 		break;
+	case TrainWhat::Stamina:
+		TrainMod(Attribute::END, value * 0.75f);
+		TrainMod(Attribute::DEX, value * 0.5f);
+		break;
 	default:
 		assert(0);
 		break;

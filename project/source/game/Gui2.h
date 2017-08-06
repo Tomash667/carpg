@@ -208,7 +208,7 @@ public:
 	void LineBegin();
 	void LineEnd();
 	bool NeedCursor();
-	void DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const Vec3& pos, float hpp = -1.f);
+	void DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const Vec3& pos, Rect* text_rect = nullptr);
 	bool To2dPoint(const Vec3& pos, Int2& pt);
 	static bool Intersect(vector<Hitbox>& hitboxes, const Int2& pt, int* index, int* index2 = nullptr);
 	void DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, DWORD color = WHITE);
@@ -236,7 +236,7 @@ public:
 	Matrix mViewProj;
 	Int2 cursor_pos, prev_cursor_pos, wnd_size;
 	Font* default_font, *fBig, *fSmall;
-	TEX tCursor[3], tMinihp[2];
+	TEX tCursor[3];
 	CursorMode cursor_mode;
 	cstring txOk, txYes, txNo, txCancel;
 	static TEX tBox, tBox2, tPix, tDown;
