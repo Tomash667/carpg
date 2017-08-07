@@ -407,7 +407,6 @@ struct NetChangePlayer
 		ADDED_ITEMS_MSG, // message about gaining multiple items [byte(ile)-count]
 		STAT_CHANGED, // player stat changed [byte(id)-ChangedStatType, byte(a)-stat id, int(ile)-value]
 		ADD_PERK, // add perk to player [byte(id)-perk, int(ile)-value]
-		UPDATE_STAMINA, // update player stamina [float]
 	} type;
 	PlayerController* pc;
 	int id, ile;

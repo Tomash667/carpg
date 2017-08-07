@@ -10,13 +10,15 @@ struct PlayerController;
 //-----------------------------------------------------------------------------
 struct PlayerInfo
 {
+	// max 8 atm
 	enum UPDATE_FLAGS
 	{
 		UF_POISON_DAMAGE = 1 << 0,
 		UF_NET_CHANGES = 1 << 1,
 		UF_GOLD = 1 << 2,
 		UF_ALCOHOL = 1 << 3,
-		UF_BUFFS = 1 << 4
+		UF_BUFFS = 1 << 4,
+		UF_STAMINA = 1 << 5
 	};
 
 	enum STATE

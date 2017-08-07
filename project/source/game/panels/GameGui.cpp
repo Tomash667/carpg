@@ -607,7 +607,7 @@ void GameGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
 		// stamina
 		if(game.devmode)
 		{
-			float stamina = max(unit.stamina / unit.stamina_max, 0.f);
+			float stamina = max(unit.GetStaminap(), 0.f);
 			r2 += Int2(0, 4);
 			r3.Right() = int(stamina * 64);
 			r2.Right() = r2.Left() + int(stamina * sizex);

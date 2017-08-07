@@ -895,7 +895,7 @@ void Unit::UpdateEffects(float dt)
 		if(stamina > stamina_max)
 			stamina = stamina_max;
 		if(game.IsServer() && player && player != game.pc)
-			game.AddChange(NetChangePlayer::UPDATE_STAMINA, player);
+			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
 	}
 
 	// remove expired effects
@@ -2604,51 +2604,65 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 	{
 	case Attribute::STR:
 		{
-			// hp depends on str
-			RecalculateHp();
-			if(!fake_unit)
+			// hp/load depends on str
+			Game& game = Game::Get();
+			if(game.IsLocal())
 			{
-				Game& game = Game::Get();
-				if(game.IsServer())
+				RecalculateHp();
+				if(!fake_unit)
 				{
-					NetChange& c = Add1(game.net_changes);
-					c.type = NetChange::UPDATE_HP;
-					c.unit = this;
+					if(game.IsServer())
+					{
+						NetChange& c = Add1(game.net_changes);
+						c.type = NetChange::UPDATE_HP;
+						c.unit = this;
+					}
 				}
 			}
-			// max load depends on str
+			else
+				hpmax = CalculateMaxHp();
 			CalculateLoad();
 		}
 		break;
 	case Attribute::END:
 		{
 			// hp/stamina depends on end
-			RecalculateHp();
-			RecalculateStamina();
-			if(!fake_unit)
+			Game& game = Game::Get();
+			if(game.IsLocal())
 			{
-				Game& game = Game::Get();
-				if(game.IsServer())
+				RecalculateHp();
+				RecalculateStamina();
+				if(!fake_unit)
 				{
-					NetChange& c = Add1(game.net_changes);
-					c.type = NetChange::UPDATE_HP;
-					c.unit = this;
-					if(IsPlayer() && player != game.pc)
-						game.AddChange(NetChangePlayer::UPDATE_STAMINA, player);
+					if(game.IsServer())
+					{
+						NetChange& c = Add1(game.net_changes);
+						c.type = NetChange::UPDATE_HP;
+						c.unit = this;
+						if(IsPlayer() && player != game.pc)
+							game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
+					}
 				}
+			}
+			else
+			{
+				hpmax = CalculateMaxHp();
+				stamina_max = CalculateMaxStamina();
 			}
 		}
 		break;
 	case Attribute::DEX:
 		{
 			// stamina depends on dex
-			RecalculateStamina();
-			if(!fake_unit)
+			Game& game = Game::Get();
+			if(game.IsLocal())
 			{
-				Game& game = Game::Get();
-				if(game.IsServer() && IsPlayer() && player != game.pc)
-					game.AddChange(NetChangePlayer::UPDATE_STAMINA, player);
+				RecalculateStamina();
+				if(!fake_unit && IsPlayer() && player != game.pc)
+					game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
 			}
+			else
+				stamina_max = CalculateMaxStamina();
 		}
 		break;
 	case Attribute::INT:
@@ -3026,5 +3040,10 @@ void Unit::RemoveStamina(float value)
 {
 	stamina -= value;
 	if(player)
+	{
 		player->Train(TrainWhat::Stamina, value, 0);
+		Game& game = Game::Get();
+		if(game.pc != player)
+			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
+	}
 }

@@ -2703,7 +2703,6 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						// release attack
 						u.attack_power = u.ani->groups[1].time / u.GetAttackFrame(0);
-						u.RemoveStamina(u.GetWeapon().GetInfo().stamina * (1.f + u.attack_power / 2));
 						u.animation_state = 1;
 						u.ani->groups[1].speed = u.attack_power + u.GetAttackSpeed();
 						u.attack_power += 1.f;
@@ -2718,7 +2717,10 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						}
 
 						if(IsLocal())
+						{
 							u.player->Train(TrainWhat::AttackStart, 0.f, 0);
+							u.RemoveStamina(u.GetWeapon().GetInfo().stamina * ((u.attack_power - 1.f) / 2 + 1.f));
+						}
 					}
 				}
 				else if(u.animation_state == 2)
@@ -2776,7 +2778,6 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.ani->groups[1].speed = 2.f;
 						u.ani->frame_end_info2 = false;
 						u.hitted = false;
-						u.RemoveStamina(50.f);
 
 						if(IsOnline())
 						{
@@ -2788,7 +2789,10 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						}
 
 						if(IsLocal())
+						{
 							u.player->Train(TrainWhat::BashStart, 0.f, 0);
+							u.RemoveStamina(50.f);
+						}
 					}
 				}
 			}
@@ -2807,7 +2811,6 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.animation_state = 1;
 						u.run_attack = true;
 						u.attack_power = 1.5f;
-						u.RemoveStamina(u.GetWeapon().GetInfo().stamina * 1.5f);
 
 						if(IsOnline())
 						{
@@ -2819,7 +2822,10 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						}
 
 						if(IsLocal())
+						{
 							u.player->Train(TrainWhat::AttackStart, 0.f, 0);
+							u.RemoveStamina(u.GetWeapon().GetInfo().stamina * 1.5f);
+						}
 					}
 					else
 					{
@@ -2884,7 +2890,6 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(u.animation_state == 0 && KeyUpAllowed(pc->action_key))
 				{
 					u.animation_state = 1;
-					u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 
 					if(IsOnline())
 					{
@@ -2894,6 +2899,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						c.id = AID_Shoot;
 						c.f[1] = 1.f;
 					}
+
+					if(IsLocal())
+						u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 				}
 			}
 			else if(u.frozen == 0)

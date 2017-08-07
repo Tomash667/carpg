@@ -1,11 +1,5 @@
 CURRENT:
-? {?/3] mp update
-	calculate stamina for player by server ??? maybe send how much they used, restored ???
-	RemoveStamina
-- [?/3] stamina/hp is recalculated on client, it may be different then server
-	? calculate by player and server but server has priority
-? [2] mp testing
-	+ look at server stamina; player stamina, use potion; enemy stamina, cmd heal stamina restore
+- 21:35:32 WARN  - NM_TRANSFER: Unknown packet 104.
 ===============================================================================================================
 NEW:
 + remove compability with old qmsh files
@@ -43,3 +37,7 @@ NEW:
 + ai modes - dexterious - move around, jump back; shielder - block attacks
 + sprint
 + stamina needs rework - currently it restore very fast for game to be beatable, but enemies restore it too fast to
++ last_dmg calculated on server
++ alt menu is displayed too fast, it annoys me when alt tabing
++ ai allow half power attack, use stamina at same point as player (on release, not start holding)
++ something better then -delay-1 -delay-2

@@ -1809,6 +1809,7 @@ void Game::SendPlayerData(int index)
 	unit.stats.Write(stream);
 	unit.unmod_stats.Write(stream);
 	stream.Write(unit.gold);
+	stream.Write(unit.stamina);
 	unit.player->Write(stream);
 
 	// other team members
@@ -1887,10 +1888,11 @@ bool Game::ReadPlayerData(BitStream& stream)
 
 	unit->player->Init(*unit, true);
 
-	if(!unit->stats.Read(stream) ||
-		!unit->unmod_stats.Read(stream) ||
-		!stream.Read(unit->gold) ||
-		!pc->Read(stream))
+	if(!unit->stats.Read(stream)
+		|| !unit->unmod_stats.Read(stream)
+		|| !stream.Read(unit->gold)
+		|| !stream.Read(unit->stamina)
+		|| !pc->Read(stream))
 	{
 		Error("Read player data: Broken stats.");
 		return false;
@@ -1903,6 +1905,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 	unit->weight = 0;
 	unit->CalculateLoad();
 	unit->RecalculateWeight();
+	unit->stamina_max = unit->CalculateMaxStamina();
 
 	unit->player->credit = credit;
 	unit->player->free_days = free_days;
@@ -2410,6 +2413,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.animation_state = 1;
 							unit.ani->groups[1].speed = unit.attack_power + unit.GetAttackSpeed();
 							unit.attack_power += 1.f;
+							unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * ((unit.attack_power - 1.f) / 2 + 1.f));
 						}
 						else
 						{
@@ -2453,6 +2457,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 								unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
 							unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 							unit.bow_instance->groups[0].speed = unit.ani->groups[1].speed;
+							unit.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 						}
 						if(type == AID_Shoot)
 						{
@@ -2481,6 +2486,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.ani->frame_end_info2 = false;
 							unit.hitted = false;
 							unit.player->Train(TrainWhat::BashStart, 0.f, 0);
+							unit.RemoveStamina(50.f);
 						}
 						break;
 					case AID_RunningAttack:
@@ -2495,6 +2501,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.ani->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
+							unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * 1.5f);
 						}
 						break;
 					case AID_StopBlock:
@@ -3668,10 +3675,18 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		case NetChange::CHEAT_HEAL:
 			if(info.devmode)
 			{
-				unit.hp = unit.hpmax;
-				NetChange& c = Add1(net_changes);
-				c.type = NetChange::UPDATE_HP;
-				c.unit = &unit;
+				if(unit.hp != unit.hpmax)
+				{
+					unit.hp = unit.hpmax;
+					NetChange& c = Add1(net_changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = &unit;
+				}
+				if(unit.stamina != unit.stamina_max)
+				{
+					unit.stamina = unit.stamina_max;
+					info.update_flags |= PlayerInfo::UF_STAMINA;
+				}
 			}
 			else
 			{
@@ -3730,10 +3745,19 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					else
 					{
-						target->hp = target->hpmax;
-						NetChange& c = Add1(net_changes);
-						c.type = NetChange::UPDATE_HP;
-						c.unit = target;
+						if(target->hp != target->hpmax)
+						{
+							target->hp = target->hpmax;
+							NetChange& c = Add1(net_changes);
+							c.type = NetChange::UPDATE_HP;
+							c.unit = target;
+						}
+						if(target->stamina != target->stamina_max)
+						{
+							target->stamina = target->stamina_max;
+							if(target->player && target->player != pc)
+								GetPlayerInfo(target->player).update_flags |= PlayerInfo::UF_STAMINA;
+						}
 					}
 				}
 			}
@@ -5340,9 +5364,6 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				stream.WriteCasted<byte>(c.id);
 				stream.Write(c.ile);
 				break;
-			case NetChangePlayer::UPDATE_STAMINA:
-				stream.Write(c.pc->unit->stamina);
-				break;
 			default:
 				Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
 				assert(0);
@@ -5361,6 +5382,8 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 		stream.Write(info.u->alcohol);
 	if(IS_SET(info.update_flags, PlayerInfo::UF_BUFFS))
 		stream.WriteCasted<byte>(info.buffs);
+	if(IS_SET(info.update_flags, PlayerInfo::UF_STAMINA))
+		stream.Write(info.u->stamina);
 
 	return changes;
 }
@@ -9184,19 +9207,6 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						pc->perks.push_back(TakenPerk((Perk)id, value));
 				}
 				break;
-			// update stamina
-			case NetChangePlayer::UPDATE_STAMINA:
-				{
-					float stamina;
-					if(!stream.Read(stamina))
-					{
-						Error("Update single client: Broken UPDATE_STAMINA.");
-						StreamError();
-					}
-					else
-						pc->unit->stamina = stamina;
-				}
-				break;
 			default:
 				Warn("Update single client: Unknown player change type %d.", type);
 				StreamError();
@@ -9242,6 +9252,17 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			if(!stream.ReadCasted<byte>(pc->player_info->buffs))
 			{
 				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_BUFFS.");
+				StreamError();
+				return true;
+			}
+		}
+		
+		// stamina
+		if(IS_SET(flags, PlayerInfo::UF_STAMINA))
+		{
+			if(!stream.Read(pc->unit->stamina))
+			{
+				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_STAMINA.");
 				StreamError();
 				return true;
 			}
