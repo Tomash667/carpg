@@ -1,13 +1,15 @@
-// typ broni
+// stats
+hp = "Health"
+stamina = "Stamina"
+invalidArmor = "Does not fit"
+
+// weapon types
 wt_shortBlade = "Short blade"
 wt_longBlade = "Long blade"
 wt_blunt = "Blunt"
 wt_axe = "Axe"
 
-// typ pancerza
-invalidArmor = "Does not fit"
-
-// u¿ywalne obiekty
+// useable objects
 u_chair = "Chair"
 u_bench = "Bench"
 u_anvil = "Anvil"
@@ -18,7 +20,7 @@ u_throne = "Throne"
 u_stool = "Stool"
 u_bench_dir = "Bench"
 
-// rodzaje wrogów
+// enemy types
 sg_goblins = "goblins"
 sg_orcs = "orcs"
 sg_bandits = "bandits"
@@ -31,9 +33,10 @@ sg_evils = "undead"
 sg_unk = "unknown monsters"
 
 // buffs
-buffPoison = "Poisoned"
-buffAlcohol = "Alcohol"
-buffRegeneration = "Regeneration"
-buffNatural = "Natural healing"
-buffFood = "Food"
-buffAntimagic = "Antimagic"
+buff_poison = "Poisoned"
+buff_alcohol = "Alcohol"
+buff_regeneration = "Regeneration"
+buff_natural = "Natural healing"
+buff_food = "Food"
+buff_antimagic = "Antimagic"
+buff_stamina = "Restoring stamina"

@@ -26,7 +26,7 @@ items goblin {
 	chance 20 bow_short
 	chance 20 shield_wood
 	chance 5 p_hp
-	if chance 50
+	if chance 2
 		frying_pan
 	else
 		random {dagger_short axe_small blunt_club}
@@ -2137,6 +2137,7 @@ unit base_zombie {
 	profile zombie
 	flags {undead dont_escape slow pierce_res25 blunt_res25 dont_open poison_res no_power_attack ignore_block backstab_res dont_eat}
 	hp 800
+	stamina -100
 	group undead
 	dmg_type blunt
 	walk_speed 1.5
@@ -2439,6 +2440,7 @@ unit base_golem {
 	mesh "golem.qmsh"
 	profile golem
 	flags {dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res}
+	stamina -100
 	group mages
 	dmg_type blunt
 	walk_speed 1.5
@@ -2780,6 +2782,7 @@ unit tomashu : base_human {
 	}
 	flags | {dont_escape tomashu leader secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat}
 	hp 750
+	stamina 100
 	def 50
 	items {
 		sword_forbidden

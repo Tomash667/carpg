@@ -1091,7 +1091,58 @@ private:
 			crc.Update(script->id);
 			crc.Update(script->variants.size());
 			for(auto variant : script->variants)
-				crc.UpdateVector(variant->code);
+			{
+				for(int* data = variant->code.data(), *end = variant->code.data() + variant->code.size(); data != end;)
+				{
+					int op = *data;
+					++data;
+					crc.Update(op);
+					switch(op)
+					{
+					case BuildingScript::BS_ADD_BUILDING:
+						{
+							int type = *data;
+							crc.Update(type);
+							++data;
+							int ptr = *data;
+							if(type == BuildingScript::BS_BUILDING)
+								crc.Update(((Building*)ptr)->id);
+							else
+								crc.Update(((BuildingGroup*)ptr)->id);
+							++data;
+						}
+						break;
+					case BuildingScript::BS_RANDOM:
+						{
+							uint count = (uint)*data;
+							crc.Update(count);
+							++data;
+							for(uint i=0; i<count; ++i)
+							{
+								int type = *data;
+								crc.Update(type);
+								++data;
+								int ptr = *data;
+								if(type == BuildingScript::BS_BUILDING)
+									crc.Update(((Building*)ptr)->id);
+								else
+									crc.Update(((BuildingGroup*)ptr)->id);
+								++data;
+							}
+						}
+						break;
+					case BuildingScript::BS_PUSH_INT:
+					case BuildingScript::BS_PUSH_VAR:
+					case BuildingScript::BS_SET_VAR:
+					case BuildingScript::BS_INC:
+					case BuildingScript::BS_DEC:
+					case BuildingScript::BS_IF:
+						crc.Update(*data);
+						++data;
+						break;
+					}
+				}
+			}
 		}
 
 		content::buildings_crc = crc.Get();

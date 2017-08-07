@@ -59,6 +59,7 @@ people. Expect changes for the better!
 	D / right arrow - move right
 	Q - rotate left
 	E - rotate right
+	F - auto walk forward
 	Y - yell
 	TAB - character screen, team, inventory
 	J - journal
@@ -71,7 +72,10 @@ people. Expect changes for the better!
 3.3. Equipment
 	left mouse button - use, wear, sell, buy
 	right mouse button - drop
-	Enter - take everything
+	click + shift - apply action to all items (drop/pickup)
+	click + ctrl - apply action to single item (drop/pickup)
+	click + alt - show dialog window with number to enter for how many items do action
+	F - pick all items
 3.4. World map
 	left mouse button - travel to location / enter
 	Tab - open / close multiplayer input panel
@@ -103,6 +107,9 @@ people. Expect changes for the better!
 	that it will be stronger. This is useful against resistant enemies which
 	attack normal asking little or nothing. Attack on the run is like 0.25 of
 	powerful attack but you cannot stop.
+* Stamina - Attacking uses stamina, if you run out of stamina you can't run or
+	attack. Blocking uses stamina too, and if you loss all stamina block is
+	broken. Stop attacking to restore stamina, not walking restore it faster.
 * Often, save the game, especially at the beginning when you are weak. Later,
 	before the fight with the boss. Remember, you can always happen some
 	unrepaired bug and the game may hang or crash :( Before saving the previous

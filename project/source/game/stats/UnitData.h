@@ -13,7 +13,6 @@
 struct Spell;
 struct DialogEntry;
 struct GameDialog;
-class GameTypeManager;
 
 //-----------------------------------------------------------------------------
 struct ItemScript
@@ -33,6 +32,14 @@ struct SpellList
 	bool have_non_combat;
 
 	SpellList() : spell(), name(), level(), have_non_combat(false) {}
+};
+
+//-----------------------------------------------------------------------------
+enum class UNIT_TYPE
+{
+	ANIMAL,
+	HUMANOID,
+	HUMAN
 };
 
 //-----------------------------------------------------------------------------
@@ -250,7 +257,7 @@ struct UnitData
 	MATERIAL_TYPE mat;
 	Int2 level;
 	StatProfile* stat_profile;
-	int hp_bonus, def_bonus, dmg_type, flags, flags2, flags3;
+	int hp_bonus, stamina_bonus, def_bonus, dmg_type, flags, flags2, flags3;
 	const int* items;
 	SpellList* spells;
 	Int2 gold, gold2;
@@ -264,11 +271,12 @@ struct UnitData
 	vector<string>* idles;
 	ArmorUnitType armor_type;
 	ItemScript* item_script;
+	UNIT_TYPE type;
 
-	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp_bonus(100), def_bonus(0),
+	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp_bonus(100), stamina_bonus(0), def_bonus(0),
 		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), items(nullptr), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS),
 		walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
-		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr)
+		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN)
 	{
 	}
 
@@ -291,8 +299,6 @@ struct UnitData
 	}
 
 	void CopyFrom(UnitData& ud);
-
-	static void Register(GameTypeManager& gt_mgr);
 };
 
 //-----------------------------------------------------------------------------

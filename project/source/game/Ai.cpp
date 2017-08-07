@@ -24,7 +24,8 @@ cstring str_ai_state[AIController::State_Max] = {
 	"Dodge",
 	"Escape",
 	"Block",
-	"Cast"
+	"Cast",
+	"Wait"
 };
 
 cstring str_ai_idle[AIController::Idle_Max] = {
@@ -296,8 +297,8 @@ void Game::UpdateAi(float dt)
 
 			switch(ai.state)
 			{
-				//===================================================================================================================
-				// brak wrogów w okolicy
+			//===================================================================================================================
+			// brak wrogów w okolicy
 			case AIController::Idle:
 				{
 					if(u.useable == nullptr)
@@ -316,6 +317,7 @@ void Game::UpdateAi(float dt)
 								ai.target_last_pos = ai.alert_target_pos;
 								ai.alert_target = nullptr;
 								ai.state = AIController::Fighting;
+								ai.timer = 0.f;
 								ai.city_wander = false;
 								ai.change_ai_mode = true;
 								repeat = true;
@@ -334,6 +336,7 @@ void Game::UpdateAi(float dt)
 							ai.target = enemy;
 							ai.target_last_pos = enemy->pos;
 							ai.state = AIController::Fighting;
+							ai.timer = 0.f;
 							ai.city_wander = false;
 							ai.change_ai_mode = true;
 							AI_Shout(ctx, ai);
@@ -851,7 +854,7 @@ void Game::UpdateAi(float dt)
 								}
 								else if(IS_SET(u.data->flags2, F2_SIT_ON_THRONE) && !u.IsFollower())
 									co = I_UZYJ;
-								else if(u.type == Unit::HUMAN)
+								else if(u.data->type == UNIT_TYPE::HUMAN)
 								{
 									if(!IS_SET(u.data->flags, F_AI_GUARD))
 									{
@@ -983,6 +986,7 @@ void Game::UpdateAi(float dt)
 										ai.timer = Random(2.f, 5.f);
 										ai.idle_action = AIController::Idle_Animation;
 										u.ani->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
+										u.ani->groups[0].speed = 1.f;
 										u.ani->frame_end_info = false;
 										u.animation = ANI_IDLE;
 										if(IsOnline())
@@ -1036,7 +1040,7 @@ void Game::UpdateAi(float dt)
 									break;
 								case I_GADAJ:
 									// podejdŸ do postaci i gadaj
-									if(u.type == Unit::HUMAN)
+									if(u.data->type == UNIT_TYPE::HUMAN)
 									{
 										const float d = ((IS_SET(u.data->flags, F_AI_GUARD) || IS_SET(u.data->flags, F_AI_STAY)) ? 1.5f : 10.f);
 										close_enemies.clear();
@@ -1175,6 +1179,7 @@ void Game::UpdateAi(float dt)
 											{
 												ani = Rand() % 2 + 1;
 												u.ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+												u.ani->groups[0].speed = 1.f;
 												u.animation = ANI_PLAY;
 												u.action = A_ANIMATION;
 											}
@@ -1291,6 +1296,7 @@ void Game::UpdateAi(float dt)
 												}
 												else
 													u.ani->Play(base.anim, PLAY_PRIO1, 0);
+												u.ani->groups[0].speed = 1.f;
 												u.useable = &use;
 												u.target_pos = u.pos;
 												u.target_pos2 = use.pos;
@@ -1393,8 +1399,8 @@ void Game::UpdateAi(float dt)
 										{
 											u.TakeWeapon(W_BOW);
 											float dir = Vec3::LookAtAngle(u.pos, ai.idle_data.obj.pos);
-											if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f && u.frozen == 0 &&
-												CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
+											if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f && u.frozen == 0
+												&& u.stamina > 0 && CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
 											{
 												// strzelanie z ³uku
 												float speed = u.GetBowAttackSpeed();
@@ -1406,6 +1412,7 @@ void Game::UpdateAi(float dt)
 												u.bow_instance = GetBowInstance(u.GetBow().mesh);
 												u.bow_instance->Play(&u.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
 												u.bow_instance->groups[0].speed = speed;
+												u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 
 												if(IsOnline())
 												{
@@ -1508,8 +1515,8 @@ void Game::UpdateAi(float dt)
 				}
 				break;
 
-				//===================================================================================================================
-				// walka
+			//===================================================================================================================
+			// walka
 			case AIController::Fighting:
 				{
 					ai.in_combat = true;
@@ -1541,9 +1548,32 @@ void Game::UpdateAi(float dt)
 					if(ai.alert_target)
 						ai.alert_target = nullptr;
 
+					bool tick = false;
+					if(ai.timer <= 0.f)
+					{
+						tick = true;
+						ai.timer = 0.25f;
+					}
+
 					// drink healing potion
-					if(Rand() % 4 == 0)
+					if(tick && Rand() % 4 == 0)
 						ai.CheckPotion(true);
+
+					// wait for stamina
+					float stamina = u.GetStaminap();
+					if(tick && u.action == A_NONE && (stamina < 0.25f || Rand() % 6 == 0))
+					{
+						if(Rand() % 4 == 0 || stamina <= 0.f)
+						{
+							ai.timer = Random(0.5f, 1.f);
+							if(stamina <= 0.f)
+								ai.timer += 1.f;
+							ai.state = AIController::Wait;
+							break;
+						}
+						else
+							ai.timer = 0.25f;
+					}
 
 					// chowanie/wyjmowanie broni
 					if(u.action == A_NONE)
@@ -1628,6 +1658,7 @@ void Game::UpdateAi(float dt)
 											u.ani->frame_end_info = false;
 											u.animation = ANI_PLAY;
 											u.ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+											u.ani->groups[0].speed = 1.f;
 										}
 
 										if(IsOnline())
@@ -1674,7 +1705,7 @@ void Game::UpdateAi(float dt)
 
 					if(u.IsHoldingBow())
 					{
-						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == 0)
+						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == 0 && u.stamina > 0)
 						{
 							// sprawdŸ czy mo¿esz strzelaæ we wroga
 							look_pos = PredictTargetPos(u, *enemy, u.GetArrowSpeed());
@@ -1691,6 +1722,7 @@ void Game::UpdateAi(float dt)
 								u.bow_instance = GetBowInstance(u.GetBow().mesh);
 								u.bow_instance->Play(&u.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
 								u.bow_instance->groups[0].speed = speed;
+								u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 
 								if(IsOnline())
 								{
@@ -1711,25 +1743,39 @@ void Game::UpdateAi(float dt)
 					}
 					else
 					{
-						if(!IS_SET(u.data->flags, F_MAGE) && u.action != A_CAST && u.action != A_SHOOT)
-						{
-							look_at = LookAtTarget;
-							move_type = MovePoint;
-							target_pos = enemy->pos;
-							run_type = WalkIfNear;
-							path_unit_ignore = enemy;
-						}
-
-						// zaatakuj
+						// attack
 						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == 0)
 						{
-							if(best_dist <= u.GetAttackRange())
+							if(best_dist <= u.GetAttackRange() + 1.f)
 								AI_DoAttack(ai, enemy);
-							else if(best_dist <= u.GetAttackRange() * 3)
+							else if(u.CanRun() && best_dist <= u.GetAttackRange() * 3 + 1.f)
 								AI_DoAttack(ai, enemy, true);
 						}
 
-						// blok/odskok
+						// stay close but not too close
+						if(ai.state == AIController::Fighting && enemy && !(u.IsHoldingBow() || IS_SET(u.data->flags, F_MAGE)))
+						{
+							look_at = LookAtTarget;
+							target_pos = enemy->pos;
+							path_unit_ignore = enemy;
+							run_type = WalkIfNear;
+							if(u.action == A_ATTACK)
+							{
+								if(best_dist > u.GetAttackRange())
+									move_type = MovePoint;
+								else if(best_dist < u.GetAttackRange() / 2)
+									move_type = MoveAway;
+							}
+							else
+							{
+								if(best_dist < u.GetAttackRange() + 0.5f)
+									move_type = MoveAway;
+								else if(best_dist > u.GetAttackRange() + 1.f)
+									move_type = MovePoint;
+							}
+						}
+
+						// block/jump back
 						if(ai.ignore <= 0.f)
 						{
 							// wybierz najbli¿sza atakuj¹c¹ postaæ
@@ -1792,8 +1838,8 @@ void Game::UpdateAi(float dt)
 				}
 				break;
 
-				//===================================================================================================================
-				// idŸ do ostatnio znanego miejsca w którym by³ wróg
+			//===================================================================================================================
+			// idŸ do ostatnio znanego miejsca w którym by³ wróg
 			case AIController::SeenEnemy:
 				{
 					if(enemy)
@@ -1802,6 +1848,7 @@ void Game::UpdateAi(float dt)
 						ai.target = enemy;
 						ai.target_last_pos = enemy->pos;
 						ai.state = AIController::Fighting;
+						ai.timer = 0.f;
 						repeat = true;
 						break;
 					}
@@ -1816,6 +1863,7 @@ void Game::UpdateAi(float dt)
 							ai.target = ai.alert_target;
 							ai.target_last_pos = ai.alert_target_pos;
 							ai.state = AIController::Fighting;
+							ai.timer = 0.f;
 							ai.alert_target = nullptr;
 							repeat = true;
 							break;
@@ -1869,8 +1917,8 @@ void Game::UpdateAi(float dt)
 				}
 				break;
 
-				//===================================================================================================================
-				// szukaj w okolicznych pokojach wrogów
+			//===================================================================================================================
+			// szukaj w okolicznych pokojach wrogów
 			case AIController::SearchEnemy:
 				{
 					if(enemy)
@@ -1879,6 +1927,7 @@ void Game::UpdateAi(float dt)
 						ai.target = enemy;
 						ai.target_last_pos = enemy->pos;
 						ai.state = AIController::Fighting;
+						ai.timer = 0.f;
 						AI_Shout(ctx, ai);
 						repeat = true;
 						break;
@@ -1894,6 +1943,7 @@ void Game::UpdateAi(float dt)
 							ai.target = ai.alert_target;
 							ai.target_last_pos = ai.alert_target_pos;
 							ai.state = AIController::Fighting;
+							ai.timer = 0.f;
 							ai.alert_target = nullptr;
 							repeat = true;
 							break;
@@ -1928,8 +1978,8 @@ void Game::UpdateAi(float dt)
 				}
 				break;
 
-				//===================================================================================================================
-				// uciekaj
+			//===================================================================================================================
+			// uciekaj
 			case AIController::Escape:
 				{
 					// sprawdŸ czy mo¿esz wypiæ miksturkê
@@ -2032,8 +2082,8 @@ void Game::UpdateAi(float dt)
 						if(ai.timer <= 0.f)
 						{
 							ai.state = AIController::Fighting;
+							ai.timer = 0.f;
 							ai.escape_room = nullptr;
-							//repeat = true;
 						}
 					}
 					else
@@ -2046,7 +2096,7 @@ void Game::UpdateAi(float dt)
 							{
 								ai.escape_room = nullptr;
 								ai.state = AIController::Fighting;
-								//repeat = true;
+								ai.timer = 0.f;
 							}
 							else
 							{
@@ -2059,7 +2109,7 @@ void Game::UpdateAi(float dt)
 						{
 							ai.escape_room = nullptr;
 							ai.state = AIController::Fighting;
-							//repeat = true;
+							ai.timer = 0.f;
 						}
 					}
 
@@ -2069,8 +2119,8 @@ void Game::UpdateAi(float dt)
 				}
 				break;
 
-				//===================================================================================================================
-				// blokuj ciosy
+			//===================================================================================================================
+			// blokuj ciosy
 			case AIController::Block:
 				{
 					// wybierz najbli¿sza atakuj¹c¹ postaæ
@@ -2096,7 +2146,7 @@ void Game::UpdateAi(float dt)
 						target_pos = top->pos;
 
 						// uderz tarcz¹
-						if(best_dist <= u.GetAttackRange() && !u.ani->groups[1].IsBlending() && ai.ignore <= 0.f)
+						if(best_dist <= u.GetAttackRange() && !u.ani->groups[1].IsBlending() && ai.ignore <= 0.f && u.stamina > 0)
 						{
 							if(Rand() % 2 == 0)
 							{
@@ -2106,6 +2156,7 @@ void Game::UpdateAi(float dt)
 								u.ani->groups[1].speed = 2.f;
 								u.ani->frame_end_info2 = false;
 								u.hitted = false;
+								u.RemoveStamina(50.f);
 
 								if(IsOnline())
 								{
@@ -2128,6 +2179,7 @@ void Game::UpdateAi(float dt)
 						u.ani->frame_end_info2 = false;
 						u.ani->Deactivate(1);
 						ai.state = AIController::Fighting;
+						ai.timer = 0.f;
 						ai.ignore = BLOCK_AFTER_BLOCK_TIMER;
 						repeat = true;
 						if(IsOnline())
@@ -2143,8 +2195,8 @@ void Game::UpdateAi(float dt)
 				}
 				break;
 
-				//===================================================================================================================
-				// odskakuj przed atakami
+			//===================================================================================================================
+			// odskakuj przed atakami
 			case AIController::Dodge:
 				{
 					// wybierz najbli¿sza atakuj¹c¹ postaæ
@@ -2193,14 +2245,15 @@ void Game::UpdateAi(float dt)
 					if((!top || ai.timer <= 0.f) && ai.potion == -1 && u.action != A_DRINK)
 					{
 						ai.state = AIController::Fighting;
+						ai.timer = 0.f;
 						ai.ignore = BLOCK_AFTER_BLOCK_TIMER;
 						repeat = true;
 					}
 				}
 				break;
 
-				//===================================================================================================================
-				// rzucanie czaru na cel
+			//===================================================================================================================
+			// rzucanie czaru na cel
 			case AIController::Cast:
 				if(ai.cast_target == &u)
 				{
@@ -2226,6 +2279,7 @@ void Game::UpdateAi(float dt)
 							u.ani->frame_end_info = false;
 							u.animation = ANI_PLAY;
 							u.ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							u.ani->groups[0].speed = 1.f;
 						}
 					}
 				}
@@ -2269,12 +2323,55 @@ void Game::UpdateAi(float dt)
 								u.ani->frame_end_info = false;
 								u.animation = ANI_PLAY;
 								u.ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+								u.ani->groups[0].speed = 1.f;
 							}
 						}
 					}
 
 					if(u.action == A_CAST)
 						u.target_pos = target_pos;
+				}
+				break;
+
+			//===================================================================================================================
+			// wait for stamina
+			case AIController::Wait:
+				{
+					Unit* top = nullptr;
+					float best_dist = 10.f;
+
+					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
+					{
+						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2))
+						{
+							float dist = Vec3::Distance(u.pos, (*it2)->pos);
+							if(dist < best_dist)
+							{
+								top = *it2;
+								best_dist = dist;
+							}
+						}
+					}
+
+					if(top)
+					{
+						look_at = LookAtTarget;
+						if(best_dist < 1.5f)
+							move_type = MoveAway;
+						else if(best_dist > 2.f)
+						{
+							move_type = MovePoint;
+							run_type = Walk;
+						}
+						target_pos = top->pos;
+					}
+
+					// end of waiting or no enemies
+					if(ai.timer <= 0.f || !top)
+					{
+						ai.state = AIController::Fighting;
+						ai.timer = 0.f;
+					}
 				}
 				break;
 			}
@@ -2798,7 +2895,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 {
 	Unit& u = *ai.unit;
 
-	if(u.action == A_NONE && (u.ani->ani->head.n_groups == 1 || u.weapon_state == WS_TAKEN) && ai.next_attack <= 0.f)
+	if(u.action == A_NONE && (u.ani->ani->head.n_groups == 1 || u.weapon_state == WS_TAKEN) && ai.next_attack <= 0.f && u.stamina > 0)
 	{
 		if(sound_volume && u.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 			PlayAttachedSound(u, u.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
@@ -2823,6 +2920,13 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 			u.run_attack = true;
 			do_power_attack = false;
 		}
+
+		float stamina = (w_biegu || do_power_attack) ? 1.5f : 1.f;
+		if(u.HaveWeapon())
+			stamina *= u.GetWeapon().GetInfo().stamina;
+		else
+			stamina *= 50.f;
+		u.RemoveStamina(stamina);
 
 		float speed(do_power_attack ? ai.unit->GetPowerAttackSpeed() : ai.unit->GetAttackSpeed());
 

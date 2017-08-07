@@ -21,7 +21,13 @@ enum class TooltipGroup
 {
 	Sidebar,
 	Buff,
+	Bar,
 	Invalid = -1
+};
+enum Bar
+{
+	BAR_HP,
+	BAR_STAMINA
 };
 
 //-----------------------------------------------------------------------------
@@ -38,12 +44,9 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 	txDoorLocked = Str("doorLocked");
 	txPressEsc = Str("pressEsc");
 	txMenu = Str("menu");
-	txBuffPoison = Str("buffPoison");
-	txBuffAlcohol = Str("buffAlcohol");
-	txBuffRegeneration = Str("buffRegeneration");
-	txBuffNatural = Str("buffNatural");
-	txBuffFood = Str("buffFood");
-	txBuffAntimagic = Str("buffAntimagic");
+	txHp = Str("hp");
+	txStamina = Str("stamina");
+	BuffInfo::LoadText();
 
 	scrollbar.parent = this;
 	visible = false;
@@ -133,7 +136,6 @@ void GameGui::DrawFront()
 	// end of game screen
 	if(game.koniec_gry)
 	{
-		// czarne t³o
 		DrawEndOfGameScreen();
 		return;
 	}
@@ -146,6 +148,7 @@ void GameGui::DrawFront()
 	if(game.pc->dmgc > 0.f)
 		GUI.DrawSpriteFull(game.tObwodkaBolu, COLOR_RGBA(255, 255, 255, (int)Clamp<float>(game.pc->dmgc / game.pc->unit->hp * 5 * 255, 0.f, 255.f)));
 
+	// debug info
 	if(game.debug_info && (!game.IsLocal() || !game.devmode))
 		game.debug_info = false;
 	if(game.debug_info)
@@ -162,15 +165,11 @@ void GameGui::DrawFront()
 			if(u.IsAI())
 			{
 				AIController& ai = *u.ai;
-				GUI.DrawText3D(GUI.default_font, Format("%s (%s)\nB:%d, F:%d, LVL:%d\nA:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.level,
-					str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer, ai.unit->run_attack ? 1 : 0),
-					DT_OUTLINE, WHITE, text_pos, max((*it)->GetHpp(), 0.f));
+				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, LVL:%d\nA:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.level,
+					str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer, ai.unit->run_attack ? 1 : 0), u, text_pos, -1);
 			}
 			else
-			{
-				GUI.DrawText3D(GUI.default_font, Format("%s (%s)\nB:%d, F:%d, A:%d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.player->action),
-					DT_OUTLINE, WHITE, text_pos, max((*it)->GetHpp(), 0.f));
-			}
+				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, A:%d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.player->action), u, text_pos, -1);
 		}
 	}
 
@@ -192,14 +191,7 @@ void GameGui::DrawFront()
 				}
 			}
 			if(!dont_draw)
-			{
-				float hpp;
-				if(!u->IsAlive() && !u->IsFollower())
-					hpp = -1.f;
-				else
-					hpp = max(u->GetHpp(), 0.f);
-				GUI.DrawText3D(GUI.default_font, u->GetName(), DT_OUTLINE, WHITE, u->GetUnitTextPos(), hpp);
-			}
+				DrawUnitInfo(u->GetName(), *u, u->GetUnitTextPos(), -1);
 		}
 		break;
 	case BP_CHEST:
@@ -274,10 +266,7 @@ void GameGui::DrawFront()
 				alpha = 0;
 
 			if(alpha)
-			{
-				GUI.DrawText3D(GUI.default_font, it->unit->GetName(), DT_OUTLINE, game.IsEnemy(*it->unit, *game.pc->unit) ? COLOR_RGBA(255, 0, 0, alpha) : COLOR_RGBA(0, 255, 0, alpha),
-					it->last_pos, max(it->unit->GetHpp(), 0.f));
-			}
+				DrawUnitInfo(it->unit->GetName(), *it->unit, it->last_pos, alpha);
 		}
 	}
 
@@ -343,39 +332,29 @@ void GameGui::DrawFront()
 		buffs = game.pc->unit->GetBuffs();
 	else
 		buffs = game.GetPlayerInfo(game.pc).buffs;
-
-	/*static bool have_manabar = true;
-	if(Key.PressedRelease('B'))
-	have_manabar = !have_manabar;*/
-	const bool have_manabar = false;
-
+	
 	// healthbar
-	float hp_scale = float(GUI.wnd_size.x) / 800;
-	Matrix mat;
+	float wnd_scale = float(GUI.wnd_size.x) / 800;
 	float hpp = Clamp(game.pc->unit->hp / game.pc->unit->hpmax, 0.f, 1.f);
 	Rect part = { 0, 0, int(hpp * 256), 16 };
-	int hp_offset = (have_manabar ? 35 : 17);
-	mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(hp_scale, hp_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - hp_scale*hp_offset));
+	Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 35));
 	if(part.Right() > 0)
-		GUI.DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, &mat, &part, nullptr, WHITE);
-	GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
+		GUI.DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, mat, &part, nullptr, WHITE);
+	GUI.DrawSprite2(tBar, mat, nullptr, nullptr, WHITE);
 
-	// manabar
-	if(have_manabar)
-	{
-		float mpp = 1.f;
-		part.Right() = int(mpp * 256);
-		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(hp_scale, hp_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - hp_scale * 17));
-		if(part.Right() > 0)
-			GUI.DrawSprite2(tManaBar, &mat, &part, nullptr, WHITE);
-		GUI.DrawSprite2(tBar, &mat, nullptr, nullptr, WHITE);
-	}
+	// stamina bar
+	float stamina_p = game.pc->unit->stamina / game.pc->unit->stamina_max;
+	part.Right() = int(stamina_p * 256);
+	mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 17));
+	if(part.Right() > 0)
+		GUI.DrawSprite2(tStaminaBar, mat, &part, nullptr, WHITE);
+	GUI.DrawSprite2(tBar, mat, nullptr, nullptr, WHITE);
 
 	// buffs
 	for(BuffImage& img : buff_images)
 	{
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(buff_scale, buff_scale), nullptr, 0.f, &img.pos);
-		GUI.DrawSprite2(img.tex, &mat, nullptr, nullptr, WHITE);
+		GUI.DrawSprite2(img.tex, mat, nullptr, nullptr, WHITE);
 	}
 
 	float scale;
@@ -384,7 +363,7 @@ void GameGui::DrawFront()
 	int img_size = 64 * GUI.wnd_size.x / 1920;
 	offset = img_size + 2;
 	scale = float(img_size) / 64;
-	Int2 spos(256.f*hp_scale + offset, GUI.wnd_size.y - offset);
+	Int2 spos(256.f*wnd_scale + offset, GUI.wnd_size.y - offset);
 
 	// shortcuts
 	/*for(int i = 0; i<10; ++i)
@@ -412,8 +391,8 @@ void GameGui::DrawFront()
 			else
 				t = tShortcutDown;
 			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
-			GUI.DrawSprite2(t, &mat, nullptr, nullptr, WHITE);
-			GUI.DrawSprite2(tSideButton[i], &mat, nullptr, nullptr, WHITE);
+			GUI.DrawSprite2(t, mat, nullptr, nullptr, WHITE);
+			GUI.DrawSprite2(tSideButton[i], mat, nullptr, nullptr, WHITE);
 		}
 	}
 
@@ -433,6 +412,7 @@ void GameGui::DrawFront()
 //=================================================================================================
 void GameGui::DrawBack()
 {
+	// debug info
 	if(game.debug_info2)
 	{
 		Unit& u = *game.pc->unit;
@@ -454,6 +434,7 @@ void GameGui::DrawBack()
 		GUI.DrawText(GUI.default_font, text, DT_NOCLIP, BLACK, r);
 	}
 
+	// profiler
 	const string& str = Profiler::g_profiler.GetString();
 	if(!str.empty())
 	{
@@ -464,44 +445,45 @@ void GameGui::DrawBack()
 		GUI.DrawText(GUI.default_font, str, DT_LEFT, BLACK, rect);
 	}
 
+	// tooltip
 	tooltip.Draw();
 }
 
 //=================================================================================================
 void GameGui::DrawDeathScreen()
 {
-	if(game.death_screen > 0)
+	if(game.death_screen <= 0)
+		return;
+
+	// czarne t³o
+	int color;
+	if(game.death_screen == 1)
+		color = (int(game.death_fade * 255) << 24) | 0x00FFFFFF;
+	else
+		color = WHITE;
+
+	if((color & 0xFF000000) != 0)
+		GUI.DrawSpriteFull(game.tCzern, color);
+
+	// obrazek i tekst
+	if(game.death_screen > 1)
 	{
-		// czarne t³o
-		int color;
-		if(game.death_screen == 1)
+		if(game.death_screen == 2)
 			color = (int(game.death_fade * 255) << 24) | 0x00FFFFFF;
 		else
 			color = WHITE;
 
 		if((color & 0xFF000000) != 0)
-			GUI.DrawSpriteFull(game.tCzern, color);
-
-		// obrazek i tekst
-		if(game.death_screen > 1)
 		{
-			if(game.death_screen == 2)
-				color = (int(game.death_fade * 255) << 24) | 0x00FFFFFF;
-			else
-				color = WHITE;
+			D3DSURFACE_DESC desc;
+			V(game.tRip->GetLevelDesc(0, &desc));
 
-			if((color & 0xFF000000) != 0)
-			{
-				D3DSURFACE_DESC desc;
-				V(game.tRip->GetLevelDesc(0, &desc));
+			GUI.DrawSprite(game.tRip, Center(desc.Width, desc.Height), color);
 
-				GUI.DrawSprite(game.tRip, Center(desc.Width, desc.Height), color);
-
-				cstring text = Format(game.death_solo ? txDeathAlone : txDeath, game.pc->kills, game.total_kills - game.pc->kills);
-				cstring text2 = Format("%s\n\n%s", text, game.death_screen == 3 ? txPressEsc : "\n");
-				Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
-				GUI.DrawText(GUI.default_font, text2, DT_CENTER | DT_BOTTOM, color, rect);
-			}
+			cstring text = Format(game.death_solo ? txDeathAlone : txDeath, game.pc->kills, game.total_kills - game.pc->kills);
+			cstring text2 = Format("%s\n\n%s", text, game.death_screen == 3 ? txPressEsc : "\n");
+			Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
+			GUI.DrawText(GUI.default_font, text2, DT_CENTER | DT_BOTTOM, color, rect);
 		}
 	}
 }
@@ -586,6 +568,55 @@ void GameGui::DrawSpeechBubbles()
 }
 
 //=================================================================================================
+void GameGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
+{
+	DWORD text_color;
+	if(alpha == -1)
+	{
+		text_color = WHITE;
+		alpha = 255;
+	}
+	else if(game.IsEnemy(unit, *game.pc->unit))
+		text_color = COLOR_RGBA(255, 0, 0, alpha);
+	else
+		text_color = COLOR_RGBA(0, 255, 0, alpha);
+
+	// text
+	Rect r;
+	GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, text_color, pos, &r);
+
+	float hpp;
+	if(!unit.IsAlive() && !unit.IsFollower())
+		hpp = -1.f;
+	else
+		hpp = max(unit.GetHpp(), 0.f);
+	DWORD color = COLOR_RGBA(255, 255, 255, alpha);
+
+	if(hpp >= 0.f)
+	{
+		// hp background
+		Rect r2(r.Left(), r.Bottom(), r.Right(), r.Bottom() + 4);
+		GUI.DrawSpriteRect(tMinihp[0], r2, color);
+
+		// hp
+		int sizex = r2.SizeX();
+		r2.Right() = r2.Left() + int(hpp * sizex);
+		Rect r3 = { 0, 0, int(hpp * 64), 4 };
+		GUI.DrawSpriteRectPart(tMinihp[1], r2, r3, color);
+
+		// stamina
+		if(game.devmode)
+		{
+			float stamina = max(unit.GetStaminap(), 0.f);
+			r2 += Int2(0, 4);
+			r3.Right() = int(stamina * 64);
+			r2.Right() = r2.Left() + int(stamina * sizex);
+			GUI.DrawSpriteRectPart(tMinistamina, r2, r3, color);
+		}
+	}
+}
+
+//=================================================================================================
 void GameGui::Update(float dt)
 {
 	TooltipGroup group = TooltipGroup::Invalid;
@@ -608,7 +639,6 @@ void GameGui::Update(float dt)
 
 	const bool have_manabar = false;
 	float hp_scale = float(GUI.wnd_size.x) / 800;
-	int hp_offset = (have_manabar ? 35 : 17);
 
 	// buffs
 	int buffs;
@@ -619,53 +649,21 @@ void GameGui::Update(float dt)
 
 	buff_scale = GUI.wnd_size.x / 1024.f;
 	float off = buff_scale * 33;
-	float buf_posy = float(GUI.wnd_size.y - 5) - off - hp_scale * hp_offset;
+	float buf_posy = float(GUI.wnd_size.y - 5) - off - hp_scale * 35;
 	Int2 buff_size(int(buff_scale * 32), int(buff_scale * 32));
 
 	buff_images.clear();
 
-	if(IS_SET(buffs, BUFF_POISON))
+	for(int i=0; i<BUFF_COUNT; ++i)
 	{
-		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffPoison, BUFF_POISON));
-		buf_posy -= off;
+		int buff_bit = 1 << i;
+		if(IS_SET(buffs, buff_bit))
+		{
+			auto& info = BuffInfo::info[i];
+			buff_images.push_back(BuffImage(Vec2(2, buf_posy), info.img, i));
+			buf_posy -= off;
+		}
 	}
-
-	if(IS_SET(buffs, BUFF_ALCOHOL))
-	{
-		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffAlcohol, BUFF_ALCOHOL));
-		buf_posy -= off;
-	}
-
-	if(IS_SET(buffs, BUFF_ANTIMAGIC))
-	{
-		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffAntimagic, BUFF_ANTIMAGIC));
-		buf_posy -= off;
-	}
-
-	if(IS_SET(buffs, BUFF_REGENERATION))
-	{
-		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffRegeneration, BUFF_REGENERATION));
-		buf_posy -= off;
-	}
-
-	if(IS_SET(buffs, BUFF_NATURAL))
-	{
-		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffNatural, BUFF_NATURAL));
-		buf_posy -= off;
-	}
-
-	if(IS_SET(buffs, BUFF_FOOD))
-	{
-		buff_images.push_back(BuffImage(Vec2(2, buf_posy), tBuffFood, BUFF_FOOD));
-		buf_posy -= off;
-	}
-
-	//float scale;
-	int offset;
-
-	int img_size = 64 * GUI.wnd_size.x / 1920;
-	offset = img_size + 2;
-	//scale = float(img_size)/64;
 
 	// sidebar
 	int max = (int)SideButtonId::Max;
@@ -684,7 +682,7 @@ void GameGui::Update(float dt)
 	bool anything = use_cursor;
 	if(gp_trade->visible)
 		anything = true;
-	bool show_buff_tooltip = anything;
+	bool show_tooltips = anything;
 	if(!anything)
 	{
 		for(int i = 0; i < (int)SideButtonId::Max; ++i)
@@ -693,14 +691,16 @@ void GameGui::Update(float dt)
 			{
 				anything = true;
 				if(i != (int)SideButtonId::Minimap)
-					show_buff_tooltip = true;
+					show_tooltips = true;
 				break;
 			}
 		}
 	}
 
-	if(show_buff_tooltip)
+	// check cursor over item to show tooltip
+	if(show_tooltips)
 	{
+		// for buffs
 		for(BuffImage& img : buff_images)
 		{
 			if(PointInRect(GUI.cursor_pos, Int2(img.pos), buff_size))
@@ -709,6 +709,25 @@ void GameGui::Update(float dt)
 				id = img.id;
 				break;
 			}
+		}
+
+		// for healthbar
+		float wnd_scale = float(GUI.wnd_size.x) / 800;
+		Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 35));
+		Rect r = GUI.GetSpriteRect(tBar, mat);
+		if(r.IsInside(GUI.cursor_pos))
+		{
+			group = TooltipGroup::Bar;
+			id = Bar::BAR_HP;
+		}
+
+		// for stamina bar
+		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 17));
+		r = GUI.GetSpriteRect(tBar, mat);
+		if(r.IsInside(GUI.cursor_pos))
+		{
+			group = TooltipGroup::Bar;
+			id = Bar::BAR_STAMINA;
 		}
 	}
 
@@ -720,6 +739,8 @@ void GameGui::Update(float dt)
 
 	if(sidebar > 0.f && !GUI.HaveDialog())
 	{
+		int img_size = 64 * GUI.wnd_size.x / 1920;
+		int offset = img_size + 2;
 		int total = offset * max;
 		int sposy = GUI.wnd_size.y - (GUI.wnd_size.y - total) / 2 - offset;
 		for(int i = 0; i < max; ++i)
@@ -1000,38 +1021,21 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 		tooltip.anything = false;
 		return;
 	}
-	else
-	{
-		tooltip.anything = true;
-		tooltip.img = nullptr;
-		tooltip.big_text.clear();
-		tooltip.small_text.clear();
 
-		if(group == TooltipGroup::Buff)
+	tooltip.anything = true;
+	tooltip.img = nullptr;
+	tooltip.big_text.clear();
+	tooltip.small_text.clear();
+
+	switch(group)
+	{
+	case TooltipGroup::Buff:
 		{
-			switch(id)
-			{
-			case BUFF_POISON:
-				tooltip.text = txBuffPoison;
-				break;
-			case BUFF_ALCOHOL:
-				tooltip.text = txBuffAlcohol;
-				break;
-			case BUFF_REGENERATION:
-				tooltip.text = txBuffRegeneration;
-				break;
-			case BUFF_NATURAL:
-				tooltip.text = txBuffNatural;
-				break;
-			case BUFF_FOOD:
-				tooltip.text = txBuffFood;
-				break;
-			case BUFF_ANTIMAGIC:
-				tooltip.text = txBuffAntimagic;
-				break;
-			}
+			auto& info = BuffInfo::info[id];
+			tooltip.text = info.text;
 		}
-		else if(group == TooltipGroup::Sidebar)
+		break;
+	case TooltipGroup::Sidebar:
 		{
 			GAME_KEYS gk;
 
@@ -1065,6 +1069,26 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 
 			tooltip.text = Game::Get().GetShortcutText(gk);
 		}
+		break;
+	case TooltipGroup::Bar:
+		{
+			Unit* u = game.pc->unit;
+			if(id == BAR_HP)
+			{
+				int hp = (int)u->hp;
+				if(hp == 0 && u->hp > 0.f)
+					hp = 1;
+				int hpmax = (int)u->hpmax;
+				tooltip.text = Format("%s: %d/%d", txHp, hp, hpmax);
+			}
+			else if(id == BAR_STAMINA)
+			{
+				int stamina = (int)u->stamina;
+				int stamina_max = (int)u->stamina_max;
+				tooltip.text = Format("%s: %d/%d", txStamina, stamina, stamina_max);
+			}
+		}
+		break;
 	}
 }
 
@@ -1100,6 +1124,7 @@ void GameGui::LoadData()
 	resMgr.GetLoadedTexture("bar.png", tBar);
 	resMgr.GetLoadedTexture("hp_bar.png", tHpBar);
 	resMgr.GetLoadedTexture("poisoned_hp_bar.png", tPoisonedHpBar);
+	resMgr.GetLoadedTexture("stamina_bar.png", tStaminaBar);
 	resMgr.GetLoadedTexture("mana_bar.png", tManaBar);
 	resMgr.GetLoadedTexture("shortcut.png", tShortcut);
 	resMgr.GetLoadedTexture("shortcut_hover.png", tShortcutHover);
@@ -1112,12 +1137,10 @@ void GameGui::LoadData()
 	resMgr.GetLoadedTexture("bt_active.png", tSideButton[(int)SideButtonId::Active]);
 	resMgr.GetLoadedTexture("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
 	resMgr.GetLoadedTexture("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
-	resMgr.GetLoadedTexture("buff_trucizna.png", tBuffPoison);
-	resMgr.GetLoadedTexture("buff_alkohol.png", tBuffAlcohol);
-	resMgr.GetLoadedTexture("buff_regeneracja.png", tBuffRegeneration);
-	resMgr.GetLoadedTexture("buff_jedzenie.png", tBuffFood);
-	resMgr.GetLoadedTexture("buff_naturalna.png", tBuffNatural);
-	resMgr.GetLoadedTexture("buff_antimagic.png", tBuffAntimagic);
+	resMgr.GetLoadedTexture("minihp.png", tMinihp[0]);
+	resMgr.GetLoadedTexture("minihp2.png", tMinihp[1]);
+	resMgr.GetLoadedTexture("ministamina.png", tMinistamina);
+	BuffInfo::LoadImages(resMgr);
 }
 
 //=================================================================================================

@@ -26,10 +26,10 @@ std::map<const Item*, const Item*> better_items;
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
 WeaponTypeInfo weapon_type_info[] = {
-	nullptr, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, Skill::SHORT_BLADE, // WT_SHORT
-	nullptr, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, Skill::LONG_BLADE, // WT_LONG
-	nullptr, 0.85f, 0.15f, 0.29f, 0.9f, 0.00075f, Skill::BLUNT, // WT_MACE
-	nullptr, 0.8f, 0.2f, 0.31f, 0.95f, 0.001f, Skill::AXE // WT_AXE
+	nullptr, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, Skill::SHORT_BLADE, 40.f, // WT_SHORT
+	nullptr, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, Skill::LONG_BLADE, 50.f, // WT_LONG
+	nullptr, 0.85f, 0.15f, 0.29f, 0.9f, 0.00075f, Skill::BLUNT, 60.f, // WT_MACE
+	nullptr, 0.8f, 0.2f, 0.31f, 0.95f, 0.001f, Skill::AXE, 60.f, // WT_AXE
 };
 
 vector<const Item*> items_to_add;
@@ -1562,7 +1562,8 @@ uint LoadItems(uint& out_crc, uint& errors)
 		{ "dex", E_DEX },
 		{ "antimagic", E_ANTIMAGIC },
 		{ "food", E_FOOD },
-		{ "green_hair", E_GREEN_HAIR }
+		{ "green_hair", E_GREEN_HAIR },
+		{ "stamina", E_STAMINA }
 	});
 
 	t.AddKeywords(G_OTHER_TYPE, {

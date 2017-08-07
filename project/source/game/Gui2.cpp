@@ -2092,7 +2092,7 @@ bool IGUI::NeedCursor()
 }
 
 //=================================================================================================
-void IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const Vec3& pos, float hpp)
+void IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const Vec3& pos, Rect* text_rect)
 {
 	assert(font);
 
@@ -2101,23 +2101,11 @@ void IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color
 		return;
 
 	Int2 size = font->CalculateSize(text);
-
-	// tekst
 	Rect r = { pt.x - size.x / 2, pt.y - size.y - 4, pt.x + size.x / 2 + 1, pt.y - 4 };
 	DrawText(font, text, flags | DT_NOCLIP, color, r);
 
-	// pasek hp
-	if(hpp >= 0.f)
-	{
-		DWORD color2 = COLOR_RGBA(255, 255, 255, (color & 0xFF000000) >> 24);
-
-		Rect r2(r.Left(), r.Bottom(), r.Right(), r.Bottom() + 4);
-		GUI.DrawSpriteRect(tMinihp[0], r2, color2);
-
-		r2.Right() = r2.Left() + int(hpp * r2.SizeX());
-		Rect r3 = { 0, 0, int(hpp * 64), 4 };
-		GUI.DrawSpriteRectPart(tMinihp[1], r2, r3, color2);
-	}
+	if(text_rect)
+		*text_rect = r;
 }
 
 //=================================================================================================
@@ -2272,9 +2260,9 @@ Dialog* IGUI::GetDialog(cstring name)
 }
 
 //=================================================================================================
-void IGUI::DrawSprite2(TEX t, const Matrix* mat, const Rect* part, const Rect* clipping, DWORD color)
+void IGUI::DrawSprite2(TEX t, const Matrix& mat, const Rect* part, const Rect* clipping, DWORD color)
 {
-	assert(t && mat);
+	assert(t);
 
 	D3DSURFACE_DESC desc;
 	t->GetLevelDesc(0, &desc);
@@ -2287,8 +2275,7 @@ void IGUI::DrawSprite2(TEX t, const Matrix* mat, const Rect* part, const Rect* c
 		rect.Set(desc.Width, desc.Height);
 
 	// transform
-	if(mat)
-		rect.Transform(*mat);
+	rect.Transform(mat);
 
 	// clipping
 	if(clipping && !rect.Clip(*clipping))
@@ -2302,6 +2289,32 @@ void IGUI::DrawSprite2(TEX t, const Matrix* mat, const Rect* part, const Rect* c
 	rect.Populate(v, col);
 	in_buffer = 1;
 	Flush();
+}
+
+//=================================================================================================
+// Rotation is generaly ignored and shouldn't be used here
+Rect IGUI::GetSpriteRect(TEX t, const Matrix& mat, const Rect* part, const Rect* clipping)
+{
+	assert(t);
+
+	D3DSURFACE_DESC desc;
+	t->GetLevelDesc(0, &desc);
+	GuiRect rect;
+
+	// set pos & uv
+	if(part)
+		rect.Set(desc.Width, desc.Height, *part);
+	else
+		rect.Set(desc.Width, desc.Height);
+
+	// transform
+	rect.Transform(mat);
+
+	// clipping
+	if(clipping && !rect.Clip(*clipping))
+		return Rect::Zero;
+
+	return rect.ToRect();
 }
 
 //=================================================================================================

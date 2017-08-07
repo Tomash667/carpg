@@ -703,12 +703,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else
 						MSG("You need to enter unit id!");
 					break;
-					//case CMD_SPAWNITEM:
-					//	break;
 				case CMD_HEAL:
 					if(IsLocal())
 					{
 						pc->unit->hp = pc->unit->hpmax;
+						pc->unit->stamina = pc->unit->stamina_max;
 						pc->unit->HealPoison();
 						if(IsOnline())
 						{
@@ -977,12 +976,15 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(IsLocal())
 						{
 							selected_target->hp = selected_target->hpmax;
+							selected_target->stamina = selected_target->stamina_max;
 							selected_target->HealPoison();
 							if(IsOnline())
 							{
 								NetChange& c = Add1(net_changes);
 								c.type = NetChange::UPDATE_HP;
 								c.unit = selected_target;
+								if(selected_target->player && selected_target->player != pc)
+									GetPlayerInfo(selected_target->player).update_flags |= PlayerInfo::UF_STAMINA;
 							}
 						}
 						else

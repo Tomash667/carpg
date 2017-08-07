@@ -2644,6 +2644,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				u.action = A_PICKUP;
 				u.animation = ANI_PLAY;
 				u.ani->Play(u_gory ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				u.ani->groups[0].speed = 1.f;
 				u.ani->frame_end_info = false;
 
 				if(IsLocal())
@@ -2700,6 +2701,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				{
 					if(KeyUpAllowed(pc->action_key))
 					{
+						// release attack
 						u.attack_power = u.ani->groups[1].time / u.GetAttackFrame(0);
 						u.animation_state = 1;
 						u.ani->groups[1].speed = u.attack_power + u.GetAttackSpeed();
@@ -2715,14 +2717,18 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						}
 
 						if(IsLocal())
+						{
 							u.player->Train(TrainWhat::AttackStart, 0.f, 0);
+							u.RemoveStamina(u.GetWeapon().GetInfo().stamina * ((u.attack_power - 1.f) / 2 + 1.f));
+						}
 					}
 				}
 				else if(u.animation_state == 2)
 				{
 					byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Down);
-					if(k != VK_NONE)
+					if(k != VK_NONE && u.stamina > 0)
 					{
+						// prepare next attack
 						u.action = A_ATTACK;
 						u.attack_id = u.GetRandomAttack();
 						u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
@@ -2747,7 +2753,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			{
 				if(KeyUpAllowed(pc->action_key))
 				{
-					// skoñcz blokowaæ
+					// stop blocking
 					u.action = A_NONE;
 					u.ani->frame_end_info2 = false;
 					u.ani->Deactivate(1);
@@ -2763,9 +2769,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 				else if(!u.ani->groups[1].IsBlending() && u.HaveShield())
 				{
-					if(KeyDownAllowed(GK_ATTACK_USE))
+					if(KeyDownAllowed(GK_ATTACK_USE) && u.stamina > 0)
 					{
-						// uderz tarcz¹
+						// shield bash
 						u.action = A_BASH;
 						u.animation_state = 0;
 						u.ani->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
@@ -2783,21 +2789,24 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						}
 
 						if(IsLocal())
+						{
 							u.player->Train(TrainWhat::BashStart, 0.f, 0);
+							u.RemoveStamina(50.f);
+						}
 					}
 				}
 			}
 			else if(u.action == A_NONE && u.frozen == 0)
 			{
 				byte k = KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc->wasted_key);
-				if(k != VK_NONE)
+				if(k != VK_NONE && u.stamina > 0)
 				{
 					u.action = A_ATTACK;
 					u.attack_id = u.GetRandomAttack();
 					u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
 					if(this_frame_run)
 					{
-						// atak w biegu
+						// running attack
 						u.ani->groups[1].speed = u.GetAttackSpeed();
 						u.animation_state = 1;
 						u.run_attack = true;
@@ -2813,11 +2822,14 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						}
 
 						if(IsLocal())
+						{
 							u.player->Train(TrainWhat::AttackStart, 0.f, 0);
+							u.RemoveStamina(u.GetWeapon().GetInfo().stamina * 1.5f);
+						}
 					}
 					else
 					{
-						// normalny/potê¿ny atak
+						// prepare attack
 						u.ani->groups[1].speed = u.GetPowerAttackSpeed();
 						pc->action_key = k;
 						u.animation_state = 0;
@@ -2848,9 +2860,10 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(oks != 1)
 				{
-					byte k = KeyDoReturn(GK_BLOCK, &KeyStates::Pressed);
+					byte k = KeyDoReturn(GK_BLOCK, &KeyStates::Down);
 					if(k != VK_NONE)
 					{
+						// start blocking
 						u.action = A_BLOCK;
 						u.ani->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
 						u.ani->groups[1].blend_max = (oks == 2 ? 0.33f : u.GetBlockSpeed());
@@ -2871,7 +2884,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		}
 		else
 		{
-			// atak z ³uku
+			// shoting from bow
 			if(u.action == A_SHOOT)
 			{
 				if(u.animation_state == 0 && KeyUpAllowed(pc->action_key))
@@ -2886,12 +2899,15 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						c.id = AID_Shoot;
 						c.f[1] = 1.f;
 					}
+
+					if(IsLocal())
+						u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 				}
 			}
 			else if(u.frozen == 0)
 			{
 				byte k = KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc->wasted_key);
-				if(k != VK_NONE)
+				if(k != VK_NONE && u.stamina > 0)
 				{
 					float speed = u.GetBowAttackSpeed();
 					u.ani->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
@@ -2930,6 +2946,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				int id = Rand() % u.data->idles->size();
 				pc->idle_timer = Random(0.f, 0.5f);
 				u.ani->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
+				u.ani->groups[0].speed = 1.f;
 				u.ani->frame_end_info = false;
 				u.animation = ANI_IDLE;
 
@@ -6588,9 +6605,8 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	// typ
 	if(!test_unit)
 	{
-		if(IS_SET(base.flags, F_HUMAN))
+		if(base.type == UNIT_TYPE::HUMAN)
 		{
-			u->type = Unit::HUMAN;
 			if(human_data)
 				u->human_data = human_data;
 			else
@@ -6624,17 +6640,11 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 			u->ani = new AnimeshInstance(aHumanBase);
 		}
 		else
-		{
 			u->ani = new AnimeshInstance(base.mesh);
-
-			if(IS_SET(base.flags, F_HUMANOID))
-				u->type = Unit::HUMANOID;
-			else
-				u->type = Unit::ANIMAL;
-		}
 
 		u->animation = u->current_animation = ANI_STAND;
 		u->ani->Play("stoi", PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+		u->ani->groups[0].speed = 1.f;
 
 		if(u->ani->ani->head.n_groups > 1)
 			u->ani->groups[1].state = 0;
@@ -6703,6 +6713,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 		// hp
 		u->hp = u->hpmax = u->CalculateMaxHp();
+		u->stamina = u->stamina_max = u->CalculateMaxStamina();
 
 		u->fake_unit = false;
 	}
@@ -7711,15 +7722,19 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				break;
 			case ANI_STAND:
 				u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+				u.ani->groups[0].speed = 1.f;
 				break;
 			case ANI_BATTLE:
 				u.ani->Play(NAMES::ani_battle, PLAY_PRIO1, 0);
+				u.ani->groups[0].speed = 1.f;
 				break;
 			case ANI_BATTLE_BOW:
 				u.ani->Play(NAMES::ani_battle_bow, PLAY_PRIO1, 0);
+				u.ani->groups[0].speed = 1.f;
 				break;
 			case ANI_DIE:
 				u.ani->Play(NAMES::ani_die, PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
+				u.ani->groups[0].speed = 1.f;
 				break;
 			case ANI_PLAY:
 				break;
@@ -7727,6 +7742,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				break;
 			case ANI_KNEELS:
 				u.ani->Play("kleka", PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
+				u.ani->groups[0].speed = 1.f;
 				break;
 			default:
 				assert(0);
@@ -7739,6 +7755,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		if(u.animation == ANI_IDLE && u.ani->frame_end_info)
 		{
 			u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+			u.ani->groups[0].speed = 1.f;
 			u.animation = ANI_STAND;
 		}
 
@@ -7760,7 +7777,10 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				u.ani->frame_end_info = false;
 			}
 			if(u.action != A_POSITION)
+			{
+				u.UpdateStaminaAction();
 				continue;
+			}
 		}
 
 		// aktualizuj akcjê
@@ -8576,6 +8596,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			assert(0);
 			break;
 		}
+
+		u.UpdateStaminaAction();
 	}
 }
 
@@ -8815,11 +8837,6 @@ Vec4 Game::GetLightColor()
 {
 	return Vec4(1, 1, 1, 1);
 	//return Vec4(0.5f,0.5f,0.5f,1);
-}
-
-inline bool CanRemoveBullet(const Bullet& b)
-{
-	return b.remove;
 }
 
 struct BulletCallback : public btCollisionWorld::ContactResultCallback
@@ -9229,7 +9246,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 	}
 
 	if(deletions)
-		RemoveElements(ctx.bullets, CanRemoveBullet);
+		RemoveElements(ctx.bullets, [](const Bullet& b) { return b.remove; });
 }
 
 void Game::SpawnDungeonColliders()
@@ -10778,6 +10795,7 @@ void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_wea
 		u.rot = rot;
 		u.animation = u.current_animation = ANI_STAND;
 		u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+		u.ani->groups[0].speed = 1.f;
 		BreakAction(u);
 		u.SetAnimationAtEnd();
 		if(u.in_building != -1)
@@ -11056,6 +11074,11 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		hitted_mat = hitted.GetShield().material;
 		blocked *= block_value;
 		dmg -= blocked;
+		float stamina = blocked;
+		stamina -= hitted.Get(Skill::SHIELD);
+		float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted.Get(Skill::SHIELD)) / 100);
+		stamina *= block_stamina_loss;
+		hitted.RemoveStamina(stamina);
 
 		// play sound
 		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
@@ -11075,25 +11098,29 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			hitted.player->Train(TrainWhat::BlockAttack, base_dmg / hitted.hpmax, attacker.level);
 
 		// pain animation & break blocking
-		if(attacker.attack_power >= 1.9f && !IS_SET(hitted.data->flags, F_DONT_SUFFER))
+		if(hitted.stamina < 0)
 		{
 			BreakAction(hitted);
 
-			if(hitted.action != A_POSITION)
-				hitted.action = A_PAIN;
-			else
-				hitted.animation_state = 1;
+			if(!IS_SET(hitted.data->flags, F_DONT_SUFFER))
+			{
+				if(hitted.action != A_POSITION)
+					hitted.action = A_PAIN;
+				else
+					hitted.animation_state = 1;
 
-			if(hitted.ani->ani->head.n_groups == 2)
-			{
-				hitted.ani->frame_end_info2 = false;
-				hitted.ani->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
-			}
-			else
-			{
-				hitted.ani->frame_end_info = false;
-				hitted.ani->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-				hitted.animation = ANI_PLAY;
+				if(hitted.ani->ani->head.n_groups == 2)
+				{
+					hitted.ani->frame_end_info2 = false;
+					hitted.ani->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+				}
+				else
+				{
+					hitted.ani->frame_end_info = false;
+					hitted.ani->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+					hitted.ani->groups[0].speed = 1.f;
+					hitted.animation = ANI_PLAY;
+				}
 			}
 		}
 
@@ -13015,7 +13042,7 @@ void Game::ClearGame()
 
 	draw_batch.Clear();
 
-	LeaveLocation(true);
+	LeaveLocation(true, false);
 
 	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && open_location == -1 && IsLocal() && !was_client)
 	{
@@ -15032,10 +15059,11 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 	ctx.dialog_wait = 1.f + float(strlen(ctx.dialog_text)) / 20;
 
 	int ani;
-	if(!ctx.talker->useable && ctx.talker->type == Unit::HUMAN && Rand() % 3 != 0)
+	if(!ctx.talker->useable && ctx.talker->data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
 	{
 		ani = Rand() % 2 + 1;
 		ctx.talker->ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		ctx.talker->ani->groups[0].speed = 1.f;
 		ctx.talker->animation = ANI_PLAY;
 		ctx.talker->action = A_ANIMATION;
 	}
@@ -16454,7 +16482,7 @@ void Game::InitQuests()
 {
 	QuestManager& quest_manager = QuestManager::Get();
 	vector<int> used;
-
+	
 	// goblins
 	quest_goblins = new Quest_Goblins;
 	quest_goblins->start_loc = GetRandomSettlement(used, 1);
@@ -18319,6 +18347,7 @@ void Game::UpdateGame2(float dt)
 								(*it)->HealPoison();
 								(*it)->live_state = Unit::ALIVE;
 								(*it)->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+								(*it)->ani->groups[0].speed = 1.f;
 								(*it)->action = A_ANIMATION;
 								if((*it)->IsAI())
 									(*it)->ai->Reset();
@@ -18361,6 +18390,7 @@ void Game::UpdateGame2(float dt)
 							(*it)->HealPoison();
 							(*it)->live_state = Unit::ALIVE;
 							(*it)->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+							(*it)->ani->groups[0].speed = 1.f;
 							(*it)->action = A_ANIMATION;
 							if((*it)->IsAI())
 								(*it)->ai->Reset();
@@ -18551,6 +18581,7 @@ void Game::UpdateGame2(float dt)
 					(*it)->HealPoison();
 					(*it)->live_state = Unit::ALIVE;
 					(*it)->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+					(*it)->ani->groups[0].speed = 1.f;
 					(*it)->action = A_ANIMATION;
 					if((*it)->IsAI())
 						(*it)->ai->Reset();
@@ -19862,6 +19893,7 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 			u.action = A_ANIMATION2;
 			u.animation = ANI_PLAY;
 			u.ani->Play(bu.anim, PLAY_PRIO1, 0);
+			u.ani->groups[0].speed = 1.f;
 			u.useable = &use;
 			u.useable->user = &u;
 			u.target_pos = u.pos;
@@ -19896,7 +19928,7 @@ SOUND Game::GetTalkSound(Unit& u)
 {
 	if(IS_SET(u.data->flags2, F2_XAR))
 		return sXarTalk;
-	else if(u.type == Unit::HUMAN)
+	else if(u.data->type == UNIT_TYPE::HUMAN)
 		return sTalk[Rand() % 4];
 	else if(IS_SET(u.data->flags2, F2_ORC_SOUNDS))
 		return sOrcTalk;
@@ -19915,10 +19947,11 @@ void Game::UnitTalk(Unit& u, cstring text)
 	game_gui->AddSpeechBubble(&u, text);
 
 	int ani = 0;
-	if(u.type == Unit::HUMAN && Rand() % 3 != 0)
+	if(u.data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
 	{
 		ani = Rand() % 2 + 1;
 		u.ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		u.ani->groups[0].speed = 1.f;
 		u.animation = ANI_PLAY;
 		u.action = A_ANIMATION;
 	}
@@ -20720,6 +20753,7 @@ void Game::DropGold(int ile)
 	// animacja wyrzucania
 	pc->unit->action = A_ANIMATION;
 	pc->unit->ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	pc->unit->ani->groups[0].speed = 1.f;
 	pc->unit->ani->frame_end_info = false;
 
 	if(IsLocal())

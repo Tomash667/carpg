@@ -205,6 +205,7 @@ struct WeaponTypeInfo
 	cstring name;
 	float str2dmg, dex2dmg, power_speed, base_speed, dex_speed;
 	Skill skill;
+	float stamina;
 };
 extern WeaponTypeInfo weapon_type_info[];
 
@@ -311,6 +312,7 @@ enum ConsumeEffect
 	E_ANTIMAGIC, // gives 50% magic resistance for Y sec
 	E_FOOD, // heals 1 hp/sec for Y sec (stack)
 	E_GREEN_HAIR, // turn hair into green
+	E_STAMINA, // regenerate stamina
 };
 
 //-----------------------------------------------------------------------------

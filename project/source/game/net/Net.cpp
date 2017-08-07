@@ -516,7 +516,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	stream.Write(unit.netid);
 
 	// human data
-	if(unit.type == Unit::HUMAN)
+	if(unit.data->type == UNIT_TYPE::HUMAN)
 	{
 		stream.WriteCasted<byte>(unit.human_data->hair);
 		stream.WriteCasted<byte>(unit.human_data->beard);
@@ -526,7 +526,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	}
 
 	// items
-	if(unit.type != Unit::ANIMAL)
+	if(unit.data->type != UNIT_TYPE::ANIMAL)
 	{
 		byte zero = 0;
 		if(unit.HaveWeapon())
@@ -1391,16 +1391,9 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		Error("Missing base unit id '%s'!", BUF);
 		return false;
 	}
-
-	if(IS_SET(unit.data->flags, F_HUMAN))
-		unit.type = Unit::HUMAN;
-	else if(IS_SET(unit.data->flags, F_HUMANOID))
-		unit.type = Unit::HUMANOID;
-	else
-		unit.type = Unit::ANIMAL;
-
+	
 	// human data
-	if(unit.type == Unit::HUMAN)
+	if(unit.data->type == UNIT_TYPE::HUMAN)
 	{
 		unit.human_data = new Human;
 		if(!stream.ReadCasted<byte>(unit.human_data->hair)
@@ -1437,7 +1430,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 
 	// equipped items
-	if(unit.type != Unit::ANIMAL)
+	if(unit.data->type != UNIT_TYPE::ANIMAL)
 	{
 		for(int i = 0; i < SLOT_MAX; ++i)
 		{
@@ -1816,6 +1809,7 @@ void Game::SendPlayerData(int index)
 	unit.stats.Write(stream);
 	unit.unmod_stats.Write(stream);
 	stream.Write(unit.gold);
+	stream.Write(unit.stamina);
 	unit.player->Write(stream);
 
 	// other team members
@@ -1894,10 +1888,11 @@ bool Game::ReadPlayerData(BitStream& stream)
 
 	unit->player->Init(*unit, true);
 
-	if(!unit->stats.Read(stream) ||
-		!unit->unmod_stats.Read(stream) ||
-		!stream.Read(unit->gold) ||
-		!pc->Read(stream))
+	if(!unit->stats.Read(stream)
+		|| !unit->unmod_stats.Read(stream)
+		|| !stream.Read(unit->gold)
+		|| !stream.Read(unit->stamina)
+		|| !pc->Read(stream))
 	{
 		Error("Read player data: Broken stats.");
 		return false;
@@ -1910,6 +1905,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 	unit->weight = 0;
 	unit->CalculateLoad();
 	unit->RecalculateWeight();
+	unit->stamina_max = unit->CalculateMaxStamina();
 
 	unit->player->credit = credit;
 	unit->player->free_days = free_days;
@@ -2417,6 +2413,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.animation_state = 1;
 							unit.ani->groups[1].speed = unit.attack_power + unit.GetAttackSpeed();
 							unit.attack_power += 1.f;
+							unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * ((unit.attack_power - 1.f) / 2 + 1.f));
 						}
 						else
 						{
@@ -2460,6 +2457,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 								unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
 							unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
 							unit.bow_instance->groups[0].speed = unit.ani->groups[1].speed;
+							unit.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 						}
 						if(type == AID_Shoot)
 						{
@@ -2488,6 +2486,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.ani->frame_end_info2 = false;
 							unit.hitted = false;
 							unit.player->Train(TrainWhat::BashStart, 0.f, 0);
+							unit.RemoveStamina(50.f);
 						}
 						break;
 					case AID_RunningAttack:
@@ -2502,6 +2501,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.ani->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
+							unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * 1.5f);
 						}
 						break;
 					case AID_StopBlock:
@@ -2611,6 +2611,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 					unit.action = A_ANIMATION;
 					unit.ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+					unit.ani->groups[0].speed = 1.f;
 					unit.ani->frame_end_info = false;
 					item->pos = unit.pos;
 					item->pos.x -= sin(unit.rot)*0.25f;
@@ -2657,6 +2658,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				unit.action = A_PICKUP;
 				unit.animation = ANI_PLAY;
 				unit.ani->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				unit.ani->groups[0].speed = 1.f;
 				unit.ani->frame_end_info = false;
 
 				// send pickup acceptation
@@ -3224,6 +3226,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				else
 				{
 					unit.ani->Play(unit.data->idles->at(index).c_str(), PLAY_ONCE, 0);
+					unit.ani->groups[0].speed = 1.f;
 					unit.ani->frame_end_info = false;
 					unit.animation = ANI_IDLE;
 					// send info to other players
@@ -3426,6 +3429,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						unit.action = A_ANIMATION2;
 						unit.animation = ANI_PLAY;
 						unit.ani->Play(base.anim, PLAY_PRIO1, 0);
+						unit.ani->groups[0].speed = 1.f;
 						unit.useable = useable;
 						unit.target_pos = unit.pos;
 						unit.target_pos2 = useable->pos;
@@ -3671,10 +3675,18 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		case NetChange::CHEAT_HEAL:
 			if(info.devmode)
 			{
-				unit.hp = unit.hpmax;
-				NetChange& c = Add1(net_changes);
-				c.type = NetChange::UPDATE_HP;
-				c.unit = &unit;
+				if(unit.hp != unit.hpmax)
+				{
+					unit.hp = unit.hpmax;
+					NetChange& c = Add1(net_changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = &unit;
+				}
+				if(unit.stamina != unit.stamina_max)
+				{
+					unit.stamina = unit.stamina_max;
+					info.update_flags |= PlayerInfo::UF_STAMINA;
+				}
 			}
 			else
 			{
@@ -3733,10 +3745,19 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					else
 					{
-						target->hp = target->hpmax;
-						NetChange& c = Add1(net_changes);
-						c.type = NetChange::UPDATE_HP;
-						c.unit = target;
+						if(target->hp != target->hpmax)
+						{
+							target->hp = target->hpmax;
+							NetChange& c = Add1(net_changes);
+							c.type = NetChange::UPDATE_HP;
+							c.unit = target;
+						}
+						if(target->stamina != target->stamina_max)
+						{
+							target->stamina = target->stamina_max;
+							if(target->player && target->player != pc)
+								GetPlayerInfo(target->player).update_flags |= PlayerInfo::UF_STAMINA;
+						}
 					}
 				}
 			}
@@ -4589,6 +4610,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					// animation
 					unit.action = A_ANIMATION;
 					unit.ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+					unit.ani->groups[0].speed = 1.f;
 					unit.ani->frame_end_info = false;
 
 					// create item
@@ -4676,7 +4698,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					world_pos = loc.pos;
 					if(open_location != -1)
 					{
-						LeaveLocation();
+						LeaveLocation(false, false);
 						open_location = -1;
 					}
 					// inform other players
@@ -5360,6 +5382,8 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 		stream.Write(info.u->alcohol);
 	if(IS_SET(info.update_flags, PlayerInfo::UF_BUFFS))
 		stream.WriteCasted<byte>(info.buffs);
+	if(IS_SET(info.update_flags, PlayerInfo::UF_STAMINA))
+		stream.Write(info.u->stamina);
 
 	return changes;
 }
@@ -5965,6 +5989,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						unit->action = A_ANIMATION;
 						unit->ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+						unit->ani->groups[0].speed = 1.f;
 						unit->ani->frame_end_info = false;
 					}
 				}
@@ -6008,6 +6033,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit->action = A_PICKUP;
 						unit->animation = ANI_PLAY;
 						unit->ani->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+						unit->ani->groups[0].speed = 1.f;
 						unit->ani->frame_end_info = false;
 					}
 				}
@@ -6126,6 +6152,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						{
 							unit->ani->frame_end_info = false;
 							unit->ani->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+							unit->ani->groups[0].speed = 1.f;
 							unit->animation = ANI_PLAY;
 						}
 					}
@@ -6269,6 +6296,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else
 					{
 						unit->ani->Play(unit->data->idles->at(animation_index).c_str(), PLAY_ONCE, 0);
+						unit->ani->groups[0].speed = 1.f;
 						unit->ani->frame_end_info = false;
 						unit->animation = ANI_IDLE;
 					}
@@ -6334,6 +6362,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						if(animation != 0)
 						{
 							unit->ani->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+							unit->ani->groups[0].speed = 1.f;
 							unit->animation = ANI_PLAY;
 							unit->action = A_ANIMATION;
 						}
@@ -6444,7 +6473,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Error("Update client: HAIR_COLOR, missing unit %d.", netid);
 						StreamError();
 					}
-					else if(unit->type != Unit::HUMAN)
+					else if(unit->data->type != UNIT_TYPE::HUMAN)
 					{
 						Error("Update client: HAIR_COLOR, unit %d (%s) is not human.", netid, unit->data->id.c_str());
 						StreamError();
@@ -6513,6 +6542,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							pc->unit->HealPoison();
 							pc->unit->live_state = Unit::ALIVE;
 							pc->unit->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+							pc->unit->ani->groups[0].speed = 1.f;
 							pc->unit->action = A_ANIMATION;
 						}
 					}
@@ -6849,6 +6879,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					unit->action = A_ANIMATION2;
 					unit->animation = ANI_PLAY;
 					unit->ani->Play(state == 2 ? "czyta_papiery" : base.anim, PLAY_PRIO1, 0);
+					unit->ani->groups[0].speed = 1.f;
 					unit->useable = useable;
 					unit->target_pos = unit->pos;
 					unit->target_pos2 = useable->pos;
@@ -7637,6 +7668,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							unit->ani->frame_end_info = false;
 							unit->animation = ANI_PLAY;
 							unit->ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							unit->ani->groups[0].speed = 1.f;
 						}
 					}
 				}
@@ -8144,7 +8176,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					world_pos = loc.pos;
 					if(open_location != -1)
 					{
-						LeaveLocation();
+						LeaveLocation(false, false);
 						open_location = -1;
 					}
 				}
@@ -9220,6 +9252,17 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			if(!stream.ReadCasted<byte>(pc->player_info->buffs))
 			{
 				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_BUFFS.");
+				StreamError();
+				return true;
+			}
+		}
+		
+		// stamina
+		if(IS_SET(flags, PlayerInfo::UF_STAMINA))
+		{
+			if(!stream.Read(pc->unit->stamina))
+			{
+				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_STAMINA.");
 				StreamError();
 				return true;
 			}

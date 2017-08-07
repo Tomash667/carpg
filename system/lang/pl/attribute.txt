@@ -8,13 +8,13 @@ attribute str {
 }
 attribute end {
 	name "Kondycja"
-	//desc "\tZwiêksza zdrowie i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz, koncentracja, sztuka przetrwania, sza³."
-	desc "\tZwiêksza zdrowie i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz."
+	//desc "\tZwiêksza zdrowie, wytrzyma³oœæ i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz, koncentracja, sztuka przetrwania, sza³."
+	desc "\tZwiêksza zdrowie, wytrzyma³oœæ i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz."
 }
 attribute dex {
 	name "Zrêcznoœæ"
-	//desc "\tZwiêksza szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych.\n\tBieganie i walka trenuje zrêcznoœæ.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, krótkie ostrze, d³ugie ostrze, ³uk, walka bez broni, tarcza, lekki pancerz, œredni pancerz, skradanie, pu³apki, kradzie¿, rzemios³o."
-	desc "\tZwiêksza szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych.\n\tBieganie i walka trenuje zrêcznoœæ.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, krótkie ostrze, d³ugie ostrze, ³uk, tarcza, lekki pancerz, œredni pancerz."
+	//desc "\tZwiêksza wytrzyma³oœæ, szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych.\n\tBieganie i walka trenuje zrêcznoœæ.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, krótkie ostrze, d³ugie ostrze, ³uk, walka bez broni, tarcza, lekki pancerz, œredni pancerz, skradanie, pu³apki, kradzie¿, rzemios³o."
+	desc "\tZwiêksza wytrzyma³oœæ, szybkoœæ ataku, ruchu i obracania oraz obra¿enia od broni lekkich i dystansowych.\n\tBieganie i walka trenuje zrêcznoœæ.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, krótkie ostrze, d³ugie ostrze, ³uk, tarcza, lekki pancerz, œredni pancerz."
 }
 attribute int {
 	name "Inteligencja"

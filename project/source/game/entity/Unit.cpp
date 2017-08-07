@@ -10,6 +10,7 @@
 #include "Team.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
+const float Unit::STAMINA_BOW_ATTACK = 100.f;
 
 //=================================================================================================
 Unit::~Unit()
@@ -28,6 +29,12 @@ float Unit::CalculateMaxHp() const
 		return data->hp_bonus * (1.f + (v - 50) / 50);
 	else
 		return data->hp_bonus * (1.f - (50 - v) / 100);
+}
+
+//=================================================================================================
+float Unit::CalculateMaxStamina() const
+{
+	return 50.f + (float)data->stamina_bonus + 2.5f * Get(Attribute::END) + 2.f * Get(Attribute::DEX);
 }
 
 //=================================================================================================
@@ -193,6 +200,7 @@ bool Unit::DropItem(int index)
 
 	action = A_ANIMATION;
 	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	ani->groups[0].speed = 1.f;
 	ani->frame_end_info = false;
 
 	if(game.IsLocal())
@@ -256,6 +264,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 
 	action = A_ANIMATION;
 	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	ani->groups[0].speed = 1.f;
 	ani->frame_end_info = false;
 
 	if(game.IsLocal())
@@ -310,6 +319,7 @@ bool Unit::DropItems(int index, uint count)
 
 	action = A_ANIMATION;
 	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	ani->groups[0].speed = 1.f;
 	ani->frame_end_info = false;
 
 	if(game.IsLocal())
@@ -688,6 +698,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_REGENERATE:
 	case E_NATURAL:
 	case E_ANTIMAGIC:
+	case E_STAMINA:
 		{
 			Effect& e = Add1(effects);
 			e.effect = item.effect;
@@ -765,8 +776,10 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 //=================================================================================================
 void Unit::UpdateEffects(float dt)
 {
-	float best_reg = 0.f, food_heal = 0.f, poison_dmg = 0.f, alco_sum = 0.f;
+	Game& game = Game::Get();
+	float best_reg = 0.f, food_heal = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f;
 
+	// update effects timer
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
@@ -787,13 +800,16 @@ void Unit::UpdateEffects(float dt)
 		case E_FOOD:
 			food_heal += dt;
 			break;
+		case E_STAMINA:
+			if(it->power > best_stamina)
+				best_stamina = it->power;
+			break;
 		}
 		if((it->time -= dt) <= 0.f)
 			_to_remove.push_back(index);
 	}
 
-	Game& game = Game::Get();
-
+	// healing from food
 	if((best_reg > 0.f || food_heal > 0.f) && hp != hpmax)
 	{
 		float natural = 1.f;
@@ -809,6 +825,7 @@ void Unit::UpdateEffects(float dt)
 		}
 	}
 
+	// update alcohol value
 	if(alco_sum > 0.f)
 	{
 		alcohol += alco_sum*dt;
@@ -826,6 +843,7 @@ void Unit::UpdateEffects(float dt)
 			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_ALCOHOL;
 	}
 
+	// update poison damage
 	if(poison_dmg != 0.f)
 		game.GiveDmg(game.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, DMG_NO_BLOOD);
 	if(IsPlayer())
@@ -835,6 +853,52 @@ void Unit::UpdateEffects(float dt)
 		player->last_dmg_poison = poison_dmg;
 	}
 
+	// restore stamina
+	if(stamina != stamina_max && (stamina_action != SA_DONT_RESTORE || best_stamina > 0.f))
+	{
+		float stamina_restore;
+		switch(stamina_action)
+		{
+		case SA_RESTORE_MORE:
+			stamina_restore = 30.f;
+			break;
+		case SA_RESTORE:
+		default:
+			stamina_restore = 20.f;
+			break;
+		case SA_RESTORE_SLOW:
+			stamina_restore = 15.f;
+			break;
+		case SA_DONT_RESTORE:
+			stamina_restore = 0.f;
+			break;
+		}
+		switch(GetLoadState())
+		{
+		case LS_NONE:
+		case LS_LIGHT:
+		case LS_MEDIUM:
+			break;
+		case LS_HEAVY:
+			stamina_restore -= 1.f;
+			break;
+		case LS_OVERLOADED:
+			stamina_restore -= 2.5f;
+			break;
+		case LS_MAX_OVERLOADED:
+			stamina_restore -= 5.f;
+			break;
+		}
+		if(stamina_restore < 0)
+			stamina_restore = 0;
+		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt;
+		if(stamina > stamina_max)
+			stamina = stamina_max;
+		if(game.IsServer() && player && player != game.pc)
+			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
+	}
+
+	// remove expired effects
 	while(!_to_remove.empty())
 	{
 		index = _to_remove.back();
@@ -856,6 +920,8 @@ void Unit::EndEffects(int days, int* best_nat)
 		*best_nat = 0;
 
 	alcohol = 0.f;
+	stamina = stamina_max;
+
 	if(effects.empty())
 		return;
 
@@ -883,6 +949,7 @@ void Unit::EndEffects(int days, int* best_nat)
 			break;
 		case E_ALCOHOL:
 		case E_ANTIMAGIC:
+		case E_STAMINA:
 			_to_remove.push_back(index);
 			break;
 		case E_NATURAL:
@@ -1084,6 +1151,14 @@ void Unit::RecalculateHp()
 }
 
 //=================================================================================================
+void Unit::RecalculateStamina()
+{
+	float p = stamina / stamina_max;
+	stamina_max = CalculateMaxStamina();
+	stamina = stamina_max * p;
+}
+
+//=================================================================================================
 float Unit::CalculateShieldAttack() const
 {
 	assert(HaveShield());
@@ -1218,7 +1293,9 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
 	WriteFile(file, &hp, sizeof(hp), &tmp, nullptr);
 	WriteFile(file, &hpmax, sizeof(hpmax), &tmp, nullptr);
-	WriteFile(file, &type, sizeof(type), &tmp, nullptr);
+	WriteFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
+	WriteFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
+	WriteFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
 	WriteFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileWriter f(file);
 	stats.Save(f);
@@ -1245,7 +1322,7 @@ void Unit::Save(HANDLE file, bool local)
 	int guard_refid = (guard_target ? guard_target->refid : -1);
 	WriteFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);
 
-	assert((human_data != nullptr) == (type == HUMAN));
+	assert((human_data != nullptr) == (data->type == UNIT_TYPE::HUMAN));
 	if(human_data)
 	{
 		byte b = 1;
@@ -1415,7 +1492,23 @@ void Unit::Load(HANDLE file, bool local)
 	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
 	ReadFile(file, &hp, sizeof(hp), &tmp, nullptr);
 	ReadFile(file, &hpmax, sizeof(hpmax), &tmp, nullptr);
-	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
+	if(LOAD_VERSION >= V_CURRENT)
+	{
+		ReadFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
+		ReadFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
+		ReadFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
+	}
+	else
+	{
+		stamina_max = CalculateMaxStamina();
+		stamina = stamina_max;
+		stamina_action = SA_RESTORE_MORE;
+	}
+	if(LOAD_VERSION < V_CURRENT)
+	{
+		int old_type;
+		ReadFile(file, &old_type, sizeof(old_type), &tmp, nullptr);
+	}
 	if(LOAD_VERSION < V_0_2_10)
 	{
 		int weapon, bow, shield, armor;
@@ -1580,7 +1673,7 @@ void Unit::Load(HANDLE file, bool local)
 	}
 	else
 	{
-		assert(type != HUMAN);
+		assert(data->type != UNIT_TYPE::HUMAN);
 		human_data = nullptr;
 	}
 
@@ -1886,7 +1979,7 @@ void Unit::ReequipItems()
 	}
 
 	// add item if unit have none
-	if(type == HUMANOID && !HaveWeapon())
+	if(data->type == UNIT_TYPE::HUMANOID && !HaveWeapon())
 		AddItemAndEquipIfNone(UnitHelper::GetBaseWeapon(*this));
 }
 
@@ -2423,6 +2516,9 @@ int Unit::GetBuffs() const
 		case E_ANTIMAGIC:
 			b |= BUFF_ANTIMAGIC;
 			break;
+		case E_STAMINA:
+			b |= BUFF_STAMINA;
+			break;
 		}
 	}
 
@@ -2508,39 +2604,67 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 	{
 	case Attribute::STR:
 		{
-			// hp depends on str
-			RecalculateHp();
-			if(!fake_unit)
+			// hp/load depends on str
+			Game& game = Game::Get();
+			if(game.IsLocal())
 			{
-				Game& game = Game::Get();
-				if(game.IsServer())
+				RecalculateHp();
+				if(!fake_unit)
 				{
-					NetChange& c = Add1(game.net_changes);
-					c.type = NetChange::UPDATE_HP;
-					c.unit = this;
+					if(game.IsServer())
+					{
+						NetChange& c = Add1(game.net_changes);
+						c.type = NetChange::UPDATE_HP;
+						c.unit = this;
+					}
 				}
 			}
-			// max load depends on str
+			else
+				hpmax = CalculateMaxHp();
 			CalculateLoad();
 		}
 		break;
 	case Attribute::END:
 		{
-			// hp depends on end
-			RecalculateHp();
-			if(!fake_unit)
+			// hp/stamina depends on end
+			Game& game = Game::Get();
+			if(game.IsLocal())
 			{
-				Game& game = Game::Get();
-				if(game.IsServer())
+				RecalculateHp();
+				RecalculateStamina();
+				if(!fake_unit)
 				{
-					NetChange& c = Add1(game.net_changes);
-					c.type = NetChange::UPDATE_HP;
-					c.unit = this;
+					if(game.IsServer())
+					{
+						NetChange& c = Add1(game.net_changes);
+						c.type = NetChange::UPDATE_HP;
+						c.unit = this;
+						if(IsPlayer() && player != game.pc)
+							game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
+					}
 				}
+			}
+			else
+			{
+				hpmax = CalculateMaxHp();
+				stamina_max = CalculateMaxStamina();
 			}
 		}
 		break;
 	case Attribute::DEX:
+		{
+			// stamina depends on dex
+			Game& game = Game::Get();
+			if(game.IsLocal())
+			{
+				RecalculateStamina();
+				if(!fake_unit && IsPlayer() && player != game.pc)
+					game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
+			}
+			else
+				stamina_max = CalculateMaxStamina();
+		}
+		break;
 	case Attribute::INT:
 	case Attribute::WIS:
 	case Attribute::CHA:
@@ -2576,19 +2700,6 @@ void Unit::RecalculateStat(Skill s, bool apply)
 	// apply effect modifiers
 	ValueBuffer buf;
 	SkillInfo& info = g_skills[id];
-	/*for(Effect2& e : effects2)
-	{
-		if(e.e->type == EffectType::Skill)
-		{
-			if(e.e->a == id)
-				buf.Add(e.e->b);
-		}
-		else if(e.e->type == EffectType::SkillPack)
-		{
-			if(e.e->a == (int)info.pack)
-				buf.Add(e.e->b);
-		}
-	}*/
 	if(IsPlayer())
 		value += buf.Get(state);
 	else
@@ -2687,13 +2798,6 @@ void Unit::CalculateStats()
 int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
 {
 	ValueBuffer buf;
-
-	/*for(const Effect2& e : effects2)
-	{
-		if(e.e->type == type && e.e->a == id)
-			buf.Add(e.e->b);
-	}*/
-
 	if(state)
 		return buf.Get(*state);
 	else
@@ -2746,13 +2850,6 @@ int Unit::Get(SubSkill ss) const
 	SubSkillInfo& info = g_sub_skills[id];
 	int v = Get(info.skill);
 	ValueBuffer buf;
-
-	/*for(const Effect2& e : effects2)
-	{
-		if(e.e->type == EffectType::SubSkill && e.e->a == id)
-			buf.Add(e.e->b);
-	}*/
-
 	return v + buf.Get();
 }
 
@@ -2875,4 +2972,78 @@ void Unit::StartAutoTalk(bool leader, GameDialog* dialog)
 		auto_talk_timer = 0.f;
 	}
 	auto_talk_dialog = dialog;
+}
+
+//=================================================================================================
+void Unit::UpdateStaminaAction()
+{
+	if(useable)
+	{
+		if(useable->GetBase()->stamina_slow_restore)
+			stamina_action = SA_RESTORE_SLOW;
+		else
+			stamina_action = SA_RESTORE_MORE;
+	}
+	else
+	{
+		switch(action)
+		{
+		case A_TAKE_WEAPON:
+		case A_PICKUP:
+		case A_POSITION:
+		case A_PAIN:
+		case A_CAST:
+			stamina_action = SA_RESTORE;
+			break;
+		case A_SHOOT:
+			if(animation_state < 2)
+				stamina_action = SA_RESTORE_SLOW;
+			else
+				stamina_action = SA_RESTORE;
+			break;
+		case A_EAT:
+		case A_DRINK:
+		case A_ANIMATION:
+		case A_ANIMATION2:
+		default:
+			stamina_action = SA_RESTORE_MORE;
+			break;
+		case A_BLOCK:
+			stamina_action = SA_RESTORE_SLOW;
+			break;
+		case A_BASH:
+		case A_ATTACK:
+			stamina_action = SA_DONT_RESTORE;
+			break;
+		}
+
+		switch(animation)
+		{
+		case ANI_WALK:
+		case ANI_WALK_TYL:
+		case ANI_LEFT:
+		case ANI_RIGHT:
+		case ANI_KNEELS:
+			if(stamina_action == SA_RESTORE_MORE)
+				stamina_action = SA_RESTORE;
+			break;
+		case ANI_RUN:
+			if(stamina_action > SA_RESTORE_SLOW)
+				stamina_action = SA_RESTORE_SLOW;
+			break;
+		}
+	}
+}
+
+//=================================================================================================
+void Unit::RemoveStamina(float value)
+{
+	stamina -= value;
+	if(player)
+	{
+		player->Train(TrainWhat::Stamina, value, 0);
+		Game& game = Game::Get();
+		if(game.pc != player)
+			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
+	}
 }

@@ -423,7 +423,7 @@ struct NetChangePlayer
 enum AttackId
 {
 	AID_Attack,
-	AID_PowerAttack,
+	AID_PowerAttack, // or just start holding attack key
 	AID_Shoot,
 	AID_StartShoot,
 	AID_Block,

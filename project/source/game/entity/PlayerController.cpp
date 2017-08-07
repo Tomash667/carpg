@@ -292,6 +292,8 @@ void PlayerController::Rest(int days, bool resting)
 {
 	// up³yw czasu efektów
 	int best_nat;
+	float prev_hp = unit->hp,
+		prev_stamina = unit->stamina;
 	unit->EndEffects(days, &best_nat);
 
 	// regeneracja hp
@@ -313,15 +315,21 @@ void PlayerController::Rest(int days, bool resting)
 		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 
-		Game& game = Game::Get();
-		if(game.IsOnline())
+		Train(Attribute::END, int(heal));
+	}
+
+	Game& game = Game::Get();
+	if(game.IsOnline())
+	{
+		if(unit->hp != prev_hp)
 		{
 			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::UPDATE_HP;
 			c.unit = unit;
 		}
 
-		Train(Attribute::END, int(heal));
+		if(unit->stamina != prev_stamina && this != game.pc)
+			game.GetPlayerInfo(this).update_flags |= PlayerInfo::UF_STAMINA;
 	}
 
 	last_dmg = 0;
@@ -649,6 +657,10 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 		break;
 	case TrainWhat::Trade:
 		TrainMod(Attribute::CHA, 100.f);
+		break;
+	case TrainWhat::Stamina:
+		TrainMod(Attribute::END, value * 0.75f);
+		TrainMod(Attribute::DEX, value * 0.5f);
 		break;
 	default:
 		assert(0);

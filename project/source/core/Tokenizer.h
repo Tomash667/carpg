@@ -14,7 +14,6 @@ namespace tokenizer
 		T_INT,
 		T_FLOAT,
 		T_KEYWORD,
-		T_BROKEN_NUMBER,
 
 		T_KEYWORD_GROUP,
 		T_NUMBER,
@@ -440,12 +439,15 @@ namespace tokenizer
 		}
 		int IsKeywordGroup(std::initializer_list<int> const & groups) const;
 		bool IsBool() const { return IsInt() && (normal_seek._int == 0 || normal_seek._int == 1); }
-		bool IsBrokenNumber() const { return IsToken(T_BROKEN_NUMBER); }
 
 		//===========================================================================================================================
 		static cstring GetTokenName(TOKEN _tt);
 		// get formatted text of current token
 		cstring GetTokenValue(const SeekData& s) const;
+		cstring GetTokenValue() const
+		{
+			return GetTokenValue(normal_seek);
+		}
 
 		//===========================================================================================================================
 		void AssertToken(TOKEN _tt) const
@@ -508,7 +510,6 @@ namespace tokenizer
 			if(!IsBool())
 				Unexpected(T_BOOL);
 		}
-		void AssertBrokenNumber() const { AssertToken(T_BROKEN_NUMBER); }
 
 		//===========================================================================================================================
 		TOKEN GetToken() const
@@ -843,7 +844,7 @@ namespace tokenizer
 	private:
 		bool DoNext(SeekData& s, bool return_eol);
 		void CheckItemOrKeyword(SeekData& s, const string& item);
-		void ParseNumber(SeekData& s, uint pos2, bool negative);
+		bool ParseNumber(SeekData& s, uint pos2, bool negative);
 		uint FindFirstNotOf(SeekData& s, cstring _str, uint _start);
 		uint FindFirstOf(SeekData& s, cstring _str, uint _start);
 		uint FindFirstOfStr(SeekData& s, cstring _str, uint _start);

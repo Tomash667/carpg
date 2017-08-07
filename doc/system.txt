@@ -102,34 +102,6 @@ RENDEROWANIE / RENDER TARGETS (MS = multisampling)
 	7) Wyrenderuj post effect
 5) Dla MS wygl¹da podobnie tylko ¿e RenderTarget = sPostEffect[?] i trzeba u¿ywaæ StrechRect
 
-=====================================================================================================
-ATRYBUTY POSTACI
-=====================================================================================================
-10
-20
-30
-40
-50 - œrednia dla cz-owieka
-60
-70
-80
-90
-100
-
-=====================================================================================================
-UMIEJ|TNOŒCI POSTACI
-=====================================================================================================
-0 - nieznana
-10 - uczeñ
-20 - bieg-y
-30
-40
-50
-60
-70
-80
-90
-100 - mistrz
 
 =====================================================================================================
 MAPA W KAFELKACH
@@ -149,6 +121,8 @@ O-----> +X
 |
 |/ -Z
 
+
+=====================================================================================================
 EKSPORTER
 + ostrzeªenie o edit mode
 + ostrzeªenie o translate, scale, rot ? albo ustawianie
@@ -157,14 +131,8 @@ EKSPORTER
 + instancing obiektów (okna w budynkach)
 + poprawne eksportowanie animacji gdy nie jest ustawione na base
 
-PLIKI KONFIGURACYJNE W 0.3:
-aaa:
-	b: 3
-	c: tel
-	d: "aaa"
-ggg: [1,2,3]
-ccc: ddd: ["a", b: [1, 2, 5]]
 
+=====================================================================================================
 ¯YWIO£Y
 
            Ogieñ
@@ -180,6 +148,8 @@ woda - zimno, kwas
 powietrze - elektrycznoœæ, trucizna
 ziemia - metal
 
+
+=====================================================================================================
 KIERUNEK ZWRACANY PRZEZ angle()
 			PI/2
 	 3/4PI  /|\
@@ -195,6 +165,8 @@ KIERUNEK ZWRACANY PRZEZ angle()
 	5/4 PI  \|/     7/4 PI
            3/2 PI
 
+		   
+=====================================================================================================
 -----------------------------------------------
   SERWER             |    KLIENT
 ---------------------+-------------------------
@@ -208,7 +180,8 @@ KIERUNEK ZWRACANY PRZEZ angle()
                      | ID_READY
  ID_START            |
 
-------------------------
+ 
+=====================================================================================================
 odpoczynek u klienta
 SERWER		KLIENT
 dialog
@@ -273,6 +246,8 @@ std::vector<*>{
 	)
 }
 
+
+=====================================================================================================
 NIEU¯YTE ZASOBY:
 + Leinnan
 	* obiekty/
@@ -308,35 +283,15 @@ NIEU¯YTE ZASOBY:
 	* UberPack-1.zip
 	* bin/work/forge-final-v2
 
+
+=====================================================================================================
 przy debugowaniu w windbg
 symbols: srv*c:\symbols*http://msdl.microsoft.com/download/symbols
 images: c:\symbols
 .symopt+ 0x40
 
 
-uk³ad klas gui
-
-class XControl : public Control
-{
-public:
-	// enumy i typy
-	
-	// konstrukory/destruktory
-	
-	// funkcje
-	
-	// get
-	
-	// set
-	
-protected:
-private:
-	// funkcje
-	
-	// zmienne
-};
-
-
+=====================================================================================================
 http://gamedev.stackexchange.com/questions/14309/how-to-develop-rpg-damage-formulas
 Creating formulas like this requires knowledge of elementary mathematical functions - the things you learned about in Algebra and Pre-calculus class.
 

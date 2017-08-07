@@ -1,13 +1,15 @@
-// typ broni
+// stats
+hp = "Zdrowie"
+stamina = "Wytrzyma³oœæ"
+invalidArmor = "Nie pasuje"
+
+// weapon types
 wt_shortBlade = "Krótkie ostrze"
 wt_longBlade = "D³ugie ostrze"
 wt_blunt = "Broñ obuchowa"
 wt_axe = "Topór"
 
-// typ pancerza
-invalidArmor = "Nie pasuje"
-
-// u¿ywalne obiekty
+// useable objects
 u_chair = "Krzes³o"
 u_bench = "£awa"
 u_anvil = "Kowad³o"
@@ -18,7 +20,7 @@ u_throne = "Tron"
 u_stool = "Sto³ek"
 u_bench_dir = "£awa"
 
-// rodzaje wrogów
+// enemy types
 sg_goblins = "gobliny"
 sg_orcs = "orkowie"
 sg_bandits = "bandyci"
@@ -31,9 +33,10 @@ sg_evils = "nieumarli"
 sg_unk = "nieznani"
 
 // buffs
-buffPoison = "Zatrucie"
-buffAlcohol = "Alkohol"
-buffRegeneration = "Regeneracja"
-buffNatural = "Naturalne leczenie"
-buffFood = "Jedzenie"
-buffAntimagic = "Antymagia"
+buff_poison = "Zatrucie"
+buff_alcohol = "Alkohol"
+buff_regeneration = "Regeneracja"
+buff_natural = "Naturalne leczenie"
+buff_food = "Jedzenie"
+buff_antimagic = "Antymagia"
+buff_stamina = "Przywracanie wytrzyma³oœci"

@@ -19,12 +19,12 @@ public:
 		progress = _progress;
 	}
 
-	void SetProgress(float _progress, const AnyString& str)
+	void SetProgress(float _progress, cstring str)
 	{
 		assert(_progress >= 0.f && _progress <= 1.f);
 		progress = _progress;
-		if(str.s != nullptr)
-			text = str.s;
+		if(str != nullptr)
+			text = str;
 		else
 			text.clear();
 	}

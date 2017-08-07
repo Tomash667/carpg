@@ -10,6 +10,7 @@
 #include "PlayerController.h"
 #include "Useable.h"
 #include "Effect.h"
+#include "Buff.h"
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
@@ -94,24 +95,6 @@ struct Effect
 };
 
 //-----------------------------------------------------------------------------
-// MP obs³uguje max 8 buffów
-enum BUFF_FLAGS
-{
-	BUFF_REGENERATION = 1 << 0,
-	BUFF_NATURAL = 1 << 1,
-	BUFF_FOOD = 1 << 2,
-	BUFF_ALCOHOL = 1 << 3,
-	BUFF_POISON = 1 << 4,
-	BUFF_ANTIMAGIC = 1 << 5,
-};
-
-//-----------------------------------------------------------------------------
-/*struct Effect2
-{
-	EffectType type;
-	int a, b;
-};*/
-
 enum class AutoTalkMode
 {
 	No,
@@ -124,13 +107,6 @@ enum class AutoTalkMode
 // jednostka w grze
 struct Unit
 {
-	enum Type
-	{
-		ANIMAL,
-		HUMANOID,
-		HUMAN
-	};
-
 	enum LiveState
 	{
 		ALIVE,
@@ -141,8 +117,27 @@ struct Unit
 		LIVESTATE_MAX
 	};
 
+	enum StaminaAction
+	{
+		SA_DONT_RESTORE,
+		SA_RESTORE_SLOW,
+		SA_RESTORE,
+		SA_RESTORE_MORE
+	};
+
+	enum LoadState
+	{
+		LS_NONE, // < 25%
+		LS_LIGHT, // < 50%
+		LS_MEDIUM, // < 75%
+		LS_HEAVY, // < 100%
+		LS_OVERLOADED, // < 200%
+		LS_MAX_OVERLOADED // >= 200%
+	};
+
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
+	static const float STAMINA_BOW_ATTACK;
 
 	AnimeshInstance* ani;
 	Animation animation, current_animation;
@@ -151,8 +146,7 @@ struct Unit
 	Vec3 pos; // pozycja postaci
 	Vec3 visual_pos; // graficzna pozycja postaci, u¿ywana w MP
 	Vec3 prev_pos, target_pos, target_pos2;
-	float rot, prev_speed, hp, hpmax, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
-	Type type;
+	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
 	int animation_state, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid;
 	ACTION action;
 	WeaponType weapon_taken, weapon_hiding;
@@ -186,14 +180,14 @@ struct Unit
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
 	UnitStats stats, unmod_stats;
-	//vector<Effect2> effects2;
 	AutoTalkMode auto_talk;
 	float auto_talk_timer;
 	GameDialog* auto_talk_dialog;
+	StaminaAction stamina_action;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : ani(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE) {}
 	~Unit();
 
 	float CalculateArmorDefense(const Armor* armor = nullptr);
@@ -226,13 +220,13 @@ struct Unit
 	float GetSphereRadius() const
 	{
 		float radius = ani->ani->head.radius;
-		if(type == HUMAN)
+		if(data->type == UNIT_TYPE::HUMAN)
 			radius *= ((human_data->height - 1)*0.2f + 1.f);
 		return radius;
 	}
 	float GetUnitRadius() const
 	{
-		if(type == HUMAN)
+		if(data->type == UNIT_TYPE::HUMAN)
 			return 0.3f * ((human_data->height - 1)*0.2f + 1.f);
 		else
 			return data->width;
@@ -248,7 +242,7 @@ struct Unit
 	}
 	float GetUnitHeight() const
 	{
-		if(type == HUMAN)
+		if(data->type == UNIT_TYPE::HUMAN)
 			return 1.73f * ((human_data->height - 1)*0.2f + 1.f);
 		else
 			return ani->ani->head.bbox.SizeY();
@@ -282,12 +276,14 @@ struct Unit
 	}
 	Vec3 GetEyePos() const;
 	float CalculateMaxHp() const;
+	float CalculateMaxStamina() const;
 	float GetHpp() const { return hp / hpmax; }
+	float GetStaminap() const { return stamina / stamina_max; }
 	void GetBox(Box& box) const;
 	int GetDmgType() const;
 	bool IsNotFighting() const
 	{
-		if(type == ANIMAL)
+		if(data->type == UNIT_TYPE::ANIMAL)
 			return false;
 		else
 			return (weapon_state == WS_HIDDEN);
@@ -325,9 +321,10 @@ struct Unit
 		if(IS_SET(data->flags, F_SLOW) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !run_attack) || action == A_SHOOT)
 			return false;
 		else
-			return !IsOverloaded();
+			return !IsOverloaded() && stamina > 0;
 	}
 	void RecalculateHp();
+	void RecalculateStamina();
 	bool CanBlock() const
 	{
 		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED && HaveShield();
@@ -416,11 +413,11 @@ struct Unit
 	void ReequipItems();
 	bool CanUseWeapons() const
 	{
-		return type >= HUMANOID;
+		return data->type >= UNIT_TYPE::HUMANOID;
 	}
 	bool CanUseArmor() const
 	{
-		return type == HUMAN;
+		return data->type == UNIT_TYPE::HUMAN;
 	}
 	static Unit* GetByRefid(int _refid)
 	{
@@ -622,41 +619,39 @@ struct Unit
 	void CalculateLoad() { weight_max = Get(Attribute::STR) * 15; }
 	bool IsOverloaded() const
 	{
-		return weight > weight_max;
+		return weight >= weight_max;
 	}
 	bool IsMaxOverloaded() const
 	{
-		return weight > weight_max * 2;
+		return weight >= weight_max * 2;
 	}
-	int GetLoadState() const
+	LoadState GetLoadState() const
 	{
-		if(weight < weight / 4)
-			return 0;
-		else if(weight < weight / 2)
-			return 1;
-		else if(weight < weight * 3 / 2)
-			return 2;
+		if(weight < weight_max / 4)
+			return LS_NONE;
+		else if(weight < weight_max / 2)
+			return LS_LIGHT;
+		else if(weight < weight_max * 3 / 4)
+			return LS_MEDIUM;
 		else if(weight < weight_max)
-			return 3;
+			return LS_HEAVY;
 		else if(weight < weight_max * 2)
-			return 4;
+			return LS_OVERLOADED;
 		else
-			return 5;
+			return LS_MAX_OVERLOADED;
 	}
 	float GetRunLoad() const
 	{
 		switch(GetLoadState())
 		{
-		case 0:
+		case LS_NONE:
+		case LS_LIGHT:
 			return 1.f;
-		case 1:
-			return Lerp(1.f, 0.95f, float(weight - weight / 4) / (weight / 2 - weight / 4));
-		case 2:
-			return Lerp(0.95f, 0.85f, float(weight - weight / 2) / (weight * 3 / 2 - weight / 2));
-		case 3:
-			return Lerp(0.85f, 0.7f, float(weight - weight * 3 / 2) / (weight_max - weight * 3 / 2));
-		case 4:
-		case 5:
+		case LS_MEDIUM:
+			return Lerp(1.f, 0.9f, float(weight - weight_max / 2) / (weight_max / 4));
+		case LS_HEAVY:
+			return Lerp(0.9f, 0.7f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
+		case LS_MAX_OVERLOADED:
 			return 0.f;
 		default:
 			assert(0);
@@ -667,16 +662,16 @@ struct Unit
 	{
 		switch(GetLoadState())
 		{
-		case 0:
-		case 1:
-		case 2:
+		case LS_NONE:
+		case LS_LIGHT:
+		case LS_MEDIUM:
 			return 1.f;
-		case 3:
-			return Lerp(1.f, 0.9f, float(weight - weight * 3 / 2) / (weight_max - weight * 3 / 2));
-		case 4:
-			return Lerp(0.9f, 0.f, float(weight - weight_max) / weight_max);
-		case 5:
-			return 0.f;
+		case LS_HEAVY:
+			return Lerp(1.f, 0.9f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
+		case LS_OVERLOADED:
+			return Lerp(0.9f, 0.5f, float(weight - weight_max) / weight_max);
+		case LS_MAX_OVERLOADED:
+			return 0.5f;
 		default:
 			assert(0);
 			return 0.f;
@@ -686,15 +681,15 @@ struct Unit
 	{
 		switch(GetLoadState())
 		{
-		case 0:
-		case 1:
-		case 2:
+		case LS_NONE:
+		case LS_LIGHT:
+		case LS_MEDIUM:
 			return 0.f;
-		case 3:
-			return Lerp(0.f, 0.1f, float(weight - weight * 3 / 2) / (weight_max - weight * 3 / 2));
-		case 4:
+		case LS_HEAVY:
+			return Lerp(0.f, 0.1f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
+		case LS_OVERLOADED:
 			return Lerp(0.1f, 0.25f, float(weight - weight_max) / weight_max);
-		case 5:
+		case LS_MAX_OVERLOADED:
 			return 0.25f;
 		default:
 			assert(0);
@@ -817,6 +812,9 @@ struct Unit
 			return hero->credit;
 		}
 	}
+
+	void UpdateStaminaAction();
+	void RemoveStamina(float value);
 };
 
 //-----------------------------------------------------------------------------

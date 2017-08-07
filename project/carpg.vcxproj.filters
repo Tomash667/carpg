@@ -606,6 +606,9 @@
     <ClCompile Include="source\game\system\Content.cpp">
       <Filter>3. game\system</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\stats\Buff.cpp">
+      <Filter>3. game\stats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1205,6 +1208,9 @@
     <ClInclude Include="source\game\system\ContentLoader.h">
       <Filter>3. game\system</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\stats\Buff.h">
+      <Filter>3. game\stats</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">
@@ -1231,6 +1237,9 @@
       <Filter>0. doc</Filter>
     </Text>
     <Text Include="..\doc\todo.txt">
+      <Filter>0. doc</Filter>
+    </Text>
+    <Text Include="..\doc\todo last.txt">
       <Filter>0. doc</Filter>
     </Text>
   </ItemGroup>

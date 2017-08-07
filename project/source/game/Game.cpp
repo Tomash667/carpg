@@ -260,7 +260,7 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 
 	Unit* u = (Unit*)ptr;
 
-	if(u->type == Unit::HUMAN)
+	if(u->data->type == UNIT_TYPE::HUMAN)
 	{
 		int bone = u->ani->ani->GetBone("usta")->id;
 		static Matrix mat2;
@@ -2611,6 +2611,7 @@ void Game::UnitStandup(Unit& u)
 	if(anim)
 	{
 		u.ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+		u.ani->groups[0].speed = 1.f;
 		u.action = A_ANIMATION;
 	}
 	else

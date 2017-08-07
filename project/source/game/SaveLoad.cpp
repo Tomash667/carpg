@@ -318,7 +318,7 @@ void Game::SaveGame(HANDLE file)
 	ProcessUnitWarps();
 	ProcessRemoveUnits();
 	if(game_state == GS_WORLDMAP && open_location != -1)
-		LeaveLocation(false);
+		LeaveLocation(false, false);
 
 	// signature
 	byte sign[4] = { 'C','R','S','V' };

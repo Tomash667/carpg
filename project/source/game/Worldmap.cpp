@@ -2559,6 +2559,7 @@ void Game::RespawnUnits(LevelContext& ctx)
 			u->ani->Play(NAMES::ani_die, PLAY_PRIO1, 0);
 			u->animation = u->current_animation = ANI_DIE;
 		}
+		u->ani->groups[0].speed = 1.f;
 		if(u->human_data)
 			u->human_data->ApplyScale(u->ani->ani);
 		u->SetAnimationAtEnd();

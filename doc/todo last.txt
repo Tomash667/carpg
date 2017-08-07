@@ -1,4 +1,5 @@
 CURRENT:
+- 21:35:32 WARN  - NM_TRANSFER: Unknown packet 104.
 ===============================================================================================================
 NEW:
 + remove compability with old qmsh files
@@ -10,3 +11,33 @@ NEW:
 + draw_flags += -= (gui, terrain, etc)
 + fix function names, Generate vs Spawn
 - what is update first GUI or game, currently game can steal key press that should go to gui
++ file system - full path vs filename
++ buff - show remaining time
+- some gui rendering can be out of date because Update is not run (GameGui buff images etc)
++ potion of restoration (+hp/stamina)
++ split unit between global (world unit) and local (unit)
++ common code for players and ai
++ stamina can't run - verify by server
++ Unit.cpp IsEmptySlot, use lambda
++ image near cursor for inventory when holding key (for example ctrl=1, shift=infinity)
++ starting items list, family hairloom list
++ convexSweepTest for bullets
++ weapon subtype - stamina usage
++ heavy attack - starts after holding, different animation
++ skill decrase armor speed penality, need to rethink all values (base speed, at max skill level etc)
++ more descriptive location names - tainted crypt, corrupted glade
++ draw units title/hpbar - order by distance
++ system -> don't train attributes by actions, train skills, and when they are trained, train attribute
++ train charisma/trading on buy/sell, not on starting trade
++ lock view on target
++ combat: jump back, left, right
++ stamina from shoting depends on bow
++ perk points (1 per 2 levels + int bonus)
++ broken block should take longer, fall on ground etc
++ ai modes - dexterious - move around, jump back; shielder - block attacks
++ sprint
++ stamina needs rework - currently it restore very fast for game to be beatable, but enemies restore it too fast to
++ last_dmg calculated on server
++ alt menu is displayed too fast, it annoys me when alt tabing
++ ai allow half power attack, use stamina at same point as player (on release, not start holding)
++ something better then -delay-1 -delay-2

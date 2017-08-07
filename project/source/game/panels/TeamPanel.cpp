@@ -111,7 +111,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			Vec2 scale;
 			Control::ResizeImage(t, Int2(32, 32), img_size, scale);
 			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)offset.x, (float)offset.y));
-			GUI.DrawSprite2(t, &mat, nullptr, &rect, WHITE);
+			GUI.DrawSprite2(t, mat, nullptr, &rect, WHITE);
 		}
 		if(u == Team.leader)
 			GUI.DrawSprite(tKorona, Int2(offset.x + 32, offset.y), WHITE, &rect);

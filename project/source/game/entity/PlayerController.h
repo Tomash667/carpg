@@ -65,6 +65,8 @@ enum class TrainWhat
 
 	Talk, // player talked [0]
 	Trade, // player traded items [0]
+
+	Stamina, // player uses stamina [value]
 };
 
 inline int GetRequiredAttributePoints(int level)

@@ -59,6 +59,7 @@ osoby. Oczekuj zmian na lepsze!
 	D / strza³ka w prawo - ruch w prawo
 	Q - obrót w lewo
 	E - obrót w prawo
+	F - automatyczny ruch do przodu
 	Y - okrzyk
 	TAB - ekran postaci, ekwipunek, dru¿yna
 	J - dziennik
@@ -74,7 +75,7 @@ osoby. Oczekuj zmian na lepsze!
 	klikniêcie + shift - je¿eli jest kilka przedmiotów to robi to dla wszystkich
 	klikniêcie + ctrl - je¿eli jest kilka przedmiotów to robi to dla jednego
 	klikniêcie + alt - wyœwietla dla ilu przedmiotów to zrobiæ
-	Enter - zabierz wszystko
+	F - zabierz wszystko
 3.4. Mapa œwiata
 	lewy przycisk myszki - podró¿uj do lokacji / wejdŸ
 	Tab - otwórz / zamknij okno tekstu w multiplayer
@@ -104,6 +105,10 @@ osoby. Oczekuj zmian na lepsze!
 	przydatne przeciwko odpornym wrogom którym normalnym atakiem zadajesz ma³o
 	lub nic. Atak w biegu jest jak 0.25 potê¿nego ataku ale nie mo¿esz siê
 	zatrzymaæ.
+* Wytrzyma³oœæ - Atakowanie zu¿ywa wytrzyma³oœæ, gdy siê skoñczy nie mo¿esz
+	biegaæ ani atakowaæ. Blokowanie ciosów te¿ zu¿ywa wytrzyma³oœæ i gdy siê
+	skoñczy blok zostaje przerwany. Przestañ atakowaæ aby odzyskaæ wytrzyma³oœæ,
+	szybciej je¿eli stoisz w miejscu.
 * Czêsto zapisuj grê, szczególnie na pocz¹tku kiedy jesteœ s³aby. PóŸniej przed
 	walk¹ z bossem. Pamiêtaj, ¿e zawsze mo¿e siê zdarzyæ jakiœ nie naprawiony
 	b³¹d i gra mo¿e siê zawiesiæ :( Przed zapisywaniem poprzedni zapis jest

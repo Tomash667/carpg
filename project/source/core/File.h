@@ -442,3 +442,507 @@ inline T& ptr_shiftd(T2* ptr, uint shift)
 {
 	return *((T*)(((byte*)ptr) + shift));
 }
+
+//-----------------------------------------------------------------------------
+// New io reader/writer
+namespace io2
+{
+	//-----------------------------------------------------------------------------
+	// Output source
+	class Source
+	{
+	public:
+		virtual ~Source()
+		{
+		}
+		virtual void Write(const void* data, uint size) = 0;
+		virtual bool Read(void* data, uint size) = 0;
+		virtual bool Skip(uint size) = 0;
+	};
+
+	//-----------------------------------------------------------------------------
+	// File output source
+	class FileSource final : public Source
+	{
+	public:
+		FileSource() : file(INVALID_HANDLE_VALUE), own_handle(true)
+		{
+		}
+
+		explicit FileSource(cstring path, bool write) : own_handle(true)
+		{
+			Open(path, write);
+		}
+
+		explicit FileSource(HANDLE file) : file(file), own_handle(false)
+		{
+		}
+
+		explicit FileSource(FileSource&& f) : file(f.file), own_handle(f.own_handle)
+		{
+			f.file = INVALID_HANDLE_VALUE;
+		}
+
+		~FileSource()
+		{
+			if(file != INVALID_HANDLE_VALUE && own_handle)
+			{
+				CloseHandle(file);
+				file = INVALID_HANDLE_VALUE;
+			}
+		}
+
+		bool Open(cstring path, bool write)
+		{
+			assert(path);
+			if(write)
+				file = CreateFile(path, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+			else
+				file = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+			return file != INVALID_HANDLE_VALUE;
+		}
+
+		void Write(const void* data, uint size) override
+		{
+			DWORD tmp;
+			WriteFile(file, data, size, &tmp, nullptr);
+			assert(size == tmp);
+		}
+
+		bool Read(void* data, uint size) override
+		{
+			DWORD tmp;
+			ReadFile(file, data, size, &tmp, nullptr);
+			return tmp == size;
+		}
+
+		bool Skip(uint size) override
+		{
+			DWORD pos = SetFilePointer(file, size, nullptr, FILE_CURRENT);
+			return !(pos == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR);
+		}
+
+		bool IsOpen() const
+		{
+			return file != INVALID_HANDLE_VALUE;
+		}
+
+		void Flush()
+		{
+			FlushFileBuffers(file);
+		}
+
+		uint GetSize() const
+		{
+			return GetFileSize(file, nullptr);
+		}
+
+	private:
+		HANDLE file;
+		bool own_handle;
+	};
+
+	//-----------------------------------------------------------------------------
+	// Generic source, use virtual call to dynamicaly select output source
+	class GenericSource final : public Source
+	{
+	public:
+		GenericSource() : source(nullptr)
+		{
+		}
+
+		GenericSource(Source* source, bool owned) : source(source), owned(owned)
+		{
+		}
+
+		~GenericSource()
+		{
+			if(owned)
+				delete source;
+		}
+
+		void Write(const void* data, uint size) override
+		{
+			source->Write(data, size);
+		}
+
+		bool Read(void* data, uint size) override
+		{
+			return source->Read(data, size);
+		}
+
+		bool Skip(uint size) override
+		{
+			return source->Skip(size);
+		}
+
+	private:
+		Source* source;
+		bool owned;
+	};
+
+	//-----------------------------------------------------------------------------
+	// Base writer
+	template<typename SourceType>
+	class BaseWriter
+	{
+	public:
+		SourceType& GetSource()
+		{
+			return source;
+		}
+
+		void Write(const void* data, uint size)
+		{
+			source.Write(data, size);
+		}
+
+		template<typename T>
+		void Write(const T& data)
+		{
+			Write(&data, sizeof(T));
+		}
+		template<>
+		void Write(const string& s)
+		{
+			WriteString1(s);
+		}
+
+		template<typename DestType, typename SourceType>
+		void WriteCasted(const SourceType& a)
+		{
+			DestType val = (DestType)a;
+			Write(&val, sizeof(DestType));
+		}
+
+		template<typename SizeType>
+		void WriteString(const string& s)
+		{
+			assert(s.length() <= std::numeric_limits<SizeType>::max());
+			SizeType len = (SizeType)s.length();
+			Write(len);
+			if(len)
+				Write(s.c_str(), len);
+		}
+		template<typename SizeType>
+		void WriteString(cstring s)
+		{
+			assert(s && strlen(s) <= std::numeric_limits<SizeType>::max());
+			SizeType len = (SizeType)strlen(s);
+			Write(len);
+			if(len)
+				Write(s, len);
+		}
+		void WriteString1(const string& s)
+		{
+			WriteString<byte>(s);
+		}
+		void WriteString1(cstring s)
+		{
+			WriteString<byte>(s);
+		}
+		void WriteString2(const string& s)
+		{
+			WriteString<word>(s);
+		}
+		void WriteString2(cstring s)
+		{
+			WriteString<word>(s);
+		}
+		void WriteString(const string& s)
+		{
+			WriteString<uint>(s);
+		}
+		void WriteString(cstring s)
+		{
+			WriteString<uint>(s);
+		}
+
+		template<typename SizeType, typename T>
+		void WriteVector(const vector<T>& v)
+		{
+			assert(v.count() <= std::numeric_limits<SizeType>::max());
+			WriteCasted<SizeType>(v.size());
+			if(!v.empty())
+				Write(&v[0], sizeof(T)*v.size());
+		}
+		template<typename T>
+		void WriteVector1(const vector<T>& v)
+		{
+			WriteVector<byte>(v);
+		}
+		template<typename T>
+		void WriteVector2(const vector<T>& v)
+		{
+			WriteVector<word>(v);
+		}
+		template<typename T>
+		void WriteVector(const vector<T>& v)
+		{
+			WriteVector<uint>(v);
+		}
+
+		void Write0()
+		{
+			WriteCasted<byte>(0);
+		}
+
+		template<typename T>
+		void operator << (const T& a)
+		{
+			Write(&a, sizeof(T));
+		}
+		void operator << (const string& s)
+		{
+			WriteString1(s);
+		}
+		void operator << (cstring s)
+		{
+			WriteString1(s);
+		}
+		template<typename T>
+		void operator << (vector<T>& v)
+		{
+			WriteVector(v);
+		}
+
+	protected:
+		BaseWriter()
+		{
+		}
+
+		explicit BaseWriter(SourceType&& source) : source(std::move(source))
+		{
+		}
+
+		SourceType source;
+	};
+
+	//-----------------------------------------------------------------------------
+	// File writer
+	class FileWriter final : public BaseWriter<FileSource>
+	{
+	public:
+		FileWriter()
+		{
+		}
+
+		explicit FileWriter(cstring path) : BaseWriter(FileSource(path, true))
+		{
+		}
+
+		void Flush()
+		{
+			source.Flush();
+		}
+
+		uint GetSize() const
+		{
+			return source.GetSize();
+		}
+
+		bool IsOpen() const
+		{
+			return source.IsOpen();
+		}
+
+		bool Open(cstring path)
+		{
+			return source.Open(path, true);
+		}
+
+		operator bool() const
+		{
+			return IsOpen();
+		}
+	};
+
+	//-----------------------------------------------------------------------------
+	// Writer to generic source
+	class StreamWriter final : public BaseWriter<GenericSource>
+	{
+	public:
+		StreamWriter()
+		{
+		}
+
+		template<typename T>
+		explicit StreamWriter(BaseWriter<T>& writer) : BaseWriter(GenericSource(&writer.GetSource(), false))
+		{
+		}
+	};
+
+	//-----------------------------------------------------------------------------
+	// Base reader
+	template<typename SourceType>
+	class BaseReader
+	{
+	public:
+		SourceType& GetSource()
+		{
+			return source;
+		}
+
+		bool Read(void* data, uint size)
+		{
+			return source.Read(data, size);
+		}
+
+		template<typename T>
+		bool Read(T& data)
+		{
+			return Read(&data, sizeof(T));
+		}
+
+		template<typename DestType, typename SourceType>
+		bool ReadCasted(SourceType& a)
+		{
+			DestType b;
+			if(!Read<DestType>(b))
+				return false;
+			a = (SourceType)b;
+			return true;
+		}
+
+		template<typename SizeType>
+		bool ReadString(string& s)
+		{
+			SizeType len;
+			if(!Read(len))
+				return false;
+			if(len)
+			{
+				s.resize(len);
+				if(!Read((char*)s.data(), len))
+					return false;
+			}
+			else
+				s.clear();
+			return true;
+		}
+		bool ReadString1(string& s)
+		{
+			return ReadString<byte>(s);
+		}
+		bool ReadString2(string& s)
+		{
+			return ReadString<word>(s);
+		}
+		bool ReadString(string& s)
+		{
+			return ReadString<uint>(s);
+		}
+
+		template<typename SizeType, typename T>
+		bool ReadVector(vector<T>& v)
+		{
+			SizeType count;
+			if(!Read(count))
+				return false;
+			v.resize(count);
+			if(count)
+				return Read(&v[0], sizeof(T)*count);
+			return true;
+		}
+		template<typename T>
+		bool ReadVector1(vector<T>& v)
+		{
+			return ReadVector<byte>(v);
+		}
+		template<typename T>
+		bool ReadVector2(vector<T>& v)
+		{
+			return ReadVector<word>(v);
+		}
+		template<typename T>
+		bool ReadVector(vector<T>& v)
+		{
+			return ReadVector<uint>(v);
+		}
+
+		template<typename T>
+		bool operator >> (T& a)
+		{
+			return Read(&a, sizeof(T));
+		}
+		bool operator >> (string& s)
+		{
+			return ReadString1(s);
+		}
+		template<typename T>
+		bool operator >> (vector<T>& v)
+		{
+			return ReadVector(v);
+		}
+
+	protected:
+		BaseReader()
+		{
+		}
+
+		BaseReader(SourceType&& source) : source(std::move(source))
+		{
+		}
+
+		SourceType source;
+	};
+
+	//-----------------------------------------------------------------------------
+	// File reader
+	class FileReader final : public BaseReader<FileSource>
+	{
+	public:
+		FileReader()
+		{
+		}
+
+		FileReader(cstring path) : BaseReader(FileSource(path, true))
+		{
+		}
+
+		uint GetSize() const
+		{
+			return source.GetSize();
+		}
+
+		bool IsOpen() const
+		{
+			return source.IsOpen();
+		}
+
+		bool Open(cstring path)
+		{
+			return source.Open(path, false);
+		}
+
+		bool Skip(uint size)
+		{
+			return source.Skip(size);
+		}
+		template<typename T>
+		bool Skip()
+		{
+			return source.Skip(sizeof(T));
+		}
+
+		operator bool() const
+		{
+			return IsOpen();
+		}
+	};
+
+	//-----------------------------------------------------------------------------
+	// Reader from generic source
+	class StreamReader final : public BaseReader<GenericSource>
+	{
+	public:
+		StreamReader()
+		{
+		}
+
+		template<typename T>
+		StreamReader(BaseReader<T>& reader) : BaseReader(GenericSource(&reader.GetSource(), false))
+		{
+		}
+	};
+};
