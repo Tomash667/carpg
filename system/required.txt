@@ -81,7 +81,7 @@ item ladle
 // spawn forest items
 item healing_herb
 item green_herb
-// pre 0.10 quest item
+// pre 0.5 quest item
 item q_main_letter
 // small chance to generate on dungeon table
 item golden_cup

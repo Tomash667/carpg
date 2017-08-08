@@ -1,10 +1,25 @@
-﻿FAR FAR TODO:
-+ remove windows.h/directx/music from pch, include it per file
-+ unify error messge for loading
+﻿CURRENT:
+===============================================================================================================
+NEW:
+===============================================================================================================
+VERIFY:
+- da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
+- w questowych lokacjach krew/zwłoki nie znikają
+- wskaźnik na fizykę, ale co jak objects się rozszerza i obiekt zmienia pozycję
+- with big lag (there is limit to 0.3 dt) player can move thru units, doors, objects (like in deus ex, save game while moving into barrier and after saving you are on other side)
+	- zombie attack animation end but attack is not complete, it will stay and do nothing
+- da sie wlezc w kogos
+- ANGLE!
+- wydobywaniem rudy można zablokować kogoś kto tam stoi
+- f5/f9 a konsola
+- fov may not work good when near borders
+- verify dialogs ending with end/restart
+- without human flag and mesh crash when spawned, log error
+- 21:35:32 WARN  - NM_TRANSFER: Unknown packet 104.
+===============================================================================================================
+FAR FAR TODO:
 + toolset/menu don't lock cursor in windowed mode
-+ fast delegate type safety, currently i accepts different type and sometimes even works
 - trim crash on polish letters
-+ refactor ResourceManager, all resources inheirt from Resource, not BaseResource, allow multiple variables/factory, fix problems with Sound/Music
 + options to select sound device (default/headphones/speakers)
 
 ZNANE BŁEDY:
@@ -64,34 +79,17 @@ POTRZEBA PRZYKŁADÓW:
 - sawmill, messanger spawned inside client
 - inventory icons disappear after alt-enter or changing multisampling [ł]; not happens on my gpu, need more info
 //****************************************************
-DO WERYFIKACJI:
-- da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
-- w questowych lokacjach krew/zwłoki nie znikają
-- wskaźnik na fizykę, ale co jak objects się rozszerza i obiekt zmienia pozycję
-- with big lag (there is limit to 0.3 dt) player can move thru units, doors, objects (like in deus ex, save game while moving into barrier and after saving you are on other side)
-	- zombie attack animation end but attack is not complete, it will stay and do nothing
-- da sie wlezc w kogos
-- ANGLE!
-- wydobywaniem rudy można zablokować kogoś kto tam stoi
-? f5/f9 a konsola
-? fov may not work good when near borders
-? + verify dialogs ending with end/restart
-//****************************************************
 - zliczanie load_errors
 - debug ai lag is too big!
 - engine refactoring (resMgr - change var name)
 
-
-+ rename City -> Settlement
 + HaveResources
-+ cmd warp ?, list, front of building, desc
 + multiple same buildings (except house) are not supported
 	support for more then one blacksmith etc
 	need fix Game::GetMapPosition (no connection between CityBuilding & InsideBuilding)
 	... more
 + better auto_talk, unit can spawn on other side of level and find path to nearest player (currently it uses distance)
 + not hardcoded
-	+ items spawn in front of shop
 	+ better stock script (ilość kasy)
 	+ spawned units (citizen, villager, guard)
 	+ arena_pos is taken from old unit spawn mode (what if someone used new mode, this var won't be set!)
@@ -104,7 +102,6 @@ DO WERYFIKACJI:
 
 + game
 	+ multi pickup - holding pickup key should pickup all similar items (with setting) for example many gold pieces
-	+ order ai to pickup items from dungeon
 
 + check units required by building spawn
 + map of spells/units with hashing
@@ -141,21 +138,11 @@ DO WERYFIKACJI:
 + enemies inside building
 	- AI_HitReaction don't work inside
 	- CanSee
-+ AI_Shout should work on units that lie on ground
-
-+ item generator for items from file
-+ new crystal armor mesh
-+ arifact armors: gladiator, thief, antimagic, troll hide, blood crystal armor
-+ magic effects
-+ armor models
-+ weapons models
-+ effects (burning weapon, blood crystal)
 + GAME_KEY (unlock_cursor, open_menu)
 + put PlayerInfo* inside PlayerController and remove GetPlayerInfo from NetChangePlayer uses
 ? perks for ap/sp at 20,40,60,80,100,etc 60,70,80,90,100 for specific skill/attribute (but there need to be hell a lot of perks)
 + easy mode (spanie w karczmie leczy wszystko, podróż też, jedzenie leczy więcej, jest łatwiej itp)
 + losowe obiekty
-+ lepsze flagi dla console commands bo jest F_ANYWHERE a to nie jest anywhere !
 + optymalizacje quadtree
 + zatrzymywanie muzki gdy gra jest zminimalizowana w trybie fullscreen
 + heal a death_screen
@@ -201,11 +188,7 @@ NOWE:
 + kto może rekrutować, zmieniać ai
 + podział na AddGold i AddItem
 + ekran wczytywania w SP i MP
-+ wyświetlanie postępów w szkoleniu atrybuów/umiejętności
-+ pasek zdobywania skill/atrib przy szkoleniu tak jak w skyrimie tylko nie dla poziomów a tych statów
 + przycisk anuluj w czasie łączenia
-+ możliwość otwierania mapy w mieście, ekwipunku/statystyk na mapie
-+ komenda 'revive' dla zwłok, healunit dla pobitych
 + animacja przesuwania postaci przy ożywianiu
 + lepsze generowanie obiektów
 + więcej kamieni szlachetnych, sztabek
@@ -234,7 +217,6 @@ NOWE:
 + przechowywanie przedmiotu do użycia w SLOT_TO_USE rozwiązało by wiele problemów z Inventory::lock
 + lepsze rysowanie przedmiotów na ziemi, sortowanie po modelu, bez CommitChanges jeśli jest 1 materiał
 + customowy box dla np grzyba żeby mógł być częściowo w ziemi
-+ exporter: Warning gdy są zaznaczone obiekty na różnych layerach, przy eksportowaniu obiektów z ujemną skalą
 + lepszy picking czego gracz chce użyć
 + tryb bezpiecznego ataku (nie można trafić neutralnych)
 + animacja podnoszenia przedmiotu (znika w punkcie)
@@ -248,10 +230,8 @@ NOWE:
 + lepszy pathfinding, powiązanie tile i local
 + punkt z którego wydobywa się dźwięk w czasie używania obiektu
 + warp to player
-+ creditsy
 + animacja ust gdy przestaje gadać
 + lepszy system generowania jednostek
-+ lepszy ekran wczytywania, napisy co się dzieje
 ? czy można przeszkadzać komuś w walce gadając z nim
 + gadania a akcja postaci (czy można gadać czy nie, np jak siada albo je można zaczekać aż skończy po kliknięciu)
 ? raknet wysyła wiadomości do zdisconnectowanych przy broadcast jeśli nie wyśle jeszcze disconnect
@@ -271,7 +251,6 @@ NOWE:
 + przechowywanie wierzchołków w Blood
 + większy rozmiar okien
 + alpha test per submesh
-+ autocomplete dla komend w konsoli
 + przezroczystość postaci gdy jest invisible
 + jaki algorytm dla StrechRect
 + optymalizacja, spr czy rysować trail particle emitter / electro / portal / area
@@ -343,28 +322,11 @@ WALKA:
 * parowanie
 * cios w plecy
 
-KONSOLA:
-* dostęp do zmiennych [hair, mustache, beard, hair_color]
-
-* inwestycje: kopalnia/tartak/port/handel/młyn
-* konie
-* możliwość ruchu na mapie do dowolnego punktu
-* w konwerterze są animacje bez klatek ALukAtak
 * rozmiar broni/tarczy/łuku zależy od skali postaci
-* rozbrajanie
 * % poziom trudności
 * wynik wysyłany do internetu
-* szybkość nauki zależna od początkowych atrybutów
-* różne skille na bronie
-* średni pancerz
-* pośrednia nauka podobnych skili
-* inny podział broni (sztylet / krótki miecz itp)
-* nie można zmieniać pancerza w czasie walki
-* klimat
 * dźwięk kroków
-* pływanie po powierzchni
 * dostosowany rozmiar obszaru
-* wspólna struktura dla miast/wsi itp
 * prostsze tworzenie budynków
 * więcej wariantów budynków
 * inne generowanie miasta? najpierw główne budynki, potem drogi, potem wcisnąć reszte
@@ -372,16 +334,13 @@ KONSOLA:
 * min, max światła tak jak mgły
 * occlusion query
 * pozbyć się warningów z shaderów
-* potężne łuki
 * skrzynie używane przez kupców
 * przestępstwa
 * kradzież
 * otwieranie zamków
 * wyważanie zamków
 * większa specjalizacja kowali
-* skakanie
 * pool jednostek (i innych obiektów)
-* ogłuszanie
 * wielopoziomowe podziemia
 * jaskinia w podziemiach
 * okrągłe podziemia
@@ -391,12 +350,10 @@ KONSOLA:
 * zapadnie, oskryptowalne przyciski/wajchy/płyty naciskowe
 * praca: strażnik, rolnik, drwal, górnik, kupiec
 * wiek postaci
-* kurier
 * kilka schodów w górę/dół
 * pokój z kratkami i lawą/wodą
 * podział pancerza na zwykły i naturalny
 * amulet naturalnego pancerza ?
-* komenda toggle przełączająca zmienne bool i enum (E0 -> E1 -> E2 -> E0 ...)
 * lista brakujących tekstur
 * kostka HP, bardziej rozbudowane generowanie wrogów
 * cząsteczki przyczepione do obiektów
@@ -407,7 +364,6 @@ KONSOLA:
 * akumulacja bólu
 * więcej animacji śmierci
 * odtwarzanie animacji przez graczy (i_co i podobne)
-* AIGroupController
 * zewnętrzne dane
 * stłuczenia, możliwość zadawania stłuczeń każdą bronią (obuchowe odrazu zadają część)
 * więcej tekstów po śmierci
@@ -416,7 +372,6 @@ KONSOLA:
 * opcje screenshota w configu [rozszerzenie, full]
 * celowanie z łuku
 * konfiguracja wbudowanych tekstur np [DeathBkg = black.jpg]
-* bind f1 "toggle noai"
 * nazwy karczm i innych budynków
 * kopanie
 * stackowanie przedmiotów
@@ -428,12 +383,9 @@ KONSOLA:
 * podział trail particle Update
 * gdy jest za duża szybkość to trail particle nie nadąża
 * trail particle skierowany w stronę kamery
-* warning w exporterze/converterze że nie ma tekstury
-* exporter (opcja "połącz submesh o tym samym materiale?")
 * różne materiały ścian i obiektów
 * lepsza fizyka postaci
 * nowsza wersja biblioteki FMOD, bullet physics, raknet (?)
-* komenda spawnitem
 * warianty obiektów (np. druga tekstura beczki, od razu w modelu)
 * quadtree dla statycznych obiektów
 * połączenie selected_target, selected_unit, before_player_ptr
@@ -487,7 +439,7 @@ KONSOLA:
 * światło w miejscu eksplozji
 * animowany pasek wczytywania?
 * własne renderowanie tekstu (brak kropek w nowej linijce tak jak jest to teraz)
-* skakanie, wspinanie się po ścianie, używanie liny
+* wspinanie się po ścianie, używanie liny
 * więcej możliwości otwierania drzwi, fizyka, animacja
 * w wieży maga na samym dole drzwi, schody w górę
 * możliwość wyboru jaką klase chcesz trenować
@@ -546,7 +498,6 @@ KONSOLA:
 * inny system ekwipunku [char doll, sloty na przedmioty osobno, modele przedmiotów obracające się, skalowalny, konfigurowanie rozmiaru ikon przedmiotów 64,128,256 itp]
 * konfiguracja domyślnych wartości skryptów [addunit.level = max, addunit.count = random(2,3), restore addunit.in_arena]
 * wędrowanie postaci po mieście jak w gta
-* spowalnianie wszystkich oprócz gracza [CMD]
 * niepiśmienność barbarzyńcy i ew łowcy [wychowany przez wilki]
 * możliwość startu jako mieszkaniec miasta
 * RotatedRectanglesCollision jest jakieś zbugowanie w Collide(Box2d, bez rot), trzeba było dać -rot, trzeba sprawdzić czy działa w innych funkcjach dobrze Collide(Box2d, rot), GenerateDungeonObjects
@@ -554,11 +505,9 @@ KONSOLA:
 * odchylenie przy strzelaniu (gracz, ai, pułapki)
 * podchodzenie w czasie dialogu, wyciąganie broni, grożenie, proszenie
 * reakcja na wyciągnięcie bronii
-* CMD modyfikacja włosów/brody/wąsów/koloru włosów/wzrostu
 * lepsze generowanie podziemi tak że ułożenie budynków ma sens [kuchnia,skarbiec,sypialnia,stróżówka]
 * przemieszczanie się wrogów i obozy tak jak miało być w 0.2
 * destruktor Unit
-* jakaś nakładka na Unit* (żeby można było usuwać ?)
 * generowanie postaci na pozycji / miasta na mapie zawsze działające [przesuwa tam gdzie wolne miejsce, bo używając losowości to i za 1000 razem nie trafi w to pole]
 * ukryte przejścia
 * skrytki
@@ -581,7 +530,6 @@ KONSOLA:
 * skalowalny poziom trudności zadań [odzyskaj paczkę od słabych, normalnych, silnych wrogów]
 * połączona obsługa zadań w EnterLocation i EnterLevel
 * system klas dla npc [np klasa drwal, i potem tylko ustawiam że to drwal 5 poziomu, bandyta któregoś, mieszkanie któregoś]
-* komendy na pozycje gracza, szybką podróż po mapie, zmienne zadań
 * identyfikator obiektów [np Unit] na początku żeby nie przewijać w debugerze gdzieś do końca [u jednostki do np. data]
 * animacje w osobnych plikach
 * różne rodzaje tekstur podziemi
@@ -604,7 +552,6 @@ KONSOLA:
 * możliwość przepychania się pomiędzy ludźmi jak w assassins creed
 * losowa postać
 * domyślna tekstura
-* zapisywanie/wczytywanie w tutorialu, traktowanie go jak każdy inny poziom, brak zahardcodowanych rzeczy
 * mniejsze limity [dłuższy nick, więcej miejsca na teksty online, dłuższy tekst 100+]
 * można dać FindFirstFileEx aby przyspieszyć wyszukiwanie ale tylko dla windowsa 7+
 * sprawdzanie czy przesyłane stringi kończą się zerem
@@ -614,9 +561,6 @@ KONSOLA:
 * większy limit danych w PrepareLevelData (niektóre rzeczy są zapisywane jako byte - jak będzie kompresja to można dawać worda :3)
 * lepsze sprawdzanie danych poziomu (stan drzwi, pozycja na mapie itp) puki co jak chcą to niech se hakierują
 * lepsza interpolacja pozycji postaci, bez prev_pos
-* niektóre zmiany nie muszą być kilka razy wysyłane np CHANGE_FLAGS
-* łączenie aktualizacji dotyczących tej samej postaci
-* u klienta przechowywanie hp jako (0-1) albo nawet (byte 0-255)
 * krwawienie od ran
 * rzyganie od trucizny
 * zapisywanie bool jako flagi (Unit, PlayerController)
@@ -629,7 +573,6 @@ KONSOLA:
 * rekrutowanie jako członka drużyny (udział w zyskach) lub jako najemnika (opłata+mały udział w zyskach), niektórzy członkowie drużyny mogą wymagać zapłaty za coś (np na leczenie, na spłacenie długów)
 * kredyt powinien inaczej działać, tablica 2d dla każdej postaci w drużynie, jeśli dwie osoby mają dla siebie kredyt to się zeruje
 * więcej animacji dla rozmowy (tak, nie, prosi, grozi)
-* odtwarzanie animacji przez gracza po wpisaniu komendy
 * symbole na pancerzu i tarczy (używane np przez straż)
 * konfiguracja różnych zmiennych w konfigu (STARTUP_TIMER)
 * hardcore+ (raz na wersję 0.X), potem nie można wziąść tej opcji; dostępne po ukończeniu wszystkich questów na normalnym lub hardcore
@@ -637,8 +580,6 @@ KONSOLA:
 	"czuję marchewkę" i gdzieś cie prowadzi)
 * zakaz stawiania ścian na blokadzie przy generowaniu mapy, sporo to uprości, otoczony murem
 * własny alokator pamięci, sprawdzanie mem leak, heap corruption itp
-* lod modeli - kilka w jednym pliku
-* ParseCommand, lepsze sprawdzanie liczb zamiast atoi/atof
 * do przeczytania o infinite game http://www.gamedev.net/page/resources/_/creative/game-design/the-infinite-game-r3045
 * kilkukrotne automatyczne dołączanie, wybierane postaci
 * używanie wektora LevelContext w mieście zamiast
