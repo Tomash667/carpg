@@ -24,6 +24,7 @@
 #include "Mapa2.h"
 #include "Location.h"
 #include "Unit.h"
+#include "ResourceManager.h"
 
 enum TRAP_TYPE;
 
@@ -508,7 +509,7 @@ struct Game final : public Engine, public UnitEventHandler
 	//-----------------------------------------------------------------
 	Mesh* aHumanBase, *aHair[5], *aBeard[5], *aMustache[2], *aEyebrows;
 	Mesh* aBox, *aCylinder, *aSphere, *aCapsule;
-	Mesh* aArrow, *aSkybox, *aWorek, *aSkrzynia, *aKratka, *aNaDrzwi, *aNaDrzwi2, *aSchodyDol, *aSchodyGora, *aSchodyDol2, *aSpellball, *aPrzycisk, *aBeczka, *aDrzwi, *aDrzwi2;
+	Mesh* aArrow, *aSkybox, *aWorek, *aSkrzynia, *aKratka, *aNaDrzwi, *aNaDrzwi2, *aSchodyDol, *aSchodyGora, *aSchodyDol2, *aSpellball, *aPrzycisk, *aDrzwi, *aDrzwi2;
 	VertexData* vdSchodyGora, *vdSchodyDol, *vdNaDrzwi;
 	TEX tItemRegion, tMinimap, tChar, tSave;
 	TEX tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tRip, tCelownik, tObwodkaBolu, tEquipped,

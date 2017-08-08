@@ -1,4 +1,5 @@
 #include "Pch.h"
+#include "Core.h"
 #include "Game.h"
 #include "SingleInsideLocation.h"
 #include "CreateCharacterPanel.h"
@@ -392,18 +393,18 @@ tut_state:
 void Game::UpdateTutorial()
 {
 	// atakowanie manekina
-	if(pc->unit->action == A_ATTACK && pc->unit->animation_state == 1 && !pc->unit->hitted && pc->unit->ani->GetProgress2() >= pc->unit->GetAttackFrame(1)
+	if(pc->unit->action == A_ATTACK && pc->unit->animation_state == 1 && !pc->unit->hitted && pc->unit->mesh_inst->GetProgress2() >= pc->unit->GetAttackFrame(1)
 		&& Vec3::Distance(pc->unit->pos, tut_dummy) < 5.f)
 	{
 		Mesh::Point* hitbox, *point;
 		hitbox = pc->unit->GetWeapon().mesh->FindPoint("hit");
-		point = pc->unit->ani->ani->GetPoint(NAMES::point_weapon);
+		point = pc->unit->mesh_inst->mesh->GetPoint(NAMES::point_weapon);
 
 		Obbox obox1, obox2;
 
 		// calculate hitbox matrix
 		Matrix m_unit = Matrix::RotationY(pc->unit->rot) * Matrix::Translation(pc->unit->pos);
-		Matrix m_weapon = point->mat * pc->unit->ani->mat_bones[point->bone] * m_unit;
+		Matrix m_weapon = point->mat * pc->unit->mesh_inst->mat_bones[point->bone] * m_unit;
 		Matrix m_hitbox = hitbox->mat * m_weapon;
 
 		// create weapon hitbox oriented bounding box

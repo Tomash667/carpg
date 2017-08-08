@@ -820,8 +820,8 @@ void GameGui::UpdateSpeechBubbles(float dt)
 					sb.unit->talking = false;
 					sb.unit->bubble = nullptr;
 					// fix na crash, powody dla których ani jest NULLem nie s¹ znane :S
-					if(sb.unit->ani)
-						sb.unit->ani->need_update = true;
+					if(sb.unit->mesh_inst)
+						sb.unit->mesh_inst->need_update = true;
 				}
 				SpeechBubblePool.Free(*it);
 				*it = nullptr;
@@ -1120,27 +1120,27 @@ void GameGui::ClosePanels(bool close_mp_box)
 //=================================================================================================
 void GameGui::LoadData()
 {
-	ResourceManager& resMgr = ResourceManager::Get();
-	resMgr.GetLoadedTexture("bar.png", tBar);
-	resMgr.GetLoadedTexture("hp_bar.png", tHpBar);
-	resMgr.GetLoadedTexture("poisoned_hp_bar.png", tPoisonedHpBar);
-	resMgr.GetLoadedTexture("stamina_bar.png", tStaminaBar);
-	resMgr.GetLoadedTexture("mana_bar.png", tManaBar);
-	resMgr.GetLoadedTexture("shortcut.png", tShortcut);
-	resMgr.GetLoadedTexture("shortcut_hover.png", tShortcutHover);
-	resMgr.GetLoadedTexture("shortcut_down.png", tShortcutDown);
-	resMgr.GetLoadedTexture("bt_menu.png", tSideButton[(int)SideButtonId::Menu]);
-	resMgr.GetLoadedTexture("bt_team.png", tSideButton[(int)SideButtonId::Team]);
-	resMgr.GetLoadedTexture("bt_minimap.png", tSideButton[(int)SideButtonId::Minimap]);
-	resMgr.GetLoadedTexture("bt_journal.png", tSideButton[(int)SideButtonId::Journal]);
-	resMgr.GetLoadedTexture("bt_inventory.png", tSideButton[(int)SideButtonId::Inventory]);
-	resMgr.GetLoadedTexture("bt_active.png", tSideButton[(int)SideButtonId::Active]);
-	resMgr.GetLoadedTexture("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
-	resMgr.GetLoadedTexture("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
-	resMgr.GetLoadedTexture("minihp.png", tMinihp[0]);
-	resMgr.GetLoadedTexture("minihp2.png", tMinihp[1]);
-	resMgr.GetLoadedTexture("ministamina.png", tMinistamina);
-	BuffInfo::LoadImages(resMgr);
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("bar.png", tBar);
+	tex_mgr.AddLoadTask("hp_bar.png", tHpBar);
+	tex_mgr.AddLoadTask("poisoned_hp_bar.png", tPoisonedHpBar);
+	tex_mgr.AddLoadTask("stamina_bar.png", tStaminaBar);
+	tex_mgr.AddLoadTask("mana_bar.png", tManaBar);
+	tex_mgr.AddLoadTask("shortcut.png", tShortcut);
+	tex_mgr.AddLoadTask("shortcut_hover.png", tShortcutHover);
+	tex_mgr.AddLoadTask("shortcut_down.png", tShortcutDown);
+	tex_mgr.AddLoadTask("bt_menu.png", tSideButton[(int)SideButtonId::Menu]);
+	tex_mgr.AddLoadTask("bt_team.png", tSideButton[(int)SideButtonId::Team]);
+	tex_mgr.AddLoadTask("bt_minimap.png", tSideButton[(int)SideButtonId::Minimap]);
+	tex_mgr.AddLoadTask("bt_journal.png", tSideButton[(int)SideButtonId::Journal]);
+	tex_mgr.AddLoadTask("bt_inventory.png", tSideButton[(int)SideButtonId::Inventory]);
+	tex_mgr.AddLoadTask("bt_active.png", tSideButton[(int)SideButtonId::Active]);
+	tex_mgr.AddLoadTask("bt_stats.png", tSideButton[(int)SideButtonId::Stats]);
+	tex_mgr.AddLoadTask("bt_talk.png", tSideButton[(int)SideButtonId::Talk]);
+	tex_mgr.AddLoadTask("minihp.png", tMinihp[0]);
+	tex_mgr.AddLoadTask("minihp2.png", tMinihp[1]);
+	tex_mgr.AddLoadTask("ministamina.png", tMinistamina);
+	BuffInfo::LoadImages();
 }
 
 //=================================================================================================

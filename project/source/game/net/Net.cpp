@@ -601,7 +601,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	if(mp_load)
 	{
 		stream.Write(unit.netid);
-		unit.ani->Write(stream);
+		unit.mesh_inst->Write(stream);
 		stream.WriteCasted<byte>(unit.animation);
 		stream.WriteCasted<byte>(unit.current_animation);
 		stream.WriteCasted<byte>(unit.animation_state);
@@ -1311,7 +1311,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				return false;
 			}
 
-			explo->tex = resMgr.GetLoadedTexture(BUF);
+			explo->tex = ResourceManager::Get<Texture>().AddLoadTask(BUF);
 		}
 
 		// electro
@@ -1420,12 +1420,12 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				unit.human_data->mustache, unit.human_data->height);
 			return false;
 		}
-		unit.ani = new MeshInstance(aHumanBase);
+		unit.mesh_inst = new MeshInstance(aHumanBase);
 		unit.human_data->ApplyScale(aHumanBase);
 	}
 	else
 	{
-		unit.ani = new MeshInstance(unit.data->mesh);
+		unit.mesh_inst = new MeshInstance(unit.data->mesh);
 		unit.human_data = nullptr;
 	}
 
@@ -1476,16 +1476,16 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	// animation
 	if(unit.IsAlive())
 	{
-		unit.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+		unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 		unit.animation = unit.current_animation = ANI_STAND;
 	}
 	else
 	{
-		unit.ani->Play(NAMES::ani_die, PLAY_PRIO1, 0);
+		unit.mesh_inst->Play(NAMES::ani_die, PLAY_PRIO1, 0);
 		unit.animation = unit.current_animation = ANI_DIE;
 	}
 	unit.SetAnimationAtEnd();
-	unit.ani->ptr = &unit;
+	unit.mesh_inst->ptr = &unit;
 
 	// hero/player data
 	byte type;
@@ -1590,7 +1590,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		// get current state in multiplayer
 		int useable_netid;
 		if(!stream.Read(unit.netid)
-			|| !unit.ani->Read(stream)
+			|| !unit.mesh_inst->Read(stream)
 			|| !stream.ReadCasted<byte>(unit.animation)
 			|| !stream.ReadCasted<byte>(unit.current_animation)
 			|| !stream.ReadCasted<byte>(unit.animation_state)
@@ -1642,9 +1642,9 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			if(unit.action == A_SHOOT)
 			{
 				unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
-				unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-				unit.bow_instance->groups[0].speed = unit.ani->groups[1].speed;
-				unit.bow_instance->groups[0].time = unit.ani->groups[1].time;
+				unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+				unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[1].speed;
+				unit.bow_instance->groups[0].time = unit.mesh_inst->groups[1].time;
 			}
 		}
 	}
@@ -1690,8 +1690,8 @@ bool Game::ReadDoor(BitStream& stream, Door& door)
 		return false;
 	}
 
-	door.ani = new MeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
-	door.ani->groups[0].speed = 2.f;
+	door.mesh_inst = new MeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
+	door.mesh_inst->groups[0].speed = 2.f;
 	door.phy = new btCollisionObject;
 	door.phy->setCollisionShape(shape_door);
 
@@ -1706,7 +1706,7 @@ bool Game::ReadDoor(BitStream& stream, Door& door)
 	{
 		btVector3& pos = door.phy->getWorldTransform().getOrigin();
 		pos.setY(pos.y() - 100.f);
-		door.ani->SetToEnd(door.ani->ani->anims[0].name.c_str());
+		door.mesh_inst->SetToEnd(door.mesh_inst->mesh->anims[0].name.c_str());
 	}
 
 	return true;
@@ -1733,7 +1733,7 @@ bool Game::ReadChest(BitStream& stream, Chest& chest)
 		|| !stream.Read(chest.rot)
 		|| !stream.Read(chest.netid))
 		return false;
-	chest.ani = new MeshInstance(aSkrzynia);
+	chest.mesh_inst = new MeshInstance(aSkrzynia);
 	return true;
 }
 
@@ -2186,7 +2186,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 			if(!stream.Read(new_pos)
 				|| !stream.Read(rot)
-				|| !stream.Read(unit.ani->groups[0].speed))
+				|| !stream.Read(unit.mesh_inst->groups[0].speed))
 			{
 				Error("UpdateServer: Broken packet ID_CONTROL(2) from %s.", info.name.c_str());
 				StreamError();
@@ -2372,7 +2372,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					unit.ani->groups[1].speed = 1.f;
+					unit.mesh_inst->groups[1].speed = 1.f;
 					SetUnitWeaponState(unit, !hide, weapon_type);
 					// send to other players
 					if(players > 2)
@@ -2409,9 +2409,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					case AID_Attack:
 						if(unit.action == A_ATTACK && unit.animation_state == 0)
 						{
-							unit.attack_power = unit.ani->groups[1].time / unit.GetAttackFrame(0);
+							unit.attack_power = unit.mesh_inst->groups[1].time / unit.GetAttackFrame(0);
 							unit.animation_state = 1;
-							unit.ani->groups[1].speed = unit.attack_power + unit.GetAttackSpeed();
+							unit.mesh_inst->groups[1].speed = unit.attack_power + unit.GetAttackSpeed();
 							unit.attack_power += 1.f;
 							unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * ((unit.attack_power - 1.f) / 2 + 1.f));
 						}
@@ -2422,8 +2422,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.f;
-							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = attack_speed;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
 						}
@@ -2436,8 +2436,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.f;
-							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = attack_speed;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.animation_state = 0;
 							unit.hitted = false;
 						}
@@ -2448,15 +2448,15 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.animation_state = 1;
 						else
 						{
-							unit.ani->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = attack_speed;
+							unit.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.action = A_SHOOT;
 							unit.animation_state = (type == AID_Shoot ? 1 : 0);
 							unit.hitted = false;
 							if(!unit.bow_instance)
 								unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
-							unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-							unit.bow_instance->groups[0].speed = unit.ani->groups[1].speed;
+							unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+							unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[1].speed;
 							unit.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 						}
 						if(type == AID_Shoot)
@@ -2471,9 +2471,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					case AID_Block:
 						{
 							unit.action = A_BLOCK;
-							unit.ani->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = 1.f;
-							unit.ani->groups[1].blend_max = attack_speed;
+							unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
+							unit.mesh_inst->groups[1].speed = 1.f;
+							unit.mesh_inst->groups[1].blend_max = attack_speed;
 							unit.animation_state = 0;
 						}
 						break;
@@ -2481,9 +2481,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						{
 							unit.action = A_BASH;
 							unit.animation_state = 0;
-							unit.ani->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = 2.f;
-							unit.ani->frame_end_info2 = false;
+							unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
+							unit.mesh_inst->groups[1].speed = 2.f;
+							unit.mesh_inst->frame_end_info2 = false;
 							unit.hitted = false;
 							unit.player->Train(TrainWhat::BashStart, 0.f, 0);
 							unit.RemoveStamina(50.f);
@@ -2497,8 +2497,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.5f;
 							unit.run_attack = true;
-							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = attack_speed;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
 							unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * 1.5f);
@@ -2507,8 +2507,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					case AID_StopBlock:
 						{
 							unit.action = A_NONE;
-							unit.ani->frame_end_info2 = false;
-							unit.ani->Deactivate(1);
+							unit.mesh_inst->frame_end_info2 = false;
+							unit.mesh_inst->Deactivate(1);
 						}
 						break;
 					}
@@ -2610,9 +2610,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 
 					unit.action = A_ANIMATION;
-					unit.ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-					unit.ani->groups[0].speed = 1.f;
-					unit.ani->frame_end_info = false;
+					unit.mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+					unit.mesh_inst->groups[0].speed = 1.f;
+					unit.mesh_inst->frame_end_info = false;
 					item->pos = unit.pos;
 					item->pos.x -= sin(unit.rot)*0.25f;
 					item->pos.z -= cos(unit.rot)*0.25f;
@@ -2657,9 +2657,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				bool up_animation = (item->pos.y > unit.pos.y + 0.5f);
 				unit.action = A_PICKUP;
 				unit.animation = ANI_PLAY;
-				unit.ani->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
-				unit.ani->groups[0].speed = 1.f;
-				unit.ani->frame_end_info = false;
+				unit.mesh_inst->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				unit.mesh_inst->groups[0].speed = 1.f;
+				unit.mesh_inst->frame_end_info = false;
 
 				// send pickup acceptation
 				NetChangePlayer& c = Add1(net_changes_player);
@@ -2783,7 +2783,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					c2.id = chest->netid;
 
 					// animation / sound
-					chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
+					chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
 					if(sound_volume)
 					{
 						Vec3 pos = chest->pos;
@@ -3158,7 +3158,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			if(player.action == PlayerController::Action_LootChest)
 			{
 				player.action_chest->looted = false;
-				player.action_chest->ani->Play(&player.action_chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+				player.action_chest->mesh_inst->Play(&player.action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 				if(sound_volume)
 				{
 					Vec3 pos = player.action_chest->pos;
@@ -3225,9 +3225,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					unit.ani->Play(unit.data->idles->at(index).c_str(), PLAY_ONCE, 0);
-					unit.ani->groups[0].speed = 1.f;
-					unit.ani->frame_end_info = false;
+					unit.mesh_inst->Play(unit.data->idles->at(index).c_str(), PLAY_ONCE, 0);
+					unit.mesh_inst->groups[0].speed = 1.f;
+					unit.mesh_inst->frame_end_info = false;
 					unit.animation = ANI_IDLE;
 					// send info to other players
 					if(players > 2)
@@ -3428,8 +3428,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 						unit.action = A_ANIMATION2;
 						unit.animation = ANI_PLAY;
-						unit.ani->Play(base.anim, PLAY_PRIO1, 0);
-						unit.ani->groups[0].speed = 1.f;
+						unit.mesh_inst->Play(base.anim, PLAY_PRIO1, 0);
+						unit.mesh_inst->groups[0].speed = 1.f;
 						unit.useable = useable;
 						unit.target_pos = unit.pos;
 						unit.target_pos2 = useable->pos;
@@ -4184,20 +4184,20 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					if(door->state == Door::Open)
 					{
 						door->state = Door::Closing;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
+						door->mesh_inst->frame_end_info = false;
 					}
 					else if(door->state == Door::Opening)
 					{
 						door->state = Door::Closing2;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+						door->mesh_inst->frame_end_info = false;
 					}
 					else if(door->state == Door::Opening2)
 					{
 						door->state = Door::Closing;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+						door->mesh_inst->frame_end_info = false;
 					}
 					else
 						ok = false;
@@ -4209,22 +4209,22 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
+						door->mesh_inst->frame_end_info = false;
 					}
 					else if(door->state == Door::Closing)
 					{
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening2;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
+						door->mesh_inst->frame_end_info = false;
 					}
 					else if(door->state == Door::Closing2)
 					{
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
+						door->mesh_inst->frame_end_info = false;
 					}
 					else
 						ok = false;
@@ -4609,9 +4609,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 					// animation
 					unit.action = A_ANIMATION;
-					unit.ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-					unit.ani->groups[0].speed = 1.f;
-					unit.ani->frame_end_info = false;
+					unit.mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+					unit.mesh_inst->groups[0].speed = 1.f;
+					unit.mesh_inst->frame_end_info = false;
 
 					// create item
 					GroundItem* item = new GroundItem;
@@ -4836,7 +4836,7 @@ void Game::WriteServerChanges(BitStream& stream)
 				stream.Write(unit.netid);
 				stream.Write(unit.pos);
 				stream.Write(unit.rot);
-				stream.Write(unit.ani->groups[0].speed);
+				stream.Write(unit.mesh_inst->groups[0].speed);
 				stream.WriteCasted<byte>(unit.animation);
 			}
 			break;
@@ -5543,7 +5543,7 @@ void Game::UpdateClient(float dt)
 			WriteBool(net_stream, true);
 			net_stream.Write((cstring)&pc->unit->pos, sizeof(Vec3));
 			net_stream.Write(pc->unit->rot);
-			net_stream.Write(pc->unit->ani->groups[0].speed);
+			net_stream.Write(pc->unit->mesh_inst->groups[0].speed);
 			net_stream.WriteCasted<byte>(pc->unit->animation);
 		}
 		else
@@ -5613,7 +5613,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				else if(unit != pc->unit)
 				{
 					unit->pos = pos;
-					unit->ani->groups[0].speed = ani_speed;
+					unit->mesh_inst->groups[0].speed = ani_speed;
 					assert(ani < ANI_MAX);
 					if(unit->animation != ANI_PLAY && ani != ANI_PLAY)
 						unit->animation = ani;
@@ -5677,8 +5677,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else if(unit != pc->unit)
 					{
-						if(unit->ani->ani->head.n_groups > 1)
-							unit->ani->groups[1].speed = 1.f;
+						if(unit->mesh_inst->mesh->head.n_groups > 1)
+							unit->mesh_inst->groups[1].speed = 1.f;
 						SetUnitWeaponState(*unit, !hide, type);
 					}
 				}
@@ -5713,7 +5713,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 				Unit& unit = *unit_ptr;
 				byte type = (typeflags & 0xF);
-				int group = unit.ani->ani->head.n_groups - 1;
+				int group = unit.mesh_inst->mesh->head.n_groups - 1;
 				unit.weapon_state = WS_TAKEN;
 
 				switch(type)
@@ -5722,7 +5722,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					if(unit.action == A_ATTACK && unit.animation_state == 0)
 					{
 						unit.animation_state = 1;
-						unit.ani->groups[1].speed = attack_speed;
+						unit.mesh_inst->groups[1].speed = attack_speed;
 					}
 					else
 					{
@@ -5731,8 +5731,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
-						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
-						unit.ani->groups[group].speed = attack_speed;
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.animation_state = 1;
 						unit.hitted = false;
 					}
@@ -5744,8 +5744,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
-						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
-						unit.ani->groups[group].speed = attack_speed;
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.animation_state = 0;
 						unit.hitted = false;
 					}
@@ -5756,23 +5756,23 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.animation_state = 1;
 					else
 					{
-						unit.ani->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
-						unit.ani->groups[group].speed = attack_speed;
+						unit.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.action = A_SHOOT;
 						unit.animation_state = (type == AID_Shoot ? 1 : 0);
 						unit.hitted = false;
 						if(!unit.bow_instance)
 							unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
-						unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-						unit.bow_instance->groups[0].speed = unit.ani->groups[group].speed;
+						unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+						unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[group].speed;
 					}
 					break;
 				case AID_Block:
 					{
 						unit.action = A_BLOCK;
-						unit.ani->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, group);
-						unit.ani->groups[1].speed = 1.f;
-						unit.ani->groups[1].blend_max = attack_speed;
+						unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, group);
+						unit.mesh_inst->groups[1].speed = 1.f;
+						unit.mesh_inst->groups[1].blend_max = attack_speed;
 						unit.animation_state = 0;
 					}
 					break;
@@ -5780,9 +5780,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						unit.action = A_BASH;
 						unit.animation_state = 0;
-						unit.ani->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, group);
-						unit.ani->groups[1].speed = 2.f;
-						unit.ani->frame_end_info2 = false;
+						unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, group);
+						unit.mesh_inst->groups[1].speed = 2.f;
+						unit.mesh_inst->frame_end_info2 = false;
 						unit.hitted = false;
 					}
 					break;
@@ -5794,8 +5794,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.5f;
 						unit.run_attack = true;
-						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
-						unit.ani->groups[group].speed = attack_speed;
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.animation_state = 1;
 						unit.hitted = false;
 					}
@@ -5803,9 +5803,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				case AID_StopBlock:
 					{
 						unit.action = A_NONE;
-						unit.ani->frame_end_info2 = false;
-						unit.ani->Deactivate(group);
-						unit.ani->groups[1].speed = 1.f;
+						unit.mesh_inst->frame_end_info2 = false;
+						unit.mesh_inst->Deactivate(group);
+						unit.mesh_inst->groups[1].speed = 1.f;
 					}
 					break;
 				}
@@ -5988,9 +5988,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else if(unit != pc->unit)
 					{
 						unit->action = A_ANIMATION;
-						unit->ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-						unit->ani->groups[0].speed = 1.f;
-						unit->ani->frame_end_info = false;
+						unit->mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+						unit->mesh_inst->groups[0].speed = 1.f;
+						unit->mesh_inst->frame_end_info = false;
 					}
 				}
 			}
@@ -6032,9 +6032,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						unit->action = A_PICKUP;
 						unit->animation = ANI_PLAY;
-						unit->ani->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
-						unit->ani->groups[0].speed = 1.f;
-						unit->ani->frame_end_info = false;
+						unit->mesh_inst->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+						unit->mesh_inst->groups[0].speed = 1.f;
+						unit->mesh_inst->frame_end_info = false;
 					}
 				}
 			}
@@ -6143,16 +6143,16 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						else
 							unit->animation_state = 1;
 
-						if(unit->ani->ani->head.n_groups == 2)
+						if(unit->mesh_inst->mesh->head.n_groups == 2)
 						{
-							unit->ani->frame_end_info2 = false;
-							unit->ani->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit->mesh_inst->frame_end_info2 = false;
+							unit->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						}
 						else
 						{
-							unit->ani->frame_end_info = false;
-							unit->ani->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-							unit->ani->groups[0].speed = 1.f;
+							unit->mesh_inst->frame_end_info = false;
+							unit->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+							unit->mesh_inst->groups[0].speed = 1.f;
 							unit->animation = ANI_PLAY;
 						}
 					}
@@ -6295,9 +6295,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						unit->ani->Play(unit->data->idles->at(animation_index).c_str(), PLAY_ONCE, 0);
-						unit->ani->groups[0].speed = 1.f;
-						unit->ani->frame_end_info = false;
+						unit->mesh_inst->Play(unit->data->idles->at(animation_index).c_str(), PLAY_ONCE, 0);
+						unit->mesh_inst->groups[0].speed = 1.f;
+						unit->mesh_inst->frame_end_info = false;
 						unit->animation = ANI_IDLE;
 					}
 				}
@@ -6361,8 +6361,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 						if(animation != 0)
 						{
-							unit->ani->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-							unit->ani->groups[0].speed = 1.f;
+							unit->mesh_inst->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+							unit->mesh_inst->groups[0].speed = 1.f;
 							unit->animation = ANI_PLAY;
 							unit->action = A_ANIMATION;
 						}
@@ -6541,8 +6541,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						{
 							pc->unit->HealPoison();
 							pc->unit->live_state = Unit::ALIVE;
-							pc->unit->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-							pc->unit->ani->groups[0].speed = 1.f;
+							pc->unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+							pc->unit->mesh_inst->groups[0].speed = 1.f;
 							pc->unit->action = A_ANIMATION;
 						}
 					}
@@ -6825,7 +6825,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 									interpolators.Free(info->u->interp);
 								if(info->u->cobj)
 									delete info->u->cobj->getCollisionShape();
-								delete info->u->ani;
+								delete info->u->mesh_inst;
 								delete info->u;
 								info->u = nullptr;
 							}
@@ -6878,8 +6878,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 					unit->action = A_ANIMATION2;
 					unit->animation = ANI_PLAY;
-					unit->ani->Play(state == 2 ? "czyta_papiery" : base.anim, PLAY_PRIO1, 0);
-					unit->ani->groups[0].speed = 1.f;
+					unit->mesh_inst->Play(state == 2 ? "czyta_papiery" : base.anim, PLAY_PRIO1, 0);
+					unit->mesh_inst->groups[0].speed = 1.f;
 					unit->useable = useable;
 					unit->target_pos = unit->pos;
 					unit->target_pos2 = useable->pos;
@@ -7219,20 +7219,20 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							if(door->state == Door::Open)
 							{
 								door->state = Door::Closing;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
-								door->ani->frame_end_info = false;
+								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
+								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Opening)
 							{
 								door->state = Door::Closing2;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-								door->ani->frame_end_info = false;
+								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Opening2)
 							{
 								door->state = Door::Closing;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-								door->ani->frame_end_info = false;
+								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+								door->mesh_inst->frame_end_info = false;
 							}
 							else
 								ok = false;
@@ -7244,22 +7244,22 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-								door->ani->frame_end_info = false;
+								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
+								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Closing)
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening2;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-								door->ani->frame_end_info = false;
+								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
+								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Closing2)
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-								door->ani->frame_end_info = false;
+								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
+								door->mesh_inst->frame_end_info = false;
 							}
 							else
 								ok = false;
@@ -7299,7 +7299,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
+						chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
 						if(sound_volume)
 						{
 							Vec3 pos = chest->pos;
@@ -7329,7 +7329,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+						chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 						if(sound_volume)
 						{
 							Vec3 pos = chest->pos;
@@ -7658,17 +7658,17 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit->attack_id = attack_id;
 						unit->animation_state = 0;
 
-						if(unit->ani->ani->head.n_groups == 2)
+						if(unit->mesh_inst->mesh->head.n_groups == 2)
 						{
-							unit->ani->frame_end_info2 = false;
-							unit->ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+							unit->mesh_inst->frame_end_info2 = false;
+							unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 						}
 						else
 						{
-							unit->ani->frame_end_info = false;
+							unit->mesh_inst->frame_end_info = false;
 							unit->animation = ANI_PLAY;
-							unit->ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-							unit->ani->groups[0].speed = 1.f;
+							unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							unit->mesh_inst->groups[0].speed = 1.f;
 						}
 					}
 				}
@@ -10340,9 +10340,9 @@ void Game::InterpolateUnits(float dt)
 	{
 		if(unit != pc->unit)
 			UpdateInterpolator(unit->interp, dt, unit->visual_pos, unit->rot);
-		if(unit->ani->ani->head.n_groups == 1)
+		if(unit->mesh_inst->mesh->head.n_groups == 1)
 		{
-			if(!unit->ani->groups[0].anim)
+			if(!unit->mesh_inst->groups[0].anim)
 			{
 				unit->action = A_NONE;
 				unit->animation = ANI_STAND;
@@ -10350,7 +10350,7 @@ void Game::InterpolateUnits(float dt)
 		}
 		else
 		{
-			if(!unit->ani->groups[0].anim && !unit->ani->groups[1].anim)
+			if(!unit->mesh_inst->groups[0].anim && !unit->mesh_inst->groups[1].anim)
 			{
 				unit->action = A_NONE;
 				unit->animation = ANI_STAND;
@@ -10365,9 +10365,9 @@ void Game::InterpolateUnits(float dt)
 			{
 				if(unit != pc->unit)
 					UpdateInterpolator(unit->interp, dt, unit->visual_pos, unit->rot);
-				if(unit->ani->ani->head.n_groups == 1)
+				if(unit->mesh_inst->mesh->head.n_groups == 1)
 				{
-					if(!unit->ani->groups[0].anim)
+					if(!unit->mesh_inst->groups[0].anim)
 					{
 						unit->action = A_NONE;
 						unit->animation = ANI_STAND;
@@ -10375,7 +10375,7 @@ void Game::InterpolateUnits(float dt)
 				}
 				else
 				{
-					if(!unit->ani->groups[0].anim && !unit->ani->groups[1].anim)
+					if(!unit->mesh_inst->groups[0].anim && !unit->mesh_inst->groups[1].anim)
 					{
 						unit->action = A_NONE;
 						unit->animation = ANI_STAND;
@@ -10610,7 +10610,7 @@ void Game::ProcessLeftPlayers()
 					{
 						// close chest
 						unit->player->action_chest->looted = false;
-						unit->player->action_chest->ani->Play(&unit->player->action_chest->ani->ani->anims[0],
+						unit->player->action_chest->mesh_inst->Play(&unit->player->action_chest->mesh_inst->mesh->anims[0],
 							PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 						if(sound_volume)
 						{

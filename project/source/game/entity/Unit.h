@@ -4,7 +4,7 @@
 #include "Item.h"
 #include "UnitData.h"
 #include "Class.h"
-#include "Mesh.h"
+#include "MeshInstance.h"
 #include "HumanData.h"
 #include "HeroData.h"
 #include "PlayerController.h"
@@ -139,7 +139,7 @@ struct Unit
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
 
-	MeshInstance* ani;
+	MeshInstance* mesh_inst;
 	Animation animation, current_animation;
 	Human* human_data;
 	LiveState live_state;
@@ -186,7 +186,7 @@ struct Unit
 	StaminaAction stamina_action;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Unit() : ani(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
+	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
 		human_data(nullptr), stamina_action(SA_RESTORE_MORE) {}
 	~Unit();
 
@@ -219,7 +219,7 @@ struct Unit
 	void EndEffects(int days = 0, int* best_nat = nullptr);
 	float GetSphereRadius() const
 	{
-		float radius = ani->ani->head.radius;
+		float radius = mesh_inst->mesh->head.radius;
 		if(data->type == UNIT_TYPE::HUMAN)
 			radius *= ((human_data->height - 1)*0.2f + 1.f);
 		return radius;
@@ -245,7 +245,7 @@ struct Unit
 		if(data->type == UNIT_TYPE::HUMAN)
 			return 1.73f * ((human_data->height - 1)*0.2f + 1.f);
 		else
-			return ani->ani->head.bbox.SizeY();
+			return mesh_inst->mesh->head.bbox.SizeY();
 	}
 	Vec3 GetHeadPoint() const
 	{
@@ -786,7 +786,7 @@ struct Unit
 	void ApplyHumanData(HumanData& hd)
 	{
 		hd.Set(*human_data);
-		human_data->ApplyScale(ani->ani);
+		human_data->ApplyScale(mesh_inst->mesh);
 	}
 
 	int ItemsToSellWeight() const;

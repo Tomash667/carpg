@@ -22,6 +22,6 @@ enum class MusicType
 //-----------------------------------------------------------------------------
 struct Music
 {
-	SoundResourcePtr music;
+	SoundPtr music;
 	MusicType type;
 };

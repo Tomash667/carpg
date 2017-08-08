@@ -174,11 +174,23 @@ public:
 	};
 
 	template<typename T>
-	class TypeManager
+	class BaseTypeManager
 	{
 		template<typename T>
 		struct Internal
 		{
+		};
+
+		template<>
+		struct Internal<Mesh>
+		{
+			static const ResourceType Type = ResourceType::Mesh;
+		};
+
+		template<>
+		struct Internal<Sound>
+		{
+			static const ResourceType Type = ResourceType::Sound;
 		};
 
 		template<>
@@ -190,16 +202,97 @@ public:
 	public:
 		const ResourceType Type = Internal<T>::Type;
 
-		TypeManager(ResourceManager& res_mgr) : res_mgr(res_mgr)
+		BaseTypeManager(ResourceManager& res_mgr) : res_mgr(res_mgr)
 		{
 		}
 
-		// Return loaded texture, if not exists throw
-		T* GetLoaded(const AnyString& path);
+		//-------------------------------------------------------------
+		// Instant methods
+		//-------------------------------------------------------------
+		// Try to return resource, if not exists return null
+		T* TryGet(const AnyString& name);
+
+		// Return resource, if not exists throws
+		T* Get(const AnyString& name);
+
+		// Return loaded resource, if not exists or can't load throws
+		T* GetLoaded(const AnyString& name);
+
+		void Load(T* res);
+
+		//-------------------------------------------------------------
+		// Load screen methods
+		//-------------------------------------------------------------
+		void AddTaskCategory(const AnyString& name);
+
+		T* AddLoadTask(const AnyString& name);
+		void AddLoadTask(T* res);
+
+
 
 	private:
 		ResourceManager& res_mgr;
 	};
+
+	template<typename T>
+	class TypeManager : public BaseTypeManager<T>
+	{
+	public:
+		TypeManager(ResourceManager& res_mgr) : BaseTypeManager(res_mgr)
+		{
+		}
+	};
+
+	template<>
+	class TypeManager<Mesh> : public BaseTypeManager<Mesh>
+	{
+	public:
+		TypeManager(ResourceManager& res_mgr) : BaseTypeManager(res_mgr)
+		{
+		}
+
+		using BaseTypeManager::AddLoadTask;
+
+		void AddLoadTask(const AnyString& name, VertexData*& vertex_data);
+		void AddLoadTask(const AnyString& name, void* ptr, TaskCallback callback);
+		void AddLoadTask(Mesh* res, void* ptr, TaskCallback callback);
+	};
+
+	template<>
+	class TypeManager<Texture> : public BaseTypeManager<Texture>
+	{
+	public:
+		TypeManager(ResourceManager& res_mgr) : BaseTypeManager(res_mgr)
+		{
+		}
+
+		using BaseTypeManager::AddLoadTask;
+
+		TEX GetLoadedRaw(const AnyString& path);
+		void AddLoadTask(const AnyString& name, TEX& tex);
+		void AddLoadTask(Texture* res, TEX& tex);
+	};
+
+	template<>
+	class TypeManager<Sound> : public BaseTypeManager<Sound>
+	{
+	public:
+		TypeManager(ResourceManager& res_mgr) : BaseTypeManager(res_mgr)
+		{
+		}
+
+		using BaseTypeManager::AddLoadTask;
+
+		void AddLoadTask(const AnyString& name, SOUND& sound);
+
+		Sound* TryGetSound(const AnyString& path);
+		Sound* TryGetMusic(const AnyString& path);
+		Sound* GetSound(const AnyString& path);
+		Sound* GetMusic(const AnyString& path);
+		Sound* GetLoadedSound(const AnyString& path);
+		Sound* GetLoadedMusic(const AnyString& path);
+	};
+
 
 	ResourceManager();
 	~ResourceManager();
@@ -219,6 +312,7 @@ public:
 	bool AddPak(cstring path, cstring key = nullptr);
 	void AddTask(Task& task_data);
 	void AddTask(VoidF& callback, cstring category, int size = 1);
+	void AddTask(void* ptr, TaskCallback callback);
 	void AddTaskCategory(cstring category);
 	void Cleanup();
 	BufferHandle GetBuffer(Resource* res);

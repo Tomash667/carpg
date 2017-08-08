@@ -1615,7 +1615,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						u = CreateUnit(ud, -1, nullptr, nullptr, in_level, true);
 						info.u = u;
 						u->ApplyHumanData(info.hd);
-						u->ani->need_update = true;
+						u->mesh_inst->need_update = true;
 
 						u->player = new PlayerController;
 						u->player->id = info.id;

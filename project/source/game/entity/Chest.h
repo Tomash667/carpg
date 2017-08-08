@@ -3,7 +3,7 @@
 
 //-----------------------------------------------------------------------------
 #include "ItemSlot.h"
-#include "Mesh.h"
+#include "MeshInstance.h"
 #include "Item.h"
 
 //-----------------------------------------------------------------------------
@@ -24,19 +24,19 @@ struct Chest
 	vector<ItemSlot> items;
 	Vec3 pos;
 	float rot;
-	MeshInstance* ani;
+	MeshInstance* mesh_inst;
 	ChestEventHandler* handler;
 	int netid;
 	bool looted; // czy skrzynia jest ograbiana - nie trzeba zapisywaæ
 
 	static const int MIN_SIZE = 20;
 
-	Chest() : ani(nullptr)
+	Chest() : mesh_inst(nullptr)
 	{
 	}
 	~Chest()
 	{
-		delete ani;
+		delete mesh_inst;
 	}
 
 	void Save(HANDLE file, bool local);

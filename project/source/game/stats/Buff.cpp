@@ -14,13 +14,14 @@ BuffInfo BuffInfo::info[] = {
 	BuffInfo("buff_stamina")
 };
 
-void BuffInfo::LoadImages(ResourceManager& res_mgr)
+void BuffInfo::LoadImages()
 {
+	auto& tex_mgr = ResourceManager::Get<Texture>();
 	for(int i=0; i<BUFF_COUNT; ++i)
 	{
 		auto& buff = info[i];
 		cstring path = Format("%s.png", buff.id);
-		res_mgr.GetLoadedTexture(path, buff.img);
+		tex_mgr.AddLoadTask(path, buff.img);
 	}
 }
 

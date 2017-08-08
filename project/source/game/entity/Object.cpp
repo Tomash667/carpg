@@ -228,9 +228,9 @@ void Object::Save(HANDLE file)
 	{
 		byte len = 0;
 		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		len = (byte)strlen(mesh->res->filename);
+		len = (byte)strlen(mesh->filename);
 		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		WriteFile(file, mesh->res->filename, len, &tmp, nullptr);
+		WriteFile(file, mesh->filename, len, &tmp, nullptr);
 	}
 }
 
@@ -266,7 +266,7 @@ void Object::Load(HANDLE file)
 		ReadFile(file, BUF, len, &tmp, nullptr);
 		BUF[len] = 0;
 		if(LOAD_VERSION >= V_0_3)
-			mesh = ResourceManager::Get().GetLoadedMesh(BUF)->data;
+			mesh = ResourceManager::Get<Mesh>().AddLoadTask(BUF);
 		else
 		{
 			if(strcmp(BUF, "mur.qmsh") == 0 || strcmp(BUF, "mur2.qmsh") == 0 || strcmp(BUF, "brama.qmsh") == 0)
@@ -275,7 +275,7 @@ void Object::Load(HANDLE file)
 				mesh = base->mesh;
 			}
 			else
-				mesh = ResourceManager::Get().GetLoadedMesh(BUF)->data;
+				mesh = ResourceManager::Get<Mesh>().AddLoadTask(BUF);
 		}
 	}
 }
@@ -291,7 +291,7 @@ void Object::Write(BitStream& stream) const
 	else
 	{
 		stream.Write<byte>(0);
-		WriteString1(stream, mesh->res->filename);
+		WriteString1(stream, mesh->filename);
 	}
 }
 
@@ -319,7 +319,7 @@ bool Object::Read(BitStream& stream)
 		// use mesh
 		if(!ReadString1(stream))
 			return false;
-		mesh = ResourceManager::Get().GetLoadedMesh(BUF)->data;
+		mesh = ResourceManager::Get<Mesh>().AddLoadTask(BUF);
 		base = nullptr;
 	}
 	return true;

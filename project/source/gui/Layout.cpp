@@ -60,20 +60,20 @@ void Layout::LoadDefault()
 	tabctrl.font_color_down = BLACK;
 	tabctrl.padding = Int2(8, 4);
 	tabctrl.padding_active = Int2(8, 8);
-	t = tex_mgr.GetLoaded("close_small.png")->tex;
+	t = tex_mgr.GetLoadedRaw("close_small.png");
 	tabctrl.close = AreaLayout(t);
 	tabctrl.close.size = Int2(12, 12);
 	tabctrl.close_hover = AreaLayout(t, COLOR_RGB(51, 153, 255));
 	tabctrl.close_hover.size = Int2(12, 12);
-	t = tex_mgr.GetLoaded("tabctrl_arrow.png")->tex;
+	t = tex_mgr.GetLoadedRaw("tabctrl_arrow.png");
 	tabctrl.button_prev = AreaLayout(t, Rect(0, 0, 12, 16));
 	tabctrl.button_prev_hover = AreaLayout(t, Rect(0, 0, 12, 16), COLOR_RGB(51, 153, 255));
 	tabctrl.button_next = AreaLayout(t, Rect(16, 0, 28, 16));
 	tabctrl.button_next_hover = AreaLayout(t, Rect(16, 0, 28, 16), COLOR_RGB(51, 153, 255));
 
-	t = tex_mgr.GetLoaded("box.png")->tex;
+	t = tex_mgr.GetLoadedRaw("box.png");
 	tree_view.background = AreaLayout(t, 8, 32);
-	t = tex_mgr.GetLoaded("treeview.png")->tex;
+	t = tex_mgr.GetLoadedRaw("treeview.png");
 	tree_view.button = AreaLayout(t, Rect(0, 0, 16, 16));
 	tree_view.button_hover = AreaLayout(t, Rect(16, 0, 32, 16));
 	tree_view.button_down = AreaLayout(t, Rect(32, 0, 48, 16));
@@ -82,14 +82,14 @@ void Layout::LoadDefault()
 	tree_view.font_color = BLACK;
 	tree_view.selected = AreaLayout(COLOR_RGB(51, 153, 255));
 	tree_view.level_offset = 16;
-	t = tex_mgr.GetLoaded("box2.png")->tex;
+	t = tex_mgr.GetLoadedRaw("box2.png");
 	tree_view.text_box_background = t;
-	t = tex_mgr.GetLoaded("drag_n_drop.png")->tex;
+	t = tex_mgr.GetLoadedRaw("drag_n_drop.png");
 	tree_view.drag_n_drop = t;
 
 	split_panel.background = AreaLayout(COLOR_RGB(0xAB, 0xAB, 0xAB), COLOR_RGB(0xA0, 0xA0, 0xA0));
 	split_panel.padding = Int2(0, 0);
-	t = tex_mgr.GetLoaded("split_panel.png")->tex;
+	t = tex_mgr.GetLoadedRaw("split_panel.png");
 	split_panel.horizontal = AreaLayout(t, Rect(3, 2, 4, 5));
 	split_panel.vertical = AreaLayout(t, Rect(11, 3, 14, 4));
 
@@ -99,9 +99,9 @@ void Layout::LoadDefault()
 	label->padding = Int2(0, 0);
 	label->align = DT_LEFT;
 
-	t = tex_mgr.GetLoaded("box.png")->tex;
+	t = tex_mgr.GetLoadedRaw("box.png");
 	check_box_group.background = AreaLayout(t, 8, 32);
-	t = tex_mgr.GetLoaded("checkbox.png")->tex;
+	t = tex_mgr.GetLoadedRaw("checkbox.png");
 	check_box_group.box = AreaLayout(t, Rect(0, 0, 16, 16));
 	check_box_group.checked = AreaLayout(t, Rect(16, 0, 32, 16));
 	check_box_group.font = def_font;

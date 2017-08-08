@@ -262,7 +262,7 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 
 	if(u->data->type == UNIT_TYPE::HUMAN)
 	{
-		int bone = u->ani->ani->GetBone("usta")->id;
+		int bone = u->mesh_inst->mesh->GetBone("usta")->id;
 		static Matrix mat2;
 		float val = u->talking ? sin(u->talk_timer * 6) : 0.f;
 		mat[bone] = Matrix::RotationX(val / 5) *mat[bone];
@@ -2398,7 +2398,7 @@ void Game::UnitFall(Unit& u)
 	}
 	u.animation = ANI_DIE;
 	u.talking = false;
-	u.ani->need_update = true;
+	u.mesh_inst->need_update = true;
 }
 
 //=================================================================================================
@@ -2508,7 +2508,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	}
 	u.animation = ANI_DIE;
 	u.talking = false;
-	u.ani->need_update = true;
+	u.mesh_inst->need_update = true;
 
 	// dŸwiêk
 	if(sound_volume)
@@ -2607,11 +2607,11 @@ void Game::UnitStandup(Unit& u)
 {
 	u.HealPoison();
 	u.live_state = Unit::ALIVE;
-	Mesh::Animation* anim = u.ani->ani->GetAnimation("wstaje2");
+	Mesh::Animation* anim = u.mesh_inst->mesh->GetAnimation("wstaje2");
 	if(anim)
 	{
-		u.ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-		u.ani->groups[0].speed = 1.f;
+		u.mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+		u.mesh_inst->groups[0].speed = 1.f;
 		u.action = A_ANIMATION;
 	}
 	else
@@ -3039,7 +3039,7 @@ MeshInstance* Game::GetBowInstance(Mesh* mesh)
 	{
 		MeshInstance* instance = bow_instances.back();
 		bow_instances.pop_back();
-		instance->ani = mesh;
+		instance->mesh = mesh;
 		return instance;
 	}
 }
@@ -3048,7 +3048,7 @@ MeshInstance* Game::GetBowInstance(Mesh* mesh)
 void Game::SetupTrap(TaskData& task_data)
 {
 	BaseTrap& trap = *(BaseTrap*)task_data.ptr;
-	trap.mesh = (Mesh*)task_data.res->data;
+	trap.mesh = (Mesh*)task_data.res;
 
 	Mesh::Point* pt = trap.mesh->FindPoint("hitbox");
 	assert(pt);
@@ -3066,7 +3066,7 @@ void Game::SetupObject(TaskData& task_data)
 {
 	Obj& o = *(Obj*)task_data.ptr;
 	if(task_data.res)
-		o.mesh = (Mesh*)task_data.res->data;
+		o.mesh = (Mesh*)task_data.res;
 
 	if(IS_SET(o.flags, OBJ_BUILDING))
 		return;

@@ -1,6 +1,14 @@
 ﻿CURRENT:
++ there is some code depending on Resource::filename, and using == operator!
++ WHAT TO LOAD AND WHERE
+	+ gui textures - at startup
+	+ else when required
+	+ human mesh/startup items on opening create character screen - show small loading window
 ===============================================================================================================
 NEW:
++ rename Bullet -> Projecticle (or other)
++ BaseBullet for Bullet, save by base, no mesh etc
++ dynamic loading in background (for example items/hair on character creation)
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
@@ -49,7 +57,7 @@ POTRZEBA PRZYKŁADÓW:
 - ai look at angle nie jest clipowane, albo coś?
 - jednostka po walce na arenie miała in_building 1, ale pozycję przed areną, zcrashowało na FindLocalPath bo dystans był za duży
 - check unit ai error, bohater po walce na arenie, nie ma ai; czasami hero nie ma ai
-- crash na UpdateSpeechBoubbles, boubble->unit->ani = nullptr
+- crash na UpdateSpeechBoubbles, boubble->unit->mesh_inst = nullptr
 - u leinnana po wczytaniu w mp nie było minimapy w mieście
 - brak synchronizacji terenu pomiędzy klientem a serwerem
 - [Minister of Death] In sometimes happen in multiplayer that someone get stuck to the wall when he dies, making that person unable to revive,

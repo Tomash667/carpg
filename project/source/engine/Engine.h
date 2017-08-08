@@ -1,11 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Core.h"
 #include "Timer.h"
 #include "KeyStates.h"
 #include "Physics.h"
-#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 #define DISPLAY_FORMAT D3DFMT_X8R8G8B8
@@ -109,8 +107,6 @@ protected:
 	virtual void OnResize() = 0;
 	virtual void OnTick(float dt) = 0;
 	virtual void OnFocus(bool focus) = 0;
-
-	ResourceManager& resMgr;
 
 private:
 	void AdjustWindowSize();

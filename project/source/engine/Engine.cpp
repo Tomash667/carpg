@@ -1,5 +1,7 @@
 ﻿#include "Pch.h"
+#include "Core.h"
 #include "Engine.h"
+#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 extern const uint MIN_WIDTH = 800;
@@ -18,7 +20,7 @@ extern string g_system_dir;
 Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), fmod_system(nullptr),
 phy_config(nullptr), phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), replace_cursor(false), locked_cursor(true),
 lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1, -1), s_wnd_size(-1, -1), music_ended(false), disabled_sound(false), key_callback(nullptr),
-res_freed(false), vsync(true), resMgr(ResourceManager::Get()), active(false), mouse_dif(0, 0)
+res_freed(false), vsync(true), active(false), mouse_dif(0, 0)
 {
 	engine = this;
 }
@@ -202,7 +204,7 @@ void Engine::Cleanup()
 
 	OnCleanup();
 
-	resMgr.Cleanup();
+	ResourceManager::Get().Cleanup();
 
 	// directx
 	if(device)
@@ -1333,7 +1335,7 @@ bool Engine::Start(cstring title, bool _fullscreen, uint w, uint h)
 		InitRender();
 		InitSound();
 		InitPhysics();
-		resMgr.Init(device, fmod_system);
+		ResourceManager::Get().Init(device, fmod_system);
 	}
 	catch(cstring e)
 	{

@@ -113,7 +113,7 @@ void Game::BreakAction(Unit& unit, bool fall, bool notify)
 		}
 		else
 			unit.used_item = nullptr;
-		unit.ani->Deactivate(1);
+		unit.mesh_inst->Deactivate(1);
 		unit.action = A_NONE;
 		break;
 	case A_EAT:
@@ -126,7 +126,7 @@ void Game::BreakAction(Unit& unit, bool fall, bool notify)
 		}
 		else
 			unit.used_item = nullptr;
-		unit.ani->Deactivate(1);
+		unit.mesh_inst->Deactivate(1);
 		unit.action = A_NONE;
 		break;
 	case A_TAKE_WEAPON:
@@ -157,7 +157,7 @@ void Game::BreakAction(Unit& unit, bool fall, bool notify)
 		unit.action = A_NONE;
 		break;
 	case A_BLOCK:
-		unit.ani->Deactivate(1);
+		unit.mesh_inst->Deactivate(1);
 		unit.action = A_NONE;
 		break;
 	}
@@ -186,8 +186,8 @@ void Game::BreakAction(Unit& unit, bool fall, bool notify)
 	else
 		unit.action = A_NONE;
 
-	unit.ani->frame_end_info = false;
-	unit.ani->frame_end_info2 = false;
+	unit.mesh_inst->frame_end_info = false;
+	unit.mesh_inst->frame_end_info2 = false;
 	unit.run_attack = false;
 
 	if(unit.IsPlayer())
@@ -311,7 +311,7 @@ void Game::Draw()
 void Game::GenerateImage(TaskData& task_data)
 {
 	Item* item = (Item*)task_data.ptr;
-	item->mesh = (Mesh*)task_data.res->data;
+	item->mesh = (Mesh*)task_data.res;
 
 	auto it = item_texture_map.lower_bound(item->mesh);
 	if(it != item_texture_map.end() && !(item_texture_map.key_comp()(item->mesh, it->first)))
@@ -339,7 +339,7 @@ void Game::GenerateImage(TaskData& task_data)
 	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
 	V(device->BeginScene());
 
-	const Mesh& a = *item->mesh;
+	const Mesh& mesh = *item->mesh;
 
 	const TexId* tex_override = nullptr;
 	if(item->type == IT_ARMOR)
@@ -347,16 +347,16 @@ void Game::GenerateImage(TaskData& task_data)
 		tex_override = item->ToArmor().GetTextureOverride();
 		if(tex_override)
 		{
-			assert(item->ToArmor().tex_override.size() == a.head.n_subs);
+			assert(item->ToArmor().tex_override.size() == mesh.head.n_subs);
 		}
 	}
 
 	Matrix matWorld = Matrix::IdentityMatrix,
-		matView = Matrix::CreateLookAt(a.cam_pos, a.cam_target, a.cam_up),
+		matView = Matrix::CreateLookAt(mesh.cam_pos, mesh.cam_target, mesh.cam_up),
 		matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
 
 	LightData ld;
-	ld.pos = a.cam_pos;
+	ld.pos = mesh.cam_pos;
 	ld.color = Vec3(1, 1, 1);
 	ld.range = 10.f;
 
@@ -369,18 +369,18 @@ void Game::GenerateImage(TaskData& task_data)
 	V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 	V(eMesh->SetRawValue(hMeshLights, &ld, 0, sizeof(LightData)));
 
-	V(device->SetVertexDeclaration(vertex_decl[a.vertex_decl]));
-	V(device->SetStreamSource(0, a.vb, 0, a.vertex_size));
-	V(device->SetIndices(a.ib));
+	V(device->SetVertexDeclaration(vertex_decl[mesh.vertex_decl]));
+	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
+	V(device->SetIndices(mesh.ib));
 
 	UINT passes;
 	V(eMesh->Begin(&passes, 0));
 	V(eMesh->BeginPass(0));
 
-	for(int i = 0; i < a.head.n_subs; ++i)
+	for(int i = 0; i < mesh.head.n_subs; ++i)
 	{
-		const Mesh::Submesh& sub = a.subs[i];
-		V(eMesh->SetTexture(hMeshTex, GetTexture(i, tex_override, a)));
+		const Mesh::Submesh& sub = mesh.subs[i];
+		V(eMesh->SetTexture(hMeshTex, mesh.GetTexture(i, tex_override)));
 		V(eMesh->CommitChanges());
 		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
 	}
@@ -1588,16 +1588,16 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		u.human_data->height += dt;
 		if(Key.Down(VK_SHIFT) && u.human_data->height > 1.1f)
 			u.human_data->height = 1.1f;
-		u.human_data->ApplyScale(u.ani->ani);
-		u.ani->need_update = true;
+		u.human_data->ApplyScale(u.mesh_inst->mesh);
+		u.mesh_inst->need_update = true;
 	}
 	else if(Key.Down('9'))
 	{
 		u.human_data->height -= dt;
 		if(Key.Down(VK_SHIFT) && u.human_data->height < 0.9f)
 			u.human_data->height = 0.9f;
-		u.human_data->ApplyScale(u.ani->ani);
-		u.ani->need_update = true;
+		u.human_data->ApplyScale(u.mesh_inst->mesh);
+		u.mesh_inst->need_update = true;
 	}*/
 
 	/* sprawdzanie które kafelki wokó³ gracza blokuj¹
@@ -1909,7 +1909,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 					case WS_HIDDEN:
 						// broñ jest schowana, zacznij wyjmowaæ
-						u.ani->Play(u.GetTakeWeaponAnimation(bron == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+						u.mesh_inst->Play(u.GetTakeWeaponAnimation(bron == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 						u.weapon_taken = bron;
 						u.animation_state = 0;
 						u.weapon_state = WS_TAKING;
@@ -1925,7 +1925,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							u.weapon_hiding = W_NONE;
 							pc->ostatnia = u.weapon_taken;
 							u.weapon_state = WS_TAKEN;
-							u.ani->Deactivate(1);
+							u.mesh_inst->Deactivate(1);
 						}
 						else
 						{
@@ -1935,7 +1935,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							pc->ostatnia = u.weapon_taken;
 							u.weapon_state = WS_TAKING;
 							u.animation_state = 0;
-							CLEAR_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
+							CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 						}
 						break;
 					case WS_TAKING:
@@ -1946,7 +1946,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							u.action = A_NONE;
 							u.weapon_taken = W_NONE;
 							u.weapon_state = WS_HIDDEN;
-							u.ani->Deactivate(1);
+							u.mesh_inst->Deactivate(1);
 						}
 						else
 						{
@@ -1955,12 +1955,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							u.weapon_taken = W_NONE;
 							u.weapon_state = WS_HIDING;
 							u.animation_state = 0;
-							SET_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
+							SET_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 						}
 						break;
 					case WS_TAKEN:
 						// broñ jest wyjêta, zacznij chowaæ
-						u.ani->Play(u.GetTakeWeaponAnimation(bron == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
+						u.mesh_inst->Play(u.GetTakeWeaponAnimation(bron == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
 						u.weapon_hiding = bron;
 						u.weapon_taken = W_NONE;
 						u.weapon_state = WS_HIDING;
@@ -1990,7 +1990,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			if(u.weapon_state == WS_HIDDEN)
 			{
 				// broñ schowana, zacznij wyjmowaæ
-				u.ani->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
+				u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
 				u.weapon_taken = pc->ostatnia = W_ONE_HANDED;
 				u.weapon_state = WS_TAKING;
 				u.action = A_TAKE_WEAPON;
@@ -2019,7 +2019,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.weapon_hiding = W_NONE;
 						pc->ostatnia = u.weapon_taken;
 						u.weapon_state = WS_TAKEN;
-						u.ani->Deactivate(1);
+						u.mesh_inst->Deactivate(1);
 					}
 					else
 					{
@@ -2029,7 +2029,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						pc->ostatnia = u.weapon_taken;
 						u.weapon_state = WS_TAKING;
 						u.animation_state = 0;
-						CLEAR_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
+						CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 
 					if(IsOnline())
@@ -2057,7 +2057,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(u.animation_state == 0)
 					{
 						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
-						u.ani->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
+						u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_ONCE | PLAY_PRIO1, 1);
 						pc->ostatnia = u.weapon_taken = W_ONE_HANDED;
 					}
 					else
@@ -2067,7 +2067,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.weapon_hiding = W_BOW;
 						u.weapon_state = WS_HIDING;
 						u.animation_state = 0;
-						SET_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
+						SET_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
 				pc->next_action = NA_NONE;
@@ -2091,7 +2091,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					u.weapon_state = WS_HIDING;
 					u.animation_state = 0;
 					u.action = A_TAKE_WEAPON;
-					u.ani->Play(NAMES::ani_take_bow, PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
+					u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
 					pc->next_action = NA_NONE;
 					Inventory::lock_id = LOCK_NO;
 
@@ -2115,7 +2115,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				u.weapon_state = WS_TAKING;
 				u.action = A_TAKE_WEAPON;
 				u.animation_state = 0;
-				u.ani->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
+				u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
 				pc->next_action = NA_NONE;
 				Inventory::lock_id = LOCK_NO;
 
@@ -2140,7 +2140,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.weapon_hiding = W_NONE;
 						pc->ostatnia = u.weapon_taken;
 						u.weapon_state = WS_TAKEN;
-						u.ani->Deactivate(1);
+						u.mesh_inst->Deactivate(1);
 					}
 					else
 					{
@@ -2150,7 +2150,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						pc->ostatnia = u.weapon_taken;
 						u.weapon_state = WS_TAKING;
 						u.animation_state = 0;
-						CLEAR_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
+						CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
 				else
@@ -2179,7 +2179,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						// tak na prawdê to jeszcze nic nie zrobi³ wiêc mo¿na anuluowaæ
 						pc->ostatnia = u.weapon_taken = W_BOW;
-						u.ani->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
+						u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
 					}
 					else
 					{
@@ -2188,7 +2188,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.weapon_hiding = W_ONE_HANDED;
 						u.weapon_state = WS_HIDING;
 						u.animation_state = 0;
-						SET_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
+						SET_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
 				pc->next_action = NA_NONE;
@@ -2207,7 +2207,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				// broñ wyjêta
 				if(u.weapon_taken == W_ONE_HANDED)
 				{
-					u.ani->Play(u.GetTakeWeaponAnimation(true), PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
+					u.mesh_inst->Play(u.GetTakeWeaponAnimation(true), PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
 					pc->ostatnia = u.weapon_taken = W_BOW;
 					u.weapon_hiding = W_ONE_HANDED;
 					u.weapon_state = WS_HIDING;
@@ -2488,7 +2488,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					game_gui->gp_trade->Show();
 
 					// animacja / dŸwiêk
-					pc->action_chest->ani->Play(&pc->action_chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
+					pc->action_chest->mesh_inst->Play(&pc->action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
 					if(sound_volume)
 					{
 						Vec3 pos = pc->action_chest->pos;
@@ -2531,8 +2531,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(!location->outside)
 						minimap_opened_doors = true;
 					door->state = Door::Opening;
-					door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-					door->ani->frame_end_info = false;
+					door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
+					door->mesh_inst->frame_end_info = false;
 					if(sound_volume && Rand() % 2 == 0)
 					{
 						// skrzypienie
@@ -2578,8 +2578,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							minimap_opened_doors = true;
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
+						door->mesh_inst->frame_end_info = false;
 						if(sound_volume && Rand() % 2 == 0)
 						{
 							// skrzypienie
@@ -2611,8 +2611,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			{
 				// zamykanie drzwi
 				door->state = Door::Closing;
-				door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
-				door->ani->frame_end_info = false;
+				door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
+				door->mesh_inst->frame_end_info = false;
 				if(sound_volume && Rand() % 2 == 0)
 				{
 					SOUND snd;
@@ -2643,9 +2643,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				u.action = A_PICKUP;
 				u.animation = ANI_PLAY;
-				u.ani->Play(u_gory ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
-				u.ani->groups[0].speed = 1.f;
-				u.ani->frame_end_info = false;
+				u.mesh_inst->Play(u_gory ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				u.mesh_inst->groups[0].speed = 1.f;
+				u.mesh_inst->frame_end_info = false;
 
 				if(IsLocal())
 				{
@@ -2702,9 +2702,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(KeyUpAllowed(pc->action_key))
 					{
 						// release attack
-						u.attack_power = u.ani->groups[1].time / u.GetAttackFrame(0);
+						u.attack_power = u.mesh_inst->groups[1].time / u.GetAttackFrame(0);
 						u.animation_state = 1;
-						u.ani->groups[1].speed = u.attack_power + u.GetAttackSpeed();
+						u.mesh_inst->groups[1].speed = u.attack_power + u.GetAttackSpeed();
 						u.attack_power += 1.f;
 
 						if(IsOnline())
@@ -2713,7 +2713,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_Attack;
-							c.f[1] = u.ani->groups[1].speed;
+							c.f[1] = u.mesh_inst->groups[1].speed;
 						}
 
 						if(IsLocal())
@@ -2731,8 +2731,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						// prepare next attack
 						u.action = A_ATTACK;
 						u.attack_id = u.GetRandomAttack();
-						u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-						u.ani->groups[1].speed = u.GetPowerAttackSpeed();
+						u.mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+						u.mesh_inst->groups[1].speed = u.GetPowerAttackSpeed();
 						pc->action_key = k;
 						u.animation_state = 0;
 						u.run_attack = false;
@@ -2744,7 +2744,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_PowerAttack;
-							c.f[1] = u.ani->groups[1].speed;
+							c.f[1] = u.mesh_inst->groups[1].speed;
 						}
 					}
 				}
@@ -2755,8 +2755,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				{
 					// stop blocking
 					u.action = A_NONE;
-					u.ani->frame_end_info2 = false;
-					u.ani->Deactivate(1);
+					u.mesh_inst->frame_end_info2 = false;
+					u.mesh_inst->Deactivate(1);
 
 					if(IsOnline())
 					{
@@ -2767,16 +2767,16 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						c.f[1] = 1.f;
 					}
 				}
-				else if(!u.ani->groups[1].IsBlending() && u.HaveShield())
+				else if(!u.mesh_inst->groups[1].IsBlending() && u.HaveShield())
 				{
 					if(KeyDownAllowed(GK_ATTACK_USE) && u.stamina > 0)
 					{
 						// shield bash
 						u.action = A_BASH;
 						u.animation_state = 0;
-						u.ani->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
-						u.ani->groups[1].speed = 2.f;
-						u.ani->frame_end_info2 = false;
+						u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
+						u.mesh_inst->groups[1].speed = 2.f;
+						u.mesh_inst->frame_end_info2 = false;
 						u.hitted = false;
 
 						if(IsOnline())
@@ -2803,11 +2803,11 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				{
 					u.action = A_ATTACK;
 					u.attack_id = u.GetRandomAttack();
-					u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+					u.mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
 					if(this_frame_run)
 					{
 						// running attack
-						u.ani->groups[1].speed = u.GetAttackSpeed();
+						u.mesh_inst->groups[1].speed = u.GetAttackSpeed();
 						u.animation_state = 1;
 						u.run_attack = true;
 						u.attack_power = 1.5f;
@@ -2818,7 +2818,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_RunningAttack;
-							c.f[1] = u.ani->groups[1].speed;
+							c.f[1] = u.mesh_inst->groups[1].speed;
 						}
 
 						if(IsLocal())
@@ -2830,7 +2830,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					else
 					{
 						// prepare attack
-						u.ani->groups[1].speed = u.GetPowerAttackSpeed();
+						u.mesh_inst->groups[1].speed = u.GetPowerAttackSpeed();
 						pc->action_key = k;
 						u.animation_state = 0;
 						u.run_attack = false;
@@ -2841,7 +2841,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_PowerAttack;
-							c.f[1] = u.ani->groups[1].speed;
+							c.f[1] = u.mesh_inst->groups[1].speed;
 						}
 					}
 					u.hitted = false;
@@ -2865,8 +2865,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						// start blocking
 						u.action = A_BLOCK;
-						u.ani->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
-						u.ani->groups[1].blend_max = (oks == 2 ? 0.33f : u.GetBlockSpeed());
+						u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
+						u.mesh_inst->groups[1].blend_max = (oks == 2 ? 0.33f : u.GetBlockSpeed());
 						pc->action_key = k;
 						u.animation_state = 0;
 
@@ -2876,7 +2876,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_Block;
-							c.f[1] = u.ani->groups[1].blend_max;
+							c.f[1] = u.mesh_inst->groups[1].blend_max;
 						}
 					}
 				}
@@ -2910,14 +2910,14 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(k != VK_NONE && u.stamina > 0)
 				{
 					float speed = u.GetBowAttackSpeed();
-					u.ani->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-					u.ani->groups[1].speed = speed;
+					u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+					u.mesh_inst->groups[1].speed = speed;
 					u.action = A_SHOOT;
 					u.animation_state = 0;
 					u.hitted = false;
 					pc->action_key = k;
 					u.bow_instance = GetBowInstance(u.GetBow().mesh);
-					u.bow_instance->Play(&u.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
+					u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
 					u.bow_instance->groups[0].speed = speed;
 
 					if(IsOnline())
@@ -2945,9 +2945,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			{
 				int id = Rand() % u.data->idles->size();
 				pc->idle_timer = Random(0.f, 0.5f);
-				u.ani->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
-				u.ani->groups[0].speed = 1.f;
-				u.ani->frame_end_info = false;
+				u.mesh_inst->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
+				u.mesh_inst->groups[0].speed = 1.f;
+				u.mesh_inst->frame_end_info = false;
 				u.animation = ANI_IDLE;
 
 				if(IsOnline())
@@ -6637,19 +6637,19 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 #undef HEX
 			}
 
-			u->ani = new MeshInstance(aHumanBase);
+			u->mesh_inst = new MeshInstance(aHumanBase);
 		}
 		else
-			u->ani = new MeshInstance(base.mesh);
+			u->mesh_inst = new MeshInstance(base.mesh);
 
 		u->animation = u->current_animation = ANI_STAND;
-		u->ani->Play("stoi", PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-		u->ani->groups[0].speed = 1.f;
+		u->mesh_inst->Play("stoi", PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+		u->mesh_inst->groups[0].speed = 1.f;
 
-		if(u->ani->ani->head.n_groups > 1)
-			u->ani->groups[1].state = 0;
+		if(u->mesh_inst->mesh->head.n_groups > 1)
+			u->mesh_inst->groups[1].state = 0;
 
-		u->ani->ptr = u;
+		u->mesh_inst->ptr = u;
 	}
 
 	u->pos = Vec3(0, 0, 0);
@@ -7259,21 +7259,21 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Vec3& hitpo
 
 	Mesh::Point* hitbox, *point;
 
-	if(unit.ani->ani->head.n_groups > 1)
+	if(unit.mesh_inst->mesh->head.n_groups > 1)
 	{
 		Mesh* mesh = unit.GetWeapon().mesh;
 		if(!mesh)
 			return false;
 		hitbox = mesh->FindPoint("hit");
-		point = unit.ani->ani->GetPoint(NAMES::point_weapon);
+		point = unit.mesh_inst->mesh->GetPoint(NAMES::point_weapon);
 		assert(point);
 	}
 	else
 	{
 		point = nullptr;
-		hitbox = unit.ani->ani->GetPoint(Format("hitbox%d", unit.attack_id + 1));
+		hitbox = unit.mesh_inst->mesh->GetPoint(Format("hitbox%d", unit.attack_id + 1));
 		if(!hitbox)
-			hitbox = unit.ani->ani->FindPoint("hitbox");
+			hitbox = unit.mesh_inst->mesh->FindPoint("hitbox");
 	}
 
 	assert(hitbox);
@@ -7294,9 +7294,9 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, Mesh::Poi
 
 	// ustaw koœci
 	if(_unit.human_data)
-		_unit.ani->SetupBones(&_unit.human_data->mat_scale[0]);
+		_unit.mesh_inst->SetupBones(&_unit.human_data->mat_scale[0]);
 	else
-		_unit.ani->SetupBones();
+		_unit.mesh_inst->SetupBones();
 
 	// oblicz macierz hitbox
 
@@ -7306,11 +7306,11 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, Mesh::Poi
 	if(_bone)
 	{
 		// m1 = BoxMatrix * PointMatrix * BoneMatrix * UnitRot * UnitPos
-		m1 = _hitbox.mat * (_bone->mat * _unit.ani->mat_bones[_bone->bone] * m1);
+		m1 = _hitbox.mat * (_bone->mat * _unit.mesh_inst->mat_bones[_bone->bone] * m1);
 	}
 	else
 	{
-		m1 = _hitbox.mat * _unit.ani->mat_bones[_hitbox.bone] * m1;
+		m1 = _hitbox.mat * _unit.mesh_inst->mat_bones[_hitbox.bone] * m1;
 	}
 
 	// m1 to macierz hitboxa
@@ -7685,7 +7685,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			if(u.IsStanding() && u.talking)
 			{
 				u.talk_timer += dt;
-				u.ani->need_update = true;
+				u.mesh_inst->need_update = true;
 			}
 		}
 
@@ -7696,53 +7696,53 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			switch(u.animation)
 			{
 			case ANI_WALK:
-				u.ani->Play(NAMES::ani_move, PLAY_PRIO1 | PLAY_RESTORE, 0);
+				u.mesh_inst->Play(NAMES::ani_move, PLAY_PRIO1 | PLAY_RESTORE, 0);
 				if(!IsClient2())
-					u.ani->groups[0].speed = u.GetWalkSpeed() / u.data->walk_speed;
+					u.mesh_inst->groups[0].speed = u.GetWalkSpeed() / u.data->walk_speed;
 				break;
 			case ANI_WALK_TYL:
-				u.ani->Play(NAMES::ani_move, PLAY_BACK | PLAY_PRIO1 | PLAY_RESTORE, 0);
+				u.mesh_inst->Play(NAMES::ani_move, PLAY_BACK | PLAY_PRIO1 | PLAY_RESTORE, 0);
 				if(!IsClient2())
-					u.ani->groups[0].speed = u.GetWalkSpeed() / u.data->walk_speed;
+					u.mesh_inst->groups[0].speed = u.GetWalkSpeed() / u.data->walk_speed;
 				break;
 			case ANI_RUN:
-				u.ani->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_RESTORE, 0);
+				u.mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_RESTORE, 0);
 				if(!IsClient2())
-					u.ani->groups[0].speed = u.GetRunSpeed() / u.data->run_speed;
+					u.mesh_inst->groups[0].speed = u.GetRunSpeed() / u.data->run_speed;
 				break;
 			case ANI_LEFT:
-				u.ani->Play(NAMES::ani_left, PLAY_PRIO1 | PLAY_RESTORE, 0);
+				u.mesh_inst->Play(NAMES::ani_left, PLAY_PRIO1 | PLAY_RESTORE, 0);
 				if(!IsClient2())
-					u.ani->groups[0].speed = u.GetRotationSpeed() / u.data->rot_speed;
+					u.mesh_inst->groups[0].speed = u.GetRotationSpeed() / u.data->rot_speed;
 				break;
 			case ANI_RIGHT:
-				u.ani->Play(NAMES::ani_right, PLAY_PRIO1 | PLAY_RESTORE, 0);
+				u.mesh_inst->Play(NAMES::ani_right, PLAY_PRIO1 | PLAY_RESTORE, 0);
 				if(!IsClient2())
-					u.ani->groups[0].speed = u.GetRotationSpeed() / u.data->rot_speed;
+					u.mesh_inst->groups[0].speed = u.GetRotationSpeed() / u.data->rot_speed;
 				break;
 			case ANI_STAND:
-				u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
-				u.ani->groups[0].speed = 1.f;
+				u.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+				u.mesh_inst->groups[0].speed = 1.f;
 				break;
 			case ANI_BATTLE:
-				u.ani->Play(NAMES::ani_battle, PLAY_PRIO1, 0);
-				u.ani->groups[0].speed = 1.f;
+				u.mesh_inst->Play(NAMES::ani_battle, PLAY_PRIO1, 0);
+				u.mesh_inst->groups[0].speed = 1.f;
 				break;
 			case ANI_BATTLE_BOW:
-				u.ani->Play(NAMES::ani_battle_bow, PLAY_PRIO1, 0);
-				u.ani->groups[0].speed = 1.f;
+				u.mesh_inst->Play(NAMES::ani_battle_bow, PLAY_PRIO1, 0);
+				u.mesh_inst->groups[0].speed = 1.f;
 				break;
 			case ANI_DIE:
-				u.ani->Play(NAMES::ani_die, PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
-				u.ani->groups[0].speed = 1.f;
+				u.mesh_inst->Play(NAMES::ani_die, PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
+				u.mesh_inst->groups[0].speed = 1.f;
 				break;
 			case ANI_PLAY:
 				break;
 			case ANI_IDLE:
 				break;
 			case ANI_KNEELS:
-				u.ani->Play("kleka", PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
-				u.ani->groups[0].speed = 1.f;
+				u.mesh_inst->Play("kleka", PLAY_STOP_AT_END | PLAY_ONCE | PLAY_PRIO3, 0);
+				u.mesh_inst->groups[0].speed = 1.f;
 				break;
 			default:
 				assert(0);
@@ -7752,20 +7752,20 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		}
 
 		// koniec animacji idle
-		if(u.animation == ANI_IDLE && u.ani->frame_end_info)
+		if(u.animation == ANI_IDLE && u.mesh_inst->frame_end_info)
 		{
-			u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
-			u.ani->groups[0].speed = 1.f;
+			u.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+			u.mesh_inst->groups[0].speed = 1.f;
 			u.animation = ANI_STAND;
 		}
 
 		// aktualizuj animacjê
-		u.ani->Update(dt);
+		u.mesh_inst->Update(dt);
 
 		// zmieñ stan z umiera na umar³ i stwórz krew (chyba ¿e tylko upad³)
 		if(!u.IsStanding())
 		{
-			if(u.ani->frame_end_info)
+			if(u.mesh_inst->frame_end_info)
 			{
 				if(u.live_state == Unit::DYING)
 				{
@@ -7774,7 +7774,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				}
 				else if(u.live_state == Unit::FALLING)
 					u.live_state = Unit::FALL;
-				u.ani->frame_end_info = false;
+				u.mesh_inst->frame_end_info = false;
 			}
 			if(u.action != A_POSITION)
 			{
@@ -7791,9 +7791,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		case A_TAKE_WEAPON:
 			if(u.weapon_state == WS_TAKING)
 			{
-				if(u.animation_state == 0 && (u.ani->GetProgress2() >= u.data->frames->t[F_TAKE_WEAPON] || u.ani->frame_end_info2))
+				if(u.animation_state == 0 && (u.mesh_inst->GetProgress2() >= u.data->frames->t[F_TAKE_WEAPON] || u.mesh_inst->frame_end_info2))
 					u.animation_state = 1;
-				if(u.ani->frame_end_info2)
+				if(u.mesh_inst->frame_end_info2)
 				{
 					u.weapon_state = WS_TAKEN;
 					if(u.useable)
@@ -7803,22 +7803,22 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					}
 					else
 						u.action = A_NONE;
-					u.ani->Deactivate(1);
-					u.ani->frame_end_info2 = false;
+					u.mesh_inst->Deactivate(1);
+					u.mesh_inst->frame_end_info2 = false;
 				}
 			}
 			else
 			{
 				// chowanie broni
-				if(u.animation_state == 0 && (u.ani->GetProgress2() <= u.data->frames->t[F_TAKE_WEAPON] || u.ani->frame_end_info2))
+				if(u.animation_state == 0 && (u.mesh_inst->GetProgress2() <= u.data->frames->t[F_TAKE_WEAPON] || u.mesh_inst->frame_end_info2))
 					u.animation_state = 1;
-				if(u.weapon_taken != W_NONE && (u.animation_state == 1 || u.ani->frame_end_info2))
+				if(u.weapon_taken != W_NONE && (u.animation_state == 1 || u.mesh_inst->frame_end_info2))
 				{
-					u.ani->Play(u.GetTakeWeaponAnimation(u.weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+					u.mesh_inst->Play(u.GetTakeWeaponAnimation(u.weapon_taken == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 					u.weapon_state = WS_TAKING;
 					u.weapon_hiding = W_NONE;
 					u.animation_state = 1;
-					u.ani->frame_end_info2 = false;
+					u.mesh_inst->frame_end_info2 = false;
 					u.animation_state = 0;
 
 					if(IsOnline())
@@ -7829,13 +7829,13 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						c.type = NetChange::TAKE_WEAPON;
 					}
 				}
-				else if(u.ani->frame_end_info2)
+				else if(u.mesh_inst->frame_end_info2)
 				{
 					u.weapon_state = WS_HIDDEN;
 					u.weapon_hiding = W_NONE;
 					u.action = A_NONE;
-					u.ani->Deactivate(1);
-					u.ani->frame_end_info2 = false;
+					u.mesh_inst->Deactivate(1);
+					u.mesh_inst->frame_end_info2 = false;
 
 					if(&u == pc->unit)
 					{
@@ -7916,12 +7916,12 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		case A_SHOOT:
 			if(u.animation_state == 0)
 			{
-				if(u.ani->GetProgress2() > 20.f / 40)
-					u.ani->groups[1].time = 20.f / 40 * u.ani->groups[1].anim->length;
+				if(u.mesh_inst->GetProgress2() > 20.f / 40)
+					u.mesh_inst->groups[1].time = 20.f / 40 * u.mesh_inst->groups[1].anim->length;
 			}
 			else if(u.animation_state == 1)
 			{
-				if(IsLocal() && !u.hitted && u.ani->GetProgress2() > 20.f / 40)
+				if(IsLocal() && !u.hitted && u.mesh_inst->GetProgress2() > 20.f / 40)
 				{
 					u.hitted = true;
 					Bullet& b = Add1(ctx.bullets);
@@ -7933,14 +7933,14 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						++b.backstab;
 
 					if(u.human_data)
-						u.ani->SetupBones(&u.human_data->mat_scale[0]);
+						u.mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
 					else
-						u.ani->SetupBones();
+						u.mesh_inst->SetupBones();
 
-					Mesh::Point* point = u.ani->ani->GetPoint(NAMES::point_weapon);
+					Mesh::Point* point = u.mesh_inst->mesh->GetPoint(NAMES::point_weapon);
 					assert(point);
 
-					m2 = point->mat * u.ani->mat_bones[point->bone] * (Matrix::RotationY(u.rot) * Matrix::Translation(u.pos));
+					m2 = point->mat * u.mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(u.rot) * Matrix::Translation(u.pos));
 
 					b.attack = u.CalculateAttack(&u.GetBow());
 					b.rot = Vec3(PI / 2, u.rot + PI, 0);
@@ -8051,17 +8051,17 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						c.extra_f = b.speed;
 					}
 				}
-				if(u.ani->GetProgress2() > 20.f / 40)
+				if(u.mesh_inst->GetProgress2() > 20.f / 40)
 					u.animation_state = 2;
 			}
-			else if(u.ani->GetProgress2() > 35.f / 40)
+			else if(u.mesh_inst->GetProgress2() > 35.f / 40)
 			{
 				u.animation_state = 3;
-				if(u.ani->frame_end_info2)
+				if(u.mesh_inst->frame_end_info2)
 				{
 				koniec_strzelania:
-					u.ani->Deactivate(1);
-					u.ani->frame_end_info2 = false;
+					u.mesh_inst->Deactivate(1);
+					u.mesh_inst->frame_end_info2 = false;
 					u.action = A_NONE;
 					assert(u.bow_instance);
 					bow_instances.push_back(u.bow_instance);
@@ -8074,7 +8074,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					break;
 				}
 			}
-			if(!u.ani)
+			if(!u.mesh_inst)
 			{
 				// fix na skutek, nie na przyczynê ;(
 #ifdef _DEBUG
@@ -8084,20 +8084,20 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 #endif
 				goto koniec_strzelania;
 			}
-			u.bow_instance->groups[0].time = min(u.ani->groups[1].time, u.bow_instance->groups[0].anim->length);
+			u.bow_instance->groups[0].time = min(u.mesh_inst->groups[1].time, u.bow_instance->groups[0].anim->length);
 			u.bow_instance->need_update = true;
 			break;
 		case A_ATTACK:
 			if(u.animation_state == 0)
 			{
 				float t = u.GetAttackFrame(0);
-				if(u.ani->ani->head.n_groups == 1)
+				if(u.mesh_inst->mesh->head.n_groups == 1)
 				{
-					if(u.ani->GetProgress() > t)
+					if(u.mesh_inst->GetProgress() > t)
 					{
 						if(IsLocal() && u.IsAI())
 						{
-							u.ani->groups[0].speed = 1.f + u.GetAttackSpeed();
+							u.mesh_inst->groups[0].speed = 1.f + u.GetAttackSpeed();
 							u.attack_power = 2.f;
 							++u.animation_state;
 							if(IsOnline())
@@ -8106,20 +8106,20 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 								c.type = NetChange::ATTACK;
 								c.unit = &u;
 								c.id = AID_Attack;
-								c.f[1] = u.ani->groups[0].speed;
+								c.f[1] = u.mesh_inst->groups[0].speed;
 							}
 						}
 						else
-							u.ani->groups[0].time = t*u.ani->groups[0].anim->length;
+							u.mesh_inst->groups[0].time = t*u.mesh_inst->groups[0].anim->length;
 					}
 				}
 				else
 				{
-					if(u.ani->GetProgress2() > t)
+					if(u.mesh_inst->GetProgress2() > t)
 					{
 						if(IsLocal() && u.IsAI())
 						{
-							u.ani->groups[1].speed = 1.f + u.GetAttackSpeed();
+							u.mesh_inst->groups[1].speed = 1.f + u.GetAttackSpeed();
 							u.attack_power = 2.f;
 							++u.animation_state;
 							if(IsOnline())
@@ -8128,29 +8128,29 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 								c.type = NetChange::ATTACK;
 								c.unit = &u;
 								c.id = AID_Attack;
-								c.f[1] = u.ani->groups[1].speed;
+								c.f[1] = u.mesh_inst->groups[1].speed;
 							}
 						}
 						else
-							u.ani->groups[1].time = t*u.ani->groups[1].anim->length;
+							u.mesh_inst->groups[1].time = t*u.mesh_inst->groups[1].anim->length;
 					}
 				}
 			}
 			else
 			{
-				if(u.ani->ani->head.n_groups > 1)
+				if(u.mesh_inst->mesh->head.n_groups > 1)
 				{
-					if(u.animation_state == 1 && u.ani->GetProgress2() > u.GetAttackFrame(0))
+					if(u.animation_state == 1 && u.mesh_inst->GetProgress2() > u.GetAttackFrame(0))
 					{
-						if(IsLocal() && !u.hitted && u.ani->GetProgress2() >= u.GetAttackFrame(1))
+						if(IsLocal() && !u.hitted && u.mesh_inst->GetProgress2() >= u.GetAttackFrame(1))
 						{
 							ATTACK_RESULT result = DoAttack(ctx, u);
 							if(result != ATTACK_NOT_HIT)
 							{
 								/*if(result == ATTACK_PARRIED)
 								{
-									u.ani->frame_end_info2 = false;
-									u.ani->Play(Rand()%2 == 0 ? "atak1_p" : "atak2_p", PLAY_PRIO1|PLAY_ONCE, 1);
+									u.mesh_inst->frame_end_info2 = false;
+									u.mesh_inst->Play(Rand()%2 == 0 ? "atak1_p" : "atak2_p", PLAY_PRIO1|PLAY_ONCE, 1);
 									u.action = A_PAIN;
 									if(IsLocal() && u.IsAI())
 									{
@@ -8162,19 +8162,19 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 								u.hitted = true;
 							}
 						}
-						if(u.ani->GetProgress2() >= u.GetAttackFrame(2) || u.ani->frame_end_info2)
+						if(u.mesh_inst->GetProgress2() >= u.GetAttackFrame(2) || u.mesh_inst->frame_end_info2)
 						{
 							// koniec mo¿liwego ataku
 							u.animation_state = 2;
-							u.ani->groups[1].speed = 1.f;
+							u.mesh_inst->groups[1].speed = 1.f;
 							u.run_attack = false;
 						}
 					}
-					if(u.animation_state == 2 && u.ani->frame_end_info2)
+					if(u.animation_state == 2 && u.mesh_inst->frame_end_info2)
 					{
 						u.run_attack = false;
-						u.ani->Deactivate(1);
-						u.ani->frame_end_info2 = false;
+						u.mesh_inst->Deactivate(1);
+						u.mesh_inst->frame_end_info2 = false;
 						u.action = A_NONE;
 						if(IsLocal() && u.IsAI())
 						{
@@ -8185,14 +8185,14 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				}
 				else
 				{
-					if(u.animation_state == 1 && u.ani->GetProgress() > u.GetAttackFrame(0))
+					if(u.animation_state == 1 && u.mesh_inst->GetProgress() > u.GetAttackFrame(0))
 					{
-						if(IsLocal() && !u.hitted && u.ani->GetProgress() >= u.GetAttackFrame(1))
+						if(IsLocal() && !u.hitted && u.mesh_inst->GetProgress() >= u.GetAttackFrame(1))
 						{
 							ATTACK_RESULT result = DoAttack(ctx, u);
 							if(result != ATTACK_NOT_HIT)
 							{
-								/*u.ani->Deactivate(0);
+								/*u.mesh_inst->Deactivate(0);
 								u.atak_w_biegu = false;
 								u.action = A_NONE;
 								if(IsLocal() && u.IsAI())
@@ -8203,15 +8203,15 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 								u.hitted = true;
 							}
 						}
-						if(u.ani->GetProgress() >= u.GetAttackFrame(2) || u.ani->frame_end_info)
+						if(u.mesh_inst->GetProgress() >= u.GetAttackFrame(2) || u.mesh_inst->frame_end_info)
 						{
 							// koniec mo¿liwego ataku
 							u.animation_state = 2;
-							u.ani->groups[0].speed = 1.f;
+							u.mesh_inst->groups[0].speed = 1.f;
 							u.run_attack = false;
 						}
 					}
-					if(u.animation_state == 2 && u.ani->frame_end_info)
+					if(u.animation_state == 2 && u.mesh_inst->frame_end_info)
 					{
 						u.run_attack = false;
 						u.animation = ANI_BATTLE;
@@ -8231,7 +8231,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		case A_BASH:
 			if(u.animation_state == 0)
 			{
-				if(u.ani->GetProgress2() >= u.data->frames->t[F_BASH])
+				if(u.mesh_inst->GetProgress2() >= u.data->frames->t[F_BASH])
 					u.animation_state = 1;
 			}
 			if(IsLocal() && u.animation_state == 1 && !u.hitted)
@@ -8239,24 +8239,24 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				if(DoShieldSmash(ctx, u))
 					u.hitted = true;
 			}
-			if(u.ani->frame_end_info2)
+			if(u.mesh_inst->frame_end_info2)
 			{
 				u.action = A_NONE;
-				u.ani->frame_end_info2 = false;
-				u.ani->Deactivate(1);
+				u.mesh_inst->frame_end_info2 = false;
+				u.mesh_inst->Deactivate(1);
 			}
 			break;
 			/*case A_PAROWANIE:
-				if(u.ani->frame_end_info2)
+				if(u.mesh_inst->frame_end_info2)
 				{
 					u.action = A_NONE;
-					u.ani->frame_end_info2 = false;
-					u.ani->Deactivate(1);
+					u.mesh_inst->frame_end_info2 = false;
+					u.mesh_inst->Deactivate(1);
 				}
 				break;*/
 		case A_DRINK:
 			{
-				float p = u.ani->GetProgress2();
+				float p = u.mesh_inst->GetProgress2();
 				if(p >= 28.f / 52.f && u.animation_state == 0)
 				{
 					if(sound_volume)
@@ -8270,7 +8270,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					u.animation_state = 2;
 					u.used_item = nullptr;
 				}
-				if(u.ani->frame_end_info2)
+				if(u.mesh_inst->frame_end_info2)
 				{
 					if(u.useable)
 					{
@@ -8279,14 +8279,14 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					}
 					else
 						u.action = A_NONE;
-					u.ani->frame_end_info2 = false;
-					u.ani->Deactivate(1);
+					u.mesh_inst->frame_end_info2 = false;
+					u.mesh_inst->Deactivate(1);
 				}
 			}
 			break;
 		case A_EAT:
 			{
-				float p = u.ani->GetProgress2();
+				float p = u.mesh_inst->GetProgress2();
 				if(p >= 32.f / 70 && u.animation_state == 0)
 				{
 					u.animation_state = 1;
@@ -8304,7 +8304,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					u.animation_state = 3;
 					u.used_item = nullptr;
 				}
-				if(u.ani->frame_end_info2)
+				if(u.mesh_inst->frame_end_info2)
 				{
 					if(u.useable)
 					{
@@ -8313,60 +8313,60 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					}
 					else
 						u.action = A_NONE;
-					u.ani->frame_end_info2 = false;
-					u.ani->Deactivate(1);
+					u.mesh_inst->frame_end_info2 = false;
+					u.mesh_inst->Deactivate(1);
 				}
 			}
 			break;
 		case A_PAIN:
-			if(u.ani->ani->head.n_groups == 2)
+			if(u.mesh_inst->mesh->head.n_groups == 2)
 			{
-				if(u.ani->frame_end_info2)
+				if(u.mesh_inst->frame_end_info2)
 				{
 					u.action = A_NONE;
-					u.ani->frame_end_info2 = false;
-					u.ani->Deactivate(1);
+					u.mesh_inst->frame_end_info2 = false;
+					u.mesh_inst->Deactivate(1);
 				}
 			}
-			else if(u.ani->frame_end_info)
+			else if(u.mesh_inst->frame_end_info)
 			{
 				u.action = A_NONE;
 				u.animation = ANI_BATTLE;
-				u.ani->frame_end_info = false;
+				u.mesh_inst->frame_end_info = false;
 			}
 			break;
 		case A_CAST:
-			if(u.ani->ani->head.n_groups == 2)
+			if(u.mesh_inst->mesh->head.n_groups == 2)
 			{
-				if(IsLocal() && u.animation_state == 0 && u.ani->GetProgress2() >= u.data->frames->t[F_CAST])
+				if(IsLocal() && u.animation_state == 0 && u.mesh_inst->GetProgress2() >= u.data->frames->t[F_CAST])
 				{
 					u.animation_state = 1;
 					CastSpell(ctx, u);
 				}
-				if(u.ani->frame_end_info2)
+				if(u.mesh_inst->frame_end_info2)
 				{
 					u.action = A_NONE;
-					u.ani->frame_end_info2 = false;
-					u.ani->Deactivate(1);
+					u.mesh_inst->frame_end_info2 = false;
+					u.mesh_inst->Deactivate(1);
 				}
 			}
 			else
 			{
-				if(IsLocal() && u.animation_state == 0 && u.ani->GetProgress() >= u.data->frames->t[F_CAST])
+				if(IsLocal() && u.animation_state == 0 && u.mesh_inst->GetProgress() >= u.data->frames->t[F_CAST])
 				{
 					u.animation_state = 1;
 					CastSpell(ctx, u);
 				}
-				if(u.ani->frame_end_info)
+				if(u.mesh_inst->frame_end_info)
 				{
 					u.action = A_NONE;
 					u.animation = ANI_BATTLE;
-					u.ani->frame_end_info = false;
+					u.mesh_inst->frame_end_info = false;
 				}
 			}
 			break;
 		case A_ANIMATION:
-			if(u.ani->frame_end_info)
+			if(u.mesh_inst->frame_end_info)
 			{
 				u.action = A_NONE;
 				u.animation = ANI_STAND;
@@ -8438,7 +8438,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						// odtwarzanie dŸwiêku
 						if(bu.sound)
 						{
-							if(u.ani->GetProgress() >= bu.sound_timer)
+							if(u.mesh_inst->GetProgress() >= bu.sound_timer)
 							{
 								if(u.animation_state == AS_ANIMATION2_USING)
 								{
@@ -8550,19 +8550,19 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			if(u.animation_state == 1)
 			{
 				// obs³uga animacji cierpienia
-				if(u.ani->ani->head.n_groups == 2)
+				if(u.mesh_inst->mesh->head.n_groups == 2)
 				{
-					if(u.ani->frame_end_info2 || u.timer >= 0.5f)
+					if(u.mesh_inst->frame_end_info2 || u.timer >= 0.5f)
 					{
-						u.ani->frame_end_info2 = false;
-						u.ani->Deactivate(1);
+						u.mesh_inst->frame_end_info2 = false;
+						u.mesh_inst->Deactivate(1);
 						u.animation_state = 2;
 					}
 				}
-				else if(u.ani->frame_end_info || u.timer >= 0.5f)
+				else if(u.mesh_inst->frame_end_info || u.timer >= 0.5f)
 				{
 					u.animation = ANI_BATTLE;
-					u.ani->frame_end_info = false;
+					u.mesh_inst->frame_end_info = false;
 					u.animation_state = 2;
 				}
 			}
@@ -8585,7 +8585,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				u.visual_pos = u.pos = Vec3::Lerp(u.target_pos2, u.target_pos, u.timer * 2);
 			break;
 		case A_PICKUP:
-			if(u.ani->frame_end_info)
+			if(u.mesh_inst->frame_end_info)
 			{
 				u.action = A_NONE;
 				u.animation = ANI_STAND;
@@ -8760,7 +8760,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& attacker)
 	if(!mesh)
 		return false;
 
-	if(!CheckForHit(ctx, attacker, hitted, *mesh->FindPoint("hit"), attacker.ani->ani->GetPoint(NAMES::point_shield), hitpoint))
+	if(!CheckForHit(ctx, attacker, hitted, *mesh->FindPoint("hit"), attacker.mesh_inst->mesh->GetPoint(NAMES::point_shield), hitpoint))
 		return false;
 
 	if(!IS_SET(hitted->data->flags, F_DONT_SUFFER) && hitted->last_bash <= 0.f)
@@ -8774,17 +8774,17 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& attacker)
 		else
 			hitted->animation_state = 1;
 
-		if(hitted->ani->ani->head.n_groups == 2)
+		if(hitted->mesh_inst->mesh->head.n_groups == 2)
 		{
-			hitted->ani->frame_end_info2 = false;
-			hitted->ani->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
-			hitted->ani->groups[1].speed = 1.f;
+			hitted->mesh_inst->frame_end_info2 = false;
+			hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+			hitted->mesh_inst->groups[1].speed = 1.f;
 		}
 		else
 		{
-			hitted->ani->frame_end_info = false;
-			hitted->ani->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-			hitted->ani->groups[0].speed = 1.f;
+			hitted->mesh_inst->frame_end_info = false;
+			hitted->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+			hitted->mesh_inst->groups[0].speed = 1.f;
 			hitted->animation = ANI_PLAY;
 		}
 
@@ -9027,7 +9027,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 						if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
 						{
-							float blocked = hitted->CalculateBlock(&hitted->GetShield()) * hitted->ani->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
+							float blocked = hitted->CalculateBlock(&hitted->GetShield()) * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
 							dmg -= blocked;
 
 							MATERIAL_TYPE mat = hitted->GetShield().material;
@@ -9145,7 +9145,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 						if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
 						{
-							float blocked = hitted->CalculateBlock(&hitted->GetShield()) * hitted->ani->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
+							float blocked = hitted->CalculateBlock(&hitted->GetShield()) * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
 							dmg -= blocked / 2;
 
 							if(hitted->IsPlayer())
@@ -9459,6 +9459,9 @@ bool Game::CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) 
 
 void Game::LoadItemsData()
 {
+	auto& mesh_mgr = ResourceManager::Get<Mesh>();
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+
 	for(auto it : g_items)
 	{
 		Item& item = *it.second;
@@ -9466,9 +9469,9 @@ void Game::LoadItemsData()
 		if(IS_SET(item.flags, ITEM_TEX_ONLY))
 		{
 			item.mesh = nullptr;
-			auto tex = resMgr.TryGetTexture(item.mesh_id.c_str());
+			auto tex = tex_mgr.TryGet(item.mesh_id);
 			if(tex)
-				resMgr.GetLoadedTexture(item.mesh_id.c_str(), item.tex);
+				tex_mgr.AddLoadTask(tex, item.tex);
 			else
 			{
 				item.tex = missing_texture;
@@ -9478,9 +9481,9 @@ void Game::LoadItemsData()
 		}
 		else
 		{
-			auto mesh = resMgr.TryGetMesh(item.mesh_id.c_str());
+			auto mesh = mesh_mgr.TryGet(item.mesh_id);
 			if(mesh)
-				resMgr.GetLoadedMesh(item.mesh_id, Task(&item, TaskCallback(this, &Game::GenerateImage)));
+				mesh_mgr.AddLoadTask(mesh, &item, TaskCallback(this, &Game::GenerateImage));
 			else
 			{
 				item.mesh = nullptr;
@@ -9929,7 +9932,7 @@ void Game::GenerateDungeonObjects()
 					if(IS_SET(obj->flags, OBJ_CHEST))
 					{
 						Chest* chest = new Chest;
-						chest->ani = new MeshInstance(aSkrzynia);
+						chest->mesh_inst = new MeshInstance(aSkrzynia);
 						chest->pos = pos;
 						chest->rot = rot;
 						chest->handler = nullptr;
@@ -10243,7 +10246,7 @@ void Game::GenerateDungeonObjects()
 				}
 
 				Chest* chest = new Chest;
-				chest->ani = new MeshInstance(aSkrzynia);
+				chest->mesh_inst = new MeshInstance(aSkrzynia);
 				chest->pos = pos;
 				chest->rot = rot;
 				chest->handler = nullptr;
@@ -10794,8 +10797,8 @@ void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_wea
 
 		u.rot = rot;
 		u.animation = u.current_animation = ANI_STAND;
-		u.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
-		u.ani->groups[0].speed = 1.f;
+		u.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+		u.mesh_inst->groups[0].speed = 1.f;
 		BreakAction(u);
 		u.SetAnimationAtEnd();
 		if(u.in_building != -1)
@@ -10848,7 +10851,7 @@ void Game::OpenDoorsByTeam(const Int2& pt)
 						door->state = Door::Open;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
-						door->ani->SetToEnd(&door->ani->ani->anims[0]);
+						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
 					}
 				}
 			}
@@ -11109,16 +11112,16 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 				else
 					hitted.animation_state = 1;
 
-				if(hitted.ani->ani->head.n_groups == 2)
+				if(hitted.mesh_inst->mesh->head.n_groups == 2)
 				{
-					hitted.ani->frame_end_info2 = false;
-					hitted.ani->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+					hitted.mesh_inst->frame_end_info2 = false;
+					hitted.mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 				}
 				else
 				{
-					hitted.ani->frame_end_info = false;
-					hitted.ani->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-					hitted.ani->groups[0].speed = 1.f;
+					hitted.mesh_inst->frame_end_info = false;
+					hitted.mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+					hitted.mesh_inst->groups[0].speed = 1.f;
 					hitted.animation = ANI_PLAY;
 				}
 			}
@@ -11546,15 +11549,15 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 {
 	Spell& spell = *u.data->spells->spell[u.attack_id];
 
-	Mesh::Point* point = u.ani->ani->GetPoint(NAMES::point_cast);
+	Mesh::Point* point = u.mesh_inst->mesh->GetPoint(NAMES::point_cast);
 	assert(point);
 
 	if(u.human_data)
-		u.ani->SetupBones(&u.human_data->mat_scale[0]);
+		u.mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
 	else
-		u.ani->SetupBones();
+		u.mesh_inst->SetupBones();
 
-	m2 = point->mat * u.ani->mat_bones[point->bone] * (Matrix::RotationY(u.rot) * Matrix::Translation(u.pos));
+	m2 = point->mat * u.mesh_inst->mat_bones[point->bone] * (Matrix::RotationY(u.rot) * Matrix::Translation(u.pos));
 
 	Vec3 coord = Vec3::TransformZero(m2);
 
@@ -13524,7 +13527,7 @@ void Game::OnReenterLevel(LevelContext& ctx)
 		{
 			Chest& chest = **it;
 
-			chest.ani = new MeshInstance(aSkrzynia);
+			chest.mesh_inst = new MeshInstance(aSkrzynia);
 		}
 	}
 
@@ -13536,8 +13539,8 @@ void Game::OnReenterLevel(LevelContext& ctx)
 			Door& door = **it;
 
 			// animowany model
-			door.ani = new MeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
-			door.ani->groups[0].speed = 2.f;
+			door.mesh_inst = new MeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
+			door.mesh_inst->groups[0].speed = 2.f;
 
 			// fizyka
 			door.phy = new btCollisionObject;
@@ -13555,7 +13558,7 @@ void Game::OnReenterLevel(LevelContext& ctx)
 			{
 				btVector3& pos = door.phy->getWorldTransform().getOrigin();
 				pos.setY(pos.y() - 100.f);
-				door.ani->SetToEnd(door.ani->ani->anims[0].name.c_str());
+				door.mesh_inst->SetToEnd(door.mesh_inst->mesh->anims[0].name.c_str());
 			}
 		}
 	}
@@ -13563,13 +13566,14 @@ void Game::OnReenterLevel(LevelContext& ctx)
 
 void Game::ApplyToTexturePack(TexturePack& tp, cstring diffuse, cstring normal, cstring specular)
 {
-	tp.diffuse = resMgr.GetLoadedTexture(diffuse);
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tp.diffuse = tex_mgr.AddLoadTask(diffuse);
 	if(normal)
-		tp.normal = resMgr.GetLoadedTexture(normal);
+		tp.normal = tex_mgr.AddLoadTask(normal);
 	else
 		tp.normal = nullptr;
 	if(specular)
-		tp.specular = resMgr.GetLoadedTexture(specular);
+		tp.specular = tex_mgr.AddLoadTask(specular);
 	else
 		tp.specular = nullptr;
 }
@@ -14175,7 +14179,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 					}
 					(*it)->hero->mode = HeroData::Follow;
 					(*it)->talking = false;
-					(*it)->ani->need_update = true;
+					(*it)->mesh_inst->need_update = true;
 					(*it)->ai->Reset();
 					*it = nullptr;
 				}
@@ -14186,8 +14190,8 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 						// przenieœ do karczmy przy opuszczaniu lokacji
 						WarpToInn(**it);
 					}
-					delete (*it)->ani;
-					(*it)->ani = nullptr;
+					delete (*it)->mesh_inst;
+					(*it)->mesh_inst = nullptr;
 					delete (*it)->ai;
 					(*it)->ai = nullptr;
 					(*it)->EndEffects();
@@ -14199,7 +14203,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 			else
 			{
 				(*it)->talking = false;
-				(*it)->ani->need_update = true;
+				(*it)->mesh_inst->need_update = true;
 				(*it)->useable = nullptr;
 				*it = nullptr;
 			}
@@ -14254,8 +14258,8 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 		{
 			for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
 			{
-				delete (*it)->ani;
-				(*it)->ani = nullptr;
+				delete (*it)->mesh_inst;
+				(*it)->mesh_inst = nullptr;
 			}
 		}
 
@@ -14269,8 +14273,8 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 					door.state = Door::Closed;
 				else if(door.state == Door::Opening || door.state == Door::Opening2)
 					door.state = Door::Open;
-				delete door.ani;
-				door.ani = nullptr;
+				delete door.mesh_inst;
+				door.mesh_inst = nullptr;
 			}
 		}
 	}
@@ -14301,9 +14305,9 @@ void Game::CreateBlood(LevelContext& ctx, const Unit& u, bool fully_created)
 
 	Blood& b = Add1(ctx.bloods);
 	if(u.human_data)
-		u.ani->SetupBones(&u.human_data->mat_scale[0]);
+		u.mesh_inst->SetupBones(&u.human_data->mat_scale[0]);
 	else
-		u.ani->SetupBones();
+		u.mesh_inst->SetupBones();
 	b.pos = u.GetLootCenter();
 	b.type = u.data->blood;
 	b.rot = Random(MAX_ANGLE);
@@ -14511,7 +14515,7 @@ void Game::UpdateContext(LevelContext& ctx, float dt)
 	if(ctx.chests && !ctx.chests->empty())
 	{
 		for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
-			(*it)->ani->Update(dt);
+			(*it)->mesh_inst->Update(dt);
 	}
 
 	// aktualizuj drzwi
@@ -14520,26 +14524,26 @@ void Game::UpdateContext(LevelContext& ctx, float dt)
 		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
 		{
 			Door& door = **it;
-			door.ani->Update(dt);
+			door.mesh_inst->Update(dt);
 			if(door.state == Door::Opening || door.state == Door::Opening2)
 			{
 				if(door.state == Door::Opening)
 				{
-					if(door.ani->frame_end_info || door.ani->GetProgress() >= 0.25f)
+					if(door.mesh_inst->frame_end_info || door.mesh_inst->GetProgress() >= 0.25f)
 					{
 						door.state = Door::Opening2;
 						btVector3& pos = door.phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
 					}
 				}
-				if(door.ani->frame_end_info)
+				if(door.mesh_inst->frame_end_info)
 					door.state = Door::Open;
 			}
 			else if(door.state == Door::Closing || door.state == Door::Closing2)
 			{
 				if(door.state == Door::Closing)
 				{
-					if(door.ani->frame_end_info || door.ani->GetProgress() <= 0.25f)
+					if(door.mesh_inst->frame_end_info || door.mesh_inst->GetProgress() <= 0.25f)
 					{
 						bool blocking = false;
 
@@ -14560,7 +14564,7 @@ void Game::UpdateContext(LevelContext& ctx, float dt)
 						}
 					}
 				}
-				if(door.ani->frame_end_info)
+				if(door.mesh_inst->frame_end_info)
 				{
 					if(door.state == Door::Closing2)
 						door.state = Door::Closed;
@@ -14568,8 +14572,8 @@ void Game::UpdateContext(LevelContext& ctx, float dt)
 					{
 						// nie mo¿na zamknaæ drzwi bo coœ blokuje
 						door.state = Door::Opening2;
-						door.ani->Play(&door.ani->ani->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
-						door.ani->frame_end_info = false;
+						door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
+						door.mesh_inst->frame_end_info = false;
 						// mo¿na by daæ lepszy punkt dŸwiêku
 						if(sound_volume)
 							PlaySound3d(sDoorBudge, door.pos, 2.f, 5.f);
@@ -15062,8 +15066,8 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 	if(!ctx.talker->useable && ctx.talker->data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
 	{
 		ani = Rand() % 2 + 1;
-		ctx.talker->ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-		ctx.talker->ani->groups[0].speed = 1.f;
+		ctx.talker->mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		ctx.talker->mesh_inst->groups[0].speed = 1.f;
 		ctx.talker->animation = ANI_PLAY;
 		ctx.talker->action = A_ANIMATION;
 	}
@@ -16255,7 +16259,7 @@ void Game::SpawnHeroesInsideDungeon()
 						door->state = Door::Open;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
-						door->ani->SetToEnd(&door->ani->ani->anims[0]);
+						door->mesh_inst->SetToEnd(&door->mesh_inst->mesh->anims[0]);
 					}
 				}
 			}
@@ -17682,8 +17686,8 @@ bool Game::GenerateMine()
 			door->pos = o.pos;
 			door->rot = o.rot.y;
 			door->state = Door::Closed;
-			door->ani = new MeshInstance(aDrzwi);
-			door->ani->groups[0].speed = 2.f;
+			door->mesh_inst = new MeshInstance(aDrzwi);
+			door->mesh_inst->groups[0].speed = 2.f;
 			door->phy = new btCollisionObject;
 			door->phy->setCollisionShape(shape_door);
 			door->locked = LOCK_MINE;
@@ -18346,8 +18350,8 @@ void Game::UpdateGame2(float dt)
 							{
 								(*it)->HealPoison();
 								(*it)->live_state = Unit::ALIVE;
-								(*it)->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-								(*it)->ani->groups[0].speed = 1.f;
+								(*it)->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+								(*it)->mesh_inst->groups[0].speed = 1.f;
 								(*it)->action = A_ANIMATION;
 								if((*it)->IsAI())
 									(*it)->ai->Reset();
@@ -18389,8 +18393,8 @@ void Game::UpdateGame2(float dt)
 						{
 							(*it)->HealPoison();
 							(*it)->live_state = Unit::ALIVE;
-							(*it)->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-							(*it)->ani->groups[0].speed = 1.f;
+							(*it)->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+							(*it)->mesh_inst->groups[0].speed = 1.f;
 							(*it)->action = A_ANIMATION;
 							if((*it)->IsAI())
 								(*it)->ai->Reset();
@@ -18580,8 +18584,8 @@ void Game::UpdateGame2(float dt)
 				{
 					(*it)->HealPoison();
 					(*it)->live_state = Unit::ALIVE;
-					(*it)->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-					(*it)->ani->groups[0].speed = 1.f;
+					(*it)->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+					(*it)->mesh_inst->groups[0].speed = 1.f;
 					(*it)->action = A_ANIMATION;
 					if((*it)->IsAI())
 						(*it)->ai->Reset();
@@ -18932,7 +18936,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 		{
 		case WS_HIDDEN:
 			// wyjmij bron
-			u.ani->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+			u.mesh_inst->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 			u.action = A_TAKE_WEAPON;
 			u.weapon_taken = co;
 			u.weapon_state = WS_TAKING;
@@ -18948,7 +18952,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 					u.weapon_taken = u.weapon_hiding;
 					u.weapon_hiding = W_NONE;
 					u.weapon_state = WS_TAKEN;
-					u.ani->Deactivate(1);
+					u.mesh_inst->Deactivate(1);
 				}
 				else
 				{
@@ -18956,13 +18960,13 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 					u.weapon_taken = u.weapon_hiding;
 					u.weapon_hiding = W_NONE;
 					u.weapon_state = WS_TAKING;
-					CLEAR_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
+					CLEAR_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 				}
 			}
 			else
 			{
 				// chowa broñ, zacznij wyci¹gaæ
-				u.ani->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+				u.mesh_inst->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 				u.action = A_TAKE_WEAPON;
 				u.weapon_taken = co;
 				u.weapon_hiding = W_NONE;
@@ -18977,7 +18981,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 				// wyjmuje z³¹ broñ, zacznij wyjmowaæ dobr¹
 				// lub
 				// powinien mieæ wyjêt¹ broñ, ale nie t¹!
-				u.ani->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
+				u.mesh_inst->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_PRIO1, 1);
 				u.action = A_TAKE_WEAPON;
 				u.weapon_taken = co;
 				u.weapon_hiding = W_NONE;
@@ -19008,7 +19012,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 				u.action = A_NONE;
 				u.weapon_taken = W_NONE;
 				u.weapon_state = WS_HIDDEN;
-				u.ani->Deactivate(1);
+				u.mesh_inst->Deactivate(1);
 			}
 			else
 			{
@@ -19017,12 +19021,12 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 				u.weapon_taken = W_NONE;
 				u.weapon_state = WS_HIDING;
 				u.animation_state = 0;
-				SET_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
+				SET_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 			}
 			break;
 		case WS_TAKEN:
 			// zacznij chowaæ
-			u.ani->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
+			u.mesh_inst->Play(u.GetTakeWeaponAnimation(co == W_ONE_HANDED), PLAY_ONCE | PLAY_BACK | PLAY_PRIO1, 1);
 			u.weapon_hiding = co;
 			u.weapon_taken = W_NONE;
 			u.weapon_state = WS_HIDING;
@@ -19160,7 +19164,7 @@ void Game::OnCloseInventory()
 	else if(inventory_mode == I_LOOT_CHEST && IsLocal())
 	{
 		pc->action_chest->looted = false;
-		pc->action_chest->ani->Play(&pc->action_chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+		pc->action_chest->mesh_inst->Play(&pc->action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 		if(sound_volume)
 		{
 			Vec3 pos = pc->action_chest->pos;
@@ -19892,8 +19896,8 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 		{
 			u.action = A_ANIMATION2;
 			u.animation = ANI_PLAY;
-			u.ani->Play(bu.anim, PLAY_PRIO1, 0);
-			u.ani->groups[0].speed = 1.f;
+			u.mesh_inst->Play(bu.anim, PLAY_PRIO1, 0);
+			u.mesh_inst->groups[0].speed = 1.f;
 			u.useable = &use;
 			u.useable->user = &u;
 			u.target_pos = u.pos;
@@ -19950,8 +19954,8 @@ void Game::UnitTalk(Unit& u, cstring text)
 	if(u.data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
 	{
 		ani = Rand() % 2 + 1;
-		u.ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-		u.ani->groups[0].speed = 1.f;
+		u.mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+		u.mesh_inst->groups[0].speed = 1.f;
 		u.animation = ANI_PLAY;
 		u.action = A_ANIMATION;
 	}
@@ -20752,9 +20756,9 @@ void Game::DropGold(int ile)
 
 	// animacja wyrzucania
 	pc->unit->action = A_ANIMATION;
-	pc->unit->ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-	pc->unit->ani->groups[0].speed = 1.f;
-	pc->unit->ani->frame_end_info = false;
+	pc->unit->mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	pc->unit->mesh_inst->groups[0].speed = 1.f;
+	pc->unit->mesh_inst->frame_end_info = false;
 
 	if(IsLocal())
 	{

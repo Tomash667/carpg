@@ -87,7 +87,7 @@ void Game::PreconfigureGame()
 	PreloadLanguage();
 	PreloadData();
 	CreatePlaceholderResources();
-	resMgr.SetLoadScreen(load_screen);
+	ResourceManager::Get().SetLoadScreen(load_screen);
 }
 
 //=================================================================================================
@@ -144,7 +144,7 @@ void Game::PreloadLanguage()
 //=================================================================================================
 void Game::PreloadData()
 {
-	resMgr.AddDir("data/preload");
+	ResourceManager::Get().AddDir("data/preload");
 
 	// loadscreen textures
 	load_screen->LoadData();
@@ -157,7 +157,7 @@ void Game::PreloadData()
 	if(!nomusic)
 	{
 		Music* music = new Music;
-		music->music = resMgr.GetLoadedMusic("Intro.ogg");
+		music->music = ResourceManager::Get<Sound>().GetLoadedMusic("Intro.ogg");
 		music->type = MusicType::Intro;
 		musics.push_back(music);
 		SetMusic(MusicType::Intro);
@@ -170,15 +170,16 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	resMgr.PrepareLoadScreen2(0.1f, 11, txCreatingListOfFiles);
+	auto& res_mgr = ResourceManager::Get();
+	res_mgr.PrepareLoadScreen2(0.1f, 11, txCreatingListOfFiles);
 
 	AddFilesystem();
 	LoadDatafiles();
 	LoadLanguageFiles();
-	resMgr.NextTask(txLoadingShaders);
+	res_mgr.NextTask(txLoadingShaders);
 	LoadShaders();
 	ConfigureGame();
-	resMgr.EndLoadScreenStage();
+	res_mgr.EndLoadScreenStage();
 }
 
 //=================================================================================================
@@ -187,8 +188,9 @@ void Game::LoadSystem()
 void Game::AddFilesystem()
 {
 	Info("Game: Creating list of files.");
-	resMgr.AddDir("data");
-	resMgr.AddPak("data/data.pak", "KrystaliceFire");
+	auto& res_mgr = ResourceManager::Get();
+	res_mgr.AddDir("data");
+	res_mgr.AddPak("data/data.pak", "KrystaliceFire");
 }
 
 //=================================================================================================
@@ -197,49 +199,50 @@ void Game::AddFilesystem()
 void Game::LoadDatafiles()
 {
 	Info("Game: Loading system.");
+	auto& res_mgr = ResourceManager::Get();
 	load_errors = 0;
 	load_warnings = 0;
 	uint loaded;
 
 	// items
-	resMgr.NextTask(txLoadingItems);
+	res_mgr.NextTask(txLoadingItems);
 	loaded = LoadItems(crc_items, load_errors);
 	Info("Game: Loaded items: %u (crc %p).", loaded, crc_items);
 
 	// spells
-	resMgr.NextTask(txLoadingSpells);
+	res_mgr.NextTask(txLoadingSpells);
 	loaded = LoadSpells(crc_spells, load_errors);
 	Info("Game: Loaded spells: %u (crc %p).", loaded, crc_spells);
 
 	// dialogs
-	resMgr.NextTask(txLoadingDialogs);
+	res_mgr.NextTask(txLoadingDialogs);
 	loaded = LoadDialogs(crc_dialogs, load_errors);
 	Info("Game: Loaded dialogs: %u (crc %p).", loaded, crc_dialogs);
 
 	// units
-	resMgr.NextTask(txLoadingUnits);
+	res_mgr.NextTask(txLoadingUnits);
 	loaded = LoadUnits(crc_units, load_errors);
 	Info("Game: Loaded units: %u (crc %p).", loaded, crc_units);
 
 	// musics
-	resMgr.NextTask(txLoadingMusics);
+	res_mgr.NextTask(txLoadingMusics);
 	loaded = LoadMusicDatafile(load_errors);
 	Info("Game: Loaded music: %u.", loaded);
 
 	// content
 	content::system_dir = g_system_dir;
-	content::LoadContent([this](content::Id id)
+	content::LoadContent([this, &res_mgr](content::Id id)
 	{
 		switch(id)
 		{
 		case content::Id::Buildings:
-			resMgr.NextTask(txLoadingBuildings);
+			res_mgr.NextTask(txLoadingBuildings);
 			break;
 		}
 	});
 
 	// required
-	resMgr.NextTask(txLoadingRequires);
+	res_mgr.NextTask(txLoadingRequires);
 	LoadRequiredStats(load_errors);
 }
 
@@ -249,7 +252,7 @@ void Game::LoadDatafiles()
 void Game::LoadLanguageFiles()
 {
 	Info("Game: Loading language files.");
-	resMgr.NextTask(txLoadingLanguageFiles);
+	ResourceManager::Get().NextTask(txLoadingLanguageFiles);
 
 	LoadLanguageFile("menu.txt");
 	LoadLanguageFile("stats.txt");
@@ -288,7 +291,7 @@ void Game::LoadLanguageFiles()
 void Game::ConfigureGame()
 {
 	Info("Game: Configuring game.");
-	resMgr.NextTask(txConfiguringGame);
+	ResourceManager::Get().NextTask(txConfiguringGame);
 
 	InitScene();
 	InitSuperShader();
@@ -320,12 +323,13 @@ void Game::ConfigureGame()
 void Game::LoadData()
 {
 	Info("Game: Loading data.");
+	auto& res_mgr = ResourceManager::Get();
 
-	resMgr.SetMutex(mutex);
+	res_mgr.SetMutex(mutex);
 	mutex = nullptr;
-	resMgr.PrepareLoadScreen();
+	res_mgr.PrepareLoadScreen();
 	AddLoadTasks();
-	resMgr.StartLoadScreen();
+	res_mgr.StartLoadScreen();
 }
 
 //=================================================================================================
@@ -491,150 +495,154 @@ void Game::StartGameMode()
 //=================================================================================================
 void Game::AddLoadTasks()
 {
+	auto& res_mgr = ResourceManager::Get();
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	auto& mesh_mgr = ResourceManager::Get<Mesh>();
+	auto& sound_mgr = ResourceManager::Get<Sound>();
+
 	// gui textures
-	resMgr.AddTaskCategory(txLoadGuiTextures);
+	res_mgr.AddTaskCategory(txLoadGuiTextures);
 	LoadGuiData();
-	resMgr.GetLoadedTexture("klasa_cecha.png", tKlasaCecha);
-	resMgr.GetLoadedTexture("celownik.png", tCelownik);
-	resMgr.GetLoadedTexture("bubble.png", tBubble);
-	resMgr.GetLoadedTexture("gotowy.png", tGotowy);
-	resMgr.GetLoadedTexture("niegotowy.png", tNieGotowy);
-	resMgr.GetLoadedTexture("save-16.png", tIcoZapis);
-	resMgr.GetLoadedTexture("padlock-16.png", tIcoHaslo);
-	resMgr.GetLoadedTexture("emerytura.jpg", tEmerytura);
-	resMgr.GetLoadedTexture("equipped.png", tEquipped);
-	resMgr.GetLoadedTexture("czern.bmp", tCzern);
-	resMgr.GetLoadedTexture("rip.jpg", tRip);
-	resMgr.GetLoadedTexture("dialog_up.png", tDialogUp);
-	resMgr.GetLoadedTexture("dialog_down.png", tDialogDown);
-	resMgr.GetLoadedTexture("mini_unit.png", tMiniunit);
-	resMgr.GetLoadedTexture("mini_unit2.png", tMiniunit2);
-	resMgr.GetLoadedTexture("schody_dol.png", tSchodyDol);
-	resMgr.GetLoadedTexture("schody_gora.png", tSchodyGora);
-	resMgr.GetLoadedTexture("czerwono.png", tObwodkaBolu);
-	resMgr.GetLoadedTexture("dark_portal.png", tPortal);
-	resMgr.GetLoadedTexture("mini_unit3.png", tMiniunit3);
-	resMgr.GetLoadedTexture("mini_unit4.png", tMiniunit4);
-	resMgr.GetLoadedTexture("mini_unit5.png", tMiniunit5);
-	resMgr.GetLoadedTexture("mini_bag.png", tMinibag);
-	resMgr.GetLoadedTexture("mini_bag2.png", tMinibag2);
-	resMgr.GetLoadedTexture("mini_portal.png", tMiniportal);
+	tex_mgr.AddLoadTask("klasa_cecha.png", tKlasaCecha);
+	tex_mgr.AddLoadTask("celownik.png", tCelownik);
+	tex_mgr.AddLoadTask("bubble.png", tBubble);
+	tex_mgr.AddLoadTask("gotowy.png", tGotowy);
+	tex_mgr.AddLoadTask("niegotowy.png", tNieGotowy);
+	tex_mgr.AddLoadTask("save-16.png", tIcoZapis);
+	tex_mgr.AddLoadTask("padlock-16.png", tIcoHaslo);
+	tex_mgr.AddLoadTask("emerytura.jpg", tEmerytura);
+	tex_mgr.AddLoadTask("equipped.png", tEquipped);
+	tex_mgr.AddLoadTask("czern.bmp", tCzern);
+	tex_mgr.AddLoadTask("rip.jpg", tRip);
+	tex_mgr.AddLoadTask("dialog_up.png", tDialogUp);
+	tex_mgr.AddLoadTask("dialog_down.png", tDialogDown);
+	tex_mgr.AddLoadTask("mini_unit.png", tMiniunit);
+	tex_mgr.AddLoadTask("mini_unit2.png", tMiniunit2);
+	tex_mgr.AddLoadTask("schody_dol.png", tSchodyDol);
+	tex_mgr.AddLoadTask("schody_gora.png", tSchodyGora);
+	tex_mgr.AddLoadTask("czerwono.png", tObwodkaBolu);
+	tex_mgr.AddLoadTask("dark_portal.png", tPortal);
+	tex_mgr.AddLoadTask("mini_unit3.png", tMiniunit3);
+	tex_mgr.AddLoadTask("mini_unit4.png", tMiniunit4);
+	tex_mgr.AddLoadTask("mini_unit5.png", tMiniunit5);
+	tex_mgr.AddLoadTask("mini_bag.png", tMinibag);
+	tex_mgr.AddLoadTask("mini_bag2.png", tMinibag2);
+	tex_mgr.AddLoadTask("mini_portal.png", tMiniportal);
 	for(ClassInfo& ci : g_classes)
-		resMgr.GetLoadedTexture(ci.icon_file, ci.icon);
-	resMgr.GetLoadedTexture("warning.png", tWarning);
-	resMgr.GetLoadedTexture("error.png", tError);
+		tex_mgr.AddLoadTask(ci.icon_file, ci.icon);
+	tex_mgr.AddLoadTask("warning.png", tWarning);
+	tex_mgr.AddLoadTask("error.png", tError);
 
 	// terrain textures
-	resMgr.AddTaskCategory(txLoadTerrainTextures);
-	resMgr.GetLoadedTexture("trawa.jpg", tTrawa);
-	resMgr.GetLoadedTexture("droga.jpg", tDroga);
-	resMgr.GetLoadedTexture("ziemia.jpg", tZiemia);
-	resMgr.GetLoadedTexture("Grass0157_5_S.jpg", tTrawa2);
-	resMgr.GetLoadedTexture("LeavesDead0045_1_S.jpg", tTrawa3);
-	resMgr.GetLoadedTexture("pole.jpg", tPole);
-	tFloorBase.diffuse = resMgr.GetLoadedTexture("droga.jpg");
+	res_mgr.AddTaskCategory(txLoadTerrainTextures);
+	tex_mgr.AddLoadTask("trawa.jpg", tTrawa);
+	tex_mgr.AddLoadTask("droga.jpg", tDroga);
+	tex_mgr.AddLoadTask("ziemia.jpg", tZiemia);
+	tex_mgr.AddLoadTask("Grass0157_5_S.jpg", tTrawa2);
+	tex_mgr.AddLoadTask("LeavesDead0045_1_S.jpg", tTrawa3);
+	tex_mgr.AddLoadTask("pole.jpg", tPole);
+	tFloorBase.diffuse = tex_mgr.AddLoadTask("droga.jpg");
 	tFloorBase.normal = nullptr;
 	tFloorBase.specular = nullptr;
-	tWallBase.diffuse = resMgr.GetLoadedTexture("sciana.jpg");
-	tWallBase.normal = resMgr.GetLoadedTexture("sciana_nrm.jpg");
-	tWallBase.specular = resMgr.GetLoadedTexture("sciana_spec.jpg");
-	tCeilBase.diffuse = resMgr.GetLoadedTexture("sufit.jpg");
+	tWallBase.diffuse = tex_mgr.AddLoadTask("sciana.jpg");
+	tWallBase.normal = tex_mgr.AddLoadTask("sciana_nrm.jpg");
+	tWallBase.specular = tex_mgr.AddLoadTask("sciana_spec.jpg");
+	tCeilBase.diffuse = tex_mgr.AddLoadTask("sufit.jpg");
 	tCeilBase.normal = nullptr;
 	tCeilBase.specular = nullptr;
 
 	// particles
-	resMgr.AddTaskCategory(txLoadParticles);
-	tKrew[BLOOD_RED] = resMgr.GetLoadedTexture("krew.png");
-	tKrew[BLOOD_GREEN] = resMgr.GetLoadedTexture("krew2.png");
-	tKrew[BLOOD_BLACK] = resMgr.GetLoadedTexture("krew3.png");
-	tKrew[BLOOD_BONE] = resMgr.GetLoadedTexture("iskra.png");
-	tKrew[BLOOD_ROCK] = resMgr.GetLoadedTexture("kamien.png");
-	tKrew[BLOOD_IRON] = resMgr.GetLoadedTexture("iskra.png");
-	tKrewSlad[BLOOD_RED] = resMgr.GetLoadedTexture("krew_slad.png");
-	tKrewSlad[BLOOD_GREEN] = resMgr.GetLoadedTexture("krew_slad2.png");
-	tKrewSlad[BLOOD_BLACK] = resMgr.GetLoadedTexture("krew_slad3.png");
+	res_mgr.AddTaskCategory(txLoadParticles);
+	tKrew[BLOOD_RED] = tex_mgr.AddLoadTask("krew.png");
+	tKrew[BLOOD_GREEN] = tex_mgr.AddLoadTask("krew2.png");
+	tKrew[BLOOD_BLACK] = tex_mgr.AddLoadTask("krew3.png");
+	tKrew[BLOOD_BONE] = tex_mgr.AddLoadTask("iskra.png");
+	tKrew[BLOOD_ROCK] = tex_mgr.AddLoadTask("kamien.png");
+	tKrew[BLOOD_IRON] = tex_mgr.AddLoadTask("iskra.png");
+	tKrewSlad[BLOOD_RED] = tex_mgr.AddLoadTask("krew_slad.png");
+	tKrewSlad[BLOOD_GREEN] = tex_mgr.AddLoadTask("krew_slad2.png");
+	tKrewSlad[BLOOD_BLACK] = tex_mgr.AddLoadTask("krew_slad3.png");
 	tKrewSlad[BLOOD_BONE] = nullptr;
 	tKrewSlad[BLOOD_ROCK] = nullptr;
 	tKrewSlad[BLOOD_IRON] = nullptr;
-	tIskra = resMgr.GetLoadedTexture("iskra.png");
-	tWoda = resMgr.GetLoadedTexture("water.png");
-	tFlare = resMgr.GetLoadedTexture("flare.png");
-	tFlare2 = resMgr.GetLoadedTexture("flare2.png");
-	resMgr.GetLoadedTexture("lighting_line.png", tLightingLine);
+	tIskra = tex_mgr.AddLoadTask("iskra.png");
+	tWoda = tex_mgr.AddLoadTask("water.png");
+	tFlare = tex_mgr.AddLoadTask("flare.png");
+	tFlare2 = tex_mgr.AddLoadTask("flare2.png");
+	tex_mgr.AddLoadTask("lighting_line.png", tLightingLine);
 
 	// physic meshes
-	resMgr.AddTaskCategory(txLoadPhysicMeshes);
-	resMgr.GetLoadedMeshVertexData("schody_gora_phy.qmsh", vdSchodyGora);
-	resMgr.GetLoadedMeshVertexData("schody_dol_phy.qmsh", vdSchodyDol);
-	resMgr.GetLoadedMeshVertexData("nadrzwi_phy.qmsh", vdNaDrzwi);
+	res_mgr.AddTaskCategory(txLoadPhysicMeshes);
+	mesh_mgr.AddLoadTask("schody_gora_phy.qmsh", vdSchodyGora);
+	mesh_mgr.AddLoadTask("schody_dol_phy.qmsh", vdSchodyDol);
+	mesh_mgr.AddLoadTask("nadrzwi_phy.qmsh", vdNaDrzwi);
 
 	// models
-	resMgr.AddTaskCategory(txLoadModels);
-	resMgr.GetLoadedMesh("box.qmsh", aBox);
-	resMgr.GetLoadedMesh("cylinder.qmsh", aCylinder);
-	resMgr.GetLoadedMesh("sphere.qmsh", aSphere);
-	resMgr.GetLoadedMesh("capsule.qmsh", aCapsule);
-	resMgr.GetLoadedMesh("strzala.qmsh", aArrow);
-	resMgr.GetLoadedMesh("skybox.qmsh", aSkybox);
-	resMgr.GetLoadedMesh("worek.qmsh", aWorek);
-	resMgr.GetLoadedMesh("skrzynia.qmsh", aSkrzynia);
-	resMgr.GetLoadedMesh("kratka.qmsh", aKratka);
-	resMgr.GetLoadedMesh("nadrzwi.qmsh", aNaDrzwi);
-	resMgr.GetLoadedMesh("nadrzwi2.qmsh", aNaDrzwi2);
-	resMgr.GetLoadedMesh("schody_dol.qmsh", aSchodyDol);
-	resMgr.GetLoadedMesh("schody_dol2.qmsh", aSchodyDol2);
-	resMgr.GetLoadedMesh("schody_gora.qmsh", aSchodyGora);
-	resMgr.GetLoadedMesh("beczka.qmsh", aBeczka);
-	resMgr.GetLoadedMesh("spellball.qmsh", aSpellball);
-	resMgr.GetLoadedMesh("drzwi.qmsh", aDrzwi);
-	resMgr.GetLoadedMesh("drzwi2.qmsh", aDrzwi2);
-	resMgr.GetLoadedMesh("czlowiek.qmsh", aHumanBase);
-	resMgr.GetLoadedMesh("hair1.qmsh", aHair[0]);
-	resMgr.GetLoadedMesh("hair2.qmsh", aHair[1]);
-	resMgr.GetLoadedMesh("hair3.qmsh", aHair[2]);
-	resMgr.GetLoadedMesh("hair4.qmsh", aHair[3]);
-	resMgr.GetLoadedMesh("hair5.qmsh", aHair[4]);
-	resMgr.GetLoadedMesh("eyebrows.qmsh", aEyebrows);
-	resMgr.GetLoadedMesh("mustache1.qmsh", aMustache[0]);
-	resMgr.GetLoadedMesh("mustache2.qmsh", aMustache[1]);
-	resMgr.GetLoadedMesh("beard1.qmsh", aBeard[0]);
-	resMgr.GetLoadedMesh("beard2.qmsh", aBeard[1]);
-	resMgr.GetLoadedMesh("beard3.qmsh", aBeard[2]);
-	resMgr.GetLoadedMesh("beard4.qmsh", aBeard[3]);
-	resMgr.GetLoadedMesh("beardm1.qmsh", aBeard[4]);
+	res_mgr.AddTaskCategory(txLoadModels);
+	aBox = mesh_mgr.AddLoadTask("box.qmsh");
+	aCylinder = mesh_mgr.AddLoadTask("cylinder.qmsh");
+	aSphere = mesh_mgr.AddLoadTask("sphere.qmsh");
+	aCapsule = mesh_mgr.AddLoadTask("capsule.qmsh");
+	aArrow = mesh_mgr.AddLoadTask("strzala.qmsh");
+	aSkybox = mesh_mgr.AddLoadTask("skybox.qmsh");
+	aWorek = mesh_mgr.AddLoadTask("worek.qmsh");
+	aSkrzynia = mesh_mgr.AddLoadTask("skrzynia.qmsh");
+	aKratka = mesh_mgr.AddLoadTask("kratka.qmsh");
+	aNaDrzwi = mesh_mgr.AddLoadTask("nadrzwi.qmsh");
+	aNaDrzwi2 = mesh_mgr.AddLoadTask("nadrzwi2.qmsh");
+	aSchodyDol = mesh_mgr.AddLoadTask("schody_dol.qmsh");
+	aSchodyDol2 = mesh_mgr.AddLoadTask("schody_dol2.qmsh");
+	aSchodyGora = mesh_mgr.AddLoadTask("schody_gora.qmsh");
+	aSpellball = mesh_mgr.AddLoadTask("spellball.qmsh");
+	aDrzwi = mesh_mgr.AddLoadTask("drzwi.qmsh");
+	aDrzwi2 = mesh_mgr.AddLoadTask("drzwi2.qmsh");
+	aHumanBase = mesh_mgr.AddLoadTask("czlowiek.qmsh");
+	aHair[0] = mesh_mgr.AddLoadTask("hair1.qmsh");
+	aHair[1] = mesh_mgr.AddLoadTask("hair2.qmsh");
+	aHair[2] = mesh_mgr.AddLoadTask("hair3.qmsh");
+	aHair[3] = mesh_mgr.AddLoadTask("hair4.qmsh");
+	aHair[4] = mesh_mgr.AddLoadTask("hair5.qmsh");
+	aEyebrows = mesh_mgr.AddLoadTask("eyebrows.qmsh");
+	aMustache[0] = mesh_mgr.AddLoadTask("mustache1.qmsh");
+	aMustache[1] = mesh_mgr.AddLoadTask("mustache2.qmsh");
+	aBeard[0] = mesh_mgr.AddLoadTask("beard1.qmsh");
+	aBeard[1] = mesh_mgr.AddLoadTask("beard2.qmsh");
+	aBeard[2] = mesh_mgr.AddLoadTask("beard3.qmsh");
+	aBeard[3] = mesh_mgr.AddLoadTask("beard4.qmsh");
+	aBeard[4] = mesh_mgr.AddLoadTask("beardm1.qmsh");
 
 	// buildings
-	resMgr.AddTaskCategory(txLoadBuildings);
+	res_mgr.AddTaskCategory(txLoadBuildings);
 	for(Building* b : content::buildings)
 	{
 		if(!b->mesh_id.empty())
-			resMgr.GetLoadedMesh(b->mesh_id, b->mesh);
+			b->mesh = mesh_mgr.AddLoadTask(b->mesh_id);
 		if(!b->inside_mesh_id.empty())
-			resMgr.GetLoadedMesh(b->inside_mesh_id, b->inside_mesh);
+			b->inside_mesh = mesh_mgr.AddLoadTask(b->inside_mesh_id);
 	}
 
 	// traps
-	resMgr.AddTaskCategory(txLoadTraps);
+	res_mgr.AddTaskCategory(txLoadTraps);
 	for(uint i = 0; i < n_traps; ++i)
 	{
 		BaseTrap& t = g_traps[i];
 		if(t.mesh_id)
-			resMgr.GetLoadedMesh(t.mesh_id, Task(&t, TaskCallback(this, &Game::SetupTrap)));
+			 mesh_mgr.AddLoadTask(t.mesh_id, &t, TaskCallback(this, &Game::SetupTrap));
 		if(t.mesh_id2)
-			resMgr.GetLoadedMesh(t.mesh_id2, t.mesh2);
+			t.mesh2 = mesh_mgr.AddLoadTask(t.mesh_id2);
 		if(!nosound)
 		{
 			if(t.sound_id)
-				resMgr.GetLoadedSound(t.sound_id, t.sound);
+				sound_mgr.AddLoadTask(t.sound_id, t.sound);
 			if(t.sound_id2)
-				resMgr.GetLoadedSound(t.sound_id2, t.sound2);
+				sound_mgr.AddLoadTask(t.sound_id2, t.sound2);
 			if(t.sound_id3)
-				resMgr.GetLoadedSound(t.sound_id3, t.sound3);
+				sound_mgr.AddLoadTask(t.sound_id3, t.sound3);
 		}
 	}
 
 	// spells
-	resMgr.AddTaskCategory(txLoadSpells);
+	res_mgr.AddTaskCategory(txLoadSpells);
 	for(Spell* spell_ptr : spells)
 	{
 		Spell& spell = *spell_ptr;
@@ -642,25 +650,25 @@ void Game::AddLoadTasks()
 		if(!nosound)
 		{
 			if(!spell.sound_cast_id.empty())
-				resMgr.GetLoadedSound(spell.sound_cast_id, spell.sound_cast);
+				sound_mgr.AddLoadTask(spell.sound_cast_id, spell.sound_cast);
 			if(!spell.sound_hit_id.empty())
-				resMgr.GetLoadedSound(spell.sound_hit_id, spell.sound_hit);
+				sound_mgr.AddLoadTask(spell.sound_hit_id, spell.sound_hit);
 		}
 		if(!spell.tex_id.empty())
-			spell.tex = resMgr.GetLoadedTexture(spell.tex_id.c_str());
+			spell.tex = tex_mgr.AddLoadTask(spell.tex_id);
 		if(!spell.tex_particle_id.empty())
-			spell.tex_particle = resMgr.GetLoadedTexture(spell.tex_particle_id.c_str());
+			spell.tex_particle = tex_mgr.AddLoadTask(spell.tex_particle_id);
 		if(!spell.tex_explode_id.empty())
-			spell.tex_explode = resMgr.GetLoadedTexture(spell.tex_explode_id.c_str());
+			spell.tex_explode = tex_mgr.AddLoadTask(spell.tex_explode_id);
 		if(!spell.mesh_id.empty())
-			resMgr.GetLoadedMesh(spell.mesh_id, spell.mesh);
+			spell.mesh = mesh_mgr.AddLoadTask(spell.mesh_id);
 
 		if(spell.type == Spell::Ball || spell.type == Spell::Point)
 			spell.shape = new btSphereShape(spell.size);
 	}
 
 	// objects
-	resMgr.AddTaskCategory(txLoadObjects);
+	res_mgr.AddTaskCategory(txLoadObjects);
 	for(uint i = 0; i < n_objs; ++i)
 	{
 		Obj& o = g_objs[i];
@@ -670,23 +678,23 @@ void Game::AddLoadTasks()
 			if(!vo.loaded)
 			{
 				for(uint i = 0; i < vo.count; ++i)
-					resMgr.GetLoadedMesh(vo.entries[i].mesh_name, vo.entries[i].mesh);
+					vo.entries[i].mesh = mesh_mgr.AddLoadTask(vo.entries[i].mesh_name);
 				vo.loaded = true;
 			}
-			resMgr.AddTask(Task(&o, TaskCallback(this, &Game::SetupObject)));
+			res_mgr.AddTask(&o, TaskCallback(this, &Game::SetupObject));
 		}
 		else if(o.mesh_id)
 		{
 			if(IS_SET(o.flags, OBJ_SCALEABLE))
 			{
-				resMgr.GetLoadedMesh(o.mesh_id, o.mesh);
+				o.mesh = mesh_mgr.AddLoadTask(o.mesh_id);
 				o.matrix = nullptr;
 			}
 			else
 			{
 				if(o.type == OBJ_CYLINDER)
 				{
-					resMgr.GetLoadedMesh(o.mesh_id, o.mesh);
+					o.mesh = mesh_mgr.AddLoadTask(o.mesh_id);
 					if(!IS_SET(o.flags, OBJ_NO_PHYSICS))
 					{
 						btCylinderShape* shape = new btCylinderShape(btVector3(o.r, o.h, o.r));
@@ -695,7 +703,7 @@ void Game::AddLoadTasks()
 					o.matrix = nullptr;
 				}
 				else
-					resMgr.GetLoadedMesh(o.mesh_id, Task(&o, TaskCallback(this, &Game::SetupObject)));
+					mesh_mgr.AddLoadTask(o.mesh_id, &o, TaskCallback(this, &Game::SetupObject));
 			}
 		}
 		else
@@ -704,25 +712,27 @@ void Game::AddLoadTasks()
 			o.matrix = nullptr;
 		}
 	}
+
+	// useable objects
 	for(uint i = 0; i < n_base_usables; ++i)
 	{
 		BaseUsable& bu = g_base_usables[i];
 		bu.obj = FindObject(bu.obj_name);
 		if(!nosound && bu.sound_id)
-			resMgr.GetLoadedSound(bu.sound_id, bu.sound);
+			sound_mgr.AddLoadTask(bu.sound_id, bu.sound);
 		if(bu.item_id)
 			bu.item = FindItem(bu.item_id);
 	}
 
 	// units
-	resMgr.AddTaskCategory(txLoadUnits);
+	res_mgr.AddTaskCategory(txLoadUnits);
 	for(UnitData* ud_ptr : unit_datas)
 	{
 		UnitData& ud = *ud_ptr;
 
 		// model
 		if(!ud.mesh_id.empty())
-			resMgr.GetLoadedMesh(ud.mesh_id, ud.mesh);
+			ud.mesh = mesh_mgr.AddLoadTask(ud.mesh_id);
 
 		// sounds
 		SoundPack& sounds = *ud.sounds;
@@ -732,7 +742,7 @@ void Game::AddLoadTasks()
 			for(int i = 0; i < SOUND_MAX; ++i)
 			{
 				if(!sounds.filename[i].empty())
-					resMgr.GetLoadedSound(sounds.filename[i], sounds.sound[i]);
+					sound_mgr.AddLoadTask(sounds.filename[i], sounds.sound[i]);
 			}
 		}
 
@@ -743,13 +753,13 @@ void Game::AddLoadTasks()
 			for(TexId& ti : ud.tex->textures)
 			{
 				if(!ti.id.empty())
-					ti.tex = resMgr.GetLoadedTexture(ti.id.c_str());
+					ti.tex = tex_mgr.AddLoadTask(ti.id);
 			}
 		}
 	}
 
 	// items
-	resMgr.AddTaskCategory(txLoadItems);
+	res_mgr.AddTaskCategory(txLoadItems);
 	for(Armor* armor : g_armors)
 	{
 		Armor& a = *armor;
@@ -758,7 +768,7 @@ void Game::AddLoadTasks()
 			for(TexId& ti : a.tex_override)
 			{
 				if(!ti.id.empty())
-					ti.tex = resMgr.GetLoadedTexture(ti.id.c_str());
+					ti.tex = tex_mgr.AddLoadTask(ti.id);
 			}
 		}
 	}
@@ -767,53 +777,53 @@ void Game::AddLoadTasks()
 	// sounds
 	if(!nosound)
 	{
-		resMgr.AddTaskCategory(txLoadSounds);
-		resMgr.GetLoadedSound("gulp.mp3", sGulp);
-		resMgr.GetLoadedSound("moneta2.mp3", sCoins);
-		resMgr.GetLoadedSound("bow1.mp3", sBow[0]);
-		resMgr.GetLoadedSound("bow2.mp3", sBow[1]);
-		resMgr.GetLoadedSound("drzwi-02.mp3", sDoor[0]);
-		resMgr.GetLoadedSound("drzwi-03.mp3", sDoor[1]);
-		resMgr.GetLoadedSound("drzwi-04.mp3", sDoor[2]);
-		resMgr.GetLoadedSound("104528__skyumori__door-close-sqeuak-02.mp3", sDoorClose);
-		resMgr.GetLoadedSound("wont_budge.ogg", sDoorClosed[0]);
-		resMgr.GetLoadedSound("wont_budge2.ogg", sDoorClosed[1]);
-		resMgr.GetLoadedSound("bottle.wav", sItem[0]); // potion
-		resMgr.GetLoadedSound("armor-light.wav", sItem[1]); // light armor
-		resMgr.GetLoadedSound("chainmail1.wav", sItem[2]); // heavy armor
-		resMgr.GetLoadedSound("metal-ringing.wav", sItem[3]); // crystal
-		resMgr.GetLoadedSound("wood-small.wav", sItem[4]); // bow
-		resMgr.GetLoadedSound("cloth-heavy.wav", sItem[5]); // shield
-		resMgr.GetLoadedSound("sword-unsheathe.wav", sItem[6]); // weapon
-		resMgr.GetLoadedSound("interface3.wav", sItem[7]);
-		resMgr.GetLoadedSound("hello-3.mp3", sTalk[0]);
-		resMgr.GetLoadedSound("hello-4.mp3", sTalk[1]);
-		resMgr.GetLoadedSound("hmph.wav", sTalk[2]);
-		resMgr.GetLoadedSound("huh-2.mp3", sTalk[3]);
-		resMgr.GetLoadedSound("chest_open.mp3", sChestOpen);
-		resMgr.GetLoadedSound("chest_close.mp3", sChestClose);
-		resMgr.GetLoadedSound("door_budge.mp3", sDoorBudge);
-		resMgr.GetLoadedSound("atak_kamien.mp3", sRock);
-		resMgr.GetLoadedSound("atak_drewno.mp3", sWood);
-		resMgr.GetLoadedSound("atak_krysztal.mp3", sCrystal);
-		resMgr.GetLoadedSound("atak_metal.mp3", sMetal);
-		resMgr.GetLoadedSound("atak_cialo.mp3", sBody[0]);
-		resMgr.GetLoadedSound("atak_cialo2.mp3", sBody[1]);
-		resMgr.GetLoadedSound("atak_cialo3.mp3", sBody[2]);
-		resMgr.GetLoadedSound("atak_cialo4.mp3", sBody[3]);
-		resMgr.GetLoadedSound("atak_cialo5.mp3", sBody[4]);
-		resMgr.GetLoadedSound("atak_kosci.mp3", sBone);
-		resMgr.GetLoadedSound("atak_skora.mp3", sSkin);
-		resMgr.GetLoadedSound("arena_fight.mp3", sArenaFight);
-		resMgr.GetLoadedSound("arena_wygrana.mp3", sArenaWin);
-		resMgr.GetLoadedSound("arena_porazka.mp3", sArenaLost);
-		resMgr.GetLoadedSound("unlock.mp3", sUnlock);
-		resMgr.GetLoadedSound("TouchofDeath.ogg", sEvil);
-		resMgr.GetLoadedSound("shade8.wav", sXarTalk);
-		resMgr.GetLoadedSound("ogre1.wav", sOrcTalk);
-		resMgr.GetLoadedSound("goblin-7.wav", sGoblinTalk);
-		resMgr.GetLoadedSound("golem_alert.mp3", sGolemTalk);
-		resMgr.GetLoadedSound("eat.mp3", sEat);
+		res_mgr.AddTaskCategory(txLoadSounds);
+		sound_mgr.AddLoadTask("gulp.mp3", sGulp);
+		sound_mgr.AddLoadTask("moneta2.mp3", sCoins);
+		sound_mgr.AddLoadTask("bow1.mp3", sBow[0]);
+		sound_mgr.AddLoadTask("bow2.mp3", sBow[1]);
+		sound_mgr.AddLoadTask("drzwi-02.mp3", sDoor[0]);
+		sound_mgr.AddLoadTask("drzwi-03.mp3", sDoor[1]);
+		sound_mgr.AddLoadTask("drzwi-04.mp3", sDoor[2]);
+		sound_mgr.AddLoadTask("104528__skyumori__door-close-sqeuak-02.mp3", sDoorClose);
+		sound_mgr.AddLoadTask("wont_budge.ogg", sDoorClosed[0]);
+		sound_mgr.AddLoadTask("wont_budge2.ogg", sDoorClosed[1]);
+		sound_mgr.AddLoadTask("bottle.wav", sItem[0]); // potion
+		sound_mgr.AddLoadTask("armor-light.wav", sItem[1]); // light armor
+		sound_mgr.AddLoadTask("chainmail1.wav", sItem[2]); // heavy armor
+		sound_mgr.AddLoadTask("metal-ringing.wav", sItem[3]); // crystal
+		sound_mgr.AddLoadTask("wood-small.wav", sItem[4]); // bow
+		sound_mgr.AddLoadTask("cloth-heavy.wav", sItem[5]); // shield
+		sound_mgr.AddLoadTask("sword-unsheathe.wav", sItem[6]); // weapon
+		sound_mgr.AddLoadTask("interface3.wav", sItem[7]);
+		sound_mgr.AddLoadTask("hello-3.mp3", sTalk[0]);
+		sound_mgr.AddLoadTask("hello-4.mp3", sTalk[1]);
+		sound_mgr.AddLoadTask("hmph.wav", sTalk[2]);
+		sound_mgr.AddLoadTask("huh-2.mp3", sTalk[3]);
+		sound_mgr.AddLoadTask("chest_open.mp3", sChestOpen);
+		sound_mgr.AddLoadTask("chest_close.mp3", sChestClose);
+		sound_mgr.AddLoadTask("door_budge.mp3", sDoorBudge);
+		sound_mgr.AddLoadTask("atak_kamien.mp3", sRock);
+		sound_mgr.AddLoadTask("atak_drewno.mp3", sWood);
+		sound_mgr.AddLoadTask("atak_krysztal.mp3", sCrystal);
+		sound_mgr.AddLoadTask("atak_metal.mp3", sMetal);
+		sound_mgr.AddLoadTask("atak_cialo.mp3", sBody[0]);
+		sound_mgr.AddLoadTask("atak_cialo2.mp3", sBody[1]);
+		sound_mgr.AddLoadTask("atak_cialo3.mp3", sBody[2]);
+		sound_mgr.AddLoadTask("atak_cialo4.mp3", sBody[3]);
+		sound_mgr.AddLoadTask("atak_cialo5.mp3", sBody[4]);
+		sound_mgr.AddLoadTask("atak_kosci.mp3", sBone);
+		sound_mgr.AddLoadTask("atak_skora.mp3", sSkin);
+		sound_mgr.AddLoadTask("arena_fight.mp3", sArenaFight);
+		sound_mgr.AddLoadTask("arena_wygrana.mp3", sArenaWin);
+		sound_mgr.AddLoadTask("arena_porazka.mp3", sArenaLost);
+		sound_mgr.AddLoadTask("unlock.mp3", sUnlock);
+		sound_mgr.AddLoadTask("TouchofDeath.ogg", sEvil);
+		sound_mgr.AddLoadTask("shade8.wav", sXarTalk);
+		sound_mgr.AddLoadTask("ogre1.wav", sOrcTalk);
+		sound_mgr.AddLoadTask("goblin-7.wav", sGoblinTalk);
+		sound_mgr.AddLoadTask("golem_alert.mp3", sGolemTalk);
+		sound_mgr.AddLoadTask("eat.mp3", sEat);
 	}
 
 	// musics

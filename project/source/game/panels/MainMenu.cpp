@@ -137,9 +137,9 @@ check_updates(check_updates), skip_version(skip_version), game(game), event(even
 //=================================================================================================
 void MainMenu::LoadData()
 {
-	ResourceManager& resMgr = ResourceManager::Get();
-	resMgr.GetLoadedTexture("menu_bg.jpg", MainMenu::tBackground);
-	resMgr.GetLoadedTexture("logo.png", MainMenu::tLogo);
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("menu_bg.jpg", MainMenu::tBackground);
+	tex_mgr.AddLoadTask("logo.png", MainMenu::tLogo);
 }
 
 //=================================================================================================

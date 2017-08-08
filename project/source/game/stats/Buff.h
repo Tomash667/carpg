@@ -1,9 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-class ResourceManager;
-
-//-----------------------------------------------------------------------------
 enum BUFF_FLAGS
 {
 	BUFF_REGENERATION = 1 << 0,
@@ -31,6 +28,6 @@ struct BuffInfo
 
 	static BuffInfo info[];
 
-	static void LoadImages(ResourceManager& res_mgr);
+	static void LoadImages();
 	static void LoadText();
 };

@@ -1680,7 +1680,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 		else if(IS_SET(obj->flags, OBJ_CHEST))
 		{
 			Chest* chest = new Chest;
-			chest->ani = new MeshInstance(obj->mesh);
+			chest->mesh_inst = new MeshInstance(obj->mesh);
 			chest->rot = rot;
 			chest->pos = pos;
 			chest->handler = nullptr;
@@ -2269,8 +2269,8 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					door->rot = Clip(pt.rot.y + rot);
 					door->state = Door::Open;
 					door->door2 = (token == "door2");
-					door->ani = new MeshInstance(door->door2 ? aDrzwi2 : aDrzwi);
-					door->ani->groups[0].speed = 2.f;
+					door->mesh_inst = new MeshInstance(door->door2 ? aDrzwi2 : aDrzwi);
+					door->mesh_inst->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);
 					door->locked = LOCK_NONE;
@@ -2293,7 +2293,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					{
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
-						door->ani->SetToEnd(door->ani->ani->anims[0].name.c_str());
+						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
 					}
 
 					ctx.doors->push_back(door);
@@ -2547,21 +2547,21 @@ void Game::RespawnUnits(LevelContext& ctx)
 		// model
 		u->action = A_NONE;
 		u->talking = false;
-		u->ani = new MeshInstance(u->data->mesh ? (Mesh*)u->data->mesh : aHumanBase);
-		u->ani->ptr = u;
+		u->mesh_inst = new MeshInstance(u->data->mesh ? (Mesh*)u->data->mesh : aHumanBase);
+		u->mesh_inst->ptr = u;
 		if(u->IsAlive())
 		{
-			u->ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
+			u->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
 			u->animation = u->current_animation = ANI_STAND;
 		}
 		else
 		{
-			u->ani->Play(NAMES::ani_die, PLAY_PRIO1, 0);
+			u->mesh_inst->Play(NAMES::ani_die, PLAY_PRIO1, 0);
 			u->animation = u->current_animation = ANI_DIE;
 		}
-		u->ani->groups[0].speed = 1.f;
+		u->mesh_inst->groups[0].speed = 1.f;
 		if(u->human_data)
-			u->human_data->ApplyScale(u->ani->ani);
+			u->human_data->ApplyScale(u->mesh_inst->mesh);
 		u->SetAnimationAtEnd();
 
 		// fizyka
@@ -2774,7 +2774,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		Unit* innkeeper = inn->FindUnit(FindUnitData("innkeeper"));
 
 		innkeeper->talking = false;
-		innkeeper->ani->need_update = true;
+		innkeeper->mesh_inst->need_update = true;
 		innkeeper->busy = Unit::Busy_No;
 		contest_state = CONTEST_DONE;
 		contest_units.clear();
@@ -3194,8 +3194,8 @@ void Game::GenerateDungeonObjects2()
 					door->pos = o.pos;
 					door->rot = o.rot.y;
 					door->state = Door::Closed;
-					door->ani = new MeshInstance(aDrzwi);
-					door->ani->groups[0].speed = 2.f;
+					door->mesh_inst = new MeshInstance(aDrzwi);
+					door->mesh_inst->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);
 					door->locked = LOCK_NONE;
@@ -3214,7 +3214,7 @@ void Game::GenerateDungeonObjects2()
 						door->state = Door::Open;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
-						door->ani->SetToEnd(door->ani->ani->anims[0].name.c_str());
+						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
 					}
 				}
 				else

@@ -59,22 +59,22 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 //=================================================================================================
 void WorldMapGui::LoadData()
 {
-	ResourceManager& resMgr = ResourceManager::Get();
-	resMgr.GetLoadedTexture("camp.png", tMapIcon[LI_CAMP]);
-	resMgr.GetLoadedTexture("village.png", tMapIcon[LI_VILLAGE]);
-	resMgr.GetLoadedTexture("city.png", tMapIcon[LI_CITY]);
-	resMgr.GetLoadedTexture("dungeon.png", tMapIcon[LI_DUNGEON]);
-	resMgr.GetLoadedTexture("crypt.png", tMapIcon[LI_CRYPT]);
-	resMgr.GetLoadedTexture("cave.png", tMapIcon[LI_CAVE]);
-	resMgr.GetLoadedTexture("forest.png", tMapIcon[LI_FOREST]);
-	resMgr.GetLoadedTexture("moonwell.png", tMapIcon[LI_MOONWELL]);
-	resMgr.GetLoadedTexture("academy.png", tMapIcon[LI_ACADEMY]);
-	resMgr.GetLoadedTexture("worldmap.jpg", tWorldMap);
-	resMgr.GetLoadedTexture("selected.png", tSelected[0]);
-	resMgr.GetLoadedTexture("selected2.png", tSelected[1]);
-	resMgr.GetLoadedTexture("mover.png", tMover);
-	resMgr.GetLoadedTexture("old_map.png", tMapBg);
-	resMgr.GetLoadedTexture("enc.png", tEnc);
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("camp.png", tMapIcon[LI_CAMP]);
+	tex_mgr.AddLoadTask("village.png", tMapIcon[LI_VILLAGE]);
+	tex_mgr.AddLoadTask("city.png", tMapIcon[LI_CITY]);
+	tex_mgr.AddLoadTask("dungeon.png", tMapIcon[LI_DUNGEON]);
+	tex_mgr.AddLoadTask("crypt.png", tMapIcon[LI_CRYPT]);
+	tex_mgr.AddLoadTask("cave.png", tMapIcon[LI_CAVE]);
+	tex_mgr.AddLoadTask("forest.png", tMapIcon[LI_FOREST]);
+	tex_mgr.AddLoadTask("moonwell.png", tMapIcon[LI_MOONWELL]);
+	tex_mgr.AddLoadTask("academy.png", tMapIcon[LI_ACADEMY]);
+	tex_mgr.AddLoadTask("worldmap.jpg", tWorldMap);
+	tex_mgr.AddLoadTask("selected.png", tSelected[0]);
+	tex_mgr.AddLoadTask("selected2.png", tSelected[1]);
+	tex_mgr.AddLoadTask("mover.png", tMover);
+	tex_mgr.AddLoadTask("old_map.png", tMapBg);
+	tex_mgr.AddLoadTask("enc.png", tEnc);
 }
 
 //=================================================================================================

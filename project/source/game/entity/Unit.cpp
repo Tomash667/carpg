@@ -15,7 +15,7 @@ const float Unit::STAMINA_BOW_ATTACK = 100.f;
 //=================================================================================================
 Unit::~Unit()
 {
-	delete ani;
+	delete mesh_inst;
 	delete human_data;
 	delete hero;
 	delete player;
@@ -199,9 +199,9 @@ bool Unit::DropItem(int index)
 	weight -= s.item->weight;
 
 	action = A_ANIMATION;
-	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-	ani->groups[0].speed = 1.f;
-	ani->frame_end_info = false;
+	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	mesh_inst->groups[0].speed = 1.f;
+	mesh_inst->frame_end_info = false;
 
 	if(game.IsLocal())
 	{
@@ -263,9 +263,9 @@ void Unit::DropItem(ITEM_SLOT slot)
 	weight -= item2->weight;
 
 	action = A_ANIMATION;
-	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-	ani->groups[0].speed = 1.f;
-	ani->frame_end_info = false;
+	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	mesh_inst->groups[0].speed = 1.f;
+	mesh_inst->frame_end_info = false;
 
 	if(game.IsLocal())
 	{
@@ -318,9 +318,9 @@ bool Unit::DropItems(int index, uint count)
 	weight -= s.item->weight*count;
 
 	action = A_ANIMATION;
-	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-	ani->groups[0].speed = 1.f;
-	ani->frame_end_info = false;
+	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	mesh_inst->groups[0].speed = 1.f;
+	mesh_inst->frame_end_info = false;
 
 	if(game.IsLocal())
 	{
@@ -474,7 +474,7 @@ int Unit::ConsumeItem(int index)
 		anim_name = "pije";
 	}
 	animation_state = 0;
-	ani->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
+	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
 	used_item = &cons;
 
 	// wyœlij komunikat
@@ -523,7 +523,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 	}
 
 	animation_state = 0;
-	ani->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
+	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
 	used_item = &item;
 	used_item_is_team = true;
 
@@ -559,7 +559,7 @@ void Unit::HideWeapon()
 			action = A_NONE;
 			weapon_taken = W_NONE;
 			weapon_state = WS_HIDDEN;
-			ani->Deactivate(1);
+			mesh_inst->Deactivate(1);
 		}
 		else
 		{
@@ -568,17 +568,17 @@ void Unit::HideWeapon()
 			weapon_taken = W_NONE;
 			weapon_state = WS_HIDING;
 			animation_state = 0;
-			SET_BIT(ani->groups[1].state, MeshInstance::FLAG_BACK);
+			SET_BIT(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 		}
 		break;
 	case WS_TAKEN:
-		ani->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK, 1);
+		mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK, 1);
 		weapon_hiding = weapon_taken;
 		weapon_taken = W_NONE;
 		animation_state = 0;
 		action = A_TAKE_WEAPON;
 		weapon_state = WS_HIDING;
-		ani->frame_end_info2 = false;
+		mesh_inst->frame_end_info2 = false;
 		break;
 	}
 
@@ -605,13 +605,13 @@ void Unit::TakeWeapon(WeaponType _type)
 
 	if(weapon_taken == W_NONE)
 	{
-		ani->Play(GetTakeWeaponAnimation(_type == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE, 1);
+		mesh_inst->Play(GetTakeWeaponAnimation(_type == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE, 1);
 		weapon_hiding = W_NONE;
 		weapon_taken = _type;
 		animation_state = 0;
 		action = A_TAKE_WEAPON;
 		weapon_state = WS_TAKING;
-		ani->frame_end_info2 = false;
+		mesh_inst->frame_end_info2 = false;
 
 		Game& game = Game::Get();
 		if(game.IsOnline())
@@ -1061,13 +1061,13 @@ int Unit::GetDmgType() const
 //=================================================================================================
 Vec3 Unit::GetLootCenter() const
 {
-	Mesh::Point* point2 = ani->ani->GetPoint("centrum");
+	Mesh::Point* point2 = mesh_inst->mesh->GetPoint("centrum");
 
 	if(!point2)
 		return pos;
 
 	const Mesh::Point& point = *point2;
-	Matrix matBone = point.mat * ani->mat_bones[point.bone];
+	Matrix matBone = point.mat * mesh_inst->mat_bones[point.bone];
 	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 	Vec3 center = Vec3::TransformZero(matBone);
 	return center;
@@ -1337,7 +1337,7 @@ void Unit::Save(HANDLE file, bool local)
 
 	if(local)
 	{
-		ani->Save(file);
+		mesh_inst->Save(file);
 		WriteFile(file, &animation, sizeof(animation), &tmp, nullptr);
 		WriteFile(file, &current_animation, sizeof(current_animation), &tmp, nullptr);
 
@@ -1680,11 +1680,11 @@ void Unit::Load(HANDLE file, bool local)
 	if(local)
 	{
 		if(IS_SET(data->flags, F_HUMAN))
-			ani = new MeshInstance(Game::Get().aHumanBase);
+			mesh_inst = new MeshInstance(Game::Get().aHumanBase);
 		else
-			ani = new MeshInstance(data->mesh);
-		ani->Load(file);
-		ani->ptr = this;
+			mesh_inst = new MeshInstance(data->mesh);
+		mesh_inst->Load(file);
+		mesh_inst->ptr = this;
 		ReadFile(file, &animation, sizeof(animation), &tmp, nullptr);
 		ReadFile(file, &current_animation, sizeof(current_animation), &tmp, nullptr);
 
@@ -1748,9 +1748,9 @@ void Unit::Load(HANDLE file, bool local)
 		if(action == A_SHOOT)
 		{
 			bow_instance = Game::Get().GetBowInstance(GetBow().mesh);
-			bow_instance->Play(&bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			bow_instance->groups[0].speed = ani->groups[1].speed;
-			bow_instance->groups[0].time = ani->groups[1].time;
+			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
+			bow_instance->groups[0].time = mesh_inst->groups[1].time;
 		}
 
 		if(LOAD_VERSION < V_0_2_10)
@@ -1760,7 +1760,7 @@ void Unit::Load(HANDLE file, bool local)
 	}
 	else
 	{
-		ani = nullptr;
+		mesh_inst = nullptr;
 		ai = nullptr;
 		useable = nullptr;
 		used_item = nullptr;
@@ -1794,7 +1794,7 @@ void Unit::Load(HANDLE file, bool local)
 		player = nullptr;
 
 	if(local && human_data)
-		human_data->ApplyScale(ani->ani);
+		human_data->ApplyScale(mesh_inst->mesh);
 
 	if(IS_SET(data->flags, F_HERO))
 	{
@@ -2265,8 +2265,8 @@ int NAMES::max_attacks = countof(ani_attacks);
 //=================================================================================================
 Vec3 Unit::GetEyePos() const
 {
-	const Mesh::Point& point = *ani->ani->GetPoint("oczy");
-	Matrix matBone = point.mat * ani->mat_bones[point.bone];
+	const Mesh::Point& point = *mesh_inst->mesh->GetPoint("oczy");
+	Matrix matBone = point.mat * mesh_inst->mat_bones[point.bone];
 	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 	Vec3 eye = Vec3::TransformZero(matBone);
 	return eye;
@@ -2416,21 +2416,21 @@ Mesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 	if(melee)
 	{
 		if(HaveShield())
-			return ani->ani->GetAnimation(NAMES::ani_take_weapon);
+			return mesh_inst->mesh->GetAnimation(NAMES::ani_take_weapon);
 		else
 		{
-			Mesh::Animation* anim = ani->ani->GetAnimation(NAMES::ani_take_weapon_no_shield);
+			Mesh::Animation* anim = mesh_inst->mesh->GetAnimation(NAMES::ani_take_weapon_no_shield);
 			if(!anim)
 			{
 				// brak animacja wyci¹gania broni bez tarczy, u¿yj zwyk³ej
-				return ani->ani->GetAnimation(NAMES::ani_take_weapon);
+				return mesh_inst->mesh->GetAnimation(NAMES::ani_take_weapon);
 			}
 			else
 				return anim;
 		}
 	}
 	else
-		return ani->ani->GetAnimation(NAMES::ani_take_bow);
+		return mesh_inst->mesh->GetAnimation(NAMES::ani_take_bow);
 }
 
 //=================================================================================================
@@ -2953,9 +2953,9 @@ void Unit::SetAnimationAtEnd(cstring anim_name)
 {
 	auto mat_scale = (human_data ? human_data->mat_scale.data() : nullptr);
 	if(anim_name)
-		ani->SetToEnd(anim_name, mat_scale);
+		mesh_inst->SetToEnd(anim_name, mat_scale);
 	else
-		ani->SetToEnd(mat_scale);
+		mesh_inst->SetToEnd(mat_scale);
 }
 
 //=================================================================================================

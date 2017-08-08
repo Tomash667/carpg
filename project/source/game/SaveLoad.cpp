@@ -1,5 +1,6 @@
 // zapisywanie/wczytywanie gry
 #include "Pch.h"
+#include "Core.h"
 #include "Game.h"
 #include "SaveState.h"
 #include "Version.h"
@@ -868,12 +869,12 @@ void Game::LoadGame(HANDLE file)
 
 			if(IS_SET(u->data->flags, F_HUMAN))
 			{
-				u->ani = new MeshInstance(aHumanBase);
+				u->mesh_inst = new MeshInstance(aHumanBase);
 				u->human_data->ApplyScale(aHumanBase);
 			}
 			else
-				u->ani = new MeshInstance(u->data->mesh);
-			u->ani->ptr = u;
+				u->mesh_inst = new MeshInstance(u->data->mesh);
+			u->mesh_inst->ptr = u;
 
 			if(!u->IsPlayer())
 			{

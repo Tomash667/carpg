@@ -217,7 +217,7 @@ void Game::DrawGrass()
 			// draw
 			for(int i = 0; i < mesh->head.n_subs; ++i)
 			{
-				V(eGrass->SetTexture(hGrassTex, mesh->subs[i].tex->data));
+				V(eGrass->SetTexture(hGrassTex, mesh->subs[i].tex->tex));
 				V(eGrass->CommitChanges());
 				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
 			}

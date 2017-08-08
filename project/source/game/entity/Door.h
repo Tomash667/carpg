@@ -1,7 +1,8 @@
 // drzwi
 #pragma once
 
-#include "Mesh.h"
+//-----------------------------------------------------------------------------
+#include "MeshInstance.h"
 
 //-----------------------------------------------------------------------------
 // id zamka
@@ -36,15 +37,15 @@ struct Door
 
 	// lokalne zmienne
 	State state;
-	MeshInstance* ani;
+	MeshInstance* mesh_inst;
 	btCollisionObject* phy;
 
-	Door() : door2(false), ani(nullptr)
+	Door() : door2(false), mesh_inst(nullptr)
 	{
 	}
 	~Door()
 	{
-		delete ani;
+		delete mesh_inst;
 	}
 	bool IsBlocking() const
 	{
