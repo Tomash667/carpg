@@ -36,7 +36,7 @@ void Door::Load(HANDLE file, bool local)
 	{
 		Game& game = Game::Get();
 
-		ani = new AnimeshInstance(door2 ? game.aDrzwi2 : game.aDrzwi);
+		ani = new MeshInstance(door2 ? game.aDrzwi2 : game.aDrzwi);
 		ani->Load(file);
 
 		phy = new btCollisionObject;

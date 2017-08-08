@@ -395,7 +395,7 @@ void Game::UpdateTutorial()
 	if(pc->unit->action == A_ATTACK && pc->unit->animation_state == 1 && !pc->unit->hitted && pc->unit->ani->GetProgress2() >= pc->unit->GetAttackFrame(1)
 		&& Vec3::Distance(pc->unit->pos, tut_dummy) < 5.f)
 	{
-		Animesh::Point* hitbox, *point;
+		Mesh::Point* hitbox, *point;
 		hitbox = pc->unit->GetWeapon().mesh->FindPoint("hit");
 		point = pc->unit->ani->ani->GetPoint(NAMES::point_weapon);
 

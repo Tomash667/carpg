@@ -253,7 +253,7 @@ struct TexPack
 struct UnitData
 {
 	string id, mesh_id, name;
-	Animesh* mesh;
+	Mesh* mesh;
 	MATERIAL_TYPE mat;
 	Int2 level;
 	StatProfile* stat_profile;

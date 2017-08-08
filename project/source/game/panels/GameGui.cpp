@@ -211,7 +211,7 @@ void GameGui::DrawFront()
 	case BP_ITEM:
 		{
 			GroundItem& item = *game.before_player_ptr.item;
-			Animesh* mesh;
+			Mesh* mesh;
 			if(IS_SET(item.item->flags, ITEM_GROUND_MESH))
 				mesh = item.item->mesh;
 			else

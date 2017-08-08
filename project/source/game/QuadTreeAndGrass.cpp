@@ -194,7 +194,7 @@ void Game::DrawGrass()
 	{
 		if(!grass_patches[j].empty())
 		{
-			Animesh* mesh = FindObject(j == 0 ? "grass" : "corn")->mesh;
+			Mesh* mesh = FindObject(j == 0 ? "grass" : "corn")->mesh;
 
 			// setup instancing data
 			Matrix* m;

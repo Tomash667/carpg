@@ -1,7 +1,7 @@
 // drzwi
 #pragma once
 
-#include "Animesh.h"
+#include "Mesh.h"
 
 //-----------------------------------------------------------------------------
 // id zamka
@@ -36,7 +36,7 @@ struct Door
 
 	// lokalne zmienne
 	State state;
-	AnimeshInstance* ani;
+	MeshInstance* ani;
 	btCollisionObject* phy;
 
 	Door() : door2(false), ani(nullptr)

@@ -311,7 +311,7 @@ void Game::Draw()
 void Game::GenerateImage(TaskData& task_data)
 {
 	Item* item = (Item*)task_data.ptr;
-	item->mesh = (Animesh*)task_data.res->data;
+	item->mesh = (Mesh*)task_data.res->data;
 
 	auto it = item_texture_map.lower_bound(item->mesh);
 	if(it != item_texture_map.end() && !(item_texture_map.key_comp()(item->mesh, it->first)))
@@ -339,7 +339,7 @@ void Game::GenerateImage(TaskData& task_data)
 	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
 	V(device->BeginScene());
 
-	const Animesh& a = *item->mesh;
+	const Mesh& a = *item->mesh;
 
 	const TexId* tex_override = nullptr;
 	if(item->type == IT_ARMOR)
@@ -379,7 +379,7 @@ void Game::GenerateImage(TaskData& task_data)
 
 	for(int i = 0; i < a.head.n_subs; ++i)
 	{
-		const Animesh::Submesh& sub = a.subs[i];
+		const Mesh::Submesh& sub = a.subs[i];
 		V(eMesh->SetTexture(hMeshTex, GetTexture(i, tex_override, a)));
 		V(eMesh->CommitChanges());
 		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
@@ -1935,7 +1935,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							pc->ostatnia = u.weapon_taken;
 							u.weapon_state = WS_TAKING;
 							u.animation_state = 0;
-							CLEAR_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
+							CLEAR_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
 						}
 						break;
 					case WS_TAKING:
@@ -1955,7 +1955,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 							u.weapon_taken = W_NONE;
 							u.weapon_state = WS_HIDING;
 							u.animation_state = 0;
-							SET_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
+							SET_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
 						}
 						break;
 					case WS_TAKEN:
@@ -2029,7 +2029,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						pc->ostatnia = u.weapon_taken;
 						u.weapon_state = WS_TAKING;
 						u.animation_state = 0;
-						CLEAR_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
+						CLEAR_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 
 					if(IsOnline())
@@ -2067,7 +2067,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.weapon_hiding = W_BOW;
 						u.weapon_state = WS_HIDING;
 						u.animation_state = 0;
-						SET_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
+						SET_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
 				pc->next_action = NA_NONE;
@@ -2150,7 +2150,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						pc->ostatnia = u.weapon_taken;
 						u.weapon_state = WS_TAKING;
 						u.animation_state = 0;
-						CLEAR_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
+						CLEAR_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
 				else
@@ -2188,7 +2188,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.weapon_hiding = W_ONE_HANDED;
 						u.weapon_state = WS_HIDING;
 						u.animation_state = 0;
-						SET_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
+						SET_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
 				pc->next_action = NA_NONE;
@@ -6350,7 +6350,7 @@ uint Game::TestGameData(bool major)
 		}
 		else
 		{
-			Animesh::Point* pt = w.mesh->FindPoint("hit");
+			Mesh::Point* pt = w.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
 				Error("Test: Weapon %s: no hitbox in mesh %s.", w.id.c_str(), w.mesh_id.c_str());
@@ -6375,7 +6375,7 @@ uint Game::TestGameData(bool major)
 		}
 		else
 		{
-			Animesh::Point* pt = s.mesh->FindPoint("hit");
+			Mesh::Point* pt = s.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
 				Error("Test: Shield %s: no hitbox in mesh %s.", s.id.c_str(), s.mesh_id.c_str());
@@ -6479,7 +6479,7 @@ uint Game::TestGameData(bool major)
 			}
 			else
 			{
-				Animesh& a = *ud.mesh;
+				Mesh& a = *ud.mesh;
 
 				for(uint i = 0; i < NAMES::n_ani_base; ++i)
 				{
@@ -6637,10 +6637,10 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 #undef HEX
 			}
 
-			u->ani = new AnimeshInstance(aHumanBase);
+			u->ani = new MeshInstance(aHumanBase);
 		}
 		else
-			u->ani = new AnimeshInstance(base.mesh);
+			u->ani = new MeshInstance(base.mesh);
 
 		u->animation = u->current_animation = ANI_STAND;
 		u->ani->Play("stoi", PLAY_PRIO1 | PLAY_NO_BLEND, 0);
@@ -7257,11 +7257,11 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Vec3& hitpo
 {
 	// atak broni¹ lub naturalny
 
-	Animesh::Point* hitbox, *point;
+	Mesh::Point* hitbox, *point;
 
 	if(unit.ani->ani->head.n_groups > 1)
 	{
-		Animesh* mesh = unit.GetWeapon().mesh;
+		Mesh* mesh = unit.GetWeapon().mesh;
 		if(!mesh)
 			return false;
 		hitbox = mesh->FindPoint("hit");
@@ -7286,7 +7286,7 @@ bool Game::CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Vec3& hitpo
 //  - _bone to punkt "bron", _hitbox to hitbox z bronii
 //  - _bone jest nullptr, _hitbox jest na modelu postaci
 // Na drodze testów ustali³em ¿e najlepiej dzia³a gdy stosuje siê sam¹ funkcjê OrientedBoxToOrientedBox
-bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, Animesh::Point& _hitbox, Animesh::Point* _bone, Vec3& _hitpoint)
+bool Game::CheckForHit(LevelContext& ctx, Unit& _unit, Unit*& _hitted, Mesh::Point& _hitbox, Mesh::Point* _bone, Vec3& _hitpoint)
 {
 	assert(_hitted && _hitbox.IsBox());
 
@@ -7937,7 +7937,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					else
 						u.ani->SetupBones();
 
-					Animesh::Point* point = u.ani->ani->GetPoint(NAMES::point_weapon);
+					Mesh::Point* point = u.ani->ani->GetPoint(NAMES::point_weapon);
 					assert(point);
 
 					m2 = point->mat * u.ani->mat_bones[point->bone] * (Matrix::RotationY(u.rot) * Matrix::Translation(u.pos));
@@ -8755,7 +8755,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& attacker)
 
 	Vec3 hitpoint;
 	Unit* hitted;
-	Animesh* mesh = attacker.GetShield().mesh;
+	Mesh* mesh = attacker.GetShield().mesh;
 
 	if(!mesh)
 		return false;
@@ -9369,7 +9369,7 @@ void Game::CreateCollisionShapes()
 	s->addChildShape(tr, b);
 	shape_schody = s;
 
-	Animesh::Point* point = aArrow->FindPoint("Empty");
+	Mesh::Point* point = aArrow->FindPoint("Empty");
 	assert(point && point->IsBox());
 
 	btBoxShape* box = new btBoxShape(ToVector3(point->size));
@@ -9929,7 +9929,7 @@ void Game::GenerateDungeonObjects()
 					if(IS_SET(obj->flags, OBJ_CHEST))
 					{
 						Chest* chest = new Chest;
-						chest->ani = new AnimeshInstance(aSkrzynia);
+						chest->ani = new MeshInstance(aSkrzynia);
 						chest->pos = pos;
 						chest->rot = rot;
 						chest->handler = nullptr;
@@ -10243,7 +10243,7 @@ void Game::GenerateDungeonObjects()
 				}
 
 				Chest* chest = new Chest;
-				chest->ani = new AnimeshInstance(aSkrzynia);
+				chest->ani = new MeshInstance(aSkrzynia);
 				chest->pos = pos;
 				chest->rot = rot;
 				chest->handler = nullptr;
@@ -11546,7 +11546,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 {
 	Spell& spell = *u.data->spells->spell[u.attack_id];
 
-	Animesh::Point* point = u.ani->ani->GetPoint(NAMES::point_cast);
+	Mesh::Point* point = u.ani->ani->GetPoint(NAMES::point_cast);
 	assert(point);
 
 	if(u.human_data)
@@ -13524,7 +13524,7 @@ void Game::OnReenterLevel(LevelContext& ctx)
 		{
 			Chest& chest = **it;
 
-			chest.ani = new AnimeshInstance(aSkrzynia);
+			chest.ani = new MeshInstance(aSkrzynia);
 		}
 	}
 
@@ -13536,7 +13536,7 @@ void Game::OnReenterLevel(LevelContext& ctx)
 			Door& door = **it;
 
 			// animowany model
-			door.ani = new AnimeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
+			door.ani = new MeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
 			door.ani->groups[0].speed = 2.f;
 
 			// fizyka
@@ -13574,14 +13574,14 @@ void Game::ApplyToTexturePack(TexturePack& tp, cstring diffuse, cstring normal, 
 		tp.specular = nullptr;
 }
 
-void ApplyTexturePackToSubmesh(Animesh::Submesh& sub, TexturePack& tp)
+void ApplyTexturePackToSubmesh(Mesh::Submesh& sub, TexturePack& tp)
 {
 	sub.tex = tp.diffuse;
 	sub.tex_normal = tp.normal;
 	sub.tex_specular = tp.specular;
 }
 
-void ApplyDungeonLightToMesh(Animesh& mesh)
+void ApplyDungeonLightToMesh(Mesh& mesh)
 {
 	for(int i = 0; i < mesh.head.n_subs; ++i)
 	{
@@ -14135,7 +14135,7 @@ void Game::LeaveLevel(bool clear)
 void Game::LeaveLevel(LevelContext& ctx, bool clear)
 {
 	// posprz¹taj jednostki
-	// usuñ AnimeshInstance i btCollisionShape
+	// usuñ MeshInstance i btCollisionShape
 	if(IsLocal() && !clear)
 	{
 		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
@@ -15576,12 +15576,12 @@ void Game::SpawnArenaViewers(int count)
 {
 	assert(InRange(count, 1, 9));
 
-	vector<Animesh::Point*> points;
+	vector<Mesh::Point*> points;
 	UnitData& ud = *FindUnitData("viewer");
 	InsideBuilding* arena = GetArena();
-	Animesh* mesh = arena->type->inside_mesh;
+	Mesh* mesh = arena->type->inside_mesh;
 
-	for(vector<Animesh::Point>::iterator it = mesh->attach_points.begin(), end = mesh->attach_points.end(); it != end; ++it)
+	for(vector<Mesh::Point>::iterator it = mesh->attach_points.begin(), end = mesh->attach_points.end(); it != end; ++it)
 	{
 		if(strncmp(it->name.c_str(), "o_s_viewer_", 11) == 0)
 			points.push_back(&*it);
@@ -15590,7 +15590,7 @@ void Game::SpawnArenaViewers(int count)
 	while(count > 0)
 	{
 		int id = Rand() % points.size();
-		Animesh::Point* pt = points[id];
+		Mesh::Point* pt = points[id];
 		points.erase(points.begin() + id);
 		Vec3 pos(pt->mat._41 + arena->offset.x, pt->mat._42, pt->mat._43 + arena->offset.y);
 		Vec3 look_at(arena->offset.x, 0, arena->offset.y);
@@ -17282,7 +17282,7 @@ void Object::Swap(Object& o)
 
 	p = mesh;
 	mesh = o.mesh;
-	o.mesh = (Animesh*)p;
+	o.mesh = (Mesh*)p;
 
 	p = base;
 	base = o.base;
@@ -17682,7 +17682,7 @@ bool Game::GenerateMine()
 			door->pos = o.pos;
 			door->rot = o.rot.y;
 			door->state = Door::Closed;
-			door->ani = new AnimeshInstance(aDrzwi);
+			door->ani = new MeshInstance(aDrzwi);
 			door->ani->groups[0].speed = 2.f;
 			door->phy = new btCollisionObject;
 			door->phy->setCollisionShape(shape_door);
@@ -18956,7 +18956,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 					u.weapon_taken = u.weapon_hiding;
 					u.weapon_hiding = W_NONE;
 					u.weapon_state = WS_TAKING;
-					CLEAR_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
+					CLEAR_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
 				}
 			}
 			else
@@ -19017,7 +19017,7 @@ void Game::SetUnitWeaponState(Unit& u, bool wyjmuje, WeaponType co)
 				u.weapon_taken = W_NONE;
 				u.weapon_state = WS_HIDING;
 				u.animation_state = 0;
-				SET_BIT(u.ani->groups[1].state, AnimeshInstance::FLAG_BACK);
+				SET_BIT(u.ani->groups[1].state, MeshInstance::FLAG_BACK);
 			}
 			break;
 		case WS_TAKEN:

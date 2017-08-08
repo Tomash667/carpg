@@ -66,7 +66,7 @@ struct Useable
 		return GetBase()->obj;
 	}
 
-	Animesh* GetMesh() const;
+	Mesh* GetMesh() const;
 
 	static vector<Useable*> refid_table;
 	static vector<UseableRequest> refid_request;

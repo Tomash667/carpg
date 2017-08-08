@@ -19,7 +19,7 @@ struct BaseTrap
 	int dmg;
 	TRAP_TYPE type;
 	cstring mesh_id, mesh_id2;
-	Animesh* mesh, *mesh2;
+	Mesh* mesh, *mesh2;
 	bool alpha;
 	float rw, h;
 	cstring sound_id, sound_id2, sound_id3;

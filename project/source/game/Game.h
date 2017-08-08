@@ -368,7 +368,7 @@ struct ConfigVar
 	ConfigVar(cstring name, bool& _bool) : name(name), type(AnyVarType::Bool), ptr((AnyVar*)&_bool), have_new_value(false), need_save(false) {}
 };
 
-typedef std::map<Animesh*, TEX> ItemTextureMap;
+typedef std::map<Mesh*, TEX> ItemTextureMap;
 
 struct Game final : public Engine, public UnitEventHandler
 {
@@ -506,15 +506,15 @@ struct Game final : public Engine, public UnitEventHandler
 	//-----------------------------------------------------------------
 	// ZASOBY
 	//-----------------------------------------------------------------
-	Animesh* aHumanBase, *aHair[5], *aBeard[5], *aMustache[2], *aEyebrows;
-	Animesh* aBox, *aCylinder, *aSphere, *aCapsule;
-	Animesh* aArrow, *aSkybox, *aWorek, *aSkrzynia, *aKratka, *aNaDrzwi, *aNaDrzwi2, *aSchodyDol, *aSchodyGora, *aSchodyDol2, *aSpellball, *aPrzycisk, *aBeczka, *aDrzwi, *aDrzwi2;
+	Mesh* aHumanBase, *aHair[5], *aBeard[5], *aMustache[2], *aEyebrows;
+	Mesh* aBox, *aCylinder, *aSphere, *aCapsule;
+	Mesh* aArrow, *aSkybox, *aWorek, *aSkrzynia, *aKratka, *aNaDrzwi, *aNaDrzwi2, *aSchodyDol, *aSchodyGora, *aSchodyDol2, *aSpellball, *aPrzycisk, *aBeczka, *aDrzwi, *aDrzwi2;
 	VertexData* vdSchodyGora, *vdSchodyDol, *vdNaDrzwi;
 	TEX tItemRegion, tMinimap, tChar, tSave;
 	TEX tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tRip, tCelownik, tObwodkaBolu, tEquipped,
 		tDialogUp, tDialogDown, tBubble, tMiniunit, tMiniunit2, tSchodyDol, tSchodyGora, tIcoHaslo, tIcoZapis, tGotowy, tNieGotowy, tTrawa, tTrawa2, tTrawa3, tZiemia,
 		tDroga, tMiniSave, tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tPole, tWarning, tError;
-	TextureResourcePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
+	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *eGui, *ePostFx, *eGlow, *eGrass;
 	D3DXHANDLE techAnim, techHair, techAnimDir, techHairDir, techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techTerrain,
@@ -640,7 +640,7 @@ public:
 	int death_screen, dungeon_level;
 	bool death_solo;
 	float death_fade, game_speed;
-	vector<AnimeshInstance*> bow_instances;
+	vector<MeshInstance*> bow_instances;
 	Pak* pak;
 	Unit* selected_unit, *selected_target;
 	vector<AIController*> ais;
@@ -659,7 +659,7 @@ public:
 	CityGenerator* gen;
 	uint crc_items, crc_units, crc_dialogs, crc_spells;
 
-	AnimeshInstance* GetBowInstance(Animesh* mesh);
+	MeshInstance* GetBowInstance(Mesh* mesh);
 
 	//---------------------------------
 	// SCREENSHOT
@@ -1067,7 +1067,7 @@ public:
 	// nie dzia³a dla budynków bo nie uwzglêdnia obiektów
 	bool CanSee(const Vec3& v1, const Vec3& v2);
 	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Vec3& hitpoint);
-	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Animesh::Point& hitbox, Animesh::Point* bone, Vec3& hitpoint);
+	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
 	void UpdateParticles(LevelContext& ctx, float dt);
 	// wykonuje atak postaci
 	enum ATTACK_RESULT
@@ -1840,7 +1840,7 @@ public:
 	void RespawnBuildingPhysics();
 	void SpawnCityObjects();
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
-	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Animesh* mesh, Animesh* inside_mesh, float rot, int roti,
+	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, int roti,
 		const Vec3& shift, Building* type, CityBuilding* building, bool recreate = false, Vec3* out_point = nullptr);
 	void GenerateForest(Location& loc);
 	void SpawnForestObjects(int road_dir = -1); //-1 brak, 0 -, 1 |

@@ -21,9 +21,8 @@ enum class ResourceType
 const int INVALID_PAK = -1;
 
 //-----------------------------------------------------------------------------
-class BaseResource
+struct Resource
 {
-public:
 	string path;
 	cstring filename;
 	ResourceState state;
@@ -37,37 +36,26 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-template<typename T, ResourceType resType>
-class Resource : public BaseResource
+struct Texture : public Resource
 {
-public:
-	static const ResourceType Type = resType;
-
-	T data;
+	TEX tex;
 };
+typedef Texture* TexturePtr;
 
 //-----------------------------------------------------------------------------
-struct Animesh;
-typedef Animesh Mesh;
-struct VertexData;
-
-//-----------------------------------------------------------------------------
-typedef Resource<void*, ResourceType::Unknown> AnyResource;
-typedef Resource<Mesh*, ResourceType::Mesh> MeshResource;
-typedef Resource<SOUND, ResourceType::Sound> SoundResource;
-typedef Resource<TEX, ResourceType::Texture> TextureResource;
-
-//-----------------------------------------------------------------------------
-typedef MeshResource* MeshResourcePtr;
-typedef SoundResource* SoundResourcePtr;
-typedef TextureResource* TextureResourcePtr;
+struct Sound : public Resource
+{
+	SOUND sound;
+	bool is_music;
+};
+typedef Sound* SoundPtr;
 
 //-----------------------------------------------------------------------------
 // Texture override data
 struct TexId
 {
 	string id;
-	TextureResource* tex;
+	Texture* tex;
 
 	explicit TexId(cstring _id) : tex(nullptr)
 	{

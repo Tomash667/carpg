@@ -904,7 +904,7 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 //=================================================================================================
 void CreateCharacterPanel::Init()
 {
-	unit->ani = new AnimeshInstance(game->aHumanBase);
+	unit->ani = new MeshInstance(game->aHumanBase);
 
 	for(ClassInfo& ci : g_classes)
 	{

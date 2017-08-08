@@ -568,7 +568,7 @@ void Unit::HideWeapon()
 			weapon_taken = W_NONE;
 			weapon_state = WS_HIDING;
 			animation_state = 0;
-			SET_BIT(ani->groups[1].state, AnimeshInstance::FLAG_BACK);
+			SET_BIT(ani->groups[1].state, MeshInstance::FLAG_BACK);
 		}
 		break;
 	case WS_TAKEN:
@@ -1061,12 +1061,12 @@ int Unit::GetDmgType() const
 //=================================================================================================
 Vec3 Unit::GetLootCenter() const
 {
-	Animesh::Point* point2 = ani->ani->GetPoint("centrum");
+	Mesh::Point* point2 = ani->ani->GetPoint("centrum");
 
 	if(!point2)
 		return pos;
 
-	const Animesh::Point& point = *point2;
+	const Mesh::Point& point = *point2;
 	Matrix matBone = point.mat * ani->mat_bones[point.bone];
 	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 	Vec3 center = Vec3::TransformZero(matBone);
@@ -1680,9 +1680,9 @@ void Unit::Load(HANDLE file, bool local)
 	if(local)
 	{
 		if(IS_SET(data->flags, F_HUMAN))
-			ani = new AnimeshInstance(Game::Get().aHumanBase);
+			ani = new MeshInstance(Game::Get().aHumanBase);
 		else
-			ani = new AnimeshInstance(data->mesh);
+			ani = new MeshInstance(data->mesh);
 		ani->Load(file);
 		ani->ptr = this;
 		ReadFile(file, &animation, sizeof(animation), &tmp, nullptr);
@@ -2265,7 +2265,7 @@ int NAMES::max_attacks = countof(ani_attacks);
 //=================================================================================================
 Vec3 Unit::GetEyePos() const
 {
-	const Animesh::Point& point = *ani->ani->GetPoint("oczy");
+	const Mesh::Point& point = *ani->ani->GetPoint("oczy");
 	Matrix matBone = point.mat * ani->mat_bones[point.bone];
 	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 	Vec3 eye = Vec3::TransformZero(matBone);
@@ -2411,7 +2411,7 @@ const Item* Unit::GetIIndexItem(int i_index) const
 }
 
 //=================================================================================================
-Animesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
+Mesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 {
 	if(melee)
 	{
@@ -2419,7 +2419,7 @@ Animesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 			return ani->ani->GetAnimation(NAMES::ani_take_weapon);
 		else
 		{
-			Animesh::Animation* anim = ani->ani->GetAnimation(NAMES::ani_take_weapon_no_shield);
+			Mesh::Animation* anim = ani->ani->GetAnimation(NAMES::ani_take_weapon_no_shield);
 			if(!anim)
 			{
 				// brak animacja wyci¹gania broni bez tarczy, u¿yj zwyk³ej

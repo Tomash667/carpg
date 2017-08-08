@@ -14,12 +14,12 @@ struct TrailParticleEmitter;
 struct Bullet
 {
 	Vec3 pos, rot, start_pos;
-	Animesh* mesh;
+	Mesh* mesh;
 	float speed, timer, attack, tex_size, yspeed, poison_attack;
 	int level, backstab;
 	Unit* owner;
 	Spell* spell;
-	TextureResourcePtr tex;
+	TexturePtr tex;
 	TrailParticleEmitter* trail, *trail2;
 	ParticleEmitter* pe;
 	bool remove;

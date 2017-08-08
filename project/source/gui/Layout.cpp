@@ -15,7 +15,7 @@ Layout::~Layout()
 
 void Layout::LoadDefault()
 {
-	ResourceManager& res_mgr = ResourceManager::Get();
+	auto& tex_mgr = ResourceManager::Get<Texture>();
 	Font* def_font = GUI.default_font;
 	Font* font_big = GUI.fBig;
 	TEX t;
@@ -60,20 +60,20 @@ void Layout::LoadDefault()
 	tabctrl.font_color_down = BLACK;
 	tabctrl.padding = Int2(8, 4);
 	tabctrl.padding_active = Int2(8, 8);
-	res_mgr.GetLoadedTexture("close_small.png", t);
+	t = tex_mgr.GetLoaded("close_small.png")->tex;
 	tabctrl.close = AreaLayout(t);
 	tabctrl.close.size = Int2(12, 12);
 	tabctrl.close_hover = AreaLayout(t, COLOR_RGB(51, 153, 255));
 	tabctrl.close_hover.size = Int2(12, 12);
-	res_mgr.GetLoadedTexture("tabctrl_arrow.png", t);
+	t = tex_mgr.GetLoaded("tabctrl_arrow.png")->tex;
 	tabctrl.button_prev = AreaLayout(t, Rect(0, 0, 12, 16));
 	tabctrl.button_prev_hover = AreaLayout(t, Rect(0, 0, 12, 16), COLOR_RGB(51, 153, 255));
 	tabctrl.button_next = AreaLayout(t, Rect(16, 0, 28, 16));
 	tabctrl.button_next_hover = AreaLayout(t, Rect(16, 0, 28, 16), COLOR_RGB(51, 153, 255));
 
-	res_mgr.GetLoadedTexture("box.png", t);
+	t = tex_mgr.GetLoaded("box.png")->tex;
 	tree_view.background = AreaLayout(t, 8, 32);
-	res_mgr.GetLoadedTexture("treeview.png", t);
+	t = tex_mgr.GetLoaded("treeview.png")->tex;
 	tree_view.button = AreaLayout(t, Rect(0, 0, 16, 16));
 	tree_view.button_hover = AreaLayout(t, Rect(16, 0, 32, 16));
 	tree_view.button_down = AreaLayout(t, Rect(32, 0, 48, 16));
@@ -82,14 +82,14 @@ void Layout::LoadDefault()
 	tree_view.font_color = BLACK;
 	tree_view.selected = AreaLayout(COLOR_RGB(51, 153, 255));
 	tree_view.level_offset = 16;
-	res_mgr.GetLoadedTexture("box2.png", t);
+	t = tex_mgr.GetLoaded("box2.png")->tex;
 	tree_view.text_box_background = t;
-	res_mgr.GetLoadedTexture("drag_n_drop.png", t);
+	t = tex_mgr.GetLoaded("drag_n_drop.png")->tex;
 	tree_view.drag_n_drop = t;
 
 	split_panel.background = AreaLayout(COLOR_RGB(0xAB, 0xAB, 0xAB), COLOR_RGB(0xA0, 0xA0, 0xA0));
 	split_panel.padding = Int2(0, 0);
-	res_mgr.GetLoadedTexture("split_panel.png", t);
+	t = tex_mgr.GetLoaded("split_panel.png")->tex;
 	split_panel.horizontal = AreaLayout(t, Rect(3, 2, 4, 5));
 	split_panel.vertical = AreaLayout(t, Rect(11, 3, 14, 4));
 
@@ -99,9 +99,9 @@ void Layout::LoadDefault()
 	label->padding = Int2(0, 0);
 	label->align = DT_LEFT;
 
-	res_mgr.GetLoadedTexture("box.png", t);
+	t = tex_mgr.GetLoaded("box.png")->tex;
 	check_box_group.background = AreaLayout(t, 8, 32);
-	res_mgr.GetLoadedTexture("checkbox.png", t);
+	t = tex_mgr.GetLoaded("checkbox.png")->tex;
 	check_box_group.box = AreaLayout(t, Rect(0, 0, 16, 16));
 	check_box_group.checked = AreaLayout(t, Rect(16, 0, 32, 16));
 	check_box_group.font = def_font;

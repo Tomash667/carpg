@@ -80,7 +80,7 @@ void Game::PreconfigureGame()
 	}
 
 	// set animesh callback
-	AnimeshInstance::Predraw = HumanPredraw;
+	MeshInstance::Predraw = HumanPredraw;
 
 	PreinitGui();
 	CreateVertexDeclarations();

@@ -7,7 +7,7 @@
 #include "BitStreamFunc.h"
 
 //=================================================================================================
-Animesh* Useable::GetMesh() const
+Mesh* Useable::GetMesh() const
 {
 	Obj* base_obj = GetBaseObj();
 	if(IS_SET(base_obj->flags2, OBJ2_VARIANT))

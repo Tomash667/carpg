@@ -67,7 +67,7 @@ struct Building
 	vector<TileScheme> scheme;
 	int flags;
 	BuildingGroup* group;
-	Animesh* mesh, *inside_mesh;
+	Mesh* mesh, *inside_mesh;
 	UnitData* unit;
 
 	Building() : size(0, 0), shift(), flags(0), mesh(nullptr), inside_mesh(nullptr), group(nullptr), unit(nullptr) {}

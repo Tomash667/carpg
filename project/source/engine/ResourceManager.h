@@ -18,7 +18,7 @@ enum class StreamType
 //-----------------------------------------------------------------------------
 struct ResourceComparer
 {
-	bool operator () (const BaseResource* r1, const BaseResource* r2) const
+	bool operator () (const Resource* r1, const Resource* r2) const
 	{
 		if(r1->type != r2->type)
 			return r1->type > r2->type;
@@ -28,7 +28,7 @@ struct ResourceComparer
 };
 
 //-----------------------------------------------------------------------------
-typedef std::set<AnyResource*, ResourceComparer> ResourceContainer;
+typedef std::set<Resource*, ResourceComparer> ResourceContainer;
 typedef ResourceContainer::iterator ResourceIterator;
 
 //-----------------------------------------------------------------------------
@@ -109,7 +109,7 @@ public:
 // Task data
 struct TaskData
 {
-	AnyResource* res;
+	Resource* res;
 	void* ptr;
 
 	TaskData(void* ptr = nullptr) : ptr(ptr), res(nullptr) {}
@@ -182,7 +182,7 @@ public:
 		};
 
 		template<>
-		struct Internal<TextureResource>
+		struct Internal<Texture>
 		{
 			static const ResourceType Type = ResourceType::Texture;
 		};
@@ -194,10 +194,8 @@ public:
 		{
 		}
 
-		T* ForceLoad(const AnyString& path)
-		{
-			return (T*)res_mgr.ForceLoadResource(path, Type);
-		}
+		// Return loaded texture, if not exists throw
+		T* GetLoaded(const AnyString& path);
 
 	private:
 		ResourceManager& res_mgr;
@@ -223,9 +221,9 @@ public:
 	void AddTask(VoidF& callback, cstring category, int size = 1);
 	void AddTaskCategory(cstring category);
 	void Cleanup();
-	BufferHandle GetBuffer(BaseResource* res);
-	cstring GetPath(BaseResource* res);
-	StreamReader GetStream(BaseResource* res, StreamType type);
+	BufferHandle GetBuffer(Resource* res);
+	cstring GetPath(Resource* res);
+	StreamReader GetStream(Resource* res, StreamType type);
 	ResourceType ExtToResourceType(cstring ext);
 	ResourceType FilenameToResourceType(cstring filename);
 	void Init(IDirect3DDevice9* device, FMOD::System* fmod_system);
@@ -238,15 +236,16 @@ public:
 	void EndLoadScreenStage();
 	void SetMutex(HANDLE _mutex) { mutex = _mutex; }
 
+	/*
 #define DECLARE_FUNCTIONS(TYPE, NAME, SUBTYPE, RAW_TYPE, RAW_NAME) \
 	TYPE TryGet##NAME##(const AnyString& filename) { return (TYPE)TryGetResource(filename.s, SUBTYPE); } \
 	TYPE Get##NAME##(const AnyString& filename) { return (TYPE)GetResource(filename.s, SUBTYPE); } \
 	TYPE GetLoaded##NAME##(const AnyString& filename, PtrOrRef<Task> task = nullptr) { return (TYPE)GetLoadedResource(filename.s, SUBTYPE, task.ptr); } \
 	void GetLoaded##NAME##(const AnyString &filename, RAW_TYPE& RAW_NAME) { GetLoadedResource(filename.s, SUBTYPE, &Task(&RAW_NAME)); } \
-	void Load##NAME##(TYPE res, PtrOrRef<Task> task = nullptr) { LoadResource((AnyResource*)res, task.ptr); }
+	void Load##NAME##(TYPE res, PtrOrRef<Task> task = nullptr) { LoadResource((Resource*)res, task.ptr); }
 
 	// Mesh functions
-	DECLARE_FUNCTIONS(MeshResourcePtr, Mesh, ResourceSubType::Mesh, Animesh*, mesh);
+	DECLARE_FUNCTIONS(MeshResourcePtr, Mesh, ResourceSubType::Mesh, Mesh*, mesh);
 	// Mesh vertex data functions
 	DECLARE_FUNCTIONS(MeshResourcePtr, MeshVertexData, ResourceSubType::MeshVertexData, VertexData*, vertex_data);
 	// Music functions
@@ -254,9 +253,11 @@ public:
 	// Sound functions
 	DECLARE_FUNCTIONS(SoundResourcePtr, Sound, ResourceSubType::Sound, SOUND, sound);
 	// Texture functions
-	DECLARE_FUNCTIONS(TextureResourcePtr, Texture, ResourceSubType::Texture, TEX, tex);
+	DECLARE_FUNCTIONS(TexturePtr, Texture, ResourceSubType::Texture, TEX, tex);
 
-	AnyResource* ForceLoadResource(const AnyString& path, ResourceType type);
+	*/
+
+	Resource* ForceLoadResource(const AnyString& path, ResourceType type);
 
 	template<typename T>
 	TypeManager<T> For()
@@ -275,7 +276,7 @@ private:
 		};
 
 		// begining should be like in TaskData
-		AnyResource* res;
+		Resource* res;
 		void* ptr;
 		// new fields
 		ResourceSubType type;
@@ -291,32 +292,32 @@ private:
 		cstring name;
 	};
 
-	BaseResource* AddResource(cstring filename, cstring path);
+	Resource* AddResource(cstring filename, cstring path);
 	void ApplyTask(Task* task);
 	void RegisterExtensions();
-	BaseResource* GetResource(cstring filename, ResourceType type);
-	AnyResource* GetResource(cstring filename, ResourceSubType type);
-	AnyResource* TryGetResource(cstring filename, ResourceSubType type);
-	AnyResource* GetLoadedResource(cstring filename, ResourceSubType type, Task* task)
+	Resource* GetResource(cstring filename, ResourceType type);
+	Resource* GetResource(cstring filename, ResourceSubType type);
+	Resource* TryGetResource(cstring filename, ResourceSubType type);
+	Resource* GetLoadedResource(cstring filename, ResourceSubType type, Task* task)
 	{
-		AnyResource* res = GetResource(filename, type);
+		Resource* res = GetResource(filename, type);
 		LoadResource(res, task);
 		return res;
 	}
-	void LoadResource(AnyResource* res, Task* task);
-	void LoadResource(AnyResource* res);
-	void LoadMeshInternal(MeshResource* res);
-	void LoadMeshVertexDataInternal(MeshResource* res);
-	void LoadMusicInternal(SoundResource* res);
-	void LoadSoundInternal(SoundResource* res);
-	void LoadTextureInternal(TextureResource* res);
+	void LoadResource(Resource* res, Task* task);
+	void LoadResource(Resource* res);
+	void LoadMeshInternal(Mesh* res);
+	void LoadMeshVertexDataInternal(Mesh* res);
+	void LoadMusicInternal(Sound* res);
+	void LoadSoundInternal(Sound* res);
+	void LoadTextureInternal(Texture* res);
 	void UpdateLoadScreen();
 	void TickLoadScreen();
 
 	Mode mode;
 	IDirect3DDevice9* device;
 	FMOD::System* fmod_system;
-	AnyResource* last_resource;
+	Resource* last_resource;
 	ResourceContainer resources;
 	std::map<cstring, ResourceType, CstringComparer> exts;
 	vector<Pak*> paks;

@@ -184,7 +184,7 @@ struct Item
 	string id, mesh_id, name, desc;
 	int weight, value, flags, refid;
 	ITEM_TYPE type;
-	Animesh* mesh;
+	Mesh* mesh;
 	TEX tex;
 };
 
@@ -364,7 +364,7 @@ struct BookScheme
 	BookScheme() : tex(nullptr), size(0, 0), prev(0, 0), next(0, 0) {}
 
 	string id;
-	TextureResourcePtr tex;
+	TexturePtr tex;
 	Int2 size, prev, next;
 	vector<Rect> regions;
 };

@@ -3,7 +3,7 @@
 
 //-----------------------------------------------------------------------------
 #include "ItemSlot.h"
-#include "Animesh.h"
+#include "Mesh.h"
 #include "Item.h"
 
 //-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ struct Chest
 	vector<ItemSlot> items;
 	Vec3 pos;
 	float rot;
-	AnimeshInstance* ani;
+	MeshInstance* ani;
 	ChestEventHandler* handler;
 	int netid;
 	bool looted; // czy skrzynia jest ograbiana - nie trzeba zapisywaæ

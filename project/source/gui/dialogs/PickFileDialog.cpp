@@ -103,7 +103,7 @@ PickFileDialog::PickFileDialog()
 	label_preview->SetAlign(DT_CENTER | DT_VCENTER);
 	Add(label_preview);
 
-	ResourceManager::Get().GetLoadedTexture("dir.png", tex_dir);
+	tex_dir = ResourceManager::Get<Texture>().GetLoaded("dir.png")->tex;
 
 	preview_types["txt"] = PreviewType::Text;
 	preview_types["bmp"] = PreviewType::Image;
@@ -520,8 +520,7 @@ void PickFileDialog::SetupPreview()
 	case PreviewType::Image:
 		{
 			draw_box->visible = true;
-			auto tex = ResourceManager::Get<TextureResource>().ForceLoad(item->path);
-			draw_box->SetTexture(tex->data);
+			draw_box->SetTexture(ResourceManager::Get<Texture>().GetLoaded(item->path)->tex);
 		}
 		break;
 	}

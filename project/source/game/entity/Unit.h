@@ -4,7 +4,7 @@
 #include "Item.h"
 #include "UnitData.h"
 #include "Class.h"
-#include "Animesh.h"
+#include "Mesh.h"
 #include "HumanData.h"
 #include "HeroData.h"
 #include "PlayerController.h"
@@ -139,7 +139,7 @@ struct Unit
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
 
-	AnimeshInstance* ani;
+	MeshInstance* ani;
 	Animation animation, current_animation;
 	Human* human_data;
 	LiveState live_state;
@@ -151,7 +151,7 @@ struct Unit
 	ACTION action;
 	WeaponType weapon_taken, weapon_hiding;
 	WeaponState weapon_state;
-	AnimeshInstance* bow_instance;
+	MeshInstance* bow_instance;
 	UnitData* data;
 	PlayerController* player;
 	const Item* used_item;
@@ -713,7 +713,7 @@ struct Unit
 	}
 	const Item* GetIIndexItem(int i_index) const;
 
-	Animesh::Animation* GetTakeWeaponAnimation(bool melee) const;
+	Mesh::Animation* GetTakeWeaponAnimation(bool melee) const;
 
 	bool CanDoWhileUsing() const
 	{

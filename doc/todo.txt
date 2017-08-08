@@ -261,7 +261,7 @@ NOWE:
 + plik z domyślnymi ustawieniami default.cfg
 + tłumaczenie w bazie danych
 + zmiana języka bez restartu
-+ materiały dla podziemi jak Animesh::Submesh
++ materiały dla podziemi jak Mesh::Submesh
 + miasto z N bramami
 + nie wyświetlaj więcej powiadomienia o tej wersji
 + usunięcie niepotrzebnego kodu z eMesh, renderowanie przedmiotów nowym kodem

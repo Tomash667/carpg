@@ -1680,7 +1680,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 		else if(IS_SET(obj->flags, OBJ_CHEST))
 		{
 			Chest* chest = new Chest;
-			chest->ani = new AnimeshInstance(obj->mesh);
+			chest->ani = new MeshInstance(obj->mesh);
 			chest->rot = rot;
 			chest->pos = pos;
 			chest->handler = nullptr;
@@ -1953,7 +1953,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 	}
 }
 
-void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Animesh* mesh, Animesh* inside_mesh, float rot, int roti,
+void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, int roti,
 	const Vec3& shift, Building* type, CityBuilding* building, bool recreate, Vec3* out_point)
 {
 	if(mesh->attach_points.empty())
@@ -1971,11 +1971,11 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 	bool have_exit = false, have_spawn = false;
 	bool is_inside = (inside != nullptr);
 	Vec3 spawn_point;
-	static vector<const Animesh::Point*> details;
+	static vector<const Mesh::Point*> details;
 
-	for(vector<Animesh::Point>::const_iterator it2 = mesh->attach_points.begin(), end2 = mesh->attach_points.end(); it2 != end2; ++it2)
+	for(vector<Mesh::Point>::const_iterator it2 = mesh->attach_points.begin(), end2 = mesh->attach_points.end(); it2 != end2; ++it2)
 	{
-		const Animesh::Point& pt = *it2;
+		const Mesh::Point& pt = *it2;
 		if(pt.name.length() < 5 || pt.name[0] != 'o')
 			continue;
 
@@ -2269,7 +2269,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					door->rot = Clip(pt.rot.y + rot);
 					door->state = Door::Open;
 					door->door2 = (token == "door2");
-					door->ani = new AnimeshInstance(door->door2 ? aDrzwi2 : aDrzwi);
+					door->ani = new MeshInstance(door->door2 ? aDrzwi2 : aDrzwi);
 					door->ani->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);
@@ -2373,7 +2373,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 			std::random_shuffle(details.begin(), details.end(), MyRand);
 			while(count && !details.empty())
 			{
-				const Animesh::Point& pt = *details.back();
+				const Mesh::Point& pt = *details.back();
 				details.pop_back();
 				--count;
 
@@ -2547,7 +2547,7 @@ void Game::RespawnUnits(LevelContext& ctx)
 		// model
 		u->action = A_NONE;
 		u->talking = false;
-		u->ani = new AnimeshInstance(u->data->mesh ? (Animesh*)u->data->mesh : aHumanBase);
+		u->ani = new MeshInstance(u->data->mesh ? (Mesh*)u->data->mesh : aHumanBase);
 		u->ani->ptr = u;
 		if(u->IsAlive())
 		{
@@ -3194,7 +3194,7 @@ void Game::GenerateDungeonObjects2()
 					door->pos = o.pos;
 					door->rot = o.rot.y;
 					door->state = Door::Closed;
-					door->ani = new AnimeshInstance(aDrzwi);
+					door->ani = new MeshInstance(aDrzwi);
 					door->ani->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);
@@ -5822,9 +5822,9 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const Vec3& pos, float
 	if(IS_SET(obj->flags2, OBJ2_CAM_COLLIDERS))
 	{
 		int roti = (int)round((rot / (PI / 2)));
-		for(vector<Animesh::Point>::const_iterator it = obj->mesh->attach_points.begin(), end = obj->mesh->attach_points.end(); it != end; ++it)
+		for(vector<Mesh::Point>::const_iterator it = obj->mesh->attach_points.begin(), end = obj->mesh->attach_points.end(); it != end; ++it)
 		{
-			const Animesh::Point& pt = *it;
+			const Mesh::Point& pt = *it;
 			if(strncmp(pt.name.c_str(), "camcol", 6) != 0)
 				continue;
 
@@ -6229,11 +6229,11 @@ void Game::PickableItemBegin(LevelContext& ctx, Object& o)
 	PickableItem::spawns.clear();
 	PickableItem::items.clear();
 
-	for(vector<Animesh::Point>::iterator it = o.base->mesh->attach_points.begin(), end = o.base->mesh->attach_points.end(); it != end; ++it)
+	for(vector<Mesh::Point>::iterator it = o.base->mesh->attach_points.begin(), end = o.base->mesh->attach_points.end(); it != end; ++it)
 	{
 		if(strncmp(it->name.c_str(), "spawn_", 6) == 0)
 		{
-			assert(it->type == Animesh::Point::Box);
+			assert(it->type == Mesh::Point::Box);
 			Box box(it->mat._41, it->mat._42, it->mat._43);
 			box.v1.x -= it->size.x - 0.05f;
 			box.v1.z -= it->size.z - 0.05f;

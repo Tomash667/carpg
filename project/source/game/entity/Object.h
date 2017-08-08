@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Animesh.h"
+#include "Mesh.h"
 
 //-----------------------------------------------------------------------------
 // Object physics type
@@ -63,7 +63,7 @@ struct VariantObj
 	struct Entry
 	{
 		cstring mesh_name;
-		Animesh* mesh;
+		Mesh* mesh;
 	};
 	Entry* entries;
 	uint count;
@@ -75,7 +75,7 @@ struct VariantObj
 struct Obj
 {
 	cstring id, name, mesh_id;
-	Animesh* mesh;
+	Mesh* mesh;
 	OBJ_PHY_TYPE type;
 	float r, h, centery;
 	Vec2 size;
@@ -123,7 +123,7 @@ struct Object
 {
 	Vec3 pos, rot;
 	float scale;
-	Animesh* mesh;
+	Mesh* mesh;
 	Obj* base;
 	void* ptr;
 	bool require_split;

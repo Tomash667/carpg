@@ -646,7 +646,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				}
 				else
 				{
-					const Animesh& ani = node->GetMesh();
+					const Mesh& ani = node->GetMesh();
 					if(IS_SET(ani.head.flags, ANIMESH_TANGENTS))
 						node->flags |= SceneNode::F_BINORMALS;
 
@@ -771,7 +771,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		for(vector<GroundItem*>::iterator it = ctx.items->begin(), end = ctx.items->end(); it != end; ++it)
 		{
 			GroundItem& item = **it;
-			Animesh* mesh;
+			Mesh* mesh;
 			pos = item.pos;
 			if(IS_SET(item.item->flags, ITEM_GROUND_MESH))
 			{
@@ -815,7 +815,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		for(vector<Useable*>::iterator it = ctx.useables->begin(), end = ctx.useables->end(); it != end; ++it)
 		{
 			Useable& use = **it;
-			Animesh* mesh = use.GetMesh();
+			Mesh* mesh = use.GetMesh();
 			if(frustum.SphereToFrustum(use.pos, mesh->head.radius))
 			{
 				SceneNode* node = node_pool.Get();
@@ -1485,7 +1485,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	}
 
 	// przedmiot w d³oni
-	Animesh* right_hand_item = nullptr;
+	Mesh* right_hand_item = nullptr;
 	int right_hand_item_flags = 0;
 	bool w_dloni = false;
 
@@ -1546,10 +1546,10 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		mat_scale = Matrix::IdentityMatrix;
 
 	// broñ
-	Animesh* mesh;
+	Mesh* mesh;
 	if(u.HaveWeapon() && right_hand_item != (mesh = u.GetWeapon().mesh))
 	{
-		Animesh::Point* point = u.ani->ani->GetPoint(w_dloni ? NAMES::point_weapon : NAMES::point_hidden_weapon);
+		Mesh::Point* point = u.ani->ani->GetPoint(w_dloni ? NAMES::point_weapon : NAMES::point_hidden_weapon);
 		assert(point);
 
 		SceneNode* node2 = node_pool.Get();
@@ -1584,7 +1584,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		// hitbox broni
 		if(draw_hitbox && u.weapon_state == WS_TAKEN && u.weapon_taken == W_ONE_HANDED)
 		{
-			Animesh::Point* box = mesh->FindPoint("hit");
+			Mesh::Point* box = mesh->FindPoint("hit");
 			assert(box && box->IsBox());
 
 			DebugSceneNode* debug_node = debug_node_pool.Get();
@@ -1598,8 +1598,8 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	// tarcza
 	if(u.HaveShield() && u.GetShield().mesh)
 	{
-		Animesh* shield = u.GetShield().mesh;
-		Animesh::Point* point = u.ani->ani->GetPoint(w_dloni ? NAMES::point_shield : NAMES::point_shield_hidden);
+		Mesh* shield = u.GetShield().mesh;
+		Mesh::Point* point = u.ani->ani->GetPoint(w_dloni ? NAMES::point_shield : NAMES::point_shield_hidden);
 		assert(point);
 
 		SceneNode* node2 = node_pool.Get();
@@ -1634,7 +1634,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		// hitbox tarczy
 		if(draw_hitbox && u.weapon_state == WS_TAKEN && u.weapon_taken == W_ONE_HANDED)
 		{
-			Animesh::Point* box = shield->FindPoint("hit");
+			Mesh::Point* box = shield->FindPoint("hit");
 			assert(box && box->IsBox());
 
 			DebugSceneNode* debug_node = debug_node_pool.Get();
@@ -1648,7 +1648,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	// jakiœ przedmiot
 	if(right_hand_item)
 	{
-		Animesh::Point* point = u.ani->ani->GetPoint(NAMES::point_weapon);
+		Mesh::Point* point = u.ani->ani->GetPoint(NAMES::point_weapon);
 		assert(point);
 
 		SceneNode* node2 = node_pool.Get();
@@ -1705,7 +1705,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		SceneNode* node2 = node_pool.Get();
 		node2->billboard = false;
 
-		Animesh::Point* point = u.ani->ani->GetPoint(w_dloni ? NAMES::point_bow : NAMES::point_shield_hidden);
+		Mesh::Point* point = u.ani->ani->GetPoint(w_dloni ? NAMES::point_bow : NAMES::point_shield_hidden);
 		assert(point);
 
 		if(u.action == A_SHOOT)
@@ -2315,7 +2315,7 @@ void Game::AddOrSplitSceneNode(SceneNode* node, int exclude_subs)
 {
 	assert(node && node->GetMesh().head.n_subs < 31);
 
-	const Animesh& ani = node->GetMesh();
+	const Mesh& ani = node->GetMesh();
 	if(IS_SET(ani.head.flags, ANIMESH_TANGENTS))
 		node->flags |= SceneNode::F_BINORMALS;
 	if(ani.head.n_subs == 1)
@@ -2525,7 +2525,7 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 			}
 			else
 			{
-				const Animesh& mesh = node->GetMesh();
+				const Mesh& mesh = node->GetMesh();
 				light_pos = Vec2(it3->pos.x, it3->pos.z);
 				const Vec2 sub_size = mesh.splits[sub].box.SizeXZ();
 				dist = DistanceRectangleToPoint(obj_pos, sub_size, light_pos);
@@ -2749,7 +2749,7 @@ void Game::DrawGlowingNodes(bool use_postfx)
 	// renderuj wszystkie obiekty
 	int prev_mode = -1;
 	Vec4 glow_color;
-	Animesh* mesh;
+	Mesh* mesh;
 
 	for(vector<GlowNode>::iterator it = draw_batch.glow_nodes.begin(), end = draw_batch.glow_nodes.end(); it != end; ++it)
 	{
@@ -3021,7 +3021,7 @@ void Game::DrawSkybox()
 	V(eSkybox->Begin(&passes, 0));
 	V(eSkybox->BeginPass(0));
 
-	for(vector<Animesh::Submesh>::iterator it = aSkybox->subs.begin(), end = aSkybox->subs.end(); it != end; ++it)
+	for(vector<Mesh::Submesh>::iterator it = aSkybox->subs.begin(), end = aSkybox->subs.end(); it != end; ++it)
 	{
 		V(eSkybox->SetTexture(hSkyboxTex, it->tex->data));
 		V(eSkybox->CommitChanges());
@@ -3188,12 +3188,12 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 	// modele
 	int current_flags = -1;
 	bool inside_begin = false;
-	const Animesh* prev_mesh = nullptr;
+	const Mesh* prev_mesh = nullptr;
 
 	for(vector<SceneNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
 	{
 		const SceneNode* node = *it;
-		const Animesh& mesh = node->GetMesh();
+		const Mesh& mesh = node->GetMesh();
 
 		// pobierz nowy efekt jeœli trzeba
 		if(node->flags != current_flags)
@@ -3232,7 +3232,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		V(e->SetVector(hSTint, (D3DXVECTOR4*)&node->tint));
 		if(IS_SET(node->flags, SceneNode::F_ANIMATED))
 		{
-			const AnimeshInstance& ani = node->GetAnimesh();
+			const MeshInstance& ani = node->GetAnimesh();
 			V(e->SetMatrixArray(hSMatBones, (D3DXMATRIX*)&ani.mat_bones[0], ani.mat_bones.size()));
 		}
 
@@ -3257,7 +3257,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 				if(!IS_SET(node->subs, 1 << i))
 					continue;
 
-				const Animesh::Submesh& sub = mesh.subs[i];
+				const Mesh::Submesh& sub = mesh.subs[i];
 
 				// tekstura
 				V(e->SetTexture(hSTexDiffuse, GetTexture(i, node->tex_override, mesh)));
@@ -3285,7 +3285,7 @@ void Game::DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>&
 		else
 		{
 			int index = (node->subs & ~SPLIT_INDEX);
-			const Animesh::Submesh& sub = mesh.subs[index];
+			const Mesh::Submesh& sub = mesh.subs[index];
 
 			// tekstura
 			V(e->SetTexture(hSTexDiffuse, GetTexture(index, node->tex_override, mesh)));
@@ -3333,7 +3333,7 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 	V(eMesh->Begin(&passes, 0));
 	V(eMesh->BeginPass(0));
 
-	static Animesh* meshes[DebugSceneNode::MaxType] = {
+	static Mesh* meshes[DebugSceneNode::MaxType] = {
 		aBox,
 		aCylinder,
 		aSphere,
@@ -3352,7 +3352,7 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 	{
 		const DebugSceneNode& node = **it;
 
-		Animesh* mesh = meshes[node.type];
+		Mesh* mesh = meshes[node.type];
 		V(device->SetVertexDeclaration(vertex_decl[mesh->vertex_decl]));
 		V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
 		V(device->SetIndices(mesh->ib));
@@ -3505,7 +3505,7 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 	SetNoCulling(false);
 	SetNoZWrite(true);
 
-	Animesh* mesh = aSpellball;
+	Mesh* mesh = aSpellball;
 	V(device->SetVertexDeclaration(vertex_decl[mesh->vertex_decl]));
 	V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
 	V(device->SetIndices(mesh->ib));

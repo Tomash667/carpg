@@ -868,11 +868,11 @@ void Game::LoadGame(HANDLE file)
 
 			if(IS_SET(u->data->flags, F_HUMAN))
 			{
-				u->ani = new AnimeshInstance(aHumanBase);
+				u->ani = new MeshInstance(aHumanBase);
 				u->human_data->ApplyScale(aHumanBase);
 			}
 			else
-				u->ani = new AnimeshInstance(u->data->mesh);
+				u->ani = new MeshInstance(u->data->mesh);
 			u->ani->ptr = u;
 
 			if(!u->IsPlayer())

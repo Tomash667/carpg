@@ -1420,12 +1420,12 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				unit.human_data->mustache, unit.human_data->height);
 			return false;
 		}
-		unit.ani = new AnimeshInstance(aHumanBase);
+		unit.ani = new MeshInstance(aHumanBase);
 		unit.human_data->ApplyScale(aHumanBase);
 	}
 	else
 	{
-		unit.ani = new AnimeshInstance(unit.data->mesh);
+		unit.ani = new MeshInstance(unit.data->mesh);
 		unit.human_data = nullptr;
 	}
 
@@ -1690,7 +1690,7 @@ bool Game::ReadDoor(BitStream& stream, Door& door)
 		return false;
 	}
 
-	door.ani = new AnimeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
+	door.ani = new MeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
 	door.ani->groups[0].speed = 2.f;
 	door.phy = new btCollisionObject;
 	door.phy->setCollisionShape(shape_door);
@@ -1733,7 +1733,7 @@ bool Game::ReadChest(BitStream& stream, Chest& chest)
 		|| !stream.Read(chest.rot)
 		|| !stream.Read(chest.netid))
 		return false;
-	chest.ani = new AnimeshInstance(aSkrzynia);
+	chest.ani = new MeshInstance(aSkrzynia);
 	return true;
 }
 

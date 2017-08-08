@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "Core.h"
 #include "ResourceManager.h"
-#include "Animesh.h"
+#include "Mesh.h"
 #include "LoadScreen.h"
 #include "Engine.h"
 
@@ -342,7 +342,7 @@ void ResourceManager::Cleanup()
 				break;
 			case ResourceType::Mesh:
 				if(res->subtype == (int)ResourceSubType::Mesh)
-					delete (Animesh*)res->data;
+					delete (Mesh*)res->data;
 				break;
 			}
 		}
@@ -503,7 +503,7 @@ void ResourceManager::Init(IDirect3DDevice9* _device, FMOD::System* _fmod_system
 
 	RegisterExtensions();
 
-	Animesh::MeshInit();
+	Mesh::MeshInit();
 }
 
 //=================================================================================================
@@ -609,8 +609,8 @@ void ResourceManager::LoadMeshVertexDataInternal(MeshResource* res)
 
 	try
 	{
-		VertexData* vd = Animesh::LoadVertexData(reader);
-		res->data = (Animesh*)vd;
+		VertexData* vd = Mesh::LoadVertexData(reader);
+		res->data = (Mesh*)vd;
 		res->state = ResourceState::Loaded;
 		res->subtype = (int)ResourceSubType::MeshVertexData;
 	}

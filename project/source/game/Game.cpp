@@ -2607,7 +2607,7 @@ void Game::UnitStandup(Unit& u)
 {
 	u.HealPoison();
 	u.live_state = Unit::ALIVE;
-	Animesh::Animation* anim = u.ani->ani->GetAnimation("wstaje2");
+	Mesh::Animation* anim = u.ani->ani->GetAnimation("wstaje2");
 	if(anim)
 	{
 		u.ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
@@ -3031,13 +3031,13 @@ uint Game::ValidateGameData(bool major)
 }
 
 //=================================================================================================
-AnimeshInstance* Game::GetBowInstance(Animesh* mesh)
+MeshInstance* Game::GetBowInstance(Mesh* mesh)
 {
 	if(bow_instances.empty())
-		return new AnimeshInstance(mesh);
+		return new MeshInstance(mesh);
 	else
 	{
-		AnimeshInstance* instance = bow_instances.back();
+		MeshInstance* instance = bow_instances.back();
 		bow_instances.pop_back();
 		instance->ani = mesh;
 		return instance;
@@ -3048,11 +3048,11 @@ AnimeshInstance* Game::GetBowInstance(Animesh* mesh)
 void Game::SetupTrap(TaskData& task_data)
 {
 	BaseTrap& trap = *(BaseTrap*)task_data.ptr;
-	trap.mesh = (Animesh*)task_data.res->data;
+	trap.mesh = (Mesh*)task_data.res->data;
 
-	Animesh::Point* pt = trap.mesh->FindPoint("hitbox");
+	Mesh::Point* pt = trap.mesh->FindPoint("hitbox");
 	assert(pt);
-	if(pt->type == Animesh::Point::Box)
+	if(pt->type == Mesh::Point::Box)
 	{
 		trap.rw = pt->size.x;
 		trap.h = pt->size.z;
@@ -3066,12 +3066,12 @@ void Game::SetupObject(TaskData& task_data)
 {
 	Obj& o = *(Obj*)task_data.ptr;
 	if(task_data.res)
-		o.mesh = (Animesh*)task_data.res->data;
+		o.mesh = (Mesh*)task_data.res->data;
 
 	if(IS_SET(o.flags, OBJ_BUILDING))
 		return;
 
-	Animesh::Point* point;
+	Mesh::Point* point;
 	if(!IS_SET(o.flags2, OBJ2_VARIANT))
 		point = o.mesh->FindPoint("hit");
 	else
@@ -3100,12 +3100,12 @@ void Game::SetupObject(TaskData& task_data)
 
 	if(IS_SET(o.flags2, OBJ2_MULTI_PHYSICS))
 	{
-		LocalVector2<Animesh::Point*> points;
-		Animesh::Point* prev_point = point;
+		LocalVector2<Mesh::Point*> points;
+		Mesh::Point* prev_point = point;
 
 		while(true)
 		{
-			Animesh::Point* new_point = o.mesh->FindNextPoint("hit", prev_point);
+			Mesh::Point* new_point = o.mesh->FindNextPoint("hit", prev_point);
 			if(new_point)
 			{
 				assert(new_point->IsBox() && new_point->size.x >= 0 && new_point->size.y >= 0 && new_point->size.z >= 0);
@@ -3132,7 +3132,7 @@ void Game::SetupObject(TaskData& task_data)
 	}
 	else if(IS_SET(o.flags, OBJ_DOUBLE_PHYSICS))
 	{
-		Animesh::Point* point2 = o.mesh->FindNextPoint("hit", point);
+		Mesh::Point* point2 = o.mesh->FindNextPoint("hit", point);
 		if(point2 && point2->IsBox())
 		{
 			assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
