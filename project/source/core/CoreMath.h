@@ -16,9 +16,6 @@ struct Matrix;
 struct Quat;
 struct Plane;
 
-// for ray-mesh collision
-#include "VertexData.h"
-
 //-----------------------------------------------------------------------------
 // Random numbers
 //-----------------------------------------------------------------------------
@@ -1346,7 +1343,6 @@ float DistanceRectangleToPoint(const Vec2& pos, const Vec2& size, const Vec2& pt
 // x0,y0 - point
 float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float y2);
 float GetClosestPointOnLineSegment(const Vec2& A, const Vec2& B, const Vec2& P, Vec2& result);
-bool RayToMesh(const Vec3& _ray_pos, const Vec3& _ray_dir, const Vec3& _obj_pos, float _obj_rot, VertexData* _vd, float& _dist);
 
 //-----------------------------------------------------------------------------
 // POD types

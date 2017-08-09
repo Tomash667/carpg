@@ -1,34 +1,96 @@
 #include "Pch.h"
 #include "Core.h"
 #include "ResourceManager.h"
-#include "Mesh.h"
 #include "LoadScreen.h"
 #include "Engine.h"
+#include "Mesh.h"
 
 //-----------------------------------------------------------------------------
 ResourceManager ResourceManager::manager;
 ObjectPool<ResourceManager::TaskDetail> ResourceManager::task_pool;
-ResourceManager::ResourceSubTypeInfo ResourceManager::res_info[] = {
-	ResourceSubType::Unknown, ResourceType::Unknown, "unknown",
-	ResourceSubType::Task, ResourceType::Unknown, "task",
-	ResourceSubType::Callback, ResourceType::Unknown, "callback",
-	ResourceSubType::Category, ResourceType::Unknown, "category",
-	ResourceSubType::Mesh, ResourceType::Mesh, "mesh",
-	ResourceSubType::MeshVertexData, ResourceType::Mesh, "mesh vertex data",
-	ResourceSubType::Music, ResourceType::Sound, "music",
-	ResourceSubType::Sound, ResourceType::Sound, "sound",
-	ResourceSubType::Texture, ResourceType::Texture, "texture"
-};
 
 //=================================================================================================
-ResourceManager::ResourceManager() : last_resource(nullptr), mode(Mode::Instant), mutex(nullptr)
+ResourceManager::ResourceManager() : mode(Mode::Instant), mutex(nullptr)
 {
 }
 
 //=================================================================================================
 ResourceManager::~ResourceManager()
 {
-	delete last_resource;
+}
+
+//=================================================================================================
+void ResourceManager::Init(IDirect3DDevice9* device, FMOD::System* fmod_system)
+{
+	this->device = device;
+	this->fmod_system = fmod_system;
+
+	RegisterExtensions();
+
+	Mesh::MeshInit();
+}
+
+//=================================================================================================
+void ResourceManager::RegisterExtensions()
+{
+	exts["bmp"] = ResourceType::Texture;
+	exts["dds"] = ResourceType::Texture;
+	exts["dib"] = ResourceType::Texture;
+	exts["hdr"] = ResourceType::Texture;
+	exts["jpg"] = ResourceType::Texture;
+	exts["pfm"] = ResourceType::Texture;
+	exts["png"] = ResourceType::Texture;
+	exts["ppm"] = ResourceType::Texture;
+	exts["tga"] = ResourceType::Texture;
+
+	exts["qmsh"] = ResourceType::Mesh;
+
+	exts["phy"] = ResourceType::VertexData;
+
+	exts["aiff"] = ResourceType::SoundOrMusic;
+	exts["asf"] = ResourceType::SoundOrMusic;
+	exts["asx"] = ResourceType::SoundOrMusic;
+	exts["dls"] = ResourceType::SoundOrMusic;
+	exts["flac"] = ResourceType::SoundOrMusic;
+	exts["it"] = ResourceType::SoundOrMusic;
+	exts["m3u"] = ResourceType::SoundOrMusic;
+	exts["midi"] = ResourceType::SoundOrMusic;
+	exts["mod"] = ResourceType::SoundOrMusic;
+	exts["mp2"] = ResourceType::SoundOrMusic;
+	exts["mp3"] = ResourceType::SoundOrMusic;
+	exts["ogg"] = ResourceType::SoundOrMusic;
+	exts["pls"] = ResourceType::SoundOrMusic;
+	exts["s3m"] = ResourceType::SoundOrMusic;
+	exts["wav"] = ResourceType::SoundOrMusic;
+	exts["wax"] = ResourceType::SoundOrMusic;
+	exts["wma"] = ResourceType::SoundOrMusic;
+	exts["xm"] = ResourceType::SoundOrMusic;
+}
+
+//=================================================================================================
+void ResourceManager::Cleanup()
+{
+	for(Resource* res : resources)
+		delete res;
+
+	for(Pak* pak : paks)
+	{
+		CloseHandle(pak->file);
+		if(pak->version == 0)
+			delete (PakV0*)pak;
+		else
+		{
+			PakV1* pak1 = (PakV1*)pak;
+			BufferPool.Free(pak1->filename_buf);
+			delete pak1;
+		}
+	}
+
+	for(Buffer* buf : sound_bufs)
+		BufferPool.Free(buf);
+
+	task_pool.Free(tasks);
+	task_pool.Free(next_tasks);
 }
 
 //=================================================================================================
@@ -302,71 +364,45 @@ Resource* ResourceManager::AddResource(cstring filename, cstring path)
 	if(type == ResourceType::Unknown)
 		return nullptr;
 
-	if(!last_resource)
-		last_resource = new Resource;
-	last_resource->filename = filename;
-	last_resource->type = type;
+	Resource* res = CreateResource(type);
+	res->filename = filename;
+	res->type = type;
 
-	std::pair<ResourceIterator, bool>& result = resources.insert(last_resource);
+	std::pair<ResourceIterator, bool>& result = resources.insert(res);
 	if(result.second)
 	{
 		// added
-		Resource* res = last_resource;
-		last_resource = nullptr;
-		res->data = nullptr;
 		res->state = ResourceState::NotLoaded;
-		res->subtype = (int)ResourceSubType::Unknown;
 		return res;
 	}
 	else
 	{
 		// already exists
-		Resource* res = *result.first;
-		if(res->pak_index != INVALID_PAK || res->path != path)
-			Warn("ResourceManager: Resource '%s' already exists (%s; %s).", filename, GetPath(res), path);
+		Resource* existing = *result.first;
+		if(existing->pak_index != INVALID_PAK || existing->path != path)
+			Warn("ResourceManager: Resource '%s' already exists (%s; %s).", filename, GetPath(existing), path);
+		delete res;
 		return nullptr;
 	}
 }
 
 //=================================================================================================
-void ResourceManager::Cleanup()
+Resource* ResourceManager::CreateResource(ResourceType type)
 {
-	for(Resource* res : resources)
+	switch(type)
 	{
-		if(res->state == ResourceState::Loaded)
-		{
-			switch(res->type)
-			{
-			case ResourceType::Texture:
-				((TEX)res->data)->Release();
-				break;
-			case ResourceType::Mesh:
-				if(res->subtype == (int)ResourceSubType::Mesh)
-					delete (Mesh*)res->data;
-				break;
-			}
-		}
-		delete res;
+	case ResourceType::Texture:
+		return new Texture;
+	case ResourceType::Mesh:
+		return new Mesh;
+	case ResourceType::VertexData:
+		return new VertexData;
+	case ResourceType::SoundOrMusic:
+		return new Sound;
+	default:
+		assert(0);
+		return nullptr;
 	}
-
-	for(Pak* pak : paks)
-	{
-		CloseHandle(pak->file);
-		if(pak->version == 0)
-			delete (PakV0*)pak;
-		else
-		{
-			PakV1* pak1 = (PakV1*)pak;
-			BufferPool.Free(pak1->filename_buf);
-			delete pak1;
-		}
-	}
-
-	for(Buffer* buf : sound_bufs)
-		BufferPool.Free(buf);
-
-	task_pool.Free(tasks);
-	task_pool.Free(next_tasks);
 }
 
 //=================================================================================================
@@ -481,68 +517,9 @@ StreamReader ResourceManager::GetStream(Resource* res, StreamType type)
 	}
 }
 
-//=================================================================================================
-Resource* ResourceManager::GetResource(cstring filename, ResourceType type)
-{
-	Resource res;
-	res.type = type;
-	res.filename = filename;
-
-	auto it = resources.find(&res);
-	if(it != resources.end())
-		return *it;
-	else
-		return nullptr;
-}
 
 //=================================================================================================
-void ResourceManager::Init(IDirect3DDevice9* _device, FMOD::System* _fmod_system)
-{
-	device = _device;
-	fmod_system = _fmod_system;
-
-	RegisterExtensions();
-
-	Mesh::MeshInit();
-}
-
-//=================================================================================================
-void ResourceManager::RegisterExtensions()
-{
-	exts["bmp"] = ResourceType::Texture;
-	exts["dds"] = ResourceType::Texture;
-	exts["dib"] = ResourceType::Texture;
-	exts["hdr"] = ResourceType::Texture;
-	exts["jpg"] = ResourceType::Texture;
-	exts["pfm"] = ResourceType::Texture;
-	exts["png"] = ResourceType::Texture;
-	exts["ppm"] = ResourceType::Texture;
-	exts["tga"] = ResourceType::Texture;
-
-	exts["qmsh"] = ResourceType::Mesh;
-
-	exts["aiff"] = ResourceType::Sound;
-	exts["asf"] = ResourceType::Sound;
-	exts["asx"] = ResourceType::Sound;
-	exts["dls"] = ResourceType::Sound;
-	exts["flac"] = ResourceType::Sound;
-	exts["it"] = ResourceType::Sound;
-	exts["m3u"] = ResourceType::Sound;
-	exts["midi"] = ResourceType::Sound;
-	exts["mod"] = ResourceType::Sound;
-	exts["mp2"] = ResourceType::Sound;
-	exts["mp3"] = ResourceType::Sound;
-	exts["ogg"] = ResourceType::Sound;
-	exts["pls"] = ResourceType::Sound;
-	exts["s3m"] = ResourceType::Sound;
-	exts["wav"] = ResourceType::Sound;
-	exts["wax"] = ResourceType::Sound;
-	exts["wma"] = ResourceType::Sound;
-	exts["xm"] = ResourceType::Sound;
-}
-
-//=================================================================================================
-void ResourceManager::ApplyTask(Task* task)
+/*void ResourceManager::ApplyTask(Task* task)
 {
 	if(IS_SET(task->flags, Task::Assign))
 	{
@@ -551,40 +528,39 @@ void ResourceManager::ApplyTask(Task* task)
 	}
 	else
 		task->callback(*task);
-}
+}*/
 
 //=================================================================================================
-void ResourceManager::LoadResource(Resource* res)
+void ResourceManager::LoadResourceInternal(Resource* res)
 {
 	assert(res->state != ResourceState::Loaded);
-	switch((ResourceSubType)res->subtype)
+
+	switch(res->type)
 	{
-	case ResourceSubType::Mesh:
-		LoadMeshInternal((MeshResource*)res);
+	case ResourceType::Mesh:
+		LoadMesh((Mesh*)res);
 		break;
-	case ResourceSubType::MeshVertexData:
-		LoadMeshVertexDataInternal((MeshResource*)res);
+	case ResourceType::VertexData:
+		LoadVertexData((VertexData*)res);
 		break;
-	case ResourceSubType::Music:
-		LoadMusicInternal((SoundResource*)res);
+	case ResourceType::SoundOrMusic:
+		LoadSoundOrMusic((Sound*)res);
 		break;
-	case ResourceSubType::Sound:
-		LoadSoundInternal((SoundResource*)res);
-		break;
-	case ResourceSubType::Texture:
-		LoadTextureInternal((TextureResource*)res);
+	case ResourceType::Texture:
+		LoadTexture((Texture*)res);
 		break;
 	default:
 		assert(0);
 		break;
 	}
+
+	res->state = ResourceState::Loaded;
 }
 
 //=================================================================================================
-void ResourceManager::LoadMeshInternal(MeshResource* res)
+void ResourceManager::LoadMesh(Mesh* mesh)
 {
-	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
-	Mesh* mesh = new Mesh;
+	StreamReader&& reader = GetStream(mesh, StreamType::FullFileOrMemory);
 
 	try
 	{
@@ -592,177 +568,147 @@ void ResourceManager::LoadMeshInternal(MeshResource* res)
 	}
 	catch(cstring err)
 	{
-		delete mesh;
-		throw Format("ResourceManager: Failed to load mesh '%s'. %s", GetPath(res), err);
+		throw Format("ResourceManager: Failed to load mesh '%s'. %s", GetPath(mesh), err);
 	}
-
-	mesh->res = res;
-	res->data = mesh;
-	res->state = ResourceState::Loaded;
-	res->subtype = (int)ResourceSubType::Mesh;
 }
 
 //=================================================================================================
-void ResourceManager::LoadMeshVertexDataInternal(MeshResource* res)
+void ResourceManager::LoadVertexData(VertexData* vd)
 {
-	StreamReader&& reader = GetStream(res, StreamType::FullFileOrMemory);
+	StreamReader&& reader = GetStream(vd, StreamType::FullFileOrMemory);
 
 	try
 	{
-		VertexData* vd = Mesh::LoadVertexData(reader);
-		res->data = (Mesh*)vd;
-		res->state = ResourceState::Loaded;
-		res->subtype = (int)ResourceSubType::MeshVertexData;
+		Mesh::LoadVertexData(vd, reader);
 	}
 	catch(cstring err)
 	{
-		throw Format("ResourceManager: Failed to load mesh vertex data '%s'. %s", GetPath(res), err);
+		throw Format("ResourceManager: Failed to load mesh vertex data '%s'. %s", GetPath(vd), err);
 	}
 }
 
 //=================================================================================================
-void ResourceManager::LoadMusicInternal(SoundResource* res)
+void ResourceManager::LoadSoundOrMusic(Sound* sound)
 {
 	assert(fmod_system);
 
+	int flags = FMOD_HARDWARE | FMOD_LOWMEM;
+	if(sound->is_music)
+		flags |= FMOD_2D;
+	else
+		flags |= FMOD_3D | FMOD_LOOP_OFF;
+
 	FMOD_RESULT result;
-	if(res->IsFile())
-		result = fmod_system->createStream(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D, nullptr, &res->data);
+	if(sound->IsFile())
+		result = fmod_system->createStream(sound->path.c_str(), flags, nullptr, &sound->sound);
 	else
 	{
-		BufferHandle&& buf = GetBuffer(res);
+		BufferHandle&& buf = GetBuffer(sound);
 		FMOD_CREATESOUNDEXINFO info = { 0 };
 		info.cbsize = sizeof(info);
 		info.length = buf->Size();
-		result = fmod_system->createStream((cstring)buf->Data(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_2D | FMOD_OPENMEMORY, &info, &res->data);
+		result = fmod_system->createStream((cstring)buf->Data(), flags | FMOD_OPENMEMORY, &info, &sound->sound);
 		if(result == FMOD_OK)
 			sound_bufs.push_back(buf.Pin());
 	}
-
+	
 	if(result != FMOD_OK)
-		throw Format("ResourceManager: Failed to load music '%s' (%d).", res->path.c_str(), result);
-
-	res->state = ResourceState::Loaded;
-	res->subtype = (int)ResourceSubType::Music;
+		throw Format("ResourceManager: Failed to load %s '%s' (%d).", sound->is_music ? "music" : "sound", sound->path.c_str(), result);
 }
 
 //=================================================================================================
-void ResourceManager::LoadSoundInternal(SoundResource* res)
-{
-	assert(fmod_system);
-
-	FMOD_RESULT result;
-	if(res->IsFile())
-		result = fmod_system->createSound(res->path.c_str(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF, nullptr, &res->data);
-	else
-	{
-		BufferHandle&& buf = GetBuffer(res);
-		FMOD_CREATESOUNDEXINFO info = { 0 };
-		info.cbsize = sizeof(info);
-		info.length = buf->Size();
-		result = fmod_system->createSound((cstring)buf->Data(), FMOD_HARDWARE | FMOD_LOWMEM | FMOD_3D | FMOD_LOOP_OFF | FMOD_OPENMEMORY, &info, &res->data);
-		if(result == FMOD_OK)
-			sound_bufs.push_back(buf.Pin());
-	}
-
-	if(result != FMOD_OK)
-		throw Format("ResourceManager: Failed to load sound '%s' (%d).", res->path.c_str(), result);
-
-	res->state = ResourceState::Loaded;
-	res->subtype = (int)ResourceSubType::Sound;
-}
-
-//=================================================================================================
-void ResourceManager::LoadTextureInternal(TextureResource* res)
+void ResourceManager::LoadTexture(Texture* tex)
 {
 	HRESULT hr;
-	if(res->IsFile())
-		hr = D3DXCreateTextureFromFile(device, res->path.c_str(), &res->data);
+	if(tex->IsFile())
+		hr = D3DXCreateTextureFromFile(device, tex->path.c_str(), &tex->tex);
 	else
 	{
-		BufferHandle&& buf = GetBuffer(res);
-		hr = D3DXCreateTextureFromFileInMemory(device, buf->Data(), buf->Size(), &res->data);
+		BufferHandle&& buf = GetBuffer(tex);
+		hr = D3DXCreateTextureFromFileInMemory(device, buf->Data(), buf->Size(), &tex->tex);
 	}
 
 	if(FAILED(hr))
-		throw Format("Failed to load texture '%s' (%u).", GetPath(res), hr);
-
-	res->state = ResourceState::Loaded;
-	res->subtype = (int)ResourceSubType::Texture;
+		throw Format("Failed to load texture '%s' (%u).", GetPath(tex), hr);
 }
 
 //=================================================================================================
-void ResourceManager::AddTask(Task& task)
+void ResourceManager::AddTask(void* ptr, TaskCallback callback)
 {
-	if(mode == Mode::Instant || mode == Mode::LoadScreenStart)
-		ApplyTask(&task);
+	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
+
+	TaskDetail* td = task_pool.Get();
+	td->callback = callback;
+	td->data.ptr = ptr;
+	td->type = TaskType::Callback;
+
+	if(mode == Mode::LoadScreenPrepare)
+	{
+		tasks.push_back(td);
+		++to_load;
+	}
 	else
 	{
-		assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
+		next_tasks.push_back(td);
+		++to_load_next;
+	}
+}
 
-		TaskDetail* td = task_pool.Get();
-		td->category = nullptr;
-		td->delegate = task.callback;
-		td->flags = task.flags;
-		td->ptr = task.ptr;
-		td->res = nullptr;
-		td->type = ResourceSubType::Task;
+void ResourceManager::AddLoadTask(Resource* res)
+{
+	assert(res && (mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext));
 
-		if(mode == Mode::LoadScreenPrepare)
-		{
-			tasks.push_back(td);
-			++to_load;
-		}
-		else
-		{
-			next_tasks.push_back(td);
-			++to_load_next;
-		}
+	TaskDetail* td = task_pool.Get();
+	td->data.res = res;
+	td->type = TaskType::Load;
+
+	if(mode == Mode::LoadScreenPrepare)
+	{
+		tasks.push_back(td);
+		++to_load;
+	}
+	else
+	{
+		next_tasks.push_back(td);
+		++to_load_next;
+	}
+}
+
+void ResourceManager::AddLoadTask(Resource* res, void* ptr, TaskCallback callback)
+{
+	assert(res && (mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext));
+
+	TaskDetail* td = task_pool.Get();
+	td->data.res = res;
+	td->data.ptr = ptr;
+	td->callback = callback;
+	td->type = TaskType::LoadAndCallback;
+
+	if(mode == Mode::LoadScreenPrepare)
+	{
+		tasks.push_back(td);
+		++to_load;
+	}
+	else
+	{
+		next_tasks.push_back(td);
+		++to_load_next;
 	}
 }
 
 //=================================================================================================
-void ResourceManager::AddTaskCategory(cstring category)
+void ResourceManager::AddTaskCategory(const AnyString& category)
 {
 	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
 
 	TaskDetail* td = task_pool.Get();
 	td->category = category;
-	td->delegate = nullptr;
-	td->flags = 0;
-	td->ptr = nullptr;
-	td->res = nullptr;
-	td->type = ResourceSubType::Category;
+	td->type = TaskType::Category;
 
 	if(mode == Mode::LoadScreenPrepare)
 		tasks.push_back(td);
 	else
 		next_tasks.push_back(td);
-}
-
-//=================================================================================================
-void ResourceManager::AddTask(VoidF& callback, cstring category, int size)
-{
-	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
-
-	TaskDetail* td = task_pool.Get();
-	td->category = category;
-	td->delegate = callback;
-	td->flags = TaskDetail::VoidCallback;
-	td->ptr = nullptr;
-	td->res = nullptr;
-	td->type = ResourceSubType::Callback;
-
-	if(mode == Mode::LoadScreenPrepare)
-	{
-		tasks.push_back(td);
-		to_load += size;
-	}
-	else
-	{
-		next_tasks.push_back(td);
-		to_load_next += size;
-	}
 }
 
 //=================================================================================================
@@ -875,31 +821,31 @@ void ResourceManager::UpdateLoadScreen()
 	for(uint i = 0; i < tasks.size(); ++i)
 	{
 		TaskDetail* task = tasks[i];
-		if(task->res && task->res->state != ResourceState::Loaded)
-			LoadResource(task->res);
-
-		if(task->category)
+		switch(task->type)
+		{
+		case TaskType::Category:
 			category = task->category;
-
-		if(task->type != ResourceSubType::Category)
+			break;
+		case TaskType::Callback:
+			task->callback(task->data);
 			++loaded;
-
-		if(IS_SET(task->flags, TaskDetail::Assign))
-		{
-			void** ptr = (void**)task->ptr;
-			*ptr = task->res->data;
+			break;
+		case TaskType::Load:
+			if(task->data.res->state != ResourceState::Loaded)
+				LoadResourceInternal(task->data.res);
+			++loaded;
+			break;
+		case TaskType::LoadAndCallback:
+			if(task->data.res->state != ResourceState::Loaded)
+				LoadResourceInternal(task->data.res);
+			task->callback(task->data);
+			++loaded;
+			break;
+		default:
+			assert(0);
+			break;
 		}
-		else if(task->delegate)
-		{
-			if(IS_SET(task->flags, TaskDetail::VoidCallback))
-			{
-				VoidF callback = (VoidF)task->delegate;
-				callback();
-			}
-			else
-				task->delegate(*(TaskData*)task);
-		}
-
+		
 		TickLoadScreen();
 	}
 
@@ -909,10 +855,10 @@ void ResourceManager::UpdateLoadScreen()
 }
 
 //=================================================================================================
-void ResourceManager::NextTask(cstring _category)
+void ResourceManager::NextTask(cstring next_category)
 {
-	if(_category)
-		category = _category;
+	if(next_category)
+		category = next_category;
 	++loaded;
 
 	TickLoadScreen();
@@ -939,135 +885,131 @@ void ResourceManager::TickLoadScreen()
 }
 
 //=================================================================================================
-Resource* ResourceManager::GetResource(cstring filename, ResourceSubType type)
-{
-	assert(filename);
+//void ResourceManager::LoadResource(Resource* res, Task* task)
+//{
+//	assert(res);
+//
+//	if(res->state == ResourceState::Loaded)
+//	{
+//		if(task)
+//		{
+//			task->res = res;
+//			ApplyTask(task);
+//		}
+//		return;
+//	}
+//
+//	if(res->state == ResourceState::NotLoaded && (mode == Mode::Instant || mode == Mode::LoadScreenStart))
+//	{
+//		LoadResource(res);
+//		if(task)
+//		{
+//			task->res = res;
+//			ApplyTask(task);
+//		}
+//	}
+//	else
+//	{
+//		TaskDetail* td = task_pool.Get();
+//		if(task)
+//		{
+//			td->delegate = task->callback;
+//			td->flags = task->flags;
+//			td->ptr = task->ptr;
+//		}
+//		else
+//		{
+//			td->delegate = nullptr;
+//			td->flags = 0;
+//		}
+//		td->category = nullptr;
+//		td->res = res;
+//		td->type = (ResourceSubType)res->subtype;
+//
+//		res->state = ResourceState::Loading;
+//
+//		if(mode == Mode::LoadScreenPrepare)
+//		{
+//			tasks.push_back(td);
+//			++to_load;
+//		}
+//		else
+//		{
+//			assert(mode == Mode::LoadScreenNext);
+//			next_tasks.push_back(td);
+//			++to_load_next;
+//		}
+//	}
+//}
 
-	auto& info = res_info[(int)type];
-	Resource* res = GetResource(filename, info.type);
+
+//=====================================================================================================================================================
+//=====================================================================================================================================================
+//=====================================================================================================================================================
+
+
+
+
+Resource* ResourceManager::GetResource(const AnyString& filename, ResourceType type)
+{
+	Resource* res = TryGetResource(filename, type);
 	if(!res)
-		throw Format("ResourceManager: Missing %s '%s'.", info.name, filename);
-	if(res->subtype != (int)type)
 	{
-		if(res->subtype != (int)ResourceSubType::Unknown)
-			throw Format("ResourceManager: Resource type mismatch '%s' (%s, %s).", filename, res_info[res->subtype].name, info.name);
-		res->subtype = (int)type;
-	}
-
-	return (Resource*)res;
-}
-
-//=================================================================================================
-Resource* ResourceManager::TryGetResource(cstring filename, ResourceSubType type)
-{
-	assert(filename);
-
-	auto& info = res_info[(int)type];
-	Resource* res = GetResource(filename, info.type);
-	if(!res)
-		return nullptr;
-	if(res->subtype != (int)type)
-	{
-		if(res->subtype != (int)ResourceSubType::Unknown)
-			throw Format("ResourceManager: Resource type mismatch '%s' (%s, %s).", filename, res_info[res->subtype].name, info.name);
-		res->subtype = (int)type;
-	}
-
-	return (Resource*)res;
-}
-
-//=================================================================================================
-void ResourceManager::LoadResource(Resource* res, Task* task)
-{
-	assert(res);
-
-	if(res->state == ResourceState::Loaded)
-	{
-		if(task)
+		cstring type_name;
+		switch(type)
 		{
-			task->res = res;
-			ApplyTask(task);
+		case ResourceType::Mesh:
+			type_name = "mesh";
+			break;
+		case ResourceType::Texture:
+			type_name = "texture";
+			break;
+		case ResourceType::VertexData:
+			type_name = "vertex data";
+			break;
+		case ResourceType::SoundOrMusic:
+			type_name = "sound or music";
+			break;
+		default:
+			assert(0);
+			type_name = "unknown";
+			break;
 		}
-		return;
-	}
-
-	if(res->state == ResourceState::NotLoaded && (mode == Mode::Instant || mode == Mode::LoadScreenStart))
-	{
-		LoadResource(res);
-		if(task)
-		{
-			task->res = res;
-			ApplyTask(task);
-		}
-	}
-	else
-	{
-		TaskDetail* td = task_pool.Get();
-		if(task)
-		{
-			td->delegate = task->callback;
-			td->flags = task->flags;
-			td->ptr = task->ptr;
-		}
-		else
-		{
-			td->delegate = nullptr;
-			td->flags = 0;
-		}
-		td->category = nullptr;
-		td->res = res;
-		td->type = (ResourceSubType)res->subtype;
-
-		res->state = ResourceState::Loading;
-
-		if(mode == Mode::LoadScreenPrepare)
-		{
-			tasks.push_back(td);
-			++to_load;
-		}
-		else
-		{
-			assert(mode == Mode::LoadScreenNext);
-			next_tasks.push_back(td);
-			++to_load_next;
-		}
-	}
-}
-
-//=================================================================================================
-Resource* ResourceManager::ForceLoadResource(const AnyString& path, ResourceType type)
-{
-	auto filename = io::FilenameFromPath(path);
-	auto resource = GetResource(filename, type);
-	if(!resource)
-	{
-		resource = AddResource(filename, path);
-		resource->filename = filename;
-		resource->path = path;
-		resource->pak_index = INVALID_PAK;
-	}
-	auto res = (Resource*)resource;
-	if(!res->IsLoaded())
-	{
-		if(res->subtype == (int)ResourceSubType::Unknown)
-		{
-			switch(type)
-			{
-			case ResourceType::Texture:
-				res->subtype = (int)ResourceSubType::Texture;
-				break;
-			case ResourceType::Mesh:
-				res->subtype = (int)ResourceSubType::Mesh;
-				break;
-			case ResourceType::Sound:
-				res->subtype = (int)ResourceSubType::Sound;
-				break;
-			default:
-				assert(0);
-				break;
-			}
-		}
-		LoadResource(res);
+		throw Format("ResourceManager: Missing %s '%s'.", type_name, filename);
 	}
 	return res;
+}
+
+Resource* ResourceManager::TryGetResource(const AnyString& filename, ResourceType type)
+{
+	res_search.filename = filename;
+	auto it = resources.find(&res_search);
+	if(it != resources.end())
+	{
+		assert((*it)->type == type);
+		return *it;
+	}
+	else
+		return nullptr;
+}
+
+void ResourceManager::LoadResource(Resource* res)
+{
+	assert(res);
+	if(res->state != ResourceState::Loaded)
+		LoadResourceInternal(res);
+}
+
+void ResourceManager::ApplyRawTextureCallback(TaskData& data)
+{
+	TEX& tex = *(TEX*)data.ptr;
+	Texture* res = (Texture*)data.res;
+	tex = res->tex;
+}
+
+void ResourceManager::ApplyRawSoundCallback(TaskData& data)
+{
+	SOUND& sound = *(SOUND*)data.ptr;
+	Sound* res = (Sound*)data.res;
+	sound = res->sound;
 }

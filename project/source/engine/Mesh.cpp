@@ -551,7 +551,7 @@ void Mesh::GetKeyframeData(KeyframeBone& keyframe, Animation* anim, uint bone, f
 //=================================================================================================
 // Wczytuje dane wierzcho³ków z modelu (na razie dzia³a tylko dla Vec3)
 //=================================================================================================
-VertexData* Mesh::LoadVertexData(StreamReader& stream)
+void Mesh::LoadVertexData(VertexData* vd, StreamReader& stream)
 {
 	// read and check header
 	Header head;
@@ -566,8 +566,6 @@ VertexData* Mesh::LoadVertexData(StreamReader& stream)
 
 	// skip camera data
 	stream.Skip(sizeof(Vec3) * 2);
-
-	VertexData* vd = new VertexData;
 	vd->radius = head.radius;
 
 	// read vertices
@@ -583,8 +581,6 @@ VertexData* Mesh::LoadVertexData(StreamReader& stream)
 		throw "Failed to read triangle data.";
 	vd->faces.resize(head.n_tris);
 	stream.Read(vd->faces.data(), size);
-
-	return vd;
 }
 
 //=================================================================================================

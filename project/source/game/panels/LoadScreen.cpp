@@ -29,7 +29,7 @@ void LoadScreen::Draw(ControlDrawData*)
 void LoadScreen::LoadData()
 {
 	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("loadbar_bg.png", tLoadbarBg);
-	tex_mgr.AddLoadTask("loadbar.png", tLoadbar);
-	tex_mgr.AddLoadTask("load_bg.jpg", tBackground);
+	tLoadbarBg = tex_mgr.GetLoadedRaw("loadbar_bg.png");
+	tLoadbar = tex_mgr.GetLoadedRaw("loadbar.png");
+	tBackground = tex_mgr.GetLoadedRaw("load_bg.jpg");
 }

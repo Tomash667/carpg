@@ -258,7 +258,7 @@ void Game::LoadMusic(MusicType type, bool new_load_screen)
 					sound_mgr.AddTaskCategory(txLoadMusic);
 				first = false;
 			}
-			sound_mgr.AddLoadTask(music->music);
+			sound_mgr.Load(music->music);
 		}
 	}
 }

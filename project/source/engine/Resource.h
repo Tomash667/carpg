@@ -14,7 +14,8 @@ enum class ResourceType
 	Unknown,
 	Texture,
 	Mesh,
-	Sound
+	VertexData,
+	SoundOrMusic
 };
 
 //-----------------------------------------------------------------------------
@@ -27,10 +28,12 @@ struct Resource
 	cstring filename;
 	ResourceState state;
 	ResourceType type;
-	int subtype;
 	int pak_index;
 	uint pak_file_index;
 
+	virtual ~Resource()
+	{
+	}
 	bool IsFile() const { return pak_index == INVALID_PAK; }
 	bool IsLoaded() const { return state == ResourceState::Loaded; }
 };
@@ -39,6 +42,10 @@ struct Resource
 struct Texture : public Resource
 {
 	TEX tex;
+
+	Texture() : tex(nullptr)
+	{
+	}
 };
 typedef Texture* TexturePtr;
 
@@ -47,6 +54,10 @@ struct Sound : public Resource
 {
 	SOUND sound;
 	bool is_music;
+
+	Sound() : sound(nullptr), is_music(false)
+	{
+	}
 };
 typedef Sound* SoundPtr;
 
@@ -64,3 +75,7 @@ struct TexId
 	}
 	explicit TexId(const string& id) : id(id), tex(nullptr) {}
 };
+
+//-----------------------------------------------------------------------------
+typedef Mesh* MeshPtr;
+typedef VertexData* VertexDataPtr;

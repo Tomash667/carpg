@@ -569,12 +569,12 @@ void Game::SetupCamera(float dt)
 				}
 				if(p.type == SCHODY_GORA)
 				{
-					if(RayToMesh(to, dist, pt_to_pos(lvl.staircase_up), dir_to_rot(lvl.staircase_up_dir), vdSchodyGora, tout) && tout < min_tout)
+					if(vdSchodyGora->RayToMesh(to, dist, pt_to_pos(lvl.staircase_up), dir_to_rot(lvl.staircase_up_dir), tout) && tout < min_tout)
 						min_tout = tout;
 				}
 				else if(p.type == SCHODY_DOL)
 				{
-					if(!lvl.staircase_down_in_wall && RayToMesh(to, dist, pt_to_pos(lvl.staircase_down), dir_to_rot(lvl.staircase_down_dir), vdSchodyDol, tout) && tout < min_tout)
+					if(!lvl.staircase_down_in_wall && vdSchodyDol->RayToMesh(to, dist, pt_to_pos(lvl.staircase_down), dir_to_rot(lvl.staircase_down_dir), tout) && tout < min_tout)
 						min_tout = tout;
 				}
 				else if(p.type == DRZWI || p.type == OTWOR_NA_DRZWI)
@@ -609,7 +609,7 @@ void Game::SetupCamera(float dt)
 							pos.x -= 0.8229f;
 					}
 
-					if(RayToMesh(to, dist, pos, rot, vdNaDrzwi, tout) && tout < min_tout)
+					if(vdNaDrzwi->RayToMesh(to, dist, pos, rot, tout) && tout < min_tout)
 						min_tout = tout;
 
 					Door* door = FindDoor(ctx, Int2(x, z));
@@ -709,7 +709,7 @@ void Game::SetupCamera(float dt)
 					min_tout = tout;
 			}
 
-			if(RayToMesh(to, dist, door.pos, door.rot, vdNaDrzwi, tout) && tout < min_tout)
+			if(vdNaDrzwi->RayToMesh(to, dist, door.pos, door.rot, tout) && tout < min_tout)
 				min_tout = tout;
 		}
 	}

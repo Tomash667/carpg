@@ -1729,12 +1729,7 @@ void Game::OnCleanup()
 	CleanupItems();
 	CleanupSpells();
 	DeleteElements(musics);
-
-	// vertex data
-	delete vdSchodyGora;
-	delete vdSchodyDol;
-	delete vdNaDrzwi;
-
+	
 	// teren
 	delete terrain;
 	delete terrain_shape;

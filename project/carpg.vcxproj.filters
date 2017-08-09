@@ -612,6 +612,9 @@
     <ClCompile Include="source\engine\MeshInstance.cpp">
       <Filter>2. engine</Filter>
     </ClCompile>
+    <ClCompile Include="source\engine\VertexData.cpp">
+      <Filter>2. engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1199,9 +1202,6 @@
     <ClInclude Include="source\core\Core.h">
       <Filter>1. core</Filter>
     </ClInclude>
-    <ClInclude Include="source\core\VertexData.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
     <ClInclude Include="source\core\Algorithm.h">
       <Filter>1. core</Filter>
     </ClInclude>
@@ -1215,6 +1215,9 @@
       <Filter>2. engine</Filter>
     </ClInclude>
     <ClInclude Include="source\engine\MeshInstance.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\VertexData.h">
       <Filter>2. engine</Filter>
     </ClInclude>
   </ItemGroup>

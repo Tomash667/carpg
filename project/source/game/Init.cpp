@@ -498,6 +498,7 @@ void Game::AddLoadTasks()
 	auto& res_mgr = ResourceManager::Get();
 	auto& tex_mgr = ResourceManager::Get<Texture>();
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
+	auto& vd_mgr = ResourceManager::Get<VertexData>();
 	auto& sound_mgr = ResourceManager::Get<Sound>();
 
 	// gui textures
@@ -573,9 +574,9 @@ void Game::AddLoadTasks()
 
 	// physic meshes
 	res_mgr.AddTaskCategory(txLoadPhysicMeshes);
-	mesh_mgr.AddLoadTask("schody_gora_phy.qmsh", vdSchodyGora);
-	mesh_mgr.AddLoadTask("schody_dol_phy.qmsh", vdSchodyDol);
-	mesh_mgr.AddLoadTask("nadrzwi_phy.qmsh", vdNaDrzwi);
+	vdSchodyGora = vd_mgr.AddLoadTask("schody_gora.phy");
+	vdSchodyDol = vd_mgr.AddLoadTask("schody_dol.phy");
+	vdNaDrzwi = vd_mgr.AddLoadTask("nadrzwi.phy");
 
 	// models
 	res_mgr.AddTaskCategory(txLoadModels);

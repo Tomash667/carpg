@@ -1,14 +1,21 @@
 ﻿CURRENT:
 + rename X_phy.qmsh -> X.phy
 + there is some code depending on Resource::filename, and using == operator!
++ try to fix LoadScreen function/modes mess
 + WHAT TO LOAD AND WHERE
 	+ gui textures - at startup
 	+ else when required
 	+ human mesh/startup items on opening create character screen - show small loading window
+	+ currently level music is loaded at instant
+- update create character screen, for single frame there is no doll
+? testing
+	? sound/music looping
+	? all
 ===============================================================================================================
 NEW:
 + rename Bullet -> Projecticle (or other)
 + BaseBullet for Bullet, save by base, no mesh etc
++ Resources - hashing
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

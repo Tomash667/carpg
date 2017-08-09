@@ -140,7 +140,7 @@ struct Mesh : public Resource
 
 	void SetupBoneMatrices();
 	void Load(StreamReader& stream, IDirect3DDevice9* device);
-	static VertexData* LoadVertexData(StreamReader& stream);
+	static void LoadVertexData(VertexData* vd, StreamReader& stream);
 	Animation* GetAnimation(cstring name);
 	Bone* GetBone(cstring name);
 	Point* GetPoint(cstring name);

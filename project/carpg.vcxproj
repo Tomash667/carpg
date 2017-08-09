@@ -142,7 +142,6 @@
     <ClInclude Include="source\core\TextWriter.h" />
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
-    <ClInclude Include="source\core\VertexData.h" />
     <ClInclude Include="source\engine\Mesh.h" />
     <ClInclude Include="source\engine\Engine.h" />
     <ClInclude Include="source\engine\KeyStates.h" />
@@ -153,6 +152,7 @@
     <ClInclude Include="source\engine\ResourceManager.h" />
     <ClInclude Include="source\engine\Terrain.h" />
     <ClInclude Include="source\engine\TerrainTile.h" />
+    <ClInclude Include="source\engine\VertexData.h" />
     <ClInclude Include="source\engine\VertexDeclaration.h" />
     <ClInclude Include="source\ErrorHandler.h" />
     <ClInclude Include="source\game\Collision.h" />
@@ -351,6 +351,7 @@
     <ClCompile Include="source\engine\ResourceManager.cpp" />
     <ClCompile Include="source\engine\Terrain.cpp" />
     <ClCompile Include="source\engine\TerrainTile.cpp" />
+    <ClCompile Include="source\engine\VertexData.cpp" />
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\game\Ai.cpp" />
     <ClCompile Include="source\game\ConsoleCommands.cpp" />

@@ -88,6 +88,7 @@ typedef FMOD::Sound* SOUND;
 #endif
 struct Mesh;
 struct MeshInstance;
+struct VertexData;
 
 //-----------------------------------------------------------------------------
 // Delegates
