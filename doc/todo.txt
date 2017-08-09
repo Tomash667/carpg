@@ -1,4 +1,5 @@
 ﻿CURRENT:
++ rename X_phy.qmsh -> X.phy
 + there is some code depending on Resource::filename, and using == operator!
 + WHAT TO LOAD AND WHERE
 	+ gui textures - at startup
@@ -8,7 +9,6 @@
 NEW:
 + rename Bullet -> Projecticle (or other)
 + BaseBullet for Bullet, save by base, no mesh etc
-+ dynamic loading in background (for example items/hair on character creation)
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
@@ -24,6 +24,8 @@ VERIFY:
 - verify dialogs ending with end/restart
 - without human flag and mesh crash when spawned, log error
 - 21:35:32 WARN  - NM_TRANSFER: Unknown packet 104.
+- przenoszenie do walki gdy jesteś w środku areny
+- dźwięki areny gdy się na niej jest ale nie bierze udziału
 ===============================================================================================================
 FAR FAR TODO:
 + toolset/menu don't lock cursor in windowed mode
@@ -91,12 +93,10 @@ POTRZEBA PRZYKŁADÓW:
 - debug ai lag is too big!
 - engine refactoring (resMgr - change var name)
 
-+ HaveResources
 + multiple same buildings (except house) are not supported
 	support for more then one blacksmith etc
 	need fix Game::GetMapPosition (no connection between CityBuilding & InsideBuilding)
 	... more
-+ better auto_talk, unit can spawn on other side of level and find path to nearest player (currently it uses distance)
 + not hardcoded
 	+ better stock script (ilość kasy)
 	+ spawned units (citizen, villager, guard)
@@ -120,7 +120,6 @@ POTRZEBA PRZYKŁADÓW:
 + better ResourceManager (first thread "load human.qmsh" -> second: create vb,ib & return -> create, lock & return -> fill & return -> unlock etc)
 + list of music per location
 
-+ propably i wrongly use fmodex, all music handles are always open
 + divide Object to StaticObject and Object, this will allow fast loading of current level ?
 + same armor for guards / militia (maybe with some logo)
 	currently they have too bad armor in city (padded & hide)
@@ -132,16 +131,11 @@ POTRZEBA PRZYKŁADÓW:
 
 + keyword group name
 + check unit mesh n_subs with tex override count
-+ skip to next item in loading text file
 + rework loading item script to reuse if block
 + remove spell int id
 + start arrow trail from back (currently its from start and there is large gap)
 + logging group (Engine, ResourceManager)
-+ resource manager background mode
 
-+ indoors different y (whole room)
-+ cave different y
-+ indoors slopes
 + portals with textures
 + enemies inside building
 	- AI_HitReaction don't work inside
@@ -149,35 +143,23 @@ POTRZEBA PRZYKŁADÓW:
 + GAME_KEY (unlock_cursor, open_menu)
 + put PlayerInfo* inside PlayerController and remove GetPlayerInfo from NetChangePlayer uses
 ? perks for ap/sp at 20,40,60,80,100,etc 60,70,80,90,100 for specific skill/attribute (but there need to be hell a lot of perks)
-+ easy mode (spanie w karczmie leczy wszystko, podróż też, jedzenie leczy więcej, jest łatwiej itp)
 + losowe obiekty
-+ optymalizacje quadtree
 + zatrzymywanie muzki gdy gra jest zminimalizowana w trybie fullscreen
 + heal a death_screen
 + ustawienia console_pause, menu_pause, journal_pause
 + inactive_update w konsoli
 + wyrzucanie przedmiotów nie ustawia jednego przedmiotu w drugim tylko obok
-+ warp merchant, food_seller, blacksmith, alchemist, barracks, training_grounds (warp front inn)
 + posłaniec po dostarczeniu listu niech opuszcza miasto
 + klawisz Przełącz bieganie/chodzenie
 + paker niech kopiuje pdb i exe; paker for new system
 + zapisywanie wczytywanie w czasie contest/tournament
 + lepszy report o crashu
 + ujednolicenie formatu dat
-+ dźwięki areny gdy się na niej jest ale nie bierze udziału
-+ przenoszenie do walki gdy jesteś w środku areny
 + milicja w wiosce
 + debug key - show item under cursor id, quest id; allow pick encounter
 ? instancing
 + dużo drzew w lesie
 + preload shaderów
-+ matCombined w SceneNode
-+ hero profiles [warrior=light(light armor/bow/any weapon), medium=(medium armor/bow/any weapon/shield)]
-+ GetBetterItem allow change weapon/armor type (require hero profiles, otherwise warrior will always use first armor)
-+ IsBetterItem based on other things then raw damage/defense for weapon/armor
-+ ? mithril better then magical
-+ non magical mithril/adamant
-+ athletics skill (need text in attributes)
 + crash reporting
 	+ new window
 	+ errors & console (should be parent of console)
@@ -195,29 +177,19 @@ POTRZEBA PRZYKŁADÓW:
 NOWE:
 + kto może rekrutować, zmieniać ai
 + podział na AddGold i AddItem
-+ ekran wczytywania w SP i MP
-+ przycisk anuluj w czasie łączenia
 + animacja przesuwania postaci przy ożywianiu
 + lepsze generowanie obiektów
-+ więcej kamieni szlachetnych, sztabek
-+ wieża magów w górę a nie w dół
 + lepsze generowanie podziemi (połączenia pokoi i korytarzów, póki co drogi nie mogą się zapętlać)
 + żelazne golemy prawie nigdy nie występują
-+ PUT_ITEM, GET_ITEM na uint
 + autozapis (w hardcore)
-+ podzielenie WinMain na kilka kawałków żeby niepotrzebnie nie leżały zmienne na stosie
 + paker/install script 'move'
-+ poziom trudności (łatwy/normalny/realistyczny)
-+ jedzenie przywraca życie na normalnym, na realistycznym głód, na lekkim leczy więcej
 + predykcja efektów miksturki po stronie klienta?
 + myśliwy
 + zwłoki w podziemiach
 + ekwipunek, możliwość ustawienia po_akcji gdy chowa broń, możliwość zmiany po_akcji
 + AIController a potion, też potrzebuje lock; trzeba zrobić klasę ItemContainer która przechowuje lock i wskaźnik na wagę; wiele akcji zmienia lock a nie są sprawdzane (np wyrzucanie przedmiotów
 	ale to chyba nie da się robić gdy jest lock, można dodać asserta)
-+ zrobić porządek z zasięgiem dźwięku
 ? osobny vector dla net_changes_player w PlayerInfo
-+ mniejsze sceny lasu i wiosek. W lesie muszę kamerę kierować na dół bo klatkuje.
 + zmiana multisamplingu nie ma wpływu na wygenerowane obrazki przedmiotów
 + możliwość nie wyjmowania tarczy
 	+ po przerwaniu akcji z używalnym obiektem, ma ten przedmiot w dłoni
@@ -225,7 +197,6 @@ NOWE:
 + przechowywanie przedmiotu do użycia w SLOT_TO_USE rozwiązało by wiele problemów z Inventory::lock
 + lepsze rysowanie przedmiotów na ziemi, sortowanie po modelu, bez CommitChanges jeśli jest 1 materiał
 + customowy box dla np grzyba żeby mógł być częściowo w ziemi
-+ lepszy picking czego gracz chce użyć
 + tryb bezpiecznego ataku (nie można trafić neutralnych)
 + animacja podnoszenia przedmiotu (znika w punkcie)
 + tryby wczytywania: na początku, gdy potrzeba, wczytywanie i zwalnianie
@@ -237,7 +208,6 @@ NOWE:
 + obchodzenie dookoła celu, odskok w bok, animacja odskoku
 + lepszy pathfinding, powiązanie tile i local
 + punkt z którego wydobywa się dźwięk w czasie używania obiektu
-+ warp to player
 + animacja ust gdy przestaje gadać
 + lepszy system generowania jednostek
 ? czy można przeszkadzać komuś w walce gadając z nim
@@ -248,11 +218,9 @@ NOWE:
 + coś lepszego niż visual leak detector
 + F2_MELEE dla zwykłych jednostek
 + blokada widoku przez drewno u kowala
-+ stalowy łuk, łuk bloczkowy
 + rzucanie głazami, włóczniami przez giganty
 + SSAO http://www.theorangeduck.com/page/pure-depth-ssao
 + waving trawy itp http://mbmodwiki.ollclan.eu/Swyter%27s_Simple_Waving
-+ dla zmiennych w konfigu, przechowywanie wartości aktualnej i z konfigu, wiadomo o co chodzi xD
 + nie wiem na ile to będzie potrzebne ale można renderować splits że jest kilka pod rząd, eksportowanie może układać tak że będą pod rząd
 + możliwość nie wczytywania normalmap i specularmap
 + bow_instanced do ObjectPool
@@ -263,10 +231,7 @@ NOWE:
 + jaki algorytm dla StrechRect
 + optymalizacja, spr czy rysować trail particle emitter / electro / portal / area
 + synchronizacja animacji chodzenia/obracania z szybkością (jak ktoś np klika co chwile Q,Q,Q,Q)
-+ pozbyć się D3DXMESH z Terrain
 + texture override nie pozwala na inną normalmapę/specular, trzeba by wymyśleć coś nowego
-+ wireframe mode
-+ plik z domyślnymi ustawieniami default.cfg
 + tłumaczenie w bazie danych
 + zmiana języka bez restartu
 + materiały dla podziemi jak Mesh::Submesh
@@ -274,10 +239,6 @@ NOWE:
 + nie wyświetlaj więcej powiadomienia o tej wersji
 + usunięcie niepotrzebnego kodu z eMesh, renderowanie przedmiotów nowym kodem
 + repozytorium na pdb i exe
-+ dynamiczne wczytywanie tekstur/modeli
-+ możliwość zresetowania pojedyńczego ustawienia klawiszy
-+ na pewno chcesz zresetować Sterowanie/Ustawienia ?
-+ (?) w rogu który opisuje opcje i sterowanie
 + naprawiony kąt w grze (niech 0 wskazuje w prawo)
 + coś lepszego niż fallback
 + enum ONLINE_MODE { SINGLE_PLAYER, CLIENT, SERVER };
@@ -286,7 +247,6 @@ NOWE:
 + lepsza walidacja wczytywania zapisów (póki co crashuje zazwyczaj :S)
 + optymalizacja kolizji (jeśli CollisionObject jest ROTATED_RECTANGLE z rot=0,PI/2,PI,3/2PI to niech zmienia go na RECTANGLE
 + chowanie wyjetej strzaly
-+ ikony budynków na minimapie
 + ustawienia jasności/gammy, trzeba zobaczyć jak to jest w innych grach zrobione
 + better handling errors in language, on error skip to next object
 + inverse kinematics
@@ -296,8 +256,6 @@ NOWE:
 + class trainers (that require having starting skills/attributes of that class, increase base and allow special skills)
 + remove InfoBox from GamePanel
 + ambient sounds
-+ less laggy grass, configuration
-+ longer aiming with bow increase accuracy, scale down sight
 + kompresja pak https://code.google.com/p/lz4/
 
 ZMIANY NAZW:
@@ -318,17 +276,8 @@ DIALOGI:
 	 Tarcza: 10
 	 Suma:
 * handel jak w morrowindzie
-* HERO nie wydawanie całej kasy na jeden przedmiot, bo potem będzie bieda, tak samo z kredytem; kupi przedmiot za 100k a potem nie ma na miksturki
 * ilość tekstów nie zahardcodowana w exe tylko odczytywana z pliku
 * zapisywanie obiektów/postaci jako index/hash
-
-WALKA:
-- blokowanie bronią
-- tarcza blokuje min 25% jeśli jest wyciągnięta
-- zablokowanie ciosu powoduje wytrącenie broni
-- można przerwać normalny atak i zablokować
-* parowanie
-* cios w plecy
 
 * rozmiar broni/tarczy/łuku zależy od skali postaci
 * % poziom trudności
@@ -341,7 +290,6 @@ WALKA:
 * własne funkcje do rysowania tekstu i liczenia rozmiaru
 * min, max światła tak jak mgły
 * occlusion query
-* pozbyć się warningów z shaderów
 * skrzynie używane przez kupców
 * przestępstwa
 * kradzież
@@ -381,7 +329,6 @@ WALKA:
 * celowanie z łuku
 * konfiguracja wbudowanych tekstur np [DeathBkg = black.jpg]
 * nazwy karczm i innych budynków
-* kopanie
 * stackowanie przedmiotów
 * więzienie
 * lepsze uciekanie
@@ -395,48 +342,28 @@ WALKA:
 * lepsza fizyka postaci
 * nowsza wersja biblioteki FMOD, bullet physics, raknet (?)
 * warianty obiektów (np. druga tekstura beczki, od razu w modelu)
-* quadtree dla statycznych obiektów
 * połączenie selected_target, selected_unit, before_player_ptr
 * lepszy generator przedmiotów (uwzględnianie min i max ceny)
 * podział na particle emitter i particle emitter base
 * dwie tekstury ścian, np. dziura czy ozdoba
 * lepsze generowanie poziomów (sprawdza pf czy da się przejść albo zwiększanie rozmiaru obiektów o margines postaci wokół)
 * algorytm rot rect - rect
-* lepsza obsługa błędów w cfg (zwraca info o błędzie a nie tylko domyślną wartość)
 * + i - grup jednostek (np gobliny szybko się mnożą, magowie wolno ale są silni itp)
 * w SpawnUnitNearLocation i SpawnUnitInsideRoom można użyć jakiegoś rozkładu czy czegoś a nie losowości (poisson disc)
 * SpawnUnitInsideRoom najpierw niech zrobi GatherCollisionObjects dla pokoju a potem przekazuje dla pojedyńczych jednostek
-* wnęki w krypcie, krąg ochronny w wieży maga, stos kości w bazie nekromantów
 * materiały obiektów / ścian itp
 * dźwięk przyczepiony do głowy
 * rozbijanie obozu
 * zwiadowcy grupy, rozmiar grupy
-* kupa złota, skarby w labiryncie na końcu
-* obozy w jaskiniach/podziemiach/lasach itp
-* echo dla skryptów (np bind) on/off
-* elemental affinity (atut, kilka poziomów) czary żywiołu są tańsze, odporność, efekty graficzne
-* uwzględnianie celu w nazwie podziemi (labirynt, fort)
-* podział na jednostkę na aktualnej mapie i na globalną (np animation_state, trafil i inne są tylko tymczasowe)
-* przy rzucaniu czarów uwzględnianie rozmiaru wroga
 * ubywanie atrybutów ze starości
 * lepszy generator miasta
-* wbudowany notepad [edit]
-* konwersja configu i zapisów ze starej wersji [przykład w system.txt]
 * w pliku konfiguracyjnym ścieżki do data/saves/screenshots
-* poziomy trudności (łatwy - brak frendly fire, normalny - połowa frendly fire, trudny - pełny frendly fire)
-* celowanie magów/łuczników do niskich/wysokich postaci
 * efekt ładowania czaru w dłoni
 * lepszy system cząsteczek (obracanie)
-* zwalnanie danych przy zmianie poziomu
-* ustandaryzowane zasięgi głośności (min,max)
 * zasięg okrzyku zależny od dźwięku
-* rozbrajanie
 * lepsze rozpędzanie/zwalnianie postaci (z animacją przejściową chodzenia/biegania)
-* sprawdzanie czy wróg cię widzi frustrumem i zasięg słyszenia jeśli biegasz/chodzisz
 * crc zapisów
-* refid cząsteczek jest niepotrzebny
 * używanie bazowy obiektów dla wszystkiego tylko trochę lepiej (teraz np w zapisie jest multum mur.qmsh zapisane)
-* handel pomiędzy postaciami
 * podtyp w BaseItem żeby nie trzeba było rzutować i sprawdzać w SortTraderItems
 * więcej kolorów włosów, plik hair_color.txt
 * lepsze wybór opcji dialogowej
@@ -447,9 +374,7 @@ WALKA:
 * światło w miejscu eksplozji
 * animowany pasek wczytywania?
 * własne renderowanie tekstu (brak kropek w nowej linijce tak jak jest to teraz)
-* wspinanie się po ścianie, używanie liny
 * więcej możliwości otwierania drzwi, fizyka, animacja
-* w wieży maga na samym dole drzwi, schody w górę
 * możliwość wyboru jaką klase chcesz trenować
 * wymiana pomiędzy postaciami
 * rzucanie przedmiotem w ramach handlu
@@ -460,67 +385,42 @@ WALKA:
 * możliwość zmiany pozycji kursora podczas wpisywania tekstu, także w konsoli
 * więcej informacji o tym dlaczego zapis/wczyt się nie powiódł
 * jeden pancerz dla wszystkich i tylko używanie różnych tekstur + możliwe podmiany modelu w konfigu dla każdego z osobna
-* odkryć co jest nie tak z animacją trafiony_BUG, skopiowanie od tak tej klatki daje taki sam efekt
 * pozycja głowy dla napisów odczytywana z modelu
 * kilka modeli tego samego obiektu
 * współdzielenie btCollisionShape
-* wspólna klasa dla danych lokacji jak i wnętrza budynków (jednostki, obiekty, drzwi, itp)
-	bez tych wskaźników na wektory w Game
-* używanie drzwi aby wejść/wyjść do/z domu
 * osobna fizyka dla LevelContext
-* nie podoba mi się to przekazywanie wszędzie LevelContext, lepiej użyć jakiejś zmiennej w Game
 * lepszy system oświetlenia dla budynków (obecnie max 3 światła na cały budynek)
 * struct ISaveable { virtual void Save(); virtual void Load(); }
 	struct File { void operator << (vector<ISaveable>& v) { ... } }
 * zapisywanie kontekstu a nie wszystkiego osobno
 * poziomy trudności pułapek (różne pułapki [słaba, normalna, silna, zabójcza])
-* możliwość budowy budynków (dom, karczma, itp)
 * nazwane drużyny
-* odkupienie/zajęcie budynku
 * gildie
 * lepsze dźwięki zależne od broni trafiającej
 	sword block metal
 	arrow block wood
 * lepsze generowanie przedmiotów w sklepie, zapamiętywanie przez jakiś czas
 * oświetlenie na zewnątrz dla terenu, pod małym kątem jest biała trawa [na ziemie i trawie zato widać trawę pod kątem, mipmaping?]
-* kolizje fizyki 3d
 * potwory/bandyci/nic w jaskini/lesie
-* attack_range zależne od rodzaju broni (sztylet mniejszy bo nie trafia itp)
-* różne charaktery bohaterów [prosty wojownik, złośliwy łotrzyk]
 * GUI_Layer::allow_controls allow_close
 * proste w użyciu przesuwanie postaci z miejsca na miejsce, animacja przesuwania w wolne miejsce przy ożywianiu
 * lepsze połączenie pf kratkowego i lokalnego (np idzie od razu do ostatniego celu w lokalnym jeśli się da a nie podcelów, zaokrąglanie)
 * zasoby drużynowe
-* właściciel przedmiotu
-* konsola - modyfikacja statystyk dowolnej postaci, przedmiotu, obiektu itp
-* oszukiwanie przy podziale łupu
-* charakter postaci, zmiana
-* podnoszenie przedmiotów przez towarzyszy
-* sprzedaż przedmiotów przez towarzyszy
 * podział łupów w karczmie lub bazie
 * szybka podróż do środka miasta, opuszczenie przez kliknięcie na mapie
-* odkupowanie przedmiotów od towarzyszy
 * przy podziale łupów automatyczna sprzedaż przedmiotów do sklepu, uzupełnianie miksturek, wymiana przedmiotów, podział złota
-* różne priorytety kupowania przedmiotów dla bohaterów (dla łowcy łuk, dla woja broń), preferencje rodzaju broni, pancerza itp
 * interpolacja pozycji postaci i obrotów
 * inny system ekwipunku [char doll, sloty na przedmioty osobno, modele przedmiotów obracające się, skalowalny, konfigurowanie rozmiaru ikon przedmiotów 64,128,256 itp]
 * konfiguracja domyślnych wartości skryptów [addunit.level = max, addunit.count = random(2,3), restore addunit.in_arena]
 * wędrowanie postaci po mieście jak w gta
-* niepiśmienność barbarzyńcy i ew łowcy [wychowany przez wilki]
 * możliwość startu jako mieszkaniec miasta
 * RotatedRectanglesCollision jest jakieś zbugowanie w Collide(Box2d, bez rot), trzeba było dać -rot, trzeba sprawdzić czy działa w innych funkcjach dobrze Collide(Box2d, rot), GenerateDungeonObjects
 * spotykanie tych samych bohaterów w różnych miejscach
 * odchylenie przy strzelaniu (gracz, ai, pułapki)
 * podchodzenie w czasie dialogu, wyciąganie broni, grożenie, proszenie
-* reakcja na wyciągnięcie bronii
 * lepsze generowanie podziemi tak że ułożenie budynków ma sens [kuchnia,skarbiec,sypialnia,stróżówka]
-* przemieszczanie się wrogów i obozy tak jak miało być w 0.2
 * destruktor Unit
 * generowanie postaci na pozycji / miasta na mapie zawsze działające [przesuwa tam gdzie wolne miejsce, bo używając losowości to i za 1000 razem nie trafi w to pole]
-* ukryte przejścia
-* skrytki
-* drzwi na wajche, opuszczane mosty/kraty
-* skrzynia zamknięta na klucz
 * glify
 * inactive_update -> pause on lost focus
 * wykrywanie/rozbrajanie pułapek [oznaczanie dla innych, ai łotrzyka]
@@ -532,14 +432,10 @@ WALKA:
 * lepsze generowanie pułapek
 * wchodzenie po schodach w mieście
 * CanSee (lepsze, uwzględniające teren)
-* różne rozmiary terenu
 * możliwość zapisywania i wczytywanie wszędzie
 * CAPSLOCK - przełącz pomiędzy bieganiem a chodzeniem
-* skalowalny poziom trudności zadań [odzyskaj paczkę od słabych, normalnych, silnych wrogów]
 * połączona obsługa zadań w EnterLocation i EnterLevel
 * system klas dla npc [np klasa drwal, i potem tylko ustawiam że to drwal 5 poziomu, bandyta któregoś, mieszkanie któregoś]
-* identyfikator obiektów [np Unit] na początku żeby nie przewijać w debugerze gdzieś do końca [u jednostki do np. data]
-* animacje w osobnych plikach
 * różne rodzaje tekstur podziemi
 * więcej artefaktów
 * lepsze renderowanie podziemi, po teksturze
@@ -549,7 +445,6 @@ WALKA:
 * zmiana koloru włosów / typu
 * uwzględnianie w dialoga ilości osób w drużynie [zabić go, zabić ich]
 * FindPlaceForLocation - niech szuka miejsca a nie losowo sprawdza czy można tu postawić lokację
-* lepsze celowanie czego chce się użyć czy pogadać [problemy najlepiej widać w karczmie jak stoją koło krzeseł]
 * flagi postaci [nie można okraść, pobić, zabić]
 * bandyci pobierają złoto z kasy drużynowej/od wszystkich
 * inny system dla postaci (np daje wojownik 8 poziomu i samo ustawia statystyki itp)
@@ -567,8 +462,6 @@ WALKA:
 * nie wysyłanie klientom informacji o wszystkich lokacjach
 * uniwerslny ekran wczytywania działający w single i multi
 * większy limit danych w PrepareLevelData (niektóre rzeczy są zapisywane jako byte - jak będzie kompresja to można dawać worda :3)
-* lepsze sprawdzanie danych poziomu (stan drzwi, pozycja na mapie itp) puki co jak chcą to niech se hakierują
-* lepsza interpolacja pozycji postaci, bez prev_pos
 * krwawienie od ran
 * rzyganie od trucizny
 * zapisywanie bool jako flagi (Unit, PlayerController)
@@ -583,9 +476,6 @@ WALKA:
 * więcej animacji dla rozmowy (tak, nie, prosi, grozi)
 * symbole na pancerzu i tarczy (używane np przez straż)
 * konfiguracja różnych zmiennych w konfigu (STARTUP_TIMER)
-* hardcore+ (raz na wersję 0.X), potem nie można wziąść tej opcji; dostępne po ukończeniu wszystkich questów na normalnym lub hardcore
-* sekret z projektem drahma (zaczepia cię losowy gostek i pyta "co mówi jeden bałwanek do drugiego?", jeśli INT<50 "O co ci chodzi?","Co kurwa?", jeśli <75 dodatkowo "Zamarzam", jeśli większe to 
-	"czuję marchewkę" i gdzieś cie prowadzi)
 * zakaz stawiania ścian na blokadzie przy generowaniu mapy, sporo to uprości, otoczony murem
 * własny alokator pamięci, sprawdzanie mem leak, heap corruption itp
 * do przeczytania o infinite game http://www.gamedev.net/page/resources/_/creative/game-design/the-infinite-game-r3045
@@ -604,7 +494,6 @@ WALKA:
 * quickstart - load
 * wysyłanie komunikatu o stanie broni, obecnie może u k być schowana a u s wyjęta, same komunikaty pośrednie nie wystarczają
 	np s wysyła że zaczyna wyjmować ale potem anuluje i zaczyna coś robić, k nie ma 100% pewności czy nie zdążył wyjąść
-* przeczytać http://www.realtimerendering.com/
 * zapisane postacie które można wybrać przy wybieraniu postaci lub stworzenie nowej
 * pajączki * te kolczaste
 

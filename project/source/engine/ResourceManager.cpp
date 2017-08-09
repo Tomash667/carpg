@@ -64,7 +64,7 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 			else
 			{
 				cstring path = Format("%s/%s", dir, find_data.cFileName);
-				BaseResource* res = AddResource(find_data.cFileName, path);
+				Resource* res = AddResource(find_data.cFileName, path);
 				if(res)
 				{
 					res->pak_index = INVALID_PAK;
@@ -193,7 +193,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 					return false;
 				}
 
-				BaseResource* res = AddResource(file.name.c_str(), path);
+				Resource* res = AddResource(file.name.c_str(), path);
 				if(res)
 				{
 					res->pak_index = pak_index;
@@ -275,7 +275,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 				return false;
 			}
 
-			BaseResource* res = AddResource(file.filename, path);
+			Resource* res = AddResource(file.filename, path);
 			if(res)
 			{
 				res->pak_index = pak_index;
@@ -294,7 +294,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 }
 
 //=================================================================================================
-BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
+Resource* ResourceManager::AddResource(cstring filename, cstring path)
 {
 	assert(filename && path);
 
@@ -303,7 +303,7 @@ BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
 		return nullptr;
 
 	if(!last_resource)
-		last_resource = new AnyResource;
+		last_resource = new Resource;
 	last_resource->filename = filename;
 	last_resource->type = type;
 
@@ -311,7 +311,7 @@ BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
 	if(result.second)
 	{
 		// added
-		AnyResource* res = last_resource;
+		Resource* res = last_resource;
 		last_resource = nullptr;
 		res->data = nullptr;
 		res->state = ResourceState::NotLoaded;
@@ -321,7 +321,7 @@ BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
 	else
 	{
 		// already exists
-		AnyResource* res = *result.first;
+		Resource* res = *result.first;
 		if(res->pak_index != INVALID_PAK || res->path != path)
 			Warn("ResourceManager: Resource '%s' already exists (%s; %s).", filename, GetPath(res), path);
 		return nullptr;
@@ -331,7 +331,7 @@ BaseResource* ResourceManager::AddResource(cstring filename, cstring path)
 //=================================================================================================
 void ResourceManager::Cleanup()
 {
-	for(AnyResource* res : resources)
+	for(Resource* res : resources)
 	{
 		if(res->state == ResourceState::Loaded)
 		{
@@ -390,7 +390,7 @@ ResourceType ResourceManager::FilenameToResourceType(cstring filename)
 }
 
 //=================================================================================================
-BufferHandle ResourceManager::GetBuffer(BaseResource* res)
+BufferHandle ResourceManager::GetBuffer(Resource* res)
 {
 	assert(res);
 
@@ -420,7 +420,7 @@ BufferHandle ResourceManager::GetBuffer(BaseResource* res)
 }
 
 //=================================================================================================
-cstring ResourceManager::GetPath(BaseResource* res)
+cstring ResourceManager::GetPath(Resource* res)
 {
 	assert(res);
 
@@ -431,7 +431,7 @@ cstring ResourceManager::GetPath(BaseResource* res)
 }
 
 //=================================================================================================
-StreamReader ResourceManager::GetStream(BaseResource* res, StreamType type)
+StreamReader ResourceManager::GetStream(Resource* res, StreamType type)
 {
 	assert(res);
 
@@ -482,9 +482,9 @@ StreamReader ResourceManager::GetStream(BaseResource* res, StreamType type)
 }
 
 //=================================================================================================
-BaseResource* ResourceManager::GetResource(cstring filename, ResourceType type)
+Resource* ResourceManager::GetResource(cstring filename, ResourceType type)
 {
-	AnyResource res;
+	Resource res;
 	res.type = type;
 	res.filename = filename;
 
@@ -554,7 +554,7 @@ void ResourceManager::ApplyTask(Task* task)
 }
 
 //=================================================================================================
-void ResourceManager::LoadResource(AnyResource* res)
+void ResourceManager::LoadResource(Resource* res)
 {
 	assert(res->state != ResourceState::Loaded);
 	switch((ResourceSubType)res->subtype)
@@ -939,12 +939,12 @@ void ResourceManager::TickLoadScreen()
 }
 
 //=================================================================================================
-AnyResource* ResourceManager::GetResource(cstring filename, ResourceSubType type)
+Resource* ResourceManager::GetResource(cstring filename, ResourceSubType type)
 {
 	assert(filename);
 
 	auto& info = res_info[(int)type];
-	BaseResource* res = GetResource(filename, info.type);
+	Resource* res = GetResource(filename, info.type);
 	if(!res)
 		throw Format("ResourceManager: Missing %s '%s'.", info.name, filename);
 	if(res->subtype != (int)type)
@@ -954,16 +954,16 @@ AnyResource* ResourceManager::GetResource(cstring filename, ResourceSubType type
 		res->subtype = (int)type;
 	}
 
-	return (AnyResource*)res;
+	return (Resource*)res;
 }
 
 //=================================================================================================
-AnyResource* ResourceManager::TryGetResource(cstring filename, ResourceSubType type)
+Resource* ResourceManager::TryGetResource(cstring filename, ResourceSubType type)
 {
 	assert(filename);
 
 	auto& info = res_info[(int)type];
-	BaseResource* res = GetResource(filename, info.type);
+	Resource* res = GetResource(filename, info.type);
 	if(!res)
 		return nullptr;
 	if(res->subtype != (int)type)
@@ -973,11 +973,11 @@ AnyResource* ResourceManager::TryGetResource(cstring filename, ResourceSubType t
 		res->subtype = (int)type;
 	}
 
-	return (AnyResource*)res;
+	return (Resource*)res;
 }
 
 //=================================================================================================
-void ResourceManager::LoadResource(AnyResource* res, Task* task)
+void ResourceManager::LoadResource(Resource* res, Task* task)
 {
 	assert(res);
 
@@ -1035,7 +1035,7 @@ void ResourceManager::LoadResource(AnyResource* res, Task* task)
 }
 
 //=================================================================================================
-AnyResource* ResourceManager::ForceLoadResource(const AnyString& path, ResourceType type)
+Resource* ResourceManager::ForceLoadResource(const AnyString& path, ResourceType type)
 {
 	auto filename = io::FilenameFromPath(path);
 	auto resource = GetResource(filename, type);
@@ -1046,7 +1046,7 @@ AnyResource* ResourceManager::ForceLoadResource(const AnyString& path, ResourceT
 		resource->path = path;
 		resource->pak_index = INVALID_PAK;
 	}
-	auto res = (AnyResource*)resource;
+	auto res = (Resource*)resource;
 	if(!res->IsLoaded())
 	{
 		if(res->subtype == (int)ResourceSubType::Unknown)

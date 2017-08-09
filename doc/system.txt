@@ -123,16 +123,6 @@ O-----> +X
 
 
 =====================================================================================================
-EKSPORTER
-+ ostrzeªenie o edit mode
-+ ostrzeªenie o translate, scale, rot ? albo ustawianie
-+ output w cfg nie dzia-a
-+ naprawianie ujemnej skali w empty
-+ instancing obiektów (okna w budynkach)
-+ poprawne eksportowanie animacji gdy nie jest ustawione na base
-
-
-=====================================================================================================
 ¯YWIO£Y
 
            Ogieñ
