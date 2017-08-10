@@ -487,7 +487,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 					FindBuilding(village_hall)->type = village_hall_old;
 					for(Object& o : objects)
 					{
-						if(o.mesh->filename == "soltys.qmsh")
+						if(strcmp(o.mesh->filename, "soltys.qmsh") == 0) //dada
 							o.mesh = ResourceManager::Get<Mesh>().AddLoadTask("soltys_old.qmsh");
 					}
 					InsideBuilding* b = FindInsideBuilding(village_hall);

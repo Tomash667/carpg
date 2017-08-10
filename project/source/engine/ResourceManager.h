@@ -20,7 +20,7 @@ struct ResourceComparer
 {
 	bool operator () (const Resource* r1, const Resource* r2) const
 	{
-		return _stricmp(r1->filename, r2->filename) > 0;
+		return _stricmp(r1->filename2, r2->filename2) > 0;
 	}
 };
 
