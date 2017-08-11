@@ -51,7 +51,7 @@ void Bullet::Load(FileReader& f)
 	if(LOAD_VERSION < V_0_3)
 		f.Skip<float>();
 	f.ReadStringBUF();
-	mesh = ResourceManager::Get<Mesh>().AddLoadTask(BUF);
+	mesh = ResourceManager::Get<Mesh>().GetLoaded(BUF);
 	f >> speed;
 	f >> timer;
 	f >> attack;
@@ -72,7 +72,7 @@ void Bullet::Load(FileReader& f)
 		spell = nullptr;
 	f.ReadStringBUF();
 	if(BUF[0])
-		tex = ResourceManager::Get<Texture>().AddLoadTask(BUF);
+		tex = ResourceManager::Get<Texture>().GetLoaded(BUF);
 	else
 		tex = nullptr;
 	f >> refid;

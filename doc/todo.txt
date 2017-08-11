@@ -1,5 +1,4 @@
 ﻿CURRENT:
-+ there is some code depending on Resource::filename, and using == operator!
 + try to fix LoadScreen function/modes mess
 + WHAT TO LOAD AND WHERE
 	+ gui textures - at startup
@@ -7,14 +6,19 @@
 	+ human mesh/startup items on opening create character screen - show small loading window
 	+ currently level music is loaded at instant
 - update create character screen, for single frame there is no doll
+? sound left/right test
 ? testing
 	? sound/music looping
 	? all
++ include version number in text about unsupported version, currently it is:
+	Błąd wczytywania gry: Wersja 0 zapisów nie jest już wspierana.
 ===============================================================================================================
 NEW:
 + rename Bullet -> Projecticle (or other)
 + BaseBullet for Bullet, save by base, no mesh etc
 + Resources - hashing
++ sleeping on bed animation
++ terrain holes
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

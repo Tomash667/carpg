@@ -406,6 +406,59 @@ Resource* ResourceManager::CreateResource(ResourceType type)
 }
 
 //=================================================================================================
+Resource* ResourceManager::TryGetResource(const AnyString& filename, ResourceType type)
+{
+	res_search.filename = filename;
+	auto it = resources.find(&res_search);
+	if(it != resources.end())
+	{
+		assert((*it)->type == type);
+		return *it;
+	}
+	else
+		return nullptr;
+}
+
+//=================================================================================================
+Resource* ResourceManager::GetResource(const AnyString& filename, ResourceType type)
+{
+	Resource* res = TryGetResource(filename, type);
+	if(!res)
+	{
+		cstring type_name;
+		switch(type)
+		{
+		case ResourceType::Mesh:
+			type_name = "mesh";
+			break;
+		case ResourceType::Texture:
+			type_name = "texture";
+			break;
+		case ResourceType::VertexData:
+			type_name = "vertex data";
+			break;
+		case ResourceType::SoundOrMusic:
+			type_name = "sound or music";
+			break;
+		default:
+			assert(0);
+			type_name = "unknown";
+			break;
+		}
+		throw Format("ResourceManager: Missing %s '%s'.", type_name, filename);
+	}
+	return res;
+}
+
+//=================================================================================================
+void ResourceManager::LoadResource(Resource* res)
+{
+	assert(res);
+	if(res->state != ResourceState::Loaded)
+		LoadResourceInternal(res);
+}
+
+//=================================================================================================
 ResourceType ResourceManager::ExtToResourceType(cstring ext)
 {
 	auto it = exts.find(ext);
@@ -517,18 +570,136 @@ StreamReader ResourceManager::GetStream(Resource* res, StreamType type)
 	}
 }
 
+//=================================================================================================
+void ResourceManager::AddTaskCategory(const AnyString& category)
+{
+	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
+
+	TaskDetail* td = task_pool.Get();
+	td->category = category;
+	td->type = TaskType::Category;
+
+	if(mode == Mode::LoadScreenPrepare)
+		tasks.push_back(td);
+	else
+		next_tasks.push_back(td);
+}
 
 //=================================================================================================
-/*void ResourceManager::ApplyTask(Task* task)
+void ResourceManager::AddTask(void* ptr, TaskCallback callback)
 {
-	if(IS_SET(task->flags, Task::Assign))
+	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
+
+	TaskDetail* td = task_pool.Get();
+	td->callback = callback;
+	td->data.ptr = ptr;
+	td->type = TaskType::Callback;
+
+	if(mode == Mode::LoadScreenPrepare)
 	{
-		void** ptr = (void**)task->ptr;
-		*ptr = task->res->data;
+		tasks.push_back(td);
+		++to_load;
 	}
 	else
-		task->callback(*task);
-}*/
+	{
+		next_tasks.push_back(td);
+		++to_load_next;
+	}
+}
+
+//=================================================================================================
+void ResourceManager::AddLoadTask(Resource* res)
+{
+	assert(res && (mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext));
+
+	TaskDetail* td = task_pool.Get();
+	td->data.res = res;
+	td->type = TaskType::Load;
+
+	if(mode == Mode::LoadScreenPrepare)
+	{
+		tasks.push_back(td);
+		++to_load;
+	}
+	else
+	{
+		next_tasks.push_back(td);
+		++to_load_next;
+	}
+}
+
+//=================================================================================================
+void ResourceManager::AddLoadTask(Resource* res, void* ptr, TaskCallback callback)
+{
+	assert(res && (mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext));
+
+	TaskDetail* td = task_pool.Get();
+	td->data.res = res;
+	td->data.ptr = ptr;
+	td->callback = callback;
+	td->type = TaskType::LoadAndCallback;
+
+	if(mode == Mode::LoadScreenPrepare)
+	{
+		tasks.push_back(td);
+		++to_load;
+	}
+	else
+	{
+		next_tasks.push_back(td);
+		++to_load_next;
+	}
+}
+
+//=================================================================================================
+void ResourceManager::NextTask(cstring next_category)
+{
+	if(next_category)
+		category = next_category;
+	++loaded;
+
+	TickLoadScreen();
+}
+
+//=================================================================================================
+void ResourceManager::PrepareLoadScreen(float cap)
+{
+	assert((mode == Mode::Instant || mode == Mode::LoadScreenEnd) && cap >= 0.f && cap <= 1.f);
+
+	if(mode == Mode::Instant)
+	{
+		to_load = 0;
+		loaded = 0;
+		to_load_next = 0;
+		old_load_cap = 0.f;
+		load_cap = cap;
+	}
+	else
+	{
+		assert(cap > load_cap);
+		old_load_cap = load_cap;
+		load_cap = cap;
+	}
+
+	mode = Mode::LoadScreenPrepare;
+}
+
+//=================================================================================================
+void ResourceManager::PrepareLoadScreen2(float cap, int steps, cstring text)
+{
+	assert(mode == Mode::Instant && cap >= 0.f && cap <= 1.f);
+
+	to_load = steps;
+	loaded = 0;
+	to_load_next = 0;
+	old_load_cap = 0.f;
+	load_cap = cap;
+	mode = Mode::LoadScreenPrepare2;
+	timer.Start();
+	timer_dt = 1.f;
+	category = text;
+	TickLoadScreen();
+}
 
 //=================================================================================================
 void ResourceManager::LoadResourceInternal(Resource* res)
@@ -630,125 +801,6 @@ void ResourceManager::LoadTexture(Texture* tex)
 
 	if(FAILED(hr))
 		throw Format("Failed to load texture '%s' (%u).", GetPath(tex), hr);
-}
-
-//=================================================================================================
-void ResourceManager::AddTask(void* ptr, TaskCallback callback)
-{
-	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
-
-	TaskDetail* td = task_pool.Get();
-	td->callback = callback;
-	td->data.ptr = ptr;
-	td->type = TaskType::Callback;
-
-	if(mode == Mode::LoadScreenPrepare)
-	{
-		tasks.push_back(td);
-		++to_load;
-	}
-	else
-	{
-		next_tasks.push_back(td);
-		++to_load_next;
-	}
-}
-
-void ResourceManager::AddLoadTask(Resource* res)
-{
-	assert(res && (mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext));
-
-	TaskDetail* td = task_pool.Get();
-	td->data.res = res;
-	td->type = TaskType::Load;
-
-	if(mode == Mode::LoadScreenPrepare)
-	{
-		tasks.push_back(td);
-		++to_load;
-	}
-	else
-	{
-		next_tasks.push_back(td);
-		++to_load_next;
-	}
-}
-
-void ResourceManager::AddLoadTask(Resource* res, void* ptr, TaskCallback callback)
-{
-	assert(res && (mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext));
-
-	TaskDetail* td = task_pool.Get();
-	td->data.res = res;
-	td->data.ptr = ptr;
-	td->callback = callback;
-	td->type = TaskType::LoadAndCallback;
-
-	if(mode == Mode::LoadScreenPrepare)
-	{
-		tasks.push_back(td);
-		++to_load;
-	}
-	else
-	{
-		next_tasks.push_back(td);
-		++to_load_next;
-	}
-}
-
-//=================================================================================================
-void ResourceManager::AddTaskCategory(const AnyString& category)
-{
-	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
-
-	TaskDetail* td = task_pool.Get();
-	td->category = category;
-	td->type = TaskType::Category;
-
-	if(mode == Mode::LoadScreenPrepare)
-		tasks.push_back(td);
-	else
-		next_tasks.push_back(td);
-}
-
-//=================================================================================================
-void ResourceManager::PrepareLoadScreen(float cap)
-{
-	assert((mode == Mode::Instant || mode == Mode::LoadScreenEnd) && cap >= 0.f && cap <= 1.f);
-
-	if(mode == Mode::Instant)
-	{
-		to_load = 0;
-		loaded = 0;
-		to_load_next = 0;
-		old_load_cap = 0.f;
-		load_cap = cap;
-	}
-	else
-	{
-		assert(cap > load_cap);
-		old_load_cap = load_cap;
-		load_cap = cap;
-	}
-
-	mode = Mode::LoadScreenPrepare;
-}
-
-//=================================================================================================
-void ResourceManager::PrepareLoadScreen2(float cap, int steps, cstring text)
-{
-	assert(mode == Mode::Instant && cap >= 0.f && cap <= 1.f);
-
-	to_load = steps;
-	loaded = 0;
-	to_load_next = 0;
-	old_load_cap = 0.f;
-	load_cap = cap;
-	mode = Mode::LoadScreenPrepare2;
-	timer.Start();
-	timer_dt = 1.f;
-	category = text;
-	TickLoadScreen();
 }
 
 //=================================================================================================
@@ -855,16 +907,6 @@ void ResourceManager::UpdateLoadScreen()
 }
 
 //=================================================================================================
-void ResourceManager::NextTask(cstring next_category)
-{
-	if(next_category)
-		category = next_category;
-	++loaded;
-
-	TickLoadScreen();
-}
-
-//=================================================================================================
 void ResourceManager::TickLoadScreen()
 {
 	timer_dt += timer.Tick();
@@ -885,121 +927,6 @@ void ResourceManager::TickLoadScreen()
 }
 
 //=================================================================================================
-//void ResourceManager::LoadResource(Resource* res, Task* task)
-//{
-//	assert(res);
-//
-//	if(res->state == ResourceState::Loaded)
-//	{
-//		if(task)
-//		{
-//			task->res = res;
-//			ApplyTask(task);
-//		}
-//		return;
-//	}
-//
-//	if(res->state == ResourceState::NotLoaded && (mode == Mode::Instant || mode == Mode::LoadScreenStart))
-//	{
-//		LoadResource(res);
-//		if(task)
-//		{
-//			task->res = res;
-//			ApplyTask(task);
-//		}
-//	}
-//	else
-//	{
-//		TaskDetail* td = task_pool.Get();
-//		if(task)
-//		{
-//			td->delegate = task->callback;
-//			td->flags = task->flags;
-//			td->ptr = task->ptr;
-//		}
-//		else
-//		{
-//			td->delegate = nullptr;
-//			td->flags = 0;
-//		}
-//		td->category = nullptr;
-//		td->res = res;
-//		td->type = (ResourceSubType)res->subtype;
-//
-//		res->state = ResourceState::Loading;
-//
-//		if(mode == Mode::LoadScreenPrepare)
-//		{
-//			tasks.push_back(td);
-//			++to_load;
-//		}
-//		else
-//		{
-//			assert(mode == Mode::LoadScreenNext);
-//			next_tasks.push_back(td);
-//			++to_load_next;
-//		}
-//	}
-//}
-
-
-//=====================================================================================================================================================
-//=====================================================================================================================================================
-//=====================================================================================================================================================
-
-
-
-
-Resource* ResourceManager::GetResource(const AnyString& filename, ResourceType type)
-{
-	Resource* res = TryGetResource(filename, type);
-	if(!res)
-	{
-		cstring type_name;
-		switch(type)
-		{
-		case ResourceType::Mesh:
-			type_name = "mesh";
-			break;
-		case ResourceType::Texture:
-			type_name = "texture";
-			break;
-		case ResourceType::VertexData:
-			type_name = "vertex data";
-			break;
-		case ResourceType::SoundOrMusic:
-			type_name = "sound or music";
-			break;
-		default:
-			assert(0);
-			type_name = "unknown";
-			break;
-		}
-		throw Format("ResourceManager: Missing %s '%s'.", type_name, filename);
-	}
-	return res;
-}
-
-Resource* ResourceManager::TryGetResource(const AnyString& filename, ResourceType type)
-{
-	res_search.filename = filename;
-	auto it = resources.find(&res_search);
-	if(it != resources.end())
-	{
-		assert((*it)->type == type);
-		return *it;
-	}
-	else
-		return nullptr;
-}
-
-void ResourceManager::LoadResource(Resource* res)
-{
-	assert(res);
-	if(res->state != ResourceState::Loaded)
-		LoadResourceInternal(res);
-}
-
 void ResourceManager::ApplyRawTextureCallback(TaskData& data)
 {
 	TEX& tex = *(TEX*)data.ptr;
@@ -1007,6 +934,7 @@ void ResourceManager::ApplyRawTextureCallback(TaskData& data)
 	tex = res->tex;
 }
 
+//=================================================================================================
 void ResourceManager::ApplyRawSoundCallback(TaskData& data)
 {
 	SOUND& sound = *(SOUND*)data.ptr;

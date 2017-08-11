@@ -170,6 +170,7 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
+	load_screen->Setup(0.f, 0.1f, 11, )
 	auto& res_mgr = ResourceManager::Get();
 	res_mgr.PrepareLoadScreen2(0.1f, 11, txCreatingListOfFiles);
 

@@ -2658,7 +2658,7 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 			if(game.IsLocal())
 			{
 				RecalculateStamina();
-				if(!fake_unit && IsPlayer() && player != game.pc)
+				if(!fake_unit && game.IsServer() && IsPlayer() && player != game.pc)
 					game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
 			}
 			else

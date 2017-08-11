@@ -20,7 +20,7 @@ struct ResourceComparer
 {
 	bool operator () (const Resource* r1, const Resource* r2) const
 	{
-		return _stricmp(r1->filename2, r2->filename2) > 0;
+		return _stricmp(r1->filename, r2->filename) > 0;
 	}
 };
 
@@ -166,6 +166,8 @@ public:
 		Category
 	};
 
+	//-----------------------------------------------------------------------------
+	// Base type manager
 	template<typename T>
 	class BaseTypeManager
 	{
@@ -206,9 +208,6 @@ public:
 		{
 		}
 
-		//-------------------------------------------------------------
-		// Instant methods
-		//-------------------------------------------------------------
 		// Try to return resource, if not exists return null
 		T* TryGet(const AnyString& filename)
 		{
@@ -229,19 +228,19 @@ public:
 			return (T*)res;
 		}
 
+		// Load resource, if failed throws
 		void Load(T* res)
 		{
 			res_mgr.LoadResource(res);
 		}
 
-		//-------------------------------------------------------------
-		// Load screen methods
-		//-------------------------------------------------------------
+		// Add task category
 		void AddTaskCategory(const AnyString& name)
 		{
 			res_mgr.AddTaskCategory(name);
 		}
 
+		// Add load task, if not exists throws, if failed throws later
 		T* AddLoadTask(const AnyString& filename)
 		{
 			auto res = res_mgr.GetResource(filename, Type);
@@ -249,27 +248,31 @@ public:
 			return (T*)res;
 		}
 
+		// Add load task, if failed throws later
 		void AddLoadTask(T* res)
 		{
 			res_mgr.AddLoadTask(res);
 		}
 
+		// Add load task, if not exists throws, if failed throws later, after loading run callback
 		void AddLoadTask(const AnyString& filename, void* ptr, TaskCallback callback)
 		{
 			auto res = res_mgr.GetResource(filename, Type);
 			res_mgr.AddLoadTask(res, ptr, callback);
 		}
 
+		// Add load task, if failed throws later, after loading run callback
 		void AddLoadTask(T* res, void* ptr, TaskCallback callback)
 		{
 			res_mgr.AddLoadTask(res, ptr, callback);
 		}
 
-
 	protected:
 		ResourceManager& res_mgr;
 	};
 
+	//-----------------------------------------------------------------------------
+	// Generic type manager
 	template<typename T>
 	class TypeManager : public BaseTypeManager<T>
 	{
@@ -279,6 +282,8 @@ public:
 		}
 	};
 	
+	//-----------------------------------------------------------------------------
+	// Texture type manager
 	template<>
 	class TypeManager<Texture> : public BaseTypeManager<Texture>
 	{
@@ -306,6 +311,8 @@ public:
 		}
 	};
 
+	//-----------------------------------------------------------------------------
+	// Sound or music type manager
 	template<>
 	class TypeManager<Sound> : public BaseTypeManager<Sound>
 	{
@@ -384,7 +391,6 @@ public:
 	template<typename T>
 	friend class TypeManager;
 
-
 	ResourceManager();
 	~ResourceManager();
 
@@ -409,25 +415,15 @@ public:
 	BufferHandle GetBuffer(Resource* res);
 	cstring GetPath(Resource* res);
 	StreamReader GetStream(Resource* res, StreamType type);
-
-	//void AddTask(Task& task_data);
-	//void AddTask(VoidF& callback, cstring category, int size = 1);
-	//void AddTask(void* ptr, TaskCallback callback);
 	void AddTaskCategory(const AnyString& name);
+	void AddTask(void* ptr, TaskCallback callback);
 	void NextTask(cstring next_category = nullptr);
-
 	void SetLoadScreen(LoadScreen* _load_screen) { load_screen = _load_screen; }
 	void PrepareLoadScreen(float cap = 1.f);
 	void PrepareLoadScreen2(float cap, int steps, cstring text);
 	void StartLoadScreen();
 	void EndLoadScreenStage();
 	void SetMutex(HANDLE _mutex) { mutex = _mutex; }
-
-	void LoadResource(Resource* res);
-	void AddLoadTask(Resource* res);
-	void AddLoadTask(Resource* res, void* ptr, TaskCallback callback);
-	void AddTask(void* ptr, TaskCallback callback);
-
 	
 	template<typename T>
 	TypeManager<T> For()
@@ -439,13 +435,11 @@ public:
 private:
 	struct TaskDetail
 	{
-		// begining should be like in TaskData
 		union
 		{
 			TaskData data;
 			cstring category;
 		};
-		// new fields
 		TaskType type;
 		TaskCallback callback;
 
@@ -453,32 +447,25 @@ private:
 		{
 		}
 	};
+
+	void RegisterExtensions();
+	void UpdateLoadScreen();
+	void TickLoadScreen();
 	
 	Resource* AddResource(cstring filename, cstring path);
 	Resource* CreateResource(ResourceType type);
-
-
-	//void ApplyTask(Task* task);
-	void RegisterExtensions();
-	//void LoadResource(Resource* res, Task* task);
-	void UpdateLoadScreen();
-	void TickLoadScreen();
-
-	// internal loading of resources
+	Resource* TryGetResource(const AnyString& filename, ResourceType type);
+	Resource* GetResource(const AnyString& filename, ResourceType type);
+	void AddLoadTask(Resource* res);
+	void AddLoadTask(Resource* res, void* ptr, TaskCallback callback);
+	void LoadResource(Resource* res);
+	void LoadResourceInternal(Resource* res);
 	void LoadMesh(Mesh* mesh);
 	void LoadVertexData(VertexData* vd);
 	void LoadSoundOrMusic(Sound* sound);
 	void LoadTexture(Texture* tex);
-
-	// NEW NEW NEW
-	Resource* GetResource(const AnyString& filename, ResourceType type);
-	Resource* TryGetResource(const AnyString& filename, ResourceType type);
-	void LoadResourceInternal(Resource* res);
-
 	void ApplyRawTextureCallback(TaskData& data);
 	void ApplyRawSoundCallback(TaskData& data);
-
-	
 
 	Mode mode;
 	IDirect3DDevice9* device;

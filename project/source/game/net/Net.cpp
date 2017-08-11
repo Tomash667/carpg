@@ -1311,7 +1311,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				return false;
 			}
 
-			explo->tex = ResourceManager::Get<Texture>().AddLoadTask(BUF);
+			explo->tex = ResourceManager::Get<Texture>().GetLoaded(BUF);
 		}
 
 		// electro

@@ -487,15 +487,21 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 					FindBuilding(village_hall)->type = village_hall_old;
 					for(Object& o : objects)
 					{
-						if(strcmp(o.mesh->filename, "soltys.qmsh") == 0) //dada
-							o.mesh = ResourceManager::Get<Mesh>().AddLoadTask("soltys_old.qmsh");
+						if(strcmp(o.mesh->filename, "soltys.qmsh") == 0)
+						{
+							o.mesh = ResourceManager::Get<Mesh>().GetLoaded("soltys_old.qmsh");
+							break;
+						}
 					}
 					InsideBuilding* b = FindInsideBuilding(village_hall);
 					b->type = village_hall_old;
 					for(Object& o : b->objects)
 					{
-						if(o.mesh->filename == "soltys_srodek.qmsh")
-							o.mesh = ResourceManager::Get<Mesh>().AddLoadTask("soltys_srodek_old.qmsh");
+						if(strcmp(o.mesh->filename, "soltys_srodek.qmsh") == 0)
+						{
+							o.mesh = ResourceManager::Get<Mesh>().GetLoaded("soltys_srodek_old.qmsh");
+							break;
+						}
 					}
 				}
 			}

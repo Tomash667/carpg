@@ -25,7 +25,7 @@ const int INVALID_PAK = -1;
 struct Resource
 {
 	string path;
-	cstring filename2;
+	cstring filename;
 	ResourceState state;
 	ResourceType type;
 	int pak_index;
