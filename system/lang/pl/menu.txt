@@ -643,11 +643,11 @@ cantSaveNow = "Nie mo¿na w tej chwili zapisaæ gry."
 cantLoadGame = "Nie mo¿esz wczytaæ gry."
 loadSignature = "Z³a sygnatura pliku."
 loadVersion = "Ten zapis pochodzi z nowszej wersji: %s\nTwoja wersja: %s\nJeœli chcesz go wczytaæ musisz zaktualizowaæ CaRpg."
-loadSaveVersionOld = "Wersja %d zapisów nie jest ju¿ wspierana."
-loadSaveVersionNew = "Ten zapis zosta³ utworzony w nowszej wersji zapisów %d. Zaktualizuj CaRpg."
+loadSaveVersionOld = "Zapisy z wersji %s nie s¹ ju¿ wspierane."
 loadMP = "Ten zapis pochodzi z trybu wieloosobowego."
 loadSP = "Ten zapis pochodzi z trybu pojedynczego gracza."
 loadError = "B³¹d wczytywania gry: "
+loadErrorGeneric = "B³¹d wczytywania gry: plik jest uszkodzony lub nieprawid³owy, wiêcej informacji w pliku log."
 loadOpenError = "Nie mo¿na otworzyæ pliku '%s' (%d)."
 
 // gra

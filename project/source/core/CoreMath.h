@@ -462,7 +462,7 @@ struct Rect
 	Rect(const Int2& p1, const Int2& p2);
 	Rect(const Rect& box);
 	explicit Rect(const Box2d& box);
-	Rect(const Box2d& box, const Int2& pad);;
+	Rect(const Box2d& box, const Int2& pad);
 
 	// Comparison operators
 	bool operator == (const Rect& r) const;

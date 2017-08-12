@@ -1,5 +1,4 @@
 ﻿CURRENT:
-+ try to fix LoadScreen function/modes mess
 + WHAT TO LOAD AND WHERE
 	+ gui textures - at startup
 	+ else when required
@@ -10,8 +9,6 @@
 ? testing
 	? sound/music looping
 	? all
-+ include version number in text about unsupported version, currently it is:
-	Błąd wczytywania gry: Wersja 0 zapisów nie jest już wspierana.
 ===============================================================================================================
 NEW:
 + rename Bullet -> Projecticle (or other)

@@ -150,11 +150,8 @@ public:
 	enum class Mode
 	{
 		Instant,
-		LoadScreenPrepare, // add tasks
-		LoadScreenPrepare2, // fake loadscreen prepare
-		LoadScreenNext, // add next_tasks
-		LoadScreenStart, // load tasks instantly
-		LoadScreenEnd // waits for prepare
+		LoadScreenPrepare,
+		LoadScreenRuning
 	};
 
 	enum class TaskType
@@ -419,10 +416,8 @@ public:
 	void AddTask(void* ptr, TaskCallback callback);
 	void NextTask(cstring next_category = nullptr);
 	void SetLoadScreen(LoadScreen* _load_screen) { load_screen = _load_screen; }
-	void PrepareLoadScreen(float cap = 1.f);
-	void PrepareLoadScreen2(float cap, int steps, cstring text);
+	void PrepareLoadScreen(float progress_min = 0.f, float progress_max = 1.f);
 	void StartLoadScreen();
-	void EndLoadScreenStage();
 	void SetMutex(HANDLE _mutex) { mutex = _mutex; }
 	
 	template<typename T>
@@ -451,6 +446,7 @@ private:
 	void RegisterExtensions();
 	void UpdateLoadScreen();
 	void TickLoadScreen();
+	void ReleaseMutex();
 	
 	Resource* AddResource(cstring filename, cstring path);
 	Resource* CreateResource(ResourceType type);
@@ -475,11 +471,11 @@ private:
 	std::map<cstring, ResourceType, CstringComparer> exts;
 	vector<Pak*> paks;
 	vector<Buffer*> sound_bufs;
-	vector<TaskDetail*> tasks, next_tasks;
-	int to_load, loaded, to_load_next;
+	vector<TaskDetail*> tasks;
+	int to_load, loaded;
 	cstring category;
 	Timer timer;
-	float load_cap, old_load_cap, timer_dt;
+	float timer_dt, progress, progress_min, progress_max;
 	LoadScreen* load_screen;
 	HANDLE mutex;
 	static ResourceManager manager;

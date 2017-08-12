@@ -90,7 +90,6 @@ void ResourceManager::Cleanup()
 		BufferPool.Free(buf);
 
 	task_pool.Free(tasks);
-	task_pool.Free(next_tasks);
 }
 
 //=================================================================================================
@@ -573,82 +572,51 @@ StreamReader ResourceManager::GetStream(Resource* res, StreamType type)
 //=================================================================================================
 void ResourceManager::AddTaskCategory(const AnyString& category)
 {
-	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
+	assert(mode == Mode::LoadScreenPrepare);
 
 	TaskDetail* td = task_pool.Get();
 	td->category = category;
 	td->type = TaskType::Category;
-
-	if(mode == Mode::LoadScreenPrepare)
-		tasks.push_back(td);
-	else
-		next_tasks.push_back(td);
+	tasks.push_back(td);
 }
 
 //=================================================================================================
 void ResourceManager::AddTask(void* ptr, TaskCallback callback)
 {
-	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
+	assert(mode == Mode::LoadScreenPrepare);
 
 	TaskDetail* td = task_pool.Get();
 	td->callback = callback;
 	td->data.ptr = ptr;
 	td->type = TaskType::Callback;
-
-	if(mode == Mode::LoadScreenPrepare)
-	{
-		tasks.push_back(td);
-		++to_load;
-	}
-	else
-	{
-		next_tasks.push_back(td);
-		++to_load_next;
-	}
+	tasks.push_back(td);
+	++to_load;
 }
 
 //=================================================================================================
 void ResourceManager::AddLoadTask(Resource* res)
 {
-	assert(res && (mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext));
+	assert(res && mode == Mode::LoadScreenPrepare);
 
 	TaskDetail* td = task_pool.Get();
 	td->data.res = res;
 	td->type = TaskType::Load;
-
-	if(mode == Mode::LoadScreenPrepare)
-	{
-		tasks.push_back(td);
-		++to_load;
-	}
-	else
-	{
-		next_tasks.push_back(td);
-		++to_load_next;
-	}
+	tasks.push_back(td);
+	++to_load;
 }
 
 //=================================================================================================
 void ResourceManager::AddLoadTask(Resource* res, void* ptr, TaskCallback callback)
 {
-	assert(res && (mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext));
+	assert(res && mode == Mode::LoadScreenPrepare);
 
 	TaskDetail* td = task_pool.Get();
 	td->data.res = res;
 	td->data.ptr = ptr;
 	td->callback = callback;
 	td->type = TaskType::LoadAndCallback;
-
-	if(mode == Mode::LoadScreenPrepare)
-	{
-		tasks.push_back(td);
-		++to_load;
-	}
-	else
-	{
-		next_tasks.push_back(td);
-		++to_load_next;
-	}
+	tasks.push_back(td);
+	++to_load;
 }
 
 //=================================================================================================
@@ -662,43 +630,112 @@ void ResourceManager::NextTask(cstring next_category)
 }
 
 //=================================================================================================
-void ResourceManager::PrepareLoadScreen(float cap)
+void ResourceManager::PrepareLoadScreen(float progress_min, float progress_max)
 {
-	assert((mode == Mode::Instant || mode == Mode::LoadScreenEnd) && cap >= 0.f && cap <= 1.f);
+	assert(mode == Mode::Instant && InRange(progress_min, 0.f, 1.f) && InRange(progress_max, 0.f, 1.f) && progress_max >= progress_min);
 
-	if(mode == Mode::Instant)
-	{
-		to_load = 0;
-		loaded = 0;
-		to_load_next = 0;
-		old_load_cap = 0.f;
-		load_cap = cap;
-	}
-	else
-	{
-		assert(cap > load_cap);
-		old_load_cap = load_cap;
-		load_cap = cap;
-	}
-
+	this->progress_min = progress_min;
+	this->progress_max = progress_max;
+	progress = progress_min;
+	to_load = 0;
+	loaded = 0;
 	mode = Mode::LoadScreenPrepare;
 }
 
 //=================================================================================================
-void ResourceManager::PrepareLoadScreen2(float cap, int steps, cstring text)
+void ResourceManager::StartLoadScreen()
 {
-	assert(mode == Mode::Instant && cap >= 0.f && cap <= 1.f);
+	assert(mode == Mode::LoadScreenPrepare);
 
-	to_load = steps;
-	loaded = 0;
-	to_load_next = 0;
-	old_load_cap = 0.f;
-	load_cap = cap;
-	mode = Mode::LoadScreenPrepare2;
-	timer.Start();
-	timer_dt = 1.f;
-	category = text;
-	TickLoadScreen();
+	mode = Mode::LoadScreenRuning;
+	UpdateLoadScreen();
+	mode = Mode::Instant;
+	task_pool.Free(tasks);
+}
+
+//=================================================================================================
+void ResourceManager::UpdateLoadScreen()
+{
+	Engine& engine = Engine::Get();
+	if(to_load == loaded)
+	{
+		// no tasks to load, draw with full progress
+		progress = progress_max;
+		ReleaseMutex();
+		load_screen->SetProgress(progress_max, "");
+		engine.DoPseudotick();
+		return;
+	}
+
+	// draw first frame
+	category = tasks[loaded]->category;
+	load_screen->SetProgressOptional(progress, category);
+	engine.DoPseudotick();
+
+	// do all tasks
+	timer.Reset();
+	timer_dt = 0;
+	for(uint i = 0; i < tasks.size(); ++i)
+	{
+		TaskDetail* task = tasks[i];
+		switch(task->type)
+		{
+		case TaskType::Category:
+			category = task->category;
+			break;
+		case TaskType::Callback:
+			task->callback(task->data);
+			++loaded;
+			break;
+		case TaskType::Load:
+			if(task->data.res->state != ResourceState::Loaded)
+				LoadResourceInternal(task->data.res);
+			++loaded;
+			break;
+		case TaskType::LoadAndCallback:
+			if(task->data.res->state != ResourceState::Loaded)
+				LoadResourceInternal(task->data.res);
+			task->callback(task->data);
+			++loaded;
+			break;
+		default:
+			assert(0);
+			break;
+		}
+
+		TickLoadScreen();
+	}
+
+	// draw last frame
+	progress = progress_max;
+	ReleaseMutex();
+	load_screen->SetProgress(progress_max);
+	engine.DoPseudotick();
+}
+
+//=================================================================================================
+void ResourceManager::TickLoadScreen()
+{
+	timer_dt += timer.Tick();
+	if(timer_dt >= 0.05f)
+	{
+		timer_dt = 0.f;
+		progress = float(loaded) / to_load * (progress_max - progress_min) + progress_min;
+		load_screen->SetProgressOptional(progress, category);
+		Engine::Get().DoPseudotick();
+		ReleaseMutex();
+	}
+}
+
+//=================================================================================================
+void ResourceManager::ReleaseMutex()
+{
+	if(mutex && progress >= 0.5f)
+	{
+		::ReleaseMutex(mutex);
+		CloseHandle(mutex);
+		mutex = nullptr;
+	}
 }
 
 //=================================================================================================
@@ -801,129 +838,6 @@ void ResourceManager::LoadTexture(Texture* tex)
 
 	if(FAILED(hr))
 		throw Format("Failed to load texture '%s' (%u).", GetPath(tex), hr);
-}
-
-//=================================================================================================
-void ResourceManager::EndLoadScreenStage()
-{
-	assert((mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenPrepare2) && load_cap != 1.f);
-
-	if(mode == Mode::LoadScreenPrepare)
-		mode = Mode::LoadScreenNext;
-	else
-	{
-		mode = Mode::LoadScreenEnd;
-		task_pool.Free(tasks);
-		to_load = to_load_next;
-		loaded = 0;
-		to_load_next = 0;
-		next_tasks.swap(tasks);
-	}
-}
-
-//=================================================================================================
-void ResourceManager::StartLoadScreen()
-{
-	assert(mode == Mode::LoadScreenPrepare || mode == Mode::LoadScreenNext);
-
-	if(mode == Mode::LoadScreenPrepare)
-		mode = Mode::LoadScreenStart;
-	UpdateLoadScreen();
-
-	if(load_cap == 1.f)
-	{
-		// cleanup
-		assert(next_tasks.empty());
-
-		mode = Mode::Instant;
-		task_pool.Free(tasks);
-	}
-	else
-	{
-		mode = Mode::LoadScreenEnd;
-		task_pool.Free(tasks);
-		to_load = to_load_next;
-		loaded = 0;
-		to_load_next = 0;
-		next_tasks.swap(tasks);
-	}
-}
-
-//=================================================================================================
-void ResourceManager::UpdateLoadScreen()
-{
-	Engine& engine = Engine::Get();
-	if(to_load == loaded)
-	{
-		// no tasks to load, draw with full progress
-		load_screen->SetProgress(load_cap, "");
-		engine.DoPseudotick();
-		return;
-	}
-
-	// draw first frame
-	float progress = float(loaded) / to_load * (load_cap - old_load_cap) + old_load_cap;
-	category = tasks[loaded]->category;
-	load_screen->SetProgressOptional(progress, category);
-	engine.DoPseudotick();
-
-	// do all tasks
-	timer.Reset();
-	timer_dt = 0;
-	for(uint i = 0; i < tasks.size(); ++i)
-	{
-		TaskDetail* task = tasks[i];
-		switch(task->type)
-		{
-		case TaskType::Category:
-			category = task->category;
-			break;
-		case TaskType::Callback:
-			task->callback(task->data);
-			++loaded;
-			break;
-		case TaskType::Load:
-			if(task->data.res->state != ResourceState::Loaded)
-				LoadResourceInternal(task->data.res);
-			++loaded;
-			break;
-		case TaskType::LoadAndCallback:
-			if(task->data.res->state != ResourceState::Loaded)
-				LoadResourceInternal(task->data.res);
-			task->callback(task->data);
-			++loaded;
-			break;
-		default:
-			assert(0);
-			break;
-		}
-		
-		TickLoadScreen();
-	}
-
-	// draw last frame
-	load_screen->SetProgress(load_cap);
-	engine.DoPseudotick();
-}
-
-//=================================================================================================
-void ResourceManager::TickLoadScreen()
-{
-	timer_dt += timer.Tick();
-	if(timer_dt >= 0.05f)
-	{
-		timer_dt = 0.f;
-		float progress = float(loaded) / to_load * (load_cap - old_load_cap) + old_load_cap;
-		load_screen->SetProgressOptional(progress, category);
-		Engine::Get().DoPseudotick();
-
-		if(mutex && progress >= 0.5f)
-		{
-			ReleaseMutex(mutex);
-			CloseHandle(mutex);
-			mutex = nullptr;
-		}
-	}
 }
 
 //=================================================================================================

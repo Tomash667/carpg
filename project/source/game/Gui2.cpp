@@ -1900,6 +1900,19 @@ bool IGUI::HaveDialog(cstring name)
 }
 
 //=================================================================================================
+bool IGUI::HaveDialog(Dialog* dialog)
+{
+	assert(dialog);;
+	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
+	for(auto d : dialogs)
+	{
+		if(d == dialog)
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
 bool IGUI::AnythingVisible() const
 {
 	return !dialog_layer->Empty() || layer->AnythingVisible();

@@ -170,17 +170,14 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	load_screen->Setup(0.f, 0.1f, 11, )
-	auto& res_mgr = ResourceManager::Get();
-	res_mgr.PrepareLoadScreen2(0.1f, 11, txCreatingListOfFiles);
+	load_screen->Setup(0.f, 0.1f, 11, txCreatingListOfFiles);
 
 	AddFilesystem();
 	LoadDatafiles();
 	LoadLanguageFiles();
-	res_mgr.NextTask(txLoadingShaders);
+	load_screen->Tick(txLoadingShaders);
 	LoadShaders();
 	ConfigureGame();
-	res_mgr.EndLoadScreenStage();
 }
 
 //=================================================================================================
@@ -206,27 +203,27 @@ void Game::LoadDatafiles()
 	uint loaded;
 
 	// items
-	res_mgr.NextTask(txLoadingItems);
+	load_screen->Tick(txLoadingItems);
 	loaded = LoadItems(crc_items, load_errors);
 	Info("Game: Loaded items: %u (crc %p).", loaded, crc_items);
 
 	// spells
-	res_mgr.NextTask(txLoadingSpells);
+	load_screen->Tick(txLoadingSpells);
 	loaded = LoadSpells(crc_spells, load_errors);
 	Info("Game: Loaded spells: %u (crc %p).", loaded, crc_spells);
 
 	// dialogs
-	res_mgr.NextTask(txLoadingDialogs);
+	load_screen->Tick(txLoadingDialogs);
 	loaded = LoadDialogs(crc_dialogs, load_errors);
 	Info("Game: Loaded dialogs: %u (crc %p).", loaded, crc_dialogs);
 
 	// units
-	res_mgr.NextTask(txLoadingUnits);
+	load_screen->Tick(txLoadingUnits);
 	loaded = LoadUnits(crc_units, load_errors);
 	Info("Game: Loaded units: %u (crc %p).", loaded, crc_units);
 
 	// musics
-	res_mgr.NextTask(txLoadingMusics);
+	load_screen->Tick(txLoadingMusics);
 	loaded = LoadMusicDatafile(load_errors);
 	Info("Game: Loaded music: %u.", loaded);
 
@@ -237,13 +234,13 @@ void Game::LoadDatafiles()
 		switch(id)
 		{
 		case content::Id::Buildings:
-			res_mgr.NextTask(txLoadingBuildings);
+			load_screen->Tick(txLoadingBuildings);
 			break;
 		}
 	});
 
 	// required
-	res_mgr.NextTask(txLoadingRequires);
+	load_screen->Tick(txLoadingRequires);
 	LoadRequiredStats(load_errors);
 }
 
@@ -253,7 +250,7 @@ void Game::LoadDatafiles()
 void Game::LoadLanguageFiles()
 {
 	Info("Game: Loading language files.");
-	ResourceManager::Get().NextTask(txLoadingLanguageFiles);
+	load_screen->Tick(txLoadingLanguageFiles);
 
 	LoadLanguageFile("menu.txt");
 	LoadLanguageFile("stats.txt");
@@ -292,7 +289,7 @@ void Game::LoadLanguageFiles()
 void Game::ConfigureGame()
 {
 	Info("Game: Configuring game.");
-	ResourceManager::Get().NextTask(txConfiguringGame);
+	load_screen->Tick(txConfiguringGame);
 
 	InitScene();
 	InitSuperShader();
@@ -328,7 +325,7 @@ void Game::LoadData()
 
 	res_mgr.SetMutex(mutex);
 	mutex = nullptr;
-	res_mgr.PrepareLoadScreen();
+	res_mgr.PrepareLoadScreen(0.1f);
 	AddLoadTasks();
 	res_mgr.StartLoadScreen();
 }

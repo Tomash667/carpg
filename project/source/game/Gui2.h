@@ -199,6 +199,7 @@ public:
 	void SimpleDialog(cstring text, Control* parent, cstring name = "simple");
 	void DrawSpriteRect(TEX t, const Rect& rect, DWORD color = WHITE);
 	bool HaveDialog(cstring name);
+	bool HaveDialog(Dialog* dialog);
 	IDirect3DDevice9* GetDevice() { return device; }
 	bool AnythingVisible() const;
 	void OnResize(const Int2& wnd_size);

@@ -26,6 +26,7 @@
 #include "AIController.h"
 #include "BitStreamFunc.h"
 #include "Team.h"
+#include "SaveState.h"
 
 extern string g_ctime;
 
@@ -223,11 +224,15 @@ void Game::SaveLoadEvent(int id)
 				if(mp_load)
 					create_server_panel->Show();
 			}
-			catch(cstring err)
+			catch(const SaveException& ex)
 			{
-				err = Format("%s%s", txLoadError, err);
-				Error(err);
-				GUI.SimpleDialog(err, saveload);
+				Error("Failed to load game: %s", ex.msg);
+				cstring dialog_text;
+				if(ex.localized_msg)
+					dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
+				else
+					dialog_text = txLoadErrorGeneric;
+				GUI.SimpleDialog(dialog_text, saveload);
 				mp_load = false;
 			}
 		}

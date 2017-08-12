@@ -160,7 +160,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 }
 
 //=================================================================================================
-bool Game::LoadGameSlot(int slot)
+void Game::LoadGameSlot(int slot)
 {
 	assert(InRange(slot, 1, MAX_SAVE_SLOTS));
 
@@ -171,8 +171,8 @@ bool Game::LoadGameSlot(int slot)
 	HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
 	{
-		Error(txLoadOpenError, filename, GetLastError());
-		throw txLoadFailed;
+		auto last_error = GetLastError();
+		throw SaveException(Format(txLoadOpenError, filename, last_error), Format("Failed to open file '%s' (%d).", filename, last_error), true);
 	}
 
 	prev_game_state = game_state;
@@ -190,12 +190,19 @@ bool Game::LoadGameSlot(int slot)
 	{
 		LoadGame(file);
 	}
-	catch(cstring /*err*/)
+	catch(const SaveException&)
 	{
 		prev_game_state = GS_LOAD;
 		CloseHandle(file);
 		ExitToMenu();
 		throw;
+	}
+	catch(cstring msg)
+	{
+		prev_game_state = GS_LOAD;
+		CloseHandle(file);
+		ExitToMenu();
+		throw SaveException(nullptr, msg);
 	}
 
 	prev_game_state = GS_LOAD;
@@ -233,8 +240,6 @@ bool Game::LoadGameSlot(int slot)
 		multiplayer_panel->visible = true;
 		main_menu->visible = true;
 	}
-
-	return true;
 }
 
 //=================================================================================================
@@ -572,6 +577,8 @@ void Game::SaveGame(HANDLE file)
 		PushNetChange(NetChange::GAME_SAVED);
 		AddMultiMsg(txGameSaved);
 	}
+
+	WriteFile(file, "EOS", 3, &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -658,21 +665,25 @@ void Game::LoadGame(HANDLE file)
 	for(int i = 0; i < 4; ++i)
 	{
 		if(sign2[i] != sign[i])
-			throw txLoadSignature;
+			throw SaveException(txLoadSignature, "Invalid file signature.");
 	}
 
 	// version
 	int version;
 	f >> version;
 	if(version > VERSION)
-		throw Format(txLoadVersion, VersionToString(version), VERSION_STR);
+	{
+		cstring ver_str = VersionToString(version);
+		throw SaveException(Format(txLoadVersion, ver_str, VERSION_STR), Format("Invalid file version %s, current %s.", ver_str, VERSION_STR));
+	}
 
 	// save version
 	f >> LOAD_VERSION;
-	if(LOAD_VERSION < SUPPORT_LOAD_VERSION.x)
-		throw Format(txLoadSaveVersionOld, LOAD_VERSION);
-	if(LOAD_VERSION > SUPPORT_LOAD_VERSION.y)
-		throw Format(txLoadSaveVersionNew, LOAD_VERSION);
+	if(LOAD_VERSION < MIN_SUPPORT_LOAD_VERSION)
+	{
+		cstring ver_str = VersionToString(version);
+		throw SaveException(Format(txLoadSaveVersionOld, ver_str), Format("Unsupported version '%s'.", ver_str));
+	}
 	if(LOAD_VERSION >= V_0_2_20 && LOAD_VERSION < V_0_4)
 	{
 		// build - unused
@@ -684,7 +695,7 @@ void Game::LoadGame(HANDLE file)
 	if(LOAD_VERSION >= V_0_4)
 		f >> start_version;
 	else
-		start_version = VERSION;
+		start_version = version;
 
 	// czy online / dev
 	byte flags;
@@ -693,12 +704,12 @@ void Game::LoadGame(HANDLE file)
 	if(mp_load)
 	{
 		if(!online_save)
-			throw txLoadMP;
+			throw SaveException(txLoadMP, "Save is from singleplayer mode.");
 	}
 	else
 	{
 		if(online_save)
-			throw txLoadSP;
+			throw SaveException(txLoadSP, "Save is from multiplayer mode.");
 	}
 
 	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
@@ -1408,6 +1419,15 @@ void Game::LoadGame(HANDLE file)
 	else
 		pc->is_local = true;
 
+	// end of save
+	if(LOAD_VERSION >= V_CURRENT)
+	{
+		char eos[3];
+		ReadFile(file, eos, 3, &tmp, nullptr);
+		if(eos[0] != 'E' || eos[1] != 'O' || eos[2] != 'S')
+			throw "Missing EOS.";
+	}
+
 	if(enter_from == ENTER_FROM_UNKNOWN && game_state2 == GS_LEVEL)
 	{
 		// zgadnij sk¹d przysz³a dru¿yna
@@ -1599,7 +1619,7 @@ void Game::Quicksave(bool from_console)
 }
 
 //=================================================================================================
-void Game::Quickload(bool from_console)
+bool Game::Quickload(bool from_console)
 {
 	if(!CanLoadGame())
 	{
@@ -1607,7 +1627,7 @@ void Game::Quickload(bool from_console)
 			AddConsoleMsg(txCantLoadGame);
 		else
 			GUI.SimpleDialog(txCantLoadGame, nullptr);
-		return;
+		return true;
 	}
 
 	try
@@ -1616,12 +1636,24 @@ void Game::Quickload(bool from_console)
 		sv_online = false;
 		LoadGameSlot(MAX_SAVE_SLOTS);
 	}
-	catch(cstring err)
+	catch(const SaveException& ex)
 	{
-		err = Format("%s%s", txLoadError, err);
-		Error(err);
-		GUI.SimpleDialog(err, nullptr);
+		if(ex.missing_file)
+		{
+			Warn("Missing quicksave.");
+			return false;
+		}
+
+		Error("Failed to load game: %s", ex.msg);
+		cstring dialog_text;
+		if(ex.localized_msg)
+			dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
+		else
+			dialog_text = txLoadErrorGeneric;
+		GUI.SimpleDialog(dialog_text, nullptr);
 	}
+
+	return true;
 }
 
 //=================================================================================================
