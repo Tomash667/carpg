@@ -136,4 +136,5 @@ private:
 	vector<Perk> available_perks, unavailable_perks;
 	vector<std::pair<cstring, int>> taken_perks;
 	const Item* items[4];
+	TEX tKlasaCecha;
 };

@@ -5,6 +5,7 @@
 #include "Language.h"
 #include "InfoBox.h"
 #include "BitStreamFunc.h"
+#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId
@@ -348,7 +349,7 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 	PlayerInfo& info = game->game_players[item];
 
 	if(column == 0)
-		cell.img = (info.ready ? game->tGotowy : game->tNieGotowy);
+		cell.img = (info.ready ? tGotowy : tNieGotowy);
 	else if(column == 1)
 	{
 		cell.text_color->text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
@@ -517,4 +518,12 @@ void ServerPanel::PickClass(Class clas, bool ready)
 			game->AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
 		game->CheckReady();
 	}
+}
+
+//=================================================================================================
+void ServerPanel::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("gotowy.png", tGotowy);
+	tex_mgr.AddLoadTask("niegotowy.png", tNieGotowy);
 }

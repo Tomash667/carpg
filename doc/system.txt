@@ -157,18 +157,27 @@ KIERUNEK ZWRACANY PRZEZ angle()
 
 		   
 =====================================================================================================
------------------------------------------------
-  SERWER             |    KLIENT
----------------------+-------------------------
- ID_WORLD_DATA       |
-                     | ID_READY
- ID_CHANGE_LEVEL     |
-                     | ID_SND_RECEIPT_ACKED
- ID_LEVEL_DATA       |
-                     | ID_READY
- ID_PLAYER_DATA2     |
-                     | ID_READY
- ID_START            |
+------------------------------------------------------
+  SERWER					|    KLIENT
+----------------------------+-------------------------
+ ID_STARTUP ->				|
+							| LoadingStart(9)
+ ID_WORLD_DATA ->			|
+							| Step, ReadWorldData, Step
+							| <- ID_READY
+ ID_PLAYER_START_DATA ->	|
+							| Step, ReadPlayerData, Step
+							| <- ID_READY
+ ID_CHANGE_LEVEL ->			|
+							| Step
+							| <- ID_SND_RECEIPT_ACKED
+ ID_LEVEL_DATA ->			|
+							| Step, ReadLevelData, Step
+							| <- ID_READY
+ ID_PLAYER_DATA	->			|
+							| Step, ReadPlayerData, LoadResources
+							| <- ID_READY
+ ID_START ->				|
 
  
 =====================================================================================================

@@ -731,52 +731,55 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		Net_FilterServerChanges();
 	}
 
+	// calculate number of loading steps for drawing progress bar
+	steps = 3; // common txEnteringLocation, txGeneratingMinimap, txLoadingComplete
+	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
+		++steps; // txGeneratingMap
 	switch(l.type)
 	{
 	case L_CITY:
-		steps = 5;
-		if(l.state != LS_ENTERED && l.state != LS_CLEARED)
-			steps += LocationHelper::IsCity(l) ? 11 : 10;
 		if(first)
-			steps += 5;
+			steps += 4; // txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems
 		else if(!reenter)
 		{
-			steps += 3;
+			steps += 2; // txGeneratingUnits, txGeneratingPhysics
 			if(l.last_visit != worldtime)
-				++steps;
+				++steps; // txGeneratingItems
 		}
+		if(!reenter)
+			++steps; // txRecreatingObjects
 		break;
 	case L_DUNGEON:
 	case L_CRYPT:
 	case L_CAVE:
-		steps = 3;
 		if(first)
-			steps += 3;
+			steps += 2; // txGeneratingObjects, txGeneratingUnits
 		else if(!reenter)
-			++steps;
+			++steps; // txRegeneratingLevel
 		break;
 	case L_FOREST:
 	case L_CAMP:
 	case L_MOONWELL:
-		steps = 3;
 		if(first)
-			steps += 4;
+			steps += 3; // txGeneratingObjects, txGeneratingUnits, txGeneratingItems
+		else if(!reenter)
+			steps += 2; // txGeneratingUnits, txGeneratingPhysics
 		if(!reenter)
-			steps += 3;
+			++steps; // txRecreatingObjects
 		break;
 	case L_ENCOUNTER:
-		steps = 8;
+		steps += 4; // txGeneratingObjects, txRecreatingObjects, txGeneratingUnits, txGeneratingItems
 		break;
 	default:
 		assert(0);
-		steps = 6;
+		steps = 10;
 		break;
 	}
-	++steps; // for music
 
-	LoadingStart(steps);
+	LoadingStart(steps, 0.8f);
 	LoadingStep(txEnteringLocation);
 
+	// generate map on first visit
 	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
 	{
 		if(next_seed != 0)
@@ -1414,14 +1417,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		break;
 	}
 
-	// load music
-	LoadingStep(txLoadMusic);
-	if(!nomusic)
-		LoadMusic(GetLocationMusic(), false);
+	LoadResources(txLoadingComplete);
 
-	SetTerrainTextures();
-
-	LoadingStep(txLoadingComplete);
 	l.last_visit = worldtime;
 	CheckIfLocationCleared();
 	local_ctx_valid = true;
@@ -3354,8 +3351,6 @@ void Game::GenerateForest(Location& loc)
 		}
 	}
 
-	LoadingStep(txGeneratingTerrain);
-
 	Perlin perlin(4, 4, 1);
 
 	// losuj teren
@@ -3760,8 +3755,6 @@ void Game::GenerateEncounterMap(Location& loc)
 				t = TT_GRASS3;
 		}
 	}
-
-	LoadingStep(txGeneratingTerrain);
 
 	Perlin perlin(4, 4, 1);
 
@@ -4711,8 +4704,6 @@ void Game::GenerateCamp(Location& loc)
 		}
 	}
 
-	LoadingStep(txGeneratingTerrain);
-
 	Perlin perlin(4, 4, 1);
 
 	// losuj teren
@@ -5396,8 +5387,6 @@ void Game::GenerateMoonwell(Location& loc)
 		}
 	}
 
-	LoadingStep(txGeneratingTerrain);
-
 	Perlin perlin(4, 4, 1);
 
 	// losuj teren
@@ -5884,8 +5873,6 @@ void Game::GenerateSecretLocation(Location& loc)
 				t = TT_GRASS3;
 		}
 	}
-
-	LoadingStep(txGeneratingTerrain);
 
 	Perlin perlin(4, 4, 1);
 
@@ -6383,7 +6370,6 @@ void Game::GenerateCityMap(Location& loc)
 	gen->SetTerrainNoise(Random(3, 5), Random(3.f, 8.f), 1.f, Random(1.f, 2.f));
 
 	gen->RandomizeHeight();
-	LoadingStep();
 
 	RoadType rtype;
 	int swap = 0;
@@ -6408,29 +6394,19 @@ void Game::GenerateCityMap(Location& loc)
 	rtype = RoadType_Plus;
 
 	gen->GenerateMainRoad(rtype, dir, 4, plaza, swap, city->entry_points, city->gates, true);
-	LoadingStep();
 	gen->FlattenRoadExits();
-	LoadingStep();
 	gen->GenerateRoads(TT_ROAD, 25);
 	for(int i = 0; i < 2; ++i)
-	{
-		LoadingStep();
 		gen->FlattenRoad();
-	}
-	LoadingStep();
 
 	vector<ToBuild> tobuild;
 	PrepareCityBuildings(*city, tobuild);
 
 	gen->GenerateBuildings(tobuild);
-	LoadingStep();
 	gen->ApplyWallTiles(city->gates);
-	LoadingStep();
 
 	gen->SmoothTerrain();
-	LoadingStep();
 	gen->FlattenRoad();
-	LoadingStep();
 
 	if(plaza && Rand() % 4 != 0)
 	{
@@ -6460,7 +6436,6 @@ void Game::GenerateCityMap(Location& loc)
 	terrain->RemoveHeightMap();
 
 	gen->CleanBorders();
-	LoadingStep();
 }
 
 void Game::GenerateVillageMap(Location& loc)
@@ -6480,7 +6455,6 @@ void Game::GenerateVillageMap(Location& loc)
 	gen->SetTerrainNoise(Random(3, 5), Random(3.f, 8.f), 1.f, Random(2.f, 10.f));
 
 	gen->RandomizeHeight();
-	LoadingStep();
 
 	RoadType rtype;
 	int roads, swap = 0;
@@ -6532,26 +6506,17 @@ void Game::GenerateVillageMap(Location& loc)
 	gen->GenerateMainRoad(rtype, dir, roads, plaza, swap, village->entry_points, village->gates, extra_roads);
 	if(extra_roads)
 		gen->GenerateRoads(TT_SAND, 5);
-	LoadingStep();
 	gen->FlattenRoadExits();
 	for(int i = 0; i < 2; ++i)
-	{
-		LoadingStep();
 		gen->FlattenRoad();
-	}
-	LoadingStep();
 
 	vector<ToBuild> tobuild;
 	PrepareCityBuildings(*village, tobuild);
 
 	gen->GenerateBuildings(tobuild);
-	LoadingStep();
 	gen->GenerateFields();
-	LoadingStep();
 	gen->SmoothTerrain();
-	LoadingStep();
 	gen->FlattenRoad();
-	LoadingStep();
 
 	g_have_well = false;
 
@@ -6569,7 +6534,6 @@ void Game::GenerateVillageMap(Location& loc)
 	}
 
 	gen->CleanBorders();
-	LoadingStep();
 }
 
 void Game::PrepareCityBuildings(City& city, vector<ToBuild>& tobuild)

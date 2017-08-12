@@ -1792,7 +1792,7 @@ void Game::SendPlayerData(int index)
 	BitStream& stream = net_stream2;
 
 	stream.Reset();
-	stream.Write(ID_PLAYER_DATA2);
+	stream.Write(ID_PLAYER_DATA);
 	stream.Write(unit.netid);
 
 	// items
@@ -5503,7 +5503,7 @@ void Game::UpdateClient(float dt)
 					peer->DeallocatePacket(packet);
 					StreamError();
 					Net_FilterClientChanges();
-					LoadingStart(4);
+					LoadingStart(4, 0.8f);
 					return;
 				}
 			}

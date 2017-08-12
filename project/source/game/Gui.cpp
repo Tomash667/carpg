@@ -274,6 +274,8 @@ void Game::LoadGuiData()
 	game_gui->LoadData();
 	Inventory::LoadData();
 	world_map->LoadData();
+	server_panel->LoadData();
+	pick_server_panel->LoadData();
 }
 
 //=================================================================================================

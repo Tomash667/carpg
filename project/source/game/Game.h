@@ -512,9 +512,7 @@ struct Game final : public Engine, public UnitEventHandler
 	Mesh* aArrow, *aSkybox, *aWorek, *aSkrzynia, *aKratka, *aNaDrzwi, *aNaDrzwi2, *aSchodyDol, *aSchodyGora, *aSchodyDol2, *aSpellball, *aPrzycisk, *aDrzwi, *aDrzwi2;
 	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
 	TEX tItemRegion, tMinimap, tChar, tSave;
-	TEX tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tRip, tCelownik, tObwodkaBolu, tEquipped,
-		tDialogUp, tDialogDown, tBubble, tMiniunit, tMiniunit2, tSchodyDol, tSchodyGora, tIcoHaslo, tIcoZapis, tGotowy, tNieGotowy, tTrawa, tTrawa2, tTrawa3, tZiemia,
-		tDroga, tMiniSave, tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tPole, tWarning, tError;
+	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tMiniSave, tWarning, tError;
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *eGui, *ePostFx, *eGlow, *eGrass;
@@ -533,7 +531,11 @@ struct Game final : public Engine, public UnitEventHandler
 	cstring txLoadGuiTextures,
 		txLoadTerrainTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadBuildings, txLoadTraps, txLoadSpells, txLoadObjects, txLoadUnits,
 		txLoadItems, txLoadSounds, txLoadMusic, txGenerateWorld;
-	// pre
+	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;
+	
+	//-----------------------------------------------------------------
+	// Localized texts
+	//-----------------------------------------------------------------
 	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings, txLoadingRequires, txLoadingShaders,
 		txLoadingDialogs, txLoadingLanguageFiles;
 	cstring txAiNoHpPot[2], txAiJoinTour[4], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
@@ -542,7 +544,7 @@ struct Game final : public Engine, public UnitEventHandler
 		txAiHeroOutsideText[2], txAiDrunkMageText[3], txAiDrunkText[5], txAiDrunkmanText[4];
 	cstring txRandomEncounter, txCamp;
 	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics, txRecreatingObjects, txGeneratingMinimap,
-		txLoadingComplete, txWaitingForPlayers, txGeneratingTerrain;
+		txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txContestNoWinner, txContestStart, txContestTalk[14], txContestWin, txContestWinNews, txContestDraw, txContestPrize, txContestNoPeople;
 	cstring txTut[10], txTutNote, txTutLoc, txTour[23], txTutPlay, txTutTick;
 	cstring txCantSaveGame, txSaveFailed, txSavedGameN, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading, txCantSaveNow,
@@ -702,7 +704,7 @@ public:
 
 	//---------------------------------
 	// WCZYTYWANIE
-	float loading_dt;
+	float loading_dt, loading_cap;
 	Timer loading_t;
 	int loading_steps, loading_index;
 	DWORD clear_color2;
@@ -1136,7 +1138,6 @@ public:
 	void GenerateCaveUnits();
 	void SaveGame(HANDLE file);
 	void LoadGame(HANDLE file);
-	void SaveGame2(StreamWriter& f);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelContext& ctx, int& err_count);
 	void CastSpell(LevelContext& ctx, Unit& unit);
@@ -1234,8 +1235,9 @@ public:
 	void SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests, int count);
 	void PlayHitSound(MATERIAL_TYPE mat_bron, MATERIAL_TYPE mat_cialo, const Vec3& hitpoint, float range, bool dmg);
 	// wczytywanie
-	void LoadingStart(int steps);
-	void LoadingStep(cstring text = nullptr);
+	void LoadingStart(int steps, float load_cap = 1.f);
+	void LoadingStep(cstring text = nullptr, int end = 0);
+	void LoadResources(cstring text);
 	//
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();

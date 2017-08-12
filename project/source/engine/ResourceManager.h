@@ -417,8 +417,10 @@ public:
 	void NextTask(cstring next_category = nullptr);
 	void SetLoadScreen(LoadScreen* _load_screen) { load_screen = _load_screen; }
 	void PrepareLoadScreen(float progress_min = 0.f, float progress_max = 1.f);
-	void StartLoadScreen();
+	void StartLoadScreen(cstring category = nullptr);
 	void SetMutex(HANDLE _mutex) { mutex = _mutex; }
+	bool HaveTasks() const { return !tasks.empty(); }
+	int GetLoadTasksCount() const { return to_load; }
 	
 	template<typename T>
 	TypeManager<T> For()

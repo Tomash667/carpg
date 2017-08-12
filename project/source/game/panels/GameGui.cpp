@@ -142,11 +142,11 @@ void GameGui::DrawFront()
 
 	// celownik
 	if(game.pc->unit->action == A_SHOOT)
-		GUI.DrawSprite(game.tCelownik, Center(32, 32));
+		GUI.DrawSprite(tCelownik, Center(32, 32));
 
 	// obwódka bólu
 	if(game.pc->dmgc > 0.f)
-		GUI.DrawSpriteFull(game.tObwodkaBolu, COLOR_RGBA(255, 255, 255, (int)Clamp<float>(game.pc->dmgc / game.pc->unit->hp * 5 * 255, 0.f, 255.f)));
+		GUI.DrawSpriteFull(tObwodkaBolu, COLOR_RGBA(255, 255, 255, (int)Clamp<float>(game.pc->dmgc / game.pc->unit->hp * 5 * 255, 0.f, 255.f)));
 
 	// debug info
 	if(game.debug_info && (!game.IsLocal() || !game.devmode))
@@ -558,7 +558,7 @@ void GameGui::DrawSpeechBubbles()
 					pt.y = GUI.wnd_size.y - sb.size.y / 2;
 
 				Rect rect = Rect::Create(Int2(pt.x - sb.size.x / 2, pt.y - sb.size.y / 2), sb.size);
-				GUI.DrawItem(game.tBubble, rect.LeftTop(), sb.size, a1);
+				GUI.DrawItem(tBubble, rect.LeftTop(), sb.size, a1);
 				GUI.DrawText(GUI.fSmall, sb.text, DT_CENTER | DT_VCENTER, a2, rect);
 			}
 		}
@@ -1121,6 +1121,9 @@ void GameGui::ClosePanels(bool close_mp_box)
 void GameGui::LoadData()
 {
 	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("celownik.png", tCelownik);
+	tex_mgr.AddLoadTask("bubble.png", tBubble);
+	tex_mgr.AddLoadTask("czerwono.png", tObwodkaBolu);
 	tex_mgr.AddLoadTask("bar.png", tBar);
 	tex_mgr.AddLoadTask("hp_bar.png", tHpBar);
 	tex_mgr.AddLoadTask("poisoned_hp_bar.png", tPoisonedHpBar);
@@ -1140,7 +1143,9 @@ void GameGui::LoadData()
 	tex_mgr.AddLoadTask("minihp.png", tMinihp[0]);
 	tex_mgr.AddLoadTask("minihp2.png", tMinihp[1]);
 	tex_mgr.AddLoadTask("ministamina.png", tMinistamina);
+
 	BuffInfo::LoadImages();
+	minimap->LoadData();
 }
 
 //=================================================================================================

@@ -563,7 +563,7 @@ recreatingObjects = "Odtwarzanie obiektów"
 generatingMinimap = "Generowanie minimapy"
 loadingComplete = "Wczytywanie zakoñczone"
 waitingForPlayers = "Oczekiwanie na graczy"
-generatingTerrain = "Generowanie terenu"
+loadingResources = "Wczytywanie zasobów"
 
 // zawody w piciu
 contestNoWinner = "W tym roku nikt nie wygra³ zawodów w piciu."

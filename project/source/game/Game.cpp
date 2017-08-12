@@ -2039,7 +2039,7 @@ void Game::SetGameText()
 	txGeneratingMinimap = Str("generatingMinimap");
 	txLoadingComplete = Str("loadingComplete");
 	txWaitingForPlayers = Str("waitingForPlayers");
-	txGeneratingTerrain = Str("generatingTerrain");
+	txLoadingResources = Str("loadingResources");
 
 	// zawody w piciu
 	txContestNoWinner = Str("contestNoWinner");

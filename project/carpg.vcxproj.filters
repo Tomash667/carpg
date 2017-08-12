@@ -597,9 +597,6 @@
     <ClCompile Include="source\engine\Terrain.cpp">
       <Filter>2. engine</Filter>
     </ClCompile>
-    <ClCompile Include="source\engine\TerrainTile.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\system\Content.cpp">
       <Filter>3. game\system</Filter>
     </ClCompile>
@@ -614,6 +611,9 @@
     </ClCompile>
     <ClCompile Include="source\engine\VertexData.cpp">
       <Filter>2. engine</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\TerrainTile.cpp">
+      <Filter>3. game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1193,9 +1193,6 @@
     <ClInclude Include="source\engine\Terrain.h">
       <Filter>2. engine</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\TerrainTile.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\engine\VertexDeclaration.h">
       <Filter>2. engine</Filter>
     </ClInclude>
@@ -1219,6 +1216,9 @@
     </ClInclude>
     <ClInclude Include="source\engine\VertexData.h">
       <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\TerrainTile.h">
+      <Filter>3. game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

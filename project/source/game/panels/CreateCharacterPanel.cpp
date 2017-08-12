@@ -271,7 +271,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 					{
 						mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
 						part.Right() = int(fi.part * 256);
-						GUI.DrawSprite2(game->tKlasaCecha, mat, &part, &rect, WHITE);
+						GUI.DrawSprite2(tKlasaCecha, mat, &part, &rect, WHITE);
 					}
 					r.Bottom() = r.Top() + VALUE_H;
 					if(!GUI.DrawText(GUI.default_font, item_text, DT_SINGLELINE, BLACK, r, &rect))
@@ -919,6 +919,7 @@ void CreateCharacterPanel::Init()
 void CreateCharacterPanel::LoadData()
 {
 	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("klasa_cecha.png", tKlasaCecha);
 	tex_mgr.AddLoadTask("close.png", custom_x.tex[Button::NONE]);
 	tex_mgr.AddLoadTask("close_hover.png", custom_x.tex[Button::HOVER]);
 	tex_mgr.AddLoadTask("close_down.png", custom_x.tex[Button::DOWN]);

@@ -10681,7 +10681,7 @@ void Game::ChangeLevel(int gdzie)
 		}
 		else
 		{
-			LoadingStart(4);
+			LoadingStart(4, 0.8f);
 			LoadingStep(txLevelUp);
 
 			MultiInsideLocation* inside = (MultiInsideLocation*)location;
@@ -10695,13 +10695,13 @@ void Game::ChangeLevel(int gdzie)
 	{
 		MultiInsideLocation* inside = (MultiInsideLocation*)location;
 
-		int steps = 3;
+		int steps = 3; // txLevelDown, txGeneratingMinimap, txLoadingComplete
 		if(dungeon_level + 1 >= inside->generated)
-			steps += 2;
+			steps += 3; // txGeneratingMap, txGeneratingObjects, txGeneratingUnits
 		else
-			++steps;
+			++steps; // txRegeneratingLevel
 
-		LoadingStart(steps);
+		LoadingStart(steps, 0.8f);
 		LoadingStep(txLevelDown);
 
 		// poziom w dó³
@@ -10740,7 +10740,9 @@ void Game::ChangeLevel(int gdzie)
 	local_ctx_valid = true;
 	location->last_visit = worldtime;
 	CheckIfLocationCleared();
-	LoadingStep(txLoadingComplete);
+	LoadResources(txLoadingComplete);
+
+	SetMusic();
 
 	if(IsOnline() && players > 1)
 	{
@@ -14070,9 +14072,6 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 	AddPlayerTeam(spawn_pos, spawn_rot, reenter, from_outside);
 	OpenDoorsByTeam(spawn_pt);
-	if(!nomusic)
-		LoadMusic(GetLocationMusic(), false);
-	SetMusic();
 	OnEnterLevelOrLocation();
 	OnEnterLevel();
 
@@ -14744,11 +14743,12 @@ void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpo
 	}
 }
 
-void Game::LoadingStart(int steps)
+void Game::LoadingStart(int steps, float load_cap)
 {
 	load_screen->Reset();
 	loading_t.Reset();
 	loading_dt = 0.f;
+	loading_cap = load_cap;
 	loading_steps = steps;
 	loading_index = 0;
 	clear_color = BLACK;
@@ -14756,24 +14756,67 @@ void Game::LoadingStart(int steps)
 	load_screen->visible = true;
 	main_menu->visible = false;
 	game_gui->visible = false;
+	ResourceManager::Get().PrepareLoadScreen(load_cap);
 }
 
-void Game::LoadingStep(cstring text)
+void Game::LoadingStep(cstring text, int end)
 {
-	float progress = float(loading_index) / loading_steps;
-	if(text)
-		load_screen->SetProgress(progress, text);
+	float progress;
+	if(end == 0)
+		progress = float(loading_index) / loading_steps * loading_cap;
+	else if(end == 1)
+		progress = loading_cap;
 	else
-		load_screen->SetProgress(progress);
+		progress = 1.f;
+	load_screen->SetProgressOptional(progress, text);
 
-	++loading_index;
-	loading_dt += loading_t.Tick();
-	if(loading_dt >= 1.f / 30 || loading_index == loading_steps)
+	if(end != 2)
 	{
-		loading_dt = 0.f;
-		DoPseudotick();
-		loading_t.Tick();
+		++loading_index;
+		if(end == 1)
+			assert(loading_index == loading_steps);
 	}
+	if(end != 1)
+	{
+		loading_dt += loading_t.Tick();
+		if(loading_dt >= 1.f / 30 || end == 2)
+		{
+			loading_dt = 0.f;
+			DoPseudotick();
+			loading_t.Tick();
+		}
+	}
+}
+
+void Game::LoadResources(cstring text)
+{
+	LoadingStep(nullptr, 1);
+	Info("Preparing resources to load.");
+
+	//------------------------------------------------
+	// Add load tasks
+	//------------------------------------------------
+	// load music
+	if(!nomusic)
+		LoadMusic(GetLocationMusic(), false);
+
+	// terrain textures
+	if(location->outside)
+		SetTerrainTextures();
+
+	//------------------------------------------------
+	// check if there is anything to load
+	auto& res_mgr = ResourceManager::Get();
+	if(res_mgr.HaveTasks())
+	{
+		Info("Loading new resources (%d).", res_mgr.GetLoadTasksCount());
+		res_mgr.StartLoadScreen(txLoadingResources);
+	}
+	else
+		Info("Nothing new to load.");
+
+	// finished
+	LoadingStep(text, 2);
 }
 
 cstring arena_slabi[] = {

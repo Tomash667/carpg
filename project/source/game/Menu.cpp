@@ -1312,7 +1312,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								if(game_state == GS_LOAD)
 									LoadingStep("");
 								else
-									LoadingStart(4);
+									LoadingStart(4, 0.8f);
 								current_location = loc;
 								location = locations[loc];
 								dungeon_level = level;
@@ -1365,7 +1365,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						StreamError();
 					}
 					break;
-				case ID_PLAYER_DATA2:
+				case ID_PLAYER_DATA:
 					if(net_state == 3)
 					{
 						++net_state;
@@ -1382,14 +1382,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 						else
 						{
 							Info("NM_TRANSFER: Loaded player data.");
+							LoadResources("");
 							byte b[] = { ID_READY, 3 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
-							LoadingStep("");
 						}
 					}
 					else
 					{
-						Error("NM_TRANSFER: Received ID_PLAYER_DATA2 with net state %d.", net_state);
+						Error("NM_TRANSFER: Received ID_PLAYER_DATA with net state %d.", net_state);
 						StreamError();
 					}
 					break;
@@ -2865,7 +2865,7 @@ void Game::UpdateLobbyNet(float dt)
 					{
 						// close lobby and wait for server
 						Info("UpdateLobbyNet: Waiting for server.");
-						LoadingStart(9);
+						LoadingStart(9, 0.8f);
 						main_menu->visible = false;
 						server_panel->CloseDialog();
 						info_box->Show(txWaitingForServer);

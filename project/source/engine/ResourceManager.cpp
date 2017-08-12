@@ -640,14 +640,17 @@ void ResourceManager::PrepareLoadScreen(float progress_min, float progress_max)
 	to_load = 0;
 	loaded = 0;
 	mode = Mode::LoadScreenPrepare;
+	category = nullptr;
 }
 
 //=================================================================================================
-void ResourceManager::StartLoadScreen()
+void ResourceManager::StartLoadScreen(cstring category)
 {
 	assert(mode == Mode::LoadScreenPrepare);
 
 	mode = Mode::LoadScreenRuning;
+	if(category)
+		this->category = category;
 	UpdateLoadScreen();
 	mode = Mode::Instant;
 	task_pool.Free(tasks);
@@ -668,8 +671,9 @@ void ResourceManager::UpdateLoadScreen()
 	}
 
 	// draw first frame
-	category = tasks[loaded]->category;
-	load_screen->SetProgressOptional(progress, category);
+	if(tasks[0]->type == TaskType::Category)
+		category = tasks[0]->category;
+	load_screen->SetProgress(progress, category);
 	engine.DoPseudotick();
 
 	// do all tasks

@@ -4,6 +4,10 @@
 #include "VertexDeclaration.h"
 
 //-----------------------------------------------------------------------------
+struct Texture;
+typedef Texture* TexturePtr;
+
+//-----------------------------------------------------------------------------
 struct Tri
 {
 	int a, b, c;
@@ -104,7 +108,7 @@ public:
 	{
 		return texSplat;
 	}
-	TEX* GetTextures()
+	TexturePtr* GetTextures()
 	{
 		return tex;
 	}
@@ -151,13 +155,7 @@ public:
 	}
 
 	//---------------------------
-	void SetTextures(TEX* textures)
-	{
-		assert(textures);
-		for(uint i = 0; i < 5; ++i)
-			tex[i] = textures[i];
-	}
-
+	void SetTextures(TexturePtr* textures);
 	void RemoveHeightMap(bool _delete = false);
 	void SetHeightMap(float* h);
 	bool IsInside(float x, float z) const
@@ -185,7 +183,7 @@ private:
 	LPD3DXMESH mesh;
 	IDirect3DDevice9* device;
 	TEX texSplat;
-	TEX tex[5];
+	TexturePtr tex[5];
 	Vec3 pos;
 	int state;
 };

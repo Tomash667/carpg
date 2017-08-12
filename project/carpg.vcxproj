@@ -151,7 +151,6 @@
     <ClInclude Include="source\engine\Resource.h" />
     <ClInclude Include="source\engine\ResourceManager.h" />
     <ClInclude Include="source\engine\Terrain.h" />
-    <ClInclude Include="source\engine\TerrainTile.h" />
     <ClInclude Include="source\engine\VertexData.h" />
     <ClInclude Include="source\engine\VertexDeclaration.h" />
     <ClInclude Include="source\ErrorHandler.h" />
@@ -285,6 +284,7 @@
     <ClInclude Include="source\game\stats\UnitData.h" />
     <ClInclude Include="source\game\stats\UnitStats.h" />
     <ClInclude Include="source\game\Team.h" />
+    <ClInclude Include="source\game\TerrainTile.h" />
     <ClInclude Include="source\gui\AreaLayout.h" />
     <ClInclude Include="source\gui\Button.h" />
     <ClInclude Include="source\gui\CheckBox.h" />
@@ -350,7 +350,6 @@
     <ClCompile Include="source\engine\Physics.cpp" />
     <ClCompile Include="source\engine\ResourceManager.cpp" />
     <ClCompile Include="source\engine\Terrain.cpp" />
-    <ClCompile Include="source\engine\TerrainTile.cpp" />
     <ClCompile Include="source\engine\VertexData.cpp" />
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\game\Ai.cpp" />
@@ -475,6 +474,7 @@
     <ClCompile Include="source\game\stats\UnitStats.cpp" />
     <ClCompile Include="source\game\Team.cpp" />
     <ClCompile Include="source\game\TeamItems.cpp" />
+    <ClCompile Include="source\game\TerrainTile.cpp" />
     <ClCompile Include="source\game\Tournament.cpp" />
     <ClCompile Include="source\game\Tutorial.cpp" />
     <ClCompile Include="source\game\Worldmap.cpp" />

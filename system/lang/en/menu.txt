@@ -564,7 +564,7 @@ recreatingObjects = "Recreating objects"
 generatingMinimap = "Generating minimap"
 loadingComplete = "Loading completed"
 waitingForPlayers = "Waiting for players."
-generatingTerrain = "Generating terrain"
+loadingResources = "Loading resources"
 
 // zawody w piciu
 contestNoWinner = "This year nobody won the contest in drinking."

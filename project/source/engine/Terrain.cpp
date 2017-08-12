@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Core.h"
 #include "Terrain.h"
+#include "Resource.h"
 
 //-----------------------------------------------------------------------------
 void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3)
@@ -266,14 +267,13 @@ void Terrain::Make(bool smooth)
 void Terrain::ApplyTextures(ID3DXEffect* effect)
 {
 	assert(state > 1);
-
 	assert(effect);
 
-	V(effect->SetTexture("tex0", tex[0]));
-	V(effect->SetTexture("tex1", tex[1]));
-	V(effect->SetTexture("tex2", tex[2]));
-	V(effect->SetTexture("tex3", tex[3]));
-	V(effect->SetTexture("tex4", tex[4]));
+	V(effect->SetTexture("tex0", tex[0]->tex));
+	V(effect->SetTexture("tex1", tex[1]->tex));
+	V(effect->SetTexture("tex2", tex[2]->tex));
+	V(effect->SetTexture("tex3", tex[3]->tex));
+	V(effect->SetTexture("tex4", tex[4]->tex));
 	V(effect->SetTexture("texBlend", texSplat));
 }
 
@@ -805,6 +805,14 @@ void Terrain::FillGeometryPart(vector<Tri>& tris, vector<Vec3>& verts, int px, i
 	}
 
 #undef XZ
+}
+
+//=================================================================================================
+void Terrain::SetTextures(TexturePtr* textures)
+{
+	assert(textures);
+	for(uint i = 0; i < 5; ++i)
+		tex[i] = textures[i];
 }
 
 //=================================================================================================

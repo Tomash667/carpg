@@ -322,9 +322,14 @@ void Game::ListGrass()
 
 void Game::SetTerrainTextures()
 {
-	TEX tex[5] = { tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga };
+	TexturePtr tex[5] = { tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga };
 	if(LocationHelper::IsVillage(location))
-		tex[2] = tPole;
+		tex[1] = tPole;
+
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	for(int i = 0; i < 5; ++i)
+		tex_mgr.AddLoadTask(tex[i]);
+
 	terrain->SetTextures(tex);
 }
 

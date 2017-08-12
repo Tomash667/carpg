@@ -3053,8 +3053,9 @@ void Game::DrawTerrain(const vector<uint>& parts)
 	V(eTerrain->SetMatrix(hTerrainWorld, (D3DXMATRIX*)&m1));
 	V(eTerrain->SetMatrix(hTerrainCombined, (D3DXMATRIX*)&m2));
 	V(eTerrain->SetTexture(hTerrainTexBlend, terrain->GetSplatTexture()));
+	auto tex = terrain->GetTextures();
 	for(int i = 0; i < 5; ++i)
-		V(eTerrain->SetTexture(hTerrainTex[i], terrain->GetTextures()[i]));
+		V(eTerrain->SetTexture(hTerrainTex[i], tex[i]->tex));
 	V(eTerrain->SetVector(hTerrainFogColor, (D3DXVECTOR4*)&fogColor));
 	V(eTerrain->SetVector(hTerrainFogParam, (D3DXVECTOR4*)&fogParams));
 	V(eTerrain->SetVector(hTerrainLightDir, (D3DXVECTOR4*)&lightDir));

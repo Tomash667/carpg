@@ -169,7 +169,7 @@ enum GamePacket : byte
 	*/
 	ID_LEVEL_DATA,
 
-	ID_PLAYER_DATA2,
+	ID_PLAYER_DATA,
 	ID_START,
 	ID_CONTROL,
 	ID_CHANGES,

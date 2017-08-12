@@ -4,11 +4,14 @@
 	+ else when required
 	+ human mesh/startup items on opening create character screen - show small loading window
 	+ currently level music is loaded at instant
-- update create character screen, for single frame there is no doll
-? sound left/right test
 ? testing
 	? sound/music looping
 	? all
++ dungeon debug info - show levels
+- zly teren pola
+- grass is drawn only next to roads/on field
+- update create character screen, for single frame there is no doll
+- cursor focus bug - start server/client, activate serwer when possible, start game, alt tab to client when loaded - cursor is visible
 ===============================================================================================================
 NEW:
 + rename Bullet -> Projecticle (or other)
@@ -16,6 +19,11 @@ NEW:
 + Resources - hashing
 + sleeping on bed animation
 + terrain holes
++ don't wait for server to load assets
++ refactor EnterLocation to pieces (GenerateMinimap - very common step, call it outside switch and do work, every type have same common function (SpawnObjects/units/items) etc)
++ modability - arena enemies
++ rework mp loading - currently info is shown in infobox and in text
++ mp send loading progress % to/from players, to other players
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

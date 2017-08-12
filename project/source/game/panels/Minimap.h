@@ -20,6 +20,7 @@ public:
 	void Show();
 	void Hide();
 	void Build();
+	void LoadData();
 
 	// przekszata³ca z pozycji œwiata do punktu na mapie (gdzie punkt (0,0) to lewy dolny róg mapy, a (1,1) to prawy górny)
 	Vec2 TransformCoord(const Vec2& pt)
@@ -61,4 +62,7 @@ public:
 	Matrix m1;
 	vector<Text> texts;
 	City* city;
+
+private:
+	TEX tMiniunit[5], tSchodyDol, tSchodyGora, tMinibag, tMinibag2, tMiniportal;
 };

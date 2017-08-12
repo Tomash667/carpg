@@ -352,8 +352,6 @@ void Game::PostconfigureGame()
 	terrain_options.tile_size = 2.f;
 	terrain_options.tiles_per_part = 16;
 	terrain->Init(device, terrain_options);
-	TEX tex[5] = { tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga };
-	terrain->SetTextures(tex);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
 
@@ -502,31 +500,11 @@ void Game::AddLoadTasks()
 	// gui textures
 	res_mgr.AddTaskCategory(txLoadGuiTextures);
 	LoadGuiData();
-	tex_mgr.AddLoadTask("klasa_cecha.png", tKlasaCecha);
-	tex_mgr.AddLoadTask("celownik.png", tCelownik);
-	tex_mgr.AddLoadTask("bubble.png", tBubble);
-	tex_mgr.AddLoadTask("gotowy.png", tGotowy);
-	tex_mgr.AddLoadTask("niegotowy.png", tNieGotowy);
-	tex_mgr.AddLoadTask("save-16.png", tIcoZapis);
-	tex_mgr.AddLoadTask("padlock-16.png", tIcoHaslo);
 	tex_mgr.AddLoadTask("emerytura.jpg", tEmerytura);
 	tex_mgr.AddLoadTask("equipped.png", tEquipped);
 	tex_mgr.AddLoadTask("czern.bmp", tCzern);
 	tex_mgr.AddLoadTask("rip.jpg", tRip);
-	tex_mgr.AddLoadTask("dialog_up.png", tDialogUp);
-	tex_mgr.AddLoadTask("dialog_down.png", tDialogDown);
-	tex_mgr.AddLoadTask("mini_unit.png", tMiniunit);
-	tex_mgr.AddLoadTask("mini_unit2.png", tMiniunit2);
-	tex_mgr.AddLoadTask("schody_dol.png", tSchodyDol);
-	tex_mgr.AddLoadTask("schody_gora.png", tSchodyGora);
-	tex_mgr.AddLoadTask("czerwono.png", tObwodkaBolu);
 	tex_mgr.AddLoadTask("dark_portal.png", tPortal);
-	tex_mgr.AddLoadTask("mini_unit3.png", tMiniunit3);
-	tex_mgr.AddLoadTask("mini_unit4.png", tMiniunit4);
-	tex_mgr.AddLoadTask("mini_unit5.png", tMiniunit5);
-	tex_mgr.AddLoadTask("mini_bag.png", tMinibag);
-	tex_mgr.AddLoadTask("mini_bag2.png", tMinibag2);
-	tex_mgr.AddLoadTask("mini_portal.png", tMiniportal);
 	for(ClassInfo& ci : g_classes)
 		tex_mgr.AddLoadTask(ci.icon_file, ci.icon);
 	tex_mgr.AddLoadTask("warning.png", tWarning);
@@ -534,12 +512,12 @@ void Game::AddLoadTasks()
 
 	// terrain textures
 	res_mgr.AddTaskCategory(txLoadTerrainTextures);
-	tex_mgr.AddLoadTask("trawa.jpg", tTrawa);
-	tex_mgr.AddLoadTask("droga.jpg", tDroga);
-	tex_mgr.AddLoadTask("ziemia.jpg", tZiemia);
-	tex_mgr.AddLoadTask("Grass0157_5_S.jpg", tTrawa2);
-	tex_mgr.AddLoadTask("LeavesDead0045_1_S.jpg", tTrawa3);
-	tex_mgr.AddLoadTask("pole.jpg", tPole);
+	tTrawa = tex_mgr.Get("trawa.jpg");
+	tTrawa2 = tex_mgr.Get("Grass0157_5_S.jpg");
+	tTrawa3 = tex_mgr.Get("LeavesDead0045_1_S.jpg");
+	tDroga = tex_mgr.Get("droga.jpg");
+	tZiemia = tex_mgr.Get("ziemia.jpg");
+	tPole = tex_mgr.Get("pole.jpg");
 	tFloorBase.diffuse = tex_mgr.AddLoadTask("droga.jpg");
 	tFloorBase.normal = nullptr;
 	tFloorBase.specular = nullptr;

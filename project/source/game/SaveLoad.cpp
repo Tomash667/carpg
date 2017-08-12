@@ -184,7 +184,7 @@ void Game::LoadGameSlot(int slot)
 		game_gui->visible = false;
 		world_map->visible = false;
 	}
-	LoadingStart(8);
+	LoadingStart(9, 0.8f);
 
 	try
 	{
@@ -811,7 +811,7 @@ void Game::LoadGame(HANDLE file)
 			if(index >= int(ile) / 4)
 			{
 				++step;
-				LoadingStep(txLoadingLocations);
+				LoadingStep();
 			}
 		}
 		else if(step == 1)
@@ -819,7 +819,7 @@ void Game::LoadGame(HANDLE file)
 			if(index >= int(ile) / 2)
 			{
 				++step;
-				LoadingStep(txLoadingLocations);
+				LoadingStep();
 			}
 		}
 		else if(step == 2)
@@ -827,7 +827,7 @@ void Game::LoadGame(HANDLE file)
 			if(index >= int(ile) * 3 / 4)
 			{
 				++step;
-				LoadingStep(txLoadingLocations);
+				LoadingStep();
 			}
 		}
 
@@ -1140,7 +1140,7 @@ void Game::LoadGame(HANDLE file)
 		throw "Error reading data after news.";
 	++check_id;
 
-	LoadingStep(txEndOfLoading);
+	LoadingStep(txLoadingLevel);
 
 	if(game_state2 == GS_LEVEL)
 	{
@@ -1151,7 +1151,6 @@ void Game::LoadGame(HANDLE file)
 			OutsideLocation* outside = (OutsideLocation*)location;
 
 			SetOutsideParams();
-			SetTerrainTextures();
 
 			ApplyContext(location, local_ctx);
 			ApplyTiles(outside->h, outside->tiles);
@@ -1464,12 +1463,9 @@ void Game::LoadGame(HANDLE file)
 		LoadMusic(MusicType::Boss, false);
 		LoadMusic(MusicType::Death, false);
 		LoadMusic(MusicType::Travel, false);
-		if(game_state2 == GS_LEVEL)
-			LoadMusic(GetLocationMusic(), false);
 	}
 
-	// finish loading
-	LoadingStep(txEndOfLoading);
+	LoadResources(txEndOfLoading);
 	load_screen->visible = false;
 
 #ifdef _DEBUG
@@ -1741,38 +1737,4 @@ void Game::CheckUnitsAi(LevelContext& ctx, int& err_count)
 			Error("Unit %s is neither player or ai.", u.data->id.c_str());
 		}
 	}
-}
-
-void Game::SaveGame2(StreamWriter& f)
-{
-	// signature
-	//f.WriteRawString("CRSV");
-	f << VERSION;
-
-	// header
-	/*
-	bool - hardcore, mp
-	int64 - save_data, game time, play time
-	string - player class, player name, location name, text
-	int - players
-	byte[] - image
-	*/
-
-	// data
-
-	/*Config cfg;
-		cfg.Add("game_day", Format("%d", day));
-		cfg.Add("game_month", Format("%d", month));
-		cfg.Add("game_year", Format("%d", year));
-		cfg.Add("location", ss.location.c_str());
-		cfg.Add("player_name", ss.player_name.c_str());
-		cfg.Add("player_class", g_classes[(int)ss.player_class].id);
-		cfg.Add("save_date", Format("%I64d", ss.save_date));
-		cfg.Add("text", ss.text.c_str());
-		cfg.Add("hardcore", ss.hardcore ? "1" : "0");
-
-		if(IsOnline())
-		{
-			ss.multiplayers = players;
-			cfg.Add("multiplayers", Format("%d", ss.multiplayers));*/
 }

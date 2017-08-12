@@ -7,6 +7,7 @@
 #include "Game.h"
 #include "Version.h"
 #include "BitStreamFunc.h"
+#include "ResourceManager.h"
 
 //=================================================================================================
 PickServerPanel::PickServerPanel(const DialogInfo& info) : Dialog(info)
@@ -280,9 +281,9 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 	{
 		vector<TEX>& imgs = *cell.imgset;
 		if(IS_SET(server.flags, SERVER_PASSWORD))
-			imgs.push_back(game->tIcoHaslo);
+			imgs.push_back(tIcoHaslo);
 		if(IS_SET(server.flags, SERVER_SAVED))
-			imgs.push_back(game->tIcoZapis);
+			imgs.push_back(tIcoZapis);
 	}
 	else
 	{
@@ -292,4 +293,12 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 		else
 			cell.text_color->text = server.name.c_str();
 	}
+}
+
+//=================================================================================================
+void PickServerPanel::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("save-16.png", tIcoZapis);
+	tex_mgr.AddLoadTask("padlock-16.png", tIcoHaslo);
 }
