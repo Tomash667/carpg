@@ -1185,6 +1185,7 @@ void Game::LoadGame(HANDLE file)
 			RespawnObjectColliders(false);
 			SpawnDungeonColliders();
 			CreateDungeonMinimap();
+			PreloadTraps(*local_ctx.traps);
 		}
 
 		// cz¹steczki

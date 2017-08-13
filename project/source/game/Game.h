@@ -1147,6 +1147,7 @@ public:
 	void UpdateTraps(LevelContext& ctx, float dt);
 	// zwraca tymczasowy wskaŸnik na stworzon¹ pu³apkê lub nullptr (mo¿e siê nie udaæ tylko dla ARROW i POISON)
 	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
+	void PreloadTraps(vector<Trap*>& traps);
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);

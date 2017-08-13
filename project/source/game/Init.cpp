@@ -605,17 +605,17 @@ void Game::AddLoadTasks()
 	{
 		BaseTrap& t = g_traps[i];
 		if(t.mesh_id)
-			 mesh_mgr.AddLoadTask(t.mesh_id, &t, TaskCallback(this, &Game::SetupTrap), true);
+			t.mesh = mesh_mgr.AddLoadTask(t.mesh_id);
 		if(t.mesh_id2)
-			t.mesh2 = mesh_mgr.AddLoadTask(t.mesh_id2);
+			t.mesh2 = mesh_mgr.Get(t.mesh_id2);
 		if(!nosound)
 		{
 			if(t.sound_id)
-				sound_mgr.AddLoadTask(t.sound_id, t.sound);
+				t.sound = sound_mgr.Get(t.sound_id);
 			if(t.sound_id2)
-				sound_mgr.AddLoadTask(t.sound_id2, t.sound2);
+				t.sound2 = sound_mgr.Get(t.sound_id2);
 			if(t.sound_id3)
-				sound_mgr.AddLoadTask(t.sound_id3, t.sound3);
+				t.sound3 = sound_mgr.Get(t.sound_id3);
 		}
 	}
 

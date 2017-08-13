@@ -1031,6 +1031,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				return false;
 			}
 		}
+		PreloadTraps(lvl.traps);
 
 		// doors
 		if(!stream.Read(count)

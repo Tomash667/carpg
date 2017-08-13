@@ -4,6 +4,10 @@
 	+ else when required
 	+ human mesh/startup items on opening create character screen - show small loading window
 	+ currently level music is loaded at instant; move LoadMusic
+	+ items
+	+ units
+	+ buildings
+	+ objects/usables
 ? testing
 	? sound/music looping
 	? all
@@ -22,10 +26,16 @@ NEW:
 + terrain holes
 + don't wait for server to load assets
 + refactor EnterLocation to pieces (GenerateMinimap - very common step, call it outside switch and do work, every type have same common function (SpawnObjects/units/items) etc)
-+ modability - arena enemies
 + rework mp loading - currently info is shown in infobox and in text
 + mp send loading progress % to/from players, to other players
-+ modability - base locations
++ modability:
+	+ base locations
+	+ blood types, textures
+	+ arena enemies
+	+ traps
++ cmd - reset shop stock
++ future background loading
+	+ trap first mesh
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

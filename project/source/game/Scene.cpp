@@ -1408,7 +1408,6 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		u.mesh_inst->SetupBones();
 
 	bool selected = (before_player == BP_UNIT && before_player_ptr.unit == &u);
-	//float dist = distance_sqrt(u.GetCenter(), camera_center);
 
 	// dodaj scene node
 	SceneNode* node = node_pool.Get();
@@ -1441,12 +1440,6 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		else
 			node->tint = Vec4(2, 2, 2, 1);
 	}
-	/*if(u.invisible)
-	{
-		node->flags |= SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
-		node->tint.w = 0.5f;
-		node->dist = dist;
-	}*/
 	AddOrSplitSceneNode(node, (u.HaveArmor() && u.GetArmor().armor_type == ArmorUnitType::HUMAN && u.GetArmor().mesh) ? 1 : 0);
 
 	// pancerz
@@ -1462,12 +1455,6 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node2->tex_override = armor.GetTextureOverride();
 		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = lights;
-		/*if(u.invisible)
-		{
-			node2->flags |= SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
-			node2->tint.w = 0.5f;
-			node2->dist = dist;
-		}*/
 		if(selected)
 		{
 			if(cl_glow)
@@ -1560,12 +1547,6 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node2->tex_override = nullptr;
 		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = lights;
-		/*if(u.invisible)
-		{
-			node2->flags |= SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
-			node2->tint.w = 0.5f;
-			node2->dist = dist;
-		}*/
 		if(selected)
 		{
 			if(cl_glow)
@@ -1610,12 +1591,6 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node2->tex_override = nullptr;
 		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = lights;
-		/*if(u.invisible)
-		{
-			node2->flags |= SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
-			node2->tint.w = 0.5f;
-			node2->dist = dist;
-		}*/
 		if(selected)
 		{
 			if(cl_glow)
@@ -1659,12 +1634,6 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node2->tex_override = nullptr;
 		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = lights;
-		/*if(u.invisible)
-		{
-			node2->flags |= SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
-			node2->tint.w = 0.5f;
-			node2->dist = dist;
-		}*/
 		if(selected)
 		{
 			if(cl_glow)
@@ -1729,12 +1698,6 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node2->tex_override = nullptr;
 		node2->tint = Vec4(1, 1, 1, 1);
 		node2->lights = lights;
-		/*if(u.invisible)
-		{
-			node2->flags |= SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
-			node2->tint.w = 0.5f;
-			node2->dist = dist;
-		}*/
 		if(selected)
 		{
 			if(cl_glow)
@@ -1766,12 +1729,6 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		node2->tex_override = nullptr;
 		node2->tint = h.hair_color;
 		node2->lights = lights;
-		/*if(u.invisible)
-		{
-			node2->flags |= SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
-			node2->tint.w = 0.5f;
-			node2->dist = dist;
-		}*/
 		if(selected)
 		{
 			if(cl_glow)
@@ -1803,12 +1760,6 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			node3->tex_override = nullptr;
 			node3->tint = h.hair_color;
 			node3->lights = lights;
-			/*if(u.invisible)
-			{
-				node3->flags |= SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
-				node3->tint.w = 0.5f;
-				node3->dist = dist;
-			}*/
 			if(selected)
 			{
 				if(cl_glow)
@@ -1841,12 +1792,6 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			node3->tex_override = nullptr;
 			node3->tint = h.hair_color;
 			node3->lights = lights;
-			/*if(u.invisible)
-			{
-				node3->flags |= SceneNode::F_ALPHA_BLEND;
-				node3->tint.w = 0.5f;
-				node3->dist = dist;
-			}*/
 			if(selected)
 			{
 				if(cl_glow)
@@ -1879,12 +1824,6 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 			node3->tex_override = nullptr;
 			node3->tint = h.hair_color;
 			node3->lights = lights;
-			/*if(u.invisible)
-			{
-				node3->flags |= SceneNode::F_ALPHA_BLEND | SceneNode::F_NO_ZWRITE;
-				node3->tint.w = 0.5f;
-				node3->dist = dist;
-			}*/
 			if(selected)
 			{
 				if(cl_glow)

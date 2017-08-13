@@ -66,7 +66,7 @@ typedef Sound* SoundPtr;
 struct TexId
 {
 	string id;
-	Texture* tex;
+	TexturePtr tex;
 
 	explicit TexId(cstring _id) : tex(nullptr)
 	{

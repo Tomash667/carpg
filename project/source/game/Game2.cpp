@@ -12062,7 +12062,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 				{
 					// ktoœ nadepn¹³
 					if(sound_volume)
-						PlaySound3d(trap.base->sound, trap.pos, 1.f, 4.f);
+						PlaySound3d(trap.base->sound->sound, trap.pos, 1.f, 4.f);
 					trap.state = 1;
 					trap.time = Random(0.5f, 0.75f);
 
@@ -12085,7 +12085,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 
 					// dŸwiêk wychodzenia
 					if(sound_volume)
-						PlaySound3d(trap.base->sound2, trap.pos, 2.f, 8.f);
+						PlaySound3d(trap.base->sound2->sound, trap.pos, 2.f, 8.f);
 				}
 			}
 			else if(trap.state == 2)
@@ -12174,7 +12174,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 					trap.state = 4;
 					trap.time = 1.5f;
 					if(sound_volume)
-						PlaySound3d(trap.base->sound3, trap.pos, 1.f, 4.f);
+						PlaySound3d(trap.base->sound3->sound, trap.pos, 1.f, 4.f);
 				}
 			}
 			else if(trap.state == 4)
@@ -12286,7 +12286,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						if(sound_volume)
 						{
 							// dŸwiêk nadepniêcia
-							PlaySound3d(trap.base->sound, trap.pos, 1.f, 4.f);
+							PlaySound3d(trap.base->sound->sound, trap.pos, 1.f, 4.f);
 							// dŸwiêk strza³u
 							PlaySound3d(sBow[Rand() % 2], b.pos, 2.f, 8.f);
 						}
@@ -12432,7 +12432,8 @@ Trap* Game::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	Trap& trap = *t;
 	local_ctx.traps->push_back(t);
 
-	trap.base = &g_traps[type];
+	auto& base = g_traps[type];
+	trap.base = &base;
 	trap.hitted = nullptr;
 	trap.state = 0;
 	trap.pos = Vec3(2.f*pt.x + Random(trap.base->rw, 2.f - trap.base->rw), 0.f, 2.f*pt.y + Random(trap.base->h, 2.f - trap.base->h));
@@ -12526,6 +12527,30 @@ Trap* Game::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	}
 
 	return &trap;
+}
+
+void Game::PreloadTraps(vector<Trap*>& traps)
+{
+	auto& mesh_mgr = ResourceManager::Get<Mesh>();
+	auto& sound_mgr = ResourceManager::Get<Sound>();
+
+	for(Trap* trap : traps)
+	{
+		auto& base = *trap->base;
+		if(base.state != ResourceState::NotLoaded)
+			continue;
+
+		if(base.mesh2)
+			mesh_mgr.AddLoadTask(base.mesh2);
+		if(base.sound)
+			sound_mgr.AddLoadTask(base.sound);
+		if(base.sound2)
+			sound_mgr.AddLoadTask(base.sound2);
+		if(base.sound3)
+			sound_mgr.AddLoadTask(base.sound3);
+
+		base.state = ResourceState::Loaded;
+	}
 }
 
 struct BulletRaytestCallback3 : public btCollisionWorld::RayResultCallback
@@ -15992,6 +16017,8 @@ void Game::GenerateTraps()
 			}
 		}
 	}
+
+	PreloadTraps(*local_ctx.traps);
 }
 
 void Game::RegenerateTraps()
