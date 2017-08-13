@@ -3039,23 +3039,6 @@ MeshInstance* Game::GetBowInstance(Mesh* mesh)
 }
 
 //=================================================================================================
-void Game::SetupTrap(TaskData& task_data)
-{
-	BaseTrap& trap = *(BaseTrap*)task_data.ptr;
-	trap.mesh = (Mesh*)task_data.res;
-
-	Mesh::Point* pt = trap.mesh->FindPoint("hitbox");
-	assert(pt);
-	if(pt->type == Mesh::Point::Box)
-	{
-		trap.rw = pt->size.x;
-		trap.h = pt->size.z;
-	}
-	else
-		trap.h = trap.rw = pt->size.x;
-}
-
-//=================================================================================================
 void Game::SetupObject(TaskData& task_data)
 {
 	Obj& o = *(Obj*)task_data.ptr;

@@ -43,82 +43,10 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 {
 	assert(device);
 
-	// header
-	if(!stream.Read(head))
-		throw "Failed to read file header.";
-	if(memcmp(head.format, "QMSH", 4) != 0)
-		throw Format("Invalid file signature '%.4s'.", head.format);
-	if(head.version < 12 || head.version > 19)
-		throw Format("Invalid file version '%d'.", head.version);
-	if(head.n_bones >= 32)
-		throw Format("Too many bones (%d).", head.n_bones);
-	if(head.n_subs == 0)
-		throw "Missing model mesh!";
-	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
-	{
-		if(head.n_bones == 0)
-			throw "No bones.";
-		if(head.version >= 13 && head.n_groups == 0)
-			throw "No bone groups.";
-	}
-
-	// camera
-	if(head.version >= 13)
-	{
-		stream.Read(cam_pos);
-		stream.Read(cam_target);
-		if(head.version >= 15)
-			stream.Read(cam_up);
-		else
-			cam_up = Vec3(0, 1, 0);
-		if(!stream)
-			throw "Missing camera data.";
-	}
-	else
-	{
-		cam_pos = Vec3(1, 1, 1);
-		cam_target = Vec3(0, 0, 0);
-		cam_up = Vec3(0, 1, 0);
-	}
+	LoadHeader(stream, 0);
+	SetVertexSizeDecl();
 
 	// ------ vertices
-	// set vertex size & fvf
-	if(IS_SET(head.flags, F_PHYSICS))
-	{
-		vertex_decl = VDI_POS;
-		vertex_size = sizeof(VPos);
-	}
-	else
-	{
-		vertex_size = sizeof(Vec3);
-		if(IS_SET(head.flags, F_ANIMATED))
-		{
-			if(IS_SET(head.flags, F_TANGENTS))
-			{
-				vertex_decl = VDI_ANIMATED_TANGENT;
-				vertex_size = sizeof(VAnimatedTangent);
-			}
-			else
-			{
-				vertex_decl = VDI_ANIMATED;
-				vertex_size = sizeof(VAnimated);
-			}
-		}
-		else
-		{
-			if(IS_SET(head.flags, F_TANGENTS))
-			{
-				vertex_decl = VDI_TANGENT;
-				vertex_size = sizeof(VTangent);
-			}
-			else
-			{
-				vertex_decl = VDI_DEFAULT;
-				vertex_size = sizeof(VDefault);
-			}
-		}
-	}
-
 	// ensure size
 	uint size = vertex_size * head.n_verts;
 	if(!stream.Ensure(size))
@@ -308,39 +236,7 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		++head.n_bones;
 	}
 
-	// points
-	size = Point::MIN_SIZE * head.n_points;
-	if(!stream.Ensure(size))
-		throw "Failed to read points.";
-	attach_points.resize(head.n_points);
-	for(word i = 0; i < head.n_points; ++i)
-	{
-		Point& p = attach_points[i];
-
-		stream.Read(p.name);
-		stream.Read(p.mat);
-		stream.Read(p.bone);
-		if(head.version == 12)
-			++p.bone; // in that version there was different counting
-		stream.Read(p.type);
-		if(head.version >= 14)
-			stream.Read(p.size);
-		else
-		{
-			stream.Read(p.size.x);
-			p.size.y = p.size.z = p.size.x;
-		}
-		if(head.version >= 19)
-		{
-			stream.Read(p.rot);
-			p.rot.y = Clip(-p.rot.y);
-		}
-		else
-		{
-			// fallback, it was often wrong but thats the way it was (works good for PI/2 and PI*3/2, inverted for 0 and PI, bad for other)
-			p.rot = Vec3(0, p.mat.GetYaw(), 0);
-		}
-	}
+	LoadPoints(stream);
 
 	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
 	{
@@ -401,6 +297,139 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 			throw "Failed to read mesh splits.";
 		splits.resize(head.n_subs);
 		stream.Read(splits.data(), size);
+	}
+}
+
+//=================================================================================================
+// Load metadata only from mesh (points)
+void Mesh::LoadMetadata(StreamReader& stream)
+{
+	LoadHeader(stream, 20);
+	stream.SetOffset(head.points_offset);
+	LoadPoints(stream);
+}
+
+//=================================================================================================
+void Mesh::LoadHeader(StreamReader& stream, uint required_version)
+{
+	// head
+	uint size = sizeof(Header) - sizeof(uint);
+	if(!stream.Read(&head, size))
+		throw "Failed to read file header.";
+	if(memcmp(head.format, "QMSH", 4) != 0)
+		throw Format("Invalid file signature '%.4s'.", head.format);
+	if(head.version < 12 || head.version > 20)
+		throw Format("Invalid file version '%d'.", head.version);
+	if(head.n_bones >= 32)
+		throw Format("Too many bones (%d).", head.n_bones);
+	if(head.n_subs == 0)
+		throw "Missing model mesh!";
+	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
+	{
+		if(head.n_bones == 0)
+			throw "No bones.";
+		if(head.version >= 13 && head.n_groups == 0)
+			throw "No bone groups.";
+	}
+	if(head.version < required_version)
+		throw Format("This require at last '%u' version.", required_version);
+	if(head.version >= 20)
+		head.points_offset = stream.Read<uint>();
+
+	// camera
+	if(head.version >= 13)
+	{
+		stream.Read(cam_pos);
+		stream.Read(cam_target);
+		if(head.version >= 15)
+			stream.Read(cam_up);
+		else
+			cam_up = Vec3(0, 1, 0);
+		if(!stream)
+			throw "Missing camera data.";
+	}
+	else
+	{
+		cam_pos = Vec3(1, 1, 1);
+		cam_target = Vec3(0, 0, 0);
+		cam_up = Vec3(0, 1, 0);
+	}
+}
+
+//=================================================================================================
+void Mesh::SetVertexSizeDecl()
+{
+	if(IS_SET(head.flags, F_PHYSICS))
+	{
+		vertex_decl = VDI_POS;
+		vertex_size = sizeof(VPos);
+	}
+	else
+	{
+		vertex_size = sizeof(Vec3);
+		if(IS_SET(head.flags, F_ANIMATED))
+		{
+			if(IS_SET(head.flags, F_TANGENTS))
+			{
+				vertex_decl = VDI_ANIMATED_TANGENT;
+				vertex_size = sizeof(VAnimatedTangent);
+			}
+			else
+			{
+				vertex_decl = VDI_ANIMATED;
+				vertex_size = sizeof(VAnimated);
+			}
+		}
+		else
+		{
+			if(IS_SET(head.flags, F_TANGENTS))
+			{
+				vertex_decl = VDI_TANGENT;
+				vertex_size = sizeof(VTangent);
+			}
+			else
+			{
+				vertex_decl = VDI_DEFAULT;
+				vertex_size = sizeof(VDefault);
+			}
+		}
+	}
+}
+
+void Mesh::LoadPoints(StreamReader& stream)
+{
+	uint size = Point::MIN_SIZE * head.n_points;
+	if(!stream.Ensure(size))
+		throw "Failed to read points.";
+	attach_points.clear();
+	attach_points.resize(head.n_points);
+	for(word i = 0; i < head.n_points; ++i)
+	{
+		Point& p = attach_points[i];
+
+		stream.Read(p.name);
+		stream.Read(p.mat);
+		stream.Read(p.bone);
+		if(head.version == 12)
+			++p.bone; // in that version there was different counting
+		stream.Read(p.type);
+		if(head.version >= 14)
+			stream.Read(p.size);
+		else
+		{
+			stream.Read(p.size.x);
+			p.size.y = p.size.z = p.size.x;
+		}
+		if(head.version >= 19)
+		{
+			stream.Read(p.rot);
+			p.rot.y = Clip(-p.rot.y);
+		}
+		else
+		{
+			// fallback, it was often wrong but thats the way it was (works good for PI/2 and PI*3/2, inverted for 0 and PI, bad for other)
+			p.rot = Vec3(0, p.mat.GetYaw(), 0);
+		}
 	}
 }
 

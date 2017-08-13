@@ -88,6 +88,7 @@ public:
 	virtual bool Read(void* ptr, uint data_size) = 0;
 	virtual bool Skip(uint data_size) = 0;
 	virtual void Write(const void* ptr, uint data_size) = 0;
+	virtual void SetOffset(uint offset) = 0;
 
 protected:
 	uint offset, size;
@@ -160,11 +161,13 @@ public:
 	FileSource(bool write, HANDLE file, uint clamp_offset = 0, uint clamp_size = 0);
 	~FileSource();
 
-	bool IsFile() const { return true; }
+	bool IsFile() const override { return true; }
+	bool Read(void* ptr, uint data_size) override;
+	bool Skip(uint data_size) override;
+	void Write(const void* ptr, uint data_size) override;
+	void SetOffset(uint offset) override;
+
 	HANDLE PinFile();
-	bool Read(void* ptr, uint data_size);
-	bool Skip(uint data_size);
-	void Write(const void* ptr, uint data_size);
 	void Refresh();
 
 private:
@@ -182,11 +185,13 @@ public:
 	MemorySource(Buffer* buf);
 	~MemorySource();
 
-	bool IsFile() const { return false; }
+	bool IsFile() const override { return false; }
+	bool Read(void* ptr, uint data_size) override;
+	bool Skip(uint data_size) override;
+	void Write(const void* ptr, uint data_size) override;
+	void SetOffset(uint offset) override;
+
 	Buffer* PinBuffer();
-	bool Read(void* ptr, uint data_size);
-	bool Skip(uint data_size);
-	void Write(const void* ptr, uint data_size);
 
 private:
 	Buffer* buf;
@@ -199,10 +204,11 @@ class BitStreamSource : public StreamSource
 public:
 	BitStreamSource(BitStream* bitstream, bool write);
 
-	bool IsFile() const { return false; }
-	bool Read(void* ptr, uint data_size);
-	bool Skip(uint data_size);
-	void Write(const void* ptr, uint data_size);
+	bool IsFile() const override { return false; }
+	bool Read(void* ptr, uint data_size) override;
+	bool Skip(uint data_size) override;
+	void Write(const void* ptr, uint data_size) override;
+	void SetOffset(uint offset) override;
 
 private:
 	BitStream* bitstream;
@@ -219,6 +225,7 @@ public:
 	StreamSource* GetSource() { return source; }
 	Buffer* PinBuffer();
 	HANDLE PinFile();
+	void SetOffset(uint offset) { source->SetOffset(offset); }
 
 protected:
 	StreamSource* source;
@@ -336,9 +343,7 @@ public:
 	{
 		WriteVector<uint>(v);
 	}
-
-	void Refresh();
-
+	
 	template<typename LengthType>
 	void WriteString(const string& s)
 	{

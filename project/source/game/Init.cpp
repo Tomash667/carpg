@@ -605,7 +605,20 @@ void Game::AddLoadTasks()
 	{
 		BaseTrap& t = g_traps[i];
 		if(t.mesh_id)
-			t.mesh = mesh_mgr.AddLoadTask(t.mesh_id);
+		{
+			t.mesh = mesh_mgr.Get(t.mesh_id);
+			mesh_mgr.LoadMetadata(t.mesh);
+
+			Mesh::Point* pt = t.mesh->FindPoint("hitbox");
+			assert(pt);
+			if(pt->type == Mesh::Point::Box)
+			{
+				t.rw = pt->size.x;
+				t.h = pt->size.z;
+			}
+			else
+				t.h = t.rw = pt->size.x;
+		}
 		if(t.mesh_id2)
 			t.mesh2 = mesh_mgr.Get(t.mesh_id2);
 		if(!nosound)

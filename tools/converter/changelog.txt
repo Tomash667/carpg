@@ -1,7 +1,10 @@
 CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
-v19.1:
+v20:
+* points offset in header
+* converter -info command
+* default extension .phy for physics
 * converter return 0 (success) or 1 (failed)
 * export script can run converter to export directly to qmsh file
 

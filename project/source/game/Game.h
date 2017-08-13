@@ -1012,7 +1012,6 @@ public:
 	void ExitToMenu();
 	void DoExitToMenu();
 	void GenerateImage(TaskData& task_data);
-	void SetupTrap(TaskData& task_data);
 	void SetupObject(TaskData& task_data);
 	Unit* GetFollowTarget();
 	void SetupCamera(float dt);
@@ -1057,6 +1056,7 @@ public:
 	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
 	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
+	void SetDungeonParamsToMeshes();
 	void MoveUnit(Unit& unit, bool warped = false);
 	bool CollideWithStairs(const CollisionObject& co, const Vec3& pos, float radius) const;
 	bool CollideWithStairsRect(const CollisionObject& co, const Box2d& box) const;

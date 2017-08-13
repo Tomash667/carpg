@@ -278,6 +278,22 @@ public:
 		{
 		}
 	};
+
+	//-----------------------------------------------------------------------------
+	// Mesh type manager
+	template<>
+	class TypeManager<Mesh> : public BaseTypeManager<Mesh>
+	{
+	public:
+		TypeManager(ResourceManager& res_mgr) : BaseTypeManager(res_mgr)
+		{
+		}
+
+		void LoadMetadata(Mesh* mesh)
+		{
+			res_mgr.LoadMeshMetadata(mesh);
+		}
+	};
 	
 	//-----------------------------------------------------------------------------
 	// Texture type manager
@@ -464,6 +480,7 @@ private:
 	void LoadResource(Resource* res);
 	void LoadResourceInternal(Resource* res);
 	void LoadMesh(Mesh* mesh);
+	void LoadMeshMetadata(Mesh* mesh);
 	void LoadVertexData(VertexData* vd);
 	void LoadSoundOrMusic(Sound* sound);
 	void LoadTexture(Texture* tex);

@@ -101,7 +101,7 @@ struct QMSH
 	std::vector<uint2> Indices;
 	std::vector< shared_ptr<QMSH_SUBMESH> > Submeshes;
 	std::vector< shared_ptr<QMSH_BONE> > Bones; // Tylko kiedy Flags & SKINNING
-	std::vector< shared_ptr<QMSH_ANIMATION> > Animations; // Tylko kiedy FLags & SKINNING
+	std::vector< shared_ptr<QMSH_ANIMATION> > Animations; // Tylko kiedy Flags & SKINNING
 	std::vector< shared_ptr<QMSH_POINT> > Points;
 	std::vector<QMSH_GROUP> Groups;
 

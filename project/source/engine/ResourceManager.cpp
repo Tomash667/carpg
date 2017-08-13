@@ -799,6 +799,21 @@ void ResourceManager::LoadMesh(Mesh* mesh)
 }
 
 //=================================================================================================
+void ResourceManager::LoadMeshMetadata(Mesh* mesh)
+{
+	StreamReader&& reader = GetStream(mesh, StreamType::FullFileOrMemory);
+
+	try
+	{
+		mesh->LoadMetadata(reader);
+	}
+	catch(cstring err)
+	{
+		throw Format("ResourceManager: Failed to load mesh metadata '%s'. %s", GetPath(mesh), err);
+	}
+}
+
+//=================================================================================================
 void ResourceManager::LoadVertexData(VertexData* vd)
 {
 	StreamReader&& reader = GetStream(vd, StreamType::FullFileOrMemory);

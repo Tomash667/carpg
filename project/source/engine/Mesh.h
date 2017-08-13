@@ -38,6 +38,7 @@ struct Mesh : public Resource
 		word n_verts, n_tris, n_subs, n_bones, n_anims, n_points, n_groups;
 		float radius;
 		Box bbox;
+		uint points_offset;
 	};
 
 	struct Submesh
@@ -140,6 +141,10 @@ struct Mesh : public Resource
 
 	void SetupBoneMatrices();
 	void Load(StreamReader& stream, IDirect3DDevice9* device);
+	void LoadMetadata(StreamReader& stream);
+	void LoadHeader(StreamReader& stream, uint required_version);
+	void SetVertexSizeDecl();
+	void LoadPoints(StreamReader& stream);
 	static void LoadVertexData(VertexData* vd, StreamReader& stream);
 	Animation* GetAnimation(cstring name);
 	Bone* GetBone(cstring name);

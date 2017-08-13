@@ -29,6 +29,7 @@
     <ClCompile Include="MeshMender.cpp" />
     <ClCompile Include="MeshTask.cpp" />
     <ClCompile Include="PCH.cpp" />
+    <ClCompile Include="Loader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\Base.hpp">

@@ -143,6 +143,16 @@ void FileSource::Refresh()
 }
 
 //=================================================================================================
+void FileSource::SetOffset(uint offset)
+{
+	assert(valid && offset <= size);
+	uint start_real_offset = real_offset - this->offset;
+	this->offset = offset;
+	real_offset = start_real_offset + offset;
+	SetFilePointer(file, real_offset, nullptr, FILE_BEGIN);
+}
+
+//=================================================================================================
 MemorySource::MemorySource(Buffer* _buf)
 {
 	buf = _buf;
@@ -207,6 +217,13 @@ void MemorySource::Write(const void* ptr, uint data_size)
 }
 
 //=================================================================================================
+void MemorySource::SetOffset(uint offset)
+{
+	assert(valid && offset <= size);
+	this->offset = offset;
+}
+
+//=================================================================================================
 BitStreamSource::BitStreamSource(BitStream* bitstream, bool write) : bitstream(bitstream), write(write)
 {
 	assert(bitstream);
@@ -248,6 +265,18 @@ void BitStreamSource::Write(const void* ptr, uint data_size)
 	bitstream->Write((const char*)ptr, data_size);
 	size += data_size;
 	offset += data_size;
+}
+
+//=================================================================================================
+void BitStreamSource::SetOffset(uint offset)
+{
+	assert(valid && offset <= size);
+	this->offset = offset;
+	uint pos = this->offset * 8;
+	if(write)
+		bitstream->SetWriteOffset(pos);
+	else
+		bitstream->SetReadOffset(pos);
 }
 
 //=================================================================================================

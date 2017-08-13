@@ -12540,6 +12540,8 @@ void Game::PreloadTraps(vector<Trap*>& traps)
 		if(base.state != ResourceState::NotLoaded)
 			continue;
 
+		if(base.mesh)
+			mesh_mgr.AddLoadTask(base.mesh);
 		if(base.mesh2)
 			mesh_mgr.AddLoadTask(base.mesh2);
 		if(base.sound)
@@ -13646,37 +13648,17 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 	// tekstury podziemi
 	ApplyLocationTexturePack(tFloor[0], tWall[0], tCeil[0], base.tex);
 
-	// tekstury schodów / pu³apek
-	ApplyTexturePackToSubmesh(aSchodyDol->subs[0], tFloor[0]);
-	ApplyTexturePackToSubmesh(aSchodyDol->subs[2], tWall[0]);
-	ApplyTexturePackToSubmesh(aSchodyDol2->subs[0], tFloor[0]);
-	ApplyTexturePackToSubmesh(aSchodyDol2->subs[2], tWall[0]);
-	ApplyTexturePackToSubmesh(aSchodyGora->subs[0], tFloor[0]);
-	ApplyTexturePackToSubmesh(aSchodyGora->subs[2], tWall[0]);
-	ApplyTexturePackToSubmesh(aNaDrzwi->subs[0], tWall[0]);
-	ApplyTexturePackToSubmesh(g_traps[TRAP_ARROW].mesh->subs[0], tFloor[0]);
-	ApplyTexturePackToSubmesh(g_traps[TRAP_POISON].mesh->subs[0], tFloor[0]);
-	ApplyDungeonLightToMesh(*aSchodyDol);
-	ApplyDungeonLightToMesh(*aSchodyDol2);
-	ApplyDungeonLightToMesh(*aSchodyGora);
-	ApplyDungeonLightToMesh(*aNaDrzwi);
-	ApplyDungeonLightToMesh(*aNaDrzwi2);
-	ApplyDungeonLightToMesh(*g_traps[TRAP_ARROW].mesh);
-	ApplyDungeonLightToMesh(*g_traps[TRAP_POISON].mesh);
-
 	// druga tekstura
 	if(base.tex2 != -1)
 	{
 		BaseLocation& base2 = g_base_locations[base.tex2];
 		ApplyLocationTexturePack(tFloor[1], tWall[1], tCeil[1], base2.tex);
-		ApplyTexturePackToSubmesh(aNaDrzwi2->subs[0], tWall[1]);
 	}
 	else
 	{
 		tFloor[1] = tFloor[0];
-		tCeil[1] = tCeil[1];
-		tWall[1] = tWall[1];
-		ApplyTexturePackToSubmesh(aNaDrzwi2->subs[0], tWall[0]);
+		tCeil[1] = tCeil[0];
+		tWall[1] = tWall[0];
 	}
 
 	// ustawienia uv podziemi
@@ -13686,6 +13668,38 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 		dungeon_tex_wrap = new_tex_wrap;
 		ChangeDungeonTexWrap();
 	}
+}
+
+void Game::SetDungeonParamsToMeshes()
+{
+	// tekstury schodów / pu³apek
+	ApplyTexturePackToSubmesh(aSchodyDol->subs[0], tFloor[0]);
+	ApplyTexturePackToSubmesh(aSchodyDol->subs[2], tWall[0]);
+	ApplyTexturePackToSubmesh(aSchodyDol2->subs[0], tFloor[0]);
+	ApplyTexturePackToSubmesh(aSchodyDol2->subs[2], tWall[0]);
+	ApplyTexturePackToSubmesh(aSchodyGora->subs[0], tFloor[0]);
+	ApplyTexturePackToSubmesh(aSchodyGora->subs[2], tWall[0]);
+	ApplyTexturePackToSubmesh(aNaDrzwi->subs[0], tWall[0]);
+	ApplyDungeonLightToMesh(*aSchodyDol);
+	ApplyDungeonLightToMesh(*aSchodyDol2);
+	ApplyDungeonLightToMesh(*aSchodyGora);
+	ApplyDungeonLightToMesh(*aNaDrzwi);
+	ApplyDungeonLightToMesh(*aNaDrzwi2);
+
+	// apply texture/lighting to trap to make it same texture as dungeon
+	if(g_traps[TRAP_ARROW].mesh->state == ResourceState::Loaded)
+	{
+		ApplyTexturePackToSubmesh(g_traps[TRAP_ARROW].mesh->subs[0], tFloor[0]);
+		ApplyDungeonLightToMesh(*g_traps[TRAP_ARROW].mesh);
+	}
+	if(g_traps[TRAP_POISON].mesh->state == ResourceState::Loaded)
+	{
+		ApplyTexturePackToSubmesh(g_traps[TRAP_POISON].mesh->subs[0], tFloor[0]);
+		ApplyDungeonLightToMesh(*g_traps[TRAP_POISON].mesh);
+	}
+
+	// druga tekstura
+	ApplyTexturePackToSubmesh(aNaDrzwi2->subs[0], tWall[1]);
 }
 
 void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal, bool from_outside)
@@ -14866,6 +14880,8 @@ void Game::LoadResources(cstring text)
 	}
 
 	// finished
+	if(!location->outside)
+		SetDungeonParamsToMeshes();
 	LoadingStep(text, 2);
 }
 
