@@ -518,15 +518,16 @@ void Game::AddLoadTasks()
 	tDroga = tex_mgr.Get("droga.jpg");
 	tZiemia = tex_mgr.Get("ziemia.jpg");
 	tPole = tex_mgr.Get("pole.jpg");
-	tFloorBase.diffuse = tex_mgr.AddLoadTask("droga.jpg");
+	tFloorBase.diffuse = tex_mgr.Get("droga.jpg");
 	tFloorBase.normal = nullptr;
 	tFloorBase.specular = nullptr;
-	tWallBase.diffuse = tex_mgr.AddLoadTask("sciana.jpg");
-	tWallBase.normal = tex_mgr.AddLoadTask("sciana_nrm.jpg");
-	tWallBase.specular = tex_mgr.AddLoadTask("sciana_spec.jpg");
-	tCeilBase.diffuse = tex_mgr.AddLoadTask("sufit.jpg");
+	tWallBase.diffuse = tex_mgr.Get("sciana.jpg");
+	tWallBase.normal = tex_mgr.Get("sciana_nrm.jpg");
+	tWallBase.specular = tex_mgr.Get("sciana_spec.jpg");
+	tCeilBase.diffuse = tex_mgr.Get("sufit.jpg");
 	tCeilBase.normal = nullptr;
 	tCeilBase.specular = nullptr;
+	BaseLocation::PreloadTextures();
 
 	// particles
 	res_mgr.AddTaskCategory(txLoadParticles);
@@ -604,7 +605,7 @@ void Game::AddLoadTasks()
 	{
 		BaseTrap& t = g_traps[i];
 		if(t.mesh_id)
-			 mesh_mgr.AddLoadTask(t.mesh_id, &t, TaskCallback(this, &Game::SetupTrap));
+			 mesh_mgr.AddLoadTask(t.mesh_id, &t, TaskCallback(this, &Game::SetupTrap), true);
 		if(t.mesh_id2)
 			t.mesh2 = mesh_mgr.AddLoadTask(t.mesh_id2);
 		if(!nosound)
@@ -680,7 +681,7 @@ void Game::AddLoadTasks()
 					o.matrix = nullptr;
 				}
 				else
-					mesh_mgr.AddLoadTask(o.mesh_id, &o, TaskCallback(this, &Game::SetupObject));
+					mesh_mgr.AddLoadTask(o.mesh_id, &o, TaskCallback(this, &Game::SetupObject), true);
 			}
 		}
 		else

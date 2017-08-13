@@ -1054,7 +1054,8 @@ public:
 	void UpdateGameDialog(DialogContext& ctx, float dt);
 	void GenerateStockItems();
 	void GenerateMerchantItems(vector<ItemSlot>& items, int price_limit);
-	void ApplyToTexturePack(TexturePack& tp, cstring diffuse, cstring normal, cstring specular);
+	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
+	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
 	void MoveUnit(Unit& unit, bool warped = false);
 	bool CollideWithStairs(const CollisionObject& co, const Vec3& pos, float radius) const;

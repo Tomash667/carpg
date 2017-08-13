@@ -598,25 +598,36 @@ void ResourceManager::AddLoadTask(Resource* res)
 {
 	assert(res && mode == Mode::LoadScreenPrepare);
 
-	TaskDetail* td = task_pool.Get();
-	td->data.res = res;
-	td->type = TaskType::Load;
-	tasks.push_back(td);
-	++to_load;
+	if(res->state == ResourceState::NotLoaded)
+	{
+		TaskDetail* td = task_pool.Get();
+		td->data.res = res;
+		td->type = TaskType::Load;
+		tasks.push_back(td);
+		++to_load;
+
+		res->state = ResourceState::Loading;
+	}
 }
 
 //=================================================================================================
-void ResourceManager::AddLoadTask(Resource* res, void* ptr, TaskCallback callback)
+void ResourceManager::AddLoadTask(Resource* res, void* ptr, TaskCallback callback, bool required)
 {
 	assert(res && mode == Mode::LoadScreenPrepare);
 
-	TaskDetail* td = task_pool.Get();
-	td->data.res = res;
-	td->data.ptr = ptr;
-	td->callback = callback;
-	td->type = TaskType::LoadAndCallback;
-	tasks.push_back(td);
-	++to_load;
+	if(required || res->state == ResourceState::NotLoaded)
+	{
+		TaskDetail* td = task_pool.Get();
+		td->data.res = res;
+		td->data.ptr = ptr;
+		td->callback = callback;
+		td->type = TaskType::LoadAndCallback;
+		tasks.push_back(td);
+		++to_load;
+
+		if(res->state == ResourceState::NotLoaded)
+			res->state = ResourceState::Loading;
+	}
 }
 
 //=================================================================================================
@@ -692,8 +703,7 @@ void ResourceManager::UpdateLoadScreen()
 			++loaded;
 			break;
 		case TaskType::Load:
-			if(task->data.res->state != ResourceState::Loaded)
-				LoadResourceInternal(task->data.res);
+			LoadResourceInternal(task->data.res);
 			++loaded;
 			break;
 		case TaskType::LoadAndCallback:

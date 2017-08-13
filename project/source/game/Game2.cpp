@@ -9483,7 +9483,7 @@ void Game::LoadItemsData()
 		{
 			auto mesh = mesh_mgr.TryGet(item.mesh_id);
 			if(mesh)
-				mesh_mgr.AddLoadTask(mesh, &item, TaskCallback(this, &Game::GenerateImage));
+				mesh_mgr.AddLoadTask(mesh, &item, TaskCallback(this, &Game::GenerateImage), true);
 			else
 			{
 				item.mesh = nullptr;
@@ -13566,20 +13566,6 @@ void Game::OnReenterLevel(LevelContext& ctx)
 	}
 }
 
-void Game::ApplyToTexturePack(TexturePack& tp, cstring diffuse, cstring normal, cstring specular)
-{
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tp.diffuse = tex_mgr.AddLoadTask(diffuse);
-	if(normal)
-		tp.normal = tex_mgr.AddLoadTask(normal);
-	else
-		tp.normal = nullptr;
-	if(specular)
-		tp.specular = tex_mgr.AddLoadTask(specular);
-	else
-		tp.specular = nullptr;
-}
-
 void ApplyTexturePackToSubmesh(Mesh::Submesh& sub, TexturePack& tp)
 {
 	sub.tex = tp.diffuse;
@@ -13597,6 +13583,32 @@ void ApplyDungeonLightToMesh(Mesh& mesh)
 	}
 }
 
+void Game::ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex)
+{
+	ApplyLocationTexturePack(floor, tex.floor, tFloorBase);
+	ApplyLocationTexturePack(wall, tex.wall, tWallBase);
+	ApplyLocationTexturePack(ceil, tex.ceil, tCeilBase);
+}
+
+void Game::ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def)
+{
+	if(e.tex)
+	{
+		pack.diffuse = e.tex;
+		pack.normal = e.tex_normal;
+		pack.specular = e.tex_specular;
+	}
+	else
+		pack = pack_def;
+	
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask(pack.diffuse);
+	if(pack.normal)
+		tex_mgr.AddLoadTask(pack.normal);
+	if(pack.specular)
+		tex_mgr.AddLoadTask(pack.specular);
+}
+
 void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 {
 	// ustawienia t³a
@@ -13607,18 +13619,7 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 	clear_color2 = COLOR_RGB(int(fog_color.x * 255), int(fog_color.y * 255), int(fog_color.z * 255));
 
 	// tekstury podziemi
-	if(base.tex_floor)
-		ApplyToTexturePack(tFloor[0], base.tex_floor, base.tex_floor_nrm, base.tex_floor_spec);
-	else
-		tFloor[0] = tFloorBase;
-	if(base.tex_wall)
-		ApplyToTexturePack(tWall[0], base.tex_wall, base.tex_wall_nrm, base.tex_wall_spec);
-	else
-		tWall[0] = tWallBase;
-	if(base.tex_ceil)
-		ApplyToTexturePack(tCeil[0], base.tex_ceil, base.tex_ceil_nrm, base.tex_ceil_spec);
-	else
-		tCeil[0] = tCeilBase;
+	ApplyLocationTexturePack(tFloor[0], tWall[0], tCeil[0], base.tex);
 
 	// tekstury schodów / pu³apek
 	ApplyTexturePackToSubmesh(aSchodyDol->subs[0], tFloor[0]);
@@ -13642,25 +13643,14 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 	if(base.tex2 != -1)
 	{
 		BaseLocation& base2 = g_base_locations[base.tex2];
-		if(base2.tex_floor)
-			ApplyToTexturePack(tFloor[1], base2.tex_floor, base2.tex_floor_nrm, base2.tex_floor_spec);
-		else
-			tFloor[1] = tFloor[0];
-		if(base2.tex_wall)
-			ApplyToTexturePack(tWall[1], base2.tex_wall, base2.tex_wall_nrm, base2.tex_wall_spec);
-		else
-			tWall[1] = tWall[0];
-		if(base2.tex_ceil)
-			ApplyToTexturePack(tCeil[1], base2.tex_ceil, base2.tex_ceil_nrm, base2.tex_ceil_spec);
-		else
-			tCeil[1] = tCeil[0];
+		ApplyLocationTexturePack(tFloor[1], tWall[1], tCeil[1], base2.tex);
 		ApplyTexturePackToSubmesh(aNaDrzwi2->subs[0], tWall[1]);
 	}
 	else
 	{
-		tFloor[1] = tFloorBase;
-		tCeil[1] = tCeilBase;
-		tWall[1] = tWallBase;
+		tFloor[1] = tFloor[0];
+		tCeil[1] = tCeil[1];
+		tWall[1] = tWall[1];
 		ApplyTexturePackToSubmesh(aNaDrzwi2->subs[0], tWall[0]);
 	}
 
@@ -14791,7 +14781,6 @@ void Game::LoadingStep(cstring text, int end)
 void Game::LoadResources(cstring text)
 {
 	LoadingStep(nullptr, 1);
-	Info("Preparing resources to load.");
 
 	//------------------------------------------------
 	// Add load tasks
@@ -14799,11 +14788,7 @@ void Game::LoadResources(cstring text)
 	// load music
 	if(!nomusic)
 		LoadMusic(GetLocationMusic(), false);
-
-	// terrain textures
-	if(location->outside)
-		SetTerrainTextures();
-
+	
 	//------------------------------------------------
 	// check if there is anything to load
 	auto& res_mgr = ResourceManager::Get();
@@ -14813,7 +14798,10 @@ void Game::LoadResources(cstring text)
 		res_mgr.StartLoadScreen(txLoadingResources);
 	}
 	else
+	{
 		Info("Nothing new to load.");
+		res_mgr.CancelLoadScreen();
+	}
 
 	// finished
 	LoadingStep(text, 2);

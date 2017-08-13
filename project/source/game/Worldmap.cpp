@@ -1417,6 +1417,9 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		break;
 	}
 
+	if(location->outside)
+		SetTerrainTextures();
+
 	LoadResources(txLoadingComplete);
 
 	l.last_visit = worldtime;

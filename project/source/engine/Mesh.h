@@ -47,7 +47,7 @@ struct Mesh : public Resource
 		word min_ind; // odpowiednik parametru DrawIndexedPrimitive - MinIndex (tylko wyra¿ony w trójk¹tach)
 		word n_ind; // odpowiednik parametru DrawIndexedPrimitive - NumVertices (tylko wyra¿ony w trójk¹tach)
 		string name;//, normal_name, specular_name;
-		Texture* tex, *tex_normal, *tex_specular;
+		TexturePtr tex, tex_normal, tex_specular;
 		Vec3 specular_color;
 		float specular_intensity;
 		int specular_hardness;

@@ -699,6 +699,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	{
 		// outside location
 		SetOutsideParams();
+		SetTerrainTextures();
 
 		OutsideLocation* outside = (OutsideLocation*)location;
 		int size11 = outside->size*outside->size;

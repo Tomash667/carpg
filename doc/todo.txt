@@ -3,10 +3,11 @@
 	+ gui textures - at startup
 	+ else when required
 	+ human mesh/startup items on opening create character screen - show small loading window
-	+ currently level music is loaded at instant
+	+ currently level music is loaded at instant; move LoadMusic
 ? testing
 	? sound/music looping
 	? all
+	? tutorial
 + dungeon debug info - show levels
 - zly teren pola
 - grass is drawn only next to roads/on field
@@ -24,6 +25,7 @@ NEW:
 + modability - arena enemies
 + rework mp loading - currently info is shown in infobox and in text
 + mp send loading progress % to/from players, to other players
++ modability - base locations
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

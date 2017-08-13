@@ -252,16 +252,16 @@ public:
 		}
 
 		// Add load task, if not exists throws, if failed throws later, after loading run callback
-		void AddLoadTask(const AnyString& filename, void* ptr, TaskCallback callback)
+		void AddLoadTask(const AnyString& filename, void* ptr, TaskCallback callback, bool required = false)
 		{
 			auto res = res_mgr.GetResource(filename, Type);
-			res_mgr.AddLoadTask(res, ptr, callback);
+			res_mgr.AddLoadTask(res, ptr, callback, required);
 		}
 
 		// Add load task, if failed throws later, after loading run callback
-		void AddLoadTask(T* res, void* ptr, TaskCallback callback)
+		void AddLoadTask(T* res, void* ptr, TaskCallback callback, bool required = false)
 		{
-			res_mgr.AddLoadTask(res, ptr, callback);
+			res_mgr.AddLoadTask(res, ptr, callback, required);
 		}
 
 	protected:
@@ -300,11 +300,11 @@ public:
 		void AddLoadTask(const AnyString& filename, TEX& tex)
 		{
 			auto res = (Texture*)res_mgr.GetResource(filename, Type);
-			res_mgr.AddLoadTask(res, &tex, TaskCallback(&res_mgr, &ResourceManager::ApplyRawTextureCallback));
+			res_mgr.AddLoadTask(res, &tex, TaskCallback(&res_mgr, &ResourceManager::ApplyRawTextureCallback), true);
 		}
 		void AddLoadTask(Texture* res, TEX& tex)
 		{
-			res_mgr.AddLoadTask(res, &tex, TaskCallback(&res_mgr, &ResourceManager::ApplyRawTextureCallback));
+			res_mgr.AddLoadTask(res, &tex, TaskCallback(&res_mgr, &ResourceManager::ApplyRawTextureCallback), true);
 		}
 	};
 
@@ -324,7 +324,7 @@ public:
 		{
 			Sound* res = (Sound*)res_mgr.GetResource(filename, Type);
 			assert(!res->is_music);
-			res_mgr.AddLoadTask(res, &sound, TaskCallback(&res_mgr, &ResourceManager::ApplyRawSoundCallback));
+			res_mgr.AddLoadTask(res, &sound, TaskCallback(&res_mgr, &ResourceManager::ApplyRawSoundCallback), true);
 		}
 
 		Sound* TryGetSound(const AnyString& filename)
@@ -418,6 +418,11 @@ public:
 	void SetLoadScreen(LoadScreen* _load_screen) { load_screen = _load_screen; }
 	void PrepareLoadScreen(float progress_min = 0.f, float progress_max = 1.f);
 	void StartLoadScreen(cstring category = nullptr);
+	void CancelLoadScreen()
+	{
+		assert(mode == Mode::LoadScreenPrepare && tasks.empty());
+		mode = Mode::Instant;
+	}
 	void SetMutex(HANDLE _mutex) { mutex = _mutex; }
 	bool HaveTasks() const { return !tasks.empty(); }
 	int GetLoadTasksCount() const { return to_load; }
@@ -455,7 +460,7 @@ private:
 	Resource* TryGetResource(const AnyString& filename, ResourceType type);
 	Resource* GetResource(const AnyString& filename, ResourceType type);
 	void AddLoadTask(Resource* res);
-	void AddLoadTask(Resource* res, void* ptr, TaskCallback callback);
+	void AddLoadTask(Resource* res, void* ptr, TaskCallback callback, bool required);
 	void LoadResource(Resource* res);
 	void LoadResourceInternal(Resource* res);
 	void LoadMesh(Mesh* mesh);

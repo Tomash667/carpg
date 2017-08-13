@@ -1151,6 +1151,7 @@ void Game::LoadGame(HANDLE file)
 			OutsideLocation* outside = (OutsideLocation*)location;
 
 			SetOutsideParams();
+			SetTerrainTextures();
 
 			ApplyContext(location, local_ctx);
 			ApplyTiles(outside->h, outside->tiles);
