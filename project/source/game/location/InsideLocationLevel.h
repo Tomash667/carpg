@@ -7,7 +7,7 @@
 #include "Trap.h"
 #include "Door.h"
 #include "GroundItem.h"
-#include "Useable.h"
+#include "Usable.h"
 #include "Object.h"
 #include "GameCommon.h"
 #include "LevelArea.h"
@@ -23,7 +23,7 @@ struct InsideLocationLevel : public LevelArea
 	vector<Room> rooms;
 	vector<Trap*> traps;
 	vector<Door*> doors;
-	vector<Useable*> useables;
+	vector<Usable*> usables;
 	vector<Blood> bloods;
 	Int2 staircase_up, staircase_down;
 	int staircase_up_dir, staircase_down_dir;

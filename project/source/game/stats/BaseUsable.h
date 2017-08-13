@@ -2,6 +2,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "Resource.h"
+
+//-----------------------------------------------------------------------------
 struct Item;
 struct Obj;
 
@@ -26,16 +29,16 @@ struct BaseUsable
 	cstring id, name, obj_name, anim, item_id, sound_id;
 	float sound_timer;
 	const Item* item;
-	SOUND sound;
+	SoundPtr sound;
 	int limit_rot; // spr przyk³adowe obiekty ¿eby zobaczyæ jak to dzia³a
 	Obj* obj;
-	bool allow_use;
-	bool stamina_slow_restore;
+	ResourceState state;
+	bool allow_use, stamina_slow_restore;
 
 	BaseUsable(cstring id, cstring obj_name, cstring anim, int limit_rot, bool allow_use, bool stamina_slow_restore, cstring item_id = nullptr,
 		cstring sound_id = nullptr, float sound_timer = 0.f) :
 		id(id), name(nullptr), anim(anim), item_id(item_id), sound_id(sound_id), sound_timer(sound_timer), obj_name(obj_name), item(nullptr), sound(nullptr),
-		limit_rot(limit_rot), allow_use(allow_use), stamina_slow_restore(stamina_slow_restore), obj(nullptr)
+		limit_rot(limit_rot), allow_use(allow_use), stamina_slow_restore(stamina_slow_restore), obj(nullptr), state(ResourceState::NotLoaded)
 	{
 	}
 };

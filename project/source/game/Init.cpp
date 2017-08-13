@@ -691,13 +691,13 @@ void Game::AddLoadTasks()
 		}
 	}
 
-	// useable objects
+	// usable objects
 	for(uint i = 0; i < n_base_usables; ++i)
 	{
 		BaseUsable& bu = g_base_usables[i];
 		bu.obj = FindObject(bu.obj_name);
 		if(!nosound && bu.sound_id)
-			sound_mgr.AddLoadTask(bu.sound_id, bu.sound);
+			bu.sound = sound_mgr.Get(bu.sound_id);
 		if(bu.item_id)
 			bu.item = FindItem(bu.item_id);
 	}

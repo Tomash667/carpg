@@ -1350,7 +1350,7 @@ Int2 Game::RandomNearTile(const Int2& _tile)
 // 3 - start tile and target tile is equal
 // 4 - target tile is blocked
 // 5 - path not found
-int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_tile, const Int2& target_tile, const Unit* _me, const Unit* _other, const void* useable, bool is_end_point)
+int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_tile, const Int2& target_tile, const Unit* _me, const Unit* _other, const void* usable, bool is_end_point)
 {
 	assert(_me);
 
@@ -1370,9 +1370,9 @@ int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_t
 
 	if(dist <= 0 || my_tile.x < 0 || my_tile.y < 0)
 	{
-		Error("Invalid FindLocalPath, ctx type %d, ctx building %d, my tile %d %d, target tile %d %d, me %s (%p; %g %g %g; %d), useable %p, is end point %d.",
+		Error("Invalid FindLocalPath, ctx type %d, ctx building %d, my tile %d %d, target tile %d %d, me %s (%p; %g %g %g; %d), usable %p, is end point %d.",
 			ctx.type, ctx.building_id, my_tile.x, my_tile.y, target_tile.x, target_tile.y, _me->data->id.c_str(), _me, _me->pos.x, _me->pos.y, _me->pos.z, _me->in_building,
-			useable, is_end_point ? 1 : 0);
+			usable, is_end_point ? 1 : 0);
 		if(_other)
 		{
 			Error("Other unit %s (%p; %g, %g, %g, %d).", _other->data->id.c_str(), _other, _other->pos.x, _other->pos.y, _other->pos.z, _other->in_building);
@@ -1404,9 +1404,9 @@ int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_t
 	IgnoreObjects ignore = { 0 };
 	ignore.ignored_units = (const Unit**)ignored_units;
 	const void* ignored_objects[2] = { 0 };
-	if(useable)
+	if(usable)
 	{
-		ignored_objects[0] = useable;
+		ignored_objects[0] = usable;
 		ignore.ignored_objects = ignored_objects;
 	}
 
@@ -2682,7 +2682,7 @@ void Game::PlayerYell(Unit& u)
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
-		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == 0 && !u2.useable && u2.ai->state == AIController::Idle &&
+		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == 0 && !u2.usable && u2.ai->state == AIController::Idle &&
 			!IS_SET(u2.data->flags, F_AI_STAY) &&
 			(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot ||
 				u2.ai->idle_action == AIController::Idle_Look))

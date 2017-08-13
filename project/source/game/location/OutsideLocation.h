@@ -13,7 +13,7 @@ struct OutsideLocation : public Location, public LevelArea
 {
 	vector<Object> objects;
 	vector<Chest*> chests;
-	vector<Useable*> useables;
+	vector<Usable*> usables;
 	vector<Blood> bloods;
 	TerrainTile* tiles;
 	float* h;

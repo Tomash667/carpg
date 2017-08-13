@@ -8,14 +8,14 @@
 #include "HumanData.h"
 #include "HeroData.h"
 #include "PlayerController.h"
-#include "Useable.h"
+#include "Usable.h"
 #include "Effect.h"
 #include "Buff.h"
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
 struct AIController;
-struct Useable;
+struct Usable;
 struct EntityInterpolator;
 struct UnitEventHandler;
 struct SpeechBubble;
@@ -162,7 +162,7 @@ struct Unit
 	btCollisionObject* cobj;
 	static vector<Unit*> refid_table;
 	static vector<std::pair<Unit**, int>> refid_request;
-	Useable* useable;
+	Usable* usable;
 	HeroData* hero;
 	UnitEventHandler* event_handler;
 	SpeechBubble* bubble;
@@ -717,7 +717,7 @@ struct Unit
 
 	bool CanDoWhileUsing() const
 	{
-		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && g_base_usables[useable->type].allow_use;
+		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && g_base_usables[usable->type].allow_use;
 	}
 
 	int GetBuffs() const;

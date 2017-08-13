@@ -9,7 +9,7 @@ wt_longBlade = "D³ugie ostrze"
 wt_blunt = "Broñ obuchowa"
 wt_axe = "Topór"
 
-// useable objects
+// usable objects
 u_chair = "Krzes³o"
 u_bench = "£awa"
 u_anvil = "Kowad³o"

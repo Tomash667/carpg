@@ -186,7 +186,7 @@
     <ClInclude Include="source\game\entity\SpellEffects.h" />
     <ClInclude Include="source\game\entity\Trap.h" />
     <ClInclude Include="source\game\entity\Unit.h" />
-    <ClInclude Include="source\game\entity\Useable.h" />
+    <ClInclude Include="source\game\entity\Usable.h" />
     <ClInclude Include="source\game\Game.h" />
     <ClInclude Include="source\game\GameCommon.h" />
     <ClInclude Include="source\game\GameFile.h" />
@@ -265,7 +265,7 @@
     <ClInclude Include="source\game\stats\Attribute.h" />
     <ClInclude Include="source\game\stats\BaseLocation.h" />
     <ClInclude Include="source\game\stats\BaseTrap.h" />
-    <ClInclude Include="source\game\stats\BaseUseable.h" />
+    <ClInclude Include="source\game\stats\BaseUsable.h" />
     <ClInclude Include="source\game\stats\Class.h" />
     <ClInclude Include="source\game\stats\Const.h" />
     <ClInclude Include="source\game\stats\DamageTypes.h" />
@@ -378,7 +378,7 @@
     <ClCompile Include="source\game\entity\SpellEffects.cpp" />
     <ClCompile Include="source\game\entity\Trap.cpp" />
     <ClCompile Include="source\game\entity\Unit.cpp" />
-    <ClCompile Include="source\game\entity\Useable.cpp" />
+    <ClCompile Include="source\game\entity\Usable.cpp" />
     <ClCompile Include="source\game\FOV.cpp" />
     <ClCompile Include="source\game\Game.cpp" />
     <ClCompile Include="source\game\Game2.cpp" />
@@ -456,7 +456,7 @@
     <ClCompile Include="source\game\stats\Attribute.cpp" />
     <ClCompile Include="source\game\stats\BaseLocation.cpp" />
     <ClCompile Include="source\game\stats\BaseTrap.cpp" />
-    <ClCompile Include="source\game\stats\BaseUseable.cpp" />
+    <ClCompile Include="source\game\stats\BaseUsable.cpp" />
     <ClCompile Include="source\game\stats\Class.cpp" />
     <ClCompile Include="source\game\stats\Effect.cpp" />
     <ClCompile Include="source\game\stats\Item.cpp" />

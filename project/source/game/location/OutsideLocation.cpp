@@ -32,7 +32,7 @@ OutsideLocation::~OutsideLocation()
 	delete[] h;
 	DeleteElements(units);
 	DeleteElements(chests);
-	DeleteElements(useables);
+	DeleteElements(usables);
 	DeleteElements(items);
 }
 
@@ -45,7 +45,7 @@ void OutsideLocation::ApplyContext(LevelContext& ctx)
 	ctx.traps = nullptr;
 	ctx.doors = nullptr;
 	ctx.items = &items;
-	ctx.useables = &useables;
+	ctx.usables = &usables;
 	ctx.bloods = &bloods;
 	ctx.lights = nullptr;
 	ctx.have_terrain = true;
@@ -90,9 +90,9 @@ void OutsideLocation::Save(HANDLE file, bool local)
 			(*it)->Save(file);
 
 		// u¿ywalne
-		ile = useables.size();
+		ile = usables.size();
 		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
+		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 			(*it)->Save(file, local);
 
 		// krew
@@ -154,11 +154,11 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 
 		// u¿ywalne
 		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		useables.resize(ile);
-		for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
+		usables.resize(ile);
+		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		{
-			*it = new Useable;
-			Useable::AddRefid(*it);
+			*it = new Usable;
+			Usable::AddRefid(*it);
 			(*it)->Load(file, local);
 		}
 
@@ -239,9 +239,9 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 		// konwersja ³awy w obrócon¹ ³awê i ustawienie wariantu
 		if(LOAD_VERSION < V_0_2_20)
 		{
-			for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
+			for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 			{
-				Useable& u = **it;
+				Usable& u = **it;
 				if(u.type == U_BENCH)
 				{
 					if(type == L_CITY)
@@ -266,10 +266,10 @@ void OutsideLocation::BuildRefidTable()
 		Unit::refid_table.push_back(*it);
 	}
 
-	for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
+	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 	{
-		(*it)->refid = (int)Useable::refid_table.size();
-		Useable::refid_table.push_back(*it);
+		(*it)->refid = (int)Usable::refid_table.size();
+		Usable::refid_table.push_back(*it);
 	}
 }
 

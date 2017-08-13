@@ -1373,17 +1373,17 @@ void Unit::Save(HANDLE file, bool local)
 			WriteFile(file, &b, sizeof(b), &tmp, nullptr);
 		}
 
-		if(useable)
+		if(usable)
 		{
-			if(useable->user != this)
+			if(usable->user != this)
 			{
-				Warn("Invalid useable %s (%d) user %s.", useable->GetBase()->id, useable->refid, data->id.c_str());
-				useable = nullptr;
+				Warn("Invalid usable %s (%d) user %s.", usable->GetBase()->id, usable->refid, data->id.c_str());
+				usable = nullptr;
 				int refi = -1;
 				WriteFile(file, &refi, sizeof(refi), &tmp, nullptr);
 			}
 			else
-				WriteFile(file, &useable->refid, sizeof(useable->refid), &tmp, nullptr);
+				WriteFile(file, &usable->refid, sizeof(usable->refid), &tmp, nullptr);
 		}
 		else
 		{
@@ -1741,9 +1741,9 @@ void Unit::Load(HANDLE file, bool local)
 		int refi;
 		ReadFile(file, &refi, sizeof(refi), &tmp, nullptr);
 		if(refi == -1)
-			useable = nullptr;
+			usable = nullptr;
 		else
-			Useable::AddRequest(&useable, refi, this);
+			Usable::AddRequest(&usable, refi, this);
 
 		if(action == A_SHOOT)
 		{
@@ -1762,7 +1762,7 @@ void Unit::Load(HANDLE file, bool local)
 	{
 		mesh_inst = nullptr;
 		ai = nullptr;
-		useable = nullptr;
+		usable = nullptr;
 		used_item = nullptr;
 		weapon_state = WS_HIDDEN;
 		weapon_taken = W_NONE;
@@ -2977,9 +2977,9 @@ void Unit::StartAutoTalk(bool leader, GameDialog* dialog)
 //=================================================================================================
 void Unit::UpdateStaminaAction()
 {
-	if(useable)
+	if(usable)
 	{
-		if(useable->GetBase()->stamina_slow_restore)
+		if(usable->GetBase()->stamina_slow_restore)
 			stamina_action = SA_RESTORE_SLOW;
 		else
 			stamina_action = SA_RESTORE_MORE;

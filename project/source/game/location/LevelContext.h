@@ -21,7 +21,7 @@ struct TrailParticleEmitter;
 struct Trap;
 struct Unit;
 struct UnitData;
-struct Useable;
+struct Usable;
 
 //-----------------------------------------------------------------------------
 struct TmpLevelContext
@@ -59,7 +59,7 @@ struct LevelContext
 	vector<Trap*>* traps; // nullable
 	vector<Door*>* doors; // nullable
 	vector<GroundItem*>* items;
-	vector<Useable*>* useables;
+	vector<Usable*>* usables;
 	vector<Bullet>* bullets;
 	vector<Blood>* bloods;
 	vector<ParticleEmitter*>* pes;
@@ -80,7 +80,7 @@ struct LevelContext
 	void RemoveDeadUnits();
 	Unit* FindUnitById(UnitData* ud);
 	Object* FindObjectById(Obj* obj);
-	Useable* FindUseableById(int _type);
+	Usable* FindUsableById(int _type);
 	bool RemoveItemFromWorld(const Item* item);
 	bool FindItemInCorpse(const Item* item, Unit** unit, int* slot);
 	bool RemoveGroundItem(const Item* item);

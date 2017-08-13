@@ -88,7 +88,7 @@ struct GlowNode
 	enum Type
 	{
 		Item,
-		Useable,
+		Usable,
 		Unit,
 		Door,
 		Chest

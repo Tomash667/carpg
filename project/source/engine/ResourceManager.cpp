@@ -8,6 +8,7 @@
 //-----------------------------------------------------------------------------
 ResourceManager ResourceManager::manager;
 ObjectPool<ResourceManager::TaskDetail> ResourceManager::task_pool;
+bool AAA;
 
 //=================================================================================================
 ResourceManager::ResourceManager() : mode(Mode::Instant), mutex(nullptr)
@@ -756,6 +757,9 @@ void ResourceManager::ReleaseMutex()
 void ResourceManager::LoadResourceInternal(Resource* res)
 {
 	assert(res->state != ResourceState::Loaded);
+
+	if(AAA)
+		Info("Loading %s", res->filename);
 
 	switch(res->type)
 	{

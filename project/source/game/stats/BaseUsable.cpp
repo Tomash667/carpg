@@ -1,7 +1,8 @@
 // bazowy u¿ywalny obiekt
 #include "Pch.h"
 #include "Core.h"
-#include "BaseUseable.h"
+#include "BaseUsable.h"
+#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 BaseUsable g_base_usables[] = {

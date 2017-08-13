@@ -563,7 +563,7 @@ void Game::SaveGame(HANDLE file)
 		WriteFile(file, &netid_counter, sizeof(netid_counter), &tmp, nullptr);
 		WriteFile(file, &item_netid_counter, sizeof(item_netid_counter), &tmp, nullptr);
 		WriteFile(file, &chest_netid_counter, sizeof(chest_netid_counter), &tmp, nullptr);
-		WriteFile(file, &useable_netid_counter, sizeof(useable_netid_counter), &tmp, nullptr);
+		WriteFile(file, &usable_netid_counter, sizeof(usable_netid_counter), &tmp, nullptr);
 		WriteFile(file, &skip_id_counter, sizeof(skip_id_counter), &tmp, nullptr);
 		WriteFile(file, &trap_netid_counter, sizeof(trap_netid_counter), &tmp, nullptr);
 		WriteFile(file, &door_netid_counter, sizeof(door_netid_counter), &tmp, nullptr);
@@ -728,7 +728,7 @@ void Game::LoadGame(HANDLE file)
 	GameStats::Get().Load(file);
 
 	Unit::refid_table.clear();
-	Useable::refid_table.clear();
+	Usable::refid_table.clear();
 	ParticleEmitter::refid_table.clear();
 	TrailParticleEmitter::refid_table.clear();
 
@@ -927,18 +927,18 @@ void Game::LoadGame(HANDLE file)
 	for(vector<std::pair<Unit**, int> >::iterator it = Unit::refid_request.begin(), end = Unit::refid_request.end(); it != end; ++it)
 		*(it->first) = Unit::refid_table[it->second];
 	Unit::refid_request.clear();
-	for(vector<UseableRequest>::iterator it = Useable::refid_request.begin(), end = Useable::refid_request.end(); it != end; ++it)
+	for(vector<UsableRequest>::iterator it = Usable::refid_request.begin(), end = Usable::refid_request.end(); it != end; ++it)
 	{
-		Useable* u = Useable::refid_table[it->refid];
+		Usable* u = Usable::refid_table[it->refid];
 		if(u->user != it->user)
 		{
-			Warn("Invalid useable %s (%d) user %s.", u->GetBase()->id, u->refid, it->user->data->id.c_str());
-			*it->useable = nullptr;
+			Warn("Invalid usable %s (%d) user %s.", u->GetBase()->id, u->refid, it->user->data->id.c_str());
+			*it->usable = nullptr;
 		}
 		else
-			*it->useable = u;
+			*it->usable = u;
 	}
-	Useable::refid_request.clear();
+	Usable::refid_request.clear();
 
 	// camera
 	ReadFile(file, &cam.real_rot.y, sizeof(cam.real_rot.y), &tmp, nullptr);
@@ -1404,7 +1404,7 @@ void Game::LoadGame(HANDLE file)
 		ReadFile(file, &netid_counter, sizeof(netid_counter), &tmp, nullptr);
 		ReadFile(file, &item_netid_counter, sizeof(item_netid_counter), &tmp, nullptr);
 		ReadFile(file, &chest_netid_counter, sizeof(chest_netid_counter), &tmp, nullptr);
-		ReadFile(file, &useable_netid_counter, sizeof(useable_netid_counter), &tmp, nullptr);
+		ReadFile(file, &usable_netid_counter, sizeof(usable_netid_counter), &tmp, nullptr);
 		ReadFile(file, &skip_id_counter, sizeof(skip_id_counter), &tmp, nullptr);
 		ReadFile(file, &trap_netid_counter, sizeof(trap_netid_counter), &tmp, nullptr);
 		ReadFile(file, &door_netid_counter, sizeof(door_netid_counter), &tmp, nullptr);

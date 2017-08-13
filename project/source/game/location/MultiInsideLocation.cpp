@@ -23,7 +23,7 @@ void MultiInsideLocation::ApplyContext(LevelContext& ctx)
 	ctx.traps = &active->traps;
 	ctx.doors = &active->doors;
 	ctx.items = &active->items;
-	ctx.useables = &active->useables;
+	ctx.usables = &active->usables;
 	ctx.bloods = &active->bloods;
 	ctx.lights = &active->lights;
 	ctx.have_terrain = false;

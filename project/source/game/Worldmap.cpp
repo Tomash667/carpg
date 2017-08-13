@@ -1563,14 +1563,14 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 
 			sdir += rot;
 
-			Useable* u = new Useable;
-			ctx.useables->push_back(u);
+			Usable* u = new Usable;
+			ctx.usables->push_back(u);
 			u->type = U_STOOL;
 			u->pos = pos + Vec3(sin(sdir)*slen, 0, cos(sdir)*slen);
 			u->rot = sdir;
 			u->user = nullptr;
 			if(IsOnline())
-				u->netid = useable_netid_counter++;
+				u->netid = usable_netid_counter++;
 
 			SpawnObjectExtras(ctx, stolek, u->pos, u->rot, u, nullptr);
 		}
@@ -1636,7 +1636,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 				typ = U_CHAIR;
 			}
 
-			Useable* u = new Useable;
+			Usable* u = new Usable;
 			u->type = typ;
 			u->pos = pos;
 			u->rot = rot;
@@ -1671,10 +1671,10 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 			obj_ptr = u;
 
 			if(IsOnline())
-				u->netid = useable_netid_counter++;
+				u->netid = usable_netid_counter++;
 
-			obj_id = ctx.useables->size();
-			ctx.useables->push_back(u);
+			obj_id = ctx.usables->size();
+			ctx.usables->push_back(u);
 			obj_t = 1;
 		}
 		else if(IS_SET(obj->flags, OBJ_CHEST))
@@ -1711,7 +1711,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 	if(obj_t == 0)
 		return &(*ctx.objects)[obj_id];
 	else if(obj_t == 1)
-		return (Object*)((*ctx.useables)[obj_id]); // meh
+		return (Object*)((*ctx.usables)[obj_id]); // meh
 	else
 		return (Object*)((*ctx.chests)[obj_id]); // meh^2
 }
@@ -2830,7 +2830,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 			DeleteElements(outside->chests);
 			DeleteElements(outside->items);
 			outside->objects.clear();
-			DeleteElements(outside->useables);
+			DeleteElements(outside->usables);
 			for(vector<Unit*>::iterator it = outside->units.begin(), end = outside->units.end(); it != end; ++it)
 				delete *it;
 			outside->units.clear();

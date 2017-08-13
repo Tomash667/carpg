@@ -145,7 +145,7 @@ union BeforePlayerPtr
 	Chest* chest;
 	Door* door;
 	GroundItem* item;
-	Useable* useable;
+	Usable* usable;
 	void* any;
 };
 
@@ -873,7 +873,7 @@ public:
 	int track_id;
 	MusicType GetLocationMusic();
 	uint LoadMusicDatafile(uint& errors);
-	void LoadMusic(MusicType type, bool new_load_screen = true);
+	void LoadMusic(MusicType type, bool new_load_screen = true, bool task = false);
 	void SetMusic();
 	void SetMusic(MusicType type);
 	void SetupTracks();
@@ -1092,7 +1092,7 @@ public:
 	Int2 RandomNearTile(const Int2& tile);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
-	int FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other, const void* useable = nullptr, bool is_end_point = false);
+	int FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other, const void* usable = nullptr, bool is_end_point = false);
 	bool DoShieldSmash(LevelContext& ctx, Unit& attacker);
 	Vec4 GetFogColor();
 	Vec4 GetFogParams();
@@ -1192,7 +1192,7 @@ public:
 	void GenerateDungeonObjects2();
 	SOUND GetItemSound(const Item* item);
 	cstring GetCurrentLocationText();
-	void Unit_StopUsingUseable(LevelContext& ctx, Unit& unit, bool send = true);
+	void Unit_StopUsingUsable(LevelContext& ctx, Unit& unit, bool send = true);
 	void OnReenterLevel(LevelContext& ctx);
 	void EnterLevel(bool first, bool reenter, bool from_lower, int from_portal, bool from_outside);
 	void LeaveLevel(bool clear = false);
@@ -1327,7 +1327,7 @@ public:
 	void WarpToInn(Unit& unit);
 	void PayCredit(PlayerController* player, int ile);
 	void CreateSaveImage(cstring filename);
-	void PlayerUseUseable(Useable* u, bool after_action);
+	void PlayerUseUsable(Usable* u, bool after_action);
 	SOUND GetTalkSound(Unit& u);
 	void UnitTalk(Unit& u, cstring text);
 	void OnEnterLocation();
@@ -1349,9 +1349,9 @@ public:
 	{
 		return FindObjectByIdLocal(FindObject(id));
 	}
-	Useable* FindUseableByIdLocal(int type)
+	Usable* FindUsableByIdLocal(int type)
 	{
-		return local_ctx.FindUseableById(type);
+		return local_ctx.FindUsableById(type);
 	}
 	Unit* GetRandomArenaHero();
 	cstring GetRandomIdleText(Unit& u);
@@ -1547,7 +1547,7 @@ public:
 	BitStream net_stream, net_stream2;
 	bool change_title_a;
 	bool level_generated;
-	int netid_counter, item_netid_counter, chest_netid_counter, useable_netid_counter, skip_id_counter, trap_netid_counter, door_netid_counter, electro_netid_counter;
+	int netid_counter, item_netid_counter, chest_netid_counter, usable_netid_counter, skip_id_counter, trap_netid_counter, door_netid_counter, electro_netid_counter;
 	vector<NetChange> net_changes;
 	vector<NetChangePlayer> net_changes_player;
 	vector<string*> net_talk;
@@ -1779,7 +1779,7 @@ public:
 	// szuka questowych przedmiotów u klienta
 	const Item* FindQuestItemClient(cstring id, int refid) const;
 	//void ConvertPlayerToAI(PlayerInfo& info);
-	Useable* FindUseable(int netid);
+	Usable* FindUsable(int netid);
 	// read item id and return it (can be quest item or gold), results: -2 read error, -1 not found, 0 empty, 1 ok
 	int ReadItemAndFind(BitStream& stream, const Item*& item) const;
 	bool ReadItemList(BitStream& stream, vector<ItemSlot>& items);
@@ -1840,7 +1840,7 @@ public:
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void GenerateDungeon(Location& loc);
 	void SpawnCityPhysics();
-	// zwraca Object lub Useable lub Chest!!!, w przypadku budynku rot musi byæ równe 0, PI/2, PI, 3*2/PI (w przeciwnym wypadku bêdzie 0)
+	// zwraca Object lub Usable lub Chest!!!, w przypadku budynku rot musi byæ równe 0, PI/2, PI, 3*2/PI (w przeciwnym wypadku bêdzie 0)
 	Object* SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float rot, float scale = 1.f, Vec3* out_point = nullptr, int variant = -1);
 	void RespawnBuildingPhysics();
 	void SpawnCityObjects();

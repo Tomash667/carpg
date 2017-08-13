@@ -1,9 +1,6 @@
 ﻿CURRENT:
 + WHAT TO LOAD AND WHERE
-	+ gui textures - at startup
-	+ else when required
 	+ human mesh/startup items on opening create character screen - show small loading window
-	+ currently level music is loaded at instant; move LoadMusic
 	+ items
 	+ units
 	+ buildings
@@ -13,6 +10,7 @@
 	? all
 	? tutorial
 + dungeon debug info - show levels
++ remove AAA!
 - zly teren pola
 - grass is drawn only next to roads/on field
 - update create character screen, for single frame there is no doll
@@ -36,6 +34,7 @@ NEW:
 + cmd - reset shop stock
 + future background loading
 	+ trap first mesh
+	+ optimize traps NotLoaded checking
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

@@ -559,10 +559,10 @@ void City::BuildRefidTable()
 			Unit::refid_table.push_back(*it);
 		}
 
-		for(vector<Useable*>::iterator it = (*it2)->useables.begin(), end = (*it2)->useables.end(); it != end; ++it)
+		for(vector<Usable*>::iterator it = (*it2)->usables.begin(), end = (*it2)->usables.end(); it != end; ++it)
 		{
-			(*it)->refid = (int)Useable::refid_table.size();
-			Useable::refid_table.push_back(*it);
+			(*it)->refid = (int)Usable::refid_table.size();
+			Usable::refid_table.push_back(*it);
 		}
 	}
 }

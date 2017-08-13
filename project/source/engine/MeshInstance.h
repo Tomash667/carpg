@@ -136,7 +136,7 @@ struct MeshInstance
 	bool Read(BitStream& stream);
 
 	int GetHighestPriority(uint& group);
-	int GetUseableGroup(uint group);
+	int GetUsableGroup(uint group);
 	bool GetEndResultClear(uint g)
 	{
 		bool r;

@@ -13,7 +13,7 @@ InsideBuilding::~InsideBuilding()
 	DeleteElements(units);
 	DeleteElements(doors);
 	DeleteElements(items);
-	DeleteElements(useables);
+	DeleteElements(usables);
 }
 
 //=================================================================================================
@@ -25,7 +25,7 @@ void InsideBuilding::ApplyContext(LevelContext& ctx)
 	ctx.traps = nullptr;
 	ctx.doors = &doors;
 	ctx.items = &items;
-	ctx.useables = &useables;
+	ctx.usables = &usables;
 	ctx.bloods = &bloods;
 	ctx.lights = &lights;
 	ctx.have_terrain = false;
@@ -75,9 +75,9 @@ void InsideBuilding::Save(HANDLE file, bool local)
 	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 		(*it)->Save(file);
 
-	ile = useables.size();
+	ile = usables.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
+	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
 	FileWriter f(file);
@@ -189,11 +189,11 @@ void InsideBuilding::Load(HANDLE file, bool local)
 	}
 
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	useables.resize(ile);
-	for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
+	usables.resize(ile);
+	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 	{
-		*it = new Useable;
-		Useable::AddRefid(*it);
+		*it = new Usable;
+		Usable::AddRefid(*it);
 		(*it)->Load(file, local);
 	}
 
@@ -260,9 +260,9 @@ void InsideBuilding::Load(HANDLE file, bool local)
 	// konwersja krzese³ w sto³ki
 	if(LOAD_VERSION < V_0_2_12 && type->group == content::BG_INN)
 	{
-		for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
+		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		{
-			Useable& u = **it;
+			Usable& u = **it;
 			if(u.type == U_CHAIR)
 				u.type = U_STOOL;
 		}

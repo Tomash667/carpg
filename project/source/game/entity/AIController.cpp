@@ -124,7 +124,7 @@ void AIController::Save(HANDLE file)
 	case AIController::Idle_Use:
 	case AIController::Idle_WalkUse:
 	case AIController::Idle_WalkUseEat:
-		WriteFile(file, &idle_data.useable->refid, sizeof(idle_data.useable->refid), &tmp, nullptr);
+		WriteFile(file, &idle_data.usable->refid, sizeof(idle_data.usable->refid), &tmp, nullptr);
 		break;
 	case AIController::Idle_TrainBow:
 		WriteFile(file, &idle_data.obj.pos, sizeof(idle_data.obj.pos), &tmp, nullptr);
@@ -289,7 +289,7 @@ void AIController::Load(HANDLE file)
 		{
 			int refi;
 			ReadFile(file, &refi, sizeof(refi), &tmp, nullptr);
-			idle_data.useable = Useable::GetByRefid(refi);
+			idle_data.usable = Usable::GetByRefid(refi);
 		}
 		break;
 	case AIController::Idle_TrainBow:

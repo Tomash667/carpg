@@ -360,10 +360,10 @@ void Game::PrepareLevelData(BitStream& stream)
 				InsideBuilding& ib = *inside_building;
 				stream.Write(ib.level_shift);
 				WriteString1(stream, ib.type->id);
-				// useable objects
-				stream.WriteCasted<byte>(ib.useables.size());
-				for(Useable* useable : ib.useables)
-					useable->Write(stream);
+				// usable objects
+				stream.WriteCasted<byte>(ib.usables.size());
+				for(Usable* usable : ib.usables)
+					usable->Write(stream);
 				// units
 				stream.WriteCasted<byte>(ib.units.size());
 				for(Unit* unit : ib.units)
@@ -433,10 +433,10 @@ void Game::PrepareLevelData(BitStream& stream)
 		WriteBool(stream, lvl.staircase_down_in_wall);
 	}
 
-	// useable objects
-	stream.WriteCasted<byte>(local_ctx.useables->size());
-	for(Useable* useable : *local_ctx.useables)
-		useable->Write(stream);
+	// usable objects
+	stream.WriteCasted<byte>(local_ctx.usables->size());
+	for(Usable* usable : *local_ctx.usables)
+		usable->Write(stream);
 	// units
 	stream.WriteCasted<byte>(local_ctx.units->size());
 	for(Unit* unit : *local_ctx.units)
@@ -617,7 +617,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 			WriteString1(stream, unit.used_item->id);
 		else
 			stream.WriteCasted<byte>(0);
-		stream.Write(unit.useable ? unit.useable->netid : -1);
+		stream.Write(unit.usable ? unit.usable->netid : -1);
 	}
 }
 
@@ -802,20 +802,20 @@ bool Game::ReadLevelData(BitStream& stream)
 				ib.offset = Vec2(512.f*ib.level_shift.x + 256.f, 512.f*ib.level_shift.y + 256.f);
 				ProcessBuildingObjects(ib.ctx, city_ctx, &ib, ib.type->inside_mesh, nullptr, 0, 0, Vec3(ib.offset.x, 0, ib.offset.y), ib.type, nullptr, true);
 
-				// useable objects
+				// usable objects
 				if(!stream.Read(count)
-					|| !EnsureSize(stream, Useable::MIN_SIZE * count))
+					|| !EnsureSize(stream, Usable::MIN_SIZE * count))
 				{
-					Error("Read level: Broken packet for useable object in %d inside building.", index);
+					Error("Read level: Broken packet for usable object in %d inside building.", index);
 					return false;
 				}
-				ib.useables.resize(count);
-				for(Useable*& useable : ib.useables)
+				ib.usables.resize(count);
+				for(Usable*& usable : ib.usables)
 				{
-					useable = new Useable;
-					if(!useable->Read(stream))
+					usable = new Usable;
+					if(!usable->Read(stream))
 					{
-						Error("Read level: Broken packet for useable object in %d inside building.", index);
+						Error("Read level: Broken packet for usable object in %d inside building.", index);
 						return false;
 					}
 				}
@@ -1069,21 +1069,21 @@ bool Game::ReadLevelData(BitStream& stream)
 		CreateDungeonMinimap();
 	}
 
-	// useable objects
+	// usable objects
 	byte count;
 	if(!stream.Read(count)
-		|| !EnsureSize(stream, count * Useable::MIN_SIZE))
+		|| !EnsureSize(stream, count * Usable::MIN_SIZE))
 	{
-		Error("Read level: Broken useable object count.");
+		Error("Read level: Broken usable object count.");
 		return false;
 	}
-	local_ctx.useables->resize(count);
-	for(Useable*& useable : *local_ctx.useables)
+	local_ctx.usables->resize(count);
+	for(Usable*& usable : *local_ctx.usables)
 	{
-		useable = new Useable;
-		if(!useable->Read(stream))
+		usable = new Usable;
+		if(!usable->Read(stream))
 		{
-			Error("Read level: Broken useable object.");
+			Error("Read level: Broken usable object.");
 			return false;
 		}
 	}
@@ -1573,7 +1573,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	unit.busy = Unit::Busy_No;
 	unit.in_building = -1;
 	unit.frozen = 0;
-	unit.useable = nullptr;
+	unit.usable = nullptr;
 	unit.used_item = nullptr;
 	unit.bow_instance = nullptr;
 	unit.ai = nullptr;
@@ -1590,7 +1590,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	if(mp_load)
 	{
 		// get current state in multiplayer
-		int useable_netid;
+		int usable_netid;
 		if(!stream.Read(unit.netid)
 			|| !unit.mesh_inst->Read(stream)
 			|| !stream.ReadCasted<byte>(unit.animation)
@@ -1605,7 +1605,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			|| !stream.Read(unit.target_pos2)
 			|| !stream.Read(unit.timer)
 			|| !ReadString1(stream)
-			|| !stream.Read(useable_netid))
+			|| !stream.Read(usable_netid))
 			return false;
 		else
 		{
@@ -1622,20 +1622,20 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			else
 				unit.used_item = nullptr;
 
-			// useable
-			if(useable_netid == -1)
-				unit.useable = nullptr;
+			// usable
+			if(usable_netid == -1)
+				unit.usable = nullptr;
 			else
 			{
-				unit.useable = FindUseable(useable_netid);
-				if(unit.useable)
+				unit.usable = FindUsable(usable_netid);
+				if(unit.usable)
 				{
-					unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.useable->pos);
-					unit.useable->user = &unit;
+					unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.usable->pos);
+					unit.usable->user = &unit;
 				}
 				else
 				{
-					Error("Missing useable %d.", useable_netid);
+					Error("Missing usable %d.", usable_netid);
 					return false;
 				}
 			}
@@ -2205,7 +2205,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				if(player.noclip || unit.useable || CheckMoveNet(unit, new_pos))
+				if(player.noclip || unit.usable || CheckMoveNet(unit, new_pos))
 				{
 					// update position
 					if(!unit.pos.Equal(new_pos) && !location->outside)
@@ -3392,12 +3392,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player wants to start/stop using useable
+		// player wants to start/stop using usable
 		case NetChange::USE_USEABLE:
 			{
-				int useable_netid;
+				int usable_netid;
 				byte state; // 0-stop, 1-start
-				if(!stream.Read(useable_netid)
+				if(!stream.Read(usable_netid)
 					|| !stream.Read(state))
 				{
 					Error("Update server: Broken USE_USEABLE from %s.", info.name.c_str());
@@ -3405,18 +3405,18 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					break;
 				}
 
-				Useable* useable = FindUseable(useable_netid);
-				if(!useable)
+				Usable* usable = FindUsable(usable_netid);
+				if(!usable)
 				{
-					Error("Update server: USE_USEABLE from %s, missing useable %d.", info.name.c_str(), useable_netid);
+					Error("Update server: USE_USEABLE from %s, missing usable %d.", info.name.c_str(), usable_netid);
 					StreamError();
 					break;
 				}
 
 				if(state == 1)
 				{
-					// use useable
-					if(useable->user)
+					// use usable
+					if(usable->user)
 					{
 						// someone else is already using this
 						NetChangePlayer& c = Add1(net_changes_player);
@@ -3426,44 +3426,44 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					else
 					{
-						BaseUsable& base = g_base_usables[useable->type];
+						BaseUsable& base = g_base_usables[usable->type];
 
 						unit.action = A_ANIMATION2;
 						unit.animation = ANI_PLAY;
 						unit.mesh_inst->Play(base.anim, PLAY_PRIO1, 0);
 						unit.mesh_inst->groups[0].speed = 1.f;
-						unit.useable = useable;
+						unit.usable = usable;
 						unit.target_pos = unit.pos;
-						unit.target_pos2 = useable->pos;
-						if(g_base_usables[useable->type].limit_rot == 4)
-							unit.target_pos2 -= Vec3(sin(useable->rot)*1.5f, 0, cos(useable->rot)*1.5f);
+						unit.target_pos2 = usable->pos;
+						if(g_base_usables[usable->type].limit_rot == 4)
+							unit.target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 						unit.timer = 0.f;
 						unit.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-						unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.useable->pos);
+						unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.usable->pos);
 						unit.used_item = base.item;
 						if(unit.used_item)
 						{
 							unit.weapon_taken = W_NONE;
 							unit.weapon_state = WS_HIDDEN;
 						}
-						useable->user = &unit;
+						usable->user = &unit;
 
 						// send info to players
 						NetChange& c = Add1(net_changes);
 						c.type = NetChange::USE_USEABLE;
 						c.unit = info.u;
-						c.id = useable_netid;
+						c.id = usable_netid;
 						c.ile = state;
 					}
 				}
 				else
 				{
-					// stop using useable
-					if(useable->user == &unit)
+					// stop using usable
+					if(usable->user == &unit)
 					{
 						unit.action = A_NONE;
 						unit.animation = ANI_STAND;
-						useable->user = nullptr;
+						usable->user = nullptr;
 						if(unit.live_state == Unit::ALIVE)
 							unit.used_item = nullptr;
 
@@ -3473,14 +3473,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							NetChange& c = Add1(net_changes);
 							c.type = NetChange::USE_USEABLE;
 							c.unit = info.u;
-							c.id = useable_netid;
+							c.id = usable_netid;
 							c.ile = state;
 						}
 					}
 					else
 					{
-						Error("Update server: USE_USEABLE from %s, useable %d is used by %d (%s).", info.name.c_str(), useable_netid,
-							useable->user->netid, useable->user->data->id.c_str());
+						Error("Update server: USE_USEABLE from %s, usable %d is used by %d (%s).", info.name.c_str(), usable_netid,
+							usable->user->netid, usable->user->data->id.c_str());
 						StreamError();
 					}
 				}
@@ -6836,21 +6836,21 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 								info->u->to_remove = true;
 								to_remove.push_back(info->u);
 
-								if(info->u->useable)
-									info->u->useable->user = nullptr;
+								if(info->u->usable)
+									info->u->usable->user = nullptr;
 							}
 						}
 					}
 				}
 			}
 			break;
-		// unit uses useable object
+		// unit uses usable object
 		case NetChange::USE_USEABLE:
 			{
-				int netid, useable_netid;
+				int netid, usable_netid;
 				byte state;
 				if(!stream.Read(netid)
-					|| !stream.Read(useable_netid)
+					|| !stream.Read(usable_netid)
 					|| !stream.Read(state))
 				{
 					Error("Update client: Broken USE_USEABLE.");
@@ -6866,45 +6866,45 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
-				Useable* useable = FindUseable(useable_netid);
-				if(!useable)
+				Usable* usable = FindUsable(usable_netid);
+				if(!usable)
 				{
-					Error("Update client: USE_USEABLE, missing useable %d.", useable_netid);
+					Error("Update client: USE_USEABLE, missing usable %d.", usable_netid);
 					StreamError();
 					break;
 				}
 
 				if(state == 1 || state == 2)
 				{
-					BaseUsable& base = g_base_usables[useable->type];
+					BaseUsable& base = g_base_usables[usable->type];
 
 					unit->action = A_ANIMATION2;
 					unit->animation = ANI_PLAY;
 					unit->mesh_inst->Play(state == 2 ? "czyta_papiery" : base.anim, PLAY_PRIO1, 0);
 					unit->mesh_inst->groups[0].speed = 1.f;
-					unit->useable = useable;
+					unit->usable = usable;
 					unit->target_pos = unit->pos;
-					unit->target_pos2 = useable->pos;
-					if(g_base_usables[useable->type].limit_rot == 4)
-						unit->target_pos2 -= Vec3(sin(useable->rot)*1.5f, 0, cos(useable->rot)*1.5f);
+					unit->target_pos2 = usable->pos;
+					if(g_base_usables[usable->type].limit_rot == 4)
+						unit->target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 					unit->timer = 0.f;
 					unit->animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-					unit->use_rot = Vec3::LookAtAngle(unit->pos, unit->useable->pos);
+					unit->use_rot = Vec3::LookAtAngle(unit->pos, unit->usable->pos);
 					unit->used_item = base.item;
 					if(unit->used_item)
 					{
 						unit->weapon_taken = W_NONE;
 						unit->weapon_state = WS_HIDDEN;
 					}
-					useable->user = unit;
+					usable->user = unit;
 
-					if(before_player == BP_USEABLE && before_player_ptr.useable == useable)
+					if(before_player == BP_USEABLE && before_player_ptr.usable == usable)
 						before_player = BP_NONE;
 				}
 				else if(unit->player != pc)
 				{
 					if(state == 0)
-						useable->user = nullptr;
+						usable->user = nullptr;
 					unit->action = A_NONE;
 					unit->animation = ANI_STAND;
 					if(unit->live_state == Unit::ALIVE)
@@ -8214,7 +8214,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				StreamError();
 			}
 			break;
-		// play useable object sound for unit
+		// play usable object sound for unit
 		case NetChange::USEABLE_SOUND:
 			{
 				int netid;
@@ -8231,13 +8231,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Error("Update client: USEABLE_SOUND, missing unit %d.", netid);
 						StreamError();
 					}
-					else if(!unit->useable)
+					else if(!unit->usable)
 					{
-						Error("Update client: USEABLE_SOUND, unit %d (%s) don't use useable.", netid, unit->data->id.c_str());
+						Error("Update client: USEABLE_SOUND, unit %d (%s) don't use usable.", netid, unit->data->id.c_str());
 						StreamError();
 					}
 					else if(sound_volume && unit != pc->unit)
-						PlaySound3d(unit->useable->GetBase()->sound, unit->GetCenter(), 2.f, 5.f);
+						PlaySound3d(unit->usable->GetBase()->sound->sound, unit->GetCenter(), 2.f, 5.f);
 				}
 			}
 			break;
@@ -8695,7 +8695,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						pc->unit->RemoveQuestItem(refid);
 				}
 				break;
-			// someone else is using useable
+			// someone else is using usable
 			case NetChangePlayer::USE_USEABLE:
 				AddGameMsg3(GMS_USED);
 				break;
@@ -9698,7 +9698,7 @@ void Game::Net_OnNewGameServer()
 		item_netid_counter = 0;
 		chest_netid_counter = 0;
 		skip_id_counter = 0;
-		useable_netid_counter = 0;
+		usable_netid_counter = 0;
 		trap_netid_counter = 0;
 		door_netid_counter = 0;
 		electro_netid_counter = 0;
@@ -9768,9 +9768,9 @@ const Item* Game::FindQuestItemClient(cstring id, int refid) const
 }
 
 //=================================================================================================
-Useable* Game::FindUseable(int netid)
+Usable* Game::FindUsable(int netid)
 {
-	for(vector<Useable*>::iterator it = local_ctx.useables->begin(), end = local_ctx.useables->end(); it != end; ++it)
+	for(vector<Usable*>::iterator it = local_ctx.usables->begin(), end = local_ctx.usables->end(); it != end; ++it)
 	{
 		if((*it)->netid == netid)
 			return *it;
@@ -9782,7 +9782,7 @@ Useable* Game::FindUseable(int netid)
 		{
 			if(*it)
 			{
-				for(vector<Useable*>::iterator it2 = (*it)->useables.begin(), end2 = (*it)->useables.end(); it2 != end2; ++it2)
+				for(vector<Usable*>::iterator it2 = (*it)->usables.begin(), end2 = (*it)->usables.end(); it2 != end2; ++it2)
 				{
 					if((*it2)->netid == netid)
 						return *it2;
@@ -10540,8 +10540,8 @@ bool Game::CheckMoveNet(Unit& unit, const Vec3& pos)
 	IgnoreObjects ignore = { 0 };
 	Unit* ignored[] = { &unit, nullptr };
 	const void* ignored_objects[2] = { nullptr, nullptr };
-	if(unit.useable)
-		ignored_objects[0] = unit.useable;
+	if(unit.usable)
+		ignored_objects[0] = unit.usable;
 	ignore.ignored_units = (const Unit**)ignored;
 	ignore.ignored_objects = ignored_objects;
 
@@ -10604,8 +10604,8 @@ void Game::ProcessLeftPlayers()
 			}
 			else
 			{
-				if(unit->useable)
-					unit->useable->user = nullptr;
+				if(unit->usable)
+					unit->usable->user = nullptr;
 				switch(unit->player->action)
 				{
 				case PlayerController::Action_LootChest:

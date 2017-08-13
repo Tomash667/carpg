@@ -238,7 +238,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 }
 
 //=================================================================================================
-void Game::LoadMusic(MusicType type, bool new_load_screen)
+void Game::LoadMusic(MusicType type, bool new_load_screen, bool task)
 {
 	bool first = true;
 	auto& sound_mgr = ResourceManager::Get<Sound>();
@@ -258,7 +258,10 @@ void Game::LoadMusic(MusicType type, bool new_load_screen)
 					sound_mgr.AddTaskCategory(txLoadMusic);
 				first = false;
 			}
-			sound_mgr.Load(music->music);
+			if(task)
+				sound_mgr.AddLoadTask(music->music);
+			else
+				sound_mgr.Load(music->music);
 		}
 	}
 }

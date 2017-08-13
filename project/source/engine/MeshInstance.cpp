@@ -233,7 +233,7 @@ void MeshInstance::SetupBones(Matrix* mat_scale)
 		int anim_group;
 
 		// ustal z któr¹ animacj¹ ustalaæ blending
-		anim_group = GetUseableGroup(bones_group);
+		anim_group = GetUsableGroup(bones_group);
 
 		if(anim_group == BLEND_TO_BIND_POSE)
 		{
@@ -374,7 +374,7 @@ void MeshInstance::SetupBlending(int bones_group, bool first)
 
 	// nowe ustalanie z której grupy braæ animacjê!
 	// teraz wybiera wed³ug priorytetu
-	anim_group = GetUseableGroup(bones_group);
+	anim_group = GetUsableGroup(bones_group);
 
 	if(anim_group == BLEND_TO_BIND_POSE)
 	{
@@ -519,7 +519,7 @@ int MeshInstance::GetHighestPriority(uint& _group)
 //=================================================================================================
 // Zwraca grupê której ma u¿ywaæ dana grupa
 //=================================================================================================
-int MeshInstance::GetUseableGroup(uint group)
+int MeshInstance::GetUsableGroup(uint group)
 {
 	uint top_group;
 	int highest_prio = GetHighestPriority(top_group);

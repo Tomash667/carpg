@@ -258,9 +258,9 @@ Object* LevelContext::FindObjectById(Obj* obj)
 	return nullptr;
 }
 
-Useable* LevelContext::FindUseableById(int _type)
+Usable* LevelContext::FindUsableById(int _type)
 {
-	for(vector<Useable*>::iterator it = useables->begin(), end = useables->end(); it != end; ++it)
+	for(vector<Usable*>::iterator it = usables->begin(), end = usables->end(); it != end; ++it)
 	{
 		if((*it)->type == _type)
 			return *it;

@@ -812,9 +812,9 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	// u¿ywalne
 	if(IS_SET(draw_flags, DF_USEABLES))
 	{
-		for(vector<Useable*>::iterator it = ctx.useables->begin(), end = ctx.useables->end(); it != end; ++it)
+		for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
 		{
-			Useable& use = **it;
+			Usable& use = **it;
 			Mesh* mesh = use.GetMesh();
 			if(frustum.SphereToFrustum(use.pos, mesh->head.radius))
 			{
@@ -827,13 +827,13 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, use.pos.x, use.pos.z, mesh->head.radius);
-				if(before_player == BP_USEABLE && before_player_ptr.useable == &use)
+				if(before_player == BP_USEABLE && before_player_ptr.usable == &use)
 				{
 					if(cl_glow)
 					{
 						GlowNode& glow = Add1(draw_batch.glow_nodes);
 						glow.node = node;
-						glow.type = GlowNode::Useable;
+						glow.type = GlowNode::Usable;
 						glow.ptr = &use;
 						glow.alpha = false;
 					}

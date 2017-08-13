@@ -301,7 +301,7 @@ void Game::UpdateAi(float dt)
 			// brak wrogów w okolicy
 			case AIController::Idle:
 				{
-					if(u.useable == nullptr)
+					if(u.usable == nullptr)
 					{
 						if(ai.alert_target)
 						{
@@ -356,7 +356,7 @@ void Game::UpdateAi(float dt)
 							ai.idle_action = AIController::Idle_None;
 							ai.timer = Random(2.f, 5.f);
 							ai.city_wander = false;
-							Unit_StopUsingUseable(ctx, u);
+							Unit_StopUsingUsable(ctx, u);
 						}
 					}
 
@@ -393,14 +393,14 @@ void Game::UpdateAi(float dt)
 
 					bool wander = true;
 
-					if(u.useable && u.useable->user != &u)
+					if(u.usable && u.usable->user != &u)
 					{
 						// naprawa b³êdu gdy siê on zdarzy a nie rozwi¹zanie
-						Warn("Invalid useable user: %s is using %s but the user is %s.", u.data->id.c_str(), u.useable->GetBase()->id,
-							u.useable->user ? u.useable->user->data->id.c_str() : "nullptr");
-						u.useable = nullptr;
+						Warn("Invalid usable user: %s is using %s but the user is %s.", u.data->id.c_str(), u.usable->GetBase()->id,
+							u.usable->user ? u.usable->user->data->id.c_str() : "nullptr");
+						u.usable = nullptr;
 #ifdef _DEBUG
-						AddGameMsg("Invalid useable user!", 5.f);
+						AddGameMsg("Invalid usable user!", 5.f);
 #endif
 					}
 					if(u.action == A_BLOCK)
@@ -422,7 +422,7 @@ void Game::UpdateAi(float dt)
 						AddGameMsg("Unit blocks in idle!", 5.f);
 #endif
 					}
-					if(u.look_target && !u.useable)
+					if(u.look_target && !u.usable)
 					{
 						// patrzenie na postaæ w czasie dialogu
 						look_at = LookAtPoint;
@@ -433,11 +433,11 @@ void Game::UpdateAi(float dt)
 					else if(u.IsHero() && u.hero->mode == HeroData::Leave)
 					{
 						// bohater chce opuœciæ t¹ lokacjê
-						if(u.useable)
+						if(u.usable)
 						{
 							if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 							{
-								Unit_StopUsingUseable(ctx, u);
+								Unit_StopUsingUsable(ctx, u);
 								ai.idle_action = AIController::Idle_None;
 								ai.timer = Random(1.f, 2.f);
 								ai.city_wander = true;
@@ -458,11 +458,11 @@ void Game::UpdateAi(float dt)
 						// chodzenie do karczmy
 						if(ai.goto_inn && !(u.IsHero() && tournament_generated))
 						{
-							if(u.useable)
+							if(u.usable)
 							{
 								if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 								{
-									Unit_StopUsingUseable(ctx, u);
+									Unit_StopUsingUsable(ctx, u);
 									ai.idle_action = AIController::Idle_None;
 									ai.timer = Random(1.f, 2.f);
 								}
@@ -511,11 +511,11 @@ void Game::UpdateAi(float dt)
 							if(dist >= (u.assist ? 4.f : 2.f))
 							{
 								// pod¹¿aj za liderem
-								if(u.useable)
+								if(u.usable)
 								{
 									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 									{
-										Unit_StopUsingUseable(ctx, u);
+										Unit_StopUsingUsable(ctx, u);
 										ai.idle_action = AIController::Idle_None;
 										ai.timer = Random(1.f, 2.f);
 										ai.city_wander = false;
@@ -568,11 +568,11 @@ void Game::UpdateAi(float dt)
 							else
 							{
 								// odsuñ siê ¿eby nie blokowaæ
-								if(u.useable)
+								if(u.usable)
 								{
 									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 									{
-										Unit_StopUsingUseable(ctx, u);
+										Unit_StopUsingUsable(ctx, u);
 										ai.idle_action = AIController::Idle_None;
 										ai.timer = Random(1.f, 2.f);
 										ai.city_wander = false;
@@ -656,7 +656,7 @@ void Game::UpdateAi(float dt)
 							}
 							else if(ai.idle_action == AIController::Idle_Use)
 							{
-								if(u.useable->type == U_STOOL && u.in_building != -1)
+								if(u.usable->type == U_STOOL && u.in_building != -1)
 								{
 									int co;
 									if(IsDrunkman(u))
@@ -674,7 +674,7 @@ void Game::UpdateAi(float dt)
 										ai.timer = Random(10.f, 15.f);
 										break;
 									case 2:
-										Unit_StopUsingUseable(ctx, u);
+										Unit_StopUsingUsable(ctx, u);
 										ai.idle_action = AIController::Idle_None;
 										ai.timer = Random(2.5f, 5.f);
 										break;
@@ -682,14 +682,14 @@ void Game::UpdateAi(float dt)
 								}
 								else
 								{
-									Unit_StopUsingUseable(ctx, u);
+									Unit_StopUsingUsable(ctx, u);
 									ai.idle_action = AIController::Idle_None;
 									ai.timer = Random(2.5f, 5.f);
 								}
 							}
 							else if(ai.idle_action == AIController::Idle_WalkUseEat)
 							{
-								if(u.useable)
+								if(u.usable)
 								{
 									if(u.animation_state != 0)
 									{
@@ -783,26 +783,26 @@ void Game::UpdateAi(float dt)
 								if(req_item && !u.HaveItem(req_item) && u.slots[SLOT_WEAPON] != req_item)
 									goto normal_idle_action;
 								// find closest ore vein
-								Useable* useable = nullptr;
+								Usable* usable = nullptr;
 								float range = 20.1f;
-								for(vector<Useable*>::iterator it2 = ctx.useables->begin(), end2 = ctx.useables->end(); it2 != end2; ++it2)
+								for(vector<Usable*>::iterator it2 = ctx.usables->begin(), end2 = ctx.usables->end(); it2 != end2; ++it2)
 								{
-									Useable& use = **it2;
+									Usable& use = **it2;
 									if(!use.user && (use.type == U_IRON_VEIN || use.type == U_GOLD_VEIN))
 									{
 										float dist = Vec3::Distance(use.pos, u.pos);
 										if(dist < range)
 										{
 											range = dist;
-											useable = &use;
+											usable = &use;
 										}
 									}
 								}
 								// start mining if there is anything to mine
-								if(useable)
+								if(usable)
 								{
 									ai.idle_action = AIController::Idle_WalkUse;
-									ai.idle_data.useable = useable;
+									ai.idle_data.usable = usable;
 									ai.timer = Random(5.f, 10.f);
 								}
 								else
@@ -953,12 +953,12 @@ void Game::UpdateAi(float dt)
 									break;
 								case I_UZYJ:
 									// u¿yj pobliskiego obiektu
-									if(ctx.useables)
+									if(ctx.usables)
 									{
-										static vector<Useable*> uses;
-										for(vector<Useable*>::iterator it2 = ctx.useables->begin(), end2 = ctx.useables->end(); it2 != end2; ++it2)
+										static vector<Usable*> uses;
+										for(vector<Usable*>::iterator it2 = ctx.usables->begin(), end2 = ctx.usables->end(); it2 != end2; ++it2)
 										{
-											Useable& use = **it2;
+											Usable& use = **it2;
 											if(!use.user && (use.type != U_THRONE || IS_SET(u.data->flags2, F2_SIT_ON_THRONE)) && Vec3::Distance(use.pos, u.pos) < 10.f
 												/*CanSee - niestety nie ma takiej funkcji wiêc trudno :p*/)
 											{
@@ -970,9 +970,9 @@ void Game::UpdateAi(float dt)
 										if(!uses.empty())
 										{
 											ai.idle_action = AIController::Idle_WalkUse;
-											ai.idle_data.useable = uses[Rand() % uses.size()];
+											ai.idle_data.usable = uses[Rand() % uses.size()];
 											ai.timer = Random(3.f, 6.f);
-											if(ai.idle_data.useable->type == U_STOOL && Rand() % 3 == 0)
+											if(ai.idle_data.usable->type == U_STOOL && Rand() % 3 == 0)
 												ai.idle_action = AIController::Idle_WalkUseEat;
 											uses.clear();
 											break;
@@ -1275,12 +1275,12 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_WalkUse:
 							case AIController::Idle_WalkUseEat:
 								{
-									Useable& use = *ai.idle_data.useable;
+									Usable& use = *ai.idle_data.usable;
 									if(use.user || u.frozen)
 										ai.idle_action = AIController::Idle_None;
 									else if(Vec3::Distance2d(u.pos, use.pos) < PICKUP_RANGE)
 									{
-										if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.useable->pos))) < PI / 4)
+										if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.usable->pos))) < PI / 4)
 										{
 											BaseUsable& base = g_base_usables[use.type];
 											const Item* needed_item = base.item;
@@ -1297,25 +1297,25 @@ void Game::UpdateAi(float dt)
 												else
 													u.mesh_inst->Play(base.anim, PLAY_PRIO1, 0);
 												u.mesh_inst->groups[0].speed = 1.f;
-												u.useable = &use;
+												u.usable = &use;
 												u.target_pos = u.pos;
 												u.target_pos2 = use.pos;
 												if(g_base_usables[use.type].limit_rot == 4)
 													u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
 												u.timer = 0.f;
 												u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-												u.use_rot = Vec3::LookAtAngle(u.pos, u.useable->pos);
+												u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
 												u.used_item = needed_item;
 												if(ai.idle_action == AIController::Idle_WalkUseEat)
 													ai.timer = -1.f;
 												else
 												{
 													ai.idle_action = AIController::Idle_Use;
-													if(u.useable->type == U_STOOL && u.in_building != -1 && IsDrunkman(u))
+													if(u.usable->type == U_STOOL && u.in_building != -1 && IsDrunkman(u))
 														ai.timer = Random(10.f, 20.f);
-													else if(u.useable->type == U_THRONE)
+													else if(u.usable->type == U_THRONE)
 														ai.timer = 120.f;
-													else if(u.useable->type == U_IRON_VEIN || u.useable->type == U_GOLD_VEIN)
+													else if(u.usable->type == U_IRON_VEIN || u.usable->type == U_GOLD_VEIN)
 														ai.timer = Random(20.f, 30.f);
 													else
 														ai.timer = Random(5.f, 10.f);

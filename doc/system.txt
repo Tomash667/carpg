@@ -61,7 +61,7 @@ float3 normal
 float2 tex
 
 =====================================================================================================
-CollisionObject user pointer wskazuje na Unit*/Useable*/Object*
+CollisionObject user pointer wskazuje na Unit*/Usable*/Object*
 
 =====================================================================================================
 RENDEROWANIE / RENDER TARGETS (MS = multisampling)

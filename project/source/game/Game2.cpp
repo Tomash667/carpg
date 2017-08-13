@@ -162,11 +162,11 @@ void Game::BreakAction(Unit& unit, bool fall, bool notify)
 		break;
 	}
 
-	if(unit.useable)
+	if(unit.usable)
 	{
 		unit.target_pos2 = unit.target_pos = unit.pos;
 		const Item* prev_used_item = unit.used_item;
-		Unit_StopUsingUseable(GetContext(unit), unit, !fall);
+		Unit_StopUsingUsable(GetContext(unit), unit, !fall);
 		if(prev_used_item && unit.slots[SLOT_WEAPON] == prev_used_item && !unit.HaveShield())
 		{
 			unit.weapon_state = WS_TAKEN;
@@ -1642,12 +1642,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		return;
 	}
 
-	if(u.useable)
+	if(u.usable)
 	{
 		if(u.action == A_ANIMATION2 && OR2_EQ(u.animation_state, AS_ANIMATION2_USING, AS_ANIMATION2_USING_SOUND))
 		{
 			if(KeyPressedReleaseAllowed(GK_ATTACK_USE) || KeyPressedReleaseAllowed(GK_USE))
-				Unit_StopUsingUseable(ctx, u);
+				Unit_StopUsingUsable(ctx, u);
 		}
 		UpdatePlayerView();
 		player_rot_buf = 0.f;
@@ -1658,7 +1658,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 	bool idle = true, this_frame_run = false;
 
-	if(!u.useable)
+	if(!u.usable)
 	{
 		if(u.weapon_taken == W_NONE)
 		{
@@ -2273,7 +2273,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		}
 	} // allow_input == ALLOW_INPUT || allow_input == ALLOW_KEYBOARD
 
-	if(u.useable)
+	if(u.usable)
 		return;
 
 	// sprawdŸ co jest przed graczem oraz stwórz listê pobliskich wrogów
@@ -2355,7 +2355,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_ITEM);
 
 	// u¿ywalne przed graczem
-	for(vector<Useable*>::iterator it = ctx.useables->begin(), end = ctx.useables->end(); it != end; ++it)
+	for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
 	{
 		if(!(*it)->user)
 			PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_USEABLE);
@@ -2681,7 +2681,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 		}
 		else if(u.action == A_NONE)
-			PlayerUseUseable(before_player_ptr.useable, false);
+			PlayerUseUsable(before_player_ptr.usable, false);
 	}
 
 	if(before_player == BP_UNIT)
@@ -6675,7 +6675,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->invisible = false;
 	u->hurt_timer = 0.f;
 	u->talking = false;
-	u->useable = nullptr;
+	u->usable = nullptr;
 	u->in_building = -1;
 	u->frozen = 0;
 	u->in_arena = -1;
@@ -7796,7 +7796,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				if(u.mesh_inst->frame_end_info2)
 				{
 					u.weapon_state = WS_TAKEN;
-					if(u.useable)
+					if(u.usable)
 					{
 						u.action = A_ANIMATION2;
 						u.animation_state = AS_ANIMATION2_USING;
@@ -7871,8 +7871,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							break;
 							// u¿yj obiekt
 						case NA_USE:
-							if(before_player == BP_USEABLE && before_player_ptr.useable == pc->next_action_useable)
-								PlayerUseUseable(pc->next_action_useable, true);
+							if(before_player == BP_USEABLE && before_player_ptr.usable == pc->next_action_usable)
+								PlayerUseUsable(pc->next_action_usable, true);
 							break;
 							// sprzedawanie za³o¿onego przedmiotu
 						case NA_SELL:
@@ -7899,7 +7899,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						pc->next_action = NA_NONE;
 						assert(Inventory::lock_id == LOCK_NO);
 
-						if(u.action == A_NONE && u.useable)
+						if(u.action == A_NONE && u.usable)
 						{
 							u.action = A_ANIMATION2;
 							u.animation_state = AS_ANIMATION2_USING;
@@ -8272,7 +8272,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				}
 				if(u.mesh_inst->frame_end_info2)
 				{
-					if(u.useable)
+					if(u.usable)
 					{
 						u.animation_state = AS_ANIMATION2_USING;
 						u.action = A_ANIMATION2;
@@ -8306,7 +8306,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				}
 				if(u.mesh_inst->frame_end_info2)
 				{
-					if(u.useable)
+					if(u.usable)
 					{
 						u.animation_state = AS_ANIMATION2_USING;
 						u.action = A_ANIMATION2;
@@ -8395,16 +8395,16 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					if(allow_move && u.timer >= 0.5f)
 					{
 						u.visual_pos = u.pos = u.target_pos;
-						u.useable->user = nullptr;
+						u.usable->user = nullptr;
 						if(IsOnline() && IsServer())
 						{
 							NetChange& c = Add1(net_changes);
 							c.type = NetChange::USE_USEABLE;
 							c.unit = &u;
-							c.id = u.useable->netid;
+							c.id = u.usable->netid;
 							c.ile = 0;
 						}
-						u.useable = nullptr;
+						u.usable = nullptr;
 						u.action = A_NONE;
 						break;
 					}
@@ -8415,7 +8415,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						u.visual_pos = u.pos = Vec3::Lerp(u.target_pos2, u.target_pos, u.timer * 2);
 
 						// obrót
-						float target_rot = Vec3::LookAtAngle(u.target_pos, u.useable->pos);
+						float target_rot = Vec3::LookAtAngle(u.target_pos, u.usable->pos);
 						float dif = AngleDiff(u.rot, target_rot);
 						if(NotZero(dif))
 						{
@@ -8431,7 +8431,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				}
 				else
 				{
-					BaseUsable& bu = g_base_usables[u.useable->type];
+					BaseUsable& bu = g_base_usables[u.usable->type];
 
 					if(u.animation_state > AS_ANIMATION2_MOVE_TO_OBJECT)
 					{
@@ -8444,7 +8444,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 								{
 									u.animation_state = AS_ANIMATION2_USING_SOUND;
 									if(sound_volume)
-										PlaySound3d(bu.sound, u.GetCenter(), 2.f, 5.f);
+										PlaySound3d(bu.sound->sound, u.GetCenter(), 2.f, 5.f);
 									if(IsOnline() && IsServer())
 									{
 										NetChange& c = Add1(net_changes);
@@ -8466,31 +8466,31 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						else if(bu.limit_rot == 1)
 						{
 							float rot1 = Clip(u.use_rot + PI / 2),
-								dif1 = AngleDiff(rot1, u.useable->rot),
-								rot2 = Clip(u.useable->rot + PI),
+								dif1 = AngleDiff(rot1, u.usable->rot),
+								rot2 = Clip(u.usable->rot + PI),
 								dif2 = AngleDiff(rot1, rot2);
 
 							if(dif1 < dif2)
-								target_rot = u.useable->rot;
+								target_rot = u.usable->rot;
 							else
 								target_rot = rot2;
 						}
 						else if(bu.limit_rot == 2)
-							target_rot = u.useable->rot;
+							target_rot = u.usable->rot;
 						else if(bu.limit_rot == 3)
 						{
 							float rot1 = Clip(u.use_rot + PI),
-								dif1 = AngleDiff(rot1, u.useable->rot),
-								rot2 = Clip(u.useable->rot + PI),
+								dif1 = AngleDiff(rot1, u.usable->rot),
+								rot2 = Clip(u.usable->rot + PI),
 								dif2 = AngleDiff(rot1, rot2);
 
 							if(dif1 < dif2)
-								target_rot = u.useable->rot;
+								target_rot = u.usable->rot;
 							else
 								target_rot = rot2;
 						}
 						else
-							target_rot = u.useable->rot + PI;
+							target_rot = u.usable->rot + PI;
 						target_rot = Clip(target_rot);
 
 						// obrót w strone obiektu
@@ -8569,16 +8569,16 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			if(u.timer >= 0.5f)
 			{
 				u.visual_pos = u.pos = u.target_pos;
-				u.useable->user = nullptr;
+				u.usable->user = nullptr;
 				if(IsOnline() && IsServer())
 				{
 					NetChange& c = Add1(net_changes);
 					c.type = NetChange::USE_USEABLE;
 					c.unit = &u;
-					c.id = u.useable->netid;
+					c.id = u.usable->netid;
 					c.ile = 0;
 				}
-				u.useable = nullptr;
+				u.usable = nullptr;
 				u.action = A_NONE;
 			}
 			else
@@ -9911,15 +9911,15 @@ void Game::GenerateDungeonObjects()
 
 						sdir += rot;
 
-						Useable* u = new Useable;
-						local_ctx.useables->push_back(u);
+						Usable* u = new Usable;
+						local_ctx.usables->push_back(u);
 						u->type = U_STOOL;
 						u->pos = pos + Vec3(sin(sdir)*slen, 0, cos(sdir)*slen);
 						u->rot = sdir;
 						u->user = nullptr;
 
 						if(IsOnline())
-							u->netid = useable_netid_counter++;
+							u->netid = usable_netid_counter++;
 
 						SpawnObjectExtras(local_ctx, stolek, u->pos, u->rot, u, nullptr);
 					}
@@ -9969,7 +9969,7 @@ void Game::GenerateDungeonObjects()
 							typ = U_CHAIR;
 						}
 
-						Useable* u = new Useable;
+						Usable* u = new Usable;
 						u->type = typ;
 						u->pos = pos;
 						u->rot = rot;
@@ -9999,11 +9999,11 @@ void Game::GenerateDungeonObjects()
 						}
 						else
 							u->variant = -1;
-						local_ctx.useables->push_back(u);
+						local_ctx.usables->push_back(u);
 						obj_ptr = u;
 
 						if(IsOnline())
-							u->netid = useable_netid_counter++;
+							u->netid = usable_netid_counter++;
 					}
 					else
 					{
@@ -10954,7 +10954,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 			SpawnObjectExtras(ctx, chest, (*it)->pos, (*it)->rot, nullptr, nullptr, 1.f, flags);
 	}
 
-	for(vector<Useable*>::iterator it = ctx.useables->begin(), end = ctx.useables->end(); it != end; ++it)
+	for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
 		SpawnObjectExtras(ctx, g_base_usables[(*it)->type].obj, (*it)->pos, (*it)->rot, *it, nullptr, 1.f, flags);
 }
 
@@ -12878,14 +12878,14 @@ vector<Unit*> Unit::refid_table;
 vector<std::pair<Unit**, int> > Unit::refid_request;
 vector<ParticleEmitter*> ParticleEmitter::refid_table;
 vector<TrailParticleEmitter*> TrailParticleEmitter::refid_table;
-vector<Useable*> Useable::refid_table;
-vector<UseableRequest> Useable::refid_request;
+vector<Usable*> Usable::refid_table;
+vector<UsableRequest> Usable::refid_request;
 
 void Game::BuildRefidTables()
 {
 	// jednostki i u¿ywalne
 	Unit::refid_table.clear();
-	Useable::refid_table.clear();
+	Usable::refid_table.clear();
 	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
 	{
 		if(*it)
@@ -13483,7 +13483,7 @@ cstring Game::GetCurrentLocationText()
 		return Format(txLocationTextMap, locations[current_location]->name.c_str());
 }
 
-void Game::Unit_StopUsingUseable(LevelContext& ctx, Unit& u, bool send)
+void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 {
 	u.animation = ANI_STAND;
 	u.animation_state = AS_ANIMATION2_MOVE_TO_ENDPOINT;
@@ -13531,14 +13531,14 @@ void Game::Unit_StopUsingUseable(LevelContext& ctx, Unit& u, bool send)
 			NetChange& c = Add1(net_changes);
 			c.type = NetChange::USE_USEABLE;
 			c.unit = &u;
-			c.id = u.useable->netid;
+			c.id = u.usable->netid;
 			c.ile = 3;
 		}
 		else if(&u == pc->unit)
 		{
 			NetChange& c = Add1(net_changes);
 			c.type = NetChange::USE_USEABLE;
-			c.id = u.useable->netid;
+			c.id = u.usable->netid;
 			c.ile = 0;
 		}
 	}
@@ -14167,11 +14167,11 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 			(*it)->talking = false;
 
 			// jeœli u¿ywa jakiegoœ obiektu to przesuñ
-			if((*it)->useable)
+			if((*it)->usable)
 			{
-				Unit_StopUsingUseable(ctx, **it);
-				(*it)->useable->user = nullptr;
-				(*it)->useable = nullptr;
+				Unit_StopUsingUsable(ctx, **it);
+				(*it)->usable->user = nullptr;
+				(*it)->usable = nullptr;
 				(*it)->visual_pos = (*it)->pos = (*it)->target_pos;
 			}
 
@@ -14210,7 +14210,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 					(*it)->ai = nullptr;
 					(*it)->EndEffects();
 
-					if((*it)->useable)
+					if((*it)->usable)
 						(*it)->pos = (*it)->target_pos;
 				}
 			}
@@ -14218,7 +14218,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 			{
 				(*it)->talking = false;
 				(*it)->mesh_inst->need_update = true;
-				(*it)->useable = nullptr;
+				(*it)->usable = nullptr;
 				*it = nullptr;
 			}
 		}
@@ -14301,8 +14301,8 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 			DeleteElements(ctx.doors);
 		if(ctx.traps)
 			DeleteElements(ctx.traps);
-		if(ctx.useables)
-			DeleteElements(ctx.useables);
+		if(ctx.usables)
+			DeleteElements(ctx.usables);
 		if(ctx.items)
 			DeleteElements(ctx.items);
 	}
@@ -14807,12 +14807,46 @@ void Game::LoadResources(cstring text)
 {
 	LoadingStep(nullptr, 1);
 
-	//------------------------------------------------
-	// Add load tasks
-	//------------------------------------------------
-	// load music
-	if(!nomusic)
-		LoadMusic(GetLocationMusic(), false);
+	if(!location->loaded_resources)
+	{
+		auto& sound_mgr = ResourceManager::Get<Sound>();
+
+		// load music
+		if(!nomusic)
+			LoadMusic(GetLocationMusic(), false, true);
+
+		// load usables
+		auto& usables = *local_ctx.usables;
+		for(auto u : usables)
+		{
+			auto base = u->GetBase();
+			if(base->state == ResourceState::NotLoaded)
+			{
+				if(base->sound)
+					sound_mgr.AddLoadTask(base->sound);
+				base->state = ResourceState::Loaded;
+			}
+		}
+		if(city_ctx)
+		{
+			for(auto ib : city_ctx->inside_buildings)
+			{
+				auto& usables = ib->usables;
+				for(auto u : usables)
+				{
+					auto base = u->GetBase();
+					if(base->state == ResourceState::NotLoaded)
+					{
+						if(base->sound)
+							sound_mgr.AddLoadTask(base->sound);
+						base->state = ResourceState::Loaded;
+					}
+				}
+			}
+		}
+
+		location->loaded_resources = true;
+	}
 	
 	//------------------------------------------------
 	// check if there is anything to load
@@ -14820,7 +14854,10 @@ void Game::LoadResources(cstring text)
 	if(res_mgr.HaveTasks())
 	{
 		Info("Loading new resources (%d).", res_mgr.GetLoadTasksCount());
+		extern bool AAA;
+		AAA = true;
 		res_mgr.StartLoadScreen(txLoadingResources);
+		AAA = false;
 	}
 	else
 	{
@@ -15119,7 +15156,7 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 	ctx.dialog_wait = 1.f + float(strlen(ctx.dialog_text)) / 20;
 
 	int ani;
-	if(!ctx.talker->useable && ctx.talker->data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
+	if(!ctx.talker->usable && ctx.talker->data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
 	{
 		ani = Rand() % 2 + 1;
 		ctx.talker->mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
@@ -17854,7 +17891,7 @@ bool Game::GenerateMine()
 
 		// usuñ star¹ rudê
 		if(quest_mine->mine_state3 != Quest_Mine::State3::None)
-			DeleteElements(local_ctx.useables);
+			DeleteElements(local_ctx.usables);
 
 		// dodaj now¹
 		for(int y = 1; y < lvl.h - 1; ++y)
@@ -17938,13 +17975,13 @@ bool Game::GenerateMine()
 
 						if(!Collide(global_col, box, 0.f, rot))
 						{
-							Useable* u = new Useable;
+							Usable* u = new Usable;
 							u->pos = pos;
 							u->rot = rot;
 							u->type = (Rand() % 10 < zloto_szansa ? U_GOLD_VEIN : U_IRON_VEIN);
 							u->user = nullptr;
-							u->netid = useable_netid_counter++;
-							local_ctx.useables->push_back(u);
+							u->netid = usable_netid_counter++;
+							local_ctx.usables->push_back(u);
 
 							CollisionObject& c = Add1(local_ctx.colliders);
 							btCollisionObject* cobj = new btCollisionObject;
@@ -19914,10 +19951,10 @@ void Game::CreateSaveImage(cstring filename)
 	surf->Release();
 }
 
-void Game::PlayerUseUseable(Useable* useable, bool after_action)
+void Game::PlayerUseUsable(Usable* usable, bool after_action)
 {
 	Unit& u = *pc->unit;
-	Useable& use = *useable;
+	Usable& use = *usable;
 	BaseUsable& bu = g_base_usables[use.type];
 
 	bool ok = true;
@@ -19941,7 +19978,7 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 				return;
 			u.HideWeapon();
 			pc->next_action = NA_USE;
-			pc->next_action_useable = &use;
+			pc->next_action_usable = &use;
 			ok = false;
 		}
 		else
@@ -19956,15 +19993,15 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 			u.animation = ANI_PLAY;
 			u.mesh_inst->Play(bu.anim, PLAY_PRIO1, 0);
 			u.mesh_inst->groups[0].speed = 1.f;
-			u.useable = &use;
-			u.useable->user = &u;
+			u.usable = &use;
+			u.usable->user = &u;
 			u.target_pos = u.pos;
 			u.target_pos2 = use.pos;
 			if(g_base_usables[use.type].limit_rot == 4)
 				u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
 			u.timer = 0.f;
 			u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-			u.use_rot = Vec3::LookAtAngle(u.pos, u.useable->pos);
+			u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
 			before_player = BP_NONE;
 
 			if(IsOnline())
@@ -19972,7 +20009,7 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 				NetChange& c = Add1(net_changes);
 				c.type = NetChange::USE_USEABLE;
 				c.unit = &u;
-				c.id = u.useable->netid;
+				c.id = u.usable->netid;
 				c.ile = 1;
 			}
 		}
@@ -19980,7 +20017,7 @@ void Game::PlayerUseUseable(Useable* useable, bool after_action)
 		{
 			NetChange& c = Add1(net_changes);
 			c.type = NetChange::USE_USEABLE;
-			c.id = before_player_ptr.useable->netid;
+			c.id = before_player_ptr.usable->netid;
 			c.ile = 1;
 		}
 	}

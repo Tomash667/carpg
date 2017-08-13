@@ -27,7 +27,7 @@ enum OBJ_FLAGS
 	OBJ_CAMPFIRE = 1 << 8, // object has larger fire effect (requires OBJ_LIGHT)
 	OBJ_IMPORTANT = 1 << 9, // try more times to generate this object
 	OBJ_BILLBOARD = 1 << 10, // object always face camera
-	OBJ_USEABLE = 1 << 11, // object is useable
+	OBJ_USEABLE = 1 << 11, // object is usable
 	OBJ_BENCH = 1 << 12, // object is bench
 	OBJ_ANVIL = 1 << 13, // object is anvil
 	OBJ_CHAIR = 1 << 14, // object is chair
@@ -42,7 +42,7 @@ enum OBJ_FLAGS
 	OBJ_THRONE = 1 << 23, // object is throne
 	OBJ_IRON_VEIN = 1 << 24, // object is iron vein
 	OBJ_GOLD_VEIN = 1 << 25, // object is gold vein
-	//OBJ_V0_CONVERSION = 1<<26, // convert vein objects to useables / flag removed - unused bit
+	//OBJ_V0_CONVERSION = 1<<26, // convert vein objects to usables / flag removed - unused bit
 	OBJ_PHY_BLOCKS_CAM = 1 << 27, // object physics blocks camera
 	OBJ_PHY_ROT = 1 << 28, // object physics can be rotated
 	OBJ_WATER_EFFECT = 1 << 29, // object have water particle effect
@@ -52,7 +52,7 @@ enum OBJ_FLAGS
 enum OBJ_FLAGS2
 {
 	OBJ2_BENCH_ROT = 1 << 0, // object is rotated bech (can be only used from correct side)
-	OBJ2_VARIANT = 1 << 1, // object have multiple mesh variants (must be useable with box physics for now)
+	OBJ2_VARIANT = 1 << 1, // object have multiple mesh variants (must be usable with box physics for now)
 	OBJ2_MULTI_PHYSICS = 1 << 2, // object have multiple colliders (only workd with box for now)
 	OBJ2_CAM_COLLIDERS = 1 << 3, // spawn camera coliders from mesh attach points
 };

@@ -228,7 +228,7 @@ void GameGui::DrawFront()
 		break;
 	case BP_USEABLE:
 		{
-			Useable& u = *game.before_player_ptr.useable;
+			Usable& u = *game.before_player_ptr.usable;
 			BaseUsable& bu = g_base_usables[u.type];
 			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;

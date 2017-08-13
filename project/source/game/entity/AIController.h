@@ -4,7 +4,7 @@
 //-----------------------------------------------------------------------------
 struct Unit;
 struct Room;
-struct Useable;
+struct Usable;
 struct Object;
 
 //-----------------------------------------------------------------------------
@@ -105,7 +105,7 @@ struct AIController
 		float rot;
 		Vec3 pos;
 		Unit* unit;
-		Useable* useable;
+		Usable* usable;
 		ObjP obj;
 		AreaTarget area;
 

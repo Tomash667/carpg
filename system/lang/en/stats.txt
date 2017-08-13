@@ -9,7 +9,7 @@ wt_longBlade = "Long blade"
 wt_blunt = "Blunt"
 wt_axe = "Axe"
 
-// useable objects
+// usable objects
 u_chair = "Chair"
 u_bench = "Bench"
 u_anvil = "Anvil"
