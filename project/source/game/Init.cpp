@@ -669,33 +669,17 @@ void Game::AddLoadTasks()
 			if(!vo.loaded)
 			{
 				for(uint i = 0; i < vo.count; ++i)
-					vo.entries[i].mesh = mesh_mgr.AddLoadTask(vo.entries[i].mesh_name);
+					vo.entries[i].mesh = mesh_mgr.Get(vo.entries[i].mesh_name);
 				vo.loaded = true;
 			}
-			res_mgr.AddTask(&o, TaskCallback(this, &Game::SetupObject));
+			SetupObject(o);
 		}
 		else if(o.mesh_id)
 		{
-			if(IS_SET(o.flags, OBJ_SCALEABLE))
-			{
-				o.mesh = mesh_mgr.AddLoadTask(o.mesh_id);
-				o.matrix = nullptr;
-			}
-			else
-			{
-				if(o.type == OBJ_CYLINDER)
-				{
-					o.mesh = mesh_mgr.AddLoadTask(o.mesh_id);
-					if(!IS_SET(o.flags, OBJ_NO_PHYSICS))
-					{
-						btCylinderShape* shape = new btCylinderShape(btVector3(o.r, o.h, o.r));
-						o.shape = shape;
-					}
-					o.matrix = nullptr;
-				}
-				else
-					mesh_mgr.AddLoadTask(o.mesh_id, &o, TaskCallback(this, &Game::SetupObject), true);
-			}
+			o.mesh = mesh_mgr.Get(o.mesh_id);
+			if(!IS_SET(o.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS) && o.type == OBJ_CYLINDER)
+				o.shape = new btCylinderShape(btVector3(o.r, o.h, o.r));
+			SetupObject(o);
 		}
 		else
 		{
@@ -820,4 +804,86 @@ void Game::AddLoadTasks()
 	// musics
 	if(!nomusic)
 		LoadMusic(MusicType::Title);
+}
+
+//=================================================================================================
+void Game::SetupObject(Obj& obj)
+{
+	Mesh::Point* point;
+	if(IS_SET(obj.flags2, OBJ2_VARIANT))
+	{
+		assert(!IS_SET(obj.flags, OBJ_DOUBLE_PHYSICS) && !IS_SET(obj.flags2, OBJ2_MULTI_PHYSICS)); // not supported for variant mesh yet
+		ResourceManager::Get<Mesh>().LoadMetadata(obj.variant->entries[0].mesh);
+		point = obj.variant->entries[0].mesh->FindPoint("hit");
+	}
+	else
+	{
+		ResourceManager::Get<Mesh>().LoadMetadata(obj.mesh);
+		point = obj.mesh->FindPoint("hit");
+	}
+
+	if(!point || !point->IsBox() || IS_SET(obj.flags, OBJ_BUILDING | OBJ_SCALEABLE) || obj.type == OBJ_CYLINDER)
+		return;
+
+	assert(point->size.x >= 0 && point->size.y >= 0 && point->size.z >= 0);
+	obj.shape = new btBoxShape(ToVector3(point->size));
+	obj.matrix = &point->mat;
+	obj.size = point->size.XZ();
+
+	if(IS_SET(obj.flags, OBJ_PHY_ROT))
+		obj.type = OBJ_HITBOX_ROT;
+
+	if(IS_SET(obj.flags2, OBJ2_MULTI_PHYSICS))
+	{
+		LocalVector2<Mesh::Point*> points;
+		Mesh::Point* prev_point = point;
+
+		while(true)
+		{
+			Mesh::Point* new_point = obj.mesh->FindNextPoint("hit", prev_point);
+			if(new_point)
+			{
+				assert(new_point->IsBox() && new_point->size.x >= 0 && new_point->size.y >= 0 && new_point->size.z >= 0);
+				points.push_back(new_point);
+				prev_point = new_point;
+			}
+			else
+				break;
+		}
+
+		assert(points.size() > 1u);
+		obj.next_obj = new Obj[points.size() + 1];
+		for(uint i = 0, size = points.size(); i < size; ++i)
+		{
+			Obj& o2 = obj.next_obj[i];
+			o2.shape = new btBoxShape(ToVector3(points[i]->size));
+			if(IS_SET(obj.flags, OBJ_PHY_BLOCKS_CAM))
+				o2.flags = OBJ_PHY_BLOCKS_CAM;
+			o2.matrix = &points[i]->mat;
+			o2.size = points[i]->size.XZ();
+			o2.type = obj.type;
+		}
+		obj.next_obj[points.size()].shape = nullptr;
+	}
+	else if(IS_SET(obj.flags, OBJ_DOUBLE_PHYSICS))
+	{
+		Mesh::Point* point2 = obj.mesh->FindNextPoint("hit", point);
+		if(point2 && point2->IsBox())
+		{
+			assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
+			obj.next_obj = new Obj("", 0, 0, "", "");
+			if(!IS_SET(obj.flags, OBJ_NO_PHYSICS))
+			{
+				btBoxShape* shape = new btBoxShape(ToVector3(point2->size));
+				obj.next_obj->shape = shape;
+				if(IS_SET(obj.flags, OBJ_PHY_BLOCKS_CAM))
+					obj.next_obj->flags = OBJ_PHY_BLOCKS_CAM;
+			}
+			else
+				obj.next_obj->shape = nullptr;
+			obj.next_obj->matrix = &point2->mat;
+			obj.next_obj->size = point2->size.XZ();
+			obj.next_obj->type = obj.type;
+		}
+	}
 }

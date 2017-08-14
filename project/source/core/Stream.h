@@ -308,6 +308,7 @@ private:
 class StreamWriter : public Stream
 {
 public:
+	StreamWriter(const AnyString& path);
 	StreamWriter(HANDLE file);
 	StreamWriter(BitStream& bitstream);
 

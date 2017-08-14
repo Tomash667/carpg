@@ -4,6 +4,12 @@
     <Filter Include="Common">
       <UniqueIdentifier>{9dfde5a3-b5b1-4a6d-8660-96f2c1150a68}</UniqueIdentifier>
     </Filter>
+    <Filter Include="external">
+      <UniqueIdentifier>{409bf09a-475d-43f9-8141-21468da4c79f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="doc">
+      <UniqueIdentifier>{173bfe71-4736-4115-8bd7-5cae9a324d4e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\Base.cpp">
@@ -30,6 +36,9 @@
     <ClCompile Include="MeshTask.cpp" />
     <ClCompile Include="PCH.cpp" />
     <ClCompile Include="Loader.cpp" />
+    <ClCompile Include="Mesh.cpp">
+      <Filter>external</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\Base.hpp">
@@ -55,8 +64,16 @@
     <ClInclude Include="MeshTask.hpp" />
     <ClInclude Include="PCH.hpp" />
     <ClInclude Include="Qmsh.h" />
+    <ClInclude Include="Mesh.h">
+      <Filter>external</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="zmiany.txt" />
+    <Text Include="changelog.txt">
+      <Filter>doc</Filter>
+    </Text>
+    <Text Include="UWAGI.TXT">
+      <Filter>doc</Filter>
+    </Text>
   </ItemGroup>
 </Project>

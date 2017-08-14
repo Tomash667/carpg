@@ -21,3 +21,5 @@ struct ConversionData
 
 void Convert(ConversionData& data);
 void Info(const char* path);
+int Upgrade(const char* path, bool force);
+void UpgradeDir(const char* path, bool force, bool subdir);

@@ -4,7 +4,6 @@
 	+ items
 	+ units
 	+ buildings
-	+ objects
 ? testing
 	? sound/music looping
 	? all
@@ -16,24 +15,14 @@
 - update create character screen, for single frame there is no doll
 - cursor focus bug - start server/client, activate serwer when possible, start game, alt tab to client when loaded - cursor is visible
 - physics of stairs up don't work for camera
++ cleanup data/new if not required
 ===============================================================================================================
 NEW:
-+ rename Bullet -> Projecticle (or other)
 + BaseBullet for Bullet, save by base, no mesh etc
 + Resources - hashing
-+ sleeping on bed animation
-+ terrain holes
-+ don't wait for server to load assets
-+ refactor EnterLocation to pieces (GenerateMinimap - very common step, call it outside switch and do work, every type have same common function (SpawnObjects/units/items) etc)
-+ rework mp loading - currently info is shown in infobox and in text
-+ mp send loading progress % to/from players, to other players
-+ modability:
-	+ base locations
-	+ blood types, textures
-	+ arena enemies
-	+ traps
-+ cmd - reset shop stock
-+ converter, offset to points
++ remove support for v0 paks
++ refactor old Stream class
++ custom formatter %.2g - 1000.123 -> 1000.12 (in printf it write 1.E cośtam)
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
@@ -122,15 +111,6 @@ POTRZEBA PRZYKŁADÓW:
 	support for more then one blacksmith etc
 	need fix Game::GetMapPosition (no connection between CityBuilding & InsideBuilding)
 	... more
-+ not hardcoded
-	+ better stock script (ilość kasy)
-	+ spawned units (citizen, villager, guard)
-	+ arena_pos is taken from old unit spawn mode (what if someone used new mode, this var won't be set!)
-	+ ilość mieszkańców, zależność liczby mieszkańców od budynków
-	+ stock chest connected to unit id
-	+ requirment for inn/hall
-	+ locations, location to building script
-	+ optional arena, but this require changes (you don't know if location have arena until you visit it, now it will require generating all buildings at start)
 + building script -> location script (?)
 + multi pickup - holding pickup key should pickup all similar items (with setting) for example many gold pieces
 + check units required by building spawn
@@ -150,8 +130,6 @@ POTRZEBA PRZYKŁADÓW:
 + using iterator for ForLevel
 + better info about getting gold from dividing, from pay credit
 + keyword group name
-+ check unit mesh n_subs with tex override count
-+ rework loading item script to reuse if block
 + remove spell int id
 + start arrow trail from back (currently its from start and there is large gap)
 + logging group (Engine, ResourceManager)
@@ -200,12 +178,10 @@ NOWE:
 + lepsze generowanie podziemi (połączenia pokoi i korytarzów, póki co drogi nie mogą się zapętlać)
 + żelazne golemy prawie nigdy nie występują
 + paker/install script 'move'
-+ predykcja efektów miksturki po stronie klienta?
 + zwłoki w podziemiach
 + ekwipunek, możliwość ustawienia po_akcji gdy chowa broń, możliwość zmiany po_akcji
 + AIController a potion, też potrzebuje lock; trzeba zrobić klasę ItemContainer która przechowuje lock i wskaźnik na wagę; wiele akcji zmienia lock a nie są sprawdzane (np wyrzucanie przedmiotów
 	ale to chyba nie da się robić gdy jest lock, można dodać asserta)
-? osobny vector dla net_changes_player w PlayerInfo
 + zmiana multisamplingu nie ma wpływu na wygenerowane obrazki przedmiotów
 + możliwość nie wyjmowania tarczy
 	+ po przerwaniu akcji z używalnym obiektem, ma ten przedmiot w dłoni
@@ -214,15 +190,10 @@ NOWE:
 + lepsze rysowanie przedmiotów na ziemi, sortowanie po modelu, bez CommitChanges jeśli jest 1 materiał
 + customowy box dla np grzyba żeby mógł być częściowo w ziemi
 + tryb bezpiecznego ataku (nie można trafić neutralnych)
-+ animacja podnoszenia przedmiotu (znika w punkcie)
 + tryby wczytywania: na początku, gdy potrzeba, wczytywanie i zwalnianie
 + szybkość rozprzestrzeniania się newsów
-+ lod terenu, tak że widać bardzo daleko, może nawet cały świat
-+ lod budynków, tak że widać je z daleka
-+ lod obiektów (renderowanie do tekstury?)
 + struct Angle - opakowanie które sprawdza czy wartość się zgadza
 + obchodzenie dookoła celu, odskok w bok, animacja odskoku
-+ lepszy pathfinding, powiązanie tile i local
 + punkt z którego wydobywa się dźwięk w czasie używania obiektu
 + animacja ust gdy przestaje gadać
 + lepszy system generowania jednostek
@@ -235,23 +206,18 @@ NOWE:
 + F2_MELEE dla zwykłych jednostek
 + blokada widoku przez drewno u kowala
 + rzucanie głazami, włóczniami przez giganty
-+ SSAO http://www.theorangeduck.com/page/pure-depth-ssao
 + waving trawy itp http://mbmodwiki.ollclan.eu/Swyter%27s_Simple_Waving
 + nie wiem na ile to będzie potrzebne ale można renderować splits że jest kilka pod rząd, eksportowanie może układać tak że będą pod rząd
 + możliwość nie wczytywania normalmap i specularmap
 + bow_instanced do ObjectPool
 + przechowywanie wierzchołków w Blood
-+ większy rozmiar okien
 + alpha test per submesh
-+ przezroczystość postaci gdy jest invisible
-+ jaki algorytm dla StrechRect
++ jaki algorytm dla StretchRect
 + optymalizacja, spr czy rysować trail particle emitter / electro / portal / area
 + synchronizacja animacji chodzenia/obracania z szybkością (jak ktoś np klika co chwile Q,Q,Q,Q)
 + texture override nie pozwala na inną normalmapę/specular, trzeba by wymyśleć coś nowego
 + tłumaczenie w bazie danych
-+ zmiana języka bez restartu
 + materiały dla podziemi jak Mesh::Submesh
-+ miasto z N bramami
 + nie wyświetlaj więcej powiadomienia o tej wersji
 + usunięcie niepotrzebnego kodu z eMesh, renderowanie przedmiotów nowym kodem
 + repozytorium na pdb i exe
@@ -263,7 +229,6 @@ NOWE:
 + lepsza walidacja wczytywania zapisów (póki co crashuje zazwyczaj :S)
 + optymalizacja kolizji (jeśli CollisionObject jest ROTATED_RECTANGLE z rot=0,PI/2,PI,3/2PI to niech zmienia go na RECTANGLE
 + chowanie wyjetej strzaly
-+ ustawienia jasności/gammy, trzeba zobaczyć jak to jest w innych grach zrobione
 + better handling errors in language, on error skip to next object
 + battle system (character automaticali aims to hit with weapon if its too far/near, blocking); combat between ai is fully dice rolls, but looks like they fight in real combat
 + What makes a computer opponent feel alive? http://gamedev.stackexchange.com/questions/16571/what-makes-a-computer-opponent-feel-alive
@@ -279,7 +244,6 @@ Dialog2.h
 Gui2.h/cpp
 
 DIALOGI:
-+ więcej emocji
 + gadanie w kilka osób
 
 * ograniczona liczba złota handlarzy
@@ -353,29 +317,22 @@ DIALOGI:
 * używanie bazowy obiektów dla wszystkiego tylko trochę lepiej (teraz np w zapisie jest multum mur.qmsh zapisane)
 * podtyp w BaseItem żeby nie trzeba było rzutować i sprawdzać w SortTraderItems
 * więcej kolorów włosów, plik hair_color.txt
-* lepsze wybór opcji dialogowej
 * możliwość przerywania dialogu w każdej chwili, specjalne dialogi nieprzyrywalne, akcja ai gdy przerwiesz (np atak)
-* gildia złodzieji
 * lepszy pasek hp uwzględniający szerokość ramki [jak w wczytywanie.png] i minimalną ilość hp [nie jest mniejsze od 1 pix jeśli jest cokolwiek]
 * światło w miejscu eksplozji
 * animowany pasek wczytywania?
 * własne renderowanie tekstu (brak kropek w nowej linijce tak jak jest to teraz)
-* więcej możliwości otwierania drzwi, fizyka, animacja
 * możliwość wyboru jaką klase chcesz trenować
 * wymiana pomiędzy postaciami
 * rzucanie przedmiotem w ramach handlu
-* gdy drzwi są zamknięte niech będzie limit odtwarzania dźwięku, że sa zamknięte
 * lepszy ruch ustami
 * d3dpp.SwapEffect, d3dpp.PresentationInterval, FullScreen_RefreshRateInHz
 * cachowanie tekstów np przy zapisywaniu czy wyświetlaniu czegoś w ekwipunku
 * jeden pancerz dla wszystkich i tylko używanie różnych tekstur + możliwe podmiany modelu w konfigu dla każdego z osobna
 * pozycja głowy dla napisów odczytywana z modelu
-* kilka modeli tego samego obiektu
 * osobna fizyka dla LevelContext
 * lepszy system oświetlenia dla budynków (obecnie max 3 światła na cały budynek)
-* poziomy trudności pułapek (różne pułapki [słaba, normalna, silna, zabójcza])
 * nazwane drużyny
-* gildie
 * lepsze dźwięki zależne od broni trafiającej
 	sword block metal
 	arrow block wood
@@ -387,7 +344,6 @@ DIALOGI:
 * szybka podróż do środka miasta, opuszczenie przez kliknięcie na mapie
 * przy podziale łupów automatyczna sprzedaż przedmiotów do sklepu, uzupełnianie miksturek, wymiana przedmiotów, podział złota
 * interpolacja pozycji postaci i obrotów
-* możliwość startu jako mieszkaniec miasta
 * odchylenie przy strzelaniu (gracz, ai, pułapki)
 * podchodzenie w czasie dialogu, wyciąganie broni, grożenie, proszenie
 * glify
@@ -412,17 +368,107 @@ DIALOGI:
 * kolor włosów jako DWORD a nie Vec4
 * rekrutowanie jako członka drużyny (udział w zyskach) lub jako najemnika (opłata+mały udział w zyskach), niektórzy członkowie drużyny mogą wymagać zapłaty za coś (np na leczenie, na spłacenie długów)
 * kredyt powinien inaczej działać, tablica 2d dla każdej postaci w drużynie, jeśli dwie osoby mają dla siebie kredyt to się zeruje
-* więcej animacji dla rozmowy (tak, nie, prosi, grozi)
 * symbole na pancerzu i tarczy (używane np przez straż)
 * zakaz stawiania ścian na blokadzie przy generowaniu mapy, sporo to uprości, otoczony murem
 * własny alokator pamięci, sprawdzanie mem leak, heap corruption itp
 * do przeczytania o infinite game http://www.gamedev.net/page/resources/_/creative/game-design/the-infinite-game-r3045
-* kilkukrotne automatyczne dołączanie, wybierane postaci
 * zapisane postacie które można wybrać przy wybieraniu postaci lub stworzenie nowej
-* pajączki * te kolczaste
-* send multiple crc errors
 
 tyczka a przycisk na ścianie
 lina a dźwignia
-wyrąbywanie drzwi toporem
 patche przez p2p
+
+## Uncategorized
+- bipolar affinity (fire & ice, like Hel from smite)
+- glory everlasting (i don't know what it will be but i like this name, something with angels :) )
+- after detecting trap mark area as red, unit can inform other units about trap (or not and let them step into it)
+- new attributes: luck, beauty
+- shattering sky (like window) - world end event
+- elements: fire, cold, water, electricity, acid, positive/negative energy
+- gods (good and evil for a start)
+- gods domains
+- save game without slot limits
+- dialog generator (between ai, talk about weather, need to add character traits)
+- team combat in arena (2v2, 3v3 etc)
+- autopatcher
+- better weapon physics checking for collisions
+- precompiled resources
+- precompiled scripts
+- footsteps on snow, mud
+- limited containers space
+- units on paintings looking at player
+- player profiles (settings, saves, stats per player)
+- ability to brew potion (by player, by npc), receipts
+- fair gold split system
+- effects on objects/walls after hitting with weapon, wounds on units, arrows inside units
+- better team shares (currently bow will be taken by first unit, not by one that needs it's most)
+- weak_ref pointers for units/objects so they can be removed
+- units tattoo (normal, magical)
+- wounds, broken bones, hurted feets (cant run/walk)
+- two weapons combat, left/right/both handness, styl bliźniaczych mieczy
+- holes burned in boots by acid
+- saving team shares
+- unit level, item level, party level - ai knows what items are trash by comparing item to party level, can add option to sell trash items
+- epic abilites of high attribute/skill
+- blocking with bracelets on hands
+- alterego - zmiana wyglądu, charakteru za pomocą umiejętności/czarów - można np napadać na karawany i nikt nie wie że to ty
+- hero name generation: 
+	- hunter names "X from Forest Y"
+	- barbarian/hunter/druid are never from town, always from village
+- random hunters inside forest
+- global play time
+- decals
+
+## Core
+- ? textures without power of 2
+- rotated particles
+- input don't work when there is lag, but why? maybe it can happen without lag too
+- reuse terrain_shape
+- faster cleanup of btCollisionWorld
+- MeshInit changes
+- check compiler settings: Buffer security check, Floating point model
+- instancing
+- keep pointers to animations
+- blocks in config, translation
+- don't use D3DX
+- direct3d 9ex (http://msdn.microsoft.com/en-us/library/windows/desktop/ee890072(v=vs.85).aspx)
+- dont use D3DPOOL_MANAGED
+- render plugins (directx9/10/11, opengl)
+- mac, linux version (endianness)
+- save texts in quests as ids to allow change between versions and to take less space
+- EnumAdapterModes for resolutions/refresh rate
+- limit search in FindPath
+- better drawing of physics objects (btTransform can store scalling)
+- autopswd ?
+- render to texture automatic objects/portal system (tv/portal/vision for example), max loop count, with additional texture
+- dynamic bounding sphere for scene nodes
+- draw skybox after objects
+- builtin fallin falloff
+- rework allow_input system
+
+## Animation / mesh
+- using bones without attach points
+- eyes as different model - to allow different textures, colors, rotation
+- better player apperance system (like in skyrim ;P)
+- player attributes connected to apperance (high strength - more muscles, high dexterity - thin)
+
+## Game
+- black light
+- shop inventory on desk, shelfs, chests
+- temporary inventory (steal from someone, you can't take some items, knocked out)
+- number of blood related to damage taken
+- ability to revive units
+- better door physics
+- attached sound are using player head position, unit talking comes from head position
+- barter
+
+## Sounds
+- ambient
+	- birds, wind, dogs barking, chickens, tree branches on wind
+	- owl in forest at night
+	- bats, water drops in cave/dungeon
+	- whistling wind and wailing in the crypt
+- combat
+	- taking out/hiding weapon
+- starting using bow sound
+- attacking with weapon

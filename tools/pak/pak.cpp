@@ -12,6 +12,25 @@ typedef unsigned char byte;
 typedef unsigned int uint;
 typedef const char* cstring;
 
+static const uint FORMAT_STRINGS = 8;
+static const uint FORMAT_LENGTH = 2048;
+static char format_buf[FORMAT_STRINGS][FORMAT_LENGTH];
+static int format_marker;
+
+//=================================================================================================
+cstring Format(cstring str, ...)
+{
+	va_list list;
+	va_start(list, str);
+	char* cbuf = format_buf[format_marker];
+	_vsnprintf_s(cbuf, FORMAT_LENGTH, FORMAT_LENGTH - 1, str, list);
+	cbuf[FORMAT_LENGTH - 1] = 0;
+	format_marker = (format_marker + 1) % FORMAT_STRINGS;
+	va_end(list);
+
+	return cbuf;
+}
+
 struct Pak
 {
 	static const byte CURRENT_VERSION = 1;
@@ -167,14 +186,18 @@ struct Paker
 			return;
 
 		printf("Browsing files: %u\n", pak->file_count);
+		uint total_size = 0u, total_compressed_size = 0u;
 		for(uint i = 0; i < pak->file_count; ++i)
 		{
 			Pak::File& f = pak->file_table[i];
 			if(f.compressed_size == f.size)
-				printf("  %s - size %u, offset %u\n", f.filename, f.size, f.offset);
+				printf("  %s - size %s, offset %u\n", f.filename, GetSize(f.size), f.offset);
 			else
-				printf("  %s - size %u, compressed %u, offset %u\n", f.filename, f.size, f.compressed_size, f.offset);
+				printf("  %s - size %s, compressed %s, offset %u\n", f.filename, GetSize(f.size), GetSize(f.compressed_size), f.offset);
+			total_size += f.size;
+			total_compressed_size += f.compressed_size;
 		}
+		printf("Size: %s, compressed %s (%d%%)\n", GetSize(total_size), GetSize(total_compressed_size), (int)floor(double(total_compressed_size) * 100 / total_size));
 		printf("Done.\n");
 
 		delete pak;
@@ -270,11 +293,11 @@ struct Paker
 			"-e/encrypt pswd - encrypt file entries with password\n"
 			"-fe/fullencrypt pswd - full encrypt with password\n"
 			"-nc/nocompress - don't compress\n"
-			"-o/output filename - output filename (default \"data.pak\")"
+			"-o/output filename - output filename (default \"data.pak\")\n"
 			"-ns/nosubdir - don't process subdirectories\n"
-			"-k/key pswd - encryption key"
-			"-b/browse filename - display list of files"
-			"-u/unpack filename - unpack files from pak"
+			"-k/key pswd - encryption key\n"
+			"-b/browse filename - display list of files\n"
+			"-u/unpack filename - unpack files from pak\n"
 			"Parameters without '-' are treated as files/directories.\n");
 		done_anything = true;
 	}
@@ -286,6 +309,38 @@ struct Paker
 			return None;
 		else
 			return it->second;
+	}
+
+	cstring GetSize(uint size)
+	{
+		double dsize = (double)size;
+		int mag = 0;
+		while(dsize >= 500)
+		{
+			dsize /= 1024;
+			++mag;
+		}
+		if(mag == 0)
+			return Format("%u B", size);
+
+		if(dsize > 250)
+			dsize = floor(dsize / 10) * 10;
+		else if(dsize > 100)
+			dsize = floor(dsize);
+		else if(dsize > 10)
+			dsize = floor(dsize * 10) / 10;
+		else
+			dsize = floor(dsize * 100) / 100;
+		switch(mag )
+		{
+		case 1:
+			return Format("%g KB", dsize);
+		case 2:
+			return Format("%g MB", dsize);
+		case 3:
+		default:
+			return Format("%g GB", dsize);
+		}
 	}
 
 	int FindCharInString(cstring str, cstring chars)

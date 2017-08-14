@@ -134,6 +134,7 @@ int main(int argc, char **argv)
 	export_phy = false;
 
 	int result = 0;
+	bool check_subdir = true, force_update = false;
 
 	for(int i = 1; i < argc; ++i)
 	{
@@ -156,6 +157,12 @@ int main(int argc, char **argv)
 					"-phy - export only physic mesh (default extension .phy)\n"
 					"-normal - export normal mesh\n"
 					"-info FILE - show information about mesh (version etc)\n"
+					"-upgrade FILE - upgrade mesh to newest version\n"
+					"-upgradedir DIR - upgrade all meshes in directory and subdirectories\n"
+					"-subdir - check subdirectories in upgradedir (default)\n"
+					"-nosubdir - don't check subdirectories in upgradedir\n"
+					"-force - force upgrade operation\n"
+					"-noforce - don't force upgrade operation (default)\n"
 					"Parameters without '-' are treated as input file.\n");
 			}
 			else if(str == "-v")
@@ -217,6 +224,34 @@ int main(int argc, char **argv)
 				else
 					printf("Missing FILE for '-info'!\n");
 			}
+			else if(str == "-upgrade")
+			{
+				if(i + 1 < argc)
+				{
+					++i;
+					Upgrade(argv[i], force_update);
+				}
+				else
+					printf("Missing FILE for '-upgrade'!\n");
+			}
+			else if(str == "-upgradedir")
+			{
+				if(i + 1 < argc)
+				{
+					++i;
+					UpgradeDir(argv[i], force_update, check_subdir);
+				}
+				else
+					printf("Missing FILE for '-upgradedir'!\n");
+			}
+			else if(str == "-subdir")
+				check_subdir = true;
+			else if(str == "-nosubdir")
+				check_subdir = false;
+			else if(str == "-force")
+				force_update = true;
+			else if(str == "-noforce")
+				force_update = false;
 			else
 				printf("Unknown switch \"%s\"!\n", cstr);
 		}

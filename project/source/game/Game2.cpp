@@ -14823,39 +14823,29 @@ void Game::LoadResources(cstring text)
 
 	if(!location->loaded_resources)
 	{
-		auto& sound_mgr = ResourceManager::Get<Sound>();
+		auto& mesh_mgr = ResourceManager::Get<Mesh>();
 
 		// load music
 		if(!nomusic)
 			LoadMusic(GetLocationMusic(), false, true);
 
+		// load objects
+		for(auto& obj : *local_ctx.objects)
+			mesh_mgr.AddLoadTask(obj.mesh);
+
 		// load usables
-		auto& usables = *local_ctx.usables;
-		for(auto u : usables)
-		{
-			auto base = u->GetBase();
-			if(base->state == ResourceState::NotLoaded)
-			{
-				if(base->sound)
-					sound_mgr.AddLoadTask(base->sound);
-				base->state = ResourceState::Loaded;
-			}
-		}
+		PreloadUsables(*local_ctx.usables);
+
 		if(city_ctx)
 		{
 			for(auto ib : city_ctx->inside_buildings)
 			{
-				auto& usables = ib->usables;
-				for(auto u : usables)
-				{
-					auto base = u->GetBase();
-					if(base->state == ResourceState::NotLoaded)
-					{
-						if(base->sound)
-							sound_mgr.AddLoadTask(base->sound);
-						base->state = ResourceState::Loaded;
-					}
-				}
+				// load building objects
+				for(auto& obj : ib->objects)
+					mesh_mgr.AddLoadTask(obj.mesh);				
+
+				// load building usables
+				PreloadUsables(ib->usables);
 			}
 		}
 
@@ -14883,6 +14873,30 @@ void Game::LoadResources(cstring text)
 	if(!location->outside)
 		SetDungeonParamsToMeshes();
 	LoadingStep(text, 2);
+}
+
+void Game::PreloadUsables(vector<Usable*>& usables)
+{
+	auto& mesh_mgr = ResourceManager::Get<Mesh>();
+	auto& sound_mgr = ResourceManager::Get<Sound>();
+
+	for(auto u : usables)
+	{
+		auto base = u->GetBase();
+		if(base->state == ResourceState::NotLoaded)
+		{
+			if(base->obj->variant)
+			{
+				for(uint i = 0; i < base->obj->variant->count; ++i)
+					mesh_mgr.AddLoadTask(base->obj->variant->entries[i].mesh);
+			}
+			else
+				mesh_mgr.AddLoadTask(base->obj->mesh);
+			if(base->sound)
+				sound_mgr.AddLoadTask(base->sound);
+			base->state = ResourceState::Loaded;
+		}
+	}
 }
 
 cstring arena_slabi[] = {

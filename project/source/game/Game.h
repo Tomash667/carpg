@@ -1012,7 +1012,7 @@ public:
 	void ExitToMenu();
 	void DoExitToMenu();
 	void GenerateImage(TaskData& task_data);
-	void SetupObject(TaskData& task_data);
+	void SetupObject(Obj& obj);
 	Unit* GetFollowTarget();
 	void SetupCamera(float dt);
 	void LoadShaders();
@@ -1240,6 +1240,7 @@ public:
 	void LoadingStart(int steps, float load_cap = 1.f);
 	void LoadingStep(cstring text = nullptr, int end = 0);
 	void LoadResources(cstring text);
+	void PreloadUsables(vector<Usable*>& usable);
 	//
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();

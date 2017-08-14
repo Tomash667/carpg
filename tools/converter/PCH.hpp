@@ -22,6 +22,11 @@
 #include <cstdio>
 
 using namespace common;
+using std::vector;
+
+typedef unsigned short word;
+typedef unsigned int uint;
+typedef const char* cstring;
 
 void Write(const string &s);
 void Writeln(const string &s);

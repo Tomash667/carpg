@@ -86,7 +86,7 @@ struct Obj
 	VariantObj* variant;
 	float extra_dist;
 
-	Obj() : flags(0), flags2(0)
+	Obj() : flags(0), flags2(0), matrix(nullptr), shape(nullptr)
 	{
 	}
 

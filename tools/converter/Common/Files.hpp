@@ -71,6 +71,30 @@ public:
 	virtual void SetSize(size_t Size);
 	virtual void Truncate();
 	virtual bool End();
+
+	template <typename T>
+	void ReadEx(T *x)
+	{
+		Read(x, sizeof(*x));
+	}
+	template<typename T>
+	void Read(T& x)
+	{
+		Read(&x, sizeof(T));
+	}
+	template<typename T>
+	T Read()
+	{
+		T x;
+		Read(&x, sizeof(T));
+		return x;
+	}
+
+	template<typename T>
+	void Write(const T& x)
+	{
+		Write(&x, sizeof(T));
+	}
 };
 
 } // namespace common

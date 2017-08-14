@@ -2,11 +2,23 @@ CHANGELOG
 Minor updates have changes only in exporter/converer, don't affect qmsh file.
 ---------------------------
 v20:
+QMSH:
 * points offset in header
-* converter -info command
+SCRIPT (v19.1):
+* export script can run converter to export directly to qmsh file
+* update for lastest blender version
+* fix default filename
+CONVERTER:
+* new commands
+	-info FILE - show file info (version etc)
+	-upgrade FILE - upgrade mesh to newest version
+	-upgradedir PATH - upgrade all meshes to newest version
+	-force - force mesh upgrade
+	-noforce - don't force mesh upgrade (default)
+	-subdir - check subdirectories for upgradedir (default)
+	-nosubdir - don't check subdirectories for upgradedir
 * default extension .phy for physics
 * converter return 0 (success) or 1 (failed)
-* export script can run converter to export directly to qmsh file
 
 v19:
 * using euler angles in point

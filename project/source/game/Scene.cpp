@@ -2255,6 +2255,7 @@ void Game::AddOrSplitSceneNode(SceneNode* node, int exclude_subs)
 	assert(node && node->GetMesh().head.n_subs < 31);
 
 	const Mesh& mesh = node->GetMesh();
+	assert(mesh.state == ResourceState::Loaded);
 	if(IS_SET(mesh.head.flags, Mesh::F_TANGENTS))
 		node->flags |= SceneNode::F_BINORMALS;
 	if(mesh.head.n_subs == 1)

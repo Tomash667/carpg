@@ -67,9 +67,6 @@ public:
 	// Zwraca liczbê pominiêtych bajtów.
 	// (Mo¿na j¹ prze³adowaæ, ale nie trzeba - ma swoj¹ wersjê oryginaln¹)
 	virtual size_t Skip(size_t MaxLength);
-
-	template <typename T>
-	void ReadEx(T *x) { MustRead(x, sizeof(*x)); }
 	// Odczytuje ³añcuch poprzedzony rozmiarem 1B
 	void ReadString1(string *s);
 	// Odczytuje ³añcuch poprzedzony rozmiarem 2B
