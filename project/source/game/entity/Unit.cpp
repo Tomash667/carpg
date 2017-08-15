@@ -1933,14 +1933,10 @@ int Unit::FindHealingPotion() const
 void Unit::ReequipItems()
 {
 	bool changes = false;
-	int index = 0;
 	for(ItemSlot& item_slot : items)
 	{
 		if(!item_slot.item)
-		{
-			++index;
 			continue;
-		}
 
 		if(item_slot.item->type == IT_GOLD)
 		{
@@ -1969,8 +1965,6 @@ void Unit::ReequipItems()
 				changes = true;
 			}
 		}
-
-		++index;
 	}
 	if(changes)
 	{

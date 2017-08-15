@@ -14838,6 +14838,20 @@ void Game::LoadResources(cstring text)
 
 		if(city_ctx)
 		{
+			// load buildings
+			for(auto& b : city_ctx->buildings)
+			{
+				auto& type = *b.type;
+				if(type.state == ResourceState::NotLoaded)
+				{
+					if(type.mesh)
+						mesh_mgr.AddLoadTask(type.mesh);
+					if(type.inside_mesh)
+						mesh_mgr.AddLoadTask(type.inside_mesh);
+					type.state = ResourceState::Loaded;
+				}
+			}
+
 			for(auto ib : city_ctx->inside_buildings)
 			{
 				// load building objects

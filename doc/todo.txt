@@ -3,7 +3,7 @@
 	+ human mesh/startup items on opening create character screen - show small loading window
 	+ items
 	+ units
-	+ buildings
+	+ change load screen cap from 0.1f to something more realistic
 ? testing
 	? sound/music looping
 	? all
@@ -15,7 +15,12 @@
 - update create character screen, for single frame there is no doll
 - cursor focus bug - start server/client, activate serwer when possible, start game, alt tab to client when loaded - cursor is visible
 - physics of stairs up don't work for camera
+- remove source/game/net/Multiplayer.cpp/h or use
 + cleanup data/new if not required
+- textbox.cpp:692 unused len - check history
+- Mapa2.h CanJoinRoom StairsUp x2
+- Game2.cpp:6800 Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?
+- if(w == 1) AddGameMsg3(w == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 ===============================================================================================================
 NEW:
 + BaseBullet for Bullet, save by base, no mesh etc
@@ -23,6 +28,9 @@ NEW:
 + remove support for v0 paks
 + refactor old Stream class
 + custom formatter %.2g - 1000.123 -> 1000.12 (in printf it write 1.E cośtam)
++ converter optimize loading after points are loaded to not load them second time
++ don't keep mesh_id when you can keep only mesh and Get it on loading
++ better dialog choice scrollbar (current looks like poor man solution)
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
@@ -40,6 +48,7 @@ VERIFY:
 - 21:35:32 WARN  - NM_TRANSFER: Unknown packet 104.
 - przenoszenie do walki gdy jesteś w środku areny
 - dźwięki areny gdy się na niej jest ale nie bierze udziału
+- blokada widoku przez drewno u kowala
 ===============================================================================================================
 FAR FAR TODO:
 + toolset/menu don't lock cursor in windowed mode
@@ -196,15 +205,12 @@ NOWE:
 + obchodzenie dookoła celu, odskok w bok, animacja odskoku
 + punkt z którego wydobywa się dźwięk w czasie używania obiektu
 + animacja ust gdy przestaje gadać
-+ lepszy system generowania jednostek
 ? czy można przeszkadzać komuś w walce gadając z nim
 + gadania a akcja postaci (czy można gadać czy nie, np jak siada albo je można zaczekać aż skończy po kliknięciu)
 ? raknet wysyła wiadomości do zdisconnectowanych przy broadcast jeśli nie wyśle jeszcze disconnect
 + reputacja i rozpoznawalność, po opusczeniu zawodów kara
 + więcej nazw, Axe the Axe
-+ coś lepszego niż visual leak detector
 + F2_MELEE dla zwykłych jednostek
-+ blokada widoku przez drewno u kowala
 + rzucanie głazami, włóczniami przez giganty
 + waving trawy itp http://mbmodwiki.ollclan.eu/Swyter%27s_Simple_Waving
 + nie wiem na ile to będzie potrzebne ale można renderować splits że jest kilka pod rząd, eksportowanie może układać tak że będą pod rząd
@@ -235,16 +241,7 @@ NOWE:
 + skill trainers (train from - to 0-5)
 + class trainers (that require having starting skills/attributes of that class, increase base and allow special skills)
 + remove InfoBox from GamePanel
-+ ambient sounds
 + kompresja pak https://code.google.com/p/lz4/
-
-ZMIANY NAZW:
-GUI_DialogType
-Dialog2.h
-Gui2.h/cpp
-
-DIALOGI:
-+ gadanie w kilka osób
 
 * ograniczona liczba złota handlarzy
 * tekst po najechaniu na Obrona
@@ -260,7 +257,6 @@ DIALOGI:
 * rozmiar broni/tarczy/łuku zależy od skali postaci
 * % poziom trudności
 * wynik wysyłany do internetu
-* dźwięk kroków
 * prostsze tworzenie budynków
 * min, max światła tak jak mgły
 * skrzynie używane przez kupców
@@ -333,9 +329,6 @@ DIALOGI:
 * osobna fizyka dla LevelContext
 * lepszy system oświetlenia dla budynków (obecnie max 3 światła na cały budynek)
 * nazwane drużyny
-* lepsze dźwięki zależne od broni trafiającej
-	sword block metal
-	arrow block wood
 * lepsze generowanie przedmiotów w sklepie, zapamiętywanie przez jakiś czas
 * oświetlenie na zewnątrz dla terenu, pod małym kątem jest biała trawa [na ziemie i trawie zato widać trawę pod kątem, mipmaping?]
 * GUI_Layer::allow_controls allow_close
@@ -364,7 +357,6 @@ DIALOGI:
 * można dać FindFirstFileEx aby przyspieszyć wyszukiwanie ale tylko dla windowsa 7+
 * zapisywanie bool jako flagi (Unit, PlayerController)
 * kilka osób może naraz przeszukiwać zwłoki/skrzynie (?)
-* więcej dźwięków (aktualnie trafienie z firebolla w tarcze traktuje jak iron<>shield.mat) może odczytywanie z pliku macierzy dźwięków
 * kolor włosów jako DWORD a nie Vec4
 * rekrutowanie jako członka drużyny (udział w zyskach) lub jako najemnika (opłata+mały udział w zyskach), niektórzy członkowie drużyny mogą wymagać zapłaty za coś (np na leczenie, na spłacenie długów)
 * kredyt powinien inaczej działać, tablica 2d dla każdej postaci w drużynie, jeśli dwie osoby mają dla siebie kredyt to się zeruje
@@ -376,7 +368,6 @@ DIALOGI:
 
 tyczka a przycisk na ścianie
 lina a dźwignia
-patche przez p2p
 
 ## Uncategorized
 - bipolar affinity (fire & ice, like Hel from smite)
@@ -390,7 +381,6 @@ patche przez p2p
 - save game without slot limits
 - dialog generator (between ai, talk about weather, need to add character traits)
 - team combat in arena (2v2, 3v3 etc)
-- autopatcher
 - better weapon physics checking for collisions
 - precompiled resources
 - precompiled scripts
@@ -461,14 +451,3 @@ patche przez p2p
 - better door physics
 - attached sound are using player head position, unit talking comes from head position
 - barter
-
-## Sounds
-- ambient
-	- birds, wind, dogs barking, chickens, tree branches on wind
-	- owl in forest at night
-	- bats, water drops in cave/dungeon
-	- whistling wind and wailing in the crypt
-- combat
-	- taking out/hiding weapon
-- starting using bow sound
-- attacking with weapon

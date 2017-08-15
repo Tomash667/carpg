@@ -594,9 +594,15 @@ void Game::AddLoadTasks()
 	for(Building* b : content::buildings)
 	{
 		if(!b->mesh_id.empty())
-			b->mesh = mesh_mgr.AddLoadTask(b->mesh_id);
+		{
+			b->mesh = mesh_mgr.Get(b->mesh_id);
+			mesh_mgr.LoadMetadata(b->mesh);
+		}
 		if(!b->inside_mesh_id.empty())
-			b->inside_mesh = mesh_mgr.AddLoadTask(b->inside_mesh_id);
+		{
+			b->inside_mesh = mesh_mgr.Get(b->inside_mesh_id);
+			mesh_mgr.LoadMetadata(b->inside_mesh);
+		}
 	}
 
 	// traps

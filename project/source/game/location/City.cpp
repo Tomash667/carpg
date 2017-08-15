@@ -669,7 +669,7 @@ InsideBuilding* City::FindInsideBuilding(Building* type)
 //=================================================================================================
 InsideBuilding* City::FindInsideBuilding(BuildingGroup* group)
 {
-	assert(group >= 0);
+	assert(group);
 	for(InsideBuilding* i : inside_buildings)
 	{
 		if(i->type->group == group)
@@ -681,7 +681,7 @@ InsideBuilding* City::FindInsideBuilding(BuildingGroup* group)
 //=================================================================================================
 InsideBuilding* City::FindInsideBuilding(BuildingGroup* group, int& index)
 {
-	assert(group >= 0);
+	assert(group);
 	index = 0;
 	for(InsideBuilding* i : inside_buildings)
 	{
@@ -696,7 +696,7 @@ InsideBuilding* City::FindInsideBuilding(BuildingGroup* group, int& index)
 //=================================================================================================
 CityBuilding* City::FindBuilding(BuildingGroup* group)
 {
-	assert(group >= 0);
+	assert(group);
 	for(CityBuilding& b : buildings)
 	{
 		if(b.type->group == group)
