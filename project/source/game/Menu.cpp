@@ -1382,7 +1382,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						else
 						{
 							Info("NM_TRANSFER: Loaded player data.");
-							LoadResources("");
+							LoadResources("", false);
 							byte b[] = { ID_READY, 3 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 						}

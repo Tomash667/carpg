@@ -2865,7 +2865,7 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 		return;
 
 	if(sound_volume)
-		PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY], 3.f, 20.f);
+		PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
 
 	if(IsOnline())
 	{
@@ -2898,7 +2898,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 	if(u.action == A_NONE && (u.mesh_inst->mesh->head.n_groups == 1 || u.weapon_state == WS_TAKEN) && ai.next_attack <= 0.f && u.stamina > 0)
 	{
 		if(sound_volume && u.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-			PlayAttachedSound(u, u.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+			PlayAttachedSound(u, u.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 		u.action = A_ATTACK;
 		u.attack_id = u.GetRandomAttack();
 
@@ -2974,7 +2974,7 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 			return;
 
 		if(sound_volume)
-			PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY], 3.f, 20.f);
+			PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
 
 		if(IsOnline())
 		{

@@ -1679,10 +1679,8 @@ void Unit::Load(HANDLE file, bool local)
 
 	if(local)
 	{
-		if(IS_SET(data->flags, F_HUMAN))
-			mesh_inst = new MeshInstance(Game::Get().aHumanBase);
-		else
-			mesh_inst = new MeshInstance(data->mesh);
+		ResourceManager::Get<Mesh>().Load(data->mesh);
+		mesh_inst = new MeshInstance(data->mesh);
 		mesh_inst->Load(file);
 		mesh_inst->ptr = this;
 		ReadFile(file, &animation, sizeof(animation), &tmp, nullptr);

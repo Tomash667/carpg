@@ -442,6 +442,7 @@ public:
 	void SetMutex(HANDLE _mutex) { mutex = _mutex; }
 	bool HaveTasks() const { return !tasks.empty(); }
 	int GetLoadTasksCount() const { return to_load; }
+	bool IsLoadScreen() const { return mode != Mode::Instant; }
 	
 	template<typename T>
 	TypeManager<T> For()

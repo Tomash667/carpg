@@ -25,7 +25,7 @@ void Mesh::MeshInit()
 MeshInstance::MeshInstance(Mesh* mesh) : mesh(mesh), need_update(true), frame_end_info(false),
 frame_end_info2(false), ptr(nullptr)
 {
-	assert(mesh);
+	assert(mesh && mesh->IsLoaded());
 
 	mat_bones.resize(mesh->head.n_bones);
 	blendb.resize(mesh->head.n_bones);

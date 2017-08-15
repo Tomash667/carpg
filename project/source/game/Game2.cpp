@@ -6600,6 +6600,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	else
 		u = new Unit;
 
+	u->data = &base;
 	u->human_data = nullptr;
 
 	// typ
@@ -6633,23 +6634,11 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 				}
 				else
 					u->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
-				u->human_data->ApplyScale(aHumanBase);
 #undef HEX
 			}
-
-			u->mesh_inst = new MeshInstance(aHumanBase);
 		}
-		else
-			u->mesh_inst = new MeshInstance(base.mesh);
 
-		u->animation = u->current_animation = ANI_STAND;
-		u->mesh_inst->Play("stoi", PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-		u->mesh_inst->groups[0].speed = 1.f;
-
-		if(u->mesh_inst->mesh->head.n_groups > 1)
-			u->mesh_inst->groups[1].state = 0;
-
-		u->mesh_inst->ptr = u;
+		CreateUnitMesh(*u, false);
 	}
 
 	u->pos = Vec3(0, 0, 0);
@@ -6662,7 +6651,6 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->weapon_taken = W_NONE;
 	u->weapon_hiding = W_NONE;
 	u->weapon_state = WS_HIDDEN;
-	u->data = &base;
 	if(level == -2)
 		u->level = base.level.Random();
 	else if(level == -3)
@@ -6762,6 +6750,50 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		u->netid = netid_counter++;
 
 	return u;
+}
+
+void Game::CreateUnitMesh(Unit& unit, bool on_worldmap)
+{
+	Mesh* mesh = unit.data->mesh;
+
+	if(!mesh->IsLoaded())
+	{
+		if(ResourceManager::Get().IsLoadScreen())
+		{
+			ResourceManager::Get<Mesh>().AddLoadTask(mesh);
+			units_mesh_load.push_back(std::pair<Unit*, bool>(&unit, on_worldmap));
+			unit.mesh_inst = nullptr;
+		}
+		else
+			ResourceManager::Get<Mesh>().Load(mesh);
+	}
+
+	if(mesh->IsLoaded())
+	{
+		unit.mesh_inst = new MeshInstance(mesh);
+		unit.mesh_inst->ptr = &unit;
+
+		if(!on_worldmap)
+		{
+			if(unit.IsAlive())
+			{
+				unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+				unit.animation = unit.current_animation = ANI_STAND;
+			}
+			else
+			{
+				unit.mesh_inst->Play(NAMES::ani_die, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+				unit.animation = unit.current_animation = ANI_DIE;
+				unit.SetAnimationAtEnd();
+			}
+		}
+
+		unit.mesh_inst->groups[0].speed = 1.f;
+		if(unit.mesh_inst->mesh->head.n_groups > 1)
+			unit.mesh_inst->groups[1].state = 0;
+		if(unit.human_data)
+			unit.human_data->ApplyScale(unit.mesh_inst->mesh);
+	}
 }
 
 void GiveItem(Unit& unit, const int* ps, int count)
@@ -7632,7 +7664,7 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 		if(taker.hurt_timer <= 0.f && taker.data->sounds->sound[SOUND_PAIN])
 		{
 			if(sound_volume)
-				PlayAttachedSound(taker, taker.data->sounds->sound[SOUND_PAIN], 2.f, 15.f);
+				PlayAttachedSound(taker, taker.data->sounds->sound[SOUND_PAIN]->sound, 2.f, 15.f);
 			taker.hurt_timer = Random(1.f, 1.5f);
 			if(IS_SET(dmg_flags, DMG_NO_BLOOD))
 				taker.hurt_timer += 1.f;
@@ -10740,7 +10772,7 @@ void Game::ChangeLevel(int gdzie)
 	local_ctx_valid = true;
 	location->last_visit = worldtime;
 	CheckIfLocationCleared();
-	LoadResources(txLoadingComplete);
+	LoadResources(txLoadingComplete, false);
 
 	SetMusic();
 
@@ -14817,56 +14849,13 @@ void Game::LoadingStep(cstring text, int end)
 	}
 }
 
-void Game::LoadResources(cstring text)
+// Preload resources and start load screen if required
+void Game::LoadResources(cstring text, bool worldmap)
 {
 	LoadingStep(nullptr, 1);
 
-	if(!location->loaded_resources)
-	{
-		auto& mesh_mgr = ResourceManager::Get<Mesh>();
-
-		// load music
-		if(!nomusic)
-			LoadMusic(GetLocationMusic(), false, true);
-
-		// load objects
-		for(auto& obj : *local_ctx.objects)
-			mesh_mgr.AddLoadTask(obj.mesh);
-
-		// load usables
-		PreloadUsables(*local_ctx.usables);
-
-		if(city_ctx)
-		{
-			// load buildings
-			for(auto& b : city_ctx->buildings)
-			{
-				auto& type = *b.type;
-				if(type.state == ResourceState::NotLoaded)
-				{
-					if(type.mesh)
-						mesh_mgr.AddLoadTask(type.mesh);
-					if(type.inside_mesh)
-						mesh_mgr.AddLoadTask(type.inside_mesh);
-					type.state = ResourceState::Loaded;
-				}
-			}
-
-			for(auto ib : city_ctx->inside_buildings)
-			{
-				// load building objects
-				for(auto& obj : ib->objects)
-					mesh_mgr.AddLoadTask(obj.mesh);				
-
-				// load building usables
-				PreloadUsables(ib->usables);
-			}
-		}
-
-		location->loaded_resources = true;
-	}
+	PreloadResources(worldmap);
 	
-	//------------------------------------------------
 	// check if there is anything to load
 	auto& res_mgr = ResourceManager::Get();
 	if(res_mgr.HaveTasks())
@@ -14876,6 +14865,11 @@ void Game::LoadResources(cstring text)
 		AAA = true;
 		res_mgr.StartLoadScreen(txLoadingResources);
 		AAA = false;
+
+		// apply mesh instance for newly loaded meshes
+		for(auto& unit_mesh : units_mesh_load)
+			CreateUnitMesh(*unit_mesh.first, unit_mesh.second);
+		units_mesh_load.clear();
 	}
 	else
 	{
@@ -14887,6 +14881,69 @@ void Game::LoadResources(cstring text)
 	if(!location->outside)
 		SetDungeonParamsToMeshes();
 	LoadingStep(text, 2);
+}
+
+// When there is something new to load, add task to load it when entering location etc
+void Game::PreloadResources(bool worldmap)
+{
+	auto& mesh_mgr = ResourceManager::Get<Mesh>();
+
+	if(!worldmap)
+	{
+		// load units - units respawn so need to check everytime...
+		PreloadUnits(*local_ctx.units);
+		if(city_ctx)
+		{
+			for(auto ib : city_ctx->inside_buildings)
+				PreloadUnits(ib->units);
+		}
+
+		if(!location->loaded_resources)
+		{
+			// load music
+			if(!nomusic)
+				LoadMusic(GetLocationMusic(), false, true);
+
+			// load objects
+			for(auto& obj : *local_ctx.objects)
+				mesh_mgr.AddLoadTask(obj.mesh);
+
+			// load usables
+			PreloadUsables(*local_ctx.usables);
+
+			if(city_ctx)
+			{
+				// load buildings
+				for(auto& b : city_ctx->buildings)
+				{
+					auto& type = *b.type;
+					if(type.state == ResourceState::NotLoaded)
+					{
+						if(type.mesh)
+							mesh_mgr.AddLoadTask(type.mesh);
+						if(type.inside_mesh)
+							mesh_mgr.AddLoadTask(type.inside_mesh);
+						type.state = ResourceState::Loaded;
+					}
+				}
+
+				for(auto ib : city_ctx->inside_buildings)
+				{
+					// load building objects
+					for(auto& obj : ib->objects)
+						mesh_mgr.AddLoadTask(obj.mesh);
+
+					// load building usables
+					PreloadUsables(ib->usables);
+
+					// load units inside building
+					PreloadUnits(ib->units);
+				}
+			}
+
+			location->loaded_resources = true;
+		}
+	}
 }
 
 void Game::PreloadUsables(vector<Usable*>& usables)
@@ -14909,6 +14966,38 @@ void Game::PreloadUsables(vector<Usable*>& usables)
 			if(base->sound)
 				sound_mgr.AddLoadTask(base->sound);
 			base->state = ResourceState::Loaded;
+		}
+	}
+}
+
+void Game::PreloadUnits(vector<Unit*>& units)
+{
+	auto& mesh_mgr = ResourceManager::Get<Mesh>();
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	auto& sound_mgr = ResourceManager::Get<Sound>();
+
+	for(Unit* unit : units)
+	{
+		auto& data = *unit->data;
+		if(data.state == ResourceState::Loaded)
+			continue;
+
+		if(data.mesh)
+			mesh_mgr.AddLoadTask(data.mesh);
+		
+		for(int i = 0; i < SOUND_MAX; ++i)
+		{
+			if(data.sounds->sound[i])
+				sound_mgr.AddLoadTask(data.sounds->sound[i]);
+		}
+
+		if(data.tex)
+		{
+			for(TexId& ti : data.tex->textures)
+			{
+				if(ti.tex)
+					tex_mgr.AddLoadTask(ti.tex);
+			}
 		}
 	}
 }

@@ -657,6 +657,7 @@ void Game::LoadGame(HANDLE file)
 	load_unit_handler.clear();
 	load_chest_handler.clear();
 	load_unit_refid.clear();
+	units_mesh_load.clear();
 
 	// signature
 	byte sign[4] = { 'C','R','S','V' };
@@ -877,15 +878,7 @@ void Game::LoadGame(HANDLE file)
 			Unit* u = new Unit;
 			u->Load(file, false);
 			Unit::AddRefid(u);
-
-			if(IS_SET(u->data->flags, F_HUMAN))
-			{
-				u->mesh_inst = new MeshInstance(aHumanBase);
-				u->human_data->ApplyScale(aHumanBase);
-			}
-			else
-				u->mesh_inst = new MeshInstance(u->data->mesh);
-			u->mesh_inst->ptr = u;
+			CreateUnitMesh(*u, true);
 
 			if(!u->IsPlayer())
 			{
@@ -1467,7 +1460,7 @@ void Game::LoadGame(HANDLE file)
 		LoadMusic(MusicType::Travel, false);
 	}
 
-	LoadResources(txEndOfLoading);
+	LoadResources(txEndOfLoading, game_state2 == GS_WORLDMAP);
 	load_screen->visible = false;
 
 #ifdef _DEBUG

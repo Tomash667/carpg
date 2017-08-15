@@ -219,7 +219,7 @@ struct Unit
 	void EndEffects(int days = 0, int* best_nat = nullptr);
 	float GetSphereRadius() const
 	{
-		float radius = mesh_inst->mesh->head.radius;
+		float radius = data->mesh->head.radius;
 		if(data->type == UNIT_TYPE::HUMAN)
 			radius *= ((human_data->height - 1)*0.2f + 1.f);
 		return radius;
@@ -245,7 +245,7 @@ struct Unit
 		if(data->type == UNIT_TYPE::HUMAN)
 			return 1.73f * ((human_data->height - 1)*0.2f + 1.f);
 		else
-			return mesh_inst->mesh->head.bbox.SizeY();
+			return data->mesh->head.bbox.SizeY();
 	}
 	Vec3 GetHeadPoint() const
 	{
@@ -786,7 +786,7 @@ struct Unit
 	void ApplyHumanData(HumanData& hd)
 	{
 		hd.Set(*human_data);
-		human_data->ApplyScale(mesh_inst->mesh);
+		human_data->ApplyScale(data->mesh);
 	}
 
 	int ItemsToSellWeight() const;

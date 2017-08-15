@@ -586,6 +586,7 @@ public:
 	ItemTextureMap item_texture_map;
 	uint load_errors, load_warnings;
 	TEX missing_texture;
+	vector<std::pair<Unit*, bool>> units_mesh_load;
 
 	//---------------------------------
 	// GUI / HANDEL
@@ -1064,6 +1065,7 @@ public:
 	uint TestGameData(bool major);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
+	void CreateUnitMesh(Unit& unit, bool on_worldmap);
 	void ParseItemScript(Unit& unit, const int* script);
 	bool IsEnemy(Unit& u1, Unit& u2, bool ignore_dont_attack = false);
 	bool IsFriend(Unit& u1, Unit& u2);
@@ -1239,8 +1241,10 @@ public:
 	// wczytywanie
 	void LoadingStart(int steps, float load_cap = 1.f);
 	void LoadingStep(cstring text = nullptr, int end = 0);
-	void LoadResources(cstring text);
+	void LoadResources(cstring text, bool worldmap);
+	void PreloadResources(bool worldmap);
 	void PreloadUsables(vector<Usable*>& usable);
+	void PreloadUnits(vector<Unit*>& units);
 	//
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();

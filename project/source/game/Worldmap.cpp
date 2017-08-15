@@ -1420,7 +1420,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(location->outside)
 		SetTerrainTextures();
 
-	LoadResources(txLoadingComplete);
+	LoadResources(txLoadingComplete, false);
 
 	l.last_visit = worldtime;
 	CheckIfLocationCleared();
@@ -2547,22 +2547,7 @@ void Game::RespawnUnits(LevelContext& ctx)
 		// model
 		u->action = A_NONE;
 		u->talking = false;
-		u->mesh_inst = new MeshInstance(u->data->mesh ? (Mesh*)u->data->mesh : aHumanBase);
-		u->mesh_inst->ptr = u;
-		if(u->IsAlive())
-		{
-			u->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
-			u->animation = u->current_animation = ANI_STAND;
-		}
-		else
-		{
-			u->mesh_inst->Play(NAMES::ani_die, PLAY_PRIO1, 0);
-			u->animation = u->current_animation = ANI_DIE;
-		}
-		u->mesh_inst->groups[0].speed = 1.f;
-		if(u->human_data)
-			u->human_data->ApplyScale(u->mesh_inst->mesh);
-		u->SetAnimationAtEnd();
+		CreateUnitMesh(*u, false);
 
 		// fizyka
 		btCapsuleShape* caps = new btCapsuleShape(u->GetUnitRadius(), max(MIN_H, u->GetUnitHeight()));

@@ -713,7 +713,9 @@ void Game::AddLoadTasks()
 
 		// model
 		if(!ud.mesh_id.empty())
-			ud.mesh = mesh_mgr.AddLoadTask(ud.mesh_id);
+			ud.mesh = mesh_mgr.Get(ud.mesh_id);
+		else
+			ud.mesh = aHumanBase;
 
 		// sounds
 		SoundPack& sounds = *ud.sounds;
@@ -723,7 +725,7 @@ void Game::AddLoadTasks()
 			for(int i = 0; i < SOUND_MAX; ++i)
 			{
 				if(!sounds.filename[i].empty())
-					sound_mgr.AddLoadTask(sounds.filename[i], sounds.sound[i]);
+					sounds.sound[i] = sound_mgr.Get(sounds.filename[i]);
 			}
 		}
 
@@ -734,7 +736,7 @@ void Game::AddLoadTasks()
 			for(TexId& ti : ud.tex->textures)
 			{
 				if(!ti.id.empty())
-					ti.tex = tex_mgr.AddLoadTask(ti.id);
+					ti.tex = tex_mgr.Get(ti.id);
 			}
 		}
 	}

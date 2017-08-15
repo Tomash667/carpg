@@ -1,12 +1,18 @@
 ﻿CURRENT:
++ at loading units txt -> set mesh for human, don't check for UNIT_TYPE::HUMAN to use aHumanBase
++ in Unit don't use mesh_inst->mesh because it may be not set, use data->mesh
++ testing...
 + WHAT TO LOAD AND WHERE
 	+ human mesh/startup items on opening create character screen - show small loading window
 	+ items
-	+ units
 	+ change load screen cap from 0.1f to something more realistic
 ? testing
 	? sound/music looping
-	? all
+	? mp
+		? enter city, enter visited city, reenter city, enter city after load
+		? enter outside loc, enter visited outside loc, reenter outside loc, enter outside loc after load
+		? enter dungeon, enter visited dungeon, reenter dungeon, enter dungeon after load, level down/up, revisit down/up after load
+		? load on worldmap
 	? tutorial
 + dungeon debug info - show levels
 + remove AAA!
@@ -31,6 +37,17 @@ NEW:
 + converter optimize loading after points are loaded to not load them second time
 + don't keep mesh_id when you can keep only mesh and Get it on loading
 + better dialog choice scrollbar (current looks like poor man solution)
++ loading when required feature:
+	+ spells
+	+ more hardcoded sounds
+	+ more hardcoded textures
+	+ more hardcoded meshes
+	+ better prepare, not at end in second loop but when object is created
+	+ don't preload human meshes (need to make changes to AddPlayerTeam to handle mesh loading)
+	+ Unit::Load require instant loading of mesh
++ refactor TestUnitSpells -> get and count errors
++ npc generator like in gta - spawn units using usables
++ refactor - unify all errors with load_errors
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
@@ -50,11 +67,6 @@ VERIFY:
 - dźwięki areny gdy się na niej jest ale nie bierze udziału
 - blokada widoku przez drewno u kowala
 ===============================================================================================================
-FAR FAR TODO:
-+ toolset/menu don't lock cursor in windowed mode
-- trim crash on polish letters
-+ options to select sound device (default/headphones/speakers)
-
 ZNANE BŁEDY:
 - wyszukiwanie ścieżek ai nie działa zbyt dobrze i mogą się zablokować
 - członkowie drużyny żeby się odblokować przechodzą przez obiekty i inne jednostki
@@ -112,10 +124,10 @@ POTRZEBA PRZYKŁADÓW:
 - sawmill, messanger spawned inside client
 - inventory icons disappear after alt-enter or changing multisampling [ł]; not happens on my gpu, need more info
 //****************************************************
-- zliczanie load_errors
 - debug ai lag is too big!
 - engine refactoring (resMgr - change var name)
 
++ toolset/menu don't lock cursor in windowed mode
 + multiple same buildings (except house) are not supported
 	support for more then one blacksmith etc
 	need fix Game::GetMapPosition (no connection between CityBuilding & InsideBuilding)
@@ -313,7 +325,6 @@ NOWE:
 * używanie bazowy obiektów dla wszystkiego tylko trochę lepiej (teraz np w zapisie jest multum mur.qmsh zapisane)
 * podtyp w BaseItem żeby nie trzeba było rzutować i sprawdzać w SortTraderItems
 * więcej kolorów włosów, plik hair_color.txt
-* możliwość przerywania dialogu w każdej chwili, specjalne dialogi nieprzyrywalne, akcja ai gdy przerwiesz (np atak)
 * lepszy pasek hp uwzględniający szerokość ramki [jak w wczytywanie.png] i minimalną ilość hp [nie jest mniejsze od 1 pix jeśli jest cokolwiek]
 * światło w miejscu eksplozji
 * animowany pasek wczytywania?
@@ -338,7 +349,6 @@ NOWE:
 * przy podziale łupów automatyczna sprzedaż przedmiotów do sklepu, uzupełnianie miksturek, wymiana przedmiotów, podział złota
 * interpolacja pozycji postaci i obrotów
 * odchylenie przy strzelaniu (gracz, ai, pułapki)
-* podchodzenie w czasie dialogu, wyciąganie broni, grożenie, proszenie
 * glify
 * inactive_update -> pause on lost focus
 * wykrywanie/rozbrajanie pułapek [oznaczanie dla innych, ai łotrzyka]
@@ -350,7 +360,6 @@ NOWE:
 * drzwi - możliwość dopasowania pozycji, różne tekstury z różnych stron
 * możliwość ustawienia koloru ubrania/miksturki itp
 * zmiana koloru włosów / typu
-* uwzględnianie w dialoga ilości osób w drużynie [zabić go, zabić ich]
 * flagi postaci [nie można okraść, pobić, zabić]
 * bandyci pobierają złoto z kasy drużynowej/od wszystkich
 * możliwość zmiany grupy jednostki i innych danych

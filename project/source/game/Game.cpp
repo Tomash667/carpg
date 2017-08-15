@@ -788,6 +788,7 @@ void Game::DoExitToMenu()
 	game_gui->visible = false;
 	world_map->visible = false;
 	main_menu->visible = true;
+	units_mesh_load.clear();
 
 	if(change_title_a)
 		ChangeTitle();
@@ -2507,9 +2508,9 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	// dŸwiêk
 	if(sound_volume)
 	{
-		SOUND snd = u.data->sounds->sound[SOUND_DEATH];
+		SOUND snd = u.data->sounds->sound[SOUND_DEATH]->sound;
 		if(!snd)
-			snd = u.data->sounds->sound[SOUND_PAIN];
+			snd = u.data->sounds->sound[SOUND_PAIN]->sound;
 		if(snd)
 			PlayUnitSound(u, snd, 2.f);
 	}

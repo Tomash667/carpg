@@ -1394,7 +1394,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		return false;
 	}
 	
-	// human data
+	// human data / mesh
 	if(unit.data->type == UNIT_TYPE::HUMAN)
 	{
 		unit.human_data = new Human;
@@ -1422,14 +1422,10 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				unit.human_data->mustache, unit.human_data->height);
 			return false;
 		}
-		unit.mesh_inst = new MeshInstance(aHumanBase);
-		unit.human_data->ApplyScale(aHumanBase);
 	}
 	else
-	{
-		unit.mesh_inst = new MeshInstance(unit.data->mesh);
 		unit.human_data = nullptr;
-	}
+	CreateUnitMesh(unit, false);
 
 	// equipped items
 	if(unit.data->type != UNIT_TYPE::ANIMAL)
@@ -1474,21 +1470,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		Error("Invalid live state %d.", unit.live_state);
 		return false;
 	}
-
-	// animation
-	if(unit.IsAlive())
-	{
-		unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
-		unit.animation = unit.current_animation = ANI_STAND;
-	}
-	else
-	{
-		unit.mesh_inst->Play(NAMES::ani_die, PLAY_PRIO1, 0);
-		unit.animation = unit.current_animation = ANI_DIE;
-	}
-	unit.SetAnimationAtEnd();
-	unit.mesh_inst->ptr = &unit;
-
+	
 	// hero/player data
 	byte type;
 	if(!stream.Read(type))
@@ -2420,7 +2402,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						else
 						{
 							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.f;
@@ -2434,7 +2416,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					case AID_PowerAttack:
 						{
 							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.f;
@@ -2494,7 +2476,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					case AID_RunningAttack:
 						{
 							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.5f;
@@ -5729,7 +5711,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else
 					{
 						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
@@ -5742,7 +5724,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				case AID_PowerAttack:
 					{
 						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
@@ -5791,7 +5773,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				case AID_RunningAttack:
 					{
 						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.5f;
@@ -5922,7 +5904,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else if(sound_volume)
-						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_PAIN], 2.f, 15.f);
+						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_PAIN]->sound, 2.f, 15.f);
 				}
 			}
 			break;
@@ -7127,7 +7109,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else if(sound_volume)
-						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_SEE_ENEMY], 3.f, 20.f);
+						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
 				}
 			}
 			break;
