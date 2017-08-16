@@ -57,3 +57,19 @@ questowe, komendy, stock,
 + preload przy AddItem do unit
 + zabezpieczenie funkcji dodających do skrzyni, na ziemie czy to jest na ekranie wczytywania (żebym przez przypadek nie używał)
 + u klienta odpalanie PreloadLocation, preload przy odbieraniu komunikatów
+
+
+Net_AddItem
+Preload przy otwieraniu skrzyni/handlu i tak jest potrzebny
+? Net_RegisterItem
+SpawnUnit
+
+
+CMD_SPAWNUNIT
+consumed item
+
+
+====
+ReadUnit
+ReadItemListTeam - TryToSkip
+

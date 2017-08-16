@@ -1,17 +1,5 @@
 ﻿CURRENT:
-+ at loading units txt -> set mesh for human, don't check for UNIT_TYPE::HUMAN to use aHumanBase
-+ in Unit don't use mesh_inst->mesh because it may be not set, use data->mesh
-+ testing...
-+ WHAT TO LOAD AND WHERE
-	+ human mesh/startup items on opening create character screen - show small loading window
-	+ items
-		+ ground items
-		+ unit items [client don't know this]
-		+ chest items [client don't know this]
-		+ stock items [client don't know this]
-		+ spawned items
-		+ spawned unit items
-	+ change load screen cap from 0.1f to something more realistic
++ change load screen cap from 0.1f to something more realistic
 ? testing
 	? sound/music looping
 	? mp
@@ -21,14 +9,17 @@
 		? load on worldmap
 		? quest generated items
 	? tutorial
+	? correct image generated for tex overrides
 + dungeon debug info - show levels
-+ remove AAA!
 - zly teren pola
 - grass is drawn only next to roads/on field
 - update create character screen, for single frame there is no doll
 - cursor focus bug - start server/client, activate serwer when possible, start game, alt tab to client when loaded - cursor is visible
 - physics of stairs up don't work for camera
 - f5/f9 a konsola
+AFTER TESTING:
++ remove AAA!
++ remove preload.txt
 ===============================================================================================================
 NEW:
 + BaseBullet for Bullet, save by base, no mesh etc
@@ -48,6 +39,9 @@ NEW:
 	+ don't preload human meshes (need to make changes to AddPlayerTeam to handle mesh loading)
 	+ Unit::Load require instant loading of mesh
 	+ preload shaders
+	+ PreloadItem TryLoad and use replacement icon
+	+ preload and unhardcode items
+	+ human mesh/startup items on opening create character screen - show small loading window
 + refactor TestUnitSpells -> get and count errors
 + npc generator like in gta - spawn units using usables
 + refactor - unify all errors with load_errors
@@ -55,6 +49,7 @@ NEW:
 + common class Level instead of LevelContext and InsideBuilding, vector<Level*> levels that contains local_ctx and inside buildings
 + remove builtin stock from traders, everything goes to scripts
 + ai abadon team in combat and let them die, try to stay out of danger/escape if possible
++ remove ITEM_SECRET ?
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

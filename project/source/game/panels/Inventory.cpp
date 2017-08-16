@@ -215,7 +215,7 @@ void Inventory::Draw(ControlDrawData*)
 			GUI.DrawSprite(icon, Int2(shift_x + x * 63, shift_y + (y + 1) * 63 - 32));
 
 		// obrazek przedmiotu
-		GUI.DrawSprite(item->tex, Int2(shift_x + x * 63, shift_y + y * 63));
+		GUI.DrawSprite(item->icon, Int2(shift_x + x * 63, shift_y + y * 63));
 
 		// iloœæ
 		if(count > 1)
@@ -1308,7 +1308,7 @@ void Inventory::FormatBox()
 			box_text += Format(txPrice, price);
 		}
 		box_text_small = item->desc;
-		box_img = item->tex;
+		box_img = item->icon;
 	}
 }
 
@@ -1406,7 +1406,7 @@ void Inventory::GetTooltip(TooltipController*, int group, int)
 		}
 		tooltip.small_text = item->desc;
 		tooltip.big_text.clear();
-		tooltip.img = item->tex;
+		tooltip.img = item->icon;
 	}
 }
 

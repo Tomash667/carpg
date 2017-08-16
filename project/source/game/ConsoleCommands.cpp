@@ -365,7 +365,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								ile = 1;
 
 							if(IsLocal())
+							{
+								PreloadItem(item);
 								AddItem(*pc->unit, item, ile, false);
+							}
 							else
 							{
 								NetChange& c = Add1(net_changes);
@@ -399,7 +402,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								ile = 1;
 
 							if(IsLocal())
+							{
+								PreloadItem(item);
 								AddItem(*pc->unit, item, ile);
+							}
 							else
 							{
 								NetChange& c = Add1(net_changes);

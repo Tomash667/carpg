@@ -59,6 +59,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			cstring who = (LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys);
 
 			const Item* base_item = FindItem("parcel");
+			game->PreloadItem(base_item);
 			CreateItemCopy(parcel, base_item);
 			parcel.id = "$stolen_parcel";
 			parcel.name = Format(game->txQuest[8], who, loc.name.c_str());

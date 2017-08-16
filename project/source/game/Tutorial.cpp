@@ -177,7 +177,9 @@ void Game::StartTutorial()
 
 	// ekwipunek
 	pc->unit->ClearInventory();
-	pc->unit->slots[SLOT_ARMOR] = FindItem("al_clothes");
+	auto item = FindItem("al_clothes");
+	PreloadItem(item);
+	pc->unit->slots[SLOT_ARMOR] = item;
 	pc->unit->weight += pc->unit->slots[SLOT_ARMOR]->weight;
 	pc->unit->gold = 10;
 	notes.push_back(txTutNote);

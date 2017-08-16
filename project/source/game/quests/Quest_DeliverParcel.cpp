@@ -47,6 +47,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		{
 			Location& loc = *game->locations[end_loc];
 			const Item* base_item = FindItem("parcel");
+			game->PreloadItem(base_item);
 			CreateItemCopy(parcel, base_item);
 			parcel.id = "$parcel";
 			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());

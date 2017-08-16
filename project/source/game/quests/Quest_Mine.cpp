@@ -271,6 +271,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			const Item* item = FindItem("key_kopalnia");
+			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
 
 			if(game->IsOnline())

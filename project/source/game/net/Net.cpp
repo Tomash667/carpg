@@ -101,6 +101,7 @@ bool Game::ReadItemList(BitStream& stream, vector<ItemSlot>& items)
 		if(ReadItemAndFind(stream, slot.item) < 1
 			|| !stream.Read(slot.count))
 			return false;
+		PreloadItem(slot.item);
 		slot.team_count = 0;
 	}
 
@@ -108,7 +109,7 @@ bool Game::ReadItemList(BitStream& stream, vector<ItemSlot>& items)
 }
 
 //=================================================================================================
-bool Game::ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items)
+bool Game::ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items, bool skip)
 {
 	const int MIN_SIZE = 9;
 
@@ -124,6 +125,9 @@ bool Game::ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items)
 			|| !stream.Read(slot.count)
 			|| !stream.Read(slot.team_count))
 			return false;
+
+		if(!skip)
+			PreloadItem(slot.item);
 	}
 
 	return true;
@@ -1440,7 +1444,10 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			{
 				const Item* item = FindItem(BUF);
 				if(item && ItemTypeToSlot(item->type) == (ITEM_SLOT)i)
+				{
+					PreloadItem(item);
 					unit.slots[i] = item;
+				}
 				else
 				{
 					if(item)
@@ -3845,7 +3852,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					const Item* item = FindItem(BUF);
 					if(item && count)
+					{
+						PreloadItem(item);
 						AddItem(*info.u, item, count, is_team);
+					}
 					else
 					{
 						Error("Update server: CHEAT_ADDITEM from %s, missing item %s or invalid count %u.", info.name.c_str(), BUF, count);
@@ -5634,7 +5644,11 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else
+					{
+						if(item)
+							PreloadItem(item);
 						target->slots[type] = item;
+					}
 				}
 			}
 			break;
@@ -5990,7 +6004,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					delete item;
 				}
 				else
+				{
+					PreloadItem(item->item);
 					GetContext(item->pos).items->push_back(item);
+				}
 			}
 			break;
 		// unit picks up item
@@ -6081,7 +6098,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else if(unit != pc->unit || force)
+					{
+						PreloadItem(item);
 						unit->ConsumeItem(item->ToConsumable(), false, false);
+					}
 				}
 			}
 			break;
@@ -6563,6 +6583,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 				else
 				{
+					PreloadItem(base);
 					Item* item = CreateItemCopy(base);
 					if(!ReadString1(stream, item->id)
 						|| !ReadString1(stream, item->name)
@@ -6875,6 +6896,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					unit->used_item = base.item;
 					if(unit->used_item)
 					{
+						PreloadItem(unit->used_item);
 						unit->weapon_taken = W_NONE;
 						unit->weapon_state = WS_HIDDEN;
 					}
@@ -8528,7 +8550,10 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						StreamError();
 					}
 					else
+					{
+						PreloadItem(item);
 						AddItem(*pc->unit, item, (uint)count, (uint)team_count);
+					}
 				}
 				break;
 			// add items to trader which is trading with player
@@ -8563,7 +8588,10 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							StreamError();
 						}
 						else
+						{
+							PreloadItem(item);
 							AddItem(*unit, item, (uint)count, (uint)team_count);
+						}
 					}
 				}
 				break;
@@ -8599,7 +8627,10 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							StreamError();
 						}
 						else
+						{
+							PreloadItem(item);
 							AddItem(*chest, item, (uint)count, (uint)team_count);
+						}
 					}
 				}
 				break;
@@ -8726,7 +8757,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						vector<ItemSlot> items;
 						if(!Skip(stream, sizeof(int) * 3)
 							|| !stats.Read(stream)
-							|| !ReadItemListTeam(stream, items))
+							|| !ReadItemListTeam(stream, items, true))
 						{
 							Error("Update single client: Broken %s(2).", name);
 						}
@@ -9048,7 +9079,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						else
 						{
 							vector<ItemSlot> items;
-							if(!ReadItemListTeam(stream, items))
+							if(!ReadItemListTeam(stream, items, true))
 								Error("Update single client: Broken UPDATE_TRADER_INVENTORY(3).");
 						}
 					}

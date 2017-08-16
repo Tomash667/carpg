@@ -346,6 +346,7 @@ void Quest_Mages2::SetProgress(int prog2)
 					game->Net_UpdateQuest(refid);
 			}
 			const Item* item = FindItem("q_magowie_potion");
+			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, false);
 			game->current_dialog->pc->unit->gold -= 150;
 

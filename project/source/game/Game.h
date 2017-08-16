@@ -587,6 +587,7 @@ public:
 	uint load_errors, load_warnings;
 	TEX missing_texture;
 	vector<std::pair<Unit*, bool>> units_mesh_load;
+	std::set<const Item*> items_load;
 
 	//---------------------------------
 	// GUI / HANDEL
@@ -1245,7 +1246,6 @@ public:
 	void PreloadResources(bool worldmap);
 	void PreloadUsables(vector<Usable*>& usable);
 	void PreloadUnits(vector<Unit*>& units);
-	void PreloadUnitItems(Unit& unit);
 	void PreloadItems(vector<ItemSlot>& items);
 	void PreloadItem(const Item* item);
 	//
@@ -1791,7 +1791,7 @@ public:
 	// read item id and return it (can be quest item or gold), results: -2 read error, -1 not found, 0 empty, 1 ok
 	int ReadItemAndFind(BitStream& stream, const Item*& item) const;
 	bool ReadItemList(BitStream& stream, vector<ItemSlot>& items);
-	bool ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items);
+	bool ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items, bool skip = false);
 	Door* FindDoor(int netid);
 	Trap* FindTrap(int netid);
 	bool RemoveTrap(int netid);

@@ -909,30 +909,36 @@ void Game::LoadItemsData()
 
 		if(IS_SET(item.flags, ITEM_TEX_ONLY))
 		{
-			item.mesh = nullptr;
-			auto tex = tex_mgr.TryGet(item.mesh_id);
-			if(tex)
-				tex_mgr.AddLoadTask(tex, item.tex);
-			else
+			item.tex = tex_mgr.TryGet(item.mesh_id);
+			if(!item.tex)
 			{
-				item.tex = missing_texture;
+				item.icon = missing_texture;
 				Warn("Missing item texture '%s'.", item.mesh_id.c_str());
 				++load_errors;
 			}
 		}
 		else
 		{
-			auto mesh = mesh_mgr.TryGet(item.mesh_id);
-			if(mesh)
-				mesh_mgr.AddLoadTask(mesh, &item, TaskCallback(this, &Game::GenerateImage), true);
-			else
+			item.mesh = mesh_mgr.TryGet(item.mesh_id);
+			if(!item.mesh)
 			{
-				item.mesh = nullptr;
-				item.tex = missing_texture;
+				item.icon = missing_texture;
 				item.flags &= ~ITEM_GROUND_MESH;
 				Warn("Missing item mesh '%s'.", item.mesh_id.c_str());
 				++load_errors;
 			}
 		}
 	}
+
+	// preload hardcoded items
+	PreloadItem(FindItem("beer"));
+	PreloadItem(FindItem("vodka"));
+	PreloadItem(FindItem("spirit"));
+	PreloadItem(FindItem("p_hp"));
+	PreloadItem(FindItem("p_hp2"));
+	PreloadItem(FindItem("p_hp3"));
+	PreloadItem(FindItem("gold"));
+	auto list = FindItemList("normal_food");
+	for(auto item : list.lis->items)
+		PreloadItem(item);
 }

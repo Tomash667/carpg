@@ -310,13 +310,20 @@ void Game::Draw()
 //=================================================================================================
 void Game::GenerateImage(TaskData& task_data)
 {
-	Item* item = (Item*)task_data.ptr;
-	item->mesh = (Mesh*)task_data.res;
+	Item& item = *(Item*)task_data.ptr;
 
-	auto it = item_texture_map.lower_bound(item->mesh);
-	if(it != item_texture_map.end() && !(item_texture_map.key_comp()(item->mesh, it->first)))
+	// if item use image, set it as icon
+	if(item.tex)
 	{
-		item->tex = it->second;
+		item.icon = item.tex->tex;
+		return;
+	}
+
+	// try to find icon using same mesh
+	auto it = item_texture_map.lower_bound(item.mesh);
+	if(it != item_texture_map.end() && !(item_texture_map.key_comp()(item.mesh, it->first)))
+	{
+		item.icon = it->second;
 		return;
 	}
 
@@ -339,15 +346,14 @@ void Game::GenerateImage(TaskData& task_data)
 	V(device->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, 0, 1.f, 0));
 	V(device->BeginScene());
 
-	const Mesh& mesh = *item->mesh;
-
+	const Mesh& mesh = *item.mesh;
 	const TexId* tex_override = nullptr;
-	if(item->type == IT_ARMOR)
+	if(item.type == IT_ARMOR)
 	{
-		tex_override = item->ToArmor().GetTextureOverride();
+		tex_override = item.ToArmor().GetTextureOverride();
 		if(tex_override)
 		{
-			assert(item->ToArmor().tex_override.size() == mesh.head.n_subs);
+			assert(item.ToArmor().tex_override.size() == mesh.head.n_subs);
 		}
 	}
 
@@ -412,8 +418,8 @@ void Game::GenerateImage(TaskData& task_data)
 	V(device->SetRenderTarget(0, surf));
 	surf->Release();
 
-	item->tex = t;
-	item_texture_map.insert(it, ItemTextureMap::value_type(item->mesh, t));
+	item.icon = t;
+	item_texture_map.insert(it, ItemTextureMap::value_type(item.mesh, t));
 }
 
 //=================================================================================================
@@ -5217,6 +5223,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					secret_state = SECRET_REWARD;
 					const Item* item = FindItem("sword_forbidden");
+					PreloadItem(item);
 					ctx.pc->unit->AddItem(item, 1, true);
 					if(!ctx.is_local)
 					{
@@ -6336,6 +6343,7 @@ uint Game::TestGameData(bool major)
 {
 	string str;
 	uint errors = 0;
+	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 
 	Info("Test: Checking items...");
 
@@ -6350,6 +6358,7 @@ uint Game::TestGameData(bool major)
 		}
 		else
 		{
+			mesh_mgr.LoadMetadata(w.mesh);
 			Mesh::Point* pt = w.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
@@ -6375,6 +6384,7 @@ uint Game::TestGameData(bool major)
 		}
 		else
 		{
+			mesh_mgr.LoadMetadata(s.mesh);
 			Mesh::Point* pt = s.mesh->FindPoint("hit");
 			if(!pt || !pt->IsBox())
 			{
@@ -6480,6 +6490,7 @@ uint Game::TestGameData(bool major)
 			else
 			{
 				Mesh& a = *ud.mesh;
+				mesh_mgr.Load(ud.mesh);
 
 				for(uint i = 0; i < NAMES::n_ani_base; ++i)
 				{
@@ -6714,6 +6725,16 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		ParseItemScript(*u, base.items);
 		SortItems(u->items);
 		u->RecalculateWeight();
+		if(!ResourceManager::Get().IsLoadScreen())
+		{
+			for(auto slot : u->slots)
+			{
+				if(slot)
+					PreloadItem(slot);
+			}
+			for(auto& slot : u->items)
+				PreloadItem(slot.item);
+		}
 	}
 
 	// gold
@@ -14852,12 +14873,14 @@ void Game::PreloadResources(bool worldmap)
 {
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 
+	items_load.clear();
+
 	if(!worldmap)
 	{
 		// load units - units respawn so need to check everytime...
 		PreloadUnits(*local_ctx.units);
 		for(auto ground_item : *local_ctx.items)
-			PreloadItem(ground_item->item);
+			items_load.insert(ground_item->item);
 		for(auto chest : *local_ctx.chests)
 			PreloadItems(chest->items);
 		if(IsLocal())
@@ -14877,7 +14900,7 @@ void Game::PreloadResources(bool worldmap)
 			{
 				PreloadUnits(ib->units);
 				for(auto ground_item : ib->items)
-					PreloadItem(ground_item->item);
+					items_load.insert(ground_item->item);
 			}
 		}
 
@@ -14927,6 +14950,9 @@ void Game::PreloadResources(bool worldmap)
 			location->loaded_resources = true;
 		}
 	}
+
+	for(const Item* item : items_load)
+		PreloadItem(item);
 }
 
 void Game::PreloadUsables(vector<Usable*>& usables)
@@ -14961,7 +14987,12 @@ void Game::PreloadUnits(vector<Unit*>& units)
 
 	for(Unit* unit : units)
 	{
-		PreloadUnitItems(*unit);
+		for(uint i = 0; i<SLOT_MAX; ++i)
+		{
+			if(unit->slots[i])
+				items_load.insert(unit->slots[i]);
+		}
+		PreloadItems(unit->items);
 
 		auto& data = *unit->data;
 		if(data.state == ResourceState::Loaded)
@@ -14987,21 +15018,10 @@ void Game::PreloadUnits(vector<Unit*>& units)
 	}
 }
 
-void Game::PreloadUnitItems(Unit& unit)
-{
-	for(uint i=0; i<SLOT_MAX; ++i)
-	{
-		if(unit.slots[i])
-			PreloadItem(unit.slots[i]);
-	}
-
-	PreloadItems(unit.items);
-}
-
 void Game::PreloadItems(vector<ItemSlot>& items)
 {
 	for(auto& slot : items)
-		PreloadItem(slot.item);
+		items_load.insert(slot.item);
 }
 
 void Game::PreloadItem(const Item* citem)
@@ -15027,6 +15047,10 @@ void Game::PreloadItem(const Item* citem)
 					}
 				}
 			}
+			if(item.tex)
+				ResourceManager::Get<Texture>().AddLoadTask(item.tex, &item, TaskCallback(this, &Game::GenerateImage), true);
+			else
+				ResourceManager::Get<Mesh>().AddLoadTask(item.mesh, &item, TaskCallback(this, &Game::GenerateImage), true);
 			item.state = ResourceState::Loading;
 		}
 	}
@@ -15044,6 +15068,18 @@ void Game::PreloadItem(const Item* citem)
 						tex_mgr.Load(ti.tex);
 				}
 			}
+		}
+		if(item.tex)
+		{
+			ResourceManager::Get<Texture>().Load(item.tex);
+			item.icon = item.tex->tex;
+		}
+		else
+		{
+			ResourceManager::Get<Mesh>().Load(item.mesh);
+			TaskData task;
+			task.ptr = &item;
+			GenerateImage(task);
 		}
 		item.state = ResourceState::Loaded;
 	}

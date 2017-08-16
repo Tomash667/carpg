@@ -1598,7 +1598,10 @@ void CreateCharacterPanel::UpdateInventory()
 		return;
 
 	for(int i = 0; i < 4; ++i)
+	{
+		game->PreloadItem(items[i]);
 		unit->slots[i] = items[i];
+	}
 
 	bool reset = false;
 
