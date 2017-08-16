@@ -689,9 +689,6 @@ void TextBox::OnChar(char c)
 			}
 			else if(isdigit(byte(c)))
 			{
-				int len = text.length();
-				if(!text.empty() && text[0] == '-')
-					--len;
 				text.push_back(c);
 				ValidateNumber();
 			}

@@ -1,0 +1,59 @@
+co chce osiagnac
+zeby przedmioty (model, obrazek) wczytywal sie dynamicznie a nie na poczatku gry
+
+jak to osiagnac
+wczytywac podczas wchodzenia do poziomu
+on demand
+
+kiedy podczas poziomu
+kiedy sie da
+
+kiedy on demand
+kiedy nie na sie podczas wchodzenia
+
+kiedy sie da?
+u klienta zawsze oprocz dynamicznego generowania (konsola, questy)
+u klienta - przedmioty na ziemi, w rece
+	nie da sie - komendy, quest, stock, inventory
+
+oznaczenie jednostek jako local
+albo wskaźnik na Location*, pole active
+
+przy AddItem, load etc jeśli jest local to preload przedmioty
+
+?
+wchodzenie do lokacji
+> postacie są oznaczane jako local i przy dodawaniu przedmiotów robi preload
+> stock podczas generowania robi preload
+> ground items generalnie tylko local (można dodać asserta) wiec preload
+> skrzynie (też dodać local) i preload podczas generowania
+
+wychodzenie z lokacji
+nie jest active
+
+ponowne wchodzenie
+oznaczenie jako active i odpalenie PreloadLocation -> sprawdza wszystkie itemy jeszcze raz (unit, ground, chest, stock)
+
+reenter
+nic
+
+additem
+jednostka jest active - odrazu wczytuje
+
+load w lok
+PreloadLocation
+
+load na mapie i enter
+
+questowe, komendy, stock,
+
++ oznaczanie jako active, odznaczenie gdzie trzebe, wczytywanie, w mp aktualny poziom jest zawsze active
++ dodanie location do Unit, Chest, GroundItem
++ Preload location
+
++ w PreloadResources zbierz wszystkie unikalne przedmioty std::set<const Item*>, wczytaj je i wyślij w mp
+
++ wczytywanie przedmiotów w PreloadLocation po każdym wejściu oprócz reenter
++ preload przy AddItem do unit
++ zabezpieczenie funkcji dodających do skrzyni, na ziemie czy to jest na ekranie wczytywania (żebym przez przypadek nie używał)
++ u klienta odpalanie PreloadLocation, preload przy odbieraniu komunikatów

@@ -743,18 +743,6 @@ void Game::AddLoadTasks()
 
 	// items
 	res_mgr.AddTaskCategory(txLoadItems);
-	for(Armor* armor : g_armors)
-	{
-		Armor& a = *armor;
-		if(!a.tex_override.empty())
-		{
-			for(TexId& ti : a.tex_override)
-			{
-				if(!ti.id.empty())
-					ti.tex = tex_mgr.AddLoadTask(ti.id);
-			}
-		}
-	}
 	LoadItemsData();
 
 	// sounds
@@ -892,6 +880,59 @@ void Game::SetupObject(Obj& obj)
 			obj.next_obj->matrix = &point2->mat;
 			obj.next_obj->size = point2->size.XZ();
 			obj.next_obj->type = obj.type;
+		}
+	}
+}
+
+//=================================================================================================
+void Game::LoadItemsData()
+{
+	auto& mesh_mgr = ResourceManager::Get<Mesh>();
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+
+	for(Armor* armor : g_armors)
+	{
+		Armor& a = *armor;
+		if(!a.tex_override.empty())
+		{
+			for(TexId& ti : a.tex_override)
+			{
+				if(!ti.id.empty())
+					ti.tex = tex_mgr.Get(ti.id);
+			}
+		}
+	}
+
+	for(auto it : g_items)
+	{
+		Item& item = *it.second;
+
+		if(IS_SET(item.flags, ITEM_TEX_ONLY))
+		{
+			item.mesh = nullptr;
+			auto tex = tex_mgr.TryGet(item.mesh_id);
+			if(tex)
+				tex_mgr.AddLoadTask(tex, item.tex);
+			else
+			{
+				item.tex = missing_texture;
+				Warn("Missing item texture '%s'.", item.mesh_id.c_str());
+				++load_errors;
+			}
+		}
+		else
+		{
+			auto mesh = mesh_mgr.TryGet(item.mesh_id);
+			if(mesh)
+				mesh_mgr.AddLoadTask(mesh, &item, TaskCallback(this, &Game::GenerateImage), true);
+			else
+			{
+				item.mesh = nullptr;
+				item.tex = missing_texture;
+				item.flags &= ~ITEM_GROUND_MESH;
+				Warn("Missing item mesh '%s'.", item.mesh_id.c_str());
+				++load_errors;
+			}
 		}
 	}
 }

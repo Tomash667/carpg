@@ -5986,7 +5986,7 @@ void Game::MoveUnit(Unit& unit, bool warped)
 									else
 										world_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit.pos.x - 33.f) / (256.f - 66.f));
 								}
-								else if(w == 1)
+								else
 									AddGameMsg3(w == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 							}
 							else
@@ -6796,7 +6796,7 @@ void Game::CreateUnitMesh(Unit& unit, bool on_worldmap)
 	}
 }
 
-void GiveItem(Unit& unit, const int* ps, int count)
+void GiveItem(Unit& unit, const int*& ps, int count)
 {
 	int type = *ps;
 	++ps;
@@ -6950,6 +6950,9 @@ void Game::ParseItemScript(Unit& unit, const int* script)
 				GiveItem(unit, ps, a);
 			else
 				SkipItem(ps, 1);
+			break;
+		default:
+			assert(0);
 			break;
 		}
 	}
@@ -9487,45 +9490,6 @@ bool Game::CanShootAtLocation2(const Unit& me, const void* ptr, const Vec3& to) 
 	BulletRaytestCallback callback(&me, ptr);
 	phy_world->rayTest(btVector3(me.pos.x, me.pos.y + 1.f, me.pos.z), btVector3(to.x, to.y + 1.f, to.z), callback);
 	return callback.clear;
-}
-
-void Game::LoadItemsData()
-{
-	auto& mesh_mgr = ResourceManager::Get<Mesh>();
-	auto& tex_mgr = ResourceManager::Get<Texture>();
-
-	for(auto it : g_items)
-	{
-		Item& item = *it.second;
-
-		if(IS_SET(item.flags, ITEM_TEX_ONLY))
-		{
-			item.mesh = nullptr;
-			auto tex = tex_mgr.TryGet(item.mesh_id);
-			if(tex)
-				tex_mgr.AddLoadTask(tex, item.tex);
-			else
-			{
-				item.tex = missing_texture;
-				Warn("Missing item texture '%s'.", item.mesh_id.c_str());
-				++load_errors;
-			}
-		}
-		else
-		{
-			auto mesh = mesh_mgr.TryGet(item.mesh_id);
-			if(mesh)
-				mesh_mgr.AddLoadTask(mesh, &item, TaskCallback(this, &Game::GenerateImage), true);
-			else
-			{
-				item.mesh = nullptr;
-				item.tex = missing_texture;
-				item.flags &= ~ITEM_GROUND_MESH;
-				Warn("Missing item mesh '%s'.", item.mesh_id.c_str());
-				++load_errors;
-			}
-		}
-	}
 }
 
 void Game::SpawnTerrainCollider()
@@ -14892,10 +14856,29 @@ void Game::PreloadResources(bool worldmap)
 	{
 		// load units - units respawn so need to check everytime...
 		PreloadUnits(*local_ctx.units);
+		for(auto ground_item : *local_ctx.items)
+			PreloadItem(ground_item->item);
+		for(auto chest : *local_ctx.chests)
+			PreloadItems(chest->items);
+		if(IsLocal())
+		{
+			PreloadItems(chest_merchant);
+			PreloadItems(chest_blacksmith);
+			PreloadItems(chest_alchemist);
+			PreloadItems(chest_innkeeper);
+			PreloadItems(chest_food_seller);
+			auto quest = (Quest_Orcs2*)QuestManager::Get().FindQuestById(Q_ORCS2);
+			if(quest)
+				PreloadItems(quest->wares);
+		}
 		if(city_ctx)
 		{
 			for(auto ib : city_ctx->inside_buildings)
+			{
 				PreloadUnits(ib->units);
+				for(auto ground_item : ib->items)
+					PreloadItem(ground_item->item);
+			}
 		}
 
 		if(!location->loaded_resources)
@@ -14978,6 +14961,8 @@ void Game::PreloadUnits(vector<Unit*>& units)
 
 	for(Unit* unit : units)
 	{
+		PreloadUnitItems(*unit);
+
 		auto& data = *unit->data;
 		if(data.state == ResourceState::Loaded)
 			continue;
@@ -14999,6 +14984,68 @@ void Game::PreloadUnits(vector<Unit*>& units)
 					tex_mgr.AddLoadTask(ti.tex);
 			}
 		}
+	}
+}
+
+void Game::PreloadUnitItems(Unit& unit)
+{
+	for(uint i=0; i<SLOT_MAX; ++i)
+	{
+		if(unit.slots[i])
+			PreloadItem(unit.slots[i]);
+	}
+
+	PreloadItems(unit.items);
+}
+
+void Game::PreloadItems(vector<ItemSlot>& items)
+{
+	for(auto& slot : items)
+		PreloadItem(slot.item);
+}
+
+void Game::PreloadItem(const Item* citem)
+{
+	Item& item = *(Item*)citem;
+	if(item.state == ResourceState::Loaded)
+		return;
+
+	if(ResourceManager::Get().IsLoadScreen())
+	{
+		if(item.state != ResourceState::Loading)
+		{
+			if(item.type == IT_ARMOR)
+			{
+				Armor& armor = item.ToArmor();
+				if(!armor.tex_override.empty())
+				{
+					auto& tex_mgr = ResourceManager::Get<Texture>();
+					for(TexId& ti : armor.tex_override)
+					{
+						if(!ti.id.empty())
+							ti.tex = tex_mgr.AddLoadTask(ti.id);
+					}
+				}
+			}
+			item.state = ResourceState::Loading;
+		}
+	}
+	else
+	{
+		if(item.type == IT_ARMOR)
+		{
+			Armor& armor = item.ToArmor();
+			if(!armor.tex_override.empty())
+			{
+				auto& tex_mgr = ResourceManager::Get<Texture>();
+				for(TexId& ti : armor.tex_override)
+				{
+					if(!ti.id.empty())
+						tex_mgr.Load(ti.tex);
+				}
+			}
+		}
+		item.state = ResourceState::Loaded;
 	}
 }
 

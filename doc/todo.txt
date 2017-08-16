@@ -5,6 +5,12 @@
 + WHAT TO LOAD AND WHERE
 	+ human mesh/startup items on opening create character screen - show small loading window
 	+ items
+		+ ground items
+		+ unit items [client don't know this]
+		+ chest items [client don't know this]
+		+ stock items [client don't know this]
+		+ spawned items
+		+ spawned unit items
 	+ change load screen cap from 0.1f to something more realistic
 ? testing
 	? sound/music looping
@@ -13,6 +19,7 @@
 		? enter outside loc, enter visited outside loc, reenter outside loc, enter outside loc after load
 		? enter dungeon, enter visited dungeon, reenter dungeon, enter dungeon after load, level down/up, revisit down/up after load
 		? load on worldmap
+		? quest generated items
 	? tutorial
 + dungeon debug info - show levels
 + remove AAA!
@@ -21,12 +28,6 @@
 - update create character screen, for single frame there is no doll
 - cursor focus bug - start server/client, activate serwer when possible, start game, alt tab to client when loaded - cursor is visible
 - physics of stairs up don't work for camera
-- remove source/game/net/Multiplayer.cpp/h or use
-+ cleanup data/new if not required
-- textbox.cpp:692 unused len - check history
-- Mapa2.h CanJoinRoom StairsUp x2
-- Game2.cpp:6800 Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?
-- if(w == 1) AddGameMsg3(w == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 ===============================================================================================================
 NEW:
 + BaseBullet for Bullet, save by base, no mesh etc
@@ -48,6 +49,9 @@ NEW:
 + refactor TestUnitSpells -> get and count errors
 + npc generator like in gta - spawn units using usables
 + refactor - unify all errors with load_errors
++ chests inside buildings
++ common class Level instead of LevelContext and InsideBuilding, vector<Level*> levels that contains local_ctx and inside buildings
++ remove builtin stock from traders, everything goes to scripts
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
@@ -330,7 +334,6 @@ NOWE:
 * animowany pasek wczytywania?
 * własne renderowanie tekstu (brak kropek w nowej linijce tak jak jest to teraz)
 * możliwość wyboru jaką klase chcesz trenować
-* wymiana pomiędzy postaciami
 * rzucanie przedmiotem w ramach handlu
 * lepszy ruch ustami
 * d3dpp.SwapEffect, d3dpp.PresentationInterval, FullScreen_RefreshRateInHz

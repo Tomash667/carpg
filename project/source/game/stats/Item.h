@@ -57,7 +57,7 @@ struct Book;
 // Base item type
 struct Item
 {
-	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), mesh(nullptr), tex(nullptr)
+	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), mesh(nullptr), tex(nullptr), state(ResourceState::NotLoaded)
 	{
 	}
 	virtual ~Item() {}
@@ -186,6 +186,7 @@ struct Item
 	ITEM_TYPE type;
 	Mesh* mesh;
 	TEX tex;
+	ResourceState state;
 };
 
 //-----------------------------------------------------------------------------

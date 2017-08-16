@@ -1245,6 +1245,9 @@ public:
 	void PreloadResources(bool worldmap);
 	void PreloadUsables(vector<Usable*>& usable);
 	void PreloadUnits(vector<Unit*>& units);
+	void PreloadUnitItems(Unit& unit);
+	void PreloadItems(vector<ItemSlot>& items);
+	void PreloadItem(const Item* item);
 	//
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();
