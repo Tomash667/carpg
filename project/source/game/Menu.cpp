@@ -1312,7 +1312,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								if(game_state == GS_LOAD)
 									LoadingStep("");
 								else
-									LoadingStart(4, 0.8f);
+									LoadingStart(4);
 								current_location = loc;
 								location = locations[loc];
 								dungeon_level = level;
@@ -2865,7 +2865,7 @@ void Game::UpdateLobbyNet(float dt)
 					{
 						// close lobby and wait for server
 						Info("UpdateLobbyNet: Waiting for server.");
-						LoadingStart(9, 0.8f);
+						LoadingStart(9);
 						main_menu->visible = false;
 						server_panel->CloseDialog();
 						info_box->Show(txWaitingForServer);

@@ -184,7 +184,7 @@ void Game::LoadGameSlot(int slot)
 		game_gui->visible = false;
 		world_map->visible = false;
 	}
-	LoadingStart(9, 0.8f);
+	LoadingStart(9);
 
 	try
 	{

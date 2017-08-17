@@ -776,7 +776,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		break;
 	}
 
-	LoadingStart(steps, 0.8f);
+	LoadingStart(steps);
 	LoadingStep(txEnteringLocation);
 
 	// generate map on first visit

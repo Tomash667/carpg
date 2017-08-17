@@ -5497,7 +5497,7 @@ void Game::UpdateClient(float dt)
 					peer->DeallocatePacket(packet);
 					StreamError();
 					Net_FilterClientChanges();
-					LoadingStart(4, 0.8f);
+					LoadingStart(4);
 					return;
 				}
 			}

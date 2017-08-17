@@ -137,6 +137,7 @@ void Game::PreloadLanguage()
 	txLoadingShaders = Str("loadingShaders");
 	txLoadingDialogs = Str("loadingDialogs");
 	txLoadingLanguageFiles = Str("loadingLanguageFiles");
+	txPreloadAssets = Str("preloadAssets");
 }
 
 //=================================================================================================
@@ -170,7 +171,7 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	load_screen->Setup(0.f, 0.1f, 11, txCreatingListOfFiles);
+	load_screen->Setup(0.f, 0.33f, 12, txCreatingListOfFiles);
 
 	AddFilesystem();
 	LoadDatafiles();
@@ -266,16 +267,10 @@ void Game::LoadLanguageFiles()
 	SetStatsText();
 
 	txLoadGuiTextures = Str("loadGuiTextures");
-	txLoadTerrainTextures = Str("loadTerrainTextures");
 	txLoadParticles = Str("loadParticles");
 	txLoadPhysicMeshes = Str("loadPhysicMeshes");
 	txLoadModels = Str("loadModels");
-	txLoadBuildings = Str("loadBuildings");
-	txLoadTraps = Str("loadTraps");
 	txLoadSpells = Str("loadSpells");
-	txLoadObjects = Str("loadObjects");
-	txLoadUnits = Str("loadUnits");
-	txLoadItems = Str("loadItems");
 	txLoadSounds = Str("loadSounds");
 	txLoadMusic = Str("loadMusic");
 	txGenerateWorld = Str("generateWorld");
@@ -325,7 +320,7 @@ void Game::LoadData()
 
 	res_mgr.SetMutex(mutex);
 	mutex = nullptr;
-	res_mgr.PrepareLoadScreen(0.1f);
+	res_mgr.PrepareLoadScreen(0.33f);
 	AddLoadTasks();
 	res_mgr.StartLoadScreen();
 }
@@ -491,6 +486,8 @@ void Game::StartGameMode()
 //=================================================================================================
 void Game::AddLoadTasks()
 {
+	load_screen->Tick(txPreloadAssets);
+
 	auto& res_mgr = ResourceManager::Get();
 	auto& tex_mgr = ResourceManager::Get<Texture>();
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
@@ -510,8 +507,7 @@ void Game::AddLoadTasks()
 	tex_mgr.AddLoadTask("warning.png", tWarning);
 	tex_mgr.AddLoadTask("error.png", tError);
 
-	// terrain textures
-	res_mgr.AddTaskCategory(txLoadTerrainTextures);
+	// preload terrain textures
 	tTrawa = tex_mgr.Get("trawa.jpg");
 	tTrawa2 = tex_mgr.Get("Grass0157_5_S.jpg");
 	tTrawa3 = tex_mgr.Get("LeavesDead0045_1_S.jpg");
@@ -589,8 +585,7 @@ void Game::AddLoadTasks()
 	aBeard[3] = mesh_mgr.AddLoadTask("beard4.qmsh");
 	aBeard[4] = mesh_mgr.AddLoadTask("beardm1.qmsh");
 
-	// buildings
-	res_mgr.AddTaskCategory(txLoadBuildings);
+	// preload buildings
 	for(Building* b : content::buildings)
 	{
 		if(!b->mesh_id.empty())
@@ -605,8 +600,7 @@ void Game::AddLoadTasks()
 		}
 	}
 
-	// traps
-	res_mgr.AddTaskCategory(txLoadTraps);
+	// preload traps
 	for(uint i = 0; i < n_traps; ++i)
 	{
 		BaseTrap& t = g_traps[i];
@@ -664,8 +658,7 @@ void Game::AddLoadTasks()
 			spell.shape = new btSphereShape(spell.size);
 	}
 
-	// objects
-	res_mgr.AddTaskCategory(txLoadObjects);
+	// preload objects
 	for(uint i = 0; i < n_objs; ++i)
 	{
 		Obj& o = g_objs[i];
@@ -694,7 +687,7 @@ void Game::AddLoadTasks()
 		}
 	}
 
-	// usable objects
+	// preload usable objects
 	for(uint i = 0; i < n_base_usables; ++i)
 	{
 		BaseUsable& bu = g_base_usables[i];
@@ -705,8 +698,7 @@ void Game::AddLoadTasks()
 			bu.item = FindItem(bu.item_id);
 	}
 
-	// units
-	res_mgr.AddTaskCategory(txLoadUnits);
+	// preload units
 	for(UnitData* ud_ptr : unit_datas)
 	{
 		UnitData& ud = *ud_ptr;
@@ -741,8 +733,7 @@ void Game::AddLoadTasks()
 		}
 	}
 
-	// items
-	res_mgr.AddTaskCategory(txLoadItems);
+	// preload items
 	LoadItemsData();
 
 	// sounds

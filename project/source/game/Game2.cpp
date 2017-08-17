@@ -10698,7 +10698,7 @@ void Game::ChangeLevel(int gdzie)
 		}
 		else
 		{
-			LoadingStart(4, 0.8f);
+			LoadingStart(4);
 			LoadingStep(txLevelUp);
 
 			MultiInsideLocation* inside = (MultiInsideLocation*)location;
@@ -10718,7 +10718,7 @@ void Game::ChangeLevel(int gdzie)
 		else
 			++steps; // txRegeneratingLevel
 
-		LoadingStart(steps, 0.8f);
+		LoadingStart(steps);
 		LoadingStep(txLevelDown);
 
 		// poziom w dó³
@@ -14789,12 +14789,12 @@ void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpo
 	}
 }
 
-void Game::LoadingStart(int steps, float load_cap)
+void Game::LoadingStart(int steps)
 {
 	load_screen->Reset();
 	loading_t.Reset();
 	loading_dt = 0.f;
-	loading_cap = load_cap;
+	loading_cap = 0.66f;
 	loading_steps = steps;
 	loading_index = 0;
 	clear_color = BLACK;
@@ -14802,7 +14802,7 @@ void Game::LoadingStart(int steps, float load_cap)
 	load_screen->visible = true;
 	main_menu->visible = false;
 	game_gui->visible = false;
-	ResourceManager::Get().PrepareLoadScreen(load_cap);
+	ResourceManager::Get().PrepareLoadScreen(loading_cap);
 }
 
 void Game::LoadingStep(cstring text, int end)

@@ -1,5 +1,5 @@
 ﻿CURRENT:
-+ change load screen cap from 0.1f to something more realistic
+? change load screen cap from 0.1f to something more realistic; verify
 ? testing
 	? sound/music looping
 	? mp
@@ -10,26 +10,24 @@
 		? quest generated items
 	? tutorial
 	? correct image generated for tex overrides
+- f5/f9 a konsola
+	f5 - can't save - display above console
+	f9 - load failed - display above console, stop blocking fallback when console is open
+AFTER TESTING:
++ remove AAA!
++ remove preload.txt
 + dungeon debug info - show levels
 - zly teren pola
 - grass is drawn only next to roads/on field
 - update create character screen, for single frame there is no doll
 - cursor focus bug - start server/client, activate serwer when possible, start game, alt tab to client when loaded - cursor is visible
 - physics of stairs up don't work for camera
-- f5/f9 a konsola
-AFTER TESTING:
-+ remove AAA!
-+ remove preload.txt
 ===============================================================================================================
 NEW:
 + BaseBullet for Bullet, save by base, no mesh etc
 + Resources - hashing
-+ remove support for v0 paks
-+ refactor old Stream class
 + custom formatter %.2g - 1000.123 -> 1000.12 (in printf it write 1.E cośtam)
 + converter optimize loading after points are loaded to not load them second time
-+ don't keep mesh_id when you can keep only mesh and Get it on loading
-+ better dialog choice scrollbar (current looks like poor man solution)
 + loading when required feature:
 	+ spells
 	+ more hardcoded sounds
@@ -42,14 +40,12 @@ NEW:
 	+ PreloadItem TryLoad and use replacement icon
 	+ preload and unhardcode items
 	+ human mesh/startup items on opening create character screen - show small loading window
-+ refactor TestUnitSpells -> get and count errors
+	+ don't keep mesh_id when you can keep only mesh and Get it on loading
 + npc generator like in gta - spawn units using usables
-+ refactor - unify all errors with load_errors
 + chests inside buildings
 + common class Level instead of LevelContext and InsideBuilding, vector<Level*> levels that contains local_ctx and inside buildings
-+ remove builtin stock from traders, everything goes to scripts
-+ ai abadon team in combat and let them die, try to stay out of danger/escape if possible
 + remove ITEM_SECRET ?
++ load Str at start or when required (less variables vs error logging at startup)
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
@@ -69,6 +65,7 @@ VERIFY:
 - blokada widoku przez drewno u kowala
 - debug ai lag is too big!
 - input don't work when there is lag, but why? maybe it can happen without lag too
+- oświetlenie na zewnątrz dla terenu, pod małym kątem jest biała trawa [na ziemie i trawie zato widać trawę pod kątem, mipmaping?]
 ===============================================================================================================
 ZNANE BŁEDY:
 - wyszukiwanie ścieżek ai nie działa zbyt dobrze i mogą się zablokować
@@ -87,7 +84,7 @@ OMINIĘTE:
 	(pozycja ta sama tylko nikt już nie blokuje) to nie szedł
 - D3DX: Warning ID3DXEffect::EndPass. Changes have been made but not commited. CommitChange must be called before each DrawPrimitive call
 - po wejściu do gry i powrocie do menu jest obwódka wokół obrazka, przez multisampling
-//****************************************************
+===============================================================================================================
 POTRZEBA PRZYKŁADÓW:
 - zapytałem gostka o miejsca i powiedział o krypcie na zachód, a jest na wschód [to było w release, potrzeba więcej testów]
 - raz jeden z herosów miał nullptr w items._Myfirst, dodałem logowanie gdy się to wydarzy
@@ -126,13 +123,11 @@ POTRZEBA PRZYKŁADÓW:
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it
 - sawmill, messanger spawned inside client
 - inventory icons disappear after alt-enter or changing multisampling [ł]; not happens on my gpu, need more info
-//****************************************************
+===============================================================================================================
 + check units required by building spawn
 + map of spells/units with hashing
 + better ResourceManager (first thread "load human.qmsh" -> second: create vb,ib & return -> create, lock & return -> fill & return -> unlock etc)
 + divide Object to StaticObject and Object, this will allow fast loading of current level ?
-+ same armor for guards / militia (maybe with some logo)
-	currently they have too bad armor in city (padded & hide)
 + disallow up stairs in middle of room, it looks stupid
 + Scene.Draw move setting light params from DrawSceneNodes to Scene.Draw, with drawing objects turned off, this params won't be set
 + ISaveable { void Save(GameWriter& f); bool Load(GameReader& f); } IWriteable { void Write(StreamWriter& s); bool Read(StreamReader& s); }
@@ -145,37 +140,26 @@ POTRZEBA PRZYKŁADÓW:
 	- AI_HitReaction don't work inside
 	- CanSee
 + GAME_KEY (unlock_cursor, open_menu)
-? perks for ap/sp at 20,40,60,80,100,etc 60,70,80,90,100 for specific skill/attribute (but there need to be hell a lot of perks)
 + losowe obiekty
 + zatrzymywanie muzki gdy gra jest zminimalizowana w trybie fullscreen
 + heal a death_screen
 + ustawienia console_pause, menu_pause, journal_pause
 + inactive_update w konsoli
 + wyrzucanie przedmiotów nie ustawia jednego przedmiotu w drugim tylko obok
-+ klawisz Przełącz bieganie/chodzenie
 + paker niech kopiuje pdb i exe; paker for new system
-+ milicja w wiosce
 ? instancing
 + dużo drzew w lesie
-+ unit profiles (0-100 to use potion, 0-100 brave, etc)
 + https://github.com/cppformat/cppformat
 + xar have black shield, the wall if found in other place
 + use fullpath for filenames (allows multiple files with same name)
 + binary data files
 + paks with data/assets
-+ natural weapon & armor
-+ multiple enemy groups in location fighting with each other
-
-NOWE:
 + kto może rekrutować, zmieniać ai
 + podział na AddGold i AddItem
 + animacja przesuwania postaci przy ożywianiu
-+ żelazne golemy prawie nigdy nie występują
 + paker/install script 'move'
-+ zwłoki w podziemiach
 + ekwipunek, możliwość ustawienia po_akcji gdy chowa broń, możliwość zmiany po_akcji
-+ AIController a potion, też potrzebuje lock; trzeba zrobić klasę ItemContainer która przechowuje lock i wskaźnik na wagę; wiele akcji zmienia lock a nie są sprawdzane (np wyrzucanie przedmiotów
-	ale to chyba nie da się robić gdy jest lock, można dodać asserta)
++ AIController a potion, też potrzebuje lock; trzeba zrobić klasę ItemContainer która przechowuje lock i wskaźnik na wagę; wiele akcji zmienia lock a nie są sprawdzane (np wyrzucanie przedmiotów ale to chyba nie da się robić gdy jest lock, można dodać asserta)
 + zmiana multisamplingu nie ma wpływu na wygenerowane obrazki przedmiotów
 + możliwość nie wyjmowania tarczy
 	+ po przerwaniu akcji z używalnym obiektem, ma ten przedmiot w dłoni
@@ -186,7 +170,6 @@ NOWE:
 + tryb bezpiecznego ataku (nie można trafić neutralnych)
 + tryby wczytywania: na początku, gdy potrzeba, wczytywanie i zwalnianie
 + szybkość rozprzestrzeniania się newsów
-+ struct Angle - opakowanie które sprawdza czy wartość się zgadza
 + obchodzenie dookoła celu, odskok w bok, animacja odskoku
 + animacja ust gdy przestaje gadać
 ? czy można przeszkadzać komuś w walce gadając z nim
@@ -204,57 +187,38 @@ NOWE:
 + optymalizacja, spr czy rysować trail particle emitter / electro / portal / area
 + synchronizacja animacji chodzenia/obracania z szybkością (jak ktoś np klika co chwile Q,Q,Q,Q)
 + texture override nie pozwala na inną normalmapę/specular, trzeba by wymyśleć coś nowego
-+ tłumaczenie w bazie danych
 + materiały dla podziemi jak Mesh::Submesh
 + nie wyświetlaj więcej powiadomienia o tej wersji
 + usunięcie niepotrzebnego kodu z eMesh, renderowanie przedmiotów nowym kodem
 + repozytorium na pdb i exe
-+ naprawiony kąt w grze (niech 0 wskazuje w prawo)
 + coś lepszego niż fallback
 + enum ONLINE_MODE { SINGLE_PLAYER, CLIENT, SERVER };
-+ podział GenerateDungeon/Cave dla większej liczby LoadingStep
-+ strażnicy przy bramie
 + lepsza walidacja wczytywania zapisów (póki co crashuje zazwyczaj :S)
 + optymalizacja kolizji (jeśli CollisionObject jest ROTATED_RECTANGLE z rot=0,PI/2,PI,3/2PI to niech zmienia go na RECTANGLE
 + chowanie wyjetej strzaly
-+ better handling errors in language, on error skip to next object
 + battle system (character automaticali aims to hit with weapon if its too far/near, blocking); combat between ai is fully dice rolls, but looks like they fight in real combat
 + What makes a computer opponent feel alive? http://gamedev.stackexchange.com/questions/16571/what-makes-a-computer-opponent-feel-alive
-+ skill trainers (train from - to 0-5)
-+ class trainers (that require having starting skills/attributes of that class, increase base and allow special skills)
 + remove InfoBox from GamePanel
 + kompresja pak https://code.google.com/p/lz4/
-
 * ilość tekstów nie zahardcodowana w exe tylko odczytywana z pliku
 * zapisywanie obiektów/postaci jako index/hash
 * rozmiar broni/tarczy/łuku zależy od skali postaci
 * % poziom trudności
-* wynik wysyłany do internetu
 * prostsze tworzenie budynków
 * min, max światła tak jak mgły
 * przestępstwa
 * większa specjalizacja kowali
 * pool jednostek (i innych obiektów)
-* jeden dobry bóg
 * zapadnie, oskryptowalne przyciski/wajchy/płyty naciskowe
 * praca: strażnik, rolnik, drwal, górnik, kupiec
 * kilka schodów w górę/dół
-* podział pancerza na zwykły i naturalny
-* amulet naturalnego pancerza ?
 * kostka HP, bardziej rozbudowane generowanie wrogów
 * cząsteczki przyczepione do obiektów
 * odrzut wrogów
-* naturalna broń
-* akumulacja bólu
-* więcej animacji śmierci
-* stłuczenia, możliwość zadawania stłuczeń każdą bronią (obuchowe odrazu zadają część)
 * więcej tekstów po śmierci
-* lista wyników
 * celowanie z łuku
 * konfiguracja wbudowanych tekstur np [DeathBkg = black.jpg]
 * stackowanie przedmiotów
-* lepsze uciekanie
-* chowanie po wciśnięciu 1/2 (?)
 * podział trail particle Update
 * gdy jest za duża szybkość to trail particle nie nadąża
 * trail particle skierowany w stronę kamery
@@ -262,12 +226,8 @@ NOWE:
 * lepszy generator przedmiotów (uwzględnianie min i max ceny)
 * podział na particle emitter i particle emitter base
 * algorytm rot rect - rect
-* + i - grup jednostek (np gobliny szybko się mnożą, magowie wolno ale są silni itp)
-* dźwięk przyczepiony do głowy
 * rozbijanie obozu
 * zwiadowcy grupy, rozmiar grupy
-* ubywanie atrybutów ze starości
-* efekt ładowania czaru w dłoni
 * lepszy system cząsteczek (obracanie)
 * zasięg okrzyku zależny od dźwięku
 * lepsze rozpędzanie/zwalnianie postaci (z animacją przejściową chodzenia/biegania)
@@ -284,11 +244,9 @@ NOWE:
 * d3dpp.SwapEffect, d3dpp.PresentationInterval, FullScreen_RefreshRateInHz
 * cachowanie tekstów np przy zapisywaniu czy wyświetlaniu czegoś w ekwipunku
 * jeden pancerz dla wszystkich i tylko używanie różnych tekstur + możliwe podmiany modelu w konfigu dla każdego z osobna
-* pozycja głowy dla napisów odczytywana z modelu
 * lepszy system oświetlenia dla budynków (obecnie max 3 światła na cały budynek)
 * nazwane drużyny
 * lepsze generowanie przedmiotów w sklepie, zapamiętywanie przez jakiś czas
-* oświetlenie na zewnątrz dla terenu, pod małym kątem jest biała trawa [na ziemie i trawie zato widać trawę pod kątem, mipmaping?]
 * GUI_Layer::allow_controls allow_close
 * zasoby drużynowe
 * podział łupów w karczmie lub bazie
@@ -301,15 +259,12 @@ NOWE:
 * FMOD::Memory_GetStats + własne kontrolowanie ile pamięci pożera carpegie
 * lepsze generowanie pułapek
 * wchodzenie po schodach w mieście
-* CanSee (lepsze, uwzględniające teren)
-* CAPSLOCK - przełącz pomiędzy bieganiem a chodzeniem
 * drzwi - możliwość dopasowania pozycji, różne tekstury z różnych stron
 * możliwość ustawienia koloru ubrania/miksturki itp
 * zmiana koloru włosów / typu
 * flagi postaci [nie można okraść, pobić, zabić]
 * bandyci pobierają złoto z kasy drużynowej/od wszystkich
 * możliwość zmiany grupy jednostki i innych danych
-* można dać FindFirstFileEx aby przyspieszyć wyszukiwanie ale tylko dla windowsa 7+
 * zapisywanie bool jako flagi (Unit, PlayerController)
 * kilka osób może naraz przeszukiwać zwłoki/skrzynie (?)
 * rekrutowanie jako członka drużyny (udział w zyskach) lub jako najemnika (opłata+mały udział w zyskach), niektórzy członkowie drużyny mogą wymagać zapłaty za coś (np na leczenie, na spłacenie długów)
@@ -319,33 +274,21 @@ NOWE:
 * własny alokator pamięci, sprawdzanie mem leak, heap corruption itp
 * do przeczytania o infinite game http://www.gamedev.net/page/resources/_/creative/game-design/the-infinite-game-r3045
 * zapisane postacie które można wybrać przy wybieraniu postaci lub stworzenie nowej
-
-tyczka a przycisk na ścianie
-lina a dźwignia
+* tyczka a przycisk na ścianie
+* lina a dźwignia
 
 ## Uncategorized
 - bipolar affinity (fire & ice, like Hel from smite)
-- glory everlasting (i don't know what it will be but i like this name, something with angels :) )
 - after detecting trap mark area as red, unit can inform other units about trap (or not and let them step into it)
 - new attributes: luck, beauty
-- shattering sky (like window) - world end event
-- elements: fire, cold, water, electricity, acid, positive/negative energy
-- gods (good and evil for a start)
-- gods domains
-- save game without slot limits
 - dialog generator (between ai, talk about weather, need to add character traits)
-- team combat in arena (2v2, 3v3 etc)
 - better weapon physics checking for collisions
 - precompiled resources
 - precompiled scripts
-- footsteps on snow, mud
-- limited containers space
 - units on paintings looking at player
 - player profiles (settings, saves, stats per player)
-- ability to brew potion (by player, by npc), receipts
 - fair gold split system
 - effects on objects/walls after hitting with weapon, wounds on units, arrows inside units
-- better team shares (currently bow will be taken by first unit, not by one that needs it's most)
 - weak_ref pointers for units/objects so they can be removed
 - units tattoo (normal, magical)
 - wounds, broken bones, hurted feets (cant run/walk)
@@ -355,7 +298,6 @@ lina a dźwignia
 - unit level, item level, party level - ai knows what items are trash by comparing item to party level, can add option to sell trash items
 - blocking with bracelets on hands
 - alterego - zmiana wyglądu, charakteru za pomocą umiejętności/czarów - można np napadać na karawany i nikt nie wie że to ty
-- random hunters inside forest
 - global play time
 - decals
 
@@ -365,18 +307,10 @@ lina a dźwignia
 - reuse terrain_shape
 - faster cleanup of btCollisionWorld
 - MeshInit changes
-- check compiler settings: Buffer security check, Floating point model
 - instancing
 - keep pointers to animations
-- blocks in config, translation
-- direct3d 9ex (http://msdn.microsoft.com/en-us/library/windows/desktop/ee890072(v=vs.85).aspx)
-- render plugins (directx9/10/11, opengl)
-- mac, linux version (endianness)
-- save texts in quests as ids to allow change between versions and to take less space
 - EnumAdapterModes for resolutions/refresh rate
-- limit search in FindPath
 - dynamic bounding sphere for scene nodes
-- draw skybox after objects
 - builtin fallin falloff
 
 ## Animation / mesh
@@ -384,9 +318,3 @@ lina a dźwignia
 - eyes as different model - to allow different textures, colors, rotation
 - better player apperance system (like in skyrim ;P)
 - player attributes connected to apperance (high strength - more muscles, high dexterity - thin)
-
-## Game
-- black light
-- shop inventory on desk, shelfs, chests
-- temporary inventory (steal from someone, you can't take some items, knocked out)
-- attached sound are using player head position, unit talking comes from head position

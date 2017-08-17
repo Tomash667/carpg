@@ -528,16 +528,14 @@ struct Game final : public Engine, public UnitEventHandler
 	VB vbParticle;
 	SURFACE sChar, sSave, sItemRegion;
 	static cstring txGoldPlus, txQuestCompletedGold;
-	cstring txLoadGuiTextures,
-		txLoadTerrainTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadBuildings, txLoadTraps, txLoadSpells, txLoadObjects, txLoadUnits,
-		txLoadItems, txLoadSounds, txLoadMusic, txGenerateWorld;
+	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
 	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;
 	
 	//-----------------------------------------------------------------
 	// Localized texts
 	//-----------------------------------------------------------------
-	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings, txLoadingRequires, txLoadingShaders,
-		txLoadingDialogs, txLoadingLanguageFiles;
+	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings, txLoadingRequires,
+		txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets;
 	cstring txAiNoHpPot[2], txAiJoinTour[4], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],
@@ -1240,7 +1238,7 @@ public:
 	void SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests, int count);
 	void PlayHitSound(MATERIAL_TYPE mat_bron, MATERIAL_TYPE mat_cialo, const Vec3& hitpoint, float range, bool dmg);
 	// wczytywanie
-	void LoadingStart(int steps, float load_cap = 1.f);
+	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
 	void LoadResources(cstring text, bool worldmap);
 	void PreloadResources(bool worldmap);
