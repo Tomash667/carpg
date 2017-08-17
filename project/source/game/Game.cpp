@@ -411,12 +411,11 @@ void Game::OnTick(float dt)
 		}
 	}
 
-	// szybkie zapisywanie
-	if(KeyPressedReleaseAllowed(GK_QUICKSAVE))
+	// quicksave, quickload
+	bool special_key_allowed = (allow_input == ALLOW_KEYBOARD || allow_input == ALLOW_INPUT || (!GUI.HaveDialog() || GUI.HaveTopDialog("console")));
+	if(KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
 		Quicksave(false);
-
-	// szybkie wczytywanie
-	if(KeyPressedReleaseAllowed(GK_QUICKLOAD))
+	if(KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
 		Quickload(false);
 
 	// mp box

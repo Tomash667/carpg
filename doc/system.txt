@@ -157,8 +157,10 @@ KIERUNEK ZWRACANY PRZEZ angle()
 
 		   
 =====================================================================================================
+New multiplayer game
+* Enter new location
 ------------------------------------------------------
-  SERWER					|    KLIENT
+  SERVER					|    CLIENT
 ----------------------------+-------------------------
  ID_STARTUP ->				|
 							| LoadingStart(9)
@@ -168,7 +170,8 @@ KIERUNEK ZWRACANY PRZEZ angle()
  ID_PLAYER_START_DATA ->	|
 							| Step, ReadPlayerData, Step
 							| <- ID_READY
- ID_CHANGE_LEVEL ->			|
+*ID_CHANGE_LEVEL ->			|
+ or ID_START_AT_WORLDMAP -> |
 							| Step
 							| <- ID_SND_RECEIPT_ACKED
  ID_LEVEL_DATA ->			|

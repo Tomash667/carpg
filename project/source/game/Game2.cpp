@@ -311,6 +311,7 @@ void Game::Draw()
 void Game::GenerateImage(TaskData& task_data)
 {
 	Item& item = *(Item*)task_data.ptr;
+	item.state = ResourceState::Loaded;
 
 	// if item use image, set it as icon
 	if(item.tex)
@@ -929,6 +930,8 @@ void Game::UpdateGame(float dt)
 		if(Key.Down('0'))
 			o->rot.y = 0;
 	}*/
+
+	VerifyResources();
 
 	minimap_opened_doors = false;
 
@@ -6773,12 +6776,13 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	return u;
 }
 
-void Game::CreateUnitMesh(Unit& unit, bool on_worldmap)
+void Game::CreateUnitMesh(Unit& unit, bool on_worldmap, int preload)
 {
 	Mesh* mesh = unit.data->mesh;
 
 	if(!mesh->IsLoaded())
 	{
+		assert(preload != 2);
 		if(ResourceManager::Get().IsLoadScreen())
 		{
 			ResourceManager::Get<Mesh>().AddLoadTask(mesh);
@@ -6791,30 +6795,37 @@ void Game::CreateUnitMesh(Unit& unit, bool on_worldmap)
 
 	if(mesh->IsLoaded())
 	{
-		unit.mesh_inst = new MeshInstance(mesh);
-		unit.mesh_inst->ptr = &unit;
-
-		if(!on_worldmap)
+		if(preload != 2)
 		{
-			if(unit.IsAlive())
-			{
-				unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-				unit.animation = unit.current_animation = ANI_STAND;
-			}
-			else
-			{
-				unit.mesh_inst->Play(NAMES::ani_die, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-				unit.animation = unit.current_animation = ANI_DIE;
-				unit.SetAnimationAtEnd();
-			}
-		}
+			unit.mesh_inst = new MeshInstance(mesh);
+			unit.mesh_inst->ptr = &unit;
 
-		unit.mesh_inst->groups[0].speed = 1.f;
-		if(unit.mesh_inst->mesh->head.n_groups > 1)
-			unit.mesh_inst->groups[1].state = 0;
-		if(unit.human_data)
-			unit.human_data->ApplyScale(unit.mesh_inst->mesh);
+			if(!on_worldmap)
+			{
+				if(unit.IsAlive())
+				{
+					unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+					unit.animation = unit.current_animation = ANI_STAND;
+				}
+				else
+				{
+					unit.mesh_inst->Play(NAMES::ani_die, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+					unit.animation = unit.current_animation = ANI_DIE;
+					unit.SetAnimationAtEnd();
+				}
+			}
+
+			unit.mesh_inst->groups[0].speed = 1.f;
+			if(unit.mesh_inst->mesh->head.n_groups > 1)
+				unit.mesh_inst->groups[1].state = 0;
+			if(unit.human_data)
+				unit.human_data->ApplyScale(unit.mesh_inst->mesh);
+		}
+		else
+			unit.mesh_inst->ApplyPreload(mesh);
 	}
+	else if(preload)
+		unit.mesh_inst = new MeshInstance(nullptr, true);
 }
 
 void GiveItem(Unit& unit, const int*& ps, int count)
@@ -14853,7 +14864,7 @@ void Game::LoadResources(cstring text, bool worldmap)
 
 		// apply mesh instance for newly loaded meshes
 		for(auto& unit_mesh : units_mesh_load)
-			CreateUnitMesh(*unit_mesh.first, unit_mesh.second);
+			CreateUnitMesh(*unit_mesh.first, unit_mesh.second, mp_load ? 2 : 0);
 		units_mesh_load.clear();
 	}
 	else
@@ -14873,18 +14884,21 @@ void Game::PreloadResources(bool worldmap)
 {
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 
-	items_load.clear();
+	if(IsLocal())
+		items_load.clear();
 
 	if(!worldmap)
 	{
 		// load units - units respawn so need to check everytime...
 		PreloadUnits(*local_ctx.units);
-		for(auto ground_item : *local_ctx.items)
-			items_load.insert(ground_item->item);
-		for(auto chest : *local_ctx.chests)
-			PreloadItems(chest->items);
+
+		// preload items, this info is sent by server so no need to redo this by clients (and it will be less complete)
 		if(IsLocal())
 		{
+			for(auto ground_item : *local_ctx.items)
+				items_load.insert(ground_item->item);
+			for(auto chest : *local_ctx.chests)
+				PreloadItems(chest->items);
 			PreloadItems(chest_merchant);
 			PreloadItems(chest_blacksmith);
 			PreloadItems(chest_alchemist);
@@ -14894,13 +14908,17 @@ void Game::PreloadResources(bool worldmap)
 			if(quest)
 				PreloadItems(quest->wares);
 		}
+
 		if(city_ctx)
 		{
 			for(auto ib : city_ctx->inside_buildings)
 			{
 				PreloadUnits(ib->units);
-				for(auto ground_item : ib->items)
-					items_load.insert(ground_item->item);
+				if(IsLocal())
+				{
+					for(auto ground_item : ib->items)
+						items_load.insert(ground_item->item);
+				}
 			}
 		}
 
@@ -14987,12 +15005,15 @@ void Game::PreloadUnits(vector<Unit*>& units)
 
 	for(Unit* unit : units)
 	{
-		for(uint i = 0; i<SLOT_MAX; ++i)
+		if(IsLocal())
 		{
-			if(unit->slots[i])
-				items_load.insert(unit->slots[i]);
+			for(uint i = 0; i < SLOT_MAX; ++i)
+			{
+				if(unit->slots[i])
+					items_load.insert(unit->slots[i]);
+			}
+			PreloadItems(unit->items);
 		}
-		PreloadItems(unit->items);
 
 		auto& data = *unit->data;
 		if(data.state == ResourceState::Loaded)
@@ -15082,6 +15103,52 @@ void Game::PreloadItem(const Item* citem)
 			GenerateImage(task);
 		}
 		item.state = ResourceState::Loaded;
+	}
+}
+
+void Game::VerifyResources()
+{
+	for(auto item : *local_ctx.items)
+		assert(item->item->state == ResourceState::Loaded);
+	for(auto& obj : *local_ctx.objects)
+		assert(obj.mesh->state == ResourceState::Loaded);
+	for(auto unit : *local_ctx.units)
+	{
+		assert(unit->data->state == ResourceState::Loaded);
+		for(int i = 0; i < SLOT_MAX; ++i)
+		{
+			if(unit->slots[i])
+				assert(unit->slots[i]->state == ResourceState::Loaded);
+		}
+		for(auto& slot : unit->items)
+			assert(slot.item->state == ResourceState::Loaded);
+	}
+	for(auto u : *local_ctx.usables)
+		assert(u->GetBase()->state == ResourceState::Loaded);
+	for(auto trap : *local_ctx.traps)
+		assert(trap->base->state == ResourceState::Loaded);
+	if(city_ctx)
+	{
+		for(auto ib : city_ctx->inside_buildings)
+		{
+			for(auto item : ib->items)
+				assert(item->item->state == ResourceState::Loaded);
+			for(auto& obj : ib->objects)
+				assert(obj.mesh->state == ResourceState::Loaded);
+			for(auto unit : ib->units)
+			{
+				assert(unit->data->state == ResourceState::Loaded);
+				for(int i = 0; i < SLOT_MAX; ++i)
+				{
+					if(unit->slots[i])
+						assert(unit->slots[i]->state == ResourceState::Loaded);
+				}
+				for(auto& slot : unit->items)
+					assert(slot.item->state == ResourceState::Loaded);
+			}
+			for(auto u : ib->usables)
+				assert(u->GetBase()->state == ResourceState::Loaded);
+		}
 	}
 }
 

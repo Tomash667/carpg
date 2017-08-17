@@ -1,5 +1,6 @@
 ﻿CURRENT:
-? change load screen cap from 0.1f to something more realistic; verify
+- CreateUnitMesh only checks mesh IsLoaded, what about sound/textures, seting UnitData::state
+- loadscreen don't revert to instant after failing to load for client
 ? testing
 	? sound/music looping
 	? mp
@@ -10,17 +11,20 @@
 		? quest generated items
 	? tutorial
 	? correct image generated for tex overrides
-- f5/f9 a konsola
-	f5 - can't save - display above console
-	f9 - load failed - display above console, stop blocking fallback when console is open
 AFTER TESTING:
 + remove AAA!
 + remove preload.txt
++ remove verify resources call
 + dungeon debug info - show levels
+- f5/f9 a konsola
+	f5 - can't save - display above console
+	f9 - load failed - display above console, stop blocking fallback when console is open
+	+ fixed journal blocking quicksave/quickload
 - zly teren pola
 - grass is drawn only next to roads/on field
 - update create character screen, for single frame there is no doll
 - cursor focus bug - start server/client, activate serwer when possible, start game, alt tab to client when loaded - cursor is visible
+	- everything is ok except the system cursor is visible
 - physics of stairs up don't work for camera
 ===============================================================================================================
 NEW:
@@ -46,6 +50,11 @@ NEW:
 + common class Level instead of LevelContext and InsideBuilding, vector<Level*> levels that contains local_ctx and inside buildings
 + remove ITEM_SECRET ?
 + load Str at start or when required (less variables vs error logging at startup)
++ allow inside buildings
+	+ combat
+	+ traps
+	+ chests
+	+ temporary effects
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
@@ -59,13 +68,22 @@ VERIFY:
 - fov may not work good when near borders
 - verify dialogs ending with end/restart
 - without human flag and mesh crash when spawned, log error
-- 21:35:32 WARN  - NM_TRANSFER: Unknown packet 104.
+- 21:35:32 WARN  - NM_TRANSFER: Unknown packet 104. Unknown packet 97.
+SERVER
+	19:02:38 INFO  - Preparing world data.
+	19:02:38 INFO  - NM_TRANSFER_SERVER: Send world data, size 3055.
+	19:02:43 INFO  - NM_TRANSFER_SERVER: Disconnecting player Diablox2 due no response.
+CLIENT
+	19:02:38 INFO  - UpdateLobbyNet: Starting in 0...
+	19:02:38 INFO  - UpdateLobbyNet: Waiting for server.
+	19:02:38 WARN  - NM_TRANSFER: Unknown packet 97.
 - przenoszenie do walki gdy jesteś w środku areny
 - dźwięki areny gdy się na niej jest ale nie bierze udziału
 - blokada widoku przez drewno u kowala
 - debug ai lag is too big!
 - input don't work when there is lag, but why? maybe it can happen without lag too
 - oświetlenie na zewnątrz dla terenu, pod małym kątem jest biała trawa [na ziemie i trawie zato widać trawę pod kątem, mipmaping?]
+- when closing game there is message that client was kicked
 ===============================================================================================================
 ZNANE BŁEDY:
 - wyszukiwanie ścieżek ai nie działa zbyt dobrze i mogą się zablokować

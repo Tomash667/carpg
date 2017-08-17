@@ -999,6 +999,22 @@ public:
 		else
 			return true;
 	}
+	bool KeyPressedReleaseSpecial(GAME_KEYS gk, bool special)
+	{
+		if(special)
+		{
+			GameKey& k = GKey[gk];
+			for(int i = 0; i < 2; ++i)
+			{
+				if(k.key[i] >= VK_F1 && k.key[i] <= VK_F12)
+				{
+					if(Key.PressedRelease(k.key[i]))
+						return true;
+				}
+			}
+		}
+		return KeyPressedReleaseAllowed(gk);
+	}
 	// przedmioty w czasie grabienia itp s¹ tu przechowywane indeksy
 	// ujemne wartoœci odnosz¹ siê do slotów (SLOT_WEAPON = -SLOT_WEAPON-1), pozytywne do zwyk³ych przedmiotów
 	vector<int> tmp_inventory[2];
@@ -1064,7 +1080,7 @@ public:
 	uint TestGameData(bool major);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
-	void CreateUnitMesh(Unit& unit, bool on_worldmap);
+	void CreateUnitMesh(Unit& unit, bool on_worldmap, int preload = 0);
 	void ParseItemScript(Unit& unit, const int* script);
 	bool IsEnemy(Unit& u1, Unit& u2, bool ignore_dont_attack = false);
 	bool IsFriend(Unit& u1, Unit& u2);
@@ -1246,6 +1262,7 @@ public:
 	void PreloadUnits(vector<Unit*>& units);
 	void PreloadItems(vector<ItemSlot>& items);
 	void PreloadItem(const Item* item);
+	void VerifyResources();
 	//
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();

@@ -82,7 +82,7 @@ struct MeshInstance
 	};
 	typedef vector<byte>::const_iterator BoneIter;
 
-	explicit MeshInstance(Mesh* mesh);
+	explicit MeshInstance(Mesh* mesh, bool preload = false);
 
 	// kontynuuj odtwarzanie animacji
 	void Play(int group = 0)
@@ -134,6 +134,7 @@ struct MeshInstance
 	void Load(HANDLE file);
 	void Write(BitStream& stream) const;
 	bool Read(BitStream& stream);
+	bool ApplyPreload(Mesh* mesh);
 
 	int GetHighestPriority(uint& group);
 	int GetUsableGroup(uint group);
@@ -163,7 +164,7 @@ struct MeshInstance
 	bool IsBlending() const;
 
 	Mesh* mesh;
-	bool frame_end_info, frame_end_info2, need_update;
+	bool frame_end_info, frame_end_info2, need_update, preload;
 	vector<Matrix> mat_bones;
 	vector<Mesh::KeyframeBone> blendb;
 	vector<Group> groups;

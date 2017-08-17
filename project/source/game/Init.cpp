@@ -796,16 +796,30 @@ void Game::AddLoadTasks()
 //=================================================================================================
 void Game::SetupObject(Obj& obj)
 {
+	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 	Mesh::Point* point;
+
+	if(IS_SET(obj.flags, OBJ_PRELOAD))
+	{
+		if(IS_SET(obj.flags2, OBJ2_VARIANT))
+		{
+			VariantObj& vo = *obj.variant;
+			for(uint i = 0; i < vo.count; ++i)
+				mesh_mgr.Load(vo.entries[i].mesh);
+		}
+		else if(obj.mesh_id)
+			mesh_mgr.Load(obj.mesh);
+	}
+	
 	if(IS_SET(obj.flags2, OBJ2_VARIANT))
 	{
 		assert(!IS_SET(obj.flags, OBJ_DOUBLE_PHYSICS) && !IS_SET(obj.flags2, OBJ2_MULTI_PHYSICS)); // not supported for variant mesh yet
-		ResourceManager::Get<Mesh>().LoadMetadata(obj.variant->entries[0].mesh);
+		mesh_mgr.LoadMetadata(obj.variant->entries[0].mesh);
 		point = obj.variant->entries[0].mesh->FindPoint("hit");
 	}
 	else
 	{
-		ResourceManager::Get<Mesh>().LoadMetadata(obj.mesh);
+		mesh_mgr.LoadMetadata(obj.mesh);
 		point = obj.mesh->FindPoint("hit");
 	}
 

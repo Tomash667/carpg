@@ -22,14 +22,17 @@ void Mesh::MeshInit()
 //=================================================================================================
 // Konstruktor instancji Mesh
 //=================================================================================================
-MeshInstance::MeshInstance(Mesh* mesh) : mesh(mesh), need_update(true), frame_end_info(false),
-frame_end_info2(false), ptr(nullptr)
+MeshInstance::MeshInstance(Mesh* mesh, bool preload) : mesh(mesh), need_update(true), frame_end_info(false),
+frame_end_info2(false), ptr(nullptr), preload(preload)
 {
-	assert(mesh && mesh->IsLoaded());
+	if(!preload)
+	{
+		assert(mesh && mesh->IsLoaded());
 
-	mat_bones.resize(mesh->head.n_bones);
-	blendb.resize(mesh->head.n_bones);
-	groups.resize(mesh->head.n_groups);
+		mat_bones.resize(mesh->head.n_bones);
+		blendb.resize(mesh->head.n_bones);
+		groups.resize(mesh->head.n_groups);
+	}
 }
 
 //=================================================================================================
@@ -734,6 +737,7 @@ void MeshInstance::Write(BitStream& stream) const
 	if(frame_end_info2)
 		fai |= 0x02;
 	stream.WriteCasted<byte>(fai);
+	stream.WriteCasted<byte>(groups.size());
 
 	for(const Group& group : groups)
 	{
@@ -753,12 +757,17 @@ void MeshInstance::Write(BitStream& stream) const
 bool MeshInstance::Read(BitStream& stream)
 {
 	int fai;
+	byte groups_count;
 
-	if(!stream.ReadCasted<byte>(fai))
+	if(!stream.ReadCasted<byte>(fai)
+		|| !stream.Read(groups_count))
 		return false;
 
 	frame_end_info = IS_SET(fai, 0x01);
 	frame_end_info2 = IS_SET(fai, 0x02);
+
+	if(preload)
+		groups.resize(groups_count);
 
 	for(Group& group : groups)
 	{
@@ -771,11 +780,20 @@ bool MeshInstance::Read(BitStream& stream)
 		{
 			if(BUF[0])
 			{
-				group.anim = mesh->GetAnimation(BUF);
-				if(!group.anim)
+				if(preload)
 				{
-					Error("Missing animation '%s'.", BUF);
-					return false;
+					string* str = StringPool.Get();
+					*str = BUF;
+					group.anim = (Mesh::Animation*)str;
+				}
+				else
+				{
+					group.anim = mesh->GetAnimation(BUF);
+					if(!group.anim)
+					{
+						Error("Missing animation '%s'.", BUF);
+						return false;
+					}
 				}
 			}
 			else
@@ -786,5 +804,37 @@ bool MeshInstance::Read(BitStream& stream)
 	}
 
 	need_update = true;
+	return true;
+}
+
+//=================================================================================================
+bool MeshInstance::ApplyPreload(Mesh* mesh)
+{
+	assert(mesh
+		&& preload
+		&& !this->mesh
+		&& groups.size() == mesh->head.n_groups);
+
+	preload = false;
+	this->mesh = mesh;
+	mat_bones.resize(mesh->head.n_bones);
+	blendb.resize(mesh->head.n_bones);
+
+	for(auto& group : groups)
+	{
+		string* str = (string*)group.anim;
+		if(str)
+		{
+			group.anim = mesh->GetAnimation(str->c_str());
+			if(!group.anim)
+			{
+				Error("Invalid animation '%s' for mesh '%s'.", str->c_str(), mesh->path.c_str());
+				StringPool.Free(str);
+				return false;
+			}
+			StringPool.Free(str);
+		}
+	}
+
 	return true;
 }

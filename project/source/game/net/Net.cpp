@@ -464,6 +464,11 @@ void Game::PrepareLevelData(BitStream& stream)
 
 	location->WritePortals(stream);
 
+	// items preload
+	stream.Write(items_load.size());
+	for(auto item : items_load)
+		WriteString1(stream, item->id);
+
 	// saved bullets, spells, explosions etc
 	if(mp_load)
 	{
@@ -1188,6 +1193,31 @@ bool Game::ReadLevelData(BitStream& stream)
 		return false;
 	}
 
+	// items to preload
+	uint items_load_count;
+	if(!stream.Read(items_load_count)
+		|| !EnsureSize(stream, items_load_count * 2))
+	{
+		Error("Read level: Broken items preload count.");
+		return false;
+	}
+	items_load.clear();
+	for(uint i = 0; i < items_load_count; ++i)
+	{
+		if(!ReadString1(stream))
+		{
+			Error("Read level: Broken item preload '%u'.", i);
+			return false;
+		}
+		auto item = FindItem(BUF, false);
+		if(!item)
+		{
+			Error("Read level: Missing item preload '%s'.", BUF);
+			return false;
+		}
+		items_load.insert(item);
+	}
+
 	// multiplayer data
 	if(mp_load)
 	{
@@ -1429,7 +1459,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 	else
 		unit.human_data = nullptr;
-	CreateUnitMesh(unit, false);
+	CreateUnitMesh(unit, false, mp_load ? 1 : 0);
 
 	// equipped items
 	if(unit.data->type != UNIT_TYPE::ANIMAL)
@@ -1958,8 +1988,6 @@ bool Game::ReadPlayerData(BitStream& stream)
 		}
 		unit->run_attack = IS_SET(flags, 0x01);
 		unit->used_item_is_team = IS_SET(flags, 0x02);
-
-		mp_load = false;
 	}
 
 	// checksum

@@ -119,70 +119,62 @@ enum GamePacket : byte
 	*/
 	ID_PICK_CHARACTER,
 
-	/* info about current server task
+	/* Info about current server task
 	byte - id
 	byte - state (0-generating world, 1-sending world, 2-waiting for players)
 	*/
 	ID_STATE,
 
-	/* dane úwiata gry
-	byte - id
-	byte - liczba lokacji
-	{
-		byte - typ
-		[jeúli insidelocation]
-		byte - poziomy
-		[jeúli miasto/wioska]
-		{
-			byte - citizens
-			word - citizens_world
-		}
-		[jeúli wioska]
-		{
-			byte - budynek1
-			byte - budynek2
-		}
-		byte - stan
-		Vec2 - pozycja
-		string1 - nazwa
-	}
-	byte - startowa lokacja
+	/* World data sent to all players
+	PrepareWorldData
+	ReadWorldData
+	Client repond with ID_READY
 	*/
 	ID_WORLD_DATA,
 
+	/* One time send data per player
+	WritePlayerStartData
+	ReadPlayerStartData
+	Client repond with ID_READY
+	*/
+	ID_PLAYER_START_DATA,
+
+	/* Sent by clients after loading data to inform server
+	byte - action id
+	*/
 	ID_READY,
 
-	/* trwa zmiana poziomu na inny, klient odsy≥a ID_
-	byte - id
-	[SERWER]
-	{
-		byte - id lokacji
-		byte - poziom podziemi
-	}
-	[KLIENT]
-	byte - czy 1 wizyta [0-nie, 1-tak]
+	/* Info about changing location level
+	byte - location id
+	byte - dungeon level
+	Client send ack response
 	*/
 	ID_CHANGE_LEVEL,
 
-	/*
+	/* Level data sent to client
 	byte - id
+	PrepareLevelData
+	ReadLevelData
 	*/
 	ID_LEVEL_DATA,
 
+	/* Player data sent per player
+	SendPlayerData
+	ReadPlayerData
+	*/
 	ID_PLAYER_DATA,
+
+	/* Sent to all players when everyone is loaded to start level
+	*/
 	ID_START,
+
+	/* Start game at worldmap, sent to all players
+	*/
+	ID_START_AT_WORLDMAP,
+
 	ID_CONTROL,
 	ID_CHANGES,
-	ID_PLAYER_UPDATE,
-
-	// dane gracza wysy≥ane na poczπtku gry [WritePlayerStartData/ReadPlayerStartData]
-	ID_PLAYER_START_DATA,
-
-	// trwa zapisywanie gry
-	//ID_SAVING,
-
-	// przejdü do gry na mapie úwiata
-	ID_START_AT_WORLDMAP
+	ID_PLAYER_UPDATE
 };
 
 //-----------------------------------------------------------------------------

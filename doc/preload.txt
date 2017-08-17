@@ -73,3 +73,10 @@ consumed item
 ReadUnit
 ReadItemListTeam - TryToSkip
 
+
+
+===================================================
+PreloadObjects drawing that arent objects
+ FindObject
+corn
+grass

@@ -304,6 +304,8 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 // Load metadata only from mesh (points)
 void Mesh::LoadMetadata(StreamReader& stream)
 {
+	if(vb)
+		return;
 	LoadHeader(stream, 20);
 	stream.SetOffset(head.points_offset);
 	LoadPoints(stream);

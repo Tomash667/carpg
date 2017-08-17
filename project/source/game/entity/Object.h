@@ -21,7 +21,7 @@ enum OBJ_FLAGS
 	OBJ_HIGH = 1 << 2, // object is placed higher (1.5 m)
 	OBJ_CHEST = 1 << 3, // object is chest
 	OBJ_ON_WALL = 1 << 4, // object is created on wall, ignoring size
-	// unused 1<<5
+	OBJ_PRELOAD = 1 << 5, // force preload mesh
 	OBJ_LIGHT = 1 << 6, // object has torch light and flame
 	OBJ_TABLE = 1 << 7, // generate Random table and chairs
 	OBJ_CAMPFIRE = 1 << 8, // object has larger fire effect (requires OBJ_LIGHT)
