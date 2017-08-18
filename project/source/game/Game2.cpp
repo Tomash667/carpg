@@ -544,7 +544,7 @@ void Game::SetupCamera(float dt)
 			maxz = min(lvl.h - 1, tz + 3);
 
 		// sufit
-		const D3DXPLANE sufit(0, -1, 0, 4);
+		const Plane sufit(0, -1, 0, 4);
 		if(RayToPlane(to, dist, sufit, &tout) && tout < min_tout && tout > 0.f)
 		{
 			//tmpvar2 = 1;
@@ -552,7 +552,7 @@ void Game::SetupCamera(float dt)
 		}
 
 		// pod³oga
-		const D3DXPLANE podloga(0, 1, 0, 0);
+		const Plane podloga(0, 1, 0, 0);
 		if(RayToPlane(to, dist, podloga, &tout) && tout < min_tout && tout > 0.f)
 			min_tout = tout;
 
@@ -654,14 +654,14 @@ void Game::SetupCamera(float dt)
 		// budynek
 
 		// pod³oga
-		const D3DXPLANE podloga(0, 1, 0, 0);
+		const Plane podloga(0, 1, 0, 0);
 		if(RayToPlane(to, dist, podloga, &tout) && tout < min_tout && tout > 0.f)
 			min_tout = tout;
 
 		// sufit
 		if(building.top > 0.f)
 		{
-			const D3DXPLANE sufit(0, -1, 0, 4);
+			const Plane sufit(0, -1, 0, 4);
 			if(RayToPlane(to, dist, sufit, &tout) && tout < min_tout && tout > 0.f)
 				min_tout = tout;
 		}

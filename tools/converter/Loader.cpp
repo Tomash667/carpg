@@ -115,7 +115,7 @@ void UpgradeDir(const char* path, bool force, bool subdir, int& upgraded, int& o
 		}
 		else
 		{
-			if(EndsWith(find.cFileName, ".qmsh"))
+			if(EndsWith(find.cFileName, ".qmsh") || EndsWith(find.cFileName, ".phy"))
 			{
 				string file_path = Formats("%s/%s", path, find.cFileName);
 				int result = Upgrade(file_path.c_str(), force);

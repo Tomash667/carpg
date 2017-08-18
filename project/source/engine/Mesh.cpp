@@ -43,7 +43,7 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 {
 	assert(device);
 
-	LoadHeader(stream, 0);
+	LoadHeader(stream);
 	SetVertexSizeDecl();
 
 	// ------ vertices
@@ -101,56 +101,36 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		else
 			sub.tex = nullptr;
 
-		if(head.version >= 16)
+		// specular value
+		stream.Read(sub.specular_color);
+		stream.Read(sub.specular_intensity);
+		stream.Read(sub.specular_hardness);
+
+		// normalmap
+		if(IS_SET(head.flags, F_TANGENTS))
 		{
-			// specular value
-			if(head.version >= 18)
-			{
-				stream.Read(sub.specular_color);
-				stream.Read(sub.specular_intensity);
-				stream.Read(sub.specular_hardness);
-			}
-			else
-			{
-				sub.specular_color = DefaultSpecularColor;
-				sub.specular_intensity = DefaultSpecularIntensity;
-				sub.specular_hardness = DefaultSpecularHardness;
-			}
-
-			// normalmap
-			if(IS_SET(head.flags, F_TANGENTS))
-			{
-				stream.ReadString1();
-				if(BUF[0])
-				{
-					sub.tex_normal = ResourceManager::Get<Texture>().GetLoaded(BUF);
-					stream.Read(sub.normal_factor);
-				}
-				else
-					sub.tex_normal = nullptr;
-			}
-			else
-				sub.tex_normal = nullptr;
-
-			// specular map
 			stream.ReadString1();
 			if(BUF[0])
 			{
-				sub.tex_specular = ResourceManager::Get<Texture>().GetLoaded(BUF);
-				stream.Read(sub.specular_factor);
-				stream.Read(sub.specular_color_factor);
+				sub.tex_normal = ResourceManager::Get<Texture>().GetLoaded(BUF);
+				stream.Read(sub.normal_factor);
 			}
 			else
-				sub.tex_specular = nullptr;
+				sub.tex_normal = nullptr;
 		}
 		else
-		{
-			sub.tex_specular = nullptr;
 			sub.tex_normal = nullptr;
-			sub.specular_color = DefaultSpecularColor;
-			sub.specular_intensity = DefaultSpecularIntensity;
-			sub.specular_hardness = DefaultSpecularHardness;
+
+		// specular map
+		stream.ReadString1();
+		if(BUF[0])
+		{
+			sub.tex_specular = ResourceManager::Get<Texture>().GetLoaded(BUF);
+			stream.Read(sub.specular_factor);
+			stream.Read(sub.specular_color_factor);
 		}
+		else
+			sub.tex_specular = nullptr;
 
 		if(!stream)
 			throw Format("Failed to read submesh %u.", i);
@@ -238,49 +218,28 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 
 	LoadPoints(stream);
 
+	// bone groups
 	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
 	{
-		// groups
-		if(head.version == 12 && head.n_groups < 2)
+		if(!stream.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
+			throw "Failed to read bone groups.";
+		groups.resize(head.n_groups);
+		for(word i = 0; i < head.n_groups; ++i)
 		{
-			head.n_groups = 1;
-			groups.resize(1);
+			BoneGroup& gr = groups[i];
 
-			BoneGroup& gr = groups[0];
-			gr.name = "default";
-			gr.parent = 0;
-			gr.bones.reserve(head.n_bones - 1);
+			stream.Read(gr.name);
 
-			for(word i = 1; i < head.n_bones; ++i)
-				gr.bones.push_back((byte)i);
-		}
-		else
-		{
-			if(!stream.Ensure(BoneGroup::MIN_SIZE * head.n_groups))
-				throw "Failed to read bone groups.";
-			groups.resize(head.n_groups);
-			for(word i = 0; i < head.n_groups; ++i)
-			{
-				BoneGroup& gr = groups[i];
+			// parent group
+			stream.Read(gr.parent);
+			assert(gr.parent < head.n_groups);
+			assert(gr.parent != i || i == 0);
 
-				stream.Read(gr.name);
-
-				// parent group
-				stream.Read(gr.parent);
-				assert(gr.parent < head.n_groups);
-				assert(gr.parent != i || i == 0);
-
-				// bone indexes
-				byte count;
-				stream.Read(count);
-				gr.bones.resize(count);
-				stream.Read(gr.bones.data(), gr.bones.size());
-				if(head.version == 12)
-				{
-					for(byte& b : gr.bones)
-						++b;
-				}
-			}
+			// bone indexes
+			byte count;
+			stream.Read(count);
+			gr.bones.resize(count);
+			stream.Read(gr.bones.data(), gr.bones.size());
 		}
 
 		if(!stream)
@@ -306,55 +265,33 @@ void Mesh::LoadMetadata(StreamReader& stream)
 {
 	if(vb)
 		return;
-	LoadHeader(stream, 20);
+	LoadHeader(stream);
 	stream.SetOffset(head.points_offset);
 	LoadPoints(stream);
 }
 
 //=================================================================================================
-void Mesh::LoadHeader(StreamReader& stream, uint required_version)
+void Mesh::LoadHeader(StreamReader& stream)
 {
 	// head
-	uint size = sizeof(Header) - sizeof(uint);
-	if(!stream.Read(&head, size))
+	if(!stream.Read(head))
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
 	if(head.version < 12 || head.version > 20)
-		throw Format("Invalid file version '%d'.", head.version);
+		throw Format("Invalid file version '%u'.", head.version);
+	if(head.version < 20)
+		throw Format("Unsupported file version '%u'.", head.version);
 	if(head.n_bones >= 32)
-		throw Format("Too many bones (%d).", head.n_bones);
+		throw Format("Too many bones (%u).", head.n_bones);
 	if(head.n_subs == 0)
 		throw "Missing model mesh!";
 	if(IS_SET(head.flags, F_ANIMATED) && !IS_SET(head.flags, F_STATIC))
 	{
 		if(head.n_bones == 0)
 			throw "No bones.";
-		if(head.version >= 13 && head.n_groups == 0)
+		if(head.n_groups == 0)
 			throw "No bone groups.";
-	}
-	if(head.version < required_version)
-		throw Format("This require at last '%u' version.", required_version);
-	if(head.version >= 20)
-		head.points_offset = stream.Read<uint>();
-
-	// camera
-	if(head.version >= 13)
-	{
-		stream.Read(cam_pos);
-		stream.Read(cam_target);
-		if(head.version >= 15)
-			stream.Read(cam_up);
-		else
-			cam_up = Vec3(0, 1, 0);
-		if(!stream)
-			throw "Missing camera data.";
-	}
-	else
-	{
-		cam_pos = Vec3(1, 1, 1);
-		cam_target = Vec3(0, 0, 0);
-		cam_up = Vec3(0, 1, 0);
 	}
 }
 
@@ -412,26 +349,10 @@ void Mesh::LoadPoints(StreamReader& stream)
 		stream.Read(p.name);
 		stream.Read(p.mat);
 		stream.Read(p.bone);
-		if(head.version == 12)
-			++p.bone; // in that version there was different counting
 		stream.Read(p.type);
-		if(head.version >= 14)
-			stream.Read(p.size);
-		else
-		{
-			stream.Read(p.size.x);
-			p.size.y = p.size.z = p.size.x;
-		}
-		if(head.version >= 19)
-		{
-			stream.Read(p.rot);
-			p.rot.y = Clip(-p.rot.y);
-		}
-		else
-		{
-			// fallback, it was often wrong but thats the way it was (works good for PI/2 and PI*3/2, inverted for 0 and PI, bad for other)
-			p.rot = Vec3(0, p.mat.GetYaw(), 0);
-		}
+		stream.Read(p.size);
+		stream.Read(p.rot);
+		p.rot.y = Clip(-p.rot.y);
 	}
 }
 
@@ -590,14 +511,10 @@ void Mesh::LoadVertexData(VertexData* vd, StreamReader& stream)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
-	if(head.version < 13)
+	if(head.version != 20)
 		throw Format("Invalid file version '%d'.", head.version);
 	if(head.flags != F_PHYSICS)
 		throw Format("Invalid mesh flags '%d'.", head.flags);
-
-	// skip camera data
-	stream.Skip(sizeof(Vec3) * 2);
-	vd->radius = head.radius;
 
 	// read vertices
 	uint size = sizeof(Vec3) * head.n_verts;

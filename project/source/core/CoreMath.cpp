@@ -81,28 +81,28 @@ float Angle(float x1, float y1, float x2, float y2)
 //=================================================================================================
 // Kolizja promienia z prostopad³oœcianem
 // Jeœli promieñ nie przecina prostopad³oœcianu, zwraca false.
-// Jeœli promieñ przecina prostopad³oœcian, zwraca true i przez OutT zwraca odleg³oœæ w wielokrotnoœciach d³ugoœci RayDir.
-// Jeœli promieñ przecina prostopad³oœcian od ty³u, funkcja te¿ zwraca true i zwraca OutT ujemne.
-// Jeœli RayOrig jest wewn¹trz prostopad³oœcianu, funkcja zwraca true i OutT = 0.
+// Jeœli promieñ przecina prostopad³oœcian, zwraca true i przez out_t zwraca odleg³oœæ w wielokrotnoœciach d³ugoœci ray_dir.
+// Jeœli promieñ przecina prostopad³oœcian od ty³u, funkcja te¿ zwraca true i zwraca out_t ujemne.
+// Jeœli ray_pos jest wewn¹trz prostopad³oœcianu, funkcja zwraca true i out_t = 0.
 // funkcja z TFQE
 //=================================================================================================
-bool RayToBox(const Vec3 &RayOrig, const Vec3 &RayDir, const Box &Box, float *OutT)
+bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box &box, float* out_t)
 {
 	// removed xn, yn, zn
 	bool inside = true;
 	float xt;//, xn;
 
-	if(RayOrig.x < Box.v1.x)
+	if(ray_pos.x < box.v1.x)
 	{
-		xt = Box.v1.x - RayOrig.x;
-		xt /= RayDir.x;
+		xt = box.v1.x - ray_pos.x;
+		xt /= ray_dir.x;
 		//xn = -1.0f;
 		inside = false;
 	}
-	else if(RayOrig.x > Box.v2.x)
+	else if(ray_pos.x > box.v2.x)
 	{
-		xt = Box.v2.x - RayOrig.x;
-		xt /= RayDir.x;
+		xt = box.v2.x - ray_pos.x;
+		xt /= ray_dir.x;
 		//xn = 1.0f;
 		inside = false;
 	}
@@ -111,17 +111,17 @@ bool RayToBox(const Vec3 &RayOrig, const Vec3 &RayDir, const Box &Box, float *Ou
 
 	float yt;//, yn;
 
-	if(RayOrig.y < Box.v1.y)
+	if(ray_pos.y < box.v1.y)
 	{
-		yt = Box.v1.y - RayOrig.y;
-		yt /= RayDir.y;
+		yt = box.v1.y - ray_pos.y;
+		yt /= ray_dir.y;
 		//yn = -1.0f;
 		inside = false;
 	}
-	else if(RayOrig.y > Box.v2.y)
+	else if(ray_pos.y > box.v2.y)
 	{
-		yt = Box.v2.y - RayOrig.y;
-		yt /= RayDir.y;
+		yt = box.v2.y - ray_pos.y;
+		yt /= ray_dir.y;
 		//yn = 1.0f;
 		inside = false;
 	}
@@ -130,17 +130,17 @@ bool RayToBox(const Vec3 &RayOrig, const Vec3 &RayDir, const Box &Box, float *Ou
 
 	float zt;//, zn;
 
-	if(RayOrig.z < Box.v1.z)
+	if(ray_pos.z < box.v1.z)
 	{
-		zt = Box.v1.z - RayOrig.z;
-		zt /= RayDir.z;
+		zt = box.v1.z - ray_pos.z;
+		zt /= ray_dir.z;
 		//zn = -1.0f;
 		inside = false;
 	}
-	else if(RayOrig.z > Box.v2.z)
+	else if(ray_pos.z > box.v2.z)
 	{
-		zt = Box.v2.z - RayOrig.z;
-		zt /= RayDir.z;
+		zt = box.v2.z - ray_pos.z;
+		zt /= ray_dir.z;
 		//zn = 1.0f;
 		inside = false;
 	}
@@ -149,7 +149,7 @@ bool RayToBox(const Vec3 &RayOrig, const Vec3 &RayDir, const Box &Box, float *Ou
 
 	if(inside)
 	{
-		*OutT = 0.0f;
+		*out_t = 0.0f;
 		return true;
 	}
 
@@ -175,32 +175,32 @@ bool RayToBox(const Vec3 &RayOrig, const Vec3 &RayDir, const Box &Box, float *Ou
 	{
 	case 0: // ray intersects with yz plane
 		{
-			float y = RayOrig.y + RayDir.y * t;
-			if(y < Box.v1.y || y > Box.v2.y) return false;
-			float z = RayOrig.z + RayDir.z * t;
-			if(z < Box.v1.z || z > Box.v2.z) return false;
+			float y = ray_pos.y + ray_dir.y * t;
+			if(y < box.v1.y || y > box.v2.y) return false;
+			float z = ray_pos.z + ray_dir.z * t;
+			if(z < box.v1.z || z > box.v2.z) return false;
 		}
 		break;
 	case 1: // ray intersects with xz plane
 		{
-			float x = RayOrig.x + RayDir.x * t;
-			if(x < Box.v1.x || x > Box.v2.x) return false;
-			float z = RayOrig.z + RayDir.z * t;
-			if(z < Box.v1.z || z > Box.v2.z) return false;
+			float x = ray_pos.x + ray_dir.x * t;
+			if(x < box.v1.x || x > box.v2.x) return false;
+			float z = ray_pos.z + ray_dir.z * t;
+			if(z < box.v1.z || z > box.v2.z) return false;
 		}
 		break;
 	default:
 	case 2: // ray intersects with xy plane
 		{
-			float x = RayOrig.x + RayDir.x * t;
-			if(x < Box.v1.x || x > Box.v2.x) return false;
-			float y = RayOrig.y + RayDir.y * t;
-			if(y < Box.v1.y || y > Box.v2.y) return false;
+			float x = ray_pos.x + ray_dir.x * t;
+			if(x < box.v1.x || x > box.v2.x) return false;
+			float y = ray_pos.y + ray_dir.y * t;
+			if(y < box.v1.y || y > box.v2.y) return false;
 		}
 		break;
 	}
 
-	*OutT = t;
+	*out_t = t;
 	return true;
 }
 
@@ -484,7 +484,7 @@ bool FrustumPlanes::SphereInFrustum(const Vec3& sphere_center, float sphere_radi
 }
 
 // funkcja z TFQE
-bool RayToPlane(const Vec3 &RayOrig, const Vec3 &RayDir, const D3DXPLANE &Plane, float *OutT)
+bool RayToPlane(const Vec3& ray_pos, const Vec3& ray_dir, const Plane& plane, float* out_t)
 {
 	// Napisane na podstawie:
 	// http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm
@@ -496,11 +496,11 @@ bool RayToPlane(const Vec3 &RayOrig, const Vec3 &RayDir, const D3DXPLANE &Plane,
 	// Ten sam wzór jest w ksi¹¿ce "3D Math Primer for Graphics and Game Development", str. 284.
 	// Inna wersja dostêpna jest w ksi¹¿ce: "3D Game Engine Programming", Stefan Zerbst with Oliver Duvel, str. 136.
 
-	float VD = Plane.a * RayDir.x + Plane.b * RayDir.y + Plane.c * RayDir.z;
+	float VD = plane.x * ray_dir.x + plane.y * ray_dir.y + plane.z * ray_dir.z;
 	if(VD == 0.0f)
 		return false;
 
-	*OutT = -(Plane.a * RayOrig.x + Plane.b * RayOrig.y + Plane.c * RayOrig.z + Plane.d) / VD;
+	*out_t = -(plane.x * ray_pos.x + plane.y * ray_pos.y + plane.z * ray_pos.z + plane.w) / VD;
 
 	return true;
 }
@@ -528,7 +528,7 @@ bool RayToSphere(const Vec3& _ray_pos, const Vec3& _ray_dir, const Vec3& _center
 
 	// Pierwszy pierwiastek - ten mniejszy
 	_dist = (minus_b - sqrt_Delta) / a_2;
-	// Przypadek ¿e ca³a sfera jest przed RayOrig - pierwiastek mniejszy to wynik
+	// Przypadek ¿e ca³a sfera jest przed ray_pos - pierwiastek mniejszy to wynik
 	if(_dist >= 0.f)
 		return true;
 	// Drugi pierwiastek - ten wiêkszy

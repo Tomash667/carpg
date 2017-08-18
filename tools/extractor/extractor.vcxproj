@@ -44,7 +44,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\source;..\..\source\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\project\source;..\..\project\source\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>COMMON_ONLY;NO_DIRECT_X;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -59,7 +59,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\source;..\..\source\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\project\source;..\..\project\source\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>COMMON_ONLY;NO_DIRECT_X;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -70,8 +70,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\source\core\Base.cpp" />
-    <ClCompile Include="..\..\source\core\Tokenizer.cpp" />
+    <ClCompile Include="..\..\project\source\core\Containers.cpp" />
+    <ClCompile Include="..\..\project\source\core\File.cpp" />
+    <ClCompile Include="..\..\project\source\core\Logger.cpp" />
+    <ClCompile Include="..\..\project\source\core\Text.cpp" />
+    <ClCompile Include="..\..\project\source\core\Tokenizer.cpp" />
     <ClCompile Include="extractor.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

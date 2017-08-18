@@ -39,6 +39,7 @@ struct Mesh : public Resource
 		float radius;
 		Box bbox;
 		uint points_offset;
+		Vec3 cam_pos, cam_target, cam_up;
 	};
 
 	struct Submesh
@@ -142,7 +143,7 @@ struct Mesh : public Resource
 	void SetupBoneMatrices();
 	void Load(StreamReader& stream, IDirect3DDevice9* device);
 	void LoadMetadata(StreamReader& stream);
-	void LoadHeader(StreamReader& stream, uint required_version);
+	void LoadHeader(StreamReader& stream);
 	void SetVertexSizeDecl();
 	void LoadPoints(StreamReader& stream);
 	static void LoadVertexData(VertexData* vd, StreamReader& stream);
@@ -189,6 +190,5 @@ struct Mesh : public Resource
 	vector<Point> attach_points;
 	vector<BoneGroup> groups;
 	vector<Split> splits;
-	Vec3 cam_pos, cam_target, cam_up;
 };
 typedef Mesh* MeshPtr;

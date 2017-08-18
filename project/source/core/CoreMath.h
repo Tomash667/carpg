@@ -1291,9 +1291,9 @@ struct Oob
 // KOLIZJE
 //-----------------------------------------------------------------------------
 // promieñ - AABOX
-bool RayToBox(const Vec3 &RayOrig, const Vec3 &RayDir, const Box &Box, float *OutT);
+bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box& box, float* out_t);
 // promieñ - p³aszczyzna
-bool RayToPlane(const Vec3 &RayOrig, const Vec3 &RayDir, const D3DXPLANE &Plane, float *OutT);
+bool RayToPlane(const Vec3& ray_pos, const Vec3& ray_dir, const Plane& plane, float* out_t);
 // promieñ - sfera
 bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist);
 // promieñ - trójk¹t

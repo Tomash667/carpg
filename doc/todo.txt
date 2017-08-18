@@ -1,4 +1,8 @@
 ﻿CURRENT:
++ upgrade phy
+? verify mesh loading
++ add qmsh_format.txt
+-------------
 ? CreateUnitMesh only checks mesh IsLoaded, what about sound/textures, seting UnitData::state
 ? loadscreen don't revert to instant after failing to load for client
 ? testing
@@ -31,7 +35,6 @@ NEW:
 + BaseBullet for Bullet, save by base, no mesh etc
 + Resources - hashing
 + custom formatter %.2g - 1000.123 -> 1000.12 (in printf it write 1.E cośtam)
-+ converter optimize loading after points are loaded to not load them second time
 + loading when required feature:
 	+ spells
 	+ more hardcoded sounds
