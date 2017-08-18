@@ -47,7 +47,7 @@ extern cstring RESTART_MUTEX_NAME;
 
 //=================================================================================================
 Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0),
-console_open(false), cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(0),
+cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false),
 game_speed(1.f), devmode(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false),
 obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), debug_info(false), dont_wander(false), local_ctx_valid(false),
 city_ctx(nullptr), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0), nosound(false), nomusic(false),
@@ -262,7 +262,7 @@ void HumanPredraw(void* ptr, Matrix* mat, int n)
 
 	if(u->data->type == UNIT_TYPE::HUMAN)
 	{
-		int bone = u->ani->ani->GetBone("usta")->id;
+		int bone = u->mesh_inst->mesh->GetBone("usta")->id;
 		static Matrix mat2;
 		float val = u->talking ? sin(u->talk_timer * 6) : 0.f;
 		mat[bone] = Matrix::RotationX(val / 5) *mat[bone];
@@ -321,7 +321,6 @@ void Game::OnTick(float dt)
 
 	if(koniec_gry)
 	{
-		console_open = false;
 		death_fade += dt;
 		if(death_fade >= 1.f && AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
 		{
@@ -412,12 +411,11 @@ void Game::OnTick(float dt)
 		}
 	}
 
-	// szybkie zapisywanie
-	if(KeyPressedReleaseAllowed(GK_QUICKSAVE))
+	// quicksave, quickload
+	bool special_key_allowed = (allow_input == ALLOW_KEYBOARD || allow_input == ALLOW_INPUT || (!GUI.HaveDialog() || GUI.HaveTopDialog("console")));
+	if(KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
 		Quicksave(false);
-
-	// szybkie wczytywanie
-	if(KeyPressedReleaseAllowed(GK_QUICKLOAD))
+	if(KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
 		Quickload(false);
 
 	// mp box
@@ -774,6 +772,10 @@ void Game::DoExitToMenu()
 	attached_sounds.clear();
 	ClearGame();
 
+	auto& res_mgr = ResourceManager::Get();
+	if(res_mgr.IsLoadScreen())
+		res_mgr.CancelLoadScreen(true);
+
 	game_state = GS_MAIN_MENU;
 	paused = false;
 	mp_load = false;
@@ -789,6 +791,7 @@ void Game::DoExitToMenu()
 	game_gui->visible = false;
 	world_map->visible = false;
 	main_menu->visible = true;
+	units_mesh_load.clear();
 
 	if(change_title_a)
 		ChangeTitle();
@@ -1351,7 +1354,7 @@ Int2 Game::RandomNearTile(const Int2& _tile)
 // 3 - start tile and target tile is equal
 // 4 - target tile is blocked
 // 5 - path not found
-int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_tile, const Int2& target_tile, const Unit* _me, const Unit* _other, const void* useable, bool is_end_point)
+int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_tile, const Int2& target_tile, const Unit* _me, const Unit* _other, const void* usable, bool is_end_point)
 {
 	assert(_me);
 
@@ -1371,9 +1374,9 @@ int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_t
 
 	if(dist <= 0 || my_tile.x < 0 || my_tile.y < 0)
 	{
-		Error("Invalid FindLocalPath, ctx type %d, ctx building %d, my tile %d %d, target tile %d %d, me %s (%p; %g %g %g; %d), useable %p, is end point %d.",
+		Error("Invalid FindLocalPath, ctx type %d, ctx building %d, my tile %d %d, target tile %d %d, me %s (%p; %g %g %g; %d), usable %p, is end point %d.",
 			ctx.type, ctx.building_id, my_tile.x, my_tile.y, target_tile.x, target_tile.y, _me->data->id.c_str(), _me, _me->pos.x, _me->pos.y, _me->pos.z, _me->in_building,
-			useable, is_end_point ? 1 : 0);
+			usable, is_end_point ? 1 : 0);
 		if(_other)
 		{
 			Error("Other unit %s (%p; %g, %g, %g, %d).", _other->data->id.c_str(), _other, _other->pos.x, _other->pos.y, _other->pos.z, _other->in_building);
@@ -1405,9 +1408,9 @@ int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_t
 	IgnoreObjects ignore = { 0 };
 	ignore.ignored_units = (const Unit**)ignored_units;
 	const void* ignored_objects[2] = { 0 };
-	if(useable)
+	if(usable)
 	{
-		ignored_objects[0] = useable;
+		ignored_objects[0] = usable;
 		ignore.ignored_objects = ignored_objects;
 	}
 
@@ -1729,12 +1732,7 @@ void Game::OnCleanup()
 	CleanupItems();
 	CleanupSpells();
 	DeleteElements(musics);
-
-	// vertex data
-	delete vdSchodyGora;
-	delete vdSchodyDol;
-	delete vdNaDrzwi;
-
+	
 	// teren
 	delete terrain;
 	delete terrain_shape;
@@ -2045,7 +2043,7 @@ void Game::SetGameText()
 	txGeneratingMinimap = Str("generatingMinimap");
 	txLoadingComplete = Str("loadingComplete");
 	txWaitingForPlayers = Str("waitingForPlayers");
-	txGeneratingTerrain = Str("generatingTerrain");
+	txLoadingResources = Str("loadingResources");
 
 	// zawody w piciu
 	txContestNoWinner = Str("contestNoWinner");
@@ -2081,11 +2079,11 @@ void Game::SetGameText()
 	txCantLoadGame = Str("cantLoadGame");
 	txLoadSignature = Str("loadSignature");
 	txLoadVersion = Str("loadVersion");
-	txLoadSaveVersionNew = Str("loadSaveVersionNew");
 	txLoadSaveVersionOld = Str("loadSaveVersionOld");
 	txLoadMP = Str("loadMP");
 	txLoadSP = Str("loadSP");
 	txLoadError = Str("loadError");
+	txLoadErrorGeneric = Str("loadErrorGeneric");
 	txLoadOpenError = Str("loadOpenError");
 
 	txPvpRefuse = Str("pvpRefuse");
@@ -2398,7 +2396,7 @@ void Game::UnitFall(Unit& u)
 	}
 	u.animation = ANI_DIE;
 	u.talking = false;
-	u.ani->need_update = true;
+	u.mesh_inst->need_update = true;
 }
 
 //=================================================================================================
@@ -2508,14 +2506,14 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	}
 	u.animation = ANI_DIE;
 	u.talking = false;
-	u.ani->need_update = true;
+	u.mesh_inst->need_update = true;
 
 	// dŸwiêk
 	if(sound_volume)
 	{
-		SOUND snd = u.data->sounds->sound[SOUND_DEATH];
+		SOUND snd = u.data->sounds->sound[SOUND_DEATH]->sound;
 		if(!snd)
-			snd = u.data->sounds->sound[SOUND_PAIN];
+			snd = u.data->sounds->sound[SOUND_PAIN]->sound;
 		if(snd)
 			PlayUnitSound(u, snd, 2.f);
 	}
@@ -2607,11 +2605,11 @@ void Game::UnitStandup(Unit& u)
 {
 	u.HealPoison();
 	u.live_state = Unit::ALIVE;
-	Animesh::Animation* anim = u.ani->ani->GetAnimation("wstaje2");
+	Mesh::Animation* anim = u.mesh_inst->mesh->GetAnimation("wstaje2");
 	if(anim)
 	{
-		u.ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-		u.ani->groups[0].speed = 1.f;
+		u.mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+		u.mesh_inst->groups[0].speed = 1.f;
 		u.action = A_ANIMATION;
 	}
 	else
@@ -2688,7 +2686,7 @@ void Game::PlayerYell(Unit& u)
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
-		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == 0 && !u2.useable && u2.ai->state == AIController::Idle &&
+		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == 0 && !u2.usable && u2.ai->state == AIController::Idle &&
 			!IS_SET(u2.data->flags, F_AI_STAY) &&
 			(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot ||
 				u2.ai->idle_action == AIController::Idle_Look))
@@ -3031,125 +3029,16 @@ uint Game::ValidateGameData(bool major)
 }
 
 //=================================================================================================
-AnimeshInstance* Game::GetBowInstance(Animesh* mesh)
+MeshInstance* Game::GetBowInstance(Mesh* mesh)
 {
 	if(bow_instances.empty())
-		return new AnimeshInstance(mesh);
+		return new MeshInstance(mesh);
 	else
 	{
-		AnimeshInstance* instance = bow_instances.back();
+		MeshInstance* instance = bow_instances.back();
 		bow_instances.pop_back();
-		instance->ani = mesh;
+		instance->mesh = mesh;
 		return instance;
-	}
-}
-
-//=================================================================================================
-void Game::SetupTrap(TaskData& task_data)
-{
-	BaseTrap& trap = *(BaseTrap*)task_data.ptr;
-	trap.mesh = (Animesh*)task_data.res->data;
-
-	Animesh::Point* pt = trap.mesh->FindPoint("hitbox");
-	assert(pt);
-	if(pt->type == Animesh::Point::Box)
-	{
-		trap.rw = pt->size.x;
-		trap.h = pt->size.z;
-	}
-	else
-		trap.h = trap.rw = pt->size.x;
-}
-
-//=================================================================================================
-void Game::SetupObject(TaskData& task_data)
-{
-	Obj& o = *(Obj*)task_data.ptr;
-	if(task_data.res)
-		o.mesh = (Animesh*)task_data.res->data;
-
-	if(IS_SET(o.flags, OBJ_BUILDING))
-		return;
-
-	Animesh::Point* point;
-	if(!IS_SET(o.flags2, OBJ2_VARIANT))
-		point = o.mesh->FindPoint("hit");
-	else
-		point = o.variant->entries[0].mesh->FindPoint("hit");
-
-	if(!point || !point->IsBox())
-	{
-		o.shape = nullptr;
-		o.matrix = nullptr;
-		return;
-	}
-
-	assert(point->size.x >= 0 && point->size.y >= 0 && point->size.z >= 0);
-	if(!IS_SET(o.flags, OBJ_NO_PHYSICS))
-	{
-		btBoxShape* shape = new btBoxShape(ToVector3(point->size));
-		o.shape = shape;
-	}
-	else
-		o.shape = nullptr;
-	o.matrix = &point->mat;
-	o.size = point->size.XZ();
-
-	if(IS_SET(o.flags, OBJ_PHY_ROT))
-		o.type = OBJ_HITBOX_ROT;
-
-	if(IS_SET(o.flags2, OBJ2_MULTI_PHYSICS))
-	{
-		LocalVector2<Animesh::Point*> points;
-		Animesh::Point* prev_point = point;
-
-		while(true)
-		{
-			Animesh::Point* new_point = o.mesh->FindNextPoint("hit", prev_point);
-			if(new_point)
-			{
-				assert(new_point->IsBox() && new_point->size.x >= 0 && new_point->size.y >= 0 && new_point->size.z >= 0);
-				points.push_back(new_point);
-				prev_point = new_point;
-			}
-			else
-				break;
-		}
-
-		assert(points.size() > 1u);
-		o.next_obj = new Obj[points.size() + 1];
-		for(uint i = 0, size = points.size(); i < size; ++i)
-		{
-			Obj& o2 = o.next_obj[i];
-			o2.shape = new btBoxShape(ToVector3(points[i]->size));
-			if(IS_SET(o.flags, OBJ_PHY_BLOCKS_CAM))
-				o2.flags = OBJ_PHY_BLOCKS_CAM;
-			o2.matrix = &points[i]->mat;
-			o2.size = points[i]->size.XZ();
-			o2.type = o.type;
-		}
-		o.next_obj[points.size()].shape = nullptr;
-	}
-	else if(IS_SET(o.flags, OBJ_DOUBLE_PHYSICS))
-	{
-		Animesh::Point* point2 = o.mesh->FindNextPoint("hit", point);
-		if(point2 && point2->IsBox())
-		{
-			assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
-			o.next_obj = new Obj("", 0, 0, "", "");
-			if(!IS_SET(o.flags, OBJ_NO_PHYSICS))
-			{
-				btBoxShape* shape = new btBoxShape(ToVector3(point2->size));
-				o.next_obj->shape = shape;
-				if(IS_SET(o.flags, OBJ_PHY_BLOCKS_CAM))
-					o.next_obj->flags = OBJ_PHY_BLOCKS_CAM;
-			}
-			else
-				o.next_obj->shape = nullptr;
-			o.next_obj->matrix = &point2->mat;
-			o.next_obj->size = point2->size.XZ();
-			o.next_obj->type = o.type;
-		}
 	}
 }
 

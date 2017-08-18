@@ -4,18 +4,18 @@
 #include "Item.h"
 #include "UnitData.h"
 #include "Class.h"
-#include "Animesh.h"
+#include "MeshInstance.h"
 #include "HumanData.h"
 #include "HeroData.h"
 #include "PlayerController.h"
-#include "Useable.h"
+#include "Usable.h"
 #include "Effect.h"
 #include "Buff.h"
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
 struct AIController;
-struct Useable;
+struct Usable;
 struct EntityInterpolator;
 struct UnitEventHandler;
 struct SpeechBubble;
@@ -135,11 +135,20 @@ struct Unit
 		LS_MAX_OVERLOADED // >= 200%
 	};
 
+	enum class CREATE_MESH
+	{
+		NORMAL,
+		ON_WORLDMAP,
+		PRELOAD,
+		AFTER_PRELOAD,
+		LOAD
+	};
+
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
 
-	AnimeshInstance* ani;
+	MeshInstance* mesh_inst;
 	Animation animation, current_animation;
 	Human* human_data;
 	LiveState live_state;
@@ -151,7 +160,7 @@ struct Unit
 	ACTION action;
 	WeaponType weapon_taken, weapon_hiding;
 	WeaponState weapon_state;
-	AnimeshInstance* bow_instance;
+	MeshInstance* bow_instance;
 	UnitData* data;
 	PlayerController* player;
 	const Item* used_item;
@@ -162,7 +171,7 @@ struct Unit
 	btCollisionObject* cobj;
 	static vector<Unit*> refid_table;
 	static vector<std::pair<Unit**, int>> refid_request;
-	Useable* useable;
+	Usable* usable;
 	HeroData* hero;
 	UnitEventHandler* event_handler;
 	SpeechBubble* bubble;
@@ -186,7 +195,7 @@ struct Unit
 	StaminaAction stamina_action;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	Unit() : ani(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
+	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
 		human_data(nullptr), stamina_action(SA_RESTORE_MORE) {}
 	~Unit();
 
@@ -219,7 +228,7 @@ struct Unit
 	void EndEffects(int days = 0, int* best_nat = nullptr);
 	float GetSphereRadius() const
 	{
-		float radius = ani->ani->head.radius;
+		float radius = data->mesh->head.radius;
 		if(data->type == UNIT_TYPE::HUMAN)
 			radius *= ((human_data->height - 1)*0.2f + 1.f);
 		return radius;
@@ -245,7 +254,7 @@ struct Unit
 		if(data->type == UNIT_TYPE::HUMAN)
 			return 1.73f * ((human_data->height - 1)*0.2f + 1.f);
 		else
-			return ani->ani->head.bbox.SizeY();
+			return data->mesh->head.bbox.SizeY();
 	}
 	Vec3 GetHeadPoint() const
 	{
@@ -713,11 +722,11 @@ struct Unit
 	}
 	const Item* GetIIndexItem(int i_index) const;
 
-	Animesh::Animation* GetTakeWeaponAnimation(bool melee) const;
+	Mesh::Animation* GetTakeWeaponAnimation(bool melee) const;
 
 	bool CanDoWhileUsing() const
 	{
-		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && g_base_usables[useable->type].allow_use;
+		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && g_base_usables[usable->type].allow_use;
 	}
 
 	int GetBuffs() const;
@@ -786,7 +795,7 @@ struct Unit
 	void ApplyHumanData(HumanData& hd)
 	{
 		hd.Set(*human_data);
-		human_data->ApplyScale(ani->ani);
+		human_data->ApplyScale(data->mesh);
 	}
 
 	int ItemsToSellWeight() const;
@@ -815,6 +824,8 @@ struct Unit
 
 	void UpdateStaminaAction();
 	void RemoveStamina(float value);
+
+	void CreateMesh(CREATE_MESH mode);
 };
 
 //-----------------------------------------------------------------------------

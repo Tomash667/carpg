@@ -99,13 +99,13 @@ void Inventory::LoadText()
 //=================================================================================================
 void Inventory::LoadData()
 {
-	ResourceManager& resMgr = ResourceManager::Get();
-	resMgr.GetLoadedTexture("item_bar.png", tItemBar);
-	resMgr.GetLoadedTexture("equipped.png", tEquipped);
-	resMgr.GetLoadedTexture("coins.png", tGold);
-	resMgr.GetLoadedTexture("star_hq.png", tStarHq);
-	resMgr.GetLoadedTexture("star_m.png", tStarM);
-	resMgr.GetLoadedTexture("star_u.png", tStarU);
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("item_bar.png", tItemBar);
+	tex_mgr.AddLoadTask("equipped.png", tEquipped);
+	tex_mgr.AddLoadTask("coins.png", tGold);
+	tex_mgr.AddLoadTask("star_hq.png", tStarHq);
+	tex_mgr.AddLoadTask("star_m.png", tStarM);
+	tex_mgr.AddLoadTask("star_u.png", tStarU);
 }
 
 //=================================================================================================
@@ -215,7 +215,7 @@ void Inventory::Draw(ControlDrawData*)
 			GUI.DrawSprite(icon, Int2(shift_x + x * 63, shift_y + (y + 1) * 63 - 32));
 
 		// obrazek przedmiotu
-		GUI.DrawSprite(item->tex, Int2(shift_x + x * 63, shift_y + y * 63));
+		GUI.DrawSprite(item->icon, Int2(shift_x + x * 63, shift_y + y * 63));
 
 		// iloœæ
 		if(count > 1)
@@ -1308,7 +1308,7 @@ void Inventory::FormatBox()
 			box_text += Format(txPrice, price);
 		}
 		box_text_small = item->desc;
-		box_img = item->tex;
+		box_img = item->icon;
 	}
 }
 
@@ -1406,7 +1406,7 @@ void Inventory::GetTooltip(TooltipController*, int group, int)
 		}
 		tooltip.small_text = item->desc;
 		tooltip.big_text.clear();
-		tooltip.img = item->tex;
+		tooltip.img = item->icon;
 	}
 }
 

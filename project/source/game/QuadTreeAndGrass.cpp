@@ -194,7 +194,7 @@ void Game::DrawGrass()
 	{
 		if(!grass_patches[j].empty())
 		{
-			Animesh* mesh = FindObject(j == 0 ? "grass" : "corn")->mesh;
+			Mesh* mesh = FindObject(j == 0 ? "grass" : "corn")->mesh;
 
 			// setup instancing data
 			Matrix* m;
@@ -217,7 +217,7 @@ void Game::DrawGrass()
 			// draw
 			for(int i = 0; i < mesh->head.n_subs; ++i)
 			{
-				V(eGrass->SetTexture(hGrassTex, mesh->subs[i].tex->data));
+				V(eGrass->SetTexture(hGrassTex, mesh->subs[i].tex->tex));
 				V(eGrass->CommitChanges());
 				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
 			}
@@ -322,9 +322,14 @@ void Game::ListGrass()
 
 void Game::SetTerrainTextures()
 {
-	TEX tex[5] = { tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga };
+	TexturePtr tex[5] = { tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga };
 	if(LocationHelper::IsVillage(location))
-		tex[2] = tPole;
+		tex[1] = tPole;
+
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	for(int i = 0; i < 5; ++i)
+		tex_mgr.AddLoadTask(tex[i]);
+
 	terrain->SetTextures(tex);
 }
 

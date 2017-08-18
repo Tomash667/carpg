@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Animesh.h"
+#include "Mesh.h"
 
 //-----------------------------------------------------------------------------
 // Object physics type
@@ -21,13 +21,13 @@ enum OBJ_FLAGS
 	OBJ_HIGH = 1 << 2, // object is placed higher (1.5 m)
 	OBJ_CHEST = 1 << 3, // object is chest
 	OBJ_ON_WALL = 1 << 4, // object is created on wall, ignoring size
-	// unused 1<<5
+	OBJ_PRELOAD = 1 << 5, // force preload mesh
 	OBJ_LIGHT = 1 << 6, // object has torch light and flame
 	OBJ_TABLE = 1 << 7, // generate Random table and chairs
 	OBJ_CAMPFIRE = 1 << 8, // object has larger fire effect (requires OBJ_LIGHT)
 	OBJ_IMPORTANT = 1 << 9, // try more times to generate this object
 	OBJ_BILLBOARD = 1 << 10, // object always face camera
-	OBJ_USEABLE = 1 << 11, // object is useable
+	OBJ_USEABLE = 1 << 11, // object is usable
 	OBJ_BENCH = 1 << 12, // object is bench
 	OBJ_ANVIL = 1 << 13, // object is anvil
 	OBJ_CHAIR = 1 << 14, // object is chair
@@ -42,7 +42,7 @@ enum OBJ_FLAGS
 	OBJ_THRONE = 1 << 23, // object is throne
 	OBJ_IRON_VEIN = 1 << 24, // object is iron vein
 	OBJ_GOLD_VEIN = 1 << 25, // object is gold vein
-	//OBJ_V0_CONVERSION = 1<<26, // convert vein objects to useables / flag removed - unused bit
+	//OBJ_V0_CONVERSION = 1<<26, // convert vein objects to usables / flag removed - unused bit
 	OBJ_PHY_BLOCKS_CAM = 1 << 27, // object physics blocks camera
 	OBJ_PHY_ROT = 1 << 28, // object physics can be rotated
 	OBJ_WATER_EFFECT = 1 << 29, // object have water particle effect
@@ -52,7 +52,7 @@ enum OBJ_FLAGS
 enum OBJ_FLAGS2
 {
 	OBJ2_BENCH_ROT = 1 << 0, // object is rotated bech (can be only used from correct side)
-	OBJ2_VARIANT = 1 << 1, // object have multiple mesh variants (must be useable with box physics for now)
+	OBJ2_VARIANT = 1 << 1, // object have multiple mesh variants (must be usable with box physics for now)
 	OBJ2_MULTI_PHYSICS = 1 << 2, // object have multiple colliders (only workd with box for now)
 	OBJ2_CAM_COLLIDERS = 1 << 3, // spawn camera coliders from mesh attach points
 };
@@ -63,7 +63,7 @@ struct VariantObj
 	struct Entry
 	{
 		cstring mesh_name;
-		Animesh* mesh;
+		Mesh* mesh;
 	};
 	Entry* entries;
 	uint count;
@@ -75,7 +75,7 @@ struct VariantObj
 struct Obj
 {
 	cstring id, name, mesh_id;
-	Animesh* mesh;
+	Mesh* mesh;
 	OBJ_PHY_TYPE type;
 	float r, h, centery;
 	Vec2 size;
@@ -86,7 +86,7 @@ struct Obj
 	VariantObj* variant;
 	float extra_dist;
 
-	Obj() : flags(0), flags2(0)
+	Obj() : flags(0), flags2(0), matrix(nullptr), shape(nullptr)
 	{
 	}
 
@@ -123,7 +123,7 @@ struct Object
 {
 	Vec3 pos, rot;
 	float scale;
-	Animesh* mesh;
+	Mesh* mesh;
 	Obj* base;
 	void* ptr;
 	bool require_split;

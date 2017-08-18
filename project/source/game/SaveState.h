@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 enum SAVE_VERSION
 {
 	V_0_2 = 0, // 0.2/0.2.1
@@ -15,6 +16,17 @@ enum SAVE_VERSION
 };
 
 //-----------------------------------------------------------------------------
+struct SaveException
+{
+	SaveException(cstring localized_msg, cstring msg, bool missing_file = false) : localized_msg(localized_msg), msg(msg), missing_file(missing_file)
+	{
+	}
+
+	cstring localized_msg, msg;
+	bool missing_file;
+};
+
+//-----------------------------------------------------------------------------
 extern const int SAVE_VERSION;
 extern int LOAD_VERSION;
-extern const Int2 SUPPORT_LOAD_VERSION;
+extern const int MIN_SUPPORT_LOAD_VERSION;

@@ -2,7 +2,8 @@
 
 const int QMSH_TMP_VERSION_MIN = 12;
 const int QMSH_TMP_VERSION_MAX = 19;
-const int QMSH_VERSION = 19;
+const int QMSH_VERSION = 20;
+extern const char* CONVERTER_VERSION;
 
 enum GROUP_OPTION
 {
@@ -19,3 +20,6 @@ struct ConversionData
 };
 
 void Convert(ConversionData& data);
+void Info(const char* path);
+int Upgrade(const char* path, bool force);
+void UpgradeDir(const char* path, bool force, bool subdir);

@@ -26,6 +26,7 @@
 #include "AIController.h"
 #include "BitStreamFunc.h"
 #include "Team.h"
+#include "SaveState.h"
 
 extern string g_ctime;
 
@@ -223,11 +224,15 @@ void Game::SaveLoadEvent(int id)
 				if(mp_load)
 					create_server_panel->Show();
 			}
-			catch(cstring err)
+			catch(const SaveException& ex)
 			{
-				err = Format("%s%s", txLoadError, err);
-				Error(err);
-				GUI.SimpleDialog(err, saveload);
+				Error("Failed to load game: %s", ex.msg);
+				cstring dialog_text;
+				if(ex.localized_msg)
+					dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
+				else
+					dialog_text = txLoadErrorGeneric;
+				GUI.SimpleDialog(dialog_text, saveload);
 				mp_load = false;
 			}
 		}
@@ -1273,10 +1278,13 @@ void Game::GenericInfoBoxUpdate(float dt)
 						if(ReadPlayerStartData(stream))
 						{
 							// odeœlij informacje o gotowoœci
+							if(mp_load_worldmap)
+								LoadResources("", true);
+							else
+								LoadingStep("");
 							byte b[] = { ID_READY, 1 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
 							info_box->Show(txLoadedPlayer);
-							LoadingStep("");
 							Info("NM_TRANSFER: Loaded player start data.");
 						}
 						else
@@ -1360,7 +1368,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						StreamError();
 					}
 					break;
-				case ID_PLAYER_DATA2:
+				case ID_PLAYER_DATA:
 					if(net_state == 3)
 					{
 						++net_state;
@@ -1377,76 +1385,84 @@ void Game::GenericInfoBoxUpdate(float dt)
 						else
 						{
 							Info("NM_TRANSFER: Loaded player data.");
+							LoadResources("", false);
+							mp_load = false;
 							byte b[] = { ID_READY, 3 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
-							LoadingStep("");
 						}
 					}
 					else
 					{
-						Error("NM_TRANSFER: Received ID_PLAYER_DATA2 with net state %d.", net_state);
+						Error("NM_TRANSFER: Received ID_PLAYER_DATA with net state %d.", net_state);
 						StreamError();
 					}
 					break;
 				case ID_START:
-					if(net_state == 4)
+					if(mp_load_worldmap)
 					{
-						assert(net_state == 4);
-						++net_state;
-						Info("NM_TRANSFER: Level started.");
-						clear_color = clear_color2;
-						game_state = GS_LEVEL;
-						load_screen->visible = false;
-						main_menu->visible = false;
-						game_gui->visible = true;
-						world_map->visible = false;
-						info_box->CloseDialog();
-						update_timer = 0.f;
-						fallback_co = FALLBACK_NONE;
-						fallback_t = 0.f;
-						cam.Reset();
-						player_rot_buf = 0.f;
-						if(change_title_a)
-							ChangeTitle();
-						StreamEnd();
-						peer->DeallocatePacket(packet);
-						SetGamePanels();
-						OnEnterLevelOrLocation();
+						// start on worldmap
+						if(net_state == 1)
+						{
+							mp_load_worldmap = false;
+							++net_state;
+							Info("NM_TRANSFER: Starting at world map.");
+							clear_color = WHITE;
+							game_state = GS_WORLDMAP;
+							load_screen->visible = false;
+							main_menu->visible = false;
+							game_gui->visible = false;
+							world_map->visible = true;
+							world_state = WS_MAIN;
+							info_box->CloseDialog();
+							update_timer = 0.f;
+							leader_id = 0;
+							Team.leader = nullptr;
+							pc = nullptr;
+							SetMusic(MusicType::Travel);
+							if(change_title_a)
+								ChangeTitle();
+							StreamEnd();
+							peer->DeallocatePacket(packet);
+						}
+						else
+						{
+							Error("NM_TRANSFER: Received ID_START at worldmap with net state %d.", net_state);
+							StreamError();
+							break;
+						}
 					}
 					else
 					{
-						Error("NM_TRANSFER: Received ID_START with net state %d.", net_state);
-						StreamError();
-					}
-					return;
-				case ID_START_AT_WORLDMAP:
-					if(net_state == 1)
-					{
-						++net_state;
-						Info("NM_TRANSFER: Starting at world map.");
-						clear_color = WHITE;
-						game_state = GS_WORLDMAP;
-						load_screen->visible = false;
-						main_menu->visible = false;
-						game_gui->visible = false;
-						world_map->visible = true;
-						world_state = WS_MAIN;
-						info_box->CloseDialog();
-						update_timer = 0.f;
-						leader_id = 0;
-						Team.leader = nullptr;
-						pc = nullptr;
-						SetMusic(MusicType::Travel);
-						if(change_title_a)
-							ChangeTitle();
-						StreamEnd();
-						peer->DeallocatePacket(packet);
-					}
-					else
-					{
-						Error("NM_TRANSFER: Received ID_START_AT_WORLDMAP with net state %d.", net_state);
-						StreamError();
-						break;
+						// start in location
+						if(net_state == 4)
+						{
+							assert(net_state == 4);
+							++net_state;
+							Info("NM_TRANSFER: Level started.");
+							clear_color = clear_color2;
+							game_state = GS_LEVEL;
+							load_screen->visible = false;
+							main_menu->visible = false;
+							game_gui->visible = true;
+							world_map->visible = false;
+							info_box->CloseDialog();
+							update_timer = 0.f;
+							fallback_co = FALLBACK_NONE;
+							fallback_t = 0.f;
+							cam.Reset();
+							player_rot_buf = 0.f;
+							if(change_title_a)
+								ChangeTitle();
+							StreamEnd();
+							peer->DeallocatePacket(packet);
+							SetGamePanels();
+							OnEnterLevelOrLocation();
+						}
+						else
+						{
+							Error("NM_TRANSFER: Received ID_START with net state %d.", net_state);
+							StreamError();
+						}
 					}
 					return;
 				default:
@@ -1615,7 +1631,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						u = CreateUnit(ud, -1, nullptr, nullptr, in_level, true);
 						info.u = u;
 						u->ApplyHumanData(info.hd);
-						u->ani->need_update = true;
+						u->mesh_inst->need_update = true;
 
 						u->player = new PlayerController;
 						u->player->id = info.id;
@@ -1789,7 +1805,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 					if(open_location == -1)
 					{
 						// zapisano na mapie œwiata
-						byte b = ID_START_AT_WORLDMAP;
+						byte b = ID_START;
 						peer->Send((cstring)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 
 						DeleteOldPlayers();
@@ -1812,7 +1828,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						packet_data.resize(3);
 						packet_data[0] = ID_CHANGE_LEVEL;
 						packet_data[1] = (byte)current_location;
-						packet_data[2] = 0;
+						packet_data[2] = dungeon_level;
 						int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 						for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
 						{
@@ -2311,7 +2327,7 @@ void Game::UpdateLobbyNet(float dt)
 				sv_startup = true;
 				startup_timer = float(STARTUP_TIMER);
 				last_startup_id = STARTUP_TIMER;
-				byte b[] = { ID_STARTUP, STARTUP_TIMER };
+				byte b[] = { ID_TIMER, STARTUP_TIMER };
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				server_panel->bts[5].text = server_panel->txStop;
 				server_panel->AddMsg(Format(server_panel->txStarting, STARTUP_TIMER));
@@ -2845,34 +2861,19 @@ void Game::UpdateLobbyNet(float dt)
 					ClosePeer(true);
 					return;
 				}
-			case ID_STARTUP:
+			case ID_TIMER:
 				if(packet->length != 2)
 				{
-					Error("UpdateLobbyNet: Broken packet ID_STARTUP.");
+					Error("UpdateLobbyNet: Broken packet ID_TIMER.");
 					StreamError();
 				}
 				else
 				{
 					Info("UpdateLobbyNet: Starting in %d...", packet->data[1]);
 					server_panel->AddMsg(Format(server_panel->txStartingIn, packet->data[1]));
-
-					if(packet->data[1] == 0)
-					{
-						// close lobby and wait for server
-						Info("UpdateLobbyNet: Waiting for server.");
-						LoadingStart(9);
-						main_menu->visible = false;
-						server_panel->CloseDialog();
-						info_box->Show(txWaitingForServer);
-						net_mode = NM_TRANSFER;
-						net_state = 0;
-						StreamEnd();
-						peer->DeallocatePacket(packet);
-						return;
-					}
 				}
 				break;
-			case ID_END_STARTUP:
+			case ID_END_TIMER:
 				Info("UpdateLobbyNet: Startup canceled.");
 				AddMsg(server_panel->txStartingStop);
 				break;
@@ -2897,6 +2898,31 @@ void Game::UpdateLobbyNet(float dt)
 						server_panel->bts[0].text = server_panel->txPickChar;
 						server_panel->bts[1].state = Button::DISABLED;
 					}
+				}
+				break;
+			case ID_STARTUP:
+				if(packet->length != 2)
+				{
+					Error("UpdateLobbyNet: Broken packet ID_STARTUP.");
+					StreamError();
+				}
+				else
+				{
+					Info("UpdateLobbyNet: Starting in 0...");
+					server_panel->AddMsg(Format(server_panel->txStartingIn, 0));
+
+					// close lobby and wait for server
+					mp_load_worldmap = (packet->data[1] == 1);
+					Info("UpdateLobbyNet: Waiting for server.");
+					LoadingStart(mp_load_worldmap ? 4 : 9);
+					main_menu->visible = false;
+					server_panel->CloseDialog();
+					info_box->Show(txWaitingForServer);
+					net_mode = NM_TRANSFER;
+					net_state = 0;
+					StreamEnd();
+					peer->DeallocatePacket(packet);
+					return;
 				}
 				break;
 			default:
@@ -3062,7 +3088,17 @@ void Game::UpdateLobbyNet(float dt)
 			{
 				Info("UpdateLobbyNet: Starting in %d...", d);
 				server_panel->AddMsg(Format(server_panel->txStartingIn, d));
-				byte b[] = { ID_STARTUP, (byte)d };
+				byte b[2];
+				if(d == 0)
+				{
+					b[0] = ID_STARTUP;
+					b[1] = (open_location == -1 ? 1 : 0);
+				}
+				else
+				{
+					b[0] = ID_TIMER;
+					b[1] = (byte)d;
+				}
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			}
 		}

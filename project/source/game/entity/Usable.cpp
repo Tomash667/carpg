@@ -1,13 +1,13 @@
 #include "Pch.h"
 #include "Core.h"
-#include "Useable.h"
+#include "Usable.h"
 #include "Unit.h"
 #include "Object.h"
 #include "SaveState.h"
 #include "BitStreamFunc.h"
 
 //=================================================================================================
-Animesh* Useable::GetMesh() const
+Mesh* Usable::GetMesh() const
 {
 	Obj* base_obj = GetBaseObj();
 	if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
@@ -20,7 +20,7 @@ Animesh* Useable::GetMesh() const
 }
 
 //=================================================================================================
-void Useable::Save(HANDLE file, bool local)
+void Usable::Save(HANDLE file, bool local)
 {
 	WriteFile(file, &type, sizeof(type), &tmp, nullptr);
 	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
@@ -38,7 +38,7 @@ void Useable::Save(HANDLE file, bool local)
 }
 
 //=================================================================================================
-void Useable::Load(HANDLE file, bool local)
+void Usable::Load(HANDLE file, bool local)
 {
 	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
 	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
@@ -60,7 +60,7 @@ void Useable::Load(HANDLE file, bool local)
 }
 
 //=================================================================================================
-void Useable::Write(BitStream& stream) const
+void Usable::Write(BitStream& stream) const
 {
 	stream.Write(netid);
 	stream.Write(pos);
@@ -70,7 +70,7 @@ void Useable::Write(BitStream& stream) const
 }
 
 //=================================================================================================
-bool Useable::Read(BitStream& stream)
+bool Usable::Read(BitStream& stream)
 {
 	if(!stream.Read(netid)
 		|| !stream.Read(pos)
@@ -81,7 +81,7 @@ bool Useable::Read(BitStream& stream)
 	user = nullptr;
 	if(type >= U_MAX)
 	{
-		Error("Invalid useable type %d.", type);
+		Error("Invalid usable type %d.", type);
 		return false;
 	}
 	return true;

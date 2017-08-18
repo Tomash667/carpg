@@ -192,9 +192,6 @@
     <ClCompile Include="source\game\entity\Trap.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\entity\Useable.cpp">
-      <Filter>3. game\entity</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\generator\CityGenerator.cpp">
       <Filter>3. game\generator</Filter>
     </ClCompile>
@@ -238,9 +235,6 @@
       <Filter>3. game\stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\BaseTrap.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\stats\BaseUseable.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Class.cpp">
@@ -579,9 +573,6 @@
     <ClCompile Include="source\gui\Font.cpp">
       <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="source\engine\Animesh.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
     <ClCompile Include="source\engine\Engine.cpp">
       <Filter>2. engine</Filter>
     </ClCompile>
@@ -600,14 +591,29 @@
     <ClCompile Include="source\engine\Terrain.cpp">
       <Filter>2. engine</Filter>
     </ClCompile>
-    <ClCompile Include="source\engine\TerrainTile.cpp">
-      <Filter>2. engine</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\system\Content.cpp">
       <Filter>3. game\system</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Buff.cpp">
       <Filter>3. game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\Mesh.cpp">
+      <Filter>2. engine</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\MeshInstance.cpp">
+      <Filter>2. engine</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\VertexData.cpp">
+      <Filter>2. engine</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\TerrainTile.cpp">
+      <Filter>3. game</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\stats\BaseUsable.cpp">
+      <Filter>3. game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\Usable.cpp">
+      <Filter>3. game\entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -737,9 +743,6 @@
     <ClInclude Include="source\game\entity\Trap.h">
       <Filter>3. game\entity</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\entity\Useable.h">
-      <Filter>3. game\entity</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\generator\CityGenerator.h">
       <Filter>3. game\generator</Filter>
     </ClInclude>
@@ -789,9 +792,6 @@
       <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\BaseTrap.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\BaseUseable.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Class.h">
@@ -1166,9 +1166,6 @@
     <ClInclude Include="source\gui\Font.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\Animesh.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\engine\Engine.h">
       <Filter>2. engine</Filter>
     </ClInclude>
@@ -1190,16 +1187,10 @@
     <ClInclude Include="source\engine\Terrain.h">
       <Filter>2. engine</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\TerrainTile.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\engine\VertexDeclaration.h">
       <Filter>2. engine</Filter>
     </ClInclude>
     <ClInclude Include="source\core\Core.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\VertexData.h">
       <Filter>1. core</Filter>
     </ClInclude>
     <ClInclude Include="source\core\Algorithm.h">
@@ -1210,6 +1201,24 @@
     </ClInclude>
     <ClInclude Include="source\game\stats\Buff.h">
       <Filter>3. game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Mesh.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\MeshInstance.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\VertexData.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\TerrainTile.h">
+      <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\stats\BaseUsable.h">
+      <Filter>3. game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Usable.h">
+      <Filter>3. game\entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1237,9 +1246,6 @@
       <Filter>0. doc</Filter>
     </Text>
     <Text Include="..\doc\todo.txt">
-      <Filter>0. doc</Filter>
-    </Text>
-    <Text Include="..\doc\todo last.txt">
       <Filter>0. doc</Filter>
     </Text>
   </ItemGroup>

@@ -86,8 +86,9 @@ typedef const char* cstring;
 #ifndef COMMON_ONLY
 typedef FMOD::Sound* SOUND;
 #endif
-struct Animesh;
-struct AnimeshInstance;
+struct Mesh;
+struct MeshInstance;
+struct VertexData;
 
 //-----------------------------------------------------------------------------
 // Delegates

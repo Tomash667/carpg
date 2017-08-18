@@ -101,6 +101,7 @@ bool Game::ReadItemList(BitStream& stream, vector<ItemSlot>& items)
 		if(ReadItemAndFind(stream, slot.item) < 1
 			|| !stream.Read(slot.count))
 			return false;
+		PreloadItem(slot.item);
 		slot.team_count = 0;
 	}
 
@@ -108,7 +109,7 @@ bool Game::ReadItemList(BitStream& stream, vector<ItemSlot>& items)
 }
 
 //=================================================================================================
-bool Game::ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items)
+bool Game::ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items, bool skip)
 {
 	const int MIN_SIZE = 9;
 
@@ -124,6 +125,9 @@ bool Game::ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items)
 			|| !stream.Read(slot.count)
 			|| !stream.Read(slot.team_count))
 			return false;
+
+		if(!skip)
+			PreloadItem(slot.item);
 	}
 
 	return true;
@@ -360,10 +364,10 @@ void Game::PrepareLevelData(BitStream& stream)
 				InsideBuilding& ib = *inside_building;
 				stream.Write(ib.level_shift);
 				WriteString1(stream, ib.type->id);
-				// useable objects
-				stream.WriteCasted<byte>(ib.useables.size());
-				for(Useable* useable : ib.useables)
-					useable->Write(stream);
+				// usable objects
+				stream.WriteCasted<byte>(ib.usables.size());
+				for(Usable* usable : ib.usables)
+					usable->Write(stream);
 				// units
 				stream.WriteCasted<byte>(ib.units.size());
 				for(Unit* unit : ib.units)
@@ -433,10 +437,10 @@ void Game::PrepareLevelData(BitStream& stream)
 		WriteBool(stream, lvl.staircase_down_in_wall);
 	}
 
-	// useable objects
-	stream.WriteCasted<byte>(local_ctx.useables->size());
-	for(Useable* useable : *local_ctx.useables)
-		useable->Write(stream);
+	// usable objects
+	stream.WriteCasted<byte>(local_ctx.usables->size());
+	for(Usable* usable : *local_ctx.usables)
+		usable->Write(stream);
 	// units
 	stream.WriteCasted<byte>(local_ctx.units->size());
 	for(Unit* unit : *local_ctx.units)
@@ -459,6 +463,15 @@ void Game::PrepareLevelData(BitStream& stream)
 		WriteChest(stream, *chest);
 
 	location->WritePortals(stream);
+
+	// items preload
+	stream.Write(items_load.size());
+	for(auto item : items_load)
+	{
+		WriteString1(stream, item->id);
+		if(item->IsQuest())
+			stream.Write(item->refid);
+	}
 
 	// saved bullets, spells, explosions etc
 	if(mp_load)
@@ -601,7 +614,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	if(mp_load)
 	{
 		stream.Write(unit.netid);
-		unit.ani->Write(stream);
+		unit.mesh_inst->Write(stream);
 		stream.WriteCasted<byte>(unit.animation);
 		stream.WriteCasted<byte>(unit.current_animation);
 		stream.WriteCasted<byte>(unit.animation_state);
@@ -617,7 +630,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 			WriteString1(stream, unit.used_item->id);
 		else
 			stream.WriteCasted<byte>(0);
-		stream.Write(unit.useable ? unit.useable->netid : -1);
+		stream.Write(unit.usable ? unit.usable->netid : -1);
 	}
 }
 
@@ -699,6 +712,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	{
 		// outside location
 		SetOutsideParams();
+		SetTerrainTextures();
 
 		OutsideLocation* outside = (OutsideLocation*)location;
 		int size11 = outside->size*outside->size;
@@ -801,20 +815,20 @@ bool Game::ReadLevelData(BitStream& stream)
 				ib.offset = Vec2(512.f*ib.level_shift.x + 256.f, 512.f*ib.level_shift.y + 256.f);
 				ProcessBuildingObjects(ib.ctx, city_ctx, &ib, ib.type->inside_mesh, nullptr, 0, 0, Vec3(ib.offset.x, 0, ib.offset.y), ib.type, nullptr, true);
 
-				// useable objects
+				// usable objects
 				if(!stream.Read(count)
-					|| !EnsureSize(stream, Useable::MIN_SIZE * count))
+					|| !EnsureSize(stream, Usable::MIN_SIZE * count))
 				{
-					Error("Read level: Broken packet for useable object in %d inside building.", index);
+					Error("Read level: Broken packet for usable object in %d inside building.", index);
 					return false;
 				}
-				ib.useables.resize(count);
-				for(Useable*& useable : ib.useables)
+				ib.usables.resize(count);
+				for(Usable*& usable : ib.usables)
 				{
-					useable = new Useable;
-					if(!useable->Read(stream))
+					usable = new Usable;
+					if(!usable->Read(stream))
 					{
-						Error("Read level: Broken packet for useable object in %d inside building.", index);
+						Error("Read level: Broken packet for usable object in %d inside building.", index);
 						return false;
 					}
 				}
@@ -1067,21 +1081,21 @@ bool Game::ReadLevelData(BitStream& stream)
 		CreateDungeonMinimap();
 	}
 
-	// useable objects
+	// usable objects
 	byte count;
 	if(!stream.Read(count)
-		|| !EnsureSize(stream, count * Useable::MIN_SIZE))
+		|| !EnsureSize(stream, count * Usable::MIN_SIZE))
 	{
-		Error("Read level: Broken useable object count.");
+		Error("Read level: Broken usable object count.");
 		return false;
 	}
-	local_ctx.useables->resize(count);
-	for(Useable*& useable : *local_ctx.useables)
+	local_ctx.usables->resize(count);
+	for(Usable*& usable : *local_ctx.usables)
 	{
-		useable = new Useable;
-		if(!useable->Read(stream))
+		usable = new Usable;
+		if(!usable->Read(stream))
 		{
-			Error("Read level: Broken useable object.");
+			Error("Read level: Broken usable object.");
 			return false;
 		}
 	}
@@ -1180,6 +1194,57 @@ bool Game::ReadLevelData(BitStream& stream)
 	{
 		Error("Read level: Broken portals.");
 		return false;
+	}
+
+	// items to preload
+	uint items_load_count;
+	if(!stream.Read(items_load_count)
+		|| !EnsureSize(stream, items_load_count * 2))
+	{
+		Error("Read level: Broken items preload count.");
+		return false;
+	}
+	items_load.clear();
+	for(uint i = 0; i < items_load_count; ++i)
+	{
+		if(!ReadString1(stream))
+		{
+			Error("Read level: Broken item preload '%u'.", i);
+			return false;
+		}
+		if(BUF[0] != '$')
+		{
+			auto item = FindItem(BUF, false);
+			if(!item)
+			{
+				Error("Read level: Missing item preload '%s'.", BUF);
+				return false;
+			}
+			items_load.insert(item);
+		}
+		else
+		{
+			int refid;
+			if(!stream.Read(refid))
+			{
+				Error("Read level: Broken quest item preload '%u'.", i);
+				return false;
+			}
+			auto item = FindQuestItemClient(BUF, refid);
+			if(!item)
+			{
+				Error("Read level: Missing quest item preload '%s' (%d).", BUF, refid);
+				return false;
+			}
+			auto base = FindItem(BUF + 1);
+			if(!base)
+			{
+				Error("Read level: Missing quest item preload base '%s' (%d).", BUF, refid);
+				return false;
+			}
+			items_load.insert(base);
+			items_load.insert(item);
+		}
 	}
 
 	// multiplayer data
@@ -1311,7 +1376,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				return false;
 			}
 
-			explo->tex = resMgr.GetLoadedTexture(BUF);
+			explo->tex = ResourceManager::Get<Texture>().GetLoaded(BUF);
 		}
 
 		// electro
@@ -1392,7 +1457,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		return false;
 	}
 	
-	// human data
+	// human data / mesh
 	if(unit.data->type == UNIT_TYPE::HUMAN)
 	{
 		unit.human_data = new Human;
@@ -1420,14 +1485,10 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				unit.human_data->mustache, unit.human_data->height);
 			return false;
 		}
-		unit.ani = new AnimeshInstance(aHumanBase);
-		unit.human_data->ApplyScale(aHumanBase);
 	}
 	else
-	{
-		unit.ani = new AnimeshInstance(unit.data->mesh);
 		unit.human_data = nullptr;
-	}
+	unit.CreateMesh(mp_load ? Unit::CREATE_MESH::PRELOAD : Unit::CREATE_MESH::NORMAL);
 
 	// equipped items
 	if(unit.data->type != UNIT_TYPE::ANIMAL)
@@ -1442,7 +1503,10 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			{
 				const Item* item = FindItem(BUF);
 				if(item && ItemTypeToSlot(item->type) == (ITEM_SLOT)i)
+				{
+					PreloadItem(item);
 					unit.slots[i] = item;
+				}
 				else
 				{
 					if(item)
@@ -1472,21 +1536,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		Error("Invalid live state %d.", unit.live_state);
 		return false;
 	}
-
-	// animation
-	if(unit.IsAlive())
-	{
-		unit.ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
-		unit.animation = unit.current_animation = ANI_STAND;
-	}
-	else
-	{
-		unit.ani->Play(NAMES::ani_die, PLAY_PRIO1, 0);
-		unit.animation = unit.current_animation = ANI_DIE;
-	}
-	unit.SetAnimationAtEnd();
-	unit.ani->ptr = &unit;
-
+	
 	// hero/player data
 	byte type;
 	if(!stream.Read(type))
@@ -1571,7 +1621,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	unit.busy = Unit::Busy_No;
 	unit.in_building = -1;
 	unit.frozen = 0;
-	unit.useable = nullptr;
+	unit.usable = nullptr;
 	unit.used_item = nullptr;
 	unit.bow_instance = nullptr;
 	unit.ai = nullptr;
@@ -1588,9 +1638,9 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	if(mp_load)
 	{
 		// get current state in multiplayer
-		int useable_netid;
+		int usable_netid;
 		if(!stream.Read(unit.netid)
-			|| !unit.ani->Read(stream)
+			|| !unit.mesh_inst->Read(stream)
 			|| !stream.ReadCasted<byte>(unit.animation)
 			|| !stream.ReadCasted<byte>(unit.current_animation)
 			|| !stream.ReadCasted<byte>(unit.animation_state)
@@ -1603,7 +1653,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			|| !stream.Read(unit.target_pos2)
 			|| !stream.Read(unit.timer)
 			|| !ReadString1(stream)
-			|| !stream.Read(useable_netid))
+			|| !stream.Read(usable_netid))
 			return false;
 		else
 		{
@@ -1620,20 +1670,20 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			else
 				unit.used_item = nullptr;
 
-			// useable
-			if(useable_netid == -1)
-				unit.useable = nullptr;
+			// usable
+			if(usable_netid == -1)
+				unit.usable = nullptr;
 			else
 			{
-				unit.useable = FindUseable(useable_netid);
-				if(unit.useable)
+				unit.usable = FindUsable(usable_netid);
+				if(unit.usable)
 				{
-					unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.useable->pos);
-					unit.useable->user = &unit;
+					unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.usable->pos);
+					unit.usable->user = &unit;
 				}
 				else
 				{
-					Error("Missing useable %d.", useable_netid);
+					Error("Missing usable %d.", usable_netid);
 					return false;
 				}
 			}
@@ -1642,9 +1692,9 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			if(unit.action == A_SHOOT)
 			{
 				unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
-				unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-				unit.bow_instance->groups[0].speed = unit.ani->groups[1].speed;
-				unit.bow_instance->groups[0].time = unit.ani->groups[1].time;
+				unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+				unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[1].speed;
+				unit.bow_instance->groups[0].time = unit.mesh_inst->groups[1].time;
 			}
 		}
 	}
@@ -1690,8 +1740,8 @@ bool Game::ReadDoor(BitStream& stream, Door& door)
 		return false;
 	}
 
-	door.ani = new AnimeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
-	door.ani->groups[0].speed = 2.f;
+	door.mesh_inst = new MeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
+	door.mesh_inst->groups[0].speed = 2.f;
 	door.phy = new btCollisionObject;
 	door.phy->setCollisionShape(shape_door);
 
@@ -1706,7 +1756,7 @@ bool Game::ReadDoor(BitStream& stream, Door& door)
 	{
 		btVector3& pos = door.phy->getWorldTransform().getOrigin();
 		pos.setY(pos.y() - 100.f);
-		door.ani->SetToEnd(door.ani->ani->anims[0].name.c_str());
+		door.mesh_inst->SetToEnd(door.mesh_inst->mesh->anims[0].name.c_str());
 	}
 
 	return true;
@@ -1733,7 +1783,7 @@ bool Game::ReadChest(BitStream& stream, Chest& chest)
 		|| !stream.Read(chest.rot)
 		|| !stream.Read(chest.netid))
 		return false;
-	chest.ani = new AnimeshInstance(aSkrzynia);
+	chest.mesh_inst = new MeshInstance(aSkrzynia);
 	return true;
 }
 
@@ -1792,7 +1842,7 @@ void Game::SendPlayerData(int index)
 	BitStream& stream = net_stream2;
 
 	stream.Reset();
-	stream.Write(ID_PLAYER_DATA2);
+	stream.Write(ID_PLAYER_DATA);
 	stream.Write(unit.netid);
 
 	// items
@@ -1967,8 +2017,6 @@ bool Game::ReadPlayerData(BitStream& stream)
 		}
 		unit->run_attack = IS_SET(flags, 0x01);
 		unit->used_item_is_team = IS_SET(flags, 0x02);
-
-		mp_load = false;
 	}
 
 	// checksum
@@ -2186,7 +2234,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 			if(!stream.Read(new_pos)
 				|| !stream.Read(rot)
-				|| !stream.Read(unit.ani->groups[0].speed))
+				|| !stream.Read(unit.mesh_inst->groups[0].speed))
 			{
 				Error("UpdateServer: Broken packet ID_CONTROL(2) from %s.", info.name.c_str());
 				StreamError();
@@ -2203,7 +2251,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				if(player.noclip || unit.useable || CheckMoveNet(unit, new_pos))
+				if(player.noclip || unit.usable || CheckMoveNet(unit, new_pos))
 				{
 					// update position
 					if(!unit.pos.Equal(new_pos) && !location->outside)
@@ -2372,7 +2420,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					unit.ani->groups[1].speed = 1.f;
+					unit.mesh_inst->groups[1].speed = 1.f;
 					SetUnitWeaponState(unit, !hide, weapon_type);
 					// send to other players
 					if(players > 2)
@@ -2409,21 +2457,21 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					case AID_Attack:
 						if(unit.action == A_ATTACK && unit.animation_state == 0)
 						{
-							unit.attack_power = unit.ani->groups[1].time / unit.GetAttackFrame(0);
+							unit.attack_power = unit.mesh_inst->groups[1].time / unit.GetAttackFrame(0);
 							unit.animation_state = 1;
-							unit.ani->groups[1].speed = unit.attack_power + unit.GetAttackSpeed();
+							unit.mesh_inst->groups[1].speed = unit.attack_power + unit.GetAttackSpeed();
 							unit.attack_power += 1.f;
 							unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * ((unit.attack_power - 1.f) / 2 + 1.f));
 						}
 						else
 						{
 							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.f;
-							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = attack_speed;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
 						}
@@ -2432,12 +2480,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					case AID_PowerAttack:
 						{
 							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.f;
-							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = attack_speed;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.animation_state = 0;
 							unit.hitted = false;
 						}
@@ -2448,15 +2496,15 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.animation_state = 1;
 						else
 						{
-							unit.ani->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = attack_speed;
+							unit.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.action = A_SHOOT;
 							unit.animation_state = (type == AID_Shoot ? 1 : 0);
 							unit.hitted = false;
 							if(!unit.bow_instance)
 								unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
-							unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-							unit.bow_instance->groups[0].speed = unit.ani->groups[1].speed;
+							unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+							unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[1].speed;
 							unit.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 						}
 						if(type == AID_Shoot)
@@ -2471,9 +2519,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					case AID_Block:
 						{
 							unit.action = A_BLOCK;
-							unit.ani->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = 1.f;
-							unit.ani->groups[1].blend_max = attack_speed;
+							unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
+							unit.mesh_inst->groups[1].speed = 1.f;
+							unit.mesh_inst->groups[1].blend_max = attack_speed;
 							unit.animation_state = 0;
 						}
 						break;
@@ -2481,9 +2529,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						{
 							unit.action = A_BASH;
 							unit.animation_state = 0;
-							unit.ani->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = 2.f;
-							unit.ani->frame_end_info2 = false;
+							unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
+							unit.mesh_inst->groups[1].speed = 2.f;
+							unit.mesh_inst->frame_end_info2 = false;
 							unit.hitted = false;
 							unit.player->Train(TrainWhat::BashStart, 0.f, 0);
 							unit.RemoveStamina(50.f);
@@ -2492,13 +2540,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					case AID_RunningAttack:
 						{
 							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
 							unit.attack_power = 1.5f;
 							unit.run_attack = true;
-							unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-							unit.ani->groups[1].speed = attack_speed;
+							unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
 							unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * 1.5f);
@@ -2507,8 +2555,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					case AID_StopBlock:
 						{
 							unit.action = A_NONE;
-							unit.ani->frame_end_info2 = false;
-							unit.ani->Deactivate(1);
+							unit.mesh_inst->frame_end_info2 = false;
+							unit.mesh_inst->Deactivate(1);
 						}
 						break;
 					}
@@ -2610,9 +2658,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 
 					unit.action = A_ANIMATION;
-					unit.ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-					unit.ani->groups[0].speed = 1.f;
-					unit.ani->frame_end_info = false;
+					unit.mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+					unit.mesh_inst->groups[0].speed = 1.f;
+					unit.mesh_inst->frame_end_info = false;
 					item->pos = unit.pos;
 					item->pos.x -= sin(unit.rot)*0.25f;
 					item->pos.z -= cos(unit.rot)*0.25f;
@@ -2657,9 +2705,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				bool up_animation = (item->pos.y > unit.pos.y + 0.5f);
 				unit.action = A_PICKUP;
 				unit.animation = ANI_PLAY;
-				unit.ani->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
-				unit.ani->groups[0].speed = 1.f;
-				unit.ani->frame_end_info = false;
+				unit.mesh_inst->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+				unit.mesh_inst->groups[0].speed = 1.f;
+				unit.mesh_inst->frame_end_info = false;
 
 				// send pickup acceptation
 				NetChangePlayer& c = Add1(net_changes_player);
@@ -2783,7 +2831,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					c2.id = chest->netid;
 
 					// animation / sound
-					chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
+					chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
 					if(sound_volume)
 					{
 						Vec3 pos = chest->pos;
@@ -3158,7 +3206,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			if(player.action == PlayerController::Action_LootChest)
 			{
 				player.action_chest->looted = false;
-				player.action_chest->ani->Play(&player.action_chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+				player.action_chest->mesh_inst->Play(&player.action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 				if(sound_volume)
 				{
 					Vec3 pos = player.action_chest->pos;
@@ -3225,9 +3273,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					unit.ani->Play(unit.data->idles->at(index).c_str(), PLAY_ONCE, 0);
-					unit.ani->groups[0].speed = 1.f;
-					unit.ani->frame_end_info = false;
+					unit.mesh_inst->Play(unit.data->idles->at(index).c_str(), PLAY_ONCE, 0);
+					unit.mesh_inst->groups[0].speed = 1.f;
+					unit.mesh_inst->frame_end_info = false;
 					unit.animation = ANI_IDLE;
 					// send info to other players
 					if(players > 2)
@@ -3390,12 +3438,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player wants to start/stop using useable
+		// player wants to start/stop using usable
 		case NetChange::USE_USEABLE:
 			{
-				int useable_netid;
+				int usable_netid;
 				byte state; // 0-stop, 1-start
-				if(!stream.Read(useable_netid)
+				if(!stream.Read(usable_netid)
 					|| !stream.Read(state))
 				{
 					Error("Update server: Broken USE_USEABLE from %s.", info.name.c_str());
@@ -3403,18 +3451,18 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					break;
 				}
 
-				Useable* useable = FindUseable(useable_netid);
-				if(!useable)
+				Usable* usable = FindUsable(usable_netid);
+				if(!usable)
 				{
-					Error("Update server: USE_USEABLE from %s, missing useable %d.", info.name.c_str(), useable_netid);
+					Error("Update server: USE_USEABLE from %s, missing usable %d.", info.name.c_str(), usable_netid);
 					StreamError();
 					break;
 				}
 
 				if(state == 1)
 				{
-					// use useable
-					if(useable->user)
+					// use usable
+					if(usable->user)
 					{
 						// someone else is already using this
 						NetChangePlayer& c = Add1(net_changes_player);
@@ -3424,44 +3472,44 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					else
 					{
-						BaseUsable& base = g_base_usables[useable->type];
+						BaseUsable& base = g_base_usables[usable->type];
 
 						unit.action = A_ANIMATION2;
 						unit.animation = ANI_PLAY;
-						unit.ani->Play(base.anim, PLAY_PRIO1, 0);
-						unit.ani->groups[0].speed = 1.f;
-						unit.useable = useable;
+						unit.mesh_inst->Play(base.anim, PLAY_PRIO1, 0);
+						unit.mesh_inst->groups[0].speed = 1.f;
+						unit.usable = usable;
 						unit.target_pos = unit.pos;
-						unit.target_pos2 = useable->pos;
-						if(g_base_usables[useable->type].limit_rot == 4)
-							unit.target_pos2 -= Vec3(sin(useable->rot)*1.5f, 0, cos(useable->rot)*1.5f);
+						unit.target_pos2 = usable->pos;
+						if(g_base_usables[usable->type].limit_rot == 4)
+							unit.target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 						unit.timer = 0.f;
 						unit.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-						unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.useable->pos);
+						unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.usable->pos);
 						unit.used_item = base.item;
 						if(unit.used_item)
 						{
 							unit.weapon_taken = W_NONE;
 							unit.weapon_state = WS_HIDDEN;
 						}
-						useable->user = &unit;
+						usable->user = &unit;
 
 						// send info to players
 						NetChange& c = Add1(net_changes);
 						c.type = NetChange::USE_USEABLE;
 						c.unit = info.u;
-						c.id = useable_netid;
+						c.id = usable_netid;
 						c.ile = state;
 					}
 				}
 				else
 				{
-					// stop using useable
-					if(useable->user == &unit)
+					// stop using usable
+					if(usable->user == &unit)
 					{
 						unit.action = A_NONE;
 						unit.animation = ANI_STAND;
-						useable->user = nullptr;
+						usable->user = nullptr;
 						if(unit.live_state == Unit::ALIVE)
 							unit.used_item = nullptr;
 
@@ -3471,14 +3519,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							NetChange& c = Add1(net_changes);
 							c.type = NetChange::USE_USEABLE;
 							c.unit = info.u;
-							c.id = useable_netid;
+							c.id = usable_netid;
 							c.ile = state;
 						}
 					}
 					else
 					{
-						Error("Update server: USE_USEABLE from %s, useable %d is used by %d (%s).", info.name.c_str(), useable_netid,
-							useable->user->netid, useable->user->data->id.c_str());
+						Error("Update server: USE_USEABLE from %s, usable %d is used by %d (%s).", info.name.c_str(), usable_netid,
+							usable->user->netid, usable->user->data->id.c_str());
 						StreamError();
 					}
 				}
@@ -3861,7 +3909,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					const Item* item = FindItem(BUF);
 					if(item && count)
+					{
+						PreloadItem(item);
 						AddItem(*info.u, item, count, is_team);
+					}
 					else
 					{
 						Error("Update server: CHEAT_ADDITEM from %s, missing item %s or invalid count %u.", info.name.c_str(), BUF, count);
@@ -4184,20 +4235,20 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					if(door->state == Door::Open)
 					{
 						door->state = Door::Closing;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
+						door->mesh_inst->frame_end_info = false;
 					}
 					else if(door->state == Door::Opening)
 					{
 						door->state = Door::Closing2;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+						door->mesh_inst->frame_end_info = false;
 					}
 					else if(door->state == Door::Opening2)
 					{
 						door->state = Door::Closing;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+						door->mesh_inst->frame_end_info = false;
 					}
 					else
 						ok = false;
@@ -4209,22 +4260,22 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
+						door->mesh_inst->frame_end_info = false;
 					}
 					else if(door->state == Door::Closing)
 					{
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening2;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
+						door->mesh_inst->frame_end_info = false;
 					}
 					else if(door->state == Door::Closing2)
 					{
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening;
-						door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-						door->ani->frame_end_info = false;
+						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
+						door->mesh_inst->frame_end_info = false;
 					}
 					else
 						ok = false;
@@ -4609,9 +4660,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 					// animation
 					unit.action = A_ANIMATION;
-					unit.ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-					unit.ani->groups[0].speed = 1.f;
-					unit.ani->frame_end_info = false;
+					unit.mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+					unit.mesh_inst->groups[0].speed = 1.f;
+					unit.mesh_inst->frame_end_info = false;
 
 					// create item
 					GroundItem* item = new GroundItem;
@@ -4836,7 +4887,7 @@ void Game::WriteServerChanges(BitStream& stream)
 				stream.Write(unit.netid);
 				stream.Write(unit.pos);
 				stream.Write(unit.rot);
-				stream.Write(unit.ani->groups[0].speed);
+				stream.Write(unit.mesh_inst->groups[0].speed);
 				stream.WriteCasted<byte>(unit.animation);
 			}
 			break;
@@ -5543,7 +5594,7 @@ void Game::UpdateClient(float dt)
 			WriteBool(net_stream, true);
 			net_stream.Write((cstring)&pc->unit->pos, sizeof(Vec3));
 			net_stream.Write(pc->unit->rot);
-			net_stream.Write(pc->unit->ani->groups[0].speed);
+			net_stream.Write(pc->unit->mesh_inst->groups[0].speed);
 			net_stream.WriteCasted<byte>(pc->unit->animation);
 		}
 		else
@@ -5613,7 +5664,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				else if(unit != pc->unit)
 				{
 					unit->pos = pos;
-					unit->ani->groups[0].speed = ani_speed;
+					unit->mesh_inst->groups[0].speed = ani_speed;
 					assert(ani < ANI_MAX);
 					if(unit->animation != ANI_PLAY && ani != ANI_PLAY)
 						unit->animation = ani;
@@ -5650,7 +5701,11 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else
+					{
+						if(item)
+							PreloadItem(item);
 						target->slots[type] = item;
+					}
 				}
 			}
 			break;
@@ -5677,8 +5732,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else if(unit != pc->unit)
 					{
-						if(unit->ani->ani->head.n_groups > 1)
-							unit->ani->groups[1].speed = 1.f;
+						if(unit->mesh_inst->mesh->head.n_groups > 1)
+							unit->mesh_inst->groups[1].speed = 1.f;
 						SetUnitWeaponState(*unit, !hide, type);
 					}
 				}
@@ -5713,7 +5768,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 				Unit& unit = *unit_ptr;
 				byte type = (typeflags & 0xF);
-				int group = unit.ani->ani->head.n_groups - 1;
+				int group = unit.mesh_inst->mesh->head.n_groups - 1;
 				unit.weapon_state = WS_TAKEN;
 
 				switch(type)
@@ -5722,17 +5777,17 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					if(unit.action == A_ATTACK && unit.animation_state == 0)
 					{
 						unit.animation_state = 1;
-						unit.ani->groups[1].speed = attack_speed;
+						unit.mesh_inst->groups[1].speed = attack_speed;
 					}
 					else
 					{
 						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
-						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
-						unit.ani->groups[group].speed = attack_speed;
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.animation_state = 1;
 						unit.hitted = false;
 					}
@@ -5740,12 +5795,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				case AID_PowerAttack:
 					{
 						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.f;
-						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
-						unit.ani->groups[group].speed = attack_speed;
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.animation_state = 0;
 						unit.hitted = false;
 					}
@@ -5756,23 +5811,23 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.animation_state = 1;
 					else
 					{
-						unit.ani->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
-						unit.ani->groups[group].speed = attack_speed;
+						unit.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.action = A_SHOOT;
 						unit.animation_state = (type == AID_Shoot ? 1 : 0);
 						unit.hitted = false;
 						if(!unit.bow_instance)
 							unit.bow_instance = GetBowInstance(unit.GetBow().mesh);
-						unit.bow_instance->Play(&unit.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-						unit.bow_instance->groups[0].speed = unit.ani->groups[group].speed;
+						unit.bow_instance->Play(&unit.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+						unit.bow_instance->groups[0].speed = unit.mesh_inst->groups[group].speed;
 					}
 					break;
 				case AID_Block:
 					{
 						unit.action = A_BLOCK;
-						unit.ani->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, group);
-						unit.ani->groups[1].speed = 1.f;
-						unit.ani->groups[1].blend_max = attack_speed;
+						unit.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, group);
+						unit.mesh_inst->groups[1].speed = 1.f;
+						unit.mesh_inst->groups[1].blend_max = attack_speed;
 						unit.animation_state = 0;
 					}
 					break;
@@ -5780,22 +5835,22 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						unit.action = A_BASH;
 						unit.animation_state = 0;
-						unit.ani->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, group);
-						unit.ani->groups[1].speed = 2.f;
-						unit.ani->frame_end_info2 = false;
+						unit.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, group);
+						unit.mesh_inst->groups[1].speed = 2.f;
+						unit.mesh_inst->frame_end_info2 = false;
 						unit.hitted = false;
 					}
 					break;
 				case AID_RunningAttack:
 					{
 						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
 						unit.attack_power = 1.5f;
 						unit.run_attack = true;
-						unit.ani->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
-						unit.ani->groups[group].speed = attack_speed;
+						unit.mesh_inst->Play(NAMES::ani_attacks[unit.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, group);
+						unit.mesh_inst->groups[group].speed = attack_speed;
 						unit.animation_state = 1;
 						unit.hitted = false;
 					}
@@ -5803,9 +5858,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				case AID_StopBlock:
 					{
 						unit.action = A_NONE;
-						unit.ani->frame_end_info2 = false;
-						unit.ani->Deactivate(group);
-						unit.ani->groups[1].speed = 1.f;
+						unit.mesh_inst->frame_end_info2 = false;
+						unit.mesh_inst->Deactivate(group);
+						unit.mesh_inst->groups[1].speed = 1.f;
 					}
 					break;
 				}
@@ -5920,7 +5975,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else if(sound_volume)
-						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_PAIN], 2.f, 15.f);
+						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_PAIN]->sound, 2.f, 15.f);
 				}
 			}
 			break;
@@ -5988,9 +6043,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else if(unit != pc->unit)
 					{
 						unit->action = A_ANIMATION;
-						unit->ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-						unit->ani->groups[0].speed = 1.f;
-						unit->ani->frame_end_info = false;
+						unit->mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+						unit->mesh_inst->groups[0].speed = 1.f;
+						unit->mesh_inst->frame_end_info = false;
 					}
 				}
 			}
@@ -6006,7 +6061,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					delete item;
 				}
 				else
+				{
+					PreloadItem(item->item);
 					GetContext(item->pos).items->push_back(item);
+				}
 			}
 			break;
 		// unit picks up item
@@ -6032,9 +6090,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						unit->action = A_PICKUP;
 						unit->animation = ANI_PLAY;
-						unit->ani->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
-						unit->ani->groups[0].speed = 1.f;
-						unit->ani->frame_end_info = false;
+						unit->mesh_inst->Play(up_animation ? "podnosi_gora" : "podnosi", PLAY_ONCE | PLAY_PRIO2, 0);
+						unit->mesh_inst->groups[0].speed = 1.f;
+						unit->mesh_inst->frame_end_info = false;
 					}
 				}
 			}
@@ -6097,7 +6155,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else if(unit != pc->unit || force)
+					{
+						PreloadItem(item);
 						unit->ConsumeItem(item->ToConsumable(), false, false);
+					}
 				}
 			}
 			break;
@@ -6143,16 +6204,16 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						else
 							unit->animation_state = 1;
 
-						if(unit->ani->ani->head.n_groups == 2)
+						if(unit->mesh_inst->mesh->head.n_groups == 2)
 						{
-							unit->ani->frame_end_info2 = false;
-							unit->ani->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
+							unit->mesh_inst->frame_end_info2 = false;
+							unit->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO1 | PLAY_ONCE, 1);
 						}
 						else
 						{
-							unit->ani->frame_end_info = false;
-							unit->ani->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
-							unit->ani->groups[0].speed = 1.f;
+							unit->mesh_inst->frame_end_info = false;
+							unit->mesh_inst->Play(NAMES::ani_hurt, PLAY_PRIO3 | PLAY_ONCE, 0);
+							unit->mesh_inst->groups[0].speed = 1.f;
 							unit->animation = ANI_PLAY;
 						}
 					}
@@ -6295,9 +6356,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						unit->ani->Play(unit->data->idles->at(animation_index).c_str(), PLAY_ONCE, 0);
-						unit->ani->groups[0].speed = 1.f;
-						unit->ani->frame_end_info = false;
+						unit->mesh_inst->Play(unit->data->idles->at(animation_index).c_str(), PLAY_ONCE, 0);
+						unit->mesh_inst->groups[0].speed = 1.f;
+						unit->mesh_inst->frame_end_info = false;
 						unit->animation = ANI_IDLE;
 					}
 				}
@@ -6361,8 +6422,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 						if(animation != 0)
 						{
-							unit->ani->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-							unit->ani->groups[0].speed = 1.f;
+							unit->mesh_inst->Play(animation == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+							unit->mesh_inst->groups[0].speed = 1.f;
 							unit->animation = ANI_PLAY;
 							unit->action = A_ANIMATION;
 						}
@@ -6541,8 +6602,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						{
 							pc->unit->HealPoison();
 							pc->unit->live_state = Unit::ALIVE;
-							pc->unit->ani->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-							pc->unit->ani->groups[0].speed = 1.f;
+							pc->unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+							pc->unit->mesh_inst->groups[0].speed = 1.f;
 							pc->unit->action = A_ANIMATION;
 						}
 					}
@@ -6579,6 +6640,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 				else
 				{
+					PreloadItem(base);
 					Item* item = CreateItemCopy(base);
 					if(!ReadString1(stream, item->id)
 						|| !ReadString1(stream, item->name)
@@ -6825,7 +6887,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 									interpolators.Free(info->u->interp);
 								if(info->u->cobj)
 									delete info->u->cobj->getCollisionShape();
-								delete info->u->ani;
+								delete info->u->mesh_inst;
 								delete info->u;
 								info->u = nullptr;
 							}
@@ -6834,21 +6896,21 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 								info->u->to_remove = true;
 								to_remove.push_back(info->u);
 
-								if(info->u->useable)
-									info->u->useable->user = nullptr;
+								if(info->u->usable)
+									info->u->usable->user = nullptr;
 							}
 						}
 					}
 				}
 			}
 			break;
-		// unit uses useable object
+		// unit uses usable object
 		case NetChange::USE_USEABLE:
 			{
-				int netid, useable_netid;
+				int netid, usable_netid;
 				byte state;
 				if(!stream.Read(netid)
-					|| !stream.Read(useable_netid)
+					|| !stream.Read(usable_netid)
 					|| !stream.Read(state))
 				{
 					Error("Update client: Broken USE_USEABLE.");
@@ -6864,45 +6926,46 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
-				Useable* useable = FindUseable(useable_netid);
-				if(!useable)
+				Usable* usable = FindUsable(usable_netid);
+				if(!usable)
 				{
-					Error("Update client: USE_USEABLE, missing useable %d.", useable_netid);
+					Error("Update client: USE_USEABLE, missing usable %d.", usable_netid);
 					StreamError();
 					break;
 				}
 
 				if(state == 1 || state == 2)
 				{
-					BaseUsable& base = g_base_usables[useable->type];
+					BaseUsable& base = g_base_usables[usable->type];
 
 					unit->action = A_ANIMATION2;
 					unit->animation = ANI_PLAY;
-					unit->ani->Play(state == 2 ? "czyta_papiery" : base.anim, PLAY_PRIO1, 0);
-					unit->ani->groups[0].speed = 1.f;
-					unit->useable = useable;
+					unit->mesh_inst->Play(state == 2 ? "czyta_papiery" : base.anim, PLAY_PRIO1, 0);
+					unit->mesh_inst->groups[0].speed = 1.f;
+					unit->usable = usable;
 					unit->target_pos = unit->pos;
-					unit->target_pos2 = useable->pos;
-					if(g_base_usables[useable->type].limit_rot == 4)
-						unit->target_pos2 -= Vec3(sin(useable->rot)*1.5f, 0, cos(useable->rot)*1.5f);
+					unit->target_pos2 = usable->pos;
+					if(g_base_usables[usable->type].limit_rot == 4)
+						unit->target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 					unit->timer = 0.f;
 					unit->animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-					unit->use_rot = Vec3::LookAtAngle(unit->pos, unit->useable->pos);
+					unit->use_rot = Vec3::LookAtAngle(unit->pos, unit->usable->pos);
 					unit->used_item = base.item;
 					if(unit->used_item)
 					{
+						PreloadItem(unit->used_item);
 						unit->weapon_taken = W_NONE;
 						unit->weapon_state = WS_HIDDEN;
 					}
-					useable->user = unit;
+					usable->user = unit;
 
-					if(before_player == BP_USEABLE && before_player_ptr.useable == useable)
+					if(before_player == BP_USEABLE && before_player_ptr.usable == usable)
 						before_player = BP_NONE;
 				}
 				else if(unit->player != pc)
 				{
 					if(state == 0)
-						useable->user = nullptr;
+						usable->user = nullptr;
 					unit->action = A_NONE;
 					unit->animation = ANI_STAND;
 					if(unit->live_state == Unit::ALIVE)
@@ -7125,7 +7188,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else if(sound_volume)
-						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_SEE_ENEMY], 3.f, 20.f);
+						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
 				}
 			}
 			break;
@@ -7219,20 +7282,20 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							if(door->state == Door::Open)
 							{
 								door->state = Door::Closing;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
-								door->ani->frame_end_info = false;
+								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
+								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Opening)
 							{
 								door->state = Door::Closing2;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-								door->ani->frame_end_info = false;
+								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Opening2)
 							{
 								door->state = Door::Closing;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-								door->ani->frame_end_info = false;
+								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+								door->mesh_inst->frame_end_info = false;
 							}
 							else
 								ok = false;
@@ -7244,22 +7307,22 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-								door->ani->frame_end_info = false;
+								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
+								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Closing)
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening2;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-								door->ani->frame_end_info = false;
+								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
+								door->mesh_inst->frame_end_info = false;
 							}
 							else if(door->state == Door::Closing2)
 							{
 								door->locked = LOCK_NONE;
 								door->state = Door::Opening;
-								door->ani->Play(&door->ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
-								door->ani->frame_end_info = false;
+								door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END, 0);
+								door->mesh_inst->frame_end_info = false;
 							}
 							else
 								ok = false;
@@ -7299,7 +7362,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
+						chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
 						if(sound_volume)
 						{
 							Vec3 pos = chest->pos;
@@ -7329,7 +7392,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						chest->ani->Play(&chest->ani->ani->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+						chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 						if(sound_volume)
 						{
 							Vec3 pos = chest->pos;
@@ -7658,17 +7721,17 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit->attack_id = attack_id;
 						unit->animation_state = 0;
 
-						if(unit->ani->ani->head.n_groups == 2)
+						if(unit->mesh_inst->mesh->head.n_groups == 2)
 						{
-							unit->ani->frame_end_info2 = false;
-							unit->ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+							unit->mesh_inst->frame_end_info2 = false;
+							unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 						}
 						else
 						{
-							unit->ani->frame_end_info = false;
+							unit->mesh_inst->frame_end_info = false;
 							unit->animation = ANI_PLAY;
-							unit->ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-							unit->ani->groups[0].speed = 1.f;
+							unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							unit->mesh_inst->groups[0].speed = 1.f;
 						}
 					}
 				}
@@ -8212,7 +8275,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				StreamError();
 			}
 			break;
-		// play useable object sound for unit
+		// play usable object sound for unit
 		case NetChange::USEABLE_SOUND:
 			{
 				int netid;
@@ -8229,13 +8292,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Error("Update client: USEABLE_SOUND, missing unit %d.", netid);
 						StreamError();
 					}
-					else if(!unit->useable)
+					else if(!unit->usable)
 					{
-						Error("Update client: USEABLE_SOUND, unit %d (%s) don't use useable.", netid, unit->data->id.c_str());
+						Error("Update client: USEABLE_SOUND, unit %d (%s) don't use usable.", netid, unit->data->id.c_str());
 						StreamError();
 					}
 					else if(sound_volume && unit != pc->unit)
-						PlaySound3d(unit->useable->GetBase()->sound, unit->GetCenter(), 2.f, 5.f);
+						PlaySound3d(unit->usable->GetBase()->sound->sound, unit->GetCenter(), 2.f, 5.f);
 				}
 			}
 			break;
@@ -8544,7 +8607,10 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						StreamError();
 					}
 					else
+					{
+						PreloadItem(item);
 						AddItem(*pc->unit, item, (uint)count, (uint)team_count);
+					}
 				}
 				break;
 			// add items to trader which is trading with player
@@ -8579,7 +8645,10 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							StreamError();
 						}
 						else
+						{
+							PreloadItem(item);
 							AddItem(*unit, item, (uint)count, (uint)team_count);
+						}
 					}
 				}
 				break;
@@ -8615,7 +8684,10 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							StreamError();
 						}
 						else
+						{
+							PreloadItem(item);
 							AddItem(*chest, item, (uint)count, (uint)team_count);
+						}
 					}
 				}
 				break;
@@ -8693,7 +8765,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						pc->unit->RemoveQuestItem(refid);
 				}
 				break;
-			// someone else is using useable
+			// someone else is using usable
 			case NetChangePlayer::USE_USEABLE:
 				AddGameMsg3(GMS_USED);
 				break;
@@ -8742,7 +8814,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						vector<ItemSlot> items;
 						if(!Skip(stream, sizeof(int) * 3)
 							|| !stats.Read(stream)
-							|| !ReadItemListTeam(stream, items))
+							|| !ReadItemListTeam(stream, items, true))
 						{
 							Error("Update single client: Broken %s(2).", name);
 						}
@@ -9064,7 +9136,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						else
 						{
 							vector<ItemSlot> items;
-							if(!ReadItemListTeam(stream, items))
+							if(!ReadItemListTeam(stream, items, true))
 								Error("Update single client: Broken UPDATE_TRADER_INVENTORY(3).");
 						}
 					}
@@ -9696,7 +9768,7 @@ void Game::Net_OnNewGameServer()
 		item_netid_counter = 0;
 		chest_netid_counter = 0;
 		skip_id_counter = 0;
-		useable_netid_counter = 0;
+		usable_netid_counter = 0;
 		trap_netid_counter = 0;
 		door_netid_counter = 0;
 		electro_netid_counter = 0;
@@ -9766,9 +9838,9 @@ const Item* Game::FindQuestItemClient(cstring id, int refid) const
 }
 
 //=================================================================================================
-Useable* Game::FindUseable(int netid)
+Usable* Game::FindUsable(int netid)
 {
-	for(vector<Useable*>::iterator it = local_ctx.useables->begin(), end = local_ctx.useables->end(); it != end; ++it)
+	for(vector<Usable*>::iterator it = local_ctx.usables->begin(), end = local_ctx.usables->end(); it != end; ++it)
 	{
 		if((*it)->netid == netid)
 			return *it;
@@ -9780,7 +9852,7 @@ Useable* Game::FindUseable(int netid)
 		{
 			if(*it)
 			{
-				for(vector<Useable*>::iterator it2 = (*it)->useables.begin(), end2 = (*it)->useables.end(); it2 != end2; ++it2)
+				for(vector<Usable*>::iterator it2 = (*it)->usables.begin(), end2 = (*it)->usables.end(); it2 != end2; ++it2)
 				{
 					if((*it2)->netid == netid)
 						return *it2;
@@ -10205,8 +10277,9 @@ bool Game::ReadWorldData(BitStream& stream)
 		Error("Read world: Invalid location %d.", current_location);
 		return false;
 	}
-	world_pos = locations[current_location]->pos;
-	locations[current_location]->state = LS_VISITED;
+	location = locations[current_location];
+	world_pos = location->pos;
+	location->state = LS_VISITED;
 
 	// quests
 	if(!QuestManager::Get().Read(stream))
@@ -10340,9 +10413,9 @@ void Game::InterpolateUnits(float dt)
 	{
 		if(unit != pc->unit)
 			UpdateInterpolator(unit->interp, dt, unit->visual_pos, unit->rot);
-		if(unit->ani->ani->head.n_groups == 1)
+		if(unit->mesh_inst->mesh->head.n_groups == 1)
 		{
-			if(!unit->ani->groups[0].anim)
+			if(!unit->mesh_inst->groups[0].anim)
 			{
 				unit->action = A_NONE;
 				unit->animation = ANI_STAND;
@@ -10350,7 +10423,7 @@ void Game::InterpolateUnits(float dt)
 		}
 		else
 		{
-			if(!unit->ani->groups[0].anim && !unit->ani->groups[1].anim)
+			if(!unit->mesh_inst->groups[0].anim && !unit->mesh_inst->groups[1].anim)
 			{
 				unit->action = A_NONE;
 				unit->animation = ANI_STAND;
@@ -10365,9 +10438,9 @@ void Game::InterpolateUnits(float dt)
 			{
 				if(unit != pc->unit)
 					UpdateInterpolator(unit->interp, dt, unit->visual_pos, unit->rot);
-				if(unit->ani->ani->head.n_groups == 1)
+				if(unit->mesh_inst->mesh->head.n_groups == 1)
 				{
-					if(!unit->ani->groups[0].anim)
+					if(!unit->mesh_inst->groups[0].anim)
 					{
 						unit->action = A_NONE;
 						unit->animation = ANI_STAND;
@@ -10375,7 +10448,7 @@ void Game::InterpolateUnits(float dt)
 				}
 				else
 				{
-					if(!unit->ani->groups[0].anim && !unit->ani->groups[1].anim)
+					if(!unit->mesh_inst->groups[0].anim && !unit->mesh_inst->groups[1].anim)
 					{
 						unit->action = A_NONE;
 						unit->animation = ANI_STAND;
@@ -10538,8 +10611,8 @@ bool Game::CheckMoveNet(Unit& unit, const Vec3& pos)
 	IgnoreObjects ignore = { 0 };
 	Unit* ignored[] = { &unit, nullptr };
 	const void* ignored_objects[2] = { nullptr, nullptr };
-	if(unit.useable)
-		ignored_objects[0] = unit.useable;
+	if(unit.usable)
+		ignored_objects[0] = unit.usable;
 	ignore.ignored_units = (const Unit**)ignored;
 	ignore.ignored_objects = ignored_objects;
 
@@ -10602,15 +10675,15 @@ void Game::ProcessLeftPlayers()
 			}
 			else
 			{
-				if(unit->useable)
-					unit->useable->user = nullptr;
+				if(unit->usable)
+					unit->usable->user = nullptr;
 				switch(unit->player->action)
 				{
 				case PlayerController::Action_LootChest:
 					{
 						// close chest
 						unit->player->action_chest->looted = false;
-						unit->player->action_chest->ani->Play(&unit->player->action_chest->ani->ani->anims[0],
+						unit->player->action_chest->mesh_inst->Play(&unit->player->action_chest->mesh_inst->mesh->anims[0],
 							PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
 						if(sound_volume)
 						{

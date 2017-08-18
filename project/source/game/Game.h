@@ -24,6 +24,7 @@
 #include "Mapa2.h"
 #include "Location.h"
 #include "Unit.h"
+#include "ResourceManager.h"
 
 enum TRAP_TYPE;
 
@@ -144,7 +145,7 @@ union BeforePlayerPtr
 	Chest* chest;
 	Door* door;
 	GroundItem* item;
-	Useable* useable;
+	Usable* usable;
 	void* any;
 };
 
@@ -368,7 +369,7 @@ struct ConfigVar
 	ConfigVar(cstring name, bool& _bool) : name(name), type(AnyVarType::Bool), ptr((AnyVar*)&_bool), have_new_value(false), need_save(false) {}
 };
 
-typedef std::map<Animesh*, TEX> ItemTextureMap;
+typedef std::map<Mesh*, TEX> ItemTextureMap;
 
 struct Game final : public Engine, public UnitEventHandler
 {
@@ -506,15 +507,13 @@ struct Game final : public Engine, public UnitEventHandler
 	//-----------------------------------------------------------------
 	// ZASOBY
 	//-----------------------------------------------------------------
-	Animesh* aHumanBase, *aHair[5], *aBeard[5], *aMustache[2], *aEyebrows;
-	Animesh* aBox, *aCylinder, *aSphere, *aCapsule;
-	Animesh* aArrow, *aSkybox, *aWorek, *aSkrzynia, *aKratka, *aNaDrzwi, *aNaDrzwi2, *aSchodyDol, *aSchodyGora, *aSchodyDol2, *aSpellball, *aPrzycisk, *aBeczka, *aDrzwi, *aDrzwi2;
-	VertexData* vdSchodyGora, *vdSchodyDol, *vdNaDrzwi;
+	Mesh* aHumanBase, *aHair[5], *aBeard[5], *aMustache[2], *aEyebrows;
+	Mesh* aBox, *aCylinder, *aSphere, *aCapsule;
+	Mesh* aArrow, *aSkybox, *aWorek, *aSkrzynia, *aKratka, *aNaDrzwi, *aNaDrzwi2, *aSchodyDol, *aSchodyGora, *aSchodyDol2, *aSpellball, *aPrzycisk, *aDrzwi, *aDrzwi2;
+	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
 	TEX tItemRegion, tMinimap, tChar, tSave;
-	TEX tCzern, tEmerytura, tPortal, tLightingLine, tKlasaCecha, tRip, tCelownik, tObwodkaBolu, tEquipped,
-		tDialogUp, tDialogDown, tBubble, tMiniunit, tMiniunit2, tSchodyDol, tSchodyGora, tIcoHaslo, tIcoZapis, tGotowy, tNieGotowy, tTrawa, tTrawa2, tTrawa3, tZiemia,
-		tDroga, tMiniSave, tMiniunit3, tMiniunit4, tMiniunit5, tMinibag, tMinibag2, tMiniportal, tPole, tWarning, tError;
-	TextureResourcePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
+	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tMiniSave, tWarning, tError;
+	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *eGui, *ePostFx, *eGlow, *eGrass;
 	D3DXHANDLE techAnim, techHair, techAnimDir, techHairDir, techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techTerrain,
@@ -529,23 +528,25 @@ struct Game final : public Engine, public UnitEventHandler
 	VB vbParticle;
 	SURFACE sChar, sSave, sItemRegion;
 	static cstring txGoldPlus, txQuestCompletedGold;
-	cstring txLoadGuiTextures,
-		txLoadTerrainTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadBuildings, txLoadTraps, txLoadSpells, txLoadObjects, txLoadUnits,
-		txLoadItems, txLoadSounds, txLoadMusic, txGenerateWorld;
-	// pre
-	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings, txLoadingRequires, txLoadingShaders,
-		txLoadingDialogs, txLoadingLanguageFiles;
+	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
+	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;
+	
+	//-----------------------------------------------------------------
+	// Localized texts
+	//-----------------------------------------------------------------
+	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings, txLoadingRequires,
+		txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets;
 	cstring txAiNoHpPot[2], txAiJoinTour[4], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],
 		txAiHeroOutsideText[2], txAiDrunkMageText[3], txAiDrunkText[5], txAiDrunkmanText[4];
 	cstring txRandomEncounter, txCamp;
 	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics, txRecreatingObjects, txGeneratingMinimap,
-		txLoadingComplete, txWaitingForPlayers, txGeneratingTerrain;
+		txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txContestNoWinner, txContestStart, txContestTalk[14], txContestWin, txContestWinNews, txContestDraw, txContestPrize, txContestNoPeople;
 	cstring txTut[10], txTutNote, txTutLoc, txTour[23], txTutPlay, txTutTick;
-	cstring txCantSaveGame, txSaveFailed, txSavedGameN, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading, txCantSaveNow, txCantLoadGame,
-		txLoadSignature, txLoadVersion, txLoadSaveVersionNew, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError, txLoadOpenError;
+	cstring txCantSaveGame, txSaveFailed, txSavedGameN, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading, txCantSaveNow,
+		txCantLoadGame, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError, txLoadErrorGeneric, txLoadOpenError;
 	cstring txPvpRefuse, txSsFailed, txSsDone, txWin, txWinMp, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor,
 		txNeedKey, txLevelUp, txLevelDown, txLocationText, txLocationTextMap, txRegeneratingLevel, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed,
 		txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedLadle, txNeedPickaxe, txNeedHammer,
@@ -583,6 +584,8 @@ public:
 	ItemTextureMap item_texture_map;
 	uint load_errors, load_warnings;
 	TEX missing_texture;
+	vector<std::pair<Unit*, bool>> units_mesh_load;
+	std::set<const Item*> items_load;
 
 	//---------------------------------
 	// GUI / HANDEL
@@ -616,7 +619,7 @@ public:
 
 	//---------------------------------
 	// KONSOLA I KOMENDY
-	bool have_console, console_open, inactive_update, nosound, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander,
+	bool have_console, inactive_update, nosound, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander,
 		nomusic;
 	string cfg_file;
 	vector<ConsoleCommand> cmds;
@@ -640,7 +643,7 @@ public:
 	int death_screen, dungeon_level;
 	bool death_solo;
 	float death_fade, game_speed;
-	vector<AnimeshInstance*> bow_instances;
+	vector<MeshInstance*> bow_instances;
 	Pak* pak;
 	Unit* selected_unit, *selected_target;
 	vector<AIController*> ais;
@@ -659,7 +662,7 @@ public:
 	CityGenerator* gen;
 	uint crc_items, crc_units, crc_dialogs, crc_spells;
 
-	AnimeshInstance* GetBowInstance(Animesh* mesh);
+	MeshInstance* GetBowInstance(Mesh* mesh);
 
 	//---------------------------------
 	// SCREENSHOT
@@ -701,7 +704,7 @@ public:
 
 	//---------------------------------
 	// WCZYTYWANIE
-	float loading_dt;
+	float loading_dt, loading_cap;
 	Timer loading_t;
 	int loading_steps, loading_index;
 	DWORD clear_color2;
@@ -870,7 +873,7 @@ public:
 	int track_id;
 	MusicType GetLocationMusic();
 	uint LoadMusicDatafile(uint& errors);
-	void LoadMusic(MusicType type, bool new_load_screen = true);
+	void LoadMusic(MusicType type, bool new_load_screen = true, bool task = false);
 	void SetMusic();
 	void SetMusic(MusicType type);
 	void SetupTracks();
@@ -996,6 +999,22 @@ public:
 		else
 			return true;
 	}
+	bool KeyPressedReleaseSpecial(GAME_KEYS gk, bool special)
+	{
+		if(special)
+		{
+			GameKey& k = GKey[gk];
+			for(int i = 0; i < 2; ++i)
+			{
+				if(k.key[i] >= VK_F1 && k.key[i] <= VK_F12)
+				{
+					if(Key.PressedRelease(k.key[i]))
+						return true;
+				}
+			}
+		}
+		return KeyPressedReleaseAllowed(gk);
+	}
 	// przedmioty w czasie grabienia itp s¹ tu przechowywane indeksy
 	// ujemne wartoœci odnosz¹ siê do slotów (SLOT_WEAPON = -SLOT_WEAPON-1), pozytywne do zwyk³ych przedmiotów
 	vector<int> tmp_inventory[2];
@@ -1009,8 +1028,7 @@ public:
 	void ExitToMenu();
 	void DoExitToMenu();
 	void GenerateImage(TaskData& task_data);
-	void SetupTrap(TaskData& task_data);
-	void SetupObject(TaskData& task_data);
+	void SetupObject(Obj& obj);
 	Unit* GetFollowTarget();
 	void SetupCamera(float dt);
 	void LoadShaders();
@@ -1051,8 +1069,10 @@ public:
 	void UpdateGameDialog(DialogContext& ctx, float dt);
 	void GenerateStockItems();
 	void GenerateMerchantItems(vector<ItemSlot>& items, int price_limit);
-	void ApplyToTexturePack(TexturePack& tp, cstring diffuse, cstring normal, cstring specular);
+	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
+	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
+	void SetDungeonParamsToMeshes();
 	void MoveUnit(Unit& unit, bool warped = false);
 	bool CollideWithStairs(const CollisionObject& co, const Vec3& pos, float radius) const;
 	bool CollideWithStairsRect(const CollisionObject& co, const Box2d& box) const;
@@ -1067,7 +1087,7 @@ public:
 	// nie dzia³a dla budynków bo nie uwzglêdnia obiektów
 	bool CanSee(const Vec3& v1, const Vec3& v2);
 	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Vec3& hitpoint);
-	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Animesh::Point& hitbox, Animesh::Point* bone, Vec3& hitpoint);
+	bool CheckForHit(LevelContext& ctx, Unit& unit, Unit*& hitted, Mesh::Point& hitbox, Mesh::Point* bone, Vec3& hitpoint);
 	void UpdateParticles(LevelContext& ctx, float dt);
 	// wykonuje atak postaci
 	enum ATTACK_RESULT
@@ -1088,7 +1108,7 @@ public:
 	Int2 RandomNearTile(const Int2& tile);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
-	int FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other, const void* useable = nullptr, bool is_end_point = false);
+	int FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other, const void* usable = nullptr, bool is_end_point = false);
 	bool DoShieldSmash(LevelContext& ctx, Unit& attacker);
 	Vec4 GetFogColor();
 	Vec4 GetFogParams();
@@ -1135,7 +1155,6 @@ public:
 	void GenerateCaveUnits();
 	void SaveGame(HANDLE file);
 	void LoadGame(HANDLE file);
-	void SaveGame2(StreamWriter& f);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelContext& ctx, int& err_count);
 	void CastSpell(LevelContext& ctx, Unit& unit);
@@ -1144,6 +1163,7 @@ public:
 	void UpdateTraps(LevelContext& ctx, float dt);
 	// zwraca tymczasowy wskaŸnik na stworzon¹ pu³apkê lub nullptr (mo¿e siê nie udaæ tylko dla ARROW i POISON)
 	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
+	void PreloadTraps(vector<Trap*>& traps);
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);
@@ -1153,10 +1173,10 @@ public:
 	void UpdateAttachedSounds(float dt);
 	void BuildRefidTables();
 	bool SaveGameSlot(int slot, cstring text);
-	bool LoadGameSlot(int slot);
+	void LoadGameSlot(int slot);
 	void LoadSaveSlots();
 	void Quicksave(bool from_console);
-	void Quickload(bool from_console);
+	bool Quickload(bool from_console);
 	void ClearGameVarsOnNewGameOrLoad();
 	void ClearGameVarsOnNewGame();
 	void ClearGameVarsOnLoad();
@@ -1188,7 +1208,7 @@ public:
 	void GenerateDungeonObjects2();
 	SOUND GetItemSound(const Item* item);
 	cstring GetCurrentLocationText();
-	void Unit_StopUsingUseable(LevelContext& ctx, Unit& unit, bool send = true);
+	void Unit_StopUsingUsable(LevelContext& ctx, Unit& unit, bool send = true);
 	void OnReenterLevel(LevelContext& ctx);
 	void EnterLevel(bool first, bool reenter, bool from_lower, int from_portal, bool from_outside);
 	void LeaveLevel(bool clear = false);
@@ -1234,7 +1254,17 @@ public:
 	void PlayHitSound(MATERIAL_TYPE mat_bron, MATERIAL_TYPE mat_cialo, const Vec3& hitpoint, float range, bool dmg);
 	// wczytywanie
 	void LoadingStart(int steps);
-	void LoadingStep(cstring text = nullptr);
+	void LoadingStep(cstring text = nullptr, int end = 0);
+	void LoadResources(cstring text, bool worldmap);
+	bool RequireLoadingResources(Location* loc);
+	void PreloadResources(bool worldmap);
+	void PreloadUsables(vector<Usable*>& usable);
+	void PreloadUnits(vector<Unit*>& units);
+	void PreloadItems(vector<ItemSlot>& items);
+	void PreloadItem(const Item* item);
+	void VerifyResources();
+	void VerifyUnitResources(Unit* unit);
+	void VerifyItemResources(const Item* item);
 	//
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();
@@ -1322,7 +1352,7 @@ public:
 	void WarpToInn(Unit& unit);
 	void PayCredit(PlayerController* player, int ile);
 	void CreateSaveImage(cstring filename);
-	void PlayerUseUseable(Useable* u, bool after_action);
+	void PlayerUseUsable(Usable* u, bool after_action);
 	SOUND GetTalkSound(Unit& u);
 	void UnitTalk(Unit& u, cstring text);
 	void OnEnterLocation();
@@ -1344,9 +1374,9 @@ public:
 	{
 		return FindObjectByIdLocal(FindObject(id));
 	}
-	Useable* FindUseableByIdLocal(int type)
+	Usable* FindUsableByIdLocal(int type)
 	{
-		return local_ctx.FindUseableById(type);
+		return local_ctx.FindUsableById(type);
 	}
 	Unit* GetRandomArenaHero();
 	cstring GetRandomIdleText(Unit& u);
@@ -1542,7 +1572,7 @@ public:
 	BitStream net_stream, net_stream2;
 	bool change_title_a;
 	bool level_generated;
-	int netid_counter, item_netid_counter, chest_netid_counter, useable_netid_counter, skip_id_counter, trap_netid_counter, door_netid_counter, electro_netid_counter;
+	int netid_counter, item_netid_counter, chest_netid_counter, usable_netid_counter, skip_id_counter, trap_netid_counter, door_netid_counter, electro_netid_counter;
 	vector<NetChange> net_changes;
 	vector<NetChangePlayer> net_changes_player;
 	vector<string*> net_talk;
@@ -1570,9 +1600,8 @@ public:
 	bool godmode, noclip, invisible;
 	vector<Int2> minimap_reveal_mp;
 	bool boss_level_mp; // u¿ywane u klienta zamiast boss_levels
-	bool mp_load;
+	bool mp_load, mp_load_worldmap, mp_use_interp;
 	float mp_interp;
-	bool mp_use_interp;
 	ObjectPool<EntityInterpolator> interpolators;
 	float interpolate_timer;
 	int mp_port;
@@ -1774,11 +1803,11 @@ public:
 	// szuka questowych przedmiotów u klienta
 	const Item* FindQuestItemClient(cstring id, int refid) const;
 	//void ConvertPlayerToAI(PlayerInfo& info);
-	Useable* FindUseable(int netid);
+	Usable* FindUsable(int netid);
 	// read item id and return it (can be quest item or gold), results: -2 read error, -1 not found, 0 empty, 1 ok
 	int ReadItemAndFind(BitStream& stream, const Item*& item) const;
 	bool ReadItemList(BitStream& stream, vector<ItemSlot>& items);
-	bool ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items);
+	bool ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items, bool skip = false);
 	Door* FindDoor(int netid);
 	Trap* FindTrap(int netid);
 	bool RemoveTrap(int netid);
@@ -1835,12 +1864,12 @@ public:
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void GenerateDungeon(Location& loc);
 	void SpawnCityPhysics();
-	// zwraca Object lub Useable lub Chest!!!, w przypadku budynku rot musi byæ równe 0, PI/2, PI, 3*2/PI (w przeciwnym wypadku bêdzie 0)
+	// zwraca Object lub Usable lub Chest!!!, w przypadku budynku rot musi byæ równe 0, PI/2, PI, 3*2/PI (w przeciwnym wypadku bêdzie 0)
 	Object* SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float rot, float scale = 1.f, Vec3* out_point = nullptr, int variant = -1);
 	void RespawnBuildingPhysics();
 	void SpawnCityObjects();
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
-	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Animesh* mesh, Animesh* inside_mesh, float rot, int roti,
+	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, int roti,
 		const Vec3& shift, Building* type, CityBuilding* building, bool recreate = false, Vec3* out_point = nullptr);
 	void GenerateForest(Location& loc);
 	void SpawnForestObjects(int road_dir = -1); //-1 brak, 0 -, 1 |

@@ -191,7 +191,7 @@ struct Room
 	}
 
 	bool IsCorridor() const { return target == RoomTarget::Corridor; }
-	bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsUp; }
+	bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsDown; }
 
 	void Save(HANDLE file);
 	void Load(HANDLE file);

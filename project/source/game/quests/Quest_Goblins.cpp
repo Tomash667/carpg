@@ -70,9 +70,9 @@ void DodajStraznikow()
 	assert(u);
 
 	// szukaj tronu
-	Useable* use = nullptr;
+	Usable* use = nullptr;
 
-	for(vector<Useable*>::iterator it = game.local_ctx.useables->begin(), end = game.local_ctx.useables->end(); it != end; ++it)
+	for(vector<Usable*>::iterator it = game.local_ctx.usables->begin(), end = game.local_ctx.usables->end(); it != end; ++it)
 	{
 		if((*it)->type == U_THRONE)
 		{

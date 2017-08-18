@@ -16,9 +16,6 @@ struct Matrix;
 struct Quat;
 struct Plane;
 
-// for ray-mesh collision
-#include "VertexData.h"
-
 //-----------------------------------------------------------------------------
 // Random numbers
 //-----------------------------------------------------------------------------
@@ -465,7 +462,7 @@ struct Rect
 	Rect(const Int2& p1, const Int2& p2);
 	Rect(const Rect& box);
 	explicit Rect(const Box2d& box);
-	Rect(const Box2d& box, const Int2& pad);;
+	Rect(const Box2d& box, const Int2& pad);
 
 	// Comparison operators
 	bool operator == (const Rect& r) const;
@@ -1294,9 +1291,9 @@ struct Oob
 // KOLIZJE
 //-----------------------------------------------------------------------------
 // promieñ - AABOX
-bool RayToBox(const Vec3 &RayOrig, const Vec3 &RayDir, const Box &Box, float *OutT);
+bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box& box, float* out_t);
 // promieñ - p³aszczyzna
-bool RayToPlane(const Vec3 &RayOrig, const Vec3 &RayDir, const D3DXPLANE &Plane, float *OutT);
+bool RayToPlane(const Vec3& ray_pos, const Vec3& ray_dir, const Plane& plane, float* out_t);
 // promieñ - sfera
 bool RayToSphere(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& center, float radius, float& dist);
 // promieñ - trójk¹t
@@ -1346,7 +1343,6 @@ float DistanceRectangleToPoint(const Vec2& pos, const Vec2& size, const Vec2& pt
 // x0,y0 - point
 float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float y2);
 float GetClosestPointOnLineSegment(const Vec2& A, const Vec2& B, const Vec2& P, Vec2& result);
-bool RayToMesh(const Vec3& _ray_pos, const Vec3& _ray_dir, const Vec3& _obj_pos, float _obj_rot, VertexData* _vd, float& _dist);
 
 //-----------------------------------------------------------------------------
 // POD types

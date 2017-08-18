@@ -61,7 +61,7 @@ float3 normal
 float2 tex
 
 =====================================================================================================
-CollisionObject user pointer wskazuje na Unit*/Useable*/Object*
+CollisionObject user pointer wskazuje na Unit*/Usable*/Object*
 
 =====================================================================================================
 RENDEROWANIE / RENDER TARGETS (MS = multisampling)
@@ -80,13 +80,13 @@ RENDEROWANIE / RENDER TARGETS (MS = multisampling)
 	1) Wyrenderuj normalnie scene
 	2) RenderTarget = sPostEffect[0]
 	3) Renderowanie glow
-	4) StrechRect sPostEffect[0] -> tPostEffect[0]
+	4) StretchRect sPostEffect[0] -> tPostEffect[0]
 	5) RenderTarget = sPostEffect[1], Source = tPostEffect[0]
 	6) BlurX
-	7) StrechRect sPostEffect[1] -> tPostEffect[0]
+	7) StretchRect sPostEffect[1] -> tPostEffect[0]
 	8) RenderTarget = sPostEffect[0], Source = tPostEffect[0]
 	9) BlurY
-	10) StrechRect sPostEffect[0] -> tPostEffect[0]
+	10) StretchRect sPostEffect[0] -> tPostEffect[0]
 	11) RenderTarget = Default, Source = tPostEffect[0]
 	12) Wyrenderowanie glow na normalnej scenie z blendingiem
 4. Post effect
@@ -100,7 +100,7 @@ RENDEROWANIE / RENDER TARGETS (MS = multisampling)
 	5) Przy ostatnim przebiegu
 	6) RenderTarget = Default, Source = tPostEffect[?]
 	7) Wyrenderuj post effect
-5) Dla MS wygl¹da podobnie tylko ¿e RenderTarget = sPostEffect[?] i trzeba u¿ywaæ StrechRect
+5) Dla MS wygl¹da podobnie tylko ¿e RenderTarget = sPostEffect[?] i trzeba u¿ywaæ StretchRect
 
 
 =====================================================================================================
@@ -120,16 +120,6 @@ O-----> +X
 |
 |
 |/ -Z
-
-
-=====================================================================================================
-EKSPORTER
-+ ostrzeªenie o edit mode
-+ ostrzeªenie o translate, scale, rot ? albo ustawianie
-+ output w cfg nie dzia-a
-+ naprawianie ujemnej skali w empty
-+ instancing obiektów (okna w budynkach)
-+ poprawne eksportowanie animacji gdy nie jest ustawione na base
 
 
 =====================================================================================================
@@ -167,19 +157,31 @@ KIERUNEK ZWRACANY PRZEZ angle()
 
 		   
 =====================================================================================================
------------------------------------------------
-  SERWER             |    KLIENT
----------------------+-------------------------
- ID_WORLD_DATA       |
-                     | ID_READY
- ID_CHANGE_LEVEL     |
-                     | ID_SND_RECEIPT_ACKED
- ID_LEVEL_DATA       |
-                     | ID_READY
- ID_PLAYER_DATA2     |
-                     | ID_READY
- ID_START            |
-
+New multiplayer game
+* Enter new location
+------------------------------------------------------
+  SERVER					|    CLIENT
+----------------------------+-------------------------
+ ID_STARTUP ->				|
+							| LoadingStart(9/4) (second if starting on worldmap)
+ ID_WORLD_DATA ->			|
+							| Step, ReadWorldData, Step (net_state = 0)
+							| <- ID_READY
+ ID_PLAYER_START_DATA ->	|
+							| Step, ReadPlayerData, Step/LoadResources (second if starting on worldmap; net_state = 1)
+							| <- ID_READY
+*ID_CHANGE_LEVEL ->			|
+ or ID_START (worldmap) ----+--------------------------------------> DONE
+							| Step
+							| <- ID_SND_RECEIPT_ACKED
+ ID_LEVEL_DATA ->			|
+							| Step, ReadLevelData, Step
+							| <- ID_READY
+ ID_PLAYER_DATA	->			|
+							| Step, ReadPlayerData, LoadResources
+							| <- ID_READY
+ ID_START ->				|
+                            | DONE
  
 =====================================================================================================
 odpoczynek u klienta

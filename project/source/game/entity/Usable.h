@@ -1,26 +1,26 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "BaseUseable.h"
+#include "BaseUsable.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
-struct Useable;
+struct Usable;
 
 //-----------------------------------------------------------------------------
-struct UseableRequest
+struct UsableRequest
 {
-	Useable** useable;
+	Usable** usable;
 	int refid;
 	Unit* user;
 
-	UseableRequest(Useable** useable, int refid, Unit* user) : useable(useable), refid(refid), user(user)
+	UsableRequest(Usable** usable, int refid, Unit* user) : usable(usable), refid(refid), user(user)
 	{
 	}
 };
 
 //-----------------------------------------------------------------------------
-struct Useable
+struct Usable
 {
 	Vec3 pos;
 	float rot;
@@ -29,14 +29,14 @@ struct Useable
 
 	static const int MIN_SIZE = 22;
 
-	Useable() : variant(-1) {}
+	Usable() : variant(-1) {}
 
 	void Save(HANDLE file, bool local);
 	void Load(HANDLE file, bool local);
 	void Write(BitStream& stream) const;
 	bool Read(BitStream& stream);
 
-	static Useable* GetByRefid(int _refid)
+	static Usable* GetByRefid(int _refid)
 	{
 		if(_refid == -1 || _refid >= (int)refid_table.size())
 			return nullptr;
@@ -44,17 +44,17 @@ struct Useable
 			return refid_table[_refid];
 	}
 
-	static void AddRequest(Useable** useable, int refid, Unit* user)
+	static void AddRequest(Usable** usable, int refid, Unit* user)
 	{
-		assert(useable && refid != -1 && user);
-		refid_request.push_back(UseableRequest(useable, refid, user));
+		assert(usable && refid != -1 && user);
+		refid_request.push_back(UsableRequest(usable, refid, user));
 	}
 
-	static void AddRefid(Useable* useable)
+	static void AddRefid(Usable* usable)
 	{
-		assert(useable);
-		useable->refid = (int)refid_table.size();
-		refid_table.push_back(useable);
+		assert(usable);
+		usable->refid = (int)refid_table.size();
+		refid_table.push_back(usable);
 	}
 
 	BaseUsable* GetBase() const
@@ -66,8 +66,8 @@ struct Useable
 		return GetBase()->obj;
 	}
 
-	Animesh* GetMesh() const;
+	Mesh* GetMesh() const;
 
-	static vector<Useable*> refid_table;
-	static vector<UseableRequest> refid_request;
+	static vector<Usable*> refid_table;
+	static vector<UsableRequest> refid_request;
 };

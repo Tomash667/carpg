@@ -12,6 +12,8 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 
 	void LoadData();
+	void Setup(float min_progress, float max_progress, int steps, cstring str);
+	void Tick(cstring str);
 
 	void SetProgress(float _progress)
 	{
@@ -45,6 +47,7 @@ public:
 
 private:
 	TEX tBackground, tLoadbar, tLoadbarBg;
-	float progress;
+	float progress, min_progress, max_progress;
 	string text;
+	int step, steps;
 };

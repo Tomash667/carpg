@@ -14,60 +14,59 @@ enum class ResourceType
 	Unknown,
 	Texture,
 	Mesh,
-	Sound
+	VertexData,
+	SoundOrMusic
 };
 
 //-----------------------------------------------------------------------------
 const int INVALID_PAK = -1;
 
 //-----------------------------------------------------------------------------
-class BaseResource
+struct Resource
 {
-public:
 	string path;
 	cstring filename;
 	ResourceState state;
 	ResourceType type;
-	int subtype;
 	int pak_index;
 	uint pak_file_index;
 
+	virtual ~Resource()
+	{
+	}
 	bool IsFile() const { return pak_index == INVALID_PAK; }
 	bool IsLoaded() const { return state == ResourceState::Loaded; }
 };
 
 //-----------------------------------------------------------------------------
-template<typename T, ResourceType resType>
-class Resource : public BaseResource
+struct Texture : public Resource
 {
-public:
-	static const ResourceType Type = resType;
+	TEX tex;
 
-	T data;
+	Texture() : tex(nullptr)
+	{
+	}
 };
+typedef Texture* TexturePtr;
 
 //-----------------------------------------------------------------------------
-struct Animesh;
-typedef Animesh Mesh;
-struct VertexData;
+struct Sound : public Resource
+{
+	SOUND sound;
+	bool is_music;
 
-//-----------------------------------------------------------------------------
-typedef Resource<void*, ResourceType::Unknown> AnyResource;
-typedef Resource<Mesh*, ResourceType::Mesh> MeshResource;
-typedef Resource<SOUND, ResourceType::Sound> SoundResource;
-typedef Resource<TEX, ResourceType::Texture> TextureResource;
-
-//-----------------------------------------------------------------------------
-typedef MeshResource* MeshResourcePtr;
-typedef SoundResource* SoundResourcePtr;
-typedef TextureResource* TextureResourcePtr;
+	Sound() : sound(nullptr), is_music(false)
+	{
+	}
+};
+typedef Sound* SoundPtr;
 
 //-----------------------------------------------------------------------------
 // Texture override data
 struct TexId
 {
 	string id;
-	TextureResource* tex;
+	TexturePtr tex;
 
 	explicit TexId(cstring _id) : tex(nullptr)
 	{
@@ -76,3 +75,7 @@ struct TexId
 	}
 	explicit TexId(const string& id) : id(id), tex(nullptr) {}
 };
+
+//-----------------------------------------------------------------------------
+typedef Mesh* MeshPtr;
+typedef VertexData* VertexDataPtr;

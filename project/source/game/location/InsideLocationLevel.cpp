@@ -12,7 +12,7 @@ InsideLocationLevel::~InsideLocationLevel()
 	DeleteElements(units);
 	DeleteElements(chests);
 	DeleteElements(doors);
-	DeleteElements(useables);
+	DeleteElements(usables);
 	DeleteElements(items);
 	DeleteElements(traps);
 }
@@ -201,9 +201,9 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 		(*it)->Save(file);
 
 	// u¿ywalne
-	ile = useables.size();
+	ile = usables.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
+	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
 	// krew
@@ -291,11 +291,11 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 
 	// u¿ywalne
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	useables.resize(ile);
-	for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
+	usables.resize(ile);
+	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 	{
-		*it = new Useable;
-		Useable::AddRefid(*it);
+		*it = new Usable;
+		Usable::AddRefid(*it);
 		(*it)->Load(file, local);
 	}
 
@@ -336,9 +336,9 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	// konwersja krzese³ w sto³ki
 	if(LOAD_VERSION < V_0_2_12)
 	{
-		for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
+		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		{
-			Useable& u = **it;
+			Usable& u = **it;
 			if(u.type == U_CHAIR)
 				u.type = U_STOOL;
 		}
@@ -347,9 +347,9 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	// konwersja ³awy w obrócon¹ ³awê i ustawienie wariantu
 	if(LOAD_VERSION < V_0_2_20)
 	{
-		for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
+		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		{
-			Useable& u = **it;
+			Usable& u = **it;
 			if(u.type == U_BENCH)
 			{
 				u.type = U_BENCH_ROT;
@@ -415,10 +415,10 @@ void InsideLocationLevel::BuildRefidTable()
 		Unit::refid_table.push_back(*it);
 	}
 
-	for(vector<Useable*>::iterator it = useables.begin(), end = useables.end(); it != end; ++it)
+	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 	{
-		(*it)->refid = (int)Useable::refid_table.size();
-		Useable::refid_table.push_back(*it);
+		(*it)->refid = (int)Usable::refid_table.size();
+		Usable::refid_table.push_back(*it);
 	}
 }
 

@@ -99,15 +99,6 @@ enum GamePacket : byte
 	*/
 	ID_SERVER_CLOSE,
 
-	/* trwa uruchamianie serwera, size:2
-	byte - id
-	byte - pozosta≥y czas
-	*/
-	ID_STARTUP,
-
-	/* przerwano odliczanie startu, size:1 */
-	ID_END_STARTUP,
-
 	/* send to server when changed class
 	byte - id
 	CharacterData
@@ -119,70 +110,72 @@ enum GamePacket : byte
 	*/
 	ID_PICK_CHARACTER,
 
-	/* info about current server task
+	/* Server startup timer
+	byte - left seconds
+	*/
+	ID_TIMER,
+
+	/* Server startup canceled
+	*/
+	ID_END_TIMER,
+
+	/* Server starting
+	bool - start on worldmap
+	*/
+	ID_STARTUP,
+
+	/* Info about current server task
 	byte - id
 	byte - state (0-generating world, 1-sending world, 2-waiting for players)
 	*/
 	ID_STATE,
 
-	/* dane úwiata gry
-	byte - id
-	byte - liczba lokacji
-	{
-		byte - typ
-		[jeúli insidelocation]
-		byte - poziomy
-		[jeúli miasto/wioska]
-		{
-			byte - citizens
-			word - citizens_world
-		}
-		[jeúli wioska]
-		{
-			byte - budynek1
-			byte - budynek2
-		}
-		byte - stan
-		Vec2 - pozycja
-		string1 - nazwa
-	}
-	byte - startowa lokacja
+	/* World data sent to all players
+	PrepareWorldData
+	ReadWorldData
+	Client repond with ID_READY
 	*/
 	ID_WORLD_DATA,
 
+	/* One time send data per player
+	WritePlayerStartData
+	ReadPlayerStartData
+	Client repond with ID_READY
+	*/
+	ID_PLAYER_START_DATA,
+
+	/* Sent by clients after loading data to inform server
+	byte - action id
+	*/
 	ID_READY,
 
-	/* trwa zmiana poziomu na inny, klient odsy≥a ID_
-	byte - id
-	[SERWER]
-	{
-		byte - id lokacji
-		byte - poziom podziemi
-	}
-	[KLIENT]
-	byte - czy 1 wizyta [0-nie, 1-tak]
+	/* Info about changing location level
+	byte - location id
+	byte - dungeon level
+	Client send ack response
 	*/
 	ID_CHANGE_LEVEL,
 
-	/*
+	/* Level data sent to client
 	byte - id
+	PrepareLevelData
+	ReadLevelData
 	*/
 	ID_LEVEL_DATA,
 
-	ID_PLAYER_DATA2,
+	/* Player data sent per player
+	SendPlayerData
+	ReadPlayerData
+	*/
+	ID_PLAYER_DATA,
+
+	/* Sent to all players when everyone is loaded to start level
+	*/
 	ID_START,
+
 	ID_CONTROL,
 	ID_CHANGES,
-	ID_PLAYER_UPDATE,
-
-	// dane gracza wysy≥ane na poczπtku gry [WritePlayerStartData/ReadPlayerStartData]
-	ID_PLAYER_START_DATA,
-
-	// trwa zapisywanie gry
-	//ID_SAVING,
-
-	// przejdü do gry na mapie úwiata
-	ID_START_AT_WORLDMAP
+	ID_PLAYER_UPDATE
 };
 
 //-----------------------------------------------------------------------------
@@ -259,7 +252,7 @@ struct NetChange
 		CHEAT_MODSTAT, // player used cheat modstat [byte(id)-stat id, bool(ile)-is skill, char(i)-value]
 		CHEAT_REVEAL, // player used cheat 'reveal' []
 		CHEAT_GOTO_MAP, // player used cheat 'goto_map' []
-		USE_USEABLE, // unit uses useable object SERVER[int(netid)-unit, int(id)-useable netid, byte(ile)-state(0-stop,1-start,2-start special)] / CLIENT[int(id)-useable netid, byte(ile)-state(0-stop,1-start)]
+		USE_USEABLE, // unit uses usable object SERVER[int(netid)-unit, int(id)-usable netid, byte(ile)-state(0-stop,1-start,2-start special)] / CLIENT[int(id)-usable netid, byte(ile)-state(0-stop,1-start)]
 		STAND_UP, // unit stands up SERVER[int(netid)-unit] / CLIENT[]
 		GAME_OVER, // game over []
 		RECRUIT_NPC, // recruit npc to team [int(netid)-unit, auto:bool-is free]
@@ -325,7 +318,7 @@ struct NetChange
 		CHEAT_FALL, // player used cheat 'fall' [int(netid)-unit]
 		REMOVE_USED_ITEM, // remove used item from unit hand [int(netid)-unit]
 		GAME_STATS, // game stats showed at end of game [auto:int-kills]
-		USEABLE_SOUND, // play useable object sound for unit [int(netid)-unit]
+		USEABLE_SOUND, // play usable object sound for unit [int(netid)-unit]
 		YELL, // player yell to move ai []
 		ACADEMY_TEXT, // show when trying to enter academy []
 		BREAK_ACTION, // break unit action [int(netid)-unit]
@@ -379,7 +372,7 @@ struct NetChangePlayer
 		SET_FROZEN, // change player frozen state [byte(id)-state]
 		REMOVE_QUEST_ITEM, // remove quest item from inventory [int(id)-quest refid]
 		DEVMODE, // change devmode for player [bool(id)-allowed]
-		USE_USEABLE, // someone else is using useable []
+		USE_USEABLE, // someone else is using usable []
 		IS_BETTER_ITEM, // response to is IS_BETTER_ITEM (bool(id)-is better)
 		PVP, // question about pvp [byte(id)-player id]
 		ADD_ITEMS, // add multiple same items to inventory [int(id)-team count, int(ile)-count, Item(item)]

@@ -318,7 +318,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 9) Command line
 Command line switches are used for exe shortcut or from window shell.
 -config file.cfg - use this config file
--consola - open windows console
+-console - open windows console
 -delay-1 - start delay for other game instance
 -delay-2 - wait for other game instance to finish loading
 -fullscreen - run in fullscreen

@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Animesh.h"
+#include "MeshInstance.h"
 
 //-----------------------------------------------------------------------------
 struct Blood;
@@ -32,30 +32,30 @@ struct SceneNode
 	Matrix mat;
 	union
 	{
-		Animesh* mesh;
-		AnimeshInstance* ani;
+		Mesh* mesh;
+		MeshInstance* mesh_inst;
 	};
-	AnimeshInstance* parent_ani;
+	MeshInstance* parent_mesh_inst;
 	int flags, lights, subs;
 	const TexId* tex_override;
 	Vec4 tint;
 	bool billboard;
 
-	const Animesh& GetMesh() const
+	const Mesh& GetMesh() const
 	{
-		if(!IS_SET(flags, F_ANIMATED) || parent_ani)
+		if(!IS_SET(flags, F_ANIMATED) || parent_mesh_inst)
 			return *mesh;
 		else
-			return *ani->ani;
+			return *mesh_inst->mesh;
 	}
 
-	const AnimeshInstance& GetAnimesh() const
+	const MeshInstance& GetMeshInstance() const
 	{
 		assert(IS_SET(flags, F_ANIMATED));
-		if(!parent_ani)
-			return *ani;
+		if(!parent_mesh_inst)
+			return *mesh_inst;
 		else
-			return *parent_ani;
+			return *parent_mesh_inst;
 	}
 };
 
@@ -88,7 +88,7 @@ struct GlowNode
 	enum Type
 	{
 		Item,
-		Useable,
+		Usable,
 		Unit,
 		Door,
 		Chest
@@ -130,7 +130,7 @@ struct Lights
 //-----------------------------------------------------------------------------
 struct TexturePack
 {
-	TextureResourcePtr diffuse, normal, specular;
+	TexturePtr diffuse, normal, specular;
 
 	int GetIndex() const
 	{

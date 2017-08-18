@@ -17,7 +17,7 @@ void Door::Save(HANDLE file, bool local)
 	WriteFile(file, &door2, sizeof(door2), &tmp, nullptr);
 
 	if(local)
-		ani->Save(file);
+		mesh_inst->Save(file);
 }
 
 //=================================================================================================
@@ -36,8 +36,8 @@ void Door::Load(HANDLE file, bool local)
 	{
 		Game& game = Game::Get();
 
-		ani = new AnimeshInstance(door2 ? game.aDrzwi2 : game.aDrzwi);
-		ani->Load(file);
+		mesh_inst = new MeshInstance(door2 ? game.aDrzwi2 : game.aDrzwi);
+		mesh_inst->Load(file);
 
 		phy = new btCollisionObject;
 		phy->setCollisionShape(game.shape_door);
@@ -53,9 +53,9 @@ void Door::Load(HANDLE file, bool local)
 		{
 			btVector3& poss = phy->getWorldTransform().getOrigin();
 			poss.setY(poss.y() - 100.f);
-			ani->SetToEnd(ani->ani->anims[0].name.c_str());
+			mesh_inst->SetToEnd(mesh_inst->mesh->anims[0].name.c_str());
 		}
 	}
 	else
-		ani = nullptr;
+		mesh_inst = nullptr;
 }

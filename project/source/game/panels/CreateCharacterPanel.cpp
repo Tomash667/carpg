@@ -271,7 +271,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 					{
 						mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(float(flow_size.x - 4) / 256, 17.f / 32), nullptr, 0.f, &Vec2(r.LeftTop()));
 						part.Right() = int(fi.part * 256);
-						GUI.DrawSprite2(game->tKlasaCecha, mat, &part, &rect, WHITE);
+						GUI.DrawSprite2(tKlasaCecha, mat, &part, &rect, WHITE);
 					}
 					r.Bottom() = r.Top() + VALUE_H;
 					if(!GUI.DrawText(GUI.default_font, item_text, DT_SINGLELINE, BLACK, r, &rect))
@@ -564,8 +564,8 @@ void CreateCharacterPanel::Event(GuiEvent e)
 		case IdSize:
 			unit->human_data->height = Lerp(0.9f, 1.1f, float(slider[4].val) / 100);
 			slider[4].text = Format("%s %d/%d", txSize, slider[4].val, slider[4].maxv);
-			unit->human_data->ApplyScale(unit->ani->ani);
-			unit->ani->need_update = true;
+			unit->human_data->ApplyScale(unit->mesh_inst->mesh);
+			unit->mesh_inst->need_update = true;
 			break;
 		case IdRandomSet:
 			cc.Random(clas);
@@ -720,92 +720,92 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		{
 		case DA_ATAK:
 			unit->attack_id = unit->GetRandomAttack();
-			unit->ani->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO2 | PLAY_ONCE, 0);
-			unit->ani->groups[0].speed = unit->GetAttackSpeed();
+			unit->mesh_inst->Play(NAMES::ani_attacks[unit->attack_id], PLAY_PRIO2 | PLAY_ONCE, 0);
+			unit->mesh_inst->groups[0].speed = unit->GetAttackSpeed();
 			unit->animation_state = 0;
 			t = 100.f;
-			unit->ani->frame_end_info = false;
+			unit->mesh_inst->frame_end_info = false;
 			break;
 		case DA_BLOK:
-			unit->ani->Play(NAMES::ani_block, PLAY_PRIO2, 0);
-			unit->ani->groups[0].speed = 1.f;
+			unit->mesh_inst->Play(NAMES::ani_block, PLAY_PRIO2, 0);
+			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 1.f;
 			break;
 		case DA_BOJOWY:
-			unit->ani->Play(NAMES::ani_battle, PLAY_PRIO2, 0);
-			unit->ani->groups[0].speed = 1.f;
+			unit->mesh_inst->Play(NAMES::ani_battle, PLAY_PRIO2, 0);
+			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 1.f;
 			break;
 		case DA_IDZIE:
-			unit->ani->Play(NAMES::ani_move, PLAY_PRIO2, 0);
-			unit->ani->groups[0].speed = 1.f;
+			unit->mesh_inst->Play(NAMES::ani_move, PLAY_PRIO2, 0);
+			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 2.f;
 			break;
 		case DA_ROZGLADA:
-			unit->ani->Play("rozglada", PLAY_PRIO2 | PLAY_ONCE, 0);
-			unit->ani->groups[0].speed = 1.f;
+			unit->mesh_inst->Play("rozglada", PLAY_PRIO2 | PLAY_ONCE, 0);
+			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 100.f;
-			unit->ani->frame_end_info = false;
+			unit->mesh_inst->frame_end_info = false;
 			break;
 		case DA_SCHOWAJ_BRON:
-			unit->ani->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2 | PLAY_ONCE | PLAY_BACK, 0);
-			unit->ani->groups[1].speed = 1.f;
-			unit->ani->groups[0].speed = 1.f;
+			unit->mesh_inst->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2 | PLAY_ONCE | PLAY_BACK, 0);
+			unit->mesh_inst->groups[1].speed = 1.f;
+			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 100.f;
 			unit->animation_state = 0;
 			unit->weapon_state = WS_HIDING;
 			unit->weapon_taken = W_NONE;
 			unit->weapon_hiding = W_ONE_HANDED;
-			unit->ani->frame_end_info = false;
+			unit->mesh_inst->frame_end_info = false;
 			break;
 		case DA_SCHOWAJ_LUK:
-			unit->ani->Play(NAMES::ani_take_bow, PLAY_PRIO2 | PLAY_ONCE | PLAY_BACK, 0);
-			unit->ani->groups[1].speed = 1.f;
-			unit->ani->groups[0].speed = 1.f;
+			unit->mesh_inst->Play(NAMES::ani_take_bow, PLAY_PRIO2 | PLAY_ONCE | PLAY_BACK, 0);
+			unit->mesh_inst->groups[1].speed = 1.f;
+			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 100.f;
 			unit->animation_state = 0;
 			unit->weapon_state = WS_HIDING;
 			unit->weapon_taken = W_NONE;
 			unit->weapon_hiding = W_BOW;
-			unit->ani->frame_end_info = false;
+			unit->mesh_inst->frame_end_info = false;
 			break;
 		case DA_STOI:
-			unit->ani->Play(NAMES::ani_stand, PLAY_PRIO2, 0);
-			unit->ani->groups[0].speed = 1.f;
+			unit->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO2, 0);
+			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 2.f;
 			break;
 		case DA_STRZAL:
-			unit->ani->Play(NAMES::ani_shoot, PLAY_PRIO2 | PLAY_ONCE, 0);
-			unit->ani->groups[0].speed = unit->GetBowAttackSpeed();
+			unit->mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO2 | PLAY_ONCE, 0);
+			unit->mesh_inst->groups[0].speed = unit->GetBowAttackSpeed();
 			unit->animation_state = 0;
 			t = 100.f;
 			unit->bow_instance = game->GetBowInstance(unit->GetBow().mesh);
-			unit->bow_instance->Play(&unit->bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			unit->bow_instance->groups[0].speed = unit->ani->groups[0].speed;
-			unit->ani->frame_end_info = false;
+			unit->bow_instance->Play(&unit->bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+			unit->bow_instance->groups[0].speed = unit->mesh_inst->groups[0].speed;
+			unit->mesh_inst->frame_end_info = false;
 			unit->action = A_SHOOT;
 			break;
 		case DA_WYJMIJ_BRON:
-			unit->ani->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2 | PLAY_ONCE, 0);
-			unit->ani->groups[1].speed = 1.f;
-			unit->ani->groups[0].speed = 1.f;
+			unit->mesh_inst->Play(unit->GetTakeWeaponAnimation(true), PLAY_PRIO2 | PLAY_ONCE, 0);
+			unit->mesh_inst->groups[1].speed = 1.f;
+			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 100.f;
 			unit->animation_state = 0;
 			unit->weapon_state = WS_TAKING;
 			unit->weapon_taken = W_ONE_HANDED;
 			unit->weapon_hiding = W_NONE;
-			unit->ani->frame_end_info = false;
+			unit->mesh_inst->frame_end_info = false;
 			break;
 		case DA_WYJMIJ_LUK:
-			unit->ani->Play(NAMES::ani_take_bow, PLAY_PRIO2 | PLAY_ONCE, 0);
-			unit->ani->groups[1].speed = 1.f;
-			unit->ani->groups[0].speed = 1.f;
+			unit->mesh_inst->Play(NAMES::ani_take_bow, PLAY_PRIO2 | PLAY_ONCE, 0);
+			unit->mesh_inst->groups[1].speed = 1.f;
+			unit->mesh_inst->groups[0].speed = 1.f;
 			t = 100.f;
 			unit->animation_state = 0;
 			unit->weapon_state = WS_TAKING;
 			unit->weapon_taken = W_BOW;
 			unit->weapon_hiding = W_NONE;
-			unit->ani->frame_end_info = false;
+			unit->mesh_inst->frame_end_info = false;
 			break;
 		default:
 			assert(0);
@@ -816,9 +816,9 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 	switch(anim)
 	{
 	case DA_ATAK:
-		if(unit->ani->frame_end_info)
+		if(unit->mesh_inst->frame_end_info)
 		{
-			unit->ani->groups[0].speed = 1.f;
+			unit->mesh_inst->groups[0].speed = 1.f;
 			if(Rand() % 2 == 0)
 			{
 				anim = DA_ATAK;
@@ -830,9 +830,9 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		break;
 	case DA_SCHOWAJ_BRON:
 	case DA_SCHOWAJ_LUK:
-		if(unit->animation_state == 0 && (unit->ani->GetProgress() <= unit->data->frames->t[F_TAKE_WEAPON] || unit->ani->frame_end_info))
+		if(unit->animation_state == 0 && (unit->mesh_inst->GetProgress() <= unit->data->frames->t[F_TAKE_WEAPON] || unit->mesh_inst->frame_end_info))
 			unit->animation_state = 1;
-		if(unit->ani->frame_end_info)
+		if(unit->mesh_inst->frame_end_info)
 		{
 			unit->weapon_state = WS_HIDDEN;
 			unit->weapon_hiding = W_NONE;
@@ -841,17 +841,17 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		}
 		break;
 	case DA_STRZAL:
-		if(unit->ani->GetProgress() > 20.f / 40 && unit->animation_state < 2)
+		if(unit->mesh_inst->GetProgress() > 20.f / 40 && unit->animation_state < 2)
 			unit->animation_state = 2;
-		else if(unit->ani->GetProgress() > 35.f / 40)
+		else if(unit->mesh_inst->GetProgress() > 35.f / 40)
 		{
 			unit->animation_state = 3;
-			if(unit->ani->frame_end_info)
+			if(unit->mesh_inst->frame_end_info)
 			{
 				assert(unit->bow_instance);
 				game->bow_instances.push_back(unit->bow_instance);
 				unit->bow_instance = nullptr;
-				unit->ani->groups[0].speed = 1.f;
+				unit->mesh_inst->groups[0].speed = 1.f;
 				unit->action = A_NONE;
 				if(Rand() % 2 == 0)
 				{
@@ -863,29 +863,29 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 				break;
 			}
 		}
-		unit->bow_instance->groups[0].time = min(unit->ani->groups[0].time, unit->bow_instance->groups[0].anim->length);
+		unit->bow_instance->groups[0].time = min(unit->mesh_inst->groups[0].time, unit->bow_instance->groups[0].anim->length);
 		unit->bow_instance->need_update = true;
 		break;
 	case DA_WYJMIJ_BRON:
-		if(unit->animation_state == 0 && (unit->ani->GetProgress() >= unit->data->frames->t[F_TAKE_WEAPON] || unit->ani->frame_end_info))
+		if(unit->animation_state == 0 && (unit->mesh_inst->GetProgress() >= unit->data->frames->t[F_TAKE_WEAPON] || unit->mesh_inst->frame_end_info))
 			unit->animation_state = 1;
-		if(unit->ani->frame_end_info)
+		if(unit->mesh_inst->frame_end_info)
 		{
 			unit->weapon_state = WS_TAKEN;
 			anim = DA_ATAK;
 		}
 		break;
 	case DA_WYJMIJ_LUK:
-		if(unit->animation_state == 0 && (unit->ani->GetProgress() >= unit->data->frames->t[F_TAKE_WEAPON] || unit->ani->frame_end_info))
+		if(unit->animation_state == 0 && (unit->mesh_inst->GetProgress() >= unit->data->frames->t[F_TAKE_WEAPON] || unit->mesh_inst->frame_end_info))
 			unit->animation_state = 1;
-		if(unit->ani->frame_end_info)
+		if(unit->mesh_inst->frame_end_info)
 		{
 			unit->weapon_state = WS_TAKEN;
 			anim = DA_STRZAL;
 		}
 		break;
 	case DA_ROZGLADA:
-		if(unit->ani->frame_end_info)
+		if(unit->mesh_inst->frame_end_info)
 			anim = DA_STOI;
 		break;
 	case DA_BLOK:
@@ -898,13 +898,13 @@ void CreateCharacterPanel::UpdateUnit(float dt)
 		break;
 	}
 
-	unit->ani->Update(dt);
+	unit->mesh_inst->Update(dt);
 }
 
 //=================================================================================================
 void CreateCharacterPanel::Init()
 {
-	unit->ani = new AnimeshInstance(game->aHumanBase);
+	unit->mesh_inst = new MeshInstance(game->aHumanBase);
 
 	for(ClassInfo& ci : g_classes)
 	{
@@ -918,19 +918,20 @@ void CreateCharacterPanel::Init()
 //=================================================================================================
 void CreateCharacterPanel::LoadData()
 {
-	ResourceManager& resMgr = ResourceManager::Get();
-	resMgr.GetLoadedTexture("close.png", custom_x.tex[Button::NONE]);
-	resMgr.GetLoadedTexture("close_hover.png", custom_x.tex[Button::HOVER]);
-	resMgr.GetLoadedTexture("close_down.png", custom_x.tex[Button::DOWN]);
-	resMgr.GetLoadedTexture("close_disabled.png", custom_x.tex[Button::DISABLED]);
-	resMgr.GetLoadedTexture("plus.png", custom_bt[0].tex[Button::NONE]);
-	resMgr.GetLoadedTexture("plus_hover.png", custom_bt[0].tex[Button::HOVER]);
-	resMgr.GetLoadedTexture("plus_down.png", custom_bt[0].tex[Button::DOWN]);
-	resMgr.GetLoadedTexture("plus_disabled.png", custom_bt[0].tex[Button::DISABLED]);
-	resMgr.GetLoadedTexture("minus.png", custom_bt[1].tex[Button::NONE]);
-	resMgr.GetLoadedTexture("minus_hover.png", custom_bt[1].tex[Button::HOVER]);
-	resMgr.GetLoadedTexture("minus_down.png", custom_bt[1].tex[Button::DOWN]);
-	resMgr.GetLoadedTexture("minus_disabled.png", custom_bt[1].tex[Button::DISABLED]);
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("klasa_cecha.png", tKlasaCecha);
+	tex_mgr.AddLoadTask("close.png", custom_x.tex[Button::NONE]);
+	tex_mgr.AddLoadTask("close_hover.png", custom_x.tex[Button::HOVER]);
+	tex_mgr.AddLoadTask("close_down.png", custom_x.tex[Button::DOWN]);
+	tex_mgr.AddLoadTask("close_disabled.png", custom_x.tex[Button::DISABLED]);
+	tex_mgr.AddLoadTask("plus.png", custom_bt[0].tex[Button::NONE]);
+	tex_mgr.AddLoadTask("plus_hover.png", custom_bt[0].tex[Button::HOVER]);
+	tex_mgr.AddLoadTask("plus_down.png", custom_bt[0].tex[Button::DOWN]);
+	tex_mgr.AddLoadTask("plus_disabled.png", custom_bt[0].tex[Button::DISABLED]);
+	tex_mgr.AddLoadTask("minus.png", custom_bt[1].tex[Button::NONE]);
+	tex_mgr.AddLoadTask("minus_hover.png", custom_bt[1].tex[Button::HOVER]);
+	tex_mgr.AddLoadTask("minus_down.png", custom_bt[1].tex[Button::DOWN]);
+	tex_mgr.AddLoadTask("minus_disabled.png", custom_bt[1].tex[Button::DISABLED]);
 }
 
 //=================================================================================================
@@ -999,8 +1000,8 @@ void CreateCharacterPanel::SetControls()
 void CreateCharacterPanel::SetCharacter()
 {
 	anim = anim2 = DA_STOI;
-	unit->ani->Play(NAMES::ani_stand, PLAY_PRIO2 | PLAY_NO_BLEND, 0);
-	unit->ani->groups[0].speed = 1.f;
+	unit->mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO2 | PLAY_NO_BLEND, 0);
+	unit->mesh_inst->groups[0].speed = 1.f;
 }
 
 //=================================================================================================
@@ -1578,14 +1579,14 @@ void CreateCharacterPanel::CheckSkillsUpdate()
 //=================================================================================================
 void CreateCharacterPanel::UpdateInventory()
 {
-	const Item* old_items[4];
-	for(int i = 0; i < 4; ++i)
+	const Item* old_items[SLOT_MAX];
+	for(int i = 0; i < SLOT_MAX; ++i)
 		old_items[i] = items[i];
 
 	cc.GetStartingItems(items);
 
 	bool same = true;
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		if(items[i] != old_items[i])
 		{
@@ -1596,8 +1597,11 @@ void CreateCharacterPanel::UpdateInventory()
 	if(same)
 		return;
 
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < SLOT_MAX; ++i)
+	{
+		game->PreloadItem(items[i]);
 		unit->slots[i] = items[i];
+	}
 
 	bool reset = false;
 

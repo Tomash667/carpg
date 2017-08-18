@@ -1,10 +1,11 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-#include <Pch.h>
-#include <Base.h>
-#include <Tokenizer.h>
-#undef FAR
-#define FAR
 #include <WinSock2.h>
+#undef min
+#undef max
+#undef STRICT
+#include <Pch.h>
+#include <Core.h>
+#include <Tokenizer.h>
 #include <iostream>
 
 Logger* logger;

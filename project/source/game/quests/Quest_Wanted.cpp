@@ -71,6 +71,7 @@ void Quest_Wanted::SetProgress(int prog2)
 
 			// dodaj list
 			const Item* base_item = FindItem("wanted_letter");
+			game->PreloadItem(base_item);
 			CreateItemCopy(letter, base_item);
 			letter.id = "$wanted_letter";
 			letter.name = game->txQuest[258];

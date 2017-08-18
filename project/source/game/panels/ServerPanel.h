@@ -37,10 +37,12 @@ public:
 	void UseLoadedCharacter(bool have);
 	void CheckAutopick();
 	void PickClass(Class clas, bool ready);
+	void LoadData();
 
 	Grid grid;
 	cstring txReady, txNotReady, txStart, txStop, txStarting, txPickChar, txKick, txNone, txSetLeader, txNick, txChar, txLoadedCharInfo, txNotLoadedCharInfo, txChangeChar, txCantKickMyself,
 		txCantKickUnconnected, txReallyKick, txAlreadyLeader, txLeaderChanged, txNotJoinedYet, txNotAllReady, txStartingIn, txStartingStop, txDisconnecting, txYouAreLeader, txJoined, txPlayerLeft,
 		txNeedSelectedPlayer, txServerText;
 	InputTextBox itb;
+	TEX tGotowy, tNieGotowy;
 };

@@ -10,7 +10,7 @@
 //-----------------------------------------------------------------------------
 struct Chest;
 struct DialogContext;
-struct Useable;
+struct Usable;
 struct PlayerInfo;
 
 //-----------------------------------------------------------------------------
@@ -101,7 +101,7 @@ struct PlayerController : public HeroPlayerCommon
 	union
 	{
 		int next_action_idx;
-		Useable* next_action_useable;
+		Usable* next_action_usable;
 	};
 	WeaponType ostatnia;
 	bool godmode, noclip, is_local, recalculate_level;

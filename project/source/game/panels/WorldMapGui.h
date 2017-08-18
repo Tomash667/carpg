@@ -40,6 +40,7 @@ public:
 		txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins;
 
 private:
+	void AppendLocationText(Location& loc, string& s);
 	void GetCityText(City& city, string& s);
 
 	Game& game;

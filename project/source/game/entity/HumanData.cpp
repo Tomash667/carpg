@@ -2,7 +2,7 @@
 #include "Pch.h"
 #include "Core.h"
 #include "HumanData.h"
-#include "Animesh.h"
+#include "Mesh.h"
 #include "SaveState.h"
 #include "BitStreamFunc.h"
 
@@ -52,7 +52,7 @@ Vec2 Human::GetScale()
 //=================================================================================================
 // Ustawienie macierzy na podstawie wysokoœci i wagi
 //=================================================================================================
-void Human::ApplyScale(Animesh* mesh)
+void Human::ApplyScale(Mesh* mesh)
 {
 	assert(mesh);
 

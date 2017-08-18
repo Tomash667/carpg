@@ -731,52 +731,55 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		Net_FilterServerChanges();
 	}
 
+	// calculate number of loading steps for drawing progress bar
+	steps = 3; // common txEnteringLocation, txGeneratingMinimap, txLoadingComplete
+	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
+		++steps; // txGeneratingMap
 	switch(l.type)
 	{
 	case L_CITY:
-		steps = 5;
-		if(l.state != LS_ENTERED && l.state != LS_CLEARED)
-			steps += LocationHelper::IsCity(l) ? 11 : 10;
 		if(first)
-			steps += 5;
+			steps += 4; // txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems
 		else if(!reenter)
 		{
-			steps += 3;
+			steps += 2; // txGeneratingUnits, txGeneratingPhysics
 			if(l.last_visit != worldtime)
-				++steps;
+				++steps; // txGeneratingItems
 		}
+		if(!reenter)
+			++steps; // txRecreatingObjects
 		break;
 	case L_DUNGEON:
 	case L_CRYPT:
 	case L_CAVE:
-		steps = 3;
 		if(first)
-			steps += 3;
+			steps += 2; // txGeneratingObjects, txGeneratingUnits
 		else if(!reenter)
-			++steps;
+			++steps; // txRegeneratingLevel
 		break;
 	case L_FOREST:
 	case L_CAMP:
 	case L_MOONWELL:
-		steps = 3;
 		if(first)
-			steps += 4;
+			steps += 3; // txGeneratingObjects, txGeneratingUnits, txGeneratingItems
+		else if(!reenter)
+			steps += 2; // txGeneratingUnits, txGeneratingPhysics
 		if(!reenter)
-			steps += 3;
+			++steps; // txRecreatingObjects
 		break;
 	case L_ENCOUNTER:
-		steps = 8;
+		steps += 4; // txGeneratingObjects, txRecreatingObjects, txGeneratingUnits, txGeneratingItems
 		break;
 	default:
 		assert(0);
-		steps = 6;
+		steps = 10;
 		break;
 	}
-	++steps; // for music
 
 	LoadingStart(steps);
 	LoadingStep(txEnteringLocation);
 
+	// generate map on first visit
 	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
 	{
 		if(next_seed != 0)
@@ -1414,14 +1417,11 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		break;
 	}
 
-	// load music
-	LoadingStep(txLoadMusic);
-	if(!nomusic)
-		LoadMusic(GetLocationMusic(), false);
+	if(location->outside)
+		SetTerrainTextures();
 
-	SetTerrainTextures();
+	LoadResources(txLoadingComplete, false);
 
-	LoadingStep(txLoadingComplete);
 	l.last_visit = worldtime;
 	CheckIfLocationCleared();
 	local_ctx_valid = true;
@@ -1563,14 +1563,14 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 
 			sdir += rot;
 
-			Useable* u = new Useable;
-			ctx.useables->push_back(u);
+			Usable* u = new Usable;
+			ctx.usables->push_back(u);
 			u->type = U_STOOL;
 			u->pos = pos + Vec3(sin(sdir)*slen, 0, cos(sdir)*slen);
 			u->rot = sdir;
 			u->user = nullptr;
 			if(IsOnline())
-				u->netid = useable_netid_counter++;
+				u->netid = usable_netid_counter++;
 
 			SpawnObjectExtras(ctx, stolek, u->pos, u->rot, u, nullptr);
 		}
@@ -1636,7 +1636,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 				typ = U_CHAIR;
 			}
 
-			Useable* u = new Useable;
+			Usable* u = new Usable;
 			u->type = typ;
 			u->pos = pos;
 			u->rot = rot;
@@ -1671,16 +1671,16 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 			obj_ptr = u;
 
 			if(IsOnline())
-				u->netid = useable_netid_counter++;
+				u->netid = usable_netid_counter++;
 
-			obj_id = ctx.useables->size();
-			ctx.useables->push_back(u);
+			obj_id = ctx.usables->size();
+			ctx.usables->push_back(u);
 			obj_t = 1;
 		}
 		else if(IS_SET(obj->flags, OBJ_CHEST))
 		{
 			Chest* chest = new Chest;
-			chest->ani = new AnimeshInstance(obj->mesh);
+			chest->mesh_inst = new MeshInstance(obj->mesh);
 			chest->rot = rot;
 			chest->pos = pos;
 			chest->handler = nullptr;
@@ -1711,7 +1711,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 	if(obj_t == 0)
 		return &(*ctx.objects)[obj_id];
 	else if(obj_t == 1)
-		return (Object*)((*ctx.useables)[obj_id]); // meh
+		return (Object*)((*ctx.usables)[obj_id]); // meh
 	else
 		return (Object*)((*ctx.chests)[obj_id]); // meh^2
 }
@@ -1953,7 +1953,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 	}
 }
 
-void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Animesh* mesh, Animesh* inside_mesh, float rot, int roti,
+void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, int roti,
 	const Vec3& shift, Building* type, CityBuilding* building, bool recreate, Vec3* out_point)
 {
 	if(mesh->attach_points.empty())
@@ -1971,11 +1971,11 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 	bool have_exit = false, have_spawn = false;
 	bool is_inside = (inside != nullptr);
 	Vec3 spawn_point;
-	static vector<const Animesh::Point*> details;
+	static vector<const Mesh::Point*> details;
 
-	for(vector<Animesh::Point>::const_iterator it2 = mesh->attach_points.begin(), end2 = mesh->attach_points.end(); it2 != end2; ++it2)
+	for(vector<Mesh::Point>::const_iterator it2 = mesh->attach_points.begin(), end2 = mesh->attach_points.end(); it2 != end2; ++it2)
 	{
-		const Animesh::Point& pt = *it2;
+		const Mesh::Point& pt = *it2;
 		if(pt.name.length() < 5 || pt.name[0] != 'o')
 			continue;
 
@@ -2269,8 +2269,8 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					door->rot = Clip(pt.rot.y + rot);
 					door->state = Door::Open;
 					door->door2 = (token == "door2");
-					door->ani = new AnimeshInstance(door->door2 ? aDrzwi2 : aDrzwi);
-					door->ani->groups[0].speed = 2.f;
+					door->mesh_inst = new MeshInstance(door->door2 ? aDrzwi2 : aDrzwi);
+					door->mesh_inst->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);
 					door->locked = LOCK_NONE;
@@ -2293,7 +2293,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					{
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
-						door->ani->SetToEnd(door->ani->ani->anims[0].name.c_str());
+						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
 					}
 
 					ctx.doors->push_back(door);
@@ -2373,7 +2373,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 			std::random_shuffle(details.begin(), details.end(), MyRand);
 			while(count && !details.empty())
 			{
-				const Animesh::Point& pt = *details.back();
+				const Mesh::Point& pt = *details.back();
 				details.pop_back();
 				--count;
 
@@ -2547,22 +2547,7 @@ void Game::RespawnUnits(LevelContext& ctx)
 		// model
 		u->action = A_NONE;
 		u->talking = false;
-		u->ani = new AnimeshInstance(u->data->mesh ? (Animesh*)u->data->mesh : aHumanBase);
-		u->ani->ptr = u;
-		if(u->IsAlive())
-		{
-			u->ani->Play(NAMES::ani_stand, PLAY_PRIO1, 0);
-			u->animation = u->current_animation = ANI_STAND;
-		}
-		else
-		{
-			u->ani->Play(NAMES::ani_die, PLAY_PRIO1, 0);
-			u->animation = u->current_animation = ANI_DIE;
-		}
-		u->ani->groups[0].speed = 1.f;
-		if(u->human_data)
-			u->human_data->ApplyScale(u->ani->ani);
-		u->SetAnimationAtEnd();
+		u->CreateMesh(Unit::CREATE_MESH::NORMAL);
 
 		// fizyka
 		btCapsuleShape* caps = new btCapsuleShape(u->GetUnitRadius(), max(MIN_H, u->GetUnitHeight()));
@@ -2774,7 +2759,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		Unit* innkeeper = inn->FindUnit(FindUnitData("innkeeper"));
 
 		innkeeper->talking = false;
-		innkeeper->ani->need_update = true;
+		innkeeper->mesh_inst->need_update = true;
 		innkeeper->busy = Unit::Busy_No;
 		contest_state = CONTEST_DONE;
 		contest_units.clear();
@@ -2830,7 +2815,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 			DeleteElements(outside->chests);
 			DeleteElements(outside->items);
 			outside->objects.clear();
-			DeleteElements(outside->useables);
+			DeleteElements(outside->usables);
 			for(vector<Unit*>::iterator it = outside->units.begin(), end = outside->units.end(); it != end; ++it)
 				delete *it;
 			outside->units.clear();
@@ -3194,8 +3179,8 @@ void Game::GenerateDungeonObjects2()
 					door->pos = o.pos;
 					door->rot = o.rot.y;
 					door->state = Door::Closed;
-					door->ani = new AnimeshInstance(aDrzwi);
-					door->ani->groups[0].speed = 2.f;
+					door->mesh_inst = new MeshInstance(aDrzwi);
+					door->mesh_inst->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);
 					door->locked = LOCK_NONE;
@@ -3214,7 +3199,7 @@ void Game::GenerateDungeonObjects2()
 						door->state = Door::Open;
 						btVector3& pos = door->phy->getWorldTransform().getOrigin();
 						pos.setY(pos.y() - 100.f);
-						door->ani->SetToEnd(door->ani->ani->anims[0].name.c_str());
+						door->mesh_inst->SetToEnd(door->mesh_inst->mesh->anims[0].name.c_str());
 					}
 				}
 				else
@@ -3353,8 +3338,6 @@ void Game::GenerateForest(Location& loc)
 				t = TT_GRASS3;
 		}
 	}
-
-	LoadingStep(txGeneratingTerrain);
 
 	Perlin perlin(4, 4, 1);
 
@@ -3760,8 +3743,6 @@ void Game::GenerateEncounterMap(Location& loc)
 				t = TT_GRASS3;
 		}
 	}
-
-	LoadingStep(txGeneratingTerrain);
 
 	Perlin perlin(4, 4, 1);
 
@@ -4711,8 +4692,6 @@ void Game::GenerateCamp(Location& loc)
 		}
 	}
 
-	LoadingStep(txGeneratingTerrain);
-
 	Perlin perlin(4, 4, 1);
 
 	// losuj teren
@@ -5396,8 +5375,6 @@ void Game::GenerateMoonwell(Location& loc)
 		}
 	}
 
-	LoadingStep(txGeneratingTerrain);
-
 	Perlin perlin(4, 4, 1);
 
 	// losuj teren
@@ -5822,9 +5799,9 @@ void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const Vec3& pos, float
 	if(IS_SET(obj->flags2, OBJ2_CAM_COLLIDERS))
 	{
 		int roti = (int)round((rot / (PI / 2)));
-		for(vector<Animesh::Point>::const_iterator it = obj->mesh->attach_points.begin(), end = obj->mesh->attach_points.end(); it != end; ++it)
+		for(vector<Mesh::Point>::const_iterator it = obj->mesh->attach_points.begin(), end = obj->mesh->attach_points.end(); it != end; ++it)
 		{
-			const Animesh::Point& pt = *it;
+			const Mesh::Point& pt = *it;
 			if(strncmp(pt.name.c_str(), "camcol", 6) != 0)
 				continue;
 
@@ -5884,8 +5861,6 @@ void Game::GenerateSecretLocation(Location& loc)
 				t = TT_GRASS3;
 		}
 	}
-
-	LoadingStep(txGeneratingTerrain);
 
 	Perlin perlin(4, 4, 1);
 
@@ -6229,11 +6204,11 @@ void Game::PickableItemBegin(LevelContext& ctx, Object& o)
 	PickableItem::spawns.clear();
 	PickableItem::items.clear();
 
-	for(vector<Animesh::Point>::iterator it = o.base->mesh->attach_points.begin(), end = o.base->mesh->attach_points.end(); it != end; ++it)
+	for(vector<Mesh::Point>::iterator it = o.base->mesh->attach_points.begin(), end = o.base->mesh->attach_points.end(); it != end; ++it)
 	{
 		if(strncmp(it->name.c_str(), "spawn_", 6) == 0)
 		{
-			assert(it->type == Animesh::Point::Box);
+			assert(it->type == Mesh::Point::Box);
 			Box box(it->mat._41, it->mat._42, it->mat._43);
 			box.v1.x -= it->size.x - 0.05f;
 			box.v1.z -= it->size.z - 0.05f;
@@ -6383,7 +6358,6 @@ void Game::GenerateCityMap(Location& loc)
 	gen->SetTerrainNoise(Random(3, 5), Random(3.f, 8.f), 1.f, Random(1.f, 2.f));
 
 	gen->RandomizeHeight();
-	LoadingStep();
 
 	RoadType rtype;
 	int swap = 0;
@@ -6408,29 +6382,19 @@ void Game::GenerateCityMap(Location& loc)
 	rtype = RoadType_Plus;
 
 	gen->GenerateMainRoad(rtype, dir, 4, plaza, swap, city->entry_points, city->gates, true);
-	LoadingStep();
 	gen->FlattenRoadExits();
-	LoadingStep();
 	gen->GenerateRoads(TT_ROAD, 25);
 	for(int i = 0; i < 2; ++i)
-	{
-		LoadingStep();
 		gen->FlattenRoad();
-	}
-	LoadingStep();
 
 	vector<ToBuild> tobuild;
 	PrepareCityBuildings(*city, tobuild);
 
 	gen->GenerateBuildings(tobuild);
-	LoadingStep();
 	gen->ApplyWallTiles(city->gates);
-	LoadingStep();
 
 	gen->SmoothTerrain();
-	LoadingStep();
 	gen->FlattenRoad();
-	LoadingStep();
 
 	if(plaza && Rand() % 4 != 0)
 	{
@@ -6460,7 +6424,6 @@ void Game::GenerateCityMap(Location& loc)
 	terrain->RemoveHeightMap();
 
 	gen->CleanBorders();
-	LoadingStep();
 }
 
 void Game::GenerateVillageMap(Location& loc)
@@ -6480,7 +6443,6 @@ void Game::GenerateVillageMap(Location& loc)
 	gen->SetTerrainNoise(Random(3, 5), Random(3.f, 8.f), 1.f, Random(2.f, 10.f));
 
 	gen->RandomizeHeight();
-	LoadingStep();
 
 	RoadType rtype;
 	int roads, swap = 0;
@@ -6532,26 +6494,17 @@ void Game::GenerateVillageMap(Location& loc)
 	gen->GenerateMainRoad(rtype, dir, roads, plaza, swap, village->entry_points, village->gates, extra_roads);
 	if(extra_roads)
 		gen->GenerateRoads(TT_SAND, 5);
-	LoadingStep();
 	gen->FlattenRoadExits();
 	for(int i = 0; i < 2; ++i)
-	{
-		LoadingStep();
 		gen->FlattenRoad();
-	}
-	LoadingStep();
 
 	vector<ToBuild> tobuild;
 	PrepareCityBuildings(*village, tobuild);
 
 	gen->GenerateBuildings(tobuild);
-	LoadingStep();
 	gen->GenerateFields();
-	LoadingStep();
 	gen->SmoothTerrain();
-	LoadingStep();
 	gen->FlattenRoad();
-	LoadingStep();
 
 	g_have_well = false;
 
@@ -6569,7 +6522,6 @@ void Game::GenerateVillageMap(Location& loc)
 	}
 
 	gen->CleanBorders();
-	LoadingStep();
 }
 
 void Game::PrepareCityBuildings(City& city, vector<ToBuild>& tobuild)

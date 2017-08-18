@@ -1,10 +1,12 @@
 #include "Pch.h"
+#include "Core.h"
 #include "Game.h"
 #include "SingleInsideLocation.h"
 #include "CreateCharacterPanel.h"
 #include "MainMenu.h"
 #include "GameGui.h"
 #include "WorldMapGui.h"
+#include "LoadScreen.h"
 
 char mapa_t[] = {
 	"$$$$$$$$###########$$$"
@@ -164,6 +166,8 @@ struct TutUnitHandler : public UnitEventHandler
 
 void Game::StartTutorial()
 {
+	LoadingStart(1);
+
 	HumanData hd;
 	hd.Get(*create_character->unit->human_data);
 	NewGameCommon(create_character->clas, create_character->name.c_str(), hd, create_character->cc, true);
@@ -176,7 +180,9 @@ void Game::StartTutorial()
 
 	// ekwipunek
 	pc->unit->ClearInventory();
-	pc->unit->slots[SLOT_ARMOR] = FindItem("al_clothes");
+	auto item = FindItem("al_clothes");
+	PreloadItem(item);
+	pc->unit->slots[SLOT_ARMOR] = item;
 	pc->unit->weight += pc->unit->slots[SLOT_ARMOR]->weight;
 	pc->unit->gold = 10;
 	notes.push_back(txTutNote);
@@ -358,11 +364,13 @@ void Game::StartTutorial()
 	GenerateMerchantItems(chest_merchant, 500);
 
 	// go!
+	LoadResources("", false);
 	SpawnDungeonColliders();
 	CreateDungeonMinimap();
 	AddPlayerTeam(Vec3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0, false, true);
 	location_event_handler = nullptr;
 	SetMusic();
+	load_screen->visible = false;
 	main_menu->visible = false;
 	game_gui->visible = true;
 	world_map->visible = false;
@@ -392,18 +400,18 @@ tut_state:
 void Game::UpdateTutorial()
 {
 	// atakowanie manekina
-	if(pc->unit->action == A_ATTACK && pc->unit->animation_state == 1 && !pc->unit->hitted && pc->unit->ani->GetProgress2() >= pc->unit->GetAttackFrame(1)
+	if(pc->unit->action == A_ATTACK && pc->unit->animation_state == 1 && !pc->unit->hitted && pc->unit->mesh_inst->GetProgress2() >= pc->unit->GetAttackFrame(1)
 		&& Vec3::Distance(pc->unit->pos, tut_dummy) < 5.f)
 	{
-		Animesh::Point* hitbox, *point;
+		Mesh::Point* hitbox, *point;
 		hitbox = pc->unit->GetWeapon().mesh->FindPoint("hit");
-		point = pc->unit->ani->ani->GetPoint(NAMES::point_weapon);
+		point = pc->unit->mesh_inst->mesh->GetPoint(NAMES::point_weapon);
 
 		Obbox obox1, obox2;
 
 		// calculate hitbox matrix
 		Matrix m_unit = Matrix::RotationY(pc->unit->rot) * Matrix::Translation(pc->unit->pos);
-		Matrix m_weapon = point->mat * pc->unit->ani->mat_bones[point->bone] * m_unit;
+		Matrix m_weapon = point->mat * pc->unit->mesh_inst->mat_bones[point->bone] * m_unit;
 		Matrix m_hitbox = hitbox->mat * m_weapon;
 
 		// create weapon hitbox oriented bounding box

@@ -119,9 +119,10 @@ struct Location : public ILevel
 	bool reset; // resetowanie lokacji po wejœciu
 	bool outside; // czy poziom jest otwarty
 	bool dont_clean;
+	bool loaded_resources;
 
 	Location(bool outside) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), spawn(SG_BRAK),
-		portal(nullptr), dont_clean(false)
+		portal(nullptr), dont_clean(false), loaded_resources(false)
 	{
 	}
 
@@ -143,11 +144,6 @@ struct Location : public ILevel
 	Portal* TryGetPortal(int index) const;
 	void WritePortals(BitStream& stream) const;
 	bool ReadPortals(BitStream& stream, int at_level);
-
-	bool IsSingleLevel() const
-	{
-		return type != L_DUNGEON && type != L_CRYPT;
-	}
 };
 
 //-----------------------------------------------------------------------------

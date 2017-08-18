@@ -30,9 +30,9 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		if(inside->HaveDownStairs() && IS_SET(lvl.map[lvl.staircase_down(lvl.w)].flags, Pole::F_ODKRYTE))
-			GUI.DrawSprite(game.tSchodyDol, Int2(TileToPoint(lvl.staircase_down)) - Int2(16, 16), COLOR_RGBA(255, 255, 255, 180));
+			GUI.DrawSprite(tSchodyDol, Int2(TileToPoint(lvl.staircase_down)) - Int2(16, 16), COLOR_RGBA(255, 255, 255, 180));
 		if(inside->HaveUpStairs() && IS_SET(lvl.map[lvl.staircase_up(lvl.w)].flags, Pole::F_ODKRYTE))
-			GUI.DrawSprite(game.tSchodyGora, Int2(TileToPoint(lvl.staircase_up)) - Int2(16, 16), COLOR_RGBA(255, 255, 255, 180));
+			GUI.DrawSprite(tSchodyGora, Int2(TileToPoint(lvl.staircase_up)) - Int2(16, 16), COLOR_RGBA(255, 255, 255, 180));
 	}
 
 	// portale
@@ -41,7 +41,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	while(p)
 	{
 		if(!lvl || (game.dungeon_level == p->at_level && lvl->IsTileVisible(p->pos)))
-			GUI.DrawSprite(game.tMiniportal, Int2(TileToPoint(pos_to_pt(p->pos))) - Int2(24, 8), COLOR_RGBA(255, 255, 255, 180));
+			GUI.DrawSprite(tMiniportal, Int2(TileToPoint(pos_to_pt(p->pos))) - Int2(24, 8), COLOR_RGBA(255, 255, 255, 180));
 		p = p->next_portal;
 	}
 
@@ -54,7 +54,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		else if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
 			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), nullptr, 0.f, &(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - Vec2(16, 16)));
-			GUI.DrawSpriteTransform(game.tMinibag, m1, COLOR_RGBA(255, 255, 255, 140));
+			GUI.DrawSpriteTransform(tMinibag, m1, COLOR_RGBA(255, 255, 255, 140));
 		}
 	}
 	for(vector<GroundItem*>::iterator it = important_items->begin(), end = important_items->end(); it != end; ++it)
@@ -62,7 +62,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		if(!lvl || lvl->IsTileVisible((*it)->pos))
 		{
 			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), nullptr, 0.f, &(PosToPoint(Vec2((*it)->pos.x, (*it)->pos.z)) - Vec2(16, 16)));
-			GUI.DrawSpriteTransform(game.tMinibag2, m1, COLOR_RGBA(255, 255, 255, 140));
+			GUI.DrawSpriteTransform(tMinibag2, m1, COLOR_RGBA(255, 255, 255, 140));
 		}
 	}
 
@@ -70,7 +70,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	for(Unit* unit : Team.members)
 	{
 		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit->rot, &(PosToPoint(game.GetMapPosition(*unit)) - Vec2(16, 16)));
-		GUI.DrawSpriteTransform((unit == game.pc->unit) ? game.tMiniunit : game.tMiniunit2, m1, COLOR_RGBA(255, 255, 255, 140));
+		GUI.DrawSpriteTransform(tMiniunit[unit == game.pc->unit ? 0 : 1], m1, COLOR_RGBA(255, 255, 255, 140));
 	}
 
 	// obrazki pozosta³ych postaci
@@ -80,7 +80,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		if((u.IsAlive() || IS_SET(u.data->flags2, F2_MARK)) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
 		{
 			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), (*it)->rot, &(PosToPoint(game.GetMapPosition(u)) - Vec2(16, 16)));
-			GUI.DrawSpriteTransform(u.IsAlive() ? (game.IsEnemy(u, *game.pc->unit) ? game.tMiniunit3 : game.tMiniunit4) : game.tMiniunit5, m1, COLOR_RGBA(255, 255, 255, 140));
+			GUI.DrawSpriteTransform(tMiniunit[u.IsAlive() ? (game.IsEnemy(u, *game.pc->unit) ? 2 : 3) : 4], m1, COLOR_RGBA(255, 255, 255, 140));
 		}
 	}
 
@@ -192,4 +192,20 @@ void Minimap::Build()
 			}
 		}
 	}
+}
+
+//=================================================================================================
+void Minimap::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("mini_unit.png", tMiniunit[0]);
+	tex_mgr.AddLoadTask("mini_unit2.png", tMiniunit[1]);
+	tex_mgr.AddLoadTask("mini_unit3.png", tMiniunit[2]);
+	tex_mgr.AddLoadTask("mini_unit4.png", tMiniunit[3]);
+	tex_mgr.AddLoadTask("mini_unit5.png", tMiniunit[4]);
+	tex_mgr.AddLoadTask("schody_dol.png", tSchodyDol);
+	tex_mgr.AddLoadTask("schody_gora.png", tSchodyGora);
+	tex_mgr.AddLoadTask("mini_bag.png", tMinibag);
+	tex_mgr.AddLoadTask("mini_bag2.png", tMinibag2);
+	tex_mgr.AddLoadTask("mini_portal.png", tMiniportal);
 }

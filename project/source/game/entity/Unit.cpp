@@ -15,7 +15,7 @@ const float Unit::STAMINA_BOW_ATTACK = 100.f;
 //=================================================================================================
 Unit::~Unit()
 {
-	delete ani;
+	delete mesh_inst;
 	delete human_data;
 	delete hero;
 	delete player;
@@ -199,9 +199,9 @@ bool Unit::DropItem(int index)
 	weight -= s.item->weight;
 
 	action = A_ANIMATION;
-	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-	ani->groups[0].speed = 1.f;
-	ani->frame_end_info = false;
+	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	mesh_inst->groups[0].speed = 1.f;
+	mesh_inst->frame_end_info = false;
 
 	if(game.IsLocal())
 	{
@@ -263,9 +263,9 @@ void Unit::DropItem(ITEM_SLOT slot)
 	weight -= item2->weight;
 
 	action = A_ANIMATION;
-	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-	ani->groups[0].speed = 1.f;
-	ani->frame_end_info = false;
+	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	mesh_inst->groups[0].speed = 1.f;
+	mesh_inst->frame_end_info = false;
 
 	if(game.IsLocal())
 	{
@@ -318,9 +318,9 @@ bool Unit::DropItems(int index, uint count)
 	weight -= s.item->weight*count;
 
 	action = A_ANIMATION;
-	ani->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
-	ani->groups[0].speed = 1.f;
-	ani->frame_end_info = false;
+	mesh_inst->Play("wyrzuca", PLAY_ONCE | PLAY_PRIO2, 0);
+	mesh_inst->groups[0].speed = 1.f;
+	mesh_inst->frame_end_info = false;
 
 	if(game.IsLocal())
 	{
@@ -474,7 +474,7 @@ int Unit::ConsumeItem(int index)
 		anim_name = "pije";
 	}
 	animation_state = 0;
-	ani->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
+	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
 	used_item = &cons;
 
 	// wyœlij komunikat
@@ -523,7 +523,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 	}
 
 	animation_state = 0;
-	ani->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
+	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
 	used_item = &item;
 	used_item_is_team = true;
 
@@ -559,7 +559,7 @@ void Unit::HideWeapon()
 			action = A_NONE;
 			weapon_taken = W_NONE;
 			weapon_state = WS_HIDDEN;
-			ani->Deactivate(1);
+			mesh_inst->Deactivate(1);
 		}
 		else
 		{
@@ -568,17 +568,17 @@ void Unit::HideWeapon()
 			weapon_taken = W_NONE;
 			weapon_state = WS_HIDING;
 			animation_state = 0;
-			SET_BIT(ani->groups[1].state, AnimeshInstance::FLAG_BACK);
+			SET_BIT(mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 		}
 		break;
 	case WS_TAKEN:
-		ani->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK, 1);
+		mesh_inst->Play(GetTakeWeaponAnimation(weapon_taken == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE | PLAY_BACK, 1);
 		weapon_hiding = weapon_taken;
 		weapon_taken = W_NONE;
 		animation_state = 0;
 		action = A_TAKE_WEAPON;
 		weapon_state = WS_HIDING;
-		ani->frame_end_info2 = false;
+		mesh_inst->frame_end_info2 = false;
 		break;
 	}
 
@@ -605,13 +605,13 @@ void Unit::TakeWeapon(WeaponType _type)
 
 	if(weapon_taken == W_NONE)
 	{
-		ani->Play(GetTakeWeaponAnimation(_type == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE, 1);
+		mesh_inst->Play(GetTakeWeaponAnimation(_type == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE, 1);
 		weapon_hiding = W_NONE;
 		weapon_taken = _type;
 		animation_state = 0;
 		action = A_TAKE_WEAPON;
 		weapon_state = WS_TAKING;
-		ani->frame_end_info2 = false;
+		mesh_inst->frame_end_info2 = false;
 
 		Game& game = Game::Get();
 		if(game.IsOnline())
@@ -1061,13 +1061,13 @@ int Unit::GetDmgType() const
 //=================================================================================================
 Vec3 Unit::GetLootCenter() const
 {
-	Animesh::Point* point2 = ani->ani->GetPoint("centrum");
+	Mesh::Point* point2 = mesh_inst->mesh->GetPoint("centrum");
 
 	if(!point2)
 		return pos;
 
-	const Animesh::Point& point = *point2;
-	Matrix matBone = point.mat * ani->mat_bones[point.bone];
+	const Mesh::Point& point = *point2;
+	Matrix matBone = point.mat * mesh_inst->mat_bones[point.bone];
 	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 	Vec3 center = Vec3::TransformZero(matBone);
 	return center;
@@ -1337,7 +1337,7 @@ void Unit::Save(HANDLE file, bool local)
 
 	if(local)
 	{
-		ani->Save(file);
+		mesh_inst->Save(file);
 		WriteFile(file, &animation, sizeof(animation), &tmp, nullptr);
 		WriteFile(file, &current_animation, sizeof(current_animation), &tmp, nullptr);
 
@@ -1373,17 +1373,17 @@ void Unit::Save(HANDLE file, bool local)
 			WriteFile(file, &b, sizeof(b), &tmp, nullptr);
 		}
 
-		if(useable)
+		if(usable)
 		{
-			if(useable->user != this)
+			if(usable->user != this)
 			{
-				Warn("Invalid useable %s (%d) user %s.", useable->GetBase()->id, useable->refid, data->id.c_str());
-				useable = nullptr;
+				Warn("Invalid usable %s (%d) user %s.", usable->GetBase()->id, usable->refid, data->id.c_str());
+				usable = nullptr;
 				int refi = -1;
 				WriteFile(file, &refi, sizeof(refi), &tmp, nullptr);
 			}
 			else
-				WriteFile(file, &useable->refid, sizeof(useable->refid), &tmp, nullptr);
+				WriteFile(file, &usable->refid, sizeof(usable->refid), &tmp, nullptr);
 		}
 		else
 		{
@@ -1426,14 +1426,14 @@ void Unit::Load(HANDLE file, bool local)
 {
 	human_data = nullptr;
 
-	// id postaci
+	// unit data
 	byte len;
 	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	BUF[len] = 0;
 	ReadFile(file, BUF, len, &tmp, nullptr);
 	data = FindUnitData(BUF);
 
-	// przedmioty
+	// items
 	bool can_sort = true;
 	if(LOAD_VERSION >= V_0_2_10)
 	{
@@ -1485,6 +1485,7 @@ void Unit::Load(HANDLE file, bool local)
 		}
 	}
 
+	// stats
 	ReadFile(file, &live_state, sizeof(live_state), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_20 && live_state != ALIVE)
 		live_state = LiveState(live_state + 2); // kolejnoœæ siê zmieni³a
@@ -1679,12 +1680,8 @@ void Unit::Load(HANDLE file, bool local)
 
 	if(local)
 	{
-		if(IS_SET(data->flags, F_HUMAN))
-			ani = new AnimeshInstance(Game::Get().aHumanBase);
-		else
-			ani = new AnimeshInstance(data->mesh);
-		ani->Load(file);
-		ani->ptr = this;
+		CreateMesh(CREATE_MESH::LOAD);
+		mesh_inst->Load(file);
 		ReadFile(file, &animation, sizeof(animation), &tmp, nullptr);
 		ReadFile(file, &current_animation, sizeof(current_animation), &tmp, nullptr);
 
@@ -1741,16 +1738,16 @@ void Unit::Load(HANDLE file, bool local)
 		int refi;
 		ReadFile(file, &refi, sizeof(refi), &tmp, nullptr);
 		if(refi == -1)
-			useable = nullptr;
+			usable = nullptr;
 		else
-			Useable::AddRequest(&useable, refi, this);
+			Usable::AddRequest(&usable, refi, this);
 
 		if(action == A_SHOOT)
 		{
 			bow_instance = Game::Get().GetBowInstance(GetBow().mesh);
-			bow_instance->Play(&bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-			bow_instance->groups[0].speed = ani->groups[1].speed;
-			bow_instance->groups[0].time = ani->groups[1].time;
+			bow_instance->Play(&bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+			bow_instance->groups[0].speed = mesh_inst->groups[1].speed;
+			bow_instance->groups[0].time = mesh_inst->groups[1].time;
 		}
 
 		if(LOAD_VERSION < V_0_2_10)
@@ -1760,9 +1757,9 @@ void Unit::Load(HANDLE file, bool local)
 	}
 	else
 	{
-		ani = nullptr;
+		mesh_inst = nullptr;
 		ai = nullptr;
-		useable = nullptr;
+		usable = nullptr;
 		used_item = nullptr;
 		weapon_state = WS_HIDDEN;
 		weapon_taken = W_NONE;
@@ -1794,7 +1791,7 @@ void Unit::Load(HANDLE file, bool local)
 		player = nullptr;
 
 	if(local && human_data)
-		human_data->ApplyScale(ani->ani);
+		human_data->ApplyScale(mesh_inst->mesh);
 
 	if(IS_SET(data->flags, F_HERO))
 	{
@@ -1933,14 +1930,10 @@ int Unit::FindHealingPotion() const
 void Unit::ReequipItems()
 {
 	bool changes = false;
-	int index = 0;
 	for(ItemSlot& item_slot : items)
 	{
 		if(!item_slot.item)
-		{
-			++index;
 			continue;
-		}
 
 		if(item_slot.item->type == IT_GOLD)
 		{
@@ -1969,8 +1962,6 @@ void Unit::ReequipItems()
 				changes = true;
 			}
 		}
-
-		++index;
 	}
 	if(changes)
 	{
@@ -2265,8 +2256,8 @@ int NAMES::max_attacks = countof(ani_attacks);
 //=================================================================================================
 Vec3 Unit::GetEyePos() const
 {
-	const Animesh::Point& point = *ani->ani->GetPoint("oczy");
-	Matrix matBone = point.mat * ani->mat_bones[point.bone];
+	const Mesh::Point& point = *mesh_inst->mesh->GetPoint("oczy");
+	Matrix matBone = point.mat * mesh_inst->mat_bones[point.bone];
 	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(pos));
 	Vec3 eye = Vec3::TransformZero(matBone);
 	return eye;
@@ -2411,26 +2402,26 @@ const Item* Unit::GetIIndexItem(int i_index) const
 }
 
 //=================================================================================================
-Animesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
+Mesh::Animation* Unit::GetTakeWeaponAnimation(bool melee) const
 {
 	if(melee)
 	{
 		if(HaveShield())
-			return ani->ani->GetAnimation(NAMES::ani_take_weapon);
+			return mesh_inst->mesh->GetAnimation(NAMES::ani_take_weapon);
 		else
 		{
-			Animesh::Animation* anim = ani->ani->GetAnimation(NAMES::ani_take_weapon_no_shield);
+			Mesh::Animation* anim = mesh_inst->mesh->GetAnimation(NAMES::ani_take_weapon_no_shield);
 			if(!anim)
 			{
 				// brak animacja wyci¹gania broni bez tarczy, u¿yj zwyk³ej
-				return ani->ani->GetAnimation(NAMES::ani_take_weapon);
+				return mesh_inst->mesh->GetAnimation(NAMES::ani_take_weapon);
 			}
 			else
 				return anim;
 		}
 	}
 	else
-		return ani->ani->GetAnimation(NAMES::ani_take_bow);
+		return mesh_inst->mesh->GetAnimation(NAMES::ani_take_bow);
 }
 
 //=================================================================================================
@@ -2658,7 +2649,7 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 			if(game.IsLocal())
 			{
 				RecalculateStamina();
-				if(!fake_unit && IsPlayer() && player != game.pc)
+				if(!fake_unit && game.IsServer() && IsPlayer() && player != game.pc)
 					game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
 			}
 			else
@@ -2953,9 +2944,9 @@ void Unit::SetAnimationAtEnd(cstring anim_name)
 {
 	auto mat_scale = (human_data ? human_data->mat_scale.data() : nullptr);
 	if(anim_name)
-		ani->SetToEnd(anim_name, mat_scale);
+		mesh_inst->SetToEnd(anim_name, mat_scale);
 	else
-		ani->SetToEnd(mat_scale);
+		mesh_inst->SetToEnd(mat_scale);
 }
 
 //=================================================================================================
@@ -2977,9 +2968,9 @@ void Unit::StartAutoTalk(bool leader, GameDialog* dialog)
 //=================================================================================================
 void Unit::UpdateStaminaAction()
 {
-	if(useable)
+	if(usable)
 	{
-		if(useable->GetBase()->stamina_slow_restore)
+		if(usable->GetBase()->stamina_slow_restore)
 			stamina_action = SA_RESTORE_SLOW;
 		else
 			stamina_action = SA_RESTORE_MORE;
@@ -3045,5 +3036,119 @@ void Unit::RemoveStamina(float value)
 		Game& game = Game::Get();
 		if(game.pc != player)
 			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
+	}
+}
+
+//=================================================================================================
+// NORMAL - load if instant mode, add tasks when loadscreen mode
+// ON_WORLDMAP - like normal but don't play animations
+// PRELOAD - create MeshInstance with preload option when mesh not loaded
+// AFTER_PRELOAD - call ApplyPreload on MeshInstance
+// LOAD - always load mesh, add tasks for other
+void Unit::CreateMesh(CREATE_MESH mode)
+{
+	Mesh* mesh = data->mesh;
+	if(data->state != ResourceState::Loaded)
+	{
+		assert(mode != CREATE_MESH::AFTER_PRELOAD);
+		if(ResourceManager::Get().IsLoadScreen())
+		{
+			if(mode == CREATE_MESH::LOAD)
+				ResourceManager::Get<Mesh>().Load(mesh);
+			else if(!mesh->IsLoaded())
+				Game::Get().units_mesh_load.push_back(std::pair<Unit*, bool>(this, mode == CREATE_MESH::ON_WORLDMAP));
+			if(data->state == ResourceState::NotLoaded)
+			{
+				ResourceManager::Get<Mesh>().AddLoadTask(mesh);
+				if(data->sounds)
+				{
+					auto& sound_mgr = ResourceManager::Get<Sound>();
+					for(int i = 0; i<SLOT_MAX; ++i)
+					{
+						if(data->sounds->sound[i])
+							sound_mgr.AddLoadTask(data->sounds->sound[i]);
+					}
+				}
+				if(data->tex)
+				{
+					auto& tex_mgr = ResourceManager::Get<Texture>();
+					for(auto& tex : data->tex->textures)
+					{
+						if(tex.tex)
+							tex_mgr.AddLoadTask(tex.tex);
+					}
+				}
+				data->state = ResourceState::Loading;
+				ResourceManager::Get().AddTask(this, TaskCallback([](TaskData& td)
+				{
+					Unit* unit = (Unit*)td.ptr;
+					unit->data->state = ResourceState::Loaded;
+				}));
+			}
+		}
+		else
+		{
+			ResourceManager::Get<Mesh>().Load(mesh);
+			if(data->sounds)
+			{
+				auto& sound_mgr = ResourceManager::Get<Sound>();
+				for(int i = 0; i<SLOT_MAX; ++i)
+				{
+					if(data->sounds->sound[i])
+						sound_mgr.Load(data->sounds->sound[i]);
+				}
+			}
+			if(data->tex)
+			{
+				auto& tex_mgr = ResourceManager::Get<Texture>();
+				for(auto& tex : data->tex->textures)
+				{
+					if(tex.tex)
+						tex_mgr.Load(tex.tex);
+				}
+			}
+			data->state = ResourceState::Loaded;
+		}
+	}
+
+	if(mesh->IsLoaded())
+	{
+		if(mode != CREATE_MESH::AFTER_PRELOAD)
+		{
+			assert(!mesh_inst);
+			mesh_inst = new MeshInstance(mesh);
+			mesh_inst->ptr = this;
+
+			if(mode != CREATE_MESH::ON_WORLDMAP)
+			{
+				if(IsAlive())
+				{
+					mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+					animation = current_animation = ANI_STAND;
+				}
+				else
+				{
+					mesh_inst->Play(NAMES::ani_die, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+					animation = current_animation = ANI_DIE;
+					SetAnimationAtEnd();
+				}
+			}
+
+			mesh_inst->groups[0].speed = 1.f;
+			if(mesh_inst->mesh->head.n_groups > 1)
+				mesh_inst->groups[1].state = 0;
+			if(human_data)
+				human_data->ApplyScale(mesh_inst->mesh);
+		}
+		else
+		{
+			assert(mesh_inst);
+			mesh_inst->ApplyPreload(mesh);
+		}
+	}
+	else if(mode == CREATE_MESH::PRELOAD)
+	{
+		assert(!mesh_inst);
+		mesh_inst = new MeshInstance(nullptr, true);
 	}
 }

@@ -73,7 +73,7 @@ void Game::SetupTracks()
 
 	track_id = 0;
 	last_music = tracks.front();
-	PlayMusic(last_music->music->data);
+	PlayMusic(last_music->music->sound);
 	music_ended = false;
 }
 
@@ -101,7 +101,7 @@ void Game::UpdateMusic()
 		{
 			++track_id;
 			last_music = tracks[track_id];
-			PlayMusic(last_music->music->data);
+			PlayMusic(last_music->music->sound);
 			music_ended = false;
 		}
 	}
@@ -156,6 +156,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 		{ "death", MusicType::Death }
 	});
 
+	auto& sound_mgr = ResourceManager::Get<Sound>();
 	Ptr<Music> music(nullptr);
 
 	try
@@ -180,7 +181,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 						{
 							const string& filename = t.MustGetString();
 							music.Ensure();
-							music->music = resMgr.TryGetMusic(filename);
+							music->music = sound_mgr.TryGetMusic(filename);
 							if(music->music)
 							{
 								music->type = type;
@@ -204,7 +205,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 				{
 					const string& filename = t.MustGetString();
 					music.Ensure();
-					music->music = resMgr.TryGetMusic(filename);
+					music->music = sound_mgr.TryGetMusic(filename);
 					if(music->music)
 					{
 						music->type = type;
@@ -237,9 +238,10 @@ uint Game::LoadMusicDatafile(uint& errors)
 }
 
 //=================================================================================================
-void Game::LoadMusic(MusicType type, bool new_load_screen)
+void Game::LoadMusic(MusicType type, bool new_load_screen, bool task)
 {
 	bool first = true;
+	auto& sound_mgr = ResourceManager::Get<Sound>();
 
 	for(Music* music : musics)
 	{
@@ -253,10 +255,13 @@ void Game::LoadMusic(MusicType type, bool new_load_screen)
 					return;
 				}
 				if(new_load_screen)
-					resMgr.AddTaskCategory(txLoadMusic);
+					sound_mgr.AddTaskCategory(txLoadMusic);
 				first = false;
 			}
-			resMgr.LoadMusic(music->music);
+			if(task)
+				sound_mgr.AddLoadTask(music->music);
+			else
+				sound_mgr.Load(music->music);
 		}
 	}
 }

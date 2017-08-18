@@ -15,6 +15,7 @@
 #include "AIController.h"
 #include "BitStreamFunc.h"
 #include "Team.h"
+#include "SaveState.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
@@ -92,7 +93,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_PAUSE, "pause", "pause/unpause", F_GAME | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_MULTISAMPLING, "multisampling", "sets multisampling (multisampling type [quality])", F_ANYWHERE | F_WORLD_MAP | F_NO_ECHO));
 	cmds.push_back(ConsoleCommand(CMD_QUICKSAVE, "quicksave", "save game on last slot", F_GAME | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_SINGLEPLAYER | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_QUICKLOAD, "quickload", "load game from last slot", F_SINGLEPLAYER | F_WORLD_MAP | F_MENU));
 	cmds.push_back(ConsoleCommand(CMD_RESOLUTION, "resolution", "show or change display resolution (resolution [w h hz])", F_ANYWHERE | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_QS, "qs", "pick Random character, get ready and start game", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_CLEAR, "clear", "clear text", F_ANYWHERE | F_WORLD_MAP));
@@ -364,7 +365,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								ile = 1;
 
 							if(IsLocal())
+							{
+								PreloadItem(item);
 								AddItem(*pc->unit, item, ile, false);
+							}
 							else
 							{
 								NetChange& c = Add1(net_changes);
@@ -398,7 +402,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								ile = 1;
 
 							if(IsLocal())
+							{
+								PreloadItem(item);
 								AddItem(*pc->unit, item, ile);
+							}
 							else
 							{
 								NetChange& c = Add1(net_changes);
@@ -1152,14 +1159,19 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						int slot = 1;
 						if(t.Next())
 							slot = Clamp(t.MustGetInt(), 1, 10);
+
 						try
 						{
 							LoadGameSlot(slot);
+							GUI.CloseDialog(console);
 						}
-						catch(cstring err)
+						catch(const SaveException& ex)
 						{
-							Error(err);
-							MSG(Format("Failed to load game: %s", err));
+							cstring error = Format("Failed to load game: %s", ex.msg);
+							Error(error);
+							MSG(error);
+							if(!GUI.HaveDialog(console))
+								GUI.ShowDialog(console);
 						}
 					}
 					else
@@ -1443,7 +1455,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							last_startup_id = STARTUP_TIMER;
 							startup_timer = float(STARTUP_TIMER);
 							packet_data.resize(2);
-							packet_data[0] = ID_STARTUP;
+							packet_data[0] = ID_TIMER;
 							packet_data[1] = (byte)STARTUP_TIMER;
 							peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 							server_panel->bts[4].text = server_panel->txStop;
@@ -1602,7 +1614,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					Quicksave(true);
 					break;
 				case CMD_QUICKLOAD:
-					Quickload(true);
+					if(!Quickload(true))
+						MSG("Missing quicksave.");
 					break;
 				case CMD_RESOLUTION:
 					if(t.Next())
@@ -1709,7 +1722,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								last_startup_id = STARTUP_TIMER;
 								startup_timer = float(STARTUP_TIMER);
 								packet_data.resize(2);
-								packet_data[0] = ID_STARTUP;
+								packet_data[0] = ID_TIMER;
 								packet_data[1] = (byte)STARTUP_TIMER;
 								peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 							}

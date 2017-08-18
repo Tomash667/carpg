@@ -259,7 +259,7 @@ W pliku konfiguracyjnym (domyœlnie carpg.cfg) mo¿na u¿ywaæ takich opcji:
 9) Linia komend
 To s¹ prze³¹czniki dla aplikacji, dodawane do skrótu do pliku exe.
 -config plik.cfg - ustawia którego pliku cfg u¿yæ
--consola - uruchamia grê z konsol¹
+-console - uruchamia grê z konsol¹
 -delay-1 - powoduje czekanie innej gry
 -delay-2 - czeka a¿ inna gra siê wczyta
 -fullscreen - uruchamia w trybie pe³noekranowym

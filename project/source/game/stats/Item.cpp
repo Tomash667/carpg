@@ -239,6 +239,8 @@ void CreateItemCopy(Item& item, const Item* base_item)
 			o.type = o2.type;
 			o.value = o2.value;
 			o.weight = o2.weight;
+			o.state = o2.state;
+			o.icon = o2.icon;
 		}
 		break;
 	default:
@@ -1217,7 +1219,7 @@ bool LoadBookScheme(Tokenizer& t, Crc& crc)
 			case BSK_TEXTURE:
 				{
 					const string& str = t.MustGetString();
-					scheme->tex = ResourceManager::Get().TryGetTexture(str);
+					scheme->tex = ResourceManager::Get<Texture>().TryGet(str);
 					if(!scheme->tex)
 						t.Throw("Missing texture '%s'.", str.c_str());
 				}

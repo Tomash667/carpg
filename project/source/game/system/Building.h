@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Content.h"
+#include "Resource.h"
 
 //-----------------------------------------------------------------------------
 // Building group
@@ -67,10 +68,11 @@ struct Building
 	vector<TileScheme> scheme;
 	int flags;
 	BuildingGroup* group;
-	Animesh* mesh, *inside_mesh;
+	Mesh* mesh, *inside_mesh;
 	UnitData* unit;
+	ResourceState state;
 
-	Building() : size(0, 0), shift(), flags(0), mesh(nullptr), inside_mesh(nullptr), group(nullptr), unit(nullptr) {}
+	Building() : size(0, 0), shift(), flags(0), mesh(nullptr), inside_mesh(nullptr), group(nullptr), unit(nullptr), state(ResourceState::NotLoaded) {}
 };
 
 //-----------------------------------------------------------------------------

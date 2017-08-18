@@ -30,14 +30,14 @@ struct Spell
 
 	string id, sound_cast_id, sound_hit_id, tex_id, tex_particle_id, tex_explode_id, mesh_id;
 	SOUND sound_cast, sound_hit;
-	TextureResourcePtr tex, tex_particle, tex_explode;
+	TexturePtr tex, tex_particle, tex_explode;
 	Vec2 cooldown;
 	Type type;
 	int flags, dmg, dmg_bonus;
 	float range, size, size_particle, speed, explode_range;
 	Vec2 sound_cast_dist, sound_hit_dist;
 	btCollisionShape* shape;
-	Animesh* mesh;
+	Mesh* mesh;
 
 	Spell() : sound_cast(nullptr), sound_hit(nullptr), tex(nullptr), tex_particle(nullptr), tex_explode(nullptr), shape(nullptr), mesh(nullptr), type(Point),
 		cooldown(0, 0), flags(0), dmg(0), dmg_bonus(0), range(10.f), size(0.f), size_particle(0.f), speed(10.f), explode_range(0.f),

@@ -105,7 +105,9 @@
     <ClCompile Include="Common\Stream.cpp" />
     <ClCompile Include="Common\Tokenizer.cpp" />
     <ClCompile Include="GlobalCode.cpp" />
+    <ClCompile Include="Loader.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshMender.cpp" />
     <ClCompile Include="MeshTask.cpp" />
     <ClCompile Include="PCH.cpp">
@@ -121,13 +123,15 @@
     <ClInclude Include="Common\Stream.hpp" />
     <ClInclude Include="Common\Tokenizer.hpp" />
     <ClInclude Include="GlobalCode.hpp" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshMender.h" />
     <ClInclude Include="MeshTask.hpp" />
     <ClInclude Include="PCH.hpp" />
     <ClInclude Include="Qmsh.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="zmiany.txt" />
+    <Text Include="changelog.txt" />
+    <Text Include="UWAGI.TXT" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

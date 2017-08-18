@@ -1996,6 +1996,7 @@ void CityGenerator::Test()
 	delete[] h;
 }
 
+//=================================================================================================
 bool CityGenerator::IsPointNearRoad(int x, int y)
 {
 	if(x > 0 && y > 0)

@@ -69,8 +69,8 @@ void WarpToThroneBanditBoss()
 	assert(u);
 
 	// search for boss
-	Useable* use = nullptr;
-	for(vector<Useable*>::iterator it = game.local_ctx.useables->begin(), end = game.local_ctx.useables->end(); it != end; ++it)
+	Usable* use = nullptr;
+	for(vector<Usable*>::iterator it = game.local_ctx.usables->begin(), end = game.local_ctx.usables->end(); it != end; ++it)
 	{
 		if((*it)->type == U_THRONE)
 		{
@@ -133,6 +133,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			state = Quest::Started;
 			name = game->txQuest[153];
 			const Item* item = FindItem("q_bandyci_paczka");
+			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
 			other_loc = game->GetRandomSettlement(start_loc);
 			Location& sl = GetStartLocation();
@@ -177,7 +178,11 @@ void Quest_Bandits::SetProgress(int prog2)
 		// podczas rozmowy z bandytami, 66% szansy na znalezienie przy nich listu za 1 razem
 		{
 			if(get_letter || Rand() % 3 != 0)
-				game->current_dialog->talker->AddItem(FindItem("q_bandyci_list"), 1, true);
+			{
+				const Item* item = FindItem("q_bandyci_list");
+				game->PreloadItem(item);
+				game->current_dialog->talker->AddItem(item, 1, true);
+			}
 			get_letter = true;
 			msgs.push_back(game->txQuest[157]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);

@@ -1531,6 +1531,17 @@ bool LoadUnit(Tokenizer& t, Crc& crc)
 		else
 			unit->type = UNIT_TYPE::ANIMAL;
 
+		if(unit->mesh_id.empty())
+		{
+			if(unit->type != UNIT_TYPE::HUMAN)
+				t.Throw("Unit without mesh.");
+		}
+		else
+		{
+			if(unit->type == UNIT_TYPE::HUMAN)
+				t.Throw("Human unit with custome mesh.");
+		}
+
 		// add
 		std::pair<UnitDataIterator, bool>& result = unit_datas.insert(unit);
 		if(!result.second)

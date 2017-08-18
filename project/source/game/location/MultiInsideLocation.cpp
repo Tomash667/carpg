@@ -8,7 +8,7 @@
 MultiInsideLocation::MultiInsideLocation(int _levels) : active_level(-1), active(nullptr), generated(0)
 {
 	levels.resize(_levels);
-	LevelInfo li = { -1, false, false };
+	LevelInfo li = { -1, false, false, false };
 	infos.resize(_levels, li);
 	for(vector<InsideLocationLevel>::iterator it = levels.begin(), end = levels.end(); it != end; ++it)
 		it->map = nullptr;
@@ -23,7 +23,7 @@ void MultiInsideLocation::ApplyContext(LevelContext& ctx)
 	ctx.traps = &active->traps;
 	ctx.doors = &active->doors;
 	ctx.items = &active->items;
-	ctx.useables = &active->useables;
+	ctx.usables = &active->usables;
 	ctx.bloods = &active->bloods;
 	ctx.lights = &active->lights;
 	ctx.have_terrain = false;
@@ -87,6 +87,7 @@ void MultiInsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			it->seed = 0;
 		ReadFile(file, &it->cleared, sizeof(it->cleared), &tmp, nullptr);
 		ReadFile(file, &it->reset, sizeof(it->reset), &tmp, nullptr);
+		it->loaded_resources = false;
 	}
 }
 

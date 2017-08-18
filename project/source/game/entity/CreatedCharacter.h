@@ -7,6 +7,7 @@
 #include "Skill.h"
 #include "Class.h"
 #include "HumanData.h"
+#include "ItemSlot.h"
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
@@ -63,7 +64,7 @@ struct CreatedCharacter
 	int Read(BitStream& stream);
 	void Apply(PlayerController& pc);
 	bool HavePerk(Perk perk) const;
-	void GetStartingItems(const Item* (&items)[4]);
+	void GetStartingItems(const Item* (&items)[SLOT_MAX]);
 
 	int Get(Attribute attrib) const
 	{

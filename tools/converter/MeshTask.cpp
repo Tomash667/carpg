@@ -2517,8 +2517,11 @@ void SaveQmsh(const QMSH &Qmsh, const string &FileName)
 	F.WriteEx(Qmsh.BoundingSphereRadius);
 	F.WriteEx(Qmsh.BoundingBox);
 
-	//
-	//F.WriteEx(Qmsh.real_bones);
+	// points offset
+	int offset_pos = F.GetPos();
+	F.WriteEx(0xDEADC0DE);
+
+	// camera
 	F.WriteEx(Qmsh.camera_pos);
 	F.WriteEx(Qmsh.camera_target);
 	F.WriteEx(Qmsh.camera_up);
@@ -2634,6 +2637,10 @@ void SaveQmsh(const QMSH &Qmsh, const string &FileName)
 	}
 	
 	// punkty
+	int pos = F.GetPos();
+	F.SetPos(offset_pos);
+	F.WriteEx(pos);
+	F.SetPos(pos);
 	for(uint i=0; i<Qmsh.Points.size(); ++i)
 	{
 		const QMSH_POINT& point = *Qmsh.Points[i].get();

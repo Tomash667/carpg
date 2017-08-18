@@ -38,7 +38,7 @@ void Chest::Save(HANDLE file, bool local)
 
 	if(local)
 	{
-		AnimeshInstance::Group& group = ani->groups[0];
+		MeshInstance::Group& group = mesh_inst->groups[0];
 		if(group.IsPlaying())
 		{
 			WriteFile(file, &group.state, sizeof(group.state), &tmp, nullptr);
@@ -113,12 +113,12 @@ void Chest::Load(HANDLE file, bool local)
 		int b;
 		ReadFile(file, &b, sizeof(b), &tmp, nullptr);
 
-		ani = new AnimeshInstance(Game::Get().aSkrzynia);
+		mesh_inst = new MeshInstance(Game::Get().aSkrzynia);
 
 		if(b != 0)
 		{
-			AnimeshInstance::Group& group = ani->groups[0];
-			group.anim = &ani->ani->anims[0];
+			MeshInstance::Group& group = mesh_inst->groups[0];
+			group.anim = &mesh_inst->mesh->anims[0];
 			group.state = b;
 			ReadFile(file, &group.time, sizeof(group.time), &tmp, nullptr);
 			ReadFile(file, &group.blend_time, sizeof(group.blend_time), &tmp, nullptr);
@@ -126,7 +126,7 @@ void Chest::Load(HANDLE file, bool local)
 		}
 	}
 	else
-		ani = nullptr;
+		mesh_inst = nullptr;
 
 	int refid;
 	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);

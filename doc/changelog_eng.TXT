@@ -36,6 +36,9 @@ Version 0.5.0 (2017-XX-YY):
 - fixed invalid player name
 - fixed carried inventory weight effect on run speed
 - fixed many animations speed affected by walk speed (drop item, pickup)
+- fixed compability with pre 0.3 village hall broken in 0.4.20
+- fixed fields texture in villages
+- fixed item icon not using armor texture overrides (mithril, dragonscale)
 
 --------------------------------------------------------------------------------
 Version 0.4.20 (2016-04-29):
@@ -163,7 +166,7 @@ Version 0.4 (2015-10-20):
 - fixed ai going to inn disappear
 - fixed ai exiting village at old gates position
 - fixed tearing near light with high fps
-- fixed bug with ai team member getting warped to useable object [Minister of Death]
+- fixed bug with ai team member getting warped to usable object [Minister of Death]
 - fixed player unit not being removed when player crashed on loading world
 
 --------------------------------------------------------------------------------
@@ -290,7 +293,7 @@ Added:
 + build number in exe and save
 + better displaying near character names and healthbars
 + new effect after drinking alcohol
-+ useable items have visible model when on ground, not a sack
++ usable items have visible model when on ground, not a sack
 + pickable mushrooms in caves
 + eating food by AI
 + buffs visible above healthbar
@@ -478,7 +481,7 @@ Version 0.2.5 (2014-06-22):
 + screenshot without gui
 + weapon state between levels don't change
 + more dialogues with crazies
-+ hiding weapon before using useable
++ hiding weapon before using usable
 + kill counter at end of game
 + alt+f4 in multiplayer
 + timeout for client connection to server
@@ -505,7 +508,7 @@ Version 0.2.5 (2014-06-22):
 - fixed MP crash when changing level with traps
 - fixed missing animations for client
 - better usables for client
-- when using useable, team nicks are drawn
+- when using usable, team nicks are drawn
 - shooting and changing level could crash game
 - you can't die on arena now
 - valid sync of credit/days after loading

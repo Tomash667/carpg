@@ -487,15 +487,21 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 					FindBuilding(village_hall)->type = village_hall_old;
 					for(Object& o : objects)
 					{
-						if(o.mesh->res->filename == "soltys.qmsh")
-							o.mesh = ResourceManager::Get().GetLoadedMesh("soltys_old.qmsh")->data;
+						if(strcmp(o.mesh->filename, "soltys.qmsh") == 0)
+						{
+							o.mesh = ResourceManager::Get<Mesh>().GetLoaded("soltys_old.qmsh");
+							break;
+						}
 					}
 					InsideBuilding* b = FindInsideBuilding(village_hall);
 					b->type = village_hall_old;
 					for(Object& o : b->objects)
 					{
-						if(o.mesh->res->filename == "soltys_srodek.qmsh")
-							o.mesh = ResourceManager::Get().GetLoadedMesh("soltys_srodek_old.qmsh")->data;
+						if(strcmp(o.mesh->filename, "soltys_srodek.qmsh") == 0)
+						{
+							o.mesh = ResourceManager::Get<Mesh>().GetLoaded("soltys_srodek_old.qmsh");
+							break;
+						}
 					}
 				}
 			}
@@ -553,10 +559,10 @@ void City::BuildRefidTable()
 			Unit::refid_table.push_back(*it);
 		}
 
-		for(vector<Useable*>::iterator it = (*it2)->useables.begin(), end = (*it2)->useables.end(); it != end; ++it)
+		for(vector<Usable*>::iterator it = (*it2)->usables.begin(), end = (*it2)->usables.end(); it != end; ++it)
 		{
-			(*it)->refid = (int)Useable::refid_table.size();
-			Useable::refid_table.push_back(*it);
+			(*it)->refid = (int)Usable::refid_table.size();
+			Usable::refid_table.push_back(*it);
 		}
 	}
 }
@@ -663,7 +669,7 @@ InsideBuilding* City::FindInsideBuilding(Building* type)
 //=================================================================================================
 InsideBuilding* City::FindInsideBuilding(BuildingGroup* group)
 {
-	assert(group >= 0);
+	assert(group);
 	for(InsideBuilding* i : inside_buildings)
 	{
 		if(i->type->group == group)
@@ -675,7 +681,7 @@ InsideBuilding* City::FindInsideBuilding(BuildingGroup* group)
 //=================================================================================================
 InsideBuilding* City::FindInsideBuilding(BuildingGroup* group, int& index)
 {
-	assert(group >= 0);
+	assert(group);
 	index = 0;
 	for(InsideBuilding* i : inside_buildings)
 	{
@@ -690,7 +696,7 @@ InsideBuilding* City::FindInsideBuilding(BuildingGroup* group, int& index)
 //=================================================================================================
 CityBuilding* City::FindBuilding(BuildingGroup* group)
 {
-	assert(group >= 0);
+	assert(group);
 	for(CityBuilding& b : buildings)
 	{
 		if(b.type->group == group)

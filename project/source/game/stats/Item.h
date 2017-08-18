@@ -57,7 +57,7 @@ struct Book;
 // Base item type
 struct Item
 {
-	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), mesh(nullptr), tex(nullptr)
+	explicit Item(ITEM_TYPE type) : type(type), weight(1), value(0), flags(0), mesh(nullptr), tex(nullptr), icon(nullptr), state(ResourceState::NotLoaded)
 	{
 	}
 	virtual ~Item() {}
@@ -184,8 +184,10 @@ struct Item
 	string id, mesh_id, name, desc;
 	int weight, value, flags, refid;
 	ITEM_TYPE type;
-	Animesh* mesh;
-	TEX tex;
+	MeshPtr mesh;
+	TexturePtr tex;
+	TEX icon;
+	ResourceState state;
 };
 
 //-----------------------------------------------------------------------------
@@ -364,7 +366,7 @@ struct BookScheme
 	BookScheme() : tex(nullptr), size(0, 0), prev(0, 0), next(0, 0) {}
 
 	string id;
-	TextureResourcePtr tex;
+	TexturePtr tex;
 	Int2 size, prev, next;
 	vector<Rect> regions;
 };

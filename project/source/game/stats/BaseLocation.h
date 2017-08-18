@@ -3,6 +3,7 @@
 
 //-----------------------------------------------------------------------------
 #include "SpawnGroup.h"
+#include "Resource.h"
 
 //-----------------------------------------------------------------------------
 // fort ludzi, 2-3 poziomów, bez pu³apek czy ukrytych przejœæ
@@ -83,11 +84,46 @@ struct RoomStrChance
 };
 
 //-----------------------------------------------------------------------------
-// Rodzaj pu³apek w lokacji
-#define TRAPS_NORMAL (1<<0)
-#define TRAPS_MAGIC (1<<1)
-#define TRAPS_NEAR_ENTRANCE (1<<2)
-#define TRAPS_NEAR_END (1<<3)
+// Traps flags
+enum TRAP_FLAGS
+{
+	TRAPS_NORMAL = 1 << 0,
+	TRAPS_MAGIC = 1 << 1,
+	TRAPS_NEAR_ENTRANCE = 1 << 2,
+	TRAPS_NEAR_END = 1 << 3
+};
+
+//-----------------------------------------------------------------------------
+struct LocationTexturePack
+{
+	struct Entry
+	{
+		cstring id, id_normal, id_specular;
+		TexturePtr tex, tex_normal, tex_specular;
+
+		Entry() : id(nullptr), id_normal(nullptr), id_specular(nullptr), tex(nullptr), tex_normal(nullptr), tex_specular(nullptr)
+		{
+		}
+		Entry(cstring id, cstring id_normal, cstring id_specular) : id(id), id_normal(id_normal), id_specular(id_specular), tex(nullptr), tex_normal(nullptr),
+			tex_specular(nullptr)
+		{
+		}
+	};
+
+	Entry floor, wall, ceil;
+
+	LocationTexturePack()
+	{
+	}
+	LocationTexturePack(cstring id_floor, cstring id_wall, cstring id_ceil) : floor(id_floor, nullptr, nullptr), wall(id_wall, nullptr, nullptr), ceil(id_ceil, nullptr, nullptr)
+	{
+	}
+	LocationTexturePack(cstring id_floor, cstring id_floor_nrm, cstring id_floor_spec, cstring id_wall, cstring id_wall_nrm, cstring id_wall_spec, cstring id_ceil,
+		cstring id_ceil_nrm, cstring id_ceil_spec) : floor(id_floor, id_floor_nrm, id_floor_spec), wall(id_wall, id_wall_nrm, id_wall_spec),
+		ceil(id_ceil, id_ceil_nrm, id_ceil_spec)
+	{
+	}
+};
 
 //-----------------------------------------------------------------------------
 // Bazowa lokalizacja, rodzaj podziemi/krypty
@@ -104,14 +140,14 @@ struct BaseLocation
 	float draw_range, draw_range_lvl;
 	RoomStrChance* rooms;
 	int room_count, room_total;
-	cstring tex_floor, tex_wall, tex_ceil;
 	int door_chance, door_open, bars_chance;
 	SPAWN_GROUP sg1, sg2, sg3;
 	int schance1, schance2, schance3;
 	int traps, tex2;
-	cstring tex_floor_nrm, tex_wall_nrm, tex_ceil_nrm, tex_floor_spec, tex_wall_spec, tex_ceil_spec;
+	LocationTexturePack tex;
 
 	RoomType* GetRandomRoomType() const;
+	static void PreloadTextures();
 };
 extern BaseLocation g_base_locations[];
 extern const uint n_base_locations;

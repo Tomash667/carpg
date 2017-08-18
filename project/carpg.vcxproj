@@ -142,16 +142,16 @@
     <ClInclude Include="source\core\TextWriter.h" />
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
-    <ClInclude Include="source\core\VertexData.h" />
-    <ClInclude Include="source\engine\Animesh.h" />
+    <ClInclude Include="source\engine\Mesh.h" />
     <ClInclude Include="source\engine\Engine.h" />
     <ClInclude Include="source\engine\KeyStates.h" />
+    <ClInclude Include="source\engine\MeshInstance.h" />
     <ClInclude Include="source\engine\ParticleSystem.h" />
     <ClInclude Include="source\engine\Physics.h" />
     <ClInclude Include="source\engine\Resource.h" />
     <ClInclude Include="source\engine\ResourceManager.h" />
     <ClInclude Include="source\engine\Terrain.h" />
-    <ClInclude Include="source\engine\TerrainTile.h" />
+    <ClInclude Include="source\engine\VertexData.h" />
     <ClInclude Include="source\engine\VertexDeclaration.h" />
     <ClInclude Include="source\ErrorHandler.h" />
     <ClInclude Include="source\game\Collision.h" />
@@ -186,7 +186,7 @@
     <ClInclude Include="source\game\entity\SpellEffects.h" />
     <ClInclude Include="source\game\entity\Trap.h" />
     <ClInclude Include="source\game\entity\Unit.h" />
-    <ClInclude Include="source\game\entity\Useable.h" />
+    <ClInclude Include="source\game\entity\Usable.h" />
     <ClInclude Include="source\game\Game.h" />
     <ClInclude Include="source\game\GameCommon.h" />
     <ClInclude Include="source\game\GameFile.h" />
@@ -265,7 +265,7 @@
     <ClInclude Include="source\game\stats\Attribute.h" />
     <ClInclude Include="source\game\stats\BaseLocation.h" />
     <ClInclude Include="source\game\stats\BaseTrap.h" />
-    <ClInclude Include="source\game\stats\BaseUseable.h" />
+    <ClInclude Include="source\game\stats\BaseUsable.h" />
     <ClInclude Include="source\game\stats\Class.h" />
     <ClInclude Include="source\game\stats\Const.h" />
     <ClInclude Include="source\game\stats\DamageTypes.h" />
@@ -284,6 +284,7 @@
     <ClInclude Include="source\game\stats\UnitData.h" />
     <ClInclude Include="source\game\stats\UnitStats.h" />
     <ClInclude Include="source\game\Team.h" />
+    <ClInclude Include="source\game\TerrainTile.h" />
     <ClInclude Include="source\gui\AreaLayout.h" />
     <ClInclude Include="source\gui\Button.h" />
     <ClInclude Include="source\gui\CheckBox.h" />
@@ -341,14 +342,15 @@
     <ClCompile Include="source\core\Text.cpp" />
     <ClCompile Include="source\core\Timer.cpp" />
     <ClCompile Include="source\core\Tokenizer.cpp" />
-    <ClCompile Include="source\engine\Animesh.cpp" />
+    <ClCompile Include="source\engine\Mesh.cpp" />
     <ClCompile Include="source\engine\Engine.cpp" />
     <ClCompile Include="source\engine\KeyStates.cpp" />
+    <ClCompile Include="source\engine\MeshInstance.cpp" />
     <ClCompile Include="source\engine\ParticleSystem.cpp" />
     <ClCompile Include="source\engine\Physics.cpp" />
     <ClCompile Include="source\engine\ResourceManager.cpp" />
     <ClCompile Include="source\engine\Terrain.cpp" />
-    <ClCompile Include="source\engine\TerrainTile.cpp" />
+    <ClCompile Include="source\engine\VertexData.cpp" />
     <ClCompile Include="source\ErrorHandler.cpp" />
     <ClCompile Include="source\game\Ai.cpp" />
     <ClCompile Include="source\game\ConsoleCommands.cpp" />
@@ -376,7 +378,7 @@
     <ClCompile Include="source\game\entity\SpellEffects.cpp" />
     <ClCompile Include="source\game\entity\Trap.cpp" />
     <ClCompile Include="source\game\entity\Unit.cpp" />
-    <ClCompile Include="source\game\entity\Useable.cpp" />
+    <ClCompile Include="source\game\entity\Usable.cpp" />
     <ClCompile Include="source\game\FOV.cpp" />
     <ClCompile Include="source\game\Game.cpp" />
     <ClCompile Include="source\game\Game2.cpp" />
@@ -454,7 +456,7 @@
     <ClCompile Include="source\game\stats\Attribute.cpp" />
     <ClCompile Include="source\game\stats\BaseLocation.cpp" />
     <ClCompile Include="source\game\stats\BaseTrap.cpp" />
-    <ClCompile Include="source\game\stats\BaseUseable.cpp" />
+    <ClCompile Include="source\game\stats\BaseUsable.cpp" />
     <ClCompile Include="source\game\stats\Class.cpp" />
     <ClCompile Include="source\game\stats\Effect.cpp" />
     <ClCompile Include="source\game\stats\Item.cpp" />
@@ -472,6 +474,7 @@
     <ClCompile Include="source\game\stats\UnitStats.cpp" />
     <ClCompile Include="source\game\Team.cpp" />
     <ClCompile Include="source\game\TeamItems.cpp" />
+    <ClCompile Include="source\game\TerrainTile.cpp" />
     <ClCompile Include="source\game\Tournament.cpp" />
     <ClCompile Include="source\game\Tutorial.cpp" />
     <ClCompile Include="source\game\Worldmap.cpp" />
@@ -528,7 +531,6 @@
     <Text Include="..\doc\readme.txt" />
     <Text Include="..\doc\readme_eng.txt" />
     <Text Include="..\doc\system.txt" />
-    <Text Include="..\doc\todo last.txt" />
     <Text Include="..\doc\todo.txt" />
   </ItemGroup>
   <ItemGroup>

@@ -26,9 +26,13 @@ public:
 
 	void Show();
 	void GetCell(int item, int column, Cell& cell);
+	void LoadData();
 
 	Grid grid;
 	vector<ServerData> servers;
 	float ping_timer;
 	cstring txUnknownResponse, txUnknownResponse2, txBrokenResponse;
+
+private:
+	TEX tIcoHaslo, tIcoZapis;
 };

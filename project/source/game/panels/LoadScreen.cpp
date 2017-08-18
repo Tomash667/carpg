@@ -2,6 +2,7 @@
 #include "Core.h"
 #include "LoadScreen.h"
 #include "ResourceManager.h"
+#include "Engine.h"
 
 //=================================================================================================
 void LoadScreen::Draw(ControlDrawData*)
@@ -28,8 +29,35 @@ void LoadScreen::Draw(ControlDrawData*)
 //=================================================================================================
 void LoadScreen::LoadData()
 {
-	ResourceManager& resMgr = ResourceManager::Get();
-	resMgr.GetLoadedTexture("loadbar_bg.png", tLoadbarBg);
-	resMgr.GetLoadedTexture("loadbar.png", tLoadbar);
-	resMgr.GetLoadedTexture("load_bg.jpg", tBackground);
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tLoadbarBg = tex_mgr.GetLoadedRaw("loadbar_bg.png");
+	tLoadbar = tex_mgr.GetLoadedRaw("loadbar.png");
+	tBackground = tex_mgr.GetLoadedRaw("load_bg.jpg");
+}
+
+//=================================================================================================
+void LoadScreen::Setup(float min_progress, float max_progress, int steps, cstring str)
+{
+	assert(max_progress >= min_progress && InRange(min_progress, 0.f, 1.f) && InRange(max_progress, 0.f, 1.f) && steps > 0);
+	this->min_progress = min_progress;
+	this->max_progress = max_progress;
+	this->steps = steps;
+	if(str)
+		text = str;
+	else
+		text.clear();
+	progress = min_progress;
+	step = 0;
+	Engine::Get().DoPseudotick();
+}
+
+//=================================================================================================
+void LoadScreen::Tick(cstring str)
+{
+	assert(step != steps);
+	++step;
+	progress = min_progress + (max_progress - min_progress) * step / steps;
+	if(str)
+		text = str;
+	Engine::Get().DoPseudotick();
 }

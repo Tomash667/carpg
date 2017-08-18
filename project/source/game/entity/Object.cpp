@@ -73,7 +73,7 @@ Obj g_objs[] = {
 	Obj("tree", OBJ_SCALEABLE, 0, L_ANG("Drzewo", "Tree"), "drzewo.qmsh", 0.043f, 5.f, 1),
 	Obj("tree2", OBJ_SCALEABLE, 0, L_ANG("Drzewo", "Tree"), "drzewo2.qmsh", 0.024f, 5.f, 1),
 	Obj("tree3", OBJ_SCALEABLE, 0, L_ANG("Drzewo", "Tree"), "drzewo3.qmsh", 0.067f, 5.f, 1),
-	Obj("grass", OBJ_NO_PHYSICS, 0, L_ANG("Trawa", "Grass"), "trawa.qmsh", 1),
+	Obj("grass", OBJ_NO_PHYSICS | OBJ_PRELOAD, 0, L_ANG("Trawa", "Grass"), "trawa.qmsh", 1),
 	Obj("plant", OBJ_NO_PHYSICS, 0, L_ANG("Krzak", "Plant"), "krzak.qmsh", 1),
 	Obj("plant_pot", 0, 0, L_ANG("Roœlina w doniczce", "Plant pot"), "doniczka.qmsh", 0.514f / 2, 0.1f / 2, 1),
 	Obj("desk", 0, 0, L_ANG("Biurko", "Desk"), "biurko.qmsh", 1),
@@ -120,7 +120,7 @@ Obj g_objs[] = {
 	Obj("wheel", OBJ_NO_PHYSICS, 0, "Ko³o", "kolo.qmsh", 0.f, 0.f),
 	Obj("woodpile", 0, 0, "Drewno", "woodpile.qmsh"),
 	Obj("grass2", OBJ_NO_PHYSICS, 0, "Trawa", "trawa2.qmsh", 0.f, 0.f, 1),
-	Obj("corn", OBJ_NO_PHYSICS, 0, "Zbo¿e", "zboze.qmsh", 0.f, 0.f, 1),
+	Obj("corn", OBJ_NO_PHYSICS | OBJ_PRELOAD, 0, "Zbo¿e", "zboze.qmsh", 0.f, 0.f, 1),
 };
 const uint n_objs = countof(g_objs);
 
@@ -228,9 +228,9 @@ void Object::Save(HANDLE file)
 	{
 		byte len = 0;
 		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		len = (byte)strlen(mesh->res->filename);
+		len = (byte)strlen(mesh->filename);
 		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		WriteFile(file, mesh->res->filename, len, &tmp, nullptr);
+		WriteFile(file, mesh->filename, len, &tmp, nullptr);
 	}
 }
 
@@ -266,7 +266,7 @@ void Object::Load(HANDLE file)
 		ReadFile(file, BUF, len, &tmp, nullptr);
 		BUF[len] = 0;
 		if(LOAD_VERSION >= V_0_3)
-			mesh = ResourceManager::Get().GetLoadedMesh(BUF)->data;
+			mesh = ResourceManager::Get<Mesh>().GetLoaded(BUF);
 		else
 		{
 			if(strcmp(BUF, "mur.qmsh") == 0 || strcmp(BUF, "mur2.qmsh") == 0 || strcmp(BUF, "brama.qmsh") == 0)
@@ -275,7 +275,7 @@ void Object::Load(HANDLE file)
 				mesh = base->mesh;
 			}
 			else
-				mesh = ResourceManager::Get().GetLoadedMesh(BUF)->data;
+				mesh = ResourceManager::Get<Mesh>().GetLoaded(BUF);
 		}
 	}
 }
@@ -291,7 +291,7 @@ void Object::Write(BitStream& stream) const
 	else
 	{
 		stream.Write<byte>(0);
-		WriteString1(stream, mesh->res->filename);
+		WriteString1(stream, mesh->filename);
 	}
 }
 
@@ -309,7 +309,7 @@ bool Object::Read(BitStream& stream)
 		base = FindObject(BUF);
 		if(!base)
 		{
-			Error("Missing base object '%stream'!", BUF);
+			Error("Missing base object '%s'!", BUF);
 			return false;
 		}
 		mesh = base->mesh;
@@ -319,7 +319,7 @@ bool Object::Read(BitStream& stream)
 		// use mesh
 		if(!ReadString1(stream))
 			return false;
-		mesh = ResourceManager::Get().GetLoadedMesh(BUF)->data;
+		mesh = ResourceManager::Get<Mesh>().GetLoaded(BUF);
 		base = nullptr;
 	}
 	return true;

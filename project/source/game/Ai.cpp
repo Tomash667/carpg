@@ -197,8 +197,8 @@ void Game::UpdateAi(float dt)
 				if(u.action == A_BLOCK)
 				{
 					u.action = A_NONE;
-					u.ani->frame_end_info2 = false;
-					u.ani->Deactivate(1);
+					u.mesh_inst->frame_end_info2 = false;
+					u.mesh_inst->Deactivate(1);
 					if(IsOnline())
 					{
 						NetChange& c = Add1(net_changes);
@@ -301,7 +301,7 @@ void Game::UpdateAi(float dt)
 			// brak wrogów w okolicy
 			case AIController::Idle:
 				{
-					if(u.useable == nullptr)
+					if(u.usable == nullptr)
 					{
 						if(ai.alert_target)
 						{
@@ -311,7 +311,7 @@ void Game::UpdateAi(float dt)
 							{
 								// ktoœ inny go powiadomi³ okrzykiem o wrogu
 								u.talking = false;
-								u.ani->need_update = true;
+								u.mesh_inst->need_update = true;
 								ai.in_combat = true;
 								ai.target = ai.alert_target;
 								ai.target_last_pos = ai.alert_target_pos;
@@ -331,7 +331,7 @@ void Game::UpdateAi(float dt)
 						{
 							// zauwa¿y³ wroga, zacznij walkê
 							u.talking = false;
-							u.ani->need_update = true;
+							u.mesh_inst->need_update = true;
 							ai.in_combat = true;
 							ai.target = enemy;
 							ai.target_last_pos = enemy->pos;
@@ -356,7 +356,7 @@ void Game::UpdateAi(float dt)
 							ai.idle_action = AIController::Idle_None;
 							ai.timer = Random(2.f, 5.f);
 							ai.city_wander = false;
-							Unit_StopUsingUseable(ctx, u);
+							Unit_StopUsingUsable(ctx, u);
 						}
 					}
 
@@ -393,22 +393,22 @@ void Game::UpdateAi(float dt)
 
 					bool wander = true;
 
-					if(u.useable && u.useable->user != &u)
+					if(u.usable && u.usable->user != &u)
 					{
 						// naprawa b³êdu gdy siê on zdarzy a nie rozwi¹zanie
-						Warn("Invalid useable user: %s is using %s but the user is %s.", u.data->id.c_str(), u.useable->GetBase()->id,
-							u.useable->user ? u.useable->user->data->id.c_str() : "nullptr");
-						u.useable = nullptr;
+						Warn("Invalid usable user: %s is using %s but the user is %s.", u.data->id.c_str(), u.usable->GetBase()->id,
+							u.usable->user ? u.usable->user->data->id.c_str() : "nullptr");
+						u.usable = nullptr;
 #ifdef _DEBUG
-						AddGameMsg("Invalid useable user!", 5.f);
+						AddGameMsg("Invalid usable user!", 5.f);
 #endif
 					}
 					if(u.action == A_BLOCK)
 					{
 						// mo¿e naprawione ale póki co niech zostanie
 						u.action = A_NONE;
-						u.ani->frame_end_info2 = false;
-						u.ani->Deactivate(1);
+						u.mesh_inst->frame_end_info2 = false;
+						u.mesh_inst->Deactivate(1);
 						if(IsOnline())
 						{
 							NetChange& c = Add1(net_changes);
@@ -422,7 +422,7 @@ void Game::UpdateAi(float dt)
 						AddGameMsg("Unit blocks in idle!", 5.f);
 #endif
 					}
-					if(u.look_target && !u.useable)
+					if(u.look_target && !u.usable)
 					{
 						// patrzenie na postaæ w czasie dialogu
 						look_at = LookAtPoint;
@@ -433,11 +433,11 @@ void Game::UpdateAi(float dt)
 					else if(u.IsHero() && u.hero->mode == HeroData::Leave)
 					{
 						// bohater chce opuœciæ t¹ lokacjê
-						if(u.useable)
+						if(u.usable)
 						{
 							if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 							{
-								Unit_StopUsingUseable(ctx, u);
+								Unit_StopUsingUsable(ctx, u);
 								ai.idle_action = AIController::Idle_None;
 								ai.timer = Random(1.f, 2.f);
 								ai.city_wander = true;
@@ -458,11 +458,11 @@ void Game::UpdateAi(float dt)
 						// chodzenie do karczmy
 						if(ai.goto_inn && !(u.IsHero() && tournament_generated))
 						{
-							if(u.useable)
+							if(u.usable)
 							{
 								if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 								{
-									Unit_StopUsingUseable(ctx, u);
+									Unit_StopUsingUsable(ctx, u);
 									ai.idle_action = AIController::Idle_None;
 									ai.timer = Random(1.f, 2.f);
 								}
@@ -511,11 +511,11 @@ void Game::UpdateAi(float dt)
 							if(dist >= (u.assist ? 4.f : 2.f))
 							{
 								// pod¹¿aj za liderem
-								if(u.useable)
+								if(u.usable)
 								{
 									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 									{
-										Unit_StopUsingUseable(ctx, u);
+										Unit_StopUsingUsable(ctx, u);
 										ai.idle_action = AIController::Idle_None;
 										ai.timer = Random(1.f, 2.f);
 										ai.city_wander = false;
@@ -568,11 +568,11 @@ void Game::UpdateAi(float dt)
 							else
 							{
 								// odsuñ siê ¿eby nie blokowaæ
-								if(u.useable)
+								if(u.usable)
 								{
 									if(u.busy != Unit::Busy_Talking && (u.action != A_ANIMATION2 || u.animation_state != AS_ANIMATION2_MOVE_TO_ENDPOINT))
 									{
-										Unit_StopUsingUseable(ctx, u);
+										Unit_StopUsingUsable(ctx, u);
 										ai.idle_action = AIController::Idle_None;
 										ai.timer = Random(1.f, 2.f);
 										ai.city_wander = false;
@@ -651,12 +651,12 @@ void Game::UpdateAi(float dt)
 							else if(ai.idle_action == AIController::Idle_Chat)
 							{
 								u.talking = false;
-								u.ani->need_update = true;
+								u.mesh_inst->need_update = true;
 								ai.idle_action = AIController::Idle_None;
 							}
 							else if(ai.idle_action == AIController::Idle_Use)
 							{
-								if(u.useable->type == U_STOOL && u.in_building != -1)
+								if(u.usable->type == U_STOOL && u.in_building != -1)
 								{
 									int co;
 									if(IsDrunkman(u))
@@ -674,7 +674,7 @@ void Game::UpdateAi(float dt)
 										ai.timer = Random(10.f, 15.f);
 										break;
 									case 2:
-										Unit_StopUsingUseable(ctx, u);
+										Unit_StopUsingUsable(ctx, u);
 										ai.idle_action = AIController::Idle_None;
 										ai.timer = Random(2.5f, 5.f);
 										break;
@@ -682,14 +682,14 @@ void Game::UpdateAi(float dt)
 								}
 								else
 								{
-									Unit_StopUsingUseable(ctx, u);
+									Unit_StopUsingUsable(ctx, u);
 									ai.idle_action = AIController::Idle_None;
 									ai.timer = Random(2.5f, 5.f);
 								}
 							}
 							else if(ai.idle_action == AIController::Idle_WalkUseEat)
 							{
-								if(u.useable)
+								if(u.usable)
 								{
 									if(u.animation_state != 0)
 									{
@@ -783,26 +783,26 @@ void Game::UpdateAi(float dt)
 								if(req_item && !u.HaveItem(req_item) && u.slots[SLOT_WEAPON] != req_item)
 									goto normal_idle_action;
 								// find closest ore vein
-								Useable* useable = nullptr;
+								Usable* usable = nullptr;
 								float range = 20.1f;
-								for(vector<Useable*>::iterator it2 = ctx.useables->begin(), end2 = ctx.useables->end(); it2 != end2; ++it2)
+								for(vector<Usable*>::iterator it2 = ctx.usables->begin(), end2 = ctx.usables->end(); it2 != end2; ++it2)
 								{
-									Useable& use = **it2;
+									Usable& use = **it2;
 									if(!use.user && (use.type == U_IRON_VEIN || use.type == U_GOLD_VEIN))
 									{
 										float dist = Vec3::Distance(use.pos, u.pos);
 										if(dist < range)
 										{
 											range = dist;
-											useable = &use;
+											usable = &use;
 										}
 									}
 								}
 								// start mining if there is anything to mine
-								if(useable)
+								if(usable)
 								{
 									ai.idle_action = AIController::Idle_WalkUse;
-									ai.idle_data.useable = useable;
+									ai.idle_data.usable = usable;
 									ai.timer = Random(5.f, 10.f);
 								}
 								else
@@ -953,12 +953,12 @@ void Game::UpdateAi(float dt)
 									break;
 								case I_UZYJ:
 									// u¿yj pobliskiego obiektu
-									if(ctx.useables)
+									if(ctx.usables)
 									{
-										static vector<Useable*> uses;
-										for(vector<Useable*>::iterator it2 = ctx.useables->begin(), end2 = ctx.useables->end(); it2 != end2; ++it2)
+										static vector<Usable*> uses;
+										for(vector<Usable*>::iterator it2 = ctx.usables->begin(), end2 = ctx.usables->end(); it2 != end2; ++it2)
 										{
-											Useable& use = **it2;
+											Usable& use = **it2;
 											if(!use.user && (use.type != U_THRONE || IS_SET(u.data->flags2, F2_SIT_ON_THRONE)) && Vec3::Distance(use.pos, u.pos) < 10.f
 												/*CanSee - niestety nie ma takiej funkcji wiêc trudno :p*/)
 											{
@@ -970,9 +970,9 @@ void Game::UpdateAi(float dt)
 										if(!uses.empty())
 										{
 											ai.idle_action = AIController::Idle_WalkUse;
-											ai.idle_data.useable = uses[Rand() % uses.size()];
+											ai.idle_data.usable = uses[Rand() % uses.size()];
 											ai.timer = Random(3.f, 6.f);
-											if(ai.idle_data.useable->type == U_STOOL && Rand() % 3 == 0)
+											if(ai.idle_data.usable->type == U_STOOL && Rand() % 3 == 0)
 												ai.idle_action = AIController::Idle_WalkUseEat;
 											uses.clear();
 											break;
@@ -985,9 +985,9 @@ void Game::UpdateAi(float dt)
 										int id = Rand() % u.data->idles->size();
 										ai.timer = Random(2.f, 5.f);
 										ai.idle_action = AIController::Idle_Animation;
-										u.ani->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
-										u.ani->groups[0].speed = 1.f;
-										u.ani->frame_end_info = false;
+										u.mesh_inst->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
+										u.mesh_inst->groups[0].speed = 1.f;
+										u.mesh_inst->frame_end_info = false;
 										u.animation = ANI_IDLE;
 										if(IsOnline())
 										{
@@ -1178,8 +1178,8 @@ void Game::UpdateAi(float dt)
 											if(Rand() % 3 != 0)
 											{
 												ani = Rand() % 2 + 1;
-												u.ani->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
-												u.ani->groups[0].speed = 1.f;
+												u.mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
+												u.mesh_inst->groups[0].speed = 1.f;
 												u.animation = ANI_PLAY;
 												u.action = A_ANIMATION;
 											}
@@ -1275,12 +1275,12 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_WalkUse:
 							case AIController::Idle_WalkUseEat:
 								{
-									Useable& use = *ai.idle_data.useable;
+									Usable& use = *ai.idle_data.usable;
 									if(use.user || u.frozen)
 										ai.idle_action = AIController::Idle_None;
 									else if(Vec3::Distance2d(u.pos, use.pos) < PICKUP_RANGE)
 									{
-										if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.useable->pos))) < PI / 4)
+										if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.usable->pos))) < PI / 4)
 										{
 											BaseUsable& base = g_base_usables[use.type];
 											const Item* needed_item = base.item;
@@ -1292,30 +1292,30 @@ void Game::UpdateAi(float dt)
 												if(use.type == U_CHAIR && IS_SET(u.data->flags, F_AI_CLERK))
 												{
 													czyta_papiery = true;
-													u.ani->Play("czyta_papiery", PLAY_PRIO3, 0);
+													u.mesh_inst->Play("czyta_papiery", PLAY_PRIO3, 0);
 												}
 												else
-													u.ani->Play(base.anim, PLAY_PRIO1, 0);
-												u.ani->groups[0].speed = 1.f;
-												u.useable = &use;
+													u.mesh_inst->Play(base.anim, PLAY_PRIO1, 0);
+												u.mesh_inst->groups[0].speed = 1.f;
+												u.usable = &use;
 												u.target_pos = u.pos;
 												u.target_pos2 = use.pos;
 												if(g_base_usables[use.type].limit_rot == 4)
 													u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
 												u.timer = 0.f;
 												u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-												u.use_rot = Vec3::LookAtAngle(u.pos, u.useable->pos);
+												u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
 												u.used_item = needed_item;
 												if(ai.idle_action == AIController::Idle_WalkUseEat)
 													ai.timer = -1.f;
 												else
 												{
 													ai.idle_action = AIController::Idle_Use;
-													if(u.useable->type == U_STOOL && u.in_building != -1 && IsDrunkman(u))
+													if(u.usable->type == U_STOOL && u.in_building != -1 && IsDrunkman(u))
 														ai.timer = Random(10.f, 20.f);
-													else if(u.useable->type == U_THRONE)
+													else if(u.usable->type == U_THRONE)
 														ai.timer = 120.f;
-													else if(u.useable->type == U_IRON_VEIN || u.useable->type == U_GOLD_VEIN)
+													else if(u.usable->type == U_IRON_VEIN || u.usable->type == U_GOLD_VEIN)
 														ai.timer = Random(20.f, 30.f);
 													else
 														ai.timer = Random(5.f, 10.f);
@@ -1404,13 +1404,13 @@ void Game::UpdateAi(float dt)
 											{
 												// strzelanie z ³uku
 												float speed = u.GetBowAttackSpeed();
-												u.ani->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-												u.ani->groups[1].speed = speed;
+												u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+												u.mesh_inst->groups[1].speed = speed;
 												u.action = A_SHOOT;
 												u.animation_state = 1;
 												u.hitted = false;
 												u.bow_instance = GetBowInstance(u.GetBow().mesh);
-												u.bow_instance->Play(&u.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
+												u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
 												u.bow_instance->groups[0].speed = speed;
 												u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 
@@ -1648,17 +1648,17 @@ void Game::UpdateAi(float dt)
 										u.attack_id = i;
 										u.animation_state = 0;
 
-										if(u.ani->ani->head.n_groups == 2)
+										if(u.mesh_inst->mesh->head.n_groups == 2)
 										{
-											u.ani->frame_end_info2 = false;
-											u.ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+											u.mesh_inst->frame_end_info2 = false;
+											u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 										}
 										else
 										{
-											u.ani->frame_end_info = false;
+											u.mesh_inst->frame_end_info = false;
 											u.animation = ANI_PLAY;
-											u.ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-											u.ani->groups[0].speed = 1.f;
+											u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+											u.mesh_inst->groups[0].speed = 1.f;
 										}
 
 										if(IsOnline())
@@ -1714,13 +1714,13 @@ void Game::UpdateAi(float dt)
 							{
 								// strzelanie z ³uku
 								float speed = u.GetBowAttackSpeed();
-								u.ani->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-								u.ani->groups[1].speed = speed;
+								u.mesh_inst->Play(NAMES::ani_shoot, PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+								u.mesh_inst->groups[1].speed = speed;
 								u.action = A_SHOOT;
 								u.animation_state = 1;
 								u.hitted = false;
 								u.bow_instance = GetBowInstance(u.GetBow().mesh);
-								u.bow_instance->Play(&u.bow_instance->ani->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
+								u.bow_instance->Play(&u.bow_instance->mesh->anims[0], PLAY_ONCE | PLAY_PRIO1 | PLAY_NO_BLEND | PLAY_RESTORE, 0);
 								u.bow_instance->groups[0].speed = speed;
 								u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 
@@ -1806,8 +1806,8 @@ void Game::UpdateAi(float dt)
 									ai.timer = BLOCK_TIMER;
 									ai.ignore = 0.f;
 									u.action = A_BLOCK;
-									u.ani->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
-									u.ani->groups[1].blend_max = speed;
+									u.mesh_inst->Play(NAMES::ani_block, PLAY_PRIO1 | PLAY_STOP_AT_END | PLAY_RESTORE, 1);
+									u.mesh_inst->groups[1].blend_max = speed;
 									u.animation_state = 0;
 
 									if(IsOnline())
@@ -2146,15 +2146,15 @@ void Game::UpdateAi(float dt)
 						target_pos = top->pos;
 
 						// uderz tarcz¹
-						if(best_dist <= u.GetAttackRange() && !u.ani->groups[1].IsBlending() && ai.ignore <= 0.f && u.stamina > 0)
+						if(best_dist <= u.GetAttackRange() && !u.mesh_inst->groups[1].IsBlending() && ai.ignore <= 0.f && u.stamina > 0)
 						{
 							if(Rand() % 2 == 0)
 							{
 								u.action = A_BASH;
 								u.animation_state = 0;
-								u.ani->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
-								u.ani->groups[1].speed = 2.f;
-								u.ani->frame_end_info2 = false;
+								u.mesh_inst->Play(NAMES::ani_bash, PLAY_ONCE | PLAY_PRIO1 | PLAY_RESTORE, 1);
+								u.mesh_inst->groups[1].speed = 2.f;
+								u.mesh_inst->frame_end_info2 = false;
 								u.hitted = false;
 								u.RemoveStamina(50.f);
 
@@ -2176,8 +2176,8 @@ void Game::UpdateAi(float dt)
 					{
 						// brak ciosów do zablokowania lub czas min¹³
 						u.action = A_NONE;
-						u.ani->frame_end_info2 = false;
-						u.ani->Deactivate(1);
+						u.mesh_inst->frame_end_info2 = false;
+						u.mesh_inst->Deactivate(1);
 						ai.state = AIController::Fighting;
 						ai.timer = 0.f;
 						ai.ignore = BLOCK_AFTER_BLOCK_TIMER;
@@ -2269,17 +2269,17 @@ void Game::UpdateAi(float dt)
 						u.animation_state = 0;
 						u.target_pos = u.pos;
 
-						if(u.ani->ani->head.n_groups == 2)
+						if(u.mesh_inst->mesh->head.n_groups == 2)
 						{
-							u.ani->frame_end_info2 = false;
-							u.ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+							u.mesh_inst->frame_end_info2 = false;
+							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 						}
 						else
 						{
-							u.ani->frame_end_info = false;
+							u.mesh_inst->frame_end_info = false;
 							u.animation = ANI_PLAY;
-							u.ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-							u.ani->groups[0].speed = 1.f;
+							u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+							u.mesh_inst->groups[0].speed = 1.f;
 						}
 					}
 				}
@@ -2313,17 +2313,17 @@ void Game::UpdateAi(float dt)
 							u.animation_state = 0;
 							u.target_pos = target_pos;
 
-							if(u.ani->ani->head.n_groups == 2)
+							if(u.mesh_inst->mesh->head.n_groups == 2)
 							{
-								u.ani->frame_end_info2 = false;
-								u.ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+								u.mesh_inst->frame_end_info2 = false;
+								u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 							}
 							else
 							{
-								u.ani->frame_end_info = false;
+								u.mesh_inst->frame_end_info = false;
 								u.animation = ANI_PLAY;
-								u.ani->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
-								u.ani->groups[0].speed = 1.f;
+								u.mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 0);
+								u.mesh_inst->groups[0].speed = 1.f;
 							}
 						}
 					}
@@ -2539,8 +2539,8 @@ void Game::UpdateAi(float dt)
 							if(!location->outside)
 								minimap_opened_doors = true;
 							door.state = Door::Opening;
-							door.ani->Play(&door.ani->ani->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
-							door.ani->frame_end_info = false;
+							door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
+							door.mesh_inst->frame_end_info = false;
 
 							if(nosound && Rand() % 2 == 0)
 							{
@@ -2865,7 +2865,7 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 		return;
 
 	if(sound_volume)
-		PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY], 3.f, 20.f);
+		PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
 
 	if(IsOnline())
 	{
@@ -2895,10 +2895,10 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 {
 	Unit& u = *ai.unit;
 
-	if(u.action == A_NONE && (u.ani->ani->head.n_groups == 1 || u.weapon_state == WS_TAKEN) && ai.next_attack <= 0.f && u.stamina > 0)
+	if(u.action == A_NONE && (u.mesh_inst->mesh->head.n_groups == 1 || u.weapon_state == WS_TAKEN) && ai.next_attack <= 0.f && u.stamina > 0)
 	{
 		if(sound_volume && u.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
-			PlayAttachedSound(u, u.data->sounds->sound[SOUND_ATTACK], 1.f, 10.f);
+			PlayAttachedSound(u, u.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 		u.action = A_ATTACK;
 		u.attack_id = u.GetRandomAttack();
 
@@ -2930,15 +2930,15 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 
 		float speed(do_power_attack ? ai.unit->GetPowerAttackSpeed() : ai.unit->GetAttackSpeed());
 
-		if(u.ani->ani->head.n_groups > 1)
+		if(u.mesh_inst->mesh->head.n_groups > 1)
 		{
-			u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
-			u.ani->groups[1].speed = speed;
+			u.mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 1);
+			u.mesh_inst->groups[1].speed = speed;
 		}
 		else
 		{
-			u.ani->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 0);
-			u.ani->groups[0].speed = speed;
+			u.mesh_inst->Play(NAMES::ani_attacks[u.attack_id], PLAY_PRIO1 | PLAY_ONCE | PLAY_RESTORE, 0);
+			u.mesh_inst->groups[0].speed = speed;
 			u.animation = ANI_PLAY;
 		}
 		u.animation_state = (do_power_attack ? 0 : 1);
@@ -2974,7 +2974,7 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 			return;
 
 		if(sound_volume)
-			PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY], 3.f, 20.f);
+			PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
 
 		if(IsOnline())
 		{

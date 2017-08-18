@@ -5,6 +5,7 @@
 #include "Language.h"
 #include "InfoBox.h"
 #include "BitStreamFunc.h"
+#include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId
@@ -298,7 +299,7 @@ void ServerPanel::Event(GuiEvent e)
 					game->sv_startup = true;
 					game->startup_timer = float(STARTUP_TIMER);
 					game->last_startup_id = STARTUP_TIMER;
-					byte b[] = { ID_STARTUP, STARTUP_TIMER };
+					byte b[] = { ID_TIMER, STARTUP_TIMER };
 					game->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 					bts[4].text = txStop;
 					cstring s = Format(txStartingIn, STARTUP_TIMER);
@@ -348,7 +349,7 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 	PlayerInfo& info = game->game_players[item];
 
 	if(column == 0)
-		cell.img = (info.ready ? game->tGotowy : game->tNieGotowy);
+		cell.img = (info.ready ? tGotowy : tNieGotowy);
 	else if(column == 1)
 	{
 		cell.text_color->text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
@@ -457,7 +458,7 @@ void ServerPanel::StopStartup()
 
 	if(game->players > 1)
 	{
-		byte c = ID_END_STARTUP;
+		byte c = ID_END_TIMER;
 		game->peer->Send((cstring)&c, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 	}
 }
@@ -517,4 +518,12 @@ void ServerPanel::PickClass(Class clas, bool ready)
 			game->AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));
 		game->CheckReady();
 	}
+}
+
+//=================================================================================================
+void ServerPanel::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("gotowy.png", tGotowy);
+	tex_mgr.AddLoadTask("niegotowy.png", tNieGotowy);
 }

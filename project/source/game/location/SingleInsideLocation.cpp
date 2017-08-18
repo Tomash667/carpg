@@ -12,7 +12,7 @@ void SingleInsideLocation::ApplyContext(LevelContext& ctx)
 	ctx.traps = &traps;
 	ctx.doors = &doors;
 	ctx.items = &items;
-	ctx.useables = &useables;
+	ctx.usables = &usables;
 	ctx.bloods = &bloods;
 	ctx.lights = &lights;
 	ctx.have_terrain = false;

@@ -1,5 +1,6 @@
 // zapisywanie/wczytywanie gry
 #include "Pch.h"
+#include "Core.h"
 #include "Game.h"
 #include "SaveState.h"
 #include "Version.h"
@@ -159,7 +160,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 }
 
 //=================================================================================================
-bool Game::LoadGameSlot(int slot)
+void Game::LoadGameSlot(int slot)
 {
 	assert(InRange(slot, 1, MAX_SAVE_SLOTS));
 
@@ -170,8 +171,8 @@ bool Game::LoadGameSlot(int slot)
 	HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
 	{
-		Error(txLoadOpenError, filename, GetLastError());
-		throw txLoadFailed;
+		auto last_error = GetLastError();
+		throw SaveException(Format(txLoadOpenError, filename, last_error), Format("Failed to open file '%s' (%d).", filename, last_error), true);
 	}
 
 	prev_game_state = game_state;
@@ -183,18 +184,25 @@ bool Game::LoadGameSlot(int slot)
 		game_gui->visible = false;
 		world_map->visible = false;
 	}
-	LoadingStart(8);
+	LoadingStart(9);
 
 	try
 	{
 		LoadGame(file);
 	}
-	catch(cstring /*err*/)
+	catch(const SaveException&)
 	{
 		prev_game_state = GS_LOAD;
 		CloseHandle(file);
 		ExitToMenu();
 		throw;
+	}
+	catch(cstring msg)
+	{
+		prev_game_state = GS_LOAD;
+		CloseHandle(file);
+		ExitToMenu();
+		throw SaveException(nullptr, msg);
 	}
 
 	prev_game_state = GS_LOAD;
@@ -232,8 +240,6 @@ bool Game::LoadGameSlot(int slot)
 		multiplayer_panel->visible = true;
 		main_menu->visible = true;
 	}
-
-	return true;
 }
 
 //=================================================================================================
@@ -557,7 +563,7 @@ void Game::SaveGame(HANDLE file)
 		WriteFile(file, &netid_counter, sizeof(netid_counter), &tmp, nullptr);
 		WriteFile(file, &item_netid_counter, sizeof(item_netid_counter), &tmp, nullptr);
 		WriteFile(file, &chest_netid_counter, sizeof(chest_netid_counter), &tmp, nullptr);
-		WriteFile(file, &useable_netid_counter, sizeof(useable_netid_counter), &tmp, nullptr);
+		WriteFile(file, &usable_netid_counter, sizeof(usable_netid_counter), &tmp, nullptr);
 		WriteFile(file, &skip_id_counter, sizeof(skip_id_counter), &tmp, nullptr);
 		WriteFile(file, &trap_netid_counter, sizeof(trap_netid_counter), &tmp, nullptr);
 		WriteFile(file, &door_netid_counter, sizeof(door_netid_counter), &tmp, nullptr);
@@ -571,6 +577,8 @@ void Game::SaveGame(HANDLE file)
 		PushNetChange(NetChange::GAME_SAVED);
 		AddMultiMsg(txGameSaved);
 	}
+
+	WriteFile(file, "EOS", 3, &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -649,6 +657,7 @@ void Game::LoadGame(HANDLE file)
 	load_unit_handler.clear();
 	load_chest_handler.clear();
 	load_unit_refid.clear();
+	units_mesh_load.clear();
 
 	// signature
 	byte sign[4] = { 'C','R','S','V' };
@@ -657,21 +666,25 @@ void Game::LoadGame(HANDLE file)
 	for(int i = 0; i < 4; ++i)
 	{
 		if(sign2[i] != sign[i])
-			throw txLoadSignature;
+			throw SaveException(txLoadSignature, "Invalid file signature.");
 	}
 
 	// version
 	int version;
 	f >> version;
 	if(version > VERSION)
-		throw Format(txLoadVersion, VersionToString(version), VERSION_STR);
+	{
+		cstring ver_str = VersionToString(version);
+		throw SaveException(Format(txLoadVersion, ver_str, VERSION_STR), Format("Invalid file version %s, current %s.", ver_str, VERSION_STR));
+	}
 
 	// save version
 	f >> LOAD_VERSION;
-	if(LOAD_VERSION < SUPPORT_LOAD_VERSION.x)
-		throw Format(txLoadSaveVersionOld, LOAD_VERSION);
-	if(LOAD_VERSION > SUPPORT_LOAD_VERSION.y)
-		throw Format(txLoadSaveVersionNew, LOAD_VERSION);
+	if(LOAD_VERSION < MIN_SUPPORT_LOAD_VERSION)
+	{
+		cstring ver_str = VersionToString(version);
+		throw SaveException(Format(txLoadSaveVersionOld, ver_str), Format("Unsupported version '%s'.", ver_str));
+	}
 	if(LOAD_VERSION >= V_0_2_20 && LOAD_VERSION < V_0_4)
 	{
 		// build - unused
@@ -683,7 +696,7 @@ void Game::LoadGame(HANDLE file)
 	if(LOAD_VERSION >= V_0_4)
 		f >> start_version;
 	else
-		start_version = VERSION;
+		start_version = version;
 
 	// czy online / dev
 	byte flags;
@@ -692,12 +705,12 @@ void Game::LoadGame(HANDLE file)
 	if(mp_load)
 	{
 		if(!online_save)
-			throw txLoadMP;
+			throw SaveException(txLoadMP, "Save is from singleplayer mode.");
 	}
 	else
 	{
 		if(online_save)
-			throw txLoadSP;
+			throw SaveException(txLoadSP, "Save is from multiplayer mode.");
 	}
 
 	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
@@ -716,7 +729,7 @@ void Game::LoadGame(HANDLE file)
 	GameStats::Get().Load(file);
 
 	Unit::refid_table.clear();
-	Useable::refid_table.clear();
+	Usable::refid_table.clear();
 	ParticleEmitter::refid_table.clear();
 	TrailParticleEmitter::refid_table.clear();
 
@@ -799,7 +812,7 @@ void Game::LoadGame(HANDLE file)
 			if(index >= int(ile) / 4)
 			{
 				++step;
-				LoadingStep(txLoadingLocations);
+				LoadingStep();
 			}
 		}
 		else if(step == 1)
@@ -807,7 +820,7 @@ void Game::LoadGame(HANDLE file)
 			if(index >= int(ile) / 2)
 			{
 				++step;
-				LoadingStep(txLoadingLocations);
+				LoadingStep();
 			}
 		}
 		else if(step == 2)
@@ -815,7 +828,7 @@ void Game::LoadGame(HANDLE file)
 			if(index >= int(ile) * 3 / 4)
 			{
 				++step;
-				LoadingStep(txLoadingLocations);
+				LoadingStep();
 			}
 		}
 
@@ -865,15 +878,7 @@ void Game::LoadGame(HANDLE file)
 			Unit* u = new Unit;
 			u->Load(file, false);
 			Unit::AddRefid(u);
-
-			if(IS_SET(u->data->flags, F_HUMAN))
-			{
-				u->ani = new AnimeshInstance(aHumanBase);
-				u->human_data->ApplyScale(aHumanBase);
-			}
-			else
-				u->ani = new AnimeshInstance(u->data->mesh);
-			u->ani->ptr = u;
+			u->CreateMesh(Unit::CREATE_MESH::ON_WORLDMAP);
 
 			if(!u->IsPlayer())
 			{
@@ -915,18 +920,18 @@ void Game::LoadGame(HANDLE file)
 	for(vector<std::pair<Unit**, int> >::iterator it = Unit::refid_request.begin(), end = Unit::refid_request.end(); it != end; ++it)
 		*(it->first) = Unit::refid_table[it->second];
 	Unit::refid_request.clear();
-	for(vector<UseableRequest>::iterator it = Useable::refid_request.begin(), end = Useable::refid_request.end(); it != end; ++it)
+	for(vector<UsableRequest>::iterator it = Usable::refid_request.begin(), end = Usable::refid_request.end(); it != end; ++it)
 	{
-		Useable* u = Useable::refid_table[it->refid];
+		Usable* u = Usable::refid_table[it->refid];
 		if(u->user != it->user)
 		{
-			Warn("Invalid useable %s (%d) user %s.", u->GetBase()->id, u->refid, it->user->data->id.c_str());
-			*it->useable = nullptr;
+			Warn("Invalid usable %s (%d) user %s.", u->GetBase()->id, u->refid, it->user->data->id.c_str());
+			*it->usable = nullptr;
 		}
 		else
-			*it->useable = u;
+			*it->usable = u;
 	}
-	Useable::refid_request.clear();
+	Usable::refid_request.clear();
 
 	// camera
 	ReadFile(file, &cam.real_rot.y, sizeof(cam.real_rot.y), &tmp, nullptr);
@@ -1128,7 +1133,7 @@ void Game::LoadGame(HANDLE file)
 		throw "Error reading data after news.";
 	++check_id;
 
-	LoadingStep(txEndOfLoading);
+	LoadingStep(txLoadingLevel);
 
 	if(game_state2 == GS_LEVEL)
 	{
@@ -1391,7 +1396,7 @@ void Game::LoadGame(HANDLE file)
 		ReadFile(file, &netid_counter, sizeof(netid_counter), &tmp, nullptr);
 		ReadFile(file, &item_netid_counter, sizeof(item_netid_counter), &tmp, nullptr);
 		ReadFile(file, &chest_netid_counter, sizeof(chest_netid_counter), &tmp, nullptr);
-		ReadFile(file, &useable_netid_counter, sizeof(useable_netid_counter), &tmp, nullptr);
+		ReadFile(file, &usable_netid_counter, sizeof(usable_netid_counter), &tmp, nullptr);
 		ReadFile(file, &skip_id_counter, sizeof(skip_id_counter), &tmp, nullptr);
 		ReadFile(file, &trap_netid_counter, sizeof(trap_netid_counter), &tmp, nullptr);
 		ReadFile(file, &door_netid_counter, sizeof(door_netid_counter), &tmp, nullptr);
@@ -1406,6 +1411,15 @@ void Game::LoadGame(HANDLE file)
 	}
 	else
 		pc->is_local = true;
+
+	// end of save
+	if(LOAD_VERSION >= V_CURRENT)
+	{
+		char eos[3];
+		ReadFile(file, eos, 3, &tmp, nullptr);
+		if(eos[0] != 'E' || eos[1] != 'O' || eos[2] != 'S')
+			throw "Missing EOS.";
+	}
 
 	if(enter_from == ENTER_FROM_UNKNOWN && game_state2 == GS_LEVEL)
 	{
@@ -1443,12 +1457,9 @@ void Game::LoadGame(HANDLE file)
 		LoadMusic(MusicType::Boss, false);
 		LoadMusic(MusicType::Death, false);
 		LoadMusic(MusicType::Travel, false);
-		if(game_state2 == GS_LEVEL)
-			LoadMusic(GetLocationMusic(), false);
 	}
 
-	// finish loading
-	LoadingStep(txEndOfLoading);
+	LoadResources(txEndOfLoading, game_state2 == GS_WORLDMAP);
 	load_screen->visible = false;
 
 #ifdef _DEBUG
@@ -1598,7 +1609,7 @@ void Game::Quicksave(bool from_console)
 }
 
 //=================================================================================================
-void Game::Quickload(bool from_console)
+bool Game::Quickload(bool from_console)
 {
 	if(!CanLoadGame())
 	{
@@ -1606,7 +1617,7 @@ void Game::Quickload(bool from_console)
 			AddConsoleMsg(txCantLoadGame);
 		else
 			GUI.SimpleDialog(txCantLoadGame, nullptr);
-		return;
+		return true;
 	}
 
 	try
@@ -1615,12 +1626,24 @@ void Game::Quickload(bool from_console)
 		sv_online = false;
 		LoadGameSlot(MAX_SAVE_SLOTS);
 	}
-	catch(cstring err)
+	catch(const SaveException& ex)
 	{
-		err = Format("%s%s", txLoadError, err);
-		Error(err);
-		GUI.SimpleDialog(err, nullptr);
+		if(ex.missing_file)
+		{
+			Warn("Missing quicksave.");
+			return false;
+		}
+
+		Error("Failed to load game: %s", ex.msg);
+		cstring dialog_text;
+		if(ex.localized_msg)
+			dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
+		else
+			dialog_text = txLoadErrorGeneric;
+		GUI.SimpleDialog(dialog_text, nullptr);
 	}
+
+	return true;
 }
 
 //=================================================================================================
@@ -1708,38 +1731,4 @@ void Game::CheckUnitsAi(LevelContext& ctx, int& err_count)
 			Error("Unit %s is neither player or ai.", u.data->id.c_str());
 		}
 	}
-}
-
-void Game::SaveGame2(StreamWriter& f)
-{
-	// signature
-	//f.WriteRawString("CRSV");
-	f << VERSION;
-
-	// header
-	/*
-	bool - hardcore, mp
-	int64 - save_data, game time, play time
-	string - player class, player name, location name, text
-	int - players
-	byte[] - image
-	*/
-
-	// data
-
-	/*Config cfg;
-		cfg.Add("game_day", Format("%d", day));
-		cfg.Add("game_month", Format("%d", month));
-		cfg.Add("game_year", Format("%d", year));
-		cfg.Add("location", ss.location.c_str());
-		cfg.Add("player_name", ss.player_name.c_str());
-		cfg.Add("player_class", g_classes[(int)ss.player_class].id);
-		cfg.Add("save_date", Format("%I64d", ss.save_date));
-		cfg.Add("text", ss.text.c_str());
-		cfg.Add("hardcore", ss.hardcore ? "1" : "0");
-
-		if(IsOnline())
-		{
-			ss.multiplayers = players;
-			cfg.Add("multiplayers", Format("%d", ss.multiplayers));*/
 }

@@ -164,7 +164,7 @@ struct SoundPack
 {
 	string id;
 	string filename[SOUND_MAX];
-	SOUND sound[SOUND_MAX];
+	SoundPtr sound[SOUND_MAX];
 	bool inited;
 
 	SoundPack() : inited(false), sound() {}
@@ -253,7 +253,7 @@ struct TexPack
 struct UnitData
 {
 	string id, mesh_id, name;
-	Animesh* mesh;
+	MeshPtr mesh;
 	MATERIAL_TYPE mat;
 	Int2 level;
 	StatProfile* stat_profile;
@@ -272,11 +272,12 @@ struct UnitData
 	ArmorUnitType armor_type;
 	ItemScript* item_script;
 	UNIT_TYPE type;
+	ResourceState state;
 
 	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp_bonus(100), stamina_bonus(0), def_bonus(0),
 		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), items(nullptr), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS),
 		walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
-		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN)
+		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded)
 	{
 	}
 
