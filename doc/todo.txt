@@ -1,25 +1,4 @@
 ﻿CURRENT:
-+ upgrade phy
-? verify mesh loading
-+ add qmsh_format.txt
--------------
-? CreateUnitMesh only checks mesh IsLoaded, what about sound/textures, seting UnitData::state
-? loadscreen don't revert to instant after failing to load for client
-? testing
-	? sound/music looping
-	? mp
-		? enter city, enter visited city, reenter city, enter city after load
-		? enter outside loc, enter visited outside loc, reenter outside loc, enter outside loc after load
-		? enter dungeon, enter visited dungeon, reenter dungeon, enter dungeon after load, level down/up, revisit down/up after load
-		? load on worldmap
-		? quest generated items
-	? tutorial
-	? correct image generated for tex overrides
-AFTER TESTING:
-+ remove AAA!
-+ remove preload.txt
-+ remove verify resources call
-? dungeon debug info - show levels
 - f5/f9 a konsola
 	f5 - can't save - display above console
 	f9 - load failed - display above console, stop blocking fallback when console is open
@@ -30,6 +9,17 @@ AFTER TESTING:
 - cursor focus bug - start server/client, activate serwer when possible, start game, alt tab to client when loaded - cursor is visible
 	- everything is ok except the system cursor is visible
 - physics of stairs up don't work for camera
+- game saved center text don't show for clients
+- when client disconnect on loading worldmap with START_ON_WORLDMAP server will crash in RemovePlayerOnLoad
+- 122.stream
+- GenericInfoBox, RemovePlayerOnLoad don't remove interpolator (u->interp)
+- client can't save when leader
+	? am i even checking is he leader
+	- contest_state >= CONTEST_STARTING || tournament_state != TOURNAMENT_NOT_DONE
+		tournament_state, contest maybe too
+- warp village inn, hall, goto city, warp hall - objects from village inside (mp save WEIRD)
+- deliver parcel - encounter bandits without parcel -> crash in dialog
+- tutorial - autorun is on
 ===============================================================================================================
 NEW:
 + BaseBullet for Bullet, save by base, no mesh etc
@@ -59,6 +49,10 @@ NEW:
 	+ temporary effects
 	+ AI_HitReaction don't work inside
 	+ CanSee
++ refactor network
+	+ sv_startup is started in 4 places
++ multiplayer - CanSave - server side
++ questitem in multiplayer, player don't play and quests are forever unfinished
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

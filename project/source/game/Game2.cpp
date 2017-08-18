@@ -321,12 +321,21 @@ void Game::GenerateImage(TaskData& task_data)
 	}
 
 	// try to find icon using same mesh
-	auto it = item_texture_map.lower_bound(item.mesh);
-	if(it != item_texture_map.end() && !(item_texture_map.key_comp()(item.mesh, it->first)))
+	bool use_tex_override = false;
+	if(item.type == IT_ARMOR)
+		use_tex_override = !item.ToArmor().tex_override.empty();
+	ItemTextureMap::iterator it;
+	if(!use_tex_override)
 	{
-		item.icon = it->second;
-		return;
+		it = item_texture_map.lower_bound(item.mesh);
+		if(it != item_texture_map.end() && !(item_texture_map.key_comp()(item.mesh, it->first)))
+		{
+			item.icon = it->second;
+			return;
+		}
 	}
+	else
+		it = item_texture_map.end();
 
 	SetAlphaBlend(false);
 	SetAlphaTest(false);
@@ -359,11 +368,11 @@ void Game::GenerateImage(TaskData& task_data)
 	}
 
 	Matrix matWorld = Matrix::IdentityMatrix,
-		matView = Matrix::CreateLookAt(mesh.cam_pos, mesh.cam_target, mesh.cam_up),
+		matView = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
 		matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
 
 	LightData ld;
-	ld.pos = mesh.cam_pos;
+	ld.pos = mesh.head.cam_pos;
 	ld.color = Vec3(1, 1, 1);
 	ld.range = 10.f;
 
@@ -420,7 +429,8 @@ void Game::GenerateImage(TaskData& task_data)
 	surf->Release();
 
 	item.icon = t;
-	item_texture_map.insert(it, ItemTextureMap::value_type(item.mesh, t));
+	if(it != item_texture_map.end())
+		item_texture_map.insert(it, ItemTextureMap::value_type(item.mesh, t));
 }
 
 //=================================================================================================
@@ -930,9 +940,7 @@ void Game::UpdateGame(float dt)
 		if(Key.Down('0'))
 			o->rot.y = 0;
 	}*/
-
-	VerifyResources();
-
+	
 	minimap_opened_doors = false;
 
 	if(in_tutorial && !IsOnline())
@@ -6652,7 +6660,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 			}
 		}
 
-		CreateUnitMesh(*u, false);
+		u->CreateMesh(Unit::CREATE_MESH::NORMAL);
 	}
 
 	u->pos = Vec3(0, 0, 0);
@@ -6774,100 +6782,6 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		u->netid = netid_counter++;
 
 	return u;
-}
-
-void Game::CreateUnitMesh(Unit& unit, bool on_worldmap, int preload)
-{
-	Mesh* mesh = unit.data->mesh;
-	if(unit.data->state != ResourceState::Loaded)
-	{
-		assert(preload != 2);
-		if(ResourceManager::Get().IsLoadScreen())
-		{
-			if(!mesh->IsLoaded())
-				units_mesh_load.push_back(std::pair<Unit*, bool>(&unit, on_worldmap));
-			if(unit.data->state == ResourceState::NotLoaded)
-			{
-				ResourceManager::Get<Mesh>().AddLoadTask(mesh);
-				if(unit.data->sounds)
-				{
-					auto& sound_mgr = ResourceManager::Get<Sound>();
-					for(int i = 0; i<SLOT_MAX; ++i)
-					{
-						if(unit.data->sounds->sound[i])
-							sound_mgr.AddLoadTask(unit.data->sounds->sound[i]);
-					}
-				}
-				if(unit.data->tex)
-				{
-					auto& tex_mgr = ResourceManager::Get<Texture>();
-					for(auto& tex : unit.data->tex->textures)
-					{
-						if(tex.tex)
-							tex_mgr.AddLoadTask(tex.tex);
-					}
-				}
-				unit.data->state = ResourceState::Loading;
-			}
-		}
-		else
-		{
-			ResourceManager::Get<Mesh>().Load(mesh);
-			if(unit.data->sounds)
-			{
-				auto& sound_mgr = ResourceManager::Get<Sound>();
-				for(int i=0; i<SLOT_MAX; ++i)
-				{
-					if(unit.data->sounds->sound[i])
-						sound_mgr.Load(unit.data->sounds->sound[i]);						
-				}
-			}
-			if(unit.data->tex)
-			{
-				auto& tex_mgr = ResourceManager::Get<Texture>();
-				for(auto& tex : unit.data->tex->textures)
-				{
-					if(tex.tex)
-						tex_mgr.Load(tex.tex);
-				}
-			}
-			unit.data->state = ResourceState::Loaded;
-		}
-	}
-
-	if(mesh->IsLoaded())
-	{
-		if(preload != 2)
-		{
-			unit.mesh_inst = new MeshInstance(mesh);
-			unit.mesh_inst->ptr = &unit;
-
-			if(!on_worldmap)
-			{
-				if(unit.IsAlive())
-				{
-					unit.mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-					unit.animation = unit.current_animation = ANI_STAND;
-				}
-				else
-				{
-					unit.mesh_inst->Play(NAMES::ani_die, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-					unit.animation = unit.current_animation = ANI_DIE;
-					unit.SetAnimationAtEnd();
-				}
-			}
-
-			unit.mesh_inst->groups[0].speed = 1.f;
-			if(unit.mesh_inst->mesh->head.n_groups > 1)
-				unit.mesh_inst->groups[1].state = 0;
-			if(unit.human_data)
-				unit.human_data->ApplyScale(unit.mesh_inst->mesh);
-		}
-		else
-			unit.mesh_inst->ApplyPreload(mesh);
-	}
-	else if(preload)
-		unit.mesh_inst = new MeshInstance(nullptr, true);
 }
 
 void GiveItem(Unit& unit, const int*& ps, int count)
@@ -14899,14 +14813,20 @@ void Game::LoadResources(cstring text, bool worldmap)
 	if(res_mgr.HaveTasks())
 	{
 		Info("Loading new resources (%d).", res_mgr.GetLoadTasksCount());
-		extern bool AAA;
-		AAA = true;
 		res_mgr.StartLoadScreen(txLoadingResources);
-		AAA = false;
 
 		// apply mesh instance for newly loaded meshes
 		for(auto& unit_mesh : units_mesh_load)
-			CreateUnitMesh(*unit_mesh.first, unit_mesh.second, mp_load ? 2 : 0);
+		{
+			Unit::CREATE_MESH mode;
+			if(unit_mesh.second)
+				mode = Unit::CREATE_MESH::ON_WORLDMAP;
+			else if(mp_load && IsClient())
+				mode = Unit::CREATE_MESH::AFTER_PRELOAD;
+			else
+				mode = Unit::CREATE_MESH::NORMAL;
+			unit_mesh.first->CreateMesh(mode);
+		}
 		units_mesh_load.clear();
 	}
 	else
@@ -14916,9 +14836,27 @@ void Game::LoadResources(cstring text, bool worldmap)
 	}
 
 	// finished
-	if(!location->outside)
+	if((IsLocal() || !mp_load_worldmap) && !location->outside)
 		SetDungeonParamsToMeshes();
 	LoadingStep(text, 2);
+}
+
+bool Game::RequireLoadingResources(Location* loc)
+{
+	bool result;
+	if(loc->GetLastLevel() == 0)
+	{
+		result = !loc->loaded_resources;
+		loc->loaded_resources = true;
+	}
+	else
+	{
+		MultiInsideLocation* multi = (MultiInsideLocation*)loc;
+		auto& info = multi->infos[dungeon_level];
+		result = !info.loaded_resources;
+		info.loaded_resources = true;
+	}
+	return result;
 }
 
 // When there is something new to load, add task to load it when entering location etc
@@ -14933,6 +14871,9 @@ void Game::PreloadResources(bool worldmap)
 	{
 		// load units - units respawn so need to check everytime...
 		PreloadUnits(*local_ctx.units);
+		// some traps respawn
+		if(local_ctx.traps)
+			PreloadTraps(*local_ctx.traps);
 
 		// preload items, this info is sent by server so no need to redo this by clients (and it will be less complete)
 		if(IsLocal())
@@ -14964,7 +14905,7 @@ void Game::PreloadResources(bool worldmap)
 			}
 		}
 
-		if(!location->loaded_resources)
+		if(RequireLoadingResources(location))
 		{
 			// load music
 			if(!nomusic)
@@ -15006,8 +14947,6 @@ void Game::PreloadResources(bool worldmap)
 					PreloadUnits(ib->units);
 				}
 			}
-
-			location->loaded_resources = true;
 		}
 	}
 
@@ -15162,20 +15101,23 @@ void Game::VerifyResources()
 		assert(base->state == ResourceState::Loaded);
 		if(base->sound)
 			assert(base->sound->IsLoaded());
-	}		
-	for(auto trap : *local_ctx.traps)
+	}
+	if(local_ctx.traps)
 	{
-		assert(trap->base->state == ResourceState::Loaded);
-		if(trap->base->mesh)
-			assert(trap->base->mesh->IsLoaded());
-		if(trap->base->mesh2)
-			assert(trap->base->mesh2->IsLoaded());
-		if(trap->base->sound)
-			assert(trap->base->sound->IsLoaded());
-		if(trap->base->sound2)
-			assert(trap->base->sound2->IsLoaded());
-		if(trap->base->sound3)
-			assert(trap->base->sound3->IsLoaded());
+		for(auto trap : *local_ctx.traps)
+		{
+			assert(trap->base->state == ResourceState::Loaded);
+			if(trap->base->mesh)
+				assert(trap->base->mesh->IsLoaded());
+			if(trap->base->mesh2)
+				assert(trap->base->mesh2->IsLoaded());
+			if(trap->base->sound)
+				assert(trap->base->sound->IsLoaded());
+			if(trap->base->sound2)
+				assert(trap->base->sound2->IsLoaded());
+			if(trap->base->sound3)
+				assert(trap->base->sound3->IsLoaded());
+		}
 	}
 	if(city_ctx)
 	{
@@ -16424,8 +16366,6 @@ void Game::GenerateTraps()
 			}
 		}
 	}
-
-	PreloadTraps(*local_ctx.traps);
 }
 
 void Game::RegenerateTraps()

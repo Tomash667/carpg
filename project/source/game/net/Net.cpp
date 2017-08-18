@@ -467,7 +467,11 @@ void Game::PrepareLevelData(BitStream& stream)
 	// items preload
 	stream.Write(items_load.size());
 	for(auto item : items_load)
+	{
 		WriteString1(stream, item->id);
+		if(item->IsQuest())
+			stream.Write(item->refid);
+	}
 
 	// saved bullets, spells, explosions etc
 	if(mp_load)
@@ -1040,7 +1044,6 @@ bool Game::ReadLevelData(BitStream& stream)
 				return false;
 			}
 		}
-		PreloadTraps(lvl.traps);
 
 		// doors
 		if(!stream.Read(count)
@@ -1209,13 +1212,39 @@ bool Game::ReadLevelData(BitStream& stream)
 			Error("Read level: Broken item preload '%u'.", i);
 			return false;
 		}
-		auto item = FindItem(BUF, false);
-		if(!item)
+		if(BUF[0] != '$')
 		{
-			Error("Read level: Missing item preload '%s'.", BUF);
-			return false;
+			auto item = FindItem(BUF, false);
+			if(!item)
+			{
+				Error("Read level: Missing item preload '%s'.", BUF);
+				return false;
+			}
+			items_load.insert(item);
 		}
-		items_load.insert(item);
+		else
+		{
+			int refid;
+			if(!stream.Read(refid))
+			{
+				Error("Read level: Broken quest item preload '%u'.", i);
+				return false;
+			}
+			auto item = FindQuestItemClient(BUF, refid);
+			if(!item)
+			{
+				Error("Read level: Missing quest item preload '%s' (%d).", BUF, refid);
+				return false;
+			}
+			auto base = FindItem(BUF + 1);
+			if(!base)
+			{
+				Error("Read level: Missing quest item preload base '%s' (%d).", BUF, refid);
+				return false;
+			}
+			items_load.insert(base);
+			items_load.insert(item);
+		}
 	}
 
 	// multiplayer data
@@ -1459,7 +1488,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 	else
 		unit.human_data = nullptr;
-	CreateUnitMesh(unit, false, mp_load ? 1 : 0);
+	unit.CreateMesh(mp_load ? Unit::CREATE_MESH::PRELOAD : Unit::CREATE_MESH::NORMAL);
 
 	// equipped items
 	if(unit.data->type != UNIT_TYPE::ANIMAL)
@@ -10248,8 +10277,9 @@ bool Game::ReadWorldData(BitStream& stream)
 		Error("Read world: Invalid location %d.", current_location);
 		return false;
 	}
-	world_pos = locations[current_location]->pos;
-	locations[current_location]->state = LS_VISITED;
+	location = locations[current_location];
+	world_pos = location->pos;
+	location->state = LS_VISITED;
 
 	// quests
 	if(!QuestManager::Get().Read(stream))

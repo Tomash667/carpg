@@ -163,15 +163,15 @@ New multiplayer game
   SERVER					|    CLIENT
 ----------------------------+-------------------------
  ID_STARTUP ->				|
-							| LoadingStart(9)
+							| LoadingStart(9/4) (second if starting on worldmap)
  ID_WORLD_DATA ->			|
-							| Step, ReadWorldData, Step
+							| Step, ReadWorldData, Step (net_state = 0)
 							| <- ID_READY
  ID_PLAYER_START_DATA ->	|
-							| Step, ReadPlayerData, Step
+							| Step, ReadPlayerData, Step/LoadResources (second if starting on worldmap; net_state = 1)
 							| <- ID_READY
 *ID_CHANGE_LEVEL ->			|
- or ID_START_AT_WORLDMAP -> |
+ or ID_START (worldmap) ----+--------------------------------------> DONE
 							| Step
 							| <- ID_SND_RECEIPT_ACKED
  ID_LEVEL_DATA ->			|
@@ -181,7 +181,7 @@ New multiplayer game
 							| Step, ReadPlayerData, LoadResources
 							| <- ID_READY
  ID_START ->				|
-
+                            | DONE
  
 =====================================================================================================
 odpoczynek u klienta

@@ -1455,7 +1455,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							last_startup_id = STARTUP_TIMER;
 							startup_timer = float(STARTUP_TIMER);
 							packet_data.resize(2);
-							packet_data[0] = ID_STARTUP;
+							packet_data[0] = ID_TIMER;
 							packet_data[1] = (byte)STARTUP_TIMER;
 							peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 							server_panel->bts[4].text = server_panel->txStop;
@@ -1722,7 +1722,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								last_startup_id = STARTUP_TIMER;
 								startup_timer = float(STARTUP_TIMER);
 								packet_data.resize(2);
-								packet_data[0] = ID_STARTUP;
+								packet_data[0] = ID_TIMER;
 								packet_data[1] = (byte)STARTUP_TIMER;
 								peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 							}

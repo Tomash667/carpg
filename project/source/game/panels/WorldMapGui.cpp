@@ -633,12 +633,12 @@ void WorldMapGui::AppendLocationText(Location& loc, string& s)
 		if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
 		{
 			InsideLocation* inside = (InsideLocation*)&loc;
-			s += Format("%s, %s, st %d, levels %d",
+			s += Format("%s, %s, st %d, levels %d, ",
 				g_base_locations[inside->target].name, g_spawn_groups[inside->spawn].id, inside->st, inside->GetLastLevel() + 1);
 		}
 		else if(loc.type == L_FOREST || loc.type == L_CAMP || loc.type == L_CAVE || loc.type == L_MOONWELL)
-			s += Format("%s, st %d", g_spawn_groups[loc.spawn].id, loc.st);
-		s += Format(", quest 0x%p)", loc.active_quest);
+			s += Format("%s, st %d, ", g_spawn_groups[loc.spawn].id, loc.st);
+		s += Format("quest 0x%p)", loc.active_quest);
 	}
 	if(loc.state >= LS_VISITED && loc.type == L_CITY)
 		GetCityText((City&)loc, s);

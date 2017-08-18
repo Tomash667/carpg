@@ -99,15 +99,6 @@ enum GamePacket : byte
 	*/
 	ID_SERVER_CLOSE,
 
-	/* trwa uruchamianie serwera, size:2
-	byte - id
-	byte - pozosta³y czas
-	*/
-	ID_STARTUP,
-
-	/* przerwano odliczanie startu, size:1 */
-	ID_END_STARTUP,
-
 	/* send to server when changed class
 	byte - id
 	CharacterData
@@ -118,6 +109,20 @@ enum GamePacket : byte
 	bool - ok
 	*/
 	ID_PICK_CHARACTER,
+
+	/* Server startup timer
+	byte - left seconds
+	*/
+	ID_TIMER,
+
+	/* Server startup canceled
+	*/
+	ID_END_TIMER,
+
+	/* Server starting
+	bool - start on worldmap
+	*/
+	ID_STARTUP,
 
 	/* Info about current server task
 	byte - id
@@ -167,10 +172,6 @@ enum GamePacket : byte
 	/* Sent to all players when everyone is loaded to start level
 	*/
 	ID_START,
-
-	/* Start game at worldmap, sent to all players
-	*/
-	ID_START_AT_WORLDMAP,
 
 	ID_CONTROL,
 	ID_CHANGES,

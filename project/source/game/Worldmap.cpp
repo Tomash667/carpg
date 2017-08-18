@@ -2547,7 +2547,7 @@ void Game::RespawnUnits(LevelContext& ctx)
 		// model
 		u->action = A_NONE;
 		u->talking = false;
-		CreateUnitMesh(*u, false);
+		u->CreateMesh(Unit::CREATE_MESH::NORMAL);
 
 		// fizyka
 		btCapsuleShape* caps = new btCapsuleShape(u->GetUnitRadius(), max(MIN_H, u->GetUnitHeight()));

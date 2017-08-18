@@ -299,7 +299,7 @@ void ServerPanel::Event(GuiEvent e)
 					game->sv_startup = true;
 					game->startup_timer = float(STARTUP_TIMER);
 					game->last_startup_id = STARTUP_TIMER;
-					byte b[] = { ID_STARTUP, STARTUP_TIMER };
+					byte b[] = { ID_TIMER, STARTUP_TIMER };
 					game->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 					bts[4].text = txStop;
 					cstring s = Format(txStartingIn, STARTUP_TIMER);
@@ -458,7 +458,7 @@ void ServerPanel::StopStartup()
 
 	if(game->players > 1)
 	{
-		byte c = ID_END_STARTUP;
+		byte c = ID_END_TIMER;
 		game->peer->Send((cstring)&c, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 	}
 }

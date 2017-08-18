@@ -1,3 +1,5 @@
+QMSH FILE FORMAT
+--------------------------
 HEADER
 char[4] - format QMSH
 byte - version (12 - 20)
@@ -16,15 +18,15 @@ word - n_points
 word - n_groups
 float - radius
 Box - bbox
-(if version >= 20)
-uint - points_offset
-(if version >= 13)
+if(version >= 20)
+	uint - points_offset
+if(version >= 13)
 {
 	Vec3 - cam_pos
 	Vec3 - cam_target
 }
-(if version >= 15)
-Vec3 - cam_up
+if(version >= 15)
+	Vec3 - cam_up
 
 --------------------------
 VERTEX DATA
@@ -44,22 +46,22 @@ SUBMESHES
 	word - n_ind
 	string1 - name
 	string1 - diffuse texture
-	(if version >= 18)
+	if(version >= 18)
 	{
 		Vec3 - specular_color
 		float - specular_intensity
 		int - specular_hardness
 	}
-	(if version >= 16)
+	if(version >= 16)
 	{
-		(if flags & F_TANGENTS)
+		if(flags & F_TANGENTS)
 		{
 			string1 - normal texture
-			(if have normal texture)
+			if(have normal texture)
 				float - normal_factor
 		}
 		string1 - specular texture
-		(if have specular texture)
+		if(have specular texture)
 		{
 			float - specular_factor
 			float - specular_color_factor
@@ -69,25 +71,69 @@ SUBMESHES
 
 --------------------------
 BONES
-(if flags & F_ANIMATED and flags !& F_STATIC)
+if(flags & F_ANIMATED and flags !& F_STATIC)
 {
-
+	[n_bones]
+	{
+		word - bone_parent
+		float[12] - matrix
+		string1 - name
+	}
 }
 
 --------------------------
 ANIMATIONS
-(if flags & F_ANIMATED and flags !& F_STATIC)
+if(flags & F_ANIMATED and flags !& F_STATIC)
 {
-
+	[n_anims]
+	{
+		string1 - name
+		float - length
+		word - n_frames
+		[n_frames]
+		{
+			float - time
+			KeyframeBone[n_bones]
+		}
+	}
 }
 
 --------------------------
 POINTS
+[n_points]
+{
+	string1 - name
+	Matrix - mat
+	word - bone
+	if(version == 12)
+		++bone;
+	word - type
+	if(version >= 14)
+		Vec3 - size
+	else
+		float - size
+	if(version >= 19)
+		Vec3 - rot
+}
 
 --------------------------
 BONE GROUPS
+if(flags & F_ANIMATED and flags !& F_STATIC and version >= 13)
+{
+	string1 - name
+	word - parent
+	byte - count
+	byte[count] - bones
+}
 
 --------------------------
 SPLITS
-
-add task to reorder this
+if(flags & F_SPLITS)
+{
+	[n_splits]
+	{
+		Vec3 - pos
+		float - radius
+		BOx - box
+	}
+}

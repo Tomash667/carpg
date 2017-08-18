@@ -8,7 +8,7 @@
 MultiInsideLocation::MultiInsideLocation(int _levels) : active_level(-1), active(nullptr), generated(0)
 {
 	levels.resize(_levels);
-	LevelInfo li = { -1, false, false };
+	LevelInfo li = { -1, false, false, false };
 	infos.resize(_levels, li);
 	for(vector<InsideLocationLevel>::iterator it = levels.begin(), end = levels.end(); it != end; ++it)
 		it->map = nullptr;
@@ -87,6 +87,7 @@ void MultiInsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			it->seed = 0;
 		ReadFile(file, &it->cleared, sizeof(it->cleared), &tmp, nullptr);
 		ReadFile(file, &it->reset, sizeof(it->reset), &tmp, nullptr);
+		it->loaded_resources = false;
 	}
 }
 

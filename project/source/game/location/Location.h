@@ -144,11 +144,6 @@ struct Location : public ILevel
 	Portal* TryGetPortal(int index) const;
 	void WritePortals(BitStream& stream) const;
 	bool ReadPortals(BitStream& stream, int at_level);
-
-	bool IsSingleLevel() const
-	{
-		return type != L_DUNGEON && type != L_CRYPT;
-	}
 };
 
 //-----------------------------------------------------------------------------

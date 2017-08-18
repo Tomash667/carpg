@@ -1080,7 +1080,6 @@ public:
 	uint TestGameData(bool major);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
-	void CreateUnitMesh(Unit& unit, bool on_worldmap, int preload = 0);
 	void ParseItemScript(Unit& unit, const int* script);
 	bool IsEnemy(Unit& u1, Unit& u2, bool ignore_dont_attack = false);
 	bool IsFriend(Unit& u1, Unit& u2);
@@ -1257,6 +1256,7 @@ public:
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
 	void LoadResources(cstring text, bool worldmap);
+	bool RequireLoadingResources(Location* loc);
 	void PreloadResources(bool worldmap);
 	void PreloadUsables(vector<Usable*>& usable);
 	void PreloadUnits(vector<Unit*>& units);
@@ -1600,9 +1600,8 @@ public:
 	bool godmode, noclip, invisible;
 	vector<Int2> minimap_reveal_mp;
 	bool boss_level_mp; // u¿ywane u klienta zamiast boss_levels
-	bool mp_load;
+	bool mp_load, mp_load_worldmap, mp_use_interp;
 	float mp_interp;
-	bool mp_use_interp;
 	ObjectPool<EntityInterpolator> interpolators;
 	float interpolate_timer;
 	int mp_port;

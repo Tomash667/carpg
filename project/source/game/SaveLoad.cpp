@@ -878,7 +878,7 @@ void Game::LoadGame(HANDLE file)
 			Unit* u = new Unit;
 			u->Load(file, false);
 			Unit::AddRefid(u);
-			CreateUnitMesh(*u, true);
+			u->CreateMesh(Unit::CREATE_MESH::ON_WORLDMAP);
 
 			if(!u->IsPlayer())
 			{
@@ -1178,7 +1178,6 @@ void Game::LoadGame(HANDLE file)
 			RespawnObjectColliders(false);
 			SpawnDungeonColliders();
 			CreateDungeonMinimap();
-			PreloadTraps(*local_ctx.traps);
 		}
 
 		// cz¹steczki

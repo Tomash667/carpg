@@ -11,7 +11,7 @@ struct MultiInsideLocation : public InsideLocation
 	{
 		int last_visit;
 		uint seed;
-		bool cleared, reset;
+		bool cleared, reset, loaded_resources;
 	};
 	vector<InsideLocationLevel> levels;
 	vector<LevelInfo> infos;

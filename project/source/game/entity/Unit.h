@@ -135,6 +135,15 @@ struct Unit
 		LS_MAX_OVERLOADED // >= 200%
 	};
 
+	enum class CREATE_MESH
+	{
+		NORMAL,
+		ON_WORLDMAP,
+		PRELOAD,
+		AFTER_PRELOAD,
+		LOAD
+	};
+
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
@@ -815,6 +824,8 @@ struct Unit
 
 	void UpdateStaminaAction();
 	void RemoveStamina(float value);
+
+	void CreateMesh(CREATE_MESH mode);
 };
 
 //-----------------------------------------------------------------------------

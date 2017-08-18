@@ -1680,10 +1680,8 @@ void Unit::Load(HANDLE file, bool local)
 
 	if(local)
 	{
-		ResourceManager::Get<Mesh>().Load(data->mesh);
-		mesh_inst = new MeshInstance(data->mesh);
+		CreateMesh(CREATE_MESH::LOAD);
 		mesh_inst->Load(file);
-		mesh_inst->ptr = this;
 		ReadFile(file, &animation, sizeof(animation), &tmp, nullptr);
 		ReadFile(file, &current_animation, sizeof(current_animation), &tmp, nullptr);
 
@@ -3038,5 +3036,119 @@ void Unit::RemoveStamina(float value)
 		Game& game = Game::Get();
 		if(game.pc != player)
 			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
+	}
+}
+
+//=================================================================================================
+// NORMAL - load if instant mode, add tasks when loadscreen mode
+// ON_WORLDMAP - like normal but don't play animations
+// PRELOAD - create MeshInstance with preload option when mesh not loaded
+// AFTER_PRELOAD - call ApplyPreload on MeshInstance
+// LOAD - always load mesh, add tasks for other
+void Unit::CreateMesh(CREATE_MESH mode)
+{
+	Mesh* mesh = data->mesh;
+	if(data->state != ResourceState::Loaded)
+	{
+		assert(mode != CREATE_MESH::AFTER_PRELOAD);
+		if(ResourceManager::Get().IsLoadScreen())
+		{
+			if(mode == CREATE_MESH::LOAD)
+				ResourceManager::Get<Mesh>().Load(mesh);
+			else if(!mesh->IsLoaded())
+				Game::Get().units_mesh_load.push_back(std::pair<Unit*, bool>(this, mode == CREATE_MESH::ON_WORLDMAP));
+			if(data->state == ResourceState::NotLoaded)
+			{
+				ResourceManager::Get<Mesh>().AddLoadTask(mesh);
+				if(data->sounds)
+				{
+					auto& sound_mgr = ResourceManager::Get<Sound>();
+					for(int i = 0; i<SLOT_MAX; ++i)
+					{
+						if(data->sounds->sound[i])
+							sound_mgr.AddLoadTask(data->sounds->sound[i]);
+					}
+				}
+				if(data->tex)
+				{
+					auto& tex_mgr = ResourceManager::Get<Texture>();
+					for(auto& tex : data->tex->textures)
+					{
+						if(tex.tex)
+							tex_mgr.AddLoadTask(tex.tex);
+					}
+				}
+				data->state = ResourceState::Loading;
+				ResourceManager::Get().AddTask(this, TaskCallback([](TaskData& td)
+				{
+					Unit* unit = (Unit*)td.ptr;
+					unit->data->state = ResourceState::Loaded;
+				}));
+			}
+		}
+		else
+		{
+			ResourceManager::Get<Mesh>().Load(mesh);
+			if(data->sounds)
+			{
+				auto& sound_mgr = ResourceManager::Get<Sound>();
+				for(int i = 0; i<SLOT_MAX; ++i)
+				{
+					if(data->sounds->sound[i])
+						sound_mgr.Load(data->sounds->sound[i]);
+				}
+			}
+			if(data->tex)
+			{
+				auto& tex_mgr = ResourceManager::Get<Texture>();
+				for(auto& tex : data->tex->textures)
+				{
+					if(tex.tex)
+						tex_mgr.Load(tex.tex);
+				}
+			}
+			data->state = ResourceState::Loaded;
+		}
+	}
+
+	if(mesh->IsLoaded())
+	{
+		if(mode != CREATE_MESH::AFTER_PRELOAD)
+		{
+			assert(!mesh_inst);
+			mesh_inst = new MeshInstance(mesh);
+			mesh_inst->ptr = this;
+
+			if(mode != CREATE_MESH::ON_WORLDMAP)
+			{
+				if(IsAlive())
+				{
+					mesh_inst->Play(NAMES::ani_stand, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+					animation = current_animation = ANI_STAND;
+				}
+				else
+				{
+					mesh_inst->Play(NAMES::ani_die, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+					animation = current_animation = ANI_DIE;
+					SetAnimationAtEnd();
+				}
+			}
+
+			mesh_inst->groups[0].speed = 1.f;
+			if(mesh_inst->mesh->head.n_groups > 1)
+				mesh_inst->groups[1].state = 0;
+			if(human_data)
+				human_data->ApplyScale(mesh_inst->mesh);
+		}
+		else
+		{
+			assert(mesh_inst);
+			mesh_inst->ApplyPreload(mesh);
+		}
+	}
+	else if(mode == CREATE_MESH::PRELOAD)
+	{
+		assert(!mesh_inst);
+		mesh_inst = new MeshInstance(nullptr, true);
 	}
 }

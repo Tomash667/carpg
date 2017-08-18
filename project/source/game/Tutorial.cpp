@@ -6,6 +6,7 @@
 #include "MainMenu.h"
 #include "GameGui.h"
 #include "WorldMapGui.h"
+#include "LoadScreen.h"
 
 char mapa_t[] = {
 	"$$$$$$$$###########$$$"
@@ -165,6 +166,8 @@ struct TutUnitHandler : public UnitEventHandler
 
 void Game::StartTutorial()
 {
+	LoadingStart(1);
+
 	HumanData hd;
 	hd.Get(*create_character->unit->human_data);
 	NewGameCommon(create_character->clas, create_character->name.c_str(), hd, create_character->cc, true);
@@ -361,11 +364,13 @@ void Game::StartTutorial()
 	GenerateMerchantItems(chest_merchant, 500);
 
 	// go!
+	LoadResources("", false);
 	SpawnDungeonColliders();
 	CreateDungeonMinimap();
 	AddPlayerTeam(Vec3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0, false, true);
 	location_event_handler = nullptr;
 	SetMusic();
+	load_screen->visible = false;
 	main_menu->visible = false;
 	game_gui->visible = true;
 	world_map->visible = false;
