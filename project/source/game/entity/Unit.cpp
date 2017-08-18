@@ -1426,14 +1426,14 @@ void Unit::Load(HANDLE file, bool local)
 {
 	human_data = nullptr;
 
-	// id postaci
+	// unit data
 	byte len;
 	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	BUF[len] = 0;
 	ReadFile(file, BUF, len, &tmp, nullptr);
 	data = FindUnitData(BUF);
 
-	// przedmioty
+	// items
 	bool can_sort = true;
 	if(LOAD_VERSION >= V_0_2_10)
 	{
@@ -1485,6 +1485,7 @@ void Unit::Load(HANDLE file, bool local)
 		}
 	}
 
+	// stats
 	ReadFile(file, &live_state, sizeof(live_state), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_2_20 && live_state != ALIVE)
 		live_state = LiveState(live_state + 2); // kolejnoœæ siê zmieni³a

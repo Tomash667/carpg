@@ -122,19 +122,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		Location& current = *game.locations[game.current_location];
 		GUI.DrawSprite(tSelected[1], WorldPosToScreen(Int2(current.pos.x - 32.f, current.pos.y + 32.f)), 0xAAFFFFFF);
 		s += Format("\n\n%s: %s", txCurrentLoc, current.name.c_str());
-		if(game.devmode && game.IsLocal())
-		{
-			if(current.type == L_DUNGEON || current.type == L_CRYPT)
-			{
-				InsideLocation* inside = (InsideLocation*)&current;
-				s += Format(" (%s, %s, st %d)", g_base_locations[inside->target].name, g_spawn_groups[inside->spawn].id, inside->st);
-			}
-			else if(current.type == L_FOREST || current.type == L_CAMP || current.type == L_CAVE || current.type == L_MOONWELL)
-				s += Format(" (st %d)", current.st);
-			s += Format(", quest 0x%p", current.active_quest);
-		}
-		if(current.state >= LS_VISITED && current.type == L_CITY)
-			GetCityText((City&)current, s.get_ref());
+		AppendLocationText(current, s.get_ref());
 	}
 
 	// opis zaznaczonej lokacji
@@ -147,20 +135,8 @@ void WorldMapGui::Draw(ControlDrawData*)
 			float odl = Vec2::Distance(game.world_pos, picked.pos) / 600.f * 200;
 			int koszt = int(ceil(odl / TRAVEL_SPEED));
 			s += Format("\n\n%s: %s", txTarget, picked.name.c_str());
-			if(game.devmode && game.IsLocal())
-			{
-				if(picked.type == L_DUNGEON || picked.type == L_CRYPT)
-				{
-					InsideLocation* inside = (InsideLocation*)&picked;
-					s += Format(" (%s, %s, %d)", g_base_locations[inside->target].name, g_spawn_groups[inside->spawn].id, inside->st);
-				}
-				else if(picked.type == L_FOREST || picked.type == L_CAMP || picked.type == L_CAVE || picked.type == L_MOONWELL)
-					s += Format(" (st %d)", picked.st);
-				s += Format(", quest 0x%p", picked.active_quest);
-			}
+			AppendLocationText(picked, s.get_ref());
 			s += Format("\n%s: %g km\n%s: %d %s", txDistance, ceil(odl * 10) / 10, txTravelTime, koszt, koszt == 1 ? txDay : txDays);
-			if(picked.state >= LS_VISITED && picked.type == L_CITY)
-				GetCityText((City&)picked, s.get_ref());
 		}
 		GUI.DrawSprite(tSelected[0], WorldPosToScreen(Int2(picked.pos.x - 32.f, picked.pos.y + 32.f)), 0xAAFFFFFF);
 	}
@@ -646,6 +622,26 @@ void WorldMapGui::Event(GuiEvent e)
 		mp_box->GainFocus();
 	else if(e == GuiEvent_LostFocus)
 		mp_box->LostFocus();
+}
+
+//=================================================================================================
+void WorldMapGui::AppendLocationText(Location& loc, string& s)
+{
+	if(game.devmode && game.IsLocal())
+	{
+		s += " (";
+		if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
+		{
+			InsideLocation* inside = (InsideLocation*)&loc;
+			s += Format("%s, %s, st %d, levels %d",
+				g_base_locations[inside->target].name, g_spawn_groups[inside->spawn].id, inside->st, inside->GetLastLevel() + 1);
+		}
+		else if(loc.type == L_FOREST || loc.type == L_CAMP || loc.type == L_CAVE || loc.type == L_MOONWELL)
+			s += Format("%s, st %d", g_spawn_groups[loc.spawn].id, loc.st);
+		s += Format(", quest 0x%p)", loc.active_quest);
+	}
+	if(loc.state >= LS_VISITED && loc.type == L_CITY)
+		GetCityText((City&)loc, s);
 }
 
 //=================================================================================================

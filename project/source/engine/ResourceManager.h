@@ -434,11 +434,7 @@ public:
 	void SetLoadScreen(LoadScreen* _load_screen) { load_screen = _load_screen; }
 	void PrepareLoadScreen(float progress_min = 0.f, float progress_max = 1.f);
 	void StartLoadScreen(cstring category = nullptr);
-	void CancelLoadScreen()
-	{
-		assert(mode == Mode::LoadScreenPrepare && tasks.empty());
-		mode = Mode::Instant;
-	}
+	void CancelLoadScreen(bool cleanup = false);
 	void SetMutex(HANDLE _mutex) { mutex = _mutex; }
 	bool HaveTasks() const { return !tasks.empty(); }
 	int GetLoadTasksCount() const { return to_load; }

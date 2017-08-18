@@ -1579,14 +1579,14 @@ void CreateCharacterPanel::CheckSkillsUpdate()
 //=================================================================================================
 void CreateCharacterPanel::UpdateInventory()
 {
-	const Item* old_items[4];
-	for(int i = 0; i < 4; ++i)
+	const Item* old_items[SLOT_MAX];
+	for(int i = 0; i < SLOT_MAX; ++i)
 		old_items[i] = items[i];
 
 	cc.GetStartingItems(items);
 
 	bool same = true;
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		if(items[i] != old_items[i])
 		{
@@ -1597,7 +1597,7 @@ void CreateCharacterPanel::UpdateInventory()
 	if(same)
 		return;
 
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		game->PreloadItem(items[i]);
 		unit->slots[i] = items[i];

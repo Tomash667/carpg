@@ -771,6 +771,7 @@ void Game::DoExitToMenu()
 	StopSounds();
 	attached_sounds.clear();
 	ClearGame();
+	ResourceManager::Get().CancelLoadScreen(true);
 
 	game_state = GS_MAIN_MENU;
 	paused = false;

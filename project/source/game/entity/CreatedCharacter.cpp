@@ -223,9 +223,9 @@ void CreatedCharacter::Apply(PlayerController& pc)
 
 	// inventory
 	Game::Get().ParseItemScript(*pc.unit, pc.unit->data->items);
-	const Item* items[4];
+	const Item* items[SLOT_MAX];
 	GetStartingItems(items);
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < SLOT_MAX; ++i)
 		pc.unit->slots[i] = items[i];
 	if(HavePerk(Perk::AlchemistApprentice))
 	{
@@ -249,7 +249,7 @@ bool CreatedCharacter::HavePerk(Perk perk) const
 }
 
 //=================================================================================================
-void CreatedCharacter::GetStartingItems(const Item* (&items)[4])
+void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 {
 	items[SLOT_WEAPON] = nullptr;
 	items[SLOT_BOW] = nullptr;

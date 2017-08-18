@@ -6779,18 +6779,60 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 void Game::CreateUnitMesh(Unit& unit, bool on_worldmap, int preload)
 {
 	Mesh* mesh = unit.data->mesh;
-
-	if(!mesh->IsLoaded())
+	if(unit.data->state != ResourceState::Loaded)
 	{
 		assert(preload != 2);
 		if(ResourceManager::Get().IsLoadScreen())
 		{
-			ResourceManager::Get<Mesh>().AddLoadTask(mesh);
-			units_mesh_load.push_back(std::pair<Unit*, bool>(&unit, on_worldmap));
-			unit.mesh_inst = nullptr;
+			if(!mesh->IsLoaded())
+				units_mesh_load.push_back(std::pair<Unit*, bool>(&unit, on_worldmap));
+			if(unit.data->state == ResourceState::NotLoaded)
+			{
+				ResourceManager::Get<Mesh>().AddLoadTask(mesh);
+				if(unit.data->sounds)
+				{
+					auto& sound_mgr = ResourceManager::Get<Sound>();
+					for(int i = 0; i<SLOT_MAX; ++i)
+					{
+						if(unit.data->sounds->sound[i])
+							sound_mgr.AddLoadTask(unit.data->sounds->sound[i]);
+					}
+				}
+				if(unit.data->tex)
+				{
+					auto& tex_mgr = ResourceManager::Get<Texture>();
+					for(auto& tex : unit.data->tex->textures)
+					{
+						if(tex.tex)
+							tex_mgr.AddLoadTask(tex.tex);
+					}
+				}
+				unit.data->state = ResourceState::Loading;
+			}
 		}
 		else
+		{
 			ResourceManager::Get<Mesh>().Load(mesh);
+			if(unit.data->sounds)
+			{
+				auto& sound_mgr = ResourceManager::Get<Sound>();
+				for(int i=0; i<SLOT_MAX; ++i)
+				{
+					if(unit.data->sounds->sound[i])
+						sound_mgr.Load(unit.data->sounds->sound[i]);						
+				}
+			}
+			if(unit.data->tex)
+			{
+				auto& tex_mgr = ResourceManager::Get<Texture>();
+				for(auto& tex : unit.data->tex->textures)
+				{
+					if(tex.tex)
+						tex_mgr.Load(tex.tex);
+				}
+			}
+			unit.data->state = ResourceState::Loaded;
+		}
 	}
 
 	if(mesh->IsLoaded())
@@ -15109,47 +15151,92 @@ void Game::PreloadItem(const Item* citem)
 void Game::VerifyResources()
 {
 	for(auto item : *local_ctx.items)
-		assert(item->item->state == ResourceState::Loaded);
+		VerifyItemResources(item->item);
 	for(auto& obj : *local_ctx.objects)
 		assert(obj.mesh->state == ResourceState::Loaded);
 	for(auto unit : *local_ctx.units)
-	{
-		assert(unit->data->state == ResourceState::Loaded);
-		for(int i = 0; i < SLOT_MAX; ++i)
-		{
-			if(unit->slots[i])
-				assert(unit->slots[i]->state == ResourceState::Loaded);
-		}
-		for(auto& slot : unit->items)
-			assert(slot.item->state == ResourceState::Loaded);
-	}
+		VerifyUnitResources(unit);
 	for(auto u : *local_ctx.usables)
-		assert(u->GetBase()->state == ResourceState::Loaded);
+	{
+		auto base = u->GetBase();
+		assert(base->state == ResourceState::Loaded);
+		if(base->sound)
+			assert(base->sound->IsLoaded());
+	}		
 	for(auto trap : *local_ctx.traps)
+	{
 		assert(trap->base->state == ResourceState::Loaded);
+		if(trap->base->mesh)
+			assert(trap->base->mesh->IsLoaded());
+		if(trap->base->mesh2)
+			assert(trap->base->mesh2->IsLoaded());
+		if(trap->base->sound)
+			assert(trap->base->sound->IsLoaded());
+		if(trap->base->sound2)
+			assert(trap->base->sound2->IsLoaded());
+		if(trap->base->sound3)
+			assert(trap->base->sound3->IsLoaded());
+	}
 	if(city_ctx)
 	{
 		for(auto ib : city_ctx->inside_buildings)
 		{
 			for(auto item : ib->items)
-				assert(item->item->state == ResourceState::Loaded);
+				VerifyItemResources(item->item);
 			for(auto& obj : ib->objects)
 				assert(obj.mesh->state == ResourceState::Loaded);
 			for(auto unit : ib->units)
-			{
-				assert(unit->data->state == ResourceState::Loaded);
-				for(int i = 0; i < SLOT_MAX; ++i)
-				{
-					if(unit->slots[i])
-						assert(unit->slots[i]->state == ResourceState::Loaded);
-				}
-				for(auto& slot : unit->items)
-					assert(slot.item->state == ResourceState::Loaded);
-			}
+				VerifyUnitResources(unit);
 			for(auto u : ib->usables)
-				assert(u->GetBase()->state == ResourceState::Loaded);
+			{
+				auto base = u->GetBase();
+				assert(base->state == ResourceState::Loaded);
+				if(base->sound)
+					assert(base->sound->IsLoaded());
+			}
 		}
 	}
+}
+
+void Game::VerifyUnitResources(Unit* unit)
+{
+	assert(unit->data->state == ResourceState::Loaded);
+	if(unit->data->mesh)
+		assert(unit->data->mesh->IsLoaded());
+	if(unit->data->sounds)
+	{
+		for(int i = 0; i < SOUND_MAX; ++i)
+		{
+			if(unit->data->sounds->sound[i])
+				assert(unit->data->sounds->sound[i]->IsLoaded());
+		}
+	}
+	if(unit->data->tex)
+	{
+		for(auto& tex : unit->data->tex->textures)
+		{
+			if(tex.tex)
+				assert(tex.tex->IsLoaded());
+		}
+	}
+
+	for(int i = 0; i < SLOT_MAX; ++i)
+	{
+		if(unit->slots[i])
+			VerifyItemResources(unit->slots[i]);
+	}
+	for(auto& slot : unit->items)
+		VerifyItemResources(slot.item);
+}
+
+void Game::VerifyItemResources(const Item* item)
+{
+	assert(item->state == ResourceState::Loaded);
+	if(item->tex)
+		assert(item->tex->IsLoaded());
+	if(item->mesh)
+		assert(item->mesh->IsLoaded());
+	assert(item->icon);
 }
 
 cstring arena_slabi[] = {

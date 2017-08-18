@@ -53,8 +53,6 @@ void SortItems(vector<ItemSlot>& items)
 		items.pop_back();
 }
 
-extern cstring armor_type_string[4];
-
 void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 {
 	assert(item);

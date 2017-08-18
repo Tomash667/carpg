@@ -669,6 +669,19 @@ void ResourceManager::StartLoadScreen(cstring category)
 }
 
 //=================================================================================================
+void ResourceManager::CancelLoadScreen(bool cleanup)
+{
+	assert(mode == Mode::LoadScreenPrepare);
+	
+	if(cleanup)
+		tasks.clear();
+	else
+		assert(tasks.empty());
+
+	mode = Mode::Instant;
+}
+
+//=================================================================================================
 void ResourceManager::UpdateLoadScreen()
 {
 	Engine& engine = Engine::Get();

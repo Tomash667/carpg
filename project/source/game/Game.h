@@ -1263,6 +1263,8 @@ public:
 	void PreloadItems(vector<ItemSlot>& items);
 	void PreloadItem(const Item* item);
 	void VerifyResources();
+	void VerifyUnitResources(Unit* unit);
+	void VerifyItemResources(const Item* item);
 	//
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();
