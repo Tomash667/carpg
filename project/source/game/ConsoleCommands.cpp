@@ -16,9 +16,22 @@
 #include "BitStreamFunc.h"
 #include "Team.h"
 #include "SaveState.h"
+#include "QuestManager.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
+static PrintMsgFunc g_print_func;
+
+//-----------------------------------------------------------------------------
+void Msg(cstring msg)
+{
+	g_print_func(msg);
+}
+template<typename... Args>
+void Msg(cstring msg, const Args&... args)
+{
+	g_print_func(Format(msg, args...));
+}
 
 //=================================================================================================
 void Game::AddCommands()
@@ -65,7 +78,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10)", F_GAME | F_MENU | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_SHOW_MINIMAP, "show_minimap", "reveal minimap", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SKIP_DAYS, "skip_days", "skip days [skip_days [count])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_LIST, "list", "display list of items/units sorted by id/name, unit item unitn itemn (list type [filter])", F_ANYWHERE));
+	cmds.push_back(ConsoleCommand(CMD_LIST, "list", "display list of types, don't enter type to list possible choices (list type [filter])", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_HEALUNIT, "healunit", "heal unit in front of player", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SUICIDE, "suicide", "kill player", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_CITIZEN, "citizen", "citizens/crazies don't attack player or his team", F_GAME | F_CHEAT | F_WORLD_MAP));
@@ -104,30 +117,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_TILE_INFO, "tile_info", "display info about map tile", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SET_SEED, "set_seed", "set randomness seed", F_ANYWHERE | F_WORLD_MAP | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_CRASH, "crash", "crash game to death!", F_ANYWHERE | F_WORLD_MAP | F_CHEAT));
-}
-
-//=================================================================================================
-inline bool SortItemsById(const Item* item1, const Item* item2)
-{
-	return item1->id < item2->id;
-}
-
-//=================================================================================================
-inline bool SortItemsByName(const Item* item1, const Item* item2)
-{
-	return strcoll(item1->name.c_str(), item2->name.c_str()) < 0;
-}
-
-//=================================================================================================
-inline bool SortUnitsById(const UnitData* unit1, const UnitData* unit2)
-{
-	return unit1->id < unit2->id;
-}
-
-//=================================================================================================
-inline bool SortUnitsByName(const UnitData* unit1, const UnitData* unit2)
-{
-	return strcoll(unit1->name.c_str(), unit2->name.c_str()) < 0;
+	cmds.push_back(ConsoleCommand(CMD_FORCEQUEST, "forcequest", "force next random quest to select (use list quest or none/reset)", F_GAME | F_WORLD_MAP | F_CHEAT));
 }
 
 //=================================================================================================
@@ -135,11 +125,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 {
 	if(!print_func)
 		print_func = PrintMsgFunc(this, &Game::AddConsoleMsg);
+	g_print_func = print_func;
 
 	Tokenizer t(Tokenizer::F_JOIN_MINUS);
 	t.FromString(_str);
-
-#define MSG(x) print_func(x)
 
 	try
 	{
@@ -154,7 +143,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 			if(IS_SET(it->flags, F_CHEAT) && !devmode)
 			{
-				MSG(Format("You can't use command '%s' without devmode.", token.c_str()));
+				Msg("You can't use command '%s' without devmode.", token.c_str());
 				return;
 			}
 
@@ -164,12 +153,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				{
 					if(!IS_SET(it->flags, F_LOBBY))
 					{
-						MSG(Format("You can't use command '%s' in server lobby.", token.c_str()));
+						Msg("You can't use command '%s' in server lobby.", token.c_str());
 						return;
 					}
 					else if(IS_SET(it->flags, F_SERVER) && !sv_server)
 					{
-						MSG(Format("Only server can use command '%s'.", token.c_str()));
+						Msg("Only server can use command '%s'.", token.c_str());
 						return;
 					}
 				}
@@ -177,7 +166,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				{
 					if(!IS_SET(it->flags, F_MENU))
 					{
-						MSG(Format("You can't use command '%s' in menu.", token.c_str()));
+						Msg("You can't use command '%s' in menu.", token.c_str());
 						return;
 					}
 				}
@@ -185,12 +174,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				{
 					if(!IS_SET(it->flags, F_MULTIPLAYER))
 					{
-						MSG(Format("You can't use command '%s' in multiplayer.", token.c_str()));
+						Msg("You can't use command '%s' in multiplayer.", token.c_str());
 						return;
 					}
 					else if(IS_SET(it->flags, F_SERVER) && !sv_server)
 					{
-						MSG(Format("Only server can use command '%s'.", token.c_str()));
+						Msg("Only server can use command '%s'.", token.c_str());
 						return;
 					}
 				}
@@ -198,7 +187,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				{
 					if(!IS_SET(it->flags, F_WORLD_MAP))
 					{
-						MSG(Format("You can't use command '%s' on world map.", token.c_str()));
+						Msg("You can't use command '%s' on world map.", token.c_str());
 						return;
 					}
 				}
@@ -206,7 +195,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				{
 					if(!IS_SET(it->flags, F_SINGLEPLAYER))
 					{
-						MSG(Format("You can't use command '%s' in singleplayer.", token.c_str()));
+						Msg("You can't use command '%s' in singleplayer.", token.c_str());
 						return;
 					}
 				}
@@ -218,7 +207,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				{
 					if(IS_SET(it->flags, F_MP_VAR) && !IsServer())
 					{
-						MSG("Only server can change this variable.");
+						Msg("Only server can change this variable.");
 						return;
 					}
 
@@ -234,7 +223,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							it->changed();
 					}
 				}
-				MSG(Format("%s = %d", it->name, *(bool*)it->var ? 1 : 0));
+				Msg("%s = %d", it->name, *(bool*)it->var ? 1 : 0);
 				return;
 			}
 			else if(it->type == ConsoleCommand::VAR_FLOAT)
@@ -245,7 +234,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				{
 					if(IS_SET(it->flags, F_MP_VAR) && !IsServer())
 					{
-						MSG("Only server can change this variable.");
+						Msg("Only server can change this variable.");
 						return;
 					}
 
@@ -257,7 +246,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							PushNetChange(NetChange::CHANGE_MP_VARS);
 					}
 				}
-				MSG(Format("%s = %g", it->name, f));
+				Msg("%s = %g", it->name, f);
 				return;
 			}
 			else if(it->type == ConsoleCommand::VAR_INT)
@@ -268,7 +257,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				{
 					if(IS_SET(it->flags, F_MP_VAR) && !IsServer())
 					{
-						MSG("Only server can change this variable.");
+						Msg("Only server can change this variable.");
 						return;
 					}
 
@@ -282,7 +271,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							it->changed();
 					}
 				}
-				MSG(Format("%s = %d", it->name, i));
+				Msg("%s = %d", it->name, i);
 				return;
 			}
 			else if(it->type == ConsoleCommand::VAR_UINT)
@@ -293,7 +282,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				{
 					if(IS_SET(it->flags, F_MP_VAR) && !IsServer())
 					{
-						MSG("Only server can change this variable.");
+						Msg("Only server can change this variable.");
 						return;
 					}
 
@@ -305,13 +294,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							PushNetChange(NetChange::CHANGE_MP_VARS);
 					}
 				}
-				MSG(Format("%s = %u", it->name, u));
+				Msg("%s = %u", it->name, u);
 				return;
 			}
 			else
 			{
 				if(!IS_SET(it->flags, F_NO_ECHO))
-					MSG(_str.c_str());
+					Msg(_str.c_str());
 
 				switch(it->cmd)
 				{
@@ -322,7 +311,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						PushNetChange(NetChange::CHEAT_GOTO_MAP);
 					break;
 				case CMD_VERSION:
-					MSG(Format("CaRpg version " VERSION_STR ", built %s.", g_ctime.c_str()));
+					Msg("CaRpg version " VERSION_STR ", built %s.", g_ctime.c_str());
 					break;
 				case CMD_QUIT:
 					if(t.Next() && t.IsInt() && t.GetInt() == 1)
@@ -343,7 +332,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						rysuj_mape_konsola(lvl.map, lvl.w, lvl.h);
 					}
 					else
-						MSG("You need to be inside dungeon!");
+						Msg("You need to be inside dungeon!");
 					break;
 				case CMD_ADDITEM:
 					if(t.Next())
@@ -351,7 +340,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						const string& item_name = t.MustGetItem();
 						const Item* item = FindItem(item_name.c_str());
 						if(!item || IS_SET(item->flags, ITEM_SECRET))
-							MSG(Format("Can't find item with id '%s'!", item_name.c_str()));
+							Msg("Can't find item with id '%s'!", item_name.c_str());
 						else
 						{
 							int ile;
@@ -380,7 +369,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						MSG("You need to enter item id!");
+						Msg("You need to enter item id!");
 					break;
 				case CMD_ADDTEAM:
 					if(t.Next())
@@ -388,7 +377,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						const string& item_name = t.MustGetItem();
 						const Item* item = FindItem(item_name.c_str());
 						if(!item || IS_SET(item->flags, ITEM_SECRET))
-							MSG(Format("Can't find item with id '%s'!", item_name.c_str()));
+							Msg("Can't find item with id '%s'!", item_name.c_str());
 						else
 						{
 							int ile;
@@ -417,7 +406,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						MSG("You need to enter item id!");
+						Msg("You need to enter item id!");
 					break;
 				case CMD_ADDGOLD:
 					if(t.Next())
@@ -433,14 +422,14 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						MSG("You need to enter gold amount!");
+						Msg("You need to enter gold amount!");
 					break;
 				case CMD_ADDGOLD_TEAM:
 					if(t.Next())
 					{
 						int ile = t.MustGetInt();
 						if(ile <= 0)
-							MSG("Gold count must by positive!");
+							Msg("Gold count must by positive!");
 						else
 						{
 							if(IsLocal())
@@ -454,12 +443,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						MSG("You need to enter gold amount!");
+						Msg("You need to enter gold amount!");
 					break;
 				case CMD_SETSTAT:
 				case CMD_MODSTAT:
 					if(!t.Next())
-						MSG("Enter name of attribute/skill and value. Use ? to get list of attributes/skills.");
+						Msg("Enter name of attribute/skill and value. Use ? to get list of attributes/skills.");
 					else if(t.IsSymbol('?'))
 					{
 						LocalVector2<Attribute> attribs;
@@ -485,7 +474,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							return g_attributes[(int)a].id;
 						});
 						str += ".";
-						MSG(str.c_str());
+						Msg(str.c_str());
 						str = "List of skills: ";
 						Join(skills.Get(), str.get_ref(), ", ",
 							[](Skill s)
@@ -493,7 +482,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							return g_skills[(int)s].id;
 						});
 						str += ".";
-						MSG(str.c_str());
+						Msg(str.c_str());
 					}
 					else
 					{
@@ -516,13 +505,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 							else
 							{
-								MSG(Format("Invalid attribute/skill '%s'.", s.c_str()));
+								Msg("Invalid attribute/skill '%s'.", s.c_str());
 								break;
 							}
 						}
 
 						if(!t.Next())
-							MSG("You need to enter number!");
+							Msg("You need to enter number!");
 						else
 						{
 							int num = t.MustGetInt();
@@ -619,12 +608,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						});
 
 						string s = "Available commands:\n";
-						MSG("Available commands:");
+						Msg("Available commands:");
 
 						for each(const ConsoleCommand* cmd in cmds2)
 						{
 							cstring str = Format("%s - %s.", cmd->name, cmd->desc);
-							MSG(str);
+							Msg(str);
 							s += str;
 							s += "\n";
 						}
@@ -645,22 +634,22 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						{
 							if(cmd == it2->name)
 							{
-								MSG(Format("%s - %s.", cmd.c_str(), it2->desc));
+								Msg("%s - %s.", cmd.c_str(), it2->desc);
 								return;
 							}
 						}
 
-						MSG(Format("Unknown command '%s'!", cmd.c_str()));
+						Msg("Unknown command '%s'!", cmd.c_str());
 					}
 					else
-						MSG("Enter 'cmds' or 'cmds all' to show list of commands. To get information about single command enter \"help CMD\". To get ID of item/unit use command \"list\".");
+						Msg("Enter 'cmds' or 'cmds all' to show list of commands. To get information about single command enter \"help CMD\". To get ID of item/unit use command \"list\".");
 					break;
 				case CMD_SPAWNUNIT:
 					if(t.Next())
 					{
 						UnitData* data = FindUnitData(t.MustGetItem().c_str(), false);
 						if(!data || IS_SET(data->flags, F_SECRET))
-							MSG(Format("Missing base unit '%s'!", t.GetItem().c_str()));
+							Msg("Missing base unit '%s'!", t.GetItem().c_str());
 						else
 						{
 							int level = -1, ile = 1, in_arena = -1;
@@ -684,7 +673,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									Unit* u = SpawnUnitNearLocation(ctx, pc->unit->GetFrontPos(), *data, &pc->unit->pos, level);
 									if(!u)
 									{
-										MSG(Format("No free space for unit '%s'!", data->id.c_str()));
+										Msg("No free space for unit '%s'!", data->id.c_str());
 										break;
 									}
 									else if(in_arena != -1)
@@ -708,7 +697,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						MSG("You need to enter unit id!");
+						Msg("You need to enter unit id!");
 					break;
 				case CMD_HEAL:
 					if(IsLocal())
@@ -739,243 +728,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						MSG("No unit selected.");
+						Msg("No unit selected.");
 					break;
 				case CMD_LIST:
-					if(t.Next())
-					{
-						int co;
-
-						{
-							const string& lis = t.MustGetItem();
-							if(lis == "item" || lis == "items")
-								co = 0;
-							else if(lis == "itemn" || lis == "item_names")
-								co = 1;
-							else if(lis == "unit" || lis == "units")
-								co = 2;
-							else if(lis == "unitn" || lis == "unit_names")
-								co = 3;
-							else
-							{
-								MSG(Format("Unknown list type '%s'!", lis.c_str()));
-								return;
-							}
-						}
-
-						if(t.Next())
-						{
-							const string& reg = t.MustGetItem();
-							if(co == 0 || co == 1)
-							{
-								LocalVector2<const Item*> items;
-
-								if(co == 0)
-								{
-									for(auto it : g_items)
-									{
-										const Item* item = it.second;
-										if(_strnicmp(reg.c_str(), item->id.c_str(), reg.length()) == 0)
-											items.push_back(item);
-									}
-								}
-								else
-								{
-									for(auto it : g_items)
-									{
-										const Item* item = it.second;
-										if(_strnicmp(reg.c_str(), item->name.c_str(), reg.length()) == 0)
-											items.push_back(item);
-									}
-								}
-
-								if(items.empty())
-								{
-									MSG(Format("No items found starting with '%s'.", reg.c_str()));
-									return;
-								}
-
-								std::sort(items.begin(), items.end(), (co == 0 ? SortItemsById : SortItemsByName));
-
-								string s = Format("Items list (%d):\n", items.size());
-								MSG(Format("Items list (%d):", items.size()));
-
-								if(co == 0)
-								{
-									for each(const Item* item in items)
-									{
-										if(IS_SET(item->flags, ITEM_SECRET))
-											continue;
-										cstring s2 = Format("%s (%s)", item->id.c_str(), item->name.c_str());
-										MSG(s2);
-										s += s2;
-										s += "\n";
-									}
-								}
-								else
-								{
-									for each(const Item* item in items)
-									{
-										if(IS_SET(item->flags, ITEM_SECRET))
-											continue;
-										cstring s2 = Format("%s (%s)", item->name.c_str(), item->id.c_str());
-										MSG(s2);
-										s += s2;
-										s += "\n";
-									}
-								}
-
-								Info(s.c_str());
-							}
-							else
-							{
-								LocalVector2<const UnitData*> unitsd;
-
-								if(co == 2)
-								{
-									for(UnitData* ud : unit_datas)
-									{
-										if(_strnicmp(reg.c_str(), ud->id.c_str(), reg.length()) == 0)
-											unitsd.push_back(ud);
-									}
-								}
-								else
-								{
-									for(UnitData* ud : unit_datas)
-									{
-										if(_strnicmp(reg.c_str(), ud->name.c_str(), reg.length()) == 0)
-											unitsd.push_back(ud);
-									}
-								}
-
-								if(unitsd.empty())
-								{
-									MSG(Format("No units found starting with '%s'.", reg.c_str()));
-									return;
-								}
-
-								std::sort(unitsd.begin(), unitsd.end(), (co == 2 ? SortUnitsById : SortUnitsByName));
-
-								string s = Format("Units list (%d):\n", unitsd.size());
-								MSG(Format("Units list (%d):", unitsd.size()));
-
-								if(co == 2)
-								{
-									for each(const UnitData* u in unitsd)
-									{
-										if(IS_SET(u->flags, F_SECRET))
-											continue;
-										cstring s2 = Format("%s (%s)", u->id.c_str(), u->name.c_str());
-										MSG(s2);
-										s += s2;
-										s += "\n";
-									}
-								}
-								else
-								{
-									for each(const UnitData* u in unitsd)
-									{
-										if(IS_SET(u->flags, F_SECRET))
-											continue;
-										cstring s2 = Format("%s (%s)", u->name.c_str(), u->id.c_str());
-										MSG(s2);
-										s += s2;
-										s += "\n";
-									}
-								}
-
-								Info(s.c_str());
-							}
-						}
-						else
-						{
-							if(co == 0 || co == 1)
-							{
-								LocalVector2<const Item*> items;
-
-								for(auto it : g_items)
-									items.push_back(it.second);
-
-								std::sort(items.begin(), items.end(), (co == 0 ? SortItemsById : SortItemsByName));
-
-								string s = Format("Items list (%d):\n", items.size());
-								MSG(Format("Items list (%d):", items.size()));
-
-								if(co == 0)
-								{
-									for each(const Item* item in items)
-									{
-										if(IS_SET(item->flags, ITEM_SECRET))
-											continue;
-										cstring s2 = Format("%s (%s)", item->id.c_str(), item->name.c_str());
-										MSG(s2);
-										s += s2;
-										s += "\n";
-									}
-								}
-								else
-								{
-									for each(const Item* item in items)
-									{
-										if(IS_SET(item->flags, ITEM_SECRET))
-											continue;
-										cstring s2 = Format("%s (%s)", item->name.c_str(), item->id.c_str());
-										MSG(s2);
-										s += s2;
-										s += "\n";
-									}
-								}
-
-								Info(s.c_str());
-							}
-							else
-							{
-								LocalVector2<const UnitData*> unitsd;
-
-								for(UnitData* ud : unit_datas)
-									unitsd.push_back(ud);
-
-								std::sort(unitsd.begin(), unitsd.end(), (co == 2 ? SortUnitsById : SortUnitsByName));
-
-								string s = Format("Units list (%d):\n", unitsd.size());
-								MSG(Format("Units list (%d):", unitsd.size()));
-
-								if(co == 2)
-								{
-									for each(const UnitData* u in unitsd)
-									{
-										if(IS_SET(u->flags, F_SECRET))
-											continue;
-										cstring s2 = Format("%s (%s)", u->id.c_str(), u->name.c_str());
-										MSG(s2);
-										s += s2;
-										s += "\n";
-									}
-								}
-								else
-								{
-									for each(const UnitData* u in unitsd)
-									{
-										if(IS_SET(u->flags, F_SECRET))
-											continue;
-										cstring s2 = Format("%s (%s)", u->name.c_str(), u->id.c_str());
-										MSG(s2);
-										s += s2;
-										s += "\n";
-									}
-								}
-
-								Info(s.c_str());
-							}
-						}
-					}
-					else
-					{
-						MSG("Display list of items/units (item/items, itemn/item_names, unit/units, unitn/unit_names). Examples:");
-						MSG("'list item' - list of items ordered by id");
-						MSG("'list itemn' - list of items ordered by name");
-						MSG("'list unit t' - list of units ordered by id starting from t");
-					}
+					CmdList(t);
 					break;
 				case CMD_HEALUNIT:
 					if(selected_target)
@@ -1002,7 +758,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						MSG("No unit selected.");
+						Msg("No unit selected.");
 					break;
 				case CMD_SUICIDE:
 					if(IsLocal())
@@ -1065,7 +821,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 						}
 					}
-					MSG(Format("invisible = %d", pc->unit->invisible ? 1 : 0));
+					Msg("invisible = %d", pc->unit->invisible ? 1 : 0);
 					break;
 				case CMD_GODMODE:
 					if(t.Next())
@@ -1093,7 +849,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 						}
 					}
-					MSG(Format("godmode = %d", pc->godmode ? 1 : 0));
+					Msg("godmode = %d", pc->godmode ? 1 : 0);
 					break;
 				case CMD_NOCLIP:
 					if(t.Next())
@@ -1121,7 +877,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 						}
 					}
-					MSG(Format("noclip = %d", pc->noclip ? 1 : 0));
+					Msg("noclip = %d", pc->noclip ? 1 : 0);
 					break;
 				case CMD_KILLALL:
 					{
@@ -1132,7 +888,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(before_player == BP_UNIT)
 							ignore = before_player_ptr.unit;
 						if(!Cheat_KillAll(typ, *pc->unit, ignore))
-							MSG(Format("Unknown parameter '%d'.", typ));
+							Msg("Unknown parameter '%d'.", typ);
 					}
 					break;
 				case CMD_SAVE:
@@ -1149,7 +905,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						SaveGameSlot(slot, text->c_str());
 					}
 					else
-						MSG("You can't save game in this moment.");
+						Msg("You can't save game in this moment.");
 					break;
 				case CMD_LOAD:
 					if(CanLoadGame())
@@ -1169,13 +925,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						{
 							cstring error = Format("Failed to load game: %s", ex.msg);
 							Error(error);
-							MSG(error);
+							Msg(error);
 							if(!GUI.HaveDialog(console))
 								GUI.ShowDialog(console);
 						}
 					}
 					else
-						MSG("You can't load game in this moment.");
+						Msg("You can't load game in this moment.");
 					break;
 				case CMD_SHOW_MINIMAP:
 					if(IsLocal())
@@ -1208,7 +964,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						BuildingGroup* group = content::FindBuildingGroup(type);
 						if(!group)
 						{
-							MSG(Format("Missing building group '%s'.", type.c_str()));
+							Msg("Missing building group '%s'.", type.c_str());
 							break;
 						}
 
@@ -1238,10 +994,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 
 						if(!ok)
-							MSG(Format("Missing building of type '%s'.", type.c_str()));
+							Msg("Missing building of type '%s'.", type.c_str());
 					}
 					else
-						MSG("You need to enter where.");
+						Msg("You need to enter where.");
 					break;
 				case CMD_WHISPER:
 					if(t.Next())
@@ -1249,13 +1005,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						const string& player_nick = t.MustGetItem();
 						int index = FindPlayerIndex(player_nick.c_str(), true);
 						if(index == -1)
-							MSG(Format("No player with nick '%s'.", player_nick.c_str()));
+							Msg("No player with nick '%s'.", player_nick.c_str());
 						else if(t.NextLine())
 						{
 							const string& text = t.MustGetItem();
 							PlayerInfo& info = game_players[index];
 							if(info.id == my_id)
-								MSG(Format("Whispers in your head: %s", text.c_str()));
+								Msg("Whispers in your head: %s", text.c_str());
 							else
 							{
 								net_stream.Reset();
@@ -1269,10 +1025,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 						}
 						else
-							MSG("You need to enter message.");
+							Msg("You need to enter message.");
 					}
 					else
-						MSG("You need to enter player nick.");
+						Msg("You need to enter player nick.");
 					break;
 				case CMD_SERVER_SAY:
 					if(t.NextLine())
@@ -1291,7 +1047,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							game_gui->AddSpeechBubble(pc->unit, text.c_str());
 					}
 					else
-						MSG("You need to enter message.");
+						Msg("You need to enter message.");
 					break;
 				case CMD_KICK:
 					if(t.Next())
@@ -1299,12 +1055,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						const string& player_name = t.MustGetItem();
 						int index = FindPlayerIndex(player_name.c_str(), true);
 						if(index == -1)
-							MSG(Format("No player with nick '%s'.", player_name.c_str()));
+							Msg("No player with nick '%s'.", player_name.c_str());
 						else
 							KickPlayer(index);
 					}
 					else
-						MSG("You need to enter player nick.");
+						Msg("You need to enter player nick.");
 					break;
 				case CMD_READY:
 					{
@@ -1319,12 +1075,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						const string& player_name = t.MustGetItem();
 						int index = FindPlayerIndex(player_name.c_str(), true);
 						if(index == -1)
-							MSG(Format("No player with nick '%s'.", player_name.c_str()));
+							Msg("No player with nick '%s'.", player_name.c_str());
 						else
 						{
 							PlayerInfo& info = game_players[index];
 							if(leader_id == info.id)
-								MSG(Format("Player '%s' is already a leader.", player_name.c_str()));
+								Msg("Player '%s' is already a leader.", player_name.c_str());
 							else if(sv_server || leader_id == my_id)
 							{
 								if(server_panel->visible)
@@ -1335,7 +1091,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 										AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 									}
 									else
-										MSG("You can't change a leader.");
+										Msg("You can't change a leader.");
 								}
 								else
 								{
@@ -1356,11 +1112,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								AddMsg(Format("Leader changed to '%s'.", info.name.c_str()));
 							}
 							else
-								MSG("You can't change a leader.");
+								Msg("You can't change a leader.");
 						}
 					}
 					else
-						MSG("You need to enter leader nick.");
+						Msg("You need to enter leader nick.");
 					break;
 				case CMD_EXIT:
 					ExitToMenu();
@@ -1390,7 +1146,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									return g_classes[(int)c].id;
 								});
 								str += ".";
-								MSG(str.c_str());
+								Msg(str.c_str());
 							}
 							else
 							{
@@ -1401,19 +1157,19 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									if(ClassInfo::IsPickable(ci->class_id))
 									{
 										server_panel->PickClass(ci->class_id, false);
-										MSG("You picked Random character.");
+										Msg("You picked Random character.");
 									}
 									else
-										MSG(Format("Class '%s' is not pickable by players.", clas.c_str()));
+										Msg("Class '%s' is not pickable by players.", clas.c_str());
 								}
 								else
-									MSG(Format("Invalid class name '%s'. Use 'Random ?' for list of classes.", clas.c_str()));
+									Msg("Invalid class name '%s'. Use 'Random ?' for list of classes.", clas.c_str());
 							}
 						}
 						else
 						{
 							server_panel->PickClass(Class::RANDOM, false);
-							MSG("You picked Random character.");
+							Msg("You picked Random character.");
 						}
 					}
 					else if(sv_online)
@@ -1426,13 +1182,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						AddMsg(Format("You rolled %d.", n));
 					}
 					else
-						MSG(Format("You rolled %d.", Random(1, 100)));
+						Msg("You rolled %d.", Random(1, 100));
 					break;
 				case CMD_START:
 					{
 						if(sv_startup)
 						{
-							MSG("Server is already starting.");
+							Msg("Server is already starting.");
 							break;
 						}
 
@@ -1464,7 +1220,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							Info(s);
 						}
 						else
-							MSG(error_text);
+							Msg(error_text);
 					}
 					break;
 				case CMD_SAY:
@@ -1481,7 +1237,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Info(s);
 					}
 					else
-						MSG("You need to enter message.");
+						Msg("You need to enter message.");
 					break;
 				case CMD_PLAYER_DEVMODE:
 					if(t.Next())
@@ -1509,7 +1265,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								int index = FindPlayerIndex(player_name.c_str(), true);
 								if(index == -1)
-									MSG(Format("No player with nick '%s'.", player_name.c_str()));
+									Msg("No player with nick '%s'.", player_name.c_str());
 								else
 								{
 									PlayerInfo& info = game_players[index];
@@ -1543,23 +1299,23 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									s.pop(2);
 									s += ".";
-									MSG(s->c_str());
+									Msg(s->c_str());
 								}
 								else
-									MSG("No players.");
+									Msg("No players.");
 							}
 							else
 							{
 								int index = FindPlayerIndex(player_name.c_str(), true);
 								if(index == -1)
-									MSG(Format("No player with nick '%s'.", player_name.c_str()));
+									Msg("No player with nick '%s'.", player_name.c_str());
 								else
-									MSG(Format("Player devmode: %s(%d).", player_name.c_str(), game_players[index].devmode ? 1 : 0));
+									Msg("Player devmode: %s(%d).", player_name.c_str(), game_players[index].devmode ? 1 : 0);
 							}
 						}
 					}
 					else
-						MSG("You need to enter player nick/all.");
+						Msg("You need to enter player nick/all.");
 					break;
 				case CMD_NOAI:
 					if(t.Next())
@@ -1572,7 +1328,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							c.id = (noai ? 1 : 0);
 						}
 					}
-					MSG(Format("noai = %d", noai ? 1 : 0));
+					Msg("noai = %d", noai ? 1 : 0);
 					break;
 				case CMD_PAUSE:
 					paused = !paused;
@@ -1598,16 +1354,16 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						{
 							int ms, msq;
 							GetMultisampling(ms, msq);
-							MSG(Format("Changed multisampling to %d, %d.", ms, msq));
+							Msg("Changed multisampling to %d, %d.", ms, msq);
 						}
 						else
-							MSG(wynik == 1 ? "This mode is already set." : "This mode is unavailable.");
+							Msg(wynik == 1 ? "This mode is already set." : "This mode is unavailable.");
 					}
 					else
 					{
 						int ms, msq;
 						GetMultisampling(ms, msq);
-						MSG(Format("multisampling = %d, %d", ms, msq));
+						Msg("multisampling = %d, %d", ms, msq);
 					}
 					break;
 				case CMD_QUICKSAVE:
@@ -1615,7 +1371,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_QUICKLOAD:
 					if(!Quickload(true))
-						MSG("Missing quicksave.");
+						Msg("Missing quicksave.");
 					break;
 				case CMD_RESOLUTION:
 					if(t.Next())
@@ -1668,7 +1424,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(valid)
 							ChangeMode(w, h, fullscreen, hz);
 						else
-							MSG(Format("Can't change resolution to %dx%d (%d Hz).", w, h, hz));
+							Msg("Can't change resolution to %dx%d (%d Hz).", w, h, hz);
 					}
 					else
 					{
@@ -1683,7 +1439,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(i + 1 != display_modes)
 								s += ", ";
 						}
-						MSG(s);
+						Msg(s);
 					}
 					break;
 				case CMD_QS:
@@ -1727,7 +1483,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 							}
 							else
-								MSG(error_text);
+								Msg(error_text);
 						}
 					}
 					else
@@ -1759,7 +1515,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						break;
 					case PS_UNKNOWN:
 					default:
-						MSG("Unknown parse source.");
+						Msg("Unknown parse source.");
 						break;
 					}
 					break;
@@ -1774,7 +1530,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							u = selected_unit;
 						else
 						{
-							MSG("No unit selected.");
+							Msg("No unit selected.");
 							break;
 						}
 						if(IsLocal())
@@ -1809,10 +1565,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						OutsideLocation* outside = (OutsideLocation*)location;
 						const TerrainTile& t = outside->tiles[pos_to_pt(pc->unit->pos)(outside->size)];
-						MSG(t.GetInfo());
+						Msg(t.GetInfo());
 					}
 					else
-						MSG("You must stand on terrain tile.");
+						Msg("You must stand on terrain tile.");
 					break;
 				case CMD_SET_SEED:
 					t.Next();
@@ -1821,6 +1577,26 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_CRASH:
 					void DoCrash();
 					DoCrash();
+					break;
+				case CMD_FORCEQUEST:
+					{
+						auto& qm = QuestManager::Get();
+						if(t.Next())
+						{
+							const string& id = t.MustGetItem();
+							if(!qm.SetForcedQuest(id))
+								Msg("Invalid quest id '%s'.", id.c_str());
+						}
+						auto force = qm.GetForcedQuest();
+						cstring name;
+						if(force == Q_FORCE_DISABLED)
+							name = "disabled";
+						else if(force == Q_FORCE_NONE)
+							name = "none";
+						else
+							name = qm.GetQuestInfos()[force].name;
+						Msg("Forced quest: %s", name);
+					}
 					break;
 				default:
 					assert(0);
@@ -1831,18 +1607,243 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 			}
 		}
 
-		MSG(Format("Unknown command '%s'!", token.c_str()));
+		Msg("Unknown command '%s'!", token.c_str());
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		MSG(Format("Failed to parse command: %s", e.str->c_str()));
+		Msg("Failed to parse command: %s", e.str->c_str());
 	}
-
-#undef MSG
 }
 
 //=================================================================================================
 void Game::ShaderVersionChanged()
 {
 	ReloadShaders();
+}
+
+//=================================================================================================
+void Game::CmdList(Tokenizer& t)
+{
+	if(!t.Next())
+	{
+		Msg("Display list of items/units/quests (item/items, itemn/item_names, unit/units, unitn/unit_names, quest/quests). Examples:");
+		Msg("'list item' - list of items ordered by id");
+		Msg("'list itemn' - list of items ordered by name");
+		Msg("'list unit t' - list of units ordered by id starting from t");
+		return;
+	}
+
+	enum LIST_TYPE
+	{
+		LIST_ITEM,
+		LIST_ITEM_NAME,
+		LIST_UNIT,
+		LIST_UNIT_NAME,
+		LIST_QUEST
+	};
+
+	LIST_TYPE list_type;
+	const string& lis = t.MustGetItem();
+	if(lis == "item" || lis == "items")
+		list_type = LIST_ITEM;
+	else if(lis == "itemn" || lis == "item_names")
+		list_type = LIST_ITEM_NAME;
+	else if(lis == "unit" || lis == "units")
+		list_type = LIST_UNIT;
+	else if(lis == "unitn" || lis == "unit_names")
+		list_type = LIST_UNIT_NAME;
+	else if(lis == "quest" || lis == "quests")
+		list_type = LIST_QUEST;
+	else
+	{
+		Msg("Unknown list type '%s'!", lis.c_str());
+		return;
+	}
+
+	LocalString match;
+	if(t.Next())
+		match = t.MustGetText();
+
+	switch(list_type)
+	{
+	case LIST_ITEM:
+		{
+			LocalVector2<const Item*> items;
+			for(auto it : g_items)
+			{
+				auto item = it.second;
+				if(!IS_SET(item->flags, ITEM_SECRET) && (match.empty() || _strnicmp(match.c_str(), item->id.c_str(), match.length()) == 0))
+					items.push_back(item);
+			}
+
+			if(items.empty())
+			{
+				Msg("No items found starting with '%s'.", match.c_str());
+				return;
+			}
+
+			std::sort(items.begin(), items.end(), [](const Item* item1, const Item* item2)
+			{
+				return item1->id < item2->id;
+			});
+
+			LocalString s = Format("Items list (%d):\n", items.size());
+			Msg("Items list (%d):", items.size());
+
+			for(auto item : items)
+			{
+				cstring s2 = Format("%s (%s)", item->id.c_str(), item->name.c_str());
+				Msg(s2);
+				s += s2;
+				s += "\n";
+			}
+
+			Info(s.c_str());
+		}
+		break;
+	case LIST_ITEM_NAME:
+		{
+			LocalVector2<const Item*> items;
+			for(auto it : g_items)
+			{
+				auto item = it.second;
+				if(!IS_SET(item->flags, ITEM_SECRET) && (match.empty() || _strnicmp(match.c_str(), item->name.c_str(), match.length()) == 0))
+					items.push_back(item);
+			}
+
+			if(items.empty())
+			{
+				Msg("No items found starting with name '%s'.", match.c_str());
+				return;
+			}
+
+			std::sort(items.begin(), items.end(), [](const Item* item1, const Item* item2)
+			{
+				return strcoll(item1->name.c_str(), item2->name.c_str()) < 0;
+			});
+
+			LocalString s = Format("Items list (%d):\n", items.size());
+			Msg("Items list (%d):", items.size());
+
+			for(auto item : items)
+			{
+				cstring s2 = Format("%s (%s)", item->name.c_str(), item->id.c_str());
+				Msg(s2);
+				s += s2;
+				s += "\n";
+			}
+
+			Info(s.c_str());
+		}
+		break;
+	case LIST_UNIT:
+		{
+			LocalVector2<UnitData*> units;
+			for(auto unit : unit_datas)
+			{
+				if(!IS_SET(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->id.c_str(), match.length()) == 0))
+					units.push_back(unit);
+			}
+
+			if(units.empty())
+			{
+				Msg("No units found starting with '%s'.", match.c_str());
+				return;
+			}
+
+			std::sort(units.begin(), units.end(), [](const UnitData* unit1, const UnitData* unit2)
+			{
+				return unit1->id < unit2->id;
+			});
+
+			LocalString s = Format("Units list (%d):\n", units.size());
+			Msg("Units list (%d):", units.size());
+
+			for(auto unit : units)
+			{
+				cstring s2 = Format("%s (%s)", unit->id.c_str(), unit->name.c_str());
+				Msg(s2);
+				s += s2;
+				s += "\n";
+			}
+
+			Info(s.c_str());
+		}
+		break;
+	case LIST_UNIT_NAME:
+		{
+			LocalVector2<UnitData*> units;
+			for(auto unit : unit_datas)
+			{
+				if(!IS_SET(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->name.c_str(), match.length()) == 0))
+					units.push_back(unit);
+			}
+
+			if(units.empty())
+			{
+				Msg("No units found starting with name '%s'.", match.c_str());
+				return;
+			}
+
+			std::sort(units.begin(), units.end(), [](const UnitData* unit1, const UnitData* unit2)
+			{
+				return strcoll(unit1->name.c_str(), unit2->name.c_str()) < 0;
+			});
+
+			LocalString s = Format("Units list (%d):\n", units.size());
+			Msg("Units list (%d):", units.size());
+
+			for(auto unit : units)
+			{
+				cstring s2 = Format("%s (%s)", unit->name.c_str(), unit->id.c_str());
+				Msg(s2);
+				s += s2;
+				s += "\n";
+			}
+
+			Info(s.c_str());
+		}
+		break;
+	case LIST_QUEST:
+		{
+			LocalVector2<const QuestInfo*> quests;
+			for(auto& info : QuestManager::Get().GetQuestInfos())
+			{
+				if(match.empty() || _strnicmp(match.c_str(), info.name, match.length()) == 0)
+					quests.push_back(&info);
+			}
+
+			if(quests.empty())
+			{
+				Msg("No quests found starting with '%s'.", match.c_str());
+				return;
+			}
+
+			std::sort(quests.begin(), quests.end(), [](const QuestInfo* quest1, const QuestInfo* quest2)
+			{
+				return strcoll(quest1->name, quest2->name) < 0;
+			});
+
+			LocalString s = Format("Quests list (%d):\n", quests.size());
+			Msg("Quests list (%d):", quests.size());
+
+			cstring quest_type[] = {
+				"mayor",
+				"captain",
+				"random",
+				"unique"
+			};
+
+			for(auto quest : quests)
+			{
+				cstring s2 = Format("%s (%s)", quest->name, quest_type[(int)quest->type]);
+				Msg(s2);
+				s += s2;
+				s += "\n";
+			}
+
+			Info(s.c_str());
+		}
+		break;
+	}
 }

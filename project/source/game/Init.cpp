@@ -11,6 +11,7 @@
 #include "PickServerPanel.h"
 #include "Spell.h"
 #include "Trap.h"
+#include "QuestManager.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -335,6 +336,7 @@ void Game::PostconfigureGame()
 	LockCursor();
 	CreateCollisionShapes();
 	create_character->Init();
+	QuestManager::Get().Init();
 
 	// load gui textures that require instant loading
 	GUI.GetLayout()->LoadDefault();

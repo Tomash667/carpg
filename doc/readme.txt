@@ -176,20 +176,16 @@ Zobacz plik changelog.txt.
 Aby otworzyæ konsolê wciœnij ~ [tylda na lewo od 1]. Niektóre komendy s¹
 dostêpne tylko w trybie multiplayer lub tylko w lobby.
 Dostêpne komendy bez trybu developera:
-	cmds - wyœwietla komendy i zapisuje je do pliku commands.txt, z all
-		wyœwietla te¿ te niedostêpne (cmds [all]).
+	cmds - wyœwietla komendy i zapisuje je do pliku commands.txt, z all wyœwietla te¿ te niedostêpne (cmds [all]).
 	devmode - ustawia tryb developera (devmode 0/1).
 	exit - wychodzi do menu.
 	help - wyœwietla informacje o komendzie (help [komenda]).
 	kick - wyrzuca gracza z serwera (kick nick).
 	leader - zmienia przywódcê dru¿yny (leader nick).
-	list - wyœwietla jednostki/przedmioty po id/nazwie, unit item unitn itemn
-		(list typ [filtr]).
-	player_devmode - w³¹cza/wy³¹cza tryb developera dla innego gracza w multiplayer
-		(playercheat nick/all 0/1).
+	list - wyœwietla jednostki/przedmioty/zadania po id/nazwie, unit item unitn itemn quest (list typ [filtr]).
+	player_devmode - w³¹cza/wy³¹cza tryb developera dla innego gracza w multiplayer (playercheat nick/all 0/1).
 	quit - wychodzi z gry.
-	random - losuje liczbê 1-100 lub wybiera losow¹ postaæ (random, random 
-		[warrior/hunter/rogue]).
+	random - losuje liczbê 1-100 lub wybiera losow¹ postaæ (random, random [warrior/hunter/rogue]).
 	server - wyœwietla wiadomoœæ od serwera wszystkim graczom (say wiadomoœæ).
 	version - wyœwietla wersjê gry.
 	w/whisper - wysy³a prywatn¹ wiadomoœæ do gracza (whisper nick wiadomoœæ).

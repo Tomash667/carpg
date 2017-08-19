@@ -4090,22 +4090,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						city_ctx->quest_mayor_time = worldtime;
 						city_ctx->quest_mayor = CityQuestState::InProgress;
 
-						int force = -1;
-						if(DEBUG_BOOL && Key.Focus() && Key.Down('G'))
-						{
-							if(Key.Down('0'))
-								force = 0;
-							else if(Key.Down('1'))
-								force = 1;
-							else if(Key.Down('2'))
-								force = 2;
-							else if(Key.Down('3'))
-								force = 3;
-							else if(Key.Down('4'))
-								force = 4;
-						}
-						Quest* quest = QuestManager::Get().GetMayorQuest(force);
-
+						Quest* quest = QuestManager::Get().GetMayorQuest();
 						if(quest)
 						{
 							// add new quest
@@ -4169,24 +4154,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						city_ctx->quest_captain_time = worldtime;
 						city_ctx->quest_captain = CityQuestState::InProgress;
 
-						int force = -1;
-						if(DEBUG_BOOL && Key.Focus() && Key.Down('G'))
-						{
-							if(Key.Down('0'))
-								force = 0;
-							else if(Key.Down('1'))
-								force = 1;
-							else if(Key.Down('2'))
-								force = 2;
-							else if(Key.Down('3'))
-								force = 3;
-							else if(Key.Down('4'))
-								force = 4;
-							else if(Key.Down('5'))
-								force = 5;
-						}
-						Quest* quest = QuestManager::Get().GetCaptainQuest(force);
-
+						Quest* quest = QuestManager::Get().GetCaptainQuest();
 						if(quest)
 						{
 							// add new quest
@@ -4233,18 +4201,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					if(ctx.talker->quest_refid == -1)
 					{
-						int force = -1;
-						if(DEBUG_BOOL && Key.Focus() && Key.Down('G'))
-						{
-							if(Key.Down('1'))
-								force = 1;
-							else if(Key.Down('2'))
-								force = 2;
-							else if(Key.Down('3'))
-								force = 3;
-						}
-						Quest* quest = QuestManager::Get().GetAdventurerQuest(force);
-
+						Quest* quest = QuestManager::Get().GetAdventurerQuest();
 						quest->refid = quest_manager.quest_counter++;
 						ctx.talker->quest_refid = quest->refid;
 						quest->Start();

@@ -180,8 +180,7 @@ Available commands:
 	break_action - break unit current action ('break 1' targets self)
 	citizen - citizens/crazies don't attack player or his team.
 	clear - clear text.
-	cmds - show commands and write them to file commands.txt, with all show
-		unavailable commands too (cmds [all]).
+	cmds - show commands and write them to file commands.txt, with all show unavailable commands too (cmds [all]).
 	crash - crash game to death!
 	devmode - developer mode (devmode 0/1).
 	dont_wander - citizens don't wander around city (dont_wander 0/1).
@@ -195,6 +194,7 @@ Available commands:
 	exit - exit to menu.
 	fall - unit fall on ground for some time ('fall 1' targets self)
 	fog - draw fog (fog 0/1).
+	forcequest - force next random quest to select (use list quest or none/reset)
 	givegold - gives gold to another character (givegold nick count).
 	godmode - player can't be killed (godmode 0/1).
 	goto_map - transport player to world map.
@@ -206,16 +206,13 @@ Available commands:
 	invisible - ai can't see player (invisible 0/1).
 	kick - kick player from server (kick nick).
 	kill - kill unit in front of player.
-	killall - kills all enemy units in current level, with 1 it kills allies too,
-		with 2 kill inside buildings (killall [1/2]).
+	killall - kills all enemy units in current level, with 1 it kills allies too, with 2 kill inside buildings (killall [1/2]).
 	leader - change team leader (leader nick).
 	lighting - use lighting (lighting 0/1).
-	list - display list of items/units sorted by id/name, unit item unitn itemn
-		(list type [filter]).
+	list - display list of types, don't enter type to list possible choices (list type [filter]).
 	load - load game (load 1-10).
 	map2console - draw dungeon map in console.
-	modstat - modify player statistics (modstat stat value), use modstat ? to get
-		list of stats.
+	modstat - modify player statistics (modstat stat value), use modstat ? to get list of stats.
 	mp_interp - interpolation interval (mp_interp 0.f-1.f).
 	mp_use_interp - set use of interpolation (mp_use_interp 0/1).
 	multisampling - sets multisampling (multisampling type [quality]).
@@ -223,18 +220,15 @@ Available commands:
 	noai - disable ai (noai 0/1).
 	noclip - turn off player collisions (noclip 0/1).
 	pause - pause/unpause.
-	paycredit - you pay credit with your gold, without count you pay as much as you
-		can (paycredit [count]).
+	paycredit - you pay credit with your gold, without count you pay as much as you can (paycredit [count]).
 	play_music - sets if play music (play_music 0/1).
 	play_sound - sets if play sound (play_sound 0/1).
-	player_devmode - allow/disallow developer mode for player in multiplayer
-		(playercheat nick/all 0/1).
+	player_devmode - allow/disallow developer mode for player in multiplayer (playercheat nick/all 0/1).
 	qs - pick random character, get ready and start game.
 	quickload - load game from last slot.
 	quicksave - save game on last slot.
 	quit - quit from game.
-	random - roll random number 1-100 or pick random character (random, random
-		[warrior/hunter/rogue]).
+	random - roll random number 1-100 or pick random character (random, random [warrior/hunter/rogue]).
 	ready - set player as ready/unready.
 	reload_shaders - reload shaders.
 	resolution - show or change display resolution (resolution [w h hz]).
@@ -245,8 +239,7 @@ Available commands:
 	scare - enemies escape.
 	screenshot - save screenshot.
 	server - send message from server to all players (server msg).
-	setstat - set player statistics (setstat stat value), use setstat ? to get list
-		of stats.
+	setstat - set player statistics (setstat stat value), use setstat ? to get list of stats.
 	set_seed - set randomness seed (set_seed uint).
 	shader_version - force shader version (shader_version 2/3).
 	show_minimap - reveal minimap.

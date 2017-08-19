@@ -17,42 +17,18 @@
 	? am i even checking is he leader
 	- contest_state >= CONTEST_STARTING || tournament_state != TOURNAMENT_NOT_DONE
 		tournament_state, contest maybe too
+	? who can really save ?
 - warp village inn, hall, goto city, warp hall - objects from village inside (mp save WEIRD)
-- deliver parcel - encounter bandits without parcel -> crash in dialog
 - tutorial - autorun is on
 ===============================================================================================================
 NEW:
 + BaseBullet for Bullet, save by base, no mesh etc
 + Resources - hashing
 + custom formatter %.2g - 1000.123 -> 1000.12 (in printf it write 1.E cośtam)
-+ loading when required feature:
-	+ spells
-	+ more hardcoded sounds
-	+ more hardcoded textures
-	+ more hardcoded meshes
-	+ better prepare, not at end in second loop but when object is created
-	+ don't preload human meshes (need to make changes to AddPlayerTeam to handle mesh loading)
-	+ Unit::Load require instant loading of mesh
-	+ preload shaders
-	+ PreloadItem TryLoad and use replacement icon
-	+ preload and unhardcode items
-	+ human mesh/startup items on opening create character screen - show small loading window
-	+ don't keep mesh_id when you can keep only mesh and Get it on loading
 + npc generator like in gta - spawn units using usables
-+ common class Level instead of LevelContext and InsideBuilding, vector<Level*> levels that contains local_ctx and inside buildings
 + remove ITEM_SECRET ?
 + load Str at start or when required (less variables vs error logging at startup)
-+ better inside buildings
-	+ combat
-	+ traps
-	+ chests
-	+ temporary effects
-	+ AI_HitReaction don't work inside
-	+ CanSee
-+ refactor network
-	+ sv_startup is started in 4 places
-+ multiplayer - CanSave - server side
-+ questitem in multiplayer, player don't play and quests are forever unfinished
++ debug key - show quest to chose
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

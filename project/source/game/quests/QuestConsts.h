@@ -14,7 +14,9 @@ enum class QuestType
 // kolejnoœæ nie jest nigdzie u¿ywana, mo¿na dawaæ jak siê chce, ale na koñcu ¿eby zapisy by³y kompatybilne
 enum QUEST
 {
-	Q_MINE,
+	Q_FORCE_DISABLED = -2,
+	Q_FORCE_NONE = -1,
+	Q_MINE = 0,
 	Q_SAWMILL,
 	Q_BANDITS,
 	Q_MAGES,
@@ -36,7 +38,7 @@ enum QUEST
 	Q_FIND_ARTIFACT,
 	Q_CRAZIES,
 	Q_WANTED,
-	Q_MAIN,
+	Q_MAIN
 };
 
 //-----------------------------------------------------------------------------

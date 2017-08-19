@@ -622,6 +622,11 @@ struct LocalString
 		s->clear();
 	}
 
+	uint length() const
+	{
+		return s->length();
+	}
+
 private:
 	string* s;
 };

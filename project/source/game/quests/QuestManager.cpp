@@ -26,7 +26,36 @@
 #include "Quest_StolenArtifact.h"
 #include "Quest_Wanted.h"
 
+//-----------------------------------------------------------------------------
 QuestManager Singleton<QuestManager>::instance;
+
+//=================================================================================================
+void QuestManager::Init()
+{
+	infos.push_back({ Q_MINE, QuestType::Unique, "mine" });
+	infos.push_back({ Q_SAWMILL, QuestType::Unique, "sawmill" });
+	infos.push_back({ Q_BANDITS, QuestType::Unique, "bandits" });
+	infos.push_back({ Q_MAGES, QuestType::Unique, "mages" });
+	infos.push_back({ Q_MAGES2, QuestType::Unique, "mages2" });
+	infos.push_back({ Q_ORCS, QuestType::Unique, "orcs" });
+	infos.push_back({ Q_ORCS2, QuestType::Unique, "orcs2" });
+	infos.push_back({ Q_GOBLINS, QuestType::Unique, "goblins" });
+	infos.push_back({ Q_EVIL, QuestType::Unique, "evil" });
+	infos.push_back({ Q_DELIVER_LETTER, QuestType::Mayor, "deliver_letter" });
+	infos.push_back({ Q_DELIVER_PARCEL, QuestType::Mayor, "deliver_parcel" });
+	infos.push_back({ Q_SPREAD_NEWS, QuestType::Mayor, "spread_news" });
+	infos.push_back({ Q_RESCUE_CAPTIVE, QuestType::Captain, "rescue_captive" });
+	infos.push_back({ Q_BANDITS_COLLECT_TOLL, QuestType::Captain, "bandits_collect_toll" });
+	infos.push_back({ Q_CAMP_NEAR_CITY, QuestType::Captain, "camp_near_city" });
+	infos.push_back({ Q_RETRIEVE_PACKAGE, QuestType::Mayor, "retrieve_package" });
+	infos.push_back({ Q_KILL_ANIMALS, QuestType::Captain, "kill_animals" });
+	infos.push_back({ Q_LOST_ARTIFACT, QuestType::Random, "lost_artifact" });
+	infos.push_back({ Q_STOLEN_ARTIFACT, QuestType::Random, "stolen_artifact" });
+	infos.push_back({ Q_FIND_ARTIFACT, QuestType::Random, "find_artifact" });
+	infos.push_back({ Q_CRAZIES, QuestType::Unique, "crazies" });
+	infos.push_back({ Q_WANTED, QuestType::Captain, "wanted" });
+	infos.push_back({ Q_MAIN, QuestType::Unique, "main" });
+}
 
 //=================================================================================================
 Quest* QuestManager::CreateQuest(QUEST quest_id)
@@ -79,6 +108,8 @@ Quest* QuestManager::CreateQuest(QUEST quest_id)
 		return new Quest_Wanted;
 	case Q_MAIN:
 		return new Quest_Main;
+	case Q_FORCE_NONE:
+		return nullptr;
 	default:
 		assert(0);
 		return nullptr;
@@ -86,129 +117,118 @@ Quest* QuestManager::CreateQuest(QUEST quest_id)
 }
 
 //=================================================================================================
-Quest* QuestManager::GetMayorQuest(int force)
+QUEST QuestManager::GetRandomQuest(QuestType type)
 {
-	if(force == -1)
+	if(force == Q_FORCE_NONE)
 	{
+		if(type == QuestType::Random)
+		{
+			Warn("Can't force none random quest - unsupported.");
+			force = Q_FORCE_DISABLED;
+		}
+		else
+		{
+			Info("Forcing NONE quest.");
+			force = Q_FORCE_DISABLED;
+			return Q_FORCE_NONE;
+		}
+	}
+
+	if(force != Q_FORCE_DISABLED)
+	{
+		auto& info = infos[force];
+		if(info.type != type)
+		{
+			Warn("Can't force quest '%s', invalid quest type.", info.name);
+			force = Q_FORCE_DISABLED;
+		}
+		else
+		{
+			Info("Forcing '%s' quest.", info.name);
+			force = Q_FORCE_DISABLED;
+			return info.id;
+		}
+	}
+
+	switch(type)
+	{
+	case QuestType::Mayor:
 		switch(Rand() % 12)
 		{
 		case 0:
 		case 1:
 		case 2:
-			return new Quest_DeliverLetter;
+			return Q_DELIVER_LETTER;
 		case 3:
 		case 4:
 		case 5:
-			return new Quest_DeliverParcel;
+			return Q_DELIVER_PARCEL;
 		case 6:
 		case 7:
-			return new Quest_SpreadNews;
-			break;
+			return Q_SPREAD_NEWS;
 		case 8:
 		case 9:
-			return new Quest_RetrievePackage;
+			return Q_RETRIEVE_PACKAGE;
 		case 10:
 		case 11:
 		default:
-			return nullptr;
+			return Q_FORCE_NONE;
 		}
-	}
-	else
-	{
-		switch(force)
-		{
-		case 0:
-		default:
-			return nullptr;
-		case 1:
-			return new Quest_DeliverLetter;
-		case 2:
-			return new Quest_DeliverParcel;
-		case 3:
-			return new Quest_SpreadNews;
-		case 4:
-			return new Quest_RetrievePackage;
-		}
-	}
-}
-
-//=================================================================================================
-Quest* QuestManager::GetCaptainQuest(int force)
-{
-	if(force == -1)
-	{
+	case QuestType::Captain:
 		switch(Rand() % 11)
 		{
 		case 0:
 		case 1:
-			return new Quest_RescueCaptive;
+			return Q_RESCUE_CAPTIVE;
 		case 2:
 		case 3:
-			return new Quest_BanditsCollectToll;
+			return Q_BANDITS_COLLECT_TOLL;
 		case 4:
 		case 5:
-			return new Quest_CampNearCity;
+			return Q_CAMP_NEAR_CITY;
 		case 6:
 		case 7:
-			return new Quest_KillAnimals;
+			return Q_KILL_ANIMALS;
 		case 8:
 		case 9:
-			return new Quest_Wanted;
+			return Q_WANTED;
 		case 10:
 		default:
-			return nullptr;
+			return Q_FORCE_NONE;
 		}
-	}
-	else
-	{
-		switch(force)
-		{
-		case 0:
-		default:
-			return nullptr;
-		case 1:
-			return new Quest_RescueCaptive;
-		case 2:
-			return new Quest_BanditsCollectToll;
-		case 3:
-			return new Quest_CampNearCity;
-		case 4:
-			return new Quest_KillAnimals;
-		case 5:
-			return new Quest_Wanted;
-		}
-	}
-}
-
-//=================================================================================================
-Quest* QuestManager::GetAdventurerQuest(int force)
-{
-	if(force == -1)
-	{
+	case QuestType::Random:
 		switch(Rand() % 3)
 		{
 		case 0:
 		default:
-			return new Quest_FindArtifact;
+			return Q_FIND_ARTIFACT;
 		case 1:
-			return new Quest_LostArtifact;
+			return Q_LOST_ARTIFACT;
 		case 2:
-			return new Quest_StolenArtifact;
+			return Q_STOLEN_ARTIFACT;
 		}
+	default:
+		assert(0);
+		return Q_FORCE_NONE;
 	}
-	else
-	{
-		switch(force)
-		{
-		case 1:
-		default:
-			return new Quest_FindArtifact;
-		case 2:
-			return new Quest_LostArtifact;
-		case 3:
-			return new Quest_StolenArtifact;
-		}
-	}
+}
+
+//=================================================================================================
+Quest* QuestManager::GetMayorQuest()
+{
+	return CreateQuest(GetRandomQuest(QuestType::Mayor));
+}
+
+//=================================================================================================
+Quest* QuestManager::GetCaptainQuest()
+{
+	return CreateQuest(GetRandomQuest(QuestType::Captain));
+}
+
+//=================================================================================================
+Quest* QuestManager::GetAdventurerQuest()
+{
+	return CreateQuest(GetRandomQuest(QuestType::Random));
 }
 
 //=================================================================================================
@@ -227,6 +247,7 @@ void QuestManager::AddQuestItemRequest(const Item** item, cstring name, int ques
 //=================================================================================================
 void QuestManager::Reset()
 {
+	force = Q_FORCE_DISABLED;
 	DeleteElements(quests);
 	DeleteElements(unaccepted_quests);
 	DeleteElements(quest_item_requests);
@@ -483,4 +504,30 @@ bool QuestManager::RemoveQuestRumor(PLOTKA_QUESTOWA rumor_id)
 	}
 	else
 		return false;
+}
+
+//=================================================================================================
+bool QuestManager::SetForcedQuest(const string& name)
+{
+	if(name == "reset")
+	{
+		force = Q_FORCE_DISABLED;
+		return true;
+	}
+	if(name == "none")
+	{
+		force = Q_FORCE_NONE;
+		return true;
+	}
+
+	for(auto& info : infos)
+	{
+		if(name == info.name)
+		{
+			force = info.id;
+			return true;
+		}
+	}
+
+	return false;
 }

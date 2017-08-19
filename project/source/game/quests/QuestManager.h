@@ -21,13 +21,22 @@ struct QuestItemRequest
 };
 
 //-----------------------------------------------------------------------------
+struct QuestInfo
+{
+	QUEST id;
+	QuestType type;
+	cstring name;
+};
+
+//-----------------------------------------------------------------------------
 class QuestManager : public Singleton<QuestManager>
 {
 public:
+	void Init();
 	Quest* CreateQuest(QUEST quest_id);
-	Quest* GetMayorQuest(int force = -1);
-	Quest* GetCaptainQuest(int force = -1);
-	Quest* GetAdventurerQuest(int force = -1);
+	Quest* GetMayorQuest();
+	Quest* GetCaptainQuest();
+	Quest* GetAdventurerQuest();
 	void AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit = nullptr);
 	void Reset();
 	void Cleanup();
@@ -43,6 +52,9 @@ public:
 	const Item* FindQuestItem(cstring name, int refid);
 	void EndUniqueQuest();
 	bool RemoveQuestRumor(PLOTKA_QUESTOWA rumor_id);
+	bool SetForcedQuest(const string& name);
+	QUEST GetForcedQuest() const { return force; }
+	const vector<QuestInfo>& GetQuestInfos() const { return infos; }
 
 	vector<Quest*> unaccepted_quests;
 	vector<Quest*> quests;
@@ -57,4 +69,8 @@ public:
 
 private:
 	void LoadQuests(HANDLE file, vector<Quest*>& quests);
+	QUEST GetRandomQuest(QuestType type);
+
+	vector<QuestInfo> infos;
+	QUEST force;
 };

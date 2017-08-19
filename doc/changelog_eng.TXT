@@ -1,13 +1,10 @@
 Changelog
 
-README CHANGES:
-+ F autowalk
-+ F pick all
-
 --------------------------------------------------------------------------------
 Version 0.5.0 (2017-XX-YY):
 + stamina - used by attacking, blocking
 + new items: cup, golden cup, golden bar, plate, sausage, soup, stew, fish, fish meat, healing herb, green herb, frying pan
++ loading when required (units, items, buildings, objects, textures) not on start of game
 + loading spells from file
 + loading dialogs from file
 + loading units from file
@@ -22,6 +19,7 @@ Version 0.5.0 (2017-XX-YY):
 + allow game start without sound drivers
 + removed main quest until it's more complete
 + support for transparent items
++ new command 'forcequest'
 - fixed last item not visible in controls change panel
 - fixed orc gorush always picking shaman class for random
 - fixed orc gorush never getting more healing potions as intendent
@@ -39,6 +37,7 @@ Version 0.5.0 (2017-XX-YY):
 - fixed compability with pre 0.3 village hall broken in 0.4.20
 - fixed fields texture in villages
 - fixed item icon not using armor texture overrides (mithril, dragonscale)
+- fixed crash in ecounter deliver parcel when parcel was not in inventory
 
 --------------------------------------------------------------------------------
 Version 0.4.20 (2016-04-29):

@@ -1058,6 +1058,7 @@ public:
 	bool Collide(const vector<CollisionObject>& objects, const Box2d& box, float margin = 0.f);
 	bool Collide(const vector<CollisionObject>& objects, const Box2d& box, float margin, float rot);
 	void ParseCommand(const string& str, PrintMsgFunc print_func = nullptr, PARSE_SOURCE ps = PS_UNKNOWN);
+	void CmdList(Tokenizer& t);
 	void AddCommands();
 	void AddConsoleMsg(cstring msg);
 	void UpdateAi(float dt);
