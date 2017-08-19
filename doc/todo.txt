@@ -19,7 +19,6 @@
 		tournament_state, contest maybe too
 	? who can really save ?
 - warp village inn, hall, goto city, warp hall - objects from village inside (mp save WEIRD)
-- tutorial - autorun is on
 ===============================================================================================================
 NEW:
 + BaseBullet for Bullet, save by base, no mesh etc

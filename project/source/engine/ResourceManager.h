@@ -199,7 +199,7 @@ public:
 		};
 
 	public:
-		const ResourceType Type = Internal<T>::Type;
+		static const ResourceType Type = Internal<T>::Type;
 
 		BaseTypeManager(ResourceManager& res_mgr) : res_mgr(res_mgr)
 		{

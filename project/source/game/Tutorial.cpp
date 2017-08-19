@@ -177,6 +177,7 @@ void Game::StartTutorial()
 	tut_shield = nullptr;
 	tut_shield2 = nullptr;
 	contest_state = CONTEST_NOT_DONE;
+	autowalk = false;
 
 	// ekwipunek
 	pc->unit->ClearInventory();

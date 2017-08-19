@@ -1319,7 +1319,6 @@ void Engine::ShowError(cstring msg, Logger::Level level)
 bool Engine::Start(cstring title, bool _fullscreen, uint w, uint h)
 {
 	assert(title);
-	assert(w >= MIN_WIDTH && h >= MIN_HEIGHT);
 
 	// set parameters
 	fullscreen = _fullscreen;

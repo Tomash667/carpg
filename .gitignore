@@ -11,12 +11,13 @@
 *.pdb
 *.lib
 
+.vs
+
 /bin/cache
 /bin/data
 /bin/*
 /other
 /paks/out
-/project/ipch
 /project/Output
 
 /tools/converter/Debug
