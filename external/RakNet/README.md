@@ -1,6 +1,12 @@
+Fork changes against larku/RakNet
+============
++ Moved to VS 2017
++ Fix clash with macro in Microsoft xlocinfo.h header. PR25
++ Revert patch causing timestamps to be received with the incorrect endianness PR26
++ ID_ALREADY_CONNECTED after reenter password #2
+
 RakNet 4.081
 ============
-
 Copyright (c) 2014, Oculus VR, Inc.
 
 Package notes
@@ -267,5 +273,3 @@ _RAKNET_SUPPORT_UDPForwarder=0
 Unreal engine
 -----------------------------------------
 See https://udn.epicgames.com/lists/showpost.php?list=unprog3&id=37697&lessthan=&show=20
-
-

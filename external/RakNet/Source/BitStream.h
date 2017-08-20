@@ -21,6 +21,9 @@
 #ifndef __BITSTREAM_H
 #define __BITSTREAM_H
 
+#include <cmath>
+#include <cfloat>
+#include <string>
 #include "RakMemoryOverride.h"
 #include "RakNetDefines.h"
 #include "Export.h"
@@ -28,8 +31,7 @@
 #include "RakString.h"
 #include "RakWString.h"
 #include "RakAssert.h"
-#include <math.h>
-#include <float.h>
+
 
 #ifdef _MSC_VER
 #pragma warning( push )
@@ -659,6 +661,10 @@ namespace RakNet
 		/// \internal Unrolled inner loop, for when performance is critical
 		bool ReadAlignedVar32(char *inOutByteArray);
 
+        inline void Write(const std::string &inStringVar)
+        {
+            RakString::Serialize(inStringVar.c_str(), this);
+        }
 		inline void Write(const char * const inStringVar)
 		{
 			RakString::Serialize(inStringVar, this);
@@ -2022,7 +2028,7 @@ namespace RakNet
 	}
 
 	template <class templateType>
-	BitStream& operator<<(BitStream& out, templateType& c)
+	BitStream& operator<<(BitStream& out, const templateType& c)
 	{
 		out.Write(c);
 		return out;

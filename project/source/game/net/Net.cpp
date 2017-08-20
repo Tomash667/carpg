@@ -262,6 +262,7 @@ void Game::KickPlayer(int index)
 	packet_data[0] = ID_SERVER_CLOSE;
 	packet_data[1] = 1;
 	peer->Send((cstring)&packet_data[0], 2, MEDIUM_PRIORITY, RELIABLE, 0, info.adr, false);
+	StreamWrite(packet_data, Stream_None, info.adr);
 
 	info.state = PlayerInfo::REMOVING;
 
@@ -1887,6 +1888,7 @@ void Game::SendPlayerData(int index)
 	stream.WriteCasted<byte>(0xFF);
 
 	peer->Send(&stream, HIGH_PRIORITY, RELIABLE, 0, info.adr, false);
+	StreamWrite(stream, Stream_TransferServer, info.adr);
 }
 
 //=================================================================================================
@@ -2156,6 +2158,7 @@ void Game::UpdateServer(float dt)
 		net_changes.clear();
 		assert(net_talk.empty());
 		peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+		StreamWrite(net_stream, Stream_UpdateGameServer, UNASSIGNED_SYSTEM_ADDRESS);
 
 #ifdef _DEBUG
 		int _net_player_updates = (int)net_changes_player.size();
@@ -2193,6 +2196,7 @@ void Game::UpdateServer(float dt)
 				int changes = WriteServerChangesForPlayer(net_stream, info);
 				DEBUG_DO(_net_player_updates -= changes);
 				peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, info.adr, false);
+				StreamWrite(net_stream, Stream_UpdateGameServer, info.adr);
 				info.update_flags = 0;
 			}
 		}
@@ -5603,6 +5607,7 @@ void Game::UpdateClient(float dt)
 		WriteClientChanges(net_stream);
 		net_changes.clear();
 		peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, server, false);
+		StreamWrite(net_stream, Stream_UpdateGameClient, server);
 	}
 
 	if(exit_from_server)
@@ -9586,8 +9591,11 @@ void Game::Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet)
 		AddMsg(str);
 
 		// przeœlij dalej
-		if(players > 2)
+		if (players > 2)
+		{
 			peer->Send(&stream, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, true);
+			StreamWrite(stream, Stream_Chat, packet->systemAddress);
+		}
 
 		if(game_state == GS_LEVEL)
 			game_gui->AddSpeechBubble(info.u, BUF);
@@ -9627,6 +9635,7 @@ void Game::Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet)
 				PlayerInfo& info2 = game_players[index];
 				packet->data[1] = (byte)info.id;
 				peer->Send((cstring)packet->data, packet->length, MEDIUM_PRIORITY, RELIABLE, 0, info2.adr, false);
+				StreamWrite(packet, Stream_Chat, info2.adr);
 			}
 		}
 	}
@@ -10976,6 +10985,12 @@ void Game::StreamError()
 
 	ErrorHandler::Get().StreamEnd(false);
 	current_packet = nullptr;
+}
+
+//=================================================================================================
+void Game::StreamWrite(const void* data, uint size, StreamLogType type, const SystemAddress& adr)
+{
+	ErrorHandler::Get().StreamWrite(data, size, type, adr);
 }
 
 //=================================================================================================

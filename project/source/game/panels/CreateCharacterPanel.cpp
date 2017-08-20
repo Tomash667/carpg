@@ -957,6 +957,7 @@ void CreateCharacterPanel::Show(bool _enter_name)
 	SetCharacter();
 	GUI.ShowDialog(this);
 	ResetDoll(true);
+	RenderUnit();
 }
 
 //=================================================================================================

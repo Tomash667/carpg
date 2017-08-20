@@ -10587,6 +10587,7 @@ void Game::ChangeLevel(int gdzie)
 			packet_data[1] = (byte)current_location;
 			packet_data[2] = (byte)poziom;
 			int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+			StreamWrite(packet_data.data(), 3, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 			for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
 			{
 				if(it->id == my_id)

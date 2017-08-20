@@ -53,6 +53,7 @@
 #include "SuperFastHash.h"
 #include "RakAlloca.h"
 #include "WSAStartupSingleton.h"
+#include "PacketLogger.h"
 
 #ifdef USE_THREADED_SEND
 #include "SendToThread.h"
@@ -199,6 +200,10 @@ RakPeer::RakPeer()
 	_cookie_jar = 0;
 #endif
 
+	//
+	// Dummy call to PacketLogger to ensure it's included in exported symbols.
+	//
+	PacketLogger::BaseIDTOString(0);
 	StringCompressor::AddReference();
 	RakNet::StringTable::AddReference();
 	WSAStartupSingleton::AddRef();
@@ -1685,28 +1690,41 @@ void RakPeer::CloseConnection( const AddressOrGUID target, bool sendDisconnectio
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 void RakPeer::CancelConnectionAttempt( const SystemAddress target )
 {
-	unsigned int i;
+	requestedConnectionCancelQueueMutex.Lock();
+	requestedConnectionCancelQueue.Push(target, _FILE_AND_LINE_ );
+	requestedConnectionCancelQueueMutex.Unlock();
+}
 
-	// Cancel pending connection attempt, if there is one
-	i=0;
-	requestedConnectionQueueMutex.Lock();
-	while (i < requestedConnectionQueue.Size())
+void RakPeer::HandleConnectionCancelQueue( )
+{
+	requestedConnectionCancelQueueMutex.Lock();
+	while (requestedConnectionCancelQueue.Size() > 0)
 	{
-		if (requestedConnectionQueue[i]->systemAddress==target)
-		{
-#if LIBCAT_SECURITY==1
-			CAT_AUDIT_PRINTF("AUDIT: Deleting requestedConnectionQueue %i client_handshake %x\n", i, requestedConnectionQueue[ i ]->client_handshake);
-			RakNet::OP_DELETE(requestedConnectionQueue[i]->client_handshake, _FILE_AND_LINE_ );
-#endif
-			RakNet::OP_DELETE(requestedConnectionQueue[i], _FILE_AND_LINE_ );
-			requestedConnectionQueue.RemoveAtIndex(i);
-			break;
-		}
-		else
-			i++;
-	}
-	requestedConnectionQueueMutex.Unlock();
+		unsigned int i;
 
+		// Cancel pending connection attempt, if there is one
+		i=0;
+		requestedConnectionQueueMutex.Lock();
+		while (i < requestedConnectionQueue.Size())
+		{
+			if (requestedConnectionQueue[i]->systemAddress==requestedConnectionCancelQueue[0])
+			{
+#if LIBCAT_SECURITY==1
+				CAT_AUDIT_PRINTF("AUDIT: Deleting requestedConnectionQueue %i client_handshake %x\n", i, requestedConnectionQueue[ i ]->client_handshake);
+				RakNet::OP_DELETE(requestedConnectionQueue[i]->client_handshake, _FILE_AND_LINE_ );
+#endif
+				RakNet::OP_DELETE(requestedConnectionQueue[i], _FILE_AND_LINE_ );
+				requestedConnectionQueue.RemoveAtIndex(i);
+				break;
+			}
+			else
+				i++;
+		}
+		requestedConnectionQueueMutex.Unlock();
+
+		requestedConnectionCancelQueue.RemoveAtIndex(0);
+	}
+	requestedConnectionCancelQueueMutex.Unlock();
 }
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2559,7 +2577,7 @@ RakNet::TimeMS RakPeer::GetTimeoutTime( const SystemAddress target )
 		RemoteSystemStruct * remoteSystem = GetRemoteSystemFromSystemAddress( target, false, true );
 
 		if ( remoteSystem != 0 )
-			remoteSystem->reliabilityLayer.GetTimeoutTime();
+			return remoteSystem->reliabilityLayer.GetTimeoutTime();
 	}
 	return defaultTimeoutTime;
 }
@@ -3528,7 +3546,8 @@ void RakPeer::ParseConnectionRequestPacket( RakPeer::RemoteSystemStruct *remoteS
 		bitStream.Write(GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS));
 		// changed to unreliable to fix problem with ID_INVALID_DATA
 		// when using reliable remoteSystem is never freed
-		SendImmediate((char*) bitStream.GetData(), bitStream.GetNumberOfBytesUsed(), IMMEDIATE_PRIORITY, UNRELIABLE, 0, systemAddress, false, false, RakNet::GetTimeUS(), 0);
+		SendImmediate((char*)bitStream.GetData(), bitStream.GetNumberOfBytesUsed(), IMMEDIATE_PRIORITY, UNRELIABLE, 0, systemAddress, false, false, RakNet::GetTimeUS(), 0);
+		//SendImmediate((char*) bitStream.GetData(), bitStream.GetNumberOfBytesUsed(), IMMEDIATE_PRIORITY, RELIABLE, 0, systemAddress, false, false, RakNet::GetTimeUS(), 0);
 		remoteSystem->connectMode=RemoteSystemStruct::DISCONNECT_ASAP_SILENTLY;
 		return;
 	}
@@ -4497,31 +4516,38 @@ uint64_t RakPeerInterface::Get64BitUniqueRandomNumber(void)
 
 
 
+	uint64_t g;
 #if   defined(_WIN32)
-	uint64_t g=RakNet::GetTimeUS();
+	g = RakNet::GetTimeUS();
+#else
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	g = tv.tv_usec + tv.tv_sec * 1000000;
+#endif
 
 	RakNet::TimeUS lastTime, thisTime;
 	int j;
 	// Sleep a small random time, then use the last 4 bits as a source of randomness
-	for (j=0; j < 8; j++)
+	for (j=0; j < 4; j++)
 	{
-		lastTime = RakNet::GetTimeUS();
-		RakSleep(1);
-		RakSleep(0);
-		thisTime = RakNet::GetTimeUS();
-		RakNet::TimeUS diff = thisTime-lastTime;
-		unsigned int diff4Bits = (unsigned int) (diff & 15);
-		diff4Bits <<= 32-4;
-		diff4Bits >>= j*4;
-		((char*)&g)[j] ^= diff4Bits;
+		unsigned char diffByte = 0;
+		for (int i=0; i < 4; i++)
+		{
+			lastTime = RakNet::GetTimeUS();
+			RakSleep(1);
+			RakSleep(0);
+			thisTime = RakNet::GetTimeUS();
+			RakNet::TimeUS diff = thisTime-lastTime;
+			diffByte ^= (unsigned char) ((diff & 15) << (i * 2));
+			if (i == 3)
+			{
+				diffByte ^= (unsigned char) ((diff & 15) >> 2);
+			}
+		}
+
+		((char*)&g)[4 + j] ^= diffByte;
 	}
 	return g;
-
-#else
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	return tv.tv_usec + tv.tv_sec * 1000000;
-#endif
 }
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 void RakPeer::GenerateGUID(void)
@@ -5181,11 +5207,11 @@ bool ProcessOfflineNetworkPacket( SystemAddress systemAddress, const char *data,
 #endif // LIBCAT_SECURITY
 				bsOut.Write((unsigned char) 0);  // HasCookie oN
 
-			// MTU. Lower MTU if it is exceeds our own limit
-			if (length+UDP_HEADER_SIZE > MAXIMUM_MTU_SIZE)
-				bsOut.WriteCasted<uint16_t>(MAXIMUM_MTU_SIZE);
-			else
-				bsOut.WriteCasted<uint16_t>(length+UDP_HEADER_SIZE);
+			// MTU. Lower MTU if it exceeds our own limit.
+			uint16_t mtu = (length+UDP_HEADER_SIZE > MAXIMUM_MTU_SIZE) ? MAXIMUM_MTU_SIZE : length+UDP_HEADER_SIZE;
+			bsOut.WriteCasted<uint16_t>(mtu);
+			// Pad response with zeros to MTU size so the connection's MTU will be tested in both directions
+			bsOut.PadWithZeroToByteLength(mtu - bsOut.GetNumberOfBytesUsed());
 
 			for (i=0; i < rakPeer->pluginListNTS.Size(); i++)
 				rakPeer->pluginListNTS[i]->OnDirectSocketSend((const char*) bsOut.GetData(), bsOut.GetNumberOfBitsUsed(), systemAddress);
@@ -5195,7 +5221,15 @@ bool ProcessOfflineNetworkPacket( SystemAddress systemAddress, const char *data,
 			bsp.data = (char*) bsOut.GetData();
 			bsp.length = bsOut.GetNumberOfBytesUsed();
 			bsp.systemAddress = systemAddress;
+#if !defined(__native_client__) && !defined(WINDOWS_STORE_RT)
+			if (rakNetSocket->IsBerkleySocket())
+				((RNS2_Berkley*)rakNetSocket)->SetDoNotFragment(1);
+#endif
 			rakNetSocket->Send(&bsp, _FILE_AND_LINE_);
+#if !defined(__native_client__) && !defined(WINDOWS_STORE_RT)
+			if (rakNetSocket->IsBerkleySocket())
+				((RNS2_Berkley*)rakNetSocket)->SetDoNotFragment(0);
+#endif
 		}
 		else if ((unsigned char)(data)[0] == ID_OPEN_CONNECTION_REQUEST_2)
 		{
@@ -5587,20 +5621,19 @@ bool RakPeer::RunUpdateCycle(BitStream &updateBitStream )
 
 	// This is here so RecvFromBlocking actually gets data from the same thread
 
-	#if   defined(WINDOWS_STORE_RT)
-	#elif defined(_WIN32)
-		if (socketList[0]->GetSocketType()==RNS2T_WINDOWS && ((RNS2_Windows*)socketList[0])->GetSocketLayerOverride())
-		{
-			int len;
-			SystemAddress sender;
-			char dataOut[ MAXIMUM_MTU_SIZE ];
-			do {
-				len = ((RNS2_Windows*)socketList[0])->GetSocketLayerOverride()->RakNetRecvFrom(dataOut,&sender,true);
-				if (len>0)
-					ProcessNetworkPacket( sender, dataOut, len, this, socketList[0], RakNet::GetTimeUS(), updateBitStream );
-			} while (len>0);
-		}
-	#endif
+#if !defined(WINDOWS_STORE_RT) && !defined(__native_client__)
+	if (socketList[0]->IsBerkleySocket() && static_cast<RNS2_Berkley*>(socketList[0])->GetSocketLayerOverride())
+	{
+		int len;
+		SystemAddress sender;
+		char dataOut[ MAXIMUM_MTU_SIZE ];
+		do {
+			len = static_cast<RNS2_Berkley*>(socketList[0])->GetSocketLayerOverride()->RakNetRecvFrom(dataOut,&sender,true);
+			if (len>0)
+				ProcessNetworkPacket( sender, dataOut, len, this, socketList[0], RakNet::GetTimeUS(), updateBitStream );
+		} while (len>0);
+	}
+#endif
 
 //	unsigned int socketListIndex;
 	RNS2RecvStruct *recvFromStruct;
@@ -5689,6 +5722,8 @@ bool RakPeer::RunUpdateCycle(BitStream &updateBitStream )
 
 		bufferedCommands.Deallocate(bcs, _FILE_AND_LINE_);
 	}
+
+	HandleConnectionCancelQueue();
 
 	if (requestedConnectionQueue.IsEmpty()==false)
 	{
@@ -6032,12 +6067,29 @@ bool RakPeer::RunUpdateCycle(BitStream &updateBitStream )
 							//					RakNet::BitStream nICS_BS( data, NewIncomingConnectionStruct_Size, false );
 							//					newIncomingConnectionStruct.Deserialize( nICS_BS );
 
+							bool usesOverride = false;
+#if defined(WINDOWS_STORE_RT) || defined(__native_client__)
 							remoteSystem->myExternalSystemAddress = bsSystemAddress;
+#else
+							// A dummy override address should never be added as an external address. When
+							// communicating through a socket overlay dummy addresses are needed which can be
+							// mapped to the underlying layer (e.g. a Steam user ID). Upon connecting RakNet
+							// communicates the address used to reach the recipient so it can be added to it's list
+							// of external addresses. Should two peers communicate using the same dummy override
+							// address for each other, they will send messages to the loopback, assuming the target
+							// address is their own external address.
+							if (remoteSystem->rakNetSocket->IsBerkleySocket())
+							{
+								const SocketLayerOverride* socketOverride = static_cast<RNS2_Berkley*>(remoteSystem->rakNetSocket)->GetSocketLayerOverride();
+								usesOverride = socketOverride && socketOverride->IsOverrideAddress(bsSystemAddress);
+							}
+							remoteSystem->myExternalSystemAddress = usesOverride ? UNASSIGNED_SYSTEM_ADDRESS : bsSystemAddress;
+#endif
 
 							// Bug: If A connects to B through R, A's firstExternalID is set to R. If A tries to send to R, sends to loopback because R==firstExternalID
 							// Correct fix is to specify in Connect() if target is through a proxy.
 							// However, in practice you have to connect to something else first anyway to know about the proxy. So setting once only is good enough
-							if (firstExternalID==UNASSIGNED_SYSTEM_ADDRESS)
+							if (firstExternalID==UNASSIGNED_SYSTEM_ADDRESS && !usesOverride)
 							{
 								firstExternalID=bsSystemAddress;
 								firstExternalID.debugPort=ntohs(firstExternalID.address.addr4.sin_port);
@@ -6171,13 +6223,24 @@ bool RakPeer::RunUpdateCycle(BitStream &updateBitStream )
 								//	systemAddress.GetPort() = remotePort;
 
 								// The remote system told us our external IP, so save it
+								bool usesOverride = false;
+#if defined(WINDOWS_STORE_RT) || defined(__native_client__)
 								remoteSystem->myExternalSystemAddress = externalID;
+#else
+								if (remoteSystem->rakNetSocket->IsBerkleySocket())
+								{
+									const SocketLayerOverride* socketOverride = static_cast<RNS2_Berkley*>(remoteSystem->rakNetSocket)->GetSocketLayerOverride();
+									usesOverride = socketOverride && socketOverride->IsOverrideAddress(externalID);
+								}
+								remoteSystem->myExternalSystemAddress = usesOverride ? UNASSIGNED_SYSTEM_ADDRESS : externalID;
+#endif
 								remoteSystem->connectMode=RemoteSystemStruct::CONNECTED;
+
 
 								// Bug: If A connects to B through R, A's firstExternalID is set to R. If A tries to send to R, sends to loopback because R==firstExternalID
 								// Correct fix is to specify in Connect() if target is through a proxy.
 								// However, in practice you have to connect to something else first anyway to know about the proxy. So setting once only is good enough
-								if (firstExternalID==UNASSIGNED_SYSTEM_ADDRESS)
+								if (firstExternalID==UNASSIGNED_SYSTEM_ADDRESS && !usesOverride)
 								{
 									firstExternalID=externalID;
 									firstExternalID.debugPort=ntohs(firstExternalID.address.addr4.sin_port);

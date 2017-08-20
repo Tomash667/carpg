@@ -169,7 +169,11 @@
 #include <tchar.h>
 #else
 #ifndef TCHAR
+#if defined(__WIN32__)
+#include <tchar.h>
+#else
 #define TCHAR char
+#endif
 #endif
 #ifndef _T
 #define _T(__x) (__x)

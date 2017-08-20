@@ -358,3 +358,19 @@ void ErrorHandler::StreamEnd(bool ok)
 
 	current_packet = nullptr;
 }
+
+//=================================================================================================
+void ErrorHandler::StreamWrite(const void* data, uint size, int type, const SystemAddress& adr)
+{
+	assert(data && size > 0);
+
+	if (!stream_log.IsOpen() || stream_log_mode != StreamLogMode::Full)
+		return;
+
+	stream_log.Write<byte>(0xFF);
+	stream_log.Write<byte>(2);
+	stream_log.Write<byte>(type);
+	stream_log.Write(adr.address);
+	stream_log.Write(size);
+	stream_log.Write(data, size);
+}

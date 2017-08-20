@@ -334,6 +334,7 @@ class Quest_Crazies;
 
 enum StreamLogType
 {
+	Stream_None,
 	Stream_PickServer,
 	Stream_PingIp,
 	Stream_Connect,
@@ -345,7 +346,8 @@ enum StreamLogType
 	Stream_UpdateLobbyServer,
 	Stream_UpdateLobbyClient,
 	Stream_UpdateGameServer,
-	Stream_UpdateGameClient
+	Stream_UpdateGameClient,
+	Stream_Chat
 };
 
 enum class AnyVarType
@@ -1846,6 +1848,19 @@ public:
 	BitStream& StreamStart(Packet* packet, StreamLogType type);
 	void StreamEnd();
 	void StreamError();
+	void StreamWrite(vector<byte>& data, StreamLogType type, const SystemAddress& adr)
+	{
+		StreamWrite(data.data(), data.size(), type, adr);
+	}
+	void StreamWrite(BitStream& data, StreamLogType type, const SystemAddress& adr)
+	{
+		StreamWrite(data.GetData(), data.GetNumberOfBytesUsed(), type, adr);
+	}
+	void StreamWrite(Packet* packet, StreamLogType type, const SystemAddress& adr)
+	{
+		StreamWrite(packet->data, packet->length, type, adr);
+	}
+	void StreamWrite(const void* data, uint size, StreamLogType type, const SystemAddress& adr);
 
 	BitStream current_stream;
 	Packet* current_packet;

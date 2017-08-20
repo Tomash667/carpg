@@ -11,6 +11,9 @@
 #include "NativeFeatureIncludes.h"
 #if _RAKNET_SUPPORT_PacketLogger==1
 
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 #include "PacketLogger.h"
 #include "BitStream.h"
 #include "DS_List.h"
@@ -31,6 +34,7 @@
 #pragma warning( push )
 #endif
 
+using namespace std;
 using namespace RakNet;
 
 STATIC_FACTORY_DEFINITIONS(PacketLogger,PacketLogger);

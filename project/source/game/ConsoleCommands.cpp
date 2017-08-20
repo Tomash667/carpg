@@ -1019,6 +1019,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								net_stream.WriteCasted<byte>(IsServer() ? my_id : info.id);
 								WriteString1(net_stream, text);
 								peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, sv_server ? info.adr : server, false);
+								StreamWrite(net_stream, Stream_Chat, sv_server ? info.adr : server);
 								cstring s = Format("@%s: %s", info.name.c_str(), text.c_str());
 								AddMsg(s);
 								Info(s);
@@ -1040,6 +1041,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							net_stream.Write(ID_SERVER_SAY);
 							WriteString1(net_stream, text);
 							peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+							StreamWrite(net_stream, Stream_Chat, UNASSIGNED_SYSTEM_ADDRESS);
 						}
 						AddServerMsg(text.c_str());
 						Info("SERWER: %s", text.c_str());
@@ -1214,6 +1216,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							packet_data[0] = ID_TIMER;
 							packet_data[1] = (byte)STARTUP_TIMER;
 							peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+							StreamWrite(&packet_data[0], 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 							server_panel->bts[4].text = server_panel->txStop;
 							cstring s = Format(server_panel->txStartingIn, STARTUP_TIMER);
 							AddMsg(s);
@@ -1232,6 +1235,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						net_stream.WriteCasted<byte>(my_id);
 						WriteString1(net_stream, text);
 						peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, sv_server ? UNASSIGNED_SYSTEM_ADDRESS : server, sv_server);
+						StreamWrite(net_stream, Stream_Chat, sv_server ? UNASSIGNED_SYSTEM_ADDRESS : server);
 						cstring s = Format("%s: %s", game_players[0].name.c_str(), text.c_str());
 						AddMsg(s);
 						Info(s);
@@ -1481,6 +1485,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								packet_data[0] = ID_TIMER;
 								packet_data[1] = (byte)STARTUP_TIMER;
 								peer->Send((cstring)&packet_data[0], 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+								StreamWrite(&packet_data[0], 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 							}
 							else
 								Msg(error_text);

@@ -68,6 +68,7 @@ public:
 	void ReadConfiguration(Config& cfg);
 	void StreamStart(Packet* packet, int type);
 	void StreamEnd(bool ok);
+	void StreamWrite(const void* data, uint size, int type, const SystemAddress& adr);
 
 private:
 	ErrorHandler();

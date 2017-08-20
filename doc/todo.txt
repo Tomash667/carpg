@@ -5,13 +5,11 @@
 	+ fixed journal blocking quicksave/quickload
 - zly teren pola
 - grass is drawn only next to roads/on field
-- update create character screen, for single frame there is no doll
 - cursor focus bug - start server/client, activate serwer when possible, start game, alt tab to client when loaded - cursor is visible
 	- everything is ok except the system cursor is visible
 - physics of stairs up don't work for camera
 - game saved center text don't show for clients
 - when client disconnect on loading worldmap with START_ON_WORLDMAP server will crash in RemovePlayerOnLoad
-- 122.stream
 - GenericInfoBox, RemovePlayerOnLoad don't remove interpolator (u->interp)
 - client can't save when leader
 	? am i even checking is he leader
@@ -41,15 +39,6 @@ VERIFY:
 - fov may not work good when near borders
 - verify dialogs ending with end/restart
 - without human flag and mesh crash when spawned, log error
-- 21:35:32 WARN  - NM_TRANSFER: Unknown packet 104. Unknown packet 97.
-SERVER
-	19:02:38 INFO  - Preparing world data.
-	19:02:38 INFO  - NM_TRANSFER_SERVER: Send world data, size 3055.
-	19:02:43 INFO  - NM_TRANSFER_SERVER: Disconnecting player Diablox2 due no response.
-CLIENT
-	19:02:38 INFO  - UpdateLobbyNet: Starting in 0...
-	19:02:38 INFO  - UpdateLobbyNet: Waiting for server.
-	19:02:38 WARN  - NM_TRANSFER: Unknown packet 97.
 - przenoszenie do walki gdy jesteś w środku areny
 - dźwięki areny gdy się na niej jest ale nie bierze udziału
 - blokada widoku przez drewno u kowala

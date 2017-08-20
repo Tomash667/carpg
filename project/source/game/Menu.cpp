@@ -575,6 +575,7 @@ void Game::ChangeReady()
 		PlayerInfo& info = game_players[0];
 		byte b[] = { ID_CHANGE_READY, (byte)(info.ready ? 1 : 0) };
 		peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE_ORDERED, 1, server, false);
+		StreamWrite(b, 2, Stream_UpdateLobbyClient, server);
 	}
 
 	server_panel->bts[1].text = (game_players[0].ready ? server_panel->txNotReady : server_panel->txReady);
@@ -831,6 +832,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							content::WriteCrc(net_stream);
 							WriteString1(net_stream, player_name);
 							peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
+							StreamWrite(net_stream, Stream_Connect, server);
 						}
 						break;
 					case ID_JOIN:
@@ -1256,6 +1258,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							// odeœlij informacje o gotowoœci
 							byte b[] = { ID_READY, 0 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
+							StreamWrite(b, 2, Stream_Transfer, server);
 							info_box->Show(txLoadedWorld);
 							LoadingStep("");
 							Info("NM_TRANSFER: Loaded world data.");
@@ -1284,6 +1287,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								LoadingStep("");
 							byte b[] = { ID_READY, 1 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
+							StreamWrite(b, 2, Stream_Transfer, server);
 							info_box->Show(txLoadedPlayer);
 							Info("NM_TRANSFER: Loaded player start data.");
 						}
@@ -1359,6 +1363,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							Info("NM_TRANSFER: Loaded level data.");
 							byte b[] = { ID_READY, 2 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
+							StreamWrite(b, 2, Stream_Transfer, server);
 							LoadingStep("");
 						}
 					}
@@ -1389,6 +1394,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							mp_load = false;
 							byte b[] = { ID_READY, 3 };
 							peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, server, false);
+							StreamWrite(b, 2, Stream_Transfer, server);
 						}
 					}
 					else
@@ -1520,6 +1526,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 								net_stream2.WriteCasted<byte>(ID_PLAYER_START_DATA);
 								WritePlayerStartData(net_stream2, info);
 								peer->Send(&net_stream2, MEDIUM_PRIORITY, RELIABLE, 0, info.adr, false);
+								StreamWrite(net_stream2, Stream_TransferServer, info.adr);
 							}
 							else if(type == 1)
 							{
@@ -1558,7 +1565,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 					if(players > 1)
 					{
 						byte b[] = { ID_STATE, 0 };
-						peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+						peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+						StreamWrite(b, 2, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 					}
 
 					// do it
@@ -1590,12 +1598,14 @@ void Game::GenericInfoBoxUpdate(float dt)
 
 					// send info about preparing world data
 					byte b[] = { ID_STATE, 1 };
-					peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+					peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+					StreamWrite(b, 2, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 
 					// prepare & send world data
 					net_stream.Reset();
 					PrepareWorldData(net_stream);
-					peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+					peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+					StreamWrite(net_stream, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 					Info("NM_TRANSFER_SERVER: Send world data, size %d.", net_stream.GetNumberOfBytesUsed());
 					net_state = 2;
 					net_timer = mp_timeout;
@@ -1745,7 +1755,8 @@ void Game::GenericInfoBoxUpdate(float dt)
 				if(players > 1)
 				{
 					byte b[] = { ID_STATE, 2 };
-					peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+					peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+					StreamWrite(b, 2, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 				}
 			}
 			else if(net_state == 2)
@@ -1807,6 +1818,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						// zapisano na mapie œwiata
 						byte b = ID_START;
 						peer->Send((cstring)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+						StreamWrite(&b, 1, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 
 						DeleteOldPlayers();
 
@@ -1830,6 +1842,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						packet_data[1] = (byte)current_location;
 						packet_data[2] = dungeon_level;
 						int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+						StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 						for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
 						{
 							if(it->id == my_id)
@@ -1999,6 +2012,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						{
 							// wyœlij dane poziomu
 							peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
+							StreamWrite(net_stream, Stream_TransferServer, packet->systemAddress);
 							info.timer = mp_timeout;
 							info.state = PlayerInfo::WAITING_FOR_DATA;
 							Info("NM_SERVER_SEND: Send level data to %s.", info.name.c_str());
@@ -2065,6 +2079,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 				{
 					byte b = ID_START;
 					peer->Send((cstring)&b, 1, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+					StreamWrite(&b, 1, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 				}
 				for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
 					it->update_timer = 0.f;
@@ -2222,6 +2237,7 @@ void Game::CloseConnection(VoidF f)
 				Info("ServerPanel: Disconnecting clients.");
 				const byte b[] = { ID_SERVER_CLOSE, 0 };
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+				StreamWrite(b, 2, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 				net_mode = Game::NM_QUITTING_SERVER;
 				--players;
 				net_timer = T_WAIT_FOR_DISCONNECT;
@@ -2257,6 +2273,7 @@ void Game::CloseConnection(VoidF f)
 				Info("ServerPanel: Disconnecting clients.");
 				const byte b[] = { ID_SERVER_CLOSE, 0 };
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+				StreamWrite(b, 2, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 				net_mode = Game::NM_QUITTING_SERVER;
 				--players;
 				net_timer = T_WAIT_FOR_DISCONNECT;
@@ -2329,6 +2346,7 @@ void Game::UpdateLobbyNet(float dt)
 				last_startup_id = STARTUP_TIMER;
 				byte b[] = { ID_TIMER, STARTUP_TIMER };
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+				StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 				server_panel->bts[5].text = server_panel->txStop;
 				server_panel->AddMsg(Format(server_panel->txStarting, STARTUP_TIMER));
 				Info("UpdateLobbyNet: Starting in %d...", STARTUP_TIMER);
@@ -2413,6 +2431,7 @@ void Game::UpdateLobbyNet(float dt)
 						// brak miejsca na serwerze, wyœlij komunikat i czekaj a¿ siê roz³¹czy
 						byte b[] = { ID_CANT_JOIN, 0 };
 						peer->Send((cstring)b, 2, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
+						StreamWrite(b, 2, Stream_UpdateLobbyServer, packet->systemAddress);
 						info.state = PlayerInfo::REMOVING;
 						info.timer = T_WAIT_FOR_DISCONNECT;
 					}
@@ -2609,6 +2628,7 @@ void Game::UpdateLobbyNet(float dt)
 						if(include_extra == 2)
 							net_stream.WriteCasted<byte>(type);
 						peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
+						StreamWrite(net_stream, Stream_UpdateLobbyServer, packet->systemAddress);
 						info->state = PlayerInfo::REMOVING;
 						info->timer = T_WAIT_FOR_DISCONNECT;
 					}
@@ -2661,6 +2681,7 @@ void Game::UpdateLobbyNet(float dt)
 						else
 							net_stream.WriteCasted<byte>(0);
 						peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
+						StreamWrite(net_stream, Stream_UpdateLobbyServer, packet->systemAddress);
 						info->state = PlayerInfo::IN_LOBBY;
 
 						server_panel->AddMsg(Format(server_panel->txJoined, info->name.c_str()));
@@ -2778,6 +2799,7 @@ void Game::UpdateLobbyNet(float dt)
 					// send result
 					byte packet[2] = { ID_PICK_CHARACTER, ok };
 					peer->Send((cstring)packet, 2, HIGH_PRIORITY, RELIABLE, 0, info->adr, false);
+					StreamWrite(packet, 2, Stream_UpdateLobbyServer, info->adr);
 				}
 				break;
 			default:
@@ -3041,6 +3063,7 @@ void Game::UpdateLobbyNet(float dt)
 					net_stream.WriteCasted<byte>(ile);
 					net_stream.SetWriteOffset(off);
 					peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 2, UNASSIGNED_SYSTEM_ADDRESS, true);
+					StreamWrite(net_stream, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 				}
 				lobby_updates.clear();
 			}
@@ -3100,6 +3123,7 @@ void Game::UpdateLobbyNet(float dt)
 					b[1] = (byte)d;
 				}
 				peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+				StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 			}
 		}
 	}
@@ -3257,6 +3281,7 @@ void Game::OnCreateCharacter(int id)
 			WriteCharacterData(net_stream, info.clas, info.hd, info.cc);
 			WriteBool(net_stream, false);
 			peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
+			StreamWrite(net_stream, Stream_UpdateLobbyClient, server);
 			Info("Character sent to server.");
 		}
 	}

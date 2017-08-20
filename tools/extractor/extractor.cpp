@@ -10,10 +10,38 @@
 
 Logger* logger;
 
+cstring types[] = {
+	"None",
+	"PickServer",
+	"PingIp",
+	"Connect",
+	"Quitting",
+	"QuittingServer",
+	"Transfer",
+	"TransferServer",
+	"ServerSend",
+	"UpdateLobbyServer",
+	"UpdateLobbyClient",
+	"UpdateGameServer",
+	"UpdateGameClient"
+};
+
+enum STATUS
+{
+	STATUS_OK,
+	STATUS_ERROR,
+	STATUS_WRITE
+};
+
+cstring status_str[] = {
+	"READ OK",
+	"READ ERROR",
+	"WRITE"
+};
 
 struct Node
 {
-	bool ok;
+	STATUS status;
 	int index, type;
 	sockaddr_in adr;
 	uint length;
@@ -30,7 +58,7 @@ struct Reader
 
 	Reader()
 	{
-		b = (byte*)data.size();
+		b = (byte*)data.data();
 		bs = b;
 		be = b + data.size();
 	}
@@ -73,13 +101,13 @@ void ProcessFile()
 	while(!r.IsEof())
 	{
 		byte sign;
-		byte ok;
+		byte status;
 		byte type;
 		sockaddr_in adr;
 		uint length;
 
 		if(!r.Read(sign)
-			|| !r.Read(ok)
+			|| !r.Read(status)
 			|| !r.Read(type)
 			|| !r.Read(adr)
 			|| !r.Read(length))
@@ -102,7 +130,7 @@ void ProcessFile()
 		}
 
 		Node node;
-		node.ok = (ok != 0);
+		node.status = (STATUS)status;
 		node.index = index;
 		node.type = type;
 		node.length = length;
@@ -134,6 +162,114 @@ void Init()
 	});	
 }
 
+enum GamePacket : byte
+{
+	ID_HELLO = 135,
+	ID_LOBBY_UPDATE,
+	ID_CANT_JOIN,
+	ID_JOIN,
+	ID_CHANGE_READY,
+	ID_SAY,
+	ID_WHISPER,
+	ID_SERVER_SAY,
+	ID_LEAVE,
+	ID_SERVER_CLOSE,
+	ID_PICK_CHARACTER,
+	ID_TIMER,
+	ID_END_TIMER,
+	ID_STARTUP,
+	ID_STATE,
+	ID_WORLD_DATA,
+	ID_PLAYER_START_DATA,
+	ID_READY,
+	ID_CHANGE_LEVEL,
+	ID_LEVEL_DATA,
+	ID_PLAYER_DATA,
+	ID_START,
+	ID_CONTROL,
+	ID_CHANGES,
+	ID_PLAYER_UPDATE
+};
+
+cstring GetMsg(byte type)
+{
+	switch (type)
+	{
+	case ID_HELLO:
+		return "ID_HELLO";
+	case ID_LOBBY_UPDATE:
+		return "ID_LOBBY_UPDATE";
+	case ID_CANT_JOIN:
+		return "ID_CANT_JOIN";
+	case ID_JOIN:
+		return "ID_JOIN";
+	case ID_CHANGE_READY:
+		return "ID_CHANGE_READY";
+	case ID_SAY:
+		return "ID_SAY";
+	case ID_WHISPER:
+		return "ID_WHISPER";
+	case ID_SERVER_SAY:
+		return "ID_SERVER_SAY";
+	case ID_LEAVE:
+		return "ID_LEAVE";
+	case ID_SERVER_CLOSE:
+		return "ID_SERVER_CLOSE";
+	case ID_PICK_CHARACTER:
+		return "ID_PICK_CHARACTER";
+	case ID_TIMER:
+		return "ID_TIMER";
+	case ID_END_TIMER:
+		return "ID_END_TIMER";
+	case ID_STARTUP:
+		return "ID_STARTUP";
+	case ID_STATE:
+		return "ID_STATE";
+	case ID_WORLD_DATA:
+		return "ID_WORLD_DATA";
+	case ID_PLAYER_START_DATA:
+		return "ID_PLAYER_START_DATA";
+	case ID_READY:
+		return "ID_READY";
+	case ID_CHANGE_LEVEL:
+		return "ID_CHANGE_LEVEL";
+	case ID_LEVEL_DATA:
+		return "ID_LEVEL_DATA";
+	case ID_PLAYER_DATA:
+		return "ID_PLAYER_DATA";
+	case ID_START:
+		return "ID_START";
+	case ID_CONTROL:
+		return "ID_CONTROL";
+	case ID_CHANGES:
+		return "ID_CHANGES";
+	case ID_PLAYER_UPDATE:
+		return "ID_PLAYER_UPDATE";
+	default:
+		if (type < 135)
+			return Format("SYSTEM(%u)", type);
+		else
+			return Format("INVALID(%u)", type);
+	}
+}
+
+void LogStream(Node& node, int index)
+{
+	string m = "(";
+	for (int i = 0; i < min(4, (int)node.length) - 1; ++i)
+	{
+		if (i != 0)
+			m += ";";
+		m += Format("%u", node.data[i + 1]);
+	}
+	if (m.length() == 1)
+		m.clear();
+	else
+		m += ")";
+	printf("%s: Index: %d, type: %s(%d), size: %u, from: %s:%u, cmd: %s%s\n", status_str[node.status], index, types[node.type], node.type, node.length, inet_ntoa(node.adr.sin_addr),
+		node.adr.sin_port, GetMsg(node.data[0]), m.c_str());
+}
+
 bool MainLoop()
 {
 	/*
@@ -148,7 +284,6 @@ bool MainLoop()
 	adr
 	*/
 
-	Tokenizer t;
 	string str;
 	printf(">");
 	std::getline(std::cin, str);
@@ -171,7 +306,7 @@ bool MainLoop()
 				"help - display this message\n"
 				"list - display list of messages grouped by type\n"
 				"save index [filename] - save stream data to file\n"
-				"select index - select single stream\n");
+				"select index/all - select single stream\n");
 			break;
 		case K_LIST:
 			{
@@ -185,32 +320,43 @@ bool MainLoop()
 						if(prev_type != -1)
 						{
 							if(start_index != index - 1)
-								printf("%d - %d: Type %d\n", start_index, index - 1, prev_type);
+								printf("%d - %d: Type %s(%d)\n", start_index, index - 1, types[prev_type], prev_type);
 							else
-								printf("%d: Type %d\n", start_index, prev_type);
+								printf("%d: Type %s(%d)\n", start_index, types[prev_type], prev_type);
 						}
 						prev_type = node.type;
+						start_index = index;
 					}
 					++index;
 				}
 				if(prev_type != -1)
 				{
 					if(start_index != index - 1)
-						printf("%d - %d: Type %d\n", start_index, index - 1, prev_type);
+						printf("%d - %d: Type %s(%d)\n", start_index, index - 1, types[prev_type], prev_type);
 					else
-						printf("%d: Type %d\n", start_index, prev_type);
+						printf("%d: Type %s(%d)\n", start_index, types[prev_type], prev_type);
 				}
 			}
 			break;
 		case K_SELECT:
 			{
 				t.Next();
-				int index = t.MustGetInt();
-				if(index >= (int)nodes.size())
-					t.Throw("Invalid index %d.", index);
-				Node& node = nodes[index];
-				printf("Index: %d, type: %d, ok: %d, size: %u, from: %s:%u\n", index, node.type, node.ok ? 1 : 0, node.length, inet_ntoa(node.adr.sin_addr),
-					node.adr.sin_port);
+				if (t.IsItem("all"))
+				{
+					int index = 0;
+					for (Node& node : nodes)
+					{
+						LogStream(node, index);
+						++index;
+					}
+				}
+				else
+				{
+					int index = t.MustGetInt();
+					if (index >= (int)nodes.size())
+						t.Throw("Invalid index %d.\n", index);
+					LogStream(nodes[index], index);
+				}
 			}
 			break;
 		case K_SAVE:
@@ -218,7 +364,7 @@ bool MainLoop()
 				t.Next();
 				int index = t.MustGetInt();
 				if(index >= (int)nodes.size())
-					t.Throw("Invalid index %d.", index);
+					t.Throw("Invalid index %d.\n", index);
 				t.Next();
 				string out;
 				if(t.IsEof())
@@ -227,7 +373,7 @@ bool MainLoop()
 					out = t.MustGetString();
 				HANDLE file = CreateFile(out.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 				if(file == INVALID_HANDLE_VALUE)
-					t.Throw("Failed to open file '%s' (%d).", out.c_str(), GetLastError());
+					t.Throw("Failed to open file '%s' (%d).\n", out.c_str(), GetLastError());
 				Node& node = nodes[index];
 				WriteFile(file, node.data, node.length, &tmp, nullptr);
 				CloseHandle(file);
@@ -240,7 +386,7 @@ bool MainLoop()
 	}
 	catch(Tokenizer::Exception& ex)
 	{
-		printf("Failed to parse command: %s", ex.ToString());
+		printf("Failed to parse command: %s\n", ex.ToString());
 		do_exit = false;
 	}
 

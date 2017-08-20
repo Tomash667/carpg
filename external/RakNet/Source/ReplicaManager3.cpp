@@ -138,7 +138,7 @@ void ReplicaManager3::AutoCreateConnectionList(
 {
 	for (unsigned int index=0; index < participantListIn.Size(); index++)
 	{
-		if (GetConnectionByGUID(participantListIn[index], worldId)==false)
+		if (GetConnectionByGUID(participantListIn[index], worldId)==NULL)
 		{
 			Connection_RM3 *connection = AllocConnection(rakPeerInterface->GetSystemAddressFromGuid(participantListIn[index]), participantListIn[index]);
 			if (connection)
@@ -1185,6 +1185,7 @@ PluginReceiveResult ReplicaManager3::OnConstruction(Packet *packet, unsigned cha
 			}
 		}
 	}
+	bsIn.AlignReadToByteBoundary();
 
 	for (index=0; index < constructionObjectListSize; index++)
 	{

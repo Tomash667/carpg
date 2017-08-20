@@ -301,6 +301,7 @@ void ServerPanel::Event(GuiEvent e)
 					game->last_startup_id = STARTUP_TIMER;
 					byte b[] = { ID_TIMER, STARTUP_TIMER };
 					game->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+					game->StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 					bts[4].text = txStop;
 					cstring s = Format(txStartingIn, STARTUP_TIMER);
 					AddMsg(s);
@@ -382,6 +383,7 @@ void ServerPanel::ExitLobby(VoidF f)
 			Info("ServerPanel: Disconnecting clients.");
 			const byte b[] = { ID_SERVER_CLOSE, 0 };
 			game->peer->Send((cstring)b, 2, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+			game->StreamWrite(b, 2, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 			game->net_mode = Game::NM_QUITTING_SERVER;
 			--game->players;
 			game->net_timer = T_WAIT_FOR_DISCONNECT;
@@ -401,6 +403,7 @@ void ServerPanel::ExitLobby(VoidF f)
 	{
 		const byte b = ID_LEAVE;
 		game->peer->Send((cstring)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, game->server, false);
+		game->StreamWrite(&b, 1, Stream_UpdateLobbyClient, game->server);
 		game->info_box->Show(txDisconnecting);
 		game->net_mode = Game::NM_QUITTING;
 		game->net_timer = T_WAIT_FOR_DISCONNECT;
@@ -441,6 +444,7 @@ void ServerPanel::OnInput(const string& str)
 			game->net_stream.WriteCasted<byte>(game->my_id);
 			WriteString1(game->net_stream, str);
 			game->peer->Send(&game->net_stream, MEDIUM_PRIORITY, RELIABLE, 0, game->sv_server ? UNASSIGNED_SYSTEM_ADDRESS : game->server, game->sv_server);
+			game->StreamWrite(game->net_stream, Stream_Chat, game->sv_server ? UNASSIGNED_SYSTEM_ADDRESS : game->server);
 		}
 		cstring s = Format("%s: %s", game->player_name.c_str(), str.c_str());
 		AddMsg(s);
@@ -460,6 +464,7 @@ void ServerPanel::StopStartup()
 	{
 		byte c = ID_END_TIMER;
 		game->peer->Send((cstring)&c, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+		game->StreamWrite(&c, 1, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 	}
 }
 
@@ -511,6 +516,7 @@ void ServerPanel::PickClass(Class clas, bool ready)
 		WriteCharacterData(stream, info.clas, info.hd, info.cc);
 		WriteBool(stream, ready);
 		game->peer->Send(&stream, IMMEDIATE_PRIORITY, RELIABLE, 0, game->server, false);
+		game->StreamWrite(stream, Stream_UpdateLobbyClient, game->server);
 	}
 	else
 	{

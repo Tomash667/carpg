@@ -76,11 +76,13 @@ RakString::RakString(const unsigned char *format, ...){
 	va_list ap;
 	va_start(ap, format);
 	Assign((const char*) format,ap);
+	va_end(ap);
 }
 RakString::RakString(const char *format, ...){
 	va_list ap;
 	va_start(ap, format);
 	Assign(format,ap);
+	va_end(ap);
 }
 RakString::RakString( const RakString & rhs)
 {
@@ -377,6 +379,7 @@ void RakString::Set(const char *format, ...)
 	va_start(ap, format);
 	Clear();
 	Assign(format,ap);
+	va_end(ap);
 }
 bool RakString::IsEmpty(void) const
 {
@@ -450,7 +453,7 @@ void RakString::SetChar( unsigned index, RakNet::RakString s )
 }
 
 #ifdef _WIN32
-WCHAR * RakString::ToWideChar(void)
+const WCHAR * RakString::ToWideChar(void)
 {
 	//
 	// Special case of NULL or empty input string
@@ -1377,7 +1380,7 @@ void RakString::Assign(const char *str, va_list ap)
 	if (_vsnprintf(stackBuff, 512, str, ap)!=-1
 #ifndef _WIN32
 		// Here Windows will return -1 if the string is too long; Linux just truncates the string.
-		&& strlen(str) <511
+		&& strlen(stackBuff) <511
 #endif
 		)
 	{

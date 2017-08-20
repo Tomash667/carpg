@@ -89,6 +89,7 @@ void MpBox::OnInput(const string& str)
 			game.net_stream.WriteCasted<byte>(game.my_id);
 			WriteString1(game.net_stream, str);
 			game.peer->Send(&game.net_stream, MEDIUM_PRIORITY, RELIABLE, 0, game.sv_server ? UNASSIGNED_SYSTEM_ADDRESS : game.server, game.sv_server);
+			game.StreamWrite(game.net_stream, Stream_Chat, game.sv_server ? UNASSIGNED_SYSTEM_ADDRESS : game.server);
 		}
 		// add text
 		cstring s = Format("%s: %s", game.player_name.c_str(), str.c_str());
