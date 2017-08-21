@@ -32,6 +32,7 @@
 #include "Spell.h"
 #include "Team.h"
 
+// SF_DEV, SF_BETA removed in 0.4
 #define SF_ONLINE (1<<0)
 //#define SF_DEV (1<<1)
 #define SF_DEBUG (1<<2)

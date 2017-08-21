@@ -338,7 +338,7 @@ building "cottage3" {
 building "village_inn" {
 	mesh "karczma2.qmsh"
 	inside_mesh "karczma2_srodek.qmsh"
-	flags {favor_center favor_road have_name}
+	flags {favor_center favor_road have_name list}
 	scheme {
 		"|||||||||||||||"
 		"|||||||||||||||"

@@ -2003,8 +2003,11 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 		}
 		else if(c == 'd')
 		{
-			if(!recreate)
+			if (!recreate)
+			{
+				assert(!is_inside);
 				details.push_back(&pt);
+			}
 			continue;
 		}
 		else
@@ -2356,7 +2359,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 		}
 	}
 
-	if(!details.empty() && !type)
+	if(!details.empty() && !is_inside)
 	{
 		int c = Rand() % 80 + details.size() * 2, count;
 		if(c < 10)

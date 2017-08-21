@@ -8159,6 +8159,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		// game saved notification
 		case NetChange::GAME_SAVED:
 			AddMultiMsg(txGameSaved);
+			AddGameMsg2(txGameSaved, 1.f, GMS_GAME_SAVED);
 			break;
 		// ai left team due too many team members
 		case NetChange::HERO_LEAVE:
@@ -10943,6 +10944,8 @@ void Game::RemovePlayerOnLoad(PlayerInfo& info)
 		leader_id = -1;
 	if(mp_load)
 		RemoveElement(GetContext(info.u->pos).units, info.u);
+	if (info.u->interp)
+		interpolators.Free(info.u->interp);
 	delete info.u;
 	--players;
 	peer->CloseConnection(info.adr, true, 0, IMMEDIATE_PRIORITY);

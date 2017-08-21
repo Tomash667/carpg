@@ -606,4 +606,10 @@ void LoadLanguageFiles()
 
 	if(txLocationStart.empty() || txLocationEnd.empty())
 		throw "Missing locations names.";
+
+	for (auto building : content::buildings)
+	{
+		if (IS_SET(building->flags, Building::HAVE_NAME) && building->name.empty())
+			Warn("Building '%s' don't have name.", building->id.c_str());
+	}
 }

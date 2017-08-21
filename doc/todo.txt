@@ -8,15 +8,7 @@
 - cursor focus bug - start server/client, activate serwer when possible, start game, alt tab to client when loaded - cursor is visible
 	- everything is ok except the system cursor is visible
 - physics of stairs up don't work for camera
-- game saved center text don't show for clients
 - when client disconnect on loading worldmap with START_ON_WORLDMAP server will crash in RemovePlayerOnLoad
-- GenericInfoBox, RemovePlayerOnLoad don't remove interpolator (u->interp)
-- client can't save when leader
-	? am i even checking is he leader
-	- contest_state >= CONTEST_STARTING || tournament_state != TOURNAMENT_NOT_DONE
-		tournament_state, contest maybe too
-	? who can really save ?
-- warp village inn, hall, goto city, warp hall - objects from village inside (mp save WEIRD)
 ===============================================================================================================
 NEW:
 + BaseBullet for Bullet, save by base, no mesh etc
@@ -26,6 +18,10 @@ NEW:
 + remove ITEM_SECRET ?
 + load Str at start or when required (less variables vs error logging at startup)
 + debug key - show quest to chose
++ gui checkbox - clicking on text should toggle
++ visual leak detector 2.5.1
++ verify missing building names + add load errors
++ allow client to save game ? better make game continous without saving/loading, on death reload/respawn
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
