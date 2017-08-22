@@ -296,7 +296,6 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* server_pswd - last server password
 	* shader_version - force shader version 2/3
 	* skip_tutorial (true [false]) - skip tutorial
-	* skip_version - skip version checking up to this version
 	* stream_log_file ["log.stream"] - file to log mp information
 	* stream_log_mode (none [errors] full) - mode to log mp information
 	* timeout (1-3600) - time before kicking player from server when loading if

@@ -1,4 +1,28 @@
-﻿CURRENT:
+﻿FEATURE:
++ actions panel, hover over action show description
++ show action in game gui, with cooldown, charges
++ add GameKey for action usage
++ use action
++ bulls charge effect
+	+ 1.5 sec stun
+	+ 25 sec cooldown
++ stun de-buff
+	+ units/player can move
+	+ stun animation (or walk)
+	+ stun effect above head
+	+ heal remove stun
++ moving units with bulls charge
++ dash - allows to move between units, around objects
+	+ 0.5 sec cooldown
+	+ 10 sec recharge
+	+ max 2 charges
++ summoned wolf unit
++ summon wolf
+	+ 90 sec cooldown
++ resources:
+	+ buff_stun.png
+===============================================================================================================
+CURRENT:
 - f5/f9 a konsola
 	f5 - can't save - display above console
 	f9 - load failed - display above console, stop blocking fallback when console is open
@@ -18,8 +42,9 @@ NEW:
 + remove ITEM_SECRET ?
 + load Str at start or when required (less variables vs error logging at startup)
 + debug key - show quest to chose
-+ visual leak detector 2.5.1
 + verify missing building names + add load errors
++ stun resistance/immunity/power
++ allow force quest by clients, per player
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
@@ -53,77 +78,6 @@ VERIFY:
 - trochę da się widzieć przez ściany :/
 - przesuniętą fizyke w obiektach obsługuje tylko SpawnObject [czyli nie obsługuje GenerateDungeonObjects], i to tylko dla boxów, nie używalnych
 ? czy można przeszkadzać komuś w walce gadając z nim
-===============================================================================================================
-+ Scene.Draw move setting light params from DrawSceneNodes to Scene.Draw, with drawing objects turned off, this params won't be set
-+ ISaveable { void Save(GameWriter& f); bool Load(GameReader& f); } IWriteable { void Write(StreamWriter& s); bool Read(StreamReader& s); }
-+ better info about getting gold from dividing, from pay credit
-+ start arrow trail from back (currently its from start and there is large gap)
-+ portals with textures
-+ GAME_KEY (unlock_cursor, open_menu)
-+ heal a death_screen
-+ ustawienia console_pause, menu_pause, journal_pause
-+ inactive_update w konsoli
-+ paker niech kopiuje pdb i exe; paker for new system
-? instancing
-+ https://github.com/cppformat/cppformat
-+ use fullpath for filenames (allows multiple files with same name)
-+ binary data files
-+ paks with data/assets
-+ podział na AddGold i AddItem
-+ animacja przesuwania postaci przy ożywianiu
-+ paker/install script 'move'
-+ zmiana multisamplingu nie ma wpływu na wygenerowane obrazki przedmiotów
-+ możliwość nie wyjmowania tarczy
-	+ po przerwaniu akcji z używalnym obiektem, ma ten przedmiot w dłoni
-+ możliwość trzymania w dłoni chochli (SLOT_HAND?)
-+ lepsze rysowanie przedmiotów na ziemi, sortowanie po modelu, bez CommitChanges jeśli jest 1 materiał
-+ customowy box dla np grzyba żeby mógł być częściowo w ziemi
-+ tryb bezpiecznego ataku (nie można trafić neutralnych)
-+ tryby wczytywania: na początku, gdy potrzeba, wczytywanie i zwalnianie
-+ szybkość rozprzestrzeniania się newsów
-+ obchodzenie dookoła celu, odskok w bok, animacja odskoku
-+ gadania a akcja postaci (czy można gadać czy nie, np jak siada albo je można zaczekać aż skończy po kliknięciu)
+- zmiana multisamplingu nie ma wpływu na wygenerowane obrazki przedmiotów
+? heal and death_screen
 ? raknet wysyła wiadomości do zdisconnectowanych przy broadcast jeśli nie wyśle jeszcze disconnect
-+ reputacja i rozpoznawalność, po opusczeniu zawodów kara
-+ F2_MELEE dla zwykłych jednostek
-+ nie wiem na ile to będzie potrzebne ale można renderować splits że jest kilka pod rząd, eksportowanie może układać tak że będą pod rząd
-+ możliwość nie wczytywania normalmap i specularmap
-+ przechowywanie wierzchołków w Blood
-+ optymalizacja, spr czy rysować trail particle emitter / electro / portal / area
-+ synchronizacja animacji chodzenia/obracania z szybkością (jak ktoś np klika co chwile Q,Q,Q,Q)
-+ materiały dla podziemi jak Mesh::Submesh
-+ nie wyświetlaj więcej powiadomienia o tej wersji
-+ usunięcie niepotrzebnego kodu z eMesh, renderowanie przedmiotów nowym kodem
-+ repozytorium na pdb i exe
-+ optymalizacja kolizji (jeśli CollisionObject jest ROTATED_RECTANGLE z rot=0,PI/2,PI,3/2PI to niech zmienia go na RECTANGLE
-+ What makes a computer opponent feel alive? http://gamedev.stackexchange.com/questions/16571/what-makes-a-computer-opponent-feel-alive
-* zapisywanie obiektów/postaci jako index/hash
-* rozmiar broni/tarczy/łuku zależy od skali postaci
-* % poziom trudności
-* prostsze tworzenie budynków
-* przestępstwa
-* pool jednostek (i innych obiektów)
-* zapadnie, oskryptowalne przyciski/wajchy/płyty naciskowe
-* kostka HP, bardziej rozbudowane generowanie wrogów
-* więcej tekstów po śmierci
-* rozbijanie obozu
-* zwiadowcy grupy, rozmiar grupy
-* zasięg okrzyku zależny od dźwięku
-* lepsze rozpędzanie/zwalnianie postaci (z animacją przejściową chodzenia/biegania)
-* podtyp w BaseItem żeby nie trzeba było rzutować i sprawdzać w SortTraderItems
-* jeden pancerz dla wszystkich i tylko używanie różnych tekstur + możliwe podmiany modelu w konfigu dla każdego z osobna
-* GUI_Layer::allow_controls allow_close
-* podział łupów w karczmie lub bazie
-* szybka podróż do środka miasta, opuszczenie przez kliknięcie na mapie
-* przy podziale łupów automatyczna sprzedaż przedmiotów do sklepu, uzupełnianie miksturek, wymiana przedmiotów, podział złota
-* glify
-* inactive_update -> pause on lost focus
-* wchodzenie po schodach w mieście
-* drzwi - możliwość dopasowania pozycji, różne tekstury z różnych stron
-* flagi postaci [nie można okraść, pobić, zabić]
-* możliwość zmiany grupy jednostki i innych danych
-* zapisywanie bool jako flagi (Unit, PlayerController)
-* do przeczytania o infinite game http://www.gamedev.net/page/resources/_/creative/game-design/the-infinite-game-r3045
-* zapisane postacie które można wybrać przy wybieraniu postaci lub stworzenie nowej
-* tyczka a przycisk na ścianie
-* lina a dźwignia

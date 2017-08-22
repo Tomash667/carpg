@@ -117,7 +117,8 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_TILE_INFO, "tile_info", "display info about map tile", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SET_SEED, "set_seed", "set randomness seed", F_ANYWHERE | F_WORLD_MAP | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_CRASH, "crash", "crash game to death!", F_ANYWHERE | F_WORLD_MAP | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_FORCEQUEST, "forcequest", "force next random quest to select (use list quest or none/reset)", F_GAME | F_WORLD_MAP | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_FORCEQUEST, "forcequest", "force next random quest to select (use list quest or none/reset)", F_SERVER | F_GAME | F_WORLD_MAP | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_STUN, "stun", "stun unit for time (stun [length=1] [1 = self])", F_GAME | F_CHEAT));
 }
 
 //=================================================================================================
@@ -1601,6 +1602,36 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						else
 							name = qm.GetQuestInfos()[force].name;
 						Msg("Forced quest: %s", name);
+					}
+					break;
+				case CMD_STUN:
+					{
+						float length = 1.f;
+						if(t.Next() && t.IsNumber())
+						{
+							length = t.GetFloat();
+							if(length <= 0.f)
+								break;
+						}
+						Unit* u;
+						if(t.Next() && t.GetInt() == 1)
+							u = pc->unit;
+						else if(selected_unit)
+							u = selected_unit;
+						else
+						{
+							Msg("No unit selected.");
+							break;
+						}
+						if(IsLocal())
+							u->ApplyStun(length);
+						else
+						{
+							NetChange& c = Add1(net_changes);
+							c.type = NetChange::CHEAT_STUN;
+							c.f[0] = length;
+							c.unit = u;
+						}
 					}
 					break;
 				default:

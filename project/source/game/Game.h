@@ -1495,7 +1495,6 @@ public:
 	Class quickstart_class, autopick_class; // mo¿na po³¹czyæ
 	string quickstart_name;
 	bool check_updates, skip_tutorial;
-	uint skip_version;
 	string save_input_text;
 	int hair_redo_index;
 

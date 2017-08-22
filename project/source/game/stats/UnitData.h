@@ -116,7 +116,7 @@ enum UNIT_FLAGS2
 	F2_BLOODLESS = 1 << 13, // nie mo¿na rzuciæ wyssania hp
 	F2_LIMITED_ROT = 1 << 14, // stoi w miarê prosto - karczmarz za lad¹
 	F2_CLERIC = 1 << 15, // okreœlona klasa - kap³an
-	//F2_UPDATE_V0_ITEMS = 1<<16, // aktualizuje ekwipunek jeœli zapisano w V0, flag removed
+	F2_STUN_RESISTANCE = 1 << 16, // 50% resistance to stuns
 	F2_SIT_ON_THRONE = 1 << 17, // siada na tronie
 	F2_ORC_SOUNDS = 1 << 18, // dŸwiêk gadania
 	F2_GOBLIN_SOUNDS = 1 << 19, // dŸwiêk gadania

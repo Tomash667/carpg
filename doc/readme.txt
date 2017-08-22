@@ -240,8 +240,6 @@ W pliku konfiguracyjnym (domyœlnie carpg.cfg) mo¿na u¿ywaæ takich opcji:
 	* server_pswd - zapamiêtane has³o serwera
 	* shader_version - ustawia wersjê shadera 2/3
 	* skip_tutorial (true [false]) - czy pomijaæ pytanie o samouczek
-	* skip_version - przy sprawdzaniu czy jest nowa wersja pomija wersje a¿ do
-		tej
 	* stream_log_file ["log.stream"] - plik do logowania informacji w mp
 	* stream_log_mode (none [errors] full) - tryb logowania informacji w mp
 	* timeout (1-3600) - czas oczekiwania na graczy w sekundach (domyœlnie 10)

@@ -907,18 +907,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// inne
 	game.check_updates = ToBool(cfg.GetBool3("check_updates", True));
 	game.skip_tutorial = ToBool(cfg.GetBool3("skip_tutorial", False));
-	const string& wersja_str = cfg.GetString("skip_version", "");
-	if(wersja_str.empty())
-		game.skip_version = 0;
-	else
-	{
-		game.skip_version = StringToVersion(wersja_str.c_str());
-		if(game.skip_version == -1)
-		{
-			Warn("Settings: Invalid value for 'skip_version'.");
-			game.skip_version = 0;
-		}
-	}
 
 	// zapisz konfiguracjê
 	game.SaveCfg();

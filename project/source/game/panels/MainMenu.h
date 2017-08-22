@@ -22,7 +22,7 @@ public:
 		IdQuit
 	};
 
-	MainMenu(Game* game, DialogEvent event, bool check_updates, uint skip_version);
+	MainMenu(Game* game, DialogEvent event, bool check_updates);
 
 	void Draw(ControlDrawData* cdd) override;
 	void Update(float dt) override;
@@ -45,7 +45,6 @@ private:
 	TEX tBackground, tLogo;
 	DialogEvent event;
 	int check_version; // 0 - nie sprawdzono, 1 - trwa sprawdzanie, 2 - b³¹d, 3 - brak nowej wersji, 4 - jest nowa wersja
-	uint skip_version;
 	string version_text;
 	bool prev_devmode, check_updates;
 };

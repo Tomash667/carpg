@@ -2135,7 +2135,7 @@ unit base_zombie {
 	mesh "zombie.qmsh"
 	mat body
 	profile zombie
-	flags {undead dont_escape slow pierce_res25 blunt_res25 dont_open poison_res no_power_attack ignore_block backstab_res dont_eat}
+	flags {undead dont_escape slow pierce_res25 blunt_res25 dont_open poison_res no_power_attack ignore_block backstab_res dont_eat stun_res}
 	hp 800
 	stamina -100
 	group undead
@@ -2323,7 +2323,7 @@ unit q_zlo_boss : base_human {
 		healing 50
 		athletics 70
 	}
-	flags | {leader dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res mark dont_eat}
+	flags | {leader dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res mark dont_eat stun_res}
 	hp 800
 	def 50
 	items {
@@ -2439,7 +2439,7 @@ unit mage_guard : base_human {
 unit base_golem {
 	mesh "golem.qmsh"
 	profile golem
-	flags {dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res}
+	flags {dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res}
 	stamina -100
 	group mages
 	dmg_type blunt
@@ -2780,7 +2780,7 @@ unit tomashu : base_human {
 		athletics 120
 		rage 120
 	}
-	flags | {dont_escape tomashu leader secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat}
+	flags | {dont_escape tomashu leader secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res}
 	hp 750
 	stamina 100
 	def 50

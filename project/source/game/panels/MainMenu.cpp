@@ -92,8 +92,7 @@ uint __stdcall CheckVersion(void*)
 }
 
 //=================================================================================================
-MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates, uint skip_version) : check_version(0), check_version_thread(nullptr),
-check_updates(check_updates), skip_version(skip_version), game(game), event(event)
+MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates) : check_version(0), check_version_thread(nullptr), check_updates(check_updates), game(game), event(event)
 {
 	focusable = true;
 	visible = false;
@@ -225,22 +224,20 @@ void MainMenu::Update(float dt)
 					cstring str = VersionToString(version_new);
 					version_text = Format(Str("newVersion"), str);
 					Info("New version %s is available.", str);
-					if(version_new > skip_version)
-					{
-						// wyœwietl pytanie o pobranie nowej wersji
-						DialogInfo info;
-						info.event = delegate<void(int)>(this, &MainMenu::OnNewVersion);
-						info.name = "new_version";
-						info.order = ORDER_TOP;
-						info.parent = nullptr;
-						info.pause = false;
-						info.text = Format(Str("newVersionDialog"), VERSION_STR, VersionToString(version_new));
-						info.type = DIALOG_YESNO;
-						cstring names[] = { Str("download"), Str("skip") };
-						info.custom_names = names;
 
-						GUI.ShowDialog(info);
-					}
+					// wyœwietl pytanie o pobranie nowej wersji
+					DialogInfo info;
+					info.event = delegate<void(int)>(this, &MainMenu::OnNewVersion);
+					info.name = "new_version";
+					info.order = ORDER_TOP;
+					info.parent = nullptr;
+					info.pause = false;
+					info.text = Format(Str("newVersionDialog"), VERSION_STR, VersionToString(version_new));
+					info.type = DIALOG_YESNO;
+					cstring names[] = { Str("download"), Str("skip") };
+					info.custom_names = names;
+
+					GUI.ShowDialog(info);
 				}
 				else if(version_new < VERSION)
 				{

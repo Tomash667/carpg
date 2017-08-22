@@ -4851,6 +4851,35 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		case NetChange::YELL:
 			PlayerYell(unit);
 			break;
+		// player used cheat 'stun'
+		case NetChange::CHEAT_STUN:
+			{
+				int netid;
+				float length;
+				if(!stream.Read(netid)
+					|| !stream.Read(length))
+				{
+					Error("Update server: Broken CHEAT_STUN from %s.", info.name.c_str());
+					StreamError();
+				}
+				else if(!info.devmode)
+				{
+					Error("Update server: Player %s used CHEAT_STUN without devmode.", info.name.c_str());
+					StreamError();
+				}
+				else
+				{
+					Unit* target = FindUnit(netid);
+					if(target && length > 0)
+						target->ApplyStun(length);
+					else
+					{
+						Error("Update server: CHEAT_STUN from %s, missing unit %d.", info.name.c_str(), netid);
+						StreamError();
+					}
+				}
+			}
+			break;
 		// invalid change
 		default:
 			Error("Update server: Invalid change type %u from %s.", type, info.name.c_str());
@@ -9492,6 +9521,10 @@ void Game::WriteClientChanges(BitStream& stream)
 			break;
 		case NetChange::PUT_GOLD:
 			stream.Write(c.ile);
+			break;
+		case NetChange::CHEAT_STUN:
+			stream.Write(c.unit->netid);
+			stream.Write(c.f[0]);
 			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);

@@ -161,7 +161,7 @@ void Game::InitGui()
 	GUI.Add(game_gui);
 
 	// main menu
-	main_menu = new MainMenu(this, DialogEvent(this, &Game::MainMenuEvent), check_updates, skip_version);
+	main_menu = new MainMenu(this, DialogEvent(this, &Game::MainMenuEvent), check_updates);
 	GUI.Add(main_menu);
 
 	// worldmap

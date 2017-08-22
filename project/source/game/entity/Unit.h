@@ -407,6 +407,7 @@ struct Unit
 	int GetRandomAttack() const;
 	void Save(HANDLE file, bool local);
 	void Load(HANDLE file, bool local);
+	Effect* FindEffect(ConsumeEffect effect);
 	bool FindEffect(ConsumeEffect effect, float* value);
 	Vec3 GetCenter() const
 	{
@@ -826,6 +827,8 @@ struct Unit
 	void RemoveStamina(float value);
 
 	void CreateMesh(CREATE_MESH mode);
+
+	void ApplyStun(float length);
 };
 
 //-----------------------------------------------------------------------------

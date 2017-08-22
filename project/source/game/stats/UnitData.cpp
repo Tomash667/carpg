@@ -1772,6 +1772,7 @@ uint LoadUnits(uint& out_crc, uint& errors)
 		{ "bloodless", F2_BLOODLESS },
 		{ "limited_rot", F2_LIMITED_ROT },
 		{ "cleric", F2_CLERIC },
+		{ "stun_res", F2_STUN_RESISTANCE },
 		{ "sit_on_throne", F2_SIT_ON_THRONE },
 		{ "orc_sounds", F2_ORC_SOUNDS },
 		{ "goblin_sounds", F2_GOBLIN_SOUNDS },

@@ -322,6 +322,7 @@ struct NetChange
 		YELL, // player yell to move ai []
 		ACADEMY_TEXT, // show when trying to enter academy []
 		BREAK_ACTION, // break unit action [int(netid)-unit]
+		CHEAT_STUN, // player used cheat 'stun' [int(netid)-unit, f[0]-length]
 	} type;
 	union
 	{

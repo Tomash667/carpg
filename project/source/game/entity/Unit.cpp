@@ -767,6 +767,9 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			}
 		}
 		break;
+	case E_STUN:
+		ApplyStun(item.time);
+		break;
 	default:
 		assert(0);
 		break;
@@ -950,6 +953,7 @@ void Unit::EndEffects(int days, int* best_nat)
 		case E_ALCOHOL:
 		case E_ANTIMAGIC:
 		case E_STAMINA:
+		case E_STUN:
 			_to_remove.push_back(index);
 			break;
 		case E_NATURAL:
@@ -1852,6 +1856,18 @@ void Unit::Load(HANDLE file, bool local)
 }
 
 //=================================================================================================
+Effect* Unit::FindEffect(ConsumeEffect effect)
+{
+	for(Effect& e : effects)
+	{
+		if(e.effect == effect)
+			return &e;
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
 bool Unit::FindEffect(ConsumeEffect effect, float* value)
 {
 	Effect* top = nullptr;
@@ -2510,6 +2526,9 @@ int Unit::GetBuffs() const
 		case E_STAMINA:
 			b |= BUFF_STAMINA;
 			break;
+		case E_STUN:
+			b |= BUFF_STUN;
+			break;
 		}
 	}
 
@@ -3150,5 +3169,23 @@ void Unit::CreateMesh(CREATE_MESH mode)
 	{
 		assert(!mesh_inst);
 		mesh_inst = new MeshInstance(nullptr, true);
+	}
+}
+
+//=================================================================================================
+void Unit::ApplyStun(float length)
+{
+	if(IS_SET(data->flags2, F2_STUN_RESISTANCE))
+		length /= 2;
+
+	auto effect = FindEffect(E_STUN);
+	if(effect)
+		effect->time = max(effect->time, length);
+	else
+	{
+		auto& effect = Add1(effects);
+		effect.effect = E_STUN;
+		effect.power = 0.f;
+		effect.time = length;
 	}
 }
