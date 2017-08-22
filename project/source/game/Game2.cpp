@@ -919,9 +919,7 @@ void Game::UpdateGame(float dt)
 		assert(pc->is_local && pc == pc->player_info->pc);
 	}
 #endif
-
-	bool getting_out = false;
-
+	
 	/*Object* o = nullptr;
 	float dist = 999.f;
 	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
@@ -956,128 +954,7 @@ void Game::UpdateGame(float dt)
 
 	LevelContext& player_ctx = (pc->unit->in_building == -1 ? local_ctx : city_ctx->inside_buildings[pc->unit->in_building]->ctx);
 
-	// fallback
-	if(fallback_co != -1)
-	{
-		if(fallback_t <= 0.f)
-		{
-			fallback_t += dt * 2;
-
-			if(fallback_t > 0.f)
-			{
-				switch(fallback_co)
-				{
-				case FALLBACK_TRAIN:
-					if(IsLocal())
-					{
-						if(fallback_1 == 2)
-							TournamentTrain(*pc->unit);
-						else
-							Train(*pc->unit, fallback_1 == 1, fallback_2);
-						pc->Rest(10, false);
-						if(IsOnline())
-							UseDays(pc, 10);
-						else
-							WorldProgress(10, WPM_NORMAL);
-					}
-					else
-					{
-						fallback_co = FALLBACK_CLIENT;
-						fallback_t = 0.f;
-						NetChange& c = Add1(net_changes);
-						c.type = NetChange::TRAIN;
-						c.id = fallback_1;
-						c.ile = fallback_2;
-					}
-					break;
-				case FALLBACK_REST:
-					if(IsLocal())
-					{
-						pc->Rest(fallback_1, true);
-						if(IsOnline())
-							UseDays(pc, fallback_1);
-						else
-							WorldProgress(fallback_1, WPM_NORMAL);
-					}
-					else
-					{
-						fallback_co = FALLBACK_CLIENT;
-						fallback_t = 0.f;
-						NetChange& c = Add1(net_changes);
-						c.type = NetChange::REST;
-						c.id = fallback_1;
-					}
-					break;
-				case FALLBACK_ENTER:
-					// wejœcie/wyjœcie z budynku
-					{
-						UnitWarpData& uwd = Add1(unit_warp_data);
-						uwd.unit = pc->unit;
-						uwd.where = fallback_1;
-					}
-					break;
-				case FALLBACK_EXIT:
-					ExitToMap();
-					getting_out = true;
-					break;
-				case FALLBACK_CHANGE_LEVEL:
-					ChangeLevel(fallback_1);
-					getting_out = true;
-					break;
-				case FALLBACK_USE_PORTAL:
-					{
-						Portal* portal = location->GetPortal(fallback_1);
-						Location* target_loc = locations[portal->target_loc];
-						int at_level = 0;
-						// aktualnie mo¿na siê tepn¹æ z X poziomu na 1 zawsze ale ¿eby z X na X to musi byæ odwiedzony
-						// np w sekrecie z 3 na 1 i spowrotem do
-						if(target_loc->portal)
-							at_level = target_loc->portal->at_level;
-						LeaveLocation(false, false);
-						current_location = portal->target_loc;
-						EnterLocation(at_level, portal->target);
-					}
-					return;
-				case FALLBACK_NONE:
-				case FALLBACK_ARENA2:
-				case FALLBACK_CLIENT2:
-					break;
-				case FALLBACK_ARENA:
-				case FALLBACK_ARENA_EXIT:
-				case FALLBACK_WAIT_FOR_WARP:
-				case FALLBACK_CLIENT:
-					fallback_t = 0.f;
-					break;
-				default:
-					assert(0);
-					break;
-				}
-			}
-		}
-		else
-		{
-			fallback_t += dt * 2;
-
-			if(fallback_t >= 1.f)
-			{
-				if(IsLocal())
-				{
-					if(fallback_co != FALLBACK_ARENA2)
-					{
-						if(fallback_co == FALLBACK_CHANGE_LEVEL || fallback_co == FALLBACK_USE_PORTAL || fallback_co == FALLBACK_EXIT)
-						{
-							for(Unit* unit : Team.members)
-								unit->frozen = false;
-						}
-						pc->unit->frozen = 0;
-					}
-				}
-				else if(fallback_co == FALLBACK_CLIENT2)
-					pc->unit->frozen = 0;
-				fallback_co = -1;
-			}
-		}
-	}
+	UpdateFallback(dt);
 
 	if(IsLocal() && !in_tutorial)
 	{
@@ -1589,6 +1466,129 @@ void Game::UpdateGame(float dt)
 			AddGameMsg(Format("%d arena friends errors!", err_count), 10.f);
 	}
 #endif
+}
+
+void Game::UpdateFallback(float dt)
+{
+	if (fallback_co == -1)
+		return;
+
+	if (fallback_t <= 0.f)
+	{
+		fallback_t += dt * 2;
+
+		if (fallback_t > 0.f)
+		{
+			switch (fallback_co)
+			{
+			case FALLBACK_TRAIN:
+				if (IsLocal())
+				{
+					if (fallback_1 == 2)
+						TournamentTrain(*pc->unit);
+					else
+						Train(*pc->unit, fallback_1 == 1, fallback_2);
+					pc->Rest(10, false);
+					if (IsOnline())
+						UseDays(pc, 10);
+					else
+						WorldProgress(10, WPM_NORMAL);
+				}
+				else
+				{
+					fallback_co = FALLBACK_CLIENT;
+					fallback_t = 0.f;
+					NetChange& c = Add1(net_changes);
+					c.type = NetChange::TRAIN;
+					c.id = fallback_1;
+					c.ile = fallback_2;
+				}
+				break;
+			case FALLBACK_REST:
+				if (IsLocal())
+				{
+					pc->Rest(fallback_1, true);
+					if (IsOnline())
+						UseDays(pc, fallback_1);
+					else
+						WorldProgress(fallback_1, WPM_NORMAL);
+				}
+				else
+				{
+					fallback_co = FALLBACK_CLIENT;
+					fallback_t = 0.f;
+					NetChange& c = Add1(net_changes);
+					c.type = NetChange::REST;
+					c.id = fallback_1;
+				}
+				break;
+			case FALLBACK_ENTER:
+				// wejœcie/wyjœcie z budynku
+			{
+				UnitWarpData& uwd = Add1(unit_warp_data);
+				uwd.unit = pc->unit;
+				uwd.where = fallback_1;
+			}
+			break;
+			case FALLBACK_EXIT:
+				ExitToMap();
+				break;
+			case FALLBACK_CHANGE_LEVEL:
+				ChangeLevel(fallback_1);
+				break;
+			case FALLBACK_USE_PORTAL:
+			{
+				Portal* portal = location->GetPortal(fallback_1);
+				Location* target_loc = locations[portal->target_loc];
+				int at_level = 0;
+				// aktualnie mo¿na siê tepn¹æ z X poziomu na 1 zawsze ale ¿eby z X na X to musi byæ odwiedzony
+				// np w sekrecie z 3 na 1 i spowrotem do
+				if (target_loc->portal)
+					at_level = target_loc->portal->at_level;
+				LeaveLocation(false, false);
+				current_location = portal->target_loc;
+				EnterLocation(at_level, portal->target);
+			}
+			return;
+			case FALLBACK_NONE:
+			case FALLBACK_ARENA2:
+			case FALLBACK_CLIENT2:
+				break;
+			case FALLBACK_ARENA:
+			case FALLBACK_ARENA_EXIT:
+			case FALLBACK_WAIT_FOR_WARP:
+			case FALLBACK_CLIENT:
+				fallback_t = 0.f;
+				break;
+			default:
+				assert(0);
+				break;
+			}
+		}
+	}
+	else
+	{
+		fallback_t += dt * 2;
+
+		if (fallback_t >= 1.f)
+		{
+			if (IsLocal())
+			{
+				if (fallback_co != FALLBACK_ARENA2)
+				{
+					if (fallback_co == FALLBACK_CHANGE_LEVEL || fallback_co == FALLBACK_USE_PORTAL || fallback_co == FALLBACK_EXIT)
+					{
+						for (Unit* unit : Team.members)
+							unit->frozen = false;
+					}
+					pc->unit->frozen = 0;
+				}
+			}
+			else if (fallback_co == FALLBACK_CLIENT2)
+				pc->unit->frozen = 0;
+			fallback_co = -1;
+		}
+	}
 }
 
 //=================================================================================================

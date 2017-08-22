@@ -275,6 +275,7 @@ void Game::ListGrass()
 								terrain->GetAngle(pos.x, pos.z, angle);
 								if(angle.y < 0.7f)
 									continue;
+								terrain->SetH(pos);
 								part.grass.push_back(Matrix::Scale(Random(3.f, 4.f)) * Matrix::RotationY(Random(MAX_ANGLE)) * Matrix::Translation(pos));
 							}
 						}
@@ -324,7 +325,7 @@ void Game::SetTerrainTextures()
 {
 	TexturePtr tex[5] = { tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga };
 	if(LocationHelper::IsVillage(location))
-		tex[1] = tPole;
+		tex[2] = tPole;
 
 	auto& tex_mgr = ResourceManager::Get<Texture>();
 	for(int i = 0; i < 5; ++i)

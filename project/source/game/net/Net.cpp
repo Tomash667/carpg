@@ -10942,7 +10942,7 @@ void Game::RemovePlayerOnLoad(PlayerInfo& info)
 	RemoveElementOrder(Team.active_members, info.u);
 	if(Team.leader == info.u)
 		leader_id = -1;
-	if(mp_load)
+	if(mp_load && open_location != -1)
 		RemoveElement(GetContext(info.u->pos).units, info.u);
 	if (info.u->interp)
 		interpolators.Free(info.u->interp);

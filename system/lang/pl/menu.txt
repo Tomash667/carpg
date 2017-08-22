@@ -652,8 +652,6 @@ loadOpenError = "Nie mo¿na otworzyæ pliku '%s' (%d)."
 
 // gra
 pvpRefuse = "%s odmówi³ walki z tob¹."
-ssFailed = "B³¹d zapisywania zrzutu ekranu."
-ssDone = "Zapisano zrzut ekranu '%s'."
 win = "Gratulacje!\nUkoñczyliœcie wszystkie unikalne zadania które istniej¹ w tej wersji.\nDo zobaczenia w kolejnej wersji, oczekujcie zmian na lepsze! :3\nZabi³eœ %d istot, pozostali zabili %d."
 winMp = "Gratulacje!\nUkoñczy³eœ wszystkie unikalne zadania które istniej¹ w tej wersji.\nDo zobaczenia w kolejnej wersji, oczekuj zmian na lepsze! :3\nZabi³eœ %d istot, pozostali zabili %d."
 iNeedWeapon = "Potrzebujê jakiejœ broni"

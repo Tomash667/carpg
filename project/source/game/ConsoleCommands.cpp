@@ -781,7 +781,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					break;
 				case CMD_SCREENSHOT:
-					TakeScreenshot(true);
+					TakeScreenshot();
 					break;
 				case CMD_SCARE:
 					if(IsLocal())

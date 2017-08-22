@@ -26,9 +26,11 @@ Version 0.5.0 (2017-XX-YY):
 - fixed orc gorush never getting more healing potions as intendent
 - fixed incorrect number of items generated for innkeeper and orc blacksmith
 - fixed crash when entering cave/encounter with animals
-- fixed tournament heroes being generated in any city, not only chosen one
-- fixed rare crash when generating village
 - fixed crash when using $ in textbox
+- fixed crash in ecounter deliver parcel when parcel was not in inventory
+- fixed crash when loading game on worldmap and player is disconnected
+- fixed rare crash when generating village
+- fixed tournament heroes being generated in any city, not only chosen one
 - fixed window focus bug
 - fixed problems with cursor when window was far from center
 - fixed "iron vain" typo
@@ -38,8 +40,8 @@ Version 0.5.0 (2017-XX-YY):
 - fixed compability with pre 0.3 village hall broken in 0.4.20
 - fixed fields texture in villages
 - fixed item icon not using armor texture overrides (mithril, dragonscale)
-- fixed crash in ecounter deliver parcel when parcel was not in inventory
 - fixed objects around buildings from village spawning inside city townhall
+- fixed journal blocking quicksave/quickload
 
 --------------------------------------------------------------------------------
 Version 0.4.20 (2016-04-29):
