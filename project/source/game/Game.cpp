@@ -347,7 +347,7 @@ void Game::OnTick(float dt)
 
 		// screenshot
 		if(Key.PressedRelease(VK_SNAPSHOT))
-			TakeScreenshot(false, Key.Down(VK_SHIFT));
+			TakeScreenshot(Key.Down(VK_SHIFT));
 
 		// zatrzymywanie/wznawianie gry
 		if(KeyPressedReleaseAllowed(GK_PAUSE))
@@ -412,11 +412,12 @@ void Game::OnTick(float dt)
 	}
 
 	// quicksave, quickload
-	bool special_key_allowed = (allow_input == ALLOW_KEYBOARD || allow_input == ALLOW_INPUT || (!GUI.HaveDialog() || GUI.HaveTopDialog("console")));
+	bool console_open = GUI.HaveTopDialog("console");
+	bool special_key_allowed = (allow_input == ALLOW_KEYBOARD || allow_input == ALLOW_INPUT || (!GUI.HaveDialog() || console_open));
 	if(KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
-		Quicksave(false);
+		Quicksave(console_open);
 	if(KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
-		Quickload(false);
+		Quickload(console_open);
 
 	// mp box
 	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && KeyPressedReleaseAllowed(GK_TALK_BOX))
@@ -488,13 +489,32 @@ void Game::OnTick(float dt)
 		{
 			if(paused)
 			{
+				UpdateFallback(dt);
+				if (IsLocal())
+				{
+					if (IsOnline())
+						UpdateWarpData(dt);
+					ProcessUnitWarps();
+				}
+				SetupCamera(dt);
 				if(IsOnline())
 					UpdateGameNet(dt);
 			}
 			else if(GUI.HavePauseDialog())
 			{
-				if(IsOnline())
+				if (IsOnline())
 					UpdateGame(dt);
+				else
+				{
+					UpdateFallback(dt);
+					if (IsLocal())
+					{
+						if (IsOnline())
+							UpdateWarpData(dt);
+						ProcessUnitWarps();
+					}
+					SetupCamera(dt);
+				}
 			}
 			else
 				UpdateGame(dt);
@@ -686,7 +706,7 @@ void Game::OnChar(char c)
 }
 
 //=================================================================================================
-void Game::TakeScreenshot(bool text, bool no_gui)
+void Game::TakeScreenshot(bool no_gui)
 {
 	if(no_gui)
 	{
@@ -702,9 +722,9 @@ void Game::TakeScreenshot(bool text, bool no_gui)
 	HRESULT hr = device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer);
 	if(FAILED(hr))
 	{
-		if(text)
-			AddConsoleMsg(txSsFailed);
-		Error("Failed to get front buffer data to save screenshot (%d)!", hr);
+		cstring msg = Format("Failed to get front buffer data to save screenshot (%d)!", hr);
+		AddConsoleMsg(msg);
+		Error(msg);
 	}
 	else
 	{
@@ -745,9 +765,9 @@ void Game::TakeScreenshot(bool text, bool no_gui)
 
 		D3DXSaveSurfaceToFileA(path, screenshot_format, back_buffer, nullptr, nullptr);
 
-		if(text)
-			AddConsoleMsg(Format(txSsDone, path));
-		Info("Screenshot saved to '%s'.", path);
+		cstring msg = Format("Screenshot saved to '%s'.", path);
+		AddConsoleMsg(msg);
+		Info(msg);
 
 		back_buffer->Release();
 	}
@@ -2087,8 +2107,6 @@ void Game::SetGameText()
 	txLoadOpenError = Str("loadOpenError");
 
 	txPvpRefuse = Str("pvpRefuse");
-	txSsFailed = Str("ssFailed");
-	txSsDone = Str("ssDone");
 	txWin = Str("win");
 	txWinMp = Str("winMp");
 	txINeedWeapon = Str("iNeedWeapon");

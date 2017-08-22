@@ -1420,11 +1420,6 @@ void Unit::Save(HANDLE file, bool local)
 		hero->Save(file);
 }
 
-inline bool IsEmptySlot(const ItemSlot& slot)
-{
-	return !slot.item;
-}
-
 //=================================================================================================
 void Unit::Load(HANDLE file, bool local)
 {
@@ -1541,7 +1536,10 @@ void Unit::Load(HANDLE file, bool local)
 			slots[SLOT_ARMOR] = items[armor].item;
 			items[armor].item = nullptr;
 		}
-		RemoveElements(items, IsEmptySlot);
+		RemoveElements(items, [](const ItemSlot& slot)
+		{
+			return !slot.item;
+		});
 	}
 	ReadFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileReader f(file);

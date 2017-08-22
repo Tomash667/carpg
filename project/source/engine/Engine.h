@@ -60,7 +60,7 @@ public:
 	void UnlockCursor(bool lock_on_focus = true);
 	void LockCursor();
 	bool IsCursorLocked() const { return locked_cursor; }
-	bool IsCursorVisible() const;
+	bool IsCursorVisible() const { return cursor_visible; }
 	void UpdateMusic(float dt);
 
 	// ----- ZMIENNE -----
@@ -132,5 +132,5 @@ private:
 	uint frames;
 	float frame_time;
 	Timer timer;
-	bool engine_shutdown, lost_device, res_freed, replace_cursor, locked_cursor, lock_on_focus;
+	bool engine_shutdown, lost_device, res_freed, cursor_visible, replace_cursor, locked_cursor, lock_on_focus;
 };

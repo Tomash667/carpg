@@ -549,7 +549,7 @@ struct Game final : public Engine, public UnitEventHandler
 	cstring txTut[10], txTutNote, txTutLoc, txTour[23], txTutPlay, txTutTick;
 	cstring txCantSaveGame, txSaveFailed, txSavedGameN, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading, txCantSaveNow,
 		txCantLoadGame, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError, txLoadErrorGeneric, txLoadOpenError;
-	cstring txPvpRefuse, txSsFailed, txSsDone, txWin, txWinMp, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor,
+	cstring txPvpRefuse, txWin, txWinMp, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor,
 		txNeedKey, txLevelUp, txLevelDown, txLocationText, txLocationTextMap, txRegeneratingLevel, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed,
 		txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedLadle, txNeedPickaxe, txNeedHammer,
 		txNeedUnk, txReallyQuit, txSecretAppear, txGmsAddedItem, txGmsAddedItems;
@@ -1035,8 +1035,9 @@ public:
 	void SetupCamera(float dt);
 	void LoadShaders();
 	void SetupShaders();
-	void TakeScreenshot(bool text = false, bool no_gui = false);
+	void TakeScreenshot(bool no_gui = false);
 	void UpdateGame(float dt);
+	void UpdateFallback(float dt);
 	void UpdatePlayer(LevelContext& ctx, float dt);
 	void PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
 

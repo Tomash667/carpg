@@ -23,26 +23,8 @@
 	+ buff_stun.png
 ===============================================================================================================
 CURRENT:
-- f5/f9 a konsola
-	f5 - can't save - display above console
-	f9 - load failed - display above console, stop blocking fallback when console is open
-	+ fixed journal blocking quicksave/quickload
-- zly teren pola
-- grass is drawn only next to roads/on field
-- cursor focus bug - start server/client, activate serwer when possible, start game, alt tab to client when loaded - cursor is visible
-	- everything is ok except the system cursor is visible
-- physics of stairs up don't work for camera
-- when client disconnect on loading worldmap with START_ON_WORLDMAP server will crash in RemovePlayerOnLoad
 ===============================================================================================================
 NEW:
-+ BaseBullet for Bullet, save by base, no mesh etc
-+ Resources - hashing
-+ custom formatter %.2g - 1000.123 -> 1000.12 (in printf it write 1.E cośtam)
-+ npc generator like in gta - spawn units using usables
-+ remove ITEM_SECRET ?
-+ load Str at start or when required (less variables vs error logging at startup)
-+ debug key - show quest to chose
-+ verify missing building names + add load errors
 + stun resistance/immunity/power
 + allow force quest by clients, per player
 ===============================================================================================================
@@ -81,3 +63,4 @@ VERIFY:
 - zmiana multisamplingu nie ma wpływu na wygenerowane obrazki przedmiotów
 ? heal and death_screen
 ? raknet wysyła wiadomości do zdisconnectowanych przy broadcast jeśli nie wyśle jeszcze disconnect
+- walking forward and opening & closing console cause animations to act weird (like restarting)

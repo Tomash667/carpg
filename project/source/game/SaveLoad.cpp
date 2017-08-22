@@ -1594,7 +1594,7 @@ void Game::Quicksave(bool from_console)
 	if(!CanSaveGame())
 	{
 		if(from_console)
-			AddConsoleMsg(txCantSaveNow);
+			AddConsoleMsg("Can't save game now.");
 		else
 			GUI.SimpleDialog(txCantSaveNow, nullptr);
 		return;
@@ -1602,9 +1602,7 @@ void Game::Quicksave(bool from_console)
 
 	if(SaveGameSlot(MAX_SAVE_SLOTS, txQuickSave))
 	{
-		if(from_console)
-			AddConsoleMsg(txGameSaved);
-		else
+		if(!from_console)
 			AddGameMsg2(txGameSaved, 1.f, GMS_GAME_SAVED);
 	}
 }
@@ -1615,7 +1613,7 @@ bool Game::Quickload(bool from_console)
 	if(!CanLoadGame())
 	{
 		if(from_console)
-			AddConsoleMsg(txCantLoadGame);
+			AddConsoleMsg("Can't load game now.");
 		else
 			GUI.SimpleDialog(txCantLoadGame, nullptr);
 		return true;
