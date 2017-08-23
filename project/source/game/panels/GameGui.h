@@ -18,6 +18,7 @@ class Journal;
 class Minimap;
 class MpBox;
 class GameMessages;
+class ActionPanel;
 
 //-----------------------------------------------------------------------------
 enum class OpenPanel
@@ -41,7 +42,7 @@ enum class SideButtonId
 	Minimap,
 	Journal,
 	Inventory,
-	Active,
+	Action,
 	Stats,
 	Talk,
 	Max
@@ -109,6 +110,7 @@ public:
 	Minimap* minimap;
 	MpBox* mp_box;
 	GameMessages* game_messages;
+	ActionPanel* action_panel;
 	//
 	bool use_cursor;
 

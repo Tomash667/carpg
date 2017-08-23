@@ -1,8 +1,11 @@
 ﻿FEATURE:
 + actions panel, hover over action show description
 + show action in game gui, with cooldown, charges
-+ add GameKey for action usage
 + use action
++ action target pick
+	+ bulls charge, rectangle with limited rot
+	+ dash, rectancgle in any direction
+	+ summon, point
 + bulls charge effect
 	+ dmg = siła
 + stun de-buff
@@ -17,8 +20,6 @@
 + resources:
 	+ buff_stun.png
 	+ buff icons
-	+ actions.txt pl/en
-	+ key text
 ===============================================================================================================
 CURRENT:
 ===============================================================================================================

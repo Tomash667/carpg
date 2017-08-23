@@ -1,14 +1,14 @@
 action "bull_charge" {
 	name "Bycza szarża"
-	desc ""
+	desc "Przemieszczasz się do przodu ogłuszając wszystkich po drodze i zadając im obrażenia."
 }
 
 action "dash" {
-	name ""
-	desc ""
+	name "Zryw"
+	desc "Przemieszczasz się szybko w określonym kierunku. Posiada dwa ładunki."
 }
 
 action "summon_wolf" {
-	name ""
-	desc ""
+	name "Zwierzęcy sojusznik"
+	desc "Przywołuje wilka który pomaga ci w walce dopóki nie zginie."
 }

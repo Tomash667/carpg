@@ -1,0 +1,14 @@
+action "bull_charge" {
+	name "Bull charge"
+	decs "You move forward stunning all enemies on path and dealing them damage."
+}
+
+action "dash" {
+	name "Dash"
+	desc "You move fast in selected direction. Have two charges."
+}
+
+action "summon_wolf" {
+	name "Animal ally"
+	desc "You summon wolf that help you in combat until killed."
+}
