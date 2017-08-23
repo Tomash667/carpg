@@ -59,13 +59,16 @@ people. Expect changes for the better!
 	D / right arrow - move right
 	Q - rotate left
 	E - rotate right
+	1 - equip melee weapon and shield
+	2 - equip ranged weapon
+	3 - use action
+	H - drink healing potion
 	F - auto walk forward
 	Y - yell
 	TAB - character screen, team, inventory
 	J - journal
 	M - minimap
 	N - talk box
-	H - drink healing potion
 	Enter - input text in multiplayer
 	Mouse wheel - change camera distance
 	F2 - show/hide fps

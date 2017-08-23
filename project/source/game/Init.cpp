@@ -12,6 +12,7 @@
 #include "Spell.h"
 #include "Trap.h"
 #include "QuestManager.h"
+#include "Action.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -305,8 +306,12 @@ void Game::ConfigureGame()
 			g_spawn_groups[i].unit_group = FindUnitGroup(g_spawn_groups[i].unit_group_id);
 	}
 
-	for(ClassInfo& ci : g_classes)
+	for (ClassInfo& ci : g_classes)
+	{
 		ci.unit_data = FindUnitData(ci.unit_data_id, false);
+		if (ci.action_id)
+			ci.action = Action::Find(string(ci.action_id));
+	}
 
 	CreateTextures();
 }
@@ -508,6 +513,7 @@ void Game::AddLoadTasks()
 		tex_mgr.AddLoadTask(ci.icon_file, ci.icon);
 	tex_mgr.AddLoadTask("warning.png", tWarning);
 	tex_mgr.AddLoadTask("error.png", tError);
+	Action::LoadImages();
 
 	// preload terrain textures
 	tTrawa = tex_mgr.Get("trawa.jpg");

@@ -8,6 +8,7 @@
 #include "Perk.h"
 #include "UnitData.h"
 #include "Building.h"
+#include "Action.h"
 
 //-----------------------------------------------------------------------------
 string g_lang_prefix;
@@ -268,7 +269,8 @@ enum KEYWORD
 	K_LOCATION_START,
 	K_LOCATION_END,
 	K_TEXT,
-	K_BUILDING
+	K_BUILDING,
+	K_ACTION
 };
 
 //=================================================================================================
@@ -291,7 +293,8 @@ static void PrepareTokenizer(Tokenizer& t)
 		{ "location_start", K_LOCATION_START },
 		{ "location_end", K_LOCATION_END },
 		{ "text", K_TEXT },
-		{ "building", K_BUILDING }
+		{ "building", K_BUILDING },
+		{ "action", K_ACTION }
 	});
 }
 
@@ -564,6 +567,25 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 						b->name = t.MustGetString();
 					}
 					break;
+				case K_ACTION:
+					// action id {
+					//		name "text"
+					//		desc "text"
+					// }
+					{
+						t.Next();
+						const string& s = t.MustGetText();
+						auto action = Action::Find(s);
+						if(!action)
+							t.Throw(Format("Invalid action '%s'.", s.c_str()));
+						t.Next();
+						t.AssertSymbol('{');
+						t.Next();
+						GetString(t, K_NAME, action->name);
+						GetString(t, K_DESC, action->desc);
+						t.AssertSymbol('}');
+					}
+					break;
 				default:
 					t.Unexpected();
 					break;
@@ -595,6 +617,7 @@ void LoadLanguageFiles()
 
 	PrepareTokenizer(t);
 
+	LoadLanguageFile3(t, "actions.txt");
 	LoadLanguageFile3(t, "attribute.txt");
 	LoadLanguageFile3(t, "skill.txt");
 	LoadLanguageFile3(t, "class.txt");

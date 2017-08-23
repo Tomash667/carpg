@@ -6,16 +6,16 @@
 
 //-----------------------------------------------------------------------------
 ClassInfo g_classes[(int)Class::MAX] = {
-	ClassInfo(Class::BARBARIAN, "barbarian", "base_warrior", "icon_barbarian.png", false),
-	ClassInfo(Class::BARD, "bard", "base_rogue", "icon_bard.png", false),
-	ClassInfo(Class::CLERIC, "cleric", "base_warrior", "icon_cleric.png", false),
-	ClassInfo(Class::DRUID, "druid", "base_hunter", "icon_druid.png", false),
-	ClassInfo(Class::HUNTER, "hunter", "base_hunter", "icon_hunter.png", true),
-	ClassInfo(Class::MAGE, "mage", "base_rogue", "icon_mage.png", false),
-	ClassInfo(Class::MONK, "monk", "base_rogue", "icon_monk.png", false),
-	ClassInfo(Class::PALADIN, "paladin", "base_warrior", "icon_paladin.png", false),
-	ClassInfo(Class::ROGUE, "rogue", "base_rogue", "icon_rogue.png", true),
-	ClassInfo(Class::WARRIOR, "warrior", "base_warrior", "icon_warrior.png", true)
+	ClassInfo(Class::BARBARIAN, "barbarian", "base_warrior", "icon_barbarian.png", false, nullptr),
+	ClassInfo(Class::BARD, "bard", "base_rogue", "icon_bard.png", false, nullptr),
+	ClassInfo(Class::CLERIC, "cleric", "base_warrior", "icon_cleric.png", false, nullptr),
+	ClassInfo(Class::DRUID, "druid", "base_hunter", "icon_druid.png", false, nullptr),
+	ClassInfo(Class::HUNTER, "hunter", "base_hunter", "icon_hunter.png", true, "summon_wolf"),
+	ClassInfo(Class::MAGE, "mage", "base_rogue", "icon_mage.png", false, nullptr),
+	ClassInfo(Class::MONK, "monk", "base_rogue", "icon_monk.png", false, nullptr),
+	ClassInfo(Class::PALADIN, "paladin", "base_warrior", "icon_paladin.png", false, nullptr),
+	ClassInfo(Class::ROGUE, "rogue", "base_rogue", "icon_rogue.png", true, "dash"),
+	ClassInfo(Class::WARRIOR, "warrior", "base_warrior", "icon_warrior.png", true, "bull_charge")
 };
 
 // START EQUIPMENT

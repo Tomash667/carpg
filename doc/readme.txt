@@ -59,6 +59,9 @@ osoby. Oczekuj zmian na lepsze!
 	D / strza³ka w prawo - ruch w prawo
 	Q - obrót w lewo
 	E - obrót w prawo
+	1 - wybierz broñ do walki wrêcz i tarcze
+	2 - wybierz broñ dystansow¹
+	3 - u¿yj akcji
 	F - automatyczny ruch do przodu
 	Y - okrzyk
 	TAB - ekran postaci, ekwipunek, dru¿yna

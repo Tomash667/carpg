@@ -4,29 +4,26 @@
 + add GameKey for action usage
 + use action
 + bulls charge effect
-	+ 1.5 sec stun
-	+ 25 sec cooldown
+	+ dmg = siła
 + stun de-buff
-	+ units/player can move
+	+ units/player can't move
 	+ stun animation (or walk)
 	+ stun effect above head
 	+ heal remove stun
 + moving units with bulls charge
 + dash - allows to move between units, around objects
-	+ 0.5 sec cooldown
-	+ 10 sec recharge
-	+ max 2 charges
 + summoned wolf unit
 + summon wolf
-	+ 90 sec cooldown
 + resources:
 	+ buff_stun.png
+	+ buff icons
+	+ actions.txt pl/en
+	+ key text
 ===============================================================================================================
 CURRENT:
 ===============================================================================================================
 NEW:
 + stun resistance/immunity/power
-+ allow force quest by clients, per player
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

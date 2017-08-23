@@ -1,0 +1,14 @@
+action "bull_charge" {
+	name "Bycza szarża"
+	desc ""
+}
+
+action "dash" {
+	name ""
+	desc ""
+}
+
+action "summon_wolf" {
+	name ""
+	desc ""
+}

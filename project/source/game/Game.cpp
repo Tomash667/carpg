@@ -1880,6 +1880,7 @@ void Game::InitGameKeys()
 	GKey[GK_POTION].id = "keyPotion";
 	GKey[GK_MELEE_WEAPON].id = "keyMeleeWeapon";
 	GKey[GK_RANGED_WEAPON].id = "keyRangedWeapon";
+	GKey[GK_ACTION].id = "keyAction";
 	GKey[GK_TAKE_ALL].id = "keyTakeAll";
 	GKey[GK_SELECT_DIALOG].id = "keySelectDialog";
 	GKey[GK_SKIP_DIALOG].id = "keySkipDialog";
@@ -1919,6 +1920,7 @@ void Game::ResetGameKeys()
 	GKey[GK_POTION].Set('H');
 	GKey[GK_MELEE_WEAPON].Set('1');
 	GKey[GK_RANGED_WEAPON].Set('2');
+	GKey[GK_ACTION].Set('3');
 	GKey[GK_TAKE_ALL].Set('F');
 	GKey[GK_SELECT_DIALOG].Set(VK_RETURN);
 	GKey[GK_SKIP_DIALOG].Set(VK_SPACE);
