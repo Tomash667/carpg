@@ -129,7 +129,7 @@ private:
 	float sidebar;
 	int sidebar_state[(int)SideButtonId::Max];
 	TEX tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2], tMinistamina, tCelownik,
-		tBubble, tObwodkaBolu;
+		tBubble, tObwodkaBolu, tActionCooldown;
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
 	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txStamina;

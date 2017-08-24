@@ -233,6 +233,7 @@ public:
 	void SetClipboard(cstring text);
 	cstring GetClipboard();
 	Rect GetSpriteRect(TEX t, const Matrix& mat, const Rect* part = nullptr, const Rect* clipping = nullptr);
+	void UseGrayscale(bool grayscale);
 
 	Matrix mViewProj;
 	Int2 cursor_pos, prev_cursor_pos, wnd_size;
@@ -267,7 +268,7 @@ private:
 	int max_tex_size;
 	vector<Font*> fonts;
 	ID3DXEffect* eGui;
-	D3DXHANDLE techGui, techGui2;
+	D3DXHANDLE techGui, techGui2, techGuiGrayscale;
 	D3DXHANDLE hGuiSize, hGuiTex;
 	Container* layer, *dialog_layer;
 	VParticle* v, *v2;
@@ -276,7 +277,7 @@ private:
 	VB vb, vb2;
 	HitboxContext tmpHitboxContext;
 	vector<OnCharHandler*> on_char;
-	bool vb2_locked;
+	bool vb2_locked, grayscale;
 	float outline_alpha;
 	gui::Layout* layout;
 	gui::Overlay* overlay;

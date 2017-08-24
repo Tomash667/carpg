@@ -92,7 +92,7 @@ inline float GetBaseAttributeMod(int v)
 //-----------------------------------------------------------------------------
 struct PlayerController : public HeroPlayerCommon
 {
-	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer;
+	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
 	// a - attribute, s - skill
 	// *p - x points, *n - x next
 	int sp[(int)Skill::MAX], sn[(int)Skill::MAX], ap[(int)Attribute::MAX], an[(int)Attribute::MAX];
@@ -105,7 +105,7 @@ struct PlayerController : public HeroPlayerCommon
 	};
 	WeaponType ostatnia;
 	bool godmode, noclip, is_local, recalculate_level;
-	int id, free_days;
+	int id, free_days, action_charges;
 	//----------------------
 	enum Action
 	{
@@ -133,7 +133,10 @@ struct PlayerController : public HeroPlayerCommon
 	StatState attrib_state[(int)Attribute::MAX], skill_state[(int)Skill::MAX];
 	vector<TakenPerk> perks;
 
-	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), wasted_key(VK_NONE) {}
+	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), wasted_key(VK_NONE), action_recharge(0.f), action_cooldown(0.f),
+		action_charges(0)
+	{
+	}
 	~PlayerController();
 
 	float CalculateAttack() const;
@@ -142,6 +145,7 @@ struct PlayerController : public HeroPlayerCommon
 	void Rest(int days, bool resting);
 
 	void Init(Unit& _unit, bool partial = false);
+	void InitAction();
 	void Update(float dt);
 	void Train(Skill s, int points);
 	void Train(Attribute a, int points);
