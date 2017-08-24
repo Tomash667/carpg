@@ -390,6 +390,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 		else if(IS_SET(npc->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
 			npc->hero->melee = true;
 	}
+	game_gui->Setup();
 
 	fallback_co = FALLBACK_NONE;
 	fallback_t = 0.f;

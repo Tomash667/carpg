@@ -146,7 +146,7 @@ struct PlayerController : public HeroPlayerCommon
 
 	void Init(Unit& _unit, bool partial = false);
 	void InitAction();
-	void Update(float dt);
+	void Update(float dt, bool is_local = true);
 	void Train(Skill s, int points);
 	void Train(Attribute a, int points);
 	void TrainMove(float dt, bool run);
@@ -201,4 +201,6 @@ struct PlayerController : public HeroPlayerCommon
 	{
 		return is_local;
 	}
+
+	void UseActionCharge();
 };

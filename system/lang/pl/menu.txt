@@ -1212,3 +1212,8 @@ loadSounds = "Wczytywanie dŸwiêków"
 loadMusic = "Wczytywanie muzyki"
 generateWorld = "Generowanie œwiata"
 initQuests = "Inicjalizacja zadañ"
+
+// action panel
+actions = "Czary i zdolnoœci"
+cooldown = "Czas odnowienia: %g sek"
+cooldownCharges = "Czas odnowienia: %g sek, £adunki: %d (odnowienie %g sek)"

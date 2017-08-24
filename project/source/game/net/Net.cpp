@@ -1457,7 +1457,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		Error("Missing base unit id '%s'!", BUF);
 		return false;
 	}
-	
+
 	// human data / mesh
 	if(unit.data->type == UNIT_TYPE::HUMAN)
 	{
@@ -1537,7 +1537,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		Error("Invalid live state %d.", unit.live_state);
 		return false;
 	}
-	
+
 	// hero/player data
 	byte type;
 	if(!stream.Read(type))
@@ -1911,6 +1911,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 	pc = unit->player;
 	pc->player_info = &game_players[0];
 	game_players[0].pc = pc;
+	game_gui->Setup();
 
 	// items
 	for(int i = 0; i < SLOT_MAX; ++i)
@@ -9363,7 +9364,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 				return true;
 			}
 		}
-		
+
 		// stamina
 		if(IS_SET(flags, PlayerInfo::UF_STAMINA))
 		{

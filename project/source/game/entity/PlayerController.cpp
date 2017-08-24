@@ -116,21 +116,50 @@ void PlayerController::InitAction()
 }
 
 //=================================================================================================
-void PlayerController::Update(float dt)
+void PlayerController::Update(float dt, bool is_local)
 {
-	dmgc += last_dmg;
-	dmgc *= (1.f - dt * 2);
-	if(last_dmg == 0.f && dmgc < 0.1f)
-		dmgc = 0.f;
-
-	poison_dmgc += (last_dmg_poison - poison_dmgc) * dt;
-	if(last_dmg_poison == 0.f && poison_dmgc < 0.1f)
-		poison_dmgc = 0.f;
-
-	if(recalculate_level)
+	if(is_local)
 	{
-		recalculate_level = false;
-		unit->level = unit->CalculateLevel();
+		// last damage
+		dmgc += last_dmg;
+		dmgc *= (1.f - dt * 2);
+		if(last_dmg == 0.f && dmgc < 0.1f)
+			dmgc = 0.f;
+
+		// poison damage
+		poison_dmgc += (last_dmg_poison - poison_dmgc) * dt;
+		if(last_dmg_poison == 0.f && poison_dmgc < 0.1f)
+			poison_dmgc = 0.f;
+
+		if(recalculate_level)
+		{
+			recalculate_level = false;
+			unit->level = unit->CalculateLevel();
+		}
+	}
+
+	// update action
+	auto action = g_classes[(int)clas].action;
+	if(action)
+	{
+		if(action_cooldown != 0)
+		{
+			action_cooldown -= dt;
+			if(action_cooldown < 0)
+				action_cooldown = 0.f;
+		}
+		if(action_recharge != 0)
+		{
+			action_recharge -= dt;
+			if(action_recharge < 0)
+			{
+				++action_charges;
+				if(action_charges == action->charges)
+					action_recharge = 0;
+				else
+					action_recharge += action->recharge;
+			}
+		}
 	}
 }
 
@@ -392,6 +421,9 @@ void PlayerController::Save(HANDLE file)
 		f << (byte)tp.perk;
 		f << tp.value;
 	}
+	f << action_cooldown;
+	f << action_recharge;
+	f << (byte)action_charges;
 }
 
 //=================================================================================================
@@ -503,6 +535,22 @@ void PlayerController::Load(HANDLE file)
 			tp.perk = (Perk)f.Read<byte>();
 			f >> tp.value;
 		}
+	}
+	if(LOAD_VERSION >= V_CURRENT)
+	{
+		f >> action_cooldown;
+		f >> action_recharge;
+		action_charges = f.Read<byte>();
+	}
+	else
+	{
+		auto action = g_classes[(int)clas].action;
+		if(action)
+			action_charges = action->charges;
+		else
+			action_charges = 0;
+		action_cooldown = 0.f;
+		action_recharge = 0.f;
 	}
 
 	action = Action_None;
@@ -740,4 +788,15 @@ bool PlayerController::Read(BitStream& stream)
 			return false;
 	}
 	return true;
+}
+
+//=================================================================================================
+void PlayerController::UseActionCharge()
+{
+	auto action = g_classes[(int)clas].action;
+	assert(action);
+	--action_charges;
+	action_cooldown = action->cooldown;
+	if(action_recharge != 0)
+		action_recharge = action->recharge;
 }

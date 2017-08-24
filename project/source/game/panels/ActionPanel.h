@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "GamePanel.h"
+#include "TooltipController.h"
 
 //-----------------------------------------------------------------------------
 struct Action;
@@ -16,7 +17,14 @@ public:
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
 
+	void LoadData();
+	void Init(Action* action);
+
 private:
+	void GetTooltip(TooltipController* tooltip, int group, int id);
+
+	TooltipController tooltip;
 	vector<Action*> actions;
-	cstring txActions;
+	cstring txActions, txCooldown, txCooldownCharges;
+	TEX tItemBar;
 };

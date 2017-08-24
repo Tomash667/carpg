@@ -918,7 +918,7 @@ void Game::UpdateGame(float dt)
 		assert(pc->is_local && pc == pc->player_info->pc);
 	}
 #endif
-	
+
 	/*Object* o = nullptr;
 	float dist = 999.f;
 	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
@@ -937,7 +937,7 @@ void Game::UpdateGame(float dt)
 		if(Key.Down('0'))
 			o->rot.y = 0;
 	}*/
-	
+
 	minimap_opened_doors = false;
 
 	if(in_tutorial && !IsOnline())
@@ -1441,6 +1441,14 @@ void Game::UpdateGame(float dt)
 
 	// aktualizacja obrazka obra¿en
 	pc->Update(dt);
+	if(IsServer())
+	{
+		for(auto& info : game_players)
+		{
+			if(!info.left && info.pc != pc)
+				info.pc->Update(dt, false);
+		}
+	}
 
 	// aktualizuj kamerê
 	SetupCamera(dt);
@@ -13568,7 +13576,7 @@ void Game::ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entr
 	}
 	else
 		pack = pack_def;
-	
+
 	auto& tex_mgr = ResourceManager::Get<Texture>();
 	tex_mgr.AddLoadTask(pack.diffuse);
 	if(pack.normal)
@@ -14764,7 +14772,7 @@ void Game::LoadResources(cstring text, bool worldmap)
 	LoadingStep(nullptr, 1);
 
 	PreloadResources(worldmap);
-	
+
 	// check if there is anything to load
 	auto& res_mgr = ResourceManager::Get();
 	if(res_mgr.HaveTasks())
@@ -14959,7 +14967,7 @@ void Game::PreloadUnits(vector<Unit*>& units)
 
 		if(data.mesh)
 			mesh_mgr.AddLoadTask(data.mesh);
-		
+
 		for(int i = 0; i < SOUND_MAX; ++i)
 		{
 			if(data.sounds->sound[i])
@@ -16848,7 +16856,7 @@ void Game::InitQuests()
 {
 	QuestManager& quest_manager = QuestManager::Get();
 	vector<int> used;
-	
+
 	// goblins
 	quest_goblins = new Quest_Goblins;
 	quest_goblins->start_loc = GetRandomSettlement(used, 1);

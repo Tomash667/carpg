@@ -1,7 +1,8 @@
 ﻿FEATURE:
-+ actions panel, hover over action show description
+? actions panel, hover over action show description
 + show action in game gui, with cooldown, charges
 	+ handling update from player controller
+	+ reset on rest/travel
 + use action
 + action target pick
 	+ bulls charge, rectangle with limited rot
@@ -20,6 +21,7 @@
 + summoned wolf unit
 + summon wolf
 + resources:
+	+ stunned animation
 + require holding alt
 + info in class desc about actions
 + info in readme
@@ -32,6 +34,11 @@ NEW:
 + stun resistance/immunity/power
 + scaleable gui
 + scaled DrawText, use matrix
++ tutorial in academy - actions
++ npc heroes using actions
++ modability, load from file:
+	+ classes
+	+ actions
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

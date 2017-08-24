@@ -1380,6 +1380,7 @@ void Game::LoadGame(HANDLE file)
 	selected_target = nullptr;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
+	game_gui->Setup();
 
 	if(mp_load)
 	{

@@ -375,7 +375,7 @@ void GameGui::DrawFront()
 
 	// action
 	auto& class_info = g_classes[(int)game.pc->clas];
-	if (class_info.action)
+	if (class_info.action && !game.in_tutorial)
 	{
 		static float charge = 1.f;
 		if (Key.Down('G'))
@@ -785,7 +785,7 @@ void GameGui::Update(float dt)
 
 		// action
 		auto& class_info = g_classes[(int)game.pc->clas];
-		if (class_info.action)
+		if (class_info.action && !game.in_tutorial)
 		{
 			const float pad = 2.f;
 			const float img_size = 32.f;
@@ -1223,6 +1223,7 @@ void GameGui::LoadData()
 
 	BuffInfo::LoadImages();
 	minimap->LoadData();
+	action_panel->LoadData();
 }
 
 //=================================================================================================
@@ -1392,4 +1393,15 @@ void GameGui::Load(FileReader& f)
 		f >> sb.visible;
 		f >> sb.last_pos;
 	}
+}
+
+//=================================================================================================
+void GameGui::Setup()
+{
+	Action* action;
+	if(game.in_tutorial)
+		action = nullptr;
+	else
+		action = g_classes[(int)game.pc->clas].action;
+	action_panel->Init(action);
 }

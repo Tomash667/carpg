@@ -100,6 +100,7 @@ public:
 	void Save(FileWriter& f) const;
 	void Load(FileReader& f);
 	bool IsMouseInsideDialog() const { return PointInRect(GUI.cursor_pos, dialog_pos, dialog_size); }
+	void Setup();
 
 	// panels
 	GamePanelContainer* gp_trade;
