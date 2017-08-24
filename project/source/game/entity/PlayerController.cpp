@@ -5,6 +5,8 @@
 #include "Game.h"
 #include "SaveState.h"
 #include "BitStreamFunc.h"
+#include "Class.h"
+#include "Action.h"
 
 //=================================================================================================
 PlayerController::~PlayerController()
@@ -104,6 +106,13 @@ void PlayerController::Init(Unit& _unit, bool partial)
 		for(int i = 0; i < (int)Attribute::MAX; ++i)
 			ap[i] = 0;
 	}
+}
+
+//=================================================================================================
+void PlayerController::InitAction()
+{
+	auto& class_info = g_classes[(int)clas];
+	action_charges = class_info.action->charges;
 }
 
 //=================================================================================================

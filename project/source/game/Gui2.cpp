@@ -15,7 +15,7 @@ TEX IGUI::tBox, IGUI::tBox2, IGUI::tPix, IGUI::tDown;
 
 //=================================================================================================
 IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
-active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr)
+active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr), grayscale(false)
 {
 }
 
@@ -80,9 +80,10 @@ void IGUI::SetShader(ID3DXEffect* e)
 	eGui = e;
 	techGui = eGui->GetTechniqueByName("gui");
 	techGui2 = eGui->GetTechniqueByName("gui2");
+	techGuiGrayscale = eGui->GetTechniqueByName("gui_grayscale");
 	hGuiSize = eGui->GetParameterByName(nullptr, "size");
 	hGuiTex = eGui->GetParameterByName(nullptr, "tex0");
-	assert(techGui && techGui2 && hGuiSize && hGuiTex);
+	assert(techGui && techGui2 && techGuiGrayscale && hGuiSize && hGuiTex);
 }
 
 //=================================================================================================
@@ -2592,4 +2593,18 @@ cstring IGUI::GetClipboard()
 	}
 
 	return result;
+}
+
+//=================================================================================================
+void IGUI::UseGrayscale(bool grayscale)
+{
+	assert(grayscale != this->grayscale);
+	this->grayscale = grayscale;
+
+	eGui->EndPass();
+	eGui->End();
+	eGui->SetTechnique(grayscale ? techGuiGrayscale : techGui);
+	UINT passes;
+	eGui->Begin(&passes, 0);
+	eGui->BeginPass(0);
 }

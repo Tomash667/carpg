@@ -15,6 +15,8 @@
 #include "Chest.h"
 #include "Door.h"
 #include "Team.h"
+#include "Class.h"
+#include "Action.h"
 #include "ActionPanel.h"
 
 //-----------------------------------------------------------------------------
@@ -23,6 +25,7 @@ enum class TooltipGroup
 	Sidebar,
 	Buff,
 	Bar,
+	Action,
 	Invalid = -1
 };
 enum Bar
@@ -369,6 +372,51 @@ void GameGui::DrawFront()
 	offset = img_size + 2;
 	scale = float(img_size) / 64;
 	Int2 spos(256.f*wnd_scale + offset, GUI.wnd_size.y - offset);
+
+	// action
+	auto& class_info = g_classes[(int)game.pc->clas];
+	if (class_info.action)
+	{
+		static float charge = 1.f;
+		if (Key.Down('G'))
+			charge = -1.f;
+		if (charge < 1.f)
+			charge += 0.04f;
+
+		const float pad = 2.f;
+		const float img_size = 32.f;
+		const float img_ratio = 0.25f;
+
+		if (charge >= 1.f)
+		{
+			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
+				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
+			GUI.DrawSprite2(class_info.action->tex->tex, mat);
+		}
+		else
+		{
+			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
+				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
+			GUI.UseGrayscale(true);
+			GUI.DrawSprite2(class_info.action->tex->tex, mat);
+			GUI.UseGrayscale(false);
+			if (charge > 0.f)
+			{
+				Rect part = { 0, 128 - int(charge * 128), 128, 128 };
+				GUI.DrawSprite2(class_info.action->tex->tex, mat, &part);
+			}
+			GUI.DrawSprite2(tActionCooldown, mat);
+		}
+
+		// charges
+		const int charges = 2;
+		const int charges_max = 3;
+		if (charges_max > 1)
+		{
+			Rect r(int(wnd_scale * (256 + pad * 2)), int(GUI.wnd_size.y - (pad * 2) * wnd_scale)-12, 0, 0);
+			GUI.DrawText(GUI.fSmall, Format("%d/%d", charges, charges_max), DT_SINGLELINE, BLACK, r);
+		}
+	}
 
 	// shortcuts
 	/*for(int i = 0; i<10; ++i)
@@ -734,6 +782,20 @@ void GameGui::Update(float dt)
 			group = TooltipGroup::Bar;
 			id = Bar::BAR_STAMINA;
 		}
+
+		// action
+		auto& class_info = g_classes[(int)game.pc->clas];
+		if (class_info.action)
+		{
+			const float pad = 2.f;
+			const float img_size = 32.f;
+			const float img_ratio = 0.25f;
+			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
+				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
+			r = GUI.GetSpriteRect(class_info.action->tex->tex, mat);
+			if (r.IsInside(GUI.cursor_pos))
+				group = TooltipGroup::Action;
+		}
 	}
 
 	if(anything)
@@ -1094,6 +1156,13 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 			}
 		}
 		break;
+	case TooltipGroup::Action:
+		{
+			auto& class_info = g_classes[(int)game.pc->clas];
+			tooltip.text = class_info.action->name;
+			tooltip.small_text = class_info.action->desc;
+		}
+		break;
 	}
 }
 
@@ -1150,6 +1219,7 @@ void GameGui::LoadData()
 	tex_mgr.AddLoadTask("minihp.png", tMinihp[0]);
 	tex_mgr.AddLoadTask("minihp2.png", tMinihp[1]);
 	tex_mgr.AddLoadTask("ministamina.png", tMinistamina);
+	tex_mgr.AddLoadTask("action_cooldown.png", tActionCooldown);
 
 	BuffInfo::LoadImages();
 	minimap->LoadData();

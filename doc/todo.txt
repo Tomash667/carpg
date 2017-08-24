@@ -1,6 +1,7 @@
 ﻿FEATURE:
 + actions panel, hover over action show description
 + show action in game gui, with cooldown, charges
+	+ handling update from player controller
 + use action
 + action target pick
 	+ bulls charge, rectangle with limited rot
@@ -9,8 +10,9 @@
 + bulls charge effect
 	+ dmg = siła
 + stun de-buff
+	+ sending info to server
 	+ units/player can't move
-	+ stun animation (or walk)
+	+ stun animation (or stand)
 	+ stun effect above head
 	+ heal remove stun
 + moving units with bulls charge
@@ -18,13 +20,18 @@
 + summoned wolf unit
 + summon wolf
 + resources:
-	+ buff_stun.png
-	+ buff icons
++ require holding alt
++ info in class desc about actions
++ info in readme
+? tooltip
+? mp tests
 ===============================================================================================================
 CURRENT:
 ===============================================================================================================
 NEW:
 + stun resistance/immunity/power
++ scaleable gui
++ scaled DrawText, use matrix
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
@@ -62,3 +69,4 @@ VERIFY:
 ? heal and death_screen
 ? raknet wysyła wiadomości do zdisconnectowanych przy broadcast jeśli nie wyśle jeszcze disconnect
 - walking forward and opening & closing console cause animations to act weird (like restarting)
+- mipmaping artifact on minimap 20170823_210621_01.jpg
