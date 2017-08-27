@@ -690,7 +690,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	location = &l;
 	dungeon_level = level;
 	location_event_handler = nullptr;
-	before_player = BP_NONE;
+	pc_data.before_player = BP_NONE;
 	arena_free = true; //zabezpieczenie :3
 	unit_views.clear();
 	Inventory::lock_id = LOCK_NO;
@@ -1427,7 +1427,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	CheckIfLocationCleared();
 	local_ctx_valid = true;
 	cam.Reset();
-	player_rot_buf = 0.f;
+	pc_data.rot_buf = 0.f;
 	SetMusic();
 
 	if(close_portal)

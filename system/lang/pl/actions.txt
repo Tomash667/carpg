@@ -1,14 +1,14 @@
 action "bull_charge" {
-	name "Bycza szarÅ¼a"
-	desc "Przemieszczasz siÄ™ do przodu ogÅ‚uszajÄ…c wszystkich po drodze i zadajÄ…c im obraÅ¼enia."
+	name "Bycza szar¿a"
+	desc "Przemieszczasz siê do przodu og³uszaj¹c wszystkich po drodze i zadaj¹c im obra¿enia."
 }
 
 action "dash" {
 	name "Zryw"
-	desc "Przemieszczasz siÄ™ szybko w okreÅ›lonym kierunku. Posiada dwa Å‚adunki."
+	desc "Przemieszczasz siê szybko w okreœlonym kierunku. Posiada dwa ³adunki."
 }
 
 action "summon_wolf" {
-	name "ZwierzÄ™cy sojusznik"
-	desc "PrzywoÅ‚uje wilka ktÃ³ry pomaga ci w walce dopÃ³ki nie zginie."
+	name "Zwierzêcy sojusznik"
+	desc "Przywo³uje wilka który pomaga ci w walce dopóki nie zginie."
 }

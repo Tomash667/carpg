@@ -6,13 +6,23 @@
 //-----------------------------------------------------------------------------
 struct Action
 {
+	enum Area
+	{
+		LINE,
+		LINE_FORWARD,
+		POINT
+	};
+
 	cstring id;
 	float cooldown, recharge;
 	int charges;
 	TexturePtr tex;
 	string name, desc;
+	Area area;
+	Vec2 area_size; // for LINE,LINE_FORWARD w,h; for POINT radius,max_distance
 
-	Action(cstring id, float cooldown, float recharge, int charges) : id(id), cooldown(cooldown), recharge(recharge), charges(charges), tex(nullptr)
+	Action(cstring id, float cooldown, float recharge, int charges, Area area, const Vec2& area_size) : id(id), cooldown(cooldown), recharge(recharge), charges(charges),
+		tex(nullptr), area(area), area_size(area_size)
 	{
 	}
 

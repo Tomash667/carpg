@@ -5,9 +5,9 @@
 
 //-----------------------------------------------------------------------------
 Action g_actions[] = {
-	Action("bull_charge", 25.f, 25.f, 1),
-	Action("dash", 0.5f, 10.f, 2),
-	Action("summon_wolf", 90.f, 90.f, 1)
+	Action("bull_charge", 25.f, 25.f, 1, Action::LINE_FORWARD, Vec2(4.f, 0.6f)),
+	Action("dash", 0.5f, 10.f, 2, Action::LINE, Vec2(5.f, 0.25f)),
+	Action("summon_wolf", 90.f, 90.f, 1, Action::POINT, Vec2(1.5f, 10.f))
 };
 extern const uint n_actions = countof(g_actions);
 

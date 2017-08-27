@@ -651,7 +651,7 @@ void Game::LoadGame(HANDLE file)
 	attached_sounds.clear();
 	in_tutorial = false;
 	arena_free = true;
-	autowalk = false;
+	pc_data.autowalk = false;
 	ai_bow_targets.clear();
 	ai_cast_targets.clear();
 	load_location_quest.clear();
@@ -938,7 +938,7 @@ void Game::LoadGame(HANDLE file)
 	ReadFile(file, &cam.real_rot.y, sizeof(cam.real_rot.y), &tmp, nullptr);
 	ReadFile(file, &cam.dist, sizeof(cam.dist), &tmp, nullptr);
 	cam.Reset();
-	player_rot_buf = 0.f;
+	pc_data.rot_buf = 0.f;
 
 	// ekwipunek sprzedawców w mieœcie
 	LoadStock(file, chest_merchant);
@@ -1375,9 +1375,9 @@ void Game::LoadGame(HANDLE file)
 	fallback_co = FALLBACK_NONE;
 	fallback_t = 0.f;
 	inventory_mode = I_NONE;
-	before_player = BP_NONE;
-	selected_unit = nullptr;
-	selected_target = nullptr;
+	pc_data.before_player = BP_NONE;
+	pc_data.selected_unit = nullptr;
+	pc_data.selected_target = nullptr;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
 	game_gui->Setup();

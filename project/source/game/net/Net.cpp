@@ -689,7 +689,7 @@ void Game::WriteTrap(BitStream& stream, Trap& trap)
 bool Game::ReadLevelData(BitStream& stream)
 {
 	cam.Reset();
-	player_rot_buf = 0.f;
+	pc_data.rot_buf = 0.f;
 	show_mp_panel = true;
 	boss_level_mp = false;
 	open_location = 0;
@@ -2737,8 +2737,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 
 				// remove item
-				if(before_player == BP_ITEM && before_player_ptr.item == item)
-					before_player = BP_NONE;
+				if(pc_data.before_player == BP_ITEM && pc_data.before_player_ptr.item == item)
+					pc_data.before_player = BP_NONE;
 				DeleteElement(*ctx->items, item);
 			}
 			break;
@@ -4812,7 +4812,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					Unit* target = FindUnit(netid);
 					if(target)
-						BreakAction(*target, false, true);
+						BreakUnitAction(*target, false, true);
 					else
 					{
 						Error("Update server: CHEAT_BREAK_ACTION from %s, missing unit %d.", info.name.c_str(), netid);
@@ -6153,10 +6153,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else
 					{
 						RemoveElement(ctx->items, item);
-						if(before_player == BP_ITEM && before_player_ptr.item == item)
-							before_player = BP_NONE;
-						if(picking_item_state == 1 && picking_item == item)
-							picking_item_state = 2;
+						if(pc_data.before_player == BP_ITEM && pc_data.before_player_ptr.item == item)
+							pc_data.before_player = BP_NONE;
+						if(pc_data.picking_item_state == 1 && pc_data.picking_item == item)
+							pc_data.picking_item_state = 2;
 						else
 							delete item;
 					}
@@ -6232,7 +6232,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						BreakAction(*unit);
+						BreakUnitAction(*unit);
 
 						if(unit->action != A_POSITION)
 							unit->action = A_PAIN;
@@ -6644,9 +6644,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					PushNetChange(NetChange::WARP);
 					interpolate_timer = 0.f;
-					player_rot_buf = 0.f;
+					pc_data.rot_buf = 0.f;
 					cam.Reset();
-					player_rot_buf = 0.f;
+					pc_data.rot_buf = 0.f;
 				}
 			}
 			break;
@@ -6911,8 +6911,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 						if(info->u)
 						{
-							if(info->u == before_player_ptr.unit)
-								before_player = BP_NONE;
+							if(info->u == pc_data.before_player_ptr.unit)
+								pc_data.before_player = BP_NONE;
 							RemoveElement(Team.members, info->u);
 							RemoveElement(Team.active_members, info->u);
 
@@ -6994,8 +6994,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					usable->user = unit;
 
-					if(before_player == BP_USEABLE && before_player_ptr.usable == usable)
-						before_player = BP_NONE;
+					if(pc_data.before_player == BP_USEABLE && pc_data.before_player_ptr.usable == usable)
+						pc_data.before_player = BP_NONE;
 				}
 				else if(unit->player != pc)
 				{
@@ -8355,7 +8355,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				{
 					Unit* unit = FindUnit(netid);
 					if(unit)
-						BreakAction(*unit);
+						BreakUnitAction(*unit);
 					else
 					{
 						Error("Update client: BREAK_ACTION, missing unit %d.", netid);
@@ -8441,12 +8441,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 					else
 					{
-						AddItem(*pc->unit, picking_item->item, (uint)count, (uint)team_count);
-						if(picking_item->item->type == IT_GOLD && sound_volume)
+						AddItem(*pc->unit, pc_data.picking_item->item, (uint)count, (uint)team_count);
+						if(pc_data.picking_item->item->type == IT_GOLD && sound_volume)
 							PlaySound2d(sCoins);
-						if(picking_item_state == 2)
-							delete picking_item;
-						picking_item_state = 0;
+						if(pc_data.picking_item_state == 2)
+							delete pc_data.picking_item;
+						pc_data.picking_item_state = 0;
 					}
 				}
 				break;
@@ -8546,7 +8546,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 								dialog_context.dialog_wait = 1.f;
 								dialog_context.skip_id = unit->bubble->skip_id;
 							}
-							before_player = BP_NONE;
+							pc_data.before_player = BP_NONE;
 						}
 					}
 				}
@@ -10702,8 +10702,8 @@ void Game::ProcessLeftPlayers()
 		{
 			Unit* unit = info.u;
 
-			if(before_player_ptr.unit == unit)
-				before_player = BP_NONE;
+			if(pc_data.before_player_ptr.unit == unit)
+				pc_data.before_player = BP_NONE;
 			if(info.left_reason == PlayerInfo::LEFT_LOADING || game_state == GS_WORLDMAP)
 			{
 				if(open_location != -1)

@@ -4,10 +4,13 @@
 #include "Action.h"
 #include "Language.h"
 #include "ResourceManager.h"
+#include "KeyStates.h"
 
 //=================================================================================================
 ActionPanel::ActionPanel()
 {
+	visible = false;
+
 	txActions = Str("actions");
 	txCooldown = Str("cooldown");
 	txCooldownCharges = Str("cooldownCharges");
@@ -82,7 +85,7 @@ void ActionPanel::Update(float dt)
 {
 	GamePanel::Update(dt);
 
-	if(!mouse_focus)
+	if(!focus)
 		return;
 
 	int group = -1, id = -1;
@@ -108,6 +111,9 @@ void ActionPanel::Update(float dt)
 	}
 
 	tooltip.UpdateTooltip(dt, group, id);
+
+	if (focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+		Hide();
 }
 
 //=================================================================================================

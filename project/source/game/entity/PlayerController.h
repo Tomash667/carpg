@@ -10,6 +10,8 @@
 //-----------------------------------------------------------------------------
 struct Chest;
 struct DialogContext;
+struct Door;
+struct GroundItem;
 struct Usable;
 struct PlayerInfo;
 
@@ -96,7 +98,7 @@ struct PlayerController : public HeroPlayerCommon
 	// a - attribute, s - skill
 	// *p - x points, *n - x next
 	int sp[(int)Skill::MAX], sn[(int)Skill::MAX], ap[(int)Attribute::MAX], an[(int)Attribute::MAX];
-	byte action_key, wasted_key;
+	byte action_key;
 	NextAction next_action;
 	union
 	{
@@ -133,19 +135,16 @@ struct PlayerController : public HeroPlayerCommon
 	StatState attrib_state[(int)Attribute::MAX], skill_state[(int)Skill::MAX];
 	vector<TakenPerk> perks;
 
-	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), wasted_key(VK_NONE), action_recharge(0.f), action_cooldown(0.f),
-		action_charges(0)
+	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f), action_cooldown(0.f), action_charges(0)
 	{
 	}
 	~PlayerController();
 
 	float CalculateAttack() const;
 	void TravelTick();
-	void Rest(bool resting);
-	void Rest(int days, bool resting);
+	void Rest(int days, bool resting, bool travel = false);
 
 	void Init(Unit& _unit, bool partial = false);
-	void InitAction();
 	void Update(float dt, bool is_local = true);
 	void Train(Skill s, int points);
 	void Train(Attribute a, int points);
@@ -202,5 +201,58 @@ struct PlayerController : public HeroPlayerCommon
 		return is_local;
 	}
 
-	void UseActionCharge();
+	bool CanUseAction() const
+	{
+		return action_charges > 0 && action_cooldown <= 0;
+	}
+	bool UseActionCharge();
+};
+
+//-----------------------------------------------------------------------------
+enum BeforePlayer
+{
+	BP_NONE,
+	BP_UNIT,
+	BP_CHEST,
+	BP_DOOR,
+	BP_ITEM,
+	BP_USEABLE
+};
+
+//-----------------------------------------------------------------------------
+union BeforePlayerPtr
+{
+	Unit* unit;
+	Chest* chest;
+	Door* door;
+	GroundItem* item;
+	Usable* usable;
+	void* any;
+};
+
+//-----------------------------------------------------------------------------
+struct LocalPlayerData
+{
+	BeforePlayer before_player;
+	BeforePlayerPtr before_player_ptr;
+	Unit* selected_unit, *selected_target;
+	GroundItem* picking_item;
+	int picking_item_state;
+	float rot_buf;
+	byte wasted_key;
+	bool autowalk, action_ready;
+
+	void Reset()
+	{
+		before_player = BP_NONE;
+		before_player_ptr.any = nullptr;
+		selected_unit = nullptr;
+		selected_target = nullptr;
+		picking_item = nullptr;
+		picking_item_state = 0;
+		rot_buf = 0.f;
+		wasted_key = VK_NONE;
+		autowalk = false;
+		action_ready = false;
+	}
 };

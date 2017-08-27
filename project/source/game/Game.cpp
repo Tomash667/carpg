@@ -122,7 +122,7 @@ void Game::OnDraw(bool normal)
 			Draw();
 
 			// draw glow
-			if(before_player != BP_NONE && !draw_batch.glow_nodes.empty())
+			if(pc_data.before_player != BP_NONE && !draw_batch.glow_nodes.empty())
 			{
 				V(device->EndScene());
 				DrawGlowingNodes(false);
@@ -153,7 +153,7 @@ void Game::OnDraw(bool normal)
 			V(device->BeginScene());
 			Draw();
 			V(device->EndScene());
-			if(before_player != BP_NONE && !draw_batch.glow_nodes.empty())
+			if(pc_data.before_player != BP_NONE && !draw_batch.glow_nodes.empty())
 				DrawGlowingNodes(true);
 		}
 
@@ -375,18 +375,20 @@ void Game::OnTick(float dt)
 		OpenPanel open = game_gui->GetOpenPanel(),
 			to_open = OpenPanel::None;
 
-		if(GKey.PressedRelease(GK_STATS))
+		if (GKey.PressedRelease(GK_STATS))
 			to_open = OpenPanel::Stats;
-		else if(GKey.PressedRelease(GK_INVENTORY))
+		else if (GKey.PressedRelease(GK_INVENTORY))
 			to_open = OpenPanel::Inventory;
-		else if(GKey.PressedRelease(GK_TEAM_PANEL))
+		else if (GKey.PressedRelease(GK_TEAM_PANEL))
 			to_open = OpenPanel::Team;
-		else if(GKey.PressedRelease(GK_JOURNAL))
+		else if (GKey.PressedRelease(GK_JOURNAL))
 			to_open = OpenPanel::Journal;
-		else if(GKey.PressedRelease(GK_MINIMAP))
+		else if (GKey.PressedRelease(GK_MINIMAP))
 			to_open = OpenPanel::Minimap;
+		else if (GKey.PressedRelease(GK_ACTION_PANEL))
+			to_open = OpenPanel::Action;
 		else if(open == OpenPanel::Trade && Key.PressedRelease(VK_ESCAPE))
-			to_open = OpenPanel::Trade;
+			to_open = OpenPanel::Trade; // ShowPanel hide when already opened
 
 		if(to_open != OpenPanel::None)
 			game_gui->ShowPanel(to_open, open);
@@ -403,6 +405,7 @@ void Game::OnTick(float dt)
 		case OpenPanel::Inventory:
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
+		case OpenPanel::Action:
 			allow_input = ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Journal:
@@ -2376,7 +2379,7 @@ void Game::UnitFall(Unit& u)
 	if(IsLocal())
 	{
 		// przerwij akcjê
-		BreakAction(u, true);
+		BreakUnitAction(u, true);
 
 		// wstawanie
 		u.raise_timer = Random(5.f, 7.f);
@@ -2394,18 +2397,18 @@ void Game::UnitFall(Unit& u)
 		}
 
 		if(u.player == pc)
-			before_player = BP_NONE;
+			pc_data.before_player = BP_NONE;
 	}
 	else
 	{
 		// przerwij akcjê
-		BreakAction(u, true);
+		BreakUnitAction(u, true);
 
 		// komunikat
 		if(&u == pc->unit)
 		{
 			u.raise_timer = Random(5.f, 7.f);
-			before_player = BP_NONE;
+			pc_data.before_player = BP_NONE;
 		}
 	}
 
@@ -2436,7 +2439,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	if(IsLocal())
 	{
 		// przerwij akcjê
-		BreakAction(u, true);
+		BreakUnitAction(u, true);
 
 		// dodaj z³oto do ekwipunku
 		if(u.gold && !(u.IsPlayer() || u.IsFollower()))
@@ -2494,7 +2497,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 			if(IsOnline())
 				u.player->stat_flags |= STAT_KNOCKS;
 			if(u.player == pc)
-				before_player = BP_NONE;
+				pc_data.before_player = BP_NONE;
 		}
 	}
 	else
@@ -2502,13 +2505,13 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		u.hp = 0.f;
 
 		// przerwij akcjê
-		BreakAction(u, true);
+		BreakUnitAction(u, true);
 
 		// o¿ywianie
 		if(&u == pc->unit)
 		{
 			u.raise_timer = Random(5.f, 7.f);
-			before_player = BP_NONE;
+			pc_data.before_player = BP_NONE;
 		}
 
 		// muzyka bossa

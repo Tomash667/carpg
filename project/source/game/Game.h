@@ -129,26 +129,6 @@ enum COLLISION_GROUP
 	CG_UNIT = 1 << 9
 };
 
-enum BeforePlayer
-{
-	BP_NONE,
-	BP_UNIT,
-	BP_CHEST,
-	BP_DOOR,
-	BP_ITEM,
-	BP_USEABLE
-};
-
-union BeforePlayerPtr
-{
-	Unit* unit;
-	Chest* chest;
-	Door* door;
-	GroundItem* item;
-	Usable* usable;
-	void* any;
-};
-
 extern const float ATTACK_RANGE;
 extern const Vec2 ALERT_RANGE;
 extern const float PICKUP_RANGE;
@@ -471,6 +451,8 @@ struct Game final : public Engine, public UnitEventHandler
 	void CleanScene();
 	void ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool outside, Unit& u);
+	void ListAreas(LevelContext& ctx);
+	void PrepareAreaPath(Area2& area, const Vec2& size, const Vec3& pos, float rot);
 	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
 	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs = 0);
 	int GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, float z, float radius, int sub = 0);
@@ -487,7 +469,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void DrawParticles(const vector<ParticleEmitter*>& pes);
 	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
 	void DrawLightings(const vector<Electro*>& electros);
-	void DrawAreas(const vector<Area>& areas, float range);
+	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void DrawPortals(const vector<Portal*>& portals);
 	void SetAlphaTest(bool use_alphatest);
 	void SetNoZWrite(bool use_nozwrite);
@@ -637,21 +619,16 @@ public:
 	//---------------------------------
 	// GRA
 	GAME_STATE game_state, prev_game_state;
+	LocalPlayerData pc_data;
 	PlayerController* pc;
-	bool autowalk;
-	float player_rot_buf;
 	AllowInput allow_input;
-	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp;
+	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp, death_solo;
 	int death_screen, dungeon_level;
-	bool death_solo;
 	float death_fade, game_speed;
 	vector<MeshInstance*> bow_instances;
 	Pak* pak;
-	Unit* selected_unit, *selected_target;
 	vector<AIController*> ais;
 	const Item* gold_item_ptr;
-	BeforePlayer before_player;
-	BeforePlayerPtr before_player_ptr;
 	uint force_seed, next_seed;
 	vector<AttachedSound> attached_sounds;
 	SaveSlot single_saves[MAX_SAVE_SLOTS], multi_saves[MAX_SAVE_SLOTS];
@@ -1025,13 +1002,12 @@ public:
 	void BuildTmpInventory(int index);
 	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 
-	void BreakAction(Unit& unit, bool fall = false, bool notify = false);
+	void BreakUnitAction(Unit& unit, bool fall = false, bool notify = false);
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
-	void GenerateImage(TaskData& task_data);
+	void GenerateItemImage(TaskData& task_data);
 	void SetupObject(Obj& obj);
-	Unit* GetFollowTarget();
 	void SetupCamera(float dt);
 	void LoadShaders();
 	void SetupShaders();
@@ -1169,6 +1145,7 @@ public:
 	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
 	void PreloadTraps(vector<Trap*>& traps);
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
+	bool LineTest(const Vec3& from, const Vec3& dir, float width, float rot, delegate<bool(btCollisionObject*)> clbk, float& t);
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);
 	void AI_Shout(LevelContext& ctx, AIController& ai);
@@ -1579,16 +1556,6 @@ public:
 	vector<NetChange> net_changes;
 	vector<NetChangePlayer> net_changes_player;
 	vector<string*> net_talk;
-	union
-	{
-		//Unit* loot_unit;
-		//Chest* loot_chest;
-		struct
-		{
-			GroundItem* picking_item;
-			int picking_item_state;
-		};
-	};
 	struct WarpData
 	{
 		Unit* u;

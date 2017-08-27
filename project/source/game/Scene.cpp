@@ -4,10 +4,12 @@
 #include "Terrain.h"
 #include "City.h"
 #include "InsideLocation.h"
+#include "Action.h"
 
 //-----------------------------------------------------------------------------
 ObjectPool<SceneNode> node_pool;
 ObjectPool<DebugSceneNode> debug_node_pool;
+ObjectPool<Area2> area2_pool;
 extern Matrix m1, m2, m3, m4;
 extern UINT passes;
 
@@ -61,24 +63,6 @@ struct IBOX
 };
 
 //=================================================================================================
-inline bool SortNodes(const SceneNode* node1, const SceneNode* node2)
-{
-	if(node1->flags == node2->flags)
-		return node1->mesh_inst > node2->mesh_inst;
-	else
-		return node1->flags < node2->flags;
-}
-
-//=================================================================================================
-inline bool SortDungeonParts(const DungeonPart& p1, const DungeonPart& p2)
-{
-	if(p1.tp != p2.tp)
-		return p1.tp->GetIndex() < p2.tp->GetIndex();
-	else
-		return false;
-}
-
-//=================================================================================================
 void DrawBatch::Clear()
 {
 	node_pool.Free(nodes);
@@ -90,6 +74,7 @@ void DrawBatch::Clear()
 	explos.clear();
 	pes.clear();
 	areas.clear();
+	area2_pool.Free(areas2);
 	portals.clear();
 	lights.clear();
 	dungeon_parts.clear();
@@ -708,54 +693,6 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			}
 		}
 
-		// list quadtree level parts
-		/*quadtree.List(camera_frustum2, (QuadTree::Nodes&)level_parts);
-		for(vector<LevelPart*>::iterator part_it = level_parts.begin(), part_end = level_parts.end(); part_it != part_end; ++part_it)
-		{
-			for(vector<Object>::iterator obj_it = (*part_it)->objects.begin(), obj_end = (*part_it)->objects.end(); obj_it != obj_end; ++obj_it)
-			{
-				const Object& o = *obj_it;
-				if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
-				{
-					SceneNode* node = node_pool.Get();
-					D3DXMatrixTranslation(&m1, o.pos); // m1 = pos
-					D3DXMatrixRotation(&m2, o.rot); // m2 = rot
-					D3DXMatrixScaling(&m3, o.scale); // m3 = scale
-					D3DXMatrixMultiply(&m4, &m3, &m2); // m4 = scale * rot
-					D3DXMatrixMultiply(&node->mat, &m4, &m1); // mat = scale * rot * pos
-					node->mesh = o.mesh;
-					int alpha = o.RequireAlphaTest();
-					if(alpha == -1)
-						node->flags = 0;
-					else if(alpha == 0)
-						node->flags = SceneNode::F_ALPHA_TEST;
-					else
-						node->flags = SceneNode::F_ALPHA_TEST|SceneNode::F_NO_CULLING;
-					node->tex_override = nullptr;
-					node->tint = Vec4(1,1,1,1);
-					if(!outside)
-						node->lights = GatherDrawBatchLights(ctx, node, o.pos.x, o.pos.z, o.GetRadius());
-					AddOrSplitSceneNode(node);
-				}
-			}
-		}*/
-
-		/*if(outside)
-		{
-			OutsideLocation* loc = (OutsideLocation*)location;
-			quadtree.List(camera_frustum2);
-			vector<LevelPart*>& parts = (vector<LevelPart*>&)quadtree.nodes;
-			for(vector<LevelPart*>::iterator part_it = parts.begin(), part_end = parts.end(); part_it != part_end; ++part_it)
-			{
-				LevelPart& part = **part_it;
-				if(part.leaf && outs)
-				{
-					level_parts.push_back(&part);
-					if(part.generated)
-				}
-			}
-		}*/
-
 		if(outside)
 			ListGrass();
 		else
@@ -791,7 +728,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, item.pos.x, item.pos.z, mesh->head.radius);
-				if(before_player == BP_ITEM && before_player_ptr.item == &item)
+				if(pc_data.before_player == BP_ITEM && pc_data.before_player_ptr.item == &item)
 				{
 					if(cl_glow)
 					{
@@ -827,7 +764,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, use.pos.x, use.pos.z, mesh->head.radius);
-				if(before_player == BP_USEABLE && before_player_ptr.usable == &use)
+				if(pc_data.before_player == BP_USEABLE && pc_data.before_player_ptr.usable == &use)
 				{
 					if(cl_glow)
 					{
@@ -872,7 +809,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, chest.pos.x, chest.pos.z, chest.mesh_inst->mesh->head.radius);
-				if(before_player == BP_CHEST && before_player_ptr.chest == &chest)
+				if(pc_data.before_player == BP_CHEST && pc_data.before_player_ptr.chest == &chest)
 				{
 					if(cl_glow)
 					{
@@ -917,7 +854,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, door.pos.x, door.pos.z, door.mesh_inst->mesh->head.radius);
-				if(before_player == BP_DOOR && before_player_ptr.door == &door)
+				if(pc_data.before_player == BP_DOOR && pc_data.before_player_ptr.door == &door)
 				{
 					if(cl_glow)
 					{
@@ -1115,163 +1052,8 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	}
 
 	// areas
-	if(IS_SET(draw_flags, DF_AREA))
-	{
-		if(ctx.type == LevelContext::Outside)
-		{
-			if(city_ctx)
-			{
-				if(IS_SET(city_ctx->flags, City::HaveExit))
-				{
-					for(vector<EntryPoint>::const_iterator entry_it = city_ctx->entry_points.begin(), entry_end = city_ctx->entry_points.end();
-						entry_it != entry_end; ++entry_it)
-					{
-						const EntryPoint& e = *entry_it;
-						Area& a = Add1(draw_batch.areas);
-						a.v[0] = Vec3(e.exit_area.v1.x, e.exit_y, e.exit_area.v2.y);
-						a.v[1] = Vec3(e.exit_area.v2.x, e.exit_y, e.exit_area.v2.y);
-						a.v[2] = Vec3(e.exit_area.v1.x, e.exit_y, e.exit_area.v1.y);
-						a.v[3] = Vec3(e.exit_area.v2.x, e.exit_y, e.exit_area.v1.y);
-					}
-				}
-
-				for(vector<InsideBuilding*>::const_iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
-				{
-					const InsideBuilding& ib = **it;
-					Area& a = Add1(draw_batch.areas);
-					a.v[0] = Vec3(ib.enter_area.v1.x, ib.enter_y, ib.enter_area.v2.y);
-					a.v[1] = Vec3(ib.enter_area.v2.x, ib.enter_y, ib.enter_area.v2.y);
-					a.v[2] = Vec3(ib.enter_area.v1.x, ib.enter_y, ib.enter_area.v1.y);
-					a.v[3] = Vec3(ib.enter_area.v2.x, ib.enter_y, ib.enter_area.v1.y);
-				}
-			}
-
-			if(!city_ctx || !IS_SET(city_ctx->flags, City::HaveExit))
-			{
-				const float H1 = -10.f;
-				const float H2 = 30.f;
-
-				// góra
-				{
-					Area& a = Add1(draw_batch.areas);
-					a.v[0] = Vec3(33.f, H1, 256.f - 33.f);
-					a.v[1] = Vec3(33.f, H2, 256.f - 33.f);
-					a.v[2] = Vec3(256.f - 33.f, H1, 256.f - 33.f);
-					a.v[3] = Vec3(256.f - 33.f, H2, 256.f - 33.f);
-				}
-
-				// dó³
-				{
-					Area& a = Add1(draw_batch.areas);
-					a.v[0] = Vec3(33.f, H1, 33.f);
-					a.v[1] = Vec3(256.f - 33.f, H1, 33.f);
-					a.v[2] = Vec3(33.f, H2, 33.f);
-					a.v[3] = Vec3(256.f - 33.f, H2, 33.f);
-				}
-
-				// lewa
-				{
-					Area& a = Add1(draw_batch.areas);
-					a.v[0] = Vec3(33.f, H1, 33.f);
-					a.v[1] = Vec3(33.f, H2, 33.f);
-					a.v[2] = Vec3(33.f, H1, 256.f - 33.f);
-					a.v[3] = Vec3(33.f, H2, 256.f - 33.f);
-				}
-
-				// prawa
-				{
-					Area& a = Add1(draw_batch.areas);
-					a.v[0] = Vec3(256.f - 33.f, H1, 256.f - 33.f);
-					a.v[1] = Vec3(256.f - 33.f, H2, 256.f - 33.f);
-					a.v[2] = Vec3(256.f - 33.f, H1, 33.f);
-					a.v[3] = Vec3(256.f - 33.f, H2, 33.f);
-				}
-			}
-			draw_batch.area_range = 10.f;
-		}
-		else if(ctx.type == LevelContext::Inside)
-		{
-			InsideLocation* inside = (InsideLocation*)location;
-			InsideLocationLevel& lvl = inside->GetLevelData();
-
-			if(inside->HaveUpStairs())
-			{
-				Area& a = Add1(draw_batch.areas);
-				a.v[0] = a.v[1] = a.v[2] = a.v[3] = pt_to_pos(lvl.staircase_up);
-				switch(lvl.staircase_up_dir)
-				{
-				case GDIR_DOWN:
-					a.v[0] += Vec3(-0.85f, 2.87f, 0.85f);
-					a.v[1] += Vec3(0.85f, 2.87f, 0.85f);
-					a.v[2] += Vec3(-0.85f, 0.83f, 0.85f);
-					a.v[3] += Vec3(0.85f, 0.83f, 0.85f);
-					break;
-				case GDIR_UP:
-					a.v[0] += Vec3(0.85f, 2.87f, -0.85f);
-					a.v[1] += Vec3(-0.85f, 2.87f, -0.85f);
-					a.v[2] += Vec3(0.85f, 0.83f, -0.85f);
-					a.v[3] += Vec3(-0.85f, 0.83f, -0.85f);
-					break;
-				case GDIR_RIGHT:
-					a.v[0] += Vec3(-0.85f, 2.87f, -0.85f);
-					a.v[1] += Vec3(-0.85f, 2.87f, 0.85f);
-					a.v[2] += Vec3(-0.85f, 0.83f, -0.85f);
-					a.v[3] += Vec3(-0.85f, 0.83f, 0.85f);
-					break;
-				case GDIR_LEFT:
-					a.v[0] += Vec3(0.85f, 2.87f, 0.85f);
-					a.v[1] += Vec3(0.85f, 2.87f, -0.85f);
-					a.v[2] += Vec3(0.85f, 0.83f, 0.85f);
-					a.v[3] += Vec3(0.85f, 0.83f, -0.85f);
-					break;
-				}
-			}
-			if(inside->HaveDownStairs())
-			{
-				Area& a = Add1(draw_batch.areas);
-				a.v[0] = a.v[1] = a.v[2] = a.v[3] = pt_to_pos(lvl.staircase_down);
-				switch(lvl.staircase_down_dir)
-				{
-				case GDIR_DOWN:
-					a.v[0] += Vec3(-0.85f, 0.45f, 0.85f);
-					a.v[1] += Vec3(0.85f, 0.45f, 0.85f);
-					a.v[2] += Vec3(-0.85f, -1.55f, 0.85f);
-					a.v[3] += Vec3(0.85f, -1.55f, 0.85f);
-					break;
-				case GDIR_UP:
-					a.v[0] += Vec3(0.85f, 0.45f, -0.85f);
-					a.v[1] += Vec3(-0.85f, 0.45f, -0.85f);
-					a.v[2] += Vec3(0.85f, -1.55f, -0.85f);
-					a.v[3] += Vec3(-0.85f, -1.55f, -0.85f);
-					break;
-				case GDIR_RIGHT:
-					a.v[0] += Vec3(-0.85f, 0.45f, -0.85f);
-					a.v[1] += Vec3(-0.85f, 0.45f, 0.85f);
-					a.v[2] += Vec3(-0.85f, -1.55f, -0.85f);
-					a.v[3] += Vec3(-0.85f, -1.55f, 0.85f);
-					break;
-				case GDIR_LEFT:
-					a.v[0] += Vec3(0.85f, 0.45f, 0.85f);
-					a.v[1] += Vec3(0.85f, 0.45f, -0.85f);
-					a.v[2] += Vec3(0.85f, -1.55f, 0.85f);
-					a.v[3] += Vec3(0.85f, -1.55f, -0.85f);
-					break;
-				}
-			}
-			draw_batch.area_range = 5.f;
-		}
-		else
-		{
-			// exit from building
-			Area& a = Add1(draw_batch.areas);
-			const Box2d& area = city_ctx->inside_buildings[ctx.building_id]->exit_area;
-			a.v[0] = Vec3(area.v1.x, 0.1f, area.v2.y);
-			a.v[1] = Vec3(area.v2.x, 0.1f, area.v2.y);
-			a.v[2] = Vec3(area.v1.x, 0.1f, area.v1.y);
-			a.v[3] = Vec3(area.v2.x, 0.1f, area.v1.y);
-			draw_batch.area_range = 5.f;
-		}
-	}
+	if (IS_SET(draw_flags, DF_AREA))
+		ListAreas(ctx);
 
 	// colliders
 	if(draw_col)
@@ -1338,7 +1120,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Box;
 					node->group = DebugSceneNode::Physic;
-					node->mat = Matrix::Scale(ToVEC3(box->getHalfExtentsWithMargin())) * m3 * cam.matViewProj;
+					node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m3 * cam.matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -1358,7 +1140,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					DebugSceneNode* node = debug_node_pool.Get();
 					node->type = DebugSceneNode::Cylinder;
 					node->group = DebugSceneNode::Physic;
-					Vec3 v = ToVEC3(cylinder->getHalfExtentsWithoutMargin());
+					Vec3 v = ToVec3(cylinder->getHalfExtentsWithoutMargin());
 					node->mat = Matrix::Scale(v.x, v.y / 2, v.z) * m3 * cam.matViewProj;
 					draw_batch.debug_nodes.push_back(node);
 				}
@@ -1380,7 +1162,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 							node->type = DebugSceneNode::Box;
 							node->group = DebugSceneNode::Physic;
 							compound->getChildTransform(i).getOpenGLMatrix(&m2._11);
-							node->mat = Matrix::Scale(ToVEC3(box->getHalfExtentsWithMargin())) * m2 * m3 * cam.matViewProj;
+							node->mat = Matrix::Scale(ToVec3(box->getHalfExtentsWithMargin())) * m2 * m3 * cam.matViewProj;
 							draw_batch.debug_nodes.push_back(node);
 						}
 					}
@@ -1392,7 +1174,13 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		}
 	}
 
-	std::sort(draw_batch.nodes.begin(), draw_batch.nodes.end(), SortNodes);
+	std::sort(draw_batch.nodes.begin(), draw_batch.nodes.end(), [](const SceneNode* node1, const SceneNode* node2)
+	{
+		if (node1->flags == node2->flags)
+			return node1->mesh_inst > node2->mesh_inst;
+		else
+			return node1->flags < node2->flags;
+	});
 }
 
 //=================================================================================================
@@ -1407,7 +1195,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	else
 		u.mesh_inst->SetupBones();
 
-	bool selected = (before_player == BP_UNIT && before_player_ptr.unit == &u);
+	bool selected = (pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit == &u);
 
 	// dodaj scene node
 	SceneNode* node = node_pool.Get();
@@ -1869,6 +1657,214 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 }
 
 //=================================================================================================
+void Game::ListAreas(LevelContext& ctx)
+{
+	if (ctx.type == LevelContext::Outside)
+	{
+		if (city_ctx)
+		{
+			if (IS_SET(city_ctx->flags, City::HaveExit))
+			{
+				for (vector<EntryPoint>::const_iterator entry_it = city_ctx->entry_points.begin(), entry_end = city_ctx->entry_points.end();
+					entry_it != entry_end; ++entry_it)
+				{
+					const EntryPoint& e = *entry_it;
+					Area& a = Add1(draw_batch.areas);
+					a.v[0] = Vec3(e.exit_area.v1.x, e.exit_y, e.exit_area.v2.y);
+					a.v[1] = Vec3(e.exit_area.v2.x, e.exit_y, e.exit_area.v2.y);
+					a.v[2] = Vec3(e.exit_area.v1.x, e.exit_y, e.exit_area.v1.y);
+					a.v[3] = Vec3(e.exit_area.v2.x, e.exit_y, e.exit_area.v1.y);
+				}
+			}
+
+			for (vector<InsideBuilding*>::const_iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+			{
+				const InsideBuilding& ib = **it;
+				Area& a = Add1(draw_batch.areas);
+				a.v[0] = Vec3(ib.enter_area.v1.x, ib.enter_y, ib.enter_area.v2.y);
+				a.v[1] = Vec3(ib.enter_area.v2.x, ib.enter_y, ib.enter_area.v2.y);
+				a.v[2] = Vec3(ib.enter_area.v1.x, ib.enter_y, ib.enter_area.v1.y);
+				a.v[3] = Vec3(ib.enter_area.v2.x, ib.enter_y, ib.enter_area.v1.y);
+			}
+		}
+
+		if (!city_ctx || !IS_SET(city_ctx->flags, City::HaveExit))
+		{
+			const float H1 = -10.f;
+			const float H2 = 30.f;
+
+			// góra
+			{
+				Area& a = Add1(draw_batch.areas);
+				a.v[0] = Vec3(33.f, H1, 256.f - 33.f);
+				a.v[1] = Vec3(33.f, H2, 256.f - 33.f);
+				a.v[2] = Vec3(256.f - 33.f, H1, 256.f - 33.f);
+				a.v[3] = Vec3(256.f - 33.f, H2, 256.f - 33.f);
+			}
+
+			// dó³
+			{
+				Area& a = Add1(draw_batch.areas);
+				a.v[0] = Vec3(33.f, H1, 33.f);
+				a.v[1] = Vec3(256.f - 33.f, H1, 33.f);
+				a.v[2] = Vec3(33.f, H2, 33.f);
+				a.v[3] = Vec3(256.f - 33.f, H2, 33.f);
+			}
+
+			// lewa
+			{
+				Area& a = Add1(draw_batch.areas);
+				a.v[0] = Vec3(33.f, H1, 33.f);
+				a.v[1] = Vec3(33.f, H2, 33.f);
+				a.v[2] = Vec3(33.f, H1, 256.f - 33.f);
+				a.v[3] = Vec3(33.f, H2, 256.f - 33.f);
+			}
+
+			// prawa
+			{
+				Area& a = Add1(draw_batch.areas);
+				a.v[0] = Vec3(256.f - 33.f, H1, 256.f - 33.f);
+				a.v[1] = Vec3(256.f - 33.f, H2, 256.f - 33.f);
+				a.v[2] = Vec3(256.f - 33.f, H1, 33.f);
+				a.v[3] = Vec3(256.f - 33.f, H2, 33.f);
+			}
+		}
+		draw_batch.area_range = 10.f;
+	}
+	else if (ctx.type == LevelContext::Inside)
+	{
+		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocationLevel& lvl = inside->GetLevelData();
+
+		if (inside->HaveUpStairs())
+		{
+			Area& a = Add1(draw_batch.areas);
+			a.v[0] = a.v[1] = a.v[2] = a.v[3] = pt_to_pos(lvl.staircase_up);
+			switch (lvl.staircase_up_dir)
+			{
+			case GDIR_DOWN:
+				a.v[0] += Vec3(-0.85f, 2.87f, 0.85f);
+				a.v[1] += Vec3(0.85f, 2.87f, 0.85f);
+				a.v[2] += Vec3(-0.85f, 0.83f, 0.85f);
+				a.v[3] += Vec3(0.85f, 0.83f, 0.85f);
+				break;
+			case GDIR_UP:
+				a.v[0] += Vec3(0.85f, 2.87f, -0.85f);
+				a.v[1] += Vec3(-0.85f, 2.87f, -0.85f);
+				a.v[2] += Vec3(0.85f, 0.83f, -0.85f);
+				a.v[3] += Vec3(-0.85f, 0.83f, -0.85f);
+				break;
+			case GDIR_RIGHT:
+				a.v[0] += Vec3(-0.85f, 2.87f, -0.85f);
+				a.v[1] += Vec3(-0.85f, 2.87f, 0.85f);
+				a.v[2] += Vec3(-0.85f, 0.83f, -0.85f);
+				a.v[3] += Vec3(-0.85f, 0.83f, 0.85f);
+				break;
+			case GDIR_LEFT:
+				a.v[0] += Vec3(0.85f, 2.87f, 0.85f);
+				a.v[1] += Vec3(0.85f, 2.87f, -0.85f);
+				a.v[2] += Vec3(0.85f, 0.83f, 0.85f);
+				a.v[3] += Vec3(0.85f, 0.83f, -0.85f);
+				break;
+			}
+		}
+		if (inside->HaveDownStairs())
+		{
+			Area& a = Add1(draw_batch.areas);
+			a.v[0] = a.v[1] = a.v[2] = a.v[3] = pt_to_pos(lvl.staircase_down);
+			switch (lvl.staircase_down_dir)
+			{
+			case GDIR_DOWN:
+				a.v[0] += Vec3(-0.85f, 0.45f, 0.85f);
+				a.v[1] += Vec3(0.85f, 0.45f, 0.85f);
+				a.v[2] += Vec3(-0.85f, -1.55f, 0.85f);
+				a.v[3] += Vec3(0.85f, -1.55f, 0.85f);
+				break;
+			case GDIR_UP:
+				a.v[0] += Vec3(0.85f, 0.45f, -0.85f);
+				a.v[1] += Vec3(-0.85f, 0.45f, -0.85f);
+				a.v[2] += Vec3(0.85f, -1.55f, -0.85f);
+				a.v[3] += Vec3(-0.85f, -1.55f, -0.85f);
+				break;
+			case GDIR_RIGHT:
+				a.v[0] += Vec3(-0.85f, 0.45f, -0.85f);
+				a.v[1] += Vec3(-0.85f, 0.45f, 0.85f);
+				a.v[2] += Vec3(-0.85f, -1.55f, -0.85f);
+				a.v[3] += Vec3(-0.85f, -1.55f, 0.85f);
+				break;
+			case GDIR_LEFT:
+				a.v[0] += Vec3(0.85f, 0.45f, 0.85f);
+				a.v[1] += Vec3(0.85f, 0.45f, -0.85f);
+				a.v[2] += Vec3(0.85f, -1.55f, 0.85f);
+				a.v[3] += Vec3(0.85f, -1.55f, -0.85f);
+				break;
+			}
+		}
+		draw_batch.area_range = 5.f;
+	}
+	else
+	{
+		// exit from building
+		Area& a = Add1(draw_batch.areas);
+		const Box2d& area = city_ctx->inside_buildings[ctx.building_id]->exit_area;
+		a.v[0] = Vec3(area.v1.x, 0.1f, area.v2.y);
+		a.v[1] = Vec3(area.v2.x, 0.1f, area.v2.y);
+		a.v[2] = Vec3(area.v1.x, 0.1f, area.v1.y);
+		a.v[3] = Vec3(area.v2.x, 0.1f, area.v1.y);
+		draw_batch.area_range = 5.f;
+	}
+
+	// action area2
+	if (pc_data.action_ready)
+	{
+		auto& action = *g_classes[(int)pc->clas].action;
+		Area2* a = area2_pool.Get();
+		draw_batch.areas2.push_back(a);
+		PrepareAreaPath(*a, action.area_size, pc->unit->pos, pc->unit->rot);
+	}
+}
+
+//=================================================================================================
+void Game::PrepareAreaPath(Area2& area, const Vec2& size, const Vec3& pos, float rot)
+{
+	rot = Clip(rot + PI);
+
+	float t;
+	Vec3 dir(sin(rot)*size.x, 0, cos(rot)*size.x);
+	LineTest(pos, dir, size.y, rot, [this](btCollisionObject* obj)
+	{
+		void* ptr = obj->getUserPointer();
+		if (ptr == pc->unit)
+			return false;
+		if (obj == obj_terrain)
+			return false;
+		return true;
+	}, t);
+
+	float len = size.x * t;
+	auto& action = *g_classes[(int)pc->clas].action;
+
+	//if(location->outside)
+
+	area.points.resize(4);
+	area.points[0] = Vec3(-action.area_size.y, 0.05f, 0);
+	area.points[1] = Vec3(-action.area_size.y, 0.05f, len);
+	area.points[2] = Vec3(action.area_size.y, 0.05f, 0);
+	area.points[3] = Vec3(action.area_size.y, 0.05f, len);
+
+	Matrix mat = Matrix::RotationY(rot);
+	for (int i = 0; i < 4; ++i)
+		area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
+
+	area.faces.push_back(0);
+	area.faces.push_back(1);
+	area.faces.push_back(2);
+	area.faces.push_back(1);
+	area.faces.push_back(2);
+	area.faces.push_back(3);
+}
+
+//=================================================================================================
 void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 {
 	InsideLocation* inside = (InsideLocation*)location;
@@ -2246,7 +2242,13 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 		tiles.clear();
 	}
 
-	std::sort(draw_batch.dungeon_parts.begin(), draw_batch.dungeon_parts.end(), SortDungeonParts);
+	std::sort(draw_batch.dungeon_parts.begin(), draw_batch.dungeon_parts.end(), [](const DungeonPart& p1, const DungeonPart& p2)
+	{
+		if (p1.tp != p2.tp)
+			return p1.tp->GetIndex() < p2.tp->GetIndex();
+		else
+			return false;
+	});
 }
 
 //=================================================================================================
@@ -2653,7 +2655,7 @@ void Game::DrawScene(bool outside)
 
 	// obszary
 	if(!draw_batch.areas.empty())
-		DrawAreas(draw_batch.areas, draw_batch.area_range);
+		DrawAreas(draw_batch.areas, draw_batch.area_range, draw_batch.areas2);
 
 	// portale
 	if(!draw_batch.portals.empty())
@@ -3774,7 +3776,7 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 }
 
 //=================================================================================================
-void Game::DrawAreas(const vector<Area>& areas, float range)
+void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2)
 {
 	SetAlphaTest(false);
 	SetAlphaBlend(true);
@@ -3793,8 +3795,21 @@ void Game::DrawAreas(const vector<Area>& areas, float range)
 	V(eArea->Begin(&passes, 0));
 	V(eArea->BeginPass(0));
 
-	for(vector<Area>::const_iterator it = areas.begin(), end = areas.end(); it != end; ++it)
-		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &it->v[0], sizeof(Vec3)));
+	for(auto& area : areas)
+		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, area.v[0], sizeof(Vec3)));
+
+	if (!areas2.empty())
+	{
+		V(eArea->SetFloat(hAreaRange, 100.f));
+		V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&Vec4(0, 0.58f, 1.f, 0.5f)));
+		V(eArea->CommitChanges());
+
+		for (auto* area2 : areas2)
+		{
+			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, area2->points.size(), area2->faces.size() / 3, area2->faces.data(), D3DFMT_INDEX16,
+				area2->points.data(), sizeof(Vec3)));
+		}
+	}
 
 	V(eArea->EndPass());
 	V(eArea->End());

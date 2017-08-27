@@ -105,14 +105,10 @@ void PlayerController::Init(Unit& _unit, bool partial)
 			sp[i] = 0;
 		for(int i = 0; i < (int)Attribute::MAX; ++i)
 			ap[i] = 0;
-	}
-}
 
-//=================================================================================================
-void PlayerController::InitAction()
-{
-	auto& class_info = g_classes[(int)clas];
-	action_charges = class_info.action->charges;
+		auto& class_info = g_classes[(int)clas];
+		action_charges = class_info.action->charges;
+	}
 }
 
 //=================================================================================================
@@ -275,66 +271,20 @@ void PlayerController::TrainMove(float dt, bool run)
 //=================================================================================================
 void PlayerController::TravelTick()
 {
-	Rest(false);
+	Rest(1, false, true);
 	Train(TrainWhat::Move, 0.f, 0);
-
-	// up³yw czasu efektów
-	uint index = 0;
-	for(vector<Effect>::iterator it = unit->effects.begin(), end = unit->effects.end(); it != end; ++it, ++index)
-	{
-		if((it->time -= 1.f) <= 0.f)
-			_to_remove.push_back(index);
-	}
-
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == unit->effects.size() - 1)
-			unit->effects.pop_back();
-		else
-		{
-			std::iter_swap(unit->effects.begin() + index, unit->effects.end() - 1);
-			unit->effects.pop_back();
-		}
-	}
 }
 
 //=================================================================================================
-// wywo³ywane podczas podró¿y
-void PlayerController::Rest(bool resting)
+void PlayerController::Rest(int days, bool resting, bool travel)
 {
-	if(unit->hp != unit->hpmax)
-	{
-		float heal = 0.5f * unit->Get(Attribute::END);
-		if(resting)
-			heal *= 2;
-		float reg;
-		if(unit->FindEffect(E_NATURAL, &reg))
-			heal *= reg;
-
-		heal = min(heal, unit->hpmax - unit->hp);
-		unit->hp += heal;
-
-		Train(Attribute::END, int(heal));
-	}
-
-	last_dmg = 0;
-	last_dmg_poison = 0;
-	dmgc = 0;
-	poison_dmgc = 0;
-}
-
-//=================================================================================================
-void PlayerController::Rest(int days, bool resting)
-{
-	// up³yw czasu efektów
+	// update effects that work for days, end other
 	int best_nat;
 	float prev_hp = unit->hp,
 		prev_stamina = unit->stamina;
 	unit->EndEffects(days, &best_nat);
 
-	// regeneracja hp
+	// regenerate hp
 	if(unit->hp != unit->hpmax)
 	{
 		float heal = 0.5f * unit->Get(Attribute::END);
@@ -356,8 +306,9 @@ void PlayerController::Rest(int days, bool resting)
 		Train(Attribute::END, int(heal));
 	}
 
+	// send update
 	Game& game = Game::Get();
-	if(game.IsOnline())
+	if(game.IsOnline() && !travel)
 	{
 		if(unit->hp != prev_hp)
 		{
@@ -370,10 +321,18 @@ void PlayerController::Rest(int days, bool resting)
 			game.GetPlayerInfo(this).update_flags |= PlayerInfo::UF_STAMINA;
 	}
 
+	// reset last damage
 	last_dmg = 0;
 	last_dmg_poison = 0;
 	dmgc = 0;
 	poison_dmgc = 0;
+
+	// reset action
+	action_cooldown = 0;
+	action_recharge = 0;
+	auto action = g_classes[(int)clas].action;
+	if(action)
+		action_charges = action->charges;
 }
 
 //=================================================================================================
@@ -554,7 +513,6 @@ void PlayerController::Load(HANDLE file)
 	}
 
 	action = Action_None;
-	wasted_key = VK_NONE;
 }
 
 //=================================================================================================
@@ -791,12 +749,15 @@ bool PlayerController::Read(BitStream& stream)
 }
 
 //=================================================================================================
-void PlayerController::UseActionCharge()
+bool PlayerController::UseActionCharge()
 {
+	if (action_charges == 0 || action_cooldown > 0)
+		return false;
 	auto action = g_classes[(int)clas].action;
 	assert(action);
 	--action_charges;
 	action_cooldown = action->cooldown;
-	if(action_recharge != 0)
+	if(action_recharge == 0)
 		action_recharge = action->recharge;
+	return true;
 }

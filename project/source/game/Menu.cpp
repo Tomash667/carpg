@@ -362,8 +362,8 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	u->player = new PlayerController;
 	pc = u->player;
-	pc->Init(*u);
 	pc->clas = clas;
+	pc->Init(*u);
 	pc->name = name;
 	pc->is_local = true;
 	pc->unit->RecalculateWeight();
@@ -1457,7 +1457,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 							fallback_co = FALLBACK_NONE;
 							fallback_t = 0.f;
 							cam.Reset();
-							player_rot_buf = 0.f;
+							pc_data.rot_buf = 0.f;
 							if(change_title_a)
 								ChangeTitle();
 							StreamEnd();

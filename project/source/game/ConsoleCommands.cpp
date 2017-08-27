@@ -122,6 +122,12 @@ void Game::AddCommands()
 }
 
 //=================================================================================================
+void Game::AddConsoleMsg(cstring msg)
+{
+	console->AddText(msg);
+}
+
+//=================================================================================================
 void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURCE source)
 {
 	if(!print_func)
@@ -717,15 +723,15 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						PushNetChange(NetChange::CHEAT_HEAL);
 					break;
 				case CMD_KILL:
-					if(selected_target)
+					if(pc_data.selected_target)
 					{
 						if(IsLocal())
-							GiveDmg(GetContext(*pc->unit), nullptr, selected_target->hpmax, *selected_target);
+							GiveDmg(GetContext(*pc->unit), nullptr, pc_data.selected_target->hpmax, *pc_data.selected_target);
 						else
 						{
 							NetChange& c = Add1(net_changes);
 							c.type = NetChange::CHEAT_KILL;
-							c.unit = selected_target;
+							c.unit = pc_data.selected_target;
 						}
 					}
 					else
@@ -735,27 +741,27 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					CmdList(t);
 					break;
 				case CMD_HEALUNIT:
-					if(selected_target)
+					if(pc_data.selected_target)
 					{
 						if(IsLocal())
 						{
-							selected_target->hp = selected_target->hpmax;
-							selected_target->stamina = selected_target->stamina_max;
-							selected_target->HealPoison();
+							pc_data.selected_target->hp = pc_data.selected_target->hpmax;
+							pc_data.selected_target->stamina = pc_data.selected_target->stamina_max;
+							pc_data.selected_target->HealPoison();
 							if(IsOnline())
 							{
 								NetChange& c = Add1(net_changes);
 								c.type = NetChange::UPDATE_HP;
-								c.unit = selected_target;
-								if(selected_target->player && selected_target->player != pc)
-									GetPlayerInfo(selected_target->player).update_flags |= PlayerInfo::UF_STAMINA;
+								c.unit = pc_data.selected_target;
+								if(pc_data.selected_target->player && pc_data.selected_target->player != pc)
+									GetPlayerInfo(pc_data.selected_target->player).update_flags |= PlayerInfo::UF_STAMINA;
 							}
 						}
 						else
 						{
 							NetChange& c = Add1(net_changes);
 							c.type = NetChange::CHEAT_HEALUNIT;
-							c.unit = selected_target;
+							c.unit = pc_data.selected_target;
 						}
 					}
 					else
@@ -886,8 +892,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(t.Next())
 							typ = t.MustGetInt();
 						Unit* ignore = nullptr;
-						if(before_player == BP_UNIT)
-							ignore = before_player_ptr.unit;
+						if(pc_data.before_player == BP_UNIT)
+							ignore = pc_data.before_player_ptr.unit;
 						if(!Cheat_KillAll(typ, *pc->unit, ignore))
 							Msg("Unknown parameter '%d'.", typ);
 					}
@@ -1532,8 +1538,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Unit* u;
 						if(t.Next() && t.GetInt() == 1)
 							u = pc->unit;
-						else if(selected_unit)
-							u = selected_unit;
+						else if(pc_data.selected_unit)
+							u = pc_data.selected_unit;
 						else
 						{
 							Msg("No unit selected.");
@@ -1544,7 +1550,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(it->cmd == CMD_HURT)
 								GiveDmg(GetContext(*u), nullptr, 100.f, *u);
 							else if(it->cmd == CMD_BREAK_ACTION)
-								BreakAction(*u, false, true);
+								BreakUnitAction(*u, false, true);
 							else
 								UnitFall(*u);
 						}
@@ -1616,8 +1622,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Unit* u;
 						if(t.Next() && t.GetInt() == 1)
 							u = pc->unit;
-						else if(selected_unit)
-							u = selected_unit;
+						else if(pc_data.selected_unit)
+							u = pc_data.selected_unit;
 						else
 						{
 							Msg("No unit selected.");

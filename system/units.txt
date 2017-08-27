@@ -2556,6 +2556,17 @@ unit worg : wolf {
 	}
 }
 
+unit white_wolf_sum : wolf {
+	level {2 15}
+	hp 350
+	def 15
+	tex {
+		"white_wolf.jpg"
+		null
+		null
+	}
+}
+
 unit base_spider {
 	mesh "pajak.qmsh"
 	mat body

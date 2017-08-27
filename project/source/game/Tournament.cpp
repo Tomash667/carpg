@@ -62,7 +62,7 @@ void Game::GenerateTournamentUnits()
 		Unit& u = **it;
 		if(IfUnitJoinTournament(u) && !u.IsFollowingTeamMember())
 		{
-			BreakAction(u, false, true);
+			BreakUnitAction(u, false, true);
 			u.in_building = -1;
 			WarpNearLocation(local_ctx, u, pos, 12.f, false);
 			local_ctx.units->push_back(&u);

@@ -182,12 +182,12 @@ void GameGui::DrawFront()
 	}
 
 	// napis nad wybranym obiektem/postaci¹
-	switch(game.before_player)
+	switch(game.pc_data.before_player)
 	{
 	case BP_UNIT:
 		if(!game.debug_info)
 		{
-			Unit* u = game.before_player_ptr.unit;
+			Unit* u = game.pc_data.before_player_ptr.unit;
 			bool dont_draw = false;
 			for(vector<UnitView>::iterator it = game.unit_views.begin(), end = game.unit_views.end(); it != end; ++it)
 			{
@@ -204,21 +204,21 @@ void GameGui::DrawFront()
 		break;
 	case BP_CHEST:
 		{
-			Vec3 text_pos = game.before_player_ptr.chest->pos;
+			Vec3 text_pos = game.pc_data.before_player_ptr.chest->pos;
 			text_pos.y += 0.75f;
 			GUI.DrawText3D(GUI.default_font, txChest, DT_OUTLINE, WHITE, text_pos);
 		}
 		break;
 	case BP_DOOR:
 		{
-			Vec3 text_pos = game.before_player_ptr.door->pos;
+			Vec3 text_pos = game.pc_data.before_player_ptr.door->pos;
 			text_pos.y += 1.75f;
-			GUI.DrawText3D(GUI.default_font, game.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, DT_OUTLINE, WHITE, text_pos);
+			GUI.DrawText3D(GUI.default_font, game.pc_data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, DT_OUTLINE, WHITE, text_pos);
 		}
 		break;
 	case BP_ITEM:
 		{
-			GroundItem& item = *game.before_player_ptr.item;
+			GroundItem& item = *game.pc_data.before_player_ptr.item;
 			Mesh* mesh;
 			if(IS_SET(item.item->flags, ITEM_GROUND_MESH))
 				mesh = item.item->mesh;
@@ -236,7 +236,7 @@ void GameGui::DrawFront()
 		break;
 	case BP_USEABLE:
 		{
-			Usable& u = *game.before_player_ptr.usable;
+			Usable& u = *game.pc_data.before_player_ptr.usable;
 			BaseUsable& bu = g_base_usables[u.type];
 			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;
@@ -377,44 +377,44 @@ void GameGui::DrawFront()
 	auto& class_info = g_classes[(int)game.pc->clas];
 	if (class_info.action && !game.in_tutorial)
 	{
-		static float charge = 1.f;
-		if (Key.Down('G'))
-			charge = -1.f;
-		if (charge < 1.f)
-			charge += 0.04f;
-
+		Action& action = *class_info.action;
+		PlayerController& pc = *game.pc;
 		const float pad = 2.f;
 		const float img_size = 32.f;
 		const float img_ratio = 0.25f;
 
-		if (charge >= 1.f)
+		float charge;
+		if (pc.action_charges > 0 || pc.action_cooldown >= pc.action_recharge)
+			charge = pc.action_cooldown / action.cooldown;
+		else
+			charge = pc.action_recharge / action.recharge;
+
+		if (charge == 0.f)
 		{
 			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
 				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
-			GUI.DrawSprite2(class_info.action->tex->tex, mat);
+			GUI.DrawSprite2(action.tex->tex, mat);
 		}
 		else
 		{
 			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
 				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
 			GUI.UseGrayscale(true);
-			GUI.DrawSprite2(class_info.action->tex->tex, mat);
+			GUI.DrawSprite2(action.tex->tex, mat);
 			GUI.UseGrayscale(false);
-			if (charge > 0.f)
+			if (charge < 1.f)
 			{
-				Rect part = { 0, 128 - int(charge * 128), 128, 128 };
-				GUI.DrawSprite2(class_info.action->tex->tex, mat, &part);
+				Rect part = { 0, 128 - int((1.f - charge) * 128), 128, 128 };
+				GUI.DrawSprite2(action.tex->tex, mat, &part);
 			}
 			GUI.DrawSprite2(tActionCooldown, mat);
 		}
 
 		// charges
-		const int charges = 2;
-		const int charges_max = 3;
-		if (charges_max > 1)
+		if (action.charges > 1)
 		{
 			Rect r(int(wnd_scale * (256 + pad * 2)), int(GUI.wnd_size.y - (pad * 2) * wnd_scale)-12, 0, 0);
-			GUI.DrawText(GUI.fSmall, Format("%d/%d", charges, charges_max), DT_SINGLELINE, BLACK, r);
+			GUI.DrawText(GUI.fSmall, Format("%d/%d", pc.action_charges, action.charges), DT_SINGLELINE, BLACK, r);
 		}
 	}
 
@@ -681,13 +681,9 @@ void GameGui::Update(float dt)
 
 	game_messages->Update(dt);
 
-	if(!GUI.HaveDialog() && !Game::Get().dialog_context.dialog_mode)
-	{
-		if(Key.PressedRelease(VK_MENU))
-			use_cursor = !use_cursor;
-	}
-
-	if(Key.Down(VK_ESCAPE))
+	if (!GUI.HaveDialog() && !Game::Get().dialog_context.dialog_mode && Key.Down(VK_MENU))
+		use_cursor = true;
+	else
 		use_cursor = false;
 
 	const bool have_manabar = false;
@@ -1055,7 +1051,7 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	if(game.AllowMouse() && cursor_choice != -1 && Key.PressedRelease(VK_LBUTTON))
 	{
 		if(ctx.is_local)
-			game.pc->wasted_key = VK_LBUTTON;
+			game.pc_data.wasted_key = VK_LBUTTON;
 		ctx.choice_selected = cursor_choice;
 		return true;
 	}
