@@ -6708,14 +6708,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 		// kolizje
 		if(create_physics)
-		{
-			btCapsuleShape* caps = new btCapsuleShape(u->GetUnitRadius(), max(MIN_H, u->GetUnitHeight()));
-			u->cobj = new btCollisionObject;
-			u->cobj->setCollisionShape(caps);
-			u->cobj->setUserPointer(u);
-			u->cobj->setCollisionFlags(CG_UNIT);
-			phy_world->addCollisionObject(u->cobj);
-		}
+			CreateUnitPhysics(*u);
 		else
 			u->cobj = nullptr;
 	}
@@ -9236,11 +9229,7 @@ void Game::SpawnDungeonColliders()
 				!czy_blokuje2(m[x - 1 + y*w]) || !czy_blokuje2(m[x + 1 + y*w]) ||
 				!czy_blokuje2(m[x - 1 + (y + 1)*w]) || !czy_blokuje2(m[x + (y + 1)*w]) || !czy_blokuje2(m[x + 1 + (y + 1)*w])))
 			{
-				cobj = new btCollisionObject;
-				cobj->setCollisionShape(shape_wall);
-				cobj->getWorldTransform().getOrigin().setValue(2.f*x + 1.f, 2.f, 2.f*y + 1.f);
-				cobj->setCollisionFlags(CG_WALL);
-				phy_world->addCollisionObject(cobj);
+				SpawnDungeonCollider(Vec3(2.f*x + 1.f, 2.f, 2.f*y + 1.f));
 			}
 		}
 	}
@@ -9250,23 +9239,11 @@ void Game::SpawnDungeonColliders()
 	{
 		// lewa
 		if(czy_blokuje2(m[i*w]) && !czy_blokuje2(m[1 + i*w]))
-		{
-			cobj = new btCollisionObject;
-			cobj->setCollisionShape(shape_wall);
-			cobj->getWorldTransform().getOrigin().setValue(1.f, 2.f, 2.f*i + 1.f);
-			cobj->setCollisionFlags(CG_WALL);
-			phy_world->addCollisionObject(cobj);
-		}
+			SpawnDungeonCollider(Vec3(1.f, 2.f, 2.f*i + 1.f));
 
 		// prawa
 		if(czy_blokuje2(m[i*w + w - 1]) && !czy_blokuje2(m[w - 2 + i*w]))
-		{
-			cobj = new btCollisionObject;
-			cobj->setCollisionShape(shape_wall);
-			cobj->getWorldTransform().getOrigin().setValue(2.f*(w - 1) + 1.f, 2.f, 2.f*i + 1.f);
-			cobj->setCollisionFlags(CG_WALL);
-			phy_world->addCollisionObject(cobj);
-		}
+			SpawnDungeonCollider(Vec3(2.f*(w - 1) + 1.f, 2.f, 2.f*i + 1.f));
 	}
 
 	// przednia/tylna œciana
@@ -9274,23 +9251,11 @@ void Game::SpawnDungeonColliders()
 	{
 		// przednia
 		if(czy_blokuje2(m[i + (h - 1)*w]) && !czy_blokuje2(m[i + (h - 2)*w]))
-		{
-			cobj = new btCollisionObject;
-			cobj->setCollisionShape(shape_wall);
-			cobj->getWorldTransform().getOrigin().setValue(2.f*i + 1.f, 2.f, 2.f*(h - 1) + 1.f);
-			cobj->setCollisionFlags(CG_WALL);
-			phy_world->addCollisionObject(cobj);
-		}
+			SpawnDungeonCollider(Vec3(2.f*i + 1.f, 2.f, 2.f*(h - 1) + 1.f));
 
 		// tylna
 		if(czy_blokuje2(m[i]) && !czy_blokuje2(m[i + w]))
-		{
-			cobj = new btCollisionObject;
-			cobj->setCollisionShape(shape_wall);
-			cobj->getWorldTransform().getOrigin().setValue(2.f*i + 1.f, 2.f, 1.f);
-			cobj->setCollisionFlags(CG_WALL);
-			phy_world->addCollisionObject(cobj);
-		}
+			SpawnDungeonCollider(Vec3(2.f*i + 1.f, 2.f, 1.f));
 	}
 
 	// schody w górê
@@ -9298,11 +9263,20 @@ void Game::SpawnDungeonColliders()
 	{
 		cobj = new btCollisionObject;
 		cobj->setCollisionShape(shape_schody);
-		cobj->getWorldTransform().getOrigin().setValue(2.f*lvl.staircase_up.x + 1.f, 0.f, 2.f*lvl.staircase_up.y + 1.f);
+		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
+		cobj->getWorldTransform().setOrigin(btVector3(2.f*lvl.staircase_up.x + 1.f, 0.f, 2.f*lvl.staircase_up.y + 1.f));
 		cobj->getWorldTransform().setRotation(btQuaternion(dir_to_rot(lvl.staircase_up_dir), 0, 0));
-		cobj->setCollisionFlags(CG_WALL);
-		phy_world->addCollisionObject(cobj);
+		phy_world->addCollisionObject(cobj, CG_BUILDING);
 	}
+}
+
+void Game::SpawnDungeonCollider(const Vec3& pos)
+{
+	auto cobj = new btCollisionObject;
+	cobj->setCollisionShape(shape_wall);
+	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
+	cobj->getWorldTransform().setOrigin(ToVector3(pos));
+	phy_world->addCollisionObject(cobj, CG_BUILDING);
 }
 
 void Game::RemoveColliders()
@@ -9434,9 +9408,9 @@ void Game::SpawnTerrainCollider()
 
 	obj_terrain = new btCollisionObject;
 	obj_terrain->setCollisionShape(terrain_shape);
+	obj_terrain->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_TERRAIN);
 	obj_terrain->getWorldTransform().setOrigin(btVector3(float(OutsideLocation::size), 5.f, float(OutsideLocation::size)));
-	obj_terrain->setCollisionFlags(CG_WALL);
-	phy_world->addCollisionObject(obj_terrain);
+	phy_world->addCollisionObject(obj_terrain, CG_TERRAIN);
 }
 
 void Game::GenerateDungeonObjects()
@@ -10703,14 +10677,7 @@ void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_wea
 		if(!reenter)
 		{
 			local_ctx.units->push_back(&u);
-
-			btCapsuleShape* caps = new btCapsuleShape(u.GetUnitRadius(), max(MIN_H, u.GetUnitHeight()));
-			u.cobj = new btCollisionObject;
-			u.cobj->setCollisionShape(caps);
-			u.cobj->setUserPointer(&u);
-			u.cobj->setCollisionFlags(CG_UNIT);
-			phy_world->addCollisionObject(u.cobj);
-
+			CreateUnitPhysics(u);
 			if(u.IsHero())
 				ais.push_back(u.ai);
 		}
@@ -11346,6 +11313,7 @@ void Game::GenerateCaveObjects()
 
 					btCollisionObject* cobj = new btCollisionObject;
 					cobj->setCollisionShape(obj->shape);
+					cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
 
 					if(obj->type == OBJ_CYLINDER)
 					{
@@ -11359,10 +11327,8 @@ void Game::GenerateCaveObjects()
 						btTransform& tr = cobj->getWorldTransform();
 						Vec3 pos2 = Vec3::TransformZero(*obj->matrix);
 						pos2 += o.pos;
-						//Vec3 pos2 = o.pos;
 						tr.setOrigin(ToVector3(pos2));
 						tr.setRotation(btQuaternion(o.rot.y, 0, 0));
-						//tr.setBasis(btMatrix3x3(obj->matrix->_11, obj->matrix->_12, obj->matrix->_13, obj->matrix->_21, obj->matrix->_22, obj->matrix->_23, obj->matrix->_31, obj->matrix->_32, obj->matrix->_33));
 
 						c.pt = Vec2(pos2.x, pos2.z);
 						c.w = obj->size.x;
@@ -11377,8 +11343,7 @@ void Game::GenerateCaveObjects()
 							c.type = CollisionObject::RECTANGLE;
 					}
 
-					cobj->setCollisionFlags(CG_WALL);
-					phy_world->addCollisionObject(cobj);
+					phy_world->addCollisionObject(cobj, CG_OBJECT);
 				}
 
 				sta.push_back(pt);
@@ -12558,7 +12523,7 @@ bool Game::LineTest(const Vec3& from, const Vec3& dir, float width, float rot, d
 	t_to.setBasis(t_from.getBasis());
 
 	ConvexCallback callback(clbk);
-	
+
 	phy_world->convexSweepTest(shape, t_from, t_to, callback);
 
 	delete shape;
@@ -13541,13 +13506,13 @@ void Game::OnReenterLevel(LevelContext& ctx)
 			// fizyka
 			door.phy = new btCollisionObject;
 			door.phy->setCollisionShape(shape_door);
+			door.phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 			btTransform& tr = door.phy->getWorldTransform();
 			Vec3 pos = door.pos;
 			pos.y += 1.319f;
 			tr.setOrigin(ToVector3(pos));
 			tr.setRotation(btQuaternion(door.rot, 0, 0));
-			door.phy->setCollisionFlags(CG_WALL);
-			phy_world->addCollisionObject(door.phy);
+			phy_world->addCollisionObject(door.phy, CG_DOOR);
 
 			// czy otwarte
 			if(door.state == Door::Open)
@@ -18078,6 +18043,7 @@ bool Game::GenerateMine()
 			door->mesh_inst->groups[0].speed = 2.f;
 			door->phy = new btCollisionObject;
 			door->phy->setCollisionShape(shape_door);
+			door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 			door->locked = LOCK_MINE;
 			door->netid = door_netid_counter++;
 			btTransform& tr = door->phy->getWorldTransform();
@@ -18085,7 +18051,7 @@ bool Game::GenerateMine()
 			pos.y += 1.319f;
 			tr.setOrigin(ToVector3(pos));
 			tr.setRotation(btQuaternion(door->rot, 0, 0));
-			phy_world->addCollisionObject(door->phy);
+			phy_world->addCollisionObject(door->phy, CG_DOOR);
 		}
 
 		// pochodnia
@@ -18279,6 +18245,7 @@ bool Game::GenerateMine()
 							CollisionObject& c = Add1(local_ctx.colliders);
 							btCollisionObject* cobj = new btCollisionObject;
 							cobj->setCollisionShape(iron_ore->shape);
+							cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
 
 							btTransform& tr = cobj->getWorldTransform();
 							Vec3 pos2 = Vec3::TransformZero(*iron_ore->matrix);
@@ -18298,7 +18265,7 @@ bool Game::GenerateMine()
 							else
 								c.type = CollisionObject::RECTANGLE;
 
-							phy_world->addCollisionObject(cobj, CG_WALL);
+							phy_world->addCollisionObject(cobj, CG_OBJECT);
 						}
 					}
 #undef P
@@ -19976,6 +19943,26 @@ void Game::StartDialog2(PlayerController* player, Unit* talker, GameDialog* dial
 	if(player != pc)
 		Net_StartDialog(player, talker);
 	StartDialog(ctx, talker, dialog);
+}
+
+void Game::CreateUnitPhysics(Unit& unit, bool position)
+{
+	btCapsuleShape* caps = new btCapsuleShape(unit.GetUnitRadius(), max(MIN_H, unit.GetUnitHeight()));
+	unit.cobj = new btCollisionObject;
+	unit.cobj->setCollisionShape(caps);
+	unit.cobj->setUserPointer(&unit);
+	unit.cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_UNIT);
+
+	if(position)
+	{
+		Vec3 pos = unit.pos;
+		pos.y += unit.GetUnitHeight();
+		btVector3 bpos(ToVector3(unit.IsAlive() ? pos : Vec3(1000, 1000, 1000)));
+		bpos.setY(unit.pos.y + max(MIN_H, unit.GetUnitHeight()) / 2);
+		unit.cobj->getWorldTransform().setOrigin(bpos);
+	}
+
+	phy_world->addCollisionObject(unit.cobj, CG_UNIT);
 }
 
 void Game::UpdateUnitPhysics(Unit& unit, const Vec3& pos)

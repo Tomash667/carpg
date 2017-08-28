@@ -125,8 +125,14 @@ inline int KeyAllowState(byte k)
 
 enum COLLISION_GROUP
 {
-	CG_WALL = 1 << 8,
-	CG_UNIT = 1 << 9
+	CG_TERRAIN = 1 << 7,
+	CG_BUILDING = 1 << 8,
+	CG_UNIT = 1 << 9,
+	CG_OBJECT = 1 << 10,
+	CG_DOOR = 1 << 11,
+	CG_COLLIDER = 1 << 12,
+	CG_CAMERA_COLLIDER = 1 << 13,
+	// max 1 << 15
 };
 
 extern const float ATTACK_RANGE;
@@ -514,7 +520,7 @@ struct Game final : public Engine, public UnitEventHandler
 	static cstring txGoldPlus, txQuestCompletedGold;
 	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
 	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;
-	
+
 	//-----------------------------------------------------------------
 	// Localized texts
 	//-----------------------------------------------------------------
@@ -1097,6 +1103,7 @@ public:
 	Vec4 GetLightDir();
 	void UpdateBullets(LevelContext& ctx, float dt);
 	void SpawnDungeonColliders();
+	void SpawnDungeonCollider(const Vec3& pos);
 	void RemoveColliders();
 	void CreateCollisionShapes();
 	bool AllowKeyboard() const { return IS_SET(allow_input, ALLOW_KEYBOARD); }
@@ -1324,6 +1331,7 @@ public:
 	void StartPvp(PlayerController* player, Unit* unit);
 	void UpdateGameNet(float dt);
 	void CheckCredit(bool require_update = false, bool ignore = false);
+	void CreateUnitPhysics(Unit& unit, bool position = false);
 	void UpdateUnitPhysics(Unit& unit, const Vec3& pos);
 	void WarpNearLocation(LevelContext& ctx, Unit& uint, const Vec3& pos, float extra_radius, bool allow_exact, int tries = 20);
 	void Train(Unit& unit, bool is_skill, int co, int mode = 0);

@@ -1,4 +1,8 @@
 ﻿FEATURE:
+? collision flags fix
+	? loaded unit physics
+	? collisions
+	? camera colliders
 + bulls charge effect
 	+ dmg = siła
 	+ pick area: rectangle with limited rot
@@ -12,7 +16,7 @@
 + dash - allows to move between units, around objects
 	+ dash, rectancgle in any direction
 	+ animation, moving
-	+ can move over small objects/units
+	+ can move over objects/units
 + summoned wolf
 	+ pick point
 	+ spawn unit
@@ -38,9 +42,16 @@ NEW:
 + modability, load from file:
 	+ classes
 	+ actions
-+ ref: move handling of game panels from Game.OnTick to GameGui
++ ref:
+	+ move handling of game panels from Game.OnTick to GameGui
+	+ GenerateCaveObjects use duplicated code for objects spawning, GenerateMine too
+	+ spawn door physics duplicates
 + check files for utf-8 BOM ?
 + ee: sleeping beauty - after waking up tell to let her sleep for 5 minutes
++ create character screen rework
+	on left tabs - name, (gender, race), apperance, class, history, perks
+	can change any thing at any time
+	show bonuses by stats when hovering (example: strength: +10 dmg, +50 hp, +4 skills)
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

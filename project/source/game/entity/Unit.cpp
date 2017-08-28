@@ -1812,15 +1812,7 @@ void Unit::Load(HANDLE file, bool local)
 
 	// fizyka
 	if(local)
-	{
-		btCapsuleShape* caps = new btCapsuleShape(GetUnitRadius(), max(MIN_H, GetUnitHeight()));
-		cobj = new btCollisionObject;
-		cobj->setCollisionShape(caps);
-		cobj->setUserPointer(this);
-		cobj->setCollisionFlags(CG_UNIT);
-		Game::Get().phy_world->addCollisionObject(cobj);
-		Game::Get().UpdateUnitPhysics(*this, IsAlive() ? pos : Vec3(1000, 1000, 1000));
-	}
+		Game::Get().CreateUnitPhysics(*this, true);
 	else
 		cobj = nullptr;
 

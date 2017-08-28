@@ -41,13 +41,14 @@ void Door::Load(HANDLE file, bool local)
 
 		phy = new btCollisionObject;
 		phy->setCollisionShape(game.shape_door);
+		phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 
 		btTransform& tr = phy->getWorldTransform();
 		Vec3 pos2 = pos;
 		pos2.y += 1.319f;
 		tr.setOrigin(ToVector3(pos2));
 		tr.setRotation(btQuaternion(rot, 0, 0));
-		game.phy_world->addCollisionObject(phy);
+		game.phy_world->addCollisionObject(phy, CG_DOOR);
 
 		if(!IsBlocking())
 		{
