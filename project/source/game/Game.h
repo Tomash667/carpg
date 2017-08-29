@@ -1152,7 +1152,7 @@ public:
 	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
 	void PreloadTraps(vector<Trap*>& traps);
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
-	bool LineTest(const Vec3& from, const Vec3& dir, float width, float rot, delegate<bool(btCollisionObject*)> clbk, float& t);
+	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*)> clbk, float& t);
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);
 	void AI_Shout(LevelContext& ctx, AIController& ai);

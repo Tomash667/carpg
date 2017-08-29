@@ -2914,6 +2914,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		pc_data.wasted_key = KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
 		if (pc_data.wasted_key != VK_NONE)
 		{
+			pc->GetAction();
 			pc->UseActionCharge();
 			pc_data.action_ready = false;
 		}
@@ -12512,22 +12513,22 @@ struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 	}
 };
 
-bool Game::LineTest(const Vec3& from, const Vec3& dir, float width, float rot, delegate<bool(btCollisionObject*)> clbk, float& t)
+bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*)> clbk, float& t)
 {
-	auto shape = new btBoxShape(btVector3(width, 0.05f, 0.05f));
+	assert(shape->isConvex());
 
 	btTransform t_from, t_to;
+	t_from.setIdentity();
 	t_from.setOrigin(ToVector3(from));
-	t_from.getBasis().setRotation(ToQuaternion(Quat::CreateFromYawPitchRoll(rot, 0, 0)));
+	//t_from.getBasis().setRotation(ToQuaternion(Quat::CreateFromYawPitchRoll(rot, 0, 0)));
+	t_to.setIdentity();
 	t_to.setOrigin(ToVector3(dir) + t_from.getOrigin());
-	t_to.setBasis(t_from.getBasis());
+	//t_to.setBasis(t_from.getBasis());
 
 	ConvexCallback callback(clbk);
 
-	phy_world->convexSweepTest(shape, t_from, t_to, callback);
-
-	delete shape;
-
+	phy_world->convexSweepTest((btConvexShape*)shape, t_from, t_to, callback);
+	
 	t = callback.m_closestHitFraction;
 	return callback.hasHit();
 }

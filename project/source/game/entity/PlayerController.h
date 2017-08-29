@@ -201,6 +201,7 @@ struct PlayerController : public HeroPlayerCommon
 		return is_local;
 	}
 
+	Action* GetAction();
 	bool CanUseAction() const
 	{
 		return action_charges > 0 && action_cooldown <= 0;

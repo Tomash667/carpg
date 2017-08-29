@@ -13,16 +13,19 @@
 		+ stun effect above head
 		+ heal remove stun
 	+ moving units with bulls charge
+	+ sound
 + dash - allows to move between units, around objects
-	+ dash, rectancgle in any direction
+	+ dash, rectangle in any direction
 	+ animation, moving
 	+ can move over objects/units
+	+ sound
 + summoned wolf
 	+ pick point
 	+ spawn unit
 	+ disappear after death
 	+ particles
 	+ can cast over units/objects (but not walls)
+	+ sound
 + resources:
 	+ stunned animation
 + info in class desc about actions

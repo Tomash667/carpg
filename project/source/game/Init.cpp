@@ -513,7 +513,7 @@ void Game::AddLoadTasks()
 		tex_mgr.AddLoadTask(ci.icon_file, ci.icon);
 	tex_mgr.AddLoadTask("warning.png", tWarning);
 	tex_mgr.AddLoadTask("error.png", tError);
-	Action::LoadImages();
+	Action::LoadData();
 
 	// preload terrain textures
 	tTrawa = tex_mgr.Get("trawa.jpg");

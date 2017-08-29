@@ -1829,14 +1829,16 @@ void Game::PrepareAreaPath(Area2& area, const Vec2& size, const Vec3& pos, float
 {
 	rot = Clip(rot + PI);
 
+	//float height = pc->unit->GetUnitHeight();
+	const float h = 0.06f;
+	const int steps = 10;
+
 	float t;
 	Vec3 dir(sin(rot)*size.x, 0, cos(rot)*size.x);
-	LineTest(pos, dir, size.y, rot, [this](btCollisionObject* obj)
+	LineTest(pc->unit->cobj->getCollisionShape(), pos, dir, [this](btCollisionObject* obj)
 	{
-		void* ptr = obj->getUserPointer();
-		if (ptr == pc->unit)
-			return false;
-		if (obj == obj_terrain)
+		int flags = obj->getCollisionFlags();
+		if (IS_SET(flags, CG_UNIT | CG_TERRAIN))
 			return false;
 		return true;
 	}, t);
@@ -1844,24 +1846,58 @@ void Game::PrepareAreaPath(Area2& area, const Vec2& size, const Vec3& pos, float
 	float len = size.x * t;
 	auto& action = *g_classes[(int)pc->clas].action;
 
-	//if(location->outside)
+	if (location->outside && pc->unit->in_building == -1)
+	{
+		area.points.clear();
+		area.faces.clear();
 
-	area.points.resize(4);
-	area.points[0] = Vec3(-action.area_size.y, 0.05f, 0);
-	area.points[1] = Vec3(-action.area_size.y, 0.05f, len);
-	area.points[2] = Vec3(action.area_size.y, 0.05f, 0);
-	area.points[3] = Vec3(action.area_size.y, 0.05f, len);
+		Vec3 active_pos = pos;
+		Vec3 step = dir * t / (float)steps;
+		Vec3 unit_offset(pc->unit->pos.x, 0, pc->unit->pos.z);
+		float len_step = len / steps;
+		float active_step = 0;
+		Matrix mat = Matrix::RotationY(rot);
+		for (int i = 0; i < steps; ++i)
+		{
+			float current_h = terrain->GetH(active_pos) + h;
 
-	Matrix mat = Matrix::RotationY(rot);
-	for (int i = 0; i < 4; ++i)
-		area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
+			area.points.push_back(Vec3::Transform(Vec3(-action.area_size.y, current_h, active_step), mat) + unit_offset);
+			area.points.push_back(Vec3::Transform(Vec3(+action.area_size.y, current_h, active_step), mat) + unit_offset);
 
-	area.faces.push_back(0);
-	area.faces.push_back(1);
-	area.faces.push_back(2);
-	area.faces.push_back(1);
-	area.faces.push_back(2);
-	area.faces.push_back(3);
+			active_pos += step;
+			active_step += len_step;
+		}
+
+		for (int i = 0; i < steps - 2; ++i)
+		{
+			area.faces.push_back(i * 2);
+			area.faces.push_back((i + 1) * 2);
+			area.faces.push_back(i * 2 + 1);
+			area.faces.push_back((i + 1) * 2);
+			area.faces.push_back(i * 2 + 1);
+			area.faces.push_back((i + 1) * 2 + 1);
+		}
+	}
+	else
+	{
+		area.points.resize(4);
+		area.points[0] = Vec3(-action.area_size.y, h, 0);
+		area.points[1] = Vec3(-action.area_size.y, h, len);
+		area.points[2] = Vec3(action.area_size.y, h, 0);
+		area.points[3] = Vec3(action.area_size.y, h, len);
+
+		Matrix mat = Matrix::RotationY(rot);
+		for (int i = 0; i < 4; ++i)
+			area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
+
+		area.faces.clear();
+		area.faces.push_back(0);
+		area.faces.push_back(1);
+		area.faces.push_back(2);
+		area.faces.push_back(1);
+		area.faces.push_back(2);
+		area.faces.push_back(3);
+	}
 }
 
 //=================================================================================================
@@ -2653,13 +2689,13 @@ void Game::DrawScene(bool outside)
 	if(draw_batch.electros)
 		DrawLightings(*draw_batch.electros);
 
+	// portale
+	if (!draw_batch.portals.empty())
+		DrawPortals(draw_batch.portals);
+
 	// obszary
 	if(!draw_batch.areas.empty())
 		DrawAreas(draw_batch.areas, draw_batch.area_range, draw_batch.areas2);
-
-	// portale
-	if(!draw_batch.portals.empty())
-		DrawPortals(draw_batch.portals);
 }
 
 //=================================================================================================
@@ -3781,7 +3817,7 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 	SetAlphaTest(false);
 	SetAlphaBlend(true);
 	SetNoCulling(true);
-	SetNoZWrite(false);
+	SetNoZWrite(true);
 
 	V(device->SetVertexDeclaration(vertex_decl[VDI_POS]));
 
@@ -3798,8 +3834,13 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 	for(auto& area : areas)
 		V(device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, area.v[0], sizeof(Vec3)));
 
+	V(eArea->EndPass());
+	V(eArea->End());
+
 	if (!areas2.empty())
 	{
+		V(eArea->Begin(&passes, 0));
+		V(eArea->BeginPass(0));
 		V(eArea->SetFloat(hAreaRange, 100.f));
 		V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&Vec4(0, 0.58f, 1.f, 0.5f)));
 		V(eArea->CommitChanges());
@@ -3809,10 +3850,10 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, area2->points.size(), area2->faces.size() / 3, area2->faces.data(), D3DFMT_INDEX16,
 				area2->points.data(), sizeof(Vec3)));
 		}
-	}
 
-	V(eArea->EndPass());
-	V(eArea->End());
+		V(eArea->EndPass());
+		V(eArea->End());
+	}
 }
 
 //=================================================================================================
