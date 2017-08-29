@@ -9,12 +9,11 @@ struct Action
 	enum Area
 	{
 		LINE,
-		LINE_FORWARD,
 		POINT
 	};
 
 	cstring id;
-	float cooldown, recharge;
+	float cooldown, recharge, sound_dist;
 	int charges;
 	TexturePtr tex;
 	string name, desc;
@@ -22,9 +21,11 @@ struct Action
 	Vec2 area_size; // for LINE,LINE_FORWARD w,h; for POINT radius,max_distance
 	cstring sound_id;
 	SoundPtr sound;
+	bool pick_dir;
 
-	Action(cstring id, float cooldown, float recharge, int charges, Area area, const Vec2& area_size, cstring sound_id) : id(id), cooldown(cooldown), recharge(recharge),
-		charges(charges), tex(nullptr), area(area), area_size(area_size), sound_id(sound_id), sound(nullptr)
+	Action(cstring id, float cooldown, float recharge, int charges, Area area, const Vec2& area_size, cstring sound_id, float sound_dist, bool pick_dir) :
+		id(id), cooldown(cooldown), recharge(recharge), charges(charges), tex(nullptr), area(area), area_size(area_size), sound_id(sound_id), sound(nullptr),
+		sound_dist(sound_dist), pick_dir(pick_dir)
 	{
 	}
 

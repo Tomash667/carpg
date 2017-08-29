@@ -458,7 +458,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool outside, Unit& u);
 	void ListAreas(LevelContext& ctx);
-	void PrepareAreaPath(Area2& area, const Vec2& size, const Vec3& pos, float rot);
+	void PrepareAreaPath();
 	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
 	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs = 0);
 	int GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, float z, float radius, int sub = 0);
@@ -1021,6 +1021,7 @@ public:
 	void UpdateGame(float dt);
 	void UpdateFallback(float dt);
 	void UpdatePlayer(LevelContext& ctx, float dt);
+	void UseAction(PlayerController* p);
 	void PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
 
 	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
@@ -1132,7 +1133,7 @@ public:
 	void RespawnObjectColliders(LevelContext& ctx, bool spawn_pes = true);
 	void SetRoomPointers();
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
-	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax);
+	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax = 0.f);
 	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float dmg, int dmg_type, bool bash);
 	void GenerateLabirynthUnits();
 	int GetDungeonLevel();

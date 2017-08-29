@@ -24,6 +24,7 @@
 #include "AIController.h"
 #include "Spell.h"
 #include "Team.h"
+#include "Action.h"
 
 extern bool merchant_buy[];
 extern bool blacksmith_buy[];
@@ -4876,6 +4877,20 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
+		// player used action
+		case NetChange::ACTION:
+			UseAction(info.pc);
+			break;
+		// player used cheat 'refresh_cooldown'
+		case NetChange::CHEAT_REFRESH_COOLDOWN:
+			if(!info.devmode)
+			{
+				Error("Update server: Player %s used CHEAT_REFRESH_COOLDOWN without devmode.", info.name.c_str());
+				StreamError();
+			}
+			else
+				info.pc->RefreshCooldown();
+			break;
 		// invalid change
 		default:
 			Error("Update server: Invalid change type %u from %s.", type, info.name.c_str());
@@ -5267,6 +5282,10 @@ void Game::WriteServerChanges(BitStream& stream)
 			break;
 		case NetChange::GAME_STATS:
 			stream.Write(total_kills);
+			break;
+		case NetChange::ACTION:
+			stream.Write(c.unit->netid);
+			WriteString1(stream, c.unit->player->GetAction().id);
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -9462,6 +9481,7 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::TRAIN_MOVE:
 		case NetChange::CLOSE_ENCOUNTER:
 		case NetChange::YELL:
+		case NetChange::CHEAT_REFRESH_COOLDOWN:
 			break;
 		case NetChange::ADD_NOTE:
 			WriteString1(stream, notes.back());

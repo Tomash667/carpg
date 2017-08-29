@@ -374,10 +374,9 @@ void GameGui::DrawFront()
 	Int2 spos(256.f*wnd_scale + offset, GUI.wnd_size.y - offset);
 
 	// action
-	auto& class_info = g_classes[(int)game.pc->clas];
-	if (class_info.action && !game.in_tutorial)
+	if (!game.in_tutorial)
 	{
-		Action& action = *class_info.action;
+		auto& action = game.pc->GetAction();
 		PlayerController& pc = *game.pc;
 		const float pad = 2.f;
 		const float img_size = 32.f;
@@ -780,15 +779,15 @@ void GameGui::Update(float dt)
 		}
 
 		// action
-		auto& class_info = g_classes[(int)game.pc->clas];
-		if (class_info.action && !game.in_tutorial)
+		if (!game.in_tutorial)
 		{
+			auto& action = game.pc->GetAction();
 			const float pad = 2.f;
 			const float img_size = 32.f;
 			const float img_ratio = 0.25f;
 			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
 				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
-			r = GUI.GetSpriteRect(class_info.action->tex->tex, mat);
+			r = GUI.GetSpriteRect(action.tex->tex, mat);
 			if (r.IsInside(GUI.cursor_pos))
 				group = TooltipGroup::Action;
 		}
@@ -1154,9 +1153,9 @@ void GameGui::GetTooltip(TooltipController*, int _group, int id)
 		break;
 	case TooltipGroup::Action:
 		{
-			auto& class_info = g_classes[(int)game.pc->clas];
-			tooltip.text = class_info.action->name;
-			tooltip.small_text = class_info.action->desc;
+			auto& action = game.pc->GetAction();
+			tooltip.text = action.name;
+			tooltip.small_text = action.desc;
 		}
 		break;
 	}
@@ -1398,6 +1397,6 @@ void GameGui::Setup()
 	if(game.in_tutorial)
 		action = nullptr;
 	else
-		action = g_classes[(int)game.pc->clas].action;
+		action = &game.pc->GetAction();
 	action_panel->Init(action);
 }

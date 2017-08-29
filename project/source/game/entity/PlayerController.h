@@ -201,12 +201,13 @@ struct PlayerController : public HeroPlayerCommon
 		return is_local;
 	}
 
-	Action* GetAction();
+	::Action& GetAction();
 	bool CanUseAction() const
 	{
 		return action_charges > 0 && action_cooldown <= 0;
 	}
 	bool UseActionCharge();
+	void RefreshCooldown();
 };
 
 //-----------------------------------------------------------------------------
@@ -239,7 +240,7 @@ struct LocalPlayerData
 	Unit* selected_unit, *selected_target;
 	GroundItem* picking_item;
 	int picking_item_state;
-	float rot_buf;
+	float rot_buf, action_rot;
 	byte wasted_key;
 	bool autowalk, action_ready;
 

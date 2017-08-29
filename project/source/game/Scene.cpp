@@ -1815,21 +1815,22 @@ void Game::ListAreas(LevelContext& ctx)
 	}
 
 	// action area2
-	if (pc_data.action_ready)
-	{
-		auto& action = *g_classes[(int)pc->clas].action;
-		Area2* a = area2_pool.Get();
-		draw_batch.areas2.push_back(a);
-		PrepareAreaPath(*a, action.area_size, pc->unit->pos, pc->unit->rot);
-	}
+	if(pc_data.action_ready)
+		PrepareAreaPath();
 }
 
 //=================================================================================================
-void Game::PrepareAreaPath(Area2& area, const Vec2& size, const Vec3& pos, float rot)
+void Game::PrepareAreaPath()
 {
-	rot = Clip(rot + PI);
+	auto& action = pc->GetAction();
+	Area2* area_ptr = area2_pool.Get();
+	Area2& area = *area_ptr;
+	draw_batch.areas2.push_back(area_ptr);
 
-	//float height = pc->unit->GetUnitHeight();
+	float rot = Clip(pc->unit->rot + PI + pc_data.action_rot);
+	const Vec3& pos = pc->unit->pos;
+	const Vec2& size = action.area_size;
+
 	const float h = 0.06f;
 	const int steps = 10;
 
@@ -1844,7 +1845,6 @@ void Game::PrepareAreaPath(Area2& area, const Vec2& size, const Vec3& pos, float
 	}, t);
 
 	float len = size.x * t;
-	auto& action = *g_classes[(int)pc->clas].action;
 
 	if (location->outside && pc->unit->in_building == -1)
 	{

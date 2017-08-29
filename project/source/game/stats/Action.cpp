@@ -5,9 +5,9 @@
 
 //-----------------------------------------------------------------------------
 Action g_actions[] = {
-	Action("bull_charge", 25.f, 25.f, 1, Action::LINE_FORWARD, Vec2(4.f, 0.6f), "charge.wav"),
-	Action("dash", 0.5f, 10.f, 2, Action::LINE, Vec2(5.f, 0.25f), "dash.wav"),
-	Action("summon_wolf", 90.f, 90.f, 1, Action::POINT, Vec2(1.5f, 10.f), "whooshy-puff.wav")
+	Action("bull_charge", 25.f, 25.f, 1, Action::LINE, Vec2(4.f, 0.6f), "charge.wav", 3.f, false),
+	Action("dash", 0.5f, 10.f, 2, Action::LINE, Vec2(5.f, 0.25f), "dash.wav", 1.f, true),
+	Action("summon_wolf", 90.f, 90.f, 1, Action::POINT, Vec2(1.5f, 10.f), nullptr, 0, false)
 };
 extern const uint n_actions = countof(g_actions);
 

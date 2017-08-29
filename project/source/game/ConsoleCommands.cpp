@@ -119,6 +119,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_CRASH, "crash", "crash game to death!", F_ANYWHERE | F_WORLD_MAP | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_FORCEQUEST, "forcequest", "force next random quest to select (use list quest or none/reset)", F_SERVER | F_GAME | F_WORLD_MAP | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_STUN, "stun", "stun unit for time (stun [length=1] [1 = self])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REFRESH_COOLDOWN, "refresh_cooldown", "refresh action cooldown/charges", F_GAME | F_CHEAT));
 }
 
 //=================================================================================================
@@ -1639,6 +1640,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							c.unit = u;
 						}
 					}
+					break;
+				case CMD_REFRESH_COOLDOWN:
+					if(IsLocal())
+						pc->RefreshCooldown();
+					else
+						PushNetChange(NetChange::CHEAT_REFRESH_COOLDOWN);
 					break;
 				default:
 					assert(0);

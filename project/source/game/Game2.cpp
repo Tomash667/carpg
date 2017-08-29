@@ -38,6 +38,7 @@
 #include "AIController.h"
 #include "Spell.h"
 #include "Team.h"
+#include "Action.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -1626,6 +1627,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	u.changed = true;
 
 	bool idle = true, this_frame_run = false;
+	int move = 0;
 
 	if(!u.usable)
 	{
@@ -1639,7 +1641,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		else if(u.weapon_taken == W_BOW)
 			u.animation = ANI_BATTLE_BOW;
 
-		int rotate = 0, move = 0;
+		int rotate = 0;
 		if(KeyDownAllowed(GK_ROTATE_LEFT))
 			--rotate;
 		if(KeyDownAllowed(GK_ROTATE_RIGHT))
@@ -2906,18 +2908,51 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	// action
 	if (!pc_data.action_ready)
 	{
-		if (u.frozen == 0 && u.action == A_NONE && KeyPressedReleaseAllowed(GK_ACTION) && pc->CanUseAction())
+		if(u.frozen == 0 && u.action == A_NONE && KeyPressedReleaseAllowed(GK_ACTION) && pc->CanUseAction() && !in_tutorial)
+		{
 			pc_data.action_ready = true;
+			pc_data.action_rot = 0.f;
+		}
 	}
 	else
 	{
-		pc_data.wasted_key = KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
-		if (pc_data.wasted_key != VK_NONE)
+		auto& action = pc->GetAction();
+		if(action.area == Action::LINE && action.pick_dir)
 		{
-			pc->GetAction();
-			pc->UseActionCharge();
-			pc_data.action_ready = false;
+			// adjust action dir
+			switch(move)
+			{
+			case 0: // none
+			case 10: // forward
+				pc_data.action_rot = 0.f;
+				break;
+			case -10: // backward
+				pc_data.action_rot = PI;
+				break;
+			case -1: // left
+				pc_data.action_rot = -PI / 2;
+				break;
+			case 1: // right
+				pc_data.action_rot = PI / 2;
+				break;
+			case 9: // left forward
+				pc_data.action_rot = -PI / 4;
+				break;
+			case 11: // right forward
+				pc_data.action_rot = PI / 4;
+				break;
+			case -11: // left backward
+				pc_data.action_rot = -PI * 3 / 4;
+				break;
+			case -9: // prawy ty³
+				pc_data.action_rot = PI * 3 / 4;
+				break;
+			}
 		}
+
+		pc_data.wasted_key = KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
+		if(pc_data.wasted_key != VK_NONE)
+			UseAction(pc);
 		else
 		{
 			pc_data.wasted_key = KeyDoReturn(GK_BLOCK, &KeyStates::PressedRelease);
@@ -2955,6 +2990,23 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	}
 	else
 		pc->idle_timer = Random(0.f, 0.5f);
+}
+
+//=================================================================================================
+void Game::UseAction(PlayerController* p)
+{
+	auto& action = p->GetAction();
+	if(action.sound)
+		PlayAttachedSound(*p->unit, action.sound->sound, action.sound_dist);
+	p->UseActionCharge();
+	if(p == pc)
+		pc_data.action_ready = false;
+	if(IsClient2())
+	{
+		auto& c = Add1(net_changes);
+		c.type = NetChange::ACTION;
+		c.unit = p->unit;
+	}
 }
 
 //=================================================================================================
@@ -12528,7 +12580,7 @@ bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, 
 	ConvexCallback callback(clbk);
 
 	phy_world->convexSweepTest((btConvexShape*)shape, t_from, t_to, callback);
-	
+
 	t = callback.m_closestHitFraction;
 	return callback.hasHit();
 }

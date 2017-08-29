@@ -323,6 +323,9 @@ struct NetChange
 		ACADEMY_TEXT, // show when trying to enter academy []
 		BREAK_ACTION, // break unit action [int(netid)-unit]
 		CHEAT_STUN, // player used cheat 'stun' [int(netid)-unit, f[0]-length]
+		ACTION, // player unit is using action [int(netid)-unit, string1-action_id]
+		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
+		SPAWN_EFFECT, // unit spawn effect [vec3-pos]
 	} type;
 	union
 	{

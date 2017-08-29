@@ -236,6 +236,7 @@ Available commands:
 	reload_shaders - reload shaders.
 	resolution - show or change display resolution (resolution [w h hz]).
 	reveal - reveal all locations on world map.
+	refresh_cooldown - refresh action cooldown/charges.
 	s - send message to all players, short from say (say msg).
 	save - save game (save 1-10 [text]).
 	say - send message to all players (say msg).

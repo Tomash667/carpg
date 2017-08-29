@@ -106,8 +106,7 @@ void PlayerController::Init(Unit& _unit, bool partial)
 		for(int i = 0; i < (int)Attribute::MAX; ++i)
 			ap[i] = 0;
 
-		auto& class_info = g_classes[(int)clas];
-		action_charges = class_info.action->charges;
+		action_charges = GetAction().charges;
 	}
 }
 
@@ -135,26 +134,23 @@ void PlayerController::Update(float dt, bool is_local)
 	}
 
 	// update action
-	auto action = g_classes[(int)clas].action;
-	if(action)
+	auto& action = GetAction();
+	if(action_cooldown != 0)
 	{
-		if(action_cooldown != 0)
+		action_cooldown -= dt;
+		if(action_cooldown < 0)
+			action_cooldown = 0.f;
+	}
+	if(action_recharge != 0)
+	{
+		action_recharge -= dt;
+		if(action_recharge < 0)
 		{
-			action_cooldown -= dt;
-			if(action_cooldown < 0)
-				action_cooldown = 0.f;
-		}
-		if(action_recharge != 0)
-		{
-			action_recharge -= dt;
-			if(action_recharge < 0)
-			{
-				++action_charges;
-				if(action_charges == action->charges)
-					action_recharge = 0;
-				else
-					action_recharge += action->recharge;
-			}
+			++action_charges;
+			if(action_charges == action.charges)
+				action_recharge = 0;
+			else
+				action_recharge += action.recharge;
 		}
 	}
 }
@@ -330,9 +326,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 	// reset action
 	action_cooldown = 0;
 	action_recharge = 0;
-	auto action = g_classes[(int)clas].action;
-	if(action)
-		action_charges = action->charges;
+	action_charges = GetAction().charges;
 }
 
 //=================================================================================================
@@ -503,13 +497,9 @@ void PlayerController::Load(HANDLE file)
 	}
 	else
 	{
-		auto action = g_classes[(int)clas].action;
-		if(action)
-			action_charges = action->charges;
-		else
-			action_charges = 0;
 		action_cooldown = 0.f;
 		action_recharge = 0.f;
+		action_charges = GetAction().charges;
 	}
 
 	action = Action_None;
@@ -749,15 +739,31 @@ bool PlayerController::Read(BitStream& stream)
 }
 
 //=================================================================================================
+Action& PlayerController::GetAction()
+{
+	auto action = g_classes[(int)clas].action;
+	assert(action);
+	return *action;
+}
+
+//=================================================================================================
 bool PlayerController::UseActionCharge()
 {
 	if (action_charges == 0 || action_cooldown > 0)
 		return false;
-	auto action = g_classes[(int)clas].action;
-	assert(action);
+	auto& action = GetAction();
 	--action_charges;
-	action_cooldown = action->cooldown;
+	action_cooldown = action.cooldown;
 	if(action_recharge == 0)
-		action_recharge = action->recharge;
+		action_recharge = action.recharge;
 	return true;
+}
+
+//=================================================================================================
+void PlayerController::RefreshCooldown()
+{
+	auto& action = GetAction();
+	action_cooldown = 0;
+	action_recharge = 0;
+	action_charges = action.charges;
 }

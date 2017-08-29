@@ -1,8 +1,4 @@
 ﻿FEATURE:
-? collision flags fix
-	? loaded unit physics
-	? collisions
-	? camera colliders
 + bulls charge effect
 	+ dmg = siła
 	+ pick area: rectangle with limited rot
@@ -15,10 +11,8 @@
 	+ moving units with bulls charge
 	+ sound
 + dash - allows to move between units, around objects
-	+ dash, rectangle in any direction
+	+ with keyboard allow to select direction
 	+ animation, moving
-	+ can move over objects/units
-	+ sound
 + summoned wolf
 	+ pick point
 	+ spawn unit
@@ -31,6 +25,9 @@
 + info in class desc about actions
 + info in readme
 ? mp tests
+? load old save and actions
+? refresh_cooldown cmd
+? stun cmd
 - clicking on M menu apply focus but can't enter text
 ? allow run without stamina?
 ===============================================================================================================
@@ -55,6 +52,20 @@ NEW:
 	on left tabs - name, (gender, race), apperance, class, history, perks
 	can change any thing at any time
 	show bonuses by stats when hovering (example: strength: +10 dmg, +50 hp, +4 skills)
++ play as shapeshifter story
++ new actions
+	hunter:
+		+ arrow skill shot
+		+ entangle
+		+ camuflage
+	rogue:
+		+ poison dagger throw
+		+ hide
+		+ backstab bleeding + stun
+	warrior:
+		+ wide attack
+		+ shield bash
+	+ tree
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
