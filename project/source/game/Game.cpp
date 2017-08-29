@@ -1700,6 +1700,7 @@ void Game::ClearPointers()
 	shape_schody_c[0] = nullptr;
 	shape_schody_c[1] = nullptr;
 	shape_schody = nullptr;
+	shape_summon = nullptr;
 	obj_arrow = nullptr;
 	obj_spell = nullptr;
 
@@ -1769,6 +1770,7 @@ void Game::OnCleanup()
 	delete shape_block;
 	delete shape_schody_c[0];
 	delete shape_schody_c[1];
+	delete shape_summon;
 	delete shape_schody;
 	if(obj_arrow)
 		delete obj_arrow->getCollisionShape();

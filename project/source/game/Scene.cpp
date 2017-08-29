@@ -1827,77 +1827,208 @@ void Game::PrepareAreaPath()
 	Area2& area = *area_ptr;
 	draw_batch.areas2.push_back(area_ptr);
 
-	float rot = Clip(pc->unit->rot + PI + pc_data.action_rot);
-	const Vec3& pos = pc->unit->pos;
-	const Vec2& size = action.area_size;
-
 	const float h = 0.06f;
-	const int steps = 10;
+	const Vec3& pos = pc->unit->pos;
 
-	float t;
-	Vec3 dir(sin(rot)*size.x, 0, cos(rot)*size.x);
-	LineTest(pc->unit->cobj->getCollisionShape(), pos, dir, [this](btCollisionObject* obj)
+	if (action.area == Action::LINE)
 	{
-		int flags = obj->getCollisionFlags();
-		if (IS_SET(flags, CG_TERRAIN))
-			return false;
-		if (IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
-			return false;
-		return true;
-	}, t);
+		float rot = Clip(pc->unit->rot + PI + pc_data.action_rot);
+		const int steps = 10;
 
-	float len = size.x * t;
-
-	if (location->outside && pc->unit->in_building == -1)
-	{
-		area.points.clear();
-		area.faces.clear();
-
-		Vec3 active_pos = pos;
-		Vec3 step = dir * t / (float)steps;
-		Vec3 unit_offset(pc->unit->pos.x, 0, pc->unit->pos.z);
-		float len_step = len / steps;
-		float active_step = 0;
-		Matrix mat = Matrix::RotationY(rot);
-		for (int i = 0; i < steps; ++i)
+		// find max line
+		float t;
+		Vec3 dir(sin(rot)*action.area_size.x, 0, cos(rot)*action.area_size.x);
+		LineTest(pc->unit->cobj->getCollisionShape(), pos, dir, [this](btCollisionObject* obj)
 		{
-			float current_h = terrain->GetH(active_pos) + h;
-			area.points.push_back(Vec3::Transform(Vec3(-action.area_size.y, current_h, active_step), mat) + unit_offset);
-			area.points.push_back(Vec3::Transform(Vec3(+action.area_size.y, current_h, active_step), mat) + unit_offset);
+			int flags = obj->getCollisionFlags();
+			if (IS_SET(flags, CG_TERRAIN))
+				return false;
+			if (IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
+				return false;
+			return true;
+		}, t);
 
-			active_pos += step;
-			active_step += len_step;
+		float len = action.area_size.x * t;
+
+		if (location->outside && pc->unit->in_building == -1)
+		{
+			// build line on terrain
+			area.points.clear();
+			area.faces.clear();
+
+			Vec3 active_pos = pos;
+			Vec3 step = dir * t / (float)steps;
+			Vec3 unit_offset(pc->unit->pos.x, 0, pc->unit->pos.z);
+			float len_step = len / steps;
+			float active_step = 0;
+			Matrix mat = Matrix::RotationY(rot);
+			for (int i = 0; i < steps; ++i)
+			{
+				float current_h = terrain->GetH(active_pos) + h;
+				area.points.push_back(Vec3::Transform(Vec3(-action.area_size.y, current_h, active_step), mat) + unit_offset);
+				area.points.push_back(Vec3::Transform(Vec3(+action.area_size.y, current_h, active_step), mat) + unit_offset);
+
+				active_pos += step;
+				active_step += len_step;
+			}
+
+			for (int i = 0; i < steps - 1; ++i)
+			{
+				area.faces.push_back(i * 2);
+				area.faces.push_back((i + 1) * 2);
+				area.faces.push_back(i * 2 + 1);
+				area.faces.push_back((i + 1) * 2);
+				area.faces.push_back(i * 2 + 1);
+				area.faces.push_back((i + 1) * 2 + 1);
+			}
 		}
-
-		for (int i = 0; i < steps - 1; ++i)
+		else
 		{
-			area.faces.push_back(i * 2);
-			area.faces.push_back((i + 1) * 2);
-			area.faces.push_back(i * 2 + 1);
-			area.faces.push_back((i + 1) * 2);
-			area.faces.push_back(i * 2 + 1);
-			area.faces.push_back((i + 1) * 2 + 1);
+			// build line on flat terrain
+			area.points.resize(4);
+			area.points[0] = Vec3(-action.area_size.y, h, 0);
+			area.points[1] = Vec3(-action.area_size.y, h, len);
+			area.points[2] = Vec3(action.area_size.y, h, 0);
+			area.points[3] = Vec3(action.area_size.y, h, len);
+
+			Matrix mat = Matrix::RotationY(rot);
+			for (int i = 0; i < 4; ++i)
+				area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
+
+			area.faces.clear();
+			area.faces.push_back(0);
+			area.faces.push_back(1);
+			area.faces.push_back(2);
+			area.faces.push_back(1);
+			area.faces.push_back(2);
+			area.faces.push_back(3);
 		}
 	}
 	else
 	{
-		area.points.resize(4);
-		area.points[0] = Vec3(-action.area_size.y, h, 0);
-		area.points[1] = Vec3(-action.area_size.y, h, len);
-		area.points[2] = Vec3(action.area_size.y, h, 0);
-		area.points[3] = Vec3(action.area_size.y, h, len);
+		const float cam_max = 4.63034153f;
+		const float cam_min = 3.24159288f;
+		const float radius = action.area_size.x / 2;
+
+		float range = (Clamp(cam.rot.y, cam_min, cam_max) - cam_min) / (cam_max - cam_min) * action.area_size.y + 0.3f;
+		float rot = Clip(pc->unit->rot + PI);
+		static vector<float> t_forward;
+		static vector<float> t_backward;
+
+		// what are we doing here you may ask :) first do line test from player to max point, then from max point to player
+		// this will allow to find free spot event behind small rock on ground
+		t_forward.clear();
+		t_backward.clear();
+
+		auto clbk = [this](btCollisionObject* obj)
+		{
+			int flags = obj->getCollisionFlags();
+			if (IS_SET(flags, CG_TERRAIN))
+				return false;
+			if (IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
+				return false;
+			return true;
+		};
+
+		float t;
+		Vec3 dir(sin(rot)*range, 0, cos(rot)*range);
+		LineTest(shape_summon, pos, dir, clbk, t, &t_forward);
+		LineTest(shape_summon, pos + dir, -dir, clbk, t, &t_backward);
+
+		if(t_forward.empty() && t_backward.empty())
+			t = 1.f;
+		else
+		{
+			// merge t's to find free spots, we only use last one
+			static vector<std::pair<float, bool>> t_merged;
+			const bool OPEN = true;
+			const bool CLOSE = false;
+			t_merged.clear();
+			for(float f : t_forward)
+				t_merged.push_back(std::pair<float, bool>(f, OPEN));
+			for(float f : t_backward)
+				t_merged.push_back(std::pair<float, bool>(1.f - f, CLOSE));
+			std::sort(t_merged.begin(), t_merged.end(), [](const std::pair<float, bool>& a, const std::pair<float, bool>& b) { return a.first < b.first; });
+
+			// get list of free ranges
+			bool open = false;
+			float start = 0.f;
+			const float min_dist = action.area_size.x / range / 2;
+			static vector<Vec2> results;
+			results.clear();
+			for(auto& point : t_merged)
+			{
+				if(open)
+				{
+					if(point.second == CLOSE)
+					{
+						open = false;
+						start = point.first;
+					}
+				}
+				else
+				{
+					if(point.second == OPEN)
+					{
+						open = true;
+						float len = point.first - start;
+						if(len >= min_dist)
+							results.push_back(Vec2(start, point.first));
+					}
+					else
+						start = point.first;
+				}
+			}
+			if(!open)
+			{
+				float len = 1.f - start;
+				if(len >= min_dist)
+					results.push_back(Vec2(start, 1.f));
+			}
+
+			// get best T, actualy last one
+			if(results.empty())
+				t = -1.f;
+			else
+				t = results.back().y - min_dist / 2;
+		}
+
+		if(t < 0)
+		{
+			// no free space
+			draw_batch.areas2.clear();
+			area2_pool.Free(area_ptr);
+			return;
+		}
+		
+
+		// build circle
+		range = t * range;
+
+		area.points.resize(9);
+		area.points[0] = Vec3(0, h, 0 + range);
+		float angle = 0;
+		for (int i = 0; i < 8; ++i)
+		{
+			area.points[i + 1] = Vec3(sin(angle)*radius, h, cos(angle)*radius + range);
+			angle += PI / 4;
+		}
 
 		Matrix mat = Matrix::RotationY(rot);
-		for (int i = 0; i < 4; ++i)
+		for (int i = 0; i < 9; ++i)
+		{
 			area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
+			if (location->outside)
+				area.points[i].y = terrain->GetH(area.points[i]) + h;
+		}
 
 		area.faces.clear();
-		area.faces.push_back(0);
-		area.faces.push_back(1);
-		area.faces.push_back(2);
-		area.faces.push_back(1);
-		area.faces.push_back(2);
-		area.faces.push_back(3);
+		for (int i = 0; i < 8; ++i)
+		{
+			area.faces.push_back(0);
+			area.faces.push_back(i+1);
+			area.faces.push_back((i + 2) == 9 ? 1 : (i + 2));
+		}
 	}
 }
 

@@ -1,4 +1,5 @@
 ﻿FEATURE:
+- dash allows to move outside of outside barriers
 + bulls charge effect
 	+ animation
 	+ stunned animation
@@ -12,13 +13,15 @@
 		+ heal remove stun
 	+ moving units with bulls charge
 + summoned wolf
-	+ summon animation
 	+ pick point
+		+ collisions
+			+ mark as red when unavailable but render it anyway
 	+ spawn unit
 	+ disappear after death
 	+ particles
 	+ can cast over units/objects (but not walls)
 	+ despawn corpse (sound/break loot)
+	+ summon animation
 + MP
 	+ dash
 	+ summon

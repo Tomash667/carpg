@@ -675,7 +675,8 @@ public:
 
 	//---------------------------------
 	// FIZYKA
-	btCollisionShape* shape_wall, *shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2];
+	btCollisionShape* shape_wall, *shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2],
+		*shape_summon;
 	btHeightfieldTerrainShape* terrain_shape;
 	btCollisionObject* obj_arrow, *obj_terrain, *obj_spell;
 	vector<CollisionObject> global_col; // wektor na tymczasowe obiekty, czêsto u¿ywany przy zbieraniu obiektów do kolizji
@@ -1153,7 +1154,7 @@ public:
 	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
 	void PreloadTraps(vector<Trap*>& traps);
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
-	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*)> clbk, float& t);
+	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*)> clbk, float& t, vector<float>* t_list = nullptr);
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);
 	void AI_Shout(LevelContext& ctx, AIController& ai);

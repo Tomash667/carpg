@@ -9404,6 +9404,7 @@ void Game::CreateCollisionShapes()
 	tr.setOrigin(btVector3(0.95f, 2.f, 0.f));
 	s->addChildShape(tr, b);
 	shape_schody = s;
+	shape_summon = new btCylinderShape(btVector3(1.5f / 2, 1.5f, 1.5f / 2));
 
 	Mesh::Point* point = aArrow->FindPoint("Empty");
 	assert(point && point->IsBox());
@@ -12590,8 +12591,9 @@ bool Game::RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoin
 struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 {
 	delegate<bool(btCollisionObject*)> clbk;
+	vector<float>* t_list;
 
-	ConvexCallback(delegate<bool(btCollisionObject*)> clbk) : clbk(clbk)
+	ConvexCallback(delegate<bool(btCollisionObject*)> clbk, vector<float>* t_list) : clbk(clbk), t_list(t_list)
 	{
 	}
 
@@ -12603,11 +12605,13 @@ struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 	float addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
 	{
 		m_closestHitFraction = convexResult.m_hitFraction;
+		if (t_list)
+			t_list->push_back(m_closestHitFraction);
 		return convexResult.m_hitFraction;
 	}
 };
 
-bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*)> clbk, float& t)
+bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*)> clbk, float& t, vector<float>* t_list)
 {
 	assert(shape->isConvex());
 
@@ -12619,7 +12623,7 @@ bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, 
 	t_to.setOrigin(ToVector3(dir) + t_from.getOrigin());
 	//t_to.setBasis(t_from.getBasis());
 
-	ConvexCallback callback(clbk);
+	ConvexCallback callback(clbk, t_list);
 
 	phy_world->convexSweepTest((btConvexShape*)shape, t_from, t_to, callback);
 
