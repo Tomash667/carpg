@@ -1366,6 +1366,9 @@ void Unit::Save(HANDLE file, bool local)
 		WriteFile(file, &alcohol, sizeof(alcohol), &tmp, nullptr);
 		WriteFile(file, &raise_timer, sizeof(raise_timer), &tmp, nullptr);
 
+		if (action == A_DASH)
+			WriteFile(file, &use_rot, sizeof(use_rot), &tmp, nullptr);
+
 		if(used_item)
 		{
 			WriteString1(file, used_item->id);
@@ -1721,6 +1724,9 @@ void Unit::Load(HANDLE file, bool local)
 				++animation_state;
 			raise_timer = timer;
 		}
+
+		if (action == A_DASH)
+			ReadFile(file, &use_rot, sizeof(use_rot), &tmp, nullptr);
 
 		byte len;
 		ReadFile(file, &len, sizeof(len), &tmp, nullptr);

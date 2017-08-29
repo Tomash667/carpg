@@ -2565,6 +2565,7 @@ unit white_wolf_sum : wolf {
 		null
 		null
 	}
+	items null
 }
 
 unit base_spider {

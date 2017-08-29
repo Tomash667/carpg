@@ -60,7 +60,7 @@ enum ACTION
 	A_POSITION, // u¿ywa³ czegoœ ale dosta³ basha lub umar³, trzeba go przesun¹æ w normalne miejsce
 	//A_PAROWANIE
 	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
-	A_SPECIAL_ACTION,
+	A_DASH,
 };
 
 //-----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ enum AnimationState
 
 inline bool IsBlocking(ACTION a)
 {
-	return a == A_ANIMATION || a == A_PICKUP;
+	return a == A_ANIMATION || a == A_PICKUP || a == A_DASH;
 }
 
 //-----------------------------------------------------------------------------

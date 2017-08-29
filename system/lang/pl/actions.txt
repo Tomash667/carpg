@@ -5,7 +5,7 @@ action "bull_charge" {
 
 action "dash" {
 	name "Zryw"
-	desc "Przemieszczasz siê szybko w okreœlonym kierunku. Posiada dwa ³adunki."
+	desc "Przemieszczasz siê szybko w okreœlonym kierunku. Posiada trzy ³adunki."
 }
 
 action "summon_wolf" {

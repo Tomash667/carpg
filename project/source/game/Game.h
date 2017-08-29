@@ -1060,7 +1060,7 @@ public:
 	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
 	void SetDungeonParamsToMeshes();
-	void MoveUnit(Unit& unit, bool warped = false);
+	void MoveUnit(Unit& unit, bool warped = false, bool dash = false);
 	bool CollideWithStairs(const CollisionObject& co, const Vec3& pos, float radius) const;
 	bool CollideWithStairsRect(const CollisionObject& co, const Box2d& box) const;
 	uint ValidateGameData(bool major);

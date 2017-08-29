@@ -1839,7 +1839,9 @@ void Game::PrepareAreaPath()
 	LineTest(pc->unit->cobj->getCollisionShape(), pos, dir, [this](btCollisionObject* obj)
 	{
 		int flags = obj->getCollisionFlags();
-		if (IS_SET(flags, CG_UNIT | CG_TERRAIN))
+		if (IS_SET(flags, CG_TERRAIN))
+			return false;
+		if (IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
 			return false;
 		return true;
 	}, t);
@@ -1860,7 +1862,6 @@ void Game::PrepareAreaPath()
 		for (int i = 0; i < steps; ++i)
 		{
 			float current_h = terrain->GetH(active_pos) + h;
-
 			area.points.push_back(Vec3::Transform(Vec3(-action.area_size.y, current_h, active_step), mat) + unit_offset);
 			area.points.push_back(Vec3::Transform(Vec3(+action.area_size.y, current_h, active_step), mat) + unit_offset);
 
@@ -1868,7 +1869,7 @@ void Game::PrepareAreaPath()
 			active_step += len_step;
 		}
 
-		for (int i = 0; i < steps - 2; ++i)
+		for (int i = 0; i < steps - 1; ++i)
 		{
 			area.faces.push_back(i * 2);
 			area.faces.push_back((i + 1) * 2);

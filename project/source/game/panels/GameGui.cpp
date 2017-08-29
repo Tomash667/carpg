@@ -384,7 +384,12 @@ void GameGui::DrawFront()
 
 		float charge;
 		if (pc.action_charges > 0 || pc.action_cooldown >= pc.action_recharge)
-			charge = pc.action_cooldown / action.cooldown;
+		{
+			if (action.cooldown == 0)
+				charge = 0.f;
+			else
+				charge = pc.action_cooldown / action.cooldown;
+		}
 		else
 			charge = pc.action_recharge / action.recharge;
 

@@ -5,7 +5,7 @@ action "bull_charge" {
 
 action "dash" {
 	name "Dash"
-	desc "You move fast in selected direction. Have two charges."
+	desc "You move fast in selected direction. Have three charges."
 }
 
 action "summon_wolf" {

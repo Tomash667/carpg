@@ -1269,21 +1269,27 @@ bool LoadUnit(Tokenizer& t, Crc& crc)
 				}
 				else
 				{
-					const string& id = t.MustGetItemKeyword();
 					unit->item_script = nullptr;
-					for(ItemScript* s : item_scripts)
-					{
-						if(s->id == id)
-						{
-							unit->item_script = s;
-							break;
-						}
-					}
-					if(unit->item_script)
-						unit->items = &unit->item_script->code[0];
+					unit->items = nullptr;
+					if (t.IsKeywordGroup(G_NULL))
+						crc.Update0();
 					else
-						t.Throw("Missing item script '%s'.", id.c_str());
-					crc.Update(id);
+					{
+						const string& id = t.MustGetItemKeyword();
+						for (ItemScript* s : item_scripts)
+						{
+							if (s->id == id)
+							{
+								unit->item_script = s;
+								break;
+							}
+						}
+						if (unit->item_script)
+							unit->items = &unit->item_script->code[0];
+						else
+							t.Throw("Missing item script '%s'.", id.c_str());
+						crc.Update(id);
+					}
 				}
 				break;
 			case P_SPELLS:

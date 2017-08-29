@@ -1,5 +1,7 @@
 ﻿FEATURE:
 + bulls charge effect
+	+ animation
+	+ stunned animation
 	+ dmg = siła
 	+ pick area: rectangle with limited rot
 	+ stun de-buff
@@ -9,25 +11,26 @@
 		+ stun effect above head
 		+ heal remove stun
 	+ moving units with bulls charge
-	+ sound
-+ dash - allows to move between units, around objects
-	+ with keyboard allow to select direction
-	+ animation, moving
 + summoned wolf
+	+ summon animation
 	+ pick point
 	+ spawn unit
 	+ disappear after death
 	+ particles
 	+ can cast over units/objects (but not walls)
-	+ sound
-+ resources:
-	+ stunned animation
+	+ despawn corpse (sound/break loot)
++ MP
+	+ dash
+	+ summon
+	+ bulls charge
 + info in class desc about actions
 + info in readme
-? mp tests
-? load old save and actions
-? refresh_cooldown cmd
-? stun cmd
+? tests
+	? save/load while doing action (mp)
+	? fall/kill when doing action
+	? refresh_cooldown mp
+	? stun cmd
+	? load old save and actions
 - clicking on M menu apply focus but can't enter text
 ? allow run without stamina?
 ===============================================================================================================

@@ -2999,6 +2999,18 @@ void Game::UseAction(PlayerController* p)
 	if(action.sound)
 		PlayAttachedSound(*p->unit, action.sound->sound, action.sound_dist);
 	p->UseActionCharge();
+	if (strcmp(action.id, "dash") == 0)
+	{
+		p->unit->action = A_DASH;
+		p->unit->timer = 0.33f;
+		p->unit->use_rot = Clip(pc_data.action_rot + p->unit->rot + PI);
+		p->unit->speed = action.area_size.x / 0.33f;
+		p->unit->animation = ANI_RUN;
+		p->unit->current_animation = ANI_RUN;
+		p->unit->mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+		p->unit->mesh_inst->groups[0].speed = 3.f;
+		p->unit->animation_state = 0;
+	}
 	if(p == pc)
 		pc_data.action_ready = false;
 	if(IsClient2())
@@ -5926,7 +5938,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 //=============================================================================
 // Ruch jednostki, ustawia pozycje Y dla terenu, opuszczanie lokacji
 //=============================================================================
-void Game::MoveUnit(Unit& unit, bool warped)
+void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 {
 	if(location->outside)
 	{
@@ -5937,7 +5949,7 @@ void Game::MoveUnit(Unit& unit, bool warped)
 				terrain->SetH(unit.pos);
 				if(warped)
 					return;
-				if(unit.IsPlayer() && WantExitLevel() && unit.frozen == 0)
+				if(unit.IsPlayer() && WantExitLevel() && unit.frozen == 0 && !dash)
 				{
 					bool allow_exit = false;
 
@@ -6021,7 +6033,7 @@ void Game::MoveUnit(Unit& unit, bool warped)
 			if(warped)
 				return;
 
-			if(unit.IsPlayer() && location->type == L_CITY && WantExitLevel() && unit.frozen == 0)
+			if(unit.IsPlayer() && location->type == L_CITY && WantExitLevel() && unit.frozen == 0 && !dash)
 			{
 				int id = 0;
 				for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it, ++id)
@@ -6061,7 +6073,7 @@ void Game::MoveUnit(Unit& unit, bool warped)
 			City* city = (City*)location;
 			InsideBuilding& building = *city->inside_buildings[unit.in_building];
 
-			if(unit.IsPlayer() && building.exit_area.IsInside(unit.pos) && WantExitLevel() && unit.frozen == 0)
+			if(unit.IsPlayer() && building.exit_area.IsInside(unit.pos) && WantExitLevel() && unit.frozen == 0 && !dash)
 			{
 				if(IsLocal())
 				{
@@ -6114,7 +6126,7 @@ void Game::MoveUnit(Unit& unit, bool warped)
 			if(warped)
 				return;
 
-			if(unit.IsPlayer() && WantExitLevel() && box.IsInside(unit.pos) && unit.frozen == 0)
+			if(unit.IsPlayer() && WantExitLevel() && box.IsInside(unit.pos) && unit.frozen == 0 && !dash)
 			{
 				if(IsLeader())
 				{
@@ -6167,7 +6179,7 @@ void Game::MoveUnit(Unit& unit, bool warped)
 			if(warped)
 				return;
 
-			if(unit.IsPlayer() && WantExitLevel() && box.IsInside(unit.pos) && unit.frozen == 0)
+			if(unit.IsPlayer() && WantExitLevel() && box.IsInside(unit.pos) && unit.frozen == 0 && !dash)
 			{
 				if(IsLeader())
 				{
@@ -6202,7 +6214,7 @@ void Game::MoveUnit(Unit& unit, bool warped)
 	}
 
 	// obs³uga portali
-	if(unit.frozen == 0 && unit.IsPlayer() && WantExitLevel())
+	if(unit.frozen == 0 && unit.IsPlayer() && WantExitLevel() && !dash)
 	{
 		Portal* portal = location->portal;
 		int index = 0;
@@ -8603,6 +8615,36 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				u.action = A_NONE;
 				u.animation = ANI_STAND;
 				u.current_animation = (Animation)-1;
+			}
+			break;
+		case A_DASH:
+			{
+				float dt_left = min(dt, u.timer);
+				float t;
+				const float eps = 0.05f;
+				float len = u.speed * dt_left;
+				Vec3 dir(sin(u.use_rot)*(len + eps), 0, cos(u.use_rot)*(len + eps));
+				LineTest(u.cobj->getCollisionShape(), u.pos, dir, [this](btCollisionObject* obj)
+				{
+					int flags = obj->getCollisionFlags();
+					if (IS_SET(flags, CG_TERRAIN))
+						return false;
+					if (IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
+						return false;
+					return true;
+				}, t);
+				float actual_len = (len + eps) * t - eps;
+				if (actual_len > 0)
+				{
+					u.pos += Vec3(sin(u.use_rot), 0, cos(u.use_rot)) * actual_len;
+					MoveUnit(u, false, true);
+				}
+				u.timer -= dt;
+				if (u.timer <= 0 || t < 1.f)
+				{
+					u.action = A_NONE;
+					u.mesh_inst->groups[0].speed = u.GetRunSpeed() / u.data->run_speed;
+				}
 			}
 			break;
 		default:
