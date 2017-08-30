@@ -239,10 +239,11 @@ struct LocalPlayerData
 	BeforePlayerPtr before_player_ptr;
 	Unit* selected_unit, *selected_target;
 	GroundItem* picking_item;
+	Vec3 action_point;
 	int picking_item_state;
 	float rot_buf, action_rot;
 	byte wasted_key;
-	bool autowalk, action_ready;
+	bool autowalk, action_ready, action_ok;
 
 	void Reset()
 	{

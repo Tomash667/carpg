@@ -1464,26 +1464,26 @@ void Game::UpdateGame(float dt)
 //=================================================================================================
 void Game::UpdateFallback(float dt)
 {
-	if (fallback_co == -1)
+	if(fallback_co == -1)
 		return;
 
-	if (fallback_t <= 0.f)
+	if(fallback_t <= 0.f)
 	{
 		fallback_t += dt * 2;
 
-		if (fallback_t > 0.f)
+		if(fallback_t > 0.f)
 		{
-			switch (fallback_co)
+			switch(fallback_co)
 			{
 			case FALLBACK_TRAIN:
-				if (IsLocal())
+				if(IsLocal())
 				{
-					if (fallback_1 == 2)
+					if(fallback_1 == 2)
 						TournamentTrain(*pc->unit);
 					else
 						Train(*pc->unit, fallback_1 == 1, fallback_2);
 					pc->Rest(10, false);
-					if (IsOnline())
+					if(IsOnline())
 						UseDays(pc, 10);
 					else
 						WorldProgress(10, WPM_NORMAL);
@@ -1499,10 +1499,10 @@ void Game::UpdateFallback(float dt)
 				}
 				break;
 			case FALLBACK_REST:
-				if (IsLocal())
+				if(IsLocal())
 				{
 					pc->Rest(fallback_1, true);
-					if (IsOnline())
+					if(IsOnline())
 						UseDays(pc, fallback_1);
 					else
 						WorldProgress(fallback_1, WPM_NORMAL);
@@ -1518,12 +1518,12 @@ void Game::UpdateFallback(float dt)
 				break;
 			case FALLBACK_ENTER:
 				// wejœcie/wyjœcie z budynku
-			{
-				UnitWarpData& uwd = Add1(unit_warp_data);
-				uwd.unit = pc->unit;
-				uwd.where = fallback_1;
-			}
-			break;
+				{
+					UnitWarpData& uwd = Add1(unit_warp_data);
+					uwd.unit = pc->unit;
+					uwd.where = fallback_1;
+				}
+				break;
 			case FALLBACK_EXIT:
 				ExitToMap();
 				break;
@@ -1531,19 +1531,19 @@ void Game::UpdateFallback(float dt)
 				ChangeLevel(fallback_1);
 				break;
 			case FALLBACK_USE_PORTAL:
-			{
-				Portal* portal = location->GetPortal(fallback_1);
-				Location* target_loc = locations[portal->target_loc];
-				int at_level = 0;
-				// aktualnie mo¿na siê tepn¹æ z X poziomu na 1 zawsze ale ¿eby z X na X to musi byæ odwiedzony
-				// np w sekrecie z 3 na 1 i spowrotem do
-				if (target_loc->portal)
-					at_level = target_loc->portal->at_level;
-				LeaveLocation(false, false);
-				current_location = portal->target_loc;
-				EnterLocation(at_level, portal->target);
-			}
-			return;
+				{
+					Portal* portal = location->GetPortal(fallback_1);
+					Location* target_loc = locations[portal->target_loc];
+					int at_level = 0;
+					// aktualnie mo¿na siê tepn¹æ z X poziomu na 1 zawsze ale ¿eby z X na X to musi byæ odwiedzony
+					// np w sekrecie z 3 na 1 i spowrotem do
+					if(target_loc->portal)
+						at_level = target_loc->portal->at_level;
+					LeaveLocation(false, false);
+					current_location = portal->target_loc;
+					EnterLocation(at_level, portal->target);
+				}
+				return;
 			case FALLBACK_NONE:
 			case FALLBACK_ARENA2:
 			case FALLBACK_CLIENT2:
@@ -1564,21 +1564,21 @@ void Game::UpdateFallback(float dt)
 	{
 		fallback_t += dt * 2;
 
-		if (fallback_t >= 1.f)
+		if(fallback_t >= 1.f)
 		{
-			if (IsLocal())
+			if(IsLocal())
 			{
-				if (fallback_co != FALLBACK_ARENA2)
+				if(fallback_co != FALLBACK_ARENA2)
 				{
-					if (fallback_co == FALLBACK_CHANGE_LEVEL || fallback_co == FALLBACK_USE_PORTAL || fallback_co == FALLBACK_EXIT)
+					if(fallback_co == FALLBACK_CHANGE_LEVEL || fallback_co == FALLBACK_USE_PORTAL || fallback_co == FALLBACK_EXIT)
 					{
-						for (Unit* unit : Team.members)
+						for(Unit* unit : Team.members)
 							unit->frozen = false;
 					}
 					pc->unit->frozen = 0;
 				}
 			}
-			else if (fallback_co == FALLBACK_CLIENT2)
+			else if(fallback_co == FALLBACK_CLIENT2)
 				pc->unit->frozen = 0;
 			fallback_co = -1;
 		}
@@ -2906,11 +2906,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	}
 
 	// action
-	if (!pc_data.action_ready)
+	if(!pc_data.action_ready)
 	{
 		if(u.frozen == 0 && u.action == A_NONE && KeyPressedReleaseAllowed(GK_ACTION) && pc->CanUseAction() && !in_tutorial)
 		{
 			pc_data.action_ready = true;
+			pc_data.action_ok = false;
 			pc_data.action_rot = 0.f;
 		}
 	}
@@ -2952,11 +2953,16 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 		pc_data.wasted_key = KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
 		if(pc_data.wasted_key != VK_NONE)
-			UseAction(pc);
+		{
+			if(pc_data.action_ok)
+				UseAction(pc);
+			else
+				pc_data.wasted_key = VK_NONE;
+		}
 		else
 		{
 			pc_data.wasted_key = KeyDoReturn(GK_BLOCK, &KeyStates::PressedRelease);
-			if (pc_data.wasted_key != VK_NONE)
+			if(pc_data.wasted_key != VK_NONE)
 				pc_data.action_ready = false;
 		}
 	}
@@ -2999,7 +3005,7 @@ void Game::UseAction(PlayerController* p)
 	if(action.sound)
 		PlayAttachedSound(*p->unit, action.sound->sound, action.sound_dist);
 	p->UseActionCharge();
-	if (strcmp(action.id, "dash") == 0)
+	if(strcmp(action.id, "dash") == 0)
 	{
 		p->unit->action = A_DASH;
 		p->unit->timer = 0.33f;
@@ -3011,6 +3017,15 @@ void Game::UseAction(PlayerController* p)
 		p->unit->mesh_inst->groups[0].speed = 3.f;
 		p->unit->animation_state = 0;
 	}
+	else if(strcmp(action.id, "summon_wolf") == 0)
+	{
+		auto unit = SpawnUnitNearLocation(GetContext(*p->unit), pc_data.action_point, *FindUnitData("white_wolf_sum"), nullptr, p->unit->level);
+		unit->summoned = true;
+		if(IsServer())
+			Net_SpawnUnit(unit);
+		AddTeamMember(unit, true);
+		SpawnUnitEffect(*unit);
+	}
 	if(p == pc)
 		pc_data.action_ready = false;
 	if(IsClient2())
@@ -3019,6 +3034,36 @@ void Game::UseAction(PlayerController* p)
 		c.type = NetChange::ACTION;
 		c.unit = p->unit;
 	}
+}
+
+//=================================================================================================
+void Game::SpawnUnitEffect(Unit& unit)
+{
+	Vec3 real_pos = unit.pos;
+	real_pos.y += 1.f;
+	PlaySound3d(sSummon, real_pos, 1.5f);
+
+	ParticleEmitter* pe = new ParticleEmitter;
+	pe->tex = tSpawn;
+	pe->emision_interval = 0.1f;
+	pe->life = 5.f;
+	pe->particle_life = 0.5f;
+	pe->emisions = 5;
+	pe->spawn_min = 10;
+	pe->spawn_max = 15;
+	pe->max_particles = 15 * 5;
+	pe->pos = unit.pos;
+	pe->speed_min = Vec3(-1, 0, -1);
+	pe->speed_max = Vec3(1, 1, 1);
+	pe->pos_min = Vec3(-0.75f, 0, -0.75f);
+	pe->pos_max = Vec3(0.75f, 1.f, 0.75f);
+	pe->size = 0.3f;
+	pe->op_size = POP_LINEAR_SHRINK;
+	pe->alpha = 0.5f;
+	pe->op_alpha = POP_LINEAR_SHRINK;
+	pe->mode = 0;
+	pe->Init();
+	GetContext(unit).pes->push_back(pe);
 }
 
 //=================================================================================================
@@ -7796,6 +7841,12 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				{
 					u.live_state = Unit::DEAD;
 					CreateBlood(ctx, u);
+					if(u.summoned)
+					{
+						RemoveTeamMember(&u);
+						u.action = A_DESPAWN;
+						u.timer = Random(2.5f, 5.f);
+					}
 				}
 				else if(u.live_state == Unit::FALLING)
 					u.live_state = Unit::FALL;
@@ -8627,24 +8678,35 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				LineTest(u.cobj->getCollisionShape(), u.pos, dir, [this](btCollisionObject* obj)
 				{
 					int flags = obj->getCollisionFlags();
-					if (IS_SET(flags, CG_TERRAIN))
+					if(IS_SET(flags, CG_TERRAIN))
 						return false;
-					if (IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
+					if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
 						return false;
 					return true;
 				}, t);
 				float actual_len = (len + eps) * t - eps;
-				if (actual_len > 0)
+				if(actual_len > 0)
 				{
 					u.pos += Vec3(sin(u.use_rot), 0, cos(u.use_rot)) * actual_len;
 					MoveUnit(u, false, true);
 				}
 				u.timer -= dt;
-				if (u.timer <= 0 || t < 1.f)
+				if(u.timer <= 0 || t < 1.f)
 				{
 					u.action = A_NONE;
 					u.mesh_inst->groups[0].speed = u.GetRunSpeed() / u.data->run_speed;
 				}
+			}
+			break;
+		case A_DESPAWN:
+			u.timer -= dt;
+			if(u.timer <= 0.f)
+			{
+				SpawnUnitEffect(u);
+				u.to_remove = true;
+				to_remove.push_back(&u);
+				if(IsOnline())
+					Net_RemoveUnit(&u);
 			}
 			break;
 		default:
@@ -8899,6 +8961,7 @@ struct BulletCallback : public btCollisionWorld::ContactResultCallback
 	BulletCallback(btCollisionObject* _bullet, btCollisionObject* _ignore) : target(nullptr), hit(false), bullet(_bullet), ignore(_ignore), hit_unit(false)
 	{
 		assert(_bullet);
+		CLEAR_BIT(m_collisionFilterMask, CG_BARRIER);
 	}
 
 	btScalar addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap, int partId1, int index1)
@@ -9384,6 +9447,9 @@ void Game::RemoveColliders()
 
 void Game::CreateCollisionShapes()
 {
+	const float size = 256.f;
+	const float border = 32.f;
+
 	shape_wall = new btBoxShape(btVector3(1.f, 2.f, 1.f));
 	shape_low_ceiling = new btBoxShape(btVector3(1.f, 0.5f, 1.f));
 	shape_ceiling = new btStaticPlaneShape(btVector3(0.f, -1.f, 0.f), 4.f);
@@ -9405,6 +9471,7 @@ void Game::CreateCollisionShapes()
 	s->addChildShape(tr, b);
 	shape_schody = s;
 	shape_summon = new btCylinderShape(btVector3(1.5f / 2, 1.5f, 1.5f / 2));
+	shape_barrier = new btBoxShape(btVector3(size / 2, 40.f, border / 2));
 
 	Mesh::Point* point = aArrow->FindPoint("Empty");
 	assert(point && point->IsBox());
@@ -12605,7 +12672,7 @@ struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 	float addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
 	{
 		m_closestHitFraction = convexResult.m_hitFraction;
-		if (t_list)
+		if(t_list)
 			t_list->push_back(m_closestHitFraction);
 		return convexResult.m_hitFraction;
 	}
@@ -15595,40 +15662,76 @@ void Game::SpawnOutsideBariers()
 	const float border = 32.f;
 	const float border2 = border / 2;
 
-	// góra
+	// top
 	{
 		CollisionObject& cobj = Add1(local_ctx.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(size2, border2);
 		cobj.w = size2;
 		cobj.h = border2;
+
+		btCollisionObject* obj = new btCollisionObject;
+		obj->setCollisionShape(shape_barrier);
+		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
+		btTransform tr;
+		tr.setIdentity();
+		tr.setOrigin(btVector3(size2, 40.f, border2));
+		obj->setWorldTransform(tr);
+		phy_world->addCollisionObject(obj);
 	}
 
-	// dó³
+	// bottom
 	{
 		CollisionObject& cobj = Add1(local_ctx.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(size2, size - border2);
 		cobj.w = size2;
 		cobj.h = border2;
+
+		btCollisionObject* obj = new btCollisionObject;
+		obj->setCollisionShape(shape_barrier);
+		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
+		btTransform tr;
+		tr.setIdentity();
+		tr.setOrigin(btVector3(size2, 40.f, size - border2));
+		obj->setWorldTransform(tr);
+		phy_world->addCollisionObject(obj);
 	}
 
-	// lewa
+	// left
 	{
 		CollisionObject& cobj = Add1(local_ctx.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(border2, size2);
 		cobj.w = border2;
 		cobj.h = size2;
+
+		btCollisionObject* obj = new btCollisionObject;
+		obj->setCollisionShape(shape_barrier);
+		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
+		btTransform tr;
+		tr.setOrigin(btVector3(border2, 40.f, size2));
+		tr.setRotation(btQuaternion(PI / 2, 0, 0));
+		obj->setWorldTransform(tr);
+		phy_world->addCollisionObject(obj);
 	}
 
-	// prawa
+	// right
 	{
 		CollisionObject& cobj = Add1(local_ctx.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(size - border2, size2);
 		cobj.w = border2;
 		cobj.h = size2;
+
+		btCollisionObject* obj = new btCollisionObject;
+		obj->setCollisionShape(shape_barrier);
+		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
+		btTransform tr;
+		tr.setOrigin(btVector3(size - border2, 40.f, size2));
+		tr.setRotation(btQuaternion(PI / 2, 0, 0));
+		obj->setWorldTransform(tr);
+		phy_world->addCollisionObject(obj);
 	}
 }
 

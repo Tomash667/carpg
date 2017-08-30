@@ -1825,6 +1825,7 @@ void Game::PrepareAreaPath()
 	auto& action = pc->GetAction();
 	Area2* area_ptr = area2_pool.Get();
 	Area2& area = *area_ptr;
+	area.ok = true;
 	draw_batch.areas2.push_back(area_ptr);
 
 	const float h = 0.06f;
@@ -1903,6 +1904,8 @@ void Game::PrepareAreaPath()
 			area.faces.push_back(2);
 			area.faces.push_back(3);
 		}
+
+		pc_data.action_ok = true;
 	}
 	else
 	{
@@ -1996,11 +1999,12 @@ void Game::PrepareAreaPath()
 		if(t < 0)
 		{
 			// no free space
-			draw_batch.areas2.clear();
-			area2_pool.Free(area_ptr);
-			return;
+			t = 1.f;
+			area.ok = false;
+			pc_data.action_ok = false;
 		}
-		
+		else
+			pc_data.action_ok = true;
 
 		// build circle
 		range = t * range;
@@ -2029,6 +2033,10 @@ void Game::PrepareAreaPath()
 			area.faces.push_back(i+1);
 			area.faces.push_back((i + 2) == 9 ? 1 : (i + 2));
 		}
+
+		// set action
+		if(pc_data.action_ok)
+			pc_data.action_point = area.points[0];
 	}
 }
 
@@ -3974,11 +3982,14 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 		V(eArea->Begin(&passes, 0));
 		V(eArea->BeginPass(0));
 		V(eArea->SetFloat(hAreaRange, 100.f));
-		V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&Vec4(0, 0.58f, 1.f, 0.5f)));
-		V(eArea->CommitChanges());
 
 		for (auto* area2 : areas2)
 		{
+			if(area2->ok)
+				V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&Vec4(0, 0.58f, 1.f, 0.5f)));
+			else
+				V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&Vec4(1, 0, 0, 0.5f)));
+			V(eArea->CommitChanges());
 			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, area2->points.size(), area2->faces.size() / 3, area2->faces.data(), D3DFMT_INDEX16,
 				area2->points.data(), sizeof(Vec3)));
 		}

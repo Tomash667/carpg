@@ -1,5 +1,6 @@
 ﻿FEATURE:
-- dash allows to move outside of outside barriers
+? dash allows to move outside of outside barriers
+	? verify bullets moving thru barrier, correct phy obj size
 + bulls charge effect
 	+ animation
 	+ stunned animation
@@ -15,16 +16,37 @@
 + summoned wolf
 	+ pick point
 		+ collisions
-			+ mark as red when unavailable but render it anyway
-	+ spawn unit
-	+ disappear after death
-	+ particles
-	+ can cast over units/objects (but not walls)
-	+ despawn corpse (sound/break loot)
+			? mark as red when unavailable but render it anyway
+	? spawn unit, is team member, fallow, combat, don't fight citizens, spawnunit, fallow across locations
+	? disappear after death
+	? particles, sound
+	? can cast over units/objects (but not walls)
+	? despawn corpse (sound/break loot)
 	+ summon animation
 + MP
 	+ dash
+	by server
+		+ play animation/sound by server
+		+ send info to clients to play animation/sound
+			+ play animation/sound by client
+
+	by client
+	+ play animation/sound by client
+		+ send info about using charge
+			+ play animation/sound by server
+			+ resend to other clients
+				+ play animation/sound by other client
+		+ by client
+		+ by server
+		+ save/load charges
+		+ save/load in dash
+		+ reset charges after rest/travel
 	+ summon
+		+ by client
+		+ by server
+		+ effect
+		+ despawn
+		+ break loot
 	+ bulls charge
 + info in class desc about actions
 + info in readme
@@ -52,6 +74,9 @@ NEW:
 	+ move handling of game panels from Game.OnTick to GameGui
 	+ GenerateCaveObjects use duplicated code for objects spawning, GenerateMine too
 	+ spawn door physics duplicates
+	+ draw_phy is too slow, add range var, optimize
+	+ Add vs Spawn vs Generate vs Create - fix convention
+	+ move away action area calculations from Scene.cpp
 + check files for utf-8 BOM ?
 + ee: sleeping beauty - after waking up tell to let her sleep for 5 minutes
 + create character screen rework
@@ -86,13 +111,10 @@ VERIFY:
 - verify dialogs ending with end/restart
 - without human flag and mesh crash when spawned, log error
 - przenoszenie do walki gdy jesteś w środku areny
-- dźwięki areny gdy się na niej jest ale nie bierze udziału
 - blokada widoku przez drewno u kowala
 - debug ai lag is too big!
 - input don't work when there is lag, but why? maybe it can happen without lag too
 - oświetlenie na zewnątrz dla terenu, pod małym kątem jest biała trawa [na ziemie i trawie zato widać trawę pod kątem, mipmaping?]
-- when closing game there is message that client was kicked
-- check if there any objects saved by mesh
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it; draw debug ray when ai is targeting
 - D3DX: Warning ID3DXEffect::EndPass. Changes have been made but not commited. CommitChange must be called before each DrawPrimitive call
 - po wejściu do gry i powrocie do menu jest obwódka wokół obrazka, przez multisampling
@@ -108,5 +130,3 @@ VERIFY:
 - zmiana multisamplingu nie ma wpływu na wygenerowane obrazki przedmiotów
 ? heal and death_screen
 ? raknet wysyła wiadomości do zdisconnectowanych przy broadcast jeśli nie wyśle jeszcze disconnect
-- walking forward and opening & closing console cause animations to act weird (like restarting)
-- mipmaping artifact on minimap 20170823_210621_01.jpg

@@ -1701,6 +1701,7 @@ void Game::ClearPointers()
 	shape_schody_c[1] = nullptr;
 	shape_schody = nullptr;
 	shape_summon = nullptr;
+	shape_barrier = nullptr;
 	obj_arrow = nullptr;
 	obj_spell = nullptr;
 
@@ -1756,7 +1757,7 @@ void Game::OnCleanup()
 	CleanupItems();
 	CleanupSpells();
 	DeleteElements(musics);
-	
+
 	// teren
 	delete terrain;
 	delete terrain_shape;
@@ -1771,6 +1772,7 @@ void Game::OnCleanup()
 	delete shape_schody_c[0];
 	delete shape_schody_c[1];
 	delete shape_summon;
+	delete shape_barrier;
 	delete shape_schody;
 	if(obj_arrow)
 		delete obj_arrow->getCollisionShape();

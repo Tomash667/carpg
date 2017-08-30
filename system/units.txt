@@ -2566,6 +2566,8 @@ unit white_wolf_sum : wolf {
 		null
 	}
 	items null
+	group citizens
+	flags | {hero specific_name no_class}
 }
 
 unit base_spider {

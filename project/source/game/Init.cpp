@@ -551,6 +551,7 @@ void Game::AddLoadTasks()
 	tWoda = tex_mgr.AddLoadTask("water.png");
 	tFlare = tex_mgr.AddLoadTask("flare.png");
 	tFlare2 = tex_mgr.AddLoadTask("flare2.png");
+	tSpawn = tex_mgr.AddLoadTask("spawn_fog.png");
 	tex_mgr.AddLoadTask("lighting_line.png", tLightingLine);
 
 	// physic meshes
@@ -794,6 +795,7 @@ void Game::AddLoadTasks()
 		sound_mgr.AddLoadTask("goblin-7.wav", sGoblinTalk);
 		sound_mgr.AddLoadTask("golem_alert.mp3", sGolemTalk);
 		sound_mgr.AddLoadTask("eat.mp3", sEat);
+		sound_mgr.AddLoadTask("whoosh.wav", sSummon);
 	}
 
 	// musics

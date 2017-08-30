@@ -568,6 +568,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	stream.Write(unit.hpmax);
 	stream.Write(unit.netid);
 	stream.WriteCasted<char>(unit.in_arena);
+	WriteBool(stream, unit.summoned);
 
 	// hero/player data
 	byte b;
@@ -1531,7 +1532,8 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		|| !stream.Read(unit.hp)
 		|| !stream.Read(unit.hpmax)
 		|| !stream.Read(unit.netid)
-		|| !stream.ReadCasted<char>(unit.in_arena))
+		|| !stream.ReadCasted<char>(unit.in_arena)
+		|| !ReadBool(stream, unit.summoned))
 		return false;
 	if(unit.live_state >= Unit::LIVESTATE_MAX)
 	{
@@ -7145,6 +7147,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
+						if(unit->summoned)
+							SpawnUnitEffect(*unit);
 						unit->to_remove = true;
 						to_remove.push_back(unit);
 					}
@@ -7166,6 +7170,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					LevelContext& ctx = GetContext(unit->pos);
 					ctx.units->push_back(unit);
 					unit->in_building = ctx.building_id;
+					if(unit->summoned)
+						SpawnUnitEffect(*unit);
 				}
 			}
 			break;
