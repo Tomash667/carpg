@@ -223,7 +223,7 @@ void GameGui::DrawFront()
 			if(IS_SET(item.item->flags, ITEM_GROUND_MESH))
 				mesh = item.item->mesh;
 			else
-				mesh = game.aWorek;
+				mesh = game.aBag;
 			Vec3 text_pos = item.pos;
 			text_pos.y += mesh->head.bbox.v2.y;
 			cstring text;

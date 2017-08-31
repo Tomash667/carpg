@@ -712,7 +712,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						pc->unit->hp = pc->unit->hpmax;
 						pc->unit->stamina = pc->unit->stamina_max;
-						pc->unit->HealPoison();
+						pc->unit->RemovePoison();
+						pc->unit->RemoveEffect(E_STUN);
 						if(IsOnline())
 						{
 							NetChange& c = Add1(net_changes);
@@ -748,7 +749,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						{
 							pc_data.selected_target->hp = pc_data.selected_target->hpmax;
 							pc_data.selected_target->stamina = pc_data.selected_target->stamina_max;
-							pc_data.selected_target->HealPoison();
+							pc_data.selected_target->RemovePoison();
+							pc_data.selected_target->RemoveEffect(E_STUN);
 							if(IsOnline())
 							{
 								NetChange& c = Add1(net_changes);

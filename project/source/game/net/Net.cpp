@@ -1741,7 +1741,7 @@ bool Game::ReadDoor(BitStream& stream, Door& door)
 		return false;
 	}
 
-	door.mesh_inst = new MeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
+	door.mesh_inst = new MeshInstance(door.door2 ? aDoor2 : aDoor);
 	door.mesh_inst->groups[0].speed = 2.f;
 	door.phy = new btCollisionObject;
 	door.phy->setCollisionShape(shape_door);
@@ -1785,7 +1785,7 @@ bool Game::ReadChest(BitStream& stream, Chest& chest)
 		|| !stream.Read(chest.rot)
 		|| !stream.Read(chest.netid))
 		return false;
-	chest.mesh_inst = new MeshInstance(aSkrzynia);
+	chest.mesh_inst = new MeshInstance(aChest);
 	return true;
 }
 

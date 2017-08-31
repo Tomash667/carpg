@@ -36,7 +36,7 @@ void Door::Load(HANDLE file, bool local)
 	{
 		Game& game = Game::Get();
 
-		mesh_inst = new MeshInstance(door2 ? game.aDrzwi2 : game.aDrzwi);
+		mesh_inst = new MeshInstance(door2 ? game.aDoor2 : game.aDoor);
 		mesh_inst->Load(file);
 
 		phy = new btCollisionObject;

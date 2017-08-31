@@ -6785,6 +6785,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->last_bash = 0.f;
 	u->guard_target = nullptr;
 	u->alcohol = 0.f;
+	u->moved = false;
 
 	float t;
 	if(base.level.x == base.level.y)
@@ -7779,7 +7780,71 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		if(u.IsAlive())
 		{
 			if(IsLocal())
+			{
 				u.UpdateEffects(dt);
+				if(u.moved)
+				{
+					// unstuck units after being force moved (by bull charge)
+					static vector<Unit*> targets;
+					targets.clear();
+					float t;
+					bool in_dash = false;
+					ContactTest(u.cobj, [&](btCollisionObject* obj, bool second)
+					{
+						if(!second)
+						{
+							int flags = obj->getCollisionFlags();
+							if(!IS_SET(flags, CG_UNIT))
+								return false;
+							else
+							{
+								if(obj->getUserPointer() == &u)
+									return false;
+								return true;
+							}
+						}
+						else
+						{
+							Unit* target = (Unit*)obj->getUserPointer();
+							if(target->action == A_DASH)
+								in_dash = true;
+							targets.push_back(target);
+							return true;
+						}
+					}, true);
+
+					if(!in_dash)
+					{
+						if(targets.empty())
+							u.moved = false;
+						else
+						{
+							Vec3 center(0, 0, 0);
+							for(auto target : targets)
+							{
+								center += u.pos - target->pos;
+								target->moved = true;
+							}
+							center /= (float)targets.size();
+							center.y = 0;
+							center.Normalize();
+							center *= dt;
+							LineTest(u.cobj->getCollisionShape(), u.pos, center, [&](btCollisionObject* obj, bool)
+							{
+									int flags = obj->getCollisionFlags();
+									if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
+										return false;
+									return true;
+							}, t);
+							if(t == 1.f)
+							{
+								u.pos += center;
+								MoveUnit(u, false, true);
+							}
+						}
+					}
+				}
+			}
 			if(u.IsStanding() && u.talking)
 			{
 				u.talk_timer += dt;
@@ -8748,6 +8813,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					}, t, nullptr, true);
 
 					// check all hitted
+					float move_angle = Angle(0, 0, dir.x, dir.z);
+					Vec3 dir_left(sin(u.use_rot + PI / 2)*len, 0, cos(u.use_rot + PI / 2)*len);
+					Vec3 dir_right(sin(u.use_rot - PI / 2)*len, 0, cos(u.use_rot - PI / 2)*len);
 					for(auto unit : targets)
 					{
 						// deal damage/stun
@@ -8767,31 +8835,52 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						else
 							move_forward = false;
 
-						auto unit_clbk[unit](btCollisionObject* obj, bool)
+						auto unit_clbk = [unit](btCollisionObject* obj, bool)
 						{
 							int flags = obj->getCollisionFlags();
-							if(IS_SET(flags, CG_TERRAIN))
+							if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
 								return false;
-							if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == unit)
-								return false;
+							return true;
 						};
 
 						// try to push forward
-						const Vec3 move_dir = dir * 1.5f;
 						if(move_forward)
 						{
+							Vec3 move_dir = unit->pos - u.pos;
+							move_dir.y = 0;
+							move_dir.Normalize();
+							move_dir *= len;
 							float t;
 							LineTest(unit->cobj->getCollisionShape(), unit->pos, move_dir, unit_clbk, t);
 							if(t == 1.f)
 							{
+								unit->moved = true;
 								unit->pos += move_dir;
-								MoveUnit(&unit, false, true);
+								MoveUnit(*unit, false, true);
 								break;
 							}
 						}
 
 						// decide where to push, left or right
-
+						float angle = Angle(u.pos.x, u.pos.z, unit->pos.x, unit->pos.z);
+						float best_dir = ShortestArc(move_angle, angle);
+						bool inner_ok = false;
+						for(int i = 0; i < 2; ++i)
+						{
+							float t;
+							Vec3& actual_dir = (best_dir < 0 ? dir_left : dir_right);
+							LineTest(unit->cobj->getCollisionShape(), unit->pos, actual_dir, unit_clbk, t);
+							if(t == 1.f)
+							{
+								inner_ok = true;
+								unit->moved = true;
+								unit->pos += actual_dir;
+								MoveUnit(*unit, false, true);
+								break;
+							}
+						}
+						if(!inner_ok)
+							ok = false;
 					}
 				}
 
@@ -10105,7 +10194,7 @@ void Game::GenerateDungeonObjects()
 					if(IS_SET(obj->flags, OBJ_CHEST))
 					{
 						Chest* chest = new Chest;
-						chest->mesh_inst = new MeshInstance(aSkrzynia);
+						chest->mesh_inst = new MeshInstance(aChest);
 						chest->pos = pos;
 						chest->rot = rot;
 						chest->handler = nullptr;
@@ -10419,7 +10508,7 @@ void Game::GenerateDungeonObjects()
 				}
 
 				Chest* chest = new Chest;
-				chest->mesh_inst = new MeshInstance(aSkrzynia);
+				chest->mesh_inst = new MeshInstance(aChest);
 				chest->pos = pos;
 				chest->rot = rot;
 				chest->handler = nullptr;
@@ -12817,6 +12906,46 @@ bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, 
 	return callback.hasHit();
 }
 
+struct ContactTestCallback : public btCollisionWorld::ContactResultCallback
+{
+	btCollisionObject* obj;
+	delegate<bool(btCollisionObject*, bool)> clbk;
+	bool use_clbk2, hit;
+
+	ContactTestCallback(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2) : obj(obj), clbk(clbk), use_clbk2(use_clbk2), hit(false)
+	{
+	}
+
+	bool needsCollision(btBroadphaseProxy* proxy0) const override
+	{
+		return clbk((btCollisionObject*)proxy0->m_clientObject, false);
+	}
+
+	float addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap,
+		int partId1, int index1)
+	{
+		if(use_clbk2)
+		{
+			const btCollisionObject* cobj;
+			if(colObj0Wrap->m_collisionObject == obj)
+				cobj = colObj1Wrap->m_collisionObject;
+			else
+				cobj = colObj0Wrap->m_collisionObject;
+			if(!clbk((btCollisionObject*)cobj, true))
+				return 1.f;
+		}
+		hit = true;
+		return 0.f;
+	}
+};
+
+bool Game::ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2)
+{
+	ContactTestCallback callback(obj, clbk, use_clbk2);
+	phy_world->contactTest(obj, callback);
+	return callback.hit;
+}
+
 void Game::UpdateElectros(LevelContext& ctx, float dt)
 {
 	uint index = 0;
@@ -13773,7 +13902,7 @@ void Game::OnReenterLevel(LevelContext& ctx)
 		{
 			Chest& chest = **it;
 
-			chest.mesh_inst = new MeshInstance(aSkrzynia);
+			chest.mesh_inst = new MeshInstance(aChest);
 		}
 	}
 
@@ -13785,7 +13914,7 @@ void Game::OnReenterLevel(LevelContext& ctx)
 			Door& door = **it;
 
 			// animowany model
-			door.mesh_inst = new MeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
+			door.mesh_inst = new MeshInstance(door.door2 ? aDoor2 : aDoor);
 			door.mesh_inst->groups[0].speed = 2.f;
 
 			// fizyka
@@ -13890,18 +14019,18 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 void Game::SetDungeonParamsToMeshes()
 {
 	// tekstury schodów / pu³apek
-	ApplyTexturePackToSubmesh(aSchodyDol->subs[0], tFloor[0]);
-	ApplyTexturePackToSubmesh(aSchodyDol->subs[2], tWall[0]);
-	ApplyTexturePackToSubmesh(aSchodyDol2->subs[0], tFloor[0]);
-	ApplyTexturePackToSubmesh(aSchodyDol2->subs[2], tWall[0]);
-	ApplyTexturePackToSubmesh(aSchodyGora->subs[0], tFloor[0]);
-	ApplyTexturePackToSubmesh(aSchodyGora->subs[2], tWall[0]);
-	ApplyTexturePackToSubmesh(aNaDrzwi->subs[0], tWall[0]);
-	ApplyDungeonLightToMesh(*aSchodyDol);
-	ApplyDungeonLightToMesh(*aSchodyDol2);
-	ApplyDungeonLightToMesh(*aSchodyGora);
-	ApplyDungeonLightToMesh(*aNaDrzwi);
-	ApplyDungeonLightToMesh(*aNaDrzwi2);
+	ApplyTexturePackToSubmesh(aStairsDown->subs[0], tFloor[0]);
+	ApplyTexturePackToSubmesh(aStairsDown->subs[2], tWall[0]);
+	ApplyTexturePackToSubmesh(aStairsDown2->subs[0], tFloor[0]);
+	ApplyTexturePackToSubmesh(aStairsDown2->subs[2], tWall[0]);
+	ApplyTexturePackToSubmesh(aStairsUp->subs[0], tFloor[0]);
+	ApplyTexturePackToSubmesh(aStairsUp->subs[2], tWall[0]);
+	ApplyTexturePackToSubmesh(aDoorWall->subs[0], tWall[0]);
+	ApplyDungeonLightToMesh(*aStairsDown);
+	ApplyDungeonLightToMesh(*aStairsDown2);
+	ApplyDungeonLightToMesh(*aStairsUp);
+	ApplyDungeonLightToMesh(*aDoorWall);
+	ApplyDungeonLightToMesh(*aDoorWall2);
 
 	// apply texture/lighting to trap to make it same texture as dungeon
 	if(g_traps[TRAP_ARROW].mesh->state == ResourceState::Loaded)
@@ -13916,7 +14045,7 @@ void Game::SetDungeonParamsToMeshes()
 	}
 
 	// druga tekstura
-	ApplyTexturePackToSubmesh(aNaDrzwi2->subs[0], tWall[1]);
+	ApplyTexturePackToSubmesh(aDoorWall2->subs[0], tWall[1]);
 }
 
 void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal, bool from_outside)
@@ -13960,7 +14089,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 			// jaskinia
 			// schody w górê
 			Object& o = Add1(local_ctx.objects);
-			o.mesh = aSchodyGora;
+			o.mesh = aStairsUp;
 			o.pos = pt_to_pos(lvl.staircase_up);
 			o.rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
 			o.scale = 1;
@@ -18299,7 +18428,7 @@ bool Game::GenerateMine()
 		// drzwi
 		{
 			Object& o = Add1(local_ctx.objects);
-			o.mesh = aNaDrzwi;
+			o.mesh = aDoorWall;
 			o.pos = Vec3(float(end_pt.x * 2) + 1, 0, float(end_pt.y * 2) + 1);
 			o.scale = 1;
 			o.base = nullptr;
@@ -18343,7 +18472,7 @@ bool Game::GenerateMine()
 			door->pos = o.pos;
 			door->rot = o.rot.y;
 			door->state = Door::Closed;
-			door->mesh_inst = new MeshInstance(aDrzwi);
+			door->mesh_inst = new MeshInstance(aDoor);
 			door->mesh_inst->groups[0].speed = 2.f;
 			door->phy = new btCollisionObject;
 			door->phy->setCollisionShape(shape_door);

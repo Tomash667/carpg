@@ -113,7 +113,7 @@ void Chest::Load(HANDLE file, bool local)
 		int b;
 		ReadFile(file, &b, sizeof(b), &tmp, nullptr);
 
-		mesh_inst = new MeshInstance(Game::Get().aSkrzynia);
+		mesh_inst = new MeshInstance(Game::Get().aChest);
 
 		if(b != 0)
 		{

@@ -1,21 +1,10 @@
 ﻿FEATURE:
 ? guard_target loading
 - mp, client have no charges
-+ bulls charge effect
-	+ move targets out of way
-		+ ally move to left/right
-		+ enemy in direction or left/right if not possible
-		+ if blocked, stop
-	? damage/stun once
-	+ animation
-	+ stunned animation
-	? dmg = siła
++ bulls charge
+	+ charge animation
 	+ stun de-buff
-		+ sending info to server
 		+ units/player can't move
-		+ stun animation (or stand)
-		+ stun effect above head
-		+ heal remove stun
 + MP
 	+ dash
 	by server
@@ -41,6 +30,9 @@
 		+ despawn
 		+ break loot
 	+ bulls charge
+		+ heal, healunit cmd
+		+ remove effect
+		+ send info about stun start/remove, update on client side
 + info in class desc about actions
 + info in readme
 ? tests
@@ -54,6 +46,7 @@
 		? saving/loading for multiple wolfs, each for each player despawn
 - clicking on M menu apply focus but can't enter text
 ? allow run without stamina?
++ 0.1f cooldown
 ===============================================================================================================
 CURRENT:
 ===============================================================================================================
@@ -98,6 +91,7 @@ NEW:
 	+ after point
 	+ in dungeon - red marker goes into wall
 - electro/bull charge targets are unsafe, what is unit from this list was removed
++ cmd to remove cooldowns
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

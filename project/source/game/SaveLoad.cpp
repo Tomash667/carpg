@@ -794,11 +794,11 @@ void Game::LoadGame(HANDLE file)
 				{
 					for(vector<Object>::iterator obj_it = lvl->objects.begin(), obj_end = lvl->objects.end(); obj_it != obj_end; ++obj_it)
 					{
-						if(obj_it->mesh == aNaDrzwi)
+						if(obj_it->mesh == aDoorWall)
 						{
 							Int2 pt = pos_to_pt(obj_it->pos);
 							if(IS_SET(lvl->map[pt.x + pt.y*lvl->w].flags, Pole::F_DRUGA_TEKSTURA))
-								obj_it->mesh = aNaDrzwi2;
+								obj_it->mesh = aDoorWall2;
 						}
 					}
 				}

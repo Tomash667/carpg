@@ -79,6 +79,7 @@ void DrawBatch::Clear()
 	lights.clear();
 	dungeon_parts.clear();
 	matrices.clear();
+	stuns.clear();
 
 	// empty lights
 	Lights& l = Add1(lights);
@@ -716,7 +717,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				pos.y -= mesh->head.bbox.v1.y;
 			}
 			else
-				mesh = aWorek;
+				mesh = aBag;
 			if(frustum.SphereToFrustum(item.pos, mesh->head.radius))
 			{
 				SceneNode* node = node_pool.Get();
@@ -1188,6 +1189,15 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 {
 	if(!frustum.SphereToFrustum(u.visual_pos, u.GetSphereRadius()))
 		return;
+
+	// add stun effect
+	auto effect = u.FindEffect(E_STUN);
+	if(effect)
+	{
+		auto& stun = Add1(draw_batch.stuns);
+		stun.pos = u.GetHeadPoint();
+		stun.time = effect->time;
+	}
 
 	// ustaw koœci
 	if(u.data->type == UNIT_TYPE::HUMAN)
@@ -2847,6 +2857,10 @@ void Game::DrawScene(bool outside)
 	if(draw_batch.electros)
 		DrawLightings(*draw_batch.electros);
 
+	// stun effects
+	if(!draw_batch.stuns.empty())
+		DrawStunEffects(draw_batch.stuns);
+
 	// portale
 	if (!draw_batch.portals.empty())
 		DrawPortals(draw_batch.portals);
@@ -3935,6 +3949,55 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 
 	V(eParticle->EndPass());
 	V(eParticle->End());
+
+	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+}
+
+//=================================================================================================
+void Game::DrawStunEffects(const vector<StunEffect>& stuns)
+{
+	SetAlphaTest(false);
+	SetAlphaBlend(true);
+	SetNoCulling(true);
+	SetNoZWrite(true);
+
+	const Mesh& mesh = *aStun;
+
+	V(eMesh->SetTechnique(techMeshDir));
+	V(eMesh->SetVector(hMeshFogColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
+	V(eMesh->SetVector(hMeshFogParam, (D3DXVECTOR4*)&Vec4(250.f, 500.f, 250.f, 0)));
+	V(eMesh->SetVector(hMeshAmbientColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
+	V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
+	V(eMesh->SetVector(hMeshLightDir, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
+	V(eMesh->SetVector(hMeshLightColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
+
+	V(device->SetVertexDeclaration(vertex_decl[mesh.vertex_decl]));
+	V(device->SetStreamSource(0, mesh.vb, 0, mesh.vertex_size));
+	V(device->SetIndices(mesh.ib));
+	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
+
+	UINT passes;
+	V(eMesh->Begin(&passes, 0));
+	V(eMesh->BeginPass(0));
+
+	Matrix matWorld;
+	for(auto& stun : stuns)
+	{
+		matWorld = Matrix::RotationY(stun.time * 3) * Matrix::Translation(stun.pos);
+		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&(matWorld * cam.matViewProj)));
+		V(eMesh->SetMatrix(hMeshWorld, (D3DXMATRIX*)&matWorld));
+
+		for(int i = 0; i < mesh.head.n_subs; ++i)
+		{
+			const Mesh::Submesh& sub = mesh.subs[i];
+			V(eMesh->SetTexture(hMeshTex, sub.tex->tex));
+			V(eMesh->CommitChanges());
+			V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
+		}
+	}
+
+	V(eMesh->EndPass());
+	V(eMesh->End());
 
 	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 }

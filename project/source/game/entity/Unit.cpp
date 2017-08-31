@@ -1368,7 +1368,7 @@ void Unit::Save(HANDLE file, bool local)
 		WriteFile(file, &alcohol, sizeof(alcohol), &tmp, nullptr);
 		WriteFile(file, &raise_timer, sizeof(raise_timer), &tmp, nullptr);
 
-		if (action == A_DASH)
+		if(action == A_DASH)
 			WriteFile(file, &use_rot, sizeof(use_rot), &tmp, nullptr);
 
 		if(used_item)
@@ -1401,6 +1401,7 @@ void Unit::Save(HANDLE file, bool local)
 		}
 
 		WriteFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
+		WriteFile(file, &moved, sizeof(moved), &tmp, nullptr);
 	}
 
 	// efekty
@@ -1772,6 +1773,9 @@ void Unit::Load(HANDLE file, bool local)
 			last_bash = 0.f;
 		else
 			ReadFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
+
+		if(LOAD_VERSION >= V_CURRENT)
+			ReadFile(file, &moved, sizeof(moved), &tmp, nullptr);
 	}
 	else
 	{
@@ -1790,6 +1794,7 @@ void Unit::Load(HANDLE file, bool local)
 		hurt_timer = 0.f;
 		speed = prev_speed = 0.f;
 		alcohol = 0.f;
+		moved = false;
 	}
 
 	// efekty
@@ -2113,12 +2118,12 @@ void Unit::HealPoison()
 }
 
 //=================================================================================================
-void Unit::RemovePoison()
+void Unit::RemoveEffect(ConsumeEffect effect)
 {
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
-		if(it->effect == E_POISON)
+		if(it->effect == effect)
 			_to_remove.push_back(index);
 	}
 

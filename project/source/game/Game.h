@@ -477,6 +477,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void DrawParticles(const vector<ParticleEmitter*>& pes);
 	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
 	void DrawLightings(const vector<Electro*>& electros);
+	void DrawStunEffects(const vector<StunEffect>& stuns);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void DrawPortals(const vector<Portal*>& portals);
 	void SetAlphaTest(bool use_alphatest);
@@ -499,17 +500,17 @@ struct Game final : public Engine, public UnitEventHandler
 	//-----------------------------------------------------------------
 	// ZASOBY
 	//-----------------------------------------------------------------
-	Mesh* aHumanBase, *aHair[5], *aBeard[5], *aMustache[2], *aEyebrows;
-	Mesh* aBox, *aCylinder, *aSphere, *aCapsule;
-	Mesh* aArrow, *aSkybox, *aWorek, *aSkrzynia, *aKratka, *aNaDrzwi, *aNaDrzwi2, *aSchodyDol, *aSchodyGora, *aSchodyDol2, *aSpellball, *aPrzycisk, *aDrzwi, *aDrzwi2;
+	MeshPtr aHumanBase, aHair[5], aBeard[5], aMustache[2], aEyebrows;
+	MeshPtr aBox, aCylinder, aSphere, aCapsule;
+	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
 	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
 	TEX tItemRegion, tMinimap, tChar, tSave;
 	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tMiniSave, tWarning, tError;
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *eGui, *ePostFx, *eGlow, *eGrass;
-	D3DXHANDLE techAnim, techHair, techAnimDir, techHairDir, techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techTerrain,
-		techArea, techTrail, techGlowMesh, techGlowAni, techGrass;
+	D3DXHANDLE techAnim, techHair, techAnimDir, techHairDir, techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox,
+		techTerrain, techArea, techTrail, techGlowMesh, techGlowAni, techGrass;
 	D3DXHANDLE hAniCombined, hAniWorld, hAniBones, hAniTex, hAniFogColor, hAniFogParam, hAniTint, hAniHairColor, hAniAmbientColor, hAniLightDir, hAniLightColor, hAniLights,
 		hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir, hMeshLightColor, hMeshLights,
 		hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange,
@@ -1158,6 +1159,7 @@ public:
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
 	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*, bool)> clbk, float& t, vector<float>* t_list = nullptr,
 		bool use_clbk2 = false);
+	bool ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2 = false);
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);
 	void AI_Shout(LevelContext& ctx, AIController& ai);

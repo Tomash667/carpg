@@ -568,17 +568,17 @@ void Game::AddLoadTasks()
 	aCapsule = mesh_mgr.AddLoadTask("capsule.qmsh");
 	aArrow = mesh_mgr.AddLoadTask("strzala.qmsh");
 	aSkybox = mesh_mgr.AddLoadTask("skybox.qmsh");
-	aWorek = mesh_mgr.AddLoadTask("worek.qmsh");
-	aSkrzynia = mesh_mgr.AddLoadTask("skrzynia.qmsh");
-	aKratka = mesh_mgr.AddLoadTask("kratka.qmsh");
-	aNaDrzwi = mesh_mgr.AddLoadTask("nadrzwi.qmsh");
-	aNaDrzwi2 = mesh_mgr.AddLoadTask("nadrzwi2.qmsh");
-	aSchodyDol = mesh_mgr.AddLoadTask("schody_dol.qmsh");
-	aSchodyDol2 = mesh_mgr.AddLoadTask("schody_dol2.qmsh");
-	aSchodyGora = mesh_mgr.AddLoadTask("schody_gora.qmsh");
+	aBag = mesh_mgr.AddLoadTask("worek.qmsh");
+	aChest = mesh_mgr.AddLoadTask("skrzynia.qmsh");
+	aGrating = mesh_mgr.AddLoadTask("kratka.qmsh");
+	aDoorWall = mesh_mgr.AddLoadTask("nadrzwi.qmsh");
+	aDoorWall2 = mesh_mgr.AddLoadTask("nadrzwi2.qmsh");
+	aStairsDown = mesh_mgr.AddLoadTask("schody_dol.qmsh");
+	aStairsDown2 = mesh_mgr.AddLoadTask("schody_dol2.qmsh");
+	aStairsUp = mesh_mgr.AddLoadTask("schody_gora.qmsh");
 	aSpellball = mesh_mgr.AddLoadTask("spellball.qmsh");
-	aDrzwi = mesh_mgr.AddLoadTask("drzwi.qmsh");
-	aDrzwi2 = mesh_mgr.AddLoadTask("drzwi2.qmsh");
+	aDoor = mesh_mgr.AddLoadTask("drzwi.qmsh");
+	aDoor2 = mesh_mgr.AddLoadTask("drzwi2.qmsh");
 	aHumanBase = mesh_mgr.AddLoadTask("czlowiek.qmsh");
 	aHair[0] = mesh_mgr.AddLoadTask("hair1.qmsh");
 	aHair[1] = mesh_mgr.AddLoadTask("hair2.qmsh");
@@ -593,6 +593,7 @@ void Game::AddLoadTasks()
 	aBeard[2] = mesh_mgr.AddLoadTask("beard3.qmsh");
 	aBeard[3] = mesh_mgr.AddLoadTask("beard4.qmsh");
 	aBeard[4] = mesh_mgr.AddLoadTask("beardm1.qmsh");
+	aStun = mesh_mgr.AddLoadTask("stunned.qmsh");
 
 	// preload buildings
 	for(Building* b : content::buildings)

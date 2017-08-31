@@ -2273,7 +2273,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					door->rot = Clip(pt.rot.y + rot);
 					door->state = Door::Open;
 					door->door2 = (token == "door2");
-					door->mesh_inst = new MeshInstance(door->door2 ? aDrzwi2 : aDrzwi);
+					door->mesh_inst = new MeshInstance(door->door2 ? aDoor2 : aDoor);
 					door->mesh_inst->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);
@@ -3085,7 +3085,7 @@ void Game::GenerateDungeonObjects2()
 	if(inside->HaveUpStairs())
 	{
 		Object& o = Add1(local_ctx.objects);
-		o.mesh = aSchodyGora;
+		o.mesh = aStairsUp;
 		o.pos = pt_to_pos(lvl.staircase_up);
 		o.rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
 		o.scale = 1;
@@ -3098,7 +3098,7 @@ void Game::GenerateDungeonObjects2()
 	if(inside->HaveDownStairs())
 	{
 		Object& o = Add1(local_ctx.objects);
-		o.mesh = (lvl.staircase_down_in_wall ? aSchodyDol2 : aSchodyDol);
+		o.mesh = (lvl.staircase_down_in_wall ? aStairsDown2 : aStairsDown);
 		o.pos = pt_to_pos(lvl.staircase_down);
 		o.rot = Vec3(0, dir_to_rot(lvl.staircase_down_dir), 0);
 		o.scale = 1;
@@ -3114,7 +3114,7 @@ void Game::GenerateDungeonObjects2()
 			if(p == KRATKA || p == KRATKA_PODLOGA)
 			{
 				Object& o = Add1(local_ctx.objects);
-				o.mesh = aKratka;
+				o.mesh = aGrating;
 				o.rot = Vec3(0, 0, 0);
 				o.pos = Vec3(float(x * 2), 0, float(y * 2));
 				o.scale = 1;
@@ -3123,7 +3123,7 @@ void Game::GenerateDungeonObjects2()
 			if(p == KRATKA || p == KRATKA_SUFIT)
 			{
 				Object& o = Add1(local_ctx.objects);
-				o.mesh = aKratka;
+				o.mesh = aGrating;
 				o.rot = Vec3(0, 0, 0);
 				o.pos = Vec3(float(x * 2), 4, float(y * 2));
 				o.scale = 1;
@@ -3132,9 +3132,9 @@ void Game::GenerateDungeonObjects2()
 			if(p == DRZWI)
 			{
 				Object& o = Add1(local_ctx.objects);
-				o.mesh = aNaDrzwi;
+				o.mesh = aDoorWall;
 				if(IS_SET(lvl.map[x + y*lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
-					o.mesh = aNaDrzwi2;
+					o.mesh = aDoorWall2;
 				o.pos = Vec3(float(x * 2) + 1, 0, float(y * 2) + 1);
 				o.scale = 1;
 				o.base = nullptr;
@@ -3174,7 +3174,7 @@ void Game::GenerateDungeonObjects2()
 					door->pos = o.pos;
 					door->rot = o.rot.y;
 					door->state = Door::Closed;
-					door->mesh_inst = new MeshInstance(aDrzwi);
+					door->mesh_inst = new MeshInstance(aDoor);
 					door->mesh_inst->groups[0].speed = 2.f;
 					door->phy = new btCollisionObject;
 					door->phy->setCollisionShape(shape_door);

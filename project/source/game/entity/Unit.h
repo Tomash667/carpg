@@ -168,7 +168,7 @@ struct Unit
 	const Item* used_item;
 	bool used_item_is_team;
 	vector<Effect> effects;
-	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit;
+	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved;
 	AIController* ai;
 	btCollisionObject* cobj;
 	static vector<Unit*> refid_table;
@@ -198,7 +198,7 @@ struct Unit
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false) {}
 	~Unit();
 
 	float CalculateArmorDefense(const Armor* armor = nullptr);
@@ -529,7 +529,11 @@ struct Unit
 		Heal(0.15f * Get(Attribute::END) * days);
 	}
 	void HealPoison();
-	void RemovePoison();
+	void RemoveEffect(ConsumeEffect effect);
+	void RemovePoison()
+	{
+		RemoveEffect(E_POISON);
+	}
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 #define INVALID_IINDEX (-SLOT_INVALID-1)
 	int FindItem(const Item* item, int quest_refid = -1) const;
