@@ -188,18 +188,14 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
 			game->RemoveTeamMember(captive);
 
-			captive->to_remove = true;
-			game->to_remove.push_back(captive);
+			game->RemoveUnit(captive);
 			captive->event_handler = nullptr;
 			msgs.push_back(Format(game->txQuest[38], game->locations[start_loc]->name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(game->IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				game->Net_RemoveUnit(captive);
-			}
 
 			captive = nullptr;
 		}

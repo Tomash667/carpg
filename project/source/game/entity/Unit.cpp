@@ -1667,6 +1667,8 @@ void Unit::Load(HANDLE file, bool local)
 	}
 	if(LOAD_VERSION >= V_CURRENT)
 		ReadFile(file, &summoned, sizeof(summoned), &tmp, nullptr);
+	else
+		summoned = -1;
 
 	bubble = nullptr; // ustawianie przy wczytaniu SpeechBubble
 	changed = false;

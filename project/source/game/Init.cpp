@@ -795,7 +795,7 @@ void Game::AddLoadTasks()
 		sound_mgr.AddLoadTask("goblin-7.wav", sGoblinTalk);
 		sound_mgr.AddLoadTask("golem_alert.mp3", sGolemTalk);
 		sound_mgr.AddLoadTask("eat.mp3", sEat);
-		sound_mgr.AddLoadTask("whoosh.wav", sSummon);
+		sound_mgr.AddLoadTask("whooshy-puff.wav", sSummon);
 	}
 
 	// musics

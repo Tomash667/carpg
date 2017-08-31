@@ -117,7 +117,7 @@ struct Area2
 {
 	vector<Vec3> points;
 	vector<word> faces;
-	bool ok;
+	int ok;
 };
 
 //-----------------------------------------------------------------------------

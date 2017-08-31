@@ -2918,7 +2918,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	else
 	{
 		auto& action = pc->GetAction();
-		if(action.area == Action::LINE && action.pick_dir)
+		if(action.area == Action::LINE && IS_SET(action.flags, Action::F_PICK_DIR))
 		{
 			// adjust action dir
 			switch(move)
@@ -3005,26 +3005,54 @@ void Game::UseAction(PlayerController* p)
 	if(action.sound)
 		PlayAttachedSound(*p->unit, action.sound->sound, action.sound_dist);
 	p->UseActionCharge();
-	if(strcmp(action.id, "dash") == 0)
+	if(strcmp(action.id, "dash") == 0 || strcmp(action.id, "bull_charge") == 0)
 	{
+		bool dash = (strcmp(action.id, "dash") == 0);
 		p->unit->action = A_DASH;
-		p->unit->timer = 0.33f;
 		p->unit->use_rot = Clip(pc_data.action_rot + p->unit->rot + PI);
-		p->unit->speed = action.area_size.x / 0.33f;
 		p->unit->animation = ANI_RUN;
 		p->unit->current_animation = ANI_RUN;
 		p->unit->mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
-		p->unit->mesh_inst->groups[0].speed = 3.f;
-		p->unit->animation_state = 0;
+		if(dash)
+		{
+			p->unit->animation_state = 0;
+			p->unit->timer = 0.33f;
+			p->unit->speed = action.area_size.x / 0.33f;
+			p->unit->mesh_inst->groups[0].speed = 3.f;
+		}
+		else
+		{
+			p->unit->animation_state = 1;
+			p->unit->timer = 0.5f;
+			p->unit->speed = action.area_size.x / 0.5f;
+			p->unit->mesh_inst->groups[0].speed = 2.5f;
+			p->action_targets.clear();
+		}
 	}
 	else if(strcmp(action.id, "summon_wolf") == 0)
 	{
+		// despawn old
+		auto existing_unit = FindUnit([=](Unit* u) { return u->summoned == p->unit->netid; });
+		if(existing_unit)
+		{
+			RemoveTeamMember(existing_unit);
+			RemoveUnit(existing_unit);
+		}
+
+		// spawn new
 		auto unit = SpawnUnitNearLocation(GetContext(*p->unit), pc_data.action_point, *FindUnitData("white_wolf_sum"), nullptr, p->unit->level);
-		unit->summoned = true;
+		unit->summoned = p->unit->netid;
 		if(IsServer())
 			Net_SpawnUnit(unit);
 		AddTeamMember(unit, true);
 		SpawnUnitEffect(*unit);
+
+		// cast animation
+		p->unit->action = A_CAST;
+		p->unit->attack_id = -1;
+		p->unit->animation_state = 0;
+		p->unit->mesh_inst->frame_end_info2 = false;
+		p->unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
 	}
 	if(p == pc)
 		pc_data.action_ready = false;
@@ -7841,7 +7869,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				{
 					u.live_state = Unit::DEAD;
 					CreateBlood(ctx, u);
-					if(u.summoned)
+					if(u.summoned != -1)
 					{
 						RemoveTeamMember(&u);
 						u.action = A_DESPAWN;
@@ -7852,7 +7880,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					u.live_state = Unit::FALL;
 				u.mesh_inst->frame_end_info = false;
 			}
-			if(u.action != A_POSITION)
+			if(u.action != A_POSITION && u.action != A_DESPAWN)
 			{
 				u.UpdateStaminaAction();
 				continue;
@@ -8675,15 +8703,49 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				const float eps = 0.05f;
 				float len = u.speed * dt_left;
 				Vec3 dir(sin(u.use_rot)*(len + eps), 0, cos(u.use_rot)*(len + eps));
-				LineTest(u.cobj->getCollisionShape(), u.pos, dir, [this](btCollisionObject* obj)
+				if(u.animation_state == 0)
 				{
-					int flags = obj->getCollisionFlags();
-					if(IS_SET(flags, CG_TERRAIN))
-						return false;
-					if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
-						return false;
-					return true;
-				}, t);
+					// dash
+					LineTest(u.cobj->getCollisionShape(), u.pos, dir, [this](btCollisionObject* obj, bool)
+					{
+						int flags = obj->getCollisionFlags();
+						if(IS_SET(flags, CG_TERRAIN))
+							return false;
+						if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
+							return false;
+						return true;
+					}, t);
+				}
+				else
+				{
+					// bull charge
+					static vector<Unit*> targets;
+					targets.clear();
+					LineTest(u.cobj->getCollisionShape(), u.pos, dir, [&](btCollisionObject* obj, bool second)
+					{
+						int flags = obj->getCollisionFlags();
+						if(!second)
+						{
+							if(IS_SET(flags, CG_TERRAIN))
+								return false;
+							if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
+								return false;
+						}
+						else
+						{
+							if(IS_SET(obj->getCollisionFlags(), CG_UNIT))
+							{
+								Unit* unit = (Unit*)obj->getUserPointer();
+								if(!IsFriend(*unit, u))
+									targets.push_back(unit);
+								return false;
+							}
+						}
+						return true;
+					}, t, nullptr, true);
+					for(auto u : targets)
+						u->hp -= 50.f;
+				}
 				float actual_len = (len + eps) * t - eps;
 				if(actual_len > 0)
 				{
@@ -8701,13 +8763,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		case A_DESPAWN:
 			u.timer -= dt;
 			if(u.timer <= 0.f)
-			{
-				SpawnUnitEffect(u);
-				u.to_remove = true;
-				to_remove.push_back(&u);
-				if(IsOnline())
-					Net_RemoveUnit(&u);
-			}
+				RemoveUnit(&u);
 			break;
 		default:
 			assert(0);
@@ -11606,6 +11662,9 @@ void Game::GenerateCaveUnits()
 
 void Game::CastSpell(LevelContext& ctx, Unit& u)
 {
+	if(u.player)
+		return;
+
 	Spell& spell = *u.data->spells->spell[u.attack_id];
 
 	Mesh::Point* point = u.mesh_inst->mesh->GetPoint(NAMES::point_cast);
@@ -12657,20 +12716,26 @@ bool Game::RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoin
 
 struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 {
-	delegate<bool(btCollisionObject*)> clbk;
+	delegate<bool(btCollisionObject*, bool)> clbk;
 	vector<float>* t_list;
+	bool use_clbk2;
 
-	ConvexCallback(delegate<bool(btCollisionObject*)> clbk, vector<float>* t_list) : clbk(clbk), t_list(t_list)
+	ConvexCallback(delegate<bool(btCollisionObject*, bool)> clbk, vector<float>* t_list, bool use_clbk2) : clbk(clbk), t_list(t_list), use_clbk2(use_clbk2)
 	{
 	}
 
 	bool needsCollision(btBroadphaseProxy* proxy0) const override
 	{
-		return clbk((btCollisionObject*)proxy0->m_clientObject);
+		return clbk((btCollisionObject*)proxy0->m_clientObject, false);
 	}
 
 	float addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
 	{
+		if(use_clbk2)
+		{
+			if(!clbk((btCollisionObject*)convexResult.m_hitCollisionObject, true))
+				return m_closestHitFraction;
+		}
 		m_closestHitFraction = convexResult.m_hitFraction;
 		if(t_list)
 			t_list->push_back(m_closestHitFraction);
@@ -12678,9 +12743,11 @@ struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 	}
 };
 
-bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*)> clbk, float& t, vector<float>* t_list)
+bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*, bool)> clbk, float& t, vector<float>* t_list,
+	bool use_clbk2)
 {
 	assert(shape->isConvex());
+	assert(!((t_list != nullptr) && use_clbk2)); // todo
 
 	btTransform t_from, t_to;
 	t_from.setIdentity();
@@ -12690,7 +12757,7 @@ bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, 
 	t_to.setOrigin(ToVector3(dir) + t_from.getOrigin());
 	//t_to.setBasis(t_from.getBasis());
 
-	ConvexCallback callback(clbk, t_list);
+	ConvexCallback callback(clbk, t_list, use_clbk2);
 
 	phy_world->convexSweepTest((btConvexShape*)shape, t_from, t_to, callback);
 
@@ -14529,10 +14596,7 @@ void Game::ProcessUnitWarps()
 				// jednostka opuœci³a podziemia
 				if(it->unit->event_handler)
 					it->unit->event_handler->HandleUnitEvent(UnitEventHandler::LEAVE, it->unit);
-				it->unit->to_remove = true;
-				to_remove.push_back(it->unit);
-				if(IsOnline())
-					Net_RemoveUnit(it->unit);
+				RemoveUnit(it->unit);
 			}
 		}
 		else if(it->where == -2)
@@ -15537,6 +15601,17 @@ bool Game::WarpToArea(LevelContext& ctx, const Box2d& area, float radius, Vec3& 
 	return false;
 }
 
+void Game::RemoveUnit(Unit* unit, bool notify)
+{
+	assert(unit);
+	if(unit->summoned != -1)
+		SpawnUnitEffect(*unit);
+	unit->to_remove = true;
+	to_remove.push_back(unit);
+	if(notify && IsOnline())
+		Net_RemoveUnit(unit);
+}
+
 void Game::DeleteUnit(Unit* unit)
 {
 	assert(unit);
@@ -15556,6 +15631,8 @@ void Game::DeleteUnit(Unit* unit)
 		pc_data.selected_target = nullptr;
 	if(unit == pc_data.selected_unit)
 		pc_data.selected_unit = nullptr;
+	if(pc->action == PlayerController::Action_LootUnit && pc->action_unit == unit)
+		BreakUnitAction(*pc->unit);
 
 	if(unit->bubble)
 		unit->bubble->unit = nullptr;
@@ -15677,7 +15754,7 @@ void Game::SpawnOutsideBariers()
 		tr.setIdentity();
 		tr.setOrigin(btVector3(size2, 40.f, border2));
 		obj->setWorldTransform(tr);
-		phy_world->addCollisionObject(obj);
+		phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
 
 	// bottom
@@ -15695,7 +15772,7 @@ void Game::SpawnOutsideBariers()
 		tr.setIdentity();
 		tr.setOrigin(btVector3(size2, 40.f, size - border2));
 		obj->setWorldTransform(tr);
-		phy_world->addCollisionObject(obj);
+		phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
 
 	// left
@@ -15713,7 +15790,7 @@ void Game::SpawnOutsideBariers()
 		tr.setOrigin(btVector3(border2, 40.f, size2));
 		tr.setRotation(btQuaternion(PI / 2, 0, 0));
 		obj->setWorldTransform(tr);
-		phy_world->addCollisionObject(obj);
+		phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
 
 	// right
@@ -15731,7 +15808,7 @@ void Game::SpawnOutsideBariers()
 		tr.setOrigin(btVector3(size - border2, 40.f, size2));
 		tr.setRotation(btQuaternion(PI / 2, 0, 0));
 		obj->setWorldTransform(tr);
-		phy_world->addCollisionObject(obj);
+		phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
 }
 
@@ -16170,12 +16247,7 @@ void Game::RemoveArenaViewers()
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
 		if((*it)->data == ud)
-		{
-			(*it)->to_remove = true;
-			to_remove.push_back(*it);
-			if(IsOnline())
-				Net_RemoveUnit(*it);
-		}
+			RemoveUnit(*it);
 	}
 }
 
@@ -16379,6 +16451,9 @@ int Game::CanLeaveLocation(Unit& unit)
 		for(Unit* p_unit : Team.members)
 		{
 			Unit& u = *p_unit;
+			if(u.summoned != -1)
+				continue;
+
 			if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
 				return 1;
 
@@ -16401,6 +16476,9 @@ int Game::CanLeaveLocation(Unit& unit)
 		for(Unit* p_unit : Team.members)
 		{
 			Unit& u = *p_unit;
+			if(u.summoned != -1)
+				continue;
+
 			if(u.busy != Unit::Busy_No || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
 				return 1;
 
@@ -17556,32 +17634,13 @@ void Game::RemoveQuestUnit(UnitData* ud, bool on_leave)
 {
 	assert(ud);
 
-	for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
+	auto unit = FindUnit([=](Unit* unit)
 	{
-		if((*it)->data == ud && (*it)->IsAlive())
-		{
-			(*it)->to_remove = true;
-			to_remove.push_back(*it);
-			if(!on_leave && IsOnline())
-				Net_RemoveUnit(*it);
-			return;
-		}
-	}
+		return unit->data == ud && unit->IsAlive();
+	});
 
-	for(vector<InsideBuilding*>::iterator it2 = city_ctx->inside_buildings.begin(), end2 = city_ctx->inside_buildings.end(); it2 != end2; ++it2)
-	{
-		for(vector<Unit*>::iterator it = (*it2)->units.begin(), end = (*it2)->units.end(); it != end; ++it)
-		{
-			if((*it)->data == ud && (*it)->IsAlive())
-			{
-				(*it)->to_remove = true;
-				to_remove.push_back(*it);
-				if(!on_leave && IsOnline())
-					Net_RemoveUnit(*it);
-				return;
-			}
-		}
-	}
+	if(unit)
+		RemoveUnit(unit, !on_leave);
 }
 
 void Game::RemoveQuestUnits(bool on_leave)
@@ -17605,11 +17664,8 @@ void Game::RemoveQuestUnits(bool on_leave)
 			Unit* u = city_ctx->FindInn()->FindUnit(FindUnitData("artur_drwal"));
 			if(u && u->IsAlive())
 			{
-				u->to_remove = true;
-				to_remove.push_back(u);
 				quest_sawmill->build_state = Quest_Sawmill::BuildState::LumberjackLeft;
-				if(!on_leave && IsOnline())
-					Net_RemoveUnit(u);
+				RemoveUnit(u, !on_leave);
 			}
 		}
 
@@ -17635,10 +17691,7 @@ void Game::RemoveQuestUnits(bool on_leave)
 		{
 			if(*it == quest_bandits->agent && (*it)->IsAlive())
 			{
-				(*it)->to_remove = true;
-				to_remove.push_back(*it);
-				if(!on_leave && IsOnline())
-					Net_RemoveUnit(*it);
+				RemoveUnit(*it, !on_leave);
 				break;
 			}
 		}
@@ -17676,10 +17729,7 @@ void Game::RemoveQuestUnits(bool on_leave)
 
 	if(quest_evil->evil_state == Quest_Evil::State::ClericLeaving)
 	{
-		quest_evil->cleric->to_remove = true;
-		to_remove.push_back(quest_evil->cleric);
-		if(!on_leave && IsOnline())
-			Net_RemoveUnit(quest_evil->cleric);
+		RemoveUnit(quest_evil->cleric, !on_leave);
 		quest_evil->cleric = nullptr;
 		quest_evil->evil_state = Quest_Evil::State::ClericLeft;
 	}
@@ -18932,12 +18982,7 @@ void Game::UpdateGame2(float dt)
 							}
 						}
 						else
-						{
-							to_remove.push_back(*it);
-							(*it)->to_remove = true;
-							if(IsOnline())
-								Net_RemoveUnit(*it);
-						}
+							RemoveUnit(*it);
 					}
 				}
 				else

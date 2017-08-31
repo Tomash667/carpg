@@ -460,6 +460,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool outside, Unit& u);
 	void ListAreas(LevelContext& ctx);
 	void PrepareAreaPath();
+	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
 	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
 	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs = 0);
 	int GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, float z, float radius, int sub = 0);
@@ -1156,7 +1157,8 @@ public:
 	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
 	void PreloadTraps(vector<Trap*>& traps);
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
-	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*)> clbk, float& t, vector<float>* t_list = nullptr);
+	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*, bool)> clbk, float& t, vector<float>* t_list = nullptr,
+		bool use_clbk2 = false);
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);
 	void AI_Shout(LevelContext& ctx, AIController& ai);
@@ -1261,6 +1263,7 @@ public:
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();
 	bool WarpToArea(LevelContext& ctx, const Box2d& area, float radius, Vec3& pos, int tries = 10);
+	void RemoveUnit(Unit* unit, bool notify = true);
 	void DeleteUnit(Unit* unit);
 	void DialogTalk(DialogContext& ctx, cstring msg);
 	void GenerateHeroName(HeroData& hero);
@@ -1632,6 +1635,7 @@ public:
 	void SendPlayerData(int index);
 	bool ReadPlayerData(BitStream& stream);
 	Unit* FindUnit(int netid);
+	Unit* FindUnit(delegate<bool(Unit*)> pred);
 	void UpdateServer(float dt);
 	bool ProcessControlMessageServer(BitStream& stream, PlayerInfo& info);
 	void WriteServerChanges(BitStream& stream);

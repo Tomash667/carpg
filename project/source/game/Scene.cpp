@@ -1825,7 +1825,7 @@ void Game::PrepareAreaPath()
 	auto& action = pc->GetAction();
 	Area2* area_ptr = area2_pool.Get();
 	Area2& area = *area_ptr;
-	area.ok = true;
+	area.ok = 2;
 	draw_batch.areas2.push_back(area_ptr);
 
 	const float h = 0.06f;
@@ -1839,12 +1839,13 @@ void Game::PrepareAreaPath()
 		// find max line
 		float t;
 		Vec3 dir(sin(rot)*action.area_size.x, 0, cos(rot)*action.area_size.x);
-		LineTest(pc->unit->cobj->getCollisionShape(), pos, dir, [this](btCollisionObject* obj)
+		bool ignore_units = IS_SET(action.flags, Action::F_IGNORE_UNITS);
+		LineTest(pc->unit->cobj->getCollisionShape(), pos, dir, [this, ignore_units](btCollisionObject* obj, bool)
 		{
 			int flags = obj->getCollisionFlags();
 			if (IS_SET(flags, CG_TERRAIN))
 				return false;
-			if (IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
+			if (IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit || ignore_units)
 				return false;
 			return true;
 		}, t);
@@ -1910,10 +1911,11 @@ void Game::PrepareAreaPath()
 	else
 	{
 		const float cam_max = 4.63034153f;
-		const float cam_min = 3.24159288f;
+		const float cam_min = 4.08159288f;
 		const float radius = action.area_size.x / 2;
 
-		float range = (Clamp(cam.rot.y, cam_min, cam_max) - cam_min) / (cam_max - cam_min) * action.area_size.y + 0.3f;
+		float range = (Clamp(cam.rot.y, cam_min, cam_max) - cam_min) / (cam_max - cam_min) * action.area_size.y;
+		const float min_t = action.area_size.x / range / 2;
 		float rot = Clip(pc->unit->rot + PI);
 		static vector<float> t_forward;
 		static vector<float> t_backward;
@@ -1923,20 +1925,20 @@ void Game::PrepareAreaPath()
 		t_forward.clear();
 		t_backward.clear();
 
-		auto clbk = [this](btCollisionObject* obj)
+		auto clbk = [this](btCollisionObject* obj, bool)
 		{
 			int flags = obj->getCollisionFlags();
 			if (IS_SET(flags, CG_TERRAIN))
-				return false;
-			if (IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
 				return false;
 			return true;
 		};
 
 		float t;
-		Vec3 dir(sin(rot)*range, 0, cos(rot)*range);
-		LineTest(shape_summon, pos, dir, clbk, t, &t_forward);
-		LineTest(shape_summon, pos + dir, -dir, clbk, t, &t_backward);
+		Vec3 dir_normal(sin(rot), 0, cos(rot));
+		Vec3 dir = dir_normal * range;
+		Vec3 from = pos + dir_normal * radius * 2;
+		LineTest(shape_summon, from, dir, clbk, t, &t_forward);
+		LineTest(shape_summon, from + dir, -dir, clbk, t, &t_backward);
 
 		if(t_forward.empty() && t_backward.empty())
 			t = 1.f;
@@ -1954,9 +1956,9 @@ void Game::PrepareAreaPath()
 			std::sort(t_merged.begin(), t_merged.end(), [](const std::pair<float, bool>& a, const std::pair<float, bool>& b) { return a.first < b.first; });
 
 			// get list of free ranges
+			//const float extra_t = range / (range + min_t);
 			bool open = false;
 			float start = 0.f;
-			const float min_dist = action.area_size.x / range / 2;
 			static vector<Vec2> results;
 			results.clear();
 			for(auto& point : t_merged)
@@ -1975,7 +1977,7 @@ void Game::PrepareAreaPath()
 					{
 						open = true;
 						float len = point.first - start;
-						if(len >= min_dist)
+						if(len >= min_t)
 							results.push_back(Vec2(start, point.first));
 					}
 					else
@@ -1985,7 +1987,7 @@ void Game::PrepareAreaPath()
 			if(!open)
 			{
 				float len = 1.f - start;
-				if(len >= min_dist)
+				if(len >= min_t)
 					results.push_back(Vec2(start, 1.f));
 			}
 
@@ -1993,50 +1995,66 @@ void Game::PrepareAreaPath()
 			if(results.empty())
 				t = -1.f;
 			else
-				t = results.back().y - min_dist / 2;
+				t = results.back().y;
 		}
 
 		if(t < 0)
 		{
 			// no free space
 			t = 1.f;
-			area.ok = false;
+			area.ok = 0;
 			pc_data.action_ok = false;
 		}
 		else
+		{
 			pc_data.action_ok = true;
+		}
 
 		// build circle
-		range = t * range;
+		PrepareAreaPathCircle(area, radius, t * range + radius * 2, rot);
 
-		area.points.resize(9);
-		area.points[0] = Vec3(0, h, 0 + range);
-		float angle = 0;
-		for (int i = 0; i < 8; ++i)
+		// build yellow circle
+		if(t != 1.f)
 		{
-			area.points[i + 1] = Vec3(sin(angle)*radius, h, cos(angle)*radius + range);
-			angle += PI / 4;
-		}
-
-		Matrix mat = Matrix::RotationY(rot);
-		for (int i = 0; i < 9; ++i)
-		{
-			area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
-			if (location->outside)
-				area.points[i].y = terrain->GetH(area.points[i]) + h;
-		}
-
-		area.faces.clear();
-		for (int i = 0; i < 8; ++i)
-		{
-			area.faces.push_back(0);
-			area.faces.push_back(i+1);
-			area.faces.push_back((i + 2) == 9 ? 1 : (i + 2));
+			Area2* y_area = area2_pool.Get();
+			y_area->ok = 1;
+			PrepareAreaPathCircle(*y_area, radius, range + radius * 2, rot);
+			draw_batch.areas2.push_back(y_area);
 		}
 
 		// set action
 		if(pc_data.action_ok)
 			pc_data.action_point = area.points[0];
+	}
+}
+
+void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float rot)
+{
+	const float h = 0.06f;
+
+	area.points.resize(9);
+	area.points[0] = Vec3(0, h, 0 + range);
+	float angle = 0;
+	for(int i = 0; i < 8; ++i)
+	{
+		area.points[i + 1] = Vec3(sin(angle)*radius, h, cos(angle)*radius + range);
+		angle += PI / 4;
+	}
+
+	Matrix mat = Matrix::RotationY(rot);
+	for(int i = 0; i < 9; ++i)
+	{
+		area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
+		if(location->outside)
+			area.points[i].y = terrain->GetH(area.points[i]) + h;
+	}
+
+	area.faces.clear();
+	for(int i = 0; i < 8; ++i)
+	{
+		area.faces.push_back(0);
+		area.faces.push_back(i + 1);
+		area.faces.push_back((i + 2) == 9 ? 1 : (i + 2));
 	}
 }
 
@@ -3983,12 +4001,15 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 		V(eArea->BeginPass(0));
 		V(eArea->SetFloat(hAreaRange, 100.f));
 
+		static const Vec4 colors[3] = {
+			Vec4(1, 0, 0, 0.5f),
+			Vec4(1, 1, 0, 0.5f),
+			Vec4(0, 0.58f, 1.f, 0.5f)
+		};
+
 		for (auto* area2 : areas2)
 		{
-			if(area2->ok)
-				V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&Vec4(0, 0.58f, 1.f, 0.5f)));
-			else
-				V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&Vec4(1, 0, 0, 0.5f)));
+			V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&colors[area2->ok]));
 			V(eArea->CommitChanges());
 			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, area2->points.size(), area2->faces.size() / 3, area2->faces.data(), D3DFMT_INDEX16,
 				area2->points.data(), sizeof(Vec3)));

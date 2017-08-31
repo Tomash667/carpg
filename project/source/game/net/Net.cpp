@@ -568,7 +568,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	stream.Write(unit.hpmax);
 	stream.Write(unit.netid);
 	stream.WriteCasted<char>(unit.in_arena);
-	WriteBool(stream, unit.summoned);
+	WriteBool(stream, unit.summoned != -1);
 
 	// hero/player data
 	byte b;
@@ -1526,6 +1526,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 
 	// variables
+	bool summoned;
 	if(!stream.ReadCasted<byte>(unit.live_state)
 		|| !stream.Read(unit.pos)
 		|| !stream.Read(unit.rot)
@@ -1533,13 +1534,14 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		|| !stream.Read(unit.hpmax)
 		|| !stream.Read(unit.netid)
 		|| !stream.ReadCasted<char>(unit.in_arena)
-		|| !ReadBool(stream, unit.summoned))
+		|| !ReadBool(stream, summoned))
 		return false;
 	if(unit.live_state >= Unit::LIVESTATE_MAX)
 	{
 		Error("Invalid live state %d.", unit.live_state);
 		return false;
 	}
+	unit.summoned = (summoned ? 1 : -1);
 
 	// hero/player data
 	byte type;
@@ -2051,6 +2053,30 @@ Unit* Game::FindUnit(int netid)
 			{
 				if((*it2)->netid == netid)
 					return *it2;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+Unit* Game::FindUnit(delegate<bool(Unit*)> pred)
+{
+	for(auto u : *local_ctx.units)
+	{
+		if(pred(u))
+			return u;
+	}
+
+	if(city_ctx)
+	{
+		for(auto inside : city_ctx->inside_buildings)
+		{
+			for(auto u : inside->units)
+			{
+				if(pred(u))
+					return u;
 			}
 		}
 	}
@@ -7146,12 +7172,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else
-					{
-						if(unit->summoned)
-							SpawnUnitEffect(*unit);
-						unit->to_remove = true;
-						to_remove.push_back(unit);
-					}
+						RemoveUnit(unit);
 				}
 			}
 			break;
@@ -7170,7 +7191,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					LevelContext& ctx = GetContext(unit->pos);
 					ctx.units->push_back(unit);
 					unit->in_building = ctx.building_id;
-					if(unit->summoned)
+					if(unit->summoned != -1)
 						SpawnUnitEffect(*unit);
 				}
 			}

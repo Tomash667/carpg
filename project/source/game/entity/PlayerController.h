@@ -134,6 +134,7 @@ struct PlayerController : public HeroPlayerCommon
 	PlayerInfo* player_info;
 	StatState attrib_state[(int)Attribute::MAX], skill_state[(int)Skill::MAX];
 	vector<TakenPerk> perks;
+	vector<Unit*> action_targets;
 
 	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f), action_cooldown(0.f), action_charges(0)
 	{

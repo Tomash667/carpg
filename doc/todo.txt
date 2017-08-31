@@ -1,28 +1,17 @@
 ﻿FEATURE:
-? dash allows to move outside of outside barriers
-	? verify bullets moving thru barrier, correct phy obj size
+- mp, client have no charges
 + bulls charge effect
+	+ move targets out of way
+	+ damage once
 	+ animation
 	+ stunned animation
 	+ dmg = siła
-	+ pick area: rectangle with limited rot
 	+ stun de-buff
 		+ sending info to server
 		+ units/player can't move
 		+ stun animation (or stand)
 		+ stun effect above head
 		+ heal remove stun
-	+ moving units with bulls charge
-+ summoned wolf
-	+ pick point
-		+ collisions
-			? mark as red when unavailable but render it anyway
-	? spawn unit, is team member, fallow, combat, don't fight citizens, spawnunit, fallow across locations
-	? disappear after death
-	? particles, sound
-	? can cast over units/objects (but not walls)
-	? despawn corpse (sound/break loot)
-	+ summon animation
 + MP
 	+ dash
 	by server
@@ -56,6 +45,8 @@
 	? refresh_cooldown mp
 	? stun cmd
 	? load old save and actions
+	? summon
+		? spawn/despawn/break loot (player/client)
 - clicking on M menu apply focus but can't enter text
 ? allow run without stamina?
 ===============================================================================================================
@@ -97,6 +88,9 @@ NEW:
 		+ wide attack
 		+ shield bash
 	+ tree
++ better summon picking
+	+ after point
+	+ in dungeon - red marker goes into wall
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
