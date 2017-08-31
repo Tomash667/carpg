@@ -6,10 +6,10 @@
 		+ ally move to left/right
 		+ enemy in direction or left/right if not possible
 		+ if blocked, stop
-	+ damage/stun once
+	? damage/stun once
 	+ animation
 	+ stunned animation
-	+ dmg = siła
+	? dmg = siła
 	+ stun de-buff
 		+ sending info to server
 		+ units/player can't move

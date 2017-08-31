@@ -8750,6 +8750,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					// check all hitted
 					for(auto unit : targets)
 					{
+						// deal damage/stun
 						bool move_forward = true;
 						if(!IsFriend(*unit, u))
 						{
@@ -8766,6 +8767,30 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						else
 							move_forward = false;
 
+						auto unit_clbk[unit](btCollisionObject* obj, bool)
+						{
+							int flags = obj->getCollisionFlags();
+							if(IS_SET(flags, CG_TERRAIN))
+								return false;
+							if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == unit)
+								return false;
+						};
+
+						// try to push forward
+						const Vec3 move_dir = dir * 1.5f;
+						if(move_forward)
+						{
+							float t;
+							LineTest(unit->cobj->getCollisionShape(), unit->pos, move_dir, unit_clbk, t);
+							if(t == 1.f)
+							{
+								unit->pos += move_dir;
+								MoveUnit(&unit, false, true);
+								break;
+							}
+						}
+
+						// decide where to push, left or right
 
 					}
 				}
