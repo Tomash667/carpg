@@ -872,7 +872,6 @@ public:
 	vector<Location*> load_location_quest;
 	vector<Unit*> load_unit_handler;
 	vector<Chest*> load_chest_handler;
-	vector<Unit**> load_unit_refid;
 
 	bool hardcore_mode, hardcore_option;
 	string hardcore_savename;

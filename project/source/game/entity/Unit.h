@@ -158,7 +158,7 @@ struct Unit
 	Vec3 visual_pos; // graficzna pozycja postaci, u¿ywana w MP
 	Vec3 prev_pos, target_pos, target_pos2;
 	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
-	int animation_state, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid, summoned;
+	int animation_state, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid;
 	ACTION action;
 	WeaponType weapon_taken, weapon_hiding;
 	WeaponState weapon_state;
@@ -177,7 +177,7 @@ struct Unit
 	HeroData* hero;
 	UnitEventHandler* event_handler;
 	SpeechBubble* bubble;
-	Unit* look_target, *guard_target;
+	Unit* look_target, *guard_target, *summoner;
 	int netid;
 	int ai_mode; // u klienta w MP (0x01-dont_attack, 0x02-assist, 0x04-not_idle)
 	enum Busy
@@ -198,7 +198,7 @@ struct Unit
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoned(-1) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr) {}
 	~Unit();
 
 	float CalculateArmorDefense(const Armor* armor = nullptr);

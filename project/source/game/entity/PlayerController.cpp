@@ -377,6 +377,12 @@ void PlayerController::Save(HANDLE file)
 	f << action_cooldown;
 	f << action_recharge;
 	f << (byte)action_charges;
+	if(unit->action == A_DASH && unit->animation_state == 1)
+	{
+		f << action_targets.size();
+		for(auto target : action_targets)
+			f << target->refid;
+	}
 }
 
 //=================================================================================================
@@ -494,6 +500,18 @@ void PlayerController::Load(HANDLE file)
 		f >> action_cooldown;
 		f >> action_recharge;
 		action_charges = f.Read<byte>();
+		if(unit->action == A_DASH && unit->animation_state == 1)
+		{
+			uint count;
+			f >> count;
+			action_targets.resize(count);
+			for(uint i = 0; i < count; ++i)
+			{
+				int refid;
+				f >> refid;
+				Unit::AddRequest(&action_targets[i], refid);
+			}
+		}
 	}
 	else
 	{
@@ -766,4 +784,10 @@ void PlayerController::RefreshCooldown()
 	action_cooldown = 0;
 	action_recharge = 0;
 	action_charges = action.charges;
+}
+
+//=================================================================================================
+bool PlayerController::IsHit(Unit* unit) const
+{
+	return IsInside(action_targets, unit);
 }

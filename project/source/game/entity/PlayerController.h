@@ -209,6 +209,7 @@ struct PlayerController : public HeroPlayerCommon
 	}
 	bool UseActionCharge();
 	void RefreshCooldown();
+	bool IsHit(Unit* unit) const;
 };
 
 //-----------------------------------------------------------------------------

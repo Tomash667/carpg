@@ -1325,7 +1325,8 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &weight, sizeof(weight), &tmp, nullptr);
 	int guard_refid = (guard_target ? guard_target->refid : -1);
 	WriteFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);
-	WriteFile(file, &summoned, sizeof(summoned), &tmp, nullptr);
+	int summoner_refid = (summoner ? summoner->refid : -1);
+	WriteFile(file, &summoner_refid, sizeof(summoner_refid), &tmp, nullptr);
 
 	assert((human_data != nullptr) == (data->type == UNIT_TYPE::HUMAN));
 	if(human_data)
@@ -1660,15 +1661,19 @@ void Unit::Load(HANDLE file, bool local)
 		if(guard_refid == -1)
 			guard_target = nullptr;
 		else
-		{
-			guard_target = (Unit*)guard_refid;
-			Game::Get().load_unit_refid.push_back(&guard_target);
-		}
+			AddRequest(&guard_target, guard_refid);
 	}
 	if(LOAD_VERSION >= V_CURRENT)
-		ReadFile(file, &summoned, sizeof(summoned), &tmp, nullptr);
+	{
+		int summoner_refid;
+		ReadFile(file, &summoner_refid, sizeof(summoner_refid), &tmp, nullptr);
+		if(summoner_refid == -1)
+			summoner = nullptr;
+		else
+			AddRequest(&summoner, summoner_refid);
+	}
 	else
-		summoned = -1;
+		summoner = nullptr;
 
 	bubble = nullptr; // ustawianie przy wczytaniu SpeechBubble
 	changed = false;

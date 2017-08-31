@@ -657,7 +657,6 @@ void Game::LoadGame(HANDLE file)
 	load_location_quest.clear();
 	load_unit_handler.clear();
 	load_chest_handler.clear();
-	load_unit_refid.clear();
 	units_mesh_load.clear();
 
 	// signature
@@ -1349,14 +1348,6 @@ void Game::LoadGame(HANDLE file)
 	{
 		(*it)->handler = dynamic_cast<ChestEventHandler*>(quest_manager.FindQuest((int)(*it)->handler, false));
 		assert((*it)->handler);
-	}
-
-	// wskaŸniki na jednostki
-	for(vector<Unit**>::iterator it = load_unit_refid.begin(), end = load_unit_refid.end(); it != end; ++it)
-	{
-		Unit** up = *it;
-		*up = Unit::GetByRefid(int(*up));
-		assert(*up);
 	}
 
 	if(tournament_generated)

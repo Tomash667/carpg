@@ -3032,7 +3032,7 @@ void Game::UseAction(PlayerController* p)
 	else if(strcmp(action.id, "summon_wolf") == 0)
 	{
 		// despawn old
-		auto existing_unit = FindUnit([=](Unit* u) { return u->summoned == p->unit->netid; });
+		auto existing_unit = FindUnit([=](Unit* u) { return u->summoner == p->unit; });
 		if(existing_unit)
 		{
 			RemoveTeamMember(existing_unit);
@@ -3041,7 +3041,7 @@ void Game::UseAction(PlayerController* p)
 
 		// spawn new
 		auto unit = SpawnUnitNearLocation(GetContext(*p->unit), pc_data.action_point, *FindUnitData("white_wolf_sum"), nullptr, p->unit->level);
-		unit->summoned = p->unit->netid;
+		unit->summoner = p->unit;
 		if(IsServer())
 			Net_SpawnUnit(unit);
 		AddTeamMember(unit, true);
@@ -7869,7 +7869,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				{
 					u.live_state = Unit::DEAD;
 					CreateBlood(ctx, u);
-					if(u.summoned != -1)
+					if(u.summoner != nullptr)
 					{
 						RemoveTeamMember(&u);
 						u.action = A_DESPAWN;
@@ -8697,12 +8697,16 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			}
 			break;
 		case A_DASH:
+			// update unit dash/bull charge
 			{
+				assert(u.player); // todo
 				float dt_left = min(dt, u.timer);
 				float t;
 				const float eps = 0.05f;
 				float len = u.speed * dt_left;
 				Vec3 dir(sin(u.use_rot)*(len + eps), 0, cos(u.use_rot)*(len + eps));
+				bool ok = true;
+
 				if(u.animation_state == 0)
 				{
 					// dash
@@ -8718,7 +8722,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				}
 				else
 				{
-					// bull charge
+					// bull charge, do line test and find targets
 					static vector<Unit*> targets;
 					targets.clear();
 					LineTest(u.cobj->getCollisionShape(), u.pos, dir, [&](btCollisionObject* obj, bool second)
@@ -8736,24 +8740,47 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							if(IS_SET(obj->getCollisionFlags(), CG_UNIT))
 							{
 								Unit* unit = (Unit*)obj->getUserPointer();
-								if(!IsFriend(*unit, u))
-									targets.push_back(unit);
+								targets.push_back(unit);
 								return false;
 							}
 						}
 						return true;
 					}, t, nullptr, true);
-					for(auto u : targets)
-						u->hp -= 50.f;
+
+					// check all hitted
+					for(auto unit : targets)
+					{
+						bool move_forward = true;
+						if(!IsFriend(*unit, u))
+						{
+							if(!u.player->IsHit(unit))
+							{
+								GiveDmg(ctx, &u, 100.f + u.Get(Attribute::STR) * 2, *unit);
+								if(!unit->IsAlive())
+									continue;
+								else
+									u.player->action_targets.push_back(unit);
+							}
+							unit->ApplyStun(1.5f);
+						}
+						else
+							move_forward = false;
+
+
+					}
 				}
+
+				// move if there is free space
 				float actual_len = (len + eps) * t - eps;
-				if(actual_len > 0)
+				if(actual_len > 0 && ok)
 				{
 					u.pos += Vec3(sin(u.use_rot), 0, cos(u.use_rot)) * actual_len;
 					MoveUnit(u, false, true);
 				}
+
+				// end dash
 				u.timer -= dt;
-				if(u.timer <= 0 || t < 1.f)
+				if(u.timer <= 0 || t < 1.f || !ok)
 				{
 					u.action = A_NONE;
 					u.mesh_inst->groups[0].speed = u.GetRunSpeed() / u.data->run_speed;
@@ -15604,7 +15631,7 @@ bool Game::WarpToArea(LevelContext& ctx, const Box2d& area, float radius, Vec3& 
 void Game::RemoveUnit(Unit* unit, bool notify)
 {
 	assert(unit);
-	if(unit->summoned != -1)
+	if(unit->summoner != nullptr)
 		SpawnUnitEffect(*unit);
 	unit->to_remove = true;
 	to_remove.push_back(unit);
@@ -16451,7 +16478,7 @@ int Game::CanLeaveLocation(Unit& unit)
 		for(Unit* p_unit : Team.members)
 		{
 			Unit& u = *p_unit;
-			if(u.summoned != -1)
+			if(u.summoner != nullptr)
 				continue;
 
 			if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
@@ -16476,7 +16503,7 @@ int Game::CanLeaveLocation(Unit& unit)
 		for(Unit* p_unit : Team.members)
 		{
 			Unit& u = *p_unit;
-			if(u.summoned != -1)
+			if(u.summoner != nullptr)
 				continue;
 
 			if(u.busy != Unit::Busy_No || Vec3::Distance2d(unit.pos, u.pos) > 8.f)

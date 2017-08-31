@@ -1,8 +1,12 @@
 ﻿FEATURE:
+? guard_target loading
 - mp, client have no charges
 + bulls charge effect
 	+ move targets out of way
-	+ damage once
+		+ ally move to left/right
+		+ enemy in direction or left/right if not possible
+		+ if blocked, stop
+	+ damage/stun once
 	+ animation
 	+ stunned animation
 	+ dmg = siła
@@ -47,6 +51,7 @@
 	? load old save and actions
 	? summon
 		? spawn/despawn/break loot (player/client)
+		? saving/loading for multiple wolfs, each for each player despawn
 - clicking on M menu apply focus but can't enter text
 ? allow run without stamina?
 ===============================================================================================================
@@ -68,6 +73,7 @@ NEW:
 	+ draw_phy is too slow, add range var, optimize
 	+ Add vs Spawn vs Generate vs Create - fix convention
 	+ move away action area calculations from Scene.cpp
+	+ always use netid ?
 + check files for utf-8 BOM ?
 + ee: sleeping beauty - after waking up tell to let her sleep for 5 minutes
 + create character screen rework
@@ -91,6 +97,7 @@ NEW:
 + better summon picking
 	+ after point
 	+ in dungeon - red marker goes into wall
+- electro/bull charge targets are unsafe, what is unit from this list was removed
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

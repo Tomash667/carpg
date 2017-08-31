@@ -31,6 +31,7 @@ extern bool blacksmith_buy[];
 extern bool alchemist_buy[];
 extern bool innkeeper_buy[];
 extern bool foodseller_buy[];
+static Unit* SUMMONER_PLACEHOLDER = (Unit*)0xFA4E1111;
 
 //=================================================================================================
 inline bool ReadItemSimple(BitStream& stream, const Item*& item)
@@ -568,7 +569,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	stream.Write(unit.hpmax);
 	stream.Write(unit.netid);
 	stream.WriteCasted<char>(unit.in_arena);
-	WriteBool(stream, unit.summoned != -1);
+	WriteBool(stream, unit.summoner != nullptr);
 
 	// hero/player data
 	byte b;
@@ -1526,7 +1527,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 
 	// variables
-	bool summoned;
+	bool summoner;
 	if(!stream.ReadCasted<byte>(unit.live_state)
 		|| !stream.Read(unit.pos)
 		|| !stream.Read(unit.rot)
@@ -1534,14 +1535,14 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		|| !stream.Read(unit.hpmax)
 		|| !stream.Read(unit.netid)
 		|| !stream.ReadCasted<char>(unit.in_arena)
-		|| !ReadBool(stream, summoned))
+		|| !ReadBool(stream, summoner))
 		return false;
 	if(unit.live_state >= Unit::LIVESTATE_MAX)
 	{
 		Error("Invalid live state %d.", unit.live_state);
 		return false;
 	}
-	unit.summoned = (summoned ? 1 : -1);
+	unit.summoner = (summoner ? SUMMONER_PLACEHOLDER : nullptr);
 
 	// hero/player data
 	byte type;
@@ -7191,7 +7192,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					LevelContext& ctx = GetContext(unit->pos);
 					ctx.units->push_back(unit);
 					unit->in_building = ctx.building_id;
-					if(unit->summoned != -1)
+					if(unit->summoner != nullptr)
 						SpawnUnitEffect(*unit);
 				}
 			}
