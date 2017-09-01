@@ -1024,7 +1024,7 @@ public:
 	void UpdateGame(float dt);
 	void UpdateFallback(float dt);
 	void UpdatePlayer(LevelContext& ctx, float dt);
-	void UseAction(PlayerController* p);
+	void UseAction(PlayerController* p, bool from_server, const Vec3* pos_data = nullptr);
 	void SpawnUnitEffect(Unit& unit);
 	void PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
 

@@ -1,10 +1,10 @@
 ﻿FEATURE:
 ? guard_target loading
-- mp, client have no charges
+? mp, client have no charges
 + bulls charge
 	+ charge animation
 	+ stun de-buff
-		+ units/player can't move
+		? units/player can't move
 + MP
 	+ dash
 	by server
@@ -92,6 +92,7 @@ NEW:
 	+ in dungeon - red marker goes into wall
 - electro/bull charge targets are unsafe, what is unit from this list was removed
 + cmd to remove cooldowns
++ file reader 2 - don't return bool but set is_ok
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

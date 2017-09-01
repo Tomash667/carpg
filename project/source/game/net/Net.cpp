@@ -4907,8 +4907,17 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			break;
 		// player used action
-		case NetChange::ACTION:
-			UseAction(info.pc);
+		case NetChange::PLAYER_ACTION:
+			{
+				Vec3 pos;
+				if(!stream.Read(pos))
+				{
+					Error("Update server: Broken PLAYER_ACTION from %s.", info.name.c_str());
+					StreamError();
+				}
+				else
+					UseAction(info.pc, false, &pos);
+			}
 			break;
 		// player used cheat 'refresh_cooldown'
 		case NetChange::CHEAT_REFRESH_COOLDOWN:
@@ -5022,6 +5031,7 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::REMOVE_USED_ITEM:
 		case NetChange::USEABLE_SOUND:
 		case NetChange::BREAK_ACTION:
+		case NetChange::PLAYER_ACTION:
 			stream.Write(c.unit->netid);
 			break;
 		case NetChange::CAST_SPELL:
@@ -5311,10 +5321,6 @@ void Game::WriteServerChanges(BitStream& stream)
 			break;
 		case NetChange::GAME_STATS:
 			stream.Write(total_kills);
-			break;
-		case NetChange::ACTION:
-			stream.Write(c.unit->netid);
-			WriteString1(stream, c.unit->player->GetAction().id);
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -8406,6 +8412,31 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
+		// player used action
+		case NetChange::PLAYER_ACTION:
+			{
+				int netid;
+				if(!stream.Read(netid))
+				{
+					Error("Update client: Broken PLAYER_ACTION.");
+					StreamError();
+				}
+				else
+				{
+					Unit* unit = FindUnit(netid);
+					if(unit && unit->player)
+					{
+						if(unit->player != pc)
+							UseAction(unit->player, true);
+					}
+					else
+					{
+						Error("Update client: PLAYER_ACTION, invalid player unit %d.", netid);
+						StreamError();
+					}
+				}
+			}
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);
@@ -9565,6 +9596,9 @@ void Game::WriteClientChanges(BitStream& stream)
 			break;
 		case NetChange::PUT_GOLD:
 			stream.Write(c.ile);
+			break;
+		case NetChange::PLAYER_ACTION:
+			stream.Write(c.pos);
 			break;
 		case NetChange::CHEAT_STUN:
 			stream.Write(c.unit->netid);

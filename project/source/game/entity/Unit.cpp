@@ -3198,5 +3198,6 @@ void Unit::ApplyStun(float length)
 		effect.effect = E_STUN;
 		effect.power = 0.f;
 		effect.time = length;
+		animation = ANI_STAND;
 	}
 }

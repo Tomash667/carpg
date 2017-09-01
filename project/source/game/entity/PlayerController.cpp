@@ -717,6 +717,7 @@ void PlayerController::TrainMod(Skill s, float points)
 }
 
 //=================================================================================================
+// Used to send per-player data in WritePlayerData
 void PlayerController::Write(BitStream& stream) const
 {
 	stream.Write(kills);
@@ -731,9 +732,13 @@ void PlayerController::Write(BitStream& stream) const
 		stream.WriteCasted<byte>(perk.perk);
 		stream.Write(perk.value);
 	}
+	stream.Write(action_cooldown);
+	stream.Write(action_recharge);
+	stream.Write(action_charges);
 }
 
 //=================================================================================================
+// Used to sent per-player data in ReadPlayerData
 bool PlayerController::Read(BitStream& stream)
 {
 	byte count;
@@ -753,6 +758,10 @@ bool PlayerController::Read(BitStream& stream)
 			!stream.Read(perk.value))
 			return false;
 	}
+	if(!stream.Read(action_cooldown)
+		|| !stream.Read(action_recharge)
+		|| !stream.Read(action_charges))
+		return false;
 	return true;
 }
 

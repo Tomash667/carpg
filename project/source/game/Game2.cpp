@@ -1273,7 +1273,7 @@ void Game::UpdateGame(float dt)
 		pc_data.autowalk = false;
 		pc_data.action_ready = false;
 	}
-	else if(!IsBlocking(pc->unit->action))
+	else if(!IsBlocking(pc->unit->action) || !pc->unit->HaveEffect(E_STUN))
 		UpdatePlayer(player_ctx, dt);
 	else
 	{
@@ -2955,7 +2955,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		if(pc_data.wasted_key != VK_NONE)
 		{
 			if(pc_data.action_ok)
-				UseAction(pc);
+				UseAction(pc, false);
 			else
 				pc_data.wasted_key = VK_NONE;
 		}
@@ -2999,12 +2999,16 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 }
 
 //=================================================================================================
-void Game::UseAction(PlayerController* p)
+void Game::UseAction(PlayerController* p, bool from_server, Vec3* pos)
 {
 	auto& action = p->GetAction();
 	if(action.sound)
 		PlayAttachedSound(*p->unit, action.sound->sound, action.sound_dist);
-	p->UseActionCharge();
+
+	if(!from_server)
+		p->UseActionCharge();
+
+	Vec3 action_point;
 	if(strcmp(action.id, "dash") == 0 || strcmp(action.id, "bull_charge") == 0)
 	{
 		bool dash = (strcmp(action.id, "dash") == 0);
@@ -3031,37 +3035,53 @@ void Game::UseAction(PlayerController* p)
 	}
 	else if(strcmp(action.id, "summon_wolf") == 0)
 	{
-		// despawn old
-		auto existing_unit = FindUnit([=](Unit* u) { return u->summoner == p->unit; });
-		if(existing_unit)
-		{
-			RemoveTeamMember(existing_unit);
-			RemoveUnit(existing_unit);
-		}
-
-		// spawn new
-		auto unit = SpawnUnitNearLocation(GetContext(*p->unit), pc_data.action_point, *FindUnitData("white_wolf_sum"), nullptr, p->unit->level);
-		unit->summoner = p->unit;
-		if(IsServer())
-			Net_SpawnUnit(unit);
-		AddTeamMember(unit, true);
-		SpawnUnitEffect(*unit);
-
 		// cast animation
 		p->unit->action = A_CAST;
 		p->unit->attack_id = -1;
 		p->unit->animation_state = 0;
 		p->unit->mesh_inst->frame_end_info2 = false;
 		p->unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+
+		if(IsLocal())
+		{
+			// despawn old
+			auto existing_unit = FindUnit([=](Unit* u) { return u->summoner == p->unit; });
+			if(existing_unit)
+			{
+				RemoveTeamMember(existing_unit);
+				RemoveUnit(existing_unit);
+			}
+
+			// spawn new
+			auto unit = SpawnUnitNearLocation(GetContext(*p->unit), pc_data.action_point, *FindUnitData("white_wolf_sum"), nullptr, p->unit->level);
+			unit->summoner = p->unit;
+			if(IsServer())
+				Net_SpawnUnit(unit);
+			AddTeamMember(unit, true);
+			SpawnUnitEffect(*unit);
+		}
+		else if(!from_server)
+			action_point = pc_data.action_point;
 	}
+
+	if(IsOnline())
+	{
+		if(IsServer())
+		{
+			NetChange& c = Add1(net_changes);
+			c.type = NetChange::PLAYER_ACTION;
+			c.unit = p->unit;
+		}
+		else if(!from_server)
+		{
+			NetChange& c = Add1(net_changes);
+			c.type = NetChange::PLAYER_ACTION;
+			c.pos = action_point;
+		}
+	}
+
 	if(p == pc)
 		pc_data.action_ready = false;
-	if(IsClient2())
-	{
-		auto& c = Add1(net_changes);
-		c.type = NetChange::ACTION;
-		c.unit = p->unit;
-	}
 }
 
 //=================================================================================================
@@ -8861,7 +8881,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							}
 						}
 
-						// decide where to push, left or right
+						// try to push, left or right
 						float angle = Angle(u.pos.x, u.pos.z, unit->pos.x, unit->pos.z);
 						float best_dir = ShortestArc(move_angle, angle);
 						bool inner_ok = false;
