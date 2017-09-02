@@ -1644,9 +1644,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					break;
 				case CMD_REFRESH_COOLDOWN:
-					if(IsLocal())
-						pc->RefreshCooldown();
-					else
+					pc->RefreshCooldown();
+					if(!IsLocal())
 						PushNetChange(NetChange::CHEAT_REFRESH_COOLDOWN);
 					break;
 				default:

@@ -3765,6 +3765,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					unit.stamina = unit.stamina_max;
 					info.update_flags |= PlayerInfo::UF_STAMINA;
 				}
+				unit.RemovePoison();
+				unit.RemoveEffect(E_STUN);
 			}
 			else
 			{
@@ -3836,6 +3838,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							if(target->player && target->player != pc)
 								GetPlayerInfo(target->player).update_flags |= PlayerInfo::UF_STAMINA;
 						}
+						target->RemovePoison();
+						target->RemoveEffect(E_STUN);
 					}
 				}
 			}
@@ -5321,6 +5325,10 @@ void Game::WriteServerChanges(BitStream& stream)
 			break;
 		case NetChange::GAME_STATS:
 			stream.Write(total_kills);
+			break;
+		case NetChange::STUN:
+			stream.Write(c.unit->netid);
+			stream.Write(c.f[0]);
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -8433,6 +8441,35 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						Error("Update client: PLAYER_ACTION, invalid player unit %d.", netid);
 						StreamError();
+					}
+				}
+			}
+			break;
+		// unit stun - not shield bash
+		case NetChange::STUN:
+			{
+				int netid;
+				float length;
+				if(!stream.Read(netid)
+					|| !stream.Read(length))
+				{
+					Error("Update client: Broken STUN.");
+					StreamError();
+				}
+				else
+				{
+					Unit* unit = FindUnit(netid);
+					if(!unit)
+					{
+						Error("Update client: STUN, missing unit %d.", netid);
+						StreamError();
+					}
+					else
+					{
+						if(length > 0)
+							unit->ApplyStun(length);
+						else
+							unit->RemoveEffect(E_STUN);
 					}
 				}
 			}

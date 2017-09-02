@@ -160,6 +160,13 @@ void Game::BreakUnitAction(Unit& unit, bool fall, bool notify)
 		unit.mesh_inst->Deactivate(1);
 		unit.action = A_NONE;
 		break;
+	case A_DASH:
+		if(unit.animation_state == 1)
+		{
+			unit.mesh_inst->Deactivate(1);
+			unit.mesh_inst->groups[0].blend_max = 0.33f;
+		}
+		break;
 	}
 
 	if(unit.usable)
@@ -1273,7 +1280,7 @@ void Game::UpdateGame(float dt)
 		pc_data.autowalk = false;
 		pc_data.action_ready = false;
 	}
-	else if(!IsBlocking(pc->unit->action) || !pc->unit->HaveEffect(E_STUN))
+	else if(!IsBlocking(pc->unit->action) && !pc->unit->HaveEffect(E_STUN))
 		UpdatePlayer(player_ctx, dt);
 	else
 	{
@@ -2999,10 +3006,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 }
 
 //=================================================================================================
-void Game::UseAction(PlayerController* p, bool from_server, Vec3* pos)
+void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 {
+	if(p == pc && from_server)
+		return;
+
 	auto& action = p->GetAction();
-	if(action.sound)
+	if(action.sound && sound_volume)
 		PlayAttachedSound(*p->unit, action.sound->sound, action.sound_dist);
 
 	if(!from_server)
@@ -3013,7 +3023,16 @@ void Game::UseAction(PlayerController* p, bool from_server, Vec3* pos)
 	{
 		bool dash = (strcmp(action.id, "dash") == 0);
 		p->unit->action = A_DASH;
-		p->unit->use_rot = Clip(pc_data.action_rot + p->unit->rot + PI);
+		if(IsLocal() || !from_server)
+		{
+			p->unit->use_rot = Clip(pc_data.action_rot + p->unit->rot + PI);
+			action_point = Vec3(pc_data.action_rot, 0, 0);
+		}
+		else if(!from_server)
+		{
+			assert(pos);
+			p->unit->use_rot = Clip(pos->x + p->unit->rot + PI);
+		}
 		p->unit->animation = ANI_RUN;
 		p->unit->current_animation = ANI_RUN;
 		p->unit->mesh_inst->Play(NAMES::ani_run, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
@@ -3031,6 +3050,8 @@ void Game::UseAction(PlayerController* p, bool from_server, Vec3* pos)
 			p->unit->speed = action.area_size.x / 0.5f;
 			p->unit->mesh_inst->groups[0].speed = 2.5f;
 			p->action_targets.clear();
+			p->unit->mesh_inst->groups[1].blend_max = 0.1f;
+			p->unit->mesh_inst->Play("charge", PLAY_PRIO1, 1);
 		}
 	}
 	else if(strcmp(action.id, "summon_wolf") == 0)
@@ -3053,7 +3074,15 @@ void Game::UseAction(PlayerController* p, bool from_server, Vec3* pos)
 			}
 
 			// spawn new
-			auto unit = SpawnUnitNearLocation(GetContext(*p->unit), pc_data.action_point, *FindUnitData("white_wolf_sum"), nullptr, p->unit->level);
+			Vec3 spawn_pos;
+			if(p == pc)
+				spawn_pos = pc_data.action_point;
+			else
+			{
+				assert(pos);
+				spawn_pos = *pos;
+			}
+			auto unit = SpawnUnitNearLocation(GetContext(*p->unit), spawn_pos, *FindUnitData("white_wolf_sum"), nullptr, p->unit->level);
 			unit->summoner = p->unit;
 			if(IsServer())
 				Net_SpawnUnit(unit);
@@ -7799,68 +7828,65 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		// aktualizuj efekty i machanie ustami
 		if(u.IsAlive())
 		{
-			if(IsLocal())
+			u.UpdateEffects(dt);
+			if(IsLocal() && u.moved)
 			{
-				u.UpdateEffects(dt);
-				if(u.moved)
+				// unstuck units after being force moved (by bull charge)
+				static vector<Unit*> targets;
+				targets.clear();
+				float t;
+				bool in_dash = false;
+				ContactTest(u.cobj, [&](btCollisionObject* obj, bool second)
 				{
-					// unstuck units after being force moved (by bull charge)
-					static vector<Unit*> targets;
-					targets.clear();
-					float t;
-					bool in_dash = false;
-					ContactTest(u.cobj, [&](btCollisionObject* obj, bool second)
+					if(!second)
 					{
-						if(!second)
-						{
-							int flags = obj->getCollisionFlags();
-							if(!IS_SET(flags, CG_UNIT))
-								return false;
-							else
-							{
-								if(obj->getUserPointer() == &u)
-									return false;
-								return true;
-							}
-						}
+						int flags = obj->getCollisionFlags();
+						if(!IS_SET(flags, CG_UNIT))
+							return false;
 						else
 						{
-							Unit* target = (Unit*)obj->getUserPointer();
-							if(target->action == A_DASH)
-								in_dash = true;
-							targets.push_back(target);
+							if(obj->getUserPointer() == &u)
+								return false;
 							return true;
 						}
-					}, true);
-
-					if(!in_dash)
+					}
+					else
 					{
-						if(targets.empty())
-							u.moved = false;
-						else
+						Unit* target = (Unit*)obj->getUserPointer();
+						if(target->action == A_DASH)
+							in_dash = true;
+						targets.push_back(target);
+						return true;
+					}
+				}, true);
+
+				if(!in_dash)
+				{
+					if(targets.empty())
+						u.moved = false;
+					else
+					{
+						Vec3 center(0, 0, 0);
+						for(auto target : targets)
 						{
-							Vec3 center(0, 0, 0);
-							for(auto target : targets)
-							{
-								center += u.pos - target->pos;
-								target->moved = true;
-							}
-							center /= (float)targets.size();
-							center.y = 0;
-							center.Normalize();
-							center *= dt;
-							LineTest(u.cobj->getCollisionShape(), u.pos, center, [&](btCollisionObject* obj, bool)
-							{
-									int flags = obj->getCollisionFlags();
-									if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
-										return false;
-									return true;
-							}, t);
-							if(t == 1.f)
-							{
-								u.pos += center;
-								MoveUnit(u, false, true);
-							}
+							center += u.pos - target->pos;
+							target->moved = true;
+						}
+						center /= (float)targets.size();
+						center.y = 0;
+						center.Normalize();
+						center *= dt;
+						LineTest(u.cobj->getCollisionShape(), u.pos, center, [&](btCollisionObject* obj, bool)
+						{
+								int flags = obj->getCollisionFlags();
+								if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
+									return false;
+								return true;
+						}, t);
+						if(t == 1.f)
+						{
+							u.pos += center;
+							MoveUnit(u, false, true);
 						}
 					}
 				}
@@ -7956,7 +7982,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					CreateBlood(ctx, u);
 					if(u.summoner != nullptr)
 					{
-						RemoveTeamMember(&u);
+						if(IsLocal())
+							RemoveTeamMember(&u);
 						u.action = A_DESPAWN;
 						u.timer = Random(2.5f, 5.f);
 					}
@@ -8877,7 +8904,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 								unit->moved = true;
 								unit->pos += move_dir;
 								MoveUnit(*unit, false, true);
-								break;
+								continue;
 							}
 						}
 
@@ -8916,6 +8943,11 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				u.timer -= dt;
 				if(u.timer <= 0 || t < 1.f || !ok)
 				{
+					if(u.animation_state == 1)
+					{
+						u.mesh_inst->Deactivate(1);
+						u.mesh_inst->groups[0].blend_max = 0.33f;
+					}
 					u.action = A_NONE;
 					u.mesh_inst->groups[0].speed = u.GetRunSpeed() / u.data->run_speed;
 				}
@@ -15809,7 +15841,7 @@ void Game::RemoveUnit(Unit* unit, bool notify)
 		SpawnUnitEffect(*unit);
 	unit->to_remove = true;
 	to_remove.push_back(unit);
-	if(notify && IsOnline())
+	if(notify && IsOnline() && IsServer())
 		Net_RemoveUnit(unit);
 }
 

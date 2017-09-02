@@ -579,7 +579,7 @@ void Game::AddLoadTasks()
 	aSpellball = mesh_mgr.AddLoadTask("spellball.qmsh");
 	aDoor = mesh_mgr.AddLoadTask("drzwi.qmsh");
 	aDoor2 = mesh_mgr.AddLoadTask("drzwi2.qmsh");
-	aHumanBase = mesh_mgr.AddLoadTask("czlowiek.qmsh");
+	aHumanBase = mesh_mgr.AddLoadTask("human.qmsh");
 	aHair[0] = mesh_mgr.AddLoadTask("hair1.qmsh");
 	aHair[1] = mesh_mgr.AddLoadTask("hair2.qmsh");
 	aHair[2] = mesh_mgr.AddLoadTask("hair3.qmsh");

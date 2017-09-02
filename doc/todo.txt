@@ -1,51 +1,20 @@
 ﻿FEATURE:
-? guard_target loading
-? mp, client have no charges
-+ bulls charge
-	+ charge animation
-	+ stun de-buff
-		? units/player can't move
+- save on worldmap, Format is overwritten :( need more permanent solution
 + MP
-	+ dash
-	by server
-		+ play animation/sound by server
-		+ send info to clients to play animation/sound
-			+ play animation/sound by client
-
-	by client
-	+ play animation/sound by client
-		+ send info about using charge
-			+ play animation/sound by server
-			+ resend to other clients
-				+ play animation/sound by other client
-		+ by client
-		+ by server
-		+ save/load charges
-		+ save/load in dash
-		+ reset charges after rest/travel
-	+ summon
-		+ by client
-		+ by server
-		+ effect
-		+ despawn
-		+ break loot
+	- many errors UNIT_POS, REMOVE_UNIT; when looting, not always
+	+ dash, charge -> server side
 	+ bulls charge
-		+ heal, healunit cmd
-		+ remove effect
-		+ send info about stun start/remove, update on client side
 + info in class desc about actions
 + info in readme
 ? tests
 	? save/load while doing action (mp)
 	? fall/kill when doing action
-	? refresh_cooldown mp
-	? stun cmd
 	? load old save and actions
-	? summon
-		? spawn/despawn/break loot (player/client)
-		? saving/loading for multiple wolfs, each for each player despawn
+	? dash
+	? stun
 - clicking on M menu apply focus but can't enter text
 ? allow run without stamina?
+? actions and stamina
 + 0.1f cooldown
 ===============================================================================================================
 CURRENT:
@@ -90,9 +59,11 @@ NEW:
 + better summon picking
 	+ after point
 	+ in dungeon - red marker goes into wall
++ better stun area
 - electro/bull charge targets are unsafe, what is unit from this list was removed
 + cmd to remove cooldowns
 + file reader 2 - don't return bool but set is_ok
++ converter setup bone groups in blender
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

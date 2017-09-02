@@ -2127,6 +2127,18 @@ void Unit::RemoveEffect(ConsumeEffect effect)
 			_to_remove.push_back(index);
 	}
 
+	if(!_to_remove.empty())
+	{
+		auto& game = Game::Get();
+		if(game.IsOnline() && game.IsServer())
+		{
+			auto& c = Add1(game.net_changes);
+			c.type = NetChange::STUN;
+			c.unit = this;
+			c.f[0] = 0;
+		}
+	}
+	
 	while(!_to_remove.empty())
 	{
 		index = _to_remove.back();
@@ -3186,7 +3198,9 @@ void Unit::CreateMesh(CREATE_MESH mode)
 //=================================================================================================
 void Unit::ApplyStun(float length)
 {
-	if(IS_SET(data->flags2, F2_STUN_RESISTANCE))
+	Game& game = Game::Get();
+
+	if(game.IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
 		length /= 2;
 
 	auto effect = FindEffect(E_STUN);
@@ -3199,5 +3213,13 @@ void Unit::ApplyStun(float length)
 		effect.power = 0.f;
 		effect.time = length;
 		animation = ANI_STAND;
+	}
+
+	if(game.IsOnline() && game.IsServer())
+	{
+		auto& c = Add1(game.net_changes);
+		c.type = NetChange::STUN;
+		c.unit = this;
+		c.f[0] = length;
 	}
 }
