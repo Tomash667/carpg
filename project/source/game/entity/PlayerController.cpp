@@ -5,6 +5,8 @@
 #include "Game.h"
 #include "SaveState.h"
 #include "BitStreamFunc.h"
+#include "Class.h"
+#include "Action.h"
 
 //=================================================================================================
 PlayerController::~PlayerController()
@@ -103,25 +105,53 @@ void PlayerController::Init(Unit& _unit, bool partial)
 			sp[i] = 0;
 		for(int i = 0; i < (int)Attribute::MAX; ++i)
 			ap[i] = 0;
+
+		action_charges = GetAction().charges;
 	}
 }
 
 //=================================================================================================
-void PlayerController::Update(float dt)
+void PlayerController::Update(float dt, bool is_local)
 {
-	dmgc += last_dmg;
-	dmgc *= (1.f - dt * 2);
-	if(last_dmg == 0.f && dmgc < 0.1f)
-		dmgc = 0.f;
-
-	poison_dmgc += (last_dmg_poison - poison_dmgc) * dt;
-	if(last_dmg_poison == 0.f && poison_dmgc < 0.1f)
-		poison_dmgc = 0.f;
-
-	if(recalculate_level)
+	if(is_local)
 	{
-		recalculate_level = false;
-		unit->level = unit->CalculateLevel();
+		// last damage
+		dmgc += last_dmg;
+		dmgc *= (1.f - dt * 2);
+		if(last_dmg == 0.f && dmgc < 0.1f)
+			dmgc = 0.f;
+
+		// poison damage
+		poison_dmgc += (last_dmg_poison - poison_dmgc) * dt;
+		if(last_dmg_poison == 0.f && poison_dmgc < 0.1f)
+			poison_dmgc = 0.f;
+
+		if(recalculate_level)
+		{
+			recalculate_level = false;
+			unit->level = unit->CalculateLevel();
+		}
+	}
+
+	// update action
+	auto& action = GetAction();
+	if(action_cooldown != 0)
+	{
+		action_cooldown -= dt;
+		if(action_cooldown < 0)
+			action_cooldown = 0.f;
+	}
+	if(action_recharge != 0)
+	{
+		action_recharge -= dt;
+		if(action_recharge < 0)
+		{
+			++action_charges;
+			if(action_charges == action.charges)
+				action_recharge = 0;
+			else
+				action_recharge += action.recharge;
+		}
 	}
 }
 
@@ -237,66 +267,20 @@ void PlayerController::TrainMove(float dt, bool run)
 //=================================================================================================
 void PlayerController::TravelTick()
 {
-	Rest(false);
+	Rest(1, false, true);
 	Train(TrainWhat::Move, 0.f, 0);
-
-	// up³yw czasu efektów
-	uint index = 0;
-	for(vector<Effect>::iterator it = unit->effects.begin(), end = unit->effects.end(); it != end; ++it, ++index)
-	{
-		if((it->time -= 1.f) <= 0.f)
-			_to_remove.push_back(index);
-	}
-
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == unit->effects.size() - 1)
-			unit->effects.pop_back();
-		else
-		{
-			std::iter_swap(unit->effects.begin() + index, unit->effects.end() - 1);
-			unit->effects.pop_back();
-		}
-	}
 }
 
 //=================================================================================================
-// wywo³ywane podczas podró¿y
-void PlayerController::Rest(bool resting)
+void PlayerController::Rest(int days, bool resting, bool travel)
 {
-	if(unit->hp != unit->hpmax)
-	{
-		float heal = 0.5f * unit->Get(Attribute::END);
-		if(resting)
-			heal *= 2;
-		float reg;
-		if(unit->FindEffect(E_NATURAL, &reg))
-			heal *= reg;
-
-		heal = min(heal, unit->hpmax - unit->hp);
-		unit->hp += heal;
-
-		Train(Attribute::END, int(heal));
-	}
-
-	last_dmg = 0;
-	last_dmg_poison = 0;
-	dmgc = 0;
-	poison_dmgc = 0;
-}
-
-//=================================================================================================
-void PlayerController::Rest(int days, bool resting)
-{
-	// up³yw czasu efektów
+	// update effects that work for days, end other
 	int best_nat;
 	float prev_hp = unit->hp,
 		prev_stamina = unit->stamina;
 	unit->EndEffects(days, &best_nat);
 
-	// regeneracja hp
+	// regenerate hp
 	if(unit->hp != unit->hpmax)
 	{
 		float heal = 0.5f * unit->Get(Attribute::END);
@@ -318,8 +302,9 @@ void PlayerController::Rest(int days, bool resting)
 		Train(Attribute::END, int(heal));
 	}
 
+	// send update
 	Game& game = Game::Get();
-	if(game.IsOnline())
+	if(game.IsOnline() && !travel)
 	{
 		if(unit->hp != prev_hp)
 		{
@@ -332,10 +317,16 @@ void PlayerController::Rest(int days, bool resting)
 			game.GetPlayerInfo(this).update_flags |= PlayerInfo::UF_STAMINA;
 	}
 
+	// reset last damage
 	last_dmg = 0;
 	last_dmg_poison = 0;
 	dmgc = 0;
 	poison_dmgc = 0;
+
+	// reset action
+	action_cooldown = 0;
+	action_recharge = 0;
+	action_charges = GetAction().charges;
 }
 
 //=================================================================================================
@@ -382,6 +373,15 @@ void PlayerController::Save(HANDLE file)
 	{
 		f << (byte)tp.perk;
 		f << tp.value;
+	}
+	f << action_cooldown;
+	f << action_recharge;
+	f << (byte)action_charges;
+	if(unit->action == A_DASH && unit->animation_state == 1)
+	{
+		f << action_targets.size();
+		for(auto target : action_targets)
+			f << target->refid;
 	}
 }
 
@@ -495,9 +495,32 @@ void PlayerController::Load(HANDLE file)
 			f >> tp.value;
 		}
 	}
+	if(LOAD_VERSION >= V_CURRENT)
+	{
+		f >> action_cooldown;
+		f >> action_recharge;
+		action_charges = f.Read<byte>();
+		if(unit->action == A_DASH && unit->animation_state == 1)
+		{
+			uint count;
+			f >> count;
+			action_targets.resize(count);
+			for(uint i = 0; i < count; ++i)
+			{
+				int refid;
+				f >> refid;
+				Unit::AddRequest(&action_targets[i], refid);
+			}
+		}
+	}
+	else
+	{
+		action_cooldown = 0.f;
+		action_recharge = 0.f;
+		action_charges = GetAction().charges;
+	}
 
 	action = Action_None;
-	wasted_key = VK_NONE;
 }
 
 //=================================================================================================
@@ -694,6 +717,7 @@ void PlayerController::TrainMod(Skill s, float points)
 }
 
 //=================================================================================================
+// Used to send per-player data in WritePlayerData
 void PlayerController::Write(BitStream& stream) const
 {
 	stream.Write(kills);
@@ -708,9 +732,13 @@ void PlayerController::Write(BitStream& stream) const
 		stream.WriteCasted<byte>(perk.perk);
 		stream.Write(perk.value);
 	}
+	stream.Write(action_cooldown);
+	stream.Write(action_recharge);
+	stream.Write(action_charges);
 }
 
 //=================================================================================================
+// Used to sent per-player data in ReadPlayerData
 bool PlayerController::Read(BitStream& stream)
 {
 	byte count;
@@ -730,5 +758,45 @@ bool PlayerController::Read(BitStream& stream)
 			!stream.Read(perk.value))
 			return false;
 	}
+	if(!stream.Read(action_cooldown)
+		|| !stream.Read(action_recharge)
+		|| !stream.Read(action_charges))
+		return false;
 	return true;
+}
+
+//=================================================================================================
+Action& PlayerController::GetAction()
+{
+	auto action = g_classes[(int)clas].action;
+	assert(action);
+	return *action;
+}
+
+//=================================================================================================
+bool PlayerController::UseActionCharge()
+{
+	if (action_charges == 0 || action_cooldown > 0)
+		return false;
+	auto& action = GetAction();
+	--action_charges;
+	action_cooldown = action.cooldown;
+	if(action_recharge == 0)
+		action_recharge = action.recharge;
+	return true;
+}
+
+//=================================================================================================
+void PlayerController::RefreshCooldown()
+{
+	auto& action = GetAction();
+	action_cooldown = 0;
+	action_recharge = 0;
+	action_charges = action.charges;
+}
+
+//=================================================================================================
+bool PlayerController::IsHit(Unit* unit) const
+{
+	return IsInside(action_targets, unit);
 }

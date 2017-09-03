@@ -261,8 +261,7 @@ def ProcessEmpty(data,empty):
 		data.file.write("\t\ttype %s\n" % QuoteString(type))
 		data.file.write("\t\tsize %f,%f,%f\n" % (empty.scale[0],empty.scale[1],empty.scale[2]))
 		data.file.write("\t\tscale %f\n" % empty.empty_draw_size)
-		# w wersji 2.62 zmienila sie kolejnosc matrix, trzeba obracac
-		m = empty.matrix_local.transposed()
+		m = empty.matrix_world.transposed()
 		data.file.write("\t\tmatrix\n")
 		for n in m:
 			data.file.write("\t\t\t%f,%f,%f,%f\n" % (n[0],n[1],n[2],n[3]))

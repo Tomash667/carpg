@@ -59,13 +59,16 @@ people. Expect changes for the better!
 	D / right arrow - move right
 	Q - rotate left
 	E - rotate right
+	1 - equip melee weapon and shield
+	2 - equip ranged weapon
+	3 - use action
+	H - drink healing potion
 	F - auto walk forward
 	Y - yell
 	TAB - character screen, team, inventory
 	J - journal
 	M - minimap
 	N - talk box
-	H - drink healing potion
 	Enter - input text in multiplayer
 	Mouse wheel - change camera distance
 	F2 - show/hide fps
@@ -107,6 +110,9 @@ people. Expect changes for the better!
 	that it will be stronger. This is useful against resistant enemies which
 	attack normal asking little or nothing. Attack on the run is like 0.25 of
 	powerful attack but you cannot stop.
+* Actions - Use action by pressing key 3 (by default), it will draw area of effect
+	used by this action. Press left mouse button to use, right to cancel. Red
+	area means that action can be used in this place.
 * Stamina - Attacking uses stamina, if you run out of stamina you can't run or
 	attack. Blocking uses stamina too, and if you loss all stamina block is
 	broken. Stop attacking to restore stamina, not walking restore it faster.
@@ -230,9 +236,11 @@ Available commands:
 	quit - quit from game.
 	random - roll random number 1-100 or pick random character (random, random [warrior/hunter/rogue]).
 	ready - set player as ready/unready.
+	refresh_cooldown - refresh action cooldown/charges.
 	reload_shaders - reload shaders.
 	resolution - show or change display resolution (resolution [w h hz]).
 	reveal - reveal all locations on world map.
+	refresh_cooldown - refresh action cooldown/charges.
 	s - send message to all players, short from say (say msg).
 	save - save game (save 1-10 [text]).
 	say - send message to all players (say msg).
@@ -247,6 +255,7 @@ Available commands:
 	spawnunit - create unit in front of player (spawnunit id [level count arena]).
 	speed - game speed (speed 0-10).
 	start - start server.
+	stun - stun unit for time (stun [length=1] [1 = self]).
 	suicide - kill player.
 	tile_info - write current terrain tile info to console.
 	version - displays game version.
@@ -296,7 +305,6 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* server_pswd - last server password
 	* shader_version - force shader version 2/3
 	* skip_tutorial (true [false]) - skip tutorial
-	* skip_version - skip version checking up to this version
 	* stream_log_file ["log.stream"] - file to log mp information
 	* stream_log_mode (none [errors] full) - mode to log mp information
 	* timeout (1-3600) - time before kicking player from server when loading if

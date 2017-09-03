@@ -11,7 +11,8 @@ BuffInfo BuffInfo::info[] = {
 	BuffInfo("buff_alcohol"),
 	BuffInfo("buff_poison"),
 	BuffInfo("buff_antimagic"),
-	BuffInfo("buff_stamina")
+	BuffInfo("buff_stamina"),
+	BuffInfo("buff_stun")
 };
 
 void BuffInfo::LoadImages()

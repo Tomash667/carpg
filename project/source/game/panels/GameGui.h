@@ -18,6 +18,7 @@ class Journal;
 class Minimap;
 class MpBox;
 class GameMessages;
+class ActionPanel;
 
 //-----------------------------------------------------------------------------
 enum class OpenPanel
@@ -41,7 +42,7 @@ enum class SideButtonId
 	Minimap,
 	Journal,
 	Inventory,
-	Active,
+	Action,
 	Stats,
 	Talk,
 	Max
@@ -99,6 +100,7 @@ public:
 	void Save(FileWriter& f) const;
 	void Load(FileReader& f);
 	bool IsMouseInsideDialog() const { return PointInRect(GUI.cursor_pos, dialog_pos, dialog_size); }
+	void Setup();
 
 	// panels
 	GamePanelContainer* gp_trade;
@@ -109,6 +111,7 @@ public:
 	Minimap* minimap;
 	MpBox* mp_box;
 	GameMessages* game_messages;
+	ActionPanel* action_panel;
 	//
 	bool use_cursor;
 
@@ -129,7 +132,7 @@ private:
 	float sidebar;
 	int sidebar_state[(int)SideButtonId::Max];
 	TEX tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2], tMinistamina, tCelownik,
-		tBubble, tObwodkaBolu;
+		tBubble, tObwodkaBolu, tActionCooldown;
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
 	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txStamina;

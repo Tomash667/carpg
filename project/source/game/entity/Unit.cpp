@@ -767,6 +767,9 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			}
 		}
 		break;
+	case E_STUN:
+		ApplyStun(item.time);
+		break;
 	default:
 		assert(0);
 		break;
@@ -950,6 +953,7 @@ void Unit::EndEffects(int days, int* best_nat)
 		case E_ALCOHOL:
 		case E_ANTIMAGIC:
 		case E_STAMINA:
+		case E_STUN:
 			_to_remove.push_back(index);
 			break;
 		case E_NATURAL:
@@ -1321,6 +1325,8 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &weight, sizeof(weight), &tmp, nullptr);
 	int guard_refid = (guard_target ? guard_target->refid : -1);
 	WriteFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);
+	int summoner_refid = (summoner ? summoner->refid : -1);
+	WriteFile(file, &summoner_refid, sizeof(summoner_refid), &tmp, nullptr);
 
 	assert((human_data != nullptr) == (data->type == UNIT_TYPE::HUMAN));
 	if(human_data)
@@ -1362,6 +1368,9 @@ void Unit::Save(HANDLE file, bool local)
 		WriteFile(file, &alcohol, sizeof(alcohol), &tmp, nullptr);
 		WriteFile(file, &raise_timer, sizeof(raise_timer), &tmp, nullptr);
 
+		if(action == A_DASH)
+			WriteFile(file, &use_rot, sizeof(use_rot), &tmp, nullptr);
+
 		if(used_item)
 		{
 			WriteString1(file, used_item->id);
@@ -1392,6 +1401,7 @@ void Unit::Save(HANDLE file, bool local)
 		}
 
 		WriteFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
+		WriteFile(file, &moved, sizeof(moved), &tmp, nullptr);
 	}
 
 	// efekty
@@ -1652,11 +1662,19 @@ void Unit::Load(HANDLE file, bool local)
 		if(guard_refid == -1)
 			guard_target = nullptr;
 		else
-		{
-			guard_target = (Unit*)guard_refid;
-			Game::Get().load_unit_refid.push_back(&guard_target);
-		}
+			AddRequest(&guard_target, guard_refid);
 	}
+	if(LOAD_VERSION >= V_CURRENT)
+	{
+		int summoner_refid;
+		ReadFile(file, &summoner_refid, sizeof(summoner_refid), &tmp, nullptr);
+		if(summoner_refid == -1)
+			summoner = nullptr;
+		else
+			AddRequest(&summoner, summoner_refid);
+	}
+	else
+		summoner = nullptr;
 
 	bubble = nullptr; // ustawianie przy wczytaniu SpeechBubble
 	changed = false;
@@ -1718,6 +1736,9 @@ void Unit::Load(HANDLE file, bool local)
 			raise_timer = timer;
 		}
 
+		if (action == A_DASH)
+			ReadFile(file, &use_rot, sizeof(use_rot), &tmp, nullptr);
+
 		byte len;
 		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 		if(len)
@@ -1752,6 +1773,9 @@ void Unit::Load(HANDLE file, bool local)
 			last_bash = 0.f;
 		else
 			ReadFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
+
+		if(LOAD_VERSION >= V_CURRENT)
+			ReadFile(file, &moved, sizeof(moved), &tmp, nullptr);
 	}
 	else
 	{
@@ -1770,6 +1794,7 @@ void Unit::Load(HANDLE file, bool local)
 		hurt_timer = 0.f;
 		speed = prev_speed = 0.f;
 		alcohol = 0.f;
+		moved = false;
 	}
 
 	// efekty
@@ -1808,15 +1833,7 @@ void Unit::Load(HANDLE file, bool local)
 
 	// fizyka
 	if(local)
-	{
-		btCapsuleShape* caps = new btCapsuleShape(GetUnitRadius(), max(MIN_H, GetUnitHeight()));
-		cobj = new btCollisionObject;
-		cobj->setCollisionShape(caps);
-		cobj->setUserPointer(this);
-		cobj->setCollisionFlags(CG_UNIT);
-		Game::Get().phy_world->addCollisionObject(cobj);
-		Game::Get().UpdateUnitPhysics(*this, IsAlive() ? pos : Vec3(1000, 1000, 1000));
-	}
+		Game::Get().CreateUnitPhysics(*this, true);
 	else
 		cobj = nullptr;
 
@@ -1847,6 +1864,18 @@ void Unit::Load(HANDLE file, bool local)
 			player->SetRequiredPoints();
 		}
 	}
+}
+
+//=================================================================================================
+Effect* Unit::FindEffect(ConsumeEffect effect)
+{
+	for(Effect& e : effects)
+	{
+		if(e.effect == effect)
+			return &e;
+	}
+
+	return nullptr;
 }
 
 //=================================================================================================
@@ -2089,15 +2118,27 @@ void Unit::HealPoison()
 }
 
 //=================================================================================================
-void Unit::RemovePoison()
+void Unit::RemoveEffect(ConsumeEffect effect)
 {
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
-		if(it->effect == E_POISON)
+		if(it->effect == effect)
 			_to_remove.push_back(index);
 	}
 
+	if(!_to_remove.empty())
+	{
+		auto& game = Game::Get();
+		if(game.IsOnline() && game.IsServer())
+		{
+			auto& c = Add1(game.net_changes);
+			c.type = NetChange::STUN;
+			c.unit = this;
+			c.f[0] = 0;
+		}
+	}
+	
 	while(!_to_remove.empty())
 	{
 		index = _to_remove.back();
@@ -2507,6 +2548,9 @@ int Unit::GetBuffs() const
 			break;
 		case E_STAMINA:
 			b |= BUFF_STAMINA;
+			break;
+		case E_STUN:
+			b |= BUFF_STUN;
 			break;
 		}
 	}
@@ -2998,6 +3042,7 @@ void Unit::UpdateStaminaAction()
 			stamina_action = SA_RESTORE_MORE;
 			break;
 		case A_BLOCK:
+		case A_DASH:
 			stamina_action = SA_RESTORE_SLOW;
 			break;
 		case A_BASH:
@@ -3148,5 +3193,34 @@ void Unit::CreateMesh(CREATE_MESH mode)
 	{
 		assert(!mesh_inst);
 		mesh_inst = new MeshInstance(nullptr, true);
+	}
+}
+
+//=================================================================================================
+void Unit::ApplyStun(float length)
+{
+	Game& game = Game::Get();
+
+	if(game.IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
+		length /= 2;
+
+	auto effect = FindEffect(E_STUN);
+	if(effect)
+		effect->time = max(effect->time, length);
+	else
+	{
+		auto& effect = Add1(effects);
+		effect.effect = E_STUN;
+		effect.power = 0.f;
+		effect.time = length;
+		animation = ANI_STAND;
+	}
+
+	if(game.IsOnline() && game.IsServer())
+	{
+		auto& c = Add1(game.net_changes);
+		c.type = NetChange::STUN;
+		c.unit = this;
+		c.f[0] = length;
 	}
 }

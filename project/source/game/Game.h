@@ -125,28 +125,15 @@ inline int KeyAllowState(byte k)
 
 enum COLLISION_GROUP
 {
-	CG_WALL = 1 << 8,
-	CG_UNIT = 1 << 9
-};
-
-enum BeforePlayer
-{
-	BP_NONE,
-	BP_UNIT,
-	BP_CHEST,
-	BP_DOOR,
-	BP_ITEM,
-	BP_USEABLE
-};
-
-union BeforePlayerPtr
-{
-	Unit* unit;
-	Chest* chest;
-	Door* door;
-	GroundItem* item;
-	Usable* usable;
-	void* any;
+	CG_TERRAIN = 1 << 7,
+	CG_BUILDING = 1 << 8,
+	CG_UNIT = 1 << 9,
+	CG_OBJECT = 1 << 10,
+	CG_DOOR = 1 << 11,
+	CG_COLLIDER = 1 << 12,
+	CG_CAMERA_COLLIDER = 1 << 13,
+	CG_BARRIER = 1 << 14, // blocks only units
+	// max 1 << 15
 };
 
 extern const float ATTACK_RANGE;
@@ -471,6 +458,9 @@ struct Game final : public Engine, public UnitEventHandler
 	void CleanScene();
 	void ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool outside, Unit& u);
+	void ListAreas(LevelContext& ctx);
+	void PrepareAreaPath();
+	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
 	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
 	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs = 0);
 	int GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, float z, float radius, int sub = 0);
@@ -487,7 +477,8 @@ struct Game final : public Engine, public UnitEventHandler
 	void DrawParticles(const vector<ParticleEmitter*>& pes);
 	void DrawTrailParticles(const vector<TrailParticleEmitter*>& tpes);
 	void DrawLightings(const vector<Electro*>& electros);
-	void DrawAreas(const vector<Area>& areas, float range);
+	void DrawStunEffects(const vector<StunEffect>& stuns);
+	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void DrawPortals(const vector<Portal*>& portals);
 	void SetAlphaTest(bool use_alphatest);
 	void SetNoZWrite(bool use_nozwrite);
@@ -509,30 +500,30 @@ struct Game final : public Engine, public UnitEventHandler
 	//-----------------------------------------------------------------
 	// ZASOBY
 	//-----------------------------------------------------------------
-	Mesh* aHumanBase, *aHair[5], *aBeard[5], *aMustache[2], *aEyebrows;
-	Mesh* aBox, *aCylinder, *aSphere, *aCapsule;
-	Mesh* aArrow, *aSkybox, *aWorek, *aSkrzynia, *aKratka, *aNaDrzwi, *aNaDrzwi2, *aSchodyDol, *aSchodyGora, *aSchodyDol2, *aSpellball, *aPrzycisk, *aDrzwi, *aDrzwi2;
+	MeshPtr aHumanBase, aHair[5], aBeard[5], aMustache[2], aEyebrows;
+	MeshPtr aBox, aCylinder, aSphere, aCapsule;
+	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
 	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
 	TEX tItemRegion, tMinimap, tChar, tSave;
 	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tMiniSave, tWarning, tError;
-	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda;
+	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *eGui, *ePostFx, *eGlow, *eGrass;
-	D3DXHANDLE techAnim, techHair, techAnimDir, techHairDir, techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techTerrain,
-		techArea, techTrail, techGui, techGlowMesh, techGlowAni, techGrass;
+	D3DXHANDLE techAnim, techHair, techAnimDir, techHairDir, techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox,
+		techTerrain, techArea, techTrail, techGlowMesh, techGlowAni, techGrass;
 	D3DXHANDLE hAniCombined, hAniWorld, hAniBones, hAniTex, hAniFogColor, hAniFogParam, hAniTint, hAniHairColor, hAniAmbientColor, hAniLightDir, hAniLightColor, hAniLights,
 		hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir, hMeshLightColor, hMeshLights,
 		hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange,
 		hTerrainCombined, hTerrainWorld, hTerrainTexBlend, hTerrainTex[5], hTerrainColorAmbient, hTerrainColorDiffuse, hTerrainLightDir, hTerrainFogColor, hTerrainFogParam,
 		hGuiSize, hGuiTex, hPostTex, hPostPower, hPostSkill, hGlowCombined, hGlowBones, hGlowColor, hGlowTex, hGrassViewProj, hGrassTex, hGrassFogColor, hGrassFogParams, hGrassAmbientColor;
 	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sTalk[4], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
-		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sXarTalk, sOrcTalk, sGoblinTalk, sGolemTalk, sEat;
+		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sXarTalk, sOrcTalk, sGoblinTalk, sGolemTalk, sEat, sSummon;
 	VB vbParticle;
 	SURFACE sChar, sSave, sItemRegion;
 	static cstring txGoldPlus, txQuestCompletedGold;
 	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
 	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;
-	
+
 	//-----------------------------------------------------------------
 	// Localized texts
 	//-----------------------------------------------------------------
@@ -637,21 +628,16 @@ public:
 	//---------------------------------
 	// GRA
 	GAME_STATE game_state, prev_game_state;
+	LocalPlayerData pc_data;
 	PlayerController* pc;
-	bool autowalk;
-	float player_rot_buf;
 	AllowInput allow_input;
-	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp;
+	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp, death_solo;
 	int death_screen, dungeon_level;
-	bool death_solo;
 	float death_fade, game_speed;
 	vector<MeshInstance*> bow_instances;
 	Pak* pak;
-	Unit* selected_unit, *selected_target;
 	vector<AIController*> ais;
 	const Item* gold_item_ptr;
-	BeforePlayer before_player;
-	BeforePlayerPtr before_player_ptr;
 	uint force_seed, next_seed;
 	vector<AttachedSound> attached_sounds;
 	SaveSlot single_saves[MAX_SAVE_SLOTS], multi_saves[MAX_SAVE_SLOTS];
@@ -692,7 +678,8 @@ public:
 
 	//---------------------------------
 	// FIZYKA
-	btCollisionShape* shape_wall, *shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2];
+	btCollisionShape* shape_wall, *shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2],
+		*shape_summon, *shape_barrier;
 	btHeightfieldTerrainShape* terrain_shape;
 	btCollisionObject* obj_arrow, *obj_terrain, *obj_spell;
 	vector<CollisionObject> global_col; // wektor na tymczasowe obiekty, czêsto u¿ywany przy zbieraniu obiektów do kolizji
@@ -886,7 +873,6 @@ public:
 	vector<Location*> load_location_quest;
 	vector<Unit*> load_unit_handler;
 	vector<Chest*> load_chest_handler;
-	vector<Unit**> load_unit_refid;
 
 	bool hardcore_mode, hardcore_option;
 	string hardcore_savename;
@@ -1025,13 +1011,12 @@ public:
 	void BuildTmpInventory(int index);
 	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 
-	void BreakAction(Unit& unit, bool fall = false, bool notify = false);
+	void BreakUnitAction(Unit& unit, bool fall = false, bool notify = false);
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
-	void GenerateImage(TaskData& task_data);
+	void GenerateItemImage(TaskData& task_data);
 	void SetupObject(Obj& obj);
-	Unit* GetFollowTarget();
 	void SetupCamera(float dt);
 	void LoadShaders();
 	void SetupShaders();
@@ -1039,6 +1024,8 @@ public:
 	void UpdateGame(float dt);
 	void UpdateFallback(float dt);
 	void UpdatePlayer(LevelContext& ctx, float dt);
+	void UseAction(PlayerController* p, bool from_server, const Vec3* pos_data = nullptr);
+	void SpawnUnitEffect(Unit& unit);
 	void PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float& best_dist, BeforePlayer type);
 
 	int CheckMove(Vec3& pos, const Vec3& dir, float radius, Unit* me, bool* is_small = nullptr);
@@ -1077,7 +1064,7 @@ public:
 	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);
 	void SetDungeonParamsToMeshes();
-	void MoveUnit(Unit& unit, bool warped = false);
+	void MoveUnit(Unit& unit, bool warped = false, bool dash = false);
 	bool CollideWithStairs(const CollisionObject& co, const Vec3& pos, float radius) const;
 	bool CollideWithStairsRect(const CollisionObject& co, const Box2d& box) const;
 	uint ValidateGameData(bool major);
@@ -1121,6 +1108,7 @@ public:
 	Vec4 GetLightDir();
 	void UpdateBullets(LevelContext& ctx, float dt);
 	void SpawnDungeonColliders();
+	void SpawnDungeonCollider(const Vec3& pos);
 	void RemoveColliders();
 	void CreateCollisionShapes();
 	bool AllowKeyboard() const { return IS_SET(allow_input, ALLOW_KEYBOARD); }
@@ -1149,7 +1137,7 @@ public:
 	void RespawnObjectColliders(LevelContext& ctx, bool spawn_pes = true);
 	void SetRoomPointers();
 	SOUND GetMaterialSound(MATERIAL_TYPE m1, MATERIAL_TYPE m2);
-	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax);
+	void PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax = 0.f);
 	ATTACK_RESULT DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float dmg, int dmg_type, bool bash);
 	void GenerateLabirynthUnits();
 	int GetDungeonLevel();
@@ -1169,6 +1157,9 @@ public:
 	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
 	void PreloadTraps(vector<Trap*>& traps);
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
+	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*, bool)> clbk, float& t, vector<float>* t_list = nullptr,
+		bool use_clbk2 = false);
+	bool ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2 = false);
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);
 	void AI_Shout(LevelContext& ctx, AIController& ai);
@@ -1273,6 +1264,7 @@ public:
 	void StartArenaCombat(int level);
 	InsideBuilding* GetArena();
 	bool WarpToArea(LevelContext& ctx, const Box2d& area, float radius, Vec3& pos, int tries = 10);
+	void RemoveUnit(Unit* unit, bool notify = true);
 	void DeleteUnit(Unit* unit);
 	void DialogTalk(DialogContext& ctx, cstring msg);
 	void GenerateHeroName(HeroData& hero);
@@ -1347,6 +1339,7 @@ public:
 	void StartPvp(PlayerController* player, Unit* unit);
 	void UpdateGameNet(float dt);
 	void CheckCredit(bool require_update = false, bool ignore = false);
+	void CreateUnitPhysics(Unit& unit, bool position = false);
 	void UpdateUnitPhysics(Unit& unit, const Vec3& pos);
 	void WarpNearLocation(LevelContext& ctx, Unit& uint, const Vec3& pos, float extra_radius, bool allow_exact, int tries = 20);
 	void Train(Unit& unit, bool is_skill, int co, int mode = 0);
@@ -1496,7 +1489,6 @@ public:
 	Class quickstart_class, autopick_class; // mo¿na po³¹czyæ
 	string quickstart_name;
 	bool check_updates, skip_tutorial;
-	uint skip_version;
 	string save_input_text;
 	int hair_redo_index;
 
@@ -1580,16 +1572,6 @@ public:
 	vector<NetChange> net_changes;
 	vector<NetChangePlayer> net_changes_player;
 	vector<string*> net_talk;
-	union
-	{
-		//Unit* loot_unit;
-		//Chest* loot_chest;
-		struct
-		{
-			GroundItem* picking_item;
-			int picking_item_state;
-		};
-	};
 	struct WarpData
 	{
 		Unit* u;
@@ -1654,6 +1636,7 @@ public:
 	void SendPlayerData(int index);
 	bool ReadPlayerData(BitStream& stream);
 	Unit* FindUnit(int netid);
+	Unit* FindUnit(delegate<bool(Unit*)> pred);
 	void UpdateServer(float dt);
 	bool ProcessControlMessageServer(BitStream& stream, PlayerInfo& info);
 	void WriteServerChanges(BitStream& stream);

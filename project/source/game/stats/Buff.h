@@ -10,8 +10,9 @@ enum BUFF_FLAGS
 	BUFF_POISON = 1 << 4,
 	BUFF_ANTIMAGIC = 1 << 5,
 	BUFF_STAMINA = 1 << 6,
+	BUFF_STUN = 1 << 7,
 
-	BUFF_COUNT = 7
+	BUFF_COUNT = 8
 };
 static_assert(BUFF_COUNT <= 8, "MP currently allows max 8 buffs.");
 

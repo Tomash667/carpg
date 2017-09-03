@@ -47,6 +47,13 @@ float4 ps2(in VERTEX_OUTPUT In) : COLOR0
 	return In.color;
 }
 
+float4 ps_grayscale(in VERTEX_OUTPUT In) : COLOR0
+{
+	float4 c = tex2D(sampler0, In.tex) * In.color;
+	c.rgb = (c.r+c.g+c.b)/3.0f;
+	return c;
+}
+
 technique gui
 {
 	pass pass0
@@ -62,5 +69,14 @@ technique gui2
 	{
 		VertexShader = compile VS_VERSION vs();
 		PixelShader = compile PS_VERSION ps2();
+	}
+}
+
+technique gui_grayscale
+{
+	pass pass0
+	{
+		VertexShader = compile VS_VERSION vs();
+		PixelShader = compile PS_VERSION ps_grayscale();
 	}
 }

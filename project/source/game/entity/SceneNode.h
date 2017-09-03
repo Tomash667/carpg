@@ -113,6 +113,14 @@ struct Area
 };
 
 //-----------------------------------------------------------------------------
+struct Area2
+{
+	vector<Vec3> points;
+	vector<word> faces;
+	int ok;
+};
+
+//-----------------------------------------------------------------------------
 struct LightData
 {
 	Vec3 pos;
@@ -158,6 +166,13 @@ struct NodeMatrix
 };
 
 //-----------------------------------------------------------------------------
+struct StunEffect
+{
+	Vec3 pos;
+	float time;
+};
+
+//-----------------------------------------------------------------------------
 struct DrawBatch
 {
 	vector<SceneNode*> nodes;
@@ -173,9 +188,11 @@ struct DrawBatch
 	vector<Portal*> portals;
 	vector<Area> areas;
 	float area_range;
+	vector<Area2*> areas2;
 	vector<Lights> lights;
 	vector<DungeonPart> dungeon_parts;
 	vector<NodeMatrix> matrices;
+	vector<StunEffect> stuns;
 
 	void Clear();
 };

@@ -24,12 +24,14 @@
 #include "AIController.h"
 #include "Spell.h"
 #include "Team.h"
+#include "Action.h"
 
 extern bool merchant_buy[];
 extern bool blacksmith_buy[];
 extern bool alchemist_buy[];
 extern bool innkeeper_buy[];
 extern bool foodseller_buy[];
+static Unit* SUMMONER_PLACEHOLDER = (Unit*)0xFA4E1111;
 
 //=================================================================================================
 inline bool ReadItemSimple(BitStream& stream, const Item*& item)
@@ -567,6 +569,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	stream.Write(unit.hpmax);
 	stream.Write(unit.netid);
 	stream.WriteCasted<char>(unit.in_arena);
+	WriteBool(stream, unit.summoner != nullptr);
 
 	// hero/player data
 	byte b;
@@ -689,7 +692,7 @@ void Game::WriteTrap(BitStream& stream, Trap& trap)
 bool Game::ReadLevelData(BitStream& stream)
 {
 	cam.Reset();
-	player_rot_buf = 0.f;
+	pc_data.rot_buf = 0.f;
 	show_mp_panel = true;
 	boss_level_mp = false;
 	open_location = 0;
@@ -1457,7 +1460,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		Error("Missing base unit id '%s'!", BUF);
 		return false;
 	}
-	
+
 	// human data / mesh
 	if(unit.data->type == UNIT_TYPE::HUMAN)
 	{
@@ -1524,20 +1527,23 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 
 	// variables
+	bool summoner;
 	if(!stream.ReadCasted<byte>(unit.live_state)
 		|| !stream.Read(unit.pos)
 		|| !stream.Read(unit.rot)
 		|| !stream.Read(unit.hp)
 		|| !stream.Read(unit.hpmax)
 		|| !stream.Read(unit.netid)
-		|| !stream.ReadCasted<char>(unit.in_arena))
+		|| !stream.ReadCasted<char>(unit.in_arena)
+		|| !ReadBool(stream, summoner))
 		return false;
 	if(unit.live_state >= Unit::LIVESTATE_MAX)
 	{
 		Error("Invalid live state %d.", unit.live_state);
 		return false;
 	}
-	
+	unit.summoner = (summoner ? SUMMONER_PLACEHOLDER : nullptr);
+
 	// hero/player data
 	byte type;
 	if(!stream.Read(type))
@@ -1701,13 +1707,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 
 	// physics
-	btCapsuleShape* caps = new btCapsuleShape(unit.GetUnitRadius(), max(MIN_H, unit.GetUnitHeight()));
-	unit.cobj = new btCollisionObject;
-	unit.cobj->setCollisionShape(caps);
-	unit.cobj->setUserPointer(this);
-	unit.cobj->setCollisionFlags(CG_UNIT);
-	phy_world->addCollisionObject(unit.cobj);
-	UpdateUnitPhysics(unit, unit.IsAlive() ? unit.pos : Vec3(1000, 1000, 1000));
+	CreateUnitPhysics(unit, true);
 
 	// boss music
 	if(IS_SET(unit.data->flags2, F2_BOSS) && !boss_level_mp)
@@ -1741,17 +1741,18 @@ bool Game::ReadDoor(BitStream& stream, Door& door)
 		return false;
 	}
 
-	door.mesh_inst = new MeshInstance(door.door2 ? aDrzwi2 : aDrzwi);
+	door.mesh_inst = new MeshInstance(door.door2 ? aDoor2 : aDoor);
 	door.mesh_inst->groups[0].speed = 2.f;
 	door.phy = new btCollisionObject;
 	door.phy->setCollisionShape(shape_door);
+	door.phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 
 	btTransform& tr = door.phy->getWorldTransform();
 	Vec3 pos = door.pos;
 	pos.y += 1.319f;
 	tr.setOrigin(ToVector3(pos));
 	tr.setRotation(btQuaternion(door.rot, 0, 0));
-	phy_world->addCollisionObject(door.phy);
+	phy_world->addCollisionObject(door.phy, CG_DOOR);
 
 	if(door.state == Door::Open)
 	{
@@ -1784,7 +1785,7 @@ bool Game::ReadChest(BitStream& stream, Chest& chest)
 		|| !stream.Read(chest.rot)
 		|| !stream.Read(chest.netid))
 		return false;
-	chest.mesh_inst = new MeshInstance(aSkrzynia);
+	chest.mesh_inst = new MeshInstance(aChest);
 	return true;
 }
 
@@ -1911,6 +1912,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 	pc = unit->player;
 	pc->player_info = &game_players[0];
 	game_players[0].pc = pc;
+	game_gui->Setup();
 
 	// items
 	for(int i = 0; i < SLOT_MAX; ++i)
@@ -2052,6 +2054,30 @@ Unit* Game::FindUnit(int netid)
 			{
 				if((*it2)->netid == netid)
 					return *it2;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+Unit* Game::FindUnit(delegate<bool(Unit*)> pred)
+{
+	for(auto u : *local_ctx.units)
+	{
+		if(pred(u))
+			return u;
+	}
+
+	if(city_ctx)
+	{
+		for(auto inside : city_ctx->inside_buildings)
+		{
+			for(auto u : inside->units)
+			{
+				if(pred(u))
+					return u;
 			}
 		}
 	}
@@ -2736,8 +2762,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 
 				// remove item
-				if(before_player == BP_ITEM && before_player_ptr.item == item)
-					before_player = BP_NONE;
+				if(pc_data.before_player == BP_ITEM && pc_data.before_player_ptr.item == item)
+					pc_data.before_player = BP_NONE;
 				DeleteElement(*ctx->items, item);
 			}
 			break;
@@ -3739,6 +3765,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					unit.stamina = unit.stamina_max;
 					info.update_flags |= PlayerInfo::UF_STAMINA;
 				}
+				unit.RemovePoison();
+				unit.RemoveEffect(E_STUN);
 			}
 			else
 			{
@@ -3810,6 +3838,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							if(target->player && target->player != pc)
 								GetPlayerInfo(target->player).update_flags |= PlayerInfo::UF_STAMINA;
 						}
+						target->RemovePoison();
+						target->RemoveEffect(E_STUN);
 					}
 				}
 			}
@@ -4811,7 +4841,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					Unit* target = FindUnit(netid);
 					if(target)
-						BreakAction(*target, false, true);
+						BreakUnitAction(*target, false, true);
 					else
 					{
 						Error("Update server: CHEAT_BREAK_ACTION from %s, missing unit %d.", info.name.c_str(), netid);
@@ -4850,6 +4880,58 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		// player yell to move ai
 		case NetChange::YELL:
 			PlayerYell(unit);
+			break;
+		// player used cheat 'stun'
+		case NetChange::CHEAT_STUN:
+			{
+				int netid;
+				float length;
+				if(!stream.Read(netid)
+					|| !stream.Read(length))
+				{
+					Error("Update server: Broken CHEAT_STUN from %s.", info.name.c_str());
+					StreamError();
+				}
+				else if(!info.devmode)
+				{
+					Error("Update server: Player %s used CHEAT_STUN without devmode.", info.name.c_str());
+					StreamError();
+				}
+				else
+				{
+					Unit* target = FindUnit(netid);
+					if(target && length > 0)
+						target->ApplyStun(length);
+					else
+					{
+						Error("Update server: CHEAT_STUN from %s, missing unit %d.", info.name.c_str(), netid);
+						StreamError();
+					}
+				}
+			}
+			break;
+		// player used action
+		case NetChange::PLAYER_ACTION:
+			{
+				Vec3 pos;
+				if(!stream.Read(pos))
+				{
+					Error("Update server: Broken PLAYER_ACTION from %s.", info.name.c_str());
+					StreamError();
+				}
+				else
+					UseAction(info.pc, false, &pos);
+			}
+			break;
+		// player used cheat 'refresh_cooldown'
+		case NetChange::CHEAT_REFRESH_COOLDOWN:
+			if(!info.devmode)
+			{
+				Error("Update server: Player %s used CHEAT_REFRESH_COOLDOWN without devmode.", info.name.c_str());
+				StreamError();
+			}
+			else
+				info.pc->RefreshCooldown();
 			break;
 		// invalid change
 		default:
@@ -4953,6 +5035,7 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::REMOVE_USED_ITEM:
 		case NetChange::USEABLE_SOUND:
 		case NetChange::BREAK_ACTION:
+		case NetChange::PLAYER_ACTION:
 			stream.Write(c.unit->netid);
 			break;
 		case NetChange::CAST_SPELL:
@@ -5242,6 +5325,10 @@ void Game::WriteServerChanges(BitStream& stream)
 			break;
 		case NetChange::GAME_STATS:
 			stream.Write(total_kills);
+			break;
+		case NetChange::STUN:
+			stream.Write(c.unit->netid);
+			stream.Write(c.f[0]);
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -6123,10 +6210,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else
 					{
 						RemoveElement(ctx->items, item);
-						if(before_player == BP_ITEM && before_player_ptr.item == item)
-							before_player = BP_NONE;
-						if(picking_item_state == 1 && picking_item == item)
-							picking_item_state = 2;
+						if(pc_data.before_player == BP_ITEM && pc_data.before_player_ptr.item == item)
+							pc_data.before_player = BP_NONE;
+						if(pc_data.picking_item_state == 1 && pc_data.picking_item == item)
+							pc_data.picking_item_state = 2;
 						else
 							delete item;
 					}
@@ -6202,7 +6289,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						BreakAction(*unit);
+						BreakUnitAction(*unit);
 
 						if(unit->action != A_POSITION)
 							unit->action = A_PAIN;
@@ -6614,9 +6701,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					PushNetChange(NetChange::WARP);
 					interpolate_timer = 0.f;
-					player_rot_buf = 0.f;
+					pc_data.rot_buf = 0.f;
 					cam.Reset();
-					player_rot_buf = 0.f;
+					pc_data.rot_buf = 0.f;
 				}
 			}
 			break;
@@ -6881,8 +6968,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 
 						if(info->u)
 						{
-							if(info->u == before_player_ptr.unit)
-								before_player = BP_NONE;
+							if(info->u == pc_data.before_player_ptr.unit)
+								pc_data.before_player = BP_NONE;
 							RemoveElement(Team.members, info->u);
 							RemoveElement(Team.active_members, info->u);
 
@@ -6964,8 +7051,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					usable->user = unit;
 
-					if(before_player == BP_USEABLE && before_player_ptr.usable == usable)
-						before_player = BP_NONE;
+					if(pc_data.before_player == BP_USEABLE && pc_data.before_player_ptr.usable == usable)
+						pc_data.before_player = BP_NONE;
 				}
 				else if(unit->player != pc)
 				{
@@ -7100,10 +7187,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else
-					{
-						unit->to_remove = true;
-						to_remove.push_back(unit);
-					}
+						RemoveUnit(unit);
 				}
 			}
 			break;
@@ -7122,6 +7206,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					LevelContext& ctx = GetContext(unit->pos);
 					ctx.units->push_back(unit);
 					unit->in_building = ctx.building_id;
+					if(unit->summoner != nullptr)
+						SpawnUnitEffect(*unit);
 				}
 			}
 			break;
@@ -8325,11 +8411,65 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				{
 					Unit* unit = FindUnit(netid);
 					if(unit)
-						BreakAction(*unit);
+						BreakUnitAction(*unit);
 					else
 					{
 						Error("Update client: BREAK_ACTION, missing unit %d.", netid);
 						StreamError();
+					}
+				}
+			}
+			break;
+		// player used action
+		case NetChange::PLAYER_ACTION:
+			{
+				int netid;
+				if(!stream.Read(netid))
+				{
+					Error("Update client: Broken PLAYER_ACTION.");
+					StreamError();
+				}
+				else
+				{
+					Unit* unit = FindUnit(netid);
+					if(unit && unit->player)
+					{
+						if(unit->player != pc)
+							UseAction(unit->player, true);
+					}
+					else
+					{
+						Error("Update client: PLAYER_ACTION, invalid player unit %d.", netid);
+						StreamError();
+					}
+				}
+			}
+			break;
+		// unit stun - not shield bash
+		case NetChange::STUN:
+			{
+				int netid;
+				float length;
+				if(!stream.Read(netid)
+					|| !stream.Read(length))
+				{
+					Error("Update client: Broken STUN.");
+					StreamError();
+				}
+				else
+				{
+					Unit* unit = FindUnit(netid);
+					if(!unit)
+					{
+						Error("Update client: STUN, missing unit %d.", netid);
+						StreamError();
+					}
+					else
+					{
+						if(length > 0)
+							unit->ApplyStun(length);
+						else
+							unit->RemoveEffect(E_STUN);
 					}
 				}
 			}
@@ -8411,12 +8551,12 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 					else
 					{
-						AddItem(*pc->unit, picking_item->item, (uint)count, (uint)team_count);
-						if(picking_item->item->type == IT_GOLD && sound_volume)
+						AddItem(*pc->unit, pc_data.picking_item->item, (uint)count, (uint)team_count);
+						if(pc_data.picking_item->item->type == IT_GOLD && sound_volume)
 							PlaySound2d(sCoins);
-						if(picking_item_state == 2)
-							delete picking_item;
-						picking_item_state = 0;
+						if(pc_data.picking_item_state == 2)
+							delete pc_data.picking_item;
+						pc_data.picking_item_state = 0;
 					}
 				}
 				break;
@@ -8516,7 +8656,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 								dialog_context.dialog_wait = 1.f;
 								dialog_context.skip_id = unit->bubble->skip_id;
 							}
-							before_player = BP_NONE;
+							pc_data.before_player = BP_NONE;
 						}
 					}
 				}
@@ -9334,7 +9474,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 				return true;
 			}
 		}
-		
+
 		// stamina
 		if(IS_SET(flags, PlayerInfo::UF_STAMINA))
 		{
@@ -9437,6 +9577,7 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::TRAIN_MOVE:
 		case NetChange::CLOSE_ENCOUNTER:
 		case NetChange::YELL:
+		case NetChange::CHEAT_REFRESH_COOLDOWN:
 			break;
 		case NetChange::ADD_NOTE:
 			WriteString1(stream, notes.back());
@@ -9492,6 +9633,13 @@ void Game::WriteClientChanges(BitStream& stream)
 			break;
 		case NetChange::PUT_GOLD:
 			stream.Write(c.ile);
+			break;
+		case NetChange::PLAYER_ACTION:
+			stream.Write(c.pos);
+			break;
+		case NetChange::CHEAT_STUN:
+			stream.Write(c.unit->netid);
+			stream.Write(c.f[0]);
 			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);
@@ -9652,6 +9800,7 @@ void Game::ServerProcessUnits(vector<Unit*>& units)
 			NetChange& c = Add1(net_changes);
 			c.type = NetChange::UNIT_POS;
 			c.unit = *it;
+			(*it)->changed = false;
 		}
 		if((*it)->IsAI() && (*it)->ai->change_ai_mode)
 		{
@@ -10668,8 +10817,8 @@ void Game::ProcessLeftPlayers()
 		{
 			Unit* unit = info.u;
 
-			if(before_player_ptr.unit == unit)
-				before_player = BP_NONE;
+			if(pc_data.before_player_ptr.unit == unit)
+				pc_data.before_player = BP_NONE;
 			if(info.left_reason == PlayerInfo::LEFT_LOADING || game_state == GS_WORLDMAP)
 			{
 				if(open_location != -1)

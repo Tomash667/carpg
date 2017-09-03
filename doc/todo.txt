@@ -1,7 +1,57 @@
-﻿CURRENT:
+﻿FEATURE:
+? actions and stamina
+===============================================================================================================
+CURRENT:
+- clicking on M menu apply focus but can't enter text
+- create character - changing character don't reset class desc position
+? allow run without stamina?
 ===============================================================================================================
 NEW:
+- sort unit labels by distance 0.6 (remove from backlog)
 + stun resistance/immunity/power
++ scaleable gui
++ scaled DrawText, use matrix
++ tutorial in academy - actions
++ npc heroes using actions
++ modability, load from file:
+	+ classes
+	+ actions
++ ref:
+	+ move handling of game panels from Game.OnTick to GameGui
+	+ GenerateCaveObjects use duplicated code for objects spawning, GenerateMine too
+	+ spawn door physics duplicates
+	+ draw_phy is too slow, add range var, optimize
+	+ Add vs Spawn vs Generate vs Create - fix convention
+	+ move away action area calculations from Scene.cpp
+	+ always use netid ?
++ check files for utf-8 BOM ?
++ ee: sleeping beauty - after waking up tell to let her sleep for 5 minutes
++ create character screen rework
+	on left tabs - name, (gender, race), apperance, class, history, perks
+	can change any thing at any time
+	show bonuses by stats when hovering (example: strength: +10 dmg, +50 hp, +4 skills)
++ play as shapeshifter story
++ new actions
+	hunter:
+		+ arrow skill shot
+		+ entangle
+		+ camuflage
+	rogue:
+		+ poison dagger throw
+		+ hide
+		+ backstab bleeding + stun
+	warrior:
+		+ wide attack
+		+ shield bash
+	+ tree
++ better summon picking
+	+ after point
+	+ in dungeon - red marker goes into wall
++ better stun area
+- electro/bull charge targets are unsafe, what is unit from this list was removed
++ cmd to remove cooldowns
++ file reader 2 - don't return bool but set is_ok
++ converter setup bone groups in blender
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
@@ -16,13 +66,10 @@ VERIFY:
 - verify dialogs ending with end/restart
 - without human flag and mesh crash when spawned, log error
 - przenoszenie do walki gdy jesteś w środku areny
-- dźwięki areny gdy się na niej jest ale nie bierze udziału
 - blokada widoku przez drewno u kowala
 - debug ai lag is too big!
 - input don't work when there is lag, but why? maybe it can happen without lag too
 - oświetlenie na zewnątrz dla terenu, pod małym kątem jest biała trawa [na ziemie i trawie zato widać trawę pod kątem, mipmaping?]
-- when closing game there is message that client was kicked
-- check if there any objects saved by mesh
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it; draw debug ray when ai is targeting
 - D3DX: Warning ID3DXEffect::EndPass. Changes have been made but not commited. CommitChange must be called before each DrawPrimitive call
 - po wejściu do gry i powrocie do menu jest obwódka wokół obrazka, przez multisampling
@@ -38,4 +85,3 @@ VERIFY:
 - zmiana multisamplingu nie ma wpływu na wygenerowane obrazki przedmiotów
 ? heal and death_screen
 ? raknet wysyła wiadomości do zdisconnectowanych przy broadcast jeśli nie wyśle jeszcze disconnect
-- walking forward and opening & closing console cause animations to act weird (like restarting)

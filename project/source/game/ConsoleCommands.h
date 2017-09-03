@@ -68,7 +68,9 @@ enum CMD
 	CMD_TILE_INFO,
 	CMD_SET_SEED,
 	CMD_CRASH,
-	CMD_FORCEQUEST
+	CMD_FORCEQUEST,
+	CMD_STUN,
+	CMD_REFRESH_COOLDOWN
 };
 
 //-----------------------------------------------------------------------------

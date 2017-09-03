@@ -59,6 +59,9 @@ osoby. Oczekuj zmian na lepsze!
 	D / strza³ka w prawo - ruch w prawo
 	Q - obrót w lewo
 	E - obrót w prawo
+	1 - wybierz broñ do walki wrêcz i tarcze
+	2 - wybierz broñ dystansow¹
+	3 - u¿yj akcji
 	F - automatyczny ruch do przodu
 	Y - okrzyk
 	TAB - ekran postaci, ekwipunek, dru¿yna
@@ -105,6 +108,10 @@ osoby. Oczekuj zmian na lepsze!
 	przydatne przeciwko odpornym wrogom którym normalnym atakiem zadajesz ma³o
 	lub nic. Atak w biegu jest jak 0.25 potê¿nego ataku ale nie mo¿esz siê
 	zatrzymaæ.
+* Akcje - Aby u¿yæ akcji wciœnij 3 (domyœlnie), bêdzie wtedy rysowany obszar na
+	którym zostanie u¿yty ten efekt. Kliknij lewy przycisk myszki aby u¿yæ akcji,
+	prawy aby anulowaæ. Czerwony obszar oznacza brak mo¿liwoœci u¿ycia akcji w
+	tym miejscu.
 * Wytrzyma³oœæ - Atakowanie zu¿ywa wytrzyma³oœæ, gdy siê skoñczy nie mo¿esz
 	biegaæ ani atakowaæ. Blokowanie ciosów te¿ zu¿ywa wytrzyma³oœæ i gdy siê
 	skoñczy blok zostaje przerwany. Przestañ atakowaæ aby odzyskaæ wytrzyma³oœæ,
@@ -240,8 +247,6 @@ W pliku konfiguracyjnym (domyœlnie carpg.cfg) mo¿na u¿ywaæ takich opcji:
 	* server_pswd - zapamiêtane has³o serwera
 	* shader_version - ustawia wersjê shadera 2/3
 	* skip_tutorial (true [false]) - czy pomijaæ pytanie o samouczek
-	* skip_version - przy sprawdzaniu czy jest nowa wersja pomija wersje a¿ do
-		tej
 	* stream_log_file ["log.stream"] - plik do logowania informacji w mp
 	* stream_log_mode (none [errors] full) - tryb logowania informacji w mp
 	* timeout (1-3600) - czas oczekiwania na graczy w sekundach (domyœlnie 10)

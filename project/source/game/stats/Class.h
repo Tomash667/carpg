@@ -21,21 +21,23 @@ enum class Class
 };
 
 //-----------------------------------------------------------------------------
+struct Action;
 struct UnitData;
 
 //-----------------------------------------------------------------------------
 struct ClassInfo
 {
 	Class class_id;
-	cstring id, unit_data_id, icon_file;
+	cstring id, unit_data_id, icon_file, action_id;
 	string name, desc, about;
 	vector<string> names, nicknames;
 	TEX icon;
 	bool pickable;
 	UnitData* unit_data;
+	Action* action;
 
-	ClassInfo(Class class_id, cstring id, cstring unit_data_id, cstring icon_file, bool pickable) : class_id(class_id), id(id), unit_data_id(unit_data_id), icon_file(icon_file),
-		icon(nullptr), pickable(pickable), unit_data(nullptr)
+	ClassInfo(Class class_id, cstring id, cstring unit_data_id, cstring icon_file, bool pickable, cstring action_id) : class_id(class_id), id(id),
+		unit_data_id(unit_data_id), icon_file(icon_file), icon(nullptr), pickable(pickable), unit_data(nullptr), action_id(action_id), action(nullptr)
 	{
 	}
 

@@ -146,8 +146,8 @@ bool Game::SaveGameSlot(int slot, cstring text)
 
 		cfg.Save(Format("saves/%s/%d.txt", IsOnline() ? "multi" : "single", slot));
 
-		cstring path = Format("saves/%s/%d.jpg", IsOnline() ? "multi" : "single", slot);
-		CreateSaveImage(path);
+		string path = Format("saves/%s/%d.jpg", IsOnline() ? "multi" : "single", slot);
+		CreateSaveImage(path.c_str());
 
 		if(hardcore_mode)
 		{
@@ -651,13 +651,12 @@ void Game::LoadGame(HANDLE file)
 	attached_sounds.clear();
 	in_tutorial = false;
 	arena_free = true;
-	autowalk = false;
+	pc_data.autowalk = false;
 	ai_bow_targets.clear();
 	ai_cast_targets.clear();
 	load_location_quest.clear();
 	load_unit_handler.clear();
 	load_chest_handler.clear();
-	load_unit_refid.clear();
 	units_mesh_load.clear();
 
 	// signature
@@ -795,11 +794,11 @@ void Game::LoadGame(HANDLE file)
 				{
 					for(vector<Object>::iterator obj_it = lvl->objects.begin(), obj_end = lvl->objects.end(); obj_it != obj_end; ++obj_it)
 					{
-						if(obj_it->mesh == aNaDrzwi)
+						if(obj_it->mesh == aDoorWall)
 						{
 							Int2 pt = pos_to_pt(obj_it->pos);
 							if(IS_SET(lvl->map[pt.x + pt.y*lvl->w].flags, Pole::F_DRUGA_TEKSTURA))
-								obj_it->mesh = aNaDrzwi2;
+								obj_it->mesh = aDoorWall2;
 						}
 					}
 				}
@@ -938,7 +937,7 @@ void Game::LoadGame(HANDLE file)
 	ReadFile(file, &cam.real_rot.y, sizeof(cam.real_rot.y), &tmp, nullptr);
 	ReadFile(file, &cam.dist, sizeof(cam.dist), &tmp, nullptr);
 	cam.Reset();
-	player_rot_buf = 0.f;
+	pc_data.rot_buf = 0.f;
 
 	// ekwipunek sprzedawcÛw w mieúcie
 	LoadStock(file, chest_merchant);
@@ -1351,14 +1350,6 @@ void Game::LoadGame(HANDLE file)
 		assert((*it)->handler);
 	}
 
-	// wskaüniki na jednostki
-	for(vector<Unit**>::iterator it = load_unit_refid.begin(), end = load_unit_refid.end(); it != end; ++it)
-	{
-		Unit** up = *it;
-		*up = Unit::GetByRefid(int(*up));
-		assert(*up);
-	}
-
 	if(tournament_generated)
 		tournament_master = FindUnitByIdLocal("arena_master");
 	else
@@ -1375,11 +1366,12 @@ void Game::LoadGame(HANDLE file)
 	fallback_co = FALLBACK_NONE;
 	fallback_t = 0.f;
 	inventory_mode = I_NONE;
-	before_player = BP_NONE;
-	selected_unit = nullptr;
-	selected_target = nullptr;
+	pc_data.before_player = BP_NONE;
+	pc_data.selected_unit = nullptr;
+	pc_data.selected_target = nullptr;
 	dialog_context.pc = pc;
 	dialog_context.dialog_mode = false;
+	game_gui->Setup();
 
 	if(mp_load)
 	{

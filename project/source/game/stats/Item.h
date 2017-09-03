@@ -315,6 +315,7 @@ enum ConsumeEffect
 	E_FOOD, // heals 1 hp/sec for Y sec (stack)
 	E_GREEN_HAIR, // turn hair into green
 	E_STAMINA, // regenerate stamina
+	E_STUN, // unit stunned, can't do anything
 };
 
 //-----------------------------------------------------------------------------

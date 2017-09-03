@@ -12,6 +12,7 @@
 #include "Spell.h"
 #include "Trap.h"
 #include "QuestManager.h"
+#include "Action.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -305,8 +306,12 @@ void Game::ConfigureGame()
 			g_spawn_groups[i].unit_group = FindUnitGroup(g_spawn_groups[i].unit_group_id);
 	}
 
-	for(ClassInfo& ci : g_classes)
+	for (ClassInfo& ci : g_classes)
+	{
 		ci.unit_data = FindUnitData(ci.unit_data_id, false);
+		if (ci.action_id)
+			ci.action = Action::Find(string(ci.action_id));
+	}
 
 	CreateTextures();
 }
@@ -508,6 +513,7 @@ void Game::AddLoadTasks()
 		tex_mgr.AddLoadTask(ci.icon_file, ci.icon);
 	tex_mgr.AddLoadTask("warning.png", tWarning);
 	tex_mgr.AddLoadTask("error.png", tError);
+	Action::LoadData();
 
 	// preload terrain textures
 	tTrawa = tex_mgr.Get("trawa.jpg");
@@ -545,6 +551,7 @@ void Game::AddLoadTasks()
 	tWoda = tex_mgr.AddLoadTask("water.png");
 	tFlare = tex_mgr.AddLoadTask("flare.png");
 	tFlare2 = tex_mgr.AddLoadTask("flare2.png");
+	tSpawn = tex_mgr.AddLoadTask("spawn_fog.png");
 	tex_mgr.AddLoadTask("lighting_line.png", tLightingLine);
 
 	// physic meshes
@@ -561,18 +568,18 @@ void Game::AddLoadTasks()
 	aCapsule = mesh_mgr.AddLoadTask("capsule.qmsh");
 	aArrow = mesh_mgr.AddLoadTask("strzala.qmsh");
 	aSkybox = mesh_mgr.AddLoadTask("skybox.qmsh");
-	aWorek = mesh_mgr.AddLoadTask("worek.qmsh");
-	aSkrzynia = mesh_mgr.AddLoadTask("skrzynia.qmsh");
-	aKratka = mesh_mgr.AddLoadTask("kratka.qmsh");
-	aNaDrzwi = mesh_mgr.AddLoadTask("nadrzwi.qmsh");
-	aNaDrzwi2 = mesh_mgr.AddLoadTask("nadrzwi2.qmsh");
-	aSchodyDol = mesh_mgr.AddLoadTask("schody_dol.qmsh");
-	aSchodyDol2 = mesh_mgr.AddLoadTask("schody_dol2.qmsh");
-	aSchodyGora = mesh_mgr.AddLoadTask("schody_gora.qmsh");
+	aBag = mesh_mgr.AddLoadTask("worek.qmsh");
+	aChest = mesh_mgr.AddLoadTask("skrzynia.qmsh");
+	aGrating = mesh_mgr.AddLoadTask("kratka.qmsh");
+	aDoorWall = mesh_mgr.AddLoadTask("nadrzwi.qmsh");
+	aDoorWall2 = mesh_mgr.AddLoadTask("nadrzwi2.qmsh");
+	aStairsDown = mesh_mgr.AddLoadTask("schody_dol.qmsh");
+	aStairsDown2 = mesh_mgr.AddLoadTask("schody_dol2.qmsh");
+	aStairsUp = mesh_mgr.AddLoadTask("schody_gora.qmsh");
 	aSpellball = mesh_mgr.AddLoadTask("spellball.qmsh");
-	aDrzwi = mesh_mgr.AddLoadTask("drzwi.qmsh");
-	aDrzwi2 = mesh_mgr.AddLoadTask("drzwi2.qmsh");
-	aHumanBase = mesh_mgr.AddLoadTask("czlowiek.qmsh");
+	aDoor = mesh_mgr.AddLoadTask("drzwi.qmsh");
+	aDoor2 = mesh_mgr.AddLoadTask("drzwi2.qmsh");
+	aHumanBase = mesh_mgr.AddLoadTask("human.qmsh");
 	aHair[0] = mesh_mgr.AddLoadTask("hair1.qmsh");
 	aHair[1] = mesh_mgr.AddLoadTask("hair2.qmsh");
 	aHair[2] = mesh_mgr.AddLoadTask("hair3.qmsh");
@@ -586,6 +593,7 @@ void Game::AddLoadTasks()
 	aBeard[2] = mesh_mgr.AddLoadTask("beard3.qmsh");
 	aBeard[3] = mesh_mgr.AddLoadTask("beard4.qmsh");
 	aBeard[4] = mesh_mgr.AddLoadTask("beardm1.qmsh");
+	aStun = mesh_mgr.AddLoadTask("stunned.qmsh");
 
 	// preload buildings
 	for(Building* b : content::buildings)
@@ -788,6 +796,7 @@ void Game::AddLoadTasks()
 		sound_mgr.AddLoadTask("goblin-7.wav", sGoblinTalk);
 		sound_mgr.AddLoadTask("golem_alert.mp3", sGolemTalk);
 		sound_mgr.AddLoadTask("eat.mp3", sEat);
+		sound_mgr.AddLoadTask("whooshy-puff.wav", sSummon);
 	}
 
 	// musics

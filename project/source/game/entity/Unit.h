@@ -60,6 +60,8 @@ enum ACTION
 	A_POSITION, // u¿ywa³ czegoœ ale dosta³ basha lub umar³, trzeba go przesun¹æ w normalne miejsce
 	//A_PAROWANIE
 	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
+	A_DASH,
+	A_DESPAWN
 };
 
 //-----------------------------------------------------------------------------
@@ -75,7 +77,7 @@ enum AnimationState
 
 inline bool IsBlocking(ACTION a)
 {
-	return a == A_ANIMATION || a == A_PICKUP;
+	return a == A_ANIMATION || a == A_PICKUP || a == A_DASH;
 }
 
 //-----------------------------------------------------------------------------
@@ -166,7 +168,7 @@ struct Unit
 	const Item* used_item;
 	bool used_item_is_team;
 	vector<Effect> effects;
-	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit;
+	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved;
 	AIController* ai;
 	btCollisionObject* cobj;
 	static vector<Unit*> refid_table;
@@ -175,7 +177,7 @@ struct Unit
 	HeroData* hero;
 	UnitEventHandler* event_handler;
 	SpeechBubble* bubble;
-	Unit* look_target, *guard_target;
+	Unit* look_target, *guard_target, *summoner;
 	int netid;
 	int ai_mode; // u klienta w MP (0x01-dont_attack, 0x02-assist, 0x04-not_idle)
 	enum Busy
@@ -196,7 +198,7 @@ struct Unit
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
-		human_data(nullptr), stamina_action(SA_RESTORE_MORE) {}
+		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false) {}
 	~Unit();
 
 	float CalculateArmorDefense(const Armor* armor = nullptr);
@@ -407,6 +409,7 @@ struct Unit
 	int GetRandomAttack() const;
 	void Save(HANDLE file, bool local);
 	void Load(HANDLE file, bool local);
+	Effect* FindEffect(ConsumeEffect effect);
 	bool FindEffect(ConsumeEffect effect, float* value);
 	Vec3 GetCenter() const
 	{
@@ -526,7 +529,11 @@ struct Unit
 		Heal(0.15f * Get(Attribute::END) * days);
 	}
 	void HealPoison();
-	void RemovePoison();
+	void RemoveEffect(ConsumeEffect effect);
+	void RemovePoison()
+	{
+		RemoveEffect(E_POISON);
+	}
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 #define INVALID_IINDEX (-SLOT_INVALID-1)
 	int FindItem(const Item* item, int quest_refid = -1) const;
@@ -826,6 +833,8 @@ struct Unit
 	void RemoveStamina(float value);
 
 	void CreateMesh(CREATE_MESH mode);
+
+	void ApplyStun(float length);
 };
 
 //-----------------------------------------------------------------------------

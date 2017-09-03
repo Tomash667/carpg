@@ -50,7 +50,7 @@ Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quicksta
 cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false),
 game_speed(1.f), devmode(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false),
 obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), debug_info(false), dont_wander(false), local_ctx_valid(false),
-city_ctx(nullptr), check_updates(true), skip_version(-1), skip_tutorial(false), sv_online(false), portal_anim(0), nosound(false), nomusic(false),
+city_ctx(nullptr), check_updates(true), skip_tutorial(false), sv_online(false), portal_anim(0), nosound(false), nomusic(false),
 debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64 * 1024), net_stream2(64 * 1024),
 mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
 prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false),
@@ -122,7 +122,7 @@ void Game::OnDraw(bool normal)
 			Draw();
 
 			// draw glow
-			if(before_player != BP_NONE && !draw_batch.glow_nodes.empty())
+			if(pc_data.before_player != BP_NONE && !draw_batch.glow_nodes.empty())
 			{
 				V(device->EndScene());
 				DrawGlowingNodes(false);
@@ -153,7 +153,7 @@ void Game::OnDraw(bool normal)
 			V(device->BeginScene());
 			Draw();
 			V(device->EndScene());
-			if(before_player != BP_NONE && !draw_batch.glow_nodes.empty())
+			if(pc_data.before_player != BP_NONE && !draw_batch.glow_nodes.empty())
 				DrawGlowingNodes(true);
 		}
 
@@ -375,18 +375,20 @@ void Game::OnTick(float dt)
 		OpenPanel open = game_gui->GetOpenPanel(),
 			to_open = OpenPanel::None;
 
-		if(GKey.PressedRelease(GK_STATS))
+		if (GKey.PressedRelease(GK_STATS))
 			to_open = OpenPanel::Stats;
-		else if(GKey.PressedRelease(GK_INVENTORY))
+		else if (GKey.PressedRelease(GK_INVENTORY))
 			to_open = OpenPanel::Inventory;
-		else if(GKey.PressedRelease(GK_TEAM_PANEL))
+		else if (GKey.PressedRelease(GK_TEAM_PANEL))
 			to_open = OpenPanel::Team;
-		else if(GKey.PressedRelease(GK_JOURNAL))
+		else if (GKey.PressedRelease(GK_JOURNAL))
 			to_open = OpenPanel::Journal;
-		else if(GKey.PressedRelease(GK_MINIMAP))
+		else if (GKey.PressedRelease(GK_MINIMAP))
 			to_open = OpenPanel::Minimap;
+		else if (GKey.PressedRelease(GK_ACTION_PANEL))
+			to_open = OpenPanel::Action;
 		else if(open == OpenPanel::Trade && Key.PressedRelease(VK_ESCAPE))
-			to_open = OpenPanel::Trade;
+			to_open = OpenPanel::Trade; // ShowPanel hide when already opened
 
 		if(to_open != OpenPanel::None)
 			game_gui->ShowPanel(to_open, open);
@@ -403,6 +405,7 @@ void Game::OnTick(float dt)
 		case OpenPanel::Inventory:
 		case OpenPanel::Team:
 		case OpenPanel::Trade:
+		case OpenPanel::Action:
 			allow_input = ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Journal:
@@ -1697,6 +1700,8 @@ void Game::ClearPointers()
 	shape_schody_c[0] = nullptr;
 	shape_schody_c[1] = nullptr;
 	shape_schody = nullptr;
+	shape_summon = nullptr;
+	shape_barrier = nullptr;
 	obj_arrow = nullptr;
 	obj_spell = nullptr;
 
@@ -1752,7 +1757,7 @@ void Game::OnCleanup()
 	CleanupItems();
 	CleanupSpells();
 	DeleteElements(musics);
-	
+
 	// teren
 	delete terrain;
 	delete terrain_shape;
@@ -1766,6 +1771,8 @@ void Game::OnCleanup()
 	delete shape_block;
 	delete shape_schody_c[0];
 	delete shape_schody_c[1];
+	delete shape_summon;
+	delete shape_barrier;
 	delete shape_schody;
 	if(obj_arrow)
 		delete obj_arrow->getCollisionShape();
@@ -1880,6 +1887,7 @@ void Game::InitGameKeys()
 	GKey[GK_POTION].id = "keyPotion";
 	GKey[GK_MELEE_WEAPON].id = "keyMeleeWeapon";
 	GKey[GK_RANGED_WEAPON].id = "keyRangedWeapon";
+	GKey[GK_ACTION].id = "keyAction";
 	GKey[GK_TAKE_ALL].id = "keyTakeAll";
 	GKey[GK_SELECT_DIALOG].id = "keySelectDialog";
 	GKey[GK_SKIP_DIALOG].id = "keySkipDialog";
@@ -1919,6 +1927,7 @@ void Game::ResetGameKeys()
 	GKey[GK_POTION].Set('H');
 	GKey[GK_MELEE_WEAPON].Set('1');
 	GKey[GK_RANGED_WEAPON].Set('2');
+	GKey[GK_ACTION].Set('3');
 	GKey[GK_TAKE_ALL].Set('F');
 	GKey[GK_SELECT_DIALOG].Set(VK_RETURN);
 	GKey[GK_SKIP_DIALOG].Set(VK_SPACE);
@@ -2374,7 +2383,7 @@ void Game::UnitFall(Unit& u)
 	if(IsLocal())
 	{
 		// przerwij akcjê
-		BreakAction(u, true);
+		BreakUnitAction(u, true);
 
 		// wstawanie
 		u.raise_timer = Random(5.f, 7.f);
@@ -2392,18 +2401,18 @@ void Game::UnitFall(Unit& u)
 		}
 
 		if(u.player == pc)
-			before_player = BP_NONE;
+			pc_data.before_player = BP_NONE;
 	}
 	else
 	{
 		// przerwij akcjê
-		BreakAction(u, true);
+		BreakUnitAction(u, true);
 
 		// komunikat
 		if(&u == pc->unit)
 		{
 			u.raise_timer = Random(5.f, 7.f);
-			before_player = BP_NONE;
+			pc_data.before_player = BP_NONE;
 		}
 	}
 
@@ -2434,7 +2443,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	if(IsLocal())
 	{
 		// przerwij akcjê
-		BreakAction(u, true);
+		BreakUnitAction(u, true);
 
 		// dodaj z³oto do ekwipunku
 		if(u.gold && !(u.IsPlayer() || u.IsFollower()))
@@ -2492,7 +2501,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 			if(IsOnline())
 				u.player->stat_flags |= STAT_KNOCKS;
 			if(u.player == pc)
-				before_player = BP_NONE;
+				pc_data.before_player = BP_NONE;
 		}
 	}
 	else
@@ -2500,13 +2509,13 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		u.hp = 0.f;
 
 		// przerwij akcjê
-		BreakAction(u, true);
+		BreakUnitAction(u, true);
 
 		// o¿ywianie
 		if(&u == pc->unit)
 		{
 			u.raise_timer = Random(5.f, 7.f);
-			before_player = BP_NONE;
+			pc_data.before_player = BP_NONE;
 		}
 
 		// muzyka bossa
@@ -2537,10 +2546,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	}
 
 	// przenieœ fizyke
-	btVector3 a_min, a_max;
-	u.cobj->getWorldTransform().setOrigin(btVector3(1000, 1000, 1000));
-	u.cobj->getCollisionShape()->getAabb(u.cobj->getWorldTransform(), a_min, a_max);
-	phy_broadphase->setAabb(u.cobj->getBroadphaseHandle(), a_min, a_max, phy_dispatcher);
+	UpdateUnitPhysics(u, u.pos);
 }
 
 //=================================================================================================

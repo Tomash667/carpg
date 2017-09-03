@@ -1565,7 +1565,8 @@ uint LoadItems(uint& out_crc, uint& errors)
 		{ "antimagic", E_ANTIMAGIC },
 		{ "food", E_FOOD },
 		{ "green_hair", E_GREEN_HAIR },
-		{ "stamina", E_STAMINA }
+		{ "stamina", E_STAMINA },
+		{ "stun", E_STUN }
 	});
 
 	t.AddKeywords(G_OTHER_TYPE, {
