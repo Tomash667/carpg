@@ -1,5 +1,5 @@
 action "bull_charge" {
-	name "Bull charge"
+	name "Bull's charge"
 	decs "You move forward stunning all enemies on path and dealing them damage."
 }
 

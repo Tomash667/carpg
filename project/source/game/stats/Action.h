@@ -19,7 +19,7 @@ struct Action
 	};
 
 	cstring id;
-	float cooldown, recharge, sound_dist;
+	float cooldown, recharge, sound_dist, stamina_cost;
 	int charges, flags;
 	TexturePtr tex;
 	string name, desc;
@@ -28,9 +28,10 @@ struct Action
 	cstring sound_id;
 	SoundPtr sound;
 
-	Action(cstring id, float cooldown, float recharge, int charges, Area area, const Vec2& area_size, cstring sound_id, float sound_dist, int flags) :
+	Action(cstring id, float cooldown, float recharge, int charges, Area area, const Vec2& area_size, cstring sound_id, float sound_dist, int flags,
+		float stamina_cost) :
 		id(id), cooldown(cooldown), recharge(recharge), charges(charges), tex(nullptr), area(area), area_size(area_size), sound_id(sound_id), sound(nullptr),
-		sound_dist(sound_dist), flags(flags)
+		sound_dist(sound_dist), flags(flags), stamina_cost(stamina_cost)
 	{
 	}
 

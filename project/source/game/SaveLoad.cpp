@@ -146,8 +146,8 @@ bool Game::SaveGameSlot(int slot, cstring text)
 
 		cfg.Save(Format("saves/%s/%d.txt", IsOnline() ? "multi" : "single", slot));
 
-		cstring path = Format("saves/%s/%d.jpg", IsOnline() ? "multi" : "single", slot);
-		CreateSaveImage(path);
+		string path = Format("saves/%s/%d.jpg", IsOnline() ? "multi" : "single", slot);
+		CreateSaveImage(path.c_str());
 
 		if(hardcore_mode)
 		{

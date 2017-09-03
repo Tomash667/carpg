@@ -3042,6 +3042,7 @@ void Unit::UpdateStaminaAction()
 			stamina_action = SA_RESTORE_MORE;
 			break;
 		case A_BLOCK:
+		case A_DASH:
 			stamina_action = SA_RESTORE_SLOW;
 			break;
 		case A_BASH:

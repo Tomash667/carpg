@@ -1,25 +1,13 @@
 ﻿FEATURE:
-- save on worldmap, Format is overwritten :( need more permanent solution
-+ MP
-	- many errors UNIT_POS, REMOVE_UNIT; when looting, not always
-	+ dash, charge -> server side
-	+ bulls charge
-+ info in class desc about actions
-+ info in readme
-? tests
-	? save/load while doing action (mp)
-	? fall/kill when doing action
-	? load old save and actions
-	? dash
-	? stun
-- clicking on M menu apply focus but can't enter text
-? allow run without stamina?
 ? actions and stamina
-+ 0.1f cooldown
 ===============================================================================================================
 CURRENT:
+- clicking on M menu apply focus but can't enter text
+- create character - changing character don't reset class desc position
+? allow run without stamina?
 ===============================================================================================================
 NEW:
+- sort unit labels by distance 0.6 (remove from backlog)
 + stun resistance/immunity/power
 + scaleable gui
 + scaled DrawText, use matrix

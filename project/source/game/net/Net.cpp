@@ -9800,6 +9800,7 @@ void Game::ServerProcessUnits(vector<Unit*>& units)
 			NetChange& c = Add1(net_changes);
 			c.type = NetChange::UNIT_POS;
 			c.unit = *it;
+			(*it)->changed = false;
 		}
 		if((*it)->IsAI() && (*it)->ai->change_ai_mode)
 		{

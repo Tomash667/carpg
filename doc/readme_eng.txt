@@ -110,6 +110,9 @@ people. Expect changes for the better!
 	that it will be stronger. This is useful against resistant enemies which
 	attack normal asking little or nothing. Attack on the run is like 0.25 of
 	powerful attack but you cannot stop.
+* Actions - Use action by pressing key 3 (by default), it will draw area of effect
+	used by this action. Press left mouse button to use, right to cancel. Red
+	area means that action can be used in this place.
 * Stamina - Attacking uses stamina, if you run out of stamina you can't run or
 	attack. Blocking uses stamina too, and if you loss all stamina block is
 	broken. Stop attacking to restore stamina, not walking restore it faster.
@@ -233,6 +236,7 @@ Available commands:
 	quit - quit from game.
 	random - roll random number 1-100 or pick random character (random, random [warrior/hunter/rogue]).
 	ready - set player as ready/unready.
+	refresh_cooldown - refresh action cooldown/charges.
 	reload_shaders - reload shaders.
 	resolution - show or change display resolution (resolution [w h hz]).
 	reveal - reveal all locations on world map.
@@ -251,6 +255,7 @@ Available commands:
 	spawnunit - create unit in front of player (spawnunit id [level count arena]).
 	speed - game speed (speed 0-10).
 	start - start server.
+	stun - stun unit for time (stun [length=1] [1 = self]).
 	suicide - kill player.
 	tile_info - write current terrain tile info to console.
 	version - displays game version.

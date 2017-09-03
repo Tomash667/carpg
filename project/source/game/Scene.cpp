@@ -1924,7 +1924,7 @@ void Game::PrepareAreaPath()
 		const float cam_min = 4.08159288f;
 		const float radius = action.area_size.x / 2;
 
-		float range = (Clamp(cam.rot.y, cam_min, cam_max) - cam_min) / (cam_max - cam_min) * action.area_size.y;
+		float range = (Clamp(cam.rot.y, cam_min, cam_max) - cam_min) / (cam_max - cam_min) * action.area_size.y + 0.1f;
 		const float min_t = action.area_size.x / range / 2;
 		float rot = Clip(pc->unit->rot + PI);
 		static vector<float> t_forward;

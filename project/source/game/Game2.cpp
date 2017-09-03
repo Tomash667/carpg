@@ -164,7 +164,7 @@ void Game::BreakUnitAction(Unit& unit, bool fall, bool notify)
 		if(unit.animation_state == 1)
 		{
 			unit.mesh_inst->Deactivate(1);
-			unit.mesh_inst->groups[0].blend_max = 0.33f;
+			unit.mesh_inst->groups[1].blend_max = 0.33f;
 		}
 		break;
 	}
@@ -3016,7 +3016,11 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 		PlayAttachedSound(*p->unit, action.sound->sound, action.sound_dist);
 
 	if(!from_server)
+	{
 		p->UseActionCharge();
+		if(action.stamina_cost > 0)
+			p->unit->RemoveStamina(action.stamina_cost);
+	}
 
 	Vec3 action_point;
 	if(strcmp(action.id, "dash") == 0 || strcmp(action.id, "bull_charge") == 0)
@@ -6381,7 +6385,10 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 	if(!warped)
 	{
 		if(IsLocal() || &unit != pc->unit || interpolate_timer <= 0.f)
+		{
 			unit.visual_pos = unit.pos;
+			unit.changed = true;
+		}
 		UpdateUnitPhysics(unit, unit.pos);
 	}
 }
@@ -7816,11 +7823,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 	{
 		Unit& u = **it;
 		//assert(u.rot >= 0.f && u.rot < PI*2);
-
-// 		u.block_power += dt/10;
-// 		if(u.block_power > 1.f)
-// 			u.block_power = 1.f;
-
+		
 		// licznik okrzyku od ostatniego trafienia
 		u.hurt_timer -= dt;
 		u.last_bash -= dt;
@@ -7980,10 +7983,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				{
 					u.live_state = Unit::DEAD;
 					CreateBlood(ctx, u);
-					if(u.summoner != nullptr)
+					if(u.summoner != nullptr && IsLocal())
 					{
-						if(IsLocal())
-							RemoveTeamMember(&u);
+						RemoveTeamMember(&u);
 						u.action = A_DESPAWN;
 						u.timer = Random(2.5f, 5.f);
 					}
@@ -8822,12 +8824,12 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				if(u.animation_state == 0)
 				{
 					// dash
-					LineTest(u.cobj->getCollisionShape(), u.pos, dir, [this](btCollisionObject* obj, bool)
+					LineTest(u.cobj->getCollisionShape(), u.pos, dir, [&u](btCollisionObject* obj, bool)
 					{
 						int flags = obj->getCollisionFlags();
 						if(IS_SET(flags, CG_TERRAIN))
 							return false;
-						if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
+						if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == &u)
 							return false;
 						return true;
 					}, t);
@@ -8844,7 +8846,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						{
 							if(IS_SET(flags, CG_TERRAIN))
 								return false;
-							if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
+							if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == &u)
 								return false;
 						}
 						else
@@ -8860,74 +8862,77 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					}, t, nullptr, true);
 
 					// check all hitted
-					float move_angle = Angle(0, 0, dir.x, dir.z);
-					Vec3 dir_left(sin(u.use_rot + PI / 2)*len, 0, cos(u.use_rot + PI / 2)*len);
-					Vec3 dir_right(sin(u.use_rot - PI / 2)*len, 0, cos(u.use_rot - PI / 2)*len);
-					for(auto unit : targets)
+					if(IsLocal())
 					{
-						// deal damage/stun
-						bool move_forward = true;
-						if(!IsFriend(*unit, u))
+						float move_angle = Angle(0, 0, dir.x, dir.z);
+						Vec3 dir_left(sin(u.use_rot + PI / 2)*len, 0, cos(u.use_rot + PI / 2)*len);
+						Vec3 dir_right(sin(u.use_rot - PI / 2)*len, 0, cos(u.use_rot - PI / 2)*len);
+						for(auto unit : targets)
 						{
-							if(!u.player->IsHit(unit))
+							// deal damage/stun
+							bool move_forward = true;
+							if(!IsFriend(*unit, u))
 							{
-								GiveDmg(ctx, &u, 100.f + u.Get(Attribute::STR) * 2, *unit);
-								if(!unit->IsAlive())
+								if(!u.player->IsHit(unit))
+								{
+									GiveDmg(ctx, &u, 100.f + u.Get(Attribute::STR) * 2, *unit);
+									if(!unit->IsAlive())
+										continue;
+									else
+										u.player->action_targets.push_back(unit);
+								}
+								unit->ApplyStun(1.5f);
+							}
+							else
+								move_forward = false;
+
+							auto unit_clbk = [unit](btCollisionObject* obj, bool)
+							{
+								int flags = obj->getCollisionFlags();
+								if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
+									return false;
+								return true;
+							};
+
+							// try to push forward
+							if(move_forward)
+							{
+								Vec3 move_dir = unit->pos - u.pos;
+								move_dir.y = 0;
+								move_dir.Normalize();
+								move_dir *= len;
+								float t;
+								LineTest(unit->cobj->getCollisionShape(), unit->pos, move_dir, unit_clbk, t);
+								if(t == 1.f)
+								{
+									unit->moved = true;
+									unit->pos += move_dir;
+									MoveUnit(*unit, false, true);
 									continue;
-								else
-									u.player->action_targets.push_back(unit);
+								}
 							}
-							unit->ApplyStun(1.5f);
-						}
-						else
-							move_forward = false;
 
-						auto unit_clbk = [unit](btCollisionObject* obj, bool)
-						{
-							int flags = obj->getCollisionFlags();
-							if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
-								return false;
-							return true;
-						};
-
-						// try to push forward
-						if(move_forward)
-						{
-							Vec3 move_dir = unit->pos - u.pos;
-							move_dir.y = 0;
-							move_dir.Normalize();
-							move_dir *= len;
-							float t;
-							LineTest(unit->cobj->getCollisionShape(), unit->pos, move_dir, unit_clbk, t);
-							if(t == 1.f)
+							// try to push, left or right
+							float angle = Angle(u.pos.x, u.pos.z, unit->pos.x, unit->pos.z);
+							float best_dir = ShortestArc(move_angle, angle);
+							bool inner_ok = false;
+							for(int i = 0; i < 2; ++i)
 							{
-								unit->moved = true;
-								unit->pos += move_dir;
-								MoveUnit(*unit, false, true);
-								continue;
+								float t;
+								Vec3& actual_dir = (best_dir < 0 ? dir_left : dir_right);
+								LineTest(unit->cobj->getCollisionShape(), unit->pos, actual_dir, unit_clbk, t);
+								if(t == 1.f)
+								{
+									inner_ok = true;
+									unit->moved = true;
+									unit->pos += actual_dir;
+									MoveUnit(*unit, false, true);
+									break;
+								}
 							}
+							if(!inner_ok)
+								ok = false;
 						}
-
-						// try to push, left or right
-						float angle = Angle(u.pos.x, u.pos.z, unit->pos.x, unit->pos.z);
-						float best_dir = ShortestArc(move_angle, angle);
-						bool inner_ok = false;
-						for(int i = 0; i < 2; ++i)
-						{
-							float t;
-							Vec3& actual_dir = (best_dir < 0 ? dir_left : dir_right);
-							LineTest(unit->cobj->getCollisionShape(), unit->pos, actual_dir, unit_clbk, t);
-							if(t == 1.f)
-							{
-								inner_ok = true;
-								unit->moved = true;
-								unit->pos += actual_dir;
-								MoveUnit(*unit, false, true);
-								break;
-							}
-						}
-						if(!inner_ok)
-							ok = false;
 					}
 				}
 
@@ -8946,7 +8951,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					if(u.animation_state == 1)
 					{
 						u.mesh_inst->Deactivate(1);
-						u.mesh_inst->groups[0].blend_max = 0.33f;
+						u.mesh_inst->groups[1].blend_max = 0.33f;
 					}
 					u.action = A_NONE;
 					u.mesh_inst->groups[0].speed = u.GetRunSpeed() / u.data->run_speed;
@@ -20447,7 +20452,7 @@ void Game::CreateUnitPhysics(Unit& unit, bool position)
 
 void Game::UpdateUnitPhysics(Unit& unit, const Vec3& pos)
 {
-	btVector3 a_min, a_max, bpos(ToVector3(pos));
+	btVector3 a_min, a_max, bpos(ToVector3(unit.IsAlive() ? pos : Vec3(1000, 1000, 1000)));
 	bpos.setY(pos.y + max(MIN_H, unit.GetUnitHeight()) / 2);
 	unit.cobj->getWorldTransform().setOrigin(bpos);
 	unit.cobj->getCollisionShape()->getAabb(unit.cobj->getWorldTransform(), a_min, a_max);

@@ -2546,10 +2546,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	}
 
 	// przenieœ fizyke
-	btVector3 a_min, a_max;
-	u.cobj->getWorldTransform().setOrigin(btVector3(1000, 1000, 1000));
-	u.cobj->getCollisionShape()->getAabb(u.cobj->getWorldTransform(), a_min, a_max);
-	phy_broadphase->setAabb(u.cobj->getBroadphaseHandle(), a_min, a_max, phy_dispatcher);
+	UpdateUnitPhysics(u, u.pos);
 }
 
 //=================================================================================================

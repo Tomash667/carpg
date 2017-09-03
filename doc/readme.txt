@@ -108,6 +108,10 @@ osoby. Oczekuj zmian na lepsze!
 	przydatne przeciwko odpornym wrogom którym normalnym atakiem zadajesz ma³o
 	lub nic. Atak w biegu jest jak 0.25 potê¿nego ataku ale nie mo¿esz siê
 	zatrzymaæ.
+* Akcje - Aby u¿yæ akcji wciœnij 3 (domyœlnie), bêdzie wtedy rysowany obszar na
+	którym zostanie u¿yty ten efekt. Kliknij lewy przycisk myszki aby u¿yæ akcji,
+	prawy aby anulowaæ. Czerwony obszar oznacza brak mo¿liwoœci u¿ycia akcji w
+	tym miejscu.
 * Wytrzyma³oœæ - Atakowanie zu¿ywa wytrzyma³oœæ, gdy siê skoñczy nie mo¿esz
 	biegaæ ani atakowaæ. Blokowanie ciosów te¿ zu¿ywa wytrzyma³oœæ i gdy siê
 	skoñczy blok zostaje przerwany. Przestañ atakowaæ aby odzyskaæ wytrzyma³oœæ,
