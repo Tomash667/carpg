@@ -1498,7 +1498,7 @@ void Unit::Load(HANDLE file, bool local)
 	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
 	ReadFile(file, &hp, sizeof(hp), &tmp, nullptr);
 	ReadFile(file, &hpmax, sizeof(hpmax), &tmp, nullptr);
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_0_5)
 	{
 		ReadFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
 		ReadFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
@@ -1510,7 +1510,7 @@ void Unit::Load(HANDLE file, bool local)
 		stamina = stamina_max;
 		stamina_action = SA_RESTORE_MORE;
 	}
-	if(LOAD_VERSION < V_CURRENT)
+	if(LOAD_VERSION < V_0_5)
 	{
 		int old_type;
 		ReadFile(file, &old_type, sizeof(old_type), &tmp, nullptr);
@@ -1585,7 +1585,7 @@ void Unit::Load(HANDLE file, bool local)
 	ReadFile(file, &assist, sizeof(assist), &tmp, nullptr);
 
 	// auto talking
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_0_5)
 	{
 		f >> auto_talk;
 		if(auto_talk != AutoTalkMode::No)
@@ -1664,7 +1664,7 @@ void Unit::Load(HANDLE file, bool local)
 		else
 			AddRequest(&guard_target, guard_refid);
 	}
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_0_5)
 	{
 		int summoner_refid;
 		ReadFile(file, &summoner_refid, sizeof(summoner_refid), &tmp, nullptr);
@@ -1774,7 +1774,7 @@ void Unit::Load(HANDLE file, bool local)
 		else
 			ReadFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
 
-		if(LOAD_VERSION >= V_CURRENT)
+		if(LOAD_VERSION >= V_0_5)
 			ReadFile(file, &moved, sizeof(moved), &tmp, nullptr);
 	}
 	else

@@ -1104,6 +1104,7 @@ void CreateCharacterPanel::ClassChanged()
 	unit->data = ci.unit_data;
 	anim = DA_STOI;
 	t = 1.f;
+	tbClassDesc.Reset();
 	tbClassDesc.SetText(ci.desc.c_str());
 	tbClassDesc.UpdateScrollbar();
 

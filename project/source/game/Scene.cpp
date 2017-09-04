@@ -1191,12 +1191,15 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		return;
 
 	// add stun effect
-	auto effect = u.FindEffect(E_STUN);
-	if(effect)
+	if(u.IsAlive())
 	{
-		auto& stun = Add1(draw_batch.stuns);
-		stun.pos = u.GetHeadPoint();
-		stun.time = effect->time;
+		auto effect = u.FindEffect(E_STUN);
+		if(effect)
+		{
+			auto& stun = Add1(draw_batch.stuns);
+			stun.pos = u.GetHeadPoint();
+			stun.time = effect->time;
+		}
 	}
 
 	// ustaw koœci

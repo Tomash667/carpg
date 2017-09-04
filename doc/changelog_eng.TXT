@@ -1,16 +1,13 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.5.0 (2017-XX-YY):
+Version 0.5.0 (2017-09-03):
 + player actions (rogue - dash, hunter - animal ally, warrior - bull's charge)
 + stamina - used by attacking, blocking
 + new items: cup, golden cup, golden bar, plate, sausage, soup, stew, fish, fish meat, healing herb, green herb, frying pan
-+ loading when required (units, items, buildings, objects, textures) not on start of game
++ new resource manager, loading when required (units, items, buildings, objects, textures, music) not on start of game, new pak format
 + loading spells, dialogs, unit, buildings from file
 + loading list of required entities from file
-+ new resource manager
-+ loading music files at entering location (should speed up main loading)
-+ new pak version that allows compression and encrypted files
 + bow arrow speed depends on bow type & skill [Paradox Edge]
 + autowalk (key F)
 + support for missing textures and meshes for items loading

@@ -129,7 +129,6 @@ MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates) : check_ve
 	for(int i = 0; i < BUTTONS; ++i)
 		bt[i].size = maxsize;
 
-	bt[3].visible = game->devmode;
 	PlaceButtons();
 }
 
@@ -173,12 +172,6 @@ void MainMenu::Draw(ControlDrawData* /*cdd*/)
 //=================================================================================================
 void MainMenu::Update(float dt)
 {
-	if(game->devmode != prev_devmode)
-	{
-		bt[3].visible = game->devmode;
-		PlaceButtons();
-	}
-
 	for(int i = 0; i < BUTTONS; ++i)
 	{
 		bt[i].mouse_focus = focus;
@@ -285,16 +278,14 @@ void MainMenu::Event(GuiEvent e)
 //=================================================================================================
 void MainMenu::PlaceButtons()
 {
-	uint count = (game->devmode ? BUTTONS : BUTTONS - 1);
 	float kat = -PI / 2;
 	for(int i = 0; i < BUTTONS; ++i)
 	{
 		if(!bt[i].visible)
 			continue;
 		bt[i].pos = bt[i].global_pos = Int2(16 + GUI.wnd_size.x - 200 + int(sin(kat)*(GUI.wnd_size.x - 200)), 100 + int(cos(kat)*GUI.wnd_size.y));
-		kat += PI / 4 / count;
+		kat += PI / 4 / BUTTONS;
 	}
-	prev_devmode = game->devmode;
 }
 
 //=================================================================================================

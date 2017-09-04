@@ -40,7 +40,7 @@
 #include "Team.h"
 #include "Action.h"
 
-const int SAVE_VERSION = V_CURRENT;
+const int SAVE_VERSION = V_0_5;
 int LOAD_VERSION;
 const int MIN_SUPPORT_LOAD_VERSION = V_0_2_5;
 
@@ -7823,6 +7823,13 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 	{
 		Unit& u = **it;
 		//assert(u.rot >= 0.f && u.rot < PI*2);
+
+		// temporary bug fix for pathfinding crash
+		if(u.in_building == -1 && (isnan(u.pos.x) || isnan(u.pos.z)))
+		{
+			Error("Invalid unit '%s' position (%g %g %g).", u.data->id.c_str(), u.pos.x, u.pos.y, u.pos.z);
+			u.pos = Vec3(128, 0, 128);
+		}
 		
 		// licznik okrzyku od ostatniego trafienia
 		u.hurt_timer -= dt;

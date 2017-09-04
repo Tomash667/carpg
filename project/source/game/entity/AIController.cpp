@@ -32,6 +32,7 @@ void AIController::Init(Unit* _unit)
 	start_pos = unit->pos;
 	start_rot = unit->rot;
 	loc_timer = 0.f;
+	timer = 0.f;
 	goto_inn = false;
 	change_ai_mode = false;
 	pf_state = PFS_NOT_USING;

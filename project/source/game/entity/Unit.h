@@ -332,7 +332,7 @@ struct Unit
 		if(IS_SET(data->flags, F_SLOW) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !run_attack) || action == A_SHOOT)
 			return false;
 		else
-			return !IsOverloaded() && stamina > 0;
+			return !IsOverloaded();
 	}
 	void RecalculateHp();
 	void RecalculateStamina();

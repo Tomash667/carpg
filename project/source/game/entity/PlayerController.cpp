@@ -495,7 +495,7 @@ void PlayerController::Load(HANDLE file)
 			f >> tp.value;
 		}
 	}
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_0_5)
 	{
 		f >> action_cooldown;
 		f >> action_recharge;

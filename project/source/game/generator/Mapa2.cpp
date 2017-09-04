@@ -2105,7 +2105,7 @@ void Room::Load(HANDLE file)
 	connected.resize(ile);
 	if(ile)
 		ReadFile(file, &connected[0], sizeof(int)*ile, &tmp, nullptr);
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_0_5)
 		ReadFile(file, &target, sizeof(target), &tmp, nullptr);
 	else
 	{

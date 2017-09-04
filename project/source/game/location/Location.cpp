@@ -154,7 +154,7 @@ void Location::Save(HANDLE file, bool)
 void Location::Load(HANDLE file, bool, LOCATION_TOKEN token)
 {
 	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
-	if(LOAD_VERSION < V_CURRENT && type == L_VILLAGE_OLD)
+	if(LOAD_VERSION < V_0_5 && type == L_VILLAGE_OLD)
 		type = L_CITY;
 	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	byte len;
@@ -183,7 +183,7 @@ void Location::Load(HANDLE file, bool, LOCATION_TOKEN token)
 		ReadFile(file, &seed, sizeof(seed), &tmp, nullptr);
 	else
 		seed = 0;
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_0_5)
 		ReadFile(file, &image, sizeof(image), &tmp, nullptr);
 	else
 	{

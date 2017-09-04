@@ -1,6 +1,42 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja 0.5.0 (2017-09-03):
++ specjalne akcje (³otrzyk - zryw, ³owca - zwierzêcy sojusznik, wojownik - bycza szarza)
++ wytrzyma³oœæ - u¿ywana do atakowania, blokowania
++ nowe przedmioty: kielich, z³oty kielich, talerz, kie³basa, zupa, gulasz, surowa ryba, ryba, lecz¹ce ziele, zielone ziele, patelnia
++ nowy menad¿er zasobów, wczytywanie gdy potrzeba a nie na pocz¹tku gry (jednostki, przedmioty, budynki, obiekty, tekstury, muzyka), nowy format pak
++ wczytywanie z pliku zaklêæ, dialogów, jednostek, budynków
++ wczytywanie listy wymaganych encji z pliku
++ szybkoœæ strza³y zale¿y od umiejêtnoœci i rodzaju ³uku [Paradox Edge]
++ automatyczne chodzenie (domyœlnie klawisz F)
++ obs³uga brakuj¹cych tekstur i modeli dla przedmiotów w trakcie wczytywania
++ mo¿liwoœæ w³¹czenia gry bez g³oœników/s³uchawek
++ tymczasowo usuniêty g³owny quest dopóki nie jest ukoñczony
++ przezroczyste przedmioty
++ nowe komendy konsoli forcequest, stun, refresh_cooldown
+- naprawiony b³¹d z losowym nie wysy³anie mapy œwiata do klientów
+- naprawiony brak widocznoœci ostatniego elementu na liœcie sterowania
+- ork gorush nie zawsze wybiera losowo szamana
+- ork gorush ma wiêcej miksturek gdy awansuje
+- naprawiona nieprawid³owa liczba przedmiotów wygenerowana u handlarzy
+- naprawiony crash przy wchodzeniu do jaskini/losowego spotkania ze zwierzêtami
+- naprawiony crash przy u¿ywaniu $ w polach tekstowych
+- naprawiony crash przy braku paczki podczas spotkania w queœcie z dostarczaniem paczki
+- naprawiony crash serwera gdy gracz opuœci grê podczas wczytywania mapy œwiata
+- naprawiony rzadki crash przy generowaniu wioski
+- naprawiony b³¹d z generowanie uczestników turnieju w innych miastach ni¿ docelowe
+- naprawiony b³¹d z wykrywaniem ¿e okno gry jest aktywne
+- naprawione problemy z kursorem gdy okno jest przesuniête
+- naprawione nieprawid³owe imie gracza
+- naprawiony wp³yw obci¹¿enia na szybkoœæ biegu i niektóre animacjie (wyrzucanie, podnoszenie przedmiotów)
+- naprawiona niekompatybilnoœæ z wioskami z przed wersji 0.3
+- naprawione tekstury pola w wioskach
+- naprawione generowanie obrazków przedmiotów które maj¹ inne tekstury (mithrilowe)
+- naprawione generowanie obiektów z wioski w œrodku ratusza
+- naprawione blokowanie szybkiego zapisu/wczytywanie przez otwarty dziennik
+
+--------------------------------------------------------------------------------
 Wersja 0.4.20 (2016-04-29):
 + dodana obs³uga nieudanego wczytywania czcionek w windows 10 [XNautPhD]
 + dodana obs³uga wy³¹czania dŸwiêku w przypadku b³êdów inicjalizacji sterownika dŸwiêku [XNautPhD]

@@ -1,13 +1,11 @@
 ﻿FEATURE:
-? actions and stamina
 ===============================================================================================================
 CURRENT:
-- clicking on M menu apply focus but can't enter text
-- create character - changing character don't reset class desc position
-? allow run without stamina?
 ===============================================================================================================
 NEW:
+v0.6:
 - sort unit labels by distance 0.6 (remove from backlog)
++ allow to make citizens peaceful
 + stun resistance/immunity/power
 + scaleable gui
 + scaled DrawText, use matrix

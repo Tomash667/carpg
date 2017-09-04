@@ -950,7 +950,7 @@ void Game::LoadGame(HANDLE file)
 		chest_food_seller.clear();
 
 	// vars
-	if(LOAD_VERSION < V_CURRENT)
+	if(LOAD_VERSION < V_0_5)
 	{
 		bool used_cheats;
 		f >> used_cheats;
@@ -979,7 +979,7 @@ void Game::LoadGame(HANDLE file)
 		f >> draw_col;
 		f >> game_speed;
 		f >> next_seed;
-		if(LOAD_VERSION < V_CURRENT)
+		if(LOAD_VERSION < V_0_5)
 		{
 			bool next_seed_extra;
 			int next_seed_val[3];
@@ -1406,7 +1406,7 @@ void Game::LoadGame(HANDLE file)
 		pc->is_local = true;
 
 	// end of save
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_0_5)
 	{
 		char eos[3];
 		ReadFile(file, eos, 3, &tmp, nullptr);

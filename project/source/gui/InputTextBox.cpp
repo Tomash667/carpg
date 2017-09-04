@@ -151,6 +151,25 @@ void InputTextBox::Update(float dt)
 	}
 	else
 		caret_blink = -1.f;
+
+	if(focus)
+	{
+		if(!added)
+		{
+			caret_blink = 0.f;
+			added = true;
+			GUI.AddOnCharHandler(this);
+		}
+	}
+	else
+	{
+		if(added)
+		{
+			caret_blink = -1.f;
+			added = false;
+			GUI.RemoveOnCharHandler(this);
+		}
+	}
 }
 
 //=================================================================================================
