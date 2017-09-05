@@ -306,7 +306,7 @@ void Game::UpdateTournament(float dt)
 							}
 							else
 							{
-								NetChangePlayer& c = Add1(net_changes_player);
+								NetChangePlayer& c = Add1(Net::player_changes);
 								c.type = NetChangePlayer::ENTER_ARENA;
 								c.pc = p.first->player;
 								GetPlayerInfo(c.pc).NeedUpdate();
@@ -327,7 +327,7 @@ void Game::UpdateTournament(float dt)
 							}
 							else
 							{
-								NetChangePlayer& c = Add1(net_changes_player);
+								NetChangePlayer& c = Add1(Net::player_changes);
 								c.type = NetChangePlayer::ENTER_ARENA;
 								c.pc = p.second->player;
 								GetPlayerInfo(c.pc).NeedUpdate();
@@ -465,7 +465,7 @@ void Game::UpdateTournament(float dt)
 									Net_AddedItemMsg(u.player);
 								else
 								{
-									NetChangePlayer& c = Add1(net_changes_player);
+									NetChangePlayer& c = Add1(Net::player_changes);
 									c.type = NetChangePlayer::ADDED_ITEM_MSG;
 									c.ile = given_items;
 									c.pc = u.player;
@@ -506,7 +506,7 @@ void Game::UpdateTournament(float dt)
 						tournament_winner->busy = Unit::Busy_No;
 						if(tournament_winner->player != pc)
 						{
-							NetChangePlayer& c = Add1(net_changes_player);
+							NetChangePlayer& c = Add1(Net::player_changes);
 							c.type = NetChangePlayer::GOLD_MSG;
 							c.id = 1;
 							c.ile = NAGRODA;

@@ -74,7 +74,7 @@ void Quest_Evil::SetProgress(int prog2)
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(game->net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ADD_RUMOR;
 					c.id = int(game->rumors.size()) - 1;
 				}

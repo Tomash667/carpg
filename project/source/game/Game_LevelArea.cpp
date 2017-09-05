@@ -254,7 +254,7 @@ bool Game::RemoveQuestGroundItem(LevelAreaContext* lac, int quest_refid)
 	{
 		if(entry->active && Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::REMOVE_ITEM;
 			c.id = item->netid;
 		}

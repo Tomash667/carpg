@@ -49,7 +49,7 @@ void Quest_Orcs::SetProgress(int prog2)
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(game->net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ADD_RUMOR;
 					c.id = int(game->rumors.size()) - 1;
 				}
@@ -68,7 +68,7 @@ void Quest_Orcs::SetProgress(int prog2)
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(game->net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ADD_RUMOR;
 					c.id = int(game->rumors.size()) - 1;
 				}
@@ -590,7 +590,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 								u.ai->change_ai_mode = true;
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(game->net_changes);
+									NetChange& c = Add1(Net::changes);
 									c.type = NetChange::CHANGE_UNIT_BASE;
 									c.unit = &u;
 								}

@@ -695,7 +695,7 @@ void Inventory::Update(float dt)
 						unit->used_item = nullptr;
 						if(Net::Net::IsServer())
 						{
-							NetChange& c = Add1(game.net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::REMOVE_USED_ITEM;
 							c.unit = unit;
 						}
@@ -709,7 +709,7 @@ void Inventory::Update(float dt)
 					// komunikat
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(game.net_changes);
+						NetChange& c = Add1(Net::changes);
 						if(Net::Net::IsServer())
 						{
 							c.type = NetChange::CHANGE_EQUIPMENT;
@@ -864,7 +864,7 @@ void Inventory::Update(float dt)
 							lock_index = i_index;
 							lock_give = true;
 							lock_timer = 1.f;
-							NetChange& c = Add1(game.net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::IS_BETTER_ITEM;
 							c.id = i_index;
 						}
@@ -946,7 +946,7 @@ void Inventory::Update(float dt)
 						lock_index = i_index;
 						lock_give = true;
 						lock_timer = 1.f;
-						NetChange& c = Add1(game.net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::IS_BETTER_ITEM;
 						c.id = i_index;
 					}
@@ -1049,7 +1049,7 @@ void Inventory::Event(GuiEvent e)
 
 					if(Net::Net::IsServer())
 					{
-						NetChange& c = Add1(game.net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHANGE_EQUIPMENT;
 						c.unit = game.pc->action_unit;
 						c.id = i;
@@ -1096,7 +1096,7 @@ void Inventory::Event(GuiEvent e)
 
 		if(!Net::Net::IsLocal())
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GET_ALL_ITEMS;
 		}
 
@@ -1146,7 +1146,7 @@ void Inventory::RemoveSlotItem(ITEM_SLOT slot)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CHANGE_EQUIPMENT;
 		if(Net::Net::IsServer())
 		{
@@ -1207,7 +1207,7 @@ void Inventory::EquipSlotItem(ITEM_SLOT slot, int i_index)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CHANGE_EQUIPMENT;
 		if(Net::Net::IsServer())
 		{
@@ -1461,7 +1461,7 @@ void Inventory::OnTakeItem(int id)
 		game.CheckCredit(true);
 	else
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::TAKE_ITEM_CREDIT;
 		c.id = lock_index;
 	}
@@ -1547,7 +1547,7 @@ void Inventory::BuyItem(int index, uint count)
 		// komunikat
 		if(!Net::Net::IsLocal())
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GET_ITEM;
 			c.id = index;
 			c.ile = count;
@@ -1599,7 +1599,7 @@ void Inventory::SellItem(int index, uint count)
 	// komunikat
 	if(!Net::Net::IsLocal())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
 		c.ile = count;
@@ -1629,7 +1629,7 @@ void Inventory::SellSlotItem(ITEM_SLOT slot)
 	// komunikat
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		if(Net::Net::IsServer())
 		{
 			c.type = NetChange::CHANGE_EQUIPMENT;
@@ -1665,7 +1665,7 @@ void Inventory::OnPutGold(int id)
 			game.PlaySound2d(game.sCoins);
 		if(!Net::Net::IsLocal())
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PUT_GOLD;
 			c.ile = counter;
 		}
@@ -1701,7 +1701,7 @@ void Inventory::LootItem(int index, uint count)
 			unit->used_item = nullptr;
 			if(Net::Net::IsServer())
 			{
-				NetChange& c = Add1(game.net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::REMOVE_USED_ITEM;
 				c.unit = unit;
 			}
@@ -1724,7 +1724,7 @@ void Inventory::LootItem(int index, uint count)
 	// komunikat
 	if(!Net::Net::IsLocal())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::GET_ITEM;
 		c.id = index;
 		c.ile = count;
@@ -1778,7 +1778,7 @@ void Inventory::PutItem(int index, uint count)
 	// komunikat
 	if(!Net::Net::IsLocal())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
 		c.ile = count;
@@ -1808,7 +1808,7 @@ void Inventory::PutSlotItem(ITEM_SLOT slot)
 	// komunikat
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		if(Net::Net::IsServer())
 		{
 			c.type = NetChange::CHANGE_EQUIPMENT;
@@ -1844,7 +1844,7 @@ void Inventory::OnGiveGold(int id)
 			u->gold += counter;
 			if(u->IsPlayer() && u->player != game.pc)
 			{
-				NetChangePlayer& c = Add1(game.net_changes_player);
+				NetChangePlayer& c = Add1(Net::player_changes);
 				c.type = NetChangePlayer::GOLD_RECEIVED;
 				c.pc = u->player;
 				c.id = game.pc->id;
@@ -1854,7 +1854,7 @@ void Inventory::OnGiveGold(int id)
 		}
 		else
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GIVE_GOLD;
 			c.id = u->netid;
 			c.ile = counter;
@@ -1917,7 +1917,7 @@ void Inventory::ShareGiveItem(int index, uint count)
 	// komunikat
 	if(!Net::Net::IsLocal())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
 		c.ile = count;
@@ -1957,7 +1957,7 @@ void Inventory::ShareTakeItem(int index, uint count)
 	// komunikat
 	if(!Net::Net::IsLocal())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::GET_ITEM;
 		c.id = index;
 		c.ile = count;
@@ -2029,7 +2029,7 @@ void Inventory::OnGiveItem(int id)
 		slots[slot_type] = nullptr;
 		if(Net::Net::IsServer())
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_EQUIPMENT;
 			c.unit = unit;
 			c.id = slot_type;
@@ -2045,7 +2045,7 @@ void Inventory::OnGiveItem(int id)
 	// komunikat
 	if(!Net::Net::IsLocal())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = lock_index;
 		c.ile = 1;
@@ -2097,7 +2097,7 @@ void Inventory::GivePotion(int index, uint count)
 	// komunikat
 	if(!Net::Net::IsLocal())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
 		c.id = index;
 		c.ile = count;

@@ -344,7 +344,7 @@ void WorldMapGui::Update(float dt)
 
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(game.net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ENCOUNTER;
 							c.str = StringPool.Get();
 							*c.str = game.game_enc->text;
@@ -451,7 +451,7 @@ void WorldMapGui::Update(float dt)
 
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(game.net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::ENCOUNTER;
 								c.str = StringPool.Get();
 								*c.str = info.text;
@@ -494,7 +494,7 @@ void WorldMapGui::Update(float dt)
 
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(game.net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::ENCOUNTER;
 								c.str = StringPool.Get();
 								*c.str = info.text;
@@ -566,7 +566,7 @@ void WorldMapGui::Update(float dt)
 
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(game.net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::TRAVEL;
 								c.id = game.picked_location;
 							}
@@ -598,7 +598,7 @@ void WorldMapGui::Update(float dt)
 						}
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(game.net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHEAT_TRAVEL;
 							c.id = game.picked_location;
 						}

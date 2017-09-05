@@ -86,7 +86,7 @@ void Game::BreakUnitAction(Unit& unit, bool fall, bool notify)
 {
 	if(notify && Net::IsServer())
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.unit = &unit;
 		c.type = NetChange::BREAK_ACTION;
 	}
@@ -1002,7 +1002,7 @@ void Game::UpdateGame(float dt)
 					}
 					else
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHEAT_WARP_TO_STAIRS;
 						c.id = 0;
 					}
@@ -1017,7 +1017,7 @@ void Game::UpdateGame(float dt)
 					}
 					else
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHEAT_CHANGE_LEVEL;
 						c.id = 0;
 					}
@@ -1036,7 +1036,7 @@ void Game::UpdateGame(float dt)
 					}
 					else
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHEAT_WARP_TO_STAIRS;
 						c.id = 1;
 					}
@@ -1051,7 +1051,7 @@ void Game::UpdateGame(float dt)
 					}
 					else
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHEAT_CHANGE_LEVEL;
 						c.id = 1;
 					}
@@ -1494,7 +1494,7 @@ void Game::UpdateFallback(float dt)
 				{
 					fallback_co = FALLBACK_CLIENT;
 					fallback_t = 0.f;
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::TRAIN;
 					c.id = fallback_1;
 					c.ile = fallback_2;
@@ -1513,7 +1513,7 @@ void Game::UpdateFallback(float dt)
 				{
 					fallback_co = FALLBACK_CLIENT;
 					fallback_t = 0.f;
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::REST;
 					c.id = fallback_1;
 				}
@@ -1944,7 +1944,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.unit = pc->unit;
 						c.id = ((u.weapon_state == WS_HIDDEN || u.weapon_state == WS_HIDING) ? 1 : 0);
 						c.type = NetChange::TAKE_WEAPON;
@@ -1973,7 +1973,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.unit = pc->unit;
 					c.id = 0;
 					c.type = NetChange::TAKE_WEAPON;
@@ -2007,7 +2007,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.unit = pc->unit;
 						c.id = 0;
 						c.type = NetChange::TAKE_WEAPON;
@@ -2048,7 +2048,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.unit = pc->unit;
 					c.id = (u.weapon_state == WS_HIDING ? 1 : 0);
 					c.type = NetChange::TAKE_WEAPON;
@@ -2070,7 +2070,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.unit = pc->unit;
 						c.id = 1;
 						c.type = NetChange::TAKE_WEAPON;
@@ -2094,7 +2094,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.unit = pc->unit;
 					c.id = 0;
 					c.type = NetChange::TAKE_WEAPON;
@@ -2136,7 +2136,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.unit = pc->unit;
 					c.id = 0;
 					c.type = NetChange::TAKE_WEAPON;
@@ -2169,7 +2169,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.unit = pc->unit;
 					c.id = (u.weapon_state == WS_HIDING ? 1 : 0);
 					c.type = NetChange::TAKE_WEAPON;
@@ -2191,7 +2191,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.unit = pc->unit;
 						c.id = 1;
 						c.type = NetChange::TAKE_WEAPON;
@@ -2393,7 +2393,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else
 				{
 					// wiadomoœæ o wymianie do serwera
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::LOOT_UNIT;
 					c.id = u2->netid;
 					pc->action = PlayerController::Action_LootUnit;
@@ -2420,7 +2420,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else
 				{
 					// wiadomoœæ o rozmowie do serwera
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::TALK;
 					c.id = u2->netid;
 					pc->action = PlayerController::Action_Talk;
@@ -2476,7 +2476,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHEST_OPEN;
 						c.id = pc->action_chest->netid;
 					}
@@ -2485,7 +2485,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			else
 			{
 				// wyœlij wiadomoœæ o pl¹drowaniu skrzyni
-				NetChange& c = Add1(net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::LOOT_CHEST;
 				c.id = pc_data.before_player_ptr.chest->netid;
 				pc->action = PlayerController::Action_LootChest;
@@ -2516,7 +2516,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					}
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::USE_DOOR;
 						c.id = door->netid;
 						c.ile = 0;
@@ -2563,7 +2563,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						}
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::USE_DOOR;
 							c.id = door->netid;
 							c.ile = 0;
@@ -2600,7 +2600,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::USE_DOOR;
 					c.id = door->netid;
 					c.ile = 1;
@@ -2630,12 +2630,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::PICKUP_ITEM;
 						c.unit = pc->unit;
 						c.ile = (u_gory ? 1 : 0);
 
-						NetChange& c2 = Add1(net_changes);
+						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::REMOVE_ITEM;
 						c2.id = pc_data.before_player_ptr.item->netid;
 					}
@@ -2645,7 +2645,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 				else
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::PICKUP_ITEM;
 					c.id = item.netid;
 
@@ -2683,7 +2683,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_Attack;
@@ -2714,7 +2714,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_PowerAttack;
@@ -2734,7 +2734,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::ATTACK;
 						c.unit = pc->unit;
 						c.id = AID_StopBlock;
@@ -2755,7 +2755,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_Bash;
@@ -2788,7 +2788,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_RunningAttack;
@@ -2811,7 +2811,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_PowerAttack;
@@ -2846,7 +2846,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
 							c.id = AID_Block;
@@ -2867,7 +2867,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::ATTACK;
 						c.unit = pc->unit;
 						c.id = AID_Shoot;
@@ -2896,7 +2896,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::ATTACK;
 						c.unit = pc->unit;
 						c.id = AID_StartShoot;
@@ -2988,7 +2988,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::IDLE;
 					c.unit = pc->unit;
 					c.id = id;
@@ -3096,13 +3096,13 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 	{
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PLAYER_ACTION;
 			c.unit = p->unit;
 		}
 		else if(!from_server)
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PLAYER_ACTION;
 			c.pos = action_point;
 		}
@@ -3880,7 +3880,7 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog)
 				PlayAttachedSound(*ctx.talker, snd, 2.f, 5.f);
 			if(Net::IsServer())
 			{
-				NetChange& c = Add1(net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::HELLO;
 				c.unit = ctx.talker;
 			}
@@ -3905,7 +3905,7 @@ void Game::EndDialog(DialogContext& ctx)
 	{
 		if(!ctx.is_local)
 		{
-			NetChangePlayer& c = Add1(net_changes_player);
+			NetChangePlayer& c = Add1(Net::player_changes);
 			c.type = NetChangePlayer::END_DIALOG;
 			c.pc = ctx.pc;
 			GetPlayerInfo(c.pc->id).NeedUpdate();
@@ -3920,7 +3920,7 @@ void Game::EndDialog(DialogContext& ctx)
 
 	if(!ctx.is_local)
 	{
-		NetChangePlayer& c = Add1(net_changes_player);
+		NetChangePlayer& c = Add1(Net::player_changes);
 		c.type = NetChangePlayer::END_DIALOG;
 		c.pc = ctx.pc;
 		GetPlayerInfo(c.pc->id).NeedUpdate();
@@ -3971,7 +3971,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::TALK;
 				c.unit = ctx.pc->unit;
 				c.str = StringPool.Get();
@@ -4109,7 +4109,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else
 				{
 					ctx.choice_selected = -1;
-					NetChangePlayer& c = Add1(net_changes_player);
+					NetChangePlayer& c = Add1(Net::player_changes);
 					c.type = NetChangePlayer::SHOW_DIALOG_CHOICES;
 					c.pc = ctx.pc;
 					GetPlayerInfo(c.pc->id).NeedUpdate();
@@ -4173,7 +4173,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					StartTrade(I_TRADE, *ctx.pc->chest_trade, t);
 				else
 				{
-					NetChangePlayer& c = Add1(net_changes_player);
+					NetChangePlayer& c = Add1(Net::player_changes);
 					c.type = NetChangePlayer::START_TRADE;
 					c.pc = ctx.pc;
 					c.id = t->netid;
@@ -4432,7 +4432,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else
 					{
 						// wyœlij info o odpoczynku
-						NetChangePlayer& c = Add1(net_changes_player);
+						NetChangePlayer& c = Add1(Net::player_changes);
 						c.type = NetChangePlayer::REST;
 						c.pc = ctx.pc;
 						c.id = ile;
@@ -4636,7 +4636,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(net_changes);
+									NetChange& c = Add1(Net::changes);
 									c.type = NetChange::ADD_RUMOR;
 									c.id = rumors.size();
 								}
@@ -4796,7 +4796,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else
 					{
 						// wyœlij info o trenowaniu
-						NetChangePlayer& c = Add1(net_changes_player);
+						NetChangePlayer& c = Add1(Net::player_changes);
 						c.type = NetChangePlayer::TRAIN;
 						c.pc = ctx.pc;
 						c.id = (skill ? 1 : 0);
@@ -4911,7 +4911,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.talker->hero->know_name = true;
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::TELL_NAME;
 						c.unit = ctx.talker;
 					}
@@ -4979,7 +4979,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						StartTrade(I_GIVE, *t);
 					else
 					{
-						NetChangePlayer& c = Add1(net_changes_player);
+						NetChangePlayer& c = Add1(Net::player_changes);
 						c.type = NetChangePlayer::START_GIVE;
 						c.pc = ctx.pc;
 						GetPlayerInfo(ctx.pc->id).NeedUpdate();
@@ -4998,7 +4998,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						StartTrade(I_SHARE, *t);
 					else
 					{
-						NetChangePlayer& c = Add1(net_changes_player);
+						NetChangePlayer& c = Add1(Net::player_changes);
 						c.type = NetChangePlayer::START_SHARE;
 						c.pc = ctx.pc;
 						GetPlayerInfo(ctx.pc->id).NeedUpdate();
@@ -5052,7 +5052,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 							Team.crazies_attack = true;
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHANGE_FLAGS;
 							}
 						}
@@ -5080,7 +5080,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.pc->unit->human_data->hair_color = g_hair_colors[8];
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::HAIR_COLOR;
 						c.unit = ctx.pc->unit;
 					}
@@ -5105,7 +5105,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					}
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::HAIR_COLOR;
 						c.unit = ctx.pc->unit;
 					}
@@ -5221,7 +5221,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						}
 						else
 						{
-							NetChangePlayer& c = Add1(net_changes_player);
+							NetChangePlayer& c = Add1(Net::player_changes);
 							c.type = NetChangePlayer::PVP;
 							c.pc = near_players[id]->player;
 							c.id = ctx.pc->id;
@@ -5264,7 +5264,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else
 					{
 						// wyœlij info o trenowaniu
-						NetChangePlayer& c = Add1(net_changes_player);
+						NetChangePlayer& c = Add1(Net::player_changes);
 						c.type = NetChangePlayer::TRAIN;
 						c.pc = ctx.pc;
 						c.id = 2;
@@ -5284,7 +5284,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.pc->unit->gold += 10;
 					if(!ctx.is_local)
 					{
-						NetChangePlayer& c = Add1(net_changes_player);
+						NetChangePlayer& c = Add1(Net::player_changes);
 						c.type = NetChangePlayer::GOLD_MSG;
 						c.pc = ctx.pc;
 						c.ile = 10;
@@ -5299,7 +5299,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.pc->unit->gold += 1;
 					if(!ctx.is_local)
 					{
-						NetChangePlayer& c = Add1(net_changes_player);
+						NetChangePlayer& c = Add1(Net::player_changes);
 						c.type = NetChangePlayer::GOLD_MSG;
 						c.pc = ctx.pc;
 						c.ile = 1;
@@ -5336,7 +5336,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					at_arena.push_back(ctx.talker);
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHANGE_ARENA_STATE;
 						c.unit = ctx.talker;
 					}
@@ -5347,7 +5347,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						at_arena.push_back(unit);
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHANGE_ARENA_STATE;
 							c.unit = unit;
 						}
@@ -6175,7 +6175,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							fallback_co = FALLBACK_WAIT_FOR_WARP;
 							fallback_t = -1.f;
 							unit.frozen = 2;
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ENTER_BUILDING;
 							c.id = id;
 						}
@@ -7736,7 +7736,7 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SPAWN_BLOOD;
 			c.id = taker.data->blood;
 			c.pos = pe->pos;
@@ -7788,7 +7788,7 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 				taker.hurt_timer += 1.f;
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::HURT_SOUND;
 				c.unit = &taker;
 			}
@@ -7801,7 +7801,7 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 		// send update hp
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::UPDATE_HP;
 			c.unit = &taker;
 		}
@@ -8043,7 +8043,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.unit = &u;
 						c.id = 0;
 						c.type = NetChange::TAKE_WEAPON;
@@ -8261,7 +8261,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::SHOOT_ARROW;
 						c.unit = &u;
 						c.pos = b.start_pos;
@@ -8322,7 +8322,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							++u.animation_state;
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::ATTACK;
 								c.unit = &u;
 								c.id = AID_Attack;
@@ -8344,7 +8344,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							++u.animation_state;
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::ATTACK;
 								c.unit = &u;
 								c.id = AID_Attack;
@@ -8618,7 +8618,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						u.usable->user = nullptr;
 						if(Net::IsServer())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::USE_USEABLE;
 							c.unit = &u;
 							c.id = u.usable->netid;
@@ -8667,7 +8667,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 										PlaySound3d(bu.sound->sound, u.GetCenter(), 2.f, 5.f);
 									if(Net::IsServer())
 									{
-										NetChange& c = Add1(net_changes);
+										NetChange& c = Add1(Net::changes);
 										c.type = NetChange::USEABLE_SOUND;
 										c.unit = &u;
 									}
@@ -8792,7 +8792,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				u.usable->user = nullptr;
 				if(Net::IsServer())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::USE_USEABLE;
 					c.unit = &u;
 					c.id = u.usable->netid;
@@ -9112,7 +9112,7 @@ void Game::UpdateUnitInventory(Unit& u)
 			{
 				if(u.slots[i] != prev_slots[i])
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.unit = &u;
 					c.type = NetChange::CHANGE_EQUIPMENT;
 					c.id = i;
@@ -9163,7 +9163,7 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& attacker)
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.unit = hitted;
 			c.type = NetChange::STUNNED;
 		}
@@ -9354,7 +9354,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 									PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(net_changes);
+									NetChange& c = Add1(Net::changes);
 									c.type = NetChange::HIT_SOUND;
 									c.id = MAT_IRON;
 									c.ile = mat;
@@ -9409,7 +9409,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 								PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::HIT_SOUND;
 								c.id = MAT_IRON;
 								c.ile = mat;
@@ -9496,7 +9496,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 									PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(net_changes);
+									NetChange& c = Add1(Net::changes);
 									c.type = NetChange::HIT_SOUND;
 									c.id = MAT_IRON;
 									c.ile = mat;
@@ -11404,7 +11404,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::HIT_SOUND;
 			c.pos = hitpoint;
 			c.id = weapon_mat;
@@ -11951,7 +11951,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CREATE_SPELL_BALL;
 				c.spell = &spell;
 				c.pos = b.start_pos;
@@ -12012,7 +12012,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 			{
 				e->netid = electro_netid_counter++;
 
-				NetChange& c = Add1(net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CREATE_ELECTRO;
 				c.e_id = e->netid;
 				c.pos = e->lines[0].pts.front();
@@ -12049,11 +12049,11 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::UPDATE_HP;
 						c.unit = drain.to;
 
-						NetChange& c2 = Add1(net_changes);
+						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::CREATE_DRAIN;
 						c2.unit = drain.to;
 					}
@@ -12113,15 +12113,15 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::RAISE_EFFECT;
 						c.pos = pe->pos;
 
-						NetChange& c2 = Add1(net_changes);
+						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::STAND_UP;
 						c2.unit = &u2;
 
-						NetChange& c3 = Add1(net_changes);
+						NetChange& c3 = Add1(Net::changes);
 						c3.type = NetChange::UPDATE_HP;
 						c3.unit = &u2;
 					}
@@ -12168,11 +12168,11 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::HEAL_EFFECT;
 						c.pos = pe->pos;
 
-						NetChange& c3 = Add1(net_changes);
+						NetChange& c3 = Add1(Net::changes);
 						c3.type = NetChange::UPDATE_HP;
 						c3.unit = &u2;
 					}
@@ -12191,7 +12191,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 			PlaySound3d(spell.sound_cast, coord, spell.sound_cast_dist.x, spell.sound_cast_dist.y);
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SPELL_SOUND;
 			c.spell = &spell;
 			c.pos = coord;
@@ -12252,7 +12252,7 @@ void Game::SpellHitEffect(LevelContext& ctx, Bullet& bullet, const Vec3& pos, Un
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CREATE_EXPLOSION;
 			c.spell = &spell;
 			c.pos = explo->pos;
@@ -12384,7 +12384,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::TRIGGER_TRAP;
 						c.id = trap.netid;
 					}
@@ -12609,7 +12609,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 
 						if(Net::IsServer())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::SHOOT_ARROW;
 							c.unit = nullptr;
 							c.pos = b.start_pos;
@@ -12618,7 +12618,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 							c.f[2] = 0.f;
 							c.extra_f = b.speed;
 
-							NetChange& c2 = Add1(net_changes);
+							NetChange& c2 = Add1(Net::changes);
 							c2.type = NetChange::TRIGGER_TRAP;
 							c2.id = trap.netid;
 						}
@@ -12658,7 +12658,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 					trap.state = 0;
 					if(Net::IsServer())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::TRIGGER_TRAP;
 						c.id = trap.netid;
 					}
@@ -12702,12 +12702,12 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CREATE_EXPLOSION;
 						c.spell = fireball;
 						c.pos = explo->pos;
 
-						NetChange& c2 = Add1(net_changes);
+						NetChange& c2 = Add1(Net::changes);
 						c2.type = NetChange::REMOVE_TRAP;
 						c2.id = trap.netid;
 					}
@@ -13067,7 +13067,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ELECTRO_HIT;
 					c.pos = e.lines.back().pts.back();
 				}
@@ -13128,7 +13128,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::UPDATE_ELECTRO;
 								c.e_id = e.netid;
 								c.pos = to;
@@ -13190,7 +13190,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ELECTRO_HIT;
 					c.pos = e.lines.back().pts.back();
 				}
@@ -13831,7 +13831,7 @@ void Game::AddGroundItem(LevelContext& ctx, GroundItem* item)
 	if(Net::IsOnline())
 	{
 		item->netid = item_netid_counter++;
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::SPAWN_ITEM;
 		c.item = item;
 	}
@@ -13935,7 +13935,7 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 	{
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::USE_USEABLE;
 			c.unit = &u;
 			c.id = u.usable->netid;
@@ -13943,7 +13943,7 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 		}
 		else if(&u == pc->unit)
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::USE_USEABLE;
 			c.id = u.usable->netid;
 			c.ile = 0;
@@ -14805,7 +14805,7 @@ void Game::WarpUnit(Unit& unit, const Vec3& pos)
 	{
 		if(unit.interp)
 			unit.interp->Reset(unit.pos, unit.rot);
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::WARP;
 		c.unit = &unit;
 		if(unit.IsPlayer())
@@ -15157,7 +15157,7 @@ void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpo
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::HIT_SOUND;
 		c.pos = hitpoint;
 		c.id = mat2;
@@ -15165,7 +15165,7 @@ void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpo
 
 		if(mat != MAT_BODY && dmg)
 		{
-			NetChange& c2 = Add1(net_changes);
+			NetChange& c2 = Add1(Net::changes);
 			c2.type = NetChange::HIT_SOUND;
 			c2.pos = hitpoint;
 			c2.id = mat2;
@@ -15676,7 +15676,7 @@ void Game::StartArenaCombat(int level)
 	}
 	else
 	{
-		NetChangePlayer& c = Add1(net_changes_player);
+		NetChangePlayer& c = Add1(Net::player_changes);
 		c.type = NetChangePlayer::ENTER_ARENA;
 		c.pc = current_dialog->pc;
 		current_dialog->pc->arena_fights++;
@@ -15689,7 +15689,7 @@ void Game::StartArenaCombat(int level)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CHANGE_ARENA_STATE;
 		c.unit = current_dialog->pc->unit;
 	}
@@ -15719,13 +15719,13 @@ void Game::StartArenaCombat(int level)
 				}
 				else
 				{
-					NetChangePlayer& c = Add1(net_changes_player);
+					NetChangePlayer& c = Add1(Net::player_changes);
 					c.type = NetChangePlayer::ENTER_ARENA;
 					c.pc = unit->player;
 					GetPlayerInfo(c.pc).NeedUpdate();
 				}
 
-				NetChange& c = Add1(net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHANGE_ARENA_STATE;
 				c.unit = unit;
 			}
@@ -15739,7 +15739,7 @@ void Game::StartArenaCombat(int level)
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHANGE_ARENA_STATE;
 				c.unit = unit;
 			}
@@ -15916,7 +15916,7 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::TALK;
 		c.unit = ctx.talker;
 		c.str = StringPool.Get();
@@ -16121,7 +16121,7 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 				AddGameMsg(Format(msg, ile), time);
 			else
 			{
-				NetChangePlayer& c = Add1(net_changes_player);
+				NetChangePlayer& c = Add1(Net::player_changes);
 				c.type = NetChangePlayer::GOLD_MSG;
 				c.id = (defmsg ? 1 : 0);
 				c.ile = ile;
@@ -16134,7 +16134,7 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 			Unit* trader = FindPlayerTradingWithUnit(u);
 			if(trader != pc->unit)
 			{
-				NetChangePlayer& c = Add1(net_changes_player);
+				NetChangePlayer& c = Add1(Net::player_changes);
 				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
 				c.pc = trader->player;
 				c.id = u.netid;
@@ -16239,7 +16239,7 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 						GetPlayerInfo(u.player->id).update_flags |= PlayerInfo::UF_GOLD;
 						if(show)
 						{
-							NetChangePlayer& c = Add1(net_changes_player);
+							NetChangePlayer& c = Add1(Net::player_changes);
 							c.type = NetChangePlayer::GOLD_MSG;
 							c.id = (defmsg ? 1 : 0);
 							c.ile = u.player->gold_get;
@@ -16259,7 +16259,7 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 				Unit* trader = FindPlayerTradingWithUnit(u);
 				if(trader != pc->unit)
 				{
-					NetChangePlayer& c = Add1(net_changes_player);
+					NetChangePlayer& c = Add1(Net::player_changes);
 					c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
 					c.pc = trader->player;
 					c.id = u.netid;
@@ -16305,7 +16305,7 @@ void Game::EventTakeItem(int id)
 			CheckCredit(true);
 		else
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::TAKE_ITEM_CREDIT;
 			c.id = take_item_id;
 		}
@@ -18915,7 +18915,7 @@ void Game::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 
 		if(Net::IsOnline() && unit->IsPlayer() && unit->player != pc)
 		{
-			NetChangePlayer& c = Add1(net_changes_player);
+			NetChangePlayer& c = Add1(Net::player_changes);
 			c.type = NetChangePlayer::LOOK_AT;
 			c.pc = unit->player;
 			c.id = -1;
@@ -19031,12 +19031,12 @@ void Game::UpdateGame2(float dt)
 					if(Net::IsOnline())
 					{
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHANGE_ARENA_STATE;
 							c.unit = at_arena[0];
 						}
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHANGE_ARENA_STATE;
 							c.unit = at_arena[1];
 						}
@@ -19056,7 +19056,7 @@ void Game::UpdateGame2(float dt)
 					PlaySound2d(sArenaFight);
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ARENA_SOUND;
 					c.id = 0;
 				}
@@ -19066,7 +19066,7 @@ void Game::UpdateGame2(float dt)
 					(*it)->frozen = 0;
 					if((*it)->IsPlayer() && (*it)->player != pc)
 					{
-						NetChangePlayer& c = Add1(net_changes_player);
+						NetChangePlayer& c = Add1(Net::player_changes);
 						c.type = NetChangePlayer::START_ARENA_COMBAT;
 						c.pc = (*it)->player;
 						GetPlayerInfo(c.pc).NeedUpdate();
@@ -19126,7 +19126,7 @@ void Game::UpdateGame2(float dt)
 					PlaySound2d(victory_sound ? sArenaWin : sArenaLost);
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ARENA_SOUND;
 					c.id = victory_sound ? 1 : 2;
 				}
@@ -19149,7 +19149,7 @@ void Game::UpdateGame2(float dt)
 						}
 						else
 						{
-							NetChangePlayer& c = Add1(net_changes_player);
+							NetChangePlayer& c = Add1(Net::player_changes);
 							c.type = NetChangePlayer::EXIT_ARENA;
 							c.pc = (*it)->player;
 							GetPlayerInfo(c.pc).NeedUpdate();
@@ -19204,7 +19204,7 @@ void Game::UpdateGame2(float dt)
 									(*it)->ai->Reset();
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(net_changes);
+									NetChange& c = Add1(Net::changes);
 									c.type = NetChange::STAND_UP;
 									c.unit = *it;
 								}
@@ -19216,7 +19216,7 @@ void Game::UpdateGame2(float dt)
 
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHANGE_ARENA_STATE;
 								c.unit = *it;
 							}
@@ -19242,7 +19242,7 @@ void Game::UpdateGame2(float dt)
 								(*it)->ai->Reset();
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::STAND_UP;
 								c.unit = *it;
 							}
@@ -19254,7 +19254,7 @@ void Game::UpdateGame2(float dt)
 
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHANGE_ARENA_STATE;
 							c.unit = *it;
 						}
@@ -19433,7 +19433,7 @@ void Game::UpdateGame2(float dt)
 						(*it)->ai->Reset();
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::STAND_UP;
 						c.unit = *it;
 					}
@@ -19441,7 +19441,7 @@ void Game::UpdateGame2(float dt)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::CHANGE_ARENA_STATE;
 					c.unit = *it;
 				}
@@ -19450,7 +19450,7 @@ void Game::UpdateGame2(float dt)
 			at_arena[0]->hp = at_arena[0]->hpmax;
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::UPDATE_HP;
 				c.unit = at_arena[0];
 			}
@@ -19542,7 +19542,7 @@ void Game::UpdateContest(float dt)
 						BreakUnitAction(u, false, true);
 						if(u.player != pc)
 						{
-							NetChangePlayer& c = Add1(net_changes_player);
+							NetChangePlayer& c = Add1(Net::player_changes);
 							c.type = NetChangePlayer::LOOK_AT;
 							c.pc = u.player;
 							c.id = innkeeper.netid;
@@ -19754,7 +19754,7 @@ void Game::UpdateContest(float dt)
 						BreakUnitAction(u, false, true);
 						if(u.player != pc)
 						{
-							NetChangePlayer& c = Add1(net_changes_player);
+							NetChangePlayer& c = Add1(Net::player_changes);
 							c.type = NetChangePlayer::LOOK_AT;
 							c.pc = u.player;
 							c.id = -1;
@@ -20023,7 +20023,7 @@ void Game::OnCloseInventory()
 			pc->action_unit->busy = Unit::Busy_No;
 		else
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHEST_CLOSE;
 			c.id = pc->action_chest->netid;
 		}
@@ -20070,7 +20070,7 @@ void Game::UpdateGameDialogClient()
 			dialog_context.show_choices = false;
 			dialog_context.dialog_text = "";
 
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHOICE;
 			c.id = dialog_context.choice_selected;
 		}
@@ -20080,7 +20080,7 @@ void Game::UpdateGameDialogClient()
 		if(KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || KeyPressedReleaseAllowed(GK_ATTACK_USE) ||
 			(AllowKeyboard() && Key.PressedRelease(VK_ESCAPE)))
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SKIP_DIALOG;
 			c.id = dialog_context.skip_id;
 			dialog_context.skip_id = -1;
@@ -20186,7 +20186,7 @@ bool Game::Cheat_KillAll(int typ, Unit& unit, Unit* ignore)
 
 	if(!Net::IsLocal())
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CHEAT_KILLALL;
 		c.id = typ;
 		c.unit = ignore;
@@ -20254,7 +20254,7 @@ void Game::Event_Pvp(int id)
 		else
 		{
 			// nie akceptuj pvp
-			NetChangePlayer& c = Add1(net_changes_player);
+			NetChangePlayer& c = Add1(Net::player_changes);
 			c.type = NetChangePlayer::NO_PVP;
 			c.pc = pvp_response.from->player;
 			c.id = pvp_response.to->player->id;
@@ -20263,7 +20263,7 @@ void Game::Event_Pvp(int id)
 	}
 	else
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PVP;
 		c.unit = pvp_unit;
 		if(id == BUTTON_YES)
@@ -20324,7 +20324,7 @@ void Game::StartPvp(PlayerController* player, Unit* unit)
 	}
 	else
 	{
-		NetChangePlayer& c = Add1(net_changes_player);
+		NetChangePlayer& c = Add1(Net::player_changes);
 		c.type = NetChangePlayer::ENTER_ARENA;
 		c.pc = player;
 		GetPlayerInfo(player).NeedUpdate();
@@ -20340,7 +20340,7 @@ void Game::StartPvp(PlayerController* player, Unit* unit)
 		}
 		else
 		{
-			NetChangePlayer& c = Add1(net_changes_player);
+			NetChangePlayer& c = Add1(Net::player_changes);
 			c.type = NetChangePlayer::ENTER_ARENA;
 			c.pc = unit->player;
 			GetPlayerInfo(c.pc).NeedUpdate();
@@ -20773,7 +20773,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_USEABLE;
 				c.unit = &u;
 				c.id = u.usable->netid;
@@ -20782,7 +20782,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 		}
 		else
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::USE_USEABLE;
 			c.id = pc_data.before_player_ptr.usable->netid;
 			c.ile = 1;
@@ -20824,7 +20824,7 @@ void Game::UnitTalk(Unit& u, cstring text)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::TALK;
 		c.unit = &u;
 		c.str = StringPool.Get();
@@ -21638,7 +21638,7 @@ void Game::DropGold(int ile)
 		// wyœlij info o animacji
 		if(Net::IsServer())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::DROP_ITEM;
 			c.unit = pc->unit;
 		}
@@ -21646,7 +21646,7 @@ void Game::DropGold(int ile)
 	else
 	{
 		// wyœlij komunikat o wyrzucaniu z³ota
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::DROP_GOLD;
 		c.id = ile;
 	}
@@ -21690,7 +21690,7 @@ void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bo
 			if(unit.player != pc)
 			{
 				// dodaj komunikat o dodaniu przedmiotu
-				NetChangePlayer& c = Add1(net_changes_player);
+				NetChangePlayer& c = Add1(Net::player_changes);
 				c.type = NetChangePlayer::ADD_ITEMS;
 				c.pc = unit.player;
 				c.item = item;
@@ -21715,7 +21715,7 @@ void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bo
 			if(u && u->player != pc)
 			{
 				// wyœlij komunikat do gracza z aktualizacj¹ ekwipunku
-				NetChangePlayer& c = Add1(net_changes_player);
+				NetChangePlayer& c = Add1(Net::player_changes);
 				c.type = NetChangePlayer::ADD_ITEMS_TRADER;
 				c.pc = u->player;
 				c.item = item;
@@ -21775,7 +21775,7 @@ void Game::AddItem(Chest& chest, const Item* item, uint count, uint team_count, 
 		if(u)
 		{
 			// dodaj komunikat o dodaniu przedmiotu do skrzyni
-			NetChangePlayer& c = Add1(net_changes_player);
+			NetChangePlayer& c = Add1(Net::player_changes);
 			c.type = NetChangePlayer::ADD_ITEMS_CHEST;
 			c.pc = u->player;
 			c.item = item;
@@ -21915,7 +21915,7 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 
 		if(Net::IsServer() && players > 1)
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_EQUIPMENT;
 			c.unit = &unit;
 			c.id = type;
@@ -21928,7 +21928,7 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 		if(unit.IsPlayer())
 		{
 			// dodaj komunikat o dodaniu przedmiotu
-			NetChangePlayer& c = Add1(net_changes_player);
+			NetChangePlayer& c = Add1(Net::player_changes);
 			c.type = NetChangePlayer::REMOVE_ITEMS;
 			c.pc = unit.player;
 			c.id = i_index;
@@ -21952,7 +21952,7 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 			if(t && t->player != pc)
 			{
 				// dodaj komunikat o dodaniu przedmiotu
-				NetChangePlayer& c = Add1(net_changes_player);
+				NetChangePlayer& c = Add1(Net::player_changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS_TRADER;
 				c.pc = t->player;
 				c.id = unit.netid;

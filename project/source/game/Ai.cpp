@@ -203,7 +203,7 @@ void Game::UpdateAi(float dt)
 					u.mesh_inst->Deactivate(1);
 					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::ATTACK;
 						c.unit = &u;
 						c.id = AID_StopBlock;
@@ -413,7 +413,7 @@ void Game::UpdateAi(float dt)
 						u.mesh_inst->Deactivate(1);
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = &u;
 							c.id = AID_StopBlock;
@@ -993,7 +993,7 @@ void Game::UpdateAi(float dt)
 										u.animation = ANI_IDLE;
 										if(Net::IsOnline())
 										{
-											NetChange& c = Add1(net_changes);
+											NetChange& c = Add1(Net::changes);
 											c.type = NetChange::IDLE;
 											c.unit = &u;
 											c.id = id;
@@ -1200,7 +1200,7 @@ void Game::UpdateAi(float dt)
 
 											if(Net::IsOnline())
 											{
-												NetChange& c = Add1(net_changes);
+												NetChange& c = Add1(Net::changes);
 												c.type = NetChange::TALK;
 												c.unit = &u;
 												c.str = StringPool.Get();
@@ -1325,7 +1325,7 @@ void Game::UpdateAi(float dt)
 												use.user = &u;
 												if(Net::IsOnline())
 												{
-													NetChange& c = Add1(net_changes);
+													NetChange& c = Add1(Net::changes);
 													c.type = NetChange::USE_USEABLE;
 													c.unit = &u;
 													c.id = use.netid;
@@ -1418,7 +1418,7 @@ void Game::UpdateAi(float dt)
 
 												if(Net::IsOnline())
 												{
-													NetChange& c = Add1(net_changes);
+													NetChange& c = Add1(Net::changes);
 													c.type = NetChange::ATTACK;
 													c.unit = &u;
 													c.id = AID_Shoot;
@@ -1665,7 +1665,7 @@ void Game::UpdateAi(float dt)
 
 										if(Net::IsOnline())
 										{
-											NetChange& c = Add1(net_changes);
+											NetChange& c = Add1(Net::changes);
 											c.type = NetChange::CAST_SPELL;
 											c.unit = &u;
 											c.id = i;
@@ -1728,7 +1728,7 @@ void Game::UpdateAi(float dt)
 
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(net_changes);
+									NetChange& c = Add1(Net::changes);
 									c.type = NetChange::ATTACK;
 									c.unit = &u;
 									c.id = AID_Shoot;
@@ -1814,7 +1814,7 @@ void Game::UpdateAi(float dt)
 
 									if(Net::IsOnline())
 									{
-										NetChange& c = Add1(net_changes);
+										NetChange& c = Add1(Net::changes);
 										c.type = NetChange::ATTACK;
 										c.unit = &u;
 										c.id = AID_Block;
@@ -2162,7 +2162,7 @@ void Game::UpdateAi(float dt)
 
 								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(net_changes);
+									NetChange& c = Add1(Net::changes);
 									c.type = NetChange::ATTACK;
 									c.unit = &u;
 									c.id = AID_Bash;
@@ -2186,7 +2186,7 @@ void Game::UpdateAi(float dt)
 						repeat = true;
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = &u;
 							c.id = AID_StopBlock;
@@ -2554,7 +2554,7 @@ void Game::UpdateAi(float dt)
 
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::USE_DOOR;
 								c.id = door.netid;
 								c.ile = 0;
@@ -2871,7 +2871,7 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::SHOUT;
 		c.unit = &unit;
 	}
@@ -2948,7 +2948,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::ATTACK;
 			c.unit = &u;
 			c.id = (do_power_attack ? AID_PowerAttack : (w_biegu ? AID_RunningAttack : AID_Attack));
@@ -2980,7 +2980,7 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SHOUT;
 			c.unit = &unit;
 		}

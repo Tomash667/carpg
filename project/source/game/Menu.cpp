@@ -459,7 +459,7 @@ void Game::MultiplayerPanelEvent(int id)
 	case MultiplayerPanel::IdLoad:
 		// wczytaj grê
 		mp_load = true;
-		net_changes.clear();
+		Net::changes.clear();
 		if(!net_talk.empty())
 			StringPool.Free(net_talk);
 		ShowLoadPanel();
@@ -1702,7 +1702,7 @@ void Game::GenericInfoBoxUpdate(float dt)
 						else
 						{
 							// za du¿o postaci w dru¿ynie, wywal ai
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::HERO_LEAVE;
 							c.unit = unit;
 

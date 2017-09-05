@@ -358,7 +358,7 @@ void Game::OnTick(float dt)
 			{
 				paused = !paused;
 				AddMultiMsg(paused ? txGamePaused : txGameResumed);
-				NetChange& c = Add1(net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::PAUSED;
 				c.id = (paused ? 1 : 0);
 				if(paused && game_state == GS_WORLDMAP && world_state == WS_TRAVEL)
@@ -471,7 +471,7 @@ void Game::OnTick(float dt)
 							AddMsg(Format(txPvpRefuse, pvp_response.to->player->name.c_str()));
 						else
 						{
-							NetChangePlayer& c = Add1(net_changes_player);
+							NetChangePlayer& c = Add1(Net::player_changes);
 							c.type = NetChangePlayer::NO_PVP;
 							c.pc = pvp_response.from->player;
 							c.id = pvp_response.to->player->id;
@@ -530,8 +530,8 @@ void Game::OnTick(float dt)
 
 		if(Net::IsSingleplayer() && game_state != GS_MAIN_MENU)
 		{
-			assert(net_changes.empty());
-			assert(net_changes_player.empty());
+			assert(Net::changes.empty());
+			assert(Net::player_changes.empty());
 		}
 	}
 	else if(Net::IsOnline())
@@ -2395,7 +2395,7 @@ void Game::UnitFall(Unit& u)
 		// komunikat
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::FALL;
 			c.unit = &u;
 		}
@@ -2482,7 +2482,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		// komunikat
 		if(Net::IsOnline())
 		{
-			NetChange& c2 = Add1(net_changes);
+			NetChange& c2 = Add1(Net::changes);
 			c2.type = NetChange::DIE;
 			c2.unit = &u;
 		}
@@ -2617,7 +2617,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::STAND_UP;
 			c.unit = &u;
 		}

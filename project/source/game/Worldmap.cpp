@@ -4356,7 +4356,7 @@ void Game::DoWorldProgress(int days)
 			{
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::REMOVE_CAMP;
 					c.id = (*it)->target_loc;
 				}
@@ -4451,7 +4451,7 @@ void Game::DoWorldProgress(int days)
 
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::REMOVE_CAMP;
 					c.id = index;
 				}
@@ -5182,7 +5182,7 @@ int Game::AddLocation(Location* loc)
 				*rit = loc;
 				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ADD_LOCATION;
 					c.id = index;
 				}
@@ -5196,7 +5196,7 @@ int Game::AddLocation(Location* loc)
 	{
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::ADD_LOCATION;
 			c.id = locations.size();
 		}

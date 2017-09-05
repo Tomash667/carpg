@@ -368,7 +368,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 							else
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_ADDITEM;
 								c.base_item = item;
 								c.ile = ile;
@@ -405,7 +405,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 							else
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_ADDITEM;
 								c.base_item = item;
 								c.ile = ile;
@@ -424,7 +424,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							pc->unit->gold = max(pc->unit->gold + ile, 0);
 						else
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHEAT_ADDGOLD;
 							c.id = ile;
 						}
@@ -444,7 +444,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								AddGold(ile);
 							else
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_ADDGOLD_TEAM;
 								c.id = ile;
 							}
@@ -545,7 +545,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 							else
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = (it->cmd == CMD_SETSTAT ? NetChange::CHEAT_SETSTAT : NetChange::CHEAT_MODSTAT);
 								c.id = co;
 								c.ile = (skill ? 1 : 0);
@@ -695,7 +695,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 							else
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_SPAWN_UNIT;
 								c.base_unit = data;
 								c.ile = ile;
@@ -716,7 +716,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						pc->unit->RemoveEffect(E_STUN);
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::UPDATE_HP;
 							c.unit = pc->unit;
 						}
@@ -731,7 +731,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							GiveDmg(GetContext(*pc->unit), nullptr, pc_data.selected_target->hpmax, *pc_data.selected_target);
 						else
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHEAT_KILL;
 							c.unit = pc_data.selected_target;
 						}
@@ -753,7 +753,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							pc_data.selected_target->RemoveEffect(E_STUN);
 							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::UPDATE_HP;
 								c.unit = pc_data.selected_target;
 								if(pc_data.selected_target->player && pc_data.selected_target->player != pc)
@@ -762,7 +762,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 						else
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHEAT_HEALUNIT;
 							c.unit = pc_data.selected_target;
 						}
@@ -814,7 +814,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(!Net::IsLocal())
 							{
 								invisible = false;
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_INVISIBLE;
 								c.id = 0;
 							}
@@ -825,7 +825,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(!Net::IsLocal())
 							{
 								invisible = true;
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_INVISIBLE;
 								c.id = 1;
 							}
@@ -842,7 +842,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(!Net::IsLocal())
 							{
 								godmode = false;
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_GODMODE;
 								c.id = 0;
 							}
@@ -853,7 +853,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(!Net::IsLocal())
 							{
 								godmode = true;
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_GODMODE;
 								c.id = 1;
 							}
@@ -870,7 +870,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(!Net::IsLocal())
 							{
 								noclip = false;
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_NOCLIP;
 								c.id = 0;
 							}
@@ -881,7 +881,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(!Net::IsLocal())
 							{
 								noclip = true;
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_NOCLIP;
 								c.id = 1;
 							}
@@ -959,7 +959,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								WorldProgress(ile, WPM_SKIP);
 							else
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::CHEAT_SKIP_DAYS;
 								c.id = ile;
 							}
@@ -994,7 +994,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								}
 								else
 								{
-									NetChange& c = Add1(net_changes);
+									NetChange& c = Add1(Net::changes);
 									c.type = NetChange::CHEAT_WARP;
 									c.id = index;
 								}
@@ -1106,7 +1106,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								}
 								else
 								{
-									NetChange& c = Add1(net_changes);
+									NetChange& c = Add1(Net::changes);
 									c.type = NetChange::CHANGE_LEADER;
 									c.id = info.id;
 
@@ -1186,7 +1186,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else if(Net::IsOnline())
 					{
 						int n = Random(1, 100);
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::RANDOM_NUMBER;
 						c.id = n;
 						c.unit = pc->unit;
@@ -1266,7 +1266,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									if(!info.left && info.devmode != b && info.id != 0)
 									{
 										info.devmode = b;
-										NetChangePlayer& c = Add1(net_changes_player);
+										NetChangePlayer& c = Add1(Net::player_changes);
 										c.type = NetChangePlayer::DEVMODE;
 										c.id = (b ? 1 : 0);
 										c.pc = info.u->player;
@@ -1285,7 +1285,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									if(info.devmode != b)
 									{
 										info.devmode = b;
-										NetChangePlayer& c = Add1(net_changes_player);
+										NetChangePlayer& c = Add1(Net::player_changes);
 										c.type = NetChangePlayer::DEVMODE;
 										c.id = (b ? 1 : 0);
 										c.pc = info.u->player;
@@ -1336,7 +1336,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						noai = t.MustGetBool();
 						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHEAT_NOAI;
 							c.id = (noai ? 1 : 0);
 						}
@@ -1348,7 +1348,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(Net::IsOnline())
 					{
 						AddMultiMsg(paused ? txGamePaused : txGameResumed);
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::PAUSED;
 						c.id = (paused ? 1 : 0);
 						if(paused && game_state == GS_WORLDMAP && world_state == WS_TRAVEL)
@@ -1558,7 +1558,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 						else
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							if(it->cmd == CMD_HURT)
 								c.type = NetChange::CHEAT_HURT;
 							else if(it->cmd == CMD_BREAK_ACTION)
@@ -1635,7 +1635,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							u->ApplyStun(length);
 						else
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHEAT_STUN;
 							c.f[0] = length;
 							c.unit = u;

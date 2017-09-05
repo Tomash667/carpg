@@ -308,7 +308,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 	{
 		if(unit->hp != prev_hp)
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::UPDATE_HP;
 			c.unit = unit;
 		}

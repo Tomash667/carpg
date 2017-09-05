@@ -229,7 +229,7 @@ bool Unit::DropItem(int index)
 
 		if(Net::Net::IsServer())
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::DROP_ITEM;
 			c.unit = this;
 		}
@@ -244,7 +244,7 @@ bool Unit::DropItem(int index)
 			items.erase(items.begin() + index);
 		}
 
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::DROP_ITEM;
 		c.id = index;
 		c.ile = 1;
@@ -282,11 +282,11 @@ void Unit::DropItem(ITEM_SLOT slot)
 
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::DROP_ITEM;
 			c.unit = this;
 
-			NetChange& c2 = Add1(game.net_changes);
+			NetChange& c2 = Add1(Net::changes);
 			c2.unit = this;
 			c2.id = slot;
 			c2.type = NetChange::CHANGE_EQUIPMENT;
@@ -296,7 +296,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 	{
 		item2 = nullptr;
 
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::DROP_ITEM;
 		c.id = SlotToIIndex(slot);
 		c.ile = 1;
@@ -342,7 +342,7 @@ bool Unit::DropItems(int index, uint count)
 
 		if(Net::Net::IsServer())
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::DROP_ITEM;
 			c.unit = this;
 		}
@@ -356,7 +356,7 @@ bool Unit::DropItems(int index, uint count)
 			items.erase(items.begin() + index);
 		}
 
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::DROP_ITEM;
 		c.id = index;
 		c.ile = count;
@@ -481,7 +481,7 @@ int Unit::ConsumeItem(int index)
 	Game& game = Game::Get();
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CONSUME_ITEM;
 		if(Net::Net::IsServer())
 		{
@@ -532,7 +532,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 		Game& game = Game::Get();
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CONSUME_ITEM;
 			c.unit = this;
 			c.id = (int)&item;
@@ -585,7 +585,7 @@ void Unit::HideWeapon()
 	Game& game = Game::Get();
 	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::TAKE_WEAPON;
 		c.unit = this;
 		c.id = 1;
@@ -616,7 +616,7 @@ void Unit::TakeWeapon(WeaponType _type)
 		Game& game = Game::Get();
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::TAKE_WEAPON;
 			c.unit = this;
 			c.id = 0;
@@ -680,7 +680,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			hp = hpmax;
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::UPDATE_HP;
 			c.unit = this;
 		}
@@ -761,7 +761,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			human_data->hair_color = Vec4(0, 1, 0, 1);
 			if(Net::IsOnline())
 			{
-				NetChange& c = Add1(game.net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::HAIR_COLOR;
 				c.unit = this;
 			}
@@ -822,7 +822,7 @@ void Unit::UpdateEffects(float dt)
 			hp = hpmax;
 		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::UPDATE_HP;
 			c.unit = this;
 		}
@@ -2132,7 +2132,7 @@ void Unit::RemoveEffect(ConsumeEffect effect)
 		auto& game = Game::Get();
 		if(Net::IsOnline() && Net::Net::IsServer())
 		{
-			auto& c = Add1(game.net_changes);
+			auto& c = Add1(Net::changes);
 			c.type = NetChange::STUN;
 			c.unit = this;
 			c.f[0] = 0;
@@ -2210,7 +2210,7 @@ void Unit::RemoveItem(int iindex, bool active_location)
 		slots[s] = nullptr;
 		if(active_location)
 		{
-			NetChange& c = Add1(Game::Get().net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.unit = this;
 			c.type = NetChange::CHANGE_EQUIPMENT;
 			c.id = s;
@@ -2646,7 +2646,7 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 				{
 					if(Net::Net::IsServer())
 					{
-						NetChange& c = Add1(game.net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::UPDATE_HP;
 						c.unit = this;
 					}
@@ -2669,7 +2669,7 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 				{
 					if(Net::Net::IsServer())
 					{
-						NetChange& c = Add1(game.net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::UPDATE_HP;
 						c.unit = this;
 						if(IsPlayer() && player != game.pc)
@@ -3218,7 +3218,7 @@ void Unit::ApplyStun(float length)
 
 	if(Net::IsOnline() && Net::Net::IsServer())
 	{
-		auto& c = Add1(game.net_changes);
+		auto& c = Add1(Net::changes);
 		c.type = NetChange::STUN;
 		c.unit = this;
 		c.f[0] = length;
