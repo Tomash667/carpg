@@ -60,13 +60,11 @@ void Game::MainMenuEvent(int id)
 	switch(id)
 	{
 	case MainMenu::IdNewGame:
-		sv_online = false;
-		sv_server = false;
+		Net::SetMode(Net::Mode::Singleplayer);
 		ShowCreateCharacterPanel(true);
 		break;
 	case MainMenu::IdLoadGame:
-		sv_online = false;
-		sv_server = false;
+		Net::SetMode(Net::Mode::Singleplayer);
 		ShowLoadPanel();
 		break;
 	case MainMenu::IdMultiplayer:
@@ -285,7 +283,7 @@ void Game::ShowOptions()
 
 void Game::ShowSavePanel()
 {
-	saveload->SetSaveMode(true, IsOnline(), IsOnline() ? multi_saves : single_saves);
+	saveload->SetSaveMode(true, Net::IsOnline(), Net::IsOnline() ? multi_saves : single_saves);
 	GUI.ShowDialog(saveload);
 }
 
@@ -330,8 +328,7 @@ void Game::ShowCreateCharacterPanel(bool require_name, bool redo)
 
 void Game::StartQuickGame()
 {
-	sv_online = false;
-	sv_server = false;
+	Net::SetMode(Net::Mode::Singleplayer);
 
 	Class clas = quickstart_class;
 	HumanData hd;
@@ -346,7 +343,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 {
 	in_tutorial = tutorial;
 	main_menu->visible = false;
-	sv_online = false;
+	Net::SetMode(Net::Mode::Singleplayer);
 	game_state = GS_LEVEL;
 	hardcore_mode = hardcore_option;
 
@@ -564,7 +561,7 @@ void Game::CheckReady()
 
 void Game::ChangeReady()
 {
-	if(sv_server)
+	if(Net::IsServer())
 	{
 		// zmieñ info
 		if(players > 1)
@@ -2161,8 +2158,7 @@ void Game::QuickJoinIp()
 
 		Info("Pinging %s...", server_ip.c_str());
 		Info("sv_online = true");
-		sv_online = true;
-		sv_server = false;
+		Net::SetMode(Net::Mode::Client);
 		info_box->Show(txConnecting);
 		net_mode = NM_CONNECT_IP;
 		net_state = 0;
@@ -2193,7 +2189,7 @@ void Game::Quit()
 		main_menu->check_version_thread = nullptr;
 	}
 
-	if(sv_online)
+	if(Net::IsOnline())
 		CloseConnection(VoidF(this, &Game::DoQuit));
 	else
 		DoQuit();
@@ -2259,7 +2255,7 @@ void Game::CloseConnection(VoidF f)
 		server_panel->ExitLobby(f);
 	else
 	{
-		if(sv_server)
+		if(Net::IsServer())
 		{
 			Info("ServerPanel: Closing server.");
 
@@ -2323,7 +2319,7 @@ void Game::UpdateLobbyNet(float dt)
 {
 	Packet* packet;
 
-	if(sv_server)
+	if(Net::IsServer())
 	{
 		if(!sv_startup && autostart_count != -1 && autostart_count <= players)
 		{
@@ -2958,7 +2954,7 @@ void Game::UpdateLobbyNet(float dt)
 		}
 	}
 
-	if(sv_server)
+	if(Net::IsServer())
 	{
 		int index = 0;
 		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
@@ -3259,7 +3255,7 @@ void Game::OnCreateCharacter(int id)
 	if(id != BUTTON_OK)
 		return;
 
-	if(IsOnline())
+	if(Net::IsOnline())
 	{
 		PlayerInfo& info = game_players[0];
 		server_panel->bts[1].state = Button::NONE;
@@ -3270,7 +3266,7 @@ void Game::OnCreateCharacter(int id)
 		info.hd.Get(*create_character->unit->human_data);
 		info.cc = create_character->cc;
 		// send info to other players about changing my class
-		if(sv_server)
+		if(Net::IsServer())
 		{
 			if(info.clas != old_class && players > 1)
 				AddLobbyUpdate(Int2(Lobby_UpdatePlayer, 0));

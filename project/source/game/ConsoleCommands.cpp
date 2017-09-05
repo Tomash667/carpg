@@ -164,7 +164,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Msg("You can't use command '%s' in server lobby.", token.c_str());
 						return;
 					}
-					else if(IS_SET(it->flags, F_SERVER) && !sv_server)
+					else if(IS_SET(it->flags, F_SERVER) && !Net::IsServer())
 					{
 						Msg("Only server can use command '%s'.", token.c_str());
 						return;
@@ -178,14 +178,14 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						return;
 					}
 				}
-				else if(sv_online)
+				else if(Net::IsOnline())
 				{
 					if(!IS_SET(it->flags, F_MULTIPLAYER))
 					{
 						Msg("You can't use command '%s' in multiplayer.", token.c_str());
 						return;
 					}
-					else if(IS_SET(it->flags, F_SERVER) && !sv_server)
+					else if(IS_SET(it->flags, F_SERVER) && !Net::IsServer())
 					{
 						Msg("Only server can use command '%s'.", token.c_str());
 						return;
@@ -213,7 +213,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 			{
 				if(t.Next())
 				{
-					if(IS_SET(it->flags, F_MP_VAR) && !IsServer())
+					if(IS_SET(it->flags, F_MP_VAR) && !Net::IsServer())
 					{
 						Msg("Only server can change this variable.");
 						return;
@@ -240,7 +240,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 				if(t.Next())
 				{
-					if(IS_SET(it->flags, F_MP_VAR) && !IsServer())
+					if(IS_SET(it->flags, F_MP_VAR) && !Net::IsServer())
 					{
 						Msg("Only server can change this variable.");
 						return;
@@ -263,7 +263,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 				if(t.Next())
 				{
-					if(IS_SET(it->flags, F_MP_VAR) && !IsServer())
+					if(IS_SET(it->flags, F_MP_VAR) && !Net::IsServer())
 					{
 						Msg("Only server can change this variable.");
 						return;
@@ -288,7 +288,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 				if(t.Next())
 				{
-					if(IS_SET(it->flags, F_MP_VAR) && !IsServer())
+					if(IS_SET(it->flags, F_MP_VAR) && !Net::IsServer())
 					{
 						Msg("Only server can change this variable.");
 						return;
@@ -313,7 +313,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				switch(it->cmd)
 				{
 				case CMD_GOTO_MAP:
-					if(IsLocal())
+					if(Net::IsLocal())
 						ExitToMap();
 					else
 						PushNetChange(NetChange::CHEAT_GOTO_MAP);
@@ -328,7 +328,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Quit();
 					break;
 				case CMD_REVEAL:
-					if(IsLocal())
+					if(Net::IsLocal())
 						Cheat_Reveal();
 					else
 						PushNetChange(NetChange::CHEAT_REVEAL);
@@ -361,7 +361,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else
 								ile = 1;
 
-							if(IsLocal())
+							if(Net::IsLocal())
 							{
 								PreloadItem(item);
 								AddItem(*pc->unit, item, ile, false);
@@ -398,7 +398,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else
 								ile = 1;
 
-							if(IsLocal())
+							if(Net::IsLocal())
 							{
 								PreloadItem(item);
 								AddItem(*pc->unit, item, ile);
@@ -420,7 +420,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.Next())
 					{
 						int ile = t.MustGetInt();
-						if(IsLocal())
+						if(Net::IsLocal())
 							pc->unit->gold = max(pc->unit->gold + ile, 0);
 						else
 						{
@@ -440,7 +440,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							Msg("Gold count must by positive!");
 						else
 						{
-							if(IsLocal())
+							if(Net::IsLocal())
 								AddGold(ile);
 							else
 							{
@@ -524,7 +524,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						{
 							int num = t.MustGetInt();
 
-							if(IsLocal())
+							if(Net::IsLocal())
 							{
 								if(skill)
 								{
@@ -578,7 +578,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									{
 										if(!IS_SET(it->flags, F_LOBBY))
 											ok = false;
-										else if(IS_SET(it->flags, F_SERVER) && !sv_server)
+										else if(IS_SET(it->flags, F_SERVER) && !Net::IsServer())
 											ok = false;
 									}
 									else if(game_state == GS_MAIN_MENU)
@@ -586,11 +586,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 										if(!IS_SET(it->flags, F_MENU))
 											ok = false;
 									}
-									else if(sv_online)
+									else if(Net::IsOnline())
 									{
 										if(!IS_SET(it->flags, F_MULTIPLAYER))
 											ok = false;
-										else if(IS_SET(it->flags, F_SERVER) && !sv_server)
+										else if(IS_SET(it->flags, F_SERVER) && !Net::IsServer())
 											ok = false;
 									}
 									else if(game_state == GS_WORLDMAP)
@@ -672,7 +672,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								}
 							}
 
-							if(IsLocal())
+							if(Net::IsLocal())
 							{
 								LevelContext& ctx = GetContext(*pc->unit);
 
@@ -689,7 +689,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 										u->in_arena = in_arena;
 										at_arena.push_back(u);
 									}
-									if(IsOnline())
+									if(Net::IsOnline())
 										Net_SpawnUnit(u);
 								}
 							}
@@ -708,13 +708,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Msg("You need to enter unit id!");
 					break;
 				case CMD_HEAL:
-					if(IsLocal())
+					if(Net::IsLocal())
 					{
 						pc->unit->hp = pc->unit->hpmax;
 						pc->unit->stamina = pc->unit->stamina_max;
 						pc->unit->RemovePoison();
 						pc->unit->RemoveEffect(E_STUN);
-						if(IsOnline())
+						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(net_changes);
 							c.type = NetChange::UPDATE_HP;
@@ -727,7 +727,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_KILL:
 					if(pc_data.selected_target)
 					{
-						if(IsLocal())
+						if(Net::IsLocal())
 							GiveDmg(GetContext(*pc->unit), nullptr, pc_data.selected_target->hpmax, *pc_data.selected_target);
 						else
 						{
@@ -745,13 +745,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_HEALUNIT:
 					if(pc_data.selected_target)
 					{
-						if(IsLocal())
+						if(Net::IsLocal())
 						{
 							pc_data.selected_target->hp = pc_data.selected_target->hpmax;
 							pc_data.selected_target->stamina = pc_data.selected_target->stamina_max;
 							pc_data.selected_target->RemovePoison();
 							pc_data.selected_target->RemoveEffect(E_STUN);
-							if(IsOnline())
+							if(Net::IsOnline())
 							{
 								NetChange& c = Add1(net_changes);
 								c.type = NetChange::UPDATE_HP;
@@ -771,7 +771,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Msg("No unit selected.");
 					break;
 				case CMD_SUICIDE:
-					if(IsLocal())
+					if(Net::IsLocal())
 						GiveDmg(GetContext(*pc->unit), nullptr, pc->unit->hpmax, *pc->unit);
 					else
 						PushNetChange(NetChange::CHEAT_SUICIDE);
@@ -779,11 +779,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_CITIZEN:
 					if(Team.is_bandit || Team.crazies_attack)
 					{
-						if(IsLocal())
+						if(Net::IsLocal())
 						{
 							Team.is_bandit = false;
 							Team.crazies_attack = false;
-							if(IsOnline())
+							if(Net::IsOnline())
 								PushNetChange(NetChange::CHANGE_FLAGS);
 						}
 						else
@@ -794,7 +794,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					TakeScreenshot();
 					break;
 				case CMD_SCARE:
-					if(IsLocal())
+					if(Net::IsLocal())
 					{
 						for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
 						{
@@ -811,7 +811,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(!t.MustGetBool())
 						{
 							pc->unit->invisible = false;
-							if(!IsLocal())
+							if(!Net::IsLocal())
 							{
 								invisible = false;
 								NetChange& c = Add1(net_changes);
@@ -822,7 +822,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						else
 						{
 							pc->unit->invisible = true;
-							if(!IsLocal())
+							if(!Net::IsLocal())
 							{
 								invisible = true;
 								NetChange& c = Add1(net_changes);
@@ -839,7 +839,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(!t.MustGetBool())
 						{
 							pc->godmode = false;
-							if(!IsLocal())
+							if(!Net::IsLocal())
 							{
 								godmode = false;
 								NetChange& c = Add1(net_changes);
@@ -850,7 +850,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						else
 						{
 							pc->godmode = true;
-							if(!IsLocal())
+							if(!Net::IsLocal())
 							{
 								godmode = true;
 								NetChange& c = Add1(net_changes);
@@ -867,7 +867,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(!t.MustGetBool())
 						{
 							pc->noclip = false;
-							if(!IsLocal())
+							if(!Net::IsLocal())
 							{
 								noclip = false;
 								NetChange& c = Add1(net_changes);
@@ -878,7 +878,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						else
 						{
 							pc->noclip = true;
-							if(!IsLocal())
+							if(!Net::IsLocal())
 							{
 								noclip = true;
 								NetChange& c = Add1(net_changes);
@@ -920,8 +920,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_LOAD:
 					if(CanLoadGame())
 					{
-						sv_online = false;
-						sv_server = false;
+						Net::SetMode(Net::Mode::Singleplayer);
 						int slot = 1;
 						if(t.Next())
 							slot = Clamp(t.MustGetInt(), 1, 10);
@@ -944,7 +943,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Msg("You can't load game in this moment.");
 					break;
 				case CMD_SHOW_MINIMAP:
-					if(IsLocal())
+					if(Net::IsLocal())
 						Cheat_ShowMinimap();
 					else
 						PushNetChange(NetChange::CHEAT_SHOW_MINIMAP);
@@ -956,7 +955,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							ile = t.MustGetInt();
 						if(ile > 0)
 						{
-							if(IsLocal())
+							if(Net::IsLocal())
 								WorldProgress(ile, WPM_SKIP);
 							else
 							{
@@ -986,7 +985,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(building)
 							{
 								// wejdü do budynku
-								if(IsLocal())
+								if(Net::IsLocal())
 								{
 									fallback_co = FALLBACK_ENTER;
 									fallback_t = -1.f;
@@ -1026,10 +1025,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								net_stream.Reset();
 								net_stream.Write(ID_WHISPER);
-								net_stream.WriteCasted<byte>(IsServer() ? my_id : info.id);
+								net_stream.WriteCasted<byte>(Net::IsServer() ? my_id : info.id);
 								WriteString1(net_stream, text);
-								peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, sv_server ? info.adr : server, false);
-								StreamWrite(net_stream, Stream_Chat, sv_server ? info.adr : server);
+								peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? info.adr : server, false);
+								StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? info.adr : server);
 								cstring s = Format("@%s: %s", info.name.c_str(), text.c_str());
 								AddMsg(s);
 								Info(s);
@@ -1093,11 +1092,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							PlayerInfo& info = game_players[index];
 							if(leader_id == info.id)
 								Msg("Player '%s' is already a leader.", player_name.c_str());
-							else if(sv_server || leader_id == my_id)
+							else if(Net::IsServer() || leader_id == my_id)
 							{
 								if(server_panel->visible)
 								{
-									if(sv_server)
+									if(Net::IsServer())
 									{
 										leader_id = info.id;
 										AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
@@ -1111,7 +1110,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									c.type = NetChange::CHANGE_LEADER;
 									c.id = info.id;
 
-									if(sv_server)
+									if(Net::IsServer())
 									{
 										leader_id = info.id;
 										Team.leader = info.u;
@@ -1184,7 +1183,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							Msg("You picked Random character.");
 						}
 					}
-					else if(sv_online)
+					else if(Net::IsOnline())
 					{
 						int n = Random(1, 100);
 						NetChange& c = Add1(net_changes);
@@ -1244,8 +1243,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						net_stream.Write(ID_SAY);
 						net_stream.WriteCasted<byte>(my_id);
 						WriteString1(net_stream, text);
-						peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, sv_server ? UNASSIGNED_SYSTEM_ADDRESS : server, sv_server);
-						StreamWrite(net_stream, Stream_Chat, sv_server ? UNASSIGNED_SYSTEM_ADDRESS : server);
+						peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server, Net::IsServer());
+						StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server);
 						cstring s = Format("%s: %s", game_players[0].name.c_str(), text.c_str());
 						AddMsg(s);
 						Info(s);
@@ -1335,7 +1334,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.Next())
 					{
 						noai = t.MustGetBool();
-						if(IsOnline())
+						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(net_changes);
 							c.type = NetChange::CHEAT_NOAI;
@@ -1346,7 +1345,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_PAUSE:
 					paused = !paused;
-					if(IsOnline())
+					if(Net::IsOnline())
 					{
 						AddMultiMsg(paused ? txGamePaused : txGameResumed);
 						NetChange& c = Add1(net_changes);
@@ -1457,7 +1456,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					break;
 				case CMD_QS:
-					if(IsServer())
+					if(Net::IsServer())
 					{
 						if(!sv_startup)
 						{
@@ -1548,7 +1547,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							Msg("No unit selected.");
 							break;
 						}
-						if(IsLocal())
+						if(Net::IsLocal())
 						{
 							if(it->cmd == CMD_HURT)
 								GiveDmg(GetContext(*u), nullptr, 100.f, *u);
@@ -1632,7 +1631,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							Msg("No unit selected.");
 							break;
 						}
-						if(IsLocal())
+						if(Net::IsLocal())
 							u->ApplyStun(length);
 						else
 						{
@@ -1645,7 +1644,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_REFRESH_COOLDOWN:
 					pc->RefreshCooldown();
-					if(!IsLocal())
+					if(!Net::IsLocal())
 						PushNetChange(NetChange::CHEAT_REFRESH_COOLDOWN);
 					break;
 				default:

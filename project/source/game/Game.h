@@ -883,7 +883,7 @@ public:
 
 	bool WantAttackTeam(Unit& u)
 	{
-		if(IsLocal())
+		if(Net::Net::IsLocal())
 			return u.attack_team;
 		else
 			return IS_SET(u.ai_mode, 0x08);
@@ -1221,7 +1221,7 @@ public:
 	bool HaveTeamMemberPC();
 	bool IsLeader()
 	{
-		if(!IsOnline())
+		if(Net::IsSingleplayer())
 			return true;
 		else
 			return leader_id == my_id;
@@ -1311,14 +1311,14 @@ public:
 	void UpdateGame2(float dt);
 	bool IsUnitDontAttack(Unit& u)
 	{
-		if(IsLocal())
+		if(Net::Net::IsLocal())
 			return u.dont_attack;
 		else
 			return IS_SET(u.ai_mode, 0x01);
 	}
 	bool IsUnitAssist(Unit& u)
 	{
-		if(IsLocal())
+		if(Net::Net::IsLocal())
 			return u.assist;
 		else
 			return IS_SET(u.ai_mode, 0x02);
@@ -1542,7 +1542,7 @@ public:
 	int my_id; // moje unikalne id
 	int last_id;
 	int last_startup_id;
-	bool sv_server, sv_online, sv_startup, was_client;
+	bool sv_startup, was_client;
 	BitStream server_info;
 	vector<byte> packet_data;
 	vector<PlayerInfo> game_players, old_players;
@@ -1597,16 +1597,6 @@ public:
 	void UpdateInterpolator(EntityInterpolator* e, float dt, Vec3& pos, float& rot);
 	void InterpolateUnits(float dt);
 	void InterpolatePlayers(float dt);
-
-	// sprawdza czy aktualna gra jest online
-	bool IsOnline() const { return sv_online; }
-	// sprawdza czy ja jestem serwerem
-	bool IsServer() const { return sv_server; }
-	// sprawdza czy ja jestem klientem
-	bool IsClient() const { return !sv_server; }
-	bool IsClient2() const { return sv_online && !sv_server; }
-	// czy jest serwerem lub pojedyñczy gracz
-	bool IsLocal() const { return !IsOnline() || IsServer(); }
 
 	void InitServer();
 	void InitClient();

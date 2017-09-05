@@ -203,7 +203,7 @@ bool Unit::DropItem(int index)
 	mesh_inst->groups[0].speed = 1.f;
 	mesh_inst->frame_end_info = false;
 
-	if(game.IsLocal())
+	if(Net::Net::IsLocal())
 	{
 		GroundItem* item = new GroundItem;
 		item->item = s.item;
@@ -227,7 +227,7 @@ bool Unit::DropItem(int index)
 		if(!game.CheckMoonStone(item, *this))
 			game.AddGroundItem(game.GetContext(*this), item);
 
-		if(game.IsServer())
+		if(Net::Net::IsServer())
 		{
 			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::DROP_ITEM;
@@ -267,7 +267,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 	mesh_inst->groups[0].speed = 1.f;
 	mesh_inst->frame_end_info = false;
 
-	if(game.IsLocal())
+	if(Net::Net::IsLocal())
 	{
 		GroundItem* item = new GroundItem;
 		item->item = item2;
@@ -280,7 +280,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 		item2 = nullptr;
 		game.AddGroundItem(game.GetContext(*this), item);
 
-		if(game.IsOnline())
+		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::DROP_ITEM;
@@ -322,7 +322,7 @@ bool Unit::DropItems(int index, uint count)
 	mesh_inst->groups[0].speed = 1.f;
 	mesh_inst->frame_end_info = false;
 
-	if(game.IsLocal())
+	if(Net::Net::IsLocal())
 	{
 		GroundItem* item = new GroundItem;
 		item->item = s.item;
@@ -340,7 +340,7 @@ bool Unit::DropItems(int index, uint count)
 		}
 		game.AddGroundItem(game.GetContext(*this), item);
 
-		if(game.IsServer())
+		if(Net::Net::IsServer())
 		{
 			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::DROP_ITEM;
@@ -479,11 +479,11 @@ int Unit::ConsumeItem(int index)
 
 	// wyœlij komunikat
 	Game& game = Game::Get();
-	if(game.IsOnline())
+	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::CONSUME_ITEM;
-		if(game.IsServer())
+		if(Net::Net::IsServer())
 		{
 			c.unit = this;
 			c.id = (int)used_item;
@@ -501,7 +501,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 {
 	if(action != A_NONE && action != A_ANIMATION2)
 	{
-		if(Game::Get().IsLocal())
+		if(Net::IsLocal())
 		{
 			assert(0);
 			return;
@@ -530,7 +530,7 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 	if(send)
 	{
 		Game& game = Game::Get();
-		if(game.IsOnline())
+		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::CONSUME_ITEM;
@@ -583,7 +583,7 @@ void Unit::HideWeapon()
 	}
 
 	Game& game = Game::Get();
-	if(game.IsOnline())
+	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(game.net_changes);
 		c.type = NetChange::TAKE_WEAPON;
@@ -614,7 +614,7 @@ void Unit::TakeWeapon(WeaponType _type)
 		mesh_inst->frame_end_info2 = false;
 
 		Game& game = Game::Get();
-		if(game.IsOnline())
+		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::TAKE_WEAPON;
@@ -639,7 +639,7 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 	Game& game = Game::Get();
 	if(item->type == IT_GOLD && Team.IsTeamMember(*this))
 	{
-		if(game.IsLocal())
+		if(Net::Net::IsLocal())
 		{
 			if(team_count && IsTeamMember())
 			{
@@ -678,7 +678,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		hp += item.power;
 		if(hp > hpmax)
 			hp = hpmax;
-		if(game.IsOnline())
+		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::UPDATE_HP;
@@ -759,7 +759,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		if(human_data)
 		{
 			human_data->hair_color = Vec4(0, 1, 0, 1);
-			if(game.IsOnline())
+			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(game.net_changes);
 				c.type = NetChange::HAIR_COLOR;
@@ -820,7 +820,7 @@ void Unit::UpdateEffects(float dt)
 		hp += (best_reg * dt + food_heal) * natural;
 		if(hp > hpmax)
 			hp = hpmax;
-		if(game.IsOnline())
+		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(game.net_changes);
 			c.type = NetChange::UPDATE_HP;
@@ -851,7 +851,7 @@ void Unit::UpdateEffects(float dt)
 		game.GiveDmg(game.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, DMG_NO_BLOOD);
 	if(IsPlayer())
 	{
-		if(game.IsOnline() && player != game.pc && player->last_dmg_poison != poison_dmg)
+		if(Net::IsOnline() && player != game.pc && player->last_dmg_poison != poison_dmg)
 			game.game_players[player->id].update_flags |= PlayerInfo::UF_POISON_DAMAGE;
 		player->last_dmg_poison = poison_dmg;
 	}
@@ -897,7 +897,7 @@ void Unit::UpdateEffects(float dt)
 		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt;
 		if(stamina > stamina_max)
 			stamina = stamina_max;
-		if(game.IsServer() && player && player != game.pc)
+		if(Net::Net::IsServer() && player && player != game.pc)
 			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
 	}
 
@@ -2130,7 +2130,7 @@ void Unit::RemoveEffect(ConsumeEffect effect)
 	if(!_to_remove.empty())
 	{
 		auto& game = Game::Get();
-		if(game.IsOnline() && game.IsServer())
+		if(Net::IsOnline() && Net::Net::IsServer())
 		{
 			auto& c = Add1(game.net_changes);
 			c.type = NetChange::STUN;
@@ -2639,12 +2639,12 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 		{
 			// hp/load depends on str
 			Game& game = Game::Get();
-			if(game.IsLocal())
+			if(Net::Net::IsLocal())
 			{
 				RecalculateHp();
 				if(!fake_unit)
 				{
-					if(game.IsServer())
+					if(Net::Net::IsServer())
 					{
 						NetChange& c = Add1(game.net_changes);
 						c.type = NetChange::UPDATE_HP;
@@ -2661,13 +2661,13 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 		{
 			// hp/stamina depends on end
 			Game& game = Game::Get();
-			if(game.IsLocal())
+			if(Net::Net::IsLocal())
 			{
 				RecalculateHp();
 				RecalculateStamina();
 				if(!fake_unit)
 				{
-					if(game.IsServer())
+					if(Net::Net::IsServer())
 					{
 						NetChange& c = Add1(game.net_changes);
 						c.type = NetChange::UPDATE_HP;
@@ -2688,10 +2688,10 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 		{
 			// stamina depends on dex
 			Game& game = Game::Get();
-			if(game.IsLocal())
+			if(Net::Net::IsLocal())
 			{
 				RecalculateStamina();
-				if(!fake_unit && game.IsServer() && IsPlayer() && player != game.pc)
+				if(!fake_unit && Net::Net::IsServer() && IsPlayer() && player != game.pc)
 					game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
 			}
 			else
@@ -3201,7 +3201,7 @@ void Unit::ApplyStun(float length)
 {
 	Game& game = Game::Get();
 
-	if(game.IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
+	if(Net::Net::IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
 		length /= 2;
 
 	auto effect = FindEffect(E_STUN);
@@ -3216,7 +3216,7 @@ void Unit::ApplyStun(float length)
 		animation = ANI_STAND;
 	}
 
-	if(game.IsOnline() && game.IsServer())
+	if(Net::IsOnline() && Net::Net::IsServer())
 	{
 		auto& c = Add1(game.net_changes);
 		c.type = NetChange::STUN;

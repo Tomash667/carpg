@@ -1,182 +1,15 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "GamePacket.h"
+
+//-----------------------------------------------------------------------------
 struct GroundItem;
 struct Item;
 struct PlayerController;
 struct Spell;
 struct Unit;
 struct UnitData;
-
-//-----------------------------------------------------------------------------
-enum GamePacket : byte
-{
-	/* komunikat powitalny do serwera, size:7-21
-	byte - id
-	int - wersja gry
-	string1 - nick (16)
-	*/
-	ID_HELLO = ID_USER_PACKET_ENUM + 1,
-
-	/* aktualizacja w lobby, size:4+
-	byte - id
-	byte - liczba zmian
-	[tablica]
-	{
-		byte - rodzaj (0-aktualizuj gracza,1-dodaj gracza,2-usuñ gracza,3-liczba graczy,4-przywódca)
-		byte - id gracza/liczba graczy
-		[jeœli 0]
-		{
-			byte - czy gotowy
-			byte - klasa
-		}
-		[jeœli 1]
-		{
-			string1 - nick
-		}
-	}
-	*/
-	ID_LOBBY_UPDATE,
-
-	/* gracz nie mo¿e do³¹czyæ do serwera, size:2-6
-	byte - id
-	byte - powód (0-brak miejsca,1-z³a wersja,2-zajêty nick,3-z³y nick przy wczytywaniu,4-z³e ID_HELLO,5-nieznany b³¹d)
-	[jeœli powód=1]
-	int - wersja
-	*/
-	ID_CANT_JOIN,
-
-	/* do³¹cza gracza do lobby, size:4+
-	byte - id
-	byte - id gracza
-	byte - liczba graczy
-	byte - liczba graczy w lobby
-	byte - id przywódcy
-	[dla ka¿dego gracza]
-	{
-		byte - id
-		byte - gotowy
-		byte - klasa
-		string1 - nick
-	}
-	*/
-	ID_JOIN,
-
-	/* player changed readyness
-	byte - id
-	bool - ready
-	*/
-	ID_CHANGE_READY,
-
-	/* wiadomoœæ do wszystkich gracz, size:4+
-	byte - id
-	byte - id gracza
-	string1 - tekst
-	*/
-	ID_SAY,
-
-	/* prywatna wiadomoœæ, size:4+
-	byte - id
-	byte - id gracza
-	string1-tekst
-	*/
-	ID_WHISPER,
-
-	/* wiadomoœæ od serwera do wszystkich, size:3+
-	byte - id
-	string1 - tekst
-	*/
-	ID_SERVER_SAY,
-
-	/* gracz opuszcza serwer, size:1
-	byte - id
-	*/
-	ID_LEAVE,
-
-	/* zamykanie serwera, size:2
-	byte - id
-	byte - powód
-	*/
-	ID_SERVER_CLOSE,
-
-	/* send to server when changed class
-	byte - id
-	CharacterData
-	bool - ready
-	------------------------------------
-	Response:
-	byte - id
-	bool - ok
-	*/
-	ID_PICK_CHARACTER,
-
-	/* Server startup timer
-	byte - left seconds
-	*/
-	ID_TIMER,
-
-	/* Server startup canceled
-	*/
-	ID_END_TIMER,
-
-	/* Server starting
-	bool - start on worldmap
-	*/
-	ID_STARTUP,
-
-	/* Info about current server task
-	byte - id
-	byte - state (0-generating world, 1-sending world, 2-waiting for players)
-	*/
-	ID_STATE,
-
-	/* World data sent to all players
-	PrepareWorldData
-	ReadWorldData
-	Client repond with ID_READY
-	*/
-	ID_WORLD_DATA,
-
-	/* One time send data per player
-	WritePlayerStartData
-	ReadPlayerStartData
-	Client repond with ID_READY
-	*/
-	ID_PLAYER_START_DATA,
-
-	/* Sent by clients after loading data to inform server
-	byte - action id
-	*/
-	ID_READY,
-
-	/* Info about changing location level
-	byte - location id
-	byte - dungeon level
-	Client send ack response
-	*/
-	ID_CHANGE_LEVEL,
-
-	/* Level data sent to client
-	byte - id
-	PrepareLevelData
-	ReadLevelData
-	*/
-	ID_LEVEL_DATA,
-
-	/* Player data sent per player
-	SendPlayerData
-	ReadPlayerData
-	*/
-	ID_PLAYER_DATA,
-
-	/* Sent to all players when everyone is loaded to start level
-	*/
-	ID_START,
-
-	ID_CONTROL,
-	ID_CHANGES,
-	ID_PLAYER_UPDATE
-};
 
 //-----------------------------------------------------------------------------
 struct NetChange
@@ -453,4 +286,49 @@ enum class JoinResult
 	InvalidUnitsCrc,
 	InvalidDialogsCrc,
 	InvalidTypeCrc
+};
+
+class Net
+{
+public:
+	enum class Mode
+	{
+		Singleplayer,
+		Server,
+		Client
+	};
+
+	static Mode GetMode()
+	{
+		return mode;
+	}
+
+	static bool IsLocal()
+	{
+		return mode != Mode::Client;
+	}
+	static bool IsOnline()
+	{
+		return mode != Mode::Singleplayer;
+	}
+	static bool IsServer()
+	{
+		return mode == Mode::Server;
+	}
+	static bool IsClient()
+	{
+		return mode == Mode::Client;
+	}
+	static bool IsSingleplayer()
+	{
+		return mode == Mode::Singleplayer;
+	}
+
+	static void SetMode(Mode _mode)
+	{
+		mode = _mode;
+	}
+
+private:
+	static Mode mode;
 };

@@ -187,7 +187,7 @@ void PlayerController::Train(Skill skill, int points)
 		recalculate_level = true;
 		unit->Set(skill, value);
 		Game& game = Game::Get();
-		if(IsLocal())
+		if(Net::IsLocal())
 			game.ShowStatGain(true, s, gained);
 		else
 		{
@@ -236,7 +236,7 @@ void PlayerController::Train(Attribute attrib, int points)
 		recalculate_level = true;
 		unit->Set(attrib, value);
 		Game& game = Game::Get();
-		if(IsLocal())
+		if(Net::IsLocal())
 			game.ShowStatGain(false, a, gained);
 		else
 		{
@@ -304,7 +304,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 
 	// send update
 	Game& game = Game::Get();
-	if(game.IsOnline() && !travel)
+	if(Net::IsOnline() && !travel)
 	{
 		if(unit->hp != prev_hp)
 		{

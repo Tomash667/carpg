@@ -710,7 +710,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(!reenter)
 		InitQuadTree();
 
-	if(IsOnline() && players > 1)
+	if(Net::IsOnline() && players > 1)
 	{
 		packet_data.resize(3);
 		packet_data[0] = ID_CHANGE_LEVEL;
@@ -1436,7 +1436,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		location->portal = nullptr;
 	}
 
-	if(IsOnline())
+	if(Net::IsOnline())
 	{
 		net_mode = NM_SERVER_SEND;
 		net_state = 0;
@@ -1570,7 +1570,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 			u->pos = pos + Vec3(sin(sdir)*slen, 0, cos(sdir)*slen);
 			u->rot = sdir;
 			u->user = nullptr;
-			if(IsOnline())
+			if(Net::IsOnline())
 				u->netid = usable_netid_counter++;
 
 			SpawnObjectExtras(ctx, stolek, u->pos, u->rot, u, nullptr);
@@ -1671,7 +1671,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 			u->variant = variant;
 			obj_ptr = u;
 
-			if(IsOnline())
+			if(Net::IsOnline())
 				u->netid = usable_netid_counter++;
 
 			obj_id = ctx.usables->size();
@@ -1689,7 +1689,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 			obj_id = ctx.chests->size();
 			obj_t = 2;
 			ctx.chests->push_back(chest);
-			if(IsOnline())
+			if(Net::IsOnline())
 				chest->netid = chest_netid_counter++;
 		}
 		else
@@ -2736,7 +2736,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	pvp_response.ok = false;
 	tournament_generated = false;
 
-	if(IsLocal() && (quest_crazies->check_stone || (quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && quest_crazies->crazies_state < Quest_Crazies::State::End)))
+	if(Net::IsLocal() && (quest_crazies->check_stone || (quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && quest_crazies->crazies_state < Quest_Crazies::State::End)))
 		CheckCraziesStone();
 
 	// drinking contest
@@ -2761,7 +2761,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		AddNews(txContestNoWinner);
 	}
 
-	if(IsLocal())
+	if(Net::IsLocal())
 	{
 		// zawody
 		if(tournament_state != TOURNAMENT_NOT_DONE)
@@ -2772,13 +2772,13 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	}
 
 	// clear blood & bodies from orc base
-	if(IsLocal() && quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && current_location == quest_orcs2->target_loc)
+	if(Net::IsLocal() && quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && current_location == quest_orcs2->target_loc)
 	{
 		quest_orcs2->orcs_state = Quest_Orcs2::State::End;
 		UpdateLocation(31, 100, false);
 	}
 
-	if(city_ctx && game_state != GS_EXIT_TO_MENU && IsLocal())
+	if(city_ctx && game_state != GS_EXIT_TO_MENU && Net::IsLocal())
 	{
 		// opuszczanie miasta
 		BuyTeamItems();
@@ -2788,7 +2788,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 	if(open_location != -1)
 	{
-		if(IsLocal())
+		if(Net::IsLocal())
 		{
 			// usuñ questowe postacie
 			RemoveQuestUnits(true);
@@ -2820,11 +2820,11 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	if(Team.crazies_attack)
 	{
 		Team.crazies_attack = false;
-		if(IsOnline())
+		if(Net::IsOnline())
 			PushNetChange(NetChange::CHANGE_FLAGS);
 	}
 
-	if(!IsLocal())
+	if(!Net::IsLocal())
 		pc = nullptr;
 	else if(end_buffs)
 	{
@@ -3695,7 +3695,7 @@ void Game::Event_RandomEncounter(int)
 {
 	world_state = WS_TRAVEL;
 	dialog_enc = nullptr;
-	if(IsOnline())
+	if(Net::IsOnline())
 		PushNetChange(NetChange::CLOSE_ENCOUNTER);
 	current_location = encounter_loc;
 	EnterLocation();
@@ -4354,7 +4354,7 @@ void Game::DoWorldProgress(int days)
 
 			if(loc->type == L_CAMP)
 			{
-				if(IsOnline())
+				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(net_changes);
 					c.type = NetChange::REMOVE_CAMP;
@@ -4449,7 +4449,7 @@ void Game::DoWorldProgress(int days)
 					++empty_locations;
 				}
 
-				if(IsOnline())
+				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(net_changes);
 					c.type = NetChange::REMOVE_CAMP;
@@ -4473,7 +4473,7 @@ void Game::DoWorldProgress(int days)
 		}
 	}
 
-	if(IsLocal())
+	if(Net::IsLocal())
 		UpdateQuests(days);
 
 	// aktualizuj newsy
@@ -5180,7 +5180,7 @@ int Game::AddLocation(Location* loc)
 			if(!*rit)
 			{
 				*rit = loc;
-				if(IsOnline())
+				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(net_changes);
 					c.type = NetChange::ADD_LOCATION;
@@ -5194,7 +5194,7 @@ int Game::AddLocation(Location* loc)
 	}
 	else
 	{
-		if(IsOnline())
+		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(net_changes);
 			c.type = NetChange::ADD_LOCATION;
@@ -6736,7 +6736,7 @@ void Game::SetLocationVisited(Location& loc)
 {
 	loc.state = LS_VISITED;
 
-	if(loc.type == L_CITY && IsLocal())
+	if(loc.type == L_CITY && Net::IsLocal())
 	{
 		// generate buildings
 	}

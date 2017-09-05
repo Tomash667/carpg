@@ -55,9 +55,9 @@ bool Game::CanSaveGame() const
 			return false;
 	}
 
-	if(IsOnline())
+	if(Net::IsOnline())
 	{
-		if(Team.IsAnyoneAlive() && IsServer())
+		if(Team.IsAnyoneAlive() && Net::IsServer())
 			return true;
 	}
 	else if(pc->unit->IsAlive() || pc->unit->in_arena != -1)
@@ -69,7 +69,7 @@ bool Game::CanSaveGame() const
 //=================================================================================================
 bool Game::CanLoadGame() const
 {
-	if(IsOnline())
+	if(Net::IsOnline())
 		return false;
 
 	return true;
@@ -88,9 +88,9 @@ bool Game::SaveGameSlot(int slot, cstring text)
 	}
 
 	CreateDirectory("saves", nullptr);
-	CreateDirectory(IsOnline() ? "saves/multi" : "saves/single", nullptr);
+	CreateDirectory(Net::IsOnline() ? "saves/multi" : "saves/single", nullptr);
 
-	cstring filename = Format(IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
+	cstring filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 
 	if(io::FileExists(filename))
 	{
@@ -115,7 +115,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 		AddConsoleMsg(msg);
 		Info(msg);
 
-		SaveSlot& ss = (IsOnline() ? multi_saves[slot - 1] : single_saves[slot - 1]);
+		SaveSlot& ss = (Net::IsOnline() ? multi_saves[slot - 1] : single_saves[slot - 1]);
 		ss.valid = true;
 		ss.game_day = day;
 		ss.game_month = month;
@@ -138,15 +138,15 @@ bool Game::SaveGameSlot(int slot, cstring text)
 		cfg.Add("text", ss.text.c_str());
 		cfg.Add("hardcore", ss.hardcore ? "1" : "0");
 
-		if(IsOnline())
+		if(Net::IsOnline())
 		{
 			ss.multiplayers = players;
 			cfg.Add("multiplayers", Format("%d", ss.multiplayers));
 		}
 
-		cfg.Save(Format("saves/%s/%d.txt", IsOnline() ? "multi" : "single", slot));
+		cfg.Save(Format("saves/%s/%d.txt", Net::IsOnline() ? "multi" : "single", slot));
 
-		string path = Format("saves/%s/%d.jpg", IsOnline() ? "multi" : "single", slot);
+		string path = Format("saves/%s/%d.jpg", Net::IsOnline() ? "multi" : "single", slot);
 		CreateSaveImage(path.c_str());
 
 		if(hardcore_mode)
@@ -216,9 +216,9 @@ void Game::LoadGameSlot(int slot)
 		hardcore_savename = s.text;
 
 		Info("Hardcore mode, deleting save.");
-		DeleteFile(Format(IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
-		DeleteFile(Format(IsOnline() ? "saves/multi/%d.txt" : "saves/single/%d.txt", slot));
-		DeleteFile(Format(IsOnline() ? "saves/multi/%d.jpg" : "saves/single/%d.jpg", slot));
+		DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
+		DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.txt" : "saves/single/%d.txt", slot));
+		DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.jpg" : "saves/single/%d.jpg", slot));
 	}
 
 	if(!mp_load)
@@ -319,7 +319,7 @@ void Game::SaveGame(HANDLE file)
 	GameWriter f(file);
 
 	// przed zapisaniem zaktualizuj minimapê, przenieœ jednostki itp
-	if(IsOnline())
+	if(Net::IsOnline())
 		Net_PreSave();
 	UpdateDungeonMinimap(false);
 	ProcessUnitWarps();
@@ -337,7 +337,7 @@ void Game::SaveGame(HANDLE file)
 	f << start_version;
 
 	// czy online / dev
-	byte flags = (sv_online ? SF_ONLINE : 0);
+	byte flags = (Net::IsOnline() ? SF_ONLINE : 0);
 #ifdef _DEBUG
 	flags |= SF_DEBUG;
 #endif
@@ -541,7 +541,7 @@ void Game::SaveGame(HANDLE file)
 		++check_id;
 	}
 
-	if(IsOnline())
+	if(Net::IsOnline())
 	{
 		WriteString1(file, server_name);
 		WriteString1(file, server_pswd);
@@ -1613,8 +1613,7 @@ bool Game::Quickload(bool from_console)
 
 	try
 	{
-		sv_server = false;
-		sv_online = false;
+		Net::SetMode(Net::Mode::Singleplayer);
 		LoadGameSlot(MAX_SAVE_SLOTS);
 	}
 	catch(const SaveException& ex)

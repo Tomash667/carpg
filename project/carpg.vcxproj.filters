@@ -1232,6 +1232,9 @@
     <ClInclude Include="source\game\panels\ActionPanel.h">
       <Filter>3. game\panels</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\net\GamePacket.h">
+      <Filter>3. game\net</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">

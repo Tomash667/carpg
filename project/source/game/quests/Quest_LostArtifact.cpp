@@ -107,7 +107,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_AddQuest(refid);
 				game->Net_RegisterItem(&quest_item, item);
@@ -134,7 +134,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			game->current_dialog->talker->AddItem(&quest_item, 1, true);
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				if(!game->current_dialog->is_local)
@@ -157,7 +157,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->current_dialog->talker->temporary = true;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;

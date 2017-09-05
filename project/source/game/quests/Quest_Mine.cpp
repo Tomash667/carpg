@@ -109,7 +109,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_AddQuest(refid);
 				if(now_known)
@@ -123,7 +123,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -138,7 +138,7 @@ void Quest_Mine::SetProgress(int prog2)
 			days_required = Random(30, 45);
 			quest_manager.RemoveQuestRumor(P_KOPALNIA);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -156,7 +156,7 @@ void Quest_Mine::SetProgress(int prog2)
 				days = days_required - 1;
 			days_gold = 0;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -172,7 +172,7 @@ void Quest_Mine::SetProgress(int prog2)
 			days_required = Random(30, 45);
 			quest_manager.RemoveQuestRumor(P_KOPALNIA);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -185,7 +185,7 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::CanExpand;
 			game->AddNews(Format(game->txQuest[139], GetTargetLocationName()));
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -195,7 +195,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -207,7 +207,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			quest_manager.EndUniqueQuest();
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -224,7 +224,7 @@ void Quest_Mine::SetProgress(int prog2)
 			days = 0;
 			days_required = Random(30, 45);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				if(!game->current_dialog->is_local)
@@ -248,7 +248,7 @@ void Quest_Mine::SetProgress(int prog2)
 			days_gold = 0;
 			game->AddNews(Format(game->txQuest[144], GetTargetLocationName()));
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -261,7 +261,7 @@ void Quest_Mine::SetProgress(int prog2)
 			mine_state2 = State2::FoundPortal;
 			game->AddNews(Format(game->txQuest[146], GetTargetLocationName()));
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -274,7 +274,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				if(!game->current_dialog->is_local)
@@ -298,7 +298,7 @@ void Quest_Mine::SetProgress(int prog2)
 			quest_manager.EndUniqueQuest();
 			game->AddNews(game->txQuest[149]);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;

@@ -309,7 +309,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			btCreate.Draw();
 			btBack.Draw();
 
-			if(!game->IsOnline())
+			if(!Net::IsOnline())
 				checkbox.Draw();
 
 			for(int i = 0; i < 5; ++i)
@@ -424,7 +424,7 @@ void CreateCharacterPanel::Update(float dt)
 			btCreate.mouse_focus = focus;
 			btCreate.Update(dt);
 
-			if(!game->IsOnline())
+			if(!Net::IsOnline())
 			{
 				checkbox.mouse_focus = focus;
 				checkbox.Update(dt);

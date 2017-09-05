@@ -726,7 +726,7 @@ void Game::BuyTeamItems()
 //=================================================================================================
 void Game::ValidateTeamItems()
 {
-	if(!IsLocal())
+	if(!Net::IsLocal())
 		return;
 
 	struct IVector

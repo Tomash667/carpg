@@ -50,7 +50,7 @@ Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quicksta
 cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false),
 game_speed(1.f), devmode(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false),
 obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), debug_info(false), dont_wander(false), local_ctx_valid(false),
-city_ctx(nullptr), check_updates(true), skip_tutorial(false), sv_online(false), portal_anim(0), nosound(false), nomusic(false),
+city_ctx(nullptr), check_updates(true), skip_tutorial(false), portal_anim(0), nosound(false), nomusic(false),
 debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64 * 1024), net_stream2(64 * 1024),
 mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
 prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false),
@@ -288,7 +288,7 @@ void Game::OnTick(float dt)
 
 	UpdateMusic();
 
-	if(!IsOnline() || !paused)
+	if(Net::IsSingleplayer() || !paused)
 	{
 		// aktualizacja czasu spêdzonego w grze
 		if(game_state != GS_MAIN_MENU && game_state != GS_LOAD)
@@ -301,7 +301,7 @@ void Game::OnTick(float dt)
 	if(IsLostDevice() || !active || !IsCursorLocked())
 	{
 		Key.SetFocus(false);
-		if(!IsOnline() && !inactive_update)
+		if(Net::IsSingleplayer() && !inactive_update)
 			return;
 	}
 	else
@@ -352,9 +352,9 @@ void Game::OnTick(float dt)
 		// zatrzymywanie/wznawianie gry
 		if(KeyPressedReleaseAllowed(GK_PAUSE))
 		{
-			if(!IsOnline())
+			if(Net::IsSingleplayer())
 				paused = !paused;
-			else if(IsServer())
+			else if(Net::IsServer())
 			{
 				paused = !paused;
 				AddMultiMsg(paused ? txGamePaused : txGameResumed);
@@ -450,7 +450,7 @@ void Game::OnTick(float dt)
 	if(!paused)
 	{
 		// pytanie o pvp
-		if(game_state == GS_LEVEL && IsOnline())
+		if(game_state == GS_LEVEL && Net::IsOnline())
 		{
 			if(pvp_response.ok)
 			{
@@ -465,7 +465,7 @@ void Game::OnTick(float dt)
 						delete dialog_pvp;
 						dialog_pvp = nullptr;
 					}
-					if(IsServer())
+					if(Net::IsServer())
 					{
 						if(pvp_response.from == pc->unit)
 							AddMsg(Format(txPvpRefuse, pvp_response.to->player->name.c_str()));
@@ -493,26 +493,26 @@ void Game::OnTick(float dt)
 			if(paused)
 			{
 				UpdateFallback(dt);
-				if (IsLocal())
+				if (Net::IsLocal())
 				{
-					if (IsOnline())
+					if (Net::IsOnline())
 						UpdateWarpData(dt);
 					ProcessUnitWarps();
 				}
 				SetupCamera(dt);
-				if(IsOnline())
+				if(Net::IsOnline())
 					UpdateGameNet(dt);
 			}
 			else if(GUI.HavePauseDialog())
 			{
-				if (IsOnline())
+				if (Net::IsOnline())
 					UpdateGame(dt);
 				else
 				{
 					UpdateFallback(dt);
-					if (IsLocal())
+					if (Net::IsLocal())
 					{
-						if (IsOnline())
+						if (Net::IsOnline())
 							UpdateWarpData(dt);
 						ProcessUnitWarps();
 					}
@@ -524,17 +524,17 @@ void Game::OnTick(float dt)
 		}
 		else if(game_state == GS_WORLDMAP)
 		{
-			if(IsOnline())
+			if(Net::IsOnline())
 				UpdateGameNet(dt);
 		}
 
-		if(!IsOnline() && game_state != GS_MAIN_MENU)
+		if(Net::IsSingleplayer() && game_state != GS_MAIN_MENU)
 		{
 			assert(net_changes.empty());
 			assert(net_changes_player.empty());
 		}
 	}
-	else if(IsOnline())
+	else if(Net::IsOnline())
 		UpdateGameNet(dt);
 
 	// aktywacja mp_box
@@ -561,9 +561,9 @@ void Game::GetTitle(LocalString& s)
 
 	if(change_title_a && ((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (server_panel && server_panel->visible)))
 	{
-		if(sv_online)
+		if(Net::IsOnline())
 		{
-			if(sv_server)
+			if(Net::IsServer())
 			{
 				if(none)
 					s += " - SERVER";
@@ -779,7 +779,7 @@ void Game::TakeScreenshot(bool no_gui)
 //=================================================================================================
 void Game::ExitToMenu()
 {
-	if(sv_online)
+	if(Net::IsOnline())
 		CloseConnection(VoidF(this, &Game::DoExitToMenu));
 	else
 		DoExitToMenu();
@@ -2380,7 +2380,7 @@ void Game::UnitFall(Unit& u)
 	ACTION prev_action = u.action;
 	u.live_state = Unit::FALLING;
 
-	if(IsLocal())
+	if(Net::IsLocal())
 	{
 		// przerwij akcjê
 		BreakUnitAction(u, true);
@@ -2393,7 +2393,7 @@ void Game::UnitFall(Unit& u)
 			u.event_handler->HandleUnitEvent(UnitEventHandler::FALL, &u);
 
 		// komunikat
-		if(IsOnline())
+		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(net_changes);
 			c.type = NetChange::FALL;
@@ -2440,7 +2440,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	else
 		u.live_state = Unit::DYING;
 
-	if(IsLocal())
+	if(Net::IsLocal())
 	{
 		// przerwij akcjê
 		BreakUnitAction(u, true);
@@ -2480,7 +2480,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		}
 
 		// komunikat
-		if(IsOnline())
+		if(Net::IsOnline())
 		{
 			NetChange& c2 = Add1(net_changes);
 			c2.type = NetChange::DIE;
@@ -2492,13 +2492,13 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		if(killer && killer->IsPlayer())
 		{
 			++killer->player->kills;
-			if(IsOnline())
+			if(Net::IsOnline())
 				killer->player->stat_flags |= STAT_KILLS;
 		}
 		if(u.IsPlayer())
 		{
 			++u.player->knocks;
-			if(IsOnline())
+			if(Net::IsOnline())
 				u.player->stat_flags |= STAT_KNOCKS;
 			if(u.player == pc)
 				pc_data.before_player = BP_NONE;
@@ -2615,7 +2615,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 	{
 		UnitStandup(u);
 
-		if(IsOnline())
+		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(net_changes);
 			c.type = NetChange::STAND_UP;
@@ -2640,7 +2640,7 @@ void Game::UnitStandup(Unit& u)
 		u.action = A_NONE;
 	u.used_item = nullptr;
 
-	if(IsLocal() && u.IsAI())
+	if(Net::IsLocal() && u.IsAI())
 	{
 		if(u.ai->state != AIController::Idle)
 		{

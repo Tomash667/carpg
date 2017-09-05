@@ -26,6 +26,7 @@
 #include "Team.h"
 #include "Action.h"
 
+Net::Mode Net::mode;
 extern bool merchant_buy[];
 extern bool blacksmith_buy[];
 extern bool alchemist_buy[];
@@ -163,8 +164,7 @@ void Game::InitServer()
 
 	Info("Server created. Waiting for connection.");
 
-	sv_online = true;
-	sv_server = true;
+	Net::SetMode(Net::Mode::Server);
 	sv_startup = false;
 	Info("sv_online = true");
 }
@@ -187,8 +187,7 @@ void Game::InitClient()
 	}
 	peer->SetMaximumIncomingConnections(0);
 
-	sv_online = true;
-	sv_server = false;
+	Net::SetMode(Net::Mode::Client);
 	Info("sv_online = true");
 
 	DEBUG_DO(peer->SetTimeoutTime(60 * 60 * 1000, UNASSIGNED_SYSTEM_ADDRESS));
@@ -4055,7 +4054,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 								spawned->in_arena = in_arena;
 								at_arena.push_back(spawned);
 							}
-							if(IsOnline())
+							if(Net::IsOnline())
 								Net_SpawnUnit(spawned);
 						}
 					}
@@ -5346,7 +5345,7 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 	int changes = 0;
 	PlayerController& player = *info.pc;
 
-	stream.WriteCasted<byte>(ID_PLAYER_UPDATE);
+	stream.WriteCasted<byte>(ID_PLAYER_CHANGES);
 	stream.WriteCasted<byte>(info.update_flags);
 	if(IS_SET(info.update_flags, PlayerInfo::UF_POISON_DAMAGE))
 		stream.Write(player.last_dmg_poison);
@@ -5657,7 +5656,7 @@ void Game::UpdateClient(float dt)
 				return;
 			}
 			break;
-		case ID_PLAYER_UPDATE:
+		case ID_PLAYER_CHANGES:
 			if(!ProcessControlMessageClientForMe(stream))
 			{
 				peer->DeallocatePacket(packet);
@@ -8500,7 +8499,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 	byte flags;
 	if(!stream.Read(flags))
 	{
-		Error("Update single client: Broken ID_PLAYER_UPDATE.");
+		Error("Update single client: Broken ID_PLAYER_CHANGES.");
 		StreamError();
 		return true;
 	}
@@ -8510,7 +8509,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 	{
 		if(!stream.Read(pc->last_dmg_poison))
 		{
-			Error("Update single client: Broken ID_PLAYER_UPDATE at UF_POISON_DAMAGE.");
+			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_POISON_DAMAGE.");
 			StreamError();
 			return true;
 		}
@@ -8522,7 +8521,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 		byte changes;
 		if(!stream.Read(changes))
 		{
-			Error("Update single client: Broken ID_PLAYER_UPDATE at UF_NET_CHANGES.");
+			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_NET_CHANGES.");
 			StreamError();
 			return true;
 		}
@@ -8532,7 +8531,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			NetChangePlayer::TYPE type;
 			if(!stream.ReadCasted<byte>(type))
 			{
-				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_NET_CHANGES(2).");
+				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_NET_CHANGES(2).");
 				StreamError();
 				return true;
 			}
@@ -9447,7 +9446,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 		{
 			if(!stream.Read(pc->unit->gold))
 			{
-				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_GOLD.");
+				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
 				StreamError();
 				return true;
 			}
@@ -9458,7 +9457,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 		{
 			if(!stream.Read(pc->unit->alcohol))
 			{
-				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_GOLD.");
+				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
 				StreamError();
 				return true;
 			}
@@ -9469,7 +9468,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 		{
 			if(!stream.ReadCasted<byte>(pc->player_info->buffs))
 			{
-				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_BUFFS.");
+				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_BUFFS.");
 				StreamError();
 				return true;
 			}
@@ -9480,7 +9479,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 		{
 			if(!stream.Read(pc->unit->stamina))
 			{
-				Error("Update single client: Broken ID_PLAYER_UPDATE at UF_STAMINA.");
+				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_STAMINA.");
 				StreamError();
 				return true;
 			}
@@ -10926,7 +10925,7 @@ bool Game::FilterOut(NetChange& c)
 	switch(c.type)
 	{
 	case NetChange::CHANGE_EQUIPMENT:
-		return IsServer();
+		return Net::IsServer();
 	case NetChange::CHANGE_FLAGS:
 	case NetChange::UPDATE_CREDIT:
 	case NetChange::ALL_QUESTS_COMPLETED:
@@ -10970,7 +10969,7 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::GAME_STATS:
 		return false;
 	case NetChange::TALK:
-		if(IsServer() && c.str)
+		if(Net::IsServer() && c.str)
 		{
 			StringPool.Free(c.str);
 			RemoveElement(net_talk, c.str);
@@ -11077,11 +11076,11 @@ void Game::ClosePeer(bool wait)
 	Info("Peer shutdown.");
 	peer->Shutdown(wait ? I_SHUTDOWN : 0);
 	Info("sv_online = false");
-	if(!sv_server)
+	if(Net::IsClient())
 		was_client = true;
 	net_changes.clear();
 	net_changes_player.clear();
-	sv_online = false;
+	Net::SetMode(Net::Mode::Singleplayer);
 }
 
 //=================================================================================================

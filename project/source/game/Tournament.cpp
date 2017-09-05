@@ -81,7 +81,7 @@ void Game::GenerateTournamentUnits()
 		if(u)
 		{
 			u->temporary = true;
-			if(IsOnline())
+			if(Net::IsOnline())
 				Net_SpawnUnit(u);
 		}
 	}
@@ -297,7 +297,7 @@ void Game::UpdateTournament(float dt)
 						if(p.first->IsPlayer())
 						{
 							p.first->player->arena_fights++;
-							if(IsOnline())
+							if(Net::IsOnline())
 								p.first->player->stat_flags |= STAT_ARENA_FIGHTS;
 							if(p.first->player == pc)
 							{
@@ -318,7 +318,7 @@ void Game::UpdateTournament(float dt)
 						if(p.second->IsPlayer())
 						{
 							p.second->player->arena_fights++;
-							if(IsOnline())
+							if(Net::IsOnline())
 								p.second->player->stat_flags |= STAT_ARENA_FIGHTS;
 							if(p.second->player == pc)
 							{

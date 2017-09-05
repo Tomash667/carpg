@@ -223,7 +223,7 @@ void WorldMapGui::Update(float dt)
 
 	if(game.world_state == WS_TRAVEL)
 	{
-		if(game.paused || (!game.IsOnline() && GUI.HavePauseDialog()))
+		if(game.paused || (!Net::IsOnline() && GUI.HavePauseDialog()))
 			return;
 
 		// ruch po mapie
@@ -234,7 +234,7 @@ void WorldMapGui::Update(float dt)
 		{
 			// min¹³ kolejny dzieñ w podró¿y
 			++game.travel_day;
-			if(game.IsLocal())
+			if(Net::Net::IsLocal())
 				game.WorldProgress(1, Game::WPM_TRAVEL);
 		}
 
@@ -258,7 +258,7 @@ void WorldMapGui::Update(float dt)
 			game.travel_time2 += dt;
 
 			// odkryj pobliskie miejsca / ataki
-			if(game.IsLocal() && game.travel_time2 >= 0.25f)
+			if(Net::Net::IsLocal() && game.travel_time2 >= 0.25f)
 			{
 				game.travel_time2 = 0;
 				int co = -2, enc = -1, index = 0;
@@ -296,7 +296,7 @@ void WorldMapGui::Update(float dt)
 						if(loc.state == LS_UNKNOWN)
 						{
 							loc.state = LS_KNOWN;
-							if(game.IsOnline())
+							if(Net::IsOnline())
 								game.Net_ChangeLocationState(index, false);
 						}
 					}
@@ -342,7 +342,7 @@ void WorldMapGui::Update(float dt)
 						info.type = DIALOG_OK;
 						game.dialog_enc = GUI.ShowDialog(info);
 
-						if(game.IsOnline())
+						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(game.net_changes);
 							c.type = NetChange::ENCOUNTER;
@@ -449,7 +449,7 @@ void WorldMapGui::Update(float dt)
 							info.type = DIALOG_OK;
 							game.dialog_enc = GUI.ShowDialog(info);
 
-							if(game.IsOnline())
+							if(Net::IsOnline())
 							{
 								NetChange& c = Add1(game.net_changes);
 								c.type = NetChange::ENCOUNTER;
@@ -492,7 +492,7 @@ void WorldMapGui::Update(float dt)
 							info.type = DIALOG_OK;
 							game.dialog_enc = GUI.ShowDialog(info);
 
-							if(game.IsOnline())
+							if(Net::IsOnline())
 							{
 								NetChange& c = Add1(game.net_changes);
 								c.type = NetChange::ENCOUNTER;
@@ -564,7 +564,7 @@ void WorldMapGui::Update(float dt)
 								game.open_location = -1;
 							}
 
-							if(game.IsOnline())
+							if(Net::IsOnline())
 							{
 								NetChange& c = Add1(game.net_changes);
 								c.type = NetChange::TRAVEL;
@@ -573,7 +573,7 @@ void WorldMapGui::Update(float dt)
 						}
 						else
 						{
-							if(game.IsLocal())
+							if(Net::Net::IsLocal())
 								game.EnterLocation();
 							else
 								game.PushNetChange(NetChange::ENTER_LOCATION);
@@ -596,7 +596,7 @@ void WorldMapGui::Update(float dt)
 							game.LeaveLocation(false, false);
 							game.open_location = -1;
 						}
-						if(game.IsOnline())
+						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(game.net_changes);
 							c.type = NetChange::CHEAT_TRAVEL;
@@ -627,7 +627,7 @@ void WorldMapGui::Event(GuiEvent e)
 //=================================================================================================
 void WorldMapGui::AppendLocationText(Location& loc, string& s)
 {
-	if(game.devmode && game.IsLocal())
+	if(game.devmode && Net::Net::IsLocal())
 	{
 		s += " (";
 		if(loc.type == L_DUNGEON || loc.type == L_CRYPT)

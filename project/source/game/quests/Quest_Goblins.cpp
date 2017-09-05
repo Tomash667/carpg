@@ -133,7 +133,7 @@ void Quest_Goblins::SetProgress(int prog2)
 				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
-				if(game->IsOnline())
+				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(game->net_changes);
 					c.type = NetChange::ADD_RUMOR;
@@ -186,7 +186,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			e->text = game->txQuest[219];
 			e->timed = false;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_AddQuest(refid);
 				if(not_known)
@@ -206,7 +206,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			GetTargetLocation().active_quest = nullptr;
 			game->AddNews(game->txQuest[221]);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -220,7 +220,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			goblins_state = State::Counting;
 			days = Random(15, 30);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -250,7 +250,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			goblins_state = State::MessengerTalked;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				if(now_known)
@@ -274,7 +274,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			target_loc = -1;
 			game->AddNews(game->txQuest[225]);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -286,7 +286,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			goblins_state = State::MageTalkedStart;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -299,7 +299,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			goblins_state = State::MageTalked;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -314,7 +314,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			goblins_state = State::MageTalked;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				if(!game->current_dialog->is_local)
@@ -345,7 +345,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				game->Net_ChangeLocationState(target_loc, false);
@@ -363,7 +363,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			quest_manager.EndUniqueQuest();
 			game->AddNews(game->txQuest[231]);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;

@@ -81,15 +81,15 @@ void MpBox::OnInput(const string& str)
 		game.ParseCommand(str.substr(1), PrintMsgFunc(&game, &Game::AddMultiMsg), PS_CHAT);
 	else
 	{
-		if(game.IsOnline() && game.players != 1)
+		if(Net::IsOnline() && game.players != 1)
 		{
 			// send text to server / other players
 			game.net_stream.Reset();
 			game.net_stream.Write(ID_SAY);
 			game.net_stream.WriteCasted<byte>(game.my_id);
 			WriteString1(game.net_stream, str);
-			game.peer->Send(&game.net_stream, MEDIUM_PRIORITY, RELIABLE, 0, game.sv_server ? UNASSIGNED_SYSTEM_ADDRESS : game.server, game.sv_server);
-			game.StreamWrite(game.net_stream, Stream_Chat, game.sv_server ? UNASSIGNED_SYSTEM_ADDRESS : game.server);
+			game.peer->Send(&game.net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game.server, Net::IsServer());
+			game.StreamWrite(game.net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game.server);
 		}
 		// add text
 		cstring s = Format("%s: %s", game.player_name.c_str(), str.c_str());

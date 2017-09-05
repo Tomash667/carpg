@@ -47,7 +47,7 @@ void Quest_Orcs::SetProgress(int prog2)
 				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
-				if(game->IsOnline())
+				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(game->net_changes);
 					c.type = NetChange::ADD_RUMOR;
@@ -66,7 +66,7 @@ void Quest_Orcs::SetProgress(int prog2)
 				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
-				if(game->IsOnline())
+				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(game->net_changes);
 					c.type = NetChange::ADD_RUMOR;
@@ -126,7 +126,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_AddQuest(refid);
 				game->Net_ChangeLocationState(target_loc, false);
@@ -140,7 +140,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -165,7 +165,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			else
 				game->quest_orcs2->orcs_state = Quest_Orcs2::State::Completed;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -361,7 +361,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			game->AddTeamMember(game->current_dialog->talker, true);
 			Team.free_recruit = false;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_AddQuest(refid);
 		}
 		break;
@@ -379,7 +379,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			orcs_state = Quest_Orcs2::State::ToldAboutCamp;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -397,7 +397,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				game->Net_ChangeLocationState(target_loc, false);
@@ -412,7 +412,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			game->news.pop_back();
 			game->AddNews(game->txQuest[200]);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -427,7 +427,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -493,7 +493,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			orcs_state = State::ToldAboutBase;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -516,7 +516,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			done = false;
 			orcs_state = State::GenerateOrcs;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				game->Net_ChangeLocationState(target_loc, false);
@@ -532,7 +532,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddNews(game->txQuest[205]);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -588,7 +588,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 								u.ai->alert_target = nullptr;
 								u.ai->state = AIController::Idle;
 								u.ai->change_ai_mode = true;
-								if(game->IsOnline())
+								if(Net::IsOnline())
 								{
 									NetChange& c = Add1(game->net_changes);
 									c.type = NetChange::CHANGE_UNIT_BASE;
@@ -623,7 +623,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			// usuñ zw³oki po opuszczeniu lokacji
 			orcs_state = State::ClearDungeon;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -823,6 +823,6 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	if(clas == Class::WARRIOR)
 		orc->hero->melee = true;
 
-	if(game->IsOnline())
+	if(Net::IsOnline())
 		game->Net_UpdateQuest(refid);
 }
