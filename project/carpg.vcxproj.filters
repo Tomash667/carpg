@@ -1235,6 +1235,12 @@
     <ClInclude Include="source\game\net\GamePacket.h">
       <Filter>3. game\net</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\net\NetChange.h">
+      <Filter>3. game\net</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\net\NetChangePlayer.h">
+      <Filter>3. game\net</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">

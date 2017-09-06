@@ -161,6 +161,8 @@
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameStats.h" />
     <ClInclude Include="source\game\net\GamePacket.h" />
+    <ClInclude Include="source\game\net\NetChange.h" />
+    <ClInclude Include="source\game\net\NetChangePlayer.h" />
     <ClInclude Include="source\game\panels\ActionPanel.h" />
     <ClInclude Include="source\game\quests\QuestConsts.h" />
     <ClInclude Include="source\game\stats\Action.h" />
