@@ -1,15 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="gui">
-      <UniqueIdentifier>{7fad20b5-5993-4241-b98e-296ba32af9c4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="gui\dialogs">
-      <UniqueIdentifier>{af15736b-e546-466c-a097-d6f0c9f70d2f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="gui\new">
-      <UniqueIdentifier>{4fb49a50-14ef-4fc7-8958-5b6e2fbdfb3a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="0. doc">
       <UniqueIdentifier>{5abd613a-c921-4c80-8be5-819125f7176f}</UniqueIdentifier>
     </Filter>
@@ -58,6 +49,15 @@
     <Filter Include="4. resource">
       <UniqueIdentifier>{bc9d59f8-23a1-480d-ba81-5772aad70353}</UniqueIdentifier>
     </Filter>
+    <Filter Include="2. engine\gui">
+      <UniqueIdentifier>{e46e24fb-8a88-4bb0-9a04-b18bd011d68d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2. engine\gui\controls">
+      <UniqueIdentifier>{6de9f675-6f0f-42b1-a437-37f63f3161d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2. engine\gui\dialogs">
+      <UniqueIdentifier>{22378397-713d-49a2-bddf-1773b059fcbc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
@@ -77,42 +77,6 @@
     </ClCompile>
     <ClCompile Include="source\core\Tokenizer.cpp">
       <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\Button.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\CheckBox.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\Container.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\Dialog2.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\Grid.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\GuiContainer.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\InputTextBox.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\ListBox.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\MenuList.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\Scrollbar.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\Slider.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\TextBox.cpp">
-      <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="source\game\ConsoleCommands.cpp">
       <Filter>3. game</Filter>
@@ -344,29 +308,17 @@
     <ClCompile Include="source\game\entity\PlayerInfo.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
-    <ClCompile Include="source\gui\TooltipController.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\StatProfile.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\Gui.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
-    <ClCompile Include="source\gui\dialogs\GetNumberDialog.cpp">
-      <Filter>gui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\dialogs\GetTextDialog.cpp">
-      <Filter>gui\dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\panels\Controls.cpp">
       <Filter>3. game\panels</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Perk.cpp">
       <Filter>3. game\stats</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\dialogs\PickItemDialog.cpp">
-      <Filter>gui\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\CreatedCharacter.cpp">
       <Filter>3. game\entity</Filter>
@@ -471,41 +423,11 @@
     <ClCompile Include="source\game\location\City.cpp">
       <Filter>3. game\location</Filter>
     </ClCompile>
-    <ClCompile Include="source\gui\Overlay.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\Layout.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\Init.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\Building.cpp">
       <Filter>3. game\system</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\Control.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\MenuBar.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\TabControl.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\TreeView.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\Window.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\MenuStrip.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\Panel.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\SplitPanel.cpp">
-      <Filter>gui\new</Filter>
     </ClCompile>
     <ClCompile Include="source\game\GameStats.cpp">
       <Filter>3. game</Filter>
@@ -531,23 +453,8 @@
     <ClCompile Include="source\game\quests\Quest_RetrievePackage.cpp">
       <Filter>3. game\quests</Filter>
     </ClCompile>
-    <ClCompile Include="source\gui\CheckBoxGroup.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\Ai.cpp">
       <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\Label.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\FlowContainer.cpp">
-      <Filter>gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\dialogs\PickFileDialog.cpp">
-      <Filter>gui\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\dialogs\GuiDialog.cpp">
-      <Filter>gui\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="source\core\Logger.cpp">
       <Filter>1. core</Filter>
@@ -566,12 +473,6 @@
     </ClCompile>
     <ClCompile Include="source\core\Containers.cpp">
       <Filter>1. core</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\DrawBox.cpp">
-      <Filter>gui\new</Filter>
-    </ClCompile>
-    <ClCompile Include="source\gui\Font.cpp">
-      <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="source\engine\Engine.cpp">
       <Filter>2. engine</Filter>
@@ -621,6 +522,105 @@
     <ClCompile Include="source\game\panels\ActionPanel.cpp">
       <Filter>3. game\panels</Filter>
     </ClCompile>
+    <ClCompile Include="source\engine\Font.cpp">
+      <Filter>2. engine</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\GuiContainer.cpp">
+      <Filter>2. engine\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\GuiDialog.cpp">
+      <Filter>2. engine\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Layout.cpp">
+      <Filter>2. engine\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Overlay.cpp">
+      <Filter>2. engine\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Button.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\CheckBox.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\CheckBoxGroup.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Container.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Control.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\DrawBox.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\FlowContainer.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Grid.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\InputTextBox.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Label.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\ListBox.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\MenuBar.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\MenuList.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\MenuStrip.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Panel.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Scrollbar.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Slider.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\SplitPanel.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\TabControl.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\TextBox.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\TooltipController.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\TreeView.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Window.cpp">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\GetNumberDialog.cpp">
+      <Filter>2. engine\gui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\GetTextDialog.cpp">
+      <Filter>2. engine\gui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\PickFileDialog.cpp">
+      <Filter>2. engine\gui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\PickItemDialog.cpp">
+      <Filter>2. engine\gui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Dialog2.cpp">
+      <Filter>2. engine\gui\dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -637,45 +637,6 @@
     </ClInclude>
     <ClInclude Include="source\core\Tokenizer.h">
       <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\CheckBox.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Container.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Control.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Dialog2.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Grid.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Gui.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\GuiContainer.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\InputTextBox.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\ListBox.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\MenuList.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Scrollbar.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Slider.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\TextBox.h">
-      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="source\game\Collision.h">
       <Filter>3. game</Filter>
@@ -909,32 +870,17 @@
     <ClInclude Include="source\game\stats\Skill.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
-    <ClInclude Include="source\gui\GuiElement.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\entity\PlayerInfo.h">
       <Filter>3. game\entity</Filter>
     </ClInclude>
-    <ClInclude Include="source\gui\TooltipController.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\stats\StatProfile.h">
       <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\dialogs\GetNumberDialog.h">
-      <Filter>gui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\dialogs\GetTextDialog.h">
-      <Filter>gui\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\Controls.h">
       <Filter>3. game\panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Perk.h">
       <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\dialogs\PickItemDialog.h">
-      <Filter>gui\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\CreatedCharacter.h">
       <Filter>3. game\entity</Filter>
@@ -1055,38 +1001,8 @@
     <ClInclude Include="source\game\system\Content.h">
       <Filter>3. game\system</Filter>
     </ClInclude>
-    <ClInclude Include="source\gui\Window.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\TabControl.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Label.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Overlay.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\ToolStrip.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\TreeView.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\MenuBar.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Panel.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\SplitPanel.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\stats\MagicEffect.h">
       <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\AreaLayout.h">
-      <Filter>gui\new</Filter>
     </ClInclude>
     <ClInclude Include="source\game\GameStats.h">
       <Filter>3. game</Filter>
@@ -1121,30 +1037,6 @@
     <ClInclude Include="source\core\TextWriter.h">
       <Filter>1. core</Filter>
     </ClInclude>
-    <ClInclude Include="source\gui\dialogs\PickFileDialog.h">
-      <Filter>gui\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\CheckBoxGroup.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Button.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\MenuStrip.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Layout.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\GuiRect.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\FlowContainer.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\dialogs\GuiDialog.h">
-      <Filter>gui\dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="source\core\Logger.h">
       <Filter>1. core</Filter>
     </ClInclude>
@@ -1165,12 +1057,6 @@
     </ClInclude>
     <ClInclude Include="source\core\Containers.h">
       <Filter>1. core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\DrawBox.h">
-      <Filter>gui\new</Filter>
-    </ClInclude>
-    <ClInclude Include="source\gui\Font.h">
-      <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="source\engine\Engine.h">
       <Filter>2. engine</Filter>
@@ -1240,6 +1126,120 @@
     </ClInclude>
     <ClInclude Include="source\game\net\NetChangePlayer.h">
       <Filter>3. game\net</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Font.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\AreaLayout.h">
+      <Filter>2. engine\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Gui.h">
+      <Filter>2. engine\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\GuiContainer.h">
+      <Filter>2. engine\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\GuiDialog.h">
+      <Filter>2. engine\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\GuiElement.h">
+      <Filter>2. engine\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\GuiRect.h">
+      <Filter>2. engine\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Layout.h">
+      <Filter>2. engine\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Overlay.h">
+      <Filter>2. engine\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Button.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\CheckBox.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\CheckBoxGroup.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Container.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Control.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\DrawBox.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\FlowContainer.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Grid.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\InputTextBox.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Label.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\ListBox.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\MenuBar.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\MenuList.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\MenuStrip.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Panel.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Scrollbar.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Slider.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\SplitPanel.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\TabControl.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\TextBox.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\TooltipController.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\TreeView.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Window.h">
+      <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\GetNumberDialog.h">
+      <Filter>2. engine\gui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\GetTextDialog.h">
+      <Filter>2. engine\gui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\PickFileDialog.h">
+      <Filter>2. engine\gui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\PickItemDialog.h">
+      <Filter>2. engine\gui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Dialog2.h">
+      <Filter>2. engine\gui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\ToolStrip.h">
+      <Filter>2. engine\gui\controls</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
