@@ -41,7 +41,7 @@ class Console;
 class Controls;
 class CreateCharacterPanel;
 class CreateServerPanel;
-class Dialog;
+class DialogBox;
 class GameGui;
 class GameMenu;
 class InfoBox;
@@ -1469,8 +1469,8 @@ public:
 	InfoBox* info_box;
 	Controls* controls;
 	// inne
-	Dialog* dialog_enc;
-	Dialog* dialog_pvp;
+	DialogBox* dialog_enc;
+	DialogBox* dialog_pvp;
 	bool cursor_allow_move;
 
 	void UpdateGui(float dt);

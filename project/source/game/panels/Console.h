@@ -2,11 +2,11 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Dialog2.h"
+#include "GameDialogBox.h"
 #include "InputTextBox.h"
 
 //-----------------------------------------------------------------------------
-class Console : public Dialog, public OnCharHandler
+class Console : public GameDialogBox, public OnCharHandler
 {
 public:
 	explicit Console(const DialogInfo& info);

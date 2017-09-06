@@ -618,7 +618,7 @@
     <ClCompile Include="source\engine\gui\PickItemDialog.cpp">
       <Filter>2. engine\gui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="source\engine\gui\Dialog2.cpp">
+    <ClCompile Include="source\engine\gui\DialogBox.cpp">
       <Filter>2. engine\gui\dialogs</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1133,9 +1133,6 @@
     <ClInclude Include="source\engine\gui\AreaLayout.h">
       <Filter>2. engine\gui</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\gui\Gui.h">
-      <Filter>2. engine\gui</Filter>
-    </ClInclude>
     <ClInclude Include="source\engine\gui\GuiContainer.h">
       <Filter>2. engine\gui</Filter>
     </ClInclude>
@@ -1235,11 +1232,14 @@
     <ClInclude Include="source\engine\gui\PickItemDialog.h">
       <Filter>2. engine\gui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\gui\Dialog2.h">
-      <Filter>2. engine\gui\dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="source\engine\gui\ToolStrip.h">
       <Filter>2. engine\gui\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\DialogBox.h">
+      <Filter>2. engine\gui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\panels\GameDialogBox.h">
+      <Filter>3. game\panels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

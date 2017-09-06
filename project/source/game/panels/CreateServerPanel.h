@@ -1,12 +1,12 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Dialog2.h"
+#include "GameDialogBox.h"
 #include "TextBox.h"
 #include "GuiContainer.h"
 
 //-----------------------------------------------------------------------------
-class CreateServerPanel : public Dialog
+class CreateServerPanel : public GameDialogBox
 {
 public:
 	explicit CreateServerPanel(const DialogInfo& info);

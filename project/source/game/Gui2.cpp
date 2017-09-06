@@ -2,7 +2,7 @@
 #include "Core.h"
 #include "Gui2.h"
 #include "Container.h"
-#include "Dialog2.h"
+#include "DialogBox.h"
 #include "Language.h"
 #include "Game.h"
 #include "GuiRect.h"
@@ -1531,11 +1531,11 @@ void IGUI::SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext*
 }
 
 //=================================================================================================
-Dialog* IGUI::ShowDialog(const DialogInfo& info)
+DialogBox* IGUI::ShowDialog(const DialogInfo& info)
 {
 	assert(!(info.have_tick && info.img)); // not allowed together
 
-	Dialog* d;
+	DialogBox* d;
 	int extra_limit = 0;
 	Int2 min_size(0, 0);
 
@@ -1551,7 +1551,7 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 		d = dwi;
 	}
 	else
-		d = new Dialog(info);
+		d = new DialogBox(info);
 	created_dialogs.push_back(d);
 
 	// calculate size
@@ -1646,7 +1646,7 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 }
 
 //=================================================================================================
-void IGUI::ShowDialog(Dialog* d)
+void IGUI::ShowDialog(DialogBox* d)
 {
 	d->Event(GuiEvent_Show);
 
@@ -1671,9 +1671,9 @@ void IGUI::ShowDialog(Dialog* d)
 	{
 		// szukaj pierwszego dialogu który jest wy¿ej ni¿ ten
 		DialogOrder above_order = DialogOrder(d->order + 1);
-		vector<Dialog*>& ctrls = (vector<Dialog*>&)dialog_layer->GetControls();
-		vector<Dialog*>::iterator first_above = ctrls.end();
-		for(vector<Dialog*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
+		vector<DialogBox*>& ctrls = (vector<DialogBox*>&)dialog_layer->GetControls();
+		vector<DialogBox*>::iterator first_above = ctrls.end();
+		for(vector<DialogBox*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 		{
 			if((*it)->order >= above_order)
 			{
@@ -1703,7 +1703,7 @@ void IGUI::ShowDialog(Dialog* d)
 }
 
 //=================================================================================================
-bool IGUI::CloseDialog(Dialog* d)
+bool IGUI::CloseDialog(DialogBox* d)
 {
 	assert(d);
 
@@ -1723,7 +1723,7 @@ bool IGUI::CloseDialog(Dialog* d)
 }
 
 //=================================================================================================
-void IGUI::CloseDialogInternal(Dialog* d)
+void IGUI::CloseDialogInternal(DialogBox* d)
 {
 	assert(d);
 
@@ -1732,16 +1732,16 @@ void IGUI::CloseDialogInternal(Dialog* d)
 
 	if(!dialog_layer->Empty())
 	{
-		vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
-		static vector<Dialog*> to_remove;
-		for(vector<Dialog*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
+		vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+		static vector<DialogBox*> to_remove;
+		for(vector<DialogBox*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
 		{
 			if((*it)->parent == d)
 				to_remove.push_back(*it);
 		}
 		if(!to_remove.empty())
 		{
-			for(vector<Dialog*>::iterator it = to_remove.begin(), end = to_remove.end(); it != end; ++it)
+			for(vector<DialogBox*>::iterator it = to_remove.begin(), end = to_remove.end(); it != end; ++it)
 				CloseDialogInternal(*it);
 			to_remove.clear();
 		}
@@ -1756,7 +1756,7 @@ bool IGUI::HaveTopDialog(cstring name) const
 	if(dialog_layer->Empty())
 		return false;
 
-	Dialog* d = (Dialog*)(dialog_layer->Top());
+	DialogBox* d = (DialogBox*)(dialog_layer->Top());
 	return d->name == name;
 }
 
@@ -1835,7 +1835,7 @@ void IGUI::SimpleDialog(cstring text, Control* parent, cstring name)
 
 	if(parent)
 	{
-		Dialog* d = dynamic_cast<Dialog*>(parent);
+		DialogBox* d = dynamic_cast<DialogBox*>(parent);
 		if(d)
 			di.order = d->order;
 	}
@@ -1891,8 +1891,8 @@ void IGUI::DrawSpriteRect(TEX t, const Rect& rect, DWORD color)
 bool IGUI::HaveDialog(cstring name)
 {
 	assert(name);
-	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
-	for each(Dialog* dialog in dialogs)
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	for each(DialogBox* dialog in dialogs)
 	{
 		if(dialog->name == name)
 			return true;
@@ -1901,10 +1901,10 @@ bool IGUI::HaveDialog(cstring name)
 }
 
 //=================================================================================================
-bool IGUI::HaveDialog(Dialog* dialog)
+bool IGUI::HaveDialog(DialogBox* dialog)
 {
 	assert(dialog);;
-	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
 	for(auto d : dialogs)
 	{
 		if(d == dialog)
@@ -2231,8 +2231,8 @@ void IGUI::DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, D
 //=================================================================================================
 void IGUI::CloseDialogs()
 {
-	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
-	for(Dialog* dialog : dialogs)
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	for(DialogBox* dialog : dialogs)
 	{
 		if(OR2_EQ(dialog->type, DIALOG_OK, DIALOG_YESNO))
 			delete dialog;
@@ -2249,8 +2249,8 @@ void IGUI::CloseDialogs()
 //=================================================================================================
 bool IGUI::HavePauseDialog() const
 {
-	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
-	for(vector<Dialog*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	for(vector<DialogBox*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
 	{
 		if((*it)->pause)
 			return true;
@@ -2259,13 +2259,13 @@ bool IGUI::HavePauseDialog() const
 }
 
 //=================================================================================================
-Dialog* IGUI::GetDialog(cstring name)
+DialogBox* IGUI::GetDialog(cstring name)
 {
 	assert(name);
 	if(dialog_layer->Empty())
 		return nullptr;
-	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
-	for(vector<Dialog*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	for(vector<DialogBox*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
 	{
 		if((*it)->name == name)
 			return *it;

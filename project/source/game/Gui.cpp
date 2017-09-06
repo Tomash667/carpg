@@ -112,7 +112,7 @@ void Game::PreinitGui()
 
 	GUI.InitLayout();
 
-	Dialog::game = this;
+	GameDialogBox::game = this;
 
 	// load screen
 	load_screen = new LoadScreen;
@@ -248,7 +248,7 @@ void Game::LoadGuiData()
 	tex_mgr.AddLoadTask("button_hover.png", Button::tex[Button::HOVER]);
 	tex_mgr.AddLoadTask("button_down.png", Button::tex[Button::DOWN]);
 	tex_mgr.AddLoadTask("button_disabled.png", Button::tex[Button::DISABLED]);
-	tex_mgr.AddLoadTask("background.bmp", Dialog::tBackground);
+	tex_mgr.AddLoadTask("background.bmp", DialogBox::tBackground);
 	tex_mgr.AddLoadTask("scrollbar.png", TextBox::tBox);
 	tex_mgr.AddLoadTask("tlo_konsoli.jpg", Console::tBackground);
 	tex_mgr.AddLoadTask("logo_small.png", GameMenu::tLogo);

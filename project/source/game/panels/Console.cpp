@@ -8,7 +8,7 @@
 TEX Console::tBackground;
 
 //=================================================================================================
-Console::Console(const DialogInfo& info) : Dialog(info), added(false)
+Console::Console(const DialogInfo& info) : GameDialogBox(info), added(false)
 {
 	size = Int2(GUI.wnd_size.x, GUI.wnd_size.y / 3);
 	itb.parent = this;

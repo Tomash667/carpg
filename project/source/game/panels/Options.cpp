@@ -86,7 +86,7 @@ public:
 };
 
 //=================================================================================================
-Options::Options(const DialogInfo& info) : Dialog(info)
+Options::Options(const DialogInfo& info) : GameDialogBox(info)
 {
 	txOPTIONS = Str("OPTIONS");
 	txResolution = Str("resolution");

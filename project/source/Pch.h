@@ -82,6 +82,7 @@ using namespace RakNet;
 #undef near
 #undef small
 #undef DrawText
+#undef DialogBox
 #undef IN
 #undef OUT
 #undef ERROR

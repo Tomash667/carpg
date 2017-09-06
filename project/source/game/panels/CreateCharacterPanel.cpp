@@ -29,7 +29,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : Dialog(info), unit(nullptr)
+CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(info), unit(nullptr)
 {
 	txHardcoreMode = Str("hardcoreMode");
 	txHair = Str("hair");

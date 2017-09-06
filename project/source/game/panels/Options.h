@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Dialog2.h"
+#include "GameDialogBox.h"
 #include "CheckBox.h"
 #include "Button.h"
 #include "ListBox.h"
@@ -11,7 +11,7 @@
 class WndRes;
 
 //-----------------------------------------------------------------------------
-class Options : public Dialog
+class Options : public GameDialogBox
 {
 public:
 	enum Id

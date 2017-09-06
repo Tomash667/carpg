@@ -8,7 +8,7 @@
 TEX GameMenu::tLogo;
 
 //=================================================================================================
-GameMenu::GameMenu(const DialogInfo& info) : Dialog(info), prev_can_save(true), prev_can_load(true), prev_hardcore_mode(false)
+GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prev_can_save(true), prev_can_load(true), prev_hardcore_mode(false)
 {
 	txSave = Str("saveGame");
 	txSaveAndExit = Str("saveAndExit");

@@ -641,7 +641,7 @@ void Game::EndConnecting(cstring msg, bool wait)
 {
 	info_box->CloseDialog();
 	if(msg)
-		GUI.SimpleDialog(msg, pick_server_panel->visible ? (Dialog*)pick_server_panel : (Dialog*)multiplayer_panel);
+		GUI.SimpleDialog(msg, pick_server_panel->visible ? (DialogBox*)pick_server_panel : (DialogBox*)multiplayer_panel);
 	if(wait)
 		ForceRedraw();
 	ClosePeer(wait);

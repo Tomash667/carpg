@@ -13,7 +13,7 @@
 #include "GameGui.h"
 #include "MpBox.h"
 #include "GameMessages.h"
-#include "Dialog2.h"
+#include "DialogBox.h"
 
 //-----------------------------------------------------------------------------
 extern const float TRAVEL_SPEED;

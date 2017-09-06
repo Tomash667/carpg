@@ -1,6 +1,6 @@
 #include "Pch.h"
 #include "Core.h"
-#include "Dialog2.h"
+#include "DialogBox.h"
 #include "GuiDialog.h"
 #include "KeyStates.h"
 #include "MenuStrip.h"
@@ -25,7 +25,7 @@ void Overlay::Draw(ControlDrawData*)
 
 	for(auto dialog : dialogs)
 	{
-		GUI.DrawSpriteFull(Dialog::tBackground, COLOR_RGBA(255, 255, 255, 128));
+		GUI.DrawSpriteFull(DialogBox::tBackground, COLOR_RGBA(255, 255, 255, 128));
 		dialog->Draw();
 	}
 

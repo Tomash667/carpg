@@ -19,7 +19,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-ServerPanel::ServerPanel(const DialogInfo& info) : Dialog(info)
+ServerPanel::ServerPanel(const DialogInfo& info) : GameDialogBox(info)
 {
 	size = Int2(540, 510);
 	bts.resize(6);

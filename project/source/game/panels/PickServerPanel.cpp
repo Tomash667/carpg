@@ -10,7 +10,7 @@
 #include "ResourceManager.h"
 
 //=================================================================================================
-PickServerPanel::PickServerPanel(const DialogInfo& info) : Dialog(info)
+PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info)
 {
 	size = Int2(524, 340);
 	bts.resize(2);

@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Dialog2.h"
+#include "DialogBox.h"
 #include "TooltipController.h"
 #include "FlowContainer.h"
 
@@ -25,7 +25,7 @@ struct PickItemDialogParams
 };
 
 //-----------------------------------------------------------------------------
-class PickItemDialog : public Dialog
+class PickItemDialog : public DialogBox
 {
 public:
 	void GetSelected(int& group, int& id) const

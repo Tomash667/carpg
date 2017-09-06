@@ -1,11 +1,11 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Dialog2.h"
+#include "GameDialogBox.h"
 #include "Grid.h"
 
 //-----------------------------------------------------------------------------
-class Controls : public Dialog
+class Controls : public GameDialogBox
 {
 public:
 	explicit Controls(const DialogInfo& info);

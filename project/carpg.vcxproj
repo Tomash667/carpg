@@ -149,13 +149,12 @@
     <ClInclude Include="source\engine\gui\CheckBoxGroup.h" />
     <ClInclude Include="source\engine\gui\Container.h" />
     <ClInclude Include="source\engine\gui\Control.h" />
-    <ClInclude Include="source\engine\gui\Dialog2.h" />
+    <ClInclude Include="source\engine\gui\DialogBox.h" />
     <ClInclude Include="source\engine\gui\DrawBox.h" />
     <ClInclude Include="source\engine\gui\FlowContainer.h" />
     <ClInclude Include="source\engine\gui\GetNumberDialog.h" />
     <ClInclude Include="source\engine\gui\GetTextDialog.h" />
     <ClInclude Include="source\engine\gui\Grid.h" />
-    <ClInclude Include="source\engine\gui\Gui.h" />
     <ClInclude Include="source\engine\gui\GuiContainer.h" />
     <ClInclude Include="source\engine\gui\GuiDialog.h" />
     <ClInclude Include="source\engine\gui\GuiElement.h" />
@@ -202,6 +201,7 @@
     <ClInclude Include="source\game\net\NetChange.h" />
     <ClInclude Include="source\game\net\NetChangePlayer.h" />
     <ClInclude Include="source\game\panels\ActionPanel.h" />
+    <ClInclude Include="source\game\panels\GameDialogBox.h" />
     <ClInclude Include="source\game\quests\QuestConsts.h" />
     <ClInclude Include="source\game\stats\Action.h" />
     <ClInclude Include="source\game\stats\Buff.h" />
@@ -353,7 +353,7 @@
     <ClCompile Include="source\engine\gui\CheckBoxGroup.cpp" />
     <ClCompile Include="source\engine\gui\Container.cpp" />
     <ClCompile Include="source\engine\gui\Control.cpp" />
-    <ClCompile Include="source\engine\gui\Dialog2.cpp" />
+    <ClCompile Include="source\engine\gui\DialogBox.cpp" />
     <ClCompile Include="source\engine\gui\DrawBox.cpp" />
     <ClCompile Include="source\engine\gui\FlowContainer.cpp" />
     <ClCompile Include="source\engine\gui\GetNumberDialog.cpp" />

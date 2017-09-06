@@ -7,7 +7,7 @@
 #include "Game.h"
 
 //=================================================================================================
-CreateServerPanel::CreateServerPanel(const DialogInfo& info) : Dialog(info)
+CreateServerPanel::CreateServerPanel(const DialogInfo& info) : GameDialogBox(info)
 {
 	size = Int2(344, 320);
 	bts.resize(2);

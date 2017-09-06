@@ -7,7 +7,7 @@
 #include "Scrollbar.h"
 
 //=================================================================================================
-SaveLoad::SaveLoad(const DialogInfo& info) : Dialog(info), choice(0), tMiniSave(nullptr)
+SaveLoad::SaveLoad(const DialogInfo& info) : DialogBox(info), choice(0), tMiniSave(nullptr)
 {
 	txSaving = Str("SAVINGGAME");
 	txLoading = Str("LOADINGGAME");
