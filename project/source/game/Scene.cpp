@@ -2023,15 +2023,17 @@ void Game::PrepareAreaPath()
 			pc_data.action_ok = true;
 		}
 
+		bool outside = (location->outside && pc->unit->in_building == -1);
+
 		// build circle
-		PrepareAreaPathCircle(area, radius, t * range + radius * 2, rot);
+		PrepareAreaPathCircle(area, radius, t * range + radius * 2, rot, outside);
 
 		// build yellow circle
 		if(t != 1.f)
 		{
 			Area2* y_area = area2_pool.Get();
 			y_area->ok = 1;
-			PrepareAreaPathCircle(*y_area, radius, range + radius * 2, rot);
+			PrepareAreaPathCircle(*y_area, radius, range + radius * 2, rot, outside);
 			draw_batch.areas2.push_back(y_area);
 		}
 
@@ -2041,7 +2043,7 @@ void Game::PrepareAreaPath()
 	}
 }
 
-void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float rot)
+void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float rot, bool outside)
 {
 	const float h = 0.06f;
 
@@ -2058,7 +2060,7 @@ void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float r
 	for(int i = 0; i < 9; ++i)
 	{
 		area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
-		if(location->outside)
+		if(outside)
 			area.points[i].y = terrain->GetH(area.points[i]) + h;
 	}
 

@@ -15,6 +15,7 @@ Wersja 0.5.0 (2017-09-03):
 + tymczasowo usuniêty g³owny quest dopóki nie jest ukoñczony
 + przezroczyste przedmioty
 + nowe komendy konsoli forcequest, stun, refresh_cooldown
+- naprawiony rzadki crash podczas wyszukiwania œcie¿ek w mieœcie/wiosce
 - naprawiony b³¹d z losowym nie wysy³anie mapy œwiata do klientów
 - naprawiony brak widocznoœci ostatniego elementu na liœcie sterowania
 - ork gorush nie zawsze wybiera losowo szamana

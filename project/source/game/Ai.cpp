@@ -2638,6 +2638,7 @@ void Game::UpdateAi(float dt)
 						{
 							ai.pf_state = AIController::PFS_LOCAL_TRY_WALK;
 							ai.pf_local_try = 1;
+							move = 0;
 						}
 						else
 						{

@@ -515,6 +515,7 @@ void Mesh::LoadVertexData(VertexData* vd, StreamReader& stream)
 		throw Format("Invalid file version '%d'.", head.version);
 	if(head.flags != F_PHYSICS)
 		throw Format("Invalid mesh flags '%d'.", head.flags);
+	vd->radius = head.radius;
 
 	// read vertices
 	uint size = sizeof(Vec3) * head.n_verts;

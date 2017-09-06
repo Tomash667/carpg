@@ -460,7 +460,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool outside, Unit& u);
 	void ListAreas(LevelContext& ctx);
 	void PrepareAreaPath();
-	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot);
+	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot, bool outside);
 	void FillDrawBatchDungeonParts(FrustumPlanes& frustum);
 	void AddOrSplitSceneNode(SceneNode* node, int exclude_subs = 0);
 	int GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, float z, float radius, int sub = 0);

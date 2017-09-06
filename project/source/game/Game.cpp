@@ -1391,20 +1391,8 @@ int Game::FindLocalPath(LevelContext& ctx, vector<Int2>& _path, const Int2& my_t
 		return 3;
 
 	int dist = Int2::Distance(my_tile, target_tile);
-
 	if(dist >= 32)
 		return 1;
-
-	if(dist <= 0 || my_tile.x < 0 || my_tile.y < 0)
-	{
-		Error("Invalid FindLocalPath, ctx type %d, ctx building %d, my tile %d %d, target tile %d %d, me %s (%p; %g %g %g; %d), usable %p, is end point %d.",
-			ctx.type, ctx.building_id, my_tile.x, my_tile.y, target_tile.x, target_tile.y, _me->data->id.c_str(), _me, _me->pos.x, _me->pos.y, _me->pos.z, _me->in_building,
-			usable, is_end_point ? 1 : 0);
-		if(_other)
-		{
-			Error("Other unit %s (%p; %g, %g, %g, %d).", _other->data->id.c_str(), _other, _other->pos.x, _other->pos.y, _other->pos.z, _other->in_building);
-		}
-	}
 
 	// œrodek
 	const Int2 center_tile((my_tile + target_tile) / 2);
