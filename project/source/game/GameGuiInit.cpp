@@ -32,48 +32,25 @@
 //=================================================================================================
 void Game::OnResize()
 {
-	cursor_pos = Vec2(float(wnd_size.x) / 2, float(wnd_size.y) / 2);
-	GUI.wnd_size = wnd_size;
+	GUI.OnResize();
 	if(game_gui)
 		game_gui->PositionPanels();
-	GUI.OnResize(wnd_size);
 	console->Event(GuiEvent_WindowResize);
 }
 
 //=================================================================================================
-void Game::OnFocus(bool focus)
+void Game::OnFocus(bool focus, const Int2& activation_point)
 {
 	if(!focus && game_gui)
 		game_gui->use_cursor = false;
+	if(focus && activation_point.x != -1)
+		GUI.cursor_pos = activation_point;
 }
 
 //=================================================================================================
 void Game::UpdateGui(float dt)
 {
-	// myszka
-	if(GUI.NeedCursor() && cursor_allow_move)
-	{
-		cursor_pos += Vec2(float(mouse_dif.x), float(mouse_dif.y)) * mouse_sensitivity_f;
-		if(cursor_pos.x < 0)
-			cursor_pos.x = 0;
-		if(cursor_pos.y < 0)
-			cursor_pos.y = 0;
-		if(cursor_pos.x >= wnd_size.x)
-			cursor_pos.x = float(wnd_size.x - 1);
-		if(cursor_pos.y >= wnd_size.y)
-			cursor_pos.y = float(wnd_size.y - 1);
-		unlock_point = Int2(cursor_pos);
-	}
-	else
-		unlock_point = real_size / 2;
-
-	GUI.prev_cursor_pos = GUI.cursor_pos;
-	Int2 icursor_pos = Int2(cursor_pos);
-	GUI.cursor_pos = icursor_pos;
-	GUI.mouse_wheel = float(mouse_wheel) / WHEEL_DELTA;
-	GUI.Update(dt);
-	if(icursor_pos != GUI.cursor_pos)
-		cursor_pos = Vec2(GUI.cursor_pos);
+	GUI.Update(dt, cursor_allow_move ? mouse_sensitivity_f : -1.f);
 }
 
 //=================================================================================================
@@ -97,8 +74,6 @@ void Game::SetGamePanels()
 void Game::PreinitGui()
 {
 	GUI.Init(device, sprite);
-	GUI.wnd_size = wnd_size;
-	GUI.cursor_pos = Int2(cursor_pos);
 
 	// font loading works only from main thread (for now...)
 	int result = AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, nullptr);

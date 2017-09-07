@@ -1435,14 +1435,14 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 						}
 						if(valid)
-							ChangeMode(w, h, fullscreen, hz);
+							ChangeMode(Int2(w, h), IsFullscreen(), hz);
 						else
 							Msg("Can't change resolution to %dx%d (%d Hz).", w, h, hz);
 					}
 					else
 					{
 						// wypisz aktualn¹ rozdzielczoœæ i dostêpne
-						LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ", wnd_size.x, wnd_size.y, wnd_hz);
+						LocalString s = Format("Current resolution %dx%d (%d Hz). Available: ", GetWindowSize().x, GetWindowSize().y, wnd_hz);
 						uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
 						for(uint i = 0; i < display_modes; ++i)
 						{

@@ -744,12 +744,12 @@ void Game::SetupCamera(float dt)
 
 	matView = Matrix::CreateLookAt(cam.from, cam.to);
 	matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
-		float(wnd_size.x) / wnd_size.y*(1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, cam.draw_range);
+		GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, cam.draw_range);
 	cam.matViewProj = matView * matProj;
 	cam.matViewInv = matView.Inverse();
 
 	Matrix matProj2 = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
-		float(wnd_size.x) / wnd_size.y*(1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, grass_range > 0.1f ? grass_range : 0.2f);
+		GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, grass_range > 0.1f ? grass_range : 0.2f);
 
 	cam.center = cam.from;
 
@@ -1097,7 +1097,7 @@ void Game::UpdateGame(float dt)
 				const float c_cam_angle_max = PI*1.8f - 0.1f;
 
 				int div = (pc->unit->action == A_SHOOT ? 800 : 400);
-				cam.real_rot.y += -float(mouse_dif.y) * mouse_sensitivity_f / div;
+				cam.real_rot.y += -float(GetMouseDif().y) * mouse_sensitivity_f / div;
 				if(cam.real_rot.y > c_cam_angle_max)
 					cam.real_rot.y = c_cam_angle_max;
 				if(cam.real_rot.y < c_cam_angle_min)
@@ -1117,7 +1117,7 @@ void Game::UpdateGame(float dt)
 					if(KeyUpAllowed(cam.free_rot_key))
 						cam.free_rot = false;
 					else
-						cam.real_rot.x = Clip(cam.real_rot.x + float(mouse_dif.x) * mouse_sensitivity_f / 400);
+						cam.real_rot.x = Clip(cam.real_rot.x + float(GetMouseDif().x) * mouse_sensitivity_f / 400);
 				}
 			}
 			else
@@ -1146,7 +1146,7 @@ void Game::UpdateGame(float dt)
 	{
 		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !game_gui->IsMouseInsideDialog())
 		{
-			cam.dist -= float(mouse_wheel) / WHEEL_DELTA;
+			cam.dist -= GetMouseWheel();
 			cam.dist = Clamp(cam.dist, 0.5f, 6.f);
 		}
 
@@ -1691,7 +1691,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		{
 			int div = (pc->unit->action == A_SHOOT ? 800 : 400);
 			pc_data.rot_buf *= (1.f - dt * 2);
-			pc_data.rot_buf += float(mouse_dif.x) * mouse_sensitivity_f / div;
+			pc_data.rot_buf += float(GetMouseDif().x) * mouse_sensitivity_f / div;
 			if(pc_data.rot_buf > 0.1f)
 				pc_data.rot_buf = 0.1f;
 			else if(pc_data.rot_buf < -0.1f)

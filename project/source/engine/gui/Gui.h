@@ -165,7 +165,7 @@ public:
 	void InitLayout();
 	void SetText();
 	void SetShader(ID3DXEffect* e);
-	void Draw(const Int2& wnd_size, bool draw_layers, bool draw_dialogs);
+	void Draw(bool draw_layers, bool draw_dialogs);
 	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
 	zwraca false je¿eli by³ clipping od do³u (nie kontuuj tekstu w flow)
@@ -181,7 +181,7 @@ public:
 		vector<Hitbox>* hitboxes = nullptr, int* hitbox_counter = nullptr, const vector<TextLine>* lines = nullptr);
 	void Add(Control* ctrl);
 	void DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, DWORD color, int corner = 16, int size = 64, const Box2d* clip_rect = nullptr);
-	void Update(float dt);
+	void Update(float dt, float mouse_speed);
 	void DrawSprite(TEX t, const Int2& pos, DWORD color = WHITE, const Rect* clipping = nullptr);
 	void OnReset();
 	void OnReload();
@@ -202,7 +202,7 @@ public:
 	bool HaveDialog(DialogBox* dialog);
 	IDirect3DDevice9* GetDevice() { return device; }
 	bool AnythingVisible() const;
-	void OnResize(const Int2& wnd_size);
+	void OnResize();
 	void DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, DWORD color = WHITE);
 	void DrawSpriteTransform(TEX t, const Matrix& mat, DWORD color = WHITE);
 	void DrawLine(const Vec2* lines, uint count, DWORD color = BLACK, bool strip = true);

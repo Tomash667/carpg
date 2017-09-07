@@ -439,6 +439,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LogProcessorFeatures();
 
 	Game game;
+	Engine::StartupOptions options;
 	Bool3 windowed = None,
 		console = None;
 	game.cfg_file = "carpg.cfg";
@@ -595,20 +596,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		else
 			windowed = True;
 	}
+	options.fullscreen = (windowed == False);
 
 	// rozdzielczoœæ
-	int w, h;
+	const string& res = cfg.GetString("resolution", "0x0");
+	if(sscanf_s(res.c_str(), "%dx%d", &options.size.x, &options.size.y) != 2)
 	{
-		const string& res = cfg.GetString("resolution", "0x0");
-		if(sscanf_s(res.c_str(), "%dx%d", &w, &h) != 2)
-		{
-			Warn("Settings: Invalid resolution value '%s'.", res.c_str());
-			w = 0;
-			h = 0;
-		}
-		else
-			Info("Settings: Resolution %dx%d.", w, h);
+		Warn("Settings: Invalid resolution value '%s'.", res.c_str());
+		options.size = Int2::Zero;
 	}
+	else
+		Info("Settings: Resolution %dx%d.", options.size.x, options.size.y);
 
 	// refresh
 	game.wnd_hz = cfg.GetInt("refresh", 0);
@@ -771,10 +769,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		SetWindowPos(con, 0, rect.Left(), rect.Top(), 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
 	}
 
-	game.s_wnd_size.x = cfg.GetInt("wnd_size_x");
-	game.s_wnd_size.y = cfg.GetInt("wnd_size_y");
-	game.s_wnd_pos.x = cfg.GetInt("wnd_pos_x");
-	game.s_wnd_pos.y = cfg.GetInt("wnd_pos_y");
+	options.force_size.x = cfg.GetInt("wnd_size_x");
+	options.force_size.y = cfg.GetInt("wnd_size_y");
+	options.force_pos.x = cfg.GetInt("wnd_pos_x");
+	options.force_pos.y = cfg.GetInt("wnd_pos_y");
 
 	// multisampling
 	int multisampling = cfg.GetInt("multisampling", 0),
@@ -914,7 +912,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//-------------------------------------------------------------------------
 	// rozpocznij grê
 	Info("Starting game engine.");
-	bool b = game.Start0(windowed != True, w, h);
+	bool b = game.Start0(options);
 
 	//-------------------------------------------------------------------------
 	// sprz¹tanie

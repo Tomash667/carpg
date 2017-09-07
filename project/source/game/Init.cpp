@@ -395,7 +395,7 @@ void Game::PostconfigureGame()
 
 	// save config
 	cfg.Add("adapter", Format("%d", used_adapter));
-	cfg.Add("resolution", Format("%dx%d", wnd_size.x, wnd_size.y));
+	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
 	cfg.Add("refresh", Format("%d", wnd_hz));
 	SaveCfg();
 

@@ -478,7 +478,6 @@ int Unit::ConsumeItem(int index)
 	used_item = &cons;
 
 	// wyœlij komunikat
-	Game& game = Game::Get();
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -529,7 +528,6 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 
 	if(send)
 	{
-		Game& game = Game::Get();
 		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -582,7 +580,6 @@ void Unit::HideWeapon()
 		break;
 	}
 
-	Game& game = Game::Get();
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -613,7 +610,6 @@ void Unit::TakeWeapon(WeaponType _type)
 		weapon_state = WS_TAKING;
 		mesh_inst->frame_end_info2 = false;
 
-		Game& game = Game::Get();
 		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -2129,7 +2125,6 @@ void Unit::RemoveEffect(ConsumeEffect effect)
 
 	if(!_to_remove.empty())
 	{
-		auto& game = Game::Get();
 		if(Net::IsOnline() && Net::Net::IsServer())
 		{
 			auto& c = Add1(Net::changes);
@@ -2138,7 +2133,7 @@ void Unit::RemoveEffect(ConsumeEffect effect)
 			c.f[0] = 0;
 		}
 	}
-	
+
 	while(!_to_remove.empty())
 	{
 		index = _to_remove.back();
@@ -2638,7 +2633,6 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 	case Attribute::STR:
 		{
 			// hp/load depends on str
-			Game& game = Game::Get();
 			if(Net::Net::IsLocal())
 			{
 				RecalculateHp();
@@ -3199,8 +3193,6 @@ void Unit::CreateMesh(CREATE_MESH mode)
 //=================================================================================================
 void Unit::ApplyStun(float length)
 {
-	Game& game = Game::Get();
-
 	if(Net::Net::IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
 		length /= 2;
 

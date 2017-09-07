@@ -373,9 +373,9 @@ struct Game final : public Engine, public UnitEventHandler
 	void OnReload();
 	void OnReset();
 	void OnResize();
-	void OnFocus(bool focus);
+	void OnFocus(bool focus, const Int2& activation_point);
 
-	bool Start0(bool fullscreen, int w, int h);
+	bool Start0(StartupOptions& options);
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
 	void ClearPointers();

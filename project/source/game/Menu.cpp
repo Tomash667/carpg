@@ -254,7 +254,7 @@ void Game::SaveEvent(int id)
 //=================================================================================================
 void Game::SaveOptions()
 {
-	cfg.Add("fullscreen", fullscreen ? "1" : "0");
+	cfg.Add("fullscreen", IsFullscreen() ? "1" : "0");
 	cfg.Add("cl_glow", cl_glow ? "1" : "0");
 	cfg.Add("cl_normalmap", cl_normalmap ? "1" : "0");
 	cfg.Add("cl_specularmap", cl_specularmap ? "1" : "0");
@@ -262,7 +262,7 @@ void Game::SaveOptions()
 	cfg.Add("music_volume", Format("%d", music_volume));
 	cfg.Add("mouse_sensitivity", Format("%d", mouse_sensitivity));
 	cfg.Add("grass_range", Format("%g", grass_range));
-	cfg.Add("resolution", Format("%dx%d", wnd_size.x, wnd_size.y));
+	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
 	cfg.Add("refresh", Format("%d", wnd_hz));
 	cfg.Add("skip_tutorial", skip_tutorial ? "1" : "0");
 	cfg.Add("language", g_lang_prefix.c_str());

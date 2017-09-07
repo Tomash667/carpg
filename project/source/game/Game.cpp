@@ -132,7 +132,7 @@ void Game::OnDraw(bool normal)
 
 		// draw gui
 		GUI.mViewProj = cam.matViewProj;
-		GUI.Draw(wnd_size, IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
+		GUI.Draw(IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 
 		V(device->EndScene());
 	}
@@ -221,7 +221,7 @@ void Game::OnDraw(bool normal)
 			if(it + 1 == end)
 			{
 				GUI.mViewProj = cam.matViewProj;
-				GUI.Draw(wnd_size, IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
+				GUI.Draw(IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 			}
 
 			V(device->EndScene());
@@ -298,7 +298,7 @@ void Game::OnTick(float dt)
 	allow_input = ALLOW_INPUT;
 
 	// utracono urz¹dzenie directx lub okno nie aktywne
-	if(IsLostDevice() || !active || !IsCursorLocked())
+	if(IsLostDevice() || !IsActive() || !IsCursorLocked())
 	{
 		Key.SetFocus(false);
 		if(Net::IsSingleplayer() && !inactive_update)
@@ -338,12 +338,12 @@ void Game::OnTick(float dt)
 			GUI.ShowDialog(console);
 
 		// uwolnienie myszki
-		if(!fullscreen && active && IsCursorLocked() && Key.Shortcut(KEY_CONTROL, 'U'))
+		if(!IsFullscreen() && IsActive() && IsCursorLocked() && Key.Shortcut(KEY_CONTROL, 'U'))
 			UnlockCursor();
 
 		// zmiana trybu okna
 		if(Key.Shortcut(KEY_ALT, VK_RETURN))
-			ChangeMode(!fullscreen);
+			ChangeMode(!IsFullscreen());
 
 		// screenshot
 		if(Key.PressedRelease(VK_SNAPSHOT))
@@ -600,11 +600,12 @@ void Game::ChangeTitle()
 }
 
 //=================================================================================================
-bool Game::Start0(bool _fullscreen, int w, int h)
+bool Game::Start0(StartupOptions& options)
 {
 	LocalString s;
 	GetTitle(s);
-	return Start(s->c_str(), _fullscreen, w, h);
+	options.title = s.c_str();
+	return Start(options);
 }
 
 struct Point
@@ -1801,6 +1802,8 @@ void Game::OnCleanup()
 //=================================================================================================
 void Game::CreateTextures()
 {
+	auto& wnd_size = GetWindowSize();
+
 	V(device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr));
 	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, nullptr));
 	V(device->CreateTexture(128, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tChar, nullptr));
@@ -2684,7 +2687,7 @@ void Game::UpdatePostEffects(float dt)
 			mod = 1.f;
 		else
 			mod = 1.f + (drunk - 0.5f) * 2;
-		e->skill = e2->skill = Vec4(1.f / wnd_size.x*mod, 1.f / wnd_size.y*mod, 0, 0);
+		e->skill = e2->skill = Vec4(1.f / GetWindowSize().x*mod, 1.f / GetWindowSize().y*mod, 0, 0);
 		// 0.1-0
 		// 1-1
 		e->power = e2->power = (drunk - 0.1f) / 0.9f;

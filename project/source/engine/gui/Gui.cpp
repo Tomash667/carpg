@@ -36,6 +36,8 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	device = _device;
 	sprite = _sprite;
 	tFontTarget = nullptr;
+	wnd_size = Engine::Get().GetWindowSize();
+	cursor_pos = wnd_size / 2;
 
 	CreateVertexBuffer();
 
@@ -1073,11 +1075,11 @@ void IGUI::Flush(bool lock)
 }
 
 //=================================================================================================
-void IGUI::Draw(const Int2& _wnd_size, bool draw_layers, bool draw_dialogs)
+void IGUI::Draw(bool draw_layers, bool draw_dialogs)
 {
 	PROFILER_BLOCK("DrawGui");
 
-	wnd_size = _wnd_size;
+	wnd_size = Engine::Get().GetWindowSize();
 
 	if(!draw_layers && !draw_dialogs)
 		return;
@@ -1270,11 +1272,32 @@ void IGUI::DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, DWORD co
 }
 
 //=================================================================================================
-void IGUI::Update(float dt)
+void IGUI::Update(float dt, float mouse_speed)
 {
 	PROFILER_BLOCK("UpdateGui");
 
+	auto& engine = Engine::Get();
+
+	// update cursor
 	cursor_mode = CURSOR_NORMAL;
+	mouse_wheel = engine.GetMouseWheel();
+	prev_cursor_pos = cursor_pos;
+	if(NeedCursor() && mouse_speed > 0)
+	{
+		cursor_pos += engine.GetMouseDif() * mouse_speed;
+		if(cursor_pos.x < 0)
+			cursor_pos.x = 0;
+		if(cursor_pos.y < 0)
+			cursor_pos.y = 0;
+		if(cursor_pos.x >= wnd_size.x)
+			cursor_pos.x = wnd_size.x - 1;
+		if(cursor_pos.y >= wnd_size.y)
+			cursor_pos.y = wnd_size.y - 1;
+		engine.SetUnlockPoint(cursor_pos);
+	}
+	else
+		engine.SetUnlockPoint(wnd_size / 2);
+
 	layer->focus = dialog_layer->Empty();
 
 	if(focused_ctrl)
@@ -1302,6 +1325,7 @@ void IGUI::Update(float dt)
 	}
 
 	UpdateNotifications(dt);
+	engine.SetUnlockPoint(wnd_size / 2);
 }
 
 //=================================================================================================
@@ -1930,9 +1954,12 @@ bool IGUI::AnythingVisible() const
 }
 
 //=================================================================================================
-void IGUI::OnResize(const Int2& _wnd_size)
+void IGUI::OnResize()
 {
-	wnd_size = _wnd_size;
+	auto& engine = Engine::Get();
+	wnd_size = engine.GetWindowSize();
+	cursor_pos = wnd_size / 2;
+	engine.SetUnlockPoint(cursor_pos);
 	layer->Event(GuiEvent_WindowResize);
 	dialog_layer->Event(GuiEvent_WindowResize);
 }
@@ -2572,7 +2599,7 @@ void IGUI::SetClipboard(cstring text)
 {
 	assert(text);
 
-	if(OpenClipboard(Engine::Get().hwnd))
+	if(OpenClipboard(Engine::Get().GetWindowHandle()))
 	{
 		EmptyClipboard();
 		uint length = strlen(text) + 1;
@@ -2590,7 +2617,7 @@ cstring IGUI::GetClipboard()
 {
 	cstring result = nullptr;
 
-	if(OpenClipboard(Engine::Get().hwnd))
+	if(OpenClipboard(Engine::Get().GetWindowHandle()))
 	{
 		if(IsClipboardFormatAvailable(CF_TEXT) == TRUE)
 		{

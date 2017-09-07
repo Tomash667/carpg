@@ -81,7 +81,7 @@ void WorldMapGui::LoadData()
 void WorldMapGui::Draw(ControlDrawData*)
 {
 	// t³o
-	Rect rect0 = { 0,0,game.wnd_size.x,game.wnd_size.y };
+	Rect rect0(Int2::Zero, game.GetWindowSize());
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
 	game.device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
 	GUI.DrawSpriteRectPart(tMapBg, rect0, rect0);
@@ -150,7 +150,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		s += Format("\n\nEncounter: %d%% (%g)", int(float(max(0, (int)game.szansa_na_spotkanie - 25)) * 100 / 500), game.szansa_na_spotkanie);
 
 	// tekst
-	Rect rect = { 608,8,game.wnd_size.x - 8,game.wnd_size.y - 8 };
+	Rect rect(Int2(608, 8), game.GetWindowSize() - Int2(8, 8));
 	GUI.DrawText(GUI.default_font, s, 0, BLACK, rect);
 
 	// kreska

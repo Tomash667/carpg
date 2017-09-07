@@ -440,6 +440,9 @@ struct Int2
 	static Int2 Max(const Int2& i1, const Int2& i2);
 	static Int2 Min(const Int2& i1, const Int2& i2);
 	static Int2 Random(const Int2& i1, const Int2& i2);
+
+	// Constants
+	static const Int2 Zero;
 };
 
 //-----------------------------------------------------------------------------

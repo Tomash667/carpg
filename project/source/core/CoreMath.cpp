@@ -8,6 +8,8 @@ RNG _RNG;
 
 #define FLOAT_ALMOST_ZERO(F) ((absolute_cast<unsigned>(F) & 0x7f800000L) == 0)
 
+const Int2 Int2::Zero = { 0,0 };
+
 const Rect Rect::Zero = { 0,0,0,0 };
 
 const Vec2 Vec2::Zero = { 0.f, 0.f };

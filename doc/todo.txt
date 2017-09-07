@@ -1,8 +1,12 @@
 ﻿FEATURE:
+? verify is window center is wnd_size/2 or real_size/2, update GameGuiInit::UdateGui
+? cursor pos change from Vec2 to Int2, cursor testing, focus, click activation etc
+? some todo from Ref is done here
 ===============================================================================================================
 CURRENT:
 ===============================================================================================================
 NEW:
++ remove system_dir from Engine
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
