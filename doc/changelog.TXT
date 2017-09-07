@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.5.0 (2017-09-03):
+Wersja 0.5.0 (2017-09-07):
 + specjalne akcje (³otrzyk - zryw, ³owca - zwierzêcy sojusznik, wojownik - bycza szarza)
 + wytrzyma³oœæ - u¿ywana do atakowania, blokowania
 + nowe przedmioty: kielich, z³oty kielich, talerz, kie³basa, zupa, gulasz, surowa ryba, ryba, lecz¹ce ziele, zielone ziele, patelnia

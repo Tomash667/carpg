@@ -585,7 +585,8 @@ void Game::SetupCamera(float dt)
 				}
 				else if(p.type == SCHODY_DOL)
 				{
-					if(!lvl.staircase_down_in_wall && vdSchodyDol->RayToMesh(to, dist, pt_to_pos(lvl.staircase_down), dir_to_rot(lvl.staircase_down_dir), tout) && tout < min_tout)
+					if(!lvl.staircase_down_in_wall
+						&& vdSchodyDol->RayToMesh(to, dist, pt_to_pos(lvl.staircase_down), dir_to_rot(lvl.staircase_down_dir), tout) && tout < min_tout)
 						min_tout = tout;
 				}
 				else if(p.type == DRZWI || p.type == OTWOR_NA_DRZWI)
@@ -758,7 +759,8 @@ void Game::SetupCamera(float dt)
 
 	// centrum dŸwiêku 3d
 	Vec3 listener_pos = target->GetHeadSoundPos();
-	fmod_system->set3DListenerAttributes(0, (const FMOD_VECTOR*)&listener_pos, nullptr, (const FMOD_VECTOR*)&Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)), (const FMOD_VECTOR*)&Vec3(0, 1, 0));
+	fmod_system->set3DListenerAttributes(0, (const FMOD_VECTOR*)&listener_pos, nullptr, (const FMOD_VECTOR*)&Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)),
+		(const FMOD_VECTOR*)&Vec3(0, 1, 0));
 }
 
 //=================================================================================================
@@ -794,8 +796,8 @@ void Game::SetupShaders()
 	techGlowMesh = eGlow->GetTechniqueByName("mesh");
 	techGlowAni = eGlow->GetTechniqueByName("ani");
 	techGrass = eGrass->GetTechniqueByName("grass");
-	assert(techAnim && techHair && techAnimDir && techHairDir && techMesh && techMeshDir && techMeshSimple && techMeshSimple2 && techMeshExplo && techParticle && techTrail && techSkybox &&
-		techTerrain && techArea && techGlowMesh && techGlowAni && techGrass);
+	assert(techAnim && techHair && techAnimDir && techHairDir && techMesh && techMeshDir && techMeshSimple && techMeshSimple2 && techMeshExplo && techParticle
+		&& techTrail && techSkybox && techTerrain && techArea && techGlowMesh && techGlowAni && techGrass);
 
 	hMeshCombined = eMesh->GetParameterByName(nullptr, "matCombined");
 	hMeshWorld = eMesh->GetParameterByName(nullptr, "matWorld");
@@ -807,7 +809,8 @@ void Game::SetupShaders()
 	hMeshLightDir = eMesh->GetParameterByName(nullptr, "lightDir");
 	hMeshLightColor = eMesh->GetParameterByName(nullptr, "lightColor");
 	hMeshLights = eMesh->GetParameterByName(nullptr, "lights");
-	assert(hMeshCombined && hMeshWorld && hMeshTex && hMeshFogColor && hMeshFogParam && hMeshTint && hMeshAmbientColor && hMeshLightDir && hMeshLightColor && hMeshLights);
+	assert(hMeshCombined && hMeshWorld && hMeshTex && hMeshFogColor && hMeshFogParam && hMeshTint && hMeshAmbientColor && hMeshLightDir && hMeshLightColor
+		&& hMeshLights);
 
 	hParticleCombined = eParticle->GetParameterByName(nullptr, "matCombined");
 	hParticleTex = eParticle->GetParameterByName(nullptr, "tex0");
@@ -6758,47 +6761,9 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	else
 		u = new Unit;
 
+	// unit data
 	u->data = &base;
 	u->human_data = nullptr;
-
-	// typ
-	if(!test_unit)
-	{
-		if(base.type == UNIT_TYPE::HUMAN)
-		{
-			if(human_data)
-				u->human_data = human_data;
-			else
-			{
-#define HEX(h) Vec4(1.f/256*(((h)&0xFF0000)>>16), 1.f/256*(((h)&0xFF00)>>8), 1.f/256*((h)&0xFF), 1.f)
-				u->human_data = new Human;
-				u->human_data->beard = Rand() % MAX_BEARD - 1;
-				u->human_data->hair = Rand() % MAX_HAIR - 1;
-				u->human_data->mustache = Rand() % MAX_MUSTACHE - 1;
-				u->human_data->height = Random(0.9f, 1.1f);
-				if(IS_SET(base.flags2, F2_OLD))
-					u->human_data->hair_color = HEX(0xDED5D0);
-				else if(IS_SET(base.flags, F_CRAZY))
-					u->human_data->hair_color = Vec4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
-				else if(IS_SET(base.flags, F_GRAY_HAIR))
-					u->human_data->hair_color = g_hair_colors[Rand() % 4];
-				else if(IS_SET(base.flags, F_TOMASHU))
-				{
-					u->human_data->beard = 4;
-					u->human_data->mustache = -1;
-					u->human_data->hair = 0;
-					u->human_data->hair_color = g_hair_colors[0];
-					u->human_data->height = 1.1f;
-				}
-				else
-					u->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
-#undef HEX
-			}
-		}
-
-		u->CreateMesh(Unit::CREATE_MESH::NORMAL);
-	}
-
 	u->pos = Vec3(0, 0, 0);
 	u->rot = 0.f;
 	u->used_item = nullptr;
@@ -6843,12 +6808,6 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->alcohol = 0.f;
 	u->moved = false;
 
-	float t;
-	if(base.level.x == base.level.y)
-		t = 1.f;
-	else
-		t = float(u->level - base.level.x) / (base.level.y - base.level.x);
-
 	if(!custom)
 	{
 		// to prevent sending hp changed message set temporary as fake unit
@@ -6886,10 +6845,51 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	}
 
 	// gold
+	float t;
+	if(base.level.x == base.level.y)
+		t = 1.f;
+	else
+		t = float(u->level - base.level.x) / (base.level.y - base.level.x);
 	u->gold = Int2::Lerp(base.gold, base.gold2, t).Random();
 
 	if(!test_unit)
 	{
+		// mesh, human details
+		if(base.type == UNIT_TYPE::HUMAN)
+		{
+			if(human_data)
+				u->human_data = human_data;
+			else
+			{
+#define HEX(h) Vec4(1.f/256*(((h)&0xFF0000)>>16), 1.f/256*(((h)&0xFF00)>>8), 1.f/256*((h)&0xFF), 1.f)
+				u->human_data = new Human;
+				u->human_data->beard = Rand() % MAX_BEARD - 1;
+				u->human_data->hair = Rand() % MAX_HAIR - 1;
+				u->human_data->mustache = Rand() % MAX_MUSTACHE - 1;
+				u->human_data->height = Random(0.9f, 1.1f);
+				if(IS_SET(base.flags2, F2_OLD))
+					u->human_data->hair_color = HEX(0xDED5D0);
+				else if(IS_SET(base.flags, F_CRAZY))
+					u->human_data->hair_color = Vec4(RandomPart(8), RandomPart(8), RandomPart(8), 1.f);
+				else if(IS_SET(base.flags, F_GRAY_HAIR))
+					u->human_data->hair_color = g_hair_colors[Rand() % 4];
+				else if(IS_SET(base.flags, F_TOMASHU))
+				{
+					u->human_data->beard = 4;
+					u->human_data->mustache = -1;
+					u->human_data->hair = 0;
+					u->human_data->hair_color = g_hair_colors[0];
+					u->human_data->height = 1.1f;
+				}
+				else
+					u->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
+#undef HEX
+			}
+		}
+
+		u->CreateMesh(Unit::CREATE_MESH::NORMAL);
+
+		// hero data
 		if(IS_SET(base.flags, F_HERO))
 		{
 			u->hero = new HeroData;
@@ -6898,10 +6898,11 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		else
 			u->hero = nullptr;
 
+		// boss music
 		if(IS_SET(u->data->flags2, F2_BOSS))
 			boss_levels.push_back(Int2(current_location, dungeon_level));
 
-		// kolizje
+		// physics
 		if(create_physics)
 			CreateUnitPhysics(*u);
 		else
@@ -10533,7 +10534,8 @@ void Game::GenerateDungeonObjects()
 					{
 						for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
 						{
-							if(RectangleToRectangle(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y, 2.f*b_it->x, 2.f*b_it->y, 2.f*(b_it->x + 1), 2.f*(b_it->y + 1)))
+							if(RectangleToRectangle(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y,
+								2.f*b_it->x, 2.f*b_it->y, 2.f*(b_it->x + 1), 2.f*(b_it->y + 1)))
 							{
 								ok = false;
 								break;
@@ -10781,8 +10783,8 @@ void Game::GenerateDungeonUnits()
 		szansa_na_3 = 40,
 		szansa_na_wrog_w_korytarz = 25;
 
-	assert(InRange(szansa_na_brak, 0, 100) && InRange(szansa_na_1, 0, 100) && InRange(szansa_na_2, 0, 100) && InRange(szansa_na_3, 0, 100) && InRange(szansa_na_wrog_w_korytarz, 0, 100) &&
-		szansa_na_brak + szansa_na_1 + szansa_na_2 + szansa_na_3 == 100);
+	assert(InRange(szansa_na_brak, 0, 100) && InRange(szansa_na_1, 0, 100) && InRange(szansa_na_2, 0, 100) && InRange(szansa_na_3, 0, 100)
+		&& InRange(szansa_na_wrog_w_korytarz, 0, 100) && szansa_na_brak + szansa_na_1 + szansa_na_2 + szansa_na_3 == 100);
 
 	int szansa[3] = { szansa_na_brak, szansa_na_brak + szansa_na_1, szansa_na_brak + szansa_na_1 + szansa_na_2 };
 
@@ -12678,7 +12680,8 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 				bool jest = false;
 				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 				{
-					if((*it2)->IsStanding() && CircleToRectangle((*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
+					if((*it2)->IsStanding()
+						&& CircleToRectangle((*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
 					{
 						jest = true;
 						break;
@@ -12792,7 +12795,8 @@ Trap* Game::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 			{
 				trap.tile = pt + g_kierunek2[i] * j;
 
-				if(CanShootAtLocation(Vec3(trap.pos.x + (2.f*j - 1.2f)*g_kierunek2[i].x, 1.f, trap.pos.z + (2.f*j - 1.2f)*g_kierunek2[i].y), Vec3(trap.pos.x, 1.f, trap.pos.z)))
+				if(CanShootAtLocation(Vec3(trap.pos.x + (2.f*j - 1.2f)*g_kierunek2[i].x, 1.f, trap.pos.z + (2.f*j - 1.2f)*g_kierunek2[i].y),
+					Vec3(trap.pos.x, 1.f, trap.pos.z)))
 				{
 					TrapLocation& tr = Add1(possible);
 					tr.pt = trap.tile;
@@ -14406,7 +14410,8 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 	bool debug_do = DEBUG_BOOL;
 
-	if((first || need_reset) && (Rand() % 50 == 0 || (debug_do && Key.Down('C'))) && location->type != L_CAVE && inside->target != LABIRYNTH && !location->active_quest && dungeon_level == 0)
+	if((first || need_reset) && (Rand() % 50 == 0 || (debug_do && Key.Down('C'))) && location->type != L_CAVE && inside->target != LABIRYNTH
+		&& !location->active_quest && dungeon_level == 0)
 		SpawnHeroesInsideDungeon();
 
 	// stwórz obiekty kolizji

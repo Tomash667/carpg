@@ -11,6 +11,7 @@ struct TeamInfo
 	int sane_heroes;
 	int insane_heroes;
 	int free_members;
+	int summons;
 };
 
 class TeamSingleton

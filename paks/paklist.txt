@@ -22,4 +22,4 @@ dir "../bin/data" "data"
 dir "../system" "system"
 
 // copy pdb
-pdb "../build/Release/carpg.pdb"
+pdb "../bin/carpg.pdb"

@@ -104,15 +104,23 @@ void TeamSingleton::GetTeamInfo(TeamInfo& info)
 			++info.npcs;
 			if(unit->IsHero())
 			{
-				if(unit->hero->free)
+				if(unit->summoner != nullptr)
+				{
 					++info.free_members;
+					++info.summons;
+				}
 				else
 				{
-					++info.heroes;
-					if(IS_SET(unit->data->flags, F_CRAZY))
-						++info.insane_heroes;
+					if(unit->hero->free)
+						++info.free_members;
 					else
-						++info.sane_heroes;
+					{
+						++info.heroes;
+						if(IS_SET(unit->data->flags, F_CRAZY))
+							++info.insane_heroes;
+						else
+							++info.sane_heroes;
+					}
 				}
 			}
 			else

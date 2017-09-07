@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.5.0 (2017-09-03):
+Version 0.5.0 (2017-09-07):
 + player actions (rogue - dash, hunter - animal ally, warrior - bull's charge)
 + stamina - used by attacking, blocking
 + new items: cup, golden cup, golden bar, plate, sausage, soup, stew, fish, fish meat, healing herb, green herb, frying pan

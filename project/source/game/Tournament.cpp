@@ -26,6 +26,8 @@ void Game::StartTournament(Unit* arena_master)
 //=================================================================================================
 bool Game::IfUnitJoinTournament(Unit& u)
 {
+	if(u.summoner)
+		return false;
 	if(u.IsStanding() && u.IsHero() && u.frozen == 0)
 	{
 		if(IS_SET(u.data->flags2, F2_TOURNAMENT))

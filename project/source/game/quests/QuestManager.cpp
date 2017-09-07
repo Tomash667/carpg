@@ -32,6 +32,8 @@ QuestManager Singleton<QuestManager>::instance;
 //=================================================================================================
 void QuestManager::Init()
 {
+	force = Q_FORCE_DISABLED;
+
 	infos.push_back({ Q_MINE, QuestType::Unique, "mine" });
 	infos.push_back({ Q_SAWMILL, QuestType::Unique, "sawmill" });
 	infos.push_back({ Q_BANDITS, QuestType::Unique, "bandits" });
@@ -340,6 +342,7 @@ void QuestManager::Save(HANDLE file)
 	f << unique_completed_show;
 	f << quest_rumor_counter;
 	f << quest_rumor;
+	f << force;
 }
 
 //=================================================================================================
@@ -373,6 +376,11 @@ void QuestManager::Load(HANDLE file)
 	f >> unique_completed_show;
 	f >> quest_rumor_counter;
 	f >> quest_rumor;
+
+	if(LOAD_VERSION >= V_0_5)
+		f >> force;
+	else
+		force = Q_FORCE_DISABLED;
 }
 
 //=================================================================================================

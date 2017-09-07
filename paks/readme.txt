@@ -1,4 +1,5 @@
 Create pak with game and/or patch.
+7zip must be installed to create zip, and added to PATH variable.
 
 Standard usage (run command line in this directory):
 paker version (for example "paker 0.4")

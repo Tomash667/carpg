@@ -325,7 +325,7 @@ bool AIController::CheckPotion(bool in_combat)
 			int index = unit->FindHealingPotion();
 			if(index == -1)
 			{
-				if(unit->busy == Unit::Busy_No && unit->IsFollower())
+				if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
 				{
 					Game& game = Game::Get();
 					game.UnitTalk(*unit, random_string(game.txAiNoHpPot));
