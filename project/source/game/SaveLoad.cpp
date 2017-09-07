@@ -20,7 +20,7 @@
 #include "City.h"
 #include "CaveLocation.h"
 #include "Camp.h"
-#include "Gui2.h"
+#include "Gui.h"
 #include "SaveLoadPanel.h"
 #include "MultiplayerPanel.h"
 #include "MainMenu.h"

@@ -52,6 +52,10 @@ public:
 	void PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float smin, float smax = 0.f); // smax jest nieu¿ywane
 	void Render(bool dont_call_present = false);
 	bool Reset(bool force);
+	void SetAlphaBlend(bool use_alphablend);
+	void SetAlphaTest(bool use_alphatest);
+	void SetNoCulling(bool use_nocull);
+	void SetNoZWrite(bool use_nozwrite);
 	void SetStartingMultisampling(int multisampling, int multisampling_quality);
 	void SetTitle(cstring title);
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
@@ -123,6 +127,7 @@ private:
 	void LogMultisampling();
 	void PlaceCursor();
 	void SelectResolution();
+	void SetDefaultRenderState();
 	void ShowCursor(bool show);
 	void UpdateActivity(bool is_active);
 	void WindowLoop();
@@ -133,4 +138,5 @@ private:
 	float frame_time;
 	Timer timer;
 	bool engine_shutdown, lost_device, res_freed, cursor_visible, replace_cursor, locked_cursor, lock_on_focus;
+	bool r_alphatest, r_nozwrite, r_nocull, r_alphablend;
 };

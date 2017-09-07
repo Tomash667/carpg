@@ -165,7 +165,7 @@ public:
 	void InitLayout();
 	void SetText();
 	void SetShader(ID3DXEffect* e);
-	void Draw(const Int2& wnd_size);
+	void Draw(const Int2& wnd_size, bool draw_layers, bool draw_dialogs);
 	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
 	zwraca false je¿eli by³ clipping od do³u (nie kontuuj tekstu w flow)
@@ -281,6 +281,7 @@ private:
 	float outline_alpha;
 	gui::Layout* layout;
 	gui::Overlay* overlay;
+	IDirect3DVertexDeclaration9* vertex_decl;
 };
 
 //-----------------------------------------------------------------------------

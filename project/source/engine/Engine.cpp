@@ -14,7 +14,7 @@ Engine* Engine::engine;
 KeyStates Key;
 extern string g_system_dir;
 
-//=================================================================================================                                                                        
+//=================================================================================================
 Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), fmod_system(nullptr), phy_config(nullptr),
 phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true),
 lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1, -1), s_wnd_size(-1, -1), music_ended(false), disabled_sound(false), key_callback(nullptr),
@@ -458,7 +458,7 @@ void Engine::DoTick(bool update_game)
 	}
 	else if(!locked_cursor && lock_on_focus)
 		locked_cursor = true;
-	
+
 	// update keyboard shortcuts info
 	Key.UpdateShortcuts();
 
@@ -826,6 +826,8 @@ void Engine::InitRender()
 	if(FAILED(hr))
 		throw Format("Engine: Failed to create direct3dx sprite (%d).", hr);
 
+	SetDefaultRenderState();
+
 	Info("Engine: Directx device created.");
 }
 
@@ -1135,6 +1137,7 @@ bool Engine::Reset(bool force)
 	}
 
 	// reload resources
+	SetDefaultRenderState();
 	OnReload();
 	V(sprite->OnResetDevice());
 	lost_device = false;
@@ -1483,5 +1486,60 @@ void Engine::WindowLoop()
 
 		if(engine_shutdown)
 			break;
+	}
+}
+
+//=================================================================================================
+void Engine::SetDefaultRenderState()
+{
+	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+	V(device->SetRenderState(D3DRS_ALPHAREF, 200));
+	V(device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));
+
+	r_alphatest = false;
+	r_alphablend = false;
+	r_nocull = false;
+	r_nozwrite = false;
+}
+
+//=================================================================================================
+void Engine::SetAlphaBlend(bool use_alphablend)
+{
+	if(use_alphablend != r_alphablend)
+	{
+		r_alphablend = use_alphablend;
+		V(device->SetRenderState(D3DRS_ALPHABLENDENABLE, r_alphablend ? TRUE : FALSE));
+	}
+}
+
+//=================================================================================================
+void Engine::SetAlphaTest(bool use_alphatest)
+{
+	if(use_alphatest != r_alphatest)
+	{
+		r_alphatest = use_alphatest;
+		V(device->SetRenderState(D3DRS_ALPHATESTENABLE, r_alphatest ? TRUE : FALSE));
+	}
+}
+
+//=================================================================================================
+void Engine::SetNoCulling(bool use_nocull)
+{
+	if(use_nocull != r_nocull)
+	{
+		r_nocull = use_nocull;
+		V(device->SetRenderState(D3DRS_CULLMODE, r_nocull ? D3DCULL_NONE : D3DCULL_CCW));
+	}
+}
+
+//=================================================================================================
+void Engine::SetNoZWrite(bool use_nozwrite)
+{
+	if(use_nozwrite != r_nozwrite)
+	{
+		r_nozwrite = use_nozwrite;
+		V(device->SetRenderState(D3DRS_ZWRITEENABLE, r_nozwrite ? FALSE : TRUE));
 	}
 }

@@ -132,7 +132,7 @@ void Game::OnDraw(bool normal)
 
 		// draw gui
 		GUI.mViewProj = cam.matViewProj;
-		GUI.Draw(wnd_size);
+		GUI.Draw(wnd_size, IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 
 		V(device->EndScene());
 	}
@@ -221,7 +221,7 @@ void Game::OnDraw(bool normal)
 			if(it + 1 == end)
 			{
 				GUI.mViewProj = cam.matViewProj;
-				GUI.Draw(wnd_size);
+				GUI.Draw(wnd_size, IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 			}
 
 			V(device->EndScene());
@@ -645,20 +645,10 @@ void Game::OnReload()
 	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
 		V(it->e->OnResetDevice());
 
-	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-	V(device->SetRenderState(D3DRS_ALPHAREF, 200));
-	V(device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));
 
 	CreateTextures();
 	BuildDungeon();
 	RebuildMinimap();
-
-	r_alphatest = false;
-	r_alphablend = false;
-	r_nocull = false;
-	r_nozwrite = false;
 }
 
 //=================================================================================================

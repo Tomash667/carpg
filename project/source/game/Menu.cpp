@@ -6,7 +6,7 @@
 #include "Version.h"
 #include "City.h"
 #include "InsideLocation.h"
-#include "Gui2.h"
+#include "Gui.h"
 #include "GameGui.h"
 #include "MainMenu.h"
 #include "GameMenu.h"

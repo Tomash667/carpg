@@ -561,12 +561,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 						if(all)
 						{
-							for each(const ConsoleCommand& cmd in cmds)
+							for(const ConsoleCommand& cmd : cmds)
 								cmds2.push_back(&cmd);
 						}
 						else
 						{
-							for each(const ConsoleCommand& cmd in cmds)
+							for(const ConsoleCommand& cmd : cmds)
 							{
 								bool ok = true;
 								if(IS_SET(cmd.flags, F_CHEAT) && !devmode)
@@ -618,7 +618,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						string s = "Available commands:\n";
 						Msg("Available commands:");
 
-						for each(const ConsoleCommand* cmd in cmds2)
+						for(const ConsoleCommand* cmd : cmds2)
 						{
 							cstring str = Format("%s - %s.", cmd->name, cmd->desc);
 							Msg(str);

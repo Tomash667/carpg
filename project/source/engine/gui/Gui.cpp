@@ -1,11 +1,11 @@
 #include "Pch.h"
 #include "Core.h"
-#include "Gui2.h"
+#include "Gui.h"
 #include "Container.h"
 #include "DialogBox.h"
 #include "Language.h"
-#include "Game.h"
 #include "GuiRect.h"
+#include "Engine.h"
 
 using namespace gui;
 
@@ -15,7 +15,7 @@ TEX IGUI::tBox, IGUI::tBox2, IGUI::tPix, IGUI::tDown;
 
 //=================================================================================================
 IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
-active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr), grayscale(false)
+active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), vertex_decl(nullptr)
 {
 }
 
@@ -50,11 +50,21 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	dialog_layer = new Container;
 	dialog_layer->focus_top = true;
 
+	// create pixel texture
 	V(D3DXCreateTexture(device, 1, 1, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tPixel));
 	D3DLOCKED_RECT lock;
 	V(tPixel->LockRect(0, &lock, nullptr, 0));
 	*((DWORD*)lock.pBits) = COLOR_RGB(255, 255, 255);
 	V(tPixel->UnlockRect(0));
+
+	// create vertex declaration
+	const D3DVERTEXELEMENT9 v[] = {
+		{ 0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0 },
+		{ 0, 12, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0 },
+		{ 0, 20, D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_COLOR,			0 },
+		D3DDECL_END()
+	};
+	V(device->CreateVertexDeclaration(v, &vertex_decl));
 }
 
 //=================================================================================================
@@ -1063,22 +1073,22 @@ void IGUI::Flush(bool lock)
 }
 
 //=================================================================================================
-void IGUI::Draw(const Int2& _wnd_size)
+void IGUI::Draw(const Int2& _wnd_size, bool draw_layers, bool draw_dialogs)
 {
 	PROFILER_BLOCK("DrawGui");
 
 	wnd_size = _wnd_size;
 
-	Game& game = Game::Get();
-	if(!IS_SET(game.draw_flags, DF_GUI | DF_MENU))
+	if(!draw_layers && !draw_dialogs)
 		return;
 
-	game.SetAlphaTest(false);
-	game.SetAlphaBlend(true);
-	game.SetNoCulling(true);
-	game.SetNoZWrite(false);
+	auto& engine = Engine::Get();
+	engine.SetAlphaTest(false);
+	engine.SetAlphaBlend(true);
+	engine.SetNoCulling(true);
+	engine.SetNoZWrite(false);
 
-	V(device->SetVertexDeclaration(game.vertex_decl[VDI_PARTICLE]));
+	V(device->SetVertexDeclaration(vertex_decl));
 
 	tSet = nullptr;
 	tCurrent = nullptr;
@@ -1093,9 +1103,9 @@ void IGUI::Draw(const Int2& _wnd_size)
 	V(eGui->BeginPass(0));
 
 	// rysowanie
-	if(IS_SET(game.draw_flags, DF_GUI))
+	if(draw_layers)
 		layer->Draw();
-	if(IS_SET(game.draw_flags, DF_MENU))
+	if(draw_dialogs)
 		dialog_layer->Draw();
 
 	DrawNotifications();
@@ -1892,7 +1902,7 @@ bool IGUI::HaveDialog(cstring name)
 {
 	assert(name);
 	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
-	for each(DialogBox* dialog in dialogs)
+	for(DialogBox* dialog : dialogs)
 	{
 		if(dialog->name == name)
 			return true;
@@ -2069,7 +2079,7 @@ void IGUI::DrawLine(const Vec2* lines, uint count, DWORD color, bool strip)
 	}
 
 	V(vb->Unlock());
-	V(device->SetVertexDeclaration(Game::Get().vertex_decl[VDI_PARTICLE]));
+	V(device->SetVertexDeclaration(vertex_decl));
 	V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
 	V(device->DrawPrimitive(strip ? D3DPT_LINESTRIP : D3DPT_LINELIST, 0, count));
 }
@@ -2562,7 +2572,7 @@ void IGUI::SetClipboard(cstring text)
 {
 	assert(text);
 
-	if(OpenClipboard(Game::Get().hwnd))
+	if(OpenClipboard(Engine::Get().hwnd))
 	{
 		EmptyClipboard();
 		uint length = strlen(text) + 1;
@@ -2580,7 +2590,7 @@ cstring IGUI::GetClipboard()
 {
 	cstring result = nullptr;
 
-	if(OpenClipboard(Game::Get().hwnd))
+	if(OpenClipboard(Engine::Get().hwnd))
 	{
 		if(IsClipboardFormatAvailable(CF_TEXT) == TRUE)
 		{

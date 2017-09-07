@@ -93,9 +93,6 @@
     <ClCompile Include="source\game\GameCommon.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\Gui2.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\Menu.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
@@ -310,9 +307,6 @@
     </ClCompile>
     <ClCompile Include="source\game\stats\StatProfile.cpp">
       <Filter>3. game\stats</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\Gui.cpp">
-      <Filter>3. game</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\Controls.cpp">
       <Filter>3. game\panels</Filter>
@@ -621,6 +615,12 @@
     <ClCompile Include="source\engine\gui\DialogBox.cpp">
       <Filter>2. engine\gui\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\GameGuiInit.cpp">
+      <Filter>3. game</Filter>
+    </ClCompile>
+    <ClCompile Include="source\engine\gui\Gui.cpp">
+      <Filter>2. engine\gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -654,9 +654,6 @@
       <Filter>3. game</Filter>
     </ClInclude>
     <ClInclude Include="source\game\GameKeys.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\Gui2.h">
       <Filter>3. game</Filter>
     </ClInclude>
     <ClInclude Include="source\game\ItemScript.h">
@@ -1240,6 +1237,9 @@
     </ClInclude>
     <ClInclude Include="source\game\panels\GameDialogBox.h">
       <Filter>3. game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\gui\Gui.h">
+      <Filter>2. engine\gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

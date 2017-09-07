@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Gui2.h"
 #include "Button.h"
 #include "Checkbox.h"
 

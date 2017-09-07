@@ -155,6 +155,7 @@
     <ClInclude Include="source\engine\gui\GetNumberDialog.h" />
     <ClInclude Include="source\engine\gui\GetTextDialog.h" />
     <ClInclude Include="source\engine\gui\Grid.h" />
+    <ClInclude Include="source\engine\gui\Gui.h" />
     <ClInclude Include="source\engine\gui\GuiContainer.h" />
     <ClInclude Include="source\engine\gui\GuiDialog.h" />
     <ClInclude Include="source\engine\gui\GuiElement.h" />
@@ -236,7 +237,6 @@
     <ClInclude Include="source\game\GameKeys.h" />
     <ClInclude Include="source\game\generator\CityGenerator.h" />
     <ClInclude Include="source\game\generator\Mapa2.h" />
-    <ClInclude Include="source\game\Gui2.h" />
     <ClInclude Include="source\game\helpers\LocationHelper.h" />
     <ClInclude Include="source\game\helpers\UnitHelper.h" />
     <ClInclude Include="source\game\ItemScript.h" />
@@ -359,6 +359,7 @@
     <ClCompile Include="source\engine\gui\GetNumberDialog.cpp" />
     <ClCompile Include="source\engine\gui\GetTextDialog.cpp" />
     <ClCompile Include="source\engine\gui\Grid.cpp" />
+    <ClCompile Include="source\engine\gui\Gui.cpp" />
     <ClCompile Include="source\engine\gui\GuiContainer.cpp" />
     <ClCompile Include="source\engine\gui\GuiDialog.cpp" />
     <ClCompile Include="source\engine\gui\InputTextBox.cpp" />
@@ -426,8 +427,7 @@
     <ClCompile Include="source\game\Game_LevelArea.cpp" />
     <ClCompile Include="source\game\generator\CityGenerator.cpp" />
     <ClCompile Include="source\game\generator\Mapa2.cpp" />
-    <ClCompile Include="source\game\Gui.cpp" />
-    <ClCompile Include="source\game\Gui2.cpp" />
+    <ClCompile Include="source\game\GameGuiInit.cpp" />
     <ClCompile Include="source\game\helpers\UnitHelper.cpp" />
     <ClCompile Include="source\game\Init.cpp" />
     <ClCompile Include="source\game\Language.cpp" />

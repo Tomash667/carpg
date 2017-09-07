@@ -433,7 +433,6 @@ struct Game final : public Engine, public UnitEventHandler
 
 	// scene
 	bool cl_normalmap, cl_specularmap, cl_glow;
-	bool r_alphatest, r_nozwrite, r_nocull, r_alphablend;
 	DrawBatch draw_batch;
 	VDefault blood_v[4];
 	VParticle billboard_v[4];
@@ -480,10 +479,6 @@ struct Game final : public Engine, public UnitEventHandler
 	void DrawStunEffects(const vector<StunEffect>& stuns);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void DrawPortals(const vector<Portal*>& portals);
-	void SetAlphaTest(bool use_alphatest);
-	void SetNoZWrite(bool use_nozwrite);
-	void SetNoCulling(bool use_nocull);
-	void SetAlphaBlend(bool use_alphablend);
 	void UvModChanged();
 	void InitQuadTree();
 	void DrawGrass();
