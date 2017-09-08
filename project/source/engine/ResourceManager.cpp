@@ -671,7 +671,7 @@ void ResourceManager::StartLoadScreen(cstring category)
 void ResourceManager::CancelLoadScreen(bool cleanup)
 {
 	assert(mode == Mode::LoadScreenPrepare);
-	
+
 	if(cleanup)
 		tasks.clear();
 	else
@@ -769,7 +769,7 @@ void ResourceManager::ReleaseMutex()
 void ResourceManager::LoadResourceInternal(Resource* res)
 {
 	assert(res->state != ResourceState::Loaded);
-	
+
 	switch(res->type)
 	{
 	case ResourceType::Mesh:
@@ -861,7 +861,7 @@ void ResourceManager::LoadSoundOrMusic(Sound* sound)
 		if(result == FMOD_OK)
 			sound_bufs.push_back(buf.Pin());
 	}
-	
+
 	if(result != FMOD_OK)
 		throw Format("ResourceManager: Failed to load %s '%s' (%d).", sound->is_music ? "music" : "sound", sound->path.c_str(), result);
 }
