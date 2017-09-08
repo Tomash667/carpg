@@ -7,7 +7,7 @@
 GetTextDialog* GetTextDialog::self;
 
 //=================================================================================================
-GetTextDialog::GetTextDialog(const DialogInfo& info) : Dialog(info), singleline(true)
+GetTextDialog::GetTextDialog(const DialogInfo& info) : DialogBox(info), singleline(true)
 {
 }
 
@@ -174,7 +174,7 @@ void GetTextDialog::Create(const GetTextDialogParams& params)
 	// ustaw parametry
 	result = -1;
 	parent = params.parent;
-	order = parent ? ((Dialog*)parent)->order : ORDER_NORMAL;
+	order = parent ? ((DialogBox*)parent)->order : ORDER_NORMAL;
 	event = params.event;
 	text = params.text;
 	input = params.input;

@@ -102,7 +102,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_AddQuest(refid);
 		}
 		break;
@@ -134,7 +134,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				if(prog == Progress::Deliver)
 					game->Net_UpdateQuestMulti(refid, 2);
@@ -154,7 +154,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -170,7 +170,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;

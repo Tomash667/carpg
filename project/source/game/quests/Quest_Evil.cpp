@@ -72,9 +72,9 @@ void Quest_Evil::SetProgress(int prog2)
 				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
 				game->game_gui->journal->NeedUpdate(Journal::Rumors);
 				game->AddGameMsg3(GMS_ADDED_RUMOR);
-				if(game->IsOnline())
+				if(Net::IsOnline())
 				{
-					NetChange& c = Add1(game->net_changes);
+					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::ADD_RUMOR;
 					c.id = int(game->rumors.size()) - 1;
 				}
@@ -114,7 +114,7 @@ void Quest_Evil::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_AddQuest(refid);
 				if(now_known)
@@ -130,7 +130,7 @@ void Quest_Evil::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddNews(Format(game->txQuest[237], GetTargetLocationName()));
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -144,7 +144,7 @@ void Quest_Evil::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			evil_state = State::GenerateMage;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -157,7 +157,7 @@ void Quest_Evil::SetProgress(int prog2)
 			game->AddNews(Format(game->txQuest[240], game->locations[mage_loc]->name.c_str()));
 			game->current_dialog->talker->temporary = true;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -168,7 +168,7 @@ void Quest_Evil::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -179,7 +179,7 @@ void Quest_Evil::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -193,7 +193,7 @@ void Quest_Evil::SetProgress(int prog2)
 			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				if(!game->current_dialog->is_local)
@@ -260,7 +260,7 @@ void Quest_Evil::SetProgress(int prog2)
 
 			evil_state = State::ClosingPortals;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuestMulti(refid, 4);
 				for(int i = 0; i < 3; ++i)
@@ -296,7 +296,7 @@ void Quest_Evil::SetProgress(int prog2)
 			for(int i = 0; i < 3; ++i)
 				game->locations[loc[i].target_loc]->active_quest = nullptr;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuestMulti(refid, 2);
 		}
 		break;
@@ -347,7 +347,7 @@ void Quest_Evil::SetProgress(int prog2)
 			evil_state = State::ClericWantTalk;
 			game->AddNews(game->txQuest[250]);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->PushNetChange(NetChange::CLEAN_ALTAR);
 				game->Net_UpdateQuest(refid);

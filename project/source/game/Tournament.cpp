@@ -83,7 +83,7 @@ void Game::GenerateTournamentUnits()
 		if(u)
 		{
 			u->temporary = true;
-			if(IsOnline())
+			if(Net::IsOnline())
 				Net_SpawnUnit(u);
 		}
 	}
@@ -299,7 +299,7 @@ void Game::UpdateTournament(float dt)
 						if(p.first->IsPlayer())
 						{
 							p.first->player->arena_fights++;
-							if(IsOnline())
+							if(Net::IsOnline())
 								p.first->player->stat_flags |= STAT_ARENA_FIGHTS;
 							if(p.first->player == pc)
 							{
@@ -308,7 +308,7 @@ void Game::UpdateTournament(float dt)
 							}
 							else
 							{
-								NetChangePlayer& c = Add1(net_changes_player);
+								NetChangePlayer& c = Add1(Net::player_changes);
 								c.type = NetChangePlayer::ENTER_ARENA;
 								c.pc = p.first->player;
 								GetPlayerInfo(c.pc).NeedUpdate();
@@ -320,7 +320,7 @@ void Game::UpdateTournament(float dt)
 						if(p.second->IsPlayer())
 						{
 							p.second->player->arena_fights++;
-							if(IsOnline())
+							if(Net::IsOnline())
 								p.second->player->stat_flags |= STAT_ARENA_FIGHTS;
 							if(p.second->player == pc)
 							{
@@ -329,7 +329,7 @@ void Game::UpdateTournament(float dt)
 							}
 							else
 							{
-								NetChangePlayer& c = Add1(net_changes_player);
+								NetChangePlayer& c = Add1(Net::player_changes);
 								c.type = NetChangePlayer::ENTER_ARENA;
 								c.pc = p.second->player;
 								GetPlayerInfo(c.pc).NeedUpdate();
@@ -467,7 +467,7 @@ void Game::UpdateTournament(float dt)
 									Net_AddedItemMsg(u.player);
 								else
 								{
-									NetChangePlayer& c = Add1(net_changes_player);
+									NetChangePlayer& c = Add1(Net::player_changes);
 									c.type = NetChangePlayer::ADDED_ITEM_MSG;
 									c.ile = given_items;
 									c.pc = u.player;
@@ -508,7 +508,7 @@ void Game::UpdateTournament(float dt)
 						tournament_winner->busy = Unit::Busy_No;
 						if(tournament_winner->player != pc)
 						{
-							NetChangePlayer& c = Add1(net_changes_player);
+							NetChangePlayer& c = Add1(Net::player_changes);
 							c.type = NetChangePlayer::GOLD_MSG;
 							c.id = 1;
 							c.ile = NAGRODA;

@@ -99,7 +99,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			if(!game->current_dialog->pc->unit->HaveItem(item))
 			{
 				game->current_dialog->pc->unit->AddItem(item, 1, true);
-				if(game->IsOnline() && !game->current_dialog->is_local)
+				if(Net::IsOnline() && !game->current_dialog->is_local)
 				{
 					game->Net_AddItem(game->current_dialog->pc, item, true);
 					game->Net_AddedItemMsg(game->current_dialog->pc);
@@ -124,7 +124,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		else
@@ -159,7 +159,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			quest_manager.RemoveQuestRumor(P_BANDYCI);
 			game->AddNews(Format(game->txQuest[156], GetStartLocationName()));
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_AddQuest(refid);
 				if(!game->current_dialog->is_local)
@@ -190,7 +190,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			game->RemoveEncounter(enc);
 			enc = -1;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -211,7 +211,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			location_event_handler = this;
 			game->RemoveItem(*game->current_dialog->pc->unit, FindItem("q_bandyci_list"), 1);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -225,7 +225,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			camp.state = LS_KNOWN;
 			bandits_state = State::GenerateGuards;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				game->Net_ChangeLocationState(camp_loc, false);
@@ -279,7 +279,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			unit_auto_talk = true;
 			callback = WarpToThroneBanditBoss;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				game->Net_ChangeLocationState(target_loc, false);
@@ -295,7 +295,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddNews(game->txQuest[163]);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -311,7 +311,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			game->AddReward(5000);
 			quest_manager.EndUniqueQuest();
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;

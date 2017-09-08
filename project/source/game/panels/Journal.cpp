@@ -487,7 +487,7 @@ void Journal::OnAddNote(int id)
 	{
 		game.notes.push_back(Format(txAddTime, game.day + 1, game.month + 1, game.year, input.c_str()));
 		Build();
-		if(!game.IsLocal())
+		if(!Net::Net::IsLocal())
 			game.PushNetChange(NetChange::ADD_NOTE);
 	}
 }

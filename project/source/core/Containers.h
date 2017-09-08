@@ -639,6 +639,9 @@ struct LocalVector
 {
 	static_assert(sizeof(T) == sizeof(void*), "LocalVector element must be pointer or have sizeof pointer.");
 
+	typedef typename vector<T>::iterator Iterator;
+	typedef typename vector<T>::const_iterator ConstIterator;
+
 	LocalVector()
 	{
 		v = (vector<T>*)VectorPool.Get();
@@ -680,6 +683,25 @@ struct LocalVector
 	{
 		std::random_shuffle(v->begin(), v->end(), MyRand);
 	}
+
+	Iterator begin()
+	{
+		return v->begin();
+	}
+	ConstIterator begin() const
+	{
+		return v->begin();
+	}
+
+	Iterator end()
+	{
+		return v->end();
+	}
+	ConstIterator end() const
+	{
+		return v->end();
+	}
+
 
 private:
 	vector<T>* v;

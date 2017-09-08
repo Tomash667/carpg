@@ -31,7 +31,7 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 				CloseAllPanels(true);
 				koniec_gry = true;
 				death_fade = 0.f;
-				if(IsOnline())
+				if(Net::IsOnline())
 				{
 					PushNetChange(NetChange::GAME_STATS);
 					PushNetChange(NetChange::END_OF_GAME);
@@ -56,7 +56,7 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 		}
 
 		// ubywanie wolnych dni
-		if(IsOnline())
+		if(Net::IsOnline())
 		{
 			int maks = 0;
 			for(Unit* unit : Team.active_members)
@@ -89,6 +89,6 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 	// aktualizacja mapy œwiata
 	DoWorldProgress(days);
 
-	if(IsOnline())
+	if(Net::IsOnline())
 		PushNetChange(NetChange::WORLD_TIME);
 }

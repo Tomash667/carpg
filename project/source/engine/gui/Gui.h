@@ -24,7 +24,7 @@ enum GuiEvent
 //-----------------------------------------------------------------------------
 class Control;
 class Container;
-class Dialog;
+class DialogBox;
 
 //-----------------------------------------------------------------------------
 struct Hitbox
@@ -165,7 +165,7 @@ public:
 	void InitLayout();
 	void SetText();
 	void SetShader(ID3DXEffect* e);
-	void Draw(const Int2& wnd_size);
+	void Draw(bool draw_layers, bool draw_dialogs);
 	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
 	zwraca false je¿eli by³ clipping od do³u (nie kontuuj tekstu w flow)
@@ -181,16 +181,16 @@ public:
 		vector<Hitbox>* hitboxes = nullptr, int* hitbox_counter = nullptr, const vector<TextLine>* lines = nullptr);
 	void Add(Control* ctrl);
 	void DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, DWORD color, int corner = 16, int size = 64, const Box2d* clip_rect = nullptr);
-	void Update(float dt);
+	void Update(float dt, float mouse_speed);
 	void DrawSprite(TEX t, const Int2& pos, DWORD color = WHITE, const Rect* clipping = nullptr);
 	void OnReset();
 	void OnReload();
 	void OnClean();
 	void OnChar(char c);
-	Dialog* ShowDialog(const DialogInfo& info);
-	void ShowDialog(Dialog* dialog);
-	bool CloseDialog(Dialog* d);
-	void CloseDialogInternal(Dialog* d);
+	DialogBox* ShowDialog(const DialogInfo& info);
+	void ShowDialog(DialogBox* dialog);
+	bool CloseDialog(DialogBox* d);
+	void CloseDialogInternal(DialogBox* d);
 	bool HaveTopDialog(cstring name) const;
 	bool HaveDialog() const;
 	void DrawSpriteFull(TEX t, DWORD color);
@@ -199,10 +199,10 @@ public:
 	void SimpleDialog(cstring text, Control* parent, cstring name = "simple");
 	void DrawSpriteRect(TEX t, const Rect& rect, DWORD color = WHITE);
 	bool HaveDialog(cstring name);
-	bool HaveDialog(Dialog* dialog);
+	bool HaveDialog(DialogBox* dialog);
 	IDirect3DDevice9* GetDevice() { return device; }
 	bool AnythingVisible() const;
-	void OnResize(const Int2& wnd_size);
+	void OnResize();
 	void DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, DWORD color = WHITE);
 	void DrawSpriteTransform(TEX t, const Matrix& mat, DWORD color = WHITE);
 	void DrawLine(const Vec2* lines, uint count, DWORD color = BLACK, bool strip = true);
@@ -215,7 +215,7 @@ public:
 	void DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, DWORD color = WHITE);
 	void CloseDialogs();
 	bool HavePauseDialog() const;
-	Dialog* GetDialog(cstring name);
+	DialogBox* GetDialog(cstring name);
 	void DrawSprite2(TEX t, const Matrix& mat, const Rect* part = nullptr, const Rect* clipping = nullptr, DWORD color = WHITE);
 	void AddNotification(cstring text, TEX icon, float timer);
 	void DrawArea(DWORD color, const Int2& pos, const Int2& size, const Box2d* clip_rect = nullptr);
@@ -244,7 +244,7 @@ public:
 	static TEX tBox, tBox2, tPix, tDown;
 	Control* focused_ctrl;
 	float mouse_wheel;
-	vector<Dialog*> created_dialogs;
+	vector<DialogBox*> created_dialogs;
 
 private:
 	void CreateVertexBuffer();
@@ -281,6 +281,7 @@ private:
 	float outline_alpha;
 	gui::Layout* layout;
 	gui::Overlay* overlay;
+	IDirect3DVertexDeclaration9* vertex_decl;
 };
 
 //-----------------------------------------------------------------------------

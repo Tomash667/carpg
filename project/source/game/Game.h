@@ -41,7 +41,7 @@ class Console;
 class Controls;
 class CreateCharacterPanel;
 class CreateServerPanel;
-class Dialog;
+class DialogBox;
 class GameGui;
 class GameMenu;
 class InfoBox;
@@ -373,9 +373,9 @@ struct Game final : public Engine, public UnitEventHandler
 	void OnReload();
 	void OnReset();
 	void OnResize();
-	void OnFocus(bool focus);
+	void OnFocus(bool focus, const Int2& activation_point);
 
-	bool Start0(bool fullscreen, int w, int h);
+	bool Start0(StartupOptions& options);
 	void GetTitle(LocalString& s);
 	void ChangeTitle();
 	void ClearPointers();
@@ -433,7 +433,6 @@ struct Game final : public Engine, public UnitEventHandler
 
 	// scene
 	bool cl_normalmap, cl_specularmap, cl_glow;
-	bool r_alphatest, r_nozwrite, r_nocull, r_alphablend;
 	DrawBatch draw_batch;
 	VDefault blood_v[4];
 	VParticle billboard_v[4];
@@ -480,10 +479,6 @@ struct Game final : public Engine, public UnitEventHandler
 	void DrawStunEffects(const vector<StunEffect>& stuns);
 	void DrawAreas(const vector<Area>& areas, float range, const vector<Area2*>& areas2);
 	void DrawPortals(const vector<Portal*>& portals);
-	void SetAlphaTest(bool use_alphatest);
-	void SetNoZWrite(bool use_nozwrite);
-	void SetNoCulling(bool use_nocull);
-	void SetAlphaBlend(bool use_alphablend);
 	void UvModChanged();
 	void InitQuadTree();
 	void DrawGrass();
@@ -883,7 +878,7 @@ public:
 
 	bool WantAttackTeam(Unit& u)
 	{
-		if(IsLocal())
+		if(Net::Net::IsLocal())
 			return u.attack_team;
 		else
 			return IS_SET(u.ai_mode, 0x08);
@@ -1221,7 +1216,7 @@ public:
 	bool HaveTeamMemberPC();
 	bool IsLeader()
 	{
-		if(!IsOnline())
+		if(Net::IsSingleplayer())
 			return true;
 		else
 			return leader_id == my_id;
@@ -1311,14 +1306,14 @@ public:
 	void UpdateGame2(float dt);
 	bool IsUnitDontAttack(Unit& u)
 	{
-		if(IsLocal())
+		if(Net::Net::IsLocal())
 			return u.dont_attack;
 		else
 			return IS_SET(u.ai_mode, 0x01);
 	}
 	bool IsUnitAssist(Unit& u)
 	{
-		if(IsLocal())
+		if(Net::Net::IsLocal())
 			return u.assist;
 		else
 			return IS_SET(u.ai_mode, 0x02);
@@ -1469,8 +1464,8 @@ public:
 	InfoBox* info_box;
 	Controls* controls;
 	// inne
-	Dialog* dialog_enc;
-	Dialog* dialog_pvp;
+	DialogBox* dialog_enc;
+	DialogBox* dialog_pvp;
 	bool cursor_allow_move;
 
 	void UpdateGui(float dt);
@@ -1542,7 +1537,7 @@ public:
 	int my_id; // moje unikalne id
 	int last_id;
 	int last_startup_id;
-	bool sv_server, sv_online, sv_startup, was_client;
+	bool sv_startup, was_client;
 	BitStream server_info;
 	vector<byte> packet_data;
 	vector<PlayerInfo> game_players, old_players;
@@ -1569,8 +1564,6 @@ public:
 	bool change_title_a;
 	bool level_generated;
 	int netid_counter, item_netid_counter, chest_netid_counter, usable_netid_counter, skip_id_counter, trap_netid_counter, door_netid_counter, electro_netid_counter;
-	vector<NetChange> net_changes;
-	vector<NetChangePlayer> net_changes_player;
 	vector<string*> net_talk;
 	struct WarpData
 	{
@@ -1597,16 +1590,6 @@ public:
 	void UpdateInterpolator(EntityInterpolator* e, float dt, Vec3& pos, float& rot);
 	void InterpolateUnits(float dt);
 	void InterpolatePlayers(float dt);
-
-	// sprawdza czy aktualna gra jest online
-	bool IsOnline() const { return sv_online; }
-	// sprawdza czy ja jestem serwerem
-	bool IsServer() const { return sv_server; }
-	// sprawdza czy ja jestem klientem
-	bool IsClient() const { return !sv_server; }
-	bool IsClient2() const { return sv_online && !sv_server; }
-	// czy jest serwerem lub pojedyñczy gracz
-	bool IsLocal() const { return !IsOnline() || IsServer(); }
 
 	void InitServer();
 	void InitClient();
@@ -1658,26 +1641,26 @@ public:
 	PlayerInfo* GetPlayerInfoTry(PlayerController* player) { return GetPlayerInfoTry(player->id); }
 	void PushNetChange(NetChange::TYPE type)
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = type;
 	}
 	void UpdateWarpData(float dt);
 	void Net_AddQuest(int refid)
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::ADD_QUEST;
 		c.id = refid;
 	}
 	void Net_RegisterItem(const Item* item, const Item* base_item)
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::REGISTER_ITEM;
 		c.item2 = item;
 		c.base_item = base_item;
 	}
 	void Net_AddItem(PlayerController* player, const Item* item, bool is_team)
 	{
-		NetChangePlayer& c = Add1(net_changes_player);
+		NetChangePlayer& c = Add1(Net::player_changes);
 		c.type = NetChangePlayer::ADD_ITEMS;
 		c.pc = player;
 		c.item = item;
@@ -1687,14 +1670,14 @@ public:
 	}
 	void Net_AddedItemMsg(PlayerController* player)
 	{
-		NetChangePlayer& c = Add1(net_changes_player);
+		NetChangePlayer& c = Add1(Net::player_changes);
 		c.pc = player;
 		c.type = NetChangePlayer::ADDED_ITEM_MSG;
 		GetPlayerInfo(player).NeedUpdate();
 	}
 	void Net_AddItems(PlayerController* player, const Item* item, int ile, bool is_team)
 	{
-		NetChangePlayer& c = Add1(net_changes_player);
+		NetChangePlayer& c = Add1(Net::player_changes);
 		c.type = NetChangePlayer::ADD_ITEMS;
 		c.pc = player;
 		c.item = item;
@@ -1704,26 +1687,26 @@ public:
 	}
 	void Net_UpdateQuest(int refid)
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::UPDATE_QUEST;
 		c.id = refid;
 	}
 	void Net_UpdateQuestMulti(int refid, int ile)
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::UPDATE_QUEST_MULTI;
 		c.id = refid;
 		c.ile = ile;
 	}
 	void Net_RenameItem(const Item* item)
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::RENAME_ITEM;
 		c.base_item = item;
 	}
 	void Net_RemoveQuestItem(PlayerController* player, int refid)
 	{
-		NetChangePlayer& c = Add1(net_changes_player);
+		NetChangePlayer& c = Add1(Net::player_changes);
 		c.type = NetChangePlayer::REMOVE_QUEST_ITEM;
 		c.pc = player;
 		c.id = refid;
@@ -1731,45 +1714,45 @@ public:
 	}
 	void Net_ChangeLocationState(int id, bool visited)
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CHANGE_LOCATION_STATE;
 		c.id = id;
 		c.ile = (visited ? 1 : 0);
 	}
 	void Net_RecruitNpc(Unit* unit)
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::RECRUIT_NPC;
 		c.unit = unit;
 	}
 	void Net_RemoveUnit(Unit* unit)
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::REMOVE_UNIT;
 		c.id = unit->netid;
 	}
 	void Net_KickNpc(Unit* unit)
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::KICK_NPC;
 		c.id = unit->netid;
 	}
 	void Net_SpawnUnit(Unit* unit)
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::SPAWN_UNIT;
 		c.unit = unit;
 	}
 	void Net_PrepareWarp(PlayerController* player)
 	{
-		NetChangePlayer& c = Add1(net_changes_player);
+		NetChangePlayer& c = Add1(Net::player_changes);
 		c.type = NetChangePlayer::PREPARE_WARP;
 		c.pc = player;
 		GetPlayerInfo(player).NeedUpdate();
 	}
 	void Net_StartDialog(PlayerController* player, Unit* talker)
 	{
-		NetChangePlayer& c = Add1(net_changes_player);
+		NetChangePlayer& c = Add1(Net::player_changes);
 		c.type = NetChangePlayer::START_DIALOG;
 		c.pc = player;
 		c.id = talker->netid;
@@ -1781,7 +1764,7 @@ public:
 #define WHERE_PORTAL 0
 	void Net_LeaveLocation(int where)
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::LEAVE_LOCATION;
 		c.id = where;
 	}
@@ -1821,7 +1804,7 @@ public:
 	NetChangePlayer& AddChange(NetChangePlayer::TYPE type, PlayerController* _pc)
 	{
 		assert(_pc);
-		NetChangePlayer& c = Add1(net_changes_player);
+		NetChangePlayer& c = Add1(Net::player_changes);
 		c.type = type;
 		c.pc = _pc;
 		_pc->player_info->NeedUpdate();

@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Dialog2.h"
+#include "DialogBox.h"
 #include "TextBox.h"
 
 //-----------------------------------------------------------------------------
@@ -21,7 +21,7 @@ struct GetTextDialogParams
 };
 
 //-----------------------------------------------------------------------------
-class GetTextDialog : public Dialog
+class GetTextDialog : public DialogBox
 {
 public:
 	enum Result

@@ -157,7 +157,7 @@ void GameGui::DrawFront()
 		GUI.DrawSpriteFull(tObwodkaBolu, COLOR_RGBA(255, 255, 255, (int)Clamp<float>(game.pc->dmgc / game.pc->unit->hp * 5 * 255, 0.f, 255.f)));
 
 	// debug info
-	if(game.debug_info && (!game.IsLocal() || !game.devmode))
+	if(game.debug_info && (!Net::Net::IsLocal() || !game.devmode))
 		game.debug_info = false;
 	if(game.debug_info)
 	{
@@ -307,7 +307,7 @@ void GameGui::DrawFront()
 
 			// tekst
 			LocalString s;
-			if(game.IsLocal())
+			if(Net::Net::IsLocal())
 			{
 				for(uint i = 0; i < game.dialog_context.choices.size(); ++i)
 				{
@@ -336,7 +336,7 @@ void GameGui::DrawFront()
 
 	// get buffs
 	int buffs;
-	if(game.IsLocal())
+	if(Net::Net::IsLocal())
 		buffs = game.pc->unit->GetBuffs();
 	else
 		buffs = game.GetPlayerInfo(game.pc).buffs;
@@ -434,7 +434,7 @@ void GameGui::DrawFront()
 	if(sidebar > 0.f)
 	{
 		int max = (int)SideButtonId::Max;
-		if(game.IsOnline())
+		if(Net::IsOnline())
 			--max;
 		int total = offset * max;
 		spos.y = GUI.wnd_size.y - (GUI.wnd_size.y - total) / 2 - offset;
@@ -477,10 +477,10 @@ void GameGui::DrawBack()
 		if(game.devmode)
 		{
 			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT_1(u.pos.x), FLT_1(u.pos.y), FLT_1(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2), FLT_2(u.rot),
-				kierunek_nazwa_s[AngleToDir(Clip(u.rot))], FLT_1(game.fps));
+				kierunek_nazwa_s[AngleToDir(Clip(u.rot))], FLT_1(game.GetFps()));
 		}
 		else
-			text = Format("Fps: %g", FLT_1(game.fps));
+			text = Format("Fps: %g", FLT_1(game.GetFps()));
 		Int2 s = GUI.default_font->CalculateSize(text);
 		if(Int2::Distance(s, debug_info_size) < 32)
 			debug_info_size = Int2::Max(s, debug_info_size);
@@ -695,7 +695,7 @@ void GameGui::Update(float dt)
 
 	// buffs
 	int buffs;
-	if(game.IsLocal())
+	if(Net::Net::IsLocal())
 		buffs = game.pc->unit->GetBuffs();
 	else
 		buffs = game.GetPlayerInfo(game.pc).buffs;
@@ -720,7 +720,7 @@ void GameGui::Update(float dt)
 
 	// sidebar
 	int max = (int)SideButtonId::Max;
-	if(game.IsOnline())
+	if(Net::IsOnline())
 		--max;
 
 	sidebar_state[(int)SideButtonId::Inventory] = (inventory->visible ? 2 : 0);

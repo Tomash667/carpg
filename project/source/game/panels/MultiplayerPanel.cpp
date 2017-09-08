@@ -6,7 +6,7 @@
 #include "Game.h"
 
 //=================================================================================================
-MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : Dialog(info)
+MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : GameDialogBox(info)
 {
 	size = Int2(344, 380);
 	bts.resize(5);

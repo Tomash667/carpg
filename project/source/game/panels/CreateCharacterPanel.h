@@ -2,7 +2,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Dialog2.h"
+#include "GameDialogBox.h"
 #include "CheckBox.h"
 #include "Slider.h"
 #include "Class.h"
@@ -21,7 +21,7 @@ struct Unit;
 class PickItemDialog;
 
 //-----------------------------------------------------------------------------
-class CreateCharacterPanel : public Dialog
+class CreateCharacterPanel : public GameDialogBox
 {
 public:
 	enum class Group

@@ -3,6 +3,8 @@
 #include "Control.h"
 #include "Overlay.h"
 
+TEX Control::tDialog;
+
 void Control::Dock(Control* c)
 {
 	assert(c);

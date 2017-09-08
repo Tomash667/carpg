@@ -126,9 +126,9 @@ void TeamPanel::Draw(ControlDrawData*)
 		};
 		s = "$h+";
 		s += Format(txCharInTeam, u->GetName(), u->IsPlayer() ? pc_share : (u->hero->free ? 0 : 10), GetCredit(*u));
-		if(u->IsPlayer() && game.IsOnline())
+		if(u->IsPlayer() && Net::IsOnline())
 		{
-			if(game.IsServer())
+			if(Net::Net::IsServer())
 			{
 				if(u != game.pc->unit)
 				{
@@ -150,7 +150,7 @@ void TeamPanel::Draw(ControlDrawData*)
 
 	scrollbar.Draw();
 
-	int ile = (game.IsOnline() ? 4 : 2);
+	int ile = (Net::IsOnline() ? 4 : 2);
 	for(int i = 0; i < ile; ++i)
 		bt[i].Draw();
 
@@ -200,7 +200,7 @@ void TeamPanel::Update(float dt)
 		}
 	}
 
-	int ile = (game.IsOnline() ? 4 : 2);
+	int ile = (Net::IsOnline() ? 4 : 2);
 	for(int i = 0; i < ile; ++i)
 	{
 		bt[i].mouse_focus = focus;
@@ -241,8 +241,8 @@ void TeamPanel::Event(GuiEvent e)
 		scrollbar.LostFocus();
 		break;
 	case GuiEvent_Show:
-		bt[2].state = ((game.IsServer() || game.IsLeader()) ? Button::NONE : Button::DISABLED);
-		bt[3].state = (game.IsServer() ? Button::NONE : Button::DISABLED);
+		bt[2].state = ((Net::Net::IsServer() || game.IsLeader()) ? Button::NONE : Button::DISABLED);
+		bt[3].state = (Net::Net::IsServer() ? Button::NONE : Button::DISABLED);
 		picking = false;
 		Changed();
 		UpdateButtons();
@@ -282,7 +282,7 @@ void TeamPanel::Changed()
 //=================================================================================================
 void TeamPanel::UpdateButtons()
 {
-	if(game.IsOnline())
+	if(Net::IsOnline())
 	{
 		int s = (size.x - 16 - 12) / 4;
 
@@ -342,11 +342,11 @@ void TeamPanel::OnPayCredit(int id)
 		game.pc->unit->gold -= ile;
 		if(game.sound_volume)
 			game.PlaySound2d(game.sCoins);
-		if(game.IsLocal())
+		if(Net::Net::IsLocal())
 			game.PayCredit(game.pc, ile);
 		else
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PAY_CREDIT;
 			c.id = ile;
 		}
@@ -374,9 +374,9 @@ void TeamPanel::ChangeLeader()
 	{
 		if(game.IsLeader())
 			SimpleDialog(txAlreadyLeader);
-		else if(game.IsServer())
+		else if(Net::Net::IsServer())
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_LEADER;
 			c.id = game.my_id;
 
@@ -390,13 +390,13 @@ void TeamPanel::ChangeLeader()
 	}
 	else if(Team.IsLeader(target))
 		SimpleDialog(Format(txPcAlreadyLeader, target->GetName()));
-	else if(game.IsLeader() || game.IsServer())
+	else if(game.IsLeader() || Net::Net::IsServer())
 	{
-		NetChange& c = Add1(game.net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CHANGE_LEADER;
 		c.id = target->player->id;
 
-		if(game.IsServer())
+		if(Net::Net::IsServer())
 		{
 			game.leader_id = c.id;
 			Team.leader = target;
@@ -444,12 +444,12 @@ void TeamPanel::OnGiveGold(int id)
 		game.pc->unit->gold -= counter;
 		if(game.sound_volume)
 			game.PlaySound2d(game.sCoins);
-		if(game.IsLocal())
+		if(Net::Net::IsLocal())
 		{
 			target->gold += counter;
 			if(target->IsPlayer() && target->player != game.pc)
 			{
-				NetChangePlayer& c = Add1(game.net_changes_player);
+				NetChangePlayer& c = Add1(Net::player_changes);
 				c.type = NetChangePlayer::GOLD_RECEIVED;
 				c.pc = target->player;
 				c.id = game.pc->id;
@@ -459,7 +459,7 @@ void TeamPanel::OnGiveGold(int id)
 		}
 		else
 		{
-			NetChange& c = Add1(game.net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GIVE_GOLD;
 			c.id = target->netid;
 			c.ile = counter;

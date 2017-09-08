@@ -274,7 +274,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-Controls::Controls(const DialogInfo& info) : Dialog(info), picked(-1)
+Controls::Controls(const DialogInfo& info) : GameDialogBox(info), picked(-1)
 {
 	size = Int2(570 + 8 * 2, 368);
 	bts.resize(2);

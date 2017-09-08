@@ -5,7 +5,7 @@
 #include "LoadScreen.h"
 
 //=================================================================================================
-InfoBox::InfoBox(const DialogInfo& info) : Dialog(info)
+InfoBox::InfoBox(const DialogInfo& info) : GameDialogBox(info)
 {
 	visible = false;
 }

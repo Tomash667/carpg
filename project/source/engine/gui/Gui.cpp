@@ -1,11 +1,11 @@
 #include "Pch.h"
 #include "Core.h"
-#include "Gui2.h"
+#include "Gui.h"
 #include "Container.h"
-#include "Dialog2.h"
+#include "DialogBox.h"
 #include "Language.h"
-#include "Game.h"
 #include "GuiRect.h"
+#include "Engine.h"
 
 using namespace gui;
 
@@ -15,7 +15,7 @@ TEX IGUI::tBox, IGUI::tBox2, IGUI::tPix, IGUI::tDown;
 
 //=================================================================================================
 IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
-active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr), grayscale(false)
+active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), vertex_decl(nullptr)
 {
 }
 
@@ -36,6 +36,8 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	device = _device;
 	sprite = _sprite;
 	tFontTarget = nullptr;
+	wnd_size = Engine::Get().GetWindowSize();
+	cursor_pos = wnd_size / 2;
 
 	CreateVertexBuffer();
 
@@ -50,11 +52,21 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	dialog_layer = new Container;
 	dialog_layer->focus_top = true;
 
+	// create pixel texture
 	V(D3DXCreateTexture(device, 1, 1, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tPixel));
 	D3DLOCKED_RECT lock;
 	V(tPixel->LockRect(0, &lock, nullptr, 0));
 	*((DWORD*)lock.pBits) = COLOR_RGB(255, 255, 255);
 	V(tPixel->UnlockRect(0));
+
+	// create vertex declaration
+	const D3DVERTEXELEMENT9 v[] = {
+		{ 0, 0,  D3DDECLTYPE_FLOAT3,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_POSITION,		0 },
+		{ 0, 12, D3DDECLTYPE_FLOAT2,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_TEXCOORD,		0 },
+		{ 0, 20, D3DDECLTYPE_FLOAT4,	D3DDECLMETHOD_DEFAULT,	D3DDECLUSAGE_COLOR,			0 },
+		D3DDECL_END()
+	};
+	V(device->CreateVertexDeclaration(v, &vertex_decl));
 }
 
 //=================================================================================================
@@ -1063,22 +1075,22 @@ void IGUI::Flush(bool lock)
 }
 
 //=================================================================================================
-void IGUI::Draw(const Int2& _wnd_size)
+void IGUI::Draw(bool draw_layers, bool draw_dialogs)
 {
 	PROFILER_BLOCK("DrawGui");
 
-	wnd_size = _wnd_size;
+	wnd_size = Engine::Get().GetWindowSize();
 
-	Game& game = Game::Get();
-	if(!IS_SET(game.draw_flags, DF_GUI | DF_MENU))
+	if(!draw_layers && !draw_dialogs)
 		return;
 
-	game.SetAlphaTest(false);
-	game.SetAlphaBlend(true);
-	game.SetNoCulling(true);
-	game.SetNoZWrite(false);
+	auto& engine = Engine::Get();
+	engine.SetAlphaTest(false);
+	engine.SetAlphaBlend(true);
+	engine.SetNoCulling(true);
+	engine.SetNoZWrite(false);
 
-	V(device->SetVertexDeclaration(game.vertex_decl[VDI_PARTICLE]));
+	V(device->SetVertexDeclaration(vertex_decl));
 
 	tSet = nullptr;
 	tCurrent = nullptr;
@@ -1093,9 +1105,9 @@ void IGUI::Draw(const Int2& _wnd_size)
 	V(eGui->BeginPass(0));
 
 	// rysowanie
-	if(IS_SET(game.draw_flags, DF_GUI))
+	if(draw_layers)
 		layer->Draw();
-	if(IS_SET(game.draw_flags, DF_MENU))
+	if(draw_dialogs)
 		dialog_layer->Draw();
 
 	DrawNotifications();
@@ -1260,11 +1272,32 @@ void IGUI::DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, DWORD co
 }
 
 //=================================================================================================
-void IGUI::Update(float dt)
+void IGUI::Update(float dt, float mouse_speed)
 {
 	PROFILER_BLOCK("UpdateGui");
 
+	auto& engine = Engine::Get();
+
+	// update cursor
 	cursor_mode = CURSOR_NORMAL;
+	mouse_wheel = engine.GetMouseWheel();
+	prev_cursor_pos = cursor_pos;
+	if(NeedCursor() && mouse_speed > 0)
+	{
+		cursor_pos += engine.GetMouseDif() * mouse_speed;
+		if(cursor_pos.x < 0)
+			cursor_pos.x = 0;
+		if(cursor_pos.y < 0)
+			cursor_pos.y = 0;
+		if(cursor_pos.x >= wnd_size.x)
+			cursor_pos.x = wnd_size.x - 1;
+		if(cursor_pos.y >= wnd_size.y)
+			cursor_pos.y = wnd_size.y - 1;
+		engine.SetUnlockPoint(cursor_pos);
+	}
+	else
+		engine.SetUnlockPoint(wnd_size / 2);
+
 	layer->focus = dialog_layer->Empty();
 
 	if(focused_ctrl)
@@ -1292,6 +1325,7 @@ void IGUI::Update(float dt)
 	}
 
 	UpdateNotifications(dt);
+	engine.SetUnlockPoint(wnd_size / 2);
 }
 
 //=================================================================================================
@@ -1531,11 +1565,11 @@ void IGUI::SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext*
 }
 
 //=================================================================================================
-Dialog* IGUI::ShowDialog(const DialogInfo& info)
+DialogBox* IGUI::ShowDialog(const DialogInfo& info)
 {
 	assert(!(info.have_tick && info.img)); // not allowed together
 
-	Dialog* d;
+	DialogBox* d;
 	int extra_limit = 0;
 	Int2 min_size(0, 0);
 
@@ -1551,7 +1585,7 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 		d = dwi;
 	}
 	else
-		d = new Dialog(info);
+		d = new DialogBox(info);
 	created_dialogs.push_back(d);
 
 	// calculate size
@@ -1646,7 +1680,7 @@ Dialog* IGUI::ShowDialog(const DialogInfo& info)
 }
 
 //=================================================================================================
-void IGUI::ShowDialog(Dialog* d)
+void IGUI::ShowDialog(DialogBox* d)
 {
 	d->Event(GuiEvent_Show);
 
@@ -1671,9 +1705,9 @@ void IGUI::ShowDialog(Dialog* d)
 	{
 		// szukaj pierwszego dialogu który jest wy¿ej ni¿ ten
 		DialogOrder above_order = DialogOrder(d->order + 1);
-		vector<Dialog*>& ctrls = (vector<Dialog*>&)dialog_layer->GetControls();
-		vector<Dialog*>::iterator first_above = ctrls.end();
-		for(vector<Dialog*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
+		vector<DialogBox*>& ctrls = (vector<DialogBox*>&)dialog_layer->GetControls();
+		vector<DialogBox*>::iterator first_above = ctrls.end();
+		for(vector<DialogBox*>::iterator it = ctrls.begin(), end = ctrls.end(); it != end; ++it)
 		{
 			if((*it)->order >= above_order)
 			{
@@ -1703,7 +1737,7 @@ void IGUI::ShowDialog(Dialog* d)
 }
 
 //=================================================================================================
-bool IGUI::CloseDialog(Dialog* d)
+bool IGUI::CloseDialog(DialogBox* d)
 {
 	assert(d);
 
@@ -1723,7 +1757,7 @@ bool IGUI::CloseDialog(Dialog* d)
 }
 
 //=================================================================================================
-void IGUI::CloseDialogInternal(Dialog* d)
+void IGUI::CloseDialogInternal(DialogBox* d)
 {
 	assert(d);
 
@@ -1732,16 +1766,16 @@ void IGUI::CloseDialogInternal(Dialog* d)
 
 	if(!dialog_layer->Empty())
 	{
-		vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
-		static vector<Dialog*> to_remove;
-		for(vector<Dialog*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
+		vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+		static vector<DialogBox*> to_remove;
+		for(vector<DialogBox*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
 		{
 			if((*it)->parent == d)
 				to_remove.push_back(*it);
 		}
 		if(!to_remove.empty())
 		{
-			for(vector<Dialog*>::iterator it = to_remove.begin(), end = to_remove.end(); it != end; ++it)
+			for(vector<DialogBox*>::iterator it = to_remove.begin(), end = to_remove.end(); it != end; ++it)
 				CloseDialogInternal(*it);
 			to_remove.clear();
 		}
@@ -1756,7 +1790,7 @@ bool IGUI::HaveTopDialog(cstring name) const
 	if(dialog_layer->Empty())
 		return false;
 
-	Dialog* d = (Dialog*)(dialog_layer->Top());
+	DialogBox* d = (DialogBox*)(dialog_layer->Top());
 	return d->name == name;
 }
 
@@ -1835,7 +1869,7 @@ void IGUI::SimpleDialog(cstring text, Control* parent, cstring name)
 
 	if(parent)
 	{
-		Dialog* d = dynamic_cast<Dialog*>(parent);
+		DialogBox* d = dynamic_cast<DialogBox*>(parent);
 		if(d)
 			di.order = d->order;
 	}
@@ -1891,8 +1925,8 @@ void IGUI::DrawSpriteRect(TEX t, const Rect& rect, DWORD color)
 bool IGUI::HaveDialog(cstring name)
 {
 	assert(name);
-	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
-	for each(Dialog* dialog in dialogs)
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	for(DialogBox* dialog : dialogs)
 	{
 		if(dialog->name == name)
 			return true;
@@ -1901,10 +1935,10 @@ bool IGUI::HaveDialog(cstring name)
 }
 
 //=================================================================================================
-bool IGUI::HaveDialog(Dialog* dialog)
+bool IGUI::HaveDialog(DialogBox* dialog)
 {
 	assert(dialog);;
-	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
 	for(auto d : dialogs)
 	{
 		if(d == dialog)
@@ -1920,9 +1954,12 @@ bool IGUI::AnythingVisible() const
 }
 
 //=================================================================================================
-void IGUI::OnResize(const Int2& _wnd_size)
+void IGUI::OnResize()
 {
-	wnd_size = _wnd_size;
+	auto& engine = Engine::Get();
+	wnd_size = engine.GetWindowSize();
+	cursor_pos = wnd_size / 2;
+	engine.SetUnlockPoint(cursor_pos);
 	layer->Event(GuiEvent_WindowResize);
 	dialog_layer->Event(GuiEvent_WindowResize);
 }
@@ -2069,7 +2106,7 @@ void IGUI::DrawLine(const Vec2* lines, uint count, DWORD color, bool strip)
 	}
 
 	V(vb->Unlock());
-	V(device->SetVertexDeclaration(Game::Get().vertex_decl[VDI_PARTICLE]));
+	V(device->SetVertexDeclaration(vertex_decl));
 	V(device->SetStreamSource(0, vb, 0, sizeof(VParticle)));
 	V(device->DrawPrimitive(strip ? D3DPT_LINESTRIP : D3DPT_LINELIST, 0, count));
 }
@@ -2231,8 +2268,8 @@ void IGUI::DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, D
 //=================================================================================================
 void IGUI::CloseDialogs()
 {
-	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
-	for(Dialog* dialog : dialogs)
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	for(DialogBox* dialog : dialogs)
 	{
 		if(OR2_EQ(dialog->type, DIALOG_OK, DIALOG_YESNO))
 			delete dialog;
@@ -2249,8 +2286,8 @@ void IGUI::CloseDialogs()
 //=================================================================================================
 bool IGUI::HavePauseDialog() const
 {
-	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
-	for(vector<Dialog*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	for(vector<DialogBox*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
 	{
 		if((*it)->pause)
 			return true;
@@ -2259,13 +2296,13 @@ bool IGUI::HavePauseDialog() const
 }
 
 //=================================================================================================
-Dialog* IGUI::GetDialog(cstring name)
+DialogBox* IGUI::GetDialog(cstring name)
 {
 	assert(name);
 	if(dialog_layer->Empty())
 		return nullptr;
-	vector<Dialog*>& dialogs = (vector<Dialog*>&)dialog_layer->GetControls();
-	for(vector<Dialog*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
+	vector<DialogBox*>& dialogs = (vector<DialogBox*>&)dialog_layer->GetControls();
+	for(vector<DialogBox*>::iterator it = dialogs.begin(), end = dialogs.end(); it != end; ++it)
 	{
 		if((*it)->name == name)
 			return *it;
@@ -2562,7 +2599,7 @@ void IGUI::SetClipboard(cstring text)
 {
 	assert(text);
 
-	if(OpenClipboard(Game::Get().hwnd))
+	if(OpenClipboard(Engine::Get().GetWindowHandle()))
 	{
 		EmptyClipboard();
 		uint length = strlen(text) + 1;
@@ -2580,7 +2617,7 @@ cstring IGUI::GetClipboard()
 {
 	cstring result = nullptr;
 
-	if(OpenClipboard(Game::Get().hwnd))
+	if(OpenClipboard(Engine::Get().GetWindowHandle()))
 	{
 		if(IsClipboardFormatAvailable(CF_TEXT) == TRUE)
 		{

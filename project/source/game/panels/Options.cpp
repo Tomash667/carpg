@@ -7,40 +7,35 @@
 #include "MenuList.h"
 
 //-----------------------------------------------------------------------------
-extern const uint MIN_WIDTH;
-extern const uint MIN_HEIGHT;
-extern const uint DEFAULT_WIDTH;
-extern const uint DEFAULT_HEIGHT;
-
-//-----------------------------------------------------------------------------
 cstring txQuality, txMsNone;
 
 //-----------------------------------------------------------------------------
 class Res : public GuiElement
 {
 public:
-	int w, h, hz;
+	Int2 size;
+	int hz;
 
-	Res(int w, int h, int hz) : w(w), h(h), hz(hz)
+	Res(const Int2& size, int hz) : size(size), hz(hz)
 	{
 	}
 
 	cstring ToString()
 	{
-		return Format("%dx%d (%d Hz)", w, h, hz);
+		return Format("%dx%d (%d Hz)", size.x, size.y, hz);
 	}
 };
 
 //-----------------------------------------------------------------------------
 inline bool ResPred(const Res* r1, const Res* r2)
 {
-	if(r1->w > r2->w)
+	if(r1->size.x > r2->size.x)
 		return false;
-	else if(r1->w < r2->w)
+	else if(r1->size.x < r2->size.x)
 		return true;
-	else if(r1->h > r2->h)
+	else if(r1->size.y > r2->size.y)
 		return false;
-	else if(r1->h < r2->h)
+	else if(r1->size.y < r2->size.y)
 		return true;
 	else if(r1->hz > r2->hz)
 		return false;
@@ -86,7 +81,7 @@ public:
 };
 
 //=================================================================================================
-Options::Options(const DialogInfo& info) : Dialog(info)
+Options::Options(const DialogInfo& info) : GameDialogBox(info)
 {
 	txOPTIONS = Str("OPTIONS");
 	txResolution = Str("resolution");
@@ -177,17 +172,17 @@ Options::Options(const DialogInfo& info) : Dialog(info)
 	{
 		D3DDISPLAYMODE d_mode;
 		V(game->d3d->EnumAdapterModes(game->used_adapter, DISPLAY_FORMAT, i, &d_mode));
-		if(d_mode.Width >= MIN_WIDTH && d_mode.Height >= MIN_HEIGHT)
-			vres->push_back(new Res(d_mode.Width, d_mode.Height, d_mode.RefreshRate));
+		if(d_mode.Width >= Engine::MIN_WINDOW_SIZE.x && d_mode.Height >= Engine::MIN_WINDOW_SIZE.y)
+			vres->push_back(new Res(Int2(d_mode.Width, d_mode.Height), d_mode.RefreshRate));
 	}
 	// sortuj
 	std::sort(vres->begin(), vres->end(), ResPred);
 	// dodaj do listboxa i wybierz
 	int index = 0;
-	for(vector<Res*>::iterator it = vres->begin(), end = vres->end(); it != end; ++it, ++index)
+	for(auto r : vres)
 	{
-		res.Add(*it);
-		if((*it)->w == game->wnd_size.x && (*it)->h == game->wnd_size.y && (*it)->hz == game->wnd_hz)
+		res.Add(r);
+		if(r->size == game->GetWindowSize() && r->hz == game->wnd_hz)
 			res.SetIndex(index);
 	}
 	res.Initialize();
@@ -392,19 +387,19 @@ void Options::Event(GuiEvent e)
 //=================================================================================================
 void Options::SetOptions()
 {
-	check[0].checked = game->fullscreen;
+	check[0].checked = game->IsFullscreen();
 	check[1].checked = game->cl_glow;
 	check[2].checked = game->cl_normalmap;
 	check[3].checked = game->cl_specularmap;
 
 	Res& re = *res.GetItemCast<Res>();
-	if(re.w != game->wnd_size.x || re.h != game->wnd_size.y || re.hz != game->wnd_hz)
+	if(re.size != game->GetWindowSize() || re.hz != game->wnd_hz)
 	{
 		auto& ress = res.GetItemsCast<Res>();
 		int index = 0;
-		for(vector<Res*>::iterator it = ress.begin(), end = ress.end(); it != end; ++it, ++index)
+		for(auto r : ress)
 		{
-			if((*it)->w == game->wnd_size.x && (*it)->h == game->wnd_size.y && (*it)->hz == game->wnd_hz)
+			if(r->size == game->GetWindowSize() && r->hz == game->wnd_hz)
 			{
 				res.SetIndex(index);
 				break;
@@ -455,7 +450,7 @@ void Options::SetOptions()
 void Options::OnChangeRes(int)
 {
 	Res& r = *res.GetItemCast<Res>();
-	game->ChangeMode(r.w, r.h, game->fullscreen, r.hz);
+	game->ChangeMode(r.size, game->IsFullscreen(), r.hz);
 	event(IdChangeRes);
 }
 

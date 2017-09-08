@@ -72,7 +72,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_AddQuest(refid);
 		}
 		break;
@@ -86,7 +86,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -98,7 +98,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			RemoveEncounter();
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -113,7 +113,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			((City*)game->locations[start_loc])->quest_captain = CityQuestState::None;
 			game->AddNews(game->txQuest[278]);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;

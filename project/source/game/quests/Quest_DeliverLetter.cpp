@@ -71,7 +71,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_AddQuest(refid);
 				game->Net_RegisterItem(&letter, base_item);
@@ -104,7 +104,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				if(removed_item && !game->current_dialog->is_local)
 					game->Net_RemoveQuestItem(game->current_dialog->pc, refid);
@@ -122,7 +122,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_RenameItem(&letter);
 				game->Net_UpdateQuest(refid);
@@ -143,7 +143,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				if(!game->current_dialog->is_local)
 					game->Net_RemoveQuestItem(game->current_dialog->pc, refid);

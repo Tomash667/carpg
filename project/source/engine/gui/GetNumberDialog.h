@@ -1,12 +1,12 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Dialog2.h"
+#include "DialogBox.h"
 #include "TextBox.h"
 #include "Scrollbar.h"
 
 //-----------------------------------------------------------------------------
-class GetNumberDialog : public Dialog
+class GetNumberDialog : public DialogBox
 {
 public:
 	enum Result

@@ -1,7 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Gui2.h"
 #include "Button.h"
 #include "Checkbox.h"
 
@@ -15,13 +14,10 @@
 #define BUTTON_CUSTOM 6
 
 //-----------------------------------------------------------------------------
-struct Game;
-
-//-----------------------------------------------------------------------------
-class Dialog : public Control
+class DialogBox : public Control
 {
 public:
-	explicit Dialog(const DialogInfo& info);
+	explicit DialogBox(const DialogInfo& info);
 
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
@@ -31,7 +27,6 @@ public:
 
 	void CloseDialog() { GUI.CloseDialog(this); }
 
-	static Game* game;
 	static TEX tBackground;
 	string name, text;
 	GUI_DialogType type;
@@ -43,7 +38,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class DialogWithCheckbox : public Dialog
+class DialogWithCheckbox : public DialogBox
 {
 public:
 	explicit DialogWithCheckbox(const DialogInfo& info);
@@ -56,7 +51,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class DialogWithImage : public Dialog
+class DialogWithImage : public DialogBox
 {
 public:
 	explicit DialogWithImage(const DialogInfo& info);

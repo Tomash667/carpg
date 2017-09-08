@@ -2,11 +2,11 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Dialog2.h"
+#include "DialogBox.h"
 #include "Button.h"
 
 //-----------------------------------------------------------------------------
-class GameMenu : public Dialog
+class GameMenu : public DialogBox
 {
 public:
 	enum ButtonId

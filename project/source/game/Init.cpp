@@ -58,17 +58,6 @@ void Game::PreconfigureGame()
 
 	UnlockCursor(false);
 
-	// set default render states
-	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-	V(device->SetRenderState(D3DRS_ALPHAREF, 200));
-	V(device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));
-	r_alphablend = false;
-	r_alphatest = false;
-	r_nocull = false;
-	r_nozwrite = false;
-
 	// set sound vars
 	if(!disabled_sound)
 	{
@@ -406,7 +395,7 @@ void Game::PostconfigureGame()
 
 	// save config
 	cfg.Add("adapter", Format("%d", used_adapter));
-	cfg.Add("resolution", Format("%dx%d", wnd_size.x, wnd_size.y));
+	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
 	cfg.Add("refresh", Format("%d", wnd_hz));
 	SaveCfg();
 

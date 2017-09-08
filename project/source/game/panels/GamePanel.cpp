@@ -1,13 +1,14 @@
 #include "Pch.h"
 #include "Core.h"
 #include "GamePanel.h"
+#include "GameDialogBox.h"
 #include "KeyStates.h"
 #include "Game.h"
 #include "Language.h"
 
 //-----------------------------------------------------------------------------
-TEX Control::tDialog;
 TEX GamePanel::tBackground;
+Game* GameDialogBox::game;
 
 //-----------------------------------------------------------------------------
 enum MenuId

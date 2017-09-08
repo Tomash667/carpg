@@ -50,7 +50,7 @@ Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quicksta
 cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false),
 game_speed(1.f), devmode(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false),
 obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), debug_info(false), dont_wander(false), local_ctx_valid(false),
-city_ctx(nullptr), check_updates(true), skip_tutorial(false), sv_online(false), portal_anim(0), nosound(false), nomusic(false),
+city_ctx(nullptr), check_updates(true), skip_tutorial(false), portal_anim(0), nosound(false), nomusic(false),
 debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64 * 1024), net_stream2(64 * 1024),
 mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
 prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false),
@@ -132,7 +132,7 @@ void Game::OnDraw(bool normal)
 
 		// draw gui
 		GUI.mViewProj = cam.matViewProj;
-		GUI.Draw(wnd_size);
+		GUI.Draw(IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 
 		V(device->EndScene());
 	}
@@ -221,7 +221,7 @@ void Game::OnDraw(bool normal)
 			if(it + 1 == end)
 			{
 				GUI.mViewProj = cam.matViewProj;
-				GUI.Draw(wnd_size);
+				GUI.Draw(IS_SET(draw_flags, DF_GUI), IS_SET(draw_flags, DF_MENU));
 			}
 
 			V(device->EndScene());
@@ -288,7 +288,7 @@ void Game::OnTick(float dt)
 
 	UpdateMusic();
 
-	if(!IsOnline() || !paused)
+	if(Net::IsSingleplayer() || !paused)
 	{
 		// aktualizacja czasu spêdzonego w grze
 		if(game_state != GS_MAIN_MENU && game_state != GS_LOAD)
@@ -298,10 +298,10 @@ void Game::OnTick(float dt)
 	allow_input = ALLOW_INPUT;
 
 	// utracono urz¹dzenie directx lub okno nie aktywne
-	if(IsLostDevice() || !active || !IsCursorLocked())
+	if(IsLostDevice() || !IsActive() || !IsCursorLocked())
 	{
 		Key.SetFocus(false);
-		if(!IsOnline() && !inactive_update)
+		if(Net::IsSingleplayer() && !inactive_update)
 			return;
 	}
 	else
@@ -338,12 +338,12 @@ void Game::OnTick(float dt)
 			GUI.ShowDialog(console);
 
 		// uwolnienie myszki
-		if(!fullscreen && active && IsCursorLocked() && Key.Shortcut(KEY_CONTROL, 'U'))
+		if(!IsFullscreen() && IsActive() && IsCursorLocked() && Key.Shortcut(KEY_CONTROL, 'U'))
 			UnlockCursor();
 
 		// zmiana trybu okna
 		if(Key.Shortcut(KEY_ALT, VK_RETURN))
-			ChangeMode(!fullscreen);
+			ChangeMode(!IsFullscreen());
 
 		// screenshot
 		if(Key.PressedRelease(VK_SNAPSHOT))
@@ -352,13 +352,13 @@ void Game::OnTick(float dt)
 		// zatrzymywanie/wznawianie gry
 		if(KeyPressedReleaseAllowed(GK_PAUSE))
 		{
-			if(!IsOnline())
+			if(Net::IsSingleplayer())
 				paused = !paused;
-			else if(IsServer())
+			else if(Net::IsServer())
 			{
 				paused = !paused;
 				AddMultiMsg(paused ? txGamePaused : txGameResumed);
-				NetChange& c = Add1(net_changes);
+				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::PAUSED;
 				c.id = (paused ? 1 : 0);
 				if(paused && game_state == GS_WORLDMAP && world_state == WS_TRAVEL)
@@ -448,7 +448,7 @@ void Game::OnTick(float dt)
 	if(!paused)
 	{
 		// pytanie o pvp
-		if(game_state == GS_LEVEL && IsOnline())
+		if(game_state == GS_LEVEL && Net::IsOnline())
 		{
 			if(pvp_response.ok)
 			{
@@ -463,13 +463,13 @@ void Game::OnTick(float dt)
 						delete dialog_pvp;
 						dialog_pvp = nullptr;
 					}
-					if(IsServer())
+					if(Net::IsServer())
 					{
 						if(pvp_response.from == pc->unit)
 							AddMsg(Format(txPvpRefuse, pvp_response.to->player->name.c_str()));
 						else
 						{
-							NetChangePlayer& c = Add1(net_changes_player);
+							NetChangePlayer& c = Add1(Net::player_changes);
 							c.type = NetChangePlayer::NO_PVP;
 							c.pc = pvp_response.from->player;
 							c.id = pvp_response.to->player->id;
@@ -491,26 +491,26 @@ void Game::OnTick(float dt)
 			if(paused)
 			{
 				UpdateFallback(dt);
-				if (IsLocal())
+				if (Net::IsLocal())
 				{
-					if (IsOnline())
+					if (Net::IsOnline())
 						UpdateWarpData(dt);
 					ProcessUnitWarps();
 				}
 				SetupCamera(dt);
-				if(IsOnline())
+				if(Net::IsOnline())
 					UpdateGameNet(dt);
 			}
 			else if(GUI.HavePauseDialog())
 			{
-				if (IsOnline())
+				if (Net::IsOnline())
 					UpdateGame(dt);
 				else
 				{
 					UpdateFallback(dt);
-					if (IsLocal())
+					if (Net::IsLocal())
 					{
-						if (IsOnline())
+						if (Net::IsOnline())
 							UpdateWarpData(dt);
 						ProcessUnitWarps();
 					}
@@ -522,17 +522,17 @@ void Game::OnTick(float dt)
 		}
 		else if(game_state == GS_WORLDMAP)
 		{
-			if(IsOnline())
+			if(Net::IsOnline())
 				UpdateGameNet(dt);
 		}
 
-		if(!IsOnline() && game_state != GS_MAIN_MENU)
+		if(Net::IsSingleplayer() && game_state != GS_MAIN_MENU)
 		{
-			assert(net_changes.empty());
-			assert(net_changes_player.empty());
+			assert(Net::changes.empty());
+			assert(Net::player_changes.empty());
 		}
 	}
-	else if(IsOnline())
+	else if(Net::IsOnline())
 		UpdateGameNet(dt);
 
 	// aktywacja mp_box
@@ -559,9 +559,9 @@ void Game::GetTitle(LocalString& s)
 
 	if(change_title_a && ((game_state != GS_MAIN_MENU && game_state != GS_LOAD) || (server_panel && server_panel->visible)))
 	{
-		if(sv_online)
+		if(Net::IsOnline())
 		{
-			if(sv_server)
+			if(Net::IsServer())
 			{
 				if(none)
 					s += " - SERVER";
@@ -598,11 +598,12 @@ void Game::ChangeTitle()
 }
 
 //=================================================================================================
-bool Game::Start0(bool _fullscreen, int w, int h)
+bool Game::Start0(StartupOptions& options)
 {
 	LocalString s;
 	GetTitle(s);
-	return Start(s->c_str(), _fullscreen, w, h);
+	options.title = s.c_str();
+	return Start(options);
 }
 
 struct Point
@@ -643,20 +644,10 @@ void Game::OnReload()
 	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
 		V(it->e->OnResetDevice());
 
-	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
-	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-	V(device->SetRenderState(D3DRS_ALPHAREF, 200));
-	V(device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));
 
 	CreateTextures();
 	BuildDungeon();
 	RebuildMinimap();
-
-	r_alphatest = false;
-	r_alphablend = false;
-	r_nocull = false;
-	r_nozwrite = false;
 }
 
 //=================================================================================================
@@ -777,7 +768,7 @@ void Game::TakeScreenshot(bool no_gui)
 //=================================================================================================
 void Game::ExitToMenu()
 {
-	if(sv_online)
+	if(Net::IsOnline())
 		CloseConnection(VoidF(this, &Game::DoExitToMenu));
 	else
 		DoExitToMenu();
@@ -1797,6 +1788,8 @@ void Game::OnCleanup()
 //=================================================================================================
 void Game::CreateTextures()
 {
+	auto& wnd_size = GetWindowSize();
+
 	V(device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr));
 	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, nullptr));
 	V(device->CreateTexture(128, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tChar, nullptr));
@@ -2366,7 +2359,7 @@ void Game::UnitFall(Unit& u)
 	ACTION prev_action = u.action;
 	u.live_state = Unit::FALLING;
 
-	if(IsLocal())
+	if(Net::IsLocal())
 	{
 		// przerwij akcjê
 		BreakUnitAction(u, true);
@@ -2379,9 +2372,9 @@ void Game::UnitFall(Unit& u)
 			u.event_handler->HandleUnitEvent(UnitEventHandler::FALL, &u);
 
 		// komunikat
-		if(IsOnline())
+		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::FALL;
 			c.unit = &u;
 		}
@@ -2426,7 +2419,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	else
 		u.live_state = Unit::DYING;
 
-	if(IsLocal())
+	if(Net::IsLocal())
 	{
 		// przerwij akcjê
 		BreakUnitAction(u, true);
@@ -2466,9 +2459,9 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		}
 
 		// komunikat
-		if(IsOnline())
+		if(Net::IsOnline())
 		{
-			NetChange& c2 = Add1(net_changes);
+			NetChange& c2 = Add1(Net::changes);
 			c2.type = NetChange::DIE;
 			c2.unit = &u;
 		}
@@ -2478,13 +2471,13 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		if(killer && killer->IsPlayer())
 		{
 			++killer->player->kills;
-			if(IsOnline())
+			if(Net::IsOnline())
 				killer->player->stat_flags |= STAT_KILLS;
 		}
 		if(u.IsPlayer())
 		{
 			++u.player->knocks;
-			if(IsOnline())
+			if(Net::IsOnline())
 				u.player->stat_flags |= STAT_KNOCKS;
 			if(u.player == pc)
 				pc_data.before_player = BP_NONE;
@@ -2601,9 +2594,9 @@ void Game::UnitTryStandup(Unit& u, float dt)
 	{
 		UnitStandup(u);
 
-		if(IsOnline())
+		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::STAND_UP;
 			c.unit = &u;
 		}
@@ -2626,7 +2619,7 @@ void Game::UnitStandup(Unit& u)
 		u.action = A_NONE;
 	u.used_item = nullptr;
 
-	if(IsLocal() && u.IsAI())
+	if(Net::IsLocal() && u.IsAI())
 	{
 		if(u.ai->state != AIController::Idle)
 		{
@@ -2680,7 +2673,7 @@ void Game::UpdatePostEffects(float dt)
 			mod = 1.f;
 		else
 			mod = 1.f + (drunk - 0.5f) * 2;
-		e->skill = e2->skill = Vec4(1.f / wnd_size.x*mod, 1.f / wnd_size.y*mod, 0, 0);
+		e->skill = e2->skill = Vec4(1.f / GetWindowSize().x*mod, 1.f / GetWindowSize().y*mod, 0, 0);
 		// 0.1-0
 		// 1-1
 		e->power = e2->power = (drunk - 0.1f) / 0.9f;

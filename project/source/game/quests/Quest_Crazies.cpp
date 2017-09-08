@@ -45,7 +45,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_AddQuest(refid);
 		}
 		break;
@@ -64,7 +64,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				game->Net_ChangeLocationState(target_loc, false);
@@ -83,7 +83,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			quest_manager.EndUniqueQuest();
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 	}

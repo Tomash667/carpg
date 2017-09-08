@@ -113,7 +113,7 @@ void Game::SetMusic()
 	if(nomusic)
 		return;
 
-	if(!IsLocal() && boss_level_mp)
+	if(!Net::Net::IsLocal() && boss_level_mp)
 	{
 		SetMusic(MusicType::Boss);
 		return;

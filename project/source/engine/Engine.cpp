@@ -4,21 +4,19 @@
 #include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
-extern const uint MIN_WIDTH = 800;
-extern const uint MIN_HEIGHT = 600;
-extern const uint DEFAULT_WIDTH = 1024;
-extern const uint DEFAULT_HEIGHT = 768;
+const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);
+const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1024, 768);
 
 //-----------------------------------------------------------------------------
 Engine* Engine::engine;
 KeyStates Key;
 extern string g_system_dir;
 
-//=================================================================================================                                                                        
-Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), fmod_system(nullptr), phy_config(nullptr),
-phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true),
-lost_device(false), clear_color(BLACK), mouse_wheel(0), s_wnd_pos(-1, -1), s_wnd_size(-1, -1), music_ended(false), disabled_sound(false), key_callback(nullptr),
-res_freed(false), vsync(true), active(false), mouse_dif(0, 0)
+//=================================================================================================
+Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), fmod_system(nullptr),
+phy_config(nullptr), phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), cursor_visible(true), replace_cursor(false),
+locked_cursor(true), lost_device(false), clear_color(BLACK), mouse_wheel(0), music_ended(false), disabled_sound(false), key_callback(nullptr),
+res_freed(false), vsync(true), active(false), mouse_dif(0, 0), activation_point(-1, -1)
 {
 	engine = this;
 }
@@ -73,14 +71,14 @@ void Engine::ChangeMode()
 
 //=================================================================================================
 // Change display mode
-bool Engine::ChangeMode(bool _fullscreen)
+bool Engine::ChangeMode(bool new_fullscreen)
 {
-	if(fullscreen == _fullscreen)
+	if(fullscreen == new_fullscreen)
 		return false;
 
-	Info(_fullscreen ? "Engine: Changing mode to fullscreen." : "Engine: Changing mode to windowed.");
+	Info(new_fullscreen ? "Engine: Changing mode to fullscreen." : "Engine: Changing mode to windowed.");
 
-	fullscreen = _fullscreen;
+	fullscreen = new_fullscreen;
 	ChangeMode();
 
 	return true;
@@ -88,26 +86,25 @@ bool Engine::ChangeMode(bool _fullscreen)
 
 //=================================================================================================
 // Change resolution and display mode
-bool Engine::ChangeMode(int w, int h, bool _fullscreen, int hz)
+bool Engine::ChangeMode(const Int2& size, bool new_fullscreen, int hz)
 {
-	assert(w > 0 && h > 0 && hz >= 0);
+	assert(size.x > 0 && size.y > 0 && hz >= 0);
 
-	if(!CheckDisplay(w, h, hz))
+	if(!CheckDisplay(size, hz))
 	{
-		Error("Engine: Can't change display mode to %dx%d (%d Hz, %s).", w, h, hz, _fullscreen ? "fullscreen" : "windowed");
+		Error("Engine: Can't change display mode to %dx%d (%d Hz, %s).", size.x, size.y, hz, new_fullscreen ? "fullscreen" : "windowed");
 		return false;
 	}
 
-	if(wnd_size.x == w && wnd_size.y == h && fullscreen == _fullscreen && wnd_hz == hz)
+	if(wnd_size == size && fullscreen == new_fullscreen && wnd_hz == hz)
 		return false;
 
-	Info("Engine: Resolution changed to %dx%d (%d Hz, %s).", w, h, hz, _fullscreen ? "fullscreen" : "windowed");
+	Info("Engine: Resolution changed to %dx%d (%d Hz, %s).", size.x, size.y, hz, new_fullscreen ? "fullscreen" : "windowed");
 
-	bool size_changed = (wnd_size.x != w || wnd_size.y != h);
+	bool size_changed = (wnd_size != size);
 
-	fullscreen = _fullscreen;
-	wnd_size.x = w;
-	wnd_size.y = h;
+	fullscreen = new_fullscreen;
+	wnd_size = size;
 	wnd_hz = hz;
 	ChangeMode();
 
@@ -147,12 +144,12 @@ int Engine::ChangeMultisampling(int type, int level)
 
 //=================================================================================================
 // Verify display mode
-bool Engine::CheckDisplay(int w, int h, int& hz)
+bool Engine::CheckDisplay(const Int2& size, int& hz)
 {
-	assert(w >= MIN_WIDTH && h >= MIN_HEIGHT);
+	assert(size.x >= MIN_WINDOW_SIZE.x && size.x >= MIN_WINDOW_SIZE.y);
 
 	// check minimum resolution
-	if(w < MIN_WIDTH || h < MIN_HEIGHT)
+	if(size.x < MIN_WINDOW_SIZE.x || size.y < MIN_WINDOW_SIZE.y)
 		return false;
 
 	uint display_modes = d3d->GetAdapterModeCount(used_adapter, DISPLAY_FORMAT);
@@ -165,7 +162,7 @@ bool Engine::CheckDisplay(int w, int h, int& hz)
 		{
 			D3DDISPLAYMODE d_mode;
 			V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
-			if(w == d_mode.Width && h == d_mode.Height)
+			if(size.x == d_mode.Width && size.y == d_mode.Height)
 			{
 				valid = true;
 				if(hz < (int)d_mode.RefreshRate)
@@ -181,7 +178,7 @@ bool Engine::CheckDisplay(int w, int h, int& hz)
 		{
 			D3DDISPLAYMODE d_mode;
 			V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
-			if(w == d_mode.Width && h == d_mode.Height && hz == d_mode.RefreshRate)
+			if(size.x == d_mode.Width && size.y == d_mode.Height && hz == d_mode.RefreshRate)
 				return true;
 		}
 
@@ -458,7 +455,7 @@ void Engine::DoTick(bool update_game)
 	}
 	else if(!locked_cursor && lock_on_focus)
 		locked_cursor = true;
-	
+
 	// update keyboard shortcuts info
 	Key.UpdateShortcuts();
 
@@ -591,8 +588,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 				POINT pt;
 				GetCursorPos(&pt);
 				ScreenToClient(hwnd, &pt);
-				cursor_pos.x = float(pt.x)*wnd_size.x / wh.x;
-				cursor_pos.y = float(pt.y)*wnd_size.y / wh.y;
+				activation_point = Int2(pt.x * wnd_size.x / wh.x, pt.y * wnd_size.y / wh.y);
 				PlaceCursor();
 
 				if(active)
@@ -636,7 +632,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 	// handle mouse wheel
 	case WM_MOUSEWHEEL:
-		mouse_wheel += GET_WHEEL_DELTA_WPARAM(wParam);
+		mouse_wheel += float(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
 		return 0;
 	}
 
@@ -826,6 +822,8 @@ void Engine::InitRender()
 	if(FAILED(hr))
 		throw Format("Engine: Failed to create direct3dx sprite (%d).", hr);
 
+	SetDefaultRenderState();
+
 	Info("Engine: Directx device created.");
 }
 
@@ -908,9 +906,9 @@ void Engine::InitSound()
 
 //=================================================================================================
 // Create window
-void Engine::InitWindow(cstring title)
+void Engine::InitWindow(StartupOptions& options)
 {
-	assert(title);
+	assert(options.title);
 
 	// register window class
 	WNDCLASSEX wc = {
@@ -924,7 +922,7 @@ void Engine::InitWindow(cstring title)
 
 	// create window
 	AdjustWindowSize();
-	hwnd = CreateWindowEx(0, "Krystal", title, fullscreen ? WS_POPUPWINDOW : WS_OVERLAPPEDWINDOW, 0, 0, real_size.x, real_size.y,
+	hwnd = CreateWindowEx(0, "Krystal", options.title, fullscreen ? WS_POPUPWINDOW : WS_OVERLAPPEDWINDOW, 0, 0, real_size.x, real_size.y,
 		nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
 	if(!hwnd)
 		throw Format("Failed to create window (%d).", GetLastError());
@@ -932,20 +930,20 @@ void Engine::InitWindow(cstring title)
 	// position window
 	if(!fullscreen)
 	{
-		if(s_wnd_pos.x != -1 || s_wnd_pos.y != -1 || s_wnd_size.x != -1 || s_wnd_size.y != -1)
+		if(options.force_pos != Int2(-1, -1) || options.force_size != Int2(-1, -1))
 		{
 			// set window position from config file
 			Rect rect;
 			GetWindowRect(hwnd, (RECT*)&rect);
-			if(s_wnd_pos.x != -1)
-				rect.Left() = s_wnd_pos.x;
-			if(s_wnd_pos.y != -1)
-				rect.Top() = s_wnd_pos.y;
+			if(options.force_pos.x != -1)
+				rect.Left() = options.force_pos.x;
+			if(options.force_pos.y != -1)
+				rect.Top() = options.force_pos.y;
 			Int2 size = real_size;
-			if(s_wnd_size.x != -1)
-				size.x = s_wnd_size.x;
-			if(s_wnd_size.y != -1)
-				size.y = s_wnd_size.y;
+			if(options.force_size.x != -1)
+				size.x = options.force_size.x;
+			if(options.force_size.y != -1)
+				size.y = options.force_size.y;
 			SetWindowPos(hwnd, 0, rect.Left(), rect.Top(), size.x, size.y, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 		}
 		else
@@ -1135,6 +1133,7 @@ bool Engine::Reset(bool force)
 	}
 
 	// reload resources
+	SetDefaultRenderState();
 	OnReload();
 	V(sprite->OnResetDevice());
 	lost_device = false;
@@ -1184,10 +1183,10 @@ void Engine::SelectResolution()
 	{
 		D3DDISPLAYMODE d_mode;
 		V(d3d->EnumAdapterModes(used_adapter, DISPLAY_FORMAT, i, &d_mode));
-		if(d_mode.Width < MIN_WIDTH || d_mode.Height < MIN_HEIGHT)
+		if(d_mode.Width < MIN_WINDOW_SIZE.x || d_mode.Height < MIN_WINDOW_SIZE.y)
 			continue;
 		ress.push_back(E::Res(d_mode.Width, d_mode.Height, d_mode.RefreshRate));
-		if(d_mode.Width == DEFAULT_WIDTH && d_mode.Height == DEFAULT_HEIGHT)
+		if(d_mode.Width == DEFAULT_WINDOW_SIZE.x && d_mode.Height == DEFAULT_WINDOW_SIZE.y)
 		{
 			if(d_mode.RefreshRate > (uint)best_hz)
 				best_hz = d_mode.RefreshRate;
@@ -1293,21 +1292,16 @@ void Engine::ShowError(cstring msg, Logger::Level level)
 
 //=================================================================================================
 // Initialize and start engine
-bool Engine::Start(cstring title, bool _fullscreen, uint w, uint h)
+bool Engine::Start(StartupOptions& options)
 {
-	assert(title);
-
 	// set parameters
-	fullscreen = _fullscreen;
-	wnd_size.x = max(w, MIN_WIDTH);
-	wnd_size.y = max(h, MIN_HEIGHT);
-	cursor_pos.x = float(wnd_size.x / 2);
-	cursor_pos.y = float(wnd_size.y / 2);
+	fullscreen = options.fullscreen;
+	wnd_size = Int2::Max(options.size, MIN_WINDOW_SIZE);
 
 	// initialize engine
 	try
 	{
-		InitWindow(title);
+		InitWindow(options);
 		InitRender();
 		InitSound();
 		InitPhysics();
@@ -1455,7 +1449,8 @@ void Engine::UpdateActivity(bool is_active)
 		ShowCursor(true);
 		Key.ReleaseKeys();
 	}
-	OnFocus(active);
+	OnFocus(active, activation_point);
+	activation_point = Int2(-1, -1);
 }
 
 //=================================================================================================
@@ -1483,5 +1478,60 @@ void Engine::WindowLoop()
 
 		if(engine_shutdown)
 			break;
+	}
+}
+
+//=================================================================================================
+void Engine::SetDefaultRenderState()
+{
+	V(device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD));
+	V(device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+	V(device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+	V(device->SetRenderState(D3DRS_ALPHAREF, 200));
+	V(device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));
+
+	r_alphatest = false;
+	r_alphablend = false;
+	r_nocull = false;
+	r_nozwrite = false;
+}
+
+//=================================================================================================
+void Engine::SetAlphaBlend(bool use_alphablend)
+{
+	if(use_alphablend != r_alphablend)
+	{
+		r_alphablend = use_alphablend;
+		V(device->SetRenderState(D3DRS_ALPHABLENDENABLE, r_alphablend ? TRUE : FALSE));
+	}
+}
+
+//=================================================================================================
+void Engine::SetAlphaTest(bool use_alphatest)
+{
+	if(use_alphatest != r_alphatest)
+	{
+		r_alphatest = use_alphatest;
+		V(device->SetRenderState(D3DRS_ALPHATESTENABLE, r_alphatest ? TRUE : FALSE));
+	}
+}
+
+//=================================================================================================
+void Engine::SetNoCulling(bool use_nocull)
+{
+	if(use_nocull != r_nocull)
+	{
+		r_nocull = use_nocull;
+		V(device->SetRenderState(D3DRS_CULLMODE, r_nocull ? D3DCULL_NONE : D3DCULL_CCW));
+	}
+}
+
+//=================================================================================================
+void Engine::SetNoZWrite(bool use_nozwrite)
+{
+	if(use_nozwrite != r_nozwrite)
+	{
+		r_nozwrite = use_nozwrite;
+		V(device->SetRenderState(D3DRS_ZWRITEENABLE, r_nozwrite ? FALSE : TRUE));
 	}
 }

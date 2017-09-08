@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "Core.h"
 #include "Layout.h"
-#include "Gui2.h"
+#include "Gui.h"
 #include "ResourceManager.h"
 
 #include "Label.h"

@@ -1,10 +1,10 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Dialog2.h"
+#include "GameDialogBox.h"
 
 //-----------------------------------------------------------------------------
-class InfoBox : public Dialog
+class InfoBox : public GameDialogBox
 {
 public:
 	explicit InfoBox(const DialogInfo& info);

@@ -201,9 +201,9 @@ void Game::UpdateAi(float dt)
 					u.action = A_NONE;
 					u.mesh_inst->frame_end_info2 = false;
 					u.mesh_inst->Deactivate(1);
-					if(IsOnline())
+					if(Net::IsOnline())
 					{
-						NetChange& c = Add1(net_changes);
+						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::ATTACK;
 						c.unit = &u;
 						c.id = AID_StopBlock;
@@ -411,9 +411,9 @@ void Game::UpdateAi(float dt)
 						u.action = A_NONE;
 						u.mesh_inst->frame_end_info2 = false;
 						u.mesh_inst->Deactivate(1);
-						if(IsOnline())
+						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = &u;
 							c.id = AID_StopBlock;
@@ -991,9 +991,9 @@ void Game::UpdateAi(float dt)
 										u.mesh_inst->groups[0].speed = 1.f;
 										u.mesh_inst->frame_end_info = false;
 										u.animation = ANI_IDLE;
-										if(IsOnline())
+										if(Net::IsOnline())
 										{
-											NetChange& c = Add1(net_changes);
+											NetChange& c = Add1(Net::changes);
 											c.type = NetChange::IDLE;
 											c.unit = &u;
 											c.id = id;
@@ -1198,9 +1198,9 @@ void Game::UpdateAi(float dt)
 												}
 											}
 
-											if(IsOnline())
+											if(Net::IsOnline())
 											{
-												NetChange& c = Add1(net_changes);
+												NetChange& c = Add1(Net::changes);
 												c.type = NetChange::TALK;
 												c.unit = &u;
 												c.str = StringPool.Get();
@@ -1323,9 +1323,9 @@ void Game::UpdateAi(float dt)
 														ai.timer = Random(5.f, 10.f);
 												}
 												use.user = &u;
-												if(IsOnline())
+												if(Net::IsOnline())
 												{
-													NetChange& c = Add1(net_changes);
+													NetChange& c = Add1(Net::changes);
 													c.type = NetChange::USE_USEABLE;
 													c.unit = &u;
 													c.id = use.netid;
@@ -1416,9 +1416,9 @@ void Game::UpdateAi(float dt)
 												u.bow_instance->groups[0].speed = speed;
 												u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 
-												if(IsOnline())
+												if(Net::IsOnline())
 												{
-													NetChange& c = Add1(net_changes);
+													NetChange& c = Add1(Net::changes);
 													c.type = NetChange::ATTACK;
 													c.unit = &u;
 													c.id = AID_Shoot;
@@ -1663,9 +1663,9 @@ void Game::UpdateAi(float dt)
 											u.mesh_inst->groups[0].speed = 1.f;
 										}
 
-										if(IsOnline())
+										if(Net::IsOnline())
 										{
-											NetChange& c = Add1(net_changes);
+											NetChange& c = Add1(Net::changes);
 											c.type = NetChange::CAST_SPELL;
 											c.unit = &u;
 											c.id = i;
@@ -1726,9 +1726,9 @@ void Game::UpdateAi(float dt)
 								u.bow_instance->groups[0].speed = speed;
 								u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 
-								if(IsOnline())
+								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(net_changes);
+									NetChange& c = Add1(Net::changes);
 									c.type = NetChange::ATTACK;
 									c.unit = &u;
 									c.id = AID_Shoot;
@@ -1812,9 +1812,9 @@ void Game::UpdateAi(float dt)
 									u.mesh_inst->groups[1].blend_max = speed;
 									u.animation_state = 0;
 
-									if(IsOnline())
+									if(Net::IsOnline())
 									{
-										NetChange& c = Add1(net_changes);
+										NetChange& c = Add1(Net::changes);
 										c.type = NetChange::ATTACK;
 										c.unit = &u;
 										c.id = AID_Block;
@@ -2160,9 +2160,9 @@ void Game::UpdateAi(float dt)
 								u.hitted = false;
 								u.RemoveStamina(50.f);
 
-								if(IsOnline())
+								if(Net::IsOnline())
 								{
-									NetChange& c = Add1(net_changes);
+									NetChange& c = Add1(Net::changes);
 									c.type = NetChange::ATTACK;
 									c.unit = &u;
 									c.id = AID_Bash;
@@ -2184,9 +2184,9 @@ void Game::UpdateAi(float dt)
 						ai.timer = 0.f;
 						ai.ignore = BLOCK_AFTER_BLOCK_TIMER;
 						repeat = true;
-						if(IsOnline())
+						if(Net::IsOnline())
 						{
-							NetChange& c = Add1(net_changes);
+							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = &u;
 							c.id = AID_StopBlock;
@@ -2552,9 +2552,9 @@ void Game::UpdateAi(float dt)
 								PlaySound3d(sDoor[Rand() % 3], pos, 2.f, 5.f);
 							}
 
-							if(IsOnline())
+							if(Net::IsOnline())
 							{
-								NetChange& c = Add1(net_changes);
+								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::USE_DOOR;
 								c.id = door.netid;
 								c.ile = 0;
@@ -2870,9 +2870,9 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 	if(sound_volume)
 		PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
 
-	if(IsOnline())
+	if(Net::IsOnline())
 	{
-		NetChange& c = Add1(net_changes);
+		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::SHOUT;
 		c.unit = &unit;
 	}
@@ -2947,9 +2947,9 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 		u.animation_state = (do_power_attack ? 0 : 1);
 		u.hitted = !target;
 
-		if(IsOnline())
+		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::ATTACK;
 			c.unit = &u;
 			c.id = (do_power_attack ? AID_PowerAttack : (w_biegu ? AID_RunningAttack : AID_Attack));
@@ -2979,9 +2979,9 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 		if(sound_volume)
 			PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
 
-		if(IsOnline())
+		if(Net::IsOnline())
 		{
-			NetChange& c = Add1(net_changes);
+			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SHOUT;
 			c.unit = &unit;
 		}

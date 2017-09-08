@@ -19,7 +19,7 @@ enum ButtonId
 };
 
 //=================================================================================================
-ServerPanel::ServerPanel(const DialogInfo& info) : Dialog(info)
+ServerPanel::ServerPanel(const DialogInfo& info) : GameDialogBox(info)
 {
 	size = Int2(540, 510);
 	bts.resize(6);
@@ -125,7 +125,7 @@ void ServerPanel::Draw(ControlDrawData*)
 	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
 	// przyciski
-	int ile = (game->sv_server ? 6 : 3);
+	int ile = (Net::IsServer() ? 6 : 3);
 	for(int i = 0; i < ile; ++i)
 		bts[i].Draw();
 
@@ -144,7 +144,7 @@ void ServerPanel::Draw(ControlDrawData*)
 void ServerPanel::Update(float dt)
 {
 	// przyciski
-	int ile = (game->sv_server ? 6 : 3);
+	int ile = (Net::IsServer() ? 6 : 3);
 	for(int i = 0; i < ile; ++i)
 	{
 		bts[i].mouse_focus = focus;
@@ -160,7 +160,7 @@ void ServerPanel::Update(float dt)
 	grid.Update(dt);
 
 	if(focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
-		Event(GuiEvent(game->sv_server ? IdCancel : IdKick));
+		Event(GuiEvent(Net::IsServer() ? IdCancel : IdKick));
 
 	game->UpdateLobbyNet(dt);
 }
@@ -230,7 +230,7 @@ void ServerPanel::Event(GuiEvent e)
 			}
 			break;
 		case IdKick: // kick / cancel
-			if(game->sv_server)
+			if(Net::IsServer())
 			{
 				if(grid.selected == -1)
 					AddMsg(txNeedSelectedPlayer);
@@ -329,7 +329,7 @@ void ServerPanel::Show()
 	bts[1].text = txReady;
 	bts[1].state = Button::DISABLED;
 
-	if(game->sv_server)
+	if(Net::IsServer())
 	{
 		bts[2].text = txKick;
 		bts[4].state = Button::DISABLED;
@@ -365,7 +365,7 @@ void ServerPanel::ExitLobby(VoidF f)
 {
 	Info("ServerPanel: Exiting lobby.");
 
-	if(game->sv_server)
+	if(Net::IsServer())
 	{
 		if(game->mp_load)
 			game->ClearGame();
@@ -443,8 +443,8 @@ void ServerPanel::OnInput(const string& str)
 			game->net_stream.Write(ID_SAY);
 			game->net_stream.WriteCasted<byte>(game->my_id);
 			WriteString1(game->net_stream, str);
-			game->peer->Send(&game->net_stream, MEDIUM_PRIORITY, RELIABLE, 0, game->sv_server ? UNASSIGNED_SYSTEM_ADDRESS : game->server, game->sv_server);
-			game->StreamWrite(game->net_stream, Stream_Chat, game->sv_server ? UNASSIGNED_SYSTEM_ADDRESS : game->server);
+			game->peer->Send(&game->net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game->server, Net::IsServer());
+			game->StreamWrite(game->net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game->server);
 		}
 		cstring s = Format("%s: %s", game->player_name.c_str(), str.c_str());
 		AddMsg(s);
@@ -507,7 +507,7 @@ void ServerPanel::PickClass(Class clas, bool ready)
 	bts[1].state = Button::NONE;
 	bts[1].text = (ready ? txNotReady : txReady);
 	info.ready = ready;
-	if(!game->sv_server)
+	if(Net::IsClient())
 	{
 		Info("ServerPanel: Sent pick class packet.");
 		BitStream& stream = game->net_stream;

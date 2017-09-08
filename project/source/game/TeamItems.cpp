@@ -374,7 +374,7 @@ void Game::TeamShareGiveItemCredit(DialogContext& ctx)
 			tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
 			if(!ctx.is_local && tsi.from == ctx.pc->unit)
 			{
-				NetChangePlayer& c = Add1(net_changes_player);
+				NetChangePlayer& c = Add1(Net::player_changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS;
 				c.pc = tsi.from->player;
 				c.id = tsi.index;
@@ -407,7 +407,7 @@ void Game::TeamShareSellItem(DialogContext& ctx)
 		tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
 		if(!ctx.is_local)
 		{
-			NetChangePlayer& c = Add1(net_changes_player);
+			NetChangePlayer& c = Add1(Net::player_changes);
 			c.type = NetChangePlayer::REMOVE_ITEMS;
 			c.pc = tsi.from->player;
 			c.id = tsi.index;
@@ -726,7 +726,7 @@ void Game::BuyTeamItems()
 //=================================================================================================
 void Game::ValidateTeamItems()
 {
-	if(!IsLocal())
+	if(!Net::IsLocal())
 		return;
 
 	struct IVector

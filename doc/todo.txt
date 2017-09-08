@@ -1,8 +1,17 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
+? verify is window center is wnd_size/2 or real_size/2, update GameGuiInit::UdateGui
+? cursor pos change from Vec2 to Int2, cursor testing, focus, click activation etc
+? some todo from Ref is done here
 ===============================================================================================================
 NEW:
++ remove system_dir from Engine
++ faster potion using, take out weapon after drinking, allow drink potion after potion and then take out weapon
++ use uint2 for resolution
++ refactor save version from ParticleSystem.cpp
++ refactor load_screen from Resourcemanager.cpp
++ refactor Language.h from Gui.cpp, GetNumberDialog
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

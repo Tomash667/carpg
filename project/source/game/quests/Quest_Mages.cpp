@@ -68,7 +68,7 @@ void Quest_Mages::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_AddQuest(refid);
 				if(now_known)
@@ -94,7 +94,7 @@ void Quest_Mages::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			quest_manager.RemoveQuestRumor(P_MAGOWIE);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -116,7 +116,7 @@ void Quest_Mages::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddNews(game->txQuest[172]);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_AddQuest(q->refid);
 		}
 		break;
@@ -235,7 +235,7 @@ void Quest_Mages2::SetProgress(int prog2)
 
 			mages_state = State::TalkedWithCaptain;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -246,7 +246,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -263,7 +263,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -280,7 +280,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -300,7 +300,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			timer = 0.f;
 			scholar = game->current_dialog->talker;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				game->Net_ChangeLocationState(target_loc, false);
@@ -316,7 +316,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -328,7 +328,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -342,7 +342,7 @@ void Quest_Mages2::SetProgress(int prog2)
 				game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 				game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-				if(game->IsOnline())
+				if(Net::IsOnline())
 					game->Net_UpdateQuest(refid);
 			}
 			const Item* item = FindItem("q_magowie_potion");
@@ -350,7 +350,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->current_dialog->pc->unit->AddItem(item, 1, false);
 			game->current_dialog->pc->unit->gold -= 150;
 
-			if(game->IsOnline() && !game->current_dialog->is_local)
+			if(Net::IsOnline() && !game->current_dialog->is_local)
 			{
 				game->Net_AddItem(game->current_dialog->pc, item, false);
 				game->Net_AddedItemMsg(game->current_dialog->pc);
@@ -392,7 +392,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			unit_to_spawn2 = FindUnitData("golem_iron");
 			spawn_2_guard_1 = true;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -425,7 +425,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				game->Net_UpdateQuest(refid);
 				game->Net_ChangeLocationState(target_loc, false);
@@ -451,7 +451,7 @@ void Quest_Mages2::SetProgress(int prog2)
 				game->AddTeamMember(u, true);
 			}
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 			{
 				if(prog == Progress::MageDrinkPotion)
 					game->Net_ChangeLocationState(target_loc, false);
@@ -474,7 +474,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddNews(game->txQuest[186]);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -490,7 +490,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			u->hero->mode = HeroData::Leave;
 			scholar = nullptr;
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;
@@ -511,7 +511,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			quest_manager.EndUniqueQuest();
 			quest_manager.RemoveQuestRumor(P_MAGOWIE2);
 
-			if(game->IsOnline())
+			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
 		}
 		break;

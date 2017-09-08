@@ -3,7 +3,7 @@
 #include "MainMenu.h"
 #include "Language.h"
 #include "Version.h"
-#include "Dialog2.h"
+#include "DialogBox.h"
 #include "Game.h"
 #define far
 #include <wininet.h>

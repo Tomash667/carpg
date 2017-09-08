@@ -8,7 +8,7 @@
 GetNumberDialog* GetNumberDialog::self;
 
 //=================================================================================================
-GetNumberDialog::GetNumberDialog(const DialogInfo& info) : Dialog(info), scrollbar(true)
+GetNumberDialog::GetNumberDialog(const DialogInfo& info) : DialogBox(info), scrollbar(true)
 {
 }
 
@@ -201,7 +201,7 @@ GetNumberDialog* GetNumberDialog::Show(Control* parent, DialogEvent event, cstri
 
 	self->result = -1;
 	self->parent = parent;
-	self->order = ((Dialog*)parent)->order;
+	self->order = ((DialogBox*)parent)->order;
 	self->event = event;
 	self->text = text;
 	self->min_value = min_value;

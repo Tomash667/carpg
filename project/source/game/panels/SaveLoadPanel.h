@@ -1,13 +1,13 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Dialog2.h"
+#include "DialogBox.h"
 #include "Button.h"
 #include "SaveSlot.h"
 #include "TextBox.h"
 
 //-----------------------------------------------------------------------------
-class SaveLoad : public Dialog
+class SaveLoad : public DialogBox
 {
 public:
 	enum Id

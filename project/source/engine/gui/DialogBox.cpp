@@ -1,14 +1,13 @@
 #include "Pch.h"
 #include "Core.h"
-#include "Dialog2.h"
+#include "DialogBox.h"
 #include "KeyStates.h"
 
 //-----------------------------------------------------------------------------
-Game* Dialog::game;
-TEX Dialog::tBackground;
+TEX DialogBox::tBackground;
 
 //=================================================================================================
-Dialog::Dialog(const DialogInfo& info) : name(info.name), text(info.text), type(info.type), event(info.event), order(info.order), pause(info.pause),
+DialogBox::DialogBox(const DialogInfo& info) : name(info.name), text(info.text), type(info.type), event(info.event), order(info.order), pause(info.pause),
 need_delete(false)
 {
 	parent = info.parent;
@@ -16,7 +15,7 @@ need_delete(false)
 }
 
 //=================================================================================================
-void Dialog::Draw(ControlDrawData*)
+void DialogBox::Draw(ControlDrawData*)
 {
 	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
 	pos = (GUI.wnd_size - size) / 2;
@@ -33,7 +32,7 @@ void Dialog::Draw(ControlDrawData*)
 }
 
 //=================================================================================================
-void Dialog::Update(float dt)
+void DialogBox::Update(float dt)
 {
 	result = -1;
 
@@ -65,21 +64,21 @@ void Dialog::Update(float dt)
 }
 
 //=================================================================================================
-void Dialog::Event(GuiEvent e)
+void DialogBox::Event(GuiEvent e)
 {
 	if(e >= GuiEvent_Custom)
 		result = e - GuiEvent_Custom;
 }
 
 //=================================================================================================
-DialogWithCheckbox::DialogWithCheckbox(const DialogInfo& info) : Dialog(info)
+DialogWithCheckbox::DialogWithCheckbox(const DialogInfo& info) : DialogBox(info)
 {
 }
 
 //=================================================================================================
 void DialogWithCheckbox::Draw(ControlDrawData*)
 {
-	Dialog::Draw();
+	DialogBox::Draw();
 
 	checkbox.global_pos = checkbox.pos + pos;
 	checkbox.Draw();
@@ -94,7 +93,7 @@ void DialogWithCheckbox::Update(float dt)
 		checkbox.Update(dt);
 	}
 
-	Dialog::Update(dt);
+	DialogBox::Update(dt);
 }
 
 //=================================================================================================
@@ -110,7 +109,7 @@ void DialogWithCheckbox::Event(GuiEvent e)
 }
 
 //=================================================================================================
-DialogWithImage::DialogWithImage(const DialogInfo& info) : Dialog(info), img(info.img)
+DialogWithImage::DialogWithImage(const DialogInfo& info) : DialogBox(info), img(info.img)
 {
 	assert(img);
 	img_size = gui::GetImgSize(img);

@@ -1,11 +1,11 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Dialog2.h"
+#include "GameDialogBox.h"
 #include "Grid.h"
 
 //-----------------------------------------------------------------------------
-class PickServerPanel : public Dialog
+class PickServerPanel : public GameDialogBox
 {
 public:
 	struct ServerData

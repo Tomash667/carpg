@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>source;source\core;source\engine;source\game;source\game\entity;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\stats;source\game\system;source\gui;source\gui\dialogs;source\resource;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\stats;source\game\system;source\resource;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalOptions>/w34706 /w34702 /w34189 /w34265 /w34266 /w34928 %(AdditionalOptions)</AdditionalOptions>
@@ -92,7 +92,7 @@
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>source;source\core;source\engine;source\game;source\game\entity;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\stats;source\game\system;source\gui;source\gui\dialogs;source\resource;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;source\core;source\engine;source\engine\gui;source\game;source\game\entity;source\game\generator;source\game\helpers;source\game\location;source\game\net;source\game\panels;source\game\quests;source\game\stats;source\game\system;source\resource;..\external\Bullet\src;..\external\DirectX\Include;..\external\DirectXMath\Inc;..\external\FMod\inc;..\external\RakNet\Source;..\external\Visual Leak Detector\include;..\external\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -142,6 +142,45 @@
     <ClInclude Include="source\core\TextWriter.h" />
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
+    <ClInclude Include="source\engine\BitStreamFunc.h" />
+    <ClInclude Include="source\engine\Font.h" />
+    <ClInclude Include="source\engine\gui\AreaLayout.h" />
+    <ClInclude Include="source\engine\gui\Button.h" />
+    <ClInclude Include="source\engine\gui\CheckBox.h" />
+    <ClInclude Include="source\engine\gui\CheckBoxGroup.h" />
+    <ClInclude Include="source\engine\gui\Container.h" />
+    <ClInclude Include="source\engine\gui\Control.h" />
+    <ClInclude Include="source\engine\gui\DialogBox.h" />
+    <ClInclude Include="source\engine\gui\DrawBox.h" />
+    <ClInclude Include="source\engine\gui\FlowContainer.h" />
+    <ClInclude Include="source\engine\gui\GetNumberDialog.h" />
+    <ClInclude Include="source\engine\gui\GetTextDialog.h" />
+    <ClInclude Include="source\engine\gui\Grid.h" />
+    <ClInclude Include="source\engine\gui\Gui.h" />
+    <ClInclude Include="source\engine\gui\GuiContainer.h" />
+    <ClInclude Include="source\engine\gui\GuiDialog.h" />
+    <ClInclude Include="source\engine\gui\GuiElement.h" />
+    <ClInclude Include="source\engine\gui\GuiRect.h" />
+    <ClInclude Include="source\engine\gui\InputTextBox.h" />
+    <ClInclude Include="source\engine\gui\Label.h" />
+    <ClInclude Include="source\engine\gui\Layout.h" />
+    <ClInclude Include="source\engine\gui\ListBox.h" />
+    <ClInclude Include="source\engine\gui\MenuBar.h" />
+    <ClInclude Include="source\engine\gui\MenuList.h" />
+    <ClInclude Include="source\engine\gui\MenuStrip.h" />
+    <ClInclude Include="source\engine\gui\Overlay.h" />
+    <ClInclude Include="source\engine\gui\Panel.h" />
+    <ClInclude Include="source\engine\gui\PickFileDialog.h" />
+    <ClInclude Include="source\engine\gui\PickItemDialog.h" />
+    <ClInclude Include="source\engine\gui\Scrollbar.h" />
+    <ClInclude Include="source\engine\gui\Slider.h" />
+    <ClInclude Include="source\engine\gui\SplitPanel.h" />
+    <ClInclude Include="source\engine\gui\TabControl.h" />
+    <ClInclude Include="source\engine\gui\TextBox.h" />
+    <ClInclude Include="source\engine\gui\ToolStrip.h" />
+    <ClInclude Include="source\engine\gui\TooltipController.h" />
+    <ClInclude Include="source\engine\gui\TreeView.h" />
+    <ClInclude Include="source\engine\gui\Window.h" />
     <ClInclude Include="source\engine\Mesh.h" />
     <ClInclude Include="source\engine\Engine.h" />
     <ClInclude Include="source\engine\KeyStates.h" />
@@ -160,7 +199,11 @@
     <ClInclude Include="source\game\entity\BloodType.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameStats.h" />
+    <ClInclude Include="source\game\net\GamePacket.h" />
+    <ClInclude Include="source\game\net\NetChange.h" />
+    <ClInclude Include="source\game\net\NetChangePlayer.h" />
     <ClInclude Include="source\game\panels\ActionPanel.h" />
+    <ClInclude Include="source\game\panels\GameDialogBox.h" />
     <ClInclude Include="source\game\quests\QuestConsts.h" />
     <ClInclude Include="source\game\stats\Action.h" />
     <ClInclude Include="source\game\stats\Buff.h" />
@@ -195,7 +238,6 @@
     <ClInclude Include="source\game\GameKeys.h" />
     <ClInclude Include="source\game\generator\CityGenerator.h" />
     <ClInclude Include="source\game\generator\Mapa2.h" />
-    <ClInclude Include="source\game\Gui2.h" />
     <ClInclude Include="source\game\helpers\LocationHelper.h" />
     <ClInclude Include="source\game\helpers\UnitHelper.h" />
     <ClInclude Include="source\game\ItemScript.h" />
@@ -213,7 +255,6 @@
     <ClInclude Include="source\game\location\MultiInsideLocation.h" />
     <ClInclude Include="source\game\location\OutsideLocation.h" />
     <ClInclude Include="source\game\location\SingleInsideLocation.h" />
-    <ClInclude Include="source\game\net\BitStreamFunc.h" />
     <ClInclude Include="source\game\net\Net.h" />
     <ClInclude Include="source\game\panels\Console.h" />
     <ClInclude Include="source\game\panels\Controls.h" />
@@ -287,44 +328,6 @@
     <ClInclude Include="source\game\stats\UnitStats.h" />
     <ClInclude Include="source\game\Team.h" />
     <ClInclude Include="source\game\TerrainTile.h" />
-    <ClInclude Include="source\gui\AreaLayout.h" />
-    <ClInclude Include="source\gui\Button.h" />
-    <ClInclude Include="source\gui\CheckBox.h" />
-    <ClInclude Include="source\gui\CheckBoxGroup.h" />
-    <ClInclude Include="source\gui\Container.h" />
-    <ClInclude Include="source\gui\Control.h" />
-    <ClInclude Include="source\gui\Dialog2.h" />
-    <ClInclude Include="source\gui\dialogs\GetNumberDialog.h" />
-    <ClInclude Include="source\gui\dialogs\GetTextDialog.h" />
-    <ClInclude Include="source\gui\dialogs\GuiDialog.h" />
-    <ClInclude Include="source\gui\dialogs\PickFileDialog.h" />
-    <ClInclude Include="source\gui\dialogs\PickItemDialog.h" />
-    <ClInclude Include="source\gui\DrawBox.h" />
-    <ClInclude Include="source\gui\FlowContainer.h" />
-    <ClInclude Include="source\gui\Font.h" />
-    <ClInclude Include="source\gui\Grid.h" />
-    <ClInclude Include="source\gui\Gui.h" />
-    <ClInclude Include="source\gui\GuiContainer.h" />
-    <ClInclude Include="source\gui\GuiElement.h" />
-    <ClInclude Include="source\gui\GuiRect.h" />
-    <ClInclude Include="source\gui\Label.h" />
-    <ClInclude Include="source\gui\Layout.h" />
-    <ClInclude Include="source\gui\InputTextBox.h" />
-    <ClInclude Include="source\gui\ListBox.h" />
-    <ClInclude Include="source\gui\MenuBar.h" />
-    <ClInclude Include="source\gui\MenuStrip.h" />
-    <ClInclude Include="source\gui\MenuList.h" />
-    <ClInclude Include="source\gui\Overlay.h" />
-    <ClInclude Include="source\gui\Panel.h" />
-    <ClInclude Include="source\gui\Scrollbar.h" />
-    <ClInclude Include="source\gui\Slider.h" />
-    <ClInclude Include="source\gui\SplitPanel.h" />
-    <ClInclude Include="source\gui\TabControl.h" />
-    <ClInclude Include="source\gui\TextBox.h" />
-    <ClInclude Include="source\gui\ToolStrip.h" />
-    <ClInclude Include="source\gui\TooltipController.h" />
-    <ClInclude Include="source\gui\TreeView.h" />
-    <ClInclude Include="source\gui\Window.h" />
     <ClInclude Include="source\Pch.h" />
     <ClInclude Include="source\resource\resource1.h" />
     <ClInclude Include="source\Version.h" />
@@ -344,6 +347,40 @@
     <ClCompile Include="source\core\Text.cpp" />
     <ClCompile Include="source\core\Timer.cpp" />
     <ClCompile Include="source\core\Tokenizer.cpp" />
+    <ClCompile Include="source\engine\Font.cpp" />
+    <ClCompile Include="source\engine\gui\Button.cpp" />
+    <ClCompile Include="source\engine\gui\CheckBox.cpp" />
+    <ClCompile Include="source\engine\gui\CheckBoxGroup.cpp" />
+    <ClCompile Include="source\engine\gui\Container.cpp" />
+    <ClCompile Include="source\engine\gui\Control.cpp" />
+    <ClCompile Include="source\engine\gui\DialogBox.cpp" />
+    <ClCompile Include="source\engine\gui\DrawBox.cpp" />
+    <ClCompile Include="source\engine\gui\FlowContainer.cpp" />
+    <ClCompile Include="source\engine\gui\GetNumberDialog.cpp" />
+    <ClCompile Include="source\engine\gui\GetTextDialog.cpp" />
+    <ClCompile Include="source\engine\gui\Grid.cpp" />
+    <ClCompile Include="source\engine\gui\Gui.cpp" />
+    <ClCompile Include="source\engine\gui\GuiContainer.cpp" />
+    <ClCompile Include="source\engine\gui\GuiDialog.cpp" />
+    <ClCompile Include="source\engine\gui\InputTextBox.cpp" />
+    <ClCompile Include="source\engine\gui\Label.cpp" />
+    <ClCompile Include="source\engine\gui\Layout.cpp" />
+    <ClCompile Include="source\engine\gui\ListBox.cpp" />
+    <ClCompile Include="source\engine\gui\MenuBar.cpp" />
+    <ClCompile Include="source\engine\gui\MenuList.cpp" />
+    <ClCompile Include="source\engine\gui\MenuStrip.cpp" />
+    <ClCompile Include="source\engine\gui\Overlay.cpp" />
+    <ClCompile Include="source\engine\gui\Panel.cpp" />
+    <ClCompile Include="source\engine\gui\PickFileDialog.cpp" />
+    <ClCompile Include="source\engine\gui\PickItemDialog.cpp" />
+    <ClCompile Include="source\engine\gui\Scrollbar.cpp" />
+    <ClCompile Include="source\engine\gui\Slider.cpp" />
+    <ClCompile Include="source\engine\gui\SplitPanel.cpp" />
+    <ClCompile Include="source\engine\gui\TabControl.cpp" />
+    <ClCompile Include="source\engine\gui\TextBox.cpp" />
+    <ClCompile Include="source\engine\gui\TooltipController.cpp" />
+    <ClCompile Include="source\engine\gui\TreeView.cpp" />
+    <ClCompile Include="source\engine\gui\Window.cpp" />
     <ClCompile Include="source\engine\Mesh.cpp" />
     <ClCompile Include="source\engine\Engine.cpp" />
     <ClCompile Include="source\engine\KeyStates.cpp" />
@@ -390,8 +427,7 @@
     <ClCompile Include="source\game\Game_LevelArea.cpp" />
     <ClCompile Include="source\game\generator\CityGenerator.cpp" />
     <ClCompile Include="source\game\generator\Mapa2.cpp" />
-    <ClCompile Include="source\game\Gui.cpp" />
-    <ClCompile Include="source\game\Gui2.cpp" />
+    <ClCompile Include="source\game\GameGuiInit.cpp" />
     <ClCompile Include="source\game\helpers\UnitHelper.cpp" />
     <ClCompile Include="source\game\Init.cpp" />
     <ClCompile Include="source\game\Language.cpp" />
@@ -483,39 +519,6 @@
     <ClCompile Include="source\game\Tutorial.cpp" />
     <ClCompile Include="source\game\Worldmap.cpp" />
     <ClCompile Include="source\game\Worldstate.cpp" />
-    <ClCompile Include="source\gui\Button.cpp" />
-    <ClCompile Include="source\gui\CheckBox.cpp" />
-    <ClCompile Include="source\gui\CheckBoxGroup.cpp" />
-    <ClCompile Include="source\gui\Container.cpp" />
-    <ClCompile Include="source\gui\Control.cpp" />
-    <ClCompile Include="source\gui\Dialog2.cpp" />
-    <ClCompile Include="source\gui\dialogs\GetNumberDialog.cpp" />
-    <ClCompile Include="source\gui\dialogs\GetTextDialog.cpp" />
-    <ClCompile Include="source\gui\dialogs\GuiDialog.cpp" />
-    <ClCompile Include="source\gui\dialogs\PickFileDialog.cpp" />
-    <ClCompile Include="source\gui\dialogs\PickItemDialog.cpp" />
-    <ClCompile Include="source\gui\DrawBox.cpp" />
-    <ClCompile Include="source\gui\FlowContainer.cpp" />
-    <ClCompile Include="source\gui\Font.cpp" />
-    <ClCompile Include="source\gui\Grid.cpp" />
-    <ClCompile Include="source\gui\GuiContainer.cpp" />
-    <ClCompile Include="source\gui\InputTextBox.cpp" />
-    <ClCompile Include="source\gui\Label.cpp" />
-    <ClCompile Include="source\gui\Layout.cpp" />
-    <ClCompile Include="source\gui\ListBox.cpp" />
-    <ClCompile Include="source\gui\MenuBar.cpp" />
-    <ClCompile Include="source\gui\MenuStrip.cpp" />
-    <ClCompile Include="source\gui\MenuList.cpp" />
-    <ClCompile Include="source\gui\Overlay.cpp" />
-    <ClCompile Include="source\gui\Panel.cpp" />
-    <ClCompile Include="source\gui\Scrollbar.cpp" />
-    <ClCompile Include="source\gui\Slider.cpp" />
-    <ClCompile Include="source\gui\SplitPanel.cpp" />
-    <ClCompile Include="source\gui\TabControl.cpp" />
-    <ClCompile Include="source\gui\TextBox.cpp" />
-    <ClCompile Include="source\gui\TooltipController.cpp" />
-    <ClCompile Include="source\gui\TreeView.cpp" />
-    <ClCompile Include="source\gui\Window.cpp" />
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="source\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
