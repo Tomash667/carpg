@@ -142,6 +142,7 @@
     <ClInclude Include="source\core\TextWriter.h" />
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
+    <ClInclude Include="source\engine\BitStreamFunc.h" />
     <ClInclude Include="source\engine\Font.h" />
     <ClInclude Include="source\engine\gui\AreaLayout.h" />
     <ClInclude Include="source\engine\gui\Button.h" />
@@ -254,7 +255,6 @@
     <ClInclude Include="source\game\location\MultiInsideLocation.h" />
     <ClInclude Include="source\game\location\OutsideLocation.h" />
     <ClInclude Include="source\game\location\SingleInsideLocation.h" />
-    <ClInclude Include="source\game\net\BitStreamFunc.h" />
     <ClInclude Include="source\game\net\Net.h" />
     <ClInclude Include="source\game\panels\Console.h" />
     <ClInclude Include="source\game\panels\Controls.h" />

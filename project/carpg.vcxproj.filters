@@ -746,9 +746,6 @@
     <ClInclude Include="source\game\location\SingleInsideLocation.h">
       <Filter>3. game\location</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\net\BitStreamFunc.h">
-      <Filter>3. game\net</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\net\Net.h">
       <Filter>3. game\net</Filter>
     </ClInclude>
@@ -1240,6 +1237,9 @@
     </ClInclude>
     <ClInclude Include="source\engine\gui\Gui.h">
       <Filter>2. engine\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\BitStreamFunc.h">
+      <Filter>2. engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
