@@ -413,7 +413,6 @@ struct Game final : public Engine, public UnitEventHandler
 	void StartGameMode();
 
 	QUICKSTART quickstart;
-	HANDLE mutex;
 
 	// supershader
 	string sshader_code;

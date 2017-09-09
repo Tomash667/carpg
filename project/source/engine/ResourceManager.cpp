@@ -4,13 +4,14 @@
 #include "LoadScreen.h"
 #include "Engine.h"
 #include "Mesh.h"
+#include "Utility.h"
 
 //-----------------------------------------------------------------------------
 ResourceManager ResourceManager::manager;
 ObjectPool<ResourceManager::TaskDetail> ResourceManager::task_pool;
 
 //=================================================================================================
-ResourceManager::ResourceManager() : mode(Mode::Instant), mutex(nullptr)
+ResourceManager::ResourceManager() : mode(Mode::Instant)
 {
 }
 
@@ -757,12 +758,8 @@ void ResourceManager::TickLoadScreen()
 //=================================================================================================
 void ResourceManager::ReleaseMutex()
 {
-	if(mutex && progress >= 0.5f)
-	{
-		::ReleaseMutex(mutex);
-		CloseHandle(mutex);
-		mutex = nullptr;
-	}
+	if(progress >= 0.5f)
+		utility::IncrementDelayLock();
 }
 
 //=================================================================================================
@@ -871,7 +868,14 @@ void ResourceManager::LoadTexture(Texture* tex)
 {
 	HRESULT hr;
 	if(tex->IsFile())
+	{
 		hr = D3DXCreateTextureFromFile(device, tex->path.c_str(), &tex->tex);
+		if(FAILED(hr))
+		{
+			Sleep(250);
+			hr = D3DXCreateTextureFromFile(device, tex->path.c_str(), &tex->tex);
+		}
+	}
 	else
 	{
 		BufferHandle&& buf = GetBuffer(tex);

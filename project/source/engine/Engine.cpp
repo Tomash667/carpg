@@ -1288,6 +1288,7 @@ void Engine::ShowError(cstring msg, Logger::Level level)
 	ShowWindow(hwnd, SW_HIDE);
 	ShowCursor(true);
 	Logger::global->Log(level, msg);
+	Logger::global->Flush();
 	MessageBox(nullptr, msg, nullptr, MB_OK | MB_ICONERROR | MB_APPLMODAL);
 }
 
