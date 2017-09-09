@@ -303,7 +303,7 @@ void Game::KickPlayer(int index)
 		UpdateServerInfo();
 	}
 	else
-		info.left_reason = PlayerInfo::LEFT_KICK;
+		info.left = PlayerInfo::LEFT_KICK;
 }
 
 //=================================================================================================
@@ -2120,8 +2120,7 @@ void Game::UpdateServer(float dt)
 		case ID_DISCONNECTION_NOTIFICATION:
 			Info(msg_id == ID_CONNECTION_LOST ? "Lost connection with player %s." : "Player %s has disconnected.", info.name.c_str());
 			players_left.push_back(info.id);
-			info.left = true;
-			info.left_reason = PlayerInfo::LEFT_QUIT;
+			info.left = PlayerInfo::LEFT_DISCONNECTED;
 			break;
 		case ID_SAY:
 			Server_Say(stream, info, packet);
@@ -5619,7 +5618,7 @@ void Game::UpdateClient(float dt)
 					info_box->Show(txGeneratingLocation);
 					LeaveLevel();
 					net_mode = NM_TRANSFER;
-					net_state = 2;
+					net_state = NetState::Server_WaitForPlayersToLoadWorld;
 					clear_color = BLACK;
 					load_screen->visible = true;
 					game_gui->visible = false;
@@ -6948,9 +6947,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		// remove player from game
 		case NetChange::REMOVE_PLAYER:
 			{
-				byte player_id, reason;
+				byte player_id;
+				PlayerInfo::LeftReason reason;
 				if(!stream.Read(player_id)
-					|| !stream.Read(reason))
+					|| !stream.ReadCasted<byte>(reason))
 				{
 					Error("Update client: Broken REMOVE_PLAYER.");
 					StreamError();
@@ -6965,7 +6965,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						info->left = true;
+						info->left = reason;
 						AddMsg(Format("%s %s.", info->name.c_str(), reason == 1 ? txPcWasKicked : txPcLeftGame));
 
 						if(info->u)
@@ -6975,7 +6975,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							RemoveElement(Team.members, info->u);
 							RemoveElement(Team.active_members, info->u);
 
-							if(reason == PlayerInfo::LEFT_LOADING)
+							if(reason == PlayerInfo::LEFT_TIMEOUT)
 							{
 								if(info->u->interp)
 									interpolators.Free(info->u->interp);
@@ -9922,7 +9922,7 @@ void Game::Net_OnNewGameServer()
 		sp.name = player_name;
 		sp.id = 0;
 		sp.state = PlayerInfo::IN_LOBBY;
-		sp.left = false;
+		sp.left = PlayerInfo::LEFT_NO;
 		sp.loaded = false;
 
 		netid_counter = 0;
@@ -9946,7 +9946,7 @@ void Game::Net_OnNewGameServer()
 		sp.name = player_name;
 		sp.id = 0;
 		sp.state = PlayerInfo::IN_LOBBY;
-		sp.left = false;
+		sp.left = PlayerInfo::LEFT_NO;
 
 		server_panel->grid.AddItem();
 
@@ -10806,10 +10806,12 @@ void Game::ProcessLeftPlayers()
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::REMOVE_PLAYER;
 		c.id = player_id;
-		c.ile = info.left_reason;
+		c.ile = (int)info.left;
 
 		--players;
-		if(info.left_reason != PlayerInfo::LEFT_KICK)
+
+		RemovePlayer(info);
+		if(info.left != PlayerInfo::LEFT_KICK)
 		{
 			Info("Player %s left game.", info.name.c_str());
 			AddMsg(Format(txPlayerLeft, info.name.c_str()));
@@ -10821,7 +10823,7 @@ void Game::ProcessLeftPlayers()
 
 			if(pc_data.before_player_ptr.unit == unit)
 				pc_data.before_player = BP_NONE;
-			if(info.left_reason == PlayerInfo::LEFT_LOADING || game_state == GS_WORLDMAP)
+			if(info.left == PlayerInfo::LEFT_TIMEOUT || game_state == GS_WORLDMAP)
 			{
 				if(open_location != -1)
 					RemoveElement(GetContext(*unit).units, unit);
@@ -10920,6 +10922,12 @@ void Game::ProcessLeftPlayers()
 		CheckCredit();
 	}
 	players_left.clear();
+}
+
+//=================================================================================================
+void Game::RemovePlayer(PlayerInfo& info)
+{
+
 }
 
 //=================================================================================================

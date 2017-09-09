@@ -9,6 +9,7 @@ CURRENT:
 - crash client when other player left on loading (worldmap, level?)
 - update about client move/animation is not resend C->S->C, only when stopped
 - crash C2 when C left on world map
+! remove utility app id check
 ===============================================================================================================
 NEW:
 + ref move mutex from resource manager

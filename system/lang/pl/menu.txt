@@ -1195,6 +1195,9 @@ gamePaused = "Gra zatrzymana."
 gameResumed = "Gra wznowiona."
 devmodeOn = "Aktywowano tryb twórcy."
 devmodeOff = "Dezaktywowano tryb twórcy."
+playerDisconnected = "%s utraci³ po³¹czenie z serwerem."
+playerQuit = "%s opuœci³ grê."
+playerKicked = "%s zosta³ wyrzucony z serwera."
 
 // okrzyk
 yell0 = "Z drogi!"

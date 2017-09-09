@@ -230,7 +230,7 @@ struct NetChange
 		UPDATE_QUEST, // update quest [id = quest, auto: int(quest.refid), byte(quest.state), string2(quest.msgs.back())]
 		RENAME_ITEM, // item rename [auto: int(base_item.refid), string1(base_item.id), string1(base_item.name)]
 		UPDATE_QUEST_MULTI, // update quest with multiple texts [id = quest, int(quest.refid)-(auto), byte(quest.state)-(auto), vector<size:byte(ile), string2>]
-		REMOVE_PLAYER, // remove player from game [byte(id)-player id, byte(ile)-reason]
+		REMOVE_PLAYER, // remove player from game [byte(id)-player id, byte(ile)-PlayerInfo.LeftReason]
 		CHANGE_LEADER, // player wants to change leader or notification [byte(id)-player id]
 		RANDOM_NUMBER, // player get Random number SERVER[byte(unit.player.id), byte(id)-number] / CLIENT[byte(id)-number]
 		CHEAT_WARP, // player used cheat 'warp' [byte(id)-inside building index]
@@ -326,6 +326,7 @@ struct NetChange
 		CHEAT_STUN, // player used cheat 'stun' [int(netid)-unit, f[0]-length]
 		PLAYER_ACTION, // player unit is using action, client[Vec3-pos/data] / server[int(netid)-unit]
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
+		PLAYER_LEFT, // player left game [byte-player id, byte-reason (LeaveReason)]
 	} type;
 	union
 	{
@@ -453,4 +454,26 @@ enum class JoinResult
 	InvalidUnitsCrc,
 	InvalidDialogsCrc,
 	InvalidTypeCrc
+};
+
+//-----------------------------------------------------------------------------
+enum class NetState
+{
+	Client_PingIp,
+	Client_WaitingForPassword,
+	Client_Connecting,
+	Client_BeforeTransfer,
+	Client_ReceivedWorldData,
+	Client_ReceivedPlayerStartData,
+	Client_ChangingLevel,
+	Client_ReceivedLevelData,
+	Client_ReceivedPlayerData,
+	Client_Start,
+	Client_StartOnWorldmap,
+
+	Server_Starting,
+	Server_Initialized,
+	Server_WaitForPlayersToLoadWorld,
+	Server_EnterLocation,
+	Server_Send
 };

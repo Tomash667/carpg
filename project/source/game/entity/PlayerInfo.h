@@ -34,9 +34,12 @@ struct PlayerInfo
 
 	enum LeftReason
 	{
+		LEFT_NO,
+		LEFT_TIMEOUT,
+		LEFT_DISCONNECTED,
 		LEFT_QUIT,
 		LEFT_KICK,
-		LEFT_LOADING
+		LEFT_SERVER_FULL
 	};
 
 	string name;
@@ -44,13 +47,13 @@ struct PlayerInfo
 	int id, ack, update_flags, buffs;
 	SystemAddress adr;
 	float timer, update_timer, yspeed;
-	bool ready, devmode, warping, left, loaded;
+	bool ready, devmode, warping, loaded;
 	HumanData hd;
 	CreatedCharacter cc;
 	PlayerController* pc;
 	Unit* u;
 	vector<string> notes;
-	LeftReason left_reason;
+	LeftReason left;
 
 	void NeedUpdate()
 	{

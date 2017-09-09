@@ -1439,7 +1439,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(IsOnline())
 	{
 		net_mode = NM_SERVER_SEND;
-		net_state = 0;
+		net_state = NetState::Server_Send;
 		if(players > 1)
 		{
 			net_stream.Reset();

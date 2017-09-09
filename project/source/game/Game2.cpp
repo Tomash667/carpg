@@ -40,7 +40,7 @@
 #include "Team.h"
 #include "Action.h"
 
-const int SAVE_VERSION = V_0_5;
+const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
 const int MIN_SUPPORT_LOAD_VERSION = V_0_2_5;
 
@@ -11091,7 +11091,7 @@ void Game::ChangeLevel(int gdzie)
 	if(IsOnline() && players > 1)
 	{
 		net_mode = NM_SERVER_SEND;
-		net_state = 0;
+		net_state = NetState::Server_Send;
 		net_stream.Reset();
 		PrepareLevelData(net_stream);
 		Info("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed());

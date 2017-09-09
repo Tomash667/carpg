@@ -559,8 +559,8 @@ struct Game final : public Engine, public UnitEventHandler
 		txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion, txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer,
 		txPlayerDataError, txGeneratingLocation, txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
 		txLost, txLeft, txLost2, txUnconnected, txDisconnected, txClosing, txKicked, txUnknown, txUnknown2, txWaitingForServer, txStartingGame, txPreparingWorld, txInvalidCrc;
-	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txPlayerKicked, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txPcWasKicked,
-		txPcLeftGame, txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft;
+	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txPcWasKicked,
+		txPcLeftGame, txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft, txPlayerDisconnected, txPlayerQuit, txPlayerKicked;
 	cstring txYell[3];
 	cstring txHaveErrors;
 
@@ -1524,11 +1524,19 @@ public:
 	void RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc);
 	void OnEnterIp(int id);
 	void GenericInfoBoxUpdate(float dt);
+	void UpdateClientConnectingIp(float dt);
+	void UpdateClientTransfer(float dt);
+	void UpdateClientQuiting(float dt);
+	void UpdateServerTransfer(float dt);
+	void UpdateServerSend(float dt);
+	void UpdateServerQuiting(float dt);
 	void QuickJoinIp();
 	void AddMultiMsg(cstring msg);
 	void Quit();
 	bool ValidateNick(cstring nick);
 	void UpdateLobbyNet(float dt);
+	void UpdateLobbyNetClient(float dt);
+	void UpdateLobbyNetServer(float dt);
 	bool DoLobbyUpdate(BitStream& stream);
 	void OnCreateCharacter(int id);
 	void OnPlayTutorial(int id);
@@ -1569,7 +1577,8 @@ public:
 		NM_TRANSFER_SERVER,
 		NM_SERVER_SEND
 	} net_mode;
-	int net_state, net_tries;
+	NetState net_state;
+	int net_tries;
 	VoidF net_callback;
 	string net_adr;
 	float net_timer, update_timer, mp_timeout;
@@ -1826,6 +1835,7 @@ public:
 	void Net_FilterServerChanges();
 	void Net_FilterClientChanges();
 	void ProcessLeftPlayers();
+	void RemovePlayer(PlayerInfo& info);
 	void ClosePeer(bool wait = false);
 	void DeleteOldPlayers();
 	NetChangePlayer& AddChange(NetChangePlayer::TYPE type, PlayerController* _pc)
