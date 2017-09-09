@@ -1786,7 +1786,7 @@ void Unit::Load(HANDLE file, bool local)
 		weapon_state = WS_HIDDEN;
 		weapon_taken = W_NONE;
 		weapon_hiding = W_NONE;
-		frozen = 0;
+		frozen = FROZEN::NO;
 		talking = false;
 		animation = current_animation = ANI_STAND;
 		action = A_NONE;
@@ -1829,7 +1829,7 @@ void Unit::Load(HANDLE file, bool local)
 	ai = nullptr;
 	look_target = nullptr;
 	interp = nullptr;
-	frozen = 0;
+	frozen = FROZEN::NO;
 
 	// fizyka
 	if(local)
@@ -3171,9 +3171,8 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				}
 				else
 				{
-					mesh_inst->Play(NAMES::ani_die, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+					SetAnimationAtEnd(NAMES::ani_die);
 					animation = current_animation = ANI_DIE;
-					SetAnimationAtEnd();
 				}
 			}
 

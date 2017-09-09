@@ -2369,7 +2369,7 @@ void Game::UnitFall(Unit& u)
 	if(IsLocal())
 	{
 		// przerwij akcjê
-		BreakUnitAction(u, true);
+		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
 
 		// wstawanie
 		u.raise_timer = Random(5.f, 7.f);
@@ -2392,7 +2392,7 @@ void Game::UnitFall(Unit& u)
 	else
 	{
 		// przerwij akcjê
-		BreakUnitAction(u, true);
+		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
 
 		// komunikat
 		if(&u == pc->unit)
@@ -2429,7 +2429,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	if(IsLocal())
 	{
 		// przerwij akcjê
-		BreakUnitAction(u, true);
+		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
 
 		// dodaj z³oto do ekwipunku
 		if(u.gold && !(u.IsPlayer() || u.IsFollower()))
@@ -2495,7 +2495,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		u.hp = 0.f;
 
 		// przerwij akcjê
-		BreakUnitAction(u, true);
+		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
 
 		// o¿ywianie
 		if(&u == pc->unit)
@@ -2696,10 +2696,10 @@ void Game::PlayerYell(Unit& u)
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
-		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == 0 && !u2.usable && u2.ai->state == AIController::Idle &&
-			!IS_SET(u2.data->flags, F_AI_STAY) &&
-			(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot ||
-				u2.ai->idle_action == AIController::Idle_Look))
+		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
+			&& u2.ai->state == AIController::Idle && !IS_SET(u2.data->flags, F_AI_STAY)
+			&& 	(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot
+				|| u2.ai->idle_action == AIController::Idle_Look))
 		{
 			u2.ai->idle_action = AIController::Idle_MoveAway;
 			u2.ai->idle_data.unit = &u;

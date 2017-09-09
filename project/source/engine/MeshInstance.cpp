@@ -557,40 +557,6 @@ void MeshInstance::ClearBones()
 //=================================================================================================
 // Ustawia podan¹ animacje na koniec
 //=================================================================================================
-void MeshInstance::SetToEnd(cstring anim, Matrix* mat_scale)
-{
-	assert(anim);
-
-	Mesh::Animation* a = mesh->GetAnimation(anim);
-	assert(a);
-
-	groups[0].anim = a;
-	groups[0].blend_time = 0.f;
-	groups[0].state = FLAG_GROUP_ACTIVE;
-	groups[0].time = a->length;
-	groups[0].used_group = 0;
-	groups[0].prio = 3;
-
-	if(mesh->head.n_groups > 1)
-	{
-		for(int i = 1; i < mesh->head.n_groups; ++i)
-		{
-			groups[i].anim = nullptr;
-			groups[i].state = 0;
-			groups[i].used_group = 0;
-		}
-	}
-
-	need_update = true;
-
-	SetupBones(mat_scale);
-
-	groups[0].state = 0;
-}
-
-//=================================================================================================
-// Ustawia podan¹ animacje na koniec
-//=================================================================================================
 void MeshInstance::SetToEnd(Mesh::Animation* a, Matrix* mat_scale)
 {
 	assert(a);
@@ -609,14 +575,14 @@ void MeshInstance::SetToEnd(Mesh::Animation* a, Matrix* mat_scale)
 			groups[i].anim = nullptr;
 			groups[i].state = 0;
 			groups[i].used_group = 0;
+			groups[i].time = groups[0].time;
+			groups[i].blend_time = groups[0].blend_time;
 		}
 	}
 
 	need_update = true;
 
 	SetupBones(mat_scale);
-
-	groups[0].state = 0;
 }
 
 //=================================================================================================

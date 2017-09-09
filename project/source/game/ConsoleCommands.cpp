@@ -988,10 +988,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								// wejdŸ do budynku
 								if(IsLocal())
 								{
-									fallback_co = FALLBACK_ENTER;
+									fallback_co = FALLBACK::ENTER;
 									fallback_t = -1.f;
 									fallback_1 = index;
-									pc->unit->frozen = 2;
+									pc->unit->frozen = (pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 								}
 								else
 								{
@@ -1553,7 +1553,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(it->cmd == CMD_HURT)
 								GiveDmg(GetContext(*u), nullptr, 100.f, *u);
 							else if(it->cmd == CMD_BREAK_ACTION)
-								BreakUnitAction(*u, false, true);
+								BreakUnitAction(*u, BREAK_ACTION_MODE::NORMAL, true);
 							else
 								UnitFall(*u);
 						}

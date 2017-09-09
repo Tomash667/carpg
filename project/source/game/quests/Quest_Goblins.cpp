@@ -82,7 +82,7 @@ void DodajStraznikow()
 	}
 	assert(use);
 
-	// przesuñ szlachcica w poblirze tronu
+	// przesuñ szlachcica w pobli¿e tronu
 	game.WarpUnit(*u, use->pos);
 
 	// usuñ pozosta³e osoby z pomieszczenia

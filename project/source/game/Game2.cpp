@@ -82,7 +82,7 @@ PlayerController::Action InventoryModeToActionRequired(InventoryMode imode)
 }
 
 //=================================================================================================
-void Game::BreakUnitAction(Unit& unit, bool fall, bool notify)
+void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify)
 {
 	if(notify && IsServer())
 	{
@@ -108,7 +108,7 @@ void Game::BreakUnitAction(Unit& unit, bool fall, bool notify)
 		{
 			if(IsLocal())
 				AddItem(unit, unit.used_item, 1, unit.used_item_is_team);
-			if(!fall)
+			if(mode != BREAK_ACTION_MODE::FALL)
 				unit.used_item = nullptr;
 		}
 		else
@@ -121,7 +121,7 @@ void Game::BreakUnitAction(Unit& unit, bool fall, bool notify)
 		{
 			if(IsLocal())
 				AddItem(unit, unit.used_item, 1, unit.used_item_is_team);
-			if(!fall)
+			if(mode != BREAK_ACTION_MODE::FALL)
 				unit.used_item = nullptr;
 		}
 		else
@@ -171,19 +171,32 @@ void Game::BreakUnitAction(Unit& unit, bool fall, bool notify)
 
 	if(unit.usable)
 	{
-		unit.target_pos2 = unit.target_pos = unit.pos;
-		const Item* prev_used_item = unit.used_item;
-		Unit_StopUsingUsable(GetContext(unit), unit, !fall);
-		if(prev_used_item && unit.slots[SLOT_WEAPON] == prev_used_item && !unit.HaveShield())
+		if(mode == BREAK_ACTION_MODE::INSTANT)
 		{
-			unit.weapon_state = WS_TAKEN;
-			unit.weapon_taken = W_ONE_HANDED;
-			unit.weapon_hiding = W_NONE;
+			unit.action = A_NONE;
+			unit.SetAnimationAtEnd(NAMES::ani_stand);
+			unit.usable->user = nullptr;
+			unit.usable = nullptr;
+			unit.used_item = nullptr;
+			unit.animation = ANI_STAND;
 		}
-		else if(fall)
-			unit.used_item = prev_used_item;
-		unit.action = A_POSITION;
-		unit.animation_state = 0;
+		else
+		{
+			unit.target_pos2 = unit.target_pos = unit.pos;
+			const Item* prev_used_item = unit.used_item;
+			Unit_StopUsingUsable(GetContext(unit), unit, mode != BREAK_ACTION_MODE::FALL);
+			if(prev_used_item && unit.slots[SLOT_WEAPON] == prev_used_item && !unit.HaveShield())
+			{
+				unit.weapon_state = WS_TAKEN;
+				unit.weapon_taken = W_ONE_HANDED;
+				unit.weapon_hiding = W_NONE;
+			}
+			else if(mode == BREAK_ACTION_MODE::FALL)
+				unit.used_item = prev_used_item;
+			unit.action = A_POSITION;
+			unit.animation_state = 0;
+		}
+
 		if(IsLocal() && unit.IsAI() && unit.ai->idle_action != AIController::Idle_None)
 		{
 			unit.ai->idle_action = AIController::Idle_None;
@@ -1270,7 +1283,8 @@ void Game::UpdateGame(float dt)
 		}
 		else if(dialog_context.dialog_mode && IsLocal())
 		{
-			if(!dialog_context.talker->IsStanding() || !IsUnitIdle(*dialog_context.talker) || dialog_context.talker->to_remove || dialog_context.talker->frozen != 0)
+			if(!dialog_context.talker->IsStanding() || !IsUnitIdle(*dialog_context.talker) || dialog_context.talker->to_remove
+				|| dialog_context.talker->frozen != FROZEN::NO)
 			{
 				// rozmówca umar³ / jest usuwany / zaatakowa³ kogoœ
 				EndDialog(dialog_context);
@@ -1404,7 +1418,7 @@ void Game::UpdateGame(float dt)
 			DialogContext& ctx = *it->u->player->dialog_ctx;
 			if(ctx.dialog_mode)
 			{
-				if(!ctx.talker->IsStanding() || !IsUnitIdle(*ctx.talker) || ctx.talker->to_remove || ctx.talker->frozen != 0)
+				if(!ctx.talker->IsStanding() || !IsUnitIdle(*ctx.talker) || ctx.talker->to_remove || ctx.talker->frozen != FROZEN::NO)
 					EndDialog(ctx);
 				else
 					UpdateGameDialog(ctx, dt);
@@ -1474,7 +1488,7 @@ void Game::UpdateGame(float dt)
 //=================================================================================================
 void Game::UpdateFallback(float dt)
 {
-	if(fallback_co == -1)
+	if(fallback_co == FALLBACK::NO)
 		return;
 
 	if(fallback_t <= 0.f)
@@ -1485,7 +1499,7 @@ void Game::UpdateFallback(float dt)
 		{
 			switch(fallback_co)
 			{
-			case FALLBACK_TRAIN:
+			case FALLBACK::TRAIN:
 				if(IsLocal())
 				{
 					if(fallback_1 == 2)
@@ -1500,7 +1514,7 @@ void Game::UpdateFallback(float dt)
 				}
 				else
 				{
-					fallback_co = FALLBACK_CLIENT;
+					fallback_co = FALLBACK::CLIENT;
 					fallback_t = 0.f;
 					NetChange& c = Add1(net_changes);
 					c.type = NetChange::TRAIN;
@@ -1508,7 +1522,7 @@ void Game::UpdateFallback(float dt)
 					c.ile = fallback_2;
 				}
 				break;
-			case FALLBACK_REST:
+			case FALLBACK::REST:
 				if(IsLocal())
 				{
 					pc->Rest(fallback_1, true);
@@ -1519,14 +1533,14 @@ void Game::UpdateFallback(float dt)
 				}
 				else
 				{
-					fallback_co = FALLBACK_CLIENT;
+					fallback_co = FALLBACK::CLIENT;
 					fallback_t = 0.f;
 					NetChange& c = Add1(net_changes);
 					c.type = NetChange::REST;
 					c.id = fallback_1;
 				}
 				break;
-			case FALLBACK_ENTER:
+			case FALLBACK::ENTER:
 				// wejœcie/wyjœcie z budynku
 				{
 					UnitWarpData& uwd = Add1(unit_warp_data);
@@ -1534,13 +1548,13 @@ void Game::UpdateFallback(float dt)
 					uwd.where = fallback_1;
 				}
 				break;
-			case FALLBACK_EXIT:
+			case FALLBACK::EXIT:
 				ExitToMap();
 				break;
-			case FALLBACK_CHANGE_LEVEL:
+			case FALLBACK::CHANGE_LEVEL:
 				ChangeLevel(fallback_1);
 				break;
-			case FALLBACK_USE_PORTAL:
+			case FALLBACK::USE_PORTAL:
 				{
 					Portal* portal = location->GetPortal(fallback_1);
 					Location* target_loc = locations[portal->target_loc];
@@ -1554,14 +1568,14 @@ void Game::UpdateFallback(float dt)
 					EnterLocation(at_level, portal->target);
 				}
 				return;
-			case FALLBACK_NONE:
-			case FALLBACK_ARENA2:
-			case FALLBACK_CLIENT2:
+			case FALLBACK::NONE:
+			case FALLBACK::ARENA2:
+			case FALLBACK::CLIENT2:
 				break;
-			case FALLBACK_ARENA:
-			case FALLBACK_ARENA_EXIT:
-			case FALLBACK_WAIT_FOR_WARP:
-			case FALLBACK_CLIENT:
+			case FALLBACK::ARENA:
+			case FALLBACK::ARENA_EXIT:
+			case FALLBACK::WAIT_FOR_WARP:
+			case FALLBACK::CLIENT:
 				fallback_t = 0.f;
 				break;
 			default:
@@ -1578,19 +1592,19 @@ void Game::UpdateFallback(float dt)
 		{
 			if(IsLocal())
 			{
-				if(fallback_co != FALLBACK_ARENA2)
+				if(fallback_co != FALLBACK::ARENA2)
 				{
-					if(fallback_co == FALLBACK_CHANGE_LEVEL || fallback_co == FALLBACK_USE_PORTAL || fallback_co == FALLBACK_EXIT)
+					if(fallback_co == FALLBACK::CHANGE_LEVEL || fallback_co == FALLBACK::USE_PORTAL || fallback_co == FALLBACK::EXIT)
 					{
 						for(Unit* unit : Team.members)
-							unit->frozen = false;
+							unit->frozen = FROZEN::NO;
 					}
-					pc->unit->frozen = 0;
+					pc->unit->frozen = FROZEN::NO;
 				}
 			}
-			else if(fallback_co == FALLBACK_CLIENT2)
-				pc->unit->frozen = 0;
-			fallback_co = -1;
+			else if(fallback_co == FALLBACK::CLIENT2)
+				pc->unit->frozen = FROZEN::NO;
+			fallback_co = FALLBACK::NO;
 		}
 	}
 }
@@ -1611,12 +1625,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	}
 
 	// unit is frozen
-	if(u.frozen == 2)
+	if(u.frozen >= FROZEN::YES)
 	{
 		pc_data.autowalk = false;
 		pc_data.action_ready = false;
 		pc_data.rot_buf = 0.f;
-		u.animation = ANI_STAND;
+		if(u.frozen == FROZEN::YES)
+			u.animation = ANI_STAND;
 		return;
 	}
 
@@ -1656,7 +1671,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			--rotate;
 		if(KeyDownAllowed(GK_ROTATE_RIGHT))
 			++rotate;
-		if(u.frozen == 0)
+		if(u.frozen == FROZEN::NO)
 		{
 			bool cancel_autowalk = (KeyPressedReleaseAllowed(GK_MOVE_FORWARD) || KeyDownAllowed(GK_MOVE_BACK));
 			if(cancel_autowalk)
@@ -2352,7 +2367,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	}
 
 	// u¿yj czegoœ przed graczem
-	if(u.frozen == 0 && pc_data.before_player != BP_NONE && !pc_data.action_ready
+	if(u.frozen == FROZEN::NO && pc_data.before_player != BP_NONE && !pc_data.action_ready
 		&& (KeyPressedReleaseAllowed(GK_USE) || (u.IsNotFighting() && KeyPressedReleaseAllowed(GK_ATTACK_USE))))
 	{
 		idle = false;
@@ -2778,7 +2793,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					}
 				}
 			}
-			else if(u.action == A_NONE && u.frozen == 0)
+			else if(u.action == A_NONE && u.frozen == FROZEN::NO)
 			{
 				byte k = KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc_data.wasted_key);
 				if(k != VK_NONE && u.stamina > 0)
@@ -2829,7 +2844,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					u.hitted = false;
 				}
 			}
-			if(u.frozen == 0 && u.HaveShield() && !u.run_attack && (u.action == A_NONE || u.action == A_ATTACK))
+			if(u.frozen == FROZEN::NO && u.HaveShield() && !u.run_attack && (u.action == A_NONE || u.action == A_ATTACK))
 			{
 				int oks = 0;
 				if(u.action == A_ATTACK)
@@ -2886,7 +2901,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 				}
 			}
-			else if(u.frozen == 0)
+			else if(u.frozen == FROZEN::NO)
 			{
 				byte k = KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc_data.wasted_key);
 				if(k != VK_NONE && u.stamina > 0)
@@ -2918,7 +2933,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	// action
 	if(!pc_data.action_ready)
 	{
-		if(u.frozen == 0 && u.action == A_NONE && KeyPressedReleaseAllowed(GK_ACTION) && pc->CanUseAction() && !in_tutorial)
+		if(u.frozen == FROZEN::NO && u.action == A_NONE && KeyPressedReleaseAllowed(GK_ACTION) && pc->CanUseAction() && !in_tutorial)
 		{
 			pc_data.action_ready = true;
 			pc_data.action_ok = false;
@@ -4429,11 +4444,11 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 					// zabierz z³oto i zamróŸ
 					ctx.pc->unit->gold -= koszt;
-					ctx.pc->unit->frozen = 2;
+					ctx.pc->unit->frozen = FROZEN::YES;
 					if(ctx.is_local)
 					{
 						// lokalny fallback
-						fallback_co = FALLBACK_REST;
+						fallback_co = FALLBACK::REST;
 						fallback_t = -1.f;
 						fallback_1 = ile;
 					}
@@ -4792,11 +4807,11 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 					// zabierz z³oto i zamróŸ
 					ctx.pc->unit->gold -= 200;
-					ctx.pc->unit->frozen = 2;
+					ctx.pc->unit->frozen = FROZEN::YES;
 					if(ctx.is_local)
 					{
 						// lokalny fallback
-						fallback_co = FALLBACK_TRAIN;
+						fallback_co = FALLBACK::TRAIN;
 						fallback_t = -1.f;
 						fallback_1 = (skill ? 1 : 0);
 						fallback_2 = co;
@@ -5260,11 +5275,11 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(msg, "ironfist_train") == 0)
 				{
 					tournament_winner = nullptr;
-					ctx.pc->unit->frozen = 2;
+					ctx.pc->unit->frozen = FROZEN::YES;
 					if(ctx.is_local)
 					{
 						// lokalny fallback
-						fallback_co = FALLBACK_TRAIN;
+						fallback_co = FALLBACK::TRAIN;
 						fallback_t = -1.f;
 						fallback_1 = 2;
 						fallback_2 = 0;
@@ -6078,7 +6093,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 				terrain->SetH(unit.pos);
 				if(warped)
 					return;
-				if(unit.IsPlayer() && WantExitLevel() && unit.frozen == 0 && !dash)
+				if(unit.IsPlayer() && WantExitLevel() && unit.frozen == FROZEN::NO && !dash)
 				{
 					bool allow_exit = false;
 
@@ -6147,10 +6162,10 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 
 					if(allow_exit)
 					{
-						fallback_co = FALLBACK_EXIT;
+						fallback_co = FALLBACK::EXIT;
 						fallback_t = -1.f;
 						for(Unit* unit : Team.members)
-							unit->frozen = 2;
+							unit->frozen = FROZEN::YES;
 						if(IsOnline())
 							PushNetChange(NetChange::LEAVE_LOCATION);
 					}
@@ -6162,7 +6177,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 			if(warped)
 				return;
 
-			if(unit.IsPlayer() && location->type == L_CITY && WantExitLevel() && unit.frozen == 0 && !dash)
+			if(unit.IsPlayer() && location->type == L_CITY && WantExitLevel() && unit.frozen == FROZEN::NO && !dash)
 			{
 				int id = 0;
 				for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it, ++id)
@@ -6172,17 +6187,17 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						if(IsLocal())
 						{
 							// wejdŸ do budynku
-							fallback_co = FALLBACK_ENTER;
+							fallback_co = FALLBACK::ENTER;
 							fallback_t = -1.f;
 							fallback_1 = id;
-							unit.frozen = 2;
+							unit.frozen = FROZEN::YES;
 						}
 						else
 						{
 							// info do serwera
-							fallback_co = FALLBACK_WAIT_FOR_WARP;
+							fallback_co = FALLBACK::WAIT_FOR_WARP;
 							fallback_t = -1.f;
-							unit.frozen = 2;
+							unit.frozen = FROZEN::YES;
 							NetChange& c = Add1(net_changes);
 							c.type = NetChange::ENTER_BUILDING;
 							c.id = id;
@@ -6202,22 +6217,22 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 			City* city = (City*)location;
 			InsideBuilding& building = *city->inside_buildings[unit.in_building];
 
-			if(unit.IsPlayer() && building.exit_area.IsInside(unit.pos) && WantExitLevel() && unit.frozen == 0 && !dash)
+			if(unit.IsPlayer() && building.exit_area.IsInside(unit.pos) && WantExitLevel() && unit.frozen == FROZEN::NO && !dash)
 			{
 				if(IsLocal())
 				{
 					// opuœæ budynek
-					fallback_co = FALLBACK_ENTER;
+					fallback_co = FALLBACK::ENTER;
 					fallback_t = -1.f;
 					fallback_1 = -1;
-					unit.frozen = 2;
+					unit.frozen = FROZEN::YES;
 				}
 				else
 				{
 					// info do serwera
-					fallback_co = FALLBACK_WAIT_FOR_WARP;
+					fallback_co = FALLBACK::WAIT_FOR_WARP;
 					fallback_t = -1.f;
-					unit.frozen = 2;
+					unit.frozen = FROZEN::YES;
 					PushNetChange(NetChange::EXIT_BUILDING);
 				}
 			}
@@ -6255,7 +6270,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 			if(warped)
 				return;
 
-			if(unit.IsPlayer() && WantExitLevel() && box.IsInside(unit.pos) && unit.frozen == 0 && !dash)
+			if(unit.IsPlayer() && WantExitLevel() && box.IsInside(unit.pos) && unit.frozen == FROZEN::NO && !dash)
 			{
 				if(IsLeader())
 				{
@@ -6264,11 +6279,11 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						int w = CanLeaveLocation(unit);
 						if(w == 0)
 						{
-							fallback_co = FALLBACK_CHANGE_LEVEL;
+							fallback_co = FALLBACK::CHANGE_LEVEL;
 							fallback_t = -1.f;
 							fallback_1 = -1;
 							for(Unit* unit : Team.members)
-								unit->frozen = 2;
+								unit->frozen = FROZEN::YES;
 							if(IsOnline())
 								PushNetChange(NetChange::LEAVE_LOCATION);
 						}
@@ -6308,7 +6323,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 			if(warped)
 				return;
 
-			if(unit.IsPlayer() && WantExitLevel() && box.IsInside(unit.pos) && unit.frozen == 0 && !dash)
+			if(unit.IsPlayer() && WantExitLevel() && box.IsInside(unit.pos) && unit.frozen == FROZEN::NO && !dash)
 			{
 				if(IsLeader())
 				{
@@ -6317,11 +6332,11 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						int w = CanLeaveLocation(unit);
 						if(w == 0)
 						{
-							fallback_co = FALLBACK_CHANGE_LEVEL;
+							fallback_co = FALLBACK::CHANGE_LEVEL;
 							fallback_t = -1.f;
 							fallback_1 = +1;
 							for(Unit* unit : Team.members)
-								unit->frozen = 2;
+								unit->frozen = FROZEN::YES;
 							if(IsOnline())
 								PushNetChange(NetChange::LEAVE_LOCATION);
 						}
@@ -6343,7 +6358,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 	}
 
 	// obs³uga portali
-	if(unit.frozen == 0 && unit.IsPlayer() && WantExitLevel() && !dash)
+	if(unit.frozen == FROZEN::NO && unit.IsPlayer() && WantExitLevel() && !dash)
 	{
 		Portal* portal = location->portal;
 		int index = 0;
@@ -6360,11 +6375,11 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							int w = CanLeaveLocation(unit);
 							if(w == 0)
 							{
-								fallback_co = FALLBACK_USE_PORTAL;
+								fallback_co = FALLBACK::USE_PORTAL;
 								fallback_t = -1.f;
 								fallback_1 = index;
 								for(Unit* unit : Team.members)
-									unit->frozen = 2;
+									unit->frozen = FROZEN::YES;
 								if(IsOnline())
 									PushNetChange(NetChange::LEAVE_LOCATION);
 							}
@@ -6788,7 +6803,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->talking = false;
 	u->usable = nullptr;
 	u->in_building = -1;
-	u->frozen = 0;
+	u->frozen = FROZEN::NO;
 	u->in_arena = -1;
 	u->run_attack = false;
 	u->event_handler = nullptr;
@@ -10999,7 +11014,7 @@ void Game::ChangeLevel(int gdzie)
 			if(in_tutorial)
 			{
 				TutEvent(3);
-				fallback_co = FALLBACK_CLIENT;
+				fallback_co = FALLBACK::CLIENT;
 				fallback_t = 0.f;
 				return;
 			}
@@ -13380,7 +13395,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 #endif
 
 	// odciemnianie na pocz¹tku
-	fallback_co = FALLBACK_NONE;
+	fallback_co = FALLBACK::NONE;
 	fallback_t = 0.f;
 }
 
@@ -14772,6 +14787,8 @@ void Game::WarpUnit(Unit& unit, const Vec3& pos)
 {
 	const float unit_radius = unit.GetUnitRadius();
 
+	BreakUnitAction(unit, BREAK_ACTION_MODE::INSTANT);
+
 	global_col.clear();
 	LevelContext& ctx = GetContext(unit);
 	IgnoreObjects ignore = { 0 };
@@ -14827,80 +14844,80 @@ void Game::ProcessUnitWarps()
 {
 	bool warped_to_arena = false;
 
-	for(vector<UnitWarpData>::iterator it = unit_warp_data.begin(), end = unit_warp_data.end(); it != end; ++it)
+	for(auto& warp : unit_warp_data)
 	{
-		if(it->where == -1)
+		if(warp.where == -1)
 		{
-			if(city_ctx && it->unit->in_building != -1)
+			if(city_ctx && warp.unit->in_building != -1)
 			{
 				// powróæ na g³ówn¹ mapê
-				InsideBuilding& building = *city_ctx->inside_buildings[it->unit->in_building];
-				RemoveElement(building.units, it->unit);
-				it->unit->in_building = -1;
-				it->unit->rot = building.outside_rot;
-				WarpUnit(*it->unit, building.outside_spawn);
-				local_ctx.units->push_back(it->unit);
+				InsideBuilding& building = *city_ctx->inside_buildings[warp.unit->in_building];
+				RemoveElement(building.units, warp.unit);
+				warp.unit->in_building = -1;
+				warp.unit->rot = building.outside_rot;
+				WarpUnit(*warp.unit, building.outside_spawn);
+				local_ctx.units->push_back(warp.unit);
 			}
 			else
 			{
 				// jednostka opuœci³a podziemia
-				if(it->unit->event_handler)
-					it->unit->event_handler->HandleUnitEvent(UnitEventHandler::LEAVE, it->unit);
-				RemoveUnit(it->unit);
+				if(warp.unit->event_handler)
+					warp.unit->event_handler->HandleUnitEvent(UnitEventHandler::LEAVE, warp.unit);
+				RemoveUnit(warp.unit);
 			}
 		}
-		else if(it->where == -2)
+		else if(warp.where == -2)
 		{
 			// na arene
 			InsideBuilding& building = *GetArena();
-			RemoveElement(GetContext(*it->unit).units, it->unit);
-			it->unit->in_building = building.ctx.building_id;
+			RemoveElement(GetContext(*warp.unit).units, warp.unit);
+			warp.unit->in_building = building.ctx.building_id;
 			Vec3 pos;
-			if(!WarpToArea(building.ctx, (it->unit->in_arena == 0 ? building.arena1 : building.arena2), it->unit->GetUnitRadius(), pos, 20))
+			if(!WarpToArea(building.ctx, (warp.unit->in_arena == 0 ? building.arena1 : building.arena2), warp.unit->GetUnitRadius(), pos, 20))
 			{
 				// nie uda³o siê, wrzuæ go z areny
-				it->unit->in_building = -1;
-				it->unit->rot = building.outside_rot;
-				WarpUnit(*it->unit, building.outside_spawn);
-				local_ctx.units->push_back(it->unit);
-				RemoveElement(at_arena, it->unit);
+				warp.unit->in_building = -1;
+				warp.unit->rot = building.outside_rot;
+				WarpUnit(*warp.unit, building.outside_spawn);
+				local_ctx.units->push_back(warp.unit);
+				RemoveElement(at_arena, warp.unit);
 			}
 			else
 			{
-				it->unit->rot = (it->unit->in_arena == 0 ? PI : 0);
-				WarpUnit(*it->unit, pos);
-				building.units.push_back(it->unit);
+				warp.unit->rot = (warp.unit->in_arena == 0 ? PI : 0);
+				WarpUnit(*warp.unit, pos);
+				building.units.push_back(warp.unit);
 				warped_to_arena = true;
 			}
 		}
 		else
 		{
 			// wejdŸ do budynku
-			InsideBuilding& building = *city_ctx->inside_buildings[it->where];
-			if(it->unit->in_building == -1)
-				RemoveElement(local_ctx.units, it->unit);
+			InsideBuilding& building = *city_ctx->inside_buildings[warp.where];
+			if(warp.unit->in_building == -1)
+				RemoveElement(local_ctx.units, warp.unit);
 			else
-				RemoveElement(city_ctx->inside_buildings[it->unit->in_building]->units, it->unit);
-			it->unit->in_building = it->where;
-			it->unit->rot = PI;
-			WarpUnit(*it->unit, building.inside_spawn);
-			building.units.push_back(it->unit);
+				RemoveElement(city_ctx->inside_buildings[warp.unit->in_building]->units, warp.unit);
+			warp.unit->in_building = warp.where;
+			warp.unit->rot = PI;
+			WarpUnit(*warp.unit, building.inside_spawn);
+			building.units.push_back(warp.unit);
 		}
 
-		if(it->unit == pc->unit)
+		if(warp.unit == pc->unit)
 		{
 			cam.Reset();
 			pc_data.rot_buf = 0.f;
 
-			if(fallback_co == FALLBACK_ARENA)
+			if(fallback_co == FALLBACK::ARENA)
 			{
-				pc->unit->frozen = 1;
-				fallback_co = FALLBACK_ARENA2;
+				pc->unit->frozen = FROZEN::ROTATE;
+				fallback_co = FALLBACK::ARENA2;
 			}
-			else if(fallback_co == FALLBACK_ARENA_EXIT)
+			else if(fallback_co == FALLBACK::ARENA_EXIT)
 			{
-				pc->unit->frozen = 0;
-				fallback_co = FALLBACK_NONE;
+				pc->unit->frozen = FROZEN::NO;
+				fallback_co = FALLBACK::NONE;
 			}
 		}
 	}
@@ -15681,7 +15698,7 @@ void Game::StartArenaCombat(int level)
 	// dodaj gracza na arenê
 	if(current_dialog->is_local)
 	{
-		fallback_co = FALLBACK_ARENA;
+		fallback_co = FALLBACK::ARENA;
 		fallback_t = -1.f;
 	}
 	else
@@ -15693,7 +15710,7 @@ void Game::StartArenaCombat(int level)
 		GetPlayerInfo(current_dialog->pc).NeedUpdate();
 	}
 
-	current_dialog->pc->unit->frozen = 2;
+	current_dialog->pc->unit->frozen = FROZEN::YES;
 	current_dialog->pc->unit->in_arena = 0;
 	at_arena.push_back(current_dialog->pc->unit);
 
@@ -15706,15 +15723,15 @@ void Game::StartArenaCombat(int level)
 
 	for(Unit* unit : Team.members)
 	{
-		if(unit->frozen || Vec3::Distance2d(unit->pos, city_ctx->arena_pos) > 5.f)
+		if(unit->frozen != FROZEN::NO || Vec3::Distance2d(unit->pos, city_ctx->arena_pos) > 5.f)
 			continue;
 		if(unit->IsPlayer())
 		{
-			if(unit->frozen == 0)
+			if(unit->frozen == FROZEN::NO)
 			{
-				BreakUnitAction(*unit, false, true);
+				BreakUnitAction(*unit, BREAK_ACTION_MODE::NORMAL, true);
 
-				unit->frozen = 2;
+				unit->frozen = FROZEN::YES;
 				unit->in_arena = 0;
 				at_arena.push_back(unit);
 
@@ -15724,7 +15741,7 @@ void Game::StartArenaCombat(int level)
 
 				if(unit->player == pc)
 				{
-					fallback_co = FALLBACK_ARENA;
+					fallback_co = FALLBACK::ARENA;
 					fallback_t = -1.f;
 				}
 				else
@@ -15742,7 +15759,7 @@ void Game::StartArenaCombat(int level)
 		}
 		else if(unit->IsHero() && unit->CanFollow())
 		{
-			unit->frozen = 2;
+			unit->frozen = FROZEN::YES;
 			unit->in_arena = 0;
 			unit->hero->following = current_dialog->pc->unit;
 			at_arena.push_back(unit);
@@ -15813,7 +15830,7 @@ void Game::StartArenaCombat(int level)
 				Unit* u = SpawnUnitInsideArea(arena->ctx, arena->arena2, *entry.ud, lvl);
 				u->rot = 0.f;
 				u->in_arena = 1;
-				u->frozen = 2;
+				u->frozen = FROZEN::YES;
 				at_arena.push_back(u);
 
 				if(IsOnline())
@@ -19073,7 +19090,7 @@ void Game::UpdateGame2(float dt)
 				arena_etap = Arena_TrwaWalka;
 				for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
 				{
-					(*it)->frozen = 0;
+					(*it)->frozen = FROZEN::NO;
 					if((*it)->IsPlayer() && (*it)->player != pc)
 					{
 						NetChangePlayer& c = Add1(net_changes_player);
@@ -19149,12 +19166,12 @@ void Game::UpdateGame2(float dt)
 			{
 				for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
 				{
-					(*it)->frozen = 2;
+					(*it)->frozen = FROZEN::YES;
 					if((*it)->IsPlayer())
 					{
 						if((*it)->player == pc)
 						{
-							fallback_co = FALLBACK_ARENA_EXIT;
+							fallback_co = FALLBACK::ARENA_EXIT;
 							fallback_t = -1.f;
 						}
 						else
@@ -19201,7 +19218,7 @@ void Game::UpdateGame2(float dt)
 					{
 						if((*it)->in_arena == 0)
 						{
-							(*it)->frozen = 0;
+							(*it)->frozen = FROZEN::NO;
 							(*it)->in_arena = -1;
 							if((*it)->hp <= 0.f)
 							{
@@ -19239,7 +19256,7 @@ void Game::UpdateGame2(float dt)
 				{
 					for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
 					{
-						(*it)->frozen = 0;
+						(*it)->frozen = FROZEN::NO;
 						(*it)->in_arena = -1;
 						if((*it)->hp <= 0.f)
 						{
@@ -19505,7 +19522,7 @@ void Game::UpdateContest(float dt)
 			for(vector<Unit*>::iterator it = inn->ctx.units->begin(), end = inn->ctx.units->end(); it != end; ++it)
 			{
 				Unit& u = **it;
-				if(u.IsStanding() && u.IsAI() && !u.event_handler && u.frozen == 0 && u.busy == Unit::Busy_No)
+				if(u.IsStanding() && u.IsAI() && !u.event_handler && u.frozen == FROZEN::NO && u.busy == Unit::Busy_No)
 				{
 					bool ok = false;
 					if(IS_SET(u.data->flags2, F2_CONTEST))
@@ -19537,7 +19554,7 @@ void Game::UpdateContest(float dt)
 			for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
 			{
 				Unit& u = **it;
-				if(u.in_building != id || u.frozen != 0 || !u.IsStanding())
+				if(u.in_building != id || u.frozen != FROZEN::NO || !u.IsStanding())
 				{
 					*it = nullptr;
 					removed = true;
@@ -19549,7 +19566,7 @@ void Game::UpdateContest(float dt)
 					u.event_handler = this;
 					if(u.IsPlayer())
 					{
-						BreakUnitAction(u, false, true);
+						BreakUnitAction(u, BREAK_ACTION_MODE::NORMAL, true);
 						if(u.player != pc)
 						{
 							NetChangePlayer& c = Add1(net_changes_player);
@@ -19761,7 +19778,7 @@ void Game::UpdateContest(float dt)
 					u.event_handler = nullptr;
 					if(u.IsPlayer())
 					{
-						BreakUnitAction(u, false, true);
+						BreakUnitAction(u, BREAK_ACTION_MODE::NORMAL, true);
 						if(u.player != pc)
 						{
 							NetChangePlayer& c = Add1(net_changes_player);
@@ -20329,7 +20346,7 @@ void Game::StartPvp(PlayerController* player, Unit* unit)
 	// fallback gracza
 	if(player == pc)
 	{
-		fallback_co = FALLBACK_ARENA;
+		fallback_co = FALLBACK::ARENA;
 		fallback_t = -1.f;
 	}
 	else
@@ -20345,7 +20362,7 @@ void Game::StartPvp(PlayerController* player, Unit* unit)
 	{
 		if(unit->player == pc)
 		{
-			fallback_co = FALLBACK_ARENA;
+			fallback_co = FALLBACK::ARENA;
 			fallback_t = -1.f;
 		}
 		else
@@ -20358,12 +20375,12 @@ void Game::StartPvp(PlayerController* player, Unit* unit)
 	}
 
 	// dodaj do areny
-	player->unit->frozen = 2;
+	player->unit->frozen = FROZEN::YES;
 	player->arena_fights++;
 	if(IsOnline())
 		player->stat_flags |= STAT_ARENA_FIGHTS;
 	at_arena.push_back(player->unit);
-	unit->frozen = 2;
+	unit->frozen = FROZEN::YES;
 	at_arena.push_back(unit);
 	if(unit->IsHero())
 		unit->hero->following = player->unit;

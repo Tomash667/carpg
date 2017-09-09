@@ -106,6 +106,17 @@ enum class AutoTalkMode
 };
 
 //-----------------------------------------------------------------------------
+// Frozen state - used to disable unit movement
+// used for warping between locations, entering buildings
+enum class FROZEN
+{
+	NO, // not frozen
+	ROTATE, // can't move but can rotate (used after warp to arena combat)
+	YES, // can't move/rotate
+	YES_NO_ANIM, // can't move/rotate but don't change animation to standing (used by cheat 'warp')
+};
+
+//-----------------------------------------------------------------------------
 // jednostka w grze
 struct Unit
 {
@@ -158,7 +169,8 @@ struct Unit
 	Vec3 visual_pos; // graficzna pozycja postaci, u¿ywana w MP
 	Vec3 prev_pos, target_pos, target_pos2;
 	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
-	int animation_state, level, gold, attack_id, refid, in_building, frozen, in_arena, quest_refid;
+	int animation_state, level, gold, attack_id, refid, in_building, in_arena, quest_refid;
+	FROZEN frozen;
 	ACTION action;
 	WeaponType weapon_taken, weapon_hiding;
 	WeaponState weapon_state;
@@ -506,7 +518,7 @@ struct Unit
 	}
 	bool CanFollow() const
 	{
-		return IsHero() && hero->mode == HeroData::Follow && in_arena == -1 && frozen == 0;
+		return IsHero() && hero->mode == HeroData::Follow && in_arena == -1 && frozen == FROZEN::NO;
 	}
 	bool IsTeamMember() const
 	{

@@ -126,7 +126,11 @@ struct MeshInstance
 		return groups[group].GetProgress();
 	}
 	void ClearBones();
-	void SetToEnd(cstring anim, Matrix* mat_scale = nullptr);
+	void SetToEnd(cstring anim, Matrix* mat_scale = nullptr)
+	{
+		Mesh::Animation* a = mesh->GetAnimation(anim);
+		SetToEnd(a, mat_scale);
+	}
 	void SetToEnd(Mesh::Animation* anim, Matrix* mat_scale = nullptr);
 	void SetToEnd(Matrix* mat_scale = nullptr);
 	void ResetAnimation();
