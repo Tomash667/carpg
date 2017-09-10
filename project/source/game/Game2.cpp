@@ -13395,7 +13395,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 
 	// odciemnianie na pocz¹tku
 	fallback_co = FALLBACK::NONE;
-	fallback_t = 0.f;
+	fallback_t = -0.5f;
 }
 
 void Game::ClearGameVarsOnNewGame()

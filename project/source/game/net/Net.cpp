@@ -2105,7 +2105,7 @@ void Game::UpdateServer(float dt)
 			Info(msg_id == ID_CONNECTION_LOST ? "Lost connection with player %s." : "Player %s has disconnected.", info.name.c_str());
 			--players;
 			players_left = true;
-			info.left = PlayerInfo::LEFT_DISCONNECTED;
+			info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			break;
 		case ID_SAY:
 			Server_Say(stream, info, packet);

@@ -394,7 +394,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	game_gui->Setup();
 
 	fallback_co = FALLBACK::NONE;
-	fallback_t = 0.f;
+	fallback_t = -0.5f;
 	if(change_title_a)
 		ChangeTitle();
 
@@ -1179,7 +1179,7 @@ void Game::UpdateClientTransfer(float dt)
 				Net_OnNewGameClient();
 
 				fallback_co = FALLBACK::NONE;
-				fallback_t = 0.f;
+				fallback_t = -0.5f;
 				net_state = NetState::Client_ReceivedWorldData;
 
 				if(ReadWorldData(stream))
@@ -1387,7 +1387,7 @@ void Game::UpdateClientTransfer(float dt)
 					info_box->CloseDialog();
 					update_timer = 0.f;
 					fallback_co = FALLBACK::NONE;
-					fallback_t = 0.f;
+					fallback_t = -0.5f;
 					cam.Reset();
 					pc_data.rot_buf = 0.f;
 					if(change_title_a)
@@ -1487,7 +1487,7 @@ void Game::UpdateServerTransfer(float dt)
 				Info("NM_TRANSFER_SERVER: Player %s left game.", info.name.c_str());
 				--players;
 				players_left = true;
-				info.left = PlayerInfo::LEFT_DISCONNECTED;
+				info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			}
 			break;
 		case ID_READY:
@@ -1554,7 +1554,7 @@ void Game::UpdateServerTransfer(float dt)
 			ClearGameVarsOnNewGame();
 			Team.free_recruit = false;
 			fallback_co = FALLBACK::NONE;
-			fallback_t = 0.f;
+			fallback_t = -0.5f;
 			main_menu->visible = false;
 			load_screen->visible = true;
 			clear_color = BLACK;
@@ -1992,7 +1992,7 @@ void Game::UpdateServerSend(float dt)
 				Info("NM_SERVER_SEND: Player %s left game.", info.name.c_str());
 				--players;
 				players_left = true;
-				info.left = PlayerInfo::LEFT_DISCONNECTED;
+				info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			}
 			return;
 		case ID_SND_RECEIPT_ACKED:

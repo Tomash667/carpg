@@ -6,10 +6,7 @@
 ? verify version formatting to not include path number 0 ("0.5.0" -> "0.5")
 ===============================================================================================================
 CURRENT:
-+ using LEFT_QUIT
 - update about client move/animation is not resend C->S->C, only when stopped
-- missing fallback - new game
-	? load game
 ? load old mp game
 ===============================================================================================================
 NEW:
@@ -26,8 +23,6 @@ NEW:
 - unit sometimes try to move thru building, reason unknown, speed 10 and see for yourself, unit pathfinding is poor - units blocks each other
 + minimal hp bar length
 + vector of pointers that disallow null values, iterating over returns by ref
-? why keep PlayerInfo of players that left
-+ alt+f4 cause disconnected not quit
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

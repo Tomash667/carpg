@@ -1364,7 +1364,7 @@ void Game::LoadGame(HANDLE file)
 	team_shares.clear();
 	team_share_id = -1;
 	fallback_co = FALLBACK::NONE;
-	fallback_t = 0.f;
+	fallback_t = -0.5f;
 	inventory_mode = I_NONE;
 	pc_data.before_player = BP_NONE;
 	pc_data.selected_unit = nullptr;
