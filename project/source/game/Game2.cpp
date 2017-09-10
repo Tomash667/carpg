@@ -907,15 +907,14 @@ void Game::UpdateGame(float dt)
 		assert(pc->is_local);
 		if(IsOnline())
 		{
-			for(PlayerInfo& pi : game_players)
+			for(auto pinfo : game_players)
 			{
-				if(!pi.left)
+				auto& info = *pinfo;
+				if(!info.left)
 				{
-					assert(pi.pc == pi.pc->player_info->pc);
-					if(pi.id != 0)
-					{
-						assert(!pi.pc->is_local);
-					}
+					assert(info.pc == info.pc->player_info->pc);
+					if(info.id != 0)
+						assert(!info.pc->is_local);
 				}
 			}
 		}
@@ -1411,11 +1410,11 @@ void Game::UpdateGame(float dt)
 	}
 	else if(IsServer())
 	{
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+		for(auto info : game_players)
 		{
-			if(it->left)
+			if(info->left)
 				continue;
-			DialogContext& ctx = *it->u->player->dialog_ctx;
+			DialogContext& ctx = *info->u->player->dialog_ctx;
 			if(ctx.dialog_mode)
 			{
 				if(!ctx.talker->IsStanding() || !IsUnitIdle(*ctx.talker) || ctx.talker->to_remove || ctx.talker->frozen != FROZEN::NO)
@@ -1453,10 +1452,10 @@ void Game::UpdateGame(float dt)
 	pc->Update(dt);
 	if(IsServer())
 	{
-		for(auto& info : game_players)
+		for(auto info : game_players)
 		{
-			if(!info.left && info.pc != pc)
-				info.pc->Update(dt, false);
+			if(info->left == PlayerInfo::LEFT_NO && info->pc != pc)
+				info->pc->Update(dt, false);
 		}
 	}
 
@@ -10990,15 +10989,15 @@ void Game::ChangeLevel(int gdzie)
 			packet_data[2] = (byte)poziom;
 			int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			StreamWrite(packet_data.data(), 3, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
-			for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+			for(auto info : game_players)
 			{
-				if(it->id == my_id)
-					it->state = PlayerInfo::IN_GAME;
+				if(info->id == my_id)
+					info->state = PlayerInfo::IN_GAME;
 				else
 				{
-					it->state = PlayerInfo::WAITING_FOR_RESPONSE;
-					it->ack = ack;
-					it->timer = 5.f;
+					info->state = PlayerInfo::WAITING_FOR_RESPONSE;
+					info->ack = ack;
+					info->timer = 5.f;
 				}
 			}
 		}

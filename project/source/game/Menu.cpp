@@ -321,7 +321,7 @@ void Game::ShowCreateCharacterPanel(bool require_name, bool redo)
 {
 	if(redo)
 	{
-		PlayerInfo& info = game_players[0];
+		PlayerInfo& info = *game_players[0];
 		create_character->ShowRedo(info.clas, hair_redo_index, info.hd, info.cc);
 	}
 	else
@@ -549,9 +549,9 @@ void Game::CheckReady()
 {
 	bool all_ready = true;
 
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+	for(auto info : game_players)
 	{
-		if(!it->ready)
+		if(!info->ready)
 		{
 			all_ready = false;
 			break;
@@ -579,13 +579,13 @@ void Game::ChangeReady()
 	}
 	else
 	{
-		PlayerInfo& info = game_players[0];
+		PlayerInfo& info = *game_players[0];
 		byte b[] = { ID_CHANGE_READY, (byte)(info.ready ? 1 : 0) };
 		peer->Send((cstring)b, 2, HIGH_PRIORITY, RELIABLE_ORDERED, 1, server, false);
 		StreamWrite(b, 2, Stream_UpdateLobbyClient, server);
 	}
 
-	server_panel->bts[1].text = (game_players[0].ready ? server_panel->txNotReady : server_panel->txReady);
+	server_panel->bts[1].text = (game_players[0]->ready ? server_panel->txNotReady : server_panel->txReady);
 }
 
 //=================================================================================================
@@ -885,8 +885,10 @@ void Game::UpdateClientConnectingIp(float dt)
 					}
 
 					// add player
-					game_players.clear();
-					PlayerInfo& info = Add1(game_players);
+					DeleteElements(game_players);
+					auto pinfo = new PlayerInfo;
+					game_players.push_back(pinfo);
+					auto& info = *pinfo;
 					info.clas = Class::INVALID;
 					info.ready = false;
 					info.name = player_name;
@@ -900,7 +902,9 @@ void Game::UpdateClientConnectingIp(float dt)
 					// read other players
 					for(int i = 0; i < count; ++i)
 					{
-						PlayerInfo& info2 = Add1(game_players);
+						pinfo = new PlayerInfo;
+						game_players.push_back(pinfo);
+						PlayerInfo& info2 = *pinfo;
 						info2.state = PlayerInfo::IN_LOBBY;
 						info2.left = PlayerInfo::LEFT_NO;
 						info2.loaded = false;
@@ -937,7 +941,7 @@ void Game::UpdateClientConnectingIp(float dt)
 						EndConnecting(txCantJoin, true);
 						return;
 					}
-					if(load_char == 2 && !stream.ReadCasted<byte>(game_players[0].clas))
+					if(load_char == 2 && !stream.ReadCasted<byte>(game_players[0]->clas))
 					{
 						Error("NM_CONNECT_IP(2): Broken packet ID_JOIN(3).");
 						StreamError();
@@ -1470,15 +1474,19 @@ void Game::UpdateServerTransfer(float dt)
 
 		byte msg_id;
 		stream.Read(msg_id);
-		PlayerInfo& info = game_players[index];
+		PlayerInfo& info = *game_players[index];
 
 		switch(msg_id)
 		{
 		case ID_DISCONNECTION_NOTIFICATION:
 		case ID_CONNECTION_LOST:
-			Info("NM_TRANSFER_SERVER: Player %s left game.", info.name.c_str());
-			--players;
-			game_players.erase(game_players.begin() + index);
+			{
+				Info("NM_TRANSFER_SERVER: Player %s left game.", info.name.c_str());
+				--players;
+				auto it = game_players.begin() + index;
+				delete *it;
+				game_players.erase(it);
+			}
 			break;
 		case ID_READY:
 			{
@@ -1580,12 +1588,12 @@ void Game::UpdateServerTransfer(float dt)
 			Info("NM_TRANSFER_SERVER: Send world data, size %d.", net_stream.GetNumberOfBytesUsed());
 			net_state = NetState::Server_WaitForPlayersToLoadWorld;
 			net_timer = mp_timeout;
-			for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+			for(auto info : game_players)
 			{
-				if(it->id != my_id)
-					it->ready = false;
+				if(info->id != my_id)
+					info->ready = false;
 				else
-					it->ready = true;
+					info->ready = true;
 			}
 			info_box->Show(txWaitingForPlayers);
 		}
@@ -1601,8 +1609,9 @@ void Game::UpdateServerTransfer(float dt)
 		Team.active_members.clear();
 		const bool in_level = (open_location != -1);
 		int leader_perk = 0;
-		for(PlayerInfo& info : game_players)
+		for(auto pinfo : game_players)
 		{
+			auto& info = *pinfo;
 			Unit* u;
 
 			if(!info.loaded)
@@ -1718,10 +1727,10 @@ void Game::UpdateServerTransfer(float dt)
 		if(index == -1)
 		{
 			leader_id = 0;
-			Team.leader = game_players[0].u;
+			Team.leader = game_players[0]->u;
 		}
 		else
-			Team.leader = game_players[GetPlayerIndex(leader_id)].u;
+			Team.leader = game_players[GetPlayerIndex(leader_id)]->u;
 
 		if(players > 1)
 		{
@@ -1734,9 +1743,9 @@ void Game::UpdateServerTransfer(float dt)
 	{
 		// wait for all players
 		bool ok = true;
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+		for(auto info : game_players)
 		{
-			if(!it->ready)
+			if(!info->ready)
 			{
 				ok = false;
 				break;
@@ -1746,12 +1755,14 @@ void Game::UpdateServerTransfer(float dt)
 		if(!ok && net_timer <= 0.f)
 		{
 			bool anyone_removed = false;
-			for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
+			for(vector<PlayerInfo*>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
 			{
-				if(!it->ready)
+				auto& info = **it;
+				if(!info.ready)
 				{
-					Info("NM_TRANSFER_SERVER: Disconnecting player %s due no response.", it->name.c_str());
-					RemovePlayerOnLoad(*it);
+					Info("NM_TRANSFER_SERVER: Disconnecting player %s due no response.", info.name.c_str());
+					RemovePlayerOnLoad(info);
+					delete *it;
 					it = game_players.erase(it);
 					end = game_players.end();
 					anyone_removed = true;
@@ -1766,7 +1777,7 @@ void Game::UpdateServerTransfer(float dt)
 				if(leader_id == -1)
 				{
 					leader_id = 0;
-					Team.leader = game_players[0].u;
+					Team.leader = game_players[0]->u;
 				}
 			}
 		}
@@ -1814,15 +1825,15 @@ void Game::UpdateServerTransfer(float dt)
 				packet_data[2] = dungeon_level;
 				int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
-				for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+				for(auto info : game_players)
 				{
-					if(it->id == my_id)
-						it->state = PlayerInfo::IN_GAME;
+					if(info->id == my_id)
+						info->state = PlayerInfo::IN_GAME;
 					else
 					{
-						it->state = PlayerInfo::WAITING_FOR_RESPONSE;
-						it->ack = ack;
-						it->timer = mp_timeout;
+						info->state = PlayerInfo::WAITING_FOR_RESPONSE;
+						info->ack = ack;
+						info->timer = mp_timeout;
 					}
 				}
 
@@ -1834,11 +1845,11 @@ void Game::UpdateServerTransfer(float dt)
 				else
 				{
 					// ktokolwiek
-					for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+					for(auto info : game_players)
 					{
-						if(it->loaded)
+						if(info->loaded)
 						{
-							center_unit = it->u;
+							center_unit = info->u;
 							break;
 						}
 					}
@@ -1859,8 +1870,9 @@ void Game::UpdateServerTransfer(float dt)
 					}
 
 					// warp
-					for(PlayerInfo& info : game_players)
+					for(auto pinfo : game_players)
 					{
+						auto& info = *pinfo;
 						if(!info.loaded)
 						{
 							local_ctx.units->push_back(info.u);
@@ -1903,8 +1915,9 @@ void Game::UpdateServerTransfer(float dt)
 						GetOutsideSpawnPoint(pos, rot);
 
 					// warp
-					for(PlayerInfo& info : game_players)
+					for(auto pinfo : game_players)
 					{
+						auto& info = *pinfo;
 						if(!info.loaded)
 						{
 							local_ctx.units->push_back(info.u);
@@ -1946,7 +1959,7 @@ void Game::UpdateServerSend(float dt)
 			continue;
 		}
 
-		PlayerInfo& info = game_players[index];
+		PlayerInfo& info = *game_players[index];
 		if(info.left)
 		{
 			Info("NM_SERVER_SEND: Packet from %s who left game.", info.name.c_str());
@@ -2019,18 +2032,19 @@ void Game::UpdateServerSend(float dt)
 	}
 
 	bool ok = true;
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
+	for(vector<PlayerInfo*>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
 	{
-		if(it->state != PlayerInfo::IN_GAME && !it->left)
+		auto& info = **it;
+		if(info.state != PlayerInfo::IN_GAME && info.left == PlayerInfo::LEFT_NO)
 		{
-			it->timer -= dt;
-			if(it->timer <= 0.f)
+			info.timer -= dt;
+			if(info.timer <= 0.f)
 			{
-				// czas min¹³, usuñ
-				Info("NM_SERVER_SEND: Disconnecting player %s due to no response.", it->name.c_str());
-				peer->CloseConnection(it->adr, true, 0, IMMEDIATE_PRIORITY);
-				players_left.push_back(it->id);
-				it->left = PlayerInfo::LEFT_TIMEOUT;
+				// timeout, remove player
+				Info("NM_SERVER_SEND: Disconnecting player %s due to no response.", info.name.c_str());
+				peer->CloseConnection(info.adr, true, 0, IMMEDIATE_PRIORITY);
+				players_left.push_back(info.id);
+				info.left = PlayerInfo::LEFT_TIMEOUT;
 			}
 			else
 			{
@@ -2049,8 +2063,8 @@ void Game::UpdateServerSend(float dt)
 			peer->Send((cstring)&b, 1, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			StreamWrite(&b, 1, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 		}
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
-			it->update_timer = 0.f;
+		for(auto info : game_players)
+			info->update_timer = 0.f;
 		for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 			(*it)->changed = false;
 		if(city_ctx)
@@ -2089,7 +2103,7 @@ void Game::UpdateServerQuiting(float dt)
 		}
 		else
 		{
-			PlayerInfo& info = game_players[index];
+			PlayerInfo& info = *game_players[index];
 			byte msg_id;
 			stream.Read(msg_id);
 			if(msg_id == ID_DISCONNECTION_NOTIFICATION || msg_id == ID_CONNECTION_LOST)
@@ -2453,7 +2467,7 @@ void Game::UpdateLobbyNetClient(float dt)
 				else
 				{
 					Warn("UpdateLobbyNet: Character pick refused.");
-					PlayerInfo& info = game_players[0];
+					PlayerInfo& info = *game_players[0];
 					info.ready = false;
 					info.clas = Class::INVALID;
 					server_panel->bts[0].state = Button::NONE;
@@ -2502,9 +2516,9 @@ void Game::UpdateLobbyNetServer(float dt)
 	if(!sv_startup && autostart_count != -1 && autostart_count <= players)
 	{
 		bool ok = true;
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+		for(auto info : game_players)
 		{
-			if(!it->ready)
+			if(!info->ready)
 			{
 				ok = false;
 				break;
@@ -2536,7 +2550,7 @@ void Game::UpdateLobbyNetServer(float dt)
 
 		// pobierz informacje o graczu
 		int index = FindPlayerIndex(packet->systemAddress);
-		PlayerInfo* info = (index != -1 ? &game_players[index] : nullptr);
+		PlayerInfo* info = (index != -1 ? game_players[index] : nullptr);
 
 		if(info && info->state == PlayerInfo::REMOVING)
 		{
@@ -2550,7 +2564,9 @@ void Game::UpdateLobbyNetServer(float dt)
 					AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
 				UpdateServerInfo();
 				server_panel->grid.RemoveItem(index);
-				game_players.erase(game_players.begin() + index);
+				auto it = game_players.begin() + index;
+				delete *it;
+				game_players.erase(it);
 			}
 			else
 			{
@@ -2582,9 +2598,9 @@ void Game::UpdateLobbyNetServer(float dt)
 				{
 					last_id = (last_id + 1) % 256;
 					bool ok = true;
-					for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+					for(auto info : game_players)
 					{
-						if(it->id == last_id)
+						if(info->id == last_id)
 						{
 							ok = false;
 							break;
@@ -2595,10 +2611,12 @@ void Game::UpdateLobbyNetServer(float dt)
 				} while(1);
 
 				// dodaj
-				PlayerInfo& info = Add1(game_players);
+				auto pinfo = new PlayerInfo;
+				game_players.push_back(pinfo);
+
+				auto& info = *pinfo;
 				info.adr = packet->systemAddress;
 				info.id = last_id;
-				info.loaded = false;
 				server_panel->grid.AddItem();
 
 				if(players == max_players)
@@ -2614,14 +2632,9 @@ void Game::UpdateLobbyNetServer(float dt)
 				else
 				{
 					// czekaj a¿ wyœle komunikat o wersji, nick
-					info.clas = Class::INVALID;
-					info.ready = false;
 					info.state = PlayerInfo::WAITING_FOR_HELLO;
 					info.timer = T_WAIT_FOR_HELLO;
-					info.update_flags = 0;
 					info.devmode = default_player_devmode;
-					info.left = PlayerInfo::LEFT_NO;
-					info.warping = false;
 					info.buffs = 0;
 					if(players > 1)
 						AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
@@ -2648,7 +2661,9 @@ void Game::UpdateLobbyNetServer(float dt)
 						// roz³¹czy³ siê przed przyjêciem do lobby, mo¿na go usun¹æ
 						server_panel->AddMsg(Format(dis ? txDisconnected : txLost, packet->systemAddress.ToString()));
 						Info("UpdateLobbyNet: %s %s.", packet->systemAddress.ToString(), dis ? "disconnected" : "lost connection");
-						game_players.erase(game_players.begin() + index);
+						auto it = game_players.begin() + index;
+						delete *it;
+						game_players.erase(it);
 						--players;
 						if(players > 1)
 							AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
@@ -2674,7 +2689,9 @@ void Game::UpdateLobbyNetServer(float dt)
 								AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
 							server_panel->AddMsg(server_panel->txYouAreLeader);
 						}
-						game_players.erase(game_players.begin() + index);
+						auto it = game_players.begin() + index;
+						delete *it;
+						game_players.erase(it);
 						UpdateServerInfo();
 						CheckReady();
 					}
@@ -2775,9 +2792,9 @@ void Game::UpdateLobbyNetServer(float dt)
 				{
 					// check if nick is unique
 					bool ok = true;
-					for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+					for(auto info2 : game_players)
 					{
-						if(it->id != info->id && it->state == PlayerInfo::IN_LOBBY && it->name == info->name)
+						if(info2->id != info->id && info2->state == PlayerInfo::IN_LOBBY && info2->name == info->name)
 						{
 							ok = false;
 							break;
@@ -2809,26 +2826,26 @@ void Game::UpdateLobbyNetServer(float dt)
 				}
 				else
 				{
-					// wszystko jest ok, niech gracz do³¹cza
+					// everything is ok, let player join
 					net_stream.Write(ID_JOIN);
 					net_stream.WriteCasted<byte>(info->id);
 					net_stream.WriteCasted<byte>(players);
 					net_stream.WriteCasted<byte>(leader_id);
 					net_stream.WriteCasted<byte>(0);
-					int ile = 0;
-					for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+					int count = 0;
+					for(auto info2 : game_players)
 					{
-						if(it->id == info->id || it->state != PlayerInfo::IN_LOBBY)
+						if(info2->id == info->id || info2->state != PlayerInfo::IN_LOBBY)
 							continue;
-						++ile;
-						net_stream.WriteCasted<byte>(it->id);
-						net_stream.WriteCasted<byte>(it->ready ? 1 : 0);
-						net_stream.WriteCasted<byte>(it->clas);
-						WriteString1(net_stream, it->name);
+						++count;
+						net_stream.WriteCasted<byte>(info2->id);
+						net_stream.WriteCasted<byte>(info2->ready ? 1 : 0);
+						net_stream.WriteCasted<byte>(info2->clas);
+						WriteString1(net_stream, info2->name);
 					}
 					int off = net_stream.GetWriteOffset();
 					net_stream.SetWriteOffset(4 * 8);
-					net_stream.WriteCasted<byte>(ile);
+					net_stream.WriteCasted<byte>(count);
 					net_stream.SetWriteOffset(off);
 					if(mp_load)
 					{
@@ -2922,7 +2939,9 @@ void Game::UpdateLobbyNetServer(float dt)
 				server_panel->grid.RemoveItem(index);
 				UpdateServerInfo();
 				peer->CloseConnection(packet->systemAddress, true);
-				game_players.erase(game_players.begin() + index);
+				auto it = game_players.begin() + index;
+				delete *it;
+				game_players.erase(it);
 				CheckReady();
 			}
 			break;
@@ -2987,19 +3006,21 @@ void Game::UpdateLobbyNetServer(float dt)
 	}
 
 	int index = 0;
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
+	for(vector<PlayerInfo*>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
 	{
-		if(it->state != PlayerInfo::IN_LOBBY)
+		auto& info = **it;
+		if(info.state != PlayerInfo::IN_LOBBY)
 		{
-			it->timer -= dt;
-			if(it->timer <= 0.f)
+			info.timer -= dt;
+			if(info.timer <= 0.f)
 			{
 				// czas oczekiwania min¹³, zkickuj
-				Info("UpdateLobbyNet: Removed %s due to inactivity.", it->adr.ToString());
-				peer->CloseConnection(it->adr, false);
+				Info("UpdateLobbyNet: Removed %s due to inactivity.", info.adr.ToString());
+				peer->CloseConnection(info.adr, false);
 				--players;
 				if(players > 1)
 					AddLobbyUpdate(Int2(Lobby_RemovePlayer, 0));
+				delete *it;
 				it = game_players.erase(it);
 				end = game_players.end();
 				server_panel->grid.RemoveItem(index);
@@ -3042,7 +3063,7 @@ void Game::UpdateLobbyNetServer(float dt)
 							int index = GetPlayerIndex(u.y);
 							if(index != -1)
 							{
-								PlayerInfo& info = game_players[index];
+								PlayerInfo& info = *game_players[index];
 								++ile;
 								net_stream.WriteCasted<byte>(u.x);
 								net_stream.WriteCasted<byte>(info.id);
@@ -3056,7 +3077,7 @@ void Game::UpdateLobbyNetServer(float dt)
 							int index = GetPlayerIndex(u.y);
 							if(index != -1)
 							{
-								PlayerInfo& info = game_players[index];
+								PlayerInfo& info = *game_players[index];
 								++ile;
 								net_stream.WriteCasted<byte>(u.x);
 								net_stream.WriteCasted<byte>(info.id);
@@ -3113,12 +3134,14 @@ void Game::UpdateLobbyNetServer(float dt)
 			net_timer = mp_timeout;
 			net_state = NetState::Server_Starting;
 			// kick players that connected but didn't join
-			for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
+			for(vector<PlayerInfo*>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
 			{
-				if(it->state != PlayerInfo::IN_LOBBY)
+				auto& info = **it;
+				if(info.state != PlayerInfo::IN_LOBBY)
 				{
-					peer->CloseConnection(it->adr, true);
-					Warn("UpdateLobbyNet: Disconnecting %s.", it->adr.ToString());
+					peer->CloseConnection(info.adr, true);
+					Warn("UpdateLobbyNet: Disconnecting %s.", info.adr.ToString());
+					delete *it;
 					it = game_players.erase(it);
 					end = game_players.end();
 					--players;
@@ -3184,7 +3207,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d.", id);
 					return false;
 				}
-				PlayerInfo& info = game_players[index];
+				PlayerInfo& info = *game_players[index];
 				if(!ReadBool(stream, info.ready) || !stream.ReadCasted<byte>(info.clas))
 				{
 					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3).");
@@ -3205,14 +3228,14 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 			}
 			else if(id != my_id)
 			{
-				PlayerInfo& info = Add1(game_players);
-				info.ready = false;
+				auto pinfo = new PlayerInfo;
+				game_players.push_back(pinfo);
+
+				auto& info = *pinfo;
 				info.state = PlayerInfo::IN_LOBBY;
-				info.clas = Class::INVALID;
 				info.id = id;
 				info.loaded = true;
 				info.name = BUF;
-				info.left = PlayerInfo::LEFT_NO;
 				server_panel->grid.AddItem();
 
 				server_panel->AddMsg(Format(server_panel->txJoined, BUF));
@@ -3229,11 +3252,13 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d.", id);
 					return false;
 				}
-				PlayerInfo& info = game_players[index];
+				PlayerInfo& info = *game_players[index];
 				Info("UpdateLobbyNet: Player %s %s.", info.name.c_str(), is_kick ? "was kicked" : "left lobby");
 				server_panel->AddMsg(Format(is_kick ? txPlayerKicked : txPlayerLeft, info.name.c_str()));
 				server_panel->grid.RemoveItem(index);
-				game_players.erase(game_players.begin() + index);
+				auto it = game_players.begin() + index;
+				delete *it;
+				game_players.erase(it);
 			}
 			break;
 		case Lobby_ChangeCount: // zmieñ liczbê graczy
@@ -3247,7 +3272,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d", id);
 					return false;
 				}
-				PlayerInfo& info = game_players[index];
+				PlayerInfo& info = *game_players[index];
 				Info("%s is now leader.", info.name.c_str());
 				leader_id = id;
 				if(my_id == id)
@@ -3286,7 +3311,7 @@ void Game::OnCreateCharacter(int id)
 
 	if(IsOnline())
 	{
-		PlayerInfo& info = game_players[0];
+		PlayerInfo& info = *game_players[0];
 		server_panel->bts[1].state = Button::NONE;
 		server_panel->bts[0].text = server_panel->txChangeChar;
 		// set data
@@ -3408,19 +3433,20 @@ void Game::OnPickServer(int id)
 void Game::DeleteOldPlayers()
 {
 	const bool in_level = (open_location != -1);
-	for(vector<PlayerInfo>::iterator it = old_players.begin(), end = old_players.end(); it != end; ++it)
+	for(vector<PlayerInfo*>::iterator it = old_players.begin(), end = old_players.end(); it != end; ++it)
 	{
-		if(!it->loaded && it->u)
+		auto& info = **it;
+		if(!info.loaded && info.u)
 		{
 			if(in_level)
-				RemoveElement(GetContext(*it->u).units, it->u);
-			if(it->u->cobj)
+				RemoveElement(GetContext(*info.u).units, info.u);
+			if(info.u->cobj)
 			{
-				delete it->u->cobj->getCollisionShape();
-				phy_world->removeCollisionObject(it->u->cobj);
-				delete it->u->cobj;
+				delete info.u->cobj->getCollisionShape();
+				phy_world->removeCollisionObject(info.u->cobj);
+				delete info.u->cobj;
 			}
-			delete it->u;
+			delete info.u;
 		}
 	}
 	old_players.clear();

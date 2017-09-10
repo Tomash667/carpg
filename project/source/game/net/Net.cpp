@@ -227,16 +227,16 @@ int Game::FindPlayerIndex(cstring nick, bool not_left)
 	assert(nick);
 
 	int index = 0;
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it, ++index)
+	for(auto player : game_players)
 	{
-		if(it->name == nick)
+		if(player->name == nick)
 		{
-			if(not_left && it->left)
+			if(not_left && player->left != PlayerInfo::LEFT_NO)
 				return -1;
 			return index;
 		}
+		++index;
 	}
-
 	return -1;
 }
 
@@ -257,7 +257,7 @@ void Game::AddServerMsg(cstring msg)
 //=================================================================================================
 void Game::KickPlayer(int index)
 {
-	PlayerInfo& info = game_players[index];
+	PlayerInfo& info = *game_players[index];
 
 	// wyœlij informacje o kicku
 	packet_data.resize(2);
@@ -311,10 +311,11 @@ int Game::GetPlayerIndex(int id)
 {
 	assert(InRange(id, 0, 255));
 	int index = 0;
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it, ++index)
+	for(auto player : game_players)
 	{
-		if(it->id == id)
+		if(player->id == id)
 			return index;
+		++index;
 	}
 	return -1;
 }
@@ -324,10 +325,11 @@ int Game::FindPlayerIndex(const SystemAddress& adr)
 {
 	assert(adr != UNASSIGNED_SYSTEM_ADDRESS);
 	int index = 0;
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it, ++index)
+	for(auto player : game_players)
 	{
-		if(it->adr == adr)
+		if(player->adr == adr)
 			return index;
+		++index;
 	}
 	return -1;
 }
@@ -1839,7 +1841,7 @@ bool Game::ReadTrap(BitStream& stream, Trap& trap)
 //=================================================================================================
 void Game::SendPlayerData(int index)
 {
-	PlayerInfo& info = game_players[index];
+	PlayerInfo& info = *game_players[index];
 	Unit& unit = *info.u;
 	BitStream& stream = net_stream2;
 
@@ -1908,10 +1910,10 @@ bool Game::ReadPlayerData(BitStream& stream)
 		Error("Read player data: Missing unit %d.", netid);
 		return false;
 	}
-	game_players[0].u = unit;
+	game_players[0]->u = unit;
 	pc = unit->player;
-	pc->player_info = &game_players[0];
-	game_players[0].pc = pc;
+	pc->player_info = game_players[0];
+	game_players[0]->pc = pc;
 	game_gui->Setup();
 
 	// items
@@ -2107,7 +2109,7 @@ void Game::UpdateServer(float dt)
 			continue;
 		}
 
-		PlayerInfo& info = game_players[player_index];
+		PlayerInfo& info = *game_players[player_index];
 		if(info.left)
 			goto ignore_him;
 
@@ -2189,8 +2191,9 @@ void Game::UpdateServer(float dt)
 		int _net_player_updates = (int)net_changes_player.size();
 #endif
 
-		for(PlayerInfo& info : game_players)
+		for(auto pinfo : game_players)
 		{
+			auto& info = *pinfo;
 			if(info.id == my_id || info.left)
 				continue;
 
@@ -5088,12 +5091,12 @@ void Game::WriteServerChanges(BitStream& stream)
 			{
 				byte count = 0;
 				uint pos = PatchByte(stream);
-				for(PlayerInfo& info : game_players)
+				for(auto info : game_players)
 				{
-					if(!info.left)
+					if(info->left == PlayerInfo::LEFT_NO)
 					{
-						stream.Write(info.u->netid);
-						stream.Write(info.u->player->free_days);
+						stream.Write(info->u->netid);
+						stream.Write(info->u->player->free_days);
 						++count;
 					}
 				}
@@ -9674,7 +9677,7 @@ void Game::Client_Say(BitStream& stream)
 		}
 		else
 		{
-			PlayerInfo& info = game_players[index];
+			PlayerInfo& info = *game_players[index];
 			cstring s = Format("%s: %s", info.name.c_str(), BUF);
 			AddMsg(s);
 			if(game_state == GS_LEVEL)
@@ -9704,7 +9707,7 @@ void Game::Client_Whisper(BitStream& stream)
 		}
 		else
 		{
-			cstring s = Format("%s@: %s", game_players[index].name.c_str(), BUF);
+			cstring s = Format("%s@: %s", game_players[index]->name.c_str(), BUF);
 			AddMsg(s);
 		}
 	}
@@ -9783,7 +9786,7 @@ void Game::Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet)
 			}
 			else
 			{
-				PlayerInfo& info2 = game_players[index];
+				PlayerInfo& info2 = *game_players[index];
 				packet->data[1] = (byte)info.id;
 				peer->Send((cstring)packet->data, packet->length, MEDIUM_PRIORITY, RELIABLE, 0, info2.adr, false);
 				StreamWrite(packet, Stream_Chat, info2.adr);
@@ -9907,24 +9910,25 @@ void Game::Net_OnNewGameClient()
 void Game::Net_OnNewGameServer()
 {
 	players = 1;
-	game_players.clear();
+	DeleteElements(game_players);
 	my_id = 0;
 	leader_id = 0;
 	last_id = 0;
 	paused = false;
 	hardcore_mode = false;
 
+	auto info = new PlayerInfo;
+	game_players.push_back(info);
+	server_panel->grid.AddItem();
+
+	PlayerInfo& sp = *info;
+	sp.name = player_name;
+	sp.id = 0;
+	sp.state = PlayerInfo::IN_LOBBY;
+	sp.left = PlayerInfo::LEFT_NO;
+
 	if(!mp_load)
 	{
-		PlayerInfo& sp = Add1(game_players);
-		sp.clas = Class::INVALID;
-		sp.ready = false;
-		sp.name = player_name;
-		sp.id = 0;
-		sp.state = PlayerInfo::IN_LOBBY;
-		sp.left = PlayerInfo::LEFT_NO;
-		sp.loaded = false;
-
 		netid_counter = 0;
 		item_netid_counter = 0;
 		chest_netid_counter = 0;
@@ -9934,22 +9938,12 @@ void Game::Net_OnNewGameServer()
 		door_netid_counter = 0;
 		electro_netid_counter = 0;
 
-		server_panel->grid.AddItem();
 		server_panel->CheckAutopick();
 	}
 	else
 	{
-		// szukaj postaci serwera w zapisie
-		PlayerInfo& sp = Add1(game_players);
+		// search for saved character
 		PlayerInfo* old = FindOldPlayer(player_name.c_str());
-		sp.ready = false;
-		sp.name = player_name;
-		sp.id = 0;
-		sp.state = PlayerInfo::IN_LOBBY;
-		sp.left = PlayerInfo::LEFT_NO;
-
-		server_panel->grid.AddItem();
-
 		if(old)
 		{
 			sp.devmode = old->devmode;
@@ -9960,8 +9954,6 @@ void Game::Net_OnNewGameServer()
 		}
 		else
 		{
-			sp.loaded = false;
-			sp.clas = Class::INVALID;
 			server_panel->UseLoadedCharacter(false);
 			server_panel->CheckAutopick();
 		}
@@ -10204,10 +10196,10 @@ void Game::UseDays(PlayerController* player, int count)
 		count -= player->free_days;
 		player->free_days = 0;
 
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+		for(auto info : game_players)
 		{
-			if(!it->left && it->u->player != player)
-				it->u->player->free_days += count;
+			if(info->left == PlayerInfo::LEFT_NO && info->pc != player)
+				info->pc->free_days += count;
 		}
 
 		WorldProgress(count, WPM_NORMAL);
@@ -10221,10 +10213,10 @@ PlayerInfo* Game::FindOldPlayer(cstring nick)
 {
 	assert(nick);
 
-	for(PlayerInfo& info : old_players)
+	for(auto info : old_players)
 	{
-		if(info.name == nick)
-			return &info;
+		if(info->name == nick)
+			return info;
 	}
 
 	return nullptr;
@@ -10623,10 +10615,10 @@ void Game::InterpolateUnits(float dt)
 //=================================================================================================
 void Game::InterpolatePlayers(float dt)
 {
-	for(PlayerInfo& info : game_players)
+	for(auto info : game_players)
 	{
-		if(info.id != my_id && !info.left)
-			UpdateInterpolator(info.u->interp, dt, info.u->visual_pos, info.u->rot);
+		if(info->id != my_id && info->left == PlayerInfo::LEFT_NO)
+			UpdateInterpolator(info->u->interp, dt, info->u->visual_pos, info->u->rot);
 	}
 }
 
@@ -11158,22 +11150,22 @@ void Game::StreamWrite(const void* data, uint size, StreamLogType type, const Sy
 //=================================================================================================
 PlayerInfo& Game::GetPlayerInfo(int id)
 {
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+	for(auto info : game_players)
 	{
-		if(it->id == id)
-			return *it;
+		if(info->id == id)
+			return *info;
 	}
 	assert(0);
-	return game_players[0];
+	return *game_players[0];
 }
 
 //=================================================================================================
 PlayerInfo* Game::GetPlayerInfoTry(int id)
 {
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+	for(auto info : game_players)
 	{
-		if(it->id == id)
-			return &*it;
+		if(info->id == id)
+			return info;
 	}
 	return nullptr;
 }

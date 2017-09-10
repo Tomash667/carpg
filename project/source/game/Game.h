@@ -1563,7 +1563,7 @@ public:
 	bool sv_server, sv_online, sv_startup, was_client;
 	BitStream server_info;
 	vector<byte> packet_data;
-	vector<PlayerInfo> game_players, old_players;
+	vector<PlayerInfo*> game_players, old_players;
 	vector<int> players_left;
 	SystemAddress server;
 	int leader_id, kick_id;

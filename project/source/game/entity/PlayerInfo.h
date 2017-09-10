@@ -47,7 +47,7 @@ struct PlayerInfo
 	int id, ack, update_flags, buffs;
 	SystemAddress adr;
 	float timer, update_timer, yspeed;
-	bool ready, devmode, warping, loaded;
+	bool ready, devmode, warping, loaded, left_notify;
 	HumanData hd;
 	CreatedCharacter cc;
 	PlayerController* pc;
@@ -55,6 +55,7 @@ struct PlayerInfo
 	vector<string> notes;
 	LeftReason left;
 
+	PlayerInfo();
 	void NeedUpdate()
 	{
 		update_flags |= PlayerInfo::UF_NET_CHANGES;

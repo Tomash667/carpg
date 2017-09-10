@@ -852,7 +852,7 @@ void Unit::UpdateEffects(float dt)
 	if(IsPlayer())
 	{
 		if(game.IsOnline() && player != game.pc && player->last_dmg_poison != poison_dmg)
-			game.game_players[player->id].update_flags |= PlayerInfo::UF_POISON_DAMAGE;
+			game.game_players[player->id]->update_flags |= PlayerInfo::UF_POISON_DAMAGE;
 		player->last_dmg_poison = poison_dmg;
 	}
 

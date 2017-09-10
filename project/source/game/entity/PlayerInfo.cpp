@@ -4,6 +4,11 @@
 #include "SaveState.h"
 
 //=================================================================================================
+PlayerInfo::PlayerInfo() : clas(Class::INVALID), left(LEFT_NO), update_flags(0), left_notify(false), ready(false), loaded(false), warping(false)
+{
+}
+
+//=================================================================================================
 void PlayerInfo::Save(HANDLE file)
 {
 	WriteString1(file, name);
@@ -44,4 +49,5 @@ void PlayerInfo::Load(HANDLE file)
 	if(old_left == 0)
 		left = LEFT_NO;
 	loaded = false;
+	left_notify = (left != LEFT_NO);
 }

@@ -718,15 +718,15 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		packet_data[2] = 0;
 		int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+		for(auto info : game_players)
 		{
-			if(it->id == my_id)
-				it->state = PlayerInfo::IN_GAME;
+			if(info->id == my_id)
+				info->state = PlayerInfo::IN_GAME;
 			else
 			{
-				it->state = PlayerInfo::WAITING_FOR_RESPONSE;
-				it->ack = ack;
-				it->timer = 5.f;
+				info->state = PlayerInfo::WAITING_FOR_RESPONSE;
+				info->ack = ack;
+				info->timer = 5.f;
 			}
 		}
 		Net_FilterServerChanges();
@@ -1447,7 +1447,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			Info("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed());
 		}
 		else
-			game_players[0].state = PlayerInfo::IN_GAME;
+			game_players[0]->state = PlayerInfo::IN_GAME;
 
 		info_box->Show(txWaitingForPlayers);
 	}
