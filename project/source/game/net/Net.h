@@ -326,7 +326,6 @@ struct NetChange
 		CHEAT_STUN, // player used cheat 'stun' [int(netid)-unit, f[0]-length]
 		PLAYER_ACTION, // player unit is using action, client[Vec3-pos/data] / server[int(netid)-unit]
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
-		PLAYER_LEFT, // player left game [byte-player id, byte-reason (LeaveReason)]
 	} type;
 	union
 	{

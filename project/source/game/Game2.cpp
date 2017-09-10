@@ -15424,42 +15424,45 @@ void Game::PreloadUsables(vector<Usable*>& usables)
 
 void Game::PreloadUnits(vector<Unit*>& units)
 {
+	for(Unit* unit : units)
+		PreloadUnit(unit);
+}
+
+void Game::PreloadUnit(Unit* unit)
+{
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 	auto& tex_mgr = ResourceManager::Get<Texture>();
 	auto& sound_mgr = ResourceManager::Get<Sound>();
 
-	for(Unit* unit : units)
+	if(IsLocal())
 	{
-		if(IsLocal())
+		for(uint i = 0; i < SLOT_MAX; ++i)
 		{
-			for(uint i = 0; i < SLOT_MAX; ++i)
-			{
-				if(unit->slots[i])
-					items_load.insert(unit->slots[i]);
-			}
-			PreloadItems(unit->items);
+			if(unit->slots[i])
+				items_load.insert(unit->slots[i]);
 		}
+		PreloadItems(unit->items);
+	}
 
-		auto& data = *unit->data;
-		if(data.state == ResourceState::Loaded)
-			continue;
+	auto& data = *unit->data;
+	if(data.state == ResourceState::Loaded)
+		return;
 
-		if(data.mesh)
-			mesh_mgr.AddLoadTask(data.mesh);
+	if(data.mesh)
+		mesh_mgr.AddLoadTask(data.mesh);
 
-		for(int i = 0; i < SOUND_MAX; ++i)
+	for(int i = 0; i < SOUND_MAX; ++i)
+	{
+		if(data.sounds->sound[i])
+			sound_mgr.AddLoadTask(data.sounds->sound[i]);
+	}
+
+	if(data.tex)
+	{
+		for(TexId& ti : data.tex->textures)
 		{
-			if(data.sounds->sound[i])
-				sound_mgr.AddLoadTask(data.sounds->sound[i]);
-		}
-
-		if(data.tex)
-		{
-			for(TexId& ti : data.tex->textures)
-			{
-				if(ti.tex)
-					tex_mgr.AddLoadTask(ti.tex);
-			}
+			if(ti.tex)
+				tex_mgr.AddLoadTask(ti.tex);
 		}
 	}
 }
@@ -15882,38 +15885,112 @@ void Game::DeleteUnit(Unit* unit)
 {
 	assert(unit);
 
-	RemoveElement(GetContext(*unit).units, unit);
-	for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
+	if(game_state != GS_WORLDMAP)
 	{
-		if(it->unit == unit)
+		RemoveElement(GetContext(*unit).units, unit);
+		for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
 		{
-			unit_views.erase(it);
-			break;
+			if(it->unit == unit)
+			{
+				unit_views.erase(it);
+				break;
+			}
 		}
+		if(pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit == unit)
+			pc_data.before_player = BP_NONE;
+		if(unit == pc_data.selected_target)
+			pc_data.selected_target = nullptr;
+		if(unit == pc_data.selected_unit)
+			pc_data.selected_unit = nullptr;
+		if(pc->action == PlayerController::Action_LootUnit && pc->action_unit == unit)
+			BreakUnitAction(*pc->unit);
+
+		if(unit->player && IsLocal())
+		{
+			switch(unit->player->action)
+			{
+			case PlayerController::Action_LootChest:
+				{
+					// close chest
+					unit->player->action_chest->looted = false;
+					unit->player->action_chest->mesh_inst->Play(&unit->player->action_chest->mesh_inst->mesh->anims[0],
+						PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
+					if(sound_volume)
+					{
+						Vec3 pos = unit->player->action_chest->pos;
+						pos.y += 0.5f;
+						PlaySound3d(sChestClose, pos, 2.f, 5.f);
+					}
+					NetChange& c = Add1(net_changes);
+					c.type = NetChange::CHEST_CLOSE;
+					c.id = unit->player->action_chest->netid;
+				}
+				break;
+			case PlayerController::Action_LootUnit:
+				unit->player->action_unit->busy = Unit::Busy_No;
+				break;
+			case PlayerController::Action_Trade:
+			case PlayerController::Action_Talk:
+			case PlayerController::Action_GiveItems:
+			case PlayerController::Action_ShareItems:
+				unit->player->action_unit->busy = Unit::Busy_No;
+				unit->player->action_unit->look_target = nullptr;
+				break;
+			}
+		}
+
+		if(contest_state >= CONTEST_STARTING)
+			RemoveElementTry(contest_units, unit);
+		if(!arena_free)
+			RemoveElementTry(at_arena, unit);
+		if(tournament_state >= TOURNAMENT_IN_PROGRESS)
+		{
+			RemoveElementTry(tournament_units, unit);
+			for(vector<std::pair<Unit*, Unit*> >::iterator it = tournament_pairs.begin(), end = tournament_pairs.end(); it != end; ++it)
+			{
+				if(it->first == unit)
+				{
+					it->first = nullptr;
+					break;
+				}
+				else if(it->second == unit)
+				{
+					it->second = nullptr;
+					break;
+				}
+			}
+			if(tournament_skipped_unit == unit)
+				tournament_skipped_unit = nullptr;
+			if(tournament_other_fighter == unit)
+				tournament_skipped_unit = nullptr;
+		}
+
+		if(unit->usable)
+			unit->usable->user = nullptr;
+
+		if(unit->bubble)
+			unit->bubble->unit = nullptr;
+
+		if(unit->bow_instance)
+			bow_instances.push_back(unit->bow_instance);
 	}
-	if(pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit == unit)
-		pc_data.before_player = BP_NONE;
-	if(unit == pc_data.selected_target)
-		pc_data.selected_target = nullptr;
-	if(unit == pc_data.selected_unit)
-		pc_data.selected_unit = nullptr;
-	if(pc->action == PlayerController::Action_LootUnit && pc->action_unit == unit)
-		BreakUnitAction(*pc->unit);
 
-	if(unit->bubble)
-		unit->bubble->unit = nullptr;
-
-	if(unit->bow_instance)
-		bow_instances.push_back(unit->bow_instance);
+	if(unit->interp)
+		interpolators.Free(unit->interp);
 
 	if(unit->ai)
 	{
 		RemoveElement(ais, unit->ai);
 		delete unit->ai;
 	}
-	delete unit->cobj->getCollisionShape();
-	phy_world->removeCollisionObject(unit->cobj);
-	delete unit->cobj;
+
+	if(unit->cobj)
+	{
+		delete unit->cobj->getCollisionShape();
+		phy_world->removeCollisionObject(unit->cobj);
+		delete unit->cobj;
+	}
+
 	delete unit;
 }
 
@@ -20520,11 +20597,7 @@ void Game::WarpNearLocation(LevelContext& ctx, Unit& unit, const Vec3& pos, floa
 void Game::ProcessRemoveUnits()
 {
 	for(vector<Unit*>::iterator it = to_remove.begin(), end = to_remove.end(); it != end; ++it)
-	{
-		if((*it)->interp)
-			interpolators.Free((*it)->interp);
 		DeleteUnit(*it);
-	}
 	to_remove.clear();
 }
 

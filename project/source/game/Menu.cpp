@@ -27,7 +27,6 @@
 #include "BitStreamFunc.h"
 #include "Team.h"
 #include "SaveState.h"
-#include "Utility.h"
 
 extern string g_ctime;
 
@@ -1183,9 +1182,7 @@ void Game::UpdateClientTransfer(float dt)
 				fallback_t = 0.f;
 				net_state = NetState::Client_ReceivedWorldData;
 
-				bool ok = utility::GetAppId() != 3;
-
-				if(ReadWorldData(stream) && ok)
+				if(ReadWorldData(stream))
 				{
 					// odeœlij informacje o gotowoœci
 					byte b[] = { ID_READY, 0 };
@@ -1475,7 +1472,13 @@ void Game::UpdateServerTransfer(float dt)
 		byte msg_id;
 		stream.Read(msg_id);
 		PlayerInfo& info = *game_players[index];
-
+		if(info.left != PlayerInfo::LEFT_NO)
+		{
+			Info("NM_TRANSFER_SERVER: Packet from %s who left game.", info.name.c_str());
+			StreamEnd();
+			continue;
+		}
+		
 		switch(msg_id)
 		{
 		case ID_DISCONNECTION_NOTIFICATION:
@@ -1483,9 +1486,8 @@ void Game::UpdateServerTransfer(float dt)
 			{
 				Info("NM_TRANSFER_SERVER: Player %s left game.", info.name.c_str());
 				--players;
-				auto it = game_players.begin() + index;
-				delete *it;
-				game_players.erase(it);
+				players_left = true;
+				info.left = PlayerInfo::LEFT_DISCONNECTED;
 			}
 			break;
 		case ID_READY:
@@ -1612,8 +1614,10 @@ void Game::UpdateServerTransfer(float dt)
 		for(auto pinfo : game_players)
 		{
 			auto& info = *pinfo;
-			Unit* u;
+			if(info.left != PlayerInfo::LEFT_NO)
+				continue;
 
+			Unit* u;
 			if(!info.loaded)
 			{
 				UnitData& ud = *g_classes[(int)info.clas].unit_data;
@@ -1622,16 +1626,21 @@ void Game::UpdateServerTransfer(float dt)
 				info.u = u;
 				u->ApplyHumanData(info.hd);
 				u->mesh_inst->need_update = true;
-
+				
+				u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
 				u->player = new PlayerController;
 				u->player->id = info.id;
 				u->player->clas = info.clas;
 				u->player->name = info.name;
 				u->player->Init(*u);
 				info.cc.Apply(*u->player);
+				u->fake_unit = false;
 
 				if(info.cc.HavePerk(Perk::Leader))
 					++leader_perk;
+
+				if(mp_load)
+					PreloadUnit(u);
 			}
 			else
 			{
@@ -1683,7 +1692,7 @@ void Game::UpdateServerTransfer(float dt)
 				}
 				else
 				{
-					// za du¿o postaci w dru¿ynie, wywal ai
+					// too many team members, kick ai
 					NetChange& c = Add1(net_changes);
 					c.type = NetChange::HERO_LEAVE;
 					c.unit = unit;
@@ -1724,14 +1733,15 @@ void Game::UpdateServerTransfer(float dt)
 
 		// set leader
 		int index = GetPlayerIndex(leader_id);
-		if(index == -1)
+		if(index == -1 || game_players[index]->left != PlayerInfo::LEFT_NO)
 		{
 			leader_id = 0;
 			Team.leader = game_players[0]->u;
 		}
 		else
-			Team.leader = game_players[GetPlayerIndex(leader_id)]->u;
+			Team.leader = game_players[index]->u;
 
+		// send info
 		if(players > 1)
 		{
 			byte b[] = { ID_STATE, 2 };
@@ -1745,6 +1755,8 @@ void Game::UpdateServerTransfer(float dt)
 		bool ok = true;
 		for(auto info : game_players)
 		{
+			if(info->left != PlayerInfo::LEFT_NO)
+				continue;
 			if(!info->ready)
 			{
 				ok = false;
@@ -1755,20 +1767,19 @@ void Game::UpdateServerTransfer(float dt)
 		if(!ok && net_timer <= 0.f)
 		{
 			bool anyone_removed = false;
-			for(vector<PlayerInfo*>::iterator it = game_players.begin(), end = game_players.end(); it != end;)
+			for(auto pinfo : game_players)
 			{
-				auto& info = **it;
+				auto& info = *pinfo;
+				if(info.left != PlayerInfo::LEFT_NO)
+					continue;
 				if(!info.ready)
 				{
 					Info("NM_TRANSFER_SERVER: Disconnecting player %s due no response.", info.name.c_str());
-					RemovePlayerOnLoad(info);
-					delete *it;
-					it = game_players.erase(it);
-					end = game_players.end();
+					--players;
+					players_left = true;
+					info.left = PlayerInfo::LEFT_TIMEOUT;
 					anyone_removed = true;
 				}
-				else
-					++it;
 			}
 			ok = true;
 			if(anyone_removed)
@@ -1789,7 +1800,7 @@ void Game::UpdateServerTransfer(float dt)
 	}
 	else if(net_state == NetState::Server_EnterLocation)
 	{
-		// wejdŸ do lokacji
+		// enter location
 		info_box->Show(txLoadingLevel);
 		if(!mp_load)
 			EnterLocation();
@@ -1797,7 +1808,7 @@ void Game::UpdateServerTransfer(float dt)
 		{
 			if(open_location == -1)
 			{
-				// zapisano na mapie œwiata
+				// saved on worldmap
 				byte b = ID_START;
 				peer->Send((cstring)&b, 1, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				StreamWrite(&b, 1, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
@@ -1815,10 +1826,13 @@ void Game::UpdateServerTransfer(float dt)
 				world_state = WS_MAIN;
 				update_timer = 0.f;
 				SetMusic(MusicType::Travel);
+				ProcessLeftPlayers();
 				info_box->CloseDialog();
 			}
 			else
 			{
+				LoadingStart(1);
+
 				packet_data.resize(3);
 				packet_data[0] = ID_CHANGE_LEVEL;
 				packet_data[1] = (byte)current_location;
@@ -1837,14 +1851,13 @@ void Game::UpdateServerTransfer(float dt)
 					}
 				}
 
-				// znajdŸ jakiegoœ gracza który jest w zapisie i teraz
+				// find player that was in save and is playing now (first check leader)
 				Unit* center_unit = nullptr;
-				// domyœlnie to lider
 				if(GetPlayerInfo(Team.leader->player).loaded)
 					center_unit = Team.leader;
 				else
 				{
-					// ktokolwiek
+					// anyone
 					for(auto info : game_players)
 					{
 						if(info->loaded)
@@ -1929,6 +1942,7 @@ void Game::UpdateServerTransfer(float dt)
 				}
 
 				DeleteOldPlayers();
+				LoadResources("", false);
 
 				net_mode = NM_SERVER_SEND;
 				net_state = NetState::Server_Send;
@@ -1974,8 +1988,12 @@ void Game::UpdateServerSend(float dt)
 		{
 		case ID_DISCONNECTION_NOTIFICATION:
 		case ID_CONNECTION_LOST:
-			players_left.push_back(info.id);
-			info.left = PlayerInfo::LEFT_DISCONNECTED;
+			{
+				Info("NM_SERVER_SEND: Player %s left game.", info.name.c_str());
+				--players;
+				players_left = true;
+				info.left = PlayerInfo::LEFT_DISCONNECTED;
+			}
 			return;
 		case ID_SND_RECEIPT_ACKED:
 			{
@@ -2043,7 +2061,8 @@ void Game::UpdateServerSend(float dt)
 				// timeout, remove player
 				Info("NM_SERVER_SEND: Disconnecting player %s due to no response.", info.name.c_str());
 				peer->CloseConnection(info.adr, true, 0, IMMEDIATE_PRIORITY);
-				players_left.push_back(info.id);
+				--players;
+				players_left = true;
 				info.left = PlayerInfo::LEFT_TIMEOUT;
 			}
 			else
@@ -2057,7 +2076,7 @@ void Game::UpdateServerSend(float dt)
 	}
 	if(ok)
 	{
-		if(players > 1) // tu nie uwzglêdnia usuniêtych :S
+		if(players > 1)
 		{
 			byte b = ID_START;
 			peer->Send((cstring)&b, 1, HIGH_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
@@ -2086,6 +2105,7 @@ void Game::UpdateServerSend(float dt)
 		mp_load = false;
 		SetMusic();
 		SetGamePanels();
+		ProcessLeftPlayers();
 	}
 }
 
@@ -2827,6 +2847,8 @@ void Game::UpdateLobbyNetServer(float dt)
 				else
 				{
 					// everything is ok, let player join
+					if(players > 2)
+						AddLobbyUpdate(Int2(Lobby_AddPlayer, info->id));
 					net_stream.Write(ID_JOIN);
 					net_stream.WriteCasted<byte>(info->id);
 					net_stream.WriteCasted<byte>(players);
@@ -2878,10 +2900,6 @@ void Game::UpdateLobbyNetServer(float dt)
 
 					server_panel->AddMsg(Format(server_panel->txJoined, info->name.c_str()));
 					Info("UpdateLobbyNet: Player %s (%s) joined, id: %d.", info->name.c_str(), packet->systemAddress.ToString(), info->id);
-
-					// informacja dla pozosta³ych
-					if(players > 2)
-						AddLobbyUpdate(Int2(Lobby_AddPlayer, info->id));
 
 					CheckReady();
 				}
@@ -3165,7 +3183,7 @@ void Game::UpdateLobbyNetServer(float dt)
 			if(d == 0)
 			{
 				b[0] = ID_STARTUP;
-				b[1] = (open_location == -1 ? 1 : 0);
+				b[1] = (mp_load && open_location == -1 ? 1 : 0);
 			}
 			else
 			{
@@ -3193,7 +3211,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 		byte type, id;
 		if(!stream.Read(type) || !stream.Read(id))
 		{
-			Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(2).");
+			Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE at index %d.", i);
 			return false;
 		}
 
@@ -3204,18 +3222,18 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 				int index = GetPlayerIndex(id);
 				if(index == -1)
 				{
-					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d.", id);
+					Error("UpdateLobbyNet: Broken Lobby_UpdatePlayer, invalid player id %d.", id);
 					return false;
 				}
 				PlayerInfo& info = *game_players[index];
 				if(!ReadBool(stream, info.ready) || !stream.ReadCasted<byte>(info.clas))
 				{
-					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3).");
+					Error("UpdateLobbyNet: Broken Lobby_UpdatePlayer.");
 					return false;
 				}
 				if(!ClassInfo::IsPickable(info.clas))
 				{
-					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(3), player %d have class %d: %s.", id, info.clas);
+					Error("UpdateLobbyNet: Broken Lobby_UpdatePlayer, player %d have class %d: %s.", id, info.clas);
 					return false;
 				}
 			}
@@ -3223,7 +3241,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 		case Lobby_AddPlayer: // dodaj gracza
 			if(!ReadString1(stream))
 			{
-				Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE(4).");
+				Error("UpdateLobbyNet: Broken Lobby_AddPlayer.");
 				return false;
 			}
 			else if(id != my_id)
@@ -3249,7 +3267,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 				int index = GetPlayerIndex(id);
 				if(index == -1)
 				{
-					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d.", id);
+					Error("UpdateLobbyNet: Broken Lobby_Remove/KickPlayer, invalid player id %d.", id);
 					return false;
 				}
 				PlayerInfo& info = *game_players[index];
@@ -3269,7 +3287,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 				int index = GetPlayerIndex(id);
 				if(index == -1)
 				{
-					Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE, invalid player id %d", id);
+					Error("UpdateLobbyNet: Broken Lobby_ChangeLeader, invalid player id %d", id);
 					return false;
 				}
 				PlayerInfo& info = *game_players[index];
@@ -3449,7 +3467,7 @@ void Game::DeleteOldPlayers()
 			delete info.u;
 		}
 	}
-	old_players.clear();
+	DeleteElements(old_players);
 }
 
 void Game::ClearAndExitToMenu(cstring msg)

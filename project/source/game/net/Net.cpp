@@ -268,32 +268,11 @@ void Game::KickPlayer(int index)
 
 	info.state = PlayerInfo::REMOVING;
 
-	AddMsg(Format(txPlayerKicked, info.name.c_str()));
-	Info("Player %s was kicked.", info.name.c_str());
-
-	if(leader_id == info.id)
-	{
-		// serwer zostaje przywódc¹
-		leader_id = my_id;
-		if(players > 2)
-		{
-			if(server_panel->visible)
-				AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
-			else
-			{
-				NetChange& c = Add1(net_changes);
-				c.type = NetChange::CHANGE_LEADER;
-				c.id = my_id;
-				Team.leader = pc->unit;
-			}
-		}
-		if(dialog_enc)
-			dialog_enc->bts[0].state = Button::NONE;
-		AddMsg(txYouAreLeader);
-	}
-
 	if(server_panel->visible)
 	{
+		AddMsg(Format(txPlayerKicked, info.name.c_str()));
+		Info("Player %s was kicked.", info.name.c_str());
+
 		if(players > 2)
 			AddLobbyUpdate(Int2(Lobby_KickPlayer, info.id));
 
@@ -303,7 +282,10 @@ void Game::KickPlayer(int index)
 		UpdateServerInfo();
 	}
 	else
+	{
 		info.left = PlayerInfo::LEFT_KICK;
+		players_left = true;
+	}
 }
 
 //=================================================================================================
@@ -2121,7 +2103,8 @@ void Game::UpdateServer(float dt)
 		case ID_CONNECTION_LOST:
 		case ID_DISCONNECTION_NOTIFICATION:
 			Info(msg_id == ID_CONNECTION_LOST ? "Lost connection with player %s." : "Player %s has disconnected.", info.name.c_str());
-			players_left.push_back(info.id);
+			--players;
+			players_left = true;
 			info.left = PlayerInfo::LEFT_DISCONNECTED;
 			break;
 		case ID_SAY:
@@ -5621,7 +5604,7 @@ void Game::UpdateClient(float dt)
 					info_box->Show(txGeneratingLocation);
 					LeaveLevel();
 					net_mode = NM_TRANSFER;
-					net_state = NetState::Server_WaitForPlayersToLoadWorld;
+					net_state = NetState::Client_ChangingLevel;
 					clear_color = BLACK;
 					load_screen->visible = true;
 					game_gui->visible = false;
@@ -6966,37 +6949,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Error("Update client: REMOVE_PLAYER, missing player %u.", player_id);
 						StreamError();
 					}
-					else
+					else if(player_id != my_id)
 					{
 						info->left = reason;
-						AddMsg(Format("%s %s.", info->name.c_str(), reason == 1 ? txPcWasKicked : txPcLeftGame));
-
-						if(info->u)
-						{
-							if(info->u == pc_data.before_player_ptr.unit)
-								pc_data.before_player = BP_NONE;
-							RemoveElement(Team.members, info->u);
-							RemoveElement(Team.active_members, info->u);
-
-							if(reason == PlayerInfo::LEFT_TIMEOUT)
-							{
-								if(info->u->interp)
-									interpolators.Free(info->u->interp);
-								if(info->u->cobj)
-									delete info->u->cobj->getCollisionShape();
-								delete info->u->mesh_inst;
-								delete info->u;
-								info->u = nullptr;
-							}
-							else
-							{
-								info->u->to_remove = true;
-								to_remove.push_back(info->u);
-
-								if(info->u->usable)
-									info->u->usable->user = nullptr;
-							}
-						}
+						RemovePlayer(*info);
+						game_players.erase(game_players.begin() + GetPlayerIndex(info->id));
+						delete info;
 					}
 				}
 			}
@@ -10791,111 +10749,22 @@ void Game::Net_PreSave()
 //=================================================================================================
 void Game::ProcessLeftPlayers()
 {
-	for(int player_id : players_left)
+	if(!players_left)
+		return;
+	
+	LoopAndRemove(game_players, [this](PlayerInfo* pinfo)
 	{
-		// order of changes is importat here
-		PlayerInfo& info = GetPlayerInfo(player_id);
+		auto& info = *pinfo;
+		if(info.left == PlayerInfo::LEFT_NO)
+			return false;
+
+		// order of changes is important here
 		NetChange& c = Add1(net_changes);
 		c.type = NetChange::REMOVE_PLAYER;
-		c.id = player_id;
+		c.id = info.id;
 		c.ile = (int)info.left;
-
-		--players;
-
+		
 		RemovePlayer(info);
-		if(info.left != PlayerInfo::LEFT_KICK)
-		{
-			Info("Player %s left game.", info.name.c_str());
-			AddMsg(Format(txPlayerLeft, info.name.c_str()));
-		}
-
-		if(info.u)
-		{
-			Unit* unit = info.u;
-
-			if(pc_data.before_player_ptr.unit == unit)
-				pc_data.before_player = BP_NONE;
-			if(info.left == PlayerInfo::LEFT_TIMEOUT || game_state == GS_WORLDMAP)
-			{
-				if(open_location != -1)
-					RemoveElement(GetContext(*unit).units, unit);
-				RemoveElement(Team.members, unit);
-				RemoveElement(Team.active_members, unit);
-				if(unit->interp)
-					interpolators.Free(unit->interp);
-				if(unit->cobj)
-					delete unit->cobj->getCollisionShape();
-				delete unit;
-				info.u = nullptr;
-			}
-			else
-			{
-				if(unit->usable)
-					unit->usable->user = nullptr;
-				switch(unit->player->action)
-				{
-				case PlayerController::Action_LootChest:
-					{
-						// close chest
-						unit->player->action_chest->looted = false;
-						unit->player->action_chest->mesh_inst->Play(&unit->player->action_chest->mesh_inst->mesh->anims[0],
-							PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-						if(sound_volume)
-						{
-							Vec3 pos = unit->player->action_chest->pos;
-							pos.y += 0.5f;
-							PlaySound3d(sChestClose, pos, 2.f, 5.f);
-						}
-						NetChange& c = Add1(net_changes);
-						c.type = NetChange::CHEST_CLOSE;
-						c.id = unit->player->action_chest->netid;
-					}
-					break;
-				case PlayerController::Action_LootUnit:
-					unit->player->action_unit->busy = Unit::Busy_No;
-					break;
-				case PlayerController::Action_Trade:
-				case PlayerController::Action_Talk:
-				case PlayerController::Action_GiveItems:
-				case PlayerController::Action_ShareItems:
-					unit->player->action_unit->busy = Unit::Busy_No;
-					unit->player->action_unit->look_target = nullptr;
-					break;
-				}
-
-				if(contest_state >= CONTEST_STARTING)
-					RemoveElementTry(contest_units, info.u);
-				if(!arena_free)
-					RemoveElementTry(at_arena, info.u);
-				if(tournament_state >= TOURNAMENT_IN_PROGRESS)
-				{
-					RemoveElementTry(tournament_units, info.u);
-					for(vector<std::pair<Unit*, Unit*> >::iterator it = tournament_pairs.begin(), end = tournament_pairs.end(); it != end; ++it)
-					{
-						if(it->first == info.u)
-						{
-							it->first = nullptr;
-							break;
-						}
-						else if(it->second == info.u)
-						{
-							it->second = nullptr;
-							break;
-						}
-					}
-					if(tournament_skipped_unit == info.u)
-						tournament_skipped_unit = nullptr;
-					if(tournament_other_fighter == info.u)
-						tournament_skipped_unit = nullptr;
-				}
-
-				RemoveElement(Team.members, unit);
-				RemoveElement(Team.active_members, unit);
-				to_remove.push_back(unit);
-				unit->to_remove = true;
-				info.u = nullptr;
-			}
-		}
 
 		if(leader_id == c.id)
 		{
@@ -10912,14 +10781,65 @@ void Game::ProcessLeftPlayers()
 		}
 
 		CheckCredit();
-	}
-	players_left.clear();
+		delete pinfo;
+
+		return true;
+	});
+
+	players_left = false;
 }
 
 //=================================================================================================
 void Game::RemovePlayer(PlayerInfo& info)
 {
+	switch(info.left)
+	{
+	case PlayerInfo::LEFT_TIMEOUT:
+		{
+			Info("Player %s kicked due to timeout.", info.name.c_str());
+			AddMsg(Format(txPlayerKicked, info.name.c_str()));
+		}
+		break;
+	case PlayerInfo::LEFT_KICK:
+		{
+			Info("Player %s kicked from server.", info.name.c_str());
+			AddMsg(Format(txPlayerKicked, info.name.c_str()));
+		}
+		break;
+	case PlayerInfo::LEFT_DISCONNECTED:
+		{
+			Info("Player %s disconnected from server.", info.name.c_str());
+			AddMsg(Format(txPlayerDisconnected, info.name.c_str()));
+		}
+		break;
+	case PlayerInfo::LEFT_QUIT:
+		{
+			Info("Player %s quit game.", info.name.c_str());
+			AddMsg(Format(txPlayerQuit, info.name.c_str()));
+		}
+		break;
+	default:
+		assert(0);
+		break;
+	}
 
+	if(!info.u)
+		return;
+
+	Unit* unit = info.u;
+	RemoveElement(Team.members, unit);
+	RemoveElement(Team.active_members, unit);
+	if(game_state == GS_WORLDMAP)
+	{
+		if(IsLocal() && open_location == -1)
+			DeleteUnit(unit);
+	}
+	else
+	{
+		to_remove.push_back(unit);
+		unit->to_remove = true;
+	}
+	info.u = nullptr;
 }
 
 //=================================================================================================
@@ -11084,22 +11004,6 @@ void Game::ClosePeer(bool wait)
 	net_changes.clear();
 	net_changes_player.clear();
 	sv_online = false;
-}
-
-//=================================================================================================
-void Game::RemovePlayerOnLoad(PlayerInfo& info)
-{
-	RemoveElementOrder(Team.members, info.u);
-	RemoveElementOrder(Team.active_members, info.u);
-	if(Team.leader == info.u)
-		leader_id = -1;
-	if(mp_load && open_location != -1)
-		RemoveElement(GetContext(info.u->pos).units, info.u);
-	if (info.u->interp)
-		interpolators.Free(info.u->interp);
-	delete info.u;
-	--players;
-	peer->CloseConnection(info.adr, true, 0, IMMEDIATE_PRIORITY);
 }
 
 //=================================================================================================

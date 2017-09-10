@@ -559,8 +559,8 @@ struct Game final : public Engine, public UnitEventHandler
 		txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion, txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer,
 		txPlayerDataError, txGeneratingLocation, txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
 		txLost, txLeft, txLost2, txUnconnected, txDisconnected, txClosing, txKicked, txUnknown, txUnknown2, txWaitingForServer, txStartingGame, txPreparingWorld, txInvalidCrc;
-	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txPcWasKicked,
-		txPcLeftGame, txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft, txPlayerDisconnected, txPlayerQuit, txPlayerKicked;
+	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked,
+		txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft, txPlayerDisconnected, txPlayerQuit, txPlayerKicked;
 	cstring txYell[3];
 	cstring txHaveErrors;
 
@@ -1265,6 +1265,7 @@ public:
 	void PreloadResources(bool worldmap);
 	void PreloadUsables(vector<Usable*>& usable);
 	void PreloadUnits(vector<Unit*>& units);
+	void PreloadUnit(Unit* unit);
 	void PreloadItems(vector<ItemSlot>& items);
 	void PreloadItem(const Item* item);
 	void VerifyResources();
@@ -1560,11 +1561,10 @@ public:
 	int my_id; // moje unikalne id
 	int last_id;
 	int last_startup_id;
-	bool sv_server, sv_online, sv_startup, was_client;
+	bool sv_server, sv_online, sv_startup, was_client, players_left;
 	BitStream server_info;
 	vector<byte> packet_data;
 	vector<PlayerInfo*> game_players, old_players;
-	vector<int> players_left;
 	SystemAddress server;
 	int leader_id, kick_id;
 	float startup_timer;
@@ -1847,7 +1847,6 @@ public:
 		_pc->player_info->NeedUpdate();
 		return c;
 	}
-	void RemovePlayerOnLoad(PlayerInfo& info);
 
 	BitStream& StreamStart(Packet* packet, StreamLogType type);
 	void StreamEnd();

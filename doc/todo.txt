@@ -6,10 +6,11 @@
 ? verify version formatting to not include path number 0 ("0.5.0" -> "0.5")
 ===============================================================================================================
 CURRENT:
-- crash client when other player left on loading (worldmap, level?)
++ using LEFT_QUIT
 - update about client move/animation is not resend C->S->C, only when stopped
-- crash C2 when C left on world map
-! remove utility app id check
+- missing fallback - new game
+	? load game
+? load old mp game
 ===============================================================================================================
 NEW:
 + ref move mutex from resource manager
@@ -26,6 +27,7 @@ NEW:
 + minimal hp bar length
 + vector of pointers that disallow null values, iterating over returns by ref
 ? why keep PlayerInfo of players that left
++ alt+f4 cause disconnected not quit
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

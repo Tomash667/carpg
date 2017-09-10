@@ -4,7 +4,7 @@
 #include "SaveState.h"
 
 //=================================================================================================
-PlayerInfo::PlayerInfo() : clas(Class::INVALID), left(LEFT_NO), update_flags(0), left_notify(false), ready(false), loaded(false), warping(false)
+PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(Class::INVALID), left(LEFT_NO), update_flags(0), ready(false), loaded(false), warping(false)
 {
 }
 
@@ -19,7 +19,6 @@ void PlayerInfo::Save(HANDLE file)
 	int refid = (u ? u->refid : -1);
 	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
 	WriteStringArray<int, word>(file, notes);
-	WriteFile(file, &left, sizeof(left), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -45,9 +44,9 @@ void PlayerInfo::Load(HANDLE file)
 	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
 	u = Unit::GetByRefid(refid);
 	ReadStringArray<int, word>(file, notes);
-	ReadFile(file, &left, sizeof(left), &tmp, nullptr);
-	if(old_left == 0)
+	if(LOAD_VERSION < V_CURRENT)
+		ReadFile(file, &left, sizeof(left), &tmp, nullptr);
+	if(old_left == 0 || old_left == -1)
 		left = LEFT_NO;
 	loaded = false;
-	left_notify = (left != LEFT_NO);
 }
