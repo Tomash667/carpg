@@ -1946,14 +1946,6 @@ other q_orkowie_klucz {
 	flags {not_shop not_chest not_random important}
 }
 
-other q_zlo_ksiega {
-	weight 1
-	value 100
-	tex "summoning.png"
-	type other
-	flags {not_shop not_chest not_random important}
-}
-
 other key_lunar {
 	weight 0.1
 	value 100
@@ -2016,6 +2008,74 @@ other wanted_letter {
 	tex "wanted.png"
 	type other
 	flags {quest not_shop not_chest not_random important}
+}
+
+//------------------------------------------------------------------------------
+// BOOKS
+//------------------------------------------------------------------------------
+book_scheme book {
+	texture "book.png"
+	size {800 600}
+	regions {
+		{5 5 390 550}
+		{405 5 790 550}
+	}
+	prev {5 555}
+	next {780 555}
+}
+
+book book_orcs {
+	weight 0.2
+	value 10
+	mesh "book.qmsh"
+	scheme "book"
+}
+
+book book_undead {
+	weight 0.2
+	value 10
+	mesh "book.qmsh"
+	scheme "book"
+}
+
+book book_behind_the_wall {
+	weight 0.2
+	value 10
+	mesh "book.qmsh"
+	scheme "book"
+}
+
+book book_adventurer {
+	weight 0.2
+	value 10
+	mesh "book.qmsh"
+	scheme "book"
+}
+
+book book_ld {
+	weight 0.2
+	value 100
+	mesh "book.qmsh"
+	scheme "book"
+	flags {not_shop not_chest not_random}
+}
+
+book book_runic {
+	weight 0.2
+	value 100
+	mesh "book.qmsh"
+	scheme "book"
+	flags {not_shop not_chest not_random}
+	runic 1
+}
+
+book q_zlo_ksiega {
+	weight 1
+	value 100
+	tex "summoning.png"
+	scheme "book"
+	flags {not_shop not_chest not_random important}
+	runic 1
 }
 
 //------------------------------------------------------------------------------
@@ -2113,6 +2173,18 @@ list treasure {
 	diamond
 	golden_bar
 	golden_cup
+}
+
+list books {
+	book_orcs
+	book_undead
+	book_adventurer
+	book_behind_the_wall
+}
+
+list rare_books {
+	book_ld
+	book_runic
 }
 
 leveled_list short_blade {

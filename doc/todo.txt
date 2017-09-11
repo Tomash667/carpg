@@ -1,4 +1,15 @@
 ﻿FEATURE:
++ loading book items
++ using books
++ example books
+	+ LD desc
+	+ behind wall desc
+	+ english text
++ books generation
++ usable bookshelf
++ q_zlo_ksiega, runes
+! remove ShowWindow(hwnd, SW_HIDE);
+===============================================================================================================
 + vsync in options
 - innkeeper - stands still, no animations/actions
 - after alt tab - camera is moved down
@@ -32,6 +43,7 @@ NEW:
 + refactor save version from ParticleSystem.cpp
 + refactor load_screen from Resourcemanager.cpp
 + refactor Language.h from Gui.cpp, GetNumberDialog
++ open wanted letter in fullscreen, show face
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

@@ -14,8 +14,8 @@ enum class Perk
 	Talent,
 	//CraftingTradition,
 	AlchemistApprentice, // more potions
-	Wealthy, // +250 gold
-	VeryWealthy, // +1k gold
+	Wealthy, // +500 gold
+	VeryWealthy, // +2k gold
 	FamilyHeirloom,
 	Leader,
 

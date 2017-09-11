@@ -1443,6 +1443,7 @@ public:
 	void ResetCollisionPointers();
 	void SetOutsideParams();
 	UnitData& GetHero(Class clas, bool crazy = false);
+	const Item* GetRandomBook();
 
 	// level area
 	LevelAreaContext* ForLevel(int loc, int level = -1);

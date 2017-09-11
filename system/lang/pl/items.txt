@@ -749,10 +749,6 @@ item q_magowie_kula2 {
 item q_orkowie_klucz {
 	name "Zardzewia³y klucz"
 }
-item q_zlo_ksiega {
-	name "Ksiêga przywo³ywania"
-	desc "Ksiêga zawieraj¹ca zaklêcia przywo³ywania i tworzenia portali."
-}
 item key_lunar {
 	name "Ksiê¿ycowy klucz"
 }
@@ -779,6 +775,43 @@ item parcel {
 }
 item wanted_letter {
 	name "List goñczy"
+}
+
+//------------------------------------------------------------------------------
+item book_orcs {
+	name "Orkowa horda"
+	desc "Ksiêga o orkach."
+	text "Orki pierwszy raz napotkano w roku 713 pierwszej ery. Nie wiele wtedy o nich wiedziano, postrzegano je jako zwyk³e humanoidalne bestie morduj¹ce wieœniaków i pal¹ce wioski. Przyszli oni z pó³nocnych gór gdy nadesz³a zima stulecia. Hordy orków wyla³y siê z gór niczym fala.\n\nOrkowie ¿yj¹ g³ównie pod ziemi¹ w jaskiniach, lub na zewn¹trz niedaleko w lasach. Rzadko rozbijaj¹ tymczasowe obozy pod go³ym niebem, boj¹ siê ¿e niebo zawali im siê na g³owy. Pos³uguj¹ siê prymitywnym jêzykiem który po zapisaniu wygl¹da jak bazgro³y. Rzadko zdarza siê ¿e ork nie jest pó³-g³ówkiem, wtedy zostaje szamanem. Niektórzy szamani znaj¹ jêzyk ludzi.\n\nNajsilniejszy ork zostaje hersztem lub wodzem wojennym. Jedynym co trzyma w kupiê armiê orków jest strach przed swoim wodzem. Czêsto wybuchaj¹ miedzy nimi walki o to kto jest silniejszy."
+}
+item book_undead {
+	name "Plaga nieumar³ych"
+	desc "Ksiêga o nieumar³ych."
+	text "W tym krótkim traktacie postaram siê opisaæ jak zidentyfikowaæ i zabiæ ró¿ne rodzaje nieumar³ych - kap³an Jared.\n\nSzkielet - koœciany nieumar³y. Pojedynczy nie stanowi wiêkszego zagro¿enia ale zazwyczaj wystêpuj¹ w grupach. Uzbrojony w broñ, tarcze lub ³uk. Szkielety s¹ odporne na broñ k³ut¹ ale podatne na obuchow¹. Dobrze jest nosiæ ze sob¹ na przyk³ad morgensztern.\n\nSzkielet mag - koœciany nieumar³y, dziêki plugawej mocy mo¿e rzucaæ czary. Posiada te same cechy co zwyk³y szkielet. Nale¿y go zlikwidowaæ w pierwszej kolejnoœci co nie zawsze jest ³atwe gdy jest otoczony przez sojuszników. Silniejsze szkielety mog¹ o¿ywiaæ inne szkielety oraz rzucaæ eksploduj¹c¹ czaszk¹.\n\nZombie - o¿ywione plugaw¹ magi¹ zw³oki. Wyj¹tkowo wytrzyma³e i odporne na broñ k³ut¹ oraz obuchow¹. Najlepiej wykorzystaæ to ¿e zombie jest powolny - ostrzelaæ z dystansu z ³uku a gdy podejdzie dobiæ z miecza.\n\nNieumar³y stra¿nik - o¿ywiony cz³owiek który jeszcze nie sta³ siê zombie. Silny niczym cz³owiek ale bardziej wytrzyma³y, odporny na obra¿enia obuchowe i trucizny.\n\nNekromanta - nie jest nieumar³ym ale trzeba go tu opisaæ. To on odprawiaj¹c plugawe czary o¿ywia szkielety i zombie. Nale¿y go zabijaæ w pierwszej kolejnoœci!"
+}
+item book_behind_the_wall {
+	name "Za œcian¹"
+	desc "Ksiêga o niewidzialnym zagro¿eniu które jest tu¿ obok."
+	text "[Treœæ nieznanego autora prze³o¿ona na jêzyk ludzi]\n\nZa os³on¹ rzeczywistoœci tu¿ obok nas czaj¹ siê koszmary..."
+}
+item book_adventurer {
+	name "Poradnik poszukiwaczy przygód"
+	desc "Ksiêga o tym jak nie daæ siê zabiæ i zdobyæ skarby."
+	text "Jak do¿yæ do emerytury czy Poradnik poszukiwacza przygód autorstwa Tomashu\n\n1. Mieszkañcy miasta mog¹ siê na ciebie wrogo patrzeæ ale zbieraj wszystkie przedmioty które nie s¹ przybite do œciany. W szczególnoœci miksturki do alchemika, jedzenie od sprzedawcy jedzenia i alkohol z karczmy. Co nie jest ci potrzebne sprzedaj.\n2. Nie podró¿uj sam, im wiêcej postaci w dru¿ynie tym ³atwiejsza bêdzie walka. Postaraj siê mieæ przynajmniej 3-4 osoby w dru¿ynie. Na pocz¹tku z pewnoœci¹ znajdziesz jakiegoœ bohatera który do³¹czy do ciebie za darmo.\n3. Z podziemi wynoœ tyle przedmiotów ile siê da a potem sprzedawaj je w mieœcie. Twoi sojusznicy te¿ mog¹ siê do czegoœ przydaæ i nosiæ za ciebie przedmioty.\n4. Poza walk¹ warto u¿ywaæ jedzenia aby siê podleczyæ. Wypicie mikstury naturalnego leczenia zwiêksza liczbê przywracanego zdrowia za jedzenie/odpoczynek. Miksturki warto pozostawiæ na walkê.\n5. Szukaj unikalnych sojuszników którzy ciê wspomog¹. Mo¿esz zrekrutowaæ ich w miarê wczeœnie, posiadaj¹ unikatowe zdolnoœci i nie maj¹ udzia³u w ³upach.\n6. Jeœli ciê na to staæ kup od razu lepszy pancerz. Na pocz¹tku ka¿dy punkt obrony siê liczy.\n7. Nie atakuj mieszkañców miasta!"
+}
+item book_ld {
+	name "Œwiadomy sen"
+	desc "Ksiêga o orkach"
+	text ""
+}
+item book_runic {
+	name "Runiczna ksiêga"
+	desc "Ksiêga o niewiadomej treœci zapisana nieznanym ci jêzykiem."
+	text "Sekretna ksi¹¿ka, nie czytaæ! Nie ma tu nic ciekawego, naprawdê. Polecam Bloodborne, to bardzo ciekawa gra. Jak i ca³a seria Dark Souls."
+}
+item q_zlo_ksiega {
+	name "Ksiêga przywo³ywania"
+	desc "Ksiêga zawieraj¹ca zaklêcia przywo³ywania i tworzenia portali."
+	text "Wstêp do przywo³ywania i tworzenia portali autorstwa Magnusa Voolo.\n\n1. Przywo³ywanie\nAby przywo³aæ istotê z innego planu potrzebujesz znaæ jej imiê oraz fragment ¿ywio³u z którego ona pochodzi. Na przyk³ad dla ¿ywio³u ognia coœ zwi¹zanego z ogniem, zapalony kawa³ek wêgla. Przywo³anie standardowych ¿ywio³aków nie stanowi wiêkszego problemu poniewa¿ wszystkie maj¹ takie same imiona:\nogieñ - agni\nwoda - pos\npowietrze - mir\nziemia - ar\nPrzywo³anie istot z innych planów nie zosta³o opisane w tym tomie. Przed przywo³aniem nale¿y te¿ przygotowaæ kr¹g ochronny - w innym przypadku ¿ywio³ak nie bêdzie mia³ przyjaznych zamiarów. Po przywo³aniu nale¿y go spêtaæ jednym z zaklêæ.\n\n2. Otwieranie portali\nAby otworzyæ portal potrzebna jest specjalnie przygotowana brama. Do tego celu mo¿na wykorzystaæ na przyk³ad adamentium które jest odporne na czary. U¿ycie zbyt s³abej bramy mo¿e spowodowaæ jej zniszczenie i zapadniêcie siê portalu co jest ekstremalnie niebezpieczne. Na portalu trzeba u¿yæ zaklêcia portalu. Portal pozostaje otwarty przez nieograniczony czas."
 }
 
 //------------------------------------------------------------------------------

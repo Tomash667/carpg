@@ -7841,7 +7841,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			Error("Invalid unit '%s' position (%g %g %g).", u.data->id.c_str(), u.pos.x, u.pos.y, u.pos.z);
 			u.pos = Vec3(128, 0, 128);
 		}
-		
+
 		// licznik okrzyku od ostatniego trafienia
 		u.hurt_timer -= dt;
 		u.last_bash -= dt;
@@ -22581,4 +22581,14 @@ void Game::HandleQuestEvent(Quest_Event* event)
 
 	if(event->callback)
 		event->callback();
+}
+
+const Item* Game::GetRandomBook()
+{
+	if(Rand() % 2 == 0)
+		return nullptr;
+	if(Rand() % 50 == 0)
+		return FindItemList("rare_books").lis->Get();
+	else
+		return FindItemList("books").lis->Get();
 }

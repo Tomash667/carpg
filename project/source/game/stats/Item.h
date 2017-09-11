@@ -140,7 +140,7 @@ struct Item
 	}
 	bool IsStackable() const
 	{
-		return type == IT_CONSUMABLE || type == IT_GOLD || (type == IT_OTHER && !IS_SET(flags, ITEM_QUEST));
+		return type == IT_CONSUMABLE || type == IT_GOLD || (type == IT_OTHER && !IS_SET(flags, ITEM_QUEST)) || type == IT_BOOK;
 	}
 	bool CanBeGenerated() const
 	{
@@ -375,10 +375,11 @@ extern vector<BookScheme*> g_book_schemes;
 
 struct Book : public Item
 {
-	Book() : Item(IT_BOOK), scheme(nullptr) {}
+	Book() : Item(IT_BOOK), scheme(nullptr), runic(false) {}
 
 	BookScheme* scheme;
 	string text;
+	bool runic;
 };
 extern vector<Book*> g_books;
 

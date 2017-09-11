@@ -340,7 +340,10 @@ enum Property
 	P_POWER,
 	P_TIME,
 	P_SPEED,
-	P_SCHEME
+	P_SCHEME,
+	P_RUNIC
+
+	// max 32 bits
 };
 
 enum StockKeyword
@@ -393,7 +396,7 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 		break;
 	case IT_BOOK:
 		item = new Book;
-		req |= BIT(P_SCHEME);
+		req |= BIT(P_SCHEME) | BIT(P_RUNIC);
 		break;
 	case IT_GOLD:
 		item = new Item(IT_GOLD);
@@ -595,7 +598,7 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 				break;
 			case P_SCHEME:
 				{
-					const string& str = t.MustGetItem();
+					const string& str = t.MustGetText();
 					BookScheme* scheme = nullptr;
 					for(BookScheme* s : g_book_schemes)
 					{
@@ -609,6 +612,9 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 						t.Throw("Book scheme '%s' not found.", str.c_str());
 					item->ToBook().scheme = scheme;
 				}
+				break;
+			case P_RUNIC:
+				item->ToBook().runic = t.MustGetBool();
 				break;
 			default:
 				assert(0);
@@ -1222,6 +1228,7 @@ bool LoadBookScheme(Tokenizer& t, Crc& crc)
 					scheme->tex = ResourceManager::Get<Texture>().TryGet(str);
 					if(!scheme->tex)
 						t.Throw("Missing texture '%s'.", str.c_str());
+					t.Next();
 				}
 				break;
 			case BSK_SIZE:
@@ -1479,7 +1486,8 @@ uint LoadItems(uint& out_crc, uint& errors)
 		{ "power", P_POWER },
 		{ "time", P_TIME },
 		{ "speed", P_SPEED },
-		{ "scheme", P_SCHEME }
+		{ "scheme", P_SCHEME },
+		{ "runic", P_RUNIC }
 	});
 
 	t.AddKeywords(G_WEAPON_TYPE, {
@@ -1685,6 +1693,7 @@ uint LoadItems(uint& out_crc, uint& errors)
 //=================================================================================================
 void CleanupItems()
 {
+	DeleteElements(g_book_schemes);
 	DeleteElements(g_item_lists);
 	DeleteElements(g_leveled_item_lists);
 	DeleteElements(stocks);

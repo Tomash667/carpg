@@ -98,6 +98,8 @@ list food_and_drink
 list ancient_armory_armors
 list contest_reward
 list treasure
+list books
+list rare_books
 
 //------------------------------------------------------------------------------
 // Required item stock
