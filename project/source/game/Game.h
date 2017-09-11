@@ -1553,7 +1553,7 @@ public:
 
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
-	RakNet::RakPeerInterface* peer;
+	SLNet::RakPeerInterface* peer;
 	string server_name, player_name, server_pswd, server_ip, enter_pswd, server_name2;
 	int autostart_count;//, kick_timer;
 	int players; // aktualna liczba graczy w grze

@@ -6,8 +6,9 @@
 ? verify version formatting to not include path number 0 ("0.5.0" -> "0.5")
 ===============================================================================================================
 CURRENT:
-- update about client move/animation is not resend C->S->C, only when stopped
 ? load old mp game
+- can't attack in MP
+- in firewall carpg is named "Role Playing Simulation"
 ===============================================================================================================
 NEW:
 + ref move mutex from resource manager

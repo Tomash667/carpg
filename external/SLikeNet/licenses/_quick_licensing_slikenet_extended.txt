@@ -1,0 +1,219 @@
+Preamble
+========
+
+This is a quick summary/guide provided to help with complying to the license
+terms, if you are using solely the SLikeNet core with the libcatid and OpenSSL
+3rd-party libraries (i.e. no samples, no dependent extensions, and no optional
+core features except for ipv6 and LIBCAT_SECURITY) without distributing the
+source code.
+This is also the case, if you are building your application with the prebuilt
+SLikeNet library files marked with "_ext" in the library file name. If you are
+building your application with the prebuilt libraries marked with "_core",
+please refer to the file _quick_licensing_slikenet_core.txt instead.
+
+Further understand that these instructions are solely provided as a guideline
+to comply with licensing requirements. Legally bound instructions are solely
+covered by the actual license terms of the SLikeNet license and the
+dependencies it utilizes. Please refer to chapter 7 in the readme.txt file for
+detailed information!
+
+
+Quick Guide
+===========
+
+1. Include the following files in your deployment package:
+   - license.txt
+   - licenses/libcatid license.txt
+   - licenses/OpenSSL License.txt
+   - licenses/RakNet License.txt
+   - licenses/RakNet Patents.txt
+2. Delete anything following the "END OF LICENSE" marker (including that marker
+   and the separator above that line) in license.txt.
+3. In the associated documentation include the following content:
+   BSD License 
+   For RakNet software
+
+   Copyright (c) 2014, Oculus VR, Inc.
+   All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without modification, 
+   are permitted provided that the following conditions are met:
+
+   * Redistributions of source code must retain the above copyright notice, 
+     this list of conditions and the following disclaimer.
+
+   * Redistributions in binary form must reproduce the above copyright notice,     
+     this list of conditions and the following disclaimer in the documentation 
+     and/or other materials provided with the distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY 
+   EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+   OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
+   SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
+   TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+   OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+   ==========
+
+   Copyright (c) 2009 Christopher A. Taylor.  All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are met:
+
+   * Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above copyright notice,
+     this list of conditions and the following disclaimer in the documentation
+     and/or other materials provided with the distribution.
+   * Neither the name of LibCat nor the names of its contributors may be used
+     to endorse or promote products derived from this software without
+     specific prior written permission.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+   POSSIBILITY OF SUCH DAMAGE.
+
+   ==========
+
+   Copyright (c) 1998-2011 The OpenSSL Project.  All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+
+   1. Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer. 
+
+   2. Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the
+      distribution.
+
+   3. All advertising materials mentioning features or use of this
+      software must display the following acknowledgment:
+      "This product includes software developed by the OpenSSL Project
+      for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
+	
+   4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
+      endorse or promote products derived from this software without
+      prior written permission. For written permission, please contact
+      openssl-core@openssl.org.
+
+   5. Products derived from this software may not be called "OpenSSL"
+      nor may "OpenSSL" appear in their names without prior written
+      permission of the OpenSSL Project.
+
+   6. Redistributions of any form whatsoever must retain the following
+      acknowledgment:
+      "This product includes software developed by the OpenSSL Project
+      for use in the OpenSSL Toolkit (http://www.openssl.org/)"
+
+   THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
+   EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+   PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
+   ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+   NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+   STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+   OF THE POSSIBILITY OF SUCH DAMAGE.
+
+   ==========
+
+   Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
+   All rights reserved.
+
+   This package is an SSL implementation written
+   by Eric Young (eay@cryptsoft.com).
+   The implementation was written so as to conform with Netscapes SSL.
+
+   This library is free for commercial and non-commercial use as long as
+   the following conditions are aheared to.  The following conditions
+   apply to all code found in this distribution, be it the RC4, RSA,
+   lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+   included with this distribution is covered by the same copyright terms
+   except that the holder is Tim Hudson (tjh@cryptsoft.com).
+
+   Copyright remains Eric Young's, and as such any Copyright notices in
+   the code are not to be removed.
+   If this package is used in a product, Eric Young should be given attribution
+   as the author of the parts of the library used.
+   This can be in the form of a textual message at program startup or
+   in documentation (online or textual) provided with the package.
+ 
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+   1. Redistributions of source code must retain the copyright
+      notice, this list of conditions and the following disclaimer.
+   2. Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+   3. All advertising materials mentioning features or use of this software
+      must display the following acknowledgement:
+      "This product includes cryptographic software written by
+       Eric Young (eay@cryptsoft.com)"
+      The word 'cryptographic' can be left out if the rouines from the library
+      being used are not cryptographic related :-).
+   4. If you include any Windows specific code (or a derivative thereof) from 
+      the apps directory (application code) you must include an acknowledgement:
+      "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
+  
+   THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+   FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+   OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+   HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+   OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+   SUCH DAMAGE.
+
+4.  Include the following statement in any advertising material:
+    "This product includes software developed by the OpenSSL Project for use in
+     the OpenSSL Toolkit. (http://www.openssl.org/)"
+    "This product includes cryptographic software written by Eric Young
+     (eay@cryptsoft.com)"
+5.  In your product ensure that the following acknowledgement is displayed:
+    "This product includes software developed by the OpenSSL Project for use in
+     the OpenSSL Toolkit (http://www.openssl.org/)"
+5a. If your product is distributed on Windows this additional acknowledgement
+    must be displayed:
+    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
+
+
+Optional Steps
+==============
+
+The following steps are optional. You are kindly asked to follow these but are
+not required legally to do so:
+1.  Send a mail to info@slikesoft.com and notify us that you are using our
+    library.
+1a. In addition to letting us know, allow us to reference/link your
+    product/company on our webpage mentioning that you are using SLikeNet.
+2.  Mention on your webpage and/or in your product that you are using SLikeNet.
+    For instance:
+    "This product includes the Open Source/Free Software network library
+     SLikeNet™ - Copyright (c) 2016-2017 SLikeSoft™ UG (haftungbeschänkt) -
+     https://www.slikenet.com/"
+3.  Send a mail to Makoto Matsumoto and Takuji Nishimaru
+    (matumoto@math.keio.ac.jp) as well as CC Shawn Cokus
+    (Cokus@math.washington.edu) letting them know that you are using SLikeNet
+    in your product which uses their Mersenne Twister random number generator
+    MT19937.

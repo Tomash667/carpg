@@ -725,7 +725,7 @@ void Game::UpdateClientConnectingIp(float dt)
 				continue;
 			}
 
-			if(packet->length == sizeof(RakNet::TimeMS) + 1)
+			if(packet->length == sizeof(SLNet::TimeMS) + 1)
 			{
 				Warn("NM_CONNECT_IP(0): Server not set SetOfflinePingResponse yet.");
 				StreamError();

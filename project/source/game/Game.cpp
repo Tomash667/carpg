@@ -1793,7 +1793,7 @@ void Game::OnCleanup()
 	DeleteElements(old_players);
 
 	if(peer)
-		RakNet::RakPeerInterface::DestroyInstance(peer);
+		SLNet::RakPeerInterface::DestroyInstance(peer);
 }
 
 //=================================================================================================

@@ -101,6 +101,7 @@ void utility::WaitForDelayLock(int delay)
 		if(*mem == delay)
 			wait = false;
 		ReleaseMutex(mutex);
+		Sleep(250);
 	}
 }
 

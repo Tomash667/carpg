@@ -141,7 +141,7 @@ void Game::InitServer()
 	Info("Creating server (port %d)...", mp_port);
 
 	if(!peer)
-		peer = RakNet::RakPeerInterface::GetInstance();
+		peer = SLNet::RakPeerInterface::GetInstance();
 
 	SocketDescriptor sd(mp_port, 0);
 	sd.socketFamily = AF_INET;
@@ -175,9 +175,9 @@ void Game::InitClient()
 	Info("Initlializing client...");
 
 	if(!peer)
-		peer = RakNet::RakPeerInterface::GetInstance();
+		peer = SLNet::RakPeerInterface::GetInstance();
 
-	RakNet::SocketDescriptor sd;
+	SLNet::SocketDescriptor sd;
 	sd.socketFamily = AF_INET;
 	StartupResult r = peer->Startup(1, &sd, 1);
 	if(r != RAKNET_STARTED)
@@ -2279,6 +2279,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					unit.pos = new_pos;
 					UpdateUnitPhysics(unit, unit.pos);
 					unit.interp->Add(unit.pos, rot);
+					unit.changed = true;
 				}
 				else
 				{
