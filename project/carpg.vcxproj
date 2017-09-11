@@ -69,7 +69,7 @@
       <AdditionalDependencies>d3d9.lib;d3dx9d.lib;RakNet_debug.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath_debug.lib;BulletCollision_debug.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
-      <AdditionalManifestFiles>dpi_aware.manifest</AdditionalManifestFiles>
+      <AdditionalManifestFiles>carpg.exe.manifest</AdditionalManifestFiles>
     </Manifest>
     <ResourceCompile>
       <AdditionalIncludeDirectories>source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -108,7 +108,7 @@
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;RakNet.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath.lib;BulletCollision.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
-      <AdditionalManifestFiles>dpi_aware.manifest</AdditionalManifestFiles>
+      <AdditionalManifestFiles>carpg.exe.manifest</AdditionalManifestFiles>
     </Manifest>
     <ResourceCompile>
       <AdditionalIncludeDirectories>source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

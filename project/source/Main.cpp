@@ -399,6 +399,60 @@ void GetCompileTime()
 		g_ctime = "0";
 }
 
+void GettyVersion()
+{
+	DWORD dwVersion = 0;
+	DWORD dwMajorVersion = 0;
+	DWORD dwMinorVersion = 0;
+	DWORD dwBuild = 0;
+
+	dwVersion = GetVersion();
+
+	// Get the Windows version.
+
+	dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
+	dwMinorVersion = (DWORD)(HIBYTE(LOWORD(dwVersion)));
+
+	// Get the build number.
+
+	if(dwVersion < 0x80000000)
+		dwBuild = (DWORD)(HIWORD(dwVersion));
+
+	Info("Version is %d.%d (%d)\n",
+		dwMajorVersion,
+		dwMinorVersion,
+		dwBuild);
+
+
+
+	ULONGLONG mem_kb;
+	HMODULE kernel32 = LoadLibraryW(L"kernel32");
+	bool ok = false;
+	if(kernel32 != nullptr)
+	{
+		auto f = reinterpret_cast<decltype(GetPhysicallyInstalledSystemMemory)*>(GetProcAddress(kernel32, "GetPhysicallyInstalledSystemMemory"));
+		if(f)
+		{
+			f(&mem_kb);
+			ok = true;
+		}
+	}
+
+
+	if(!ok)
+	{
+		MEMORYSTATUSEX mem = { 0 };
+		mem.dwLength = sizeof(mem);
+		if(GlobalMemoryStatusEx(&mem) == 0)
+			mem_kb = 0;
+		else
+			mem_kb = mem.ullTotalPhys / 1024;
+	}
+
+	auto mem_mb = mem_kb / 1024;
+	Info("Memory: %g GB", float(mem_mb) / 1024);
+}
+
 //=================================================================================================
 // G³ówna funkcja programu
 //=================================================================================================
@@ -412,6 +466,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// logger (w tym przypadku prelogger bo jeszcze nie wiemy gdzie to zapisywaæ)
 	PreLogger plog;
 	Logger::global = &plog;
+	GettyVersion();
 
 	// stwórz foldery na zapisy
 	CreateDirectory("saves", nullptr);

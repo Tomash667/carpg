@@ -1,4 +1,11 @@
 ﻿FEATURE:
+windows
+xp
+maxram, vram
+directx support
+sse
+http://coreymaynard.com/blog/creating-a-restful-api-with-php/
+http://php.net/manual/pl/function.json-decode.php
 ===============================================================================================================
 CURRENT:
 ? verify is window center is wnd_size/2 or real_size/2, update GameGuiInit::UdateGui
