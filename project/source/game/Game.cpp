@@ -55,7 +55,7 @@ debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE)
 mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
 prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false),
 cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true),
-cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
+cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(D3DXIFF_JPG), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), current_packet(nullptr),
 game_state(GS_LOAD), default_devmode(false), default_player_devmode(false)
 {
@@ -2362,7 +2362,7 @@ void Game::UnitFall(Unit& u)
 	if(Net::IsLocal())
 	{
 		// przerwij akcjê
-		BreakUnitAction(u, true);
+		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
 
 		// wstawanie
 		u.raise_timer = Random(5.f, 7.f);
@@ -2385,7 +2385,7 @@ void Game::UnitFall(Unit& u)
 	else
 	{
 		// przerwij akcjê
-		BreakUnitAction(u, true);
+		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
 
 		// komunikat
 		if(&u == pc->unit)
@@ -2422,7 +2422,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	if(Net::IsLocal())
 	{
 		// przerwij akcjê
-		BreakUnitAction(u, true);
+		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
 
 		// dodaj z³oto do ekwipunku
 		if(u.gold && !(u.IsPlayer() || u.IsFollower()))
@@ -2488,7 +2488,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		u.hp = 0.f;
 
 		// przerwij akcjê
-		BreakUnitAction(u, true);
+		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
 
 		// o¿ywianie
 		if(&u == pc->unit)
@@ -2689,10 +2689,10 @@ void Game::PlayerYell(Unit& u)
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
-		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == 0 && !u2.usable && u2.ai->state == AIController::Idle &&
-			!IS_SET(u2.data->flags, F_AI_STAY) &&
-			(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot ||
-				u2.ai->idle_action == AIController::Idle_Look))
+		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
+			&& u2.ai->state == AIController::Idle && !IS_SET(u2.data->flags, F_AI_STAY)
+			&& 	(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot
+				|| u2.ai->idle_action == AIController::Idle_Look))
 		{
 			u2.ai->idle_action = AIController::Idle_MoveAway;
 			u2.ai->idle_data.unit = &u;

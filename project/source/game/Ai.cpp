@@ -130,9 +130,10 @@ void Game::UpdateAi(float dt)
 		if(u.guard_target && u.dont_attack && !u.guard_target->dont_attack)
 			u.dont_attack = false;
 
-		if(u.frozen == 2)
+		if(u.frozen >= FROZEN::YES)
 		{
-			u.animation = ANI_STAND;
+			if(u.frozen == FROZEN::YES)
+				u.animation = ANI_STAND;
 			continue;
 		}
 
@@ -1278,7 +1279,7 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_WalkUseEat:
 								{
 									Usable& use = *ai.idle_data.usable;
-									if(use.user || u.frozen)
+									if(use.user || u.frozen != FROZEN::NO)
 										ai.idle_action = AIController::Idle_None;
 									else if(Vec3::Distance2d(u.pos, use.pos) < PICKUP_RANGE)
 									{
@@ -1401,8 +1402,8 @@ void Game::UpdateAi(float dt)
 										{
 											u.TakeWeapon(W_BOW);
 											float dir = Vec3::LookAtAngle(u.pos, ai.idle_data.obj.pos);
-											if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f && u.frozen == 0
-												&& u.stamina > 0 && CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
+											if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f
+												&& u.frozen == FROZEN::NO && u.stamina > 0 && CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
 											{
 												// strzelanie z ³uku
 												float speed = u.GetBowAttackSpeed();
@@ -1615,7 +1616,7 @@ void Game::UpdateAi(float dt)
 							u.TakeWeapon(bron);
 					}
 
-					if(u.data->spells && u.action == A_NONE && u.frozen == 0)
+					if(u.data->spells && u.action == A_NONE && u.frozen == FROZEN::NO)
 					{
 						bool break_action = false;
 
@@ -1707,7 +1708,7 @@ void Game::UpdateAi(float dt)
 
 					if(u.IsHoldingBow())
 					{
-						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == 0 && u.stamina > 0)
+						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == FROZEN::NO && u.stamina > 0)
 						{
 							// sprawdŸ czy mo¿esz strzelaæ we wroga
 							look_pos = PredictTargetPos(u, *enemy, u.GetArrowSpeed());
@@ -1746,7 +1747,7 @@ void Game::UpdateAi(float dt)
 					else
 					{
 						// attack
-						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == 0)
+						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == FROZEN::NO)
 						{
 							if(best_dist <= u.GetAttackRange() + 1.f)
 								AI_DoAttack(ai, enemy);
@@ -2225,7 +2226,7 @@ void Game::UpdateAi(float dt)
 						target_pos = top->pos;
 
 						// zaatakuj
-						if(u.action == A_NONE && best_dist <= u.GetAttackRange() && ai.next_attack <= 0.f && u.frozen == 0)
+						if(u.action == A_NONE && best_dist <= u.GetAttackRange() && ai.next_attack <= 0.f && u.frozen == FROZEN::NO)
 							AI_DoAttack(ai, enemy);
 						else if(u.action == A_CAST)
 						{
@@ -2400,7 +2401,7 @@ void Game::UpdateAi(float dt)
 		}
 
 		// ruch postaci
-		if(move_type != DontMove && u.frozen == 0)
+		if(move_type != DontMove && u.frozen == FROZEN::NO)
 		{
 			int move;
 

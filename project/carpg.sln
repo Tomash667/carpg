@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "carpg", "carpg.vcxproj", "{AE943349-930C-4F29-BC46-AAD479B34562}"
 EndProject
@@ -9,6 +9,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_dbg", "client_dbg.vc
 	ProjectSection(ProjectDependencies) = postProject
 		{AE943349-930C-4F29-BC46-AAD479B34562} = {AE943349-930C-4F29-BC46-AAD479B34562}
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Debug", "Debug", "{38AAC0F2-1AC9-45C6-8C56-50418D654DD7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_dbg2", "client_dbg2.vcxproj", "{E00DB219-45EA-4095-A420-11A07328A203}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,8 +28,19 @@ Global
 		{87061FAA-FE77-42FE-B52C-28EC1979269F}.Debug|Win32.Build.0 = Debug|Win32
 		{87061FAA-FE77-42FE-B52C-28EC1979269F}.Release|Win32.ActiveCfg = Release|Win32
 		{87061FAA-FE77-42FE-B52C-28EC1979269F}.Release|Win32.Build.0 = Release|Win32
+		{E00DB219-45EA-4095-A420-11A07328A203}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E00DB219-45EA-4095-A420-11A07328A203}.Debug|Win32.Build.0 = Debug|Win32
+		{E00DB219-45EA-4095-A420-11A07328A203}.Release|Win32.ActiveCfg = Release|Win32
+		{E00DB219-45EA-4095-A420-11A07328A203}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{87061FAA-FE77-42FE-B52C-28EC1979269F} = {38AAC0F2-1AC9-45C6-8C56-50418D654DD7}
+		{E00DB219-45EA-4095-A420-11A07328A203} = {38AAC0F2-1AC9-45C6-8C56-50418D654DD7}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7426EB0A-1EF7-41A0-AC88-7BA8BD4A4369}
 	EndGlobalSection
 EndGlobal

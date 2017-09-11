@@ -1363,7 +1363,7 @@ void Game::LoadGame(HANDLE file)
 		location_event_handler = nullptr;
 	team_shares.clear();
 	team_share_id = -1;
-	fallback_co = FALLBACK_NONE;
+	fallback_co = FALLBACK::NONE;
 	fallback_t = 0.f;
 	inventory_mode = I_NONE;
 	pc_data.before_player = BP_NONE;

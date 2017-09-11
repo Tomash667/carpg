@@ -1628,7 +1628,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	unit.talking = false;
 	unit.busy = Unit::Busy_No;
 	unit.in_building = -1;
-	unit.frozen = 0;
+	unit.frozen = FROZEN::NO;
 	unit.usable = nullptr;
 	unit.used_item = nullptr;
 	unit.bow_instance = nullptr;
@@ -2298,7 +2298,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					// player is now stuck inside something, unstick him
+					// player is now stuck inside something, unstuck him
 					unit.interp->Add(unit.pos, rot);
 					NetChangePlayer& c = Add1(Net::player_changes);
 					c.type = NetChangePlayer::UNSTUCK;
@@ -3405,7 +3405,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					warp.u = &unit;
 					warp.where = building_index;
 					warp.timer = 1.f;
-					unit.frozen = 2;
+					unit.frozen = FROZEN::YES;
 				}
 				else
 				{
@@ -3422,7 +3422,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				warp.u = &unit;
 				warp.where = -1;
 				warp.timer = 1.f;
-				unit.frozen = 2;
+				unit.frozen = FROZEN::YES;
 			}
 			else
 			{
@@ -3988,7 +3988,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					Error("Update server: Player %s used CHEAT_WARP without devmode.", info.name.c_str());
 					StreamError();
 				}
-				else if(unit.frozen != 0)
+				else if(unit.frozen != FROZEN::NO)
 				{
 					Error("Update server: CHEAT_WARP from %s, unit is frozen.", info.name.c_str());
 					StreamError();
@@ -4004,7 +4004,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					warp.u = &unit;
 					warp.where = building_index;
 					warp.timer = 1.f;
-					unit.frozen = 2;
+					unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 					Net_PrepareWarp(info.u->player);
 				}
 			}
@@ -4200,22 +4200,22 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						PushNetChange(NetChange::LEAVE_LOCATION);
 						if(type == WHERE_OUTSIDE)
-							fallback_co = FALLBACK_EXIT;
+							fallback_co = FALLBACK::EXIT;
 						else if(type == WHERE_LEVEL_UP)
 						{
-							fallback_co = FALLBACK_CHANGE_LEVEL;
+							fallback_co = FALLBACK::CHANGE_LEVEL;
 							fallback_1 = -1;
 						}
 						else if(type == WHERE_LEVEL_DOWN)
 						{
-							fallback_co = FALLBACK_CHANGE_LEVEL;
+							fallback_co = FALLBACK::CHANGE_LEVEL;
 							fallback_1 = +1;
 						}
 						else
 						{
 							if(location->TryGetPortal(type))
 							{
-								fallback_co = FALLBACK_USE_PORTAL;
+								fallback_co = FALLBACK::USE_PORTAL;
 								fallback_1 = type;
 							}
 							else
@@ -4228,7 +4228,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 						fallback_t = -1.f;
 						for(Unit* team_member : Team.members)
-							team_member->frozen = 2;
+							team_member->frozen = FROZEN::YES;
 					}
 					else
 					{
@@ -4842,7 +4842,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					Unit* target = FindUnit(netid);
 					if(target)
-						BreakUnitAction(*target, false, true);
+						BreakUnitAction(*target, BREAK_ACTION_MODE::NORMAL, true);
 					else
 					{
 						Error("Update server: CHEAT_BREAK_ACTION from %s, missing unit %d.", info.name.c_str(), netid);
@@ -6663,6 +6663,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
+				BreakUnitAction(*unit, BREAK_ACTION_MODE::INSTANT);
+
 				int old_in_building = unit->in_building;
 				unit->in_building = in_building;
 				unit->pos = pos;
@@ -6679,17 +6681,17 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 				if(unit == pc->unit)
 				{
-					if(fallback_co == FALLBACK_WAIT_FOR_WARP)
-						fallback_co = FALLBACK_NONE;
-					else if(fallback_co == FALLBACK_ARENA)
+					if(fallback_co == FALLBACK::WAIT_FOR_WARP)
+						fallback_co = FALLBACK::NONE;
+					else if(fallback_co == FALLBACK::ARENA)
 					{
-						pc->unit->frozen = 1;
-						fallback_co = FALLBACK_NONE;
+						pc->unit->frozen = FROZEN::ROTATE;
+						fallback_co = FALLBACK::NONE;
 					}
-					else if(fallback_co == FALLBACK_ARENA_EXIT)
+					else if(fallback_co == FALLBACK::ARENA_EXIT)
 					{
-						pc->unit->frozen = 0;
-						fallback_co = FALLBACK_NONE;
+						pc->unit->frozen = FROZEN::NO;
+						fallback_co = FALLBACK::NONE;
 
 						if(pc->unit->hp <= 0.f)
 						{
@@ -7286,9 +7288,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			break;
 		// leaving notification
 		case NetChange::LEAVE_LOCATION:
-			fallback_co = FALLBACK_WAIT_FOR_WARP;
+			fallback_co = FALLBACK::WAIT_FOR_WARP;
 			fallback_t = -1.f;
-			pc->unit->frozen = 2;
+			pc->unit->frozen = FROZEN::YES;
 			break;
 		// exit to map
 		case NetChange::EXIT_TO_MAP:
@@ -9020,25 +9022,25 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 				break;
 			// preparing to warp
 			case NetChangePlayer::PREPARE_WARP:
-				fallback_co = FALLBACK_WAIT_FOR_WARP;
+				fallback_co = FALLBACK::WAIT_FOR_WARP;
 				fallback_t = -1.f;
-				pc->unit->frozen = 2;
+				pc->unit->frozen = (pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 				break;
 			// entering arena
 			case NetChangePlayer::ENTER_ARENA:
-				fallback_co = FALLBACK_ARENA;
+				fallback_co = FALLBACK::ARENA;
 				fallback_t = -1.f;
-				pc->unit->frozen = 2;
+				pc->unit->frozen = FROZEN::YES;
 				break;
 			// start of arena combat
 			case NetChangePlayer::START_ARENA_COMBAT:
-				pc->unit->frozen = 0;
+				pc->unit->frozen = FROZEN::NO;
 				break;
 			// exit from arena
 			case NetChangePlayer::EXIT_ARENA:
-				fallback_co = FALLBACK_ARENA_EXIT;
+				fallback_co = FALLBACK::ARENA_EXIT;
 				fallback_t = -1.f;
-				pc->unit->frozen = 2;
+				pc->unit->frozen = FROZEN::YES;
 				break;
 			// player refused to pvp
 			case NetChangePlayer::NO_PVP:
@@ -9109,8 +9111,8 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 				break;
 			// end of fallback
 			case NetChangePlayer::END_FALLBACK:
-				if(fallback_co == FALLBACK_CLIENT)
-					fallback_co = FALLBACK_CLIENT2;
+				if(fallback_co == FALLBACK::CLIENT)
+					fallback_co = FALLBACK::CLIENT2;
 				break;
 			// response to rest in inn
 			case NetChangePlayer::REST:
@@ -9123,10 +9125,10 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 					else
 					{
-						fallback_co = FALLBACK_REST;
+						fallback_co = FALLBACK::REST;
 						fallback_t = -1.f;
 						fallback_1 = days;
-						pc->unit->frozen = 2;
+						pc->unit->frozen = FROZEN::YES;
 					}
 				}
 				break;
@@ -9142,11 +9144,11 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 					else
 					{
-						fallback_co = FALLBACK_TRAIN;
+						fallback_co = FALLBACK::TRAIN;
 						fallback_t = -1.f;
 						fallback_1 = type;
 						fallback_2 = stat_type;
-						pc->unit->frozen = 2;
+						pc->unit->frozen = FROZEN::YES;
 					}
 				}
 				break;
@@ -9872,7 +9874,7 @@ void Game::UpdateWarpData(float dt)
 			c.id = 0;
 			GetPlayerInfo(c.pc->id).NeedUpdate();
 
-			it->u->frozen = 0;
+			it->u->frozen = FROZEN::NO;
 
 			it = mp_warps.erase(it);
 			end = mp_warps.end();

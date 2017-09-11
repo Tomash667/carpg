@@ -516,6 +516,7 @@
     <ClCompile Include="source\game\panels\ActionPanel.cpp">
       <Filter>3. game\panels</Filter>
     </ClCompile>
+    <ClCompile Include="source\Utility.cpp" />
     <ClCompile Include="source\engine\Font.cpp">
       <Filter>2. engine</Filter>
     </ClCompile>
@@ -1112,6 +1113,7 @@
     <ClInclude Include="source\game\panels\ActionPanel.h">
       <Filter>3. game\panels</Filter>
     </ClInclude>
+    <ClInclude Include="source\Utility.h" />
     <ClInclude Include="source\game\net\GamePacket.h">
       <Filter>3. game\net</Filter>
     </ClInclude>

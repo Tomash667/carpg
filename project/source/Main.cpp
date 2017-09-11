@@ -5,10 +5,10 @@
 #include "Version.h"
 #include "Language.h"
 #include "ErrorHandler.h"
+#include "Utility.h"
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
-cstring MUTEX_NAME = "CaRpgMutex";
 string g_system_dir, g_ctime;
 
 //-----------------------------------------------------------------------------
@@ -505,32 +505,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				console = True;
 			}
 			else if(strcmp(arg, "delay-1") == 0)
-			{
-				HANDLE mutex = CreateMutex(nullptr, TRUE, MUTEX_NAME);
-				if(mutex)
-				{
-					Info("Created delay mutex.");
-					game.mutex = mutex;
-				}
-				else
-					Error("Failed to create delay mutex.");
-			}
+				utility::InitDelayLock();
 			else if(strcmp(arg, "delay-2") == 0)
-			{
-				Info("Waiting for delay mutex creation.");
-				HANDLE mutex;
-				while(true)
-				{
-					mutex = OpenMutex(SYNCHRONIZE, FALSE, MUTEX_NAME);
-					if(mutex != nullptr)
-						break;
-					else
-						Sleep(250);
-				}
-				Info("Waiting for mutex.");
-				WaitForSingleObject(mutex, INFINITE);
-				CloseHandle(mutex);
-			}
+				utility::WaitForDelayLock(2);
+			else if(strcmp(arg, "delay-3") == 0)
+				utility::WaitForDelayLock(3);
+			else if(strcmp(arg, "delay-4") == 0)
+				utility::WaitForDelayLock(4);
 			else if(strcmp(arg, "restart") == 0)
 			{
 				if(!restarted)

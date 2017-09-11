@@ -313,8 +313,6 @@ void Game::LoadData()
 	Info("Game: Loading data.");
 	auto& res_mgr = ResourceManager::Get();
 
-	res_mgr.SetMutex(mutex);
-	mutex = nullptr;
 	res_mgr.PrepareLoadScreen(0.33f);
 	AddLoadTasks();
 	res_mgr.StartLoadScreen();

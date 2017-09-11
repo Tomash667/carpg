@@ -191,19 +191,23 @@ struct UnitWarpData
 	int where;
 };
 
-#define FALLBACK_TRAIN 0
-#define FALLBACK_REST 1
-#define FALLBACK_ARENA 2
-#define FALLBACK_ENTER 3
-#define FALLBACK_EXIT 4
-#define FALLBACK_CHANGE_LEVEL 5
-#define FALLBACK_NONE 6
-#define FALLBACK_ARENA_EXIT 7
-#define FALLBACK_USE_PORTAL 8
-#define FALLBACK_WAIT_FOR_WARP 9
-#define FALLBACK_ARENA2 10
-#define FALLBACK_CLIENT 11
-#define FALLBACK_CLIENT2 12
+enum class FALLBACK
+{
+	NO = -1,
+	TRAIN,
+	REST,
+	ARENA,
+	ENTER,
+	EXIT,
+	CHANGE_LEVEL,
+	NONE,
+	ARENA_EXIT,
+	USE_PORTAL,
+	WAIT_FOR_WARP,
+	ARENA2,
+	CLIENT,
+	CLIENT2
+};
 
 enum InventoryMode
 {
@@ -409,7 +413,6 @@ struct Game final : public Engine, public UnitEventHandler
 	void StartGameMode();
 
 	QUICKSTART quickstart;
-	HANDLE mutex;
 
 	// supershader
 	string sshader_code;
@@ -700,7 +703,8 @@ public:
 
 	//---------------------------------
 	// FALLBACK
-	int fallback_co, fallback_1, fallback_2;
+	FALLBACK fallback_co;
+	int fallback_1, fallback_2;
 	float fallback_t;
 
 	//--------------------------------------
@@ -1006,7 +1010,13 @@ public:
 	void BuildTmpInventory(int index);
 	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 
-	void BreakUnitAction(Unit& unit, bool fall = false, bool notify = false);
+	enum class BREAK_ACTION_MODE
+	{
+		NORMAL,
+		FALL,
+		INSTANT
+	};
+	void BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode = BREAK_ACTION_MODE::NORMAL, bool notify = false);
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();

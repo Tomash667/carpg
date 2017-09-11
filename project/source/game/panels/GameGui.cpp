@@ -454,7 +454,7 @@ void GameGui::DrawFront()
 	}
 
 	// œciemnianie
-	if(game.fallback_co != -1)
+	if(game.fallback_co != FALLBACK::NO)
 	{
 		int alpha;
 		if(game.fallback_t < 0.f)

@@ -1,11 +1,31 @@
 ﻿FEATURE:
++ vsync in options
+- innkeeper - stands still, no animations/actions
+- after alt tab - camera is moved down
+- can summon wolf outside of arena - there should be marked as WALL
+? verify version formatting to not include path number 0 ("0.5.0" -> "0.5")
 ===============================================================================================================
 CURRENT:
+- crash client when other player left on loading (worldmap, level?)
+- update about client move/animation is not resend C->S->C, only when stopped
+- crash C2 when C left on world map
 ? verify is window center is wnd_size/2 or real_size/2, update GameGuiInit::UdateGui
 ? cursor pos change from Vec2 to Int2, cursor testing, focus, click activation etc
 ? some todo from Ref is done here
 ===============================================================================================================
 NEW:
++ ref move mutex from resource manager
+- fmod 3d sound velocity
+- when using bull charge at speed 10 sound stays behind, even if it set as 2d
++ unk disappear after death
++ particle effect when unit have quest item
++ hide unit names ?
++ standardize combat system:
+	5lvl vs 5 lvs i as strong as 1vs1 etc
+	stats modifier: tanky hp*1.5, slow, dmg
+	swarm enemy - goblins, hp/4, dmg/4 but units x4
+- unit sometimes try to move thru building, reason unknown, speed 10 and see for yourself, unit pathfinding is poor - units blocks each other
++ minimal hp bar length
 + remove system_dir from Engine
 + faster potion using, take out weapon after drinking, allow drink potion after potion and then take out weapon
 + use uint2 for resolution
