@@ -1789,9 +1789,11 @@ void Game::OnCleanup()
 
 	draw_batch.Clear();
 	free_cave_data();
+	DeleteElements(game_players);
+	DeleteElements(old_players);
 
 	if(peer)
-		RakNet::RakPeerInterface::DestroyInstance(peer);
+		SLNet::RakPeerInterface::DestroyInstance(peer);
 }
 
 //=================================================================================================
@@ -2258,13 +2260,14 @@ void Game::SetGameText()
 	txReceivedGold = Str("receivedGold");
 	txYouDisconnected = Str("youDisconnected");
 	txYouKicked = Str("youKicked");
-	txPcWasKicked = Str("pcWasKicked");
-	txPcLeftGame = Str("pcLeftGame");
 	txGamePaused = Str("gamePaused");
 	txGameResumed = Str("gameResumed");
 	txDevmodeOn = Str("devmodeOn");
 	txDevmodeOff = Str("devmodeOff");
 	txPlayerLeft = Str("playerLeft");
+	txPlayerDisconnected = Str("playerDisconnected");
+	txPlayerQuit = Str("playerQuit");
+	txPlayerKicked = Str("playerKicked");
 
 	// obóz wrogów
 	txSGOOrcs = Str("sgo_orcs");

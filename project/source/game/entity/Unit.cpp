@@ -852,7 +852,7 @@ void Unit::UpdateEffects(float dt)
 	if(IsPlayer())
 	{
 		if(game.IsOnline() && player != game.pc && player->last_dmg_poison != poison_dmg)
-			game.game_players[player->id].update_flags |= PlayerInfo::UF_POISON_DAMAGE;
+			game.game_players[player->id]->update_flags |= PlayerInfo::UF_POISON_DAMAGE;
 		player->last_dmg_poison = poison_dmg;
 	}
 
@@ -2612,18 +2612,18 @@ void Unit::RecalculateStat(Attribute a, bool apply)
 {
 	int id = (int)a;
 	int old = stats.attrib[id];
-	StatState state;
+	//StatState state;
 
 	// calculate value = base + effect modifiers
-	int value = unmod_stats.attrib[id] + GetEffectModifier(EffectType::Attribute, id, (IsPlayer() ? &state : nullptr));
+	int value = unmod_stats.attrib[id]; // +GetEffectModifier(EffectType::Attribute, id, (IsPlayer() ? &state : nullptr));
 
 	if(value == old)
 		return;
 
 	// apply new value
 	stats.attrib[id] = value;
-	if(IsPlayer())
-		player->attrib_state[id] = state;
+	//if(IsPlayer())
+	//	player->attrib_state[id] = state;
 
 	if(apply)
 		ApplyStat(a, old, true);
@@ -2828,14 +2828,14 @@ void Unit::CalculateStats()
 }
 
 //=================================================================================================
-int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
+/*int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
 {
 	ValueBuffer buf;
 	if(state)
 		return buf.Get(*state);
 	else
 		return buf.Get();
-}
+}*/
 
 //=================================================================================================
 int Unit::CalculateMobility() const

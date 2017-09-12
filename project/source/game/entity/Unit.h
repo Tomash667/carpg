@@ -797,7 +797,7 @@ struct Unit
 
 	void CalculateStats();
 
-	int GetEffectModifier(EffectType type, int id, StatState* state) const;
+	//int GetEffectModifier(EffectType type, int id, StatState* state) const;
 
 	int CalculateMobility() const;
 	int CalculateMobility(const Armor& armor) const;
