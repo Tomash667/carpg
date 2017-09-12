@@ -6822,21 +6822,12 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->alcohol = 0.f;
 	u->moved = false;
 
-	if(!custom)
-	{
-		// to prevent sending hp changed message set temporary as fake unit
-		u->fake_unit = true;
-
-		// attributes & skills
-		u->data->GetStatProfile().Set(u->level, u->unmod_stats.attrib, u->unmod_stats.skill);
-		u->CalculateStats();
-
-		// hp
-		u->hp = u->hpmax = u->CalculateMaxHp();
-		u->stamina = u->stamina_max = u->CalculateMaxStamina();
-
-		u->fake_unit = false;
-	}
+	u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
+	u->data->GetStatProfile().Set(u->level, u->unmod_stats.attrib, u->unmod_stats.skill);
+	u->CalculateStats();
+	u->hp = u->hpmax = u->CalculateMaxHp();
+	u->stamina = u->stamina_max = u->CalculateMaxStamina();
+	u->fake_unit = false;
 
 	// items
 	u->weight = 0;

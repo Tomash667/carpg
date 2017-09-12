@@ -9,6 +9,7 @@ Version 0.6 (2017-10-??):
 - fixed crashes and invalid working of lobby when loading game with 3+ players
 - fixed clients failed to load when server quit on worldmap and then start new game
 - fixed using warp command when unit is using usable
+- fixed player stats panel showing randomly colors for attributes/skills
 
 --------------------------------------------------------------------------------
 Version 0.5 (2017-09-07):

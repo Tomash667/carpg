@@ -6,9 +6,6 @@
 ? verify version formatting to not include path number 0 ("0.5.0" -> "0.5")
 ===============================================================================================================
 CURRENT:
-? load old mp game
-- can't attack in MP
-- in firewall carpg is named "Role Playing Simulation"
 ===============================================================================================================
 NEW:
 + ref move mutex from resource manager
@@ -24,6 +21,7 @@ NEW:
 - unit sometimes try to move thru building, reason unknown, speed 10 and see for yourself, unit pathfinding is poor - units blocks each other
 + minimal hp bar length
 + vector of pointers that disallow null values, iterating over returns by ref
++ ref overcomplex player stats system
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

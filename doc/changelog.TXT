@@ -9,6 +9,7 @@ Wersja 0.6 (2017-10-??):
 - naprawiony crash i nieprawid³owe dzia³anie lobby gdy jest wczytywana gra z 3+ graczami
 - naprawiony b³¹d wczytywania klientów gdy serwer opuœci grê na mapie œwiata a potem rozpocznie now¹ grê
 - naprawiona komenda warp gdy jednostka u¿ywa obiektu
+- naprawiony b³¹d z losowym wyœwietlaniem kolorów przy atrybutach/umiejêtnoœciach
 
 --------------------------------------------------------------------------------
 Wersja 0.5 (2017-09-07):
