@@ -1519,7 +1519,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					switch(source)
 					{
 					case PS_CONSOLE:
-						console->itb.Reset();
+						console->Reset();
 						break;
 					case PS_CHAT:
 						game_gui->mp_box->itb.Reset();

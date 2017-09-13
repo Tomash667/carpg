@@ -5140,7 +5140,7 @@ void Game::WriteServerChanges(BitStream& stream)
 			stream.WriteCasted<byte>(c.ile);
 			break;
 		case NetChange::ADD_RUMOR:
-			WriteString1(stream, rumors[c.id]);
+			WriteString1(stream, game_gui->journal->GetRumors()[c.id]);
 			break;
 		case NetChange::HAIR_COLOR:
 			stream.Write(c.unit->netid);
@@ -6577,7 +6577,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			else
 			{
 				AddGameMsg3(GMS_ADDED_RUMOR);
-				rumors.push_back(BUF);
+				game_gui->journal->GetRumors().push_back(BUF);
 				game_gui->journal->NeedUpdate(Journal::Rumors);
 			}
 			break;
@@ -9583,7 +9583,7 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::CHEAT_REFRESH_COOLDOWN:
 			break;
 		case NetChange::ADD_NOTE:
-			WriteString1(stream, notes.back());
+			WriteString1(stream, game_gui->journal->GetNotes().back());
 			break;
 		case NetChange::USE_USEABLE:
 			stream.Write(c.id);
@@ -10271,7 +10271,7 @@ void Game::PrepareWorldData(BitStream& stream)
 	QuestManager::Get().Write(stream);
 
 	// rumors
-	WriteStringArray<byte, word>(stream, rumors);
+	WriteStringArray<byte, word>(stream, game_gui->journal->GetRumors());
 
 	// time
 	stream.WriteCasted<byte>(year);
@@ -10448,7 +10448,7 @@ bool Game::ReadWorldData(BitStream& stream)
 		return false;
 
 	// rumors
-	if(!ReadStringArray<byte, word>(stream, rumors))
+	if(!ReadStringArray<byte, word>(stream, game_gui->journal->GetRumors()))
 	{
 		Error("Read world: Broken packet for rumors.");
 		return false;
@@ -10739,7 +10739,7 @@ bool Game::ReadPlayerStartData(BitStream& stream)
 	byte flags;
 
 	if(!stream.Read(flags) ||
-		!ReadStringArray<word, word>(stream, notes))
+		!ReadStringArray<word, word>(stream, game_gui->journal->GetNotes()))
 		return false;
 
 	if(IS_SET(flags, 0x01))

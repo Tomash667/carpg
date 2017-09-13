@@ -3,6 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.6 (2017-10-??):
 - naprawiona komenda warp gdy jednostka u¿ywa obiektu
+- naprawione nieprawid³owe teksty plotek w dzienniku dla niektórych questów
 
 --------------------------------------------------------------------------------
 Wersja 0.5 (2017-09-07):
@@ -554,4 +555,4 @@ Za du¿o ¿eby wszystko wymieniaæ wiêc tylko najwa¿niejsze zmiany od wersji 0.1:
 	* zadania, plotki, newsy
 	* zapisywanie i wczytywanie
 	* pu³apki, czary wrogów
-	* dialogi		
+	* dialogi

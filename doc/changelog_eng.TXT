@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.6 (2017-10-??):
 - fixed using warp command when unit is using usable
+- fixed invalid rumor texts in journal for some quests
 
 --------------------------------------------------------------------------------
 Version 0.5 (2017-09-07):
@@ -544,4 +545,4 @@ Too many changes to write them all so only most important from 0.1:
 	* quests, rumors, news
 	* saving and loading
 	* traps, enemy spells
-	* dialogs							
+	* dialogs

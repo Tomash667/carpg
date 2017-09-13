@@ -2015,6 +2015,7 @@ other wanted_letter {
 //------------------------------------------------------------------------------
 book_scheme book {
 	texture "book.png"
+	// assuming 1024x768 resolution, this values are scaled
 	size {800 600}
 	regions {
 		{5 5 390 550}

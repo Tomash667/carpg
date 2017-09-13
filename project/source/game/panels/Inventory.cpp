@@ -10,6 +10,7 @@
 #include "AIController.h"
 #include "Chest.h"
 #include "Team.h"
+#include "BookPanel.h"
 
 /* UWAGI CO DO ZMIENNYCH
 index - indeks do items [0, 1, 2, 3...]
@@ -475,6 +476,8 @@ void Inventory::Update(float dt)
 					}
 					else if(item->type == IT_CONSUMABLE)
 						ConsumeItem(i_index);
+					else if(item->type == IT_BOOK)
+						ReadBook(item);
 					else if(item->IsWearable())
 					{
 						ITEM_SLOT type = ItemTypeToSlot(item->type);
@@ -2240,6 +2243,8 @@ void Inventory::Show()
 //=================================================================================================
 void Inventory::Hide()
 {
+	if(game.game_gui->book_panel->visible)
+		game.game_gui->book_panel->Hide();
 	LostFocus();
 	visible = false;
 }
@@ -2257,4 +2262,11 @@ void Inventory::UpdateGrid(bool mine)
 		game.BuildTmpInventory(1);
 		game.game_gui->inv_trade_other->UpdateScrollbar();
 	}
+}
+
+//=================================================================================================
+void Inventory::ReadBook(const Item* item)
+{
+	assert(item && item->type == IT_BOOK);
+	game.game_gui->book_panel->Show((const Book*)item);
 }

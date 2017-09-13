@@ -622,6 +622,9 @@
     <ClCompile Include="source\engine\gui\Gui.cpp">
       <Filter>2. engine\gui</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\panels\BookPanel.cpp">
+      <Filter>3. game\panels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1242,6 +1245,9 @@
     </ClInclude>
     <ClInclude Include="source\engine\BitStreamFunc.h">
       <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\panels\BookPanel.h">
+      <Filter>3. game\panels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

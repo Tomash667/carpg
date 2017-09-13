@@ -9,6 +9,8 @@
 + usable bookshelf
 + q_zlo_ksiega, runes
 ! remove ShowWindow(hwnd, SW_HIDE);
++ sound, open book, change page
+? reload mp game with quests, notes & rumors
 ===============================================================================================================
 + vsync in options
 - innkeeper - stands still, no animations/actions
@@ -44,6 +46,7 @@ NEW:
 + refactor load_screen from Resourcemanager.cpp
 + refactor Language.h from Gui.cpp, GetNumberDialog
 + open wanted letter in fullscreen, show face
++ ref remove DWORD
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

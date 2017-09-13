@@ -19,6 +19,7 @@ class Minimap;
 class MpBox;
 class GameMessages;
 class ActionPanel;
+class BookPanel;
 
 //-----------------------------------------------------------------------------
 enum class OpenPanel
@@ -112,6 +113,7 @@ public:
 	MpBox* mp_box;
 	GameMessages* game_messages;
 	ActionPanel* action_panel;
+	BookPanel* book_panel;
 	//
 	bool use_cursor;
 

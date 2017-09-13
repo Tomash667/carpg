@@ -4652,16 +4652,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 									return;
 								}
 
-								if(Net::IsOnline())
-								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::ADD_RUMOR;
-									c.id = rumors.size();
-								}
-
-								rumors.push_back(Format(game_gui->journal->txAddTime, day + 1, month + 1, year, ctx.dialog_s_text.c_str()));
-								game_gui->journal->NeedUpdate(Journal::Rumors);
-								AddGameMsg3(GMS_ADDED_RUMOR);
+								game_gui->journal->AddRumor(ctx.dialog_s_text.c_str());
 								DialogTalk(ctx, ctx.dialog_s_text.c_str());
 								++ctx.dialog_pos;
 								return;
@@ -13412,7 +13403,6 @@ void Game::ClearGameVarsOnNewGame()
 	game_speed = 1.f;
 	dungeon_level = 0;
 	QuestManager::Get().Reset();
-	notes.clear();
 	year = 100;
 	day = 0;
 	month = 0;
@@ -13423,7 +13413,6 @@ void Game::ClearGameVarsOnNewGame()
 	szansa_na_spotkanie = 0.f;
 	create_camp = 0;
 	arena_fighter = nullptr;
-	rumors.clear();
 	first_city = true;
 	news.clear();
 	pc_data.picking_item_state = 0;
@@ -15489,15 +15478,23 @@ void Game::PreloadItem(const Item* citem)
 					}
 				}
 			}
+			else if(item.type == IT_BOOK)
+			{
+				Book& book = item.ToBook();
+				ResourceManager::Get<Texture>().AddLoadTask(book.tex);
+			}
+
 			if(item.tex)
 				ResourceManager::Get<Texture>().AddLoadTask(item.tex, &item, TaskCallback(this, &Game::GenerateItemImage), true);
 			else
 				ResourceManager::Get<Mesh>().AddLoadTask(item.mesh, &item, TaskCallback(this, &Game::GenerateItemImage), true);
+
 			item.state = ResourceState::Loading;
 		}
 	}
 	else
 	{
+		// instant loading
 		if(item.type == IT_ARMOR)
 		{
 			Armor& armor = item.ToArmor();
@@ -15511,6 +15508,12 @@ void Game::PreloadItem(const Item* citem)
 				}
 			}
 		}
+		else if(item.type == IT_BOOK)
+		{
+			Book& book = item.ToBook();
+			ResourceManager::Get<Texture>().Load(book.tex);
+		}
+
 		if(item.tex)
 		{
 			ResourceManager::Get<Texture>().Load(item.tex);
@@ -15523,6 +15526,7 @@ void Game::PreloadItem(const Item* citem)
 			task.ptr = &item;
 			GenerateItemImage(task);
 		}
+
 		item.state = ResourceState::Loaded;
 	}
 }

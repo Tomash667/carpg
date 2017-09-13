@@ -791,7 +791,7 @@ item book_undead {
 item book_behind_the_wall {
 	name "Za œcian¹"
 	desc "Ksiêga o niewidzialnym zagro¿eniu które jest tu¿ obok."
-	text "[Treœæ nieznanego autora prze³o¿ona na jêzyk ludzi]\n\nZa os³on¹ rzeczywistoœci tu¿ obok nas czaj¹ siê koszmary..."
+	text "[Treœæ nieznanego autora prze³o¿ona na jêzyk ludzi]\n\nZa os³on¹ rzeczywistoœci tu¿ obok nas czaj¹ siê koszmary. Tylko krucha œciana oddziela nas od potwornoœci które czasem dostaj¹ siê do naszego œwiata. Nienazwane istoty atakuj¹ce umys³ i cia³o. Wielu po takim spotkaniu postrada³o umys³."
 }
 item book_adventurer {
 	name "Poradnik poszukiwaczy przygód"
@@ -800,8 +800,8 @@ item book_adventurer {
 }
 item book_ld {
 	name "Œwiadomy sen"
-	desc "Ksiêga o orkach"
-	text ""
+	desc "Ksiêga o œwiadomym œnie"
+	text "O podró¿y w g³¹b w³asnego umys³u - autor nieznany.\n\nŒwiadomy sen to sen w którym œni¹cy zdaje sobie ¿e jest to sen. "
 }
 item book_runic {
 	name "Runiczna ksiêga"

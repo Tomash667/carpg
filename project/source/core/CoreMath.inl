@@ -528,6 +528,11 @@ inline Vec2 Vec2::operator - (const Vec2& v) const
 	return result;
 }
 
+inline Vec2 Vec2::operator * (const Vec2& v) const
+{
+	return Vec2(x * v.x, y * v.y);
+}
+
 inline Vec2 Vec2::operator * (float s) const
 {
 	XMVECTOR v1 = XMLoadFloat2(this);

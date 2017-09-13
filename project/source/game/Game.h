@@ -683,12 +683,7 @@ public:
 	vector<CollisionObject> global_col; // wektor na tymczasowe obiekty, czêsto u¿ywany przy zbieraniu obiektów do kolizji
 	vector<btCollisionShape*> shapes;
 	vector<CameraCollider> cam_colliders;
-
-	//---------------------------------
-	// WIADOMOŒCI / NOTATKI / PLOTKI
-	vector<string> notes;
-	vector<string> rumors;
-
+	
 	//---------------------------------
 	// WCZYTYWANIE
 	float loading_dt, loading_cap;

@@ -1256,6 +1256,11 @@ bool LoadBookScheme(Tokenizer& t, Crc& crc)
 
 		if(scheme->regions.empty())
 			t.Throw("No regions.");
+		for(uint i = 1; i < scheme->regions.size(); ++i)
+		{
+			if(scheme->regions[0].Size() != scheme->regions[i].Size())
+				t.Throw("Scheme region sizes don't match (TODO).");
+		}
 		if(!scheme->tex)
 			t.Throw("No texture.");
 

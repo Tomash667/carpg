@@ -110,6 +110,7 @@ public:
 private:
 	void GetTooltip(TooltipController* tooltip, int group, int id);
 	void UpdateGrid(bool mine);
+	void ReadBook(const Item* item);
 
 	static TooltipController tooltip;
 	Game& game;

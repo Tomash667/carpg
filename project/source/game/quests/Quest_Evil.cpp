@@ -65,20 +65,8 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			// dodaj plotkê
 			if(!quest_manager.RemoveQuestRumor(P_ZLO))
-			{
-				cstring text = Format(game->txQuest[232], GetStartLocationName());
-				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
-				game->game_gui->journal->NeedUpdate(Journal::Rumors);
-				game->AddGameMsg3(GMS_ADDED_RUMOR);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::ADD_RUMOR;
-					c.id = int(game->rumors.size()) - 1;
-				}
-			}
+				game->game_gui->journal->AddRumor(Format(game->txQuest[232], GetStartLocationName()));
 		}
 		break;
 	case Progress::Started:

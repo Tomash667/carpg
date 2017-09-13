@@ -7,6 +7,7 @@
 #include "GameGui.h"
 #include "WorldMapGui.h"
 #include "LoadScreen.h"
+#include "Journal.h"
 
 char mapa_t[] = {
 	"$$$$$$$$###########$$$"
@@ -186,7 +187,7 @@ void Game::StartTutorial()
 	pc->unit->slots[SLOT_ARMOR] = item;
 	pc->unit->weight += pc->unit->slots[SLOT_ARMOR]->weight;
 	pc->unit->gold = 10;
-	notes.push_back(txTutNote);
+	game_gui->journal->GetNotes().push_back(txTutNote);
 
 	Int2 start_tile;
 

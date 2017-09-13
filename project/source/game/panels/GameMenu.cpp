@@ -3,9 +3,7 @@
 #include "GameMenu.h"
 #include "Language.h"
 #include "KeyStates.h"
-
-//-----------------------------------------------------------------------------
-TEX GameMenu::tLogo;
+#include "ResourceManager.h"
 
 //=================================================================================================
 GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prev_can_save(true), prev_can_load(true), prev_hardcore_mode(false)
@@ -115,4 +113,10 @@ void GameMenu::Set(bool can_save, bool can_load, bool hardcore_mode)
 		bt[1].text = (hardcore_mode ? txSaveAndExit : txSave);
 		prev_hardcore_mode = hardcore_mode;
 	}
+}
+
+//=================================================================================================
+void GameMenu::LoadData()
+{
+	ResourceManager::Get<Texture>().AddLoadTask("logo_small.png", tLogo);
 }
