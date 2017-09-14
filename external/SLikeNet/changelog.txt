@@ -1,0 +1,87 @@
+legend:
++        = added feature
+*        = changed feature (bugfixes, changed behavior, etc.)
+-        = removed feature
+***      = special note
+#x       = refers to the JIRA issue number
+PRx      = GitHub pull request number
+SECURITY = special marker to indicate fixes related to security issues
+
+If you require a more detailed list on the changes, please refer to the
+Subversion repository history at: https://www.slikesoft.com/svn/slikenet/
+
+version 0.1.0 (07-26-2017 21:00 UTC)
+*** This release satisfies/processes 29 complete and 3 partial GitHub pull requests (up to pull request #78)
++ Initial Release
+
+The following lists changes compared to RakNet 4.081/4.082:
+General:
+  + added support for VS 2010-2017, GCC 4.6.4-5.4.0, and Xcode 7.3.1 (#1)
+  + added new retail configuration (#96)
+  * SECURITY: multiple security fixes
+  * replaced multi-byte character set support with unicode support (#23)
+  * fixed mixup between Unicode/MBCS/ANSI character set usage (#23)
+  * several further changes, fixes, and code cleanup (#6, #9, #11, etc.)
+  * several documentation updates including a more detailed doxygen documentation (#101)
+  - dropped support for VS < 2010 and GCC < 4.6.4 (#1)
+Core:
+  General:
+    * fixed case for Windows includes in WindowsIncludes.h (#42 - PR37)
+  BitStream:
+    * fixed <<-operator for BitStream not accepting const parameters (#44 - PR53)
+  CCRakNetSlidingWindow:
+    * use std::abs() instead of abs for proper C++11 support in CCRakNetSlidingWindow.cpp (#46 - PR64)
+  DataStructures:
+    * minor improvement to DataStructures::Queue:WeightedGraph::GetShortestPath() by replacing Queue::Size() calls with Queue::IsEmpty() (#34 - PR14)
+    * fixed incorrect DataStructures::Queue-copy-ctor (#26)
+  NatPunchthrough:
+    * fixed NatPunchthroughClient::SendOutOfBand() producing undefined messages, if __GET_TIME_64BIT is set to 0 (#38 - PR34)
+    * fixed TestModeToString() returning non-const char pointer (#35, #59, #65 - PR22, PR31, PR61)
+  PacketFileLogger:
+    * fixed incorrectly instantiating/destroying the PacketLogger class instead of the PacketFileLogger when calling PacketFileLogger::GetInstance()/DestroyInstance() (#81)
+  RakNetSocket2:
+    * fixed incomplete zeroing of data in RakNetSocket2_Berkley_NativeClient with RAKNET_SUPPORT_IPV6 set to 1 (#31 - PR4)
+  RakPeer:
+    * fixed RakPeer::GetTimeoutTime() always returning defaultTimeoutTime (#37 - PR30)
+    * fixed incorrect delete in RakPeer::DerefAllSockets() when using a custom allocator (#48 - PR72)
+    * fixed deadlock in ProcessOfflineNetworkPacket() when building with LIBCAT_SECURITY set to 1 (#43)
+  RakString:
+    * fixed undefined behavior in RakString::Assign() on non-Windows platforms if either the passed or the formated string exceeds 511 characters (#64 - PR60)
+    * fixed undefined behavior in RakString::ToWideChar() if called with very long strings (#12)
+    * fixed undefined behavior in RakString::FromWideChar() if called with very long strings (#102)
+    * fixed memory/resource leak in RakString format-ctors and Set() method on certain platforms/compilers (#40 - PR36)
+  ReplicaManager3:
+    * fixed resource leak caused by ReplicaManager3::OnConstruction() (#45 - PR63)
+    * fixed comparing pointer to boolean in ReplicaManager3::AutoCreateConnectionList() (#36, #63 - PR29, PR56)
+  UDPProxy:
+    * fixed crash in UDPProxyClient::OnPingServers() (#39 - PR35)
+    * fixed wrong sort order in UDPProxyCoordinator::ForwardingRequestComp() and related incorrectly sorted UDPProxyCoordinator::forwardingRequestList (#47 - PR67)
+Extensions:
+  Autopatcher:
+    * fixed memory leak in ApplyPatch: TestPatchInMemory() (#32 - PR7)
+  IrrlichtDemo:
+    * fixed only partial upgrade of Irrlicht SDK to 1.8 (#91)
+  XML:
+    * upgraded XMLParser library from 2.41 to 2.44 (#103)
+Samples:
+  AutopatcherServer:
+    * fixed broken AutopatcherPostgreRepository2_WithXDelta due to non-overwritten MakePatch()-method (#14)
+  CloudServer:
+    * fixed CloudServerHelper::OnJoinCloudResult() setting incorrect default port (#15)
+  CrossConnectionTest:
+    * fixed incorrect check for incoming connection in CrossConnectionTest (#33 - PR10)
+  FileListTransfer:
+    * fixed FileListTransfer sample passing incorrect values to TCPInterface::Start() (#21)
+Building:
+  General:
+    * resolved several compile/link errors in specific configurations/projects (#7, #13, #16, #18, #19, #20, #24, #25, #26, #28, #87, #88, #89, #90, #92, #94, #97)
+    * resolved compile/link warnings (#11)
+  CMake:
+    * resolved CMake warnings/issues (#11, #78, #98, #99)
+    * update to CMake file to support VS 2015 (#46 - PR64)
+    * updated FindBoost CMake file from CMake 2.8.0 -> CMake 2.8.10.2 (#99)
+    * updated CMake file to detect FMOD Ex up to version 4.44.59 (#78)
+    * changed to not build sample projects on Linux/Mac by default (#79)
+    * fixed CMake not compiling samples by default (#30, #62 - PR51, PR54)
+    * fixed FindPortAudio CMake module ignoring libPortAudioCpp setting (#29 - PR48)
+    * fixed incorrect usage of PARENT_SCOPE and missing quoting of env-variable in CMake file (#77 - PR37)

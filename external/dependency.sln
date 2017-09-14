@@ -1,10 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlibstat", "zlib\contrib\vstudio\vc11\zlibstat.vcxproj", "{745DEC58-EBB3-47A9-A9B8-4C6627C01BF8}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RakNet", "RakNet\RakNet.vcxproj", "{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib\contrib\vstudio\vc11\zlibstat.vcxproj", "{745DEC58-EBB3-47A9-A9B8-4C6627C01BF8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "Bullet\build\vs2015\BulletCollision.vcxproj", "{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -18,6 +16,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletDynamics", "Bullet\bu
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "Bullet\build\vs2015\LinearMath.vcxproj", "{58D08522-C69F-904C-A7ED-733DA229F1BA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SLikeNet", "SLikeNet\Lib\LibStatic\SLikeNet.vcxproj", "{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,14 +33,6 @@ Global
 		{745DEC58-EBB3-47A9-A9B8-4C6627C01BF8}.Release|Win32.ActiveCfg = Release|Win32
 		{745DEC58-EBB3-47A9-A9B8-4C6627C01BF8}.Release|Win32.Build.0 = Release|Win32
 		{745DEC58-EBB3-47A9-A9B8-4C6627C01BF8}.Release|x64.ActiveCfg = Release|Win32
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|Win32.ActiveCfg = Debug|Win32
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|Win32.Build.0 = Debug|Win32
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|x64.ActiveCfg = Debug|x64
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|x64.Build.0 = Debug|x64
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|Win32.ActiveCfg = Release|Win32
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|Win32.Build.0 = Release|Win32
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|x64.ActiveCfg = Release|x64
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|x64.Build.0 = Release|x64
 		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}.Debug|Win32.ActiveCfg = Debug|Win32
 		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}.Debug|Win32.Build.0 = Debug|Win32
 		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}.Debug|x64.ActiveCfg = Debug|x64
@@ -65,8 +57,19 @@ Global
 		{58D08522-C69F-904C-A7ED-733DA229F1BA}.Release|Win32.Build.0 = Release|Win32
 		{58D08522-C69F-904C-A7ED-733DA229F1BA}.Release|x64.ActiveCfg = Release|x64
 		{58D08522-C69F-904C-A7ED-733DA229F1BA}.Release|x64.Build.0 = Release|x64
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|Win32.Build.0 = Debug|Win32
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|x64.ActiveCfg = Debug|x64
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|x64.Build.0 = Debug|x64
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|Win32.ActiveCfg = Release|Win32
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|Win32.Build.0 = Release|Win32
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|x64.ActiveCfg = Release|x64
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {62B11B75-740B-4852-BC56-D55C458A462B}
 	EndGlobalSection
 EndGlobal

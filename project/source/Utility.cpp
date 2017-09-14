@@ -8,6 +8,7 @@ static cstring SHARED_MEMORY_NAME = "CaRpg-DelayLockMemory";
 static HANDLE mutex;
 static HANDLE shmem;
 static int* mem;
+static int app_id = 1;
 
 //=================================================================================================
 void utility::InitDelayLock()
@@ -64,6 +65,8 @@ void utility::IncrementDelayLock()
 //=================================================================================================
 void utility::WaitForDelayLock(int delay)
 {
+	app_id = delay;
+
 	mutex = CreateMutex(nullptr, false, MUTEX_NAME);
 	if(!mutex)
 	{
@@ -98,5 +101,12 @@ void utility::WaitForDelayLock(int delay)
 		if(*mem == delay)
 			wait = false;
 		ReleaseMutex(mutex);
+		Sleep(250);
 	}
+}
+
+//=================================================================================================
+int utility::GetAppId()
+{
+	return app_id;
 }

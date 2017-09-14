@@ -45,6 +45,28 @@ enum class JoinResult
 };
 
 //-----------------------------------------------------------------------------
+enum class NetState
+{
+	Client_PingIp,
+	Client_WaitingForPassword,
+	Client_Connecting,
+	Client_BeforeTransfer,
+	Client_ReceivedWorldData,
+	Client_ReceivedPlayerStartData,
+	Client_ChangingLevel,
+	Client_ReceivedLevelData,
+	Client_ReceivedPlayerData,
+	Client_Start,
+	Client_StartOnWorldmap,
+
+	Server_Starting,
+	Server_Initialized,
+	Server_WaitForPlayersToLoadWorld,
+	Server_EnterLocation,
+	Server_Send
+};
+
+//-----------------------------------------------------------------------------
 class Net
 {
 public:
