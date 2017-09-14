@@ -612,7 +612,7 @@ void Game::UpdateAi(float dt)
 							if(IS_SET(u.data->flags2, F2_XAR))
 							{
 								// szukaj o³tarza
-								Obj* o = FindObject("bloody_altar");
+								BaseObject* o = BaseObject::Get("bloody_altar");
 								Object* obj = nullptr;
 								for(vector<Object>::iterator it2 = local_ctx.objects->begin(), end2 = local_ctx.objects->end(); it2 != end2; ++it2)
 								{
@@ -864,8 +864,8 @@ void Game::UpdateAi(float dt)
 										if(IS_SET(u.data->flags2, F2_AI_TRAIN) && Rand() % 5 == 0)
 										{
 											static vector<Object*> do_cw;
-											Obj* manekin = FindObject("melee_target"),
-												*tarcza = FindObject("bow_target");
+											BaseObject* manekin = BaseObject::Get("melee_target"),
+												*tarcza = BaseObject::Get("bow_target");
 											for(vector<Object>::iterator it2 = ctx.objects->begin(), end2 = ctx.objects->end(); it2 != end2; ++it2)
 											{
 												if((it2->base == manekin || (it2->base == tarcza && u.HaveBow())) && Vec3::Distance(it2->pos, u.pos) < 10.f)

@@ -9,7 +9,7 @@
 //=================================================================================================
 Mesh* Usable::GetMesh() const
 {
-	Obj* base_obj = GetBaseObj();
+	BaseObject* base_obj = GetBaseObject();
 	if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
 	{
 		assert(InRange(variant, 0, (int)base_obj->variant->count));
@@ -26,7 +26,7 @@ void Usable::Save(HANDLE file, bool local)
 	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
 	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
-	Obj* base_obj = GetBaseObj();
+	BaseObject* base_obj = GetBaseObject();
 	if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
 		WriteFile(file, &variant, sizeof(variant), &tmp, nullptr);
 
@@ -44,7 +44,7 @@ void Usable::Load(HANDLE file, bool local)
 	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
 	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
-	if(LOAD_VERSION >= V_0_2_20 && IS_SET(GetBaseObj()->flags2, OBJ2_VARIANT))
+	if(LOAD_VERSION >= V_0_2_20 && IS_SET(GetBaseObject()->flags2, OBJ2_VARIANT))
 		ReadFile(file, &variant, sizeof(variant), &tmp, nullptr);
 	else
 		variant = -1;

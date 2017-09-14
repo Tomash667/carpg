@@ -658,10 +658,10 @@ void Game::AddLoadTasks()
 	// preload objects
 	for(uint i = 0; i < n_objs; ++i)
 	{
-		Obj& o = g_objs[i];
+		BaseObject& o = g_objs[i];
 		if(IS_SET(o.flags2, OBJ2_VARIANT))
 		{
-			VariantObj& vo = *o.variant;
+			VariantObject& vo = *o.variant;
 			if(!vo.loaded)
 			{
 				for(uint i = 0; i < vo.count; ++i)
@@ -688,7 +688,7 @@ void Game::AddLoadTasks()
 	for(uint i = 0; i < n_base_usables; ++i)
 	{
 		BaseUsable& bu = g_base_usables[i];
-		bu.obj = FindObject(bu.obj_name);
+		bu.obj = BaseObject::Get(bu.obj_name);
 		if(!nosound && bu.sound_id)
 			bu.sound = sound_mgr.Get(bu.sound_id);
 		if(bu.item_id)
@@ -792,7 +792,7 @@ void Game::AddLoadTasks()
 }
 
 //=================================================================================================
-void Game::SetupObject(Obj& obj)
+void Game::SetupObject(BaseObject& obj)
 {
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 	Mesh::Point* point;
@@ -801,14 +801,14 @@ void Game::SetupObject(Obj& obj)
 	{
 		if(IS_SET(obj.flags2, OBJ2_VARIANT))
 		{
-			VariantObj& vo = *obj.variant;
+			VariantObject& vo = *obj.variant;
 			for(uint i = 0; i < vo.count; ++i)
 				mesh_mgr.Load(vo.entries[i].mesh);
 		}
 		else if(obj.mesh_id)
 			mesh_mgr.Load(obj.mesh);
 	}
-	
+
 	if(IS_SET(obj.flags2, OBJ2_VARIANT))
 	{
 		assert(!IS_SET(obj.flags, OBJ_DOUBLE_PHYSICS) && !IS_SET(obj.flags2, OBJ2_MULTI_PHYSICS)); // not supported for variant mesh yet
@@ -851,10 +851,10 @@ void Game::SetupObject(Obj& obj)
 		}
 
 		assert(points.size() > 1u);
-		obj.next_obj = new Obj[points.size() + 1];
+		obj.next_obj = new BaseObject[points.size() + 1];
 		for(uint i = 0, size = points.size(); i < size; ++i)
 		{
-			Obj& o2 = obj.next_obj[i];
+			BaseObject& o2 = obj.next_obj[i];
 			o2.shape = new btBoxShape(ToVector3(points[i]->size));
 			if(IS_SET(obj.flags, OBJ_PHY_BLOCKS_CAM))
 				o2.flags = OBJ_PHY_BLOCKS_CAM;
@@ -870,7 +870,7 @@ void Game::SetupObject(Obj& obj)
 		if(point2 && point2->IsBox())
 		{
 			assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
-			obj.next_obj = new Obj("", 0, 0, "", "");
+			obj.next_obj = new BaseObject("", 0, 0, "", "");
 			if(!IS_SET(obj.flags, OBJ_NO_PHYSICS))
 			{
 				btBoxShape* shape = new btBoxShape(ToVector3(point2->size));

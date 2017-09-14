@@ -9933,7 +9933,7 @@ void Game::GenerateDungeonObjects()
 						pt = pos_to_pt(inside->portal->pos);
 					else
 					{
-						Object* o = local_ctx.FindObject(FindObject("portal"));
+						Object* o = local_ctx.FindObject(BaseObject::Get("portal"));
 						if(o)
 							pt = pos_to_pt(o->pos);
 						else
@@ -9967,7 +9967,7 @@ void Game::GenerateDungeonObjects()
 		for(int i = 0; i < rt->count && fail > 0; ++i)
 		{
 			bool is_variant = false;
-			Obj* obj = FindObject(rt->objs[i].id, &is_variant);
+			BaseObject* obj = BaseObject::Get(rt->objs[i].id, &is_variant);
 			if(!obj)
 				continue;
 
@@ -10190,7 +10190,7 @@ void Game::GenerateDungeonObjects()
 
 				if(IS_SET(obj->flags, OBJ_TABLE))
 				{
-					Obj* stol = FindObject(Rand() % 2 == 0 ? "table" : "table2");
+					BaseObject* stol = BaseObject::Get(Rand() % 2 == 0 ? "table" : "table2");
 
 					// stó³
 					{
@@ -10205,7 +10205,7 @@ void Game::GenerateDungeonObjects()
 					}
 
 					// sto³ki
-					Obj* stolek = FindObject("stool");
+					BaseObject* stolek = BaseObject::Get("stool");
 					int ile = Random(2, 4);
 					int d[4] = { 0,1,2,3 };
 					for(int i = 0; i < 4; ++i)
@@ -10302,7 +10302,7 @@ void Game::GenerateDungeonObjects()
 						u->pos = pos;
 						u->rot = rot;
 						u->user = nullptr;
-						Obj* base_obj = u->GetBase()->obj;
+						BaseObject* base_obj = u->GetBase()->obj;
 						if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
 						{
 							// extra code for bench
@@ -10355,7 +10355,7 @@ void Game::GenerateDungeonObjects()
 				}
 
 				if(is_variant)
-					obj = FindObject(rt->objs[i].id);
+					obj = BaseObject::Get(rt->objs[i].id);
 			}
 		}
 
@@ -10379,7 +10379,7 @@ void Game::GenerateDungeonObjects()
 	if(local_ctx.chests->empty())
 	{
 		// niech w podziemiach bêdzie minimum 1 skrzynia
-		Obj* obj = FindObject("chest");
+		BaseObject* obj = BaseObject::Get("chest");
 		for(int i = 0; i < 100; ++i)
 		{
 			on_wall.clear();
@@ -11243,7 +11243,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 		if(!it->base)
 			continue;
 
-		Obj* obj = it->base;
+		BaseObject* obj = it->base;
 
 		if(IS_SET(obj->flags, OBJ_BUILDING))
 		{
@@ -11272,7 +11272,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 
 	if(ctx.chests)
 	{
-		Obj* chest = FindObject("chest");
+		BaseObject* chest = BaseObject::Get("chest");
 		for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
 			SpawnObjectExtras(ctx, chest, (*it)->pos, (*it)->rot, nullptr, nullptr, 1.f, flags);
 	}
@@ -11638,7 +11638,7 @@ void Game::GenerateCaveObjects()
 	}
 
 	// stalaktyty
-	Obj* obj = FindObject("stalactite");
+	BaseObject* obj = BaseObject::Get("stalactite");
 	static vector<Int2> sta;
 	for(int count = 0, tries = 200; count < 50 && tries>0; --tries)
 	{
@@ -11672,7 +11672,7 @@ void Game::GenerateCaveObjects()
 	}
 
 	// krzaki
-	obj = FindObject("plant2");
+	obj = BaseObject::Get("plant2");
 	for(int i = 0; i < 150; ++i)
 	{
 		Int2 pt = cave->GetRandomTile();
@@ -11689,7 +11689,7 @@ void Game::GenerateCaveObjects()
 	}
 
 	// grzyby
-	obj = FindObject("mushrooms");
+	obj = BaseObject::Get("mushrooms");
 	for(int i = 0; i < 100; ++i)
 	{
 		Int2 pt = cave->GetRandomTile();
@@ -11706,7 +11706,7 @@ void Game::GenerateCaveObjects()
 	}
 
 	// kamienie
-	obj = FindObject("rock");
+	obj = BaseObject::Get("rock");
 	sta.clear();
 	for(int i = 0; i < 80; ++i)
 	{
@@ -14187,7 +14187,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 			}
 			else
 			{
-				Obj* obj = FindObject("torch");
+				BaseObject* obj = BaseObject::Get("torch");
 
 				// pochodnia przy œcianie
 				{
@@ -14432,7 +14432,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 		if(hardcore_mode)
 		{
-			Object* o = local_ctx.FindObject(FindObject("portal"));
+			Object* o = local_ctx.FindObject(BaseObject::Get("portal"));
 
 			OutsideLocation* loc = new OutsideLocation;
 			loc->active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
@@ -14465,7 +14465,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 				c->AddItem(kartka, 1, 1);
 			else
 			{
-				Object* o = local_ctx.FindObject(FindObject("portal"));
+				Object* o = local_ctx.FindObject(BaseObject::Get("portal"));
 				assert(0);
 				if(o)
 				{
@@ -17464,7 +17464,7 @@ void Game::InitQuests()
 	quest_manager.unaccepted_quests.push_back(quest_crazies);
 
 	// sekret
-	secret_state = (FindObject("tomashu_dom")->mesh ? SECRET_NONE : SECRET_OFF);
+	secret_state = (BaseObject::Get("tomashu_dom")->mesh ? SECRET_NONE : SECRET_OFF);
 	GetSecretNote()->desc.clear();
 	secret_where = -1;
 	secret_where2 = -1;
@@ -18011,7 +18011,7 @@ cstring tartak_objs[] = {
 	"firewood"
 };
 const uint n_tartak_objs = countof(tartak_objs);
-Obj* tartak_objs_ptrs[n_tartak_objs];
+BaseObject* tartak_objs_ptrs[n_tartak_objs];
 
 void Game::GenerateSawmill(bool in_progress)
 {
@@ -18066,7 +18066,7 @@ void Game::GenerateSawmill(bool in_progress)
 	if(!tartak_objs_ptrs[0])
 	{
 		for(uint i = 0; i < n_tartak_objs; ++i)
-			tartak_objs_ptrs[i] = FindObject(tartak_objs[i]);
+			tartak_objs_ptrs[i] = BaseObject::Get(tartak_objs[i]);
 	}
 
 	UnitData& ud = *FindUnitData("artur_drwal");
@@ -18086,7 +18086,7 @@ void Game::GenerateSawmill(bool in_progress)
 		for(int i = 0; i < 25; ++i)
 		{
 			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
-			Obj* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
+			BaseObject* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
 			SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 
@@ -18106,7 +18106,7 @@ void Game::GenerateSawmill(bool in_progress)
 		// budynek
 		Vec3 spawn_pt;
 		float rot = PI / 2 * (Rand() % 4);
-		SpawnObject(local_ctx, FindObject("tartak"), Vec3(128, wys, 128), rot, 1.f, &spawn_pt);
+		SpawnObject(local_ctx, BaseObject::Get("tartak"), Vec3(128, wys, 128), rot, 1.f, &spawn_pt);
 
 		// artur drwal
 		Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pt, ud, nullptr, -2);
@@ -18120,7 +18120,7 @@ void Game::GenerateSawmill(bool in_progress)
 		for(int i = 0; i < 25; ++i)
 		{
 			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
-			Obj* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
+			BaseObject* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
 			SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 
@@ -18161,7 +18161,7 @@ void Object::Swap(Object& o)
 
 	p = base;
 	base = o.base;
-	o.base = (Obj*)p;
+	o.base = (BaseObject*)p;
 
 	// 	p = ptr;
 	// 	ptr = o.ptr;
@@ -18507,8 +18507,8 @@ bool Game::GenerateMine()
 		room.size = Int2(5, 5);
 
 		// dodaj drzwi, portal, pochodnie
-		Obj* portal = FindObject("portal"),
-			*pochodnia = FindObject("torch");
+		BaseObject* portal = BaseObject::Get("portal"),
+			*pochodnia = BaseObject::Get("torch");
 
 		// drzwi
 		{
@@ -18664,7 +18664,7 @@ bool Game::GenerateMine()
 	// generuj rudê
 	if(generuj_rude)
 	{
-		Obj* iron_ore = FindObject("iron_ore");
+		BaseObject* iron_ore = BaseObject::Get("iron_ore");
 
 		// usuñ star¹ rudê
 		if(quest_mine->mine_state3 != Quest_Mine::State3::None)
@@ -18796,15 +18796,15 @@ bool Game::GenerateMine()
 	// generuj nowe obiekty
 	if(!nowe.empty())
 	{
-		Obj* kamien = FindObject("rock"),
-			*krzak = FindObject("plant2"),
-			*grzyb = FindObject("mushrooms");
+		BaseObject* kamien = BaseObject::Get("rock"),
+			*krzak = BaseObject::Get("plant2"),
+			*grzyb = BaseObject::Get("mushrooms");
 
 		for(vector<Int2>::iterator it = nowe.begin(), end = nowe.end(); it != end; ++it)
 		{
 			if(Rand() % 10 == 0)
 			{
-				Obj* obj;
+				BaseObject* obj;
 				switch(Rand() % 3)
 				{
 				default:

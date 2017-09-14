@@ -1507,13 +1507,13 @@ void Game::ApplyTiles(float* _h, TerrainTile* _tiles)
 	terrain->CalculateBox();
 }
 
-Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float rot, float scale, Vec3* out_point, int variant)
+Object* Game::SpawnObject(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, float scale, Vec3* out_point, int variant)
 {
 	int obj_id, obj_t;
 
 	if(IS_SET(obj->flags, OBJ_TABLE))
 	{
-		Obj* stol = FindObject(Rand() % 2 == 0 ? "table" : "table2");
+		BaseObject* stol = BaseObject::Get(Rand() % 2 == 0 ? "table" : "table2");
 
 		// stó³
 		{
@@ -1530,7 +1530,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 		}
 
 		// sto³ki
-		Obj* stolek = FindObject("stool");
+		BaseObject* stolek = BaseObject::Get("stool");
 		int ile = Random(2, 4);
 		int d[4] = { 0,1,2,3 };
 		for(int i = 0; i < 4; ++i)
@@ -1644,7 +1644,7 @@ Object* Game::SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float ro
 			u->user = nullptr;
 			if(variant == -1)
 			{
-				Obj* base_obj = u->GetBase()->obj;
+				BaseObject* base_obj = u->GetBase()->obj;
 				if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
 				{
 					// extra code for bench
@@ -1757,10 +1757,10 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 	if(!city->IsVillage())
 	{
 		const int mid = int(0.5f*OutsideLocation::size);
-		Obj* oWall = FindObject("wall"),
-			*oTower = FindObject("tower"),
-			*oGate = FindObject("gate"),
-			*oGrate = FindObject("grate");
+		BaseObject* oWall = BaseObject::Get("wall"),
+			*oTower = BaseObject::Get("tower"),
+			*oGate = BaseObject::Get("gate"),
+			*oGrate = BaseObject::Get("grate");
 
 		// walls
 		for(int i = mur1; i < mur2; i += 3)
@@ -2041,7 +2041,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 				else
 					name = token.c_str();
 
-				Obj* obj = FindObjectTry(name);
+				BaseObject* obj = BaseObject::TryGet(name);
 				assert(obj);
 
 				if(obj)
@@ -2419,7 +2419,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 				else
 					name = token.c_str();
 
-				Obj* obj = FindObjectTry(name);
+				BaseObject* obj = BaseObject::TryGet(name);
 				assert(obj);
 
 				if(obj)
@@ -3092,7 +3092,7 @@ void Game::GenerateDungeonObjects2()
 		o.base = nullptr;
 	}
 	else
-		SpawnObject(local_ctx, FindObject("portal"), inside->portal->pos, inside->portal->rot);
+		SpawnObject(local_ctx, BaseObject::Get("portal"), inside->portal->pos, inside->portal->rot);
 
 	// schody w dó³
 	if(inside->HaveDownStairs())
@@ -3252,7 +3252,7 @@ void Game::RespawnBuildingPhysics()
 struct OutsideObject
 {
 	cstring name;
-	Obj* obj;
+	BaseObject* obj;
 	Vec2 scale;
 };
 
@@ -3274,7 +3274,7 @@ void Game::SpawnCityObjects()
 	if(!outside_objects[0].obj)
 	{
 		for(uint i = 0; i < n_outside_objects; ++i)
-			outside_objects[i].obj = FindObject(outside_objects[i].name);
+			outside_objects[i].obj = BaseObject::Get(outside_objects[i].name);
 	}
 
 	// well
@@ -3282,7 +3282,7 @@ void Game::SpawnCityObjects()
 	{
 		Vec3 pos = pt_to_pos(g_well_pt);
 		terrain->SetH(pos);
-		SpawnObject(local_ctx, FindObject("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, nullptr);
+		SpawnObject(local_ctx, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, nullptr);
 	}
 
 	TerrainTile* tiles = ((City*)location)->tiles;
@@ -3394,11 +3394,11 @@ void Game::SpawnForestObjects(int road_dir)
 	if(!trees[0].obj)
 	{
 		for(uint i = 0; i < n_trees; ++i)
-			trees[i].obj = FindObject(trees[i].name);
+			trees[i].obj = BaseObject::Get(trees[i].name);
 		for(uint i = 0; i < n_trees2; ++i)
-			trees2[i].obj = FindObject(trees2[i].name);
+			trees2[i].obj = BaseObject::Get(trees2[i].name);
 		for(uint i = 0; i < n_misc; ++i)
-			misc[i].obj = FindObject(misc[i].name);
+			misc[i].obj = BaseObject::Get(misc[i].name);
 	}
 
 	TerrainTile* tiles = ((OutsideLocation*)location)->tiles;
@@ -3415,7 +3415,7 @@ void Game::SpawnForestObjects(int road_dir)
 			pos = Vec3(Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f, 0, 127.f);
 		terrain->SetH(pos);
 		pos.y -= 1.f;
-		SpawnObject(local_ctx, FindObject("obelisk"), pos, 0.f);
+		SpawnObject(local_ctx, BaseObject::Get("obelisk"), pos, 0.f);
 	}
 	else if(Rand() % 16 == 0)
 	{
@@ -3913,8 +3913,8 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 				group_name2 = "wagon_guards";
 				ile2 = Random(2, 3);
 				poziom2 = Random(3, 8);
-				SpawnObjectNearLocation(local_ctx, FindObject("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
-				Chest* chest = (Chest*)SpawnObjectNearLocation(local_ctx, FindObject("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
+				SpawnObjectNearLocation(local_ctx, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
+				Chest* chest = (Chest*)SpawnObjectNearLocation(local_ctx, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
 				if(chest)
 				{
 					int gold;
@@ -4735,22 +4735,22 @@ cstring camp_objs[] = {
 	"cauldron"
 };
 const uint n_camp_objs = countof(camp_objs);
-Obj* camp_objs_ptrs[n_camp_objs];
+BaseObject* camp_objs_ptrs[n_camp_objs];
 
 void Game::SpawnCampObjects()
 {
 	SpawnForestObjects();
 
 	vector<Vec2> pts;
-	Obj* ognisko = FindObject("campfire"),
-		*ognisko_zgaszone = FindObject("campfire_off"),
-		*namiot = FindObject("tent"),
-		*poslanie = FindObject("bedding");
+	BaseObject* ognisko = BaseObject::Get("campfire"),
+		*ognisko_zgaszone = BaseObject::Get("campfire_off"),
+		*namiot = BaseObject::Get("tent"),
+		*poslanie = BaseObject::Get("bedding");
 
 	if(!camp_objs_ptrs[0])
 	{
 		for(uint i = 0; i < n_camp_objs; ++i)
-			camp_objs_ptrs[i] = FindObject(camp_objs[i]);
+			camp_objs_ptrs[i] = BaseObject::Get(camp_objs[i]);
 	}
 
 	for(int i = 0; i < 20; ++i)
@@ -4802,7 +4802,7 @@ void Game::SpawnCampObjects()
 		}
 		if(ok)
 		{
-			Obj* obj = camp_objs_ptrs[Rand() % n_camp_objs];
+			BaseObject* obj = camp_objs_ptrs[Rand() % n_camp_objs];
 			Object* o = SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
 			if(o && IS_SET(obj->flags, OBJ_CHEST) && location->spawn != SG_BRAK) // empty chests for empty camps
 			{
@@ -4916,7 +4916,7 @@ void Game::SpawnCampUnits()
 	}
 }
 
-Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const Vec2& pos, float rot, float range, float margin, float scale)
+Object* Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range, float margin, float scale)
 {
 	bool ok = false;
 	if(obj->type == OBJ_CYLINDER)
@@ -4982,7 +4982,7 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const Vec2& p
 	}
 }
 
-Object* Game::SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const Vec2& pos, const Vec2& rot_target, float range, float margin, float scale)
+Object* Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range, float margin, float scale)
 {
 	if(obj->type == OBJ_CYLINDER)
 		return SpawnObjectNearLocation(ctx, obj, pos, Vec2::LookAtAngle(pos, rot_target), range, margin, scale);
@@ -5421,17 +5421,17 @@ void Game::SpawnMoonwellObjects()
 	Vec3 pos(128.f, 0, 128.f);
 	terrain->SetH(pos);
 	pos.y -= 0.2f;
-	SpawnObject(local_ctx, FindObject("moonwell"), pos, 0.f, 1.f);
-	SpawnObject(local_ctx, FindObject("moonwell_phy"), pos, 0.f, 1.f);
+	SpawnObject(local_ctx, BaseObject::Get("moonwell"), pos, 0.f, 1.f);
+	SpawnObject(local_ctx, BaseObject::Get("moonwell_phy"), pos, 0.f, 1.f);
 
 	if(!trees[0].obj)
 	{
 		for(uint i = 0; i < n_trees; ++i)
-			trees[i].obj = FindObject(trees[i].name);
+			trees[i].obj = BaseObject::Get(trees[i].name);
 		for(uint i = 0; i < n_trees2; ++i)
-			trees2[i].obj = FindObject(trees2[i].name);
+			trees2[i].obj = BaseObject::Get(trees2[i].name);
 		for(uint i = 0; i < n_misc; ++i)
-			misc[i].obj = FindObject(misc[i].name);
+			misc[i].obj = BaseObject::Get(misc[i].name);
 	}
 
 	TerrainTile* tiles = ((OutsideLocation*)location)->tiles;
@@ -5578,7 +5578,8 @@ void Game::SpawnMoonwellUnits(const Vec3& team_pos)
 	}
 }
 
-void Game::SpawnObjectExtras(LevelContext& ctx, Obj* obj, const Vec3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale, int flags)
+void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale,
+	int flags)
 {
 	assert(obj);
 
@@ -5922,14 +5923,14 @@ void Game::SpawnSecretLocationObjects()
 {
 	Vec3 pos(128.f, 0, 96.f * 2);
 	terrain->SetH(pos);
-	Obj* o = FindObject("tomashu_dom");
+	BaseObject* o = BaseObject::Get("tomashu_dom");
 	pos.y += 0.05f;
 	SpawnObject(local_ctx, o, pos, 0, 1.f);
 	ProcessBuildingObjects(local_ctx, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, Vec3(0, 0, 0), nullptr, nullptr, false);
 
 	pos.z = 64.f;
 	terrain->SetH(pos);
-	SpawnObject(local_ctx, FindObject("portal"), pos, 0, 1.f);
+	SpawnObject(local_ctx, BaseObject::Get("portal"), pos, 0, 1.f);
 
 	Portal* portal = new Portal;
 	portal->at_level = 0;
@@ -5943,11 +5944,11 @@ void Game::SpawnSecretLocationObjects()
 	if(!trees[0].obj)
 	{
 		for(uint i = 0; i < n_trees; ++i)
-			trees[i].obj = FindObject(trees[i].name);
+			trees[i].obj = BaseObject::Get(trees[i].name);
 		for(uint i = 0; i < n_trees2; ++i)
-			trees2[i].obj = FindObject(trees2[i].name);
+			trees2[i].obj = BaseObject::Get(trees2[i].name);
 		for(uint i = 0; i < n_misc; ++i)
-			misc[i].obj = FindObject(misc[i].name);
+			misc[i].obj = BaseObject::Get(misc[i].name);
 	}
 
 	TerrainTile* tiles = ((OutsideLocation*)location)->tiles;
@@ -6081,8 +6082,8 @@ void Game::GenerateMushrooms(int days_since)
 
 void Game::GenerateCityPickableItems()
 {
-	Obj* table = FindObject("table");
-	Obj* shelves = FindObject("shelves");
+	BaseObject* table = BaseObject::Get("table"),
+		*shelves = BaseObject::Get("shelves");
 
 	// piwa w karczmie
 	InsideBuilding* inn = city_ctx->FindInn();
@@ -6294,8 +6295,8 @@ void Game::GenerateDungeonFood()
 
 	// get food list and base objects
 	const ItemList& lis = *FindItemList(sg.orc_food ? "orc_food" : "normal_food").lis;
-	Obj* table = FindObject("table");
-	Obj* shelves = FindObject("shelves");
+	BaseObject* table = BaseObject::Get("table"),
+		*shelves = BaseObject::Get("shelves");
 	const Item* plate = FindItem("plate");
 	const Item* cup = FindItem("cup");
 	bool spawn_golden_cup = Rand() % 100 == 0;

@@ -19,6 +19,7 @@ u_gold_vein = "¯y³a z³ota"
 u_throne = "Tron"
 u_stool = "Sto³ek"
 u_bench_dir = "£awa"
+u_bookshelf = "Biblioteczka"
 
 // enemy types
 sg_goblins = "gobliny"

@@ -48,6 +48,8 @@ NEW:
 + open wanted letter in fullscreen, show face
 + ref remove DWORD
 + join TextLine & FontLine
++ remove tablechairs object, now it's not requiered
++ rename tartak obj -> sawmill
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

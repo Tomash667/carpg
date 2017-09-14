@@ -7633,7 +7633,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::CLEAN_ALTAR:
 			{
 				// change object
-				Obj* o = FindObject("bloody_altar");
+				BaseObject* o = BaseObject::Get("bloody_altar");
 				int index = 0;
 				for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it, ++index)
 				{
@@ -7641,7 +7641,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						break;
 				}
 				Object& obj = local_ctx.objects->at(index);
-				obj.base = FindObject("altar");
+				obj.base = BaseObject::Get("altar");
 				obj.mesh = obj.base->mesh;
 
 				// remove particles

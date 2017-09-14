@@ -207,6 +207,7 @@
     <ClInclude Include="source\game\panels\GameDialogBox.h" />
     <ClInclude Include="source\game\quests\QuestConsts.h" />
     <ClInclude Include="source\game\stats\Action.h" />
+    <ClInclude Include="source\game\stats\BaseObject.h" />
     <ClInclude Include="source\game\stats\Buff.h" />
     <ClInclude Include="source\game\system\Building.h" />
     <ClInclude Include="source\game\system\Content.h" />
@@ -401,6 +402,7 @@
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
     <ClCompile Include="source\game\stats\Action.cpp" />
+    <ClCompile Include="source\game\stats\BaseObject.cpp" />
     <ClCompile Include="source\game\stats\Buff.cpp" />
     <ClCompile Include="source\game\system\Building.cpp" />
     <ClCompile Include="source\game\system\Content.cpp" />

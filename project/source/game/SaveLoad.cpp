@@ -1224,7 +1224,7 @@ void Game::LoadGame(HANDLE file)
 	// cele ai
 	if(!ai_bow_targets.empty())
 	{
-		Obj* tarcza_s = FindObject("bow_target");
+		BaseObject* tarcza_s = BaseObject::Get("bow_target");
 		for(vector<AIController*>::iterator it = ai_bow_targets.begin(), end = ai_bow_targets.end(); it != end; ++it)
 		{
 			AIController& ai = **it;
@@ -1515,7 +1515,7 @@ void Game::LoadQuestsData(HANDLE file)
 	ReadFile(file, &secret_where, sizeof(secret_where), &tmp, nullptr);
 	ReadFile(file, &secret_where2, sizeof(secret_where2), &tmp, nullptr);
 
-	if(secret_state > SECRET_NONE && !FindObject("tomashu_dom")->mesh)
+	if(secret_state > SECRET_NONE && !BaseObject::Get("tomashu_dom")->mesh)
 		throw "Save uses 'data.pak' file which is missing!";
 
 	// drinking contest

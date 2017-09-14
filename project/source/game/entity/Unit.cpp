@@ -3006,7 +3006,7 @@ void Unit::UpdateStaminaAction()
 {
 	if(usable)
 	{
-		if(usable->GetBase()->stamina_slow_restore)
+		if(IS_SET(usable->GetBase()->flags, BaseUsable::SLOW_STAMINA_RESTORE))
 			stamina_action = SA_RESTORE_SLOW;
 		else
 			stamina_action = SA_RESTORE_MORE;

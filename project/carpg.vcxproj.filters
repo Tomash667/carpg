@@ -625,6 +625,9 @@
     <ClCompile Include="source\game\panels\BookPanel.cpp">
       <Filter>3. game\panels</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\stats\BaseObject.cpp">
+      <Filter>3. game\stats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1248,6 +1251,9 @@
     </ClInclude>
     <ClInclude Include="source\game\panels\BookPanel.h">
       <Filter>3. game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\stats\BaseObject.h">
+      <Filter>3. game\stats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
