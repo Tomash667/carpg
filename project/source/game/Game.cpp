@@ -424,7 +424,7 @@ void Game::OnTick(float dt)
 	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && KeyPressedReleaseAllowed(GK_TALK_BOX))
 		game_gui->mp_box->visible = !game_gui->mp_box->visible;
 
-	// aktualizuj gui
+	// update gui
 	UpdateGui(dt);
 	if(game_state == GS_EXIT_TO_MENU)
 	{
@@ -437,6 +437,32 @@ void Game::OnTick(float dt)
 		EngineShutdown();
 		return;
 	}
+
+	// handle blocking input by gui
+	if(GUI.HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
+		allow_input = ALLOW_NONE;
+	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
+	{
+		switch(game_gui->GetOpenPanel())
+		{
+		case OpenPanel::None:
+		case OpenPanel::Minimap:
+		default:
+			if(game_gui->use_cursor)
+				allow_input = ALLOW_KEYBOARD;
+			break;
+		case OpenPanel::Stats:
+		case OpenPanel::Inventory:
+		case OpenPanel::Team:
+		case OpenPanel::Trade:
+		case OpenPanel::Action:
+		case OpenPanel::Journal:
+			allow_input = ALLOW_KEYBOARD;
+			break;
+		}
+	}
+	else
+		allow_input = ALLOW_INPUT;
 
 	// otwórz menu
 	if(AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
@@ -2268,6 +2294,7 @@ void Game::SetGameText()
 	txPlayerDisconnected = Str("playerDisconnected");
 	txPlayerQuit = Str("playerQuit");
 	txPlayerKicked = Str("playerKicked");
+	txServerClosed = Str("serverClosed");
 
 	// obóz wrogów
 	txSGOOrcs = Str("sgo_orcs");

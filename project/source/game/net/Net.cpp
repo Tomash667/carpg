@@ -331,7 +331,7 @@ void Game::PrepareLevelData(BitStream& stream)
 		if(location->type == L_CITY)
 		{
 			City* city = (City*)location;
-			WriteBool(stream, IS_SET(city->flags, City::HaveExit));
+			stream.WriteCasted<byte>(city->flags);
 			stream.WriteCasted<byte>(city->entry_points.size());
 			for(EntryPoint& entry_point : city->entry_points)
 			{
@@ -726,15 +726,13 @@ bool Game::ReadLevelData(BitStream& stream)
 			// entry points
 			const int ENTRY_POINT_MIN_SIZE = 20;
 			byte count;
-			bool have_exit;
-			if(!ReadBool(stream, have_exit)
+			if(!stream.ReadCasted<byte>(city->flags)
 				|| !stream.Read(count)
 				|| !EnsureSize(stream, count * ENTRY_POINT_MIN_SIZE))
 			{
 				Error("Read level: Broken packet for city.");
 				return false;
 			}
-			city->flags = (have_exit ? City::HaveExit : 0);
 			city->entry_points.resize(count);
 			for(EntryPoint& entry : city->entry_points)
 			{
@@ -5578,11 +5576,23 @@ void Game::UpdateClient(float dt)
 			break;
 		case ID_SERVER_CLOSE:
 			{
-				Info("Update client: You have been kicked out.");
+				byte reason = (packet->length == 2 ? packet->data[1] : 0);
+				cstring reason_text, reason_text_int;
+				if(reason == 1)
+				{
+					reason_text = "You have been kicked out.";
+					reason_text_int = txYouKicked;
+				}
+				else
+				{
+					reason_text = "Server was closed.";
+					reason_text_int = txServerClosed;
+				}
+				Info("Update client: %s", reason_text);
 				StreamEnd();
 				peer->DeallocatePacket(packet);
 				ExitToMenu();
-				GUI.SimpleDialog(txYouKicked, nullptr);
+				GUI.SimpleDialog(reason_text_int, nullptr);
 				return;
 			}
 		case ID_CHANGE_LEVEL:

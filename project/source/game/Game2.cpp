@@ -5985,7 +5985,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else
 				{
-					Warn("DT_SPECIAL_IF: %s", msg);
+					Warn("DT_IF_SPECIAL: %s", msg);
 					assert(0);
 				}
 			}
@@ -13741,14 +13741,14 @@ void Game::CreateDungeonMinimap()
 	DWORD* pix = (DWORD*)(((byte*)lock.pBits) + lock.Pitch*lvl.h);
 	for(int x = 0; x < lvl.w + 1; ++x)
 	{
-		*pix = COLOR_RGB(100, 100, 100);
+		*pix = 0;
 		++pix;
 	}
 	for(int y = 0; y < lvl.h + 1; ++y)
 	{
 		DWORD* pix = (DWORD*)(((byte*)lock.pBits) + lock.Pitch*y);
 		pix += lvl.w;
-		*pix = COLOR_RGB(100, 100, 100);
+		*pix = 0;
 	}
 
 	tMinimap->UnlockRect(0);
@@ -15624,8 +15624,8 @@ cstring arena_slabi[] = {
 	"goblins",
 	"undead",
 	"bandits",
-	"cave_wolfs",
-	"cave_spiders"
+	"wolfs",
+	"spiders"
 };
 
 cstring arena_sredni[] = {
@@ -19146,7 +19146,7 @@ void Game::UpdateGame2(float dt)
 			arena_t += dt;
 			if(arena_t >= 2.f)
 			{
-				if(sound_volume)
+				if(sound_volume && GetArena()->ctx.building_id == pc->unit->in_building)
 					PlaySound2d(sArenaFight);
 				if(IsOnline())
 				{
@@ -19216,7 +19216,7 @@ void Game::UpdateGame2(float dt)
 					victory_sound = true;
 				}
 
-				if(sound_volume)
+				if(sound_volume && GetArena()->ctx.building_id == pc->unit->in_building)
 					PlaySound2d(victory_sound ? sArenaWin : sArenaLost);
 				if(IsOnline())
 				{

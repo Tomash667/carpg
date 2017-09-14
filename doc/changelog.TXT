@@ -10,6 +10,11 @@ Wersja 0.6 (2017-10-??):
 - naprawiony b³¹d wczytywania klientów gdy serwer opuœci grê na mapie œwiata a potem rozpocznie now¹ grê
 - naprawiona komenda warp gdy jednostka u¿ywa obiektu
 - naprawiony b³¹d z losowym wyœwietlaniem kolorów przy atrybutach/umiejêtnoœciach
+- naprawione u¿ywanie komendy goto_map w budynku i powrót do tej samej lokacji
+- naprawiona nieprawid³owa informacja ¿e zosta³eœ wyrzucony zamiast informacji o wy³¹czaniu serwera
+- naprawiony losowy crash przy wybieraniu ³atwej walki na arenie
+- naprawiony b³¹d z prawid³owym odtwarzaniem dŸwiêków areny w multiplayer
+- usuniêta szara obwódka wokó³ minimapy w podziemiach
 
 --------------------------------------------------------------------------------
 Wersja 0.5 (2017-09-07):

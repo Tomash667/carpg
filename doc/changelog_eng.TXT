@@ -10,6 +10,11 @@ Version 0.6 (2017-10-??):
 - fixed clients failed to load when server quit on worldmap and then start new game
 - fixed using warp command when unit is using usable
 - fixed player stats panel showing randomly colors for attributes/skills
+- fixed using goto_map cheat inside buildings and returning to same location
+- fixed incorrect message that player was kicked when server was closing
+- fixed random crash when picking easy arena combat
+- fixed sounds not playing correctly for arena in multiplayer
+- remove gray outline around dungon minimap
 
 --------------------------------------------------------------------------------
 Version 0.5 (2017-09-07):
