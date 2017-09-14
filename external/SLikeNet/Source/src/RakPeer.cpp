@@ -3515,7 +3515,7 @@ void RakPeer::ParseConnectionRequestPacket( RakPeer::RemoteSystemStruct *remoteS
 		SLNet::BitStream bitStream;
 		bitStream.Write((MessageID)ID_INVALID_PASSWORD);
 		bitStream.Write(GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS));
-		SendImmediate((char*) bitStream.GetData(), bitStream.GetNumberOfBytesUsed(), IMMEDIATE_PRIORITY, RELIABLE, 0, systemAddress, false, false, SLNet::GetTimeUS(), 0);
+		SendImmediate((char*) bitStream.GetData(), bitStream.GetNumberOfBytesUsed(), IMMEDIATE_PRIORITY, UNRELIABLE, 0, systemAddress, false, false, SLNet::GetTimeUS(), 0);
 		remoteSystem->connectMode=RemoteSystemStruct::DISCONNECT_ASAP_SILENTLY;
 		return;
 	}
