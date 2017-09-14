@@ -75,12 +75,7 @@ void Game::PreinitGui()
 {
 	GUI.Init(device, sprite);
 
-	// font loading works only from main thread (for now...)
-	int result = AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, nullptr);
-	if(result == 0)
-		Error("Failed to load font 'Florence-Regular.otf' (%d)!", GetLastError());
-	else
-		Info("Added font resource: %d.", result);
+	GUI.AddFont("Florence-Regular.otf");
 	GUI.default_font = GUI.CreateFont("Arial", 12, 800, 512, 2);
 	GUI.fBig = GUI.CreateFont("Florence Regular", 28, 800, 512);
 	GUI.fSmall = GUI.CreateFont("Arial", 10, 500, 512);

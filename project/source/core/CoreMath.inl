@@ -100,6 +100,11 @@ inline Int2 Int2::operator - (const Int2& xy) const
 	return Int2(x - xy.x, y - xy.y);
 }
 
+inline Int2 Int2::operator * (const Vec2& scale) const
+{
+	return Int2(float(x) * scale.x, float(y) * scale.y);
+}
+
 inline Int2 Int2::operator * (int a) const
 {
 	return Int2(x*a, y*a);

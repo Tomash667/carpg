@@ -1,15 +1,15 @@
 ﻿FEATURE:
-+ loading book items
-+ using books
+? loading book items
+? using books
+	? sound, open book, change page
+	? runes font
 + example books
-	+ LD desc
-	+ behind wall desc
+	+ LD text
 	+ english text
-+ books generation
 + usable bookshelf
-+ q_zlo_ksiega, runes
-! remove ShowWindow(hwnd, SW_HIDE);
-+ sound, open book, change page
++ books generation
+	+ on shelfs
+	+ after tutorial
 ? reload mp game with quests, notes & rumors
 ===============================================================================================================
 + vsync in options
@@ -47,6 +47,7 @@ NEW:
 + refactor Language.h from Gui.cpp, GetNumberDialog
 + open wanted letter in fullscreen, show face
 + ref remove DWORD
++ join TextLine & FontLine
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

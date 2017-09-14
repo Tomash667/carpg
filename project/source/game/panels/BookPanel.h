@@ -22,16 +22,19 @@ public:
 private:
 	struct Split
 	{
-		uint page, region, line_start, line_end;
+		uint page, region, lines_start, lines_end;
 	};
 
 	void SplitBook();
 	Font* GetFont();
+	void ChangePage(int change);
 
 	const Book* book;
-	vector<FontLine> font_lines;
+	vector<TextLine> text_lines;
 	vector<Split> splits;
 	uint max_page, current_page;
 	Vec2 scale;
 	TEX tArrowL, tArrowR;
+	SOUND sound;
+	Font* runic_font;
 };

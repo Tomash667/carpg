@@ -166,6 +166,7 @@ public:
 	void SetText();
 	void SetShader(ID3DXEffect* e);
 	void Draw(bool draw_layers, bool draw_dialogs);
+	bool AddFont(cstring filename);
 	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
 	zwraca false je¿eli by³ clipping od do³u (nie kontuuj tekstu w flow)
@@ -234,6 +235,28 @@ public:
 	cstring GetClipboard();
 	Rect GetSpriteRect(TEX t, const Matrix& mat, const Rect* part = nullptr, const Rect* clipping = nullptr);
 	void UseGrayscale(bool grayscale);
+	struct DrawTextOptions
+	{
+		Font* font;
+		cstring str;
+		DWORD flags;
+		DWORD color;
+		Rect rect;
+		const Rect* clipping;
+		vector<Hitbox>* hitboxes;
+		int* hitbox_counter;
+		const vector<TextLine>* lines;
+		Vec2 scale;
+		uint lines_start;
+		uint lines_end;
+		uint str_length;
+
+		DrawTextOptions(Font* font, StringOrCstring str) : font(font), str(str.c_str()), rect(rect), flags(DT_LEFT), color(BLACK), clipping(nullptr),
+			hitboxes(nullptr), hitbox_counter(nullptr), lines(nullptr), scale(Vec2::One), lines_start(0), lines_end(UINT_MAX), str_length(str.length())
+		{
+		}
+	};
+	bool DrawText2(DrawTextOptions& options);
 
 	Matrix mViewProj;
 	Int2 cursor_pos, prev_cursor_pos, wnd_size;

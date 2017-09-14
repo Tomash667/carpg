@@ -424,6 +424,7 @@ struct Int2
 	int operator ()(int shift) const;
 	Int2 operator + (const Int2& i) const;
 	Int2 operator - (const Int2& i) const;
+	Int2 operator * (const Vec2& scale) const;
 	Int2 operator * (int a) const;
 	Int2 operator * (float s) const;
 	Int2 operator / (int a) const;
