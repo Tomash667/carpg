@@ -217,7 +217,8 @@ enum InventoryMode
 	I_LOOT_CHEST,
 	I_TRADE,
 	I_SHARE,
-	I_GIVE
+	I_GIVE,
+	I_LOOT_CONTAINER
 };
 
 struct TeamShareItem

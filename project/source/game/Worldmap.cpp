@@ -1612,33 +1612,10 @@ Object* Game::SpawnObject(LevelContext& ctx, BaseObject* obj, const Vec3& pos, f
 
 		if(IS_SET(obj->flags, OBJ_USEABLE))
 		{
-			int typ;
-			if(IS_SET(obj->flags, OBJ_BENCH))
-				typ = U_BENCH;
-			else if(IS_SET(obj->flags, OBJ_ANVIL))
-				typ = U_ANVIL;
-			else if(IS_SET(obj->flags, OBJ_CHAIR))
-				typ = U_CHAIR;
-			else if(IS_SET(obj->flags, OBJ_CAULDRON))
-				typ = U_CAULDRON;
-			else if(IS_SET(obj->flags, OBJ_IRON_VEIN))
-				typ = U_IRON_VEIN;
-			else if(IS_SET(obj->flags, OBJ_GOLD_VEIN))
-				typ = U_GOLD_VEIN;
-			else if(IS_SET(obj->flags, OBJ_THRONE))
-				typ = U_THRONE;
-			else if(IS_SET(obj->flags, OBJ_STOOL))
-				typ = U_STOOL;
-			else if(IS_SET(obj->flags2, OBJ2_BENCH_ROT))
-				typ = U_BENCH_ROT;
-			else
-			{
-				assert(0);
-				typ = U_CHAIR;
-			}
+			USABLE_ID type = obj->ToUsableType();
 
 			Usable* u = new Usable;
-			u->type = typ;
+			u->type = type;
 			u->pos = pos;
 			u->rot = rot;
 			u->user = nullptr;
@@ -1648,7 +1625,7 @@ Object* Game::SpawnObject(LevelContext& ctx, BaseObject* obj, const Vec3& pos, f
 				if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
 				{
 					// extra code for bench
-					if(typ == U_BENCH || typ == U_BENCH_ROT)
+					if(type == U_BENCH || type == U_BENCH_ROT)
 					{
 						switch(location->type)
 						{

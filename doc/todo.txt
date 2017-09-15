@@ -7,9 +7,11 @@
 	+ LD text
 	+ english text
 + usable bookshelf
+	+ TODO: animacja
 + books generation
 	+ on shelfs
 	+ after tutorial
+	+ disallow using from back, don't highlight
 ? reload mp game with quests, notes & rumors
 ===============================================================================================================
 + vsync in options

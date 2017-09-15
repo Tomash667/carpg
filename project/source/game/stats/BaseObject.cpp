@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Core.h"
 #include "BaseObject.h"
+#include "BaseUsable.h"
 
 //-----------------------------------------------------------------------------
 // Variants
@@ -118,6 +119,37 @@ BaseObject g_objs[] = {
 	BaseObject("corn", OBJ_NO_PHYSICS | OBJ_PRELOAD, 0, "Corn", "zboze.qmsh", 0.f, 0.f, 1),
 };
 const uint n_objs = countof(g_objs);
+
+//=================================================================================================
+USABLE_ID BaseObject::ToUsableType() const
+{
+	if(IS_SET(flags, OBJ_BENCH))
+		return U_BENCH;
+	else if(IS_SET(flags, OBJ_ANVIL))
+		return U_ANVIL;
+	else if(IS_SET(flags, OBJ_CHAIR))
+		return U_CHAIR;
+	else if(IS_SET(flags, OBJ_CAULDRON))
+		return U_CAULDRON;
+	else if(IS_SET(flags, OBJ_IRON_VEIN))
+		return U_IRON_VEIN;
+	else if(IS_SET(flags, OBJ_GOLD_VEIN))
+		return U_GOLD_VEIN;
+	else if(IS_SET(flags, OBJ_THRONE))
+		return U_THRONE;
+	else if(IS_SET(flags, OBJ_STOOL))
+		return U_STOOL;
+	else if(IS_SET(flags2, OBJ2_BENCH_ROT))
+		return U_BENCH_ROT;
+	else if(IS_SET(flags, OBJ_BOOKSHELF))
+		return U_BOOKSHELF;
+	else
+	{
+		assert(0);
+		return U_CHAIR;
+	}
+}
+
 
 //=================================================================================================
 BaseObject* BaseObject::TryGet(cstring id, bool* is_variant)

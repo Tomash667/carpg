@@ -1022,7 +1022,7 @@ void Inventory::Event(GuiEvent e)
 		bool changes = false;
 
 		// sloty
-		if(game.pc->action != PlayerController::Action_LootChest)
+		if(game.pc->action != PlayerController::Action_LootChest && game.pc->action != PlayerController::Action_LootContainer)
 		{
 			const Item** unit_slots = game.pc->action_unit->slots;
 			for(int i = 0; i < SLOT_MAX; ++i)

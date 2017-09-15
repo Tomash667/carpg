@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 struct Mesh;
+enum USABLE_ID;
 
 //-----------------------------------------------------------------------------
 // Object physics type
@@ -103,6 +104,8 @@ struct BaseObject
 		flags2(flags2), alpha(alpha), centery(centery), next_obj(nullptr), variant(variant), extra_dist(extra_dist)
 	{
 	}
+
+	USABLE_ID ToUsableType() const;
 
 	// is_variant is set when there is multiple variants
 	static BaseObject* TryGet(cstring id, bool* is_variant = nullptr);

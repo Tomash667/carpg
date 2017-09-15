@@ -39,6 +39,7 @@
 #include "Spell.h"
 #include "Team.h"
 #include "Action.h"
+#include "ItemContainer.h"
 
 const int SAVE_VERSION = V_0_5;
 int LOAD_VERSION;
@@ -75,6 +76,8 @@ PlayerController::Action InventoryModeToActionRequired(InventoryMode imode)
 		return PlayerController::Action_ShareItems;
 	case I_GIVE:
 		return PlayerController::Action_GiveItems;
+	case I_LOOT_CONTAINER:
+		return PlayerController::Action_LootContainer;
 	default:
 		assert(0);
 		return PlayerController::Action_None;
@@ -1225,6 +1228,13 @@ void Game::UpdateGame(float dt)
 			assert(pc->action == PlayerController::Action_LootUnit);
 			pos = pc->action_unit->GetLootCenter();
 			pc->unit->animation = ANI_KNEELS;
+		}
+		else if(inventory_mode == I_LOOT_CONTAINER)
+		{
+			// TODO: animacja
+			assert(pc->action == PlayerController::Action_LootContainer);
+			pos = pc->action_container->pos;
+			pc->unit->animation = ANI_STAND;
 		}
 		else if(dialog_context.dialog_mode)
 		{
@@ -10272,33 +10282,10 @@ void Game::GenerateDungeonObjects()
 					}
 					else if(IS_SET(obj->flags, OBJ_USEABLE))
 					{
-						int typ;
-						if(IS_SET(obj->flags, OBJ_BENCH))
-							typ = U_BENCH;
-						else if(IS_SET(obj->flags, OBJ_ANVIL))
-							typ = U_ANVIL;
-						else if(IS_SET(obj->flags, OBJ_CHAIR))
-							typ = U_CHAIR;
-						else if(IS_SET(obj->flags, OBJ_CAULDRON))
-							typ = U_CAULDRON;
-						else if(IS_SET(obj->flags, OBJ_IRON_VEIN))
-							typ = U_IRON_VEIN;
-						else if(IS_SET(obj->flags, OBJ_GOLD_VEIN))
-							typ = U_GOLD_VEIN;
-						else if(IS_SET(obj->flags, OBJ_THRONE))
-							typ = U_THRONE;
-						else if(IS_SET(obj->flags, OBJ_STOOL))
-							typ = U_STOOL;
-						else if(IS_SET(obj->flags2, OBJ2_BENCH_ROT))
-							typ = U_BENCH_ROT;
-						else
-						{
-							assert(0);
-							typ = U_CHAIR;
-						}
+						USABLE_ID type = obj->ToUsableType();
 
 						Usable* u = new Usable;
-						u->type = typ;
+						u->type = type;
 						u->pos = pos;
 						u->rot = rot;
 						u->user = nullptr;
@@ -10306,7 +10293,7 @@ void Game::GenerateDungeonObjects()
 						if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
 						{
 							// extra code for bench
-							if(typ == U_BENCH || typ == U_BENCH_ROT)
+							if(type == U_BENCH || type == U_BENCH_ROT)
 							{
 								switch(location->type)
 								{
@@ -20782,28 +20769,59 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 	{
 		if(Net::IsLocal())
 		{
-			u.action = A_ANIMATION2;
-			u.animation = ANI_PLAY;
-			u.mesh_inst->Play(bu.anim, PLAY_PRIO1, 0);
-			u.mesh_inst->groups[0].speed = 1.f;
-			u.usable = &use;
-			u.usable->user = &u;
-			u.target_pos = u.pos;
-			u.target_pos2 = use.pos;
-			if(g_base_usables[use.type].limit_rot == 4)
-				u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
-			u.timer = 0.f;
-			u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-			u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
-			pc_data.before_player = BP_NONE;
-
-			if(Net::IsOnline())
+			if(IS_SET(bu.flags, BaseUsable::CONTAINER))
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_USEABLE;
-				c.unit = &u;
-				c.id = u.usable->netid;
-				c.ile = 1;
+				// loot container
+				pc->action = PlayerController::Action_LootUnit;
+				pc->action_container = &use;
+				pc->action_container->user = &u;
+				pc->chest_trade = &pc->action_container->container->items;
+				CloseGamePanels();
+				inventory_mode = I_LOOT_CONTAINER;
+				BuildTmpInventory(0);
+				game_gui->inv_trade_mine->mode = Inventory::LOOT_MY;
+				BuildTmpInventory(1);
+				game_gui->inv_trade_other->unit = nullptr;
+				game_gui->inv_trade_other->items = &pc->action_chest->items;
+				game_gui->inv_trade_other->slots = nullptr;
+				game_gui->inv_trade_other->title = Inventory::txLootingSumthing; // Looting - Chest/Bookshelf
+				game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;
+				game_gui->gp_trade->Show();
+
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::USE_USEABLE;
+					c.unit = &u;
+					c.id = u.usable->netid;
+					c.ile = 1;
+				}
+			}
+			else
+			{
+				u.action = A_ANIMATION2;
+				u.animation = ANI_PLAY;
+				u.mesh_inst->Play(bu.anim, PLAY_PRIO1, 0);
+				u.mesh_inst->groups[0].speed = 1.f;
+				u.usable = &use;
+				u.usable->user = &u;
+				u.target_pos = u.pos;
+				u.target_pos2 = use.pos;
+				if(g_base_usables[use.type].limit_rot == 4)
+					u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
+				u.timer = 0.f;
+				u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
+				u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
+				pc_data.before_player = BP_NONE;
+
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::USE_USEABLE;
+					c.unit = &u;
+					c.id = u.usable->netid;
+					c.ile = 1;
+				}
 			}
 		}
 		else
@@ -21849,7 +21867,9 @@ void Game::BuildTmpInventory(int index)
 	else
 	{
 		// przedmioty innej postaci, w skrzyni
-		if(pc->action == PlayerController::Action_LootChest || pc->action == PlayerController::Action_Trade)
+		if(pc->action == PlayerController::Action_LootChest
+			|| pc->action == PlayerController::Action_Trade
+			|| pc->action == PlayerController::Action_LootContainer)
 			slots = nullptr;
 		else
 			slots = pc->action_unit->slots;

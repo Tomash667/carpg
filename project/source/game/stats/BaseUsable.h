@@ -9,7 +9,7 @@ struct Item;
 struct BaseObject;
 
 //-----------------------------------------------------------------------------
-enum USEABLE_ID
+enum USABLE_ID
 {
 	U_CHAIR,
 	U_BENCH,

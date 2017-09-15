@@ -197,6 +197,7 @@
     <ClInclude Include="source\game\ConsoleCommands.h" />
     <ClInclude Include="source\game\Encounter.h" />
     <ClInclude Include="source\game\entity\BloodType.h" />
+    <ClInclude Include="source\game\entity\ItemContainer.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameStats.h" />
     <ClInclude Include="source\game\net\GamePacket.h" />
@@ -397,6 +398,7 @@
     <ClCompile Include="source\game\Ai.cpp" />
     <ClCompile Include="source\game\ConsoleCommands.cpp" />
     <ClCompile Include="source\game\entity\Camera.cpp" />
+    <ClCompile Include="source\game\entity\ItemContainer.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
