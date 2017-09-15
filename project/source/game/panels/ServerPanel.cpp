@@ -206,7 +206,7 @@ void ServerPanel::Event(GuiEvent e)
 		{
 		case IdPickCharacter: // pick character / change character
 			{
-				PlayerInfo& info = game->game_players[0];
+				PlayerInfo& info = *game->game_players[0];
 				if(info.clas != Class::INVALID)
 				{
 					// already have character, redo
@@ -224,7 +224,7 @@ void ServerPanel::Event(GuiEvent e)
 			break;
 		case IdReady: // ready / unready
 			{
-				PlayerInfo& info = game->game_players[0];
+				PlayerInfo& info = *game->game_players[0];
 				info.ready = !info.ready;
 				game->ChangeReady();
 			}
@@ -238,7 +238,7 @@ void ServerPanel::Event(GuiEvent e)
 					AddMsg(txCantKickMyself);
 				else
 				{
-					PlayerInfo& info = game->game_players[grid.selected];
+					PlayerInfo& info = *game->game_players[grid.selected];
 					if(info.state != PlayerInfo::IN_LOBBY)
 						AddMsg(txCantKickUnconnected);
 					else
@@ -266,7 +266,7 @@ void ServerPanel::Event(GuiEvent e)
 				AddMsg(txNeedSelectedPlayer);
 			else
 			{
-				PlayerInfo& info = game->game_players[grid.selected];
+				PlayerInfo& info = *game->game_players[grid.selected];
 				if(info.id == game->leader_id)
 					AddMsg(txAlreadyLeader);
 				else if(info.state == PlayerInfo::IN_LOBBY)
@@ -284,9 +284,9 @@ void ServerPanel::Event(GuiEvent e)
 			{
 				cstring error_text = nullptr;
 
-				for(vector<PlayerInfo>::iterator it = game->game_players.begin(), end = game->game_players.end(); it != end; ++it)
+				for(auto player : game->game_players)
 				{
-					if(!it->ready)
+					if(!player->ready)
 					{
 						error_text = txNotAllReady;
 						break;
@@ -347,7 +347,7 @@ void ServerPanel::Show()
 //=================================================================================================
 void ServerPanel::GetCell(int item, int column, Cell& cell)
 {
-	PlayerInfo& info = game->game_players[item];
+	PlayerInfo& info = *game->game_players[item];
 
 	if(column == 0)
 		cell.img = (info.ready ? tGotowy : tNieGotowy);
@@ -500,7 +500,7 @@ void ServerPanel::CheckAutopick()
 //=================================================================================================
 void ServerPanel::PickClass(Class clas, bool ready)
 {
-	PlayerInfo& info = game->game_players[0];
+	PlayerInfo& info = *game->game_players[0];
 	info.clas = clas;
 	game->RandomCharacter(info.clas, game->hair_redo_index, info.hd, info.cc);
 	bts[0].text = txChangeChar;

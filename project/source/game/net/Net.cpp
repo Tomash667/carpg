@@ -144,7 +144,7 @@ void Game::InitServer()
 	Info("Creating server (port %d)...", mp_port);
 
 	if(!peer)
-		peer = RakNet::RakPeerInterface::GetInstance();
+		peer = SLNet::RakPeerInterface::GetInstance();
 
 	SocketDescriptor sd(mp_port, 0);
 	sd.socketFamily = AF_INET;
@@ -177,9 +177,9 @@ void Game::InitClient()
 	Info("Initlializing client...");
 
 	if(!peer)
-		peer = RakNet::RakPeerInterface::GetInstance();
+		peer = SLNet::RakPeerInterface::GetInstance();
 
-	RakNet::SocketDescriptor sd;
+	SLNet::SocketDescriptor sd;
 	sd.socketFamily = AF_INET;
 	StartupResult r = peer->Startup(1, &sd, 1);
 	if(r != RAKNET_STARTED)
@@ -228,16 +228,16 @@ int Game::FindPlayerIndex(cstring nick, bool not_left)
 	assert(nick);
 
 	int index = 0;
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it, ++index)
+	for(auto player : game_players)
 	{
-		if(it->name == nick)
+		if(player->name == nick)
 		{
-			if(not_left && it->left)
+			if(not_left && player->left != PlayerInfo::LEFT_NO)
 				return -1;
 			return index;
 		}
+		++index;
 	}
-
 	return -1;
 }
 
@@ -258,7 +258,7 @@ void Game::AddServerMsg(cstring msg)
 //=================================================================================================
 void Game::KickPlayer(int index)
 {
-	PlayerInfo& info = game_players[index];
+	PlayerInfo& info = *game_players[index];
 
 	// wyœlij informacje o kicku
 	packet_data.resize(2);
@@ -269,32 +269,11 @@ void Game::KickPlayer(int index)
 
 	info.state = PlayerInfo::REMOVING;
 
-	AddMsg(Format(txPlayerKicked, info.name.c_str()));
-	Info("Player %s was kicked.", info.name.c_str());
-
-	if(leader_id == info.id)
-	{
-		// serwer zostaje przywódc¹
-		leader_id = my_id;
-		if(players > 2)
-		{
-			if(server_panel->visible)
-				AddLobbyUpdate(Int2(Lobby_ChangeLeader, 0));
-			else
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_LEADER;
-				c.id = my_id;
-				Team.leader = pc->unit;
-			}
-		}
-		if(dialog_enc)
-			dialog_enc->bts[0].state = Button::NONE;
-		AddMsg(txYouAreLeader);
-	}
-
 	if(server_panel->visible)
 	{
+		AddMsg(Format(txPlayerKicked, info.name.c_str()));
+		Info("Player %s was kicked.", info.name.c_str());
+
 		if(players > 2)
 			AddLobbyUpdate(Int2(Lobby_KickPlayer, info.id));
 
@@ -304,7 +283,10 @@ void Game::KickPlayer(int index)
 		UpdateServerInfo();
 	}
 	else
-		info.left_reason = PlayerInfo::LEFT_KICK;
+	{
+		info.left = PlayerInfo::LEFT_KICK;
+		players_left = true;
+	}
 }
 
 //=================================================================================================
@@ -312,10 +294,11 @@ int Game::GetPlayerIndex(int id)
 {
 	assert(InRange(id, 0, 255));
 	int index = 0;
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it, ++index)
+	for(auto player : game_players)
 	{
-		if(it->id == id)
+		if(player->id == id)
 			return index;
+		++index;
 	}
 	return -1;
 }
@@ -325,10 +308,11 @@ int Game::FindPlayerIndex(const SystemAddress& adr)
 {
 	assert(adr != UNASSIGNED_SYSTEM_ADDRESS);
 	int index = 0;
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it, ++index)
+	for(auto player : game_players)
 	{
-		if(it->adr == adr)
+		if(player->adr == adr)
 			return index;
+		++index;
 	}
 	return -1;
 }
@@ -348,7 +332,7 @@ void Game::PrepareLevelData(BitStream& stream)
 		if(location->type == L_CITY)
 		{
 			City* city = (City*)location;
-			WriteBool(stream, IS_SET(city->flags, City::HaveExit));
+			stream.WriteCasted<byte>(city->flags);
 			stream.WriteCasted<byte>(city->entry_points.size());
 			for(EntryPoint& entry_point : city->entry_points)
 			{
@@ -743,15 +727,13 @@ bool Game::ReadLevelData(BitStream& stream)
 			// entry points
 			const int ENTRY_POINT_MIN_SIZE = 20;
 			byte count;
-			bool have_exit;
-			if(!ReadBool(stream, have_exit)
+			if(!stream.ReadCasted<byte>(city->flags)
 				|| !stream.Read(count)
 				|| !EnsureSize(stream, count * ENTRY_POINT_MIN_SIZE))
 			{
 				Error("Read level: Broken packet for city.");
 				return false;
 			}
-			city->flags = (have_exit ? City::HaveExit : 0);
 			city->entry_points.resize(count);
 			for(EntryPoint& entry : city->entry_points)
 			{
@@ -1840,7 +1822,7 @@ bool Game::ReadTrap(BitStream& stream, Trap& trap)
 //=================================================================================================
 void Game::SendPlayerData(int index)
 {
-	PlayerInfo& info = game_players[index];
+	PlayerInfo& info = *game_players[index];
 	Unit& unit = *info.u;
 	BitStream& stream = net_stream2;
 
@@ -1909,10 +1891,10 @@ bool Game::ReadPlayerData(BitStream& stream)
 		Error("Read player data: Missing unit %d.", netid);
 		return false;
 	}
-	game_players[0].u = unit;
+	game_players[0]->u = unit;
 	pc = unit->player;
-	pc->player_info = &game_players[0];
-	game_players[0].pc = pc;
+	pc->player_info = game_players[0];
+	game_players[0]->pc = pc;
 	game_gui->Setup();
 
 	// items
@@ -2108,7 +2090,7 @@ void Game::UpdateServer(float dt)
 			continue;
 		}
 
-		PlayerInfo& info = game_players[player_index];
+		PlayerInfo& info = *game_players[player_index];
 		if(info.left)
 			goto ignore_him;
 
@@ -2120,9 +2102,9 @@ void Game::UpdateServer(float dt)
 		case ID_CONNECTION_LOST:
 		case ID_DISCONNECTION_NOTIFICATION:
 			Info(msg_id == ID_CONNECTION_LOST ? "Lost connection with player %s." : "Player %s has disconnected.", info.name.c_str());
-			players_left.push_back(info.id);
-			info.left = true;
-			info.left_reason = PlayerInfo::LEFT_QUIT;
+			--players;
+			players_left = true;
+			info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			break;
 		case ID_SAY:
 			Server_Say(stream, info, packet);
@@ -2191,8 +2173,9 @@ void Game::UpdateServer(float dt)
 		int _net_player_updates = (int)Net::player_changes.size();
 #endif
 
-		for(PlayerInfo& info : game_players)
+		for(auto pinfo : game_players)
 		{
+			auto& info = *pinfo;
 			if(info.id == my_id || info.left)
 				continue;
 
@@ -2295,6 +2278,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					unit.pos = new_pos;
 					UpdateUnitPhysics(unit, unit.pos);
 					unit.interp->Add(unit.pos, rot);
+					unit.changed = true;
 				}
 				else
 				{
@@ -5090,12 +5074,12 @@ void Game::WriteServerChanges(BitStream& stream)
 			{
 				byte count = 0;
 				uint pos = PatchByte(stream);
-				for(PlayerInfo& info : game_players)
+				for(auto info : game_players)
 				{
-					if(!info.left)
+					if(info->left == PlayerInfo::LEFT_NO)
 					{
-						stream.Write(info.u->netid);
-						stream.Write(info.u->player->free_days);
+						stream.Write(info->u->netid);
+						stream.Write(info->u->player->free_days);
 						++count;
 					}
 				}
@@ -5593,11 +5577,23 @@ void Game::UpdateClient(float dt)
 			break;
 		case ID_SERVER_CLOSE:
 			{
-				Info("Update client: You have been kicked out.");
+				byte reason = (packet->length == 2 ? packet->data[1] : 0);
+				cstring reason_text, reason_text_int;
+				if(reason == 1)
+				{
+					reason_text = "You have been kicked out.";
+					reason_text_int = txYouKicked;
+				}
+				else
+				{
+					reason_text = "Server was closed.";
+					reason_text_int = txServerClosed;
+				}
+				Info("Update client: %s", reason_text);
 				StreamEnd();
 				peer->DeallocatePacket(packet);
 				ExitToMenu();
-				GUI.SimpleDialog(txYouKicked, nullptr);
+				GUI.SimpleDialog(reason_text_int, nullptr);
 				return;
 			}
 		case ID_CHANGE_LEVEL:
@@ -5620,7 +5616,7 @@ void Game::UpdateClient(float dt)
 					info_box->Show(txGeneratingLocation);
 					LeaveLevel();
 					net_mode = NM_TRANSFER;
-					net_state = 2;
+					net_state = NetState::Client_ChangingLevel;
 					clear_color = BLACK;
 					load_screen->visible = true;
 					game_gui->visible = false;
@@ -6949,9 +6945,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		// remove player from game
 		case NetChange::REMOVE_PLAYER:
 			{
-				byte player_id, reason;
+				byte player_id;
+				PlayerInfo::LeftReason reason;
 				if(!stream.Read(player_id)
-					|| !stream.Read(reason))
+					|| !stream.ReadCasted<byte>(reason))
 				{
 					Error("Update client: Broken REMOVE_PLAYER.");
 					StreamError();
@@ -6964,37 +6961,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Error("Update client: REMOVE_PLAYER, missing player %u.", player_id);
 						StreamError();
 					}
-					else
+					else if(player_id != my_id)
 					{
-						info->left = true;
-						AddMsg(Format("%s %s.", info->name.c_str(), reason == 1 ? txPcWasKicked : txPcLeftGame));
-
-						if(info->u)
-						{
-							if(info->u == pc_data.before_player_ptr.unit)
-								pc_data.before_player = BP_NONE;
-							RemoveElement(Team.members, info->u);
-							RemoveElement(Team.active_members, info->u);
-
-							if(reason == PlayerInfo::LEFT_LOADING)
-							{
-								if(info->u->interp)
-									interpolators.Free(info->u->interp);
-								if(info->u->cobj)
-									delete info->u->cobj->getCollisionShape();
-								delete info->u->mesh_inst;
-								delete info->u;
-								info->u = nullptr;
-							}
-							else
-							{
-								info->u->to_remove = true;
-								to_remove.push_back(info->u);
-
-								if(info->u->usable)
-									info->u->usable->user = nullptr;
-							}
-						}
+						info->left = reason;
+						RemovePlayer(*info);
+						game_players.erase(game_players.begin() + GetPlayerIndex(info->id));
+						delete info;
 					}
 				}
 			}
@@ -9675,7 +9647,7 @@ void Game::Client_Say(BitStream& stream)
 		}
 		else
 		{
-			PlayerInfo& info = game_players[index];
+			PlayerInfo& info = *game_players[index];
 			cstring s = Format("%s: %s", info.name.c_str(), BUF);
 			AddMsg(s);
 			if(game_state == GS_LEVEL)
@@ -9705,7 +9677,7 @@ void Game::Client_Whisper(BitStream& stream)
 		}
 		else
 		{
-			cstring s = Format("%s@: %s", game_players[index].name.c_str(), BUF);
+			cstring s = Format("%s@: %s", game_players[index]->name.c_str(), BUF);
 			AddMsg(s);
 		}
 	}
@@ -9784,7 +9756,7 @@ void Game::Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet)
 			}
 			else
 			{
-				PlayerInfo& info2 = game_players[index];
+				PlayerInfo& info2 = *game_players[index];
 				packet->data[1] = (byte)info.id;
 				peer->Send((cstring)packet->data, packet->length, MEDIUM_PRIORITY, RELIABLE, 0, info2.adr, false);
 				StreamWrite(packet, Stream_Chat, info2.adr);
@@ -9908,24 +9880,25 @@ void Game::Net_OnNewGameClient()
 void Game::Net_OnNewGameServer()
 {
 	players = 1;
-	game_players.clear();
+	DeleteElements(game_players);
 	my_id = 0;
 	leader_id = 0;
 	last_id = 0;
 	paused = false;
 	hardcore_mode = false;
 
+	auto info = new PlayerInfo;
+	game_players.push_back(info);
+	server_panel->grid.AddItem();
+
+	PlayerInfo& sp = *info;
+	sp.name = player_name;
+	sp.id = 0;
+	sp.state = PlayerInfo::IN_LOBBY;
+	sp.left = PlayerInfo::LEFT_NO;
+
 	if(!mp_load)
 	{
-		PlayerInfo& sp = Add1(game_players);
-		sp.clas = Class::INVALID;
-		sp.ready = false;
-		sp.name = player_name;
-		sp.id = 0;
-		sp.state = PlayerInfo::IN_LOBBY;
-		sp.left = false;
-		sp.loaded = false;
-
 		netid_counter = 0;
 		item_netid_counter = 0;
 		chest_netid_counter = 0;
@@ -9935,22 +9908,12 @@ void Game::Net_OnNewGameServer()
 		door_netid_counter = 0;
 		electro_netid_counter = 0;
 
-		server_panel->grid.AddItem();
 		server_panel->CheckAutopick();
 	}
 	else
 	{
-		// szukaj postaci serwera w zapisie
-		PlayerInfo& sp = Add1(game_players);
+		// search for saved character
 		PlayerInfo* old = FindOldPlayer(player_name.c_str());
-		sp.ready = false;
-		sp.name = player_name;
-		sp.id = 0;
-		sp.state = PlayerInfo::IN_LOBBY;
-		sp.left = false;
-
-		server_panel->grid.AddItem();
-
 		if(old)
 		{
 			sp.devmode = old->devmode;
@@ -9961,8 +9924,6 @@ void Game::Net_OnNewGameServer()
 		}
 		else
 		{
-			sp.loaded = false;
-			sp.clas = Class::INVALID;
 			server_panel->UseLoadedCharacter(false);
 			server_panel->CheckAutopick();
 		}
@@ -10205,10 +10166,10 @@ void Game::UseDays(PlayerController* player, int count)
 		count -= player->free_days;
 		player->free_days = 0;
 
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+		for(auto info : game_players)
 		{
-			if(!it->left && it->u->player != player)
-				it->u->player->free_days += count;
+			if(info->left == PlayerInfo::LEFT_NO && info->pc != player)
+				info->pc->free_days += count;
 		}
 
 		WorldProgress(count, WPM_NORMAL);
@@ -10222,10 +10183,10 @@ PlayerInfo* Game::FindOldPlayer(cstring nick)
 {
 	assert(nick);
 
-	for(PlayerInfo& info : old_players)
+	for(auto info : old_players)
 	{
-		if(info.name == nick)
-			return &info;
+		if(info->name == nick)
+			return info;
 	}
 
 	return nullptr;
@@ -10624,10 +10585,10 @@ void Game::InterpolateUnits(float dt)
 //=================================================================================================
 void Game::InterpolatePlayers(float dt)
 {
-	for(PlayerInfo& info : game_players)
+	for(auto info : game_players)
 	{
-		if(info.id != my_id && !info.left)
-			UpdateInterpolator(info.u->interp, dt, info.u->visual_pos, info.u->rot);
+		if(info->id != my_id && info->left == PlayerInfo::LEFT_NO)
+			UpdateInterpolator(info->u->interp, dt, info->u->visual_pos, info->u->rot);
 	}
 }
 
@@ -10800,109 +10761,22 @@ void Game::Net_PreSave()
 //=================================================================================================
 void Game::ProcessLeftPlayers()
 {
-	for(int player_id : players_left)
+	if(!players_left)
+		return;
+	
+	LoopAndRemove(game_players, [this](PlayerInfo* pinfo)
 	{
-		// order of changes is importat here
-		PlayerInfo& info = GetPlayerInfo(player_id);
+		auto& info = *pinfo;
+		if(info.left == PlayerInfo::LEFT_NO)
+			return false;
+
+		// order of changes is important here
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::REMOVE_PLAYER;
-		c.id = player_id;
-		c.ile = info.left_reason;
-
-		--players;
-		if(info.left_reason != PlayerInfo::LEFT_KICK)
-		{
-			Info("Player %s left game.", info.name.c_str());
-			AddMsg(Format(txPlayerLeft, info.name.c_str()));
-		}
-
-		if(info.u)
-		{
-			Unit* unit = info.u;
-
-			if(pc_data.before_player_ptr.unit == unit)
-				pc_data.before_player = BP_NONE;
-			if(info.left_reason == PlayerInfo::LEFT_LOADING || game_state == GS_WORLDMAP)
-			{
-				if(open_location != -1)
-					RemoveElement(GetContext(*unit).units, unit);
-				RemoveElement(Team.members, unit);
-				RemoveElement(Team.active_members, unit);
-				if(unit->interp)
-					interpolators.Free(unit->interp);
-				if(unit->cobj)
-					delete unit->cobj->getCollisionShape();
-				delete unit;
-				info.u = nullptr;
-			}
-			else
-			{
-				if(unit->usable)
-					unit->usable->user = nullptr;
-				switch(unit->player->action)
-				{
-				case PlayerController::Action_LootChest:
-					{
-						// close chest
-						unit->player->action_chest->looted = false;
-						unit->player->action_chest->mesh_inst->Play(&unit->player->action_chest->mesh_inst->mesh->anims[0],
-							PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-						if(sound_volume)
-						{
-							Vec3 pos = unit->player->action_chest->pos;
-							pos.y += 0.5f;
-							PlaySound3d(sChestClose, pos, 2.f, 5.f);
-						}
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHEST_CLOSE;
-						c.id = unit->player->action_chest->netid;
-					}
-					break;
-				case PlayerController::Action_LootUnit:
-					unit->player->action_unit->busy = Unit::Busy_No;
-					break;
-				case PlayerController::Action_Trade:
-				case PlayerController::Action_Talk:
-				case PlayerController::Action_GiveItems:
-				case PlayerController::Action_ShareItems:
-					unit->player->action_unit->busy = Unit::Busy_No;
-					unit->player->action_unit->look_target = nullptr;
-					break;
-				}
-
-				if(contest_state >= CONTEST_STARTING)
-					RemoveElementTry(contest_units, info.u);
-				if(!arena_free)
-					RemoveElementTry(at_arena, info.u);
-				if(tournament_state >= TOURNAMENT_IN_PROGRESS)
-				{
-					RemoveElementTry(tournament_units, info.u);
-					for(vector<std::pair<Unit*, Unit*> >::iterator it = tournament_pairs.begin(), end = tournament_pairs.end(); it != end; ++it)
-					{
-						if(it->first == info.u)
-						{
-							it->first = nullptr;
-							break;
-						}
-						else if(it->second == info.u)
-						{
-							it->second = nullptr;
-							break;
-						}
-					}
-					if(tournament_skipped_unit == info.u)
-						tournament_skipped_unit = nullptr;
-					if(tournament_other_fighter == info.u)
-						tournament_skipped_unit = nullptr;
-				}
-
-				RemoveElement(Team.members, unit);
-				RemoveElement(Team.active_members, unit);
-				to_remove.push_back(unit);
-				unit->to_remove = true;
-				info.u = nullptr;
-			}
-		}
+		c.id = info.id;
+		c.ile = (int)info.left;
+		
+		RemovePlayer(info);
 
 		if(leader_id == c.id)
 		{
@@ -10919,8 +10793,65 @@ void Game::ProcessLeftPlayers()
 		}
 
 		CheckCredit();
+		delete pinfo;
+
+		return true;
+	});
+
+	players_left = false;
+}
+
+//=================================================================================================
+void Game::RemovePlayer(PlayerInfo& info)
+{
+	switch(info.left)
+	{
+	case PlayerInfo::LEFT_TIMEOUT:
+		{
+			Info("Player %s kicked due to timeout.", info.name.c_str());
+			AddMsg(Format(txPlayerKicked, info.name.c_str()));
+		}
+		break;
+	case PlayerInfo::LEFT_KICK:
+		{
+			Info("Player %s kicked from server.", info.name.c_str());
+			AddMsg(Format(txPlayerKicked, info.name.c_str()));
+		}
+		break;
+	case PlayerInfo::LEFT_DISCONNECTED:
+		{
+			Info("Player %s disconnected from server.", info.name.c_str());
+			AddMsg(Format(txPlayerDisconnected, info.name.c_str()));
+		}
+		break;
+	case PlayerInfo::LEFT_QUIT:
+		{
+			Info("Player %s quit game.", info.name.c_str());
+			AddMsg(Format(txPlayerQuit, info.name.c_str()));
+		}
+		break;
+	default:
+		assert(0);
+		break;
 	}
-	players_left.clear();
+
+	if(!info.u)
+		return;
+
+	Unit* unit = info.u;
+	RemoveElement(Team.members, unit);
+	RemoveElement(Team.active_members, unit);
+	if(game_state == GS_WORLDMAP)
+	{
+		if(Net::IsLocal() && open_location == -1)
+			DeleteUnit(unit);
+	}
+	else
+	{
+		to_remove.push_back(unit);
+		unit->to_remove = true;
+	}
+	info.u = nullptr;
 }
 
 //=================================================================================================
@@ -11088,22 +11019,6 @@ void Game::ClosePeer(bool wait)
 }
 
 //=================================================================================================
-void Game::RemovePlayerOnLoad(PlayerInfo& info)
-{
-	RemoveElementOrder(Team.members, info.u);
-	RemoveElementOrder(Team.active_members, info.u);
-	if(Team.leader == info.u)
-		leader_id = -1;
-	if(mp_load && open_location != -1)
-		RemoveElement(GetContext(info.u->pos).units, info.u);
-	if (info.u->interp)
-		interpolators.Free(info.u->interp);
-	delete info.u;
-	--players;
-	peer->CloseConnection(info.adr, true, 0, IMMEDIATE_PRIORITY);
-}
-
-//=================================================================================================
 BitStream& Game::StreamStart(Packet* packet, StreamLogType type)
 {
 	assert(packet);
@@ -11151,22 +11066,22 @@ void Game::StreamWrite(const void* data, uint size, StreamLogType type, const Sy
 //=================================================================================================
 PlayerInfo& Game::GetPlayerInfo(int id)
 {
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+	for(auto info : game_players)
 	{
-		if(it->id == id)
-			return *it;
+		if(info->id == id)
+			return *info;
 	}
 	assert(0);
-	return game_players[0];
+	return *game_players[0];
 }
 
 //=================================================================================================
 PlayerInfo* Game::GetPlayerInfoTry(int id)
 {
-	for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+	for(auto info : game_players)
 	{
-		if(it->id == id)
-			return &*it;
+		if(info->id == id)
+			return info;
 	}
 	return nullptr;
 }

@@ -1,0 +1,75 @@
+Preamble
+========
+
+This is a quick summary/guide provided to help with complying to the license
+terms, if you are using solely the core functionality of SLikeNet (i.e. no
+samples, no dependent extensions, and no optional core features) without
+distributing the source code.
+This is also the case, if you are building your application with the prebuilt
+SLikeNet library files marked with "_core" in the library file name. If you are
+building your application with the prebuilt libraries marked with "_ext",
+please refer to the file _quick_licensing_slikenet_extended.txt instead.
+
+Further understand that these instructions are solely provided as a guideline
+to comply with licensing requirements. Legally bound instructions are solely
+covered by the actual license terms of the SLikeNet license and the
+dependencies it utilizes. Please refer to chapter 7 in the readme.txt file for
+detailed information!
+
+
+Quick Guide
+===========
+
+1. Include the following files in your deployment package:
+   - license.txt
+   - licenses/RakNet License.txt
+   - licenses/RakNet Patents.txt
+2. Delete anything following the "END OF LICENSE" marker (including that marker
+   and the separator above that line) in license.txt.
+3. In the associated documentation include the following content:
+   BSD License 
+   For RakNet software
+
+   Copyright (c) 2014, Oculus VR, Inc.
+   All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without modification, 
+   are permitted provided that the following conditions are met:
+	
+   * Redistributions of source code must retain the above copyright notice, 
+     this list of conditions and the following disclaimer.
+
+   * Redistributions in binary form must reproduce the above copyright notice,     
+     this list of conditions and the following disclaimer in the documentation 
+     and/or other materials provided with the distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY 
+   EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+   OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
+   SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+   INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
+   TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+   OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+Optional Steps
+==============
+
+The following steps are optional. You are kindly asked to follow these but are
+not legally required to do so:
+1.  Send a mail to info@slikesoft.com and notify us that you are using our
+    library.
+1a. In addition to letting us know, allow us to reference/link your
+    product/company on our webpage mentioning that you are using SLikeNet.
+2.  Mention on your webpage and/or in your product that you are using SLikeNet.
+    For instance:
+    "This product includes the Open Source/Free Software network library
+     SLikeNet™ - Copyright (c) 2016-2017 SLikeSoft™ UG (haftungbeschänkt) -
+     https://www.slikenet.com/"
+3.  Send a mail to Makoto Matsumoto and Takuji Nishimaru
+    (matumoto@math.keio.ac.jp) as well as CC Shawn Cokus
+    (Cokus@math.washington.edu) letting them know that you are using SLikeNet
+    in your product which uses their Mersenne Twister random number generator
+    MT19937.

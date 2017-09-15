@@ -1018,7 +1018,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						else if(t.NextLine())
 						{
 							const string& text = t.MustGetItem();
-							PlayerInfo& info = game_players[index];
+							PlayerInfo& info = *game_players[index];
 							if(info.id == my_id)
 								Msg("Whispers in your head: %s", text.c_str());
 							else
@@ -1075,7 +1075,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_READY:
 					{
-						PlayerInfo& info = game_players[0];
+						PlayerInfo& info = *game_players[0];
 						info.ready = !info.ready;
 						ChangeReady();
 					}
@@ -1089,7 +1089,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							Msg("No player with nick '%s'.", player_name.c_str());
 						else
 						{
-							PlayerInfo& info = game_players[index];
+							PlayerInfo& info = *game_players[index];
 							if(leader_id == info.id)
 								Msg("Player '%s' is already a leader.", player_name.c_str());
 							else if(Net::IsServer() || leader_id == my_id)
@@ -1205,9 +1205,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 						cstring error_text = nullptr;
 
-						for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+						for(auto info : game_players)
 						{
-							if(!it->ready)
+							if(!info->ready)
 							{
 								error_text = "Not everyone is ready.";
 								break;
@@ -1245,7 +1245,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						WriteString1(net_stream, text);
 						peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server, Net::IsServer());
 						StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server);
-						cstring s = Format("%s: %s", game_players[0].name.c_str(), text.c_str());
+						cstring s = Format("%s: %s", game_players[0]->name.c_str(), text.c_str());
 						AddMsg(s);
 						Info(s);
 					}
@@ -1261,9 +1261,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							bool b = t.MustGetBool();
 							if(player_name == "all")
 							{
-								for(PlayerInfo& info : game_players)
+								for(auto pinfo : game_players)
 								{
-									if(!info.left && info.devmode != b && info.id != 0)
+									auto& info = *pinfo;
+									if(info.left == PlayerInfo::LEFT_NO && info.devmode != b && info.id != 0)
 									{
 										info.devmode = b;
 										NetChangePlayer& c = Add1(Net::player_changes);
@@ -1281,7 +1282,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									Msg("No player with nick '%s'.", player_name.c_str());
 								else
 								{
-									PlayerInfo& info = game_players[index];
+									PlayerInfo& info = *game_players[index];
 									if(info.devmode != b)
 									{
 										info.devmode = b;
@@ -1300,8 +1301,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								LocalString s = "Players devmode: ";
 								bool any = false;
-								for(PlayerInfo& info : game_players)
+								for(auto pinfo : game_players)
 								{
+									auto& info = *pinfo;
 									if(!info.left && info.id != 0)
 									{
 										s += Format("%s(%d), ", info.name.c_str(), info.devmode ? 1 : 0);
@@ -1323,7 +1325,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								if(index == -1)
 									Msg("No player with nick '%s'.", player_name.c_str());
 								else
-									Msg("Player devmode: %s(%d).", player_name.c_str(), game_players[index].devmode ? 1 : 0);
+									Msg("Player devmode: %s(%d).", player_name.c_str(), game_players[index]->devmode ? 1 : 0);
 							}
 						}
 					}
@@ -1460,7 +1462,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						if(!sv_startup)
 						{
-							PlayerInfo& info = game_players[0];
+							PlayerInfo& info = *game_players[0];
 							if(!info.ready)
 							{
 								if(info.clas == Class::INVALID)
@@ -1474,9 +1476,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 							cstring error_text = nullptr;
 
-							for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+							for(auto info : game_players)
 							{
-								if(!it->ready)
+								if(!info->ready)
 								{
 									error_text = "Not everyone is ready.";
 									break;
@@ -1502,7 +1504,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					else
 					{
-						PlayerInfo& info = game_players[0];
+						PlayerInfo& info = *game_players[0];
 						if(!info.ready)
 						{
 							if(info.clas == Class::INVALID)

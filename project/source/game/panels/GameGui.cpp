@@ -463,7 +463,12 @@ void GameGui::DrawFront()
 	{
 		int alpha;
 		if(game.fallback_t < 0.f)
-			alpha = int((1.f + game.fallback_t) * 255);
+		{
+			if(game.fallback_co == FALLBACK::NONE)
+				alpha = 255;
+			else
+				alpha = int((1.f + game.fallback_t) * 255);
+		}
 		else
 			alpha = int((1.f - game.fallback_t) * 255);
 

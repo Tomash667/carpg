@@ -148,6 +148,7 @@ struct PlayerController : public HeroPlayerCommon
 	void Rest(int days, bool resting, bool travel = false);
 
 	void Init(Unit& _unit, bool partial = false);
+	void ResetStatState();
 	void Update(float dt, bool is_local = true);
 	void Train(Skill s, int points);
 	void Train(Attribute a, int points);

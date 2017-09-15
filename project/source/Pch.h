@@ -31,11 +31,10 @@
 
 //-----------------------------------------------------------------------------
 #ifndef COMMON_ONLY
-#	include <RakPeerInterface.h>
-#	include <RakNetTypes.h>
-#	include <MessageIdentifiers.h>
 #	define __BITSTREAM_NATIVE_END
-#	include <BitStream.h>
+#	include <slikenet/peerinterface.h>
+#	include <slikenet/MessageIdentifiers.h>
+#	include <slikenet/BitStream.h>
 #else
 #	include <cassert>
 #endif
@@ -73,7 +72,7 @@ using std::list;
 using std::min;
 using std::max;
 #ifndef COMMON_ONLY
-using namespace RakNet;
+using namespace SLNet;
 #endif
 
 //-----------------------------------------------------------------------------

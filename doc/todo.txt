@@ -21,12 +21,8 @@
 ? verify version formatting to not include path number 0 ("0.5.0" -> "0.5")
 ===============================================================================================================
 CURRENT:
-- crash client when other player left on loading (worldmap, level?)
-- update about client move/animation is not resend C->S->C, only when stopped
-- crash C2 when C left on world map
 ? verify is window center is wnd_size/2 or real_size/2, update GameGuiInit::UdateGui
 ? cursor pos change from Vec2 to Int2, cursor testing, focus, click activation etc
-? some todo from Ref is done here
 ===============================================================================================================
 NEW:
 + ref move mutex from resource manager
@@ -47,6 +43,8 @@ NEW:
 + refactor save version from ParticleSystem.cpp
 + refactor load_screen from Resourcemanager.cpp
 + refactor Language.h from Gui.cpp, GetNumberDialog
++ vector of pointers that disallow null values, iterating over returns by ref
++ ref overcomplex player stats system
 + open wanted letter in fullscreen, show face
 + ref remove DWORD
 + join TextLine & FontLine

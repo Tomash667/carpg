@@ -555,8 +555,8 @@ struct Game final : public Engine, public UnitEventHandler
 		txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion, txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer,
 		txPlayerDataError, txGeneratingLocation, txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
 		txLost, txLeft, txLost2, txUnconnected, txDisconnected, txClosing, txKicked, txUnknown, txUnknown2, txWaitingForServer, txStartingGame, txPreparingWorld, txInvalidCrc;
-	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txPlayerKicked, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txPcWasKicked,
-		txPcLeftGame, txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft;
+	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked,
+		txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft, txPlayerDisconnected, txPlayerQuit, txPlayerKicked, txServerClosed;
 	cstring txYell[3];
 	cstring txHaveErrors;
 
@@ -1256,6 +1256,7 @@ public:
 	void PreloadResources(bool worldmap);
 	void PreloadUsables(vector<Usable*>& usable);
 	void PreloadUnits(vector<Unit*>& units);
+	void PreloadUnit(Unit* unit);
 	void PreloadItems(vector<ItemSlot>& items);
 	void PreloadItem(const Item* item);
 	void VerifyResources();
@@ -1516,11 +1517,19 @@ public:
 	void RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc);
 	void OnEnterIp(int id);
 	void GenericInfoBoxUpdate(float dt);
+	void UpdateClientConnectingIp(float dt);
+	void UpdateClientTransfer(float dt);
+	void UpdateClientQuiting(float dt);
+	void UpdateServerTransfer(float dt);
+	void UpdateServerSend(float dt);
+	void UpdateServerQuiting(float dt);
 	void QuickJoinIp();
 	void AddMultiMsg(cstring msg);
 	void Quit();
 	bool ValidateNick(cstring nick);
 	void UpdateLobbyNet(float dt);
+	void UpdateLobbyNetClient(float dt);
+	void UpdateLobbyNetServer(float dt);
 	bool DoLobbyUpdate(BitStream& stream);
 	void OnCreateCharacter(int id);
 	void OnPlayTutorial(int id);
@@ -1536,7 +1545,7 @@ public:
 
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
-	RakNet::RakPeerInterface* peer;
+	SLNet::RakPeerInterface* peer;
 	string server_name, player_name, server_pswd, server_ip, enter_pswd, server_name2;
 	int autostart_count;//, kick_timer;
 	int players; // aktualna liczba graczy w grze
@@ -1544,11 +1553,10 @@ public:
 	int my_id; // moje unikalne id
 	int last_id;
 	int last_startup_id;
-	bool sv_startup, was_client;
+	bool sv_startup, was_client, players_left;
 	BitStream server_info;
 	vector<byte> packet_data;
-	vector<PlayerInfo> game_players, old_players;
-	vector<int> players_left;
+	vector<PlayerInfo*> game_players, old_players;
 	SystemAddress server;
 	int leader_id, kick_id;
 	float startup_timer;
@@ -1561,7 +1569,8 @@ public:
 		NM_TRANSFER_SERVER,
 		NM_SERVER_SEND
 	} net_mode;
-	int net_state, net_tries;
+	NetState net_state;
+	int net_tries;
 	VoidF net_callback;
 	string net_adr;
 	float net_timer, update_timer, mp_timeout;
@@ -1806,6 +1815,7 @@ public:
 	void Net_FilterServerChanges();
 	void Net_FilterClientChanges();
 	void ProcessLeftPlayers();
+	void RemovePlayer(PlayerInfo& info);
 	void ClosePeer(bool wait = false);
 	void DeleteOldPlayers();
 	NetChangePlayer& AddChange(NetChangePlayer::TYPE type, PlayerController* _pc)
@@ -1817,7 +1827,6 @@ public:
 		_pc->player_info->NeedUpdate();
 		return c;
 	}
-	void RemovePlayerOnLoad(PlayerInfo& info);
 
 	BitStream& StreamStart(Packet* packet, StreamLogType type);
 	void StreamEnd();

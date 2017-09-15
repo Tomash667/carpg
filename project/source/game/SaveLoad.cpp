@@ -534,17 +534,17 @@ void Game::SaveGame(HANDLE file)
 		WriteFile(file, &players, sizeof(players), &tmp, nullptr);
 		WriteFile(file, &max_players, sizeof(max_players), &tmp, nullptr);
 		WriteFile(file, &last_id, sizeof(last_id), &tmp, nullptr);
-		uint ile = 0;
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+		uint count = 0;
+		for(auto info : game_players)
 		{
-			if(!it->left)
-				++ile;
+			if(info->left == PlayerInfo::LEFT_NO)
+				++count;
 		}
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
+		for(auto info : game_players)
 		{
-			if(!it->left)
-				it->Save(file);
+			if(info->left == PlayerInfo::LEFT_NO)
+				info->Save(file);
 		}
 		WriteFile(file, &kick_id, sizeof(kick_id), &tmp, nullptr);
 		WriteFile(file, &netid_counter, sizeof(netid_counter), &tmp, nullptr);
@@ -1333,7 +1333,7 @@ void Game::LoadGame(HANDLE file)
 	team_shares.clear();
 	team_share_id = -1;
 	fallback_co = FALLBACK::NONE;
-	fallback_t = 0.f;
+	fallback_t = -0.5f;
 	inventory_mode = I_NONE;
 	pc_data.before_player = BP_NONE;
 	pc_data.selected_unit = nullptr;
@@ -1349,11 +1349,15 @@ void Game::LoadGame(HANDLE file)
 		ReadFile(file, &players, sizeof(players), &tmp, nullptr);
 		ReadFile(file, &max_players, sizeof(max_players), &tmp, nullptr);
 		ReadFile(file, &last_id, sizeof(last_id), &tmp, nullptr);
-		uint ile;
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		old_players.resize(ile);
-		for(uint i = 0; i < ile; ++i)
-			old_players[i].Load(file);
+		uint count;
+		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+		DeleteElements(old_players);
+		old_players.resize(count);
+		for(uint i = 0; i < count; ++i)
+		{
+			old_players[i] = new PlayerInfo;
+			old_players[i]->Load(file);
+		}
 		ReadFile(file, &kick_id, sizeof(kick_id), &tmp, nullptr);
 		ReadFile(file, &netid_counter, sizeof(netid_counter), &tmp, nullptr);
 		ReadFile(file, &item_netid_counter, sizeof(item_netid_counter), &tmp, nullptr);
