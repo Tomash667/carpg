@@ -26,6 +26,7 @@
 #include "MultiplayerPanel.h"
 #include "AIController.h"
 #include "Team.h"
+#include "ItemContainer.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern Matrix m1, m2, m3, m4;
@@ -1507,55 +1508,51 @@ void Game::ApplyTiles(float* _h, TerrainTile* _tiles)
 	terrain->CalculateBox();
 }
 
-Object* Game::SpawnObject(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, float scale, Vec3* out_point, int variant)
+Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale, int flags, Vec3* out_point,
+	int variant)
 {
-	int obj_id, obj_t;
-
-	if(IS_SET(obj->flags, OBJ_TABLE))
+	if(IS_SET(base->flags, OBJ_TABLE))
 	{
-		BaseObject* stol = BaseObject::Get(Rand() % 2 == 0 ? "table" : "table2");
+		// table & stools
+		BaseObject* table = BaseObject::Get(Rand() % 2 == 0 ? "table" : "table2"),
+			*stool = BaseObject::Get("stool");
 
-		// stó³
-		{
-			Object& o = Add1(ctx.objects);
-			o.mesh = stol->mesh;
-			o.rot = Vec3(0, rot, 0);
-			o.pos = pos;
-			o.scale = 1;
-			o.base = stol;
-			obj_id = ctx.objects->size() - 1;
-			obj_t = 0;
+		// table
+		uint obj_index = ctx.objects->size();
+		Object& o = Add1(ctx.objects);
+		o.mesh = table->mesh;
+		o.rot = Vec3(0, rot, 0);
+		o.pos = pos;
+		o.scale = 1;
+		o.base = table;
+		SpawnObjectExtras(ctx, stool, pos, rot, &o, nullptr);
 
-			SpawnObjectExtras(ctx, stol, pos, rot, &o, nullptr);
-		}
-
-		// sto³ki
-		BaseObject* stolek = BaseObject::Get("stool");
-		int ile = Random(2, 4);
+		// stools
+		int count = Random(2, 4);
 		int d[4] = { 0,1,2,3 };
 		for(int i = 0; i < 4; ++i)
 			std::swap(d[Rand() % 4], d[Rand() % 4]);
 
-		for(int i = 0; i < ile; ++i)
+		for(int i = 0; i < count; ++i)
 		{
 			float sdir, slen;
 			switch(d[i])
 			{
 			case 0:
 				sdir = 0.f;
-				slen = stol->size.y + 0.3f;
+				slen = stool->size.y + 0.3f;
 				break;
 			case 1:
 				sdir = PI / 2;
-				slen = stol->size.x + 0.3f;
+				slen = stool->size.x + 0.3f;
 				break;
 			case 2:
 				sdir = PI;
-				slen = stol->size.y + 0.3f;
+				slen = stool->size.y + 0.3f;
 				break;
 			case 3:
 				sdir = PI * 3 / 2;
-				slen = stol->size.x + 0.3f;
+				slen = stool->size.x + 0.3f;
 				break;
 			default:
 				assert(0);
@@ -1573,11 +1570,14 @@ Object* Game::SpawnObject(LevelContext& ctx, BaseObject* obj, const Vec3& pos, f
 			if(Net::IsOnline())
 				u->netid = usable_netid_counter++;
 
-			SpawnObjectExtras(ctx, stolek, u->pos, u->rot, u, nullptr);
+			SpawnObjectExtras(ctx, stool, u->pos, u->rot, u, nullptr);
 		}
+
+		return &ctx.objects->at(obj_index);
 	}
-	else if(IS_SET(obj->flags, OBJ_BUILDING))
+	else if(IS_SET(base->flags, OBJ_BUILDING))
 	{
+		// building
 		int roti;
 		if(Equal(rot, 0))
 			roti = 0;
@@ -1594,104 +1594,106 @@ Object* Game::SpawnObject(LevelContext& ctx, BaseObject* obj, const Vec3& pos, f
 			rot = 0.f;
 		}
 
+		int obj_index = ctx.objects->size();
 		Object& o = Add1(ctx.objects);
-		o.mesh = obj->mesh;
+		o.mesh = base->mesh;
 		o.rot = Vec3(0, rot, 0);
 		o.pos = pos;
 		o.scale = scale;
-		o.base = obj;
-		obj_id = ctx.objects->size() - 1;
-		obj_t = 0;
+		o.base = base;
 
 		ProcessBuildingObjects(ctx, nullptr, nullptr, o.mesh, nullptr, rot, roti, pos, nullptr, nullptr, false, out_point);
+
+		return &ctx.objects->at(obj_index);
+	}
+	else if(IS_SET(base->flags, OBJ_USABLE))
+	{
+		// usable object
+		USABLE_ID type = base->ToUsableType();
+		BaseUsable& bu = g_base_usables[type];
+
+		Usable* u = new Usable;
+		u->type = type;
+		u->pos = pos;
+		u->rot = rot;
+		u->user = nullptr;
+
+		if(IS_SET(bu.flags, BaseUsable::CONTAINER))
+		{
+			u->container = new ItemContainer;
+			auto item = GetRandomBook();
+			if(item)
+				u->container->items.push_back({ item, 1, 1 });
+		}
+
+		if(variant == -1)
+		{
+			BaseObject* base_obj = u->GetBase()->obj;
+			if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
+			{
+				// extra code for bench
+				if(type == U_BENCH || type == U_BENCH_ROT)
+				{
+					switch(location->type)
+					{
+					case L_CITY:
+						variant = 0;
+						break;
+					case L_DUNGEON:
+					case L_CRYPT:
+						variant = Rand() % 2;
+						break;
+					default:
+						variant = Rand() % 2 + 2;
+						break;
+					}
+				}
+				else
+					variant = Random<int>(base_obj->variant->count - 1);
+			}
+		}
+		u->variant = variant;
+
+		if(Net::IsOnline())
+			u->netid = usable_netid_counter++;
+		ctx.usables->push_back(u);
+
+		SpawnObjectExtras(ctx, base, pos, rot, u, nullptr, scale, flags);
+
+		return u;
+	}
+	else if(IS_SET(base->flags, OBJ_CHEST))
+	{
+		// chest
+		Chest* chest = new Chest;
+		chest->mesh_inst = new MeshInstance(base->mesh);
+		chest->rot = rot;
+		chest->pos = pos;
+		chest->handler = nullptr;
+		chest->looted = false;
+		ctx.chests->push_back(chest);
+		if(Net::IsOnline())
+			chest->netid = chest_netid_counter++;
+
+		SpawnObjectExtras(ctx, base, pos, rot, nullptr, nullptr, scale, flags);
+
+		return chest;
 	}
 	else
 	{
-		void* obj_ptr = nullptr;
-		void** result_ptr = nullptr;
+		// normal object
+		int obj_index = ctx.objects->size();
+		Object& o = Add1(ctx.objects);
+		o.mesh = base->mesh;
+		o.rot = Vec3(0, rot, 0);
+		o.pos = pos;
+		o.scale = scale;
+		o.base = base;
 
-		if(IS_SET(obj->flags, OBJ_USEABLE))
-		{
-			USABLE_ID type = obj->ToUsableType();
+		SpawnObjectExtras(ctx, base, pos, rot, &o, (btCollisionObject**)&o.ptr, scale, flags);
 
-			Usable* u = new Usable;
-			u->type = type;
-			u->pos = pos;
-			u->rot = rot;
-			u->user = nullptr;
-			if(variant == -1)
-			{
-				BaseObject* base_obj = u->GetBase()->obj;
-				if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
-				{
-					// extra code for bench
-					if(type == U_BENCH || type == U_BENCH_ROT)
-					{
-						switch(location->type)
-						{
-						case L_CITY:
-							variant = 0;
-							break;
-						case L_DUNGEON:
-						case L_CRYPT:
-							variant = Rand() % 2;
-							break;
-						default:
-							variant = Rand() % 2 + 2;
-							break;
-						}
-					}
-					else
-						variant = Random<int>(base_obj->variant->count - 1);
-				}
-			}
-			u->variant = variant;
-			obj_ptr = u;
-
-			if(Net::IsOnline())
-				u->netid = usable_netid_counter++;
-
-			obj_id = ctx.usables->size();
-			ctx.usables->push_back(u);
-			obj_t = 1;
-		}
-		else if(IS_SET(obj->flags, OBJ_CHEST))
-		{
-			Chest* chest = new Chest;
-			chest->mesh_inst = new MeshInstance(obj->mesh);
-			chest->rot = rot;
-			chest->pos = pos;
-			chest->handler = nullptr;
-			chest->looted = false;
-			obj_id = ctx.chests->size();
-			obj_t = 2;
-			ctx.chests->push_back(chest);
-			if(Net::IsOnline())
-				chest->netid = chest_netid_counter++;
-		}
-		else
-		{
-			Object& o = Add1(ctx.objects);
-			o.mesh = obj->mesh;
-			o.rot = Vec3(0, rot, 0);
-			o.pos = pos;
-			o.scale = scale;
-			o.base = obj;
-			obj_id = ctx.objects->size() - 1;
-			obj_t = 0;
-			obj_ptr = &o;
-			result_ptr = &o.ptr;
-		}
-
-		SpawnObjectExtras(ctx, obj, pos, rot, obj_ptr, (btCollisionObject**)result_ptr, scale);
+		return &ctx.objects->at(obj_index);
 	}
-
-	if(obj_t == 0)
-		return &(*ctx.objects)[obj_id];
-	else if(obj_t == 1)
-		return (Object*)((*ctx.usables)[obj_id]); // meh
-	else
-		return (Object*)((*ctx.chests)[obj_id]); // meh^2
 }
 
 void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
@@ -2018,10 +2020,10 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 				else
 					name = token.c_str();
 
-				BaseObject* obj = BaseObject::TryGet(name);
-				assert(obj);
+				BaseObject* base = BaseObject::TryGet(name);
+				assert(base);
 
-				if(obj)
+				if(base)
 				{
 					if(ctx.type == LevelContext::Outside)
 						terrain->SetH(pos);
@@ -2039,7 +2041,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 						r = PI / 2 * (Rand() % 4);
 						break;
 					}
-					SpawnObject(ctx, obj, pos, r, 1.f, nullptr, variant);
+					SpawnObjectEntity(ctx, base, pos, r, 1.f, 0, nullptr, variant);
 				}
 			}
 		}
@@ -2403,7 +2405,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 				{
 					if(ctx.type == LevelContext::Outside)
 						terrain->SetH(pos);
-					SpawnObject(ctx, obj, pos, Clip(pt.rot.y + rot), 1.f, nullptr, variant);
+					SpawnObjectEntity(ctx, obj, pos, Clip(pt.rot.y + rot), 1.f, 0, nullptr, variant);
 				}
 			}
 		}
@@ -3069,7 +3071,7 @@ void Game::GenerateDungeonObjects2()
 		o.base = nullptr;
 	}
 	else
-		SpawnObject(local_ctx, BaseObject::Get("portal"), inside->portal->pos, inside->portal->rot);
+		SpawnObjectEntity(local_ctx, BaseObject::Get("portal"), inside->portal->pos, inside->portal->rot);
 
 	// schody w dó³
 	if(inside->HaveDownStairs())
@@ -3259,7 +3261,7 @@ void Game::SpawnCityObjects()
 	{
 		Vec3 pos = pt_to_pos(g_well_pt);
 		terrain->SetH(pos);
-		SpawnObject(local_ctx, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, nullptr);
+		SpawnObjectEntity(local_ctx, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
 	}
 
 	TerrainTile* tiles = ((City*)location)->tiles;
@@ -3280,7 +3282,7 @@ void Game::SpawnCityObjects()
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = outside_objects[Rand() % n_outside_objects];
-			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 }
@@ -3392,19 +3394,19 @@ void Game::SpawnForestObjects(int road_dir)
 			pos = Vec3(Rand() % 2 == 0 ? 127.f - 32.f : 127.f + 32.f, 0, 127.f);
 		terrain->SetH(pos);
 		pos.y -= 1.f;
-		SpawnObject(local_ctx, BaseObject::Get("obelisk"), pos, 0.f);
+		SpawnObjectEntity(local_ctx, BaseObject::Get("obelisk"), pos, 0.f);
 	}
 	else if(Rand() % 16 == 0)
 	{
 		// tree with rocks around it
 		Vec3 pos(Random(48.f, 208.f), 0, Random(48.f, 208.f));
 		pos.y = terrain->GetH(pos) - 1.f;
-		SpawnObject(local_ctx, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
+		SpawnObjectEntity(local_ctx, trees2[3].obj, pos, Random(MAX_ANGLE), 4.f);
 		for(int i = 0; i < 12; ++i)
 		{
 			Vec3 pos2 = pos + Vec3(sin(PI * 2 * i / 12)*8.f, 0, cos(PI * 2 * i / 12)*8.f);
 			pos2.y = terrain->GetH(pos2);
-			SpawnObject(local_ctx, misc[4].obj, pos2, Random(MAX_ANGLE));
+			SpawnObjectEntity(local_ctx, misc[4].obj, pos2, Random(MAX_ANGLE));
 		}
 	}
 
@@ -3418,7 +3420,7 @@ void Game::SpawnForestObjects(int road_dir)
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = trees[Rand() % n_trees];
-			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 		else if(co == TT_GRASS3)
 		{
@@ -3430,7 +3432,7 @@ void Game::SpawnForestObjects(int road_dir)
 			else
 				co = Rand() % 3;
 			OutsideObject& o = trees2[co];
-			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 
@@ -3443,7 +3445,7 @@ void Game::SpawnForestObjects(int road_dir)
 			Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 			pos.y = terrain->GetH(pos);
 			OutsideObject& o = misc[Rand() % n_misc];
-			SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+			SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 		}
 	}
 }
@@ -3891,7 +3893,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 				ile2 = Random(2, 3);
 				poziom2 = Random(3, 8);
 				SpawnObjectNearLocation(local_ctx, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
-				Chest* chest = (Chest*)SpawnObjectNearLocation(local_ctx, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
+				Chest* chest = SpawnObjectNearLocation(local_ctx, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
 				if(chest)
 				{
 					int gold;
@@ -4893,7 +4895,7 @@ void Game::SpawnCampUnits()
 	}
 }
 
-Object* Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range, float margin, float scale)
+Game::ObjectEntity Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range, float margin, float scale)
 {
 	bool ok = false;
 	if(obj->type == OBJ_CYLINDER)
@@ -4920,7 +4922,7 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const 
 		if(ctx.type == LevelContext::Outside)
 			terrain->SetH(pt);
 
-		return SpawnObject(ctx, obj, pt, rot, scale);
+		return SpawnObjectEntity(ctx, obj, pt, rot, scale);
 	}
 	else
 	{
@@ -4955,11 +4957,12 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const 
 		if(ctx.type == LevelContext::Outside)
 			terrain->SetH(pt);
 
-		return SpawnObject(ctx, obj, pt, rot, scale);
+		return SpawnObjectEntity(ctx, obj, pt, rot, scale);
 	}
 }
 
-Object* Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range, float margin, float scale)
+Game::ObjectEntity Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range, float margin,
+	float scale)
 {
 	if(obj->type == OBJ_CYLINDER)
 		return SpawnObjectNearLocation(ctx, obj, pos, Vec2::LookAtAngle(pos, rot_target), range, margin, scale);
@@ -4998,7 +5001,7 @@ Object* Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const 
 		if(ctx.type == LevelContext::Outside)
 			terrain->SetH(pt);
 
-		return SpawnObject(ctx, obj, pt, rot, scale);
+		return SpawnObjectEntity(ctx, obj, pt, rot, scale);
 	}
 }
 
@@ -5398,8 +5401,8 @@ void Game::SpawnMoonwellObjects()
 	Vec3 pos(128.f, 0, 128.f);
 	terrain->SetH(pos);
 	pos.y -= 0.2f;
-	SpawnObject(local_ctx, BaseObject::Get("moonwell"), pos, 0.f, 1.f);
-	SpawnObject(local_ctx, BaseObject::Get("moonwell_phy"), pos, 0.f, 1.f);
+	SpawnObjectEntity(local_ctx, BaseObject::Get("moonwell"), pos, 0.f);
+	SpawnObjectEntity(local_ctx, BaseObject::Get("moonwell_phy"), pos, 0.f);
 
 	if(!trees[0].obj)
 	{
@@ -5425,7 +5428,7 @@ void Game::SpawnMoonwellObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
-				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(co == TT_GRASS3)
 			{
@@ -5437,7 +5440,7 @@ void Game::SpawnMoonwellObjects()
 				else
 					co = Rand() % 3;
 				OutsideObject& o = trees2[co];
-				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -5453,7 +5456,7 @@ void Game::SpawnMoonwellObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
-				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -5902,12 +5905,12 @@ void Game::SpawnSecretLocationObjects()
 	terrain->SetH(pos);
 	BaseObject* o = BaseObject::Get("tomashu_dom");
 	pos.y += 0.05f;
-	SpawnObject(local_ctx, o, pos, 0, 1.f);
+	SpawnObjectEntity(local_ctx, o, pos, 0);
 	ProcessBuildingObjects(local_ctx, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, Vec3(0, 0, 0), nullptr, nullptr, false);
 
 	pos.z = 64.f;
 	terrain->SetH(pos);
-	SpawnObject(local_ctx, BaseObject::Get("portal"), pos, 0, 1.f);
+	SpawnObjectEntity(local_ctx, BaseObject::Get("portal"), pos, 0);
 
 	Portal* portal = new Portal;
 	portal->at_level = 0;
@@ -5943,7 +5946,7 @@ void Game::SpawnSecretLocationObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = trees[Rand() % n_trees];
-				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 			else if(co == TT_GRASS3)
 			{
@@ -5955,7 +5958,7 @@ void Game::SpawnSecretLocationObjects()
 				else
 					co = Rand() % 3;
 				OutsideObject& o = trees2[co];
-				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}
@@ -5972,7 +5975,7 @@ void Game::SpawnSecretLocationObjects()
 				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
 				pos.y = terrain->GetH(pos);
 				OutsideObject& o = misc[Rand() % n_misc];
-				SpawnObject(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
+				SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
 			}
 		}
 	}

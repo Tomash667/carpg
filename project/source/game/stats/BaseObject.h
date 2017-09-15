@@ -28,7 +28,7 @@ enum OBJ_FLAGS
 	OBJ_CAMPFIRE = 1 << 8, // object has larger fire effect (requires OBJ_LIGHT)
 	OBJ_IMPORTANT = 1 << 9, // try more times to generate this object
 	OBJ_BILLBOARD = 1 << 10, // object always face camera
-	OBJ_USEABLE = 1 << 11, // object is usable
+	OBJ_USABLE = 1 << 11, // object is usable
 	OBJ_BENCH = 1 << 12, // object is bench
 	OBJ_ANVIL = 1 << 13, // object is anvil
 	OBJ_CHAIR = 1 << 14, // object is chair

@@ -2,9 +2,9 @@
 
 //-----------------------------------------------------------------------------
 #include "BaseUsable.h"
+#include "ItemContainer.h"
 
 //-----------------------------------------------------------------------------
-struct ItemContainer;
 struct Unit;
 struct Usable;
 

@@ -90,10 +90,11 @@ public:
 	const Item* last_item;
 	const Item** slots;
 	Unit* unit;
-	static cstring txGoldAndCredit, txGoldDropInfo, txCarryShort, txCarry, txCarryInfo, txTeamItem, txCantWear, txCantDoNow, txBuyTeamDialog, txDropGoldCount, txDropNoGold, txDropNotNow,
-		txDropItemCount, txWontBuy, txPrice, txNeedMoreGoldItem, txBuyItemCount, txSellItemCount, txLooting, txTrading, txPutGoldCount, txLootItemCount, txPutItemCount, txTakeAll, txInventory,
-		txLootingChest, txShareItems, txGiveItems, txPutGold, txGiveGold, txGiveGoldCount, txShareGiveItemCount, txCanCarryTeamOnly, txWontGiveItem, txShareTakeItemCount, txWontTakeItem,
-		txSellTeamItem, txSellItem, txSellFreeItem, txGivePotionCount, txNpcCantCarry;
+	static cstring txGoldAndCredit, txGoldDropInfo, txCarryShort, txCarry, txCarryInfo, txTeamItem, txCantWear, txCantDoNow, txBuyTeamDialog, txDropGoldCount,
+		txDropNoGold, txDropNotNow, txDropItemCount, txWontBuy, txPrice, txNeedMoreGoldItem, txBuyItemCount, txSellItemCount, txLooting, txLootingChest,
+		txTrading, txPutGoldCount, txLootItemCount, txPutItemCount, txTakeAll, txInventory, txShareItems, txGiveItems, txPutGold, txGiveGold, txGiveGoldCount,
+		txShareGiveItemCount, txCanCarryTeamOnly, txWontGiveItem, txShareTakeItemCount, txWontTakeItem, txSellTeamItem, txSellItem, txSellFreeItem,
+		txGivePotionCount, txNpcCantCarry;
 	Scrollbar scrollbar;
 	Button bt;
 	int counter, give_item_mode;

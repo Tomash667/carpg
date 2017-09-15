@@ -2358,7 +2358,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
 	{
 		if(!(*it)->user)
-			PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_USEABLE);
+			PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_USABLE);
 	}
 
 	if(best_dist < best_dist_target && pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit->IsStanding())
@@ -3189,6 +3189,30 @@ void Game::PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float&
 				Chest* chest = (Chest*)ptr;
 				if(AngleDiff(Clip(chest->rot - PI / 2), Clip(-Vec3::Angle2d(u.pos, pos))) > PI / 2)
 					return;
+			}
+			else if(type == BP_USABLE)
+			{
+				Usable* use = (Usable*)ptr;
+				auto& bu = *use->GetBase();
+				if(IS_SET(bu.flags, BaseUsable::CONTAINER))
+				{
+					float allowed_dif;
+					switch(bu.limit_rot)
+					{
+					default:
+					case 0:
+						allowed_dif = PI * 2;
+						break;
+					case 1:
+						allowed_dif = PI / 2;
+						break;
+					case 2:
+						allowed_dif = PI / 4;
+						break;
+					}
+					if(AngleDiff(Clip(use->rot - PI / 2), Clip(-Vec3::Angle2d(u.pos, pos))) > allowed_dif)
+						return;
+				}
 			}
 			dist += angle;
 			if(dist < best_dist)
@@ -8098,7 +8122,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							break;
 						// u¿yj obiekt
 						case NA_USE:
-							if(pc_data.before_player == BP_USEABLE && pc_data.before_player_ptr.usable == pc->next_action_usable)
+							if(pc_data.before_player == BP_USABLE && pc_data.before_player_ptr.usable == pc->next_action_usable)
 								PlayerUseUsable(pc->next_action_usable, true);
 							break;
 						// sprzedawanie za³o¿onego przedmiotu
@@ -8626,7 +8650,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						if(Net::IsServer())
 						{
 							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::USE_USEABLE;
+							c.type = NetChange::USE_USABLE;
 							c.unit = &u;
 							c.id = u.usable->netid;
 							c.ile = 0;
@@ -8675,7 +8699,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 									if(Net::IsServer())
 									{
 										NetChange& c = Add1(Net::changes);
-										c.type = NetChange::USEABLE_SOUND;
+										c.type = NetChange::USABLE_SOUND;
 										c.unit = &u;
 									}
 								}
@@ -8800,7 +8824,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				if(Net::IsServer())
 				{
 					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::USE_USEABLE;
+					c.type = NetChange::USE_USABLE;
 					c.unit = &u;
 					c.id = u.usable->netid;
 					c.ile = 0;
@@ -10188,148 +10212,13 @@ void Game::GenerateDungeonObjects()
 					}
 				}
 
-				if(IS_SET(obj->flags, OBJ_TABLE))
-				{
-					BaseObject* stol = BaseObject::Get(Rand() % 2 == 0 ? "table" : "table2");
+				SpawnObjectEntity(local_ctx, obj, pos, rot, 1.f, flags);
 
-					// stó³
-					{
-						Object& o = Add1(local_ctx.objects);
-						o.mesh = stol->mesh;
-						o.rot = Vec3(0, rot, 0);
-						o.pos = pos;
-						o.scale = 1;
-						o.base = stol;
+				if(IS_SET(obj->flags, OBJ_REQUIRED))
+					wymagany_obiekt = true;
 
-						SpawnObjectExtras(local_ctx, stol, pos, rot, nullptr, nullptr);
-					}
-
-					// sto³ki
-					BaseObject* stolek = BaseObject::Get("stool");
-					int ile = Random(2, 4);
-					int d[4] = { 0,1,2,3 };
-					for(int i = 0; i < 4; ++i)
-						std::swap(d[Rand() % 4], d[Rand() % 4]);
-
-					for(int i = 0; i < ile; ++i)
-					{
-						float sdir, slen;
-						switch(d[i])
-						{
-						case 0:
-							sdir = 0.f;
-							slen = stol->size.y + 0.3f;
-							break;
-						case 1:
-							sdir = PI / 2;
-							slen = stol->size.x + 0.3f;
-							break;
-						case 2:
-							sdir = PI;
-							slen = stol->size.y + 0.3f;
-							break;
-						case 3:
-							sdir = PI * 3 / 2;
-							slen = stol->size.x + 0.3f;
-							break;
-						default:
-							assert(0);
-							break;
-						}
-
-						sdir += rot;
-
-						Usable* u = new Usable;
-						local_ctx.usables->push_back(u);
-						u->type = U_STOOL;
-						u->pos = pos + Vec3(sin(sdir)*slen, 0, cos(sdir)*slen);
-						u->rot = sdir;
-						u->user = nullptr;
-
-						if(Net::IsOnline())
-							u->netid = usable_netid_counter++;
-
-						SpawnObjectExtras(local_ctx, stolek, u->pos, u->rot, u, nullptr);
-					}
-				}
-				else
-				{
-					void* obj_ptr = nullptr;
-					void** result_ptr = nullptr;
-
-					if(IS_SET(obj->flags, OBJ_CHEST))
-					{
-						Chest* chest = new Chest;
-						chest->mesh_inst = new MeshInstance(aChest);
-						chest->pos = pos;
-						chest->rot = rot;
-						chest->handler = nullptr;
-						chest->looted = false;
-						room_chests.push_back(chest);
-						local_ctx.chests->push_back(chest);
-						if(Net::IsOnline())
-							chest->netid = chest_netid_counter++;
-					}
-					else if(IS_SET(obj->flags, OBJ_USEABLE))
-					{
-						USABLE_ID type = obj->ToUsableType();
-
-						Usable* u = new Usable;
-						u->type = type;
-						u->pos = pos;
-						u->rot = rot;
-						u->user = nullptr;
-						BaseObject* base_obj = u->GetBase()->obj;
-						if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
-						{
-							// extra code for bench
-							if(type == U_BENCH || type == U_BENCH_ROT)
-							{
-								switch(location->type)
-								{
-								case L_CITY:
-									u->variant = 0;
-									break;
-								case L_DUNGEON:
-								case L_CRYPT:
-									u->variant = Rand() % 2;
-									break;
-								default:
-									u->variant = Rand() % 2 + 2;
-									break;
-								}
-							}
-							else
-								u->variant = Random<int>(base_obj->variant->count - 1);
-						}
-						else
-							u->variant = -1;
-						local_ctx.usables->push_back(u);
-						obj_ptr = u;
-
-						if(Net::IsOnline())
-							u->netid = usable_netid_counter++;
-					}
-					else
-					{
-						Object& o = Add1(local_ctx.objects);
-						o.mesh = obj->mesh;
-						o.rot = Vec3(0, rot, 0);
-						o.pos = pos;
-						o.scale = 1;
-						o.base = obj;
-						result_ptr = &o.ptr;
-						obj_ptr = &o;
-					}
-
-					SpawnObjectExtras(local_ctx, obj, pos, rot, obj_ptr, (btCollisionObject**)result_ptr, 1.f, flags);
-
-					if(IS_SET(obj->flags, OBJ_REQUIRED))
-						wymagany_obiekt = true;
-
-					if(IS_SET(obj->flags, OBJ_ON_WALL))
-						on_wall.push_back(pos);
-				}
+				if(IS_SET(obj->flags, OBJ_ON_WALL))
+					on_wall.push_back(pos);
 
 				if(is_variant)
 					obj = BaseObject::Get(rt->objs[i].id);
@@ -13921,7 +13810,7 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_USEABLE;
+			c.type = NetChange::USE_USABLE;
 			c.unit = &u;
 			c.id = u.usable->netid;
 			c.ile = 3;
@@ -13929,7 +13818,7 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 		else if(&u == pc->unit)
 		{
 			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_USEABLE;
+			c.type = NetChange::USE_USABLE;
 			c.id = u.usable->netid;
 			c.ile = 0;
 		}
@@ -15288,6 +15177,11 @@ void Game::PreloadResources(bool worldmap)
 				items_load.insert(ground_item->item);
 			for(auto chest : *local_ctx.chests)
 				PreloadItems(chest->items);
+			for(auto usable : *local_ctx.usables)
+			{
+				if(usable->container)
+					PreloadItems(usable->container->items);
+			}
 			PreloadItems(chest_merchant);
 			PreloadItems(chest_blacksmith);
 			PreloadItems(chest_alchemist);
@@ -15307,6 +15201,11 @@ void Game::PreloadResources(bool worldmap)
 				{
 					for(auto ground_item : ib->items)
 						items_load.insert(ground_item->item);
+					for(auto usable : ib->usables)
+					{
+						if(usable->container)
+							PreloadItems(usable->container->items);
+					}
 				}
 			}
 		}
@@ -15912,6 +15811,10 @@ void Game::DeleteUnit(Unit* unit)
 			case PlayerController::Action_ShareItems:
 				unit->player->action_unit->busy = Unit::Busy_No;
 				unit->player->action_unit->look_target = nullptr;
+				break;
+			case PlayerController::Action_LootContainer:
+				unit->player->action_container->user = nullptr;
+				// TODO
 				break;
 			}
 		}
@@ -18160,7 +18063,7 @@ void Game::GenerateSawmill(bool in_progress)
 		// budynek
 		Vec3 spawn_pt;
 		float rot = PI / 2 * (Rand() % 4);
-		SpawnObject(local_ctx, BaseObject::Get("tartak"), Vec3(128, wys, 128), rot, 1.f, &spawn_pt);
+		SpawnObjectEntity(local_ctx, BaseObject::Get("tartak"), Vec3(128, wys, 128), rot, 1.f, 0, &spawn_pt);
 
 		// artur drwal
 		Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pt, ud, nullptr, -2);
@@ -18650,7 +18553,7 @@ bool Game::GenerateMine()
 				break;
 			}
 
-			SpawnObject(local_ctx, pochodnia, pos, Random(MAX_ANGLE));
+			SpawnObjectEntity(local_ctx, pochodnia, pos, Random(MAX_ANGLE));
 		}
 
 		// portal
@@ -18675,7 +18578,7 @@ bool Game::GenerateMine()
 
 			// obiekt
 			const Vec3 pos(2.f*pt.x + 5, 0, 2.f*pt.y + 5);
-			SpawnObject(local_ctx, portal, pos, rot);
+			SpawnObjectEntity(local_ctx, portal, pos, rot);
 
 			// lokacja
 			SingleInsideLocation* loc = new SingleInsideLocation;
@@ -18873,7 +18776,7 @@ bool Game::GenerateMine()
 					break;
 				}
 
-				SpawnObject(local_ctx, obj, Vec3(2.f*it->x + Random(0.1f, 1.9f), 0.f, 2.f*it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
+				SpawnObjectEntity(local_ctx, obj, Vec3(2.f*it->x + Random(0.1f, 1.9f), 0.f, 2.f*it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
 			}
 		}
 	}
@@ -20847,18 +20750,9 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 				game_gui->inv_trade_other->unit = nullptr;
 				game_gui->inv_trade_other->items = &pc->action_chest->items;
 				game_gui->inv_trade_other->slots = nullptr;
-				game_gui->inv_trade_other->title = Inventory::txLootingSumthing; // Looting - Chest/Bookshelf
+				game_gui->inv_trade_other->title = Format("%s - %s", Inventory::txLooting, use.GetBase()->name);
 				game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;
 				game_gui->gp_trade->Show();
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::USE_USEABLE;
-					c.unit = &u;
-					c.id = u.usable->netid;
-					c.ile = 1;
-				}
 			}
 			else
 			{
@@ -20875,22 +20769,23 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 				u.timer = 0.f;
 				u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
 				u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
-				pc_data.before_player = BP_NONE;
+			}
 
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::USE_USEABLE;
-					c.unit = &u;
-					c.id = u.usable->netid;
-					c.ile = 1;
-				}
+			pc_data.before_player = BP_NONE;
+
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_USABLE;
+				c.unit = &u;
+				c.id = u.usable->netid;
+				c.ile = 1;
 			}
 		}
 		else
 		{
 			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_USEABLE;
+			c.type = NetChange::USE_USABLE;
 			c.id = pc_data.before_player_ptr.usable->netid;
 			c.ile = 1;
 		}

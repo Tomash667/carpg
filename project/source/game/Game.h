@@ -238,7 +238,7 @@ enum DRAW_FLAGS
 	DF_BULLETS = 1 << 5,
 	DF_BLOOD = 1 << 6,
 	DF_ITEMS = 1 << 7,
-	DF_USEABLES = 1 << 8,
+	DF_USABLES = 1 << 8,
 	DF_TRAPS = 1 << 9,
 	DF_AREA = 1 << 10,
 	DF_EXPLOS = 1 << 11,
@@ -684,7 +684,7 @@ public:
 	vector<CollisionObject> global_col; // wektor na tymczasowe obiekty, czêsto u¿ywany przy zbieraniu obiektów do kolizji
 	vector<btCollisionShape*> shapes;
 	vector<CameraCollider> cam_colliders;
-	
+
 	//---------------------------------
 	// WCZYTYWANIE
 	float loading_dt, loading_cap;
@@ -1863,8 +1863,51 @@ public:
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void GenerateDungeon(Location& loc);
 	void SpawnCityPhysics();
-	// zwraca Object lub Usable lub Chest!!!, w przypadku budynku rot musi byæ równe 0, PI/2, PI, 3*2/PI (w przeciwnym wypadku bêdzie 0)
-	Object* SpawnObject(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, float scale = 1.f, Vec3* out_point = nullptr, int variant = -1);
+	struct ObjectEntity
+	{
+		enum Type
+		{
+			NONE,
+			OBJECT,
+			USABLE,
+			CHEST
+		} type;
+		union
+		{
+			Object* object;
+			Usable* usable;
+			Chest* chest;
+		};
+
+		ObjectEntity(nullptr_t) : object(nullptr), type(NONE) {}
+		ObjectEntity(Object* object) : object(object), type(OBJECT) {}
+		ObjectEntity(Usable* usable) : usable(usable), type(USABLE) {}
+		ObjectEntity(Chest* chest) : chest(chest), type(CHEST) {}
+
+		operator bool()
+		{
+			return type != NONE;
+		}
+		operator Object* ()
+		{
+			assert(type == OBJECT || type == NONE);
+			return object;
+		}
+		operator Usable* ()
+		{
+			assert(type == USABLE || type == NONE);
+			return usable;
+		}
+		operator Chest* ()
+		{
+			assert(type == CHEST || type == NONE);
+			return chest;
+		}
+
+	};
+	// for object rot must be 0, PI/2, PI or PI*3/2
+	ObjectEntity SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale = 1.f, int flags = 0,
+		Vec3* out_point = nullptr, int variant = -1);
 	void RespawnBuildingPhysics();
 	void SpawnCityObjects();
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
@@ -1895,8 +1938,9 @@ public:
 	void GenerateCamp(Location& loc);
 	void SpawnCampObjects();
 	void SpawnCampUnits();
-	Object* SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range = 2.f, float margin = 0.3f, float scale = 1.f);
-	Object* SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range = 2.f, float margin = 0.3f,
+	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range = 2.f, float margin = 0.3f,
+		float scale = 1.f);
+	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range = 2.f, float margin = 0.3f,
 		float scale = 1.f);
 	int GetClosestLocation(LOCATION type, const Vec2& pos, int target = -1);
 	int GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target);

@@ -7,12 +7,13 @@
 	+ LD text
 	+ english text
 + usable bookshelf
-	+ TODO: animacja
+	+ disallow using from back, don't highlight
+	? break action, chest?
 + books generation
 	+ on shelfs
 	+ after tutorial
-	+ disallow using from back, don't highlight
 ? reload mp game with quests, notes & rumors
+? buying items from trader decrease their weight ?
 ===============================================================================================================
 + vsync in options
 - innkeeper - stands still, no animations/actions
@@ -50,6 +51,8 @@ NEW:
 + join TextLine & FontLine
 + remove tablechairs object, now it's not requiered
 + rename tartak obj -> sawmill
++ two animations of falling, front and back, for example when boulder is rolling on player it depends on player rotation which animation use, rotate player
++ enemy: doppelanger, rogue doppelanger, assassin doppelanger
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

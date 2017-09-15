@@ -3,34 +3,11 @@
 #include "Core.h"
 #include "Chest.h"
 #include "Game.h"
-#include "QuestManager.h"
-#include "SaveState.h"
 
 //=================================================================================================
 void Chest::Save(HANDLE file, bool local)
 {
-	while(!items.empty() && !items.back().item)
-		items.pop_back();
-
-	uint ile = items.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-
-	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-	{
-		if(it->item)
-		{
-			WriteString1(file, it->item->id);
-			WriteFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
-			WriteFile(file, &it->team_count, sizeof(it->team_count), &tmp, nullptr);
-			if(it->item->id[0] == '$')
-				WriteFile(file, &it->item->refid, sizeof(int), &tmp, nullptr);
-		}
-		else
-		{
-			byte zero = 0;
-			WriteFile(file, &zero, sizeof(zero), &tmp, nullptr);
-		}
-	}
+	ItemContainer::Save(file);
 
 	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
@@ -59,49 +36,7 @@ void Chest::Save(HANDLE file, bool local)
 //=================================================================================================
 void Chest::Load(HANDLE file, bool local)
 {
-	bool can_sort = true;
-
-	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	if(ile)
-	{
-		items.resize(ile);
-		for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-		{
-			byte len;
-			ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-			if(len)
-			{
-				ReadFile(file, BUF, len, &tmp, nullptr);
-				BUF[len] = 0;
-				ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
-				ReadFile(file, &it->team_count, sizeof(it->team_count), &tmp, nullptr);
-				if(BUF[0] != '$')
-					it->item = ::FindItem(BUF);
-				else
-				{
-					int quest_refid;
-					ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
-					QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_refid, &items);
-					it->item = QUEST_ITEM_PLACEHOLDER;
-					can_sort = false;
-				}
-			}
-			else
-			{
-				assert(LOAD_VERSION < V_0_2_10);
-				it->item = nullptr;
-				it->count = 0;
-			}
-		}
-	}
-
-	if(can_sort && LOAD_VERSION < V_0_2_20 && !items.empty())
-	{
-		if(LOAD_VERSION < V_0_2_10)
-			RemoveNullItems(items);
-		SortItems(items);
-	}
+	ItemContainer::Load(file);
 
 	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);

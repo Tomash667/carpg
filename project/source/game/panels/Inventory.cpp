@@ -23,13 +23,14 @@ last_index to tutaj t_index
 
 //-----------------------------------------------------------------------------
 TEX Inventory::tItemBar, Inventory::tEquipped, Inventory::tGold, Inventory::tStarHq, Inventory::tStarM, Inventory::tStarU;
-cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarryShort, Inventory::txCarry, Inventory::txCarryInfo, Inventory::txTeamItem, Inventory::txCantWear,
-Inventory::txCantDoNow, Inventory::txBuyTeamDialog, Inventory::txDropGoldCount, Inventory::txDropNoGold, Inventory::txDropNotNow, Inventory::txDropItemCount, Inventory::txWontBuy,
-Inventory::txPrice, Inventory::txNeedMoreGoldItem, Inventory::txBuyItemCount, Inventory::txSellItemCount, Inventory::txLooting, Inventory::txTrading, Inventory::txPutGoldCount,
-Inventory::txLootItemCount, Inventory::txPutItemCount, Inventory::txTakeAll, Inventory::txInventory, Inventory::txLootingChest, Inventory::txShareItems, Inventory::txGiveItems,
-Inventory::txPutGold, Inventory::txGiveGold, Inventory::txGiveGoldCount, Inventory::txShareGiveItemCount, Inventory::txCanCarryTeamOnly, Inventory::txWontGiveItem,
-Inventory::txShareTakeItemCount, Inventory::txWontTakeItem, Inventory::txSellTeamItem, Inventory::txSellItem, Inventory::txSellFreeItem, Inventory::txGivePotionCount,
-Inventory::txNpcCantCarry;
+cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarryShort, Inventory::txCarry, Inventory::txCarryInfo, Inventory::txTeamItem,
+	Inventory::txCantWear, Inventory::txCantDoNow, Inventory::txBuyTeamDialog, Inventory::txDropGoldCount, Inventory::txDropNoGold, Inventory::txDropNotNow,
+	Inventory::txDropItemCount, Inventory::txWontBuy, Inventory::txPrice, Inventory::txNeedMoreGoldItem, Inventory::txBuyItemCount, Inventory::txSellItemCount,
+	Inventory::txLooting, Inventory::txLootingChest, Inventory::txTrading, Inventory::txPutGoldCount, Inventory::txLootItemCount, Inventory::txPutItemCount,
+	Inventory::txTakeAll, Inventory::txInventory, Inventory::txShareItems, Inventory::txGiveItems, Inventory::txPutGold, Inventory::txGiveGold,
+	Inventory::txGiveGoldCount, Inventory::txShareGiveItemCount, Inventory::txCanCarryTeamOnly, Inventory::txWontGiveItem, Inventory::txShareTakeItemCount,
+	Inventory::txWontTakeItem, Inventory::txSellTeamItem, Inventory::txSellItem, Inventory::txSellFreeItem, Inventory::txGivePotionCount,
+	Inventory::txNpcCantCarry;
 LOCK_MODE Inventory::lock_id;
 int Inventory::lock_index;
 bool Inventory::lock_give;
@@ -73,13 +74,13 @@ void Inventory::LoadText()
 	txBuyItemCount = Str("buyItemCount");
 	txSellItemCount = Str("sellItemCount");
 	txLooting = Str("looting");
+	txLootingChest = Str("lootingChest");
 	txTrading = Str("trading");
 	txPutGoldCount = Str("putGoldCount");
 	txLootItemCount = Str("lootItemCount");
 	txPutItemCount = Str("putItemCount");
 	txTakeAll = Str("takeAll");
 	txInventory = Str("inventory");
-	txLootingChest = Str("lootingChest");
 	txShareItems = Str("shareItems");
 	txGiveItems = Str("giveItems");
 	txPutGold = Str("putGold");
@@ -437,7 +438,7 @@ void Inventory::Update(float dt)
 			switch(mode)
 			{
 			case INVENTORY:
-				// u¿yj/za³ó¿/zdejmij przedmiot
+				// use/equip/unequip item
 				if(!slot)
 				{
 					// zdejmij przedmiot
@@ -510,7 +511,7 @@ void Inventory::Update(float dt)
 				}
 				break;
 			case TRADE_MY:
-				// sprzedawanie przedmiotów
+				// selling items
 				if(item->value <= 1 || !game.CanBuySell(item))
 					GUI.SimpleDialog(txWontBuy, this);
 				else if(!slot)
@@ -559,7 +560,7 @@ void Inventory::Update(float dt)
 				}
 				break;
 			case TRADE_OTHER:
-				// kupowanie przedmiotów
+				// buying items
 				{
 					// ustal ile gracz chce kupiæ przedmiotów
 					uint ile;
@@ -589,7 +590,7 @@ void Inventory::Update(float dt)
 				}
 				break;
 			case LOOT_MY:
-				// chowanie przedmiotów do zw³ok/skrzyni
+				// put item into corpse/chest/container
 				if(slot)
 				{
 					// nie za³o¿ony przedmiot
@@ -635,7 +636,7 @@ void Inventory::Update(float dt)
 				}
 				break;
 			case LOOT_OTHER:
-				// zabieranie przedmiotów ze zw³ok/skrzyni
+				// take item from corpse/chest/container
 				if(slot)
 				{
 					// nie za³o¿ony przedmiot
@@ -729,7 +730,7 @@ void Inventory::Update(float dt)
 				}
 				break;
 			case SHARE_MY:
-				// dawanie przedmiotów sojusznikowi na przechowanie
+				// give item to companion to store
 				if(slot && slot->team_count > 0)
 				{
 					// nie za³o¿ony przedmiot
@@ -773,7 +774,7 @@ void Inventory::Update(float dt)
 				break;
 			case SHARE_OTHER:
 			case GIVE_OTHER:
-				// zabieranie przedmiotów od sojusznika
+				// take item from companion
 				if(slot && slot->team_count > 0)
 				{
 					// nie za³o¿ony przedmiot
@@ -811,7 +812,7 @@ void Inventory::Update(float dt)
 				}
 				break;
 			case GIVE_MY:
-				// dawanie przedmiotów sojusznikowi
+				// give item to companion
 				Unit* t = unit->player->action_unit;
 				if(slot)
 				{

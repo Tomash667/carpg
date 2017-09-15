@@ -239,7 +239,7 @@ void GameGui::DrawFront()
 			GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, WHITE, text_pos);
 		}
 		break;
-	case BP_USEABLE:
+	case BP_USABLE:
 		{
 			Usable& u = *game.pc_data.before_player_ptr.usable;
 			BaseUsable& bu = g_base_usables[u.type];

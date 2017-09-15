@@ -1327,7 +1327,7 @@ void Game::UpdateAi(float dt)
 												if(Net::IsOnline())
 												{
 													NetChange& c = Add1(Net::changes);
-													c.type = NetChange::USE_USEABLE;
+													c.type = NetChange::USE_USABLE;
 													c.unit = &u;
 													c.id = use.netid;
 													c.ile = (czyta_papiery ? 2 : 1);

@@ -224,7 +224,7 @@ enum BeforePlayer
 	BP_CHEST,
 	BP_DOOR,
 	BP_ITEM,
-	BP_USEABLE
+	BP_USABLE
 };
 
 //-----------------------------------------------------------------------------

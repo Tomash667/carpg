@@ -2,7 +2,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "ItemSlot.h"
+#include "ItemContainer.h"
 #include "MeshInstance.h"
 #include "Item.h"
 
@@ -19,9 +19,8 @@ struct ChestEventHandler
 };
 
 //-----------------------------------------------------------------------------
-struct Chest
+struct Chest : public ItemContainer
 {
-	vector<ItemSlot> items;
 	Vec3 pos;
 	float rot;
 	MeshInstance* mesh_inst;

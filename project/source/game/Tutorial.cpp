@@ -284,7 +284,7 @@ void Game::StartTutorial()
 					case 1:
 						{
 							BaseObject* o = BaseObject::Get("chest");
-							Chest* chest = (Chest*)SpawnObject(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
+							Chest* chest = SpawnObjectEntity(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(FindItem("sword_long"));
 							chest->AddItem(FindItem("shield_wood"));
 							chest->AddItem(FindItem("al_leather"));
@@ -294,7 +294,7 @@ void Game::StartTutorial()
 						break;
 					case 2:
 						tut_dummy = Vec3(2.f*x + 1, 0, 2.f*y + 1);
-						SpawnObject(local_ctx, BaseObject::Get("melee_target"), tut_dummy, PI / 2);
+						SpawnObjectEntity(local_ctx, BaseObject::Get("melee_target"), tut_dummy, PI / 2);
 						break;
 					case 3:
 						{
@@ -306,7 +306,7 @@ void Game::StartTutorial()
 					case 4:
 						{
 							BaseObject* o = BaseObject::Get("chest");
-							Chest* chest = (Chest*)SpawnObject(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
+							Chest* chest = SpawnObjectEntity(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(FindItem("bow_short"));
 							chest->AddItem(FindItem("p_hp"));
 							chest->AddItem(gold_item_ptr, Random(75, 100));
@@ -315,7 +315,7 @@ void Game::StartTutorial()
 						break;
 					case 5:
 						{
-							Object* o = SpawnObject(local_ctx, BaseObject::Get("bow_target"), Vec3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
+							Object* o = SpawnObjectEntity(local_ctx, BaseObject::Get("bow_target"), Vec3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
 							if(tut_shield)
 								tut_shield2 = o;
 							else

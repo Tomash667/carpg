@@ -5,6 +5,8 @@
 #include "Object.h"
 #include "SaveState.h"
 #include "BitStreamFunc.h"
+#include "ItemContainer.h"
+#include "Game.h"
 
 //=================================================================================================
 Mesh* Usable::GetMesh() const
@@ -29,6 +31,8 @@ void Usable::Save(HANDLE file, bool local)
 	BaseObject* base_obj = GetBaseObject();
 	if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
 		WriteFile(file, &variant, sizeof(variant), &tmp, nullptr);
+	if(IS_SET(GetBase()->flags, BaseUsable::CONTAINER))
+		container->Save(file);
 
 	if(local)
 	{
@@ -48,6 +52,18 @@ void Usable::Load(HANDLE file, bool local)
 		ReadFile(file, &variant, sizeof(variant), &tmp, nullptr);
 	else
 		variant = -1;
+	if(LOAD_VERSION >= V_CURRENT && IS_SET(GetBase()->flags, BaseUsable::CONTAINER))
+	{
+		container = new ItemContainer;
+		if(LOAD_VERSION >= V_CURRENT)
+			container->Load(file);
+		else
+		{
+			auto item = Game::Get().GetRandomBook();
+			if(item)
+				container->items.push_back({ item, 1 ,1 });
+		}
+	}
 
 	if(local)
 	{
