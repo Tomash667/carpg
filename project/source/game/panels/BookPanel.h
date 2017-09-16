@@ -36,5 +36,5 @@ private:
 	Vec2 scale;
 	TEX tArrowL, tArrowR;
 	SOUND sound;
-	Font* runic_font;
+	Font* normal_font, *runic_font;
 };

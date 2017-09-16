@@ -2018,11 +2018,11 @@ book_scheme book {
 	// assuming 1024x768 resolution, this values are scaled
 	size {800 600}
 	regions {
-		{5 5 390 550}
-		{405 5 790 550}
+		{50 17 390 505}
+		{405 17 745 505}
 	}
-	prev {5 555}
-	next {780 555}
+	prev {42 497}
+	next {737 497}
 }
 
 book book_orcs {
@@ -2030,6 +2030,7 @@ book book_orcs {
 	value 10
 	mesh "book.qmsh"
 	scheme "book"
+	flags alpha
 }
 
 book book_undead {
@@ -2037,6 +2038,7 @@ book book_undead {
 	value 10
 	mesh "book.qmsh"
 	scheme "book"
+	flags alpha
 }
 
 book book_behind_the_wall {
@@ -2044,6 +2046,7 @@ book book_behind_the_wall {
 	value 10
 	mesh "book.qmsh"
 	scheme "book"
+	flags alpha
 }
 
 book book_adventurer {
@@ -2051,6 +2054,7 @@ book book_adventurer {
 	value 10
 	mesh "book.qmsh"
 	scheme "book"
+	flags alpha
 }
 
 book book_ld {
@@ -2058,7 +2062,7 @@ book book_ld {
 	value 100
 	mesh "book.qmsh"
 	scheme "book"
-	flags {not_shop not_chest not_random}
+	flags {alpha not_shop not_chest not_random}
 }
 
 book book_runic {
@@ -2066,7 +2070,7 @@ book book_runic {
 	value 100
 	mesh "book.qmsh"
 	scheme "book"
-	flags {not_shop not_chest not_random}
+	flags {alpha not_shop not_chest not_random}
 	runic 1
 }
 
@@ -2075,7 +2079,7 @@ book q_zlo_ksiega {
 	value 100
 	tex "summoning.png"
 	scheme "book"
-	flags {not_shop not_chest not_random important}
+	flags {alpha not_shop not_chest not_random important}
 	runic 1
 }
 

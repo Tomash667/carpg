@@ -238,6 +238,9 @@ void Inventory::Update(float dt)
 {
 	GamePanel::Update(dt);
 
+	if(game.game_gui->book_panel->visible)
+		return;
+
 	if(lock_id == LOCK_TRADE_MY && lock_give)
 	{
 		lock_timer -= dt;

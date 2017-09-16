@@ -272,9 +272,9 @@ public:
 private:
 	void CreateVertexBuffer();
 	void DrawLine(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color, Vec4& color, int x, int y, const Rect* clipping,
-		HitboxContext* hc, bool parse_special);
+		HitboxContext* hc, bool parse_special, const Vec2& scale);
 	void DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color, Vec4& color, int x, int y, const Rect* clipping,
-		HitboxContext* hc, bool parse_special);
+		HitboxContext* hc, bool parse_special, const Vec2& scale);
 	int Clip(int x, int y, int w, int h, const Rect* clipping);
 	void Lock(bool outline = false);
 	void Flush(bool lock = false);

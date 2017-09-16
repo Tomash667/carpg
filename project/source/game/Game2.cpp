@@ -15360,7 +15360,7 @@ void Game::PreloadItem(const Item* citem)
 			else if(item.type == IT_BOOK)
 			{
 				Book& book = item.ToBook();
-				ResourceManager::Get<Texture>().AddLoadTask(book.tex);
+				ResourceManager::Get<Texture>().AddLoadTask(book.scheme->tex);
 			}
 
 			if(item.tex)
@@ -15390,7 +15390,7 @@ void Game::PreloadItem(const Item* citem)
 		else if(item.type == IT_BOOK)
 		{
 			Book& book = item.ToBook();
-			ResourceManager::Get<Texture>().Load(book.tex);
+			ResourceManager::Get<Texture>().Load(book.scheme->tex);
 		}
 
 		if(item.tex)

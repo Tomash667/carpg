@@ -1,11 +1,4 @@
 ﻿FEATURE:
-? loading book items
-? using books
-	? sound, open book, change page
-	? runes font
-+ example books
-	+ LD text
-	+ english text
 + usable bookshelf
 	+ disallow using from back, don't highlight
 	? break action, chest?
@@ -20,6 +13,7 @@
 - after alt tab - camera is moved down
 - can summon wolf outside of arena - there should be marked as WALL
 ? verify version formatting to not include path number 0 ("0.5.0" -> "0.5")
+- options: current resolution is not selected at start
 ===============================================================================================================
 CURRENT:
 ? verify is window center is wnd_size/2 or real_size/2, update GameGuiInit::UdateGui
@@ -53,6 +47,7 @@ NEW:
 + rename tartak obj -> sawmill
 + two animations of falling, front and back, for example when boulder is rolling on player it depends on player rotation which animation use, rotate player
 + enemy: doppelanger, rogue doppelanger, assassin doppelanger
++ EE: sawmill random text -> "ludzi coraz więcej a rką do pracy coraz mniej"
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

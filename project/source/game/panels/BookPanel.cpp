@@ -9,11 +9,15 @@
 //=================================================================================================
 BookPanel::BookPanel() : book(nullptr), scale(0, 0)
 {
+	visible = false;
 }
 
 //=================================================================================================
 void BookPanel::Draw(ControlDrawData*)
 {
+	if(!book)
+		return;
+
 	// book background
 	Int2 book_size = book->scheme->size * scale;
 	Int2 book_pos = (GUI.wnd_size - book_size) / 2;
@@ -51,6 +55,16 @@ void BookPanel::Draw(ControlDrawData*)
 		options.lines_end = split.lines_end;
 		GUI.DrawText2(options);
 	}
+
+#ifdef _DEBUG
+	if(Key.Down('B'))
+	{
+		for(auto& rect : book->scheme->regions)
+		{
+			GUI.DrawArea(COLOR_RGBA(255, 0, 0, 128), rect * scale + book_pos);
+		}
+	}
+#endif
 }
 
 //=================================================================================================
@@ -63,9 +77,6 @@ void BookPanel::Event(GuiEvent event)
 //=================================================================================================
 void BookPanel::Update(float dt)
 {
-	if(!focus)
-		return;
-
 	Int2 book_size = book->scheme->size * scale;
 	Int2 book_pos = (GUI.wnd_size - book_size) / 2;
 
@@ -103,6 +114,7 @@ void BookPanel::Show(const Book* book)
 		SplitBook();
 	}
 	visible = true;
+	current_page = 0;
 	Event(GuiEvent_Show);
 	GainFocus();
 
@@ -130,7 +142,8 @@ void BookPanel::SplitBook()
 		current_h += font->height;
 		if(current_h + font->height > (uint)regions[region].Size().y)
 		{
-			splits.push_back({ page, region, start_line, text_lines.size() - 1 });
+			current_h = 0;
+			splits.push_back({ page, region, start_line, text_lines.size() });
 			start_line = text_lines.size();
 			++region;
 			if(regions.size() == region)
@@ -163,7 +176,7 @@ Font* BookPanel::GetFont()
 	if(book->runic)
 		return runic_font;
 	else
-		return GUI.default_font;
+		return normal_font;
 }
 
 //=================================================================================================
@@ -173,10 +186,11 @@ void BookPanel::LoadData()
 	tex_mgr.AddLoadTask("strzalka_l.png", tArrowL);
 	tex_mgr.AddLoadTask("strzalka_p.png", tArrowR);
 
-	ResourceManager::Get<Sound>().AddLoadTask("sound_page.wav", sound);
+	ResourceManager::Get<Sound>().AddLoadTask("page-turn.wav", sound);
 
-	GUI.AddFont("runic.otf");
-	runic_font = GUI.CreateFont("Runic", 14, 800, 512);
+	GUI.AddFont("Dwarf Runes.ttf");
+	normal_font = GUI.CreateFont("Arial", 16, 800, 512);
+	runic_font = GUI.CreateFont("Dwarf Runes", 16, 800, 512);
 }
 
 //=================================================================================================

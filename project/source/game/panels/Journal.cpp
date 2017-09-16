@@ -310,7 +310,7 @@ void Journal::Event(GuiEvent e)
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize || e == GuiEvent_Resize || e == GuiEvent_Moved)
 	{
 		rect = Rect(32, 16, 238, 432);
-		rect2 = Rect(259, 16, 455, 431);
+		rect2 = Rect(259, 16, 455, 432);
 
 		Vec2 scale = Vec2(size) / 512;
 		rect = rect * scale + global_pos;
