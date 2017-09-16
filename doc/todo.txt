@@ -1,12 +1,10 @@
 ﻿FEATURE:
-+ usable bookshelf
-	+ disallow using from back, don't highlight
-	? break action, chest?
-+ books generation
-	+ on shelfs
-	+ after tutorial
 ? reload mp game with quests, notes & rumors
 ? buying items from trader decrease their weight ?
+? mp - read book, try open container at same time, exit while using container
+? save/load, old saves with bookshelfs
+- item drop counter don't work for mouse
+- bookshelf block view
 ===============================================================================================================
 + vsync in options
 - innkeeper - stands still, no animations/actions
@@ -14,6 +12,8 @@
 - can summon wolf outside of arena - there should be marked as WALL
 ? verify version formatting to not include path number 0 ("0.5.0" -> "0.5")
 - options: current resolution is not selected at start
+- stupid website rewrite rule
+- summon wolf on arena
 ===============================================================================================================
 CURRENT:
 ? verify is window center is wnd_size/2 or real_size/2, update GameGuiInit::UdateGui

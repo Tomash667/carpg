@@ -213,6 +213,11 @@ bool Game::LoadRequiredStats(uint& errors)
 							Error("Required list '%s' is leveled.", str.c_str());
 							++errors;
 						}
+						else if(result.lis->items.empty())
+						{
+							Error("Required list '%s' is empty.", str.c_str());
+							++errors;
+						}
 					}
 					break;
 				case R_STOCK:

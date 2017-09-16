@@ -116,6 +116,7 @@ struct BaseObject
 		return obj;
 	}
 	static cstring GetRandomPainting();
+
+	static BaseObject objs[];
+	static const uint n_objs;
 };
-extern BaseObject g_objs[];
-extern const uint n_objs;

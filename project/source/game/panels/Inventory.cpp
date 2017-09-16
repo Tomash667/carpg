@@ -1752,13 +1752,20 @@ void Inventory::PutItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
-	// dŸwiêk
+
+	// play sound
 	if(game.sound_volume)
 		game.PlaySound2d(game.GetItemSound(slot.item));
-	// dodaj
+
+	// add to container
 	if(game.inventory_mode == I_LOOT_BODY)
 	{
 		if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
+			UpdateGrid(false);
+	}
+	else if(game.inventory_mode == I_LOOT_CONTAINER)
+	{
+		if(!unit->player->action_container->container->AddItem(slot.item, count, team_count))
 			UpdateGrid(false);
 	}
 	else
@@ -1766,7 +1773,8 @@ void Inventory::PutItem(int index, uint count)
 		if(!unit->player->action_chest->AddItem(slot.item, count, team_count))
 			UpdateGrid(false);
 	}
-	// usuñ
+
+	// remove from player
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
 	if(slot.count == 0)
@@ -1782,7 +1790,8 @@ void Inventory::PutItem(int index, uint count)
 		FormatBox();
 		slot.team_count -= team_count;
 	}
-	// komunikat
+
+	// send change
 	if(!Net::Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1799,20 +1808,26 @@ void Inventory::PutSlotItem(ITEM_SLOT slot)
 	last_index = INDEX_INVALID;
 	if(mode == INVENTORY)
 		tooltip.Clear();
-	// dŸwiêk
+
+	// play sound
 	if(game.sound_volume)
 		game.PlaySound2d(game.GetItemSound(item));
-	// dodaj
+
+	// add to container
 	if(game.inventory_mode == I_LOOT_BODY)
 		unit->player->action_unit->AddItem(item, 1u, 0u);
+	else if(game.inventory_mode == I_LOOT_CONTAINER)
+		unit->player->action_container->container->AddItem(item, 1u, 0u);
 	else
 		unit->player->action_chest->AddItem(item, 1u, 0u);
 	UpdateGrid(false);
-	// usuñ
+
+	// remove from player
 	slots[slot] = nullptr;
 	UpdateGrid(true);
 	unit->weight -= item->weight;
-	// komunikat
+
+	// send change
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -2273,4 +2288,5 @@ void Inventory::ReadBook(const Item* item)
 {
 	assert(item && item->type == IT_BOOK);
 	game.game_gui->book_panel->Show((const Book*)item);
+	tooltip.Clear();
 }

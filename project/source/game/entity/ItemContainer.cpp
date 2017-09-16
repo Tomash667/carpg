@@ -69,3 +69,28 @@ void ItemContainer::Load(HANDLE file)
 		SortItems(items);
 	}
 }
+
+//=================================================================================================
+int ItemContainer::FindItem(const Item* item) const
+{
+	assert(item);
+	int index = 0;
+	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
+	{
+		if(it->item == item)
+			return index;
+	}
+	return -1;
+}
+
+//=================================================================================================
+int ItemContainer::FindQuestItem(int quest_refid) const
+{
+	int index = 0;
+	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
+	{
+		if(it->item->IsQuest(quest_refid))
+			return index;
+	}
+	return -1;
+}

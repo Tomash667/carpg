@@ -572,6 +572,7 @@ void Game::UpdateTutorial()
 void Game::EndOfTutorial(int)
 {
 	GUI.GetDialog("tut_end")->visible = false;
+	finished_tutorial = true;
 	ClearGame();
 	StartNewGame();
 }

@@ -656,9 +656,9 @@ void Game::AddLoadTasks()
 	}
 
 	// preload objects
-	for(uint i = 0; i < n_objs; ++i)
+	for(uint i = 0; i < BaseObject::n_objs; ++i)
 	{
-		BaseObject& o = g_objs[i];
+		BaseObject& o = BaseObject::objs[i];
 		if(IS_SET(o.flags2, OBJ2_VARIANT))
 		{
 			VariantObject& vo = *o.variant;

@@ -15,7 +15,7 @@ VariantObject bench_variant = { bench_variants, countof(bench_variants), false }
 
 //-----------------------------------------------------------------------------
 // Nazwa nie jest wyœwietlana
-BaseObject g_objs[] = {
+BaseObject BaseObject::objs[] = {
 	BaseObject("barrel", OBJ_NEAR_WALL, 0, "Barrel", "beczka.qmsh", 0.38f, 1.083f),
 	BaseObject("barrels", OBJ_NEAR_WALL, 0, "Barrels", "beczki.qmsh"),
 	BaseObject("big_barrel", OBJ_NEAR_WALL, 0, "Big barrel", "beczka2.qmsh"),
@@ -118,7 +118,7 @@ BaseObject g_objs[] = {
 	BaseObject("grass2", OBJ_NO_PHYSICS, 0, "Grass", "trawa2.qmsh", 0.f, 0.f, 1),
 	BaseObject("corn", OBJ_NO_PHYSICS | OBJ_PRELOAD, 0, "Corn", "zboze.qmsh", 0.f, 0.f, 1),
 };
-const uint n_objs = countof(g_objs);
+const uint BaseObject::n_objs = countof(BaseObject::objs);
 
 //=================================================================================================
 USABLE_ID BaseObject::ToUsableType() const
@@ -186,8 +186,8 @@ BaseObject* BaseObject::TryGet(cstring id, bool* is_variant)
 
 	for(uint i = 0; i < n_objs; ++i)
 	{
-		if(strcmp(g_objs[i].id, id) == 0)
-			return &g_objs[i];
+		if(strcmp(objs[i].id, id) == 0)
+			return &objs[i];
 	}
 
 	return nullptr;

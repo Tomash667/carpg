@@ -19997,6 +19997,13 @@ void Game::OnCloseInventory()
 			PlaySound3d(sChestClose, pos, 2.f, 5.f);
 		}
 	}
+	else if(inventory_mode == I_LOOT_CONTAINER)
+	{
+		if(Net::IsLocal())
+			pc->action_container->user = nullptr;
+		else
+			PushNetChange(NetChange::STOP_TRADE);
+	}
 
 	if(Net::IsOnline() && (inventory_mode == I_LOOT_BODY || inventory_mode == I_LOOT_CHEST))
 	{
@@ -20738,7 +20745,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 			if(IS_SET(bu.flags, BaseUsable::CONTAINER))
 			{
 				// loot container
-				pc->action = PlayerController::Action_LootUnit;
+				pc->action = PlayerController::Action_LootContainer;
 				pc->action_container = &use;
 				pc->action_container->user = &u;
 				pc->chest_trade = &pc->action_container->container->items;
@@ -20748,7 +20755,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 				game_gui->inv_trade_mine->mode = Inventory::LOOT_MY;
 				BuildTmpInventory(1);
 				game_gui->inv_trade_other->unit = nullptr;
-				game_gui->inv_trade_other->items = &pc->action_chest->items;
+				game_gui->inv_trade_other->items = &pc->action_container->container->items;
 				game_gui->inv_trade_other->slots = nullptr;
 				game_gui->inv_trade_other->title = Format("%s - %s", Inventory::txLooting, use.GetBase()->name);
 				game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;

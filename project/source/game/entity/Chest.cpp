@@ -73,28 +73,3 @@ void Chest::Load(HANDLE file, bool local)
 		Game::Get().load_chest_handler.push_back(this);
 	}
 }
-
-//=================================================================================================
-int Chest::FindItem(const Item* item) const
-{
-	assert(item);
-	int index = 0;
-	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
-	{
-		if(it->item == item)
-			return index;
-	}
-	return -1;
-}
-
-//=================================================================================================
-int Chest::FindQuestItem(int quest_refid) const
-{
-	int index = 0;
-	for(vector<ItemSlot>::const_iterator it = items.begin(), end = items.end(); it != end; ++it, ++index)
-	{
-		if(it->item->IsQuest(quest_refid))
-			return index;
-	}
-	return -1;
-}

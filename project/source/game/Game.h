@@ -848,7 +848,7 @@ public:
 
 	bool show_mp_panel;
 	int draw_flags;
-	bool in_tutorial;
+	bool in_tutorial, finished_tutorial;
 
 	// muzyka
 	MusicType music_type;

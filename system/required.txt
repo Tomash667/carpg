@@ -87,6 +87,8 @@ item q_main_letter
 item golden_cup
 item plate
 item cup
+// 0.6 given after tutorial
+item book_adventurer
 
 //------------------------------------------------------------------------------
 // Required item lists
