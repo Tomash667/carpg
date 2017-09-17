@@ -53,7 +53,7 @@ obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), deb
 city_ctx(nullptr), check_updates(true), skip_tutorial(false), portal_anim(0), nosound(false), nomusic(false),
 debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64 * 1024), net_stream2(64 * 1024),
 mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
-prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false),
+prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr), sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false),
 cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true),
 cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(D3DXIFF_JPG), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), current_packet(nullptr),
@@ -699,6 +699,7 @@ void Game::OnReset()
 	SafeRelease(tChar);
 	SafeRelease(tSave);
 	SafeRelease(sItemRegion);
+	SafeRelease(sItemRegionRot);
 	SafeRelease(sChar);
 	SafeRelease(sSave);
 	for(int i = 0; i < 3; ++i)
@@ -1743,6 +1744,7 @@ void Game::OnCleanup()
 	SafeRelease(tChar);
 	SafeRelease(tSave);
 	SafeRelease(sItemRegion);
+	SafeRelease(sItemRegionRot);
 	SafeRelease(sChar);
 	SafeRelease(sSave);
 	for(int i = 0; i < 3; ++i)
@@ -1820,6 +1822,7 @@ void Game::CreateTextures()
 	auto& wnd_size = GetWindowSize();
 
 	V(device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr));
+	V(device->CreateTexture(128, 128, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegionRot, nullptr));
 	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, nullptr));
 	V(device->CreateTexture(128, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tChar, nullptr));
 	V(device->CreateTexture(256, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tSave, nullptr));
@@ -1830,6 +1833,7 @@ void Game::CreateTextures()
 	if(ms != D3DMULTISAMPLE_NONE)
 	{
 		V(device->CreateRenderTarget(64, 64, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegion, nullptr));
+		V(device->CreateRenderTarget(128, 128, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegionRot, nullptr));
 		V(device->CreateRenderTarget(128, 256, D3DFMT_A8R8G8B8, type, msq, FALSE, &sChar, nullptr));
 		V(device->CreateRenderTarget(256, 256, D3DFMT_X8R8G8B8, type, msq, FALSE, &sSave, nullptr));
 		for(int i = 0; i < 3; ++i)

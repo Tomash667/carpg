@@ -963,6 +963,7 @@ void Game::UpdateAi(float dt)
 										{
 											Usable& use = **it2;
 											if(!use.user && (use.type != U_THRONE || IS_SET(u.data->flags2, F2_SIT_ON_THRONE)) && Vec3::Distance(use.pos, u.pos) < 10.f
+												&& use.type != U_BOOKSHELF
 												/*CanSee - niestety nie ma takiej funkcji wiêc trudno :p*/)
 											{
 												const Item* needed_item = g_base_usables[use.type].item;

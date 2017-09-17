@@ -503,7 +503,7 @@ struct Game final : public Engine, public UnitEventHandler
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;
 	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
 	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
-	TEX tItemRegion, tMinimap, tChar, tSave;
+	TEX tItemRegion, tItemRegionRot, tMinimap, tChar, tSave;
 	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tMiniSave, tWarning, tError;
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
@@ -518,7 +518,7 @@ struct Game final : public Engine, public UnitEventHandler
 	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sTalk[4], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
 		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sXarTalk, sOrcTalk, sGoblinTalk, sGolemTalk, sEat, sSummon;
 	VB vbParticle;
-	SURFACE sChar, sSave, sItemRegion;
+	SURFACE sChar, sSave, sItemRegion, sItemRegionRot;
 	static cstring txGoldPlus, txQuestCompletedGold;
 	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
 	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;
@@ -1017,6 +1017,7 @@ public:
 	void ExitToMenu();
 	void DoExitToMenu();
 	void GenerateItemImage(TaskData& task_data);
+	SURFACE DrawItemImage(const Item& item, TEX tex, SURFACE surface, float rot);
 	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
 	void LoadShaders();

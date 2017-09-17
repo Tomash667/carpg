@@ -2,16 +2,12 @@
 ===============================================================================================================
 + vsync in options
 - innkeeper - stands still, no animations/actions
-- after alt tab - camera is moved down
 - can summon wolf outside of arena - there should be marked as WALL
-? verify version formatting to not include path number 0 ("0.5.0" -> "0.5")
 - options: current resolution is not selected at start
 - stupid website rewrite rule
 - summon wolf on arena
 ===============================================================================================================
 CURRENT:
-? verify is window center is wnd_size/2 or real_size/2, update GameGuiInit::UdateGui
-? cursor pos change from Vec2 to Int2, cursor testing, focus, click activation etc
 ===============================================================================================================
 NEW:
 + ref move mutex from resource manager
@@ -43,6 +39,7 @@ NEW:
 + enemy: doppelanger, rogue doppelanger, assassin doppelanger
 + EE: sawmill random text -> "ludzi coraz więcej a rką do pracy coraz mniej"
 + 0.7: use new gui
++ better items rotation: bows, shields, frying pan, golden bar
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

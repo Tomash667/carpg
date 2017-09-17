@@ -73,23 +73,32 @@ KIERUNEK GetLocationDir(const Vec2& from, const Vec2& to)
 }
 
 //=================================================================================================
-cstring VersionToString(uint wersja)
+cstring VersionToString(uint version)
 {
-	uint major = GET_MAJOR(wersja),
-		minor = GET_MINOR(wersja),
-		patch = GET_PATCH(wersja);
+	uint major = GET_MAJOR(version),
+		minor = GET_MINOR(version),
+		patch = GET_PATCH(version);
 
-	return Format("%u.%u.%u", major, minor, patch);
+	if(patch == 0)
+		return Format("%u.%u", major, minor);
+	else
+		return Format("%u.%u.%u", major, minor, patch);
 }
 
 //=================================================================================================
-uint StringToVersion(cstring wersja)
+uint StringToVersion(cstring version)
 {
-	string s(wersja);
+	string s(version);
 	uint major, minor, patch;
-	int wynik = sscanf_s(wersja, "%u.%u.%u", &major, &minor, &patch);
+	int wynik = sscanf_s(version, "%u.%u.%u", &major, &minor, &patch);
 	if(wynik != 3 || !InRange(major, 0u, 255u) || !InRange(minor, 0u, 255u) || !InRange(patch, 0u, 255u))
-		return -1;
+	{
+		wynik = sscanf_s(version, "%u.%u", &major, &minor);
+		if(wynik != 2 || !InRange(major, 0u, 255u) || !InRange(minor, 0u, 255u))
+			return -1;
+		else
+			return (major << 16) | (minor << 8);
+	}
 	else
 		return ((major << 16) | (minor << 8) | patch);
 }

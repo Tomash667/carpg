@@ -4,6 +4,7 @@ Changelog
 Version 0.6 (2017-10-??):
 + readable books
 + usable bookshelf
++ items rotation in inventory
 - fixed not working multiplayer from 0.5 version
 - fixed missing moving animations for clients in multiplayer game
 - fixed crashes and missing texts witch 3+ players on client getting disconnected between loading levels/world

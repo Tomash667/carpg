@@ -342,7 +342,16 @@ void Inventory::Update(float dt)
 	if(mode == INVENTORY)
 		tooltip.UpdateTooltip(dt, new_index, -1);
 	else
+	{
 		UpdateBoxIndex(dt, new_index);
+		if(box_state == BOX_NOT_VISIBLE)
+			item_visible = nullptr;
+	}
+	if(item_visible)
+	{
+		game.DrawItemImage(*item_visible, game.tItemRegionRot, game.sItemRegionRot, rot);
+		rot += PI * dt;
+	}
 
 	if(new_index >= 0)
 	{
@@ -1235,135 +1244,46 @@ void Inventory::EquipSlotItem(int index)
 //=================================================================================================
 void Inventory::FormatBox()
 {
-	if(last_index == INDEX_GOLD)
-	{
-		box_text = Format(txGoldAndCredit, unit->gold, unit->IsPlayer() ? unit->player->credit : unit->hero->credit);
-		switch(mode)
-		{
-		case INVENTORY:
-			box_text_small = txGoldDropInfo;
-			break;
-		case TRADE_MY:
-		case TRADE_OTHER:
-		case LOOT_OTHER:
-		case GIVE_OTHER:
-		case SHARE_OTHER:
-			box_text_small.clear();
-			break;
-		case LOOT_MY:
-			box_text_small = txPutGold;
-			break;
-		case SHARE_MY:
-		case GIVE_MY:
-			box_text_small = txGiveGold;
-			break;
-		}
-		box_img = tGold;
-	}
-	else if(last_index == INDEX_CARRY)
-	{
-		box_text = Format(txCarry, float(unit->weight) / 10, int(unit->GetLoad() * 100), float(unit->weight_max) / 10);
-		box_text_small = txCarryInfo;
-		box_img = nullptr;
-	}
-	else if(last_index != INDEX_INVALID)
-	{
-		const Item* item;
-		int count, team_count;
-		int i_index = i_items->at(last_index);
-		if(i_index < 0)
-		{
-			item = slots[-i_index - 1];
-			count = 1;
-			team_count = 0;
-		}
-		else
-		{
-			ItemSlot& slot = items->at(i_index);
-			item = slot.item;
-			count = slot.count;
-			team_count = slot.team_count;
-		}
-
-		Unit* for_unit;
-		if(mode == LOOT_OTHER || mode == TRADE_OTHER)
-			for_unit = game.pc->unit;
-		else
-			for_unit = unit;
-
-		GetItemString(box_text, item, for_unit, (uint)count);
-		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
-		{
-			box_text += '\n';
-			box_text += txTeamItem;
-			if(count != 1)
-				box_text += Format(" (%d)", team_count);
-		}
-		if(mode == TRADE_MY)
-		{
-			box_text += '\n';
-			int price = game.GetItemPrice(item, *game.pc->unit, false);
-			if(price == 0 || !game.CanBuySell(item))
-				box_text += txWontBuy;
-			else
-				box_text += Format(txPrice, price);
-		}
-		else if(mode == TRADE_OTHER)
-		{
-			int price = game.GetItemPrice(item, *game.pc->unit, true);
-			box_text += '\n';
-			box_text += Format(txPrice, price);
-		}
-		box_text_small = item->desc;
-		box_img = item->icon;
-	}
+	FormatBox(last_index, box_text, box_text_small, box_img);
 }
 
 //=================================================================================================
-void Inventory::GetTooltip(TooltipController*, int group, int)
+void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 {
-	if(group == INDEX_INVALID)
-	{
-		tooltip.anything = false;
-		return;
-	}
-
-	tooltip.anything = true;
-
 	if(group == INDEX_GOLD)
 	{
-		tooltip.img = tGold;
-		tooltip.big_text.clear();
-		tooltip.text = Format(txGoldAndCredit, unit->gold, unit->IsPlayer() ? unit->player->credit : unit->hero->credit);
+		text = Format(txGoldAndCredit, unit->gold, unit->IsPlayer() ? unit->player->credit : unit->hero->credit);
 		switch(mode)
 		{
 		case INVENTORY:
-			tooltip.small_text = txGoldDropInfo;
+			small_text = txGoldDropInfo;
 			break;
 		case TRADE_MY:
 		case TRADE_OTHER:
 		case LOOT_OTHER:
 		case GIVE_OTHER:
 		case SHARE_OTHER:
-			tooltip.small_text.clear();
+			small_text.clear();
 			break;
 		case LOOT_MY:
-			tooltip.small_text = txPutGold;
+			small_text = txPutGold;
 			break;
 		case SHARE_MY:
 		case GIVE_MY:
-			tooltip.small_text = txGiveGold;
+			small_text = txGiveGold;
 			break;
 		}
+		img = tGold;
+		item_visible = nullptr;
 	}
 	else if(group == INDEX_CARRY)
 	{
-		tooltip.img = nullptr;
-		tooltip.text = Format(txCarry, float(unit->weight) / 10, int(unit->GetLoad() * 100), float(unit->weight_max) / 10);
-		tooltip.small_text = txCarryInfo;
-		tooltip.big_text.clear();
+		text = Format(txCarry, float(unit->weight) / 10, int(unit->GetLoad() * 100), float(unit->weight_max) / 10);
+		small_text = txCarryInfo;
+		img = nullptr;
+		item_visible = nullptr;
 	}
-	else
+	else if(group != INDEX_INVALID)
 	{
 		const Item* item;
 		int count, team_count;
@@ -1388,33 +1308,59 @@ void Inventory::GetTooltip(TooltipController*, int group, int)
 		else
 			for_unit = unit;
 
-		GetItemString(tooltip.text, item, for_unit, (uint)count);
+		GetItemString(text, item, for_unit, (uint)count);
 		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
 		{
-			tooltip.text += '\n';
-			tooltip.text += txTeamItem;
+			text += '\n';
+			text += txTeamItem;
 			if(count != 1)
-				tooltip.text += Format(" (%d)", team_count);
+				text += Format(" (%d)", team_count);
 		}
 		if(mode == TRADE_MY)
 		{
-			tooltip.text += '\n';
+			text += '\n';
 			int price = game.GetItemPrice(item, *game.pc->unit, false);
 			if(price == 0 || !game.CanBuySell(item))
-				tooltip.text += txWontBuy;
+				text += txWontBuy;
 			else
-				tooltip.text += Format(txPrice, price);
+				text += Format(txPrice, price);
 		}
 		else if(mode == TRADE_OTHER)
 		{
 			int price = game.GetItemPrice(item, *game.pc->unit, true);
-			tooltip.text += '\n';
-			tooltip.text += Format(txPrice, price);
+			text += '\n';
+			text += Format(txPrice, price);
 		}
-		tooltip.small_text = item->desc;
-		tooltip.big_text.clear();
-		tooltip.img = item->icon;
+		small_text = item->desc;
+
+		if(item->mesh)
+		{
+			img = game.tItemRegionRot;
+			rot = 0.f;
+			item_visible = item;
+		}
+		else
+		{
+			img = item->icon;
+			item_visible = nullptr;
+		}
 	}
+}
+
+//=================================================================================================
+void Inventory::GetTooltip(TooltipController*, int group, int)
+{
+	if(group == INDEX_INVALID)
+	{
+		item_visible = nullptr;
+		tooltip.anything = false;
+		return;
+	}
+
+	tooltip.anything = true;
+	tooltip.big_text.clear();
+
+	FormatBox(group, tooltip.text, tooltip.small_text, tooltip.img);
 }
 
 //=================================================================================================
@@ -2255,6 +2201,7 @@ void Inventory::Show()
 {
 	game.BuildTmpInventory(0);
 	visible = true;
+	item_visible = nullptr;
 	Event(GuiEvent_Show);
 	GainFocus();
 }
@@ -2266,6 +2213,7 @@ void Inventory::Hide()
 		game.game_gui->book_panel->Hide();
 	LostFocus();
 	visible = false;
+	item_visible = nullptr;
 }
 
 //=================================================================================================

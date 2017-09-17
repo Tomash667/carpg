@@ -112,7 +112,10 @@ private:
 	void GetTooltip(TooltipController* tooltip, int group, int id);
 	void UpdateGrid(bool mine);
 	void ReadBook(const Item* item);
+	void FormatBox(int group, string& text, string& small_text, TEX& img);
 
 	static TooltipController tooltip;
 	Game& game;
+	float rot;
+	const Item* item_visible;
 };

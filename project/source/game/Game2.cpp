@@ -357,18 +357,45 @@ void Game::GenerateItemImage(TaskData& task_data)
 	else
 		it = item_texture_map.end();
 
-	SetAlphaBlend(false);
+	auto surf = DrawItemImage(item, tItemRegion, sItemRegion, 0.f);
+
+	// stwórz now¹ teksturê i skopuj obrazek do niej
+	TEX t;
+	SURFACE out_surface;
+	V(device->CreateTexture(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &t, nullptr));
+	V(t->GetSurfaceLevel(0, &out_surface));
+	V(D3DXLoadSurfaceFromSurface(out_surface, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0));
+	surf->Release();
+	out_surface->Release();
+
+	item.icon = t;
+	if(it != item_texture_map.end())
+		item_texture_map.insert(it, ItemTextureMap::value_type(item.mesh, t));
+}
+
+//=================================================================================================
+SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float rot)
+{
+	if(IS_SET(ITEM_ALPHA, item.flags))
+	{
+		SetAlphaBlend(true);
+		SetNoZWrite(true);
+	}
+	else
+	{
+		SetAlphaBlend(false);
+		SetNoZWrite(false);
+	}
 	SetAlphaTest(false);
 	SetNoCulling(false);
-	SetNoZWrite(false);
 
 	// ustaw render target
 	SURFACE surf = nullptr;
-	if(sItemRegion)
-		V(device->SetRenderTarget(0, sItemRegion));
+	if(surface)
+		V(device->SetRenderTarget(0, surface));
 	else
 	{
-		V(tItemRegion->GetSurfaceLevel(0, &surf));
+		V(tex->GetSurfaceLevel(0, &surf));
 		V(device->SetRenderTarget(0, surf));
 	}
 
@@ -387,7 +414,7 @@ void Game::GenerateItemImage(TaskData& task_data)
 		}
 	}
 
-	Matrix matWorld = Matrix::IdentityMatrix,
+	Matrix matWorld = Matrix::RotationY(rot),
 		matView = Matrix::CreateLookAt(mesh.head.cam_pos, mesh.head.cam_target, mesh.head.cam_up),
 		matProj = Matrix::CreatePerspectiveFieldOfView(PI / 4, 1.f, 0.1f, 25.f);
 
@@ -397,7 +424,7 @@ void Game::GenerateItemImage(TaskData& task_data)
 	ld.range = 10.f;
 
 	V(eMesh->SetTechnique(techMesh));
-	V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&(matView*matProj)));
+	V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&(matWorld*matView*matProj)));
 	V(eMesh->SetMatrix(hMeshWorld, (D3DXMATRIX*)&matWorld));
 	V(eMesh->SetVector(hMeshFogColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 	V(eMesh->SetVector(hMeshFogParam, (D3DXVECTOR4*)&Vec4(25.f, 50.f, 25.f, 0)));
@@ -428,29 +455,19 @@ void Game::GenerateItemImage(TaskData& task_data)
 	V(device->EndScene());
 
 	// kopiuj do tekstury
-	if(sItemRegion)
+	if(surface)
 	{
-		V(tItemRegion->GetSurfaceLevel(0, &surf));
-		V(device->StretchRect(sItemRegion, nullptr, surf, nullptr, D3DTEXF_NONE));
+		V(tex->GetSurfaceLevel(0, &surf));
+		V(device->StretchRect(surface, nullptr, surf, nullptr, D3DTEXF_NONE));
 	}
-
-	// stwórz now¹ teksturê i skopuj obrazek do niej
-	TEX t;
-	SURFACE out_surface;
-	V(device->CreateTexture(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &t, nullptr));
-	V(t->GetSurfaceLevel(0, &out_surface));
-	V(D3DXLoadSurfaceFromSurface(out_surface, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0));
-	surf->Release();
-	out_surface->Release();
-
+	auto result = surf;
+	
 	// przywróæ stary render target
 	V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
 	V(device->SetRenderTarget(0, surf));
 	surf->Release();
 
-	item.icon = t;
-	if(it != item_texture_map.end())
-		item_texture_map.insert(it, ItemTextureMap::value_type(item.mesh, t));
+	return result;
 }
 
 //=================================================================================================
