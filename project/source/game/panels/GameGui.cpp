@@ -18,6 +18,7 @@
 #include "Class.h"
 #include "Action.h"
 #include "ActionPanel.h"
+#include "BookPanel.h"
 
 //-----------------------------------------------------------------------------
 enum class TooltipGroup
@@ -99,6 +100,9 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 
 	action_panel = new ActionPanel;
 	Add(action_panel);
+
+	book_panel = new BookPanel;
+	Add(book_panel);
 }
 
 //=================================================================================================
@@ -115,6 +119,7 @@ GameGui::~GameGui()
 	delete inv_trade_other;
 	delete gp_trade;
 	delete action_panel;
+	delete book_panel;
 
 	SpeechBubblePool.Free(speech_bbs);
 }
@@ -234,7 +239,7 @@ void GameGui::DrawFront()
 			GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, WHITE, text_pos);
 		}
 		break;
-	case BP_USEABLE:
+	case BP_USABLE:
 		{
 			Usable& u = *game.pc_data.before_player_ptr.usable;
 			BaseUsable& bu = g_base_usables[u.type];
@@ -1227,8 +1232,11 @@ void GameGui::LoadData()
 	tex_mgr.AddLoadTask("action_cooldown.png", tActionCooldown);
 
 	BuffInfo::LoadImages();
+	journal->LoadData();
 	minimap->LoadData();
+	team_panel->LoadData();
 	action_panel->LoadData();
+	book_panel->LoadData();
 }
 
 //=================================================================================================

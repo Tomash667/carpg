@@ -748,7 +748,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	}
 
 	// u¿ywalne
-	if(IS_SET(draw_flags, DF_USEABLES))
+	if(IS_SET(draw_flags, DF_USABLES))
 	{
 		for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
 		{
@@ -765,7 +765,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 				node->tint = Vec4(1, 1, 1, 1);
 				if(!outside)
 					node->lights = GatherDrawBatchLights(ctx, node, use.pos.x, use.pos.z, mesh->head.radius);
-				if(pc_data.before_player == BP_USEABLE && pc_data.before_player_ptr.usable == &use)
+				if(pc_data.before_player == BP_USABLE && pc_data.before_player_ptr.usable == &use)
 				{
 					if(cl_glow)
 					{
@@ -784,7 +784,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	}
 
 	// skrzynie
-	if(ctx.chests && IS_SET(draw_flags, DF_USEABLES))
+	if(ctx.chests && IS_SET(draw_flags, DF_USABLES))
 	{
 		for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
 		{
@@ -829,7 +829,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	}
 
 	// drzwi
-	if(ctx.doors && IS_SET(draw_flags, DF_USEABLES))
+	if(ctx.doors && IS_SET(draw_flags, DF_USABLES))
 	{
 		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
 		{

@@ -100,6 +100,11 @@ inline Int2 Int2::operator - (const Int2& xy) const
 	return Int2(x - xy.x, y - xy.y);
 }
 
+inline Int2 Int2::operator * (const Vec2& scale) const
+{
+	return Int2(float(x) * scale.x, float(y) * scale.y);
+}
+
 inline Int2 Int2::operator * (int a) const
 {
 	return Int2(x*a, y*a);
@@ -526,6 +531,11 @@ inline Vec2 Vec2::operator - (const Vec2& v) const
 	Vec2 result;
 	XMStoreFloat2(&result, r);
 	return result;
+}
+
+inline Vec2 Vec2::operator * (const Vec2& v) const
+{
+	return Vec2(x * v.x, y * v.y);
 }
 
 inline Vec2 Vec2::operator * (float s) const

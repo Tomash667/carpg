@@ -16,9 +16,6 @@ enum ButtonId
 	Bt_Kick
 };
 
-//-----------------------------------------------------------------------------
-TEX TeamPanel::tKorona, TeamPanel::tCzaszka;
-
 //=================================================================================================
 TeamPanel::TeamPanel() : game(Game::Get())
 {
@@ -496,4 +493,12 @@ void TeamPanel::Hide()
 {
 	LostFocus();
 	visible = false;
+}
+
+//=================================================================================================
+void TeamPanel::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("czaszka.png", TeamPanel::tCzaszka);
+	tex_mgr.AddLoadTask("korona.png", TeamPanel::tKorona);
 }

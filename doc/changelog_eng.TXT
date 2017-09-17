@@ -2,6 +2,8 @@ Changelog
 
 --------------------------------------------------------------------------------
 Version 0.6 (2017-10-??):
++ readable books
++ usable bookshelf
 - fixed not working multiplayer from 0.5 version
 - fixed missing moving animations for clients in multiplayer game
 - fixed crashes and missing texts witch 3+ players on client getting disconnected between loading levels/world
@@ -15,6 +17,7 @@ Version 0.6 (2017-10-??):
 - fixed random crash when picking easy arena combat
 - fixed sounds not playing correctly for arena in multiplayer
 - remove gray outline around dungon minimap
+- fixed invalid rumor texts in journal for some quests
 
 --------------------------------------------------------------------------------
 Version 0.5 (2017-09-07):
@@ -556,4 +559,4 @@ Too many changes to write them all so only most important from 0.1:
 	* quests, rumors, news
 	* saving and loading
 	* traps, enemy spells
-	* dialogs							
+	* dialogs

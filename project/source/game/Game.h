@@ -217,7 +217,8 @@ enum InventoryMode
 	I_LOOT_CHEST,
 	I_TRADE,
 	I_SHARE,
-	I_GIVE
+	I_GIVE,
+	I_LOOT_CONTAINER
 };
 
 struct TeamShareItem
@@ -237,7 +238,7 @@ enum DRAW_FLAGS
 	DF_BULLETS = 1 << 5,
 	DF_BLOOD = 1 << 6,
 	DF_ITEMS = 1 << 7,
-	DF_USEABLES = 1 << 8,
+	DF_USABLES = 1 << 8,
 	DF_TRAPS = 1 << 9,
 	DF_AREA = 1 << 10,
 	DF_EXPLOS = 1 << 11,
@@ -599,7 +600,7 @@ public:
 	Vec4 fog_color, fog_params, ambient_color;
 	int alpha_test_state;
 	bool cl_fog, cl_lighting, draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
-	Obj obj_alpha;
+	BaseObject obj_alpha;
 	float portal_anim, drunk_anim;
 	// post effect u¿ywa 3 tekstur lub jeœli jest w³¹czony multisampling 3 surface i 1 tekstury
 	SURFACE sPostEffect[3];
@@ -683,11 +684,6 @@ public:
 	vector<CollisionObject> global_col; // wektor na tymczasowe obiekty, czêsto u¿ywany przy zbieraniu obiektów do kolizji
 	vector<btCollisionShape*> shapes;
 	vector<CameraCollider> cam_colliders;
-
-	//---------------------------------
-	// WIADOMOŒCI / NOTATKI / PLOTKI
-	vector<string> notes;
-	vector<string> rumors;
 
 	//---------------------------------
 	// WCZYTYWANIE
@@ -852,7 +848,7 @@ public:
 
 	bool show_mp_panel;
 	int draw_flags;
-	bool in_tutorial;
+	bool in_tutorial, finished_tutorial;
 
 	// muzyka
 	MusicType music_type;
@@ -1021,7 +1017,7 @@ public:
 	void ExitToMenu();
 	void DoExitToMenu();
 	void GenerateItemImage(TaskData& task_data);
-	void SetupObject(Obj& obj);
+	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
 	void LoadShaders();
 	void SetupShaders();
@@ -1369,13 +1365,13 @@ public:
 	{
 		return FindUnitByIdLocal(FindUnitData(id));
 	}
-	Object* FindObjectByIdLocal(Obj* obj)
+	Object* FindObjectByIdLocal(BaseObject* obj)
 	{
-		return local_ctx.FindObjectById(obj);
+		return local_ctx.FindObject(obj);
 	}
 	Object* FindObjectByIdLocal(cstring id)
 	{
-		return FindObjectByIdLocal(FindObject(id));
+		return FindObjectByIdLocal(BaseObject::Get(id));
 	}
 	Usable* FindUsableByIdLocal(int type)
 	{
@@ -1444,6 +1440,7 @@ public:
 	void ResetCollisionPointers();
 	void SetOutsideParams();
 	UnitData& GetHero(Class clas, bool crazy = false);
+	const Item* GetRandomBook();
 
 	// level area
 	LevelAreaContext* ForLevel(int loc, int level = -1);
@@ -1866,8 +1863,51 @@ public:
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void GenerateDungeon(Location& loc);
 	void SpawnCityPhysics();
-	// zwraca Object lub Usable lub Chest!!!, w przypadku budynku rot musi byæ równe 0, PI/2, PI, 3*2/PI (w przeciwnym wypadku bêdzie 0)
-	Object* SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float rot, float scale = 1.f, Vec3* out_point = nullptr, int variant = -1);
+	struct ObjectEntity
+	{
+		enum Type
+		{
+			NONE,
+			OBJECT,
+			USABLE,
+			CHEST
+		} type;
+		union
+		{
+			Object* object;
+			Usable* usable;
+			Chest* chest;
+		};
+
+		ObjectEntity(nullptr_t) : object(nullptr), type(NONE) {}
+		ObjectEntity(Object* object) : object(object), type(OBJECT) {}
+		ObjectEntity(Usable* usable) : usable(usable), type(USABLE) {}
+		ObjectEntity(Chest* chest) : chest(chest), type(CHEST) {}
+
+		operator bool()
+		{
+			return type != NONE;
+		}
+		operator Object* ()
+		{
+			assert(type == OBJECT || type == NONE);
+			return object;
+		}
+		operator Usable* ()
+		{
+			assert(type == USABLE || type == NONE);
+			return usable;
+		}
+		operator Chest* ()
+		{
+			assert(type == CHEST || type == NONE);
+			return chest;
+		}
+
+	};
+	// for object rot must be 0, PI/2, PI or PI*3/2
+	ObjectEntity SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale = 1.f, int flags = 0,
+		Vec3* out_point = nullptr, int variant = -1);
 	void RespawnBuildingPhysics();
 	void SpawnCityObjects();
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
@@ -1898,8 +1938,10 @@ public:
 	void GenerateCamp(Location& loc);
 	void SpawnCampObjects();
 	void SpawnCampUnits();
-	Object* SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const Vec2& pos, float rot, float range = 2.f, float margin = 0.3f, float scale = 1.f);
-	Object* SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const Vec2& pos, const Vec2& rot_target, float range = 2.f, float margin = 0.3f, float scale = 1.f);
+	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range = 2.f, float margin = 0.3f,
+		float scale = 1.f);
+	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range = 2.f, float margin = 0.3f,
+		float scale = 1.f);
 	int GetClosestLocation(LOCATION type, const Vec2& pos, int target = -1);
 	int GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target);
 	int CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range = 64.f, bool allow_exact = true);
@@ -1908,7 +1950,8 @@ public:
 	void RemoveTmpUnits(LevelContext& ctx);
 	int AddLocation(Location* loc);
 	// tworzy lokacjê (jeœli range<0 to pozycja jest dowolna a range=-range, level=-1 - losowy poziom, =0 - minimalny, =9 maksymalny, =liczba - okreœlony)
-	int CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_LOSOWO, bool allow_exact = true, int levels = -1);
+	int CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_LOSOWO, bool allow_exact = true,
+		int levels = -1);
 	bool FindPlaceForLocation(Vec2& pos, float range = 64.f, bool allow_exact = true);
 	int FindLocationId(Location* loc);
 	void Event_StartEncounter(int id);
@@ -1918,7 +1961,8 @@ public:
 #define SOE_DONT_SPAWN_PARTICLES (1<<0)
 #define SOE_MAGIC_LIGHT (1<<1)
 #define SOE_DONT_CREATE_LIGHT (1<<2)
-	void SpawnObjectExtras(LevelContext& ctx, Obj* obj, const Vec3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale = 1.f, int flags = 0);
+	void SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale = 1.f,
+		int flags = 0);
 	void GenerateSecretLocation(Location& loc);
 	void SpawnSecretLocationObjects();
 	void SpawnSecretLocationUnits();

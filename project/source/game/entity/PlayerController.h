@@ -117,12 +117,14 @@ struct PlayerController : public HeroPlayerCommon
 		Action_Talk,
 		Action_Trade,
 		Action_ShareItems,
-		Action_GiveItems
+		Action_GiveItems,
+		Action_LootContainer
 	} action;
 	union
 	{
 		Unit* action_unit;
 		Chest* action_chest;
+		Usable* action_container;
 	};
 	// tymczasowa zmienna u¿ywane w AddGold, nie trzeba zapisywaæ
 	int gold_get;
@@ -172,7 +174,8 @@ struct PlayerController : public HeroPlayerCommon
 
 	static bool IsTrade(Action a)
 	{
-		return a == Action_LootChest || a == Action_LootUnit || a == Action_Trade || a == Action_ShareItems || a == Action_GiveItems;
+		return a == Action_LootChest || a == Action_LootUnit || a == Action_Trade || a == Action_ShareItems || a == Action_GiveItems
+			|| a == Action_LootContainer;
 	}
 
 	bool IsTrading() const
@@ -221,7 +224,7 @@ enum BeforePlayer
 	BP_CHEST,
 	BP_DOOR,
 	BP_ITEM,
-	BP_USEABLE
+	BP_USABLE
 };
 
 //-----------------------------------------------------------------------------

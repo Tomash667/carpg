@@ -26,8 +26,9 @@ public:
 	void Event(GuiEvent e) override;
 
 	void Set(bool can_save, bool can_load, bool hardcore_mode);
+	void LoadData();
 
-	static TEX tLogo;
+	TEX tLogo;
 	Button bt[6];
 	cstring txSave, txSaveAndExit, txExitToMenuDialog;
 	bool prev_can_save, prev_can_load, prev_hardcore_mode;

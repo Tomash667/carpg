@@ -39,6 +39,7 @@
 #include "Spell.h"
 #include "Team.h"
 #include "Action.h"
+#include "ItemContainer.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -75,6 +76,8 @@ PlayerController::Action InventoryModeToActionRequired(InventoryMode imode)
 		return PlayerController::Action_ShareItems;
 	case I_GIVE:
 		return PlayerController::Action_GiveItems;
+	case I_LOOT_CONTAINER:
+		return PlayerController::Action_LootContainer;
 	default:
 		assert(0);
 		return PlayerController::Action_None;
@@ -169,7 +172,7 @@ void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify)
 		break;
 	}
 
-	if(unit.usable)
+	if(unit.usable && !(unit.player && unit.player->action == PlayerController::Action_LootContainer))
 	{
 		if(mode == BREAK_ACTION_MODE::INSTANT)
 		{
@@ -483,17 +486,16 @@ void Game::SetupCamera(float dt)
 	{
 		OutsideLocation* outside = (OutsideLocation*)location;
 
-		// teren
+		// terrain
 		tout = terrain->Raytest(to, to + dist);
 		if(tout < min_tout && tout > 0.f)
 			min_tout = tout;
 
-		// budynki
+		// buildings
 		int minx = max(0, tx - 3),
 			minz = max(0, tz - 3),
 			maxx = min(OutsideLocation::size - 1, tx + 3),
 			maxz = min(OutsideLocation::size - 1, tz + 3);
-
 		for(int z = minz; z <= maxz; ++z)
 		{
 			for(int x = minx; x <= maxx; ++x)
@@ -506,49 +508,6 @@ void Game::SetupCamera(float dt)
 				}
 			}
 		}
-
-		// kolizje z obiektami
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
-		{
-			if(it->ptr != CAM_COLLIDER)
-				continue;
-
-			if(it->type == CollisionObject::SPHERE)
-			{
-				if(RayToCylinder(to, to + dist, Vec3(it->pt.x, 0, it->pt.y), Vec3(it->pt.x, 32.f, it->pt.y), it->radius, tout) && tout < min_tout && tout > 0.f)
-					min_tout = tout;
-			}
-			else if(it->type == CollisionObject::RECTANGLE)
-			{
-				Box box(it->pt.x - it->w, 0.f, it->pt.y - it->h, it->pt.x + it->w, 32.f, it->pt.y + it->h);
-				if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-					min_tout = tout;
-			}
-			else
-			{
-				float w, h;
-				if(Equal(it->rot, PI / 2) || Equal(it->rot, PI * 3 / 2))
-				{
-					w = it->h;
-					h = it->w;
-				}
-				else
-				{
-					w = it->w;
-					h = it->h;
-				}
-
-				Box box(it->pt.x - w, 0.f, it->pt.y - h, it->pt.x + w, 32.f, it->pt.y + h);
-				if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-					min_tout = tout;
-			}
-		}
-
-		for(vector<CameraCollider>::iterator it = cam_colliders.begin(), end = cam_colliders.end(); it != end; ++it)
-		{
-			if(RayToBox(to, dist, it->box, &tout) && tout < min_tout && tout > 0.f)
-				min_tout = tout;
-		}
 	}
 	else if(ctx.type == LevelContext::Inside)
 	{
@@ -560,7 +519,7 @@ void Game::SetupCamera(float dt)
 			maxx = min(lvl.w - 1, tx + 3),
 			maxz = min(lvl.h - 1, tz + 3);
 
-		// sufit
+		// ceil
 		const Plane sufit(0, -1, 0, 4);
 		if(RayToPlane(to, dist, sufit, &tout) && tout < min_tout && tout > 0.f)
 		{
@@ -568,12 +527,12 @@ void Game::SetupCamera(float dt)
 			min_tout = tout;
 		}
 
-		// pod³oga
+		// floor
 		const Plane podloga(0, 1, 0, 0);
 		if(RayToPlane(to, dist, podloga, &tout) && tout < min_tout && tout > 0.f)
 			min_tout = tout;
 
-		// podziemia
+		// dungeon
 		for(int z = minz; z <= maxz; ++z)
 		{
 			for(int x = minx; x <= maxx; ++x)
@@ -667,22 +626,21 @@ void Game::SetupCamera(float dt)
 	}
 	else
 	{
+		// building
 		InsideBuilding& building = *city_ctx->inside_buildings[ctx.building_id];
 
-		// budynek
-
-		// pod³oga
-		const Plane podloga(0, 1, 0, 0);
-		if(RayToPlane(to, dist, podloga, &tout) && tout < min_tout && tout > 0.f)
-			min_tout = tout;
-
-		// sufit
+		// ceil
 		if(building.top > 0.f)
 		{
 			const Plane sufit(0, -1, 0, 4);
 			if(RayToPlane(to, dist, sufit, &tout) && tout < min_tout && tout > 0.f)
 				min_tout = tout;
 		}
+
+		// floor
+		const Plane podloga(0, 1, 0, 0);
+		if(RayToPlane(to, dist, podloga, &tout) && tout < min_tout && tout > 0.f)
+			min_tout = tout;
 
 		// xsphere
 		if(building.xsphere_radius > 0.f)
@@ -696,18 +654,7 @@ void Game::SetupCamera(float dt)
 			}
 		}
 
-		// kolizje z obiektami
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
-		{
-			if(it->ptr != CAM_COLLIDER || it->type != CollisionObject::RECTANGLE)
-				continue;
-
-			Box box(it->pt.x - it->w, 0.f, it->pt.y - it->h, it->pt.x + it->w, 10.f, it->pt.y + it->h);
-			if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-				min_tout = tout;
-		}
-
-		// kolizje z drzwiami
+		// doors
 		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
 		{
 			Door& door = **it;
@@ -739,17 +686,60 @@ void Game::SetupCamera(float dt)
 		}
 	}
 
-	// uwzglêdnienie znear
-	if(min_tout >= 0.9f || pc->noclip)
-		min_tout = 0.9f;
-	else
+	// objects
+	for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 	{
-		min_tout -= 0.1f;
-		if(min_tout < 0.1f)
-			min_tout = 0.1f;
+		if(it->ptr != CAM_COLLIDER)
+			continue;
+
+		if(it->type == CollisionObject::SPHERE)
+		{
+			if(RayToCylinder(to, to + dist, Vec3(it->pt.x, 0, it->pt.y), Vec3(it->pt.x, 32.f, it->pt.y), it->radius, tout) && tout < min_tout && tout > 0.f)
+				min_tout = tout;
+		}
+		else if(it->type == CollisionObject::RECTANGLE)
+		{
+			Box box(it->pt.x - it->w, 0.f, it->pt.y - it->h, it->pt.x + it->w, 32.f, it->pt.y + it->h);
+			if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
+				min_tout = tout;
+		}
+		else
+		{
+			float w, h;
+			if(Equal(it->rot, PI / 2) || Equal(it->rot, PI * 3 / 2))
+			{
+				w = it->h;
+				h = it->w;
+			}
+			else
+			{
+				w = it->w;
+				h = it->h;
+			}
+
+			Box box(it->pt.x - w, 0.f, it->pt.y - h, it->pt.x + w, 32.f, it->pt.y + h);
+			if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
+				min_tout = tout;
+		}
 	}
 
-	Vec3 from = to + dist*min_tout;
+	// camera colliders
+	for(vector<CameraCollider>::iterator it = cam_colliders.begin(), end = cam_colliders.end(); it != end; ++it)
+	{
+		if(RayToBox(to, dist, it->box, &tout) && tout < min_tout && tout > 0.f)
+			min_tout = tout;
+	}
+
+	// uwzglêdnienie znear
+	if(min_tout > 1.f || pc->noclip)
+		min_tout = 1.f;
+	else if(min_tout < 0.1f)
+		min_tout = 0.1f;
+
+	float real_dist = dist.Length() * min_tout - 0.1f;
+	if(real_dist < 0.01f)
+		real_dist = 0.01f;
+	Vec3 from = to + dist.Normalize() * real_dist;
 
 	cam.Update(dt, from, to);
 
@@ -1224,6 +1214,13 @@ void Game::UpdateGame(float dt)
 			assert(pc->action == PlayerController::Action_LootUnit);
 			pos = pc->action_unit->GetLootCenter();
 			pc->unit->animation = ANI_KNEELS;
+		}
+		else if(inventory_mode == I_LOOT_CONTAINER)
+		{
+			// TODO: animacja
+			assert(pc->action == PlayerController::Action_LootContainer);
+			pos = pc->action_container->pos;
+			pc->unit->animation = ANI_STAND;
 		}
 		else if(dialog_context.dialog_mode)
 		{
@@ -2348,7 +2345,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
 	{
 		if(!(*it)->user)
-			PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_USEABLE);
+			PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_USABLE);
 	}
 
 	if(best_dist < best_dist_target && pc_data.before_player == BP_UNIT && pc_data.before_player_ptr.unit->IsStanding())
@@ -3180,6 +3177,30 @@ void Game::PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float&
 				if(AngleDiff(Clip(chest->rot - PI / 2), Clip(-Vec3::Angle2d(u.pos, pos))) > PI / 2)
 					return;
 			}
+			else if(type == BP_USABLE)
+			{
+				Usable* use = (Usable*)ptr;
+				auto& bu = *use->GetBase();
+				if(IS_SET(bu.flags, BaseUsable::CONTAINER))
+				{
+					float allowed_dif;
+					switch(bu.limit_rot)
+					{
+					default:
+					case 0:
+						allowed_dif = PI * 2;
+						break;
+					case 1:
+						allowed_dif = PI / 2;
+						break;
+					case 2:
+						allowed_dif = PI / 4;
+						break;
+					}
+					if(AngleDiff(Clip(use->rot - PI / 2), Clip(-Vec3::Angle2d(u.pos, pos))) > allowed_dif)
+						return;
+				}
+			}
 			dist += angle;
 			if(dist < best_dist)
 			{
@@ -3957,12 +3978,12 @@ void Game::StartNextDialog(DialogContext& ctx, GameDialog* dialog, int& if_level
 	if_level = 0;
 }
 
-//							WEAPON	BOW		SHIELD	ARMOR	LETTER	POTION	GOLD	OTHER
-bool merchant_buy[] = { true,	true,	true,	true,	true,	true,	false,	true };
-bool blacksmith_buy[] = { true,	true,	true,	true,	false,	false,	false,	false };
-bool alchemist_buy[] = { false,	false,	false,	false,	false,	true,	false,	false };
-bool innkeeper_buy[] = { false,	false,	false,	false,	false,	true,	false,	false };
-bool foodseller_buy[] = { false,	false,	false,	false,	false,	true,	false,	false };
+//							WEAPON	BOW		SHIELD	ARMOR	LETTER	POTION	OTHER	BOOK	GOLD	
+bool merchant_buy[] = {    true,	true,	true,	true,	true,	true,	true,	true,	false };
+bool blacksmith_buy[] = {  true,	true,	true,	true,	false,	false,	false,	false,	false };
+bool alchemist_buy[] = {   false,	false,	false,	false,	false,	true,	false,	false,	false };
+bool innkeeper_buy[] = {   false,	false,	false,	false,	false,	true,	false,	false,	false };
+bool foodseller_buy[] = {  false,	false,	false,	false,	false,	true,	false,	false,	false };
 
 //=================================================================================================
 void Game::UpdateGameDialog(DialogContext& ctx, float dt)
@@ -4651,16 +4672,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 									return;
 								}
 
-								if(Net::IsOnline())
-								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::ADD_RUMOR;
-									c.id = rumors.size();
-								}
-
-								rumors.push_back(Format(game_gui->journal->txAddTime, day + 1, month + 1, year, ctx.dialog_s_text.c_str()));
-								game_gui->journal->NeedUpdate(Journal::Rumors);
-								AddGameMsg3(GMS_ADDED_RUMOR);
+								game_gui->journal->AddRumor(ctx.dialog_s_text.c_str());
 								DialogTalk(ctx, ctx.dialog_s_text.c_str());
 								++ctx.dialog_pos;
 								return;
@@ -7831,7 +7843,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			Error("Invalid unit '%s' position (%g %g %g).", u.data->id.c_str(), u.pos.x, u.pos.y, u.pos.z);
 			u.pos = Vec3(128, 0, 128);
 		}
-		
+
 		// licznik okrzyku od ostatniego trafienia
 		u.hurt_timer -= dt;
 		u.last_bash -= dt;
@@ -8097,7 +8109,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							break;
 						// u¿yj obiekt
 						case NA_USE:
-							if(pc_data.before_player == BP_USEABLE && pc_data.before_player_ptr.usable == pc->next_action_usable)
+							if(pc_data.before_player == BP_USABLE && pc_data.before_player_ptr.usable == pc->next_action_usable)
 								PlayerUseUsable(pc->next_action_usable, true);
 							break;
 						// sprzedawanie za³o¿onego przedmiotu
@@ -8625,7 +8637,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						if(Net::IsServer())
 						{
 							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::USE_USEABLE;
+							c.type = NetChange::USE_USABLE;
 							c.unit = &u;
 							c.id = u.usable->netid;
 							c.ile = 0;
@@ -8674,7 +8686,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 									if(Net::IsServer())
 									{
 										NetChange& c = Add1(Net::changes);
-										c.type = NetChange::USEABLE_SOUND;
+										c.type = NetChange::USABLE_SOUND;
 										c.unit = &u;
 									}
 								}
@@ -8799,7 +8811,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				if(Net::IsServer())
 				{
 					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::USE_USEABLE;
+					c.type = NetChange::USE_USABLE;
 					c.unit = &u;
 					c.id = u.usable->netid;
 					c.ile = 0;
@@ -9932,7 +9944,7 @@ void Game::GenerateDungeonObjects()
 						pt = pos_to_pt(inside->portal->pos);
 					else
 					{
-						Object* o = local_ctx.FindObject(FindObject("portal"));
+						Object* o = local_ctx.FindObject(BaseObject::Get("portal"));
 						if(o)
 							pt = pos_to_pt(o->pos);
 						else
@@ -9966,7 +9978,7 @@ void Game::GenerateDungeonObjects()
 		for(int i = 0; i < rt->count && fail > 0; ++i)
 		{
 			bool is_variant = false;
-			Obj* obj = FindObject(rt->objs[i].id, &is_variant);
+			BaseObject* obj = BaseObject::Get(rt->objs[i].id, &is_variant);
 			if(!obj)
 				continue;
 
@@ -10187,174 +10199,16 @@ void Game::GenerateDungeonObjects()
 					}
 				}
 
-				if(IS_SET(obj->flags, OBJ_TABLE))
-				{
-					Obj* stol = FindObject(Rand() % 2 == 0 ? "table" : "table2");
+				SpawnObjectEntity(local_ctx, obj, pos, rot, 1.f, flags);
 
-					// stó³
-					{
-						Object& o = Add1(local_ctx.objects);
-						o.mesh = stol->mesh;
-						o.rot = Vec3(0, rot, 0);
-						o.pos = pos;
-						o.scale = 1;
-						o.base = stol;
+				if(IS_SET(obj->flags, OBJ_REQUIRED))
+					wymagany_obiekt = true;
 
-						SpawnObjectExtras(local_ctx, stol, pos, rot, nullptr, nullptr);
-					}
-
-					// sto³ki
-					Obj* stolek = FindObject("stool");
-					int ile = Random(2, 4);
-					int d[4] = { 0,1,2,3 };
-					for(int i = 0; i < 4; ++i)
-						std::swap(d[Rand() % 4], d[Rand() % 4]);
-
-					for(int i = 0; i < ile; ++i)
-					{
-						float sdir, slen;
-						switch(d[i])
-						{
-						case 0:
-							sdir = 0.f;
-							slen = stol->size.y + 0.3f;
-							break;
-						case 1:
-							sdir = PI / 2;
-							slen = stol->size.x + 0.3f;
-							break;
-						case 2:
-							sdir = PI;
-							slen = stol->size.y + 0.3f;
-							break;
-						case 3:
-							sdir = PI * 3 / 2;
-							slen = stol->size.x + 0.3f;
-							break;
-						default:
-							assert(0);
-							break;
-						}
-
-						sdir += rot;
-
-						Usable* u = new Usable;
-						local_ctx.usables->push_back(u);
-						u->type = U_STOOL;
-						u->pos = pos + Vec3(sin(sdir)*slen, 0, cos(sdir)*slen);
-						u->rot = sdir;
-						u->user = nullptr;
-
-						if(Net::IsOnline())
-							u->netid = usable_netid_counter++;
-
-						SpawnObjectExtras(local_ctx, stolek, u->pos, u->rot, u, nullptr);
-					}
-				}
-				else
-				{
-					void* obj_ptr = nullptr;
-					void** result_ptr = nullptr;
-
-					if(IS_SET(obj->flags, OBJ_CHEST))
-					{
-						Chest* chest = new Chest;
-						chest->mesh_inst = new MeshInstance(aChest);
-						chest->pos = pos;
-						chest->rot = rot;
-						chest->handler = nullptr;
-						chest->looted = false;
-						room_chests.push_back(chest);
-						local_ctx.chests->push_back(chest);
-						if(Net::IsOnline())
-							chest->netid = chest_netid_counter++;
-					}
-					else if(IS_SET(obj->flags, OBJ_USEABLE))
-					{
-						int typ;
-						if(IS_SET(obj->flags, OBJ_BENCH))
-							typ = U_BENCH;
-						else if(IS_SET(obj->flags, OBJ_ANVIL))
-							typ = U_ANVIL;
-						else if(IS_SET(obj->flags, OBJ_CHAIR))
-							typ = U_CHAIR;
-						else if(IS_SET(obj->flags, OBJ_CAULDRON))
-							typ = U_CAULDRON;
-						else if(IS_SET(obj->flags, OBJ_IRON_VEIN))
-							typ = U_IRON_VEIN;
-						else if(IS_SET(obj->flags, OBJ_GOLD_VEIN))
-							typ = U_GOLD_VEIN;
-						else if(IS_SET(obj->flags, OBJ_THRONE))
-							typ = U_THRONE;
-						else if(IS_SET(obj->flags, OBJ_STOOL))
-							typ = U_STOOL;
-						else if(IS_SET(obj->flags2, OBJ2_BENCH_ROT))
-							typ = U_BENCH_ROT;
-						else
-						{
-							assert(0);
-							typ = U_CHAIR;
-						}
-
-						Usable* u = new Usable;
-						u->type = typ;
-						u->pos = pos;
-						u->rot = rot;
-						u->user = nullptr;
-						Obj* base_obj = u->GetBase()->obj;
-						if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
-						{
-							// extra code for bench
-							if(typ == U_BENCH || typ == U_BENCH_ROT)
-							{
-								switch(location->type)
-								{
-								case L_CITY:
-									u->variant = 0;
-									break;
-								case L_DUNGEON:
-								case L_CRYPT:
-									u->variant = Rand() % 2;
-									break;
-								default:
-									u->variant = Rand() % 2 + 2;
-									break;
-								}
-							}
-							else
-								u->variant = Random<int>(base_obj->variant->count - 1);
-						}
-						else
-							u->variant = -1;
-						local_ctx.usables->push_back(u);
-						obj_ptr = u;
-
-						if(Net::IsOnline())
-							u->netid = usable_netid_counter++;
-					}
-					else
-					{
-						Object& o = Add1(local_ctx.objects);
-						o.mesh = obj->mesh;
-						o.rot = Vec3(0, rot, 0);
-						o.pos = pos;
-						o.scale = 1;
-						o.base = obj;
-						result_ptr = &o.ptr;
-						obj_ptr = &o;
-					}
-
-					SpawnObjectExtras(local_ctx, obj, pos, rot, obj_ptr, (btCollisionObject**)result_ptr, 1.f, flags);
-
-					if(IS_SET(obj->flags, OBJ_REQUIRED))
-						wymagany_obiekt = true;
-
-					if(IS_SET(obj->flags, OBJ_ON_WALL))
-						on_wall.push_back(pos);
-				}
+				if(IS_SET(obj->flags, OBJ_ON_WALL))
+					on_wall.push_back(pos);
 
 				if(is_variant)
-					obj = FindObject(rt->objs[i].id);
+					obj = BaseObject::Get(rt->objs[i].id);
 			}
 		}
 
@@ -10378,7 +10232,7 @@ void Game::GenerateDungeonObjects()
 	if(local_ctx.chests->empty())
 	{
 		// niech w podziemiach bêdzie minimum 1 skrzynia
-		Obj* obj = FindObject("chest");
+		BaseObject* obj = BaseObject::Get("chest");
 		for(int i = 0; i < 100; ++i)
 		{
 			on_wall.clear();
@@ -11242,7 +11096,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 		if(!it->base)
 			continue;
 
-		Obj* obj = it->base;
+		BaseObject* obj = it->base;
 
 		if(IS_SET(obj->flags, OBJ_BUILDING))
 		{
@@ -11271,7 +11125,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 
 	if(ctx.chests)
 	{
-		Obj* chest = FindObject("chest");
+		BaseObject* chest = BaseObject::Get("chest");
 		for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
 			SpawnObjectExtras(ctx, chest, (*it)->pos, (*it)->rot, nullptr, nullptr, 1.f, flags);
 	}
@@ -11637,7 +11491,7 @@ void Game::GenerateCaveObjects()
 	}
 
 	// stalaktyty
-	Obj* obj = FindObject("stalactite");
+	BaseObject* obj = BaseObject::Get("stalactite");
 	static vector<Int2> sta;
 	for(int count = 0, tries = 200; count < 50 && tries>0; --tries)
 	{
@@ -11671,7 +11525,7 @@ void Game::GenerateCaveObjects()
 	}
 
 	// krzaki
-	obj = FindObject("plant2");
+	obj = BaseObject::Get("plant2");
 	for(int i = 0; i < 150; ++i)
 	{
 		Int2 pt = cave->GetRandomTile();
@@ -11688,7 +11542,7 @@ void Game::GenerateCaveObjects()
 	}
 
 	// grzyby
-	obj = FindObject("mushrooms");
+	obj = BaseObject::Get("mushrooms");
 	for(int i = 0; i < 100; ++i)
 	{
 		Int2 pt = cave->GetRandomTile();
@@ -11705,7 +11559,7 @@ void Game::GenerateCaveObjects()
 	}
 
 	// kamienie
-	obj = FindObject("rock");
+	obj = BaseObject::Get("rock");
 	sta.clear();
 	for(int i = 0; i < 80; ++i)
 	{
@@ -13402,7 +13256,6 @@ void Game::ClearGameVarsOnNewGame()
 	game_speed = 1.f;
 	dungeon_level = 0;
 	QuestManager::Get().Reset();
-	notes.clear();
 	year = 100;
 	day = 0;
 	month = 0;
@@ -13413,7 +13266,6 @@ void Game::ClearGameVarsOnNewGame()
 	szansa_na_spotkanie = 0.f;
 	create_camp = 0;
 	arena_fighter = nullptr;
-	rumors.clear();
 	first_city = true;
 	news.clear();
 	pc_data.picking_item_state = 0;
@@ -13945,7 +13797,7 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_USEABLE;
+			c.type = NetChange::USE_USABLE;
 			c.unit = &u;
 			c.id = u.usable->netid;
 			c.ile = 3;
@@ -13953,7 +13805,7 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 		else if(&u == pc->unit)
 		{
 			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_USEABLE;
+			c.type = NetChange::USE_USABLE;
 			c.id = u.usable->netid;
 			c.ile = 0;
 		}
@@ -14188,7 +14040,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 			}
 			else
 			{
-				Obj* obj = FindObject("torch");
+				BaseObject* obj = BaseObject::Get("torch");
 
 				// pochodnia przy œcianie
 				{
@@ -14433,7 +14285,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 		if(hardcore_mode)
 		{
-			Object* o = local_ctx.FindObject(FindObject("portal"));
+			Object* o = local_ctx.FindObject(BaseObject::Get("portal"));
 
 			OutsideLocation* loc = new OutsideLocation;
 			loc->active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
@@ -14466,7 +14318,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 				c->AddItem(kartka, 1, 1);
 			else
 			{
-				Object* o = local_ctx.FindObject(FindObject("portal"));
+				Object* o = local_ctx.FindObject(BaseObject::Get("portal"));
 				assert(0);
 				if(o)
 				{
@@ -15312,6 +15164,11 @@ void Game::PreloadResources(bool worldmap)
 				items_load.insert(ground_item->item);
 			for(auto chest : *local_ctx.chests)
 				PreloadItems(chest->items);
+			for(auto usable : *local_ctx.usables)
+			{
+				if(usable->container)
+					PreloadItems(usable->container->items);
+			}
 			PreloadItems(chest_merchant);
 			PreloadItems(chest_blacksmith);
 			PreloadItems(chest_alchemist);
@@ -15331,6 +15188,11 @@ void Game::PreloadResources(bool worldmap)
 				{
 					for(auto ground_item : ib->items)
 						items_load.insert(ground_item->item);
+					for(auto usable : ib->usables)
+					{
+						if(usable->container)
+							PreloadItems(usable->container->items);
+					}
 				}
 			}
 		}
@@ -15482,15 +15344,23 @@ void Game::PreloadItem(const Item* citem)
 					}
 				}
 			}
+			else if(item.type == IT_BOOK)
+			{
+				Book& book = item.ToBook();
+				ResourceManager::Get<Texture>().AddLoadTask(book.scheme->tex);
+			}
+
 			if(item.tex)
 				ResourceManager::Get<Texture>().AddLoadTask(item.tex, &item, TaskCallback(this, &Game::GenerateItemImage), true);
 			else
 				ResourceManager::Get<Mesh>().AddLoadTask(item.mesh, &item, TaskCallback(this, &Game::GenerateItemImage), true);
+
 			item.state = ResourceState::Loading;
 		}
 	}
 	else
 	{
+		// instant loading
 		if(item.type == IT_ARMOR)
 		{
 			Armor& armor = item.ToArmor();
@@ -15504,6 +15374,12 @@ void Game::PreloadItem(const Item* citem)
 				}
 			}
 		}
+		else if(item.type == IT_BOOK)
+		{
+			Book& book = item.ToBook();
+			ResourceManager::Get<Texture>().Load(book.scheme->tex);
+		}
+
 		if(item.tex)
 		{
 			ResourceManager::Get<Texture>().Load(item.tex);
@@ -15516,6 +15392,7 @@ void Game::PreloadItem(const Item* citem)
 			task.ptr = &item;
 			GenerateItemImage(task);
 		}
+
 		item.state = ResourceState::Loaded;
 	}
 }
@@ -15921,6 +15798,10 @@ void Game::DeleteUnit(Unit* unit)
 			case PlayerController::Action_ShareItems:
 				unit->player->action_unit->busy = Unit::Busy_No;
 				unit->player->action_unit->look_target = nullptr;
+				break;
+			case PlayerController::Action_LootContainer:
+				unit->player->action_container->user = nullptr;
+				unit->usable = nullptr;
 				break;
 			}
 		}
@@ -17527,7 +17408,7 @@ void Game::InitQuests()
 	quest_manager.unaccepted_quests.push_back(quest_crazies);
 
 	// sekret
-	secret_state = (FindObject("tomashu_dom")->mesh ? SECRET_NONE : SECRET_OFF);
+	secret_state = (BaseObject::Get("tomashu_dom")->mesh ? SECRET_NONE : SECRET_OFF);
 	GetSecretNote()->desc.clear();
 	secret_where = -1;
 	secret_where2 = -1;
@@ -18074,7 +17955,7 @@ cstring tartak_objs[] = {
 	"firewood"
 };
 const uint n_tartak_objs = countof(tartak_objs);
-Obj* tartak_objs_ptrs[n_tartak_objs];
+BaseObject* tartak_objs_ptrs[n_tartak_objs];
 
 void Game::GenerateSawmill(bool in_progress)
 {
@@ -18129,7 +18010,7 @@ void Game::GenerateSawmill(bool in_progress)
 	if(!tartak_objs_ptrs[0])
 	{
 		for(uint i = 0; i < n_tartak_objs; ++i)
-			tartak_objs_ptrs[i] = FindObject(tartak_objs[i]);
+			tartak_objs_ptrs[i] = BaseObject::Get(tartak_objs[i]);
 	}
 
 	UnitData& ud = *FindUnitData("artur_drwal");
@@ -18149,7 +18030,7 @@ void Game::GenerateSawmill(bool in_progress)
 		for(int i = 0; i < 25; ++i)
 		{
 			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
-			Obj* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
+			BaseObject* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
 			SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 
@@ -18169,7 +18050,7 @@ void Game::GenerateSawmill(bool in_progress)
 		// budynek
 		Vec3 spawn_pt;
 		float rot = PI / 2 * (Rand() % 4);
-		SpawnObject(local_ctx, FindObject("tartak"), Vec3(128, wys, 128), rot, 1.f, &spawn_pt);
+		SpawnObjectEntity(local_ctx, BaseObject::Get("tartak"), Vec3(128, wys, 128), rot, 1.f, 0, &spawn_pt);
 
 		// artur drwal
 		Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pt, ud, nullptr, -2);
@@ -18183,7 +18064,7 @@ void Game::GenerateSawmill(bool in_progress)
 		for(int i = 0; i < 25; ++i)
 		{
 			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
-			Obj* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
+			BaseObject* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
 			SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
 		}
 
@@ -18224,7 +18105,7 @@ void Object::Swap(Object& o)
 
 	p = base;
 	base = o.base;
-	o.base = (Obj*)p;
+	o.base = (BaseObject*)p;
 
 	// 	p = ptr;
 	// 	ptr = o.ptr;
@@ -18570,8 +18451,8 @@ bool Game::GenerateMine()
 		room.size = Int2(5, 5);
 
 		// dodaj drzwi, portal, pochodnie
-		Obj* portal = FindObject("portal"),
-			*pochodnia = FindObject("torch");
+		BaseObject* portal = BaseObject::Get("portal"),
+			*pochodnia = BaseObject::Get("torch");
 
 		// drzwi
 		{
@@ -18659,7 +18540,7 @@ bool Game::GenerateMine()
 				break;
 			}
 
-			SpawnObject(local_ctx, pochodnia, pos, Random(MAX_ANGLE));
+			SpawnObjectEntity(local_ctx, pochodnia, pos, Random(MAX_ANGLE));
 		}
 
 		// portal
@@ -18684,7 +18565,7 @@ bool Game::GenerateMine()
 
 			// obiekt
 			const Vec3 pos(2.f*pt.x + 5, 0, 2.f*pt.y + 5);
-			SpawnObject(local_ctx, portal, pos, rot);
+			SpawnObjectEntity(local_ctx, portal, pos, rot);
 
 			// lokacja
 			SingleInsideLocation* loc = new SingleInsideLocation;
@@ -18727,7 +18608,7 @@ bool Game::GenerateMine()
 	// generuj rudê
 	if(generuj_rude)
 	{
-		Obj* iron_ore = FindObject("iron_ore");
+		BaseObject* iron_ore = BaseObject::Get("iron_ore");
 
 		// usuñ star¹ rudê
 		if(quest_mine->mine_state3 != Quest_Mine::State3::None)
@@ -18859,15 +18740,15 @@ bool Game::GenerateMine()
 	// generuj nowe obiekty
 	if(!nowe.empty())
 	{
-		Obj* kamien = FindObject("rock"),
-			*krzak = FindObject("plant2"),
-			*grzyb = FindObject("mushrooms");
+		BaseObject* kamien = BaseObject::Get("rock"),
+			*krzak = BaseObject::Get("plant2"),
+			*grzyb = BaseObject::Get("mushrooms");
 
 		for(vector<Int2>::iterator it = nowe.begin(), end = nowe.end(); it != end; ++it)
 		{
 			if(Rand() % 10 == 0)
 			{
-				Obj* obj;
+				BaseObject* obj;
 				switch(Rand() % 3)
 				{
 				default:
@@ -18882,7 +18763,7 @@ bool Game::GenerateMine()
 					break;
 				}
 
-				SpawnObject(local_ctx, obj, Vec3(2.f*it->x + Random(0.1f, 1.9f), 0.f, 2.f*it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
+				SpawnObjectEntity(local_ctx, obj, Vec3(2.f*it->x + Random(0.1f, 1.9f), 0.f, 2.f*it->y + Random(0.1f, 1.9f)), Random(MAX_ANGLE));
 			}
 		}
 	}
@@ -20103,6 +19984,24 @@ void Game::OnCloseInventory()
 			PlaySound3d(sChestClose, pos, 2.f, 5.f);
 		}
 	}
+	else if(inventory_mode == I_LOOT_CONTAINER)
+	{
+		if(Net::IsLocal())
+		{
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_USABLE;
+				c.unit = pc->unit;
+				c.id = pc->unit->usable->netid;
+				c.ile = 0;
+			}
+			pc->action_container->user = nullptr;
+			pc->unit->usable = nullptr;
+		}
+		else
+			PushNetChange(NetChange::STOP_TRADE);
+	}
 
 	if(Net::IsOnline() && (inventory_mode == I_LOOT_BODY || inventory_mode == I_LOOT_CHEST))
 	{
@@ -20841,25 +20740,47 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 	{
 		if(Net::IsLocal())
 		{
-			u.action = A_ANIMATION2;
-			u.animation = ANI_PLAY;
-			u.mesh_inst->Play(bu.anim, PLAY_PRIO1, 0);
-			u.mesh_inst->groups[0].speed = 1.f;
 			u.usable = &use;
 			u.usable->user = &u;
-			u.target_pos = u.pos;
-			u.target_pos2 = use.pos;
-			if(g_base_usables[use.type].limit_rot == 4)
-				u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
-			u.timer = 0.f;
-			u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-			u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
 			pc_data.before_player = BP_NONE;
+
+			if(IS_SET(bu.flags, BaseUsable::CONTAINER))
+			{
+				// loot container
+				pc->action = PlayerController::Action_LootContainer;
+				pc->action_container = &use;
+				pc->chest_trade = &pc->action_container->container->items;
+				CloseGamePanels();
+				inventory_mode = I_LOOT_CONTAINER;
+				BuildTmpInventory(0);
+				game_gui->inv_trade_mine->mode = Inventory::LOOT_MY;
+				BuildTmpInventory(1);
+				game_gui->inv_trade_other->unit = nullptr;
+				game_gui->inv_trade_other->items = &pc->action_container->container->items;
+				game_gui->inv_trade_other->slots = nullptr;
+				game_gui->inv_trade_other->title = Format("%s - %s", Inventory::txLooting, use.GetBase()->name);
+				game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;
+				game_gui->gp_trade->Show();
+			}
+			else
+			{
+				u.action = A_ANIMATION2;
+				u.animation = ANI_PLAY;
+				u.mesh_inst->Play(bu.anim, PLAY_PRIO1, 0);
+				u.mesh_inst->groups[0].speed = 1.f;
+				u.target_pos = u.pos;
+				u.target_pos2 = use.pos;
+				if(g_base_usables[use.type].limit_rot == 4)
+					u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
+				u.timer = 0.f;
+				u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
+				u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
+			}
 
 			if(Net::IsOnline())
 			{
 				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_USEABLE;
+				c.type = NetChange::USE_USABLE;
 				c.unit = &u;
 				c.id = u.usable->netid;
 				c.ile = 1;
@@ -20868,9 +20789,16 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 		else
 		{
 			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_USEABLE;
+			c.type = NetChange::USE_USABLE;
 			c.id = pc_data.before_player_ptr.usable->netid;
 			c.ile = 1;
+
+			if(IS_SET(bu.flags, BaseUsable::CONTAINER))
+			{
+				pc->action = PlayerController::Action_LootContainer;
+				pc->action_container = pc_data.before_player_ptr.usable;
+				pc->chest_trade = &pc->action_container->container->items;
+			}
 		}
 	}
 }
@@ -21908,7 +21836,9 @@ void Game::BuildTmpInventory(int index)
 	else
 	{
 		// przedmioty innej postaci, w skrzyni
-		if(pc->action == PlayerController::Action_LootChest || pc->action == PlayerController::Action_Trade)
+		if(pc->action == PlayerController::Action_LootChest
+			|| pc->action == PlayerController::Action_Trade
+			|| pc->action == PlayerController::Action_LootContainer)
 			slots = nullptr;
 		else
 			slots = pc->action_unit->slots;
@@ -22273,6 +22203,12 @@ void Game::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit)
 		pc->action = PlayerController::Action_Trade;
 		pc->action_unit = unit;
 		pc->chest_trade = &items;
+		break;
+	case I_LOOT_CONTAINER:
+		my.mode = Inventory::LOOT_MY;
+		other.mode = Inventory::LOOT_OTHER;
+		other.unit = nullptr;
+		other.title = Format("%s - %s", Inventory::txLooting, pc->action_container->GetBase()->name);
 		break;
 	default:
 		assert(0);
@@ -22644,4 +22580,14 @@ void Game::HandleQuestEvent(Quest_Event* event)
 
 	if(event->callback)
 		event->callback();
+}
+
+const Item* Game::GetRandomBook()
+{
+	if(Rand() % 2 == 0)
+		return nullptr;
+	if(Rand() % 50 == 0)
+		return FindItemList("rare_books").lis->Get();
+	else
+		return FindItemList("books").lis->Get();
 }

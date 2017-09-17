@@ -75,12 +75,7 @@ void Game::PreinitGui()
 {
 	GUI.Init(device, sprite);
 
-	// font loading works only from main thread (for now...)
-	int result = AddFontResourceExA("data/fonts/Florence-Regular.otf", FR_PRIVATE, nullptr);
-	if(result == 0)
-		Error("Failed to load font 'Florence-Regular.otf' (%d)!", GetLastError());
-	else
-		Info("Added font resource: %d.", result);
+	GUI.AddFont("Florence-Regular.otf");
 	GUI.default_font = GUI.CreateFont("Arial", 12, 800, 512, 2);
 	GUI.fBig = GUI.CreateFont("Florence Regular", 28, 800, 512);
 	GUI.fSmall = GUI.CreateFont("Arial", 10, 500, 512);
@@ -217,23 +212,13 @@ void Game::LoadGuiData()
 	tex_mgr.AddLoadTask("cursor.png", GUI.tCursor[CURSOR_NORMAL]);
 	tex_mgr.AddLoadTask("hand.png", GUI.tCursor[CURSOR_HAND]);
 	tex_mgr.AddLoadTask("text.png", GUI.tCursor[CURSOR_TEXT]);
-	tex_mgr.AddLoadTask("czaszka.png", TeamPanel::tCzaszka);
-	tex_mgr.AddLoadTask("korona.png", TeamPanel::tKorona);
 	tex_mgr.AddLoadTask("button.png", Button::tex[Button::NONE]);
 	tex_mgr.AddLoadTask("button_hover.png", Button::tex[Button::HOVER]);
 	tex_mgr.AddLoadTask("button_down.png", Button::tex[Button::DOWN]);
 	tex_mgr.AddLoadTask("button_disabled.png", Button::tex[Button::DISABLED]);
 	tex_mgr.AddLoadTask("background.bmp", DialogBox::tBackground);
 	tex_mgr.AddLoadTask("scrollbar.png", TextBox::tBox);
-	tex_mgr.AddLoadTask("tlo_konsoli.jpg", Console::tBackground);
-	tex_mgr.AddLoadTask("logo_small.png", GameMenu::tLogo);
 	tex_mgr.AddLoadTask("ticked.png", CheckBox::tTick);
-	tex_mgr.AddLoadTask("book.png", Journal::tBook);
-	tex_mgr.AddLoadTask("dziennik_przyciski.png", Journal::tPage[0]);
-	tex_mgr.AddLoadTask("dziennik_przyciski2.png", Journal::tPage[1]);
-	tex_mgr.AddLoadTask("dziennik_przyciski3.png", Journal::tPage[2]);
-	tex_mgr.AddLoadTask("strzalka_l.png", Journal::tArrowL);
-	tex_mgr.AddLoadTask("strzalka_p.png", Journal::tArrowR);
 	tex_mgr.AddLoadTask("box.png", IGUI::tBox);
 	tex_mgr.AddLoadTask("box2.png", IGUI::tBox2);
 	tex_mgr.AddLoadTask("pix.png", IGUI::tPix);
@@ -251,6 +236,8 @@ void Game::LoadGuiData()
 	world_map->LoadData();
 	server_panel->LoadData();
 	pick_server_panel->LoadData();
+	console->LoadData();
+	game_menu->LoadData();
 }
 
 //=================================================================================================

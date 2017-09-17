@@ -4,6 +4,7 @@
 // Item types
 // Adding new item type require changes in:
 // + TeamItems.cpp
+// + Game2.cpp allow buy merchant_buy
 // ? incomplete
 enum ITEM_TYPE
 {
@@ -13,8 +14,8 @@ enum ITEM_TYPE
 	IT_ARMOR,
 	IT_OTHER,
 	IT_CONSUMABLE,
-	IT_MAX_GEN = IT_CONSUMABLE, // items generated in treasure
 	IT_BOOK,
+	IT_MAX_GEN = IT_BOOK, // items generated in treasure
 	IT_GOLD,
 
 	// special types (not realy items)

@@ -2,6 +2,8 @@ Historia zmian
 
 --------------------------------------------------------------------------------
 Wersja 0.6 (2017-10-??):
++ mo¿liwoœæ czytania ksi¹¿ek
++ u¿ywalna biblioteczka
 - naprawiony nie dzia³aj¹cy tryb multiplayer z wersji 0.5
 - naprawione brakuj¹ce animacje dla klientów w trybie multiplayer
 - naprawiony crash i brakuj¹ce komunikaty dla 3+ graczy gdy klient traci po³¹czenie pomiêdzy wczytywanymi poziomami/œwiatem
@@ -15,6 +17,7 @@ Wersja 0.6 (2017-10-??):
 - naprawiony losowy crash przy wybieraniu ³atwej walki na arenie
 - naprawiony b³¹d z prawid³owym odtwarzaniem dŸwiêków areny w multiplayer
 - usuniêta szara obwódka wokó³ minimapy w podziemiach
+- naprawione nieprawid³owe teksty plotek w dzienniku dla niektórych questów
 
 --------------------------------------------------------------------------------
 Wersja 0.5 (2017-09-07):
@@ -566,4 +569,4 @@ Za du¿o ¿eby wszystko wymieniaæ wiêc tylko najwa¿niejsze zmiany od wersji 0.1:
 	* zadania, plotki, newsy
 	* zapisywanie i wczytywanie
 	* pu³apki, czary wrogów
-	* dialogi		
+	* dialogi

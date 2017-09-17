@@ -7,6 +7,7 @@
 #include "GameGui.h"
 #include "WorldMapGui.h"
 #include "LoadScreen.h"
+#include "Journal.h"
 
 char mapa_t[] = {
 	"$$$$$$$$###########$$$"
@@ -186,7 +187,7 @@ void Game::StartTutorial()
 	pc->unit->slots[SLOT_ARMOR] = item;
 	pc->unit->weight += pc->unit->slots[SLOT_ARMOR]->weight;
 	pc->unit->gold = 10;
-	notes.push_back(txTutNote);
+	game_gui->journal->GetNotes().push_back(txTutNote);
 
 	Int2 start_tile;
 
@@ -282,8 +283,8 @@ void Game::StartTutorial()
 						break;
 					case 1:
 						{
-							Obj* o = FindObject("chest");
-							Chest* chest = (Chest*)SpawnObject(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
+							BaseObject* o = BaseObject::Get("chest");
+							Chest* chest = SpawnObjectEntity(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(FindItem("sword_long"));
 							chest->AddItem(FindItem("shield_wood"));
 							chest->AddItem(FindItem("al_leather"));
@@ -293,7 +294,7 @@ void Game::StartTutorial()
 						break;
 					case 2:
 						tut_dummy = Vec3(2.f*x + 1, 0, 2.f*y + 1);
-						SpawnObject(local_ctx, FindObject("melee_target"), tut_dummy, PI / 2);
+						SpawnObjectEntity(local_ctx, BaseObject::Get("melee_target"), tut_dummy, PI / 2);
 						break;
 					case 3:
 						{
@@ -304,8 +305,8 @@ void Game::StartTutorial()
 						break;
 					case 4:
 						{
-							Obj* o = FindObject("chest");
-							Chest* chest = (Chest*)SpawnObject(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
+							BaseObject* o = BaseObject::Get("chest");
+							Chest* chest = SpawnObjectEntity(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
 							chest->AddItem(FindItem("bow_short"));
 							chest->AddItem(FindItem("p_hp"));
 							chest->AddItem(gold_item_ptr, Random(75, 100));
@@ -314,7 +315,7 @@ void Game::StartTutorial()
 						break;
 					case 5:
 						{
-							Object* o = SpawnObject(local_ctx, FindObject("bow_target"), Vec3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
+							Object* o = SpawnObjectEntity(local_ctx, BaseObject::Get("bow_target"), Vec3(2.f*x + 1, 0, 2.f*y + 1), -PI / 2);
 							if(tut_shield)
 								tut_shield2 = o;
 							else
@@ -571,6 +572,7 @@ void Game::UpdateTutorial()
 void Game::EndOfTutorial(int)
 {
 	GUI.GetDialog("tut_end")->visible = false;
+	finished_tutorial = true;
 	ClearGame();
 	StartNewGame();
 }

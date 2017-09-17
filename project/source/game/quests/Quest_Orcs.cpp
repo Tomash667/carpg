@@ -40,39 +40,15 @@ void Quest_Orcs::SetProgress(int prog2)
 		{
 			if(prog != Progress::None)
 				return;
-			// add gossip
 			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
-			{
-				cstring text = Format(game->txQuest[189], game->locations[start_loc]->name.c_str());
-				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
-				game->game_gui->journal->NeedUpdate(Journal::Rumors);
-				game->AddGameMsg3(GMS_ADDED_RUMOR);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::ADD_RUMOR;
-					c.id = int(game->rumors.size()) - 1;
-				}
-			}
+				game->game_gui->journal->AddRumor(Format(game->txQuest[189], game->locations[start_loc]->name.c_str()));
 			game->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::NotAccepted:
 		{
-			// add gossip
 			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
-			{
-				cstring text = Format(game->txQuest[190], game->locations[start_loc]->name.c_str());
-				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
-				game->game_gui->journal->NeedUpdate(Journal::Rumors);
-				game->AddGameMsg3(GMS_ADDED_RUMOR);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::ADD_RUMOR;
-					c.id = int(game->rumors.size()) - 1;
-				}
-			}
+				game->game_gui->journal->AddRumor(Format(game->txQuest[190], game->locations[start_loc]->name.c_str()));
 			// mark guard to remove
 			Unit*& u = game->quest_orcs2->guard;
 			if(u)

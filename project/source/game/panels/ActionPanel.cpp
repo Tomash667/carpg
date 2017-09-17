@@ -112,7 +112,7 @@ void ActionPanel::Update(float dt)
 
 	tooltip.UpdateTooltip(dt, group, id);
 
-	if (focus && Key.Focus() && Key.PressedRelease(VK_ESCAPE))
+	if(Key.Focus() && Key.PressedRelease(VK_ESCAPE))
 		Hide();
 }
 

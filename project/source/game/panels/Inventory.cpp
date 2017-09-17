@@ -10,6 +10,7 @@
 #include "AIController.h"
 #include "Chest.h"
 #include "Team.h"
+#include "BookPanel.h"
 
 /* UWAGI CO DO ZMIENNYCH
 index - indeks do items [0, 1, 2, 3...]
@@ -22,13 +23,14 @@ last_index to tutaj t_index
 
 //-----------------------------------------------------------------------------
 TEX Inventory::tItemBar, Inventory::tEquipped, Inventory::tGold, Inventory::tStarHq, Inventory::tStarM, Inventory::tStarU;
-cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarryShort, Inventory::txCarry, Inventory::txCarryInfo, Inventory::txTeamItem, Inventory::txCantWear,
-Inventory::txCantDoNow, Inventory::txBuyTeamDialog, Inventory::txDropGoldCount, Inventory::txDropNoGold, Inventory::txDropNotNow, Inventory::txDropItemCount, Inventory::txWontBuy,
-Inventory::txPrice, Inventory::txNeedMoreGoldItem, Inventory::txBuyItemCount, Inventory::txSellItemCount, Inventory::txLooting, Inventory::txTrading, Inventory::txPutGoldCount,
-Inventory::txLootItemCount, Inventory::txPutItemCount, Inventory::txTakeAll, Inventory::txInventory, Inventory::txLootingChest, Inventory::txShareItems, Inventory::txGiveItems,
-Inventory::txPutGold, Inventory::txGiveGold, Inventory::txGiveGoldCount, Inventory::txShareGiveItemCount, Inventory::txCanCarryTeamOnly, Inventory::txWontGiveItem,
-Inventory::txShareTakeItemCount, Inventory::txWontTakeItem, Inventory::txSellTeamItem, Inventory::txSellItem, Inventory::txSellFreeItem, Inventory::txGivePotionCount,
-Inventory::txNpcCantCarry;
+cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarryShort, Inventory::txCarry, Inventory::txCarryInfo, Inventory::txTeamItem,
+	Inventory::txCantWear, Inventory::txCantDoNow, Inventory::txBuyTeamDialog, Inventory::txDropGoldCount, Inventory::txDropNoGold, Inventory::txDropNotNow,
+	Inventory::txDropItemCount, Inventory::txWontBuy, Inventory::txPrice, Inventory::txNeedMoreGoldItem, Inventory::txBuyItemCount, Inventory::txSellItemCount,
+	Inventory::txLooting, Inventory::txLootingChest, Inventory::txTrading, Inventory::txPutGoldCount, Inventory::txLootItemCount, Inventory::txPutItemCount,
+	Inventory::txTakeAll, Inventory::txInventory, Inventory::txShareItems, Inventory::txGiveItems, Inventory::txPutGold, Inventory::txGiveGold,
+	Inventory::txGiveGoldCount, Inventory::txShareGiveItemCount, Inventory::txCanCarryTeamOnly, Inventory::txWontGiveItem, Inventory::txShareTakeItemCount,
+	Inventory::txWontTakeItem, Inventory::txSellTeamItem, Inventory::txSellItem, Inventory::txSellFreeItem, Inventory::txGivePotionCount,
+	Inventory::txNpcCantCarry;
 LOCK_MODE Inventory::lock_id;
 int Inventory::lock_index;
 bool Inventory::lock_give;
@@ -72,13 +74,13 @@ void Inventory::LoadText()
 	txBuyItemCount = Str("buyItemCount");
 	txSellItemCount = Str("sellItemCount");
 	txLooting = Str("looting");
+	txLootingChest = Str("lootingChest");
 	txTrading = Str("trading");
 	txPutGoldCount = Str("putGoldCount");
 	txLootItemCount = Str("lootItemCount");
 	txPutItemCount = Str("putItemCount");
 	txTakeAll = Str("takeAll");
 	txInventory = Str("inventory");
-	txLootingChest = Str("lootingChest");
 	txShareItems = Str("shareItems");
 	txGiveItems = Str("giveItems");
 	txPutGold = Str("putGold");
@@ -144,7 +146,7 @@ void Inventory::Draw(ControlDrawData*)
 	// napis u góry
 	Rect rect = {
 		pos.x,
-		pos.y + 8,
+		pos.y + 10,
 		pos.x + size.x,
 		pos.y + size.y
 	};
@@ -235,6 +237,9 @@ void Inventory::Draw(ControlDrawData*)
 void Inventory::Update(float dt)
 {
 	GamePanel::Update(dt);
+
+	if(game.game_gui->book_panel->visible)
+		return;
 
 	if(lock_id == LOCK_TRADE_MY && lock_give)
 	{
@@ -436,7 +441,7 @@ void Inventory::Update(float dt)
 			switch(mode)
 			{
 			case INVENTORY:
-				// u¿yj/za³ó¿/zdejmij przedmiot
+				// use/equip/unequip item
 				if(!slot)
 				{
 					// zdejmij przedmiot
@@ -475,6 +480,8 @@ void Inventory::Update(float dt)
 					}
 					else if(item->type == IT_CONSUMABLE)
 						ConsumeItem(i_index);
+					else if(item->type == IT_BOOK)
+						ReadBook(item);
 					else if(item->IsWearable())
 					{
 						ITEM_SLOT type = ItemTypeToSlot(item->type);
@@ -507,7 +514,7 @@ void Inventory::Update(float dt)
 				}
 				break;
 			case TRADE_MY:
-				// sprzedawanie przedmiotów
+				// selling items
 				if(item->value <= 1 || !game.CanBuySell(item))
 					GUI.SimpleDialog(txWontBuy, this);
 				else if(!slot)
@@ -556,7 +563,7 @@ void Inventory::Update(float dt)
 				}
 				break;
 			case TRADE_OTHER:
-				// kupowanie przedmiotów
+				// buying items
 				{
 					// ustal ile gracz chce kupiæ przedmiotów
 					uint ile;
@@ -586,7 +593,7 @@ void Inventory::Update(float dt)
 				}
 				break;
 			case LOOT_MY:
-				// chowanie przedmiotów do zw³ok/skrzyni
+				// put item into corpse/chest/container
 				if(slot)
 				{
 					// nie za³o¿ony przedmiot
@@ -632,7 +639,7 @@ void Inventory::Update(float dt)
 				}
 				break;
 			case LOOT_OTHER:
-				// zabieranie przedmiotów ze zw³ok/skrzyni
+				// take item from corpse/chest/container
 				if(slot)
 				{
 					// nie za³o¿ony przedmiot
@@ -726,7 +733,7 @@ void Inventory::Update(float dt)
 				}
 				break;
 			case SHARE_MY:
-				// dawanie przedmiotów sojusznikowi na przechowanie
+				// give item to companion to store
 				if(slot && slot->team_count > 0)
 				{
 					// nie za³o¿ony przedmiot
@@ -770,7 +777,7 @@ void Inventory::Update(float dt)
 				break;
 			case SHARE_OTHER:
 			case GIVE_OTHER:
-				// zabieranie przedmiotów od sojusznika
+				// take item from companion
 				if(slot && slot->team_count > 0)
 				{
 					// nie za³o¿ony przedmiot
@@ -808,7 +815,7 @@ void Inventory::Update(float dt)
 				}
 				break;
 			case GIVE_MY:
-				// dawanie przedmiotów sojusznikowi
+				// give item to companion
 				Unit* t = unit->player->action_unit;
 				if(slot)
 				{
@@ -1019,7 +1026,7 @@ void Inventory::Event(GuiEvent e)
 		bool changes = false;
 
 		// sloty
-		if(game.pc->action != PlayerController::Action_LootChest)
+		if(game.pc->action != PlayerController::Action_LootChest && game.pc->action != PlayerController::Action_LootContainer)
 		{
 			const Item** unit_slots = game.pc->action_unit->slots;
 			for(int i = 0; i < SLOT_MAX; ++i)
@@ -1745,13 +1752,20 @@ void Inventory::PutItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
 	uint team_count = min(count, slot.team_count);
-	// dŸwiêk
+
+	// play sound
 	if(game.sound_volume)
 		game.PlaySound2d(game.GetItemSound(slot.item));
-	// dodaj
+
+	// add to container
 	if(game.inventory_mode == I_LOOT_BODY)
 	{
 		if(!unit->player->action_unit->AddItem(slot.item, count, team_count))
+			UpdateGrid(false);
+	}
+	else if(game.inventory_mode == I_LOOT_CONTAINER)
+	{
+		if(!unit->player->action_container->container->AddItem(slot.item, count, team_count))
 			UpdateGrid(false);
 	}
 	else
@@ -1759,7 +1773,8 @@ void Inventory::PutItem(int index, uint count)
 		if(!unit->player->action_chest->AddItem(slot.item, count, team_count))
 			UpdateGrid(false);
 	}
-	// usuñ
+
+	// remove from player
 	unit->weight -= slot.item->weight*count;
 	slot.count -= count;
 	if(slot.count == 0)
@@ -1775,7 +1790,8 @@ void Inventory::PutItem(int index, uint count)
 		FormatBox();
 		slot.team_count -= team_count;
 	}
-	// komunikat
+
+	// send change
 	if(!Net::Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1792,20 +1808,26 @@ void Inventory::PutSlotItem(ITEM_SLOT slot)
 	last_index = INDEX_INVALID;
 	if(mode == INVENTORY)
 		tooltip.Clear();
-	// dŸwiêk
+
+	// play sound
 	if(game.sound_volume)
 		game.PlaySound2d(game.GetItemSound(item));
-	// dodaj
+
+	// add to container
 	if(game.inventory_mode == I_LOOT_BODY)
 		unit->player->action_unit->AddItem(item, 1u, 0u);
+	else if(game.inventory_mode == I_LOOT_CONTAINER)
+		unit->player->action_container->container->AddItem(item, 1u, 0u);
 	else
 		unit->player->action_chest->AddItem(item, 1u, 0u);
 	UpdateGrid(false);
-	// usuñ
+
+	// remove from player
 	slots[slot] = nullptr;
 	UpdateGrid(true);
 	unit->weight -= item->weight;
-	// komunikat
+
+	// send change
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
@@ -2240,6 +2262,8 @@ void Inventory::Show()
 //=================================================================================================
 void Inventory::Hide()
 {
+	if(game.game_gui->book_panel->visible)
+		game.game_gui->book_panel->Hide();
 	LostFocus();
 	visible = false;
 }
@@ -2257,4 +2281,12 @@ void Inventory::UpdateGrid(bool mine)
 		game.BuildTmpInventory(1);
 		game.game_gui->inv_trade_other->UpdateScrollbar();
 	}
+}
+
+//=================================================================================================
+void Inventory::ReadBook(const Item* item)
+{
+	assert(item && item->type == IT_BOOK);
+	game.game_gui->book_panel->Show((const Book*)item);
+	tooltip.Clear();
 }

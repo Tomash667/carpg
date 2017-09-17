@@ -31,6 +31,7 @@
 #include "AIController.h"
 #include "Spell.h"
 #include "Team.h"
+#include "Journal.h"
 
 // SF_DEV, SF_BETA removed in 0.4
 #define SF_ONLINE (1<<0)
@@ -458,23 +459,8 @@ void Game::SaveGame(HANDLE file)
 	game_gui->game_messages->Save(f);
 	game_gui->Save(f);
 
-	// zapisz rumors / notatki
-	uint count = rumors.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
-	{
-		word len = (word)it->length();
-		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		WriteFile(file, it->c_str(), len, &tmp, nullptr);
-	}
-	count = notes.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<string>::iterator it = notes.begin(), end = notes.end(); it != end; ++it)
-	{
-		word len = (word)it->length();
-		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		WriteFile(file, it->c_str(), len, &tmp, nullptr);
-	}
+	// rumors/notes
+	game_gui->journal->Save(file);
 
 	WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
 	++check_id;
@@ -487,7 +473,7 @@ void Game::SaveGame(HANDLE file)
 	SaveQuestsData(file);
 
 	// newsy
-	count = news.size();
+	uint count = news.size();
 	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
 	for(vector<News*>::iterator it = news.begin(), end = news.end(); it != end; ++it)
 	{
@@ -1032,25 +1018,8 @@ void Game::LoadGame(HANDLE file)
 	game_gui->game_messages->Load(f);
 	game_gui->Load(f);
 
-	// wczytaj rumors / notatki
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	rumors.resize(ile);
-	for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
-	{
-		word len;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		it->resize(len);
-		ReadFile(file, (void*)it->c_str(), len, &tmp, nullptr);
-	}
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	notes.resize(ile);
-	for(vector<string>::iterator it = notes.begin(), end = notes.end(); it != end; ++it)
-	{
-		word len;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		it->resize(len);
-		ReadFile(file, (void*)it->c_str(), len, &tmp, nullptr);
-	}
+	// rumors/notes
+	game_gui->journal->Load(file);
 
 	// arena
 	arena_tryb = Arena_Brak;
@@ -1255,7 +1224,7 @@ void Game::LoadGame(HANDLE file)
 	// cele ai
 	if(!ai_bow_targets.empty())
 	{
-		Obj* tarcza_s = FindObject("bow_target");
+		BaseObject* tarcza_s = BaseObject::Get("bow_target");
 		for(vector<AIController*>::iterator it = ai_bow_targets.begin(), end = ai_bow_targets.end(); it != end; ++it)
 		{
 			AIController& ai = **it;
@@ -1550,7 +1519,7 @@ void Game::LoadQuestsData(HANDLE file)
 	ReadFile(file, &secret_where, sizeof(secret_where), &tmp, nullptr);
 	ReadFile(file, &secret_where2, sizeof(secret_where2), &tmp, nullptr);
 
-	if(secret_state > SECRET_NONE && !FindObject("tomashu_dom")->mesh)
+	if(secret_state > SECRET_NONE && !BaseObject::Get("tomashu_dom")->mesh)
 		throw "Save uses 'data.pak' file which is missing!";
 
 	// drinking contest

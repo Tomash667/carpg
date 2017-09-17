@@ -99,6 +99,23 @@ void IGUI::SetShader(ID3DXEffect* e)
 }
 
 //=================================================================================================
+bool IGUI::AddFont(cstring filename)
+{
+	cstring path = Format("data/fonts/%s", filename);
+	int result = AddFontResourceExA(path, FR_PRIVATE, nullptr);
+	if(result == 0)
+	{
+		Error("Failed to load font '%s' (%d)!", filename, GetLastError());
+		return false;
+	}
+	else
+	{
+		Info("Added font resource '%s'.", filename);
+		return true;
+	}
+}
+
+//=================================================================================================
 Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int outline)
 {
 	assert(name && size > 0 && IsPow2(tex_size) && outline >= 0);
@@ -361,6 +378,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, c
 	Vec4 current_color = gui::ColorFromDWORD(color);
 	Vec4 default_color = current_color;
 	outline_alpha = current_color.w;
+	const Vec2 scale(1, 1);
 
 	bool outline = (IS_SET(flags, DT_OUTLINE) && font->texOutline);
 	bool parse_special = IS_SET(flags, DT_PARSE_SPECIAL);
@@ -384,7 +402,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, c
 	Lock(outline);
 
 	typedef void (IGUI::*DrawLineF)(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color,
-		Vec4& color, int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special);
+		Vec4& color, int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special, const Vec2& scale);
 	DrawLineF call;
 	if(outline)
 		call = &IGUI::DrawLineOutline;
@@ -415,9 +433,9 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, c
 
 				// znaki w tej linijce
 				if(clip_result == 0)
-					CALL(font, text, line_begin, line_end, default_color, current_color, x, y, nullptr, hc, parse_special);
+					CALL(font, text, line_begin, line_end, default_color, current_color, x, y, nullptr, hc, parse_special, scale);
 				else if(clip_result == 5)
-					CALL(font, text, line_begin, line_end, default_color, current_color, x, y, clipping, hc, parse_special);
+					CALL(font, text, line_begin, line_end, default_color, current_color, x, y, clipping, hc, parse_special, scale);
 				else if(clip_result == 2)
 				{
 					// tekst jest pod widocznym regionem, przerwij rysowanie
@@ -451,9 +469,9 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, c
 
 				// znaki w tej linijce
 				if(clip_result == 0)
-					CALL(font, text, it->begin, it->end, default_color, current_color, x, y, nullptr, hc, parse_special);
+					CALL(font, text, it->begin, it->end, default_color, current_color, x, y, nullptr, hc, parse_special, scale);
 				else if(clip_result == 5)
-					CALL(font, text, it->begin, it->end, default_color, current_color, x, y, clipping, hc, parse_special);
+					CALL(font, text, it->begin, it->end, default_color, current_color, x, y, clipping, hc, parse_special, scale);
 				else if(clip_result == 2)
 				{
 					// tekst jest pod widocznym regionem, przerwij rysowanie
@@ -508,9 +526,9 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, c
 
 			// znaki w tej linijce
 			if(clip_result == 0)
-				CALL(font, text, it->begin, it->end, default_color, current_color, x, y, nullptr, hc, parse_special);
+				CALL(font, text, it->begin, it->end, default_color, current_color, x, y, nullptr, hc, parse_special, scale);
 			else if(clip_result == 5)
-				CALL(font, text, it->begin, it->end, default_color, current_color, x, y, clipping, hc, parse_special);
+				CALL(font, text, it->begin, it->end, default_color, current_color, x, y, clipping, hc, parse_special, scale);
 			else if(clip_result == 2)
 			{
 				// tekst jest pod widocznym regionem, przerwij rysowanie
@@ -538,7 +556,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, c
 
 //=================================================================================================
 void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& default_color, Vec4& current_color,
-	int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special)
+	int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special, const Vec2& scale)
 {
 	for(uint i = line_begin; i < line_end; ++i)
 	{
@@ -690,8 +708,9 @@ void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, co
 		}
 
 		Glyph& g = font->glyph[byte(c)];
+		Int2 glyph_size = Int2(g.width, font->height) * scale;
 
-		int clip_result = (clipping ? Clip(x, y, g.width, font->height, clipping) : 0);
+		int clip_result = (clipping ? Clip(x, y, glyph_size.x, glyph_size.y, clipping) : 0);
 
 		if(clip_result == 0)
 		{
@@ -701,34 +720,34 @@ void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, co
 			v->tex = g.uv.LeftTop();
 			++v;
 
-			v->pos = Vec3(float(x + g.width), float(y), 0);
+			v->pos = Vec3(float(x + glyph_size.x), float(y), 0);
 			v->color = current_color;
 			v->tex = g.uv.RightTop();
 			++v;
 
-			v->pos = Vec3(float(x), float(y + font->height), 0);
+			v->pos = Vec3(float(x), float(y + glyph_size.y), 0);
 			v->color = current_color;
 			v->tex = g.uv.LeftBottom();
 			++v;
 
-			v->pos = Vec3(float(x + g.width), float(y), 0);
+			v->pos = Vec3(float(x + glyph_size.x), float(y), 0);
 			v->color = current_color;
 			v->tex = g.uv.RightTop();
 			++v;
 
-			v->pos = Vec3(float(x + g.width), float(y + font->height), 0);
+			v->pos = Vec3(float(x + glyph_size.x), float(y + glyph_size.y), 0);
 			v->color = current_color;
 			v->tex = g.uv.RightBottom();
 			++v;
 
-			v->pos = Vec3(float(x), float(y + font->height), 0);
+			v->pos = Vec3(float(x), float(y + glyph_size.y), 0);
 			v->color = current_color;
 			v->tex = g.uv.LeftBottom();
 			++v;
 
 			if(hc && hc->open != HitboxOpen::No)
 			{
-				Rect r_clip(x, y, x + g.width, y + font->height);
+				Rect r_clip = Rect::Create(Int2(x, y), glyph_size);
 				if(hc->region.Left() == INT_MAX)
 					hc->region = r_clip;
 				else
@@ -736,14 +755,13 @@ void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, co
 			}
 
 			++in_buffer;
-			x += g.width;
 		}
 		else if(clip_result == 5)
 		{
 			// przytnij znak
-			Box2d orig_pos(float(x), float(y), float(x + g.width), float(y + font->height));
+			Box2d orig_pos = Box2d::Create(Int2(x, y), glyph_size);
 			Box2d clip_pos(float(max(x, clipping->Left())), float(max(y, clipping->Top())),
-				float(min(x + g.width, clipping->Right())), float(min(y + font->height, clipping->Bottom())));
+				float(min(x + glyph_size.x, clipping->Right())), float(min(y + glyph_size.y, clipping->Bottom())));
 			Vec2 orig_size = orig_pos.Size();
 			Vec2 clip_size = clip_pos.Size();
 			Vec2 s(clip_size.x / orig_size.x, clip_size.y / orig_size.y);
@@ -795,16 +813,14 @@ void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, co
 			}
 
 			++in_buffer;
-			x += g.width;
 		}
 		else if(clip_result == 3)
 		{
 			// tekst jest ju¿ poza regionem z prawej, mo¿na przerwaæ
 			break;
 		}
-		else
-			x += g.width;
 
+		x += glyph_size.x;
 		if(in_buffer == 256)
 			Flush(true);
 	}
@@ -827,8 +843,11 @@ void IGUI::DrawLine(Font* font, cstring text, uint line_begin, uint line_end, co
 
 //=================================================================================================
 void IGUI::DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& default_color, Vec4& current_color,
-	int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special)
+	int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special, const Vec2& scale)
 {
+	// scale is TODO here
+	assert(scale == Vec2(1, 1));
+
 	Vec4 col(0, 0, 0, outline_alpha);
 	int prev_x = x, prev_y = y;
 
@@ -1007,7 +1026,7 @@ void IGUI::DrawLineOutline(Font* font, cstring text, uint line_begin, uint line_
 			Flush(true);
 	}
 
-	DrawLine(font, text, line_begin, line_end, default_color, current_color, prev_x, prev_y, clipping, hc, parse_special);
+	DrawLine(font, text, line_begin, line_end, default_color, current_color, prev_x, prev_y, clipping, hc, parse_special, scale);
 }
 
 //=================================================================================================
@@ -2644,4 +2663,203 @@ void IGUI::UseGrayscale(bool grayscale)
 	UINT passes;
 	eGui->Begin(&passes, 0);
 	eGui->BeginPass(0);
+}
+
+//=================================================================================================
+bool IGUI::DrawText2(DrawTextOptions& options)
+{
+	uint line_begin, line_end, line_index = 0;
+	int line_width, width = options.rect.SizeX();
+	Vec4 current_color = gui::ColorFromDWORD(options.color);
+	Vec4 default_color = current_color;
+	outline_alpha = current_color.w;
+
+	bool outline = (IS_SET(options.flags, DT_OUTLINE) && options.font->texOutline);
+	bool parse_special = IS_SET(options.flags, DT_PARSE_SPECIAL);
+	bool bottom_clip = false;
+
+	tCurrent = options.font->tex;
+	if(outline)
+		tCurrent2 = options.font->texOutline;
+
+	HitboxContext* hc;
+	if(options.hitboxes)
+	{
+		hc = &tmpHitboxContext;
+		hc->hitbox = options.hitboxes;
+		hc->counter = (options.hitbox_counter ? *options.hitbox_counter : 0);
+		hc->open = HitboxOpen::No;
+	}
+	else
+		hc = nullptr;
+
+	Lock(outline);
+
+	typedef void (IGUI::*DrawLineF)(Font* font, cstring text, uint line_begin, uint line_end, const Vec4& def_color,
+		Vec4& color, int x, int y, const Rect* clipping, HitboxContext* hc, bool parse_special, const Vec2& scale);
+	DrawLineF call;
+	if(outline)
+		call = &IGUI::DrawLineOutline;
+	else
+		call = &IGUI::DrawLine;
+
+#define CALL (this->*call)
+
+	if(!IS_SET(options.flags, DT_VCENTER | DT_BOTTOM))
+	{
+		int y = options.rect.Top();
+
+		if(!options.lines)
+		{
+			// tekst pionowo po œrodku lub na dole
+			while(options.font->SplitLine(line_begin, line_end, line_width, line_index, options.str, options.str_length, options.flags, width))
+			{
+				// pocz¹tkowa pozycja x w tej linijce
+				int x;
+				if(IS_SET(options.flags, DT_CENTER))
+					x = options.rect.Left() + (width - line_width) / 2;
+				else if(IS_SET(options.flags, DT_RIGHT))
+					x = options.rect.Right() - line_width;
+				else
+					x = options.rect.Left();
+
+				int clip_result = (options.clipping ? Clip(x, y, line_width, options.font->height, options.clipping) : 0);
+				Int2 scaled_pos(int(options.scale.x * (x - options.rect.Left())) + options.rect.Left(),
+					int(options.scale.y * (y - options.rect.Top())) + options.rect.Top());
+
+				// znaki w tej linijce
+				if(clip_result == 0)
+					CALL(options.font, options.str, line_begin, line_end, default_color, current_color, scaled_pos.x, scaled_pos.y, nullptr, hc, parse_special,
+						options.scale);
+				else if(clip_result == 5)
+					CALL(options.font, options.str, line_begin, line_end, default_color, current_color, scaled_pos.x, scaled_pos.y, options.clipping, hc, parse_special,
+						options.scale);
+				else if(clip_result == 2)
+				{
+					// tekst jest pod widocznym regionem, przerwij rysowanie
+					bottom_clip = true;
+					break;
+				}
+				else
+				{
+					// pomiñ hitbox
+					SkipLine(options.str, line_begin, line_end, hc);
+				}
+
+				// zmieñ y na kolejn¹ linijkê
+				y += options.font->height;
+			}
+		}
+		else
+		{
+			for(uint line_index = options.lines_start, lines_max = min(options.lines_end, options.lines->size()); line_index < lines_max; ++line_index)
+			{
+				auto& line = options.lines->at(line_index);
+
+				// pocz¹tkowa pozycja x w tej linijce
+				int x;
+				if(IS_SET(options.flags, DT_CENTER))
+					x = options.rect.Left() + (width - line_width) / 2;
+				else if(IS_SET(options.flags, DT_RIGHT))
+					x = options.rect.Right() - line_width;
+				else
+					x = options.rect.Left();
+
+				int clip_result = (options.clipping ? Clip(x, y, line.width, options.font->height, options.clipping) : 0);
+				Int2 scaled_pos(int(options.scale.x * (x - options.rect.Left())) + options.rect.Left(),
+					int(options.scale.y * (y - options.rect.Top())) + options.rect.Top());
+
+				// znaki w tej linijce
+				if(clip_result == 0)
+					CALL(options.font, options.str, line.begin, line.end, default_color, current_color, scaled_pos.x, scaled_pos.y, nullptr, hc, parse_special,
+						options.scale);
+				else if(clip_result == 5)
+					CALL(options.font, options.str, line.begin, line.end, default_color, current_color, scaled_pos.x, scaled_pos.y, options.clipping, hc, parse_special,
+						options.scale);
+				else if(clip_result == 2)
+				{
+					// tekst jest pod widocznym regionem, przerwij rysowanie
+					bottom_clip = true;
+					break;
+				}
+				else
+				{
+					// pomiñ hitbox
+					SkipLine(options.str, line.begin, line.end, hc);
+				}
+
+				// zmieñ y na kolejn¹ linijkê
+				y += options.font->height;
+			}
+		}
+	}
+	else
+	{
+		// tekst u góry
+		if(!options.lines)
+		{
+			static vector<TextLine> lines_data;
+			lines_data.clear();
+
+			// oblicz wszystkie linijki
+			while(options.font->SplitLine(line_begin, line_end, line_width, line_index, options.str, options.str_length, options.flags, width))
+				lines_data.push_back(TextLine(line_begin, line_end, line_width));
+
+			options.lines = &lines_data;
+		}
+
+		// pocz¹tkowa pozycja y
+		int y;
+		if(IS_SET(options.flags, DT_BOTTOM))
+			y = options.rect.Bottom() - options.lines->size()*options.font->height;
+		else
+			y = options.rect.Top() + (options.rect.SizeY() - int(options.lines->size())*options.font->height) / 2;
+
+		for(uint line_index = options.lines_start, lines_max = min(options.lines_end, options.lines->size()); line_index < lines_max; ++line_index)
+		{
+			auto& line = options.lines->at(line_index);
+
+			// pocz¹tkowa pozycja x w tej linijce
+			int x;
+			if(IS_SET(options.flags, DT_CENTER))
+				x = options.rect.Left() + (width - line.width) / 2;
+			else if(IS_SET(options.flags, DT_RIGHT))
+				x = options.rect.Right() - line.width;
+			else
+				x = options.rect.Left();
+
+			int clip_result = (options.clipping ? Clip(x, y, line.width, options.font->height, options.clipping) : 0);
+			Int2 scaled_pos(int(options.scale.x * (x - options.rect.Left())) + options.rect.Left(),
+				int(options.scale.y * (y - options.rect.Top())) + options.rect.Top());
+
+			// znaki w tej linijce
+			if(clip_result == 0)
+				CALL(options.font, options.str, line.begin, line.end, default_color, current_color, scaled_pos.x, scaled_pos.y, nullptr, hc, parse_special,
+					options.scale);
+			else if(clip_result == 5)
+				CALL(options.font, options.str, line.begin, line.end, default_color, current_color, scaled_pos.x, scaled_pos.y, options.clipping, hc, parse_special,
+					options.scale);
+			else if(clip_result == 2)
+			{
+				// tekst jest pod widocznym regionem, przerwij rysowanie
+				bottom_clip = true;
+				break;
+			}
+			else if(options.hitboxes)
+			{
+				// pomiñ hitbox
+				SkipLine(options.str, line.begin, line.end, hc);
+			}
+
+			// zmieñ y na kolejn¹ linijkê
+			y += options.font->height;
+		}
+	}
+
+	Flush();
+
+	if(options.hitbox_counter)
+		*options.hitbox_counter = hc->counter;
+
+	return !bottom_clip;
 }

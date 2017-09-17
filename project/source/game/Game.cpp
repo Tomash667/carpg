@@ -57,7 +57,7 @@ prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), 
 cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true),
 cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(D3DXIFF_JPG), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), current_packet(nullptr),
-game_state(GS_LOAD), default_devmode(false), default_player_devmode(false)
+game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -1783,24 +1783,25 @@ void Game::OnCleanup()
 	delete obj_spell;
 
 	// kszta³ty obiektów
-	for(uint i = 0; i < n_objs; ++i)
+	for(uint i = 0; i < BaseObject::n_objs; ++i)
 	{
-		delete g_objs[i].shape;
-		if(IS_SET(g_objs[i].flags, OBJ_DOUBLE_PHYSICS) && g_objs[i].next_obj)
+		auto& base = BaseObject::objs[i];
+		delete base.shape;
+		if(IS_SET(base.flags, OBJ_DOUBLE_PHYSICS) && base.next_obj)
 		{
-			delete g_objs[i].next_obj->shape;
-			delete g_objs[i].next_obj;
+			delete base.next_obj->shape;
+			delete base.next_obj;
 		}
-		else if(IS_SET(g_objs[i].flags2, OBJ2_MULTI_PHYSICS) && g_objs[i].next_obj)
+		else if(IS_SET(base.flags2, OBJ2_MULTI_PHYSICS) && base.next_obj)
 		{
 			for(int j = 0;; ++j)
 			{
-				bool have_next = (g_objs[i].next_obj[j].shape != nullptr);
-				delete g_objs[i].next_obj[j].shape;
+				bool have_next = (base.next_obj[j].shape != nullptr);
+				delete base.next_obj[j].shape;
 				if(!have_next)
 					break;
 			}
-			delete[] g_objs[i].next_obj;
+			delete[] base.next_obj;
 		}
 	}
 

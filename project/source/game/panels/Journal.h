@@ -37,17 +37,24 @@ public:
 	void AddEntry(cstring text, int color, bool singleline);
 	void OnAddNote(int id);
 	void NeedUpdate(Mode mode, int quest_index = 0);
+	void LoadData();
+	void AddRumor(cstring text);
+	void Save(HANDLE file);
+	void Load(HANDLE file);
 
-	static TEX tBook, tPage[3], tArrowL, tArrowR;
-	Mode mode;
-	int page, prev_page, open_quest, x, y, size_x, size_y, rect_w, rect_lines;
-	Rect rect, rect2;
-	vector<Text> texts;
-	string input;
-	cstring txAdd, txNoteText, txNoQuests, txNoRumors, txNoNotes, txAddNote, txAddTime;
-	bool details;
+	vector<string>& GetNotes() { return notes; }
+	vector<string>& GetRumors() { return rumors; }
 
 private:
 	Game& game;
-	int font_height;
+	Mode mode;
+	TEX tBook, tPage[3], tArrowL, tArrowR;
+	cstring txAdd, txNoteText, txNoQuests, txNoRumors, txNoNotes, txAddNote, txAddTime;
+	int font_height, page, prev_page, open_quest, x, y, size_x, size_y, rect_w, rect_lines;
+	Rect rect, rect2;
+	vector<Text> texts;
+	vector<string> notes;
+	vector<string> rumors;
+	string input;
+	bool details;
 };

@@ -8,9 +8,7 @@
 #include "GameKeys.h"
 #include "QuestManager.h"
 #include "Quest.h"
-
-//-----------------------------------------------------------------------------
-TEX Journal::tBook, Journal::tPage[3], Journal::tArrowL, Journal::tArrowR;
+#include "ResourceManager.h"
 
 //=================================================================================================
 Journal::Journal() : mode(Quests), game(Game::Get())
@@ -312,7 +310,7 @@ void Journal::Event(GuiEvent e)
 	if(e == GuiEvent_Show || e == GuiEvent_WindowResize || e == GuiEvent_Resize || e == GuiEvent_Moved)
 	{
 		rect = Rect(32, 16, 238, 432);
-		rect2 = Rect(259, 16, 455, 431);
+		rect2 = Rect(259, 16, 455, 432);
 
 		Vec2 scale = Vec2(size) / 512;
 		rect = rect * scale + global_pos;
@@ -332,6 +330,8 @@ void Journal::Reset()
 	mode = Quests;
 	details = false;
 	page = 0;
+	notes.clear();
+	rumors.clear();
 }
 
 //=================================================================================================
@@ -388,22 +388,22 @@ void Journal::Build()
 	else if(mode == Rumors)
 	{
 		// rumors
-		if(game.rumors.empty())
+		if(rumors.empty())
 			AddEntry(txNoRumors, 0, false);
 		else
 		{
-			for(vector<string>::iterator it = game.rumors.begin(), end = game.rumors.end(); it != end; ++it)
+			for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
 				AddEntry(it->c_str(), 0, false);
 		}
 	}
 	else
 	{
 		// notes
-		if(game.notes.empty())
+		if(notes.empty())
 			AddEntry(txNoNotes, 0, false);
 		else
 		{
-			for(vector<string>::iterator it = game.notes.begin(), end = game.notes.end(); it != end; ++it)
+			for(vector<string>::iterator it = notes.begin(), end = notes.end(); it != end; ++it)
 				AddEntry(it->c_str(), 0, false);
 		}
 
@@ -485,7 +485,7 @@ void Journal::OnAddNote(int id)
 {
 	if(id == BUTTON_OK)
 	{
-		game.notes.push_back(Format(txAddTime, game.day + 1, game.month + 1, game.year, input.c_str()));
+		notes.push_back(Format(txAddTime, game.day + 1, game.month + 1, game.year, input.c_str()));
 		Build();
 		if(!Net::Net::IsLocal())
 			game.PushNetChange(NetChange::ADD_NOTE);
@@ -504,5 +504,81 @@ void Journal::NeedUpdate(Mode at_mode, int quest_id)
 		}
 		else
 			Build();
+	}
+}
+
+//=================================================================================================
+void Journal::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("book.png", tBook);
+	tex_mgr.AddLoadTask("dziennik_przyciski.png", tPage[0]);
+	tex_mgr.AddLoadTask("dziennik_przyciski2.png", tPage[1]);
+	tex_mgr.AddLoadTask("dziennik_przyciski3.png", tPage[2]);
+	tex_mgr.AddLoadTask("strzalka_l.png", tArrowL);
+	tex_mgr.AddLoadTask("strzalka_p.png", tArrowR);
+}
+
+//=================================================================================================
+void Journal::AddRumor(cstring text)
+{
+	assert(text);
+
+	if(Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::ADD_RUMOR;
+		c.id = rumors.size();
+	}
+
+	rumors.push_back(Format(txAddTime, game.day + 1, game.month + 1, game.year, text));
+	NeedUpdate(Journal::Rumors);
+	game.AddGameMsg3(GMS_ADDED_RUMOR);
+}
+
+//=================================================================================================
+void Journal::Save(HANDLE file)
+{
+	uint count = rumors.size();
+	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
+	for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
+	{
+		word len = (word)it->length();
+		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
+		WriteFile(file, it->c_str(), len, &tmp, nullptr);
+	}
+
+	count = notes.size();
+	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
+	for(vector<string>::iterator it = notes.begin(), end = notes.end(); it != end; ++it)
+	{
+		word len = (word)it->length();
+		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
+		WriteFile(file, it->c_str(), len, &tmp, nullptr);
+	}
+}
+
+//=================================================================================================
+void Journal::Load(HANDLE file)
+{
+	uint count;
+	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+	rumors.resize(count);
+	for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
+	{
+		word len;
+		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
+		it->resize(len);
+		ReadFile(file, (void*)it->c_str(), len, &tmp, nullptr);
+	}
+
+	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+	notes.resize(count);
+	for(vector<string>::iterator it = notes.begin(), end = notes.end(); it != end; ++it)
+	{
+		word len;
+		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
+		it->resize(len);
+		ReadFile(file, (void*)it->c_str(), len, &tmp, nullptr);
 	}
 }

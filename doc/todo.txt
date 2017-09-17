@@ -1,9 +1,13 @@
 ﻿FEATURE:
+===============================================================================================================
 + vsync in options
 - innkeeper - stands still, no animations/actions
 - after alt tab - camera is moved down
 - can summon wolf outside of arena - there should be marked as WALL
 ? verify version formatting to not include path number 0 ("0.5.0" -> "0.5")
+- options: current resolution is not selected at start
+- stupid website rewrite rule
+- summon wolf on arena
 ===============================================================================================================
 CURRENT:
 ? verify is window center is wnd_size/2 or real_size/2, update GameGuiInit::UdateGui
@@ -30,6 +34,15 @@ NEW:
 + refactor Language.h from Gui.cpp, GetNumberDialog
 + vector of pointers that disallow null values, iterating over returns by ref
 + ref overcomplex player stats system
++ open wanted letter in fullscreen, show face
++ ref remove DWORD
++ join TextLine & FontLine
++ remove tablechairs object, now it's not requiered
++ rename tartak obj -> sawmill
++ two animations of falling, front and back, for example when boulder is rolling on player it depends on player rotation which animation use, rotate player
++ enemy: doppelanger, rogue doppelanger, assassin doppelanger
++ EE: sawmill random text -> "ludzi coraz więcej a rką do pracy coraz mniej"
++ 0.7: use new gui
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

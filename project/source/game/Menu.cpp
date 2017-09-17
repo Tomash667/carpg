@@ -369,6 +369,11 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	pc->dialog_ctx->pc = pc;
 	pc->dialog_ctx->is_local = true;
 	cc.Apply(*pc);
+	if(finished_tutorial)
+	{
+		u->AddItem(FindItem("book_adventurer"), 1u, false);
+		finished_tutorial = false;
+	}
 	dialog_context.pc = pc;
 
 	ClearGameVarsOnNewGame();

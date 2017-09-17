@@ -48,7 +48,7 @@ void GetNumberDialog::Update(float dt)
 		bool moving = scrollbar.clicked;
 		float prev_offset = scrollbar.offset;
 		scrollbar.ApplyMouseWheel();
-		scrollbar.mouse_focus = mouse_focus;
+		scrollbar.mouse_focus = focus;
 		scrollbar.Update(dt);
 		bool changed = false;
 		if(scrollbar.change != 0 || GUI.mouse_wheel != 0.f)
@@ -107,9 +107,9 @@ void GetNumberDialog::Update(float dt)
 
 		if(result == -1)
 		{
-			if(Key.Pressed(VK_ESCAPE))
+			if(Key.PressedRelease(VK_ESCAPE))
 				result = BUTTON_CANCEL;
-			else if(Key.Pressed(VK_RETURN))
+			else if(Key.PressedRelease(VK_RETURN))
 				result = BUTTON_OK;
 		}
 

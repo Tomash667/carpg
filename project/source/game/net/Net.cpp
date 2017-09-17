@@ -2930,10 +2930,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						AddItem(unit, slot.item, (uint)count, team_count, false);
 						if(player.action == PlayerController::Action_Trade)
 							unit.gold -= GetItemPrice(slot.item, unit, true) * count;
-						else if(player.action == PlayerController::Action_ShareItems&& slot.item->type == IT_CONSUMABLE
+						else if(player.action == PlayerController::Action_ShareItems && slot.item->type == IT_CONSUMABLE
 							&& slot.item->ToConsumable().effect == E_HEAL)
 							player.action_unit->ai->have_potion = 1;
-						if(player.action != PlayerController::Action_LootChest)
+						if(player.action != PlayerController::Action_LootChest && player.action != PlayerController::Action_LootContainer)
 						{
 							player.action_unit->weight -= slot.item->weight*count;
 							if(player.action == PlayerController::Action_LootUnit && slot.item == player.action_unit->used_item)
@@ -2959,7 +2959,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					// getting equipped item
 					ITEM_SLOT type = IIndexToSlot(i_index);
-					if(player.action == PlayerController::Action_LootChest || type < SLOT_WEAPON || type >= SLOT_MAX || !player.action_unit->slots[type])
+					if(player.action == PlayerController::Action_LootChest || player.action == PlayerController::Action_LootContainer
+						|| type < SLOT_WEAPON || type >= SLOT_MAX || !player.action_unit->slots[type])
 					{
 						Error("Update server: GET_ITEM from %s, invalid or empty slot %d.", info.name.c_str(), type);
 						StreamError();
@@ -3037,6 +3038,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					// add item
 					if(player.action == PlayerController::Action_LootChest)
 						AddItem(*player.action_chest, slot.item, count, team_count, false);
+					else if(player.action == PlayerController::Action_LootContainer)
+						player.action_container->container->AddItem(slot.item, count, team_count);
 					else if(player.action == PlayerController::Action_Trade)
 					{
 						InsertItem(*player.chest_trade, slot.item, count, team_count);
@@ -3112,6 +3115,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					// add new item
 					if(player.action == PlayerController::Action_LootChest)
 						AddItem(*player.action_chest, slot, 1u, 0u, false);
+					else if(player.action == PlayerController::Action_LootContainer)
+						player.action_container->container->AddItem(slot, 1u, 0u);
 					else if(player.action == PlayerController::Action_Trade)
 					{
 						InsertItem(*player.chest_trade, slot, 1u, 0u);
@@ -3163,7 +3168,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				bool changes = false;
 
 				// slots
-				if(player.action != PlayerController::Action_LootChest)
+				if(player.action != PlayerController::Action_LootChest && player.action != PlayerController::Action_LootContainer)
 				{
 					const Item** slots = player.action_unit->slots;
 					for(int i = 0; i < SLOT_MAX; ++i)
@@ -3231,6 +3236,17 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEST_CLOSE;
 				c.id = player.action_chest->netid;
+			}
+			else if(player.action == PlayerController::Action_LootContainer)
+			{
+				player.action_container->user = nullptr;
+				player.unit->usable = nullptr;
+
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_USABLE;
+				c.unit = info.u;
+				c.id = player.action_container->netid;
+				c.ile = 0;
 			}
 			else
 			{
@@ -3454,14 +3470,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			break;
 		// player wants to start/stop using usable
-		case NetChange::USE_USEABLE:
+		case NetChange::USE_USABLE:
 			{
 				int usable_netid;
 				byte state; // 0-stop, 1-start
 				if(!stream.Read(usable_netid)
 					|| !stream.Read(state))
 				{
-					Error("Update server: Broken USE_USEABLE from %s.", info.name.c_str());
+					Error("Update server: Broken USE_USABLE from %s.", info.name.c_str());
 					StreamError();
 					break;
 				}
@@ -3469,7 +3485,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				Usable* usable = FindUsable(usable_netid);
 				if(!usable)
 				{
-					Error("Update server: USE_USEABLE from %s, missing usable %d.", info.name.c_str(), usable_netid);
+					Error("Update server: USE_USABLE from %s, missing usable %d.", info.name.c_str(), usable_netid);
 					StreamError();
 					break;
 				}
@@ -3481,37 +3497,53 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						// someone else is already using this
 						NetChangePlayer& c = Add1(Net::player_changes);
-						c.type = NetChangePlayer::USE_USEABLE;
+						c.type = NetChangePlayer::USE_USABLE;
 						c.pc = &player;
 						info.NeedUpdate();
 					}
 					else
 					{
 						BaseUsable& base = g_base_usables[usable->type];
-
-						unit.action = A_ANIMATION2;
-						unit.animation = ANI_PLAY;
-						unit.mesh_inst->Play(base.anim, PLAY_PRIO1, 0);
-						unit.mesh_inst->groups[0].speed = 1.f;
-						unit.usable = usable;
-						unit.target_pos = unit.pos;
-						unit.target_pos2 = usable->pos;
-						if(g_base_usables[usable->type].limit_rot == 4)
-							unit.target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
-						unit.timer = 0.f;
-						unit.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-						unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.usable->pos);
-						unit.used_item = base.item;
-						if(unit.used_item)
+						if(!IS_SET(base.flags, BaseUsable::CONTAINER))
 						{
-							unit.weapon_taken = W_NONE;
-							unit.weapon_state = WS_HIDDEN;
+							unit.action = A_ANIMATION2;
+							unit.animation = ANI_PLAY;
+							unit.mesh_inst->Play(base.anim, PLAY_PRIO1, 0);
+							unit.mesh_inst->groups[0].speed = 1.f;
+							unit.usable = usable;
+							unit.target_pos = unit.pos;
+							unit.target_pos2 = usable->pos;
+							if(g_base_usables[usable->type].limit_rot == 4)
+								unit.target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
+							unit.timer = 0.f;
+							unit.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
+							unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.usable->pos);
+							unit.used_item = base.item;
+							if(unit.used_item)
+							{
+								unit.weapon_taken = W_NONE;
+								unit.weapon_state = WS_HIDDEN;
+							}
 						}
+						else
+						{
+							// start looting container
+							NetChangePlayer& c = Add1(Net::player_changes);
+							c.type = NetChangePlayer::LOOT;
+							c.pc = info.u->player;
+							c.id = 1;
+							info.NeedUpdate();
+
+							player.action = PlayerController::Action_LootContainer;
+							player.action_container = usable;
+							player.chest_trade = &usable->container->items;
+						}
+
 						usable->user = &unit;
 
 						// send info to players
 						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::USE_USEABLE;
+						c.type = NetChange::USE_USABLE;
 						c.unit = info.u;
 						c.id = usable_netid;
 						c.ile = state;
@@ -3522,28 +3554,27 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					// stop using usable
 					if(usable->user == &unit)
 					{
-						unit.action = A_NONE;
-						unit.animation = ANI_STAND;
-						usable->user = nullptr;
-						if(unit.live_state == Unit::ALIVE)
-							unit.used_item = nullptr;
+						BaseUsable& base = g_base_usables[usable->type];
+						if(!IS_SET(base.flags, BaseUsable::CONTAINER))
+						{
+							unit.action = A_NONE;
+							unit.animation = ANI_STAND;
+							if(unit.live_state == Unit::ALIVE)
+								unit.used_item = nullptr;
+						}
 
 						// send info to other players
 						if(players > 2)
 						{
 							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::USE_USEABLE;
+							c.type = NetChange::USE_USABLE;
 							c.unit = info.u;
 							c.id = usable_netid;
 							c.ile = state;
 						}
 					}
-					else
-					{
-						Error("Update server: USE_USEABLE from %s, usable %d is used by %d (%s).", info.name.c_str(), usable_netid,
-							usable->user->netid, usable->user->data->id.c_str());
-						StreamError();
-					}
+
+					usable->user = nullptr;
 				}
 			}
 			break;
@@ -4723,7 +4754,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					Error("Update server: PUT_GOLD from %s, invalid count %d (have %d).", info.name.c_str(), count, unit.gold);
 					StreamError();
 				}
-				else if(player.action != PlayerController::Action_LootChest && player.action != PlayerController::Action_LootUnit)
+				else if(player.action != PlayerController::Action_LootChest && player.action != PlayerController::Action_LootUnit
+					&& player.action != PlayerController::Action_LootContainer)
 				{
 					Error("Update server: PUT_GOLD from %s, player is not trading.", info.name.c_str());
 					StreamError();
@@ -5018,7 +5050,7 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::CREATE_DRAIN:
 		case NetChange::HERO_LEAVE:
 		case NetChange::REMOVE_USED_ITEM:
-		case NetChange::USEABLE_SOUND:
+		case NetChange::USABLE_SOUND:
 		case NetChange::BREAK_ACTION:
 		case NetChange::PLAYER_ACTION:
 			stream.Write(c.unit->netid);
@@ -5124,7 +5156,7 @@ void Game::WriteServerChanges(BitStream& stream)
 			stream.WriteCasted<byte>(c.ile);
 			break;
 		case NetChange::ADD_RUMOR:
-			WriteString1(stream, rumors[c.id]);
+			WriteString1(stream, game_gui->journal->GetRumors()[c.id]);
 			break;
 		case NetChange::HAIR_COLOR:
 			stream.Write(c.unit->netid);
@@ -5199,7 +5231,7 @@ void Game::WriteServerChanges(BitStream& stream)
 			stream.WriteCasted<byte>(c.id);
 			stream.WriteCasted<byte>(c.ile);
 			break;
-		case NetChange::USE_USEABLE:
+		case NetChange::USE_USABLE:
 			stream.Write(c.unit->netid);
 			stream.Write(c.id);
 			stream.WriteCasted<byte>(c.ile);
@@ -5385,7 +5417,7 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				}
 				break;
 			case NetChangePlayer::END_DIALOG:
-			case NetChangePlayer::USE_USEABLE:
+			case NetChangePlayer::USE_USABLE:
 			case NetChangePlayer::PREPARE_WARP:
 			case NetChangePlayer::ENTER_ARENA:
 			case NetChangePlayer::START_ARENA_COMBAT:
@@ -6573,7 +6605,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			else
 			{
 				AddGameMsg3(GMS_ADDED_RUMOR);
-				rumors.push_back(BUF);
+				game_gui->journal->GetRumors().push_back(BUF);
 				game_gui->journal->NeedUpdate(Journal::Rumors);
 			}
 			break;
@@ -6972,7 +7004,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			}
 			break;
 		// unit uses usable object
-		case NetChange::USE_USEABLE:
+		case NetChange::USE_USABLE:
 			{
 				int netid, usable_netid;
 				byte state;
@@ -6980,7 +7012,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					|| !stream.Read(usable_netid)
 					|| !stream.Read(state))
 				{
-					Error("Update client: Broken USE_USEABLE.");
+					Error("Update client: Broken USE_USABLE.");
 					StreamError();
 					break;
 				}
@@ -6988,7 +7020,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Unit* unit = FindUnit(netid);
 				if(!unit)
 				{
-					Error("Update client: USE_USEABLE, missing unit %d.", netid);
+					Error("Update client: USE_USABLE, missing unit %d.", netid);
 					StreamError();
 					break;
 				}
@@ -6996,47 +7028,55 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Usable* usable = FindUsable(usable_netid);
 				if(!usable)
 				{
-					Error("Update client: USE_USEABLE, missing usable %d.", usable_netid);
+					Error("Update client: USE_USABLE, missing usable %d.", usable_netid);
 					StreamError();
 					break;
 				}
 
+				BaseUsable& base = g_base_usables[usable->type];
 				if(state == 1 || state == 2)
 				{
-					BaseUsable& base = g_base_usables[usable->type];
-
-					unit->action = A_ANIMATION2;
-					unit->animation = ANI_PLAY;
-					unit->mesh_inst->Play(state == 2 ? "czyta_papiery" : base.anim, PLAY_PRIO1, 0);
-					unit->mesh_inst->groups[0].speed = 1.f;
-					unit->usable = usable;
-					unit->target_pos = unit->pos;
-					unit->target_pos2 = usable->pos;
-					if(g_base_usables[usable->type].limit_rot == 4)
-						unit->target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
-					unit->timer = 0.f;
-					unit->animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-					unit->use_rot = Vec3::LookAtAngle(unit->pos, unit->usable->pos);
-					unit->used_item = base.item;
-					if(unit->used_item)
+					if(!IS_SET(base.flags, BaseUsable::CONTAINER))
 					{
-						PreloadItem(unit->used_item);
-						unit->weapon_taken = W_NONE;
-						unit->weapon_state = WS_HIDDEN;
+						unit->action = A_ANIMATION2;
+						unit->animation = ANI_PLAY;
+						unit->mesh_inst->Play(state == 2 ? "czyta_papiery" : base.anim, PLAY_PRIO1, 0);
+						unit->mesh_inst->groups[0].speed = 1.f;
+						unit->usable = usable;
+						unit->target_pos = unit->pos;
+						unit->target_pos2 = usable->pos;
+						if(g_base_usables[usable->type].limit_rot == 4)
+							unit->target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
+						unit->timer = 0.f;
+						unit->animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
+						unit->use_rot = Vec3::LookAtAngle(unit->pos, unit->usable->pos);
+						unit->used_item = base.item;
+						if(unit->used_item)
+						{
+							PreloadItem(unit->used_item);
+							unit->weapon_taken = W_NONE;
+							unit->weapon_state = WS_HIDDEN;
+						}
+					}
+					else if(unit->player == pc)
+					{
+
 					}
 					usable->user = unit;
 
-					if(pc_data.before_player == BP_USEABLE && pc_data.before_player_ptr.usable == usable)
+					if(pc_data.before_player == BP_USABLE && pc_data.before_player_ptr.usable == usable)
 						pc_data.before_player = BP_NONE;
 				}
-				else if(unit->player != pc)
+				else 
 				{
-					if(state == 0)
-						usable->user = nullptr;
-					unit->action = A_NONE;
-					unit->animation = ANI_STAND;
-					if(unit->live_state == Unit::ALIVE)
-						unit->used_item = nullptr;
+					usable->user = nullptr;
+					if(unit->player != pc && !IS_SET(base.flags, BaseUsable::CONTAINER))
+					{
+						unit->action = A_NONE;
+						unit->animation = ANI_STAND;
+						if(unit->live_state == Unit::ALIVE)
+							unit->used_item = nullptr;
+					}
 				}
 			}
 			break;
@@ -7605,7 +7645,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::CLEAN_ALTAR:
 			{
 				// change object
-				Obj* o = FindObject("bloody_altar");
+				BaseObject* o = BaseObject::Get("bloody_altar");
 				int index = 0;
 				for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it, ++index)
 				{
@@ -7613,7 +7653,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						break;
 				}
 				Object& obj = local_ctx.objects->at(index);
-				obj.base = FindObject("altar");
+				obj.base = BaseObject::Get("altar");
 				obj.mesh = obj.base->mesh;
 
 				// remove particles
@@ -8343,12 +8383,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			}
 			break;
 		// play usable object sound for unit
-		case NetChange::USEABLE_SOUND:
+		case NetChange::USABLE_SOUND:
 			{
 				int netid;
 				if(!stream.Read(netid))
 				{
-					Error("Update client: Broken USEABLE_SOUND.");
+					Error("Update client: Broken USABLE_SOUND.");
 					StreamError();
 				}
 				else
@@ -8356,12 +8396,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Unit* unit = FindUnit(netid);
 					if(!unit)
 					{
-						Error("Update client: USEABLE_SOUND, missing unit %d.", netid);
+						Error("Update client: USABLE_SOUND, missing unit %d.", netid);
 						StreamError();
 					}
 					else if(!unit->usable)
 					{
-						Error("Update client: USEABLE_SOUND, unit %d (%s) don't use usable.", netid, unit->data->id.c_str());
+						Error("Update client: USABLE_SOUND, unit %d (%s) don't use usable.", netid, unit->data->id.c_str());
 						StreamError();
 					}
 					else if(sound_volume && unit != pc->unit)
@@ -8564,6 +8604,8 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					// start trade
 					if(pc->action == PlayerController::Action_LootUnit)
 						StartTrade(I_LOOT_BODY, *pc->action_unit);
+					else if(pc->action == PlayerController::Action_LootContainer)
+						StartTrade(I_LOOT_CONTAINER, pc->action_container->container->items);
 					else
 						StartTrade(I_LOOT_CHEST, pc->action_chest->items);
 				}
@@ -8887,8 +8929,10 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 				}
 				break;
 			// someone else is using usable
-			case NetChangePlayer::USE_USEABLE:
+			case NetChangePlayer::USE_USABLE:
 				AddGameMsg3(GMS_USED);
+				if(pc->action == PlayerController::Action_LootContainer)
+					pc->action = PlayerController::Action_None;
 				break;
 			// change development mode for player
 			case NetChangePlayer::DEVMODE:
@@ -9555,9 +9599,9 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::CHEAT_REFRESH_COOLDOWN:
 			break;
 		case NetChange::ADD_NOTE:
-			WriteString1(stream, notes.back());
+			WriteString1(stream, game_gui->journal->GetNotes().back());
 			break;
-		case NetChange::USE_USEABLE:
+		case NetChange::USE_USABLE:
 			stream.Write(c.id);
 			stream.WriteCasted<byte>(c.ile);
 			break;
@@ -10232,7 +10276,7 @@ void Game::PrepareWorldData(BitStream& stream)
 	QuestManager::Get().Write(stream);
 
 	// rumors
-	WriteStringArray<byte, word>(stream, rumors);
+	WriteStringArray<byte, word>(stream, game_gui->journal->GetRumors());
 
 	// time
 	stream.WriteCasted<byte>(year);
@@ -10409,7 +10453,7 @@ bool Game::ReadWorldData(BitStream& stream)
 		return false;
 
 	// rumors
-	if(!ReadStringArray<byte, word>(stream, rumors))
+	if(!ReadStringArray<byte, word>(stream, game_gui->journal->GetRumors()))
 	{
 		Error("Read world: Broken packet for rumors.");
 		return false;
@@ -10700,7 +10744,7 @@ bool Game::ReadPlayerStartData(BitStream& stream)
 	byte flags;
 
 	if(!stream.Read(flags) ||
-		!ReadStringArray<word, word>(stream, notes))
+		!ReadStringArray<word, word>(stream, game_gui->journal->GetNotes()))
 		return false;
 
 	if(IS_SET(flags, 0x01))
@@ -10763,7 +10807,7 @@ void Game::ProcessLeftPlayers()
 {
 	if(!players_left)
 		return;
-	
+
 	LoopAndRemove(game_players, [this](PlayerInfo* pinfo)
 	{
 		auto& info = *pinfo;
@@ -10775,7 +10819,7 @@ void Game::ProcessLeftPlayers()
 		c.type = NetChange::REMOVE_PLAYER;
 		c.id = info.id;
 		c.ile = (int)info.left;
-		
+
 		RemovePlayer(info);
 
 		if(leader_id == c.id)
