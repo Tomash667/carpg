@@ -4,6 +4,7 @@
 // Item types
 // Adding new item type require changes in:
 // + TeamItems.cpp
+// + Game2.cpp allow buy merchant_buy
 // ? incomplete
 enum ITEM_TYPE
 {

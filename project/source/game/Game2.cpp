@@ -172,7 +172,7 @@ void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify)
 		break;
 	}
 
-	if(unit.usable)
+	if(unit.usable && !(unit.player && unit.player->action == PlayerController::Action_LootContainer))
 	{
 		if(mode == BREAK_ACTION_MODE::INSTANT)
 		{
@@ -486,17 +486,16 @@ void Game::SetupCamera(float dt)
 	{
 		OutsideLocation* outside = (OutsideLocation*)location;
 
-		// teren
+		// terrain
 		tout = terrain->Raytest(to, to + dist);
 		if(tout < min_tout && tout > 0.f)
 			min_tout = tout;
 
-		// budynki
+		// buildings
 		int minx = max(0, tx - 3),
 			minz = max(0, tz - 3),
 			maxx = min(OutsideLocation::size - 1, tx + 3),
 			maxz = min(OutsideLocation::size - 1, tz + 3);
-
 		for(int z = minz; z <= maxz; ++z)
 		{
 			for(int x = minx; x <= maxx; ++x)
@@ -509,49 +508,6 @@ void Game::SetupCamera(float dt)
 				}
 			}
 		}
-
-		// kolizje z obiektami
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
-		{
-			if(it->ptr != CAM_COLLIDER)
-				continue;
-
-			if(it->type == CollisionObject::SPHERE)
-			{
-				if(RayToCylinder(to, to + dist, Vec3(it->pt.x, 0, it->pt.y), Vec3(it->pt.x, 32.f, it->pt.y), it->radius, tout) && tout < min_tout && tout > 0.f)
-					min_tout = tout;
-			}
-			else if(it->type == CollisionObject::RECTANGLE)
-			{
-				Box box(it->pt.x - it->w, 0.f, it->pt.y - it->h, it->pt.x + it->w, 32.f, it->pt.y + it->h);
-				if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-					min_tout = tout;
-			}
-			else
-			{
-				float w, h;
-				if(Equal(it->rot, PI / 2) || Equal(it->rot, PI * 3 / 2))
-				{
-					w = it->h;
-					h = it->w;
-				}
-				else
-				{
-					w = it->w;
-					h = it->h;
-				}
-
-				Box box(it->pt.x - w, 0.f, it->pt.y - h, it->pt.x + w, 32.f, it->pt.y + h);
-				if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-					min_tout = tout;
-			}
-		}
-
-		for(vector<CameraCollider>::iterator it = cam_colliders.begin(), end = cam_colliders.end(); it != end; ++it)
-		{
-			if(RayToBox(to, dist, it->box, &tout) && tout < min_tout && tout > 0.f)
-				min_tout = tout;
-		}
 	}
 	else if(ctx.type == LevelContext::Inside)
 	{
@@ -563,7 +519,7 @@ void Game::SetupCamera(float dt)
 			maxx = min(lvl.w - 1, tx + 3),
 			maxz = min(lvl.h - 1, tz + 3);
 
-		// sufit
+		// ceil
 		const Plane sufit(0, -1, 0, 4);
 		if(RayToPlane(to, dist, sufit, &tout) && tout < min_tout && tout > 0.f)
 		{
@@ -571,12 +527,12 @@ void Game::SetupCamera(float dt)
 			min_tout = tout;
 		}
 
-		// pod³oga
+		// floor
 		const Plane podloga(0, 1, 0, 0);
 		if(RayToPlane(to, dist, podloga, &tout) && tout < min_tout && tout > 0.f)
 			min_tout = tout;
 
-		// podziemia
+		// dungeon
 		for(int z = minz; z <= maxz; ++z)
 		{
 			for(int x = minx; x <= maxx; ++x)
@@ -670,22 +626,21 @@ void Game::SetupCamera(float dt)
 	}
 	else
 	{
+		// building
 		InsideBuilding& building = *city_ctx->inside_buildings[ctx.building_id];
 
-		// budynek
-
-		// pod³oga
-		const Plane podloga(0, 1, 0, 0);
-		if(RayToPlane(to, dist, podloga, &tout) && tout < min_tout && tout > 0.f)
-			min_tout = tout;
-
-		// sufit
+		// ceil
 		if(building.top > 0.f)
 		{
 			const Plane sufit(0, -1, 0, 4);
 			if(RayToPlane(to, dist, sufit, &tout) && tout < min_tout && tout > 0.f)
 				min_tout = tout;
 		}
+
+		// floor
+		const Plane podloga(0, 1, 0, 0);
+		if(RayToPlane(to, dist, podloga, &tout) && tout < min_tout && tout > 0.f)
+			min_tout = tout;
 
 		// xsphere
 		if(building.xsphere_radius > 0.f)
@@ -699,18 +654,7 @@ void Game::SetupCamera(float dt)
 			}
 		}
 
-		// kolizje z obiektami
-		for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
-		{
-			if(it->ptr != CAM_COLLIDER || it->type != CollisionObject::RECTANGLE)
-				continue;
-
-			Box box(it->pt.x - it->w, 0.f, it->pt.y - it->h, it->pt.x + it->w, 10.f, it->pt.y + it->h);
-			if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
-				min_tout = tout;
-		}
-
-		// kolizje z drzwiami
+		// doors
 		for(vector<Door*>::iterator it = ctx.doors->begin(), end = ctx.doors->end(); it != end; ++it)
 		{
 			Door& door = **it;
@@ -742,17 +686,60 @@ void Game::SetupCamera(float dt)
 		}
 	}
 
-	// uwzglêdnienie znear
-	if(min_tout >= 0.9f || pc->noclip)
-		min_tout = 0.9f;
-	else
+	// objects
+	for(vector<CollisionObject>::iterator it = ctx.colliders->begin(), end = ctx.colliders->end(); it != end; ++it)
 	{
-		min_tout -= 0.1f;
-		if(min_tout < 0.1f)
-			min_tout = 0.1f;
+		if(it->ptr != CAM_COLLIDER)
+			continue;
+
+		if(it->type == CollisionObject::SPHERE)
+		{
+			if(RayToCylinder(to, to + dist, Vec3(it->pt.x, 0, it->pt.y), Vec3(it->pt.x, 32.f, it->pt.y), it->radius, tout) && tout < min_tout && tout > 0.f)
+				min_tout = tout;
+		}
+		else if(it->type == CollisionObject::RECTANGLE)
+		{
+			Box box(it->pt.x - it->w, 0.f, it->pt.y - it->h, it->pt.x + it->w, 32.f, it->pt.y + it->h);
+			if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
+				min_tout = tout;
+		}
+		else
+		{
+			float w, h;
+			if(Equal(it->rot, PI / 2) || Equal(it->rot, PI * 3 / 2))
+			{
+				w = it->h;
+				h = it->w;
+			}
+			else
+			{
+				w = it->w;
+				h = it->h;
+			}
+
+			Box box(it->pt.x - w, 0.f, it->pt.y - h, it->pt.x + w, 32.f, it->pt.y + h);
+			if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
+				min_tout = tout;
+		}
 	}
 
-	Vec3 from = to + dist*min_tout;
+	// camera colliders
+	for(vector<CameraCollider>::iterator it = cam_colliders.begin(), end = cam_colliders.end(); it != end; ++it)
+	{
+		if(RayToBox(to, dist, it->box, &tout) && tout < min_tout && tout > 0.f)
+			min_tout = tout;
+	}
+
+	// uwzglêdnienie znear
+	if(min_tout > 1.f || pc->noclip)
+		min_tout = 1.f;
+	else if(min_tout < 0.1f)
+		min_tout = 0.1f;
+
+	float real_dist = dist.Length() * min_tout - 0.1f;
+	if(real_dist < 0.01f)
+		real_dist = 0.01f;
+	Vec3 from = to + dist.Normalize() * real_dist;
 
 	cam.Update(dt, from, to);
 
@@ -3991,12 +3978,12 @@ void Game::StartNextDialog(DialogContext& ctx, GameDialog* dialog, int& if_level
 	if_level = 0;
 }
 
-//							WEAPON	BOW		SHIELD	ARMOR	LETTER	POTION	GOLD	OTHER
-bool merchant_buy[] = { true,	true,	true,	true,	true,	true,	false,	true };
-bool blacksmith_buy[] = { true,	true,	true,	true,	false,	false,	false,	false };
-bool alchemist_buy[] = { false,	false,	false,	false,	false,	true,	false,	false };
-bool innkeeper_buy[] = { false,	false,	false,	false,	false,	true,	false,	false };
-bool foodseller_buy[] = { false,	false,	false,	false,	false,	true,	false,	false };
+//							WEAPON	BOW		SHIELD	ARMOR	LETTER	POTION	OTHER	BOOK	GOLD	
+bool merchant_buy[] = {    true,	true,	true,	true,	true,	true,	true,	true,	false };
+bool blacksmith_buy[] = {  true,	true,	true,	true,	false,	false,	false,	false,	false };
+bool alchemist_buy[] = {   false,	false,	false,	false,	false,	true,	false,	false,	false };
+bool innkeeper_buy[] = {   false,	false,	false,	false,	false,	true,	false,	false,	false };
+bool foodseller_buy[] = {  false,	false,	false,	false,	false,	true,	false,	false,	false };
 
 //=================================================================================================
 void Game::UpdateGameDialog(DialogContext& ctx, float dt)
@@ -15814,7 +15801,7 @@ void Game::DeleteUnit(Unit* unit)
 				break;
 			case PlayerController::Action_LootContainer:
 				unit->player->action_container->user = nullptr;
-				// TODO
+				unit->usable = nullptr;
 				break;
 			}
 		}
@@ -20000,7 +19987,18 @@ void Game::OnCloseInventory()
 	else if(inventory_mode == I_LOOT_CONTAINER)
 	{
 		if(Net::IsLocal())
+		{
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_USABLE;
+				c.unit = pc->unit;
+				c.id = pc->unit->usable->netid;
+				c.ile = 0;
+			}
 			pc->action_container->user = nullptr;
+			pc->unit->usable = nullptr;
+		}
 		else
 			PushNetChange(NetChange::STOP_TRADE);
 	}
@@ -20742,12 +20740,15 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 	{
 		if(Net::IsLocal())
 		{
+			u.usable = &use;
+			u.usable->user = &u;
+			pc_data.before_player = BP_NONE;
+
 			if(IS_SET(bu.flags, BaseUsable::CONTAINER))
 			{
 				// loot container
 				pc->action = PlayerController::Action_LootContainer;
 				pc->action_container = &use;
-				pc->action_container->user = &u;
 				pc->chest_trade = &pc->action_container->container->items;
 				CloseGamePanels();
 				inventory_mode = I_LOOT_CONTAINER;
@@ -20767,8 +20768,6 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 				u.animation = ANI_PLAY;
 				u.mesh_inst->Play(bu.anim, PLAY_PRIO1, 0);
 				u.mesh_inst->groups[0].speed = 1.f;
-				u.usable = &use;
-				u.usable->user = &u;
 				u.target_pos = u.pos;
 				u.target_pos2 = use.pos;
 				if(g_base_usables[use.type].limit_rot == 4)
@@ -20777,8 +20776,6 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 				u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
 				u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
 			}
-
-			pc_data.before_player = BP_NONE;
 
 			if(Net::IsOnline())
 			{
@@ -20795,6 +20792,13 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 			c.type = NetChange::USE_USABLE;
 			c.id = pc_data.before_player_ptr.usable->netid;
 			c.ile = 1;
+
+			if(IS_SET(bu.flags, BaseUsable::CONTAINER))
+			{
+				pc->action = PlayerController::Action_LootContainer;
+				pc->action_container = pc_data.before_player_ptr.usable;
+				pc->chest_trade = &pc->action_container->container->items;
+			}
 		}
 	}
 }
@@ -22199,6 +22203,12 @@ void Game::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit)
 		pc->action = PlayerController::Action_Trade;
 		pc->action_unit = unit;
 		pc->chest_trade = &items;
+		break;
+	case I_LOOT_CONTAINER:
+		my.mode = Inventory::LOOT_MY;
+		other.mode = Inventory::LOOT_OTHER;
+		other.unit = nullptr;
+		other.title = Format("%s - %s", Inventory::txLooting, pc->action_container->GetBase()->name);
 		break;
 	default:
 		assert(0);

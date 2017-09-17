@@ -100,5 +100,7 @@ bool Usable::Read(BitStream& stream)
 		Error("Invalid usable type %d.", type);
 		return false;
 	}
+	if(IS_SET(GetBase()->flags, BaseUsable::CONTAINER))
+		container = new ItemContainer;
 	return true;
 }

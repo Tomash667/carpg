@@ -146,7 +146,7 @@ void Inventory::Draw(ControlDrawData*)
 	// napis u góry
 	Rect rect = {
 		pos.x,
-		pos.y + 8,
+		pos.y + 10,
 		pos.x + size.x,
 		pos.y + size.y
 	};

@@ -3036,8 +3036,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					uint team_count = min(count, slot.team_count);
 
 					// add item
-					if(player.action == PlayerController::Action_LootChest || player.action == PlayerController::Action_LootContainer)
+					if(player.action == PlayerController::Action_LootChest)
 						AddItem(*player.action_chest, slot.item, count, team_count, false);
+					else if(player.action == PlayerController::Action_LootContainer)
+						player.action_container->container->AddItem(slot.item, count, team_count);
 					else if(player.action == PlayerController::Action_Trade)
 					{
 						InsertItem(*player.chest_trade, slot.item, count, team_count);
@@ -3111,8 +3113,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					const Item*& slot = unit.slots[type];
 					int price = GetItemPrice(slot, unit, false);
 					// add new item
-					if(player.action == PlayerController::Action_LootChest || player.action == PlayerController::Action_LootContainer)
+					if(player.action == PlayerController::Action_LootChest)
 						AddItem(*player.action_chest, slot, 1u, 0u, false);
+					else if(player.action == PlayerController::Action_LootContainer)
+						player.action_container->container->AddItem(slot, 1u, 0u);
 					else if(player.action == PlayerController::Action_Trade)
 					{
 						InsertItem(*player.chest_trade, slot, 1u, 0u);
@@ -3236,6 +3240,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			else if(player.action == PlayerController::Action_LootContainer)
 			{
 				player.action_container->user = nullptr;
+				player.unit->usable = nullptr;
 
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_USABLE;
@@ -3520,6 +3525,19 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 								unit.weapon_state = WS_HIDDEN;
 							}
 						}
+						else
+						{
+							// start looting container
+							NetChangePlayer& c = Add1(Net::player_changes);
+							c.type = NetChangePlayer::LOOT;
+							c.pc = info.u->player;
+							c.id = 1;
+							info.NeedUpdate();
+
+							player.action = PlayerController::Action_LootContainer;
+							player.action_container = usable;
+							player.chest_trade = &usable->container->items;
+						}
 
 						usable->user = &unit;
 
@@ -3545,8 +3563,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 								unit.used_item = nullptr;
 						}
 
-						usable->user = nullptr;
-
 						// send info to other players
 						if(players > 2)
 						{
@@ -3557,12 +3573,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							c.ile = state;
 						}
 					}
-					else
-					{
-						Error("Update server: USE_USABLE from %s, usable %d is used by %d (%s).", info.name.c_str(), usable_netid,
-							usable->user->netid, usable->user->data->id.c_str());
-						StreamError();
-					}
+
+					usable->user = nullptr;
 				}
 			}
 			break;
@@ -7046,15 +7058,19 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							unit->weapon_state = WS_HIDDEN;
 						}
 					}
+					else if(unit->player == pc)
+					{
+
+					}
 					usable->user = unit;
 
 					if(pc_data.before_player == BP_USABLE && pc_data.before_player_ptr.usable == usable)
 						pc_data.before_player = BP_NONE;
 				}
-				else if(unit->player != pc)
+				else 
 				{
 					usable->user = nullptr;
-					if(!IS_SET(base.flags, BaseUsable::CONTAINER))
+					if(unit->player != pc && !IS_SET(base.flags, BaseUsable::CONTAINER))
 					{
 						unit->action = A_NONE;
 						unit->animation = ANI_STAND;
@@ -8588,6 +8604,8 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					// start trade
 					if(pc->action == PlayerController::Action_LootUnit)
 						StartTrade(I_LOOT_BODY, *pc->action_unit);
+					else if(pc->action == PlayerController::Action_LootContainer)
+						StartTrade(I_LOOT_CONTAINER, pc->action_container->container->items);
 					else
 						StartTrade(I_LOOT_CHEST, pc->action_chest->items);
 				}
@@ -8913,6 +8931,8 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			// someone else is using usable
 			case NetChangePlayer::USE_USABLE:
 				AddGameMsg3(GMS_USED);
+				if(pc->action == PlayerController::Action_LootContainer)
+					pc->action = PlayerController::Action_None;
 				break;
 			// change development mode for player
 			case NetChangePlayer::DEVMODE:

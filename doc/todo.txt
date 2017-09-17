@@ -1,10 +1,4 @@
 ﻿FEATURE:
-? reload mp game with quests, notes & rumors
-? buying items from trader decrease their weight ?
-? mp - read book, try open container at same time, exit while using container
-? save/load, old saves with bookshelfs
-- item drop counter don't work for mouse
-- bookshelf block view
 ===============================================================================================================
 + vsync in options
 - innkeeper - stands still, no animations/actions
@@ -48,6 +42,7 @@ NEW:
 + two animations of falling, front and back, for example when boulder is rolling on player it depends on player rotation which animation use, rotate player
 + enemy: doppelanger, rogue doppelanger, assassin doppelanger
 + EE: sawmill random text -> "ludzi coraz więcej a rką do pracy coraz mniej"
++ 0.7: use new gui
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

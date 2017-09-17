@@ -5671,9 +5671,13 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 		CollisionObject& c = Add1(ctx.colliders);
 		c.ptr = user_ptr;
 
+		int group = CG_OBJECT;
+		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
+			group |= CG_CAMERA_COLLIDER;
+
 		btCollisionObject* cobj = new btCollisionObject;
 		cobj->setCollisionShape(obj->shape);
-		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
+		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
 
 		if(obj->type == OBJ_CYLINDER)
 		{
@@ -5729,7 +5733,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 				c.type = CollisionObject::RECTANGLE;
 		}
 
-		phy_world->addCollisionObject(cobj, CG_OBJECT);
+		phy_world->addCollisionObject(cobj, group);
 
 		if(IS_SET(obj->flags, OBJ_PHYSICS_PTR))
 		{
