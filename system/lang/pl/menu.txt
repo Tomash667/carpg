@@ -54,6 +54,7 @@ language = "Jêzyk:"
 multisamplingError = "B³¹d ustawiania multisamplingu. Byæ mo¿e nie dzia³a on w trybie okienkowym."
 needRestart = "Zmiana jêzyka wymaga restartu gry. Na pewno chcesz to zrobiæ?"
 grassRange = "Zasiêg trawy"
+vsync = "Vsync"
 
 // zapisywanie wczytywanie
 SAVINGGAME = "ZAPISYWANIE GRY"

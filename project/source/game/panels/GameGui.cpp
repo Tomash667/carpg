@@ -299,8 +299,6 @@ void GameGui::DrawFront()
 		break;
 	}
 
-	
-
 	// dymki z tekstem
 	DrawSpeechBubbles();
 
@@ -397,7 +395,7 @@ void GameGui::DrawFront()
 	Int2 spos(256.f*wnd_scale + offset, GUI.wnd_size.y - offset);
 
 	// action
-	if (!game.in_tutorial)
+	if(!game.in_tutorial)
 	{
 		auto& action = game.pc->GetAction();
 		PlayerController& pc = *game.pc;
@@ -406,9 +404,9 @@ void GameGui::DrawFront()
 		const float img_ratio = 0.25f;
 
 		float charge;
-		if (pc.action_charges > 0 || pc.action_cooldown >= pc.action_recharge)
+		if(pc.action_charges > 0 || pc.action_cooldown >= pc.action_recharge)
 		{
-			if (action.cooldown == 0)
+			if(action.cooldown == 0)
 				charge = 0.f;
 			else
 				charge = pc.action_cooldown / action.cooldown;
@@ -416,7 +414,7 @@ void GameGui::DrawFront()
 		else
 			charge = pc.action_recharge / action.recharge;
 
-		if (charge == 0.f)
+		if(charge == 0.f)
 		{
 			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
 				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
@@ -429,7 +427,7 @@ void GameGui::DrawFront()
 			GUI.UseGrayscale(true);
 			GUI.DrawSprite2(action.tex->tex, mat);
 			GUI.UseGrayscale(false);
-			if (charge < 1.f)
+			if(charge < 1.f)
 			{
 				Rect part = { 0, 128 - int((1.f - charge) * 128), 128, 128 };
 				GUI.DrawSprite2(action.tex->tex, mat, &part);
@@ -438,9 +436,9 @@ void GameGui::DrawFront()
 		}
 
 		// charges
-		if (action.charges > 1)
+		if(action.charges > 1)
 		{
-			Rect r(int(wnd_scale * (256 + pad * 2)), int(GUI.wnd_size.y - (pad * 2) * wnd_scale)-12, 0, 0);
+			Rect r(int(wnd_scale * (256 + pad * 2)), int(GUI.wnd_size.y - (pad * 2) * wnd_scale) - 12, 0, 0);
 			GUI.DrawText(GUI.fSmall, Format("%d/%d", pc.action_charges, action.charges), DT_SINGLELINE, BLACK, r);
 		}
 	}
@@ -599,6 +597,8 @@ void GameGui::DrawEndOfGameScreen()
 //=================================================================================================
 void GameGui::DrawSpeechBubbles()
 {
+	// get list to sort
+	sorted_speech_bbs.clear();
 	for(vector<SpeechBubble*>::iterator it = speech_bbs.begin(), end = speech_bbs.end(); it != end; ++it)
 	{
 		SpeechBubble& sb = **it;
@@ -621,34 +621,48 @@ void GameGui::DrawSpeechBubbles()
 			sb.visible = true;
 			if(sb.time > 0.25f)
 			{
-				int a1, a2;
-				if(sb.time >= 0.5f)
-				{
-					a1 = 0x80FFFFFF;
-					a2 = 0xFFFFFFFF;
-				}
-				else
-				{
-					float alpha = (min(sb.time, 0.5f) - 0.25f) * 4;
-					a1 = COLOR_RGBA(255, 255, 255, int(alpha * 0x80));
-					a2 = COLOR_RGBA(255, 255, 255, int(alpha * 0xFF));
-				}
-				if(pt.x < sb.size.x / 2)
-					pt.x = sb.size.x / 2;
-				else if(pt.x > GUI.wnd_size.x - sb.size.x / 2)
-					pt.x = GUI.wnd_size.x - sb.size.x / 2;
-				if(pt.y < sb.size.y / 2)
-					pt.y = sb.size.y / 2;
-				else if(pt.y > GUI.wnd_size.y - sb.size.y / 2)
-					pt.y = GUI.wnd_size.y - sb.size.y / 2;
-
-				Rect rect = Rect::Create(Int2(pt.x - sb.size.x / 2, pt.y - sb.size.y / 2), sb.size);
-				GUI.DrawItem(tBubble, rect.LeftTop(), sb.size, a1);
-				GUI.DrawText(GUI.fSmall, sb.text, DT_CENTER | DT_VCENTER, a2, rect);
+				float cam_dist = Vec3::Distance(game.cam.from, pos);
+				sorted_speech_bbs.push_back({ &sb, cam_dist, pt });
 			}
 		}
 		else
 			sb.visible = false;
+	}
+
+	// sort
+	std::sort(sorted_speech_bbs.begin(), sorted_speech_bbs.end(), [](const SortedSpeechBubble& a, const SortedSpeechBubble& b)
+	{
+		return a.dist > b.dist;
+	});
+
+	// draw
+	for(auto& it : sorted_speech_bbs)
+	{
+		auto& sb = *it.bubble;
+		int a1, a2;
+		if(sb.time >= 0.5f)
+		{
+			a1 = 0x80FFFFFF;
+			a2 = 0xFFFFFFFF;
+		}
+		else
+		{
+			float alpha = (min(sb.time, 0.5f) - 0.25f) * 4;
+			a1 = COLOR_RGBA(255, 255, 255, int(alpha * 0x80));
+			a2 = COLOR_RGBA(255, 255, 255, int(alpha * 0xFF));
+		}
+		if(it.pt.x < sb.size.x / 2)
+			it.pt.x = sb.size.x / 2;
+		else if(it.pt.x > GUI.wnd_size.x - sb.size.x / 2)
+			it.pt.x = GUI.wnd_size.x - sb.size.x / 2;
+		if(it.pt.y < sb.size.y / 2)
+			it.pt.y = sb.size.y / 2;
+		else if(it.pt.y > GUI.wnd_size.y - sb.size.y / 2)
+			it.pt.y = GUI.wnd_size.y - sb.size.y / 2;
+
+		Rect rect = Rect::Create(Int2(it.pt.x - sb.size.x / 2, it.pt.y - sb.size.y / 2), sb.size);
+		GUI.DrawItem(tBubble, rect.LeftTop(), sb.size, a1);
+		GUI.DrawText(GUI.fSmall, sb.text, DT_CENTER | DT_VCENTER, a2, rect);
 	}
 }
 
@@ -713,7 +727,7 @@ void GameGui::Update(float dt)
 
 	game_messages->Update(dt);
 
-	if (!GUI.HaveDialog() && !Game::Get().dialog_context.dialog_mode && Key.Down(VK_MENU))
+	if(!GUI.HaveDialog() && !Game::Get().dialog_context.dialog_mode && Key.Down(VK_MENU))
 		use_cursor = true;
 	else
 		use_cursor = false;
@@ -735,7 +749,7 @@ void GameGui::Update(float dt)
 
 	buff_images.clear();
 
-	for(int i=0; i<BUFF_COUNT; ++i)
+	for(int i = 0; i < BUFF_COUNT; ++i)
 	{
 		int buff_bit = 1 << i;
 		if(IS_SET(buffs, buff_bit))
@@ -812,7 +826,7 @@ void GameGui::Update(float dt)
 		}
 
 		// action
-		if (!game.in_tutorial)
+		if(!game.in_tutorial)
 		{
 			auto& action = game.pc->GetAction();
 			const float pad = 2.f;
@@ -821,7 +835,7 @@ void GameGui::Update(float dt)
 			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
 				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
 			r = GUI.GetSpriteRect(action.tex->tex, mat);
-			if (r.IsInside(GUI.cursor_pos))
+			if(r.IsInside(GUI.cursor_pos))
 				group = TooltipGroup::Action;
 		}
 	}

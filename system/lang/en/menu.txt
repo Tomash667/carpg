@@ -54,6 +54,7 @@ language = "Language:"
 multisamplingError = "Failed to change multisampling. Maybe it only works in fullscreen mode."
 needRestart = "Changing language require restarting game. Are you sure?"
 grassRange = "Grass range"
+vsync = "Vsync"
 
 // save/load
 SAVINGGAME = "SAVING GAME"

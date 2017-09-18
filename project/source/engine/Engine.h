@@ -33,9 +33,9 @@ public:
 	{
 		cstring title;
 		Int2 size, force_size, force_pos;
-		bool fullscreen;
+		bool fullscreen, vsync;
 
-		StartupOptions() : title(nullptr), size(0, 0), force_size(-1, -1), force_pos(-1, -1), fullscreen(false)
+		StartupOptions() : title(nullptr), size(0, 0), force_size(-1, -1), force_pos(-1, -1), fullscreen(false), vsync(true)
 		{
 		}
 	};
@@ -77,9 +77,10 @@ public:
 	float GetFps() const { return fps; }
 	const Int2& GetMouseDif() const { return mouse_dif; }
 	float GetMouseWheel() const { return mouse_wheel; }
-	void GetMultisampling(int& ms, int& msq) { ms = multisampling; msq = multisampling_quality; }
+	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisampling_quality; }
 	float GetWindowAspect() const { return float(wnd_size.x) / wnd_size.y; }
 	HWND GetWindowHandle() const { return hwnd; }
+	bool GetVsync() const { return vsync; }
 	const Int2& GetWindowSize() const { return wnd_size; }
 
 	void SetAlphaBlend(bool use_alphablend);
@@ -89,6 +90,7 @@ public:
 	void SetStartingMultisampling(int multisampling, int multisampling_quality);
 	void SetTitle(cstring title);
 	void SetUnlockPoint(const Int2& pt) { unlock_point = pt; }
+	void SetVsync(bool vsync);
 
 	// ----- ZMIENNE -----
 	KeyDownCallback key_callback;
@@ -99,7 +101,6 @@ public:
 	ID3DXSprite* sprite;
 	DWORD clear_color;
 	int wnd_hz, used_adapter, shader_version;
-	bool vsync;
 
 	// FMOD
 	FMOD::System* fmod_system;
@@ -164,4 +165,7 @@ private:
 	Int2 wnd_size, real_size, mouse_dif, unlock_point, activation_point;
 	float fps, mouse_wheel;
 	bool active, fullscreen;
+
+	// render
+	bool vsync;
 };

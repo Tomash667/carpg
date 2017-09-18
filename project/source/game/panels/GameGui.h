@@ -126,6 +126,13 @@ private:
 		Vec3* last_pos;
 	};
 
+	struct SortedSpeechBubble
+	{
+		SpeechBubble* bubble;
+		float dist;
+		Int2 pt;
+	};
+
 	void DrawFront();
 	void DrawBack();
 	void DrawDeathScreen();
@@ -147,6 +154,7 @@ private:
 		tBubble, tObwodkaBolu, tActionCooldown;
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
+	vector<SortedSpeechBubble> sorted_speech_bbs;
 	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txStamina;
 	Int2 debug_info_size, dialog_pos, dialog_size, profiler_size;
 };

@@ -1,8 +1,8 @@
- _______  _______  _______  _______  _______ 
+ _______  _______  _______  _______  _______
 (  ____ \(  ___  )(  ____ )(  ____ )(  ____ \
 | (    \/| (   ) || (    )|| (    )|| (    \/
-| |      | (___) || (____)|| (____)|| |      
-| |      |  ___  ||     __)|  _____)| | ____ 
+| |      | (___) || (____)|| (____)|| |
+| |      |  ___  ||     __)|  _____)| | ____
 | |      | (   ) || (\ (   | (      | | \_  )
 | (____/\| )   ( || ) \ \__| )      | (___) |
 (_______/|/     \||/   \__/|/       (_______)
@@ -24,7 +24,7 @@ Date: 2017-09-07
 	9... Command line
 	10.. Report bug
 	11.. Credits
-	
+
 ===============================================================================
 2) About
 CaRpg is a combination of the type of game action rpg / hack-n-slash like Gothic
@@ -262,7 +262,7 @@ Available commands:
 	w - send private message to player, short from whisper (w nick msg).
 	warp - move player into building (warp inn/arena/hall).
 	whisper - send private message to player (whisper nick msg).
-	
+
 ===============================================================================
 8) Config file
 In configuration file (by default carpg.cfg) you can use such options:
@@ -281,7 +281,7 @@ In configuration file (by default carpg.cfg) you can use such options:
 	* force_seed (true [false]) - force randomness seed on all levels
 	* fullscreen ([true] false) - fullscreen mode
 	* inactive_update (true [false]) - update singleplayer game even if window is
-		not active	
+		not active
 	* log ([true] false) - logging to file
 	* log_filename ["log.txt"] - logging to file name
 	* name - player name in quick game
@@ -377,7 +377,7 @@ Music:
 	* http://www.deceasedsuperiortechnician.com/
 Sounds:
 	* http://www.freesound.org/
-	* http://www.pacdv.com/sounds/ 
+	* http://www.pacdv.com/sounds/
 	* http://www.soundjay.com
 	* http://www.grsites.com/archive/sounds/
 	* http://www.wavsource.com

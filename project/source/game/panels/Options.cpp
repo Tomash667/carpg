@@ -101,7 +101,8 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 		"fullscreenMode",
 		"glow",
 		"normalMap",
-		"specularMap"
+		"specularMap",
+		"vsync"
 	};
 
 	size = Int2(570, 460);
@@ -109,7 +110,7 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 
 	Int2 offset(290, 60);
 
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < 5; ++i)
 	{
 		check[i].id = IdFullscreen + i;
 		check[i].parent = this;
@@ -248,7 +249,7 @@ void Options::Draw(ControlDrawData* /*cdd*/)
 	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
 
 	// checkboxy
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < 5; ++i)
 		check[i].Draw();
 
 	// scrollbary
@@ -312,7 +313,7 @@ void Options::Update(float dt)
 		multisampling.menu->Update(dt);
 	if(language.menu->visible)
 		language.menu->Update(dt);
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < 5; ++i)
 	{
 		check[i].mouse_focus = focus;
 		check[i].Update(dt);
@@ -363,7 +364,7 @@ void Options::Event(GuiEvent e)
 			SetOptions();
 		}
 		pos = global_pos = (GUI.wnd_size - size) / 2;
-		for(int i = 0; i < 4; ++i)
+		for(int i = 0; i < 5; ++i)
 			check[i].global_pos = global_pos + check[i].pos;
 		for(int i = 0; i < 4; ++i)
 			scroll[i].global_pos = global_pos + scroll[i].pos;
@@ -391,6 +392,7 @@ void Options::SetOptions()
 	check[1].checked = game->cl_glow;
 	check[2].checked = game->cl_normalmap;
 	check[3].checked = game->cl_specularmap;
+	check[4].checked = game->GetVsync();
 
 	Res& re = *res.GetItemCast<Res>();
 	if(re.size != game->GetWindowSize() || re.hz != game->wnd_hz)

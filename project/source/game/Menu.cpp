@@ -162,6 +162,9 @@ void Game::OptionsEvent(int index)
 	case Options::IdSpecular:
 		cl_specularmap = options->check[3].checked;
 		break;
+	case Options::IdVsync:
+		SetVsync(!GetVsync());
+		break;
 	}
 }
 
@@ -248,22 +251,23 @@ void Game::SaveEvent(int id)
 //=================================================================================================
 void Game::SaveOptions()
 {
-	cfg.Add("fullscreen", IsFullscreen() ? "1" : "0");
-	cfg.Add("cl_glow", cl_glow ? "1" : "0");
-	cfg.Add("cl_normalmap", cl_normalmap ? "1" : "0");
-	cfg.Add("cl_specularmap", cl_specularmap ? "1" : "0");
+	cfg.Add("fullscreen", IsFullscreen());
+	cfg.Add("cl_glow", cl_glow);
+	cfg.Add("cl_normalmap", cl_normalmap);
+	cfg.Add("cl_specularmap", cl_specularmap);
 	cfg.Add("sound_volume", Format("%d", sound_volume));
 	cfg.Add("music_volume", Format("%d", music_volume));
 	cfg.Add("mouse_sensitivity", Format("%d", mouse_sensitivity));
 	cfg.Add("grass_range", Format("%g", grass_range));
 	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
 	cfg.Add("refresh", Format("%d", wnd_hz));
-	cfg.Add("skip_tutorial", skip_tutorial ? "1" : "0");
+	cfg.Add("skip_tutorial", skip_tutorial);
 	cfg.Add("language", g_lang_prefix.c_str());
 	int ms, msq;
 	GetMultisampling(ms, msq);
 	cfg.Add("multisampling", Format("%d", ms));
 	cfg.Add("multisampling_quality", Format("%d", msq));
+	cfg.Add("vsync", GetVsync());
 	SaveCfg();
 }
 

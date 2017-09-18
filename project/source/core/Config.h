@@ -47,6 +47,10 @@ public:
 	};
 
 	void Add(cstring name, cstring value);
+	void Add(cstring name, bool value)
+	{
+		Add(name, value ? "1" : "0");
+	}
 	Result Load(cstring filename);
 	Result Save(cstring filename);
 	void Remove(cstring name);

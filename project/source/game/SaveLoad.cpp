@@ -137,7 +137,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 		cfg.Add("player_class", ClassInfo::classes[(int)ss.player_class].id);
 		cfg.Add("save_date", Format("%I64d", ss.save_date));
 		cfg.Add("text", ss.text.c_str());
-		cfg.Add("hardcore", ss.hardcore ? "1" : "0");
+		cfg.Add("hardcore", ss.hardcore);
 
 		if(Net::IsOnline())
 		{

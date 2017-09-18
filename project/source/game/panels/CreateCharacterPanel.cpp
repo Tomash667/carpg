@@ -542,7 +542,7 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			break;
 		case IdHardcore:
 			game->hardcore_option = checkbox.checked;
-			game->cfg.Add("hardcore", game->hardcore_option ? "1" : "0");
+			game->cfg.Add("hardcore", game->hardcore_option);
 			game->SaveCfg();
 			break;
 		case IdHair:

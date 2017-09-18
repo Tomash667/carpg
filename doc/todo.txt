@@ -1,7 +1,7 @@
 ﻿FEATURE:
 ===============================================================================================================
 ? sort unit labels by distance
-+ vsync in options
+? vsync in options
 - innkeeper - stands still, no animations/actions
 - can summon wolf outside of arena - there should be marked as WALL
 ? options: current resolution is not selected at start

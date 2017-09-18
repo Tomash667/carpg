@@ -771,7 +771,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		Warn("Settings: Unknown shader version %d.", game.shader_version);
 		game.shader_version = -1;
 	}
-	game.vsync = cfg.GetBool("vsync", true);
+	options.vsync = cfg.GetBool("vsync", true);
 	game.grass_range = cfg.GetFloat("grass_range", 40.f);
 	if(game.grass_range < 0.f)
 		game.grass_range = 0.f;
