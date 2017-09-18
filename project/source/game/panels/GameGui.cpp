@@ -166,13 +166,21 @@ void GameGui::DrawFront()
 		game.debug_info = false;
 	if(game.debug_info)
 	{
+		sorted_units.clear();
 		vector<Unit*>& units = *game.GetContext(*game.pc->unit).units;
-		for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
+		for(auto unit : units)
 		{
-			Unit& u = **it;
-			if(!u.IsAlive())
+			if(!unit->IsAlive())
 				continue;
+			float dist = Vec3::DistanceSquared(game.cam.from, unit->pos);
+			sorted_units.push_back({ unit, dist, 255, nullptr });
+		}
 
+		SortUnits();
+
+		for(auto& it : sorted_units)
+		{
+			Unit& u = *it.unit;
 			Vec3 text_pos = u.visual_pos;
 			text_pos.y += u.GetUnitHeight();
 			if(u.IsAI())
@@ -184,6 +192,47 @@ void GameGui::DrawFront()
 			else
 				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, A:%d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.player->action), u, text_pos, -1);
 		}
+	}
+	else
+	{
+		// near enemies/allies
+		sorted_units.clear();
+		for(vector<UnitView>::iterator it = game.unit_views.begin(), end = game.unit_views.end(); it != end; ++it)
+		{
+			int alpha;
+
+			// 0.0 -> 0.1 niewidoczne
+			// 0.1 -> 0.2 alpha 0->255
+			// -0.2 -> -0.1 widoczne
+			// -0.1 -> 0.0 alpha 255->0
+			if(it->time > UNIT_VIEW_A)
+			{
+				if(it->time > UNIT_VIEW_B)
+					alpha = 255;
+				else
+					alpha = int((it->time - UNIT_VIEW_A) * 255 * UNIT_VIEW_MUL);
+			}
+			else if(it->time < 0.f)
+			{
+				if(it->time < -UNIT_VIEW_A)
+					alpha = 255;
+				else
+					alpha = int(-it->time * 255 * UNIT_VIEW_MUL);
+			}
+			else
+				alpha = 0;
+
+			if(alpha)
+			{
+				float dist = Vec3::DistanceSquared(game.cam.from, it->unit->pos);
+				sorted_units.push_back({ it->unit, dist, alpha, &it->last_pos });
+			}
+		}
+
+		SortUnits();
+
+		for(auto& it : sorted_units)
+			DrawUnitInfo(it.unit->GetName(), *it.unit, *it.last_pos, it.alpha);
 	}
 
 	// napis nad wybranym obiektem/postaci¹
@@ -242,7 +291,7 @@ void GameGui::DrawFront()
 	case BP_USABLE:
 		{
 			Usable& u = *game.pc_data.before_player_ptr.usable;
-			BaseUsable& bu = g_base_usables[u.type];
+			BaseUsable& bu = BaseUsable::base_usables[u.type];
 			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;
 			GUI.DrawText3D(GUI.default_font, bu.name, DT_OUTLINE, WHITE, text_pos);
@@ -250,38 +299,7 @@ void GameGui::DrawFront()
 		break;
 	}
 
-	// pobliscy wrogowie / sojusznicy
-	if(!game.debug_info)
-	{
-		for(vector<UnitView>::iterator it = game.unit_views.begin(), end = game.unit_views.end(); it != end; ++it)
-		{
-			int alpha;
-
-			// 0.0 -> 0.1 niewidoczne
-			// 0.1 -> 0.2 alpha 0->255
-			// -0.2 -> -0.1 widoczne
-			// -0.1 -> 0.0 alpha 255->0
-			if(it->time > UNIT_VIEW_A)
-			{
-				if(it->time > UNIT_VIEW_B)
-					alpha = 255;
-				else
-					alpha = int((it->time - UNIT_VIEW_A) * 255 * UNIT_VIEW_MUL);
-			}
-			else if(it->time < 0.f)
-			{
-				if(it->time < -UNIT_VIEW_A)
-					alpha = 255;
-				else
-					alpha = int(-it->time * 255 * UNIT_VIEW_MUL);
-			}
-			else
-				alpha = 0;
-
-			if(alpha)
-				DrawUnitInfo(it->unit->GetName(), *it->unit, it->last_pos, alpha);
-		}
-	}
+	
 
 	// dymki z tekstem
 	DrawSpeechBubbles();
@@ -1417,4 +1435,13 @@ void GameGui::Setup()
 	else
 		action = &game.pc->GetAction();
 	action_panel->Init(action);
+}
+
+//=================================================================================================
+void GameGui::SortUnits()
+{
+	std::sort(sorted_units.begin(), sorted_units.end(), [](const SortedUnitView& a, const SortedUnitView& b)
+	{
+		return a.dist > b.dist;
+	});
 }

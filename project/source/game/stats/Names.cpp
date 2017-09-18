@@ -54,7 +54,7 @@ void Game::GenerateHeroName(Class clas, bool szalony, string& hero_name)
 		return;
 	}
 
-	ClassInfo& ci = g_classes[(int)clas];
+	ClassInfo& ci = ClassInfo::classes[(int)clas];
 	if(Rand() % 2 == 0)
 		hero_name = random_item(ci.names);
 	else

@@ -782,7 +782,7 @@ void Game::UpdateAi(float dt)
 							else if(IS_SET(u.data->flags3, F3_MINER) && Rand() % 2 == 0)
 							{
 								// check if unit have required item
-								const Item* req_item = g_base_usables[U_IRON_VEIN].item;
+								const Item* req_item = BaseUsable::base_usables[U_IRON_VEIN].item;
 								if(req_item && !u.HaveItem(req_item) && u.slots[SLOT_WEAPON] != req_item)
 									goto normal_idle_action;
 								// find closest ore vein
@@ -966,7 +966,7 @@ void Game::UpdateAi(float dt)
 												&& use.type != U_BOOKSHELF
 												/*CanSee - niestety nie ma takiej funkcji wiêc trudno :p*/)
 											{
-												const Item* needed_item = g_base_usables[use.type].item;
+												const Item* needed_item = BaseUsable::base_usables[use.type].item;
 												if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
 													uses.push_back(*it2);
 											}
@@ -1286,7 +1286,7 @@ void Game::UpdateAi(float dt)
 									{
 										if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.usable->pos))) < PI / 4)
 										{
-											BaseUsable& base = g_base_usables[use.type];
+											BaseUsable& base = BaseUsable::base_usables[use.type];
 											const Item* needed_item = base.item;
 											if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
 											{
@@ -1304,7 +1304,7 @@ void Game::UpdateAi(float dt)
 												u.usable = &use;
 												u.target_pos = u.pos;
 												u.target_pos2 = use.pos;
-												if(g_base_usables[use.type].limit_rot == 4)
+												if(BaseUsable::base_usables[use.type].limit_rot == 4)
 													u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
 												u.timer = 0.f;
 												u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;

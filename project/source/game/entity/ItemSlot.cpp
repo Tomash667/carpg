@@ -100,7 +100,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			}
 
 			str += Format(" - %s\n%s: %d (%d) %s\n%s: $c%c%d$c-\n",
-				weapon_type_info[weapon.weapon_type].name,
+				WeaponTypeInfo::info[weapon.weapon_type].name,
 				txAttack,
 				weapon.dmg,
 				(int)unit->CalculateAttack(item),

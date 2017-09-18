@@ -782,7 +782,7 @@ bool PlayerController::Read(BitStream& stream)
 //=================================================================================================
 Action& PlayerController::GetAction()
 {
-	auto action = g_classes[(int)clas].action;
+	auto action = ClassInfo::classes[(int)clas].action;
 	assert(action);
 	return *action;
 }

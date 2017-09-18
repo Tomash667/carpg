@@ -1783,7 +1783,7 @@ bool Game::ReadTrap(BitStream& stream, Trap& trap)
 		|| !stream.Read(trap.pos)
 		|| !stream.Read(trap.obj.rot.y))
 		return false;
-	trap.base = &g_traps[type];
+	trap.base = &BaseTrap::traps[type];
 
 	trap.state = 0;
 	trap.obj.base = nullptr;
@@ -3503,7 +3503,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					else
 					{
-						BaseUsable& base = g_base_usables[usable->type];
+						BaseUsable& base = BaseUsable::base_usables[usable->type];
 						if(!IS_SET(base.flags, BaseUsable::CONTAINER))
 						{
 							unit.action = A_ANIMATION2;
@@ -3513,7 +3513,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.usable = usable;
 							unit.target_pos = unit.pos;
 							unit.target_pos2 = usable->pos;
-							if(g_base_usables[usable->type].limit_rot == 4)
+							if(BaseUsable::base_usables[usable->type].limit_rot == 4)
 								unit.target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 							unit.timer = 0.f;
 							unit.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
@@ -3554,7 +3554,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					// stop using usable
 					if(usable->user == &unit)
 					{
-						BaseUsable& base = g_base_usables[usable->type];
+						BaseUsable& base = BaseUsable::base_usables[usable->type];
 						if(!IS_SET(base.flags, BaseUsable::CONTAINER))
 						{
 							unit.action = A_NONE;
@@ -7033,7 +7033,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
-				BaseUsable& base = g_base_usables[usable->type];
+				BaseUsable& base = BaseUsable::base_usables[usable->type];
 				if(state == 1 || state == 2)
 				{
 					if(!IS_SET(base.flags, BaseUsable::CONTAINER))
@@ -7045,7 +7045,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit->usable = usable;
 						unit->target_pos = unit->pos;
 						unit->target_pos2 = usable->pos;
-						if(g_base_usables[usable->type].limit_rot == 4)
+						if(BaseUsable::base_usables[usable->type].limit_rot == 4)
 							unit->target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 						unit->timer = 0.f;
 						unit->animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;

@@ -1,10 +1,12 @@
 ﻿FEATURE:
 ===============================================================================================================
+? sort unit labels by distance
 + vsync in options
 - innkeeper - stands still, no animations/actions
 - can summon wolf outside of arena - there should be marked as WALL
-- options: current resolution is not selected at start
+? options: current resolution is not selected at start
 - stupid website rewrite rule
+- reset cooldown when entering arena
 - summon wolf on arena
 ===============================================================================================================
 CURRENT:
@@ -40,6 +42,8 @@ NEW:
 + EE: sawmill random text -> "ludzi coraz więcej a rką do pracy coraz mniej"
 + 0.7: use new gui
 + better items rotation: bows, shields, frying pan, golden bar
++ reading book animation, searching bookshelf animation
++ fighting styles: protection, aggresive, defensive, duel, normal
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

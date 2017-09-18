@@ -34,6 +34,7 @@ struct BaseTrap
 		sound_id3(sound_id3), sound(sound), sound2(sound2), sound3(sound3), state(ResourceState::NotLoaded)
 	{
 	}
+
+	static BaseTrap traps[];
+	static const uint n_traps;
 };
-extern BaseTrap g_traps[];
-extern const uint n_traps;

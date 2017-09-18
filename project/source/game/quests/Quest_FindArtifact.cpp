@@ -16,7 +16,7 @@ void Quest_FindArtifact::Start()
 	quest_id = Q_FIND_ARTIFACT;
 	type = QuestType::Random;
 	start_loc = game->current_location;
-	item = g_artifacts[Rand() % g_artifacts.size()];
+	item = OtherItem::artifacts[Rand() % OtherItem::artifacts.size()];
 }
 
 //=================================================================================================

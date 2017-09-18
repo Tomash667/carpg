@@ -16,7 +16,7 @@ struct TakeRatio
 //=================================================================================================
 void CreatedCharacter::Clear(Class c)
 {
-	ClassInfo& info = g_classes[(int)c];
+	ClassInfo& info = ClassInfo::classes[(int)c];
 
 	sp_max = 3;
 	perks_max = 2;

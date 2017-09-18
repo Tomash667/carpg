@@ -118,6 +118,14 @@ public:
 	bool use_cursor;
 
 private:
+	struct SortedUnitView
+	{
+		Unit* unit;
+		float dist;
+		int alpha;
+		Vec3* last_pos;
+	};
+
 	void DrawFront();
 	void DrawBack();
 	void DrawDeathScreen();
@@ -126,11 +134,13 @@ private:
 	void DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha);
 	void UpdateSpeechBubbles(float dt);
 	void GetTooltip(TooltipController*, int group, int id);
+	void SortUnits();
 
 	Game& game;
 	TooltipController tooltip;
 	float buff_scale;
 	vector<BuffImage> buff_images;
+	vector<SortedUnitView> sorted_units;
 	float sidebar;
 	int sidebar_state[(int)SideButtonId::Max];
 	TEX tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2], tMinistamina, tCelownik,

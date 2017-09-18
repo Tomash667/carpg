@@ -295,7 +295,7 @@ void Game::ConfigureGame()
 			g_spawn_groups[i].unit_group = FindUnitGroup(g_spawn_groups[i].unit_group_id);
 	}
 
-	for (ClassInfo& ci : g_classes)
+	for (ClassInfo& ci : ClassInfo::classes)
 	{
 		ci.unit_data = FindUnitData(ci.unit_data_id, false);
 		if (ci.action_id)
@@ -496,7 +496,7 @@ void Game::AddLoadTasks()
 	tex_mgr.AddLoadTask("czern.bmp", tCzern);
 	tex_mgr.AddLoadTask("rip.jpg", tRip);
 	tex_mgr.AddLoadTask("dark_portal.png", tPortal);
-	for(ClassInfo& ci : g_classes)
+	for(ClassInfo& ci : ClassInfo::classes)
 		tex_mgr.AddLoadTask(ci.icon_file, ci.icon);
 	tex_mgr.AddLoadTask("warning.png", tWarning);
 	tex_mgr.AddLoadTask("error.png", tError);
@@ -598,9 +598,9 @@ void Game::AddLoadTasks()
 	}
 
 	// preload traps
-	for(uint i = 0; i < n_traps; ++i)
+	for(uint i = 0; i < BaseTrap::n_traps; ++i)
 	{
-		BaseTrap& t = g_traps[i];
+		BaseTrap& t = BaseTrap::traps[i];
 		if(t.mesh_id)
 		{
 			t.mesh = mesh_mgr.Get(t.mesh_id);
@@ -685,9 +685,9 @@ void Game::AddLoadTasks()
 	}
 
 	// preload usable objects
-	for(uint i = 0; i < n_base_usables; ++i)
+	for(uint i = 0; i < BaseUsable::n_base_usables; ++i)
 	{
-		BaseUsable& bu = g_base_usables[i];
+		BaseUsable& bu = BaseUsable::base_usables[i];
 		bu.obj = BaseObject::Get(bu.obj_name);
 		if(!nosound && bu.sound_id)
 			bu.sound = sound_mgr.Get(bu.sound_id);
@@ -893,7 +893,7 @@ void Game::LoadItemsData()
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 	auto& tex_mgr = ResourceManager::Get<Texture>();
 
-	for(Armor* armor : g_armors)
+	for(Armor* armor : Armor::armors)
 	{
 		Armor& a = *armor;
 		if(!a.tex_override.empty())

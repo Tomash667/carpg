@@ -14,7 +14,7 @@ void Quest_StolenArtifact::Start()
 	quest_id = Q_STOLEN_ARTIFACT;
 	type = QuestType::Random;
 	start_loc = game->current_location;
-	item = g_artifacts[Rand() % g_artifacts.size()];
+	item = OtherItem::artifacts[Rand() % OtherItem::artifacts.size()];
 	switch(Rand() % 6)
 	{
 	case 0:

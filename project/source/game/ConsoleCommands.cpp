@@ -1140,7 +1140,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(t.IsSymbol('?'))
 							{
 								LocalVector2<Class> classes;
-								for(ClassInfo& ci : g_classes)
+								for(ClassInfo& ci : ClassInfo::classes)
 								{
 									if(ci.pickable)
 										classes.push_back(ci.class_id);
@@ -1148,13 +1148,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								std::sort(classes.begin(), classes.end(),
 									[](Class c1, Class c2) -> bool
 								{
-									return strcmp(g_classes[(int)c1].id, g_classes[(int)c2].id) < 0;
+									return strcmp(ClassInfo::classes[(int)c1].id, ClassInfo::classes[(int)c2].id) < 0;
 								});
 								LocalString str = "List of classes: ";
 								Join(classes.Get(), str.get_ref(), ", ",
 									[](Class c)
 								{
-									return g_classes[(int)c].id;
+									return ClassInfo::classes[(int)c].id;
 								});
 								str += ".";
 								Msg(str.c_str());

@@ -208,8 +208,9 @@ struct WeaponTypeInfo
 	float str2dmg, dex2dmg, power_speed, base_speed, dex_speed;
 	Skill skill;
 	float stamina;
+
+	static WeaponTypeInfo info[];
 };
-extern WeaponTypeInfo weapon_type_info[];
 
 inline const WeaponTypeInfo& GetWeaponTypeInfo(Skill s)
 {
@@ -217,13 +218,13 @@ inline const WeaponTypeInfo& GetWeaponTypeInfo(Skill s)
 	{
 	default:
 	case Skill::SHORT_BLADE:
-		return weapon_type_info[WT_SHORT];
+		return WeaponTypeInfo::info[WT_SHORT];
 	case Skill::LONG_BLADE:
-		return weapon_type_info[WT_LONG];
+		return WeaponTypeInfo::info[WT_LONG];
 	case Skill::AXE:
-		return weapon_type_info[WT_AXE];
+		return WeaponTypeInfo::info[WT_AXE];
 	case Skill::BLUNT:
-		return weapon_type_info[WT_MACE];
+		return WeaponTypeInfo::info[WT_MACE];
 	}
 }
 
@@ -235,14 +236,15 @@ struct Weapon : public Item
 
 	const WeaponTypeInfo& GetInfo() const
 	{
-		return weapon_type_info[weapon_type];
+		return WeaponTypeInfo::info[weapon_type];
 	}
 
 	int dmg, dmg_type, req_str;
 	WEAPON_TYPE weapon_type;
 	MATERIAL_TYPE material;
+
+	static vector<Weapon*> weapons;
 };
-extern vector<Weapon*> g_weapons;
 
 //-----------------------------------------------------------------------------
 // Bow
@@ -251,8 +253,9 @@ struct Bow : public Item
 	Bow() : Item(IT_BOW), dmg(10), req_str(10), speed(45) {}
 
 	int dmg, req_str, speed;
+
+	static vector<Bow*> bows;
 };
-extern vector<Bow*> g_bows;
 
 //-----------------------------------------------------------------------------
 // Shield
@@ -262,8 +265,9 @@ struct Shield : public Item
 
 	int def, req_str;
 	MATERIAL_TYPE material;
+
+	static vector<Shield*> shields;
 };
-extern vector<Shield*> g_shields;
 
 //-----------------------------------------------------------------------------
 // Armor
@@ -284,8 +288,9 @@ struct Armor : public Item
 	Skill skill;
 	ArmorUnitType armor_type;
 	vector<TexId> tex_override;
+
+	static vector<Armor*> armors;
 };
-extern vector<Armor*> g_armors;
 
 //-----------------------------------------------------------------------------
 // Can item can be weared by human?
@@ -338,8 +343,9 @@ struct Consumable : public Item
 	ConsumeEffect effect;
 	float power, time;
 	ConsumableType cons_type;
+
+	static vector<Consumable*> consumables;
 };
-extern vector<Consumable*> g_consumables;
 
 //-----------------------------------------------------------------------------
 // Other items
@@ -356,9 +362,10 @@ struct OtherItem : public Item
 	OtherItem() : Item(IT_OTHER), other_type(OtherItems) {}
 
 	OtherType other_type;
+
+	static vector<OtherItem*> others;
+	static vector<OtherItem*> artifacts;
 };
-extern vector<OtherItem*> g_others;
-extern vector<OtherItem*> g_artifacts;
 
 //-----------------------------------------------------------------------------
 // Books
@@ -370,8 +377,9 @@ struct BookScheme
 	TexturePtr tex;
 	Int2 size, prev, next;
 	vector<Rect> regions;
+
+	static vector<BookScheme*> book_schemes;
 };
-extern vector<BookScheme*> g_book_schemes;
 
 struct Book : public Item
 {
@@ -380,8 +388,9 @@ struct Book : public Item
 	BookScheme* scheme;
 	string text;
 	bool runic;
+
+	static vector<Book*> books;
 };
-extern vector<Book*> g_books;
 
 //-----------------------------------------------------------------------------
 // Item lists
@@ -459,8 +468,9 @@ struct Stock
 {
 	string id;
 	vector<int> code;
+
+	static vector<Stock*> stocks;
 };
-extern vector<Stock*> stocks;
 
 Stock* FindStockScript(cstring id);
 void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& items);
@@ -473,8 +483,9 @@ struct StartItem
 	int value;
 
 	StartItem(Skill skill, const Item* item = nullptr, int value = 0) : skill(skill), item(item), value(value) {}
+
+	static vector<StartItem> start_items;
 };
-extern vector<StartItem> start_items;
 const Item* GetStartItem(Skill skill, int value);
 
 //-----------------------------------------------------------------------------

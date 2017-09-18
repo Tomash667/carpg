@@ -4965,7 +4965,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(msg, "hero_about") == 0)
 				{
 					assert(ctx.talker->IsHero());
-					DialogTalk(ctx, g_classes[(int)ctx.talker->hero->clas].about.c_str());
+					DialogTalk(ctx, ClassInfo::classes[(int)ctx.talker->hero->clas].about.c_str());
 					++ctx.dialog_pos;
 					return;
 				}
@@ -6534,7 +6534,7 @@ uint Game::TestGameData(bool major)
 	Info("Test: Checking items...");
 
 	// bronie
-	for(Weapon* weapon : g_weapons)
+	for(Weapon* weapon : Weapon::weapons)
 	{
 		const Weapon& w = *weapon;
 		if(!w.mesh)
@@ -6560,7 +6560,7 @@ uint Game::TestGameData(bool major)
 	}
 
 	// tarcze
-	for(Shield* shield : g_shields)
+	for(Shield* shield : Shield::shields)
 	{
 		const Shield& s = *shield;
 		if(!s.mesh)
@@ -8686,7 +8686,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				}
 				else
 				{
-					BaseUsable& bu = g_base_usables[u.usable->type];
+					BaseUsable& bu = BaseUsable::base_usables[u.usable->type];
 
 					if(u.animation_state > AS_ANIMATION2_MOVE_TO_OBJECT)
 					{
@@ -10521,27 +10521,27 @@ void Game::GenerateTreasure(int level, int _count, vector<ItemSlot>& items, int&
 		switch(Rand() % IT_MAX_GEN)
 		{
 		case IT_WEAPON:
-			item = g_weapons[Rand() % g_weapons.size()];
+			item = Weapon::weapons[Rand() % Weapon::weapons.size()];
 			count = 1;
 			break;
 		case IT_ARMOR:
-			item = g_armors[Rand() % g_armors.size()];
+			item = Armor::armors[Rand() % Armor::armors.size()];
 			count = 1;
 			break;
 		case IT_BOW:
-			item = g_bows[Rand() % g_bows.size()];
+			item = Bow::bows[Rand() % Bow::bows.size()];
 			count = 1;
 			break;
 		case IT_SHIELD:
-			item = g_shields[Rand() % g_shields.size()];
+			item = Shield::shields[Rand() % Shield::shields.size()];
 			count = 1;
 			break;
 		case IT_CONSUMABLE:
-			item = g_consumables[Rand() % g_consumables.size()];
+			item = Consumable::consumables[Rand() % Consumable::consumables.size()];
 			count = Random(2, 5);
 			break;
 		case IT_OTHER:
-			item = g_others[Rand() % g_others.size()];
+			item = OtherItem::others[Rand() % OtherItem::others.size()];
 			count = Random(1, 4);
 			break;
 		default:
@@ -11148,7 +11148,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 	}
 
 	for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
-		SpawnObjectExtras(ctx, g_base_usables[(*it)->type].obj, (*it)->pos, (*it)->rot, *it, nullptr, 1.f, flags);
+		SpawnObjectExtras(ctx, BaseUsable::base_usables[(*it)->type].obj, (*it)->pos, (*it)->rot, *it, nullptr, 1.f, flags);
 }
 
 void Game::SetRoomPointers()
@@ -12627,7 +12627,7 @@ Trap* Game::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	Trap& trap = *t;
 	local_ctx.traps->push_back(t);
 
-	auto& base = g_traps[type];
+	auto& base = BaseTrap::traps[type];
 	trap.base = &base;
 	trap.hitted = nullptr;
 	trap.state = 0;
@@ -13970,15 +13970,15 @@ void Game::SetDungeonParamsToMeshes()
 	ApplyDungeonLightToMesh(*aDoorWall2);
 
 	// apply texture/lighting to trap to make it same texture as dungeon
-	if(g_traps[TRAP_ARROW].mesh->state == ResourceState::Loaded)
+	if(BaseTrap::traps[TRAP_ARROW].mesh->state == ResourceState::Loaded)
 	{
-		ApplyTexturePackToSubmesh(g_traps[TRAP_ARROW].mesh->subs[0], tFloor[0]);
-		ApplyDungeonLightToMesh(*g_traps[TRAP_ARROW].mesh);
+		ApplyTexturePackToSubmesh(BaseTrap::traps[TRAP_ARROW].mesh->subs[0], tFloor[0]);
+		ApplyDungeonLightToMesh(*BaseTrap::traps[TRAP_ARROW].mesh);
 	}
-	if(g_traps[TRAP_POISON].mesh->state == ResourceState::Loaded)
+	if(BaseTrap::traps[TRAP_POISON].mesh->state == ResourceState::Loaded)
 	{
-		ApplyTexturePackToSubmesh(g_traps[TRAP_POISON].mesh->subs[0], tFloor[0]);
-		ApplyDungeonLightToMesh(*g_traps[TRAP_POISON].mesh);
+		ApplyTexturePackToSubmesh(BaseTrap::traps[TRAP_POISON].mesh->subs[0], tFloor[0]);
+		ApplyDungeonLightToMesh(*BaseTrap::traps[TRAP_POISON].mesh);
 	}
 
 	// druga tekstura
@@ -20723,7 +20723,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 {
 	Unit& u = *pc->unit;
 	Usable& use = *usable;
-	BaseUsable& bu = g_base_usables[use.type];
+	BaseUsable& bu = BaseUsable::base_usables[use.type];
 
 	bool ok = true;
 	if(bu.item)
@@ -20787,7 +20787,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 				u.mesh_inst->groups[0].speed = 1.f;
 				u.target_pos = u.pos;
 				u.target_pos2 = use.pos;
-				if(g_base_usables[use.type].limit_rot == 4)
+				if(BaseUsable::base_usables[use.type].limit_rot == 4)
 					u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
 				u.timer = 0.f;
 				u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
@@ -21371,42 +21371,42 @@ const Item* Game::GetRandomItem(int max_value)
 	switch(type)
 	{
 	case 0:
-		for(Weapon* w : g_weapons)
+		for(Weapon* w : Weapon::weapons)
 		{
 			if(w->value <= max_value && w->CanBeGenerated())
 				items->push_back(w);
 		}
 		break;
 	case 1:
-		for(Bow* b : g_bows)
+		for(Bow* b : Bow::bows)
 		{
 			if(b->value <= max_value && b->CanBeGenerated())
 				items->push_back(b);
 		}
 		break;
 	case 2:
-		for(Shield* s : g_shields)
+		for(Shield* s : Shield::shields)
 		{
 			if(s->value <= max_value && s->CanBeGenerated())
 				items->push_back(s);
 		}
 		break;
 	case 3:
-		for(Armor* a : g_armors)
+		for(Armor* a : Armor::armors)
 		{
 			if(a->value <= max_value && a->CanBeGenerated())
 				items->push_back(a);
 		}
 		break;
 	case 4:
-		for(Consumable* c : g_consumables)
+		for(Consumable* c : Consumable::consumables)
 		{
 			if(c->value <= max_value && c->CanBeGenerated())
 				items->push_back(c);
 		}
 		break;
 	case 5:
-		for(OtherItem* o : g_others)
+		for(OtherItem* o : OtherItem::others)
 		{
 			if(o->value <= max_value && o->CanBeGenerated())
 				items->push_back(o);

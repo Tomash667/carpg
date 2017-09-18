@@ -357,7 +357,7 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 		cell.text_color->color = (info.id == game->leader_id ? 0xFFFFD700 : BLACK);
 	}
 	else
-		cell.text = (info.clas == Class::INVALID ? txNone : g_classes[(int)info.clas].name.c_str());
+		cell.text = (info.clas == Class::INVALID ? txNone : ClassInfo::classes[(int)info.clas].name.c_str());
 }
 
 //=================================================================================================

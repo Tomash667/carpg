@@ -57,7 +57,7 @@ float Unit::CalculateAttack(const Item* _weapon) const
 	if(_weapon->type == IT_WEAPON)
 	{
 		const Weapon& w = _weapon->ToWeapon();
-		const WeaponTypeInfo& wi = weapon_type_info[w.weapon_type];
+		const WeaponTypeInfo& wi = WeaponTypeInfo::info[w.weapon_type];
 		float p;
 		if(str >= w.req_str)
 			p = 1.f;
@@ -2568,7 +2568,7 @@ int Unit::CalculateLevel()
 //=================================================================================================
 int Unit::CalculateLevel(Class clas)
 {
-	UnitData* ud = g_classes[(int)clas].unit_data;
+	UnitData* ud = ClassInfo::classes[(int)clas].unit_data;
 
 	float tlevel = 0.f;
 	float weight_sum = 0.f;

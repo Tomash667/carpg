@@ -5,7 +5,7 @@
 #include "UnitData.h"
 
 //-----------------------------------------------------------------------------
-ClassInfo g_classes[(int)Class::MAX] = {
+ClassInfo ClassInfo::classes[(int)Class::MAX] = {
 	ClassInfo(Class::BARBARIAN, "barbarian", "base_warrior", "icon_barbarian.png", false, nullptr),
 	ClassInfo(Class::BARD, "bard", "base_rogue", "icon_bard.png", false, nullptr),
 	ClassInfo(Class::CLERIC, "cleric", "base_warrior", "icon_cleric.png", false, nullptr),
@@ -25,7 +25,7 @@ ClassInfo g_classes[(int)Class::MAX] = {
 //=================================================================================================
 ClassInfo* ClassInfo::Find(const string& id)
 {
-	for(ClassInfo& c : g_classes)
+	for(ClassInfo& c : ClassInfo::classes)
 	{
 		if(id == c.id)
 			return &c;
@@ -39,7 +39,7 @@ void ClassInfo::Validate(uint& err)
 {
 	for(int i = 0; i < (int)Class::MAX; ++i)
 	{
-		ClassInfo& ci = g_classes[i];
+		ClassInfo& ci = ClassInfo::classes[i];
 		if(ci.class_id != (Class)i)
 		{
 			++err;
@@ -128,7 +128,7 @@ Class ClassInfo::GetRandomPlayer()
 	static vector<Class> classes;
 	if(classes.empty())
 	{
-		for(ClassInfo& ci : g_classes)
+		for(ClassInfo& ci : ClassInfo::classes)
 		{
 			if(ci.pickable)
 				classes.push_back(ci.class_id);

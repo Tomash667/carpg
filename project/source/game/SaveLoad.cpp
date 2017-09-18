@@ -134,7 +134,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 		cfg.Add("game_year", Format("%d", year));
 		cfg.Add("location", ss.location.c_str());
 		cfg.Add("player_name", ss.player_name.c_str());
-		cfg.Add("player_class", g_classes[(int)ss.player_class].id);
+		cfg.Add("player_class", ClassInfo::classes[(int)ss.player_class].id);
 		cfg.Add("save_date", Format("%I64d", ss.save_date));
 		cfg.Add("text", ss.text.c_str());
 		cfg.Add("hardcore", ss.hardcore ? "1" : "0");

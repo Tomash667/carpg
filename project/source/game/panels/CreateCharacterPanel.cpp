@@ -906,7 +906,7 @@ void CreateCharacterPanel::Init()
 {
 	unit->mesh_inst = new MeshInstance(game->aHumanBase);
 
-	for(ClassInfo& ci : g_classes)
+	for(ClassInfo& ci : ClassInfo::classes)
 	{
 		if(ci.IsPickable())
 			lbClasses.Add(new DefaultGuiElement(ci.name.c_str(), (int)ci.class_id, ci.icon));
@@ -1100,7 +1100,7 @@ void CreateCharacterPanel::GetTooltip(TooltipController* _tool, int group, int i
 //=================================================================================================
 void CreateCharacterPanel::ClassChanged()
 {
-	ClassInfo& ci = g_classes[(int)clas];
+	ClassInfo& ci = ClassInfo::classes[(int)clas];
 	unit->data = ci.unit_data;
 	anim = DA_STOI;
 	t = 1.f;

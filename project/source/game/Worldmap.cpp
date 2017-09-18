@@ -1610,7 +1610,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 	{
 		// usable object
 		USABLE_ID type = base->ToUsableType();
-		BaseUsable& bu = g_base_usables[type];
+		BaseUsable& bu = BaseUsable::base_usables[type];
 
 		Usable* u = new Usable;
 		u->type = type;
@@ -2582,22 +2582,22 @@ void Game::GenerateStockItems()
 			switch(Rand() % 4)
 			{
 			case 0: // broñ
-				while((item = g_weapons[Rand() % g_weapons.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH))
+				while((item = Weapon::weapons[Rand() % Weapon::weapons.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH))
 					;
 				InsertItemBare(chest_blacksmith, item);
 				break;
 			case 1: // ³uk
-				while((item = g_bows[Rand() % g_bows.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH))
+				while((item = Bow::bows[Rand() % Bow::bows.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH))
 					;
 				InsertItemBare(chest_blacksmith, item);
 				break;
 			case 2: // tarcza
-				while((item = g_shields[Rand() % g_shields.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH))
+				while((item = Shield::shields[Rand() % Shield::shields.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH))
 					;
 				InsertItemBare(chest_blacksmith, item);
 				break;
 			case 3: // pancerz
-				while((item = g_armors[Rand() % g_armors.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH))
+				while((item = Armor::armors[Rand() % Armor::armors.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH))
 					;
 				InsertItemBare(chest_blacksmith, item);
 				break;
@@ -2614,7 +2614,7 @@ void Game::GenerateStockItems()
 		chest_alchemist.clear();
 		for(int i = 0, ile = Random(8, 12) + count_mod; i < ile; ++i)
 		{
-			while(IS_SET((item = g_consumables[Rand() % g_consumables.size()])->flags, ITEM_NOT_SHOP | ITEM_NOT_ALCHEMIST))
+			while(IS_SET((item = Consumable::consumables[Rand() % Consumable::consumables.size()])->flags, ITEM_NOT_SHOP | ITEM_NOT_ALCHEMIST))
 				;
 			InsertItemBare(chest_alchemist, item, Random(3, 6));
 		}
@@ -2663,32 +2663,32 @@ void Game::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit)
 		switch(Rand() % 6)
 		{
 		case 0: // broñ
-			while((item = g_weapons[Rand() % g_weapons.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
+			while((item = Weapon::weapons[Rand() % Weapon::weapons.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item);
 			break;
 		case 1: // ³uk
-			while((item = g_bows[Rand() % g_bows.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
+			while((item = Bow::bows[Rand() % Bow::bows.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item);
 			break;
 		case 2: // tarcza
-			while((item = g_shields[Rand() % g_shields.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
+			while((item = Shield::shields[Rand() % Shield::shields.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item);
 			break;
 		case 3: // pancerz
-			while((item = g_armors[Rand() % g_armors.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
+			while((item = Armor::armors[Rand() % Armor::armors.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item);
 			break;
 		case 4: // jadalne
-			while((item = g_consumables[Rand() % g_consumables.size()])->value > price_limit / 5 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
+			while((item = Consumable::consumables[Rand() % Consumable::consumables.size()])->value > price_limit / 5 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item, Random(2, 5));
 			break;
 		case 5: // inne
-			while((item = g_others[Rand() % g_others.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
+			while((item = OtherItem::others[Rand() % OtherItem::others.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
 				;
 			InsertItemBare(items, item);
 			break;

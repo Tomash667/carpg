@@ -60,6 +60,7 @@ struct BaseUsable
 		limit_rot(limit_rot), flags(flags), obj(nullptr), state(ResourceState::NotLoaded)
 	{
 	}
+
+	static BaseUsable base_usables[];
+	static const uint n_base_usables;
 };
-extern BaseUsable g_base_usables[];
-extern const uint n_base_usables;

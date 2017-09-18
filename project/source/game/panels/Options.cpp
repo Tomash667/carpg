@@ -404,6 +404,7 @@ void Options::SetOptions()
 				res.SetIndex(index);
 				break;
 			}
+			++index;
 		}
 	}
 

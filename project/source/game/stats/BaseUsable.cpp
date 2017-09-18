@@ -5,7 +5,7 @@
 #include "ResourceManager.h"
 
 //-----------------------------------------------------------------------------
-BaseUsable g_base_usables[] = {
+BaseUsable BaseUsable::base_usables[] = {
 	BaseUsable("u_chair", "chair", "siedzi_krzeslo", 2, BaseUsable::ALLOW_USE),
 	BaseUsable("u_bench", "bench", "siedzi_lawa", 3, BaseUsable::ALLOW_USE),
 	BaseUsable("u_anvil", "anvil", "kowalstwo", 1, BaseUsable::SLOW_STAMINA_RESTORE, "blacksmith_hammer", "blacksmith.mp3", 10.f / 30),
@@ -17,4 +17,4 @@ BaseUsable g_base_usables[] = {
 	BaseUsable("u_bench_dir", "bench_dir", "siedzi_lawa", 2, BaseUsable::ALLOW_USE),
 	BaseUsable("u_bookshelf", "bookshelf", nullptr, 1, BaseUsable::CONTAINER)
 };
-const uint n_base_usables = countof(g_base_usables);
+const uint BaseUsable::n_base_usables = countof(BaseUsable::base_usables);

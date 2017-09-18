@@ -2015,10 +2015,10 @@ void Game::RestartGame()
 void Game::SetStatsText()
 {
 	// typ broni
-	weapon_type_info[WT_SHORT].name = Str("wt_shortBlade");
-	weapon_type_info[WT_LONG].name = Str("wt_longBlade");
-	weapon_type_info[WT_MACE].name = Str("wt_blunt");
-	weapon_type_info[WT_AXE].name = Str("wt_axe");
+	WeaponTypeInfo::info[WT_SHORT].name = Str("wt_shortBlade");
+	WeaponTypeInfo::info[WT_LONG].name = Str("wt_longBlade");
+	WeaponTypeInfo::info[WT_MACE].name = Str("wt_blunt");
+	WeaponTypeInfo::info[WT_AXE].name = Str("wt_axe");
 }
 
 //=================================================================================================
@@ -2309,7 +2309,7 @@ void Game::SetGameText()
 	// nazwy u¿ywalnych obiektów
 	for(int i = 0; i < U_MAX; ++i)
 	{
-		BaseUsable& u = g_base_usables[i];
+		BaseUsable& u = BaseUsable::base_usables[i];
 		u.name = Str(u.id);
 	}
 
@@ -2988,7 +2988,7 @@ void Game::ReleaseShaders()
 //=================================================================================================
 void Game::SetMeshSpecular()
 {
-	for(Weapon* weapon : g_weapons)
+	for(Weapon* weapon : Weapon::weapons)
 	{
 		Weapon& w = *weapon;
 		if(w.mesh && w.mesh->head.version < 18)
@@ -3002,7 +3002,7 @@ void Game::SetMeshSpecular()
 		}
 	}
 
-	for(Shield* shield : g_shields)
+	for(Shield* shield : Shield::shields)
 	{
 		Shield& s = *shield;
 		if(s.mesh && s.mesh->head.version < 18)
@@ -3016,7 +3016,7 @@ void Game::SetMeshSpecular()
 		}
 	}
 
-	for(Armor* armor : g_armors)
+	for(Armor* armor : Armor::armors)
 	{
 		Armor& a = *armor;
 		if(a.mesh && a.mesh->head.version < 18)

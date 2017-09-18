@@ -25,7 +25,7 @@ void CheckStartItems(Skill skill, bool required, uint& errors)
 {
 	bool have_0 = !required, have_heirloom = false;
 
-	for(StartItem& si : start_items)
+	for(StartItem& si : StartItem::start_items)
 	{
 		if(si.skill == skill)
 		{

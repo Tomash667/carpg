@@ -62,7 +62,7 @@ struct Usable
 
 	BaseUsable* GetBase() const
 	{
-		return &g_base_usables[type];
+		return &BaseUsable::base_usables[type];
 	}
 	BaseObject* GetBaseObject() const
 	{
