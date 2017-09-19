@@ -33,8 +33,8 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 				death_fade = 0.f;
 				if(Net::IsOnline())
 				{
-					PushNetChange(NetChange::GAME_STATS);
-					PushNetChange(NetChange::END_OF_GAME);
+					Net::PushChange(NetChange::GAME_STATS);
+					Net::PushChange(NetChange::END_OF_GAME);
 				}
 			}
 		}
@@ -73,7 +73,7 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 						--unit->player->free_days;
 				}
 
-				PushNetChange(NetChange::UPDATE_FREE_DAYS);
+				Net::PushChange(NetChange::UPDATE_FREE_DAYS);
 			}
 		}
 	}
@@ -90,5 +90,5 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 	DoWorldProgress(days);
 
 	if(Net::IsOnline())
-		PushNetChange(NetChange::WORLD_TIME);
+		Net::PushChange(NetChange::WORLD_TIME);
 }

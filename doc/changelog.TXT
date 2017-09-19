@@ -20,6 +20,7 @@ Wersja 0.6 (2017-10-??):
 - naprawiony b³¹d z prawid³owym odtwarzaniem dŸwiêków areny w multiplayer
 - usuniêta szara obwódka wokó³ minimapy w podziemiach
 - naprawione nieprawid³owe teksty plotek w dzienniku dla niektórych questów
+- naprawione przywo³ywanie wilka na arenie
 
 --------------------------------------------------------------------------------
 Wersja 0.5 (2017-09-07):

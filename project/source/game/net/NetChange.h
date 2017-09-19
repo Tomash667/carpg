@@ -92,7 +92,7 @@ struct NetChange
 		PVP, // response to pvp request [bool(id)-is accepted]
 		CHEAT_CITIZEN, // player used cheat 'citizen' []
 		CHEAT_SHOW_MINIMAP, // player used cheat 'show_minimap'
-		CHANGE_ARENA_STATE, // change unit arena state [int(netid)-unit, auto:char-state]
+		CHANGE_ARENA_STATE, // change unit arena state, reset cooldown when entering arena [int(netid)-unit, auto:char-state]
 		ARENA_SOUND, // plays arena sound [byte(id)-type]
 		SHOUT, // unit shout after seeing enemy [int(netid)-unit]
 		LEAVE_LOCATION, // leader wants to leave location or leaving notification SERVER[] / CLIENT[char(id)-type]

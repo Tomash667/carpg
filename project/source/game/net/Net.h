@@ -108,6 +108,13 @@ public:
 		mode = _mode;
 	}
 
+	static NetChange& PushChange(NetChange::TYPE type)
+	{
+		auto& c = Add1(changes);
+		c.type = type;
+		return c;
+	}
+
 	static vector<NetChange> changes;
 	static vector<NetChangePlayer> player_changes;
 

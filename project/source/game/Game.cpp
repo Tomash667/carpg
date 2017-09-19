@@ -362,7 +362,7 @@ void Game::OnTick(float dt)
 				c.type = NetChange::PAUSED;
 				c.id = (paused ? 1 : 0);
 				if(paused && game_state == GS_WORLDMAP && world_state == WS_TRAVEL)
-					PushNetChange(NetChange::UPDATE_MAP_POS);
+					Net::PushChange(NetChange::UPDATE_MAP_POS);
 			}
 		}
 	}

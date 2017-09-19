@@ -337,7 +337,7 @@ void Quest_Evil::SetProgress(int prog2)
 
 			if(Net::IsOnline())
 			{
-				game->PushNetChange(NetChange::CLEAN_ALTAR);
+				Net::PushChange(NetChange::CLEAN_ALTAR);
 				game->Net_UpdateQuest(refid);
 			}
 		}

@@ -1,64 +1,30 @@
 ﻿FEATURE:
 ===============================================================================================================
+CURRENT:
 ? sort unit labels by distance
 ? vsync in options
 - innkeeper - stands still, no animations/actions
 - can summon wolf outside of arena - there should be marked as WALL
 ? options: current resolution is not selected at start
 - stupid website rewrite rule
-- reset cooldown when entering arena
-- summon wolf on arena
-===============================================================================================================
-CURRENT:
+? reset cooldown when entering arena
+? summon wolf on arena
+? ally fallow when pc is fighting on arena
+? tournament - przenoszenie do walki gdy jesteś w środku areny
+? w karczmie po powrocie nie było jedzenia, w mieście; eat and return
+? czy można przeszkadzać komuś w walce gadając z nim
 ===============================================================================================================
 NEW:
-+ ref move mutex from resource manager
-- fmod 3d sound velocity
-- when using bull charge at speed 10 sound stays behind, even if it set as 2d
-+ unk disappear after death
-+ particle effect when unit have quest item
-+ hide unit names ?
-+ standardize combat system:
-	5lvl vs 5 lvs i as strong as 1vs1 etc
-	stats modifier: tanky hp*1.5, slow, dmg
-	swarm enemy - goblins, hp/4, dmg/4 but units x4
-- unit sometimes try to move thru building, reason unknown, speed 10 and see for yourself, unit pathfinding is poor - units blocks each other
-+ minimal hp bar length
-+ remove system_dir from Engine
-+ faster potion using, take out weapon after drinking, allow drink potion after potion and then take out weapon
-+ use uint2 for resolution
-+ refactor save version from ParticleSystem.cpp
-+ refactor load_screen from Resourcemanager.cpp
-+ refactor Language.h from Gui.cpp, GetNumberDialog
-+ vector of pointers that disallow null values, iterating over returns by ref
-+ ref overcomplex player stats system
-+ open wanted letter in fullscreen, show face
-+ ref remove DWORD
-+ join TextLine & FontLine
-+ remove tablechairs object, now it's not requiered
-+ rename tartak obj -> sawmill
-+ two animations of falling, front and back, for example when boulder is rolling on player it depends on player rotation which animation use, rotate player
-+ enemy: doppelanger, rogue doppelanger, assassin doppelanger
-+ EE: sawmill random text -> "ludzi coraz więcej a rką do pracy coraz mniej"
-+ 0.7: use new gui
-+ better items rotation: bows, shields, frying pan, golden bar
-+ reading book animation, searching bookshelf animation
-+ fighting styles: protection, aggresive, defensive, duel, normal
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
 - w questowych lokacjach krew/zwłoki nie znikają
-- wskaźnik na fizykę, ale co jak objects się rozszerza i obiekt zmienia pozycję
 - da sie wlezc w kogos
 - ANGLE!
-- wydobywaniem rudy można zablokować kogoś kto tam stoi
 - fov may not work good when near borders
 - verify dialogs ending with end/restart
 - without human flag and mesh crash when spawned, log error
-- przenoszenie do walki gdy jesteś w środku areny
-- blokada widoku przez drewno u kowala
 - debug ai lag is too big!
-- input don't work when there is lag, but why? maybe it can happen without lag too
 - oświetlenie na zewnątrz dla terenu, pod małym kątem jest biała trawa [na ziemie i trawie zato widać trawę pod kątem, mipmaping?]
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it; draw debug ray when ai is targeting
 - D3DX: Warning ID3DXEffect::EndPass. Changes have been made but not commited. CommitChange must be called before each DrawPrimitive call
@@ -66,12 +32,8 @@ VERIFY:
 - jeśli w mp osoba coś powie i zostanie usunięta w tej samej ramce to u klienta ten tekst się nie wyświetli
 - ai look at angle nie jest clipowane, albo coś?
 - Direct3D9: :Dynamic vertex buffer locked twice or more in a row without D3DLOCK_NOOVERWRITE or D3DLOCK_DISCARD. Could have severe performance penalty.
-- w karczmie po powrocie nie było jedzenia, w mieście
 - inventory icons disappear after alt-enter or changing multisampling [ł]; not happens on my gpu, need more info
-- wydobywaniem rudy można zablokować kogoś kto tam stoi; don't warp unit to usable, make it walk to expected point
 - trochę da się widzieć przez ściany :/
-- przesuniętą fizyke w obiektach obsługuje tylko SpawnObject [czyli nie obsługuje GenerateDungeonObjects], i to tylko dla boxów, nie używalnych
-? czy można przeszkadzać komuś w walce gadając z nim
 - zmiana multisamplingu nie ma wpływu na wygenerowane obrazki przedmiotów
 ? heal and death_screen
 ? raknet wysyła wiadomości do zdisconnectowanych przy broadcast jeśli nie wyśle jeszcze disconnect

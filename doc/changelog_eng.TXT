@@ -20,6 +20,7 @@ Version 0.6 (2017-10-??):
 - fixed sounds not playing correctly for arena in multiplayer
 - remove gray outline around dungon minimap
 - fixed invalid rumor texts in journal for some quests
+- fixed summoning wolf on arena
 
 --------------------------------------------------------------------------------
 Version 0.5 (2017-09-07):

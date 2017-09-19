@@ -1656,11 +1656,6 @@ public:
 	PlayerInfo* GetPlayerInfoTry(int id);
 	PlayerInfo& GetPlayerInfo(PlayerController* player) { return GetPlayerInfo(player->id); }
 	PlayerInfo* GetPlayerInfoTry(PlayerController* player) { return GetPlayerInfoTry(player->id); }
-	void PushNetChange(NetChange::TYPE type)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = type;
-	}
 	void UpdateWarpData(float dt);
 	void Net_AddQuest(int refid)
 	{

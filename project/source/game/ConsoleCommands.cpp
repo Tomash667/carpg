@@ -226,7 +226,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						var = value;
 						if(IS_SET(it->flags, F_MP_VAR))
-							PushNetChange(NetChange::CHANGE_MP_VARS);
+							Net::PushChange(NetChange::CHANGE_MP_VARS);
 						if(it->changed)
 							it->changed();
 					}
@@ -251,7 +251,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						f = f2;
 						if(IS_SET(it->flags, F_MP_VAR))
-							PushNetChange(NetChange::CHANGE_MP_VARS);
+							Net::PushChange(NetChange::CHANGE_MP_VARS);
 					}
 				}
 				Msg("%s = %g", it->name, f);
@@ -274,7 +274,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						i = i2;
 						if(IS_SET(it->flags, F_MP_VAR))
-							PushNetChange(NetChange::CHANGE_MP_VARS);
+							Net::PushChange(NetChange::CHANGE_MP_VARS);
 						if(it->changed)
 							it->changed();
 					}
@@ -299,7 +299,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						u = u2;
 						if(IS_SET(it->flags, F_MP_VAR))
-							PushNetChange(NetChange::CHANGE_MP_VARS);
+							Net::PushChange(NetChange::CHANGE_MP_VARS);
 					}
 				}
 				Msg("%s = %u", it->name, u);
@@ -316,7 +316,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(Net::IsLocal())
 						ExitToMap();
 					else
-						PushNetChange(NetChange::CHEAT_GOTO_MAP);
+						Net::PushChange(NetChange::CHEAT_GOTO_MAP);
 					break;
 				case CMD_VERSION:
 					Msg("CaRpg version " VERSION_STR ", built %s.", g_ctime.c_str());
@@ -331,7 +331,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(Net::IsLocal())
 						Cheat_Reveal();
 					else
-						PushNetChange(NetChange::CHEAT_REVEAL);
+						Net::PushChange(NetChange::CHEAT_REVEAL);
 					break;
 				case CMD_MAP2CONSOLE:
 					if(game_state == GS_LEVEL && !location->outside)
@@ -722,7 +722,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						PushNetChange(NetChange::CHEAT_HEAL);
+						Net::PushChange(NetChange::CHEAT_HEAL);
 					break;
 				case CMD_KILL:
 					if(pc_data.selected_target)
@@ -774,7 +774,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(Net::IsLocal())
 						GiveDmg(GetContext(*pc->unit), nullptr, pc->unit->hpmax, *pc->unit);
 					else
-						PushNetChange(NetChange::CHEAT_SUICIDE);
+						Net::PushChange(NetChange::CHEAT_SUICIDE);
 					break;
 				case CMD_CITIZEN:
 					if(Team.is_bandit || Team.crazies_attack)
@@ -784,10 +784,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							Team.is_bandit = false;
 							Team.crazies_attack = false;
 							if(Net::IsOnline())
-								PushNetChange(NetChange::CHANGE_FLAGS);
+								Net::PushChange(NetChange::CHANGE_FLAGS);
 						}
 						else
-							PushNetChange(NetChange::CHEAT_CITIZEN);
+							Net::PushChange(NetChange::CHEAT_CITIZEN);
 					}
 					break;
 				case CMD_SCREENSHOT:
@@ -803,7 +803,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						PushNetChange(NetChange::CHEAT_SCARE);
+						Net::PushChange(NetChange::CHEAT_SCARE);
 					break;
 				case CMD_INVISIBLE:
 					if(t.Next())
@@ -946,7 +946,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(Net::IsLocal())
 						Cheat_ShowMinimap();
 					else
-						PushNetChange(NetChange::CHEAT_SHOW_MINIMAP);
+						Net::PushChange(NetChange::CHEAT_SHOW_MINIMAP);
 					break;
 				case CMD_SKIP_DAYS:
 					{
@@ -1354,7 +1354,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						c.type = NetChange::PAUSED;
 						c.id = (paused ? 1 : 0);
 						if(paused && game_state == GS_WORLDMAP && world_state == WS_TRAVEL)
-							PushNetChange(NetChange::UPDATE_MAP_POS);
+							Net::PushChange(NetChange::UPDATE_MAP_POS);
 					}
 					break;
 				case CMD_MULTISAMPLING:
@@ -1647,7 +1647,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_REFRESH_COOLDOWN:
 					pc->RefreshCooldown();
 					if(!Net::IsLocal())
-						PushNetChange(NetChange::CHEAT_REFRESH_COOLDOWN);
+						Net::PushChange(NetChange::CHEAT_REFRESH_COOLDOWN);
 					break;
 				default:
 					assert(0);

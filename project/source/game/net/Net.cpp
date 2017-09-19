@@ -2136,7 +2136,7 @@ void Game::UpdateServer(float dt)
 		bool last_anyone_talking = anyone_talking;
 		anyone_talking = IsAnyoneTalking();
 		if(last_anyone_talking != anyone_talking)
-			PushNetChange(NetChange::CHANGE_FLAGS);
+			Net::PushChange(NetChange::CHANGE_FLAGS);
 
 		update_timer = 0;
 		net_stream.Reset();
@@ -2157,7 +2157,7 @@ void Game::UpdateServer(float dt)
 		if(!minimap_reveal_mp.empty())
 		{
 			if(game_state == GS_LEVEL)
-				PushNetChange(NetChange::REVEAL_MINIMAP);
+				Net::PushChange(NetChange::REVEAL_MINIMAP);
 			else
 				minimap_reveal_mp.clear();
 		}
@@ -3756,7 +3756,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					Team.is_bandit = false;
 					Team.crazies_attack = false;
-					PushNetChange(NetChange::CHANGE_FLAGS);
+					Net::PushChange(NetChange::CHANGE_FLAGS);
 				}
 			}
 			else
@@ -4213,7 +4213,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					int result = CanLeaveLocation(*info.u);
 					if(result == 0)
 					{
-						PushNetChange(NetChange::LEAVE_LOCATION);
+						Net::PushChange(NetChange::LEAVE_LOCATION);
 						if(type == WHERE_OUTSIDE)
 							fallback_co = FALLBACK::EXIT;
 						else if(type == WHERE_LEVEL_UP)
@@ -4415,7 +4415,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				dialog_enc = nullptr;
 			}
 			world_state = WS_TRAVEL;
-			PushNetChange(NetChange::CLOSE_ENCOUNTER);
+			Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 			Event_RandomEncounter(0);
 			StreamEnd();
 			return false;
@@ -6730,7 +6730,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							pc->unit->action = A_ANIMATION;
 						}
 					}
-					PushNetChange(NetChange::WARP);
+					Net::PushChange(NetChange::WARP);
 					interpolate_timer = 0.f;
 					pc_data.rot_buf = 0.f;
 					cam.Reset();
@@ -7067,7 +7067,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					if(pc_data.before_player == BP_USABLE && pc_data.before_player_ptr.usable == usable)
 						pc_data.before_player = BP_NONE;
 				}
-				else 
+				else
 				{
 					usable->user = nullptr;
 					if(unit->player != pc && !IS_SET(base.flags, BaseUsable::CONTAINER))
@@ -7250,6 +7250,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						if(state < -1 || state > 1)
 							state = -1;
 						unit->in_arena = state;
+						if(unit == pc->unit && state >= 0)
+							pc->RefreshCooldown();
 					}
 				}
 			}
@@ -10219,7 +10221,7 @@ void Game::UseDays(PlayerController* player, int count)
 		WorldProgress(count, WPM_NORMAL);
 	}
 
-	PushNetChange(NetChange::UPDATE_FREE_DAYS);
+	Net::PushChange(NetChange::UPDATE_FREE_DAYS);
 }
 
 //=================================================================================================

@@ -461,7 +461,7 @@ SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float ro
 		V(device->StretchRect(surface, nullptr, surf, nullptr, D3DTEXF_NONE));
 	}
 	auto result = surf;
-	
+
 	// przywróæ stary render target
 	V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
 	V(device->SetRenderTarget(0, surf));
@@ -985,8 +985,8 @@ void Game::UpdateGame(float dt)
 			text = txWinMp;
 			if(Net::IsServer())
 			{
-				PushNetChange(NetChange::GAME_STATS);
-				PushNetChange(NetChange::ALL_QUESTS_COMPLETED);
+				Net::PushChange(NetChange::GAME_STATS);
+				Net::PushChange(NetChange::ALL_QUESTS_COMPLETED);
 			}
 		}
 		else
@@ -1088,7 +1088,7 @@ void Game::UpdateGame(float dt)
 				return;
 			}
 			else
-				PushNetChange(NetChange::CHEAT_GOTO_MAP);
+				Net::PushChange(NetChange::CHEAT_GOTO_MAP);
 		}
 	}
 
@@ -1189,8 +1189,8 @@ void Game::UpdateGame(float dt)
 			death_solo = (Team.GetTeamSize() == 1u);
 			if(Net::IsOnline())
 			{
-				PushNetChange(NetChange::GAME_STATS);
-				PushNetChange(NetChange::GAME_OVER);
+				Net::PushChange(NetChange::GAME_STATS);
+				Net::PushChange(NetChange::GAME_OVER);
 			}
 		}
 		else if(death_screen == 1 || death_screen == 2)
@@ -1715,7 +1715,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			if(Net::IsLocal())
 				PlayerYell(u);
 			else
-				PushNetChange(NetChange::YELL);
+				Net::PushChange(NetChange::YELL);
 		}
 
 		if((allow_input == ALLOW_INPUT || allow_input == ALLOW_MOUSE) && !cam.free_rot)
@@ -1837,7 +1837,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						if(train_move >= 1.f)
 						{
 							--train_move;
-							PushNetChange(NetChange::TRAIN_MOVE);
+							Net::PushChange(NetChange::TRAIN_MOVE);
 						}
 					}
 
@@ -3114,6 +3114,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 			}
 			auto unit = SpawnUnitNearLocation(GetContext(*p->unit), spawn_pos, *FindUnitData("white_wolf_sum"), nullptr, p->unit->level);
 			unit->summoner = p->unit;
+			unit->in_arena = p->unit->in_arena;
 			if(Net::IsServer())
 				Net_SpawnUnit(unit);
 			AddTeamMember(unit, true);
@@ -3995,7 +3996,7 @@ void Game::StartNextDialog(DialogContext& ctx, GameDialog* dialog, int& if_level
 	if_level = 0;
 }
 
-//							WEAPON	BOW		SHIELD	ARMOR	LETTER	POTION	OTHER	BOOK	GOLD	
+//							WEAPON	BOW		SHIELD	ARMOR	LETTER	POTION	OTHER	BOOK	GOLD
 bool merchant_buy[] = {    true,	true,	true,	true,	true,	true,	true,	true,	false };
 bool blacksmith_buy[] = {  true,	true,	true,	true,	false,	false,	false,	false,	false };
 bool alchemist_buy[] = {   false,	false,	false,	false,	false,	true,	false,	false,	false };
@@ -6190,7 +6191,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						for(Unit* unit : Team.members)
 							unit->frozen = FROZEN::YES;
 						if(Net::IsOnline())
-							PushNetChange(NetChange::LEAVE_LOCATION);
+							Net::PushChange(NetChange::LEAVE_LOCATION);
 					}
 				}
 			}
@@ -6256,7 +6257,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 					fallback_co = FALLBACK::WAIT_FOR_WARP;
 					fallback_t = -1.f;
 					unit.frozen = FROZEN::YES;
-					PushNetChange(NetChange::EXIT_BUILDING);
+					Net::PushChange(NetChange::EXIT_BUILDING);
 				}
 			}
 		}
@@ -6308,7 +6309,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							for(Unit* unit : Team.members)
 								unit->frozen = FROZEN::YES;
 							if(Net::IsOnline())
-								PushNetChange(NetChange::LEAVE_LOCATION);
+								Net::PushChange(NetChange::LEAVE_LOCATION);
 						}
 						else
 							AddGameMsg3(w == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
@@ -6361,7 +6362,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							for(Unit* unit : Team.members)
 								unit->frozen = FROZEN::YES;
 							if(Net::IsOnline())
-								PushNetChange(NetChange::LEAVE_LOCATION);
+								Net::PushChange(NetChange::LEAVE_LOCATION);
 						}
 						else
 							AddGameMsg3(w == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
@@ -6404,7 +6405,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								for(Unit* unit : Team.members)
 									unit->frozen = FROZEN::YES;
 								if(Net::IsOnline())
-									PushNetChange(NetChange::LEAVE_LOCATION);
+									Net::PushChange(NetChange::LEAVE_LOCATION);
 							}
 							else
 								AddGameMsg3(w == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
@@ -11074,7 +11075,7 @@ void Game::ExitToMap()
 	SetMusic(MusicType::Travel);
 
 	if(Net::IsServer())
-		PushNetChange(NetChange::EXIT_TO_MAP);
+		Net::PushChange(NetChange::EXIT_TO_MAP);
 
 	show_mp_panel = true;
 	world_map->visible = true;
@@ -16257,7 +16258,7 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 		}
 
 		if(credit_info)
-			PushNetChange(NetChange::UPDATE_CREDIT);
+			Net::PushChange(NetChange::UPDATE_CREDIT);
 	}
 	else if(show)
 		AddGameMsg(Format(msg, pc->gold_get), time);
@@ -16642,7 +16643,7 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 			{
 				Team.is_bandit = true;
 				if(Net::IsOnline())
-					PushNetChange(NetChange::CHANGE_FLAGS);
+					Net::PushChange(NetChange::CHANGE_FLAGS);
 			}
 		}
 		else if(attacked.data->group == G_CRAZIES)
@@ -16651,7 +16652,7 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 			{
 				Team.crazies_attack = true;
 				if(Net::IsOnline())
-					PushNetChange(NetChange::CHANGE_FLAGS);
+					Net::PushChange(NetChange::CHANGE_FLAGS);
 			}
 		}
 		if(attacked.dont_attack)
@@ -19030,6 +19031,13 @@ void Game::UpdateGame2(float dt)
 					}
 				}
 
+				// reset cooldowns
+				for(auto unit : at_arena)
+				{
+					if(unit->IsPlayer())
+						unit->player->RefreshCooldown();
+				}
+
 				arena_etap = Arena_OdliczanieDoStartu;
 				arena_t = 0.f;
 			}
@@ -19324,7 +19332,7 @@ void Game::UpdateGame2(float dt)
 				GenerateDungeonUnits();
 				if(Net::IsOnline())
 				{
-					PushNetChange(NetChange::EVIL_SOUND);
+					Net::PushChange(NetChange::EVIL_SOUND);
 					for(uint i = offset, ile = local_ctx.units->size(); i < ile; ++i)
 						Net_SpawnUnit(local_ctx.units->at(i));
 				}
@@ -19375,7 +19383,7 @@ void Game::UpdateGame2(float dt)
 								if(Net::IsOnline())
 								{
 									Net_UpdateQuest(quest_evil->refid);
-									PushNetChange(NetChange::CLOSE_PORTAL);
+									Net::PushChange(NetChange::CLOSE_PORTAL);
 								}
 							}
 						}
@@ -19978,7 +19986,7 @@ void Game::OnCloseInventory()
 			pc->action_unit->look_target = nullptr;
 		}
 		else
-			PushNetChange(NetChange::STOP_TRADE);
+			Net::PushChange(NetChange::STOP_TRADE);
 	}
 	else if(inventory_mode == I_SHARE || inventory_mode == I_GIVE)
 	{
@@ -19988,7 +19996,7 @@ void Game::OnCloseInventory()
 			pc->action_unit->look_target = nullptr;
 		}
 		else
-			PushNetChange(NetChange::STOP_TRADE);
+			Net::PushChange(NetChange::STOP_TRADE);
 	}
 	else if(inventory_mode == I_LOOT_CHEST && Net::IsLocal())
 	{
@@ -20017,13 +20025,13 @@ void Game::OnCloseInventory()
 			pc->unit->usable = nullptr;
 		}
 		else
-			PushNetChange(NetChange::STOP_TRADE);
+			Net::PushChange(NetChange::STOP_TRADE);
 	}
 
 	if(Net::IsOnline() && (inventory_mode == I_LOOT_BODY || inventory_mode == I_LOOT_CHEST))
 	{
 		if(Net::IsClient())
-			PushNetChange(NetChange::STOP_TRADE);
+			Net::PushChange(NetChange::STOP_TRADE);
 		else if(inventory_mode == I_LOOT_BODY)
 			pc->action_unit->busy = Unit::Busy_No;
 		else
@@ -20309,7 +20317,7 @@ void Game::Cheat_ShowMinimap()
 		UpdateDungeonMinimap(false);
 
 		if(Net::IsServer())
-			PushNetChange(NetChange::CHEAT_SHOW_MINIMAP);
+			Net::PushChange(NetChange::CHEAT_SHOW_MINIMAP);
 	}
 }
 
@@ -20422,7 +20430,7 @@ void Game::CheckCredit(bool require_update, bool ignore)
 	}
 
 	if(!ignore && require_update && Net::IsOnline())
-		PushNetChange(NetChange::UPDATE_CREDIT);
+		Net::PushChange(NetChange::UPDATE_CREDIT);
 }
 
 void Game::StartDialog2(PlayerController* player, Unit* talker, GameDialog* dialog)
@@ -20664,7 +20672,7 @@ void Game::PayCredit(PlayerController* player, int ile)
 	}
 
 	if(Net::IsOnline())
-		PushNetChange(NetChange::UPDATE_CREDIT);
+		Net::PushChange(NetChange::UPDATE_CREDIT);
 }
 
 InsideBuilding* Game::GetArena()
@@ -21437,7 +21445,7 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 		unit.AddItem(note);
 		delete item;
 		if(Net::IsOnline())
-			PushNetChange(NetChange::SECRET_TEXT);
+			Net::PushChange(NetChange::SECRET_TEXT);
 		return true;
 	}
 
@@ -22266,7 +22274,7 @@ void Game::ShowAcademyText()
 	if(GUI.GetDialog("academy") == nullptr)
 		GUI.SimpleDialog(txQuest[271], world_map, "academy");
 	if(Net::IsServer())
-		PushNetChange(NetChange::ACADEMY_TEXT);
+		Net::PushChange(NetChange::ACADEMY_TEXT);
 }
 
 const float price_mod_buy[] = { 1.25f, 1.0f, 0.75f };

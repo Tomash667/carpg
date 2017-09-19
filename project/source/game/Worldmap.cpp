@@ -2800,7 +2800,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	{
 		Team.crazies_attack = false;
 		if(Net::IsOnline())
-			PushNetChange(NetChange::CHANGE_FLAGS);
+			Net::PushChange(NetChange::CHANGE_FLAGS);
 	}
 
 	if(!Net::IsLocal())
@@ -3675,7 +3675,7 @@ void Game::Event_RandomEncounter(int)
 	world_state = WS_TRAVEL;
 	dialog_enc = nullptr;
 	if(Net::IsOnline())
-		PushNetChange(NetChange::CLOSE_ENCOUNTER);
+		Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 	current_location = encounter_loc;
 	EnterLocation();
 }
@@ -3683,7 +3683,7 @@ void Game::Event_RandomEncounter(int)
 void Game::Event_StartEncounter(int)
 {
 	dialog_enc = nullptr;
-	PushNetChange(NetChange::CLOSE_ENCOUNTER);
+	Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 }
 
 void Game::GenerateEncounterMap(Location& loc)

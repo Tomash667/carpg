@@ -354,7 +354,7 @@ void WorldMapGui::Update(float dt)
 								game.dialog_enc->bts[0].state = Button::DISABLED;
 
 							game.world_state = WS_ENCOUNTER;
-							game.PushNetChange(NetChange::UPDATE_MAP_POS);
+							Net::PushChange(NetChange::UPDATE_MAP_POS);
 						}
 					}
 					else
@@ -460,7 +460,7 @@ void WorldMapGui::Update(float dt)
 									game.dialog_enc->bts[0].state = Button::DISABLED;
 
 								game.world_state = WS_ENCOUNTER;
-								game.PushNetChange(NetChange::UPDATE_MAP_POS);
+								Net::PushChange(NetChange::UPDATE_MAP_POS);
 							}
 						}
 						else
@@ -503,7 +503,7 @@ void WorldMapGui::Update(float dt)
 									game.dialog_enc->bts[0].state = Button::DISABLED;
 
 								game.world_state = WS_ENCOUNTER;
-								game.PushNetChange(NetChange::UPDATE_MAP_POS);
+								Net::PushChange(NetChange::UPDATE_MAP_POS);
 							}
 						}
 					}
@@ -576,7 +576,7 @@ void WorldMapGui::Update(float dt)
 							if(Net::Net::IsLocal())
 								game.EnterLocation();
 							else
-								game.PushNetChange(NetChange::ENTER_LOCATION);
+								Net::PushChange(NetChange::ENTER_LOCATION);
 						}
 					}
 					else

@@ -561,7 +561,7 @@ void Game::SaveGame(HANDLE file)
 		WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
 		++check_id;
 
-		PushNetChange(NetChange::GAME_SAVED);
+		Net::PushChange(NetChange::GAME_SAVED);
 		AddMultiMsg(txGameSaved);
 	}
 
