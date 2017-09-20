@@ -1,18 +1,15 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-? sort unit labels by distance
-? vsync in options
 - innkeeper - stands still, no animations/actions
 - can summon wolf outside of arena - there should be marked as WALL
-? options: current resolution is not selected at start
+	- buildings should block too
+	- building colliders (some) too
 - stupid website rewrite rule
-? reset cooldown when entering arena
-? summon wolf on arena
-? ally fallow when pc is fighting on arena
 ? tournament - przenoszenie do walki gdy jesteś w środku areny
 ? w karczmie po powrocie nie było jedzenia, w mieście; eat and return
-? czy można przeszkadzać komuś w walce gadając z nim
+- unit talking set ANI_PLAY but then don't change it to ANI_STAND (after arena combat, after accepting combat, and more)
+- hero warrior spawned at 20 lvl have worst armor..., lather armor of hi quality (adam short sword, elven bow)
 ===============================================================================================================
 NEW:
 ===============================================================================================================

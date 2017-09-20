@@ -81,6 +81,7 @@ void HeroData::Save(HANDLE file)
 	WriteFile(file, &phase, sizeof(phase), &tmp, nullptr);
 	WriteFile(file, &phase_timer, sizeof(phase_timer), &tmp, nullptr);
 	WriteFile(file, &free, sizeof(free), &tmp, nullptr);
+	WriteFile(file, &lost_pvp, sizeof(lost_pvp), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -111,6 +112,10 @@ void HeroData::Load(HANDLE file)
 		float old_weight;
 		ReadFile(file, &old_weight, sizeof(old_weight), &tmp, nullptr);
 	}
+	if(LOAD_VERSION >= V_CURRENT)
+		ReadFile(file, &lost_pvp, sizeof(lost_pvp), &tmp, nullptr);
+	else
+		lost_pvp = false;
 }
 
 //=================================================================================================

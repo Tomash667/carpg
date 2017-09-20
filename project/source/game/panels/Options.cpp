@@ -131,31 +131,31 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 	bts[1].size = GUI.default_font->CalculateSize(bts[1].text) + Int2(24, 24);
 
 	bts[0].size.x = bts[1].size.x = max(bts[0].size.x, bts[1].size.x);
-	bts[0].pos = Int2(286, 400);
-	bts[1].pos = Int2(size.x - 16 - bts[0].size.x, 400);
+	bts[0].pos = Int2(20, 410);
+	bts[1].pos = Int2(bts[0].size.x + 40, 410);
 
-	scroll[0].pos = Int2(290, 250);
+	scroll[0].pos = Int2(290, 290);
 	scroll[0].size = Int2(250, 16);
 	scroll[0].total = 100;
 	scroll[0].part = 10;
 	scroll[0].offset = 0;
 	scroll[0].hscrollbar = true;
 
-	scroll[1].pos = Int2(290, 290);
+	scroll[1].pos = Int2(290, 330);
 	scroll[1].size = Int2(250, 16);
 	scroll[1].total = 100;
 	scroll[1].part = 10;
 	scroll[1].offset = 0;
 	scroll[1].hscrollbar = true;
 
-	scroll[2].pos = Int2(290, 330);
+	scroll[2].pos = Int2(290, 370);
 	scroll[2].size = Int2(250, 16);
 	scroll[2].total = 100;
 	scroll[2].part = 10;
 	scroll[2].offset = 0;
 	scroll[2].hscrollbar = true;
 
-	scroll[3].pos = Int2(290, 370);
+	scroll[3].pos = Int2(290, 410);
 	scroll[3].size = Int2(250, 16);
 	scroll[3].total = 100;
 	scroll[3].part = 10;
@@ -277,19 +277,19 @@ void Options::Draw(ControlDrawData* /*cdd*/)
 	GUI.DrawText(GUI.default_font, txLanguage, DT_SINGLELINE, BLACK, r2);
 	// G³oœnoœæ dŸwiêku (0)
 	r2.Left() = global_pos.x + 290;
-	r2.Top() = global_pos.y + 230;
+	r2.Top() = global_pos.y + 270;
 	r2.Bottom() = r2.Top() + 20;
 	GUI.DrawText(GUI.default_font, Format("%s (%d)", txSoundVolume, sound_volume), DT_SINGLELINE, BLACK, r2);
 	// G³oœnoœæ muzyki (0)
-	r2.Top() = global_pos.y + 270;
+	r2.Top() = global_pos.y + 310;
 	r2.Bottom() = r2.Top() + 20;
 	GUI.DrawText(GUI.default_font, Format("%s (%d)", txMusicVolume, music_volume), DT_SINGLELINE, BLACK, r2);
 	// Czu³oœæ myszki (0)
-	r2.Top() = global_pos.y + 310;
+	r2.Top() = global_pos.y + 350;
 	r2.Bottom() = r2.Top() + 20;
 	GUI.DrawText(GUI.default_font, Format("%s (%d)", txMouseSensitivity, mouse_sensitivity), DT_SINGLELINE, BLACK, r2);
 	// Zasiêg trawy (0)
-	r2.Top() = global_pos.y + 350;
+	r2.Top() = global_pos.y + 390;
 	r2.Bottom() = r2.Top() + 20;
 	GUI.DrawText(GUI.default_font, Format("%s (%d)", txGrassRange, grass_range), DT_SINGLELINE, BLACK, r2);
 

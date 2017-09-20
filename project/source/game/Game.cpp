@@ -695,6 +695,7 @@ void Game::OnReset()
 		V(it->e->OnLostDevice());
 
 	SafeRelease(tItemRegion);
+	SafeRelease(tItemRegionRot);
 	SafeRelease(tMinimap);
 	SafeRelease(tChar);
 	SafeRelease(tSave);
@@ -1677,8 +1678,13 @@ void Game::ClearPointers()
 
 	// tekstury render target, powierzchnie
 	tItemRegion = nullptr;
+	tItemRegionRot = nullptr;
 	tMinimap = nullptr;
 	tChar = nullptr;
+	sItemRegion = nullptr;
+	sItemRegionRot = nullptr;
+	sChar = nullptr;
+	sSave = nullptr;
 	for(int i = 0; i < 3; ++i)
 	{
 		sPostEffect[i] = nullptr;
@@ -1740,6 +1746,7 @@ void Game::OnCleanup()
 
 	// tekstury render target, powierzchnie
 	SafeRelease(tItemRegion);
+	SafeRelease(sItemRegionRot);
 	SafeRelease(tMinimap);
 	SafeRelease(tChar);
 	SafeRelease(tSave);
@@ -2649,6 +2656,7 @@ void Game::UnitStandup(Unit& u)
 		u.mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
 		u.mesh_inst->groups[0].speed = 1.f;
 		u.action = A_ANIMATION;
+		u.animation = ANI_STAND;
 	}
 	else
 		u.action = A_NONE;

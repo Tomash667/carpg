@@ -2616,8 +2616,6 @@ int Game::GatherDrawBatchLights(LevelContext& ctx, SceneNode* node, float x, flo
 	}
 	else
 	{
-		assert(node);
-
 		Vec3 lights_pos[3];
 		float lights_range[3] = { 0 };
 		const Vec2 obj_pos(x, z);

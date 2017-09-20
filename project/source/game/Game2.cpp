@@ -3115,6 +3115,8 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 			auto unit = SpawnUnitNearLocation(GetContext(*p->unit), spawn_pos, *FindUnitData("white_wolf_sum"), nullptr, p->unit->level);
 			unit->summoner = p->unit;
 			unit->in_arena = p->unit->in_arena;
+			if(unit->in_arena != -1)
+				at_arena.push_back(unit);
 			if(Net::IsServer())
 				Net_SpawnUnit(unit);
 			AddTeamMember(unit, true);
@@ -8026,6 +8028,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						RemoveTeamMember(&u);
 						u.action = A_DESPAWN;
 						u.timer = Random(2.5f, 5.f);
+						u.summoner = nullptr;
 					}
 				}
 				else if(u.live_state == Unit::FALLING)
@@ -15754,7 +15757,7 @@ bool Game::WarpToArea(LevelContext& ctx, const Box2d& area, float radius, Vec3& 
 void Game::RemoveUnit(Unit* unit, bool notify)
 {
 	assert(unit);
-	if(unit->summoner != nullptr)
+	if(unit->action == A_DESPAWN)
 		SpawnUnitEffect(*unit);
 	unit->to_remove = true;
 	to_remove.push_back(unit);
@@ -19182,76 +19185,79 @@ void Game::UpdateGame2(float dt)
 						AddGoldArena(ile);
 					}
 
-					for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
+					for(Unit* unit : at_arena)
 					{
-						if((*it)->in_arena == 0)
+						if(unit->in_arena != 0)
 						{
-							(*it)->frozen = FROZEN::NO;
-							(*it)->in_arena = -1;
-							if((*it)->hp <= 0.f)
-							{
-								(*it)->HealPoison();
-								(*it)->live_state = Unit::ALIVE;
-								(*it)->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-								(*it)->mesh_inst->groups[0].speed = 1.f;
-								(*it)->action = A_ANIMATION;
-								if((*it)->IsAI())
-									(*it)->ai->Reset();
-								if(Net::IsOnline())
-								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::STAND_UP;
-									c.unit = *it;
-								}
-							}
-
-							UnitWarpData& warp_data = Add1(unit_warp_data);
-							warp_data.unit = *it;
-							warp_data.where = -1;
-
-							if(Net::IsOnline())
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::CHANGE_ARENA_STATE;
-								c.unit = *it;
-							}
+							RemoveUnit(unit);
+							continue;
 						}
-						else
-							RemoveUnit(*it);
-					}
-				}
-				else
-				{
-					for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-					{
-						(*it)->frozen = FROZEN::NO;
-						(*it)->in_arena = -1;
-						if((*it)->hp <= 0.f)
+
+						unit->frozen = FROZEN::NO;
+						unit->in_arena = -1;
+						if(unit->hp <= 0.f)
 						{
-							(*it)->HealPoison();
-							(*it)->live_state = Unit::ALIVE;
-							(*it)->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-							(*it)->mesh_inst->groups[0].speed = 1.f;
-							(*it)->action = A_ANIMATION;
-							if((*it)->IsAI())
-								(*it)->ai->Reset();
+							unit->HealPoison();
+							unit->live_state = Unit::ALIVE;
+							unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+							unit->mesh_inst->groups[0].speed = 1.f;
+							unit->action = A_ANIMATION;
+							unit->animation = ANI_STAND;
+							if(unit->IsAI())
+								unit->ai->Reset();
 							if(Net::IsOnline())
 							{
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::STAND_UP;
-								c.unit = *it;
+								c.unit = unit;
 							}
 						}
 
 						UnitWarpData& warp_data = Add1(unit_warp_data);
-						warp_data.unit = *it;
+						warp_data.unit = unit;
 						warp_data.where = -1;
 
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHANGE_ARENA_STATE;
-							c.unit = *it;
+							c.unit = unit;
+						}
+					}
+				}
+				else
+				{
+					for(Unit* unit : at_arena)
+					{
+						unit->frozen = FROZEN::NO;
+						unit->in_arena = -1;
+						if(unit->hp <= 0.f)
+						{
+							unit->HealPoison();
+							unit->live_state = Unit::ALIVE;
+							unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+							unit->mesh_inst->groups[0].speed = 1.f;
+							unit->action = A_ANIMATION;
+							unit->animation = ANI_STAND;
+							if(unit->IsAI())
+								unit->ai->Reset();
+							if(Net::IsOnline())
+							{
+								NetChange& c = Add1(Net::changes);
+								c.type = NetChange::STAND_UP;
+								c.unit = unit;
+							}
+						}
+
+						UnitWarpData& warp_data = Add1(unit_warp_data);
+						warp_data.unit = unit;
+						warp_data.where = -1;
+
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CHANGE_ARENA_STATE;
+							c.unit = unit;
 						}
 					}
 
@@ -19414,23 +19420,24 @@ void Game::UpdateGame2(float dt)
 		if(ile[0] == 0 || ile[1] == 0)
 		{
 			// o¿yw wszystkich
-			for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
+			for(Unit* unit : at_arena)
 			{
-				(*it)->in_arena = -1;
-				if((*it)->hp <= 0.f)
+				unit->in_arena = -1;
+				if(unit->hp <= 0.f)
 				{
-					(*it)->HealPoison();
-					(*it)->live_state = Unit::ALIVE;
-					(*it)->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-					(*it)->mesh_inst->groups[0].speed = 1.f;
-					(*it)->action = A_ANIMATION;
-					if((*it)->IsAI())
-						(*it)->ai->Reset();
+					unit->HealPoison();
+					unit->live_state = Unit::ALIVE;
+					unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+					unit->mesh_inst->groups[0].speed = 1.f;
+					unit->action = A_ANIMATION;
+					unit->animation = ANI_STAND;
+					if(unit->IsAI())
+						unit->ai->Reset();
 					if(Net::IsOnline())
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::STAND_UP;
-						c.unit = *it;
+						c.unit = unit;
 					}
 				}
 
@@ -19438,7 +19445,7 @@ void Game::UpdateGame2(float dt)
 				{
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::CHANGE_ARENA_STATE;
-					c.unit = *it;
+					c.unit = unit;
 				}
 			}
 
