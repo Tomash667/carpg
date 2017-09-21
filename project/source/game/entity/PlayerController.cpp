@@ -531,7 +531,7 @@ void PlayerController::Load(HANDLE file)
 		action_recharge = 0.f;
 		action_charges = GetAction().charges;
 	}
-	if(LOAD_VERSION <= V_CURRENT)
+	if(LOAD_VERSION < V_0_5_1)
 		ResetStatState();
 
 	action = Action_None;

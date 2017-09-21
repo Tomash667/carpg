@@ -309,6 +309,7 @@ void Quest_Evil::SetProgress(int prog2)
 			Object& obj = game->local_ctx.objects->at(index);
 			obj.base = BaseObject::Get("altar");
 			obj.mesh = obj.base->mesh;
+			ResourceManager::Get<Mesh>().Load(obj.mesh);
 			// usuñ cz¹steczki
 			float best_dist = 999.f;
 			ParticleEmitter* pe = nullptr;

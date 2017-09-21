@@ -11,6 +11,8 @@ Version 0.6 (2017-10-??):
 - fixed crashes and missing texts witch 3+ players on client getting disconnected between loading levels/world
 - fixed crash on loading when new player joins loaded game
 - fixed crashes and invalid working of lobby when loading game with 3+ players
+- fixed crash when alt-tabbing at very start of initialization [Zettaton]
+- fixed crash after killing evil boss [Medarc]
 - fixed clients failed to load when server quit on worldmap and then start new game
 - fixed using warp command when unit is using usable
 - fixed player stats panel showing randomly colors for attributes/skills

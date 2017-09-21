@@ -31,7 +31,7 @@ void PlayerInfo::Load(HANDLE file)
 	ReadFile(file, &id, sizeof(id), &tmp, nullptr);
 	ReadFile(file, &devmode, sizeof(devmode), &tmp, nullptr);
 	int old_left;
-	if(LOAD_VERSION < V_CURRENT)
+	if(LOAD_VERSION < V_0_5_1)
 	{
 		bool left;
 		ReadFile(file, &left, sizeof(left), &tmp, nullptr);
@@ -44,7 +44,7 @@ void PlayerInfo::Load(HANDLE file)
 	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
 	u = Unit::GetByRefid(refid);
 	ReadStringArray<int, word>(file, notes);
-	if(LOAD_VERSION < V_CURRENT)
+	if(LOAD_VERSION < V_0_5_1)
 		ReadFile(file, &left, sizeof(left), &tmp, nullptr);
 	if(old_left == 0 || old_left == -1)
 		left = LEFT_NO;

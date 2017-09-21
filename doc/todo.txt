@@ -10,6 +10,7 @@ CURRENT:
 ? w karczmie po powrocie nie było jedzenia, w mieście; eat and return
 - unit talking set ANI_PLAY but then don't change it to ANI_STAND (after arena combat, after accepting combat, and more)
 - hero warrior spawned at 20 lvl have worst armor..., lather armor of hi quality (adam short sword, elven bow)
++ update bug founders in readme
 ===============================================================================================================
 NEW:
 ===============================================================================================================
