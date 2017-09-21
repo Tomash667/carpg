@@ -7,6 +7,8 @@ Wersja 0.6 (2017-10-??):
 - naprawiony crash i brakuj¹ce komunikaty dla 3+ graczy gdy klient traci po³¹czenie pomiêdzy wczytywanymi poziomami/œwiatem
 - naprawiony crash gdy nowy gracz do³¹cza do wczytywanej gry
 - naprawiony crash i nieprawid³owe dzia³anie lobby gdy jest wczytywana gra z 3+ graczami
+- naprawiony crash przy alt-tabowaniu na samym pocz¹tku inicjalizacji gry [Zettaton]
+- naprawiony crash po zabicu z³ego bossa [Medarc]
 - naprawiony b³¹d wczytywania klientów gdy serwer opuœci grê na mapie œwiata a potem rozpocznie now¹ grê
 - naprawiona komenda warp gdy jednostka u¿ywa obiektu
 - naprawiony b³¹d z losowym wyœwietlaniem kolorów przy atrybutach/umiejêtnoœciach
