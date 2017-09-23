@@ -3113,14 +3113,17 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 				spawn_pos = *pos;
 			}
 			auto unit = SpawnUnitNearLocation(GetContext(*p->unit), spawn_pos, *FindUnitData("white_wolf_sum"), nullptr, p->unit->level);
-			unit->summoner = p->unit;
-			unit->in_arena = p->unit->in_arena;
-			if(unit->in_arena != -1)
-				at_arena.push_back(unit);
-			if(Net::IsServer())
-				Net_SpawnUnit(unit);
-			AddTeamMember(unit, true);
-			SpawnUnitEffect(*unit);
+			if(unit)
+			{
+				unit->summoner = p->unit;
+				unit->in_arena = p->unit->in_arena;
+				if(unit->in_arena != -1)
+					at_arena.push_back(unit);
+				if(Net::IsServer())
+					Net_SpawnUnit(unit);
+				AddTeamMember(unit, true);
+				SpawnUnitEffect(*unit);
+			}
 		}
 		else if(!from_server)
 			action_point = pc_data.action_point;
@@ -6965,7 +6968,7 @@ void GiveItem(Unit& unit, const int*& ps, int count)
 		const LeveledItemList& lis = *(const LeveledItemList*)(*ps);
 		int level = max(0, unit.level - 4);
 		for(int i = 0; i < count; ++i)
-			unit.AddItemAndEquipIfNone(lis.Get(Random(Random(level, unit.level))));
+			unit.AddItemAndEquipIfNone(lis.Get(Random(level, unit.level)));
 	}
 	else if(type == PS_LEVELED_LIST_MOD)
 	{
@@ -7923,8 +7926,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						{
 								int flags = obj->getCollisionFlags();
 								if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
-									return false;
-								return true;
+									return LT_IGNORE;
+								return LT_COLLIDE;
 						}, t);
 						if(t == 1.f)
 						{
@@ -8869,10 +8872,10 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					{
 						int flags = obj->getCollisionFlags();
 						if(IS_SET(flags, CG_TERRAIN))
-							return false;
+							return LT_IGNORE;
 						if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == &u)
-							return false;
-						return true;
+							return LT_IGNORE;
+						return LT_COLLIDE;
 					}, t);
 				}
 				else
@@ -8886,9 +8889,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						if(!second)
 						{
 							if(IS_SET(flags, CG_TERRAIN))
-								return false;
+								return LT_IGNORE;
 							if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == &u)
-								return false;
+								return LT_IGNORE;
 						}
 						else
 						{
@@ -8896,10 +8899,10 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							{
 								Unit* unit = (Unit*)obj->getUserPointer();
 								targets.push_back(unit);
-								return false;
+								return LT_IGNORE;
 							}
 						}
-						return true;
+						return LT_COLLIDE;
 					}, t, nullptr, true);
 
 					// check all hitted
@@ -8931,8 +8934,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							{
 								int flags = obj->getCollisionFlags();
 								if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
-									return false;
-								return true;
+									return LT_IGNORE;
+								return LT_COLLIDE;
 							};
 
 							// try to push forward
@@ -12800,38 +12803,54 @@ bool Game::RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoin
 
 struct ConvexCallback : public btCollisionWorld::ConvexResultCallback
 {
-	delegate<bool(btCollisionObject*, bool)> clbk;
+	delegate<Game::LINE_TEST_RESULT(btCollisionObject*, bool)> clbk;
 	vector<float>* t_list;
-	bool use_clbk2;
+	float end_t, closest;
+	bool use_clbk2, end = false;
 
-	ConvexCallback(delegate<bool(btCollisionObject*, bool)> clbk, vector<float>* t_list, bool use_clbk2) : clbk(clbk), t_list(t_list), use_clbk2(use_clbk2)
+	ConvexCallback(delegate<Game::LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, vector<float>* t_list, bool use_clbk2) : clbk(clbk), t_list(t_list), use_clbk2(use_clbk2),
+		end(false), end_t(1.f), closest(1.1f)
 	{
 	}
 
 	bool needsCollision(btBroadphaseProxy* proxy0) const override
 	{
-		return clbk((btCollisionObject*)proxy0->m_clientObject, false);
+		return clbk((btCollisionObject*)proxy0->m_clientObject, false) == Game::LT_COLLIDE;
 	}
 
 	float addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
 	{
 		if(use_clbk2)
 		{
-			if(!clbk((btCollisionObject*)convexResult.m_hitCollisionObject, true))
+			auto result = clbk((btCollisionObject*)convexResult.m_hitCollisionObject, true);
+			if(result == Game::LT_IGNORE)
 				return m_closestHitFraction;
+			else if(result == Game::LT_END)
+			{
+				if(end_t > convexResult.m_hitFraction)
+				{
+					closest = min(closest, convexResult.m_hitFraction);
+					m_closestHitFraction = convexResult.m_hitFraction;
+					end_t = convexResult.m_hitFraction;
+				}
+				end = true;
+				return 1.f;
+			}
+			else if(end && convexResult.m_hitFraction > end_t)
+				return 1.f;
 		}
-		m_closestHitFraction = convexResult.m_hitFraction;
+		closest = min(closest, convexResult.m_hitFraction);
 		if(t_list)
-			t_list->push_back(m_closestHitFraction);
-		return convexResult.m_hitFraction;
+			t_list->push_back(convexResult.m_hitFraction);
+		// return value is unused
+		return 1.f;
 	}
 };
 
-bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*, bool)> clbk, float& t, vector<float>* t_list,
-	bool use_clbk2)
+bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, float& t,
+	vector<float>* t_list, bool use_clbk2, float* end_t)
 {
 	assert(shape->isConvex());
-	assert(!((t_list != nullptr) && use_clbk2)); // todo
 
 	btTransform t_from, t_to;
 	t_from.setIdentity();
@@ -12845,8 +12864,15 @@ bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, 
 
 	phy_world->convexSweepTest((btConvexShape*)shape, t_from, t_to, callback);
 
-	t = callback.m_closestHitFraction;
-	return callback.hasHit();
+	t = callback.closest;
+	if(end_t)
+	{
+		if(callback.end)
+			*end_t = callback.end_t;
+		else
+			*end_t = 1.f;
+	}
+	return callback.closest <= 1.0f;
 }
 
 struct ContactTestCallback : public btCollisionWorld::ContactResultCallback

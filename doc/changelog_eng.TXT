@@ -24,6 +24,9 @@ Version 0.6 (2017-10-??):
 - fixed invalid rumor texts in journal for some quests
 - fixed summoning wolf on arena
 - fixed allies declining/agreeing randomly to pvp after loading
+- fixed units spawning randomly with worse items then they should have for their level
+- fixed summoning wolf thru walls/door/arena
+- fixed crash when summoned wolf inside wall
 
 --------------------------------------------------------------------------------
 Version 0.5 (2017-09-07):

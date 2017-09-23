@@ -352,11 +352,13 @@ Thanks for bug founding:
 	darktorq
 	Docucat
 	fire
+	Medarc
 	Minister of Death
 	Paradox Edge
 	thebard88
 	Vinur_Gamall
 	XNautPhD
+	Zettaton
 	Zinny
 
 Models:

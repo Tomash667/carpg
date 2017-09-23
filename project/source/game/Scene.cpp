@@ -1857,10 +1857,10 @@ void Game::PrepareAreaPath()
 		{
 			int flags = obj->getCollisionFlags();
 			if (IS_SET(flags, CG_TERRAIN))
-				return false;
+				return LT_IGNORE;
 			if (IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit || ignore_units)
-				return false;
-			return true;
+				return LT_IGNORE;
+			return LT_COLLIDE;
 		}, t);
 
 		float len = action.area_size.x * t;
@@ -1926,8 +1926,11 @@ void Game::PrepareAreaPath()
 		const float cam_max = 4.63034153f;
 		const float cam_min = 4.08159288f;
 		const float radius = action.area_size.x / 2;
+		const float unit_r = pc->unit->GetUnitRadius();
 
-		float range = (Clamp(cam.rot.y, cam_min, cam_max) - cam_min) / (cam_max - cam_min) * action.area_size.y + 0.1f;
+		float range = (Clamp(cam.rot.y, cam_min, cam_max) - cam_min) / (cam_max - cam_min) * action.area_size.y;
+		if(range < radius + unit_r)
+			range = radius + unit_r;
 		const float min_t = action.area_size.x / range / 2;
 		float rot = Clip(pc->unit->rot + PI);
 		static vector<float> t_forward;
@@ -1938,83 +1941,104 @@ void Game::PrepareAreaPath()
 		t_forward.clear();
 		t_backward.clear();
 
-		auto clbk = [this](btCollisionObject* obj, bool)
+		auto clbk = [this](btCollisionObject* obj, bool second)
 		{
 			int flags = obj->getCollisionFlags();
-			if (IS_SET(flags, CG_TERRAIN))
-				return false;
-			return true;
+			if(!second)
+			{
+				if(IS_SET(flags, CG_TERRAIN))
+					return LT_IGNORE;
+				if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit)
+					return LT_IGNORE;
+				return LT_COLLIDE;
+			}
+			else
+			{
+				if(IS_SET(flags, CG_BUILDING | CG_DOOR))
+					return LT_END;
+				else
+					return LT_COLLIDE;
+			}
 		};
 
-		float t;
+		float t, end_t;
 		Vec3 dir_normal(sin(rot), 0, cos(rot));
 		Vec3 dir = dir_normal * range;
-		Vec3 from = pos + dir_normal * radius * 2;
-		LineTest(shape_summon, from, dir, clbk, t, &t_forward);
+		Vec3 from = pos;
+		LineTest(shape_summon, from, dir, clbk, t, &t_forward, true, &end_t);
 		LineTest(shape_summon, from + dir, -dir, clbk, t, &t_backward);
 
-		if(t_forward.empty() && t_backward.empty())
-			t = 1.f;
-		else
+		// merge t's to find free spots, we only use last one
+		static vector<std::pair<float, bool>> t_merged;
+		const bool OPEN = true;
+		const bool CLOSE = false;
+		t_merged.clear();
+		float unit_t = pc->unit->GetUnitRadius() / range;
+		if(unit_t < end_t)
 		{
-			// merge t's to find free spots, we only use last one
-			static vector<std::pair<float, bool>> t_merged;
-			const bool OPEN = true;
-			const bool CLOSE = false;
-			t_merged.clear();
-			for(float f : t_forward)
-				t_merged.push_back(std::pair<float, bool>(f, OPEN));
-			for(float f : t_backward)
-				t_merged.push_back(std::pair<float, bool>(1.f - f, CLOSE));
-			std::sort(t_merged.begin(), t_merged.end(), [](const std::pair<float, bool>& a, const std::pair<float, bool>& b) { return a.first < b.first; });
-
-			// get list of free ranges
-			//const float extra_t = range / (range + min_t);
-			bool open = false;
-			float start = 0.f;
-			static vector<Vec2> results;
-			results.clear();
-			for(auto& point : t_merged)
-			{
-				if(open)
-				{
-					if(point.second == CLOSE)
-					{
-						open = false;
-						start = point.first;
-					}
-				}
-				else
-				{
-					if(point.second == OPEN)
-					{
-						open = true;
-						float len = point.first - start;
-						if(len >= min_t)
-							results.push_back(Vec2(start, point.first));
-					}
-					else
-						start = point.first;
-				}
-			}
-			if(!open)
-			{
-				float len = 1.f - start;
-				if(len >= min_t)
-					results.push_back(Vec2(start, 1.f));
-			}
-
-			// get best T, actualy last one
-			if(results.empty())
-				t = -1.f;
-			else
-				t = results.back().y;
+			t_merged.push_back(std::pair<float, bool>(0.f, OPEN));
+			t_merged.push_back(std::pair<float, bool>(unit_t, CLOSE));
 		}
+		for(float f : t_forward)
+		{
+			if(f >= end_t)
+				break;
+			t_merged.push_back(std::pair<float, bool>(f, OPEN));
+		}
+		t_merged.push_back(std::pair<float, bool>(end_t, OPEN));
+		for(float f : t_backward)
+		{
+			if(f == 0.f)
+				f = 1.f;
+			else
+				f = 1.f - (f + radius / range);
+			if(f >= end_t)
+				continue;
+			t_merged.push_back(std::pair<float, bool>(f, CLOSE));
+		}
+		std::sort(t_merged.begin(), t_merged.end(), [](const std::pair<float, bool>& a, const std::pair<float, bool>& b) { return a.first < b.first; });
+
+		// get list of free ranges
+		//const float extra_t = range / (range + min_t);
+		int open = 0;
+		float start = 0.f;
+		static vector<Vec2> results;
+		results.clear();
+		for(auto& point : t_merged)
+		{
+			if(point.second == CLOSE)
+			{
+				--open;
+				start = point.first;
+			}
+			else
+			{
+				if(open == 0)
+				{
+					float len = point.first - start;
+					if(len >= min_t)
+						results.push_back(Vec2(start, point.first));
+				}
+				++open;
+			}
+		}
+		if(open == 0)
+		{
+			float len = 1.f - start;
+			if(len >= min_t)
+				results.push_back(Vec2(start, 1.f));
+		}
+
+		// get best T, actualy last one
+		if(results.empty())
+			t = -1.f;
+		else
+			t = results.back().y;
 
 		if(t < 0)
 		{
 			// no free space
-			t = 1.f;
+			t = end_t;
 			area.ok = 0;
 			pc_data.action_ok = false;
 		}
@@ -2026,14 +2050,14 @@ void Game::PrepareAreaPath()
 		bool outside = (location->outside && pc->unit->in_building == -1);
 
 		// build circle
-		PrepareAreaPathCircle(area, radius, t * range + radius * 2, rot, outside);
+		PrepareAreaPathCircle(area, radius, t * range, rot, outside);
 
 		// build yellow circle
 		if(t != 1.f)
 		{
 			Area2* y_area = area2_pool.Get();
 			y_area->ok = 1;
-			PrepareAreaPathCircle(*y_area, radius, range + radius * 2, rot, outside);
+			PrepareAreaPathCircle(*y_area, radius, range, rot, outside);
 			draw_batch.areas2.push_back(y_area);
 		}
 
@@ -2046,18 +2070,19 @@ void Game::PrepareAreaPath()
 void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float rot, bool outside)
 {
 	const float h = 0.06f;
+	const int circle_points = 10;
 
-	area.points.resize(9);
+	area.points.resize(circle_points + 1);
 	area.points[0] = Vec3(0, h, 0 + range);
 	float angle = 0;
-	for(int i = 0; i < 8; ++i)
+	for(int i = 0; i < circle_points; ++i)
 	{
 		area.points[i + 1] = Vec3(sin(angle)*radius, h, cos(angle)*radius + range);
-		angle += PI / 4;
+		angle += (PI * 2) / circle_points;
 	}
 
 	Matrix mat = Matrix::RotationY(rot);
-	for(int i = 0; i < 9; ++i)
+	for(int i = 0; i < circle_points + 1; ++i)
 	{
 		area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
 		if(outside)
@@ -2065,11 +2090,11 @@ void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float r
 	}
 
 	area.faces.clear();
-	for(int i = 0; i < 8; ++i)
+	for(int i = 0; i < circle_points; ++i)
 	{
 		area.faces.push_back(0);
 		area.faces.push_back(i + 1);
-		area.faces.push_back((i + 2) == 9 ? 1 : (i + 2));
+		area.faces.push_back((i + 2) == (circle_points + 1) ? 1 : (i + 2));
 	}
 }
 

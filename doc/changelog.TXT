@@ -24,6 +24,9 @@ Wersja 0.6 (2017-10-??):
 - naprawione nieprawid³owe teksty plotek w dzienniku dla niektórych questów
 - naprawione przywo³ywanie wilka na arenie
 - naprawione losowe zgadzenie/odmawianie pvp przez npc po wczytaniu gry
+- naprawione losowe generowanie jednostke z o wiele slabszymi przedmiotami ni¿ ich poziom
+- naprawione przywo³ywanie wilka za œcian¹/drzwiami/na arenie
+- naprawiony crash po przywo³aniu wilka w œrodku œciany
 
 --------------------------------------------------------------------------------
 Wersja 0.5 (2017-09-07):

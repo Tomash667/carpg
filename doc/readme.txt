@@ -294,11 +294,13 @@ Podziêkowania za znalezione b³êdy:
 	darktorq
 	Docucat
 	fire
+	Medarc
 	Minister of Death
 	Paradox Edge
 	thebard88
 	Vinur_Gamall
 	XNautPhD
+	Zettaton
 	Zinny
 
 Modele:

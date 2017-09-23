@@ -2,15 +2,11 @@
 ===============================================================================================================
 CURRENT:
 - innkeeper - stands still, no animations/actions
-- can summon wolf outside of arena - there should be marked as WALL
-	- buildings should block too
-	- building colliders (some) too
 - stupid website rewrite rule
 ? tournament - przenoszenie do walki gdy jesteś w środku areny
-? w karczmie po powrocie nie było jedzenia, w mieście; eat and return
 - unit talking set ANI_PLAY but then don't change it to ANI_STAND (after arena combat, after accepting combat, and more)
-- hero warrior spawned at 20 lvl have worst armor..., lather armor of hi quality (adam short sword, elven bow)
-+ update bug founders in readme
+- fix cast spell - shield don't move
+- window don't get any focus at startup...
 ===============================================================================================================
 NEW:
 ===============================================================================================================

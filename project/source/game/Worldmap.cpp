@@ -1943,6 +1943,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 		return;
 	}
 
+	// https://github.com/Tomash667/carpg/wiki/%5BPL%5D-Buildings-export
 	// o_x_[!N!]nazwa_???
 	// x (o - obiekt, r - obrócony obiekt, p - fizyka, s - strefa, c - postaæ, m - maska œwiat³a, d - detal wokó³ obiektu, l - limited rot object)
 	// N - wariant (tylko obiekty)
@@ -2050,12 +2051,14 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 			// fizyka
 			if(token == "circle" || token == "circlev")
 			{
+				bool is_wall = (token == "circle");
+
 				CollisionObject& cobj = Add1(ctx.colliders);
 				cobj.type = CollisionObject::SPHERE;
 				cobj.radius = pt.size.x;
 				cobj.pt.x = pos.x;
 				cobj.pt.y = pos.z;
-				cobj.ptr = (token == "circle" ? CAM_COLLIDER : nullptr);
+				cobj.ptr = (is_wall ? CAM_COLLIDER : nullptr);
 
 				if(ctx.type == LevelContext::Outside)
 				{
@@ -2067,19 +2070,23 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 				shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
 				co->setCollisionShape(shape);
-				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_COLLIDER);
+				int group = (is_wall ? CG_BUILDING : CG_COLLIDER);
+				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
 				co->getWorldTransform().setOrigin(ToVector3(pos));
-				phy_world->addCollisionObject(co, CG_COLLIDER);
+				phy_world->addCollisionObject(co, group);
 			}
-			else if(token == "square" || token == "squarev" || token == "squarevp")
+			else if(token == "square" || token == "squarev" || token == "squarevn" || token == "squarevp")
 			{
+				bool is_wall = (token == "square" || token == "squarevn");
+				bool block_camera = (token == "square");
+
 				CollisionObject& cobj = Add1(ctx.colliders);
 				cobj.type = CollisionObject::RECTANGLE;
 				cobj.pt.x = pos.x;
 				cobj.pt.y = pos.z;
 				cobj.w = pt.size.x;
 				cobj.h = pt.size.z;
-				cobj.ptr = (token == "square" ? CAM_COLLIDER : nullptr);
+				cobj.ptr = (block_camera ? CAM_COLLIDER : nullptr);
 
 				btBoxShape* shape;
 				if(token != "squarevp")
@@ -2102,9 +2109,10 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 				shapes.push_back(shape);
 				btCollisionObject* co = new btCollisionObject;
 				co->setCollisionShape(shape);
-				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_COLLIDER);
+				int group = (is_wall ? CG_BUILDING : CG_COLLIDER);
+				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
 				co->getWorldTransform().setOrigin(ToVector3(pos));
-				phy_world->addCollisionObject(co, CG_COLLIDER);
+				phy_world->addCollisionObject(co, group);
 
 				if(roti != 0)
 				{
