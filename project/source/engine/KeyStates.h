@@ -141,6 +141,7 @@ struct KeyStates
 	}
 
 private:
+	vector<byte> to_release;
 	byte keystate[256];
 	bool keyrepeat[256];
 	bool doubleclk[5];

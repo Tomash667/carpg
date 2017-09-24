@@ -99,7 +99,7 @@ void MeshInstance::Play(Mesh::Animation* anim, int flags, int group)
 //=================================================================================================
 // Wy³¹cz grupê
 //=================================================================================================
-void MeshInstance::Deactivate(int group)
+void MeshInstance::Deactivate(int group, bool in_update)
 {
 	assert(InRange(group, 0, mesh->head.n_groups - 1));
 
@@ -107,7 +107,7 @@ void MeshInstance::Deactivate(int group)
 
 	if(IS_SET(gr.state, FLAG_GROUP_ACTIVE))
 	{
-		SetupBlending(group);
+		SetupBlending(group, true, in_update);
 
 		if(IS_SET(gr.state, FLAG_RESTORE))
 		{
@@ -131,6 +131,12 @@ void MeshInstance::Update(float dt)
 	for(word i = 0; i < mesh->head.n_groups; ++i)
 	{
 		Group& gr = groups[i];
+
+		if(IS_SET(gr.state, FLAG_UPDATED))
+		{
+			CLEAR_BIT(gr.state, FLAG_UPDATED);
+			continue;
+		}
 
 		// blending
 		if(IS_SET(gr.state, FLAG_BLENDING))
@@ -169,7 +175,7 @@ void MeshInstance::Update(float dt)
 						if(IS_SET(gr.state, FLAG_STOP_AT_END))
 							Stop(i);
 						else
-							Deactivate(i);
+							Deactivate(i, true);
 					}
 					else
 					{
@@ -197,7 +203,7 @@ void MeshInstance::Update(float dt)
 						if(IS_SET(gr.state, FLAG_STOP_AT_END))
 							Stop(i);
 						else
-							Deactivate(i);
+							Deactivate(i, true);
 					}
 					else
 					{
@@ -369,7 +375,7 @@ void MeshInstance::SetupBones(Matrix* mat_scale)
 //=================================================================================================
 // Ustawia blending (przejœcia pomiêdzy animacjami)
 //=================================================================================================
-void MeshInstance::SetupBlending(int bones_group, bool first)
+void MeshInstance::SetupBlending(int bones_group, bool first, bool in_update)
 {
 	int anim_group;
 	const Group& gr_bones = groups[bones_group];
@@ -476,12 +482,14 @@ void MeshInstance::SetupBlending(int bones_group, bool first)
 	{
 		for(int group = 0; group < mesh->head.n_groups; ++group)
 		{
-			if(group != bones_group && (!groups[group].IsActive() ||
-				groups[group].prio < gr_bones.prio))
+			auto& gr = groups[group];
+			if(group != bones_group && (!gr.IsActive() || gr.prio < gr_bones.prio))
 			{
 				SetupBlending(group, false);
-				SET_BIT(groups[group].state, FLAG_BLENDING);
-				groups[group].blend_time = 0;
+				SET_BIT(gr.state, FLAG_BLENDING);
+				if(in_update && group > bones_group)
+					SET_BIT(gr.state, FLAG_UPDATED);
+				gr.blend_time = 0;
 			}
 		}
 	}
@@ -709,7 +717,7 @@ void MeshInstance::Write(BitStream& stream) const
 	{
 		stream.Write(group.time);
 		stream.Write(group.speed);
-		stream.WriteCasted<byte>(group.state);
+		stream.Write(group.state);
 		stream.WriteCasted<byte>(group.prio);
 		stream.WriteCasted<byte>(group.used_group);
 		if(group.anim)
@@ -739,7 +747,7 @@ bool MeshInstance::Read(BitStream& stream)
 	{
 		if(stream.Read(group.time) &&
 			stream.Read(group.speed) &&
-			stream.ReadCasted<byte>(group.state) &&
+			stream.Read(group.state) &&
 			stream.ReadCasted<byte>(group.prio) &&
 			stream.ReadCasted<byte>(group.used_group) &&
 			ReadString1(stream))

@@ -6691,7 +6691,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
-				BreakUnitAction(*unit, BREAK_ACTION_MODE::INSTANT);
+				BreakUnitAction(*unit, BREAK_ACTION_MODE::INSTANT, false, true);
 
 				int old_in_building = unit->in_building;
 				unit->in_building = in_building;
@@ -6728,7 +6728,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							pc->unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
 							pc->unit->mesh_inst->groups[0].speed = 1.f;
 							pc->unit->action = A_ANIMATION;
-							pc->unit->animation = ANI_STAND;
+							pc->unit->animation = ANI_PLAY;
 						}
 					}
 					Net::PushChange(NetChange::WARP);

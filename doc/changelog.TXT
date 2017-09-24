@@ -27,6 +27,8 @@ Wersja 0.6 (2017-10-??):
 - naprawione losowe generowanie jednostke z o wiele slabszymi przedmiotami ni¿ ich poziom
 - naprawione przywo³ywanie wilka za œcian¹/drzwiami/na arenie
 - naprawiony crash po przywo³aniu wilka w œrodku œciany
+- naprawione nie dzia³aj¹ca obs³uga klawiszy, eksplozja pozycji, nieprawid³owe animacje przy niskim fps
+- naprawiony brak animacji postaci czasami
 
 --------------------------------------------------------------------------------
 Wersja 0.5 (2017-09-07):

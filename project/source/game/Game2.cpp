@@ -85,7 +85,7 @@ PlayerController::Action InventoryModeToActionRequired(InventoryMode imode)
 }
 
 //=================================================================================================
-void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify)
+void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify, bool allow_animation)
 {
 	if(notify && Net::IsServer())
 	{
@@ -207,7 +207,10 @@ void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify)
 		}
 	}
 	else
-		unit.action = A_NONE;
+	{
+		if(unit.action != A_ANIMATION || !allow_animation)
+			unit.action = A_NONE;
+	}
 
 	unit.mesh_inst->frame_end_info = false;
 	unit.mesh_inst->frame_end_info2 = false;
@@ -1807,7 +1810,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					u.animation = ANI_WALK;
 
 				u.speed = run ? u.GetRunSpeed() : u.GetWalkSpeed();
-				u.prev_speed = (u.prev_speed + (u.speed - u.prev_speed)*dt * 3);
+				u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed)*dt * 3), 0.f, u.speed);
 				float speed = u.prev_speed * dt;
 
 				u.prev_pos = u.pos;
@@ -8006,6 +8009,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			u.current_animation = u.animation;
 		}
 
+		// aktualizuj animacjê
+		u.mesh_inst->Update(dt);
+
 		// koniec animacji idle
 		if(u.animation == ANI_IDLE && u.mesh_inst->frame_end_info)
 		{
@@ -8013,9 +8019,6 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			u.mesh_inst->groups[0].speed = 1.f;
 			u.animation = ANI_STAND;
 		}
-
-		// aktualizuj animacjê
-		u.mesh_inst->Update(dt);
 
 		// zmieñ stan z umiera na umar³ i stwórz krew (chyba ¿e tylko upad³)
 		if(!u.IsStanding())
@@ -14675,7 +14678,7 @@ void Game::WarpUnit(Unit& unit, const Vec3& pos)
 {
 	const float unit_radius = unit.GetUnitRadius();
 
-	BreakUnitAction(unit, BREAK_ACTION_MODE::INSTANT);
+	BreakUnitAction(unit, BREAK_ACTION_MODE::INSTANT, false, true);
 
 	global_col.clear();
 	LevelContext& ctx = GetContext(unit);
@@ -15645,7 +15648,7 @@ void Game::StartArenaCombat(int level)
 		{
 			if(unit->frozen == FROZEN::NO)
 			{
-				BreakUnitAction(*unit, BREAK_ACTION_MODE::NORMAL, true);
+				BreakUnitAction(*unit, BREAK_ACTION_MODE::NORMAL, true, true);
 
 				unit->frozen = FROZEN::YES;
 				unit->in_arena = 0;
@@ -15920,7 +15923,7 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 	ctx.dialog_wait = 1.f + float(strlen(ctx.dialog_text)) / 20;
 
 	int ani;
-	if(!ctx.talker->usable && ctx.talker->data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
+	if(!ctx.talker->usable && ctx.talker->data->type == UNIT_TYPE::HUMAN && ctx.talker->action == A_NONE && Rand() % 3 != 0)
 	{
 		ani = Rand() % 2 + 1;
 		ctx.talker->mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);
@@ -19232,7 +19235,7 @@ void Game::UpdateGame2(float dt)
 							unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
 							unit->mesh_inst->groups[0].speed = 1.f;
 							unit->action = A_ANIMATION;
-							unit->animation = ANI_STAND;
+							unit->animation = ANI_PLAY;
 							if(unit->IsAI())
 								unit->ai->Reset();
 							if(Net::IsOnline())
@@ -19268,7 +19271,7 @@ void Game::UpdateGame2(float dt)
 							unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
 							unit->mesh_inst->groups[0].speed = 1.f;
 							unit->action = A_ANIMATION;
-							unit->animation = ANI_STAND;
+							unit->animation = ANI_PLAY;
 							if(unit->IsAI())
 								unit->ai->Reset();
 							if(Net::IsOnline())
@@ -19460,7 +19463,7 @@ void Game::UpdateGame2(float dt)
 					unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
 					unit->mesh_inst->groups[0].speed = 1.f;
 					unit->action = A_ANIMATION;
-					unit->animation = ANI_STAND;
+					unit->animation = ANI_PLAY;
 					if(unit->IsAI())
 						unit->ai->Reset();
 					if(Net::IsOnline())
@@ -20888,7 +20891,7 @@ void Game::UnitTalk(Unit& u, cstring text)
 	game_gui->AddSpeechBubble(&u, text);
 
 	int ani = 0;
-	if(u.data->type == UNIT_TYPE::HUMAN && Rand() % 3 != 0)
+	if(u.data->type == UNIT_TYPE::HUMAN && u.action == A_NONE && Rand() % 3 != 0)
 	{
 		ani = Rand() % 2 + 1;
 		u.mesh_inst->Play(ani == 1 ? "i_co" : "pokazuje", PLAY_ONCE | PLAY_PRIO2, 0);

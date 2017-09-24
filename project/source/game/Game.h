@@ -1012,7 +1012,7 @@ public:
 		FALL,
 		INSTANT
 	};
-	void BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode = BREAK_ACTION_MODE::NORMAL, bool notify = false);
+	void BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode = BREAK_ACTION_MODE::NORMAL, bool notify = false, bool allow_animation = false);
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();

@@ -186,9 +186,9 @@ void GameGui::DrawFront()
 			if(u.IsAI())
 			{
 				AIController& ai = *u.ai;
-				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, LVL:%d\nAni:%d, A:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.level,
-					u.animation, str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer, ai.unit->run_attack ? 1 : 0),
-					u, text_pos, -1);
+				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, LVL:%d\nAni:%d, A:%d, Ai:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.level,
+					u.animation, u.action, str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer,
+					ai.unit->run_attack ? 1 : 0), u, text_pos, -1);
 			}
 			else
 			{

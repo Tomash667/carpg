@@ -2,13 +2,11 @@
 ===============================================================================================================
 CURRENT:
 - innkeeper - stands still, no animations/actions
-- stupid website rewrite rule
 ? tournament - przenoszenie do walki gdy jesteś w środku areny
-- unit talking set ANI_PLAY but then don't change it to ANI_STAND (after arena combat, after accepting combat, and more)
-- fix cast spell - shield don't move
-- window don't get any focus at startup...
+- stupid website rewrite rule
 ===============================================================================================================
 NEW:
+- with lag and speed player can move outside of building, require bullet physics
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

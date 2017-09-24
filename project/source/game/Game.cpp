@@ -2671,10 +2671,10 @@ void Game::UnitStandup(Unit& u)
 	Mesh::Animation* anim = u.mesh_inst->mesh->GetAnimation("wstaje2");
 	if(anim)
 	{
-		u.mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+		u.mesh_inst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
 		u.mesh_inst->groups[0].speed = 1.f;
 		u.action = A_ANIMATION;
-		u.animation = ANI_STAND;
+		u.animation = ANI_PLAY;
 	}
 	else
 		u.action = A_NONE;

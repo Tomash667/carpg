@@ -2472,7 +2472,7 @@ void Game::UpdateAi(float dt)
 			{
 				// ruch do ty³u
 				u.speed = u.GetWalkSpeed();
-				u.prev_speed = (u.prev_speed + (u.speed - u.prev_speed)*dt * 3);
+				u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed)*dt * 3), 0.f, u.speed);
 				float speed = u.prev_speed * dt;
 				const float kat = Vec3::LookAtAngle(u.pos, target_pos);
 
@@ -2697,7 +2697,7 @@ void Game::UpdateAi(float dt)
 					}
 
 					u.speed = run ? u.GetRunSpeed() : u.GetWalkSpeed();
-					u.prev_speed = (u.prev_speed + (u.speed - u.prev_speed)*dt * 3);
+					u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed)*dt * 3), 0.f, u.speed);
 					float speed = u.prev_speed * dt;
 					const float kat = Vec3::LookAtAngle(u.pos, move_target) + PI;
 

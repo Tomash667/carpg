@@ -27,6 +27,8 @@ Version 0.6 (2017-10-??):
 - fixed units spawning randomly with worse items then they should have for their level
 - fixed summoning wolf thru walls/door/arena
 - fixed crash when summoned wolf inside wall
+- fixed not working input with low fps, unit position exploding, wrong animations
+- fixed missing unit animations that happen sometimes
 
 --------------------------------------------------------------------------------
 Version 0.5 (2017-09-07):

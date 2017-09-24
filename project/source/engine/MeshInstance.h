@@ -44,7 +44,8 @@ struct MeshInstance
 		FLAG_BLENDING = 1 << 4,
 		FLAG_STOP_AT_END = 1 << 5,
 		FLAG_BLEND_WAIT = 1 << 6,
-		FLAG_RESTORE = 1 << 7
+		FLAG_RESTORE = 1 << 7,
+		FLAG_UPDATED = 1 << 8
 		// jeœli bêdzie wiêcej flagi potrzeba zmian w Read/Write
 	};
 
@@ -104,11 +105,11 @@ struct MeshInstance
 		CLEAR_BIT(groups[group].state, FLAG_PLAYING);
 	}
 	// deazktywój grupê
-	void Deactivate(int group = 0);
+	void Deactivate(int group = 0, bool in_update = false);
 	// aktualizacja animacji
 	void Update(float dt);
 	// ustawianie blendingu
-	void SetupBlending(int grupa, bool first = true);
+	void SetupBlending(int grupa, bool first = true, bool in_update = false);
 	// ustawianie koœci
 	void SetupBones(Matrix* mat_scale = nullptr);
 	float GetProgress() const
