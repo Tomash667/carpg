@@ -8863,6 +8863,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				const float eps = 0.05f;
 				float len = u.speed * dt_left;
 				Vec3 dir(sin(u.use_rot)*(len + eps), 0, cos(u.use_rot)*(len + eps));
+				Vec3 dir_normal = dir.Normalized();
 				bool ok = true;
 
 				if(u.animation_state == 0)
@@ -8943,6 +8944,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							{
 								Vec3 move_dir = unit->pos - u.pos;
 								move_dir.y = 0;
+								move_dir.Normalize();
+								move_dir += dir_normal;
 								move_dir.Normalize();
 								move_dir *= len;
 								float t;
@@ -12864,7 +12867,8 @@ bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, 
 
 	phy_world->convexSweepTest((btConvexShape*)shape, t_from, t_to, callback);
 
-	t = callback.closest;
+	bool has_hit = (callback.closest <= 1.f);
+	t = min(callback.closest, 1.f);
 	if(end_t)
 	{
 		if(callback.end)
@@ -12872,7 +12876,7 @@ bool Game::LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, 
 		else
 			*end_t = 1.f;
 	}
-	return callback.closest <= 1.0f;
+	return has_hit;
 }
 
 struct ContactTestCallback : public btCollisionWorld::ContactResultCallback
