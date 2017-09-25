@@ -425,32 +425,6 @@ void GettyVersion()
 
 
 
-	ULONGLONG mem_kb;
-	HMODULE kernel32 = LoadLibraryW(L"kernel32");
-	bool ok = false;
-	if(kernel32 != nullptr)
-	{
-		auto f = reinterpret_cast<decltype(GetPhysicallyInstalledSystemMemory)*>(GetProcAddress(kernel32, "GetPhysicallyInstalledSystemMemory"));
-		if(f)
-		{
-			f(&mem_kb);
-			ok = true;
-		}
-	}
-
-
-	if(!ok)
-	{
-		MEMORYSTATUSEX mem = { 0 };
-		mem.dwLength = sizeof(mem);
-		if(GlobalMemoryStatusEx(&mem) == 0)
-			mem_kb = 0;
-		else
-			mem_kb = mem.ullTotalPhys / 1024;
-	}
-
-	auto mem_mb = mem_kb / 1024;
-	Info("Memory: %g GB", float(mem_mb) / 1024);
 }
 
 //=================================================================================================
