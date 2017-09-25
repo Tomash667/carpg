@@ -1540,19 +1540,19 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 			{
 			case 0:
 				sdir = 0.f;
-				slen = stool->size.y + 0.3f;
+				slen = table->size.y + 0.3f;
 				break;
 			case 1:
 				sdir = PI / 2;
-				slen = stool->size.x + 0.3f;
+				slen = table->size.x + 0.3f;
 				break;
 			case 2:
 				sdir = PI;
-				slen = stool->size.y + 0.3f;
+				slen = table->size.y + 0.3f;
 				break;
 			case 3:
 				sdir = PI * 3 / 2;
-				slen = stool->size.x + 0.3f;
+				slen = table->size.x + 0.3f;
 				break;
 			default:
 				assert(0);
@@ -2336,6 +2336,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 				{
 					Unit* u = SpawnUnitNearLocation(ctx, pos, *ud, nullptr, -2);
 					u->rot = Clip(pt.rot.y + rot);
+					u->ai->start_rot = u->rot;
 				}
 			}
 		}

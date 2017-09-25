@@ -1,12 +1,11 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-- innkeeper - stands still, no animations/actions
-? tournament - przenoszenie do walki gdy jesteś w środku areny
 - stupid website rewrite rule
 ===============================================================================================================
 NEW:
 - with lag and speed player can move outside of building, require bullet physics
++ convert objects on table to normal items, some precreated layouts of items
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

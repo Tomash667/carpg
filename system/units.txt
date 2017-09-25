@@ -1517,7 +1517,7 @@ unit clerk : base_human {
 unit innkeeper : base_human {
 	level 4
 	profile merchant
-	flags | {ai_guard limited_rot dont_eat talk_at_competition}
+	flags | {ai_guard ai_stay limited_rot dont_eat talk_at_competition}
 	items innkeeper
 	gold {500 1000}
 	dialog innkeeper

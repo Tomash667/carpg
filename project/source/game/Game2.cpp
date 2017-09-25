@@ -20246,15 +20246,13 @@ bool Game::Cheat_KillAll(int typ, Unit& unit, Unit* ignore)
 		return true;
 	}
 
-	LevelContext& ctx = GetContext(unit);
-
 	switch(typ)
 	{
 	case 0:
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 		{
 			if((*it)->IsAlive() && IsEnemy(**it, unit) && *it != ignore)
-				GiveDmg(ctx, nullptr, (*it)->hp, **it, nullptr);
+				GiveDmg(local_ctx, nullptr, (*it)->hp, **it, nullptr);
 		}
 		if(city_ctx)
 		{
@@ -20269,10 +20267,10 @@ bool Game::Cheat_KillAll(int typ, Unit& unit, Unit* ignore)
 		}
 		break;
 	case 1:
-		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 		{
 			if((*it)->IsAlive() && !(*it)->IsPlayer() && *it != ignore)
-				GiveDmg(ctx, nullptr, (*it)->hp, **it, nullptr);
+				GiveDmg(local_ctx, nullptr, (*it)->hp, **it, nullptr);
 		}
 		if(city_ctx)
 		{
