@@ -374,8 +374,8 @@ void Game::PrepareLevelData(BitStream& stream)
 					blood.Write(stream);
 				// objects
 				stream.WriteCasted<byte>(ib.objects.size());
-				for(Object& object : ib.objects)
-					object.Write(stream);
+				for(Object* object : ib.objects)
+					object->Write(stream);
 				// lights
 				stream.WriteCasted<byte>(ib.lights.size());
 				for(Light& light : ib.lights)
@@ -443,8 +443,8 @@ void Game::PrepareLevelData(BitStream& stream)
 		blood.Write(stream);
 	// objects
 	stream.WriteCasted<word>(local_ctx.objects->size());
-	for(Object& object : *local_ctx.objects)
-		object.Write(stream);
+	for(Object* object : *local_ctx.objects)
+		object->Write(stream);
 	// chests
 	stream.WriteCasted<byte>(local_ctx.chests->size());
 	for(Chest* chest : *local_ctx.chests)
@@ -901,9 +901,10 @@ bool Game::ReadLevelData(BitStream& stream)
 					return false;
 				}
 				ib.objects.resize(count);
-				for(Object& object : ib.objects)
+				for(Object*& object : ib.objects)
 				{
-					if(!object.Read(stream))
+					object = new Object;
+					if(!object->Read(stream))
 					{
 						Error("Read level: Broken packet for object in %d inside building.", index);
 						return false;
@@ -1149,9 +1150,10 @@ bool Game::ReadLevelData(BitStream& stream)
 		return false;
 	}
 	local_ctx.objects->resize(count2);
-	for(Object& object : *local_ctx.objects)
+	for(Object*& object : *local_ctx.objects)
 	{
-		if(!object.Read(stream))
+		object = new Object;
+		if(!object->Read(stream))
 		{
 			Error("Read level: Broken object.");
 			return false;
@@ -7648,17 +7650,11 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::CLEAN_ALTAR:
 			{
 				// change object
-				BaseObject* o = BaseObject::Get("bloody_altar");
-				int index = 0;
-				for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it, ++index)
-				{
-					if(it->base == o)
-						break;
-				}
-				Object& obj = local_ctx.objects->at(index);
-				obj.base = BaseObject::Get("altar");
-				obj.mesh = obj.base->mesh;
-				ResourceManager::Get<Mesh>().Load(obj.mesh);
+				BaseObject* base_obj = BaseObject::Get("bloody_altar");
+				Object* obj = local_ctx.FindObject(base_obj);
+				obj->base = BaseObject::Get("altar");
+				obj->mesh = obj->base->mesh;
+				ResourceManager::Get<Mesh>().Load(obj->mesh);
 
 				// remove particles
 				float best_dist = 999.f;
@@ -7667,7 +7663,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				{
 					if((*it)->tex == tKrew[BLOOD_RED])
 					{
-						float dist = Vec3::Distance((*it)->pos, obj.pos);
+						float dist = Vec3::Distance((*it)->pos, obj->pos);
 						if(dist < best_dist)
 						{
 							best_dist = dist;

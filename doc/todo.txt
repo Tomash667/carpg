@@ -1,4 +1,5 @@
 ﻿FEATURE:
+? test tutorial, enter, save, load, respawn objects
 ===============================================================================================================
 CURRENT:
 - stupid website rewrite rule
@@ -6,6 +7,9 @@ CURRENT:
 NEW:
 - with lag and speed player can move outside of building, require bullet physics
 + convert objects on table to normal items, some precreated layouts of items
++ ref object from trap
++ ref GenerateCaveObjects, physics logic etc
++ Object pool
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

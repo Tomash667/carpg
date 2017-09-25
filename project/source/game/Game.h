@@ -491,7 +491,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void ClearQuadtree();
 	void ClearGrass();
 	void VerifyObjects();
-	void VerifyObjects(vector<Object>& objects, int& errors);
+	void VerifyObjects(vector<Object*>& objects, int& errors);
 
 	// profiler
 	int profiler_mode;

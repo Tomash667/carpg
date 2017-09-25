@@ -2794,13 +2794,14 @@ bool Game::CanBuySell(const Item* item)
 //=================================================================================================
 void Game::ResetCollisionPointers()
 {
-	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
+	for(vector<Object*>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
 	{
-		if(it->base && IS_SET(it->base->flags, OBJ_PHYSICS_PTR))
+		Object& obj = **it;
+		if(obj.base && IS_SET(obj.base->flags, OBJ_PHYSICS_PTR))
 		{
-			btCollisionObject* cobj = (btCollisionObject*)it->ptr;
-			if(cobj->getUserPointer() != (void*)&*it)
-				cobj->setUserPointer(&*it);
+			btCollisionObject* cobj = (btCollisionObject*)obj.ptr;
+			if(cobj->getUserPointer() != (void*)&obj)
+				cobj->setUserPointer(&obj);
 		}
 	}
 }

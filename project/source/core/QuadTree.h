@@ -12,6 +12,18 @@ struct QuadRect
 	float x, y, w, h;
 };
 
+struct QuadObj
+{
+	enum Type
+	{
+		UNIT
+	} type;
+	union
+	{
+		void* ptr;
+	};
+};
+
 struct QuadNode
 {
 	QuadRect rect;

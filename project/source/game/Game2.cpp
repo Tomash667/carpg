@@ -11121,16 +11121,17 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 			flags |= SOE_MAGIC_LIGHT;
 	}
 
-	for(vector<Object>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
+	for(vector<Object*>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
 	{
-		if(!it->base)
+		Object& obj = **it;
+		BaseObject* base_obj = obj.base;
+
+		if(!base_obj)
 			continue;
 
-		BaseObject* obj = it->base;
-
-		if(IS_SET(obj->flags, OBJ_BUILDING))
+		if(IS_SET(base_obj->flags, OBJ_BUILDING))
 		{
-			float rot = it->rot.y;
+			float rot = obj.rot.y;
 			int roti;
 			if(Equal(rot, 0))
 				roti = 0;
@@ -11147,10 +11148,10 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 				rot = 0.f;
 			}
 
-			ProcessBuildingObjects(ctx, nullptr, nullptr, obj->mesh, nullptr, rot, roti, it->pos, nullptr, nullptr, true);
+			ProcessBuildingObjects(ctx, nullptr, nullptr, base_obj->mesh, nullptr, rot, roti, obj.pos, nullptr, nullptr, true);
 		}
 		else
-			SpawnObjectExtras(ctx, obj, it->pos, it->rot.y, &*it, (btCollisionObject**)&it->ptr, it->scale, flags);
+			SpawnObjectExtras(ctx, base_obj, obj.pos, obj.rot.y, &*it, (btCollisionObject**)&obj.ptr, obj.scale, flags);
 	}
 
 	if(ctx.chests)
@@ -11521,7 +11522,7 @@ void Game::GenerateCaveObjects()
 	}
 
 	// stalaktyty
-	BaseObject* obj = BaseObject::Get("stalactite");
+	BaseObject* base_obj = BaseObject::Get("stalactite");
 	static vector<Int2> sta;
 	for(int count = 0, tries = 200; count < 50 && tries>0; --tries)
 	{
@@ -11543,53 +11544,55 @@ void Game::GenerateCaveObjects()
 		{
 			++count;
 
-			Object& o = Add1(local_ctx.objects);
-			o.base = obj;
-			o.mesh = obj->mesh;
-			o.scale = Random(1.f, 2.f);
-			o.rot = Vec3(0, Random(MAX_ANGLE), 0);
-			o.pos = Vec3(2.f*pt.x + 1.f, 4.f, 2.f*pt.y + 1.f);
-
+			Object* o = new Object;
+			o->base = base_obj;
+			o->mesh = base_obj->mesh;
+			o->scale = Random(1.f, 2.f);
+			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
+			o->pos = Vec3(2.f*pt.x + 1.f, 4.f, 2.f*pt.y + 1.f);
+			local_ctx.objects->push_back(o);
 			sta.push_back(pt);
 		}
 	}
 
 	// krzaki
-	obj = BaseObject::Get("plant2");
+	base_obj = BaseObject::Get("plant2");
 	for(int i = 0; i < 150; ++i)
 	{
 		Int2 pt = cave->GetRandomTile();
 
 		if(lvl.map[pt.x + pt.y*lvl.w].type == PUSTE)
 		{
-			Object& o = Add1(local_ctx.objects);
-			o.base = obj;
-			o.mesh = obj->mesh;
-			o.scale = 1.f;
-			o.rot = Vec3(0, Random(MAX_ANGLE), 0);
-			o.pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
+			Object* o = new Object;
+			o->base = base_obj;
+			o->mesh = base_obj->mesh;
+			o->scale = 1.f;
+			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
+			o->pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
+			local_ctx.objects->push_back(o);
 		}
 	}
 
 	// grzyby
-	obj = BaseObject::Get("mushrooms");
+	base_obj = BaseObject::Get("mushrooms");
 	for(int i = 0; i < 100; ++i)
 	{
 		Int2 pt = cave->GetRandomTile();
 
 		if(lvl.map[pt.x + pt.y*lvl.w].type == PUSTE)
 		{
-			Object& o = Add1(local_ctx.objects);
-			o.base = obj;
-			o.mesh = obj->mesh;
-			o.scale = 1.f;
-			o.rot = Vec3(0, Random(MAX_ANGLE), 0);
-			o.pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
+			Object* o = new Object;
+			o->base = base_obj;
+			o->mesh = base_obj->mesh;
+			o->scale = 1.f;
+			o->rot = Vec3(0, Random(MAX_ANGLE), 0);
+			o->pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
+			local_ctx.objects->push_back(o);
 		}
 	}
 
 	// kamienie
-	obj = BaseObject::Get("rock");
+	base_obj = BaseObject::Get("rock");
 	sta.clear();
 	for(int i = 0; i < 80; ++i)
 	{
@@ -11610,43 +11613,44 @@ void Game::GenerateCaveObjects()
 
 			if(ok)
 			{
-				Object& o = Add1(local_ctx.objects);
-				o.base = obj;
-				o.mesh = obj->mesh;
-				o.scale = 1.f;
-				o.rot = Vec3(0, Random(MAX_ANGLE), 0);
-				o.pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
+				Object* o = new Object;
+				o->base = base_obj;
+				o->mesh = base_obj->mesh;
+				o->scale = 1.f;
+				o->rot = Vec3(0, Random(MAX_ANGLE), 0);
+				o->pos = Vec3(2.f*pt.x + Random(0.1f, 1.9f), 0.f, 2.f*pt.y + Random(0.1f, 1.9f));
+				local_ctx.objects->push_back(o);
 
-				if(obj->shape)
+				if(base_obj->shape)
 				{
 					CollisionObject& c = Add1(local_ctx.colliders);
 
 					btCollisionObject* cobj = new btCollisionObject;
-					cobj->setCollisionShape(obj->shape);
+					cobj->setCollisionShape(base_obj->shape);
 					cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
 
-					if(obj->type == OBJ_CYLINDER)
+					if(base_obj->type == OBJ_CYLINDER)
 					{
-						cobj->getWorldTransform().setOrigin(btVector3(o.pos.x, o.pos.y + obj->h / 2, o.pos.z));
+						cobj->getWorldTransform().setOrigin(btVector3(o->pos.x, o->pos.y + base_obj->h / 2, o->pos.z));
 						c.type = CollisionObject::SPHERE;
-						c.pt = Vec2(o.pos.x, o.pos.z);
-						c.radius = obj->r;
+						c.pt = Vec2(o->pos.x, o->pos.z);
+						c.radius = base_obj->r;
 					}
 					else
 					{
 						btTransform& tr = cobj->getWorldTransform();
-						Vec3 pos2 = Vec3::TransformZero(*obj->matrix);
-						pos2 += o.pos;
+						Vec3 pos2 = Vec3::TransformZero(*base_obj->matrix);
+						pos2 += o->pos;
 						tr.setOrigin(ToVector3(pos2));
-						tr.setRotation(btQuaternion(o.rot.y, 0, 0));
+						tr.setRotation(btQuaternion(o->rot.y, 0, 0));
 
 						c.pt = Vec2(pos2.x, pos2.z);
-						c.w = obj->size.x;
-						c.h = obj->size.y;
-						if(NotZero(o.rot.y))
+						c.w = base_obj->size.x;
+						c.h = base_obj->size.y;
+						if(NotZero(o->rot.y))
 						{
 							c.type = CollisionObject::RECTANGLE_ROT;
-							c.rot = o.rot.y;
+							c.rot = o->rot.y;
 							c.radius = max(c.w, c.h) * SQRT_2;
 						}
 						else
@@ -14062,12 +14066,13 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 			// jaskinia
 			// schody w górê
-			Object& o = Add1(local_ctx.objects);
-			o.mesh = aStairsUp;
-			o.pos = pt_to_pos(lvl.staircase_up);
-			o.rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
-			o.scale = 1;
-			o.base = nullptr;
+			Object* o = new Object;
+			o->mesh = aStairsUp;
+			o->pos = pt_to_pos(lvl.staircase_up);
+			o->rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
+			o->scale = 1;
+			o->base = nullptr;
+			local_ctx.objects->push_back(o);
 
 			GenerateCaveObjects();
 			if(current_location == quest_mine->target_loc)
@@ -14098,24 +14103,25 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 				// pochodnia przy œcianie
 				{
-					Object& o = Add1(lvl.objects);
-					o.base = obj;
-					o.rot = Vec3(0, Random(MAX_ANGLE), 0);
-					o.scale = 1.f;
-					o.mesh = obj->mesh;
+					Object* o = new Object;
+					o->base = obj;
+					o->rot = Vec3(0, Random(MAX_ANGLE), 0);
+					o->scale = 1.f;
+					o->mesh = obj->mesh;
+					lvl.objects.push_back(o);
 
 					Int2 pt = lvl.GetUpStairsFrontTile();
 					if(czy_blokuje2(lvl.map[pt.x - 1 + pt.y*lvl.w].type))
-						o.pos = Vec3(2.f*pt.x + obj->size.x + 0.1f, 0.f, 2.f*pt.y + 1.f);
+						o->pos = Vec3(2.f*pt.x + obj->size.x + 0.1f, 0.f, 2.f*pt.y + 1.f);
 					else if(czy_blokuje2(lvl.map[pt.x + 1 + pt.y*lvl.w].type))
-						o.pos = Vec3(2.f*(pt.x + 1) - obj->size.x - 0.1f, 0.f, 2.f*pt.y + 1.f);
+						o->pos = Vec3(2.f*(pt.x + 1) - obj->size.x - 0.1f, 0.f, 2.f*pt.y + 1.f);
 					else if(czy_blokuje2(lvl.map[pt.x + (pt.y - 1)*lvl.w].type))
-						o.pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*pt.y + obj->size.y + 0.1f);
+						o->pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*pt.y + obj->size.y + 0.1f);
 					else if(czy_blokuje2(lvl.map[pt.x + (pt.y + 1)*lvl.w].type))
-						o.pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*(pt.y + 1) + obj->size.y - 0.1f);
+						o->pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*(pt.y + 1) + obj->size.y - 0.1f);
 
 					Light& s = Add1(lvl.lights);
-					s.pos = o.pos;
+					s.pos = o->pos;
 					s.pos.y += obj->centery;
 					s.range = 5;
 					s.color = Vec3(1.f, 0.9f, 0.9f);
@@ -14145,15 +14151,16 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 				// pochodnia w skarbie
 				{
-					Object& o = Add1(lvl.objects);
-					o.base = obj;
-					o.rot = Vec3(0, Random(MAX_ANGLE), 0);
-					o.scale = 1.f;
-					o.mesh = obj->mesh;
-					o.pos = lvl.rooms[0].Center();
+					Object* o = new Object;
+					o->base = obj;
+					o->rot = Vec3(0, Random(MAX_ANGLE), 0);
+					o->scale = 1.f;
+					o->mesh = obj->mesh;
+					o->pos = lvl.rooms[0].Center();
+					lvl.objects.push_back(o);
 
 					Light& s = Add1(lvl.lights);
-					s.pos = o.pos;
+					s.pos = o->pos;
 					s.pos.y += obj->centery;
 					s.range = 5;
 					s.color = Vec3(1.f, 0.9f, 0.9f);
@@ -15258,8 +15265,8 @@ void Game::PreloadResources(bool worldmap)
 				LoadMusic(GetLocationMusic(), false, true);
 
 			// load objects
-			for(auto& obj : *local_ctx.objects)
-				mesh_mgr.AddLoadTask(obj.mesh);
+			for(auto obj : *local_ctx.objects)
+				mesh_mgr.AddLoadTask(obj->mesh);
 
 			// load usables
 			PreloadUsables(*local_ctx.usables);
@@ -15283,8 +15290,8 @@ void Game::PreloadResources(bool worldmap)
 				for(auto ib : city_ctx->inside_buildings)
 				{
 					// load building objects
-					for(auto& obj : ib->objects)
-						mesh_mgr.AddLoadTask(obj.mesh);
+					for(auto obj : ib->objects)
+						mesh_mgr.AddLoadTask(obj->mesh);
 
 					// load building usables
 					PreloadUsables(ib->usables);
@@ -15455,8 +15462,8 @@ void Game::VerifyResources()
 {
 	for(auto item : *local_ctx.items)
 		VerifyItemResources(item->item);
-	for(auto& obj : *local_ctx.objects)
-		assert(obj.mesh->state == ResourceState::Loaded);
+	for(auto obj : *local_ctx.objects)
+		assert(obj->mesh->state == ResourceState::Loaded);
 	for(auto unit : *local_ctx.units)
 		VerifyUnitResources(unit);
 	for(auto u : *local_ctx.usables)
@@ -15489,8 +15496,8 @@ void Game::VerifyResources()
 		{
 			for(auto item : ib->items)
 				VerifyItemResources(item->item);
-			for(auto& obj : ib->objects)
-				assert(obj.mesh->state == ResourceState::Loaded);
+			for(auto obj : ib->objects)
+				assert(obj->mesh->state == ResourceState::Loaded);
 			for(auto unit : ib->units)
 				VerifyUnitResources(unit);
 			for(auto u : ib->usables)
@@ -18041,25 +18048,15 @@ void Game::GenerateSawmill(bool in_progress)
 	terrain->Rebuild(true);
 
 	// usuñ obiekty
-	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end;)
+	LoopAndRemove(*local_ctx.objects, [](const Object* obj)
 	{
-		if(Vec3::Distance2d(it->pos, Vec3(128, 0, 128)) < 16.f)
+		if(Vec3::Distance2d(obj->pos, Vec3(128, 0, 128)) < 16.f)
 		{
-			if(it + 1 == end)
-			{
-				local_ctx.objects->pop_back();
-				break;
-			}
-			else
-			{
-				it->Swap(*(end - 1));
-				local_ctx.objects->pop_back();
-				end = local_ctx.objects->end();
-			}
+			delete obj;
+			return true;
 		}
-		else
-			++it;
-	}
+		return false;
+	});
 
 	if(!tartak_objs_ptrs[0])
 	{
@@ -18133,37 +18130,6 @@ void Game::GenerateSawmill(bool in_progress)
 
 		quest_sawmill->build_state = Quest_Sawmill::BuildState::Finished;
 	}
-}
-
-void Object::Swap(Object& o)
-{
-	Vec3 tv;
-
-	tv = pos;
-	pos = o.pos;
-	o.pos = tv;
-
-	tv = rot;
-	rot = o.rot;
-	o.rot = tv;
-
-	tv.x = scale;
-	scale = o.scale;
-	o.scale = tv.x;
-
-	void* p;
-
-	p = mesh;
-	mesh = o.mesh;
-	o.mesh = (Mesh*)p;
-
-	p = base;
-	base = o.base;
-	o.base = (BaseObject*)p;
-
-	// 	p = ptr;
-	// 	ptr = o.ptr;
-	// 	o.ptr = p;
 }
 
 bool Game::GenerateMine()
@@ -18510,11 +18476,12 @@ bool Game::GenerateMine()
 
 		// drzwi
 		{
-			Object& o = Add1(local_ctx.objects);
-			o.mesh = aDoorWall;
-			o.pos = Vec3(float(end_pt.x * 2) + 1, 0, float(end_pt.y * 2) + 1);
-			o.scale = 1;
-			o.base = nullptr;
+			Object* o = new Object;
+			o->mesh = aDoorWall;
+			o->pos = Vec3(float(end_pt.x * 2) + 1, 0, float(end_pt.y * 2) + 1);
+			o->scale = 1;
+			o->base = nullptr;
+			local_ctx.objects->push_back(o);
 
 			// hack :3
 			Room& r2 = Add1(lvl.rooms);
@@ -18522,29 +18489,29 @@ bool Game::GenerateMine()
 
 			if(czy_blokuje2(lvl.map[end_pt.x - 1 + end_pt.y*lvl.w].type))
 			{
-				o.rot = Vec3(0, 0, 0);
+				o->rot = Vec3(0, 0, 0);
 				if(end_pt.y > center.y)
 				{
-					o.pos.z -= 0.8229f;
+					o->pos.z -= 0.8229f;
 					lvl.At(end_pt + Int2(0, 1)).room = 1;
 				}
 				else
 				{
-					o.pos.z += 0.8229f;
+					o->pos.z += 0.8229f;
 					lvl.At(end_pt + Int2(0, -1)).room = 1;
 				}
 			}
 			else
 			{
-				o.rot = Vec3(0, PI / 2, 0);
+				o->rot = Vec3(0, PI / 2, 0);
 				if(end_pt.x > center.x)
 				{
-					o.pos.x -= 0.8229f;
+					o->pos.x -= 0.8229f;
 					lvl.At(end_pt + Int2(1, 0)).room = 1;
 				}
 				else
 				{
-					o.pos.x += 0.8229f;
+					o->pos.x += 0.8229f;
 					lvl.At(end_pt + Int2(-1, 0)).room = 1;
 				}
 			}
@@ -18552,8 +18519,8 @@ bool Game::GenerateMine()
 			Door* door = new Door;
 			local_ctx.doors->push_back(door);
 			door->pt = end_pt;
-			door->pos = o.pos;
-			door->rot = o.rot.y;
+			door->pos = o->pos;
+			door->rot = o->rot.y;
 			door->state = Door::Closed;
 			door->mesh_inst = new MeshInstance(aDoor);
 			door->mesh_inst->groups[0].speed = 2.f;
@@ -22431,13 +22398,13 @@ void Game::VerifyObjects()
 		throw Format("Veryify objects failed with %d errors. Check log for details.", errors);
 }
 
-void Game::VerifyObjects(vector<Object>& objects, int& errors)
+void Game::VerifyObjects(vector<Object*>& objects, int& errors)
 {
-	for(Object& o : objects)
+	for(Object* o : objects)
 	{
-		if(!o.mesh && !o.base)
+		if(!o->mesh && !o->base)
 		{
-			Error("Broken object at (%g,%g,%g).", o.pos.x, o.pos.y, o.pos.z);
+			Error("Broken object at (%g,%g,%g).", o->pos.x, o->pos.y, o->pos.z);
 			++errors;
 		}
 	}

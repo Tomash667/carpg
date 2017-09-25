@@ -39,7 +39,6 @@ struct Object
 	}
 	void Save(HANDLE file);
 	void Load(HANDLE file);
-	void Swap(Object& o);
 	void Write(BitStream& stream) const;
 	bool Read(BitStream& stream);
 };

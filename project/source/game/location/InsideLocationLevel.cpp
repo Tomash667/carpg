@@ -9,6 +9,7 @@
 InsideLocationLevel::~InsideLocationLevel()
 {
 	delete[] map;
+	DeleteElements(objects);
 	DeleteElements(units);
 	DeleteElements(chests);
 	DeleteElements(doors);
@@ -185,8 +186,8 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 	// obiekty
 	ile = objects.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Object>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
-		it->Save(file);
+	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
+		(*it)->Save(file);
 
 	// drzwi
 	ile = doors.size();
@@ -268,8 +269,11 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	// obiekty
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	objects.resize(ile);
-	for(vector<Object>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
-		it->Load(file);
+	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
+	{
+		*it = new Object;
+		(*it)->Load(file);
+	}
 
 	// drzwi
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);

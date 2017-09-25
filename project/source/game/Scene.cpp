@@ -596,9 +596,9 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	// obiekty
 	if(IS_SET(draw_flags, DF_OBJECTS))
 	{
-		for(vector<Object>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
+		for(vector<Object*>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
 		{
-			const Object& o = *it;
+			const Object& o = **it;
 			if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
 			{
 				SceneNode* node = node_pool.Get();
