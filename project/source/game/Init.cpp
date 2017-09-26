@@ -296,7 +296,7 @@ void Game::ConfigureGame()
 			g_spawn_groups[i].unit_group = FindUnitGroup(g_spawn_groups[i].unit_group_id);
 	}
 
-	for (ClassInfo& ci : g_classes)
+	for (ClassInfo& ci : ClassInfo::classes)
 	{
 		ci.unit_data = FindUnitData(ci.unit_data_id, false);
 		if (ci.action_id)
@@ -316,8 +316,6 @@ void Game::LoadData()
 	Info("Game: Loading data.");
 	auto& res_mgr = ResourceManager::Get();
 
-	res_mgr.SetMutex(mutex);
-	mutex = nullptr;
 	res_mgr.PrepareLoadScreen(0.33f);
 	AddLoadTasks();
 	res_mgr.StartLoadScreen();
@@ -501,7 +499,7 @@ void Game::AddLoadTasks()
 	tex_mgr.AddLoadTask("czern.bmp", tCzern);
 	tex_mgr.AddLoadTask("rip.jpg", tRip);
 	tex_mgr.AddLoadTask("dark_portal.png", tPortal);
-	for(ClassInfo& ci : g_classes)
+	for(ClassInfo& ci : ClassInfo::classes)
 		tex_mgr.AddLoadTask(ci.icon_file, ci.icon);
 	tex_mgr.AddLoadTask("warning.png", tWarning);
 	tex_mgr.AddLoadTask("error.png", tError);
@@ -603,9 +601,9 @@ void Game::AddLoadTasks()
 	}
 
 	// preload traps
-	for(uint i = 0; i < n_traps; ++i)
+	for(uint i = 0; i < BaseTrap::n_traps; ++i)
 	{
-		BaseTrap& t = g_traps[i];
+		BaseTrap& t = BaseTrap::traps[i];
 		if(t.mesh_id)
 		{
 			t.mesh = mesh_mgr.Get(t.mesh_id);
@@ -661,12 +659,12 @@ void Game::AddLoadTasks()
 	}
 
 	// preload objects
-	for(uint i = 0; i < n_objs; ++i)
+	for(uint i = 0; i < BaseObject::n_objs; ++i)
 	{
-		Obj& o = g_objs[i];
+		BaseObject& o = BaseObject::objs[i];
 		if(IS_SET(o.flags2, OBJ2_VARIANT))
 		{
-			VariantObj& vo = *o.variant;
+			VariantObject& vo = *o.variant;
 			if(!vo.loaded)
 			{
 				for(uint i = 0; i < vo.count; ++i)
@@ -690,10 +688,10 @@ void Game::AddLoadTasks()
 	}
 
 	// preload usable objects
-	for(uint i = 0; i < n_base_usables; ++i)
+	for(uint i = 0; i < BaseUsable::n_base_usables; ++i)
 	{
-		BaseUsable& bu = g_base_usables[i];
-		bu.obj = FindObject(bu.obj_name);
+		BaseUsable& bu = BaseUsable::base_usables[i];
+		bu.obj = BaseObject::Get(bu.obj_name);
 		if(!nosound && bu.sound_id)
 			bu.sound = sound_mgr.Get(bu.sound_id);
 		if(bu.item_id)
@@ -797,7 +795,7 @@ void Game::AddLoadTasks()
 }
 
 //=================================================================================================
-void Game::SetupObject(Obj& obj)
+void Game::SetupObject(BaseObject& obj)
 {
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 	Mesh::Point* point;
@@ -806,7 +804,7 @@ void Game::SetupObject(Obj& obj)
 	{
 		if(IS_SET(obj.flags2, OBJ2_VARIANT))
 		{
-			VariantObj& vo = *obj.variant;
+			VariantObject& vo = *obj.variant;
 			for(uint i = 0; i < vo.count; ++i)
 				mesh_mgr.Load(vo.entries[i].mesh);
 		}
@@ -856,10 +854,10 @@ void Game::SetupObject(Obj& obj)
 		}
 
 		assert(points.size() > 1u);
-		obj.next_obj = new Obj[points.size() + 1];
+		obj.next_obj = new BaseObject[points.size() + 1];
 		for(uint i = 0, size = points.size(); i < size; ++i)
 		{
-			Obj& o2 = obj.next_obj[i];
+			BaseObject& o2 = obj.next_obj[i];
 			o2.shape = new btBoxShape(ToVector3(points[i]->size));
 			if(IS_SET(obj.flags, OBJ_PHY_BLOCKS_CAM))
 				o2.flags = OBJ_PHY_BLOCKS_CAM;
@@ -875,7 +873,7 @@ void Game::SetupObject(Obj& obj)
 		if(point2 && point2->IsBox())
 		{
 			assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
-			obj.next_obj = new Obj("", 0, 0, "", "");
+			obj.next_obj = new BaseObject("", 0, 0, "", "");
 			if(!IS_SET(obj.flags, OBJ_NO_PHYSICS))
 			{
 				btBoxShape* shape = new btBoxShape(ToVector3(point2->size));
@@ -898,7 +896,7 @@ void Game::LoadItemsData()
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 	auto& tex_mgr = ResourceManager::Get<Texture>();
 
-	for(Armor* armor : g_armors)
+	for(Armor* armor : Armor::armors)
 	{
 		Armor& a = *armor;
 		if(!a.tex_override.empty())

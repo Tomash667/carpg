@@ -93,6 +93,8 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	free_days = 0;
 	recalculate_level = false;
 
+	ResetStatState();
+
 	if(!partial)
 	{
 		kills = 0;
@@ -108,6 +110,16 @@ void PlayerController::Init(Unit& _unit, bool partial)
 
 		action_charges = GetAction().charges;
 	}
+}
+
+//=================================================================================================
+void PlayerController::ResetStatState()
+{
+	// currently it isn't working
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+		attrib_state[i] = StatState::NORMAL;
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+		skill_state[i] = StatState::NORMAL;
 }
 
 //=================================================================================================
@@ -519,6 +531,8 @@ void PlayerController::Load(HANDLE file)
 		action_recharge = 0.f;
 		action_charges = GetAction().charges;
 	}
+	if(LOAD_VERSION < V_0_5_1)
+		ResetStatState();
 
 	action = Action_None;
 }
@@ -768,7 +782,7 @@ bool PlayerController::Read(BitStream& stream)
 //=================================================================================================
 Action& PlayerController::GetAction()
 {
-	auto action = g_classes[(int)clas].action;
+	auto action = ClassInfo::classes[(int)clas].action;
 	assert(action);
 	return *action;
 }

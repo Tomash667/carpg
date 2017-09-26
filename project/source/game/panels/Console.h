@@ -17,8 +17,11 @@ public:
 
 	void AddText(cstring str);
 	void OnInput(const string& str);
+	void LoadData();
+	void Reset() { itb.Reset(); }
 
-	static TEX tBackground;
+private:
+	TEX tBackground;
 	InputTextBox itb;
 	bool added;
 };

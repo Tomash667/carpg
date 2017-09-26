@@ -31,6 +31,7 @@
 #include "AIController.h"
 #include "Spell.h"
 #include "Team.h"
+#include "Journal.h"
 
 // SF_DEV, SF_BETA removed in 0.4
 #define SF_ONLINE (1<<0)
@@ -133,10 +134,10 @@ bool Game::SaveGameSlot(int slot, cstring text)
 		cfg.Add("game_year", Format("%d", year));
 		cfg.Add("location", ss.location.c_str());
 		cfg.Add("player_name", ss.player_name.c_str());
-		cfg.Add("player_class", g_classes[(int)ss.player_class].id);
+		cfg.Add("player_class", ClassInfo::classes[(int)ss.player_class].id);
 		cfg.Add("save_date", Format("%I64d", ss.save_date));
 		cfg.Add("text", ss.text.c_str());
-		cfg.Add("hardcore", ss.hardcore ? "1" : "0");
+		cfg.Add("hardcore", ss.hardcore);
 
 		if(Net::IsOnline())
 		{
@@ -458,23 +459,8 @@ void Game::SaveGame(HANDLE file)
 	game_gui->game_messages->Save(f);
 	game_gui->Save(f);
 
-	// zapisz rumors / notatki
-	uint count = rumors.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
-	{
-		word len = (word)it->length();
-		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		WriteFile(file, it->c_str(), len, &tmp, nullptr);
-	}
-	count = notes.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<string>::iterator it = notes.begin(), end = notes.end(); it != end; ++it)
-	{
-		word len = (word)it->length();
-		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		WriteFile(file, it->c_str(), len, &tmp, nullptr);
-	}
+	// rumors/notes
+	game_gui->journal->Save(file);
 
 	WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
 	++check_id;
@@ -487,7 +473,7 @@ void Game::SaveGame(HANDLE file)
 	SaveQuestsData(file);
 
 	// newsy
-	count = news.size();
+	uint count = news.size();
 	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
 	for(vector<News*>::iterator it = news.begin(), end = news.end(); it != end; ++it)
 	{
@@ -548,17 +534,17 @@ void Game::SaveGame(HANDLE file)
 		WriteFile(file, &players, sizeof(players), &tmp, nullptr);
 		WriteFile(file, &max_players, sizeof(max_players), &tmp, nullptr);
 		WriteFile(file, &last_id, sizeof(last_id), &tmp, nullptr);
-		uint ile = 0;
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+		uint count = 0;
+		for(auto info : game_players)
 		{
-			if(!it->left)
-				++ile;
+			if(info->left == PlayerInfo::LEFT_NO)
+				++count;
 		}
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
+		for(auto info : game_players)
 		{
-			if(!it->left)
-				it->Save(file);
+			if(info->left == PlayerInfo::LEFT_NO)
+				info->Save(file);
 		}
 		WriteFile(file, &kick_id, sizeof(kick_id), &tmp, nullptr);
 		WriteFile(file, &netid_counter, sizeof(netid_counter), &tmp, nullptr);
@@ -575,7 +561,7 @@ void Game::SaveGame(HANDLE file)
 		WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
 		++check_id;
 
-		PushNetChange(NetChange::GAME_SAVED);
+		Net::PushChange(NetChange::GAME_SAVED);
 		AddMultiMsg(txGameSaved);
 	}
 
@@ -1032,25 +1018,8 @@ void Game::LoadGame(HANDLE file)
 	game_gui->game_messages->Load(f);
 	game_gui->Load(f);
 
-	// wczytaj rumors / notatki
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	rumors.resize(ile);
-	for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
-	{
-		word len;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		it->resize(len);
-		ReadFile(file, (void*)it->c_str(), len, &tmp, nullptr);
-	}
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	notes.resize(ile);
-	for(vector<string>::iterator it = notes.begin(), end = notes.end(); it != end; ++it)
-	{
-		word len;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		it->resize(len);
-		ReadFile(file, (void*)it->c_str(), len, &tmp, nullptr);
-	}
+	// rumors/notes
+	game_gui->journal->Load(file);
 
 	// arena
 	arena_tryb = Arena_Brak;
@@ -1255,7 +1224,7 @@ void Game::LoadGame(HANDLE file)
 	// cele ai
 	if(!ai_bow_targets.empty())
 	{
-		Obj* tarcza_s = FindObject("bow_target");
+		BaseObject* tarcza_s = BaseObject::Get("bow_target");
 		for(vector<AIController*>::iterator it = ai_bow_targets.begin(), end = ai_bow_targets.end(); it != end; ++it)
 		{
 			AIController& ai = **it;
@@ -1363,8 +1332,8 @@ void Game::LoadGame(HANDLE file)
 		location_event_handler = nullptr;
 	team_shares.clear();
 	team_share_id = -1;
-	fallback_co = FALLBACK_NONE;
-	fallback_t = 0.f;
+	fallback_co = FALLBACK::NONE;
+	fallback_t = -0.5f;
 	inventory_mode = I_NONE;
 	pc_data.before_player = BP_NONE;
 	pc_data.selected_unit = nullptr;
@@ -1380,11 +1349,15 @@ void Game::LoadGame(HANDLE file)
 		ReadFile(file, &players, sizeof(players), &tmp, nullptr);
 		ReadFile(file, &max_players, sizeof(max_players), &tmp, nullptr);
 		ReadFile(file, &last_id, sizeof(last_id), &tmp, nullptr);
-		uint ile;
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		old_players.resize(ile);
-		for(uint i = 0; i < ile; ++i)
-			old_players[i].Load(file);
+		uint count;
+		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+		DeleteElements(old_players);
+		old_players.resize(count);
+		for(uint i = 0; i < count; ++i)
+		{
+			old_players[i] = new PlayerInfo;
+			old_players[i]->Load(file);
+		}
 		ReadFile(file, &kick_id, sizeof(kick_id), &tmp, nullptr);
 		ReadFile(file, &netid_counter, sizeof(netid_counter), &tmp, nullptr);
 		ReadFile(file, &item_netid_counter, sizeof(item_netid_counter), &tmp, nullptr);
@@ -1546,7 +1519,7 @@ void Game::LoadQuestsData(HANDLE file)
 	ReadFile(file, &secret_where, sizeof(secret_where), &tmp, nullptr);
 	ReadFile(file, &secret_where2, sizeof(secret_where2), &tmp, nullptr);
 
-	if(secret_state > SECRET_NONE && !FindObject("tomashu_dom")->mesh)
+	if(secret_state > SECRET_NONE && !BaseObject::Get("tomashu_dom")->mesh)
 		throw "Save uses 'data.pak' file which is missing!";
 
 	// drinking contest

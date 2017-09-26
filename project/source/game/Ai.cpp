@@ -130,9 +130,10 @@ void Game::UpdateAi(float dt)
 		if(u.guard_target && u.dont_attack && !u.guard_target->dont_attack)
 			u.dont_attack = false;
 
-		if(u.frozen == 2)
+		if(u.frozen >= FROZEN::YES)
 		{
-			u.animation = ANI_STAND;
+			if(u.frozen == FROZEN::YES)
+				u.animation = ANI_STAND;
 			continue;
 		}
 
@@ -611,7 +612,7 @@ void Game::UpdateAi(float dt)
 							if(IS_SET(u.data->flags2, F2_XAR))
 							{
 								// szukaj o³tarza
-								Obj* o = FindObject("bloody_altar");
+								BaseObject* o = BaseObject::Get("bloody_altar");
 								Object* obj = nullptr;
 								for(vector<Object>::iterator it2 = local_ctx.objects->begin(), end2 = local_ctx.objects->end(); it2 != end2; ++it2)
 								{
@@ -781,7 +782,7 @@ void Game::UpdateAi(float dt)
 							else if(IS_SET(u.data->flags3, F3_MINER) && Rand() % 2 == 0)
 							{
 								// check if unit have required item
-								const Item* req_item = g_base_usables[U_IRON_VEIN].item;
+								const Item* req_item = BaseUsable::base_usables[U_IRON_VEIN].item;
 								if(req_item && !u.HaveItem(req_item) && u.slots[SLOT_WEAPON] != req_item)
 									goto normal_idle_action;
 								// find closest ore vein
@@ -863,8 +864,8 @@ void Game::UpdateAi(float dt)
 										if(IS_SET(u.data->flags2, F2_AI_TRAIN) && Rand() % 5 == 0)
 										{
 											static vector<Object*> do_cw;
-											Obj* manekin = FindObject("melee_target"),
-												*tarcza = FindObject("bow_target");
+											BaseObject* manekin = BaseObject::Get("melee_target"),
+												*tarcza = BaseObject::Get("bow_target");
 											for(vector<Object>::iterator it2 = ctx.objects->begin(), end2 = ctx.objects->end(); it2 != end2; ++it2)
 											{
 												if((it2->base == manekin || (it2->base == tarcza && u.HaveBow())) && Vec3::Distance(it2->pos, u.pos) < 10.f)
@@ -962,9 +963,10 @@ void Game::UpdateAi(float dt)
 										{
 											Usable& use = **it2;
 											if(!use.user && (use.type != U_THRONE || IS_SET(u.data->flags2, F2_SIT_ON_THRONE)) && Vec3::Distance(use.pos, u.pos) < 10.f
+												&& use.type != U_BOOKSHELF
 												/*CanSee - niestety nie ma takiej funkcji wiêc trudno :p*/)
 											{
-												const Item* needed_item = g_base_usables[use.type].item;
+												const Item* needed_item = BaseUsable::base_usables[use.type].item;
 												if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
 													uses.push_back(*it2);
 											}
@@ -1278,13 +1280,13 @@ void Game::UpdateAi(float dt)
 							case AIController::Idle_WalkUseEat:
 								{
 									Usable& use = *ai.idle_data.usable;
-									if(use.user || u.frozen)
+									if(use.user || u.frozen != FROZEN::NO)
 										ai.idle_action = AIController::Idle_None;
 									else if(Vec3::Distance2d(u.pos, use.pos) < PICKUP_RANGE)
 									{
 										if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.usable->pos))) < PI / 4)
 										{
-											BaseUsable& base = g_base_usables[use.type];
+											BaseUsable& base = BaseUsable::base_usables[use.type];
 											const Item* needed_item = base.item;
 											if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
 											{
@@ -1302,7 +1304,7 @@ void Game::UpdateAi(float dt)
 												u.usable = &use;
 												u.target_pos = u.pos;
 												u.target_pos2 = use.pos;
-												if(g_base_usables[use.type].limit_rot == 4)
+												if(BaseUsable::base_usables[use.type].limit_rot == 4)
 													u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
 												u.timer = 0.f;
 												u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
@@ -1326,7 +1328,7 @@ void Game::UpdateAi(float dt)
 												if(Net::IsOnline())
 												{
 													NetChange& c = Add1(Net::changes);
-													c.type = NetChange::USE_USEABLE;
+													c.type = NetChange::USE_USABLE;
 													c.unit = &u;
 													c.id = use.netid;
 													c.ile = (czyta_papiery ? 2 : 1);
@@ -1401,8 +1403,8 @@ void Game::UpdateAi(float dt)
 										{
 											u.TakeWeapon(W_BOW);
 											float dir = Vec3::LookAtAngle(u.pos, ai.idle_data.obj.pos);
-											if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f && u.frozen == 0
-												&& u.stamina > 0 && CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
+											if(AngleDiff(u.rot, dir) < PI / 4 && u.action == A_NONE && u.weapon_taken == W_BOW && ai.next_attack <= 0.f
+												&& u.frozen == FROZEN::NO && u.stamina > 0 && CanShootAtLocation2(u, ai.idle_data.obj.ptr, ai.idle_data.obj.pos))
 											{
 												// strzelanie z ³uku
 												float speed = u.GetBowAttackSpeed();
@@ -1615,7 +1617,7 @@ void Game::UpdateAi(float dt)
 							u.TakeWeapon(bron);
 					}
 
-					if(u.data->spells && u.action == A_NONE && u.frozen == 0)
+					if(u.data->spells && u.action == A_NONE && u.frozen == FROZEN::NO)
 					{
 						bool break_action = false;
 
@@ -1707,7 +1709,7 @@ void Game::UpdateAi(float dt)
 
 					if(u.IsHoldingBow())
 					{
-						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == 0 && u.stamina > 0)
+						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == FROZEN::NO && u.stamina > 0)
 						{
 							// sprawdŸ czy mo¿esz strzelaæ we wroga
 							look_pos = PredictTargetPos(u, *enemy, u.GetArrowSpeed());
@@ -1746,7 +1748,7 @@ void Game::UpdateAi(float dt)
 					else
 					{
 						// attack
-						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == 0)
+						if(u.action == A_NONE && ai.next_attack <= 0.f && u.frozen == FROZEN::NO)
 						{
 							if(best_dist <= u.GetAttackRange() + 1.f)
 								AI_DoAttack(ai, enemy);
@@ -2225,7 +2227,7 @@ void Game::UpdateAi(float dt)
 						target_pos = top->pos;
 
 						// zaatakuj
-						if(u.action == A_NONE && best_dist <= u.GetAttackRange() && ai.next_attack <= 0.f && u.frozen == 0)
+						if(u.action == A_NONE && best_dist <= u.GetAttackRange() && ai.next_attack <= 0.f && u.frozen == FROZEN::NO)
 							AI_DoAttack(ai, enemy);
 						else if(u.action == A_CAST)
 						{
@@ -2400,7 +2402,7 @@ void Game::UpdateAi(float dt)
 		}
 
 		// ruch postaci
-		if(move_type != DontMove && u.frozen == 0)
+		if(move_type != DontMove && u.frozen == FROZEN::NO)
 		{
 			int move;
 
@@ -2470,7 +2472,7 @@ void Game::UpdateAi(float dt)
 			{
 				// ruch do ty³u
 				u.speed = u.GetWalkSpeed();
-				u.prev_speed = (u.prev_speed + (u.speed - u.prev_speed)*dt * 3);
+				u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed)*dt * 3), 0.f, u.speed);
 				float speed = u.prev_speed * dt;
 				const float kat = Vec3::LookAtAngle(u.pos, target_pos);
 
@@ -2695,7 +2697,7 @@ void Game::UpdateAi(float dt)
 					}
 
 					u.speed = run ? u.GetRunSpeed() : u.GetWalkSpeed();
-					u.prev_speed = (u.prev_speed + (u.speed - u.prev_speed)*dt * 3);
+					u.prev_speed = Clamp((u.prev_speed + (u.speed - u.prev_speed)*dt * 3), 0.f, u.speed);
 					float speed = u.prev_speed * dt;
 					const float kat = Vec3::LookAtAngle(u.pos, move_target) + PI;
 

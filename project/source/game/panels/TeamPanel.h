@@ -29,8 +29,9 @@ public:
 	void Kick();
 	void OnGiveGold(int id);
 	void OnKick(int id);
+	void LoadData();
 
-	static TEX tKorona, tCzaszka;
+	TEX tKorona, tCzaszka;
 	Scrollbar scrollbar;
 	Button bt[4];
 	cstring txTeam, txCharInTeam, txPing, txDays, txPickCharacter, txNoCredit, txPayCreditAmount, txNotEnoughGold, txPaidCredit, txPaidCreditPart, txGiveGoldSelf, txGiveGoldAmount, txOnlyPcLeader,

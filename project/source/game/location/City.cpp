@@ -312,7 +312,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				}
 
 				// delete old walls
-				Obj* to_remove = FindObject("to_remove");
+				BaseObject* to_remove = BaseObject::Get("to_remove");
 				vector<Object>::iterator it = objects.begin();
 				while(it != objects.end())
 				{
@@ -323,8 +323,8 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				}
 
 				// add new buildings
-				Obj* oWall = FindObject("wall");
-				Obj* oTower = FindObject("tower");
+				BaseObject* oWall = BaseObject::Get("wall"),
+					*oTower = BaseObject::Get("tower");
 
 				const int mid = int(0.5f*size);
 
@@ -418,7 +418,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				Object& o = Add1(objects);
 				o.rot.x = o.rot.z = 0.f;
 				o.scale = 1.f;
-				o.base = FindObject("gate");
+				o.base = BaseObject::Get("gate");
 				o.mesh = o.base->mesh;
 				switch(side)
 				{
@@ -445,7 +445,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				o2.pos = o.pos;
 				o2.rot = o.rot;
 				o2.scale = 1.f;
-				o2.base = FindObject("grate");
+				o2.base = BaseObject::Get("grate");
 				o2.mesh = o2.base->mesh;
 
 				// exit

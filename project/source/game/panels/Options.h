@@ -20,6 +20,7 @@ public:
 		IdGlow,
 		IdNormal,
 		IdSpecular,
+		IdVsync,
 		IdChangeRes,
 		IdOk,
 		IdControls,
@@ -41,9 +42,10 @@ public:
 	void OnChangeLanguage(int id);
 	void ChangeLanguage(int id);
 
-	CheckBox check[4];
+	CheckBox check[5];
 	ListBox res, multisampling, language;
-	cstring txOPTIONS, txResolution, txMultisampling, txLanguage, txMultisamplingError, txNeedRestart, txSoundVolume, txMusicVolume, txMouseSensitivity, txGrassRange;
+	cstring txOPTIONS, txResolution, txMultisampling, txLanguage, txMultisamplingError, txNeedRestart, txSoundVolume, txMusicVolume, txMouseSensitivity,
+		txGrassRange;
 	string language_id;
 	Scrollbar scroll[4];
 	int sound_volume, music_volume, mouse_sensitivity, grass_range;

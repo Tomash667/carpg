@@ -6,45 +6,48 @@
 #include "Resource.h"
 
 //-----------------------------------------------------------------------------
-// fort ludzi, 2-3 poziomów, bez pu³apek czy ukrytych przejœæ
-#define HUMAN_FORT 0
-// fort krasnoludów 3-5 poziomów, pu³apki, tajne przejœcia, na dole skarby
-#define DWARF_FORT 1
-// wie¿a magów, 4-6 okr¹g³ych ma³ych poziomów
-// 50% szansy na magów, 25% na magów i golemy
-#define MAGE_TOWER 2
-// kryjówka bandytów, 1 poziom, pu³apki przy wejœciu
-// 75% szansy na bandytów
-#define BANDITS_HIDEOUT 3
-// krypta w której pochowano jak¹œ znan¹ osobê, 2-3 poziomów, na pocz¹tku ostrze¿enia, na ostatnim poziomie du¿o pu³apek i centralna sala ze zw³okami i skarbami
-// 50% szansy na nieumar³ych, 25% nekro
-#define HERO_CRYPT 4
-// uwiêziono tu jakiegoœ z³ego potwora, 2-3 poziomów, jak wy¿ej
-// 75% szansy na nieumar³ych
-#define MONSTER_CRYPT 5
-// stara œwi¹tynia, 1-3 poziomów, mo¿e byæ oczyszczona lub nie ze z³ych kap³anów/nekromantów
-// 25% nieumarli, 25% nekro, 25% Ÿli
-#define OLD_TEMPLE 6
-// ukryta skrytka, 1 poziom, wygl¹da jak zwyk³y poziom ale s¹ ukryte przejœcia i pu³apki, na koñcu skarb
-// 25% nic, 25% bandyci
-#define VAULT 7
-// baza nekromantów
-// 50% nekro, 25% z³o
-#define NECROMANCER_BASE 8
-// labirynt
-#define LABIRYNTH 9
-// jaskina
-#define CAVE 10
-// koñcowy poziom questu kopalnia
-#define KOPALNIA_POZIOM 11
-// jak HUMAN_FORT ale 100% szansy na drzwi
-#define TUTORIAL_FORT 12
-// jak HUMAN_FORT ale z sal¹ tronow¹
-#define THRONE_FORT 13
-// jak VAULT ale z sal¹ tronow¹
-#define THRONE_VAULT 14
-// druga tekstura krypty
-#define CRYPT_2_TEXTURE 15
+enum BaseLocationId
+{
+	// fort ludzi, 2-3 poziomów, bez pu³apek czy ukrytych przejœæ
+	HUMAN_FORT,
+	// fort krasnoludów 3-5 poziomów, pu³apki, tajne przejœcia, na dole skarby
+	DWARF_FORT,
+	// wie¿a magów, 4-6 okr¹g³ych ma³ych poziomów
+	// 50% szansy na magów, 25% na magów i golemy
+	MAGE_TOWER,
+	// kryjówka bandytów, 1 poziom, pu³apki przy wejœciu
+	// 75% szansy na bandytów
+	BANDITS_HIDEOUT,
+	// krypta w której pochowano jak¹œ znan¹ osobê, 2-3 poziomów, na pocz¹tku ostrze¿enia, na ostatnim poziomie du¿o pu³apek i centralna sala ze zw³okami i skarbami
+	// 50% szansy na nieumar³ych, 25% nekro
+	HERO_CRYPT,
+	// uwiêziono tu jakiegoœ z³ego potwora, 2-3 poziomów, jak wy¿ej
+	// 75% szansy na nieumar³ych
+	MONSTER_CRYPT,
+	// stara œwi¹tynia, 1-3 poziomów, mo¿e byæ oczyszczona lub nie ze z³ych kap³anów/nekromantów
+	// 25% nieumarli, 25% nekro, 25% Ÿli
+	OLD_TEMPLE,
+	// ukryta skrytka, 1 poziom, wygl¹da jak zwyk³y poziom ale s¹ ukryte przejœcia i pu³apki, na koñcu skarb
+	// 25% nic, 25% bandyci
+	VAULT,
+	// baza nekromantów
+	// 50% nekro, 25% z³o
+	NECROMANCER_BASE,
+	// labirynt
+	LABIRYNTH,
+	// jaskina
+	CAVE,
+	// koñcowy poziom questu kopalnia
+	KOPALNIA_POZIOM,
+	// jak HUMAN_FORT ale 100% szansy na drzwi
+	TUTORIAL_FORT,
+	// jak HUMAN_FORT ale z sal¹ tronow¹
+	THRONE_FORT,
+	// jak VAULT ale z sal¹ tronow¹
+	THRONE_VAULT,
+	// druga tekstura krypty
+	CRYPT_2_TEXTURE
+};
 
 //-----------------------------------------------------------------------------
 // Location flags

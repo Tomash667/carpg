@@ -1,16 +1,7 @@
 ﻿FEATURE:
-windows
-xp
-maxram, vram
-directx support
-sse
-http://coreymaynard.com/blog/creating-a-restful-api-with-php/
-http://php.net/manual/pl/function.json-decode.php
+? tests
 ===============================================================================================================
 CURRENT:
-? verify is window center is wnd_size/2 or real_size/2, update GameGuiInit::UdateGui
-? cursor pos change from Vec2 to Int2, cursor testing, focus, click activation etc
-? some todo from Ref is done here
 ===============================================================================================================
 NEW:
 + remove system_dir from Engine

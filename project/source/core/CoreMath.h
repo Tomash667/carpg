@@ -424,6 +424,7 @@ struct Int2
 	int operator ()(int shift) const;
 	Int2 operator + (const Int2& i) const;
 	Int2 operator - (const Int2& i) const;
+	Int2 operator * (const Vec2& scale) const;
 	Int2 operator * (int a) const;
 	Int2 operator * (float s) const;
 	Int2 operator / (int a) const;
@@ -564,6 +565,7 @@ struct Vec2 : XMFLOAT2
 	// Binary operators
 	Vec2 operator + (const Vec2& v) const;
 	Vec2 operator - (const Vec2& v) const;
+	Vec2 operator * (const Vec2& v) const;
 	Vec2 operator * (float s) const;
 	Vec2 operator / (float s) const;
 	friend Vec2 operator * (float s, const Vec2& v);

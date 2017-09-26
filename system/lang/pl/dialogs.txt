@@ -345,7 +345,7 @@ dialog hero {
 	3 {
 		"Zobaczymy kto jest lepszy!"
 		"Spuszczê ci ³omot!"
-		"Miesi¹c"
+		"Przygotuj siê na pora¿kê!"
 	}
 	4 "Aktualnie trwa jakaœ walka na arenie, musimy zaczekaæ."
 	5 {

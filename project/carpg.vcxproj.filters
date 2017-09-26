@@ -516,6 +516,7 @@
     <ClCompile Include="source\game\panels\ActionPanel.cpp">
       <Filter>3. game\panels</Filter>
     </ClCompile>
+    <ClCompile Include="source\Utility.cpp" />
     <ClCompile Include="source\engine\Font.cpp">
       <Filter>2. engine</Filter>
     </ClCompile>
@@ -620,6 +621,15 @@
     </ClCompile>
     <ClCompile Include="source\engine\gui\Gui.cpp">
       <Filter>2. engine\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\panels\BookPanel.cpp">
+      <Filter>3. game\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\stats\BaseObject.cpp">
+      <Filter>3. game\stats</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\ItemContainer.cpp">
+      <Filter>3. game\entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\net\NetStats.cpp">
       <Filter>3. game\net</Filter>
@@ -1115,6 +1125,7 @@
     <ClInclude Include="source\game\panels\ActionPanel.h">
       <Filter>3. game\panels</Filter>
     </ClInclude>
+    <ClInclude Include="source\Utility.h" />
     <ClInclude Include="source\game\net\GamePacket.h">
       <Filter>3. game\net</Filter>
     </ClInclude>
@@ -1243,6 +1254,15 @@
     </ClInclude>
     <ClInclude Include="source\engine\BitStreamFunc.h">
       <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\panels\BookPanel.h">
+      <Filter>3. game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\stats\BaseObject.h">
+      <Filter>3. game\stats</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\ItemContainer.h">
+      <Filter>3. game\entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\net\NetStats.h">
       <Filter>3. game\net</Filter>

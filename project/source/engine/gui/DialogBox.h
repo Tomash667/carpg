@@ -5,13 +5,16 @@
 #include "Checkbox.h"
 
 //-----------------------------------------------------------------------------
-#define BUTTON_OK 0
-#define BUTTON_YES 1
-#define BUTTON_NO 2
-#define BUTTON_CANCEL 3
-#define BUTTON_CHECKED 4
-#define BUTTON_UNCHECKED 5
-#define BUTTON_CUSTOM 6
+enum DialogButtonId
+{
+	BUTTON_OK,
+	BUTTON_YES,
+	BUTTON_NO,
+	BUTTON_CANCEL,
+	BUTTON_CHECKED,
+	BUTTON_UNCHECKED,
+	BUTTON_CUSTOM
+};
 
 //-----------------------------------------------------------------------------
 class DialogBox : public Control

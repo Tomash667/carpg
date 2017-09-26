@@ -191,19 +191,23 @@ struct UnitWarpData
 	int where;
 };
 
-#define FALLBACK_TRAIN 0
-#define FALLBACK_REST 1
-#define FALLBACK_ARENA 2
-#define FALLBACK_ENTER 3
-#define FALLBACK_EXIT 4
-#define FALLBACK_CHANGE_LEVEL 5
-#define FALLBACK_NONE 6
-#define FALLBACK_ARENA_EXIT 7
-#define FALLBACK_USE_PORTAL 8
-#define FALLBACK_WAIT_FOR_WARP 9
-#define FALLBACK_ARENA2 10
-#define FALLBACK_CLIENT 11
-#define FALLBACK_CLIENT2 12
+enum class FALLBACK
+{
+	NO = -1,
+	TRAIN,
+	REST,
+	ARENA,
+	ENTER,
+	EXIT,
+	CHANGE_LEVEL,
+	NONE,
+	ARENA_EXIT,
+	USE_PORTAL,
+	WAIT_FOR_WARP,
+	ARENA2,
+	CLIENT,
+	CLIENT2
+};
 
 enum InventoryMode
 {
@@ -213,7 +217,8 @@ enum InventoryMode
 	I_LOOT_CHEST,
 	I_TRADE,
 	I_SHARE,
-	I_GIVE
+	I_GIVE,
+	I_LOOT_CONTAINER
 };
 
 struct TeamShareItem
@@ -233,7 +238,7 @@ enum DRAW_FLAGS
 	DF_BULLETS = 1 << 5,
 	DF_BLOOD = 1 << 6,
 	DF_ITEMS = 1 << 7,
-	DF_USEABLES = 1 << 8,
+	DF_USABLES = 1 << 8,
 	DF_TRAPS = 1 << 9,
 	DF_AREA = 1 << 10,
 	DF_EXPLOS = 1 << 11,
@@ -409,7 +414,6 @@ struct Game final : public Engine, public UnitEventHandler
 	void StartGameMode();
 
 	QUICKSTART quickstart;
-	HANDLE mutex;
 
 	// supershader
 	string sshader_code;
@@ -499,7 +503,7 @@ struct Game final : public Engine, public UnitEventHandler
 	MeshPtr aBox, aCylinder, aSphere, aCapsule;
 	MeshPtr aArrow, aSkybox, aBag, aChest, aGrating, aDoorWall, aDoorWall2, aStairsDown, aStairsDown2, aStairsUp, aSpellball, aPressurePlate, aDoor, aDoor2, aStun;
 	VertexDataPtr vdSchodyGora, vdSchodyDol, vdNaDrzwi;
-	TEX tItemRegion, tMinimap, tChar, tSave;
+	TEX tItemRegion, tItemRegionRot, tMinimap, tChar, tSave;
 	TEX tCzern, tEmerytura, tPortal, tLightingLine, tRip, tEquipped, tMiniSave, tWarning, tError;
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
@@ -514,7 +518,7 @@ struct Game final : public Engine, public UnitEventHandler
 	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sTalk[4], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
 		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sXarTalk, sOrcTalk, sGoblinTalk, sGolemTalk, sEat, sSummon;
 	VB vbParticle;
-	SURFACE sChar, sSave, sItemRegion;
+	SURFACE sChar, sSave, sItemRegion, sItemRegionRot;
 	static cstring txGoldPlus, txQuestCompletedGold;
 	cstring txLoadGuiTextures, txLoadParticles, txLoadPhysicMeshes, txLoadModels, txLoadSpells, txLoadSounds, txLoadMusic, txGenerateWorld;
 	TexturePtr tTrawa, tTrawa2, tTrawa3, tDroga, tZiemia, tPole;
@@ -551,8 +555,8 @@ struct Game final : public Engine, public UnitEventHandler
 		txInvalidPswd, txCantJoin2, txServerFull, txInvalidData, txNickUsed, txInvalidVersion, txInvalidVersion2, txInvalidNick, txGeneratingWorld, txLoadedWorld, txWorldDataError, txLoadedPlayer,
 		txPlayerDataError, txGeneratingLocation, txLoadingLocation, txLoadingLocationError, txLoadingChars, txLoadingCharsError, txSendingWorld, txMpNPCLeft, txLoadingLevel, txDisconnecting,
 		txLost, txLeft, txLost2, txUnconnected, txDisconnected, txClosing, txKicked, txUnknown, txUnknown2, txWaitingForServer, txStartingGame, txPreparingWorld, txInvalidCrc;
-	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txPlayerKicked, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked, txPcWasKicked,
-		txPcLeftGame, txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft;
+	cstring txCreateServerFailed, txInitConnectionFailed, txServer, txYouAreLeader, txRolledNumber, txPcIsLeader, txReceivedGold, txYouDisconnected, txYouKicked,
+		txGamePaused, txGameResumed, txDevmodeOn, txDevmodeOff, txPlayerLeft, txPlayerDisconnected, txPlayerQuit, txPlayerKicked, txServerClosed;
 	cstring txYell[3];
 	cstring txHaveErrors;
 
@@ -596,7 +600,7 @@ public:
 	Vec4 fog_color, fog_params, ambient_color;
 	int alpha_test_state;
 	bool cl_fog, cl_lighting, draw_particle_sphere, draw_unit_radius, draw_hitbox, draw_phy, draw_col;
-	Obj obj_alpha;
+	BaseObject obj_alpha;
 	float portal_anim, drunk_anim;
 	// post effect u¿ywa 3 tekstur lub jeœli jest w³¹czony multisampling 3 surface i 1 tekstury
 	SURFACE sPostEffect[3];
@@ -682,11 +686,6 @@ public:
 	vector<CameraCollider> cam_colliders;
 
 	//---------------------------------
-	// WIADOMOŒCI / NOTATKI / PLOTKI
-	vector<string> notes;
-	vector<string> rumors;
-
-	//---------------------------------
 	// WCZYTYWANIE
 	float loading_dt, loading_cap;
 	Timer loading_t;
@@ -700,7 +699,8 @@ public:
 
 	//---------------------------------
 	// FALLBACK
-	int fallback_co, fallback_1, fallback_2;
+	FALLBACK fallback_co;
+	int fallback_1, fallback_2;
 	float fallback_t;
 
 	//--------------------------------------
@@ -848,7 +848,7 @@ public:
 
 	bool show_mp_panel;
 	int draw_flags;
-	bool in_tutorial;
+	bool in_tutorial, finished_tutorial;
 
 	// muzyka
 	MusicType music_type;
@@ -1006,12 +1006,19 @@ public:
 	void BuildTmpInventory(int index);
 	int GetItemPrice(const Item* item, Unit& unit, bool buy);
 
-	void BreakUnitAction(Unit& unit, bool fall = false, bool notify = false);
+	enum class BREAK_ACTION_MODE
+	{
+		NORMAL,
+		FALL,
+		INSTANT
+	};
+	void BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode = BREAK_ACTION_MODE::NORMAL, bool notify = false, bool allow_animation = false);
 	void Draw();
 	void ExitToMenu();
 	void DoExitToMenu();
 	void GenerateItemImage(TaskData& task_data);
-	void SetupObject(Obj& obj);
+	SURFACE DrawItemImage(const Item& item, TEX tex, SURFACE surface, float rot);
+	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
 	void LoadShaders();
 	void SetupShaders();
@@ -1152,8 +1159,14 @@ public:
 	Trap* CreateTrap(Int2 pt, TRAP_TYPE type, bool timed = false);
 	void PreloadTraps(vector<Trap*>& traps);
 	bool RayTest(const Vec3& from, const Vec3& to, Unit* ignore, Vec3& hitpoint, Unit*& hitted);
-	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<bool(btCollisionObject*, bool)> clbk, float& t, vector<float>* t_list = nullptr,
-		bool use_clbk2 = false);
+	enum LINE_TEST_RESULT
+	{
+		LT_IGNORE,
+		LT_COLLIDE,
+		LT_END
+	};
+	bool LineTest(btCollisionShape* shape, const Vec3& from, const Vec3& dir, delegate<LINE_TEST_RESULT(btCollisionObject*, bool)> clbk, float& t,
+		vector<float>* t_list = nullptr, bool use_clbk2 = false, float* end_t = nullptr);
 	bool ContactTest(btCollisionObject* obj, delegate<bool(btCollisionObject*, bool)> clbk, bool use_clbk2 = false);
 	void UpdateElectros(LevelContext& ctx, float dt);
 	void UpdateDrains(LevelContext& ctx, float dt);
@@ -1250,6 +1263,7 @@ public:
 	void PreloadResources(bool worldmap);
 	void PreloadUsables(vector<Usable*>& usable);
 	void PreloadUnits(vector<Unit*>& units);
+	void PreloadUnit(Unit* unit);
 	void PreloadItems(vector<ItemSlot>& items);
 	void PreloadItem(const Item* item);
 	void VerifyResources();
@@ -1358,13 +1372,13 @@ public:
 	{
 		return FindUnitByIdLocal(FindUnitData(id));
 	}
-	Object* FindObjectByIdLocal(Obj* obj)
+	Object* FindObjectByIdLocal(BaseObject* obj)
 	{
-		return local_ctx.FindObjectById(obj);
+		return local_ctx.FindObject(obj);
 	}
 	Object* FindObjectByIdLocal(cstring id)
 	{
-		return FindObjectByIdLocal(FindObject(id));
+		return FindObjectByIdLocal(BaseObject::Get(id));
 	}
 	Usable* FindUsableByIdLocal(int type)
 	{
@@ -1433,6 +1447,7 @@ public:
 	void ResetCollisionPointers();
 	void SetOutsideParams();
 	UnitData& GetHero(Class clas, bool crazy = false);
+	const Item* GetRandomBook();
 
 	// level area
 	LevelAreaContext* ForLevel(int loc, int level = -1);
@@ -1509,11 +1524,19 @@ public:
 	void RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc);
 	void OnEnterIp(int id);
 	void GenericInfoBoxUpdate(float dt);
+	void UpdateClientConnectingIp(float dt);
+	void UpdateClientTransfer(float dt);
+	void UpdateClientQuiting(float dt);
+	void UpdateServerTransfer(float dt);
+	void UpdateServerSend(float dt);
+	void UpdateServerQuiting(float dt);
 	void QuickJoinIp();
 	void AddMultiMsg(cstring msg);
 	void Quit();
 	bool ValidateNick(cstring nick);
 	void UpdateLobbyNet(float dt);
+	void UpdateLobbyNetClient(float dt);
+	void UpdateLobbyNetServer(float dt);
 	bool DoLobbyUpdate(BitStream& stream);
 	void OnCreateCharacter(int id);
 	void OnPlayTutorial(int id);
@@ -1529,7 +1552,7 @@ public:
 
 	//-----------------------------------------------------------------
 	// MULTIPLAYER
-	RakNet::RakPeerInterface* peer;
+	SLNet::RakPeerInterface* peer;
 	string server_name, player_name, server_pswd, server_ip, enter_pswd, server_name2;
 	int autostart_count;//, kick_timer;
 	int players; // aktualna liczba graczy w grze
@@ -1537,11 +1560,10 @@ public:
 	int my_id; // moje unikalne id
 	int last_id;
 	int last_startup_id;
-	bool sv_startup, was_client;
+	bool sv_startup, was_client, players_left;
 	BitStream server_info;
 	vector<byte> packet_data;
-	vector<PlayerInfo> game_players, old_players;
-	vector<int> players_left;
+	vector<PlayerInfo*> game_players, old_players;
 	SystemAddress server;
 	int leader_id, kick_id;
 	float startup_timer;
@@ -1554,7 +1576,8 @@ public:
 		NM_TRANSFER_SERVER,
 		NM_SERVER_SEND
 	} net_mode;
-	int net_state, net_tries;
+	NetState net_state;
+	int net_tries;
 	VoidF net_callback;
 	string net_adr;
 	float net_timer, update_timer, mp_timeout;
@@ -1639,11 +1662,6 @@ public:
 	PlayerInfo* GetPlayerInfoTry(int id);
 	PlayerInfo& GetPlayerInfo(PlayerController* player) { return GetPlayerInfo(player->id); }
 	PlayerInfo* GetPlayerInfoTry(PlayerController* player) { return GetPlayerInfoTry(player->id); }
-	void PushNetChange(NetChange::TYPE type)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = type;
-	}
 	void UpdateWarpData(float dt);
 	void Net_AddQuest(int refid)
 	{
@@ -1799,6 +1817,7 @@ public:
 	void Net_FilterServerChanges();
 	void Net_FilterClientChanges();
 	void ProcessLeftPlayers();
+	void RemovePlayer(PlayerInfo& info);
 	void ClosePeer(bool wait = false);
 	void DeleteOldPlayers();
 	NetChangePlayer& AddChange(NetChangePlayer::TYPE type, PlayerController* _pc)
@@ -1810,7 +1829,6 @@ public:
 		_pc->player_info->NeedUpdate();
 		return c;
 	}
-	void RemovePlayerOnLoad(PlayerInfo& info);
 
 	BitStream& StreamStart(Packet* packet, StreamLogType type);
 	void StreamEnd();
@@ -1847,8 +1865,51 @@ public:
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void GenerateDungeon(Location& loc);
 	void SpawnCityPhysics();
-	// zwraca Object lub Usable lub Chest!!!, w przypadku budynku rot musi byæ równe 0, PI/2, PI, 3*2/PI (w przeciwnym wypadku bêdzie 0)
-	Object* SpawnObject(LevelContext& ctx, Obj* obj, const Vec3& pos, float rot, float scale = 1.f, Vec3* out_point = nullptr, int variant = -1);
+	struct ObjectEntity
+	{
+		enum Type
+		{
+			NONE,
+			OBJECT,
+			USABLE,
+			CHEST
+		} type;
+		union
+		{
+			Object* object;
+			Usable* usable;
+			Chest* chest;
+		};
+
+		ObjectEntity(nullptr_t) : object(nullptr), type(NONE) {}
+		ObjectEntity(Object* object) : object(object), type(OBJECT) {}
+		ObjectEntity(Usable* usable) : usable(usable), type(USABLE) {}
+		ObjectEntity(Chest* chest) : chest(chest), type(CHEST) {}
+
+		operator bool()
+		{
+			return type != NONE;
+		}
+		operator Object* ()
+		{
+			assert(type == OBJECT || type == NONE);
+			return object;
+		}
+		operator Usable* ()
+		{
+			assert(type == USABLE || type == NONE);
+			return usable;
+		}
+		operator Chest* ()
+		{
+			assert(type == CHEST || type == NONE);
+			return chest;
+		}
+
+	};
+	// for object rot must be 0, PI/2, PI or PI*3/2
+	ObjectEntity SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale = 1.f, int flags = 0,
+		Vec3* out_point = nullptr, int variant = -1);
 	void RespawnBuildingPhysics();
 	void SpawnCityObjects();
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
@@ -1879,8 +1940,10 @@ public:
 	void GenerateCamp(Location& loc);
 	void SpawnCampObjects();
 	void SpawnCampUnits();
-	Object* SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const Vec2& pos, float rot, float range = 2.f, float margin = 0.3f, float scale = 1.f);
-	Object* SpawnObjectNearLocation(LevelContext& ctx, Obj* obj, const Vec2& pos, const Vec2& rot_target, float range = 2.f, float margin = 0.3f, float scale = 1.f);
+	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range = 2.f, float margin = 0.3f,
+		float scale = 1.f);
+	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range = 2.f, float margin = 0.3f,
+		float scale = 1.f);
 	int GetClosestLocation(LOCATION type, const Vec2& pos, int target = -1);
 	int GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target);
 	int CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range = 64.f, bool allow_exact = true);
@@ -1889,7 +1952,8 @@ public:
 	void RemoveTmpUnits(LevelContext& ctx);
 	int AddLocation(Location* loc);
 	// tworzy lokacjê (jeœli range<0 to pozycja jest dowolna a range=-range, level=-1 - losowy poziom, =0 - minimalny, =9 maksymalny, =liczba - okreœlony)
-	int CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_LOSOWO, bool allow_exact = true, int levels = -1);
+	int CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_LOSOWO, bool allow_exact = true,
+		int levels = -1);
 	bool FindPlaceForLocation(Vec2& pos, float range = 64.f, bool allow_exact = true);
 	int FindLocationId(Location* loc);
 	void Event_StartEncounter(int id);
@@ -1899,7 +1963,8 @@ public:
 #define SOE_DONT_SPAWN_PARTICLES (1<<0)
 #define SOE_MAGIC_LIGHT (1<<1)
 #define SOE_DONT_CREATE_LIGHT (1<<2)
-	void SpawnObjectExtras(LevelContext& ctx, Obj* obj, const Vec3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale = 1.f, int flags = 0);
+	void SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale = 1.f,
+		int flags = 0);
 	void GenerateSecretLocation(Location& loc);
 	void SpawnSecretLocationObjects();
 	void SpawnSecretLocationUnits();

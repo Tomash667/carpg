@@ -285,10 +285,10 @@ void TakenPerk::Apply(PlayerController& pc) const
 		// effects in CreatedCharacter::Apply
 		break;
 	case Perk::Wealthy:
-		pc.unit->gold += 250;
+		pc.unit->gold += 500;
 		break;
 	case Perk::VeryWealthy:
-		pc.unit->gold += 1000;
+		pc.unit->gold += 2000;
 		break;
 	default:
 		assert(0);

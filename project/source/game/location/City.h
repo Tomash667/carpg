@@ -46,6 +46,7 @@ struct City : public OutsideLocation
 		HaveFoodSeller = 1 << 5,
 		HaveInn = 1 << 6,
 		HaveArena = 1 << 7
+		// saved as byte in PreparedWorldData
 	};
 
 	SettlementType settlement_type;

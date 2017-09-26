@@ -226,7 +226,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						var = value;
 						if(IS_SET(it->flags, F_MP_VAR))
-							PushNetChange(NetChange::CHANGE_MP_VARS);
+							Net::PushChange(NetChange::CHANGE_MP_VARS);
 						if(it->changed)
 							it->changed();
 					}
@@ -251,7 +251,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						f = f2;
 						if(IS_SET(it->flags, F_MP_VAR))
-							PushNetChange(NetChange::CHANGE_MP_VARS);
+							Net::PushChange(NetChange::CHANGE_MP_VARS);
 					}
 				}
 				Msg("%s = %g", it->name, f);
@@ -274,7 +274,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						i = i2;
 						if(IS_SET(it->flags, F_MP_VAR))
-							PushNetChange(NetChange::CHANGE_MP_VARS);
+							Net::PushChange(NetChange::CHANGE_MP_VARS);
 						if(it->changed)
 							it->changed();
 					}
@@ -299,7 +299,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						u = u2;
 						if(IS_SET(it->flags, F_MP_VAR))
-							PushNetChange(NetChange::CHANGE_MP_VARS);
+							Net::PushChange(NetChange::CHANGE_MP_VARS);
 					}
 				}
 				Msg("%s = %u", it->name, u);
@@ -316,7 +316,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(Net::IsLocal())
 						ExitToMap();
 					else
-						PushNetChange(NetChange::CHEAT_GOTO_MAP);
+						Net::PushChange(NetChange::CHEAT_GOTO_MAP);
 					break;
 				case CMD_VERSION:
 					Msg("CaRpg version " VERSION_STR ", built %s.", g_ctime.c_str());
@@ -331,7 +331,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(Net::IsLocal())
 						Cheat_Reveal();
 					else
-						PushNetChange(NetChange::CHEAT_REVEAL);
+						Net::PushChange(NetChange::CHEAT_REVEAL);
 					break;
 				case CMD_MAP2CONSOLE:
 					if(game_state == GS_LEVEL && !location->outside)
@@ -722,7 +722,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						PushNetChange(NetChange::CHEAT_HEAL);
+						Net::PushChange(NetChange::CHEAT_HEAL);
 					break;
 				case CMD_KILL:
 					if(pc_data.selected_target)
@@ -774,7 +774,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(Net::IsLocal())
 						GiveDmg(GetContext(*pc->unit), nullptr, pc->unit->hpmax, *pc->unit);
 					else
-						PushNetChange(NetChange::CHEAT_SUICIDE);
+						Net::PushChange(NetChange::CHEAT_SUICIDE);
 					break;
 				case CMD_CITIZEN:
 					if(Team.is_bandit || Team.crazies_attack)
@@ -784,10 +784,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							Team.is_bandit = false;
 							Team.crazies_attack = false;
 							if(Net::IsOnline())
-								PushNetChange(NetChange::CHANGE_FLAGS);
+								Net::PushChange(NetChange::CHANGE_FLAGS);
 						}
 						else
-							PushNetChange(NetChange::CHEAT_CITIZEN);
+							Net::PushChange(NetChange::CHEAT_CITIZEN);
 					}
 					break;
 				case CMD_SCREENSHOT:
@@ -803,7 +803,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						PushNetChange(NetChange::CHEAT_SCARE);
+						Net::PushChange(NetChange::CHEAT_SCARE);
 					break;
 				case CMD_INVISIBLE:
 					if(t.Next())
@@ -946,7 +946,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(Net::IsLocal())
 						Cheat_ShowMinimap();
 					else
-						PushNetChange(NetChange::CHEAT_SHOW_MINIMAP);
+						Net::PushChange(NetChange::CHEAT_SHOW_MINIMAP);
 					break;
 				case CMD_SKIP_DAYS:
 					{
@@ -987,10 +987,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								// wejdŸ do budynku
 								if(Net::IsLocal())
 								{
-									fallback_co = FALLBACK_ENTER;
+									fallback_co = FALLBACK::ENTER;
 									fallback_t = -1.f;
 									fallback_1 = index;
-									pc->unit->frozen = 2;
+									pc->unit->frozen = (pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 								}
 								else
 								{
@@ -1018,7 +1018,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						else if(t.NextLine())
 						{
 							const string& text = t.MustGetItem();
-							PlayerInfo& info = game_players[index];
+							PlayerInfo& info = *game_players[index];
 							if(info.id == my_id)
 								Msg("Whispers in your head: %s", text.c_str());
 							else
@@ -1075,7 +1075,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_READY:
 					{
-						PlayerInfo& info = game_players[0];
+						PlayerInfo& info = *game_players[0];
 						info.ready = !info.ready;
 						ChangeReady();
 					}
@@ -1089,7 +1089,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							Msg("No player with nick '%s'.", player_name.c_str());
 						else
 						{
-							PlayerInfo& info = game_players[index];
+							PlayerInfo& info = *game_players[index];
 							if(leader_id == info.id)
 								Msg("Player '%s' is already a leader.", player_name.c_str());
 							else if(Net::IsServer() || leader_id == my_id)
@@ -1140,7 +1140,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(t.IsSymbol('?'))
 							{
 								LocalVector2<Class> classes;
-								for(ClassInfo& ci : g_classes)
+								for(ClassInfo& ci : ClassInfo::classes)
 								{
 									if(ci.pickable)
 										classes.push_back(ci.class_id);
@@ -1148,13 +1148,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								std::sort(classes.begin(), classes.end(),
 									[](Class c1, Class c2) -> bool
 								{
-									return strcmp(g_classes[(int)c1].id, g_classes[(int)c2].id) < 0;
+									return strcmp(ClassInfo::classes[(int)c1].id, ClassInfo::classes[(int)c2].id) < 0;
 								});
 								LocalString str = "List of classes: ";
 								Join(classes.Get(), str.get_ref(), ", ",
 									[](Class c)
 								{
-									return g_classes[(int)c].id;
+									return ClassInfo::classes[(int)c].id;
 								});
 								str += ".";
 								Msg(str.c_str());
@@ -1205,9 +1205,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 						cstring error_text = nullptr;
 
-						for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+						for(auto info : game_players)
 						{
-							if(!it->ready)
+							if(!info->ready)
 							{
 								error_text = "Not everyone is ready.";
 								break;
@@ -1245,7 +1245,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						WriteString1(net_stream, text);
 						peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server, Net::IsServer());
 						StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server);
-						cstring s = Format("%s: %s", game_players[0].name.c_str(), text.c_str());
+						cstring s = Format("%s: %s", game_players[0]->name.c_str(), text.c_str());
 						AddMsg(s);
 						Info(s);
 					}
@@ -1261,9 +1261,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							bool b = t.MustGetBool();
 							if(player_name == "all")
 							{
-								for(PlayerInfo& info : game_players)
+								for(auto pinfo : game_players)
 								{
-									if(!info.left && info.devmode != b && info.id != 0)
+									auto& info = *pinfo;
+									if(info.left == PlayerInfo::LEFT_NO && info.devmode != b && info.id != 0)
 									{
 										info.devmode = b;
 										NetChangePlayer& c = Add1(Net::player_changes);
@@ -1281,7 +1282,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									Msg("No player with nick '%s'.", player_name.c_str());
 								else
 								{
-									PlayerInfo& info = game_players[index];
+									PlayerInfo& info = *game_players[index];
 									if(info.devmode != b)
 									{
 										info.devmode = b;
@@ -1300,8 +1301,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							{
 								LocalString s = "Players devmode: ";
 								bool any = false;
-								for(PlayerInfo& info : game_players)
+								for(auto pinfo : game_players)
 								{
+									auto& info = *pinfo;
 									if(!info.left && info.id != 0)
 									{
 										s += Format("%s(%d), ", info.name.c_str(), info.devmode ? 1 : 0);
@@ -1323,7 +1325,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								if(index == -1)
 									Msg("No player with nick '%s'.", player_name.c_str());
 								else
-									Msg("Player devmode: %s(%d).", player_name.c_str(), game_players[index].devmode ? 1 : 0);
+									Msg("Player devmode: %s(%d).", player_name.c_str(), game_players[index]->devmode ? 1 : 0);
 							}
 						}
 					}
@@ -1352,7 +1354,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						c.type = NetChange::PAUSED;
 						c.id = (paused ? 1 : 0);
 						if(paused && game_state == GS_WORLDMAP && world_state == WS_TRAVEL)
-							PushNetChange(NetChange::UPDATE_MAP_POS);
+							Net::PushChange(NetChange::UPDATE_MAP_POS);
 					}
 					break;
 				case CMD_MULTISAMPLING:
@@ -1460,7 +1462,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						if(!sv_startup)
 						{
-							PlayerInfo& info = game_players[0];
+							PlayerInfo& info = *game_players[0];
 							if(!info.ready)
 							{
 								if(info.clas == Class::INVALID)
@@ -1474,9 +1476,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 							cstring error_text = nullptr;
 
-							for(vector<PlayerInfo>::iterator it = game_players.begin(), end = game_players.end(); it != end; ++it)
+							for(auto info : game_players)
 							{
-								if(!it->ready)
+								if(!info->ready)
 								{
 									error_text = "Not everyone is ready.";
 									break;
@@ -1502,7 +1504,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					else
 					{
-						PlayerInfo& info = game_players[0];
+						PlayerInfo& info = *game_players[0];
 						if(!info.ready)
 						{
 							if(info.clas == Class::INVALID)
@@ -1519,7 +1521,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					switch(source)
 					{
 					case PS_CONSOLE:
-						console->itb.Reset();
+						console->Reset();
 						break;
 					case PS_CHAT:
 						game_gui->mp_box->itb.Reset();
@@ -1552,7 +1554,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							if(it->cmd == CMD_HURT)
 								GiveDmg(GetContext(*u), nullptr, 100.f, *u);
 							else if(it->cmd == CMD_BREAK_ACTION)
-								BreakUnitAction(*u, false, true);
+								BreakUnitAction(*u, BREAK_ACTION_MODE::NORMAL, true);
 							else
 								UnitFall(*u);
 						}
@@ -1645,7 +1647,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_REFRESH_COOLDOWN:
 					pc->RefreshCooldown();
 					if(!Net::IsLocal())
-						PushNetChange(NetChange::CHEAT_REFRESH_COOLDOWN);
+						Net::PushChange(NetChange::CHEAT_REFRESH_COOLDOWN);
 					break;
 				default:
 					assert(0);

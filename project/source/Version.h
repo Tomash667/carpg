@@ -37,8 +37,12 @@
 #endif
 
 //-----------------------------------------------------------------------------
-#define VERSION_STR STRING(VERSION_MAJOR) "." STRING(VERSION_MINOR) "." STRING(VERSION_PATCH)
+#if VERSION_PATCH == 0
+#	define VERSION_STR STRING(VERSION_MAJOR) "." STRING(VERSION_MINOR)
+#else
+#	define VERSION_STR STRING(VERSION_MAJOR) "." STRING(VERSION_MINOR) "." STRING(VERSION_PATCH)
+#endif
 
 //-----------------------------------------------------------------------------
-cstring VersionToString(uint wersja);
-uint StringToVersion(cstring wersja);
+cstring VersionToString(uint version);
+uint StringToVersion(cstring version);

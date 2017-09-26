@@ -65,20 +65,8 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			// dodaj plotkê
 			if(!quest_manager.RemoveQuestRumor(P_ZLO))
-			{
-				cstring text = Format(game->txQuest[232], GetStartLocationName());
-				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
-				game->game_gui->journal->NeedUpdate(Journal::Rumors);
-				game->AddGameMsg3(GMS_ADDED_RUMOR);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::ADD_RUMOR;
-					c.id = int(game->rumors.size()) - 1;
-				}
-			}
+				game->game_gui->journal->AddRumor(Format(game->txQuest[232], GetStartLocationName()));
 		}
 		break;
 	case Progress::Started:
@@ -311,7 +299,7 @@ void Quest_Evil::SetProgress(int prog2)
 			Location& target = GetTargetLocation();
 			target.active_quest = nullptr;
 			target.dont_clean = false;
-			Obj* o = FindObject("bloody_altar");
+			BaseObject* o = BaseObject::Get("bloody_altar");
 			int index = 0;
 			for(vector<Object>::iterator it = game->local_ctx.objects->begin(), end = game->local_ctx.objects->end(); it != end; ++it, ++index)
 			{
@@ -319,8 +307,9 @@ void Quest_Evil::SetProgress(int prog2)
 					break;
 			}
 			Object& obj = game->local_ctx.objects->at(index);
-			obj.base = FindObject("altar");
+			obj.base = BaseObject::Get("altar");
 			obj.mesh = obj.base->mesh;
+			ResourceManager::Get<Mesh>().Load(obj.mesh);
 			// usuñ cz¹steczki
 			float best_dist = 999.f;
 			ParticleEmitter* pe = nullptr;
@@ -349,7 +338,7 @@ void Quest_Evil::SetProgress(int prog2)
 
 			if(Net::IsOnline())
 			{
-				game->PushNetChange(NetChange::CLEAN_ALTAR);
+				Net::PushChange(NetChange::CLEAN_ALTAR);
 				game->Net_UpdateQuest(refid);
 			}
 		}
@@ -609,7 +598,7 @@ void Quest_Evil::GenerateBloodyAltar()
 	Vec3 center(float(lvl.w + 1), 0, float(lvl.h + 1));
 	int best_index = -1, index = 0;
 	float best_dist = 999.f;
-	Obj* oltarz = FindObject("altar");
+	BaseObject* oltarz = BaseObject::Get("altar");
 	for(vector<Object>::iterator it = lvl.objects.begin(), end = lvl.objects.end(); it != end; ++it, ++index)
 	{
 		if(it->base == oltarz)
@@ -626,7 +615,7 @@ void Quest_Evil::GenerateBloodyAltar()
 
 	// zmieñ typ obiektu
 	Object& o = lvl.objects[best_index];
-	o.base = FindObject("bloody_altar");
+	o.base = BaseObject::Get("bloody_altar");
 	o.mesh = o.base->mesh;
 
 	// dodaj cz¹steczki
@@ -734,7 +723,7 @@ void Quest_Evil::GeneratePortal()
 	Vec3 portal_pos = r.Center();
 	r.target = RoomTarget::PortalCreate;
 	float rot = PI*Random(0, 3);
-	game->SpawnObject(game->local_ctx, FindObject("portal"), portal_pos, rot);
+	game->SpawnObjectEntity(game->local_ctx, BaseObject::Get("portal"), portal_pos, rot);
 	inside->portal = new Portal;
 	inside->portal->target_loc = -1;
 	inside->portal->next_portal = nullptr;

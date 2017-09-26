@@ -57,7 +57,7 @@ float Unit::CalculateAttack(const Item* _weapon) const
 	if(_weapon->type == IT_WEAPON)
 	{
 		const Weapon& w = _weapon->ToWeapon();
-		const WeaponTypeInfo& wi = weapon_type_info[w.weapon_type];
+		const WeaponTypeInfo& wi = WeaponTypeInfo::info[w.weapon_type];
 		float p;
 		if(str >= w.req_str)
 			p = 1.f;
@@ -848,7 +848,7 @@ void Unit::UpdateEffects(float dt)
 	if(IsPlayer())
 	{
 		if(Net::IsOnline() && player != game.pc && player->last_dmg_poison != poison_dmg)
-			game.game_players[player->id].update_flags |= PlayerInfo::UF_POISON_DAMAGE;
+			game.game_players[player->id]->update_flags |= PlayerInfo::UF_POISON_DAMAGE;
 		player->last_dmg_poison = poison_dmg;
 	}
 
@@ -1782,7 +1782,7 @@ void Unit::Load(HANDLE file, bool local)
 		weapon_state = WS_HIDDEN;
 		weapon_taken = W_NONE;
 		weapon_hiding = W_NONE;
-		frozen = 0;
+		frozen = FROZEN::NO;
 		talking = false;
 		animation = current_animation = ANI_STAND;
 		action = A_NONE;
@@ -1825,7 +1825,7 @@ void Unit::Load(HANDLE file, bool local)
 	ai = nullptr;
 	look_target = nullptr;
 	interp = nullptr;
-	frozen = 0;
+	frozen = FROZEN::NO;
 
 	// fizyka
 	if(local)
@@ -2568,7 +2568,7 @@ int Unit::CalculateLevel()
 //=================================================================================================
 int Unit::CalculateLevel(Class clas)
 {
-	UnitData* ud = g_classes[(int)clas].unit_data;
+	UnitData* ud = ClassInfo::classes[(int)clas].unit_data;
 
 	float tlevel = 0.f;
 	float weight_sum = 0.f;
@@ -2607,18 +2607,18 @@ void Unit::RecalculateStat(Attribute a, bool apply)
 {
 	int id = (int)a;
 	int old = stats.attrib[id];
-	StatState state;
+	//StatState state;
 
 	// calculate value = base + effect modifiers
-	int value = unmod_stats.attrib[id] + GetEffectModifier(EffectType::Attribute, id, (IsPlayer() ? &state : nullptr));
+	int value = unmod_stats.attrib[id]; // +GetEffectModifier(EffectType::Attribute, id, (IsPlayer() ? &state : nullptr));
 
 	if(value == old)
 		return;
 
 	// apply new value
 	stats.attrib[id] = value;
-	if(IsPlayer())
-		player->attrib_state[id] = state;
+	//if(IsPlayer())
+	//	player->attrib_state[id] = state;
 
 	if(apply)
 		ApplyStat(a, old, true);
@@ -2822,14 +2822,14 @@ void Unit::CalculateStats()
 }
 
 //=================================================================================================
-int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
+/*int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
 {
 	ValueBuffer buf;
 	if(state)
 		return buf.Get(*state);
 	else
 		return buf.Get();
-}
+}*/
 
 //=================================================================================================
 int Unit::CalculateMobility() const
@@ -3006,7 +3006,7 @@ void Unit::UpdateStaminaAction()
 {
 	if(usable)
 	{
-		if(usable->GetBase()->stamina_slow_restore)
+		if(IS_SET(usable->GetBase()->flags, BaseUsable::SLOW_STAMINA_RESTORE))
 			stamina_action = SA_RESTORE_SLOW;
 		else
 			stamina_action = SA_RESTORE_MORE;
@@ -3165,9 +3165,8 @@ void Unit::CreateMesh(CREATE_MESH mode)
 				}
 				else
 				{
-					mesh_inst->Play(NAMES::ani_die, PLAY_PRIO1 | PLAY_NO_BLEND, 0);
+					SetAnimationAtEnd(NAMES::ani_die);
 					animation = current_animation = ANI_DIE;
-					SetAnimationAtEnd();
 				}
 			}
 

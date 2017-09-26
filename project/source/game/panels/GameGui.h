@@ -19,6 +19,7 @@ class Minimap;
 class MpBox;
 class GameMessages;
 class ActionPanel;
+class BookPanel;
 
 //-----------------------------------------------------------------------------
 enum class OpenPanel
@@ -112,10 +113,26 @@ public:
 	MpBox* mp_box;
 	GameMessages* game_messages;
 	ActionPanel* action_panel;
+	BookPanel* book_panel;
 	//
 	bool use_cursor;
 
 private:
+	struct SortedUnitView
+	{
+		Unit* unit;
+		float dist;
+		int alpha;
+		Vec3* last_pos;
+	};
+
+	struct SortedSpeechBubble
+	{
+		SpeechBubble* bubble;
+		float dist;
+		Int2 pt;
+	};
+
 	void DrawFront();
 	void DrawBack();
 	void DrawDeathScreen();
@@ -124,17 +141,20 @@ private:
 	void DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha);
 	void UpdateSpeechBubbles(float dt);
 	void GetTooltip(TooltipController*, int group, int id);
+	void SortUnits();
 
 	Game& game;
 	TooltipController tooltip;
 	float buff_scale;
 	vector<BuffImage> buff_images;
+	vector<SortedUnitView> sorted_units;
 	float sidebar;
 	int sidebar_state[(int)SideButtonId::Max];
 	TEX tBar, tHpBar, tPoisonedHpBar, tStaminaBar, tManaBar, tShortcut, tShortcutHover, tShortcutDown, tSideButton[(int)SideButtonId::Max], tMinihp[2], tMinistamina, tCelownik,
 		tBubble, tObwodkaBolu, tActionCooldown;
 	Scrollbar scrollbar;
 	vector<SpeechBubble*> speech_bbs;
+	vector<SortedSpeechBubble> sorted_speech_bbs;
 	cstring txMenu, txDeath, txDeathAlone, txGameTimeout, txChest, txDoor, txDoorLocked, txPressEsc, txHp, txStamina;
 	Int2 debug_info_size, dialog_pos, dialog_size, profiler_size;
 };

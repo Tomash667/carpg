@@ -142,7 +142,7 @@ bool LevelContext::FindItemInChest(const Item* item, Chest** chest, int* slot)
 }
 
 //=================================================================================================
-Object* LevelContext::FindObject(Obj* obj)
+Object* LevelContext::FindObject(BaseObject* obj)
 {
 	assert(obj);
 
@@ -240,19 +240,6 @@ Unit* LevelContext::FindUnitById(UnitData* ud)
 	{
 		if((*it)->data == ud)
 			return *it;
-	}
-
-	return nullptr;
-}
-
-Object* LevelContext::FindObjectById(Obj* obj)
-{
-	assert(obj);
-
-	for(vector<Object>::iterator it = objects->begin(), end = objects->end(); it != end; ++it)
-	{
-		if(it->base == obj)
-			return &*it;
 	}
 
 	return nullptr;

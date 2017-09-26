@@ -1,14 +1,14 @@
- _______  _______  _______  _______  _______ 
+ _______  _______  _______  _______  _______
 (  ____ \(  ___  )(  ____ )(  ____ )(  ____ \
 | (    \/| (   ) || (    )|| (    )|| (    \/
-| |      | (___) || (____)|| (____)|| |      
-| |      |  ___  ||     __)|  _____)| | ____ 
+| |      | (___) || (____)|| (____)|| |
+| |      |  ___  ||     __)|  _____)| | ____
 | |      | (   ) || (\ (   | (      | | \_  )
 | (____/\| )   ( || ) \ \__| )      | (___) |
 (_______/|/     \||/   \__/|/       (_______)
 
 Strona: http://carpg.pl
-Wersja: 0.5.0
+Wersja: 0.5
 Data: 2017-09-07
 
 ===============================================================================
@@ -24,7 +24,7 @@ Data: 2017-09-07
 	9... Linia komend
 	10.. Zg³oœ b³¹d
 	11.. Autorzy
-	
+
 ===============================================================================
 2) Opis
 CaRpg jest to po³¹czenie gier typu action rpg/hack-n-slash jak Gothic czy
@@ -123,7 +123,7 @@ osoby. Oczekuj zmian na lepsze!
 	zapisywania mo¿esz go skopiowaæ.
 * Pora¿ka - Gdy postaæ z twojej dru¿yny straci ca³e hp to upadnie na ziemiê.
 	Gdy nie bêdzie ju¿ wrogów w okolicy to wstanie maj¹c 1 hp. Gdy wszyscy
-	umr¹ nast¹pi koniec gry. Gra koñczy siê te¿ w 160 roku, twoja postaæ 
+	umr¹ nast¹pi koniec gry. Gra koñczy siê te¿ w 160 roku, twoja postaæ
 	odchodzi na emeryturê.
 * Podzia³ ³upów - Ka¿dy cz³onek dru¿yny otrzymuje jak¹œ czêœæ ³upów dla siebie.
 	Ka¿dy bohater niezale¿ny otrzymuje 10% ³upów, reszta jest dzielona po równo
@@ -138,7 +138,7 @@ osoby. Oczekuj zmian na lepsze!
 	lepszy ni¿ to co ma spróbuje go od ciebie odkupiæ. Bohaterowie niezale¿ni
 	przyjm¹ te¿ od ciebie ka¿d¹ miksturkê, za darmo.
 * Tryb hardcore - W tym trybie po zapisaniu wychodzisz do menu a wczytanie
-	usuwa zapis. Standardowy tryb dla gier rougelike. Nie jest on póki co 
+	usuwa zapis. Standardowy tryb dla gier rougelike. Nie jest on póki co
 	zalecany bo jeœli gra siê zawiesi lub zcrashuje bêdzie trzeba zaczynaæ od
 	nowa.
 * Jeœli NPC zablokuje ci drogê mo¿esz na niego krzykn¹æ (domyœlnie klawisz Y)
@@ -159,7 +159,7 @@ osoby. Oczekuj zmian na lepsze!
 	Serwer te¿ mo¿e zmieniæ dowódcê.
 * Up³yw czasu - W trybie singleplayer czas p³ynie normalnie, gdy gracz odpoczywa
 	lub trenuje. W trybie multiplayer gdy jedna osoba odpoczywa/trenuje
-	pozostali gracze otrzymuj¹ tyle samo wolnych dni do wykorzystania. Ile jest 
+	pozostali gracze otrzymuj¹ tyle samo wolnych dni do wykorzystania. Ile jest
 	dni mo¿na zobaczyæ w panelu dru¿yny TAB. Gdy ktoœ przekroczy t¹ liczbê to
 	automatycznie zwiêkszy j¹ u wszystkich. Dzieñ siê zmienia siê u wszystkich
 	tylko przy przekroczeniu tej liczby. Wolnych dni ubywa w czasie podró¿y aby
@@ -197,7 +197,7 @@ Dostêpne komendy bez trybu developera:
 	version - wyœwietla wersjê gry.
 	w/whisper - wysy³a prywatn¹ wiadomoœæ do gracza (whisper nick wiadomoœæ).
 Pe³na lista komend w readme_eng.txt.
-	
+
 ===============================================================================
 8) Plik konfiguracyjny
 W pliku konfiguracyjnym (domyœlnie carpg.cfg) mo¿na u¿ywaæ takich opcji:
@@ -294,11 +294,13 @@ Podziêkowania za znalezione b³êdy:
 	darktorq
 	Docucat
 	fire
+	Medarc
 	Minister of Death
 	Paradox Edge
 	thebard88
 	Vinur_Gamall
 	XNautPhD
+	Zettaton
 	Zinny
 
 Modele:
@@ -319,7 +321,7 @@ Muzyka:
 	* http://www.deceasedsuperiortechnician.com/
 DŸwiêki:
 	* http://www.freesound.org/
-	* http://www.pacdv.com/sounds/ 
+	* http://www.pacdv.com/sounds/
 	* http://www.soundjay.com
 	* http://www.grsites.com/archive/sounds/
 	* http://www.wavsource.com

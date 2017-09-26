@@ -4,8 +4,8 @@
 #include "Crc.h"
 #include "Version.h"
 #include "Base64.h"
-#include <HTTPConnection.h>
-#include <TCPInterface.h>
+#include <slikenet/HTTPConnection.h>
+#include <slikenet/TCPInterface.h>
 #include <process.h>
 
 NetStats* SingletonPtr<NetStats>::instance;

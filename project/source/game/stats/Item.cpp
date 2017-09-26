@@ -10,22 +10,22 @@ ItemsMap g_items;
 std::map<string, const Item*> item_aliases;
 vector<ItemList*> g_item_lists;
 vector<LeveledItemList*> g_leveled_item_lists;
-vector<Weapon*> g_weapons;
-vector<Bow*> g_bows;
-vector<Shield*> g_shields;
-vector<Armor*> g_armors;
-vector<Consumable*> g_consumables;
-vector<OtherItem*> g_others;
-vector<OtherItem*> g_artifacts;
+vector<Weapon*> Weapon::weapons;
+vector<Bow*> Bow::bows;
+vector<Shield*> Shield::shields;
+vector<Armor*> Armor::armors;
+vector<Consumable*> Consumable::consumables;
+vector<OtherItem*> OtherItem::others;
+vector<OtherItem*> OtherItem::artifacts;
 vector<BookScheme*> g_book_schemes;
 vector<Book*> g_books;
 vector<Stock*> stocks;
-vector<StartItem> start_items;
+vector<StartItem> StartItem::start_items;
 std::map<const Item*, const Item*> better_items;
 
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
-WeaponTypeInfo weapon_type_info[] = {
+WeaponTypeInfo WeaponTypeInfo::info[] = {
 	nullptr, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, Skill::SHORT_BLADE, 40.f, // WT_SHORT
 	nullptr, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, Skill::LONG_BLADE, 50.f, // WT_LONG
 	nullptr, 0.85f, 0.15f, 0.29f, 0.9f, 0.00075f, Skill::BLUNT, 60.f, // WT_MACE
@@ -340,7 +340,10 @@ enum Property
 	P_POWER,
 	P_TIME,
 	P_SPEED,
-	P_SCHEME
+	P_SCHEME,
+	P_RUNIC
+
+	// max 32 bits
 };
 
 enum StockKeyword
@@ -393,7 +396,7 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 		break;
 	case IT_BOOK:
 		item = new Book;
-		req |= BIT(P_SCHEME);
+		req |= BIT(P_SCHEME) | BIT(P_RUNIC);
 		break;
 	case IT_GOLD:
 		item = new Item(IT_GOLD);
@@ -595,7 +598,7 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 				break;
 			case P_SCHEME:
 				{
-					const string& str = t.MustGetItem();
+					const string& str = t.MustGetText();
 					BookScheme* scheme = nullptr;
 					for(BookScheme* s : g_book_schemes)
 					{
@@ -609,6 +612,9 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 						t.Throw("Book scheme '%s' not found.", str.c_str());
 					item->ToBook().scheme = scheme;
 				}
+				break;
+			case P_RUNIC:
+				item->ToBook().runic = t.MustGetBool();
 				break;
 			default:
 				assert(0);
@@ -641,7 +647,7 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 		case IT_WEAPON:
 			{
 				Weapon& w = item->ToWeapon();
-				g_weapons.push_back(&w);
+				Weapon::weapons.push_back(&w);
 
 				crc.Update(w.dmg);
 				crc.Update(w.dmg_type);
@@ -653,7 +659,7 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 		case IT_BOW:
 			{
 				Bow& b = item->ToBow();
-				g_bows.push_back(&b);
+				Bow::bows.push_back(&b);
 
 				crc.Update(b.dmg);
 				crc.Update(b.req_str);
@@ -663,7 +669,7 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 		case IT_SHIELD:
 			{
 				Shield& s = item->ToShield();
-				g_shields.push_back(&s);
+				Shield::shields.push_back(&s);
 
 				crc.Update(s.def);
 				crc.Update(s.req_str);
@@ -673,7 +679,7 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 		case IT_ARMOR:
 			{
 				Armor& a = item->ToArmor();
-				g_armors.push_back(&a);
+				Armor::armors.push_back(&a);
 
 				crc.Update(a.def);
 				crc.Update(a.req_str);
@@ -689,7 +695,7 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 		case IT_CONSUMABLE:
 			{
 				Consumable& c = item->ToConsumable();
-				g_consumables.push_back(&c);
+				Consumable::consumables.push_back(&c);
 
 				crc.Update(c.effect);
 				crc.Update(c.power);
@@ -700,9 +706,9 @@ bool LoadItem(Tokenizer& t, Crc& crc)
 		case IT_OTHER:
 			{
 				OtherItem& o = item->ToOther();
-				g_others.push_back(&o);
+				OtherItem::others.push_back(&o);
 				if(o.other_type == Artifact)
-					g_artifacts.push_back(&o);
+					OtherItem::artifacts.push_back(&o);
 
 				crc.Update(o.other_type);
 			}
@@ -1222,6 +1228,7 @@ bool LoadBookScheme(Tokenizer& t, Crc& crc)
 					scheme->tex = ResourceManager::Get<Texture>().TryGet(str);
 					if(!scheme->tex)
 						t.Throw("Missing texture '%s'.", str.c_str());
+					t.Next();
 				}
 				break;
 			case BSK_SIZE:
@@ -1249,6 +1256,11 @@ bool LoadBookScheme(Tokenizer& t, Crc& crc)
 
 		if(scheme->regions.empty())
 			t.Throw("No regions.");
+		for(uint i = 1; i < scheme->regions.size(); ++i)
+		{
+			if(scheme->regions[0].Size() != scheme->regions[i].Size())
+				t.Throw("Scheme region sizes don't match (TODO).");
+		}
 		if(!scheme->tex)
 			t.Throw("No texture.");
 
@@ -1317,13 +1329,14 @@ bool LoadStartItems(Tokenizer& t, Crc& crc)
 				crc.Update(item->id);
 				crc.Update(num);
 
-				start_items.push_back(StartItem(skill, item, num));
+				StartItem::start_items.push_back(StartItem(skill, item, num));
 			}
 
 			t.Next();
 		}
 
-		std::sort(start_items.begin(), start_items.end(), [](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
+		std::sort(StartItem::start_items.begin(), StartItem::start_items.end(),
+			[](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
 		return true;
 	}
 	catch(const Tokenizer::Exception& e)
@@ -1336,9 +1349,9 @@ bool LoadStartItems(Tokenizer& t, Crc& crc)
 //=================================================================================================
 const Item* GetStartItem(Skill skill, int value)
 {
-	auto it = std::lower_bound(start_items.begin(), start_items.end(), StartItem(skill),
+	auto it = std::lower_bound(StartItem::start_items.begin(), StartItem::start_items.end(), StartItem(skill),
 		[](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
-	if(it == start_items.end())
+	if(it == StartItem::start_items.end())
 		return nullptr;
 	const Item* best = nullptr;
 	int best_value = -2;
@@ -1352,7 +1365,7 @@ const Item* GetStartItem(Skill skill, int value)
 			best_value = it->value;
 		}
 		++it;
-		if(it == start_items.end() || it->skill != skill)
+		if(it == StartItem::start_items.end() || it->skill != skill)
 			break;
 	}
 	return best;
@@ -1479,7 +1492,8 @@ uint LoadItems(uint& out_crc, uint& errors)
 		{ "power", P_POWER },
 		{ "time", P_TIME },
 		{ "speed", P_SPEED },
-		{ "scheme", P_SCHEME }
+		{ "scheme", P_SCHEME },
+		{ "runic", P_RUNIC }
 	});
 
 	t.AddKeywords(G_WEAPON_TYPE, {
@@ -1685,6 +1699,7 @@ uint LoadItems(uint& out_crc, uint& errors)
 //=================================================================================================
 void CleanupItems()
 {
+	DeleteElements(g_book_schemes);
 	DeleteElements(g_item_lists);
 	DeleteElements(g_leveled_item_lists);
 	DeleteElements(stocks);

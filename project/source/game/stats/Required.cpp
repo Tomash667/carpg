@@ -25,7 +25,7 @@ void CheckStartItems(Skill skill, bool required, uint& errors)
 {
 	bool have_0 = !required, have_heirloom = false;
 
-	for(StartItem& si : start_items)
+	for(StartItem& si : StartItem::start_items)
 	{
 		if(si.skill == skill)
 		{
@@ -211,6 +211,11 @@ bool Game::LoadRequiredStats(uint& errors)
 						else if(result.is_leveled)
 						{
 							Error("Required list '%s' is leveled.", str.c_str());
+							++errors;
+						}
+						else if(result.lis->items.empty())
+						{
+							Error("Required list '%s' is empty.", str.c_str());
 							++errors;
 						}
 					}

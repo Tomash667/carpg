@@ -435,7 +435,6 @@ public:
 	void PrepareLoadScreen(float progress_min = 0.f, float progress_max = 1.f);
 	void StartLoadScreen(cstring category = nullptr);
 	void CancelLoadScreen(bool cleanup = false);
-	void SetMutex(HANDLE _mutex) { mutex = _mutex; }
 	bool HaveTasks() const { return !tasks.empty(); }
 	int GetLoadTasksCount() const { return to_load; }
 	bool IsLoadScreen() const { return mode != Mode::Instant; }
@@ -498,7 +497,6 @@ private:
 	Timer timer;
 	float timer_dt, progress, progress_min, progress_max;
 	LoadScreen* load_screen;
-	HANDLE mutex;
 	static ResourceManager manager;
 	static ObjectPool<TaskDetail> task_pool;
 };

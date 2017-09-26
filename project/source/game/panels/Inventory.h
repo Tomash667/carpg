@@ -90,10 +90,11 @@ public:
 	const Item* last_item;
 	const Item** slots;
 	Unit* unit;
-	static cstring txGoldAndCredit, txGoldDropInfo, txCarryShort, txCarry, txCarryInfo, txTeamItem, txCantWear, txCantDoNow, txBuyTeamDialog, txDropGoldCount, txDropNoGold, txDropNotNow,
-		txDropItemCount, txWontBuy, txPrice, txNeedMoreGoldItem, txBuyItemCount, txSellItemCount, txLooting, txTrading, txPutGoldCount, txLootItemCount, txPutItemCount, txTakeAll, txInventory,
-		txLootingChest, txShareItems, txGiveItems, txPutGold, txGiveGold, txGiveGoldCount, txShareGiveItemCount, txCanCarryTeamOnly, txWontGiveItem, txShareTakeItemCount, txWontTakeItem,
-		txSellTeamItem, txSellItem, txSellFreeItem, txGivePotionCount, txNpcCantCarry;
+	static cstring txGoldAndCredit, txGoldDropInfo, txCarryShort, txCarry, txCarryInfo, txTeamItem, txCantWear, txCantDoNow, txBuyTeamDialog, txDropGoldCount,
+		txDropNoGold, txDropNotNow, txDropItemCount, txWontBuy, txPrice, txNeedMoreGoldItem, txBuyItemCount, txSellItemCount, txLooting, txLootingChest,
+		txTrading, txPutGoldCount, txLootItemCount, txPutItemCount, txTakeAll, txInventory, txShareItems, txGiveItems, txPutGold, txGiveGold, txGiveGoldCount,
+		txShareGiveItemCount, txCanCarryTeamOnly, txWontGiveItem, txShareTakeItemCount, txWontTakeItem, txSellTeamItem, txSellItem, txSellFreeItem,
+		txGivePotionCount, txNpcCantCarry;
 	Scrollbar scrollbar;
 	Button bt;
 	int counter, give_item_mode;
@@ -110,7 +111,11 @@ public:
 private:
 	void GetTooltip(TooltipController* tooltip, int group, int id);
 	void UpdateGrid(bool mine);
+	void ReadBook(const Item* item);
+	void FormatBox(int group, string& text, string& small_text, TEX& img);
 
 	static TooltipController tooltip;
 	Game& game;
+	float rot;
+	const Item* item_visible;
 };

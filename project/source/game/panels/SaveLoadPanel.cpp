@@ -204,7 +204,7 @@ void SaveLoad::SetText()
 	{
 		if(jest)
 			s += " ";
-		s += g_classes[(int)slot.player_class].name;
+		s += ClassInfo::classes[(int)slot.player_class].name;
 		jest = true;
 	}
 	if(slot.hardcore)

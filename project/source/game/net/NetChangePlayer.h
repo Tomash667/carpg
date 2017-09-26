@@ -22,7 +22,7 @@ struct NetChangePlayer
 		SET_FROZEN, // change player frozen state [byte(id)-state]
 		REMOVE_QUEST_ITEM, // remove quest item from inventory [int(id)-quest refid]
 		DEVMODE, // change devmode for player [bool(id)-allowed]
-		USE_USEABLE, // someone else is using usable []
+		USE_USABLE, // someone else is using usable []
 		IS_BETTER_ITEM, // response to is IS_BETTER_ITEM (bool(id)-is better)
 		PVP, // question about pvp [byte(id)-player id]
 		ADD_ITEMS, // add multiple same items to inventory [int(id)-team count, int(ile)-count, Item(item)]

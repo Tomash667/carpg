@@ -18,6 +18,7 @@
 #include "Class.h"
 #include "Action.h"
 #include "ActionPanel.h"
+#include "BookPanel.h"
 
 //-----------------------------------------------------------------------------
 enum class TooltipGroup
@@ -99,6 +100,9 @@ GameGui::GameGui() : debug_info_size(0, 0), profiler_size(0, 0), use_cursor(fals
 
 	action_panel = new ActionPanel;
 	Add(action_panel);
+
+	book_panel = new BookPanel;
+	Add(book_panel);
 }
 
 //=================================================================================================
@@ -115,6 +119,7 @@ GameGui::~GameGui()
 	delete inv_trade_other;
 	delete gp_trade;
 	delete action_panel;
+	delete book_panel;
 
 	SpeechBubblePool.Free(speech_bbs);
 }
@@ -161,24 +166,77 @@ void GameGui::DrawFront()
 		game.debug_info = false;
 	if(game.debug_info)
 	{
+		sorted_units.clear();
 		vector<Unit*>& units = *game.GetContext(*game.pc->unit).units;
-		for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
+		for(auto unit : units)
 		{
-			Unit& u = **it;
-			if(!u.IsAlive())
+			if(!unit->IsAlive())
 				continue;
+			float dist = Vec3::DistanceSquared(game.cam.from, unit->pos);
+			sorted_units.push_back({ unit, dist, 255, nullptr });
+		}
 
+		SortUnits();
+
+		for(auto& it : sorted_units)
+		{
+			Unit& u = *it.unit;
 			Vec3 text_pos = u.visual_pos;
 			text_pos.y += u.GetUnitHeight();
 			if(u.IsAI())
 			{
 				AIController& ai = *u.ai;
-				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, LVL:%d\nA:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.level,
-					str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer, ai.unit->run_attack ? 1 : 0), u, text_pos, -1);
+				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, LVL:%d\nAni:%d, A:%d, Ai:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.level,
+					u.animation, u.action, str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer,
+					ai.unit->run_attack ? 1 : 0), u, text_pos, -1);
 			}
 			else
-				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, A:%d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.player->action), u, text_pos, -1);
+			{
+				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, Ani:%d, A:%d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.animation, u.player->action),
+					u, text_pos, -1);
+			}
 		}
+	}
+	else
+	{
+		// near enemies/allies
+		sorted_units.clear();
+		for(vector<UnitView>::iterator it = game.unit_views.begin(), end = game.unit_views.end(); it != end; ++it)
+		{
+			int alpha;
+
+			// 0.0 -> 0.1 niewidoczne
+			// 0.1 -> 0.2 alpha 0->255
+			// -0.2 -> -0.1 widoczne
+			// -0.1 -> 0.0 alpha 255->0
+			if(it->time > UNIT_VIEW_A)
+			{
+				if(it->time > UNIT_VIEW_B)
+					alpha = 255;
+				else
+					alpha = int((it->time - UNIT_VIEW_A) * 255 * UNIT_VIEW_MUL);
+			}
+			else if(it->time < 0.f)
+			{
+				if(it->time < -UNIT_VIEW_A)
+					alpha = 255;
+				else
+					alpha = int(-it->time * 255 * UNIT_VIEW_MUL);
+			}
+			else
+				alpha = 0;
+
+			if(alpha)
+			{
+				float dist = Vec3::DistanceSquared(game.cam.from, it->unit->pos);
+				sorted_units.push_back({ it->unit, dist, alpha, &it->last_pos });
+			}
+		}
+
+		SortUnits();
+
+		for(auto& it : sorted_units)
+			DrawUnitInfo(it.unit->GetName(), *it.unit, *it.last_pos, it.alpha);
 	}
 
 	// napis nad wybranym obiektem/postaci¹
@@ -234,48 +292,15 @@ void GameGui::DrawFront()
 			GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, WHITE, text_pos);
 		}
 		break;
-	case BP_USEABLE:
+	case BP_USABLE:
 		{
 			Usable& u = *game.pc_data.before_player_ptr.usable;
-			BaseUsable& bu = g_base_usables[u.type];
+			BaseUsable& bu = BaseUsable::base_usables[u.type];
 			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;
 			GUI.DrawText3D(GUI.default_font, bu.name, DT_OUTLINE, WHITE, text_pos);
 		}
 		break;
-	}
-
-	// pobliscy wrogowie / sojusznicy
-	if(!game.debug_info)
-	{
-		for(vector<UnitView>::iterator it = game.unit_views.begin(), end = game.unit_views.end(); it != end; ++it)
-		{
-			int alpha;
-
-			// 0.0 -> 0.1 niewidoczne
-			// 0.1 -> 0.2 alpha 0->255
-			// -0.2 -> -0.1 widoczne
-			// -0.1 -> 0.0 alpha 255->0
-			if(it->time > UNIT_VIEW_A)
-			{
-				if(it->time > UNIT_VIEW_B)
-					alpha = 255;
-				else
-					alpha = int((it->time - UNIT_VIEW_A) * 255 * UNIT_VIEW_MUL);
-			}
-			else if(it->time < 0.f)
-			{
-				if(it->time < -UNIT_VIEW_A)
-					alpha = 255;
-				else
-					alpha = int(-it->time * 255 * UNIT_VIEW_MUL);
-			}
-			else
-				alpha = 0;
-
-			if(alpha)
-				DrawUnitInfo(it->unit->GetName(), *it->unit, it->last_pos, alpha);
-		}
 	}
 
 	// dymki z tekstem
@@ -374,7 +399,7 @@ void GameGui::DrawFront()
 	Int2 spos(256.f*wnd_scale + offset, GUI.wnd_size.y - offset);
 
 	// action
-	if (!game.in_tutorial)
+	if(!game.in_tutorial)
 	{
 		auto& action = game.pc->GetAction();
 		PlayerController& pc = *game.pc;
@@ -383,9 +408,9 @@ void GameGui::DrawFront()
 		const float img_ratio = 0.25f;
 
 		float charge;
-		if (pc.action_charges > 0 || pc.action_cooldown >= pc.action_recharge)
+		if(pc.action_charges > 0 || pc.action_cooldown >= pc.action_recharge)
 		{
-			if (action.cooldown == 0)
+			if(action.cooldown == 0)
 				charge = 0.f;
 			else
 				charge = pc.action_cooldown / action.cooldown;
@@ -393,7 +418,7 @@ void GameGui::DrawFront()
 		else
 			charge = pc.action_recharge / action.recharge;
 
-		if (charge == 0.f)
+		if(charge == 0.f)
 		{
 			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
 				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
@@ -406,7 +431,7 @@ void GameGui::DrawFront()
 			GUI.UseGrayscale(true);
 			GUI.DrawSprite2(action.tex->tex, mat);
 			GUI.UseGrayscale(false);
-			if (charge < 1.f)
+			if(charge < 1.f)
 			{
 				Rect part = { 0, 128 - int((1.f - charge) * 128), 128, 128 };
 				GUI.DrawSprite2(action.tex->tex, mat, &part);
@@ -415,9 +440,9 @@ void GameGui::DrawFront()
 		}
 
 		// charges
-		if (action.charges > 1)
+		if(action.charges > 1)
 		{
-			Rect r(int(wnd_scale * (256 + pad * 2)), int(GUI.wnd_size.y - (pad * 2) * wnd_scale)-12, 0, 0);
+			Rect r(int(wnd_scale * (256 + pad * 2)), int(GUI.wnd_size.y - (pad * 2) * wnd_scale) - 12, 0, 0);
 			GUI.DrawText(GUI.fSmall, Format("%d/%d", pc.action_charges, action.charges), DT_SINGLELINE, BLACK, r);
 		}
 	}
@@ -454,11 +479,16 @@ void GameGui::DrawFront()
 	}
 
 	// œciemnianie
-	if(game.fallback_co != -1)
+	if(game.fallback_co != FALLBACK::NO)
 	{
 		int alpha;
 		if(game.fallback_t < 0.f)
-			alpha = int((1.f + game.fallback_t) * 255);
+		{
+			if(game.fallback_co == FALLBACK::NONE)
+				alpha = 255;
+			else
+				alpha = int((1.f + game.fallback_t) * 255);
+		}
 		else
 			alpha = int((1.f - game.fallback_t) * 255);
 
@@ -571,6 +601,8 @@ void GameGui::DrawEndOfGameScreen()
 //=================================================================================================
 void GameGui::DrawSpeechBubbles()
 {
+	// get list to sort
+	sorted_speech_bbs.clear();
 	for(vector<SpeechBubble*>::iterator it = speech_bbs.begin(), end = speech_bbs.end(); it != end; ++it)
 	{
 		SpeechBubble& sb = **it;
@@ -593,34 +625,48 @@ void GameGui::DrawSpeechBubbles()
 			sb.visible = true;
 			if(sb.time > 0.25f)
 			{
-				int a1, a2;
-				if(sb.time >= 0.5f)
-				{
-					a1 = 0x80FFFFFF;
-					a2 = 0xFFFFFFFF;
-				}
-				else
-				{
-					float alpha = (min(sb.time, 0.5f) - 0.25f) * 4;
-					a1 = COLOR_RGBA(255, 255, 255, int(alpha * 0x80));
-					a2 = COLOR_RGBA(255, 255, 255, int(alpha * 0xFF));
-				}
-				if(pt.x < sb.size.x / 2)
-					pt.x = sb.size.x / 2;
-				else if(pt.x > GUI.wnd_size.x - sb.size.x / 2)
-					pt.x = GUI.wnd_size.x - sb.size.x / 2;
-				if(pt.y < sb.size.y / 2)
-					pt.y = sb.size.y / 2;
-				else if(pt.y > GUI.wnd_size.y - sb.size.y / 2)
-					pt.y = GUI.wnd_size.y - sb.size.y / 2;
-
-				Rect rect = Rect::Create(Int2(pt.x - sb.size.x / 2, pt.y - sb.size.y / 2), sb.size);
-				GUI.DrawItem(tBubble, rect.LeftTop(), sb.size, a1);
-				GUI.DrawText(GUI.fSmall, sb.text, DT_CENTER | DT_VCENTER, a2, rect);
+				float cam_dist = Vec3::Distance(game.cam.from, pos);
+				sorted_speech_bbs.push_back({ &sb, cam_dist, pt });
 			}
 		}
 		else
 			sb.visible = false;
+	}
+
+	// sort
+	std::sort(sorted_speech_bbs.begin(), sorted_speech_bbs.end(), [](const SortedSpeechBubble& a, const SortedSpeechBubble& b)
+	{
+		return a.dist > b.dist;
+	});
+
+	// draw
+	for(auto& it : sorted_speech_bbs)
+	{
+		auto& sb = *it.bubble;
+		int a1, a2;
+		if(sb.time >= 0.5f)
+		{
+			a1 = 0x80FFFFFF;
+			a2 = 0xFFFFFFFF;
+		}
+		else
+		{
+			float alpha = (min(sb.time, 0.5f) - 0.25f) * 4;
+			a1 = COLOR_RGBA(255, 255, 255, int(alpha * 0x80));
+			a2 = COLOR_RGBA(255, 255, 255, int(alpha * 0xFF));
+		}
+		if(it.pt.x < sb.size.x / 2)
+			it.pt.x = sb.size.x / 2;
+		else if(it.pt.x > GUI.wnd_size.x - sb.size.x / 2)
+			it.pt.x = GUI.wnd_size.x - sb.size.x / 2;
+		if(it.pt.y < sb.size.y / 2)
+			it.pt.y = sb.size.y / 2;
+		else if(it.pt.y > GUI.wnd_size.y - sb.size.y / 2)
+			it.pt.y = GUI.wnd_size.y - sb.size.y / 2;
+
+		Rect rect = Rect::Create(Int2(it.pt.x - sb.size.x / 2, it.pt.y - sb.size.y / 2), sb.size);
+		GUI.DrawItem(tBubble, rect.LeftTop(), sb.size, a1);
+		GUI.DrawText(GUI.fSmall, sb.text, DT_CENTER | DT_VCENTER, a2, rect);
 	}
 }
 
@@ -685,7 +731,7 @@ void GameGui::Update(float dt)
 
 	game_messages->Update(dt);
 
-	if (!GUI.HaveDialog() && !Game::Get().dialog_context.dialog_mode && Key.Down(VK_MENU))
+	if(!GUI.HaveDialog() && !Game::Get().dialog_context.dialog_mode && Key.Down(VK_MENU))
 		use_cursor = true;
 	else
 		use_cursor = false;
@@ -707,7 +753,7 @@ void GameGui::Update(float dt)
 
 	buff_images.clear();
 
-	for(int i=0; i<BUFF_COUNT; ++i)
+	for(int i = 0; i < BUFF_COUNT; ++i)
 	{
 		int buff_bit = 1 << i;
 		if(IS_SET(buffs, buff_bit))
@@ -784,7 +830,7 @@ void GameGui::Update(float dt)
 		}
 
 		// action
-		if (!game.in_tutorial)
+		if(!game.in_tutorial)
 		{
 			auto& action = game.pc->GetAction();
 			const float pad = 2.f;
@@ -793,7 +839,7 @@ void GameGui::Update(float dt)
 			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale * img_ratio, wnd_scale * img_ratio), nullptr, 0.f,
 				&Vec2((256.f + pad) * wnd_scale, GUI.wnd_size.y - (img_size + pad) * wnd_scale));
 			r = GUI.GetSpriteRect(action.tex->tex, mat);
-			if (r.IsInside(GUI.cursor_pos))
+			if(r.IsInside(GUI.cursor_pos))
 				group = TooltipGroup::Action;
 		}
 	}
@@ -1222,8 +1268,11 @@ void GameGui::LoadData()
 	tex_mgr.AddLoadTask("action_cooldown.png", tActionCooldown);
 
 	BuffInfo::LoadImages();
+	journal->LoadData();
 	minimap->LoadData();
+	team_panel->LoadData();
 	action_panel->LoadData();
+	book_panel->LoadData();
 }
 
 //=================================================================================================
@@ -1404,4 +1453,13 @@ void GameGui::Setup()
 	else
 		action = &game.pc->GetAction();
 	action_panel->Init(action);
+}
+
+//=================================================================================================
+void GameGui::SortUnits()
+{
+	std::sort(sorted_units.begin(), sorted_units.end(), [](const SortedUnitView& a, const SortedUnitView& b)
+	{
+		return a.dist > b.dist;
+	});
 }

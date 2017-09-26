@@ -16,9 +16,6 @@ enum ButtonId
 	Bt_Kick
 };
 
-//-----------------------------------------------------------------------------
-TEX TeamPanel::tKorona, TeamPanel::tCzaszka;
-
 //=================================================================================================
 TeamPanel::TeamPanel() : game(Game::Get())
 {
@@ -106,7 +103,7 @@ void TeamPanel::Draw(ControlDrawData*)
 	{
 		if(!u->IsHero() || !IS_SET(u->data->flags2, F2_NO_CLASS))
 		{
-			TEX t = g_classes[(int)u->GetClass()].icon;
+			TEX t = ClassInfo::classes[(int)u->GetClass()].icon;
 			Int2 img_size;
 			Vec2 scale;
 			Control::ResizeImage(t, Int2(32, 32), img_size, scale);
@@ -496,4 +493,12 @@ void TeamPanel::Hide()
 {
 	LostFocus();
 	visible = false;
+}
+
+//=================================================================================================
+void TeamPanel::LoadData()
+{
+	auto& tex_mgr = ResourceManager::Get<Texture>();
+	tex_mgr.AddLoadTask("czaszka.png", TeamPanel::tCzaszka);
+	tex_mgr.AddLoadTask("korona.png", TeamPanel::tKorona);
 }

@@ -37,8 +37,7 @@ struct Action
 
 	static Action* Find(const string& id);
 	static void LoadData();
-};
 
-//-----------------------------------------------------------------------------
-extern Action g_actions[];
-extern const uint n_actions;
+	static Action actions[];
+	static const uint n_actions;
+};

@@ -345,7 +345,7 @@ dialog hero {
 	3 {
 		"Let's see who is better!"
 		"I'll beat shit out of you!"
-		"Month"
+		"Prepare for defeat!"
 	}
 	4 "Currently there is some fight in the arena, we have to wait."
 	5 {

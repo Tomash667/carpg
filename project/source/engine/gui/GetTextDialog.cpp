@@ -53,7 +53,7 @@ void GetTextDialog::Update(float dt)
 		{
 			if(Key.PressedRelease(VK_ESCAPE))
 				result = BUTTON_CANCEL;
-			else if(Key.Pressed(VK_RETURN))
+			else if(Key.PressedRelease(VK_RETURN))
 			{
 				if(!textBox.IsMultiline() || Key.Down(VK_SHIFT))
 				{

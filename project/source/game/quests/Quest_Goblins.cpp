@@ -82,7 +82,7 @@ void DodajStraznikow()
 	}
 	assert(use);
 
-	// przesuñ szlachcica w poblirze tronu
+	// przesuñ szlachcica w pobli¿e tronu
 	game.WarpUnit(*u, use->pos);
 
 	// usuñ pozosta³e osoby z pomieszczenia
@@ -126,20 +126,8 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::NotAccepted:
 		// nie zaakceptowano
 		{
-			// dodaj plotkê
 			if(quest_manager.RemoveQuestRumor(P_GOBLINY))
-			{
-				cstring text = Format(game->txQuest[211], game->locations[start_loc]->name.c_str());
-				game->rumors.push_back(Format(game->game_gui->journal->txAddNote, game->day + 1, game->month + 1, game->year, text));
-				game->game_gui->journal->NeedUpdate(Journal::Rumors);
-				game->AddGameMsg3(GMS_ADDED_RUMOR);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::ADD_RUMOR;
-					c.id = int(game->rumors.size()) - 1;
-				}
-			}
+				game->game_gui->journal->AddRumor(Format(game->txQuest[211], game->locations[start_loc]->name.c_str()));
 		}
 		break;
 	case Progress::Started:

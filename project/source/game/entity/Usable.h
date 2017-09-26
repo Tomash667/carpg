@@ -2,6 +2,7 @@
 
 //-----------------------------------------------------------------------------
 #include "BaseUsable.h"
+#include "ItemContainer.h"
 
 //-----------------------------------------------------------------------------
 struct Unit;
@@ -25,11 +26,13 @@ struct Usable
 	Vec3 pos;
 	float rot;
 	Unit* user;
+	ItemContainer* container;
 	int type, refid, netid, variant;
 
 	static const int MIN_SIZE = 22;
 
-	Usable() : variant(-1) {}
+	Usable() : variant(-1), container(nullptr) {}
+	~Usable() { delete container; }
 
 	void Save(HANDLE file, bool local);
 	void Load(HANDLE file, bool local);
@@ -59,9 +62,9 @@ struct Usable
 
 	BaseUsable* GetBase() const
 	{
-		return &g_base_usables[type];
+		return &BaseUsable::base_usables[type];
 	}
-	Obj* GetBaseObj() const
+	BaseObject* GetBaseObject() const
 	{
 		return GetBase()->obj;
 	}

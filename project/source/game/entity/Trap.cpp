@@ -46,7 +46,7 @@ void Trap::Load(HANDLE file, bool local)
 	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
 
-	base = &g_traps[type];
+	base = &BaseTrap::traps[type];
 	hitted = nullptr;
 	obj.pos = pos;
 	obj.rot = Vec3(0, 0, 0);

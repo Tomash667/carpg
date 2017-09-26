@@ -1,0 +1,17 @@
+TIMELINE:
+1. 2 era, rok X, odkryto zamieszkaną wyspę, handel, budują świątynie, są pokojowi
+2. X+~100 zaatakowanie wyspy przez inne państwo, wyspiarze przegrywają wojnę, odprawiaja jakiś mroczny rytuał żeby przeywołać demona, rozpoczyna się rzeź najeźdźców, demon staje się coraz silniejszy, na wyspie jest coraz mniej żywych,
+3. X+101 na wyspę przybywa statek paladynów z klasztoru oraz drużyna hi-lvl bohaterów, zoe-paladyn tego samego boga co reszta paladynów, łotrzyk, mag; walczą z demonami i zwiedzają wyspę, przeczeszują świątynie w poszukiwaniu informacji o rytuale i demonie, wielu paladynów ginie
+4. demon jest zbyt silny żeby go pokonać, odprawiają rytuał który uwięził demona w zoe, postanawiają spalić wszystkie notatki żeby nikt się nie dowiedzał, zastawiają pułapki, tworzą ożywieńców, garstka ludzi opuszcza wyspę
+5. 2 era, x+500; na wyspie osiedlają się ludzie z jakiegoś państaw, tworzą kolonie, handlują jakimiś przyprawami których nie ma nigdzie indziej; powstaje miasto, wioski
+6. 3 era, czasy obecne, gracz ukończył szkolenie w akademii, wykonał kilka zadań, otrzymał list od wujka zapraszający go na wyspę, wujek poszedł szukać jakiegoś chłopaka który zaginął i sam też się zgubił, jest w jednym z podziemi
+7. odkrycie zoe, akt II
+8. zabicie/uwolnienie zoe, akt III
+9. pokonanie bossa - koniec gry lub cofnięcie się w czasie akt IV
+10. finalne pokonanie bossa -> koniec gry
+
+DIALOG:
++ pomiędzy starymi bohaterami o to czy spalić dokumenty, głosowanie
+
+INNE:
++ ankh speed run

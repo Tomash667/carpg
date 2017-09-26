@@ -53,15 +53,14 @@ struct ClassInfo
 	static Class GetRandomEvil();
 	static void Validate(uint &err);
 	static Class OldToNew(Class c);
-};
 
-//-----------------------------------------------------------------------------
-extern ClassInfo g_classes[(int)Class::MAX];
+	static ClassInfo classes[(int)Class::MAX];
+};
 
 //=================================================================================================
 inline bool ClassInfo::IsPickable(Class c)
 {
 	if(c < (Class)0 || c >= Class::MAX)
 		return false;
-	return g_classes[(int)c].pickable;
+	return ClassInfo::classes[(int)c].pickable;
 }

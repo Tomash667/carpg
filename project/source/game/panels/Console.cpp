@@ -3,9 +3,7 @@
 #include "Console.h"
 #include "KeyStates.h"
 #include "Game.h"
-
-//-----------------------------------------------------------------------------
-TEX Console::tBackground;
+#include "ResourceManager.h"
 
 //=================================================================================================
 Console::Console(const DialogInfo& info) : GameDialogBox(info), added(false)
@@ -25,7 +23,7 @@ Console::Console(const DialogInfo& info) : GameDialogBox(info), added(false)
 }
 
 //=================================================================================================
-void Console::Draw(ControlDrawData* cdd/* =nullptr */)
+void Console::Draw(ControlDrawData*)
 {
 	// t³o
 	Rect r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y / 3 };
@@ -88,4 +86,10 @@ void Console::AddText(cstring str)
 void Console::OnInput(const string& str)
 {
 	Game::Get().ParseCommand(str, PrintMsgFunc(this, &Console::AddText), PS_CONSOLE);
+}
+//=================================================================================================
+
+void Console::LoadData()
+{
+	ResourceManager::Get<Texture>().AddLoadTask("tlo_konsoli.jpg", tBackground);
 }

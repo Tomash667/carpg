@@ -53,11 +53,11 @@ obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), deb
 city_ctx(nullptr), check_updates(true), skip_tutorial(false), portal_anim(0), nosound(false), nomusic(false),
 debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64 * 1024), net_stream2(64 * 1024),
 mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
-prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false),
+prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr), sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false),
 cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true),
-cl_specularmap(true), dungeon_tex_wrap(true), mutex(nullptr), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
+cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(D3DXIFF_JPG), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), current_packet(nullptr),
-game_state(GS_LOAD), default_devmode(false), default_player_devmode(false)
+game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -362,7 +362,7 @@ void Game::OnTick(float dt)
 				c.type = NetChange::PAUSED;
 				c.id = (paused ? 1 : 0);
 				if(paused && game_state == GS_WORLDMAP && world_state == WS_TRAVEL)
-					PushNetChange(NetChange::UPDATE_MAP_POS);
+					Net::PushChange(NetChange::UPDATE_MAP_POS);
 			}
 		}
 	}
@@ -424,7 +424,7 @@ void Game::OnTick(float dt)
 	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && KeyPressedReleaseAllowed(GK_TALK_BOX))
 		game_gui->mp_box->visible = !game_gui->mp_box->visible;
 
-	// aktualizuj gui
+	// update gui
 	UpdateGui(dt);
 	if(game_state == GS_EXIT_TO_MENU)
 	{
@@ -437,6 +437,32 @@ void Game::OnTick(float dt)
 		EngineShutdown();
 		return;
 	}
+
+	// handle blocking input by gui
+	if(GUI.HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
+		allow_input = ALLOW_NONE;
+	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
+	{
+		switch(game_gui->GetOpenPanel())
+		{
+		case OpenPanel::None:
+		case OpenPanel::Minimap:
+		default:
+			if(game_gui->use_cursor)
+				allow_input = ALLOW_KEYBOARD;
+			break;
+		case OpenPanel::Stats:
+		case OpenPanel::Inventory:
+		case OpenPanel::Team:
+		case OpenPanel::Trade:
+		case OpenPanel::Action:
+		case OpenPanel::Journal:
+			allow_input = ALLOW_KEYBOARD;
+			break;
+		}
+	}
+	else
+		allow_input = ALLOW_INPUT;
 
 	// otwórz menu
 	if(AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
@@ -631,15 +657,24 @@ void Game::OnReload()
 {
 	GUI.OnReload();
 
-	V(eMesh->OnResetDevice());
-	V(eParticle->OnResetDevice());
-	V(eTerrain->OnResetDevice());
-	V(eSkybox->OnResetDevice());
-	V(eArea->OnResetDevice());
-	V(eGui->OnResetDevice());
-	V(ePostFx->OnResetDevice());
-	V(eGlow->OnResetDevice());
-	V(eGrass->OnResetDevice());
+	if(eMesh)
+		V(eMesh->OnResetDevice());
+	if(eParticle)
+		V(eParticle->OnResetDevice());
+	if(eTerrain)
+		V(eTerrain->OnResetDevice());
+	if(eSkybox)
+		V(eSkybox->OnResetDevice());
+	if(eArea)
+		V(eArea->OnResetDevice());
+	if(eGui)
+		V(eGui->OnResetDevice());
+	if(ePostFx)
+		V(ePostFx->OnResetDevice());
+	if(eGlow)
+		V(eGlow->OnResetDevice());
+	if(eGrass)
+		V(eGrass->OnResetDevice());
 
 	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
 		V(it->e->OnResetDevice());
@@ -655,24 +690,35 @@ void Game::OnReset()
 {
 	GUI.OnReset();
 
-	V(eMesh->OnLostDevice());
-	V(eParticle->OnLostDevice());
-	V(eTerrain->OnLostDevice());
-	V(eSkybox->OnLostDevice());
-	V(eArea->OnLostDevice());
-	V(eGui->OnLostDevice());
-	V(ePostFx->OnLostDevice());
-	V(eGlow->OnLostDevice());
-	V(eGrass->OnLostDevice());
+	if(eMesh)
+		V(eMesh->OnLostDevice());
+	if(eParticle)
+		V(eParticle->OnLostDevice());
+	if(eTerrain)
+		V(eTerrain->OnLostDevice());
+	if(eSkybox)
+		V(eSkybox->OnLostDevice());
+	if(eArea)
+		V(eArea->OnLostDevice());
+	if(eGui)
+		V(eGui->OnLostDevice());
+	if(ePostFx)
+		V(ePostFx->OnLostDevice());
+	if(eGlow)
+		V(eGlow->OnLostDevice());
+	if(eGrass)
+		V(eGrass->OnLostDevice());
 
 	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
 		V(it->e->OnLostDevice());
 
 	SafeRelease(tItemRegion);
+	SafeRelease(tItemRegionRot);
 	SafeRelease(tMinimap);
 	SafeRelease(tChar);
 	SafeRelease(tSave);
 	SafeRelease(sItemRegion);
+	SafeRelease(sItemRegionRot);
 	SafeRelease(sChar);
 	SafeRelease(sSave);
 	for(int i = 0; i < 3; ++i)
@@ -1650,8 +1696,13 @@ void Game::ClearPointers()
 
 	// tekstury render target, powierzchnie
 	tItemRegion = nullptr;
+	tItemRegionRot = nullptr;
 	tMinimap = nullptr;
 	tChar = nullptr;
+	sItemRegion = nullptr;
+	sItemRegionRot = nullptr;
+	sChar = nullptr;
+	sSave = nullptr;
 	for(int i = 0; i < 3; ++i)
 	{
 		sPostEffect[i] = nullptr;
@@ -1713,10 +1764,12 @@ void Game::OnCleanup()
 
 	// tekstury render target, powierzchnie
 	SafeRelease(tItemRegion);
+	SafeRelease(sItemRegionRot);
 	SafeRelease(tMinimap);
 	SafeRelease(tChar);
 	SafeRelease(tSave);
 	SafeRelease(sItemRegion);
+	SafeRelease(sItemRegionRot);
 	SafeRelease(sChar);
 	SafeRelease(sSave);
 	for(int i = 0; i < 3; ++i)
@@ -1757,32 +1810,35 @@ void Game::OnCleanup()
 	delete obj_spell;
 
 	// kszta³ty obiektów
-	for(uint i = 0; i < n_objs; ++i)
+	for(uint i = 0; i < BaseObject::n_objs; ++i)
 	{
-		delete g_objs[i].shape;
-		if(IS_SET(g_objs[i].flags, OBJ_DOUBLE_PHYSICS) && g_objs[i].next_obj)
+		auto& base = BaseObject::objs[i];
+		delete base.shape;
+		if(IS_SET(base.flags, OBJ_DOUBLE_PHYSICS) && base.next_obj)
 		{
-			delete g_objs[i].next_obj->shape;
-			delete g_objs[i].next_obj;
+			delete base.next_obj->shape;
+			delete base.next_obj;
 		}
-		else if(IS_SET(g_objs[i].flags2, OBJ2_MULTI_PHYSICS) && g_objs[i].next_obj)
+		else if(IS_SET(base.flags2, OBJ2_MULTI_PHYSICS) && base.next_obj)
 		{
 			for(int j = 0;; ++j)
 			{
-				bool have_next = (g_objs[i].next_obj[j].shape != nullptr);
-				delete g_objs[i].next_obj[j].shape;
+				bool have_next = (base.next_obj[j].shape != nullptr);
+				delete base.next_obj[j].shape;
 				if(!have_next)
 					break;
 			}
-			delete[] g_objs[i].next_obj;
+			delete[] base.next_obj;
 		}
 	}
 
 	draw_batch.Clear();
 	free_cave_data();
+	DeleteElements(game_players);
+	DeleteElements(old_players);
 
 	if(peer)
-		RakNet::RakPeerInterface::DestroyInstance(peer);
+		SLNet::RakPeerInterface::DestroyInstance(peer);
 }
 
 //=================================================================================================
@@ -1791,6 +1847,7 @@ void Game::CreateTextures()
 	auto& wnd_size = GetWindowSize();
 
 	V(device->CreateTexture(64, 64, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegion, nullptr));
+	V(device->CreateTexture(128, 128, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tItemRegionRot, nullptr));
 	V(device->CreateTexture(128, 128, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tMinimap, nullptr));
 	V(device->CreateTexture(128, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tChar, nullptr));
 	V(device->CreateTexture(256, 256, 0, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &tSave, nullptr));
@@ -1801,6 +1858,7 @@ void Game::CreateTextures()
 	if(ms != D3DMULTISAMPLE_NONE)
 	{
 		V(device->CreateRenderTarget(64, 64, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegion, nullptr));
+		V(device->CreateRenderTarget(128, 128, D3DFMT_A8R8G8B8, type, msq, FALSE, &sItemRegionRot, nullptr));
 		V(device->CreateRenderTarget(128, 256, D3DFMT_A8R8G8B8, type, msq, FALSE, &sChar, nullptr));
 		V(device->CreateRenderTarget(256, 256, D3DFMT_X8R8G8B8, type, msq, FALSE, &sSave, nullptr));
 		for(int i = 0; i < 3; ++i)
@@ -1982,10 +2040,10 @@ void Game::RestartGame()
 void Game::SetStatsText()
 {
 	// typ broni
-	weapon_type_info[WT_SHORT].name = Str("wt_shortBlade");
-	weapon_type_info[WT_LONG].name = Str("wt_longBlade");
-	weapon_type_info[WT_MACE].name = Str("wt_blunt");
-	weapon_type_info[WT_AXE].name = Str("wt_axe");
+	WeaponTypeInfo::info[WT_SHORT].name = Str("wt_shortBlade");
+	WeaponTypeInfo::info[WT_LONG].name = Str("wt_longBlade");
+	WeaponTypeInfo::info[WT_MACE].name = Str("wt_blunt");
+	WeaponTypeInfo::info[WT_AXE].name = Str("wt_axe");
 }
 
 //=================================================================================================
@@ -2251,13 +2309,15 @@ void Game::SetGameText()
 	txReceivedGold = Str("receivedGold");
 	txYouDisconnected = Str("youDisconnected");
 	txYouKicked = Str("youKicked");
-	txPcWasKicked = Str("pcWasKicked");
-	txPcLeftGame = Str("pcLeftGame");
 	txGamePaused = Str("gamePaused");
 	txGameResumed = Str("gameResumed");
 	txDevmodeOn = Str("devmodeOn");
 	txDevmodeOff = Str("devmodeOff");
 	txPlayerLeft = Str("playerLeft");
+	txPlayerDisconnected = Str("playerDisconnected");
+	txPlayerQuit = Str("playerQuit");
+	txPlayerKicked = Str("playerKicked");
+	txServerClosed = Str("serverClosed");
 
 	// obóz wrogów
 	txSGOOrcs = Str("sgo_orcs");
@@ -2274,7 +2334,7 @@ void Game::SetGameText()
 	// nazwy u¿ywalnych obiektów
 	for(int i = 0; i < U_MAX; ++i)
 	{
-		BaseUsable& u = g_base_usables[i];
+		BaseUsable& u = BaseUsable::base_usables[i];
 		u.name = Str(u.id);
 	}
 
@@ -2362,7 +2422,7 @@ void Game::UnitFall(Unit& u)
 	if(Net::IsLocal())
 	{
 		// przerwij akcjê
-		BreakUnitAction(u, true);
+		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
 
 		// wstawanie
 		u.raise_timer = Random(5.f, 7.f);
@@ -2385,7 +2445,7 @@ void Game::UnitFall(Unit& u)
 	else
 	{
 		// przerwij akcjê
-		BreakUnitAction(u, true);
+		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
 
 		// komunikat
 		if(&u == pc->unit)
@@ -2422,7 +2482,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	if(Net::IsLocal())
 	{
 		// przerwij akcjê
-		BreakUnitAction(u, true);
+		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
 
 		// dodaj z³oto do ekwipunku
 		if(u.gold && !(u.IsPlayer() || u.IsFollower()))
@@ -2488,7 +2548,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		u.hp = 0.f;
 
 		// przerwij akcjê
-		BreakUnitAction(u, true);
+		BreakUnitAction(u, BREAK_ACTION_MODE::FALL);
 
 		// o¿ywianie
 		if(&u == pc->unit)
@@ -2611,9 +2671,10 @@ void Game::UnitStandup(Unit& u)
 	Mesh::Animation* anim = u.mesh_inst->mesh->GetAnimation("wstaje2");
 	if(anim)
 	{
-		u.mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+		u.mesh_inst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
 		u.mesh_inst->groups[0].speed = 1.f;
 		u.action = A_ANIMATION;
+		u.animation = ANI_PLAY;
 	}
 	else
 		u.action = A_NONE;
@@ -2689,10 +2750,10 @@ void Game::PlayerYell(Unit& u)
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
 		Unit& u2 = **it;
-		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == 0 && !u2.usable && u2.ai->state == AIController::Idle &&
-			!IS_SET(u2.data->flags, F_AI_STAY) &&
-			(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot ||
-				u2.ai->idle_action == AIController::Idle_Look))
+		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
+			&& u2.ai->state == AIController::Idle && !IS_SET(u2.data->flags, F_AI_STAY)
+			&& 	(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot
+				|| u2.ai->idle_action == AIController::Idle_Look))
 		{
 			u2.ai->idle_action = AIController::Idle_MoveAway;
 			u2.ai->idle_data.unit = &u;
@@ -2953,7 +3014,7 @@ void Game::ReleaseShaders()
 //=================================================================================================
 void Game::SetMeshSpecular()
 {
-	for(Weapon* weapon : g_weapons)
+	for(Weapon* weapon : Weapon::weapons)
 	{
 		Weapon& w = *weapon;
 		if(w.mesh && w.mesh->head.version < 18)
@@ -2967,7 +3028,7 @@ void Game::SetMeshSpecular()
 		}
 	}
 
-	for(Shield* shield : g_shields)
+	for(Shield* shield : Shield::shields)
 	{
 		Shield& s = *shield;
 		if(s.mesh && s.mesh->head.version < 18)
@@ -2981,7 +3042,7 @@ void Game::SetMeshSpecular()
 		}
 	}
 
-	for(Armor* armor : g_armors)
+	for(Armor* armor : Armor::armors)
 	{
 		Armor& a = *armor;
 		if(a.mesh && a.mesh->head.version < 18)

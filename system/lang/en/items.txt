@@ -749,10 +749,6 @@ item q_magowie_kula2 {
 item q_orkowie_klucz {
 	name "Rusted key"
 }
-item q_zlo_ksiega {
-	name "Summoning book"
-	desc "The book contains spells for summoning and creating portals."
-}
 item key_lunar {
 	name "Moon key"
 }
@@ -779,6 +775,43 @@ item parcel {
 }
 item wanted_letter {
 	name "Wanted poster"
+}
+
+//------------------------------------------------------------------------------
+item book_orcs {
+	name "Orc horde"
+	desc "Book about orcs."
+	text "*** Orc horde ***\n\nOrcs were first encountered in the year 713 of the first era. Not much was known about them, they were perceived as mere humanoid beasts murdering villagers and burning villages. They came from the northern mountains when the winter came. Horde of orcs poured out of the mountains like a wave.\n\nOrcs live mainly underground in caves, or outside in the woods. Rarely break temporary camps under the open sky, they fear that the sky will collapse on their heads. They use a primitive language which, once written, looks like a scribble. Rarely happens that the orc is not a half-wit, then he becomes a shaman. Some shamans know the language of people.\n\nThe strongest orc becomes the warlord or leader. The only thing holding up his army of orcs is fear of its leader. Often, there is a fierce battle between them to find out who are stronger."
+}
+item book_undead {
+	name "Plague of undead"
+	desc "Book about undead."
+	text "*** Plague of undead ***\n\nn this short treatise I will try to describe how to identify and kill different types of undead - the priest Jared.\n\nSkeleton - bone undead. Single does not pose a greater threat but usually occurs in groups. Armed with weapons, shields or bow. Skeletons are resistant to pierce damage but susceptible to blunt weapons. It is good to carry a morningstar, for example.\n\nSkeleton mage - bones undead, thanks to the vile power can cast spells. It has the same features as a regular skeleton. It should be eliminated in the first place, which is not always easy when he is surrounded by allies. Stronger skeletons can rise up other skeletons and throw an exploding skull.\n\nZombie - animated with corrupted magic corpse. Extremely durable and resistant to the pierce and blunt weapon. It's best to use that zombie is slow - shoot from the distance with the bow and when it finish it off with a sword.\n\nUndead guard - an animated man who has not yet become a zombie. Strong as a man but more durable, resistant to bruises and poisons.\n\nNecromancer - He is not undead, but he must be described here. It is he who performs wicked witchcraft animates skeletons and zombies. He should be killed in the first place!"
+}
+item book_behind_the_wall {
+	name "Behind the wall"
+	desc "Book about invisible danger that is right next to you."
+	text "[The content of an unknown author translated into the language of the people by Danart the Mad]\n\n*** Behind the wall ***\n\nNightmares are behind the cover of reality right next to us. Only a fragile wall separates us from the monstrosities that sometimes enter our world. Unnamed beings attacking the mind and body. Many after such a meeting lost their mind and began wandering around the world aimlessly attacking travelers.\n\nYyoijy"
+}
+item book_adventurer {
+	name "Adventurer's Guide"
+	desc "Book about how not to get killed and get treasures."
+	text "How to live to retirement or in other words Tomashu Adventurer's Guide\n\n1. City dwellers can look at you hostile but collect all items that are not nailed to the wall. In particular, potions to alchemist, food from the seller of the food and alcohol from the inn. What you do not need, sell.\n2. Do not travel alone, the more characters in the team, the easier it will be to fight. Try to have at least 3-4 people in your team. At first you will find some hero who will join you for free.\n3. Get as many items as you can and then sell them in the city. Your allies can also come in handy and carry items for you.\n4. Outside the fight, you should use food to heal. Drinking a mixture of natural healing increases the amount of healing for food / rest. It is worth leaving healing potions for fight.\n5. Find unique allies who will help you. You can recruit them early, have unique abilities and do not require share of gold.\n6. If you can afford to buy better armor, do it right now. At the beginning every point of defense counts.\n7. If you want to clean a location ask the locals for nearby places. For starters, you should visit places where enemies are very weak or weak.\n8. Do not attack the city residents! Unless you want to never buy or train anymore.\n9. Do not be afraid to run away when chances for victory are tiny.\n10. Save game often and don't die."
+}
+item book_ld {
+	name "Lucid dream"
+	desc "Book about lucid dream"
+	text "*** Lucid dream ***\n\nAbout traveling in the depths of one's own mind - unknown author.\n\nA lucid dream is a dream in which the dreamer realizes that it is a dream. It usually occurs when a person realizes that this is dream in middle of sleep. It is also possible to fall asleep and remain conscious. The dreamer has control over himself and what happens in a dream. As far as this is his dream...\n\nOne of the methods is to test the reality and to save daily dream experiences. After some time we will begin to test the reality in dreams as well, and we will recognize it as a dream.\n\nThe second method is direct entry into the world of dreams. You can make a special magical amulet that will allow it."
+}
+item book_runic {
+	name "Runic book"
+	desc "An unfamiliar book written with an unfamiliar language."
+	text "*** Mystery *** \n\nSecret book, do not read! Nothing interesting here, realy. I recommend Bloodborne, a very interesting game. Like the whole series of Dark Souls and Uncharted."
+}
+item q_zlo_ksiega {
+	name "Summoning book"
+	desc "The book contains spells for summoning and creating portals."
+	text "Introduction to summoning and creating portals by Magnus Voolo.\n\n1. Summoning\nTo summon a creature from another plane, you need to know it name and have piece of the element from which it originated. For example, for a fire elemental something related to fire, lit piece of coal. Summoning standard elementals does not pose a problem because they all have the same names:\nfire - agni\nwater - pos\nair - mir\nearth - ar\nSummoning beings from other planes is not described in this volume. Prior to summoning you should also prepare a protective circle - otherwise the elemental will not have friendly intentions. After summoning use one of binding spells.\n\n2. Opening portals\nTo open the portal you need a specially prepared gate. For this purpose you can use, for example, an adamentium that is resistant to sorcery. Using too weak gate can cause damage and collapse of the portal, which is extremely dangerous. You need to cast gate spell on portal. The portal remains open for an unlimited amount of time."
 }
 
 //------------------------------------------------------------------------------

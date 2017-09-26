@@ -1,7 +1,37 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.5.0 (2017-09-07):
+Version 0.6 (2017-10-??):
++ readable books
++ usable bookshelf
++ items rotation in inventory
++ sorting unit labels by distance
+- fixed not working multiplayer from 0.5 version
+- fixed missing moving animations for clients in multiplayer game
+- fixed crashes and missing texts witch 3+ players on client getting disconnected between loading levels/world
+- fixed crash on loading when new player joins loaded game
+- fixed crashes and invalid working of lobby when loading game with 3+ players
+- fixed crash when alt-tabbing at very start of initialization [Zettaton]
+- fixed crash after killing evil boss [Medarc]
+- fixed clients failed to load when server quit on worldmap and then start new game
+- fixed using warp command when unit is using usable
+- fixed player stats panel showing randomly colors for attributes/skills
+- fixed using goto_map cheat inside buildings and returning to same location
+- fixed incorrect message that player was kicked when server was closing
+- fixed random crash when picking easy arena combat
+- fixed sounds not playing correctly for arena in multiplayer
+- remove gray outline around dungon minimap
+- fixed invalid rumor texts in journal for some quests
+- fixed summoning wolf on arena
+- fixed allies declining/agreeing randomly to pvp after loading
+- fixed units spawning randomly with worse items then they should have for their level
+- fixed summoning wolf thru walls/door/arena
+- fixed crash when summoned wolf inside wall
+- fixed not working input with low fps, unit position exploding, wrong animations
+- fixed missing unit animations that happen sometimes
+
+--------------------------------------------------------------------------------
+Version 0.5 (2017-09-07):
 + player actions (rogue - dash, hunter - animal ally, warrior - bull's charge)
 + stamina - used by attacking, blocking
 + new items: cup, golden cup, golden bar, plate, sausage, soup, stew, fish, fish meat, healing herb, green herb, frying pan
@@ -540,4 +570,4 @@ Too many changes to write them all so only most important from 0.1:
 	* quests, rumors, news
 	* saving and loading
 	* traps, enemy spells
-	* dialogs							
+	* dialogs

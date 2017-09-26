@@ -155,13 +155,14 @@ void TooltipController::FormatBox()
 	}
 
 	// text
+	Int2 text_size(0, 0);
 	if(!text.empty())
 	{
 		if(h)
 			h += 5;
 		else
 			h = 12;
-		Int2 text_size = GUI.default_font->CalculateSize(text, 400);
+		text_size = GUI.default_font->CalculateSize(text, 400);
 		if(text_size.x > w)
 			w = text_size.x;
 		r_text.Left() = 0;
@@ -207,6 +208,8 @@ void TooltipController::FormatBox()
 			}
 		}
 	}
+	else if(img)
+		h += max(0, img_size.y - text_size.y);
 
 	w += 24;
 	h += 12;

@@ -1287,6 +1287,7 @@ void Engine::ShowError(cstring msg, Logger::Level level)
 	ShowWindow(hwnd, SW_HIDE);
 	ShowCursor(true);
 	Logger::global->Log(level, msg);
+	Logger::global->Flush();
 	MessageBox(nullptr, msg, nullptr, MB_OK | MB_ICONERROR | MB_APPLMODAL);
 }
 
@@ -1297,6 +1298,7 @@ bool Engine::Start(StartupOptions& options)
 	// set parameters
 	fullscreen = options.fullscreen;
 	wnd_size = Int2::Max(options.size, MIN_WINDOW_SIZE);
+	vsync = options.vsync;
 
 	// initialize engine
 	try
@@ -1534,4 +1536,14 @@ void Engine::SetNoZWrite(bool use_nozwrite)
 		r_nozwrite = use_nozwrite;
 		V(device->SetRenderState(D3DRS_ZWRITEENABLE, r_nozwrite ? FALSE : TRUE));
 	}
+}
+
+//=================================================================================================
+void Engine::SetVsync(bool new_vsync)
+{
+	if(new_vsync == vsync)
+		return;
+
+	vsync = new_vsync;
+	Reset(true);
 }

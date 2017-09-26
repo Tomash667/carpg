@@ -6,11 +6,14 @@
 
 //-----------------------------------------------------------------------------
 // id zamka
-#define LOCK_NONE 0
-#define LOCK_UNLOCKABLE 1
-#define LOCK_MINE 2
-#define LOCK_ORCS 3
-#define LOCK_TUTORIAL 100
+enum LockId
+{
+	LOCK_NONE,
+	LOCK_UNLOCKABLE,
+	LOCK_MINE,
+	LOCK_ORCS,
+	LOCK_TUTORIAL = 100
+};
 
 //-----------------------------------------------------------------------------
 struct Door
