@@ -5,6 +5,7 @@
 #include "Version.h"
 #include "DialogBox.h"
 #include "Game.h"
+#include "NetStats.h"
 #define far
 #include <wininet.h>
 #include <process.h>
@@ -92,7 +93,8 @@ uint __stdcall CheckVersion(void*)
 }
 
 //=================================================================================================
-MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates) : check_version(0), check_version_thread(nullptr), check_updates(check_updates), game(game), event(event)
+MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates) : check_version(0), check_version_thread(nullptr), check_updates(check_updates),
+game(game), event(event), send_stats(true)
 {
 	focusable = true;
 	visible = false;
@@ -176,6 +178,12 @@ void MainMenu::Update(float dt)
 	{
 		bt[i].mouse_focus = focus;
 		bt[i].Update(dt);
+	}
+
+	if(send_stats)
+	{
+		send_stats = false;
+		NetStats::Get().Update();
 	}
 
 	if(check_version == 0)

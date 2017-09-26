@@ -621,7 +621,7 @@
     <ClCompile Include="source\engine\gui\Gui.cpp">
       <Filter>2. engine\gui</Filter>
     </ClCompile>
-    <ClCompile Include="NetStats.cpp">
+    <ClCompile Include="source\game\net\NetStats.cpp">
       <Filter>3. game\net</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1244,8 +1244,11 @@
     <ClInclude Include="source\engine\BitStreamFunc.h">
       <Filter>2. engine</Filter>
     </ClInclude>
-    <ClInclude Include="NetStats.h">
+    <ClInclude Include="source\game\net\NetStats.h">
       <Filter>3. game\net</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\Base64.h">
+      <Filter>1. core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

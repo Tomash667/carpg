@@ -1265,7 +1265,7 @@ bool LoadBookScheme(Tokenizer& t, Crc& crc)
 		crc.Update(scheme->size);
 		crc.Update(scheme->prev);
 		crc.Update(scheme->next);
-		crc.UpdateVector(scheme->regions);
+		crc.Update(scheme->regions);
 
 		return true;
 	}

@@ -13,6 +13,7 @@
 #include "Trap.h"
 #include "QuestManager.h"
 #include "Action.h"
+#include "NetStats.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -303,6 +304,8 @@ void Game::ConfigureGame()
 	}
 
 	CreateTextures();
+
+	NetStats::Get().Initialize();
 }
 
 //=================================================================================================
@@ -810,7 +813,7 @@ void Game::SetupObject(Obj& obj)
 		else if(obj.mesh_id)
 			mesh_mgr.Load(obj.mesh);
 	}
-	
+
 	if(IS_SET(obj.flags2, OBJ2_VARIANT))
 	{
 		assert(!IS_SET(obj.flags, OBJ_DOUBLE_PHYSICS) && !IS_SET(obj.flags2, OBJ2_MULTI_PHYSICS)); // not supported for variant mesh yet

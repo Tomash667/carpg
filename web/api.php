@@ -11,7 +11,6 @@ CREATE TABLE ca_stats
 	winver int NOT NULL,
 	ram float NOT NULL,
 	cpu_flags int NOT NULL,
-	cpu_flags2 int NOT NULL,
 	vs_ver int NOT NULL,
 	ps_ver int NOT NULL,
 	insertdate datetime NOT NULL DEFAULT GETDATE(),
@@ -40,23 +39,22 @@ function Action()
 	$winver = (int)$json['winver'];
 	$ram = (float)$json['ram'];
 	$cpu_flags = (int)$json['cpu_flags'];
-	$cpu_flags2 = (int)$json['cpu_flags2'];
 	$vs_ver = (int)$json['vs_ver'];
 	$ps_ver = (int)$json['ps_ver'];
 	
-	if(!isset($uid) || !isset($version) || !isset($winver) || !isset($ram) || !isset($cpu_flags) || !isset($cpu_flags2) || !isset($vs_ver) || !isset($ps_ver))
+	if(!isset($uid) || !isset($version) || !isset($winver) || !isset($ram) || !isset($cpu_flags) || !isset($vs_ver) || !isset($ps_ver))
 		return 0;
 	
-	$sse = $cpu_flags2 & (1 << 25);
-	$sse2 = $cpu_flags2 & (1 << 26);
-	$x64 = $cpu_flags & (1 << 29);
+	$x64 = $cpu_flags & (1 << 0);
+	$sse = $cpu_flags2 & (1 << 2);
+	$sse2 = $cpu_flags2 & (1 << 3);
 	
 	$conn = mysql_connect($dbhost, $dbuser, $dbpass);
 	if(!$conn)
 		return 1;
 	mysql_select_db($dbname);
 	
-	$ok = mysql_query("INSERT INTO ca_stats (uid,version,winver,ram,cpu_flags,cpu_flags2,vs_ver,ps_ver,sse,sse2,x64) values ('".$uid."',".$version.",".$winver.",".$ram.",".$cpu_flags.",".$cpu_flags2.",".$vs_ver.",".$ps_ver.",".$sse.",".$sse2.",".$x64.")", $conn);
+	$ok = mysql_query("INSERT INTO ca_stats (uid,version,winver,ram,cpu_flags,vs_ver,ps_ver,sse,sse2,x64) values ('".$uid."',".$version.",".$winver.",".$ram.",".$cpu_flags.",".$vs_ver.",".$ps_ver.",".$sse.",".$sse2.",".$x64.")", $conn);
 	if(!$ok)
 		return 1;
 	

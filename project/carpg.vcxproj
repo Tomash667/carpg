@@ -66,7 +66,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;../external/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d9.lib;d3dx9d.lib;RakNet_debug.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath_debug.lib;BulletCollision_debug.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;Rpcrt4.lib;d3dx9d.lib;RakNet_debug.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath_debug.lib;BulletCollision_debug.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <AdditionalManifestFiles>carpg.exe.manifest</AdditionalManifestFiles>
@@ -105,7 +105,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;../external/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;RakNet.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath.lib;BulletCollision.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;Rpcrt4.lib;d3dx9.lib;RakNet.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath.lib;BulletCollision.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <AdditionalManifestFiles>carpg.exe.manifest</AdditionalManifestFiles>
@@ -123,8 +123,8 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="NetStats.h" />
     <ClInclude Include="source\core\Algorithm.h" />
+    <ClInclude Include="source\core\Base64.h" />
     <ClInclude Include="source\core\Core.h" />
     <ClInclude Include="source\core\Config.h" />
     <ClInclude Include="source\core\Config2.h" />
@@ -203,6 +203,7 @@
     <ClInclude Include="source\game\net\GamePacket.h" />
     <ClInclude Include="source\game\net\NetChange.h" />
     <ClInclude Include="source\game\net\NetChangePlayer.h" />
+    <ClInclude Include="source\game\net\NetStats.h" />
     <ClInclude Include="source\game\panels\ActionPanel.h" />
     <ClInclude Include="source\game\panels\GameDialogBox.h" />
     <ClInclude Include="source\game\quests\QuestConsts.h" />
@@ -334,7 +335,6 @@
     <ClInclude Include="source\Version.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NetStats.cpp" />
     <ClCompile Include="source\core\CoreMath.cpp" />
     <ClCompile Include="source\core\BoxToBox.cpp" />
     <ClCompile Include="source\core\Bresenham.cpp" />
@@ -398,6 +398,7 @@
     <ClCompile Include="source\game\entity\Camera.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
+    <ClCompile Include="source\game\net\NetStats.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\stats\Action.cpp" />
     <ClCompile Include="source\game\stats\Buff.cpp" />

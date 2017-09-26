@@ -30,11 +30,19 @@ public:
 	}
 
 	template<typename T>
-	void UpdateVector(const vector<T>& v)
+	void Update(const vector<T>& v)
 	{
 		Update(v.size());
 		if(!v.empty())
 			Update((const byte*)v.data(), v.size() * sizeof(T));
+	}
+
+	template<>
+	void Update(const vector<string>& v)
+	{
+		Update(v.size());
+		for(const string& s : v)
+			Update(s);
 	}
 
 	void Update0()
