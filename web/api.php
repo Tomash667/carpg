@@ -1,6 +1,6 @@
 <?php
 
-include("../forum/config.php");
+require("forum/Settings.php");
 
 /*
 CREATE TABLE ca_stats
@@ -13,7 +13,7 @@ CREATE TABLE ca_stats
 	cpu_flags int NOT NULL,
 	vs_ver int NOT NULL,
 	ps_ver int NOT NULL,
-	insertdate datetime NOT NULL DEFAULT GETDATE(),
+	insertdate datetime NOT NULL,
 	sse bit NOT NULL,
 	sse2 bit NOT NULL,
 	x64 bit NOT NULL
@@ -24,13 +24,14 @@ function Action()
 {
 	if($_SERVER['REQUEST_METHOD'] != 'POST' || $_GET['action'] != 'stats' || !isset($_POST['data']) || !isset($_POST['c']))
 		return 0;
-
+	
 	$data = $_POST['data'];
 	$c = $_POST['c'];
+	
 	if(crc32($data) != $c)
 		return 0;
 	
-	$json = json_decode(base64_decode($data), true);
+	$json = json_decode(base64_decode(strtr($data, '._-', '+/=')), true);
 	if($json == null)
 		return 0;
 	
@@ -46,15 +47,20 @@ function Action()
 		return 0;
 	
 	$x64 = $cpu_flags & (1 << 0);
-	$sse = $cpu_flags2 & (1 << 2);
-	$sse2 = $cpu_flags2 & (1 << 3);
+	$sse = $cpu_flags & (1 << 2);
+	$sse2 = $cpu_flags & (1 << 3);
 	
-	$conn = mysql_connect($dbhost, $dbuser, $dbpass);
+	global $db_server;
+	global $db_user;
+	global $db_passwd;
+	global $db_name;
+	
+	$conn = mysql_connect($db_server, $db_user, $db_passwd);
 	if(!$conn)
 		return 1;
-	mysql_select_db($dbname);
+	mysql_select_db($db_name);
 	
-	$ok = mysql_query("INSERT INTO ca_stats (uid,version,winver,ram,cpu_flags,vs_ver,ps_ver,sse,sse2,x64) values ('".$uid."',".$version.",".$winver.",".$ram.",".$cpu_flags.",".$vs_ver.",".$ps_ver.",".$sse.",".$sse2.",".$x64.")", $conn);
+	$ok = mysql_query("INSERT INTO ca_stats (uid,version,winver,ram,cpu_flags,vs_ver,ps_ver,insertdate,sse,sse2,x64) values ('".$uid."',".$version.",".$winver.",".$ram.",".$cpu_flags.",".$vs_ver.",".$ps_ver.",now(),".$sse.",".$sse2.",".$x64.")", $conn);
 	if(!$ok)
 		return 1;
 	

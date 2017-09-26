@@ -53,7 +53,7 @@ void FormatStr(string& s, cstring str, ...)
 	if(len >= 0)
 	{
 		cbuf[len] = 0;
-		s.resize(len + 1);
+		s.resize(len);
 	}
 	else
 	{

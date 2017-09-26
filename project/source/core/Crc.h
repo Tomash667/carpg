@@ -6,7 +6,7 @@ class Crc
 public:
 	Crc() : m_crc(CRC32_NEGL) {}
 	void Update(const byte *input, size_t length);
-	uint Get() const { return m_crc; }
+	uint Get() const { return ~m_crc; }
 	operator uint() const { return Get(); }
 
 	template<typename T>

@@ -467,7 +467,7 @@ bool NetStats::Send()
 	string encrypted;
 	Base64::Encode(data, &encrypted);
 	Replace(encrypted, "+/=", "._-");
-
+	
 	Crc crc;
 	crc.Update(encrypted);
 	uint c = crc.Get();
@@ -479,9 +479,9 @@ bool NetStats::Send()
 	tcp->Start(0, 1);
 
 	HTTPConnection* http = HTTPConnection::GetInstance();
-	http->Init(tcp, "http://carpg.pl/api.php");
+	http->Init(tcp, "carpg.pl");
 
-	http->Post("?action=stats", request_data.c_str());
+	http->Post("/api.php?action=stats", request_data.c_str());
 
 	Timer t;
 	t.Start();
@@ -495,9 +495,10 @@ bool NetStats::Send()
 			http->ProcessTCPPacket(packet);
 			tcp->DeallocatePacket(packet);
 
-			if(http->HasBadResponse(nullptr, nullptr))
+			int code;
+			if(http->HasBadResponse(&code, nullptr))
 			{
-				Error("NetStats: Bad server response.");
+				Error("NetStats: Bad server response (%d).");
 				ok = false;
 				break;
 			}
@@ -509,14 +510,17 @@ bool NetStats::Send()
 		}
 
 		dt += t.Tick();
-		if(dt >= 10.f)
+		if(dt >= 10000.f) // change timeout
 		{
 			Error("NetStats: Timeout.");
 			ok = false;
 			break;
 		}
 		else
+		{
+			http->Update();
 			Sleep(50);
+		}
 	}
 
 	HTTPConnection::DestroyInstance(http);
