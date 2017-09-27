@@ -149,7 +149,13 @@ void NetStats::Close()
 	if(inst)
 	{
 		shutdown_thread = true;
-		Sleep(100);
+		for(int i = 0; i < 20; ++i)
+		{
+			Sleep(50);
+			inst = NetStats::TryGet();
+			if(!inst)
+				break;
+		}
 	}
 }
 
@@ -523,7 +529,7 @@ bool NetStats::Send()
 			int code;
 			if(http->HasBadResponse(&code, nullptr))
 			{
-				Error("NetStats: Bad server response (%d).");
+				Error("NetStats: Bad server response (%d).", code);
 				ok = false;
 				break;
 			}
@@ -535,7 +541,7 @@ bool NetStats::Send()
 		}
 
 		dt += t.Tick();
-		if(dt >= 10000.f) // change timeout
+		if(dt >= 10.f)
 		{
 			Error("NetStats: Timeout.");
 			ok = false;

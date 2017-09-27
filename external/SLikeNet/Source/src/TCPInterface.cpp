@@ -314,6 +314,8 @@ void TCPInterface::Stop(void)
 	SLNet::OP_DELETE_ARRAY(remoteClients,_FILE_AND_LINE_);
 	remoteClients=0;
 
+	for(i = 0; i < incomingMessages.Size(); ++i)
+		rakFree_Ex(incomingMessages[i]->data, _FILE_AND_LINE_);
 	incomingMessages.Clear(_FILE_AND_LINE_);
 	newIncomingConnections.Clear(_FILE_AND_LINE_);
 	newRemoteClients.Clear(_FILE_AND_LINE_);

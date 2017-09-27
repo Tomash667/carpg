@@ -36,7 +36,7 @@ function Action()
 	if($json == null)
 		return 0;
 	
-	$uid = mysql_real_escape_string($json['uid']);
+	$uid = $json['uid'];
 	$version = (int)$json['version'];
 	$winver = (int)$json['winver'];
 	$ram = (float)$json['ram'];
@@ -57,18 +57,18 @@ function Action()
 	global $db_passwd;
 	global $db_name;
 	
-	$conn = mysql_connect($db_server, $db_user, $db_passwd);
-	if(!$conn)
-		return 1;
-	mysql_select_db($db_name);
-	
-	$ok = mysql_query("INSERT INTO ca_stats (uid,version,winver,ram,cpu_flags,vs_ver,ps_ver,insertdate,ip,sse,sse2,x64) values ('".$uid."',".$version.",".$winver.",".$ram.",".$cpu_flags.",".$vs_ver.",".$ps_ver.",now(),".$ip.','.$sse.",".$sse2.",".$x64.")", $conn);
-	if(!$ok)
+	$conn = new mysqli($db_server, $db_user, $db_passwd, $db_name);
+	if($conn->connect_errno)
 		return 1;
 	
-	mysql_close($conn);
+	$query = $conn->prepare('INSERT INTO ca_stats(uid,version,winver,ram,cpu_flags,vs_ver,ps_ver,insertdate,ip,sse,sse2,x64) VALUES(?,?,?,?,?,?,?,now(),?,?,?,?)');
+	$ok = $query->bind_param("siidiiisiii", $uid, $version, $winver, $ram, $cpu_flags, $vs_ver, $ps_ver, $ip, $sse, $sse2, $x64);
+	if($ok && $query->execute())
+		$ok = true;
 	
-	return 2;
+	$conn->close();
+	
+	return $ok ? 2 : 1;
 }
 
 $result = Action();
