@@ -4,7 +4,8 @@ class NetStats : public SingletonPtr<NetStats>
 {
 public:
 	void Initialize();
-	void Update();
+	static void TryUpdate();
+	static void Close();
 
 private:
 	struct Stats
@@ -22,6 +23,7 @@ private:
 		int operator == (const Stats& stats) const;
 	};
 
+	void Update();
 	void InitializeCpu(Stats& s);
 	void InitializeMemory(Stats& s);
 	void InitializeVersion(Stats& s);

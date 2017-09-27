@@ -9,6 +9,7 @@
 #include <process.h>
 
 NetStats* SingletonPtr<NetStats>::instance;
+static volatile bool shutdown_thread;
 
 struct CpuFlags
 {
@@ -121,6 +122,13 @@ void NetStats::Initialize()
 	CheckMatch();
 }
 
+void NetStats::TryUpdate()
+{
+	NetStats* inst = NetStats::TryGet();
+	if(inst)
+		inst->Update();
+}
+
 void NetStats::Update()
 {
 	if(!have_changes)
@@ -132,6 +140,16 @@ void NetStats::Update()
 			NetStats::Get().UpdateAsync();
 			return 0u;
 		}, nullptr, 0, nullptr);
+	}
+}
+
+void NetStats::Close()
+{
+	NetStats* inst = NetStats::TryGet();
+	if(inst)
+	{
+		shutdown_thread = true;
+		Sleep(100);
 	}
 }
 
@@ -467,7 +485,7 @@ bool NetStats::Send()
 	string encrypted;
 	Base64::Encode(data, &encrypted);
 	Replace(encrypted, "+/=", "._-");
-	
+
 	Crc crc;
 	crc.Update(encrypted);
 	uint c = crc.Get();
@@ -489,6 +507,13 @@ bool NetStats::Send()
 	bool ok = true;
 	while(true)
 	{
+		if(shutdown_thread)
+		{
+			Info("NetStats: Shutting down.");
+			ok = false;
+			break;
+		}
+
 		Packet* packet = tcp->Receive();
 		if(packet)
 		{

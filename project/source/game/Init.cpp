@@ -305,7 +305,8 @@ void Game::ConfigureGame()
 
 	CreateTextures();
 
-	NetStats::Get().Initialize();
+	if(!disable_net_stats)
+		NetStats::Get().Initialize();
 }
 
 //=================================================================================================

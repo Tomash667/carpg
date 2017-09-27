@@ -1,7 +1,7 @@
 ﻿FEATURE:
-+ option to disable for multi clients debugging
+? option to disable for multi clients debugging
 ? test dpi
-+ timeout cleanup
+? timeout cleanup
 ! change timeout
 ===============================================================================================================
 CURRENT:
@@ -14,6 +14,7 @@ NEW:
 + refactor load_screen from Resourcemanager.cpp
 + refactor Language.h from Gui.cpp, GetNumberDialog
 + 0.8 check windows support 1/3
+? logger and multiple threads
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

@@ -337,6 +337,11 @@ public:
 		return *instance;
 	}
 
+	static T* TryGet()
+	{
+		return instance;
+	}
+
 	static void Free()
 	{
 		delete instance;

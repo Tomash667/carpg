@@ -183,7 +183,7 @@ void MainMenu::Update(float dt)
 	if(send_stats)
 	{
 		send_stats = false;
-		NetStats::Get().Update();
+		NetStats::TryUpdate();
 	}
 
 	if(check_version == 0)

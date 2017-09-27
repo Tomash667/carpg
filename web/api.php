@@ -14,6 +14,7 @@ CREATE TABLE ca_stats
 	vs_ver int NOT NULL,
 	ps_ver int NOT NULL,
 	insertdate datetime NOT NULL,
+	ip varchar(50) NOT NULL,
 	sse bit NOT NULL,
 	sse2 bit NOT NULL,
 	x64 bit NOT NULL
@@ -35,7 +36,7 @@ function Action()
 	if($json == null)
 		return 0;
 	
-	$uid = $json['uid'];
+	$uid = mysql_real_escape_string($json['uid']);
 	$version = (int)$json['version'];
 	$winver = (int)$json['winver'];
 	$ram = (float)$json['ram'];
@@ -46,6 +47,7 @@ function Action()
 	if(!isset($uid) || !isset($version) || !isset($winver) || !isset($ram) || !isset($cpu_flags) || !isset($vs_ver) || !isset($ps_ver))
 		return 0;
 	
+	$ip = $_SERVER['REMOTE_ADDR'];
 	$x64 = $cpu_flags & (1 << 0);
 	$sse = $cpu_flags & (1 << 2);
 	$sse2 = $cpu_flags & (1 << 3);
@@ -60,7 +62,7 @@ function Action()
 		return 1;
 	mysql_select_db($db_name);
 	
-	$ok = mysql_query("INSERT INTO ca_stats (uid,version,winver,ram,cpu_flags,vs_ver,ps_ver,insertdate,sse,sse2,x64) values ('".$uid."',".$version.",".$winver.",".$ram.",".$cpu_flags.",".$vs_ver.",".$ps_ver.",now(),".$sse.",".$sse2.",".$x64.")", $conn);
+	$ok = mysql_query("INSERT INTO ca_stats (uid,version,winver,ram,cpu_flags,vs_ver,ps_ver,insertdate,ip,sse,sse2,x64) values ('".$uid."',".$version.",".$winver.",".$ram.",".$cpu_flags.",".$vs_ver.",".$ps_ver.",now(),".$ip.','.$sse.",".$sse2.",".$x64.")", $conn);
 	if(!$ok)
 		return 1;
 	
