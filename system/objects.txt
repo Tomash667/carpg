@@ -1,0 +1,97 @@
+object barrel {
+	mesh "beczka.qmsh"
+	cylinder { 0.38, 1.083 }
+	flags near_wall
+}
+
+object barrels {
+	mesh "beczki.qmsh"
+	flags near_wall
+}
+
+object barrels {
+	mesh "beczka2.qmsh"
+	flags {near_wall blocks_camera}
+}
+
+//==============================================================================
+
+usable chair {
+	mesh "krzeslo.qmsh"
+	animation "siedzi_krzeslo"
+	flags allow_use
+	limit_rot 2
+}
+
+usable bench {
+	variants {
+		"lawa.qmsh"
+		"lawa2.qmsh"
+		"lawa3.qmsh"
+		"lawa4.qmsh"
+	}
+	object bench
+	animation "siedzi_lawa"
+	flags {near_wall allow_use}
+	limit_rot 3
+}
+
+usable bench_dir : bench {
+	limit_rot 2
+}
+
+usable anvil {
+	mesh "kowadlo.qmsh"
+	required_item blacksmith_hammer
+	animation "kowalstwo"
+	animation_sound { "blacksmith.mp3" 0.333 }
+	flags slow_stamina_restore
+	limit_rot 1
+}
+
+usable cauldron {
+	mesh "kociol.qmsh"
+	required_item ladle
+	animation "miesza"
+	flags SLOW_STAMINA_RESTORE
+	limit_rot 0
+}
+
+usable iron_vein {
+	mesh "iron_ore.qmsh"
+	required_item pickaxe
+	animation "wydobywa"
+	animation_sound { "kilof.mp3" 0.55 }
+	flags SLOW_STAMINA_RESTORE
+	limit_rot 4
+}
+
+usable gold_vein {
+	mesh "gold_ore.qmsh"
+	required_item pickaxe
+	animation "wydobywa"
+	animation_sound { "kilof.mp3" 0.55 }
+	flags SLOW_STAMINA_RESTORE
+	limit_rot 4
+}
+
+usable throne {
+	mesh "tron.qmsh"
+	animation "siedzi_krzeslo"
+	flags { allow_use important required near_wall }
+	limit_rot 2
+}
+
+usable stool {
+	mesh "stolek.qmsh"
+	cylinder { 0.27, 0.44 }
+	animation "siedzi_tron"
+	flags allow_use
+	limit_rot 2
+}
+
+usable bookshelf {
+	mesh "biblioteczka.qmsh"
+	flags {container near_wall blocks_camera}
+	limit_rot 1
+}

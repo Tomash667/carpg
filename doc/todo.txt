@@ -6,6 +6,10 @@ CURRENT:
 NEW:
 - with lag and speed player can move outside of building, require bullet physics
 + convert objects on table to normal items, some precreated layouts of items
+0.7:
++ amulet
++ magic effects
++ system rework part 1
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
