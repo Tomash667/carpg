@@ -6,7 +6,7 @@ class Crc
 public:
 	Crc() : m_crc(CRC32_NEGL) {}
 	void Update(const byte *input, size_t length);
-	uint Get() const { return m_crc; }
+	uint Get() const { return ~m_crc; }
 	operator uint() const { return Get(); }
 
 	template<typename T>
@@ -30,11 +30,19 @@ public:
 	}
 
 	template<typename T>
-	void UpdateVector(const vector<T>& v)
+	void Update(const vector<T>& v)
 	{
 		Update(v.size());
 		if(!v.empty())
 			Update((const byte*)v.data(), v.size() * sizeof(T));
+	}
+
+	template<>
+	void Update(const vector<string>& v)
+	{
+		Update(v.size());
+		for(const string& s : v)
+			Update(s);
 	}
 
 	void Update0()

@@ -13,6 +13,7 @@
 #include "Trap.h"
 #include "QuestManager.h"
 #include "Action.h"
+#include "NetStats.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -303,6 +304,9 @@ void Game::ConfigureGame()
 	}
 
 	CreateTextures();
+
+	if(!disable_net_stats)
+		NetStats::Get().Initialize();
 }
 
 //=================================================================================================

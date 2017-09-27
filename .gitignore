@@ -10,15 +10,16 @@
 *.aps
 *.pdb
 *.lib
+*.obj
 
 .vs
+Output
 
 /bin/cache
 /bin/data
 /bin/*
 /other
 /paks/out
-/project/Output
 
 /tools/converter/Debug
 /tools/converter/Release
@@ -34,6 +35,3 @@
 /tools/text_comparer/Release
 
 /external/lib
-/external/Bullet/build/vs2015/Output
-/external/SLikeNet/Lib/LibStatic/Output
-/external/zlib/contrib/vstudio/vc11/Output
