@@ -458,6 +458,8 @@ namespace io2
 		virtual void Write(const void* data, uint size) = 0;
 		virtual bool Read(void* data, uint size) = 0;
 		virtual bool Skip(uint size) = 0;
+		virtual bool Ensure(uint size) = 0;
+		virtual bool IsOk() const = 0;
 	};
 
 	//-----------------------------------------------------------------------------
@@ -465,7 +467,7 @@ namespace io2
 	class FileSource final : public Source
 	{
 	public:
-		FileSource() : file(INVALID_HANDLE_VALUE), own_handle(true)
+		FileSource() : file(INVALID_HANDLE_VALUE), own_handle(true), ok(false)
 		{
 		}
 
@@ -474,13 +476,14 @@ namespace io2
 			Open(path, write);
 		}
 
-		explicit FileSource(HANDLE file) : file(file), own_handle(false)
+		explicit FileSource(HANDLE file) : file(file), own_handle(false), ok(true)
 		{
 		}
 
-		explicit FileSource(FileSource&& f) : file(f.file), own_handle(f.own_handle)
+		explicit FileSource(FileSource&& f) : file(f.file), own_handle(f.own_handle), ok(f.ok)
 		{
 			f.file = INVALID_HANDLE_VALUE;
+			f.ok = false;
 		}
 
 		~FileSource()
@@ -499,7 +502,8 @@ namespace io2
 				file = CreateFile(path, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 			else
 				file = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-			return file != INVALID_HANDLE_VALUE;
+			ok = (file != INVALID_HANDLE_VALUE);
+			return ok;
 		}
 
 		void Write(const void* data, uint size) override
@@ -513,18 +517,34 @@ namespace io2
 		{
 			DWORD tmp;
 			ReadFile(file, data, size, &tmp, nullptr);
-			return tmp == size;
+			ok = (tmp == size && ok);
+			return ok;
 		}
 
 		bool Skip(uint size) override
 		{
 			DWORD pos = SetFilePointer(file, size, nullptr, FILE_CURRENT);
-			return !(pos == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR);
+			ok = !(pos == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR) && ok;
+			return ok;
+		}
+
+		bool Ensure(uint size_required) override
+		{
+			if(!ok)
+				return false;
+			DWORD pos = SetFilePointer(file, 0, nullptr, FILE_CURRENT);
+			DWORD size = GetFileSize(file, nullptr);
+			return (size - pos >= size_required);
 		}
 
 		bool IsOpen() const
 		{
 			return file != INVALID_HANDLE_VALUE;
+		}
+
+		bool IsOk() const override
+		{
+			return ok;
 		}
 
 		void Flush()
@@ -539,7 +559,7 @@ namespace io2
 
 	private:
 		HANDLE file;
-		bool own_handle;
+		bool own_handle, ok;
 	};
 
 	//-----------------------------------------------------------------------------
@@ -574,6 +594,16 @@ namespace io2
 		bool Skip(uint size) override
 		{
 			return source->Skip(size);
+		}
+
+		bool Ensure(uint size) override
+		{
+			return source->Ensure(size);
+		}
+
+		bool IsOk() const override
+		{
+			return source->IsOk();
 		}
 
 	private:
@@ -704,6 +734,14 @@ namespace io2
 		void operator << (vector<T>& v)
 		{
 			WriteVector(v);
+		}
+
+		template<>
+		void operator << (vector<string>& v)
+		{
+			WriteCasted<byte>(v.size());
+			for(string& s : v)
+				WriteString1(s);
 		}
 
 	protected:
@@ -874,6 +912,25 @@ namespace io2
 		{
 			return ReadVector(v);
 		}
+		template<>
+		bool operator >> (vector<string>& v)
+		{
+			byte count;
+			if(!Read(count))
+				return false;
+			v.resize(count);
+			for(string& s : v)
+			{
+				if(!ReadString1(s))
+					return false;
+			}
+			return true;
+		}
+
+		bool Ensure(uint size)
+		{
+			return source.Ensure(size);
+		}
 
 	protected:
 		BaseReader()
@@ -896,7 +953,7 @@ namespace io2
 		{
 		}
 
-		FileReader(cstring path) : BaseReader(FileSource(path, true))
+		FileReader(cstring path) : BaseReader(FileSource(path, false))
 		{
 		}
 
@@ -908,6 +965,11 @@ namespace io2
 		bool IsOpen() const
 		{
 			return source.IsOpen();
+		}
+
+		bool IsOk() const
+		{
+			return source.IsOk();
 		}
 
 		bool Open(cstring path)
@@ -927,7 +989,7 @@ namespace io2
 
 		operator bool() const
 		{
-			return IsOpen();
+			return IsOk();
 		}
 	};
 

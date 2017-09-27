@@ -2,11 +2,16 @@
 ? test tutorial, enter, save, load, respawn objects
 ===============================================================================================================
 CURRENT:
-- stupid website rewrite rule
 ===============================================================================================================
 NEW:
-- with lag and speed player can move outside of building, require bullet physics
-+ convert objects on table to normal items, some precreated layouts of items
++ remove system_dir from Engine
++ faster potion using, take out weapon after drinking, allow drink potion after potion and then take out weapon
++ use uint2 for resolution
++ refactor save version from ParticleSystem.cpp
++ refactor load_screen from Resourcemanager.cpp
++ refactor Language.h from Gui.cpp, GetNumberDialog
++ 0.8 check windows support 1/3
+? logger and multiple threads
 + ref object from trap
 + ref GenerateCaveObjects, physics logic etc
 + Object pool
@@ -14,12 +19,17 @@ NEW:
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
 - w questowych lokacjach krew/zwłoki nie znikają
+- wskaźnik na fizykę, ale co jak objects się rozszerza i obiekt zmienia pozycję
 - da sie wlezc w kogos
 - ANGLE!
+- wydobywaniem rudy można zablokować kogoś kto tam stoi
 - fov may not work good when near borders
 - verify dialogs ending with end/restart
 - without human flag and mesh crash when spawned, log error
+- przenoszenie do walki gdy jesteś w środku areny
+- blokada widoku przez drewno u kowala
 - debug ai lag is too big!
+- input don't work when there is lag, but why? maybe it can happen without lag too
 - oświetlenie na zewnątrz dla terenu, pod małym kątem jest biała trawa [na ziemie i trawie zato widać trawę pod kątem, mipmaping?]
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it; draw debug ray when ai is targeting
 - D3DX: Warning ID3DXEffect::EndPass. Changes have been made but not commited. CommitChange must be called before each DrawPrimitive call
@@ -27,8 +37,12 @@ VERIFY:
 - jeśli w mp osoba coś powie i zostanie usunięta w tej samej ramce to u klienta ten tekst się nie wyświetli
 - ai look at angle nie jest clipowane, albo coś?
 - Direct3D9: :Dynamic vertex buffer locked twice or more in a row without D3DLOCK_NOOVERWRITE or D3DLOCK_DISCARD. Could have severe performance penalty.
+- w karczmie po powrocie nie było jedzenia, w mieście
 - inventory icons disappear after alt-enter or changing multisampling [ł]; not happens on my gpu, need more info
+- wydobywaniem rudy można zablokować kogoś kto tam stoi; don't warp unit to usable, make it walk to expected point
 - trochę da się widzieć przez ściany :/
+- przesuniętą fizyke w obiektach obsługuje tylko SpawnObject [czyli nie obsługuje GenerateDungeonObjects], i to tylko dla boxów, nie używalnych
+? czy można przeszkadzać komuś w walce gadając z nim
 - zmiana multisamplingu nie ma wpływu na wygenerowane obrazki przedmiotów
 ? heal and death_screen
 ? raknet wysyła wiadomości do zdisconnectowanych przy broadcast jeśli nie wyśle jeszcze disconnect

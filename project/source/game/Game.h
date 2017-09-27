@@ -414,6 +414,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void StartGameMode();
 
 	QUICKSTART quickstart;
+	bool disable_net_stats;
 
 	// supershader
 	string sshader_code;
