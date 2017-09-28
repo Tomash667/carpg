@@ -1427,6 +1427,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		SetMusic(music);
 
 	InitQuadTree();
+	CalculateQuadtree();
 
 	return true;
 }

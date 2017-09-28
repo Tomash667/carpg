@@ -1,5 +1,12 @@
 ﻿FEATURE:
-? test tutorial, enter, save, load, respawn objects
++ populate with object
+	- buildings don't render - only leafs are selected
+	- grass inversed range
++ rendering
+? test, save, load, reenter, mp
++ usable
++ units
++ other
 ===============================================================================================================
 CURRENT:
 ===============================================================================================================
@@ -15,6 +22,7 @@ NEW:
 + ref object from trap
 + ref GenerateCaveObjects, physics logic etc
 + Object pool
++ ref quadtree core <-> game part
 ===============================================================================================================
 VERIFY:
 - da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

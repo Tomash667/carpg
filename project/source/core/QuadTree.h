@@ -12,16 +12,21 @@ struct QuadRect
 	float x, y, w, h;
 };
 
+struct Object;
+
 struct QuadObj
 {
 	enum Type
 	{
-		UNIT
+		OBJECT
 	} type;
 	union
 	{
+		Object* obj;
 		void* ptr;
 	};
+
+	explicit QuadObj(Object* obj) : obj(obj), type(OBJECT) {}
 };
 
 struct QuadNode
@@ -61,7 +66,7 @@ struct QuadTree
 struct LevelPart : QuadNode
 {
 	bool generated;
-	//vector<Object> objects;
+	vector<QuadObj> objects;
 	vector<Matrix> grass, grass2;
 };
 

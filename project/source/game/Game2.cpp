@@ -771,14 +771,8 @@ void Game::SetupCamera(float dt)
 		GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, cam.draw_range);
 	cam.matViewProj = matView * matProj;
 	cam.matViewInv = matView.Inverse();
-
-	Matrix matProj2 = Matrix::CreatePerspectiveFieldOfView(PI / 4 + sin(drunk_anim)*(PI / 16)*drunk_mod,
-		GetWindowAspect() * (1.f + sin(drunk_anim) / 10 * drunk_mod), 0.1f, grass_range > 0.1f ? grass_range : 0.2f);
-
 	cam.center = cam.from;
-
 	cam.frustum.Set(cam.matViewProj);
-	cam.frustum2.Set(matView * matProj2);
 
 	// centrum dŸwiêku 3d
 	Vec3 listener_pos = target->GetHeadSoundPos();
@@ -11151,7 +11145,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 			ProcessBuildingObjects(ctx, nullptr, nullptr, base_obj->mesh, nullptr, rot, roti, obj.pos, nullptr, nullptr, true);
 		}
 		else
-			SpawnObjectExtras(ctx, base_obj, obj.pos, obj.rot.y, &*it, (btCollisionObject**)&obj.ptr, obj.scale, flags);
+			SpawnObjectExtras(ctx, base_obj, obj.pos, obj.rot.y, &obj, (btCollisionObject**)&obj.ptr, obj.scale, flags);
 	}
 
 	if(ctx.chests)

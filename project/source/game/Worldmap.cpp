@@ -1420,7 +1420,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	}
 
 	if(location->outside)
+	{
 		SetTerrainTextures();
+		CalculateQuadtree();
+	}
 
 	LoadResources(txLoadingComplete, false);
 
@@ -1690,7 +1693,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 		o->base = base;
 		ctx.objects->push_back(o);
 
-		SpawnObjectExtras(ctx, base, pos, rot, &o, (btCollisionObject**)&o->ptr, scale, flags);
+		SpawnObjectExtras(ctx, base, pos, rot, o, (btCollisionObject**)&o->ptr, scale, flags);
 
 		return o;
 	}

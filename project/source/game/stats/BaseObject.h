@@ -34,7 +34,7 @@ enum OBJ_FLAGS
 	OBJ_CHAIR = 1 << 14, // object is chair
 	OBJ_CAULDRON = 1 << 15, // object is cauldron
 	OBJ_SCALEABLE = 1 << 16, // object can be scaled, need different physics handling
-	OBJ_PHYSICS_PTR = 1 << 17, // set Object::ptr, in bullet object set pointer to Object
+	OBJ_PHYSICS_PTR = 1 << 17, // btCollisionObject user pointer points to Object
 	OBJ_BUILDING = 1 << 18, // object is building
 	OBJ_DOUBLE_PHYSICS = 1 << 19, // object have 2 physics colliders (only works with box for now)
 	OBJ_BLOOD_EFFECT = 1 << 20, // altar blood effect

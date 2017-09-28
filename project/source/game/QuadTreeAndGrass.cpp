@@ -114,7 +114,7 @@ QuadNode* QuadTree::GetNode(const Vec2& pos, float radius)
 	const float radius_x2 = radius * 2;
 
 	if(!CircleToRectangle(pos.x, pos.y, radius, node->rect.x, node->rect.y, node->rect.w, node->rect.h))
-		return nullptr;
+		return top;
 
 	while(true)
 	{
@@ -233,23 +233,22 @@ void Game::DrawGrass()
 	V(device->SetStreamSourceFreq(1, 1));
 }
 
-extern Matrix m1, m2, m3, m4;
-
 void Game::ListGrass()
 {
-	ClearGrass();
-
 	if(grass_range < 0.5f)
 		return;
-
-	quadtree.ListLeafs(cam.frustum2, (QuadTree::Nodes&)level_parts);
-
+	
 	OutsideLocation* outside = (OutsideLocation*)location;
 	Vec3 pos, angle;
+	Vec2 from = cam.from.XZ();
+	float in_dist = grass_range * grass_range;
 
 	for(LevelParts::iterator it = level_parts.begin(), end = level_parts.end(); it != end; ++it)
 	{
 		LevelPart& part = **it;
+		if(Vec2::DistanceSquared(part.box.Midpoint(), from) > in_dist)
+			continue;
+
 		if(!part.generated)
 		{
 			int minx = max(1, part.grid_box.p1.x),
@@ -358,4 +357,21 @@ void Game::ClearGrass()
 	grass_patches[1].clear();
 	grass_count[0] = 0;
 	grass_count[1] = 0;
+}
+
+void Game::CalculateQuadtree()
+{
+	if(local_ctx.type != LevelContext::Outside)
+		return;
+
+	for(Object* obj : *local_ctx.objects)
+	{
+		auto node = (LevelPart*)quadtree.GetNode(obj->pos.XZ(), obj->mesh->head.radius);
+		node->objects.push_back(QuadObj(obj));
+	}
+}
+
+void Game::ListQuadtreeNodes()
+{
+	quadtree.ListLeafs(cam.frustum, (QuadTree::Nodes&)level_parts);
 }
