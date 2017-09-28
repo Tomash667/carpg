@@ -12,7 +12,8 @@ namespace content
 {
 	enum class Id
 	{
-		Buildings
+		Buildings,
+		Objects
 	};
 
 	extern string system_dir;
@@ -42,8 +43,10 @@ namespace content
 
 	void LoadContent(delegate<void(Id)> callback);
 	void LoadBuildings();
+	void LoadObjects();
 	void CleanupContent();
 	void CleanupBuildings();
+	void CleanupObjects();
 	bool ReadCrc(BitStream& stream);
 	void WriteCrc(BitStream& stream);
 	bool GetCrc(Id type, uint& my_crc, cstring& type_crc);

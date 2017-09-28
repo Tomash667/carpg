@@ -237,3 +237,64 @@ cstring BaseObject::GetRandomPainting()
 		return "painting_x4";
 	}
 }
+
+#include "TextWriter.h"
+void ExportObjects()
+{
+	TextWriter f("../system/building_exp.txt");
+
+	for(auto& o : BaseObject::objs)
+	{
+		if(IS_SET(o.flags, OBJ_USABLE))
+			continue;
+
+		f << Format("object %s {\n", o.id);
+		if(o.mesh_id)
+			f << Format("\tmesh \"%s\"\n", o.mesh_id);
+		if(o.type == OBJ_CYLINDER)
+			f << Format("\tcylinder { %g %g }\n", o.r, o.h);
+		if(o.centery != 0)
+			f << Format("\tcenter_y %g\n", o.centery);
+		if(o.extra_dist != 0)
+			f << Format("\textra_dist %g\n", o.extra_dist);
+		if(o.alpha != -1)
+			f << Format("\talpha %d\n", o.alpha);
+		if(o.flags != 0 || o.flags2 != 0)
+		{
+			f << "\tflags";
+
+			f.WriteFlags({
+				{ o.flags, {
+					{ OBJ_NEAR_WALL, "near_wall" },
+					{ OBJ_NO_PHYSICS, "no_physics" },
+					{ OBJ_HIGH, "high" },
+					{ OBJ_ON_WALL, "on_wall" },
+					{ OBJ_PRELOAD, "preload" },
+					{ OBJ_LIGHT, "light" },
+					{ OBJ_TABLE, "table" },
+					{ OBJ_CAMPFIRE, "campfire" },
+					{ OBJ_IMPORTANT, "important" },
+					{ OBJ_BILLBOARD, "billboard" },
+					{ OBJ_SCALEABLE, "scaleable" },
+					{ OBJ_PHYSICS_PTR, "physics_ptr" },
+					{ OBJ_BUILDING, "building" },
+					{ OBJ_DOUBLE_PHYSICS, "double_physics" },
+					{ OBJ_BLOOD_EFFECT, "blood effect" },
+					{ OBJ_REQUIRED, "required" },
+					{ OBJ_IN_MIDDLE, "in_middle" },
+					{ OBJ_PHY_BLOCKS_CAM, "blocks_camera" },
+					{ OBJ_PHY_ROT, "rotate_physics" },
+					{ OBJ_WATER_EFFECT, "water_effect" }
+				}},
+				{ o.flags2, {
+					{ OBJ2_VARIANT, "variant" },
+					{ OBJ2_MULTI_PHYSICS, "multiple_physics" },
+					{ OBJ2_CAM_COLLIDERS, "camera_colliders" }
+				}}
+			});
+
+			f << "\n";
+		}
+		f << "}\n\n";
+	}
+}

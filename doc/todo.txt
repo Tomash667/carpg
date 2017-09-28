@@ -1,4 +1,5 @@
 ﻿FEATURE:
+? altar has alpha=0, but bloody altar=-1
 ===============================================================================================================
 CURRENT:
 - stupid website rewrite rule

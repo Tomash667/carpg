@@ -39,15 +39,15 @@ struct BaseUsable
 	const Item* item;
 	SoundPtr sound;
 	/* For container:
-		0 - no limit
-		1 - 90* angle
-		2 - 45* angle
+	0 - no limit
+	1 - 90* angle
+	2 - 45* angle
 	For not container:
-		0 - use player rotation
-		1 - can be used from one of two sides (left/right)
-		2 - use object rotation
-		3 - can be used from one of two sides (front/back)
-		4 - use object rotation, can be used from 90* angle
+	0 - use player rotation
+	1 - can be used from one of two sides (left/right)
+	2 - use object rotation
+	3 - can be used from one of two sides (front/back)
+	4 - use object rotation, can be used from 90* angle
 	*/
 	int limit_rot;
 	int flags;
@@ -63,4 +63,7 @@ struct BaseUsable
 
 	static BaseUsable base_usables[];
 	static const uint n_base_usables;
+
+	static BaseUsable* Get(cstring);
+	static BaseUsable* TryGet(cstring);
 };

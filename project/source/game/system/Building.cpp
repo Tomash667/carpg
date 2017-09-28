@@ -359,7 +359,7 @@ public:
 	BuildingLoader() : t(Tokenizer::F_JOIN_MINUS | Tokenizer::F_MULTI_KEYWORDS | Tokenizer::F_UNESCAPE | Tokenizer::F_HIDE_ID)
 	{
 	}
-	
+
 	void Load()
 	{
 		InitTokenizer();
@@ -382,7 +382,7 @@ public:
 		});
 		if(!ok)
 			return;
-		
+
 		SetupBuildingGroups();
 		CalculateCrc();
 
@@ -650,7 +650,7 @@ private:
 		vector<bool> if_state; // false - if block, true - else block
 		bool inline_variant = false,
 			in_shuffle = false;
-		
+
 		while(!t.IsEof())
 		{
 			if(t.IsSymbol('}'))
@@ -1063,7 +1063,7 @@ private:
 		content::BG_BLACKSMITH = content::FindBuildingGroup("blacksmith");
 		content::BG_MERCHANT = content::FindBuildingGroup("merchant");
 	}
-	
+
 	void CalculateCrc()
 	{
 		Crc crc;

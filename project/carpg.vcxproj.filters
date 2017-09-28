@@ -631,6 +631,15 @@
     <ClCompile Include="source\game\entity\ItemContainer.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
+    <ClCompile Include="source\core\TextWriter.cpp">
+      <Filter>1. core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\BaseObject.cpp">
+      <Filter>3. game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\ObjectLoader.cpp">
+      <Filter>3. game\system</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1110,9 +1119,6 @@
     <ClInclude Include="source\game\TerrainTile.h">
       <Filter>3. game</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\stats\BaseUsable.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\entity\Usable.h">
       <Filter>3. game\entity</Filter>
     </ClInclude>
@@ -1255,11 +1261,14 @@
     <ClInclude Include="source\game\panels\BookPanel.h">
       <Filter>3. game\panels</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\stats\BaseObject.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\entity\ItemContainer.h">
       <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\BaseObject.h">
+      <Filter>3. game\system</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\BaseUsable.h">
+      <Filter>3. game\system</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
