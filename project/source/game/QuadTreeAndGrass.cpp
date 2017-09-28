@@ -237,7 +237,7 @@ void Game::ListGrass()
 {
 	if(grass_range < 0.5f)
 		return;
-	
+
 	OutsideLocation* outside = (OutsideLocation*)location;
 	Vec3 pos, angle;
 	Vec2 from = cam.from.XZ();
@@ -246,7 +246,7 @@ void Game::ListGrass()
 	for(LevelParts::iterator it = level_parts.begin(), end = level_parts.end(); it != end; ++it)
 	{
 		LevelPart& part = **it;
-		if(Vec2::DistanceSquared(part.box.Midpoint(), from) > in_dist)
+		if(!part.leaf || Vec2::DistanceSquared(part.box.Midpoint(), from) > in_dist)
 			continue;
 
 		if(!part.generated)
@@ -345,6 +345,7 @@ void Game::ClearQuadtree()
 		LevelPart& part = **it;
 		part.grass.clear();
 		part.grass2.clear();
+		part.objects.clear();
 	}
 
 	level_parts_pool.Free(level_parts);
@@ -373,5 +374,5 @@ void Game::CalculateQuadtree()
 
 void Game::ListQuadtreeNodes()
 {
-	quadtree.ListLeafs(cam.frustum, (QuadTree::Nodes&)level_parts);
+	quadtree.List(cam.frustum, (QuadTree::Nodes&)level_parts);
 }

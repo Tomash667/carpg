@@ -1,8 +1,8 @@
 ﻿FEATURE:
 + populate with object
-	- buildings don't render - only leafs are selected
-	- grass inversed range
-+ rendering
+	? buildings don't render - only leafs are selected
+	? grass inversed range
+? performance
 ? test, save, load, reenter, mp
 + usable
 + units
@@ -31,7 +31,7 @@ VERIFY:
 - da sie wlezc w kogos
 - ANGLE!
 - wydobywaniem rudy można zablokować kogoś kto tam stoi
-- fov may not work good when near borders
+- (tile?) fov may not work good when near borders
 - verify dialogs ending with end/restart
 - without human flag and mesh crash when spawned, log error
 - przenoszenie do walki gdy jesteś w środku areny
