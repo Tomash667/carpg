@@ -1020,6 +1020,126 @@ void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags, boo
 }
 
 //=================================================================================================
+void ReadFlags2(Tokenizer& t, int group, int& flags)
+{
+	if(t.IsSymbol('|'))
+		t.Next();
+	else
+		flags = 0;
+
+	if(t.IsSymbol('{'))
+	{
+		t.Next();
+
+		do
+		{
+			if(t.IsSymbol('~'))
+			{
+				t.Next();
+				CLEAR_BIT(flags, t.MustGetKeywordId(group));
+			}
+			else
+				flags |= t.MustGetKeywordId(group);
+			t.Next();
+		} while(!t.IsSymbol('}'));
+	}
+	else
+	{
+		if(t.IsSymbol('~'))
+		{
+			t.Next();
+			CLEAR_BIT(flags, t.MustGetKeywordId(group));
+		}
+		else
+			flags |= t.MustGetKeywordId(group);
+	}
+}
+
+//=================================================================================================
+void ReadFlags2(Tokenizer& t, std::initializer_list<FlagGroup> const & flags)
+{
+	if(t.IsSymbol('|'))
+		t.Next();
+	else
+	{
+		for(FlagGroup const & f : flags)
+			*f.flags = 0;
+	}
+
+	bool unexpected = false;
+
+	if(t.IsSymbol('{'))
+	{
+		t.Next();
+
+		do
+		{
+			bool found = false;
+			bool neg = t.IsSymbol('~');
+			if(neg)
+				t.Next();
+
+			for(FlagGroup const & f : flags)
+			{
+				if(t.IsKeywordGroup(f.group))
+				{
+					if(neg)
+						CLEAR_BIT(*f.flags, t.GetKeywordId(f.group));
+					else
+						*f.flags |= t.GetKeywordId(f.group);
+					found = true;
+					break;
+				}
+			}
+
+			if(!found)
+			{
+				unexpected = true;
+				break;
+			}
+
+			t.Next();
+		} while(!t.IsSymbol('}'));
+	}
+	else
+	{
+		bool found = false;
+		bool neg = t.IsSymbol('~');
+		if(neg)
+			t.Next();
+
+		for(FlagGroup const & f : flags)
+		{
+			if(t.IsKeywordGroup(f.group))
+			{
+				if(neg)
+					CLEAR_BIT(*f.flags, t.GetKeywordId(f.group));
+				else
+					*f.flags |= t.GetKeywordId(f.group);
+				found = true;
+				break;
+			}
+		}
+
+		if(!found)
+			unexpected = true;
+	}
+
+	if(unexpected)
+	{
+		auto& formatter = t.StartUnexpected();
+
+		for(FlagGroup const & f : flags)
+		{
+			int g = f.group;
+			formatter.Add(T_KEYWORD_GROUP, &g);
+		}
+
+		formatter.Throw();
+	}
+}
+
+//=================================================================================================
 void Tokenizer::Parse(Int2& i)
 {
 	if(IsSymbol('{'))

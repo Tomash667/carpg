@@ -504,9 +504,6 @@
     <ClCompile Include="source\game\TerrainTile.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\BaseUsable.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\entity\Usable.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
@@ -625,9 +622,6 @@
     <ClCompile Include="source\game\panels\BookPanel.cpp">
       <Filter>3. game\panels</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\BaseObject.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\entity\ItemContainer.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
@@ -638,6 +632,9 @@
       <Filter>3. game\system</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\ObjectLoader.cpp">
+      <Filter>3. game\system</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\BaseUsable.cpp">
       <Filter>3. game\system</Filter>
     </ClCompile>
   </ItemGroup>

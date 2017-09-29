@@ -13,11 +13,7 @@ void Object::Save(HANDLE file)
 	WriteFile(file, &scale, sizeof(scale), &tmp, nullptr);
 
 	if(base)
-	{
-		byte len = (byte)strlen(base->id);
-		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		WriteFile(file, base->id, len, &tmp, nullptr);
-	}
+		WriteString1(file, base->id2);
 	else
 	{
 		byte len = 0;
@@ -81,7 +77,7 @@ void Object::Write(BitStream& stream) const
 	stream.Write(rot);
 	stream.Write(scale);
 	if(base)
-		WriteString1(stream, base->id);
+		WriteString1(stream, base->id2);
 	else
 	{
 		stream.Write<byte>(0);

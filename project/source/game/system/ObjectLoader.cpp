@@ -4,15 +4,20 @@
 #include "ContentLoader.h"
 #include "BaseObject.h"
 #include "BaseUsable.h"
+#include "Crc.h"
 
-vector<VariantObject*> variant_objects;
+static vector<VariantObject*> variant_objects;
 
+//=================================================================================================
 class ObjectLoader
 {
 	enum Group
 	{
 		G_TOP,
-		G_OBJECT_PROPERTY
+		G_OBJECT_PROPERTY,
+		G_OBJECT_FLAGS,
+		G_USABLE_PROPERTY,
+		G_USABLE_FLAGS
 	};
 
 	enum Top
@@ -32,13 +37,21 @@ class ObjectLoader
 		OP_EXTRA_DIST
 	};
 
+	enum UsableProperty
+	{
+		UP_REQUIRED_ITEM,
+		UP_ANIMATION,
+		UP_ANIMATION_SOUND,
+		UP_LIMIT_ROT
+	};
+
 public:
 	void Load()
 	{
 		InitTokenizer();
 
 		ContentLoader loader;
-		bool ok = loader.Load(t, "objects.txt", G_TOP, [this](int top, const string& id)
+		bool ok = loader.Load(t, "objects.txt", G_TOP, [&, this](int top, const string& id)
 		{
 			VerifyNameIsUnique(id);
 			switch(top)
@@ -56,9 +69,8 @@ public:
 
 		CalculateCrc();
 
-		// TODO
-		//Info("Loaded objects (%u), usables (%u), - crc %p.",
-		//	content::buildings.size(), content::building_groups.size(), content::building_scripts.size(), content::buildings_crc);
+		Info("Loaded objects (%u), usables (%u), - crc %p.",
+			BaseObject::objs.size() - BaseUsable::usables.size(), BaseUsable::usables.size(), content::objects_crc);
 	}
 
 private:
@@ -78,19 +90,52 @@ private:
 			{ "variant", OP_VARIANT },
 			{ "extra_dist", OP_EXTRA_DIST }
 		});
+
+		t.AddKeywords(G_OBJECT_FLAGS, {
+			{ "near_wall", OBJ_NEAR_WALL },
+			{ "no_physics", OBJ_NO_PHYSICS },
+			{ "high", OBJ_HIGH },
+			{ "chest", OBJ_CHEST },
+			{ "on_wall", OBJ_ON_WALL },
+			{ "preload", OBJ_PRELOAD },
+			{ "light", OBJ_LIGHT },
+			{ "table", OBJ_TABLE },
+			{ "campfire", OBJ_CAMPFIRE },
+			{ "important", OBJ_IMPORTANT },
+			{ "billboard", OBJ_BILLBOARD },
+			{ "scaleable", OBJ_SCALEABLE },
+			{ "physics_ptr", OBJ_PHYSICS_PTR },
+			{ "building", OBJ_BUILDING },
+			{ "double_physics", OBJ_DOUBLE_PHYSICS },
+			{ "blood_effect", OBJ_BLOOD_EFFECT },
+			{ "required", OBJ_REQUIRED },
+			{ "in_middle", OBJ_IN_MIDDLE },
+			{ "blocks_camera", OBJ_PHY_BLOCKS_CAM },
+			{ "rotate_physics", OBJ_PHY_ROT },
+			{ "water_effect", OBJ_WATER_EFFECT },
+			{ "multiple_physics", OBJ_MULTI_PHYSICS },
+			{ "camera_colliders", OBJ_CAM_COLLIDERS }
+		});
+
+		t.AddKeywords(G_USABLE_FLAGS, {
+			{ "allow_use", BaseUsable::ALLOW_USE },
+			{ "slow_stamina_restore", BaseUsable::SLOW_STAMINA_RESTORE },
+			{ "container", BaseUsable::CONTAINER },
+			{ "bench", BaseUsable::BENCH }
+		});
 	}
 
 	void ParseObject(const string& id)
 	{
 		Ptr<BaseObject> obj;
-		obj->id = id;
+		obj->id2 = id;
 		t.Next();
 
 		if(t.IsSymbol(':'))
 		{
 			t.Next();
 			const string& parent_id = t.MustGetItem();
-			auto parent = BaseObject::TryGet(parent_id);
+			auto parent = BaseObject::TryGet(parent_id.c_str());
 			if(!parent)
 				t.Throw("Missing parent object '%s'.", parent_id.c_str());
 			t.Next();
@@ -105,90 +150,219 @@ private:
 			auto prop = (ObjectProperty)t.MustGetKeywordId(G_OBJECT_PROPERTY);
 			t.Next();
 
-			switch(prop)
-			{
-			case OP_MESH:
-				obj->mesh_id = t.MustGetString();
-				t.Next();
-				break;
-			case OP_CYLINDER:
-				t.AssertSymbol('{');
-				t.Next();
-				obj->r = t.MustGetNumberFloat();
-				t.Next();
-				obj->h = t.MustGetNumberFloat();
-				t.Next();
-				t.AssertSymbol('}');
-				t.Next();
-				if(obj->r <= 0 || obj->h <= 0)
-					t.Throw("Invalid cylinder size.");
-				break;
-			case OP_CENTER_Y:
-				obj->centery = t.MustGetNumberFloat();
-				t.Next();
-				break;
-			case OP_FLAGS:
-			case OP_ALPHA:
-				obj->alpha = t.MustGetInt();
-				t.Next();
-				if(obj->alpha < -1)
-					t.Throw("Invalid alpha value.");
-				break;
-			case OP_VARIANT:
-				{
-					t.AssertSymbol('{');
-					t.Next();
-					obj->variant = new VariantObject;
-					obj->variant->loaded = false;
-					variant_objects.push_back(obj->variant);
-					while(!t.IsSymbol('}'))
-					{
-						obj->variant->entries.push_back({ t.MustGetString(), nullptr });
-						t.Next();
-					}
-					if(obj->variant->entries.size() < 2u)
-						t.Throw("Variant with not enought meshes.");
-					t.Next();
-				}
-				break;
-			case OP_EXTRA_DIST:
-				obj->extra_dist = t.MustGetNumberFloat();
-				t.Next();
-				if(obj->extra_dist < 0.f)
-					t.Throw("Invalid extra distance.");
-				break;
-			}
+			ParseObjectProperty(prop, obj);
 		}
 
-		BaseObject::objs.push_back(obj.Pin()));
+		BaseObject::objs.push_back(obj.Pin());
+	}
+
+	void ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
+	{
+		switch(prop)
+		{
+		case OP_MESH:
+			obj->mesh_id2 = t.MustGetString();
+			t.Next();
+			break;
+		case OP_CYLINDER:
+			t.AssertSymbol('{');
+			t.Next();
+			obj->r = t.MustGetNumberFloat();
+			t.Next();
+			obj->h = t.MustGetNumberFloat();
+			if(obj->r <= 0 || obj->h <= 0)
+				t.Throw("Invalid cylinder size.");
+			t.Next();
+			t.AssertSymbol('}');
+			t.Next();
+			break;
+		case OP_CENTER_Y:
+			obj->centery = t.MustGetNumberFloat();
+			t.Next();
+			break;
+		case OP_FLAGS:
+			ReadFlags2(t, G_OBJECT_FLAGS, obj->flags3);
+			t.Next();
+			break;
+		case OP_ALPHA:
+			obj->alpha = t.MustGetInt();
+			if(obj->alpha < -1)
+				t.Throw("Invalid alpha value.");
+			t.Next();
+			break;
+		case OP_VARIANT:
+			{
+				t.AssertSymbol('{');
+				t.Next();
+				obj->variants = new VariantObject;
+				obj->variants->loaded = false;
+				variant_objects.push_back(obj->variants);
+				while(!t.IsSymbol('}'))
+				{
+					obj->variants->entries.push_back({ t.MustGetString(), nullptr });
+					t.Next();
+				}
+				if(obj->variants->entries.size() < 2u)
+					t.Throw("Variant with not enought meshes.");
+				t.Next();
+			}
+			break;
+		case OP_EXTRA_DIST:
+			obj->extra_dist = t.MustGetNumberFloat();
+			if(obj->extra_dist < 0.f)
+				t.Throw("Invalid extra distance.");
+			t.Next();
+			break;
+		}
 	}
 
 	void ParseUsable(const string& id)
 	{
+		Ptr<BaseUsable> use;
+		use->id2 = id;
+		t.Next();
 
+		if(t.IsSymbol(':'))
+		{
+			t.Next();
+			const string& parent_id = t.MustGetItem();
+			auto parent_usable = BaseUsable::TryGet(parent_id.c_str());
+			if(parent_usable)
+				*use = *parent_usable;
+			else
+			{
+				auto parent_obj = BaseObject::TryGet(parent_id.c_str());
+				if(parent_obj)
+					*use = *parent_obj;
+				else
+					t.Throw("Missing parent usable or object '%s'.", parent_id.c_str());
+			}
+			t.Next();
+		}
+
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			if(t.IsKeywordGroup(G_OBJECT_PROPERTY))
+			{
+				auto prop = (ObjectProperty)t.MustGetKeywordId(G_OBJECT_PROPERTY);
+				t.Next();
+
+				if(prop == OP_FLAGS)
+				{
+					ReadFlags2(t, {
+						{ &use->flags3, G_OBJECT_FLAGS },
+						{ &use->use_flags, G_USABLE_FLAGS }
+					});
+					t.Next();
+				}
+				else
+					ParseObjectProperty(prop, use);
+			}
+			else if(t.IsKeywordGroup(G_USABLE_PROPERTY))
+			{
+				auto prop = (UsableProperty)t.MustGetKeywordId(G_USABLE_PROPERTY);
+				t.Next();
+
+				switch(prop)
+				{
+				case UP_REQUIRED_ITEM:
+					use->item_id2 = t.MustGetItem();
+					t.Next();
+					break;
+				case UP_ANIMATION:
+					use->anim2 = t.MustGetString();
+					t.Next();
+					break;
+				case UP_ANIMATION_SOUND:
+					t.AssertSymbol('{');
+					t.Next();
+					use->sound_id2 = t.MustGetString();
+					t.Next();
+					use->sound_timer = t.MustGetNumberFloat();
+					if(!InRange(use->sound_timer, 0.f, 1.f))
+						t.Throw("Invalid animation sound timer.");
+					t.Next();
+					t.AssertSymbol('}');
+					t.Next();
+					break;
+				case UP_LIMIT_ROT:
+					use->limit_rot = t.MustGetInt();
+					if(use->limit_rot < 0)
+						t.Throw("Invalid limit rot.");
+					t.Next();
+					break;
+				}
+			}
+			else
+				t.Expecting("usable property");
+		}
+
+		use->flags3 |= OBJ_USABLE;
+
+		auto u = use.Pin();
+		BaseObject::objs.push_back(u);
+		BaseUsable::usables.push_back(u);
 	}
 
 	void VerifyNameIsUnique(const string& id)
 	{
-		if(BaseObject::TryGet(id) || BaseUsable::TryGet(id))
+		if(BaseObject::TryGet(id.c_str()) || BaseUsable::TryGet(id.c_str()))
 			t.Throw("Id must be unique.");
 	}
 
 	void CalculateCrc()
 	{
+		Crc crc;
 
+		for(BaseObject* obj : BaseObject::objs)
+		{
+			crc.Update(obj->id2);
+			crc.Update(obj->mesh_id2);
+			crc.Update(obj->type);
+			if(obj->type == OBJ_CYLINDER)
+			{
+				crc.Update(obj->r);
+				crc.Update(obj->h);
+			}
+			crc.Update(obj->centery);
+			crc.Update(obj->flags3);
+			crc.Update(obj->alpha);
+			if(obj->variants)
+			{
+				for(auto& e : obj->variants->entries)
+					crc.Update(e.mesh_id2);
+			}
+			crc.Update(obj->extra_dist);
+
+			if(obj->IsUsable())
+			{
+				BaseUsable* use = (BaseUsable*)obj;
+				crc.Update(use->anim2);
+				crc.Update(use->item_id2);
+				crc.Update(use->sound_id2);
+				crc.Update(use->sound_timer);
+				crc.Update(use->limit_rot);
+				crc.Update(use->use_flags);
+			}
+		}
 	}
 
 	Tokenizer t;
 };
 
+//=================================================================================================
 void content::LoadObjects()
 {
 	ObjectLoader loader;
 	loader.Load();
 }
 
+//=================================================================================================
 void content::CleanupObjects()
 {
-
+	DeleteElements(BaseObject::objs);
+	DeleteElements(variant_objects);
 }

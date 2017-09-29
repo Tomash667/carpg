@@ -357,3 +357,26 @@ building_script city {
 building_script village {
 	inn
 }
+
+//------------------------------------------------------------------------------
+// Objects / usables
+//------------------------------------------------------------------------------
+// pre 0.2.12 convert chairs into stools
+usable chair
+usable stool
+// pre 0.2.20 convert bench into bench_rot
+usable bench
+usable bench_rot
+// pre 0.7
+usable chair
+usable bench
+usable anvil
+usable cauldron
+usable iron_vein
+usable gold_vein
+usable throne
+usable stool
+usable bench_rot
+usable bookshelf
+// quests
+usable throne

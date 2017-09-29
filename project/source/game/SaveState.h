@@ -13,6 +13,7 @@ enum SAVE_VERSION
 	V_0_5 = 7, // 0.5
 	V_0_5_1 = 8, // 0.5.1
 	V_0_6 = 9, // 0.6
+	V_FEATURE = 10, // 0.7?
 
 	V_CURRENT = V_0_6
 };

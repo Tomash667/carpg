@@ -656,43 +656,41 @@ void Game::AddLoadTasks()
 	}
 
 	// preload objects
-	for(uint i = 0; i < BaseObject::n_objs; ++i)
+	for(BaseObject* p_obj : BaseObject::objs)
 	{
-		BaseObject& o = BaseObject::objs[i];
-		if(IS_SET(o.flags2, OBJ2_VARIANT))
+		auto& obj = *p_obj;
+		if(obj.variants)
 		{
-			VariantObject& vo = *o.variant;
+			VariantObject& vo = *obj.variants;
 			if(!vo.loaded)
 			{
-				for(uint i = 0; i < vo.count; ++i)
-					vo.entries[i].mesh = mesh_mgr.Get(vo.entries[i].mesh_name);
+				for(uint i = 0; i < vo.entries.size(); ++i)
+					vo.entries[i].mesh = mesh_mgr.Get(vo.entries[i].mesh_id2);
 				vo.loaded = true;
 			}
-			SetupObject(o);
+			SetupObject(obj);
 		}
-		else if(o.mesh_id)
+		else if(!obj.mesh_id2.empty())
 		{
-			o.mesh = mesh_mgr.Get(o.mesh_id);
-			if(!IS_SET(o.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS) && o.type == OBJ_CYLINDER)
-				o.shape = new btCylinderShape(btVector3(o.r, o.h, o.r));
-			SetupObject(o);
+			obj.mesh = mesh_mgr.Get(obj.mesh_id2);
+			if(!IS_SET(obj.flags3, OBJ_SCALEABLE | OBJ_NO_PHYSICS) && obj.type == OBJ_CYLINDER)
+				obj.shape = new btCylinderShape(btVector3(obj.r, obj.h, obj.r));
+			SetupObject(obj);
 		}
 		else
 		{
-			o.mesh = nullptr;
-			o.matrix = nullptr;
+			obj.mesh = nullptr;
+			obj.matrix = nullptr;
 		}
-	}
 
-	// preload usable objects
-	for(uint i = 0; i < BaseUsable::n_base_usables; ++i)
-	{
-		BaseUsable& bu = BaseUsable::base_usables[i];
-		bu.obj = BaseObject::Get(bu.obj_name);
-		if(!nosound && bu.sound_id)
-			bu.sound = sound_mgr.Get(bu.sound_id);
-		if(bu.item_id)
-			bu.item = FindItem(bu.item_id);
+		if(obj.IsUsable())
+		{
+			BaseUsable& bu = *(BaseUsable*)p_obj;
+			if(!nosound && !bu.sound_id2.empty())
+				bu.sound = sound_mgr.Get(bu.sound_id2);
+			if(!bu.item_id2.empty())
+				bu.item = FindItem(bu.item_id2.c_str());
+		}
 	}
 
 	// preload units
@@ -797,23 +795,23 @@ void Game::SetupObject(BaseObject& obj)
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 	Mesh::Point* point;
 
-	if(IS_SET(obj.flags, OBJ_PRELOAD))
+	if(IS_SET(obj.flags3, OBJ_PRELOAD))
 	{
-		if(IS_SET(obj.flags2, OBJ2_VARIANT))
+		if(obj.variants)
 		{
-			VariantObject& vo = *obj.variant;
-			for(uint i = 0; i < vo.count; ++i)
+			VariantObject& vo = *obj.variants;
+			for(uint i = 0; i < vo.entries.size(); ++i)
 				mesh_mgr.Load(vo.entries[i].mesh);
 		}
-		else if(obj.mesh_id)
+		else if(!obj.mesh_id2.empty())
 			mesh_mgr.Load(obj.mesh);
 	}
 
-	if(IS_SET(obj.flags2, OBJ2_VARIANT))
+	if(obj.variants)
 	{
-		assert(!IS_SET(obj.flags, OBJ_DOUBLE_PHYSICS) && !IS_SET(obj.flags2, OBJ2_MULTI_PHYSICS)); // not supported for variant mesh yet
-		mesh_mgr.LoadMetadata(obj.variant->entries[0].mesh);
-		point = obj.variant->entries[0].mesh->FindPoint("hit");
+		assert(!IS_SET(obj.flags3, OBJ_DOUBLE_PHYSICS | OBJ_MULTI_PHYSICS)); // not supported for variant mesh yet
+		mesh_mgr.LoadMetadata(obj.variants->entries[0].mesh);
+		point = obj.variants->entries[0].mesh->FindPoint("hit");
 	}
 	else
 	{
@@ -821,7 +819,7 @@ void Game::SetupObject(BaseObject& obj)
 		point = obj.mesh->FindPoint("hit");
 	}
 
-	if(!point || !point->IsBox() || IS_SET(obj.flags, OBJ_BUILDING | OBJ_SCALEABLE) || obj.type == OBJ_CYLINDER)
+	if(!point || !point->IsBox() || IS_SET(obj.flags3, OBJ_BUILDING | OBJ_SCALEABLE) || obj.type == OBJ_CYLINDER)
 		return;
 
 	assert(point->size.x >= 0 && point->size.y >= 0 && point->size.z >= 0);
@@ -829,10 +827,10 @@ void Game::SetupObject(BaseObject& obj)
 	obj.matrix = &point->mat;
 	obj.size = point->size.XZ();
 
-	if(IS_SET(obj.flags, OBJ_PHY_ROT))
+	if(IS_SET(obj.flags3, OBJ_PHY_ROT))
 		obj.type = OBJ_HITBOX_ROT;
 
-	if(IS_SET(obj.flags2, OBJ2_MULTI_PHYSICS))
+	if(IS_SET(obj.flags3, OBJ_MULTI_PHYSICS))
 	{
 		LocalVector2<Mesh::Point*> points;
 		Mesh::Point* prev_point = point;
@@ -856,27 +854,27 @@ void Game::SetupObject(BaseObject& obj)
 		{
 			BaseObject& o2 = obj.next_obj[i];
 			o2.shape = new btBoxShape(ToVector3(points[i]->size));
-			if(IS_SET(obj.flags, OBJ_PHY_BLOCKS_CAM))
-				o2.flags = OBJ_PHY_BLOCKS_CAM;
+			if(IS_SET(obj.flags3, OBJ_PHY_BLOCKS_CAM))
+				o2.flags3 = OBJ_PHY_BLOCKS_CAM;
 			o2.matrix = &points[i]->mat;
 			o2.size = points[i]->size.XZ();
 			o2.type = obj.type;
 		}
 		obj.next_obj[points.size()].shape = nullptr;
 	}
-	else if(IS_SET(obj.flags, OBJ_DOUBLE_PHYSICS))
+	else if(IS_SET(obj.flags3, OBJ_DOUBLE_PHYSICS))
 	{
 		Mesh::Point* point2 = obj.mesh->FindNextPoint("hit", point);
 		if(point2 && point2->IsBox())
 		{
 			assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
-			obj.next_obj = new BaseObject("", 0, 0, "", "");
-			if(!IS_SET(obj.flags, OBJ_NO_PHYSICS))
+			obj.next_obj = new BaseObject;
+			if(!IS_SET(obj.flags3, OBJ_NO_PHYSICS))
 			{
 				btBoxShape* shape = new btBoxShape(ToVector3(point2->size));
 				obj.next_obj->shape = shape;
-				if(IS_SET(obj.flags, OBJ_PHY_BLOCKS_CAM))
-					obj.next_obj->flags = OBJ_PHY_BLOCKS_CAM;
+				if(IS_SET(obj.flags3, OBJ_PHY_BLOCKS_CAM))
+					obj.next_obj->flags3 = OBJ_PHY_BLOCKS_CAM;
 			}
 			else
 				obj.next_obj->shape = nullptr;

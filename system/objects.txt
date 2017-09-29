@@ -495,7 +495,7 @@ usable bench {
 	}
 	object bench
 	animation "siedzi_lawa"
-	flags {near_wall allow_use}
+	flags {near_wall allow_use bench}
 	limit_rot 3
 }
 

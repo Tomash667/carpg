@@ -245,12 +245,14 @@ Unit* LevelContext::FindUnitById(UnitData* ud)
 	return nullptr;
 }
 
-Usable* LevelContext::FindUsableById(int _type)
+Usable* LevelContext::FindUsable(BaseUsable* base)
 {
-	for(vector<Usable*>::iterator it = usables->begin(), end = usables->end(); it != end; ++it)
+	assert(base);
+
+	for(Usable* use : *usables)
 	{
-		if((*it)->type == _type)
-			return *it;
+		if(use->base == base)
+			return use;
 	}
 
 	return nullptr;

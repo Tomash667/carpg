@@ -875,4 +875,7 @@ struct FlagGroup
 
 //-----------------------------------------------------------------------------
 int ReadFlags(Tokenizer& t, int group);
-void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const & flags, bool clear);
+void ReadFlags(Tokenizer& t, std::initializer_list<FlagGroup> const& flags, bool clear);
+void ReadFlags2(Tokenizer& t, int group, int& flags);
+// Read flags in format (flag pointer, tokenizer group), allow negate/clear
+void ReadFlags2(Tokenizer& t, std::initializer_list<FlagGroup> const& flags);

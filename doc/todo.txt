@@ -1,5 +1,8 @@
 ﻿FEATURE:
 ? altar has alpha=0, but bloody altar=-1
+? test OBJ_DOUBLE_PHYSICS
++ find all BaseObject::Get/usable and add to required
++ remove obj_alpha
 ===============================================================================================================
 CURRENT:
 - stupid website rewrite rule
@@ -7,6 +10,9 @@ CURRENT:
 NEW:
 - with lag and speed player can move outside of building, require bullet physics
 + convert objects on table to normal items, some precreated layouts of items
++ move chest to usables
++ particles in objects, not hardcoded water_effect, blood_effect
++ remove hardcoded bench variants in base usable
 0.7:
 + amulet
 + magic effects

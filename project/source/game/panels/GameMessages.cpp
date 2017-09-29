@@ -137,12 +137,26 @@ void GameMessages::AddMessage(cstring text, float time, int type)
 //=================================================================================================
 void GameMessages::AddMessageIfNotExists(cstring text, float time, int type)
 {
-	for(GameMsg& msg : msgs)
+	if(type >= 0)
 	{
-		if(msg.type == type)
+		for(GameMsg& msg : msgs)
 		{
-			msg.time = time;
-			return;
+			if(msg.type == type)
+			{
+				msg.time = time;
+				return;
+			}
+		}
+	}
+	else
+	{
+		for(GameMsg& msg : msgs)
+		{
+			if(msg.msg == text)
+			{
+				msg.time = time;
+				return;
+			}
 		}
 	}
 

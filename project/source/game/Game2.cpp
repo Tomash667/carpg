@@ -3206,8 +3206,8 @@ void Game::PlayerCheckObjectDistance(Unit& u, const Vec3& pos, void* ptr, float&
 			else if(type == BP_USABLE)
 			{
 				Usable* use = (Usable*)ptr;
-				auto& bu = *use->GetBase();
-				if(IS_SET(bu.flags, BaseUsable::CONTAINER))
+				auto& bu = *use->base;
+				if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
 				{
 					float allowed_dif;
 					switch(bu.limit_rot)
@@ -8696,7 +8696,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				}
 				else
 				{
-					BaseUsable& bu = BaseUsable::base_usables[u.usable->type];
+					BaseUsable& bu = *u.usable->base;
 
 					if(u.animation_state > AS_ANIMATION2_MOVE_TO_OBJECT)
 					{
@@ -10028,13 +10028,13 @@ void Game::GenerateDungeonObjects()
 				else
 					shift = obj->size + Vec2(obj->extra_dist, obj->extra_dist);
 
-				if(IS_SET(obj->flags, OBJ_NEAR_WALL))
+				if(IS_SET(obj->flags3, OBJ_NEAR_WALL))
 				{
 					Int2 tile;
 					int dir;
-					if(!lvl.GetRandomNearWallTile(*it, tile, dir, IS_SET(obj->flags, OBJ_ON_WALL)))
+					if(!lvl.GetRandomNearWallTile(*it, tile, dir, IS_SET(obj->flags3, OBJ_ON_WALL)))
 					{
-						if(IS_SET(obj->flags, OBJ_IMPORTANT))
+						if(IS_SET(obj->flags3, OBJ_IMPORTANT))
 							--j;
 						--fail;
 						continue;
@@ -10047,7 +10047,7 @@ void Game::GenerateDungeonObjects()
 					else
 						pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f), 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f));
 
-					if(IS_SET(obj->flags, OBJ_ON_WALL))
+					if(IS_SET(obj->flags3, OBJ_ON_WALL))
 					{
 						switch(dir)
 						{
@@ -10079,7 +10079,7 @@ void Game::GenerateDungeonObjects()
 
 						if(!ok)
 						{
-							if(IS_SET(obj->flags, OBJ_IMPORTANT))
+							if(IS_SET(obj->flags3, OBJ_IMPORTANT))
 								--j;
 							fail = true;
 							continue;
@@ -10104,7 +10104,7 @@ void Game::GenerateDungeonObjects()
 						}
 					}
 				}
-				else if(IS_SET(obj->flags, OBJ_IN_MIDDLE))
+				else if(IS_SET(obj->flags3, OBJ_IN_MIDDLE))
 				{
 					rot = PI / 2 * (Rand() % 4);
 					pos = it->Center();
@@ -10134,13 +10134,13 @@ void Game::GenerateDungeonObjects()
 						pos = it->GetRandomPos(obj->r);
 				}
 
-				if(IS_SET(obj->flags, OBJ_HIGH))
+				if(IS_SET(obj->flags3, OBJ_HIGH))
 					pos.y += 1.5f;
 
 				if(obj->type == OBJ_HITBOX)
 				{
 					// sprawdŸ kolizje z blokami
-					if(!IS_SET(obj->flags, OBJ_NO_PHYSICS))
+					if(!IS_SET(obj->flags3, OBJ_NO_PHYSICS))
 					{
 						bool ok = true;
 						if(NotZero(rot))
@@ -10176,7 +10176,7 @@ void Game::GenerateDungeonObjects()
 						}
 						if(!ok)
 						{
-							if(IS_SET(obj->flags, OBJ_IMPORTANT))
+							if(IS_SET(obj->flags3, OBJ_IMPORTANT))
 								--j;
 							--fail;
 							continue;
@@ -10188,7 +10188,7 @@ void Game::GenerateDungeonObjects()
 					GatherCollisionObjects(local_ctx, global_col, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
 					if(!global_col.empty() && Collide(global_col, Box2d(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y), 0.8f, rot))
 					{
-						if(IS_SET(obj->flags, OBJ_IMPORTANT))
+						if(IS_SET(obj->flags3, OBJ_IMPORTANT))
 							--j;
 						--fail;
 						continue;
@@ -10197,7 +10197,7 @@ void Game::GenerateDungeonObjects()
 				else
 				{
 					// sprawdŸ kolizje z blokami
-					if(!IS_SET(obj->flags, OBJ_NO_PHYSICS))
+					if(!IS_SET(obj->flags3, OBJ_NO_PHYSICS))
 					{
 						bool ok = true;
 						for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
@@ -10210,7 +10210,7 @@ void Game::GenerateDungeonObjects()
 						}
 						if(!ok)
 						{
-							if(IS_SET(obj->flags, OBJ_IMPORTANT))
+							if(IS_SET(obj->flags3, OBJ_IMPORTANT))
 								--j;
 							--fail;
 							continue;
@@ -10222,7 +10222,7 @@ void Game::GenerateDungeonObjects()
 					GatherCollisionObjects(local_ctx, global_col, pos, obj->r, &ignore);
 					if(!global_col.empty() && Collide(global_col, pos, obj->r + 0.8f))
 					{
-						if(IS_SET(obj->flags, OBJ_IMPORTANT))
+						if(IS_SET(obj->flags3, OBJ_IMPORTANT))
 							--j;
 						--fail;
 						continue;
@@ -10231,10 +10231,10 @@ void Game::GenerateDungeonObjects()
 
 				SpawnObjectEntity(local_ctx, obj, pos, rot, 1.f, flags);
 
-				if(IS_SET(obj->flags, OBJ_REQUIRED))
+				if(IS_SET(obj->flags3, OBJ_REQUIRED))
 					wymagany_obiekt = true;
 
-				if(IS_SET(obj->flags, OBJ_ON_WALL))
+				if(IS_SET(obj->flags3, OBJ_ON_WALL))
 					on_wall.push_back(pos);
 
 				if(is_variant)
@@ -10328,11 +10328,11 @@ void Game::GenerateDungeonObjects()
 				else
 					shift = obj->size;
 
-				if(IS_SET(obj->flags, OBJ_NEAR_WALL))
+				if(IS_SET(obj->flags3, OBJ_NEAR_WALL))
 				{
 					Int2 tile;
 					int dir;
-					if(!lvl.GetRandomNearWallTile(r, tile, dir, IS_SET(obj->flags, OBJ_ON_WALL)))
+					if(!lvl.GetRandomNearWallTile(r, tile, dir, IS_SET(obj->flags3, OBJ_ON_WALL)))
 						continue;
 
 					rot = dir_to_rot(dir);
@@ -10357,7 +10357,7 @@ void Game::GenerateDungeonObjects()
 						break;
 					}
 				}
-				else if(IS_SET(obj->flags, OBJ_IN_MIDDLE))
+				else if(IS_SET(obj->flags3, OBJ_IN_MIDDLE))
 				{
 					rot = PI / 2 * (Rand() % 4);
 					pos = r.Center();
@@ -10387,7 +10387,7 @@ void Game::GenerateDungeonObjects()
 						pos = r.GetRandomPos(obj->r);
 				}
 
-				if(IS_SET(obj->flags, OBJ_HIGH))
+				if(IS_SET(obj->flags3, OBJ_HIGH))
 					pos.y += 1.5f;
 
 				if(obj->type == OBJ_HITBOX)
@@ -11128,7 +11128,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 
 		BaseObject* obj = it->base;
 
-		if(IS_SET(obj->flags, OBJ_BUILDING))
+		if(IS_SET(obj->flags3, OBJ_BUILDING))
 		{
 			float rot = it->rot.y;
 			int roti;
@@ -11161,7 +11161,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 	}
 
 	for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
-		SpawnObjectExtras(ctx, BaseUsable::base_usables[(*it)->type].obj, (*it)->pos, (*it)->rot, *it, nullptr, 1.f, flags);
+		SpawnObjectExtras(ctx, (*it)->base, (*it)->pos, (*it)->rot, *it, nullptr, 1.f, flags);
 }
 
 void Game::SetRoomPointers()
@@ -13508,7 +13508,6 @@ void Game::AddGameMsg(cstring msg, float time)
 
 void Game::AddGameMsg2(cstring msg, float time, int id)
 {
-	assert(id > 0);
 	game_gui->game_messages->AddMessageIfNotExists(msg, time, id);
 }
 
@@ -14133,7 +14132,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					pe->pos = s.pos;
 					pe->pos_min = Vec3(0, 0, 0);
 					pe->pos_max = Vec3(0, 0, 0);
-					pe->size = IS_SET(obj->flags, OBJ_CAMPFIRE) ? .7f : .5f;
+					pe->size = IS_SET(obj->flags3, OBJ_CAMPFIRE) ? .7f : .5f;
 					pe->spawn_min = 1;
 					pe->spawn_max = 3;
 					pe->speed_min = Vec3(-1, 3, -1);
@@ -14171,7 +14170,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					pe->pos = s.pos;
 					pe->pos_min = Vec3(0, 0, 0);
 					pe->pos_max = Vec3(0, 0, 0);
-					pe->size = IS_SET(obj->flags, OBJ_CAMPFIRE) ? .7f : .5f;
+					pe->size = IS_SET(obj->flags3, OBJ_CAMPFIRE) ? .7f : .5f;
 					pe->spawn_min = 1;
 					pe->spawn_max = 3;
 					pe->speed_min = Vec3(-1, 3, -1);
@@ -15307,7 +15306,7 @@ void Game::PreloadUsables(vector<Usable*>& usables)
 
 	for(auto u : usables)
 	{
-		auto base = u->GetBase();
+		auto base = u->base;
 		if(base->state == ResourceState::NotLoaded)
 		{
 			if(base->obj->variant)
@@ -15461,7 +15460,7 @@ void Game::VerifyResources()
 		VerifyUnitResources(unit);
 	for(auto u : *local_ctx.usables)
 	{
-		auto base = u->GetBase();
+		auto base = u->base;
 		assert(base->state == ResourceState::Loaded);
 		if(base->sound)
 			assert(base->sound->IsLoaded());
@@ -15495,7 +15494,7 @@ void Game::VerifyResources()
 				VerifyUnitResources(unit);
 			for(auto u : ib->usables)
 			{
-				auto base = u->GetBase();
+				auto base = u->base;
 				assert(base->state == ResourceState::Loaded);
 				if(base->sound)
 					assert(base->sound->IsLoaded());
@@ -18662,7 +18661,8 @@ bool Game::GenerateMine()
 	// generuj rudê
 	if(generuj_rude)
 	{
-		BaseObject* iron_ore = BaseObject::Get("iron_ore");
+		auto iron_vein = BaseUsable::Get("iron_vein"),
+			gold_vein = BaseUsable::Get("gold_vein");
 
 		// usuñ star¹ rudê
 		if(quest_mine->mine_state3 != Quest_Mine::State3::None)
@@ -18739,39 +18739,39 @@ bool Game::GenerateMine()
 						}
 
 						float rot = Clip(dir_to_rot(dir) + PI);
-						static float radius = max(iron_ore->size.x, iron_ore->size.y) * SQRT_2;
+						static float radius = max(iron_vein->size.x, iron_vein->size.y) * SQRT_2;
 
 						IgnoreObjects ignore = { 0 };
 						ignore.ignore_blocks = true;
 						global_col.clear();
 						GatherCollisionObjects(local_ctx, global_col, pos, radius, &ignore);
 
-						Box2d box(pos.x - iron_ore->size.x, pos.z - iron_ore->size.y, pos.x + iron_ore->size.x, pos.z + iron_ore->size.y);
+						Box2d box(pos.x - iron_vein->size.x, pos.z - iron_vein->size.y, pos.x + iron_vein->size.x, pos.z + iron_vein->size.y);
 
 						if(!Collide(global_col, box, 0.f, rot))
 						{
 							Usable* u = new Usable;
 							u->pos = pos;
 							u->rot = rot;
-							u->type = (Rand() % 10 < zloto_szansa ? U_GOLD_VEIN : U_IRON_VEIN);
+							u->base = (Rand() % 10 < zloto_szansa ? gold_vein : iron_vein);
 							u->user = nullptr;
 							u->netid = usable_netid_counter++;
 							local_ctx.usables->push_back(u);
 
 							CollisionObject& c = Add1(local_ctx.colliders);
 							btCollisionObject* cobj = new btCollisionObject;
-							cobj->setCollisionShape(iron_ore->shape);
+							cobj->setCollisionShape(iron_vein->shape);
 							cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_OBJECT);
 
 							btTransform& tr = cobj->getWorldTransform();
-							Vec3 pos2 = Vec3::TransformZero(*iron_ore->matrix);
+							Vec3 pos2 = Vec3::TransformZero(*iron_vein->matrix);
 							pos2 += pos;
 							tr.setOrigin(ToVector3(pos2));
 							tr.setRotation(btQuaternion(rot, 0, 0));
 
 							c.pt = Vec2(pos2.x, pos2.z);
-							c.w = iron_ore->size.x;
-							c.h = iron_ore->size.y;
+							c.w = iron_vein->size.x;
+							c.h = iron_vein->size.y;
 							if(NotZero(rot))
 							{
 								c.type = CollisionObject::RECTANGLE_ROT;
@@ -20769,21 +20769,14 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 {
 	Unit& u = *pc->unit;
 	Usable& use = *usable;
-	BaseUsable& bu = BaseUsable::base_usables[use.type];
+	BaseUsable& bu = *use->base;
 
 	bool ok = true;
 	if(bu.item)
 	{
 		if(!u.HaveItem(bu.item) && u.slots[SLOT_WEAPON] != bu.item)
 		{
-			if(use.type == U_CAULDRON)
-				AddGameMsg2(txNeedLadle, 2.f, GMS_NEED_LADLE);
-			else if(use.type == U_ANVIL)
-				AddGameMsg2(txNeedHammer, 2.f, GMS_NEED_HAMMER);
-			else if(use.type == U_IRON_VEIN || use.type == U_GOLD_VEIN)
-				AddGameMsg2(txNeedPickaxe, 2.f, GMS_NEED_PICKAXE);
-			else
-				AddGameMsg2(txNeedUnk, 2.f, GMS_NEED_PICKAXE);
+			AddGameMsg2(Format(txNeedItem, bu.item->name.c_str()), 2.f);
 			ok = false;
 		}
 		else if(pc->unit->weapon_state != WS_HIDDEN && (bu.item != &pc->unit->GetWeapon() || pc->unit->HaveShield()))
@@ -20807,7 +20800,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 			u.usable->user = &u;
 			pc_data.before_player = BP_NONE;
 
-			if(IS_SET(bu.flags, BaseUsable::CONTAINER))
+			if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
 			{
 				// loot container
 				pc->action = PlayerController::Action_LootContainer;
@@ -20821,7 +20814,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 				game_gui->inv_trade_other->unit = nullptr;
 				game_gui->inv_trade_other->items = &pc->action_container->container->items;
 				game_gui->inv_trade_other->slots = nullptr;
-				game_gui->inv_trade_other->title = Format("%s - %s", Inventory::txLooting, use.GetBase()->name);
+				game_gui->inv_trade_other->title = Format("%s - %s", Inventory::txLooting, use.base->name);
 				game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;
 				game_gui->gp_trade->Show();
 			}
@@ -20829,11 +20822,11 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 			{
 				u.action = A_ANIMATION2;
 				u.animation = ANI_PLAY;
-				u.mesh_inst->Play(bu.anim, PLAY_PRIO1, 0);
+				u.mesh_inst->Play(bu.anim2.c_str(), PLAY_PRIO1, 0);
 				u.mesh_inst->groups[0].speed = 1.f;
 				u.target_pos = u.pos;
 				u.target_pos2 = use.pos;
-				if(BaseUsable::base_usables[use.type].limit_rot == 4)
+				if(use.base->limit_rot == 4)
 					u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
 				u.timer = 0.f;
 				u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
@@ -20856,7 +20849,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 			c.id = pc_data.before_player_ptr.usable->netid;
 			c.ile = 1;
 
-			if(IS_SET(bu.flags, BaseUsable::CONTAINER))
+			if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
 			{
 				pc->action = PlayerController::Action_LootContainer;
 				pc->action_container = pc_data.before_player_ptr.usable;
@@ -22271,7 +22264,7 @@ void Game::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit)
 		my.mode = Inventory::LOOT_MY;
 		other.mode = Inventory::LOOT_OTHER;
 		other.unit = nullptr;
-		other.title = Format("%s - %s", Inventory::txLooting, pc->action_container->GetBase()->name);
+		other.title = Format("%s - %s", Inventory::txLooting, pc->action_container->base->name);
 		break;
 	default:
 		assert(0);

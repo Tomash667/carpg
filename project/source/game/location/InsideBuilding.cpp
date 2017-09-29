@@ -260,11 +260,13 @@ void InsideBuilding::Load(HANDLE file, bool local)
 	// konwersja krzese³ w sto³ki
 	if(LOAD_VERSION < V_0_2_12 && type->group == content::BG_INN)
 	{
+		auto chair = BaseUsable::Get("chair"),
+			stool = BaseUsable::Get("stool");
 		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		{
 			Usable& u = **it;
-			if(u.type == U_CHAIR)
-				u.type = U_STOOL;
+			if(u.base == chair)
+				u.base = stool;
 		}
 	}
 }

@@ -24,6 +24,7 @@ namespace content
 	extern vector<BuildingGroup*> building_groups;
 	extern vector<BuildingScript*> building_scripts;
 	extern uint buildings_crc;
+	extern uint objects_crc;
 
 	// Hardcoded building groups
 	extern BuildingGroup* BG_INN;

@@ -3,38 +3,24 @@
 
 //-----------------------------------------------------------------------------
 #include "Resource.h"
+#include "BaseObject.h"
 
 //-----------------------------------------------------------------------------
 struct Item;
-struct BaseObject;
 
 //-----------------------------------------------------------------------------
-enum USABLE_ID
-{
-	U_CHAIR,
-	U_BENCH,
-	U_ANVIL,
-	U_CAULDRON,
-	U_IRON_VEIN,
-	U_GOLD_VEIN,
-	U_THRONE,
-	U_STOOL,
-	U_BENCH_ROT,
-	U_BOOKSHELF,
-	U_MAX
-};
-
-//-----------------------------------------------------------------------------
-struct BaseUsable
+struct BaseUsable : public BaseObject
 {
 	enum Flags
 	{
 		ALLOW_USE = 1 << 0,
 		SLOW_STAMINA_RESTORE = 1 << 1,
-		CONTAINER = 1 << 2
+		CONTAINER = 1 << 2,
+		BENCH = 1 << 3, // hardcoded to use variant in city
 	};
 
-	cstring id, name, obj_name, anim, item_id, sound_id;
+	string anim2, item_id2, sound_id2;
+	cstring name;
 	float sound_timer;
 	const Item* item;
 	SoundPtr sound;
@@ -50,20 +36,53 @@ struct BaseUsable
 	4 - use object rotation, can be used from 90* angle
 	*/
 	int limit_rot;
-	int flags;
-	BaseObject* obj;
+	int use_flags;
 	ResourceState state;
 
-	BaseUsable(cstring id, cstring obj_name, cstring anim, int limit_rot, int flags, cstring item_id = nullptr,
-		cstring sound_id = nullptr, float sound_timer = 0.f) :
-		id(id), name(nullptr), anim(anim), item_id(item_id), sound_id(sound_id), sound_timer(sound_timer), obj_name(obj_name), item(nullptr), sound(nullptr),
-		limit_rot(limit_rot), flags(flags), obj(nullptr), state(ResourceState::NotLoaded)
+	BaseUsable() : name(nullptr), sound_timer(0), item(nullptr), sound(nullptr), limit_rot(0), use_flags(0), state(ResourceState::NotLoaded)
 	{
 	}
 
-	static BaseUsable base_usables[];
-	static const uint n_base_usables;
+	BaseUsable& operator = (BaseObject& o)
+	{
+		mesh_id2 = o.mesh_id2;
+		type = o.type;
+		r = o.r;
+		h = o.h;
+		centery = o.centery;
+		flags3 = o.flags3;
+		alpha = o.alpha;
+		variants = o.variants;
+		extra_dist = o.extra_dist;
+		return *this;
+	}
 
-	static BaseUsable* Get(cstring);
-	static BaseUsable* TryGet(cstring);
+	BaseUsable& operator = (BaseUsable& u)
+	{
+		*this = (BaseObject&)u;
+		anim2 = u.anim2;
+		item_id2 = u.item_id2;
+		sound_id2 = u.sound_id2;
+		sound_timer = u.sound_timer;
+		limit_rot = u.limit_rot;
+		use_flags = u.use_flags;
+		return *this;
+	}
+
+	static vector<BaseUsable*> usables;
+
+	static BaseUsable* Get(cstring id);
+	/*{
+		auto usable = TryGet(id);
+		assert(usable);
+		return usable;
+	}*/
+	static BaseUsable* TryGet(cstring id);
+	/*{
+		auto obj = BaseObject::Get(id);
+		if(obj && IS_SET(obj->flags3, OBJ_USABLE))
+			return (BaseUsable*)obj;
+		else
+			return nullptr;
+	}*/
 };

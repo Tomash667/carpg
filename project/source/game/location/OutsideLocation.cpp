@@ -239,14 +239,16 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 		// konwersja ³awy w obrócon¹ ³awê i ustawienie wariantu
 		if(LOAD_VERSION < V_0_2_20)
 		{
+			auto bench = BaseUsable::Get("bench"),
+				bench_rot = BaseUsable::Get("bench_rot");
 			for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 			{
 				Usable& u = **it;
-				if(u.type == U_BENCH)
+				if(u.base == bench)
 				{
 					if(type == L_CITY)
 					{
-						u.type = U_BENCH_ROT;
+						u.base = bench_rot;
 						u.variant = 0;
 					}
 					else
