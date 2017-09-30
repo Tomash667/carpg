@@ -608,7 +608,11 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			for(auto part : level_parts)
 			{
 				for(auto& obj : part->objects)
-					AddObjectToDrawBatch(ctx, *obj.obj, frustum);
+				{
+					const Object& o = *obj.obj;
+					if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
+						AddObjectToDrawBatch(ctx, o, frustum);
+				}
 			}
 		}
 		else

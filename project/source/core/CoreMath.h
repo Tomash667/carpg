@@ -507,6 +507,8 @@ struct Rect
 	const int& Top() const { return p1.y; }
 	int& Bottom() { return p2.y; }
 	const int& Bottom() const { return p2.y; }
+	int MidX() const { return (p2.x - p1.x) / 2 + p1.x; }
+	int MidY() const { return (p2.y - p1.y) / 2 + p1.y; }
 
 	// Methods
 	bool IsInside(const Int2& pt) const;
@@ -896,6 +898,7 @@ struct Box2d
 	bool IsInside(const Vec2& v) const;
 	bool IsInside(const Vec3& v) const;
 	bool IsInside(const Int2& p) const;
+	bool IsFullyInside(const Vec2& v, float r) const;
 	bool IsValid() const;
 	Vec2 Midpoint() const;
 	Vec2 Size() const;
@@ -958,19 +961,19 @@ struct Box2d
 
 	Box2d LeftBottomPart() const
 	{
-		return Box2d(v1.x, v1.y, v1.x + (v2.x - v1.x) / 2, v1.y + (v2.y - v1.y) / 2);
+		return Box2d(Left(), MidY(), MidX(), Bottom());
 	}
 	Box2d RightBottomPart() const
 	{
-		return Box2d(v1.x + (v2.x - v1.x) / 2, v1.y, v2.x, v1.y + (v2.y - v1.y) / 2);
+		return Box2d(MidX(), MidY(), Right(), Bottom());
 	}
 	Box2d LeftTopPart() const
 	{
-		return Box2d(v1.x, v1.y + (v2.y - v1.y) / 2, v1.x + (v2.x - v1.x) / 2, v2.y);
+		return Box2d(Left(), Top(), MidX(), MidY());
 	}
 	Box2d RightTopPart() const
 	{
-		return Box2d(v1.x + (v2.x - v1.x) / 2, v1.y + (v2.y - v1.y) / 2, v2.x, v2.y);
+		return Box2d(MidX(), Top(), Right(), MidY());
 	}
 
 	void ToRectangle(float& x, float& y, float& w, float& h) const
@@ -990,6 +993,8 @@ struct Box2d
 	float Right() const { return v2.x; }
 	float Top() const { return v1.y; }
 	float Bottom() const { return v2.y; }
+	float MidX() const { return (v2.x - v1.x) / 2 + v1.x; }
+	float MidY() const { return (v2.y - v1.y) / 2 + v1.y; }
 };
 
 //-----------------------------------------------------------------------------

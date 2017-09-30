@@ -1,16 +1,10 @@
 ﻿FEATURE:
-+ populate with object
-	? buildings don't render - only leafs are selected
-	? grass inversed range
-? performance
-? test, save, load, reenter, mp
-+ usable
-+ units
-+ other
 ===============================================================================================================
 CURRENT:
+- using " in save name/player name etc can make saves fail to load correct name
 ===============================================================================================================
 NEW:
+- CustomCollisionWorld::Reset() takes lot of time when there is large number of colliders, need faster option of cleanup/atexit
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

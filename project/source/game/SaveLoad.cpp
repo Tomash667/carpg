@@ -1418,6 +1418,9 @@ void Game::LoadGame(HANDLE file)
 			enter_from = ENTER_FROM_OUTSIDE;
 	}
 
+	if(location->outside)
+		CalculateQuadtree();
+
 	// load music
 	LoadingStep(txLoadMusic);
 	if(!nomusic)

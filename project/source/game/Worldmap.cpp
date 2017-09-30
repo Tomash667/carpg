@@ -2815,6 +2815,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		{
 			OutsideLocation* outside = (OutsideLocation*)location;
 			outside->bloods.clear();
+			DeleteElements(outside->objects);
 			DeleteElements(outside->chests);
 			DeleteElements(outside->items);
 			outside->objects.clear();

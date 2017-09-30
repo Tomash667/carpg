@@ -262,6 +262,15 @@ bool CircleToRectangle(float circlex, float circley, float radius, float rectx, 
 	return (dx*dx + dy*dy) <= (radius*radius);
 }
 
+
+bool Box2d::IsFullyInside(const Vec2& v, float r) const
+{
+	return v.x - r >= v1.x
+		&& v.x + r <= v2.x
+		&& v.y - r >= v1.y
+		&& v.y + r <= v2.y;
+}
+
 bool Plane::Intersect3Planes(const Plane& P1, const Plane& P2, const Plane& P3, Vec3& OutP)
 {
 	float fDet;

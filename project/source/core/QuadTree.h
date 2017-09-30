@@ -1,17 +1,5 @@
 #pragma once
 
-struct QuadRect
-{
-	QuadRect()
-	{
-	}
-	QuadRect(const Box2d& box)
-	{
-		box.ToRectangle(x, y, w, h);
-	}
-	float x, y, w, h;
-};
-
 struct Object;
 
 struct QuadObj
@@ -31,7 +19,6 @@ struct QuadObj
 
 struct QuadNode
 {
-	QuadRect rect;
 	Box2d box;
 	Rect grid_box;
 	QuadNode* childs[4];
@@ -48,7 +35,7 @@ struct QuadTree
 	{
 	}
 
-	void Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int splits, float margin);
+	void Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int splits);
 
 	void List(FrustumPlanes& frustum, Nodes& nodes);
 	void ListLeafs(FrustumPlanes& frustum, Nodes& nodes);
