@@ -1,10 +1,15 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-- using " in save name/player name etc can make saves fail to load correct name
+? 3 players usable tests
 ===============================================================================================================
 NEW:
-- CustomCollisionWorld::Reset() takes lot of time when there is large number of colliders, need faster option of cleanup/atexit
++ net devmode: show stamina for clients
+- can talk to unit while it's exiting building, dialog is thru door then
+- green screen, cannot reproduce
+? using cheats to exit from arena/tournament
+- travel on worldmap is a bit out of sync, clicking instantly after travel will error on server, thinking that team not yet entered location, forward prediction should be easy here
+- traps are out of sync for client/server
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

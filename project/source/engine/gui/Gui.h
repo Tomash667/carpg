@@ -210,7 +210,7 @@ public:
 	void LineBegin();
 	void LineEnd();
 	bool NeedCursor();
-	void DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const Vec3& pos, Rect* text_rect = nullptr);
+	bool DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const Vec3& pos, Rect* text_rect = nullptr);
 	bool To2dPoint(const Vec3& pos, Int2& pt);
 	static bool Intersect(vector<Hitbox>& hitboxes, const Int2& pt, int* index, int* index2 = nullptr);
 	void DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, DWORD color = WHITE);

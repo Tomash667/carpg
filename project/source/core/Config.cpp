@@ -200,7 +200,7 @@ Config::Result Config::Load(cstring filename)
 				if(version < 0 || version > CONFIG_VERSION)
 					t.Throw("Invalid version %d.", version);
 				if(version == 1)
-					t.SetFlags(Tokenizer::F_JOIN_MINUS);
+					t.SetFlags(Tokenizer::F_JOIN_MINUS | Tokenizer::F_UNESCAPE);
 				t.Next();
 			}
 		}
@@ -273,12 +273,10 @@ Config::Result Config::Save(cstring filename)
 
 	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 	{
-		cstring fmt;
 		if(it->value.find_first_of(" \t,./;'[]-=<>?:\"{}!@#$%^&*()_+") != string::npos)
-			fmt = "%s = \"%s\"\n";
+			s = Format("%s = \"%s\"\n", it->name.c_str(), Escape(it->value));
 		else
-			fmt = "%s = %s\n";
-		s = Format(fmt, it->name.c_str(), it->value.c_str());
+			s = Format("%s = %s\n", it->name.c_str(), it->value.c_str());
 		WriteFile(file, s, strlen(s), &tmp, nullptr);
 	}
 

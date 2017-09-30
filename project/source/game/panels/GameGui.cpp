@@ -686,35 +686,36 @@ void GameGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
 
 	// text
 	Rect r;
-	GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, text_color, pos, &r);
-
-	float hpp;
-	if(!unit.IsAlive() && !unit.IsFollower())
-		hpp = -1.f;
-	else
-		hpp = max(unit.GetHpp(), 0.f);
-	DWORD color = COLOR_RGBA(255, 255, 255, alpha);
-
-	if(hpp >= 0.f)
+	if(GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, text_color, pos, &r))
 	{
-		// hp background
-		Rect r2(r.Left(), r.Bottom(), r.Right(), r.Bottom() + 4);
-		GUI.DrawSpriteRect(tMinihp[0], r2, color);
+		float hpp;
+		if(!unit.IsAlive() && !unit.IsFollower())
+			hpp = -1.f;
+		else
+			hpp = max(unit.GetHpp(), 0.f);
+		DWORD color = COLOR_RGBA(255, 255, 255, alpha);
 
-		// hp
-		int sizex = r2.SizeX();
-		r2.Right() = r2.Left() + int(hpp * sizex);
-		Rect r3 = { 0, 0, int(hpp * 64), 4 };
-		GUI.DrawSpriteRectPart(tMinihp[1], r2, r3, color);
-
-		// stamina
-		if(game.devmode)
+		if(hpp >= 0.f)
 		{
-			float stamina = max(unit.GetStaminap(), 0.f);
-			r2 += Int2(0, 4);
-			r3.Right() = int(stamina * 64);
-			r2.Right() = r2.Left() + int(stamina * sizex);
-			GUI.DrawSpriteRectPart(tMinistamina, r2, r3, color);
+			// hp background
+			Rect r2(r.Left(), r.Bottom(), r.Right(), r.Bottom() + 4);
+			GUI.DrawSpriteRect(tMinihp[0], r2, color);
+
+			// hp
+			int sizex = r2.SizeX();
+			r2.Right() = r2.Left() + int(hpp * sizex);
+			Rect r3 = { 0, 0, int(hpp * 64), 4 };
+			GUI.DrawSpriteRectPart(tMinihp[1], r2, r3, color);
+
+			// stamina
+			if(game.devmode && Net::IsLocal())
+			{
+				float stamina = max(unit.GetStaminap(), 0.f);
+				r2 += Int2(0, 4);
+				r3.Right() = int(stamina * 64);
+				r2.Right() = r2.Left() + int(stamina * sizex);
+				GUI.DrawSpriteRectPart(tMinistamina, r2, r3, color);
+			}
 		}
 	}
 }

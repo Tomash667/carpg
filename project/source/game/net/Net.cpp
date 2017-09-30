@@ -1447,7 +1447,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		return false;
 	}
 
-	// human data / mesh
+	// human data
 	if(unit.data->type == UNIT_TYPE::HUMAN)
 	{
 		unit.human_data = new Human;
@@ -1478,7 +1478,6 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 	else
 		unit.human_data = nullptr;
-	unit.CreateMesh(mp_load ? Unit::CREATE_MESH::PRELOAD : Unit::CREATE_MESH::NORMAL);
 
 	// equipped items
 	if(unit.data->type != UNIT_TYPE::ANIMAL)
@@ -1605,6 +1604,9 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		if(!stream.ReadCasted<byte>(unit.ai_mode))
 			return false;
 	}
+
+	// mesh
+	unit.CreateMesh(mp_load ? Unit::CREATE_MESH::PRELOAD : Unit::CREATE_MESH::NORMAL);
 
 	unit.action = A_NONE;
 	unit.weapon_taken = W_NONE;
@@ -4213,8 +4215,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					int result = CanLeaveLocation(*info.u);
-					if(result == 0)
+					CanLeaveLocationResult result = CanLeaveLocation(*info.u);
+					if(result == CanLeaveLocationResult::Yes)
 					{
 						Net::PushChange(NetChange::LEAVE_LOCATION);
 						if(type == WHERE_OUTSIDE)
@@ -4254,7 +4256,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						NetChangePlayer& c = Add1(Net::player_changes);
 						c.type = NetChangePlayer::CANT_LEAVE_LOCATION;
 						c.pc = &player;
-						c.id = result;
+						c.id = (int)result;
 						info.NeedUpdate();
 					}
 				}
@@ -9084,19 +9086,19 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			// can't leave location message
 			case NetChangePlayer::CANT_LEAVE_LOCATION:
 				{
-					byte reason;
-					if(!stream.Read(reason))
+					CanLeaveLocationResult reason;
+					if(!stream.ReadCasted<byte>(reason))
 					{
 						Error("Update single client: Broken CANT_LEAVE_LOCATION.");
 						StreamError();
 					}
-					else if(reason >= 2)
+					else if(reason != CanLeaveLocationResult::InCombat && reason != CanLeaveLocationResult::TeamTooFar)
 					{
-						Error("Update single client: CANT_LEAVE_LOCATION, invalid reason %u.", reason);
+						Error("Update single client: CANT_LEAVE_LOCATION, invalid reason %u.", (byte)reason);
 						StreamError();
 					}
 					else
-						AddGameMsg3(reason == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+						AddGameMsg3(reason == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 				}
 				break;
 			// force player to look at unit

@@ -1528,7 +1528,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 		o->scale = 1;
 		o->base = table;
 		ctx.objects->push_back(o);
-		SpawnObjectExtras(ctx, stool, pos, rot, o, nullptr);
+		SpawnObjectExtras(ctx, table, pos, rot, o, nullptr);
 
 		// stools
 		int count = Random(2, 4);
@@ -2315,18 +2315,18 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					assert(inside);
 
 					inside->arena1.v1.x = pos.x - pt.size.x;
-					inside->arena1.v1.y = pos.z - pt.size.y;
+					inside->arena1.v1.y = pos.z - pt.size.z;
 					inside->arena1.v2.x = pos.x + pt.size.x;
-					inside->arena1.v2.y = pos.z + pt.size.y;
+					inside->arena1.v2.y = pos.z + pt.size.z;
 				}
 				else if(token == "arena2")
 				{
 					assert(inside);
 
 					inside->arena2.v1.x = pos.x - pt.size.x;
-					inside->arena2.v1.y = pos.z - pt.size.y;
+					inside->arena2.v1.y = pos.z - pt.size.z;
 					inside->arena2.v2.x = pos.x + pt.size.x;
-					inside->arena2.v2.y = pos.z + pt.size.y;
+					inside->arena2.v2.y = pos.z + pt.size.z;
 				}
 				else if(token == "viewer")
 				{

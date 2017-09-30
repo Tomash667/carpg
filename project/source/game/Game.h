@@ -1100,7 +1100,7 @@ public:
 #define DMG_MAGICAL (1<<1)
 	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
 	void UpdateUnits(LevelContext& ctx, float dt);
-	void UpdateUnitInventory(Unit& unit);
+	void UpdateUnitInventory(Unit& unit, bool notify = true);
 	bool FindPath(LevelContext& ctx, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors = true, bool wedrowanie = false, vector<Int2>* blocked = nullptr);
 	Int2 RandomNearTile(const Int2& tile);
 	bool CanLoadGame() const;
@@ -1296,8 +1296,13 @@ public:
 	float PlayerAngleY();
 	Vec3 GetExitPos(Unit& u, bool force_border = false);
 	void AttackReaction(Unit& attacked, Unit& attacker);
-	// czy mo¿na opuœciæ lokacjê (0-tak, 1-dru¿yna za daleko, 2-wrogowie w pobli¿u)
-	int CanLeaveLocation(Unit& unit);
+	enum class CanLeaveLocationResult
+	{
+		Yes,
+		TeamTooFar,
+		InCombat
+	};
+	CanLeaveLocationResult CanLeaveLocation(Unit& unit);
 	void GenerateTraps();
 	void RegenerateTraps();
 	void SpawnHeroesInsideDungeon();

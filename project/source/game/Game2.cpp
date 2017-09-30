@@ -6135,14 +6135,14 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								{
 									if(Net::IsLocal())
 									{
-										int w = CanLeaveLocation(unit);
-										if(w == 0)
+										auto result = CanLeaveLocation(unit);
+										if(result == CanLeaveLocationResult::Yes)
 										{
 											allow_exit = true;
 											SetExitWorldDir();
 										}
 										else
-											AddGameMsg3(w == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+											AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 									}
 									else
 										Net_LeaveLocation(WHERE_OUTSIDE);
@@ -6157,8 +6157,8 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						{
 							if(Net::IsLocal())
 							{
-								int w = CanLeaveLocation(unit);
-								if(w == 0)
+								auto result = CanLeaveLocation(unit);
+								if(result == CanLeaveLocationResult::Yes)
 								{
 									allow_exit = true;
 									// opuszczanie otwartego terenu (las/droga/obóz)
@@ -6177,7 +6177,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 										world_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit.pos.x - 33.f) / (256.f - 66.f));
 								}
 								else
-									AddGameMsg3(w == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+									AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 							}
 							else
 								Net_LeaveLocation(WHERE_OUTSIDE);
@@ -6302,8 +6302,8 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 				{
 					if(Net::IsLocal())
 					{
-						int w = CanLeaveLocation(unit);
-						if(w == 0)
+						auto result = CanLeaveLocation(unit);
+						if(result == CanLeaveLocationResult::Yes)
 						{
 							fallback_co = FALLBACK::CHANGE_LEVEL;
 							fallback_t = -1.f;
@@ -6314,7 +6314,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								Net::PushChange(NetChange::LEAVE_LOCATION);
 						}
 						else
-							AddGameMsg3(w == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+							AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 					}
 					else
 						Net_LeaveLocation(WHERE_LEVEL_UP);
@@ -6355,8 +6355,8 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 				{
 					if(Net::IsLocal())
 					{
-						int w = CanLeaveLocation(unit);
-						if(w == 0)
+						auto result = CanLeaveLocation(unit);
+						if(result == CanLeaveLocationResult::Yes)
 						{
 							fallback_co = FALLBACK::CHANGE_LEVEL;
 							fallback_t = -1.f;
@@ -6367,7 +6367,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 								Net::PushChange(NetChange::LEAVE_LOCATION);
 						}
 						else
-							AddGameMsg3(w == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+							AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 					}
 					else
 						Net_LeaveLocation(WHERE_LEVEL_DOWN);
@@ -6398,8 +6398,8 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 					{
 						if(Net::IsLocal())
 						{
-							int w = CanLeaveLocation(unit);
-							if(w == 0)
+							auto result = CanLeaveLocation(unit);
+							if(result == CanLeaveLocationResult::Yes)
 							{
 								fallback_co = FALLBACK::USE_PORTAL;
 								fallback_t = -1.f;
@@ -6410,7 +6410,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 									Net::PushChange(NetChange::LEAVE_LOCATION);
 							}
 							else
-								AddGameMsg3(w == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+								AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 						}
 						else
 							Net_LeaveLocation(WHERE_PORTAL + index);
@@ -8635,18 +8635,15 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		case A_ANIMATION2:
 			{
 				bool allow_move = true;
-				if(Net::IsOnline())
+				if(Net::IsServer())
 				{
-					if(Net::IsServer())
-					{
-						if(u.IsPlayer() && &u != pc->unit)
-							allow_move = false;
-					}
-					else
-					{
-						if(!u.IsPlayer() || &u != pc->unit)
-							allow_move = false;
-					}
+					if(u.IsPlayer() && &u != pc->unit)
+						allow_move = false;
+				}
+				else if(Net::IsClient())
+				{
+					if(!u.IsPlayer() || &u != pc->unit)
+						allow_move = false;
 				}
 				if(u.animation_state == AS_ANIMATION2_MOVE_TO_ENDPOINT)
 				{
@@ -8665,6 +8662,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						}
 						u.usable = nullptr;
 						u.action = A_NONE;
+						u.changed = true;
 						break;
 					}
 
@@ -8686,6 +8684,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							else
 								u.rot = Clip(u.rot + Sign(arc) * rot_speed);
 						}
+
+						u.changed = true;
 					}
 				}
 				else
@@ -8781,6 +8781,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							if(allow_move)
 							{
 								u.visual_pos = u.pos = Vec3::Lerp(u.target_pos, u.target_pos2, u.timer * 2);
+								u.changed = true;
 								global_col.clear();
 								float my_radius = u.GetUnitRadius();
 								bool ok = true;
@@ -8805,6 +8806,8 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			}
 			break;
 		case A_POSITION:
+			if(Net::IsClient() && u.player != pc)
+				break;
 			u.timer += dt;
 			if(u.animation_state == 1)
 			{
@@ -8842,6 +8845,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			}
 			else
 				u.visual_pos = u.pos = Vec3::Lerp(u.target_pos2, u.target_pos, u.timer * 2);
+			u.changed = true;
 			break;
 		case A_PICKUP:
 			if(u.mesh_inst->frame_end_info)
@@ -9017,7 +9021,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 }
 
 // dzia³a tylko dla cz³onków dru¿yny!
-void Game::UpdateUnitInventory(Unit& u)
+void Game::UpdateUnitInventory(Unit& u, bool notify)
 {
 	bool changes = false;
 	int index = 0;
@@ -9148,7 +9152,7 @@ void Game::UpdateUnitInventory(Unit& u)
 		RemoveNullItems(u.items);
 		SortItems(u.items);
 
-		if(Net::IsOnline() && players > 1)
+		if(Net::IsOnline() && players > 1 && notify)
 		{
 			for(int i = 0; i < SLOT_MAX; ++i)
 			{
@@ -13810,6 +13814,9 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 	u.timer = 0.f;
 	u.used_item = nullptr;
 
+	if(Net::IsClient())
+		return;
+
 	const float unit_radius = u.GetUnitRadius();
 
 	global_col.clear();
@@ -16706,10 +16713,10 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 	}
 }
 
-int Game::CanLeaveLocation(Unit& unit)
+Game::CanLeaveLocationResult Game::CanLeaveLocation(Unit& unit)
 {
 	if(secret_state == SECRET_FIGHT)
-		return false;
+		return CanLeaveLocationResult::InCombat;
 
 	if(city_ctx)
 	{
@@ -16720,19 +16727,19 @@ int Game::CanLeaveLocation(Unit& unit)
 				continue;
 
 			if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
-				return 1;
+				return CanLeaveLocationResult::TeamTooFar;
 
 			if(u.IsPlayer())
 			{
 				if(u.in_building != -1 || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
-					return 1;
+					return CanLeaveLocationResult::TeamTooFar;
 			}
 
 			for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
 			{
 				Unit& u2 = **it2;
 				if(&u != &u2 && u2.IsStanding() && IsEnemy(u, u2) && u2.IsAI() && u2.ai->in_combat && Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE.x && CanSee(u, u2))
-					return 2;
+					return CanLeaveLocationResult::InCombat;
 			}
 		}
 	}
@@ -16745,18 +16752,18 @@ int Game::CanLeaveLocation(Unit& unit)
 				continue;
 
 			if(u.busy != Unit::Busy_No || Vec3::Distance2d(unit.pos, u.pos) > 8.f)
-				return 1;
+				return CanLeaveLocationResult::TeamTooFar;
 
 			for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
 			{
 				Unit& u2 = **it2;
 				if(&u != &u2 && u2.IsStanding() && IsEnemy(u, u2) && u2.IsAI() && u2.ai->in_combat && Vec3::Distance2d(u.pos, u2.pos) < ALERT_RANGE.x && CanSee(u, u2))
-					return 2;
+					return CanLeaveLocationResult::InCombat;
 			}
 		}
 	}
 
-	return 0;
+	return CanLeaveLocationResult::Yes;
 }
 
 void Game::GenerateTraps()
@@ -22154,6 +22161,13 @@ void Game::OnEnterLevelOrLocation()
 	ClearGui(false);
 	lights_dt = 1.f;
 	pc_data.autowalk = false;
+	fallback_t = -0.5f;
+	fallback_co = FALLBACK::NONE;
+	if(Net::IsLocal())
+	{
+		for(auto unit : Team.members)
+			unit->frozen = FROZEN::NO;
+	}
 }
 
 void Game::StartTrade(InventoryMode mode, Unit& unit)

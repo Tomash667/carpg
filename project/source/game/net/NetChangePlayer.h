@@ -35,7 +35,7 @@ struct NetChangePlayer
 		START_ARENA_COMBAT, // start of arena combat []
 		EXIT_ARENA, // exit from arena []
 		NO_PVP, // player refused to pvp [byte(id)-player id]
-		CANT_LEAVE_LOCATION, // can't leave location message [byte(id)-reason (0-not in combat, 1-geather team)]
+		CANT_LEAVE_LOCATION, // can't leave location message [byte(id)-reason (CanLeaveLocationResult)]
 		LOOK_AT, // force player to look at unit [int(netid)-unit or null]
 		END_FALLBACK, // end of fallback []
 		REST, // response to rest in inn [byte(id)-days]
