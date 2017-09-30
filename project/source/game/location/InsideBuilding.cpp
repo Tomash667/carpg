@@ -10,6 +10,7 @@
 //=================================================================================================
 InsideBuilding::~InsideBuilding()
 {
+	DeleteElements(objects);
 	DeleteElements(units);
 	DeleteElements(doors);
 	DeleteElements(items);
@@ -67,8 +68,8 @@ void InsideBuilding::Save(HANDLE file, bool local)
 
 	ile = objects.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Object>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
-		it->Save(file);
+	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
+		(*it)->Save(file);
 
 	ile = items.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
@@ -177,8 +178,11 @@ void InsideBuilding::Load(HANDLE file, bool local)
 
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	objects.resize(ile);
-	for(vector<Object>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
-		it->Load(file);
+	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
+	{
+		*it = new Object;
+		(*it)->Load(file);
+	}
 
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	items.resize(ile);

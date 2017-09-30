@@ -566,7 +566,14 @@ void Game::CleanScene()
 void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outside)
 {
 	PROFILER_BLOCK("ListDrawObjects");
+
 	draw_batch.Clear();
+	ClearGrass();
+	if(ctx.type == LevelContext::Outside)
+	{
+		ListQuadtreeNodes();
+		ListGrass();
+	}
 
 	// teren
 	if(ctx.type == LevelContext::Outside && IS_SET(draw_flags, DF_TERRAIN))
@@ -596,111 +603,28 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	// obiekty
 	if(IS_SET(draw_flags, DF_OBJECTS))
 	{
-		for(vector<Object>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
+		if(ctx.type == LevelContext::Outside)
 		{
-			const Object& o = *it;
-			if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
+			for(auto part : level_parts)
 			{
-				SceneNode* node = node_pool.Get();
-				if(!o.IsBillboard())
+				for(auto& obj : part->objects)
 				{
-					node->billboard = false;
-					node->mat = Matrix::Scale(o.scale)
-						* Matrix::Rotation(o.rot)
-						* Matrix::Translation(o.pos);
-				}
-				else
-				{
-					node->billboard = true;
-					node->mat = Matrix::CreateLookAt(o.pos, cam.center);
-				}
-				node->mesh = o.mesh;
-				int alpha = o.RequireAlphaTest();
-				if(alpha == -1)
-					node->flags = 0;
-				else if(alpha == 0)
-					node->flags = SceneNode::F_ALPHA_TEST;
-				else
-					node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
-				node->tex_override = nullptr;
-				node->tint = Vec4(1, 1, 1, 1);
-				if(!IS_SET(node->mesh->head.flags, Mesh::F_SPLIT))
-				{
-					if(!outside)
-						node->lights = GatherDrawBatchLights(ctx, node, o.pos.x, o.pos.z, o.GetRadius());
-					AddOrSplitSceneNode(node);
-				}
-				else
-				{
-					const Mesh& mesh = node->GetMesh();
-					if(IS_SET(mesh.head.flags, Mesh::F_TANGENTS))
-						node->flags |= SceneNode::F_BINORMALS;
-
-					//#define DEBUG_SPLITS
-#ifdef DEBUG_SPLITS
-					static int req = 33;
-					if(Key.PressedRelease('8'))
-					{
-						++req;
-						if(req == mesh.head.n_subs)
-							req = 0;
-					}
-#endif
-
-					// for simplicity original node in unused and freed at end
-#ifndef DEBUG_SPLITS
-					for(int i = 0; i < mesh.head.n_subs; ++i)
-#else
-					int i = req;
-#endif
-					{
-						Vec3 pos = Vec3::Transform(mesh.splits[i].pos, node->mat);
-						const float radius = mesh.splits[i].radius*o.scale;
-						if(frustum.SphereToFrustum(pos, radius))
-						{
-							SceneNode* node2 = node_pool.Get();
-							node2->billboard = false;
-							node2->mesh_inst = node->mesh_inst;
-							node2->mat = node->mat;
-							node2->flags = node->flags;
-							node2->parent_mesh_inst = nullptr;
-							node2->subs = SPLIT_INDEX | i;
-							node2->tint = node->tint;
-							node2->lights = node->lights;
-							node2->tex_override = node->tex_override;
-							if(cl_normalmap && mesh.subs[i].tex_normal)
-								node2->flags |= SceneNode::F_NORMAL_MAP;
-							if(cl_specularmap && mesh.subs[i].tex_specular)
-								node2->flags |= SceneNode::F_SPECULAR_MAP;
-							if(!outside)
-								node2->lights = GatherDrawBatchLights(ctx, node2, pos.x, pos.z, radius, i);
-							draw_batch.nodes.push_back(node2);
-						}
-
-#ifdef DEBUG_SPLITS
-						DebugSceneNode* debug = debug_node_pool.Get();
-						debug->type = DebugSceneNode::Sphere;
-						debug->group = DebugSceneNode::Physic;
-						D3DXMatrixScaling(&m1, radius * 2);
-						D3DXMatrixTranslation(&m2, pos);
-						D3DXMatrixMultiply(&m3, &m1, &m2);
-						D3DXMatrixMultiply(&debug->mat, &m3, &cam.matViewProj);
-						draw_batch.debug_nodes.push_back(debug);
-#endif
-					}
-
-					node_pool.Free(node);
+					const Object& o = *obj.obj;
+					if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
+						AddObjectToDrawBatch(ctx, o, frustum);
 				}
 			}
 		}
-
-		if(outside)
-			ListGrass();
 		else
-			ClearGrass();
+		{
+			for(vector<Object*>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
+			{
+				const Object& o = **it;
+				if(frustum.SphereToFrustum(o.pos, o.GetRadius()))
+					AddObjectToDrawBatch(ctx, o, frustum);
+			}
+		}
 	}
-	else
-		ClearGrass();
 
 	// przedmioty
 	if(IS_SET(draw_flags, DF_ITEMS))
@@ -1666,6 +1590,102 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 		debug_node->type = DebugSceneNode::Box;
 		debug_node->group = DebugSceneNode::Hitbox;
 		draw_batch.debug_nodes.push_back(debug_node);
+	}
+}
+
+//=================================================================================================
+void Game::AddObjectToDrawBatch(LevelContext& ctx, const Object& o, FrustumPlanes& frustum)
+{
+	SceneNode* node = node_pool.Get();
+	if(!o.IsBillboard())
+	{
+		node->billboard = false;
+		node->mat = Matrix::Scale(o.scale)
+			* Matrix::Rotation(o.rot)
+			* Matrix::Translation(o.pos);
+	}
+	else
+	{
+		node->billboard = true;
+		node->mat = Matrix::CreateLookAt(o.pos, cam.center);
+	}
+
+	node->mesh = o.mesh;
+	int alpha = o.RequireAlphaTest();
+	if(alpha == -1)
+		node->flags = 0;
+	else if(alpha == 0)
+		node->flags = SceneNode::F_ALPHA_TEST;
+	else
+		node->flags = SceneNode::F_ALPHA_TEST | SceneNode::F_NO_CULLING;
+	node->tex_override = nullptr;
+	node->tint = Vec4(1, 1, 1, 1);
+	if(!IS_SET(node->mesh->head.flags, Mesh::F_SPLIT))
+	{
+		if(ctx.type != LevelContext::Outside)
+			node->lights = GatherDrawBatchLights(ctx, node, o.pos.x, o.pos.z, o.GetRadius());
+		AddOrSplitSceneNode(node);
+	}
+	else
+	{
+		const Mesh& mesh = node->GetMesh();
+		if(IS_SET(mesh.head.flags, Mesh::F_TANGENTS))
+			node->flags |= SceneNode::F_BINORMALS;
+
+		//#define DEBUG_SPLITS
+#ifdef DEBUG_SPLITS
+		static int req = 33;
+		if(Key.PressedRelease('8'))
+		{
+			++req;
+			if(req == mesh.head.n_subs)
+				req = 0;
+		}
+#endif
+
+		// for simplicity original node in unused and freed at end
+#ifndef DEBUG_SPLITS
+		for(int i = 0; i < mesh.head.n_subs; ++i)
+#else
+		int i = req;
+#endif
+		{
+			Vec3 pos = Vec3::Transform(mesh.splits[i].pos, node->mat);
+			const float radius = mesh.splits[i].radius*o.scale;
+			if(frustum.SphereToFrustum(pos, radius))
+			{
+				SceneNode* node2 = node_pool.Get();
+				node2->billboard = false;
+				node2->mesh_inst = node->mesh_inst;
+				node2->mat = node->mat;
+				node2->flags = node->flags;
+				node2->parent_mesh_inst = nullptr;
+				node2->subs = SPLIT_INDEX | i;
+				node2->tint = node->tint;
+				node2->lights = node->lights;
+				node2->tex_override = node->tex_override;
+				if(cl_normalmap && mesh.subs[i].tex_normal)
+					node2->flags |= SceneNode::F_NORMAL_MAP;
+				if(cl_specularmap && mesh.subs[i].tex_specular)
+					node2->flags |= SceneNode::F_SPECULAR_MAP;
+				if(ctx.type != LevelContext::Outside)
+					node2->lights = GatherDrawBatchLights(ctx, node2, pos.x, pos.z, radius, i);
+				draw_batch.nodes.push_back(node2);
+			}
+
+#ifdef DEBUG_SPLITS
+			DebugSceneNode* debug = debug_node_pool.Get();
+			debug->type = DebugSceneNode::Sphere;
+			debug->group = DebugSceneNode::Physic;
+			D3DXMatrixScaling(&m1, radius * 2);
+			D3DXMatrixTranslation(&m2, pos);
+			D3DXMatrixMultiply(&m3, &m1, &m2);
+			D3DXMatrixMultiply(&debug->mat, &m3, &cam.matViewProj);
+			draw_batch.debug_nodes.push_back(debug);
+#endif
+		}
+
+		node_pool.Free(node);
 	}
 }
 

@@ -778,13 +778,14 @@ void Game::LoadGame(HANDLE file)
 				InsideLocationLevel* lvl = inside->GetLastLevelData();
 				if(lvl && !lvl->rooms.empty() && lvl->rooms[0].target == RoomTarget::Treasury)
 				{
-					for(vector<Object>::iterator obj_it = lvl->objects.begin(), obj_end = lvl->objects.end(); obj_it != obj_end; ++obj_it)
+					for(vector<Object*>::iterator obj_it = lvl->objects.begin(), obj_end = lvl->objects.end(); obj_it != obj_end; ++obj_it)
 					{
-						if(obj_it->mesh == aDoorWall)
+						Object& obj = **obj_it;
+						if(obj.mesh == aDoorWall)
 						{
-							Int2 pt = pos_to_pt(obj_it->pos);
+							Int2 pt = pos_to_pt(obj.pos);
 							if(IS_SET(lvl->map[pt.x + pt.y*lvl->w].flags, Pole::F_DRUGA_TEKSTURA))
-								obj_it->mesh = aDoorWall2;
+								obj.mesh = aDoorWall2;
 						}
 					}
 				}
@@ -1231,14 +1232,15 @@ void Game::LoadGame(HANDLE file)
 			LevelContext& ctx = Game::Get().GetContext(*ai.unit);
 			Object* ptr = nullptr;
 			float dist, best_dist;
-			for(vector<Object>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
+			for(vector<Object*>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
 			{
-				if(it->base == tarcza_s)
+				Object& obj = **it;
+				if(obj.base == tarcza_s)
 				{
-					dist = Vec3::Distance(it->pos, ai.idle_data.pos);
+					dist = Vec3::Distance(obj.pos, ai.idle_data.pos);
 					if(!ptr || dist < best_dist)
 					{
-						ptr = &*it;
+						ptr = &obj;
 						best_dist = dist;
 					}
 				}
@@ -1415,6 +1417,9 @@ void Game::LoadGame(HANDLE file)
 		else
 			enter_from = ENTER_FROM_OUTSIDE;
 	}
+
+	if(location->outside)
+		CalculateQuadtree();
 
 	// load music
 	LoadingStep(txLoadMusic);

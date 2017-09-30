@@ -12,7 +12,7 @@
 struct InsideBuilding final : public ILevel, public LevelArea
 {
 	vector<Door*> doors;
-	vector<Object> objects;
+	vector<Object*> objects;
 	vector<Usable*> usables;
 	vector<Blood> bloods;
 	vector<Light> lights;

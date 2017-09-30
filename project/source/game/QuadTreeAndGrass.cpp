@@ -4,26 +4,32 @@
 #include "Terrain.h"
 #include "LocationHelper.h"
 
-void QuadTree::Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int splits, float margin)
+enum QuadPartType
+{
+	Q_LEFT_BOTTOM,
+	Q_RIGHT_BOTTOM,
+	Q_LEFT_TOP,
+	Q_RIGHT_TOP
+};
+
+void QuadTree::Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int splits)
 {
 	if(node)
 	{
-		node->rect = QuadRect(box);
-		node->box = Box2d(box, margin);
+		node->box = box;
 		node->grid_box = grid_box;
 		if(splits > 0)
 		{
 			node->leaf = false;
 			--splits;
-			//margin /= 2;
-			node->childs[0] = get();
-			Init(node->childs[0], box.LeftBottomPart(), grid_box.LeftBottomPart(), splits, margin);
-			node->childs[1] = get();
-			Init(node->childs[1], box.RightBottomPart(), grid_box.RightBottomPart(), splits, margin);
-			node->childs[2] = get();
-			Init(node->childs[2], box.LeftTopPart(), grid_box.LeftTopPart(), splits, margin);
-			node->childs[3] = get();
-			Init(node->childs[3], box.RightTopPart(), grid_box.RightTopPart(), splits, margin);
+			node->childs[Q_LEFT_BOTTOM] = get();
+			Init(node->childs[Q_LEFT_BOTTOM], box.LeftBottomPart(), grid_box.LeftBottomPart(), splits);
+			node->childs[Q_RIGHT_BOTTOM] = get();
+			Init(node->childs[Q_RIGHT_BOTTOM], box.RightBottomPart(), grid_box.RightBottomPart(), splits);
+			node->childs[Q_LEFT_TOP] = get();
+			Init(node->childs[Q_LEFT_TOP], box.LeftTopPart(), grid_box.LeftTopPart(), splits);
+			node->childs[Q_RIGHT_TOP] = get();
+			Init(node->childs[Q_RIGHT_TOP], box.RightTopPart(), grid_box.RightTopPart(), splits);
 		}
 		else
 		{
@@ -35,7 +41,7 @@ void QuadTree::Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int 
 	else
 	{
 		top = get();
-		Init(top, box, grid_box, splits, margin);
+		Init(top, box, grid_box, splits);
 	}
 }
 
@@ -111,27 +117,35 @@ void QuadTree::Clear(Nodes& nodes)
 QuadNode* QuadTree::GetNode(const Vec2& pos, float radius)
 {
 	QuadNode* node = top;
-	const float radius_x2 = radius * 2;
+	if(!node->box.IsFullyInside(pos, radius))
+		return top;
 
-	if(!CircleToRectangle(pos.x, pos.y, radius, node->rect.x, node->rect.y, node->rect.w, node->rect.h))
-		return nullptr;
-
-	while(true)
+	while(!node->leaf)
 	{
-		if(radius_x2 < node->rect.w && !node->leaf)
+		Vec2 midpoint = node->box.Midpoint();
+		int index;
+		if(pos.x >= midpoint.x)
 		{
-			for(int i = 0; i < 4; ++i)
-			{
-				if(CircleToRectangle(pos.x, pos.y, radius, node->childs[i]->rect.x, node->childs[i]->rect.y, node->childs[i]->rect.w, node->childs[i]->rect.h))
-				{
-					node = node->childs[i];
-					break;
-				}
-			}
+			if(pos.y >= midpoint.y)
+				index = Q_RIGHT_BOTTOM;
+			else
+				index = Q_RIGHT_TOP;
 		}
 		else
-			return node;
+		{
+			if(pos.y >= midpoint.y)
+				index = Q_LEFT_BOTTOM;
+			else
+				index = Q_LEFT_TOP;
+		}
+
+		if(node->childs[index]->box.IsFullyInside(pos, radius))
+			node = node->childs[index];
+		else
+			break;
 	}
+
+	return node;
 }
 
 ObjectPool<LevelPart> level_parts_pool;
@@ -146,7 +160,7 @@ QuadNode* GetLevelPart()
 void Game::InitQuadTree()
 {
 	quadtree.get = GetLevelPart;
-	quadtree.Init(nullptr, Box2d(0, 0, 256, 256), Rect(0, 0, 128, 128), 5, 2.f);
+	quadtree.Init(nullptr, Box2d(0, 0, 256, 256), Rect(0, 0, 128, 128), 5);
 }
 
 void Game::DrawGrass()
@@ -233,23 +247,23 @@ void Game::DrawGrass()
 	V(device->SetStreamSourceFreq(1, 1));
 }
 
-extern Matrix m1, m2, m3, m4;
-
 void Game::ListGrass()
 {
-	ClearGrass();
-
 	if(grass_range < 0.5f)
 		return;
 
-	quadtree.ListLeafs(cam.frustum2, (QuadTree::Nodes&)level_parts);
-
+	PROFILER_BLOCK("ListGrass");
 	OutsideLocation* outside = (OutsideLocation*)location;
 	Vec3 pos, angle;
+	Vec2 from = cam.from.XZ();
+	float in_dist = grass_range * grass_range;
 
 	for(LevelParts::iterator it = level_parts.begin(), end = level_parts.end(); it != end; ++it)
 	{
 		LevelPart& part = **it;
+		if(!part.leaf || Vec2::DistanceSquared(part.box.Midpoint(), from) > in_dist)
+			continue;
+
 		if(!part.generated)
 		{
 			int minx = max(1, part.grid_box.p1.x),
@@ -346,6 +360,7 @@ void Game::ClearQuadtree()
 		LevelPart& part = **it;
 		part.grass.clear();
 		part.grass2.clear();
+		part.objects.clear();
 	}
 
 	level_parts_pool.Free(level_parts);
@@ -358,4 +373,22 @@ void Game::ClearGrass()
 	grass_patches[1].clear();
 	grass_count[0] = 0;
 	grass_count[1] = 0;
+}
+
+void Game::CalculateQuadtree()
+{
+	if(local_ctx.type != LevelContext::Outside)
+		return;
+	
+	for(Object* obj : *local_ctx.objects)
+	{
+		auto node = (LevelPart*)quadtree.GetNode(obj->pos.XZ(), obj->GetRadius());
+		node->objects.push_back(QuadObj(obj));
+	}
+}
+
+void Game::ListQuadtreeNodes()
+{
+	PROFILER_BLOCK("ListQuadtreeNodes");
+	quadtree.List(cam.frustum, (QuadTree::Nodes&)level_parts);
 }

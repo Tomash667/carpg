@@ -303,12 +303,12 @@ inline bool Rect::IsInside(const Int2& pt) const
 
 inline Rect Rect::LeftBottomPart() const
 {
-	return Rect(p1.x, p1.y, p1.x + (p2.x - p1.x) / 2, p1.y + (p2.y - p1.y) / 2);
+	return Rect(Left(), MidY(), MidX(), Bottom());
 }
 
 inline Rect Rect::LeftTopPart() const
 {
-	return Rect(p1.x, p1.y + (p2.y - p1.y) / 2, p1.x + (p2.x - p1.x) / 2, p2.y);
+	return Rect(Left(), Top(), MidX(), MidY());
 }
 
 inline Int2 Rect::Random() const
@@ -330,12 +330,12 @@ inline void Rect::Resize(const Rect& r)
 
 inline Rect Rect::RightBottomPart() const
 {
-	return Rect(p1.x + (p2.x - p1.x) / 2, p1.y, p2.x, p1.y + (p2.y - p1.y) / 2);
+	return Rect(MidX(), MidY(), Right(), Bottom());
 }
 
 inline Rect Rect::RightTopPart() const
 {
-	return Rect(p1.x + (p2.x - p1.x) / 2, p1.y + (p2.y - p1.y) / 2, p2.x, p2.y);
+	return Rect(MidX(), Top(), Right(), MidY());
 }
 
 inline void Rect::Set(const Int2& pos, const Int2& size)

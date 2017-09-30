@@ -30,6 +30,7 @@ OutsideLocation::~OutsideLocation()
 {
 	delete[] tiles;
 	delete[] h;
+	DeleteElements(objects);
 	DeleteElements(units);
 	DeleteElements(chests);
 	DeleteElements(usables);
@@ -74,8 +75,8 @@ void OutsideLocation::Save(HANDLE file, bool local)
 		// obiekty
 		ile = objects.size();
 		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Object>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
-			it->Save(file);
+		for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
+			(*it)->Save(file);
 
 		// skrzynie
 		ile = chests.size();
@@ -131,8 +132,11 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 		// obiekty
 		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		objects.resize(ile);
-		for(vector<Object>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
-			it->Load(file);
+		for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
+		{
+			*it = new Object;
+			(*it)->Load(file);
+		}
 
 		// skrzynie
 		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);

@@ -462,6 +462,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void CleanScene();
 	void ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool outside, Unit& u);
+	void AddObjectToDrawBatch(LevelContext& ctx, const Object& o, FrustumPlanes& frustum);
 	void ListAreas(LevelContext& ctx);
 	void PrepareAreaPath();
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot, bool outside);
@@ -492,7 +493,9 @@ struct Game final : public Engine, public UnitEventHandler
 	void ClearQuadtree();
 	void ClearGrass();
 	void VerifyObjects();
-	void VerifyObjects(vector<Object>& objects, int& errors);
+	void VerifyObjects(vector<Object*>& objects, int& errors);
+	void CalculateQuadtree();
+	void ListQuadtreeNodes();
 
 	// profiler
 	int profiler_mode;

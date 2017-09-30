@@ -612,16 +612,8 @@ void Game::UpdateAi(float dt)
 							if(IS_SET(u.data->flags2, F2_XAR))
 							{
 								// szukaj o³tarza
-								BaseObject* o = BaseObject::Get("bloody_altar");
-								Object* obj = nullptr;
-								for(vector<Object>::iterator it2 = local_ctx.objects->begin(), end2 = local_ctx.objects->end(); it2 != end2; ++it2)
-								{
-									if(it2->base == o)
-									{
-										obj = &*it2;
-										break;
-									}
-								}
+								BaseObject* base_obj = BaseObject::Get("bloody_altar");
+								Object* obj = local_ctx.FindObject(base_obj);
 
 								if(obj)
 								{
@@ -866,10 +858,11 @@ void Game::UpdateAi(float dt)
 											static vector<Object*> do_cw;
 											BaseObject* manekin = BaseObject::Get("melee_target"),
 												*tarcza = BaseObject::Get("bow_target");
-											for(vector<Object>::iterator it2 = ctx.objects->begin(), end2 = ctx.objects->end(); it2 != end2; ++it2)
+											for(vector<Object*>::iterator it2 = ctx.objects->begin(), end2 = ctx.objects->end(); it2 != end2; ++it2)
 											{
-												if((it2->base == manekin || (it2->base == tarcza && u.HaveBow())) && Vec3::Distance(it2->pos, u.pos) < 10.f)
-													do_cw.push_back(&*it2);
+												Object& obj = **it2;
+												if((obj.base == manekin || (obj.base == tarcza && u.HaveBow())) && Vec3::Distance(obj.pos, u.pos) < 10.f)
+													do_cw.push_back(&obj);
 											}
 											if(!do_cw.empty())
 											{
