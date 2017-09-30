@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.6 (2017-10-??):
+Wersja 0.6 (2017-10-01):
 + mo¿liwoœæ czytania ksi¹¿ek
 + u¿ywalna biblioteczka
 + obracanie przedmiotów w ekwipunku

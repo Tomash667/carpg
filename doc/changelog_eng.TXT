@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.6 (2017-10-??):
+Version 0.6 (2017-10-01):
 + readable books
 + usable bookshelf
 + items rotation in inventory

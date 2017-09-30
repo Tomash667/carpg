@@ -41,7 +41,7 @@
 #include "Action.h"
 #include "ItemContainer.h"
 
-const int SAVE_VERSION = V_CURRENT;
+const int SAVE_VERSION = V_0_6;
 int LOAD_VERSION;
 const int MIN_SUPPORT_LOAD_VERSION = V_0_2_5;
 

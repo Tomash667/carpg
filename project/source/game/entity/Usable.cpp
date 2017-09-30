@@ -52,10 +52,10 @@ void Usable::Load(HANDLE file, bool local)
 		ReadFile(file, &variant, sizeof(variant), &tmp, nullptr);
 	else
 		variant = -1;
-	if(LOAD_VERSION >= V_CURRENT && IS_SET(GetBase()->flags, BaseUsable::CONTAINER))
+	if(LOAD_VERSION >= V_0_6 && IS_SET(GetBase()->flags, BaseUsable::CONTAINER))
 	{
 		container = new ItemContainer;
-		if(LOAD_VERSION >= V_CURRENT)
+		if(LOAD_VERSION >= V_0_6)
 			container->Load(file);
 		else
 		{
