@@ -14,7 +14,6 @@ info = "Informacje"
 website = "Strona www"
 quit = "Wyjœcie"
 infoText = "CARPG\nWersja: %s\nData: %s\nAutorzy: Tomashu, Leinnan i inni\nWiêcej informacji w pliku readme.txt."
-url = "http://carpg.pl"
 newerVersion = "Masz nowsz¹ wersjê ni¿ dostêpna."
 noNewVersion = "Brak nowej wersji CaRpg."
 checkVersionError = "B³¹d sprawdzania wersji CaRpg (%d:%u)."
@@ -25,7 +24,6 @@ newVersionDialog = "Dostêpna jest nowa wersja CaRpg.\nAktualna: %s\nDostêpna: %s
 download = "Pobierz"
 skip = "Pomiñ"
 version = "Wersja: %s"
-versionUrl = "http://carpg.pl/last"
 haveErrors = "Wyst¹pi³y %u b³êdy oraz %u ostrze¿enia podczas wczytywania gry. SprawdŸ log w celu poznania szczegó³ów."
 
 // menu

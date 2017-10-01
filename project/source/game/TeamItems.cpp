@@ -346,10 +346,11 @@ void Game::UpdateTeamItemShares()
 		if(state == 1)
 		{
 			// start dialog
-			DialogContext& ctx = *(tsi.from->IsPlayer() ? tsi.from : Team.leader)->player->dialog_ctx;
+			auto player_to_ask = (tsi.from->IsPlayer() ? tsi.from : Team.leader)->player;
+			DialogContext& ctx = *player_to_ask->dialog_ctx;
 			ctx.team_share_id = team_share_id;
 			ctx.team_share_item = tsi.from->items[tsi.index].item;
-			StartDialog2(tsi.from->player, tsi.to, dialog);
+			StartDialog2(player_to_ask, tsi.to, dialog);
 		}
 
 		++team_share_id;
@@ -387,6 +388,7 @@ void Game::TeamShareGiveItemCredit(DialogContext& ctx)
 		else
 		{
 			tsi.to->hero->credit += tsi.item->value / 2;
+			tsi.to->items[tsi.index].team_count = 0;
 			CheckCredit(true);
 			UpdateUnitInventory(*tsi.to);
 		}
@@ -630,7 +632,7 @@ void Game::BuyTeamItems()
 		}
 
 		// za³ó¿ nowe przedmioty
-		UpdateUnitInventory(u);
+		UpdateUnitInventory(u, false);
 		u.ai->have_potion = 2;
 
 		// sprzedaj stare przedmioty
