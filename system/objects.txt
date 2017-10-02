@@ -71,7 +71,7 @@ object altar {
 object bloody_altar {
 	mesh "krwawy_oltarz.qmsh"
 	center_y 0.782
-	flags { near_wall important blood effect blocks_camera }
+	flags { near_wall important blood_effect blocks_camera }
 }
 
 object tent {
@@ -148,7 +148,7 @@ object campfire {
 	mesh "ognisko.qmsh"
 	cylinder { 1.0735 0.43 }
 	center_y 0.4
-	flags { no_physics light campfire }
+	flags { no_physics light campfire_effect }
 }
 
 object campfire_off {
@@ -159,12 +159,12 @@ object campfire_off {
 
 object chest {
 	mesh "skrzynia.qmsh"
-	flags { near_wall }
+	flags { near_wall is_chest }
 }
 
 object chest_r {
 	mesh "skrzynia.qmsh"
-	flags { important required in_middle }
+	flags { important required in_middle is_chest }
 }
 
 object melee_target {
@@ -190,12 +190,12 @@ object gobelin {
 
 object table_and_chairs {
 	cylinder { 3 0.6 }
-	flags table
+	flags table_spawner
 }
 
 object tablechairs {
 	cylinder { 3 0.6 }
-	flags table
+	flags table_spawner
 }
 
 object grave {
@@ -280,7 +280,6 @@ object withered_tree {
 
 object tartak {
 	mesh "tartak.qmsh"
-	cylinder { 0 0 }
 	flags building
 }
 
@@ -424,7 +423,6 @@ object barrel_broken {
 
 object fern {
 	mesh "paproc.qmsh"
-	cylinder { 0 0 }
 	alpha 1
 	flags no_physics
 }
@@ -436,26 +434,22 @@ object stocks {
 
 object winplant {
 	mesh "krzaki_okno.qmsh"
-	cylinder { 0 0 }
 	alpha 1
 	flags no_physics
 }
 
 object smallroof {
 	mesh "daszek.qmsh"
-	cylinder { 0 0 }
 	flags { no_physics camera_colliders }
 }
 
 object rope {
 	mesh "lina.qmsh"
-	cylinder { 0 0 }
 	flags no_physics
 }
 
 object wheel {
 	mesh "kolo.qmsh"
-	cylinder { 0 0 }
 	flags no_physics
 }
 
@@ -465,14 +459,12 @@ object woodpile {
 
 object grass2 {
 	mesh "trawa2.qmsh"
-	cylinder { 0 0 }
 	alpha 1
 	flags no_physics
 }
 
 object corn {
 	mesh "zboze.qmsh"
-	cylinder { 0 0 }
 	alpha 1
 	flags { no_physics preload }
 }
@@ -493,9 +485,8 @@ usable bench {
 		"lawa3.qmsh"
 		"lawa4.qmsh"
 	}
-	object bench
 	animation "siedzi_lawa"
-	flags {near_wall allow_use bench}
+	flags {near_wall allow_use is_bench}
 	limit_rot 3
 }
 
@@ -516,7 +507,7 @@ usable cauldron {
 	mesh "kociol.qmsh"
 	required_item ladle
 	animation "miesza"
-	flags SLOW_STAMINA_RESTORE
+	flags slow_stamina_restore
 	limit_rot 0
 }
 
@@ -525,7 +516,7 @@ usable iron_vein {
 	required_item pickaxe
 	animation "wydobywa"
 	animation_sound { "kilof.mp3" 0.55 }
-	flags SLOW_STAMINA_RESTORE
+	flags slow_stamina_restore
 	limit_rot 4
 }
 
@@ -534,7 +525,7 @@ usable gold_vein {
 	required_item pickaxe
 	animation "wydobywa"
 	animation_sound { "kilof.mp3" 0.55 }
-	flags SLOW_STAMINA_RESTORE
+	flags slow_stamina_restore
 	limit_rot 4
 }
 
@@ -547,7 +538,7 @@ usable throne {
 
 usable stool {
 	mesh "stolek.qmsh"
-	cylinder { 0.27, 0.44 }
+	cylinder { 0.27 0.44 }
 	animation "siedzi_tron"
 	flags allow_use
 	limit_rot 2

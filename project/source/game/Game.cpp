@@ -66,7 +66,7 @@ game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), fini
 
 	devmode = default_devmode;
 
-	obj_alpha.id2 = "tmp_alpha";
+	obj_alpha.id = "tmp_alpha";
 	obj_alpha.alpha = 1;
 
 	game = this;
@@ -1817,12 +1817,12 @@ void Game::OnCleanup()
 	{
 		auto& base = *p_obj;
 		delete base.shape;
-		if(IS_SET(base.flags3, OBJ_DOUBLE_PHYSICS) && base.next_obj)
+		if(IS_SET(base.flags, OBJ_DOUBLE_PHYSICS) && base.next_obj)
 		{
 			delete base.next_obj->shape;
 			delete base.next_obj;
 		}
-		else if(IS_SET(base.flags3, OBJ_MULTI_PHYSICS) && base.next_obj)
+		else if(IS_SET(base.flags, OBJ_MULTI_PHYSICS) && base.next_obj)
 		{
 			for(int j = 0;; ++j)
 			{
@@ -2180,10 +2180,7 @@ void Game::SetGameText()
 	txGmsNotInCombat = Str("gmsNotInCombat");
 	txGainTextAttrib = Str("gainTextAttrib");
 	txGainTextSkill = Str("gainTextSkill");
-	txNeedLadle = Str("needLadle");
-	txNeedPickaxe = Str("needPickaxe");
-	txNeedHammer = Str("needHammer");
-	txNeedUnk = Str("needUnk");
+	txNeedItem = Str("needItem");
 	txReallyQuit = Str("reallyQuit");
 	txSecretAppear = Str("secretAppear");
 	txGmsAddedItem = Str("gmsAddedItem");
@@ -2333,11 +2330,7 @@ void Game::SetGameText()
 	txSGOMagesAndGolems = Str("sgo_magesAndGolems");
 	txSGOUnk = Str("sgo_unk");
 	txSGOPowerfull = Str("sgo_powerfull");
-
-	// nazwy u¿ywalnych obiektów
-	for(BaseUsable* use : BaseUsable::usables)
-		use->name = Str(use->id2.c_str());
-
+	
 	// rodzaje wrogów
 	for(int i = 0; i < SG_MAX; ++i)
 	{

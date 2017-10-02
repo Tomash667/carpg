@@ -3508,7 +3508,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						{
 							unit.action = A_ANIMATION2;
 							unit.animation = ANI_PLAY;
-							unit.mesh_inst->Play(base.anim2.c_str(), PLAY_PRIO1, 0);
+							unit.mesh_inst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
 							unit.mesh_inst->groups[0].speed = 1.f;
 							unit.usable = usable;
 							unit.target_pos = unit.pos;
@@ -7041,7 +7041,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						unit->action = A_ANIMATION2;
 						unit->animation = ANI_PLAY;
-						unit->mesh_inst->Play(state == 2 ? "czyta_papiery" : base.anim2.c_str(), PLAY_PRIO1, 0);
+						unit->mesh_inst->Play(state == 2 ? "czyta_papiery" : base.anim.c_str(), PLAY_PRIO1, 0);
 						unit->mesh_inst->groups[0].speed = 1.f;
 						unit->usable = usable;
 						unit->target_pos = unit->pos;

@@ -9,18 +9,6 @@ wt_longBlade = "Long blade"
 wt_blunt = "Blunt"
 wt_axe = "Axe"
 
-// usable objects
-u_chair = "Chair"
-u_bench = "Bench"
-u_anvil = "Anvil"
-u_cauldron = "Cauldron"
-u_iron_vein = "Iron vein"
-u_gold_vein = "Gold vein"
-u_throne = "Throne"
-u_stool = "Stool"
-u_bench_dir = "Bench"
-u_bookshelf = "Bookshelf"
-
 // enemy types
 sg_goblins = "goblins"
 sg_orcs = "orcs"

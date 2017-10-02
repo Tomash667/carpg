@@ -538,7 +538,7 @@ private:
 				break;
 			case BK_GROUP:
 				{
-					const string& group_id = t.MustGetString();
+					const string& group_id = t.MustGetItem();
 					auto group = content::FindBuildingGroup(group_id);
 					if(!group)
 					{
@@ -552,7 +552,7 @@ private:
 				break;
 			case BK_UNIT:
 				{
-					const string& unit_id = t.MustGetString();
+					const string& unit_id = t.MustGetItem();
 					auto unit = content::FindUnit(unit_id);
 					if(!unit)
 					{

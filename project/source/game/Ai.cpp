@@ -91,6 +91,8 @@ void Game::UpdateAi(float dt)
 	static vector<Unit*> close_enemies;
 
 	auto stool = BaseUsable::Get("stool"),
+		chair = BaseUsable::Get("chair"),
+		throne = BaseUsable::Get("throne"),
 		iron_vein = BaseUsable::Get("iron_vein"),
 		gold_vein = BaseUsable::Get("gold_vein");
 
@@ -403,7 +405,7 @@ void Game::UpdateAi(float dt)
 					if(u.usable && u.usable->user != &u)
 					{
 						// naprawa b³êdu gdy siê on zdarzy a nie rozwi¹zanie
-						Warn("Invalid usable user: %s is using %s but the user is %s.", u.data->id.c_str(), u.usable->base->id2.c_str(),
+						Warn("Invalid usable user: %s is using %s but the user is %s.", u.data->id.c_str(), u.usable->base->id.c_str(),
 							u.usable->user ? u.usable->user->data->id.c_str() : "nullptr");
 						u.usable = nullptr;
 #ifdef _DEBUG
@@ -966,11 +968,11 @@ void Game::UpdateAi(float dt)
 										for(vector<Usable*>::iterator it2 = ctx.usables->begin(), end2 = ctx.usables->end(); it2 != end2; ++it2)
 										{
 											Usable& use = **it2;
-											if(!use.user && (use.type != U_THRONE || IS_SET(u.data->flags2, F2_SIT_ON_THRONE)) && Vec3::Distance(use.pos, u.pos) < 10.f
-												&& use.type != U_BOOKSHELF
+											if(!use.user && (use.base != throne || IS_SET(u.data->flags2, F2_SIT_ON_THRONE))
+												&& Vec3::Distance(use.pos, u.pos) < 10.f && !use.base->IsContainer()
 												/*CanSee - niestety nie ma takiej funkcji wiêc trudno :p*/)
 											{
-												const Item* needed_item = BaseUsable::base_usables[use.type].item;
+												const Item* needed_item = use.base->item;
 												if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
 													uses.push_back(*it2);
 											}
@@ -980,7 +982,7 @@ void Game::UpdateAi(float dt)
 											ai.idle_action = AIController::Idle_WalkUse;
 											ai.idle_data.usable = uses[Rand() % uses.size()];
 											ai.timer = Random(3.f, 6.f);
-											if(ai.idle_data.usable->type == U_STOOL && Rand() % 3 == 0)
+											if(ai.idle_data.usable->base == stool && Rand() % 3 == 0)
 												ai.idle_action = AIController::Idle_WalkUseEat;
 											uses.clear();
 											break;
@@ -1290,25 +1292,25 @@ void Game::UpdateAi(float dt)
 									{
 										if(AngleDiff(Clip(u.rot + PI / 2), Clip(-Vec3::Angle2d(u.pos, ai.idle_data.usable->pos))) < PI / 4)
 										{
-											BaseUsable& base = BaseUsable::base_usables[use.type];
+											BaseUsable& base = *use.base;
 											const Item* needed_item = base.item;
 											if(!needed_item || u.HaveItem(needed_item) || u.slots[SLOT_WEAPON] == needed_item)
 											{
 												u.action = A_ANIMATION2;
 												u.animation = ANI_PLAY;
 												bool czyta_papiery = false;
-												if(use.type == U_CHAIR && IS_SET(u.data->flags, F_AI_CLERK))
+												if(use.base == chair && IS_SET(u.data->flags, F_AI_CLERK))
 												{
 													czyta_papiery = true;
 													u.mesh_inst->Play("czyta_papiery", PLAY_PRIO3, 0);
 												}
 												else
-													u.mesh_inst->Play(base.anim2, PLAY_PRIO1, 0);
+													u.mesh_inst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
 												u.mesh_inst->groups[0].speed = 1.f;
 												u.usable = &use;
 												u.target_pos = u.pos;
 												u.target_pos2 = use.pos;
-												if(BaseUsable::base_usables[use.type].limit_rot == 4)
+												if(use.base->limit_rot == 4)
 													u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
 												u.timer = 0.f;
 												u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
@@ -1319,11 +1321,11 @@ void Game::UpdateAi(float dt)
 												else
 												{
 													ai.idle_action = AIController::Idle_Use;
-													if(u.usable->type == U_STOOL && u.in_building != -1 && IsDrunkman(u))
+													if(u.usable->base == stool && u.in_building != -1 && IsDrunkman(u))
 														ai.timer = Random(10.f, 20.f);
-													else if(u.usable->type == U_THRONE)
+													else if(u.usable->base == throne)
 														ai.timer = 120.f;
-													else if(u.usable->type == U_IRON_VEIN || u.usable->type == U_GOLD_VEIN)
+													else if(u.usable->base == iron_vein || u.usable->base == gold_vein)
 														ai.timer = Random(20.f, 30.f);
 													else
 														ai.timer = Random(5.f, 10.f);
@@ -1355,7 +1357,7 @@ void Game::UpdateAi(float dt)
 										run_type = Walk;
 										look_at = LookAtWalk;
 										path_obj_ignore = &use;
-										if(use.GetBase()->limit_rot == 4)
+										if(use.base->limit_rot == 4)
 											target_pos -= Vec3(sin(use.rot), 0, cos(use.rot));
 									}
 								}

@@ -39,10 +39,10 @@ BaseObject* BaseObject::TryGet(cstring id, bool* is_variant)
 
 	for(BaseObject* obj : objs)
 	{
-		if(obj->id2 == id)
+		if(obj->id == id)
 			return obj;
 	}
-	
+
 	return nullptr;
 }
 

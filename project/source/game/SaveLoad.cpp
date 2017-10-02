@@ -911,7 +911,7 @@ void Game::LoadGame(HANDLE file)
 		Usable* u = Usable::refid_table[it->refid];
 		if(u->user != it->user)
 		{
-			Warn("Invalid usable %s (%d) user %s.", u->base->id2.c_str(), u->refid, it->user->data->id.c_str());
+			Warn("Invalid usable %s (%d) user %s.", u->base->id.c_str(), u->refid, it->user->data->id.c_str());
 			*it->usable = nullptr;
 		}
 		else

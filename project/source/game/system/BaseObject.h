@@ -2,7 +2,6 @@
 
 //-----------------------------------------------------------------------------
 struct Mesh;
-enum USABLE_ID;
 
 //-----------------------------------------------------------------------------
 // Object physics type
@@ -20,12 +19,12 @@ enum OBJ_FLAGS
 	OBJ_NEAR_WALL = 1 << 0, // spawn object near wall
 	OBJ_NO_PHYSICS = 1 << 1, // object have no physics
 	OBJ_HIGH = 1 << 2, // object is placed higher (1.5 m)
-	OBJ_CHEST = 1 << 3, // object is chest
+	OBJ_IS_CHEST = 1 << 3, // object is chest
 	OBJ_ON_WALL = 1 << 4, // object is created on wall, ignoring size
 	OBJ_PRELOAD = 1 << 5, // force preload mesh
 	OBJ_LIGHT = 1 << 6, // object has torch light and flame
-	OBJ_TABLE = 1 << 7, // generate Random table and chairs
-	OBJ_CAMPFIRE = 1 << 8, // object has larger fire effect (requires OBJ_LIGHT)
+	OBJ_TABLE_SPAWNER = 1 << 7, // generate Random table and chairs
+	OBJ_CAMPFIRE_EFFECT = 1 << 8, // object has larger fire effect (requires OBJ_LIGHT)
 	OBJ_IMPORTANT = 1 << 9, // try more times to generate this object
 	OBJ_BILLBOARD = 1 << 10, // object always face camera
 	OBJ_SCALEABLE = 1 << 11, // object can be scaled, need different physics handling
@@ -48,7 +47,7 @@ struct VariantObject
 {
 	struct Entry
 	{
-		string mesh_id2;
+		string mesh_id;
 		Mesh* mesh;
 	};
 	vector<Entry> entries;
@@ -59,19 +58,19 @@ struct VariantObject
 // Base object
 struct BaseObject
 {
-	string id2, mesh_id2;
+	string id, mesh_id;
 	Mesh* mesh;
 	OBJ_PHY_TYPE type;
 	float r, h, centery;
 	Vec2 size;
 	btCollisionShape* shape;
 	Matrix* matrix;
-	int flags3, alpha;
+	int flags, alpha;
 	BaseObject* next_obj;
 	VariantObject* variants;
 	float extra_dist; // extra distance from wall
 
-	BaseObject() : mesh(nullptr), type(OBJ_HITBOX), centery(0), shape(nullptr), matrix(nullptr), flags3(0), alpha(-1), next_obj(nullptr),
+	BaseObject() : mesh(nullptr), type(OBJ_HITBOX), centery(0), shape(nullptr), matrix(nullptr), flags(0), alpha(-1), next_obj(nullptr),
 		variants(nullptr), extra_dist(0.f)
 	{
 	}
@@ -82,12 +81,12 @@ struct BaseObject
 
 	BaseObject& operator = (BaseObject& o)
 	{
-		mesh_id2 = o.mesh_id2;
+		mesh_id = o.mesh_id;
 		type = o.type;
 		r = o.r;
 		h = o.h;
 		centery = o.centery;
-		flags3 = o.flags3;
+		flags = o.flags;
 		alpha = o.alpha;
 		variants = o.variants;
 		extra_dist = o.extra_dist;
@@ -96,11 +95,9 @@ struct BaseObject
 
 	bool IsUsable() const
 	{
-		return IS_SET(flags3, OBJ_USABLE);
+		return IS_SET(flags, OBJ_USABLE);
 	}
-
-	USABLE_ID ToUsableType() const;
-
+	
 	// is_variant is set when there is multiple variants
 	static BaseObject* TryGet(cstring id, bool* is_variant = nullptr);
 	static BaseObject* Get(cstring id, bool* is_variant = nullptr)

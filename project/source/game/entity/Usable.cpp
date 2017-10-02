@@ -38,7 +38,7 @@ Mesh* Usable::GetMesh() const
 //=================================================================================================
 void Usable::Save(HANDLE file, bool local)
 {
-	WriteString1(file, base->id2);
+	WriteString1(file, base->id);
 	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
 	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
@@ -137,7 +137,7 @@ void Usable::Load(HANDLE file, bool local)
 void Usable::Write(BitStream& stream) const
 {
 	stream.Write(netid);
-	WriteString1(stream, base->id2);
+	WriteString1(stream, base->id);
 	stream.Write(pos);
 	stream.Write(rot);
 	stream.WriteCasted<byte>(variant);

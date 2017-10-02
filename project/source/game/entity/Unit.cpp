@@ -1382,7 +1382,7 @@ void Unit::Save(HANDLE file, bool local)
 		{
 			if(usable->user != this)
 			{
-				Warn("Invalid usable %s (%d) user %s.", usable->base->id2.c_str(), usable->refid, data->id.c_str());
+				Warn("Invalid usable %s (%d) user %s.", usable->base->id.c_str(), usable->refid, data->id.c_str());
 				usable = nullptr;
 				int refi = -1;
 				WriteFile(file, &refi, sizeof(refi), &tmp, nullptr);

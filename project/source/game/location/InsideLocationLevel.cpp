@@ -356,7 +356,7 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 			Usable& u = **it;
 			if(u.base == bench)
 			{
-				u.base = bench;
+				u.base = bench_rot;
 				u.variant = Rand() % 2;
 			}
 		}

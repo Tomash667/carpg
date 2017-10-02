@@ -10028,13 +10028,13 @@ void Game::GenerateDungeonObjects()
 				else
 					shift = obj->size + Vec2(obj->extra_dist, obj->extra_dist);
 
-				if(IS_SET(obj->flags3, OBJ_NEAR_WALL))
+				if(IS_SET(obj->flags, OBJ_NEAR_WALL))
 				{
 					Int2 tile;
 					int dir;
-					if(!lvl.GetRandomNearWallTile(*it, tile, dir, IS_SET(obj->flags3, OBJ_ON_WALL)))
+					if(!lvl.GetRandomNearWallTile(*it, tile, dir, IS_SET(obj->flags, OBJ_ON_WALL)))
 					{
-						if(IS_SET(obj->flags3, OBJ_IMPORTANT))
+						if(IS_SET(obj->flags, OBJ_IMPORTANT))
 							--j;
 						--fail;
 						continue;
@@ -10047,7 +10047,7 @@ void Game::GenerateDungeonObjects()
 					else
 						pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f), 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f));
 
-					if(IS_SET(obj->flags3, OBJ_ON_WALL))
+					if(IS_SET(obj->flags, OBJ_ON_WALL))
 					{
 						switch(dir)
 						{
@@ -10079,7 +10079,7 @@ void Game::GenerateDungeonObjects()
 
 						if(!ok)
 						{
-							if(IS_SET(obj->flags3, OBJ_IMPORTANT))
+							if(IS_SET(obj->flags, OBJ_IMPORTANT))
 								--j;
 							fail = true;
 							continue;
@@ -10104,7 +10104,7 @@ void Game::GenerateDungeonObjects()
 						}
 					}
 				}
-				else if(IS_SET(obj->flags3, OBJ_IN_MIDDLE))
+				else if(IS_SET(obj->flags, OBJ_IN_MIDDLE))
 				{
 					rot = PI / 2 * (Rand() % 4);
 					pos = it->Center();
@@ -10134,13 +10134,13 @@ void Game::GenerateDungeonObjects()
 						pos = it->GetRandomPos(obj->r);
 				}
 
-				if(IS_SET(obj->flags3, OBJ_HIGH))
+				if(IS_SET(obj->flags, OBJ_HIGH))
 					pos.y += 1.5f;
 
 				if(obj->type == OBJ_HITBOX)
 				{
 					// sprawdŸ kolizje z blokami
-					if(!IS_SET(obj->flags3, OBJ_NO_PHYSICS))
+					if(!IS_SET(obj->flags, OBJ_NO_PHYSICS))
 					{
 						bool ok = true;
 						if(NotZero(rot))
@@ -10176,7 +10176,7 @@ void Game::GenerateDungeonObjects()
 						}
 						if(!ok)
 						{
-							if(IS_SET(obj->flags3, OBJ_IMPORTANT))
+							if(IS_SET(obj->flags, OBJ_IMPORTANT))
 								--j;
 							--fail;
 							continue;
@@ -10188,7 +10188,7 @@ void Game::GenerateDungeonObjects()
 					GatherCollisionObjects(local_ctx, global_col, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
 					if(!global_col.empty() && Collide(global_col, Box2d(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y), 0.8f, rot))
 					{
-						if(IS_SET(obj->flags3, OBJ_IMPORTANT))
+						if(IS_SET(obj->flags, OBJ_IMPORTANT))
 							--j;
 						--fail;
 						continue;
@@ -10197,7 +10197,7 @@ void Game::GenerateDungeonObjects()
 				else
 				{
 					// sprawdŸ kolizje z blokami
-					if(!IS_SET(obj->flags3, OBJ_NO_PHYSICS))
+					if(!IS_SET(obj->flags, OBJ_NO_PHYSICS))
 					{
 						bool ok = true;
 						for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
@@ -10210,7 +10210,7 @@ void Game::GenerateDungeonObjects()
 						}
 						if(!ok)
 						{
-							if(IS_SET(obj->flags3, OBJ_IMPORTANT))
+							if(IS_SET(obj->flags, OBJ_IMPORTANT))
 								--j;
 							--fail;
 							continue;
@@ -10222,7 +10222,7 @@ void Game::GenerateDungeonObjects()
 					GatherCollisionObjects(local_ctx, global_col, pos, obj->r, &ignore);
 					if(!global_col.empty() && Collide(global_col, pos, obj->r + 0.8f))
 					{
-						if(IS_SET(obj->flags3, OBJ_IMPORTANT))
+						if(IS_SET(obj->flags, OBJ_IMPORTANT))
 							--j;
 						--fail;
 						continue;
@@ -10231,10 +10231,10 @@ void Game::GenerateDungeonObjects()
 
 				SpawnObjectEntity(local_ctx, obj, pos, rot, 1.f, flags);
 
-				if(IS_SET(obj->flags3, OBJ_REQUIRED))
+				if(IS_SET(obj->flags, OBJ_REQUIRED))
 					wymagany_obiekt = true;
 
-				if(IS_SET(obj->flags3, OBJ_ON_WALL))
+				if(IS_SET(obj->flags, OBJ_ON_WALL))
 					on_wall.push_back(pos);
 
 				if(is_variant)
@@ -10328,11 +10328,11 @@ void Game::GenerateDungeonObjects()
 				else
 					shift = obj->size;
 
-				if(IS_SET(obj->flags3, OBJ_NEAR_WALL))
+				if(IS_SET(obj->flags, OBJ_NEAR_WALL))
 				{
 					Int2 tile;
 					int dir;
-					if(!lvl.GetRandomNearWallTile(r, tile, dir, IS_SET(obj->flags3, OBJ_ON_WALL)))
+					if(!lvl.GetRandomNearWallTile(r, tile, dir, IS_SET(obj->flags, OBJ_ON_WALL)))
 						continue;
 
 					rot = dir_to_rot(dir);
@@ -10357,7 +10357,7 @@ void Game::GenerateDungeonObjects()
 						break;
 					}
 				}
-				else if(IS_SET(obj->flags3, OBJ_IN_MIDDLE))
+				else if(IS_SET(obj->flags, OBJ_IN_MIDDLE))
 				{
 					rot = PI / 2 * (Rand() % 4);
 					pos = r.Center();
@@ -10387,7 +10387,7 @@ void Game::GenerateDungeonObjects()
 						pos = r.GetRandomPos(obj->r);
 				}
 
-				if(IS_SET(obj->flags3, OBJ_HIGH))
+				if(IS_SET(obj->flags, OBJ_HIGH))
 					pos.y += 1.5f;
 
 				if(obj->type == OBJ_HITBOX)
@@ -11128,7 +11128,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 
 		BaseObject* obj = it->base;
 
-		if(IS_SET(obj->flags3, OBJ_BUILDING))
+		if(IS_SET(obj->flags, OBJ_BUILDING))
 		{
 			float rot = it->rot.y;
 			int roti;
@@ -14132,7 +14132,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					pe->pos = s.pos;
 					pe->pos_min = Vec3(0, 0, 0);
 					pe->pos_max = Vec3(0, 0, 0);
-					pe->size = IS_SET(obj->flags3, OBJ_CAMPFIRE) ? .7f : .5f;
+					pe->size = IS_SET(obj->flags, OBJ_CAMPFIRE_EFFECT) ? .7f : .5f;
 					pe->spawn_min = 1;
 					pe->spawn_max = 3;
 					pe->speed_min = Vec3(-1, 3, -1);
@@ -14170,7 +14170,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					pe->pos = s.pos;
 					pe->pos_min = Vec3(0, 0, 0);
 					pe->pos_max = Vec3(0, 0, 0);
-					pe->size = IS_SET(obj->flags3, OBJ_CAMPFIRE) ? .7f : .5f;
+					pe->size = IS_SET(obj->flags, OBJ_CAMPFIRE_EFFECT) ? .7f : .5f;
 					pe->spawn_min = 1;
 					pe->spawn_max = 3;
 					pe->speed_min = Vec3(-1, 3, -1);
@@ -15309,13 +15309,13 @@ void Game::PreloadUsables(vector<Usable*>& usables)
 		auto base = u->base;
 		if(base->state == ResourceState::NotLoaded)
 		{
-			if(base->obj->variant)
+			if(base->variants)
 			{
-				for(uint i = 0; i < base->obj->variant->count; ++i)
-					mesh_mgr.AddLoadTask(base->obj->variant->entries[i].mesh);
+				for(uint i = 0; i < base->variants->entries.size(); ++i)
+					mesh_mgr.AddLoadTask(base->variants->entries[i].mesh);
 			}
 			else
-				mesh_mgr.AddLoadTask(base->obj->mesh);
+				mesh_mgr.AddLoadTask(base->mesh);
 			if(base->sound)
 				sound_mgr.AddLoadTask(base->sound);
 			base->state = ResourceState::Loaded;
@@ -20769,7 +20769,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 {
 	Unit& u = *pc->unit;
 	Usable& use = *usable;
-	BaseUsable& bu = *use->base;
+	BaseUsable& bu = *use.base;
 
 	bool ok = true;
 	if(bu.item)
@@ -20814,7 +20814,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 				game_gui->inv_trade_other->unit = nullptr;
 				game_gui->inv_trade_other->items = &pc->action_container->container->items;
 				game_gui->inv_trade_other->slots = nullptr;
-				game_gui->inv_trade_other->title = Format("%s - %s", Inventory::txLooting, use.base->name);
+				game_gui->inv_trade_other->title = Format("%s - %s", Inventory::txLooting, use.base->name.c_str());
 				game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;
 				game_gui->gp_trade->Show();
 			}
@@ -20822,7 +20822,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 			{
 				u.action = A_ANIMATION2;
 				u.animation = ANI_PLAY;
-				u.mesh_inst->Play(bu.anim2.c_str(), PLAY_PRIO1, 0);
+				u.mesh_inst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
 				u.mesh_inst->groups[0].speed = 1.f;
 				u.target_pos = u.pos;
 				u.target_pos2 = use.pos;
@@ -22264,7 +22264,7 @@ void Game::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit)
 		my.mode = Inventory::LOOT_MY;
 		other.mode = Inventory::LOOT_OTHER;
 		other.unit = nullptr;
-		other.title = Format("%s - %s", Inventory::txLooting, pc->action_container->base->name);
+		other.title = Format("%s - %s", Inventory::txLooting, pc->action_container->base->name.c_str());
 		break;
 	default:
 		assert(0);

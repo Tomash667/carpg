@@ -1511,7 +1511,7 @@ void Game::ApplyTiles(float* _h, TerrainTile* _tiles)
 Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale, int flags, Vec3* out_point,
 	int variant)
 {
-	if(IS_SET(base->flags3, OBJ_TABLE))
+	if(IS_SET(base->flags, OBJ_TABLE_SPAWNER))
 	{
 		// table & stools
 		BaseObject* table = BaseObject::Get(Rand() % 2 == 0 ? "table" : "table2");
@@ -1575,7 +1575,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 
 		return &ctx.objects->at(obj_index);
 	}
-	else if(IS_SET(base->flags3, OBJ_BUILDING))
+	else if(IS_SET(base->flags, OBJ_BUILDING))
 	{
 		// building
 		int roti;
@@ -1606,7 +1606,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 
 		return &ctx.objects->at(obj_index);
 	}
-	else if(IS_SET(base->flags3, OBJ_USABLE))
+	else if(IS_SET(base->flags, OBJ_USABLE))
 	{
 		// usable object
 		BaseUsable* base_use = (BaseUsable*)base;
@@ -1630,7 +1630,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 			if(base->variants)
 			{
 				// extra code for bench
-				if(IS_SET(base_use->use_flags, BaseUsable::BENCH))
+				if(IS_SET(base_use->use_flags, BaseUsable::IS_BENCH))
 				{
 					switch(location->type)
 					{
@@ -1660,7 +1660,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 
 		return u;
 	}
-	else if(IS_SET(base->flags3, OBJ_CHEST))
+	else if(IS_SET(base->flags, OBJ_IS_CHEST))
 	{
 		// chest
 		Chest* chest = new Chest;
@@ -4790,7 +4790,7 @@ void Game::SpawnCampObjects()
 		{
 			BaseObject* obj = camp_objs_ptrs[Rand() % n_camp_objs];
 			Object* o = SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
-			if(o && IS_SET(obj->flags3, OBJ_CHEST) && location->spawn != SG_BRAK) // empty chests for empty camps
+			if(o && IS_SET(obj->flags, OBJ_IS_CHEST) && location->spawn != SG_BRAK) // empty chests for empty camps
 			{
 				int gold, level = location->st;
 				Chest* chest = (Chest*)o;
@@ -5573,7 +5573,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 	// ogieñ pochodni
 	if(!IS_SET(flags, SOE_DONT_SPAWN_PARTICLES))
 	{
-		if(IS_SET(obj->flags3, OBJ_LIGHT))
+		if(IS_SET(obj->flags, OBJ_LIGHT))
 		{
 			ParticleEmitter* pe = new ParticleEmitter;
 			pe->alpha = 0.8f;
@@ -5597,7 +5597,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 			ctx.pes->push_back(pe);
 
 			pe->tex = tFlare;
-			if(IS_SET(obj->flags3, OBJ_CAMPFIRE))
+			if(IS_SET(obj->flags, OBJ_CAMPFIRE_EFFECT))
 				pe->size = 0.7f;
 			else
 			{
@@ -5618,7 +5618,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 					s.color = Vec3(1.f, 0.9f, 0.9f);
 			}
 		}
-		else if(IS_SET(obj->flags3, OBJ_BLOOD_EFFECT))
+		else if(IS_SET(obj->flags, OBJ_BLOOD_EFFECT))
 		{
 			// krew
 			ParticleEmitter* pe = new ParticleEmitter;
@@ -5644,7 +5644,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 			pe->Init();
 			ctx.pes->push_back(pe);
 		}
-		else if(IS_SET(obj->flags3, OBJ_WATER_EFFECT))
+		else if(IS_SET(obj->flags, OBJ_WATER_EFFECT))
 		{
 			// krew
 			ParticleEmitter* pe = new ParticleEmitter;
@@ -5679,7 +5679,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 		c.ptr = user_ptr;
 
 		int group = CG_OBJECT;
-		if(IS_SET(obj->flags3, OBJ_PHY_BLOCKS_CAM))
+		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
 			group |= CG_CAMERA_COLLIDER;
 
 		btCollisionObject* cobj = new btCollisionObject;
@@ -5742,22 +5742,22 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 
 		phy_world->addCollisionObject(cobj, group);
 
-		if(IS_SET(obj->flags3, OBJ_PHYSICS_PTR))
+		if(IS_SET(obj->flags, OBJ_PHYSICS_PTR))
 		{
 			assert(user_ptr && phy_result);
 			*phy_result = cobj;
 			cobj->setUserPointer(user_ptr);
 		}
 
-		if(IS_SET(obj->flags3, OBJ_PHY_BLOCKS_CAM))
+		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
 			c.ptr = CAM_COLLIDER;
 
 		if(phy_result)
 			*phy_result = cobj;
 
-		if(IS_SET(obj->flags3, OBJ_DOUBLE_PHYSICS))
+		if(IS_SET(obj->flags, OBJ_DOUBLE_PHYSICS))
 			SpawnObjectExtras(ctx, obj->next_obj, pos, rot, user_ptr, nullptr, scale, flags);
-		else if(IS_SET(obj->flags3, OBJ_MULTI_PHYSICS))
+		else if(IS_SET(obj->flags, OBJ_MULTI_PHYSICS))
 		{
 			for(int i = 0;; ++i)
 			{
@@ -5768,7 +5768,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 			}
 		}
 	}
-	else if(IS_SET(obj->flags3, OBJ_SCALEABLE))
+	else if(IS_SET(obj->flags, OBJ_SCALEABLE))
 	{
 		CollisionObject& c = Add1(ctx.colliders);
 		c.type = CollisionObject::SPHERE;
@@ -5784,7 +5784,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 		phy_world->addCollisionObject(cobj, CG_OBJECT);
 	}
 
-	if(IS_SET(obj->flags3, OBJ_CAM_COLLIDERS))
+	if(IS_SET(obj->flags, OBJ_CAM_COLLIDERS))
 	{
 		int roti = (int)round((rot / (PI / 2)));
 		for(vector<Mesh::Point>::const_iterator it = obj->mesh->attach_points.begin(), end = obj->mesh->attach_points.end(); it != end; ++it)

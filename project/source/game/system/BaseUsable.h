@@ -16,11 +16,10 @@ struct BaseUsable : public BaseObject
 		ALLOW_USE = 1 << 0,
 		SLOW_STAMINA_RESTORE = 1 << 1,
 		CONTAINER = 1 << 2,
-		BENCH = 1 << 3, // hardcoded to use variant in city
+		IS_BENCH = 1 << 3, // hardcoded to use variant in city
 	};
 
-	string anim2, item_id2, sound_id2;
-	cstring name;
+	string anim, item_id, sound_id, name;
 	float sound_timer;
 	const Item* item;
 	SoundPtr sound;
@@ -39,18 +38,18 @@ struct BaseUsable : public BaseObject
 	int use_flags;
 	ResourceState state;
 
-	BaseUsable() : name(nullptr), sound_timer(0), item(nullptr), sound(nullptr), limit_rot(0), use_flags(0), state(ResourceState::NotLoaded)
+	BaseUsable() : sound_timer(0), item(nullptr), sound(nullptr), limit_rot(0), use_flags(0), state(ResourceState::NotLoaded)
 	{
 	}
 
 	BaseUsable& operator = (BaseObject& o)
 	{
-		mesh_id2 = o.mesh_id2;
+		mesh_id = o.mesh_id;
 		type = o.type;
 		r = o.r;
 		h = o.h;
 		centery = o.centery;
-		flags3 = o.flags3;
+		flags = o.flags;
 		alpha = o.alpha;
 		variants = o.variants;
 		extra_dist = o.extra_dist;
@@ -60,29 +59,27 @@ struct BaseUsable : public BaseObject
 	BaseUsable& operator = (BaseUsable& u)
 	{
 		*this = (BaseObject&)u;
-		anim2 = u.anim2;
-		item_id2 = u.item_id2;
-		sound_id2 = u.sound_id2;
+		anim = u.anim;
+		item_id = u.item_id;
+		sound_id = u.sound_id;
 		sound_timer = u.sound_timer;
 		limit_rot = u.limit_rot;
 		use_flags = u.use_flags;
 		return *this;
 	}
 
+	bool IsContainer() const
+	{
+		return IS_SET(use_flags, CONTAINER);
+	}
+
 	static vector<BaseUsable*> usables;
 
-	static BaseUsable* Get(cstring id);
-	/*{
+	static BaseUsable* TryGet(cstring id);
+	static BaseUsable* Get(cstring id)
+	{
 		auto usable = TryGet(id);
 		assert(usable);
 		return usable;
-	}*/
-	static BaseUsable* TryGet(cstring id);
-	/*{
-		auto obj = BaseObject::Get(id);
-		if(obj && IS_SET(obj->flags3, OBJ_USABLE))
-			return (BaseUsable*)obj;
-		else
-			return nullptr;
-	}*/
+	}
 };

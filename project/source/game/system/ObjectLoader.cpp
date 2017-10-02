@@ -6,6 +6,7 @@
 #include "BaseUsable.h"
 #include "Crc.h"
 
+uint content::objects_crc;
 static vector<VariantObject*> variant_objects;
 
 //=================================================================================================
@@ -33,7 +34,7 @@ class ObjectLoader
 		OP_CENTER_Y,
 		OP_FLAGS,
 		OP_ALPHA,
-		OP_VARIANT,
+		OP_VARIANTS,
 		OP_EXTRA_DIST
 	};
 
@@ -87,7 +88,7 @@ private:
 			{ "center_y", OP_CENTER_Y },
 			{ "flags", OP_FLAGS },
 			{ "alpha", OP_ALPHA },
-			{ "variant", OP_VARIANT },
+			{ "variants", OP_VARIANTS },
 			{ "extra_dist", OP_EXTRA_DIST }
 		});
 
@@ -95,12 +96,12 @@ private:
 			{ "near_wall", OBJ_NEAR_WALL },
 			{ "no_physics", OBJ_NO_PHYSICS },
 			{ "high", OBJ_HIGH },
-			{ "chest", OBJ_CHEST },
+			{ "is_chest", OBJ_IS_CHEST },
 			{ "on_wall", OBJ_ON_WALL },
 			{ "preload", OBJ_PRELOAD },
 			{ "light", OBJ_LIGHT },
-			{ "table", OBJ_TABLE },
-			{ "campfire", OBJ_CAMPFIRE },
+			{ "table_spawner", OBJ_TABLE_SPAWNER },
+			{ "campfire_effect", OBJ_CAMPFIRE_EFFECT },
 			{ "important", OBJ_IMPORTANT },
 			{ "billboard", OBJ_BILLBOARD },
 			{ "scaleable", OBJ_SCALEABLE },
@@ -117,18 +118,25 @@ private:
 			{ "camera_colliders", OBJ_CAM_COLLIDERS }
 		});
 
+		t.AddKeywords(G_USABLE_PROPERTY, {
+			{ "required_item", UP_REQUIRED_ITEM },
+			{ "animation", UP_ANIMATION },
+			{ "animation_sound", UP_ANIMATION_SOUND },
+			{ "limit_rot", UP_LIMIT_ROT }
+		});
+
 		t.AddKeywords(G_USABLE_FLAGS, {
 			{ "allow_use", BaseUsable::ALLOW_USE },
 			{ "slow_stamina_restore", BaseUsable::SLOW_STAMINA_RESTORE },
 			{ "container", BaseUsable::CONTAINER },
-			{ "bench", BaseUsable::BENCH }
+			{ "is_bench", BaseUsable::IS_BENCH }
 		});
 	}
 
 	void ParseObject(const string& id)
 	{
 		Ptr<BaseObject> obj;
-		obj->id2 = id;
+		obj->id = id;
 		t.Next();
 
 		if(t.IsSymbol(':'))
@@ -161,7 +169,7 @@ private:
 		switch(prop)
 		{
 		case OP_MESH:
-			obj->mesh_id2 = t.MustGetString();
+			obj->mesh_id = t.MustGetString();
 			t.Next();
 			break;
 		case OP_CYLINDER:
@@ -181,7 +189,7 @@ private:
 			t.Next();
 			break;
 		case OP_FLAGS:
-			ReadFlags2(t, G_OBJECT_FLAGS, obj->flags3);
+			ReadFlags2(t, G_OBJECT_FLAGS, obj->flags);
 			t.Next();
 			break;
 		case OP_ALPHA:
@@ -190,7 +198,7 @@ private:
 				t.Throw("Invalid alpha value.");
 			t.Next();
 			break;
-		case OP_VARIANT:
+		case OP_VARIANTS:
 			{
 				t.AssertSymbol('{');
 				t.Next();
@@ -219,7 +227,7 @@ private:
 	void ParseUsable(const string& id)
 	{
 		Ptr<BaseUsable> use;
-		use->id2 = id;
+		use->id = id;
 		t.Next();
 
 		if(t.IsSymbol(':'))
@@ -253,7 +261,7 @@ private:
 				if(prop == OP_FLAGS)
 				{
 					ReadFlags2(t, {
-						{ &use->flags3, G_OBJECT_FLAGS },
+						{ &use->flags, G_OBJECT_FLAGS },
 						{ &use->use_flags, G_USABLE_FLAGS }
 					});
 					t.Next();
@@ -269,17 +277,17 @@ private:
 				switch(prop)
 				{
 				case UP_REQUIRED_ITEM:
-					use->item_id2 = t.MustGetItem();
+					use->item_id = t.MustGetItem();
 					t.Next();
 					break;
 				case UP_ANIMATION:
-					use->anim2 = t.MustGetString();
+					use->anim = t.MustGetString();
 					t.Next();
 					break;
 				case UP_ANIMATION_SOUND:
 					t.AssertSymbol('{');
 					t.Next();
-					use->sound_id2 = t.MustGetString();
+					use->sound_id = t.MustGetString();
 					t.Next();
 					use->sound_timer = t.MustGetNumberFloat();
 					if(!InRange(use->sound_timer, 0.f, 1.f))
@@ -297,10 +305,10 @@ private:
 				}
 			}
 			else
-				t.Expecting("usable property");
+				t.ThrowExpecting("usable property");
 		}
 
-		use->flags3 |= OBJ_USABLE;
+		use->flags |= OBJ_USABLE;
 
 		auto u = use.Pin();
 		BaseObject::objs.push_back(u);
@@ -319,8 +327,8 @@ private:
 
 		for(BaseObject* obj : BaseObject::objs)
 		{
-			crc.Update(obj->id2);
-			crc.Update(obj->mesh_id2);
+			crc.Update(obj->id);
+			crc.Update(obj->mesh_id);
 			crc.Update(obj->type);
 			if(obj->type == OBJ_CYLINDER)
 			{
@@ -328,21 +336,21 @@ private:
 				crc.Update(obj->h);
 			}
 			crc.Update(obj->centery);
-			crc.Update(obj->flags3);
+			crc.Update(obj->flags);
 			crc.Update(obj->alpha);
 			if(obj->variants)
 			{
 				for(auto& e : obj->variants->entries)
-					crc.Update(e.mesh_id2);
+					crc.Update(e.mesh_id);
 			}
 			crc.Update(obj->extra_dist);
 
 			if(obj->IsUsable())
 			{
 				BaseUsable* use = (BaseUsable*)obj;
-				crc.Update(use->anim2);
-				crc.Update(use->item_id2);
-				crc.Update(use->sound_id2);
+				crc.Update(use->anim);
+				crc.Update(use->item_id);
+				crc.Update(use->sound_id);
 				crc.Update(use->sound_timer);
 				crc.Update(use->limit_rot);
 				crc.Update(use->use_flags);
