@@ -7,6 +7,8 @@
 #include <slikenet/HTTPConnection.h>
 #include <slikenet/TCPInterface.h>
 #include <process.h>
+#include <Wincrypt.h>
+#include <Lmcons.h>
 
 NetStats* SingletonPtr<NetStats>::instance;
 static volatile bool shutdown_thread;
@@ -35,6 +37,11 @@ bool NetStats::Stats::operator = (const NetStats::Stats& stats)
 {
 	bool changes = false;
 
+	if(user_name != stats.user_name)
+	{
+		user_name = stats.user_name;
+		changes = true;
+	}
 	if(cpu_flags != stats.cpu_flags)
 	{
 		cpu_flags = stats.cpu_flags;
@@ -87,6 +94,8 @@ bool NetStats::Stats::operator = (const NetStats::Stats& stats)
 int NetStats::Stats::operator == (const NetStats::Stats& stats) const
 {
 	int dif = 0;
+	if(user_name != stats.user_name)
+		++dif;
 	if(cpu_name != stats.cpu_name)
 		++dif;
 	if(ram != stats.ram)
@@ -109,11 +118,45 @@ int NetStats::Stats::operator == (const NetStats::Stats& stats) const
 	return dif;
 }
 
+void NetStats::Stats::CalculateHash()
+{
+	HCRYPTPROV crypt_prov;
+	CryptAcquireContext(&crypt_prov, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
+
+	HCRYPTHASH hasher;
+	CryptCreateHash(crypt_prov, CALG_MD5, 0, 0, &hasher);
+
+	string to_hash = Format("%s;%s;%d;%u;%d", user_name.c_str(), cpu_name.c_str(), int(ram * 10), drive_id, winver);
+	for(auto& gpu : gpus)
+	{
+		to_hash += gpu;
+		to_hash += ';';
+	}
+
+	CryptHashData(hasher, (const byte*)to_hash.c_str(), to_hash.length(), 0);
+
+	byte hash[16];
+	DWORD hash_length = 16;
+	CryptGetHashParam(hasher, HP_HASHVAL, hash, &hash_length, 0);
+
+	CryptDestroyHash(hasher);
+	CryptReleaseContext(crypt_prov, 0);
+	
+	char chars[] = "0123456789abcdef";
+	uid.reserve(32);
+	for(int i = 0; i < 16; ++i)
+	{
+		uid.push_back(chars[hash[i] >> 4]);
+		uid.push_back(chars[hash[i] & 0xF]);
+	}
+}
+
 void NetStats::Initialize()
 {
 	have_changes = false;
 	Load();
 	current.ver = VERSION;
+	InitializeUserName(current);
 	InitializeCpu(current);
 	InitializeMemory(current);
 	InitializeVersion(current);
@@ -157,6 +200,14 @@ void NetStats::Close()
 				break;
 		}
 	}
+}
+
+void NetStats::InitializeUserName(Stats& s)
+{
+	char buf[UNLEN + 1];
+	DWORD len = UNLEN + 1;
+	GetUserName(buf, &len);
+	s.user_name = buf;
 }
 
 void NetStats::InitializeCpu(Stats& s)
@@ -352,18 +403,22 @@ void NetStats::Load()
 	uint ver, count;
 	f >> ver;
 	f >> count;
-	if(!f || ver != 0 || !f.Ensure(count * Stats::MIN_SIZE))
+	if(!f || ver > 1 || !f.Ensure(count * Stats::MIN_SIZE))
 	{
 		Error("NetStats: Broken file 'carpg.bin'.");
 		return;
 	}
+	if(ver == 0)
+		return;
 
 	Crc crc;
 
 	stats.resize(count);
 	for(Stats& stat : stats)
 	{
+		f >> stat.ouid;
 		f >> stat.uid;
+		f >> stat.user_name;
 		f >> stat.cpu_flags;
 		f >> stat.vs_ver;
 		f >> stat.ps_ver;
@@ -374,7 +429,9 @@ void NetStats::Load()
 		f >> stat.cpu_name;
 		f >> stat.ver;
 
+		crc.Update(stat.ouid);
 		crc.Update(stat.uid);
+		crc.Update(stat.user_name);
 		crc.Update(stat.cpu_flags);
 		crc.Update(stat.vs_ver);
 		crc.Update(stat.ps_ver);
@@ -399,14 +456,16 @@ void NetStats::Load()
 void NetStats::Save()
 {
 	io2::FileWriter f("carpg.bin");
-	f << 0;
+	f << 1;
 	f << stats.size();
 
 	Crc crc;
 
 	for(auto& stat : stats)
 	{
+		f << stat.ouid;
 		f << stat.uid;
+		f << stat.user_name;
 		f << stat.cpu_flags;
 		f << stat.vs_ver;
 		f << stat.ps_ver;
@@ -417,7 +476,9 @@ void NetStats::Save()
 		f << stat.cpu_name;
 		f << stat.ver;
 
+		crc.Update(stat.ouid);
 		crc.Update(stat.uid);
+		crc.Update(stat.user_name);
 		crc.Update(stat.cpu_flags);
 		crc.Update(stat.vs_ver);
 		crc.Update(stat.ps_ver);
@@ -446,14 +507,15 @@ void NetStats::CheckMatch()
 		}
 	}
 
+	current.CalculateHash();
 	if(best_match)
 	{
 		have_changes = (*best_match = current);
-		current.uid = best_match->uid;
+		current.ouid = best_match->ouid;
 	}
 	else
 	{
-		UuidCreate(&current.uid);
+		current.ouid = current.uid;
 		stats.push_back(current);
 		have_changes = true;
 	}
@@ -468,15 +530,10 @@ void NetStats::UpdateAsync()
 
 bool NetStats::Send()
 {
-	string guid;
-	FormatStr(guid, "%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX",
-		current.uid.Data1, current.uid.Data2, current.uid.Data3,
-		current.uid.Data4[0], current.uid.Data4[1], current.uid.Data4[2], current.uid.Data4[3],
-		current.uid.Data4[4], current.uid.Data4[5], current.uid.Data4[6], current.uid.Data4[7]);
-
 	string data;
 	FormatStr(data, R"raw(
 {
+	"ouid": "%s",
 	"uid": "%s",
 	"version": %d,
 	"winver": %d,
@@ -485,7 +542,7 @@ bool NetStats::Send()
 	"vs_ver": %d,
 	"ps_ver": %d
 }
-)raw", guid.c_str(), current.ver, current.winver, current.ram, current.cpu_flags, current.vs_ver, current.ps_ver);
+)raw", current.ouid.c_str(), current.uid.c_str(), current.ver, current.winver, current.ram, current.cpu_flags, current.vs_ver, current.ps_ver);
 	Trim(data);
 
 	string encrypted;
@@ -497,7 +554,8 @@ bool NetStats::Send()
 	uint c = crc.Get();
 
 	string request_data;
-	FormatStr(request_data, "data=%s&c=%d", encrypted.c_str(), c);
+	// 2932966817
+	FormatStr(request_data, "data=%s&c=%u", encrypted.c_str(), c);
 
 	TCPInterface* tcp = TCPInterface::GetInstance();
 	tcp->Start(0, 1);

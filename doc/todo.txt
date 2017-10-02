@@ -12,6 +12,7 @@ NEW:
 - traps are out of sync for client/server
 - chaning vsync reset failed, cannot reproduce
 + 404 handling on website
++ when npc have item in his inventory and in pc, it will first ask for pc one
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

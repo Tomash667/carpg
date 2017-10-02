@@ -10,20 +10,22 @@ public:
 private:
 	struct Stats
 	{
-		static const uint MIN_SIZE = sizeof(UUID) + sizeof(int) * 4 + sizeof(uint) + sizeof(float) + 2;
+		static const uint MIN_SIZE = sizeof(int) * 4 + sizeof(uint) + sizeof(float) + 5;
 
-		UUID uid;
 		int cpu_flags, vs_ver, ps_ver, winver, ver;
 		uint drive_id;
 		float ram;
 		vector<string> gpus;
-		string cpu_name;
+		string ouid, uid, cpu_name, user_name;
 
 		bool operator = (const Stats& stats);
 		int operator == (const Stats& stats) const;
+
+		void CalculateHash();
 	};
 
 	void Update();
+	void InitializeUserName(Stats& s);
 	void InitializeCpu(Stats& s);
 	void InitializeMemory(Stats& s);
 	void InitializeVersion(Stats& s);
