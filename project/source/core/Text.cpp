@@ -42,6 +42,28 @@ cstring FormatList(cstring str, va_list list)
 }
 
 //=================================================================================================
+void FormatStr(string& s, cstring str, ...)
+{
+	assert(str);
+	va_list list;
+	va_start(list, str);
+	s.resize(FORMAT_LENGTH);
+	char* cbuf = (char*)s.data();
+	int len = _vsnprintf_s(cbuf, FORMAT_LENGTH, FORMAT_LENGTH - 1, str, list);
+	if(len >= 0)
+	{
+		cbuf[len] = 0;
+		s.resize(len);
+	}
+	else
+	{
+		cbuf[0] = 0;
+		s.clear();
+	}
+	va_end(list);
+}
+
+//=================================================================================================
 cstring Upper(cstring str)
 {
 	assert(str);
@@ -419,6 +441,26 @@ void RemoveEndOfLine(string& str, bool remove)
 			}
 			else
 				++pos;
+		}
+	}
+}
+
+//=================================================================================================
+void Replace(string& s, cstring in_chars, cstring out_chars)
+{
+	assert(in_chars && out_chars && strlen(in_chars) == strlen(out_chars));
+
+	for(char& c : s)
+	{
+		cstring i_in_chars = in_chars,
+			i_out_chars = out_chars;
+		char i_char;
+		while((i_char = *i_in_chars) != 0)
+		{
+			if(c == i_char)
+				c = *i_out_chars;
+			++i_in_chars;
+			++i_out_chars;
 		}
 	}
 }

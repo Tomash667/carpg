@@ -1,44 +1,45 @@
 ﻿FEATURE:
++ building loader
++ object loader improvements, baseobject, baseusable
 ? altar has alpha=0, but bloody altar=-1
 ? test OBJ_DOUBLE_PHYSICS
 ? physics: tartak, fern, winplant, smallroof, rope, wheel, grass2, corn
 ? testing
 ===============================================================================================================
 CURRENT:
-- stupid website rewrite rule
+? 3 players usable tests
 ===============================================================================================================
 NEW:
-- with lag and speed player can move outside of building, require bullet physics
-+ convert objects on table to normal items, some precreated layouts of items
++ net devmode: show stamina for clients
+- can talk to unit while it's exiting building, dialog is thru door then
+- green screen, cannot reproduce
+? using cheats to exit from arena/tournament
+- travel on worldmap is a bit out of sync, clicking instantly after travel will error on server, thinking that team not yet entered location, forward prediction should be easy here
+- traps are out of sync for client/server
+- chaning vsync reset failed, cannot reproduce
 + move chest to usables
 + particles in objects, not hardcoded water_effect, blood_effect
 + remove hardcoded bench variants in base usable
 + remove hardcoded ai to use read papers animation on chair, eat food on stool
 + remove obj_alpha
 + validate objects metadata (required objects, units)
+? why version/stats thread start at menu, not while loading
 0.7:
 + amulet
 + magic effects
 + system rework part 1
 ===============================================================================================================
 VERIFY:
-- da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
+? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
 - w questowych lokacjach krew/zwłoki nie znikają
 - da sie wlezc w kogos
 - ANGLE!
-- fov may not work good when near borders
+- (tile?) fov may not work good when near borders
 - verify dialogs ending with end/restart
 - without human flag and mesh crash when spawned, log error
 - debug ai lag is too big!
-- oświetlenie na zewnątrz dla terenu, pod małym kątem jest biała trawa [na ziemie i trawie zato widać trawę pod kątem, mipmaping?]
 - magic bullets and fireballs don't hit on client, aims ground, ? argh happened once & i can't reproduce it; draw debug ray when ai is targeting
-- D3DX: Warning ID3DXEffect::EndPass. Changes have been made but not commited. CommitChange must be called before each DrawPrimitive call
-- po wejściu do gry i powrocie do menu jest obwódka wokół obrazka, przez multisampling
-- jeśli w mp osoba coś powie i zostanie usunięta w tej samej ramce to u klienta ten tekst się nie wyświetli
 - ai look at angle nie jest clipowane, albo coś?
-- Direct3D9: :Dynamic vertex buffer locked twice or more in a row without D3DLOCK_NOOVERWRITE or D3DLOCK_DISCARD. Could have severe performance penalty.
-- inventory icons disappear after alt-enter or changing multisampling [ł]; not happens on my gpu, need more info
 - trochę da się widzieć przez ściany :/
-- zmiana multisamplingu nie ma wpływu na wygenerowane obrazki przedmiotów
 ? heal and death_screen
 ? raknet wysyła wiadomości do zdisconnectowanych przy broadcast jeśli nie wyśle jeszcze disconnect

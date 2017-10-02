@@ -625,6 +625,9 @@
     <ClCompile Include="source\game\entity\ItemContainer.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\net\NetStats.cpp">
+      <Filter>3. game\net</Filter>
+    </ClCompile>
     <ClCompile Include="source\core\TextWriter.cpp">
       <Filter>1. core</Filter>
     </ClCompile>
@@ -1260,6 +1263,12 @@
     </ClInclude>
     <ClInclude Include="source\game\entity\ItemContainer.h">
       <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\net\NetStats.h">
+      <Filter>3. game\net</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\Base64.h">
+      <Filter>1. core</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\BaseObject.h">
       <Filter>3. game\system</Filter>

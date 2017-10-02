@@ -2165,13 +2165,13 @@ bool IGUI::NeedCursor()
 }
 
 //=================================================================================================
-void IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const Vec3& pos, Rect* text_rect)
+bool IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const Vec3& pos, Rect* text_rect)
 {
 	assert(font);
 
 	Int2 pt;
 	if(!To2dPoint(pos, pt))
-		return;
+		return false;
 
 	Int2 size = font->CalculateSize(text);
 	Rect r = { pt.x - size.x / 2, pt.y - size.y - 4, pt.x + size.x / 2 + 1, pt.y - 4 };
@@ -2179,6 +2179,8 @@ void IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color
 
 	if(text_rect)
 		*text_rect = r;
+
+	return true;
 }
 
 //=================================================================================================

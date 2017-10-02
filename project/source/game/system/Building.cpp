@@ -1078,7 +1078,7 @@ private:
 			crc.Update(building->inside_mesh_id);
 			crc.Update(building->size);
 			crc.Update(building->shift);
-			crc.UpdateVector(building->scheme);
+			crc.Update(building->scheme);
 			crc.Update(building->flags);
 			if(building->group)
 				crc.Update(building->group->id);

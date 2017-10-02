@@ -23,6 +23,7 @@
 #include "AIController.h"
 #include "Spell.h"
 #include "Team.h"
+#include "NetStats.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -57,7 +58,7 @@ prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr), sItemRegionRot(n
 cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr), cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true),
 cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0), grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0),
 screenshot_format(D3DXIFF_JPG), quickstart_class(Class::RANDOM), autopick_class(Class::INVALID), current_packet(nullptr),
-game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false)
+game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false), disable_net_stats(false)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -1840,6 +1841,7 @@ void Game::OnCleanup()
 	DeleteElements(game_players);
 	DeleteElements(old_players);
 
+	NetStats::Close();
 	if(peer)
 		SLNet::RakPeerInterface::DestroyInstance(peer);
 }
@@ -2787,13 +2789,14 @@ bool Game::CanBuySell(const Item* item)
 //=================================================================================================
 void Game::ResetCollisionPointers()
 {
-	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
+	for(vector<Object*>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
 	{
-		if(it->base && IS_SET(it->base->flags, OBJ_PHYSICS_PTR))
+		Object& obj = **it;
+		if(obj.base && IS_SET(obj.base->flags, OBJ_PHYSICS_PTR))
 		{
-			btCollisionObject* cobj = (btCollisionObject*)it->ptr;
-			if(cobj->getUserPointer() != (void*)&*it)
-				cobj->setUserPointer(&*it);
+			btCollisionObject* cobj = (btCollisionObject*)obj.ptr;
+			if(cobj->getUserPointer() != (void*)&obj)
+				cobj->setUserPointer(&obj);
 		}
 	}
 }

@@ -11,7 +11,7 @@
 //-----------------------------------------------------------------------------
 struct OutsideLocation : public Location, public LevelArea
 {
-	vector<Object> objects;
+	vector<Object*> objects;
 	vector<Chest*> chests;
 	vector<Usable*> usables;
 	vector<Blood> bloods;

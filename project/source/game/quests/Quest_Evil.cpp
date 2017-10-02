@@ -299,17 +299,11 @@ void Quest_Evil::SetProgress(int prog2)
 			Location& target = GetTargetLocation();
 			target.active_quest = nullptr;
 			target.dont_clean = false;
-			BaseObject* o = BaseObject::Get("bloody_altar");
-			int index = 0;
-			for(vector<Object>::iterator it = game->local_ctx.objects->begin(), end = game->local_ctx.objects->end(); it != end; ++it, ++index)
-			{
-				if(it->base == o)
-					break;
-			}
-			Object& obj = game->local_ctx.objects->at(index);
-			obj.base = BaseObject::Get("altar");
-			obj.mesh = obj.base->mesh;
-			ResourceManager::Get<Mesh>().Load(obj.mesh);
+			BaseObject* base_obj = BaseObject::Get("bloody_altar");
+			Object* obj = game->local_ctx.FindObject(base_obj);
+			obj->base = BaseObject::Get("altar");
+			obj->mesh = obj->base->mesh;
+			ResourceManager::Get<Mesh>().Load(obj->mesh);
 			// usuñ cz¹steczki
 			float best_dist = 999.f;
 			ParticleEmitter* pe = nullptr;
@@ -317,7 +311,7 @@ void Quest_Evil::SetProgress(int prog2)
 			{
 				if((*it)->tex == game->tKrew[BLOOD_RED])
 				{
-					float dist = Vec3::Distance((*it)->pos, obj.pos);
+					float dist = Vec3::Distance((*it)->pos, obj->pos);
 					if(dist < best_dist)
 					{
 						best_dist = dist;
@@ -596,27 +590,26 @@ void Quest_Evil::GenerateBloodyAltar()
 
 	// szukaj zwyk³ego o³tarza blisko œrodka
 	Vec3 center(float(lvl.w + 1), 0, float(lvl.h + 1));
-	int best_index = -1, index = 0;
 	float best_dist = 999.f;
-	BaseObject* oltarz = BaseObject::Get("altar");
-	for(vector<Object>::iterator it = lvl.objects.begin(), end = lvl.objects.end(); it != end; ++it, ++index)
+	BaseObject* base_obj = BaseObject::Get("altar");
+	Object* obj = nullptr;
+	for(auto o : lvl.objects)
 	{
-		if(it->base == oltarz)
+		if(o->base == base_obj)
 		{
-			float dist = Vec3::Distance(it->pos, center);
+			float dist = Vec3::Distance(o->pos, center);
 			if(dist < best_dist)
 			{
 				best_dist = dist;
-				best_index = index;
+				obj = o;
 			}
 		}
 	}
-	assert(best_index != -1);
+	assert(obj);
 
 	// zmieñ typ obiektu
-	Object& o = lvl.objects[best_index];
-	o.base = BaseObject::Get("bloody_altar");
-	o.mesh = o.base->mesh;
+	obj->base = BaseObject::Get("bloody_altar");
+	obj->mesh = obj->base->mesh;
 
 	// dodaj cz¹steczki
 	ParticleEmitter* pe = new ParticleEmitter;
@@ -628,8 +621,8 @@ void Quest_Evil::GenerateBloodyAltar()
 	pe->op_alpha = POP_LINEAR_SHRINK;
 	pe->op_size = POP_LINEAR_SHRINK;
 	pe->particle_life = 0.5f;
-	pe->pos = o.pos;
-	pe->pos.y += o.base->centery;
+	pe->pos = obj->pos;
+	pe->pos.y += obj->base->centery;
 	pe->pos_min = Vec3(0, 0, 0);
 	pe->pos_max = Vec3(0, 0, 0);
 	pe->spawn_min = 1;
@@ -644,7 +637,7 @@ void Quest_Evil::GenerateBloodyAltar()
 
 	// dodaj krew
 	vector<Int2> path;
-	game->FindPath(game->local_ctx, lvl.staircase_up, pos_to_pt(o.pos), path);
+	game->FindPath(game->local_ctx, lvl.staircase_up, pos_to_pt(obj->pos), path);
 	for(vector<Int2>::iterator it = path.begin(), end = path.end(); it != end; ++it)
 	{
 		if(it != path.begin())
@@ -670,13 +663,13 @@ void Quest_Evil::GenerateBloodyAltar()
 	}
 
 	// ustaw pokój na specjalny ¿eby nie by³o tam wrogów
-	lvl.GetNearestRoom(o.pos)->target = RoomTarget::Treasury;
+	lvl.GetNearestRoom(obj->pos)->target = RoomTarget::Treasury;
 
 	evil_state = Quest_Evil::State::SpawnedAltar;
-	pos = o.pos;
+	pos = obj->pos;
 
 	if(game->devmode)
-		Info("Generated bloody altar (%g,%g).", o.pos.x, o.pos.z);
+		Info("Generated bloody altar (%g,%g).", obj->pos.x, obj->pos.z);
 }
 
 //=================================================================================================

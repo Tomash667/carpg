@@ -374,8 +374,8 @@ void Game::PrepareLevelData(BitStream& stream)
 					blood.Write(stream);
 				// objects
 				stream.WriteCasted<byte>(ib.objects.size());
-				for(Object& object : ib.objects)
-					object.Write(stream);
+				for(Object* object : ib.objects)
+					object->Write(stream);
 				// lights
 				stream.WriteCasted<byte>(ib.lights.size());
 				for(Light& light : ib.lights)
@@ -443,8 +443,8 @@ void Game::PrepareLevelData(BitStream& stream)
 		blood.Write(stream);
 	// objects
 	stream.WriteCasted<word>(local_ctx.objects->size());
-	for(Object& object : *local_ctx.objects)
-		object.Write(stream);
+	for(Object* object : *local_ctx.objects)
+		object->Write(stream);
 	// chests
 	stream.WriteCasted<byte>(local_ctx.chests->size());
 	for(Chest* chest : *local_ctx.chests)
@@ -901,9 +901,10 @@ bool Game::ReadLevelData(BitStream& stream)
 					return false;
 				}
 				ib.objects.resize(count);
-				for(Object& object : ib.objects)
+				for(Object*& object : ib.objects)
 				{
-					if(!object.Read(stream))
+					object = new Object;
+					if(!object->Read(stream))
 					{
 						Error("Read level: Broken packet for object in %d inside building.", index);
 						return false;
@@ -1149,9 +1150,10 @@ bool Game::ReadLevelData(BitStream& stream)
 		return false;
 	}
 	local_ctx.objects->resize(count2);
-	for(Object& object : *local_ctx.objects)
+	for(Object*& object : *local_ctx.objects)
 	{
-		if(!object.Read(stream))
+		object = new Object;
+		if(!object->Read(stream))
 		{
 			Error("Read level: Broken object.");
 			return false;
@@ -1425,6 +1427,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		SetMusic(music);
 
 	InitQuadTree();
+	CalculateQuadtree();
 
 	return true;
 }
@@ -1444,7 +1447,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		return false;
 	}
 
-	// human data / mesh
+	// human data
 	if(unit.data->type == UNIT_TYPE::HUMAN)
 	{
 		unit.human_data = new Human;
@@ -1475,7 +1478,6 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 	else
 		unit.human_data = nullptr;
-	unit.CreateMesh(mp_load ? Unit::CREATE_MESH::PRELOAD : Unit::CREATE_MESH::NORMAL);
 
 	// equipped items
 	if(unit.data->type != UNIT_TYPE::ANIMAL)
@@ -1602,6 +1604,9 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		if(!stream.ReadCasted<byte>(unit.ai_mode))
 			return false;
 	}
+
+	// mesh
+	unit.CreateMesh(mp_load ? Unit::CREATE_MESH::PRELOAD : Unit::CREATE_MESH::NORMAL);
 
 	unit.action = A_NONE;
 	unit.weapon_taken = W_NONE;
@@ -4210,8 +4215,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					int result = CanLeaveLocation(*info.u);
-					if(result == 0)
+					CanLeaveLocationResult result = CanLeaveLocation(*info.u);
+					if(result == CanLeaveLocationResult::Yes)
 					{
 						Net::PushChange(NetChange::LEAVE_LOCATION);
 						if(type == WHERE_OUTSIDE)
@@ -4251,7 +4256,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						NetChangePlayer& c = Add1(Net::player_changes);
 						c.type = NetChangePlayer::CANT_LEAVE_LOCATION;
 						c.pc = &player;
-						c.id = result;
+						c.id = (int)result;
 						info.NeedUpdate();
 					}
 				}
@@ -7648,17 +7653,11 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::CLEAN_ALTAR:
 			{
 				// change object
-				BaseObject* o = BaseObject::Get("bloody_altar");
-				int index = 0;
-				for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it, ++index)
-				{
-					if(it->base == o)
-						break;
-				}
-				Object& obj = local_ctx.objects->at(index);
-				obj.base = BaseObject::Get("altar");
-				obj.mesh = obj.base->mesh;
-				ResourceManager::Get<Mesh>().Load(obj.mesh);
+				BaseObject* base_obj = BaseObject::Get("bloody_altar");
+				Object* obj = local_ctx.FindObject(base_obj);
+				obj->base = BaseObject::Get("altar");
+				obj->mesh = obj->base->mesh;
+				ResourceManager::Get<Mesh>().Load(obj->mesh);
 
 				// remove particles
 				float best_dist = 999.f;
@@ -7667,7 +7666,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				{
 					if((*it)->tex == tKrew[BLOOD_RED])
 					{
-						float dist = Vec3::Distance((*it)->pos, obj.pos);
+						float dist = Vec3::Distance((*it)->pos, obj->pos);
 						if(dist < best_dist)
 						{
 							best_dist = dist;
@@ -9087,19 +9086,19 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			// can't leave location message
 			case NetChangePlayer::CANT_LEAVE_LOCATION:
 				{
-					byte reason;
-					if(!stream.Read(reason))
+					CanLeaveLocationResult reason;
+					if(!stream.ReadCasted<byte>(reason))
 					{
 						Error("Update single client: Broken CANT_LEAVE_LOCATION.");
 						StreamError();
 					}
-					else if(reason >= 2)
+					else if(reason != CanLeaveLocationResult::InCombat && reason != CanLeaveLocationResult::TeamTooFar)
 					{
-						Error("Update single client: CANT_LEAVE_LOCATION, invalid reason %u.", reason);
+						Error("Update single client: CANT_LEAVE_LOCATION, invalid reason %u.", (byte)reason);
 						StreamError();
 					}
 					else
-						AddGameMsg3(reason == 1 ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+						AddGameMsg3(reason == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 				}
 				break;
 			// force player to look at unit

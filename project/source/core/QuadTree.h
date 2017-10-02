@@ -1,20 +1,24 @@
 #pragma once
 
-struct QuadRect
+struct Object;
+
+struct QuadObj
 {
-	QuadRect()
+	enum Type
 	{
-	}
-	QuadRect(const Box2d& box)
+		OBJECT
+	} type;
+	union
 	{
-		box.ToRectangle(x, y, w, h);
-	}
-	float x, y, w, h;
+		Object* obj;
+		void* ptr;
+	};
+
+	explicit QuadObj(Object* obj) : obj(obj), type(OBJECT) {}
 };
 
 struct QuadNode
 {
-	QuadRect rect;
 	Box2d box;
 	Rect grid_box;
 	QuadNode* childs[4];
@@ -31,7 +35,7 @@ struct QuadTree
 	{
 	}
 
-	void Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int splits, float margin);
+	void Init(QuadNode* node, const Box2d& box, const Rect& grid_box, int splits);
 
 	void List(FrustumPlanes& frustum, Nodes& nodes);
 	void ListLeafs(FrustumPlanes& frustum, Nodes& nodes);
@@ -49,7 +53,7 @@ struct QuadTree
 struct LevelPart : QuadNode
 {
 	bool generated;
-	//vector<Object> objects;
+	vector<QuadObj> objects;
 	vector<Matrix> grass, grass2;
 };
 

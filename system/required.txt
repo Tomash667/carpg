@@ -407,7 +407,7 @@ object shelves
 object tree
 object tree2
 object tree3
-withered_tree
+object withered_tree
 object grass
 object plant
 object rock

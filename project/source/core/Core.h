@@ -325,6 +325,31 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+template<typename T>
+class SingletonPtr
+{
+	static T* instance;
+public:
+	static T& Get()
+	{
+		if(!instance)
+			instance = new T;
+		return *instance;
+	}
+
+	static T* TryGet()
+	{
+		return instance;
+	}
+
+	static void Free()
+	{
+		delete instance;
+		instance = nullptr;
+	}
+};
+
+//-----------------------------------------------------------------------------
 // Return true if any element matches condition
 template<typename T, typename Arg>
 inline bool Any(const T& item, const Arg& arg)

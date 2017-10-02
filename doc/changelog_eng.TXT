@@ -1,11 +1,12 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.6 (2017-10-??):
+Version 0.6 (2017-10-01):
 + readable books
 + usable bookshelf
 + items rotation in inventory
 + sorting unit labels by distance
++ open location optimalizations
 - fixed not working multiplayer from 0.5 version
 - fixed missing moving animations for clients in multiplayer game
 - fixed crashes and missing texts witch 3+ players on client getting disconnected between loading levels/world
@@ -29,6 +30,9 @@ Version 0.6 (2017-10-??):
 - fixed crash when summoned wolf inside wall
 - fixed not working input with low fps, unit position exploding, wrong animations
 - fixed missing unit animations that happen sometimes
+- fixed saving & loading name/save name containing quotation mark
+- fixed uneven generation of units in the inn/arena
+- fixed missing message about near enemies for client when trying to leavel location
 
 --------------------------------------------------------------------------------
 Version 0.5 (2017-09-07):

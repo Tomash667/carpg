@@ -18,7 +18,7 @@ struct InsideLocationLevel : public LevelArea
 	Pole* map;
 	int w, h;
 	vector<Chest*> chests;
-	vector<Object> objects;
+	vector<Object*> objects;
 	vector<Light> lights;
 	vector<Room> rooms;
 	vector<Trap*> traps;

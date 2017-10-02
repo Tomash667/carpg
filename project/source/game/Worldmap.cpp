@@ -1420,7 +1420,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	}
 
 	if(location->outside)
+	{
 		SetTerrainTextures();
+		CalculateQuadtree();
+	}
 
 	LoadResources(txLoadingComplete, false);
 
@@ -1518,14 +1521,14 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 		BaseUsable* stool = BaseUsable::Get("stool");
 
 		// table
-		uint obj_index = ctx.objects->size();
-		Object& o = Add1(ctx.objects);
-		o.mesh = table->mesh;
-		o.rot = Vec3(0, rot, 0);
-		o.pos = pos;
-		o.scale = 1;
-		o.base = table;
-		SpawnObjectExtras(ctx, stool, pos, rot, &o, nullptr);
+		Object* o = new Object;
+		o->mesh = table->mesh;
+		o->rot = Vec3(0, rot, 0);
+		o->pos = pos;
+		o->scale = 1;
+		o->base = table;
+		ctx.objects->push_back(o);
+		SpawnObjectExtras(ctx, table, pos, rot, o, nullptr);
 
 		// stools
 		int count = Random(2, 4);
@@ -1573,7 +1576,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 			SpawnObjectExtras(ctx, stool, u->pos, u->rot, u, nullptr);
 		}
 
-		return &ctx.objects->at(obj_index);
+		return o;
 	}
 	else if(IS_SET(base->flags, OBJ_BUILDING))
 	{
@@ -1594,17 +1597,17 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 			rot = 0.f;
 		}
 
-		int obj_index = ctx.objects->size();
-		Object& o = Add1(ctx.objects);
-		o.mesh = base->mesh;
-		o.rot = Vec3(0, rot, 0);
-		o.pos = pos;
-		o.scale = scale;
-		o.base = base;
+		Object* o = new Object;
+		o->mesh = base->mesh;
+		o->rot = Vec3(0, rot, 0);
+		o->pos = pos;
+		o->scale = scale;
+		o->base = base;
+		ctx.objects->push_back(o);
 
-		ProcessBuildingObjects(ctx, nullptr, nullptr, o.mesh, nullptr, rot, roti, pos, nullptr, nullptr, false, out_point);
+		ProcessBuildingObjects(ctx, nullptr, nullptr, o->mesh, nullptr, rot, roti, pos, nullptr, nullptr, false, out_point);
 
-		return &ctx.objects->at(obj_index);
+		return o;
 	}
 	else if(IS_SET(base->flags, OBJ_USABLE))
 	{
@@ -1680,17 +1683,17 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 	else
 	{
 		// normal object
-		int obj_index = ctx.objects->size();
-		Object& o = Add1(ctx.objects);
-		o.mesh = base->mesh;
-		o.rot = Vec3(0, rot, 0);
-		o.pos = pos;
-		o.scale = scale;
-		o.base = base;
+		Object* o = new Object;
+		o->mesh = base->mesh;
+		o->rot = Vec3(0, rot, 0);
+		o->pos = pos;
+		o->scale = scale;
+		o->base = base;
+		ctx.objects->push_back(o);
 
-		SpawnObjectExtras(ctx, base, pos, rot, &o, (btCollisionObject**)&o.ptr, scale, flags);
+		SpawnObjectExtras(ctx, base, pos, rot, o, (btCollisionObject**)&o->ptr, scale, flags);
 
-		return &ctx.objects->at(obj_index);
+		return o;
 	}
 }
 
@@ -1704,30 +1707,31 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 	// budynki
 	for(vector<CityBuilding>::iterator it = _buildings.begin(), end = _buildings.end(); it != end; ++it)
 	{
-		Object& o = Add1(local_ctx.objects);
+		Object* o = new Object;
 
 		switch(it->rot)
 		{
 		case 0:
-			o.rot.y = 0.f;
+			o->rot.y = 0.f;
 			break;
 		case 1:
-			o.rot.y = PI * 3 / 2;
+			o->rot.y = PI * 3 / 2;
 			break;
 		case 2:
-			o.rot.y = PI;
+			o->rot.y = PI;
 			break;
 		case 3:
-			o.rot.y = PI / 2;
+			o->rot.y = PI / 2;
 			break;
 		}
 
-		o.pos = Vec3(float(it->pt.x + it->type->shift[it->rot].x) * 2, 1.f, float(it->pt.y + it->type->shift[it->rot].y) * 2);
-		terrain->SetH(o.pos);
-		o.rot.x = o.rot.z = 0.f;
-		o.scale = 1.f;
-		o.base = nullptr;
-		o.mesh = it->type->mesh;
+		o->pos = Vec3(float(it->pt.x + it->type->shift[it->rot].x) * 2, 1.f, float(it->pt.y + it->type->shift[it->rot].y) * 2);
+		terrain->SetH(o->pos);
+		o->rot.x = o->rot.z = 0.f;
+		o->scale = 1.f;
+		o->base = nullptr;
+		o->mesh = it->type->mesh;
+		local_ctx.objects->push_back(o);
 	}
 
 	// create walls, towers & gates
@@ -1745,173 +1749,189 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			// north
 			if(!IS_SET(city->gates, GATE_SOUTH) || i < mid - 1 || i > mid)
 			{
-				Object& o = Add1(local_ctx.objects);
-				o.pos = Vec3(float(i) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f);
-				o.rot = Vec3(0, PI, 0);
-				o.scale = 1.f;
-				o.base = oWall;
-				o.mesh = oWall->mesh;
-				SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
+				Object* o = new Object;
+				o->pos = Vec3(float(i) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f);
+				o->rot = Vec3(0, PI, 0);
+				o->scale = 1.f;
+				o->base = oWall;
+				o->mesh = oWall->mesh;
+				local_ctx.objects->push_back(o);
+				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
 			}
 
 			// south
 			if(!IS_SET(city->gates, GATE_NORTH) || i < mid - 1 || i > mid)
 			{
-				Object& o = Add1(local_ctx.objects);
-				o.pos = Vec3(float(i) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f);
-				o.rot = Vec3(0, 0, 0);
-				o.scale = 1.f;
-				o.base = oWall;
-				o.mesh = oWall->mesh;
-				SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
+				Object* o = new Object;
+				o->pos = Vec3(float(i) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f);
+				o->rot = Vec3(0, 0, 0);
+				o->scale = 1.f;
+				o->base = oWall;
+				o->mesh = oWall->mesh;
+				local_ctx.objects->push_back(o);
+				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
 			}
 
 			// west
 			if(!IS_SET(city->gates, GATE_WEST) || i < mid - 1 || i > mid)
 			{
-				Object& o = Add1(local_ctx.objects);
-				o.pos = Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
-				o.rot = Vec3(0, PI * 3 / 2, 0);
-				o.scale = 1.f;
-				o.base = oWall;
-				o.mesh = oWall->mesh;
-				SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
+				Object* o = new Object;
+				o->pos = Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
+				o->rot = Vec3(0, PI * 3 / 2, 0);
+				o->scale = 1.f;
+				o->base = oWall;
+				o->mesh = oWall->mesh;
+				local_ctx.objects->push_back(o);
+				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
 			}
 
 			// east
 			if(!IS_SET(city->gates, GATE_EAST) || i < mid - 1 || i > mid)
 			{
-				Object& o = Add1(local_ctx.objects);
-				o.pos = Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
-				o.rot = Vec3(0, PI / 2, 0);
-				o.scale = 1.f;
-				o.base = oWall;
-				o.mesh = oWall->mesh;
-				SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
+				Object* o = new Object;
+				o->pos = Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, float(i) * 2 + 1.f);
+				o->rot = Vec3(0, PI / 2, 0);
+				o->scale = 1.f;
+				o->base = oWall;
+				o->mesh = oWall->mesh;
+				local_ctx.objects->push_back(o);
+				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
 			}
 		}
 
 		// towers
 		{
 			// north east
-			Object& o = Add1(local_ctx.objects);
-			o.pos = Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f);
-			o.rot = Vec3(0, 0, 0);
-			o.scale = 1.f;
-			o.base = oTower;
-			o.mesh = oTower->mesh;
-			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
+			Object* o = new Object;
+			o->pos = Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f);
+			o->rot = Vec3(0, 0, 0);
+			o->scale = 1.f;
+			o->base = oTower;
+			o->mesh = oTower->mesh;
+			local_ctx.objects->push_back(o);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
 		}
 		{
 			// south east
-			Object& o = Add1(local_ctx.objects);
-			o.pos = Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f);
-			o.rot = Vec3(0, PI / 2, 0);
-			o.scale = 1.f;
-			o.base = oTower;
-			o.mesh = oTower->mesh;
-			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
+			Object* o = new Object;
+			o->pos = Vec3(int(0.85f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f);
+			o->rot = Vec3(0, PI / 2, 0);
+			o->scale = 1.f;
+			o->base = oTower;
+			o->mesh = oTower->mesh;
+			local_ctx.objects->push_back(o);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
 		}
 		{
 			// south west
-			Object& o = Add1(local_ctx.objects);
-			o.pos = Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f);
-			o.rot = Vec3(0, PI, 0);
-			o.scale = 1.f;
-			o.base = oTower;
-			o.mesh = oTower->mesh;
-			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
+			Object* o = new Object;
+			o->pos = Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.15f*OutsideLocation::size) * 2 + 1.f);
+			o->rot = Vec3(0, PI, 0);
+			o->scale = 1.f;
+			o->base = oTower;
+			o->mesh = oTower->mesh;
+			local_ctx.objects->push_back(o);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
 		}
 		{
 			// north west
-			Object& o = Add1(local_ctx.objects);
-			o.pos = Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f);
-			o.rot = Vec3(0, PI * 3 / 2, 0);
-			o.scale = 1.f;
-			o.base = oTower;
-			o.mesh = oTower->mesh;
-			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
+			Object* o = new Object;
+			o->pos = Vec3(int(0.15f*OutsideLocation::size) * 2 + 1.f, 1.f, int(0.85f*OutsideLocation::size) * 2 + 1.f);
+			o->rot = Vec3(0, PI * 3 / 2, 0);
+			o->scale = 1.f;
+			o->base = oTower;
+			o->mesh = oTower->mesh;
+			local_ctx.objects->push_back(o);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
 		}
 
 		// gates
 		if(IS_SET(city->gates, GATE_NORTH))
 		{
-			Object& o = Add1(local_ctx.objects);
-			o.rot.x = o.rot.z = 0.f;
-			o.scale = 1.f;
-			o.base = oGate;
-			o.mesh = oGate->mesh;
-			o.rot.y = 0;
-			o.pos = Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2);
-			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
+			Object* o = new Object;
+			o->rot.x = o->rot.z = 0.f;
+			o->scale = 1.f;
+			o->base = oGate;
+			o->mesh = oGate->mesh;
+			o->rot.y = 0;
+			o->pos = Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2);
+			local_ctx.objects->push_back(o);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
 
-			Object& o2 = Add1(local_ctx.objects);
-			o2.pos = o.pos;
-			o2.rot = o.rot;
-			o2.scale = 1.f;
-			o2.base = oGrate;
-			o2.mesh = oGrate->mesh;
-			SpawnObjectExtras(local_ctx, o2.base, o2.pos, o2.rot.y, nullptr, nullptr, 1.f, 0);
+			Object* o2 = new Object;
+			o2->pos = o->pos;
+			o2->rot = o->rot;
+			o2->scale = 1.f;
+			o2->base = oGrate;
+			o2->mesh = oGrate->mesh;
+			local_ctx.objects->push_back(o2);
+			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, nullptr, 1.f, 0);
 		}
 
 		if(IS_SET(city->gates, GATE_SOUTH))
 		{
-			Object& o = Add1(local_ctx.objects);
-			o.rot.x = o.rot.z = 0.f;
-			o.scale = 1.f;
-			o.base = oGate;
-			o.mesh = oGate->mesh;
-			o.rot.y = PI;
-			o.pos = Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2);
-			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
+			Object* o = new Object;
+			o->rot.x = o->rot.z = 0.f;
+			o->scale = 1.f;
+			o->base = oGate;
+			o->mesh = oGate->mesh;
+			o->rot.y = PI;
+			o->pos = Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2);
+			local_ctx.objects->push_back(o);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
 
-			Object& o2 = Add1(local_ctx.objects);
-			o2.pos = o.pos;
-			o2.rot = o.rot;
-			o2.scale = 1.f;
-			o2.base = oGrate;
-			o2.mesh = oGrate->mesh;
-			SpawnObjectExtras(local_ctx, o2.base, o2.pos, o2.rot.y, nullptr, nullptr, 1.f, 0);
+			Object* o2 = new Object;
+			o2->pos = o->pos;
+			o2->rot = o->rot;
+			o2->scale = 1.f;
+			o2->base = oGrate;
+			o2->mesh = oGrate->mesh;
+			local_ctx.objects->push_back(o2);
+			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, nullptr, 1.f, 0);
 		}
 
 		if(IS_SET(city->gates, GATE_WEST))
 		{
-			Object& o = Add1(local_ctx.objects);
-			o.rot.x = o.rot.z = 0.f;
-			o.scale = 1.f;
-			o.base = oGate;
-			o.mesh = oGate->mesh;
-			o.rot.y = PI * 3 / 2;
-			o.pos = Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f);
-			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
+			Object* o = new Object;
+			o->rot.x = o->rot.z = 0.f;
+			o->scale = 1.f;
+			o->base = oGate;
+			o->mesh = oGate->mesh;
+			o->rot.y = PI * 3 / 2;
+			o->pos = Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f);
+			local_ctx.objects->push_back(o);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
 
-			Object& o2 = Add1(local_ctx.objects);
-			o2.pos = o.pos;
-			o2.rot = o.rot;
-			o2.scale = 1.f;
-			o2.base = oGrate;
-			o2.mesh = oGrate->mesh;
-			SpawnObjectExtras(local_ctx, o2.base, o2.pos, o2.rot.y, nullptr, nullptr, 1.f, 0);
+			Object* o2 = new Object;
+			o2->pos = o->pos;
+			o2->rot = o->rot;
+			o2->scale = 1.f;
+			o2->base = oGrate;
+			o2->mesh = oGrate->mesh;
+			local_ctx.objects->push_back(o2);
+			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, nullptr, 1.f, 0);
 		}
 
 		if(IS_SET(city->gates, GATE_EAST))
 		{
-			Object& o = Add1(local_ctx.objects);
-			o.rot.x = o.rot.z = 0.f;
-			o.scale = 1.f;
-			o.base = oGate;
-			o.mesh = oGate->mesh;
-			o.rot.y = PI / 2;
-			o.pos = Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f);
-			SpawnObjectExtras(local_ctx, o.base, o.pos, o.rot.y, nullptr, nullptr, 1.f, 0);
+			Object* o = new Object;
+			o->rot.x = o->rot.z = 0.f;
+			o->scale = 1.f;
+			o->base = oGate;
+			o->mesh = oGate->mesh;
+			o->rot.y = PI / 2;
+			o->pos = Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f);
+			local_ctx.objects->push_back(o);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
 
-			Object& o2 = Add1(local_ctx.objects);
-			o2.pos = o.pos;
-			o2.rot = o.rot;
-			o2.scale = 1.f;
-			o2.base = oGrate;
-			o2.mesh = oGrate->mesh;
-			SpawnObjectExtras(local_ctx, o2.base, o2.pos, o2.rot.y, nullptr, nullptr, 1.f, 0);
+			Object* o2 = new Object;
+			o2->pos = o->pos;
+			o2->rot = o->rot;
+			o2->scale = 1.f;
+			o2->base = oGrate;
+			o2->mesh = oGrate->mesh;
+			local_ctx.objects->push_back(o2);
+			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, nullptr, 1.f, 0);
 		}
 	}
 
@@ -2209,16 +2229,16 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					{
 						Vec3 o_pos = Vec3(inside->offset.x, 0.f, inside->offset.y);
 
-						Object& o = Add1(inside->ctx.objects);
-						o.base = nullptr;
-						o.mesh = inside_mesh;
-						o.pos = o_pos;
-						o.rot = Vec3(0, 0, 0);
-						o.scale = 1.f;
-						o.require_split = true;
+						Object* o = new Object;
+						o->base = nullptr;
+						o->mesh = inside_mesh;
+						o->pos = o_pos;
+						o->rot = Vec3(0, 0, 0);
+						o->scale = 1.f;
+						o->require_split = true;
+						inside->ctx.objects->push_back(o);
 
-						// nie mo¿na przekazaæ o.pos bo funkcja doda nowe obiekty i ta referencja bêdzie nie wa¿na
-						ProcessBuildingObjects(inside->ctx, city, inside, inside_mesh, nullptr, 0.f, 0, o_pos, nullptr, nullptr);
+						ProcessBuildingObjects(inside->ctx, city, inside, inside_mesh, nullptr, 0.f, 0, o->pos, nullptr, nullptr);
 					}
 
 					have_exit = true;
@@ -2293,18 +2313,18 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					assert(inside);
 
 					inside->arena1.v1.x = pos.x - pt.size.x;
-					inside->arena1.v1.y = pos.z - pt.size.y;
+					inside->arena1.v1.y = pos.z - pt.size.z;
 					inside->arena1.v2.x = pos.x + pt.size.x;
-					inside->arena1.v2.y = pos.z + pt.size.y;
+					inside->arena1.v2.y = pos.z + pt.size.z;
 				}
 				else if(token == "arena2")
 				{
 					assert(inside);
 
 					inside->arena2.v1.x = pos.x - pt.size.x;
-					inside->arena2.v1.y = pos.z - pt.size.y;
+					inside->arena2.v1.y = pos.z - pt.size.z;
 					inside->arena2.v2.x = pos.x + pt.size.x;
-					inside->arena2.v2.y = pos.z + pt.size.y;
+					inside->arena2.v2.y = pos.z + pt.size.z;
 				}
 				else if(token == "viewer")
 				{
@@ -2793,6 +2813,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		{
 			OutsideLocation* outside = (OutsideLocation*)location;
 			outside->bloods.clear();
+			DeleteElements(outside->objects);
 			DeleteElements(outside->chests);
 			DeleteElements(outside->items);
 			outside->objects.clear();
@@ -3070,12 +3091,13 @@ void Game::GenerateDungeonObjects2()
 	// schody w górê
 	if(inside->HaveUpStairs())
 	{
-		Object& o = Add1(local_ctx.objects);
-		o.mesh = aStairsUp;
-		o.pos = pt_to_pos(lvl.staircase_up);
-		o.rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
-		o.scale = 1;
-		o.base = nullptr;
+		Object* o = new Object;
+		o->mesh = aStairsUp;
+		o->pos = pt_to_pos(lvl.staircase_up);
+		o->rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
+		o->scale = 1;
+		o->base = nullptr;
+		local_ctx.objects->push_back(o);
 	}
 	else
 		SpawnObjectEntity(local_ctx, BaseObject::Get("portal"), inside->portal->pos, inside->portal->rot);
@@ -3083,12 +3105,13 @@ void Game::GenerateDungeonObjects2()
 	// schody w dó³
 	if(inside->HaveDownStairs())
 	{
-		Object& o = Add1(local_ctx.objects);
-		o.mesh = (lvl.staircase_down_in_wall ? aStairsDown2 : aStairsDown);
-		o.pos = pt_to_pos(lvl.staircase_down);
-		o.rot = Vec3(0, dir_to_rot(lvl.staircase_down_dir), 0);
-		o.scale = 1;
-		o.base = nullptr;
+		Object* o = new Object;
+		o->mesh = (lvl.staircase_down_in_wall ? aStairsDown2 : aStairsDown);
+		o->pos = pt_to_pos(lvl.staircase_down);
+		o->rot = Vec3(0, dir_to_rot(lvl.staircase_down_dir), 0);
+		o->scale = 1;
+		o->base = nullptr;
+		local_ctx.objects->push_back(o);
 	}
 
 	// kratki, drzwi
@@ -3099,57 +3122,60 @@ void Game::GenerateDungeonObjects2()
 			POLE p = lvl.map[x + y*lvl.w].type;
 			if(p == KRATKA || p == KRATKA_PODLOGA)
 			{
-				Object& o = Add1(local_ctx.objects);
-				o.mesh = aGrating;
-				o.rot = Vec3(0, 0, 0);
-				o.pos = Vec3(float(x * 2), 0, float(y * 2));
-				o.scale = 1;
-				o.base = nullptr;
+				Object* o = new Object;
+				o->mesh = aGrating;
+				o->rot = Vec3(0, 0, 0);
+				o->pos = Vec3(float(x * 2), 0, float(y * 2));
+				o->scale = 1;
+				o->base = nullptr;
+				local_ctx.objects->push_back(o);
 			}
 			if(p == KRATKA || p == KRATKA_SUFIT)
 			{
-				Object& o = Add1(local_ctx.objects);
-				o.mesh = aGrating;
-				o.rot = Vec3(0, 0, 0);
-				o.pos = Vec3(float(x * 2), 4, float(y * 2));
-				o.scale = 1;
-				o.base = nullptr;
+				Object* o = new Object;
+				o->mesh = aGrating;
+				o->rot = Vec3(0, 0, 0);
+				o->pos = Vec3(float(x * 2), 4, float(y * 2));
+				o->scale = 1;
+				o->base = nullptr;
+				local_ctx.objects->push_back(o);
 			}
 			if(p == DRZWI)
 			{
-				Object& o = Add1(local_ctx.objects);
-				o.mesh = aDoorWall;
+				Object* o = new Object;
+				o->mesh = aDoorWall;
 				if(IS_SET(lvl.map[x + y*lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
-					o.mesh = aDoorWall2;
-				o.pos = Vec3(float(x * 2) + 1, 0, float(y * 2) + 1);
-				o.scale = 1;
-				o.base = nullptr;
+					o->mesh = aDoorWall2;
+				o->pos = Vec3(float(x * 2) + 1, 0, float(y * 2) + 1);
+				o->scale = 1;
+				o->base = nullptr;
+				local_ctx.objects->push_back(o);
 
 				if(czy_blokuje2(lvl.map[x - 1 + y*lvl.w].type))
 				{
-					o.rot = Vec3(0, 0, 0);
+					o->rot = Vec3(0, 0, 0);
 					int mov = 0;
 					if(lvl.rooms[lvl.map[x + (y - 1)*lvl.w].room].IsCorridor())
 						++mov;
 					if(lvl.rooms[lvl.map[x + (y + 1)*lvl.w].room].IsCorridor())
 						--mov;
 					if(mov == 1)
-						o.pos.z += 0.8229f;
+						o->pos.z += 0.8229f;
 					else if(mov == -1)
-						o.pos.z -= 0.8229f;
+						o->pos.z -= 0.8229f;
 				}
 				else
 				{
-					o.rot = Vec3(0, PI / 2, 0);
+					o->rot = Vec3(0, PI / 2, 0);
 					int mov = 0;
 					if(lvl.rooms[lvl.map[x - 1 + y*lvl.w].room].IsCorridor())
 						++mov;
 					if(lvl.rooms[lvl.map[x + 1 + y*lvl.w].room].IsCorridor())
 						--mov;
 					if(mov == 1)
-						o.pos.x += 0.8229f;
+						o->pos.x += 0.8229f;
 					else if(mov == -1)
-						o.pos.x -= 0.8229f;
+						o->pos.x -= 0.8229f;
 				}
 
 				if(Rand() % 100 < base.door_chance || IS_SET(lvl.map[x + y*lvl.w].flags, Pole::F_SPECJALNE))
@@ -3157,8 +3183,8 @@ void Game::GenerateDungeonObjects2()
 					Door* door = new Door;
 					local_ctx.doors->push_back(door);
 					door->pt = Int2(x, y);
-					door->pos = o.pos;
-					door->rot = o.rot.y;
+					door->pos = o->pos;
+					door->rot = o->rot.y;
 					door->state = Door::Closed;
 					door->mesh_inst = new MeshInstance(aDoor);
 					door->mesh_inst->groups[0].speed = 2.f;
@@ -6082,11 +6108,12 @@ void Game::GenerateCityPickableItems()
 	const Item* vodka = FindItem("vodka");
 	const Item* plate = FindItem("plate");
 	const Item* cup = FindItem("cup");
-	for(vector<Object>::iterator it = inn->ctx.objects->begin(), end = inn->ctx.objects->end(); it != end; ++it)
+	for(vector<Object*>::iterator it = inn->ctx.objects->begin(), end = inn->ctx.objects->end(); it != end; ++it)
 	{
-		if(it->base == table)
+		Object& obj = **it;
+		if(obj.base == table)
 		{
-			PickableItemBegin(inn->ctx, *it);
+			PickableItemBegin(inn->ctx, obj);
 			if(Rand() % 2 == 0)
 			{
 				PickableItemAdd(beer);
@@ -6098,9 +6125,9 @@ void Game::GenerateCityPickableItems()
 			if(Rand() % 3 == 0)
 				PickableItemAdd(cup);
 		}
-		else if(it->base == shelves)
+		else if(obj.base == shelves)
 		{
-			PickableItemBegin(inn->ctx, *it);
+			PickableItemBegin(inn->ctx, obj);
 			for(int i = 0, ile = Random(3, 5); i < ile; ++i)
 				PickableItemAdd(beer);
 			for(int i = 0, ile = Random(1, 3); i < ile; ++i)
@@ -6112,25 +6139,26 @@ void Game::GenerateCityPickableItems()
 	CityBuilding* food = city_ctx->FindBuilding(content::BG_FOOD_SELLER);
 	if(food)
 	{
-		Object* o = nullptr;
+		Object* found_obj = nullptr;
 		float best_dist = 9999.f, dist;
-		for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
+		for(vector<Object*>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
 		{
-			if(it->base == shelves)
+			Object& obj = **it;
+			if(obj.base == shelves)
 			{
-				dist = Vec3::Distance(food->walk_pt, it->pos);
+				dist = Vec3::Distance(food->walk_pt, obj.pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
-					o = &*it;
+					found_obj = &obj;
 				}
 			}
 		}
 
-		if(o)
+		if(found_obj)
 		{
 			const ItemList* lis = FindItemList("food_and_drink").lis;
-			PickableItemBegin(local_ctx, *o);
+			PickableItemBegin(local_ctx, *found_obj);
 			for(int i = 0; i < 20; ++i)
 				PickableItemAdd(lis->Get());
 		}
@@ -6140,24 +6168,25 @@ void Game::GenerateCityPickableItems()
 	CityBuilding* alch = city_ctx->FindBuilding(content::BG_ALCHEMIST);
 	if(alch)
 	{
-		Object* o = nullptr;
+		Object* found_obj = nullptr;
 		float best_dist = 9999.f, dist;
-		for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
+		for(vector<Object*>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
 		{
-			if(it->base == shelves)
+			Object& obj = **it;
+			if(obj.base == shelves)
 			{
-				dist = Vec3::Distance(alch->walk_pt, it->pos);
+				dist = Vec3::Distance(alch->walk_pt, obj.pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
-					o = &*it;
+					found_obj = &obj;
 				}
 			}
 		}
 
-		if(o)
+		if(found_obj)
 		{
-			PickableItemBegin(local_ctx, *o);
+			PickableItemBegin(local_ctx, *found_obj);
 			const Item* heal_pot = FindItem("p_hp");
 			PickableItemAdd(heal_pot);
 			if(Rand() % 2 == 0)
@@ -6293,11 +6322,12 @@ void Game::GenerateDungeonFood()
 	bool spawn_golden_cup = Rand() % 100 == 0;
 
 	// spawn food
-	for(vector<Object>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
+	for(vector<Object*>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
 	{
-		if(it->base == table)
+		Object& obj = **it;
+		if(obj.base == table)
 		{
-			PickableItemBegin(local_ctx, *it);
+			PickableItemBegin(local_ctx, obj);
 			if(spawn_golden_cup)
 			{
 				spawn_golden_cup = false;
@@ -6317,12 +6347,12 @@ void Game::GenerateDungeonFood()
 			if(Rand() % 3 == 0)
 				PickableItemAdd(cup);
 		}
-		else if(it->base == shelves)
+		else if(obj.base == shelves)
 		{
 			int count = Random(mod, mod * 3 / 2);
 			if(count)
 			{
-				PickableItemBegin(local_ctx, *it);
+				PickableItemBegin(local_ctx, obj);
 				for(int i = 0; i < count; ++i)
 					PickableItemAdd(lis.Get());
 			}

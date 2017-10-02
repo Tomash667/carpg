@@ -112,7 +112,7 @@ void HeroData::Load(HANDLE file)
 		float old_weight;
 		ReadFile(file, &old_weight, sizeof(old_weight), &tmp, nullptr);
 	}
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_0_6)
 		ReadFile(file, &lost_pvp, sizeof(lost_pvp), &tmp, nullptr);
 	else
 		lost_pvp = false;

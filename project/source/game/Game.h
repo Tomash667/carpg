@@ -411,6 +411,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void StartGameMode();
 
 	QUICKSTART quickstart;
+	bool disable_net_stats;
 
 	// supershader
 	string sshader_code;
@@ -458,6 +459,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void CleanScene();
 	void ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outside);
 	void ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool outside, Unit& u);
+	void AddObjectToDrawBatch(LevelContext& ctx, const Object& o, FrustumPlanes& frustum);
 	void ListAreas(LevelContext& ctx);
 	void PrepareAreaPath();
 	void PrepareAreaPathCircle(Area2& area, float radius, float range, float rot, bool outside);
@@ -488,7 +490,9 @@ struct Game final : public Engine, public UnitEventHandler
 	void ClearQuadtree();
 	void ClearGrass();
 	void VerifyObjects();
-	void VerifyObjects(vector<Object>& objects, int& errors);
+	void VerifyObjects(vector<Object*>& objects, int& errors);
+	void CalculateQuadtree();
+	void ListQuadtreeNodes();
 
 	// profiler
 	int profiler_mode;
@@ -1093,7 +1097,7 @@ public:
 #define DMG_MAGICAL (1<<1)
 	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
 	void UpdateUnits(LevelContext& ctx, float dt);
-	void UpdateUnitInventory(Unit& unit);
+	void UpdateUnitInventory(Unit& unit, bool notify = true);
 	bool FindPath(LevelContext& ctx, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors = true, bool wedrowanie = false, vector<Int2>* blocked = nullptr);
 	Int2 RandomNearTile(const Int2& tile);
 	bool CanLoadGame() const;
@@ -1289,8 +1293,13 @@ public:
 	float PlayerAngleY();
 	Vec3 GetExitPos(Unit& u, bool force_border = false);
 	void AttackReaction(Unit& attacked, Unit& attacker);
-	// czy mo¿na opuœciæ lokacjê (0-tak, 1-dru¿yna za daleko, 2-wrogowie w pobli¿u)
-	int CanLeaveLocation(Unit& unit);
+	enum class CanLeaveLocationResult
+	{
+		Yes,
+		TeamTooFar,
+		InCombat
+	};
+	CanLeaveLocationResult CanLeaveLocation(Unit& unit);
 	void GenerateTraps();
 	void RegenerateTraps();
 	void SpawnHeroesInsideDungeon();
