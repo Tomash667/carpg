@@ -86,8 +86,6 @@ void Human::Load(HANDLE file)
 	ReadFile(file, &beard, sizeof(beard), &tmp, nullptr);
 	ReadFile(file, &mustache, sizeof(mustache), &tmp, nullptr);
 	ReadFile(file, &hair_color, sizeof(hair_color), &tmp, nullptr);
-	if(LOAD_VERSION < V_0_2_10)
-		ReadFile(file, &height, sizeof(height), &tmp, nullptr); // old weight
 	ReadFile(file, &height, sizeof(height), &tmp, nullptr);
 }
 
@@ -138,8 +136,6 @@ void HumanData::Load(HANDLE file)
 	ReadFile(file, &beard, sizeof(beard), &tmp, nullptr);
 	ReadFile(file, &mustache, sizeof(mustache), &tmp, nullptr);
 	ReadFile(file, &hair_color, sizeof(hair_color), &tmp, nullptr);
-	if(LOAD_VERSION < V_0_2_10)
-		ReadFile(file, &height, sizeof(height), &tmp, nullptr); // old weight
 	ReadFile(file, &height, sizeof(height), &tmp, nullptr);
 }
 

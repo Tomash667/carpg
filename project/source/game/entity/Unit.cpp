@@ -1436,53 +1436,28 @@ void Unit::Load(HANDLE file, bool local)
 
 	// items
 	bool can_sort = true;
-	if(LOAD_VERSION >= V_0_2_10)
+	for(int i = 0; i < SLOT_MAX; ++i)
 	{
-		for(int i = 0; i < SLOT_MAX; ++i)
-		{
-			ReadString1(file);
-			slots[i] = (BUF[0] ? ::FindItem(BUF) : nullptr);
-		}
-	}
-	else
-	{
-		for(int i = 0; i < SLOT_MAX; ++i)
-			slots[i] = nullptr;
+		ReadString1(file);
+		slots[i] = (BUF[0] ? ::FindItem(BUF) : nullptr);
 	}
 	uint ile;
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	items.resize(ile);
 	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
 	{
-		byte len;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		if(len)
-		{
-			BUF[len] = 0;
-			ReadFile(file, BUF, len, &tmp, nullptr);
-			ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
-			ReadFile(file, &it->team_count, sizeof(it->team_count), &tmp, nullptr);
-			if(LOAD_VERSION < V_0_2_10)
-			{
-				int equipped_as;
-				ReadFile(file, &equipped_as, sizeof(equipped_as), &tmp, nullptr);
-			}
-			if(BUF[0] != '$')
-				it->item = ::FindItem(BUF);
-			else
-			{
-				int quest_item_refid;
-				ReadFile(file, &quest_item_refid, sizeof(quest_item_refid), &tmp, nullptr);
-				QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_item_refid, &items, this);
-				it->item = QUEST_ITEM_PLACEHOLDER;
-				can_sort = false;
-			}
-		}
+		ReadString1(file);
+		ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
+		ReadFile(file, &it->team_count, sizeof(it->team_count), &tmp, nullptr);
+		if(BUF[0] != '$')
+			it->item = ::FindItem(BUF);
 		else
 		{
-			assert(LOAD_VERSION < V_0_2_10);
-			it->item = nullptr;
-			it->count = 0;
+			int quest_item_refid;
+			ReadFile(file, &quest_item_refid, sizeof(quest_item_refid), &tmp, nullptr);
+			QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_item_refid, &items, this);
+			it->item = QUEST_ITEM_PLACEHOLDER;
+			can_sort = false;
 		}
 	}
 
@@ -1510,38 +1485,6 @@ void Unit::Load(HANDLE file, bool local)
 	{
 		int old_type;
 		ReadFile(file, &old_type, sizeof(old_type), &tmp, nullptr);
-	}
-	if(LOAD_VERSION < V_0_2_10)
-	{
-		int weapon, bow, shield, armor;
-		ReadFile(file, &weapon, sizeof(weapon), &tmp, nullptr);
-		ReadFile(file, &shield, sizeof(shield), &tmp, nullptr);
-		ReadFile(file, &bow, sizeof(bow), &tmp, nullptr);
-		ReadFile(file, &armor, sizeof(armor), &tmp, nullptr);
-		if(weapon != -1)
-		{
-			slots[SLOT_WEAPON] = items[weapon].item;
-			items[weapon].item = nullptr;
-		}
-		if(bow != -1)
-		{
-			slots[SLOT_BOW] = items[bow].item;
-			items[bow].item = nullptr;
-		}
-		if(shield != -1)
-		{
-			slots[SLOT_SHIELD] = items[shield].item;
-			items[shield].item = nullptr;
-		}
-		if(armor != -1)
-		{
-			slots[SLOT_ARMOR] = items[armor].item;
-			items[armor].item = nullptr;
-		}
-		RemoveElements(items, [](const ItemSlot& slot)
-		{
-			return !slot.item;
-		});
 	}
 	ReadFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileReader f(file);
@@ -1598,23 +1541,15 @@ void Unit::Load(HANDLE file, bool local)
 	{
 		auto_talk_timer = Unit::AUTO_TALK_WAIT;
 		auto_talk_dialog = nullptr;
-		if(LOAD_VERSION < V_0_2_10)
+
+		int old_auto_talk;
+		f >> old_auto_talk;
+		if(old_auto_talk == 2)
 		{
-			bool old_auto_talk;
-			f >> old_auto_talk;
-			auto_talk = (old_auto_talk ? AutoTalkMode::Yes : AutoTalkMode::No);
+			f >> auto_talk_timer;
+			auto_talk_timer = 1.f - auto_talk_timer;
 		}
-		else
-		{
-			int old_auto_talk;
-			f >> old_auto_talk;
-			if(old_auto_talk == 2)
-			{
-				f >> auto_talk_timer;
-				auto_talk_timer = 1.f - auto_talk_timer;
-			}
-			auto_talk = (AutoTalkMode)old_auto_talk;
-		}
+		auto_talk = (AutoTalkMode)old_auto_talk;
 	}
 
 	ReadFile(file, &dont_attack, sizeof(dont_attack), &tmp, nullptr);
@@ -1632,34 +1567,18 @@ void Unit::Load(HANDLE file, bool local)
 		Game::Get().load_unit_handler.push_back(this);
 	}
 	CalculateLoad();
-	if(LOAD_VERSION < V_0_2_10)
-	{
-		weight = 0;
-		if(can_sort)
-		{
-			RemoveNullItems(items);
-			RecalculateWeight();
-			SortItems(items);
-		}
-	}
-	else
-	{
-		if(can_sort && LOAD_VERSION < V_0_2_20)
-			SortItems(items);
-		ReadFile(file, &weight, sizeof(weight), &tmp, nullptr);
-		RecalculateWeight();
-	}
-	if(LOAD_VERSION < V_0_2_10)
+	if(can_sort && LOAD_VERSION < V_0_2_20)
+		SortItems(items);
+	ReadFile(file, &weight, sizeof(weight), &tmp, nullptr);
+	RecalculateWeight();
+
+	int guard_refid;
+	ReadFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);
+	if(guard_refid == -1)
 		guard_target = nullptr;
 	else
-	{
-		int guard_refid;
-		ReadFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);
-		if(guard_refid == -1)
-			guard_target = nullptr;
-		else
-			AddRequest(&guard_target, guard_refid);
-	}
+		AddRequest(&guard_target, guard_refid);
+
 	if(LOAD_VERSION >= V_0_5)
 	{
 		int summoner_refid;
@@ -1715,8 +1634,6 @@ void Unit::Load(HANDLE file, bool local)
 		ReadFile(file, &talking, sizeof(talking), &tmp, nullptr);
 		ReadFile(file, &talk_timer, sizeof(talk_timer), &tmp, nullptr);
 		ReadFile(file, &attack_power, sizeof(attack_power), &tmp, nullptr);
-		if(LOAD_VERSION < V_0_2_10)
-			attack_power += 1.f;
 		ReadFile(file, &run_attack, sizeof(run_attack), &tmp, nullptr);
 		ReadFile(file, &timer, sizeof(timer), &tmp, nullptr);
 		if(LOAD_VERSION >= V_0_2_20)
@@ -1742,10 +1659,7 @@ void Unit::Load(HANDLE file, bool local)
 			BUF[len] = 0;
 			ReadFile(file, BUF, len, &tmp, nullptr);
 			used_item = ::FindItem(BUF);
-			if(LOAD_VERSION < V_0_2_10)
-				used_item_is_team = true;
-			else
-				ReadFile(file, &used_item_is_team, sizeof(used_item_is_team), &tmp, nullptr);
+			ReadFile(file, &used_item_is_team, sizeof(used_item_is_team), &tmp, nullptr);
 		}
 		else
 			used_item = nullptr;
@@ -1765,10 +1679,7 @@ void Unit::Load(HANDLE file, bool local)
 			bow_instance->groups[0].time = mesh_inst->groups[1].time;
 		}
 
-		if(LOAD_VERSION < V_0_2_10)
-			last_bash = 0.f;
-		else
-			ReadFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
+		ReadFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
 
 		if(LOAD_VERSION >= V_0_5)
 			ReadFile(file, &moved, sizeof(moved), &tmp, nullptr);

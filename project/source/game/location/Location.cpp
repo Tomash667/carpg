@@ -365,11 +365,4 @@ void Portal::Load(Location* loc, HANDLE file)
 	ReadFile(file, &at_level, sizeof(at_level), &tmp, nullptr);
 	ReadFile(file, &target, sizeof(target), &tmp, nullptr);
 	ReadFile(file, &target_loc, sizeof(target_loc), &tmp, nullptr);
-
-	if(LOAD_VERSION < V_0_2_10)
-	{
-		// fix na portal na z³ym poziomie (kiedyœ nie uwzglêdnia³o at_level) do rysowania
-		if(at_level == 0 && target_loc == -1)
-			at_level = loc->GetLastLevel();
-	}
 }

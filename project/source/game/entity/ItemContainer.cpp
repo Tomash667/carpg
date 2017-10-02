@@ -35,39 +35,23 @@ void ItemContainer::Load(HANDLE file)
 	items.resize(count);
 	for(auto& slot : items)
 	{
-		byte len;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		if(len)
-		{
-			ReadFile(file, BUF, len, &tmp, nullptr);
-			BUF[len] = 0;
-			ReadFile(file, &slot.count, sizeof(slot.count), &tmp, nullptr);
-			ReadFile(file, &slot.team_count, sizeof(slot.team_count), &tmp, nullptr);
-			if(BUF[0] != '$')
-				slot.item = ::FindItem(BUF);
-			else
-			{
-				int quest_refid;
-				ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
-				QuestManager::Get().AddQuestItemRequest(&slot.item, BUF, quest_refid, &items);
-				slot.item = QUEST_ITEM_PLACEHOLDER;
-				can_sort = false;
-			}
-		}
+		ReadString1(file);
+		ReadFile(file, &slot.count, sizeof(slot.count), &tmp, nullptr);
+		ReadFile(file, &slot.team_count, sizeof(slot.team_count), &tmp, nullptr);
+		if(BUF[0] != '$')
+			slot.item = ::FindItem(BUF);
 		else
 		{
-			assert(LOAD_VERSION < V_0_2_10);
-			slot.item = nullptr;
-			slot.count = 0;
+			int quest_refid;
+			ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
+			QuestManager::Get().AddQuestItemRequest(&slot.item, BUF, quest_refid, &items);
+			slot.item = QUEST_ITEM_PLACEHOLDER;
+			can_sort = false;
 		}
 	}
 
 	if(can_sort && LOAD_VERSION < V_0_2_20 && !items.empty())
-	{
-		if(LOAD_VERSION < V_0_2_10)
-			RemoveNullItems(items);
 		SortItems(items);
-	}
 }
 
 //=================================================================================================
