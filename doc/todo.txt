@@ -1,10 +1,8 @@
 ﻿FEATURE:
 ? altar has alpha=0, but bloody altar=-1
 ? test OBJ_DOUBLE_PHYSICS
-+ find all BaseObject::Get/usable and add to required
-+ remove obj_alpha
 ? physics: tartak, fern, winplant, smallroof, rope, wheel, grass2, corn
-! SW_HIDE
+? testing
 ===============================================================================================================
 CURRENT:
 - stupid website rewrite rule
@@ -16,6 +14,8 @@ NEW:
 + particles in objects, not hardcoded water_effect, blood_effect
 + remove hardcoded bench variants in base usable
 + remove hardcoded ai to use read papers animation on chair, eat food on stool
++ remove obj_alpha
++ validate objects metadata (required objects, units)
 0.7:
 + amulet
 + magic effects
