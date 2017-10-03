@@ -4,6 +4,7 @@ CURRENT:
 ? 3 players usable tests
 - traps are out of sync for client/server
 - can talk to unit while it's exiting building, dialog is thru door then
+- town hall, kiepskie tekstury?
 ===============================================================================================================
 NEW:
 + net devmode: show stamina for clients
@@ -13,6 +14,15 @@ NEW:
 - changing vsync reset failed, cannot reproduce
 + 404 handling on website
 + when npc have item in his inventory and in pc, it will first ask for pc one
++ move chest to usables
++ particles in objects, not hardcoded water_effect, blood_effect
++ remove hardcoded bench variants in base usable
++ remove hardcoded ai to use read papers animation on chair, eat food on stool
++ remove obj_alpha
++ validate objects metadata (required objects, units)
+? why version/stats thread start at menu, not while loading
+- grass under moon well
++ exporter: when file has no ext or ends with .qmsh save as .qmsh.tmp
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

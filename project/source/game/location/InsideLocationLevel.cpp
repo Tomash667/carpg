@@ -340,23 +340,27 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	// konwersja krzese³ w sto³ki
 	if(LOAD_VERSION < V_0_2_12)
 	{
+		auto chair = BaseUsable::Get("chair"),
+			stool = BaseUsable::Get("stool");
 		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		{
 			Usable& u = **it;
-			if(u.type == U_CHAIR)
-				u.type = U_STOOL;
+			if(u.base == chair)
+				u.base = stool;
 		}
 	}
 
 	// konwersja ³awy w obrócon¹ ³awê i ustawienie wariantu
 	if(LOAD_VERSION < V_0_2_20)
 	{
+		auto bench = BaseUsable::Get("bench"),
+			bench_dir = BaseUsable::Get("bench_dir");
 		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		{
 			Usable& u = **it;
-			if(u.type == U_BENCH)
+			if(u.base == bench)
 			{
-				u.type = U_BENCH_ROT;
+				u.base = bench_dir;
 				u.variant = Rand() % 2;
 			}
 		}

@@ -1382,7 +1382,7 @@ void Unit::Save(HANDLE file, bool local)
 		{
 			if(usable->user != this)
 			{
-				Warn("Invalid usable %s (%d) user %s.", usable->GetBase()->id, usable->refid, data->id.c_str());
+				Warn("Invalid usable %s (%d) user %s.", usable->base->id.c_str(), usable->refid, data->id.c_str());
 				usable = nullptr;
 				int refi = -1;
 				WriteFile(file, &refi, sizeof(refi), &tmp, nullptr);
@@ -2917,7 +2917,7 @@ void Unit::UpdateStaminaAction()
 {
 	if(usable)
 	{
-		if(IS_SET(usable->GetBase()->flags, BaseUsable::SLOW_STAMINA_RESTORE))
+		if(IS_SET(usable->base->use_flags, BaseUsable::SLOW_STAMINA_RESTORE))
 			stamina_action = SA_RESTORE_SLOW;
 		else
 			stamina_action = SA_RESTORE_MORE;

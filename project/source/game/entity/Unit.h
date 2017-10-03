@@ -745,7 +745,7 @@ struct Unit
 
 	bool CanDoWhileUsing() const
 	{
-		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && IS_SET(BaseUsable::base_usables[usable->type].flags, BaseUsable::ALLOW_USE);
+		return action == A_ANIMATION2 && animation_state == AS_ANIMATION2_USING && IS_SET(usable->base->use_flags, BaseUsable::ALLOW_USE);
 	}
 
 	int GetBuffs() const;

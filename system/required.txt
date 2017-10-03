@@ -357,3 +357,172 @@ building_script city {
 building_script village {
 	inn
 }
+
+//------------------------------------------------------------------------------
+// Objects / usables
+// some objects are required by building too (not listed here)
+//------------------------------------------------------------------------------
+// pre 0.2.20 convert tombstone to tombstone_1
+object tombstone_1
+// pre 0.3 remove walls, gate
+object to_remove
+// pre 0.2.12 convert chairs into stools
+usable chair
+usable stool
+// pre 0.2.20 convert bench into bench_dir
+usable bench
+usable bench_dir
+// pre 0.7
+usable chair
+usable bench
+usable anvil
+usable cauldron
+usable iron_vein
+usable gold_vein
+usable throne
+usable stool
+usable bench_dir
+// table spawner
+object table
+object table2
+usable stool
+// city
+object wall
+object tower
+object gate
+object grate
+object grass
+object corn
+object coveredwell
+object tree
+object tree2
+object tree3
+object grass
+object plant
+object rock
+object fern
+object table
+object shelves
+// outside
+object tree
+object tree2
+object tree3
+object withered_tree
+object grass
+object plant
+object rock
+object fern
+object obelisk
+object moonwell
+object moonwell_phy
+// camp
+object barrel
+object barrels
+object box
+object boxes
+object bow_target
+object torch
+object torch_off
+object tanning_rack
+object hay
+object firewood
+object bench
+object chest
+object melee_target
+object anvil
+object cauldron
+object campfire
+object campfire_off
+object tent
+object bedding
+// dungeon
+object chest
+object torch
+object bed
+object wardrobe
+object shelves
+object table_and_chairs
+object bookshelf
+object painting
+object gobelin
+object throne
+object magic_thing
+object barrel
+object barrels
+object box
+object boxes
+object big_barrel
+object altar
+object bench_dir
+object melee_target
+object bow_target
+object tanning_rack
+object anvil
+object cauldron
+object campfire
+object firewood
+object emblem
+object grave
+object tombstone
+object chest_r
+object portal
+// cave
+object stalactite
+object plant2
+object mushrooms
+object rock
+usable iron_vein
+usable gold_vein
+// quests
+object altar
+object bloody_altar
+object portal
+usable throne
+// sawmill
+object barrel
+object barrels
+object box
+object boxes
+object torch
+object torch_off
+object firewood
+object tartak
+// ai
+object melee_target
+object bow_target
+usable stool
+usable chair
+usable throne
+usable iron_vein
+usable gold_vein
+// random encounter
+object wagon
+object chest
+// hardcoded random tombstones
+object tombstone_1
+object tombstone_x1
+object tombstone_x2
+object tombstone_x3
+object tombstone_x4
+object tombstone_x5
+object tombstone_x6
+object tombstone_x7
+object tombstone_x8
+object tombstone_x9
+// hardcoded random painting
+object painting1
+object painting2
+object painting3
+object painting4
+object painting5
+object painting6
+object painting7
+object painting8
+object painting_x1
+object painting_x2
+object painting_x3
+object painting_x4
+// hardcoded random objects around cottage
+object wheel
+object rope
+object woodpile

@@ -9,18 +9,6 @@ wt_longBlade = "D³ugie ostrze"
 wt_blunt = "Broñ obuchowa"
 wt_axe = "Topór"
 
-// usable objects
-u_chair = "Krzes³o"
-u_bench = "£awa"
-u_anvil = "Kowad³o"
-u_cauldron = "Kocio³ek"
-u_iron_vein = "¯y³a ¿elaza"
-u_gold_vein = "¯y³a z³ota"
-u_throne = "Tron"
-u_stool = "Sto³ek"
-u_bench_dir = "£awa"
-u_bookshelf = "Biblioteczka"
-
 // enemy types
 sg_goblins = "gobliny"
 sg_orcs = "orkowie"

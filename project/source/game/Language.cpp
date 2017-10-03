@@ -9,6 +9,7 @@
 #include "UnitData.h"
 #include "Building.h"
 #include "Action.h"
+#include "BaseUsable.h"
 
 //-----------------------------------------------------------------------------
 string g_lang_prefix;
@@ -270,7 +271,8 @@ enum KEYWORD
 	K_LOCATION_END,
 	K_TEXT,
 	K_BUILDING,
-	K_ACTION
+	K_ACTION,
+	K_USABLE
 };
 
 //=================================================================================================
@@ -294,7 +296,8 @@ static void PrepareTokenizer(Tokenizer& t)
 		{ "location_end", K_LOCATION_END },
 		{ "text", K_TEXT },
 		{ "building", K_BUILDING },
-		{ "action", K_ACTION }
+		{ "action", K_ACTION },
+		{ "usable", K_USABLE }
 	});
 }
 
@@ -346,10 +349,10 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					// }
 					{
 						t.Next();
-						const string& s = t.MustGetText();
-						AttributeInfo* ai = AttributeInfo::Find(s);
+						const string& id = t.MustGetText();
+						AttributeInfo* ai = AttributeInfo::Find(id);
 						if(!ai)
-							t.Throw(Format("Invalid attribute '%s'.", s.c_str()));
+							t.Throw("Invalid attribute '%s'.", id.c_str());
 						t.Next();
 						t.AssertSymbol('{');
 						t.Next();
@@ -362,10 +365,10 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					// skill_group id = "text"
 					{
 						t.Next();
-						const string& s = t.MustGetText();
-						SkillGroupInfo* sgi = SkillGroupInfo::Find(s);
+						const string& id = t.MustGetText();
+						SkillGroupInfo* sgi = SkillGroupInfo::Find(id);
 						if(!sgi)
-							t.Throw(Format("Invalid skill group '%s'.", s.c_str()));
+							t.Throw("Invalid skill group '%s'.", id.c_str());
 						t.Next();
 						t.AssertSymbol('=');
 						t.Next();
@@ -379,10 +382,10 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					// }
 					{
 						t.Next();
-						const string& s = t.MustGetText();
-						SkillInfo* si = SkillInfo::Find(s);
+						const string& id = t.MustGetText();
+						SkillInfo* si = SkillInfo::Find(id);
 						if(!si)
-							t.Throw(Format("Invalid skill '%s'.", s.c_str()));
+							t.Throw("Invalid skill '%s'.", id.c_str());
 						t.Next();
 						t.AssertSymbol('{');
 						t.Next();
@@ -399,10 +402,10 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					// }
 					{
 						t.Next();
-						const string& s = t.MustGetText();
-						ClassInfo* ci = ClassInfo::Find(s);
+						const string& id = t.MustGetText();
+						ClassInfo* ci = ClassInfo::Find(id);
 						if(!ci)
-							t.Throw(Format("Invalid class '%s'.", s.c_str()));
+							t.Throw("Invalid class '%s'.", id.c_str());
 						t.Next();
 						t.AssertSymbol('{');
 						t.Next();
@@ -486,13 +489,13 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					// }
 					{
 						t.Next();
-						const string& s = t.MustGetText();
+						const string& id = t.MustGetText();
 						ItemListResult lis;
-						Item* item = (Item*)FindItem(s.c_str(), false, &lis);
+						Item* item = (Item*)FindItem(id.c_str(), false, &lis);
 						if(!item)
-							t.Throw(Format("Invalid item '%s'.", s.c_str()));
+							t.Throw("Invalid item '%s'.", id.c_str());
 						if(lis.lis)
-							t.Throw(Format("Item '%s' is list.", s.c_str()));
+							t.Throw("Item '%s' is list.", id.c_str());
 						t.Next();
 						t.AssertSymbol('{');
 						t.Next();
@@ -527,10 +530,10 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					// }
 					{
 						t.Next();
-						const string& s = t.MustGetText();
-						PerkInfo* ci = PerkInfo::Find(s);
+						const string& id = t.MustGetText();
+						PerkInfo* ci = PerkInfo::Find(id);
 						if(!ci)
-							t.Throw(Format("Invalid perk '%s'.", s.c_str()));
+							t.Throw("Invalid perk '%s'.", id.c_str());
 						t.Next();
 						t.AssertSymbol('{');
 						t.Next();
@@ -543,10 +546,10 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					// unit id = "text"
 					{
 						t.Next();
-						const string& s = t.MustGetText();
-						UnitData* ud = FindUnitData(s.c_str(), false);
+						const string& id = t.MustGetText();
+						UnitData* ud = FindUnitData(id.c_str(), false);
 						if(!ud)
-							t.Throw(Format("Invalid unit '%s'.", s.c_str()));
+							t.Throw("Invalid unit '%s'.", id.c_str());
 						t.Next();
 						t.AssertSymbol('=');
 						t.Next();
@@ -557,10 +560,10 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					// building id = "text"
 					{
 						t.Next();
-						const string& s = t.MustGetText();
-						Building* b = content::FindBuilding(s.c_str());
+						const string& id = t.MustGetText();
+						Building* b = Building::TryGet(id.c_str());
 						if(!b)
-							t.Throw("Invalid building '%s'.", s.c_str());
+							t.Throw("Invalid building '%s'.", id.c_str());
 						t.Next();
 						t.AssertSymbol('=');
 						t.Next();
@@ -574,16 +577,30 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					// }
 					{
 						t.Next();
-						const string& s = t.MustGetText();
-						auto action = Action::Find(s);
+						const string& id = t.MustGetText();
+						auto action = Action::Find(id);
 						if(!action)
-							t.Throw(Format("Invalid action '%s'.", s.c_str()));
+							t.Throw("Invalid action '%s'.", id.c_str());
 						t.Next();
 						t.AssertSymbol('{');
 						t.Next();
 						GetString(t, K_NAME, action->name);
 						GetString(t, K_DESC, action->desc);
 						t.AssertSymbol('}');
+					}
+					break;
+				case K_USABLE:
+					// usable id = "text"
+					{
+						t.Next();
+						const string& id = t.MustGetText();
+						auto use = BaseUsable::TryGet(id.c_str());
+						if(!use)
+							t.Throw("Invalid usable '%s'.", id.c_str());
+						t.Next();
+						t.AssertSymbol('=');
+						t.Next();
+						use->name = t.MustGetString();
 					}
 					break;
 				default:
@@ -626,13 +643,20 @@ void LoadLanguageFiles()
 	LoadLanguageFile3(t, "perks.txt");
 	LoadLanguageFile3(t, "units.txt");
 	LoadLanguageFile3(t, "buildings.txt");
+	LoadLanguageFile3(t, "objects.txt");
 
 	if(txLocationStart.empty() || txLocationEnd.empty())
 		throw "Missing locations names.";
 
-	for (auto building : content::buildings)
+	for (auto building : Building::buildings)
 	{
 		if (IS_SET(building->flags, Building::HAVE_NAME) && building->name.empty())
 			Warn("Building '%s' don't have name.", building->id.c_str());
+	}
+
+	for(auto usable : BaseUsable::usables)
+	{
+		if(usable->name.empty())
+			Warn("Usables '%s' don't have name.", usable->name.c_str());
 	}
 }

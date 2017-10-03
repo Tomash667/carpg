@@ -763,7 +763,7 @@ bool Game::ReadLevelData(BitStream& stream)
 					Error("Read level: Broken packet for buildings.");
 					return false;
 				}
-				building.type = content::FindBuilding(BUF);
+				building.type =  Building::Get(BUF);
 				if(!building.type)
 				{
 					Error("Read level: Invalid building id '%s'.", BUF);
@@ -793,7 +793,7 @@ bool Game::ReadLevelData(BitStream& stream)
 					Error("Read level: Broken packet for %d inside building.", index);
 					return false;
 				}
-				ib.type = content::FindBuilding(BUF);
+				ib.type = Building::Get(BUF);
 				if(!ib.type || !ib.type->inside_mesh)
 				{
 					Error("Read level: Invalid building id '%s' for building %d.", BUF, index);
@@ -3508,17 +3508,17 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					else
 					{
-						BaseUsable& base = BaseUsable::base_usables[usable->type];
-						if(!IS_SET(base.flags, BaseUsable::CONTAINER))
+						BaseUsable& base = *usable->base;
+						if(!IS_SET(base.use_flags, BaseUsable::CONTAINER))
 						{
 							unit.action = A_ANIMATION2;
 							unit.animation = ANI_PLAY;
-							unit.mesh_inst->Play(base.anim, PLAY_PRIO1, 0);
+							unit.mesh_inst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
 							unit.mesh_inst->groups[0].speed = 1.f;
 							unit.usable = usable;
 							unit.target_pos = unit.pos;
 							unit.target_pos2 = usable->pos;
-							if(BaseUsable::base_usables[usable->type].limit_rot == 4)
+							if(usable->base->limit_rot == 4)
 								unit.target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 							unit.timer = 0.f;
 							unit.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
@@ -3559,8 +3559,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					// stop using usable
 					if(usable->user == &unit)
 					{
-						BaseUsable& base = BaseUsable::base_usables[usable->type];
-						if(!IS_SET(base.flags, BaseUsable::CONTAINER))
+						BaseUsable& base = *usable->base;
+						if(!IS_SET(base.use_flags, BaseUsable::CONTAINER))
 						{
 							unit.action = A_NONE;
 							unit.animation = ANI_STAND;
@@ -7039,19 +7039,19 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
-				BaseUsable& base = BaseUsable::base_usables[usable->type];
+				BaseUsable& base = *usable->base;
 				if(state == 1 || state == 2)
 				{
-					if(!IS_SET(base.flags, BaseUsable::CONTAINER))
+					if(!IS_SET(base.use_flags, BaseUsable::CONTAINER))
 					{
 						unit->action = A_ANIMATION2;
 						unit->animation = ANI_PLAY;
-						unit->mesh_inst->Play(state == 2 ? "czyta_papiery" : base.anim, PLAY_PRIO1, 0);
+						unit->mesh_inst->Play(state == 2 ? "czyta_papiery" : base.anim.c_str(), PLAY_PRIO1, 0);
 						unit->mesh_inst->groups[0].speed = 1.f;
 						unit->usable = usable;
 						unit->target_pos = unit->pos;
 						unit->target_pos2 = usable->pos;
-						if(BaseUsable::base_usables[usable->type].limit_rot == 4)
+						if(base.limit_rot == 4)
 							unit->target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 						unit->timer = 0.f;
 						unit->animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
@@ -7076,7 +7076,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				else
 				{
 					usable->user = nullptr;
-					if(unit->player != pc && !IS_SET(base.flags, BaseUsable::CONTAINER))
+					if(unit->player != pc && !IS_SET(base.use_flags, BaseUsable::CONTAINER))
 					{
 						unit->action = A_NONE;
 						unit->animation = ANI_STAND;
@@ -8408,7 +8408,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						StreamError();
 					}
 					else if(sound_volume && unit != pc->unit)
-						PlaySound3d(unit->usable->GetBase()->sound->sound, unit->GetCenter(), 2.f, 5.f);
+						PlaySound3d(unit->usable->base->sound->sound, unit->GetCenter(), 2.f, 5.f);
 				}
 			}
 			break;

@@ -2,6 +2,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "BaseUsable.h"
 #include "Bullet.h"
 #include "Collision.h"
 #include "SpellEffects.h"
@@ -79,7 +80,11 @@ struct LevelContext
 	void SetTmpCtx(TmpLevelContext* ctx);
 	void RemoveDeadUnits();
 	Unit* FindUnitById(UnitData* ud);
-	Usable* FindUsableById(int _type);
+	Usable* FindUsable(BaseUsable* base);
+	Usable* FindUsable(cstring id)
+	{
+		return FindUsable(BaseUsable::Get(id));
+	}
 	bool RemoveItemFromWorld(const Item* item);
 	bool FindItemInCorpse(const Item* item, Unit** unit, int* slot);
 	bool RemoveGroundItem(const Item* item);

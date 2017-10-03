@@ -10,7 +10,6 @@
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
 #include "Perlin.h"
-#include <functional>
 #include "LocationHelper.h"
 #include "Content.h"
 #include "QuestManager.h"
@@ -27,6 +26,8 @@
 #include "AIController.h"
 #include "Team.h"
 #include "ItemContainer.h"
+#include "BuildingScript.h"
+#include "BuildingGroup.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern Matrix m1, m2, m3, m4;
@@ -436,7 +437,7 @@ void Game::GenerateWorld()
 
 void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool required)
 {
-	BuildingScript* script = content::FindBuildingScript(city.IsVillage() ? "village" : "city");
+	BuildingScript* script = BuildingScript::Get(city.IsVillage() ? "village" : "city");
 	if(city.variant == -1)
 		city.variant = Rand() % script->variants.size();
 
@@ -908,8 +909,6 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				GenerateCityPickableItems();
 				if(city->IsVillage())
 					SpawnForestItems(-2);
-
-				ResetCollisionPointers();
 			}
 			else if(!reenter)
 			{
@@ -1260,8 +1259,6 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				// generate items
 				LoadingStep(txGeneratingItems);
 				SpawnForestItems(-1);
-
-				ResetCollisionPointers();
 			}
 			else if(!reenter)
 			{
@@ -1514,11 +1511,11 @@ void Game::ApplyTiles(float* _h, TerrainTile* _tiles)
 Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale, int flags, Vec3* out_point,
 	int variant)
 {
-	if(IS_SET(base->flags, OBJ_TABLE))
+	if(IS_SET(base->flags, OBJ_TABLE_SPAWNER))
 	{
 		// table & stools
-		BaseObject* table = BaseObject::Get(Rand() % 2 == 0 ? "table" : "table2"),
-			*stool = BaseObject::Get("stool");
+		BaseObject* table = BaseObject::Get(Rand() % 2 == 0 ? "table" : "table2");
+		BaseUsable* stool = BaseUsable::Get("stool");
 
 		// table
 		Object* o = new Object;
@@ -1528,7 +1525,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 		o->scale = 1;
 		o->base = table;
 		ctx.objects->push_back(o);
-		SpawnObjectExtras(ctx, table, pos, rot, o, nullptr);
+		SpawnObjectExtras(ctx, table, pos, rot, o);
 
 		// stools
 		int count = Random(2, 4);
@@ -1566,14 +1563,14 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 
 			Usable* u = new Usable;
 			ctx.usables->push_back(u);
-			u->type = U_STOOL;
+			u->base = stool;
 			u->pos = pos + Vec3(sin(sdir)*slen, 0, cos(sdir)*slen);
 			u->rot = sdir;
 			u->user = nullptr;
 			if(Net::IsOnline())
 				u->netid = usable_netid_counter++;
 
-			SpawnObjectExtras(ctx, stool, u->pos, u->rot, u, nullptr);
+			SpawnObjectExtras(ctx, stool, u->pos, u->rot, u);
 		}
 
 		return o;
@@ -1612,16 +1609,15 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 	else if(IS_SET(base->flags, OBJ_USABLE))
 	{
 		// usable object
-		USABLE_ID type = base->ToUsableType();
-		BaseUsable& bu = BaseUsable::base_usables[type];
+		BaseUsable* base_use = (BaseUsable*)base;
 
 		Usable* u = new Usable;
-		u->type = type;
+		u->base = base_use;
 		u->pos = pos;
 		u->rot = rot;
 		u->user = nullptr;
 
-		if(IS_SET(bu.flags, BaseUsable::CONTAINER))
+		if(IS_SET(base_use->use_flags, BaseUsable::CONTAINER))
 		{
 			u->container = new ItemContainer;
 			auto item = GetRandomBook();
@@ -1631,11 +1627,10 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 
 		if(variant == -1)
 		{
-			BaseObject* base_obj = u->GetBase()->obj;
-			if(IS_SET(base_obj->flags2, OBJ2_VARIANT))
+			if(base->variants)
 			{
 				// extra code for bench
-				if(type == U_BENCH || type == U_BENCH_ROT)
+				if(IS_SET(base_use->use_flags, BaseUsable::IS_BENCH))
 				{
 					switch(location->type)
 					{
@@ -1652,7 +1647,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 					}
 				}
 				else
-					variant = Random<int>(base_obj->variant->count - 1);
+					variant = Random<int>(base->variants->entries.size() - 1);
 			}
 		}
 		u->variant = variant;
@@ -1661,11 +1656,11 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 			u->netid = usable_netid_counter++;
 		ctx.usables->push_back(u);
 
-		SpawnObjectExtras(ctx, base, pos, rot, u, nullptr, scale, flags);
+		SpawnObjectExtras(ctx, base, pos, rot, u, scale, flags);
 
 		return u;
 	}
-	else if(IS_SET(base->flags, OBJ_CHEST))
+	else if(IS_SET(base->flags, OBJ_IS_CHEST))
 	{
 		// chest
 		Chest* chest = new Chest;
@@ -1678,7 +1673,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 		if(Net::IsOnline())
 			chest->netid = chest_netid_counter++;
 
-		SpawnObjectExtras(ctx, base, pos, rot, nullptr, nullptr, scale, flags);
+		SpawnObjectExtras(ctx, base, pos, rot, nullptr, scale, flags);
 
 		return chest;
 	}
@@ -1693,7 +1688,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 		o->base = base;
 		ctx.objects->push_back(o);
 
-		SpawnObjectExtras(ctx, base, pos, rot, o, (btCollisionObject**)&o->ptr, scale, flags);
+		SpawnObjectExtras(ctx, base, pos, rot, o, scale, flags);
 
 		return o;
 	}
@@ -1758,7 +1753,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 				o->base = oWall;
 				o->mesh = oWall->mesh;
 				local_ctx.objects->push_back(o);
-				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 			}
 
 			// south
@@ -1771,7 +1766,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 				o->base = oWall;
 				o->mesh = oWall->mesh;
 				local_ctx.objects->push_back(o);
-				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 			}
 
 			// west
@@ -1784,7 +1779,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 				o->base = oWall;
 				o->mesh = oWall->mesh;
 				local_ctx.objects->push_back(o);
-				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 			}
 
 			// east
@@ -1797,7 +1792,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 				o->base = oWall;
 				o->mesh = oWall->mesh;
 				local_ctx.objects->push_back(o);
-				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 			}
 		}
 
@@ -1811,7 +1806,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->base = oTower;
 			o->mesh = oTower->mesh;
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 		}
 		{
 			// south east
@@ -1822,7 +1817,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->base = oTower;
 			o->mesh = oTower->mesh;
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 		}
 		{
 			// south west
@@ -1833,7 +1828,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->base = oTower;
 			o->mesh = oTower->mesh;
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 		}
 		{
 			// north west
@@ -1844,7 +1839,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->base = oTower;
 			o->mesh = oTower->mesh;
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 		}
 
 		// gates
@@ -1858,7 +1853,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->rot.y = 0;
 			o->pos = Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2);
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 
 			Object* o2 = new Object;
 			o2->pos = o->pos;
@@ -1867,7 +1862,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o2->base = oGrate;
 			o2->mesh = oGrate->mesh;
 			local_ctx.objects->push_back(o2);
-			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, 1.f, 0);
 		}
 
 		if(IS_SET(city->gates, GATE_SOUTH))
@@ -1880,7 +1875,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->rot.y = PI;
 			o->pos = Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2);
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 
 			Object* o2 = new Object;
 			o2->pos = o->pos;
@@ -1889,7 +1884,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o2->base = oGrate;
 			o2->mesh = oGrate->mesh;
 			local_ctx.objects->push_back(o2);
-			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, 1.f, 0);
 		}
 
 		if(IS_SET(city->gates, GATE_WEST))
@@ -1902,7 +1897,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->rot.y = PI * 3 / 2;
 			o->pos = Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f);
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 
 			Object* o2 = new Object;
 			o2->pos = o->pos;
@@ -1911,7 +1906,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o2->base = oGrate;
 			o2->mesh = oGrate->mesh;
 			local_ctx.objects->push_back(o2);
-			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, 1.f, 0);
 		}
 
 		if(IS_SET(city->gates, GATE_EAST))
@@ -1924,7 +1919,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->rot.y = PI / 2;
 			o->pos = Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f);
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 
 			Object* o2 = new Object;
 			o2->pos = o->pos;
@@ -1933,7 +1928,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o2->base = oGrate;
 			o2->mesh = oGrate->mesh;
 			local_ctx.objects->push_back(o2);
-			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, 1.f, 0);
 		}
 	}
 
@@ -2141,6 +2136,22 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					cobj.radius = sqrt(cobj.w*cobj.w + cobj.h*cobj.h);
 					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
 				}
+			}
+			else if(token == "squarevpa")
+			{
+				btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
+				if(ctx.type == LevelContext::Outside)
+					pos.y += terrain->GetH(pos);
+				shapes.push_back(shape);
+				btCollisionObject* co = new btCollisionObject;
+				co->setCollisionShape(shape);
+				int group = CG_COLLIDER;
+				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
+				co->getWorldTransform().setOrigin(ToVector3(pos));
+				phy_world->addCollisionObject(co, group);
+
+				if(roti != 0)
+					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
 			}
 			else if(token == "squarecam")
 			{
@@ -2487,7 +2498,7 @@ void Game::SpawnUnits(City* city)
 		UpdateUnitPhysics(*u, u->pos);
 		u->visual_pos = u->pos;
 
-		if(b.type->group == content::BG_ARENA)
+		if(b.type->group == BuildingGroup::BG_ARENA)
 			city->arena_pos = u->pos;
 
 		local_ctx.units->push_back(u);
@@ -4818,7 +4829,7 @@ void Game::SpawnCampObjects()
 		{
 			BaseObject* obj = camp_objs_ptrs[Rand() % n_camp_objs];
 			Object* o = SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
-			if(o && IS_SET(obj->flags, OBJ_CHEST) && location->spawn != SG_BRAK) // empty chests for empty camps
+			if(o && IS_SET(obj->flags, OBJ_IS_CHEST) && location->spawn != SG_BRAK) // empty chests for empty camps
 			{
 				int gold, level = location->st;
 				Chest* chest = (Chest*)o;
@@ -5087,7 +5098,7 @@ int Game::GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_ta
 void Game::SpawnTmpUnits(City* city)
 {
 	InsideBuilding* inn = city->FindInn();
-	CityBuilding* pola = city->FindBuilding(content::BG_TRAINING_GROUNDS);
+	CityBuilding* pola = city->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS);
 
 	// bohaterowie
 	if(first_city)
@@ -5593,8 +5604,7 @@ void Game::SpawnMoonwellUnits(const Vec3& team_pos)
 	}
 }
 
-void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale,
-	int flags)
+void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale, int flags)
 {
 	assert(obj);
 
@@ -5625,7 +5635,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 			ctx.pes->push_back(pe);
 
 			pe->tex = tFlare;
-			if(IS_SET(obj->flags, OBJ_CAMPFIRE))
+			if(IS_SET(obj->flags, OBJ_CAMPFIRE_EFFECT))
 				pe->size = 0.7f;
 			else
 			{
@@ -5772,25 +5782,21 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 
 		if(IS_SET(obj->flags, OBJ_PHYSICS_PTR))
 		{
-			assert(user_ptr && phy_result);
-			*phy_result = cobj;
+			assert(user_ptr);
 			cobj->setUserPointer(user_ptr);
 		}
 
 		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
 			c.ptr = CAM_COLLIDER;
-
-		if(phy_result)
-			*phy_result = cobj;
-
+		
 		if(IS_SET(obj->flags, OBJ_DOUBLE_PHYSICS))
-			SpawnObjectExtras(ctx, obj->next_obj, pos, rot, user_ptr, nullptr, scale, flags);
-		else if(IS_SET(obj->flags2, OBJ2_MULTI_PHYSICS))
+			SpawnObjectExtras(ctx, obj->next_obj, pos, rot, user_ptr, scale, flags);
+		else if(IS_SET(obj->flags, OBJ_MULTI_PHYSICS))
 		{
 			for(int i = 0;; ++i)
 			{
 				if(obj->next_obj[i].shape)
-					SpawnObjectExtras(ctx, &obj->next_obj[i], pos, rot, user_ptr, nullptr, scale, flags);
+					SpawnObjectExtras(ctx, &obj->next_obj[i], pos, rot, user_ptr, scale, flags);
 				else
 					break;
 			}
@@ -5812,7 +5818,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 		phy_world->addCollisionObject(cobj, CG_OBJECT);
 	}
 
-	if(IS_SET(obj->flags2, OBJ2_CAM_COLLIDERS))
+	if(IS_SET(obj->flags, OBJ_CAM_COLLIDERS))
 	{
 		int roti = (int)round((rot / (PI / 2)));
 		for(vector<Mesh::Point>::const_iterator it = obj->mesh->attach_points.begin(), end = obj->mesh->attach_points.end(); it != end; ++it)
@@ -6138,7 +6144,7 @@ void Game::GenerateCityPickableItems()
 	}
 
 	// jedzenie w sklepie
-	CityBuilding* food = city_ctx->FindBuilding(content::BG_FOOD_SELLER);
+	CityBuilding* food = city_ctx->FindBuilding(BuildingGroup::BG_FOOD_SELLER);
 	if(food)
 	{
 		Object* found_obj = nullptr;
@@ -6167,7 +6173,7 @@ void Game::GenerateCityPickableItems()
 	}
 
 	// miksturki u alchemika
-	CityBuilding* alch = city_ctx->FindBuilding(content::BG_ALCHEMIST);
+	CityBuilding* alch = city_ctx->FindBuilding(BuildingGroup::BG_ALCHEMIST);
 	if(alch)
 	{
 		Object* found_obj = nullptr;
@@ -6562,19 +6568,19 @@ void Game::PrepareCityBuildings(City& city, vector<ToBuild>& tobuild)
 	// set flags
 	for(ToBuild& tb : tobuild)
 	{
-		if(tb.type->group == content::BG_TRAINING_GROUNDS)
+		if(tb.type->group == BuildingGroup::BG_TRAINING_GROUNDS)
 			city.flags |= City::HaveTrainingGrounds;
-		else if(tb.type->group == content::BG_BLACKSMITH)
+		else if(tb.type->group == BuildingGroup::BG_BLACKSMITH)
 			city.flags |= City::HaveBlacksmith;
-		else if(tb.type->group == content::BG_MERCHANT)
+		else if(tb.type->group == BuildingGroup::BG_MERCHANT)
 			city.flags |= City::HaveMerchant;
-		else if(tb.type->group == content::BG_ALCHEMIST)
+		else if(tb.type->group == BuildingGroup::BG_ALCHEMIST)
 			city.flags |= City::HaveAlchemist;
-		else if(tb.type->group == content::BG_FOOD_SELLER)
+		else if(tb.type->group == BuildingGroup::BG_FOOD_SELLER)
 			city.flags |= City::HaveFoodSeller;
-		else if(tb.type->group == content::BG_INN)
+		else if(tb.type->group == BuildingGroup::BG_INN)
 			city.flags |= City::HaveInn;
-		else if(tb.type->group == content::BG_ARENA)
+		else if(tb.type->group == BuildingGroup::BG_ARENA)
 			city.flags |= City::HaveArena;
 	}
 }

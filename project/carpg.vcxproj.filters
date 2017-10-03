@@ -58,6 +58,12 @@
     <Filter Include="2. engine\gui\dialogs">
       <UniqueIdentifier>{22378397-713d-49a2-bddf-1773b059fcbc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3. game\system\objects">
+      <UniqueIdentifier>{40df2bfe-e01b-47b1-9ab8-c6bcab9c75aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3. game\system\buildings">
+      <UniqueIdentifier>{832797a9-e416-46ec-bdc8-965ed5a4bd43}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
@@ -420,9 +426,6 @@
     <ClCompile Include="source\game\Init.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\system\Building.cpp">
-      <Filter>3. game\system</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\GameStats.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
@@ -503,9 +506,6 @@
     </ClCompile>
     <ClCompile Include="source\game\TerrainTile.cpp">
       <Filter>3. game</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\stats\BaseUsable.cpp">
-      <Filter>3. game\stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\entity\Usable.cpp">
       <Filter>3. game\entity</Filter>
@@ -625,14 +625,35 @@
     <ClCompile Include="source\game\panels\BookPanel.cpp">
       <Filter>3. game\panels</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\BaseObject.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\entity\ItemContainer.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
     <ClCompile Include="source\game\net\NetStats.cpp">
       <Filter>3. game\net</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\TextWriter.cpp">
+      <Filter>1. core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\BaseObject.cpp">
+      <Filter>3. game\system\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\BaseUsable.cpp">
+      <Filter>3. game\system\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\ObjectLoader.cpp">
+      <Filter>3. game\system\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\BuildingLoader.cpp">
+      <Filter>3. game\system\buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\Building.cpp">
+      <Filter>3. game\system\buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\BuildingScript.cpp">
+      <Filter>3. game\system\buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\BuildingGroup.cpp">
+      <Filter>3. game\system\buildings</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1002,9 +1023,6 @@
     <ClInclude Include="source\core\FastFunc.h">
       <Filter>1. core</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\system\Building.h">
-      <Filter>3. game\system</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\system\Content.h">
       <Filter>3. game\system</Filter>
     </ClInclude>
@@ -1112,9 +1130,6 @@
     </ClInclude>
     <ClInclude Include="source\game\TerrainTile.h">
       <Filter>3. game</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\BaseUsable.h">
-      <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\Usable.h">
       <Filter>3. game\entity</Filter>
@@ -1258,9 +1273,6 @@
     <ClInclude Include="source\game\panels\BookPanel.h">
       <Filter>3. game\panels</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\stats\BaseObject.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\entity\ItemContainer.h">
       <Filter>3. game\entity</Filter>
     </ClInclude>
@@ -1269,6 +1281,21 @@
     </ClInclude>
     <ClInclude Include="source\core\Base64.h">
       <Filter>1. core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\BaseObject.h">
+      <Filter>3. game\system\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\BaseUsable.h">
+      <Filter>3. game\system\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\BuildingGroup.h">
+      <Filter>3. game\system\buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\Building.h">
+      <Filter>3. game\system\buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\BuildingScript.h">
+      <Filter>3. game\system\buildings</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

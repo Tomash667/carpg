@@ -173,7 +173,7 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 	{
 		D3DDISPLAYMODE d_mode;
 		V(game->d3d->EnumAdapterModes(game->used_adapter, DISPLAY_FORMAT, i, &d_mode));
-		if(d_mode.Width >= Engine::MIN_WINDOW_SIZE.x && d_mode.Height >= Engine::MIN_WINDOW_SIZE.y)
+		if(d_mode.Width >= (uint)Engine::MIN_WINDOW_SIZE.x && d_mode.Height >= (uint)Engine::MIN_WINDOW_SIZE.y)
 			vres->push_back(new Res(Int2(d_mode.Width, d_mode.Height), d_mode.RefreshRate));
 	}
 	// sortuj

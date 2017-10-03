@@ -162,8 +162,6 @@ enum GMS
 {
 	GMS_NEED_WEAPON = 1,
 	GMS_NEED_KEY,
-	GMS_NEED_LADLE,
-	GMS_NEED_HAMMER,
 	GMS_DONT_LOOT_FOLLOWER,
 	GMS_JOURNAL_UPDATED,
 	GMS_GATHER_TEAM,
@@ -180,7 +178,6 @@ enum GMS
 	GMS_ONLY_LEADER_CAN_TRAVEL,
 	GMS_NO_POTION,
 	GMS_GAME_SAVED,
-	GMS_NEED_PICKAXE,
 	GMS_PICK_CHARACTER,
 	GMS_ADDED_ITEM
 };
@@ -545,8 +542,8 @@ struct Game final : public Engine, public UnitEventHandler
 		txCantLoadGame, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError, txLoadErrorGeneric, txLoadOpenError;
 	cstring txPvpRefuse, txWin, txWinMp, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor,
 		txNeedKey, txLevelUp, txLevelDown, txLocationText, txLocationTextMap, txRegeneratingLevel, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed,
-		txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedLadle, txNeedPickaxe, txNeedHammer,
-		txNeedUnk, txReallyQuit, txSecretAppear, txGmsAddedItem, txGmsAddedItems;
+		txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedItem, txReallyQuit, txSecretAppear,
+		txGmsAddedItem, txGmsAddedItems;
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
 		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2], txPvpTooFar,
@@ -1199,7 +1196,7 @@ public:
 	int GetNearestLocation2(const Vec2& pos, int flags, bool not_quest, int flagi_cel = -1);
 	int GetNearestSettlement(const Vec2& pos) { return GetNearestLocation2(pos, (1 << L_CITY), false); }
 	void AddGameMsg(cstring msg, float time);
-	void AddGameMsg2(cstring msg, float time, int id);
+	void AddGameMsg2(cstring msg, float time, int id = -1);
 	void AddGameMsg3(GMS id);
 	int CalculateQuestReward(int gold);
 	void AddReward(int gold) { AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false); }
@@ -1389,10 +1386,6 @@ public:
 	{
 		return FindObjectByIdLocal(BaseObject::Get(id));
 	}
-	Usable* FindUsableByIdLocal(int type)
-	{
-		return local_ctx.FindUsableById(type);
-	}
 	Unit* GetRandomArenaHero();
 	cstring GetRandomIdleText(Unit& u);
 	UnitData* GetRandomHeroData();
@@ -1453,7 +1446,6 @@ public:
 	void SpawnDrunkmans();
 	void PlayerYell(Unit& u);
 	bool CanBuySell(const Item* item);
-	void ResetCollisionPointers();
 	void SetOutsideParams();
 	UnitData& GetHero(Class clas, bool crazy = false);
 	const Item* GetRandomBook();
@@ -1972,8 +1964,7 @@ public:
 #define SOE_DONT_SPAWN_PARTICLES (1<<0)
 #define SOE_MAGIC_LIGHT (1<<1)
 #define SOE_DONT_CREATE_LIGHT (1<<2)
-	void SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale = 1.f,
-		int flags = 0);
+	void SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale = 1.f, int flags = 0);
 	void GenerateSecretLocation(Location& loc);
 	void SpawnSecretLocationObjects();
 	void SpawnSecretLocationUnits();

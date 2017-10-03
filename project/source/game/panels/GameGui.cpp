@@ -295,10 +295,9 @@ void GameGui::DrawFront()
 	case BP_USABLE:
 		{
 			Usable& u = *game.pc_data.before_player_ptr.usable;
-			BaseUsable& bu = BaseUsable::base_usables[u.type];
 			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;
-			GUI.DrawText3D(GUI.default_font, bu.name, DT_OUTLINE, WHITE, text_pos);
+			GUI.DrawText3D(GUI.default_font, u.base->name, DT_OUTLINE, WHITE, text_pos);
 		}
 		break;
 	}

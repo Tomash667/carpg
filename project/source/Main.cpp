@@ -233,7 +233,7 @@ bool RunInstallScripts()
 					t.AssertKeyword(0);
 					t.Next();
 					if(t.MustGetInt() != 1)
-						t.Throw(Format("Unknown install script version '%d'.", t.MustGetInt()));
+						t.Throw("Unknown install script version '%d'.", t.MustGetInt());
 					t.Next();
 					t.AssertKeyword(1);
 					t.Next();

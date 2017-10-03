@@ -210,9 +210,12 @@
     <ClInclude Include="source\game\panels\GameDialogBox.h" />
     <ClInclude Include="source\game\quests\QuestConsts.h" />
     <ClInclude Include="source\game\stats\Action.h" />
-    <ClInclude Include="source\game\stats\BaseObject.h" />
     <ClInclude Include="source\game\stats\Buff.h" />
+    <ClInclude Include="source\game\system\BaseObject.h" />
+    <ClInclude Include="source\game\system\BaseUsable.h" />
     <ClInclude Include="source\game\system\Building.h" />
+    <ClInclude Include="source\game\system\BuildingGroup.h" />
+    <ClInclude Include="source\game\system\BuildingScript.h" />
     <ClInclude Include="source\game\system\Content.h" />
     <ClInclude Include="source\game\system\ContentLoader.h" />
     <ClInclude Include="source\game\Dialog.h" />
@@ -313,7 +316,6 @@
     <ClInclude Include="source\game\stats\Attribute.h" />
     <ClInclude Include="source\game\stats\BaseLocation.h" />
     <ClInclude Include="source\game\stats\BaseTrap.h" />
-    <ClInclude Include="source\game\stats\BaseUsable.h" />
     <ClInclude Include="source\game\stats\Class.h" />
     <ClInclude Include="source\game\stats\Const.h" />
     <ClInclude Include="source\game\stats\DamageTypes.h" />
@@ -351,6 +353,7 @@
     <ClCompile Include="source\core\Profiler.cpp" />
     <ClCompile Include="source\core\Stream.cpp" />
     <ClCompile Include="source\core\Text.cpp" />
+    <ClCompile Include="source\core\TextWriter.cpp" />
     <ClCompile Include="source\core\Timer.cpp" />
     <ClCompile Include="source\core\Tokenizer.cpp" />
     <ClCompile Include="source\engine\Font.cpp" />
@@ -407,9 +410,13 @@
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
     <ClCompile Include="source\game\stats\Action.cpp" />
-    <ClCompile Include="source\game\stats\BaseObject.cpp" />
     <ClCompile Include="source\game\stats\Buff.cpp" />
+    <ClCompile Include="source\game\system\BaseObject.cpp" />
+    <ClCompile Include="source\game\system\BaseUsable.cpp" />
     <ClCompile Include="source\game\system\Building.cpp" />
+    <ClCompile Include="source\game\system\BuildingGroup.cpp" />
+    <ClCompile Include="source\game\system\BuildingLoader.cpp" />
+    <ClCompile Include="source\game\system\BuildingScript.cpp" />
     <ClCompile Include="source\game\system\Content.cpp" />
     <ClCompile Include="source\game\Dialogs.cpp" />
     <ClCompile Include="source\game\entity\AIController.cpp" />
@@ -506,7 +513,6 @@
     <ClCompile Include="source\game\stats\Attribute.cpp" />
     <ClCompile Include="source\game\stats\BaseLocation.cpp" />
     <ClCompile Include="source\game\stats\BaseTrap.cpp" />
-    <ClCompile Include="source\game\stats\BaseUsable.cpp" />
     <ClCompile Include="source\game\stats\Class.cpp" />
     <ClCompile Include="source\game\stats\Effect.cpp" />
     <ClCompile Include="source\game\stats\Item.cpp" />
@@ -522,6 +528,7 @@
     <ClCompile Include="source\game\stats\StatProfile.cpp" />
     <ClCompile Include="source\game\stats\UnitData.cpp" />
     <ClCompile Include="source\game\stats\UnitStats.cpp" />
+    <ClCompile Include="source\game\system\ObjectLoader.cpp" />
     <ClCompile Include="source\game\Team.cpp" />
     <ClCompile Include="source\game\TeamItems.cpp" />
     <ClCompile Include="source\game\TerrainTile.cpp" />

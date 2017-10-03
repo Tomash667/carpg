@@ -6,7 +6,7 @@ public:
 	TextWriter(cstring filename) : file(filename)
 	{
 	}
-	
+
 	operator bool() const
 	{
 		return file.IsOpen();
@@ -26,6 +26,20 @@ public:
 	{
 		file << c;
 	}
+
+	struct Flag
+	{
+		int value;
+		cstring name;
+	};
+
+	struct FlagsGroup
+	{
+		int flags;
+		std::initializer_list<Flag> const& flags_def;
+	};
+
+	void WriteFlags(std::initializer_list<FlagsGroup> const& flag_groups);
 
 	io2::FileWriter file;
 };

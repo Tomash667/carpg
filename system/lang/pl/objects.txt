@@ -1,0 +1,11 @@
+// usable objects
+usable chair = "Krzes³o"
+usable bench = "£awa"
+usable anvil = "Kowad³o"
+usable cauldron = "Kocio³ek"
+usable iron_vein = "¯y³a ¿elaza"
+usable gold_vein = "¯y³a z³ota"
+usable throne = "Tron"
+usable stool = "Sto³ek"
+usable bench_dir = "£awa"
+usable bookshelf = "Biblioteczka"

@@ -1,5 +1,9 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
+#include "Content.h"
+
+//-----------------------------------------------------------------------------
 class ContentLoader
 {
 public:
@@ -18,12 +22,12 @@ public:
 		{
 			content::errors += t.ParseTop<int>(top_group, [&](int top)
 			{
-				if(!t.IsString())
+				if(!t.IsItem())
 				{
-					Error(t.FormatUnexpected(tokenizer::T_STRING));
+					Error(t.FormatUnexpected(tokenizer::T_ITEM));
 					return false;
 				}
-				local_id = t.MustGetString();
+				local_id = t.GetItem();
 
 				try
 				{

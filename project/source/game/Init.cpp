@@ -587,7 +587,7 @@ void Game::AddLoadTasks()
 	aStun = mesh_mgr.AddLoadTask("stunned.qmsh");
 
 	// preload buildings
-	for(Building* b : content::buildings)
+	for(Building* b : Building::buildings)
 	{
 		if(!b->mesh_id.empty())
 		{
@@ -660,43 +660,41 @@ void Game::AddLoadTasks()
 	}
 
 	// preload objects
-	for(uint i = 0; i < BaseObject::n_objs; ++i)
+	for(BaseObject* p_obj : BaseObject::objs)
 	{
-		BaseObject& o = BaseObject::objs[i];
-		if(IS_SET(o.flags2, OBJ2_VARIANT))
+		auto& obj = *p_obj;
+		if(obj.variants)
 		{
-			VariantObject& vo = *o.variant;
+			VariantObject& vo = *obj.variants;
 			if(!vo.loaded)
 			{
-				for(uint i = 0; i < vo.count; ++i)
-					vo.entries[i].mesh = mesh_mgr.Get(vo.entries[i].mesh_name);
+				for(uint i = 0; i < vo.entries.size(); ++i)
+					vo.entries[i].mesh = mesh_mgr.Get(vo.entries[i].mesh_id);
 				vo.loaded = true;
 			}
-			SetupObject(o);
+			SetupObject(obj);
 		}
-		else if(o.mesh_id)
+		else if(!obj.mesh_id.empty())
 		{
-			o.mesh = mesh_mgr.Get(o.mesh_id);
-			if(!IS_SET(o.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS) && o.type == OBJ_CYLINDER)
-				o.shape = new btCylinderShape(btVector3(o.r, o.h, o.r));
-			SetupObject(o);
+			obj.mesh = mesh_mgr.Get(obj.mesh_id);
+			if(!IS_SET(obj.flags, OBJ_SCALEABLE | OBJ_NO_PHYSICS) && obj.type == OBJ_CYLINDER)
+				obj.shape = new btCylinderShape(btVector3(obj.r, obj.h, obj.r));
+			SetupObject(obj);
 		}
 		else
 		{
-			o.mesh = nullptr;
-			o.matrix = nullptr;
+			obj.mesh = nullptr;
+			obj.matrix = nullptr;
 		}
-	}
 
-	// preload usable objects
-	for(uint i = 0; i < BaseUsable::n_base_usables; ++i)
-	{
-		BaseUsable& bu = BaseUsable::base_usables[i];
-		bu.obj = BaseObject::Get(bu.obj_name);
-		if(!nosound && bu.sound_id)
-			bu.sound = sound_mgr.Get(bu.sound_id);
-		if(bu.item_id)
-			bu.item = FindItem(bu.item_id);
+		if(obj.IsUsable())
+		{
+			BaseUsable& bu = *(BaseUsable*)p_obj;
+			if(!nosound && !bu.sound_id.empty())
+				bu.sound = sound_mgr.Get(bu.sound_id);
+			if(!bu.item_id.empty())
+				bu.item = FindItem(bu.item_id.c_str());
+		}
 	}
 
 	// preload units
@@ -803,21 +801,21 @@ void Game::SetupObject(BaseObject& obj)
 
 	if(IS_SET(obj.flags, OBJ_PRELOAD))
 	{
-		if(IS_SET(obj.flags2, OBJ2_VARIANT))
+		if(obj.variants)
 		{
-			VariantObject& vo = *obj.variant;
-			for(uint i = 0; i < vo.count; ++i)
+			VariantObject& vo = *obj.variants;
+			for(uint i = 0; i < vo.entries.size(); ++i)
 				mesh_mgr.Load(vo.entries[i].mesh);
 		}
-		else if(obj.mesh_id)
+		else if(!obj.mesh_id.empty())
 			mesh_mgr.Load(obj.mesh);
 	}
 
-	if(IS_SET(obj.flags2, OBJ2_VARIANT))
+	if(obj.variants)
 	{
-		assert(!IS_SET(obj.flags, OBJ_DOUBLE_PHYSICS) && !IS_SET(obj.flags2, OBJ2_MULTI_PHYSICS)); // not supported for variant mesh yet
-		mesh_mgr.LoadMetadata(obj.variant->entries[0].mesh);
-		point = obj.variant->entries[0].mesh->FindPoint("hit");
+		assert(!IS_SET(obj.flags, OBJ_DOUBLE_PHYSICS | OBJ_MULTI_PHYSICS)); // not supported for variant mesh yet
+		mesh_mgr.LoadMetadata(obj.variants->entries[0].mesh);
+		point = obj.variants->entries[0].mesh->FindPoint("hit");
 	}
 	else
 	{
@@ -825,7 +823,7 @@ void Game::SetupObject(BaseObject& obj)
 		point = obj.mesh->FindPoint("hit");
 	}
 
-	if(!point || !point->IsBox() || IS_SET(obj.flags, OBJ_BUILDING | OBJ_SCALEABLE) || obj.type == OBJ_CYLINDER)
+	if(!point || !point->IsBox() || IS_SET(obj.flags, OBJ_BUILDING | OBJ_SCALEABLE | OBJ_NO_PHYSICS) || obj.type == OBJ_CYLINDER)
 		return;
 
 	assert(point->size.x >= 0 && point->size.y >= 0 && point->size.z >= 0);
@@ -836,7 +834,7 @@ void Game::SetupObject(BaseObject& obj)
 	if(IS_SET(obj.flags, OBJ_PHY_ROT))
 		obj.type = OBJ_HITBOX_ROT;
 
-	if(IS_SET(obj.flags2, OBJ2_MULTI_PHYSICS))
+	if(IS_SET(obj.flags, OBJ_MULTI_PHYSICS))
 	{
 		LocalVector2<Mesh::Point*> points;
 		Mesh::Point* prev_point = point;
@@ -874,7 +872,7 @@ void Game::SetupObject(BaseObject& obj)
 		if(point2 && point2->IsBox())
 		{
 			assert(point2->size.x >= 0 && point2->size.y >= 0 && point2->size.z >= 0);
-			obj.next_obj = new BaseObject("", 0, 0, "", "");
+			obj.next_obj = new BaseObject;
 			if(!IS_SET(obj.flags, OBJ_NO_PHYSICS))
 			{
 				btBoxShape* shape = new btBoxShape(ToVector3(point2->size));

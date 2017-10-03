@@ -5,6 +5,7 @@
 #include "InsideBuilding.h"
 #include "EntryPoint.h"
 #include "Content.h"
+#include "BuildingGroup.h"
 
 //-----------------------------------------------------------------------------
 // Budynek w mieœcie
@@ -77,8 +78,8 @@ struct City : public OutsideLocation
 	InsideBuilding* FindInsideBuilding(Building* type);
 	InsideBuilding* FindInsideBuilding(BuildingGroup* group);
 	InsideBuilding* FindInsideBuilding(BuildingGroup* group, int& index);
-	InsideBuilding* FindInn() { return FindInsideBuilding(content::BG_INN); }
-	InsideBuilding* FindInn(int& id) { return FindInsideBuilding(content::BG_INN, id); }
+	InsideBuilding* FindInn() { return FindInsideBuilding(BuildingGroup::BG_INN); }
+	InsideBuilding* FindInn(int& id) { return FindInsideBuilding(BuildingGroup::BG_INN, id); }
 	CityBuilding* FindBuilding(BuildingGroup* group);
 	CityBuilding* FindBuilding(Building* type);
 	bool IsVillage() const { return settlement_type == SettlementType::Village; }

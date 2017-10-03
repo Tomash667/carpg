@@ -50,7 +50,7 @@ extern cstring RESTART_MUTEX_NAME;
 Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quickstart(QUICKSTART_NONE), inactive_update(false), last_screenshot(0),
 cl_fog(true), cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false),
 game_speed(1.f), devmode(false), draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false),
-obj_alpha("tmp_alpha", 0, 0, "tmp_alpha", nullptr, 1), alpha_test_state(-1), debug_info(false), dont_wander(false), local_ctx_valid(false),
+alpha_test_state(-1), debug_info(false), dont_wander(false), local_ctx_valid(false),
 city_ctx(nullptr), check_updates(true), skip_tutorial(false), portal_anim(0), nosound(false), nomusic(false),
 debug_info2(false), music_type(MusicType::None), contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64 * 1024), net_stream2(64 * 1024),
 mp_interp(0.05f), mp_use_interp(true), mp_port(PORT), paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr),
@@ -66,6 +66,9 @@ game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), fini
 #endif
 
 	devmode = default_devmode;
+
+	obj_alpha.id = "tmp_alpha";
+	obj_alpha.alpha = 1;
 
 	game = this;
 	Quest::game = this;
@@ -1809,30 +1812,7 @@ void Game::OnCleanup()
 		delete obj_arrow->getCollisionShape();
 	delete obj_arrow;
 	delete obj_spell;
-
-	// kszta³ty obiektów
-	for(uint i = 0; i < BaseObject::n_objs; ++i)
-	{
-		auto& base = BaseObject::objs[i];
-		delete base.shape;
-		if(IS_SET(base.flags, OBJ_DOUBLE_PHYSICS) && base.next_obj)
-		{
-			delete base.next_obj->shape;
-			delete base.next_obj;
-		}
-		else if(IS_SET(base.flags2, OBJ2_MULTI_PHYSICS) && base.next_obj)
-		{
-			for(int j = 0;; ++j)
-			{
-				bool have_next = (base.next_obj[j].shape != nullptr);
-				delete base.next_obj[j].shape;
-				if(!have_next)
-					break;
-			}
-			delete[] base.next_obj;
-		}
-	}
-
+	
 	draw_batch.Clear();
 	free_cave_data();
 	DeleteElements(game_players);
@@ -2179,10 +2159,7 @@ void Game::SetGameText()
 	txGmsNotInCombat = Str("gmsNotInCombat");
 	txGainTextAttrib = Str("gainTextAttrib");
 	txGainTextSkill = Str("gainTextSkill");
-	txNeedLadle = Str("needLadle");
-	txNeedPickaxe = Str("needPickaxe");
-	txNeedHammer = Str("needHammer");
-	txNeedUnk = Str("needUnk");
+	txNeedItem = Str("needItem");
 	txReallyQuit = Str("reallyQuit");
 	txSecretAppear = Str("secretAppear");
 	txGmsAddedItem = Str("gmsAddedItem");
@@ -2332,14 +2309,7 @@ void Game::SetGameText()
 	txSGOMagesAndGolems = Str("sgo_magesAndGolems");
 	txSGOUnk = Str("sgo_unk");
 	txSGOPowerfull = Str("sgo_powerfull");
-
-	// nazwy u¿ywalnych obiektów
-	for(int i = 0; i < U_MAX; ++i)
-	{
-		BaseUsable& u = BaseUsable::base_usables[i];
-		u.name = Str(u.id);
-	}
-
+	
 	// rodzaje wrogów
 	for(int i = 0; i < SG_MAX; ++i)
 	{
@@ -2791,21 +2761,6 @@ bool Game::CanBuySell(const Item* item)
 		}
 	}
 	return true;
-}
-
-//=================================================================================================
-void Game::ResetCollisionPointers()
-{
-	for(vector<Object*>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
-	{
-		Object& obj = **it;
-		if(obj.base && IS_SET(obj.base->flags, OBJ_PHYSICS_PTR))
-		{
-			btCollisionObject* cobj = (btCollisionObject*)obj.ptr;
-			if(cobj->getUserPointer() != (void*)&obj)
-				cobj->setUserPointer(&obj);
-		}
-	}
 }
 
 //=================================================================================================

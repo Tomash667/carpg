@@ -12,7 +12,6 @@ struct Object
 	float scale;
 	Mesh* mesh;
 	BaseObject* base;
-	void* ptr;
 	bool require_split;
 
 	static const int MIN_SIZE = 29;

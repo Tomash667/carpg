@@ -1,0 +1,11 @@
+// usable objects
+usable chair = "Chair"
+usable bench = "Bench"
+usable anvil = "Anvil"
+usable cauldron = "Cauldron"
+usable iron_vein = "Iron vein"
+usable gold_vein = "Gold vein"
+usable throne = "Throne"
+usable stool = "Stool"
+usable bench_dir = "Bench"
+usable bookshelf = "Bookshelf"

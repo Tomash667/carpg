@@ -1,0 +1,551 @@
+object barrel {
+	mesh "beczka.qmsh"
+	cylinder { 0.38 1.083 }
+	flags near_wall
+}
+
+object barrels {
+	mesh "beczki.qmsh"
+	flags near_wall
+}
+
+object big_barrel {
+	mesh "beczka2.qmsh"
+	flags { near_wall blocks_camera }
+}
+
+object box {
+	mesh "skrzynka.qmsh"
+	flags near_wall
+}
+
+object boxes {
+	mesh "skrzynki.qmsh"
+	flags near_wall
+}
+
+object table {
+	mesh "stol.qmsh"
+}
+
+object table2 {
+	mesh "stol2.qmsh"
+}
+
+object wagon {
+	mesh "woz.qmsh"
+	flags { multiple_physics }
+}
+
+object bow_target {
+	mesh "tarcza_strzelnicza.qmsh"
+	flags { near_wall physics_ptr }
+}
+
+object torch {
+	mesh "pochodnia.qmsh"
+	cylinder { 0.0675 2.18 }
+	center_y 2.2
+	extra_dist 0.5
+	flags { near_wall light important }
+}
+
+object torch_off {
+	mesh "pochodnia.qmsh"
+	cylinder { 0.0675 2.18 }
+	flags near_wall
+}
+
+object tanning_rack {
+	mesh "tanning_rack.qmsh"
+	alpha 0
+	flags near_wall
+}
+
+object altar {
+	mesh "oltarz.qmsh"
+	alpha 0
+	flags { near_wall important required blocks_camera }
+}
+
+object bloody_altar {
+	mesh "krwawy_oltarz.qmsh"
+	center_y 0.782
+	flags { near_wall important blood_effect blocks_camera }
+}
+
+object tent {
+	mesh "namiot.qmsh"
+	flags blocks_camera
+}
+
+object hay {
+	mesh "snopek.qmsh"
+	flags near_wall
+}
+
+object firewood {
+	mesh "drewno_na_opal.qmsh"
+	flags near_wall
+}
+
+object wardrobe {
+	mesh "szafa.qmsh"
+	flags { near_wall blocks_camera }
+}
+
+object bed {
+	mesh "lozko.qmsh"
+	flags { near_wall blocks_camera }
+}
+
+object bedding {
+	mesh "poslanie.qmsh"
+	flags no_physics
+}
+
+object painting1 {
+	mesh "obraz1.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
+object painting2 {
+	mesh "obraz2.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
+object painting3 {
+	mesh "obraz3.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
+object painting4 {
+	mesh "obraz4.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
+object painting5 {
+	mesh "obraz5.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
+object painting6 {
+	mesh "obraz6.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
+object painting7 {
+	mesh "obraz7.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
+object painting8 {
+	mesh "obraz8.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
+object campfire {
+	mesh "ognisko.qmsh"
+	cylinder { 1.0735 0.43 }
+	center_y 0.4
+	flags { no_physics light campfire_effect }
+}
+
+object campfire_off {
+	mesh "ognisko2.qmsh"
+	cylinder { 1.0735 0.43 }
+	flags no_physics
+}
+
+object chest {
+	mesh "skrzynia.qmsh"
+	flags { near_wall is_chest }
+}
+
+object chest_r {
+	mesh "skrzynia.qmsh"
+	flags { important required in_middle is_chest }
+}
+
+object melee_target {
+	mesh "manekin.qmsh"
+	cylinder { 0.27 1.85 }
+	flags physics_ptr
+}
+
+object emblem {
+	mesh "emblemat.qmsh"
+	flags { near_wall no_physics on_wall }
+}
+
+object emblem_t {
+	mesh "emblemat_t.qmsh"
+	flags { near_wall no_physics on_wall }
+}
+
+object gobelin {
+	mesh "gobelin.qmsh"
+	flags { near_wall no_physics on_wall }
+}
+
+object table_and_chairs {
+	cylinder { 3 0.6 }
+	flags table_spawner
+}
+
+object tablechairs {
+	cylinder { 3 0.6 }
+	flags table_spawner
+}
+
+object grave {
+	mesh "grob.qmsh"
+	flags near_wall
+}
+
+object tombstone_1 {
+	mesh "nagrobek.qmsh"
+}
+
+object mushrooms {
+	mesh "grzyby.qmsh"
+	flags no_physics
+}
+
+object stalactite {
+	mesh "stalaktyt.qmsh"
+	flags no_physics
+}
+
+object plant2 {
+	mesh "krzak2.qmsh"
+	alpha 1
+	flags { no_physics billboard }
+}
+
+object rock {
+	mesh "kamien.qmsh"
+	cylinder { 0.456 0.67 }
+}
+
+object tree {
+	mesh "drzewo.qmsh"
+	cylinder { 0.043 5 }
+	alpha 1
+	flags scaleable
+}
+
+object tree2 {
+	mesh "drzewo2.qmsh"
+	cylinder { 0.024 5 }
+	alpha 1
+	flags scaleable
+}
+
+object tree3 {
+	mesh "drzewo3.qmsh"
+	cylinder { 0.067 5 }
+	alpha 1
+	flags scaleable
+}
+
+object grass {
+	mesh "trawa.qmsh"
+	alpha 1
+	flags { no_physics preload }
+}
+
+object plant {
+	mesh "krzak.qmsh"
+	alpha 1
+	flags no_physics
+}
+
+object plant_pot {
+	mesh "doniczka.qmsh"
+	cylinder { 0.257 0.05 }
+	alpha 1
+}
+
+object desk {
+	mesh "biurko.qmsh"
+	alpha 1
+}
+
+object withered_tree {
+	mesh "drzewo_uschniete.qmsh"
+	cylinder { 0.58 6 }
+	flags { scaleable blocks_camera }
+}
+
+object tartak {
+	mesh "tartak.qmsh"
+	flags building
+}
+
+object portal {
+	mesh "portal.qmsh"
+	flags { important double_physics required in_middle }
+}
+
+object magic_thing {
+	mesh "magiczne_cos.qmsh"
+	cylinder { 0.561 0.844 }
+	center_y 0.844
+	flags { light in_middle }
+}
+
+object moonwell {
+	mesh "moonwell.qmsh"
+	cylinder { 1.031 0.755 }
+	flags water_effect
+}
+
+object moonwell_phy {
+	mesh "moonwell_phy.qmsh"
+	flags { double_physics rotate_physics }
+}
+
+object tomashu_dom {
+	mesh "tomashu_dom.qmsh"
+	flags building
+}
+
+object shelves {
+	mesh "polki.qmsh"
+	flags near_wall
+}
+
+object bania {
+	mesh "bania.qmsh"
+	cylinder { 1 1 }
+}
+
+object painting_x1 {
+	mesh "obraz_x1.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
+object painting_x2 {
+	mesh "obraz_x2.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
+object painting_x3 {
+	mesh "obraz_x3.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
+object painting_x4 {
+	mesh "obraz_x4.qmsh"
+	flags { near_wall no_physics high on_wall }
+}
+
+object coveredwell {
+	mesh "coveredwell.qmsh"
+	cylinder { 1.237 2.94 }
+}
+
+object obelisk {
+	mesh "obelisk.qmsh"
+	flags blocks_camera
+}
+
+object tombstone_x1 {
+	mesh "nagrobek_x1.qmsh"
+}
+
+object tombstone_x2 {
+	mesh "nagrobek_x2.qmsh"
+}
+
+object tombstone_x3 {
+	mesh "nagrobek_x3.qmsh"
+}
+
+object tombstone_x4 {
+	mesh "nagrobek_x4.qmsh"
+}
+
+object tombstone_x5 {
+	mesh "nagrobek_x5.qmsh"
+}
+
+object tombstone_x6 {
+	mesh "nagrobek_x6.qmsh"
+}
+
+object tombstone_x7 {
+	mesh "nagrobek_x7.qmsh"
+}
+
+object tombstone_x8 {
+	mesh "nagrobek_x8.qmsh"
+}
+
+object tombstone_x9 {
+	mesh "nagrobek_x9.qmsh"
+}
+
+object wall {
+	mesh "mur.qmsh"
+	alpha 0
+	flags blocks_camera
+}
+
+object tower {
+	mesh "wieza.qmsh"
+	flags blocks_camera
+}
+
+object gate {
+	mesh "brama.qmsh"
+	alpha 0
+	flags { double_physics blocks_camera }
+}
+
+object grate {
+	mesh "kraty.qmsh"
+}
+
+object to_remove {
+	mesh "snopek.qmsh"
+}
+
+object boxes2 {
+	mesh "pudla.qmsh"
+}
+
+object barrel_broken {
+	mesh "beczka_rozbita.qmsh"
+	cylinder { 0.38 1.083 }
+}
+
+object fern {
+	mesh "paproc.qmsh"
+	alpha 1
+	flags no_physics
+}
+
+object stocks {
+	mesh "dyby.qmsh"
+	flags multiple_physics
+}
+
+object winplant {
+	mesh "krzaki_okno.qmsh"
+	alpha 1
+	flags no_physics
+}
+
+object smallroof {
+	mesh "daszek.qmsh"
+	flags { no_physics camera_colliders }
+}
+
+object rope {
+	mesh "lina.qmsh"
+	flags no_physics
+}
+
+object wheel {
+	mesh "kolo.qmsh"
+	flags no_physics
+}
+
+object woodpile {
+	mesh "woodpile.qmsh"
+}
+
+object grass2 {
+	mesh "trawa2.qmsh"
+	alpha 1
+	flags no_physics
+}
+
+object corn {
+	mesh "zboze.qmsh"
+	alpha 1
+	flags { no_physics preload }
+}
+
+//==============================================================================
+
+usable chair {
+	mesh "krzeslo.qmsh"
+	animation "siedzi_krzeslo"
+	flags allow_use
+	limit_rot 2
+}
+
+usable bench {
+	variants {
+		"lawa.qmsh"
+		"lawa2.qmsh"
+		"lawa3.qmsh"
+		"lawa4.qmsh"
+	}
+	animation "siedzi_lawa"
+	flags {near_wall allow_use is_bench}
+	limit_rot 3
+}
+
+usable bench_dir : bench {
+	limit_rot 2
+}
+
+usable anvil {
+	mesh "kowadlo.qmsh"
+	required_item blacksmith_hammer
+	animation "kowalstwo"
+	animation_sound { "blacksmith.mp3" 0.333 }
+	flags slow_stamina_restore
+	limit_rot 1
+}
+
+usable cauldron {
+	mesh "kociol.qmsh"
+	required_item ladle
+	animation "miesza"
+	flags slow_stamina_restore
+	limit_rot 0
+}
+
+usable iron_vein {
+	mesh "iron_ore.qmsh"
+	required_item pickaxe
+	animation "wydobywa"
+	animation_sound { "kilof.mp3" 0.55 }
+	flags slow_stamina_restore
+	limit_rot 4
+}
+
+usable gold_vein {
+	mesh "gold_ore.qmsh"
+	required_item pickaxe
+	animation "wydobywa"
+	animation_sound { "kilof.mp3" 0.55 }
+	flags slow_stamina_restore
+	limit_rot 4
+}
+
+usable throne {
+	mesh "tron.qmsh"
+	animation "siedzi_tron"
+	flags { allow_use important required near_wall }
+	limit_rot 2
+}
+
+usable stool {
+	mesh "stolek.qmsh"
+	cylinder { 0.27 0.44 }
+	animation "siedzi_krzeslo"
+	flags allow_use
+	limit_rot 2
+}
+
+usable bookshelf {
+	mesh "biblioteczka.qmsh"
+	flags {container near_wall blocks_camera}
+	limit_rot 1
+}

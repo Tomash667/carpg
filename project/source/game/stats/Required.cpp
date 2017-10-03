@@ -1,8 +1,11 @@
 #include "Pch.h"
 #include "Core.h"
 #include "Game.h"
-#include "Content.h"
 #include "Spell.h"
+#include "BuildingGroup.h"
+#include "Building.h"
+#include "BuildingScript.h"
+#include "BaseUsable.h"
 
 extern string g_system_dir;
 
@@ -17,7 +20,9 @@ enum RequiredType
 	R_DIALOG,
 	R_BUILDING_GROUP,
 	R_BUILDING,
-	R_BUILDING_SCRIPT
+	R_BUILDING_SCRIPT,
+	R_OBJECT,
+	R_USABLE
 };
 
 //=================================================================================================
@@ -166,7 +171,9 @@ bool Game::LoadRequiredStats(uint& errors)
 		{ "dialog", R_DIALOG },
 		{ "building_group", R_BUILDING_GROUP },
 		{ "building", R_BUILDING },
-		{ "building_script", R_BUILDING_SCRIPT }
+		{ "building_script", R_BUILDING_SCRIPT },
+		{ "object", R_OBJECT },
+		{ "usable", R_USABLE }
 	});
 
 	try
@@ -284,7 +291,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_BUILDING_GROUP:
 					{
-						BuildingGroup* group = content::FindBuildingGroup(str);
+						BuildingGroup* group = BuildingGroup::TryGet(str);
 						if(!group)
 						{
 							Error("Missing required building group '%s'.", str.c_str());
@@ -294,7 +301,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_BUILDING:
 					{
-						Building* building = content::FindBuilding(str);
+						Building* building = Building::TryGet(str);
 						if(!building)
 						{
 							Error("Missing required building '%s'.", str.c_str());
@@ -304,7 +311,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_BUILDING_SCRIPT:
 					{
-						BuildingScript* script = content::FindBuildingScript(str);
+						BuildingScript* script = BuildingScript::TryGet(str);
 						if(!script)
 						{
 							Error("Missing required building script '%s'.", str.c_str());
@@ -326,6 +333,26 @@ bool Game::LoadRequiredStats(uint& errors)
 								break;
 							}
 							t.Next();
+						}
+					}
+					break;
+				case R_OBJECT:
+					{
+						auto obj = BaseObject::TryGet(str.c_str());
+						if(!obj)
+						{
+							Error("Missing required object '%s'.", str.c_str());
+							++errors;
+						}
+					}
+					break;
+				case R_USABLE:
+					{
+						auto use = BaseUsable::TryGet(str.c_str());
+						if(!use)
+						{
+							Error("Missing required usable object '%s'.", str.c_str());
+							++errors;
 						}
 					}
 					break;

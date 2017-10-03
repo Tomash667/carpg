@@ -1,8 +1,13 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.6.1 (2017-10-02):
+Version 0.7 (2017-11-XX):
++ loading objects from file
 - fixed crash when team npc want item from another team npc [MikelkCZ]
+- fixed some object wrongly having colliders
+- fixed building signs blocking player in city
+- fixed invalid village hall mesh
+- fixed invalid sign texture for food seller
 - better redirecting to website
 
 --------------------------------------------------------------------------------

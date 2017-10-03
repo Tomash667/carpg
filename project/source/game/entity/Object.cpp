@@ -13,11 +13,7 @@ void Object::Save(HANDLE file)
 	WriteFile(file, &scale, sizeof(scale), &tmp, nullptr);
 
 	if(base)
-	{
-		byte len = (byte)strlen(base->id);
-		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		WriteFile(file, base->id, len, &tmp, nullptr);
-	}
+		WriteString1(file, base->id);
 	else
 	{
 		byte len = 0;

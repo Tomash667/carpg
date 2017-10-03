@@ -278,15 +278,7 @@ void WarpToThroneOrcBoss()
 	assert(u);
 
 	// szukaj tronu
-	Usable* use = nullptr;
-	for(vector<Usable*>::iterator it = game.local_ctx.usables->begin(), end = game.local_ctx.usables->end(); it != end; ++it)
-	{
-		if((*it)->type == U_THRONE)
-		{
-			use = *it;
-			break;
-		}
-	}
+	Usable* use = game.local_ctx.FindUsable("throne");
 	assert(use);
 
 	// przenieœ
@@ -523,7 +515,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			quest_manager.EndUniqueQuest();
 			// gorush
 			game->RemoveTeamMember(orc);
-			Usable* tron = game->FindUsableByIdLocal(U_THRONE);
+			Usable* tron = game->local_ctx.FindUsable("throne");
 			assert(tron);
 			if(tron)
 			{
