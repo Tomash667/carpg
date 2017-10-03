@@ -1446,7 +1446,6 @@ public:
 	void SpawnDrunkmans();
 	void PlayerYell(Unit& u);
 	bool CanBuySell(const Item* item);
-	void ResetCollisionPointers();
 	void SetOutsideParams();
 	UnitData& GetHero(Class clas, bool crazy = false);
 	const Item* GetRandomBook();
@@ -1965,8 +1964,7 @@ public:
 #define SOE_DONT_SPAWN_PARTICLES (1<<0)
 #define SOE_MAGIC_LIGHT (1<<1)
 #define SOE_DONT_CREATE_LIGHT (1<<2)
-	void SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale = 1.f,
-		int flags = 0);
+	void SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale = 1.f, int flags = 0);
 	void GenerateSecretLocation(Location& loc);
 	void SpawnSecretLocationObjects();
 	void SpawnSecretLocationUnits();

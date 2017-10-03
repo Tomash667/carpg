@@ -41,7 +41,7 @@
 #include "Action.h"
 #include "ItemContainer.h"
 
-const int SAVE_VERSION = V_0_6;
+const int SAVE_VERSION = V_FEATURE;
 int LOAD_VERSION;
 const int MIN_SUPPORT_LOAD_VERSION = V_0_2_10;
 
@@ -10465,7 +10465,7 @@ void Game::GenerateDungeonObjects()
 				if(Net::IsOnline())
 					chest->netid = chest_netid_counter++;
 
-				SpawnObjectExtras(local_ctx, obj, pos, rot, nullptr, nullptr, 1.f, flags);
+				SpawnObjectExtras(local_ctx, obj, pos, rot, nullptr, 1.f, flags);
 				GenerateDungeonTreasure(*local_ctx.chests, chest_lvl);
 
 				break;
@@ -11149,18 +11149,18 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 			ProcessBuildingObjects(ctx, nullptr, nullptr, base_obj->mesh, nullptr, rot, roti, obj.pos, nullptr, nullptr, true);
 		}
 		else
-			SpawnObjectExtras(ctx, base_obj, obj.pos, obj.rot.y, &obj, (btCollisionObject**)&obj.ptr, obj.scale, flags);
+			SpawnObjectExtras(ctx, base_obj, obj.pos, obj.rot.y, &obj, obj.scale, flags);
 	}
 
 	if(ctx.chests)
 	{
 		BaseObject* chest = BaseObject::Get("chest");
 		for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
-			SpawnObjectExtras(ctx, chest, (*it)->pos, (*it)->rot, nullptr, nullptr, 1.f, flags);
+			SpawnObjectExtras(ctx, chest, (*it)->pos, (*it)->rot, nullptr, 1.f, flags);
 	}
 
 	for(vector<Usable*>::iterator it = ctx.usables->begin(), end = ctx.usables->end(); it != end; ++it)
-		SpawnObjectExtras(ctx, (*it)->base, (*it)->pos, (*it)->rot, *it, nullptr, 1.f, flags);
+		SpawnObjectExtras(ctx, (*it)->base, (*it)->pos, (*it)->rot, *it, 1.f, flags);
 }
 
 void Game::SetRoomPointers()
@@ -14095,7 +14095,6 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 				LoadingStep(txGeneratingUnits);
 				GenerateDungeonUnits();
 				GenerateDungeonFood();
-				ResetCollisionPointers();
 			}
 			else
 			{

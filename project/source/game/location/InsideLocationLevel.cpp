@@ -354,13 +354,13 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	if(LOAD_VERSION < V_0_2_20)
 	{
 		auto bench = BaseUsable::Get("bench"),
-			bench_rot = BaseUsable::Get("bench_rot");
+			bench_dir = BaseUsable::Get("bench_dir");
 		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		{
 			Usable& u = **it;
 			if(u.base == bench)
 			{
-				u.base = bench_rot;
+				u.base = bench_dir;
 				u.variant = Rand() % 2;
 			}
 		}

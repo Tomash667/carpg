@@ -909,8 +909,6 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				GenerateCityPickableItems();
 				if(city->IsVillage())
 					SpawnForestItems(-2);
-
-				ResetCollisionPointers();
 			}
 			else if(!reenter)
 			{
@@ -1261,8 +1259,6 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				// generate items
 				LoadingStep(txGeneratingItems);
 				SpawnForestItems(-1);
-
-				ResetCollisionPointers();
 			}
 			else if(!reenter)
 			{
@@ -1529,7 +1525,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 		o->scale = 1;
 		o->base = table;
 		ctx.objects->push_back(o);
-		SpawnObjectExtras(ctx, table, pos, rot, o, nullptr);
+		SpawnObjectExtras(ctx, table, pos, rot, o);
 
 		// stools
 		int count = Random(2, 4);
@@ -1574,7 +1570,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 			if(Net::IsOnline())
 				u->netid = usable_netid_counter++;
 
-			SpawnObjectExtras(ctx, stool, u->pos, u->rot, u, nullptr);
+			SpawnObjectExtras(ctx, stool, u->pos, u->rot, u);
 		}
 
 		return o;
@@ -1660,7 +1656,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 			u->netid = usable_netid_counter++;
 		ctx.usables->push_back(u);
 
-		SpawnObjectExtras(ctx, base, pos, rot, u, nullptr, scale, flags);
+		SpawnObjectExtras(ctx, base, pos, rot, u, scale, flags);
 
 		return u;
 	}
@@ -1677,7 +1673,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 		if(Net::IsOnline())
 			chest->netid = chest_netid_counter++;
 
-		SpawnObjectExtras(ctx, base, pos, rot, nullptr, nullptr, scale, flags);
+		SpawnObjectExtras(ctx, base, pos, rot, nullptr, scale, flags);
 
 		return chest;
 	}
@@ -1692,7 +1688,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 		o->base = base;
 		ctx.objects->push_back(o);
 
-		SpawnObjectExtras(ctx, base, pos, rot, o, (btCollisionObject**)&o->ptr, scale, flags);
+		SpawnObjectExtras(ctx, base, pos, rot, o, scale, flags);
 
 		return o;
 	}
@@ -1757,7 +1753,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 				o->base = oWall;
 				o->mesh = oWall->mesh;
 				local_ctx.objects->push_back(o);
-				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 			}
 
 			// south
@@ -1770,7 +1766,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 				o->base = oWall;
 				o->mesh = oWall->mesh;
 				local_ctx.objects->push_back(o);
-				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 			}
 
 			// west
@@ -1783,7 +1779,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 				o->base = oWall;
 				o->mesh = oWall->mesh;
 				local_ctx.objects->push_back(o);
-				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 			}
 
 			// east
@@ -1796,7 +1792,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 				o->base = oWall;
 				o->mesh = oWall->mesh;
 				local_ctx.objects->push_back(o);
-				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+				SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 			}
 		}
 
@@ -1810,7 +1806,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->base = oTower;
 			o->mesh = oTower->mesh;
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 		}
 		{
 			// south east
@@ -1821,7 +1817,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->base = oTower;
 			o->mesh = oTower->mesh;
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 		}
 		{
 			// south west
@@ -1832,7 +1828,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->base = oTower;
 			o->mesh = oTower->mesh;
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 		}
 		{
 			// north west
@@ -1843,7 +1839,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->base = oTower;
 			o->mesh = oTower->mesh;
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 		}
 
 		// gates
@@ -1857,7 +1853,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->rot.y = 0;
 			o->pos = Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.85f*OutsideLocation::size * 2);
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 
 			Object* o2 = new Object;
 			o2->pos = o->pos;
@@ -1866,7 +1862,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o2->base = oGrate;
 			o2->mesh = oGrate->mesh;
 			local_ctx.objects->push_back(o2);
-			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, 1.f, 0);
 		}
 
 		if(IS_SET(city->gates, GATE_SOUTH))
@@ -1879,7 +1875,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->rot.y = PI;
 			o->pos = Vec3(0.5f*OutsideLocation::size * 2 + 1.f, 1.f, 0.15f*OutsideLocation::size * 2);
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 
 			Object* o2 = new Object;
 			o2->pos = o->pos;
@@ -1888,7 +1884,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o2->base = oGrate;
 			o2->mesh = oGrate->mesh;
 			local_ctx.objects->push_back(o2);
-			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, 1.f, 0);
 		}
 
 		if(IS_SET(city->gates, GATE_WEST))
@@ -1901,7 +1897,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->rot.y = PI * 3 / 2;
 			o->pos = Vec3(0.15f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f);
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 
 			Object* o2 = new Object;
 			o2->pos = o->pos;
@@ -1910,7 +1906,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o2->base = oGrate;
 			o2->mesh = oGrate->mesh;
 			local_ctx.objects->push_back(o2);
-			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, 1.f, 0);
 		}
 
 		if(IS_SET(city->gates, GATE_EAST))
@@ -1923,7 +1919,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o->rot.y = PI / 2;
 			o->pos = Vec3(0.85f*OutsideLocation::size * 2, 1.f, 0.5f*OutsideLocation::size * 2 + 1.f);
 			local_ctx.objects->push_back(o);
-			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o->base, o->pos, o->rot.y, nullptr, 1.f, 0);
 
 			Object* o2 = new Object;
 			o2->pos = o->pos;
@@ -1932,7 +1928,7 @@ void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 			o2->base = oGrate;
 			o2->mesh = oGrate->mesh;
 			local_ctx.objects->push_back(o2);
-			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, nullptr, 1.f, 0);
+			SpawnObjectExtras(local_ctx, o2->base, o2->pos, o2->rot.y, nullptr, 1.f, 0);
 		}
 	}
 
@@ -2140,6 +2136,22 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					cobj.radius = sqrt(cobj.w*cobj.w + cobj.h*cobj.h);
 					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
 				}
+			}
+			else if(token == "squarevpa")
+			{
+				btBoxShape* shape = new btBoxShape(btVector3(pt.size.x, pt.size.y, pt.size.z));
+				if(ctx.type == LevelContext::Outside)
+					pos.y += terrain->GetH(pos);
+				shapes.push_back(shape);
+				btCollisionObject* co = new btCollisionObject;
+				co->setCollisionShape(shape);
+				int group = CG_COLLIDER;
+				co->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | group);
+				co->getWorldTransform().setOrigin(ToVector3(pos));
+				phy_world->addCollisionObject(co, group);
+
+				if(roti != 0)
+					co->getWorldTransform().setRotation(btQuaternion(rot, 0, 0));
 			}
 			else if(token == "squarecam")
 			{
@@ -5592,8 +5604,7 @@ void Game::SpawnMoonwellUnits(const Vec3& team_pos)
 	}
 }
 
-void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, btCollisionObject** phy_result, float scale,
-	int flags)
+void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale, int flags)
 {
 	assert(obj);
 
@@ -5771,25 +5782,21 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 
 		if(IS_SET(obj->flags, OBJ_PHYSICS_PTR))
 		{
-			assert(user_ptr && phy_result);
-			*phy_result = cobj;
+			assert(user_ptr);
 			cobj->setUserPointer(user_ptr);
 		}
 
 		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
 			c.ptr = CAM_COLLIDER;
-
-		if(phy_result)
-			*phy_result = cobj;
-
+		
 		if(IS_SET(obj->flags, OBJ_DOUBLE_PHYSICS))
-			SpawnObjectExtras(ctx, obj->next_obj, pos, rot, user_ptr, nullptr, scale, flags);
+			SpawnObjectExtras(ctx, obj->next_obj, pos, rot, user_ptr, scale, flags);
 		else if(IS_SET(obj->flags, OBJ_MULTI_PHYSICS))
 		{
 			for(int i = 0;; ++i)
 			{
 				if(obj->next_obj[i].shape)
-					SpawnObjectExtras(ctx, &obj->next_obj[i], pos, rot, user_ptr, nullptr, scale, flags);
+					SpawnObjectExtras(ctx, &obj->next_obj[i], pos, rot, user_ptr, scale, flags);
 				else
 					break;
 			}

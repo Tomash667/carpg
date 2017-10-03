@@ -28,7 +28,7 @@ enum OBJ_FLAGS
 	OBJ_IMPORTANT = 1 << 9, // try more times to generate this object
 	OBJ_BILLBOARD = 1 << 10, // object always face camera
 	OBJ_SCALEABLE = 1 << 11, // object can be scaled, need different physics handling
-	OBJ_PHYSICS_PTR = 1 << 12, // btCollisionObject user pointer points to Object
+	OBJ_PHYSICS_PTR = 1 << 12, // btCollisionObject user pointer points to Object (do not use in new code, only used in tutorial, don't support save & load)
 	OBJ_BUILDING = 1 << 13, // object is building
 	OBJ_DOUBLE_PHYSICS = 1 << 14, // object have 2 physics colliders (only works with box for now)
 	OBJ_BLOOD_EFFECT = 1 << 15, // altar blood effect
@@ -75,9 +75,7 @@ struct BaseObject
 	{
 	}
 
-	virtual ~BaseObject()
-	{
-	}
+	virtual ~BaseObject();
 
 	BaseObject& operator = (BaseObject& o)
 	{

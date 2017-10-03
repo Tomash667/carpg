@@ -1,8 +1,13 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.6.1 (2017-10-02):
+Wersja 0.7 (2017-11-XX):
++ wczytywanie obiektów z pliku
 - naprawiony crash gdy npc w dru¿ynie chce przedmiot od innego npc w dru¿ynie [MikelkCZ]
+- naprawione nieprawid³owe kolizje dla niektórych obiektów
+- naprawione kolizje gracza z znakami na budynkach
+- naprawiony nieprawid³owy model wioskowego ratuszu
+- naprawiona nieprawid³owa tekstura znaku sprzedawcy jedzenia
 - lepsze przekierowanie na stronê
 
 --------------------------------------------------------------------------------

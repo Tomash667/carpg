@@ -185,6 +185,7 @@ private:
 			obj->h = t.MustGetNumberFloat();
 			if(obj->r <= 0 || obj->h <= 0)
 				t.Throw("Invalid cylinder size.");
+			obj->type = OBJ_CYLINDER;
 			t.Next();
 			t.AssertSymbol('}');
 			t.Next();
@@ -357,6 +358,8 @@ private:
 				crc.Update(use->use_flags);
 			}
 		}
+
+		content::objects_crc = crc.Get();
 	}
 
 	Tokenizer t;

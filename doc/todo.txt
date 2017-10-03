@@ -1,14 +1,10 @@
 ﻿FEATURE:
-? altar has alpha=0, but bloody altar=-1
-? test OBJ_DOUBLE_PHYSICS
-? physics: tartak, fern, winplant, smallroof, rope, wheel, grass2, corn
-? invalid objects crc
-? testing
 ===============================================================================================================
 CURRENT:
 ? 3 players usable tests
 - traps are out of sync for client/server
 - can talk to unit while it's exiting building, dialog is thru door then
+- town hall, kiepskie tekstury?
 ===============================================================================================================
 NEW:
 + net devmode: show stamina for clients
@@ -25,10 +21,8 @@ NEW:
 + remove obj_alpha
 + validate objects metadata (required objects, units)
 ? why version/stats thread start at menu, not while loading
-0.7:
-+ amulet
-+ magic effects
-+ system rework part 1
+- grass under moon well
++ exporter: when file has no ext or ends with .qmsh save as .qmsh.tmp
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

@@ -244,7 +244,7 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 		if(LOAD_VERSION < V_0_2_20)
 		{
 			auto bench = BaseUsable::Get("bench"),
-				bench_rot = BaseUsable::Get("bench_rot");
+				bench_dir = BaseUsable::Get("bench_dir");
 			for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 			{
 				Usable& u = **it;
@@ -252,7 +252,7 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				{
 					if(type == L_CITY)
 					{
-						u.base = bench_rot;
+						u.base = bench_dir;
 						u.variant = 0;
 					}
 					else

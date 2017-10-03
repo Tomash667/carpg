@@ -823,7 +823,7 @@ void Game::SetupObject(BaseObject& obj)
 		point = obj.mesh->FindPoint("hit");
 	}
 
-	if(!point || !point->IsBox() || IS_SET(obj.flags, OBJ_BUILDING | OBJ_SCALEABLE) || obj.type == OBJ_CYLINDER)
+	if(!point || !point->IsBox() || IS_SET(obj.flags, OBJ_BUILDING | OBJ_SCALEABLE | OBJ_NO_PHYSICS) || obj.type == OBJ_CYLINDER)
 		return;
 
 	assert(point->size.x >= 0 && point->size.y >= 0 && point->size.z >= 0);

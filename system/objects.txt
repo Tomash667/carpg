@@ -531,7 +531,7 @@ usable gold_vein {
 
 usable throne {
 	mesh "tron.qmsh"
-	animation "siedzi_krzeslo"
+	animation "siedzi_tron"
 	flags { allow_use important required near_wall }
 	limit_rot 2
 }
@@ -539,7 +539,7 @@ usable throne {
 usable stool {
 	mesh "stolek.qmsh"
 	cylinder { 0.27 0.44 }
-	animation "siedzi_tron"
+	animation "siedzi_krzeslo"
 	flags allow_use
 	limit_rot 2
 }

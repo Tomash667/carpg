@@ -18,7 +18,7 @@ enum OLD_USABLE_ID
 	U_GOLD_VEIN,
 	U_THRONE,
 	U_STOOL,
-	U_BENCH_ROT,
+	U_BENCH_DIR,
 	U_BOOKSHELF,
 	U_MAX
 };
@@ -89,8 +89,8 @@ void Usable::Load(HANDLE file, bool local)
 		case U_STOOL:
 			id = "stool";
 			break;
-		case U_BENCH_ROT:
-			id = "bench_rot";
+		case U_BENCH_DIR:
+			id = "bench_dir";
 			break;
 		case U_BOOKSHELF:
 			id = "bookshelf";

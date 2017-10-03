@@ -6,6 +6,16 @@
 vector<BaseObject*> BaseObject::objs;
 
 //=================================================================================================
+BaseObject::~BaseObject()
+{
+	delete shape;
+	if(IS_SET(flags, OBJ_DOUBLE_PHYSICS))
+		delete next_obj;
+	else if(IS_SET(flags, OBJ_MULTI_PHYSICS))
+		delete[] next_obj;
+}
+
+//=================================================================================================
 BaseObject* BaseObject::TryGet(const AnyString& id, bool* is_variant)
 {
 	if(id == "painting")

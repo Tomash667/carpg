@@ -250,43 +250,6 @@ std::vector<*>{
 
 
 =====================================================================================================
-NIEU¯YTE ZASOBY:
-+ Leinnan
-	* obiekty/
-		* koryto
-		* p³ot, zepsuty
-		* zepsute kolumny
-		* pochodnia na œcienie
-	* Nowe/
-		* drugi stó³
-		* stó³ z przedmiotami
-		* zbo¿e, teren
-	* new/murek.zip
-	* gary.7z
-		* garnki
-	* bydynki
-+ MarK
-	* food/ zupa, 2 miêsa, 3 jagody
-+ Dim
-	* dims_arboretum.zip/
-		* drzewa
-		* krzaki
-		* grzyby
-		* pniak
-		* snopek
-		* sk³adowane drewno
-		* ksi¹¿ki
-+ OliverMH
-	* mesh/tree/ 3 drzewa
-+ qubodup/Iwan Gabovitch
-	* sounds/melee sounds.zip/ dŸwiêki walki
-+ ???
-	* sounds/jute-dh-steps.7z/ dŸwiêki chodzenia
-	* UberPack-1.zip
-	* bin/work/forge-final-v2
-
-
-=====================================================================================================
 przy debugowaniu w windbg
 symbols: srv*c:\symbols*http://msdl.microsoft.com/download/symbols
 images: c:\symbols

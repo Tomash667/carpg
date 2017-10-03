@@ -1812,30 +1812,7 @@ void Game::OnCleanup()
 		delete obj_arrow->getCollisionShape();
 	delete obj_arrow;
 	delete obj_spell;
-
-	// kszta³ty obiektów
-	for(BaseObject* p_obj : BaseObject::objs)
-	{
-		auto& base = *p_obj;
-		delete base.shape;
-		if(IS_SET(base.flags, OBJ_DOUBLE_PHYSICS) && base.next_obj)
-		{
-			delete base.next_obj->shape;
-			delete base.next_obj;
-		}
-		else if(IS_SET(base.flags, OBJ_MULTI_PHYSICS) && base.next_obj)
-		{
-			for(int j = 0;; ++j)
-			{
-				bool have_next = (base.next_obj[j].shape != nullptr);
-				delete base.next_obj[j].shape;
-				if(!have_next)
-					break;
-			}
-			delete[] base.next_obj;
-		}
-	}
-
+	
 	draw_batch.Clear();
 	free_cave_data();
 	DeleteElements(game_players);
@@ -2784,21 +2761,6 @@ bool Game::CanBuySell(const Item* item)
 		}
 	}
 	return true;
-}
-
-//=================================================================================================
-void Game::ResetCollisionPointers()
-{
-	for(vector<Object*>::iterator it = local_ctx.objects->begin(), end = local_ctx.objects->end(); it != end; ++it)
-	{
-		Object& obj = **it;
-		if(obj.base && IS_SET(obj.base->flags, OBJ_PHYSICS_PTR))
-		{
-			btCollisionObject* cobj = (btCollisionObject*)obj.ptr;
-			if(cobj->getUserPointer() != (void*)&obj)
-				cobj->setUserPointer(&obj);
-		}
-	}
 }
 
 //=================================================================================================
