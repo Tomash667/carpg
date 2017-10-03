@@ -17620,7 +17620,7 @@ void Game::GenerateQuestUnits()
 
 	if(current_location == quest_evil->start_loc && quest_evil->evil_state == Quest_Evil::State::None)
 	{
-		CityBuilding* b = city_ctx->FindBuilding(content::BG_INN);
+		CityBuilding* b = city_ctx->FindBuilding(BuildingGroup::BG_INN);
 		Unit* u = SpawnUnitNearLocation(local_ctx, b->walk_pt, *FindUnitData("q_zlo_kaplan"), nullptr, 10);
 		assert(u);
 		if(u)
@@ -20686,7 +20686,7 @@ InsideBuilding* Game::GetArena()
 	assert(city_ctx);
 	for(InsideBuilding* b : city_ctx->inside_buildings)
 	{
-		if(b->type->group == content::BG_ARENA)
+		if(b->type->group == BuildingGroup::BG_ARENA)
 			return b;
 	}
 	assert(0);

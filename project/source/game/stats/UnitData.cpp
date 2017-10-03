@@ -2379,9 +2379,3 @@ UnitGroup* FindUnitGroup(const AnyString& id)
 	}
 	return nullptr;
 }
-
-//=================================================================================================
-UnitData* content::FindUnit(const AnyString& id)
-{
-	return FindUnitData(id.s);
-}

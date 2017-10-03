@@ -214,6 +214,8 @@
     <ClInclude Include="source\game\system\BaseObject.h" />
     <ClInclude Include="source\game\system\BaseUsable.h" />
     <ClInclude Include="source\game\system\Building.h" />
+    <ClInclude Include="source\game\system\BuildingGroup.h" />
+    <ClInclude Include="source\game\system\BuildingScript.h" />
     <ClInclude Include="source\game\system\Content.h" />
     <ClInclude Include="source\game\system\ContentLoader.h" />
     <ClInclude Include="source\game\Dialog.h" />
@@ -412,6 +414,9 @@
     <ClCompile Include="source\game\system\BaseObject.cpp" />
     <ClCompile Include="source\game\system\BaseUsable.cpp" />
     <ClCompile Include="source\game\system\Building.cpp" />
+    <ClCompile Include="source\game\system\BuildingGroup.cpp" />
+    <ClCompile Include="source\game\system\BuildingLoader.cpp" />
+    <ClCompile Include="source\game\system\BuildingScript.cpp" />
     <ClCompile Include="source\game\system\Content.cpp" />
     <ClCompile Include="source\game\Dialogs.cpp" />
     <ClCompile Include="source\game\entity\AIController.cpp" />

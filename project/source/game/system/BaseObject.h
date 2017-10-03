@@ -99,8 +99,8 @@ struct BaseObject
 	}
 
 	// is_variant is set when there is multiple variants
-	static BaseObject* TryGet(cstring id, bool* is_variant = nullptr);
-	static BaseObject* Get(cstring id, bool* is_variant = nullptr)
+	static BaseObject* TryGet(const AnyString& id, bool* is_variant = nullptr);
+	static BaseObject* Get(const AnyString& id, bool* is_variant = nullptr)
 	{
 		BaseObject* obj = TryGet(id, is_variant);
 		assert(obj && "Missing BaseObject!");

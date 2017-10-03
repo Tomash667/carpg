@@ -763,7 +763,7 @@ bool Game::ReadLevelData(BitStream& stream)
 					Error("Read level: Broken packet for buildings.");
 					return false;
 				}
-				building.type = content::FindBuilding(BUF);
+				building.type =  Building::Get(BUF);
 				if(!building.type)
 				{
 					Error("Read level: Invalid building id '%s'.", BUF);
@@ -793,7 +793,7 @@ bool Game::ReadLevelData(BitStream& stream)
 					Error("Read level: Broken packet for %d inside building.", index);
 					return false;
 				}
-				ib.type = content::FindBuilding(BUF);
+				ib.type = Building::Get(BUF);
 				if(!ib.type || !ib.type->inside_mesh)
 				{
 					Error("Read level: Invalid building id '%s' for building %d.", BUF, index);

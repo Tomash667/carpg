@@ -1,8 +1,10 @@
 #include "Pch.h"
 #include "Core.h"
 #include "Game.h"
-#include "Content.h"
 #include "Spell.h"
+#include "BuildingGroup.h"
+#include "Building.h"
+#include "BuildingScript.h"
 #include "BaseUsable.h"
 
 extern string g_system_dir;
@@ -289,7 +291,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_BUILDING_GROUP:
 					{
-						BuildingGroup* group = content::FindBuildingGroup(str);
+						BuildingGroup* group = BuildingGroup::TryGet(str);
 						if(!group)
 						{
 							Error("Missing required building group '%s'.", str.c_str());
@@ -299,7 +301,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_BUILDING:
 					{
-						Building* building = content::FindBuilding(str);
+						Building* building = Building::TryGet(str);
 						if(!building)
 						{
 							Error("Missing required building '%s'.", str.c_str());
@@ -309,7 +311,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_BUILDING_SCRIPT:
 					{
-						BuildingScript* script = content::FindBuildingScript(str);
+						BuildingScript* script = BuildingScript::TryGet(str);
 						if(!script)
 						{
 							Error("Missing required building script '%s'.", str.c_str());

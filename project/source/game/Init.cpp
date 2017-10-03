@@ -587,7 +587,7 @@ void Game::AddLoadTasks()
 	aStun = mesh_mgr.AddLoadTask("stunned.qmsh");
 
 	// preload buildings
-	for(Building* b : content::buildings)
+	for(Building* b : Building::buildings)
 	{
 		if(!b->mesh_id.empty())
 		{

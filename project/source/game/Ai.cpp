@@ -747,7 +747,7 @@ void Game::UpdateAi(float dt)
 											// idŸ na pole treningowe
 											ai.loc_timer = ai.timer = Random(75.f, 150.f);
 											ai.idle_action = AIController::Idle_Move;
-											ai.idle_data.pos = city_ctx->FindBuilding(content::BG_TRAINING_GROUNDS)->walk_pt
+											ai.idle_data.pos = city_ctx->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS)->walk_pt
 												+ Vec3::Random(Vec3(-1.f, 0, -1), Vec3(1, 0, 1));
 										}
 									}

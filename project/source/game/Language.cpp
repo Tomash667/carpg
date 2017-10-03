@@ -561,7 +561,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						Building* b = content::FindBuilding(id.c_str());
+						Building* b = Building::TryGet(id.c_str());
 						if(!b)
 							t.Throw("Invalid building '%s'.", id.c_str());
 						t.Next();
@@ -648,7 +648,7 @@ void LoadLanguageFiles()
 	if(txLocationStart.empty() || txLocationEnd.empty())
 		throw "Missing locations names.";
 
-	for (auto building : content::buildings)
+	for (auto building : Building::buildings)
 	{
 		if (IS_SET(building->flags, Building::HAVE_NAME) && building->name.empty())
 			Warn("Building '%s' don't have name.", building->id.c_str());

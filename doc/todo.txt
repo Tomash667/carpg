@@ -1,9 +1,8 @@
 ﻿FEATURE:
-+ building loader
-+ object loader improvements, baseobject, baseusable
 ? altar has alpha=0, but bloody altar=-1
 ? test OBJ_DOUBLE_PHYSICS
 ? physics: tartak, fern, winplant, smallroof, rope, wheel, grass2, corn
+? invalid objects crc
 ? testing
 ===============================================================================================================
 CURRENT:

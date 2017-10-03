@@ -2,21 +2,20 @@
 #include "Core.h"
 #include "BaseObject.h"
 
+//-----------------------------------------------------------------------------
 vector<BaseObject*> BaseObject::objs;
 
 //=================================================================================================
-BaseObject* BaseObject::TryGet(cstring id, bool* is_variant)
+BaseObject* BaseObject::TryGet(const AnyString& id, bool* is_variant)
 {
-	assert(id);
-
-	if(strcmp(id, "painting") == 0)
+	if(id == "painting")
 	{
 		if(is_variant)
 			*is_variant = true;
 		return TryGet(GetRandomPainting());
 	}
 
-	if(strcmp(id, "tombstone") == 0)
+	if(id == "tombstone")
 	{
 		if(is_variant)
 			*is_variant = true;
@@ -27,7 +26,7 @@ BaseObject* BaseObject::TryGet(cstring id, bool* is_variant)
 			return TryGet("tombstone_1");
 	}
 
-	if(strcmp(id, "random") == 0)
+	if(id == "random")
 	{
 		switch(Rand() % 3)
 		{
@@ -37,7 +36,7 @@ BaseObject* BaseObject::TryGet(cstring id, bool* is_variant)
 		}
 	}
 
-	for(BaseObject* obj : objs)
+	for(auto obj : objs)
 	{
 		if(obj->id == id)
 			return obj;

@@ -10,7 +10,6 @@
 #include "Quest_Evil.h"
 #include "Quest_Crazies.h"
 #include "Perlin.h"
-#include <functional>
 #include "LocationHelper.h"
 #include "Content.h"
 #include "QuestManager.h"
@@ -27,6 +26,8 @@
 #include "AIController.h"
 #include "Team.h"
 #include "ItemContainer.h"
+#include "BuildingScript.h"
+#include "BuildingGroup.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern Matrix m1, m2, m3, m4;
@@ -436,7 +437,7 @@ void Game::GenerateWorld()
 
 void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool required)
 {
-	BuildingScript* script = content::FindBuildingScript(city.IsVillage() ? "village" : "city");
+	BuildingScript* script = BuildingScript::Get(city.IsVillage() ? "village" : "city");
 	if(city.variant == -1)
 		city.variant = Rand() % script->variants.size();
 
@@ -2485,7 +2486,7 @@ void Game::SpawnUnits(City* city)
 		UpdateUnitPhysics(*u, u->pos);
 		u->visual_pos = u->pos;
 
-		if(b.type->group == content::BG_ARENA)
+		if(b.type->group == BuildingGroup::BG_ARENA)
 			city->arena_pos = u->pos;
 
 		local_ctx.units->push_back(u);
@@ -5085,7 +5086,7 @@ int Game::GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_ta
 void Game::SpawnTmpUnits(City* city)
 {
 	InsideBuilding* inn = city->FindInn();
-	CityBuilding* pola = city->FindBuilding(content::BG_TRAINING_GROUNDS);
+	CityBuilding* pola = city->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS);
 
 	// bohaterowie
 	if(first_city)
@@ -6136,7 +6137,7 @@ void Game::GenerateCityPickableItems()
 	}
 
 	// jedzenie w sklepie
-	CityBuilding* food = city_ctx->FindBuilding(content::BG_FOOD_SELLER);
+	CityBuilding* food = city_ctx->FindBuilding(BuildingGroup::BG_FOOD_SELLER);
 	if(food)
 	{
 		Object* found_obj = nullptr;
@@ -6165,7 +6166,7 @@ void Game::GenerateCityPickableItems()
 	}
 
 	// miksturki u alchemika
-	CityBuilding* alch = city_ctx->FindBuilding(content::BG_ALCHEMIST);
+	CityBuilding* alch = city_ctx->FindBuilding(BuildingGroup::BG_ALCHEMIST);
 	if(alch)
 	{
 		Object* found_obj = nullptr;
@@ -6560,19 +6561,19 @@ void Game::PrepareCityBuildings(City& city, vector<ToBuild>& tobuild)
 	// set flags
 	for(ToBuild& tb : tobuild)
 	{
-		if(tb.type->group == content::BG_TRAINING_GROUNDS)
+		if(tb.type->group == BuildingGroup::BG_TRAINING_GROUNDS)
 			city.flags |= City::HaveTrainingGrounds;
-		else if(tb.type->group == content::BG_BLACKSMITH)
+		else if(tb.type->group == BuildingGroup::BG_BLACKSMITH)
 			city.flags |= City::HaveBlacksmith;
-		else if(tb.type->group == content::BG_MERCHANT)
+		else if(tb.type->group == BuildingGroup::BG_MERCHANT)
 			city.flags |= City::HaveMerchant;
-		else if(tb.type->group == content::BG_ALCHEMIST)
+		else if(tb.type->group == BuildingGroup::BG_ALCHEMIST)
 			city.flags |= City::HaveAlchemist;
-		else if(tb.type->group == content::BG_FOOD_SELLER)
+		else if(tb.type->group == BuildingGroup::BG_FOOD_SELLER)
 			city.flags |= City::HaveFoodSeller;
-		else if(tb.type->group == content::BG_INN)
+		else if(tb.type->group == BuildingGroup::BG_INN)
 			city.flags |= City::HaveInn;
-		else if(tb.type->group == content::BG_ARENA)
+		else if(tb.type->group == BuildingGroup::BG_ARENA)
 			city.flags |= City::HaveArena;
 	}
 }

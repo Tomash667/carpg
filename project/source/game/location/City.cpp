@@ -86,7 +86,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			buildings.resize(count);
 			for(CityBuilding& b : buildings)
 			{
-				b.type = content::FindBuilding(f.ReadString1C());
+				b.type = Building::Get(f.ReadString1C());
 				assert(b.type != nullptr);
 			}
 		}
@@ -100,7 +100,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			buildings.resize(count);
 			for(CityBuilding& b : buildings)
 			{
-				b.type = content::FindBuilding(f.ReadString1C());
+				b.type = Building::Get(f.ReadString1C());
 				f >> b.pt;
 				f >> b.unit_pt;
 				f >> b.rot;
@@ -179,7 +179,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				f >> b.unit_pt;
 				f >> b.rot;
 				f >> b.walk_pt;
-				b.type = content::FindOldBuilding(type);
+				b.type = Building::GetOld(type);
 				assert(b.type != nullptr);
 			}
 
@@ -480,7 +480,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			if(last_visit != -1 && LOAD_VERSION < V_0_4)
 			{
 				bool need_fix = false;
-				Building* village_hall = content::FindOldBuilding(OLD_BUILDING::B_VILLAGE_HALL);
+				Building* village_hall = Building::GetOld(OLD_BUILDING::B_VILLAGE_HALL);
 
 				if(LOAD_VERSION < V_0_3)
 					need_fix = true;
@@ -494,7 +494,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 
 				if(need_fix)
 				{
-					Building* village_hall_old = content::FindOldBuilding(OLD_BUILDING::B_VILLAGE_HALL_OLD);
+					Building* village_hall_old = Building::GetOld(OLD_BUILDING::B_VILLAGE_HALL_OLD);
 					FindBuilding(village_hall)->type = village_hall_old;
 					for(Object* obj : objects)
 					{
@@ -519,16 +519,16 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 
 			if(state == LS_KNOWN)
 			{
-				buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_VILLAGE_HALL)));
-				buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_MERCHANT)));
-				buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_FOOD_SELLER)));
-				buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_VILLAGE_INN)));
+				buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_VILLAGE_HALL)));
+				buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_MERCHANT)));
+				buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_FOOD_SELLER)));
+				buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_VILLAGE_INN)));
 				if(v_buildings[0] != OLD_BUILDING::B_NONE)
-					buildings.push_back(CityBuilding(content::FindOldBuilding(v_buildings[0])));
+					buildings.push_back(CityBuilding(Building::GetOld(v_buildings[0])));
 				if(v_buildings[1] != OLD_BUILDING::B_NONE)
-					buildings.push_back(CityBuilding(content::FindOldBuilding(v_buildings[1])));
+					buildings.push_back(CityBuilding(Building::GetOld(v_buildings[1])));
 				std::random_shuffle(buildings.begin() + 1, buildings.end(), MyRand);
-				buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_BARRACKS)));
+				buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_BARRACKS)));
 
 				flags |= HaveInn | HaveMerchant | HaveFoodSeller;
 				if(v_buildings[0] == OLD_BUILDING::B_TRAINING_GROUNDS || v_buildings[1] == OLD_BUILDING::B_TRAINING_GROUNDS)
@@ -541,16 +541,16 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 		}
 		else if(state == LS_KNOWN)
 		{
-			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_CITY_HALL)));
-			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_ARENA)));
-			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_MERCHANT)));
-			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_FOOD_SELLER)));
-			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_BLACKSMITH)));
-			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_ALCHEMIST)));
-			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_INN)));
-			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_TRAINING_GROUNDS)));
+			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_CITY_HALL)));
+			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_ARENA)));
+			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_MERCHANT)));
+			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_FOOD_SELLER)));
+			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_BLACKSMITH)));
+			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_ALCHEMIST)));
+			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_INN)));
+			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_TRAINING_GROUNDS)));
 			std::random_shuffle(buildings.begin() + 2, buildings.end(), MyRand);
-			buildings.push_back(CityBuilding(content::FindOldBuilding(OLD_BUILDING::B_BARRACKS)));
+			buildings.push_back(CityBuilding(Building::GetOld(OLD_BUILDING::B_BARRACKS)));
 
 			flags |= HaveTrainingGrounds | HaveArena | HaveMerchant | HaveFoodSeller | HaveBlacksmith | HaveAlchemist | HaveInn;
 		}

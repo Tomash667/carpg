@@ -1,6 +1,5 @@
 #include "Pch.h"
 #include "Core.h"
-#include "Content.h"
 #include "ContentLoader.h"
 #include "BaseObject.h"
 #include "BaseUsable.h"
@@ -47,6 +46,7 @@ class ObjectLoader
 	};
 
 public:
+	//=================================================================================================
 	void Load()
 	{
 		InitTokenizer();
@@ -54,7 +54,9 @@ public:
 		ContentLoader loader;
 		bool ok = loader.Load(t, "objects.txt", G_TOP, [&, this](int top, const string& id)
 		{
-			VerifyNameIsUnique(id);
+			if(BaseObject::TryGet(id.c_str()))
+				t.Throw("Id must be unique.");
+
 			switch(top)
 			{
 			case T_OBJECT:
@@ -75,6 +77,7 @@ public:
 	}
 
 private:
+	//=================================================================================================
 	void InitTokenizer()
 	{
 		t.AddKeywords(G_TOP, {
@@ -133,6 +136,7 @@ private:
 		});
 	}
 
+	//=================================================================================================
 	void ParseObject(const string& id)
 	{
 		Ptr<BaseObject> obj;
@@ -164,6 +168,7 @@ private:
 		BaseObject::objs.push_back(obj.Pin());
 	}
 
+	//=================================================================================================
 	void ParseObjectProperty(ObjectProperty prop, BaseObject* obj)
 	{
 		switch(prop)
@@ -224,6 +229,7 @@ private:
 		}
 	}
 
+	//=================================================================================================
 	void ParseUsable(const string& id)
 	{
 		Ptr<BaseUsable> use;
@@ -315,12 +321,7 @@ private:
 		BaseUsable::usables.push_back(u);
 	}
 
-	void VerifyNameIsUnique(const string& id)
-	{
-		if(BaseObject::TryGet(id.c_str()) || BaseUsable::TryGet(id.c_str()))
-			t.Throw("Id must be unique.");
-	}
-
+	//=================================================================================================
 	void CalculateCrc()
 	{
 		Crc crc;
