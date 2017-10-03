@@ -32,7 +32,7 @@ public:
 	void LoadData();
 
 	HANDLE check_version_thread;
-	cstring txInfoText, txUrl, txVersion;
+	cstring txInfoText, txVersion;
 
 private:
 	static const uint BUTTONS = 7u;

@@ -100,7 +100,6 @@ game(game), event(event), send_stats(true)
 	visible = false;
 
 	txInfoText = Str("infoText");
-	txUrl = Str("url");
 	txVersion = Str("version");
 
 	const cstring names[BUTTONS] = {
@@ -300,5 +299,5 @@ void MainMenu::PlaceButtons()
 void MainMenu::OnNewVersion(int id)
 {
 	if(id == BUTTON_YES)
-		ShellExecute(nullptr, "open", Str("versionUrl"), nullptr, nullptr, SW_SHOWNORMAL);
+		ShellExecute(nullptr, "open", Format("http://carpg.pl/redirect.php?action=download&language=%s", g_lang_prefix.c_str()), nullptr, nullptr, SW_SHOWNORMAL);
 }

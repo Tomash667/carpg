@@ -250,10 +250,7 @@ void AIController::Load(HANDLE file)
 	}
 	else if(state == AIController::Cast)
 	{
-		if(LOAD_VERSION >= V_0_2_10)
-			ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-		else
-			refid = -1;
+		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
 		cast_target = (Unit*)refid;
 		Game::Get().ai_cast_targets.push_back(this);
 	}

@@ -106,12 +106,6 @@ void HeroData::Load(HANDLE file)
 	ReadFile(file, &phase, sizeof(phase), &tmp, nullptr);
 	ReadFile(file, &phase_timer, sizeof(phase_timer), &tmp, nullptr);
 	ReadFile(file, &free, sizeof(free), &tmp, nullptr);
-	if(LOAD_VERSION == V_0_2_5)
-	{
-		// w wersji 1 by³a zapisywana waga, teraz jest ona w Unit
-		float old_weight;
-		ReadFile(file, &old_weight, sizeof(old_weight), &tmp, nullptr);
-	}
 	if(LOAD_VERSION >= V_0_6)
 		ReadFile(file, &lost_pvp, sizeof(lost_pvp), &tmp, nullptr);
 	else

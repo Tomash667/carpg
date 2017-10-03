@@ -7,15 +7,17 @@
 ===============================================================================================================
 CURRENT:
 ? 3 players usable tests
+- traps are out of sync for client/server
+- can talk to unit while it's exiting building, dialog is thru door then
 ===============================================================================================================
 NEW:
 + net devmode: show stamina for clients
-- can talk to unit while it's exiting building, dialog is thru door then
 - green screen, cannot reproduce
 ? using cheats to exit from arena/tournament
 - travel on worldmap is a bit out of sync, clicking instantly after travel will error on server, thinking that team not yet entered location, forward prediction should be easy here
-- traps are out of sync for client/server
-- chaning vsync reset failed, cannot reproduce
+- changing vsync reset failed, cannot reproduce
++ 404 handling on website
++ when npc have item in his inventory and in pc, it will first ask for pc one
 + move chest to usables
 + particles in objects, not hardcoded water_effect, blood_effect
 + remove hardcoded bench variants in base usable

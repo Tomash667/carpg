@@ -770,26 +770,6 @@ void Game::LoadGame(HANDLE file)
 			}
 
 			(*it)->Load(file, (game_state2 == GS_LEVEL && current_location == index), loc_token);
-
-			// aktualizuj nadrzwi w krypcie
-			if(LOAD_VERSION < V_0_2_10 && (*it)->type == L_CRYPT)
-			{
-				InsideLocation* inside = ((InsideLocation*)(*it));
-				InsideLocationLevel* lvl = inside->GetLastLevelData();
-				if(lvl && !lvl->rooms.empty() && lvl->rooms[0].target == RoomTarget::Treasury)
-				{
-					for(vector<Object*>::iterator obj_it = lvl->objects.begin(), obj_end = lvl->objects.end(); obj_it != obj_end; ++obj_it)
-					{
-						Object& obj = **obj_it;
-						if(obj.mesh == aDoorWall)
-						{
-							Int2 pt = pos_to_pt(obj.pos);
-							if(IS_SET(lvl->map[pt.x + pt.y*lvl->w].flags, Pole::F_DRUGA_TEKSTURA))
-								obj.mesh = aDoorWall2;
-						}
-					}
-				}
-			}
 		}
 		else
 			*it = nullptr;
@@ -893,10 +873,7 @@ void Game::LoadGame(HANDLE file)
 	boss_levels.resize(ile);
 	if(ile)
 		ReadFile(file, &boss_levels[0], sizeof(Int2)*ile, &tmp, nullptr);
-	if(LOAD_VERSION >= V_0_2_10)
-		ReadFile(file, &enter_from, sizeof(enter_from), &tmp, nullptr);
-	else
-		enter_from = ENTER_FROM_UNKNOWN;
+	ReadFile(file, &enter_from, sizeof(enter_from), &tmp, nullptr);
 	if(LOAD_VERSION >= V_0_3)
 		ReadFile(file, &light_angle, sizeof(light_angle), &tmp, nullptr);
 	else
@@ -943,11 +920,6 @@ void Game::LoadGame(HANDLE file)
 		f >> used_cheats;
 	}
 	f >> devmode;
-	if(LOAD_VERSION < V_0_2_10)
-	{
-		bool show_fps;
-		f >> show_fps;
-	}
 	if(LOAD_VERSION < V_0_4)
 	{
 		bool no_sound;
@@ -1074,13 +1046,7 @@ void Game::LoadGame(HANDLE file)
 				}
 			}
 			if(ok)
-			{
-				if(LOAD_VERSION < V_0_2_10)
-					RemoveNullItems(*qir->items);
 				SortItems(*qir->items);
-				if(qir->unit && LOAD_VERSION < V_0_2_10)
-					qir->unit->RecalculateWeight();
-			}
 		}
 		delete *it;
 	}
@@ -1215,7 +1181,7 @@ void Game::LoadGame(HANDLE file)
 	}
 
 	// gui
-	if(LOAD_VERSION >= V_0_2_10 && LOAD_VERSION <= V_0_3)
+	if(LOAD_VERSION <= V_0_3)
 	{
 		FileReader f(file);
 		LoadGui(f);
@@ -1466,38 +1432,22 @@ void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 	cnt.resize(count);
 	for(vector<ItemSlot>::iterator it = cnt.begin(), end = cnt.end(); it != end; ++it)
 	{
-		byte len;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		if(len)
-		{
-			BUF[len] = 0;
-			ReadFile(file, BUF, len, &tmp, nullptr);
-			ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
-			if(BUF[0] != '$')
-				it->item = FindItem(BUF);
-			else
-			{
-				int quest_refid;
-				ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
-				QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_refid, &cnt);
-				it->item = QUEST_ITEM_PLACEHOLDER;
-				can_sort = false;
-			}
-		}
+		ReadString1(file);
+		ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
+		if(BUF[0] != '$')
+			it->item = FindItem(BUF);
 		else
 		{
-			assert(LOAD_VERSION < V_0_2_10);
-			it->item = nullptr;
-			it->count = 0;
+			int quest_refid;
+			ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
+			QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_refid, &cnt);
+			it->item = QUEST_ITEM_PLACEHOLDER;
+			can_sort = false;
 		}
 	}
 
 	if(can_sort && LOAD_VERSION < V_0_2_20 && !cnt.empty())
-	{
-		if(LOAD_VERSION < V_0_2_10)
-			RemoveNullItems(cnt);
 		SortItems(cnt);
-	}
 }
 
 //=================================================================================================

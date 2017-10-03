@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Website: http://carpg.pl/en
-Version: 0.6
-Date: 2017-10-01
+Version: 0.6.1
+Date: 2017-10-02
 
 ===============================================================================
 1) Table of contents
@@ -353,6 +353,7 @@ Thanks for bug founding:
 	Docucat
 	fire
 	Medarc
+	MikelkCZ
 	Minister of Death
 	Paradox Edge
 	thebard88

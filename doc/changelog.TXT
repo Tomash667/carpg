@@ -1,6 +1,11 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja 0.6.1 (2017-10-02):
+- naprawiony crash gdy npc w dru¿ynie chce przedmiot od innego npc w dru¿ynie [MikelkCZ]
+- lepsze przekierowanie na stronê
+
+--------------------------------------------------------------------------------
 Wersja 0.6 (2017-10-01):
 + mo¿liwoœæ czytania ksi¹¿ek
 + u¿ywalna biblioteczka

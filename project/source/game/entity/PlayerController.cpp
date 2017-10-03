@@ -408,11 +408,6 @@ void PlayerController::Load(HANDLE file)
 	BUF[len] = 0;
 	ReadFile(file, BUF, len, &tmp, nullptr);
 	name = BUF;
-	if(LOAD_VERSION < V_0_2_10)
-	{
-		float old_weight;
-		ReadFile(file, &old_weight, sizeof(old_weight), &tmp, nullptr);
-	}
 	ReadFile(file, &move_tick, sizeof(move_tick), &tmp, nullptr);
 	ReadFile(file, &last_dmg, sizeof(last_dmg), &tmp, nullptr);
 	ReadFile(file, &last_dmg_poison, sizeof(last_dmg_poison), &tmp, nullptr);
@@ -478,20 +473,10 @@ void PlayerController::Load(HANDLE file)
 	ReadFile(file, &id, sizeof(id), &tmp, nullptr);
 	ReadFile(file, &free_days, sizeof(free_days), &tmp, nullptr);
 	ReadFile(file, &kills, sizeof(kills), &tmp, nullptr);
-	if(LOAD_VERSION < V_0_2_10)
-	{
-		knocks = 0;
-		dmg_done = 0;
-		dmg_taken = 0;
-		arena_fights = 0;
-	}
-	else
-	{
-		ReadFile(file, &knocks, sizeof(knocks), &tmp, nullptr);
-		ReadFile(file, &dmg_done, sizeof(dmg_done), &tmp, nullptr);
-		ReadFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, nullptr);
-		ReadFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
-	}
+	ReadFile(file, &knocks, sizeof(knocks), &tmp, nullptr);
+	ReadFile(file, &dmg_done, sizeof(dmg_done), &tmp, nullptr);
+	ReadFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, nullptr);
+	ReadFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
 	if(LOAD_VERSION >= V_0_4)
 	{
 		base_stats.Load(f);

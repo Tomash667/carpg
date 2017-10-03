@@ -255,14 +255,7 @@ void TrailParticleEmitter::Load(HANDLE file)
 		ReadFile(file, &parts[0], sizeof(parts[0])*count, &tmp, nullptr);
 	ReadFile(file, &first, sizeof(first), &tmp, nullptr);
 	ReadFile(file, &last, sizeof(last), &tmp, nullptr);
-	if(LOAD_VERSION < V_0_2_10)
-	{
-		int old_destroy;
-		ReadFile(file, &old_destroy, sizeof(old_destroy), &tmp, nullptr);
-		destroy = (old_destroy != 0);
-	}
-	else
-		ReadFile(file, &destroy, sizeof(destroy), &tmp, nullptr);
+	ReadFile(file, &destroy, sizeof(destroy), &tmp, nullptr);
 	ReadFile(file, &alive, sizeof(alive), &tmp, nullptr);
 	if(LOAD_VERSION >= V_0_3)
 		ReadFile(file, &timer, sizeof(timer), &tmp, nullptr);

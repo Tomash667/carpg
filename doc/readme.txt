@@ -8,8 +8,8 @@
 (_______/|/     \||/   \__/|/       (_______)
 
 Strona: http://carpg.pl
-Wersja: 0.6
-Data: 2017-10-01
+Wersja: 0.6.1
+Data: 2017-10-02
 
 ===============================================================================
 1) Spis treœci
@@ -295,6 +295,7 @@ Podziêkowania za znalezione b³êdy:
 	Docucat
 	fire
 	Medarc
+	MikelkCZ
 	Minister of Death
 	Paradox Edge
 	thebard88

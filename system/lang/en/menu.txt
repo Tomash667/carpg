@@ -14,7 +14,6 @@ info = "Information's"
 website = "Website"
 quit = "Quit"
 infoText = "CARPG\nVersion: %s\nDate: %s\nAuthors: Tomashu, Leinnan and others\nMore information in readme_eng.txt file."
-url = "http://carpg.pl/en"
 newerVersion = "You have newer version than available."
 noNewVersion = "No new version of CaRpg available."
 checkVersionError = "Error while trying to check CaRpg version (%d:%u)."
@@ -25,7 +24,6 @@ newVersionDialog = "New version of CaRpg version available.\nCurrent: %s\nNew: %
 download = "Download"
 skip = "Skip"
 version = "Version: %s"
-versionUrl = "http://carpg.pl/en/last"
 haveErrors = "While loading game %u errors and %u warning was found. Check log for details."
 
 // menu
