@@ -36,8 +36,8 @@ public:
 		F_ON_CHAR_HANDLER = 1 << 1
 	};
 
-	Control(bool is_new = false) : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
-		initialized(false), layout(GUI.GetLayout()), is_new(is_new), disabled(false), flags(0) {}
+	Control() : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
+		initialized(false), layout(GUI.GetLayout()), disabled(false), flags(0) {}
 	virtual ~Control() {}
 
 	static TEX tDialog;
@@ -49,7 +49,7 @@ public:
 	gui::Layout* layout;
 
 protected:
-	bool initialized, is_new, disabled;
+	bool initialized, disabled;
 
 private:
 	int flags;

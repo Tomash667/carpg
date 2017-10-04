@@ -8,7 +8,7 @@
 class MenuList : public Control
 {
 public:
-	MenuList(bool is_new = false);
+	MenuList();
 	~MenuList();
 
 	void Draw(ControlDrawData* cdd = nullptr) override;

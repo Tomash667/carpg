@@ -1,4 +1,34 @@
 ﻿FEATURE:
++ collapsed ListBox
+	? options
++ textbox with label, numeric OnChar, Add
+	? numeric/label CreateServerPanel
+? action panel
+? book panel
+? console
+? controls
+? createcharacterpanel
+? createserver
+? gamegui
+? gamemessages
+? infobox
+? inventory (inv, buy, sell)
+? journal
+? loadscreen
+? mainmenu
+? minimap
+? mpbox
+? multiplayerpanel
+? options
+? pickserverpanel
+? saveloadpanel
+? serverpanel
+? teampanel
+? worldmapgui
+? alt+f4 dialog
+? pick number dialog (drop gold)
+? pick text dialog (select ip)
+? pick option dialog (create char)
 ===============================================================================================================
 CURRENT:
 ? 3 players usable tests

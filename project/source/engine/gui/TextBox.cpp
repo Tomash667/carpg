@@ -10,7 +10,7 @@ static const int padding = 4;
 static const Int2 NOT_SELECTED = Int2(-1, -1);
 
 //=================================================================================================
-TextBox::TextBox(bool is_new) : Control(is_new), added(false), multiline(false), numeric(false), label(nullptr), scrollbar(nullptr), readonly(false), caret_index(-1),
+TextBox::TextBox() : added(false), multiline(false), numeric(false), label(nullptr), scrollbar(nullptr), readonly(false), caret_index(-1),
 select_start_index(-1), down(false), offset(0), offset_move(0.f), tBackground(nullptr), require_scrollbar(false), last_y_move(-1)
 {
 }
@@ -26,142 +26,121 @@ void TextBox::Draw(ControlDrawData* cdd)
 {
 	TEX background = tBackground ? tBackground : tBox;
 
-	if(!is_new)
+	// not coded yet
+	assert(!label);
+	/*if(label)
 	{
-		cstring txt = (caret_blink >= 0.f ? Format("%s|", text.c_str()) : text.c_str());
+		r.Top() -= 20;
+		GUI.DrawText(GUI.default_font, label, DT_NOCLIP, BLACK, r);
+	}*/
 
-		GUI.DrawItem(background, global_pos, size, WHITE, 4, 32);
+	Box2d* clip_rect = nullptr;
+	if(cdd)
+		clip_rect = cdd->clipping;
+	int offsety = (scrollbar ? (int)scrollbar->offset : 0);
+	const int line_height = GUI.default_font->height;
 
-		Rect r = { global_pos.x + padding, global_pos.y + padding, global_pos.x + size.x - padding, global_pos.y + size.y - padding };
+	// background
+	GUI.DrawItem(background, global_pos, real_size, WHITE, 4, 32, clip_rect);
 
-		if(!scrollbar)
-			GUI.DrawText(GUI.default_font, txt, multiline ? DT_TOP : DT_VCENTER, BLACK, r);
-		else
-		{
-			Rect r2 = Rect(r) - Int2(0, int(scrollbar->offset));
-			GUI.DrawText(GUI.default_font, txt, DT_TOP, BLACK, r2, &r);
-			scrollbar->Draw();
-		}
-
-		if(label)
-		{
-			r.Top() -= 20;
-			GUI.DrawText(GUI.default_font, label, DT_NOCLIP, BLACK, r);
-		}
-	}
+	Rect rclip;
+	Rect textbox_rect = { global_pos.x + padding, global_pos.y + padding, global_pos.x + real_size.x - padding, global_pos.y + real_size.y - padding };
+	if(clip_rect)
+		rclip = Rect::Intersect(Rect(*clip_rect), textbox_rect);
 	else
+		rclip = textbox_rect;
+
+	// selected
+	if(select_start_index != NOT_SELECTED && select_start_index != select_end_index)
 	{
-		// not coded yet
-		assert(!label);
+		DWORD color = (readonly ? COLOR_RGBA(100, 100, 100, 128) : COLOR_RGBA(0, 148, 255, 128));
+		int select_start_line = select_start_pos.y / line_height;
+		int select_end_line = select_end_pos.y / line_height;
+		int lines = select_end_line - select_start_line + 1;
+		Rect area, r;
+		Int2 pos = global_pos - Int2(offset, offsety) + Int2(padding, padding);
 
-		Box2d* clip_rect = nullptr;
-		if(cdd)
-			clip_rect = cdd->clipping;
-		int offsety = (scrollbar ? (int)scrollbar->offset : 0);
-		const int line_height = GUI.default_font->height;
-
-		// background
-		GUI.DrawItem(background, global_pos, real_size, WHITE, 4, 32, clip_rect);
-
-		Rect rclip;
-		Rect textbox_rect = { global_pos.x + padding, global_pos.y + padding, global_pos.x + real_size.x - padding, global_pos.y + real_size.y - padding };
-		if(clip_rect)
-			rclip = Rect::Intersect(Rect(*clip_rect), textbox_rect);
-		else
-			rclip = textbox_rect;
-
-		// selected
-		if(select_start_index != NOT_SELECTED && select_start_index != select_end_index)
+		// ...A----B
+		// C-------D
+		// E----F...
+		if(lines == 1)
 		{
-			DWORD color = (readonly ? COLOR_RGBA(100, 100, 100, 128) : COLOR_RGBA(0, 148, 255, 128));
-			int select_start_line = select_start_pos.y / line_height;
-			int select_end_line = select_end_pos.y / line_height;
-			int lines = select_end_line - select_start_line + 1;
-			Rect area, r;
-			Int2 pos = global_pos - Int2(offset, offsety) + Int2(padding, padding);
+			// ...A----B... partial line
+			r = {
+				pos.x + select_start_pos.x,
+				pos.y + select_start_pos.y,
+				pos.x + select_end_pos.x,
+				pos.y + select_start_pos.y + line_height
+			};
+			area = Rect::Intersect(r, rclip);
+			GUI.DrawArea(color, area.LeftTop(), area.Size());
+		}
+		else
+		{
+			// A-B partial top line
+			r = {
+				pos.x + select_start_pos.x,
+				pos.y + select_start_pos.y,
+				pos.x + real_size.x,
+				pos.y + select_start_pos.y + line_height
+			};
+			area = Rect::Intersect(r, rclip);
+			GUI.DrawArea(color, area.LeftTop(), area.Size());
 
-			// ...A----B
-			// C-------D
-			// E----F...
-			if(lines == 1)
+			// C-D full middle line(s)
+			if(lines > 2)
 			{
-				// ...A----B... partial line
-				r = {
-					pos.x + select_start_pos.x,
-					pos.y + select_start_pos.y,
-					pos.x + select_end_pos.x,
-					pos.y + select_start_pos.y + line_height
-				};
-				area = Rect::Intersect(r, rclip);
-				GUI.DrawArea(color, area.LeftTop(), area.Size());
-			}
-			else
-			{
-				// A-B partial top line
-				r = {
-					pos.x + select_start_pos.x,
-					pos.y + select_start_pos.y,
-					pos.x + real_size.x,
-					pos.y + select_start_pos.y + line_height
-				};
-				area = Rect::Intersect(r, rclip);
-				GUI.DrawArea(color, area.LeftTop(), area.Size());
-
-				// C-D full middle line(s)
-				if(lines > 2)
-				{
-					r = {
-						pos.x,
-						pos.y + select_start_pos.y + line_height,
-						pos.x + real_size.x,
-						pos.y + select_end_pos.y
-					};
-					area = Rect::Intersect(r, rclip);
-					GUI.DrawArea(color, area.LeftTop(), area.Size());
-				}
-
-				// E-F partial bottom line
 				r = {
 					pos.x,
-					pos.y + select_end_pos.y,
-					pos.x + select_end_pos.x,
-					pos.y + select_end_pos.y + line_height
+					pos.y + select_start_pos.y + line_height,
+					pos.x + real_size.x,
+					pos.y + select_end_pos.y
 				};
 				area = Rect::Intersect(r, rclip);
 				GUI.DrawArea(color, area.LeftTop(), area.Size());
 			}
-		}
 
-		// text
-		Rect r =
-		{
-			global_pos.x + padding - offset,
-			global_pos.y + padding - offsety,
-			global_pos.x + real_size.x - padding,
-			global_pos.y + real_size.y - padding
-		};
-		Rect area = Rect::Intersect(r, rclip);
-		int draw_flags = (multiline ? DT_LEFT : DT_VCENTER | DT_SINGLELINE);
-		GUI.DrawText(GUI.default_font, text, draw_flags, BLACK, r, &area);
-
-		// carret
-		if(caret_blink >= 0.f)
-		{
-			Int2 p(global_pos.x + padding + caret_pos.x - offset, global_pos.y + padding + caret_pos.y - offsety);
-			Rect caret_rect = {
-				p.x,
-				p.y,
-				p.x + 1,
-				p.y + line_height
+			// E-F partial bottom line
+			r = {
+				pos.x,
+				pos.y + select_end_pos.y,
+				pos.x + select_end_pos.x,
+				pos.y + select_end_pos.y + line_height
 			};
-			Rect caret_rect_clip;
-			if(Rect::Intersect(caret_rect, rclip, caret_rect_clip))
-				GUI.DrawArea(BLACK, caret_rect_clip.LeftTop(), caret_rect_clip.Size());
+			area = Rect::Intersect(r, rclip);
+			GUI.DrawArea(color, area.LeftTop(), area.Size());
 		}
-
-		if(require_scrollbar)
-			scrollbar->Draw();
 	}
+
+	// text
+	Rect r =
+	{
+		global_pos.x + padding - offset,
+		global_pos.y + padding - offsety,
+		global_pos.x + real_size.x - padding,
+		global_pos.y + real_size.y - padding
+	};
+	Rect area = Rect::Intersect(r, rclip);
+	int draw_flags = (multiline ? DT_LEFT : DT_VCENTER | DT_SINGLELINE);
+	GUI.DrawText(GUI.default_font, text, draw_flags, BLACK, r, &area);
+
+	// carret
+	if(caret_blink >= 0.f)
+	{
+		Int2 p(global_pos.x + padding + caret_pos.x - offset, global_pos.y + padding + caret_pos.y - offsety);
+		Rect caret_rect = {
+			p.x,
+			p.y,
+			p.x + 1,
+			p.y + line_height
+		};
+		Rect caret_rect_clip;
+		if(Rect::Intersect(caret_rect, rclip, caret_rect_clip))
+			GUI.DrawArea(BLACK, caret_rect_clip.LeftTop(), caret_rect_clip.Size());
+	}
+
+	if(require_scrollbar)
+		scrollbar->Draw();
 }
 
 //=================================================================================================
@@ -174,7 +153,7 @@ void TextBox::Update(float dt)
 		if(PointInRect(GUI.cursor_pos, global_pos, real_size))
 		{
 			GUI.cursor_mode = CURSOR_TEXT;
-			if(is_new && (Key.PressedRelease(VK_LBUTTON) || Key.PressedRelease(VK_RBUTTON)))
+			if(Key.PressedRelease(VK_LBUTTON) || Key.PressedRelease(VK_RBUTTON))
 			{
 				// set caret position, update selection
 				bool prev_focus = focus;
@@ -230,326 +209,317 @@ void TextBox::Update(float dt)
 				}
 			}
 		}
-		if(scrollbar && !is_new)
-		{
-			scrollbar->mouse_focus = mouse_focus;
-			scrollbar->Update(dt);
-		}
 	}
 
-	if(scrollbar && is_new)
+	if(scrollbar)
 	{
 		if(mouse_focus)
 			scrollbar->ApplyMouseWheel();
 		UpdateControl(scrollbar, dt);
 	}
 
-	if(focus)
+	if(!focus)
 	{
-		// update caret blinking
-		caret_blink += dt * 2;
-		if(caret_blink >= 1.f)
-			caret_blink = -1.f;
+		caret_blink = -1.f;
+		down = false;
+		return;
+	}
 
-		if(is_new)
+	// update caret blinking
+	caret_blink += dt * 2;
+	if(caret_blink >= 1.f)
+		caret_blink = -1.f;
+
+	// update selecting with mouse
+	if(down && !clicked)
+	{
+		if(Key.Up(VK_LBUTTON))
+			down = false;
+		else
 		{
-			// update selecting with mouse
-			if(down && !clicked)
+			const int MOVE_SPEED = 300;
+
+			if(!multiline)
 			{
-				if(Key.Up(VK_LBUTTON))
-					down = false;
-				else
+				int local_x = GUI.cursor_pos.x - global_pos.x - padding;
+				if(local_x <= 0.1f * size.x && offset != 0)
 				{
-					const int MOVE_SPEED = 300;
-
-					if(!multiline)
-					{
-						int local_x = GUI.cursor_pos.x - global_pos.x - padding;
-						if(local_x <= 0.1f * size.x && offset != 0)
-						{
-							offset_move -= dt * MOVE_SPEED;
-							int offset_move_i = -(int)ceil(offset_move);
-							offset_move += offset_move_i;
-							offset -= offset_move_i;
-							if(offset < 0)
-								offset = 0;
-						}
-						else if(local_x >= 0.9f * size.x)
-						{
-							offset_move += dt * MOVE_SPEED;
-							int offset_move_i = (int)floor(offset_move);
-							offset_move -= offset_move_i;
-							offset += offset_move_i;
-							const int real_size = size.x - padding * 2;
-							const int total_width = GUI.default_font->CalculateSize(text).x;
-							int max_offset = total_width - real_size;
-							if(offset > max_offset)
-								offset = max_offset;
-							if(offset < 0)
-								offset = 0;
-						}
-					}
-					else
-					{
-						int local_y = GUI.cursor_pos.y - global_pos.y - padding;
-						float move = 0.f;
-						if(local_y <= 0.1f * size.y)
-							move = -1.f;
-						else if(local_y >= 0.9f * size.y)
-							move = 1.f;
-						if(move != 0.f)
-						{
-							float change = move * MOVE_SPEED * dt;
-							scrollbar->UpdateOffset(change);
-						}
-					}
-
-					Int2 new_index, new_pos;
-					GetCaretPos(GUI.cursor_pos, new_index, new_pos);
-					if(new_index != caret_index)
-					{
-						CalculateSelection(new_index, new_pos);
-						caret_index = new_index;
-						caret_pos = new_pos;
-						caret_blink = 0.f;
-						last_y_move = -1;
-					}
+					offset_move -= dt * MOVE_SPEED;
+					int offset_move_i = -(int)ceil(offset_move);
+					offset_move += offset_move_i;
+					offset -= offset_move_i;
+					if(offset < 0)
+						offset = 0;
+				}
+				else if(local_x >= 0.9f * size.x)
+				{
+					offset_move += dt * MOVE_SPEED;
+					int offset_move_i = (int)floor(offset_move);
+					offset_move -= offset_move_i;
+					offset += offset_move_i;
+					const int real_size = size.x - padding * 2;
+					const int total_width = GUI.default_font->CalculateSize(text).x;
+					int max_offset = total_width - real_size;
+					if(offset > max_offset)
+						offset = max_offset;
+					if(offset < 0)
+						offset = 0;
+				}
+			}
+			else
+			{
+				int local_y = GUI.cursor_pos.y - global_pos.y - padding;
+				float move = 0.f;
+				if(local_y <= 0.1f * size.y)
+					move = -1.f;
+				else if(local_y >= 0.9f * size.y)
+					move = 1.f;
+				if(move != 0.f)
+				{
+					float change = move * MOVE_SPEED * dt;
+					scrollbar->UpdateOffset(change);
 				}
 			}
 
-			if(Key.DownRepeat(VK_DELETE))
+			Int2 new_index, new_pos;
+			GetCaretPos(GUI.cursor_pos, new_index, new_pos);
+			if(new_index != caret_index)
 			{
-				if(select_start_index != NOT_SELECTED)
-				{
-					DeleteSelection();
-					CalculateOffset(true);
-				}
-				else if(!multiline)
-				{
-					if(caret_index.x != text.size())
-					{
-						text.erase(caret_index.x, 1);
-						caret_blink = 0.f;
-						UpdateFontLines();
-						CalculateOffset(true);
-					}
-				}
-				else
-				{
-					if(caret_index.y + 1 != font_lines.size() || caret_index.x != font_lines[caret_index.y].count)
-					{
-						uint index = ToRawIndex(caret_index);
-						text.erase(index, 1);
-						caret_blink = 0.f;
-						UpdateFontLines();
-						caret_index = GUI.default_font->FromRawIndex(font_lines, index);
-						caret_pos = IndexToPos(caret_index);
-						CalculateOffset(true);
-					}
-				}
-			}
-
-			// move caret
-			bool shift = Key.Down(VK_SHIFT);
-			int move = 0;
-			if(Key.DownRepeat(VK_UP))
-				move -= 10;
-			if(Key.DownRepeat(VK_DOWN))
-				move += 10;
-			if(move == 0)
-			{
-				if(Key.DownRepeat(VK_LEFT))
-					move -= 1;
-				if(Key.DownRepeat(VK_RIGHT))
-					move += 1;
-			}
-
-			if(move < 0)
-			{
-				if(!(caret_index.x > 0 || caret_index.y > 0))
-				{
-					move = 0;
-					if(!shift && select_start_index != NOT_SELECTED)
-					{
-						select_start_index = NOT_SELECTED;
-						CalculateOffset(false);
-					}
-				}
-			}
-			else if(move > 0)
-			{
-				if(!(caret_index.y + 1 != font_lines.size() || caret_index.x != font_lines[caret_index.y].count))
-				{
-					move = 0;
-					if(!shift && select_start_index != NOT_SELECTED)
-					{
-						select_start_index = NOT_SELECTED;
-						CalculateOffset(false);
-					}
-				}
-			}
-
-			if(move != 0)
-			{
-				Int2 new_index, new_pos;
-				if(shift || select_start_index == NOT_SELECTED || move == 10 || move == -10)
-				{
-					if(!shift)
-						select_start_index = NOT_SELECTED;
-
-					switch(move)
-					{
-					case -10:
-						if(caret_index.y > 0)
-						{
-							if(last_y_move == -1)
-								last_y_move = caret_pos.x;
-							Int2 check_pos = global_pos + Int2(last_y_move, caret_pos.y - GUI.default_font->height / 2 - (int)scrollbar->offset);
-							GetCaretPos(check_pos, new_index, new_pos);
-						}
-						else
-						{
-							new_index = Int2(0, 0);
-							new_pos = Int2(0, 0);
-							last_y_move = -1;
-						}
-						break;
-					case -1:
-						if(caret_index.x > 0)
-						{
-							new_index = Int2(caret_index.x - 1, caret_index.y);
-							uint raw_index = ToRawIndex(new_index);
-							new_pos = caret_pos;
-							new_pos.x -= GUI.default_font->GetCharWidth(text[raw_index]);
-						}
-						else
-						{
-							assert(caret_index.y > 0);
-							new_index = Int2(font_lines[caret_index.y - 1].count, caret_index.y - 1);
-							new_pos = Int2(font_lines[new_index.y].width, new_index.y * GUI.default_font->height);
-						}
-						last_y_move = -1;
-						break;
-					case +1:
-						if((uint)caret_index.x < font_lines[caret_index.y].count)
-						{
-							new_index = Int2(caret_index.x + 1, caret_index.y);
-							uint raw_index = ToRawIndex(new_index);
-							new_pos = caret_pos;
-							new_pos.x += GUI.default_font->GetCharWidth(text[raw_index - 1]);
-						}
-						else
-						{
-							assert((uint)caret_index.y < font_lines.size());
-							new_index = Int2(0, caret_index.y + 1);
-							new_pos = Int2(0, new_index.y * GUI.default_font->height);
-						}
-						last_y_move = -1;
-						break;
-					case +10:
-						if(caret_index.y + 1 < (int)font_lines.size())
-						{
-							if(last_y_move == -1)
-								last_y_move = caret_pos.x;
-							Int2 check_pos = global_pos + Int2(last_y_move, caret_pos.y + GUI.default_font->height * 3 / 2 - (int)scrollbar->offset);
-							GetCaretPos(check_pos, new_index, new_pos);
-						}
-						else
-						{
-							new_index = Int2(font_lines.back().count, font_lines.size() - 1);
-							new_pos = Int2(font_lines.back().width, new_index.y * GUI.default_font->height);
-							last_y_move = -1;
-						}
-						break;
-					}
-
-					if(shift)
-						CalculateSelection(new_index, new_pos);
-				}
-				else if(select_start_index != NOT_SELECTED)
-				{
-					if(move == -1)
-					{
-						new_index = select_start_index;
-						new_pos = select_start_pos;
-					}
-					else
-					{
-						new_index = select_end_index;
-						new_pos = select_end_pos;
-					}
-					select_start_index = NOT_SELECTED;
-					last_y_move = -1;
-				}
-
+				CalculateSelection(new_index, new_pos);
 				caret_index = new_index;
 				caret_pos = new_pos;
 				caret_blink = 0.f;
-				CalculateOffset(false);
+				last_y_move = -1;
 			}
+		}
+	}
 
-			// select all
-			if(Key.Shortcut(KEY_CONTROL, 'A'))
+	if(Key.DownRepeat(VK_DELETE))
+	{
+		if(select_start_index != NOT_SELECTED)
+		{
+			DeleteSelection();
+			CalculateOffset(true);
+		}
+		else if(!multiline)
+		{
+			if(caret_index.x != text.size())
 			{
-				caret_index = Int2(0, 0);
-				caret_pos = Int2(0, 0);
+				text.erase(caret_index.x, 1);
 				caret_blink = 0.f;
-				select_start_index = Int2(0, 0);
-				select_start_pos = Int2(0, 0);
-				select_end_index = Int2(font_lines.back().count, font_lines.size() - 1);
-				select_end_pos = Int2(font_lines.back().width, font_lines.size() * GUI.default_font->height);
-				select_fixed_index = Int2(0, 0);
+				UpdateFontLines();
+				CalculateOffset(true);
 			}
-
-			// copy
-			if(select_start_index != NOT_SELECTED && Key.Shortcut(KEY_CONTROL, 'C'))
+		}
+		else
+		{
+			if(caret_index.y + 1 != font_lines.size() || caret_index.x != font_lines[caret_index.y].count)
 			{
-				uint start = ToRawIndex(select_start_index);
-				uint end = ToRawIndex(select_end_index);
-				GUI.SetClipboard(text.substr(start, end - start).c_str());
-			}
-
-			// paste
-			if(!readonly && Key.Shortcut(KEY_CONTROL, 'V'))
-			{
-				cstring clipboard = GUI.GetClipboard();
-				if(clipboard)
-				{
-					string str = clipboard;
-					RemoveEndOfLine(str, !multiline);
-					if(select_start_index != NOT_SELECTED)
-						DeleteSelection();
-					uint index = ToRawIndex(caret_index);
-					if(limit <= 0 || text.length() + str.length() <= (uint)limit)
-						text.insert(index, str);
-					else
-					{
-						int max_chars = limit - text.length();
-						text.insert(index, str, max_chars);
-					}
-					UpdateFontLines();
-					index += str.length();
-					caret_index = GUI.default_font->FromRawIndex(font_lines, index);
-					caret_pos = IndexToPos(caret_index);
-					CalculateOffset(true);
-				}
-			}
-
-			// cut
-			if(!readonly && select_start_index != NOT_SELECTED && Key.Shortcut(KEY_CONTROL, 'X'))
-			{
-				uint start = ToRawIndex(select_start_index);
-				uint end = ToRawIndex(select_end_index);
-				GUI.SetClipboard(text.substr(start, end - start).c_str());
-				DeleteSelection();
+				uint index = ToRawIndex(caret_index);
+				text.erase(index, 1);
+				caret_blink = 0.f;
+				UpdateFontLines();
+				caret_index = GUI.default_font->FromRawIndex(font_lines, index);
+				caret_pos = IndexToPos(caret_index);
 				CalculateOffset(true);
 			}
 		}
 	}
-	else
+
+	// move caret
+	bool shift = Key.Down(VK_SHIFT);
+	int move = 0;
+	if(Key.DownRepeat(VK_UP))
+		move -= 10;
+	if(Key.DownRepeat(VK_DOWN))
+		move += 10;
+	if(move == 0)
 	{
-		caret_blink = -1.f;
-		down = false;
+		if(Key.DownRepeat(VK_LEFT))
+			move -= 1;
+		if(Key.DownRepeat(VK_RIGHT))
+			move += 1;
+	}
+
+	if(move < 0)
+	{
+		if(!(caret_index.x > 0 || caret_index.y > 0))
+		{
+			move = 0;
+			if(!shift && select_start_index != NOT_SELECTED)
+			{
+				select_start_index = NOT_SELECTED;
+				CalculateOffset(false);
+			}
+		}
+	}
+	else if(move > 0)
+	{
+		if(!(caret_index.y + 1 != font_lines.size() || caret_index.x != font_lines[caret_index.y].count))
+		{
+			move = 0;
+			if(!shift && select_start_index != NOT_SELECTED)
+			{
+				select_start_index = NOT_SELECTED;
+				CalculateOffset(false);
+			}
+		}
+	}
+
+	if(move != 0)
+	{
+		Int2 new_index, new_pos;
+		if(shift || select_start_index == NOT_SELECTED || move == 10 || move == -10)
+		{
+			if(!shift)
+				select_start_index = NOT_SELECTED;
+
+			switch(move)
+			{
+			case -10:
+				if(caret_index.y > 0)
+				{
+					if(last_y_move == -1)
+						last_y_move = caret_pos.x;
+					Int2 check_pos = global_pos + Int2(last_y_move, caret_pos.y - GUI.default_font->height / 2 - (int)scrollbar->offset);
+					GetCaretPos(check_pos, new_index, new_pos);
+				}
+				else
+				{
+					new_index = Int2(0, 0);
+					new_pos = Int2(0, 0);
+					last_y_move = -1;
+				}
+				break;
+			case -1:
+				if(caret_index.x > 0)
+				{
+					new_index = Int2(caret_index.x - 1, caret_index.y);
+					uint raw_index = ToRawIndex(new_index);
+					new_pos = caret_pos;
+					new_pos.x -= GUI.default_font->GetCharWidth(text[raw_index]);
+				}
+				else
+				{
+					assert(caret_index.y > 0);
+					new_index = Int2(font_lines[caret_index.y - 1].count, caret_index.y - 1);
+					new_pos = Int2(font_lines[new_index.y].width, new_index.y * GUI.default_font->height);
+				}
+				last_y_move = -1;
+				break;
+			case +1:
+				if((uint)caret_index.x < font_lines[caret_index.y].count)
+				{
+					new_index = Int2(caret_index.x + 1, caret_index.y);
+					uint raw_index = ToRawIndex(new_index);
+					new_pos = caret_pos;
+					new_pos.x += GUI.default_font->GetCharWidth(text[raw_index - 1]);
+				}
+				else
+				{
+					assert((uint)caret_index.y < font_lines.size());
+					new_index = Int2(0, caret_index.y + 1);
+					new_pos = Int2(0, new_index.y * GUI.default_font->height);
+				}
+				last_y_move = -1;
+				break;
+			case +10:
+				if(caret_index.y + 1 < (int)font_lines.size())
+				{
+					if(last_y_move == -1)
+						last_y_move = caret_pos.x;
+					Int2 check_pos = global_pos + Int2(last_y_move, caret_pos.y + GUI.default_font->height * 3 / 2 - (int)scrollbar->offset);
+					GetCaretPos(check_pos, new_index, new_pos);
+				}
+				else
+				{
+					new_index = Int2(font_lines.back().count, font_lines.size() - 1);
+					new_pos = Int2(font_lines.back().width, new_index.y * GUI.default_font->height);
+					last_y_move = -1;
+				}
+				break;
+			}
+
+			if(shift)
+				CalculateSelection(new_index, new_pos);
+		}
+		else if(select_start_index != NOT_SELECTED)
+		{
+			if(move == -1)
+			{
+				new_index = select_start_index;
+				new_pos = select_start_pos;
+			}
+			else
+			{
+				new_index = select_end_index;
+				new_pos = select_end_pos;
+			}
+			select_start_index = NOT_SELECTED;
+			last_y_move = -1;
+		}
+
+		caret_index = new_index;
+		caret_pos = new_pos;
+		caret_blink = 0.f;
+		CalculateOffset(false);
+	}
+
+	// select all
+	if(Key.Shortcut(KEY_CONTROL, 'A'))
+	{
+		caret_index = Int2(0, 0);
+		caret_pos = Int2(0, 0);
+		caret_blink = 0.f;
+		select_start_index = Int2(0, 0);
+		select_start_pos = Int2(0, 0);
+		select_end_index = Int2(font_lines.back().count, font_lines.size() - 1);
+		select_end_pos = Int2(font_lines.back().width, font_lines.size() * GUI.default_font->height);
+		select_fixed_index = Int2(0, 0);
+	}
+
+	// copy
+	if(select_start_index != NOT_SELECTED && Key.Shortcut(KEY_CONTROL, 'C'))
+	{
+		uint start = ToRawIndex(select_start_index);
+		uint end = ToRawIndex(select_end_index);
+		GUI.SetClipboard(text.substr(start, end - start).c_str());
+	}
+
+	// paste
+	if(!readonly && Key.Shortcut(KEY_CONTROL, 'V'))
+	{
+		cstring clipboard = GUI.GetClipboard();
+		if(clipboard)
+		{
+			string str = clipboard;
+			RemoveEndOfLine(str, !multiline);
+			if(select_start_index != NOT_SELECTED)
+				DeleteSelection();
+			uint index = ToRawIndex(caret_index);
+			if(limit <= 0 || text.length() + str.length() <= (uint)limit)
+				text.insert(index, str);
+			else
+			{
+				int max_chars = limit - text.length();
+				text.insert(index, str, max_chars);
+			}
+			UpdateFontLines();
+			index += str.length();
+			caret_index = GUI.default_font->FromRawIndex(font_lines, index);
+			caret_pos = IndexToPos(caret_index);
+			CalculateOffset(true);
+		}
+	}
+
+	// cut
+	if(!readonly && select_start_index != NOT_SELECTED && Key.Shortcut(KEY_CONTROL, 'X'))
+	{
+		uint start = ToRawIndex(select_start_index);
+		uint end = ToRawIndex(select_end_index);
+		GUI.SetClipboard(text.substr(start, end - start).c_str());
+		DeleteSelection();
+		CalculateOffset(true);
 	}
 }
 
@@ -559,11 +529,11 @@ void TextBox::Event(GuiEvent e)
 	switch(e)
 	{
 	case GuiEvent_Moved:
-		if(scrollbar && is_new)
+		if(scrollbar)
 			scrollbar->global_pos = scrollbar->pos + global_pos;
 		break;
 	case GuiEvent_Resize:
-		if(scrollbar && is_new)
+		if(scrollbar)
 		{
 			scrollbar->pos = Int2(size.x - 16, 0);
 			scrollbar->size = Int2(16, size.y);
@@ -574,8 +544,6 @@ void TextBox::Event(GuiEvent e)
 	case GuiEvent_GainFocus:
 		if(!added)
 		{
-			if(!is_new)
-				caret_blink = 0.f;
 			if(!readonly)
 				GUI.AddOnCharHandler(this);
 			added = true;
@@ -594,19 +562,16 @@ void TextBox::Event(GuiEvent e)
 		}
 		break;
 	case GuiEvent_Initialize:
-		if(is_new)
+		if(multiline)
 		{
-			if(multiline)
-			{
-				scrollbar = new Scrollbar;
-				scrollbar->pos = Int2(size.x - 16, 0);
-				scrollbar->size = Int2(16, size.y);
-				scrollbar->total = 0;
-				scrollbar->part = size.y - 8;
-				scrollbar->offset = 0.f;
-			}
-			UpdateFontLines();
+			scrollbar = new Scrollbar;
+			scrollbar->pos = Int2(size.x - 16, 0);
+			scrollbar->size = Int2(16, size.y);
+			scrollbar->total = 0;
+			scrollbar->part = size.y - 8;
+			scrollbar->offset = 0.f;
 		}
+		UpdateFontLines();
 		break;
 	}
 }
@@ -617,43 +582,35 @@ void TextBox::OnChar(char c)
 	if(c == VK_BACK)
 	{
 		// backspace
-		if(!is_new)
+		if(select_start_index != NOT_SELECTED)
 		{
-			if(!text.empty())
-				text.pop_back();
+			DeleteSelection();
+			CalculateOffset(true);
+		}
+		else if(!multiline)
+		{
+			if(caret_index.x > 0)
+			{
+				--caret_index.x;
+				caret_pos.x -= GUI.default_font->GetCharWidth(text[caret_index.x]);
+				caret_blink = 0.f;
+				text.erase(caret_index.x, 1);
+				UpdateFontLines();
+				CalculateOffset(true);
+			}
 		}
 		else
 		{
-			if(select_start_index != NOT_SELECTED)
+			if(caret_index.x > 0 || caret_index.y > 0)
 			{
-				DeleteSelection();
+				uint index = ToRawIndex(caret_index);
+				--index;
+				text.erase(index, 1);
+				caret_blink = 0.f;
+				UpdateFontLines();
+				caret_index = GUI.default_font->FromRawIndex(font_lines, index);
+				caret_pos = IndexToPos(caret_index);
 				CalculateOffset(true);
-			}
-			else if(!multiline)
-			{
-				if(caret_index.x > 0)
-				{
-					--caret_index.x;
-					caret_pos.x -= GUI.default_font->GetCharWidth(text[caret_index.x]);
-					caret_blink = 0.f;
-					text.erase(caret_index.x, 1);
-					UpdateFontLines();
-					CalculateOffset(true);
-				}
-			}
-			else
-			{
-				if(caret_index.x > 0 || caret_index.y > 0)
-				{
-					uint index = ToRawIndex(caret_index);
-					--index;
-					text.erase(index, 1);
-					caret_blink = 0.f;
-					UpdateFontLines();
-					caret_index = GUI.default_font->FromRawIndex(font_lines, index);
-					caret_pos = IndexToPos(caret_index);
-					CalculateOffset(true);
-				}
 			}
 		}
 	}
@@ -668,7 +625,7 @@ void TextBox::OnChar(char c)
 
 		if(numeric)
 		{
-			assert(!is_new);
+			assert(0);
 			if(c == '-')
 			{
 				if(text.empty())
@@ -699,29 +656,24 @@ void TextBox::OnChar(char c)
 				DeleteSelection();
 			if(limit <= 0 || limit > (int)text.size())
 			{
-				if(!is_new)
-					text.push_back(c);
+				if(!multiline)
+				{
+					text.insert(caret_index.x, 1, c);
+					caret_pos.x += GUI.default_font->GetCharWidth(c);
+					++caret_index.x;
+					UpdateFontLines();
+				}
 				else
 				{
-					if(!multiline)
-					{
-						text.insert(caret_index.x, 1, c);
-						caret_pos.x += GUI.default_font->GetCharWidth(c);
-						++caret_index.x;
-						UpdateFontLines();
-					}
-					else
-					{
-						uint index = ToRawIndex(caret_index);
-						text.insert(index, 1, c);
-						++index;
-						UpdateFontLines();
-						caret_index = GUI.default_font->FromRawIndex(font_lines, index);
-						caret_pos = IndexToPos(caret_index);
-					}
-					caret_blink = 0.f;
-					CalculateOffset(true);
+					uint index = ToRawIndex(caret_index);
+					text.insert(index, 1, c);
+					++index;
+					UpdateFontLines();
+					caret_index = GUI.default_font->FromRawIndex(font_lines, index);
+					caret_pos = IndexToPos(caret_index);
 				}
+				caret_blink = 0.f;
+				CalculateOffset(true);
 			}
 		}
 	}
@@ -738,48 +690,11 @@ void TextBox::ValidateNumber()
 }
 
 //=================================================================================================
-void TextBox::AddScrollbar()
-{
-	assert(!is_new); // use SetMultiline
-	if(scrollbar)
-		return;
-	scrollbar = new Scrollbar;
-	scrollbar->pos = Int2(size.x + 2, 0);
-	scrollbar->size = Int2(16, size.y);
-	scrollbar->total = 8;
-	scrollbar->part = size.y - 8;
-	scrollbar->offset = 0.f;
-}
-
-//=================================================================================================
 void TextBox::Move(const Int2& _global_pos)
 {
 	global_pos = _global_pos + pos;
 	if(scrollbar)
 		scrollbar->global_pos = global_pos + scrollbar->pos;
-}
-
-//=================================================================================================
-void TextBox::Add(cstring str)
-{
-	assert(!is_new);
-	assert(scrollbar);
-	Int2 str_size = GUI.default_font->CalculateSize(str, size.x - 8);
-	bool skip_to_end = (int(scrollbar->offset) >= (scrollbar->total - scrollbar->part));
-	scrollbar->total += str_size.y;
-	if(text.empty())
-		text = str;
-	else
-	{
-		text += '\n';
-		text += str;
-	}
-	if(skip_to_end)
-	{
-		scrollbar->offset = float(scrollbar->total - scrollbar->part);
-		if(scrollbar->offset < 0.f)
-			scrollbar->offset = 0.f;
-	}
 }
 
 //=================================================================================================

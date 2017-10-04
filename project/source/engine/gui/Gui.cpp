@@ -48,9 +48,7 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	color_table[5] = Vec4(0, 0, 0, 1);
 
 	layer = new Container;
-	layer->auto_focus = true;
 	dialog_layer = new Container;
-	dialog_layer->focus_top = true;
 
 	// create pixel texture
 	V(D3DXCreateTexture(device, 1, 1, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tPixel));
@@ -1324,11 +1322,7 @@ void IGUI::Update(float dt, float mouse_speed)
 		if(!focused_ctrl->visible)
 			focused_ctrl = nullptr;
 		else if(dialog_layer->Empty())
-		{
-			layer->dont_focus = true;
 			layer->Update(dt);
-			layer->dont_focus = false;
-		}
 		else
 		{
 			focused_ctrl->LostFocus();

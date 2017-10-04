@@ -263,13 +263,12 @@ void TreeNode::CalculatePath(bool send_event)
 	}
 }
 
-TreeView::TreeView() : Control(true), TreeNode(true), menu(nullptr), hover(nullptr), edited(nullptr), fixed(nullptr), drag(DRAG_NO), hscrollbar(true, true),
-vscrollbar(false, true)
+TreeView::TreeView() : TreeNode(true), menu(nullptr), hover(nullptr), edited(nullptr), fixed(nullptr), drag(DRAG_NO), hscrollbar(true), vscrollbar(false)
 {
 	tree = this;
 	text = "Root";
 	collapsed = false;
-	text_box = new TextBox(true);
+	text_box = new TextBox;
 	text_box->visible = false;
 	text_box->SetBackground(layout->tree_view.text_box_background);
 	hscrollbar.visible = false;

@@ -26,7 +26,7 @@ public:
 
 	typedef delegate<bool(int, int)> Handler;
 
-	ListBox(bool is_new = false);
+	ListBox();
 	~ListBox();
 
 	void Draw(ControlDrawData* cdd = nullptr) override;
@@ -76,7 +76,6 @@ public:
 
 	void SetCollapsed(bool new_collapsed) { assert(!initialized); collapsed = new_collapsed; }
 
-	MenuList* menu;
 	gui::MenuStrip* menu_strip;
 	DialogEvent event_handler;
 	Handler event_handler2;

@@ -171,13 +171,13 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 	tbClassDesc.pos = Int2(130, 335);
 	tbClassDesc.size = Int2(341, 93);
 	tbClassDesc.SetReadonly(true);
-	tbClassDesc.AddScrollbar();
+	tbClassDesc.SetMultiline(true);
 
 	tbInfo.pos = Int2(130, 335);
 	tbInfo.size = Int2(341, 93);
 	tbInfo.SetReadonly(true);
 	tbInfo.SetText(Str("createCharText"));
-	tbInfo.AddScrollbar();
+	tbInfo.SetMultiline(true);
 
 	flow_pos = Int2(368, 73 - 18);
 	flow_size = Int2(198, 235 + 18);

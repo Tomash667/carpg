@@ -5,7 +5,7 @@
 
 using namespace gui;
 
-CheckBoxGroup::CheckBoxGroup() : scrollbar(false, true)
+CheckBoxGroup::CheckBoxGroup() : scrollbar(false)
 {
 	row_height = max(layout->check_box_group.font->height, layout->check_box_group.box.size.y) + 2;
 }

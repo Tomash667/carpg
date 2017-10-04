@@ -297,10 +297,6 @@ void Options::Draw(ControlDrawData* /*cdd*/)
 	res.Draw();
 	multisampling.Draw();
 	language.Draw();
-	if(multisampling.menu->visible)
-		multisampling.menu->Draw();
-	if(language.menu->visible)
-		language.menu->Draw();
 }
 
 //=================================================================================================
@@ -309,10 +305,6 @@ void Options::Update(float dt)
 	SetOptions();
 
 	// aktualizuj kontrolki
-	if(multisampling.menu->visible)
-		multisampling.menu->Update(dt);
-	if(language.menu->visible)
-		language.menu->Update(dt);
 	for(int i = 0; i < 5; ++i)
 	{
 		check[i].mouse_focus = focus;

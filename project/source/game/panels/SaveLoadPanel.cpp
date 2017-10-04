@@ -39,7 +39,6 @@ SaveLoad::SaveLoad(const DialogInfo& info) : DialogBox(info), choice(0), tMiniSa
 	textbox.parent = this;
 	textbox.SetMultiline(true);
 	textbox.SetReadonly(true);
-	textbox.AddScrollbar();
 }
 
 //=================================================================================================

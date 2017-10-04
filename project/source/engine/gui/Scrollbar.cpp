@@ -8,7 +8,7 @@ TEX Scrollbar::tex;
 TEX Scrollbar::tex2;
 
 //=================================================================================================
-Scrollbar::Scrollbar(bool hscrollbar, bool is_new) : Control(is_new), clicked(false), hscrollbar(hscrollbar), manual_change(false), offset(0.f)
+Scrollbar::Scrollbar(bool hscrollbar) : clicked(false), hscrollbar(hscrollbar), manual_change(false), offset(0.f)
 {
 }
 
@@ -139,8 +139,7 @@ void Scrollbar::Update(float dt)
 			}
 		}
 
-		if(is_new)
-			TakeFocus(true);
+		TakeFocus(true);
 	}
 }
 
@@ -156,7 +155,7 @@ bool Scrollbar::ApplyMouseWheel()
 	if(GUI.mouse_wheel != 0.f)
 	{
 		LostFocus();
-		float mod = (!is_new ? (Key.Down(VK_SHIFT) ? 1.f : 0.2f) : 0.2f);
+		const float mod = 0.2f;
 		float prev_offset = offset;
 		offset -= part*GUI.mouse_wheel*mod;
 		if(offset < 0.f)

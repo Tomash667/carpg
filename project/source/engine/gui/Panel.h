@@ -7,7 +7,7 @@ namespace gui
 	class Panel : public Container
 	{
 	public:
-		Panel() : Container(true), use_custom_color(false) {}
+		Panel() : use_custom_color(false) {}
 
 		void Draw(ControlDrawData* cdd = nullptr) override;
 

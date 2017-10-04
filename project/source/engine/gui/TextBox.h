@@ -10,7 +10,7 @@ class Scrollbar;
 class TextBox : public Control, public OnCharHandler
 {
 public:
-	explicit TextBox(bool is_new = false);
+	explicit TextBox();
 	~TextBox();
 
 	// from Control
@@ -20,9 +20,7 @@ public:
 	// from OnCharHandler
 	void OnChar(char c) override;
 
-	void AddScrollbar();
 	void Move(const Int2& global_pos);
-	void Add(cstring str);
 	void CalculateOffset(bool center);
 	void Reset();
 	void UpdateScrollbar();

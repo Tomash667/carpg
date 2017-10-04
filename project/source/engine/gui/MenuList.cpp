@@ -4,7 +4,7 @@
 #include "KeyStates.h"
 
 //=================================================================================================
-MenuList::MenuList(bool is_new) : Control(is_new), event_handler(nullptr), w(0), selected(-1), items_owner(true)
+MenuList::MenuList() : event_handler(nullptr), w(0), selected(-1), items_owner(true)
 {
 }
 

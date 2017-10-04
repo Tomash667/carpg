@@ -10,7 +10,7 @@ class Container : public Control
 {
 	friend class IGUI;
 public:
-	Container(bool new_mode = false) : Control(new_mode), auto_focus(false), focus_top(false), dont_focus(false), new_mode(new_mode)
+	Container()
 	{
 		focusable = true;
 	}
@@ -33,9 +33,7 @@ public:
 		return ctrls.back();
 	}
 
-	bool auto_focus, focus_top, dont_focus;
-
 protected:
 	vector<Control*> ctrls;
-	bool inside_loop, new_mode;
+	bool inside_loop;
 };

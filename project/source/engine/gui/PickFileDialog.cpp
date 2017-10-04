@@ -47,26 +47,26 @@ PickFileDialog::PickFileDialog()
 {
 	SetAreaSize(Int2(640, 480));
 
-	list_box = new ListBox(true);
+	list_box = new ListBox;
 	list_box->event_handler2 = ListBox::Handler(this, &PickFileDialog::HandleListBoxEvent);
 	list_box->SetSize(Int2(640 - 4, 480 - 100));
 	list_box->SetPosition(Int2(2, 34));
 	Add(list_box);
 
-	list_extensions = new ListBox(true);
+	list_extensions = new ListBox;
 	list_extensions->event_handler2 = ListBox::Handler(this, &PickFileDialog::HandleChangeExtension);
 	list_extensions->SetSize(Int2(640 - 406, 30));
 	list_extensions->SetPosition(Int2(404, 480 - 64));
 	list_extensions->SetCollapsed(true);
 	Add(list_extensions);
 
-	tb_path = new TextBox(true);
+	tb_path = new TextBox;
 	tb_path->SetReadonly(true);
 	tb_path->SetSize(Int2(640 - 4, 30));
 	tb_path->SetPosition(Int2(2, 2));
 	Add(tb_path);
 
-	tb_filename = new TextBox(true);
+	tb_filename = new TextBox;
 	tb_filename->SetSize(Int2(400, 30));
 	tb_filename->SetPosition(Int2(2, 480 - 64));
 	Add(tb_filename);
@@ -90,7 +90,7 @@ PickFileDialog::PickFileDialog()
 	draw_box->SetPosition(Int2(404, 34));
 	Add(draw_box);
 
-	tb_preview = new TextBox(true);
+	tb_preview = new TextBox;
 	tb_preview->SetReadonly(true);
 	tb_preview->SetMultiline(true);
 	tb_preview->SetSize(Int2(240 - 6, 480 - 100));
