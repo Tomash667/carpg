@@ -24,6 +24,7 @@
 #include "Spell.h"
 #include "Team.h"
 #include "NetStats.h"
+#include "RoomType.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -3041,6 +3042,7 @@ uint Game::ValidateGameData(bool major)
 	ClassInfo::Validate(err);
 	Item::Validate(err);
 	PerkInfo::Validate(err);
+	RoomType::Validate(err);
 
 	if(err == 0)
 		Info("Test: Validation succeeded.");

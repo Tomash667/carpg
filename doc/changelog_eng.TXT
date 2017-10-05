@@ -9,6 +9,9 @@ Version 0.7 (2017-11-XX):
 - fixed invalid village hall mesh
 - fixed invalid sign texture for food seller
 - better redirecting to website
+- fixed base animation played sometimes after drinking animation
+- fixed not marking usable object as free when client stopped using, broken animation
+- fixed missing items in chests
 
 --------------------------------------------------------------------------------
 Version 0.6 (2017-10-01):

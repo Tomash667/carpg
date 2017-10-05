@@ -2338,7 +2338,10 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	if(ctx.chests && !ctx.chests->empty())
 	{
 		for(vector<Chest*>::iterator it = ctx.chests->begin(), end = ctx.chests->end(); it != end; ++it)
+		{
+			//if(!(*it)->looted)
 			PlayerCheckObjectDistance(u, (*it)->pos, *it, best_dist, BP_CHEST);
+		}
 	}
 
 	// drzwi przed graczem
@@ -9906,10 +9909,10 @@ void Game::GenerateDungeonObjects()
 
 		RoomType* rt;
 
-		// dodaj blokady
+		// add colliding blocks
 		for(int x = 0; x < it->size.x; ++x)
 		{
-			// górna krawêdŸ
+			// top
 			POLE co = lvl.map[it->pos.x + x + (it->pos.y + it->size.y - 1)*lvl.w].type;
 			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 			{
@@ -9919,7 +9922,7 @@ void Game::GenerateDungeonObjects()
 			else if(co == SCIANA || co == BLOKADA_SCIANA)
 				blocks.push_back(Int2(it->pos.x + x, it->pos.y + it->size.y - 1));
 
-			// dolna krawêdŸ
+			// bottom
 			co = lvl.map[it->pos.x + x + it->pos.y*lvl.w].type;
 			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 			{
@@ -9931,7 +9934,7 @@ void Game::GenerateDungeonObjects()
 		}
 		for(int y = 0; y < it->size.y; ++y)
 		{
-			// lewa krawêdŸ
+			// left
 			POLE co = lvl.map[it->pos.x + (it->pos.y + y)*lvl.w].type;
 			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 			{
@@ -9941,7 +9944,7 @@ void Game::GenerateDungeonObjects()
 			else if(co == SCIANA || co == BLOKADA_SCIANA)
 				blocks.push_back(Int2(it->pos.x, it->pos.y + y));
 
-			// prawa krawêdŸ
+			// right
 			co = lvl.map[it->pos.x + it->size.x - 1 + (it->pos.y + y)*lvl.w].type;
 			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
 			{
@@ -9951,6 +9954,8 @@ void Game::GenerateDungeonObjects()
 			else if(co == SCIANA || co == BLOKADA_SCIANA)
 				blocks.push_back(Int2(it->pos.x + it->size.x - 1, it->pos.y + y));
 		}
+
+		// choose room type
 		if(it->target != RoomTarget::None)
 		{
 			if(it->target == RoomTarget::Treasury)
@@ -10003,13 +10008,11 @@ void Game::GenerateDungeonObjects()
 		int fail = 10;
 		bool wymagany_obiekt = false;
 
-		for(int i = 0; i < rt->count && fail > 0; ++i)
+		// try to spawn all objects
+		for(uint i = 0; i < rt->count && fail > 0; ++i)
 		{
 			bool is_variant = false;
 			BaseObject* obj = BaseObject::Get(rt->objs[i].id, &is_variant);
-			if(!obj)
-				continue;
-
 			int count = rt->objs[i].count.Random();
 
 			for(int j = 0; j < count && fail > 0; ++j)
@@ -10126,7 +10129,7 @@ void Game::GenerateDungeonObjects()
 				{
 					rot = Random(MAX_ANGLE);
 
-					if(obj->type == OBJ_CYLINDER)
+					if(obj->type != OBJ_CYLINDER)
 						pos = it->GetRandomPos(max(obj->size.x, obj->size.y));
 					else
 						pos = it->GetRandomPos(obj->r);
@@ -10227,7 +10230,9 @@ void Game::GenerateDungeonObjects()
 					}
 				}
 
-				SpawnObjectEntity(local_ctx, obj, pos, rot, 1.f, flags);
+				auto e = SpawnObjectEntity(local_ctx, obj, pos, rot, 1.f, flags);
+				if(e.type == ObjectEntity::CHEST)
+					room_chests.push_back(e);
 
 				if(IS_SET(obj->flags, OBJ_REQUIRED))
 					wymagany_obiekt = true;
@@ -13813,9 +13818,6 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 	u.timer = 0.f;
 	u.used_item = nullptr;
 
-	if(Net::IsClient())
-		return;
-
 	const float unit_radius = u.GetUnitRadius();
 
 	global_col.clear();
@@ -13850,7 +13852,7 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 	if(u.cobj)
 		UpdateUnitPhysics(u, u.target_pos);
 
-	if(send && Net::IsOnline())
+	if(send)
 	{
 		if(Net::IsServer())
 		{
@@ -13860,7 +13862,7 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 			c.id = u.usable->netid;
 			c.ile = 3;
 		}
-		else if(&u == pc->unit)
+		else if(Net::IsClient())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::USE_USABLE;
@@ -20759,69 +20761,69 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 			u.used_item = bu.item;
 	}
 
-	if(ok)
+	if(!ok)
+		return;
+	
+	if(Net::IsLocal())
 	{
-		if(Net::IsLocal())
+		u.usable = &use;
+		u.usable->user = &u;
+		pc_data.before_player = BP_NONE;
+
+		if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
 		{
-			u.usable = &use;
-			u.usable->user = &u;
-			pc_data.before_player = BP_NONE;
-
-			if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
-			{
-				// loot container
-				pc->action = PlayerController::Action_LootContainer;
-				pc->action_container = &use;
-				pc->chest_trade = &pc->action_container->container->items;
-				CloseGamePanels();
-				inventory_mode = I_LOOT_CONTAINER;
-				BuildTmpInventory(0);
-				game_gui->inv_trade_mine->mode = Inventory::LOOT_MY;
-				BuildTmpInventory(1);
-				game_gui->inv_trade_other->unit = nullptr;
-				game_gui->inv_trade_other->items = &pc->action_container->container->items;
-				game_gui->inv_trade_other->slots = nullptr;
-				game_gui->inv_trade_other->title = Format("%s - %s", Inventory::txLooting, use.base->name.c_str());
-				game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;
-				game_gui->gp_trade->Show();
-			}
-			else
-			{
-				u.action = A_ANIMATION2;
-				u.animation = ANI_PLAY;
-				u.mesh_inst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
-				u.mesh_inst->groups[0].speed = 1.f;
-				u.target_pos = u.pos;
-				u.target_pos2 = use.pos;
-				if(use.base->limit_rot == 4)
-					u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
-				u.timer = 0.f;
-				u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-				u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
-			}
-
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_USABLE;
-				c.unit = &u;
-				c.id = u.usable->netid;
-				c.ile = 1;
-			}
+			// loot container
+			pc->action = PlayerController::Action_LootContainer;
+			pc->action_container = &use;
+			pc->chest_trade = &pc->action_container->container->items;
+			CloseGamePanels();
+			inventory_mode = I_LOOT_CONTAINER;
+			BuildTmpInventory(0);
+			game_gui->inv_trade_mine->mode = Inventory::LOOT_MY;
+			BuildTmpInventory(1);
+			game_gui->inv_trade_other->unit = nullptr;
+			game_gui->inv_trade_other->items = &pc->action_container->container->items;
+			game_gui->inv_trade_other->slots = nullptr;
+			game_gui->inv_trade_other->title = Format("%s - %s", Inventory::txLooting, use.base->name.c_str());
+			game_gui->inv_trade_other->mode = Inventory::LOOT_OTHER;
+			game_gui->gp_trade->Show();
 		}
 		else
 		{
+			u.action = A_ANIMATION2;
+			u.animation = ANI_PLAY;
+			u.mesh_inst->Play(bu.anim.c_str(), PLAY_PRIO1, 0);
+			u.mesh_inst->groups[0].speed = 1.f;
+			u.target_pos = u.pos;
+			u.target_pos2 = use.pos;
+			if(use.base->limit_rot == 4)
+				u.target_pos2 -= Vec3(sin(use.rot)*1.5f, 0, cos(use.rot)*1.5f);
+			u.timer = 0.f;
+			u.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
+			u.use_rot = Vec3::LookAtAngle(u.pos, u.usable->pos);
+		}
+
+		if(Net::IsOnline())
+		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::USE_USABLE;
-			c.id = pc_data.before_player_ptr.usable->netid;
+			c.unit = &u;
+			c.id = u.usable->netid;
 			c.ile = 1;
+		}
+	}
+	else
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::USE_USABLE;
+		c.id = pc_data.before_player_ptr.usable->netid;
+		c.ile = 1;
 
-			if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
-			{
-				pc->action = PlayerController::Action_LootContainer;
-				pc->action_container = pc_data.before_player_ptr.usable;
-				pc->chest_trade = &pc->action_container->container->items;
-			}
+		if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
+		{
+			pc->action = PlayerController::Action_LootContainer;
+			pc->action_container = pc_data.before_player_ptr.usable;
+			pc->chest_trade = &pc->action_container->container->items;
 		}
 	}
 }

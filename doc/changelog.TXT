@@ -9,6 +9,9 @@ Wersja 0.7 (2017-11-XX):
 - naprawiony nieprawid³owy model wioskowego ratuszu
 - naprawiona nieprawid³owa tekstura znaku sprzedawcy jedzenia
 - lepsze przekierowanie na stronê
+- naprawiona bazowa animacja czasami odtwarzana po animacji picia
+- naprawione nieoznaczanie u¿ywalnych obiektów jako wolne gdy klient przestaje ich u¿ywaæ, zepsuta animacja
+- naprawiony brak przedmiotów w skrzynkach
 
 --------------------------------------------------------------------------------
 Wersja 0.6 (2017-10-01):

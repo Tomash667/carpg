@@ -461,21 +461,7 @@ int Unit::ConsumeItem(int index)
 		removed = true;
 	}
 
-	// zacznij spo¿ywaæ
-	cstring anim_name;
-	if(cons.cons_type == Food)
-	{
-		action = A_EAT;
-		anim_name = "je";
-	}
-	else
-	{
-		action = A_DRINK;
-		anim_name = "pije";
-	}
-	animation_state = 0;
-	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
-	used_item = &cons;
+	ConsumeItemAnim(cons);
 
 	// wyœlij komunikat
 	if(Net::IsOnline())
@@ -509,22 +495,8 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 			weapon_state = WS_HIDDEN;
 	}
 
-	cstring anim_name;
-	if(item.cons_type == Food)
-	{
-		action = A_EAT;
-		anim_name = "je";
-	}
-	else
-	{
-		action = A_DRINK;
-		anim_name = "pije";
-	}
-
-	animation_state = 0;
-	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
-	used_item = &item;
 	used_item_is_team = true;
+	ConsumeItemAnim(item);
 
 	if(send)
 	{
@@ -537,6 +509,31 @@ void Unit::ConsumeItem(const Consumable& item, bool force, bool send)
 			c.ile = (force ? 1 : 0);
 		}
 	}
+}
+
+//=================================================================================================
+void Unit::ConsumeItemAnim(const Consumable& cons)
+{
+	cstring anim_name;
+	if(cons.cons_type == Food)
+	{
+		action = A_EAT;
+		anim_name = "je";
+	}
+	else
+	{
+		action = A_DRINK;
+		anim_name = "pije";
+	}
+
+	animation_state = 0;
+	if(current_animation == ANI_PLAY)
+	{
+		animation = ANI_STAND;
+		current_animation = ANI_NONE;
+	}
+	mesh_inst->Play(anim_name, PLAY_ONCE | PLAY_PRIO1, 1);
+	used_item = &cons;
 }
 
 //=================================================================================================
@@ -590,21 +587,21 @@ void Unit::HideWeapon()
 }
 
 //=================================================================================================
-void Unit::TakeWeapon(WeaponType _type)
+void Unit::TakeWeapon(WeaponType type)
 {
-	assert(_type == W_ONE_HANDED || _type == W_BOW);
+	assert(type == W_ONE_HANDED || type == W_BOW);
 
 	if(action != A_NONE)
 		return;
 
-	if(weapon_taken == _type)
+	if(weapon_taken == type)
 		return;
 
 	if(weapon_taken == W_NONE)
 	{
-		mesh_inst->Play(GetTakeWeaponAnimation(_type == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE, 1);
+		mesh_inst->Play(GetTakeWeaponAnimation(type == W_ONE_HANDED), PLAY_PRIO1 | PLAY_ONCE, 1);
 		weapon_hiding = W_NONE;
-		weapon_taken = _type;
+		weapon_taken = type;
 		animation_state = 0;
 		action = A_TAKE_WEAPON;
 		weapon_state = WS_TAKING;
@@ -621,7 +618,7 @@ void Unit::TakeWeapon(WeaponType _type)
 	else
 	{
 		HideWeapon();
-		weapon_taken = _type;
+		weapon_taken = type;
 	}
 }
 

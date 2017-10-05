@@ -22,7 +22,10 @@ struct RoomType
 {
 	cstring id;
 	ObjEntry* objs;
-	int count, flags;
+	uint count;
+	int flags;
+
+	static void Validate(uint& err);
 };
 extern RoomType g_room_types[];
 extern int n_room_types;
