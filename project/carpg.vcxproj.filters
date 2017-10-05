@@ -64,6 +64,9 @@
     <Filter Include="3. game\system\buildings">
       <UniqueIdentifier>{832797a9-e416-46ec-bdc8-965ed5a4bd43}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3. game\system\items">
+      <UniqueIdentifier>{538a0371-6a23-4988-b2e4-0735a1ab3812}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
@@ -654,6 +657,9 @@
     </ClCompile>
     <ClCompile Include="source\game\system\BuildingGroup.cpp">
       <Filter>3. game\system\buildings</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\ItemLoader.cpp">
+      <Filter>3. game\system\items</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

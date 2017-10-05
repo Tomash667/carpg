@@ -528,6 +528,7 @@
     <ClCompile Include="source\game\stats\StatProfile.cpp" />
     <ClCompile Include="source\game\stats\UnitData.cpp" />
     <ClCompile Include="source\game\stats\UnitStats.cpp" />
+    <ClCompile Include="source\game\system\ItemLoader.cpp" />
     <ClCompile Include="source\game\system\ObjectLoader.cpp" />
     <ClCompile Include="source\game\Team.cpp" />
     <ClCompile Include="source\game\TeamItems.cpp" />

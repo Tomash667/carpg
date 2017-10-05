@@ -188,6 +188,10 @@ struct Item
 	TexturePtr tex;
 	TEX icon;
 	ResourceState state;
+
+	static Item* TryGet(const AnyString& id);
+
+	Item& operator = (const Item& i);
 };
 
 //-----------------------------------------------------------------------------
@@ -379,6 +383,7 @@ struct BookScheme
 	vector<Rect> regions;
 
 	static vector<BookScheme*> book_schemes;
+	static BookScheme* TryGet(const AnyString& id);
 };
 
 struct Book : public Item
@@ -523,3 +528,88 @@ typedef std::unordered_map<cstring, Item*, Hash, CmpCstring> ItemsMap;
 
 extern ItemsMap g_items;
 extern std::map<const Item*, const Item*> better_items;
+
+inline Item& Item::operator = (const Item& i)
+{
+	assert(type == i.type);
+	mesh_id = i.mesh_id;
+	weight = i.weight;
+	value = i.value;
+	flags = i.flags;
+	switch(type)
+	{
+	case IT_WEAPON:
+		{
+			auto& w = ToWeapon();
+			auto& w2 = i.ToWeapon();
+			w.dmg = w2.dmg;
+			w.dmg_type = w2.dmg_type;
+			w.req_str = w2.req_str;
+			w.weapon_type = w2.weapon_type;
+			w.material = w2.material;
+		}
+		break;
+	case IT_BOW:
+		{
+			auto& b = ToBow();
+			auto& b2 = i.ToBow();
+			b.dmg = b2.dmg;
+			b.req_str = b2.req_str;
+			b.speed = b2.speed;
+		}
+		break;
+	case IT_SHIELD:
+		{
+			auto& s = ToShield();
+			auto& s2 = i.ToShield();
+			s.def = s2.def;
+			s.req_str = s2.req_str;
+			s.material = s2.material;
+		}
+		break;
+	case IT_ARMOR:
+		{
+			auto& a = ToArmor();
+			auto& a2 = i.ToArmor();
+			a.def = a2.def;
+			a.req_str = a2.req_str;
+			a.mobility = a2.mobility;
+			a.material = a2.material;
+			a.skill = a2.skill;
+			a.armor_type = a2.armor_type;
+			a.tex_override = a2.tex_override;
+		}
+		break;
+	case IT_OTHER:
+		{
+			auto& o = ToOther();
+			auto& o2 = i.ToOther();
+			o.other_type = o2.other_type;
+		}
+		break;
+	case IT_CONSUMABLE:
+		{
+			auto& c = ToConsumable();
+			auto& c2 = i.ToConsumable();
+			c.effect = c2.effect;
+			c.power = c2.power;
+			c.time = c2.time;
+			c.cons_type = c2.cons_type;
+		}
+		break;
+	case IT_BOOK:
+		{
+			auto& b = ToBook();
+			auto& b2 = i.ToBook();
+			b.scheme = b2.scheme;
+			b.runic = b2.runic;
+		}
+		break;
+	case IT_GOLD:
+		break;
+	default:
+		assert(0);
+		break;
+	}
+	return *this;
+}

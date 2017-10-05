@@ -163,7 +163,7 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	load_screen->Setup(0.f, 0.33f, 12, txCreatingListOfFiles);
+	load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
 
 	AddFilesystem();
 	LoadDatafiles();
@@ -226,6 +226,12 @@ void Game::LoadDatafiles()
 	{
 		switch(id)
 		{
+		case content::Id::Items:
+			load_screen->Tick(txLoadingItems);
+			break;
+		case content::Id::Objects:
+			load_screen->Tick(txLoadingObjects);
+			break;
 		case content::Id::Buildings:
 			load_screen->Tick(txLoadingBuildings);
 			break;
