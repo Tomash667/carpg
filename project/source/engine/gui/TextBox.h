@@ -43,6 +43,7 @@ public:
 	Scrollbar* scrollbar;
 
 private:
+	void OnInitialize() override;
 	void ValidateNumber();
 	void GetCaretPos(const Int2& in_pos, Int2& index, Int2& pos, uint* char_index = nullptr);
 	void CalculateSelection(const Int2& new_index, const Int2& new_pos);

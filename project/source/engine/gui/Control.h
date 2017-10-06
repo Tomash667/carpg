@@ -64,6 +64,8 @@ public:
 	virtual void SetDisabled(bool new_disabled) { disabled = new_disabled; }
 	virtual void Update(float dt) {}
 
+	virtual void OnInitialize() {}
+
 	Int2 GetCursorPos() const
 	{
 		return GUI.cursor_pos - pos;

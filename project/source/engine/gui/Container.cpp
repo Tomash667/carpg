@@ -9,6 +9,13 @@ Container::~Container()
 }
 
 //=================================================================================================
+void Container::OnInitialize()
+{
+	for(Control* c : ctrls)
+		c->Initialize();
+}
+
+//=================================================================================================
 void Container::Add(Control* ctrl)
 {
 	assert(ctrl);
@@ -69,10 +76,6 @@ void Container::Event(GuiEvent e)
 {
 	switch(e)
 	{
-	case GuiEvent_Initialize:
-		for(Control* c : ctrls)
-			c->Initialize();
-		break;
 	case GuiEvent_WindowResize:
 	case GuiEvent_Show:
 	case GuiEvent_Hide:

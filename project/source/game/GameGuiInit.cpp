@@ -263,9 +263,6 @@ void Game::NullGui()
 //=================================================================================================
 void Game::RemoveGui()
 {
-	delete game_gui;
-	delete main_menu;
-	delete world_map;
 	delete console;
 	delete game_menu;
 	delete options;
@@ -279,7 +276,6 @@ void Game::RemoveGui()
 	delete GetTextDialog::self;
 	delete GetNumberDialog::self;
 	delete PickItemDialog::self;
-	delete load_screen;
 	delete controls;
 	gui::PickFileDialog::Destroy();
 }

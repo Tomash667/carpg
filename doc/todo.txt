@@ -29,6 +29,7 @@
 ? pick number dialog (drop gold)
 ? pick text dialog (select ip)
 ? pick option dialog (create char)
+? close game with dialogs open
 ===============================================================================================================
 CURRENT:
 ? 3 players usable tests

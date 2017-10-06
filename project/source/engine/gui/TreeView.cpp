@@ -268,18 +268,34 @@ TreeView::TreeView() : TreeNode(true), menu(nullptr), hover(nullptr), edited(nul
 	tree = this;
 	text = "Root";
 	collapsed = false;
-	text_box = new TextBox;
-	text_box->visible = false;
-	text_box->SetBackground(layout->tree_view.text_box_background);
-	hscrollbar.visible = false;
-	vscrollbar.visible = false;
-	CalculateWidth();
 	SetOnCharHandler(true);
 }
 
 TreeView::~TreeView()
 {
 	delete text_box;
+}
+
+void TreeView::OnInitialize()
+{
+	text_box = new TextBox;
+	text_box->visible = false;
+	text_box->SetBackground(layout->tree_view.text_box_background);
+	hscrollbar.visible = false;
+	vscrollbar.visible = false;
+	CalculateWidth();
+
+	item_height = layout->tree_view.font->height + 2;
+	level_offset = layout->tree_view.level_offset;
+	vscrollbar.size = Int2(16, size.y);
+	vscrollbar.part = size.y;
+	vscrollbar.pos = Int2(size.x - 16, 0);
+	vscrollbar.global_pos = global_pos + vscrollbar.pos;
+	hscrollbar.size = Int2(size.x, 16);
+	hscrollbar.part = size.x;
+	hscrollbar.pos = Int2(0, size.y - 16);
+	hscrollbar.global_pos = global_pos + hscrollbar.pos;
+	CalculatePos();
 }
 
 void TreeView::CalculatePos()
@@ -436,19 +452,6 @@ void TreeView::Event(GuiEvent e)
 {
 	switch(e)
 	{
-	case GuiEvent_Initialize:
-		item_height = layout->tree_view.font->height + 2;
-		level_offset = layout->tree_view.level_offset;
-		vscrollbar.size = Int2(16, size.y);
-		vscrollbar.part = size.y;
-		vscrollbar.pos = Int2(size.x - 16, 0);
-		vscrollbar.global_pos = global_pos + vscrollbar.pos;
-		hscrollbar.size = Int2(size.x, 16);
-		hscrollbar.part = size.x;
-		hscrollbar.pos = Int2(0, size.y - 16);
-		hscrollbar.global_pos = global_pos + hscrollbar.pos;
-		CalculatePos();
-		break;
 	case GuiEvent_LostFocus:
 		drag = DRAG_NO;
 		break;

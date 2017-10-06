@@ -15,6 +15,11 @@ MenuBar::~MenuBar()
 	DeleteElements(items);
 }
 
+void MenuBar::OnInitialize()
+{
+	Update(true, true);
+}
+
 void MenuBar::Draw(ControlDrawData*)
 {
 	// backgroud
@@ -93,10 +98,6 @@ void MenuBar::Event(GuiEvent e)
 {
 	switch(e)
 	{
-	case GuiEvent_Initialize:
-		// control initialization, menubar must be attacked to other control (like Window)
-		Update(true, true);
-		break;
 	case GuiEvent_Moved:
 		// parent control moved
 		Update(true, false);

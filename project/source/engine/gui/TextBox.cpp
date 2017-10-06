@@ -22,6 +22,21 @@ TextBox::~TextBox()
 }
 
 //=================================================================================================
+void TextBox::OnInitialize()
+{
+	if(multiline)
+	{
+		scrollbar = new Scrollbar;
+		scrollbar->pos = Int2(size.x - 16, 0);
+		scrollbar->size = Int2(16, size.y);
+		scrollbar->total = 0;
+		scrollbar->part = size.y - 8;
+		scrollbar->offset = 0.f;
+	}
+	UpdateFontLines();
+}
+
+//=================================================================================================
 void TextBox::Draw(ControlDrawData* cdd)
 {
 	TEX background = tBackground ? tBackground : tBox;
@@ -560,18 +575,6 @@ void TextBox::Event(GuiEvent e)
 			down = false;
 			offset_move = 0.f;
 		}
-		break;
-	case GuiEvent_Initialize:
-		if(multiline)
-		{
-			scrollbar = new Scrollbar;
-			scrollbar->pos = Int2(size.x - 16, 0);
-			scrollbar->size = Int2(16, size.y);
-			scrollbar->total = 0;
-			scrollbar->part = size.y - 8;
-			scrollbar->offset = 0.f;
-		}
-		UpdateFontLines();
 		break;
 	}
 }

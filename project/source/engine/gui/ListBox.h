@@ -81,6 +81,7 @@ public:
 	Handler event_handler2;
 
 private:
+	void OnInitialize() override;
 	int PosToIndex(int y);
 	void OnSelect(int index);
 	bool ChangeIndexEvent(int index, bool force, bool scroll_to);

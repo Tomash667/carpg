@@ -27,7 +27,7 @@ void Control::Initialize()
 	if(initialized)
 		return;
 	initialized = true;
-	Event(GuiEvent_Initialize);
+	OnInitialize();
 }
 
 void Control::SetSize(const Int2& new_size)

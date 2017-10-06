@@ -17,6 +17,13 @@ TabControl::~TabControl()
 	Clear();
 }
 
+void TabControl::OnInitialize()
+{
+	Update(true, true);
+	for(Tab* tab : tabs)
+		tab->panel->Initialize();
+}
+
 void TabControl::Dock(Control* c)
 {
 	assert(c);
@@ -105,11 +112,6 @@ void TabControl::Event(GuiEvent e)
 {
 	switch(e)
 	{
-	case GuiEvent_Initialize:
-		Update(true, true);
-		for(Tab* tab : tabs)
-			tab->panel->Initialize();
-		break;
 	case GuiEvent_Moved:
 		Update(true, false);
 		break;

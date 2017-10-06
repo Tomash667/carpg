@@ -6,14 +6,18 @@ using namespace gui;
 
 Label::Label(cstring text, bool auto_size) : text(text), custom_layout(nullptr), own_custom_layout(false), auto_size(auto_size)
 {
-	if(auto_size)
-		CalculateSize();
 }
 
 Label::~Label()
 {
 	if(own_custom_layout)
 		delete custom_layout;
+}
+
+void Label::OnInitialize()
+{
+	if(auto_size)
+		CalculateSize();
 }
 
 void Label::Draw(ControlDrawData*)

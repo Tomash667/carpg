@@ -22,6 +22,25 @@ ListBox::~ListBox()
 }
 
 //=================================================================================================
+void ListBox::OnInitialize()
+{
+	real_size = size;
+	scrollbar.pos = Int2(size.x - 16, 0);
+	scrollbar.size = Int2(16, size.y);
+	scrollbar.offset = 0.f;
+	scrollbar.total = items.size()*item_height;
+	scrollbar.part = size.y - 4;
+
+	if(collapsed)
+	{
+		menu_strip = new MenuStrip(items, size.x);
+		menu_strip->SetHandler(DialogEvent(this, &ListBox::OnSelect));
+	}
+
+	UpdateScrollbarVisibility();
+}
+
+//=================================================================================================
 void ListBox::Draw(ControlDrawData*)
 {
 	if(collapsed)
@@ -180,23 +199,6 @@ void ListBox::Event(GuiEvent e)
 {
 	if(e == GuiEvent_Moved)
 		scrollbar.global_pos = global_pos + scrollbar.pos;
-	else if(e == GuiEvent_Initialize)
-	{
-		real_size = size;
-		scrollbar.pos = Int2(size.x - 16, 0);
-		scrollbar.size = Int2(16, size.y);
-		scrollbar.offset = 0.f;
-		scrollbar.total = items.size()*item_height;
-		scrollbar.part = size.y - 4;
-
-		if(collapsed)
-		{
-			menu_strip = new MenuStrip(items, size.x);
-			menu_strip->SetHandler(DialogEvent(this, &ListBox::OnSelect));
-		}
-
-		UpdateScrollbarVisibility();
-	}
 }
 
 //=================================================================================================

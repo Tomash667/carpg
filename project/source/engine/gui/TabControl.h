@@ -69,6 +69,7 @@ namespace gui
 		void ScrollTo(Tab* tab);
 
 	private:
+		void OnInitialize() override;
 		void Update(bool move, bool resize);
 		void CalculateRect();
 		void CalculateRect(Tab& tab, int offset);

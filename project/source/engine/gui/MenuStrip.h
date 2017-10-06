@@ -66,6 +66,7 @@ namespace gui
 		bool IsOpen();
 
 	private:
+		void OnInitialize() override;
 		void CalculateWidth(int min_width);
 		void ChangeIndex(int dir);
 		void UpdateMouse();
@@ -76,6 +77,6 @@ namespace gui
 		vector<Item> items;
 		Item* selected;
 		MenuBar* parent_menu_bar;
-		int menu_bar_index;
+		int min_width, menu_bar_index;
 	};
 }

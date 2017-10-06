@@ -34,6 +34,8 @@ public:
 	}
 
 protected:
+	void OnInitialize() override;
+
 	vector<Control*> ctrls;
 	bool inside_loop;
 };

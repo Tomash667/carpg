@@ -15,7 +15,6 @@ enum GuiEvent
 	GuiEvent_Show, // control is shown
 	GuiEvent_WindowResize, // game window size change, only send to parent controls
 	GuiEvent_Close, // window is closed (old)
-	GuiEvent_Initialize, // send at control initialization
 	GuiEvent_Hide, // control is hidden
 	GuiEvent_LostMouseFocus, // control lost mouse focus
 	GuiEvent_Custom

@@ -8,7 +8,7 @@
 
 using namespace gui;
 
-MenuStrip::MenuStrip(vector<SimpleMenuCtor>& _items, int min_width) : items(items), selected(nullptr)
+MenuStrip::MenuStrip(vector<SimpleMenuCtor>& _items, int min_width) : items(items), selected(nullptr), min_width(min_width)
 {
 	items.resize(_items.size());
 	for(uint i = 0, size = _items.size(); i < size; ++i)
@@ -21,11 +21,9 @@ MenuStrip::MenuStrip(vector<SimpleMenuCtor>& _items, int min_width) : items(item
 		item2.index = i;
 		item2.enabled = true;
 	}
-
-	CalculateWidth(min_width);
 }
 
-MenuStrip::MenuStrip(vector<GuiElement*>& _items, int min_width) : items(items), selected(nullptr)
+MenuStrip::MenuStrip(vector<GuiElement*>& _items, int min_width) : items(items), selected(nullptr), min_width(min_width)
 {
 	items.resize(_items.size());
 	for(uint i = 0, size = _items.size(); i < size; ++i)
@@ -38,7 +36,10 @@ MenuStrip::MenuStrip(vector<GuiElement*>& _items, int min_width) : items(items),
 		item2.index = i;
 		item2.enabled = true;
 	}
+}
 
+void MenuStrip::OnInitialize()
+{
 	CalculateWidth(min_width);
 }
 

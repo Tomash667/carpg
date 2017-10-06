@@ -26,6 +26,8 @@ namespace gui
 			bool checked;
 		};
 
+		void OnInitialize() override;
+
 		vector<Item*> items;
 		Scrollbar scrollbar;
 		int row_height;

@@ -38,6 +38,7 @@ namespace gui
 		void SetSize(const Int2& size);
 
 	private:
+		void OnInitialize() override;
 		void CalculateSize();
 		LabelLayout* EnsureLayout();
 

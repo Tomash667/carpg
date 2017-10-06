@@ -33,6 +33,7 @@ namespace gui
 		bool allow_move;
 
 	private:
+		void OnInitialize() override;
 		void Update(GuiEvent e, bool resize, bool move);
 
 		Panel* panel1, *panel2;

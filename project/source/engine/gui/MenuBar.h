@@ -39,6 +39,7 @@ namespace gui
 		void SetHandler(MenuStrip::Handler _handler) { handler = _handler; }
 
 	private:
+		void OnInitialize() override;
 		void Update(bool move, bool resize);
 		void OnCloseMenuStrip();
 		void EnsureMenu(Item* item);

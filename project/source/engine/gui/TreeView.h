@@ -176,6 +176,7 @@ namespace gui
 			DRAG_MOVED
 		};
 
+		void OnInitialize() override;
 		void CalculatePos();
 		void CalculatePos(TreeNode* node, Int2& offset, int& max_width);
 		bool CanDragAndDrop();

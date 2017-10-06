@@ -15,6 +15,30 @@ Window::~Window()
 {
 }
 
+void Window::OnInitialize()
+{
+	if(fullscreen)
+		size = GUI.wnd_size;
+	if(menu)
+		menu->Initialize();
+	if(toolstrip)
+		toolstrip->Initialize();
+	CalculateArea();
+	Int2 offset = Int2(area.v1);
+	for(Control* c : ctrls)
+	{
+		if(c == menu || c == toolstrip)
+			continue;
+		if(c->IsDocked())
+		{
+			c->pos = Int2(0, 0);
+			c->size = Int2(area.Size());
+		}
+		c->global_pos = c->pos + offset + global_pos;
+		c->Initialize();
+	}
+}
+
 void Window::Draw(ControlDrawData*)
 {
 	GUI.DrawArea(body_rect, layout->window.background);
@@ -42,30 +66,6 @@ void Window::Event(GuiEvent e)
 {
 	switch(e)
 	{
-	case GuiEvent_Initialize:
-		{
-			if(fullscreen)
-				size = GUI.wnd_size;
-			if(menu)
-				menu->Initialize();
-			if(toolstrip)
-				toolstrip->Initialize();
-			CalculateArea();
-			Int2 offset = Int2(area.v1);
-			for(Control* c : ctrls)
-			{
-				if(c == menu || c == toolstrip)
-					continue;
-				if(c->IsDocked())
-				{
-					c->pos = Int2(0, 0);
-					c->size = Int2(area.Size());
-				}
-				c->global_pos = c->pos + offset + global_pos;
-				c->Initialize();
-			}
-		}
-		break;
 	case GuiEvent_WindowResize:
 		{
 			if(fullscreen)

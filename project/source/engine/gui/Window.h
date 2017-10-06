@@ -37,6 +37,7 @@ namespace gui
 		void SetToolStrip(ToolStrip* toolstrip);
 
 	private:
+		void OnInitialize() override;
 		void CalculateArea();
 
 		MenuBar* menu;
