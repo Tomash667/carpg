@@ -1,16 +1,8 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-? 3 players usable tests
-	? usable
-	? chest
-	? door
-	? container
-- mp fog of war out of sync with server (random room visible)
-- stoping usable move to old position which now may be blocked
 - traps are out of sync for client/server
 - can talk to unit while it's exiting building, dialog is thru door then
-- town hall, kiepskie tekstury?
 - don't focus chest when there is user
 	+ looted is not set/sent
 ===============================================================================================================
@@ -33,6 +25,7 @@ NEW:
 + exporter: when file has no ext or ends with .qmsh save as .qmsh.tmp
 + net A_POSITION should be calculated server side
 + randomized order of spawned objects
++ net server side door opening
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

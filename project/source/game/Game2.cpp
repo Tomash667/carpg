@@ -9889,8 +9889,6 @@ void Game::GenerateDungeonObjects()
 	static vector<Chest*> room_chests;
 	static vector<Vec3> on_wall;
 	static vector<Int2> blocks;
-	IgnoreObjects ignore = { 0 };
-	ignore.ignore_blocks = true;
 	int chest_lvl = GetDungeonLevelChest();
 
 	// dotyczy tylko pochodni
@@ -9907,55 +9905,10 @@ void Game::GenerateDungeonObjects()
 		if(it->IsCorridor())
 			continue;
 
-		RoomType* rt;
-
-		// add colliding blocks
-		for(int x = 0; x < it->size.x; ++x)
-		{
-			// top
-			POLE co = lvl.map[it->pos.x + x + (it->pos.y + it->size.y - 1)*lvl.w].type;
-			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-			{
-				blocks.push_back(Int2(it->pos.x + x, it->pos.y + it->size.y - 1));
-				blocks.push_back(Int2(it->pos.x + x, it->pos.y + it->size.y - 2));
-			}
-			else if(co == SCIANA || co == BLOKADA_SCIANA)
-				blocks.push_back(Int2(it->pos.x + x, it->pos.y + it->size.y - 1));
-
-			// bottom
-			co = lvl.map[it->pos.x + x + it->pos.y*lvl.w].type;
-			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-			{
-				blocks.push_back(Int2(it->pos.x + x, it->pos.y));
-				blocks.push_back(Int2(it->pos.x + x, it->pos.y + 1));
-			}
-			else if(co == SCIANA || co == BLOKADA_SCIANA)
-				blocks.push_back(Int2(it->pos.x + x, it->pos.y));
-		}
-		for(int y = 0; y < it->size.y; ++y)
-		{
-			// left
-			POLE co = lvl.map[it->pos.x + (it->pos.y + y)*lvl.w].type;
-			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-			{
-				blocks.push_back(Int2(it->pos.x, it->pos.y + y));
-				blocks.push_back(Int2(it->pos.x + 1, it->pos.y + y));
-			}
-			else if(co == SCIANA || co == BLOKADA_SCIANA)
-				blocks.push_back(Int2(it->pos.x, it->pos.y + y));
-
-			// right
-			co = lvl.map[it->pos.x + it->size.x - 1 + (it->pos.y + y)*lvl.w].type;
-			if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-			{
-				blocks.push_back(Int2(it->pos.x + it->size.x - 1, it->pos.y + y));
-				blocks.push_back(Int2(it->pos.x + it->size.x - 2, it->pos.y + y));
-			}
-			else if(co == SCIANA || co == BLOKADA_SCIANA)
-				blocks.push_back(Int2(it->pos.x + it->size.x - 1, it->pos.y + y));
-		}
+		AddRoomColliders(lvl, *it, blocks);
 
 		// choose room type
+		RoomType* rt;
 		if(it->target != RoomTarget::None)
 		{
 			if(it->target == RoomTarget::Treasury)
@@ -10012,236 +9965,28 @@ void Game::GenerateDungeonObjects()
 		for(uint i = 0; i < rt->count && fail > 0; ++i)
 		{
 			bool is_variant = false;
-			BaseObject* obj = BaseObject::Get(rt->objs[i].id, &is_variant);
+			BaseObject* base = BaseObject::Get(rt->objs[i].id, &is_variant);
 			int count = rt->objs[i].count.Random();
 
 			for(int j = 0; j < count && fail > 0; ++j)
 			{
-				Vec3 pos;
-				float rot;
-				Vec2 shift;
-
-				if(obj->type == OBJ_CYLINDER)
+				auto e = GenerateDungeonObject(lvl, *it, base, on_wall, blocks, flags);
+				if(!e)
 				{
-					shift.x = obj->r + obj->extra_dist;
-					shift.y = obj->r + obj->extra_dist;
-				}
-				else
-					shift = obj->size + Vec2(obj->extra_dist, obj->extra_dist);
-
-				if(IS_SET(obj->flags, OBJ_NEAR_WALL))
-				{
-					Int2 tile;
-					int dir;
-					if(!lvl.GetRandomNearWallTile(*it, tile, dir, IS_SET(obj->flags, OBJ_ON_WALL)))
-					{
-						if(IS_SET(obj->flags, OBJ_IMPORTANT))
-							--j;
-						--fail;
-						continue;
-					}
-
-					rot = dir_to_rot(dir);
-
-					if(dir == 2 || dir == 3)
-						pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f) + 2, 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f) + 2);
-					else
-						pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f), 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f));
-
-					if(IS_SET(obj->flags, OBJ_ON_WALL))
-					{
-						switch(dir)
-						{
-						case 0:
-							pos.x += 1.f;
-							break;
-						case 1:
-							pos.z += 1.f;
-							break;
-						case 2:
-							pos.x -= 1.f;
-							break;
-						case 3:
-							pos.z -= 1.f;
-							break;
-						}
-
-						bool ok = true;
-
-						for(vector<Vec3>::iterator it2 = on_wall.begin(), end2 = on_wall.end(); it2 != end2; ++it2)
-						{
-							float dist = Vec3::Distance2d(*it2, pos);
-							if(dist < 2.f)
-							{
-								ok = false;
-								continue;
-							}
-						}
-
-						if(!ok)
-						{
-							if(IS_SET(obj->flags, OBJ_IMPORTANT))
-								--j;
-							fail = true;
-							continue;
-						}
-					}
-					else
-					{
-						switch(dir)
-						{
-						case 0:
-							pos.x += Random(0.2f, 1.8f);
-							break;
-						case 1:
-							pos.z += Random(0.2f, 1.8f);
-							break;
-						case 2:
-							pos.x -= Random(0.2f, 1.8f);
-							break;
-						case 3:
-							pos.z -= Random(0.2f, 1.8f);
-							break;
-						}
-					}
-				}
-				else if(IS_SET(obj->flags, OBJ_IN_MIDDLE))
-				{
-					rot = PI / 2 * (Rand() % 4);
-					pos = it->Center();
-					switch(Rand() % 4)
-					{
-					case 0:
-						pos.x += 2;
-						break;
-					case 1:
-						pos.x -= 2;
-						break;
-					case 2:
-						pos.z += 2;
-						break;
-					case 3:
-						pos.z -= 2;
-						break;
-					}
-				}
-				else
-				{
-					rot = Random(MAX_ANGLE);
-
-					if(obj->type != OBJ_CYLINDER)
-						pos = it->GetRandomPos(max(obj->size.x, obj->size.y));
-					else
-						pos = it->GetRandomPos(obj->r);
+					if(IS_SET(base->flags, OBJ_IMPORTANT))
+						--j;
+					--fail;
+					continue;
 				}
 
-				if(IS_SET(obj->flags, OBJ_HIGH))
-					pos.y += 1.5f;
-
-				if(obj->type == OBJ_HITBOX)
-				{
-					// sprawdü kolizje z blokami
-					if(!IS_SET(obj->flags, OBJ_NO_PHYSICS))
-					{
-						bool ok = true;
-						if(NotZero(rot))
-						{
-							RotRect r1, r2;
-							r1.center.x = pos.x;
-							r1.center.y = pos.z;
-							r1.rot = rot;
-							r1.size = shift;
-							r2.rot = 0;
-							r2.size = Vec2(1, 1);
-							for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
-							{
-								r2.center.x = 2.f*b_it->x + 1.f;
-								r2.center.y = 2.f*b_it->y + 1.f;
-								if(RotatedRectanglesCollision(r1, r2))
-								{
-									ok = false;
-									break;
-								}
-							}
-						}
-						else
-						{
-							for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
-							{
-								if(RectangleToRectangle(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y, 2.f*b_it->x, 2.f*b_it->y, 2.f*(b_it->x + 1), 2.f*(b_it->y + 1)))
-								{
-									ok = false;
-									break;
-								}
-							}
-						}
-						if(!ok)
-						{
-							if(IS_SET(obj->flags, OBJ_IMPORTANT))
-								--j;
-							--fail;
-							continue;
-						}
-					}
-
-					// sprawdü kolizje z innymi obiektami
-					global_col.clear();
-					GatherCollisionObjects(local_ctx, global_col, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
-					if(!global_col.empty() && Collide(global_col, Box2d(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y), 0.8f, rot))
-					{
-						if(IS_SET(obj->flags, OBJ_IMPORTANT))
-							--j;
-						--fail;
-						continue;
-					}
-				}
-				else
-				{
-					// sprawdü kolizje z blokami
-					if(!IS_SET(obj->flags, OBJ_NO_PHYSICS))
-					{
-						bool ok = true;
-						for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
-						{
-							if(CircleToRectangle(pos.x, pos.z, shift.x, 2.f*b_it->x + 1.f, 2.f*b_it->y + 1.f, 1.f, 1.f))
-							{
-								ok = false;
-								break;
-							}
-						}
-						if(!ok)
-						{
-							if(IS_SET(obj->flags, OBJ_IMPORTANT))
-								--j;
-							--fail;
-							continue;
-						}
-					}
-
-					// sprawdü kolizje z innymi obiektami
-					global_col.clear();
-					GatherCollisionObjects(local_ctx, global_col, pos, obj->r, &ignore);
-					if(!global_col.empty() && Collide(global_col, pos, obj->r + 0.8f))
-					{
-						if(IS_SET(obj->flags, OBJ_IMPORTANT))
-							--j;
-						--fail;
-						continue;
-					}
-				}
-
-				auto e = SpawnObjectEntity(local_ctx, obj, pos, rot, 1.f, flags);
 				if(e.type == ObjectEntity::CHEST)
 					room_chests.push_back(e);
 
-				if(IS_SET(obj->flags, OBJ_REQUIRED))
+				if(IS_SET(base->flags, OBJ_REQUIRED))
 					wymagany_obiekt = true;
 
-				if(IS_SET(obj->flags, OBJ_ON_WALL))
-					on_wall.push_back(pos);
-
 				if(is_variant)
-					obj = BaseObject::Get(rt->objs[i].id);
+					base = BaseObject::Get(rt->objs[i].id);
 			}
 		}
 
@@ -10265,7 +10010,7 @@ void Game::GenerateDungeonObjects()
 	if(local_ctx.chests->empty())
 	{
 		// niech w podziemiach bÍdzie minimum 1 skrzynia
-		BaseObject* obj = BaseObject::Get("chest");
+		BaseObject* base = BaseObject::Get("chest");
 		for(int i = 0; i < 100; ++i)
 		{
 			on_wall.clear();
@@ -10273,209 +10018,236 @@ void Game::GenerateDungeonObjects()
 			Room& r = lvl.rooms[Rand() % lvl.rooms.size()];
 			if(r.target == RoomTarget::None)
 			{
-				// dodaj blokady
-				for(int x = 0; x < r.size.x; ++x)
+				AddRoomColliders(lvl, r, blocks);
+
+				auto e = GenerateDungeonObject(lvl, r, base, on_wall, blocks, flags);
+				if(e)
 				{
-					// gÛrna krawÍdü
-					POLE co = lvl.map[r.pos.x + x + (r.pos.y + r.size.y - 1)*lvl.w].type;
-					if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-					{
-						blocks.push_back(Int2(r.pos.x + x, r.pos.y + r.size.y - 1));
-						blocks.push_back(Int2(r.pos.x + x, r.pos.y + r.size.y - 2));
-					}
-					else if(co == SCIANA || co == BLOKADA_SCIANA)
-						blocks.push_back(Int2(r.pos.x + x, r.pos.y + r.size.y - 1));
-
-					// dolna krawÍdü
-					co = lvl.map[r.pos.x + x + r.pos.y*lvl.w].type;
-					if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-					{
-						blocks.push_back(Int2(r.pos.x + x, r.pos.y));
-						blocks.push_back(Int2(r.pos.x + x, r.pos.y + 1));
-					}
-					else if(co == SCIANA || co == BLOKADA_SCIANA)
-						blocks.push_back(Int2(r.pos.x + x, r.pos.y));
+					GenerateDungeonTreasure(*local_ctx.chests, chest_lvl);
+					break;
 				}
-				for(int y = 0; y < r.size.y; ++y)
-				{
-					// lewa krawÍdü
-					POLE co = lvl.map[r.pos.x + (r.pos.y + y)*lvl.w].type;
-					if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-					{
-						blocks.push_back(Int2(r.pos.x, r.pos.y + y));
-						blocks.push_back(Int2(r.pos.x + 1, r.pos.y + y));
-					}
-					else if(co == SCIANA || co == BLOKADA_SCIANA)
-						blocks.push_back(Int2(r.pos.x, r.pos.y + y));
+			}
+		}
+	}
+}
 
-					// prawa krawÍdü
-					co = lvl.map[r.pos.x + r.size.x - 1 + (r.pos.y + y)*lvl.w].type;
-					if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-					{
-						blocks.push_back(Int2(r.pos.x + r.size.x - 1, r.pos.y + y));
-						blocks.push_back(Int2(r.pos.x + r.size.x - 2, r.pos.y + y));
-					}
-					else if(co == SCIANA || co == BLOKADA_SCIANA)
-						blocks.push_back(Int2(r.pos.x + r.size.x - 1, r.pos.y + y));
-				}
+Game::ObjectEntity Game::GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall, vector<Int2>& blocks, int flags)
+{
+	Vec3 pos;
+	float rot;
+	Vec2 shift;
 
-				Vec3 pos;
-				float rot;
-				Vec2 shift;
+	if(base->type == OBJ_CYLINDER)
+	{
+		shift.x = base->r + base->extra_dist;
+		shift.y = base->r + base->extra_dist;
+	}
+	else
+		shift = base->size + Vec2(base->extra_dist, base->extra_dist);
 
-				if(obj->type == OBJ_CYLINDER)
-				{
-					shift.x = obj->r;
-					shift.y = obj->r;
-				}
-				else
-					shift = obj->size;
+	if(IS_SET(base->flags, OBJ_NEAR_WALL))
+	{
+		Int2 tile;
+		int dir;
+		if(!lvl.GetRandomNearWallTile(room, tile, dir, IS_SET(base->flags, OBJ_ON_WALL)))
+			return nullptr;
 
-				if(IS_SET(obj->flags, OBJ_NEAR_WALL))
-				{
-					Int2 tile;
-					int dir;
-					if(!lvl.GetRandomNearWallTile(r, tile, dir, IS_SET(obj->flags, OBJ_ON_WALL)))
-						continue;
+		rot = dir_to_rot(dir);
 
-					rot = dir_to_rot(dir);
-					if(dir == 2 || dir == 3)
-						pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f) + 2, 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f) + 2);
-					else
-						pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f), 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f));
+		if(dir == 2 || dir == 3)
+			pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f) + 2, 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f) + 2);
+		else
+			pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f), 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f));
 
-					switch(dir)
-					{
-					case 0:
-						pos.x += Random(0.2f, 1.8f);
-						break;
-					case 1:
-						pos.z += Random(0.2f, 1.8f);
-						break;
-					case 2:
-						pos.x -= Random(0.2f, 1.8f);
-						break;
-					case 3:
-						pos.z -= Random(0.2f, 1.8f);
-						break;
-					}
-				}
-				else if(IS_SET(obj->flags, OBJ_IN_MIDDLE))
-				{
-					rot = PI / 2 * (Rand() % 4);
-					pos = r.Center();
-					switch(Rand() % 4)
-					{
-					case 0:
-						pos.x += 2;
-						break;
-					case 1:
-						pos.x -= 2;
-						break;
-					case 2:
-						pos.z += 2;
-						break;
-					case 3:
-						pos.z -= 2;
-						break;
-					}
-				}
-				else
-				{
-					rot = Random(MAX_ANGLE);
+		if(IS_SET(base->flags, OBJ_ON_WALL))
+		{
+			switch(dir)
+			{
+			case 0:
+				pos.x += 1.f;
+				break;
+			case 1:
+				pos.z += 1.f;
+				break;
+			case 2:
+				pos.x -= 1.f;
+				break;
+			case 3:
+				pos.z -= 1.f;
+				break;
+			}
 
-					if(obj->type == OBJ_CYLINDER)
-						pos = r.GetRandomPos(max(obj->size.x, obj->size.y));
-					else
-						pos = r.GetRandomPos(obj->r);
-				}
-
-				if(IS_SET(obj->flags, OBJ_HIGH))
-					pos.y += 1.5f;
-
-				if(obj->type == OBJ_HITBOX)
-				{
-					// sprawdü kolizje z blokami
-					bool ok = true;
-					if(NotZero(rot))
-					{
-						RotRect r1, r2;
-						r1.center.x = pos.x;
-						r1.center.y = pos.z;
-						r1.rot = rot;
-						r1.size = shift;
-						r2.rot = 0;
-						r2.size = Vec2(1, 1);
-						for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
-						{
-							r2.center.x = 2.f*b_it->x + 1.f;
-							r2.center.y = 2.f*b_it->y + 1.f;
-							if(RotatedRectanglesCollision(r1, r2))
-							{
-								ok = false;
-								break;
-							}
-						}
-					}
-					else
-					{
-						for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
-						{
-							if(RectangleToRectangle(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y,
-								2.f*b_it->x, 2.f*b_it->y, 2.f*(b_it->x + 1), 2.f*(b_it->y + 1)))
-							{
-								ok = false;
-								break;
-							}
-						}
-					}
-					if(!ok)
-						continue;
-
-					// sprawdü kolizje z innymi obiektami
-					global_col.clear();
-					GatherCollisionObjects(local_ctx, global_col, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
-					if(!global_col.empty() && Collide(global_col, Box2d(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y), 0.4f, rot))
-						continue;
-				}
-				else
-				{
-					// sprawdü kolizje z blokami
-					bool ok = true;
-					for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
-					{
-						if(CircleToRectangle(pos.x, pos.z, shift.x, 2.f*b_it->x + 1.f, 2.f*b_it->y + 1.f, 1.f, 1.f))
-						{
-							ok = false;
-							break;
-						}
-					}
-					if(!ok)
-						continue;
-
-					// sprawdü kolizje z innymi obiektami
-					global_col.clear();
-					GatherCollisionObjects(local_ctx, global_col, pos, obj->r, &ignore);
-					if(!global_col.empty() && Collide(global_col, pos, obj->r + 0.4f))
-						continue;
-				}
-
-				Chest* chest = new Chest;
-				chest->mesh_inst = new MeshInstance(aChest);
-				chest->pos = pos;
-				chest->rot = rot;
-				chest->handler = nullptr;
-				chest->looted = false;
-				local_ctx.chests->push_back(chest);
-				if(Net::IsOnline())
-					chest->netid = chest_netid_counter++;
-
-				SpawnObjectExtras(local_ctx, obj, pos, rot, nullptr, 1.f, flags);
-				GenerateDungeonTreasure(*local_ctx.chests, chest_lvl);
-
+			for(vector<Vec3>::iterator it2 = on_wall.begin(), end2 = on_wall.end(); it2 != end2; ++it2)
+			{
+				float dist = Vec3::Distance2d(*it2, pos);
+				if(dist < 2.f)
+					return nullptr;
+			}
+		}
+		else
+		{
+			switch(dir)
+			{
+			case 0:
+				pos.x += Random(0.2f, 1.8f);
+				break;
+			case 1:
+				pos.z += Random(0.2f, 1.8f);
+				break;
+			case 2:
+				pos.x -= Random(0.2f, 1.8f);
+				break;
+			case 3:
+				pos.z -= Random(0.2f, 1.8f);
 				break;
 			}
 		}
+	}
+	else if(IS_SET(base->flags, OBJ_IN_MIDDLE))
+	{
+		rot = PI / 2 * (Rand() % 4);
+		pos = room.Center();
+		switch(Rand() % 4)
+		{
+		case 0:
+			pos.x += 2;
+			break;
+		case 1:
+			pos.x -= 2;
+			break;
+		case 2:
+			pos.z += 2;
+			break;
+		case 3:
+			pos.z -= 2;
+			break;
+		}
+	}
+	else
+	{
+		rot = Random(MAX_ANGLE);
+		float margin = (base->type == OBJ_CYLINDER ? base->r : max(base->size.x, base->size.y));
+		if(!room.GetRandomPos(margin, pos))
+			return nullptr;
+	}
+
+	if(IS_SET(base->flags, OBJ_HIGH))
+		pos.y += 1.5f;
+
+	if(base->type == OBJ_HITBOX)
+	{
+		// sprawdü kolizje z blokami
+		if(!IS_SET(base->flags, OBJ_NO_PHYSICS))
+		{
+			if(NotZero(rot))
+			{
+				RotRect r1, r2;
+				r1.center.x = pos.x;
+				r1.center.y = pos.z;
+				r1.rot = rot;
+				r1.size = shift;
+				r2.rot = 0;
+				r2.size = Vec2(1, 1);
+				for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
+				{
+					r2.center.x = 2.f*b_it->x + 1.f;
+					r2.center.y = 2.f*b_it->y + 1.f;
+					if(RotatedRectanglesCollision(r1, r2))
+						return nullptr;
+				}
+			}
+			else
+			{
+				for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
+				{
+					if(RectangleToRectangle(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y,
+						2.f*b_it->x, 2.f*b_it->y, 2.f*(b_it->x + 1), 2.f*(b_it->y + 1)))
+						return nullptr;
+				}
+			}
+		}
+
+		// sprawdü kolizje z innymi obiektami
+		IgnoreObjects ignore = { 0 };
+		ignore.ignore_blocks = true;
+		global_col.clear();
+		GatherCollisionObjects(local_ctx, global_col, pos, max(shift.x, shift.y) * SQRT_2, &ignore);
+		if(!global_col.empty() && Collide(global_col, Box2d(pos.x - shift.x, pos.z - shift.y, pos.x + shift.x, pos.z + shift.y), 0.8f, rot))
+			return nullptr;
+	}
+	else
+	{
+		// sprawdü kolizje z blokami
+		if(!IS_SET(base->flags, OBJ_NO_PHYSICS))
+		{
+			for(vector<Int2>::iterator b_it = blocks.begin(), b_end = blocks.end(); b_it != b_end; ++b_it)
+			{
+				if(CircleToRectangle(pos.x, pos.z, shift.x, 2.f*b_it->x + 1.f, 2.f*b_it->y + 1.f, 1.f, 1.f))
+					return nullptr;
+			}
+		}
+
+		// sprawdü kolizje z innymi obiektami
+		IgnoreObjects ignore = { 0 };
+		ignore.ignore_blocks = true;
+		global_col.clear();
+		GatherCollisionObjects(local_ctx, global_col, pos, base->r, &ignore);
+		if(!global_col.empty() && Collide(global_col, pos, base->r + 0.8f))
+			return nullptr;
+	}
+
+	if(IS_SET(base->flags, OBJ_ON_WALL))
+		on_wall.push_back(pos);
+
+	return SpawnObjectEntity(local_ctx, base, pos, rot, 1.f, flags);
+}
+
+void Game::AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks)
+{
+	// add colliding blocks
+	for(int x = 0; x < room.size.x; ++x)
+	{
+		// top
+		POLE co = lvl.map[room.pos.x + x + (room.pos.y + room.size.y - 1)*lvl.w].type;
+		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+		{
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 2));
+		}
+		else if(co == SCIANA || co == BLOKADA_SCIANA)
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
+
+		// bottom
+		co = lvl.map[room.pos.x + x + room.pos.y*lvl.w].type;
+		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+		{
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y + 1));
+		}
+		else if(co == SCIANA || co == BLOKADA_SCIANA)
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
+	}
+	for(int y = 0; y < room.size.y; ++y)
+	{
+		// left
+		POLE co = lvl.map[room.pos.x + (room.pos.y + y)*lvl.w].type;
+		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+		{
+			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
+			blocks.push_back(Int2(room.pos.x + 1, room.pos.y + y));
+		}
+		else if(co == SCIANA || co == BLOKADA_SCIANA)
+			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
+
+		// right
+		co = lvl.map[room.pos.x + room.size.x - 1 + (room.pos.y + y)*lvl.w].type;
+		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+		{
+			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
+			blocks.push_back(Int2(room.pos.x + room.size.x - 2, room.pos.y + y));
+		}
+		else if(co == SCIANA || co == BLOKADA_SCIANA)
+			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
 	}
 }
 
@@ -14638,6 +14410,8 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 	else
 	{
 		// usuÒ obiekty
+		if(ctx.objects)
+			DeleteElements(ctx.objects);
 		if(ctx.chests)
 			DeleteElements(ctx.chests);
 		if(ctx.doors)

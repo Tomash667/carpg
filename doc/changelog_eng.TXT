@@ -11,6 +11,7 @@ Version 0.7 (2017-11-XX):
 - better redirecting to website
 - fixed base animation played sometimes after drinking animation
 - fixed not marking usable object as free when client stopped using, broken animation
+- fixed opening/closing door not send between clients (only between client and server)
 - fixed missing items in chests
 
 --------------------------------------------------------------------------------

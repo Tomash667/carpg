@@ -4347,6 +4347,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					pos.y += 1.5f;
 					PlaySound3d(snd, pos, 2.f, 5.f);
 				}
+
+				// send to other players
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_DOOR;
+				c.id = netid;
+				c.ile = (is_closing ? 1 : 0);
 			}
 			break;
 		// leader wants to travel to location

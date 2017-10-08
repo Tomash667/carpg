@@ -11,6 +11,7 @@ Wersja 0.7 (2017-11-XX):
 - lepsze przekierowanie na stronê
 - naprawiona bazowa animacja czasami odtwarzana po animacji picia
 - naprawione nieoznaczanie u¿ywalnych obiektów jako wolne gdy klient przestaje ich u¿ywaæ, zepsuta animacja
+- naprawione przesy³anie informacji o u¿ywaniu drzwi pomiêdzy klientami
 - naprawiony brak przedmiotów w skrzynkach
 
 --------------------------------------------------------------------------------
