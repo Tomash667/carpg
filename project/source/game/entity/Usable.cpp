@@ -57,7 +57,7 @@ void Usable::Save(HANDLE file, bool local)
 //=================================================================================================
 void Usable::Load(HANDLE file, bool local)
 {
-	if(LOAD_VERSION < V_FEATURE)
+	if(LOAD_VERSION < V_0_6_2)
 	{
 		int type;
 		ReadFile(file, &type, sizeof(type), &tmp, nullptr);

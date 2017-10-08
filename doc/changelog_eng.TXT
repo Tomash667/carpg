@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.7 (2017-11-XX):
+Version 0.6.2 (2017-10-08):
 + loading objects from file
 - fixed crash when team npc want item from another team npc [MikelkCZ]
 - fixed some object wrongly having colliders
