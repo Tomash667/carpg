@@ -2,6 +2,7 @@
 #include "Pch.h"
 #include "Core.h"
 #include "RoomType.h"
+#include "BaseObject.h"
 
 //-----------------------------------------------------------------------------
 ObjEntry objs_sypialnia[] = {
@@ -255,4 +256,19 @@ RoomType* FindRoomType(cstring id)
 
 	assert(0);
 	return &g_room_types[0];
+}
+
+void RoomType::Validate(uint& err)
+{
+	for(auto& room_type : g_room_types)
+	{
+		for(uint i = 0; i < room_type.count; ++i)
+		{
+			if(!BaseObject::TryGet(room_type.objs[i].id))
+			{
+				++err;
+				Error("Missing object '%s' in room '%s'.", room_type.objs[i].id, room_type.id);
+			}
+		}
+	}
 }

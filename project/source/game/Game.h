@@ -367,6 +367,48 @@ struct Game final : public Engine, public UnitEventHandler
 	Game();
 	~Game();
 
+	struct ObjectEntity
+	{
+		enum Type
+		{
+			NONE,
+			OBJECT,
+			USABLE,
+			CHEST
+		} type;
+		union
+		{
+			Object* object;
+			Usable* usable;
+			Chest* chest;
+		};
+
+		ObjectEntity(nullptr_t) : object(nullptr), type(NONE) {}
+		ObjectEntity(Object* object) : object(object), type(OBJECT) {}
+		ObjectEntity(Usable* usable) : usable(usable), type(USABLE) {}
+		ObjectEntity(Chest* chest) : chest(chest), type(CHEST) {}
+
+		operator bool()
+		{
+			return type != NONE;
+		}
+		operator Object* ()
+		{
+			assert(type == OBJECT || type == NONE);
+			return object;
+		}
+		operator Usable* ()
+		{
+			assert(type == USABLE || type == NONE);
+			return usable;
+		}
+		operator Chest* ()
+		{
+			assert(type == CHEST || type == NONE);
+			return chest;
+		}
+	};
+
 	void OnCleanup();
 	void OnDraw();
 	void OnDraw(bool normal = true);
@@ -1123,6 +1165,8 @@ public:
 	void LoadItemsData();
 	void SpawnTerrainCollider();
 	void GenerateDungeonObjects();
+	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall, vector<Int2>& blocks, int flags);
+	void AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks);
 	void GenerateDungeonTreasure(vector<Chest*>& chests, int level, bool extra = false);
 	void GenerateDungeonUnits();
 	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
@@ -1866,48 +1910,6 @@ public:
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void GenerateDungeon(Location& loc);
 	void SpawnCityPhysics();
-	struct ObjectEntity
-	{
-		enum Type
-		{
-			NONE,
-			OBJECT,
-			USABLE,
-			CHEST
-		} type;
-		union
-		{
-			Object* object;
-			Usable* usable;
-			Chest* chest;
-		};
-
-		ObjectEntity(nullptr_t) : object(nullptr), type(NONE) {}
-		ObjectEntity(Object* object) : object(object), type(OBJECT) {}
-		ObjectEntity(Usable* usable) : usable(usable), type(USABLE) {}
-		ObjectEntity(Chest* chest) : chest(chest), type(CHEST) {}
-
-		operator bool()
-		{
-			return type != NONE;
-		}
-		operator Object* ()
-		{
-			assert(type == OBJECT || type == NONE);
-			return object;
-		}
-		operator Usable* ()
-		{
-			assert(type == USABLE || type == NONE);
-			return usable;
-		}
-		operator Chest* ()
-		{
-			assert(type == CHEST || type == NONE);
-			return chest;
-		}
-
-	};
 	// for object rot must be 0, PI/2, PI or PI*3/2
 	ObjectEntity SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale = 1.f, int flags = 0,
 		Vec3* out_point = nullptr, int variant = -1);

@@ -179,6 +179,7 @@ void NetStats::Update()
 		NetStats::Free();
 	else
 	{
+		started = true;
 		_beginthreadex(nullptr, 1024, [](void*) -> uint
 		{
 			NetStats::Get().UpdateAsync();

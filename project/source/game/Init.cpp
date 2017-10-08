@@ -823,13 +823,19 @@ void Game::SetupObject(BaseObject& obj)
 		point = obj.mesh->FindPoint("hit");
 	}
 
-	if(!point || !point->IsBox() || IS_SET(obj.flags, OBJ_BUILDING | OBJ_SCALEABLE | OBJ_NO_PHYSICS) || obj.type == OBJ_CYLINDER)
+	if(!point || !point->IsBox() || IS_SET(obj.flags, OBJ_BUILDING | OBJ_SCALEABLE) || obj.type == OBJ_CYLINDER)
+	{
+		obj.size = Vec2::Zero;
+		obj.matrix = nullptr;
 		return;
+	}
 
 	assert(point->size.x >= 0 && point->size.y >= 0 && point->size.z >= 0);
-	obj.shape = new btBoxShape(ToVector3(point->size));
 	obj.matrix = &point->mat;
 	obj.size = point->size.XZ();
+
+	if(!IS_SET(obj.flags, OBJ_NO_PHYSICS))
+		obj.shape = new btBoxShape(ToVector3(point->size));
 
 	if(IS_SET(obj.flags, OBJ_PHY_ROT))
 		obj.type = OBJ_HITBOX_ROT;

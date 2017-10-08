@@ -32,10 +32,10 @@
 ? close game with dialogs open
 ===============================================================================================================
 CURRENT:
-? 3 players usable tests
 - traps are out of sync for client/server
 - can talk to unit while it's exiting building, dialog is thru door then
-- town hall, kiepskie tekstury?
+- don't focus chest when there is user
+	+ looted is not set/sent
 ===============================================================================================================
 NEW:
 + net devmode: show stamina for clients
@@ -54,6 +54,9 @@ NEW:
 ? why version/stats thread start at menu, not while loading
 - grass under moon well
 + exporter: when file has no ext or ends with .qmsh save as .qmsh.tmp
++ net A_POSITION should be calculated server side
++ randomized order of spawned objects
++ net server side door opening
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
