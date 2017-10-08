@@ -16,8 +16,9 @@ namespace gui
 		Overlay();
 		~Overlay();
 
-		bool NeedCursor() const override { return true; }
+		void OnInitialize() override;
 		void Draw(ControlDrawData* cdd = nullptr) override;
+		void Event(GuiEvent e) override;
 		void Update(float dt) override;
 
 		void CloseDialog(GuiDialog* dialog);

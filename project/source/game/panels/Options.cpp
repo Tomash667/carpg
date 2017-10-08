@@ -96,7 +96,11 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 
 	txQuality = Str("quality");
 	txMsNone = Str("msNone");
+}
 
+//=================================================================================================
+void Options::OnInitialize()
+{
 	cstring ids[] = {
 		"fullscreenMode",
 		"glow",

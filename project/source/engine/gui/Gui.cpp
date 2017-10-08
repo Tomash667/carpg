@@ -6,6 +6,7 @@
 #include "Language.h"
 #include "GuiRect.h"
 #include "Engine.h"
+#include "Overlay.h"
 
 using namespace gui;
 
@@ -14,8 +15,8 @@ IGUI GUI;
 TEX IGUI::tBox, IGUI::tBox2, IGUI::tPix, IGUI::tDown;
 
 //=================================================================================================
-IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
-active_notifications(), tPixel(nullptr), layout(nullptr), overlay(nullptr), grayscale(false), vertex_decl(nullptr)
+IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false),
+active_notifications(), tPixel(nullptr), layout(nullptr), overlay(new Overlay), grayscale(false), vertex_decl(nullptr)
 {
 }
 
@@ -47,7 +48,6 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	color_table[4] = Vec4(1, 1, 1, 1);
 	color_table[5] = Vec4(0, 0, 0, 1);
 
-	layer = new Container;
 	dialog_layer = new Container;
 
 	// create pixel texture
@@ -1121,12 +1121,11 @@ void IGUI::Draw(bool draw_layers, bool draw_dialogs)
 	V(eGui->Begin(&passes, 0));
 	V(eGui->BeginPass(0));
 
-	// rysowanie
+	// draw controls
 	if(draw_layers)
-		layer->Draw();
+		overlay->Draw();
 	if(draw_dialogs)
 		dialog_layer->Draw();
-
 	DrawNotifications();
 
 	// draw cursor
@@ -1145,7 +1144,7 @@ void IGUI::Draw(bool draw_layers, bool draw_dialogs)
 //=================================================================================================
 void IGUI::Add(Control* ctrl)
 {
-	layer->Add(ctrl);
+	overlay->Add(ctrl);
 }
 
 //=================================================================================================
@@ -1315,27 +1314,10 @@ void IGUI::Update(float dt, float mouse_speed)
 	else
 		engine.SetUnlockPoint(wnd_size / 2);
 
-	layer->focus = dialog_layer->Empty();
-
-	if(focused_ctrl)
-	{
-		if(!focused_ctrl->visible)
-			focused_ctrl = nullptr;
-		else if(dialog_layer->Empty())
-			layer->Update(dt);
-		else
-		{
-			focused_ctrl->LostFocus();
-			focused_ctrl = nullptr;
-		}
-	}
-
-	if(!focused_ctrl)
-	{
-		dialog_layer->focus = true;
-		dialog_layer->Update(dt);
-		layer->Update(dt);
-	}
+	dialog_layer->mouse_focus;
+	dialog_layer->Update(dt);
+	overlay->mouse_focus = !dialog_layer->mouse_focus;
+	overlay->Update(dt);
 
 	UpdateNotifications(dt);
 	engine.SetUnlockPoint(wnd_size / 2);
@@ -1470,8 +1452,8 @@ void IGUI::OnClean()
 		delete *it;
 	}
 
-	delete layer;
 	delete dialog_layer;
+	delete overlay;
 }
 
 //=================================================================================================
@@ -1698,6 +1680,7 @@ DialogBox* IGUI::ShowDialog(const DialogInfo& info)
 //=================================================================================================
 void IGUI::ShowDialog(DialogBox* d)
 {
+	d->Initialize();
 	d->Event(GuiEvent_Show);
 
 	if(dialog_layer->Empty())
@@ -1966,7 +1949,7 @@ bool IGUI::HaveDialog(DialogBox* dialog)
 //=================================================================================================
 bool IGUI::AnythingVisible() const
 {
-	return !dialog_layer->Empty() || layer->AnythingVisible();
+	return !dialog_layer->Empty() || overlay->AnythingVisible();
 }
 
 //=================================================================================================
@@ -1976,7 +1959,7 @@ void IGUI::OnResize()
 	wnd_size = engine.GetWindowSize();
 	cursor_pos = wnd_size / 2;
 	engine.SetUnlockPoint(cursor_pos);
-	layer->Event(GuiEvent_WindowResize);
+	overlay->Event(GuiEvent_WindowResize);
 	dialog_layer->Event(GuiEvent_WindowResize);
 }
 
@@ -2155,7 +2138,7 @@ bool IGUI::NeedCursor()
 	if(!dialog_layer->Empty())
 		return true;
 	else
-		return layer->visible && layer->NeedCursor();
+		return overlay->NeedCursor();
 }
 
 //=================================================================================================

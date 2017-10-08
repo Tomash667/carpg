@@ -96,11 +96,16 @@ uint __stdcall CheckVersion(void*)
 MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates) : check_version(0), check_version_thread(nullptr), check_updates(check_updates),
 game(game), event(event), send_stats(true)
 {
-	focusable = true;
 	visible = false;
 
 	txInfoText = Str("infoText");
 	txVersion = Str("version");
+}
+
+//=================================================================================================
+void MainMenu::OnInitialize()
+{
+	size = parent->size;
 
 	const cstring names[BUTTONS] = {
 		"newGame",
@@ -174,10 +179,7 @@ void MainMenu::Draw(ControlDrawData* /*cdd*/)
 void MainMenu::Update(float dt)
 {
 	for(int i = 0; i < BUTTONS; ++i)
-	{
-		bt[i].mouse_focus = focus;
-		bt[i].Update(dt);
-	}
+		UpdateControl(&bt[i], dt);
 
 	if(send_stats)
 	{
@@ -273,8 +275,11 @@ void MainMenu::Update(float dt)
 //=================================================================================================
 void MainMenu::Event(GuiEvent e)
 {
-	if(e == GuiEvent_WindowResize)
+	if(e == GuiEvent_ParentSizeChanged)
+	{
+		size = parent->size;
 		PlaceButtons();
+	}
 	else if(e >= GuiEvent_Custom)
 	{
 		if(event)

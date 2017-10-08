@@ -36,7 +36,7 @@ public:
 		F_ON_CHAR_HANDLER = 1 << 1
 	};
 
-	Control() : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false), focusable(false),
+	Control() : pos(0, 0), global_pos(0, 0), size(0, 0), parent(nullptr), visible(true), focus(false), mouse_focus(false),
 		initialized(false), layout(GUI.GetLayout()), disabled(false), flags(0) {}
 	virtual ~Control() {}
 
@@ -44,8 +44,7 @@ public:
 	Int2 pos, global_pos, size;
 	Control* parent;
 	bool visible, focus,
-		mouse_focus, // in Update it is set to true if Control can gain mouse focus, setting it to false mean that Control have taken focus
-		focusable;
+		mouse_focus; // in Update it is set to true if Control can gain mouse focus, setting it to false mean that Control have taken focus
 	gui::Layout* layout;
 
 protected:

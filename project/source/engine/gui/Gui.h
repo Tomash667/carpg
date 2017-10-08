@@ -17,6 +17,7 @@ enum GuiEvent
 	GuiEvent_Close, // window is closed (old)
 	GuiEvent_Hide, // control is hidden
 	GuiEvent_LostMouseFocus, // control lost mouse focus
+	GuiEvent_ParentSizeChanged,
 	GuiEvent_Custom
 };
 
@@ -264,7 +265,6 @@ public:
 	CursorMode cursor_mode;
 	cstring txOk, txYes, txNo, txCancel;
 	static TEX tBox, tBox2, tPix, tDown;
-	Control* focused_ctrl;
 	float mouse_wheel;
 	vector<DialogBox*> created_dialogs;
 
@@ -292,7 +292,7 @@ private:
 	ID3DXEffect* eGui;
 	D3DXHANDLE techGui, techGui2, techGuiGrayscale;
 	D3DXHANDLE hGuiSize, hGuiTex;
-	Container* layer, *dialog_layer;
+	Container* dialog_layer;
 	VParticle* v, *v2;
 	uint in_buffer, in_buffer2;
 	Vec4 color_table[6];

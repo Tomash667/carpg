@@ -32,6 +32,7 @@ public:
 
 	explicit Options(const DialogInfo& info);
 
+	void OnInitialize() override;
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;

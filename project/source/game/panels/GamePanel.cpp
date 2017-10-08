@@ -22,7 +22,6 @@ enum MenuId
 //=================================================================================================
 GamePanel::GamePanel() : /*resizing(false), draging(false),*/ box_state(BOX_NOT_VISIBLE), order(0), last_index(INDEX_INVALID), last_index2(INDEX_INVALID)
 {
-	focusable = true;
 }
 
 //=================================================================================================

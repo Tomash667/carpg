@@ -24,6 +24,7 @@ public:
 
 	MainMenu(Game* game, DialogEvent event, bool check_updates);
 
+	void OnInitialize() override;
 	void Draw(ControlDrawData* cdd) override;
 	void Update(float dt) override;
 	void Event(GuiEvent e) override;

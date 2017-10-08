@@ -10,10 +10,6 @@ class Container : public Control
 {
 	friend class IGUI;
 public:
-	Container()
-	{
-		focusable = true;
-	}
 	~Container();
 
 	void Draw(ControlDrawData* cdd = nullptr) override;

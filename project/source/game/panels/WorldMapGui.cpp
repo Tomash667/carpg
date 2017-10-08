@@ -21,7 +21,6 @@ extern const float TRAVEL_SPEED;
 //=================================================================================================
 WorldMapGui::WorldMapGui() : game(Game::Get())
 {
-	focusable = true;
 	visible = false;
 
 	txGameTimeout = Str("gameTimeout");

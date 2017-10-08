@@ -11,7 +11,6 @@ DialogBox::DialogBox(const DialogInfo& info) : name(info.name), text(info.text),
 need_delete(false)
 {
 	parent = info.parent;
-	focusable = true;
 }
 
 //=================================================================================================

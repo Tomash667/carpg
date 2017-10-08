@@ -28,6 +28,7 @@
 #include "GameMessages.h"
 #include "MpBox.h"
 #include "PickFileDialog.h"
+#include "Overlay.h"
 
 //=================================================================================================
 void Game::OnResize()
@@ -198,6 +199,8 @@ void Game::InitGui()
 	info.name = "controls";
 	info.parent = options;
 	controls = new Controls(info);
+
+	GUI.GetOverlay()->Initialize();
 }
 
 //=================================================================================================

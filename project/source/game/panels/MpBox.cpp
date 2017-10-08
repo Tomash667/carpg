@@ -34,10 +34,9 @@ void MpBox::Draw(ControlDrawData*)
 void MpBox::Update(float dt)
 {
 	// hack for mp_box focus
-	focusable = Game::Get().game_gui->CanFocusMpBox();
+	Game::Get().game_gui->CanFocusMpBox();
 
 	bool prev_focus = focus;
-	focus = focusable;
 	GamePanel::Update(dt);
 	itb.mouse_focus = focus;
 	focus = prev_focus;

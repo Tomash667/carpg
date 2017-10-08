@@ -19,6 +19,12 @@ Overlay::~Overlay()
 		RemoveElement(ctrls, (Control*)menu);
 }
 
+void Overlay::OnInitialize()
+{
+	size = GUI.wnd_size;
+	Container::OnInitialize();
+}
+
 void Overlay::Draw(ControlDrawData*)
 {
 	Container::Draw();
@@ -33,9 +39,20 @@ void Overlay::Draw(ControlDrawData*)
 		menu->Draw();
 }
 
+void Overlay::Event(GuiEvent e)
+{
+	if(e == GuiEvent_WindowResize)
+	{
+		size = GUI.wnd_size;
+		for(auto c : ctrls)
+			c->Event(GuiEvent_ParentSizeChanged);
+	}
+	else
+		Control::Event(e);
+}
+
 void Overlay::Update(float dt)
 {
-	mouse_focus = true;
 	clicked = nullptr;
 
 	// close menu if old dialog window is open
