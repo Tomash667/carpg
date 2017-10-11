@@ -7,9 +7,6 @@
 #include "UnitData.h"
 #include "Crc.h"
 
-//-----------------------------------------------------------------------------
-uint content::buildings_crc;
-
 //=================================================================================================
 class BuildingLoader
 {
@@ -107,7 +104,7 @@ public:
 		CalculateCrc();
 
 		Info("Loaded buildings (%u), groups (%u), scripts (%u) - crc %p.", Building::buildings.size(), BuildingGroup::groups.size(),
-			BuildingScript::scripts.size(), content::buildings_crc);
+			BuildingScript::scripts.size(), content::crc[(int)content::Id::Buildings]);
 	}
 
 private:
@@ -877,7 +874,7 @@ private:
 			}
 		}
 
-		content::buildings_crc = crc.Get();
+		content::crc[(int)content::Id::Buildings] = crc.Get();
 	}
 
 	BuildingScript::Variant* variant;

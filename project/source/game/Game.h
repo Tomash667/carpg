@@ -527,8 +527,8 @@ struct Game final : public Engine, public UnitEventHandler
 	//-----------------------------------------------------------------
 	// Localized texts
 	//-----------------------------------------------------------------
-	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings, txLoadingRequires,
-		txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets;
+	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingObjects, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings,
+		txLoadingRequires, txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets;
 	cstring txAiNoHpPot[2], txAiJoinTour[4], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],
@@ -648,7 +648,6 @@ public:
 	City* city_ctx; // jeøeli jest w mieúcie/wiosce to ten wskaünik jest ok, takto nullptr
 	vector<Unit*> to_remove;
 	CityGenerator* gen;
-	uint crc_items, crc_units, crc_dialogs, crc_spells;
 
 	MeshInstance* GetBowInstance(Mesh* mesh);
 
@@ -854,10 +853,9 @@ public:
 	// muzyka
 	MusicType music_type;
 	Music* last_music;
-	vector<Music*> musics, tracks;
+	vector<Music*> tracks;
 	int track_id;
 	MusicType GetLocationMusic();
-	uint LoadMusicDatafile(uint& errors);
 	void LoadMusic(MusicType type, bool new_load_screen = true, bool task = false);
 	void SetMusic();
 	void SetMusic(MusicType type);

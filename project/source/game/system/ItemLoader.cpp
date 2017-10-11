@@ -2,6 +2,7 @@
 #include "Core.h"
 #include "Item.h"
 #include "ContentLoader.h"
+#include "ResourceManager.h"
 
 class ItemLoader
 {
@@ -118,6 +119,8 @@ public:
 private:
 	void InitTokenizer()
 	{
+		t.SetFlags(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
+
 		t.AddKeywords(G_ITEM_TYPE, {
 			{ "weapon", IT_WEAPON },
 			{ "bow", IT_BOW },
@@ -276,9 +279,13 @@ private:
 
 	void ParseItem(ITEM_TYPE type, const string& id)
 	{
+		ItemsMap::iterator it = Item::items.lower_bound(id.c_str());
+		if(it != Item::items.end() && !(Item::items.key_comp()(id.c_str(), it->first)))
+			t.Throw("Id must be unique.");
+
+		// create
 		int req = BIT(P_WEIGHT) | BIT(P_VALUE) | BIT(P_MESH) | BIT(P_TEX) | BIT(P_FLAGS);
 		Ptr<Item> item(nullptr);
-
 		switch(type)
 		{
 		case IT_WEAPON:
@@ -314,10 +321,6 @@ private:
 			req |= BIT(P_TYPE);
 			break;
 		}
-
-		auto existing_item = Item::TryGet(id);
-		if(existing_item)
-			t.Throw("Id must be unique.");
 
 		// id
 		item->id = id;
@@ -541,29 +544,29 @@ private:
 		if(item->mesh_id.empty())
 			t.Throw("No mesh/texture.");
 
-		auto it = item.Pin();
-		g_items.insert(it);
+		auto item_ptr = item.Pin();
+		Item::items.insert(it, ItemsMap::value_type(item_ptr->id.c_str(), item_ptr));
 
-		switch(it->type)
+		switch(item_ptr->type)
 		{
 		case IT_WEAPON:
-			Weapon::weapons.push_back((Weapon*)it);
+			Weapon::weapons.push_back((Weapon*)item_ptr);
 			break;
 		case IT_BOW:
-			Bow::bows.push_back((Bow*)it);
+			Bow::bows.push_back((Bow*)item_ptr);
 			break;
 		case IT_SHIELD:
-			Shield::shields.push_back((Shield*)it);
+			Shield::shields.push_back((Shield*)item_ptr);
 			break;
 		case IT_ARMOR:
-			Armor::armors.push_back((Armor*)it);
+			Armor::armors.push_back((Armor*)item_ptr);
 			break;
 		case IT_CONSUMABLE:
-			Consumable::consumables.push_back((Consumable*)it);
+			Consumable::consumables.push_back((Consumable*)item_ptr);
 			break;
 		case IT_OTHER:
 			{
-				OtherItem& o = it->ToOther();
+				OtherItem& o = item_ptr->ToOther();
 				OtherItem::others.push_back(&o);
 				if(o.other_type == Artifact)
 					OtherItem::artifacts.push_back(&o);
@@ -571,7 +574,7 @@ private:
 			break;
 		case IT_BOOK:
 			{
-				Book& b = item->ToBook();
+				Book& b = item_ptr->ToBook();
 				if(!b.scheme)
 					t.Throw("Missing book '%s' scheme.", b.id.c_str());
 				Book::books.push_back(&b);
@@ -587,85 +590,503 @@ private:
 
 	void ParseItemList(const string& id)
 	{
-		/*
-		ItemList* lis = new ItemList;
-		ItemListResult used_list;
-		const Item* item;
+		auto existing_list = ItemList::TryGet(id);
+		if(existing_list)
+			t.Throw("Id must be unique.");
 
-		try
+		Ptr<ItemList> lis;
+
+		// id
+		lis->id = id;
+		t.Next();
+
+		// {
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
 		{
-			// id
+			auto item = Item::TryGet(t.MustGetItemKeyword());
+			if(!item)
+				t.Throw("Missing item %s.", t.GetTokenString().c_str());
+			lis->items.push_back(item);
 			t.Next();
-			lis->id = t.MustGetItemKeyword();
+		}
+
+		ItemList::lists.push_back(lis.Pin());
+	}
+
+	void ParseLeveledItemList(const string& id)
+	{
+		auto existing_list = ItemList::TryGet(id);
+		if(existing_list)
+			t.Throw("Id must be unique.");
+
+		Ptr<LeveledItemList> lis;
+
+		// id
+		t.Next();
+		lis->id = t.MustGetItemKeyword();
+		t.Next();
+
+		// {
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			auto item = Item::TryGet(t.MustGetItemKeyword());
+			if(!item)
+				t.Throw("Missing item '%s'.", t.GetTokenString().c_str());
+
+			t.Next();
+			int level = t.MustGetInt();
+			if(level < 0)
+				t.Throw("Can't have negative required level %d for item '%s'.", level, item->id.c_str());
+
+			lis->items.push_back({ item, level });
+			t.Next();
+		}
+
+		LeveledItemList::lists.push_back(lis.Pin());
+	}
+
+	void ParseStock(const string& id)
+	{
+		auto existing_stock = Stock::TryGet(id);
+		if(existing_stock)
+			t.Throw("Id must be unique.");
+
+		Ptr<Stock> stock;
+		bool in_set = false, in_city = false, in_city_else;
+		ItemListResult used_list;
+
+		// id
+		stock->id = t.MustGetItemKeyword();
+		t.Next();
+
+		// {
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(true)
+		{
+			if(t.IsSymbol('}'))
+			{
+				if(in_city)
+				{
+					t.Next();
+					if(!in_city_else && t.IsKeyword(SK_ELSE, G_STOCK_KEYWORD))
+					{
+						in_city_else = true;
+						stock->code.push_back(SE_NOT_CITY);
+						t.Next();
+						t.AssertSymbol('{');
+						t.Next();
+					}
+					else
+					{
+						in_city = false;
+						stock->code.push_back(SE_ANY_CITY);
+					}
+				}
+				else if(in_set)
+				{
+					in_set = false;
+					stock->code.push_back(SE_END_SET);
+					t.Next();
+				}
+				else
+					break;
+			}
+			else if(t.IsKeywordGroup(G_STOCK_KEYWORD))
+			{
+				StockKeyword k = (StockKeyword)t.GetKeywordId(G_STOCK_KEYWORD);
+
+				switch(k)
+				{
+				case SK_SET:
+					if(in_set)
+						t.Throw("Can't have nested sets.");
+					if(in_city)
+						t.Throw("Can't have set block inside city block.");
+					in_set = true;
+					stock->code.push_back(SE_START_SET);
+					t.Next();
+					t.AssertSymbol('{');
+					t.Next();
+					break;
+				case SK_CITY:
+					if(in_city)
+						t.Throw("Already in city block.");
+					t.Next();
+					if(t.IsSymbol('{'))
+					{
+						t.Next();
+						in_city = true;
+						in_city_else = false;
+						stock->code.push_back(SE_CITY);
+					}
+					else if(t.IsItem())
+					{
+						const Item* item = FindItemOrList(t.GetItem(), used_list);
+						stock->code.push_back(SE_CITY);
+						stock->code.push_back(SE_ADD);
+						if(used_list.lis != nullptr)
+						{
+							StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+							stock->code.push_back(t);
+							stock->code.push_back((int)used_list.lis);
+						}
+						else if(!item)
+							t.Throw("Missing item '%s'.", t.GetItem().c_str());
+						else
+						{
+							stock->code.push_back(SE_ITEM);
+							stock->code.push_back((int)item);
+						}
+						t.Next();
+						stock->code.push_back(SE_ANY_CITY);
+					}
+					else
+					{
+						char c = '{';
+						t.StartUnexpected().Add(tokenizer::T_SYMBOL, (int*)&c).Add(tokenizer::T_ITEM).Throw();
+					}
+					break;
+				case SK_CHANCE:
+					t.Next();
+					if(t.IsSymbol('{'))
+					{
+						// chance { item X   item2 Y   ... }
+						t.Next();
+						stock->code.push_back(SE_CHANCE);
+						uint chance_pos = stock->code.size();
+						stock->code.push_back(0);
+						stock->code.push_back(0);
+						int count = 0, chance = 0;
+						while(!t.IsSymbol('}'))
+						{
+							const Item* item = FindItemOrList(t.MustGetItem(), used_list);
+							if(used_list.lis != nullptr)
+							{
+								StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+								stock->code.push_back(t);
+								stock->code.push_back((int)used_list.lis);
+							}
+							else if(!item)
+								t.Throw("Missing item '%s'.", t.GetItem().c_str());
+							else
+							{
+								stock->code.push_back(SE_ITEM);
+								stock->code.push_back((int)item);
+							}
+							t.Next();
+							int ch = t.MustGetInt();
+							if(ch <= 0)
+								t.Throw("Negative chance %d.", ch);
+							++count;
+							chance += ch;
+							stock->code.push_back(ch);
+							t.Next();
+						}
+						if(count <= 1)
+							t.Throw("Chance with 1 or less items.");
+						stock->code[chance_pos] = count;
+						stock->code[chance_pos + 1] = chance;
+						t.Next();
+					}
+					else
+					{
+						// chance item1 item2
+						stock->code.push_back(SE_CHANCE);
+						stock->code.push_back(2);
+						stock->code.push_back(2);
+						for(int i = 0; i < 2; ++i)
+						{
+							const Item* item = FindItemOrList(t.MustGetItem(), used_list);
+							if(used_list.lis != nullptr)
+							{
+								StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+								stock->code.push_back(t);
+								stock->code.push_back((int)used_list.lis);
+							}
+							else if(!item)
+								t.Throw("Missing item '%s'.", t.GetItem().c_str());
+							else
+							{
+								stock->code.push_back(SE_ITEM);
+								stock->code.push_back((int)item);
+							}
+							stock->code.push_back(1);
+							t.Next();
+						}
+					}
+					break;
+				case SK_RANDOM:
+					{
+						// Random X Y [same] item
+						t.Next();
+						int a = t.MustGetInt();
+						t.Next();
+						int b = t.MustGetInt();
+						if(a >= b || a < 1 || b < 1)
+							t.Throw("Invalid Random values (%d, %d).", a, b);
+						t.Next();
+
+						StockEntry type = SE_RANDOM;
+						if(t.IsKeyword(SK_SAME, G_STOCK_KEYWORD))
+						{
+							type = SE_SAME_RANDOM;
+							t.Next();
+						}
+
+						stock->code.push_back(type);
+						stock->code.push_back(a);
+						stock->code.push_back(b);
+
+						const Item* item = FindItemOrList(t.MustGetItem(), used_list);
+						if(used_list.lis != nullptr)
+						{
+							StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+							stock->code.push_back(t);
+							stock->code.push_back((int)used_list.lis);
+						}
+						else if(!item)
+							t.Throw("Missing item '%s'.", t.GetItem().c_str());
+						else
+						{
+							stock->code.push_back(SE_ITEM);
+							stock->code.push_back((int)item);
+						}
+						t.Next();
+					}
+					break;
+				default:
+					t.Unexpected();
+					break;
+				}
+			}
+			else if(t.IsInt())
+			{
+				// X [same] item
+				int count = t.GetInt();
+				if(count < 1)
+					t.Throw("Invalid count %d.", count);
+				t.Next();
+
+				StockEntry type = SE_MULTIPLE;
+				if(t.IsKeyword(SK_SAME, G_STOCK_KEYWORD))
+				{
+					type = SE_SAME_MULTIPLE;
+					t.Next();
+				}
+
+				stock->code.push_back(type);
+				stock->code.push_back(count);
+
+				const Item* item = FindItemOrList(t.MustGetItem(), used_list);
+				if(used_list.lis != nullptr)
+				{
+					StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+					stock->code.push_back(t);
+					stock->code.push_back((int)used_list.lis);
+				}
+				else if(!item)
+					t.Throw("Missing item '%s'.", t.GetItem().c_str());
+				else
+				{
+					stock->code.push_back(SE_ITEM);
+					stock->code.push_back((int)item);
+				}
+				t.Next();
+			}
+			else if(t.IsItem())
+			{
+				// item
+				stock->code.push_back(SE_ADD);
+
+				const Item* item = FindItemOrList(t.MustGetItem(), used_list);
+				if(used_list.lis != nullptr)
+				{
+					StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
+					stock->code.push_back(t);
+					stock->code.push_back((int)used_list.lis);
+				}
+				else if(!item)
+					t.Throw("Missing item '%s'.", t.GetItem().c_str());
+				else
+				{
+					stock->code.push_back(SE_ITEM);
+					stock->code.push_back((int)item);
+				}
+				t.Next();
+			}
+			else
+				t.Unexpected();
+		}
+
+		if(stock->code.empty())
+			t.Throw("No code.");
+
+		Stock::stocks.push_back(stock.Pin());
+	}
+
+	void ParseBookScheme(const string& id)
+	{
+		auto existing_scheme = BookScheme::TryGet(id);
+		if(existing_scheme)
+			t.Throw("Id must be unique.");
+
+		Ptr<BookScheme> scheme;
+
+		// id
+		scheme->id = t.MustGetItemKeyword();
+		t.Next();
+
+		// {
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			BookSchemeProperty key = (BookSchemeProperty)t.MustGetKeywordId(G_BOOK_SCHEME_PROPERTY);
 			t.Next();
 
-			// {
+			switch(key)
+			{
+			case BSP_TEXTURE:
+				{
+					const string& str = t.MustGetString();
+					scheme->tex = ResourceManager::Get<Texture>().TryGet(str);
+					if(!scheme->tex)
+						t.Throw("Missing texture '%s'.", str.c_str());
+					t.Next();
+				}
+				break;
+			case BSP_SIZE:
+				t.Parse(scheme->size);
+				break;
+			case BSP_REGIONS:
+				t.AssertSymbol('{');
+				t.Next();
+				while(!t.IsSymbol('}'))
+				{
+					Rect b;
+					t.Parse(b);
+					scheme->regions.push_back(b);
+				}
+				t.Next();
+				break;
+			case BSP_PREV:
+				t.Parse(scheme->prev);
+				break;
+			case BSP_NEXT:
+				t.Parse(scheme->next);
+				break;
+			}
+		}
+
+		if(scheme->regions.empty())
+			t.Throw("No regions.");
+		for(uint i = 1; i < scheme->regions.size(); ++i)
+		{
+			if(scheme->regions[0].Size() != scheme->regions[i].Size())
+				t.Throw("Scheme region sizes don't match (TODO).");
+		}
+		if(!scheme->tex)
+			t.Throw("No texture.");
+
+		BookScheme::book_schemes.push_back(scheme.Pin());
+	}
+
+	void ParseStartItems()
+	{
+		if(!StartItem::start_items.empty())
+			t.Throw("Start items already declared.");
+
+		// {
+		t.Next();
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			Skill skill = (Skill)t.MustGetKeywordId(G_SKILL);
+			t.Next();
 			t.AssertSymbol('{');
 			t.Next();
 
 			while(!t.IsSymbol('}'))
 			{
-				item = FindItem(t.MustGetItemKeyword().c_str(), false, &used_list);
-				if(used_list.lis != nullptr)
-					t.Throw("Item list can't have item list '%s' inside.", used_list.GetId());
-				if(!item)
-					t.Throw("Missing item %s.", t.GetTokenString().c_str());
-
-				lis->items.push_back(item);
+				int num;
+				if(t.IsSymbol('*'))
+					num = HEIRLOOM;
+				else
+				{
+					num = t.MustGetInt();
+					if(num < 0 || num > 100)
+						t.Throw("Invalid skill value %d.", num);
+				}
 				t.Next();
+
+				const string& str = t.MustGetItemKeyword();
+				const Item* item = Item::TryGet(str);
+				if(!item)
+					t.Throw("Missing item '%s'.", str.c_str());
+				t.Next();
+
+				StartItem::start_items.push_back(StartItem(skill, item, num));
 			}
 
-			for(ItemList* l : g_item_lists)
-			{
-				if(l->id == lis->id)
-					t.Throw("Item list with that id already exists.");
-			}
-
-			g_item_lists.push_back(lis);
-
-			crc.Update(lis->id);
-			crc.Update(lis->items.size());
-			for(const Item* i : lis->items)
-				crc.Update(i->id);
-
-			return true;
+			t.Next();
 		}
-		catch(const Tokenizer::Exception& e)
-		{
-			Error("Failed to parse item list '%s': %s", lis->id.c_str(), e.ToString());
-			delete lis;
-			return false;
-		}*/
-	}
 
-	void ParseLeveledItemList(const string& id)
-	{
-
-	}
-
-	void ParseStock(const string& id)
-	{
-
-	}
-
-	void ParseBookScheme(const string& id)
-	{
-
-	}
-
-	void ParseStartItems()
-	{
-
+		std::sort(StartItem::start_items.begin(), StartItem::start_items.end(),
+			[](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
 	}
 
 	void ParseBetterItems()
 	{
+		if(!better_items.empty())
+			t.Throw("Better items already declared.");
 
+		// {
+		t.Next();
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			auto& str = t.MustGetItemKeyword();
+			auto item = Item::TryGet(str);
+			if(!item)
+				t.Throw("Missing item '%s'.", str.c_str());
+			t.Next();
+
+			auto& str2 = t.MustGetItemKeyword();
+			auto item2 = Item::TryGet(str2);
+			if(!item2)
+				t.Throw("Missing item '%s'.", str2.c_str());
+
+			better_items[item] = item2;
+			t.Next();
+		}
 	}
 
 	void ParseAlias(const string& id)
 	{
+		auto item = Item::TryGet(id);
+		if(!item)
+			t.Throw("Missing item '%s'.", id.c_str());
+		t.Next();
 
+		auto& alias = t.MustGetItemKeyword();
+		auto item2 = Item::TryGet(alias);
+		if(item2)
+			t.Throw("Can't create alias '%s', already exists.", alias.c_str());
+
+		item_aliases[alias] = item;
 	}
 
 	void CalculateCrc()
@@ -769,7 +1190,50 @@ private:
 		case IT_GOLD:
 			break;
 		}*/
+
+
+		/*crc.Update(lis->id);
+		crc.Update(lis->items.size());
+		for(const Item* i : lis->items)
+			crc.Update(i->id);
+
+
+			crc.Update(lis->id);
+		crc.Update(lis->items.size());
+		for(LeveledItemList::Entry& e : lis->items)
+		{
+			crc.Update(e.item->id);
+			crc.Update(e.level);
+		}
+
+
+
+		crc.Update(scheme->id);
+		crc.Update(scheme->tex->filename);
+		crc.Update(scheme->size);
+		crc.Update(scheme->prev);
+		crc.Update(scheme->next);
+		crc.Update(scheme->regions);
+			*/
 	}
 
 	Tokenizer t;
 };
+
+void content::LoadItems()
+{
+	ItemLoader loader;
+	loader.Load();
+}
+
+void content::CleanupItems()
+{
+	DeleteElements(BookScheme::book_schemes);
+	DeleteElements(ItemList::lists);
+	DeleteElements(LeveledItemList::lists);
+	DeleteElements(Stock::stocks);
+
+	for(auto it : Item::items)
+		delete it.second;
+	Item::items.clear();
+}

@@ -5,7 +5,6 @@
 #include "BaseUsable.h"
 #include "Crc.h"
 
-uint content::objects_crc;
 static vector<VariantObject*> variant_objects;
 
 //=================================================================================================
@@ -73,7 +72,7 @@ public:
 		CalculateCrc();
 
 		Info("Loaded objects (%u), usables (%u), - crc %p.",
-			BaseObject::objs.size() - BaseUsable::usables.size(), BaseUsable::usables.size(), content::objects_crc);
+			BaseObject::objs.size() - BaseUsable::usables.size(), BaseUsable::usables.size(), content::crc[(int)content::Id::Objects]);
 	}
 
 private:
@@ -359,7 +358,7 @@ private:
 			}
 		}
 
-		content::objects_crc = crc.Get();
+		content::crc[(int)content::Id::Objects] = crc.Get();
 	}
 
 	Tokenizer t;

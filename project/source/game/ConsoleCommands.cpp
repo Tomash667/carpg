@@ -1721,7 +1721,7 @@ void Game::CmdList(Tokenizer& t)
 	case LIST_ITEM:
 		{
 			LocalVector2<const Item*> items;
-			for(auto it : g_items)
+			for(auto it : Item::items)
 			{
 				auto item = it.second;
 				if(!IS_SET(item->flags, ITEM_SECRET) && (match.empty() || _strnicmp(match.c_str(), item->id.c_str(), match.length()) == 0))
@@ -1756,7 +1756,7 @@ void Game::CmdList(Tokenizer& t)
 	case LIST_ITEM_NAME:
 		{
 			LocalVector2<const Item*> items;
-			for(auto it : g_items)
+			for(auto it : Item::items)
 			{
 				auto item = it.second;
 				if(!IS_SET(item->flags, ITEM_SECRET) && (match.empty() || _strnicmp(match.c_str(), item->name.c_str(), match.length()) == 0))

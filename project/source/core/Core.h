@@ -144,13 +144,13 @@ namespace internal
 	{
 	public:
 		template<typename Q = T>
-		static typename std::enable_if<std::is_abstract<Q>::value, Q>::type* Allocate()
+		static typename std::enable_if<std::is_abstract<Q>::value || !std::is_default_constructible<T>::value, Q>::type* Allocate()
 		{
 			return nullptr;
 		}
 
 		template<typename Q = T>
-		static typename std::enable_if<!std::is_abstract<Q>::value, Q>::type* Allocate()
+		static typename std::enable_if<!std::is_abstract<Q>::value && std::is_default_constructible<T>::value, Q>::type* Allocate()
 		{
 			return new T;
 		}
@@ -184,8 +184,8 @@ public:
 	Ptr(T* ptr) : ptr(ptr)
 	{
 	}
-	template<bool = !std::is_abstract<T>::value>
-	Ptr()
+	template<typename U = T>
+	Ptr(typename std::enable_if<!std::is_abstract<U>::value && std::is_default_constructible<U>::value>::type* = nullptr)
 	{
 		ptr = allocator.Create();
 	}

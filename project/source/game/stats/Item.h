@@ -46,12 +46,31 @@ enum ITEM_FLAGS
 
 //-----------------------------------------------------------------------------
 struct Armor;
+struct Book;
 struct Bow;
 struct Consumable;
+struct Item;
+struct ItemList;
+struct ItemListResult;
+struct LeveledItemList;
+struct OtherItem;
 struct Shield;
 struct Weapon;
-struct OtherItem;
-struct Book;
+
+//-----------------------------------------------------------------------------
+struct CstringHash
+{
+	size_t operator() (cstring s) const
+	{
+		size_t hash = 0;
+		while(*s)
+		{
+			hash = hash * 101 + *s++;
+		}
+		return hash;
+	}
+};
+typedef std::unordered_map<cstring, Item*, CstringHash, CstringComparer> ItemsMap;
 
 //-----------------------------------------------------------------------------
 // Base item type
@@ -61,6 +80,8 @@ struct Item
 	{
 	}
 	virtual ~Item() {}
+
+	Item& operator = (const Item& i);
 
 	template<typename T, ITEM_TYPE _type>
 	T& Cast()
@@ -179,8 +200,6 @@ struct Item
 		return float(value) / weight;
 	}
 
-	static void Validate(uint& err);
-
 	string id, mesh_id, name, desc;
 	int weight, value, flags, refid;
 	ITEM_TYPE type;
@@ -189,9 +208,9 @@ struct Item
 	TEX icon;
 	ResourceState state;
 
+	static ItemsMap items;
 	static Item* TryGet(const AnyString& id);
-
-	Item& operator = (const Item& i);
+	static void Validate(uint& err);
 };
 
 //-----------------------------------------------------------------------------
@@ -397,6 +416,7 @@ struct Book : public Item
 	static vector<Book*> books;
 };
 
+
 //-----------------------------------------------------------------------------
 // Item lists
 struct ItemList
@@ -409,6 +429,9 @@ struct ItemList
 		return items[Rand() % items.size()];
 	}
 	void Get(int count, const Item** result) const;
+
+	static vector<ItemList*> lists;
+	static ItemListResult TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -425,6 +448,8 @@ struct LeveledItemList
 	vector<Entry> items;
 
 	const Item* Get(int level) const;
+
+	static vector<LeveledItemList*> lists;
 };
 
 //-----------------------------------------------------------------------------
@@ -437,6 +462,24 @@ struct ItemListResult
 	};
 	int mod;
 	bool is_leveled;
+
+	ItemListResult()
+	{
+	}
+	ItemListResult(nullptr_t) : lis(nullptr), is_leveled(false)
+	{
+	}
+	ItemListResult(const ItemList* lis) : lis(lis), is_leveled(false), mod(0)
+	{
+	}
+	ItemListResult(const LeveledItemList* llis) : llis(llis), is_leveled(true), mod(0)
+	{
+	}
+
+	operator bool() const
+	{
+		return lis != nullptr;
+	}
 
 	cstring GetId() const
 	{
@@ -475,6 +518,7 @@ struct Stock
 	vector<int> code;
 
 	static vector<Stock*> stocks;
+	static Stock* TryGet(const AnyString& id);
 };
 
 Stock* FindStockScript(cstring id);
@@ -496,120 +540,11 @@ const Item* GetStartItem(Skill skill, int value);
 //-----------------------------------------------------------------------------
 bool ItemCmp(const Item* a, const Item* b);
 const Item* FindItem(cstring id, bool report = true, ItemListResult* lis = nullptr);
+const Item* FindItemOrList(const AnyString& id, ItemListResult& lis);
 ItemListResult FindItemList(cstring id, bool report = true);
 void CreateItemCopy(Item& item, const Item* base_item);
 Item* CreateItemCopy(const Item* item);
-uint LoadItems(uint& crc, uint& errors);
-void CleanupItems();
 
 //-----------------------------------------------------------------------------
-struct Hash
-{
-	size_t operator() (cstring s) const
-	{
-		size_t hash = 0;
-		while(*s)
-		{
-			hash = hash * 101 + *s++;
-		}
-		return hash;
-	}
-};
-
-struct CmpCstring
-{
-	bool operator () (cstring a, cstring b) const
-	{
-		return strcmp(a, b) == 0;
-	}
-};
-
-typedef std::unordered_map<cstring, Item*, Hash, CmpCstring> ItemsMap;
-
-extern ItemsMap g_items;
 extern std::map<const Item*, const Item*> better_items;
-
-inline Item& Item::operator = (const Item& i)
-{
-	assert(type == i.type);
-	mesh_id = i.mesh_id;
-	weight = i.weight;
-	value = i.value;
-	flags = i.flags;
-	switch(type)
-	{
-	case IT_WEAPON:
-		{
-			auto& w = ToWeapon();
-			auto& w2 = i.ToWeapon();
-			w.dmg = w2.dmg;
-			w.dmg_type = w2.dmg_type;
-			w.req_str = w2.req_str;
-			w.weapon_type = w2.weapon_type;
-			w.material = w2.material;
-		}
-		break;
-	case IT_BOW:
-		{
-			auto& b = ToBow();
-			auto& b2 = i.ToBow();
-			b.dmg = b2.dmg;
-			b.req_str = b2.req_str;
-			b.speed = b2.speed;
-		}
-		break;
-	case IT_SHIELD:
-		{
-			auto& s = ToShield();
-			auto& s2 = i.ToShield();
-			s.def = s2.def;
-			s.req_str = s2.req_str;
-			s.material = s2.material;
-		}
-		break;
-	case IT_ARMOR:
-		{
-			auto& a = ToArmor();
-			auto& a2 = i.ToArmor();
-			a.def = a2.def;
-			a.req_str = a2.req_str;
-			a.mobility = a2.mobility;
-			a.material = a2.material;
-			a.skill = a2.skill;
-			a.armor_type = a2.armor_type;
-			a.tex_override = a2.tex_override;
-		}
-		break;
-	case IT_OTHER:
-		{
-			auto& o = ToOther();
-			auto& o2 = i.ToOther();
-			o.other_type = o2.other_type;
-		}
-		break;
-	case IT_CONSUMABLE:
-		{
-			auto& c = ToConsumable();
-			auto& c2 = i.ToConsumable();
-			c.effect = c2.effect;
-			c.power = c2.power;
-			c.time = c2.time;
-			c.cons_type = c2.cons_type;
-		}
-		break;
-	case IT_BOOK:
-		{
-			auto& b = ToBook();
-			auto& b2 = i.ToBook();
-			b.scheme = b2.scheme;
-			b.runic = b2.runic;
-		}
-		break;
-	case IT_GOLD:
-		break;
-	default:
-		assert(0);
-		break;
-	}
-	return *this;
-}
+extern std::map<string, const Item*> item_aliases;

@@ -121,6 +121,7 @@ void Game::PreloadLanguage()
 	txCreatingListOfFiles = Str("creatingListOfFiles");
 	txConfiguringGame = Str("configuringGame");
 	txLoadingItems = Str("loadingItems");
+	txLoadingObjects = Str("loadingObjects");
 	txLoadingSpells = Str("loadingSpells");
 	txLoadingUnits = Str("loadingUnits");
 	txLoadingMusics = Str("loadingMusics");
@@ -152,7 +153,7 @@ void Game::PreloadData()
 		Music* music = new Music;
 		music->music = ResourceManager::Get<Sound>().GetLoadedMusic("Intro.ogg");
 		music->type = MusicType::Intro;
-		musics.push_back(music);
+		Music::musics.push_back(music);
 		SetMusic(MusicType::Intro);
 	}
 }
@@ -193,32 +194,6 @@ void Game::LoadDatafiles()
 	auto& res_mgr = ResourceManager::Get();
 	load_errors = 0;
 	load_warnings = 0;
-	uint loaded;
-
-	// items
-	load_screen->Tick(txLoadingItems);
-	loaded = LoadItems(crc_items, load_errors);
-	Info("Game: Loaded items: %u (crc %p).", loaded, crc_items);
-
-	// spells
-	load_screen->Tick(txLoadingSpells);
-	loaded = LoadSpells(crc_spells, load_errors);
-	Info("Game: Loaded spells: %u (crc %p).", loaded, crc_spells);
-
-	// dialogs
-	load_screen->Tick(txLoadingDialogs);
-	loaded = LoadDialogs(crc_dialogs, load_errors);
-	Info("Game: Loaded dialogs: %u (crc %p).", loaded, crc_dialogs);
-
-	// units
-	load_screen->Tick(txLoadingUnits);
-	loaded = LoadUnits(crc_units, load_errors);
-	Info("Game: Loaded units: %u (crc %p).", loaded, crc_units);
-
-	// musics
-	load_screen->Tick(txLoadingMusics);
-	loaded = LoadMusicDatafile(load_errors);
-	Info("Game: Loaded music: %u.", loaded);
 
 	// content
 	content::system_dir = g_system_dir;
@@ -232,8 +207,20 @@ void Game::LoadDatafiles()
 		case content::Id::Objects:
 			load_screen->Tick(txLoadingObjects);
 			break;
+		case content::Id::Spells:
+			load_screen->Tick(txLoadingSpells);
+			break;
+		case content::Id::Dialogs:
+			load_screen->Tick(txLoadingDialogs);
+			break;
+		case content::Id::Units:
+			load_screen->Tick(txLoadingUnits);
+			break;
 		case content::Id::Buildings:
 			load_screen->Tick(txLoadingBuildings);
+			break;
+		case content::Id::Musics:
+			load_screen->Tick(txLoadingMusics);
 			break;
 		}
 	});
@@ -914,7 +901,7 @@ void Game::LoadItemsData()
 		}
 	}
 
-	for(auto it : g_items)
+	for(auto it : Item::items)
 	{
 		Item& item = *it.second;
 

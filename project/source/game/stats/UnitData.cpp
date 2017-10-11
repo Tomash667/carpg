@@ -2022,7 +2022,7 @@ uint LoadUnits(uint& out_crc, uint& errors)
 }
 
 //=================================================================================================
-void CleanupUnits()
+void content::CleanupUnits()
 {
 	DeleteElements(stat_profiles);
 	DeleteElements(item_scripts);

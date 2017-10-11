@@ -6,10 +6,10 @@
 #include "ResourceManager.h"
 
 extern string g_system_dir;
-ItemsMap g_items;
+ItemsMap Item::items;
 std::map<string, const Item*> item_aliases;
-vector<ItemList*> g_item_lists;
-vector<LeveledItemList*> g_leveled_item_lists;
+vector<ItemList*> ItemList::lists;
+vector<LeveledItemList*> LeveledItemList::lists;
 vector<Weapon*> Weapon::weapons;
 vector<Bow*> Bow::bows;
 vector<Shield*> Shield::shields;
@@ -19,7 +19,7 @@ vector<OtherItem*> OtherItem::others;
 vector<OtherItem*> OtherItem::artifacts;
 vector<BookScheme*> BookScheme::book_schemes;
 vector<Book*> Book::books;
-vector<Stock*> stocks;
+vector<Stock*> Stock::stocks;
 vector<StartItem> StartItem::start_items;
 std::map<const Item*, const Item*> better_items;
 
@@ -33,6 +33,91 @@ WeaponTypeInfo WeaponTypeInfo::info[] = {
 };
 
 vector<const Item*> items_to_add;
+
+Item& Item::operator = (const Item& i)
+{
+	assert(type == i.type);
+	mesh_id = i.mesh_id;
+	weight = i.weight;
+	value = i.value;
+	flags = i.flags;
+	switch(type)
+	{
+	case IT_WEAPON:
+		{
+			auto& w = ToWeapon();
+			auto& w2 = i.ToWeapon();
+			w.dmg = w2.dmg;
+			w.dmg_type = w2.dmg_type;
+			w.req_str = w2.req_str;
+			w.weapon_type = w2.weapon_type;
+			w.material = w2.material;
+		}
+		break;
+	case IT_BOW:
+		{
+			auto& b = ToBow();
+			auto& b2 = i.ToBow();
+			b.dmg = b2.dmg;
+			b.req_str = b2.req_str;
+			b.speed = b2.speed;
+		}
+		break;
+	case IT_SHIELD:
+		{
+			auto& s = ToShield();
+			auto& s2 = i.ToShield();
+			s.def = s2.def;
+			s.req_str = s2.req_str;
+			s.material = s2.material;
+		}
+		break;
+	case IT_ARMOR:
+		{
+			auto& a = ToArmor();
+			auto& a2 = i.ToArmor();
+			a.def = a2.def;
+			a.req_str = a2.req_str;
+			a.mobility = a2.mobility;
+			a.material = a2.material;
+			a.skill = a2.skill;
+			a.armor_type = a2.armor_type;
+			a.tex_override = a2.tex_override;
+		}
+		break;
+	case IT_OTHER:
+		{
+			auto& o = ToOther();
+			auto& o2 = i.ToOther();
+			o.other_type = o2.other_type;
+		}
+		break;
+	case IT_CONSUMABLE:
+		{
+			auto& c = ToConsumable();
+			auto& c2 = i.ToConsumable();
+			c.effect = c2.effect;
+			c.power = c2.power;
+			c.time = c2.time;
+			c.cons_type = c2.cons_type;
+		}
+		break;
+	case IT_BOOK:
+		{
+			auto& b = ToBook();
+			auto& b2 = i.ToBook();
+			b.scheme = b2.scheme;
+			b.runic = b2.runic;
+		}
+		break;
+	case IT_GOLD:
+		break;
+	default:
+		assert(0);
+		break;
+	}
+	return *this;
+}
 
 //=================================================================================================
 void ItemList::Get(int count, const Item** result) const
@@ -160,8 +245,8 @@ const Item* FindItem(cstring id, bool report, ItemListResult* lis)
 		lis->lis = nullptr;
 
 	// search item
-	auto it = g_items.find(id);
-	if(it != g_items.end())
+	auto it = Item::items.find(id);
+	if(it != Item::items.end())
 		return it->second;
 
 	// search item by old id
@@ -191,7 +276,7 @@ ItemListResult FindItemList(cstring id, bool report)
 	else
 		result.mod = 0;
 
-	for(ItemList* lis : g_item_lists)
+	for(ItemList* lis : ItemList::lists)
 	{
 		if(lis->id == id)
 		{
@@ -201,7 +286,7 @@ ItemListResult FindItemList(cstring id, bool report)
 		}
 	}
 
-	for(LeveledItemList* llis : g_leveled_item_lists)
+	for(LeveledItemList* llis : LeveledItemList::lists)
 	{
 		if(llis->id == id)
 		{
@@ -278,7 +363,7 @@ Item* CreateItemCopy(const Item* item)
 //=================================================================================================
 void Item::Validate(uint& err)
 {
-	for(auto it : g_items)
+	for(auto it : Item::items)
 	{
 		const Item& item = *it.second;
 
@@ -366,987 +451,6 @@ enum BOOK_SCHEME_KEYWORD
 };
 
 //=================================================================================================
-bool LoadItem(Tokenizer& t, Crc& crc)
-{
-	ITEM_TYPE type = (ITEM_TYPE)t.GetKeywordId(G_ITEM_TYPE);
-	int req = BIT(P_WEIGHT) | BIT(P_VALUE) | BIT(P_MESH) | BIT(P_TEX) | BIT(P_FLAGS);
-	Item* item;
-
-	switch(type)
-	{
-	case IT_WEAPON:
-		item = new Weapon;
-		req |= BIT(P_ATTACK) | BIT(P_REQ_STR) | BIT(P_TYPE) | BIT(P_MATERIAL) | BIT(P_DMG_TYPE);
-		break;
-	case IT_BOW:
-		item = new Bow;
-		req |= BIT(P_ATTACK) | BIT(P_REQ_STR) | BIT(P_SPEED);
-		break;
-	case IT_SHIELD:
-		item = new Shield;
-		req |= BIT(P_DEFENSE) | BIT(P_REQ_STR) | BIT(P_MATERIAL);
-		break;
-	case IT_ARMOR:
-		item = new Armor;
-		req |= BIT(P_DEFENSE) | BIT(P_MOBILITY) | BIT(P_REQ_STR) | BIT(P_MATERIAL) | BIT(P_SKILL) | BIT(P_TYPE) | BIT(P_TEX_OVERRIDE);
-		break;
-	case IT_CONSUMABLE:
-		item = new Consumable;
-		req |= BIT(P_EFFECT) | BIT(P_TIME) | BIT(P_POWER) | BIT(P_TYPE);
-		break;
-	case IT_BOOK:
-		item = new Book;
-		req |= BIT(P_SCHEME) | BIT(P_RUNIC);
-		break;
-	case IT_GOLD:
-		item = new Item(IT_GOLD);
-		break;
-	case IT_OTHER:
-	default:
-		item = new OtherItem;
-		req |= BIT(P_TYPE);
-		break;
-	}
-
-	try
-	{
-		// id
-		t.Next();
-		item->id = t.MustGetItemKeyword();
-		t.Next();
-
-		// {
-		t.AssertSymbol('{');
-		t.Next();
-
-		// properties
-		while(!t.IsSymbol('}'))
-		{
-			Property prop = (Property)t.MustGetKeywordId(G_PROPERTY);
-			if(!IS_SET(req, BIT(prop)))
-				t.Throw("Can't have property '%s'.", t.GetTokenString().c_str());
-
-			t.Next();
-
-			switch(prop)
-			{
-			case P_WEIGHT:
-				item->weight = int(t.MustGetNumberFloat() * 10);
-				if(item->weight < 0)
-					t.Throw("Can't have negative weight %g.", item->GetWeight());
-				break;
-			case P_VALUE:
-				item->value = t.MustGetInt();
-				if(item->value < 0)
-					t.Throw("Can't have negative value %d.", item->value);
-				break;
-			case P_MESH:
-				if(IS_SET(item->flags, ITEM_TEX_ONLY))
-					t.Throw("Can't have mesh, it is texture only item.");
-				item->mesh_id = t.MustGetString();
-				if(item->mesh_id.empty())
-					t.Throw("Empty mesh.");
-				break;
-			case P_TEX:
-				if(!item->mesh_id.empty() && !IS_SET(item->flags, ITEM_TEX_ONLY))
-					t.Throw("Can't be texture only item, it have mesh.");
-				item->mesh_id = t.MustGetString();
-				if(item->mesh_id.empty())
-					t.Throw("Empty texture.");
-				item->flags |= ITEM_TEX_ONLY;
-				break;
-			case P_ATTACK:
-				{
-					int attack = t.MustGetInt();
-					if(attack < 0)
-						t.Throw("Can't have negative attack %d.", attack);
-					if(item->type == IT_WEAPON)
-						item->ToWeapon().dmg = attack;
-					else
-						item->ToBow().dmg = attack;
-				}
-				break;
-			case P_REQ_STR:
-				{
-					int req_str = t.MustGetInt();
-					if(req_str < 0)
-						t.Throw("Can't have negative required strength %d.", req_str);
-					switch(item->type)
-					{
-					case IT_WEAPON:
-						item->ToWeapon().req_str = req_str;
-						break;
-					case IT_BOW:
-						item->ToBow().req_str = req_str;
-						break;
-					case IT_SHIELD:
-						item->ToShield().req_str = req_str;
-						break;
-					case IT_ARMOR:
-						item->ToArmor().req_str = req_str;
-						break;
-					}
-				}
-				break;
-			case P_TYPE:
-				switch(item->type)
-				{
-				case IT_WEAPON:
-					item->ToWeapon().weapon_type = (WEAPON_TYPE)t.MustGetKeywordId(G_WEAPON_TYPE);
-					break;
-				case IT_ARMOR:
-					item->ToArmor().armor_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_UNIT_TYPE);
-					break;
-				case IT_CONSUMABLE:
-					item->ToConsumable().cons_type = (ConsumableType)t.MustGetKeywordId(G_CONSUMABLE_TYPE);
-					break;
-				case IT_OTHER:
-					item->ToOther().other_type = (OtherType)t.MustGetKeywordId(G_OTHER_TYPE);
-					break;
-				}
-				break;
-			case P_MATERIAL:
-				{
-					MATERIAL_TYPE mat = (MATERIAL_TYPE)t.MustGetKeywordId(G_MATERIAL);
-					switch(item->type)
-					{
-					case IT_WEAPON:
-						item->ToWeapon().material = mat;
-						break;
-					case IT_SHIELD:
-						item->ToShield().material = mat;
-						break;
-					case IT_ARMOR:
-						item->ToArmor().material = mat;
-						break;
-					}
-				}
-				break;
-			case P_DMG_TYPE:
-				item->ToWeapon().dmg_type = ReadFlags(t, G_DMG_TYPE);
-				break;
-			case P_FLAGS:
-				{
-					int old_flags = (item->flags & ITEM_TEX_ONLY);
-					item->flags |= ReadFlags(t, G_FLAGS) | old_flags;
-				}
-				break;
-			case P_DEFENSE:
-				{
-					int def = t.MustGetInt();
-					if(def < 0)
-						t.Throw("Can't have negative defense %d.", def);
-					if(item->type == IT_SHIELD)
-						item->ToShield().def = def;
-					else
-						item->ToArmor().def = def;
-				}
-				break;
-			case P_MOBILITY:
-				{
-					int mob = t.MustGetInt();
-					if(mob < 0)
-						t.Throw("Can't have negative mobility %d.", mob);
-					item->ToArmor().mobility = mob;
-				}
-				break;
-			case P_SKILL:
-				item->ToArmor().skill = (Skill)t.MustGetKeywordId(G_ARMOR_SKILL);
-				break;
-			case P_TEX_OVERRIDE:
-				{
-					vector<TexId>& tex_o = item->ToArmor().tex_override;
-					if(t.IsSymbol('{'))
-					{
-						t.Next();
-						do
-						{
-							tex_o.push_back(TexId(t.MustGetString().c_str()));
-							t.Next();
-						} while(!t.IsSymbol('}'));
-					}
-					else
-						tex_o.push_back(TexId(t.MustGetString().c_str()));
-				}
-				break;
-			case P_EFFECT:
-				item->ToConsumable().effect = (ConsumeEffect)t.MustGetKeywordId(G_EFFECT);
-				break;
-			case P_POWER:
-				{
-					float power = t.MustGetNumberFloat();
-					if(power < 0.f)
-						t.Throw("Can't have negative power %g.", power);
-					item->ToConsumable().power = power;
-				}
-				break;
-			case P_TIME:
-				{
-					float time = t.MustGetNumberFloat();
-					if(time < 0.f)
-						t.Throw("Can't have negative time %g.", time);
-					item->ToConsumable().time = time;
-				}
-				break;
-			case P_SPEED:
-				{
-					int speed = t.MustGetInt();
-					if(speed < 1)
-						t.Throw("Can't have less than 1 speed %d.", speed);
-					item->ToBow().speed = speed;
-				}
-				break;
-			case P_SCHEME:
-				{
-					const string& str = t.MustGetText();
-					BookScheme* scheme = nullptr;
-					for(BookScheme* s : g_book_schemes)
-					{
-						if(s->id == str)
-						{
-							scheme = s;
-							break;
-						}
-					}
-					if(!scheme)
-						t.Throw("Book scheme '%s' not found.", str.c_str());
-					item->ToBook().scheme = scheme;
-				}
-				break;
-			case P_RUNIC:
-				item->ToBook().runic = t.MustGetBool();
-				break;
-			default:
-				assert(0);
-				break;
-			}
-
-			t.Next();
-		}
-
-		if(item->mesh_id.empty())
-			t.Throw("No mesh/texture.");
-
-		cstring key = item->id.c_str();
-
-		ItemsMap::iterator it = g_items.lower_bound(key);
-		if(it != g_items.end() && !(g_items.key_comp()(key, it->first)))
-			t.Throw("Item already exists.");
-		else
-			g_items.insert(it, ItemsMap::value_type(key, item));
-
-		crc.Update(item->id);
-		crc.Update(item->mesh_id);
-		crc.Update(item->weight);
-		crc.Update(item->value);
-		crc.Update(item->flags);
-		crc.Update(item->type);
-
-		switch(item->type)
-		{
-		case IT_WEAPON:
-			{
-				Weapon& w = item->ToWeapon();
-				Weapon::weapons.push_back(&w);
-
-				crc.Update(w.dmg);
-				crc.Update(w.dmg_type);
-				crc.Update(w.req_str);
-				crc.Update(w.weapon_type);
-				crc.Update(w.material);
-			}
-			break;
-		case IT_BOW:
-			{
-				Bow& b = item->ToBow();
-				Bow::bows.push_back(&b);
-
-				crc.Update(b.dmg);
-				crc.Update(b.req_str);
-				crc.Update(b.speed);
-			}
-			break;
-		case IT_SHIELD:
-			{
-				Shield& s = item->ToShield();
-				Shield::shields.push_back(&s);
-
-				crc.Update(s.def);
-				crc.Update(s.req_str);
-				crc.Update(s.material);
-			}
-			break;
-		case IT_ARMOR:
-			{
-				Armor& a = item->ToArmor();
-				Armor::armors.push_back(&a);
-
-				crc.Update(a.def);
-				crc.Update(a.req_str);
-				crc.Update(a.mobility);
-				crc.Update(a.material);
-				crc.Update(a.skill);
-				crc.Update(a.armor_type);
-				crc.Update(a.tex_override.size());
-				for(TexId t : a.tex_override)
-					crc.Update(t.id);
-			}
-			break;
-		case IT_CONSUMABLE:
-			{
-				Consumable& c = item->ToConsumable();
-				Consumable::consumables.push_back(&c);
-
-				crc.Update(c.effect);
-				crc.Update(c.power);
-				crc.Update(c.time);
-				crc.Update(c.cons_type);
-			}
-			break;
-		case IT_OTHER:
-			{
-				OtherItem& o = item->ToOther();
-				OtherItem::others.push_back(&o);
-				if(o.other_type == Artifact)
-					OtherItem::artifacts.push_back(&o);
-
-				crc.Update(o.other_type);
-			}
-			break;
-		case IT_BOOK:
-			{
-				Book& b = item->ToBook();
-				if(!b.scheme)
-					t.Throw("Missing book '%s' scheme.", b.id.c_str());
-				g_books.push_back(&b);
-
-				crc.Update(b.scheme->id);
-			}
-			break;
-		case IT_GOLD:
-			break;
-		}
-
-		return true;
-	}
-	catch(const Tokenizer::Exception& e)
-	{
-		Error("Failed to parse item '%s': %s", item->id.c_str(), e.ToString());
-		delete item;
-		return false;
-	}
-}
-
-//=================================================================================================
-bool LoadItemList(Tokenizer& t, Crc& crc)
-{
-	ItemList* lis = new ItemList;
-	ItemListResult used_list;
-	const Item* item;
-
-	try
-	{
-		// id
-		t.Next();
-		lis->id = t.MustGetItemKeyword();
-		t.Next();
-
-		// {
-		t.AssertSymbol('{');
-		t.Next();
-
-		while(!t.IsSymbol('}'))
-		{
-			item = FindItem(t.MustGetItemKeyword().c_str(), false, &used_list);
-			if(used_list.lis != nullptr)
-				t.Throw("Item list can't have item list '%s' inside.", used_list.GetId());
-			if(!item)
-				t.Throw("Missing item %s.", t.GetTokenString().c_str());
-
-			lis->items.push_back(item);
-			t.Next();
-		}
-
-		for(ItemList* l : g_item_lists)
-		{
-			if(l->id == lis->id)
-				t.Throw("Item list with that id already exists.");
-		}
-
-		g_item_lists.push_back(lis);
-
-		crc.Update(lis->id);
-		crc.Update(lis->items.size());
-		for(const Item* i : lis->items)
-			crc.Update(i->id);
-
-		return true;
-	}
-	catch(const Tokenizer::Exception& e)
-	{
-		Error("Failed to parse item list '%s': %s", lis->id.c_str(), e.ToString());
-		delete lis;
-		return false;
-	}
-}
-
-//=================================================================================================
-bool LoadLeveledItemList(Tokenizer& t, Crc& crc)
-{
-	LeveledItemList* lis = new LeveledItemList;
-	ItemListResult used_list;
-	const Item* item;
-	int level;
-
-	try
-	{
-		// id
-		t.Next();
-		lis->id = t.MustGetItemKeyword();
-		t.Next();
-
-		// {
-		t.AssertSymbol('{');
-		t.Next();
-
-		while(!t.IsSymbol('}'))
-		{
-			item = FindItem(t.MustGetItemKeyword().c_str(), false, &used_list);
-			if(used_list.lis != nullptr)
-				t.Throw("Leveled item list can't have item list '%s' inside.", used_list.GetId());
-			if(!item)
-				t.Throw("Missing item '%s'.", t.GetTokenString().c_str());
-
-			t.Next();
-			level = t.MustGetInt();
-			if(level < 0)
-				t.Throw("Can't have negative required level %d for item '%s'.", level, item->id.c_str());
-
-			lis->items.push_back({ item, level });
-			t.Next();
-		}
-
-		for(LeveledItemList* l : g_leveled_item_lists)
-		{
-			if(l->id == lis->id)
-				t.Throw("Leveled item list with that id already exists.");
-		}
-
-		g_leveled_item_lists.push_back(lis);
-
-		crc.Update(lis->id);
-		crc.Update(lis->items.size());
-		for(LeveledItemList::Entry& e : lis->items)
-		{
-			crc.Update(e.item->id);
-			crc.Update(e.level);
-		}
-
-		return true;
-	}
-	catch(const Tokenizer::Exception& e)
-	{
-		Error("Failed to parse leveled item list '%s': %s", lis->id.c_str(), e.ToString());
-		delete lis;
-		return false;
-	}
-}
-
-//=================================================================================================
-bool LoadStock(Tokenizer& t, Crc& crc)
-{
-	Stock* stock = new Stock;
-	bool in_set = false, in_city = false, in_city_else;
-	ItemListResult used_list;
-
-	try
-	{
-		// id
-		t.Next();
-		stock->id = t.MustGetItemKeyword();
-		t.Next();
-		for(Stock* s : stocks)
-		{
-			if(s->id == stock->id)
-				t.Throw("Stock list already exists.");
-		}
-
-		crc.Update(stock->id);
-
-		// {
-		t.AssertSymbol('{');
-		t.Next();
-
-		while(true)
-		{
-			if(t.IsSymbol('}'))
-			{
-				if(in_city)
-				{
-					t.Next();
-					if(!in_city_else && t.IsKeyword(SK_ELSE, G_STOCK_KEYWORD))
-					{
-						in_city_else = true;
-						stock->code.push_back(SE_NOT_CITY);
-						t.Next();
-						t.AssertSymbol('{');
-						t.Next();
-						crc.Update(SE_NOT_CITY);
-					}
-					else
-					{
-						in_city = false;
-						stock->code.push_back(SE_ANY_CITY);
-						crc.Update(SE_ANY_CITY);
-					}
-				}
-				else if(in_set)
-				{
-					in_set = false;
-					stock->code.push_back(SE_END_SET);
-					t.Next();
-					crc.Update(SE_END_SET);
-				}
-				else
-					break;
-			}
-			else if(t.IsKeywordGroup(G_STOCK_KEYWORD))
-			{
-				StockKeyword k = (StockKeyword)t.GetKeywordId(G_STOCK_KEYWORD);
-
-				switch(k)
-				{
-				case SK_SET:
-					if(in_set)
-						t.Throw("Can't have nested sets.");
-					if(in_city)
-						t.Throw("Can't have set block inside city block.");
-					in_set = true;
-					stock->code.push_back(SE_START_SET);
-					t.Next();
-					t.AssertSymbol('{');
-					t.Next();
-					crc.Update(SE_START_SET);
-					break;
-				case SK_CITY:
-					if(in_city)
-						t.Throw("Already in city block.");
-					t.Next();
-					if(t.IsSymbol('{'))
-					{
-						t.Next();
-						in_city = true;
-						in_city_else = false;
-						stock->code.push_back(SE_CITY);
-						crc.Update(SE_CITY);
-					}
-					else if(t.IsItem())
-					{
-						const Item* item = FindItem(t.GetItem().c_str(), false, &used_list);
-						stock->code.push_back(SE_CITY);
-						stock->code.push_back(SE_ADD);
-						crc.Update(SE_CITY);
-						crc.Update(SE_ADD);
-						if(used_list.lis != nullptr)
-						{
-							StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-							stock->code.push_back(t);
-							stock->code.push_back((int)used_list.lis);
-							crc.Update(t);
-							crc.Update(used_list.GetIdString());
-						}
-						else if(!item)
-							t.Throw("Missing item '%s'.", t.GetItem().c_str());
-						else
-						{
-							stock->code.push_back(SE_ITEM);
-							stock->code.push_back((int)item);
-							crc.Update(SE_ITEM);
-							crc.Update(item->id);
-						}
-						t.Next();
-						stock->code.push_back(SE_ANY_CITY);
-						crc.Update(SE_ANY_CITY);
-					}
-					else
-					{
-						char c = '{';
-						t.StartUnexpected().Add(tokenizer::T_SYMBOL, (int*)&c).Add(tokenizer::T_ITEM).Throw();
-					}
-					break;
-				case SK_CHANCE:
-					t.Next();
-					if(t.IsSymbol('{'))
-					{
-						// chance { item X   item2 Y   ... }
-						t.Next();
-						stock->code.push_back(SE_CHANCE);
-						crc.Update(SE_CHANCE);
-						uint chance_pos = stock->code.size();
-						stock->code.push_back(0);
-						stock->code.push_back(0);
-						int count = 0, chance = 0;
-						while(!t.IsSymbol('}'))
-						{
-							const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
-							if(used_list.lis != nullptr)
-							{
-								StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-								stock->code.push_back(t);
-								stock->code.push_back((int)used_list.lis);
-								crc.Update(t);
-								crc.Update(used_list.GetIdString());
-							}
-							else if(!item)
-								t.Throw("Missing item '%s'.", t.GetItem().c_str());
-							else
-							{
-								stock->code.push_back(SE_ITEM);
-								stock->code.push_back((int)item);
-								crc.Update(SE_ITEM);
-								crc.Update(item->id);
-							}
-							t.Next();
-							int ch = t.MustGetInt();
-							if(ch <= 0)
-								t.Throw("Negative chance %d.", ch);
-							++count;
-							chance += ch;
-							stock->code.push_back(ch);
-							t.Next();
-							crc.Update(ch);
-						}
-						if(count <= 1)
-							t.Throw("Chance with 1 or less items.");
-						stock->code[chance_pos] = count;
-						stock->code[chance_pos + 1] = chance;
-						t.Next();
-						crc.Update(count);
-						crc.Update(chance);
-					}
-					else
-					{
-						// chance item1 item2
-						stock->code.push_back(SE_CHANCE);
-						stock->code.push_back(2);
-						stock->code.push_back(2);
-						crc.Update(SE_CHANCE);
-						crc.Update(2);
-						crc.Update(2);
-						for(int i = 0; i < 2; ++i)
-						{
-							const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
-							if(used_list.lis != nullptr)
-							{
-								StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-								stock->code.push_back(t);
-								stock->code.push_back((int)used_list.lis);
-								crc.Update(t);
-								crc.Update(used_list.GetIdString());
-							}
-							else if(!item)
-								t.Throw("Missing item '%s'.", t.GetItem().c_str());
-							else
-							{
-								stock->code.push_back(SE_ITEM);
-								stock->code.push_back((int)item);
-								crc.Update(SE_ITEM);
-								crc.Update(item->id);
-							}
-							stock->code.push_back(1);
-							crc.Update(1);
-							t.Next();
-						}
-					}
-					break;
-				case SK_RANDOM:
-					{
-						// Random X Y [same] item
-						t.Next();
-						int a = t.MustGetInt();
-						t.Next();
-						int b = t.MustGetInt();
-						if(a >= b || a < 1 || b < 1)
-							t.Throw("Invalid Random values (%d, %d).", a, b);
-						t.Next();
-
-						StockEntry type = SE_RANDOM;
-						if(t.IsKeyword(SK_SAME, G_STOCK_KEYWORD))
-						{
-							type = SE_SAME_RANDOM;
-							t.Next();
-						}
-
-						stock->code.push_back(type);
-						stock->code.push_back(a);
-						stock->code.push_back(b);
-						crc.Update(type);
-						crc.Update(a);
-						crc.Update(b);
-
-						const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
-						if(used_list.lis != nullptr)
-						{
-							StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-							stock->code.push_back(t);
-							stock->code.push_back((int)used_list.lis);
-							crc.Update(t);
-							crc.Update(used_list.GetIdString());
-						}
-						else if(!item)
-							t.Throw("Missing item '%s'.", t.GetItem().c_str());
-						else
-						{
-							stock->code.push_back(SE_ITEM);
-							stock->code.push_back((int)item);
-							crc.Update(SE_ITEM);
-							crc.Update(item->id);
-						}
-						t.Next();
-					}
-					break;
-				default:
-					t.Unexpected();
-					break;
-				}
-			}
-			else if(t.IsInt())
-			{
-				// X [same] item
-				int count = t.GetInt();
-				if(count < 1)
-					t.Throw("Invalid count %d.", count);
-				t.Next();
-
-				StockEntry type = SE_MULTIPLE;
-				if(t.IsKeyword(SK_SAME, G_STOCK_KEYWORD))
-				{
-					type = SE_SAME_MULTIPLE;
-					t.Next();
-				}
-
-				stock->code.push_back(type);
-				stock->code.push_back(count);
-				crc.Update(type);
-				crc.Update(count);
-
-				const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
-				if(used_list.lis != nullptr)
-				{
-					StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-					stock->code.push_back(t);
-					stock->code.push_back((int)used_list.lis);
-					crc.Update(t);
-					crc.Update(used_list.GetIdString());
-				}
-				else if(!item)
-					t.Throw("Missing item '%s'.", t.GetItem().c_str());
-				else
-				{
-					stock->code.push_back(SE_ITEM);
-					stock->code.push_back((int)item);
-					crc.Update(SE_ITEM);
-					crc.Update(item->id);
-				}
-				t.Next();
-			}
-			else if(t.IsItem())
-			{
-				// item
-				stock->code.push_back(SE_ADD);
-				crc.Update(SE_ADD);
-
-				const Item* item = FindItem(t.MustGetItem().c_str(), false, &used_list);
-				if(used_list.lis != nullptr)
-				{
-					StockEntry t = (used_list.is_leveled ? SE_LEVELED_LIST : SE_LIST);
-					stock->code.push_back(t);
-					stock->code.push_back((int)used_list.lis);
-					crc.Update(t);
-					crc.Update(used_list.GetIdString());
-				}
-				else if(!item)
-					t.Throw("Missing item '%s'.", t.GetItem().c_str());
-				else
-				{
-					stock->code.push_back(SE_ITEM);
-					stock->code.push_back((int)item);
-					crc.Update(SE_ITEM);
-					crc.Update(item->id);
-				}
-				t.Next();
-			}
-			else
-				t.Unexpected();
-		}
-
-		if(stock->code.empty())
-			t.Throw("No code.");
-
-		stocks.push_back(stock);
-		return true;
-	}
-	catch(const Tokenizer::Exception& e)
-	{
-		cstring str;
-		if(!stock->id.empty())
-			str = Format("Failed to parse stock list '%s': %s", stock->id.c_str(), e.ToString());
-		else
-			str = Format("Failed to parse stock list: %s", e.ToString());
-		Error(str);
-		delete stock;
-		return false;
-	}
-}
-
-//=================================================================================================
-bool LoadBookScheme(Tokenizer& t, Crc& crc)
-{
-	BookScheme* scheme = new BookScheme;
-
-	try
-	{
-		// id
-		t.Next();
-		scheme->id = t.MustGetItemKeyword();
-		t.Next();
-
-		// {
-		t.AssertSymbol('{');
-		t.Next();
-
-		while(!t.IsSymbol('}'))
-		{
-			BOOK_SCHEME_KEYWORD key = (BOOK_SCHEME_KEYWORD)t.MustGetKeywordId(G_BOOK_SCHEME_KEYWORD);
-			t.Next();
-
-			switch(key)
-			{
-			case BSK_TEXTURE:
-				{
-					const string& str = t.MustGetString();
-					scheme->tex = ResourceManager::Get<Texture>().TryGet(str);
-					if(!scheme->tex)
-						t.Throw("Missing texture '%s'.", str.c_str());
-					t.Next();
-				}
-				break;
-			case BSK_SIZE:
-				t.Parse(scheme->size);
-				break;
-			case BSK_REGIONS:
-				t.AssertSymbol('{');
-				t.Next();
-				while(!t.IsSymbol('}'))
-				{
-					Rect b;
-					t.Parse(b);
-					scheme->regions.push_back(b);
-				}
-				t.Next();
-				break;
-			case BSK_PREV:
-				t.Parse(scheme->prev);
-				break;
-			case BSK_NEXT:
-				t.Parse(scheme->next);
-				break;
-			}
-		}
-
-		if(scheme->regions.empty())
-			t.Throw("No regions.");
-		for(uint i = 1; i < scheme->regions.size(); ++i)
-		{
-			if(scheme->regions[0].Size() != scheme->regions[i].Size())
-				t.Throw("Scheme region sizes don't match (TODO).");
-		}
-		if(!scheme->tex)
-			t.Throw("No texture.");
-
-		for(BookScheme* s : g_book_schemes)
-		{
-			if(s->id == scheme->id)
-				t.Throw("Book scheme with that id already exists.");
-		}
-
-		g_book_schemes.push_back(scheme);
-
-		crc.Update(scheme->id);
-		crc.Update(scheme->tex->filename);
-		crc.Update(scheme->size);
-		crc.Update(scheme->prev);
-		crc.Update(scheme->next);
-		crc.Update(scheme->regions);
-
-		return true;
-	}
-	catch(const Tokenizer::Exception& e)
-	{
-		Error("Failed to parse book scheme '%s': %s", scheme->id.c_str(), e.ToString());
-		delete scheme;
-		return false;
-	}
-}
-
-//=================================================================================================
-bool LoadStartItems(Tokenizer& t, Crc& crc)
-{
-	try
-	{
-		// {
-		t.Next();
-		t.AssertSymbol('{');
-		t.Next();
-
-		while(!t.IsSymbol('}'))
-		{
-			Skill skill = (Skill)t.MustGetKeywordId(G_SKILL);
-			t.Next();
-			t.AssertSymbol('{');
-			t.Next();
-
-			while(!t.IsSymbol('}'))
-			{
-				int num;
-				if(t.IsSymbol('*'))
-					num = HEIRLOOM;
-				else
-				{
-					num = t.MustGetInt();
-					if(num < 0 || num > 100)
-						t.Throw("Invalid skill value %d.", num);
-				}
-				t.Next();
-
-				const string& str = t.MustGetItemKeyword();
-				const Item* item = FindItem(str.c_str(), false);
-				if(!item)
-					t.Throw("Missing item '%s'.", str.c_str());
-				t.Next();
-
-				crc.Update(skill);
-				crc.Update(item->id);
-				crc.Update(num);
-
-				StartItem::start_items.push_back(StartItem(skill, item, num));
-			}
-
-			t.Next();
-		}
-
-		std::sort(StartItem::start_items.begin(), StartItem::start_items.end(),
-			[](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
-		return true;
-	}
-	catch(const Tokenizer::Exception& e)
-	{
-		Error("Failed to parse starting items: %s", e.ToString());
-		return false;
-	}
-}
-
-//=================================================================================================
 const Item* GetStartItem(Skill skill, int value)
 {
 	auto it = std::lower_bound(StartItem::start_items.begin(), StartItem::start_items.end(), StartItem(skill),
@@ -1372,349 +476,11 @@ const Item* GetStartItem(Skill skill, int value)
 }
 
 //=================================================================================================
-bool LoadBetterItems(Tokenizer& t, Crc& crc)
-{
-	ItemListResult result;
-
-	try
-	{
-		// {
-		t.Next();
-		t.AssertSymbol('{');
-		t.Next();
-
-		while(!t.IsSymbol('}'))
-		{
-			const string& str = t.MustGetItemKeyword();
-			const Item* item = FindItem(str.c_str(), false, &result);
-			if(result.lis)
-				t.Throw("'%s' is list.", str.c_str());
-			if(!item)
-				t.Throw("Missing item '%s'.", str.c_str());
-			crc.Update(str);
-			t.Next();
-
-			const string& str2 = t.MustGetItemKeyword();
-			const Item* item2 = FindItem(str2.c_str(), false, &result);
-			if(result.lis)
-				t.Throw("'%s' is list.", str2.c_str());
-			if(!item2)
-				t.Throw("Missing item '%s'.", str2.c_str());
-			crc.Update(str2);
-
-			better_items[item] = item2;
-			t.Next();
-		}
-
-		return true;
-	}
-	catch(const Tokenizer::Exception& e)
-	{
-		Error("Failed to parse better items: %s", e.ToString());
-		return false;
-	}
-}
-
-//=================================================================================================
-static bool LoadAlias(Tokenizer& t, Crc& crc)
-{
-	try
-	{
-		t.Next();
-
-		const string& id = t.MustGetItemKeyword();
-		ItemListResult result;
-		const Item* item = FindItem(id.c_str(), false, &result);
-		if(!item)
-			t.Throw("Missing item '%s'.", id.c_str());
-		if(result.lis)
-			t.Throw("Item '%s' is list.", id.c_str());
-		crc.Update(id);
-		t.Next();
-
-		const string& alias = t.MustGetItemKeyword();
-		const Item* item2 = FindItem(alias.c_str(), false, &result);
-		if(item2 || result.lis)
-			t.Throw("Can't create alias '%s', already exists.", alias.c_str());
-		crc.Update(alias);
-
-		item_aliases[alias] = item;
-		return true;
-	}
-	catch(const Tokenizer::Exception& e)
-	{
-		Error("Failed to load item alias: %s", e.ToString());
-		return false;
-	}
-}
-
-//=================================================================================================
-uint LoadItems(uint& out_crc, uint& errors)
-{
-	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
-	if(!t.FromFile(Format("%s/items.txt", g_system_dir.c_str())))
-		throw "Failed to open items.txt.";
-
-	t.AddKeywords(G_ITEM_TYPE, {
-		{ "weapon", IT_WEAPON },
-		{ "bow", IT_BOW },
-		{ "shield", IT_SHIELD },
-		{ "armor", IT_ARMOR },
-		{ "other", IT_OTHER },
-		{ "consumable", IT_CONSUMABLE },
-		{ "book", IT_BOOK },
-		{ "gold", IT_GOLD },
-		{ "list", IT_LIST },
-		{ "leveled_list", IT_LEVELED_LIST },
-		{ "stock", IT_STOCK },
-		{ "book_scheme", IT_BOOK_SCHEME },
-		{ "start_items", IT_START_ITEMS },
-		{ "better_items", IT_BETTER_ITEMS },
-		{ "alias", IT_ALIAS }
-	});
-
-	t.AddKeywords(G_PROPERTY, {
-		{ "weight", P_WEIGHT },
-		{ "value", P_VALUE },
-		{ "mesh", P_MESH },
-		{ "tex", P_TEX },
-		{ "attack", P_ATTACK },
-		{ "req_str", P_REQ_STR },
-		{ "type", P_TYPE },
-		{ "material", P_MATERIAL },
-		{ "dmg_type", P_DMG_TYPE },
-		{ "flags", P_FLAGS },
-		{ "defense", P_DEFENSE },
-		{ "mobility", P_MOBILITY },
-		{ "skill", P_SKILL },
-		{ "tex_override", P_TEX_OVERRIDE },
-		{ "effect", P_EFFECT },
-		{ "power", P_POWER },
-		{ "time", P_TIME },
-		{ "speed", P_SPEED },
-		{ "scheme", P_SCHEME },
-		{ "runic", P_RUNIC }
-	});
-
-	t.AddKeywords(G_WEAPON_TYPE, {
-		{ "short_blade", WT_SHORT },
-		{ "long_blade", WT_LONG },
-		{ "axe", WT_AXE },
-		{ "blunt", WT_MACE }
-	});
-
-	t.AddKeywords(G_MATERIAL, {
-		{ "wood", MAT_WOOD },
-		{ "skin", MAT_SKIN },
-		{ "metal", MAT_IRON },
-		{ "crystal", MAT_CRYSTAL },
-		{ "cloth", MAT_CLOTH },
-		{ "rock", MAT_ROCK },
-		{ "body", MAT_BODY },
-		{ "bone", MAT_BONE }
-	});
-
-	t.AddKeywords(G_DMG_TYPE, {
-		{ "slash", DMG_SLASH },
-		{ "pierce", DMG_PIERCE },
-		{ "blunt", DMG_BLUNT }
-	});
-
-	// register item flags (ITEM_TEX_ONLY is not flag in item but property)
-	t.AddKeywords(G_FLAGS, {
-		{ "not_chest", ITEM_NOT_CHEST },
-		{ "not_shop", ITEM_NOT_SHOP },
-		{ "not_alchemist", ITEM_NOT_ALCHEMIST },
-		{ "quest", ITEM_QUEST },
-		{ "not_blacksmith", ITEM_NOT_BLACKSMITH },
-		{ "mage", ITEM_MAGE },
-		{ "dont_drop", ITEM_DONT_DROP },
-		{ "secret", ITEM_SECRET },
-		{ "backstab", ITEM_BACKSTAB },
-		{ "power1", ITEM_POWER_1 },
-		{ "power2", ITEM_POWER_2 },
-		{ "power3", ITEM_POWER_3 },
-		{ "power4", ITEM_POWER_4 },
-		{ "magic_resistance10", ITEM_MAGIC_RESISTANCE_10 },
-		{ "magic_resistance25", ITEM_MAGIC_RESISTANCE_25 },
-		{ "ground_mesh", ITEM_GROUND_MESH },
-		{ "crystal_sound", ITEM_CRYSTAL_SOUND },
-		{ "important", ITEM_IMPORTANT },
-		{ "not_merchant", ITEM_NOT_MERCHANT },
-		{ "not_random", ITEM_NOT_RANDOM },
-		{ "hq", ITEM_HQ },
-		{ "magical", ITEM_MAGICAL },
-		{ "unique", ITEM_UNIQUE },
-		{ "alpha", ITEM_ALPHA }
-	});
-
-	t.AddKeywords(G_ARMOR_SKILL, {
-		{ "light_armor", (int)Skill::LIGHT_ARMOR },
-		{ "medium_armor", (int)Skill::MEDIUM_ARMOR },
-		{ "heavy_armor", (int)Skill::HEAVY_ARMOR }
-	});
-
-	t.AddKeywords(G_ARMOR_UNIT_TYPE, {
-		{ "human", (int)ArmorUnitType::HUMAN },
-		{ "goblin", (int)ArmorUnitType::GOBLIN },
-		{ "orc", (int)ArmorUnitType::ORC }
-	});
-
-	t.AddKeywords(G_CONSUMABLE_TYPE, {
-		{ "potion", (int)ConsumableType::Potion },
-		{ "drink", (int)ConsumableType::Drink },
-		{ "food", (int)ConsumableType::Food }
-	});
-
-	t.AddKeywords(G_EFFECT, {
-		{ "heal", E_HEAL },
-		{ "regenerate", E_REGENERATE },
-		{ "natural", E_NATURAL },
-		{ "antidote", E_ANTIDOTE },
-		{ "poison", E_POISON },
-		{ "alcohol", E_ALCOHOL },
-		{ "str", E_STR },
-		{ "end", E_END },
-		{ "dex", E_DEX },
-		{ "antimagic", E_ANTIMAGIC },
-		{ "food", E_FOOD },
-		{ "green_hair", E_GREEN_HAIR },
-		{ "stamina", E_STAMINA },
-		{ "stun", E_STUN }
-	});
-
-	t.AddKeywords(G_OTHER_TYPE, {
-		{ "tool", Tool },
-		{ "valuable", Valuable },
-		{ "other", OtherItems },
-		{ "artifact", Artifact }
-	});
-
-	t.AddKeywords(G_STOCK_KEYWORD, {
-		{ "set", SK_SET },
-		{ "city", SK_CITY },
-		{ "else", SK_ELSE },
-		{ "chance", SK_CHANCE },
-		{ "random", SK_RANDOM },
-		{ "same", SK_SAME }
-	});
-
-	t.AddKeywords(G_BOOK_SCHEME_KEYWORD, {
-		{ "texture", BSK_TEXTURE },
-		{ "size", BSK_SIZE },
-		{ "regions", BSK_REGIONS },
-		{ "prev", BSK_PREV },
-		{ "next", BSK_NEXT }
-	});
-
-	for(SkillInfo& si : g_skills)
-		t.AddKeyword(si.id, (int)si.skill_id, G_SKILL);
-
-	Crc crc;
-
-	try
-	{
-		t.Next();
-
-		while(!t.IsEof())
-		{
-			bool skip = false;
-
-			if(t.IsKeywordGroup(G_ITEM_TYPE))
-			{
-				ITEM_TYPE type = (ITEM_TYPE)t.GetKeywordId(G_ITEM_TYPE);
-				bool ok = true;
-
-				if(type == IT_LIST)
-				{
-					if(!LoadItemList(t, crc))
-						ok = false;
-				}
-				else if(type == IT_LEVELED_LIST)
-				{
-					if(!LoadLeveledItemList(t, crc))
-						ok = false;
-				}
-				else if(type == IT_STOCK)
-				{
-					if(!LoadStock(t, crc))
-						ok = false;
-				}
-				else if(type == IT_BOOK_SCHEME)
-				{
-					if(!LoadBookScheme(t, crc))
-						ok = false;
-				}
-				else if(type == IT_START_ITEMS)
-				{
-					if(!LoadStartItems(t, crc))
-						ok = false;
-				}
-				else if(type == IT_BETTER_ITEMS)
-				{
-					if(!LoadBetterItems(t, crc))
-						ok = false;
-				}
-				else if(type == IT_ALIAS)
-				{
-					if(!LoadAlias(t, crc))
-						ok = false;
-				}
-				else
-				{
-					if(!LoadItem(t, crc))
-						ok = false;
-				}
-
-				if(!ok)
-				{
-					++errors;
-					skip = true;
-				}
-			}
-			else
-			{
-				int group = G_ITEM_TYPE;
-				Error(t.FormatUnexpected(tokenizer::T_KEYWORD_GROUP, &group));
-				++errors;
-				skip = true;
-			}
-
-			if(skip)
-				t.SkipToKeywordGroup(G_ITEM_TYPE);
-			else
-				t.Next();
-		}
-	}
-	catch(const Tokenizer::Exception& e)
-	{
-		Error("Failed to load items: %s", e.ToString());
-		++errors;
-	}
-
-	out_crc = crc.Get();
-	return g_items.size();
-}
-
-//=================================================================================================
-void CleanupItems()
-{
-	DeleteElements(g_book_schemes);
-	DeleteElements(g_item_lists);
-	DeleteElements(g_leveled_item_lists);
-	DeleteElements(stocks);
-
-	for(auto it : g_items)
-		delete it.second;
-	g_items.clear();
-}
-
-//=================================================================================================
 Stock* FindStockScript(cstring id)
 {
 	assert(id);
 
-	for(Stock* s : stocks)
+	for(Stock* s : Stock::stocks)
 	{
 		if(s->id == id)
 			return s;
@@ -1904,4 +670,53 @@ redo_set:
 		in_set = true;
 		goto redo_set;
 	}
+}
+
+Item* Item::TryGet(const AnyString& id)
+{
+	return (Item*)FindItem(id, false);
+}
+
+BookScheme* BookScheme::TryGet(const AnyString& id)
+{
+	for(auto scheme : book_schemes)
+	{
+		if(scheme->id == id)
+			return scheme;
+	}
+
+	return nullptr;
+}
+
+ItemListResult ItemList::TryGet(const AnyString& id)
+{
+	for(auto lis : lists)
+	{
+		if(lis->id == id)
+			return lis;
+	}
+
+	for(auto lis : LeveledItemList::lists)
+	{
+		if(lis->id == id)
+			return lis;
+	}
+
+	return nullptr;
+}
+
+Stock* Stock::TryGet(const AnyString& id)
+{
+	for(auto stock : stocks)
+	{
+		if(stock->id == id)
+			return stock;
+	}
+
+	return nullptr;
+}
+
+const Item* FindItemOrList(const AnyString& id, ItemListResult& lis)
+{
+	return FindItem(id, false, &lis);
 }
