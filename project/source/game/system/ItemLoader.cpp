@@ -3,7 +3,9 @@
 #include "Item.h"
 #include "ContentLoader.h"
 #include "ResourceManager.h"
+#include "Crc.h"
 
+//-----------------------------------------------------------------------------
 class ItemLoader
 {
 	enum Group
@@ -69,6 +71,7 @@ class ItemLoader
 	};
 
 public:
+	//=================================================================================================
 	void Load()
 	{
 		InitTokenizer();
@@ -115,11 +118,11 @@ public:
 
 		CalculateCrc();
 
-		//Info("Loaded objects (%u), usables (%u), - crc %p.",
-		//	BaseObject::objs.size() - BaseUsable::usables.size(), BaseUsable::usables.size(), content::objects_crc);
+		Info("Loaded items %u - crc %p.", Item::items.size(), content::crc[(int)content::Id::Items]);
 	}
 
 private:
+	//=================================================================================================
 	void InitTokenizer()
 	{
 		t.SetFlags(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
@@ -280,6 +283,7 @@ private:
 			t.AddKeyword(si.id, (int)si.skill_id, G_SKILL);
 	}
 
+	//=================================================================================================
 	void ParseItem(ITEM_TYPE type, const string& id)
 	{
 		ItemsMap::iterator it = Item::items.lower_bound(id.c_str());
@@ -591,6 +595,7 @@ private:
 		}
 	}
 
+	//=================================================================================================
 	void ParseItemList(const string& id)
 	{
 		auto existing_list = ItemList::TryGet(id);
@@ -620,6 +625,7 @@ private:
 		ItemList::lists.push_back(lis.Pin());
 	}
 
+	//=================================================================================================
 	void ParseLeveledItemList(const string& id)
 	{
 		auto existing_list = ItemList::TryGet(id);
@@ -654,6 +660,7 @@ private:
 		LeveledItemList::lists.push_back(lis.Pin());
 	}
 
+	//=================================================================================================
 	void ParseStock(const string& id)
 	{
 		auto existing_stock = Stock::TryGet(id);
@@ -935,6 +942,7 @@ private:
 		Stock::stocks.push_back(stock.Pin());
 	}
 
+	//=================================================================================================
 	void ParseBookScheme(const string& id)
 	{
 		auto existing_scheme = BookScheme::TryGet(id);
@@ -1003,6 +1011,7 @@ private:
 		BookScheme::book_schemes.push_back(scheme.Pin());
 	}
 
+	//=================================================================================================
 	void ParseStartItems()
 	{
 		if(!StartItem::start_items.empty())
@@ -1048,6 +1057,7 @@ private:
 			[](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
 	}
 
+	//=================================================================================================
 	void ParseBetterItems()
 	{
 		if(!better_items.empty())
@@ -1075,6 +1085,7 @@ private:
 		}
 	}
 
+	//=================================================================================================
 	void ParseAlias(const string& id)
 	{
 		auto item = Item::TryGet(id);
@@ -1090,143 +1101,136 @@ private:
 		item_aliases[alias] = item;
 	}
 
+	//=================================================================================================
 	void CalculateCrc()
 	{
-		/*cstring key = item->id.c_str();
+		Crc crc;
 
-		ItemsMap::iterator it = g_items.lower_bound(key);
-		if(it != g_items.end() && !(g_items.key_comp()(key, it->first)))
-			t.Throw("Item already exists.");
-		else
-			g_items.insert(it, ItemsMap::value_type(key, item));
-
-		crc.Update(item->id);
-		crc.Update(item->mesh_id);
-		crc.Update(item->weight);
-		crc.Update(item->value);
-		crc.Update(item->flags);
-		crc.Update(item->type);
-
-		switch(item->type)
+		for(auto& it : Item::items)
 		{
-		case IT_WEAPON:
+			auto item = it.second;
+
+			crc.Update(item->id);
+			crc.Update(item->mesh_id);
+			crc.Update(item->weight);
+			crc.Update(item->value);
+			crc.Update(item->flags);
+			crc.Update(item->type);
+
+			switch(item->type)
 			{
-				Weapon& w = item->ToWeapon();
-				Weapon::weapons.push_back(&w);
-
-				crc.Update(w.dmg);
-				crc.Update(w.dmg_type);
-				crc.Update(w.req_str);
-				crc.Update(w.weapon_type);
-				crc.Update(w.material);
+			case IT_WEAPON:
+				{
+					Weapon& w = item->ToWeapon();
+					crc.Update(w.dmg);
+					crc.Update(w.dmg_type);
+					crc.Update(w.req_str);
+					crc.Update(w.weapon_type);
+					crc.Update(w.material);
+				}
+				break;
+			case IT_BOW:
+				{
+					Bow& b = item->ToBow();
+					crc.Update(b.dmg);
+					crc.Update(b.req_str);
+					crc.Update(b.speed);
+				}
+				break;
+			case IT_SHIELD:
+				{
+					Shield& s = item->ToShield();
+					crc.Update(s.def);
+					crc.Update(s.req_str);
+					crc.Update(s.material);
+				}
+				break;
+			case IT_ARMOR:
+				{
+					Armor& a = item->ToArmor();
+					crc.Update(a.def);
+					crc.Update(a.req_str);
+					crc.Update(a.mobility);
+					crc.Update(a.material);
+					crc.Update(a.skill);
+					crc.Update(a.armor_type);
+					crc.Update(a.tex_override.size());
+					for(TexId t : a.tex_override)
+						crc.Update(t.id);
+				}
+				break;
+			case IT_CONSUMABLE:
+				{
+					Consumable& c = item->ToConsumable();
+					crc.Update(c.effect);
+					crc.Update(c.power);
+					crc.Update(c.time);
+					crc.Update(c.cons_type);
+				}
+				break;
+			case IT_OTHER:
+				{
+					OtherItem& o = item->ToOther();
+					crc.Update(o.other_type);
+				}
+				break;
+			case IT_BOOK:
+				{
+					Book& b = item->ToBook();
+					crc.Update(b.scheme->id);
+				}
+				break;
+			case IT_GOLD:
+				break;
+			default:
+				assert(0);
+				break;
 			}
-			break;
-		case IT_BOW:
-			{
-				Bow& b = item->ToBow();
-				Bow::bows.push_back(&b);
-
-				crc.Update(b.dmg);
-				crc.Update(b.req_str);
-				crc.Update(b.speed);
-			}
-			break;
-		case IT_SHIELD:
-			{
-				Shield& s = item->ToShield();
-				Shield::shields.push_back(&s);
-
-				crc.Update(s.def);
-				crc.Update(s.req_str);
-				crc.Update(s.material);
-			}
-			break;
-		case IT_ARMOR:
-			{
-				Armor& a = item->ToArmor();
-				Armor::armors.push_back(&a);
-
-				crc.Update(a.def);
-				crc.Update(a.req_str);
-				crc.Update(a.mobility);
-				crc.Update(a.material);
-				crc.Update(a.skill);
-				crc.Update(a.armor_type);
-				crc.Update(a.tex_override.size());
-				for(TexId t : a.tex_override)
-					crc.Update(t.id);
-			}
-			break;
-		case IT_CONSUMABLE:
-			{
-				Consumable& c = item->ToConsumable();
-				Consumable::consumables.push_back(&c);
-
-				crc.Update(c.effect);
-				crc.Update(c.power);
-				crc.Update(c.time);
-				crc.Update(c.cons_type);
-			}
-			break;
-		case IT_OTHER:
-			{
-				OtherItem& o = item->ToOther();
-				OtherItem::others.push_back(&o);
-				if(o.other_type == Artifact)
-					OtherItem::artifacts.push_back(&o);
-
-				crc.Update(o.other_type);
-			}
-			break;
-		case IT_BOOK:
-			{
-				Book& b = item->ToBook();
-				if(!b.scheme)
-					t.Throw("Missing book '%s' scheme.", b.id.c_str());
-				g_books.push_back(&b);
-
-				crc.Update(b.scheme->id);
-			}
-			break;
-		case IT_GOLD:
-			break;
-		}*/
-
-
-		/*crc.Update(lis->id);
-		crc.Update(lis->items.size());
-		for(const Item* i : lis->items)
-			crc.Update(i->id);
-
-
-			crc.Update(lis->id);
-		crc.Update(lis->items.size());
-		for(LeveledItemList::Entry& e : lis->items)
-		{
-			crc.Update(e.item->id);
-			crc.Update(e.level);
 		}
 
+		for(auto lis : ItemList::lists)
+		{
+			crc.Update(lis->id);
+			crc.Update(lis->items.size());
+			for(const Item* i : lis->items)
+				crc.Update(i->id);
+		}
 
+		for(auto lis : LeveledItemList::lists)
+		{
+			crc.Update(lis->id);
+			crc.Update(lis->items.size());
+			for(LeveledItemList::Entry& e : lis->items)
+			{
+				crc.Update(e.item->id);
+				crc.Update(e.level);
+			}
+		}
 
-		crc.Update(scheme->id);
-		crc.Update(scheme->tex->filename);
-		crc.Update(scheme->size);
-		crc.Update(scheme->prev);
-		crc.Update(scheme->next);
-		crc.Update(scheme->regions);
-			*/
+		for(auto scheme : BookScheme::book_schemes)
+		{
+			crc.Update(scheme->id);
+			crc.Update(scheme->tex->filename);
+			crc.Update(scheme->size);
+			crc.Update(scheme->prev);
+			crc.Update(scheme->next);
+			crc.Update(scheme->regions);
+		}
+
+		content::crc[(int)content::Id::Items] = crc.Get();
 	}
 
 	Tokenizer t;
 };
 
+//=================================================================================================
 void content::LoadItems()
 {
 	ItemLoader loader;
 	loader.Load();
 }
 
+//=================================================================================================
 void content::CleanupItems()
 {
 	DeleteElements(BookScheme::book_schemes);

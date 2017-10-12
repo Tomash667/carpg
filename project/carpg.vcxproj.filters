@@ -210,9 +210,6 @@
     <ClCompile Include="source\game\stats\Class.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\Item.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\Material.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
@@ -661,6 +658,9 @@
     <ClCompile Include="source\game\system\ItemLoader.cpp">
       <Filter>3. game\system\items</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\system\Item.cpp">
+      <Filter>3. game\system\items</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -802,12 +802,6 @@
       <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\DamageTypes.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\Item.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\ItemType.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Material.h">
@@ -1302,6 +1296,12 @@
     </ClInclude>
     <ClInclude Include="source\game\system\BuildingScript.h">
       <Filter>3. game\system\buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\Item.h">
+      <Filter>3. game\system\items</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\ItemType.h">
+      <Filter>3. game\system\items</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
