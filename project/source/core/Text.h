@@ -246,6 +246,13 @@ struct CstringComparer
 		return _stricmp(s1, s2) > 0;
 	}
 };
+struct CstringEqualComparer
+{
+	bool operator() (cstring s1, cstring s2) const
+	{
+		return strcmp(s1, s2) == 0;
+	}
+};
 
 // convert \r \r\n -> \n or remove all
 void RemoveEndOfLine(string& str, bool remove);

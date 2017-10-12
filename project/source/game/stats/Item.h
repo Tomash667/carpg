@@ -70,7 +70,7 @@ struct CstringHash
 		return hash;
 	}
 };
-typedef std::unordered_map<cstring, Item*, CstringHash, CstringComparer> ItemsMap;
+typedef std::unordered_map<cstring, Item*, CstringHash, CstringEqualComparer> ItemsMap;
 
 //-----------------------------------------------------------------------------
 // Base item type

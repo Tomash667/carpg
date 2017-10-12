@@ -1442,7 +1442,7 @@ void Game::UpdateServerTransfer(float dt)
 			StreamEnd();
 			continue;
 		}
-		
+
 		switch(msg_id)
 		{
 		case ID_DISCONNECTION_NOTIFICATION:
@@ -1590,7 +1590,7 @@ void Game::UpdateServerTransfer(float dt)
 				info.u = u;
 				u->ApplyHumanData(info.hd);
 				u->mesh_inst->need_update = true;
-				
+
 				u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
 				u->player = new PlayerController;
 				u->player->id = info.id;
@@ -2692,7 +2692,7 @@ void Game::UpdateLobbyNetServer(float dt)
 				int version;
 				cstring reason_text = nullptr;
 				int include_extra = 0;
-				uint p_crc_items, p_crc_spells, p_crc_dialogs, p_crc_units, my_crc, player_crc;
+				uint my_crc, player_crc;
 				content::Id type;
 				cstring type_str;
 				JoinResult reason = JoinResult::Ok;

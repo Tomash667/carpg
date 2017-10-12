@@ -105,6 +105,9 @@ public:
 			case IT_BETTER_ITEMS:
 				ParseBetterItems();
 				break;
+			case IT_ALIAS:
+				ParseAlias(id);
+				break;
 			}
 		}, require_id);
 		if(!ok)
@@ -606,9 +609,10 @@ private:
 
 		while(!t.IsSymbol('}'))
 		{
-			auto item = Item::TryGet(t.MustGetItemKeyword());
+			auto& item_id = t.MustGetItemKeyword();
+			auto item = Item::TryGet(item_id);
 			if(!item)
-				t.Throw("Missing item %s.", t.GetTokenString().c_str());
+				t.Throw("Missing item %s.", item_id.c_str());
 			lis->items.push_back(item);
 			t.Next();
 		}
@@ -625,7 +629,6 @@ private:
 		Ptr<LeveledItemList> lis;
 
 		// id
-		t.Next();
 		lis->id = t.MustGetItemKeyword();
 		t.Next();
 
@@ -941,7 +944,7 @@ private:
 		Ptr<BookScheme> scheme;
 
 		// id
-		scheme->id = t.MustGetItemKeyword();
+		scheme->id = id;
 		t.Next();
 
 		// {
@@ -1006,7 +1009,6 @@ private:
 			t.Throw("Start items already declared.");
 
 		// {
-		t.Next();
 		t.AssertSymbol('{');
 		t.Next();
 
@@ -1052,7 +1054,6 @@ private:
 			t.Throw("Better items already declared.");
 
 		// {
-		t.Next();
 		t.AssertSymbol('{');
 		t.Next();
 

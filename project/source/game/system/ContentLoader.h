@@ -38,12 +38,12 @@ public:
 				}
 				else
 				{
-					if(!t.IsItem())
+					if(!t.IsText())
 					{
-						Error(t.FormatUnexpected(tokenizer::T_ITEM));
+						Error(t.Expecting("id"));
 						return false;
 					}
-					local_id = t.GetItem();
+					local_id = t.GetText();
 
 					try
 					{
