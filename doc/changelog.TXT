@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.7 (2017-11-XX):
+Wersja 0.6.2 (2017-10-08):
 + wczytywanie obiektów z pliku
 - naprawiony crash gdy npc w dru¿ynie chce przedmiot od innego npc w dru¿ynie [MikelkCZ]
 - naprawione nieprawid³owe kolizje dla niektórych obiektów
@@ -9,6 +9,10 @@ Wersja 0.7 (2017-11-XX):
 - naprawiony nieprawid³owy model wioskowego ratuszu
 - naprawiona nieprawid³owa tekstura znaku sprzedawcy jedzenia
 - lepsze przekierowanie na stronê
+- naprawiona bazowa animacja czasami odtwarzana po animacji picia
+- naprawione nieoznaczanie u¿ywalnych obiektów jako wolne gdy klient przestaje ich u¿ywaæ, zepsuta animacja
+- naprawione przesy³anie informacji o u¿ywaniu drzwi pomiêdzy klientami
+- naprawiony brak przedmiotów w skrzynkach
 
 --------------------------------------------------------------------------------
 Wersja 0.6 (2017-10-01):

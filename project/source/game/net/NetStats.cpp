@@ -153,6 +153,7 @@ void NetStats::Stats::CalculateHash()
 
 void NetStats::Initialize()
 {
+	started = false;
 	have_changes = false;
 	Load();
 	current.ver = VERSION;
@@ -178,6 +179,7 @@ void NetStats::Update()
 		NetStats::Free();
 	else
 	{
+		started = true;
 		_beginthreadex(nullptr, 1024, [](void*) -> uint
 		{
 			NetStats::Get().UpdateAsync();
@@ -191,14 +193,19 @@ void NetStats::Close()
 	NetStats* inst = NetStats::TryGet();
 	if(inst)
 	{
-		shutdown_thread = true;
-		for(int i = 0; i < 20; ++i)
+		if(inst->started)
 		{
-			Sleep(50);
-			inst = NetStats::TryGet();
-			if(!inst)
-				break;
+			shutdown_thread = true;
+			for(int i = 0; i < 20; ++i)
+			{
+				Sleep(50);
+				inst = NetStats::TryGet();
+				if(!inst)
+					break;
+			}
 		}
+		else
+			NetStats::Free();
 	}
 }
 

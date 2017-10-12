@@ -24,6 +24,7 @@ struct GameDialog;
 //-----------------------------------------------------------------------------
 enum Animation
 {
+	ANI_NONE = -1,
 	ANI_WALK,
 	ANI_WALK_TYL,
 	ANI_RUN,
@@ -232,6 +233,7 @@ struct Unit
 	int ConsumeItem(int index);
 	// u¿ywa przedmiotu, nie mo¿e nic robiæ w tej chwili i musi mieæ schowan¹ broñ
 	void ConsumeItem(const Consumable& item, bool force = false, bool send = true);
+	void ConsumeItemAnim(const Consumable& cons);
 	void HideWeapon();
 	void TakeWeapon(WeaponType type);
 	// dodaj efekt zjadanego przedmiotu

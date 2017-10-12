@@ -39,5 +39,5 @@ private:
 
 	Stats current;
 	vector<Stats> stats;
-	bool have_changes;
+	bool have_changes, started;
 };

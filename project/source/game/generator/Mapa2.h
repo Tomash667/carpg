@@ -182,8 +182,20 @@ struct Room
 	{
 		return Vec3(Random(2.f*(pos.x + 1), 2.f*(pos.x + size.x - 1)), 0, Random(2.f*(pos.y + 1), 2.f*(pos.y + size.y - 1)));
 	}
+	bool GetRandomPos(float margin, Vec3& out_pos) const
+	{
+		float min_size = (min(size.x, size.y) - 1) * 2.f;
+		if(margin * 2 >= min_size)
+			return false;
+		out_pos = Vec3(
+			Random(2.f*(pos.x + 1) + margin, 2.f*(pos.x + size.x - 1) - margin),
+			0,
+			Random(2.f*(pos.y + 1) + margin, 2.f*(pos.y + size.y - 1) - margin));
+		return true;
+	}
 	Vec3 GetRandomPos(float margin) const
 	{
+		assert(margin * 2 < (min(size.x, size.y) - 1) * 2.f);
 		return Vec3(
 			Random(2.f*(pos.x + 1) + margin, 2.f*(pos.x + size.x - 1) - margin),
 			0,
