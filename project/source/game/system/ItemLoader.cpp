@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Core.h"
 #include "Item.h"
+#include "Stock.h"
 #include "ContentLoader.h"
 #include "ResourceManager.h"
 #include "Crc.h"
@@ -118,7 +119,8 @@ public:
 
 		CalculateCrc();
 
-		Info("Loaded items %u - crc %p.", Item::items.size(), content::crc[(int)content::Id::Items]);
+		Info("Loaded items (%u), lists (%u) - crc %p.", Item::items.size(), ItemList::lists.size() + LeveledItemList::lists.size(),
+			content::crc[(int)content::Id::Items]);
 	}
 
 private:

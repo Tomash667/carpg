@@ -83,7 +83,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			dungeon_levels = at_level + 1;
 			levels_cleared = 0;
 			whole_location_event_handler = true;
-			item_to_give[0] = FindItem("q_orkowie_klucz");
+			item_to_give[0] = Item::Get("q_orkowie_klucz");
 			spawn_item = Quest_Event::Item_GiveSpawned2;
 			unit_to_spawn = FindUnitData("q_orkowie_gorush");
 			unit_to_spawn2 = g_spawn_groups[SG_ORKOWIE].GetSpawnLeader();
@@ -217,7 +217,7 @@ bool Quest_Orcs::Load(HANDLE file)
 
 	if(!done)
 	{
-		item_to_give[0] = FindItem("q_orkowie_klucz");
+		item_to_give[0] = Item::Get("q_orkowie_klucz");
 		spawn_item = Quest_Event::Item_GiveSpawned2;
 		unit_to_spawn = FindUnitData("q_orkowie_gorush");
 		unit_to_spawn2 = g_spawn_groups[SG_ORKOWIE].GetSpawnLeader();

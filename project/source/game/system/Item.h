@@ -8,7 +8,6 @@
 #include "ItemType.h"
 #include "ArmorUnitType.h"
 #include "Resource.h"
-#include "ItemSlot.h"
 
 //-----------------------------------------------------------------------------
 static const int HEIRLOOM = -1;
@@ -210,6 +209,12 @@ struct Item
 
 	static ItemsMap items;
 	static Item* TryGet(const AnyString& id);
+	static Item* Get(const AnyString& id)
+	{
+		auto item = TryGet(id);
+		assert(item);
+		return item;
+	}
 	static void Validate(uint& err);
 };
 
@@ -432,6 +437,8 @@ struct ItemList
 
 	static vector<ItemList*> lists;
 	static ItemListResult TryGet(const AnyString& id);
+	static ItemListResult Get(const AnyString& id);
+	static const Item* GetItem(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -492,37 +499,19 @@ struct ItemListResult
 	}
 };
 
-//-----------------------------------------------------------------------------
-enum StockEntry
+inline ItemListResult ItemList::Get(const AnyString& id)
 {
-	SE_ADD,
-	SE_MULTIPLE,
-	SE_ITEM,
-	SE_CHANCE,
-	SE_RANDOM,
-	SE_CITY,
-	SE_NOT_CITY,
-	SE_ANY_CITY,
-	SE_START_SET,
-	SE_END_SET,
-	SE_LIST,
-	SE_LEVELED_LIST,
-	SE_SAME_MULTIPLE,
-	SE_SAME_RANDOM
-};
+	auto result = TryGet(id);
+	assert(result.lis != nullptr);
+	return result;
+}
 
-//-----------------------------------------------------------------------------
-struct Stock
+inline const Item* ItemList::GetItem(const AnyString& id)
 {
-	string id;
-	vector<int> code;
-
-	static vector<Stock*> stocks;
-	static Stock* TryGet(const AnyString& id);
-};
-
-Stock* FindStockScript(cstring id);
-void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& items);
+	auto result = Get(id);
+	assert(!result.is_leveled);
+	return result.lis->Get();
+}
 
 //-----------------------------------------------------------------------------
 struct StartItem
@@ -534,17 +523,15 @@ struct StartItem
 	StartItem(Skill skill, const Item* item = nullptr, int value = 0) : skill(skill), item(item), value(value) {}
 
 	static vector<StartItem> start_items;
+	static const Item* GetStartItem(Skill skill, int value);
 };
-const Item* GetStartItem(Skill skill, int value);
 
 //-----------------------------------------------------------------------------
 bool ItemCmp(const Item* a, const Item* b);
-const Item* FindItem(cstring id, bool report = true, ItemListResult* lis = nullptr);
 const Item* FindItemOrList(const AnyString& id, ItemListResult& lis);
-ItemListResult FindItemList(cstring id, bool report = true);
 void CreateItemCopy(Item& item, const Item* base_item);
 Item* CreateItemCopy(const Item* item);
 
 //-----------------------------------------------------------------------------
-extern std::map<const Item*, const Item*> better_items;
-extern std::map<string, const Item*> item_aliases;
+extern std::map<const Item*, Item*> better_items;
+extern std::map<string, Item*> item_aliases;

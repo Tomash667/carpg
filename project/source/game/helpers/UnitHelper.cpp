@@ -7,7 +7,7 @@ namespace UnitHelper
 	inline void EnsureList(const ItemList*& lis)
 	{
 		if(!lis)
-			lis = FindItemList("base_items").lis;
+			lis = ItemList::Get("base_items").lis;
 	}
 }
 

@@ -48,7 +48,7 @@ GameDialog* Quest_Goblins::GetDialog(int type2)
 //=================================================================================================
 bool CzyMajaStaryLuk()
 {
-	return Team.HaveQuestItem(FindItem("q_gobliny_luk"));
+	return Team.HaveQuestItem(Item::Get("q_gobliny_luk"));
 }
 
 //=================================================================================================
@@ -142,7 +142,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			target.active_quest = this;
 			target.st = 7;
 			spawn_item = Quest_Event::Item_OnGround;
-			item_to_give[0] = FindItem("q_gobliny_luk");
+			item_to_give[0] = Item::Get("q_gobliny_luk");
 			// questowe rzeczy
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
@@ -176,7 +176,7 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::BowStolen:
 		// gobliny ukrad³y ³uk
 		{
-			game->RemoveQuestItem(FindItem("q_gobliny_luk"));
+			game->RemoveQuestItem(Item::Get("q_gobliny_luk"));
 			msgs.push_back(game->txQuest[220]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -222,7 +222,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			spawn_item = Quest_Event::Item_GiveSpawned;
 			unit_to_spawn = g_spawn_groups[SG_GOBLINY].GetSpawnLeader();
 			unit_spawn_level = -3;
-			item_to_give[0] = FindItem("q_gobliny_luk");
+			item_to_give[0] = Item::Get("q_gobliny_luk");
 			at_level = target.GetLastLevel();
 			msgs.push_back(Format(game->txQuest[223], target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -241,7 +241,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		// oddano ³uk
 		{
 			state = Quest::Completed;
-			const Item* item = FindItem("q_gobliny_luk");
+			const Item* item = Item::Get("q_gobliny_luk");
 			game->RemoveItem(*game->current_dialog->pc->unit, item, 1);
 			game->current_dialog->talker->AddItem(item, 1, true);
 			game->AddReward(500);
@@ -421,14 +421,14 @@ bool Quest_Goblins::Load(HANDLE file)
 		if(prog == Progress::Started)
 		{
 			spawn_item = Quest_Event::Item_OnGround;
-			item_to_give[0] = FindItem("q_gobliny_luk");
+			item_to_give[0] = Item::Get("q_gobliny_luk");
 		}
 		else if(prog == Progress::InfoAboutGoblinBase)
 		{
 			spawn_item = Quest_Event::Item_GiveSpawned;
 			unit_to_spawn = g_spawn_groups[SG_GOBLINY].GetSpawnLeader();
 			unit_spawn_level = -3;
-			item_to_give[0] = FindItem("q_gobliny_luk");
+			item_to_give[0] = Item::Get("q_gobliny_luk");
 		}
 		else if(prog == Progress::TalkedWithInnkeeper)
 		{

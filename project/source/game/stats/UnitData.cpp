@@ -258,7 +258,7 @@ void AddItem(ItemScript* script, Tokenizer& t, Crc& crc)
 	if(!t.IsSymbol('!'))
 	{
 		const string& s = t.MustGetItemKeyword();
-		const Item* item = FindItem(s.c_str(), false);
+		const Item* item = Item::TryGet(s.c_str());
 		if(item)
 		{
 			script->code.push_back(PS_ITEM);
@@ -284,7 +284,7 @@ void AddItem(ItemScript* script, Tokenizer& t, Crc& crc)
 				t.NextChar();
 				t.Next();
 				const string& s = t.MustGetItemKeyword();
-				ItemListResult lis = FindItemList(s.c_str(), false);
+				ItemListResult lis = ItemList::TryGet(s);
 				if(lis.lis)
 				{
 					if(lis.is_leveled)
@@ -308,7 +308,7 @@ void AddItem(ItemScript* script, Tokenizer& t, Crc& crc)
 		else
 		{
 			const string& s = t.MustGetItemKeyword();
-			ItemListResult lis = FindItemList(s.c_str(), false);
+			ItemListResult lis = ItemList::TryGet(s);
 			if(lis.lis)
 			{
 				ParseScript type = (lis.is_leveled ? PS_LEVELED_LIST : PS_LIST);

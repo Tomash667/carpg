@@ -1435,7 +1435,7 @@ void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 		ReadString1(file);
 		ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
 		if(BUF[0] != '$')
-			it->item = FindItem(BUF);
+			it->item = Item::Get(BUF);
 		else
 		{
 			int quest_refid;

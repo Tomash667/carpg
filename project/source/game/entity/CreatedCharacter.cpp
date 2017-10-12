@@ -6,6 +6,7 @@
 #include "PlayerController.h"
 #include "Unit.h"
 #include "Game.h"
+#include "Stock.h"
 
 //-----------------------------------------------------------------------------
 struct TakeRatio
@@ -229,7 +230,7 @@ void CreatedCharacter::Apply(PlayerController& pc)
 		pc.unit->slots[i] = items[i];
 	if(HavePerk(Perk::AlchemistApprentice))
 	{
-		ParseStockScript(FindStockScript("alchemist_apprentice"), 0, false, pc.unit->items);
+		Stock::Get("alchemist_apprentice")->Parse(0, false, pc.unit->items);
 		SortItems(pc.unit->items);
 	}
 	pc.unit->MakeItemsTeam(false);
@@ -305,7 +306,7 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			++index;
 		}
 
-		const Item* heirloom = GetStartItem(best, HEIRLOOM);
+		const Item* heirloom = StartItem::GetStartItem(best, HEIRLOOM);
 		items[ItemTypeToSlot(heirloom->type)] = heirloom;
 	}
 
@@ -338,21 +339,21 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			}
 		}
 
-		items[SLOT_WEAPON] = GetStartItem(best, val);
+		items[SLOT_WEAPON] = StartItem::GetStartItem(best, val);
 	}
 
 	// bow
 	if(!items[SLOT_BOW])
 	{
 		int val = s[(int)Skill::BOW].value;
-		items[SLOT_BOW] = GetStartItem(Skill::BOW, val);
+		items[SLOT_BOW] = StartItem::GetStartItem(Skill::BOW, val);
 	}
 
 	// shield
 	if(!items[SLOT_SHIELD])
 	{
 		int val = s[(int)Skill::SHIELD].value;
-		items[SLOT_SHIELD] = GetStartItem(Skill::SHIELD, val);
+		items[SLOT_SHIELD] = StartItem::GetStartItem(Skill::SHIELD, val);
 	}
 
 	// armor
@@ -392,7 +393,7 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			++index;
 		}
 
-		items[SLOT_ARMOR] = GetStartItem(best, val);
+		items[SLOT_ARMOR] = StartItem::GetStartItem(best, val);
 	}
 }
 

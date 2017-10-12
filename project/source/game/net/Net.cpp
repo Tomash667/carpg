@@ -43,9 +43,9 @@ inline bool ReadItemSimple(BitStream& stream, const Item*& item)
 		return false;
 
 	if(BUF[0] == '$')
-		item = FindItem(BUF + 1);
+		item = Item::TryGet(BUF + 1);
 	else
-		item = FindItem(BUF);
+		item = Item::TryGet(BUF);
 
 	return (item != nullptr);
 }
@@ -1203,7 +1203,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		}
 		if(BUF[0] != '$')
 		{
-			auto item = FindItem(BUF, false);
+			auto item = Item::TryGet(BUF);
 			if(!item)
 			{
 				Error("Read level: Missing item preload '%s'.", BUF);
@@ -1225,7 +1225,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				Error("Read level: Missing quest item preload '%s' (%d).", BUF, refid);
 				return false;
 			}
-			auto base = FindItem(BUF + 1);
+			auto base = Item::TryGet(BUF + 1);
 			if(!base)
 			{
 				Error("Read level: Missing quest item preload base '%s' (%d).", BUF, refid);
@@ -1490,7 +1490,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 				unit.slots[i] = nullptr;
 			else
 			{
-				const Item* item = FindItem(BUF);
+				const Item* item = Item::TryGet(BUF);
 				if(item && ItemTypeToSlot(item->type) == (ITEM_SLOT)i)
 				{
 					PreloadItem(item);
@@ -1655,7 +1655,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			// used item
 			if(BUF[0])
 			{
-				unit.used_item = FindItem(BUF);
+				unit.used_item = Item::TryGet(BUF);
 				if(!unit.used_item)
 				{
 					Error("Missing used item '%s'.", BUF);
@@ -1912,7 +1912,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 		}
 		if(BUF[0])
 		{
-			unit->slots[i] = FindItem(BUF);
+			unit->slots[i] = Item::TryGet(BUF);
 			if(!unit->slots[i])
 				return false;
 		}
@@ -3962,7 +3962,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					const Item* item = FindItem(BUF);
+					const Item* item = Item::TryGet(BUF);
 					if(item && count)
 					{
 						PreloadItem(item);
@@ -6760,7 +6760,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			else
 			{
 				const Item* base;
-				base = FindItem(BUF);
+				base = Item::TryGet(BUF);
 				if(!base)
 				{
 					Error("Update client: REGISTER_ITEM, missing base item %s.", BUF);
@@ -10069,7 +10069,7 @@ int Game::ReadItemAndFind(BitStream& s, const Item*& item) const
 	}
 	else
 	{
-		item = FindItem(BUF);
+		item = Item::TryGet(BUF);
 		if(!item)
 		{
 			Warn("Missing item '%s'.", BUF);

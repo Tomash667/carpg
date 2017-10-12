@@ -7,7 +7,7 @@
 
 extern string g_system_dir;
 ItemsMap Item::items;
-std::map<string, const Item*> item_aliases;
+std::map<string, Item*> item_aliases;
 vector<ItemList*> ItemList::lists;
 vector<LeveledItemList*> LeveledItemList::lists;
 vector<Weapon*> Weapon::weapons;
@@ -19,9 +19,8 @@ vector<OtherItem*> OtherItem::others;
 vector<OtherItem*> OtherItem::artifacts;
 vector<BookScheme*> BookScheme::book_schemes;
 vector<Book*> Book::books;
-vector<Stock*> Stock::stocks;
 vector<StartItem> StartItem::start_items;
-std::map<const Item*, const Item*> better_items;
+std::map<const Item*, Item*> better_items;
 
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
@@ -34,6 +33,7 @@ WeaponTypeInfo WeaponTypeInfo::info[] = {
 
 vector<const Item*> items_to_add;
 
+//=================================================================================================
 Item& Item::operator = (const Item& i)
 {
 	assert(type == i.type);
@@ -216,94 +216,6 @@ bool ItemCmp(const Item* a, const Item* b)
 }
 
 //=================================================================================================
-const Item* FindItem(cstring id, bool report, ItemListResult* lis)
-{
-	assert(id);
-
-	// check for item list
-	if(id[0] == '!')
-	{
-		ItemListResult result = FindItemList(id + 1);
-		if(result.lis == nullptr)
-			return nullptr;
-
-		if(result.is_leveled)
-		{
-			assert(lis);
-			*lis = result;
-			return nullptr;
-		}
-		else
-		{
-			if(lis)
-				*lis = result;
-			return result.lis->Get();
-		}
-	}
-
-	if(lis)
-		lis->lis = nullptr;
-
-	// search item
-	auto it = Item::items.find(id);
-	if(it != Item::items.end())
-		return it->second;
-
-	// search item by old id
-	auto it2 = item_aliases.find(id);
-	if(it2 != item_aliases.end())
-		return it2->second;
-
-	if(report)
-		Warn("Missing item '%s'.", id);
-
-	return nullptr;
-}
-
-//=================================================================================================
-ItemListResult FindItemList(cstring id, bool report)
-{
-	assert(id);
-
-	ItemListResult result;
-
-	if(id[0] == '-')
-	{
-		result.mod = -(id[1] - '0');
-		id = id + 2;
-		assert(InRange(result.mod, -9, -1));
-	}
-	else
-		result.mod = 0;
-
-	for(ItemList* lis : ItemList::lists)
-	{
-		if(lis->id == id)
-		{
-			result.lis = lis;
-			result.is_leveled = false;
-			return result;
-		}
-	}
-
-	for(LeveledItemList* llis : LeveledItemList::lists)
-	{
-		if(llis->id == id)
-		{
-			result.llis = llis;
-			result.is_leveled = true;
-			return result;
-		}
-	}
-
-	if(report)
-		Warn("Missing item list '%s'.", id);
-
-	result.lis = nullptr;
-	return result;
-}
-
-//=================================================================================================
 void CreateItemCopy(Item& item, const Item* base_item)
 {
 	switch(base_item->type)
@@ -387,71 +299,8 @@ void Item::Validate(uint& err)
 	}
 }
 
-enum KeywordGroup
-{
-	G_ITEM_TYPE,
-	G_PROPERTY,
-	G_WEAPON_TYPE,
-	G_MATERIAL,
-	G_DMG_TYPE,
-	G_FLAGS,
-	G_ARMOR_SKILL,
-	G_ARMOR_UNIT_TYPE,
-	G_CONSUMABLE_TYPE,
-	G_EFFECT,
-	G_OTHER_TYPE,
-	G_STOCK_KEYWORD,
-	G_BOOK_SCHEME_KEYWORD,
-	G_SKILL
-};
-
-enum Property
-{
-	P_WEIGHT,
-	P_VALUE,
-	P_MESH,
-	P_TEX,
-	P_ATTACK,
-	P_REQ_STR,
-	P_TYPE,
-	P_MATERIAL,
-	P_DMG_TYPE,
-	P_FLAGS,
-	P_DEFENSE,
-	P_MOBILITY,
-	P_SKILL,
-	P_TEX_OVERRIDE,
-	P_EFFECT,
-	P_POWER,
-	P_TIME,
-	P_SPEED,
-	P_SCHEME,
-	P_RUNIC
-
-	// max 32 bits
-};
-
-enum StockKeyword
-{
-	SK_SET,
-	SK_CITY,
-	SK_ELSE,
-	SK_CHANCE,
-	SK_RANDOM,
-	SK_SAME
-};
-
-enum BOOK_SCHEME_KEYWORD
-{
-	BSK_TEXTURE,
-	BSK_SIZE,
-	BSK_REGIONS,
-	BSK_PREV,
-	BSK_NEXT
-};
-
 //=================================================================================================
-const Item* GetStartItem(Skill skill, int value)
+const Item* StartItem::GetStartItem(Skill skill, int value)
 {
 	auto it = std::lower_bound(StartItem::start_items.begin(), StartItem::start_items.end(), StartItem(skill),
 		[](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });
@@ -476,207 +325,22 @@ const Item* GetStartItem(Skill skill, int value)
 }
 
 //=================================================================================================
-Stock* FindStockScript(cstring id)
+Item* Item::TryGet(const AnyString& id)
 {
-	assert(id);
+	// search item
+	auto it = items.find(id);
+	if(it != Item::items.end())
+		return it->second;
 
-	for(Stock* s : Stock::stocks)
-	{
-		if(s->id == id)
-			return s;
-	}
+	// search item by old id
+	auto it2 = item_aliases.find(id.s);
+	if(it2 != item_aliases.end())
+		return it2->second;
 
 	return nullptr;
 }
 
-enum class CityBlock
-{
-	IN,
-	OUT,
-	ANY
-};
-
-inline bool CheckCity(CityBlock in_city, bool city)
-{
-	if(in_city == CityBlock::IN)
-		return city;
-	else if(in_city == CityBlock::OUT)
-		return !city;
-	else
-		return true;
-}
-
 //=================================================================================================
-// Add items from stock script to items list
-void AddItems(vector<ItemSlot>& items, StockEntry type, int code, int level, uint count, bool same)
-{
-	switch(type)
-	{
-	case SE_ITEM:
-		InsertItemBare(items, (const Item*)code, count);
-		break;
-	case SE_LIST:
-		{
-			ItemList* lis = (ItemList*)code;
-			if(same)
-				InsertItemBare(items, lis->Get(), count);
-			else
-			{
-				for(uint i = 0; i < count; ++i)
-					InsertItemBare(items, lis->Get());
-			}
-		}
-		break;
-	case SE_LEVELED_LIST:
-		{
-			LeveledItemList* llis = (LeveledItemList*)code;
-			if(same)
-				InsertItemBare(items, llis->Get(level), count);
-			else
-			{
-				for(uint i = 0; i < count; ++i)
-					InsertItemBare(items, llis->Get(level));
-			}
-		}
-		break;
-	default:
-		assert(0);
-		break;
-	}
-}
-
-//=================================================================================================
-void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& items)
-{
-	CityBlock in_city = CityBlock::ANY;
-	LocalVector2<int> sets;
-	bool in_set = false;
-	uint i = 0;
-	bool test_mode = false;
-
-redo_set:
-	for(; i < stock->code.size(); ++i)
-	{
-		StockEntry action = (StockEntry)stock->code[i];
-		switch(action)
-		{
-		case SE_ADD:
-			if(CheckCity(in_city, city))
-			{
-				++i;
-				StockEntry type = (StockEntry)stock->code[i];
-				++i;
-				AddItems(items, type, stock->code[i], level, 1, true);
-			}
-			else
-				i += 2;
-			break;
-		case SE_MULTIPLE:
-		case SE_SAME_MULTIPLE:
-			if(CheckCity(in_city, city))
-			{
-				++i;
-				int count = stock->code[i];
-				++i;
-				StockEntry type = (StockEntry)stock->code[i];
-				++i;
-				AddItems(items, type, stock->code[i], level, (uint)count, action == SE_SAME_MULTIPLE);
-			}
-			else
-				i += 3;
-			break;
-		case SE_CHANCE:
-			if(CheckCity(in_city, city))
-			{
-				++i;
-				int count = stock->code[i];
-				++i;
-				int chance = stock->code[i];
-				int ch = Rand() % chance;
-				int total = 0;
-				bool done = false;
-				for(int j = 0; j < count; ++j)
-				{
-					++i;
-					StockEntry type = (StockEntry)stock->code[i];
-					++i;
-					int code = stock->code[i];
-					++i;
-					total += stock->code[i];
-					if(ch < total && !done)
-					{
-						done = true;
-						AddItems(items, type, code, level, 1, true);
-					}
-				}
-			}
-			else
-			{
-				++i;
-				int count = stock->code[i];
-				i += 1 + 3 * count;
-			}
-			break;
-		case SE_RANDOM:
-		case SE_SAME_RANDOM:
-			if(CheckCity(in_city, city))
-			{
-				++i;
-				int a = stock->code[i];
-				++i;
-				int b = stock->code[i];
-				++i;
-				StockEntry type = (StockEntry)stock->code[i];
-				++i;
-				AddItems(items, type, stock->code[i], level, (uint)Random(a, b), action == SE_SAME_RANDOM);
-			}
-			else
-				i += 4;
-			break;
-		case SE_CITY:
-			in_city = CityBlock::IN;
-			break;
-		case SE_NOT_CITY:
-			in_city = CityBlock::OUT;
-			break;
-		case SE_ANY_CITY:
-			in_city = CityBlock::ANY;
-			break;
-		case SE_START_SET:
-			if(!test_mode)
-			{
-				assert(!in_set);
-				sets.push_back(i + 1);
-				while(stock->code[i] != SE_END_SET)
-					++i;
-			}
-			break;
-		case SE_END_SET:
-			if(!test_mode)
-			{
-				assert(in_set);
-				return;
-			}
-			break;
-		default:
-			assert(0);
-			break;
-		}
-	}
-
-	if(sets.size() > 0)
-	{
-		i = sets[Rand() % sets.size()];
-		in_set = true;
-		goto redo_set;
-	}
-}
-
-Item* Item::TryGet(const AnyString& id)
-{
-	return (Item*)FindItem(id, false);
-}
-
 BookScheme* BookScheme::TryGet(const AnyString& id)
 {
 	for(auto scheme : book_schemes)
@@ -688,35 +352,54 @@ BookScheme* BookScheme::TryGet(const AnyString& id)
 	return nullptr;
 }
 
-ItemListResult ItemList::TryGet(const AnyString& id)
+//=================================================================================================
+ItemListResult ItemList::TryGet(const AnyString& _id)
 {
+	ItemListResult result;
+	cstring id = _id.s;
+
+	if(id[0] == '-')
+	{
+		result.mod = -(id[1] - '0');
+		id = id + 2;
+		assert(InRange(result.mod, -9, -1));
+	}
+	else
+		result.mod = 0;
+
 	for(auto lis : lists)
 	{
 		if(lis->id == id)
-			return lis;
+		{
+			result.lis = lis;
+			result.is_leveled = false;
+			return result;
+		}
 	}
 
 	for(auto lis : LeveledItemList::lists)
 	{
 		if(lis->id == id)
-			return lis;
+		{
+			result.llis = lis;
+			result.is_leveled = true;
+			return result;
+		}
 	}
 
 	return nullptr;
 }
 
-Stock* Stock::TryGet(const AnyString& id)
-{
-	for(auto stock : stocks)
-	{
-		if(stock->id == id)
-			return stock;
-	}
-
-	return nullptr;
-}
-
+//=================================================================================================
 const Item* FindItemOrList(const AnyString& id, ItemListResult& lis)
 {
-	return FindItem(id, false, &lis);
+	auto item = Item::TryGet(id);
+	if(item)
+	{
+		lis.lis = nullptr;
+		return item;
+	}
+
+	lis = ItemList::TryGet(id);
+	return nullptr;
 }

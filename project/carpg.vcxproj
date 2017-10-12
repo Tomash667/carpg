@@ -213,6 +213,7 @@
     <ClInclude Include="source\game\quests\QuestConsts.h" />
     <ClInclude Include="source\game\stats\Action.h" />
     <ClInclude Include="source\game\stats\Buff.h" />
+    <ClInclude Include="source\game\stats\Stock.h" />
     <ClInclude Include="source\game\system\BaseObject.h" />
     <ClInclude Include="source\game\system\BaseUsable.h" />
     <ClInclude Include="source\game\system\Building.h" />
@@ -413,6 +414,7 @@
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
     <ClCompile Include="source\game\stats\Action.cpp" />
     <ClCompile Include="source\game\stats\Buff.cpp" />
+    <ClCompile Include="source\game\stats\Stock.cpp" />
     <ClCompile Include="source\game\system\BaseObject.cpp" />
     <ClCompile Include="source\game\system\BaseUsable.cpp" />
     <ClCompile Include="source\game\system\Building.cpp" />

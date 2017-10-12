@@ -40,6 +40,7 @@
 #include "Team.h"
 #include "Action.h"
 #include "ItemContainer.h"
+#include "Stock.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -2570,7 +2571,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						break;
 					}
 
-					if(key && pc->unit->HaveItem(FindItem(key)))
+					if(key && pc->unit->HaveItem(Item::Get(key)))
 					{
 						if(sound_volume)
 						{
@@ -5188,7 +5189,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(msg, "chlanie_nagroda") == 0)
 				{
 					contest_winner = nullptr;
-					AddItem(*ctx.pc->unit, FindItemList("contest_reward").lis->Get(), 1, false);
+					AddItem(*ctx.pc->unit, ItemList::GetItem("contest_reward"), 1, false);
 					if(ctx.is_local)
 						AddGameMsg3(GMS_ADDED_ITEM);
 					else
@@ -5331,7 +5332,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "szaleni_sprzedaj") == 0)
 				{
-					const Item* kamien = FindItem("q_szaleni_kamien");
+					const Item* kamien = Item::Get("q_szaleni_kamien");
 					RemoveItem(*ctx.pc->unit, kamien, 1);
 					ctx.pc->unit->gold += 10;
 					if(!ctx.is_local)
@@ -5408,7 +5409,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(msg, "sekret_daj") == 0)
 				{
 					secret_state = SECRET_REWARD;
-					const Item* item = FindItem("sword_forbidden");
+					const Item* item = Item::Get("sword_forbidden");
 					PreloadItem(item);
 					ctx.pc->unit->AddItem(item, 1, true);
 					if(!ctx.is_local)
@@ -10351,7 +10352,7 @@ void Game::GenerateTreasure(int level, int _count, vector<ItemSlot>& items, int&
 	}
 
 	if(extra)
-		InsertItemBare(items, FindItem("!treasure"));
+		InsertItemBare(items, ItemList::GetItem("treasure"));
 
 	gold = value + level * 5;
 }
@@ -14082,7 +14083,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 							u->dont_attack = true;
 
 						vector<ItemSlot>& items = quest_orcs2->wares;
-						ParseStockScript(FindStockScript("orc_blacksmith"), 0, false, items);
+						Stock::Get("orc_blacksmith")->Parse(0, false, items);
 						SortItems(items);
 					}
 				}
@@ -14144,7 +14145,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 		else
 		{
 			// dodaj kartkê (overkill sprawdzania!)
-			const Item* kartka = FindItem("sekret_kartka2");
+			const Item* kartka = Item::Get("sekret_kartka2");
 			assert(kartka);
 			Chest* c = local_ctx.FindChestInRoom(r);
 			assert(c);
@@ -19452,7 +19453,7 @@ void Game::UpdateContest(float dt)
 				{
 					assert(next_drink);
 					contest_time = 0.f;
-					const Consumable& drink = FindItem(next_drink)->ToConsumable();
+					const Consumable& drink = Item::Get(next_drink)->ToConsumable();
 					for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
 						(*it)->ConsumeItem(drink, true);
 				}
@@ -20537,7 +20538,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 
 	if(!ok)
 		return;
-	
+
 	if(Net::IsLocal())
 	{
 		u.usable = &use;
@@ -21086,7 +21087,7 @@ void Game::CheckCraziesStone()
 {
 	quest_crazies->check_stone = false;
 
-	const Item* kamien = FindItem("q_szaleni_kamien");
+	const Item* kamien = Item::Get("q_szaleni_kamien");
 	if(!Team.FindItemInTeam(kamien, -1, nullptr, nullptr, false))
 	{
 		// usuñ kamieñ z gry o ile to nie encounter bo i tak jest resetowany
@@ -22393,7 +22394,7 @@ const Item* Game::GetRandomBook()
 	if(Rand() % 2 == 0)
 		return nullptr;
 	if(Rand() % 50 == 0)
-		return FindItemList("rare_books").lis->Get();
+		return ItemList::GetItem("rare_books");
 	else
-		return FindItemList("books").lis->Get();
+		return ItemList::GetItem("books");
 }

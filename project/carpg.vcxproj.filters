@@ -661,6 +661,9 @@
     <ClCompile Include="source\game\system\Item.cpp">
       <Filter>3. game\system\items</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\stats\Stock.cpp">
+      <Filter>3. game\system\items</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1301,6 +1304,9 @@
       <Filter>3. game\system\items</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\ItemType.h">
+      <Filter>3. game\system\items</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\stats\Stock.h">
       <Filter>3. game\system\items</Filter>
     </ClInclude>
   </ItemGroup>

@@ -342,7 +342,7 @@ void Game::PostconfigureGame()
 	terrain->RemoveHeightMap(true);
 
 	// get pointer to gold item
-	gold_item_ptr = FindItem("gold");
+	gold_item_ptr = Item::Get("gold");
 
 	// copy first dungeon texture to second
 	tFloor[1] = tFloorBase;
@@ -686,7 +686,7 @@ void Game::AddLoadTasks()
 			if(!nosound && !bu.sound_id.empty())
 				bu.sound = sound_mgr.Get(bu.sound_id);
 			if(!bu.item_id.empty())
-				bu.item = FindItem(bu.item_id.c_str());
+				bu.item = Item::Get(bu.item_id);
 		}
 	}
 
@@ -935,14 +935,14 @@ void Game::LoadItemsData()
 	}
 
 	// preload hardcoded items
-	PreloadItem(FindItem("beer"));
-	PreloadItem(FindItem("vodka"));
-	PreloadItem(FindItem("spirit"));
-	PreloadItem(FindItem("p_hp"));
-	PreloadItem(FindItem("p_hp2"));
-	PreloadItem(FindItem("p_hp3"));
-	PreloadItem(FindItem("gold"));
-	auto list = FindItemList("normal_food");
+	PreloadItem(Item::Get("beer"));
+	PreloadItem(Item::Get("vodka"));
+	PreloadItem(Item::Get("spirit"));
+	PreloadItem(Item::Get("p_hp"));
+	PreloadItem(Item::Get("p_hp2"));
+	PreloadItem(Item::Get("p_hp3"));
+	PreloadItem(Item::Get("gold"));
+	auto list = ItemList::Get("normal_food");
 	for(auto item : list.lis->items)
 		PreloadItem(item);
 }

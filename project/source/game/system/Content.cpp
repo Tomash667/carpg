@@ -6,6 +6,7 @@
 #include "UnitData.h"
 #include "Music.h"
 
+//-----------------------------------------------------------------------------
 static cstring content_id[] = {
 	"items",
 	"objects",
@@ -17,11 +18,13 @@ static cstring content_id[] = {
 };
 static_assert(countof(content_id) == (int)content::Id::Max, "Missing content_id.");
 
+//-----------------------------------------------------------------------------
 string content::system_dir;
 uint content::errors, content::warnings;
 uint content::crc[(int)content::Id::Max];
 static uint client_crc[(int)content::Id::Max];
 
+//=================================================================================================
 void content::LoadContent(delegate<void(Id)> callback)
 {
 	uint loaded;
@@ -59,6 +62,7 @@ void content::LoadContent(delegate<void(Id)> callback)
 	callback(Id::Musics);
 }
 
+//=================================================================================================
 void content::CleanupContent()
 {
 	CleanupItems();
@@ -69,16 +73,19 @@ void content::CleanupContent()
 	CleanupMusics();
 }
 
+//=================================================================================================
 bool content::ReadCrc(BitStream& stream)
 {
 	return stream.Read(client_crc);
 }
 
+//=================================================================================================
 void content::WriteCrc(BitStream& stream)
 {
 	stream.Write(crc);
 }
 
+//=================================================================================================
 bool content::GetCrc(Id type, uint& my_crc, cstring& type_crc)
 {
 	if(type < (Id)0 || type >= Id::Max)
@@ -89,6 +96,7 @@ bool content::GetCrc(Id type, uint& my_crc, cstring& type_crc)
 	return true;
 }
 
+//=================================================================================================
 bool content::ValidateCrc(Id& type, uint& my_crc, uint& player_crc, cstring& type_str)
 {
 	for(uint i = 0; i < (uint)Id::Max; ++i)

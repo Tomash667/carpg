@@ -490,12 +490,9 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						ItemListResult lis;
-						Item* item = (Item*)FindItem(id.c_str(), false, &lis);
+						Item* item = Item::Get(id);
 						if(!item)
 							t.Throw("Invalid item '%s'.", id.c_str());
-						if(lis.lis)
-							t.Throw("Item '%s' is list.", id.c_str());
 						t.Next();
 						t.AssertSymbol('{');
 						t.Next();

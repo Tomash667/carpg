@@ -39,7 +39,7 @@ void ItemContainer::Load(HANDLE file)
 		ReadFile(file, &slot.count, sizeof(slot.count), &tmp, nullptr);
 		ReadFile(file, &slot.team_count, sizeof(slot.team_count), &tmp, nullptr);
 		if(BUF[0] != '$')
-			slot.item = ::FindItem(BUF);
+			slot.item = Item::Get(BUF);
 		else
 		{
 			int quest_refid;

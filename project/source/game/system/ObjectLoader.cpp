@@ -71,7 +71,7 @@ public:
 
 		CalculateCrc();
 
-		Info("Loaded objects (%u), usables (%u), - crc %p.",
+		Info("Loaded objects (%u), usables (%u) - crc %p.",
 			BaseObject::objs.size() - BaseUsable::usables.size(), BaseUsable::usables.size(), content::crc[(int)content::Id::Objects]);
 	}
 

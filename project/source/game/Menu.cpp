@@ -375,7 +375,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	cc.Apply(*pc);
 	if(finished_tutorial)
 	{
-		u->AddItem(FindItem("book_adventurer"), 1u, false);
+		u->AddItem(Item::Get("book_adventurer"), 1u, false);
 		finished_tutorial = false;
 	}
 	dialog_context.pc = pc;

@@ -87,7 +87,7 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::Talked:
 		if(prog == Progress::FoundBandits)
 		{
-			const Item* item = FindItem("q_bandyci_paczka");
+			const Item* item = Item::Get("q_bandyci_paczka");
 			if(!game->current_dialog->pc->unit->HaveItem(item))
 			{
 				game->current_dialog->pc->unit->AddItem(item, 1, true);
@@ -124,7 +124,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			start_time = game->worldtime;
 			state = Quest::Started;
 			name = game->txQuest[153];
-			const Item* item = FindItem("q_bandyci_paczka");
+			const Item* item = Item::Get("q_bandyci_paczka");
 			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
 			other_loc = game->GetRandomSettlement(start_loc);
@@ -171,7 +171,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		{
 			if(get_letter || Rand() % 3 != 0)
 			{
-				const Item* item = FindItem("q_bandyci_list");
+				const Item* item = Item::Get("q_bandyci_list");
 				game->PreloadItem(item);
 				game->current_dialog->talker->AddItem(item, 1, true);
 			}
@@ -201,7 +201,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			target_loc = camp_loc;
 			location_event_handler = this;
-			game->RemoveItem(*game->current_dialog->pc->unit, FindItem("q_bandyci_list"), 1);
+			game->RemoveItem(*game->current_dialog->pc->unit, Item::Get("q_bandyci_list"), 1);
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -323,7 +323,7 @@ void Quest_Bandits::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "bandyci_daj_paczke") == 0)
 	{
-		const Item* item = FindItem("q_bandyci_paczka");
+		const Item* item = Item::Get("q_bandyci_paczka");
 		ctx.talker->AddItem(item, 1, true);
 		game->RemoveQuestItem(item);
 	}
