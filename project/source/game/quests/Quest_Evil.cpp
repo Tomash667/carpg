@@ -177,7 +177,7 @@ void Quest_Evil::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[243]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			const Item* item = FindItem("q_zlo_ksiega");
+			const Item* item = Item::Get("q_zlo_ksiega");
 			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
 
@@ -241,7 +241,7 @@ void Quest_Evil::SetProgress(int prog2)
 
 			// dodaj jozana do dru¿yny
 			Unit& u = *game->current_dialog->talker;
-			const Item* item = FindItem("q_zlo_ksiega");
+			const Item* item = Item::Get("q_zlo_ksiega");
 			u.AddItem(item, 1, true);
 			game->RemoveItem(*game->current_dialog->pc->unit, item, 1);
 			game->AddTeamMember(&u, true);

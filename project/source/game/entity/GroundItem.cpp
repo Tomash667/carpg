@@ -31,7 +31,7 @@ void GroundItem::Load(HANDLE file)
 	BUF[len] = 0;
 	ReadFile(file, BUF, len, &tmp, nullptr);
 	if(BUF[0] != '$')
-		item = FindItem(BUF);
+		item = Item::Get(BUF);
 	else
 	{
 		int quest_refid;

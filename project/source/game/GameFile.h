@@ -35,7 +35,7 @@ public:
 	void operator >> (const Item*& item)
 	{
 		if(ReadStringBUF())
-			item = FindItem(BUF);
+			item = Item::Get(BUF);
 	}
 };
 

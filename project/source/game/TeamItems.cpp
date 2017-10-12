@@ -463,9 +463,9 @@ void Game::TeamShareDecline(DialogContext& ctx)
 //=================================================================================================
 void Game::BuyTeamItems()
 {
-	const Item* hp1 = FindItem("p_hp");
-	const Item* hp2 = FindItem("p_hp2");
-	const Item* hp3 = FindItem("p_hp3");
+	const Item* hp1 = Item::Get("p_hp");
+	const Item* hp2 = Item::Get("p_hp2");
+	const Item* hp3 = Item::Get("p_hp3");
 
 	for(Unit* unit : Team.active_members)
 	{
@@ -571,7 +571,7 @@ void Game::BuyTeamItems()
 			u.AddItem(hp3, (uint)ile, false);
 
 		// kup przedmioty
-		const ItemList* lis = FindItemList("base_items").lis;
+		const ItemList* lis = ItemList::Get("base_items").lis;
 		// kup broñ
 		if(!u.HaveWeapon())
 			u.AddItem(UnitHelper::GetBaseWeapon(u, lis));

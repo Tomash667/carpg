@@ -12,22 +12,33 @@ namespace content
 {
 	enum class Id
 	{
+		Items,
+		Objects,
+		Spells,
+		Dialogs,
+		Units,
 		Buildings,
-		Objects
+		Musics,
+
+		Max
 	};
 
 	extern string system_dir;
 	extern uint errors;
 	extern uint warnings;
-	extern uint buildings_crc;
-	extern uint objects_crc;
+	extern uint crc[(int)Id::Max];
 
 	void LoadContent(delegate<void(Id)> callback);
-	void LoadBuildings();
+	void LoadItems();
 	void LoadObjects();
+	void LoadBuildings();
 	void CleanupContent();
-	void CleanupBuildings();
+	void CleanupItems();
 	void CleanupObjects();
+	void CleanupSpells();
+	void CleanupUnits();
+	void CleanupBuildings();
+	void CleanupMusics();
 	bool ReadCrc(BitStream& stream);
 	void WriteCrc(BitStream& stream);
 	bool GetCrc(Id type, uint& my_crc, cstring& type_crc);

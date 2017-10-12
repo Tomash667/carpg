@@ -6,6 +6,7 @@
 #include "Building.h"
 #include "BuildingScript.h"
 #include "BaseUsable.h"
+#include "Stock.h"
 
 extern string g_system_dir;
 
@@ -84,7 +85,7 @@ void CheckBaseItems(uint& errors)
 		have_medium_armor = 0,
 		have_heavy_armor = 0,
 		have_mage_armor = 0;
-	const ItemList* lis = FindItemList("base_items").lis;
+	const ItemList* lis = ItemList::Get("base_items").lis;
 
 	for(const Item* item : lis->items)
 	{
@@ -194,22 +195,17 @@ bool Game::LoadRequiredStats(uint& errors)
 				case R_ITEM:
 					{
 						ItemListResult result;
-						const Item* item = FindItem(str.c_str(), false, &result);
+						const Item* item = Item::Get(str);
 						if(!item)
 						{
 							Error("Missing required item '%s'.", str.c_str());
-							++errors;
-						}
-						else if(result.lis)
-						{
-							Error("Required item '%s' is list.", str.c_str());
 							++errors;
 						}
 					}
 					break;
 				case R_LIST:
 					{
-						ItemListResult result = FindItemList(str.c_str(), false);
+						ItemListResult result = ItemList::TryGet(str.c_str());
 						if(!result.lis)
 						{
 							Error("Missing required item list '%s'.", str.c_str());
@@ -229,7 +225,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_STOCK:
 					{
-						Stock* stock = FindStockScript(str.c_str());
+						Stock* stock = Stock::TryGet(str);
 						if(!stock)
 						{
 							Error("Missing required item stock '%s'.", str.c_str());

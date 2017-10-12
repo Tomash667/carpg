@@ -270,7 +270,7 @@ void Quest_Mine::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[147]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			const Item* item = FindItem("key_kopalnia");
+			const Item* item = Item::Get("key_kopalnia");
 			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
 
@@ -428,9 +428,9 @@ void Quest_Mine::InitSub()
 	if(sub.done)
 		return;
 
-	ItemListResult result = FindItemList("ancient_armory_armors");
+	ItemListResult result = ItemList::Get("ancient_armory_armors");
 	result.lis->Get(3, sub.item_to_give);
-	sub.item_to_give[3] = FindItem("al_angelskin");
+	sub.item_to_give[3] = Item::Get("al_angelskin");
 	sub.spawn_item = Quest_Event::Item_InChest;
 	sub.target_loc = dungeon_loc;
 	sub.at_level = 0;

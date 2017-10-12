@@ -322,9 +322,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						case K_HAVE_ITEM:
 							{
 								const string& id = t.MustGetItemKeyword();
-								ItemListResult result;
-								const Item* item = FindItem(id.c_str(), false, &result);
-								if(item && result.lis == nullptr)
+								const Item* item = Item::TryGet(id);
+								if(item)
 								{
 									t.Next();
 									dialog->code.push_back({ DT_IF_HAVE_ITEM, (cstring)item });

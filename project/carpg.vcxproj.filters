@@ -64,6 +64,9 @@
     <Filter Include="3. game\system\buildings">
       <UniqueIdentifier>{832797a9-e416-46ec-bdc8-965ed5a4bd43}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3. game\system\items">
+      <UniqueIdentifier>{538a0371-6a23-4988-b2e4-0735a1ab3812}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
@@ -205,9 +208,6 @@
       <Filter>3. game\stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Class.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\stats\Item.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\stats\Material.cpp">
@@ -655,6 +655,15 @@
     <ClCompile Include="source\game\system\BuildingGroup.cpp">
       <Filter>3. game\system\buildings</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\system\ItemLoader.cpp">
+      <Filter>3. game\system\items</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\Item.cpp">
+      <Filter>3. game\system\items</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\stats\Stock.cpp">
+      <Filter>3. game\system\items</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -796,12 +805,6 @@
       <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\DamageTypes.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\Item.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\ItemType.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Material.h">
@@ -1296,6 +1299,15 @@
     </ClInclude>
     <ClInclude Include="source\game\system\BuildingScript.h">
       <Filter>3. game\system\buildings</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\Item.h">
+      <Filter>3. game\system\items</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\ItemType.h">
+      <Filter>3. game\system\items</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\stats\Stock.h">
+      <Filter>3. game\system\items</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

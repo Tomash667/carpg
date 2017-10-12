@@ -1788,10 +1788,6 @@ void Game::OnCleanup()
 		SafeRelease(it.second);
 
 	content::CleanupContent();
-	CleanupUnits();
-	CleanupItems();
-	CleanupSpells();
-	DeleteElements(musics);
 
 	// teren
 	delete terrain;
@@ -1813,7 +1809,7 @@ void Game::OnCleanup()
 		delete obj_arrow->getCollisionShape();
 	delete obj_arrow;
 	delete obj_spell;
-	
+
 	draw_batch.Clear();
 	free_cave_data();
 	DeleteElements(game_players);
@@ -2310,7 +2306,7 @@ void Game::SetGameText()
 	txSGOMagesAndGolems = Str("sgo_magesAndGolems");
 	txSGOUnk = Str("sgo_unk");
 	txSGOPowerfull = Str("sgo_powerfull");
-	
+
 	// rodzaje wrogów
 	for(int i = 0; i < SG_MAX; ++i)
 	{
