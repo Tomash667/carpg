@@ -2,6 +2,7 @@
 creatingListOfFiles = "Tworzenie listy zasobów"
 configuringGame = "Konfigurowanie gry"
 loadingItems = "Wczytywanie przedmiotów"
+loadingObjects = "Wczytywanie obiektów"
 loadingSpells = "Wczytywanie zaklêæ"
 loadingUnits = "Wczytywanie jednostek"
 loadingMusics = "Wczytywanie muzyki"

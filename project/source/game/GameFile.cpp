@@ -38,6 +38,6 @@ void GameReader::LoadArtifact(const Item*& item)
 		case 19: id = "a_talizman2"; break;
 		}
 
-		item = FindItem(id);
+		item = Item::Get(id);
 	}
 }

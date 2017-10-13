@@ -1186,7 +1186,7 @@ void Engine::SelectResolution()
 		if(d_mode.Width < (uint)MIN_WINDOW_SIZE.x || d_mode.Height < (uint)MIN_WINDOW_SIZE.y)
 			continue;
 		ress.push_back(E::Res(d_mode.Width, d_mode.Height, d_mode.RefreshRate));
-		if(d_mode.Width == DEFAULT_WINDOW_SIZE.x && d_mode.Height == DEFAULT_WINDOW_SIZE.y)
+		if(d_mode.Width == (uint)DEFAULT_WINDOW_SIZE.x && d_mode.Height == (uint)DEFAULT_WINDOW_SIZE.y)
 		{
 			if(d_mode.RefreshRate > (uint)best_hz)
 				best_hz = d_mode.RefreshRate;

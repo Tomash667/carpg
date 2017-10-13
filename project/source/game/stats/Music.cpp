@@ -1,8 +1,10 @@
 #include "Pch.h"
 #include "Core.h"
 #include "Game.h"
+#include "Content.h"
 
 //-----------------------------------------------------------------------------
+vector<Music*> Music::musics;
 extern string g_system_dir;
 
 //=================================================================================================
@@ -48,7 +50,7 @@ void Game::SetupTracks()
 {
 	tracks.clear();
 
-	for(Music* music : musics)
+	for(Music* music : Music::musics)
 	{
 		if(music->type == music_type)
 		{
@@ -132,7 +134,7 @@ void Game::SetMusic()
 }
 
 //=================================================================================================
-uint Game::LoadMusicDatafile(uint& errors)
+uint LoadMusics(uint& errors)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE);
 	if(!t.FromFile(Format("%s/music.txt", g_system_dir.c_str())))
@@ -185,7 +187,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 							if(music->music)
 							{
 								music->type = type;
-								musics.push_back(music.Pin());
+								Music::musics.push_back(music.Pin());
 							}
 							else
 							{
@@ -209,7 +211,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 					if(music->music)
 					{
 						music->type = type;
-						musics.push_back(music.Pin());
+						Music::musics.push_back(music.Pin());
 					}
 					else
 					{
@@ -234,7 +236,7 @@ uint Game::LoadMusicDatafile(uint& errors)
 		++errors;
 	}
 
-	return musics.size();
+	return  Music::musics.size();
 }
 
 //=================================================================================================
@@ -243,7 +245,7 @@ void Game::LoadMusic(MusicType type, bool new_load_screen, bool task)
 	bool first = true;
 	auto& sound_mgr = ResourceManager::Get<Sound>();
 
-	for(Music* music : musics)
+	for(Music* music : Music::musics)
 	{
 		if(music->type == type)
 		{
@@ -264,4 +266,10 @@ void Game::LoadMusic(MusicType type, bool new_load_screen, bool task)
 				sound_mgr.Load(music->music);
 		}
 	}
+}
+
+//=================================================================================================
+void content::CleanupMusics()
+{
+	DeleteElements(Music::musics);
 }

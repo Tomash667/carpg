@@ -8,7 +8,6 @@
 #include "ItemType.h"
 #include "ArmorUnitType.h"
 #include "Resource.h"
-#include "ItemSlot.h"
 
 //-----------------------------------------------------------------------------
 static const int HEIRLOOM = -1;
@@ -46,12 +45,31 @@ enum ITEM_FLAGS
 
 //-----------------------------------------------------------------------------
 struct Armor;
+struct Book;
 struct Bow;
 struct Consumable;
+struct Item;
+struct ItemList;
+struct ItemListResult;
+struct LeveledItemList;
+struct OtherItem;
 struct Shield;
 struct Weapon;
-struct OtherItem;
-struct Book;
+
+//-----------------------------------------------------------------------------
+struct CstringHash
+{
+	size_t operator() (cstring s) const
+	{
+		size_t hash = 0;
+		while(*s)
+		{
+			hash = hash * 101 + *s++;
+		}
+		return hash;
+	}
+};
+typedef std::unordered_map<cstring, Item*, CstringHash, CstringEqualComparer> ItemsMap;
 
 //-----------------------------------------------------------------------------
 // Base item type
@@ -61,6 +79,8 @@ struct Item
 	{
 	}
 	virtual ~Item() {}
+
+	Item& operator = (const Item& i);
 
 	template<typename T, ITEM_TYPE _type>
 	T& Cast()
@@ -179,8 +199,6 @@ struct Item
 		return float(value) / weight;
 	}
 
-	static void Validate(uint& err);
-
 	string id, mesh_id, name, desc;
 	int weight, value, flags, refid;
 	ITEM_TYPE type;
@@ -188,6 +206,16 @@ struct Item
 	TexturePtr tex;
 	TEX icon;
 	ResourceState state;
+
+	static ItemsMap items;
+	static Item* TryGet(const AnyString& id);
+	static Item* Get(const AnyString& id)
+	{
+		auto item = TryGet(id);
+		assert(item);
+		return item;
+	}
+	static void Validate(uint& err);
 };
 
 //-----------------------------------------------------------------------------
@@ -379,6 +407,7 @@ struct BookScheme
 	vector<Rect> regions;
 
 	static vector<BookScheme*> book_schemes;
+	static BookScheme* TryGet(const AnyString& id);
 };
 
 struct Book : public Item
@@ -392,6 +421,7 @@ struct Book : public Item
 	static vector<Book*> books;
 };
 
+
 //-----------------------------------------------------------------------------
 // Item lists
 struct ItemList
@@ -404,6 +434,11 @@ struct ItemList
 		return items[Rand() % items.size()];
 	}
 	void Get(int count, const Item** result) const;
+
+	static vector<ItemList*> lists;
+	static ItemListResult TryGet(const AnyString& id);
+	static ItemListResult Get(const AnyString& id);
+	static const Item* GetItem(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -420,6 +455,8 @@ struct LeveledItemList
 	vector<Entry> items;
 
 	const Item* Get(int level) const;
+
+	static vector<LeveledItemList*> lists;
 };
 
 //-----------------------------------------------------------------------------
@@ -433,6 +470,24 @@ struct ItemListResult
 	int mod;
 	bool is_leveled;
 
+	ItemListResult()
+	{
+	}
+	ItemListResult(nullptr_t) : lis(nullptr), is_leveled(false)
+	{
+	}
+	ItemListResult(const ItemList* lis) : lis(lis), is_leveled(false), mod(0)
+	{
+	}
+	ItemListResult(const LeveledItemList* llis) : llis(llis), is_leveled(true), mod(0)
+	{
+	}
+
+	operator bool() const
+	{
+		return lis != nullptr;
+	}
+
 	cstring GetId() const
 	{
 		return is_leveled ? llis->id.c_str() : lis->id.c_str();
@@ -444,36 +499,19 @@ struct ItemListResult
 	}
 };
 
-//-----------------------------------------------------------------------------
-enum StockEntry
+inline ItemListResult ItemList::Get(const AnyString& id)
 {
-	SE_ADD,
-	SE_MULTIPLE,
-	SE_ITEM,
-	SE_CHANCE,
-	SE_RANDOM,
-	SE_CITY,
-	SE_NOT_CITY,
-	SE_ANY_CITY,
-	SE_START_SET,
-	SE_END_SET,
-	SE_LIST,
-	SE_LEVELED_LIST,
-	SE_SAME_MULTIPLE,
-	SE_SAME_RANDOM
-};
+	auto result = TryGet(id);
+	assert(result.lis != nullptr);
+	return result;
+}
 
-//-----------------------------------------------------------------------------
-struct Stock
+inline const Item* ItemList::GetItem(const AnyString& id)
 {
-	string id;
-	vector<int> code;
-
-	static vector<Stock*> stocks;
-};
-
-Stock* FindStockScript(cstring id);
-void ParseStockScript(Stock* stock, int level, bool city, vector<ItemSlot>& items);
+	auto result = Get(id);
+	assert(!result.is_leveled);
+	return result.lis->Get();
+}
 
 //-----------------------------------------------------------------------------
 struct StartItem
@@ -485,41 +523,15 @@ struct StartItem
 	StartItem(Skill skill, const Item* item = nullptr, int value = 0) : skill(skill), item(item), value(value) {}
 
 	static vector<StartItem> start_items;
+	static const Item* GetStartItem(Skill skill, int value);
 };
-const Item* GetStartItem(Skill skill, int value);
 
 //-----------------------------------------------------------------------------
 bool ItemCmp(const Item* a, const Item* b);
-const Item* FindItem(cstring id, bool report = true, ItemListResult* lis = nullptr);
-ItemListResult FindItemList(cstring id, bool report = true);
+const Item* FindItemOrList(const AnyString& id, ItemListResult& lis);
 void CreateItemCopy(Item& item, const Item* base_item);
 Item* CreateItemCopy(const Item* item);
-uint LoadItems(uint& crc, uint& errors);
-void CleanupItems();
 
 //-----------------------------------------------------------------------------
-struct Hash
-{
-	size_t operator() (cstring s) const
-	{
-		size_t hash = 0;
-		while(*s)
-		{
-			hash = hash * 101 + *s++;
-		}
-		return hash;
-	}
-};
-
-struct CmpCstring
-{
-	bool operator () (cstring a, cstring b) const
-	{
-		return strcmp(a, b) == 0;
-	}
-};
-
-typedef std::unordered_map<cstring, Item*, Hash, CmpCstring> ItemsMap;
-
-extern ItemsMap g_items;
-extern std::map<const Item*, const Item*> better_items;
+extern std::map<const Item*, Item*> better_items;
+extern std::map<string, Item*> item_aliases;

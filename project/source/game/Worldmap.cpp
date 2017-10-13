@@ -28,6 +28,7 @@
 #include "ItemContainer.h"
 #include "BuildingScript.h"
 #include "BuildingGroup.h"
+#include "Stock.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern Matrix m1, m2, m3, m4;
@@ -2644,7 +2645,7 @@ void Game::GenerateStockItems()
 			}
 		}
 		// basic equipment
-		ParseStockScript(FindStockScript("blacksmith"), 5, is_city, chest_blacksmith);
+		Stock::Get("blacksmith")->Parse(5, is_city, chest_blacksmith);
 		SortItems(chest_blacksmith);
 	}
 
@@ -2665,8 +2666,8 @@ void Game::GenerateStockItems()
 	if(IS_SET(city.flags, City::HaveInn))
 	{
 		chest_innkeeper.clear();
-		ParseStockScript(FindStockScript("innkeeper"), 5, is_city, chest_innkeeper);
-		const ItemList* lis2 = FindItemList("normal_food").lis;
+		Stock::Get("innkeeper")->Parse(5, is_city, chest_innkeeper);
+		const ItemList* lis2 = ItemList::Get("normal_food").lis;
 		for(uint i = 0, count = Random(10, 20) + count_mod; i < count; ++i)
 			InsertItemBare(chest_innkeeper, lis2->Get());
 		SortItems(chest_innkeeper);
@@ -2676,7 +2677,7 @@ void Game::GenerateStockItems()
 	if(IS_SET(city.flags, City::HaveFoodSeller))
 	{
 		chest_food_seller.clear();
-		const ItemList* lis = FindItemList("food_and_drink").lis;
+		const ItemList* lis = ItemList::Get("food_and_drink").lis;
 		for(const Item* item : lis->items)
 		{
 			uint value = Random(50, 100);
@@ -2685,9 +2686,9 @@ void Game::GenerateStockItems()
 			InsertItemBare(chest_food_seller, item, value / item->value);
 		}
 		if(Rand() % 4 == 0)
-			InsertItemBare(chest_food_seller, FindItem("frying_pan"));
+			InsertItemBare(chest_food_seller, Item::Get("frying_pan"));
 		if(Rand() % 4 == 0)
-			InsertItemBare(chest_food_seller, FindItem("ladle"));
+			InsertItemBare(chest_food_seller, Item::Get("ladle"));
 		SortItems(chest_food_seller);
 	}
 }
@@ -2696,8 +2697,8 @@ void Game::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit)
 {
 	const Item* item;
 	items.clear();
-	InsertItemBare(items, FindItem("p_nreg"), Random(5, 10));
-	InsertItemBare(items, FindItem("p_hp"), Random(5, 10));
+	InsertItemBare(items, Item::Get("p_nreg"), Random(5, 10));
+	InsertItemBare(items, Item::Get("p_hp"), Random(5, 10));
 	for(int i = 0, ile = Random(15, 20); i < ile; ++i)
 	{
 		switch(Rand() % 6)
@@ -3530,8 +3531,8 @@ void Game::SpawnForestItems(int count_mod)
 		int count;
 	};
 	ItemToSpawn items_to_spawn[] = {
-		FindItem("green_herb"), green_herbs,
-		FindItem("healing_herb"), herbs
+		Item::Get("green_herb"), green_herbs,
+		Item::Get("healing_herb"), herbs
 	};
 	TerrainTile* tiles = ((OutsideLocation*)location)->tiles;
 	Vec2 region_size(2.f, 2.f);
@@ -4084,7 +4085,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 
 		if(kamien)
 		{
-			int slot = talker->FindItem(FindItem("q_szaleni_kamien"));
+			int slot = talker->FindItem(Item::Get("q_szaleni_kamien"));
 			if(slot != -1)
 				talker->items[slot].team_count = 0;
 		}
@@ -6072,7 +6073,7 @@ void Game::GenerateMushrooms(int days_since)
 	Int2 pt;
 	Vec2 pos;
 	int dir;
-	const Item* shroom = FindItem("mushroom");
+	const Item* shroom = Item::Get("mushroom");
 
 	for(int i = 0; i < days_since * 20; ++i)
 	{
@@ -6112,10 +6113,10 @@ void Game::GenerateCityPickableItems()
 
 	// piwa w karczmie
 	InsideBuilding* inn = city_ctx->FindInn();
-	const Item* beer = FindItem("beer");
-	const Item* vodka = FindItem("vodka");
-	const Item* plate = FindItem("plate");
-	const Item* cup = FindItem("cup");
+	const Item* beer = Item::Get("beer");
+	const Item* vodka = Item::Get("vodka");
+	const Item* plate = Item::Get("plate");
+	const Item* cup = Item::Get("cup");
 	for(vector<Object*>::iterator it = inn->ctx.objects->begin(), end = inn->ctx.objects->end(); it != end; ++it)
 	{
 		Object& obj = **it;
@@ -6165,7 +6166,7 @@ void Game::GenerateCityPickableItems()
 
 		if(found_obj)
 		{
-			const ItemList* lis = FindItemList("food_and_drink").lis;
+			const ItemList* lis = ItemList::Get("food_and_drink").lis;
 			PickableItemBegin(local_ctx, *found_obj);
 			for(int i = 0; i < 20; ++i)
 				PickableItemAdd(lis->Get());
@@ -6195,14 +6196,14 @@ void Game::GenerateCityPickableItems()
 		if(found_obj)
 		{
 			PickableItemBegin(local_ctx, *found_obj);
-			const Item* heal_pot = FindItem("p_hp");
+			const Item* heal_pot = Item::Get("p_hp");
 			PickableItemAdd(heal_pot);
 			if(Rand() % 2 == 0)
 				PickableItemAdd(heal_pot);
 			if(Rand() % 2 == 0)
-				PickableItemAdd(FindItem("p_nreg"));
+				PickableItemAdd(Item::Get("p_nreg"));
 			if(Rand() % 2 == 0)
-				PickableItemAdd(FindItem("healing_herb"));
+				PickableItemAdd(Item::Get("healing_herb"));
 		}
 	}
 }
@@ -6322,11 +6323,11 @@ void Game::GenerateDungeonFood()
 		return;
 
 	// get food list and base objects
-	const ItemList& lis = *FindItemList(sg.orc_food ? "orc_food" : "normal_food").lis;
+	const ItemList& lis = *ItemList::Get(sg.orc_food ? "orc_food" : "normal_food").lis;
 	BaseObject* table = BaseObject::Get("table"),
 		*shelves = BaseObject::Get("shelves");
-	const Item* plate = FindItem("plate");
-	const Item* cup = FindItem("cup");
+	const Item* plate = Item::Get("plate");
+	const Item* cup = Item::Get("cup");
 	bool spawn_golden_cup = Rand() % 100 == 0;
 
 	// spawn food
@@ -6339,7 +6340,7 @@ void Game::GenerateDungeonFood()
 			if(spawn_golden_cup)
 			{
 				spawn_golden_cup = false;
-				PickableItemAdd(FindItem("golden_cup"));
+				PickableItemAdd(Item::Get("golden_cup"));
 			}
 			else
 			{

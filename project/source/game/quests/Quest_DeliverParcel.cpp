@@ -46,7 +46,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// give parcel to player
 		{
 			Location& loc = *game->locations[end_loc];
-			const Item* base_item = FindItem("parcel");
+			const Item* base_item = Item::Get("parcel");
 			game->PreloadItem(base_item);
 			CreateItemCopy(parcel, base_item);
 			parcel.id = "$parcel";
@@ -288,7 +288,7 @@ bool Quest_DeliverParcel::Load(HANDLE file)
 		ReadFile(file, &end_loc, sizeof(end_loc), &tmp, nullptr);
 
 		Location& loc = *game->locations[end_loc];
-		const Item* base_item = FindItem("parcel");
+		const Item* base_item = Item::Get("parcel");
 		CreateItemCopy(parcel, base_item);
 		parcel.id = "$parcel";
 		parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());

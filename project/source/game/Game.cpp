@@ -1788,10 +1788,6 @@ void Game::OnCleanup()
 		SafeRelease(it.second);
 
 	content::CleanupContent();
-	CleanupUnits();
-	CleanupItems();
-	CleanupSpells();
-	DeleteElements(musics);
 
 	// teren
 	delete terrain;

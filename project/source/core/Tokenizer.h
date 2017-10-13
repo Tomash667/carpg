@@ -439,6 +439,7 @@ namespace tokenizer
 		}
 		int IsKeywordGroup(std::initializer_list<int> const & groups) const;
 		bool IsBool() const { return IsInt() && (normal_seek._int == 0 || normal_seek._int == 1); }
+		bool IsItemOrString() const { return IsItem() || IsString(); }
 
 		//===========================================================================================================================
 		static cstring GetTokenName(TOKEN _tt);
@@ -627,6 +628,16 @@ namespace tokenizer
 			return EMPTY_GROUP;
 		}
 		const string& GetBlock(char open = '{', char close = '}');
+		const string& GetItemOrString() const
+		{
+			assert(IsItemOrString());
+			return normal_seek.item;
+		}
+		const string& GetText() const
+		{
+			assert(IsText());
+			return normal_seek.item;
+		}
 
 		//===========================================================================================================================
 		const string& MustGetItem() const

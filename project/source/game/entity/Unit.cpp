@@ -1436,7 +1436,7 @@ void Unit::Load(HANDLE file, bool local)
 	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		ReadString1(file);
-		slots[i] = (BUF[0] ? ::FindItem(BUF) : nullptr);
+		slots[i] = (BUF[0] ? Item::Get(BUF) : nullptr);
 	}
 	uint ile;
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
@@ -1447,7 +1447,7 @@ void Unit::Load(HANDLE file, bool local)
 		ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
 		ReadFile(file, &it->team_count, sizeof(it->team_count), &tmp, nullptr);
 		if(BUF[0] != '$')
-			it->item = ::FindItem(BUF);
+			it->item = Item::Get(BUF);
 		else
 		{
 			int quest_item_refid;
@@ -1655,7 +1655,7 @@ void Unit::Load(HANDLE file, bool local)
 		{
 			BUF[len] = 0;
 			ReadFile(file, BUF, len, &tmp, nullptr);
-			used_item = ::FindItem(BUF);
+			used_item = Item::Get(BUF);
 			ReadFile(file, &used_item_is_team, sizeof(used_item_is_team), &tmp, nullptr);
 		}
 		else

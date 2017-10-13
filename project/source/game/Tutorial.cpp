@@ -182,7 +182,7 @@ void Game::StartTutorial()
 
 	// ekwipunek
 	pc->unit->ClearInventory();
-	auto item = FindItem("al_clothes");
+	auto item = Item::Get("al_clothes");
 	PreloadItem(item);
 	pc->unit->slots[SLOT_ARMOR] = item;
 	pc->unit->weight += pc->unit->slots[SLOT_ARMOR]->weight;
@@ -285,9 +285,9 @@ void Game::StartTutorial()
 						{
 							BaseObject* o = BaseObject::Get("chest");
 							Chest* chest = SpawnObjectEntity(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
-							chest->AddItem(FindItem("sword_long"));
-							chest->AddItem(FindItem("shield_wood"));
-							chest->AddItem(FindItem("al_leather"));
+							chest->AddItem(Item::Get("sword_long"));
+							chest->AddItem(Item::Get("shield_wood"));
+							chest->AddItem(Item::Get("al_leather"));
 							chest->AddItem(gold_item_ptr, Random(75, 100));
 							chest->handler = &tut_chest_handler;
 						}
@@ -307,8 +307,8 @@ void Game::StartTutorial()
 						{
 							BaseObject* o = BaseObject::Get("chest");
 							Chest* chest = SpawnObjectEntity(local_ctx, o, Vec3(2.f*x + 1, 0, 2.f*y + o->size.y), PI);
-							chest->AddItem(FindItem("bow_short"));
-							chest->AddItem(FindItem("p_hp"));
+							chest->AddItem(Item::Get("bow_short"));
+							chest->AddItem(Item::Get("p_hp"));
 							chest->AddItem(gold_item_ptr, Random(75, 100));
 							chest->handler = &tut_chest_handler2;
 						}

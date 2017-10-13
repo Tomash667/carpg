@@ -53,4 +53,3 @@ extern vector<std::pair<string, Spell*>> spell_alias;
 //-----------------------------------------------------------------------------
 Spell* FindSpell(cstring id);
 uint LoadSpells(uint& crc, uint& errors);
-void CleanupSpells();

@@ -34,14 +34,10 @@ enum class JoinResult
 	FullServer = 0,
 	InvalidVersion,
 	TakenNick,
-	InvalidItemsCrc,
 	BrokenPacket,
 	OtherError,
 	InvalidNick,
-	InvalidSpellsCrc,
-	InvalidUnitsCrc,
-	InvalidDialogsCrc,
-	InvalidTypeCrc
+	InvalidCrc
 };
 
 //-----------------------------------------------------------------------------

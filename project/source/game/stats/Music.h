@@ -24,4 +24,9 @@ struct Music
 {
 	SoundPtr music;
 	MusicType type;
+
+	static vector<Music*> musics;
 };
+
+//-----------------------------------------------------------------------------
+uint LoadMusics(uint& errors);

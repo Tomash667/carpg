@@ -67,6 +67,7 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;../external/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3d9.lib;d3dx9d.lib;SLikeNet_debug.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath_debug.lib;BulletCollision_debug.lib;zlib_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Manifest>
       <AdditionalManifestFiles>carpg.exe.manifest</AdditionalManifestFiles>
@@ -106,6 +107,7 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>../external/DirectX/Lib/x86;../external/FMod/lib;../external/Visual Leak Detector/lib/Win32;../external/lib;F:\SLikeNet\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;SLikeNet.lib;ws2_32.lib;fmodex_vc.lib;dbghelp.lib;LinearMath.lib;BulletCollision.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4098 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Manifest>
       <AdditionalManifestFiles>carpg.exe.manifest</AdditionalManifestFiles>
@@ -211,6 +213,7 @@
     <ClInclude Include="source\game\quests\QuestConsts.h" />
     <ClInclude Include="source\game\stats\Action.h" />
     <ClInclude Include="source\game\stats\Buff.h" />
+    <ClInclude Include="source\game\stats\Stock.h" />
     <ClInclude Include="source\game\system\BaseObject.h" />
     <ClInclude Include="source\game\system\BaseUsable.h" />
     <ClInclude Include="source\game\system\Building.h" />
@@ -320,8 +323,6 @@
     <ClInclude Include="source\game\stats\Const.h" />
     <ClInclude Include="source\game\stats\DamageTypes.h" />
     <ClInclude Include="source\game\stats\Effect.h" />
-    <ClInclude Include="source\game\stats\Item.h" />
-    <ClInclude Include="source\game\stats\ItemType.h" />
     <ClInclude Include="source\game\stats\MagicEffect.h" />
     <ClInclude Include="source\game\stats\Material.h" />
     <ClInclude Include="source\game\stats\Music.h" />
@@ -333,6 +334,8 @@
     <ClInclude Include="source\game\stats\StatProfile.h" />
     <ClInclude Include="source\game\stats\UnitData.h" />
     <ClInclude Include="source\game\stats\UnitStats.h" />
+    <ClInclude Include="source\game\system\Item.h" />
+    <ClInclude Include="source\game\system\ItemType.h" />
     <ClInclude Include="source\game\Team.h" />
     <ClInclude Include="source\game\TerrainTile.h" />
     <ClInclude Include="source\Pch.h" />
@@ -411,6 +414,7 @@
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
     <ClCompile Include="source\game\stats\Action.cpp" />
     <ClCompile Include="source\game\stats\Buff.cpp" />
+    <ClCompile Include="source\game\stats\Stock.cpp" />
     <ClCompile Include="source\game\system\BaseObject.cpp" />
     <ClCompile Include="source\game\system\BaseUsable.cpp" />
     <ClCompile Include="source\game\system\Building.cpp" />
@@ -515,7 +519,6 @@
     <ClCompile Include="source\game\stats\BaseTrap.cpp" />
     <ClCompile Include="source\game\stats\Class.cpp" />
     <ClCompile Include="source\game\stats\Effect.cpp" />
-    <ClCompile Include="source\game\stats\Item.cpp" />
     <ClCompile Include="source\game\stats\Material.cpp" />
     <ClCompile Include="source\game\stats\Music.cpp" />
     <ClCompile Include="source\game\stats\Names.cpp" />
@@ -528,6 +531,8 @@
     <ClCompile Include="source\game\stats\StatProfile.cpp" />
     <ClCompile Include="source\game\stats\UnitData.cpp" />
     <ClCompile Include="source\game\stats\UnitStats.cpp" />
+    <ClCompile Include="source\game\system\Item.cpp" />
+    <ClCompile Include="source\game\system\ItemLoader.cpp" />
     <ClCompile Include="source\game\system\ObjectLoader.cpp" />
     <ClCompile Include="source\game\Team.cpp" />
     <ClCompile Include="source\game\TeamItems.cpp" />

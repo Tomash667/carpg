@@ -121,6 +121,7 @@ void Game::PreloadLanguage()
 	txCreatingListOfFiles = Str("creatingListOfFiles");
 	txConfiguringGame = Str("configuringGame");
 	txLoadingItems = Str("loadingItems");
+	txLoadingObjects = Str("loadingObjects");
 	txLoadingSpells = Str("loadingSpells");
 	txLoadingUnits = Str("loadingUnits");
 	txLoadingMusics = Str("loadingMusics");
@@ -152,7 +153,7 @@ void Game::PreloadData()
 		Music* music = new Music;
 		music->music = ResourceManager::Get<Sound>().GetLoadedMusic("Intro.ogg");
 		music->type = MusicType::Intro;
-		musics.push_back(music);
+		Music::musics.push_back(music);
 		SetMusic(MusicType::Intro);
 	}
 }
@@ -163,7 +164,7 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	load_screen->Setup(0.f, 0.33f, 12, txCreatingListOfFiles);
+	load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
 
 	AddFilesystem();
 	LoadDatafiles();
@@ -193,32 +194,6 @@ void Game::LoadDatafiles()
 	auto& res_mgr = ResourceManager::Get();
 	load_errors = 0;
 	load_warnings = 0;
-	uint loaded;
-
-	// items
-	load_screen->Tick(txLoadingItems);
-	loaded = LoadItems(crc_items, load_errors);
-	Info("Game: Loaded items: %u (crc %p).", loaded, crc_items);
-
-	// spells
-	load_screen->Tick(txLoadingSpells);
-	loaded = LoadSpells(crc_spells, load_errors);
-	Info("Game: Loaded spells: %u (crc %p).", loaded, crc_spells);
-
-	// dialogs
-	load_screen->Tick(txLoadingDialogs);
-	loaded = LoadDialogs(crc_dialogs, load_errors);
-	Info("Game: Loaded dialogs: %u (crc %p).", loaded, crc_dialogs);
-
-	// units
-	load_screen->Tick(txLoadingUnits);
-	loaded = LoadUnits(crc_units, load_errors);
-	Info("Game: Loaded units: %u (crc %p).", loaded, crc_units);
-
-	// musics
-	load_screen->Tick(txLoadingMusics);
-	loaded = LoadMusicDatafile(load_errors);
-	Info("Game: Loaded music: %u.", loaded);
 
 	// content
 	content::system_dir = g_system_dir;
@@ -226,8 +201,26 @@ void Game::LoadDatafiles()
 	{
 		switch(id)
 		{
+		case content::Id::Items:
+			load_screen->Tick(txLoadingItems);
+			break;
+		case content::Id::Objects:
+			load_screen->Tick(txLoadingObjects);
+			break;
+		case content::Id::Spells:
+			load_screen->Tick(txLoadingSpells);
+			break;
+		case content::Id::Dialogs:
+			load_screen->Tick(txLoadingDialogs);
+			break;
+		case content::Id::Units:
+			load_screen->Tick(txLoadingUnits);
+			break;
 		case content::Id::Buildings:
 			load_screen->Tick(txLoadingBuildings);
+			break;
+		case content::Id::Musics:
+			load_screen->Tick(txLoadingMusics);
 			break;
 		}
 	});
@@ -349,7 +342,7 @@ void Game::PostconfigureGame()
 	terrain->RemoveHeightMap(true);
 
 	// get pointer to gold item
-	gold_item_ptr = FindItem("gold");
+	gold_item_ptr = Item::Get("gold");
 
 	// copy first dungeon texture to second
 	tFloor[1] = tFloorBase;
@@ -693,7 +686,7 @@ void Game::AddLoadTasks()
 			if(!nosound && !bu.sound_id.empty())
 				bu.sound = sound_mgr.Get(bu.sound_id);
 			if(!bu.item_id.empty())
-				bu.item = FindItem(bu.item_id.c_str());
+				bu.item = Item::Get(bu.item_id);
 		}
 	}
 
@@ -914,7 +907,7 @@ void Game::LoadItemsData()
 		}
 	}
 
-	for(auto it : g_items)
+	for(auto it : Item::items)
 	{
 		Item& item = *it.second;
 
@@ -942,14 +935,14 @@ void Game::LoadItemsData()
 	}
 
 	// preload hardcoded items
-	PreloadItem(FindItem("beer"));
-	PreloadItem(FindItem("vodka"));
-	PreloadItem(FindItem("spirit"));
-	PreloadItem(FindItem("p_hp"));
-	PreloadItem(FindItem("p_hp2"));
-	PreloadItem(FindItem("p_hp3"));
-	PreloadItem(FindItem("gold"));
-	auto list = FindItemList("normal_food");
+	PreloadItem(Item::Get("beer"));
+	PreloadItem(Item::Get("vodka"));
+	PreloadItem(Item::Get("spirit"));
+	PreloadItem(Item::Get("p_hp"));
+	PreloadItem(Item::Get("p_hp2"));
+	PreloadItem(Item::Get("p_hp3"));
+	PreloadItem(Item::Get("gold"));
+	auto list = ItemList::Get("normal_food");
 	for(auto item : list.lis->items)
 		PreloadItem(item);
 }

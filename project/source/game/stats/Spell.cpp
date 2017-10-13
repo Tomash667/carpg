@@ -2,6 +2,7 @@
 #include "Core.h"
 #include "Spell.h"
 #include "Crc.h"
+#include "Content.h"
 
 extern string g_system_dir;
 vector<Spell*> spells;
@@ -338,7 +339,7 @@ uint LoadSpells(uint& out_crc, uint& errors)
 }
 
 //=================================================================================================
-void CleanupSpells()
+void content::CleanupSpells()
 {
 	DeleteElements(spells);
 }

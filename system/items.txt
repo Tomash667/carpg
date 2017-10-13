@@ -2029,7 +2029,7 @@ book book_orcs {
 	weight 0.2
 	value 10
 	mesh "book.qmsh"
-	scheme "book"
+	scheme book
 	flags alpha
 }
 
@@ -2037,7 +2037,7 @@ book book_undead {
 	weight 0.2
 	value 10
 	mesh "book.qmsh"
-	scheme "book"
+	scheme book
 	flags alpha
 }
 
@@ -2045,7 +2045,7 @@ book book_behind_the_wall {
 	weight 0.2
 	value 10
 	mesh "book.qmsh"
-	scheme "book"
+	scheme book
 	flags alpha
 }
 
@@ -2053,7 +2053,7 @@ book book_adventurer {
 	weight 0.2
 	value 10
 	mesh "book.qmsh"
-	scheme "book"
+	scheme book
 	flags alpha
 }
 
@@ -2061,7 +2061,7 @@ book book_ld {
 	weight 0.2
 	value 100
 	mesh "book.qmsh"
-	scheme "book"
+	scheme book
 	flags {alpha not_shop not_chest not_random}
 }
 
@@ -2069,7 +2069,7 @@ book book_runic {
 	weight 0.2
 	value 100
 	mesh "book.qmsh"
-	scheme "book"
+	scheme book
 	flags {alpha not_shop not_chest not_random}
 	runic 1
 }
@@ -2078,7 +2078,7 @@ book q_zlo_ksiega {
 	weight 1
 	value 100
 	tex "summoning.png"
-	scheme "book"
+	scheme book
 	flags {alpha not_shop not_chest not_random important}
 	runic 1
 }

@@ -2,6 +2,7 @@
 creatingListOfFiles = "Creating list of files"
 configuringGame = "Configuring game"
 loadingItems = "Loading items"
+loadingObjects = "Loading objects"
 loadingSpells = "Loading spells"
 loadingUnits = "Loading units"
 loadingMusics = "Loading musics"
