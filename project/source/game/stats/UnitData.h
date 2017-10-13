@@ -300,6 +300,8 @@ struct UnitData
 	}
 
 	void CopyFrom(UnitData& ud);
+
+	static UnitData* TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------

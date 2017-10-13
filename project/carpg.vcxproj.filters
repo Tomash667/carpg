@@ -67,6 +67,9 @@
     <Filter Include="3. game\system\items">
       <UniqueIdentifier>{538a0371-6a23-4988-b2e4-0735a1ab3812}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3. game\system\unit">
+      <UniqueIdentifier>{2110a0ec-a4bb-43a5-bcc7-ad64a4a78f1a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
@@ -663,6 +666,9 @@
     </ClCompile>
     <ClCompile Include="source\game\stats\Stock.cpp">
       <Filter>3. game\system\items</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\UnitLoader.cpp">
+      <Filter>3. game\system\unit</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
