@@ -2710,7 +2710,8 @@ void Game::UpdateLobbyNetServer(float dt)
 					reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs (%s).", packet->systemAddress.ToString(),
 						VersionToString(version), VERSION_STR);
 				}
-				else if(!ReadString1(stream, info->name))
+				else if(!content::ReadCrc(stream)
+					|| !ReadString1(stream, info->name))
 				{
 					// failed to read crc or nick
 					reason = JoinResult::BrokenPacket;

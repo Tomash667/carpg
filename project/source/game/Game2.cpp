@@ -9965,8 +9965,8 @@ void Game::GenerateDungeonObjects()
 		// try to spawn all objects
 		for(uint i = 0; i < rt->count && fail > 0; ++i)
 		{
-			bool is_variant = false;
-			BaseObject* base = BaseObject::Get(rt->objs[i].id, &is_variant);
+			bool is_group = false;
+			BaseObject* base = BaseObject::Get(rt->objs[i].id, &is_group);
 			int count = rt->objs[i].count.Random();
 
 			for(int j = 0; j < count && fail > 0; ++j)
@@ -9986,7 +9986,7 @@ void Game::GenerateDungeonObjects()
 				if(IS_SET(base->flags, OBJ_REQUIRED))
 					wymagany_obiekt = true;
 
-				if(is_variant)
+				if(is_group)
 					base = BaseObject::Get(rt->objs[i].id);
 			}
 		}
