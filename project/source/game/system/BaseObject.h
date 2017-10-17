@@ -77,6 +77,7 @@ struct ObjectGroup
 			}
 		};
 
+		EntryList* parent;
 		vector<Entry> entries;
 		uint total_chance;
 

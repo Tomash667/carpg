@@ -332,9 +332,9 @@ private:
 		Ptr<ObjectGroup> group;
 		ObjectGroup::EntryList* list = &group->list;
 		list->total_chance = 0;
+		list->parent = nullptr;
 		group->id = id;
 		t.Next();
-		vector<ObjectGroup::EntryList*> parent_list;
 
 		t.AssertSymbol('{');
 		t.Next();
@@ -343,23 +343,27 @@ private:
 		{
 			if(t.IsSymbol('}'))
 			{
-				if(parent_list.empty())
+				if(!list->parent)
 					break;
-				list = parent_list.back();
-				parent_list.pop_back();
+				t.Next();
+				list = list->parent;
 				continue;
 			}
 
-			int chance = t.MustGetInt();
-			if(chance < 1)
-				t.Throw("Invalid chance.");
-			t.Next();
+			int chance = 1;
+			if(t.IsInt())
+			{
+				chance = t.GetInt();
+				if(chance < 1)
+					t.Throw("Invalid chance.");
+				t.Next();
+			}
 
 			if(t.IsSymbol('{'))
 			{
-				parent_list.push_back(list);
 				auto new_list = new ObjectGroup::EntryList;
 				new_list->total_chance = 0;
+				new_list->parent = list;
 				ObjectGroup::EntryList::Entry e;
 				e.list = new_list;
 				e.is_list = true;
@@ -368,6 +372,7 @@ private:
 				list->total_chance += chance;
 				list = new_list;
 				t.Next();
+				e.is_list = false;
 			}
 			else if(t.IsText())
 			{
@@ -433,7 +438,27 @@ private:
 			}
 		}
 
+		for(auto group : ObjectGroup::groups)
+		{
+			crc.Update(group->id);
+			UpdateObjectGroupCrc(crc, group->list);
+		}
+
 		content::crc[(int)content::Id::Objects] = crc.Get();
+	}
+
+	//=================================================================================================
+	void UpdateObjectGroupCrc(Crc& crc, ObjectGroup::EntryList& list)
+	{
+		crc.Update(list.total_chance);
+		for(auto& e : list.entries)
+		{
+			crc.Update(e.chance);
+			if(e.is_list)
+				UpdateObjectGroupCrc(crc, *e.list);
+			else
+				crc.Update(e.obj->id);
+		}
 	}
 
 	Tokenizer t;

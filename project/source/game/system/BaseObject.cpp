@@ -13,7 +13,7 @@ BaseObject* ObjectGroup::EntryList::GetRandom()
 	EntryList* list = this;
 	while(true)
 	{
-		uint c = Rand() % total_chance;
+		uint c = Rand() % list->total_chance;
 		uint total = 0u;
 		for(auto& e : list->entries)
 		{
