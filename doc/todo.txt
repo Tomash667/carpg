@@ -1,4 +1,12 @@
 ﻿FEATURE:
+? is_variant used anywhere ?
+? testing
+	? normal obj
+	? groups
+		? painting
+		? random
+		? tombstone
+		? chance validation
 ===============================================================================================================
 CURRENT:
 - traps are out of sync for client/server

@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+struct BaseObject;
 struct Mesh;
 
 //-----------------------------------------------------------------------------
@@ -55,6 +56,45 @@ struct VariantObject
 };
 
 //-----------------------------------------------------------------------------
+struct ObjectGroup
+{
+	struct EntryList
+	{
+		struct Entry
+		{
+			union
+			{
+				BaseObject* obj;
+				EntryList* list;
+			};
+			uint chance;
+			bool is_list;
+
+			~Entry()
+			{
+				if(is_list)
+					delete list;
+			}
+		};
+
+		vector<Entry> entries;
+		uint total_chance;
+
+		BaseObject* GetRandom();
+	};
+
+	string id;
+	EntryList list;
+
+	BaseObject* GetRandom()
+	{
+		return list.GetRandom();
+	}
+
+	static SetContainer<ObjectGroup> groups;
+};
+
+//-----------------------------------------------------------------------------
 // Base object
 struct BaseObject
 {
@@ -96,15 +136,12 @@ struct BaseObject
 		return IS_SET(flags, OBJ_USABLE);
 	}
 
-	// is_variant is set when there is multiple variants
-	static BaseObject* TryGet(const AnyString& id, bool* is_variant = nullptr);
-	static BaseObject* Get(const AnyString& id, bool* is_variant = nullptr)
+	static SetContainer<BaseObject> objs;
+	static BaseObject* TryGet(const AnyString& id, bool* is_group = nullptr);
+	static BaseObject* Get(const AnyString& id, bool* is_group = nullptr)
 	{
-		BaseObject* obj = TryGet(id, is_variant);
+		BaseObject* obj = TryGet(id, is_group);
 		assert(obj && "Missing BaseObject!");
 		return obj;
 	}
-	static cstring GetRandomPainting();
-
-	static vector<BaseObject*> objs;
 };

@@ -22,7 +22,8 @@ class ObjectLoader
 	enum Top
 	{
 		T_OBJECT,
-		T_USABLE
+		T_USABLE,
+		T_GROUP
 	};
 
 	enum ObjectProperty
@@ -64,6 +65,9 @@ public:
 			case T_USABLE:
 				ParseUsable(id);
 				break;
+			case T_GROUP:
+				ParseGroup(id);
+				break;
 			}
 		});
 		if(!ok)
@@ -81,7 +85,8 @@ private:
 	{
 		t.AddKeywords(G_TOP, {
 			{ "object", T_OBJECT },
-			{ "usable", T_USABLE }
+			{ "usable", T_USABLE },
+			{ "group", T_GROUP }
 		});
 
 		t.AddKeywords(G_OBJECT_PROPERTY, {
@@ -164,7 +169,7 @@ private:
 			ParseObjectProperty(prop, obj);
 		}
 
-		BaseObject::objs.push_back(obj.Pin());
+		BaseObject::objs.insert(obj.Pin());
 	}
 
 	//=================================================================================================
@@ -317,8 +322,78 @@ private:
 		use->flags |= OBJ_USABLE;
 
 		auto u = use.Pin();
-		BaseObject::objs.push_back(u);
+		BaseObject::objs.insert(u);
 		BaseUsable::usables.push_back(u);
+	}
+
+	//=================================================================================================
+	void ParseGroup(const string& id)
+	{
+		Ptr<ObjectGroup> group;
+		ObjectGroup::EntryList* list = &group->list;
+		list->total_chance = 0;
+		group->id = id;
+		t.Next();
+		vector<ObjectGroup::EntryList*> parent_list;
+
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(true)
+		{
+			if(t.IsSymbol('}'))
+			{
+				if(parent_list.empty())
+					break;
+				list = parent_list.back();
+				parent_list.pop_back();
+				continue;
+			}
+
+			int chance = t.MustGetInt();
+			if(chance < 1)
+				t.Throw("Invalid chance.");
+			t.Next();
+
+			if(t.IsSymbol('{'))
+			{
+				parent_list.push_back(list);
+				auto new_list = new ObjectGroup::EntryList;
+				new_list->total_chance = 0;
+				ObjectGroup::EntryList::Entry e;
+				e.list = new_list;
+				e.is_list = true;
+				e.chance = chance;
+				list->entries.push_back(std::move(e));
+				list->total_chance += chance;
+				list = new_list;
+				t.Next();
+			}
+			else if(t.IsText())
+			{
+				const string& obj_id = t.GetText();
+				bool is_group = false;
+				auto obj = BaseObject::TryGet(obj_id, &is_group);
+				if(is_group)
+					t.Throw("Can't use group inside group."); // YAGNI
+				if(!obj)
+					t.Throw("Missing object '%s'.", obj_id.c_str());
+				ObjectGroup::EntryList::Entry e;
+				e.obj = obj;
+				e.is_list = false;
+				e.chance = chance;
+				list->entries.push_back(std::move(e));
+				list->total_chance += chance;
+				t.Next();
+			}
+			else
+				t.Unexpected("object or group");
+		}
+
+		if(group->list.entries.empty())
+			t.Throw("Empty group.");
+
+		ObjectGroup::groups.insert(group.Pin());
 	}
 
 	//=================================================================================================
@@ -375,5 +450,6 @@ void content::LoadObjects()
 void content::CleanupObjects()
 {
 	DeleteElements(BaseObject::objs);
+	DeleteElements(ObjectGroup::groups);
 	DeleteElements(variant_objects);
 }
