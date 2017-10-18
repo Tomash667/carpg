@@ -1,3 +1,7 @@
+//==============================================================================
+// OBJECTS
+//==============================================================================
+
 object barrel {
 	mesh "beczka.qmsh"
 	cylinder { 0.38 1.083 }
@@ -469,6 +473,48 @@ object corn {
 	flags { no_physics preload }
 }
 
+//==============================================================================
+// OBJECT GROUPS
+//==============================================================================
+
+group painting {
+	1 painting3
+	99 {
+		1 painting1
+		2 painting2
+		2 painting4
+		2 painting5
+		2 painting6
+		1 painting7
+		1 painting8
+		3 painting_x1
+		3 painting_x2
+		3 painting_x3
+		3 painting_x4
+	}
+}
+
+group tombstone {
+	tombstone_1
+	tombstone_x1
+	tombstone_x2
+	tombstone_x3
+	tombstone_x4
+	tombstone_x5
+	tombstone_x6
+	tombstone_x7
+	tombstone_x8
+	tombstone_x9
+}
+
+group random {
+	wheel
+	rope
+	woodpile
+}
+
+//==============================================================================
+// USABLE OBJECTS
 //==============================================================================
 
 usable chair {
