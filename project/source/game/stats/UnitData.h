@@ -19,6 +19,9 @@ struct ItemScript
 {
 	string id;
 	vector<int> code;
+
+	static vector<ItemScript*> scripts;
+	static ItemScript* TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -32,6 +35,9 @@ struct SpellList
 	bool have_non_combat;
 
 	SpellList() : spell(), name(), level(), have_non_combat(false) {}
+
+	static vector<SpellList*> spells;
+	static SpellList* TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -168,6 +174,9 @@ struct SoundPack
 	bool inited;
 
 	SoundPack() : inited(false), sound() {}
+
+	static vector<SoundPack*> sounds;
+	static SoundPack* TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -229,6 +238,9 @@ struct FrameInfo
 	{
 		return ::Lerp(t[frame], t[frame + 1], 2.f / 3);
 	}
+
+	static vector<FrameInfo*> frames;
+	static FrameInfo* TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -236,6 +248,9 @@ struct IdlePack
 {
 	string id;
 	vector<string> anims;
+
+	static vector<IdlePack*> idles;
+	static IdlePack* TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -246,6 +261,9 @@ struct TexPack
 	bool inited;
 
 	TexPack() : inited(false) {}
+
+	static vector<TexPack*> packs;
+	static TexPack* TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -268,7 +286,7 @@ struct UnitData
 	SoundPack* sounds;
 	FrameInfo* frames;
 	TexPack* tex;
-	vector<string>* idles;
+	IdlePack* idles;
 	ArmorUnitType armor_type;
 	ItemScript* item_script;
 	UNIT_TYPE type;

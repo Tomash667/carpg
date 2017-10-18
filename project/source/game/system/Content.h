@@ -31,6 +31,7 @@ namespace content
 	void LoadContent(delegate<void(Id)> callback);
 	void LoadItems();
 	void LoadObjects();
+	void LoadUnits();
 	void LoadBuildings();
 	void CleanupContent();
 	void CleanupItems();

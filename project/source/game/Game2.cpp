@@ -3011,9 +3011,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				pc->idle_timer = Random(2.f, 3.f);
 			else
 			{
-				int id = Rand() % u.data->idles->size();
+				int id = Rand() % u.data->idles->anims.size();
 				pc->idle_timer = Random(0.f, 0.5f);
-				u.mesh_inst->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
+				u.mesh_inst->Play(u.data->idles->anims[id].c_str(), PLAY_ONCE, 0);
 				u.mesh_inst->groups[0].speed = 1.f;
 				u.mesh_inst->frame_end_info = false;
 				u.animation = ANI_IDLE;
@@ -6754,7 +6754,7 @@ uint Game::TestGameData(bool major)
 				// animacje idle
 				if(ud.idles)
 				{
-					for(const string& s : *ud.idles)
+					for(const string& s : ud.idles->anims)
 					{
 						if(!a.GetAnimation(s.c_str()))
 						{

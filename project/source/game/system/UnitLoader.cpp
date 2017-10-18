@@ -2,6 +2,10 @@
 #include "Core.h"
 #include "UnitData.h"
 #include "ContentLoader.h"
+#include "Dialog.h"
+#include "ItemScript.h"
+#include "Item.h"
+#include "Spell.h"
 
 class UnitLoader
 {
@@ -115,6 +119,14 @@ class UnitLoader
 		GK_GROUP
 	};
 
+	enum IfState
+	{
+		IFS_START,
+		IFS_START_INLINE,
+		IFS_ELSE,
+		IFS_ELSE_INLINE
+	};
+
 public:
 	//=================================================================================================
 	void Load()
@@ -130,25 +142,74 @@ public:
 				ParseUnit(id);
 				break;
 			case T_PROFILE:
-				ParseProfile(id);
+				{
+					if(StatProfile::TryGet(id))
+						t.Throw("Id must be unique.");
+					Ptr<StatProfile> profile;
+					profile->id = id;
+					t.Next();
+					ParseProfile(profile);
+				}
 				break;
 			case T_ITEMS:
-				ParseItems(id);
+				{
+					if(ItemScript::TryGet(id))
+						t.Throw("Id must be unique.");
+					Ptr<ItemScript> script;
+					script->id = id;
+					t.Next();
+					ParseItems(script);
+				}
 				break;
 			case T_SPELLS:
-				ParseSpells(id);
+				{
+					if(SpellList::TryGet(id))
+						t.Throw("Id must be unique.");
+					Ptr<SpellList> spells;
+					spells->id = id;
+					t.Next();
+					ParseSpells(spells);
+				}
 				break;
 			case T_SOUNDS:
-				ParseSounds(id);
+				{
+					if(SoundPack::TryGet(id))
+						t.Throw("Id must be unique.");
+					Ptr<SoundPack> sounds;
+					sounds->id = id;
+					t.Next();
+					ParseSounds(sounds);
+				}
 				break;
 			case T_FRAMES:
-				ParseFrames(id);
+				{
+					if(FrameInfo::TryGet(id))
+						t.Throw("Id must be unique.");
+					Ptr<FrameInfo> frames;
+					frames->id = id;
+					t.Next();
+					ParseFrames(frames);
+				}
 				break;
 			case T_TEX:
-				ParseTextures(id);
+				{
+					if(TexPack::TryGet(id))
+						t.Throw("Id must be unique.");
+					Ptr<TexPack> tex;
+					tex->id = id;
+					t.Next();
+					ParseTextures(tex);
+				}
 				break;
 			case T_IDLES:
-				ParseIdles(id);
+				{
+					if(IdlePack::TryGet(id))
+						t.Throw("Id must be unique.");
+					Ptr<IdlePack> idles;
+					idles->id = id;
+					t.Next();
+					ParseIdles(idles);
+				}
 				break;
 			case T_ALIAS:
 				ParseAlias(id);
@@ -492,21 +553,14 @@ private:
 			case P_PROFILE:
 				if(t.IsSymbol('{'))
 				{
-					if(!ParseProfile(empty_id, &unit->stat_profile))
-						t.Throw("Failed to load inline profile.");
+					Ptr<StatProfile> profile;
+					unit->stat_profile = profile.Get();
+					ParseProfile(profile);
 				}
 				else
 				{
 					const string& id = t.MustGetItemKeyword();
-					unit->stat_profile = nullptr;
-					for(StatProfile* p : stat_profiles)
-					{
-						if(id == p->id)
-						{
-							unit->stat_profile = p;
-							break;
-						}
-					}
+					unit->stat_profile = StatProfile::TryGet(id);
 					if(!unit->stat_profile)
 						t.Throw("Missing stat profile '%s'.", id.c_str());
 				}
@@ -539,10 +593,10 @@ private:
 			case P_ITEMS:
 				if(t.IsSymbol('{'))
 				{
-					if(LoadItems(t, crc, &unit->item_script))
-						unit->items = &unit->item_script->code[0];
-					else
-						t.Throw("Failed to load inline item script.");
+					Ptr<ItemScript> script;
+					unit->item_script = script.Get();
+					ParseItems(script);
+					unit->items = &unit->item_script->code[0];
 				}
 				else
 				{
@@ -551,14 +605,7 @@ private:
 					if(!t.IsKeywordGroup(G_NULL))
 					{
 						const string& id = t.MustGetItemKeyword();
-						for(ItemScript* s : item_scripts)
-						{
-							if(s->id == id)
-							{
-								unit->item_script = s;
-								break;
-							}
-						}
+						unit->item_script = ItemScript::TryGet(id);
 						if(unit->item_script)
 							unit->items = &unit->item_script->code[0];
 						else
@@ -569,21 +616,14 @@ private:
 			case P_SPELLS:
 				if(t.IsSymbol('{'))
 				{
-					if(!LoadSpells(t, crc, &unit->spells))
-						t.Throw("Failed to load inline spell list.");
+					Ptr<SpellList> spells;
+					unit->spells = spells.Get();
+					ParseSpells(spells);
 				}
 				else
 				{
 					const string& id = t.MustGetItemKeyword();
-					unit->spells = nullptr;
-					for(SpellList* s : spell_lists)
-					{
-						if(s->id == id)
-						{
-							unit->spells = s;
-							break;
-						}
-					}
+					unit->spells = SpellList::TryGet(id);
 					if(!unit->spells)
 						t.Throw("Missing spell list '%s'.", id.c_str());
 				}
@@ -668,21 +708,14 @@ private:
 			case P_SOUNDS:
 				if(t.IsSymbol('{'))
 				{
-					if(!LoadSounds(t, crc, &unit->sounds))
-						t.Throw("Failed to load inline sound pack.");
+					Ptr<SoundPack> sounds;
+					unit->sounds = sounds.Get();
+					ParseSounds(sounds);
 				}
 				else
 				{
 					const string& id = t.MustGetItemKeyword();
-					unit->sounds = nullptr;
-					for(SoundPack* s : sound_packs)
-					{
-						if(s->id == id)
-						{
-							unit->sounds = s;
-							break;
-						}
-					}
+					unit->sounds = SoundPack::TryGet(id);
 					if(!unit->sounds)
 						t.Throw("Missing sound pack '%s'.", id.c_str());
 				}
@@ -690,21 +723,14 @@ private:
 			case P_FRAMES:
 				if(t.IsSymbol('{'))
 				{
-					if(!LoadFrames(t, crc, &unit->frames))
-						t.Throw("Failed to load inline frame infos.");
+					Ptr<FrameInfo> frames;
+					unit->frames = frames.Get();
+					ParseFrames(frames);
 				}
 				else
 				{
 					const string& id = t.MustGetItemKeyword();
-					unit->frames = nullptr;
-					for(FrameInfo* fi : frame_infos)
-					{
-						if(fi->id == id)
-						{
-							unit->frames = fi;
-							break;
-						}
-					}
+					unit->frames = FrameInfo::TryGet(id);
 					if(!unit->frames)
 						t.Throw("Missing frame infos '%s'.", id.c_str());
 				}
@@ -712,54 +738,30 @@ private:
 			case P_TEX:
 				if(t.IsSymbol('{'))
 				{
-					TexPack* tex;
-					if(!LoadTex(t, crc, &tex))
-						t.Throw("Failed to load inline tex pack.");
-					else
-						unit->tex = tex;
+					Ptr<TexPack> tex;
+					unit->tex = tex.Get();
+					ParseTextures(tex);
 				}
 				else
 				{
 					const string& id = t.MustGetItemKeyword();
-					TexPack* tex = nullptr;
-					for(TexPack* tp : tex_packs)
-					{
-						if(tp->id == id)
-						{
-							tex = tp;
-							break;
-						}
-					}
-					if(tex)
-						unit->tex = tex;
-					else
+					unit->tex = TexPack::TryGet(id);
+					if(!unit->tex)
 						t.Throw("Missing tex pack '%s'.", id.c_str());
 				}
 				break;
 			case P_IDLES:
 				if(t.IsSymbol('{'))
 				{
-					IdlePack* idles;
-					if(!LoadIdles(t, crc, &idles))
-						t.Throw("Failed to load inline idles pack.");
-					else
-						unit->idles = &idles->anims;
+					Ptr<IdlePack> idles;
+					unit->idles = idles.Get();
+					ParseIdles(idles);
 				}
 				else
 				{
 					const string& id = t.MustGetItemKeyword();
-					IdlePack* idles = nullptr;
-					for(IdlePack* ip : idle_packs)
-					{
-						if(ip->id == id)
-						{
-							idles = ip;
-							break;
-						}
-					}
-					if(idles)
-						unit->idles = &idles->anims;
-					else
+					unit->idles = IdlePack::TryGet(id);
+					if(!unit->idles)
 						t.Throw("Missing idles pack '%s'.", id.c_str());
 				}
 				break;
@@ -807,57 +809,699 @@ private:
 	}
 
 	//=================================================================================================
-	void ParseProfile(const string& id, StatProfile* in_profile = nullptr)
+	void ParseProfile(Ptr<StatProfile>& profile)
 	{
+		profile->fixed = false;
+		for(int i = 0; i < (int)Attribute::MAX; ++i)
+			profile->attrib[i] = 10;
+		for(int i = 0; i < (int)Skill::MAX; ++i)
+			profile->skill[i] = -1;
 
+		// {
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			if(t.IsKeyword(PK_FIXED, G_PROFILE_KEYWORD))
+			{
+				t.Next();
+				profile->fixed = t.MustGetBool();
+			}
+			else if(t.IsKeywordGroup(G_ATTRIBUTE))
+			{
+				int a = t.MustGetKeywordId(G_ATTRIBUTE);
+				t.Next();
+				int val = t.MustGetInt();
+				if(val < 1)
+					t.Throw("Invalid attribute '%s' value %d.", g_attributes[a].id, val);
+				profile->attrib[a] = val;
+			}
+			else if(t.IsKeywordGroup(G_SKILL))
+			{
+				int s = t.MustGetKeywordId(G_SKILL);
+				t.Next();
+				int val = t.MustGetInt();
+				if(val < -1)
+					t.Throw("Invalid skill '%s' value %d.", g_skills[s].id, val);
+				profile->skill[s] = val;
+			}
+			else
+			{
+				int a = PK_FIXED, b = G_PROFILE_KEYWORD, c = G_ATTRIBUTE, d = G_SKILL;
+				t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &b).Add(tokenizer::T_KEYWORD_GROUP, &c).Add(tokenizer::T_KEYWORD_GROUP, &d).Throw();
+			}
+
+			t.Next();
+		}
+
+		StatProfile::profiles.push_back(profile.Pin());
 	}
 
 	//=================================================================================================
-	void ParseItems(const string& id)
+	void ParseItems(Ptr<ItemScript>& script)
 	{
+		vector<IfState> if_state;
+		bool done_if = false;
 
+		// {
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(true)
+		{
+			if(t.IsSymbol('}'))
+			{
+				while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
+				{
+					script->code.push_back(PS_END_IF);
+					if_state.pop_back();
+				}
+				if(if_state.empty())
+					break;
+				if(if_state.back() == IFS_START)
+				{
+					t.Next();
+					if(t.IsKeyword(IK_ELSE, G_ITEM_KEYWORD))
+					{
+						script->code.push_back(PS_ELSE);
+						t.Next();
+						if(t.IsKeyword(IK_IF, G_ITEM_KEYWORD))
+						{
+							// else if
+							t.Next();
+							ItemKeyword iif = (ItemKeyword)t.MustGetKeywordId(G_ITEM_KEYWORD);
+							if(iif == IK_LEVEL)
+							{
+								t.Next();
+								int lvl = t.MustGetInt();
+								if(lvl < 0)
+									t.Throw("Invalid level %d.", lvl);
+								script->code.push_back(PS_IF_LEVEL);
+								script->code.push_back(lvl);
+							}
+							else if(iif == IK_CHANCE)
+							{
+								t.Next();
+								int chance = t.MustGetInt();
+								if(chance <= 0 || chance >= 100)
+									t.Throw("Invalid chance %d.", chance);
+								script->code.push_back(PS_IF_CHANCE);
+								script->code.push_back(chance);
+							}
+							else
+							{
+								int g = G_ITEM_KEYWORD,
+									a = IK_CHANCE,
+									b = IK_LEVEL;
+								t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &g).Add(tokenizer::T_KEYWORD, &b, &g).Throw();
+							}
+							t.Next();
+							if_state.back() = IFS_ELSE_INLINE;
+							if(t.IsSymbol('{'))
+							{
+								t.Next();
+								if_state.push_back(IFS_START);
+							}
+							else
+								if_state.push_back(IFS_START_INLINE);
+						}
+						else if(t.IsSymbol('{'))
+						{
+							// else { ... }
+							t.Next();
+							if_state.back() = IFS_ELSE;
+						}
+						else
+						{
+							// single expression else
+							if_state.back() = IFS_ELSE_INLINE;
+						}
+					}
+					else
+					{
+						// } end of if
+						script->code.push_back(PS_END_IF);
+						if_state.pop_back();
+						while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
+						{
+							script->code.push_back(PS_END_IF);
+							if_state.pop_back();
+						}
+					}
+				}
+				else if(if_state.back() == IFS_ELSE)
+				{
+					// } end of else
+					script->code.push_back(PS_END_IF);
+					if_state.pop_back();
+					t.Next();
+					while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
+					{
+						script->code.push_back(PS_END_IF);
+						if_state.pop_back();
+					}
+				}
+				else
+					t.Unexpected();
+				continue;
+			}
+			else if(t.IsInt())
+			{
+				// give multiple
+				int count = t.MustGetInt();
+				if(count <= 0)
+					t.Throw("Invalid item count %d.", count);
+				t.Next();
+
+				// get item
+				script->code.push_back(PS_MANY);
+				script->code.push_back(count);
+				AddItem(script);
+			}
+			else if(t.IsKeywordGroup(G_ITEM_KEYWORD))
+			{
+				ItemKeyword k = (ItemKeyword)t.GetKeywordId(G_ITEM_KEYWORD);
+				t.Next();
+
+				switch(k)
+				{
+				case IK_CHANCE:
+					{
+						// get chance value
+						int chance = t.MustGetInt();
+						t.Next();
+						if(chance <= 0 || chance >= 100)
+							t.Throw("Invalid chance %d.", chance);
+
+						if(t.IsSymbol('{'))
+						{
+							// two item chance
+							script->code.push_back(PS_CHANCE2);
+							script->code.push_back(chance);
+							t.Next();
+							AddItem(script);
+							t.Next();
+							AddItem(script);
+							t.Next();
+							t.AssertSymbol('}');
+						}
+						else
+						{
+							// single item chance
+							script->code.push_back(PS_CHANCE);
+							script->code.push_back(chance);
+							AddItem(script);
+						}
+					}
+					break;
+				case IK_RANDOM:
+					if(t.IsSymbol('{'))
+					{
+						// one of many
+						script->code.push_back(PS_ONE_OF_MANY);
+						uint pos = script->code.size();
+						int count = 0;
+						script->code.push_back(0);
+						t.Next();
+						do
+						{
+							AddItem(script);
+							t.Next();
+							++count;
+						} while(!t.IsSymbol('}'));
+
+						if(count < 2)
+							t.Throw("Invalid one of many count %d.", count);
+						script->code[pos] = count;
+					}
+					else
+					{
+						// get count
+						int from = t.MustGetInt();
+						t.Next();
+						int to = t.MustGetInt();
+						t.Next();
+						if(from < 0 || from > to)
+							t.Throw("Invalid Random count (%d %d).", from, to);
+
+						// get item
+						script->code.push_back(PS_RANDOM);
+						script->code.push_back(from);
+						script->code.push_back(to);
+						AddItem(script);
+					}
+					break;
+				case IK_IF:
+					{
+						ItemKeyword iif = (ItemKeyword)t.MustGetKeywordId(G_ITEM_KEYWORD);
+						if(iif == IK_LEVEL)
+						{
+							t.Next();
+							int lvl = t.MustGetInt();
+							if(lvl < 0)
+								t.Throw("Invalid level %d.", lvl);
+							script->code.push_back(PS_IF_LEVEL);
+							script->code.push_back(lvl);
+						}
+						else if(iif == IK_CHANCE)
+						{
+							t.Next();
+							int chance = t.MustGetInt();
+							if(chance <= 0 || chance >= 100)
+								t.Throw("Invalid chance %d.", chance);
+							script->code.push_back(PS_IF_CHANCE);
+							script->code.push_back(chance);
+						}
+						else
+						{
+							int g = G_ITEM_KEYWORD,
+								a = IK_CHANCE,
+								b = IK_LEVEL;
+							t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &g).Add(tokenizer::T_KEYWORD, &b, &g).Throw();
+						}
+						t.Next();
+						if(t.IsSymbol('{'))
+						{
+							t.Next();
+							if_state.push_back(IFS_START);
+						}
+						else
+							if_state.push_back(IFS_START_INLINE);
+						done_if = true;
+					}
+					break;
+				default:
+					t.Unexpected();
+				}
+			}
+			else if(t.IsKeyword() || t.IsItem() || t.IsSymbol('!'))
+			{
+				// single item
+				script->code.push_back(PS_ONE);
+				AddItem(script);
+			}
+			else
+				t.Unexpected();
+
+			if(done_if)
+				done_if = false;
+			else
+			{
+				t.Next();
+				while(!if_state.empty())
+				{
+					if(if_state.back() == IFS_START_INLINE)
+					{
+						if_state.pop_back();
+						if(t.IsKeyword(IK_ELSE, G_ITEM_KEYWORD))
+						{
+							script->code.push_back(PS_ELSE);
+							t.Next();
+							if(t.IsSymbol('{'))
+							{
+								t.Next();
+								if_state.push_back(IFS_ELSE);
+							}
+							else
+								if_state.push_back(IFS_ELSE_INLINE);
+							break;
+						}
+						else
+							script->code.push_back(PS_END_IF);
+					}
+					else if(if_state.back() == IFS_ELSE_INLINE)
+					{
+						script->code.push_back(PS_END_IF);
+						if_state.pop_back();
+					}
+					else
+						break;
+				}
+			}
+		}
+
+		while(!if_state.empty())
+		{
+			if(if_state.back() == IFS_START_INLINE || if_state.back() == IFS_ELSE_INLINE)
+			{
+				script->code.push_back(PS_END_IF);
+				if_state.pop_back();
+			}
+			else
+				t.Throw("Missing closing '}'.");
+		}
+
+		script->code.push_back(PS_END);
+		ItemScript::scripts.push_back(script.Pin());
 	}
 
 	//=================================================================================================
-	void ParseSpells(const string& id)
+	void AddItem(ItemScript* script)
 	{
-
+		if(!t.IsSymbol('!'))
+		{
+			const string& s = t.MustGetItemKeyword();
+			const Item* item = Item::TryGet(s.c_str());
+			if(item)
+			{
+				script->code.push_back(PS_ITEM);
+				script->code.push_back((int)item);
+			}
+			else
+				t.Throw("Missing item '%s'.", s.c_str());
+		}
+		else
+		{
+			t.Next();
+			if(t.IsSymbol('+') || t.IsSymbol('-'))
+			{
+				bool minus = t.IsSymbol('-');
+				char c = t.PeekChar();
+				if(c < '1' || c > '9')
+					t.Throw("Invalid leveled list mod '%c'.", c);
+				int mod = c - '0';
+				if(minus)
+					mod = -mod;
+				t.NextChar();
+				t.Next();
+				const string& s = t.MustGetItemKeyword();
+				ItemListResult lis = ItemList::TryGet(s);
+				if(!lis.lis)
+					t.Throw("Missing item list '%s'.", s.c_str());
+				if(!lis.is_leveled)
+					t.Throw("Can't use mod on non leveled list '%s'.", s.c_str());
+				script->code.push_back(PS_LEVELED_LIST_MOD);
+				script->code.push_back(mod);
+				script->code.push_back((int)lis.llis);
+			}
+			else
+			{
+				const string& s = t.MustGetItemKeyword();
+				ItemListResult lis = ItemList::TryGet(s);
+				if(!lis.lis)
+					t.Throw("Missing item list '%s'.", s.c_str());
+				ParseScript type = (lis.is_leveled ? PS_LEVELED_LIST : PS_LIST);
+				script->code.push_back(type);
+				script->code.push_back((int)lis.lis);
+			}
+		}
 	}
 
 	//=================================================================================================
-	void ParseSounds(const string& id)
+	void ParseSpells(Ptr<SpellList>& spells)
 	{
+		// {
+		t.AssertSymbol('{');
+		t.Next();
 
+		int index = 0;
+
+		do
+		{
+			if(t.IsKeywordGroup(G_SPELL_KEYWORD))
+			{
+				SpellKeyword k = (SpellKeyword)t.GetKeywordId(G_SPELL_KEYWORD);
+				if(k == SK_NON_COMBAT)
+				{
+					// non_combat
+					t.Next();
+					spells->have_non_combat = t.MustGetBool();
+				}
+				else
+				{
+					// null
+					if(index == 3)
+						t.Throw("Too many spells (max 3 for now).");
+					++index;
+				}
+			}
+			else
+			{
+				if(index == 3)
+					t.Throw("Too many spells (max 3 for now).");
+				t.AssertSymbol('{');
+				t.Next();
+				const string& spell_id = t.MustGetItemKeyword();
+				Spell* spell = FindSpell(spell_id.c_str());
+				if(!spell)
+					t.Throw("Missing spell '%s'.", spell_id.c_str());
+				t.Next();
+				int lvl = t.MustGetInt();
+				if(lvl < 0)
+					t.Throw("Invalid spell level %d.", lvl);
+				t.Next();
+				t.AssertSymbol('}');
+				spells->spell[index] = spell;
+				spells->level[index] = lvl;
+				++index;
+			}
+			t.Next();
+		} while(!t.IsSymbol('}'));
+
+		if(spells->spell[0] == nullptr && spells->spell[1] == nullptr && spells->spell[2] == nullptr)
+			t.Throw("Empty spell list.");
+
+		SpellList::spells.push_back(spells.Pin());
 	}
 
 	//=================================================================================================
-	void ParseFrames(const string& id)
+	void ParseSounds(Ptr<SoundPack>& sounds)
 	{
+		// {
+		t.AssertSymbol('{');
+		t.Next();
 
+		while(!t.IsSymbol('}'))
+		{
+			SoundType type = (SoundType)t.MustGetKeywordId(G_SOUND_TYPE);
+			t.Next();
+
+			sounds->filename[(int)type] = t.MustGetString();
+			t.Next();
+		}
+
+		SoundPack::sounds.push_back(sounds.Pin());
 	}
 
 	//=================================================================================================
-	void ParseTextures(const string& id)
+	void ParseFrames(Ptr<FrameInfo>& frames)
 	{
+		// {
+		t.AssertSymbol('{');
+		t.Next();
 
+		bool have_simple = false;
+
+		while(!t.IsSymbol('}'))
+		{
+			FrameKeyword k = (FrameKeyword)t.MustGetKeywordId(G_FRAME_KEYWORD);
+			t.Next();
+
+			switch(k)
+			{
+			case FK_ATTACKS:
+				if(have_simple || frames->extra)
+					t.Throw("Frame info already have attacks information.");
+				t.AssertSymbol('{');
+				t.Next();
+				frames->extra = new AttackFrameInfo;
+				do
+				{
+					t.AssertSymbol('{');
+					t.Next();
+					float start = t.MustGetNumberFloat();
+					t.Next();
+					float end = t.MustGetNumberFloat();
+					t.Next();
+					int flags = ReadFlags(t, G_WEAPON_FLAG);
+					t.Next();
+					t.AssertSymbol('}');
+
+					if(start < 0.f || start >= end || end > 1.f)
+						t.Throw("Invalid attack frame times (%g %g).", start, end);
+
+					frames->extra->e.push_back({ start, end, flags });
+					t.Next();
+				} while(!t.IsSymbol('}'));
+				frames->attacks = frames->extra->e.size();
+				break;
+			case FK_SIMPLE_ATTACKS:
+				if(have_simple || frames->extra)
+					t.Throw("Frame info already have attacks information.");
+				else
+				{
+					t.AssertSymbol('{');
+					t.Next();
+					int index = 0;
+					frames->attacks = 0;
+					do
+					{
+						if(index == 3)
+							t.Throw("To many simple attacks (max 3 for now).");
+						t.AssertSymbol('{');
+						t.Next();
+						float start = t.MustGetNumberFloat();
+						t.Next();
+						float end = t.MustGetNumberFloat();
+						t.Next();
+						t.AssertSymbol('}');
+
+						if(start < 0.f || start >= end || end > 1.f)
+							t.Throw("Invalid attack frame times (%g %g).", start, end);
+
+						frames->t[F_ATTACK1_START + index * 2] = start;
+						frames->t[F_ATTACK1_END + index * 2] = end;
+						++index;
+						++frames->attacks;
+						t.Next();
+					} while(!t.IsSymbol('}'));
+				}
+				break;
+			case FK_CAST:
+				{
+					float f = t.MustGetNumberFloat();
+					if(!InRange(f, 0.f, 1.f))
+						t.Throw("Invalid cast frame time %g.", f);
+					frames->t[F_CAST] = f;
+				}
+				break;
+			case FK_TAKE_WEAPON:
+				{
+					float f = t.MustGetNumberFloat();
+					if(!InRange(f, 0.f, 1.f))
+						t.Throw("Invalid take weapon frame time %g.", f);
+					frames->t[F_TAKE_WEAPON] = f;
+				}
+				break;
+			case FK_BASH:
+				{
+					float f = t.MustGetNumberFloat();
+					if(!InRange(f, 0.f, 1.f))
+						t.Throw("Invalid bash frame time %g.", f);
+					frames->t[F_BASH] = f;
+				}
+				break;
+			}
+
+			t.Next();
+		}
+
+		FrameInfo::frames.push_back(frames.Pin());
 	}
 
 	//=================================================================================================
-	void ParseIdles(const string& id)
+	void ParseTextures(Ptr<TexPack>& tex)
 	{
+		// {
+		t.AssertSymbol('{');
+		t.Next();
 
+		bool any = false;
+		do
+		{
+			if(t.IsKeywordGroup(G_NULL))
+				tex->textures.push_back(TexId(nullptr));
+			else
+			{
+				const string& s = t.MustGetString();
+				tex->textures.push_back(TexId(s));
+				any = true;
+			}
+			t.Next();
+		} while(!t.IsSymbol('}'));
+
+		if(!any)
+			t.Throw("Texture pack without textures.");
+
+		TexPack::packs.push_back(tex.Pin());
+	}
+
+	//=================================================================================================
+	void ParseIdles(Ptr<IdlePack>& idles)
+	{
+		// {
+		t.AssertSymbol('{');
+		t.Next();
+
+		do
+		{
+			const string& s = t.MustGetString();
+			idles->anims.push_back(s);
+			t.Next();
+		} while(!t.IsSymbol('}'));
+
+		IdlePack::idles.push_back(idles.Pin());
 	}
 
 	//=================================================================================================
 	void ParseAlias(const string& id)
 	{
+		UnitData* ud = FindUnitData(id.c_str(), false);
+		if(!ud)
+			t.Throw("Missing unit data '%s'.", id.c_str());
+		t.Next();
 
+		const string& alias = t.MustGetItemKeyword();
+		UnitData* ud2 = FindUnitData(alias.c_str(), false);
+		if(ud2)
+			t.Throw("Can't create alias '%s', already exists.", alias.c_str());
+
+		unit_aliases[alias] = ud;
 	}
 
 	//=================================================================================================
 	void ParseGroup(const string& id)
 	{
+		Ptr<UnitGroup> group;
+		group->id = id;
+		group->total = 0;
+		if(FindUnitGroup(group->id))
+			t.Throw("Group with that id already exists.");
+		t.Next();
 
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			if(t.IsKeyword(GK_GROUP, G_GROUP_KEYWORD))
+			{
+				t.Next();
+				const string& id = t.MustGetItemKeyword();
+				UnitGroup* other_group = FindUnitGroup(id);
+				if(!other_group)
+					t.Throw("Missing group '%s'.", id.c_str());
+				for(UnitGroup::Entry& e : other_group->entries)
+					group->entries.push_back(e);
+				group->total += other_group->total;
+			}
+			else
+			{
+				const string& id = t.MustGetItemKeyword();
+				UnitData* ud = FindUnitData(id.c_str(), false);
+				if(!ud)
+					t.Throw("Missing unit '%s'.", id.c_str());
+				t.Next();
+
+				if(t.IsKeyword(GK_LEADER, G_GROUP_KEYWORD))
+					group->leader = ud;
+				else
+				{
+					int count = t.MustGetInt();
+					if(count < 1)
+						t.Throw("Invalid unit count %d.", count);
+					group->entries.push_back(UnitGroup::Entry(ud, count));
+					group->total += count;
+				}
+			}
+			t.Next();
+		}
+
+		if(group->entries.empty())
+			t.Throw("Empty group.");
+
+		unit_groups.push_back(group);
 	}
 
 	//=================================================================================================
@@ -869,3 +1513,25 @@ private:
 	Tokenizer t;
 	string empty_id;
 };
+
+//=================================================================================================
+void content::LoadUnits()
+{
+	UnitLoader loader;
+	loader.Load();
+}
+
+//=================================================================================================
+void content::CleanupUnits()
+{
+	DeleteElements(StatProfile::profiles);
+	DeleteElements(ItemScript::scripts);
+	DeleteElements(SpellList::spells);
+	DeleteElements(SoundPack::sounds);
+	DeleteElements(IdlePack::idles);
+	DeleteElements(TexPack::packs);
+	DeleteElements(FrameInfo::frames);
+	for(UnitData* ud : unit_datas)
+		delete ud;
+	DeleteElements(unit_groups);
+}
