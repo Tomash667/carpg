@@ -6,6 +6,7 @@
 #include "ItemScript.h"
 #include "Item.h"
 #include "Spell.h"
+#include "Crc.h"
 
 class UnitLoader
 {
@@ -136,6 +137,8 @@ public:
 		ContentLoader loader;
 		bool ok = loader.Load(t, "units.txt", G_TYPE, [&, this](int top, const string& id)
 		{
+			crc.Update(id);
+
 			switch(top)
 			{
 			case T_UNIT:
@@ -165,20 +168,20 @@ public:
 				{
 					if(SpellList::TryGet(id))
 						t.Throw("Id must be unique.");
-					Ptr<SpellList> spells;
-					spells->id = id;
+					Ptr<SpellList> list;
+					list->id = id;
 					t.Next();
-					ParseSpells(spells);
+					ParseSpells(list);
 				}
 				break;
 			case T_SOUNDS:
 				{
 					if(SoundPack::TryGet(id))
 						t.Throw("Id must be unique.");
-					Ptr<SoundPack> sounds;
-					sounds->id = id;
+					Ptr<SoundPack> pack;
+					pack->id = id;
 					t.Next();
-					ParseSounds(sounds);
+					ParseSounds(pack);
 				}
 				break;
 			case T_FRAMES:
@@ -195,20 +198,20 @@ public:
 				{
 					if(TexPack::TryGet(id))
 						t.Throw("Id must be unique.");
-					Ptr<TexPack> tex;
-					tex->id = id;
+					Ptr<TexPack> pack;
+					pack->id = id;
 					t.Next();
-					ParseTextures(tex);
+					ParseTextures(pack);
 				}
 				break;
 			case T_IDLES:
 				{
 					if(IdlePack::TryGet(id))
 						t.Throw("Id must be unique.");
-					Ptr<IdlePack> idles;
-					idles->id = id;
+					Ptr<IdlePack> pack;
+					pack->id = id;
 					t.Next();
-					ParseIdles(idles);
+					ParseIdles(pack);
 				}
 				break;
 			case T_ALIAS:
@@ -225,16 +228,17 @@ public:
 		if(!ok)
 			return;
 
-		CalculateCrc();
+		content::crc[(int)content::Id::Units] = crc.Get();
 
-		//Info("Loaded objects (%u), usables (%u) - crc %p.",
-		//	BaseObject::objs.size() - BaseUsable::usables.size(), BaseUsable::usables.size(), content::crc[(int)content::Id::Objects]);
+		Info("Loaded units (%u) - crc %p.", unit_datas.size(), content::crc[(int)content::Id::Units]);
 	}
 
 private:
 	//=================================================================================================
 	void InitTokenizer()
 	{
+		t.SetFlags(Tokenizer::F_UNESCAPE | Tokenizer::F_JOIN_MINUS | Tokenizer::F_MULTI_KEYWORDS);
+
 		t.AddKeywords(G_TYPE, {
 			{ "unit", T_UNIT },
 			{ "items", T_ITEMS },
@@ -509,6 +513,7 @@ private:
 			if(!parent)
 				t.Throw("Missing parent unit '%s'.", parent_id.c_str());
 			unit->CopyFrom(*parent);
+			crc.Update(parent_id);
 			t.Next();
 		}
 
@@ -526,9 +531,11 @@ private:
 			{
 			case P_MESH:
 				unit->mesh_id = t.MustGetString();
+				crc.Update(unit->mesh_id);
 				break;
 			case P_MAT:
 				unit->mat = (MATERIAL_TYPE)t.MustGetKeywordId(G_MATERIAL);
+				crc.Update(unit->mat);
 				break;
 			case P_LEVEL:
 				if(t.IsSymbol('{'))
@@ -549,6 +556,7 @@ private:
 						t.Throw("Invalid level %d.", lvl);
 					unit->level = Int2(lvl);
 				}
+				crc.Update(unit->level);
 				break;
 			case P_PROFILE:
 				if(t.IsSymbol('{'))
@@ -563,6 +571,7 @@ private:
 					unit->stat_profile = StatProfile::TryGet(id);
 					if(!unit->stat_profile)
 						t.Throw("Missing stat profile '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_FLAGS:
@@ -575,20 +584,26 @@ private:
 						{ &unit->flags2, G_FLAGS2 },
 						{ &unit->flags3, G_FLAGS3 }
 					}, clear);
+					crc.Update(unit->flags);
+					crc.Update(unit->flags2);
+					crc.Update(unit->flags3);
 				}
 				break;
 			case P_HP:
 				unit->hp_bonus = t.MustGetInt();
 				if(unit->hp_bonus < 0)
 					t.Throw("Invalid hp bonus %d.", unit->hp_bonus);
+				crc.Update(unit->hp_bonus);
 				break;
 			case P_STAMINA:
 				unit->stamina_bonus = t.MustGetInt();
+				crc.Update(unit->stamina_bonus);
 				break;
 			case P_DEF:
 				unit->def_bonus = t.MustGetInt();
 				if(unit->def_bonus < 0)
 					t.Throw("Invalid def bonus %d.", unit->def_bonus);
+				crc.Update(unit->def_bonus);
 				break;
 			case P_ITEMS:
 				if(t.IsSymbol('{'))
@@ -610,7 +625,10 @@ private:
 							unit->items = &unit->item_script->code[0];
 						else
 							t.Throw("Missing item script '%s'.", id.c_str());
+						crc.Update(id);
 					}
+					else
+						crc.Update0();
 				}
 				break;
 			case P_SPELLS:
@@ -626,6 +644,7 @@ private:
 					unit->spells = SpellList::TryGet(id);
 					if(!unit->spells)
 						t.Throw("Missing spell list '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_GOLD:
@@ -672,6 +691,8 @@ private:
 						t.Throw("Invalid gold count %d.", gold);
 					unit->gold = unit->gold2 = Int2(gold);
 				}
+				crc.Update(unit->gold);
+				crc.Update(unit->gold2);
 				break;
 			case P_DIALOG:
 				{
@@ -679,31 +700,38 @@ private:
 					unit->dialog = FindDialog(id.c_str());
 					if(!unit->dialog)
 						t.Throw("Missing dialog '%s'.", id.c_str());
+					crc.Update(unit->id);
 				}
 				break;
 			case P_GROUP:
 				unit->group = (UNIT_GROUP)t.MustGetKeywordId(G_GROUP);
+				crc.Update(unit->group);
 				break;
 			case P_DMG_TYPE:
 				unit->dmg_type = ReadFlags(t, G_DMG_TYPE);
+				crc.Update(unit->dmg_type);
 				break;
 			case P_WALK_SPEED:
 				unit->walk_speed = t.MustGetNumberFloat();
 				if(unit->walk_speed < 0.5f)
 					t.Throw("Invalid walk speed %g.", unit->walk_speed);
+				crc.Update(unit->walk_speed);
 				break;
 			case P_RUN_SPEED:
 				unit->run_speed = t.MustGetNumberFloat();
 				if(unit->run_speed < 0)
 					t.Throw("Invalid run speed %g.", unit->run_speed);
+				crc.Update(unit->run_speed);
 				break;
 			case P_ROT_SPEED:
 				unit->rot_speed = t.MustGetNumberFloat();
 				if(unit->rot_speed < 0.5f)
 					t.Throw("Invalid rot speed %g.", unit->rot_speed);
+				crc.Update(unit->rot_speed);
 				break;
 			case P_BLOOD:
 				unit->blood = (BLOOD)t.MustGetKeywordId(G_BLOOD);
+				crc.Update(unit->blood);
 				break;
 			case P_SOUNDS:
 				if(t.IsSymbol('{'))
@@ -718,6 +746,7 @@ private:
 					unit->sounds = SoundPack::TryGet(id);
 					if(!unit->sounds)
 						t.Throw("Missing sound pack '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_FRAMES:
@@ -733,6 +762,7 @@ private:
 					unit->frames = FrameInfo::TryGet(id);
 					if(!unit->frames)
 						t.Throw("Missing frame infos '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_TEX:
@@ -748,6 +778,7 @@ private:
 					unit->tex = TexPack::TryGet(id);
 					if(!unit->tex)
 						t.Throw("Missing tex pack '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_IDLES:
@@ -763,20 +794,24 @@ private:
 					unit->idles = IdlePack::TryGet(id);
 					if(!unit->idles)
 						t.Throw("Missing idles pack '%s'.", id.c_str());
+					crc.Update(id);
 				}
 				break;
 			case P_WIDTH:
 				unit->width = t.MustGetNumberFloat();
 				if(unit->width < 0.1f)
 					t.Throw("Invalid width %g.", unit->width);
+				crc.Update(unit->width);
 				break;
 			case P_ATTACK_RANGE:
 				unit->attack_range = t.MustGetNumberFloat();
 				if(unit->attack_range < 0.1f)
 					t.Throw("Invalid attack range %g.", unit->attack_range);
+				crc.Update(unit->attack_range);
 				break;
 			case P_ARMOR_TYPE:
 				unit->armor_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_TYPE);
+				crc.Update(unit->armor_type);
 				break;
 			default:
 				t.Unexpected();
@@ -805,7 +840,7 @@ private:
 				t.Throw("Human unit with custom mesh.");
 		}
 
-		unit_datas.insert(unit);
+		unit_datas.insert(unit.Pin());
 	}
 
 	//=================================================================================================
@@ -827,6 +862,8 @@ private:
 			{
 				t.Next();
 				profile->fixed = t.MustGetBool();
+				crc.Update(0);
+				crc.Update(profile->fixed);
 			}
 			else if(t.IsKeywordGroup(G_ATTRIBUTE))
 			{
@@ -836,6 +873,9 @@ private:
 				if(val < 1)
 					t.Throw("Invalid attribute '%s' value %d.", g_attributes[a].id, val);
 				profile->attrib[a] = val;
+				crc.Update(1);
+				crc.Update(a);
+				crc.Update(val);
 			}
 			else if(t.IsKeywordGroup(G_SKILL))
 			{
@@ -845,6 +885,9 @@ private:
 				if(val < -1)
 					t.Throw("Invalid skill '%s' value %d.", g_skills[s].id, val);
 				profile->skill[s] = val;
+				crc.Update(2);
+				crc.Update(s);
+				crc.Update(val);
 			}
 			else
 			{
@@ -875,6 +918,7 @@ private:
 				while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
 				{
 					script->code.push_back(PS_END_IF);
+					crc.Update(PS_END_IF);
 					if_state.pop_back();
 				}
 				if(if_state.empty())
@@ -885,6 +929,7 @@ private:
 					if(t.IsKeyword(IK_ELSE, G_ITEM_KEYWORD))
 					{
 						script->code.push_back(PS_ELSE);
+						crc.Update(PS_ELSE);
 						t.Next();
 						if(t.IsKeyword(IK_IF, G_ITEM_KEYWORD))
 						{
@@ -899,6 +944,8 @@ private:
 									t.Throw("Invalid level %d.", lvl);
 								script->code.push_back(PS_IF_LEVEL);
 								script->code.push_back(lvl);
+								crc.Update(PS_IF_LEVEL);
+								crc.Update(lvl);
 							}
 							else if(iif == IK_CHANCE)
 							{
@@ -908,6 +955,8 @@ private:
 									t.Throw("Invalid chance %d.", chance);
 								script->code.push_back(PS_IF_CHANCE);
 								script->code.push_back(chance);
+								crc.Update(PS_IF_CHANCE);
+								crc.Update(chance);
 							}
 							else
 							{
@@ -942,10 +991,12 @@ private:
 					{
 						// } end of if
 						script->code.push_back(PS_END_IF);
+						crc.Update(PS_END_IF);
 						if_state.pop_back();
 						while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
 						{
 							script->code.push_back(PS_END_IF);
+							crc.Update(PS_END_IF);
 							if_state.pop_back();
 						}
 					}
@@ -954,11 +1005,13 @@ private:
 				{
 					// } end of else
 					script->code.push_back(PS_END_IF);
+					crc.Update(PS_END_IF);
 					if_state.pop_back();
 					t.Next();
 					while(!if_state.empty() && if_state.back() == IFS_ELSE_INLINE)
 					{
 						script->code.push_back(PS_END_IF);
+						crc.Update(PS_END_IF);
 						if_state.pop_back();
 					}
 				}
@@ -977,6 +1030,8 @@ private:
 				// get item
 				script->code.push_back(PS_MANY);
 				script->code.push_back(count);
+				crc.Update(PS_MANY);
+				crc.Update(count);
 				AddItem(script);
 			}
 			else if(t.IsKeywordGroup(G_ITEM_KEYWORD))
@@ -999,6 +1054,8 @@ private:
 							// two item chance
 							script->code.push_back(PS_CHANCE2);
 							script->code.push_back(chance);
+							crc.Update(PS_CHANCE2);
+							crc.Update(chance);
 							t.Next();
 							AddItem(script);
 							t.Next();
@@ -1011,6 +1068,8 @@ private:
 							// single item chance
 							script->code.push_back(PS_CHANCE);
 							script->code.push_back(chance);
+							crc.Update(PS_CHANCE);
+							crc.Update(chance);
 							AddItem(script);
 						}
 					}
@@ -1020,6 +1079,7 @@ private:
 					{
 						// one of many
 						script->code.push_back(PS_ONE_OF_MANY);
+						crc.Update(PS_ONE_OF_MANY);
 						uint pos = script->code.size();
 						int count = 0;
 						script->code.push_back(0);
@@ -1034,6 +1094,7 @@ private:
 						if(count < 2)
 							t.Throw("Invalid one of many count %d.", count);
 						script->code[pos] = count;
+						crc.Update(count);
 					}
 					else
 					{
@@ -1049,6 +1110,9 @@ private:
 						script->code.push_back(PS_RANDOM);
 						script->code.push_back(from);
 						script->code.push_back(to);
+						crc.Update(PS_RANDOM);
+						crc.Update(from);
+						crc.Update(to);
 						AddItem(script);
 					}
 					break;
@@ -1063,6 +1127,8 @@ private:
 								t.Throw("Invalid level %d.", lvl);
 							script->code.push_back(PS_IF_LEVEL);
 							script->code.push_back(lvl);
+							crc.Update(PS_IF_LEVEL);
+							crc.Update(lvl);
 						}
 						else if(iif == IK_CHANCE)
 						{
@@ -1072,6 +1138,8 @@ private:
 								t.Throw("Invalid chance %d.", chance);
 							script->code.push_back(PS_IF_CHANCE);
 							script->code.push_back(chance);
+							crc.Update(PS_IF_CHANCE);
+							crc.Update(chance);
 						}
 						else
 						{
@@ -1099,6 +1167,7 @@ private:
 			{
 				// single item
 				script->code.push_back(PS_ONE);
+				crc.Update(PS_ONE);
 				AddItem(script);
 			}
 			else
@@ -1117,6 +1186,7 @@ private:
 						if(t.IsKeyword(IK_ELSE, G_ITEM_KEYWORD))
 						{
 							script->code.push_back(PS_ELSE);
+							crc.Update(PS_ELSE);
 							t.Next();
 							if(t.IsSymbol('{'))
 							{
@@ -1128,11 +1198,15 @@ private:
 							break;
 						}
 						else
+						{
 							script->code.push_back(PS_END_IF);
+							crc.Update(PS_END_IF);
+						}
 					}
 					else if(if_state.back() == IFS_ELSE_INLINE)
 					{
 						script->code.push_back(PS_END_IF);
+						crc.Update(PS_END_IF);
 						if_state.pop_back();
 					}
 					else
@@ -1146,6 +1220,7 @@ private:
 			if(if_state.back() == IFS_START_INLINE || if_state.back() == IFS_ELSE_INLINE)
 			{
 				script->code.push_back(PS_END_IF);
+				crc.Update(PS_END_IF);
 				if_state.pop_back();
 			}
 			else
@@ -1153,6 +1228,7 @@ private:
 		}
 
 		script->code.push_back(PS_END);
+		crc.Update(PS_END);
 		ItemScript::scripts.push_back(script.Pin());
 	}
 
@@ -1167,6 +1243,8 @@ private:
 			{
 				script->code.push_back(PS_ITEM);
 				script->code.push_back((int)item);
+				crc.Update(PS_ITEM);
+				crc.Update(item->id);
 			}
 			else
 				t.Throw("Missing item '%s'.", s.c_str());
@@ -1194,6 +1272,9 @@ private:
 				script->code.push_back(PS_LEVELED_LIST_MOD);
 				script->code.push_back(mod);
 				script->code.push_back((int)lis.llis);
+				crc.Update(PS_LEVELED_LIST_MOD);
+				crc.Update(mod);
+				crc.Update(lis.llis->id);
 			}
 			else
 			{
@@ -1204,12 +1285,14 @@ private:
 				ParseScript type = (lis.is_leveled ? PS_LEVELED_LIST : PS_LIST);
 				script->code.push_back(type);
 				script->code.push_back((int)lis.lis);
+				crc.Update(type);
+				crc.Update(lis.GetIdString());
 			}
 		}
 	}
 
 	//=================================================================================================
-	void ParseSpells(Ptr<SpellList>& spells)
+	void ParseSpells(Ptr<SpellList>& list)
 	{
 		// {
 		t.AssertSymbol('{');
@@ -1226,7 +1309,8 @@ private:
 				{
 					// non_combat
 					t.Next();
-					spells->have_non_combat = t.MustGetBool();
+					list->have_non_combat = t.MustGetBool();
+					crc.Update(list->have_non_combat ? 2 : 1);
 				}
 				else
 				{
@@ -1234,6 +1318,7 @@ private:
 					if(index == 3)
 						t.Throw("Too many spells (max 3 for now).");
 					++index;
+					crc.Update(0);
 				}
 			}
 			else
@@ -1252,21 +1337,23 @@ private:
 					t.Throw("Invalid spell level %d.", lvl);
 				t.Next();
 				t.AssertSymbol('}');
-				spells->spell[index] = spell;
-				spells->level[index] = lvl;
+				list->spell[index] = spell;
+				list->level[index] = lvl;
+				crc.Update(spell->id);
+				crc.Update(lvl);
 				++index;
 			}
 			t.Next();
 		} while(!t.IsSymbol('}'));
 
-		if(spells->spell[0] == nullptr && spells->spell[1] == nullptr && spells->spell[2] == nullptr)
+		if(list->spell[0] == nullptr && list->spell[1] == nullptr && list->spell[2] == nullptr)
 			t.Throw("Empty spell list.");
 
-		SpellList::spells.push_back(spells.Pin());
+		SpellList::lists.push_back(list.Pin());
 	}
 
 	//=================================================================================================
-	void ParseSounds(Ptr<SoundPack>& sounds)
+	void ParseSounds(Ptr<SoundPack>& pack)
 	{
 		// {
 		t.AssertSymbol('{');
@@ -1277,11 +1364,13 @@ private:
 			SoundType type = (SoundType)t.MustGetKeywordId(G_SOUND_TYPE);
 			t.Next();
 
-			sounds->filename[(int)type] = t.MustGetString();
+			pack->filename[(int)type] = t.MustGetString();
+			crc.Update(type);
+			crc.Update(pack->filename[(int)type]);
 			t.Next();
 		}
 
-		SoundPack::sounds.push_back(sounds.Pin());
+		SoundPack::packs.push_back(pack.Pin());
 	}
 
 	//=================================================================================================
@@ -1306,6 +1395,7 @@ private:
 				t.AssertSymbol('{');
 				t.Next();
 				frames->extra = new AttackFrameInfo;
+				crc.Update(0);
 				do
 				{
 					t.AssertSymbol('{');
@@ -1317,6 +1407,9 @@ private:
 					int flags = ReadFlags(t, G_WEAPON_FLAG);
 					t.Next();
 					t.AssertSymbol('}');
+					crc.Update(start);
+					crc.Update(end);
+					crc.Update(flags);
 
 					if(start < 0.f || start >= end || end > 1.f)
 						t.Throw("Invalid attack frame times (%g %g).", start, end);
@@ -1325,6 +1418,7 @@ private:
 					t.Next();
 				} while(!t.IsSymbol('}'));
 				frames->attacks = frames->extra->e.size();
+				crc.Update(frames->attacks);
 				break;
 			case FK_SIMPLE_ATTACKS:
 				if(have_simple || frames->extra)
@@ -1333,6 +1427,7 @@ private:
 				{
 					t.AssertSymbol('{');
 					t.Next();
+					crc.Update(1);
 					int index = 0;
 					frames->attacks = 0;
 					do
@@ -1346,6 +1441,8 @@ private:
 						float end = t.MustGetNumberFloat();
 						t.Next();
 						t.AssertSymbol('}');
+						crc.Update(start);
+						crc.Update(end);
 
 						if(start < 0.f || start >= end || end > 1.f)
 							t.Throw("Invalid attack frame times (%g %g).", start, end);
@@ -1364,6 +1461,8 @@ private:
 					if(!InRange(f, 0.f, 1.f))
 						t.Throw("Invalid cast frame time %g.", f);
 					frames->t[F_CAST] = f;
+					crc.Update(2);
+					crc.Update(f);
 				}
 				break;
 			case FK_TAKE_WEAPON:
@@ -1372,6 +1471,8 @@ private:
 					if(!InRange(f, 0.f, 1.f))
 						t.Throw("Invalid take weapon frame time %g.", f);
 					frames->t[F_TAKE_WEAPON] = f;
+					crc.Update(3);
+					crc.Update(f);
 				}
 				break;
 			case FK_BASH:
@@ -1380,6 +1481,8 @@ private:
 					if(!InRange(f, 0.f, 1.f))
 						t.Throw("Invalid bash frame time %g.", f);
 					frames->t[F_BASH] = f;
+					crc.Update(4);
+					crc.Update(f);
 				}
 				break;
 			}
@@ -1391,7 +1494,7 @@ private:
 	}
 
 	//=================================================================================================
-	void ParseTextures(Ptr<TexPack>& tex)
+	void ParseTextures(Ptr<TexPack>& pack)
 	{
 		// {
 		t.AssertSymbol('{');
@@ -1401,11 +1504,15 @@ private:
 		do
 		{
 			if(t.IsKeywordGroup(G_NULL))
-				tex->textures.push_back(TexId(nullptr));
+			{
+				pack->textures.push_back(TexId(nullptr));
+				crc.Update(0);
+			}
 			else
 			{
 				const string& s = t.MustGetString();
-				tex->textures.push_back(TexId(s));
+				pack->textures.push_back(TexId(s));
+				crc.Update(s);
 				any = true;
 			}
 			t.Next();
@@ -1414,11 +1521,11 @@ private:
 		if(!any)
 			t.Throw("Texture pack without textures.");
 
-		TexPack::packs.push_back(tex.Pin());
+		TexPack::packs.push_back(pack.Pin());
 	}
 
 	//=================================================================================================
-	void ParseIdles(Ptr<IdlePack>& idles)
+	void ParseIdles(Ptr<IdlePack>& pack)
 	{
 		// {
 		t.AssertSymbol('{');
@@ -1427,11 +1534,12 @@ private:
 		do
 		{
 			const string& s = t.MustGetString();
-			idles->anims.push_back(s);
+			pack->anims.push_back(s);
+			crc.Update(s);
 			t.Next();
 		} while(!t.IsSymbol('}'));
 
-		IdlePack::idles.push_back(idles.Pin());
+		IdlePack::packs.push_back(pack.Pin());
 	}
 
 	//=================================================================================================
@@ -1448,6 +1556,7 @@ private:
 			t.Throw("Can't create alias '%s', already exists.", alias.c_str());
 
 		unit_aliases[alias] = ud;
+		crc.Update(alias);
 	}
 
 	//=================================================================================================
@@ -1475,6 +1584,7 @@ private:
 				for(UnitGroup::Entry& e : other_group->entries)
 					group->entries.push_back(e);
 				group->total += other_group->total;
+				crc.Update(id);
 			}
 			else
 			{
@@ -1482,10 +1592,14 @@ private:
 				UnitData* ud = FindUnitData(id.c_str(), false);
 				if(!ud)
 					t.Throw("Missing unit '%s'.", id.c_str());
+				crc.Update(id);
 				t.Next();
 
 				if(t.IsKeyword(GK_LEADER, G_GROUP_KEYWORD))
+				{
 					group->leader = ud;
+					crc.Update(0);
+				}
 				else
 				{
 					int count = t.MustGetInt();
@@ -1493,6 +1607,7 @@ private:
 						t.Throw("Invalid unit count %d.", count);
 					group->entries.push_back(UnitGroup::Entry(ud, count));
 					group->total += count;
+					crc.Update(count);
 				}
 			}
 			t.Next();
@@ -1501,17 +1616,11 @@ private:
 		if(group->entries.empty())
 			t.Throw("Empty group.");
 
-		unit_groups.push_back(group);
-	}
-
-	//=================================================================================================
-	void CalculateCrc()
-	{
-
+		unit_groups.push_back(group.Pin());
 	}
 
 	Tokenizer t;
-	string empty_id;
+	Crc crc;
 };
 
 //=================================================================================================
@@ -1526,9 +1635,9 @@ void content::CleanupUnits()
 {
 	DeleteElements(StatProfile::profiles);
 	DeleteElements(ItemScript::scripts);
-	DeleteElements(SpellList::spells);
-	DeleteElements(SoundPack::sounds);
-	DeleteElements(IdlePack::idles);
+	DeleteElements(SpellList::lists);
+	DeleteElements(SoundPack::packs);
+	DeleteElements(IdlePack::packs);
 	DeleteElements(TexPack::packs);
 	DeleteElements(FrameInfo::frames);
 	for(UnitData* ud : unit_datas)

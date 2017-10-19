@@ -36,7 +36,7 @@ struct SpellList
 
 	SpellList() : spell(), name(), level(), have_non_combat(false) {}
 
-	static vector<SpellList*> spells;
+	static vector<SpellList*> lists;
 	static SpellList* TryGet(const AnyString& id);
 };
 
@@ -175,7 +175,7 @@ struct SoundPack
 
 	SoundPack() : inited(false), sound() {}
 
-	static vector<SoundPack*> sounds;
+	static vector<SoundPack*> packs;
 	static SoundPack* TryGet(const AnyString& id);
 };
 
@@ -249,7 +249,7 @@ struct IdlePack
 	string id;
 	vector<string> anims;
 
-	static vector<IdlePack*> idles;
+	static vector<IdlePack*> packs;
 	static IdlePack* TryGet(const AnyString& id);
 };
 

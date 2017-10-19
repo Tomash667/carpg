@@ -10,13 +10,12 @@
 
 extern string g_system_dir;
 
-vector<StatProfile*> stat_profiles;
-vector<ItemScript*> item_scripts;
-vector<SpellList*> spell_lists;
-vector<SoundPack*> sound_packs;
-vector<IdlePack*> idle_packs;
-vector<TexPack*> tex_packs;
-vector<FrameInfo*> frame_infos;
+vector<ItemScript*> ItemScript::scripts;
+vector<SpellList*> SpellList::lists;
+vector<SoundPack*> SoundPack::packs;
+vector<IdlePack*> IdlePack::packs;
+vector<TexPack*> TexPack::packs;
+vector<FrameInfo*> FrameInfo::frames;
 UnitDataContainer unit_datas;
 std::map<string, UnitData*> unit_aliases;
 UnitData unit_data_search;
@@ -396,4 +395,75 @@ UnitGroup* FindUnitGroup(const AnyString& id)
 			return group;
 	}
 	return nullptr;
+}
+
+ItemScript* ItemScript::TryGet(const AnyString& id)
+{
+	for(auto script : scripts)
+	{
+		if(script->id == id)
+			return script;
+	}
+
+	return nullptr;
+}
+
+SpellList* SpellList::TryGet(const AnyString& id)
+{
+	for(auto list : lists)
+	{
+		if(list->id == id)
+			return list;
+	}
+
+	return nullptr;
+}
+
+SoundPack* SoundPack::TryGet(const AnyString& id)
+{
+	for(auto pack : packs)
+	{
+		if(pack->id == id)
+			return pack;
+	}
+
+	return nullptr;
+}
+
+FrameInfo* FrameInfo::TryGet(const AnyString& id)
+{
+	for(auto frame : frames)
+	{
+		if(frame->id == id)
+			return frame;
+	}
+
+	return nullptr;
+}
+
+IdlePack* IdlePack::TryGet(const AnyString& id)
+{
+	for(auto pack : packs)
+	{
+		if(pack->id == id)
+			return pack;
+	}
+
+	return nullptr;
+}
+
+TexPack* TexPack::TryGet(const AnyString& id)
+{
+	for(auto pack : packs)
+	{
+		if(pack->id == id)
+			return pack;
+	}
+
+	return nullptr;
+}
+
+UnitData* UnitData::TryGet(const AnyString& id)
+{
+	return FindUnitData(id, false);
 }

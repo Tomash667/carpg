@@ -47,7 +47,7 @@ void content::LoadContent(delegate<void(Id)> callback)
 	callback(Id::Dialogs);
 
 	Info("Game: Loading units.");
-	loaded = LoadUnits();
+	LoadUnits();
 	callback(Id::Units);
 
 	Info("Game: Loading buildings.");
