@@ -1440,7 +1440,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		|| !stream.Read(unit.netid))
 		return false;
 
-	unit.data = FindUnitData(BUF, false);
+	unit.data = UnitData::TryGet(BUF);
 	if(!unit.data)
 	{
 		Error("Missing base unit id '%s'!", BUF);
@@ -4049,7 +4049,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					UnitData* data = FindUnitData(BUF, false);
+					UnitData* data = UnitData::TryGet(BUF);
 					if(!data)
 					{
 						Error("Update server: CHEAT_SPAWN_UNIT from %s, invalid unit id %s.", info.name.c_str(), BUF);
@@ -7795,7 +7795,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				else
 				{
 					Unit* unit = FindUnit(netid);
-					UnitData* ud = FindUnitData(BUF, false);
+					UnitData* ud = UnitData::TryGet(BUF);
 					if(unit && ud)
 						unit->data = ud;
 					else if(!unit)

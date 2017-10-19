@@ -56,7 +56,7 @@ void DodajStraznikow()
 {
 	Game& game = Game::Get();
 	Unit* u = nullptr;
-	UnitData* ud = FindUnitData("q_gobliny_szlachcic2");
+	UnitData* ud = UnitData::Get("q_gobliny_szlachcic2");
 
 	// szukaj szlachcica
 	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
@@ -91,7 +91,7 @@ void DodajStraznikow()
 	}
 
 	// dodaj ochronê
-	UnitData* ud2 = FindUnitData("q_gobliny_ochroniarz");
+	UnitData* ud2 = UnitData::Get("q_gobliny_ochroniarz");
 	for(int i = 0; i < 3; ++i)
 	{
 		Unit* u2 = game.SpawnUnitInsideRoom(*room, *ud2, 10);
@@ -311,7 +311,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			target.state = LS_KNOWN;
 			target.active_quest = this;
 			done = false;
-			unit_to_spawn = FindUnitData("q_gobliny_szlachcic2");
+			unit_to_spawn = UnitData::Get("q_gobliny_szlachcic2");
 			spawn_unit_room = RoomTarget::Throne;
 			callback = DodajStraznikow;
 			unit_dont_attack = true;
@@ -432,7 +432,7 @@ bool Quest_Goblins::Load(HANDLE file)
 		}
 		else if(prog == Progress::TalkedWithInnkeeper)
 		{
-			unit_to_spawn = FindUnitData("q_gobliny_szlachcic2");
+			unit_to_spawn = UnitData::Get("q_gobliny_szlachcic2");
 			spawn_unit_room = RoomTarget::Throne;
 			callback = DodajStraznikow;
 			unit_dont_attack = true;

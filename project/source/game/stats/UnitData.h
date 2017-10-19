@@ -8,21 +8,14 @@
 #include "ArmorUnitType.h"
 #include "Resource.h"
 #include "DamageTypes.h"
+//
+#include "ItemScript.h"
+#include "UnitGroup.h"
 
 //-----------------------------------------------------------------------------
 struct Spell;
 struct DialogEntry;
 struct GameDialog;
-
-//-----------------------------------------------------------------------------
-struct ItemScript
-{
-	string id;
-	vector<int> code;
-
-	static vector<ItemScript*> scripts;
-	static ItemScript* TryGet(const AnyString& id);
-};
 
 //-----------------------------------------------------------------------------
 // Lista zaklêæ postaci
@@ -276,7 +269,6 @@ struct UnitData
 	Int2 level;
 	StatProfile* stat_profile;
 	int hp_bonus, stamina_bonus, def_bonus, dmg_type, flags, flags2, flags3;
-	const int* items;
 	SpellList* spells;
 	Int2 gold, gold2;
 	GameDialog* dialog;
@@ -292,10 +284,10 @@ struct UnitData
 	UNIT_TYPE type;
 	ResourceState state;
 
-	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp_bonus(100), stamina_bonus(0), def_bonus(0),
-		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), items(nullptr), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS),
-		walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
-		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded)
+	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp_bonus(100), stamina_bonus(0), def_bonus(0), dmg_type(DMG_BLUNT), flags(0),
+		flags2(0), flags3(0), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS), walk_speed(1.5f), run_speed(5.f), rot_speed(3.f),
+		width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr), armor_type(ArmorUnitType::NONE),
+		item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded)
 	{
 	}
 
@@ -319,7 +311,9 @@ struct UnitData
 
 	void CopyFrom(UnitData& ud);
 
+	static std::map<string, UnitData*> aliases;
 	static UnitData* TryGet(const AnyString& id);
+	static UnitData* Get(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -333,36 +327,3 @@ struct UnitDataComparer
 typedef std::set<UnitData*, UnitDataComparer> UnitDataContainer;
 typedef UnitDataContainer::iterator UnitDataIterator;
 extern UnitDataContainer unit_datas;
-extern std::map<string, UnitData*> unit_aliases;
-
-//-----------------------------------------------------------------------------
-struct UnitGroup
-{
-	struct Entry
-	{
-		UnitData* ud;
-		int count;
-
-		Entry() {}
-		Entry(UnitData* ud, int count) : ud(ud), count(count) {}
-	};
-
-	string id;
-	vector<Entry> entries;
-	UnitData* leader;
-	int total;
-};
-extern vector<UnitGroup*> unit_groups;
-
-struct TmpUnitGroup
-{
-	UnitGroup* group;
-	vector<UnitGroup::Entry> entries;
-	int total, max_level;
-};
-
-//-----------------------------------------------------------------------------
-UnitData* FindUnitData(cstring id, bool report = true);
-UnitGroup* FindUnitGroup(const AnyString& id);
-uint LoadUnits(uint& crc, uint& errors);
-void TestItemScript(const int* script, string& errors, uint& count, uint& crc);

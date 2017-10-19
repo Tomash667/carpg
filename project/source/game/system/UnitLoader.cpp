@@ -611,19 +611,15 @@ private:
 					Ptr<ItemScript> script;
 					unit->item_script = script.Get();
 					ParseItems(script);
-					unit->items = &unit->item_script->code[0];
 				}
 				else
 				{
 					unit->item_script = nullptr;
-					unit->items = nullptr;
 					if(!t.IsKeywordGroup(G_NULL))
 					{
 						const string& id = t.MustGetItemKeyword();
 						unit->item_script = ItemScript::TryGet(id);
-						if(unit->item_script)
-							unit->items = &unit->item_script->code[0];
-						else
+						if(!unit->item_script)
 							t.Throw("Missing item script '%s'.", id.c_str());
 						crc.Update(id);
 					}
@@ -1545,17 +1541,17 @@ private:
 	//=================================================================================================
 	void ParseAlias(const string& id)
 	{
-		UnitData* ud = FindUnitData(id.c_str(), false);
+		UnitData* ud = UnitData::TryGet(id.c_str());
 		if(!ud)
 			t.Throw("Missing unit data '%s'.", id.c_str());
 		t.Next();
 
 		const string& alias = t.MustGetItemKeyword();
-		UnitData* ud2 = FindUnitData(alias.c_str(), false);
+		UnitData* ud2 = UnitData::TryGet(alias.c_str());
 		if(ud2)
 			t.Throw("Can't create alias '%s', already exists.", alias.c_str());
 
-		unit_aliases[alias] = ud;
+		UnitData::aliases[alias] = ud;
 		crc.Update(alias);
 	}
 
@@ -1565,7 +1561,7 @@ private:
 		Ptr<UnitGroup> group;
 		group->id = id;
 		group->total = 0;
-		if(FindUnitGroup(group->id))
+		if(UnitGroup::TryGet(group->id))
 			t.Throw("Group with that id already exists.");
 		t.Next();
 
@@ -1578,7 +1574,7 @@ private:
 			{
 				t.Next();
 				const string& id = t.MustGetItemKeyword();
-				UnitGroup* other_group = FindUnitGroup(id);
+				UnitGroup* other_group = UnitGroup::TryGet(id);
 				if(!other_group)
 					t.Throw("Missing group '%s'.", id.c_str());
 				for(UnitGroup::Entry& e : other_group->entries)
@@ -1589,7 +1585,7 @@ private:
 			else
 			{
 				const string& id = t.MustGetItemKeyword();
-				UnitData* ud = FindUnitData(id.c_str(), false);
+				UnitData* ud = UnitData::TryGet(id.c_str());
 				if(!ud)
 					t.Throw("Missing unit '%s'.", id.c_str());
 				crc.Update(id);
@@ -1616,7 +1612,7 @@ private:
 		if(group->entries.empty())
 			t.Throw("Empty group.");
 
-		unit_groups.push_back(group.Pin());
+		UnitGroup::groups.push_back(group.Pin());
 	}
 
 	Tokenizer t;
@@ -1642,5 +1638,5 @@ void content::CleanupUnits()
 	DeleteElements(FrameInfo::frames);
 	for(UnitData* ud : unit_datas)
 		delete ud;
-	DeleteElements(unit_groups);
+	DeleteElements(UnitGroup::groups);
 }

@@ -251,7 +251,6 @@
     <ClInclude Include="source\game\generator\Mapa2.h" />
     <ClInclude Include="source\game\helpers\LocationHelper.h" />
     <ClInclude Include="source\game\helpers\UnitHelper.h" />
-    <ClInclude Include="source\game\ItemScript.h" />
     <ClInclude Include="source\game\Language.h" />
     <ClInclude Include="source\game\location\Camp.h" />
     <ClInclude Include="source\game\location\CaveLocation.h" />
@@ -335,7 +334,9 @@
     <ClInclude Include="source\game\stats\UnitData.h" />
     <ClInclude Include="source\game\stats\UnitStats.h" />
     <ClInclude Include="source\game\system\Item.h" />
+    <ClInclude Include="source\game\system\ItemScript.h" />
     <ClInclude Include="source\game\system\ItemType.h" />
+    <ClInclude Include="source\game\system\UnitGroup.h" />
     <ClInclude Include="source\game\Team.h" />
     <ClInclude Include="source\game\TerrainTile.h" />
     <ClInclude Include="source\Pch.h" />
@@ -533,7 +534,9 @@
     <ClCompile Include="source\game\stats\UnitStats.cpp" />
     <ClCompile Include="source\game\system\Item.cpp" />
     <ClCompile Include="source\game\system\ItemLoader.cpp" />
+    <ClCompile Include="source\game\system\ItemScript.cpp" />
     <ClCompile Include="source\game\system\ObjectLoader.cpp" />
+    <ClCompile Include="source\game\system\UnitGroup.cpp" />
     <ClCompile Include="source\game\system\UnitLoader.cpp" />
     <ClCompile Include="source\game\Team.cpp" />
     <ClCompile Include="source\game\TeamItems.cpp" />

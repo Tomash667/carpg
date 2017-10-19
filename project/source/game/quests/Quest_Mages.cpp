@@ -387,9 +387,9 @@ void Quest_Mages2::SetProgress(int prog2)
 			unit_event_handler = this;
 			unit_auto_talk = true;
 			at_level = loc.GetLastLevel();
-			unit_to_spawn = FindUnitData("q_magowie_boss");
+			unit_to_spawn = UnitData::Get("q_magowie_boss");
 			unit_dont_attack = true;
-			unit_to_spawn2 = FindUnitData("golem_iron");
+			unit_to_spawn2 = UnitData::Get("golem_iron");
 			spawn_2_guard_1 = true;
 
 			if(Net::IsOnline())
@@ -635,9 +635,9 @@ bool Quest_Mages2::Load(HANDLE file)
 		unit_event_handler = this;
 		unit_auto_talk = true;
 		at_level = GetTargetLocation().GetLastLevel();
-		unit_to_spawn = FindUnitData("q_magowie_boss");
+		unit_to_spawn = UnitData::Get("q_magowie_boss");
 		unit_dont_attack = true;
-		unit_to_spawn2 = FindUnitData("golem_iron");
+		unit_to_spawn2 = UnitData::Get("golem_iron");
 		spawn_2_guard_1 = true;
 	}
 

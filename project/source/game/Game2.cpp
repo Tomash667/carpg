@@ -3113,7 +3113,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 				assert(pos);
 				spawn_pos = *pos;
 			}
-			auto unit = SpawnUnitNearLocation(GetContext(*p->unit), spawn_pos, *FindUnitData("white_wolf_sum"), nullptr, p->unit->level);
+			auto unit = SpawnUnitNearLocation(GetContext(*p->unit), spawn_pos, *UnitData::Get("white_wolf_sum"), nullptr, p->unit->level);
 			if(unit)
 			{
 				unit->summoner = p->unit;
@@ -6600,11 +6600,8 @@ uint Game::TestGameData(bool major)
 		str.clear();
 
 		// przedmioty postaci
-		if(ud.items)
-		{
-			uint crc;
-			TestItemScript(ud.items, str, errors, crc);
-		}
+		if(ud.item_script)
+			ud.item_script->Test(str, errors);
 
 		// czary postaci
 		if(ud.spells)
@@ -6863,9 +6860,9 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	// items
 	u->weight = 0;
 	u->CalculateLoad();
-	if(!custom && base.items)
+	if(!custom && base.item_script)
 	{
-		ParseItemScript(*u, base.items);
+		ParseItemScript(*u, base.item_script);
 		SortItems(u->items);
 		u->RecalculateWeight();
 		if(!ResourceManager::Get().IsLoadScreen())
@@ -7001,11 +6998,11 @@ void SkipItem(const int*& ps, int count)
 	}
 }
 
-void Game::ParseItemScript(Unit& unit, const int* script)
+void Game::ParseItemScript(Unit& unit, const ItemScript* script)
 {
 	assert(script);
 
-	const int* ps = script;
+	const int* ps = script->code.data();
 	int a, b, depth = 0, depth_if = 0;
 
 	while(*ps != PS_END)
@@ -11221,9 +11218,9 @@ void Game::GenerateLabirynthUnits()
 		count = 20;
 		tries = 100;
 	}
-	UnitGroup* group = FindUnitGroup(group_id);
+	UnitGroup* group = UnitGroup::TryGet(group_id);
 	static TmpUnitGroup t;
-	t.group = FindUnitGroup(group_id);
+	t.group = UnitGroup::TryGet(group_id);
 	t.total = 0;
 	t.entries.clear();
 	int level = GetDungeonLevel();
@@ -11447,9 +11444,9 @@ void Game::GenerateCaveUnits()
 {
 	// zbierz grupy
 	static TmpUnitGroup e[3] = {
-		{ FindUnitGroup("wolfs") },
-		{ FindUnitGroup("spiders") },
-		{ FindUnitGroup("rats") }
+		{ UnitGroup::TryGet("wolfs") },
+		{ UnitGroup::TryGet("spiders") },
+		{ UnitGroup::TryGet("rats") }
 	};
 
 	static vector<Int2> tiles;
@@ -14067,7 +14064,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					if(current_location == quest_orcs2->target_loc && quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
 					{
 						quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedOrcs;
-						UnitData* ud = FindUnitData("q_orkowie_slaby");
+						UnitData* ud = UnitData::Get("q_orkowie_slaby");
 						for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
 						{
 							if(!it->IsCorridor() && Rand() % 2 == 0)
@@ -14078,7 +14075,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 							}
 						}
 
-						Unit* u = SpawnUnitInsideRoom(lvl.GetFarRoom(false), *FindUnitData("q_orkowie_kowal"), -2, Int2(-999, -999), Int2(-999, -999));
+						Unit* u = SpawnUnitInsideRoom(lvl.GetFarRoom(false), *UnitData::Get("q_orkowie_kowal"), -2, Int2(-999, -999), Int2(-999, -999));
 						if(u)
 							u->dont_attack = true;
 
@@ -15504,7 +15501,7 @@ void Game::StartArenaCombat(int level)
 	}
 
 	TmpUnitGroup part;
-	part.group = FindUnitGroup(grupa);
+	part.group = UnitGroup::TryGet(grupa);
 	part.total = 0;
 	for(auto& entry : part.group->entries)
 	{
@@ -16260,7 +16257,7 @@ void Game::SpawnArenaViewers(int count)
 	assert(InRange(count, 1, 9));
 
 	vector<Mesh::Point*> points;
-	UnitData& ud = *FindUnitData("viewer");
+	UnitData& ud = *UnitData::Get("viewer");
 	InsideBuilding* arena = GetArena();
 	Mesh* mesh = arena->type->inside_mesh;
 
@@ -16288,7 +16285,7 @@ void Game::SpawnArenaViewers(int count)
 
 void Game::RemoveArenaViewers()
 {
-	UnitData* ud = FindUnitData("viewer");
+	UnitData* ud = UnitData::Get("viewer");
 	LevelContext& ctx = GetArena()->ctx;
 
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
@@ -17284,7 +17281,7 @@ void Game::GenerateQuestUnits()
 {
 	if(quest_sawmill->sawmill_state == Quest_Sawmill::State::None && current_location == quest_sawmill->start_loc)
 	{
-		Unit* u = SpawnUnitInsideInn(*FindUnitData("artur_drwal"), -2);
+		Unit* u = SpawnUnitInsideInn(*UnitData::Get("artur_drwal"), -2);
 		assert(u);
 		if(u)
 		{
@@ -17298,7 +17295,7 @@ void Game::GenerateQuestUnits()
 
 	if(current_location == quest_mine->start_loc && quest_mine->mine_state == Quest_Mine::State::None)
 	{
-		Unit* u = SpawnUnitInsideInn(*FindUnitData("inwestor"), -2);
+		Unit* u = SpawnUnitInsideInn(*UnitData::Get("inwestor"), -2);
 		assert(u);
 		if(u)
 		{
@@ -17311,7 +17308,7 @@ void Game::GenerateQuestUnits()
 
 	if(current_location == quest_bandits->start_loc && quest_bandits->bandits_state == Quest_Bandits::State::None)
 	{
-		Unit* u = SpawnUnitInsideInn(*FindUnitData("mistrz_agentow"), -2);
+		Unit* u = SpawnUnitInsideInn(*UnitData::Get("mistrz_agentow"), -2);
 		assert(u);
 		if(u)
 		{
@@ -17324,7 +17321,7 @@ void Game::GenerateQuestUnits()
 
 	if(current_location == quest_mages->start_loc && quest_mages2->mages_state == Quest_Mages2::State::None)
 	{
-		Unit* u = SpawnUnitInsideInn(*FindUnitData("q_magowie_uczony"), -2);
+		Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_magowie_uczony"), -2);
 		assert(u);
 		if(u)
 		{
@@ -17338,7 +17335,7 @@ void Game::GenerateQuestUnits()
 	{
 		if(quest_mages2->mages_state == Quest_Mages2::State::TalkedWithCaptain)
 		{
-			Unit* u = SpawnUnitInsideInn(*FindUnitData("q_magowie_stary"), 15);
+			Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
 			assert(u);
 			if(u)
 			{
@@ -17350,7 +17347,7 @@ void Game::GenerateQuestUnits()
 		}
 		else if(quest_mages2->mages_state == Quest_Mages2::State::MageLeft)
 		{
-			Unit* u = SpawnUnitInsideInn(*FindUnitData("q_magowie_stary"), 15);
+			Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_magowie_stary"), 15);
 			assert(u);
 			if(u)
 			{
@@ -17367,7 +17364,7 @@ void Game::GenerateQuestUnits()
 
 	if(current_location == quest_orcs->start_loc && quest_orcs2->orcs_state == Quest_Orcs2::State::None)
 	{
-		Unit* u = SpawnUnitInsideInn(*FindUnitData("q_orkowie_straznik"));
+		Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_orkowie_straznik"));
 		assert(u);
 		if(u)
 		{
@@ -17381,7 +17378,7 @@ void Game::GenerateQuestUnits()
 
 	if(current_location == quest_goblins->start_loc && quest_goblins->goblins_state == Quest_Goblins::State::None)
 	{
-		Unit* u = SpawnUnitInsideInn(*FindUnitData("q_gobliny_szlachcic"));
+		Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_gobliny_szlachcic"));
 		assert(u);
 		if(u)
 		{
@@ -17397,7 +17394,7 @@ void Game::GenerateQuestUnits()
 	if(current_location == quest_evil->start_loc && quest_evil->evil_state == Quest_Evil::State::None)
 	{
 		CityBuilding* b = city_ctx->FindBuilding(BuildingGroup::BG_INN);
-		Unit* u = SpawnUnitNearLocation(local_ctx, b->walk_pt, *FindUnitData("q_zlo_kaplan"), nullptr, 10);
+		Unit* u = SpawnUnitNearLocation(local_ctx, b->walk_pt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
 		assert(u);
 		if(u)
 		{
@@ -17420,7 +17417,7 @@ void Game::GenerateQuestUnits()
 		if(quest_sawmill->days >= 30 && city_ctx)
 		{
 			quest_sawmill->days = 29;
-			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
+			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				quest_sawmill->messenger = u;
@@ -17444,7 +17441,7 @@ void Game::GenerateQuestUnits()
 			quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
 			quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
-		Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+		Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
 			quest_mine->messenger = u;
@@ -17456,7 +17453,7 @@ void Game::GenerateQuestUnits()
 
 	if(quest_evil->evil_state == Quest_Evil::State::GenerateMage && current_location == quest_evil->mage_loc)
 	{
-		Unit* u = SpawnUnitInsideInn(*FindUnitData("q_zlo_mag"), -2);
+		Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_zlo_mag"), -2);
 		assert(u);
 		if(u)
 		{
@@ -17471,7 +17468,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 {
 	if(quest_goblins->goblins_state == Quest_Goblins::State::Counting && quest_goblins->days <= 0)
 	{
-		Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
+		Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
 			if(Net::IsOnline() && !on_enter)
@@ -17485,7 +17482,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 
 	if(quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft && quest_goblins->days <= 0)
 	{
-		Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
+		Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
 		if(u)
 		{
 			if(Net::IsOnline() && !on_enter)
@@ -17515,7 +17512,7 @@ void Game::UpdateQuests(int days)
 		if(quest_sawmill->days >= 30 && city_ctx && game_state == GS_LEVEL)
 		{
 			quest_sawmill->days = 29;
-			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
+			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(Net::IsOnline())
@@ -17547,7 +17544,7 @@ void Game::UpdateQuests(int days)
 				// player invesetd in mine, inform him about finishing
 				if(city_ctx && game_state == GS_LEVEL)
 				{
-					Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+					Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 					if(u)
 					{
 						if(Net::IsOnline())
@@ -17577,7 +17574,7 @@ void Game::UpdateQuests(int days)
 		quest_mine->days += days;
 		if(quest_mine->days >= quest_mine->days_required && city_ctx && game_state == GS_LEVEL)
 		{
-			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(Net::IsOnline())
@@ -17696,19 +17693,19 @@ void Game::RemoveQuestUnits(bool on_leave)
 	{
 		if(quest_sawmill->messenger)
 		{
-			RemoveQuestUnit(FindUnitData("poslaniec_tartak"), on_leave);
+			RemoveQuestUnit(UnitData::Get("poslaniec_tartak"), on_leave);
 			quest_sawmill->messenger = nullptr;
 		}
 
 		if(quest_mine->messenger)
 		{
-			RemoveQuestUnit(FindUnitData("poslaniec_kopalnia"), on_leave);
+			RemoveQuestUnit(UnitData::Get("poslaniec_kopalnia"), on_leave);
 			quest_mine->messenger = nullptr;
 		}
 
 		if(open_location == quest_sawmill->start_loc && quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild && quest_sawmill->build_state == Quest_Sawmill::BuildState::None)
 		{
-			Unit* u = city_ctx->FindInn()->FindUnit(FindUnitData("artur_drwal"));
+			Unit* u = city_ctx->FindInn()->FindUnit(UnitData::Get("artur_drwal"));
 			if(u && u->IsAlive())
 			{
 				quest_sawmill->build_state = Quest_Sawmill::BuildState::LumberjackLeft;
@@ -17718,7 +17715,7 @@ void Game::RemoveQuestUnits(bool on_leave)
 
 		if(quest_mages2->scholar && quest_mages2->mages_state == Quest_Mages2::State::ScholarWaits)
 		{
-			RemoveQuestUnit(FindUnitData("q_magowie_uczony"), on_leave);
+			RemoveQuestUnit(UnitData::Get("q_magowie_uczony"), on_leave);
 			quest_mages2->scholar = nullptr;
 			quest_mages2->mages_state = Quest_Mages2::State::Counting;
 			quest_mages2->days = Random(15, 30);
@@ -17726,7 +17723,7 @@ void Game::RemoveQuestUnits(bool on_leave)
 
 		if(quest_orcs2->guard && quest_orcs2->orcs_state >= Quest_Orcs2::State::GuardTalked)
 		{
-			RemoveQuestUnit(FindUnitData("q_orkowie_straznik"), on_leave);
+			RemoveQuestUnit(UnitData::Get("q_orkowie_straznik"), on_leave);
 			quest_orcs2->guard = nullptr;
 		}
 	}
@@ -17749,19 +17746,19 @@ void Game::RemoveQuestUnits(bool on_leave)
 	{
 		quest_mages2->hd_mage.Set(*quest_mages2->scholar->human_data);
 		quest_mages2->scholar = nullptr;
-		RemoveQuestUnit(FindUnitData("q_magowie_stary"), on_leave);
+		RemoveQuestUnit(UnitData::Get("q_magowie_stary"), on_leave);
 		quest_mages2->mages_state = Quest_Mages2::State::MageLeft;
 	}
 
 	if(quest_goblins->goblins_state == Quest_Goblins::State::MessengerTalked && quest_goblins->messenger)
 	{
-		RemoveQuestUnit(FindUnitData("q_gobliny_poslaniec"), on_leave);
+		RemoveQuestUnit(UnitData::Get("q_gobliny_poslaniec"), on_leave);
 		quest_goblins->messenger = nullptr;
 	}
 
 	if(quest_goblins->goblins_state == Quest_Goblins::State::GivenBow && quest_goblins->nobleman)
 	{
-		RemoveQuestUnit(FindUnitData("q_gobliny_szlachcic"), on_leave);
+		RemoveQuestUnit(UnitData::Get("q_gobliny_szlachcic"), on_leave);
 		quest_goblins->nobleman = nullptr;
 		quest_goblins->goblins_state = Quest_Goblins::State::NoblemanLeft;
 		quest_goblins->days = Random(15, 30);
@@ -17769,7 +17766,7 @@ void Game::RemoveQuestUnits(bool on_leave)
 
 	if(quest_goblins->goblins_state == Quest_Goblins::State::MageTalked && quest_goblins->messenger)
 	{
-		RemoveQuestUnit(FindUnitData("q_gobliny_mag"), on_leave);
+		RemoveQuestUnit(UnitData::Get("q_gobliny_mag"), on_leave);
 		quest_goblins->messenger = nullptr;
 		quest_goblins->goblins_state = Quest_Goblins::State::MageLeft;
 	}
@@ -17840,8 +17837,8 @@ void Game::GenerateSawmill(bool in_progress)
 			tartak_objs_ptrs[i] = BaseObject::Get(tartak_objs[i]);
 	}
 
-	UnitData& ud = *FindUnitData("artur_drwal");
-	UnitData& ud2 = *FindUnitData("drwal");
+	UnitData& ud = *UnitData::Get("artur_drwal");
+	UnitData& ud2 = *UnitData::Get("drwal");
 
 	if(in_progress)
 	{
@@ -18583,10 +18580,10 @@ bool Game::GenerateMine()
 		}
 		pt -= g_kierunek2[lvl.staircase_up_dir];
 
-		SpawnUnitNearLocation(local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *FindUnitData("gornik_szef"), &Vec3(2.f*lvl.staircase_up.x + 1, 0, 2.f*lvl.staircase_up.y + 1), -2);
+		SpawnUnitNearLocation(local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *UnitData::Get("gornik_szef"), &Vec3(2.f*lvl.staircase_up.x + 1, 0, 2.f*lvl.staircase_up.y + 1), -2);
 
 		// górnicy
-		UnitData& gornik = *FindUnitData("gornik");
+		UnitData& gornik = *UnitData::Get("gornik");
 		for(int i = 0; i < 10; ++i)
 		{
 			for(int j = 0; j < 15; ++j)
@@ -18605,8 +18602,8 @@ bool Game::GenerateMine()
 	// ustaw jednostki
 	if(!ustaw && quest_mine->mine_state3 >= Quest_Mine::State3::GeneratedInBuild)
 	{
-		UnitData* gornik = FindUnitData("gornik"),
-			*szef_gornikow = FindUnitData("gornik_szef");
+		UnitData* gornik = UnitData::Get("gornik"),
+			*szef_gornikow = UnitData::Get("gornik_szef");
 		for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 		{
 			Unit* u = *it;
@@ -19076,7 +19073,7 @@ void Game::UpdateGame2(float dt)
 		if(quest_bandits->timer <= 0.f)
 		{
 			// spawn agent
-			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *FindUnitData("agent"), &Team.leader->pos, -2, 2.f);
+			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("agent"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(Net::IsOnline())
@@ -19257,7 +19254,7 @@ void Game::UpdateContest(float dt)
 	{
 		int id;
 		InsideBuilding* inn = city_ctx->FindInn(id);
-		Unit& innkeeper = *inn->FindUnit(FindUnitData("innkeeper"));
+		Unit& innkeeper = *inn->FindUnit(UnitData::Get("innkeeper"));
 
 		if(innkeeper.busy == Unit::Busy_No)
 		{
@@ -19357,7 +19354,7 @@ void Game::UpdateContest(float dt)
 	else if(contest_state == CONTEST_IN_PROGRESS)
 	{
 		InsideBuilding* inn = city_ctx->FindInn();
-		Unit& innkeeper = *inn->FindUnit(FindUnitData("innkeeper"));
+		Unit& innkeeper = *inn->FindUnit(UnitData::Get("innkeeper"));
 		bool talking = true;
 		cstring next_text = nullptr, next_drink = nullptr;
 
@@ -19493,7 +19490,7 @@ void Game::UpdateContest(float dt)
 	else if(contest_state == CONTEST_FINISH)
 	{
 		InsideBuilding* inn = city_ctx->FindInn();
-		Unit& innkeeper = *inn->FindUnit(FindUnitData("innkeeper"));
+		Unit& innkeeper = *inn->FindUnit(UnitData::Get("innkeeper"));
 
 		if(!innkeeper.bubble)
 		{
@@ -21080,7 +21077,7 @@ UnitData* Game::GetRandomHeroData()
 		break;
 	}
 
-	return FindUnitData(id);
+	return UnitData::Get(id);
 }
 
 void Game::CheckCraziesStone()
@@ -21248,7 +21245,7 @@ UnitData* Game::GetUnitDataFromClass(Class clas, bool crazy)
 	}
 
 	if(id)
-		return FindUnitData(id, false);
+		return UnitData::TryGet(id);
 	else
 		return nullptr;
 }
@@ -21902,7 +21899,7 @@ void Game::SpawnDrunkmans()
 {
 	InsideBuilding* inn = city_ctx->FindInn();
 	contest_generated = true;
-	UnitData& pijak = *FindUnitData("pijak");
+	UnitData& pijak = *UnitData::Get("pijak");
 	int ile = Random(4, 6);
 	for(int i = 0; i < ile; ++i)
 	{
@@ -22048,7 +22045,7 @@ UnitData& Game::GetHero(Class clas, bool crazy)
 		break;
 	}
 
-	return *FindUnitData(id);
+	return *UnitData::Get(id);
 }
 
 void Game::ShowAcademyText()

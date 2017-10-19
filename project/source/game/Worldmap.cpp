@@ -1311,7 +1311,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			if(quest_bandits->bandits_state == Quest_Bandits::State::GenerateGuards && current_location == quest_bandits->target_loc)
 			{
 				quest_bandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
-				UnitData* ud = FindUnitData("guard_q_bandyci");
+				UnitData* ud = UnitData::Get("guard_q_bandyci");
 				int ile = Random(4, 5);
 				pos += Vec3(sin(dir + PI) * 8, 0, cos(dir + PI) * 8);
 				for(int i = 0; i < ile; ++i)
@@ -2362,7 +2362,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 		{
 			if(!recreate)
 			{
-				UnitData* ud = FindUnitData(token.c_str(), false);
+				UnitData* ud = UnitData::TryGet(token.c_str());
 				assert(ud);
 				if(ud)
 				{
@@ -2509,7 +2509,7 @@ void Game::SpawnUnits(City* city)
 		ais.push_back(ai);
 	}
 
-	UnitData* mieszkaniec = FindUnitData(LocationHelper::IsCity(locations[current_location]) ? "citizen" : "villager");
+	UnitData* mieszkaniec = UnitData::Get(LocationHelper::IsCity(locations[current_location]) ? "citizen" : "villager");
 
 	// pijacy w karczmie
 	for(int i = 0, ile = Random(1, city_ctx->citizens / 3); i < ile; ++i)
@@ -2536,7 +2536,7 @@ void Game::SpawnUnits(City* city)
 	}
 
 	// stra¿nicy
-	UnitData* guard = FindUnitData("guard_move");
+	UnitData* guard = UnitData::Get("guard_move");
 	for(int i = 0, ile = city_ctx->IsVillage() ? 3 : 6; i < ile; ++i)
 	{
 		for(int j = 0; j < 50; ++j)
@@ -2771,7 +2771,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		}
 
 		InsideBuilding* inn = city_ctx->FindInn();
-		Unit* innkeeper = inn->FindUnit(FindUnitData("innkeeper"));
+		Unit* innkeeper = inn->FindUnit(UnitData::Get("innkeeper"));
 
 		innkeeper->talking = false;
 		innkeeper->mesh_inst->need_update = true;
@@ -3591,12 +3591,12 @@ void Game::SpawnForestUnits(const Vec3& team_pos)
 {
 	// zbierz grupy
 	static TmpUnitGroup groups[4] = {
-		{ FindUnitGroup("wolfs") },
-		{ FindUnitGroup("spiders") },
-		{ FindUnitGroup("rats") },
-		{ FindUnitGroup("animals") }
+		{ UnitGroup::TryGet("wolfs") },
+		{ UnitGroup::TryGet("spiders") },
+		{ UnitGroup::TryGet("rats") },
+		{ UnitGroup::TryGet("animals") }
 	};
-	UnitData* ud_hunter = FindUnitData("wild_hunter");
+	UnitData* ud_hunter = UnitData::Get("wild_hunter");
 	const int level = GetDungeonLevel();
 	static vector<Vec2> poss;
 	poss.clear();
@@ -3688,10 +3688,10 @@ void Game::RepositionCityUnits()
 
 	UnitData* citizen;
 	if(city_ctx->IsVillage())
-		citizen = FindUnitData("villager");
+		citizen = UnitData::Get("villager");
 	else
-		citizen = FindUnitData("citizen");
-	UnitData* guard = FindUnitData("guard_move");
+		citizen = UnitData::Get("citizen");
+	UnitData* guard = UnitData::Get("guard_move");
 	InsideBuilding* inn = city_ctx->FindInn();
 
 	for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
@@ -3880,7 +3880,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		{
 		case -1:
 			if(Rand() % 3 != 0)
-				essential = FindUnitData("wild_hunter");
+				essential = UnitData::Get("wild_hunter");
 			group_name = "animals";
 			break;
 		case SG_BANDYCI:
@@ -3904,7 +3904,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		switch(spotkanie)
 		{
 		case 0: // mag
-			essential = FindUnitData("crazy_mage");
+			essential = UnitData::Get("crazy_mage");
 			group_name = nullptr;
 			ile = 1;
 			poziom = Random(10, 16);
@@ -3918,7 +3918,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			break;
 		case 2: // kupiec
 			{
-				essential = FindUnitData("merchant");
+				essential = UnitData::Get("merchant");
 				group_name = "merchant_guards";
 				ile = Random(2, 4);
 				poziom = Random(3, 8);
@@ -3982,7 +3982,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			break;
 		case 6:
 			group_name = nullptr;
-			essential = FindUnitData("q_magowie_golem");
+			essential = UnitData::Get("q_magowie_golem");
 			poziom = 8;
 			dont_attack = true;
 			dialog = FindDialog("q_mages");
@@ -3990,7 +3990,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			break;
 		case 7:
 			group_name = nullptr;
-			essential = FindUnitData("q_szaleni_szaleniec");
+			essential = UnitData::Get("q_szaleni_szaleniec");
 			poziom = 13;
 			dont_attack = true;
 			dialog = FindDialog("q_crazies");
@@ -4013,7 +4013,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			break;
 		case 9:
 			group_name = nullptr;
-			essential = FindUnitData("crazy_cook");
+			essential = UnitData::Get("crazy_cook");
 			poziom = -2;
 			dialog = essential->dialog;
 			ile = 1;
@@ -4026,7 +4026,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		{
 		case -1:
 			if(Rand() % 3 != 0)
-				essential = FindUnitData("wild_hunter");
+				essential = UnitData::Get("wild_hunter");
 			group_name = "animals";
 			break;
 		case SG_BANDYCI:
@@ -4050,7 +4050,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 
 	UnitGroup* group = nullptr;
 	if(group_name)
-		group = FindUnitGroup(group_name);
+		group = UnitGroup::TryGet(group_name);
 
 	talker = nullptr;
 	float dist, best_dist;
@@ -4118,7 +4118,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 	// druga grupa
 	if(group_name2)
 	{
-		group = FindUnitGroup(group_name2);
+		group = UnitGroup::TryGet(group_name2);
 
 		for(int i = 0; i < ile2; ++i)
 		{
@@ -4877,7 +4877,7 @@ void Game::SpawnCampUnits()
 	}
 
 	// ustal wrogów
-	group.group = FindUnitGroup(group_name);
+	group.group = UnitGroup::TryGet(group_name);
 	group.total = 0;
 	group.entries.clear();
 	for(auto& entry : group.group->entries)
@@ -5155,7 +5155,7 @@ void Game::SpawnTmpUnits(City* city)
 	// quest traveler (100% chance in city, 50% in village)
 	if(!city_ctx->IsVillage() || Rand() % 2 == 0)
 	{
-		Unit* u = SpawnUnitInsideInn(*FindUnitData("traveler"), -2, inn);
+		Unit* u = SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn);
 		if(u)
 			u->temporary = true;
 	}
@@ -5513,12 +5513,12 @@ void Game::SpawnMoonwellUnits(const Vec3& team_pos)
 {
 	// zbierz grupy
 	static TmpUnitGroup groups[4] = {
-		{ FindUnitGroup("wolfs") },
-		{ FindUnitGroup("spiders") },
-		{ FindUnitGroup("rats") },
-		{ FindUnitGroup("animals") }
+		{ UnitGroup::TryGet("wolfs") },
+		{ UnitGroup::TryGet("spiders") },
+		{ UnitGroup::TryGet("rats") },
+		{ UnitGroup::TryGet("animals") }
 	};
-	UnitData* ud_hunter = FindUnitData("wild_hunter");
+	UnitData* ud_hunter = UnitData::Get("wild_hunter");
 	int level = GetDungeonLevel();
 	static vector<Vec2> poss;
 	poss.clear();
@@ -6030,7 +6030,7 @@ void Game::SpawnSecretLocationObjects()
 void Game::SpawnSecretLocationUnits()
 {
 	OutsideLocation* outside = (OutsideLocation*)location;
-	UnitData* golem = FindUnitData("golem_adamantine");
+	UnitData* golem = UnitData::Get("golem_adamantine");
 	static vector<Vec2> poss;
 
 	poss.push_back(Vec2(128.f, 64.f));
