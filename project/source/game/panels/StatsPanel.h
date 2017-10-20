@@ -22,6 +22,7 @@ public:
 
 	void Show();
 	void Hide();
+	static char StatStateToColor(StatState s);
 
 	PlayerController* pc;
 

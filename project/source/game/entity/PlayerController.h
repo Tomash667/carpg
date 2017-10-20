@@ -134,7 +134,6 @@ struct PlayerController : public HeroPlayerCommon
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	UnitStats base_stats;
 	PlayerInfo* player_info;
-	StatState attrib_state[(int)Attribute::MAX], skill_state[(int)Skill::MAX];
 	vector<TakenPerk> perks;
 	vector<Unit*> action_targets;
 
@@ -148,7 +147,6 @@ struct PlayerController : public HeroPlayerCommon
 	void Rest(int days, bool resting, bool travel = false);
 
 	void Init(Unit& _unit, bool partial = false);
-	void ResetStatState();
 	void Update(float dt, bool is_local = true);
 	void Train(Skill s, int points);
 	void Train(Attribute a, int points);

@@ -764,16 +764,6 @@ struct Unit
 	int CalculateLevel();
 	int CalculateLevel(Class clas);
 
-	int Get(Attribute a) const
-	{
-		return stats.attrib[(int)a];
-	}
-
-	int Get(Skill s) const
-	{
-		return stats.skill[(int)s];
-	}
-
 	// change unmod stat
 	void Set(Attribute a, int value)
 	{
@@ -849,6 +839,29 @@ struct Unit
 	void CreateMesh(CREATE_MESH mode);
 
 	void ApplyStun(float length);
+
+	//==============================================
+	// SKILLS & STATS
+	//==============================================
+	int Get(Attribute a) const
+	{
+		return stats.attrib[(int)a];
+	}
+	int Get(Attribute a, StatState& state) const
+	{
+		state = StatState::NORMAL;
+		return Get(a);
+	}
+
+	int Get(Skill s) const
+	{
+		return stats.skill[(int)s];
+	}
+	int Get(Skill s, StatState& state) const
+	{
+		state = StatState::NORMAL;
+		return Get(s);
+	}
 };
 
 //-----------------------------------------------------------------------------

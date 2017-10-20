@@ -27,34 +27,6 @@ enum class StatState
 };
 
 //-----------------------------------------------------------------------------
-inline char StatStateToColor(StatState s)
-{
-	switch(s)
-	{
-	default:
-	case StatState::NORMAL:
-		return 'k';
-	case StatState::POSITIVE:
-		return 'g';
-	case StatState::POSITIVE_MIXED:
-		return '0';
-	case StatState::MIXED:
-		return 'y';
-	case StatState::NEGATIVE_MIXED:
-		return '1';
-	case StatState::NEGATIVE:
-		return 'r';
-	}
-}
-
-//-----------------------------------------------------------------------------
-struct StatInfo
-{
-	int value, unmod, base;
-	StatState state;
-};
-
-//-----------------------------------------------------------------------------
 struct UnitStats
 {
 	int attrib[(int)Attribute::MAX];

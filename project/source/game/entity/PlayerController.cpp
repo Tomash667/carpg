@@ -92,9 +92,7 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	action = Action_None;
 	free_days = 0;
 	recalculate_level = false;
-
-	ResetStatState();
-
+	
 	if(!partial)
 	{
 		kills = 0;
@@ -110,16 +108,6 @@ void PlayerController::Init(Unit& _unit, bool partial)
 
 		action_charges = GetAction().charges;
 	}
-}
-
-//=================================================================================================
-void PlayerController::ResetStatState()
-{
-	// currently it isn't working
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		attrib_state[i] = StatState::NORMAL;
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-		skill_state[i] = StatState::NORMAL;
 }
 
 //=================================================================================================
@@ -378,8 +366,6 @@ void PlayerController::Save(HANDLE file)
 	WriteFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
 	FileWriter f(file);
 	base_stats.Save(f);
-	f << attrib_state;
-	f << skill_state;
 	f << (byte)perks.size();
 	for(TakenPerk& tp : perks)
 	{
@@ -480,8 +466,11 @@ void PlayerController::Load(HANDLE file)
 	if(LOAD_VERSION >= V_0_4)
 	{
 		base_stats.Load(f);
-		f >> attrib_state;
-		f >> skill_state;
+		if(LOAD_VERSION < V_CURRENT)
+		{
+			// skip old stat state
+			f.Skip(sizeof(StatState) * ((int)Attribute::MAX + (int)Skill::MAX));
+		}
 		// perks
 		byte count;
 		f >> count;
@@ -516,8 +505,6 @@ void PlayerController::Load(HANDLE file)
 		action_recharge = 0.f;
 		action_charges = GetAction().charges;
 	}
-	if(LOAD_VERSION < V_0_5_1)
-		ResetStatState();
 
 	action = Action_None;
 }

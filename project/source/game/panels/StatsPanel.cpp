@@ -131,7 +131,11 @@ void StatsPanel::SetText()
 	flowAttribs.Clear();
 	flowAttribs.Add()->Set(txAttributes);
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", AttributeInfo::attributes[i].name.c_str(), StatStateToColor(pc->attrib_state[i]), pc->unit->Get((Attribute)i)), G_ATTRIB, i);
+	{
+		StatState state;
+		int value = pc->unit->Get((Attribute)i, state);
+		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", AttributeInfo::attributes[i].name.c_str(), state, value), G_ATTRIB, i);
+	}
 	flowAttribs.Reposition();
 
 	// stats
@@ -164,7 +168,9 @@ void StatsPanel::SetText()
 				flowSkills.Add()->Set(SkillGroupInfo::groups[(int)info.group].name.c_str());
 				last_group = info.group;
 			}
-			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), StatStateToColor(pc->skill_state[i]), pc->unit->Get((Skill)i)), G_SKILL, i);
+			StatState state;
+			int value = pc->unit->Get((Skill)i, state);
+			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), state, value), G_SKILL, i);
 		}
 	}
 	flowSkills.Reposition();
@@ -292,4 +298,25 @@ void StatsPanel::Hide()
 {
 	LostFocus();
 	visible = false;
+}
+
+//=================================================================================================
+char StatsPanel::StatStateToColor(StatState s)
+{
+	switch(s)
+	{
+	default:
+	case StatState::NORMAL:
+		return 'k';
+	case StatState::POSITIVE:
+		return 'g';
+	case StatState::POSITIVE_MIXED:
+		return '0';
+	case StatState::MIXED:
+		return 'y';
+	case StatState::NEGATIVE_MIXED:
+		return '1';
+	case StatState::NEGATIVE:
+		return 'r';
+	}
 }

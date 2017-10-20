@@ -2627,7 +2627,6 @@ void Unit::RecalculateStat(Skill s, bool apply)
 {
 	int id = (int)s;
 	int old = stats.skill[id];
-	StatState state;
 
 	// calculate value
 	int value = unmod_stats.skill[id];
@@ -2635,10 +2634,7 @@ void Unit::RecalculateStat(Skill s, bool apply)
 	// apply effect modifiers
 	ValueBuffer buf;
 	SkillInfo& info = SkillInfo::skills[id];
-	if(IsPlayer())
-		value += buf.Get(state);
-	else
-		value += buf.Get();
+	value += buf.Get();
 
 	// apply attributes bonus
 	if(info.attrib2 == Attribute::NONE)
@@ -2711,8 +2707,6 @@ void Unit::RecalculateStat(Skill s, bool apply)
 		return;
 
 	stats.skill[id] = value;
-	if(IsPlayer())
-		player->skill_state[id] = state;
 }
 
 //=================================================================================================
