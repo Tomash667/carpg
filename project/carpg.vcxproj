@@ -333,6 +333,7 @@
     <ClInclude Include="source\game\stats\StatProfile.h" />
     <ClInclude Include="source\game\stats\UnitData.h" />
     <ClInclude Include="source\game\stats\UnitStats.h" />
+    <ClInclude Include="source\game\system\FrameInfo.h" />
     <ClInclude Include="source\game\system\Item.h" />
     <ClInclude Include="source\game\system\ItemScript.h" />
     <ClInclude Include="source\game\system\ItemType.h" />
@@ -532,6 +533,7 @@
     <ClCompile Include="source\game\stats\StatProfile.cpp" />
     <ClCompile Include="source\game\stats\UnitData.cpp" />
     <ClCompile Include="source\game\stats\UnitStats.cpp" />
+    <ClCompile Include="source\game\system\FrameInfo.cpp" />
     <ClCompile Include="source\game\system\Item.cpp" />
     <ClCompile Include="source\game\system\ItemLoader.cpp" />
     <ClCompile Include="source\game\system\ItemScript.cpp" />

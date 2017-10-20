@@ -230,7 +230,7 @@ public:
 
 		content::crc[(int)content::Id::Units] = crc.Get();
 
-		Info("Loaded units (%u) - crc %p.", unit_datas.size(), content::crc[(int)content::Id::Units]);
+		Info("Loaded units (%u) - crc %p.", UnitData::units.size(), content::crc[(int)content::Id::Units]);
 	}
 
 private:
@@ -836,7 +836,7 @@ private:
 				t.Throw("Human unit with custom mesh.");
 		}
 
-		unit_datas.insert(unit.Pin());
+		UnitData::units.insert(unit.Pin());
 	}
 
 	//=================================================================================================
@@ -1636,7 +1636,6 @@ void content::CleanupUnits()
 	DeleteElements(IdlePack::packs);
 	DeleteElements(TexPack::packs);
 	DeleteElements(FrameInfo::frames);
-	for(UnitData* ud : unit_datas)
-		delete ud;
+	DeleteElements(UnitData::units);
 	DeleteElements(UnitGroup::groups);
 }

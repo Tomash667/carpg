@@ -676,6 +676,9 @@
     <ClCompile Include="source\game\system\UnitGroup.cpp">
       <Filter>3. game\system\unit</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\system\FrameInfo.cpp">
+      <Filter>3. game\system\unit</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1322,6 +1325,9 @@
       <Filter>3. game\system\unit</Filter>
     </ClInclude>
     <ClInclude Include="source\game\system\UnitGroup.h">
+      <Filter>3. game\system\unit</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\FrameInfo.h">
       <Filter>3. game\system\unit</Filter>
     </ClInclude>
   </ItemGroup>

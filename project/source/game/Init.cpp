@@ -691,7 +691,7 @@ void Game::AddLoadTasks()
 	}
 
 	// preload units
-	for(UnitData* ud_ptr : unit_datas)
+	for(UnitData* ud_ptr : UnitData::units)
 	{
 		UnitData& ud = *ud_ptr;
 

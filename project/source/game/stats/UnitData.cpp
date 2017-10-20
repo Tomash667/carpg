@@ -10,8 +10,7 @@ vector<SpellList*> SpellList::lists;
 vector<SoundPack*> SoundPack::packs;
 vector<IdlePack*> IdlePack::packs;
 vector<TexPack*> TexPack::packs;
-vector<FrameInfo*> FrameInfo::frames;
-UnitDataContainer unit_datas;
+SetContainer<UnitData> UnitData::units;
 std::map<string, UnitData*> UnitData::aliases;
 
 void UnitData::CopyFrom(UnitData& ud)
@@ -69,17 +68,6 @@ SoundPack* SoundPack::TryGet(const AnyString& id)
 	return nullptr;
 }
 
-FrameInfo* FrameInfo::TryGet(const AnyString& id)
-{
-	for(auto frame : frames)
-	{
-		if(frame->id == id)
-			return frame;
-	}
-
-	return nullptr;
-}
-
 IdlePack* IdlePack::TryGet(const AnyString& id)
 {
 	for(auto pack : packs)
@@ -106,8 +94,8 @@ UnitData* UnitData::TryGet(const AnyString& id)
 {
 	static UnitData unit_data_search;
 	unit_data_search.id = id;
-	auto it = unit_datas.find(&unit_data_search);
-	if(it != unit_datas.end())
+	auto it = units.find(&unit_data_search);
+	if(it != units.end())
 		return *it;
 
 	auto it2 = aliases.find(id.s);

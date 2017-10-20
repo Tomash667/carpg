@@ -6594,7 +6594,7 @@ uint Game::TestGameData(bool major)
 
 	// postacie
 	Info("Test: Checking units...");
-	for(UnitData* ud_ptr : unit_datas)
+	for(UnitData* ud_ptr : UnitData::units)
 	{
 		UnitData& ud = *ud_ptr;
 		str.clear();

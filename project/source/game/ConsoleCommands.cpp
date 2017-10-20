@@ -1792,7 +1792,7 @@ void Game::CmdList(Tokenizer& t)
 	case LIST_UNIT:
 		{
 			LocalVector2<UnitData*> units;
-			for(auto unit : unit_datas)
+			for(auto unit : UnitData::units)
 			{
 				if(!IS_SET(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->id.c_str(), match.length()) == 0))
 					units.push_back(unit);
@@ -1826,7 +1826,7 @@ void Game::CmdList(Tokenizer& t)
 	case LIST_UNIT_NAME:
 		{
 			LocalVector2<UnitData*> units;
-			for(auto unit : unit_datas)
+			for(auto unit : UnitData::units)
 			{
 				if(!IS_SET(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->name.c_str(), match.length()) == 0))
 					units.push_back(unit);
