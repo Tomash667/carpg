@@ -3,11 +3,14 @@
 #include "Core.h"
 #include "StatProfile.h"
 
+//-----------------------------------------------------------------------------
+vector<StatProfile*> StatProfile::profiles;
+
 //=================================================================================================
 bool StatProfile::operator != (const StatProfile& p) const
 {
 	bool result = false;
-	if(fixed != p.fixed)
+	if(flags != p.flags)
 		result = true;
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
 	{
@@ -33,7 +36,7 @@ void StatProfile::Set(int level, int* attribs, int* skills) const
 {
 	assert(skills && attribs);
 
-	if(level == 0 || fixed)
+	if(level == 0 || IS_SET(flags, F_FIXED))
 	{
 		for(int i = 0; i < (int)Attribute::MAX; ++i)
 			attribs[i] = attrib[i];
@@ -59,7 +62,7 @@ void StatProfile::SetForNew(int level, int* attribs, int* skills) const
 {
 	assert(skills && attribs);
 
-	if(level == 0 || fixed)
+	if(level == 0 || IS_SET(flags, F_FIXED))
 	{
 		for(int i = 0; i < (int)Attribute::MAX; ++i)
 		{
@@ -90,4 +93,28 @@ void StatProfile::SetForNew(int level, int* attribs, int* skills) const
 			}
 		}
 	}
+}
+
+//=================================================================================================
+SubProfile* StatProfile::TryGetSubprofile(const AnyString& id)
+{
+	for(auto sub : subprofiles)
+	{
+		if(sub->id == id)
+			return sub;
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+StatProfile* StatProfile::TryGet(const AnyString& id)
+{
+	for(auto profile : profiles)
+	{
+		if(profile->id == id)
+			return profile;
+	}
+
+	return nullptr;
 }

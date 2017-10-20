@@ -10,7 +10,6 @@
 
 extern string g_system_dir;
 
-vector<StatProfile*> stat_profiles;
 vector<ItemScript*> item_scripts;
 vector<SpellList*> spell_lists;
 vector<SoundPack*> sound_packs;
@@ -68,7 +67,9 @@ enum KeywordGroup
 	G_ARMOR_TYPE,
 	G_ATTRIBUTE,
 	G_SKILL,
-	G_PROFILE_KEYWORD,
+	G_PROFILE_KEYWORDS,
+	G_PROFILE_FLAGS,
+	G_SUBPROFILE_KEYWORDS,
 	G_SOUND_TYPE,
 	G_FRAME_KEYWORD,
 	G_WEAPON_FLAG,
@@ -123,7 +124,16 @@ enum Property
 
 enum ProfileKeyword
 {
-	PK_FIXED
+	PK_FLAGS,
+	PK_SUBPROFILE
+};
+
+enum SubprofileKeyword
+{
+	SPK_WEAPON,
+	SPK_ARMOR,
+	SPK_SKILL,
+	SPK_TAG
 };
 
 enum SoundType
@@ -165,10 +175,152 @@ enum GroupKeyword
 };
 
 //=================================================================================================
+bool LoadSubprofile(Tokenizer& t, Crc& crc, StatProfile* profile)
+{
+	SubProfile* sub = new SubProfile;
+
+	try
+	{
+		// id
+		sub->id = t.MustGetItem();
+		if(profile->TryGetSubprofile(sub->id))
+			t.Throw("Id must be unique.");
+		crc.Update(sub->id);
+		t.Next();
+
+		// {
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			auto keyword = (SubprofileKeyword)t.MustGetKeywordId(G_SUBPROFILE_KEYWORDS);
+			switch(keyword)
+			{
+			case SPK_WEAPON:
+				t.Next();
+				sub->weapons.clear();
+				crc.Update(SPK_WEAPON);
+				t.AssertSymbol('(');
+				t.Next();
+				while(!t.IsSymbol(')'))
+				{
+					auto skill = (Skill)t.MustGetKeywordId(G_SKILL);
+					if(skill != Skill::SHORT_BLADE && skill != Skill::LONG_BLADE && skill != Skill::AXE && skill != Skill::BLUNT)
+						t.Throw("Invalid weapon skill.");
+					sub->weapons.push_back(skill);
+					crc.Update(skill);
+					t.Next();
+				}
+				t.Next();
+				if(sub->weapons.size() < 2)
+					t.Throw("Subprofile with %u weapons.", sub->weapons.size());
+				break;
+			case SPK_ARMOR:
+				t.Next();
+				sub->armors.clear();
+				crc.Update(SPK_ARMOR);
+				t.AssertSymbol('(');
+				t.Next();
+				while(!t.IsSymbol(')'))
+				{
+					auto skill = (Skill)t.MustGetKeywordId(G_SKILL);
+					if(skill != Skill::LIGHT_ARMOR && skill != Skill::MEDIUM_ARMOR && skill != Skill::HEAVY_ARMOR)
+						t.Throw("Invalid armor skill.");
+					sub->armors.push_back(skill);
+					sub->weapons.push_back(skill);
+					t.Next();
+				}
+				t.Next();
+				if(sub->armors.size() < 2)
+					t.Throw("Subprofile with %u armors.", sub->armors.size());
+				break;
+			case SPK_SKILL:
+				{
+					bool is_tag;
+					float value;
+					t.Next();
+					if(t.IsKeyword(SPK_TAG, G_SUBPROFILE_KEYWORDS))
+					{
+						is_tag = true;
+						value = 1.f;
+					}
+					else if(t.IsNumber())
+					{
+						is_tag = false;
+						value = t.GetFloat();
+						if(value <= 0.f || value > 1.f)
+							t.Throw("Invalid skill value %g.", value);
+					}
+					else
+					{
+						int group = G_SUBPROFILE_KEYWORDS;
+						int keyword = SPK_TAG;
+						t.StartUnexpected()
+							.Add(tokenizer::T_FLOAT)
+							.Add(tokenizer::T_KEYWORD, &keyword, &group)
+							.Throw();
+					}
+					t.Next();
+
+					Skill skill;
+					if(t.IsKeywordGroup(G_SKILL))
+						skill = (Skill)t.GetKeywordId(G_SKILL);
+					else if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_KEYWORDS))
+					{
+						skill = Skill::WEAPON_PROFILE;
+						if(sub->weapons.empty())
+							t.Throw("Weapon skill without weapon skills declared.");
+					}
+					else if(t.IsKeyword(SPK_ARMOR, G_SUBPROFILE_KEYWORDS))
+					{
+						skill = Skill::ARMOR_PROFILE;
+						if(sub->armors.empty())
+							t.Throw("Armor skill without armor skills declared.");
+					}
+					else
+					{
+						int group = G_SKILL;
+						t.Unexpected(tokenizer::T_KEYWORD_GROUP, &group);
+					}
+					for(auto& s : sub->skills)
+					{
+						if(s.skill == skill)
+							t.Throw("Skill %s already used.", t.GetTokenString().c_str());
+					}
+					t.Next();
+
+					sub->skills.push_back({ skill, value, is_tag });
+					crc.Update(SPK_SKILL);
+					crc.Update(sub->skills.back());
+				}
+				break;
+			default:
+				t.Unexpected();
+				break;
+			}
+		}
+
+		sub->variants = max(sub->weapons.size(), 1u) * max(sub->armors.size(), 1u);
+		profile->subprofiles.push_back(sub);
+		return true;
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		if(!sub->id.empty())
+			Error("Failed to load subprofile '%s': %s", sub->id.c_str(), e.ToString());
+		else
+			Error("Failed to load subprofile: %s", e.ToString());
+		delete sub;
+		return false;
+	}
+}
+
+//=================================================================================================
 bool LoadProfile(Tokenizer& t, Crc& crc, StatProfile** result = nullptr)
 {
 	StatProfile* profile = new StatProfile;
-	profile->fixed = false;
+	profile->flags = 0;
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
 		profile->attrib[i] = 10;
 	for(int i = 0; i < (int)Skill::MAX; ++i)
@@ -191,10 +343,19 @@ bool LoadProfile(Tokenizer& t, Crc& crc, StatProfile** result = nullptr)
 
 		while(!t.IsSymbol('}'))
 		{
-			if(t.IsKeyword(PK_FIXED, G_PROFILE_KEYWORD))
+			if(t.IsKeywordGroup(G_PROFILE_KEYWORDS))
 			{
+				auto keyword = (ProfileKeyword)t.GetKeywordId(G_PROFILE_KEYWORDS);
 				t.Next();
-				profile->fixed = t.MustGetBool();
+				switch(keyword)
+				{
+				case PK_FLAGS:
+					profile->flags = ReadFlags(t, G_PROFILE_FLAGS);
+					break;
+				case PK_SUBPROFILE:
+					LoadSubprofile(t, crc, profile);
+					break;
+				}
 			}
 			else if(t.IsKeywordGroup(G_ATTRIBUTE))
 			{
@@ -220,8 +381,9 @@ bool LoadProfile(Tokenizer& t, Crc& crc, StatProfile** result = nullptr)
 			}
 			else
 			{
-				int a = PK_FIXED, b = G_PROFILE_KEYWORD, c = G_ATTRIBUTE, d = G_SKILL;
-				t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &b).Add(tokenizer::T_KEYWORD_GROUP, &c).Add(tokenizer::T_KEYWORD_GROUP, &d).Throw();
+				t.StartUnexpected()
+					.AddList(tokenizer::T_KEYWORD_GROUP, { G_SKILL, G_ATTRIBUTE, G_PROFILE_KEYWORDS })
+					.Throw();
 			}
 
 			t.Next();
@@ -229,16 +391,13 @@ bool LoadProfile(Tokenizer& t, Crc& crc, StatProfile** result = nullptr)
 
 		if(!profile->id.empty())
 		{
-			for(StatProfile* s : stat_profiles)
-			{
-				if(s->id == profile->id)
-					t.Throw("Profile with that id already exists.");
-			}
+			if(StatProfile::TryGet(profile->id))
+				t.Throw("Profile with that id already exists.");
 		}
 
 		if(result)
 			*result = profile;
-		stat_profiles.push_back(profile);
+		StatProfile::profiles.push_back(profile);
 		return true;
 	}
 	catch(const Tokenizer::Exception& e)
@@ -1214,15 +1373,7 @@ bool LoadUnit(Tokenizer& t, Crc& crc)
 				else
 				{
 					const string& id = t.MustGetItemKeyword();
-					unit->stat_profile = nullptr;
-					for(StatProfile* p : stat_profiles)
-					{
-						if(id == p->id)
-						{
-							unit->stat_profile = p;
-							break;
-						}
-					}
+					unit->stat_profile = StatProfile::TryGet(id);
 					if(!unit->stat_profile)
 						t.Throw("Missing stat profile '%s'.", id.c_str());
 					crc.Update(id);
@@ -1271,20 +1422,20 @@ bool LoadUnit(Tokenizer& t, Crc& crc)
 				{
 					unit->item_script = nullptr;
 					unit->items = nullptr;
-					if (t.IsKeywordGroup(G_NULL))
+					if(t.IsKeywordGroup(G_NULL))
 						crc.Update0();
 					else
 					{
 						const string& id = t.MustGetItemKeyword();
-						for (ItemScript* s : item_scripts)
+						for(ItemScript* s : item_scripts)
 						{
-							if (s->id == id)
+							if(s->id == id)
 							{
 								unit->item_script = s;
 								break;
 							}
 						}
-						if (unit->item_script)
+						if(unit->item_script)
 							unit->items = &unit->item_script->code[0];
 						else
 							t.Throw("Missing item script '%s'.", id.c_str());
@@ -1850,39 +2001,25 @@ uint LoadUnits(uint& out_crc, uint& errors)
 		{ "charisma", (int)Attribute::CHA }
 	});
 
-	t.AddKeywords(G_SKILL, {
-		{ "one_handed", (int)Skill::ONE_HANDED_WEAPON },
-		{ "short_blade", (int)Skill::SHORT_BLADE },
-		{ "long_blade", (int)Skill::LONG_BLADE },
-		{ "blunt", (int)Skill::BLUNT },
-		{ "axe", (int)Skill::AXE },
-		{ "bow", (int)Skill::BOW },
-		{ "unarmed", (int)Skill::UNARMED },
-		{ "shield", (int)Skill::SHIELD },
-		{ "light_armor", (int)Skill::LIGHT_ARMOR },
-		{ "medium_armor", (int)Skill::MEDIUM_ARMOR },
-		{ "heavy_armor", (int)Skill::HEAVY_ARMOR },
-		{ "nature_magic", (int)Skill::NATURE_MAGIC },
-		{ "gods_magic", (int)Skill::GODS_MAGIC },
-		{ "mystic_magic", (int)Skill::MYSTIC_MAGIC },
-		{ "spellcraft", (int)Skill::SPELLCRAFT },
-		{ "concentration", (int)Skill::CONCENTRATION },
-		{ "identification", (int)Skill::IDENTIFICATION },
-		{ "lockpick", (int)Skill::LOCKPICK },
-		{ "sneak", (int)Skill::SNEAK },
-		{ "traps", (int)Skill::TRAPS },
-		{ "steal", (int)Skill::STEAL },
-		{ "animal_empathy", (int)Skill::ANIMAL_EMPATHY },
-		{ "survival", (int)Skill::SURVIVAL },
-		{ "persuasion", (int)Skill::PERSUASION },
-		{ "alchemy", (int)Skill::ALCHEMY },
-		{ "crafting", (int)Skill::CRAFTING },
-		{ "healing", (int)Skill::HEALING },
-		{ "athletics", (int)Skill::ATHLETICS },
-		{ "rage", (int)Skill::RAGE }
+	for(uint i = 0; i < (uint)Skill::MAX; ++i)
+		t.AddKeyword(SkillInfo::skills[i].id, i, G_SKILL);
+
+	t.AddKeywords(G_PROFILE_KEYWORDS, {
+		{ "flags", PK_FLAGS },
+		{ "subprofile", PK_SUBPROFILE }
 	});
 
-	t.AddKeyword("fixed", PK_FIXED, G_PROFILE_KEYWORD);
+	t.AddKeywords(G_PROFILE_FLAGS, {
+		{ "fixed", StatProfile::F_FIXED },
+		{ "double_weapon_tag_skill", StatProfile::F_DOUBLE_WEAPON_TAG_SKILL }
+	});
+
+	t.AddKeywords(G_SUBPROFILE_KEYWORDS, {
+		{ "weapon", SPK_WEAPON },
+		{ "armor", SPK_ARMOR },
+		{ "skill", SPK_SKILL },
+		{ "tag", SPK_TAG }
+	});
 
 	t.AddKeywords(G_SOUND_TYPE, {
 		{ "see_enemy", ST_SEE_ENEMY },
@@ -2024,7 +2161,7 @@ uint LoadUnits(uint& out_crc, uint& errors)
 //=================================================================================================
 void content::CleanupUnits()
 {
-	DeleteElements(stat_profiles);
+	DeleteElements(StatProfile::profiles);
 	DeleteElements(item_scripts);
 	DeleteElements(spell_lists);
 	DeleteElements(sound_packs);

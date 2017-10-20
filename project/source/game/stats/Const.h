@@ -27,3 +27,5 @@ const int STARTUP_TIMER = 1;
 #else
 const int STARTUP_TIMER = 3;
 #endif
+
+const int MAX_LEVEL = 20;

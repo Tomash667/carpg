@@ -53,7 +53,10 @@ enum class Skill
 	RAGE,
 
 	MAX,
-	NONE
+	NONE,
+
+	WEAPON_PROFILE,
+	ARMOR_PROFILE
 };
 
 //-----------------------------------------------------------------------------

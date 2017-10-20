@@ -1,4 +1,19 @@
 ﻿FEATURE:
+* skills
++ statsX
+	+ player
+	+ npc
++ new skills
+	+ effect
+	+ training
++ attribute training
+
+* perks
++ new history perks
++ modifying apt
++ new ingame perks
++ training perks
++ addperk, removeperk command
 ===============================================================================================================
 CURRENT:
 - traps are out of sync for client/server
@@ -23,6 +38,9 @@ NEW:
 - grass under moon well
 + exporter: when file has no ext or ends with .qmsh save as .qmsh.tmp
 + randomized order of spawned objects
++ next system version:
+	+ attributes give bonus to skill (currently it isn't needed, player starts with good attribute values in useful skills)
++ modify units stats, perks -> will make unit unique
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

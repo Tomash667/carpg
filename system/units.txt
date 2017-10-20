@@ -445,67 +445,6 @@ spells evil_cleric {
 //------------------------------------------------------------------------------
 // STAT PROFILES
 //------------------------------------------------------------------------------
-profile barbarian {
-	strength 70
-	endurance 70
-	dexterity 65
-	inteligence 40
-	wisdom 50
-	charisma 40
-	
-	one_handed 20
-	short_blade 15
-	long_blade 20
-	axe 20
-	blunt 20
-	bow 15
-	unarmed 15
-	shield 10
-	light_armor 20
-	medium_armor 10
-	sneak 5
-	traps 0
-	animal_empathy 0
-	survival 20
-	crafting 0
-	healing 0
-	athletics 20
-	rage 20
-}
-
-profile bard {
-	strength 55
-	endurance 55
-	dexterity 65
-	inteligence 69
-	wisdom 50
-	charisma 65
-	
-	one_handed 15
-	short_blade 15
-	long_blade 15
-	axe 10
-	blunt 10
-	bow 15
-	unarmed 0
-	shield 0
-	light_armor 15 
-	medium_armor 10
-	mystic_magic 0
-	concentration 0
-	identification 0
-	lockpick 10
-	sneak 10
-	traps 10
-	steal 10
-	survival 0
-	persuasion 20
-	alchemy 0
-	crafting 0
-	healing 0
-	athletics 0
-}
-
 profile cleric {
 	strength 60
 	endurance 60
@@ -514,59 +453,21 @@ profile cleric {
 	wisdom 70
 	charisma 55
 	
-	one_handed 15
 	short_blade 15
 	long_blade 15
 	axe 15
 	blunt 15
 	bow 10
 	unarmed 5
+	
 	shield 10
 	light_armor 10
 	medium_armor 15
 	heavy_armor 10
-	gods_magic 20
-	spellcraft 5
-	concentration 20
-	identification 5
-	survival 0
-	persuasion 15
-	alchemy 15
-	crafting 5
-	healing 20
-	athletics 0
-}
-
-profile druid {
-	strength 60
-	endurance 60
-	dexterity 55
-	inteligence 50
-	wisdom 70
-	charisma 40
 	
-	one_handed 15
-	short_blade 15
-	long_blade 15
-	axe 15
-	blunt 15
-	bow 10
-	unarmed 10 
-	shield 10
-	light_armor 15 
-	medium_armor 10
-	nature_magic 20
-	spellcraft 5
-	concentration 20
-	identification 0
-	sneak 5
-	traps 0
-	animal_empathy 20
-	survival 15
-	alchemy 10
-	crafting 0
-	healing 20
-	athletics 0
+	athletics 10
+	literacy 15
+	haggle 15
 }
 
 profile hunter {
@@ -577,25 +478,36 @@ profile hunter {
 	wisdom 60
 	charisma 45
 	
-	one_handed 15
 	short_blade 15
 	long_blade 15
 	axe 15
 	blunt 15
 	bow 20
-	//unarmed 10
+	unarmed 10
+	
 	shield 10
 	light_armor 20
 	medium_armor 10
-	//nature_magic 10
-	//concentration 10
-	//sneak 15
-	//traps 10
-	//animal_empathy 15
-	//survival 20
-	//crafting 5
-	//healing 10
-	//athletics 10
+	heavy_armor 0
+	
+	athletics 10
+	acrobatics 10
+	literacy 0
+	haggle 5
+	
+	subprofile bowman {
+		skill tag bow
+		skill tag light_armor
+		skill tag acrobatics
+		skill 0.5 athletics
+	}
+	subprofile swordman {
+		skill tag long_blade
+		skill tag medium_armor
+		skill tag athletics
+		skill 0.5 shield
+		skill 0.25 acrobatics
+	}
 }
 
 profile mage {
@@ -606,83 +518,19 @@ profile mage {
 	wisdom 50
 	charisma 50
 	
-	one_handed 5
 	short_blade 5
 	long_blade 5
 	axe 0
 	blunt 5 
 	bow 0
 	unarmed 0
+	
 	shield 0
 	light_armor 5
 	medium_armor 0
-	mystic_magic 20
-	spellcraft 20
-	concentration 15
-	identification 20
-	persuasion 0
-	alchemy 20
-	crafting 0
-	healing 0
-}
-
-profile monk {
-	strength 60
-	endurance 60
-	dexterity 65
-	inteligence 50
-	wisdom 55
-	charisma 45
 	
-	one_handed 10
-	short_blade 10
-	long_blade 10
-	axe 10
-	blunt 10
-	bow 10
-	unarmed 20
-	shield 0
-	light_armor 10
-	medium_armor 0
-	concentration 10
-	sneak 15
-	traps 0
-	steal 0
-	survival 10
-	persuasion 0
-	alchemy 0
-	crafting 0
-	healing 0
-	athletics 15
-}
-
-profile paladin {
-	strength 65
-	endurance 65
-	dexterity 45
-	inteligence 50
-	wisdom 60
-	charisma 55
-	
-	one_handed 20
-	short_blade 10
-	long_blade 20
-	axe 15
-	blunt 15
-	bow 10
-	unarmed 5
-	shield 20
-	light_armor 10
-	medium_armor 15
-	heavy_armor 20
-	gods_magic 10
-	concentration 10
-	survival 10
-	persuasion 10
-	alchemy 0
-	crafting 0
-	healing 10
-	athletics 10
+	literacy 20
+	haggle 5
 }
 
 profile rogue {
@@ -693,30 +541,46 @@ profile rogue {
 	wisdom 50
 	charisma 55
 	
-	one_handed 15
 	short_blade 20
 	long_blade 15
 	axe 10
 	blunt 10
 	bow 15
-	//unarmed 10
+	unarmed 10
 	shield 0
 	light_armor 15
 	medium_armor 0
-	//identification 0
-	//lockpick 20
-	//sneak 20
-	//traps 20
-	//steal 20
-	//survival 10
-	//persuasion 10
-	//alchemy 0
-	//crafting 5
-	//healing 0
-	//athletics 10
+	
+	athletics 10
+	acrobatics 20
+	literacy 10
+	haggle 10
+	
+	subprofile bowman {
+		skill tag bow
+		skill tag light_armor
+		skill tag acrobatics
+		skill 0.75 short_blade
+	}
+	subprofile swordman {
+		skill tag long_blade
+		skill tag light_armor
+		skill tag acrobatics
+		skill 0.5 shield
+		skill 0.25 athletics
+	}
+	subprofile criticalhitter {
+		skill tag short_blade
+		skill tag light_armor
+		skill tag acrobatics
+		skill 0.25 athletics
+		skill 0.25 shield
+	}
 }
 
 profile warrior {
+	flags double_weapon_tag_skill
+
 	strength 65
 	endurance 65
 	dexterity 55
@@ -724,24 +588,46 @@ profile warrior {
 	wisdom 50
 	charisma 50
 	
-	one_handed 20
-	short_blade 20
-	long_blade 20
-	axe 20
-	blunt 20
+	short_blade 15
+	long_blade 15
+	axe 15
+	blunt 15
 	bow 15
-	//unarmed 15
+	unarmed 15
+	
 	shield 15
-	light_armor 15
+	light_armor 10
 	medium_armor 15
 	heavy_armor 15
-	//sneak 0
-	//traps 0
-	//survival 10
-	//persuasion 0
-	//crafting 0
-	//healing 0
-	//athletics 15
+	
+	athletics 15
+	acrobatics 5
+	haggle 5
+	literacy 0
+	
+	subprofile tank {
+		weapon (axe blunt long_blade)
+		skill tag heavy_armor
+		skill tag shield
+		skill tag athletics
+		skill 0.75 weapon
+	}
+	subprofile bowman {
+		skill tag medium_armor
+		skill tag bow
+		skill tag long_blade
+		skill 0.5 athletics
+		skill 0.5 acrobatics
+	}
+	subprofile fighter {
+		armor (medium_armor heavy_armor)
+		weapon (axe blunt long_blade)
+		skill tag armor
+		skill tag weapon
+		skill tag athletics
+		skill 0.5 shield
+		skill 0.25 acrobatics		
+	}
 }
 
 profile blacksmith {
@@ -752,23 +638,20 @@ profile blacksmith {
 	wisdom 50
 	charisma 50
 	
-	one_handed 10
 	short_blade 10
 	long_blade 10
 	axe 10
 	blunt 10
 	bow 5
 	unarmed 5
+	
 	shield 5
 	light_armor 10
 	medium_armor 5
-	identification 5
-	lockpick 5
-	traps 0
-	survival 0
-	persuasion 10
-	crafting 20
+	
 	athletics 5
+	haggle 10
+	literacy 5
 }
 
 profile merchant {
@@ -779,22 +662,19 @@ profile merchant {
 	wisdom 55
 	charisma 55
 	
-	one_handed 5
 	short_blade 5
 	long_blade 5
 	axe 5
 	blunt 5
 	bow 5
 	unarmed 5
+	
 	shield 0
 	light_armor 5
 	medium_armor 0
-	identification 0
-	survival 0
-	persuasion 20
-	alchemy 0
-	crafting 5
-	healing 0
+	
+	haggle 20
+	literacy 10
 }
 
 profile alchemist {
@@ -805,21 +685,19 @@ profile alchemist {
 	wisdom 50
 	charisma 50
 	
-	one_handed 5
 	short_blade 5
 	long_blade 5
 	axe 5
 	blunt 5
 	bow 5
 	unarmed 5
+	
 	shield 0
 	light_armor 5
 	medium_armor 0
-	identification 0
-	persuasion 10
-	alchemy 20
-	crafting 5
-	healing 0
+	
+	haggle 15
+	literacy 15
 }
 
 profile commoner {
@@ -830,19 +708,19 @@ profile commoner {
 	wisdom 50
 	charisma 50
 	
-	one_handed 5
 	short_blade 5
 	long_blade 5
 	axe 5
 	blunt 5
 	bow 0
 	unarmed 5
+	
 	shield 0
 	light_armor 5
-	survival 0
-	persuasion 0
-	crafting 5
-	healing 0
+	
+	haggle 0
+	literacy 0
+	athletics 0
 }
 
 profile clerk {
@@ -852,18 +730,19 @@ profile clerk {
 	inteligence 55
 	wisdom 55
 	charisma 55
-	one_handed 5
+	
 	short_blade 5
 	long_blade 5
 	axe 5
 	blunt 5
 	bow 5
 	unarmed 5
+	
 	shield 0
 	light_armor 5
-	persuasion 10
-	crafting 0
-	healing 0
+	
+	literacy 10
+	haggle 5
 }
 
 profile fighter {
@@ -874,7 +753,6 @@ profile fighter {
 	wisdom 50
 	charisma 50
 	
-	one_handed 15
 	short_blade 15
 	long_blade 15
 	axe 15
@@ -882,14 +760,13 @@ profile fighter {
 	bow 10
 	unarmed 10
 	shield 10
+	
 	light_armor 10
 	medium_armor 10
 	heavy_armor 0
-	sneak 0
-	survival 5
-	crafting 5
-	healing 0
+	
 	athletics 5
+	acrobatics 0
 }
 
 profile worker {
@@ -900,21 +777,17 @@ profile worker {
 	wisdom 50
 	charisma 50
 	
-	one_handed 10
 	short_blade 5
 	long_blade 5
 	axe 10
 	blunt 10
 	bow 0
 	unarmed 5
+	
 	shield 0
 	light_armor 10
 	medium_armor 5
-	sneak 0
-	survival 0
-	persuasion 0
-	crafting 5
-	healing 0
+	
 	athletics 0
 }
 
@@ -926,24 +799,19 @@ profile shaman {
 	wisdom 45
 	charisma 30
 	
-	one_handed 15
 	short_blade 10
 	long_blade 10
 	axe 15
 	blunt 15
 	bow 10
 	unarmed 10
+	
 	shield 10
 	light_armor 10
 	medium_armor 10
-	mystic_magic 15
-	concentration 15
-	sneak 5
-	traps 5
-	survival 15
-	crafting 5
-	healing 5
+	
 	athletics 10
+	literacy 5
 }
 
 profile orc {
@@ -954,21 +822,17 @@ profile orc {
 	wisdom 40
 	charisma 30
 	
-	one_handed 15
 	short_blade 10
 	long_blade 10
 	axe 15
 	blunt 15
 	bow 10
 	unarmed 10
+	
 	shield 10
 	light_armor 10
 	medium_armor 10	
-	sneak 5
-	traps 5
-	survival 15
-	crafting 5
-	healing 0
+	
 	athletics 15
 }
 
@@ -980,21 +844,17 @@ profile orc_blacksmith {
 	wisdom 40
 	charisma 30
 	
-	one_handed 15
 	short_blade 10
 	long_blade 10
 	axe 15
 	blunt 15
 	bow 10
 	unarmed 10
+	
 	shield 10
 	light_armor 10
-	medium_armor 10	
-	sneak 5
-	traps 5
-	survival 15
-	crafting 15
-	healing 0
+	medium_armor 10
+	
 	athletics 15
 }
 
@@ -1006,7 +866,6 @@ profile goblin {
 	wisdom 40
 	charisma 30
 	
-	one_handed 15
 	short_blade 15
 	long_blade 10
 	axe 10
@@ -1016,12 +875,7 @@ profile goblin {
 	
 	shield 5
 	light_armor 10	
-	lockpick 5
-	sneak 15
-	traps 5
-	steal 10
-	survival 10
-	crafting 5
+	
 	athletics 10
 }
 
@@ -1033,9 +887,7 @@ profile zombie {
 	wisdom 1
 	charisma 1 
 	
-	one_handed 10
 	unarmed 10
-	sneak 5
 }
 
 profile skeleton {
@@ -1046,18 +898,17 @@ profile skeleton {
 	wisdom 1
 	charisma 1
 	
-	one_handed 15
 	short_blade 15
 	long_blade 15
 	axe 15
 	blunt 15
 	bow 10
 	unarmed 10
+	
 	shield 10
 	light_armor 10
 	medium_armor 10
 	heavy_armor 0
-	sneak 5
 }
 
 profile skeleton_mage {
@@ -1068,18 +919,14 @@ profile skeleton_mage {
 	wisdom 1
 	charisma 1
 	
-	one_handed 5
 	short_blade 5
 	long_blade 5
 	axe 5
 	blunt 5
 	bow 5
 	unarmed 5
+	
 	light_armor 5
-	mystic_magic 15
-	concentration 5
-	identification 10
-	sneak 5
 }
 
 profile golem {
@@ -1090,7 +937,6 @@ profile golem {
 	wisdom 1
 	charisma 1
 	
-	one_handed 10
 	unarmed 10
 }
 
@@ -1102,13 +948,7 @@ profile animal {
 	wisdom 25
 	charisma 10
 	
-	one_handed 15
 	unarmed 15
-	sneak 15
-	traps 5
-	animal_empathy 5
-	survival 15
-	athletics 5
 }
 
 //------------------------------------------------------------------------------
@@ -1753,23 +1593,18 @@ unit q_orkowie_gorush_woj : base_gorush {
 		wisdom 50
 		charisma 40
 		
-		one_handed 20
 		short_blade 20
 		long_blade 20
 		axe 20
 		blunt 20
 		bow 15
 		unarmed 15
+		
 		shield 15
 		light_armor 15
 		medium_armor 15
 		heavy_armor 15
-		sneak 0
-		traps 0
-		survival 10
-		persuasion 0
-		crafting 0
-		healing 0
+		
 		athletics 15
 	}
 	def 15
@@ -1794,28 +1629,17 @@ unit q_orkowie_gorush_lowca : base_gorush {
 		wisdom 60
 		charisma 35
 		
-		one_handed 15
 		short_blade 15
 		long_blade 15
 		axe 15
 		blunt 15
 		bow 20
 		unarmed 10
+		
 		shield 10
 		light_armor 20
 		medium_armor 10
-		nature_magic 10
-		concentration 10
-		lockpick 0
-		sneak 15
-		traps 10
-		steal 0
-		animal_empathy 20
-		survival 20
-		persuasion 0
-		alchemy 0
-		crafting 5
-		healing 10
+		
 		athletics 10
 	}
 	def 10
@@ -2297,7 +2121,7 @@ unit evil_cleric_q : evil_cleric {
 unit q_zlo_boss : base_human {
 	level 20
 	profile {
-		fixed 1
+		flags fixed
 	
 		strength 90
 		endurance 90
@@ -2306,21 +2130,18 @@ unit q_zlo_boss : base_human {
 		wisdom 90
 		charisma 60
 		
-		one_handed 90
 		short_blade 50
 		long_blade 60
 		axe 70
 		blunt 90
 		bow 50
 		unarmed 60
+		
 		shield 90
 		light_armor 50
 		medium_armor 60
 		heavy_armor 90
-		gods_magic 80
-		concentration 80
-		survival 50
-		healing 50
+		
 		athletics 70
 	}
 	flags | {leader dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res mark dont_eat stun_res}
@@ -2755,7 +2576,7 @@ unit hero_rogue : base_hero {
 unit tomashu : base_human {
 	level 25
 	profile {
-		fixed 1
+		flags fixed
 		
 		strength 120
 		endurance 120
@@ -2764,35 +2585,19 @@ unit tomashu : base_human {
 		wisdom 120
 		charisma 120
 		
-		one_handed 120
 		short_blade 120
 		long_blade 120
 		axe 120
 		blunt 120
 		bow 120
 		unarmed 120
+		
 		shield 120
 		light_armor 120
 		medium_armor 120
 		heavy_armor 120
-		nature_magic 120
-		gods_magic 120
-		mystic_magic 120
-		spellcraft 120
-		concentration 120
-		identification 120
-		lockpick 120
-		sneak 120
-		traps 120
-		steal 120
-		animal_empathy 120
-		survival 120
-		persuasion 120
-		alchemy 120
-		crafting 120
-		healing 120
+		
 		athletics 120
-		rage 120
 	}
 	flags | {dont_escape tomashu leader secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res}
 	hp 750
@@ -2825,10 +2630,8 @@ unit unk {
 		wisdom 1
 		charisma 1
 		
-		one_handed 15
 		unarmed 15
-		sneak 15
-		survival 15
+		
 		athletics 15
 	}
 	flags {dont_escape no_power_attack dont_suffer poison_res pierce_res25 bloodless ignore_block magic_res25 backstab dont_eat}
@@ -2983,5 +2786,4 @@ group unk {
 // Unit alias for old names (for save compability)
 // alias unit_id other_id
 //------------------------------------------------------------------------------
-alias necromancer necromant // fixed in 0.2.5
 alias citizen citzen // fixed in 0.4
