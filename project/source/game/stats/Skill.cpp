@@ -43,7 +43,7 @@ static StatGain gain[] = {
 
 //-----------------------------------------------------------------------------
 // List of all skills
-SkillInfo g_skills[(int)Skill::MAX] = {
+SkillInfo SkillInfo::skills[(int)Skill::MAX] = {
 	SkillInfo(Skill::ONE_HANDED_WEAPON, "one_handed_weapon", SkillGroup::WEAPON, Attribute::STR, Attribute::DEX, SkillPack::WEAPON),
 	SkillInfo(Skill::SHORT_BLADE, "short_blade", SkillGroup::WEAPON, Attribute::DEX, Attribute::NONE, SkillPack::WEAPON),
 	SkillInfo(Skill::LONG_BLADE, "long_blade", SkillGroup::WEAPON, Attribute::STR, Attribute::DEX, SkillPack::WEAPON),
@@ -77,7 +77,7 @@ SkillInfo g_skills[(int)Skill::MAX] = {
 
 //-----------------------------------------------------------------------------
 // List of all skill groups
-SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX] = {
+SkillGroupInfo SkillGroupInfo::groups[(int)SkillGroup::MAX] = {
 	SkillGroupInfo(SkillGroup::WEAPON, "weapon"),
 	SkillGroupInfo(SkillGroup::ARMOR, "armor"),
 	SkillGroupInfo(SkillGroup::MAGIC, "magic"),
@@ -85,18 +85,18 @@ SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX] = {
 };
 
 //-----------------------------------------------------------------------------
-SubSkillInfo g_sub_skills[(int)SubSkill::MAX] = {
+/*SubSkillInfo g_sub_skills[(int)SubSkill::MAX] = {
 	SubSkill::FIND_TRAP, Skill::TRAPS,
 	SubSkill::SET_TRAP, Skill::TRAPS,
 	SubSkill::DISARM_TRAP, Skill::TRAPS,
 	SubSkill::HIDE, Skill::SNEAK,
 	SubSkill::MOVE_SILENTLY, Skill::SNEAK,
-};
+};*/
 
 //=================================================================================================
 SkillInfo* SkillInfo::Find(const string& id)
 {
-	for(SkillInfo& si : g_skills)
+	for(SkillInfo& si : skills)
 	{
 		if(id == si.id)
 			return &si;
@@ -108,7 +108,7 @@ SkillInfo* SkillInfo::Find(const string& id)
 //=================================================================================================
 SkillGroupInfo* SkillGroupInfo::Find(const string& id)
 {
-	for(SkillGroupInfo& sgi : g_skill_groups)
+	for(SkillGroupInfo& sgi : groups)
 	{
 		if(id == sgi.id)
 			return &sgi;
@@ -122,7 +122,7 @@ void SkillInfo::Validate(uint& err)
 {
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
-		SkillInfo& si = g_skills[i];
+		SkillInfo& si = skills[i];
 		if(si.skill_id != (Skill)i)
 		{
 			Warn("Test: Skill %s: id mismatch.", si.id);
@@ -142,7 +142,7 @@ void SkillInfo::Validate(uint& err)
 
 	for(int i = 0; i < (int)SkillGroup::MAX; ++i)
 	{
-		SkillGroupInfo& sgi = g_skill_groups[i];
+		SkillGroupInfo& sgi = SkillGroupInfo::groups[i];
 		if(sgi.group_id != (SkillGroup)i)
 		{
 			Warn("Test: Skill group %s: id mismatch.", sgi.id);

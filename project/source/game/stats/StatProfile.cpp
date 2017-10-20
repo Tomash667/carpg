@@ -13,7 +13,7 @@ bool StatProfile::operator != (const StatProfile& p) const
 	{
 		if(attrib[i] != p.attrib[i])
 		{
-			Info("Attribute %s: %d and %d.", g_attributes[i].id, attrib[i], p.attrib[i]);
+			Info("Attribute %s: %d and %d.", AttributeInfo::attributes[i].id, attrib[i], p.attrib[i]);
 			result = true;
 		}
 	}
@@ -21,7 +21,7 @@ bool StatProfile::operator != (const StatProfile& p) const
 	{
 		if(skill[i] != p.skill[i])
 		{
-			Info("Skill %s: %d and %d.", g_skills[i].id, skill[i], p.skill[i]);
+			Info("Skill %s: %d and %d.", SkillInfo::skills[i].id, skill[i], p.skill[i]);
 			result = true;
 		}
 	}

@@ -139,7 +139,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			const Armor& armor = item->ToArmor();
 			cstring mob_str, armor_type;
 
-			cstring skill = g_skills[(int)armor.skill].name.c_str();
+			cstring skill = SkillInfo::skills[(int)armor.skill].name.c_str();
 			if(unit->data->armor_type == armor.armor_type)
 				armor_type = skill;
 			else

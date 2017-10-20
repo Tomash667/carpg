@@ -466,7 +466,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						std::sort(attribs.begin(), attribs.end(),
 							[](Attribute a1, Attribute a2) -> bool
 						{
-							return strcmp(g_attributes[(int)a1].id, g_attributes[(int)a2].id) < 0;
+							return strcmp(AttributeInfo::attributes[(int)a1].id, AttributeInfo::attributes[(int)a2].id) < 0;
 						});
 						LocalVector2<Skill> skills;
 						for(int i = 0; i < (int)Skill::MAX; ++i)
@@ -474,13 +474,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						std::sort(skills.begin(), skills.end(),
 							[](Skill s1, Skill s2) -> bool
 						{
-							return strcmp(g_skills[(int)s1].id, g_skills[(int)s2].id) < 0;
+							return strcmp(SkillInfo::skills[(int)s1].id, SkillInfo::skills[(int)s2].id) < 0;
 						});
 						LocalString str = "List of attributes: ";
 						Join(attribs.Get(), str.get_ref(), ", ",
 							[](Attribute a)
 						{
-							return g_attributes[(int)a].id;
+							return AttributeInfo::attributes[(int)a].id;
 						});
 						str += ".";
 						Msg(str.c_str());
@@ -488,7 +488,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Join(skills.Get(), str.get_ref(), ", ",
 							[](Skill s)
 						{
-							return g_skills[(int)s].id;
+							return SkillInfo::skills[(int)s].id;
 						});
 						str += ".";
 						Msg(str.c_str());

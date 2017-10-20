@@ -2613,7 +2613,7 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 		int mod = stats.attrib[(int)a] / 10;
 		if(mod != old_mod)
 		{
-			for(SkillInfo& si : g_skills)
+			for(SkillInfo& si : SkillInfo::skills)
 			{
 				if(si.attrib == a || si.attrib2 == a)
 					RecalculateStat(si.skill_id, true);
@@ -2634,7 +2634,7 @@ void Unit::RecalculateStat(Skill s, bool apply)
 
 	// apply effect modifiers
 	ValueBuffer buf;
-	SkillInfo& info = g_skills[id];
+	SkillInfo& info = SkillInfo::skills[id];
 	if(IsPlayer())
 		value += buf.Get(state);
 	else
@@ -2779,14 +2779,14 @@ int Unit::CalculateMobility(const Armor& armor) const
 }
 
 //=================================================================================================
-int Unit::Get(SubSkill ss) const
+/*int Unit::Get(SubSkill ss) const
 {
 	int id = (int)ss;
 	SubSkillInfo& info = g_sub_skills[id];
 	int v = Get(info.skill);
 	ValueBuffer buf;
 	return v + buf.Get();
-}
+}*/
 
 struct TMod
 {

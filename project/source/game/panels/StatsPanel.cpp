@@ -131,7 +131,7 @@ void StatsPanel::SetText()
 	flowAttribs.Clear();
 	flowAttribs.Add()->Set(txAttributes);
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", g_attributes[i].name.c_str(), StatStateToColor(pc->attrib_state[i]), pc->unit->Get((Attribute)i)), G_ATTRIB, i);
+		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", AttributeInfo::attributes[i].name.c_str(), StatStateToColor(pc->attrib_state[i]), pc->unit->Get((Attribute)i)), G_ATTRIB, i);
 	flowAttribs.Reposition();
 
 	// stats
@@ -158,10 +158,10 @@ void StatsPanel::SetText()
 	{
 		if(pc->unit->GetUnmod((Skill)i) > 0)
 		{
-			SkillInfo& info = g_skills[i];
+			SkillInfo& info = SkillInfo::skills[i];
 			if(info.group != last_group)
 			{
-				flowSkills.Add()->Set(g_skill_groups[(int)info.group].name.c_str());
+				flowSkills.Add()->Set(SkillGroupInfo::groups[(int)info.group].name.c_str());
 				last_group = info.group;
 			}
 			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), StatStateToColor(pc->skill_state[i]), pc->unit->Get((Skill)i)), G_SKILL, i);
@@ -206,7 +206,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 	{
 	case G_ATTRIB:
 		{
-			AttributeInfo& ai = g_attributes[id];
+			AttributeInfo& ai = AttributeInfo::attributes[id];
 			Attribute a = (Attribute)id;
 			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
 			if(!Game::Get().devmode)
@@ -246,7 +246,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 		break;
 	case G_SKILL:
 		{
-			SkillInfo& si = g_skills[id];
+			SkillInfo& si = SkillInfo::skills[id];
 			Skill s = (Skill)id;
 			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
 			if(!Game::Get().devmode)
@@ -257,9 +257,9 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 					pc->sp[id], pc->sn[id], float(pc->sp[id]) * 100 / pc->sn[id]);
 			}
 			if(si.attrib2 != Attribute::NONE)
-				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str(), g_attributes[(int)si.attrib2].name.c_str());
+				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, AttributeInfo::attributes[(int)si.attrib].name.c_str(), AttributeInfo::attributes[(int)si.attrib2].name.c_str());
 			else
-				tooltip.small_text = Format("%s: %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str());
+				tooltip.small_text = Format("%s: %s", txRelatedAttributes, AttributeInfo::attributes[(int)si.attrib].name.c_str());
 		}
 		break;
 	case G_PERK:

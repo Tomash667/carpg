@@ -281,7 +281,7 @@ private:
 			{ "next", BSP_NEXT }
 		});
 
-		for(SkillInfo& si : g_skills)
+		for(SkillInfo& si : SkillInfo::skills)
 			t.AddKeyword(si.id, (int)si.skill_id, G_SKILL);
 	}
 

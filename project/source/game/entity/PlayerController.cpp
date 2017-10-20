@@ -706,7 +706,7 @@ void PlayerController::TrainMod2(Skill s, float points)
 void PlayerController::TrainMod(Skill s, float points)
 {
 	TrainMod2(s, points);
-	SkillInfo& info = g_skills[(int)s];
+	SkillInfo& info = SkillInfo::skills[(int)s];
 	if(info.attrib2 != Attribute::NONE)
 	{
 		points /= 2;

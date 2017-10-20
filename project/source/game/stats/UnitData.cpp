@@ -202,7 +202,7 @@ bool LoadProfile(Tokenizer& t, Crc& crc, StatProfile** result = nullptr)
 				t.Next();
 				int val = t.MustGetInt();
 				if(val < 1)
-					t.Throw("Invalid attribute '%s' value %d.", g_attributes[a].id, val);
+					t.Throw("Invalid attribute '%s' value %d.", AttributeInfo::attributes[a].id, val);
 				crc.Update(a);
 				crc.Update(val);
 				profile->attrib[a] = val;
@@ -213,7 +213,7 @@ bool LoadProfile(Tokenizer& t, Crc& crc, StatProfile** result = nullptr)
 				t.Next();
 				int val = t.MustGetInt();
 				if(val < -1)
-					t.Throw("Invalid skill '%s' value %d.", g_skills[s].id, val);
+					t.Throw("Invalid skill '%s' value %d.", SkillInfo::skills[s].id, val);
 				crc.Update(s);
 				crc.Update(val);
 				profile->skill[s] = val;

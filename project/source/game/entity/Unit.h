@@ -804,7 +804,7 @@ struct Unit
 	int CalculateMobility() const;
 	int CalculateMobility(const Armor& armor) const;
 
-	int Get(SubSkill s) const;
+	//int Get(SubSkill s) const;
 
 	Skill GetBestWeaponSkill() const;
 	Skill GetBestArmorSkill() const;

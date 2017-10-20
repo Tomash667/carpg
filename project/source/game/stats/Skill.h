@@ -95,6 +95,7 @@ struct SkillInfo
 	{
 	}
 
+	static SkillInfo skills[(int)Skill::MAX];
 	static SkillInfo* Find(const string& id);
 	static void Validate(uint& err);
 	static float GetModifier(int base, int& weight);
@@ -111,11 +112,12 @@ struct SkillGroupInfo
 	{
 	}
 
+	static SkillGroupInfo groups[(int)SkillGroup::MAX];
 	static SkillGroupInfo* Find(const string& id);
 };
 
 //-----------------------------------------------------------------------------
-enum class SubSkill
+/*enum class SubSkill
 {
 	// TRAPS
 	FIND_TRAP,
@@ -139,6 +141,5 @@ struct SubSkillInfo
 };
 
 //-----------------------------------------------------------------------------
-extern SkillInfo g_skills[(int)Skill::MAX];
-extern SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX];
 extern SubSkillInfo g_sub_skills[(int)SubSkill::MAX];
+*/

@@ -20384,12 +20384,12 @@ void Game::ShowStatGain(bool is_skill, int what, int value)
 	if(is_skill)
 	{
 		text = txGainTextSkill;
-		name = g_skills[what].name.c_str();
+		name = SkillInfo::skills[what].name.c_str();
 	}
 	else
 	{
 		text = txGainTextAttrib;
-		name = g_attributes[what].name.c_str();
+		name = AttributeInfo::attributes[what].name.c_str();
 	}
 
 	AddGameMsg(Format(text, name, value), 3.f);

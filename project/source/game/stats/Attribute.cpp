@@ -51,7 +51,7 @@ static StatGain gain[] = {
 
 //-----------------------------------------------------------------------------
 // All attributes
-AttributeInfo g_attributes[(int)Attribute::MAX] = {
+AttributeInfo AttributeInfo::attributes[(int)Attribute::MAX] = {
 	AttributeInfo(Attribute::STR, "str"),
 	AttributeInfo(Attribute::END, "end"),
 	AttributeInfo(Attribute::DEX, "dex"),
@@ -63,7 +63,7 @@ AttributeInfo g_attributes[(int)Attribute::MAX] = {
 //=================================================================================================
 AttributeInfo* AttributeInfo::Find(const string& id)
 {
-	for(AttributeInfo& ai : g_attributes)
+	for(AttributeInfo& ai : attributes)
 	{
 		if(id == ai.id)
 			return &ai;
@@ -77,7 +77,7 @@ void AttributeInfo::Validate(uint& err)
 {
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
 	{
-		AttributeInfo& ai = g_attributes[i];
+		AttributeInfo& ai = attributes[i];
 		if(ai.attrib_id != (Attribute)i)
 		{
 			Warn("Test: Attribute %s: id mismatch.", ai.id);
