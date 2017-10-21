@@ -48,6 +48,24 @@ struct StatsX
 	void Write(BitStream& stream);
 	bool Read(BitStream& stream);
 	StatsX* GetLevelUp();
+	int Get(Attribute a) const
+	{
+		return attrib[(int)a];
+	}
+	int Get(Skill s) const
+	{
+		return skill[(int)s];
+	}
+	void Set(Attribute a, int value)
+	{
+		assert(unique);
+		attrib[(int)a] = value;
+	}
+	void Set(Skill s, int value)
+	{
+		assert(unique);
+		skill[(int)s] = value;
+	}
 
 	static StatsX* GetRandom(StatProfile* profile, int level);
 	static StatsX* Get(Entry& e);

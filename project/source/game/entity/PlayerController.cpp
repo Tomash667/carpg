@@ -163,7 +163,7 @@ void PlayerController::Train(Skill skill, int points)
 	sp[s] += points;
 
 	int gained = 0,
-		value = unit->GetUnmod(skill);
+		value = unit->GetBase(skill);
 	//base = base_stats.skill[s];
 
 	while(sp[s] >= sn[s])
@@ -212,7 +212,7 @@ void PlayerController::Train(Attribute attrib, int points)
 	ap[a] += points;
 
 	int gained = 0,
-		value = unit->GetUnmod(attrib);
+		value = unit->GetBase(attrib);
 	//base = base_stats.attrib[a];
 
 	while(ap[a] >= an[a])
@@ -365,7 +365,6 @@ void PlayerController::Save(HANDLE file)
 	WriteFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, nullptr);
 	WriteFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
 	FileWriter f(file);
-	base_stats.Save(f);
 	f << (byte)perks.size();
 	for(TakenPerk& tp : perks)
 	{
@@ -465,11 +464,10 @@ void PlayerController::Load(HANDLE file)
 	ReadFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
 	if(LOAD_VERSION >= V_0_4)
 	{
-		base_stats.Load(f);
 		if(LOAD_VERSION < V_CURRENT)
 		{
-			// skip old stat state
-			f.Skip(sizeof(StatState) * ((int)Attribute::MAX + (int)Skill::MAX));
+			// skip old stats
+			f.Skip(sizeof(UnitStats) + sizeof(StatState) * ((int)Attribute::MAX + (int)Skill::MAX));
 		}
 		// perks
 		byte count;
@@ -680,13 +678,13 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 //=================================================================================================
 void PlayerController::TrainMod(Attribute a, float points)
 {
-	Train(a, int(points * GetBaseAttributeMod(GetBase(a))));
+	Train(a, int(points * GetBaseAttributeMod(unit->GetBase(a))));
 }
 
 //=================================================================================================
 void PlayerController::TrainMod2(Skill s, float points)
 {
-	Train(s, int(points * GetBaseSkillMod(GetBase(s))));
+	Train(s, int(points * GetBaseSkillMod(unit->GetBase(s))));
 }
 
 //=================================================================================================
@@ -711,7 +709,6 @@ void PlayerController::Write(BitStream& stream) const
 	stream.Write(dmg_taken);
 	stream.Write(knocks);
 	stream.Write(arena_fights);
-	base_stats.Write(stream);
 	stream.WriteCasted<byte>(perks.size());
 	for(const TakenPerk& perk : perks)
 	{
@@ -733,7 +730,6 @@ bool PlayerController::Read(BitStream& stream)
 		!stream.Read(dmg_taken) ||
 		!stream.Read(knocks) ||
 		!stream.Read(arena_fights) ||
-		!base_stats.Read(stream) ||
 		!stream.Read(count)
 		|| !EnsureSize(stream, 5 * count))
 		return false;

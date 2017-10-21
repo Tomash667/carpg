@@ -256,10 +256,10 @@ void TakenPerk::Apply(PlayerController& pc) const
 	switch(perk)
 	{
 	case Perk::Strength:
-		pc.base_stats.attrib[value] += 5;
+		pc.unit->statsx->attrib[value] += 5;
 		break;
 	case Perk::Weakness:
-		pc.base_stats.attrib[value] -= 5;
+		pc.unit->statsx->attrib[value] -= 5;
 		break;
 	case Perk::Skilled:
 		// nothing to do here, only affects character creation
@@ -268,13 +268,13 @@ void TakenPerk::Apply(PlayerController& pc) const
 		{
 			int plus, minus, minus2;
 			Split3(value, plus, minus, minus2);
-			pc.base_stats.skill[plus] += 10;
-			pc.base_stats.skill[minus] -= 5;
-			pc.base_stats.skill[minus2] -= 5;
+			pc.unit->statsx->skill[plus] += 10;
+			pc.unit->statsx->skill[minus] -= 5;
+			pc.unit->statsx->skill[minus2] -= 5;
 		}
 		break;
 	case Perk::Talent:
-		pc.base_stats.skill[value] += 5;
+		pc.unit->statsx->skill[value] += 5;
 		break;
 		//case Perk::CraftingTradition:
 		//	pc.base_stats.skill[(int)Skill::CRAFTING] += 10;

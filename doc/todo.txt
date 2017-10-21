@@ -1,5 +1,6 @@
 ﻿FEATURE:
 * skills
++ use statsx instead of old stats
 + statsX
 	+ player
 	+ npc
@@ -14,6 +15,8 @@
 + new ingame perks
 + training perks
 + addperk, removeperk command
+
++ remove UnitStats
 ===============================================================================================================
 CURRENT:
 - traps are out of sync for client/server

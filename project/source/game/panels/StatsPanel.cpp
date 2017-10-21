@@ -160,7 +160,8 @@ void StatsPanel::SetText()
 	flowSkills.Clear();
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
-		if(pc->unit->GetUnmod((Skill)i) > 0)
+		Skill skill = (Skill)i;
+		if(pc->unit->GetBase(skill) > 0)
 		{
 			SkillInfo& info = SkillInfo::skills[i];
 			if(info.group != last_group)
@@ -169,7 +170,7 @@ void StatsPanel::SetText()
 				last_group = info.group;
 			}
 			StatState state;
-			int value = pc->unit->Get((Skill)i, state);
+			int value = pc->unit->Get(skill, state);
 			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), state, value), G_SKILL, i);
 		}
 	}
@@ -216,10 +217,10 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			Attribute a = (Attribute)id;
 			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
 			if(!Game::Get().devmode)
-				tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(a), pc->GetBase(a), ai.desc.c_str());
+				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(a), ai.desc.c_str());
 			else
 			{
-				tooltip.text = Format("%s: %d/%d\n%s\n\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetUnmod(a), pc->GetBase(a), ai.desc.c_str(),
+				tooltip.text = Format("%s: %d/%d\n%s\n\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetBase(a), ai.desc.c_str(),
 					pc->ap[id], pc->an[id], float(pc->ap[id]) * 100 / pc->an[id]);
 			}
 			tooltip.small_text.clear();
@@ -256,10 +257,10 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			Skill s = (Skill)id;
 			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
 			if(!Game::Get().devmode)
-				tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(s), pc->GetBase(s), si.desc.c_str());
+				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(s), si.desc.c_str());
 			else
 			{
-				tooltip.text = Format("%s: %d/%d\n%s\n\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetUnmod(s), pc->GetBase(s), si.desc.c_str(),
+				tooltip.text = Format("%s: %d\n%s\n\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetBase(s), si.desc.c_str(),
 					pc->sp[id], pc->sn[id], float(pc->sp[id]) * 100 / pc->sn[id]);
 			}
 			if(si.attrib2 != Attribute::NONE)

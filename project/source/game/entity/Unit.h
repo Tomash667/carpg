@@ -11,6 +11,7 @@
 #include "Usable.h"
 #include "Effect.h"
 #include "Buff.h"
+#include "StatsX.h"
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
@@ -204,6 +205,7 @@ struct Unit
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
 	UnitStats stats, unmod_stats;
+	StatsX* statsx;
 	AutoTalkMode auto_talk;
 	float auto_talk_timer;
 	GameDialog* auto_talk_dialog;
@@ -778,15 +780,6 @@ struct Unit
 		RecalculateStat(s, true);
 	}
 
-	int GetUnmod(Attribute a) const
-	{
-		return unmod_stats.attrib[(int)a];
-	}
-	int GetUnmod(Skill s) const
-	{
-		return unmod_stats.skill[(int)s];
-	}
-
 	void CalculateStats();
 
 	//int GetEffectModifier(EffectType type, int id, StatState* state) const;
@@ -846,6 +839,7 @@ struct Unit
 	int Get(Attribute a) const
 	{
 		return stats.attrib[(int)a];
+		//return statsx->Get(a);
 	}
 	int Get(Attribute a, StatState& state) const
 	{
@@ -856,12 +850,33 @@ struct Unit
 	int Get(Skill s) const
 	{
 		return stats.skill[(int)s];
+		//return statsx->Get(s);
 	}
 	int Get(Skill s, StatState& state) const
 	{
 		state = StatState::NORMAL;
 		return Get(s);
 	}
+
+	int GetBase(Attribute a) const
+	{
+		return unmod_stats.attrib[(int)a];
+	}
+	int GetBase(Skill s) const
+	{
+		return unmod_stats.skill[(int)s];
+	}
+
+	/*void Set(Attribute a, int value)
+	{
+		statsx->Set(a, value);
+		RecalculateStat(a, true);
+	}
+	void Set(Skill s, int value)
+	{
+		statsx->Set(s, value);
+		RecalculateStat(s, true);
+	}*/
 };
 
 //-----------------------------------------------------------------------------

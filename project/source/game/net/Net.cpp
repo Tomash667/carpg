@@ -9412,24 +9412,6 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							else
 								pc->unit->Set((Skill)what, value);
 							break;
-						case ChangedStatType::BASE_ATTRIBUTE:
-							if(what >= (byte)Attribute::MAX)
-							{
-								Error("Update single client: STAT_CHANGED, invalid base attribute %u.", what);
-								StreamError();
-							}
-							else
-								pc->SetBase((Attribute)what, value);
-							break;
-						case ChangedStatType::BASE_SKILL:
-							if(what >= (byte)Skill::MAX)
-							{
-								Error("Update single client: STAT_CHANGED, invalid base skill %u.", what);
-								StreamError();
-							}
-							else
-								pc->SetBase((Skill)what, value);
-							break;
 						default:
 							Error("Update single client: STAT_CHANGED, invalid change type %u.", type);
 							StreamError();

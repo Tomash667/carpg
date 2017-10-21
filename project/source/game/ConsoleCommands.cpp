@@ -495,22 +495,22 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					else
 					{
-						int co;
-						bool skill;
+						int type;
+						bool is_skill;
 						const string& s = t.MustGetItem();
 						AttributeInfo* ai = AttributeInfo::Find(s);
 						if(ai)
 						{
-							co = (int)ai->attrib_id;
-							skill = false;
+							type = (int)ai->attrib_id;
+							is_skill = false;
 						}
 						else
 						{
 							SkillInfo* si = SkillInfo::Find(s);
 							if(si)
 							{
-								co = (int)si->skill_id;
-								skill = true;
+								type = (int)si->skill_id;
+								is_skill = true;
 							}
 							else
 							{
@@ -527,29 +527,31 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 							if(Net::IsLocal())
 							{
-								if(skill)
+								if(is_skill)
 								{
+									Skill skill = (Skill)type;
 									if(it->cmd == CMD_MODSTAT)
-										num += pc->unit->unmod_stats.skill[co];
+										num += pc->unit->GetBase(skill);
 									int v = Clamp(num, 0, SkillInfo::MAX);
-									if(v != pc->unit->unmod_stats.skill[co])
-										pc->unit->Set((Skill)co, v);
+									if(v != pc->unit->GetBase(skill))
+										pc->unit->Set(skill, v);
 								}
 								else
 								{
+									Attribute attrib = (Attribute)type;
 									if(it->cmd == CMD_MODSTAT)
-										num += pc->unit->unmod_stats.attrib[co];
+										num += pc->unit->GetBase(attrib);
 									int v = Clamp(num, 1, AttributeInfo::MAX);
-									if(v != pc->unit->unmod_stats.attrib[co])
-										pc->unit->Set((Attribute)co, v);
+									if(v != pc->unit->GetBase(attrib))
+										pc->unit->Set(attrib, v);
 								}
 							}
 							else
 							{
 								NetChange& c = Add1(Net::changes);
 								c.type = (it->cmd == CMD_SETSTAT ? NetChange::CHEAT_SETSTAT : NetChange::CHEAT_MODSTAT);
-								c.id = co;
-								c.ile = (skill ? 1 : 0);
+								c.id = type;
+								c.ile = (is_skill ? 1 : 0);
 								c.i = num;
 							}
 						}

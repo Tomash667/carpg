@@ -132,7 +132,6 @@ struct PlayerController : public HeroPlayerCommon
 	DialogContext* dialog_ctx;
 	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
-	UnitStats base_stats;
 	PlayerInfo* player_info;
 	vector<TakenPerk> perks;
 	vector<Unit*> action_targets;
@@ -180,25 +179,7 @@ struct PlayerController : public HeroPlayerCommon
 	{
 		return IsTrade(action);
 	}
-
-	int GetBase(Attribute a) const
-	{
-		return base_stats.attrib[(int)a];
-	}
-	int GetBase(Skill s) const
-	{
-		return base_stats.skill[(int)s];
-	}
-
-	// change base stats, don't modify Unit stats
-	void SetBase(Attribute a, int value)
-	{
-		base_stats.attrib[(int)a] = value;
-	}
-	void SetBase(Skill s, int value)
-	{
-		base_stats.skill[(int)s] = value;
-	}
+	
 	bool IsLocal() const
 	{
 		return is_local;

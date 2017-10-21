@@ -1764,7 +1764,7 @@ void Unit::Load(HANDLE file, bool local)
 
 		if(IsPlayer())
 		{
-			profile.Set(0, player->base_stats);
+			profile.Set(0, player->unit->statsx->attrib, player->unit->statsx->skill);
 			player->SetRequiredPoints();
 		}
 	}
