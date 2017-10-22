@@ -1814,6 +1814,7 @@ void Game::OnCleanup()
 	free_cave_data();
 	DeleteElements(game_players);
 	DeleteElements(old_players);
+	StatsX::Cleanup();
 
 	NetStats::Close();
 	if(peer)

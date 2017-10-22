@@ -771,11 +771,11 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	UnitData* ud = FindUnitData(udi);
 	orc->hero->clas = clas;
 
+	orc->data = ud;
 	orc->level = ud->level.x;
-	orc->data->GetStatProfile().Set(orc->level, orc->unmod_stats.attrib, orc->unmod_stats.skill);
+	orc->statsx = StatsX::GetRandom(&ud->GetStatProfile(), orc->level);
 	orc->CalculateStats();
 	orc->RecalculateHp();
-	orc->data = ud;
 	game->ParseItemScript(*orc, ud->items);
 	orc->MakeItemsTeam(false);
 	game->UpdateUnitInventory(*orc);

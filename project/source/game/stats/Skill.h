@@ -5,15 +5,18 @@
 #include "Attribute.h"
 
 //-----------------------------------------------------------------------------
-enum class OldSkill
+namespace old
 {
-	WEAPON,
-	BOW,
-	LIGHT_ARMOR,
-	HEAVY_ARMOR,
-	SHIELD,
-	MAX
-};
+	enum class Skill
+	{
+		WEAPON,
+		BOW,
+		LIGHT_ARMOR,
+		HEAVY_ARMOR,
+		SHIELD,
+		MAX
+	};
+}
 
 //-----------------------------------------------------------------------------
 enum class Skill

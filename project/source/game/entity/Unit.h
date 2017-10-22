@@ -204,7 +204,6 @@ struct Unit
 		Busy_Tournament
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
-	UnitStats stats, unmod_stats;
 	StatsX* statsx;
 	AutoTalkMode auto_talk;
 	float auto_talk_timer;
@@ -762,28 +761,7 @@ struct Unit
 		else
 			return true;
 	}
-
-	int CalculateLevel();
-	int CalculateLevel(Class clas);
-
-	// change unmod stat
-	void Set(Attribute a, int value)
-	{
-		//int dif = value - unmod_stats.attrib[(int)a];
-		unmod_stats.attrib[(int)a] = value;
-		RecalculateStat(a, true);
-	}
-	void Set(Skill s, int value)
-	{
-		//int dif = value - unmod_stats.skill[(int)s];
-		unmod_stats.skill[(int)s] = value;
-		RecalculateStat(s, true);
-	}
-
-	void CalculateStats();
-
-	//int GetEffectModifier(EffectType type, int id, StatState* state) const;
-
+		
 	int CalculateMobility() const;
 	int CalculateMobility(const Armor& armor) const;
 
@@ -791,10 +769,6 @@ struct Unit
 
 	Skill GetBestWeaponSkill() const;
 	Skill GetBestArmorSkill() const;
-
-	void RecalculateStat(Attribute a, bool apply);
-	void RecalculateStat(Skill s, bool apply);
-	void ApplyStat(Attribute a, int old, bool calculate_skill);
 
 	void ApplyHumanData(HumanData& hd)
 	{
@@ -838,8 +812,7 @@ struct Unit
 	//==============================================
 	int Get(Attribute a) const
 	{
-		return stats.attrib[(int)a];
-		//return statsx->Get(a);
+		return statsx->Get(a);
 	}
 	int Get(Attribute a, StatState& state) const
 	{
@@ -849,8 +822,7 @@ struct Unit
 
 	int Get(Skill s) const
 	{
-		return stats.skill[(int)s];
-		//return statsx->Get(s);
+		return statsx->Get(s);
 	}
 	int Get(Skill s, StatState& state) const
 	{
@@ -858,25 +830,32 @@ struct Unit
 		return Get(s);
 	}
 
+	// get unmodified stats
 	int GetBase(Attribute a) const
 	{
-		return unmod_stats.attrib[(int)a];
+		return statsx->Get(a);
 	}
 	int GetBase(Skill s) const
 	{
-		return unmod_stats.skill[(int)s];
+		return statsx->Get(s);
 	}
 
-	/*void Set(Attribute a, int value)
+	void Set(Attribute a, int value)
 	{
 		statsx->Set(a, value);
-		RecalculateStat(a, true);
+		ApplyStat(a);
 	}
 	void Set(Skill s, int value)
 	{
 		statsx->Set(s, value);
-		RecalculateStat(s, true);
-	}*/
+		ApplyStat(s);
+	}
+
+	void ApplyStat(Attribute a);
+	void ApplyStat(Skill s);
+
+	// calculate hp/stamina
+	void CalculateStats(bool initial = false);
 };
 
 //-----------------------------------------------------------------------------

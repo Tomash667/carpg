@@ -42,10 +42,6 @@ struct StatProfile
 
 	bool operator != (const StatProfile& p) const;
 
-	void Set(int level, int* attribs, int* skills) const;
-	void Set(int level, UnitStats& stats) const { Set(level, stats.attrib, stats.skill); }
-	void SetForNew(int level, int* attribs, int* skills) const;
-	void SetForNew(int level, UnitStats& stats) const { Set(level, stats.attrib, stats.skill); }
 	SubProfile* TryGetSubprofile(const AnyString& id);
 
 	static vector<StatProfile*> profiles;

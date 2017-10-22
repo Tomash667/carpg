@@ -91,7 +91,8 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	noclip = false;
 	action = Action_None;
 	free_days = 0;
-	recalculate_level = false;
+	recalculate_level = true;
+	level = 0.f;
 	
 	if(!partial)
 	{
@@ -126,11 +127,7 @@ void PlayerController::Update(float dt, bool is_local)
 		if(last_dmg_poison == 0.f && poison_dmgc < 0.1f)
 			poison_dmgc = 0.f;
 
-		if(recalculate_level)
-		{
-			recalculate_level = false;
-			unit->level = unit->CalculateLevel();
-		}
+		RecalculateLevel();
 	}
 
 	// update action
@@ -218,7 +215,7 @@ void PlayerController::Train(Attribute attrib, int points)
 	while(ap[a] >= an[a])
 	{
 		ap[a] -= an[a];
-		if(unit->stats.attrib[a] != AttributeInfo::MAX)
+		if(unit->statsx->attrib[a] != AttributeInfo::MAX)
 		{
 			++gained;
 			++value;
@@ -332,16 +329,11 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 //=================================================================================================
 void PlayerController::Save(HANDLE file)
 {
-	if(recalculate_level)
-	{
-		unit->level = unit->CalculateLevel();
-		recalculate_level = false;
-	}
+	RecalculateLevel();
 
 	WriteFile(file, &clas, sizeof(clas), &tmp, nullptr);
-	byte len = (byte)name.length();
-	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-	WriteFile(file, name.c_str(), len, &tmp, nullptr);
+	WriteString1(file, name);
+	WriteFile(file, &level, sizeof(level), &tmp, nullptr);
 	WriteFile(file, &move_tick, sizeof(move_tick), &tmp, nullptr);
 	WriteFile(file, &last_dmg, sizeof(last_dmg), &tmp, nullptr);
 	WriteFile(file, &last_dmg_poison, sizeof(last_dmg_poison), &tmp, nullptr);
@@ -388,11 +380,11 @@ void PlayerController::Load(HANDLE file)
 	ReadFile(file, &clas, sizeof(clas), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_4)
 		clas = ClassInfo::OldToNew(clas);
-	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-	BUF[len] = 0;
-	ReadFile(file, BUF, len, &tmp, nullptr);
-	name = BUF;
+	ReadString1(file, name);
+	if(LOAD_VERSION >= V_CURRENT)
+		ReadFile(file, &level, sizeof(level), &tmp, nullptr);
+	else
+		recalculate_level = true;
 	ReadFile(file, &move_tick, sizeof(move_tick), &tmp, nullptr);
 	ReadFile(file, &last_dmg, sizeof(last_dmg), &tmp, nullptr);
 	ReadFile(file, &last_dmg_poison, sizeof(last_dmg_poison), &tmp, nullptr);
@@ -412,15 +404,15 @@ void PlayerController::Load(HANDLE file)
 	else
 	{
 		// skill points
-		int old_sp[(int)OldSkill::MAX];
+		int old_sp[(int)old::Skill::MAX];
 		f >> old_sp;
 		for(int i = 0; i < (int)Skill::MAX; ++i)
 			sp[i] = 0;
-		sp[(int)Skill::ONE_HANDED_WEAPON] = old_sp[(int)OldSkill::WEAPON];
-		sp[(int)Skill::BOW] = old_sp[(int)OldSkill::BOW];
-		sp[(int)Skill::SHIELD] = old_sp[(int)OldSkill::SHIELD];
-		sp[(int)Skill::LIGHT_ARMOR] = old_sp[(int)OldSkill::LIGHT_ARMOR];
-		sp[(int)Skill::HEAVY_ARMOR] = old_sp[(int)OldSkill::HEAVY_ARMOR];
+		sp[(int)Skill::ONE_HANDED_WEAPON] = old_sp[(int)old::Skill::WEAPON];
+		sp[(int)Skill::BOW] = old_sp[(int)old::Skill::BOW];
+		sp[(int)Skill::SHIELD] = old_sp[(int)old::Skill::SHIELD];
+		sp[(int)Skill::LIGHT_ARMOR] = old_sp[(int)old::Skill::LIGHT_ARMOR];
+		sp[(int)Skill::HEAVY_ARMOR] = old_sp[(int)old::Skill::HEAVY_ARMOR];
 		// skip skill need
 		f.Skip(5 * sizeof(int));
 		// attribute points (str, end, dex)
@@ -511,9 +503,9 @@ void PlayerController::Load(HANDLE file)
 void PlayerController::SetRequiredPoints()
 {
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		an[i] = GetRequiredAttributePoints(unit->unmod_stats.attrib[i]);
+		an[i] = GetRequiredAttributePoints(unit->GetBase((Attribute)i));
 	for(int i = 0; i < (int)Skill::MAX; ++i)
-		sn[i] = GetRequiredSkillPoints(unit->unmod_stats.skill[i]);
+		sn[i] = GetRequiredSkillPoints(unit->GetBase((Skill)i));
 }
 
 const float level_mod[21] = {
@@ -781,4 +773,18 @@ void PlayerController::RefreshCooldown()
 bool PlayerController::IsHit(Unit* unit) const
 {
 	return IsInside(action_targets, unit);
+}
+
+//=================================================================================================
+void PlayerController::RecalculateLevel()
+{
+	if(!recalculate_level)
+		return;
+	recalculate_level = false;
+	float new_level = unit->statsx->CalculateLevel();
+	if(new_level > level)
+	{
+		level = new_level;
+		unit->level = (int)level;
+	}
 }

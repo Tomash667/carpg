@@ -94,7 +94,7 @@ inline float GetBaseAttributeMod(int v)
 //-----------------------------------------------------------------------------
 struct PlayerController : public HeroPlayerCommon
 {
-	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
+	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown, level;
 	// a - attribute, s - skill
 	// *p - x points, *n - x next
 	int sp[(int)Skill::MAX], sn[(int)Skill::MAX], ap[(int)Attribute::MAX], an[(int)Attribute::MAX];
@@ -193,6 +193,8 @@ struct PlayerController : public HeroPlayerCommon
 	bool UseActionCharge();
 	void RefreshCooldown();
 	bool IsHit(Unit* unit) const;
+
+	void RecalculateLevel();
 };
 
 //-----------------------------------------------------------------------------

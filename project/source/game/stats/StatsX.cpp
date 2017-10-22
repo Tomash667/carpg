@@ -25,41 +25,46 @@ static const Vec2 skill_apt_mod[] = {
 	Vec2(1.4f, 5.f)
 };
 
+void StatsX::Upgrade()
+{
+	// TODO
+}
+
 float StatsX::CalculateLevel()
 {
 	// attributes
-	/*float attrib_level = 0.f;
+	float attrib_level = 0.f;
 	int attrib_count = 0;
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
 	{
-	if(attrib_apt[i] > 0)
-	{
-	++attrib_count;
-	attrib_level += float(attrib[i] - attrib_base[i]) / attrib_apt_mod[attrib_apt[i]];
-	}
+		if(attrib_apt[i] > 0)
+		{
+			++attrib_count;
+			attrib_level += float(attrib[i] - attrib_base[i]) / attrib_apt_mod[attrib_apt[i]];
+		}
 	}
 	if(attrib_count > 0)
-	attrib_level /= attrib_count;
+		attrib_level /= attrib_count;
 
 	// get best 5 combat skills
 	Skill best[5] = { Skill::NONE, Skill::NONE, Skill::NONE, Skill::NONE, Skill::NONE };
 	int best_values[5] = { -1, -1, -1, -1, -1 };
 	for(int i = 0; i <= (int)Skill::HEAVY_ARMOR; ++i)
 	{
-	for(int j = 0; j < 5; ++j)
-	{
-	if(skill[i] > best_values[j])
-	{
-	for(int k = j; k < 4; ++k)
-	{
-	best_values[k + 1] = best_values[k];
-	best[k + 1] = best[k];
-	}
-	best[j] = (Skill)i;
-	best_values[j] = skill[i];
-	break;
-	}
-	}
+		for(int j = 0; j < 5; ++j)
+		{
+			if(skill[i] > best_values[j])
+			{
+				for(int k = j; k < 4; ++k)
+				{
+					best_values[k + 1] = best_values[k];
+					best[k + 1] = best[k];
+				}
+				best[j] = (Skill)i;
+				best_values[j] = skill[i];
+				break;
+			}
+		}
 	}
 
 	// skill
@@ -67,35 +72,33 @@ float StatsX::CalculateLevel()
 	float skill_count = 0.f;
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
-	if(skill_apt[i] > 0)
-	{
-	float weight;
-	if(Any((Skill)i, best[0], best[1], best[2]))
-	weight = 1.f;
-	else if((Skill)i == best[3])
-	weight = 0.75f;
-	else if((Skill)i == best[4])
-	weight = 0.5f;
-	else if(Any((Skill)i, Skill::HAGGLE, Skill::LITERACY))
-	weight = 0.1f;
-	else if(Any((Skill)i, Skill::ATHLETICS, Skill::ACROBATICS))
-	weight = 0.2f;
-	else
-	weight = 0;
-	float v = (skill[i] - skill_base[i]) / skill_apt_mod[skill_apt[i]].y;
-	v /= weight;
-	skill_level += v;
-	skill_count += weight;
-	}
+		if(skill_apt[i] > 0)
+		{
+			float weight;
+			if(Any((Skill)i, best[0], best[1], best[2]))
+				weight = 1.f;
+			else if((Skill)i == best[3])
+				weight = 0.75f;
+			else if((Skill)i == best[4])
+				weight = 0.5f;
+			//else if(Any((Skill)i, Skill::HAGGLE, Skill::LITERACY))
+			//	weight = 0.1f;
+			//else if(Any((Skill)i, Skill::ATHLETICS, Skill::ACROBATICS))
+			//	weight = 0.2f;
+			else
+				weight = 0;
+			float v = (skill[i] - skill_base[i]) / skill_apt_mod[skill_apt[i]].y;
+			v /= weight;
+			skill_level += v;
+			skill_count += weight;
+		}
 	}
 	if(skill_count > 0)
-	skill_level /= skill_count;
+		skill_level /= skill_count;
 
 	float level = (attrib_level + skill_level) / 2;
 	level = floor(level * 10) / 10;
-	return level;*/
-
-	return 0;
+	return level;
 }
 
 void StatsX::Save(FileWriter& f)
@@ -230,20 +233,7 @@ StatsX* StatsX::Get(Entry& e)
 			e.stats->armor = e.stats->subprofile->armors[e.seed.variant % e.stats->subprofile->armors.size()];
 	}
 
-	// base value / aptitude
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
-	{
-		e.stats->attrib[i] = e.profile->attrib[i];
-		e.stats->attrib_base[i] = e.stats->attrib[i];
-		e.stats->attrib_apt[i] = AttributeToAptitude(e.profile->attrib[i]);
-	}
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-	{
-		e.stats->skill[i] = e.profile->skill[i];
-		e.stats->skill_base[i] = e.stats->skill[i];
-		e.stats->skill_apt[i] = SkillToAptitude(e.profile->skill[i]);
-		e.stats->skill_tag[i] = 0.f;
-	}
+	e.stats->ApplyBase(e.profile);
 
 	// perks / tag skills
 	if(e.stats->subprofile)
@@ -284,4 +274,28 @@ StatsX* StatsX::Get(Entry& e)
 	// insert and return
 	statsx_entries.insert(it, e);
 	return e.stats;
+}
+
+void StatsX::Cleanup()
+{
+	for(auto& e : statsx_entries)
+		delete e.stats;
+}
+
+void StatsX::ApplyBase(StatProfile* profile)
+{
+	// base value / aptitude
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	{
+		attrib[i] = profile->attrib[i];
+		attrib_base[i] = attrib[i];
+		attrib_apt[i] = AttributeToAptitude(profile->attrib[i]);
+	}
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+	{
+		skill[i] = profile->skill[i];
+		skill_base[i] = skill[i];
+		skill_apt[i] = SkillToAptitude(profile->skill[i]);
+		skill_tag[i] = 0.f;
+	}
 }

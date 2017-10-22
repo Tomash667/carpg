@@ -55,6 +55,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 
 	size = Int2(600, 500);
 	unit = new Unit;
+	unit->statsx = new StatsX;
 	unit->human_data = new Human;
 	unit->player = nullptr;
 	unit->ai = nullptr;
@@ -1113,9 +1114,7 @@ void CreateCharacterPanel::ClassChanged()
 	int y = 0;
 
 	StatProfile& profile = ci.unit_data->GetStatProfile();
-	profile.Set(0, unit->stats);
-	profile.Set(0, unit->unmod_stats);
-	unit->CalculateStats();
+	unit->statsx->ApplyBase(&profile);
 
 	// attributes
 	flow_items.push_back(OldFlowItem((int)Group::Section, -1, y));

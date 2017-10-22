@@ -43,6 +43,8 @@ struct StatsX
 	Entry::Seed seed;
 	bool unique;
 
+	void ApplyBase(StatProfile* profile);
+	void Upgrade();
 	float CalculateLevel();
 	void Save(FileWriter& f);
 	void Write(BitStream& stream);
@@ -70,4 +72,5 @@ struct StatsX
 	static StatsX* GetRandom(StatProfile* profile, int level);
 	static StatsX* Get(Entry& e);
 	static StatsX* Load(FileReader& f);
+	static void Cleanup();
 };

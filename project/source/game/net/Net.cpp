@@ -1846,8 +1846,7 @@ void Game::SendPlayerData(int index)
 	WriteItemListTeam(stream, unit.items);
 
 	// data
-	unit.stats.Write(stream);
-	unit.unmod_stats.Write(stream);
+	unit.statsx->Write(stream);
 	stream.Write(unit.gold);
 	stream.Write(unit.stamina);
 	unit.player->Write(stream);
@@ -1930,8 +1929,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 
 	unit->player->Init(*unit, true);
 
-	if(!unit->stats.Read(stream)
-		|| !unit->unmod_stats.Read(stream)
+	if(!unit->statsx->Read(stream)
 		|| !stream.Read(unit->gold)
 		|| !stream.Read(unit->stamina)
 		|| !pc->Read(stream))
@@ -4108,13 +4106,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					if(what < (int)Skill::MAX)
 					{
-						int num = +value;
+						Skill skill = (Skill)what;
+						int num = value;
 						if(type == NetChange::CHEAT_MODSTAT)
-							num += info.u->unmod_stats.skill[what];
+							num += info.u->GetBase(skill);
 						int v = Clamp(num, 0, SkillInfo::MAX);
-						if(v != info.u->unmod_stats.skill[what])
+						if(v != info.u->GetBase(skill))
 						{
-							info.u->Set((Skill)what, v);
+							info.u->Set(skill, v);
 							NetChangePlayer& c = AddChange(NetChangePlayer::STAT_CHANGED, info.pc);
 							c.id = (int)ChangedStatType::SKILL;
 							c.a = what;
@@ -4131,13 +4130,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					if(what < (int)Attribute::MAX)
 					{
-						int num = +value;
+						Attribute attrib = (Attribute)what;
+						int num = value;
 						if(type == NetChange::CHEAT_MODSTAT)
-							num += info.u->unmod_stats.attrib[what];
+							num += info.u->GetBase(attrib);
 						int v = Clamp(num, 1, AttributeInfo::MAX);
-						if(v != info.u->unmod_stats.attrib[what])
+						if(v != info.u->GetBase(attrib))
 						{
-							info.u->Set((Attribute)what, v);
+							info.u->Set(attrib, v);
 							NetChangePlayer& c = AddChange(NetChangePlayer::STAT_CHANGED, info.pc);
 							c.id = (int)ChangedStatType::ATTRIBUTE;
 							c.a = what;
@@ -5407,7 +5407,7 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 					stream.Write(u.weight);
 					stream.Write(u.weight_max);
 					stream.Write(u.gold);
-					u.stats.Write(stream);
+					u.statsx->Write(stream);
 					WriteItemListTeam(stream, u.items);
 				}
 				break;
@@ -8970,7 +8970,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						if(!stream.Read(unit.weight)
 							|| !stream.Read(unit.weight_max)
 							|| !stream.Read(unit.gold)
-							|| !unit.stats.Read(stream)
+							|| !unit.statsx->Read(stream)
 							|| !ReadItemListTeam(stream, unit.items))
 						{
 							Error("Update single client: Broken %s.", name);

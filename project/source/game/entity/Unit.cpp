@@ -15,6 +15,8 @@ const float Unit::STAMINA_BOW_ATTACK = 100.f;
 //=================================================================================================
 Unit::~Unit()
 {
+	if(statsx && statsx->unique)
+		delete statsx;
 	delete mesh_inst;
 	delete human_data;
 	delete hero;
@@ -1295,8 +1297,7 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
 	WriteFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileWriter f(file);
-	stats.Save(f);
-	unmod_stats.Save(f);
+	statsx->Save(f);
 	WriteFile(file, &gold, sizeof(gold), &tmp, nullptr);
 	WriteFile(file, &invisible, sizeof(invisible), &tmp, nullptr);
 	WriteFile(file, &in_building, sizeof(in_building), &tmp, nullptr);
@@ -1485,26 +1486,31 @@ void Unit::Load(HANDLE file, bool local)
 	}
 	ReadFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileReader f(file);
-	if(LOAD_VERSION >= V_0_4)
+	if(LOAD_VERSION >= V_CURRENT)
+		statsx = StatsX::Load(f);
+	else if(LOAD_VERSION >= V_0_4)
 	{
-		stats.Load(f);
-		unmod_stats.Load(f);
+		statsx = new StatsX;
+		f.Skip(sizeof(UnitStats));
+		f >> statsx->attrib;
+		f >> statsx->skill;
 	}
 	else
 	{
+		statsx = new StatsX;
 		for(int i = 0; i < 3; ++i)
-			f >> unmod_stats.attrib[i];
+			f >> statsx->attrib[i];
 		for(int i = 3; i < 6; ++i)
-			unmod_stats.attrib[i] = -1;
+			statsx->attrib[i] = -1;
 		for(int i = 0; i < (int)Skill::MAX; ++i)
-			unmod_stats.skill[i] = -1;
-		int old_skill[(int)OldSkill::MAX];
+			statsx->skill[i] = -1;
+		int old_skill[(int)old::Skill::MAX];
 		f >> old_skill;
-		unmod_stats.skill[(int)Skill::ONE_HANDED_WEAPON] = old_skill[(int)OldSkill::WEAPON];
-		unmod_stats.skill[(int)Skill::BOW] = old_skill[(int)OldSkill::BOW];
-		unmod_stats.skill[(int)Skill::SHIELD] = old_skill[(int)OldSkill::SHIELD];
-		unmod_stats.skill[(int)Skill::LIGHT_ARMOR] = old_skill[(int)OldSkill::LIGHT_ARMOR];
-		unmod_stats.skill[(int)Skill::HEAVY_ARMOR] = old_skill[(int)OldSkill::HEAVY_ARMOR];
+		statsx->skill[(int)Skill::ONE_HANDED_WEAPON] = old_skill[(int)old::Skill::WEAPON];
+		statsx->skill[(int)Skill::BOW] = old_skill[(int)old::Skill::BOW];
+		statsx->skill[(int)Skill::SHIELD] = old_skill[(int)old::Skill::SHIELD];
+		statsx->skill[(int)Skill::LIGHT_ARMOR] = old_skill[(int)old::Skill::LIGHT_ARMOR];
+		statsx->skill[(int)Skill::HEAVY_ARMOR] = old_skill[(int)old::Skill::HEAVY_ARMOR];
 	}
 	ReadFile(file, &gold, sizeof(gold), &tmp, nullptr);
 	ReadFile(file, &invisible, sizeof(invisible), &tmp, nullptr);
@@ -1752,20 +1758,17 @@ void Unit::Load(HANDLE file, bool local)
 	}
 
 	// calculate new attributes
-	if(LOAD_VERSION < V_0_4)
+	if(LOAD_VERSION < V_CURRENT)
 	{
-		UnitData* ud = data;
-		if(IsPlayer())
-			level = CalculateLevel();
-
-		StatProfile& profile = ud->GetStatProfile();
-		profile.SetForNew(level, unmod_stats);
-		CalculateStats();
-
 		if(IsPlayer())
 		{
-			profile.Set(0, player->unit->statsx->attrib, player->unit->statsx->skill);
-			player->SetRequiredPoints();
+			statsx->Upgrade();
+			CalculateStats();
+		}
+		else
+		{
+			delete statsx;
+			statsx = StatsX::GetRandom(&data->GetStatProfile(), level);
 		}
 	}
 }
@@ -2465,75 +2468,7 @@ int Unit::GetBuffs() const
 }
 
 //=================================================================================================
-int Unit::CalculateLevel()
-{
-	if(player)
-		return CalculateLevel(player->clas);
-	else
-		return level;
-}
-
-//=================================================================================================
-int Unit::CalculateLevel(Class clas)
-{
-	UnitData* ud = ClassInfo::classes[(int)clas].unit_data;
-
-	float tlevel = 0.f;
-	float weight_sum = 0.f;
-	StatProfile& profile = ud->GetStatProfile();
-
-	// calculate player level based on attributes and skills that are important for that class
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
-	{
-		int base = profile.attrib[i] - 50;
-		if(base > 0 && unmod_stats.attrib[i] > 0)
-		{
-			int dif = unmod_stats.attrib[i] - profile.attrib[i], weight;
-			float mod = AttributeInfo::GetModifier(base, weight);
-			tlevel += (float(dif) / mod) * weight * 5;
-			weight_sum += weight;
-		}
-	}
-
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-	{
-		int base = profile.skill[i];
-		if(base > 0 && unmod_stats.skill[i] > 0)
-		{
-			int dif = unmod_stats.skill[i] - base, weight;
-			float mod = SkillInfo::GetModifier(base, weight);
-			tlevel += (float(dif) / mod) * weight * 5;
-			weight_sum += weight;
-		}
-	}
-
-	return (int)floor(tlevel / weight_sum);
-}
-
-//=================================================================================================
-void Unit::RecalculateStat(Attribute a, bool apply)
-{
-	int id = (int)a;
-	int old = stats.attrib[id];
-	//StatState state;
-
-	// calculate value = base + effect modifiers
-	int value = unmod_stats.attrib[id]; // +GetEffectModifier(EffectType::Attribute, id, (IsPlayer() ? &state : nullptr));
-
-	if(value == old)
-		return;
-
-	// apply new value
-	stats.attrib[id] = value;
-	//if(IsPlayer())
-	//	player->attrib_state[id] = state;
-
-	if(apply)
-		ApplyStat(a, old, true);
-}
-
-//=================================================================================================
-void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
+void Unit::ApplyStat(Attribute a)
 {
 	// recalculate other stats
 	switch(a)
@@ -2605,133 +2540,29 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 	case Attribute::CHA:
 		break;
 	}
-
-	if(calculate_skill)
-	{
-		// recalculate skills bonuses
-		int old_mod = old / 10;
-		int mod = stats.attrib[(int)a] / 10;
-		if(mod != old_mod)
-		{
-			for(SkillInfo& si : SkillInfo::skills)
-			{
-				if(si.attrib == a || si.attrib2 == a)
-					RecalculateStat(si.skill_id, true);
-			}
-		}
-	}
 }
 
 //=================================================================================================
-void Unit::RecalculateStat(Skill s, bool apply)
+void Unit::ApplyStat(Skill s)
 {
-	int id = (int)s;
-	int old = stats.skill[id];
 
-	// calculate value
-	int value = unmod_stats.skill[id];
+}
 
-	// apply effect modifiers
-	ValueBuffer buf;
-	SkillInfo& info = SkillInfo::skills[id];
-	value += buf.Get();
-
-	// apply attributes bonus
-	if(info.attrib2 == Attribute::NONE)
-		value += Get(info.attrib) / 10;
+//=================================================================================================
+void Unit::CalculateStats(bool initial)
+{
+	if(initial)
+	{
+		hp = hpmax = CalculateMaxHp();
+		stamina = stamina_max = CalculateMaxStamina();
+	}
 	else
-		value += Get(info.attrib) / 20 + Get(info.attrib2) / 20;
-
-	if(!apply)
 	{
-		stats.skill[id] = value;
-		return;
+		RecalculateHp();
+		RecalculateStamina();
 	}
-
-	// apply skill synergy
-	//int type = 0;
-	switch(s)
-	{
-	case Skill::LIGHT_ARMOR:
-	case Skill::HEAVY_ARMOR:
-		{
-			int other_val = Get(Skill::MEDIUM_ARMOR);
-			if(other_val > value)
-				value += (other_val - value) / 2;
-			//type = 1;
-		}
-		break;
-	case Skill::MEDIUM_ARMOR:
-		{
-			int other_val = max(Get(Skill::LIGHT_ARMOR), Get(Skill::HEAVY_ARMOR));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-			//type = 1;
-		}
-		break;
-	case Skill::SHORT_BLADE:
-		{
-			int other_val = max(max(Get(Skill::LONG_BLADE), Get(Skill::BLUNT)), Get(Skill::AXE));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-			//type = 2;
-		}
-		break;
-	case Skill::LONG_BLADE:
-		{
-			int other_val = max(max(Get(Skill::SHORT_BLADE), Get(Skill::BLUNT)), Get(Skill::AXE));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-			//type = 2;
-		}
-		break;
-	case Skill::BLUNT:
-		{
-			int other_val = max(max(Get(Skill::LONG_BLADE), Get(Skill::SHORT_BLADE)), Get(Skill::AXE));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-			//type = 2;
-		}
-		break;
-	case Skill::AXE:
-		{
-			int other_val = max(max(Get(Skill::LONG_BLADE), Get(Skill::BLUNT)), Get(Skill::SHORT_BLADE));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-			//type = 2;
-		}
-		break;
-	}
-
-	if(value == old)
-		return;
-
-	stats.skill[id] = value;
+	CalculateLoad();
 }
-
-//=================================================================================================
-void Unit::CalculateStats()
-{
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		RecalculateStat((Attribute)i, false);
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-		RecalculateStat((Skill)i, false);
-
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		ApplyStat((Attribute)i, -1, false);
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-		RecalculateStat((Skill)i, true);
-}
-
-//=================================================================================================
-/*int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
-{
-	ValueBuffer buf;
-	if(state)
-		return buf.Get(*state);
-	else
-		return buf.Get();
-}*/
 
 //=================================================================================================
 int Unit::CalculateMobility() const

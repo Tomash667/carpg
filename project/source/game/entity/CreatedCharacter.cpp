@@ -195,13 +195,16 @@ int CreatedCharacter::Read(BitStream& stream)
 //=================================================================================================
 void CreatedCharacter::Apply(PlayerController& pc)
 {
-	pc.unit->data->GetStatProfile().Set(0, pc.unit->statsx->attrib_base, pc.unit->statsx->skill_base);
+	pc.unit->statsx->ApplyBase(pc.unit->data->stat_profile);
 
 	// apply skills
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
 		if(s[i].add)
+		{
 			pc.unit->statsx->skill_base[i] += 5;
+			pc.unit->statsx->skill_apt[i]++;
+		}
 	}
 
 	// apply perks
@@ -214,12 +217,8 @@ void CreatedCharacter::Apply(PlayerController& pc)
 		pc.unit->statsx->attrib[i] = pc.unit->statsx->attrib_base[i];
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 		pc.unit->statsx->skill[i] = pc.unit->statsx->skill_base[i];
-
 	pc.unit->CalculateStats();
-	pc.unit->CalculateLoad();
-	pc.unit->hp = pc.unit->hpmax = pc.unit->CalculateMaxHp();
-	pc.unit->level = pc.unit->CalculateLevel();
-
+	pc.RecalculateLevel();
 	pc.SetRequiredPoints();
 
 	// inventory

@@ -353,7 +353,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	UnitData& ud = *ClassInfo::classes[(int)clas].unit_data;
 
-	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, false);
+	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, CUF_NO_PHYSICS | CUF_UNIQUE_STATSX);
 	u->ApplyHumanData(hd);
 	Team.members.clear();
 	Team.active_members.clear();
@@ -385,7 +385,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	if(!tutorial && cc.HavePerk(Perk::Leader))
 	{
-		Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2, nullptr, nullptr, false);
+		Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2, nullptr, nullptr, CUF_NO_PHYSICS);
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
@@ -1574,6 +1574,9 @@ void Game::UpdateServerTransfer(float dt)
 		Team.members.clear();
 		Team.active_members.clear();
 		const bool in_level = (open_location != -1);
+		int create_unit_flags = CUF_CUSTOM;
+		if(!in_level)
+			create_unit_flags |= CUF_NO_PHYSICS;
 		int leader_perk = 0;
 		for(auto pinfo : game_players)
 		{
@@ -1586,7 +1589,7 @@ void Game::UpdateServerTransfer(float dt)
 			{
 				UnitData& ud = *ClassInfo::classes[(int)info.clas].unit_data;
 
-				u = CreateUnit(ud, -1, nullptr, nullptr, in_level, true);
+				u = CreateUnit(ud, -1, nullptr, nullptr, create_unit_flags);
 				info.u = u;
 				u->ApplyHumanData(info.hd);
 				u->mesh_inst->need_update = true;
@@ -1680,7 +1683,7 @@ void Game::UpdateServerTransfer(float dt)
 
 		if(!mp_load && leader_perk > 0 && Team.GetActiveTeamSize() < MAX_TEAM_SIZE)
 		{
-			Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2 * leader_perk, nullptr, nullptr, false);
+			Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2 * leader_perk, nullptr, nullptr, CUF_NO_PHYSICS);
 			npc->ai = new AIController;
 			npc->ai->Init(npc);
 			npc->hero->know_name = true;

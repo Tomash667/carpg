@@ -6798,7 +6798,7 @@ void Game::TestUnitSpells(const SpellList& _spells, string& _errors, uint& _coun
 }
 
 //=================================================================================================
-Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_unit, bool create_physics, bool custom)
+Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_unit, int flags)
 {
 	Unit* u;
 	if(test_unit)
@@ -6853,17 +6853,20 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->alcohol = 0.f;
 	u->moved = false;
 
-	u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
-	u->data->GetStatProfile().Set(u->level, u->unmod_stats.attrib, u->unmod_stats.skill);
-	u->CalculateStats();
-	u->hp = u->hpmax = u->CalculateMaxHp();
-	u->stamina = u->stamina_max = u->CalculateMaxStamina();
-	u->fake_unit = false;
+	if(IS_SET(flags, CUF_UNIQUE_STATSX))
+	{
+		u->statsx = new StatsX;
+		u->statsx->unique = true;
+	}
+	else
+	{
+		u->statsx = StatsX::GetRandom(base.stat_profile, u->level);
+		u->CalculateStats(true);
+	}
 
 	// items
 	u->weight = 0;
-	u->CalculateLoad();
-	if(!custom && base.items)
+	if(!IS_SET(flags, CUF_CUSTOM) && base.items)
 	{
 		ParseItemScript(*u, base.items);
 		SortItems(u->items);
@@ -6939,10 +6942,10 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 			boss_levels.push_back(Int2(current_location, dungeon_level));
 
 		// physics
-		if(create_physics)
-			CreateUnitPhysics(*u);
-		else
+		if(IS_SET(flags, CUF_NO_PHYSICS))
 			u->cobj = nullptr;
+		else
+			CreateUnitPhysics(*u);
 	}
 
 	if(Net::IsServer())
@@ -20162,11 +20165,7 @@ void Game::StartPvp(PlayerController* player, Unit* unit)
 	arena_fighter = unit;
 
 	// stwórz obserwatorów na arenie na podstawie poziomu postaci
-	player->unit->level = player->unit->CalculateLevel();
-	if(unit->IsPlayer())
-		unit->level = unit->CalculateLevel();
 	int level = max(player->unit->level, unit->level);
-
 	if(level < 7)
 		SpawnArenaViewers(1);
 	else if(level < 14)
@@ -20301,23 +20300,23 @@ void Game::Train(Unit& unit, bool is_skill, int co, int mode)
 	int value, *train_points, *train_next;
 	if(is_skill)
 	{
-		if(unit.unmod_stats.skill[co] == SkillInfo::MAX)
+		if(unit.statsx->skill[co] == SkillInfo::MAX)
 		{
 			unit.player->sp[co] = unit.player->sn[co];
 			return;
 		}
-		value = unit.unmod_stats.skill[co];
+		value = unit.statsx->skill[co];
 		train_points = &unit.player->sp[co];
 		train_next = &unit.player->sn[co];
 	}
 	else
 	{
-		if(unit.unmod_stats.attrib[co] == AttributeInfo::MAX)
+		if(unit.statsx->attrib[co] == AttributeInfo::MAX)
 		{
 			unit.player->ap[co] = unit.player->an[co];
 			return;
 		}
-		value = unit.unmod_stats.attrib[co];
+		value = unit.statsx->attrib[co];
 		train_points = &unit.player->ap[co];
 		train_next = &unit.player->an[co];
 	}
