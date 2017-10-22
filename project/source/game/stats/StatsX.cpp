@@ -2,6 +2,7 @@
 #include "Core.h"
 #include "StatsX.h"
 #include "Const.h"
+#include "BitStreamFunc.h"
 
 static std::set<StatsX::Entry, StatsX::Entry> statsx_entries;
 static const float attrib_apt_mod[] = {
@@ -156,6 +157,11 @@ bool StatsX::Read(BitStream& stream)
 {
 	return stream.Read(attrib)
 		&& stream.Read(skill);
+}
+
+bool StatsX::Skip(BitStream& stream)
+{
+	return ::Skip(stream, sizeof(attrib) + sizeof(skill));
 }
 
 StatsX* StatsX::GetLevelUp()

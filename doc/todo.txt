@@ -1,5 +1,8 @@
 ﻿FEATURE:
 * skills
++ use aptitude
++ training skills instead of attributes
+
 + new skills
 	+ effect
 	+ training
@@ -19,10 +22,6 @@
 + training perks
 + addperk, removeperk command
 
-+ check all CalculateStats, CalculateLoad
-? RecalculateStat
-+ remove CalculateLevel
-+ remove UnitStats
 + StatsX.Upgrade
 + CalculateStats send mp update
 + tooltip for attack to explain melee vs ranged attack

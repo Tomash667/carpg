@@ -1491,7 +1491,7 @@ void Unit::Load(HANDLE file, bool local)
 	else if(LOAD_VERSION >= V_0_4)
 	{
 		statsx = new StatsX;
-		f.Skip(sizeof(UnitStats));
+		f.Skip(sizeof(old::UnitStats));
 		f >> statsx->attrib;
 		f >> statsx->skill;
 	}

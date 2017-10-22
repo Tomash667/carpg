@@ -459,7 +459,7 @@ void PlayerController::Load(HANDLE file)
 		if(LOAD_VERSION < V_CURRENT)
 		{
 			// skip old stats
-			f.Skip(sizeof(UnitStats) + sizeof(StatState) * ((int)Attribute::MAX + (int)Skill::MAX));
+			f.Skip(sizeof(old::UnitStats) + sizeof(StatState) * ((int)Attribute::MAX + (int)Skill::MAX));
 		}
 		// perks
 		byte count;

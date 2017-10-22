@@ -775,7 +775,6 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	orc->level = ud->level.x;
 	orc->statsx = StatsX::GetRandom(&ud->GetStatProfile(), orc->level);
 	orc->CalculateStats();
-	orc->RecalculateHp();
 	game->ParseItemScript(*orc, ud->items);
 	orc->MakeItemsTeam(false);
 	game->UpdateUnitInventory(*orc);

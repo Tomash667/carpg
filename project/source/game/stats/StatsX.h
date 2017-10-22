@@ -72,5 +72,6 @@ struct StatsX
 	static StatsX* GetRandom(StatProfile* profile, int level);
 	static StatsX* Get(Entry& e);
 	static StatsX* Load(FileReader& f);
+	static bool Skip(BitStream& stream);
 	static void Cleanup();
 };

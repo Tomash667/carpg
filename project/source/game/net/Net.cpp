@@ -8983,11 +8983,9 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					{
 						Error("Update single client: %s, player is not talking with team member.", name);
 						StreamError();
-						// try to skip
-						UnitStats stats;
 						vector<ItemSlot> items;
 						if(!Skip(stream, sizeof(int) * 3)
-							|| !stats.Read(stream)
+							|| !StatsX::Skip(stream)
 							|| !ReadItemListTeam(stream, items, true))
 						{
 							Error("Update single client: Broken %s(2).", name);

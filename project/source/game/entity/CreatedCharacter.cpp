@@ -217,7 +217,7 @@ void CreatedCharacter::Apply(PlayerController& pc)
 		pc.unit->statsx->attrib[i] = pc.unit->statsx->attrib_base[i];
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 		pc.unit->statsx->skill[i] = pc.unit->statsx->skill_base[i];
-	pc.unit->CalculateStats();
+	pc.unit->CalculateStats(true);
 	pc.RecalculateLevel();
 	pc.SetRequiredPoints();
 
