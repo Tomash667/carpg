@@ -68,10 +68,31 @@ struct StatsX
 		assert(unique);
 		skill[(int)s] = value;
 	}
+	float GetMod(Attribute a) const
+	{
+		return GetModFromApt(attrib_apt[(int)a]);
+	}
+	float GetMod(Skill s) const
+	{
+		return GetModFromApt(skill_apt[(int)s]);
+	}
 
 	static StatsX* GetRandom(StatProfile* profile, int level);
 	static StatsX* Get(Entry& e);
 	static StatsX* Load(FileReader& f);
 	static bool Skip(BitStream& stream);
 	static void Cleanup();
+
+private:
+	static float GetModFromApt(int apt)
+	{
+		return player_apt_mod[Clamp(apt, -4, +5) + 4];
+	}
+
+	static int AttributeToAptitude(int value);
+	static int SkillToAptitude(int value);
+
+	static const float player_apt_mod[];
+	static const float attrib_apt_mod[];
+	static const Vec2 skill_apt_mod[];
 };

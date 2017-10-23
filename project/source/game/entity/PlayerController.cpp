@@ -93,7 +93,7 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	free_days = 0;
 	recalculate_level = true;
 	level = 0.f;
-	
+
 	if(!partial)
 	{
 		kills = 0;
@@ -161,7 +161,6 @@ void PlayerController::Train(Skill skill, int points)
 
 	int gained = 0,
 		value = unit->GetBase(skill);
-	//base = base_stats.skill[s];
 
 	while(sp[s] >= sn[s])
 	{
@@ -210,7 +209,6 @@ void PlayerController::Train(Attribute attrib, int points)
 
 	int gained = 0,
 		value = unit->GetBase(attrib);
-	//base = base_stats.attrib[a];
 
 	while(ap[a] >= an[a])
 	{
@@ -670,13 +668,13 @@ void PlayerController::Train(TrainWhat what, float value, int level)
 //=================================================================================================
 void PlayerController::TrainMod(Attribute a, float points)
 {
-	Train(a, int(points * GetBaseAttributeMod(unit->GetBase(a))));
+	Train(a, int(points * unit->statsx->GetMod(a)));
 }
 
 //=================================================================================================
 void PlayerController::TrainMod2(Skill s, float points)
 {
-	Train(s, int(points * GetBaseSkillMod(unit->GetBase(s))));
+	Train(s, int(points * unit->statsx->GetMod(s)));
 }
 
 //=================================================================================================

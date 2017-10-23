@@ -22,7 +22,8 @@ enum Group
 enum Stats
 {
 	STATS_DATE,
-	STATS_CLASS
+	STATS_CLASS,
+	STATS_ATTACK
 };
 
 //=================================================================================================
@@ -32,8 +33,7 @@ StatsPanel::StatsPanel() : last_update(0.f)
 
 	txAttributes = Str("attributes");
 	txStatsPanel = Str("statsPanel");
-	txTraitsClass = Str("traitsClass");
-	txTraitsText = Str("traitsText");
+	txClass = Str("class");
 	txStatsText = Str("statsText");
 	txYearMonthDay = Str("yearMonthDay");
 	txBase = Str("base");
@@ -42,6 +42,15 @@ StatsPanel::StatsPanel() : last_update(0.f)
 	txTraits = Str("traits");
 	txStats = Str("stats");
 	txStatsDate = Str("statsDate");
+	txHealth = Str("health");
+	txStamina = Str("stamina");
+	txAttack = Str("attack");
+	txDefense = Str("defense");
+	txMeleeAttack = Str("meleeAttack");
+	txRangedAttack = Str("rangedAttack");
+	txMobility = Str("mobility");
+	txCarryShort = Str("carryShort");
+	txGold = Str("gold");
 
 	tooltip.Init(TooltipGetText(this, &StatsPanel::GetTooltip));
 }
@@ -141,17 +150,21 @@ void StatsPanel::SetText()
 	// stats
 	flowStats.Clear();
 	flowStats.Add()->Set(txTraits);
+	flowStats.Add()->Set(Format("%s: %s", txClass, ClassInfo::classes[(int)pc->clas].name.c_str()), G_STATS, STATS_CLASS);
+	if(game.devmode)
+		flowStats.Add()->Set(Format("Level: %g (%d)", pc->level, pc->unit->level), G_INVALID, -1);
 	int hp = int(pc->unit->hp);
 	if(hp == 0 && pc->unit->hp > 0)
 		hp = 1;
+	flowStats.Add()->Set(Format("%s: %d/%d", txHealth, hp, int(pc->unit->hpmax)), G_INVALID, -1);
+	flowStats.Add()->Set(Format("%s: %d/%d", txStamina, int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);
 	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
 	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
-	flowStats.Add()->Set(Format(txTraitsClass, ClassInfo::classes[(int)pc->clas].name.c_str()), G_STATS, STATS_CLASS);
-	if(game.devmode)
-		flowStats.Add()->Set(Format("Level: %g (%d)", pc->level, pc->unit->level), G_INVALID, -1);
-	flowStats.Add()->Set(Format(txTraitsText, hp, int(pc->unit->hpmax), int(pc->unit->stamina), int(pc->unit->stamina_max), meleeAttack, rangedAttack,
-		(int)pc->unit->CalculateDefense(), (int)pc->unit->CalculateMobility(), float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10, pc->unit->gold),
-		G_INVALID, -1);
+	flowStats.Add()->Set(Format("%s: %s/%s", txAttack, meleeAttack, rangedAttack), G_STATS, STATS_ATTACK);
+	flowStats.Add()->Set(Format("%s: %d", txDefense, (int)pc->unit->CalculateDefense()), G_INVALID, -1);
+	flowStats.Add()->Set(Format("%s: %d", txMobility, (int)pc->unit->CalculateMobility()), G_INVALID, -1);
+	flowStats.Add()->Set(Format(txCarryShort, float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10), G_INVALID, -1);
+	flowStats.Add()->Set(Format(txGold, pc->unit->gold), G_INVALID, -1);
 	flowStats.Add()->Set(txStats);
 	flowStats.Add()->Set(Format(txStatsDate, game.year, game.month + 1, game.day + 1), G_STATS, STATS_DATE);
 	GameStats& game_stats = GameStats::Get();
@@ -246,6 +259,15 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 				ClassInfo& info = ClassInfo::classes[(int)pc->clas];
 				tooltip.big_text = info.name;
 				tooltip.text = info.desc;
+				tooltip.small_text.clear();
+			}
+			break;
+		case STATS_ATTACK:
+			{
+				cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
+				cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
+				tooltip.big_text.clear();
+				tooltip.text = Format("%s: %s\n%s: %s", txMeleeAttack, meleeAttack, txRangedAttack, rangedAttack);
 				tooltip.small_text.clear();
 			}
 			break;

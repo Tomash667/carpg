@@ -13,6 +13,7 @@ Version 0.6.2 (2017-10-08):
 - fixed not marking usable object as free when client stopped using, broken animation
 - fixed opening/closing door not send between clients (only between client and server)
 - fixed missing items in chests
+- fixed very good starting item when player have very low skill
 
 --------------------------------------------------------------------------------
 Version 0.6 (2017-10-01):

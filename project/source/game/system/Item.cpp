@@ -310,9 +310,12 @@ const Item* StartItem::GetStartItem(Skill skill, int value)
 	int best_value = -2;
 	while(true)
 	{
-		if(value == HEIRLOOM && it->value == HEIRLOOM)
-			return it->item;
-		if(it->value > best_value && it->value <= value)
+		if(it->value == HEIRLOOM)
+		{
+			if(value == HEIRLOOM)
+				return it->item;
+		}
+		else if(it->value > best_value && it->value <= value)
 		{
 			best = it->item;
 			best_value = it->value;

@@ -202,8 +202,9 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	{
 		if(s[i].add)
 		{
-			pc.unit->statsx->skill_base[i] += 5;
-			pc.unit->statsx->skill_apt[i]++;
+			int value = (pc.unit->data->stat_profile->ShouldDoubleSkill((Skill)i) ? 2 : 1);
+			pc.unit->statsx->skill_base[i] += value * 5;
+			pc.unit->statsx->skill_apt[i] += value;
 		}
 	}
 

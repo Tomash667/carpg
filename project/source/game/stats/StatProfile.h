@@ -43,6 +43,7 @@ struct StatProfile
 	bool operator != (const StatProfile& p) const;
 
 	SubProfile* TryGetSubprofile(const AnyString& id);
+	bool ShouldDoubleSkill(Skill s) const;
 
 	static vector<StatProfile*> profiles;
 	static StatProfile* TryGet(const AnyString& id);

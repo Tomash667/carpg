@@ -5,7 +5,7 @@
 #include "BitStreamFunc.h"
 
 static std::set<StatsX::Entry, StatsX::Entry> statsx_entries;
-static const float attrib_apt_mod[] = {
+const float StatsX::attrib_apt_mod[] = {
 	0.f,
 	0.5f,
 	1.f,
@@ -15,7 +15,21 @@ static const float attrib_apt_mod[] = {
 	2.35f,
 	2.4f
 };
-static const Vec2 skill_apt_mod[] = {
+
+const float StatsX::player_apt_mod[] = {
+	0, // -4
+	0.25f, // -3
+	0.5f, // -2
+	0.75f, // -1
+	1.f, // 0
+	1.25f, // +1
+	1.45f, // +2
+	1.6f, // +3
+	1.7f, // +4
+	1.75f // +5
+};
+
+const Vec2 StatsX::skill_apt_mod[] = {
 	Vec2(0.f, 0.f),
 	Vec2(0.2f, 1.5f),
 	Vec2(0.4f, 2.5f),
@@ -177,12 +191,12 @@ StatsX* StatsX::GetLevelUp()
 	return Get(e);
 }
 
-int AttributeToAptitude(int value)
+int StatsX::AttributeToAptitude(int value)
 {
 	return Clamp((value - 50) / 5, 0, (int)countof(attrib_apt_mod) - 1);
 }
 
-int SkillToAptitude(int value)
+int StatsX::SkillToAptitude(int value)
 {
 	return Clamp(value / 5, 0, (int)countof(skill_apt_mod) - 1);
 }

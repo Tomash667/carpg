@@ -1156,17 +1156,18 @@ void CreateCharacterPanel::OnPickSkill(int group, int id)
 {
 	assert(group == (int)Group::PickSkill_Button);
 
+	int value = (unit->data->GetStatProfile().ShouldDoubleSkill((Skill)id) ? 10 : 5);
 	if(!cc.s[id].add)
 	{
 		// add
 		--cc.sp;
-		cc.s[id].Add(5, true);
+		cc.s[id].Add(value, true);
 	}
 	else
 	{
 		// remove
 		++cc.sp;
-		cc.s[id].Add(-5, false);
+		cc.s[id].Add(-value, false);
 	}
 
 	// update buttons image / text
@@ -1536,8 +1537,8 @@ bool CreateCharacterPanel::ValidatePerk(Perk perk)
 {
 	switch(perk)
 	{
-		//case Perk::CraftingTradition:
-		//	return !cc.s[(int)Skill::CRAFTING].mod;
+	//case Perk::CraftingTradition:
+	//	return !cc.s[(int)Skill::CRAFTING].mod;
 	case Perk::VeryWealthy:
 		return cc.HavePerk(Perk::Wealthy);
 	default:

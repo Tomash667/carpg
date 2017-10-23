@@ -81,16 +81,6 @@ inline int GetRequiredSkillPoints(int level)
 	return 3 * (level + 20)*(level + 25);
 }
 
-inline float GetBaseSkillMod(int v)
-{
-	return float(v) / 60;
-}
-
-inline float GetBaseAttributeMod(int v)
-{
-	return float(max(0, v - 50)) / 40;
-}
-
 //-----------------------------------------------------------------------------
 struct PlayerController : public HeroPlayerCommon
 {

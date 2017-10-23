@@ -44,6 +44,12 @@ SubProfile* StatProfile::TryGetSubprofile(const AnyString& id)
 }
 
 //=================================================================================================
+bool StatProfile::ShouldDoubleSkill(Skill s) const
+{
+	return IS_SET(flags, F_DOUBLE_WEAPON_TAG_SKILL) && Any(s, Skill::SHORT_BLADE, Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT);
+}
+
+//=================================================================================================
 StatProfile* StatProfile::TryGet(const AnyString& id)
 {
 	for(auto profile : profiles)
