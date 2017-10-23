@@ -65,6 +65,7 @@ enum class Skill
 //-----------------------------------------------------------------------------
 enum class SkillGroup
 {
+	COMBAT_STYLE,
 	WEAPON,
 	ARMOR,
 	MAGIC,
@@ -75,14 +76,14 @@ enum class SkillGroup
 };
 
 //-----------------------------------------------------------------------------
-enum class SkillPack
+/*enum class SkillPack
 {
 	THIEF,
 	WEAPON,
 
 	MAX,
 	NONE
-};
+};*/
 
 //-----------------------------------------------------------------------------
 struct SkillInfo
@@ -92,12 +93,12 @@ struct SkillInfo
 	string name, desc;
 	SkillGroup group;
 	Attribute attrib, attrib2;
-	SkillPack pack;
+	//SkillPack pack;
 
 	static const int MAX = 255;
 
-	SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2, SkillPack pack) : skill_id(skill_id), id(id), group(group), attrib(attrib),
-		attrib2(attrib2), pack(pack)
+	SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2) : skill_id(skill_id), id(id), group(group), attrib(attrib),
+		attrib2(attrib2)
 	{
 	}
 

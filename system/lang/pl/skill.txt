@@ -1,3 +1,4 @@
+skill_group combat_style = "Style walki"
 skill_group weapon = "Walka broni¹"
 skill_group armor = "Tarcza & Pancerz"
 skill_group magic = "Magia"

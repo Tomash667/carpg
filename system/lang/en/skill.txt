@@ -1,3 +1,4 @@
+skill_group combat_style = "Combat styles"
 skill_group weapon = "Weapons"
 skill_group armor = "Shield & Armor"
 skill_group magic = "Magic"
