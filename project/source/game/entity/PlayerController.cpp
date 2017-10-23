@@ -538,7 +538,7 @@ inline float GetLevelMod(int my_level, int target_level)
 }
 
 //=================================================================================================
-void PlayerController::Train(TrainWhat what, float value, int level)
+/*void PlayerController::Train(TrainWhat what, float value, int level)
 {
 	switch(what)
 	{
@@ -690,6 +690,11 @@ void PlayerController::TrainMod(Skill s, float points)
 		TrainMod(info.attrib2, points);
 	}
 	TrainMod(info.attrib, points);
+}*/
+
+void PlayerController::Train2(Skill skill, TrainWhat2 what, float value, int level)
+{
+
 }
 
 //=================================================================================================
