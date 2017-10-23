@@ -1,26 +1,4 @@
 ﻿FEATURE:
-
-broń
-+ machanie
-+ trafianie w cel bez obrażeń
-+ trafianie w cel
-+ zabijanie
-
-łuk
-+ strzelanie
-+ trafienie w cel bez obrażeń
-+ trafienie w cel
-+ zabijanie
-
-tarcza
-+ blokowanie ciosu
-+ shield bash (dmg/no dmg/kill)
-
-pancerz
-+ chodzenie/bieganie
-+ otrzymywanie obrażeń
-
-
 * skills
 + use aptitude
 + training skills instead of attributes
