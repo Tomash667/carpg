@@ -13,11 +13,8 @@
 + clamp max aptitude on change
 
 ? testing
-	? double weapon skill + mp
-	? rogue have better shield with 0 skill
-	? tooltip for attack to explain melee vs ranged attack
+	? double weapon skill in mp
 	? gorush change class
-	? create character
 	? mp
 	? old saves
 	? StatsX.Upgrade
