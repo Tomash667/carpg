@@ -392,25 +392,43 @@ void PlayerController::Load(HANDLE file)
 	FileReader f(file);
 	if(LOAD_VERSION >= V_0_4)
 	{
-		// attribute points
 		f >> ap;
-		// skill points
-		f >> sp;
-
+		if(LOAD_VERSION >= V_CURRENT)
+			f >> sp;
+		else
+		{
+			int old_sp[(int)old::v1::Skill::MAX];
+			f >> old_sp;
+			sp[(int)Skill::ONE_HANDED_WEAPON] = old_sp[(int)old::v1::Skill::ONE_HANDED_WEAPON];
+			sp[(int)Skill::SHORT_BLADE] = old_sp[(int)old::v1::Skill::SHORT_BLADE];
+			sp[(int)Skill::LONG_BLADE] = old_sp[(int)old::v1::Skill::LONG_BLADE];
+			sp[(int)Skill::BLUNT] = old_sp[(int)old::v1::Skill::BLUNT];
+			sp[(int)Skill::AXE] = old_sp[(int)old::v1::Skill::AXE];
+			sp[(int)Skill::BOW] = old_sp[(int)old::v1::Skill::BOW];
+			sp[(int)Skill::SHIELD] = old_sp[(int)old::v1::Skill::SHIELD];
+			sp[(int)Skill::LIGHT_ARMOR] = old_sp[(int)old::v1::Skill::LIGHT_ARMOR];
+			sp[(int)Skill::MEDIUM_ARMOR] = old_sp[(int)old::v1::Skill::MEDIUM_ARMOR];
+			sp[(int)Skill::HEAVY_ARMOR] = old_sp[(int)old::v1::Skill::HEAVY_ARMOR];
+			sp[(int)Skill::UNARMED] = 0;
+			sp[(int)Skill::ATHLETICS] = 0;
+			sp[(int)Skill::ACROBATICS] = 0;
+			sp[(int)Skill::HAGGLE] = 0;
+			sp[(int)Skill::LITERACY] = 0;
+		}
 		SetRequiredPoints();
 	}
 	else
 	{
 		// skill points
-		int old_sp[(int)old::Skill::MAX];
+		int old_sp[(int)old::v0::Skill::MAX];
 		f >> old_sp;
 		for(int i = 0; i < (int)Skill::MAX; ++i)
 			sp[i] = 0;
-		sp[(int)Skill::ONE_HANDED_WEAPON] = old_sp[(int)old::Skill::WEAPON];
-		sp[(int)Skill::BOW] = old_sp[(int)old::Skill::BOW];
-		sp[(int)Skill::SHIELD] = old_sp[(int)old::Skill::SHIELD];
-		sp[(int)Skill::LIGHT_ARMOR] = old_sp[(int)old::Skill::LIGHT_ARMOR];
-		sp[(int)Skill::HEAVY_ARMOR] = old_sp[(int)old::Skill::HEAVY_ARMOR];
+		sp[(int)Skill::ONE_HANDED_WEAPON] = old_sp[(int)old::v0::Skill::WEAPON];
+		sp[(int)Skill::BOW] = old_sp[(int)old::v0::Skill::BOW];
+		sp[(int)Skill::SHIELD] = old_sp[(int)old::v0::Skill::SHIELD];
+		sp[(int)Skill::LIGHT_ARMOR] = old_sp[(int)old::v0::Skill::LIGHT_ARMOR];
+		sp[(int)Skill::HEAVY_ARMOR] = old_sp[(int)old::v0::Skill::HEAVY_ARMOR];
 		// skip skill need
 		f.Skip(5 * sizeof(int));
 		// attribute points (str, end, dex)

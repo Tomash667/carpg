@@ -1491,9 +1491,28 @@ void Unit::Load(HANDLE file, bool local)
 	else if(LOAD_VERSION >= V_0_4)
 	{
 		statsx = new StatsX;
+		// current stats (there was no modifiers then so current == base)
 		f.Skip(sizeof(old::UnitStats));
+		// base stats
 		f >> statsx->attrib;
-		f >> statsx->skill;
+		int old_skill[(int)old::v1::Skill::MAX];
+		f >> old_skill;
+		statsx->skill[(int)Skill::ONE_HANDED_WEAPON] = old_skill[(int)old::v1::Skill::ONE_HANDED_WEAPON];
+		statsx->skill[(int)Skill::SHORT_BLADE] = old_skill[(int)old::v1::Skill::SHORT_BLADE];
+		statsx->skill[(int)Skill::LONG_BLADE] = old_skill[(int)old::v1::Skill::LONG_BLADE];
+		statsx->skill[(int)Skill::BLUNT] = old_skill[(int)old::v1::Skill::BLUNT];
+		statsx->skill[(int)Skill::AXE] = old_skill[(int)old::v1::Skill::AXE];
+		statsx->skill[(int)Skill::BOW] = old_skill[(int)old::v1::Skill::BOW];
+		statsx->skill[(int)Skill::SHIELD] = old_skill[(int)old::v1::Skill::SHIELD];
+		statsx->skill[(int)Skill::LIGHT_ARMOR] = old_skill[(int)old::v1::Skill::LIGHT_ARMOR];
+		statsx->skill[(int)Skill::MEDIUM_ARMOR] = old_skill[(int)old::v1::Skill::MEDIUM_ARMOR];
+		statsx->skill[(int)Skill::HEAVY_ARMOR] = old_skill[(int)old::v1::Skill::HEAVY_ARMOR];
+		statsx->skill[(int)Skill::UNARMED] = -1;
+		statsx->skill[(int)Skill::ATHLETICS] = -1;
+		statsx->skill[(int)Skill::ACROBATICS] = -1;
+		statsx->skill[(int)Skill::HAGGLE] = -1;
+		statsx->skill[(int)Skill::LITERACY] = -1;
+		statsx->seed.level = level;
 	}
 	else
 	{
@@ -1504,13 +1523,14 @@ void Unit::Load(HANDLE file, bool local)
 			statsx->attrib[i] = -1;
 		for(int i = 0; i < (int)Skill::MAX; ++i)
 			statsx->skill[i] = -1;
-		int old_skill[(int)old::Skill::MAX];
+		int old_skill[(int)old::v0::Skill::MAX];
 		f >> old_skill;
-		statsx->skill[(int)Skill::ONE_HANDED_WEAPON] = old_skill[(int)old::Skill::WEAPON];
-		statsx->skill[(int)Skill::BOW] = old_skill[(int)old::Skill::BOW];
-		statsx->skill[(int)Skill::SHIELD] = old_skill[(int)old::Skill::SHIELD];
-		statsx->skill[(int)Skill::LIGHT_ARMOR] = old_skill[(int)old::Skill::LIGHT_ARMOR];
-		statsx->skill[(int)Skill::HEAVY_ARMOR] = old_skill[(int)old::Skill::HEAVY_ARMOR];
+		statsx->skill[(int)Skill::ONE_HANDED_WEAPON] = old_skill[(int)old::v0::Skill::WEAPON];
+		statsx->skill[(int)Skill::BOW] = old_skill[(int)old::v0::Skill::BOW];
+		statsx->skill[(int)Skill::SHIELD] = old_skill[(int)old::v0::Skill::SHIELD];
+		statsx->skill[(int)Skill::LIGHT_ARMOR] = old_skill[(int)old::v0::Skill::LIGHT_ARMOR];
+		statsx->skill[(int)Skill::HEAVY_ARMOR] = old_skill[(int)old::v0::Skill::HEAVY_ARMOR];
+		statsx->seed.level = -1;
 	}
 	ReadFile(file, &gold, sizeof(gold), &tmp, nullptr);
 	ReadFile(file, &invisible, sizeof(invisible), &tmp, nullptr);
@@ -1763,13 +1783,14 @@ void Unit::Load(HANDLE file, bool local)
 		if(IsPlayer())
 		{
 			statsx->Upgrade();
-			CalculateStats();
+			player->SetRequiredPoints();
 		}
 		else
 		{
 			delete statsx;
 			statsx = StatsX::GetRandom(&data->GetStatProfile(), level);
 		}
+		CalculateStats();
 	}
 }
 

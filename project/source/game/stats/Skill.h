@@ -7,22 +7,70 @@
 //-----------------------------------------------------------------------------
 namespace old
 {
-	enum class Skill
+	namespace v0
 	{
-		WEAPON,
-		BOW,
-		LIGHT_ARMOR,
-		HEAVY_ARMOR,
-		SHIELD,
-		MAX
-	};
+		// pre 0.4
+		enum class Skill
+		{
+			WEAPON,
+			BOW,
+			LIGHT_ARMOR,
+			HEAVY_ARMOR,
+			SHIELD,
+			MAX
+		};
+	}
+	namespace v1
+	{
+		// pre 0.7
+		enum class Skill
+		{
+			// weapon
+			ONE_HANDED_WEAPON,
+			SHORT_BLADE,
+			LONG_BLADE,
+			BLUNT,
+			AXE,
+			BOW,
+			UNARMED,
+			// shield & armor
+			SHIELD,
+			LIGHT_ARMOR,
+			MEDIUM_ARMOR,
+			HEAVY_ARMOR,
+			// magic
+			NATURE_MAGIC,
+			GODS_MAGIC,
+			MYSTIC_MAGIC,
+			SPELLCRAFT,
+			CONCENTRATION,
+			IDENTIFICATION,
+			// other
+			LOCKPICK,
+			SNEAK,
+			TRAPS,
+			STEAL,
+			ANIMAL_EMPATHY,
+			SURVIVAL,
+			PERSUASION,
+			ALCHEMY,
+			CRAFTING,
+			HEALING,
+			ATHLETICS,
+			RAGE,
+
+			MAX,
+			NONE
+		};
+	}
 }
 
 //-----------------------------------------------------------------------------
 enum class Skill
 {
-	// weapon
+	// combat styles
 	ONE_HANDED_WEAPON,
+	// weapons
 	SHORT_BLADE,
 	LONG_BLADE,
 	BLUNT,
@@ -34,26 +82,11 @@ enum class Skill
 	LIGHT_ARMOR,
 	MEDIUM_ARMOR,
 	HEAVY_ARMOR,
-	// magic
-	NATURE_MAGIC,
-	GODS_MAGIC,
-	MYSTIC_MAGIC,
-	SPELLCRAFT,
-	CONCENTRATION,
-	IDENTIFICATION,
 	// other
-	LOCKPICK,
-	SNEAK,
-	TRAPS,
-	STEAL,
-	ANIMAL_EMPATHY,
-	SURVIVAL,
-	PERSUASION,
-	ALCHEMY,
-	CRAFTING,
-	HEALING,
 	ATHLETICS,
-	RAGE,
+	ACROBATICS,
+	HAGGLE,
+	LITERACY,
 
 	MAX,
 	NONE,

@@ -57,6 +57,7 @@ NEW:
 	+ attributes give bonus to skill (currently it isn't needed, player starts with good attribute values in useful skills)
 + modify units stats, perks -> will make unit unique
 + poison resistance from stamina
++ wisdom: skill/perk/bonus
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

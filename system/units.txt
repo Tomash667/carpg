@@ -465,9 +465,9 @@ profile cleric {
 	medium_armor 15
 	heavy_armor 10
 	
-	//X athletics 10
-	//X literacy 15
-	//X haggle 15
+	athletics 10
+	literacy 15
+	haggle 15
 }
 
 profile hunter {
@@ -490,23 +490,23 @@ profile hunter {
 	medium_armor 10
 	heavy_armor 0
 	
-	//X athletics 10
-	//X acrobatics 10
-	//X literacy 0
-	//X haggle 5
+	athletics 10
+	acrobatics 10
+	literacy 0
+	haggle 5
 	
 	subprofile bowman {
 		skill tag bow
 		skill tag light_armor
-		//X skill tag acrobatics
-		//X skill 0.5 athletics
+		skill tag acrobatics
+		skill 0.5 athletics
 	}
 	subprofile swordman {
 		skill tag long_blade
 		skill tag medium_armor
-		//X skill tag athletics
+		skill tag athletics
 		skill 0.5 shield
-		//X skill 0.25 acrobatics
+		skill 0.25 acrobatics
 	}
 }
 
@@ -529,8 +529,8 @@ profile mage {
 	light_armor 5
 	medium_armor 0
 	
-	//X literacy 20
-	//X haggle 5
+	literacy 20
+	haggle 5
 }
 
 profile rogue {
@@ -551,29 +551,29 @@ profile rogue {
 	light_armor 15
 	medium_armor 0
 	
-	//X athletics 10
-	//X acrobatics 20
-	//X literacy 10
-	//X haggle 10
+	athletics 10
+	acrobatics 20
+	literacy 10
+	haggle 10
 	
 	subprofile bowman {
 		skill tag bow
 		skill tag light_armor
-		//X skill tag acrobatics
+		skill tag acrobatics
 		skill 0.75 short_blade
 	}
 	subprofile swordman {
 		skill tag long_blade
 		skill tag light_armor
-		//X skill tag acrobatics
+		skill tag acrobatics
 		skill 0.5 shield
-		//X skill 0.25 athletics
+		skill 0.25 athletics
 	}
 	subprofile criticalhitter {
 		skill tag short_blade
 		skill tag light_armor
-		//X skill tag acrobatics
-		//X skill 0.25 athletics
+		skill tag acrobatics
+		skill 0.25 athletics
 		skill 0.25 shield
 	}
 }
@@ -600,33 +600,33 @@ profile warrior {
 	medium_armor 15
 	heavy_armor 15
 	
-	//X athletics 15
-	//X acrobatics 5
-	//X haggle 5
-	//X literacy 0
+	athletics 15
+	acrobatics 5
+	haggle 5
+	literacy 0
 	
 	subprofile tank {
 		weapon (axe blunt long_blade)
 		skill tag heavy_armor
 		skill tag shield
-		//X skill tag athletics
+		skill tag athletics
 		skill 0.75 weapon
 	}
 	subprofile bowman {
 		skill tag medium_armor
 		skill tag bow
 		skill tag long_blade
-		//X skill 0.5 athletics
-		//X skill 0.5 acrobatics
+		skill 0.5 athletics
+		skill 0.5 acrobatics
 	}
 	subprofile fighter {
 		armor (medium_armor heavy_armor)
 		weapon (axe blunt long_blade)
 		skill tag armor
 		skill tag weapon
-		//X skill tag athletics
+		skill tag athletics
 		skill 0.5 shield
-		//X skill 0.25 acrobatics		
+		skill 0.25 acrobatics		
 	}
 }
 
@@ -649,9 +649,9 @@ profile blacksmith {
 	light_armor 10
 	medium_armor 5
 	
-	//X athletics 5
-	//X haggle 10
-	//X literacy 5
+	athletics 5
+	haggle 10
+	literacy 5
 }
 
 profile merchant {
@@ -673,8 +673,8 @@ profile merchant {
 	light_armor 5
 	medium_armor 0
 	
-	//X haggle 20
-	//X literacy 10
+	haggle 20
+	literacy 10
 }
 
 profile alchemist {
@@ -696,8 +696,8 @@ profile alchemist {
 	light_armor 5
 	medium_armor 0
 	
-	//X haggle 15
-	//X literacy 15
+	haggle 15
+	literacy 15
 }
 
 profile commoner {
@@ -718,9 +718,9 @@ profile commoner {
 	shield 0
 	light_armor 5
 	
-	//X haggle 0
-	//X literacy 0
-	//X athletics 0
+	haggle 0
+	literacy 0
+	athletics 0
 }
 
 profile clerk {
@@ -741,8 +741,8 @@ profile clerk {
 	shield 0
 	light_armor 5
 	
-	//X literacy 10
-	//X haggle 5
+	literacy 10
+	haggle 5
 }
 
 profile fighter {
@@ -765,8 +765,8 @@ profile fighter {
 	medium_armor 10
 	heavy_armor 0
 	
-	//X athletics 5
-	//X acrobatics 0
+	athletics 5
+	acrobatics 0
 }
 
 profile worker {
@@ -788,7 +788,7 @@ profile worker {
 	light_armor 10
 	medium_armor 5
 	
-	//X athletics 0
+	athletics 0
 }
 
 profile shaman {
@@ -810,8 +810,8 @@ profile shaman {
 	light_armor 10
 	medium_armor 10
 	
-	//X athletics 10
-	//X literacy 5
+	athletics 10
+	literacy 5
 }
 
 profile orc {
@@ -833,7 +833,7 @@ profile orc {
 	light_armor 10
 	medium_armor 10	
 	
-	//X athletics 15
+	athletics 15
 }
 
 profile orc_blacksmith {
@@ -855,7 +855,7 @@ profile orc_blacksmith {
 	light_armor 10
 	medium_armor 10
 	
-	//X athletics 15
+	athletics 15
 }
 
 profile goblin {
@@ -876,7 +876,7 @@ profile goblin {
 	shield 5
 	light_armor 10	
 	
-	//X athletics 10
+	athletics 10
 }
 
 profile zombie {
@@ -2142,7 +2142,7 @@ unit q_zlo_boss : base_human {
 		medium_armor 60
 		heavy_armor 90
 		
-		//X athletics 70
+		athletics 70
 	}
 	flags | {leader dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res mark dont_eat stun_res}
 	hp 800
@@ -2597,7 +2597,7 @@ unit tomashu : base_human {
 		medium_armor 120
 		heavy_armor 120
 		
-		//X athletics 120
+		athletics 120
 	}
 	flags | {dont_escape tomashu leader secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res}
 	hp 750

@@ -44,35 +44,25 @@ static StatGain gain[] = {
 //-----------------------------------------------------------------------------
 // List of all skills
 SkillInfo SkillInfo::skills[(int)Skill::MAX] = {
+	// combat styles
 	SkillInfo(Skill::ONE_HANDED_WEAPON, "one_handed_weapon", SkillGroup::COMBAT_STYLE, Attribute::STR, Attribute::DEX),
+	// weapons
 	SkillInfo(Skill::SHORT_BLADE, "short_blade", SkillGroup::WEAPON, Attribute::DEX, Attribute::NONE),
 	SkillInfo(Skill::LONG_BLADE, "long_blade", SkillGroup::WEAPON, Attribute::STR, Attribute::DEX),
 	SkillInfo(Skill::BLUNT, "blunt", SkillGroup::WEAPON, Attribute::STR, Attribute::NONE),
 	SkillInfo(Skill::AXE, "axe", SkillGroup::WEAPON, Attribute::STR, Attribute::NONE),
 	SkillInfo(Skill::BOW, "bow", SkillGroup::WEAPON, Attribute::DEX, Attribute::NONE),
 	SkillInfo(Skill::UNARMED, "unarmed", SkillGroup::WEAPON, Attribute::DEX, Attribute::STR),
+	// shield & armor
 	SkillInfo(Skill::SHIELD, "shield", SkillGroup::ARMOR, Attribute::STR, Attribute::DEX),
 	SkillInfo(Skill::LIGHT_ARMOR, "light_armor", SkillGroup::ARMOR, Attribute::DEX, Attribute::NONE),
 	SkillInfo(Skill::MEDIUM_ARMOR, "medium_armor", SkillGroup::ARMOR, Attribute::END, Attribute::DEX),
 	SkillInfo(Skill::HEAVY_ARMOR, "heavy_armor", SkillGroup::ARMOR, Attribute::STR, Attribute::END),
-	SkillInfo(Skill::NATURE_MAGIC, "nature_magic", SkillGroup::MAGIC, Attribute::WIS, Attribute::NONE),
-	SkillInfo(Skill::GODS_MAGIC, "gods_magic", SkillGroup::MAGIC, Attribute::WIS, Attribute::NONE),
-	SkillInfo(Skill::MYSTIC_MAGIC, "mystic_magic", SkillGroup::MAGIC, Attribute::INT, Attribute::NONE),
-	SkillInfo(Skill::SPELLCRAFT, "spellcraft", SkillGroup::MAGIC, Attribute::INT, Attribute::WIS),
-	SkillInfo(Skill::CONCENTRATION, "concentration", SkillGroup::MAGIC, Attribute::END, Attribute::WIS),
-	SkillInfo(Skill::IDENTIFICATION, "identification", SkillGroup::MAGIC, Attribute::INT, Attribute::NONE),
-	SkillInfo(Skill::LOCKPICK, "lockpick", SkillGroup::OTHER, Attribute::DEX, Attribute::INT),
-	SkillInfo(Skill::SNEAK, "sneak", SkillGroup::OTHER, Attribute::DEX, Attribute::NONE),
-	SkillInfo(Skill::TRAPS, "traps", SkillGroup::OTHER, Attribute::DEX, Attribute::INT),
-	SkillInfo(Skill::STEAL, "steal", SkillGroup::OTHER, Attribute::DEX, Attribute::CHA),
-	SkillInfo(Skill::ANIMAL_EMPATHY, "animal_empathy", SkillGroup::OTHER, Attribute::CHA, Attribute::WIS),
-	SkillInfo(Skill::SURVIVAL, "survival", SkillGroup::OTHER, Attribute::END, Attribute::WIS),
-	SkillInfo(Skill::PERSUASION, "persuasion", SkillGroup::OTHER, Attribute::CHA, Attribute::NONE),
-	SkillInfo(Skill::ALCHEMY, "alchemy", SkillGroup::OTHER, Attribute::INT, Attribute::NONE),
-	SkillInfo(Skill::CRAFTING, "crafting", SkillGroup::OTHER, Attribute::INT, Attribute::DEX),
-	SkillInfo(Skill::HEALING, "healing", SkillGroup::OTHER, Attribute::WIS, Attribute::NONE),
+	// oher
 	SkillInfo(Skill::ATHLETICS, "athletics", SkillGroup::OTHER, Attribute::END, Attribute::STR),
-	SkillInfo(Skill::RAGE, "rage", SkillGroup::OTHER, Attribute::END, Attribute::NONE)
+	SkillInfo(Skill::ACROBATICS, "acrobatics", SkillGroup::OTHER, Attribute::DEX, Attribute::END),
+	SkillInfo(Skill::HAGGLE, "haggle", SkillGroup::OTHER, Attribute::CHA, Attribute::NONE),
+	SkillInfo(Skill::LITERACY, "literacy", SkillGroup::OTHER, Attribute::INT, Attribute::NONE)
 };
 
 //-----------------------------------------------------------------------------

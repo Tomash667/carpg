@@ -32,6 +32,6 @@ namespace old
 	struct UnitStats
 	{
 		int attrib[(int)Attribute::MAX];
-		int skill[(int)Skill::MAX];
+		int skill[(int)v1::Skill::MAX];
 	};
 }

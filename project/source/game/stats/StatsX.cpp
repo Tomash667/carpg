@@ -96,10 +96,10 @@ float StatsX::CalculateLevel()
 				weight = 0.75f;
 			else if((Skill)i == best[4])
 				weight = 0.5f;
-			//else if(Any((Skill)i, Skill::HAGGLE, Skill::LITERACY))
-			//	weight = 0.1f;
-			//else if(Any((Skill)i, Skill::ATHLETICS, Skill::ACROBATICS))
-			//	weight = 0.2f;
+			else if(Any((Skill)i, Skill::HAGGLE, Skill::LITERACY))
+				weight = 0.1f;
+			else if(Any((Skill)i, Skill::ATHLETICS, Skill::ACROBATICS))
+				weight = 0.2f;
 			else
 				weight = 0;
 			float v = (skill[i] - skill_base[i]) / skill_apt_mod[skill_apt[i]].y;
