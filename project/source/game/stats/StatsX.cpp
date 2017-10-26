@@ -42,7 +42,56 @@ const Vec2 StatsX::skill_apt_mod[] = {
 
 void StatsX::Upgrade()
 {
-	// TODO
+	// get best skills
+	TopN<Skill, 3> top(Skill::NONE, -1);
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+	{
+		if(skill[i] >= 0)
+			top.Add((Skill)i, skill[i]);
+	}
+
+	// set base values, increase tag skills
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	{
+		attrib_base[i] = profile->attrib[i];
+		attrib_apt[i] = AttributeToAptitude(attrib_base[i]);
+	}
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+	{
+		skill_base[i] = profile->skill[i];
+		if(top.Is((Skill)i))
+		{
+			int value = (profile->ShouldDoubleSkill((Skill)i)) ? 2 : 1;
+			skill_base[i] += value * 5;
+		}
+		skill_apt[i] = SkillToAptitude(skill_base[i]);
+	}
+
+	// calculate level
+	if(seed.level == -1)
+		seed.level = (int)CalculateLevel();
+	int level = seed.level;
+
+	// fill base values
+	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	{
+		if(attrib[i] != -1)
+			continue;
+		int apt = attrib_apt[i];
+		attrib[i] = attrib_base[i] + (int)(attrib_apt_mod[apt] * level);
+	}
+	for(int i = 0; i < (int)Skill::MAX; ++i)
+	{
+		if(skill[i] != -1)
+			continue;
+		int apt = skill_apt[i];
+		skill[i] = skill_base[i] + (int)(skill_apt_mod[apt].y * level);
+	}
+
+	unique = true;
+	subprofile = nullptr;
+	seed.subprofile = 0;
+	seed.variant = 0;
 }
 
 float StatsX::CalculateLevel()
@@ -52,7 +101,7 @@ float StatsX::CalculateLevel()
 	int attrib_count = 0;
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
 	{
-		if(attrib_apt[i] > 0)
+		if(attrib[i] != -1 && attrib_apt[i] > 0)
 		{
 			++attrib_count;
 			attrib_level += float(attrib[i] - attrib_base[i]) / attrib_apt_mod[attrib_apt[i]];
@@ -62,39 +111,23 @@ float StatsX::CalculateLevel()
 		attrib_level /= attrib_count;
 
 	// get best 5 combat skills
-	Skill best[5] = { Skill::NONE, Skill::NONE, Skill::NONE, Skill::NONE, Skill::NONE };
-	int best_values[5] = { -1, -1, -1, -1, -1 };
+	TopN<Skill, 5> top(Skill::NONE, -1);
 	for(int i = 0; i <= (int)Skill::HEAVY_ARMOR; ++i)
-	{
-		for(int j = 0; j < 5; ++j)
-		{
-			if(skill[i] > best_values[j])
-			{
-				for(int k = j; k < 4; ++k)
-				{
-					best_values[k + 1] = best_values[k];
-					best[k + 1] = best[k];
-				}
-				best[j] = (Skill)i;
-				best_values[j] = skill[i];
-				break;
-			}
-		}
-	}
+		top.Add((Skill)i, skill[i]);
 
 	// skill
 	float skill_level = 0.f;
 	float skill_count = 0.f;
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
-		if(skill_apt[i] > 0)
+		if(skill[i] != -1 && skill_apt[i] > 0)
 		{
 			float weight;
-			if(Any((Skill)i, best[0], best[1], best[2]))
+			if(Any((Skill)i, top.best[0], top.best[1], top.best[2]))
 				weight = 1.f;
-			else if((Skill)i == best[3])
+			else if((Skill)i == top.best[3])
 				weight = 0.75f;
-			else if((Skill)i == best[4])
+			else if((Skill)i == top.best[4])
 				weight = 0.5f;
 			else if(Any((Skill)i, Skill::HAGGLE, Skill::LITERACY))
 				weight = 0.1f;

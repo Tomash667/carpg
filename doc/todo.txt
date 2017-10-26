@@ -1,14 +1,16 @@
 ﻿FEATURE:
 * skills
-+ training skills instead of attributes
++ new Train
 + new skills
-	+ effect
-	+ training
+	+ athletics
+	+ acrobatics
+	+ haggle
+	+ literacy
 + using Player level
 + get other skill bonus
 + get other skill apt
-+ StatsX.Upgrade
 + CalculateStats send mp update
++ clamp max aptitude on change
 
 ? testing
 	? double weapon skill + mp
@@ -18,6 +20,7 @@
 	? create character
 	? mp
 	? old saves
+	? StatsX.Upgrade
 	
 * perks
 + subprofile perks

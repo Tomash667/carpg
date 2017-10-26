@@ -1782,6 +1782,7 @@ void Unit::Load(HANDLE file, bool local)
 	{
 		if(IsPlayer())
 		{
+			statsx->profile = data->stat_profile;
 			statsx->Upgrade();
 			player->SetRequiredPoints();
 		}
