@@ -48,75 +48,19 @@ skill heavy_armor {
 	name "Heavy armor"
 	desc "Affects defense and reduce armor penalty when using heavy armor."
 }
-skill nature_magic {
-	name "Nature magic"
-	desc "Affects power of nature spells and allows cast better spells."
-}
-skill gods_magic {
-	name "Gods magic"
-	desc "Affects power of gods spells and allows cast better spells."
-}
-skill mystic_magic {
-	name "Mystic magic"
-	desc "Affects power of mystic spells and allows cast better spells."
-}
-skill spellcraft {
-	name "Spellcraft"
-	desc "Allows creating new and better spells."	
-}
-skill concentration {
-	name "Concentration"
-	desc "Increase mana capacity and allows to avoid breaking casting spell when taking damage."
-}
-skill identification {
-	name "Identification"
-	desc "Allows with the knowledge to know magical properties of items."
-}
-skill lockpick {
-	name "Lockpick"
-	desc "Allows opening locks and do it faster."
-}
-skill sneak {
-	name "Sneak"
-	desc "Affects chance to be seen and heard by enemies."
-}
-skill traps {
-	name "Traps"
-	desc "Affects chance to find hidden traps, disarming traps and power of traps you set."
-}
-skill steal {
-	name "Steal"
-	desc "Affects chance to steal from others."
-}
-skill animal_empathy {
-	name "Animal empathy"
-	desc "Allows to understand, calm and recruit encountered animals."
-}
-skill survival {
-	name "Survival"
-	desc "Allows to take animal skin and avoid ambushes. Increase travel speed and chance to find something useful."
-}
-skill persuasion {
-	name "Persuasion"
-	desc "Affects shop prices and allows to affects others."
-}
-skill alchemy {
-	name "Alchemy"
-	desc "Allows to create better alchemical potions."
-}
-skill crafting {
-	name "Crafting"
-	desc "Allows creating armors and weapons."
-}
-skill healing {
-	name "Healing"
-	desc "Allows using bandages and other healing non-magical items."
-}
 skill athletics {
 	name "Athletics"
-	desc "Affects health, endurance and caring capacity."
+	desc "Affects health, stamina and caring capacity."
 }
-skill rage {
-	name "Rage"
-	desc "Affects power and duration of rage."
+skill acrobatics {
+	name "Acrobatics"
+	desc "Affects speed and stamina.."
+}
+skill haggle {
+	name "Haggle"
+	desc "Affects buying and selling price."
+}
+skill literacy {
+	name "Literacy"
+	desc "Affects chance to read magic books and runes."
 }
