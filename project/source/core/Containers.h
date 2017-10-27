@@ -20,6 +20,13 @@ inline void DeleteElements(vector<T>* v)
 	DeleteElements(*v);
 }
 
+template<typename T, typename Hash, typename Equals>
+inline void DeleteElements(std::unordered_set<T, Hash, Equals>& v)
+{
+	for(auto e : v)
+		delete e;
+}
+
 template<typename T>
 inline void DeleteElementsChecked(vector<T>& v)
 {
@@ -1092,3 +1099,29 @@ helper::DerefEnumerator<T> Deref(vector<T*>& v)
 {
 	return helper::DerefEnumerator<T>(v);
 }
+
+//-----------------------------------------------------------------------------
+namespace internal
+{
+	template<typename T>
+	struct Hash
+	{
+		size_t operator () (const T* obj) const
+		{
+			std::hash<string> hasher;
+			return hasher(obj->id);
+		}
+	};
+
+	template<typename T>
+	struct Equals
+	{
+		bool operator () (const T* obj1, const T* obj2) const
+		{
+			return obj1->id == obj2->id;
+		}
+	};
+}
+
+template<typename T>
+using SetContainer = std::unordered_set<T*, internal::Hash<T>, internal::Equals<T>>;

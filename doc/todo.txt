@@ -40,7 +40,6 @@ CURRENT:
 	+ looted is not set/sent
 ===============================================================================================================
 NEW:
-+ net devmode: show stamina for clients
 - green screen, cannot reproduce
 ? using cheats to exit from arena/tournament
 - travel on worldmap is a bit out of sync, clicking instantly after travel will error on server, thinking that team not yet entered location, forward prediction should be easy here
@@ -56,9 +55,7 @@ NEW:
 ? why version/stats thread start at menu, not while loading
 - grass under moon well
 + exporter: when file has no ext or ends with .qmsh save as .qmsh.tmp
-+ net A_POSITION should be calculated server side
 + randomized order of spawned objects
-+ net server side door opening
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
