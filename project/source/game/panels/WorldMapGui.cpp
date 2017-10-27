@@ -234,7 +234,7 @@ void WorldMapGui::Update(float dt)
 		{
 			// min¹³ kolejny dzieñ w podró¿y
 			++game.travel_day;
-			if(Net::Net::IsLocal())
+			if(Net::IsLocal())
 				game.WorldProgress(1, Game::WPM_TRAVEL);
 		}
 
@@ -258,7 +258,7 @@ void WorldMapGui::Update(float dt)
 			game.travel_time2 += dt;
 
 			// odkryj pobliskie miejsca / ataki
-			if(Net::Net::IsLocal() && game.travel_time2 >= 0.25f)
+			if(Net::IsLocal() && game.travel_time2 >= 0.25f)
 			{
 				game.travel_time2 = 0;
 				int co = -2, enc = -1, index = 0;
@@ -573,7 +573,7 @@ void WorldMapGui::Update(float dt)
 						}
 						else
 						{
-							if(Net::Net::IsLocal())
+							if(Net::IsLocal())
 								game.EnterLocation();
 							else
 								Net::PushChange(NetChange::ENTER_LOCATION);
@@ -627,7 +627,7 @@ void WorldMapGui::Event(GuiEvent e)
 //=================================================================================================
 void WorldMapGui::AppendLocationText(Location& loc, string& s)
 {
-	if(game.devmode && Net::Net::IsLocal())
+	if(game.devmode && Net::IsLocal())
 	{
 		s += " (";
 		if(loc.type == L_DUNGEON || loc.type == L_CRYPT)

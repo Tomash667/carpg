@@ -61,8 +61,8 @@ void StatsX::Upgrade()
 		skill_base[i] = profile->skill[i];
 		if(top.Is((Skill)i))
 		{
-			int value = (profile->ShouldDoubleSkill((Skill)i)) ? 2 : 1;
-			skill_base[i] += value * 5;
+			int value = (profile->ShouldDoubleSkill((Skill)i)) ? 10 : 5;
+			skill_base[i] += value;
 		}
 		skill_apt[i] = SkillToAptitude(skill_base[i]);
 	}
@@ -146,7 +146,7 @@ float StatsX::CalculateLevel()
 
 	float level = (attrib_level + skill_level) / 2;
 	level = floor(level * 10) / 10;
-	return level;
+	return min(level, (float)MAX_LEVEL);
 }
 
 void StatsX::Save(FileWriter& f)

@@ -176,7 +176,7 @@ void HeroData::PassTime(int days, bool travel)
 //=================================================================================================
 void HeroData::LevelUp()
 {
-	if(unit->level == 25)
+	if(unit->level >= MAX_LEVEL)
 		return;
 
 	++unit->level;

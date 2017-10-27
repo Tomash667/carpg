@@ -202,9 +202,9 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	{
 		if(s[i].add)
 		{
-			int value = (pc.unit->data->stat_profile->ShouldDoubleSkill((Skill)i) ? 2 : 1);
-			pc.unit->statsx->skill_base[i] += value * 5;
-			pc.unit->statsx->skill_apt[i] += value;
+			int value = (pc.unit->data->stat_profile->ShouldDoubleSkill((Skill)i) ? 10 : 5);
+			pc.unit->statsx->skill_base[i] += value;
+			pc.unit->statsx->skill_apt[i] = StatsX::SkillToAptitude(pc.unit->statsx->skill_base[i]);
 		}
 	}
 

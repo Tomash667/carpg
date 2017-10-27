@@ -919,7 +919,7 @@ public:
 
 	bool WantAttackTeam(Unit& u)
 	{
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 			return u.attack_team;
 		else
 			return IS_SET(u.ai_mode, 0x08);
@@ -1374,14 +1374,14 @@ public:
 	void UpdateGame2(float dt);
 	bool IsUnitDontAttack(Unit& u)
 	{
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 			return u.dont_attack;
 		else
 			return IS_SET(u.ai_mode, 0x01);
 	}
 	bool IsUnitAssist(Unit& u)
 	{
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 			return u.assist;
 		else
 			return IS_SET(u.ai_mode, 0x02);

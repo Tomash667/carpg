@@ -82,15 +82,14 @@ struct StatsX
 	static StatsX* Load(FileReader& f);
 	static bool Skip(BitStream& stream);
 	static void Cleanup();
+	static int AttributeToAptitude(int value);
+	static int SkillToAptitude(int value);
 
 private:
 	static float GetModFromApt(int apt)
 	{
 		return player_apt_mod[Clamp(apt, -4, +5) + 4];
 	}
-
-	static int AttributeToAptitude(int value);
-	static int SkillToAptitude(int value);
 
 	static const float player_apt_mod[];
 	static const float attrib_apt_mod[];

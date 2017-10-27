@@ -9,8 +9,6 @@
 + using Player level
 + get other skill bonus
 + get other skill apt
-+ CalculateStats send mp update
-+ clamp max aptitude on change
 
 ? testing
 	? double weapon skill in mp
@@ -18,7 +16,7 @@
 	? mp
 	? old saves
 	? StatsX.Upgrade
-	
+
 * perks
 + subprofile perks
 + new history perks
@@ -27,7 +25,7 @@
 + training perks
 + addperk, removeperk command
 + use subprofiles in creating random char
-	
+
 + better starting items list (poor, wealthy etc effects)
 ===============================================================================================================
 CURRENT:
