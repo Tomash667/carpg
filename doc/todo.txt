@@ -1,5 +1,18 @@
 ﻿FEATURE:
 * skills
++ for weapons/armor/shield show stats change (Defense: 40 (50 -> 60))
++ fixed stats, human 400 base hp
+hp 400
+hp_bonus 50
+atk 10
+atkbonus 1
+def 10
+def_bonus 1
+
++ hp/atk/def formula
+	* thinkering
+	* do
++ update level/attrib apt
 + new Train
 + new skills
 	+ athletics
@@ -9,6 +22,8 @@
 + using Player level
 + get other skill bonus
 + get other skill apt
++ unarmed attack formula
+	show unarmed when no weapon, on hover
 
 ? testing
 	? double weapon skill in mp

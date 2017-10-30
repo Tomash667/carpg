@@ -16,67 +16,6 @@ PlayerController::~PlayerController()
 }
 
 //=================================================================================================
-float PlayerController::CalculateAttack() const
-{
-	WeaponType b;
-
-	switch(unit->weapon_state)
-	{
-	case WS_HIDING:
-		b = unit->weapon_hiding;
-		break;
-	case WS_HIDDEN:
-		if(ostatnia == W_NONE)
-		{
-			if(unit->HaveWeapon())
-				b = W_ONE_HANDED;
-			else if(unit->HaveBow())
-				b = W_BOW;
-			else
-				b = W_NONE;
-		}
-		else
-			b = ostatnia;
-		break;
-	case WS_TAKING:
-	case WS_TAKEN:
-		b = unit->weapon_taken;
-		break;
-	default:
-		assert(0);
-		break;
-	}
-
-	if(b == W_ONE_HANDED)
-	{
-		if(!unit->HaveWeapon())
-		{
-			if(!unit->HaveBow())
-				b = W_NONE;
-			else
-				b = W_BOW;
-		}
-	}
-	else if(b == W_BOW)
-	{
-		if(!unit->HaveBow())
-		{
-			if(!unit->HaveWeapon())
-				b = W_NONE;
-			else
-				b = W_ONE_HANDED;
-		}
-	}
-
-	if(b == W_ONE_HANDED)
-		return unit->CalculateAttack(&unit->GetWeapon());
-	else if(b == W_BOW)
-		return unit->CalculateAttack(&unit->GetBow());
-	else
-		return 0.5f * unit->Get(Attribute::STR) + 0.5f * unit->Get(Attribute::DEX);
-}
-
-//=================================================================================================
 void PlayerController::Init(Unit& _unit, bool partial)
 {
 	unit = &_unit;

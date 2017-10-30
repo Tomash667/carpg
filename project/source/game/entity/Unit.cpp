@@ -26,11 +26,14 @@ Unit::~Unit()
 //=================================================================================================
 float Unit::CalculateMaxHp() const
 {
-	float v = 0.8f*Get(Attribute::END) + 0.2f*Get(Attribute::STR);
-	if(v >= 50.f)
-		return data->hp_bonus * (1.f + (v - 50) / 50);
+	if(IS_SET(data->flags3, F3_FIXED))
+		return (float)data->hp;
 	else
-		return data->hp_bonus * (1.f - (50 - v) / 100);
+	{
+		float end = (float)Get(Attribute::END);
+		float ath = (float)Get(Skill::ATHLETICS);
+		return data->hp + (data->hp_bonus + (end - 50) / 5 + ath / 5) * (level + 2);
+	}
 }
 
 //=================================================================================================
@@ -42,6 +45,8 @@ float Unit::CalculateMaxStamina() const
 //=================================================================================================
 float Unit::CalculateAttack() const
 {
+	if(IS_SET(data->flags3, F3_FIXED))
+		return (float)data->atk;
 	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
 	else
@@ -49,34 +54,43 @@ float Unit::CalculateAttack() const
 }
 
 //=================================================================================================
-float Unit::CalculateAttack(const Item* _weapon) const
+float Unit::CalculateAttack(const Item* weapon) const
 {
-	assert(_weapon && OR2_EQ(_weapon->type, IT_WEAPON, IT_BOW));
+	assert(weapon);
 
-	int str = Get(Attribute::STR),
-		dex = Get(Attribute::DEX);
+	if(IS_SET(data->flags3, F3_FIXED))
+		return (float)data->atk;
 
-	if(_weapon->type == IT_WEAPON)
+	float atk = float(data->atk + data->atk_bonus * level);
+	float str = (float)Get(Attribute::STR),
+		dex = (float)Get(Attribute::DEX);
+
+	if(weapon->type == IT_WEAPON)
 	{
-		const Weapon& w = _weapon->ToWeapon();
+		const Weapon& w = weapon->ToWeapon();
 		const WeaponTypeInfo& wi = WeaponTypeInfo::info[w.weapon_type];
+		float skill = (float)Get(wi.skill);
 		float p;
 		if(str >= w.req_str)
 			p = 1.f;
 		else
-			p = float(str) / w.req_str;
-		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + 1.f / 200 * (Get(Skill::ONE_HANDED_WEAPON) + Get(wi.skill))));
+			p = str / w.req_str;
+		atk += (w.dmg + (str - 50) * wi.str2dmg + (dex - 50) * wi.dex2dmg) * (p + skill / 100);
 	}
 	else
 	{
-		const Bow& b = _weapon->ToBow();
+		assert(weapon->type == IT_BOW);
+		const Bow& bow = weapon->ToBow();
+		float skill = (float)Get(Skill::BOW);
 		float p;
-		if(str >= b.req_str)
+		if(str >= bow.req_str)
 			p = 1.f;
 		else
-			p = float(str) / b.req_str;
-		return ((float)dex + b.dmg * (1.f + 1.f / 100 * Get(Skill::BOW))) * p;
+			p = float(str) / bow.req_str;
+		atk += (bow.dmg + dex - 50) * (p + skill / 100);
 	}
+
+	return atk;
 }
 
 //=================================================================================================
@@ -111,83 +125,72 @@ float Unit::CalculateWeaponBlock() const
 }
 
 //=================================================================================================
-// WZÓR NA OBRONÊ
-// kondycja/5 + pancerz * (skill * (1+max(1.f, si³a/wymagana)) + zrêcznoœæ/5*max(%obci¹¿enia, ciê¿ki_pancerz ? 0.5 : 0)
-float Unit::CalculateDefense() const
+float Unit::CalculateDefense(const Item* _armor, const Item* _shield) const
 {
-	float def = CalculateBaseDefense();
-	float load = GetLoad();
+	if(IS_SET(data->flags3, F3_FIXED))
+		return (float)data->def;
 
-	// pancerz
-	if(HaveArmor())
+	// base
+	float def = float(data->def + data->def_bonus * level);
+
+	// endurance bonus
+	float end = (float)Get(Attribute::END);
+	def += (end - 50) / 5;
+
+	// dexterity bonus
+	auto load_state = GetArmorLoadState(_armor);
+	if(load_state < LS_HEAVY)
 	{
-		const Armor& a = GetArmor();
-
-		// pancerz daje tyle ile bazowo * skill
-		switch(a.skill)
-		{
-		case Skill::HEAVY_ARMOR:
-			load *= 0.5f;
-			break;
-		case Skill::MEDIUM_ARMOR:
-			load *= 0.75f;
-			break;
-		}
-
-		float skill_val = (float)Get(a.skill);
-		int str = Get(Attribute::STR);
-		if(str < a.req_str)
-			skill_val *= str / a.req_str;
-		def += (skill_val / 100 + 1)*a.def;
+		float dex = (float)Get(Attribute::DEX);
+		float bonus = max(0.f, (dex - 50) / 5);
+		if(load_state == LS_MEDIUM)
+			bonus /= 2;
+		def += bonus;		
 	}
 
-	// zrêcznoœæ
-	if(load < 1.f)
+	// armor defense
+	if(!_armor)
+		_armor = slots[SLOT_ARMOR];
+	if(_armor)
 	{
-		int dex = Get(Attribute::DEX);
-		if(dex > 50)
-			def += (float(dex - 50) / 3) * (1.f - load);
+		assert(_armor->type == IT_ARMOR);
+		const Armor& armor = _armor->ToArmor();
+		float skill = (float)Get(armor.skill);
+		def += armor.def * (1.f + skill / 100);
+	}
+
+	// shield defense
+	if(!_shield)
+		_shield = slots[SLOT_SHIELD];
+	if(_shield)
+	{
+		assert(_shield->type == IT_SHIELD);
+		const Shield& shield = _shield->ToShield();
+		float skill = (float)Get(Skill::SHIELD);
+		def += shield.def * (1.f + skill / 200);
 	}
 
 	return def;
 }
 
-//=================================================================================================
-float Unit::CalculateDefense(const Item* _armor) const
+Unit::LoadState Unit::GetArmorLoadState(const Item* armor) const
 {
-	assert(_armor && _armor->type == IT_ARMOR);
-
-	float def = CalculateBaseDefense();
-	float load = GetLoad();
-
-	const Armor& a = _armor->ToArmor();
-
-	// pancerz daje tyle ile bazowo * skill
-	switch(a.skill)
+	auto state = GetLoadState();
+	if(armor)
 	{
-	case Skill::HEAVY_ARMOR:
-		load *= 0.5f;
-		break;
-	case Skill::MEDIUM_ARMOR:
-		load *= 0.75f;
-		break;
+		auto skill = armor->ToArmor().skill;
+		if(skill == Skill::HEAVY_ARMOR)
+		{
+			if(state < LS_HEAVY)
+				state = LS_HEAVY;
+		}
+		else if(skill == Skill::MEDIUM_ARMOR)
+		{
+			if(state < LS_MEDIUM)
+				state = LS_MEDIUM;
+		}
 	}
-
-	float skill_val = (float)Get(a.skill);
-	int str = Get(Attribute::STR);
-	if(str < a.req_str)
-		skill_val *= str / a.req_str;
-	def += (skill_val / 100 + 1)*a.def;
-
-	// zrêcznoœæ
-	if(load < 1.f)
-	{
-		int dex = Get(Attribute::DEX);
-		if(dex > 50)
-			def += (float(dex - 50) / 3) * (1.f - load);
-	}
-
-	return def;
+	return state;
 }
 
 //=================================================================================================
@@ -1114,7 +1117,7 @@ bool Unit::IsBetterArmor(const Armor& _armor) const
 	if(!HaveArmor())
 		return true;
 
-	return CalculateDefense(&GetArmor()) < CalculateDefense(&_armor);
+	return CalculateDefense() < CalculateDefense(&_armor, nullptr);
 }
 
 //=================================================================================================
@@ -1123,18 +1126,18 @@ bool Unit::IsBetterArmor(const Armor& _armor, int* value) const
 	if(!HaveArmor())
 	{
 		if(value)
-			*value = (int)CalculateDefense(&_armor);
+			*value = (int)CalculateDefense(&_armor, nullptr);
 		return true;
 	}
 
 	if(value)
 	{
-		float v = CalculateDefense(&_armor);
+		float v = CalculateDefense(&_armor, nullptr);
 		*value = (int)v;
-		return CalculateDefense(&GetArmor()) < v;
+		return CalculateDefense() < v;
 	}
 	else
-		return CalculateDefense(&GetArmor()) < CalculateDefense(&_armor);
+		return CalculateDefense() < CalculateDefense(&_armor, nullptr);
 }
 
 //=================================================================================================

@@ -145,6 +145,7 @@ enum UNIT_FLAGS3
 	F3_ORC_FOOD = 1 << 4, // je orkowe jedzenie a nie normalne
 	F3_MINER = 1 << 5, // 50% szansy ¿e zajmie siê wydobywaniem
 	F3_TALK_AT_COMPETITION = 1 << 6, // nie gada o pierdo³ach na zawodach
+	F3_FIXED = 1 << 7, // fixed stats
 };
 
 //-----------------------------------------------------------------------------
@@ -257,7 +258,7 @@ struct UnitData
 	MATERIAL_TYPE mat;
 	Int2 level;
 	StatProfile* stat_profile;
-	int hp_bonus, stamina_bonus, def_bonus, dmg_type, flags, flags2, flags3;
+	int hp, hp_bonus, atk, atk_bonus, def, def_bonus,  stamina_bonus, dmg_type, flags, flags2, flags3;
 	const int* items;
 	SpellList* spells;
 	Int2 gold, gold2;
@@ -274,7 +275,7 @@ struct UnitData
 	UNIT_TYPE type;
 	ResourceState state;
 
-	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp_bonus(100), stamina_bonus(0), def_bonus(0),
+	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp(100), hp_bonus(0), atk(1), atk_bonus(0), def(1), def_bonus(0), stamina_bonus(0),
 		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), items(nullptr), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS),
 		walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
 		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded)

@@ -156,7 +156,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				armor_type,
 				txDefense,
 				armor.def,
-				(int)unit->CalculateDefense(item),
+				(int)unit->CalculateDefense(item, nullptr),
 				txRequiredStrength,
 				(unit->Get(Attribute::STR) >= armor.req_str ? '-' : 'r'),
 				armor.req_str,

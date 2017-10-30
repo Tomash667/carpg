@@ -131,7 +131,6 @@ struct PlayerController : public HeroPlayerCommon
 	}
 	~PlayerController();
 
-	float CalculateAttack() const;
 	void TravelTick();
 	void Rest(int days, bool resting, bool travel = false);
 

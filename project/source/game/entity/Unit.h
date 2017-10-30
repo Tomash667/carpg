@@ -219,12 +219,11 @@ struct Unit
 	float CalculateDexterityDefense(const Armor* armor = nullptr);
 	float CalculateBaseDefense() const;
 	// 	float CalculateArmor(float& def_natural, float& def_dex, float& def_armor);
-
 	float CalculateAttack() const;
 	float CalculateAttack(const Item* weapon) const;
 	float CalculateBlock(const Item* shield) const;
-	float CalculateDefense() const;
-	float CalculateDefense(const Item* armor) const;
+	float CalculateDefense() const { return CalculateDefense(nullptr, nullptr); }
+	float CalculateDefense(const Item* armor, const Item* shield) const;
 	// czy ¿yje i nie le¿y na ziemi
 	bool IsStanding() const { return live_state == ALIVE; }
 	// czy ¿yje
@@ -671,6 +670,7 @@ struct Unit
 		else
 			return LS_MAX_OVERLOADED;
 	}
+	LoadState GetArmorLoadState(const Item* armor) const;
 	float GetRunLoad() const
 	{
 		switch(GetLoadState())
