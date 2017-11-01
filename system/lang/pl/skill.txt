@@ -50,11 +50,11 @@ skill heavy_armor {
 }
 skill athletics {
 	name "Atletyka"
-	desc "Zwiêksza zdrowie, wytrzyma³oœæ i udŸwig postaci."
+	desc "Zwiêksza zdrowie i udŸwig postaci."
 }
 skill acrobatics {
 	name "Akrobatyka"
-	desc "Zwiêksza szybkoœæ oraz wytrzyma³oœæ."
+	desc "Zwiêksza mobilnoœæ oraz wytrzyma³oœæ."
 }
 skill haggle {
 	name "Targowanie"

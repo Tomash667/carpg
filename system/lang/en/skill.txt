@@ -50,11 +50,11 @@ skill heavy_armor {
 }
 skill athletics {
 	name "Athletics"
-	desc "Affects health, stamina and caring capacity."
+	desc "Affects health and caring capacity."
 }
 skill acrobatics {
 	name "Acrobatics"
-	desc "Affects speed and stamina.."
+	desc "Affects mobility and stamina."
 }
 skill haggle {
 	name "Haggle"

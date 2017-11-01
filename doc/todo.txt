@@ -1,29 +1,26 @@
 ﻿FEATURE:
-* skills
-+ for weapons/armor/shield show stats change (Defense: 40 (50 -> 60))
-+ fixed stats, human 400 base hp
-hp 400
-hp_bonus 50
-atk 10
-atkbonus 1
-def 10
-def_bonus 1
 
-+ hp/atk/def formula
-	* thinkering
-	* do
-+ update level/attrib apt
-+ new Train
-+ new skills
+new world order:
++ attack formula
++ change block formula (shield defense changed)
++ units stats, new units
+- can shoot without stamina
+- one handed weapons skill = -1
+- calculatelevel very big low level attrib/skill will make player level go up (100 dex for starting 55 will calculate player level as 20)
++ recalculate hp/atk/def on changed level
++ for weapons/armor/shield show stats change (Defense: 40 (50 -> 60))
++ attib increase skills
++ skills increase other skills
++ apt bonus from other skil
++ new skills effects & training
+	+ one handed
+	+ unarmed
+		+ unarmed attack formula
+			show unarmed when no weapon, on hover
 	+ athletics
 	+ acrobatics
 	+ haggle
 	+ literacy
-+ using Player level
-+ get other skill bonus
-+ get other skill apt
-+ unarmed attack formula
-	show unarmed when no weapon, on hover
 
 ? testing
 	? double weapon skill in mp
@@ -31,8 +28,10 @@ def_bonus 1
 	? mp
 	? old saves
 	? StatsX.Upgrade
+	? client level calculate
 
 * perks
++ perk points
 + subprofile perks
 + new history perks
 + modifying apt (which perk modify starting value, which aptitude?)

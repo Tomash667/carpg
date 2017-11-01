@@ -27,8 +27,13 @@ void UnitData::CopyFrom(UnitData& ud)
 	mat = ud.mat;
 	level = ud.level;
 	stat_profile = ud.stat_profile;
+	hp = ud.hp;
 	hp_bonus = ud.hp_bonus;
+	atk = ud.atk;
+	atk_bonus = ud.atk_bonus;
+	def = ud.def;
 	def_bonus = ud.def_bonus;
+	stamina_bonus = ud.stamina_bonus;
 	dmg_type = ud.dmg_type;
 	flags = ud.flags;
 	flags2 = ud.flags2;
@@ -101,8 +106,12 @@ enum Property
 	P_PROFILE,
 	P_FLAGS,
 	P_HP,
-	P_STAMINA,
+	P_HP_BONUS,
+	P_ATK,
+	P_ATK_BONUS,
 	P_DEF,
+	P_DEF_BONUS,
+	P_STAMINA,
 	P_ITEMS,
 	P_SPELLS,
 	P_GOLD,
@@ -1395,20 +1404,44 @@ bool LoadUnit(Tokenizer& t, Crc& crc)
 				}
 				break;
 			case P_HP:
+				unit->hp = t.MustGetInt();
+				if(unit->hp < 0)
+					t.Throw("Invalid hp %d.", unit->hp);
+				crc.Update(unit->hp);
+				break;
+			case P_HP_BONUS:
 				unit->hp_bonus = t.MustGetInt();
 				if(unit->hp_bonus < 0)
 					t.Throw("Invalid hp bonus %d.", unit->hp_bonus);
 				crc.Update(unit->hp_bonus);
 				break;
+			case P_ATK:
+				unit->atk = t.MustGetInt();
+				if(unit->atk < 0)
+					t.Throw("Invalid attack %d.", unit->atk);
+				crc.Update(unit->atk);
+				break;
+			case P_ATK_BONUS:
+				unit->atk_bonus = t.MustGetInt();
+				if(unit->atk_bonus < 0)
+					t.Throw("Invalid attack bonus %d.", unit->atk_bonus);
+				crc.Update(unit->atk_bonus);
+				break;
+			case P_DEF:
+				unit->def = t.MustGetInt();
+				if(unit->def < 0)
+					t.Throw("Invalid defense %d.", unit->def);
+				crc.Update(unit->def);
+				break;
+			case P_DEF_BONUS:
+				unit->def_bonus = t.MustGetInt();
+				if(unit->def_bonus < 0)
+					t.Throw("Invalid defense bonus %d.", unit->def_bonus);
+				crc.Update(unit->def_bonus);
+				break;
 			case P_STAMINA:
 				unit->stamina_bonus = t.MustGetInt();
 				crc.Update(unit->stamina_bonus);
-				break;
-			case P_DEF:
-				unit->def_bonus = t.MustGetInt();
-				if(unit->def_bonus < 0)
-					t.Throw("Invalid def bonus %d.", unit->def_bonus);
-				crc.Update(unit->def_bonus);
 				break;
 			case P_ITEMS:
 				if(t.IsSymbol('{'))
@@ -1845,8 +1878,12 @@ uint LoadUnits(uint& out_crc, uint& errors)
 		{ "profile", P_PROFILE },
 		{ "flags", P_FLAGS },
 		{ "hp", P_HP },
-		{ "stamina", P_STAMINA },
+		{ "hp_bonus", P_HP_BONUS },
+		{ "atk", P_ATK },
+		{ "atk_bonus", P_ATK_BONUS },
 		{ "def", P_DEF },
+		{ "def_bonus", P_DEF_BONUS },
+		{ "stamina", P_STAMINA },
 		{ "items", P_ITEMS },
 		{ "spells", P_SPELLS },
 		{ "gold", P_GOLD },
@@ -1954,7 +1991,8 @@ uint LoadUnits(uint& out_crc, uint& errors)
 		{ "dont_eat", F3_DONT_EAT },
 		{ "orc_food", F3_ORC_FOOD },
 		{ "miner", F3_MINER },
-		{ "talk_at_competition", F3_TALK_AT_COMPETITION }
+		{ "talk_at_competition", F3_TALK_AT_COMPETITION },
+		{ "fixed", F3_FIXED }
 	});
 
 	t.AddKeywords(G_GROUP, {

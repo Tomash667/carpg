@@ -1158,7 +1158,13 @@ idles spider {
 unit base_human {
 	mat body
 	flags human
-	hp 500
+	hp 400
+	hp_bonus 50
+	atk 10
+	atk_bonus 1
+	def 10
+	def_bonus 1
+
 	group citizens
 	walk_speed 1.5
 	run_speed 5
@@ -1545,8 +1551,12 @@ unit base_orc {
 	mat body
 	profile orc
 	flags {humanoid orc_sounds orc_food}
-	hp 600
-	def 5
+	hp 500
+	hp_bonus 50
+	atk 10
+	atk_bonus 1
+	def 15
+	def_bonus 1
 	group orcs
 	walk_speed 1.5
 	run_speed 5
@@ -1683,7 +1693,7 @@ unit q_orkowie_kowal : friendly_orc {
 	level {5 9}
 	profile orc_blacksmith
 	flags | ai_stay
-	def 10
+	def 20
 	items orc_fighter
 	gold {100 200}
 }
@@ -1698,7 +1708,7 @@ unit q_orkowie_orc : friendly_orc {
 unit q_orkowie_orc_hunter : friendly_orc {
 	level {5 9}
 	flags | {archer ai_train}
-	def 10
+	def 20
 	items orc_hunter
 	gold {{12 32}{25 50}}
 }
@@ -1706,7 +1716,7 @@ unit q_orkowie_orc_hunter : friendly_orc {
 unit q_orkowie_orc_fighter : friendly_orc {
 	level {5 9}
 	flags | {ai_train melee}
-	def 10
+	def 20
 	items orc_fighter
 	gold {{12 32}{25 50}}
 }
@@ -1714,7 +1724,7 @@ unit q_orkowie_orc_fighter : friendly_orc {
 unit q_orkowie_orc_chief : friendly_orc {
 	level {10 15}
 	flags | {leader melee}
-	def 15
+	def 25
 	items orc_chief
 	gold {{50 100}{100 200}}
 }
@@ -1794,7 +1804,12 @@ unit base_goblin {
 	mat body
 	profile goblin
 	flags {humanoid coward goblin_sounds orc_food}
-	hp 400
+	hp 300
+	hp_bonus 50
+	atk 10
+	atk_bonus 1
+	def 10
+	def_bonus 1
 	group goblins
 	walk_speed 1.75
 	run_speed 6
@@ -1844,8 +1859,8 @@ unit q_gobliny_szlachcic2 : base_human {
 	level 18
 	profile rogue
 	flags | {archer hero ai_wanders leader specific_name no_class boss sit_on_throne mark not_goblin}
-	hp 600
-	def 25
+	hp 500
+	def 35
 	items {
 		dagger_assassin
 		bow_unique
@@ -1895,7 +1910,7 @@ unit orc : base_orc {
 unit orc_hunter : base_orc {
 	level {5 9}
 	flags | {archer ai_train}
-	def 10
+	def 20
 	items orc_hunter
 	gold {{12 32}{25 50}}
 }
@@ -1903,7 +1918,7 @@ unit orc_hunter : base_orc {
 unit orc_fighter : base_orc {
 	level {5 9}
 	flags | {ai_train melee}
-	def 10
+	def 20
 	items orc_fighter
 	gold {{12 32}{25 50}}
 }
@@ -1911,7 +1926,7 @@ unit orc_fighter : base_orc {
 unit orc_chief : base_orc {
 	level {10 15}
 	flags | {leader melee}
-	def 15
+	def 25
 	items orc_chief
 	gold {{50 100}{100 200}}
 }
@@ -1933,8 +1948,8 @@ unit orc_shaman : base_orc {
 unit q_orkowie_boss : base_orc {
 	level 18
 	flags | {leader melee boss sit_on_throne yell mark guarded}
-	hp 800
-	def 30
+	hp 700
+	def 40
 	items {
 		al_orc_shaman
 		axe_ripper
@@ -1960,7 +1975,7 @@ unit base_zombie {
 	mat body
 	profile zombie
 	flags {undead dont_escape slow pierce_res25 blunt_res25 dont_open poison_res no_power_attack ignore_block backstab_res dont_eat stun_res}
-	hp 800
+	hp 700
 	stamina -100
 	group undead
 	dmg_type blunt
@@ -1977,12 +1992,12 @@ unit base_zombie {
 
 unit zombie : base_zombie {
 	level {2 4}
-	def 25
+	def 35
 }
 
 unit zombie_rotting : base_zombie {
 	level {4 8}
-	def 50
+	def 60
 	tex {
 		null
 		"glowa_zombie2.jpg"
@@ -1996,7 +2011,7 @@ unit zombie_rotting : base_zombie {
 unit zombie_ancient : base_zombie {
 	level {8 12}
 	flags | magic_res25
-	def 75
+	def 85
 	walk_speed 1.3
 	rot_speed 2.2
 	blood black
@@ -2012,8 +2027,12 @@ unit base_skeleton {
 	mat bone
 	profile skeleton
 	flags {humanoid undead dont_escape pierce_res25 blunt_weak25 poison_res bloodless backstab_res dont_eat}
-	hp 450
-	def 20
+	hp 350
+	hp_bonus 50
+	atk 10
+	atk_bonus 1
+	def 30
+	def_bonus 1
 	group undead
 	dmg_type slash
 	walk_speed 1.5
@@ -2041,7 +2060,7 @@ unit skeleton_archer : base_skeleton {
 unit skeleton_fighter : base_skeleton {
 	level {3 6}
 	flags | melee
-	def 25
+	def 35
 	items skeleton_fighter
 }
 
@@ -2072,8 +2091,8 @@ unit necromancer : base_human {
 unit base_undead : base_human {
 	level {2 10}
 	flags | {undead dont_escape blunt_res25 poison_res gray_hair dont_eat}
-	hp 525
-	def 10
+	hp 425
+	def 20
 	gold {{10 20}{40 80}}
 	group undead
 	blood black
@@ -2101,7 +2120,7 @@ unit evil_cleric : base_human {
 	level {4 15}
 	profile cleric
 	flags | {leader gray_hair ai_train}
-	hp 525
+	hp 425
 	items evil_cleric
 	gold {{25 50}{160 320}}
 	spells evil_cleric
@@ -2145,8 +2164,8 @@ unit q_zlo_boss : base_human {
 		athletics 70
 	}
 	flags | {leader dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res mark dont_eat stun_res}
-	hp 800
-	def 50
+	hp 700
+	def 60
 	items {
 		blunt_skullsmasher
 		ah_black_armor
@@ -2214,8 +2233,8 @@ unit q_bandyci_szef : base_bandit {
 	level 18
 	profile rogue
 	flags | {ai_wanders melee boss backstab mark guarded}
-	hp 600
-	def 25
+	hp 500
+	def 35
 	items {
 		chance 25 {bow_elven bow_composite}
 		al_dragonskin
@@ -2261,6 +2280,12 @@ unit base_golem {
 	mesh "golem.qmsh"
 	profile golem
 	flags {dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res}
+	hp 400
+	hp_bonus 50
+	atk 10
+	atk_bonus 1
+	def 10
+	def_bonus 1
 	stamina -100
 	group mages
 	dmg_type blunt
@@ -2278,8 +2303,8 @@ unit golem_stone : base_golem {
 	level 8
 	mat rock
 	flags | {blunt_weak25 magic_res25}
-	hp 800
-	def 50
+	hp 700
+	def 60
 	blood rock
 }
 
@@ -2287,8 +2312,8 @@ unit golem_iron : base_golem {
 	level 12
 	mat metal
 	flags | magic_res25
-	hp 900
-	def 100
+	hp 800
+	def 110
 	blood iron
 	sounds golem_iron
 	tex {
@@ -2302,8 +2327,8 @@ unit golem_adamantine : base_golem {
 	level 20
 	mat metal
 	flags | {blunt_res25 magic_res50}
-	hp 1000
-	def 150
+	hp 900
+	def 160
 	blood iron
 	sounds golem_iron
 	tex {
@@ -2322,8 +2347,8 @@ unit q_magowie_boss : base_human {
 	level 20
 	profile mage
 	flags | {mage old boss mark guarded}
-	hp 600
-	def 25
+	hp 500
+	def 35
 	items {
 		sword_unique
 		al_mage4
@@ -2351,8 +2376,12 @@ unit wolf {
 	level {1 3}
 	profile animal
 	flags {dont_open no_power_attack ignore_block dont_eat}
-	hp 300
-	def 5
+	hp 200
+	hp_bonus 50
+	atk 10
+	atk_bonus 1
+	def 15
+	def_bonus 1
 	items wolf
 	group animals
 	dmg_type slash
@@ -2369,7 +2398,7 @@ unit wolf {
 
 unit worg : wolf {
 	level {4 8}
-	def 10
+	def 20
 	tex {
 		"wilk_czarny.jpg"
 		null
@@ -2379,8 +2408,8 @@ unit worg : wolf {
 
 unit white_wolf_sum : wolf {
 	level {2 15}
-	hp 350
-	def 15
+	hp 250
+	def 25
 	tex {
 		"white_wolf.jpg"
 		null
@@ -2396,6 +2425,12 @@ unit base_spider {
 	mat body
 	profile animal
 	flags {poison_attack dont_open poison_res no_power_attack ignore_block dont_eat}
+	hp 0
+	hp_bonus 50
+	atk 10
+	atk_bonus 1
+	def 15
+	def_bonus 1
 	group animals
 	dmg_type pierce
 	walk_speed 1
@@ -2411,16 +2446,14 @@ unit base_spider {
 unit spider : base_spider {
 	level {1 3}
 	flags | slight
-	hp 100
-	def 5
 	width 0.3
 }
 
 unit spider_big : base_spider {
 	mesh "pajak2.qmsh"
 	level {4 8}
-	hp 200
-	def 10
+	hp 100
+	def 20
 	width 0.4
 }
 
@@ -2431,6 +2464,11 @@ unit rat {
 	profile animal
 	flags {coward dont_open slight no_power_attack ignore_block dont_eat}
 	hp 50
+	hp_bonus 10
+	atk 10
+	atk_bonus 1
+	def 10
+	def_bonus 1
 	group animals
 	dmg_type pierce
 	walk_speed 1
@@ -2448,7 +2486,7 @@ unit wild_hunter : base_human {
 	level {5 13}
 	profile hunter
 	flags {human archer leader}
-	def 5
+	def 15
 	items hunter
 	gold {{4 10}{40 80}}
 	group animals
@@ -2479,8 +2517,8 @@ unit q_szaleni_szaleniec : wild_hunter {
 unit base_crazy : base_human {
 	level {2 20}
 	flags | {crazy hero tournament ai_wanders}
-	hp 510
-	def 5
+	hp 410
+	def 15
 	dialog crazy
 	group crazies
 	walk_speed 1.55
@@ -2600,9 +2638,9 @@ unit tomashu : base_human {
 		athletics 120
 	}
 	flags | {dont_escape tomashu leader secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res}
-	hp 750
+	hp 650
 	stamina 100
-	def 50
+	def 60
 	items {
 		sword_forbidden
 		ah_black_armor
@@ -2635,8 +2673,12 @@ unit unk {
 		athletics 15
 	}
 	flags {dont_escape no_power_attack dont_suffer poison_res pierce_res25 bloodless ignore_block magic_res25 backstab dont_eat}
-	hp 700
-	def 50
+	hp 600
+	hp_bonus 50
+	atk 10
+	atk_bonus 1
+	def 60
+	def_bonus 1
 	group undead
 	dmg_type slash
 	walk_speed 0.5

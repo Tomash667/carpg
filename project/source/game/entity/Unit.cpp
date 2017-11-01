@@ -2559,12 +2559,16 @@ void Unit::ApplyStat(Attribute a)
 	case Attribute::CHA:
 		break;
 	}
+
+	if(player)
+		player->recalculate_level = true;
 }
 
 //=================================================================================================
 void Unit::ApplyStat(Skill s)
 {
-
+	if(player)
+		player->recalculate_level = true;
 }
 
 //=================================================================================================

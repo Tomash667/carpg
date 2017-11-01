@@ -135,10 +135,13 @@ float StatsX::CalculateLevel()
 				weight = 0.2f;
 			else
 				weight = 0;
-			float v = (skill[i] - skill_base[i]) / skill_apt_mod[skill_apt[i]].y;
-			v /= weight;
-			skill_level += v;
-			skill_count += weight;
+			if(weight > 0)
+			{
+				float v = (skill[i] - skill_base[i]) / skill_apt_mod[skill_apt[i]].y;
+				v /= weight;
+				skill_level += v;
+				skill_count += weight;
+			}
 		}
 	}
 	if(skill_count > 0)
