@@ -170,7 +170,8 @@ struct Unit
 	Vec3 pos; // pozycja postaci
 	Vec3 visual_pos; // graficzna pozycja postaci, u¿ywana w MP
 	Vec3 prev_pos, target_pos, target_pos2;
-	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
+	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer,
+		block_energy;
 	int animation_state, level, gold, attack_id, refid, in_building, in_arena, quest_refid;
 	FROZEN frozen;
 	ACTION action;
@@ -185,8 +186,6 @@ struct Unit
 	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved;
 	AIController* ai;
 	btCollisionObject* cobj;
-	static vector<Unit*> refid_table;
-	static vector<std::pair<Unit**, int>> refid_request;
 	Usable* usable;
 	HeroData* hero;
 	UnitEventHandler* event_handler;
@@ -221,7 +220,7 @@ struct Unit
 	// 	float CalculateArmor(float& def_natural, float& def_dex, float& def_armor);
 	float CalculateAttack() const;
 	float CalculateAttack(const Item* weapon) const;
-	float CalculateBlock(const Item* shield) const;
+	float CalculateBlock(const Item* shield = nullptr) const;
 	float CalculateDefense() const { return CalculateDefense(nullptr, nullptr); }
 	float CalculateDefense(const Item* armor, const Item* shield) const;
 	// czy ¿yje i nie le¿y na ziemi
@@ -445,6 +444,10 @@ struct Unit
 	{
 		return data->type == UNIT_TYPE::HUMAN;
 	}
+
+
+	static vector<Unit*> refid_table;
+	static vector<std::pair<Unit**, int>> refid_request;
 	static Unit* GetByRefid(int _refid)
 	{
 		if(_refid == -1 || _refid >= (int)refid_table.size())
@@ -463,6 +466,8 @@ struct Unit
 		unit->refid = (int)refid_table.size();
 		refid_table.push_back(unit);
 	}
+
+
 	void RemoveQuestItem(int quest_refid);
 	bool HaveItem(const Item* item);
 	float GetAttackSpeed(const Weapon* weapon = nullptr) const;
@@ -761,7 +766,7 @@ struct Unit
 		else
 			return true;
 	}
-		
+
 	int CalculateMobility() const;
 	int CalculateMobility(const Armor& armor) const;
 

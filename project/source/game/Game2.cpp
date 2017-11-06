@@ -41,6 +41,7 @@
 #include "Action.h"
 #include "ItemContainer.h"
 #include "Stock.h"
+#include "GameCombat.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -6948,6 +6949,8 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 			CreateUnitPhysics(*u);
 	}
 
+	u->block_energy = u->CalculateBlock() * 2;
+
 	if(Net::IsServer())
 		u->netid = netid_counter++;
 
@@ -7685,55 +7688,6 @@ void Game::UpdateParticles(LevelContext& ctx, float dt)
 		RemoveNullElements(ctx.tpes);
 }
 
-int ObliczModyfikator(int type, int flags)
-{
-	// -2 invalid (weapon don't have any dmg type)
-	// -1 susceptibility
-	// 0 normal
-	// 1 resistance
-
-	int mod = -2;
-
-	if(IS_SET(type, DMG_SLASH))
-	{
-		if(IS_SET(flags, F_SLASH_RES25))
-			mod = 1;
-		else if(IS_SET(flags, F_SLASH_WEAK25))
-			mod = -1;
-		else
-			mod = 0;
-	}
-
-	if(IS_SET(type, DMG_PIERCE))
-	{
-		if(IS_SET(flags, F_PIERCE_RES25))
-		{
-			if(mod == -2)
-				mod = 1;
-		}
-		else if(IS_SET(flags, F_PIERCE_WEAK25))
-			mod = -1;
-		else if(mod != -1)
-			mod = 0;
-	}
-
-	if(IS_SET(type, DMG_BLUNT))
-	{
-		if(IS_SET(flags, F_BLUNT_RES25))
-		{
-			if(mod == -2)
-				mod = 1;
-		}
-		else if(IS_SET(flags, F_BLUNT_WEAK25))
-			mod = -1;
-		else if(mod != -1)
-			mod = 0;
-	}
-
-	assert(mod != -2);
-	return mod;
-}
-
 Game::ATTACK_RESULT Game::DoAttack(LevelContext& ctx, Unit& unit)
 {
 	Vec3 hitpoint;
@@ -7871,13 +7825,15 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			u.pos = Vec3(128, 0, 128);
 		}
 
-		// licznik okrzyku od ostatniego trafienia
-		u.hurt_timer -= dt;
-		u.last_bash -= dt;
-
 		// aktualizuj efekty i machanie ustami
 		if(u.IsAlive())
 		{
+			// licznik okrzyku od ostatniego trafienia
+			u.hurt_timer -= dt;
+			u.last_bash -= dt;
+			const float max_block = u.CalculateBlock();
+			u.block_energy = min(u.block_energy + max_block * dt, max_block * 2);
+
 			u.UpdateEffects(dt);
 			if(Net::IsLocal() && u.moved)
 			{
@@ -9423,14 +9379,14 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							AI_HitReaction(*hitted, it->start_pos);
 
 						// trafienie w postaæ
-						float dmg = it->attack,
+						float atk = it->attack,
 							def = hitted->CalculateDefense();
 
-						int mod = ObliczModyfikator(DMG_PIERCE, hitted->data->flags);
+						auto mod = game::CalculateModifier(DMG_PIERCE, hitted->data);
 						float m = 1.f;
-						if(mod == -1)
+						if(mod == game::Susceptibility)
 							m += 0.25f;
-						else if(mod == 1)
+						else if(mod == game::Resistance)
 							m -= 0.25f;
 						if(hitted->IsNotFighting())
 							m += 0.1f; // 10% do dmg jeœli ma schowan¹ broñ
@@ -9449,13 +9405,13 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						m += kat / PI*backstab_mod;
 
 						// modyfikator obra¿eñ
-						dmg *= m;
-						float base_dmg = dmg;
+						atk *= m;
+						float base_atk = atk;
 
 						if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
 						{
 							float blocked = hitted->CalculateBlock(&hitted->GetShield()) * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
-							dmg -= blocked;
+							atk -= blocked;
 
 							MATERIAL_TYPE mat = hitted->GetShield().material;
 							if(sound_volume)
@@ -9472,10 +9428,10 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							if(hitted->IsPlayer())
 							{
 								// player blocked bullet, train shield
-								hitted->player->Train(TrainWhat::BlockBullet, base_dmg / hitted->hpmax, it->level);
+								hitted->player->Train(TrainWhat::BlockBullet, base_atk / hitted->hpmax, it->level);
 							}
 
-							if(dmg < 0)
+							if(atk < 0)
 							{
 								// shot blocked by shield
 								if(it->owner && it->owner->IsPlayer())
@@ -9490,11 +9446,11 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						}
 
 						// odpornoœæ/pancerz
-						dmg -= def;
+						float dmg = game::CalculateDamage(atk, def);
 
 						// szkol gracza w pancerzu/hp
 						if(hitted->IsPlayer())
-							hitted->player->Train(TrainWhat::TakeDamageArmor, base_dmg / hitted->hpmax, it->level);
+							hitted->player->Train(TrainWhat::TakeDamageArmor, base_atk / hitted->hpmax, it->level);
 
 						// hit sound
 						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, dmg > 0.f);
@@ -11017,11 +10973,11 @@ void Game::PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax)
 
 Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float start_dmg, int dmg_type, bool bash)
 {
-	int mod = ObliczModyfikator(dmg_type, hitted.data->flags);
+	auto mod = game::CalculateModifier(dmg_type, hitted.data);
 	float m = 1.f;
-	if(mod == -1)
+	if(mod == game::Susceptibility)
 		m += 0.25f;
-	else if(mod == 1)
+	else if(mod == game::Resistance)
 		m -= 0.25f;
 	if(hitted.IsNotFighting())
 		m += 0.1f;
@@ -11042,17 +10998,13 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	m += kat / PI*backstab_mod;
 
 	// apply modifiers
-	float dmg = start_dmg * m;
-	float base_dmg = dmg;
-
-	// calculate defense
-	float armor_def = hitted.CalculateArmorDefense(),
-		dex_def = hitted.CalculateDexterityDefense(),
-		base_def = hitted.CalculateBaseDefense();
+	float atk = start_dmg * m;
+	float def = hitted.CalculateDefense();
 
 	// blocking
 	if(hitted.action == A_BLOCK && kat < PI / 2)
 	{
+		//!!!!!!!!!!!!!!!!!!!!!!!
 		int block_value = 3;
 		MATERIAL_TYPE hitted_mat;
 		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
@@ -11061,15 +11013,20 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			--block_value;
 
 		// reduce damage
-		float blocked = hitted.CalculateBlock(&hitted.GetShield());
+		float blocked = hitted.CalculateBlock();
+		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
+			blocked *= 2.f / 3;
 		hitted_mat = hitted.GetShield().material;
-		blocked *= block_value;
-		dmg -= blocked;
+		atk -= blocked;
 		float stamina = blocked;
 		stamina -= hitted.Get(Skill::SHIELD);
 		float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted.Get(Skill::SHIELD)) / 100);
 		stamina *= block_stamina_loss;
 		hitted.RemoveStamina(stamina);
+
+		// power attack depletes block energy faster
+		if(attacker.attack_power >= 1.9f)
+			blocked *= 2;
 
 		// play sound
 		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material);

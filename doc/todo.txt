@@ -3,10 +3,13 @@
 new world order:
 + attack formula
 + change block formula (shield defense changed)
+	+ block points - then blocking breaks, meh there is already stamina for that
+	+ block power 5%-100%
 + units stats, new units
 - can shoot without stamina
 - one handed weapons skill = -1
 - calculatelevel very big low level attrib/skill will make player level go up (100 dex for starting 55 will calculate player level as 20)
+- blocking shots don't remove stamina
 + recalculate hp/atk/def on changed level
 + for weapons/armor/shield show stats change (Defense: 40 (50 -> 60))
 + attib increase skills

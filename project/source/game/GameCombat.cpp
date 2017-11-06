@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Core.h"
 #include "GameCombat.h"
+#include "UnitData.h"
 
 float game::CalculateDamage(float atk, float def)
 {
@@ -25,4 +26,58 @@ float game::GetDamageMod(float atk, float def)
 		return Lerp(0.75f, 0.9f, (ratio - 2.5f) / (8.f - 2.5f));
 	else
 		return 0.9f;
+}
+
+float game::CalculateResistanceDamage(float dmg, float res)
+{
+	assert(InRange(res, 0.f, 1.f));
+	dmg = dmg * (1.f - res) - res * 100;
+	return max(dmg, 0.f);
+}
+
+game::DamageModifier game::CalculateModifier(int dmg_type, UnitData* data)
+{
+	assert(data);
+
+	DamageModifier mod = DamageModifier::Invalid;
+	int flags = data->flags;
+
+	if(IS_SET(dmg_type, DMG_SLASH))
+	{
+		if(IS_SET(flags, F_SLASH_RES25))
+			mod = DamageModifier::Resistance;
+		else if(IS_SET(flags, F_SLASH_WEAK25))
+			mod = DamageModifier::Susceptibility;
+		else
+			mod = DamageModifier::Normal;
+	}
+
+	if(IS_SET(dmg_type, DMG_PIERCE))
+	{
+		if(IS_SET(flags, F_PIERCE_RES25))
+		{
+			if(mod == DamageModifier::Invalid)
+				mod = DamageModifier::Resistance;
+		}
+		else if(IS_SET(flags, F_PIERCE_WEAK25))
+			mod = DamageModifier::Susceptibility;
+		else if(mod != -1)
+			mod = DamageModifier::Normal;
+	}
+
+	if(IS_SET(dmg_type, DMG_BLUNT))
+	{
+		if(IS_SET(flags, F_BLUNT_RES25))
+		{
+			if(mod == DamageModifier::Invalid)
+				mod = DamageModifier::Resistance;
+		}
+		else if(IS_SET(flags, F_BLUNT_WEAK25))
+			mod = DamageModifier::Susceptibility;
+		else if(mod != -1)
+			mod = DamageModifier::Normal;
+	}
+
+	assert(mod != DamageModifier::Invalid); // dmg_type is invalid
+	return mod;
 }
