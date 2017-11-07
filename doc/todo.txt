@@ -1,10 +1,6 @@
 ﻿FEATURE:
 
 new world order:
-+ change block formula (shield defense changed)
-	+ add shield block power
-	+ change formula
-+ get skill - similar/attribute bonus
 + new training
 	+ attrib
 	+ skill
@@ -14,10 +10,7 @@ new world order:
 - calculatelevel very big low level attrib/skill will make player level go up (100 dex for starting 55 will calculate player level as 20)
 - blocking shots don't remove stamina
 + recalculate hp/atk/def on changed level
-+ for weapons/armor/shield show stats change (Defense: 40 (50 -> 60))
-+ attib increase skills
-+ skills increase other skills
-+ apt bonus from other skil
+? for weapons/armor/shield show stats change (Defense: 40 (50 -> 60))
 + new skills effects & training
 	+ one handed
 	+ unarmed
@@ -35,6 +28,7 @@ new world order:
 	? old saves
 	? StatsX.Upgrade
 	? client level calculate
+	? negative aptitude effect on units/player
 
 * perks
 + perk points
@@ -76,6 +70,7 @@ NEW:
 + modify units stats, perks -> will make unit unique
 + poison resistance from stamina
 + wisdom: skill/perk/bonus
++ shield different block types (physical/magical/fire/etc)
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

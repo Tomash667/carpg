@@ -34,6 +34,8 @@ void UnitData::CopyFrom(UnitData& ud)
 	def = ud.def;
 	def_bonus = ud.def_bonus;
 	stamina_bonus = ud.stamina_bonus;
+	block = ud.block;
+	block_bonus = ud.block_bonus;
 	dmg_type = ud.dmg_type;
 	flags = ud.flags;
 	flags2 = ud.flags2;
@@ -112,6 +114,8 @@ enum Property
 	P_DEF,
 	P_DEF_BONUS,
 	P_STAMINA,
+	P_BLOCK,
+	P_BLOCK_BONUS,
 	P_ITEMS,
 	P_SPELLS,
 	P_GOLD,
@@ -1443,6 +1447,18 @@ bool LoadUnit(Tokenizer& t, Crc& crc)
 				unit->stamina_bonus = t.MustGetInt();
 				crc.Update(unit->stamina_bonus);
 				break;
+			case P_BLOCK:
+				unit->block = t.MustGetInt();
+				if(unit->block < 0)
+					t.Throw("Invalid block %d.", unit->block);
+				crc.Update(unit->block);
+				break;
+			case P_BLOCK_BONUS:
+				unit->block_bonus = t.MustGetInt();
+				if(unit->block_bonus < 0)
+					t.Throw("Invalid block bonus %d.", unit->block_bonus);
+				crc.Update(unit->block_bonus);
+				break;
 			case P_ITEMS:
 				if(t.IsSymbol('{'))
 				{
@@ -1884,6 +1900,8 @@ uint LoadUnits(uint& out_crc, uint& errors)
 		{ "def", P_DEF },
 		{ "def_bonus", P_DEF_BONUS },
 		{ "stamina", P_STAMINA },
+		{ "block", P_BLOCK },
+		{ "block_bonus", P_BLOCK_BONUS },
 		{ "items", P_ITEMS },
 		{ "spells", P_SPELLS },
 		{ "gold", P_GOLD },

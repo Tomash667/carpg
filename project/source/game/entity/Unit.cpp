@@ -62,32 +62,32 @@ float Unit::CalculateAttack(const Item* weapon) const
 		return (float)data->atk;
 
 	float atk = float(data->atk + data->atk_bonus * level);
-	float str = (float)Get(Attribute::STR),
-		dex = (float)Get(Attribute::DEX);
+	int str = Get(Attribute::STR),
+		dex = Get(Attribute::DEX);
 
 	if(weapon->type == IT_WEAPON)
 	{
 		const Weapon& w = weapon->ToWeapon();
 		const WeaponTypeInfo& wi = WeaponTypeInfo::info[w.weapon_type];
-		float skill = (float)Get(wi.skill);
+		int skill = Get(wi.skill);
 		float p;
 		if(str >= w.req_str)
 			p = 1.f;
 		else
-			p = str / w.req_str;
-		atk += (w.dmg + (str - 50) * wi.str2dmg + (dex - 50) * wi.dex2dmg) * (p + skill / 100);
+			p = float(str) / w.req_str;
+		atk += (w.dmg + wi.str2dmg * max(0, str - 50) + wi.dex2dmg * max(0, dex - 50)) * (p + skill / 100);
 	}
 	else
 	{
 		assert(weapon->type == IT_BOW);
 		const Bow& bow = weapon->ToBow();
-		float skill = (float)Get(Skill::BOW);
+		int skill = Get(Skill::BOW);
 		float p;
 		if(str >= bow.req_str)
 			p = 1.f;
 		else
 			p = float(str) / bow.req_str;
-		atk += (bow.dmg + dex - 50) * (p + skill / 100);
+		atk += (bow.dmg + max(0, dex - 50)) * (p + skill / 100);
 	}
 
 	return atk;
@@ -96,6 +96,9 @@ float Unit::CalculateAttack(const Item* weapon) const
 //=================================================================================================
 float Unit::CalculateBlock(const Item* shield) const
 {
+	if(IS_SET(data->flags3, F3_FIXED))
+		return (float)data->block;
+
 	if(!shield)
 		shield = slots[SLOT_SHIELD];
 	if(!shield)
@@ -110,7 +113,7 @@ float Unit::CalculateBlock(const Item* shield) const
 	else
 		p = float(str) / s.req_str;
 
-	return float(s.def) * (1.f + 1.f / 100 * Get(Skill::SHIELD)) * p;
+	return data->block + level * data->block_bonus + (max(0, str - 50) + s.block) * (1.f + 1.f / 100 * Get(Skill::SHIELD)) * p;
 }
 
 //=================================================================================================
@@ -129,7 +132,7 @@ float Unit::CalculateWeaponBlock() const
 }
 
 //=================================================================================================
-float Unit::CalculateDefense(const Item* _armor, const Item* _shield) const
+float Unit::CalculateDefense(const Item* armor, const Item* shield) const
 {
 	if(IS_SET(data->flags3, F3_FIXED))
 		return (float)data->def;
@@ -142,7 +145,7 @@ float Unit::CalculateDefense(const Item* _armor, const Item* _shield) const
 	def += (end - 50) / 5;
 
 	// dexterity bonus
-	auto load_state = GetArmorLoadState(_armor);
+	auto load_state = GetArmorLoadState(armor);
 	if(load_state < LS_HEAVY)
 	{
 		float dex = (float)Get(Attribute::DEX);
@@ -153,25 +156,25 @@ float Unit::CalculateDefense(const Item* _armor, const Item* _shield) const
 	}
 
 	// armor defense
-	if(!_armor)
-		_armor = slots[SLOT_ARMOR];
-	if(_armor)
+	if(!armor)
+		armor = slots[SLOT_ARMOR];
+	if(armor)
 	{
-		assert(_armor->type == IT_ARMOR);
-		const Armor& armor = _armor->ToArmor();
-		float skill = (float)Get(armor.skill);
-		def += armor.def * (1.f + skill / 100);
+		assert(armor->type == IT_ARMOR);
+		const Armor& a = armor->ToArmor();
+		float skill = (float)Get(a.skill);
+		def += a.def * (1.f + skill / 100);
 	}
 
 	// shield defense
-	if(!_shield)
-		_shield = slots[SLOT_SHIELD];
-	if(_shield)
+	if(!shield)
+		shield = slots[SLOT_SHIELD];
+	if(shield)
 	{
-		assert(_shield->type == IT_SHIELD);
-		const Shield& shield = _shield->ToShield();
+		assert(shield->type == IT_SHIELD);
+		const Shield& s = shield->ToShield();
 		float skill = (float)Get(Skill::SHIELD);
-		def += shield.def * (1.f + skill / 200);
+		def += s.def * (1.f + skill / 200);
 	}
 
 	return def;
@@ -1044,15 +1047,15 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 }
 
 //=================================================================================================
-void Unit::GetBox(Box& _box) const
+void Unit::GetBox(Box& box) const
 {
 	float radius = GetUnitRadius();
-	_box.v1.x = pos.x - radius;
-	_box.v1.y = pos.y;
-	_box.v1.z = pos.z - radius;
-	_box.v2.x = pos.x + radius;
-	_box.v2.y = pos.y + max(MIN_H, GetUnitHeight());
-	_box.v2.z = pos.z + radius;
+	box.v1.x = pos.x - radius;
+	box.v1.y = pos.y;
+	box.v1.z = pos.z - radius;
+	box.v2.x = pos.x + radius;
+	box.v2.y = pos.y + max(MIN_H, GetUnitHeight());
+	box.v2.z = pos.z + radius;
 }
 
 //=================================================================================================
@@ -1080,68 +1083,68 @@ Vec3 Unit::GetLootCenter() const
 }
 
 //=================================================================================================
-float Unit::CalculateWeaponPros(const Weapon& _weapon) const
+float Unit::CalculateWeaponPros(const Weapon& weapon) const
 {
 	// oblicz dps i tyle na t¹ wersjê
-	return CalculateAttack(&_weapon) * GetAttackSpeed(&_weapon);
+	return CalculateAttack(&weapon) * GetAttackSpeed(&weapon);
 }
 
 //=================================================================================================
-bool Unit::IsBetterWeapon(const Weapon& _weapon) const
+bool Unit::IsBetterWeapon(const Weapon& weapon) const
 {
 	if(!HaveWeapon())
 		return true;
 
-	return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(_weapon);
+	return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(weapon);
 }
 
 //=================================================================================================
-bool Unit::IsBetterWeapon(const Weapon& _weapon, int* value) const
+bool Unit::IsBetterWeapon(const Weapon& weapon, int* value) const
 {
 	if(!HaveWeapon())
 	{
 		if(value)
-			*value = (int)CalculateWeaponPros(_weapon);
+			*value = (int)CalculateWeaponPros(weapon);
 		return true;
 	}
 
 	if(value)
 	{
-		float v = CalculateWeaponPros(_weapon);
+		float v = CalculateWeaponPros(weapon);
 		*value = (int)v;
 		return CalculateWeaponPros(GetWeapon()) < v;
 	}
 	else
-		return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(_weapon);
+		return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(weapon);
 }
 
 //=================================================================================================
-bool Unit::IsBetterArmor(const Armor& _armor) const
+bool Unit::IsBetterArmor(const Armor& armor) const
 {
 	if(!HaveArmor())
 		return true;
 
-	return CalculateDefense() < CalculateDefense(&_armor, nullptr);
+	return CalculateDefense() < CalculateDefense(&armor, nullptr);
 }
 
 //=================================================================================================
-bool Unit::IsBetterArmor(const Armor& _armor, int* value) const
+bool Unit::IsBetterArmor(const Armor& armor, int* value) const
 {
 	if(!HaveArmor())
 	{
 		if(value)
-			*value = (int)CalculateDefense(&_armor, nullptr);
+			*value = (int)CalculateDefense(&armor, nullptr);
 		return true;
 	}
 
 	if(value)
 	{
-		float v = CalculateDefense(&_armor, nullptr);
+		float v = CalculateDefense(&armor, nullptr);
 		*value = (int)v;
 		return CalculateDefense() < v;
 	}
 	else
-		return CalculateDefense() < CalculateDefense(&_armor, nullptr);
+		return CalculateDefense() < CalculateDefense(&armor, nullptr);
 }
 
 //=================================================================================================
@@ -2493,6 +2496,85 @@ int Unit::GetBuffs() const
 		b |= BUFF_ALCOHOL;
 
 	return b;
+}
+
+//=================================================================================================
+int Unit::Get(Skill s) const
+{
+	int index = (int)s;
+	int value = statsx->Get(s);
+	auto& info = SkillInfo::skills[index];
+
+	// similar skill bonus
+	if(info.skill_group != -1)
+	{
+		int best = value;
+		for(int i = index - 1; i >= 0; --i)
+		{
+			auto& info2 = SkillInfo::skills[i];
+			if(info2.skill_group != info.skill_group)
+				break;
+			int value2 = statsx->Get((Skill)i);
+			if(value2 > best)
+				best = value2;
+		}
+		for(int i = index + 1; i < (int)Skill::MAX; ++i)
+		{
+			auto& info2 = SkillInfo::skills[i];
+			if(info2.skill_group != info.skill_group)
+				break;
+			int value2 = statsx->Get((Skill)i);
+			if(value2 > best)
+				best = value2;
+		}
+		if(best != value)
+			value += (best - value) / 2;
+	}
+
+	// attribute bonus
+	if(info.attrib2 != Attribute::NONE)
+	{
+		value += (GetBase(info.attrib) - 50) / 10;
+		value += (GetBase(info.attrib2) - 50) / 10;
+	}
+	else
+		value += (GetBase(info.attrib) - 50) / 5;
+
+	return value;
+}
+
+//=================================================================================================
+// Similar better skills get +4 aptitude bonus
+int Unit::GetAptitude(Skill s) const
+{
+	int index = (int)s;
+	int value = statsx->skill_apt[index];
+	auto& info = SkillInfo::skills[index];
+	if(info.skill_group != -1)
+	{
+		int best = value;
+		for(int i = index - 1; i >= 0; --i)
+		{
+			auto& info2 = SkillInfo::skills[i];
+			if(info2.skill_group != info.skill_group)
+				break;
+			int value2 = statsx->Get((Skill)i);
+			if(value2 > best)
+				best = value2;
+		}
+		for(int i = index + 1; i < (int)Skill::MAX; ++i)
+		{
+			auto& info2 = SkillInfo::skills[i];
+			if(info2.skill_group != info.skill_group)
+				break;
+			int value2 = statsx->Get((Skill)i);
+			if(value2 > best)
+				best = value2;
+		}
+		if(best != value)
+			value += 4;
+	}
+	return value;
 }
 
 //=================================================================================================

@@ -51,6 +51,7 @@ StatsPanel::StatsPanel() : last_update(0.f)
 	txMobility = Str("mobility");
 	txCarryShort = Str("carryShort");
 	txGold = Str("gold");
+	txBlock = Str("block");
 
 	tooltip.Init(TooltipGetText(this, &StatsPanel::GetTooltip));
 }
@@ -158,10 +159,12 @@ void StatsPanel::SetText()
 		hp = 1;
 	flowStats.Add()->Set(Format("%s: %d/%d", txHealth, hp, int(pc->unit->hpmax)), G_INVALID, -1);
 	flowStats.Add()->Set(Format("%s: %d/%d", txStamina, int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);
-	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
-	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
+	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "--");
+	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "--");
 	flowStats.Add()->Set(Format("%s: %s/%s", txAttack, meleeAttack, rangedAttack), G_STATS, STATS_ATTACK);
 	flowStats.Add()->Set(Format("%s: %d", txDefense, (int)pc->unit->CalculateDefense()), G_INVALID, -1);
+	cstring block = (pc->unit->HaveShield() ? Format("%d", (int)pc->unit->CalculateBlock()) : "--");
+	flowStats.Add()->Set(Format("%s: %s", txBlock, block), G_INVALID, -1);
 	flowStats.Add()->Set(Format("%s: %d", txMobility, (int)pc->unit->CalculateMobility()), G_INVALID, -1);
 	flowStats.Add()->Set(Format(txCarryShort, float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10), G_INVALID, -1);
 	flowStats.Add()->Set(Format(txGold, pc->unit->gold), G_INVALID, -1);
@@ -238,7 +241,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			else
 			{
 				tooltip.text = Format("%s: %d (%d)\n%s\n\nAptitude: %+d\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetBase(a), pc->unit->statsx->attrib_base[id],
-					ai.desc.c_str(), pc->unit->statsx->attrib_apt[id], pc->ap[id], pc->an[id], float(pc->ap[id]) * 100 / pc->an[id]);
+					ai.desc.c_str(), pc->unit->GetAptitude(a), pc->ap[id], pc->an[id], float(pc->ap[id]) * 100 / pc->an[id]);
 			}
 			tooltip.small_text.clear();
 		}
@@ -264,8 +267,8 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			break;
 		case STATS_ATTACK:
 			{
-				cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
-				cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
+				cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "--");
+				cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "--");
 				tooltip.big_text.clear();
 				tooltip.text = Format("%s: %s\n%s: %s", txMeleeAttack, meleeAttack, txRangedAttack, rangedAttack);
 				tooltip.small_text.clear();
@@ -287,7 +290,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			else
 			{
 				tooltip.text = Format("%s: %d (%d)\n%s\n\nAptitude: %+d\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetBase(s), pc->unit->statsx->skill_base[id],
-					si.desc.c_str(), pc->unit->statsx->skill_apt[id], pc->sp[id], pc->sn[id], float(pc->sp[id]) * 100 / pc->sn[id]);
+					si.desc.c_str(), pc->unit->GetAptitude(s), pc->sp[id], pc->sn[id], float(pc->sp[id]) * 100 / pc->sn[id]);
 			}
 			if(si.attrib2 != Attribute::NONE)
 			{

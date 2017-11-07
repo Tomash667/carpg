@@ -1160,10 +1160,6 @@ unit base_human {
 	flags human
 	hp 400
 	hp_bonus 50
-	atk 10
-	atk_bonus 1
-	def 10
-	def_bonus 1
 
 	group citizens
 	walk_speed 1.5
@@ -1553,10 +1549,6 @@ unit base_orc {
 	flags {humanoid orc_sounds orc_food}
 	hp 500
 	hp_bonus 50
-	atk 10
-	atk_bonus 1
-	def 15
-	def_bonus 1
 	group orcs
 	walk_speed 1.5
 	run_speed 5
@@ -1806,10 +1798,6 @@ unit base_goblin {
 	flags {humanoid coward goblin_sounds orc_food}
 	hp 300
 	hp_bonus 50
-	atk 10
-	atk_bonus 1
-	def 10
-	def_bonus 1
 	group goblins
 	walk_speed 1.75
 	run_speed 6
@@ -2029,10 +2017,6 @@ unit base_skeleton {
 	flags {humanoid undead dont_escape pierce_res25 blunt_weak25 poison_res bloodless backstab_res dont_eat}
 	hp 350
 	hp_bonus 50
-	atk 10
-	atk_bonus 1
-	def 30
-	def_bonus 1
 	group undead
 	dmg_type slash
 	walk_speed 1.5
@@ -2282,10 +2266,6 @@ unit base_golem {
 	flags {dont_escape pierce_res25 slash_res25 dont_suffer poison_res bloodless ignore_block dont_eat backstab_res stun_res}
 	hp 400
 	hp_bonus 50
-	atk 10
-	atk_bonus 1
-	def 10
-	def_bonus 1
 	stamina -100
 	group mages
 	dmg_type blunt
@@ -2378,10 +2358,6 @@ unit wolf {
 	flags {dont_open no_power_attack ignore_block dont_eat}
 	hp 200
 	hp_bonus 50
-	atk 10
-	atk_bonus 1
-	def 15
-	def_bonus 1
 	items wolf
 	group animals
 	dmg_type slash
@@ -2427,10 +2403,7 @@ unit base_spider {
 	flags {poison_attack dont_open poison_res no_power_attack ignore_block dont_eat}
 	hp 0
 	hp_bonus 50
-	atk 10
-	atk_bonus 1
 	def 15
-	def_bonus 1
 	group animals
 	dmg_type pierce
 	walk_speed 1
@@ -2465,10 +2438,6 @@ unit rat {
 	flags {coward dont_open slight no_power_attack ignore_block dont_eat}
 	hp 50
 	hp_bonus 10
-	atk 10
-	atk_bonus 1
-	def 10
-	def_bonus 1
 	group animals
 	dmg_type pierce
 	walk_speed 1
@@ -2675,10 +2644,7 @@ unit unk {
 	flags {dont_escape no_power_attack dont_suffer poison_res pierce_res25 bloodless ignore_block magic_res25 backstab dont_eat}
 	hp 600
 	hp_bonus 50
-	atk 10
-	atk_bonus 1
 	def 60
-	def_bonus 1
 	group undead
 	dmg_type slash
 	walk_speed 0.5

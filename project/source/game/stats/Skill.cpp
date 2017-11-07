@@ -43,26 +43,27 @@ static StatGain gain[] = {
 
 //-----------------------------------------------------------------------------
 // List of all skills
+// ! order by group/skill_group
 SkillInfo SkillInfo::skills[(int)Skill::MAX] = {
 	// combat styles
-	SkillInfo(Skill::ONE_HANDED_WEAPON, "one_handed_weapon", SkillGroup::COMBAT_STYLE, Attribute::STR, Attribute::DEX),
+	SkillInfo(Skill::ONE_HANDED_WEAPON, "one_handed_weapon", SkillGroup::COMBAT_STYLE, Attribute::STR, Attribute::DEX, -1),
 	// weapons
-	SkillInfo(Skill::SHORT_BLADE, "short_blade", SkillGroup::WEAPON, Attribute::DEX, Attribute::NONE),
-	SkillInfo(Skill::LONG_BLADE, "long_blade", SkillGroup::WEAPON, Attribute::STR, Attribute::DEX),
-	SkillInfo(Skill::BLUNT, "blunt", SkillGroup::WEAPON, Attribute::STR, Attribute::NONE),
-	SkillInfo(Skill::AXE, "axe", SkillGroup::WEAPON, Attribute::STR, Attribute::NONE),
-	SkillInfo(Skill::BOW, "bow", SkillGroup::WEAPON, Attribute::DEX, Attribute::NONE),
-	SkillInfo(Skill::UNARMED, "unarmed", SkillGroup::WEAPON, Attribute::DEX, Attribute::STR),
+	SkillInfo(Skill::SHORT_BLADE, "short_blade", SkillGroup::WEAPON, Attribute::DEX, Attribute::NONE, 0),
+	SkillInfo(Skill::LONG_BLADE, "long_blade", SkillGroup::WEAPON, Attribute::STR, Attribute::DEX, 0),
+	SkillInfo(Skill::BLUNT, "blunt", SkillGroup::WEAPON, Attribute::STR, Attribute::NONE, 0),
+	SkillInfo(Skill::AXE, "axe", SkillGroup::WEAPON, Attribute::STR, Attribute::NONE, 0),
+	SkillInfo(Skill::BOW, "bow", SkillGroup::WEAPON, Attribute::DEX, Attribute::NONE, -1),
+	SkillInfo(Skill::UNARMED, "unarmed", SkillGroup::WEAPON, Attribute::DEX, Attribute::STR, -1),
 	// shield & armor
-	SkillInfo(Skill::SHIELD, "shield", SkillGroup::ARMOR, Attribute::STR, Attribute::DEX),
-	SkillInfo(Skill::LIGHT_ARMOR, "light_armor", SkillGroup::ARMOR, Attribute::DEX, Attribute::NONE),
-	SkillInfo(Skill::MEDIUM_ARMOR, "medium_armor", SkillGroup::ARMOR, Attribute::END, Attribute::DEX),
-	SkillInfo(Skill::HEAVY_ARMOR, "heavy_armor", SkillGroup::ARMOR, Attribute::STR, Attribute::END),
+	SkillInfo(Skill::SHIELD, "shield", SkillGroup::ARMOR, Attribute::STR, Attribute::DEX, -1),
+	SkillInfo(Skill::LIGHT_ARMOR, "light_armor", SkillGroup::ARMOR, Attribute::DEX, Attribute::NONE, 1),
+	SkillInfo(Skill::MEDIUM_ARMOR, "medium_armor", SkillGroup::ARMOR, Attribute::END, Attribute::DEX, 1),
+	SkillInfo(Skill::HEAVY_ARMOR, "heavy_armor", SkillGroup::ARMOR, Attribute::STR, Attribute::END, 1),
 	// oher
-	SkillInfo(Skill::ATHLETICS, "athletics", SkillGroup::OTHER, Attribute::END, Attribute::STR),
-	SkillInfo(Skill::ACROBATICS, "acrobatics", SkillGroup::OTHER, Attribute::DEX, Attribute::END),
-	SkillInfo(Skill::HAGGLE, "haggle", SkillGroup::OTHER, Attribute::CHA, Attribute::NONE),
-	SkillInfo(Skill::LITERACY, "literacy", SkillGroup::OTHER, Attribute::INT, Attribute::NONE)
+	SkillInfo(Skill::ATHLETICS, "athletics", SkillGroup::OTHER, Attribute::END, Attribute::STR, -1),
+	SkillInfo(Skill::ACROBATICS, "acrobatics", SkillGroup::OTHER, Attribute::DEX, Attribute::END, -1),
+	SkillInfo(Skill::HAGGLE, "haggle", SkillGroup::OTHER, Attribute::CHA, Attribute::NONE, -1),
+	SkillInfo(Skill::LITERACY, "literacy", SkillGroup::OTHER, Attribute::INT, Attribute::NONE, -1)
 };
 
 //-----------------------------------------------------------------------------

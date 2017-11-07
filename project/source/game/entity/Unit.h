@@ -447,12 +447,12 @@ struct Unit
 
 	static vector<Unit*> refid_table;
 	static vector<std::pair<Unit**, int>> refid_request;
-	static Unit* GetByRefid(int _refid)
+	static Unit* GetByRefid(int refid)
 	{
-		if(_refid == -1 || _refid >= (int)refid_table.size())
+		if(refid == -1 || refid >= (int)refid_table.size())
 			return nullptr;
 		else
-			return refid_table[_refid];
+			return refid_table[refid];
 	}
 	static void AddRequest(Unit** unit, int refid)
 	{
@@ -824,10 +824,7 @@ struct Unit
 		return Get(a);
 	}
 
-	int Get(Skill s) const
-	{
-		return statsx->Get(s);
-	}
+	int Get(Skill s) const;
 	int Get(Skill s, StatState& state) const
 	{
 		state = StatState::NORMAL;
@@ -843,6 +840,12 @@ struct Unit
 	{
 		return statsx->Get(s);
 	}
+
+	int GetAptitude(Attribute a) const
+	{
+		return statsx->attrib_apt[(int)a];
+	}
+	int GetAptitude(Skill s) const;
 
 	void Set(Attribute a, int value)
 	{

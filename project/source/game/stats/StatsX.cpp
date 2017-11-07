@@ -303,9 +303,9 @@ StatsX* StatsX::Get(Entry& e)
 				skill = e.stats->armor;
 			if(se.tag)
 			{
-				int value = (IS_SET(e.profile->flags, StatProfile::F_DOUBLE_WEAPON_TAG_SKILL) ? 2 : 1);
-				e.stats->skill[(int)skill] += value * 5;
-				e.stats->skill_apt[(int)skill] += value;
+				int value = (IS_SET(e.profile->flags, StatProfile::F_DOUBLE_WEAPON_TAG_SKILL) ? 10 : 5);
+				e.stats->skill[(int)skill] += value;
+				e.stats->skill_apt[(int)skill] = SkillToAptitude(e.stats->skill[(int)skill]);
 			}
 			e.stats->skill_tag[(int)skill] = se.value;
 		}

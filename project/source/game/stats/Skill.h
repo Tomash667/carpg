@@ -126,12 +126,12 @@ struct SkillInfo
 	string name, desc;
 	SkillGroup group;
 	Attribute attrib, attrib2;
-	//SkillPack pack;
+	int skill_group;
 
 	static const int MAX = 255;
 
-	SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2) : skill_id(skill_id), id(id), group(group), attrib(attrib),
-		attrib2(attrib2)
+	SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2, int skill_group) : skill_id(skill_id), id(id),
+		group(group), attrib(attrib), attrib2(attrib2), skill_group(skill_group)
 	{
 	}
 

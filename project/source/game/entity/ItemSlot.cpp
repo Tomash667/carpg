@@ -5,8 +5,8 @@
 #include "Unit.h"
 #include "Language.h"
 
-cstring txAttack, txDefense, txMobility, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical, txWeight,
-txValue, txInvalidArmor;
+cstring txAttack, txDefense, txMobility, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical,
+txWeight, txValue, txInvalidArmor, txBlock;
 
 //=================================================================================================
 void SetItemStatsText()
@@ -25,6 +25,7 @@ void SetItemStatsText()
 	txWeight = Str("weight");
 	txValue = Str("value");
 	txInvalidArmor = Str("invalidArmor");
+	txBlock = Str("block");
 }
 
 //=================================================================================================
@@ -65,7 +66,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 		{
 			/*
 			Rapier - Short blade
-			Attack: 30 (40) piercing
+			Attack: 30 (40 -> 50) piercing
 			Required strength: $50$
 			*/
 			const Weapon& weapon = item->ToWeapon();
@@ -99,11 +100,19 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				break;
 			}
 
-			str += Format(" - %s\n%s: %d (%d) %s\n%s: $c%c%d$c-\n",
+			int old_attack = (unit->HaveWeapon() ? (int)unit->CalculateAttack() : 0);
+			int new_attack = (int)unit->CalculateAttack(item);
+			cstring atk_desc;
+			if(old_attack == new_attack)
+				atk_desc = Format("%d", old_attack);
+			else
+				atk_desc = Format("%d -> %d", old_attack, new_attack);
+
+			str += Format(" - %s\n%s: %d (%s) %s\n%s: $c%c%d$c-\n",
 				WeaponTypeInfo::info[weapon.weapon_type].name,
 				txAttack,
 				weapon.dmg,
-				(int)unit->CalculateAttack(item),
+				atk_desc,
 				dmg_type,
 				txRequiredStrength,
 				(unit->Get(Attribute::STR) >= weapon.req_str ? '-' : 'r'),
@@ -114,14 +123,23 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 		{
 			/*
 			Long bow
-			Attack: 30 (40) piercing
+			Attack: 30 (40 -> 50) piercing
 			Required strength: $40$
 			*/
 			const Bow& bow = item->ToBow();
-			str += Format("\n%s: %d (%d) %s\n%s: $c%c%d$c-\n",
+
+			int old_attack = (unit->HaveBow() ? (int)unit->CalculateAttack(&unit->GetBow()) : 0);
+			int new_attack = (int)unit->CalculateAttack(item);
+			cstring atk_desc;
+			if(old_attack == new_attack)
+				atk_desc = Format("%d", old_attack);
+			else
+				atk_desc = Format("%d -> %d", old_attack, new_attack);
+
+			str += Format("\n%s: %d (%s) %s\n%s: $c%c%d$c-\n",
 				txAttack,
 				bow.dmg,
-				(int)unit->CalculateAttack(item),
+				atk_desc,
 				txDTPierce,
 				txRequiredStrength,
 				(unit->Get(Attribute::STR) >= bow.req_str ? '-' : 'r'),
@@ -132,7 +150,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 		{
 			/*
 			Chainmail - Medium armor [(Does not fit)]
-			Defense: 30 (40)
+			Defense: 30 (40 -> 50)
 			Required strength: $40$
 			Mobility: 50 (40) / Mobility: 50 (70->60)
 			*/
@@ -152,11 +170,19 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			else
 				mob_str = Format("(%d->%d)", dex, mob);
 
-			str += Format(" - %s\n%s: %d (%d)\n%s: $c%c%d$c-\n%s: %d %s\n",
+			int old_def = (int)unit->CalculateDefense();
+			int new_def = (int)unit->CalculateDefense(item, nullptr);
+			cstring def_desc;
+			if(old_def == new_def)
+				def_desc = Format("%d", old_def);
+			else
+				def_desc = Format("%d -> %d", old_def, new_def);
+
+			str += Format(" - %s\n%s: %d (%s)\n%s: $c%c%d$c-\n%s: %d %s\n",
 				armor_type,
 				txDefense,
 				armor.def,
-				(int)unit->CalculateDefense(item, nullptr),
+				def_desc,
 				txRequiredStrength,
 				(unit->Get(Attribute::STR) >= armor.req_str ? '-' : 'r'),
 				armor.req_str,
@@ -169,14 +195,35 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 		{
 			/*
 			Iron shield
-			Defense: 30 (40)
+			Block: 70 (10 -> 20)
+			Defense: 30 (40 -> 50)
 			Required strength: $40$
 			*/
 			const Shield& shield = item->ToShield();
-			str += Format("\n%s: %d (%d)\n%s: $c%c%d$c-\n",
+
+			int old_def = (int)unit->CalculateDefense();
+			int new_def = (int)unit->CalculateDefense(nullptr, item);
+			cstring def_desc;
+			if(old_def == new_def)
+				def_desc = Format("%d", old_def);
+			else
+				def_desc = Format("%d -> %d", old_def, new_def);
+
+			int old_block = (int)unit->CalculateBlock();
+			int new_block = (int)unit->CalculateBlock(item);
+			cstring block_desc;
+			if(old_block == new_block)
+				block_desc = Format("%d", old_block);
+			else
+				block_desc = Format("%d -> %d", old_block, new_block);
+
+			str += Format("\n%s: %d (%s)\n%s: %d (%d)\n%s: $c%c%d$c-\n",
+				txBlock,
+				shield.block,
+				block_desc,
 				txDefense,
 				shield.def,
-				(int)unit->CalculateBlock(item),
+				def_desc,
 				txRequiredStrength,
 				(unit->Get(Attribute::STR) >= shield.req_str ? '-' : 'r'),
 				shield.req_str);
