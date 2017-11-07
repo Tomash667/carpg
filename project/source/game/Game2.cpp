@@ -6948,9 +6948,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		else
 			CreateUnitPhysics(*u);
 	}
-
-	u->block_energy = u->CalculateBlock() * 2;
-
+	
 	if(Net::IsServer())
 		u->netid = netid_counter++;
 
@@ -7831,8 +7829,6 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			// licznik okrzyku od ostatniego trafienia
 			u.hurt_timer -= dt;
 			u.last_bash -= dt;
-			const float max_block = u.CalculateBlock();
-			u.block_energy = min(u.block_energy + max_block * dt, max_block * 2);
 
 			u.UpdateEffects(dt);
 			if(Net::IsLocal() && u.moved)
@@ -9410,7 +9406,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 						if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
 						{
-							float blocked = hitted->CalculateBlock(&hitted->GetShield()) * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
+							float blocked = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
 							atk -= blocked;
 
 							MATERIAL_TYPE mat = hitted->GetShield().material;
@@ -9528,7 +9524,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 						if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
 						{
-							float blocked = hitted->CalculateBlock(&hitted->GetShield()) * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
+							float blocked = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
 							dmg -= blocked / 2;
 
 							if(hitted->IsPlayer())
@@ -11004,31 +11000,22 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	// blocking
 	if(hitted.action == A_BLOCK && kat < PI / 2)
 	{
-		//!!!!!!!!!!!!!!!!!!!!!!!
-		int block_value = 3;
-		MATERIAL_TYPE hitted_mat;
-		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
-			--block_value;
-		if(attacker.attack_power >= 1.9f)
-			--block_value;
-
 		// reduce damage
+		float base_atk = atk;
 		float blocked = hitted.CalculateBlock();
+		float stamina_used = min(atk, blocked);
 		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
 			blocked *= 2.f / 3;
-		hitted_mat = hitted.GetShield().material;
-		atk -= blocked;
-		float stamina = blocked;
-		stamina -= hitted.Get(Skill::SHIELD);
-		float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted.Get(Skill::SHIELD)) / 100);
-		stamina *= block_stamina_loss;
-		hitted.RemoveStamina(stamina);
-
-		// power attack depletes block energy faster
 		if(attacker.attack_power >= 1.9f)
-			blocked *= 2;
-
+			stamina_used *= 4.f / 3;
+		atk -= blocked;
+		stamina_used -= hitted.Get(Skill::SHIELD);
+		float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted.Get(Skill::SHIELD)) / 100);
+		stamina_used *= block_stamina_loss;
+		hitted.RemoveStamina(stamina_used);
+		
 		// play sound
+		MATERIAL_TYPE hitted_mat = hitted.GetShield().material;
 		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
 		if(Net::IsServer())
 		{
@@ -11043,7 +11030,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 		// train blocking
 		if(hitted.IsPlayer())
-			hitted.player->Train(TrainWhat::BlockAttack, base_dmg / hitted.hpmax, attacker.level);
+			hitted.player->Train(TrainWhat::BlockAttack, base_atk / hitted.hpmax, attacker.level);
 
 		// pain animation & break blocking
 		if(hitted.stamina < 0)
@@ -11073,7 +11060,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		}
 
 		// attack fully blocked
-		if(dmg < 0)
+		if(atk < 0)
 		{
 			if(attacker.IsPlayer())
 			{
@@ -11085,45 +11072,16 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			return ATTACK_BLOCKED;
 		}
 	}
-	else if(hitted.HaveShield() && hitted.action != A_PAIN)
-	{
-		// defense bonus from shield
-		base_def += hitted.CalculateBlock(&hitted.GetShield()) / 5;
-	}
-
-	// decrease defense when stunned
-	bool clean_hit = false;
-	if(hitted.action == A_PAIN)
-	{
-		dex_def = 0.f;
-		if(hitted.HaveArmor())
-		{
-			const Armor& a = hitted.GetArmor();
-			switch(a.skill)
-			{
-			case Skill::LIGHT_ARMOR:
-				armor_def *= 0.25f;
-				break;
-			case Skill::MEDIUM_ARMOR:
-				armor_def *= 0.5f;
-				break;
-			case Skill::HEAVY_ARMOR:
-				armor_def *= 0.75f;
-				break;
-			}
-		}
-		clean_hit = true;
-	}
-
-	// armor defense
-	dmg -= (armor_def + dex_def + base_def);
+	
+	// calculate damage
+	float dmg = game::CalculateDamage(atk, def);
 
 	// hit sound
 	PlayHitSound(!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material, hitted.GetBodyMaterial(), hitpoint, 2.f, dmg > 0.f);
 
 	// train player armor skill
 	if(hitted.IsPlayer())
-		hitted.player->Train(TrainWhat::TakeDamageArmor, base_dmg / hitted.hpmax, attacker.level);
+		hitted.player->Train(TrainWhat::TakeDamageArmor, dmg / hitted.hpmax, attacker.level);
 
 	// fully blocked by armor
 	if(dmg < 0)
@@ -11161,7 +11119,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		e.effect = E_POISON;
 	}
 
-	return clean_hit ? ATTACK_CLEAN_HIT : ATTACK_HIT;
+	return (hitted.action == A_PAIN ? ATTACK_CLEAN_HIT : ATTACK_HIT);
 }
 
 void Game::GenerateLabirynthUnits()
@@ -12071,20 +12029,20 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 								Unit* hitted = *it2;
 
 								// uderzenie w³óczniami
-								float dmg = float(trap.base->dmg),
+								float atk = float(trap.base->dmg),
 									def = hitted->CalculateDefense();
 
-								int mod = ObliczModyfikator(DMG_PIERCE, hitted->data->flags);
+								auto mod = game::CalculateModifier(DMG_PIERCE, hitted->data);
 								float m = 1.f;
-								if(mod == -1)
+								if(mod == game::Susceptibility)
 									m += 0.25f;
-								else if(mod == 1)
+								else if(mod == game::Resistance)
 									m -= 0.25f;
 
 								// modyfikator obra¿eñ
-								dmg *= m;
-								float base_dmg = dmg;
-								dmg -= def;
+								atk *= m;
+								float base_atk = atk;
+								atk -= def;
 
 								// dŸwiêk trafienia
 								if(sound_volume)
@@ -12092,9 +12050,10 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 
 								// train player armor skill
 								if(hitted->IsPlayer())
-									hitted->player->Train(TrainWhat::TakeDamageArmor, base_dmg / hitted->hpmax, 4);
+									hitted->player->Train(TrainWhat::TakeDamageArmor, base_atk / hitted->hpmax, 4);
 
 								// obra¿enia
+								float dmg = game::CalculateDamage(atk, def);
 								if(dmg > 0)
 									GiveDmg(ctx, nullptr, dmg, **it2);
 
@@ -21250,72 +21209,6 @@ int xdif(int a, int b)
 		if(b >= a)
 			return -5;
 		return -6;
-	}
-}
-
-Game::BLOCK_RESULT Game::CheckBlock(Unit& hitted, float angle_dif, float attack_power, float skill, float str)
-{
-	int k_block;
-	// 	if(hitted.HaveShield())
-	// 	{
-		// blokowanie tarcz¹
-	k_block = xdif((int)hitted.CalculateBlock(&hitted.GetShield()), (int)attack_power);
-
-	k_block += xdif(hitted.Get(Skill::SHIELD), (int)skill);
-
-	// 	k_block += hitted.attrib[A_STR]/2;
-	// 	k_block += hitted.attrib[A_DEX]/4;
-	// 	k_block += hitted.skill[S_SHIELD];
-
-			// premia za broñ
-	// 	}
-	// 	else
-	// 	{
-	// 		// blokowanie broni¹
-	// 		k_block = 0;
-	// 	}
-
-	if(str > 0.f)
-		k_block += xdif(hitted.Get(Attribute::STR), (int)str);
-
-	if(angle_dif > PI / 4)
-	{
-		if(angle_dif > PI / 4 + PI / 8)
-			k_block -= 2;
-		else
-			--k_block;
-	}
-
-	k_block += Random(-5, 5);
-
-	Info("k_block: %d", k_block);
-
-	/*return BLOCK_PERFECT;*/
-
-	if(k_block > 8)
-	{
-		Info("BLOCK_BREAK");
-		return BLOCK_BREAK;
-	}
-	else if(k_block > 4)
-	{
-		Info("BLOCK_POOR");
-		return BLOCK_POOR;
-	}
-	else if(k_block > 0)
-	{
-		Info("BLOCK_MEDIUM");
-		return BLOCK_MEDIUM;
-	}
-	else if(k_block > -4)
-	{
-		Info("BLOCK_GOOD");
-		return BLOCK_GOOD;
-	}
-	else
-	{
-		Info("BLOCK_PERFECT");
-		return BLOCK_PERFECT;
 	}
 }
 

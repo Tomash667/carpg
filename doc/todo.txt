@@ -1,10 +1,13 @@
 ﻿FEATURE:
 
 new world order:
-+ attack formula
 + change block formula (shield defense changed)
-	+ block points - then blocking breaks, meh there is already stamina for that
-	+ block power 5%-100%
+	+ add shield block power
+	+ change formula
++ get skill - similar/attribute bonus
++ new training
+	+ attrib
+	+ skill
 + units stats, new units
 - can shoot without stamina
 - one handed weapons skill = -1

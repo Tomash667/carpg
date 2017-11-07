@@ -1439,17 +1439,7 @@ public:
 	UnitData* GetRandomHeroData();
 	UnitData* GetUnitDataFromClass(Class clas, bool crazy);
 	void HandleQuestEvent(Quest_Event* event);
-
-	enum BLOCK_RESULT
-	{
-		BLOCK_PERFECT,
-		BLOCK_GOOD,
-		BLOCK_MEDIUM,
-		BLOCK_POOR,
-		BLOCK_BREAK
-	};
-	BLOCK_RESULT CheckBlock(Unit& hitted, float angle_dif, float attack_power, float skill, float str);
-
+	
 	void DropGold(int count);
 
 	// dodaje przedmiot do ekwipunku postaci (obs³uguje z³oto, otwarty ekwipunek i multiplayer)

@@ -170,8 +170,7 @@ struct Unit
 	Vec3 pos; // pozycja postaci
 	Vec3 visual_pos; // graficzna pozycja postaci, u¿ywana w MP
 	Vec3 prev_pos, target_pos, target_pos2;
-	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer,
-		block_energy;
+	float rot, prev_speed, hp, hpmax, stamina, stamina_max, speed, hurt_timer, talk_timer, timer, use_rot, attack_power, last_bash, alcohol, raise_timer;
 	int animation_state, level, gold, attack_id, refid, in_building, in_arena, quest_refid;
 	FROZEN frozen;
 	ACTION action;

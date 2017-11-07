@@ -1402,7 +1402,6 @@ void Unit::Save(HANDLE file, bool local)
 		}
 
 		WriteFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
-		WriteFile(file, &block_energy, sizeof(block_energy), &tmp, nullptr);
 		WriteFile(file, &moved, sizeof(moved), &tmp, nullptr);
 	}
 
@@ -1711,10 +1710,6 @@ void Unit::Load(HANDLE file, bool local)
 		}
 
 		ReadFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
-		if(LOAD_VERSION >= V_CURRENT)
-			ReadFile(file, &block_energy, sizeof(block_energy), &tmp, nullptr);
-		else
-			block_energy = CalculateBlock() * 2;
 		if(LOAD_VERSION >= V_0_5)
 			ReadFile(file, &moved, sizeof(moved), &tmp, nullptr);
 	}
