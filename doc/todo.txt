@@ -1,4 +1,8 @@
 ﻿FEATURE:
+? arena e/m/h
+? old/new mages_n_golems arena
+? old/new mages_n_golems location
++ update changelog
 ===============================================================================================================
 CURRENT:
 - traps are out of sync for client/server

@@ -15328,37 +15328,6 @@ void Game::VerifyItemResources(const Item* item)
 	assert(item->icon);
 }
 
-cstring arena_slabi[] = {
-	"orcs",
-	"goblins",
-	"undead",
-	"bandits",
-	"wolfs",
-	"spiders"
-};
-
-cstring arena_sredni[] = {
-	"orcs",
-	"goblins",
-	"undead",
-	"evils",
-	"bandits",
-	"mages",
-	"golems",
-	"mages_n_golems",
-	"hunters"
-};
-
-cstring arena_silni[] = {
-	"orcs",
-	"necros",
-	"evils",
-	"mages",
-	"golems",
-	"mages_n_golems",
-	"crazies"
-};
-
 void Game::StartArenaCombat(int level)
 {
 	assert(InRange(level, 1, 3));
@@ -15485,26 +15454,30 @@ void Game::StartArenaCombat(int level)
 		}
 	}
 
-	cstring grupa;
+	cstring list_id;
 	switch(level)
 	{
 	default:
 	case 1:
-		grupa = arena_slabi[Rand() % countof(arena_slabi)];
+		list_id = "arena_easy";
 		SpawnArenaViewers(1);
 		break;
 	case 2:
-		grupa = arena_sredni[Rand() % countof(arena_sredni)];
+		list_id = "arena_medium";
 		SpawnArenaViewers(3);
 		break;
 	case 3:
-		grupa = arena_silni[Rand() % countof(arena_silni)];
+		list_id = "arena_hard";
 		SpawnArenaViewers(5);
 		break;
 	}
 
+	auto list = FindUnitGroupList(list_id);
+	assert(list);
+	auto group = list->groups[Rand() % list->groups.size()];
+
 	TmpUnitGroup part;
-	part.group = FindUnitGroup(grupa);
+	part.group = group;
 	part.total = 0;
 	for(auto& entry : part.group->entries)
 	{

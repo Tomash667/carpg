@@ -17,7 +17,7 @@ sg_undead = "undead"
 sg_necros = "necromants"
 sg_mages = "mages"
 sg_golems = "golems"
-sg_mages_n_golems = "mages"
+sg_mages_and_golems = "mages"
 sg_evils = "undead"
 sg_unk = "unknown monsters"
 
