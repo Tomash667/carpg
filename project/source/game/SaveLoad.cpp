@@ -33,11 +33,14 @@
 #include "Team.h"
 #include "Journal.h"
 
-// SF_DEV, SF_BETA removed in 0.4
-#define SF_ONLINE (1<<0)
-//#define SF_DEV (1<<1)
-#define SF_DEBUG (1<<2)
-//#define SF_BETA (1<<3)
+enum SaveFlags
+{
+	// SF_DEV, SF_BETA removed in 0.4 (remove with compability V_0_4)
+	SF_ONLINE = 1 << 0,
+	//SF_DEV = 1 << 1,
+	SF_DEBUG = 1 << 2,
+	//SF_BETA = 1 << 3
+};
 
 //=================================================================================================
 bool Game::CanSaveGame() const

@@ -12,7 +12,7 @@ struct Portal;
 struct TrailParticleEmitter;
 
 //-----------------------------------------------------------------------------
-#define SPLIT_INDEX (1<<31)
+const int SPLIT_INDEX = 1 << 31;
 
 //-----------------------------------------------------------------------------
 struct SceneNode

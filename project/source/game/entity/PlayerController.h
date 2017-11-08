@@ -35,12 +35,15 @@ inline bool PoAkcjaTmpIndex(NextAction po)
 }
 
 //-----------------------------------------------------------------------------
-#define STAT_KILLS (1<<0)
-#define STAT_DMG_DONE (1<<1)
-#define STAT_DMG_TAKEN (1<<2)
-#define STAT_KNOCKS (1<<3)
-#define STAT_ARENA_FIGHTS (1<<4)
-#define STAT_MAX 0x1F
+enum PlayerStats
+{
+	STAT_KILLS = 1 << 0,
+	STAT_DMG_DONE = 1 << 1,
+	STAT_DMG_TAKEN = 1 << 2,
+	STAT_KNOCKS = 1 << 3,
+	STAT_ARENA_FIGHTS = 1 << 4,
+	STAT_MAX = 0x1F
+};
 
 //-----------------------------------------------------------------------------
 enum class TrainWhat
@@ -168,7 +171,7 @@ struct PlayerController : public HeroPlayerCommon
 	{
 		return IsTrade(action);
 	}
-	
+
 	bool IsLocal() const
 	{
 		return is_local;

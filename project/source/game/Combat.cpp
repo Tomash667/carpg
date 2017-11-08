@@ -1,6 +1,6 @@
 #include "Pch.h"
 #include "Core.h"
-#include "GameCombat.h"
+#include "Combat.h"
 #include "UnitData.h"
 
 float game::CalculateDamage(float atk, float def)

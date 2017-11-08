@@ -189,10 +189,13 @@ enum FRAME_INDEX
 
 //-----------------------------------------------------------------------------
 // Flags for which weapon use which attack animation
-#define A_SHORT_BLADE (1<<0)
-#define A_LONG_BLADE (1<<1)
-#define A_BLUNT (1<<2)
-#define A_AXE (1<<3)
+enum WeaponAttackFlags
+{
+	A_SHORT_BLADE = 1 << 0,
+	A_LONG_BLADE = 1 << 1,
+	A_BLUNT = 1 << 2,
+	A_AXE = 1 << 3
+};
 
 //-----------------------------------------------------------------------------
 // Informacje o animacjach ataku postaci

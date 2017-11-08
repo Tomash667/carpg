@@ -11,7 +11,10 @@ struct EntryPoint
 
 //-----------------------------------------------------------------------------
 // City gates
-#define GATE_NORTH 0x01
-#define GATE_SOUTH 0x02
-#define GATE_WEST 0x04
-#define GATE_EAST 0x08
+enum GateDir
+{
+	GATE_NORTH = 0x01,
+	GATE_SOUTH = 0x02,
+	GATE_WEST = 0x04,
+	GATE_EAST = 0x08
+};

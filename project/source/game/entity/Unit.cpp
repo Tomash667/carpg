@@ -853,7 +853,7 @@ void Unit::UpdateEffects(float dt)
 
 	// update poison damage
 	if(poison_dmg != 0.f)
-		game.GiveDmg(game.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, DMG_NO_BLOOD);
+		game.GiveDmg(game.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, Game::DMG_NO_BLOOD);
 	if(IsPlayer())
 	{
 		if(Net::IsOnline() && player != game.pc && player->last_dmg_poison != poison_dmg)

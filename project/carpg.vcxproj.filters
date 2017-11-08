@@ -667,7 +667,7 @@
     <ClCompile Include="source\game\stats\StatsX.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\GameCombat.cpp">
+    <ClCompile Include="source\game\Combat.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1318,7 +1318,7 @@
     <ClInclude Include="source\game\stats\StatsX.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\GameCombat.h">
+    <ClInclude Include="source\game\Combat.h">
       <Filter>3. game</Filter>
     </ClInclude>
   </ItemGroup>

@@ -41,7 +41,7 @@
 #include "Action.h"
 #include "ItemContainer.h"
 #include "Stock.h"
-#include "GameCombat.h"
+#include "Combat.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -21657,7 +21657,7 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 bool Game::RemoveItem(Unit& unit, const Item* item, uint count)
 {
 	int i_index = unit.FindItem(item);
-	if(i_index == INVALID_IINDEX)
+	if(i_index == Unit::INVALID_IINDEX)
 		return false;
 	RemoveItem(unit, i_index, count);
 	return true;

@@ -553,7 +553,7 @@ struct Unit
 		RemoveEffect(E_POISON);
 	}
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
-#define INVALID_IINDEX (-SLOT_INVALID-1)
+	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
 	int FindItem(const Item* item, int quest_refid = -1) const;
 	int FindQuestItem(int quest_refid) const;
 	void RemoveItem(int iindex, bool active_location = true);

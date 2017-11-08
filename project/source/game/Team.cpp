@@ -25,7 +25,7 @@ bool TeamSingleton::FindItemInTeam(const Item* item, int refid, Unit** unit_resu
 		if(unit->IsPlayer() || check_npc)
 		{
 			int index = unit->FindItem(item, refid);
-			if(index != INVALID_IINDEX)
+			if(index != Unit::INVALID_IINDEX)
 			{
 				if(unit_result)
 					*unit_result = unit;
