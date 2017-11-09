@@ -2894,7 +2894,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			// shoting from bow
 			if(u.action == A_SHOOT)
 			{
-				if(u.animation_state == 0 && KeyUpAllowed(pc->action_key))
+				if(u.animation_state == 0 && u.stamina > 0 && KeyUpAllowed(pc->action_key))
 				{
 					u.animation_state = 1;
 
@@ -6948,7 +6948,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 		else
 			CreateUnitPhysics(*u);
 	}
-	
+
 	if(Net::IsServer())
 		u->netid = netid_counter++;
 
@@ -9295,6 +9295,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 			it->trail2->Update(0, &pt1, &pt2);
 		}
 
+		// remove bullet on timeout
 		if((it->timer -= dt) <= 0.f)
 		{
 			// timeout, delete bullet
@@ -9307,319 +9308,331 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 			}
 			if(it->pe)
 				it->pe->destroy = true;
+			continue;
+		}
+
+		// do contact test
+		btCollisionObject* cobj;
+
+		if(!it->spell)
+			cobj = obj_arrow;
+		else
+		{
+			cobj = obj_spell;
+			cobj->setCollisionShape(it->spell->shape);
+		}
+
+		btTransform& tr = cobj->getWorldTransform();
+		tr.setOrigin(ToVector3(it->pos));
+		tr.setRotation(btQuaternion(it->rot.y, it->rot.x, it->rot.z));
+
+		BulletCallback callback(cobj, it->owner ? it->owner->cobj : nullptr);
+		phy_world->contactTest(cobj, callback);
+		if(!callback.hit)
+			continue;
+
+
+		Unit* hitted = callback.target;
+
+		// something was hit, remove bullet
+		it->remove = true;
+		deletions = true;
+		if(it->trail)
+		{
+			it->trail->destroy = true;
+			it->trail2->destroy = true;
+		}
+		if(it->pe)
+			it->pe->destroy = true;
+
+		if(callback.hit_unit && hitted)
+		{
+			if(!Net::IsLocal())
+				continue;
+
+			if(!it->spell)
+			{
+				if(it->owner && IsFriend(*it->owner, *hitted) || it->attack < -50.f)
+				{
+					// frendly fire
+					if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
+					{
+						MATERIAL_TYPE mat = hitted->GetShield().material;
+						if(sound_volume)
+							PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::HIT_SOUND;
+							c.id = MAT_IRON;
+							c.ile = mat;
+							c.pos = callback.hitpoint;
+						}
+					}
+					else
+						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, false);
+					continue;
+				}
+
+				if(it->owner && hitted->IsAI())
+					AI_HitReaction(*hitted, it->start_pos);
+
+				// trafienie w postaæ
+				float atk = it->attack,
+					def = hitted->CalculateDefense();
+
+				auto mod = game::CalculateModifier(DMG_PIERCE, hitted->data);
+				float m = 1.f;
+				if(mod == game::Susceptibility)
+					m += 0.25f;
+				else if(mod == game::Resistance)
+					m -= 0.25f;
+				if(hitted->IsNotFighting())
+					m += 0.1f; // 10% do dmg jeœli ma schowan¹ broñ
+
+				// backstab bonus damage
+				float kat = AngleDiff(it->rot.y, hitted->rot);
+				float backstab_mod;
+				if(it->backstab == 0)
+					backstab_mod = 0.25f;
+				if(it->backstab == 1)
+					backstab_mod = 0.5f;
+				else
+					backstab_mod = 0.75f;
+				if(IS_SET(hitted->data->flags2, F2_BACKSTAB_RES))
+					backstab_mod /= 2;
+				m += kat / PI*backstab_mod;
+
+				// modyfikator obra¿eñ
+				atk *= m;
+				float base_atk = atk;
+
+				if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
+				{
+					float blocked = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
+					float stamina_used = min(atk, blocked);
+					atk -= blocked;
+					stamina_used -= hitted->Get(Skill::SHIELD);
+					float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted->Get(Skill::SHIELD)) / 100);
+					stamina_used *= block_stamina_loss;
+					if(stamina_used > 0)
+						hitted->RemoveStamina(stamina_used);
+
+					MATERIAL_TYPE mat = hitted->GetShield().material;
+					if(sound_volume)
+						PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
+					if(Net::IsOnline())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::HIT_SOUND;
+						c.id = MAT_IRON;
+						c.ile = mat;
+						c.pos = callback.hitpoint;
+					}
+
+					if(hitted->IsPlayer())
+					{
+						// player blocked bullet, train shield
+						hitted->player->Train(TrainWhat::BlockBullet, base_atk / hitted->hpmax, it->level);
+					}
+
+					if(atk < 0)
+					{
+						// shot blocked by shield
+						if(it->owner && it->owner->IsPlayer())
+						{
+							// train player in bow
+							it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, hitted->level);
+							// aggregate
+							AttackReaction(*hitted, *it->owner);
+						}
+						continue;
+					}
+				}
+
+				// odpornoœæ/pancerz
+				float dmg = game::CalculateDamage(atk, def);
+
+				// szkol gracza w pancerzu/hp
+				if(hitted->IsPlayer())
+					hitted->player->Train(TrainWhat::TakeDamageArmor, base_atk / hitted->hpmax, it->level);
+
+				// hit sound
+				PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, dmg > 0.f);
+
+				if(dmg < 0)
+				{
+					if(it->owner && it->owner->IsPlayer())
+					{
+						// train player in bow
+						it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, hitted->level);
+						// aggregate
+						AttackReaction(*hitted, *it->owner);
+					}
+					continue;
+				}
+
+				// szkol gracza w ³uku
+				if(it->owner && it->owner->IsPlayer())
+				{
+					float v = dmg / hitted->hpmax;
+					if(hitted->hp - dmg < 0.f && !hitted->IsImmortal())
+						v = max(TRAIN_KILL_RATIO, v);
+					if(v > 1.f)
+						v = 1.f;
+					it->owner->player->Train(TrainWhat::BowAttack, v, hitted->level);
+				}
+
+				GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, 0);
+
+				// apply poison
+				if(it->poison_attack > 0.f && !IS_SET(hitted->data->flags, F_POISON_RES))
+				{
+					Effect& e = Add1(hitted->effects);
+					e.power = it->poison_attack / 5;
+					e.time = 5.f;
+					e.effect = E_POISON;
+				}
+			}
+			else
+			{
+				// trafienie w postaæ z czara
+				if(it->owner && IsFriend(*it->owner, *hitted))
+				{
+					// frendly fire
+					SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
+
+					// dŸwiêk trafienia w postaæ
+					if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
+					{
+						MATERIAL_TYPE mat = hitted->GetShield().material;
+						if(sound_volume)
+							PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::HIT_SOUND;
+							c.id = MAT_IRON;
+							c.ile = mat;
+							c.pos = callback.hitpoint;
+						}
+					}
+					else
+						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, false);
+					continue;
+				}
+
+				if(hitted->IsAI())
+					AI_HitReaction(*hitted, it->start_pos);
+
+				float dmg = it->attack;
+				if(it->owner)
+					dmg += it->owner->level * it->spell->dmg_bonus;
+				float kat = AngleDiff(Clip(it->rot.y + PI), hitted->rot);
+				float base_dmg = dmg;
+
+				if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
+				{
+					float blocked = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
+					float stamina_used = min(blocked, dmg);
+					dmg -= blocked / 2;
+					stamina_used -= hitted->Get(Skill::SHIELD);
+					float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted->Get(Skill::SHIELD)) / 100);
+					stamina_used *= block_stamina_loss;
+					if(stamina_used > 0)
+						hitted->RemoveStamina(stamina_used);
+
+					if(hitted->IsPlayer())
+					{
+						// player blocked spell, train him
+						hitted->player->Train(TrainWhat::BlockBullet, base_dmg / hitted->hpmax, it->level);
+					}
+
+					if(dmg < 0)
+					{
+						// blocked by shield
+						SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
+						continue;
+					}
+				}
+
+				GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
+
+				// apply poison
+				if(IS_SET(it->spell->flags, Spell::Poison) && !IS_SET(hitted->data->flags, F_POISON_RES))
+				{
+					Effect& e = Add1(hitted->effects);
+					e.power = dmg / 5;
+					e.time = 5.f;
+					e.effect = E_POISON;
+				}
+
+				// apply spell effect
+				SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
+			}
 		}
 		else
 		{
-			btCollisionObject* cobj;
-
+			// trafiono w obiekt
 			if(!it->spell)
-				cobj = obj_arrow;
+			{
+				if(sound_volume)
+					PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), callback.hitpoint, 2.f, 10.f);
+
+				ParticleEmitter* pe = new ParticleEmitter;
+				pe->tex = tIskra;
+				pe->emision_interval = 0.01f;
+				pe->life = 5.f;
+				pe->particle_life = 0.5f;
+				pe->emisions = 1;
+				pe->spawn_min = 10;
+				pe->spawn_max = 15;
+				pe->max_particles = 15;
+				pe->pos = callback.hitpoint;
+				pe->speed_min = Vec3(-1, 0, -1);
+				pe->speed_max = Vec3(1, 1, 1);
+				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
+				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
+				pe->size = 0.3f;
+				pe->op_size = POP_LINEAR_SHRINK;
+				pe->alpha = 0.9f;
+				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->mode = 0;
+				pe->Init();
+				ctx.pes->push_back(pe);
+
+				if(Net::IsLocal() && in_tutorial && callback.target)
+				{
+					void* ptr = (void*)callback.target;
+					if((ptr == tut_shield || ptr == tut_shield2) && tut_state == 12)
+					{
+						Train(*pc->unit, true, (int)Skill::BOW, 1);
+						tut_state = 13;
+						int unlock = 6;
+						int activate = 8;
+						for(vector<TutorialText>::iterator it = ttexts.begin(), end = ttexts.end(); it != end; ++it)
+						{
+							if(it->id == activate)
+							{
+								it->state = 1;
+								break;
+							}
+						}
+						for(vector<Door*>::iterator it = local_ctx.doors->begin(), end = local_ctx.doors->end(); it != end; ++it)
+						{
+							if((*it)->locked == LOCK_TUTORIAL + unlock)
+							{
+								(*it)->locked = LOCK_NONE;
+								break;
+							}
+						}
+					}
+				}
+			}
 			else
 			{
-				cobj = obj_spell;
-				cobj->setCollisionShape(it->spell->shape);
-			}
-
-			btTransform& tr = cobj->getWorldTransform();
-			tr.setOrigin(ToVector3(it->pos));
-			tr.setRotation(btQuaternion(it->rot.y, it->rot.x, it->rot.z));
-
-			BulletCallback callback(cobj, it->owner ? it->owner->cobj : nullptr);
-			phy_world->contactTest(cobj, callback);
-
-			if(callback.hit)
-			{
-				Unit* hitted = callback.target;
-
-				// something was hit, remove bullet
-				it->remove = true;
-				deletions = true;
-				if(it->trail)
-				{
-					it->trail->destroy = true;
-					it->trail2->destroy = true;
-				}
-				if(it->pe)
-					it->pe->destroy = true;
-
-				if(callback.hit_unit && hitted)
-				{
-					if(!Net::IsLocal())
-						continue;
-
-					if(!it->spell)
-					{
-						if(it->owner && IsFriend(*it->owner, *hitted) || it->attack < -50.f)
-						{
-							// frendly fire
-							if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
-							{
-								MATERIAL_TYPE mat = hitted->GetShield().material;
-								if(sound_volume)
-									PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
-								if(Net::IsOnline())
-								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::HIT_SOUND;
-									c.id = MAT_IRON;
-									c.ile = mat;
-									c.pos = callback.hitpoint;
-								}
-							}
-							else
-								PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, false);
-							continue;
-						}
-
-						if(it->owner && hitted->IsAI())
-							AI_HitReaction(*hitted, it->start_pos);
-
-						// trafienie w postaæ
-						float atk = it->attack,
-							def = hitted->CalculateDefense();
-
-						auto mod = game::CalculateModifier(DMG_PIERCE, hitted->data);
-						float m = 1.f;
-						if(mod == game::Susceptibility)
-							m += 0.25f;
-						else if(mod == game::Resistance)
-							m -= 0.25f;
-						if(hitted->IsNotFighting())
-							m += 0.1f; // 10% do dmg jeœli ma schowan¹ broñ
-
-						// backstab bonus damage
-						float kat = AngleDiff(it->rot.y, hitted->rot);
-						float backstab_mod;
-						if(it->backstab == 0)
-							backstab_mod = 0.25f;
-						if(it->backstab == 1)
-							backstab_mod = 0.5f;
-						else
-							backstab_mod = 0.75f;
-						if(IS_SET(hitted->data->flags2, F2_BACKSTAB_RES))
-							backstab_mod /= 2;
-						m += kat / PI*backstab_mod;
-
-						// modyfikator obra¿eñ
-						atk *= m;
-						float base_atk = atk;
-
-						if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
-						{
-							float blocked = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
-							atk -= blocked;
-
-							MATERIAL_TYPE mat = hitted->GetShield().material;
-							if(sound_volume)
-								PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
-							if(Net::IsOnline())
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::HIT_SOUND;
-								c.id = MAT_IRON;
-								c.ile = mat;
-								c.pos = callback.hitpoint;
-							}
-
-							if(hitted->IsPlayer())
-							{
-								// player blocked bullet, train shield
-								hitted->player->Train(TrainWhat::BlockBullet, base_atk / hitted->hpmax, it->level);
-							}
-
-							if(atk < 0)
-							{
-								// shot blocked by shield
-								if(it->owner && it->owner->IsPlayer())
-								{
-									// train player in bow
-									it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, hitted->level);
-									// aggregate
-									AttackReaction(*hitted, *it->owner);
-								}
-								continue;
-							}
-						}
-
-						// odpornoœæ/pancerz
-						float dmg = game::CalculateDamage(atk, def);
-
-						// szkol gracza w pancerzu/hp
-						if(hitted->IsPlayer())
-							hitted->player->Train(TrainWhat::TakeDamageArmor, base_atk / hitted->hpmax, it->level);
-
-						// hit sound
-						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, dmg > 0.f);
-
-						if(dmg < 0)
-						{
-							if(it->owner && it->owner->IsPlayer())
-							{
-								// train player in bow
-								it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, hitted->level);
-								// aggregate
-								AttackReaction(*hitted, *it->owner);
-							}
-							continue;
-						}
-
-						// szkol gracza w ³uku
-						if(it->owner && it->owner->IsPlayer())
-						{
-							float v = dmg / hitted->hpmax;
-							if(hitted->hp - dmg < 0.f && !hitted->IsImmortal())
-								v = max(TRAIN_KILL_RATIO, v);
-							if(v > 1.f)
-								v = 1.f;
-							it->owner->player->Train(TrainWhat::BowAttack, v, hitted->level);
-						}
-
-						GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, 0);
-
-						// apply poison
-						if(it->poison_attack > 0.f && !IS_SET(hitted->data->flags, F_POISON_RES))
-						{
-							Effect& e = Add1(hitted->effects);
-							e.power = it->poison_attack / 5;
-							e.time = 5.f;
-							e.effect = E_POISON;
-						}
-					}
-					else
-					{
-						// trafienie w postaæ z czara
-						if(it->owner && IsFriend(*it->owner, *hitted))
-						{
-							// frendly fire
-							SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
-
-							// dŸwiêk trafienia w postaæ
-							if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
-							{
-								MATERIAL_TYPE mat = hitted->GetShield().material;
-								if(sound_volume)
-									PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
-								if(Net::IsOnline())
-								{
-									NetChange& c = Add1(Net::changes);
-									c.type = NetChange::HIT_SOUND;
-									c.id = MAT_IRON;
-									c.ile = mat;
-									c.pos = callback.hitpoint;
-								}
-							}
-							else
-								PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, false);
-							continue;
-						}
-
-						if(hitted->IsAI())
-							AI_HitReaction(*hitted, it->start_pos);
-
-						float dmg = it->attack;
-						if(it->owner)
-							dmg += it->owner->level * it->spell->dmg_bonus;
-						float kat = AngleDiff(Clip(it->rot.y + PI), hitted->rot);
-						float base_dmg = dmg;
-
-						if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
-						{
-							float blocked = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
-							dmg -= blocked / 2;
-
-							if(hitted->IsPlayer())
-							{
-								// player blocked spell, train him
-								hitted->player->Train(TrainWhat::BlockBullet, base_dmg / hitted->hpmax, it->level);
-							}
-
-							if(dmg < 0)
-							{
-								// blocked by shield
-								SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
-								continue;
-							}
-						}
-
-						GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
-
-						// apply poison
-						if(IS_SET(it->spell->flags, Spell::Poison) && !IS_SET(hitted->data->flags, F_POISON_RES))
-						{
-							Effect& e = Add1(hitted->effects);
-							e.power = dmg / 5;
-							e.time = 5.f;
-							e.effect = E_POISON;
-						}
-
-						// apply spell effect
-						SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
-					}
-				}
-				else
-				{
-					// trafiono w obiekt
-					if(!it->spell)
-					{
-						if(sound_volume)
-							PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), callback.hitpoint, 2.f, 10.f);
-
-						ParticleEmitter* pe = new ParticleEmitter;
-						pe->tex = tIskra;
-						pe->emision_interval = 0.01f;
-						pe->life = 5.f;
-						pe->particle_life = 0.5f;
-						pe->emisions = 1;
-						pe->spawn_min = 10;
-						pe->spawn_max = 15;
-						pe->max_particles = 15;
-						pe->pos = callback.hitpoint;
-						pe->speed_min = Vec3(-1, 0, -1);
-						pe->speed_max = Vec3(1, 1, 1);
-						pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
-						pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
-						pe->size = 0.3f;
-						pe->op_size = POP_LINEAR_SHRINK;
-						pe->alpha = 0.9f;
-						pe->op_alpha = POP_LINEAR_SHRINK;
-						pe->mode = 0;
-						pe->Init();
-						ctx.pes->push_back(pe);
-
-						if(Net::IsLocal() && in_tutorial && callback.target)
-						{
-							void* ptr = (void*)callback.target;
-							if((ptr == tut_shield || ptr == tut_shield2) && tut_state == 12)
-							{
-								Train(*pc->unit, true, (int)Skill::BOW, 1);
-								tut_state = 13;
-								int unlock = 6;
-								int activate = 8;
-								for(vector<TutorialText>::iterator it = ttexts.begin(), end = ttexts.end(); it != end; ++it)
-								{
-									if(it->id == activate)
-									{
-										it->state = 1;
-										break;
-									}
-								}
-								for(vector<Door*>::iterator it = local_ctx.doors->begin(), end = local_ctx.doors->end(); it != end; ++it)
-								{
-									if((*it)->locked == LOCK_TUTORIAL + unlock)
-									{
-										(*it)->locked = LOCK_NONE;
-										break;
-									}
-								}
-							}
-						}
-					}
-					else
-					{
-						// trafienie czarem w obiekt
-						SpellHitEffect(ctx, *it, callback.hitpoint, nullptr);
-					}
-				}
+				// trafienie czarem w obiekt
+				SpellHitEffect(ctx, *it, callback.hitpoint, nullptr);
 			}
 		}
 	}
@@ -11012,8 +11025,9 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		stamina_used -= hitted.Get(Skill::SHIELD);
 		float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted.Get(Skill::SHIELD)) / 100);
 		stamina_used *= block_stamina_loss;
-		hitted.RemoveStamina(stamina_used);
-		
+		if(stamina_used > 0)
+			hitted.RemoveStamina(stamina_used);
+
 		// play sound
 		MATERIAL_TYPE hitted_mat = hitted.GetShield().material;
 		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
@@ -11072,7 +11086,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			return ATTACK_BLOCKED;
 		}
 	}
-	
+
 	// calculate damage
 	float dmg = game::CalculateDamage(atk, def);
 

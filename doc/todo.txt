@@ -19,10 +19,13 @@
 	+ blood skeleton (lifesteal)
 	+ dire wolf (bigger warg)
 	+ giant skeleton
-- can shoot without stamina
+? can shoot without stamina
+	? test attack, continue attack, running attack, power, shoot, continue shoot, bash
+	+ add to changelog
 - one handed weapons skill = -1
 - calculatelevel very big low level attrib/skill will make player level go up (100 dex for starting 55 will calculate player level as 20)
-- blocking shots don't remove stamina
+? blocking shots don't remove stamina
+	+ add to changelog (blocking don't remove stamina, units gain stamina when blocking on high levels of shield skill)
 + recalculate hp/atk/def on changed level
 ? for weapons/armor/shield show stats change (Defense: 40 (50 -> 60))
 + new skills effects & training
