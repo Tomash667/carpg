@@ -20,6 +20,7 @@ UnitDataContainer unit_datas;
 std::map<string, UnitData*> unit_aliases;
 UnitData unit_data_search;
 vector<UnitGroup*> unit_groups;
+vector<UnitGroupList*> unit_group_lists;
 
 void UnitData::CopyFrom(UnitData& ud)
 {
@@ -97,7 +98,8 @@ enum UnitDataType
 	T_TEX,
 	T_IDLES,
 	T_ALIAS,
-	T_GROUP
+	T_GROUP,
+	T_GROUP_LIST
 };
 
 enum Property
@@ -1911,6 +1913,52 @@ bool LoadGroup(Tokenizer& t, Crc& crc)
 }
 
 //=================================================================================================
+bool LoadGroupList(Tokenizer& t, Crc& crc)
+{
+	UnitGroupList* list = new UnitGroupList;
+
+	try
+	{
+		list->id = t.MustGetItemKeyword();
+		if(FindUnitGroupList(list->id))
+			t.Throw("Group list with that id already exists.");
+		crc.Update(list->id);
+		t.Next();
+
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			auto& id = t.MustGetItemKeyword();
+			auto group = FindUnitGroup(id);
+			if(!group)
+				t.Throw("Missing unit group '%s'.", id.c_str());
+			list->groups.push_back(group);
+			crc.Update(id);
+			t.Next();
+		}
+
+		if(list->groups.empty())
+			t.Throw("Empty list.");
+
+		unit_group_lists.push_back(list);
+		return true;
+	}
+	catch(const Tokenizer::Exception& e)
+	{
+		cstring str;
+		if(!list->id.empty())
+			str = Format("Failed to load unit group list '%s': %s", list->id.c_str(), e.ToString());
+		else
+			str = Format("Failed to load unit group list: %s", list->id.c_str(), e.ToString());
+		Error(str);
+		delete list;
+		return false;
+	}
+}
+
+//=================================================================================================
 uint LoadUnits(uint& out_crc, uint& errors)
 {
 	Tokenizer t(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS | Tokenizer::F_JOIN_MINUS);
@@ -1927,7 +1975,8 @@ uint LoadUnits(uint& out_crc, uint& errors)
 		{ "tex", T_TEX },
 		{ "idles", T_IDLES },
 		{ "alias", T_ALIAS },
-		{ "group", T_GROUP }
+		{ "group", T_GROUP },
+		{ "group_list", T_GROUP_LIST }
 	});
 
 	t.AddKeywords(G_PROPERTY, {
@@ -2222,6 +2271,10 @@ uint LoadUnits(uint& out_crc, uint& errors)
 					if(!LoadGroup(t, crc))
 						ok = false;
 					break;
+				case T_GROUP_LIST:
+					if(!LoadGroupList(t, crc))
+						ok = false;
+					break;
 				default:
 					Error("Invalid type %d.", type);
 					ok = false;
@@ -2271,6 +2324,7 @@ void content::CleanupUnits()
 	for(UnitData* ud : unit_datas)
 		delete ud;
 	DeleteElements(unit_groups);
+	DeleteElements(unit_group_lists);
 }
 
 //=================================================================================================
@@ -2611,8 +2665,19 @@ UnitGroup* FindUnitGroup(const AnyString& id)
 {
 	for(UnitGroup* group : unit_groups)
 	{
-		if(group->id == id.s)
+		if(group->id == id)
 			return group;
+	}
+	return nullptr;
+}
+
+//=================================================================================================
+UnitGroupList* FindUnitGroupList(const AnyString& id)
+{
+	for(auto list : unit_group_lists)
+	{
+		if(list->id == id)
+			return list;
 	}
 	return nullptr;
 }

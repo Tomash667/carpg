@@ -339,6 +339,15 @@ struct UnitGroup
 };
 extern vector<UnitGroup*> unit_groups;
 
+//-----------------------------------------------------------------------------
+struct UnitGroupList
+{
+	string id;
+	vector<UnitGroup*> groups;
+};
+extern vector<UnitGroupList*> unit_group_lists;
+
+//-----------------------------------------------------------------------------
 struct TmpUnitGroup
 {
 	UnitGroup* group;
@@ -349,5 +358,6 @@ struct TmpUnitGroup
 //-----------------------------------------------------------------------------
 UnitData* FindUnitData(cstring id, bool report = true);
 UnitGroup* FindUnitGroup(const AnyString& id);
+UnitGroupList* FindUnitGroupList(const AnyString& id);
 uint LoadUnits(uint& crc, uint& errors);
 void TestItemScript(const int* script, string& errors, uint& count, uint& crc);

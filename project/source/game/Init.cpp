@@ -286,7 +286,10 @@ void Game::ConfigureGame()
 		if(g_spawn_groups[i].unit_group_id[0] == 0)
 			g_spawn_groups[i].unit_group = nullptr;
 		else
+		{
 			g_spawn_groups[i].unit_group = FindUnitGroup(g_spawn_groups[i].unit_group_id);
+			assert(g_spawn_groups[i].unit_group);
+		}
 	}
 
 	for (ClassInfo& ci : ClassInfo::classes)

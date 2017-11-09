@@ -2806,6 +2806,37 @@ group unk {
 	unk 1
 }
 
+group_list arena_easy {
+	orcs
+	goblins
+	undead
+	bandits
+	wolfs
+	spiders
+}
+
+group_list arena_medium {
+	orcs
+	goblins
+	undead
+	evils
+	bandits
+	mages
+	golems
+	mages_and_golems
+	hunters
+}
+
+group_list arena_hard {
+	orcs
+	necros
+	evils
+	mages
+	golems
+	mages_and_golems
+	crazies
+}
+
 //------------------------------------------------------------------------------
 // Unit alias for old names (for save compability)
 // alias unit_id other_id

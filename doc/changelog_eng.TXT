@@ -1,8 +1,9 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.6.2 (2017-10-08):
+Version 0.7 (2017-XX-YY):
 + loading objects from file
++ loading arena unit groups from lists
 - fixed crash when team npc want item from another team npc [MikelkCZ]
 - fixed some object wrongly having colliders
 - fixed building signs blocking player in city
@@ -13,6 +14,8 @@ Version 0.6.2 (2017-10-08):
 - fixed not marking usable object as free when client stopped using, broken animation
 - fixed opening/closing door not send between clients (only between client and server)
 - fixed missing items in chests
+- fixed random crash when fighting with arena enemies and rolled to spawn mages and golems
+- fixed empty location where there should be mages and golems there
 - fixed very good starting item when player have very low skill
 
 --------------------------------------------------------------------------------

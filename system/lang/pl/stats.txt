@@ -17,7 +17,7 @@ sg_undead = "nieumarli"
 sg_necros = "nekromanci"
 sg_mages = "magowie"
 sg_golems = "golemy"
-sg_mages_n_golems = "magowie"
+sg_mages_and_golems = "magowie"
 sg_evils = "nieumarli"
 sg_unk = "nieznani"
 
