@@ -146,7 +146,8 @@ enum SubprofileKeyword
 	SPK_WEAPON,
 	SPK_ARMOR,
 	SPK_SKILL,
-	SPK_TAG
+	SPK_TAG,
+	SPK_PERK
 };
 
 enum SoundType
@@ -306,6 +307,48 @@ bool LoadSubprofile(Tokenizer& t, Crc& crc, StatProfile* profile)
 					sub->skills.push_back({ skill, value, is_tag });
 					crc.Update(SPK_SKILL);
 					crc.Update(sub->skills.back());
+				}
+				break;
+			case SPK_PERK:
+				{
+					t.Next();
+					auto& id = t.MustGetItemKeyword();
+					auto perk = PerkInfo::Find(id);
+					if(!perk)
+						t.Throw("Missing perk '%s'.", id.c_str());
+					t.Next();
+
+					int value = 0;
+					switch(perk->required_value)
+					{
+					case PerkInfo::None:
+						break;
+					case PerkInfo::Attribute:
+						value = t.MustGetKeywordId(G_ATTRIBUTE);
+						t.Next();
+						break;
+					case PerkInfo::Skill:
+						if(t.IsKeywordGroup(G_SKILL))
+							value = t.MustGetKeywordId(G_SKILL);
+						else if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_KEYWORDS))
+						{
+							value = (int)Skill::WEAPON_PROFILE;
+							if(sub->weapons.empty())
+								t.Throw("Weapon skill without weapon skills declared.");
+						}
+						else if(t.IsKeyword(SPK_ARMOR, G_SUBPROFILE_KEYWORDS))
+						{
+							value = (int)Skill::ARMOR_PROFILE;
+							if(sub->armors.empty())
+								t.Throw("Armor skill without armor skills declared.");
+						}
+						else
+							t.Unexpected();
+						t.Next();
+						break;
+					}
+
+					sub->perks.push_back({ perk->perk_id, value });
 				}
 				break;
 			default:
@@ -2074,7 +2117,8 @@ uint LoadUnits(uint& out_crc, uint& errors)
 		{ "weapon", SPK_WEAPON },
 		{ "armor", SPK_ARMOR },
 		{ "skill", SPK_SKILL },
-		{ "tag", SPK_TAG }
+		{ "tag", SPK_TAG },
+		{ "perk", SPK_PERK }
 	});
 
 	t.AddKeywords(G_SOUND_TYPE, {

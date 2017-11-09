@@ -7,17 +7,17 @@ struct PlayerController;
 //-----------------------------------------------------------------------------
 enum class Perk
 {
-	Weakness,
-	Strength,
-	Skilled,
-	SkillFocus,
-	Talent,
+	Weakness, // -5 attrib
+	Strength, // +5 attrib
+	Skilled, // +2 skill points
+	SkillFocus, // -5*2 skills, +10 one skill
+	Talent, // +5 skill
 	//CraftingTradition,
 	AlchemistApprentice, // more potions
 	Wealthy, // +500 gold
 	VeryWealthy, // +2k gold
-	FamilyHeirloom,
-	Leader,
+	FamilyHeirloom, // good starting item
+	Leader, // start with npc
 
 	/*
 	STR:
@@ -52,12 +52,21 @@ struct PerkInfo
 		RequireFormat = 1 << 5,
 	};
 
+	enum RequiredValue
+	{
+		None,
+		Attribute,
+		Skill
+	};
+
 	Perk perk_id, required;
 	cstring id;
 	string name, desc;
 	int flags;
+	RequiredValue required_value;
 
-	PerkInfo(Perk perk_id, cstring id, int flags, Perk required = Perk::None) : perk_id(perk_id), id(id), flags(flags), required(required)
+	PerkInfo(Perk perk_id, cstring id, int flags, RequiredValue required_value, Perk required = Perk::None) : perk_id(perk_id), id(id), flags(flags),
+		required_value(required_value), required(required)
 	{
 	}
 

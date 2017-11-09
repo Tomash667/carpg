@@ -3,6 +3,7 @@
 
 //-----------------------------------------------------------------------------
 #include "UnitStats.h"
+#include "Perk.h"
 
 //-----------------------------------------------------------------------------
 struct SubProfile
@@ -14,10 +15,17 @@ struct SubProfile
 		bool tag;
 	};
 
+	struct PerkPoint
+	{
+		Perk perk;
+		int value;
+	};
+
 	string id;
 	vector<Skill> weapons, armors;
 	uint variants;
 	vector<SkillEntry> skills;
+	vector<PerkPoint> perks;
 };
 
 //-----------------------------------------------------------------------------

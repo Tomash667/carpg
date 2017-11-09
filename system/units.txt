@@ -1,6 +1,6 @@
 // this file contains list of units and other lists used by them
 //------------------------------------------------------------------------------
-// ITEMS 
+// ITEMS
 //------------------------------------------------------------------------------
 items blacksmith {
 	al_blacksmith
@@ -452,19 +452,19 @@ profile cleric {
 	inteligence 50
 	wisdom 70
 	charisma 55
-	
+
 	short_blade 15
 	long_blade 15
 	axe 15
 	blunt 15
 	bow 10
 	unarmed 5
-	
+
 	shield 10
 	light_armor 10
 	medium_armor 15
 	heavy_armor 10
-	
+
 	athletics 10
 	literacy 15
 	haggle 15
@@ -477,29 +477,31 @@ profile hunter {
 	inteligence 50
 	wisdom 60
 	charisma 45
-	
+
 	short_blade 15
 	long_blade 15
 	axe 15
 	blunt 15
 	bow 20
 	unarmed 10
-	
+
 	shield 10
 	light_armor 20
 	medium_armor 10
 	heavy_armor 0
-	
+
 	athletics 10
 	acrobatics 10
 	literacy 0
 	haggle 5
-	
+
 	subprofile bowman {
 		skill tag bow
 		skill tag light_armor
 		skill tag acrobatics
 		skill 0.5 athletics
+		perk strength dexterity
+		perk talent bow
 	}
 	subprofile swordman {
 		skill tag long_blade
@@ -507,6 +509,8 @@ profile hunter {
 		skill tag athletics
 		skill 0.5 shield
 		skill 0.25 acrobatics
+		perk strength dexterity
+		perk talent long_blade
 	}
 }
 
@@ -517,18 +521,18 @@ profile mage {
 	inteligence 70
 	wisdom 50
 	charisma 50
-	
+
 	short_blade 5
 	long_blade 5
 	axe 0
-	blunt 5 
+	blunt 5
 	bow 0
 	unarmed 0
-	
+
 	shield 0
 	light_armor 5
 	medium_armor 0
-	
+
 	literacy 20
 	haggle 5
 }
@@ -540,7 +544,7 @@ profile rogue {
 	inteligence 60
 	wisdom 50
 	charisma 55
-	
+
 	short_blade 20
 	long_blade 15
 	axe 10
@@ -550,17 +554,19 @@ profile rogue {
 	shield 0
 	light_armor 15
 	medium_armor 0
-	
+
 	athletics 10
 	acrobatics 20
 	literacy 10
 	haggle 10
-	
+
 	subprofile bowman {
 		skill tag bow
 		skill tag light_armor
 		skill tag acrobatics
 		skill 0.75 short_blade
+		perk strength dexterity
+		perk talent bow
 	}
 	subprofile swordman {
 		skill tag long_blade
@@ -568,6 +574,8 @@ profile rogue {
 		skill tag acrobatics
 		skill 0.5 shield
 		skill 0.25 athletics
+		perk strength dexterity
+		perk talent long_blade
 	}
 	subprofile criticalhitter {
 		skill tag short_blade
@@ -575,6 +583,8 @@ profile rogue {
 		skill tag acrobatics
 		skill 0.25 athletics
 		skill 0.25 shield
+		perk strength dexterity
+		perk talent short_blade
 	}
 }
 
@@ -587,30 +597,32 @@ profile warrior {
 	inteligence 50
 	wisdom 50
 	charisma 50
-	
+
 	short_blade 15
 	long_blade 15
 	axe 15
 	blunt 15
 	bow 15
 	unarmed 15
-	
+
 	shield 15
 	light_armor 10
 	medium_armor 15
 	heavy_armor 15
-	
+
 	athletics 15
 	acrobatics 5
 	haggle 5
 	literacy 0
-	
+
 	subprofile tank {
 		weapon (axe blunt long_blade)
 		skill tag heavy_armor
 		skill tag shield
 		skill tag athletics
 		skill 0.75 weapon
+		perk strength endurance
+		perk talent heavy_armor
 	}
 	subprofile bowman {
 		skill tag medium_armor
@@ -618,6 +630,8 @@ profile warrior {
 		skill tag long_blade
 		skill 0.5 athletics
 		skill 0.5 acrobatics
+		perk strength dexterity
+		perk talent bow
 	}
 	subprofile fighter {
 		armor (medium_armor heavy_armor)
@@ -626,7 +640,9 @@ profile warrior {
 		skill tag weapon
 		skill tag athletics
 		skill 0.5 shield
-		skill 0.25 acrobatics		
+		skill 0.25 acrobatics
+		perk strength strength
+		perk talent weapon
 	}
 }
 
@@ -637,18 +653,18 @@ profile blacksmith {
 	inteligence 55
 	wisdom 50
 	charisma 50
-	
+
 	short_blade 10
 	long_blade 10
 	axe 10
 	blunt 10
 	bow 5
 	unarmed 5
-	
+
 	shield 5
 	light_armor 10
 	medium_armor 5
-	
+
 	athletics 5
 	haggle 10
 	literacy 5
@@ -661,18 +677,18 @@ profile merchant {
 	inteligence 55
 	wisdom 55
 	charisma 55
-	
+
 	short_blade 5
 	long_blade 5
 	axe 5
 	blunt 5
 	bow 5
 	unarmed 5
-	
+
 	shield 0
 	light_armor 5
 	medium_armor 0
-	
+
 	haggle 20
 	literacy 10
 }
@@ -684,18 +700,18 @@ profile alchemist {
 	inteligence 60
 	wisdom 50
 	charisma 50
-	
+
 	short_blade 5
 	long_blade 5
 	axe 5
 	blunt 5
 	bow 5
 	unarmed 5
-	
+
 	shield 0
 	light_armor 5
 	medium_armor 0
-	
+
 	haggle 15
 	literacy 15
 }
@@ -707,17 +723,17 @@ profile commoner {
 	inteligence 50
 	wisdom 50
 	charisma 50
-	
+
 	short_blade 5
 	long_blade 5
 	axe 5
 	blunt 5
 	bow 0
 	unarmed 5
-	
+
 	shield 0
 	light_armor 5
-	
+
 	haggle 0
 	literacy 0
 	athletics 0
@@ -730,17 +746,17 @@ profile clerk {
 	inteligence 55
 	wisdom 55
 	charisma 55
-	
+
 	short_blade 5
 	long_blade 5
 	axe 5
 	blunt 5
 	bow 5
 	unarmed 5
-	
+
 	shield 0
 	light_armor 5
-	
+
 	literacy 10
 	haggle 5
 }
@@ -752,7 +768,7 @@ profile fighter {
 	inteligence 50
 	wisdom 50
 	charisma 50
-	
+
 	short_blade 15
 	long_blade 15
 	axe 15
@@ -760,11 +776,11 @@ profile fighter {
 	bow 10
 	unarmed 10
 	shield 10
-	
+
 	light_armor 10
 	medium_armor 10
 	heavy_armor 0
-	
+
 	athletics 5
 	acrobatics 0
 }
@@ -776,18 +792,18 @@ profile worker {
 	inteligence 50
 	wisdom 50
 	charisma 50
-	
+
 	short_blade 5
 	long_blade 5
 	axe 10
 	blunt 10
 	bow 0
 	unarmed 5
-	
+
 	shield 0
 	light_armor 10
 	medium_armor 5
-	
+
 	athletics 0
 }
 
@@ -798,18 +814,18 @@ profile shaman {
 	inteligence 60
 	wisdom 45
 	charisma 30
-	
+
 	short_blade 10
 	long_blade 10
 	axe 15
 	blunt 15
 	bow 10
 	unarmed 10
-	
+
 	shield 10
 	light_armor 10
 	medium_armor 10
-	
+
 	athletics 10
 	literacy 5
 }
@@ -821,18 +837,18 @@ profile orc {
 	inteligence 30
 	wisdom 40
 	charisma 30
-	
+
 	short_blade 10
 	long_blade 10
 	axe 15
 	blunt 15
 	bow 10
 	unarmed 10
-	
+
 	shield 10
 	light_armor 10
-	medium_armor 10	
-	
+	medium_armor 10
+
 	athletics 15
 }
 
@@ -843,18 +859,18 @@ profile orc_blacksmith {
 	inteligence 50
 	wisdom 40
 	charisma 30
-	
+
 	short_blade 10
 	long_blade 10
 	axe 15
 	blunt 15
 	bow 10
 	unarmed 10
-	
+
 	shield 10
 	light_armor 10
 	medium_armor 10
-	
+
 	athletics 15
 }
 
@@ -865,17 +881,17 @@ profile goblin {
 	inteligence 30
 	wisdom 40
 	charisma 30
-	
+
 	short_blade 15
 	long_blade 10
 	axe 10
 	blunt 10
 	bow 10
 	unarmed 10
-	
+
 	shield 5
-	light_armor 10	
-	
+	light_armor 10
+
 	athletics 10
 }
 
@@ -885,8 +901,8 @@ profile zombie {
 	dexterity 30
 	inteligence 1
 	wisdom 1
-	charisma 1 
-	
+	charisma 1
+
 	unarmed 10
 }
 
@@ -897,14 +913,14 @@ profile skeleton {
 	inteligence 1
 	wisdom 1
 	charisma 1
-	
+
 	short_blade 15
 	long_blade 15
 	axe 15
 	blunt 15
 	bow 10
 	unarmed 10
-	
+
 	shield 10
 	light_armor 10
 	medium_armor 10
@@ -918,14 +934,14 @@ profile skeleton_mage {
 	inteligence 60
 	wisdom 1
 	charisma 1
-	
+
 	short_blade 5
 	long_blade 5
 	axe 5
 	blunt 5
 	bow 5
 	unarmed 5
-	
+
 	light_armor 5
 }
 
@@ -936,7 +952,7 @@ profile golem {
 	inteligence 1
 	wisdom 1
 	charisma 1
-	
+
 	unarmed 10
 }
 
@@ -947,7 +963,7 @@ profile animal {
 	inteligence 10
 	wisdom 25
 	charisma 10
-	
+
 	unarmed 15
 }
 
@@ -1594,19 +1610,19 @@ unit q_orkowie_gorush_woj : base_gorush {
 		inteligence 40
 		wisdom 50
 		charisma 40
-		
+
 		short_blade 20
 		long_blade 20
 		axe 20
 		blunt 20
 		bow 15
 		unarmed 15
-		
+
 		shield 15
 		light_armor 15
 		medium_armor 15
 		heavy_armor 15
-		
+
 		athletics 15
 	}
 	def 15
@@ -1630,18 +1646,18 @@ unit q_orkowie_gorush_lowca : base_gorush {
 		inteligence 40
 		wisdom 60
 		charisma 35
-		
+
 		short_blade 15
 		long_blade 15
 		axe 15
 		blunt 15
 		bow 20
 		unarmed 10
-		
+
 		shield 10
 		light_armor 20
 		medium_armor 10
-		
+
 		athletics 10
 	}
 	def 10
@@ -1681,7 +1697,7 @@ unit q_orkowie_slaby : friendly_orc {
 	gold {5 10}
 }
 
-unit q_orkowie_kowal : friendly_orc { 
+unit q_orkowie_kowal : friendly_orc {
 	level {5 9}
 	profile orc_blacksmith
 	flags | ai_stay
@@ -2125,26 +2141,26 @@ unit q_zlo_boss : base_human {
 	level 20
 	profile {
 		flags fixed
-	
+
 		strength 90
 		endurance 90
 		dexterity 65
 		inteligence 60
 		wisdom 90
 		charisma 60
-		
+
 		short_blade 50
 		long_blade 60
 		axe 70
 		blunt 90
 		bow 50
 		unarmed 60
-		
+
 		shield 90
 		light_armor 50
 		medium_armor 60
 		heavy_armor 90
-		
+
 		athletics 70
 	}
 	flags | {leader dont_escape poison_res gray_hair melee boss xar magic_res25 backstab_res mark dont_eat stun_res}
@@ -2584,26 +2600,26 @@ unit tomashu : base_human {
 	level 25
 	profile {
 		flags fixed
-		
+
 		strength 120
 		endurance 120
 		dexterity 120
 		inteligence 120
 		wisdom 120
 		charisma 120
-		
+
 		short_blade 120
 		long_blade 120
 		axe 120
 		blunt 120
 		bow 120
 		unarmed 120
-		
+
 		shield 120
 		light_armor 120
 		medium_armor 120
 		heavy_armor 120
-		
+
 		athletics 120
 	}
 	flags | {dont_escape tomashu leader secret immortal sit_on_throne melee magic_res50 backstab_res poison_res dont_eat stun_res}
@@ -2636,9 +2652,9 @@ unit unk {
 		inteligence 1
 		wisdom 1
 		charisma 1
-		
+
 		unarmed 15
-		
+
 		athletics 15
 	}
 	flags {dont_escape no_power_attack dont_suffer poison_res pierce_res25 bloodless ignore_block magic_res25 backstab dont_eat}

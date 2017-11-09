@@ -1,10 +1,24 @@
 ﻿FEATURE:
-
-new world order:
 + new training
 	+ attrib
+		+ str
+		+ end
+		+ dex
+		+ int
+		+ cha
 	+ skill
+		+ weapon
+		+ bow
+		+ armor
+		+ shield
 + units stats, new units
+	+ scale
+	+ tint
+	+ green rat, giant rat
+	+ redback spider
+	+ blood skeleton (lifesteal)
+	+ dire wolf (bigger warg)
+	+ giant skeleton
 - can shoot without stamina
 - one handed weapons skill = -1
 - calculatelevel very big low level attrib/skill will make player level go up (100 dex for starting 55 will calculate player level as 20)

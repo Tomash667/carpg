@@ -10,17 +10,17 @@
 
 //-----------------------------------------------------------------------------
 PerkInfo g_perks[(int)Perk::Max] = {
-	PerkInfo(Perk::Weakness, "weakness", PerkInfo::Free | PerkInfo::Flaw | PerkInfo::History | PerkInfo::RequireFormat),
-	PerkInfo(Perk::Strength, "strength", PerkInfo::History | PerkInfo::RequireFormat),
-	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
-	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Free | PerkInfo::History | PerkInfo::RequireFormat),
-	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History | PerkInfo::RequireFormat),
-	//PerkInfo(Perk::CraftingTradition, "crafting_tradition", PerkInfo::History | PerkInfo::Check),
-	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History),
-	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::History),
-	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History | PerkInfo::Check, Perk::Wealthy),
-	PerkInfo(Perk::FamilyHeirloom, "heirloom", PerkInfo::History),
-	PerkInfo(Perk::Leader, "leader", PerkInfo::History),
+	PerkInfo(Perk::Weakness, "weakness", PerkInfo::Free | PerkInfo::Flaw | PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Attribute),
+	PerkInfo(Perk::Strength, "strength", PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Attribute),
+	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History, PerkInfo::None),
+	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Free | PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::None),
+	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Skill),
+	//PerkInfo(Perk::CraftingTradition, "crafting_tradition", PerkInfo::History | PerkInfo::Check, PerkInfo::None),
+	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History, PerkInfo::None),
+	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::History, PerkInfo::None),
+	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History | PerkInfo::Check, PerkInfo::None, Perk::Wealthy),
+	PerkInfo(Perk::FamilyHeirloom, "heirloom", PerkInfo::History, PerkInfo::None),
+	PerkInfo(Perk::Leader, "leader", PerkInfo::History, PerkInfo::None),
 };
 
 //-----------------------------------------------------------------------------
