@@ -41,6 +41,7 @@
 #include "Action.h"
 #include "ItemContainer.h"
 #include "Stock.h"
+#include "UnitGroup.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;

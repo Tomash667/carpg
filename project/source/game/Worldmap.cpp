@@ -29,6 +29,7 @@
 #include "BuildingScript.h"
 #include "BuildingGroup.h"
 #include "Stock.h"
+#include "UnitGroup.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern Matrix m1, m2, m3, m4;

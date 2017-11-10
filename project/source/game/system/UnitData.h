@@ -8,14 +8,11 @@
 #include "ArmorUnitType.h"
 #include "Resource.h"
 #include "DamageTypes.h"
-//
 #include "ItemScript.h"
-#include "UnitGroup.h"
 #include "FrameInfo.h"
 
 //-----------------------------------------------------------------------------
 struct Spell;
-struct DialogEntry;
 struct GameDialog;
 
 //-----------------------------------------------------------------------------

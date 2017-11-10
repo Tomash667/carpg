@@ -7,6 +7,7 @@
 #include "BuildingScript.h"
 #include "BaseUsable.h"
 #include "Stock.h"
+#include "UnitGroup.h"
 
 extern string g_system_dir;
 

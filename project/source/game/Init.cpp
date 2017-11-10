@@ -14,6 +14,7 @@
 #include "QuestManager.h"
 #include "Action.h"
 #include "NetStats.h"
+#include "UnitGroup.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;

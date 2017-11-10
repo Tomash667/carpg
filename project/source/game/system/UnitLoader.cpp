@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Core.h"
 #include "UnitData.h"
+#include "UnitGroup.h"
 #include "ContentLoader.h"
 #include "Dialog.h"
 #include "ItemScript.h"
@@ -8,6 +9,7 @@
 #include "Spell.h"
 #include "Crc.h"
 
+//-----------------------------------------------------------------------------
 class UnitLoader
 {
 	enum Group
@@ -1673,4 +1675,5 @@ void content::CleanupUnits()
 	DeleteElements(FrameInfo::frames);
 	DeleteElements(UnitData::units);
 	DeleteElements(UnitGroup::groups);
+	DeleteElements(UnitGroupList::lists);
 }
