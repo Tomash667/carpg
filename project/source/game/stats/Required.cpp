@@ -17,6 +17,7 @@ enum RequiredType
 	R_STOCK,
 	R_UNIT,
 	R_GROUP,
+	R_GROUP_LIST,
 	R_SPELL,
 	R_DIALOG,
 	R_BUILDING_GROUP,
@@ -168,6 +169,7 @@ bool Game::LoadRequiredStats(uint& errors)
 		{ "stock", R_STOCK },
 		{ "unit", R_UNIT },
 		{ "group", R_GROUP },
+		{ "group_list", R_GROUP_LIST },
 		{ "spell", R_SPELL },
 		{ "dialog", R_DIALOG },
 		{ "building_group", R_BUILDING_GROUP },
@@ -261,6 +263,16 @@ bool Game::LoadRequiredStats(uint& errors)
 						else if(!group->leader && need_leader)
 						{
 							Error("Required unit group '%s' is missing leader.", group_id.c_str());
+							++errors;
+						}
+					}
+					break;
+				case R_GROUP_LIST:
+					{
+						auto& id = t.MustGetItemKeyword();
+						if(!UnitGroupList::TryGet(id))
+						{
+							Error("Missing required unit group list '%s'.", id.c_str());
 							++errors;
 						}
 					}

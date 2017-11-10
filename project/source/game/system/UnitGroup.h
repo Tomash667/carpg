@@ -22,6 +22,28 @@ struct UnitGroup
 
 	static vector<UnitGroup*> groups;
 	static UnitGroup* TryGet(const AnyString& id);
+	static UnitGroup* Get(const AnyString& id)
+	{
+		auto group = TryGet(id);
+		assert(group);
+		return group;
+	}
+};
+
+//-----------------------------------------------------------------------------
+struct UnitGroupList
+{
+	string id;
+	vector<UnitGroup*> groups;
+
+	static vector<UnitGroupList*> lists;
+	static UnitGroupList* TryGet(const AnyString& id);
+	static UnitGroupList* Get(const AnyString& id)
+	{
+		auto list = TryGet(id);
+		assert(list);
+		return list;
+	}
 };
 
 //-----------------------------------------------------------------------------

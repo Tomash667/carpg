@@ -286,7 +286,7 @@ void Game::ConfigureGame()
 		if(g_spawn_groups[i].unit_group_id[0] == 0)
 			g_spawn_groups[i].unit_group = nullptr;
 		else
-			g_spawn_groups[i].unit_group = UnitGroup::TryGet(g_spawn_groups[i].unit_group_id);
+			g_spawn_groups[i].unit_group = UnitGroup::Get(g_spawn_groups[i].unit_group_id);
 	}
 
 	for (ClassInfo& ci : ClassInfo::classes)

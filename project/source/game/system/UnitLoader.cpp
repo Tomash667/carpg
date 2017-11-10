@@ -45,7 +45,8 @@ class UnitLoader
 		T_TEX,
 		T_IDLES,
 		T_ALIAS,
-		T_GROUP
+		T_GROUP,
+		T_GROUP_LIST
 	};
 
 	enum Property
@@ -220,6 +221,9 @@ public:
 			case T_GROUP:
 				ParseGroup(id);
 				break;
+			case T_GROUP_LIST:
+				ParseGroupList(id);
+				break;
 			default:
 				assert(0);
 				break;
@@ -249,7 +253,8 @@ private:
 			{ "tex", T_TEX },
 			{ "idles", T_IDLES },
 			{ "alias", T_ALIAS },
-			{ "group", T_GROUP }
+			{ "group", T_GROUP },
+			{ "group_list", T_GROUP_LIST }
 		});
 
 		t.AddKeywords(G_PROPERTY, {
@@ -1613,6 +1618,35 @@ private:
 			t.Throw("Empty group.");
 
 		UnitGroup::groups.push_back(group.Pin());
+	}
+
+	void ParseGroupList(const string& id)
+	{
+		Ptr<UnitGroupList> list;
+		list->id = id;
+		if(UnitGroupList::TryGet(list->id))
+			t.Throw("Group list with that id already exists.");
+		crc.Update(list->id);
+		t.Next();
+
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			auto& id = t.MustGetItemKeyword();
+			auto group = UnitGroup::TryGet(id);
+			if(!group)
+				t.Throw("Missing unit group '%s'.", id.c_str());
+			list->groups.push_back(group);
+			crc.Update(id);
+			t.Next();
+		}
+
+		if(list->groups.empty())
+			t.Throw("Empty list.");
+
+		UnitGroupList::lists.push_back(list.Pin());
 	}
 
 	Tokenizer t;

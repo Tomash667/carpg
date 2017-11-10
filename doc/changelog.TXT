@@ -1,8 +1,9 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.6.2 (2017-10-08):
+Wersja 0.7 (2017-XX-YY):
 + wczytywanie obiektów z pliku
++ wczytywanie grup przeciwników na arenie z pliku
 - naprawiony crash gdy npc w dru¿ynie chce przedmiot od innego npc w dru¿ynie [MikelkCZ]
 - naprawione nieprawid³owe kolizje dla niektórych obiektów
 - naprawione kolizje gracza z znakami na budynkach
@@ -13,6 +14,8 @@ Wersja 0.6.2 (2017-10-08):
 - naprawione nieoznaczanie u¿ywalnych obiektów jako wolne gdy klient przestaje ich u¿ywaæ, zepsuta animacja
 - naprawione przesy³anie informacji o u¿ywaniu drzwi pomiêdzy klientami
 - naprawiony brak przedmiotów w skrzynkach
+- naprawiony crash przy wygenerowaniu magówi i golemów podczas walki na arenie
+- naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
 
 --------------------------------------------------------------------------------
 Wersja 0.6 (2017-10-01):

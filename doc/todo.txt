@@ -1,4 +1,7 @@
 ﻿FEATURE:
+? testing
++ SW_HIDE
++ todo
 ===============================================================================================================
 CURRENT:
 - traps are out of sync for client/server
