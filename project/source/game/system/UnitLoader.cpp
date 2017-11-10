@@ -1620,6 +1620,7 @@ private:
 		UnitGroup::groups.push_back(group.Pin());
 	}
 
+	//=================================================================================================
 	void ParseGroupList(const string& id)
 	{
 		Ptr<UnitGroupList> list;

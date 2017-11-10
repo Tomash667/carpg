@@ -228,9 +228,6 @@
     <ClCompile Include="source\game\stats\Spell.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\UnitData.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\UnitStats.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
@@ -313,9 +310,6 @@
     </ClCompile>
     <ClCompile Include="source\game\entity\PlayerInfo.cpp">
       <Filter>3. game\entity</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\stats\StatProfile.cpp">
-      <Filter>3. game\stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\Controls.cpp">
       <Filter>3. game\panels</Filter>
@@ -664,9 +658,6 @@
     <ClCompile Include="source\game\system\Item.cpp">
       <Filter>3. game\system\items</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\Stock.cpp">
-      <Filter>3. game\system\items</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\system\UnitLoader.cpp">
       <Filter>3. game\system\unit</Filter>
     </ClCompile>
@@ -678,6 +669,15 @@
     </ClCompile>
     <ClCompile Include="source\game\system\FrameInfo.cpp">
       <Filter>3. game\system\unit</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\StatProfile.cpp">
+      <Filter>3. game\system\unit</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\UnitData.cpp">
+      <Filter>3. game\system\unit</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\Stock.cpp">
+      <Filter>3. game\system\items</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -831,9 +831,6 @@
     <ClInclude Include="source\game\stats\Spell.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\stats\UnitData.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\stats\UnitStats.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
@@ -915,9 +912,6 @@
     </ClInclude>
     <ClInclude Include="source\game\entity\PlayerInfo.h">
       <Filter>3. game\entity</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\StatProfile.h">
-      <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\Controls.h">
       <Filter>3. game\panels</Filter>
@@ -1318,9 +1312,6 @@
     <ClInclude Include="source\game\system\ItemType.h">
       <Filter>3. game\system\items</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\stats\Stock.h">
-      <Filter>3. game\system\items</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\system\ItemScript.h">
       <Filter>3. game\system\unit</Filter>
     </ClInclude>
@@ -1329,6 +1320,15 @@
     </ClInclude>
     <ClInclude Include="source\game\system\FrameInfo.h">
       <Filter>3. game\system\unit</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\StatProfile.h">
+      <Filter>3. game\system\unit</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\UnitData.h">
+      <Filter>3. game\system\unit</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\Stock.h">
+      <Filter>3. game\system\items</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
