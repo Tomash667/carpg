@@ -103,8 +103,8 @@ float StatsX::CalculateLevel()
 	{
 		if(attrib[i] != -1 && attrib_apt[i] > 0)
 		{
-			++attrib_count;
-			attrib_level += float(attrib[i] - attrib_base[i]) / attrib_apt_mod[attrib_apt[i]];
+			attrib_count += attrib_apt[i];
+			attrib_level += float(attrib[i] - attrib_base[i]) / attrib_apt_mod[attrib_apt[i]] * attrib_apt[i];
 		}
 	}
 	if(attrib_count > 0)
