@@ -56,7 +56,7 @@ void WarpToThroneBanditBoss()
 	Game& game = Game::Get();
 
 	// search for boss
-	UnitData* ud = FindUnitData("q_bandyci_szef");
+	UnitData* ud = UnitData::Get("q_bandyci_szef");
 	Unit* u = nullptr;
 	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
 	{
@@ -230,7 +230,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			timer = 7.5f;
 
 			// zmieñ ai pod¹¿aj¹cych stra¿ników
-			UnitData* ud = FindUnitData("guard_q_bandyci");
+			UnitData* ud = UnitData::Get("guard_q_bandyci");
 			for(vector<Unit*>::iterator it = game->local_ctx.units->begin(), end = game->local_ctx.units->end(); it != end; ++it)
 			{
 				if((*it)->data == ud)
@@ -263,7 +263,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			done = false;
 			at_level = 0;
-			unit_to_spawn = FindUnitData("q_bandyci_szef");
+			unit_to_spawn = UnitData::Get("q_bandyci_szef");
 			spawn_unit_room = RoomTarget::Throne;
 			unit_dont_attack = true;
 			location_event_handler = nullptr;
@@ -444,7 +444,7 @@ bool Quest_Bandits::Load(HANDLE file)
 
 	if(prog == Progress::TalkedWithAgent && !done)
 	{
-		unit_to_spawn = FindUnitData("q_bandyci_szef");
+		unit_to_spawn = UnitData::Get("q_bandyci_szef");
 		spawn_unit_room = RoomTarget::Throne;
 		unit_dont_attack = true;
 		location_event_handler = nullptr;

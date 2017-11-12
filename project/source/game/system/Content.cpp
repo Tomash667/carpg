@@ -3,7 +3,6 @@
 #include "Content.h"
 #include "Spell.h"
 #include "Dialog.h"
-#include "UnitData.h"
 #include "Music.h"
 
 //-----------------------------------------------------------------------------
@@ -48,8 +47,7 @@ void content::LoadContent(delegate<void(Id)> callback)
 	callback(Id::Dialogs);
 
 	Info("Game: Loading units.");
-	loaded = LoadUnits(crc[(int)Id::Units], errors);
-	Info("Game: Loaded units: %u (crc %p).", loaded, crc[(int)Id::Units]);
+	LoadUnits();
 	callback(Id::Units);
 
 	Info("Game: Loading buildings.");

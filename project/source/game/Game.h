@@ -1114,7 +1114,7 @@ public:
 	uint TestGameData(bool major);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
 	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
-	void ParseItemScript(Unit& unit, const int* script);
+	void ParseItemScript(Unit& unit, const ItemScript* script);
 	bool IsEnemy(Unit& u1, Unit& u2, bool ignore_dont_attack = false);
 	bool IsFriend(Unit& u1, Unit& u2);
 	bool CanSee(Unit& unit, Unit& unit2);
@@ -1418,7 +1418,7 @@ public:
 	}
 	Unit* FindUnitByIdLocal(cstring id)
 	{
-		return FindUnitByIdLocal(FindUnitData(id));
+		return FindUnitByIdLocal(UnitData::Get(id));
 	}
 	Object* FindObjectByIdLocal(BaseObject* obj)
 	{

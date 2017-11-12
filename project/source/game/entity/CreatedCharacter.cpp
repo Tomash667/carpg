@@ -223,7 +223,7 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	pc.SetRequiredPoints();
 
 	// inventory
-	Game::Get().ParseItemScript(*pc.unit, pc.unit->data->items);
+	Game::Get().ParseItemScript(*pc.unit, pc.unit->data->item_script);
 	const Item* items[SLOT_MAX];
 	GetStartingItems(items);
 	for(int i = 0; i < SLOT_MAX; ++i)

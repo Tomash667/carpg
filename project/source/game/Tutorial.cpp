@@ -298,7 +298,7 @@ void Game::StartTutorial()
 						break;
 					case 3:
 						{
-							Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*x + 1, 0, 2.f*y + 1), *FindUnitData("tut_goblin"), nullptr, 1);
+							Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_goblin"), nullptr, 1);
 							u->rot = PI;
 							u->event_handler = &tut_unit_handler;
 						}
@@ -324,7 +324,7 @@ void Game::StartTutorial()
 						break;
 					case 6:
 						{
-							Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*x + 1, 0, 2.f*y + 1), *FindUnitData("tut_czlowiek"), nullptr, 1);
+							Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*x + 1, 0, 2.f*y + 1), *UnitData::Get("tut_czlowiek"), nullptr, 1);
 							u->rot = PI;
 						}
 						break;

@@ -8,18 +8,12 @@
 #include "ArmorUnitType.h"
 #include "Resource.h"
 #include "DamageTypes.h"
+#include "ItemScript.h"
+#include "FrameInfo.h"
 
 //-----------------------------------------------------------------------------
 struct Spell;
-struct DialogEntry;
 struct GameDialog;
-
-//-----------------------------------------------------------------------------
-struct ItemScript
-{
-	string id;
-	vector<int> code;
-};
 
 //-----------------------------------------------------------------------------
 // Lista zaklêæ postaci
@@ -32,6 +26,9 @@ struct SpellList
 	bool have_non_combat;
 
 	SpellList() : spell(), name(), level(), have_non_combat(false) {}
+
+	static vector<SpellList*> lists;
+	static SpellList* TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -168,67 +165,9 @@ struct SoundPack
 	bool inited;
 
 	SoundPack() : inited(false), sound() {}
-};
 
-//-----------------------------------------------------------------------------
-// Typy ramek
-enum FRAME_INDEX
-{
-	F_CAST,
-	F_TAKE_WEAPON,
-	F_ATTACK1_START,
-	F_ATTACK1_END,
-	F_ATTACK2_START,
-	F_ATTACK2_END,
-	F_ATTACK3_START,
-	F_ATTACK3_END,
-	F_BASH,
-	F_MAX
-};
-
-//-----------------------------------------------------------------------------
-// Flags for which weapon use which attack animation
-#define A_SHORT_BLADE (1<<0)
-#define A_LONG_BLADE (1<<1)
-#define A_BLUNT (1<<2)
-#define A_AXE (1<<3)
-
-//-----------------------------------------------------------------------------
-// Informacje o animacjach ataku postaci
-struct AttackFrameInfo
-{
-	struct Entry
-	{
-		float start, end;
-		int flags;
-
-		float Lerp() const
-		{
-			return ::Lerp(start, end, 2.f / 3);
-		}
-	};
-	vector<Entry> e;
-};
-
-//-----------------------------------------------------------------------------
-// Informacje o ramce animacji
-struct FrameInfo
-{
-	string id;
-	AttackFrameInfo* extra;
-	float t[F_MAX];
-	int attacks;
-
-	FrameInfo() : extra(nullptr), attacks(0), t() {}
-	~FrameInfo()
-	{
-		delete extra;
-	}
-
-	float Lerp(int frame) const
-	{
-		return ::Lerp(t[frame], t[frame + 1], 2.f / 3);
-	}
+	static vector<SoundPack*> packs;
+	static SoundPack* TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -236,6 +175,9 @@ struct IdlePack
 {
 	string id;
 	vector<string> anims;
+
+	static vector<IdlePack*> packs;
+	static IdlePack* TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -246,6 +188,9 @@ struct TexPack
 	bool inited;
 
 	TexPack() : inited(false) {}
+
+	static vector<TexPack*> packs;
+	static TexPack* TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -258,7 +203,6 @@ struct UnitData
 	Int2 level;
 	StatProfile* stat_profile;
 	int hp_bonus, stamina_bonus, def_bonus, dmg_type, flags, flags2, flags3;
-	const int* items;
 	SpellList* spells;
 	Int2 gold, gold2;
 	GameDialog* dialog;
@@ -268,16 +212,16 @@ struct UnitData
 	SoundPack* sounds;
 	FrameInfo* frames;
 	TexPack* tex;
-	vector<string>* idles;
+	IdlePack* idles;
 	ArmorUnitType armor_type;
 	ItemScript* item_script;
 	UNIT_TYPE type;
 	ResourceState state;
 
-	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp_bonus(100), stamina_bonus(0), def_bonus(0),
-		dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), items(nullptr), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS),
-		walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr),
-		armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded)
+	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp_bonus(100), stamina_bonus(0), def_bonus(0), dmg_type(DMG_BLUNT), flags(0),
+		flags2(0), flags3(0), spells(nullptr), gold(0), gold2(0), dialog(nullptr), group(G_CITIZENS), walk_speed(1.5f), run_speed(5.f), rot_speed(3.f),
+		width(0.3f), attack_range(1.f), blood(BLOOD_RED), sounds(nullptr), frames(nullptr), tex(nullptr), armor_type(ArmorUnitType::NONE),
+		item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN), state(ResourceState::NotLoaded)
 	{
 	}
 
@@ -300,59 +244,9 @@ struct UnitData
 	}
 
 	void CopyFrom(UnitData& ud);
+
+	static SetContainer<UnitData> units;
+	static std::map<string, UnitData*> aliases;
+	static UnitData* TryGet(const AnyString& id);
+	static UnitData* Get(const AnyString& id);
 };
-
-//-----------------------------------------------------------------------------
-struct UnitDataComparer
-{
-	bool operator() (const UnitData* ud1, const UnitData* ud2) const
-	{
-		return _stricmp(ud1->id.c_str(), ud2->id.c_str()) > 0;
-	}
-};
-typedef std::set<UnitData*, UnitDataComparer> UnitDataContainer;
-typedef UnitDataContainer::iterator UnitDataIterator;
-extern UnitDataContainer unit_datas;
-extern std::map<string, UnitData*> unit_aliases;
-
-//-----------------------------------------------------------------------------
-struct UnitGroup
-{
-	struct Entry
-	{
-		UnitData* ud;
-		int count;
-
-		Entry() {}
-		Entry(UnitData* ud, int count) : ud(ud), count(count) {}
-	};
-
-	string id;
-	vector<Entry> entries;
-	UnitData* leader;
-	int total;
-};
-extern vector<UnitGroup*> unit_groups;
-
-//-----------------------------------------------------------------------------
-struct UnitGroupList
-{
-	string id;
-	vector<UnitGroup*> groups;
-};
-extern vector<UnitGroupList*> unit_group_lists;
-
-//-----------------------------------------------------------------------------
-struct TmpUnitGroup
-{
-	UnitGroup* group;
-	vector<UnitGroup::Entry> entries;
-	int total, max_level;
-};
-
-//-----------------------------------------------------------------------------
-UnitData* FindUnitData(cstring id, bool report = true);
-UnitGroup* FindUnitGroup(const AnyString& id);
-UnitGroupList* FindUnitGroupList(const AnyString& id);
-uint LoadUnits(uint& crc, uint& errors);
-void TestItemScript(const int* script, string& errors, uint& count, uint& crc);
