@@ -178,7 +178,7 @@ StatsX* StatsX::Load(FileReader& f)
 	if(unique)
 	{
 		auto stats = new StatsX;
-		stats->unique = false;
+		stats->unique = true;
 		stats->profile = profile;
 		f >> stats->attrib;
 		f >> stats->attrib_base;

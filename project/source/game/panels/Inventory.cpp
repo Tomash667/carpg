@@ -355,8 +355,6 @@ void Inventory::Update(float dt)
 
 	if(new_index >= 0)
 	{
-		//int t_index = new_index;
-
 		// pobierz przedmiot
 		const Item* item;
 		ItemSlot* slot;
@@ -1220,6 +1218,9 @@ void Inventory::EquipSlotItem(ITEM_SLOT slot, int i_index)
 	}
 
 	game.BuildTmpInventory(0);
+	last_index = INDEX_INVALID;
+	if(mode == INVENTORY)
+		tooltip.Clear();
 
 	if(Net::IsOnline())
 	{

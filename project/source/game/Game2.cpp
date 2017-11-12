@@ -6856,6 +6856,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	{
 		u->statsx = new StatsX;
 		u->statsx->unique = true;
+		u->statsx->profile = base.stat_profile;
 	}
 	else
 	{

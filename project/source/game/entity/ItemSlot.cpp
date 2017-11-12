@@ -217,7 +217,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			else
 				block_desc = Format("%d -> %d", old_block, new_block);
 
-			str += Format("\n%s: %d (%s)\n%s: %d (%d)\n%s: $c%c%d$c-\n",
+			str += Format("\n%s: %d (%s)\n%s: %d (%s)\n%s: $c%c%d$c-\n",
 				txBlock,
 				shield.block,
 				block_desc,

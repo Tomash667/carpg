@@ -2290,7 +2290,7 @@ leveled_list medium_armor {
 }
 
 leveled_list heavy_armor {
-	ah_splint 1
+	ah_splint 0
 	ah_splint_hq 3
 	ah_splint_m 6
 	ah_splint_mith 9
