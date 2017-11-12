@@ -1440,7 +1440,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		|| !stream.Read(unit.netid))
 		return false;
 
-	unit.data = FindUnitData(BUF, false);
+	unit.data = UnitData::TryGet(BUF);
 	if(!unit.data)
 	{
 		Error("Missing base unit id '%s'!", BUF);
@@ -3300,14 +3300,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					Error("Update server: Broken IDLE from %s.", info.name.c_str());
 					StreamError();
 				}
-				else if(index >= unit.data->idles->size())
+				else if(index >= unit.data->idles->anims.size())
 				{
 					Error("Update server: IDLE from %s, invalid animation index %u.", info.name.c_str(), index);
 					StreamError();
 				}
 				else
 				{
-					unit.mesh_inst->Play(unit.data->idles->at(index).c_str(), PLAY_ONCE, 0);
+					unit.mesh_inst->Play(unit.data->idles->anims[index].c_str(), PLAY_ONCE, 0);
 					unit.mesh_inst->groups[0].speed = 1.f;
 					unit.mesh_inst->frame_end_info = false;
 					unit.animation = ANI_IDLE;
@@ -4047,7 +4047,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					UnitData* data = FindUnitData(BUF, false);
+					UnitData* data = UnitData::TryGet(BUF);
 					if(!data)
 					{
 						Error("Update server: CHEAT_SPAWN_UNIT from %s, invalid unit id %s.", info.name.c_str(), BUF);
@@ -6481,14 +6481,14 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Error("Update client: IDLE, missing unit %d.", netid);
 						StreamError();
 					}
-					else if(animation_index >= unit->data->idles->size())
+					else if(animation_index >= unit->data->idles->anims.size())
 					{
-						Error("Update client: IDLE, invalid animation index %u (count %u).", animation_index, unit->data->idles->size());
+						Error("Update client: IDLE, invalid animation index %u (count %u).", animation_index, unit->data->idles->anims.size());
 						StreamError();
 					}
 					else
 					{
-						unit->mesh_inst->Play(unit->data->idles->at(animation_index).c_str(), PLAY_ONCE, 0);
+						unit->mesh_inst->Play(unit->data->idles->anims[animation_index].c_str(), PLAY_ONCE, 0);
 						unit->mesh_inst->groups[0].speed = 1.f;
 						unit->mesh_inst->frame_end_info = false;
 						unit->animation = ANI_IDLE;
@@ -7795,7 +7795,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				else
 				{
 					Unit* unit = FindUnit(netid);
-					UnitData* ud = FindUnitData(BUF, false);
+					UnitData* ud = UnitData::TryGet(BUF);
 					if(unit && ud)
 						unit->data = ud;
 					else if(!unit)

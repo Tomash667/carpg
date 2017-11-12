@@ -544,7 +544,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						UnitData* ud = FindUnitData(id.c_str(), false);
+						UnitData* ud = UnitData::TryGet(id.c_str());
 						if(!ud)
 							t.Throw("Invalid unit '%s'.", id.c_str());
 						t.Next();

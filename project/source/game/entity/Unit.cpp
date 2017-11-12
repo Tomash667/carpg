@@ -1440,7 +1440,7 @@ void Unit::Load(HANDLE file, bool local)
 	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
 	BUF[len] = 0;
 	ReadFile(file, BUF, len, &tmp, nullptr);
-	data = FindUnitData(BUF);
+	data = UnitData::Get(BUF);
 
 	// items
 	bool can_sort = true;

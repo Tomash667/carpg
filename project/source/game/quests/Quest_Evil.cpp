@@ -266,7 +266,7 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			changed = false;
 			done = false;
-			unit_to_spawn = FindUnitData("q_zlo_boss");
+			unit_to_spawn = UnitData::Get("q_zlo_boss");
 			spawn_unit_room = RoomTarget::Treasury;
 			unit_event_handler = this;
 			unit_dont_attack = true;
@@ -553,7 +553,7 @@ bool Quest_Evil::Load(HANDLE file)
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 		else if(prog == Progress::AllPortalsClosed)
 		{
-			unit_to_spawn = FindUnitData("q_zlo_boss");
+			unit_to_spawn = UnitData::Get("q_zlo_boss");
 			spawn_unit_room = RoomTarget::Treasury;
 			unit_dont_attack = true;
 			unit_auto_talk = true;

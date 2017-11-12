@@ -7,6 +7,7 @@
 #include "BuildingScript.h"
 #include "BaseUsable.h"
 #include "Stock.h"
+#include "UnitGroup.h"
 
 extern string g_system_dir;
 
@@ -237,7 +238,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_UNIT:
 					{
-						UnitData* ud = FindUnitData(str.c_str(), false);
+						UnitData* ud = UnitData::TryGet(str.c_str());
 						if(!ud)
 						{
 							Error("Missing required unit '%s'.", str.c_str());
@@ -254,7 +255,7 @@ bool Game::LoadRequiredStats(uint& errors)
 							t.Next();
 						}
 						const string& group_id = t.MustGetItemKeyword();
-						UnitGroup* group = FindUnitGroup(group_id);
+						UnitGroup* group = UnitGroup::TryGet(group_id);
 						if(!group)
 						{
 							Error("Missing required unit group '%s'.", group_id.c_str());
@@ -270,7 +271,7 @@ bool Game::LoadRequiredStats(uint& errors)
 				case R_GROUP_LIST:
 					{
 						auto& id = t.MustGetItemKeyword();
-						if(!FindUnitGroupList(id))
+						if(!UnitGroupList::TryGet(id))
 						{
 							Error("Missing required unit group list '%s'.", id.c_str());
 							++errors;

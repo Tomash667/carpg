@@ -2,6 +2,7 @@
 #include "Core.h"
 #include "SpawnGroup.h"
 #include "UnitData.h"
+#include "UnitGroup.h"
 
 //-----------------------------------------------------------------------------
 SpawnGroup g_spawn_groups[] = {

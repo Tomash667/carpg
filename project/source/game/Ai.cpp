@@ -985,10 +985,10 @@ void Game::UpdateAi(float dt)
 								case I_ANIMACJA:
 									// animacja idle
 									{
-										int id = Rand() % u.data->idles->size();
+										int id = Rand() % u.data->idles->anims.size();
 										ai.timer = Random(2.f, 5.f);
 										ai.idle_action = AIController::Idle_Animation;
-										u.mesh_inst->Play(u.data->idles->at(id).c_str(), PLAY_ONCE, 0);
+										u.mesh_inst->Play(u.data->idles->anims[id].c_str(), PLAY_ONCE, 0);
 										u.mesh_inst->groups[0].speed = 1.f;
 										u.mesh_inst->frame_end_info = false;
 										u.animation = ANI_IDLE;

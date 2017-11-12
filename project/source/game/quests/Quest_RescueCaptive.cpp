@@ -62,7 +62,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			}
 
 			loc2.active_quest = this;
-			unit_to_spawn = FindUnitData("captive");
+			unit_to_spawn = UnitData::Get("captive");
 			unit_dont_attack = true;
 			at_level = loc2.GetRandomLevel();
 			unit_event_handler = this;
@@ -437,7 +437,7 @@ bool Quest_RescueCaptive::Load(HANDLE file)
 
 	if(!done)
 	{
-		unit_to_spawn = FindUnitData("captive");
+		unit_to_spawn = UnitData::Get("captive");
 		unit_dont_attack = true;
 	}
 
