@@ -1638,7 +1638,6 @@ public:
 	};
 	vector<WarpData> mp_warps;
 	vector<Item*> quest_items;
-	float train_move; // u¿ywane przez klienta do trenowania przez chodzenie
 	bool anyone_talking;
 	// u¿ywane u klienta który nie zapamiêtuje zmiennej 'pc'
 	bool godmode, noclip, invisible;
@@ -2035,6 +2034,7 @@ public:
 		WPM_SKIP
 	};
 	void WorldProgress(int days, WorldProgressMode mode);
+	void OnTravel(float dist);
 
 	int year; // rok w grze [zaczyna siê od 100, ustawiane w NewGame]
 	int month; // miesi¹c w grze [od 0 do 11, ustawiane w NewGame]

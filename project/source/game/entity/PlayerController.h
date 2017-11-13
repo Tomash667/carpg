@@ -74,6 +74,19 @@ enum class TrainWhat
 	Stamina, // player uses stamina [value]
 };
 
+enum class TrainWhat2
+{
+	Attack, // player starts attack [skill] - str when too low for weapon
+	Hit, // player hits target [skill, level, value (0-1)] - str when too low for weapon
+	Move, // player moved [value] - str when too low for armor, str when overcarrying
+	Block, // player blocked attack [attack blocked] - str when too low for shield
+	TakeHit, // player take attack [attack value]
+	TakeDamage, // player take damage [damage]
+	Stamina, // player is using stamina [value]
+	Trade, // player bought/sell goods [value]
+	Read, // player read book
+};
+
 inline int GetRequiredAttributePoints(int level)
 {
 	return 4 * (level + 20)*(level + 25);
@@ -134,18 +147,18 @@ struct PlayerController : public HeroPlayerCommon
 	}
 	~PlayerController();
 
-	void TravelTick();
 	void Rest(int days, bool resting, bool travel = false);
 
 	void Init(Unit& _unit, bool partial = false);
 	void Update(float dt, bool is_local = true);
 	void Train(Skill s, int points);
 	void Train(Attribute a, int points);
-	void TrainMove(float dt, bool run);
+	void TrainMove(float dist);
 	void Train(TrainWhat what, float value, int level);
 	void TrainMod(Attribute a, float points);
 	void TrainMod2(Skill s, float points);
 	void TrainMod(Skill s, float points);
+	void Train2(TrainWhat2 what, float value, float level, Skill skill);
 	void SetRequiredPoints();
 
 	void Save(HANDLE file);

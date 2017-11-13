@@ -1830,16 +1830,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					// train by moving
 					if(Net::IsLocal())
-						u.player->TrainMove(dt, run);
-					else
-					{
-						train_move += (run ? dt : dt / 10);
-						if(train_move >= 1.f)
-						{
-							--train_move;
-							Net::PushChange(NetChange::TRAIN_MOVE);
-						}
-					}
+						u.player->TrainMove(speed);
 
 					// revealing minimap
 					if(!location->outside)

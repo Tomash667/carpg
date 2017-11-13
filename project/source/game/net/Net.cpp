@@ -2258,7 +2258,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				return true;
 			}
 
-			if(Vec3::Distance(unit.pos, new_pos) >= 10.f)
+			float dist = Vec3::Distance(unit.pos, new_pos);
+			if(dist >= 10.f)
 			{
 				// too big change in distance, warp unit to old position
 				Warn("UpdateServer: Invalid unit movement from %s ((%g,%g,%g) -> (%g,%g,%g)).", info.name.c_str(), unit.pos.x, unit.pos.y, unit.pos.z,
@@ -2268,6 +2269,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
+				unit.player->TrainMove(dist);
 				if(player.noclip || unit.usable || CheckMoveNet(unit, new_pos))
 				{
 					// update position
@@ -9894,7 +9896,6 @@ void Game::Net_OnNewGameClient()
 {
 	DeleteElements(quest_items);
 	devmode = default_devmode;
-	train_move = 0.f;
 	anyone_talking = false;
 	godmode = false;
 	noclip = false;

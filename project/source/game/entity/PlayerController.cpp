@@ -188,21 +188,15 @@ void PlayerController::Train(Attribute attrib, int points)
 }
 
 //=================================================================================================
-void PlayerController::TrainMove(float dt, bool run)
+void PlayerController::TrainMove(float dist)
 {
-	move_tick += (run ? dt : dt / 10);
-	if(move_tick >= 1.f)
+	move_tick += dist;
+	if(move_tick >= 100.f)
 	{
-		move_tick -= 1.f;
-		Train(TrainWhat::Move, 0.f, 0);
+		float r = floor(move_tick / 100);
+		move_tick -= r * 100;
+		Train(TrainWhat::Move, r, 0);
 	}
-}
-
-//=================================================================================================
-void PlayerController::TravelTick()
-{
-	Rest(1, false, true);
-	Train(TrainWhat::Move, 0.f, 0);
 }
 
 //=================================================================================================
@@ -645,6 +639,48 @@ void PlayerController::TrainMod(Skill s, float points)
 		TrainMod(info.attrib2, points);
 	}
 	TrainMod(info.attrib, points);
+}
+
+//=================================================================================================
+void PlayerController::Train2(TrainWhat2 what, float value, float level, Skill skill)
+{
+	switch(what)
+	{
+	case TrainWhat2::Attack:
+		// weapon skill [ -> one handed / str / dex ]
+		// str when too low for weapon/bow/shield
+		// dex when too low for weapon/bow
+		break;
+	case TrainWhat2::Hit:
+		// weapon skill [ -> one handed / str / dex ]
+		break;
+	case TrainWhat2::Move:
+		// armor/acrobatics skill
+		// str when too low for armor
+		// str when overcarrying
+		break;
+	case TrainWhat2::Block:
+		// shield skill
+		// str when too low for shield
+		break;
+	case TrainWhat2::TakeHit:
+		// armor skill
+		// shield skill / 5
+		break;
+	case TrainWhat2::TakeDamage:
+		// end
+		// athletics
+		break;
+	case TrainWhat2::Stamina:
+		// end
+		break;
+	case TrainWhat2::Trade:
+		// haggle -> cha
+		break;
+	case TrainWhat2::Read:
+		// literacy -> int
+		break;
+	}
 }
 
 //=================================================================================================
