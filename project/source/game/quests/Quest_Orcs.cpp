@@ -85,7 +85,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			whole_location_event_handler = true;
 			item_to_give[0] = Item::Get("q_orkowie_klucz");
 			spawn_item = Quest_Event::Item_GiveSpawned2;
-			unit_to_spawn = FindUnitData("q_orkowie_gorush");
+			unit_to_spawn = UnitData::Get("q_orkowie_gorush");
 			unit_to_spawn2 = g_spawn_groups[SG_ORKOWIE].GetSpawnLeader();
 			unit_spawn_level2 = -3;
 			spawn_unit_room = RoomTarget::Prison;
@@ -219,7 +219,7 @@ bool Quest_Orcs::Load(HANDLE file)
 	{
 		item_to_give[0] = Item::Get("q_orkowie_klucz");
 		spawn_item = Quest_Event::Item_GiveSpawned2;
-		unit_to_spawn = FindUnitData("q_orkowie_gorush");
+		unit_to_spawn = UnitData::Get("q_orkowie_gorush");
 		unit_to_spawn2 = g_spawn_groups[SG_ORKOWIE].GetSpawnLeader();
 		unit_spawn_level2 = -3;
 		spawn_unit_room = RoomTarget::Prison;
@@ -265,7 +265,7 @@ void WarpToThroneOrcBoss()
 	Game& game = Game::Get();
 
 	// szukaj orka
-	UnitData* ud = FindUnitData("q_orkowie_boss");
+	UnitData* ud = UnitData::Get("q_orkowie_boss");
 	Unit* u = nullptr;
 	for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
 	{
@@ -470,7 +470,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 		{
 			Location& target = GetTargetLocation();
 			target.state = LS_KNOWN;
-			unit_to_spawn = FindUnitData("q_orkowie_boss");
+			unit_to_spawn = UnitData::Get("q_orkowie_boss");
 			spawn_unit_room = RoomTarget::Throne;
 			callback = WarpToThroneOrcBoss;
 			at_level = target.GetLastLevel();
@@ -526,13 +526,13 @@ void Quest_Orcs2::SetProgress(int prog2)
 			orc = nullptr;
 			// orki
 			UnitData* ud[10] = {
-				FindUnitData("orc"), FindUnitData("q_orkowie_orc"),
-				FindUnitData("orc_fighter"), FindUnitData("q_orkowie_orc_fighter"),
-				FindUnitData("orc_hunter"), FindUnitData("q_orkowie_orc_hunter"),
-				FindUnitData("orc_shaman"), FindUnitData("q_orkowie_orc_shaman"),
-				FindUnitData("orc_chief"), FindUnitData("q_orkowie_orc_chief")
+				UnitData::Get("orc"), UnitData::Get("q_orkowie_orc"),
+				UnitData::Get("orc_fighter"), UnitData::Get("q_orkowie_orc_fighter"),
+				UnitData::Get("orc_hunter"), UnitData::Get("q_orkowie_orc_hunter"),
+				UnitData::Get("orc_shaman"), UnitData::Get("q_orkowie_orc_shaman"),
+				UnitData::Get("orc_chief"), UnitData::Get("q_orkowie_orc_chief")
 			};
-			UnitData* ud_slaby = FindUnitData("q_orkowie_slaby");
+			UnitData* ud_slaby = UnitData::Get("q_orkowie_slaby");
 
 			for(vector<Unit*>::iterator it = game->local_ctx.units->begin(), end = game->local_ctx.units->end(); it != end; ++it)
 			{
@@ -711,7 +711,7 @@ bool Quest_Orcs2::Load(HANDLE file)
 			location_event_handler = this;
 		else if(prog == Progress::TalkedWhereIsBase)
 		{
-			unit_to_spawn = FindUnitData("q_orkowie_boss");
+			unit_to_spawn = UnitData::Get("q_orkowie_boss");
 			spawn_unit_room = RoomTarget::Throne;
 			location_event_handler = nullptr;
 			unit_event_handler = this;
@@ -768,7 +768,7 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 		break;
 	}
 
-	UnitData* ud = FindUnitData(udi);
+	UnitData* ud = UnitData::Get(udi);
 	orc->hero->clas = clas;
 
 	orc->level = ud->level.x;
@@ -776,7 +776,7 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	orc->CalculateStats();
 	orc->RecalculateHp();
 	orc->data = ud;
-	game->ParseItemScript(*orc, ud->items);
+	game->ParseItemScript(*orc, ud->item_script);
 	orc->MakeItemsTeam(false);
 	game->UpdateUnitInventory(*orc);
 

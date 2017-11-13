@@ -3,6 +3,9 @@
 #include "Core.h"
 #include "StatProfile.h"
 
+//-----------------------------------------------------------------------------
+vector<StatProfile*> StatProfile::profiles;
+
 //=================================================================================================
 bool StatProfile::operator != (const StatProfile& p) const
 {
@@ -90,4 +93,16 @@ void StatProfile::SetForNew(int level, int* attribs, int* skills) const
 			}
 		}
 	}
+}
+
+//=================================================================================================
+StatProfile* StatProfile::TryGet(const AnyString& id)
+{
+	for(auto profile : profiles)
+	{
+		if(profile->id == id)
+			return profile;
+	}
+
+	return nullptr;
 }

@@ -228,7 +228,7 @@ void Quest_Sawmill::LoadOld(HANDLE file)
 	else if(sawmill_state != State::None && build_state == BuildState::InProgress)
 	{
 		// fix for missing human data
-		Unit* u = game->FindUnit(game->ForLevel(target_loc), FindUnitData("artur_drwal"));
+		Unit* u = game->FindUnit(game->ForLevel(target_loc), UnitData::Get("artur_drwal"));
 		if(u)
 			hd_lumberjack.Get(*u->human_data);
 		else

@@ -214,6 +214,9 @@ group heroes
 group merchant_guards
 group wagon_guards
 group unk
+group_list arena_easy
+group_list arena_medium
+group_list arena_hard
 
 //------------------------------------------------------------------------------
 // Required spells

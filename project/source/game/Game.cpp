@@ -3011,7 +3011,7 @@ void Game::SetMeshSpecular()
 		}
 	}
 
-	for(UnitData* ud_ptr : unit_datas)
+	for(UnitData* ud_ptr : UnitData::units)
 	{
 		UnitData& ud = *ud_ptr;
 		if(ud.mesh && ud.mesh->head.version < 18)

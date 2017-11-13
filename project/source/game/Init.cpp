@@ -14,6 +14,7 @@
 #include "QuestManager.h"
 #include "Action.h"
 #include "NetStats.h"
+#include "UnitGroup.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -286,12 +287,12 @@ void Game::ConfigureGame()
 		if(g_spawn_groups[i].unit_group_id[0] == 0)
 			g_spawn_groups[i].unit_group = nullptr;
 		else
-			g_spawn_groups[i].unit_group = FindUnitGroup(g_spawn_groups[i].unit_group_id);
+			g_spawn_groups[i].unit_group = UnitGroup::Get(g_spawn_groups[i].unit_group_id);
 	}
 
 	for (ClassInfo& ci : ClassInfo::classes)
 	{
-		ci.unit_data = FindUnitData(ci.unit_data_id, false);
+		ci.unit_data = UnitData::TryGet(ci.unit_data_id);
 		if (ci.action_id)
 			ci.action = Action::Find(string(ci.action_id));
 	}
@@ -691,7 +692,7 @@ void Game::AddLoadTasks()
 	}
 
 	// preload units
-	for(UnitData* ud_ptr : unit_datas)
+	for(UnitData* ud_ptr : UnitData::units)
 	{
 		UnitData& ud = *ud_ptr;
 

@@ -67,6 +67,9 @@
     <Filter Include="3. game\system\items">
       <UniqueIdentifier>{538a0371-6a23-4988-b2e4-0735a1ab3812}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3. game\system\unit">
+      <UniqueIdentifier>{2110a0ec-a4bb-43a5-bcc7-ad64a4a78f1a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
@@ -225,9 +228,6 @@
     <ClCompile Include="source\game\stats\Spell.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\UnitData.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\UnitStats.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
@@ -310,9 +310,6 @@
     </ClCompile>
     <ClCompile Include="source\game\entity\PlayerInfo.cpp">
       <Filter>3. game\entity</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\stats\StatProfile.cpp">
-      <Filter>3. game\stats</Filter>
     </ClCompile>
     <ClCompile Include="source\game\panels\Controls.cpp">
       <Filter>3. game\panels</Filter>
@@ -661,7 +658,25 @@
     <ClCompile Include="source\game\system\Item.cpp">
       <Filter>3. game\system\items</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\Stock.cpp">
+    <ClCompile Include="source\game\system\UnitLoader.cpp">
+      <Filter>3. game\system\unit</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\ItemScript.cpp">
+      <Filter>3. game\system\unit</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\UnitGroup.cpp">
+      <Filter>3. game\system\unit</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\FrameInfo.cpp">
+      <Filter>3. game\system\unit</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\StatProfile.cpp">
+      <Filter>3. game\system\unit</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\UnitData.cpp">
+      <Filter>3. game\system\unit</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\system\Stock.cpp">
       <Filter>3. game\system\items</Filter>
     </ClCompile>
   </ItemGroup>
@@ -697,9 +712,6 @@
       <Filter>3. game</Filter>
     </ClInclude>
     <ClInclude Include="source\game\GameKeys.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\ItemScript.h">
       <Filter>3. game</Filter>
     </ClInclude>
     <ClInclude Include="source\game\SaveSlot.h">
@@ -819,9 +831,6 @@
     <ClInclude Include="source\game\stats\Spell.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\stats\UnitData.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\stats\UnitStats.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
@@ -903,9 +912,6 @@
     </ClInclude>
     <ClInclude Include="source\game\entity\PlayerInfo.h">
       <Filter>3. game\entity</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\StatProfile.h">
-      <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\Controls.h">
       <Filter>3. game\panels</Filter>
@@ -1306,7 +1312,22 @@
     <ClInclude Include="source\game\system\ItemType.h">
       <Filter>3. game\system\items</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\stats\Stock.h">
+    <ClInclude Include="source\game\system\ItemScript.h">
+      <Filter>3. game\system\unit</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\UnitGroup.h">
+      <Filter>3. game\system\unit</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\FrameInfo.h">
+      <Filter>3. game\system\unit</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\StatProfile.h">
+      <Filter>3. game\system\unit</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\UnitData.h">
+      <Filter>3. game\system\unit</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\Stock.h">
       <Filter>3. game\system\items</Filter>
     </ClInclude>
   </ItemGroup>

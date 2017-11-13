@@ -2,6 +2,7 @@
 #include "Core.h"
 #include "SpawnGroup.h"
 #include "UnitData.h"
+#include "UnitGroup.h"
 
 //-----------------------------------------------------------------------------
 SpawnGroup g_spawn_groups[] = {
@@ -13,7 +14,7 @@ SpawnGroup g_spawn_groups[] = {
 	SpawnGroup("nekro", "necros", nullptr, K_I, -1, false),
 	SpawnGroup("magowie", "mages", nullptr, K_I, 0, false),
 	SpawnGroup("golemy", "golems", nullptr, K_E, -2, false),
-	SpawnGroup("magowie&golemy", "mages_n_golems", nullptr, K_I, -1, false),
+	SpawnGroup("magowie&golemy", "mages_and_golems", nullptr, K_I, -1, false),
 	SpawnGroup("z³o", "evils", nullptr, K_I, -1, false),
 	SpawnGroup("brak", "", "", K_E, -1, false),
 	SpawnGroup("unk", "unk", nullptr, K_I, -2, false),

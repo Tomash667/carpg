@@ -656,9 +656,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_SPAWNUNIT:
 					if(t.Next())
 					{
-						UnitData* data = FindUnitData(t.MustGetItem().c_str(), false);
+						auto& id = t.MustGetItem();
+						UnitData* data = UnitData::TryGet(id);
 						if(!data || IS_SET(data->flags, F_SECRET))
-							Msg("Missing base unit '%s'!", t.GetItem().c_str());
+							Msg("Missing base unit '%s'!", id.c_str());
 						else
 						{
 							int level = -1, ile = 1, in_arena = -1;
@@ -1791,7 +1792,7 @@ void Game::CmdList(Tokenizer& t)
 	case LIST_UNIT:
 		{
 			LocalVector2<UnitData*> units;
-			for(auto unit : unit_datas)
+			for(auto unit : UnitData::units)
 			{
 				if(!IS_SET(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->id.c_str(), match.length()) == 0))
 					units.push_back(unit);
@@ -1825,7 +1826,7 @@ void Game::CmdList(Tokenizer& t)
 	case LIST_UNIT_NAME:
 		{
 			LocalVector2<UnitData*> units;
-			for(auto unit : unit_datas)
+			for(auto unit : UnitData::units)
 			{
 				if(!IS_SET(unit->flags, F_SECRET) && (match.empty() || _strnicmp(match.c_str(), unit->name.c_str(), match.length()) == 0))
 					units.push_back(unit);

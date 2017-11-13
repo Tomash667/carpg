@@ -41,7 +41,7 @@ bool TeamSingleton::FindItemInTeam(const Item* item, int refid, Unit** unit_resu
 
 Unit* TeamSingleton::FindTeamMember(cstring id)
 {
-	UnitData* unit_data = FindUnitData(id);
+	UnitData* unit_data = UnitData::Get(id);
 	assert(unit_data);
 
 	for(Unit* unit : members)

@@ -7,6 +7,7 @@
 #include "BuildingScript.h"
 #include "BaseUsable.h"
 #include "Stock.h"
+#include "UnitGroup.h"
 
 extern string g_system_dir;
 
@@ -17,6 +18,7 @@ enum RequiredType
 	R_STOCK,
 	R_UNIT,
 	R_GROUP,
+	R_GROUP_LIST,
 	R_SPELL,
 	R_DIALOG,
 	R_BUILDING_GROUP,
@@ -168,6 +170,7 @@ bool Game::LoadRequiredStats(uint& errors)
 		{ "stock", R_STOCK },
 		{ "unit", R_UNIT },
 		{ "group", R_GROUP },
+		{ "group_list", R_GROUP_LIST },
 		{ "spell", R_SPELL },
 		{ "dialog", R_DIALOG },
 		{ "building_group", R_BUILDING_GROUP },
@@ -235,7 +238,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_UNIT:
 					{
-						UnitData* ud = FindUnitData(str.c_str(), false);
+						UnitData* ud = UnitData::TryGet(str.c_str());
 						if(!ud)
 						{
 							Error("Missing required unit '%s'.", str.c_str());
@@ -252,7 +255,7 @@ bool Game::LoadRequiredStats(uint& errors)
 							t.Next();
 						}
 						const string& group_id = t.MustGetItemKeyword();
-						UnitGroup* group = FindUnitGroup(group_id);
+						UnitGroup* group = UnitGroup::TryGet(group_id);
 						if(!group)
 						{
 							Error("Missing required unit group '%s'.", group_id.c_str());
@@ -261,6 +264,16 @@ bool Game::LoadRequiredStats(uint& errors)
 						else if(!group->leader && need_leader)
 						{
 							Error("Required unit group '%s' is missing leader.", group_id.c_str());
+							++errors;
+						}
+					}
+					break;
+				case R_GROUP_LIST:
+					{
+						auto& id = t.MustGetItemKeyword();
+						if(!UnitGroupList::TryGet(id))
+						{
+							Error("Missing required unit group list '%s'.", id.c_str());
 							++errors;
 						}
 					}

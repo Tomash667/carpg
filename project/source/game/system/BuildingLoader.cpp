@@ -271,7 +271,7 @@ private:
 			case BK_UNIT:
 				{
 					const string& unit_id = t.MustGetItem();
-					auto unit = FindUnitData(unit_id.c_str(), false);
+					auto unit = UnitData::TryGet(unit_id.c_str());
 					if(!unit)
 					{
 						Warn("Missing unit '%s' for building '%s'.", unit_id.c_str(), building->id.c_str());

@@ -56,6 +56,8 @@ NEW:
 - grass under moon well
 + exporter: when file has no ext or ends with .qmsh save as .qmsh.tmp
 + randomized order of spawned objects
+- arena picks random units and try spawn them at specified levels but it is still limited to max level (for example orc 4)
+	it should pirst units at that level, if not possible lower/higher
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
