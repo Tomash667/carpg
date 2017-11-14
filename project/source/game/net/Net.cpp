@@ -1629,6 +1629,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	unit.interp->Reset(unit.pos, unit.rot);
 	unit.visual_pos = unit.pos;
 	unit.animation_state = 0;
+	unit.statsx = nullptr;
 
 	if(mp_load)
 	{
@@ -2272,7 +2273,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				unit.player->Train(TrainWhat::Move, dist, 0);
+				unit.player->TrainMove(dist);
 				if(player.noclip || unit.usable || CheckMoveNet(unit, new_pos))
 				{
 					// update position
@@ -5534,6 +5535,9 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 			case NetChangePlayer::ADD_PERK:
 				stream.WriteCasted<byte>(c.id);
 				stream.Write(c.ile);
+				break;
+			case NetChangePlayer::UPDATE_LEVEL:
+				stream.Write(c.v);
 				break;
 			default:
 				Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
@@ -9432,6 +9436,22 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 					else
 						pc->perks.push_back(TakenPerk((Perk)id, value));
+				}
+				break;
+			// player level changed
+			case NetChangePlayer::UPDATE_LEVEL:
+				{
+					float level;
+					if(!stream.Read(level))
+					{
+						Error("Update single client: Broken UPDATE_LEVEL.");
+						StreamError();
+					}
+					else
+					{
+						pc->level = level;
+						pc->unit->level = (int)level;
+					}
 				}
 				break;
 			default:

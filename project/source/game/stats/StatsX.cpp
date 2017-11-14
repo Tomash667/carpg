@@ -3,6 +3,7 @@
 #include "StatsX.h"
 #include "Const.h"
 #include "BitStreamFunc.h"
+#include "UnitData.h"
 
 static std::set<StatsX::Entry, StatsX::Entry> statsx_entries;
 const float StatsX::attrib_apt_mod[] = {
@@ -40,6 +41,7 @@ const Vec2 StatsX::skill_apt_mod[] = {
 	Vec2(1.4f, 5.f)
 };
 
+//=================================================================================================
 void StatsX::Upgrade()
 {
 	// get best skills
@@ -94,6 +96,7 @@ void StatsX::Upgrade()
 	seed.variant = 0;
 }
 
+//=================================================================================================
 float StatsX::CalculateLevel()
 {
 	// attributes
@@ -152,9 +155,13 @@ float StatsX::CalculateLevel()
 	return min(level, (float)MAX_LEVEL);
 }
 
+//=================================================================================================
 void StatsX::Save(FileWriter& f)
 {
-	f << profile->id;
+	if(profile->id.empty())
+		f << Format("!%s", profile->unit_data->id.c_str());
+	else
+		f << profile->id;
 	f << unique;
 	if(unique)
 	{
@@ -169,10 +176,18 @@ void StatsX::Save(FileWriter& f)
 		f << seed;
 }
 
+//=================================================================================================
 StatsX* StatsX::Load(FileReader& f)
 {
 	f.ReadStringBUF();
-	auto profile = StatProfile::TryGet(BUF);
+	StatProfile* profile;
+	if(BUF[0] == '!')
+	{
+		auto unit_data = UnitData::Get(BUF + 1);
+		profile = unit_data->stat_profile;
+	}
+	else
+		profile = StatProfile::Get(BUF);
 	bool unique;
 	f >> unique;
 	if(unique)
@@ -197,23 +212,27 @@ StatsX* StatsX::Load(FileReader& f)
 	}
 }
 
+//=================================================================================================
 void StatsX::Write(BitStream& stream)
 {
 	stream.Write(attrib);
 	stream.Write(skill);
 }
 
+//=================================================================================================
 bool StatsX::Read(BitStream& stream)
 {
 	return stream.Read(attrib)
 		&& stream.Read(skill);
 }
 
+//=================================================================================================
 bool StatsX::Skip(BitStream& stream)
 {
 	return ::Skip(stream, sizeof(attrib) + sizeof(skill));
 }
 
+//=================================================================================================
 StatsX* StatsX::GetLevelUp()
 {
 	assert(seed.level != MAX_LEVEL);
@@ -227,16 +246,19 @@ StatsX* StatsX::GetLevelUp()
 	return Get(e);
 }
 
+//=================================================================================================
 int StatsX::AttributeToAptitude(int value)
 {
 	return Clamp((value - 50) / 5, 0, (int)countof(attrib_apt_mod) - 1);
 }
 
+//=================================================================================================
 int StatsX::SkillToAptitude(int value)
 {
 	return Clamp(value / 5, 0, (int)countof(skill_apt_mod) - 1);
 }
 
+//=================================================================================================
 StatsX* StatsX::GetRandom(StatProfile* profile, int level)
 {
 	assert(profile);
@@ -258,6 +280,7 @@ StatsX* StatsX::GetRandom(StatProfile* profile, int level)
 	return Get(e);
 }
 
+//=================================================================================================
 StatsX* StatsX::Get(Entry& e)
 {
 	// search for existing stats
@@ -332,12 +355,14 @@ StatsX* StatsX::Get(Entry& e)
 	return e.stats;
 }
 
+//=================================================================================================
 void StatsX::Cleanup()
 {
 	for(auto& e : statsx_entries)
 		delete e.stats;
 }
 
+//=================================================================================================
 void StatsX::ApplyBase(StatProfile* profile)
 {
 	// base value / aptitude

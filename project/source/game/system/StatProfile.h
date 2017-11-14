@@ -6,6 +6,9 @@
 #include "Perk.h"
 
 //-----------------------------------------------------------------------------
+struct UnitData;
+
+//-----------------------------------------------------------------------------
 struct SubProfile
 {
 	struct SkillEntry
@@ -38,6 +41,7 @@ struct StatProfile
 	};
 
 	string id;
+	UnitData* unit_data;
 	int attrib[(int)Attribute::MAX];
 	int skill[(int)Skill::MAX];
 	int flags;
@@ -55,4 +59,10 @@ struct StatProfile
 
 	static vector<StatProfile*> profiles;
 	static StatProfile* TryGet(const AnyString& id);
+	static StatProfile* Get(const AnyString& id)
+	{
+		auto profile = TryGet(id);
+		assert(profile);
+		return profile;
+	}
 };

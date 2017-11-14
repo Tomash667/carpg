@@ -720,6 +720,7 @@ void PlayerController::TrainMod(Skill s, float points)
 // Used to send per-player data in WritePlayerData
 void PlayerController::Write(BitStream& stream) const
 {
+	stream.Write(level);
 	stream.Write(kills);
 	stream.Write(dmg_done);
 	stream.Write(dmg_taken);
@@ -741,25 +742,27 @@ void PlayerController::Write(BitStream& stream) const
 bool PlayerController::Read(BitStream& stream)
 {
 	byte count;
-	if(!stream.Read(kills) ||
-		!stream.Read(dmg_done) ||
-		!stream.Read(dmg_taken) ||
-		!stream.Read(knocks) ||
-		!stream.Read(arena_fights) ||
-		!stream.Read(count)
+	if(!stream.Read(level)
+		|| !stream.Read(kills)
+		|| !stream.Read(dmg_done)
+		|| !stream.Read(dmg_taken)
+		|| !stream.Read(knocks)
+		|| !stream.Read(arena_fights)
+		|| !stream.Read(count)
 		|| !EnsureSize(stream, 5 * count))
 		return false;
 	perks.resize(count);
 	for(TakenPerk& perk : perks)
 	{
-		if(!stream.ReadCasted<byte>(perk.perk) ||
-			!stream.Read(perk.value))
+		if(!stream.ReadCasted<byte>(perk.perk)
+			|| !stream.Read(perk.value))
 			return false;
 	}
 	if(!stream.Read(action_cooldown)
 		|| !stream.Read(action_recharge)
 		|| !stream.Read(action_charges))
 		return false;
+	unit->level = (int)level;
 	return true;
 }
 
@@ -802,7 +805,7 @@ bool PlayerController::IsHit(Unit* unit) const
 //=================================================================================================
 void PlayerController::RecalculateLevel()
 {
-	if(!recalculate_level)
+	if(!recalculate_level || Net::IsClient())
 		return;
 	recalculate_level = false;
 	float new_level = unit->statsx->CalculateLevel();
@@ -810,5 +813,14 @@ void PlayerController::RecalculateLevel()
 	{
 		level = new_level;
 		unit->level = (int)level;
+
+		if(!is_local)
+		{
+			NetChangePlayer& c = Add1(Net::player_changes);
+			c.type = NetChangePlayer::UPDATE_LEVEL;
+			c.pc = this;
+			c.v = level;
+			player_info->NeedUpdate();
+		}
 	}
 }

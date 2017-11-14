@@ -1,7 +1,8 @@
 ﻿FEATURE:
 *** new skills
-? verify all Train methods called in mp
-	- crash -> Unit.UpdateEffects is called by client for every unit, useless?
+? send player level on change
+- traveling to new location with reg buf don't remove it
+	verify with old version
 + new training/effect
 	+ attrib
 		+ str
@@ -14,6 +15,7 @@
 		+ bow
 		+ armor
 		+ shield
+	+ regenerate
 + Game::Train
 + recalculate hp/atk/def on changed level
 + new skills effects & training
@@ -24,13 +26,7 @@
 	+ athletics
 	+ acrobatics
 	+ haggle
-		trained by merchant
 	+ literacy
-		trained by sage (randomly in inn)
-? trainer - new skills/attributes
-	? sage
-	? merchant
-	? spawning heroes in city [debug]
 
 ? testing
 	? double weapon skill in mp
@@ -119,6 +115,7 @@ NEW:
 + shield different block types (physical/magical/fire/etc)
 + modify units stats, perks -> will make unit unique
 + skill: weapon style (weapon and shield, single weapon, dual weapons, two handed weapon, pole weapon)
++ serverside travel on worldmap
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

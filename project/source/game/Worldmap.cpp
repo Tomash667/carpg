@@ -5144,7 +5144,7 @@ void Game::SpawnTmpUnits(City* city)
 	// sage (75% chance in city, 25% in village)
 	int chance = city_ctx->IsVillage() ? 1 : 3;
 	if(Rand() % 4 < chance)
-		SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn, true);
+		SpawnUnitInsideInn(*UnitData::Get("sage"), -2, inn, true);
 }
 
 void Game::RemoveTmpUnits(City* city)

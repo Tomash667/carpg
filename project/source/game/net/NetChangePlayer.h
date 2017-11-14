@@ -50,6 +50,7 @@ struct NetChangePlayer
 		ADDED_ITEMS_MSG, // message about gaining multiple items [byte(ile)-count]
 		STAT_CHANGED, // player stat changed [byte(id)-ChangedStatType, byte(a)-stat id, int(ile)-value]
 		ADD_PERK, // add perk to player [byte(id)-perk, int(ile)-value]
+		UPDATE_LEVEL, // player level changed [float(v)]
 	} type;
 	PlayerController* pc;
 	int id, ile;
@@ -57,6 +58,7 @@ struct NetChangePlayer
 	{
 		int a;
 		Unit* unit;
+		float v;
 	};
 	const Item* item;
 	Vec3 pos;

@@ -171,6 +171,7 @@ public:
 						t.Throw("Id must be unique.");
 					Ptr<StatProfile> profile;
 					profile->id = id;
+					profile->unit_data = nullptr;
 					t.Next();
 					ParseProfile(profile);
 				}
@@ -531,6 +532,7 @@ private:
 			auto parent = UnitData::TryGet(parent_id);
 			if(!parent)
 				t.Throw("Missing parent unit '%s'.", parent_id.c_str());
+			parent->flags3 |= F3_PARENT_DATA;
 			unit->CopyFrom(*parent);
 			crc.Update(parent_id);
 			t.Next();
@@ -582,6 +584,7 @@ private:
 				{
 					Ptr<StatProfile> profile;
 					unit->stat_profile = profile.Get();
+					unit->stat_profile->unit_data = unit.Get();
 					ParseProfile(profile);
 				}
 				else

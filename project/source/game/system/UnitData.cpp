@@ -6,6 +6,7 @@
 #include "Spell.h"
 #include "Item.h"
 
+//-----------------------------------------------------------------------------
 vector<SpellList*> SpellList::lists;
 vector<SoundPack*> SoundPack::packs;
 vector<IdlePack*> IdlePack::packs;
@@ -13,6 +14,7 @@ vector<TexPack*> TexPack::packs;
 SetContainer<UnitData> UnitData::units;
 std::map<string, UnitData*> UnitData::aliases;
 
+//=================================================================================================
 void UnitData::CopyFrom(UnitData& ud)
 {
 	mesh_id = ud.mesh_id;
@@ -31,7 +33,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	dmg_type = ud.dmg_type;
 	flags = ud.flags;
 	flags2 = ud.flags2;
-	flags3 = ud.flags3;
+	flags3 = ud.flags3 & ~F3_PARENT_DATA;
 	spells = ud.spells;
 	gold = ud.gold;
 	gold2 = ud.gold2;
@@ -51,6 +53,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	item_script = ud.item_script;
 }
 
+//=================================================================================================
 SpellList* SpellList::TryGet(const AnyString& id)
 {
 	for(auto list : lists)
@@ -62,6 +65,7 @@ SpellList* SpellList::TryGet(const AnyString& id)
 	return nullptr;
 }
 
+//=================================================================================================
 SoundPack* SoundPack::TryGet(const AnyString& id)
 {
 	for(auto pack : packs)
@@ -73,6 +77,7 @@ SoundPack* SoundPack::TryGet(const AnyString& id)
 	return nullptr;
 }
 
+//=================================================================================================
 IdlePack* IdlePack::TryGet(const AnyString& id)
 {
 	for(auto pack : packs)
@@ -84,6 +89,7 @@ IdlePack* IdlePack::TryGet(const AnyString& id)
 	return nullptr;
 }
 
+//=================================================================================================
 TexPack* TexPack::TryGet(const AnyString& id)
 {
 	for(auto pack : packs)
@@ -95,6 +101,7 @@ TexPack* TexPack::TryGet(const AnyString& id)
 	return nullptr;
 }
 
+//=================================================================================================
 UnitData* UnitData::TryGet(const AnyString& id)
 {
 	static UnitData unit_data_search;
@@ -110,10 +117,24 @@ UnitData* UnitData::TryGet(const AnyString& id)
 	return nullptr;
 }
 
+//=================================================================================================
 UnitData* UnitData::Get(const AnyString& id)
 {
 	auto unit = TryGet(id);
 	if(!unit)
 		throw Format("Can't find unit data '%s'!", id.s);
 	return unit;
+}
+
+//=================================================================================================
+void UnitData::Validate(uint& err)
+{
+	for(auto unit : units)
+	{
+		if(unit->name.empty() && !IS_SET(unit->flags3, F3_PARENT_DATA))
+		{
+			++err;
+			Error("Test: Missing unit '%s' name.", unit->id.c_str());
+		}
+	}
 }

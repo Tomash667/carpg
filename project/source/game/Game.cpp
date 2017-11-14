@@ -3036,6 +3036,7 @@ uint Game::ValidateGameData(bool major)
 
 	uint err = TestGameData(major);
 
+	UnitData::Validate(err);
 	AttributeInfo::Validate(err);
 	SkillInfo::Validate(err);
 	ClassInfo::Validate(err);

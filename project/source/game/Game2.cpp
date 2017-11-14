@@ -7754,85 +7754,82 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
 		Unit& u = **it;
-		//assert(u.rot >= 0.f && u.rot < PI*2);
 
-		// temporary bug fix for pathfinding crash
-		if(u.in_building == -1 && (isnan(u.pos.x) || isnan(u.pos.z)))
-		{
-			Error("Invalid unit '%s' position (%g %g %g).", u.data->id.c_str(), u.pos.x, u.pos.y, u.pos.z);
-			u.pos = Vec3(128, 0, 128);
-		}
-
-		// aktualizuj efekty i machanie ustami
+		// update effects and mouth moving
 		if(u.IsAlive())
 		{
-			// licznik okrzyku od ostatniego trafienia
-			u.hurt_timer -= dt;
-			u.last_bash -= dt;
-
-			u.UpdateEffects(dt);
-			if(Net::IsLocal() && u.moved)
+			if(Net::IsLocal())
 			{
-				// unstuck units after being force moved (by bull charge)
-				static vector<Unit*> targets;
-				targets.clear();
-				float t;
-				bool in_dash = false;
-				ContactTest(u.cobj, [&](btCollisionObject* obj, bool second)
+				// hurt sound timer since last hit, timer since last stun (to prevent stunlock)
+				u.hurt_timer -= dt;
+				u.last_bash -= dt;
+
+				u.UpdateEffects(dt);
+
+				if(u.moved)
 				{
-					if(!second)
+					// unstuck units after being force moved (by bull charge)
+					static vector<Unit*> targets;
+					targets.clear();
+					float t;
+					bool in_dash = false;
+					ContactTest(u.cobj, [&](btCollisionObject* obj, bool second)
 					{
-						int flags = obj->getCollisionFlags();
-						if(!IS_SET(flags, CG_UNIT))
-							return false;
+						if(!second)
+						{
+							int flags = obj->getCollisionFlags();
+							if(!IS_SET(flags, CG_UNIT))
+								return false;
+							else
+							{
+								if(obj->getUserPointer() == &u)
+									return false;
+								return true;
+							}
+						}
 						else
 						{
-							if(obj->getUserPointer() == &u)
-								return false;
+							Unit* target = (Unit*)obj->getUserPointer();
+							if(target->action == A_DASH)
+								in_dash = true;
+							targets.push_back(target);
 							return true;
 						}
-					}
-					else
-					{
-						Unit* target = (Unit*)obj->getUserPointer();
-						if(target->action == A_DASH)
-							in_dash = true;
-						targets.push_back(target);
-						return true;
-					}
-				}, true);
+					}, true);
 
-				if(!in_dash)
-				{
-					if(targets.empty())
-						u.moved = false;
-					else
+					if(!in_dash)
 					{
-						Vec3 center(0, 0, 0);
-						for(auto target : targets)
+						if(targets.empty())
+							u.moved = false;
+						else
 						{
-							center += u.pos - target->pos;
-							target->moved = true;
-						}
-						center /= (float)targets.size();
-						center.y = 0;
-						center.Normalize();
-						center *= dt;
-						LineTest(u.cobj->getCollisionShape(), u.pos, center, [&](btCollisionObject* obj, bool)
-						{
+							Vec3 center(0, 0, 0);
+							for(auto target : targets)
+							{
+								center += u.pos - target->pos;
+								target->moved = true;
+							}
+							center /= (float)targets.size();
+							center.y = 0;
+							center.Normalize();
+							center *= dt;
+							LineTest(u.cobj->getCollisionShape(), u.pos, center, [&](btCollisionObject* obj, bool)
+							{
 								int flags = obj->getCollisionFlags();
 								if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
 									return LT_IGNORE;
 								return LT_COLLIDE;
-						}, t);
-						if(t == 1.f)
-						{
-							u.pos += center;
-							MoveUnit(u, false, true);
+							}, t);
+							if(t == 1.f)
+							{
+								u.pos += center;
+								MoveUnit(u, false, true);
+							}
 						}
 					}
 				}
 			}
+			
 			if(u.IsStanding() && u.talking)
 			{
 				u.talk_timer += dt;

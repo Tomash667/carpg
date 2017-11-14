@@ -242,7 +242,8 @@ void WorldMapGui::Update(float dt)
 		if(game.travel_time * 3 >= dist / TRAVEL_SPEED)
 		{
 			// koniec podró¿y
-			game.OnTravel(dist_to_target);
+			if(Net::IsLocal())
+				game.OnTravel(dist_to_target);
 			game.world_state = WS_MAIN;
 			game.current_location = game.picked_location;
 			Location& loc = *game.locations[game.current_location];
@@ -258,7 +259,8 @@ void WorldMapGui::Update(float dt)
 			Vec2 old_world_pos = game.world_pos;
 			game.world_pos = game.travel_start + dir * (game.travel_time / dist * TRAVEL_SPEED * 3);
 			float travel_dist = Vec2::Distance(game.world_pos, old_world_pos);
-			game.OnTravel(travel_dist);
+			if(Net::IsLocal())
+				game.OnTravel(travel_dist);
 			game.travel_time2 += dt;
 
 			// odkryj pobliskie miejsca / ataki
