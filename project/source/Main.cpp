@@ -793,6 +793,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	game.disable_net_stats = cfg.GetBool("disable_net_stats");
+	options.hidden_window = cfg.GetBool("hidden_window");
 
 	game.SetConfigVarsFromFile();
 	game.ApplyConfigVars();

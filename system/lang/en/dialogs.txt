@@ -34,6 +34,10 @@ dialog merchant {
 	8 "Don't sell it"
 	9 "Too bad."
 	10 "End dialog"
+	11 "Training"
+	12 "I can train you in haggle, it will take 10 days and cost you 200 gold pieces. Still interested?"
+	13 "Yes"
+	14 "No"
 }
 
 //==============================================================================
@@ -157,6 +161,8 @@ dialog trainer {
 		"Stone with some runes? I know nothing about this."
 	}
 	26 "End dialog"
+	27 "Athletics"
+	28 "Acrobatics"
 }
 
 //==============================================================================
@@ -1974,4 +1980,17 @@ dialog q_wanted_end {
 //==============================================================================
 dialog crazy_cook {
 	0 "Well we meet because I just run out of fresh meat! Hahaha!"
+}
+
+//==============================================================================
+dialog sage {
+	0 {
+		"Are you a seeker of knowledge?"
+		"Welcome on path to knowledge!"
+	}
+	1 "Training"
+	2 "End dialog"
+	3 "I can train you in literacy for small fee of 200 gold pieces. It will take 10 days. Are you ready?"
+	4 "Yes"
+	5 "No"
 }

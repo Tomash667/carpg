@@ -86,7 +86,7 @@ SkillGroupInfo SkillGroupInfo::groups[(int)SkillGroup::MAX] = {
 };*/
 
 //=================================================================================================
-SkillInfo* SkillInfo::Find(const string& id)
+SkillInfo* SkillInfo::Find(const AnyString& id)
 {
 	for(SkillInfo& si : skills)
 	{

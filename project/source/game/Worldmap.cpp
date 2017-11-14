@@ -5100,66 +5100,51 @@ int Game::GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_ta
 void Game::SpawnTmpUnits(City* city)
 {
 	InsideBuilding* inn = city->FindInn();
-	CityBuilding* pola = city->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS);
+	CityBuilding* training_grounds = city->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS);
 
-	// bohaterowie
+	// heroes
+	uint count;
+	Int2 level;
+
 	if(first_city)
 	{
 		first_city = false;
-		for(int i = 0; i < 4; ++i)
-		{
-			UnitData& ud = GetHero(ClassInfo::GetRandom());
-
-			if(Rand() % 2 == 0 || !pola)
-			{
-				// w karczmie
-				Unit* u = SpawnUnitInsideInn(ud, Random(2, 5), inn);
-				if(u)
-					u->temporary = true;
-			}
-			else
-			{
-				// na polu treningowym
-				Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*pola->unit_pt.x + 1, 0, 2.f*pola->unit_pt.y + 1), ud, nullptr, Random(2, 5), 8.f);
-				if(u)
-					u->temporary = true;
-			}
-		}
+		count = 4;
+		level = Int2(2, 5);
 	}
 	else
 	{
-		int ile = Random(1, 4);
-		for(int i = 0; i < ile; ++i)
-		{
-			UnitData& ud = GetHero(ClassInfo::GetRandom());
+		count = Random(1u, 4u);
+		level = Int2(2, 15);
+	}
 
-			if(Rand() % 2 == 0 || !pola)
-			{
-				// w karczmie
-				Unit* u = SpawnUnitInsideArea(inn->ctx, (Rand() % 5 == 0 ? inn->arena2 : inn->arena1), ud, Random(2, 15));
-				if(u)
-				{
-					u->rot = Random(MAX_ANGLE);
-					u->temporary = true;
-				}
-			}
-			else
-			{
-				// na polu treningowym
-				Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*pola->unit_pt.x + 1, 0, 2.f*pola->unit_pt.y + 1), ud, nullptr, Random(2, 15), 8.f);
-				if(u)
-					u->temporary = true;
-			}
+	for(uint i = 0; i < count; ++i)
+	{
+		UnitData& ud = GetHero(ClassInfo::GetRandom());
+
+		if(Rand() % 2 == 0 || !training_grounds)
+		{
+			// inside inn
+			SpawnUnitInsideInn(ud, level.Random(), inn, true);
+		}
+		else
+		{
+			// on training grounds
+			Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*training_grounds->unit_pt.x + 1, 0, 2.f*training_grounds->unit_pt.y + 1), ud, nullptr,
+				level.Random(), 8.f);
+			if(u)
+				u->temporary = true;
 		}
 	}
 
 	// quest traveler (100% chance in city, 50% in village)
 	if(!city_ctx->IsVillage() || Rand() % 2 == 0)
-	{
-		Unit* u = SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn);
-		if(u)
-			u->temporary = true;
-	}
+		SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn, true);
+
+	// sage (75% chance in city, 25% in village)
+	int chance = city_ctx->IsVillage() ? 1 : 3;
+	if(Rand() % 4 < chance)
+		SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn, true);
 }
 
 void Game::RemoveTmpUnits(City* city)

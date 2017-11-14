@@ -46,7 +46,7 @@ enum PlayerStats
 };
 
 //-----------------------------------------------------------------------------
-enum class TrainWhat2
+enum class TrainWhat
 {
 	Attack, // player starts attack [skill] - str when too low for weapon
 	Hit, // player hits target [skill, level, value (0-1)] - str when too low for weapon
@@ -131,7 +131,7 @@ struct PlayerController : public HeroPlayerCommon
 	void TrainMod(Attribute a, float points);
 	void TrainMod2(Skill s, float points);
 	void TrainMod(Skill s, float points);*/
-	void Train2(TrainWhat2 what, float value, int level, Skill skill = Skill::NONE);
+	void Train(TrainWhat what, float value, int level, Skill skill = Skill::NONE);
 	void SetRequiredPoints();
 
 	void Save(HANDLE file);

@@ -61,7 +61,7 @@ AttributeInfo AttributeInfo::attributes[(int)Attribute::MAX] = {
 };
 
 //=================================================================================================
-AttributeInfo* AttributeInfo::Find(const string& id)
+AttributeInfo* AttributeInfo::Find(const AnyString& id)
 {
 	for(AttributeInfo& ai : attributes)
 	{

@@ -2272,7 +2272,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				unit.player->Train2(TrainWhat2::Move, dist, 0);
+				unit.player->Train(TrainWhat::Move, dist, 0);
 				if(player.noclip || unit.usable || CheckMoveNet(unit, new_pos))
 				{
 					// update position
@@ -2498,7 +2498,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.animation_state = 1;
 							unit.hitted = false;
 						}
-						unit.player->Train2(TrainWhat2::Attack, 0.f, 0);
+						unit.player->Train(TrainWhat::Attack, 0.f, 0);
 						break;
 					case AID_PowerAttack:
 						{
@@ -2556,7 +2556,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.mesh_inst->groups[1].speed = 2.f;
 							unit.mesh_inst->frame_end_info2 = false;
 							unit.hitted = false;
-							unit.player->Train2(TrainWhat2::Attack, 0.f, 0, Skill::SHIELD);
+							unit.player->Train(TrainWhat::Attack, 0.f, 0, Skill::SHIELD);
 							unit.RemoveStamina(50.f);
 						}
 						break;

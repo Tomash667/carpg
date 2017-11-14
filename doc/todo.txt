@@ -1,4 +1,5 @@
 ﻿FEATURE:
+*** new skills
 ? verify all Train methods called in mp
 	- crash -> Unit.UpdateEffects is called by client for every unit, useless?
 + new training/effect
@@ -14,26 +15,22 @@
 		+ armor
 		+ shield
 + Game::Train
-+ units stats, new units
-	+ scale
-	+ tint
-	+ green rat, giant rat
-	+ redback spider
-	+ blood skeleton (lifesteal)
-	+ dire wolf (bigger warg)
-	+ giant skeleton
 + recalculate hp/atk/def on changed level
 + new skills effects & training
 	+ one handed
 		- one handed weapons skill = -1
 	+ unarmed
 		+ unarmed attack formula
-			show unarmed when no weapon, on hover
 	+ athletics
 	+ acrobatics
 	+ haggle
+		trained by merchant
 	+ literacy
-+ trainer - new skills/attributes
+		trained by sage (randomly in inn)
+? trainer - new skills/attributes
+	? sage
+	? merchant
+	? spawning heroes in city [debug]
 
 ? testing
 	? double weapon skill in mp
@@ -46,7 +43,7 @@
 	? client level calculate
 	? negative aptitude effect on units/player
 
-* perks
+*** perks
 + perk points
 + subprofile perks
 + new history perks
@@ -55,11 +52,14 @@
 + training perks
 + addperk, removeperk command
 + use subprofiles in creating random char
-
-+ new mobility
-
 + better starting items list (poor, wealthy etc effects)
+
+*** combat
++ str/dex formula changes
 + required dexterity by weapon
+
+*** better stamina
++ better stamina usage
 + don't regenerate instantly after shooting, when holding (when to remove?)
 	+ bow - remove stamina at start
 	+ weapon - remove at start -> remove more when holding
@@ -69,6 +69,18 @@
 	+ add to changelog
 ? blocking shots don't remove stamina
 	+ add to changelog (blocking don't remove stamina, units gain stamina when blocking on high levels of shield skill)
++ new mobility
+
+*** new enemies
++ units stats, new units
+	+ scale
+	+ tint
+	+ green rat, giant rat
+	+ redback spider
+	+ blood skeleton (lifesteal)
+	+ dire wolf (bigger warg)
+	+ giant skeleton
+	+ unleveled enemies
 
 ? test playthru
 	? leveling speed

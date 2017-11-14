@@ -458,7 +458,7 @@ profile cleric {
 	axe 15
 	blunt 15
 	bow 10
-	unarmed 5
+	//Xunarmed 5
 
 	shield 10
 	light_armor 10
@@ -483,7 +483,7 @@ profile hunter {
 	axe 15
 	blunt 15
 	bow 20
-	unarmed 10
+	//Xunarmed 10
 
 	shield 10
 	light_armor 20
@@ -527,7 +527,7 @@ profile mage {
 	axe 0
 	blunt 5
 	bow 0
-	unarmed 0
+	//Xunarmed 0
 
 	shield 0
 	light_armor 5
@@ -550,7 +550,7 @@ profile rogue {
 	axe 10
 	blunt 10
 	bow 15
-	unarmed 10
+	//Xunarmed 10
 	shield 0
 	light_armor 15
 	medium_armor 0
@@ -603,7 +603,7 @@ profile warrior {
 	axe 15
 	blunt 15
 	bow 15
-	unarmed 15
+	//Xunarmed 15
 
 	shield 15
 	light_armor 10
@@ -659,7 +659,7 @@ profile blacksmith {
 	axe 10
 	blunt 10
 	bow 5
-	unarmed 5
+	//Xunarmed 5
 
 	shield 5
 	light_armor 10
@@ -683,7 +683,7 @@ profile merchant {
 	axe 5
 	blunt 5
 	bow 5
-	unarmed 5
+	//Xunarmed 5
 
 	shield 0
 	light_armor 5
@@ -706,7 +706,7 @@ profile alchemist {
 	axe 5
 	blunt 5
 	bow 5
-	unarmed 5
+	//Xunarmed 5
 
 	shield 0
 	light_armor 5
@@ -729,7 +729,7 @@ profile commoner {
 	axe 5
 	blunt 5
 	bow 0
-	unarmed 5
+	//Xunarmed 5
 
 	shield 0
 	light_armor 5
@@ -752,7 +752,7 @@ profile clerk {
 	axe 5
 	blunt 5
 	bow 5
-	unarmed 5
+	//Xunarmed 5
 
 	shield 0
 	light_armor 5
@@ -774,7 +774,7 @@ profile fighter {
 	axe 15
 	blunt 15
 	bow 10
-	unarmed 10
+	//Xunarmed 10
 	shield 10
 
 	light_armor 10
@@ -798,7 +798,7 @@ profile worker {
 	axe 10
 	blunt 10
 	bow 0
-	unarmed 5
+	//Xunarmed 5
 
 	shield 0
 	light_armor 10
@@ -820,7 +820,7 @@ profile shaman {
 	axe 15
 	blunt 15
 	bow 10
-	unarmed 10
+	//Xunarmed 10
 
 	shield 10
 	light_armor 10
@@ -843,7 +843,7 @@ profile orc {
 	axe 15
 	blunt 15
 	bow 10
-	unarmed 10
+	//Xunarmed 10
 
 	shield 10
 	light_armor 10
@@ -865,7 +865,7 @@ profile orc_blacksmith {
 	axe 15
 	blunt 15
 	bow 10
-	unarmed 10
+	//Xunarmed 10
 
 	shield 10
 	light_armor 10
@@ -887,7 +887,7 @@ profile goblin {
 	axe 10
 	blunt 10
 	bow 10
-	unarmed 10
+	//Xunarmed 10
 
 	shield 5
 	light_armor 10
@@ -1370,6 +1370,23 @@ unit clerk : base_human {
 	items citizen
 	gold {{50 200}{100 400}}
 	dialog clerk
+}
+
+unit sage : base_human {
+	level {3 6}
+	profile {
+		strength 45
+		endurance 45
+		dexterity 50
+		inteligence 65
+		wisdom 50
+		charisma 50
+		
+		literacy 20
+	}
+	items citizen
+	gold {{50 100}{100 200}}
+	dialog sage
 }
 
 unit innkeeper : base_human {

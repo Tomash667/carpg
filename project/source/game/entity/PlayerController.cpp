@@ -195,17 +195,17 @@ void PlayerController::TrainMove(float dist)
 	{
 		float r = floor(move_tick / 100);
 		move_tick -= r * 100;
-		Train2(TrainWhat2::Move, r, 0);
+		Train(TrainWhat::Move, r, 0);
 	}
 }
 
 //=================================================================================================
-void PlayerController::Train2(TrainWhat2 what, float value, int level, Skill skill)
+void PlayerController::Train(TrainWhat what, float value, int level, Skill skill)
 {
 	cstring s;
 	switch(what)
 	{
-	case TrainWhat2::Attack:
+	case TrainWhat::Attack:
 		s = "Attack";
 		// weapon skill [ -> one handed / str / dex ]
 		// str when too low for weapon/bow/shield
@@ -215,7 +215,7 @@ void PlayerController::Train2(TrainWhat2 what, float value, int level, Skill ski
 				skill = unit->GetWeaponSkill();
 		}
 		break;
-	case TrainWhat2::Hit:
+	case TrainWhat::Hit:
 		s = "Hit";
 		// weapon skill [ -> one handed / str / dex ]
 		// value = 0 (no damage)
@@ -227,40 +227,40 @@ void PlayerController::Train2(TrainWhat2 what, float value, int level, Skill ski
 				ratio = value - 1.f + TRAIN_KILL_RATIO;
 		}
 		break;
-	case TrainWhat2::Move:
+	case TrainWhat::Move:
 		s = "Move";
 		// armor/acrobatics skill
 		// str when too low for armor
 		// str when overcarrying
 		break;
-	case TrainWhat2::Block:
+	case TrainWhat::Block:
 		s = "Block";
 		// shield skill
 		// str when too low for shield
 		break;
-	case TrainWhat2::TakeHit:
+	case TrainWhat::TakeHit:
 		s = "TakeHit";
 		// armor skill
 		// shield skill / 5
 		break;
-	case TrainWhat2::TakeDamage:
+	case TrainWhat::TakeDamage:
 		s = "TakeDamage";
 		// end
 		// athletics
 		break;
-	case TrainWhat2::Regenerate:
+	case TrainWhat::Regenerate:
 		s = "Regenerate";
 		// end
 		break;
-	case TrainWhat2::Stamina:
+	case TrainWhat::Stamina:
 		s = "Stamina";
 		// end
 		break;
-	case TrainWhat2::Trade:
+	case TrainWhat::Trade:
 		s = "Trade";
 		// haggle -> cha
 		break;
-	case TrainWhat2::Read:
+	case TrainWhat::Read:
 		s = "Read";
 		// literacy -> int
 		break;
@@ -302,7 +302,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 
-		Train2(TrainWhat2::Regenerate, heal, 0);
+		Train(TrainWhat::Regenerate, heal, 0);
 	}
 
 	// send update

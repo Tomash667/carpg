@@ -34,6 +34,10 @@ dialog merchant {
 	8 "Nie sprzedawaj"
 	9 "Nie to nie."
 	10 "Koniec rozmowy"
+	11 "Szkolenie"
+	12 "Mogê wyszkoliæ ciê w targowaniu, trening trwa 10 dni i kosztuje 200 sztuk z³ota. Zainteresowany?"
+	13 "Tak"
+	14 "Nie"
 }
 
 //==============================================================================
@@ -157,6 +161,8 @@ dialog trainer {
 		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
 	}
 	26 "Koniec rozmowy"
+	27 "Atletyka"
+	28 "Akrobatyka"
 }
 
 //==============================================================================
@@ -1974,4 +1980,17 @@ dialog q_wanted_end {
 //==============================================================================
 dialog crazy_cook {
 	0 "Dobrze ¿e siê spotykamy bo akurat skoñczy³o mi siê œwie¿e miêso! Hahaha!"
+}
+
+//==============================================================================
+dialog sage {
+	0 {
+		"Poszukujesz wiedzy?"
+		"Witaj na drodze ku wiedzy!"
+	}
+	1 "Szkolenie"
+	2 "Koniec rozmowy"
+	3 "Mogê ci wyszkoliæ w piœmiennictwie za niewielk¹ op³at¹ 200 sztuk z³ota. Zajmie to 10 dni. Jesteœ gotowy?"
+	4 "Tak"
+	5 "Nie"
 }

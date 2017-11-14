@@ -185,6 +185,7 @@ unit guard
 unit guard2
 unit guard3
 unit guard_move
+unit sage
 // tutorial
 unit tut_goblin
 unit tut_czlowiek

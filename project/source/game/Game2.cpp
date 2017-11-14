@@ -2716,7 +2716,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 						if(Net::IsLocal())
 						{
-							u.player->Train2(TrainWhat2::Attack, 0.f, 0);
+							u.player->Train(TrainWhat::Attack, 0.f, 0);
 							u.RemoveStamina(u.GetWeapon().GetInfo().stamina * ((u.attack_power - 1.f) / 2 + 1.f));
 						}
 					}
@@ -2788,7 +2788,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 						if(Net::IsLocal())
 						{
-							u.player->Train2(TrainWhat2::Attack, 0.f, 0, Skill::SHIELD);
+							u.player->Train(TrainWhat::Attack, 0.f, 0, Skill::SHIELD);
 							u.RemoveStamina(50.f);
 						}
 					}
@@ -2821,7 +2821,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 						if(Net::IsLocal())
 						{
-							u.player->Train2(TrainWhat2::Attack, 0.f, 0);
+							u.player->Train(TrainWhat::Attack, 0.f, 0);
 							u.RemoveStamina(u.GetWeapon().GetInfo().stamina * 1.5f);
 						}
 					}
@@ -4236,7 +4236,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					trader_buy = old_trader_buy;
 				}
 
-				ctx.pc->Train2(TrainWhat2::Trade, 0.f, 0);
+				ctx.pc->Train(TrainWhat::Trade, 0.f, 0);
 
 				return;
 			}
@@ -4741,79 +4741,30 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strncmp(msg, "train_", 6) == 0)
 				{
-					bool skill;
-					int co;
+					cstring s = msg + 6;
+					bool is_skill;
+					int what;
 
-					if(strcmp(msg + 6, "str") == 0)
+					auto attrib = AttributeInfo::Find(s);
+					if(attrib)
 					{
-						skill = false;
-						co = (int)Attribute::STR;
-					}
-					else if(strcmp(msg + 6, "end") == 0)
-					{
-						skill = false;
-						co = (int)Attribute::END;
-					}
-					else if(strcmp(msg + 6, "dex") == 0)
-					{
-						skill = false;
-						co = (int)Attribute::DEX;
-					}
-					else if(strcmp(msg + 6, "wep") == 0)
-					{
-						skill = true;
-						co = (int)Skill::ONE_HANDED_WEAPON;
-					}
-					else if(strcmp(msg + 6, "shb") == 0)
-					{
-						skill = true;
-						co = (int)Skill::SHORT_BLADE;
-					}
-					else if(strcmp(msg + 6, "lob") == 0)
-					{
-						skill = true;
-						co = (int)Skill::LONG_BLADE;
-					}
-					else if(strcmp(msg + 6, "axe") == 0)
-					{
-						skill = true;
-						co = (int)Skill::AXE;
-					}
-					else if(strcmp(msg + 6, "blu") == 0)
-					{
-						skill = true;
-						co = (int)Skill::BLUNT;
-					}
-					else if(strcmp(msg + 6, "bow") == 0)
-					{
-						skill = true;
-						co = (int)Skill::BOW;
-					}
-					else if(strcmp(msg + 6, "shi") == 0)
-					{
-						skill = true;
-						co = (int)Skill::SHIELD;
-					}
-					else if(strcmp(msg + 6, "lia") == 0)
-					{
-						skill = true;
-						co = (int)Skill::LIGHT_ARMOR;
-					}
-					else if(strcmp(msg + 6, "mea") == 0)
-					{
-						skill = true;
-						co = (int)Skill::MEDIUM_ARMOR;
-					}
-					else if(strcmp(msg + 6, "hea") == 0)
-					{
-						skill = true;
-						co = (int)Skill::HEAVY_ARMOR;
+						is_skill = false;
+						what = (int)attrib->attrib_id;
 					}
 					else
 					{
-						assert(0);
-						skill = false;
-						co = (int)Attribute::STR;
+						auto skill = SkillInfo::Find(s);
+						if(skill)
+						{
+							is_skill = true;
+							what = (int)skill->skill_id;
+						}
+						else
+						{
+							assert(0);
+							is_skill = false;
+							what = (int)Attribute::STR;
+						}
 					}
 
 					// czy gracz ma z³oto?
@@ -4835,8 +4786,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						// lokalny fallback
 						fallback_co = FALLBACK::TRAIN;
 						fallback_t = -1.f;
-						fallback_1 = (skill ? 1 : 0);
-						fallback_2 = co;
+						fallback_1 = (is_skill ? 1 : 0);
+						fallback_2 = what;
 					}
 					else
 					{
@@ -4844,8 +4795,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						NetChangePlayer& c = Add1(Net::player_changes);
 						c.type = NetChangePlayer::TRAIN;
 						c.pc = ctx.pc;
-						c.id = (skill ? 1 : 0);
-						c.ile = co;
+						c.id = (is_skill ? 1 : 0);
+						c.ile = what;
 						GetPlayerInfo(ctx.pc).NeedUpdateAndGold();
 					}
 				}
@@ -7747,7 +7698,7 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 		taker.player->stat_flags |= STAT_DMG_TAKEN;
 
 		// train endurance
-		taker.player->Train2(TrainWhat2::TakeDamage, dmg, (giver ? giver->level : -1));
+		taker.player->Train(TrainWhat::TakeDamage, dmg, (giver ? giver->level : -1));
 
 		// red screen
 		taker.player->last_dmg += dmg;
@@ -8169,7 +8120,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							b.yspeed = PlayerAngleY() * 36;
 						else
 							b.yspeed = GetPlayerInfo(u.player->id).yspeed;
-						u.player->Train2(TrainWhat2::Attack, 0.f, 0, Skill::BOW);
+						u.player->Train(TrainWhat::Attack, 0.f, 0, Skill::BOW);
 					}
 					else
 					{
@@ -9422,7 +9373,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					if(hitted->IsPlayer())
 					{
 						// player blocked bullet, train shield
-						hitted->player->Train2(TrainWhat2::Block, blocked, it->level);
+						hitted->player->Train(TrainWhat::Block, blocked, it->level);
 					}
 
 					if(atk <= 0)
@@ -9431,7 +9382,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 						if(it->owner && it->owner->IsPlayer())
 						{
 							// train player in bow
-							it->owner->player->Train2(TrainWhat2::Hit, 0.f, hitted->level, Skill::BOW);
+							it->owner->player->Train(TrainWhat::Hit, 0.f, hitted->level, Skill::BOW);
 							// aggregate
 							AttackReaction(*hitted, *it->owner);
 						}
@@ -9444,7 +9395,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 				// szkol gracza w pancerzu/hp
 				if(hitted->IsPlayer())
-					hitted->player->Train2(TrainWhat2::TakeHit, base_atk, it->level);
+					hitted->player->Train(TrainWhat::TakeHit, base_atk, it->level);
 
 				// hit sound
 				PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, dmg > 0.f);
@@ -9455,7 +9406,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					if(it->owner && it->owner->IsPlayer())
 					{
 						// train player in bow
-						it->owner->player->Train2(TrainWhat2::Hit, 0.f, hitted->level, Skill::BOW);
+						it->owner->player->Train(TrainWhat::Hit, 0.f, hitted->level, Skill::BOW);
 						// aggregate
 						AttackReaction(*hitted, *it->owner);
 					}
@@ -9468,7 +9419,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					float v = min(1.f, dmg / hitted->hpmax);
 					if(hitted->hp - dmg < 0.f && !hitted->IsImmortal())
 						v += 1.f;
-					it->owner->player->Train2(TrainWhat2::Hit, v, hitted->level, Skill::BOW);
+					it->owner->player->Train(TrainWhat::Hit, v, hitted->level, Skill::BOW);
 				}
 
 				GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, 0);
@@ -9534,7 +9485,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					if(hitted->IsPlayer())
 					{
 						// player blocked spell, train him
-						hitted->player->Train2(TrainWhat2::Block, blocked, it->level);
+						hitted->player->Train(TrainWhat::Block, blocked, it->level);
 					}
 
 					if(dmg <= 0)
@@ -11033,7 +10984,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 		// train blocking
 		if(hitted.IsPlayer())
-			hitted.player->Train2(TrainWhat2::Block, blocked, attacker.level);
+			hitted.player->Train(TrainWhat::Block, blocked, attacker.level);
 
 		// pain animation & break blocking
 		if(hitted.stamina < 0)
@@ -11068,7 +11019,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			if(attacker.IsPlayer())
 			{
 				// player attack blocked
-				attacker.player->Train2(TrainWhat2::Hit, 0.f, hitted.level, bash ? Skill::SHIELD : attacker.GetWeaponSkill());
+				attacker.player->Train(TrainWhat::Hit, 0.f, hitted.level, bash ? Skill::SHIELD : attacker.GetWeaponSkill());
 				// aggregate
 				AttackReaction(hitted, attacker);
 			}
@@ -11084,7 +11035,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 	// train player armor skill
 	if(hitted.IsPlayer())
-		hitted.player->Train2(TrainWhat2::TakeHit, atk, attacker.level);
+		hitted.player->Train(TrainWhat::TakeHit, atk, attacker.level);
 
 	// fully blocked by armor
 	if(dmg < 0)
@@ -11092,7 +11043,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		if(attacker.IsPlayer())
 		{
 			// player attack blocked
-			attacker.player->Train2(TrainWhat2::Hit, 0.f, hitted.level);
+			attacker.player->Train(TrainWhat::Hit, 0.f, hitted.level);
 			// aggregate
 			AttackReaction(hitted, attacker);
 		}
@@ -11106,7 +11057,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		float ratio = min(1.f, dmgf / hitted.hpmax);
 		if(hitted.hp - dmgf <= 0.f && !hitted.IsImmortal())
 			ratio += 1.f;
-		attacker.player->Train2(TrainWhat2::Hit, ratio, hitted.level);
+		attacker.player->Train(TrainWhat::Hit, ratio, hitted.level);
 	}
 
 	GiveDmg(ctx, &attacker, dmg, hitted, &hitpoint);
@@ -12051,7 +12002,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 
 								// train player armor skill
 								if(hitted->IsPlayer())
-									hitted->player->Train2(TrainWhat2::TakeHit, base_atk, 4);
+									hitted->player->Train(TrainWhat::TakeHit, base_atk, 4);
 
 								// obra¿enia
 								float dmg = game::CalculateDamage(atk, def);
@@ -21689,7 +21640,7 @@ Unit* Game::SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, Unit
 	return nullptr;
 }
 
-Unit* Game::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn)
+Unit* Game::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, bool temporary)
 {
 	if(!inn)
 		inn = city_ctx->FindInn();
@@ -21712,7 +21663,10 @@ Unit* Game::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn)
 	if(ok)
 	{
 		float rot = Random(MAX_ANGLE);
-		return CreateUnitWithAI(inn->ctx, ud, level, nullptr, &pos, &rot);
+		Unit* u = CreateUnitWithAI(inn->ctx, ud, level, nullptr, &pos, &rot);
+		if(u && temporary)
+			u->temporary = true;
+		return u;
 	}
 	else
 		return nullptr;
@@ -21726,13 +21680,9 @@ void Game::SpawnDrunkmans()
 	int ile = Random(4, 6);
 	for(int i = 0; i < ile; ++i)
 	{
-		Unit* u = SpawnUnitInsideInn(pijak, Random(2, 15), inn);
-		if(u)
-		{
-			u->temporary = true;
-			if(Net::IsOnline())
-				Net_SpawnUnit(u);
-		}
+		Unit* u = SpawnUnitInsideInn(pijak, Random(2, 15), inn, true);
+		if(u && Net::IsOnline())
+			Net_SpawnUnit(u);
 	}
 }
 
