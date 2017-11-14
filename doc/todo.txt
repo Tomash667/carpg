@@ -1,4 +1,6 @@
 ﻿FEATURE:
+? verify all Train methods called in mp
+	- crash -> Unit.UpdateEffects is called by client for every unit, useless?
 + new training/effect
 	+ attrib
 		+ str
@@ -11,6 +13,7 @@
 		+ bow
 		+ armor
 		+ shield
++ Game::Train
 + units stats, new units
 	+ scale
 	+ tint
@@ -36,6 +39,8 @@
 	? double weapon skill in mp
 	? gorush change class
 	? mp
+		? NetChange::ATTACK - check if train is not called twice for AID_Attack
+		? AID_Shoot, AID_RunningAttack - no sign of Train
 	? old saves
 	? StatsX.Upgrade
 	? client level calculate
@@ -73,6 +78,7 @@ CURRENT:
 - can talk to unit while it's exiting building, dialog is thru door then
 - don't focus chest when there is user
 	+ looted is not set/sent
+- goblin in forest escape outside map and crashes pathfinding
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce

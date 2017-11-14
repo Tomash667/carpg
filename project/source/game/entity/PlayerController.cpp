@@ -92,7 +92,7 @@ void PlayerController::Update(float dt, bool is_local)
 }
 
 //=================================================================================================
-void PlayerController::Train(Skill skill, int points)
+/*void PlayerController::Train(Skill skill, int points)
 {
 	int s = (int)skill;
 
@@ -185,7 +185,7 @@ void PlayerController::Train(Attribute attrib, int points)
 			c2.ile = value;
 		}
 	}
-}
+}*/
 
 //=================================================================================================
 void PlayerController::TrainMove(float dist)
@@ -195,8 +195,83 @@ void PlayerController::TrainMove(float dist)
 	{
 		float r = floor(move_tick / 100);
 		move_tick -= r * 100;
-		Train(TrainWhat::Move, r, 0);
+		Train2(TrainWhat2::Move, r, 0);
 	}
+}
+
+//=================================================================================================
+void PlayerController::Train2(TrainWhat2 what, float value, int level, Skill skill)
+{
+	cstring s;
+	switch(what)
+	{
+	case TrainWhat2::Attack:
+		s = "Attack";
+		// weapon skill [ -> one handed / str / dex ]
+		// str when too low for weapon/bow/shield
+		// dex when too low for weapon/bow
+		{
+			if(skill == Skill::NONE)
+				skill = unit->GetWeaponSkill();
+		}
+		break;
+	case TrainWhat2::Hit:
+		s = "Hit";
+		// weapon skill [ -> one handed / str / dex ]
+		// value = 0 (no damage)
+		// value < 1 (damage scale)
+		// vale >= 1 (killing hit, scale above 1)
+		{
+			float ratio = value;
+			if(ratio >= 1.f)
+				ratio = value - 1.f + TRAIN_KILL_RATIO;
+		}
+		break;
+	case TrainWhat2::Move:
+		s = "Move";
+		// armor/acrobatics skill
+		// str when too low for armor
+		// str when overcarrying
+		break;
+	case TrainWhat2::Block:
+		s = "Block";
+		// shield skill
+		// str when too low for shield
+		break;
+	case TrainWhat2::TakeHit:
+		s = "TakeHit";
+		// armor skill
+		// shield skill / 5
+		break;
+	case TrainWhat2::TakeDamage:
+		s = "TakeDamage";
+		// end
+		// athletics
+		break;
+	case TrainWhat2::Regenerate:
+		s = "Regenerate";
+		// end
+		break;
+	case TrainWhat2::Stamina:
+		s = "Stamina";
+		// end
+		break;
+	case TrainWhat2::Trade:
+		s = "Trade";
+		// haggle -> cha
+		break;
+	case TrainWhat2::Read:
+		s = "Read";
+		// literacy -> int
+		break;
+	}
+
+	cstring sk;
+	if(skill == Skill::NONE)
+		sk = "none";
+	else
+		sk = SkillInfo::skills[(int)skill].id;
+	Info("Train %s (%g, %d, %s)", s, value, level, sk);
 }
 
 //=================================================================================================
@@ -227,7 +302,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 
-		Train(Attribute::END, int(heal));
+		Train2(TrainWhat2::Regenerate, heal, 0);
 	}
 
 	// send update
@@ -487,7 +562,7 @@ inline float GetLevelMod(int my_level, int target_level)
 }
 
 //=================================================================================================
-void PlayerController::Train(TrainWhat what, float value, int level)
+/*void PlayerController::Train(TrainWhat what, float value, int level)
 {
 	switch(what)
 	{
@@ -639,49 +714,7 @@ void PlayerController::TrainMod(Skill s, float points)
 		TrainMod(info.attrib2, points);
 	}
 	TrainMod(info.attrib, points);
-}
-
-//=================================================================================================
-void PlayerController::Train2(TrainWhat2 what, float value, float level, Skill skill)
-{
-	switch(what)
-	{
-	case TrainWhat2::Attack:
-		// weapon skill [ -> one handed / str / dex ]
-		// str when too low for weapon/bow/shield
-		// dex when too low for weapon/bow
-		break;
-	case TrainWhat2::Hit:
-		// weapon skill [ -> one handed / str / dex ]
-		break;
-	case TrainWhat2::Move:
-		// armor/acrobatics skill
-		// str when too low for armor
-		// str when overcarrying
-		break;
-	case TrainWhat2::Block:
-		// shield skill
-		// str when too low for shield
-		break;
-	case TrainWhat2::TakeHit:
-		// armor skill
-		// shield skill / 5
-		break;
-	case TrainWhat2::TakeDamage:
-		// end
-		// athletics
-		break;
-	case TrainWhat2::Stamina:
-		// end
-		break;
-	case TrainWhat2::Trade:
-		// haggle -> cha
-		break;
-	case TrainWhat2::Read:
-		// literacy -> int
-		break;
-	}
-}
+}*/
 
 //=================================================================================================
 // Used to send per-player data in WritePlayerData

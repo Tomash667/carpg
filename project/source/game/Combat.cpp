@@ -3,6 +3,7 @@
 #include "Combat.h"
 #include "UnitData.h"
 
+// min damage 0.1 atk, max damage 0.9 atk
 float game::CalculateDamage(float atk, float def)
 {
 	float ratio = GetDamageMod(atk, def);

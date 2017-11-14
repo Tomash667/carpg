@@ -53,7 +53,6 @@ const float PICKUP_RANGE = 2.f;
 const float TRAP_ARROW_SPEED = 45.f;
 const float ARROW_TIMER = 5.f;
 const float MIN_H = 1.5f;
-const float TRAIN_KILL_RATIO = 0.1f;
 const float SS = 0.25f;//0.25f/8;
 const int NN = 64;
 extern const int ITEM_IMAGE_SIZE = 64;
@@ -2717,7 +2716,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 						if(Net::IsLocal())
 						{
-							u.player->Train(TrainWhat::AttackStart, 0.f, 0);
+							u.player->Train2(TrainWhat2::Attack, 0.f, 0);
 							u.RemoveStamina(u.GetWeapon().GetInfo().stamina * ((u.attack_power - 1.f) / 2 + 1.f));
 						}
 					}
@@ -2789,7 +2788,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 						if(Net::IsLocal())
 						{
-							u.player->Train(TrainWhat::BashStart, 0.f, 0);
+							u.player->Train2(TrainWhat2::Attack, 0.f, 0, Skill::SHIELD);
 							u.RemoveStamina(50.f);
 						}
 					}
@@ -2822,7 +2821,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 						if(Net::IsLocal())
 						{
-							u.player->Train(TrainWhat::AttackStart, 0.f, 0);
+							u.player->Train2(TrainWhat2::Attack, 0.f, 0);
 							u.RemoveStamina(u.GetWeapon().GetInfo().stamina * 1.5f);
 						}
 					}
@@ -4237,7 +4236,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					trader_buy = old_trader_buy;
 				}
 
-				ctx.pc->Train(TrainWhat::Trade, 0.f, 0);
+				ctx.pc->Train2(TrainWhat2::Trade, 0.f, 0);
 
 				return;
 			}
@@ -7748,7 +7747,7 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 		taker.player->stat_flags |= STAT_DMG_TAKEN;
 
 		// train endurance
-		taker.player->Train(TrainWhat::TakeDamage, min(dmg, taker.hp) / taker.hpmax, (giver ? giver->level : -1));
+		taker.player->Train2(TrainWhat2::TakeDamage, dmg, (giver ? giver->level : -1));
 
 		// red screen
 		taker.player->last_dmg += dmg;
@@ -8170,7 +8169,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							b.yspeed = PlayerAngleY() * 36;
 						else
 							b.yspeed = GetPlayerInfo(u.player->id).yspeed;
-						u.player->Train(TrainWhat::BowStart, 0.f, 0);
+						u.player->Train2(TrainWhat2::Attack, 0.f, 0, Skill::BOW);
 					}
 					else
 					{
@@ -9399,10 +9398,10 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 				if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
 				{
-					float blocked = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
-					float stamina_used = min(atk, blocked);
+					float block_power = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
+					float blocked = min(atk, block_power) + 1;
 					atk -= blocked;
-					stamina_used -= hitted->Get(Skill::SHIELD);
+					float stamina_used = blocked - hitted->Get(Skill::SHIELD);
 					float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted->Get(Skill::SHIELD)) / 100);
 					stamina_used *= block_stamina_loss;
 					if(stamina_used > 0)
@@ -9423,16 +9422,16 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					if(hitted->IsPlayer())
 					{
 						// player blocked bullet, train shield
-						hitted->player->Train(TrainWhat::BlockBullet, base_atk / hitted->hpmax, it->level);
+						hitted->player->Train2(TrainWhat2::Block, blocked, it->level);
 					}
 
-					if(atk < 0)
+					if(atk <= 0)
 					{
 						// shot blocked by shield
 						if(it->owner && it->owner->IsPlayer())
 						{
 							// train player in bow
-							it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, hitted->level);
+							it->owner->player->Train2(TrainWhat2::Hit, 0.f, hitted->level, Skill::BOW);
 							// aggregate
 							AttackReaction(*hitted, *it->owner);
 						}
@@ -9445,17 +9444,18 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 				// szkol gracza w pancerzu/hp
 				if(hitted->IsPlayer())
-					hitted->player->Train(TrainWhat::TakeDamageArmor, base_atk / hitted->hpmax, it->level);
+					hitted->player->Train2(TrainWhat2::TakeHit, base_atk, it->level);
 
 				// hit sound
 				PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, dmg > 0.f);
 
+				// currently not possible, need damage reduction
 				if(dmg < 0)
 				{
 					if(it->owner && it->owner->IsPlayer())
 					{
 						// train player in bow
-						it->owner->player->Train(TrainWhat::BowNoDamage, 0.f, hitted->level);
+						it->owner->player->Train2(TrainWhat2::Hit, 0.f, hitted->level, Skill::BOW);
 						// aggregate
 						AttackReaction(*hitted, *it->owner);
 					}
@@ -9465,12 +9465,10 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				// szkol gracza w ³uku
 				if(it->owner && it->owner->IsPlayer())
 				{
-					float v = dmg / hitted->hpmax;
+					float v = min(1.f, dmg / hitted->hpmax);
 					if(hitted->hp - dmg < 0.f && !hitted->IsImmortal())
-						v = max(TRAIN_KILL_RATIO, v);
-					if(v > 1.f)
-						v = 1.f;
-					it->owner->player->Train(TrainWhat::BowAttack, v, hitted->level);
+						v += 1.f;
+					it->owner->player->Train2(TrainWhat2::Hit, v, hitted->level, Skill::BOW);
 				}
 
 				GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, 0);
@@ -9519,12 +9517,13 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				if(it->owner)
 					dmg += it->owner->level * it->spell->dmg_bonus;
 				float kat = AngleDiff(Clip(it->rot.y + PI), hitted->rot);
-				float base_dmg = dmg;
 
 				if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
 				{
-					float blocked = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
-					float stamina_used = min(blocked, dmg);
+					float block_power = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
+					block_power /= 2;
+					float blocked = min(dmg, block_power) + 1;
+					float stamina_used = blocked * 2;
 					dmg -= blocked / 2;
 					stamina_used -= hitted->Get(Skill::SHIELD);
 					float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted->Get(Skill::SHIELD)) / 100);
@@ -9535,10 +9534,10 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					if(hitted->IsPlayer())
 					{
 						// player blocked spell, train him
-						hitted->player->Train(TrainWhat::BlockBullet, base_dmg / hitted->hpmax, it->level);
+						hitted->player->Train2(TrainWhat2::Block, blocked, it->level);
 					}
 
-					if(dmg < 0)
+					if(dmg <= 0)
 					{
 						// blocked by shield
 						SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
@@ -11004,9 +11003,9 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	if(hitted.action == A_BLOCK && kat < PI / 2)
 	{
 		// reduce damage
-		float base_atk = atk;
-		float blocked = hitted.CalculateBlock();
-		float stamina_used = min(atk, blocked);
+		float block_power = hitted.CalculateBlock();
+		float blocked = min(atk, block_power) + 1;
+		float stamina_used = blocked;
 		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
 			blocked *= 2.f / 3;
 		if(attacker.attack_power >= 1.9f)
@@ -11034,7 +11033,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 		// train blocking
 		if(hitted.IsPlayer())
-			hitted.player->Train(TrainWhat::BlockAttack, base_atk / hitted.hpmax, attacker.level);
+			hitted.player->Train2(TrainWhat2::Block, blocked, attacker.level);
 
 		// pain animation & break blocking
 		if(hitted.stamina < 0)
@@ -11064,12 +11063,12 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		}
 
 		// attack fully blocked
-		if(atk < 0)
+		if(atk <= 0)
 		{
 			if(attacker.IsPlayer())
 			{
 				// player attack blocked
-				attacker.player->Train(bash ? TrainWhat::BashNoDamage : TrainWhat::AttackNoDamage, 0.f, hitted.level);
+				attacker.player->Train2(TrainWhat2::Hit, 0.f, hitted.level, bash ? Skill::SHIELD : attacker.GetWeaponSkill());
 				// aggregate
 				AttackReaction(hitted, attacker);
 			}
@@ -11085,7 +11084,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 	// train player armor skill
 	if(hitted.IsPlayer())
-		hitted.player->Train(TrainWhat::TakeDamageArmor, dmg / hitted.hpmax, attacker.level);
+		hitted.player->Train2(TrainWhat2::TakeHit, atk, attacker.level);
 
 	// fully blocked by armor
 	if(dmg < 0)
@@ -11093,7 +11092,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		if(attacker.IsPlayer())
 		{
 			// player attack blocked
-			attacker.player->Train(bash ? TrainWhat::BashNoDamage : TrainWhat::AttackNoDamage, 0.f, hitted.level);
+			attacker.player->Train2(TrainWhat2::Hit, 0.f, hitted.level);
 			// aggregate
 			AttackReaction(hitted, attacker);
 		}
@@ -11104,12 +11103,10 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	{
 		// player hurt someone - train
 		float dmgf = (float)dmg;
-		float ratio;
+		float ratio = min(1.f, dmgf / hitted.hpmax);
 		if(hitted.hp - dmgf <= 0.f && !hitted.IsImmortal())
-			ratio = max(TRAIN_KILL_RATIO, dmgf / hitted.hpmax);
-		else
-			ratio = dmgf / hitted.hpmax;
-		attacker.player->Train(bash ? TrainWhat::BashHit : TrainWhat::AttackHit, ratio, hitted.level);
+			ratio += 1.f;
+		attacker.player->Train2(TrainWhat2::Hit, ratio, hitted.level);
 	}
 
 	GiveDmg(ctx, &attacker, dmg, hitted, &hitpoint);
@@ -12054,7 +12051,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 
 								// train player armor skill
 								if(hitted->IsPlayer())
-									hitted->player->Train(TrainWhat::TakeDamageArmor, base_atk / hitted->hpmax, 4);
+									hitted->player->Train2(TrainWhat2::TakeHit, base_atk, 4);
 
 								// obra¿enia
 								float dmg = game::CalculateDamage(atk, def);
@@ -15613,8 +15610,6 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 		ani = 0;
 
 	game_gui->AddSpeechBubble(ctx.talker, ctx.dialog_text);
-
-	ctx.pc->Train(TrainWhat::Talk, 0.f, 0);
 
 	if(Net::IsOnline())
 	{
@@ -20189,7 +20184,7 @@ void Game::ProcessRemoveUnits()
 2 - more points (potion) */
 void Game::Train(Unit& unit, bool is_skill, int co, int mode)
 {
-	int value, *train_points, *train_next;
+	/*int value, *train_points, *train_next;
 	if(is_skill)
 	{
 		if(unit.statsx->skill[co] == SkillInfo::MAX)
@@ -20266,7 +20261,7 @@ void Game::Train(Unit& unit, bool is_skill, int co, int mode)
 			unit.player->TrainMod2((Skill)co, pts);
 		else
 			unit.player->TrainMod((Attribute)co, pts);
-	}
+	}*/
 }
 
 void Game::ShowStatGain(bool is_skill, int what, int value)

@@ -811,6 +811,14 @@ struct Unit
 
 	void ApplyStun(float length);
 
+	Skill GetWeaponSkill() const
+	{
+		if(HaveWeapon())
+			return GetWeapon().GetInfo().skill;
+		else
+			return Skill::UNARMED;
+	}
+
 	//==============================================
 	// SKILLS & STATS
 	//==============================================

@@ -51,6 +51,8 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 				unit->hp = unit->hpmax;
 			if(unit->IsHero())
 				unit->hero->PassTime(1, true);
+			else if(unit->IsPlayer())
+				unit->player->Rest(1, false, true);
 		}
 
 		// ubywanie wolnych dni
@@ -96,6 +98,6 @@ void Game::OnTravel(float dist)
 	for(auto unit : Team.members)
 	{
 		if(unit->IsPlayer())
-			unit->player->TrainMove(dist / 100);
+			unit->player->TrainMove(dist);
 	}
 }

@@ -2918,7 +2918,7 @@ void Unit::RemoveStamina(float value)
 	stamina -= value;
 	if(player)
 	{
-		player->Train(TrainWhat::Stamina, value, 0);
+		player->Train2(TrainWhat2::Stamina, value, 0);
 		Game& game = Game::Get();
 		if(game.pc != player)
 			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;

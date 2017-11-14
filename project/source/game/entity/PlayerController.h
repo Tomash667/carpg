@@ -46,34 +46,6 @@ enum PlayerStats
 };
 
 //-----------------------------------------------------------------------------
-enum class TrainWhat
-{
-	TakeDamage, // player take damage [damage%, level]
-	NaturalHealing, // player heals [damage%, -]
-	TakeDamageArmor, // player block damage by armor [damage%, level]
-
-	AttackStart, // player start attack [0]
-	AttackNoDamage, // player hit target but deal no damage [0, level]
-	AttackHit, // player deal damage with weapon [damage%, level]
-
-	BlockBullet, // player block bullet [damage%, level]
-	BlockAttack, // player block hit [damage%, level]
-	BashStart, // player start bash [0]
-	BashNoDamage, // player bash hit but deal no damage [0, level]
-	BashHit, // player deal damage with base [damage%, level]
-
-	BowStart, // player start shooting [0]
-	BowNoDamage, // player hit target but deal no damage [0, level]
-	BowAttack, // player deal damage with bow [damage%, level]
-
-	Move, // player moved [0]
-
-	Talk, // player talked [0]
-	Trade, // player traded items [0]
-
-	Stamina, // player uses stamina [value]
-};
-
 enum class TrainWhat2
 {
 	Attack, // player starts attack [skill] - str when too low for weapon
@@ -82,6 +54,7 @@ enum class TrainWhat2
 	Block, // player blocked attack [attack blocked] - str when too low for shield
 	TakeHit, // player take attack [attack value]
 	TakeDamage, // player take damage [damage]
+	Regenerate, // player regenerate damage [value]
 	Stamina, // player is using stamina [value]
 	Trade, // player bought/sell goods [value]
 	Read, // player read book
@@ -151,14 +124,14 @@ struct PlayerController : public HeroPlayerCommon
 
 	void Init(Unit& _unit, bool partial = false);
 	void Update(float dt, bool is_local = true);
-	void Train(Skill s, int points);
-	void Train(Attribute a, int points);
+	/*void Train(Skill s, int points);
+	void Train(Attribute a, int points);*/
 	void TrainMove(float dist);
-	void Train(TrainWhat what, float value, int level);
+	/*void Train(TrainWhat what, float value, int level);
 	void TrainMod(Attribute a, float points);
 	void TrainMod2(Skill s, float points);
-	void TrainMod(Skill s, float points);
-	void Train2(TrainWhat2 what, float value, float level, Skill skill);
+	void TrainMod(Skill s, float points);*/
+	void Train2(TrainWhat2 what, float value, int level, Skill skill = Skill::NONE);
 	void SetRequiredPoints();
 
 	void Save(HANDLE file);

@@ -1928,6 +1928,9 @@ bool Game::ReadPlayerData(BitStream& stream)
 		free_days = unit->player->free_days;
 
 	unit->player->Init(*unit, true);
+	unit->statsx = new StatsX;
+	unit->statsx->unique = true;
+	unit->statsx->profile = unit->data->stat_profile;
 
 	if(!unit->statsx->Read(stream)
 		|| !stream.Read(unit->gold)
@@ -2269,7 +2272,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else
 			{
-				unit.player->TrainMove(dist);
+				unit.player->Train2(TrainWhat2::Move, dist, 0);
 				if(player.noclip || unit.usable || CheckMoveNet(unit, new_pos))
 				{
 					// update position
@@ -2495,7 +2498,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.animation_state = 1;
 							unit.hitted = false;
 						}
-						unit.player->Train(TrainWhat::AttackStart, 0.f, 0);
+						unit.player->Train2(TrainWhat2::Attack, 0.f, 0);
 						break;
 					case AID_PowerAttack:
 						{
@@ -2553,7 +2556,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.mesh_inst->groups[1].speed = 2.f;
 							unit.mesh_inst->frame_end_info2 = false;
 							unit.hitted = false;
-							unit.player->Train(TrainWhat::BashStart, 0.f, 0);
+							unit.player->Train2(TrainWhat2::Attack, 0.f, 0, Skill::SHIELD);
 							unit.RemoveStamina(50.f);
 						}
 						break;
@@ -4413,10 +4416,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				Error("Update server: ENTER_LOCATION from %s, not leader or not on map.", info.name.c_str());
 				StreamError();
 			}
-			break;
-		// player is training dexterity by moving
-		case NetChange::TRAIN_MOVE:
-			player.Train(TrainWhat::Move, 0.f, 0);
 			break;
 		// close encounter message box
 		case NetChange::CLOSE_ENCOUNTER:
@@ -9584,7 +9583,6 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::CHEAT_GOTO_MAP:
 		case NetChange::CHEAT_SHOW_MINIMAP:
 		case NetChange::ENTER_LOCATION:
-		case NetChange::TRAIN_MOVE:
 		case NetChange::CLOSE_ENCOUNTER:
 		case NetChange::YELL:
 		case NetChange::CHEAT_REFRESH_COOLDOWN:
@@ -10922,7 +10920,6 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::GAME_OVER:
 	case NetChange::CHEAT_CITIZEN:
 	case NetChange::WORLD_TIME:
-	case NetChange::TRAIN_MOVE:
 	case NetChange::ADD_LOCATION:
 	case NetChange::REMOVE_CAMP:
 	case NetChange::CHEAT_NOAI:
