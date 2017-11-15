@@ -8,6 +8,35 @@
 #include "Class.h"
 #include "Action.h"
 
+const float level_mod[21] = {
+	0.5f, // -10
+	0.55f, // -9
+	0.64f, // -8
+	0.72f, // -7
+	0.79f, // -6
+	0.85f, // -5
+	0.9f, // -4
+	0.94f, // -3
+	0.97f, // -2
+	0.99f, // -1
+	1.f, // 0
+	1.01f, // 1
+	1.03f, // 2
+	1.06f, //3
+	1.1f, // 4
+	1.15f, // 5
+	1.21f, // 6
+	1.28f, // 7
+	1.36f, // 8
+	1.45f, // 9
+	1.5f, // 10
+};
+
+inline float GetLevelMod(int my_level, int target_level)
+{
+	return level_mod[Clamp(my_level - target_level + 10, 0, 20)];
+}
+
 //=================================================================================================
 PlayerController::~PlayerController()
 {
@@ -65,9 +94,10 @@ void PlayerController::Update(float dt, bool is_local)
 		poison_dmgc += (last_dmg_poison - poison_dmgc) * dt;
 		if(last_dmg_poison == 0.f && poison_dmgc < 0.1f)
 			poison_dmgc = 0.f;
-
-		RecalculateLevel();
 	}
+
+	if(Net::IsLocal())
+		RecalculateLevel();
 
 	// update action
 	auto& action = GetAction();
@@ -136,9 +166,7 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 				req_str = weapon.req_str;
 			}
 			if(req_str > unit->GetBase(Attribute::STR))
-			{
-
-			}
+				Train(Attribute::STR, 50);
 
 			// train dex when too low for weapon/bow
 		}
@@ -156,20 +184,36 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 				skill = unit->GetWeaponSkill();
 
 			// train weapon skill
+			int points = (int)(Lerp(200.f, 2450.f, ratio) * GetLevelMod(unit->level, level));
+			Train(skill, points);
 		}
 		break;
 	case TrainWhat::Move:
 		s = "Move";
 		{
+			int weight = 0;
+
 			if(unit->HaveArmor())
 			{
 				auto& armor = unit->GetArmor();
 				if(armor.req_str > unit->GetBase(Attribute::STR))
 				{
 					// train str when too low for armor
+					Train(Attribute::STR, 250);
 				}
 
 				// train armor skill
+				Train(armor.skill, 250);
+
+				switch(armor.skill)
+				{
+				case Skill::MEDIUM_ARMOR:
+					weight = 2;
+					break;
+				case Skill::HEAVY_ARMOR:
+					weight = 3;
+					break;
+				}
 			}
 
 			auto load_state = unit->GetLoadState();
@@ -181,17 +225,46 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 				{
 				case Unit::LS_MEDIUM:
 					ratio = 0.5f;
+					weight = 1;
 					break;
 				case Unit::LS_HEAVY:
 					ratio = 1.f;
+					weight = 3;
 					break;
 				default:
 					ratio = 1.5f;
+					weight = 4;
 					break;
 				}
 			}
 
-			// train acrobatics
+			// train skills
+			int acro, ath;
+			switch(weight)
+			{
+			case 0:
+				acro = 300;
+				ath = 0;
+				break;
+			case 1:
+				acro = 250;
+				ath = 100;
+				break;
+			case 2:
+				acro = 200;
+				ath = 250;
+				break;
+			case 3:
+				acro = 100;
+				ath = 300;
+				break;
+			case 4:
+				acro = 0;
+				ath = 500;
+				break;
+			}
+			Train(Skill::ACROBATICS, acro);
+			Train(Skill::ATHLETICS, ath);
 		}
 		break;
 	case TrainWhat::Block:
@@ -201,47 +274,50 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 			if(shield.req_str > unit->GetBase(Attribute::STR))
 			{
 				// train str when too low for shield
+				Train(Attribute::STR, 50);
 			}
 
 			// train shield skill
+			Train(Skill::SHIELD, (int)(value * 2000));
 		}
 		break;
 	case TrainWhat::TakeHit:
 		s = "TakeHit";
 		{
+			// train armor skill
 			if(unit->HaveArmor())
-			{
-				// train armor skill
-			}
+				Train(unit->GetArmor().skill, (int)(value * 2000));
+
+			// train shield skill / 5
 			if(unit->HaveShield())
-			{
-				// train shield skill / 5
-			}
+				Train(Skill::SHIELD, (int)(value * 400));
 		}
 		break;
 	case TrainWhat::TakeDamage:
 		s = "TakeDamage";
 		{
 			// train end
+			Train(Attribute::END, (int)(value * 1250));
 
 			// train athletics skill
+			Train(Skill::ATHLETICS, (int)(value * 2500));
 		}
 		break;
 	case TrainWhat::Regenerate:
 		s = "Regenerate";
-		// end
+		Train(Attribute::END, (int)value);
 		break;
 	case TrainWhat::Stamina:
 		s = "Stamina";
-		// end
+		Train(Attribute::END, (int)value);
 		break;
 	case TrainWhat::Trade:
 		s = "Trade";
-		// haggle -> cha
+		Train(Skill::HAGGLE, (int)value);
 		break;
 	case TrainWhat::Read:
 		s = "Read";
-		// literacy -> int
+		Train(Skill::LITERACY, 2500);
 		break;
 	}
 
@@ -259,6 +335,7 @@ void PlayerController::Train(Attribute attrib, int points)
 {
 	int a = (int)attrib;
 	points = (int)(unit->GetAptitudeMod(attrib) * points);
+	assert(points != 0);
 
 	ap[a] += points;
 
@@ -307,9 +384,10 @@ void PlayerController::Train(Attribute attrib, int points)
 void PlayerController::Train(Skill skill, int points)
 {
 	int s = (int)skill;
-	points = (int)(unit->GetAptitudeMod(skill) * points);
+	int mod_points = (int)(unit->GetAptitudeMod(skill) * points);
+	assert(mod_points != 0);
 
-	sp[s] += points;
+	sp[s] += mod_points;
 
 	int gained = 0,
 		value = unit->GetBase(skill);
@@ -350,6 +428,16 @@ void PlayerController::Train(Skill skill, int points)
 			c2.ile = value;
 		}
 	}
+
+	auto& info = SkillInfo::skills[s];
+	if(info.similar == SimilarSkill::Weapon)
+	{
+		// train in one handed weapon
+		Train(Skill::ONE_HANDED_WEAPON, points);
+	}
+	Train(info.attrib, (int)(info.attrib_ratio * points));
+	if(info.attrib2 != Attribute::NONE)
+		Train(info.attrib2, (int)((1.f - info.attrib_ratio) * points));
 }
 
 //=================================================================================================
@@ -624,190 +712,6 @@ void PlayerController::SetRequiredPoints()
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 		sn[i] = GetRequiredSkillPoints(unit->GetBase((Skill)i));
 }
-
-const float level_mod[21] = {
-	0.5f, // -10
-	0.55f, // -9
-	0.64f, // -8
-	0.72f, // -7
-	0.79f, // -6
-	0.85f, // -5
-	0.9f, // -4
-	0.94f, // -3
-	0.97f, // -2
-	0.99f, // -1
-	1.f, // 0
-	1.01f, // 1
-	1.03f, // 2
-	1.06f, //3
-	1.1f, // 4
-	1.15f, // 5
-	1.21f, // 6
-	1.28f, // 7
-	1.36f, // 8
-	1.45f, // 9
-	1.5f, // 10
-};
-
-inline float GetLevelMod(int my_level, int target_level)
-{
-	return level_mod[Clamp(my_level - target_level + 10, 0, 20)];
-}
-
-//=================================================================================================
-/*void PlayerController::Train(TrainWhat what, float value, int level)
-{
-	switch(what)
-	{
-	case TrainWhat::TakeDamage:
-		TrainMod(Attribute::END, value * 2500 * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::TakeDamageArmor:
-		if(unit->HaveArmor())
-			TrainMod(unit->GetArmor().skill, value * 2000 * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::AttackStart:
-		{
-			const float c_points = 50.f;
-			const Weapon& weapon = unit->GetWeapon();
-			const WeaponTypeInfo& info = weapon.GetInfo();
-			if(weapon.req_str > unit->Get(Attribute::STR))
-				TrainMod(Attribute::STR, c_points);
-			TrainMod(Skill::ONE_HANDED_WEAPON, c_points);
-			TrainMod2(weapon.GetInfo().skill, c_points);
-			TrainMod(Attribute::STR, c_points * info.str2dmg);
-			TrainMod(Attribute::DEX, c_points * info.dex2dmg);
-		}
-		break;
-	case TrainWhat::AttackNoDamage:
-		{
-			const float c_points = 150.f;
-			const Weapon& weapon = unit->GetWeapon();
-			const WeaponTypeInfo& info = weapon.GetInfo();
-			TrainMod(Skill::ONE_HANDED_WEAPON, c_points);
-			TrainMod2(weapon.GetInfo().skill, c_points);
-			TrainMod(Attribute::STR, c_points * info.str2dmg);
-			TrainMod(Attribute::DEX, c_points * info.dex2dmg);
-		}
-		break;
-	case TrainWhat::AttackHit:
-		{
-			const float c_points = 2450.f * value;
-			const Weapon& weapon = unit->GetWeapon();
-			const WeaponTypeInfo& info = weapon.GetInfo();
-			TrainMod(Skill::ONE_HANDED_WEAPON, c_points);
-			TrainMod2(weapon.GetInfo().skill, c_points);
-			TrainMod(Attribute::STR, c_points * info.str2dmg);
-			TrainMod(Attribute::DEX, c_points * info.dex2dmg);
-		}
-		break;
-	case TrainWhat::BlockBullet:
-	case TrainWhat::BlockAttack:
-		TrainMod(Skill::SHIELD, value * 2000 * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::BashStart:
-		if(unit->GetShield().req_str > unit->Get(Attribute::STR))
-			TrainMod(Attribute::STR, 50.f);
-		TrainMod(Skill::SHIELD, 50.f);
-		break;
-	case TrainWhat::BashNoDamage:
-		TrainMod(Skill::SHIELD, 150.f * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::BashHit:
-		TrainMod(Skill::SHIELD, value * 1950 * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::BowStart:
-		if(unit->GetBow().req_str > unit->Get(Attribute::STR))
-			TrainMod(Attribute::STR, 50.f);
-		TrainMod(Skill::BOW, 50.f);
-		break;
-	case TrainWhat::BowNoDamage:
-		TrainMod(Skill::BOW, 150.f * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::BowAttack:
-		TrainMod(Skill::BOW, 2450.f * value * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::Move:
-		{
-			int dex, str;
-
-			switch(unit->GetLoadState())
-			{
-			case 0: // brak
-				dex = 49;
-				str = 1;
-				break;
-			case 1: // lekkie
-				dex = 40;
-				str = 10;
-				break;
-			case 2: // œrednie
-				dex = 25;
-				str = 25;
-				break;
-			case 3: // ciê¿kie
-				dex = 10;
-				str = 40;
-				break;
-			case 4: // maksymalne
-			default:
-				dex = 1;
-				str = 49;
-				break;
-			}
-
-			if(unit->HaveArmor())
-			{
-				const Armor& armor = unit->GetArmor();
-				if(armor.req_str > unit->Get(Attribute::STR))
-					str += 50;
-				TrainMod(armor.skill, 50.f);
-			}
-
-			TrainMod(Attribute::STR, (float)str);
-			TrainMod(Attribute::DEX, (float)dex);
-		}
-		break;
-	case TrainWhat::Talk:
-		TrainMod(Attribute::CHA, 10.f);
-		break;
-	case TrainWhat::Trade:
-		TrainMod(Attribute::CHA, 100.f);
-		break;
-	case TrainWhat::Stamina:
-		TrainMod(Attribute::END, value * 0.75f);
-		TrainMod(Attribute::DEX, value * 0.5f);
-		break;
-	default:
-		assert(0);
-		break;
-	}
-}
-
-//=================================================================================================
-void PlayerController::TrainMod(Attribute a, float points)
-{
-	Train(a, int(points * unit->statsx->GetMod(a)));
-}
-
-//=================================================================================================
-void PlayerController::TrainMod2(Skill s, float points)
-{
-	Train(s, int(points * unit->statsx->GetMod(s)));
-}
-
-//=================================================================================================
-void PlayerController::TrainMod(Skill s, float points)
-{
-	TrainMod2(s, points);
-	SkillInfo& info = SkillInfo::skills[(int)s];
-	if(info.attrib2 != Attribute::NONE)
-	{
-		points /= 2;
-		TrainMod(info.attrib2, points);
-	}
-	TrainMod(info.attrib, points);
-}*/
 
 //=================================================================================================
 // Used to send per-player data in WritePlayerData

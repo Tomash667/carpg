@@ -1574,7 +1574,7 @@ void Game::UpdateServerTransfer(float dt)
 		Team.members.clear();
 		Team.active_members.clear();
 		const bool in_level = (open_location != -1);
-		int create_unit_flags = CUF_CUSTOM;
+		int create_unit_flags = CUF_CUSTOM | CUF_UNIQUE_STATSX;
 		if(!in_level)
 			create_unit_flags |= CUF_NO_PHYSICS;
 		int leader_perk = 0;

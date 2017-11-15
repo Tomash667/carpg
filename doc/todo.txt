@@ -1,8 +1,5 @@
 ﻿FEATURE:
 *** new skills
-? send player level on change
-- traveling to new location with reg buf don't remove it for client
-	? verify with old version
 + new training/effect
 	+ attrib
 		+ str
@@ -39,6 +36,8 @@
 	? client level calculate
 	? negative aptitude effect on units/player
 	? rescaling required skill points
+	? mod client stats after loading
+	? trade with hero, by server/client (check weight) - don't send all stats? only weight?
 
 *** perks
 + perk points
@@ -54,6 +53,9 @@
 *** combat
 + str/dex formula changes
 + required dexterity by weapon
++ train dex when too low for weapon/bow
++ too low str effects (slower attack etc)
++ too low dex effects
 
 *** better stamina
 + better stamina usage

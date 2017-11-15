@@ -96,6 +96,7 @@ enum class Skill
 };
 
 //-----------------------------------------------------------------------------
+// used for grouping in StatsPanel
 enum class SkillGroup
 {
 	COMBAT_STYLE,
@@ -106,6 +107,15 @@ enum class SkillGroup
 
 	MAX,
 	NONE
+};
+
+//-----------------------------------------------------------------------------
+// gives bonus when using similar skill
+enum class SimilarSkill
+{
+	None,
+	Weapon,
+	Armor
 };
 
 //-----------------------------------------------------------------------------
@@ -126,12 +136,13 @@ struct SkillInfo
 	string name, desc;
 	SkillGroup group;
 	Attribute attrib, attrib2;
-	int skill_group;
+	float attrib_ratio;
+	SimilarSkill similar;
 
 	static const int MAX = 255;
 
-	SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2, int skill_group) : skill_id(skill_id), id(id),
-		group(group), attrib(attrib), attrib2(attrib2), skill_group(skill_group)
+	SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2, float attrib_ratio, SimilarSkill similar) : skill_id(skill_id), id(id),
+		group(group), attrib(attrib), attrib2(attrib2), attrib_ratio(attrib_ratio), similar(similar)
 	{
 	}
 

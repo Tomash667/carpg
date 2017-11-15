@@ -150,7 +150,12 @@ void HeroData::PassTime(int days, bool travel)
 
 	// koñczenie efektów
 	int best_nat;
+	//uint old_count = unit->effects.size();
 	unit->EndEffects(days, &best_nat);
+	/*if(unit->IsPlayer() && !unit->player->is_local && old_count != unit->effects.size())
+	{
+		unit->player->player_info->update_flags |= PlayerInfo::UF_BUFFS;
+	}*/
 
 	// regeneracja hp
 	if(unit->hp != unit->hpmax)

@@ -2506,13 +2506,13 @@ int Unit::Get(Skill s) const
 	auto& info = SkillInfo::skills[index];
 
 	// similar skill bonus
-	if(info.skill_group != -1)
+	if(info.similar != SimilarSkill::None)
 	{
 		int best = value;
 		for(int i = index - 1; i >= 0; --i)
 		{
 			auto& info2 = SkillInfo::skills[i];
-			if(info2.skill_group != info.skill_group)
+			if(info2.similar != info.similar)
 				break;
 			int value2 = statsx->Get((Skill)i);
 			if(value2 > best)
@@ -2521,7 +2521,7 @@ int Unit::Get(Skill s) const
 		for(int i = index + 1; i < (int)Skill::MAX; ++i)
 		{
 			auto& info2 = SkillInfo::skills[i];
-			if(info2.skill_group != info.skill_group)
+			if(info2.similar != info.similar)
 				break;
 			int value2 = statsx->Get((Skill)i);
 			if(value2 > best)
@@ -2550,13 +2550,13 @@ int Unit::GetAptitude(Skill s) const
 	int index = (int)s;
 	int value = statsx->skill_apt[index];
 	auto& info = SkillInfo::skills[index];
-	if(info.skill_group != -1)
+	if(info.similar != SimilarSkill::None)
 	{
 		int best = value;
 		for(int i = index - 1; i >= 0; --i)
 		{
 			auto& info2 = SkillInfo::skills[i];
-			if(info2.skill_group != info.skill_group)
+			if(info2.similar != info.similar)
 				break;
 			int value2 = statsx->Get((Skill)i);
 			if(value2 > best)
@@ -2565,7 +2565,7 @@ int Unit::GetAptitude(Skill s) const
 		for(int i = index + 1; i < (int)Skill::MAX; ++i)
 		{
 			auto& info2 = SkillInfo::skills[i];
-			if(info2.skill_group != info.skill_group)
+			if(info2.similar != info.similar)
 				break;
 			int value2 = statsx->Get((Skill)i);
 			if(value2 > best)

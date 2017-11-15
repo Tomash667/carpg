@@ -133,13 +133,7 @@ struct PlayerController : public HeroPlayerCommon
 
 	void Init(Unit& _unit, bool partial = false);
 	void Update(float dt, bool is_local = true);
-	/*void Train(Skill s, int points);
-	void Train(Attribute a, int points);*/
 	void TrainMove(float dist);
-	/*void Train(TrainWhat what, float value, int level);
-	void TrainMod(Attribute a, float points);
-	void TrainMod2(Skill s, float points);
-	void TrainMod(Skill s, float points);*/
 	void Train(TrainWhat what, float value, int level, Skill skill = Skill::NONE);
 private:
 	void Train(Attribute attrib, int points);

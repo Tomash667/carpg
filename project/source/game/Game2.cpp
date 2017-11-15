@@ -7698,7 +7698,7 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 		taker.player->stat_flags |= STAT_DMG_TAKEN;
 
 		// train endurance
-		taker.player->Train(TrainWhat::TakeDamage, dmg, (giver ? giver->level : -1));
+		taker.player->Train(TrainWhat::TakeDamage, dmg / taker.hp, 0);
 
 		// red screen
 		taker.player->last_dmg += dmg;
@@ -9370,7 +9370,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					if(hitted->IsPlayer())
 					{
 						// player blocked bullet, train shield
-						hitted->player->Train(TrainWhat::Block, blocked, it->level);
+						hitted->player->Train(TrainWhat::Block, blocked / hitted->hpmax, it->level);
 					}
 
 					if(atk <= 0)
@@ -9392,7 +9392,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 				// szkol gracza w pancerzu/hp
 				if(hitted->IsPlayer())
-					hitted->player->Train(TrainWhat::TakeHit, base_atk, it->level);
+					hitted->player->Train(TrainWhat::TakeHit, base_atk / hitted->hp, it->level);
 
 				// hit sound
 				PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, dmg > 0.f);
@@ -9482,7 +9482,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					if(hitted->IsPlayer())
 					{
 						// player blocked spell, train him
-						hitted->player->Train(TrainWhat::Block, blocked, it->level);
+						hitted->player->Train(TrainWhat::Block, blocked / hitted->hpmax, it->level);
 					}
 
 					if(dmg <= 0)
@@ -10981,7 +10981,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 		// train blocking
 		if(hitted.IsPlayer())
-			hitted.player->Train(TrainWhat::Block, blocked, attacker.level);
+			hitted.player->Train(TrainWhat::Block, blocked / hitted.hpmax, attacker.level);
 
 		// pain animation & break blocking
 		if(hitted.stamina < 0)
@@ -11032,7 +11032,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 	// train player armor skill
 	if(hitted.IsPlayer())
-		hitted.player->Train(TrainWhat::TakeHit, atk, attacker.level);
+		hitted.player->Train(TrainWhat::TakeHit, atk / hitted.hp, attacker.level);
 
 	// fully blocked by armor
 	if(dmg < 0)
@@ -11999,7 +11999,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 
 								// train player armor skill
 								if(hitted->IsPlayer())
-									hitted->player->Train(TrainWhat::TakeHit, base_atk, 4);
+									hitted->player->Train(TrainWhat::TakeHit, base_atk / hitted->hp, 4);
 
 								// obra¿enia
 								float dmg = game::CalculateDamage(atk, def);

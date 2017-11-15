@@ -9469,50 +9469,55 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			}
 		}
 	}
-	if(pc)
+
+	// gold
+	if(IS_SET(flags, PlayerInfo::UF_GOLD))
 	{
-		// gold
-		if(IS_SET(flags, PlayerInfo::UF_GOLD))
+		if(!pc)
+			Skip(stream, sizeof(pc->unit->gold));
+		else if(!stream.Read(pc->unit->gold))
 		{
-			if(!stream.Read(pc->unit->gold))
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
-				StreamError();
-				return true;
-			}
+			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
+			StreamError();
+			return true;
 		}
+	}
 
-		// alcohol
-		if(IS_SET(flags, PlayerInfo::UF_ALCOHOL))
+	// alcohol
+	if(IS_SET(flags, PlayerInfo::UF_ALCOHOL))
+	{
+		if(!pc)
+			Skip(stream, sizeof(pc->unit->alcohol));
+		else if(!stream.Read(pc->unit->alcohol))
 		{
-			if(!stream.Read(pc->unit->alcohol))
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
-				StreamError();
-				return true;
-			}
+			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
+			StreamError();
+			return true;
 		}
+	}
 
-		// buffs
-		if(IS_SET(flags, PlayerInfo::UF_BUFFS))
+	// buffs
+	if(IS_SET(flags, PlayerInfo::UF_BUFFS))
+	{
+		auto player_info = pc ? pc->player_info : &GetPlayerInfo(my_id);
+		if(!stream.ReadCasted<byte>(player_info->buffs))
 		{
-			if(!stream.ReadCasted<byte>(pc->player_info->buffs))
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_BUFFS.");
-				StreamError();
-				return true;
-			}
+			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_BUFFS.");
+			StreamError();
+			return true;
 		}
+	}
 
-		// stamina
-		if(IS_SET(flags, PlayerInfo::UF_STAMINA))
+	// stamina
+	if(IS_SET(flags, PlayerInfo::UF_STAMINA))
+	{
+		if(!pc)
+			Skip(stream, sizeof(pc->unit->stamina));
+		else if(!stream.Read(pc->unit->stamina))
 		{
-			if(!stream.Read(pc->unit->stamina))
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_STAMINA.");
-				StreamError();
-				return true;
-			}
+			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_STAMINA.");
+			StreamError();
+			return true;
 		}
 	}
 
