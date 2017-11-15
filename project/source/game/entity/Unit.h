@@ -854,6 +854,16 @@ struct Unit
 		return statsx->attrib_apt[(int)a];
 	}
 	int GetAptitude(Skill s) const;
+	float GetAptitudeMod(Attribute a) const
+	{
+		int apt = GetAptitude(a);
+		return StatsX::GetModFromApt(apt);
+	}
+	float GetAptitudeMod(Skill s) const
+	{
+		int apt = GetAptitude(s);
+		return StatsX::GetModFromApt(apt);
+	}
 
 	void Set(Attribute a, int value)
 	{

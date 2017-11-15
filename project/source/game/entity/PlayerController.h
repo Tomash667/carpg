@@ -67,7 +67,16 @@ inline int GetRequiredAttributePoints(int level)
 
 inline int GetRequiredSkillPoints(int level)
 {
-	return 3 * (level + 20)*(level + 25);
+	return 3 * (level + 15)*(level + 20);
+}
+
+namespace old
+{
+	// pre 0.7
+	inline int GetRequiredSkillPoints(int level)
+	{
+		return 3 * (level + 20)*(level + 25);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -132,6 +141,10 @@ struct PlayerController : public HeroPlayerCommon
 	void TrainMod2(Skill s, float points);
 	void TrainMod(Skill s, float points);*/
 	void Train(TrainWhat what, float value, int level, Skill skill = Skill::NONE);
+private:
+	void Train(Attribute attrib, int points);
+	void Train(Skill skill, int points);
+public:
 	void SetRequiredPoints();
 
 	void Save(HANDLE file);

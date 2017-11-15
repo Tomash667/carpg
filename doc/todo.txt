@@ -1,8 +1,8 @@
 ﻿FEATURE:
 *** new skills
 ? send player level on change
-- traveling to new location with reg buf don't remove it
-	verify with old version
+- traveling to new location with reg buf don't remove it for client
+	? verify with old version
 + new training/effect
 	+ attrib
 		+ str
@@ -38,6 +38,7 @@
 	? StatsX.Upgrade
 	? client level calculate
 	? negative aptitude effect on units/player
+	? rescaling required skill points
 
 *** perks
 + perk points
