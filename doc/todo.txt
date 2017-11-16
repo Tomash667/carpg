@@ -18,8 +18,6 @@
 + new skills effects & training
 	+ one handed
 		- one handed weapons skill = -1
-	+ unarmed
-		+ unarmed attack formula
 	+ athletics
 	+ acrobatics
 	+ haggle
@@ -56,6 +54,7 @@
 + train dex when too low for weapon/bow
 + too low str effects (slower attack etc)
 + too low dex effects
++ unarmed attack formula
 
 *** better stamina
 + better stamina usage

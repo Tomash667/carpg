@@ -329,7 +329,6 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 	Info("Train %s (%g, %d, %s) - %s", s, value, level, sk, player_info->name.c_str());
 }
 
-
 //=================================================================================================
 void PlayerController::Train(Attribute attrib, int points)
 {
