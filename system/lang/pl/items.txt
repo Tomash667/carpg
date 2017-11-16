@@ -776,6 +776,9 @@ item parcel {
 item wanted_letter {
 	name "List goñczy"
 }
+item magic_scroll {
+	name "Magiczny zwój"
+}
 
 //------------------------------------------------------------------------------
 item book_orcs {

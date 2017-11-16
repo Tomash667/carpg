@@ -4236,8 +4236,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					trader_buy = old_trader_buy;
 				}
 
-				ctx.pc->Train(TrainWhat::Trade, 0.f, 0);
-
 				return;
 			}
 			break;
@@ -7698,7 +7696,7 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 		taker.player->stat_flags |= STAT_DMG_TAKEN;
 
 		// train endurance
-		taker.player->Train(TrainWhat::TakeDamage, dmg / taker.hp, 0);
+		taker.player->Train(TrainWhat::TakeDamage, dmg / taker.hpmax, 0);
 
 		// red screen
 		taker.player->last_dmg += dmg;
@@ -9392,7 +9390,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 				// szkol gracza w pancerzu/hp
 				if(hitted->IsPlayer())
-					hitted->player->Train(TrainWhat::TakeHit, base_atk / hitted->hp, it->level);
+					hitted->player->Train(TrainWhat::TakeHit, base_atk / hitted->hpmax, it->level);
 
 				// hit sound
 				PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, dmg > 0.f);
@@ -11032,7 +11030,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 
 	// train player armor skill
 	if(hitted.IsPlayer())
-		hitted.player->Train(TrainWhat::TakeHit, atk / hitted.hp, attacker.level);
+		hitted.player->Train(TrainWhat::TakeHit, atk / hitted.hpmax, attacker.level);
 
 	// fully blocked by armor
 	if(dmg < 0)
@@ -11999,7 +11997,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 
 								// train player armor skill
 								if(hitted->IsPlayer())
-									hitted->player->Train(TrainWhat::TakeHit, base_atk / hitted->hp, 4);
+									hitted->player->Train(TrainWhat::TakeHit, base_atk / hitted->hpmax, 4);
 
 								// obra¿enia
 								float dmg = game::CalculateDamage(atk, def);
@@ -21826,16 +21824,16 @@ void Game::ShowAcademyText()
 		Net::PushChange(NetChange::ACADEMY_TEXT);
 }
 
-const float price_mod_buy[] = { 1.25f, 1.0f, 0.75f };
-const float price_mod_sell[] = { 0.25f, 0.5f, 0.75f };
-const float price_mod_buy_v[] = { 1.25f, 1.0f, 0.9f };
-const float price_mod_sell_v[] = { 0.5f, 0.75f, 0.9f };
+const float price_mod_buy[] = { 2.f, 1.25f, 1.f, 0.9f, 0.75f };
+const float price_mod_sell[] = { 0.25f, 0.5f, 0.6f, 0.7f, 0.75f };
+const float price_mod_buy_v[] = { 2.f, 1.25f, 1.f, 0.95f, 0.9f };
+const float price_mod_sell_v[] = { 0.5f, 0.65f, 0.75f, 0.85f, 0.9f };
 
 int Game::GetItemPrice(const Item* item, Unit& unit, bool buy)
 {
 	assert(item);
 
-	int cha = unit.Get(Attribute::CHA);
+	int haggle = unit.Get(Skill::HAGGLE);
 	const float* mod_table;
 
 	if(item->type == IT_OTHER && item->ToOther().other_type == Valuable)
@@ -21854,16 +21852,18 @@ int Game::GetItemPrice(const Item* item, Unit& unit, bool buy)
 	}
 
 	float mod;
-	if(cha <= 1)
+	if(haggle <= -10)
 		mod = mod_table[0];
-	else if(cha < 50)
-		mod = Lerp(mod_table[0], mod_table[1], float(cha) / 50);
-	else if(cha == 50)
-		mod = mod_table[1];
-	else if(cha < 100)
-		mod = Lerp(mod_table[1], mod_table[2], float(cha - 50) / 50);
+	else if(haggle <= 0)
+		mod = Lerp(mod_table[0], mod_table[1], float(haggle + 10) / 10);
+	else if(haggle <= 10)
+		mod = Lerp(mod_table[1], mod_table[2], float(haggle) / 10);
+	else if(haggle <= 35)
+		mod = Lerp(mod_table[2], mod_table[3], float(haggle - 10) / 25);
+	else if(haggle <= 100)
+		mod = Lerp(mod_table[3], mod_table[4], float(haggle - 35) / 65);
 	else
-		mod = mod_table[2];
+		mod = mod_table[4];
 
 	int price = int(mod * item->value);
 	if(price == 0 && buy)

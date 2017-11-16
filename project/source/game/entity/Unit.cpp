@@ -2529,6 +2529,10 @@ int Unit::Get(Skill s) const
 		}
 		if(best != value)
 			value += (best - value) / 2;
+
+		// combat style bonus
+		if(info.similar == SimilarSkill::Weapon)
+			value += GetBase(Skill::ONE_HANDED_WEAPON) / 10;
 	}
 
 	// attribute bonus
@@ -2548,7 +2552,8 @@ int Unit::Get(Skill s) const
 int Unit::GetAptitude(Skill s) const
 {
 	int index = (int)s;
-	int value = statsx->skill_apt[index];
+	int apt = statsx->skill_apt[index];
+	int value = statsx->Get(s);
 	auto& info = SkillInfo::skills[index];
 	if(info.similar != SimilarSkill::None)
 	{
@@ -2572,9 +2577,9 @@ int Unit::GetAptitude(Skill s) const
 				best = value2;
 		}
 		if(best != value)
-			value += 4;
+			apt += 4;
 	}
-	return value;
+	return apt;
 }
 
 //=================================================================================================

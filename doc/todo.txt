@@ -1,27 +1,14 @@
 ﻿FEATURE:
 *** new skills
-+ new training/effect
-	+ attrib
-		+ str
-		+ end
-		+ dex
-		+ int
-		+ cha
-	+ skill
-		+ weapon
-		+ bow
-		+ armor
-		+ shield
-	+ regenerate
 + Game::Train
-+ recalculate hp/atk/def on changed level
++ recalculate hp/atk/def on change level
 + new skills effects & training
-	+ one handed
-		- one handed weapons skill = -1
-	+ athletics
-	+ acrobatics
-	+ haggle
 	+ literacy
+		+ magic scroll (literacy < 25 - stun user and disappear; else magic explosion)
+			+ effect
+			+ flags
+			+ desc, eng name desc
+			+ generation
 
 ? testing
 	? double weapon skill in mp
@@ -35,7 +22,11 @@
 	? negative aptitude effect on units/player
 	? rescaling required skill points
 	? mod client stats after loading
+	? recalculate hp/atk/def in mp
+	? trainer by client, train potion, train reward
 	? trade with hero, by server/client (check weight) - don't send all stats? only weight?
+	! remove Train logging
+	! changelog
 
 *** perks
 + perk points
@@ -67,7 +58,9 @@
 	+ add to changelog
 ? blocking shots don't remove stamina
 	+ add to changelog (blocking don't remove stamina, units gain stamina when blocking on high levels of shield skill)
-+ new mobility
++ new mobility (dex + acro)
++ new stamina (end + acro)
++ new carry (str + ath)
 
 *** new enemies
 + units stats, new units

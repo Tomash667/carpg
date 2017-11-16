@@ -225,15 +225,15 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 				{
 				case Unit::LS_MEDIUM:
 					ratio = 0.5f;
-					weight = 1;
+					weight = max(weight, 1);
 					break;
 				case Unit::LS_HEAVY:
 					ratio = 1.f;
-					weight = 3;
+					weight = max(weight, 3);
 					break;
 				default:
 					ratio = 1.5f;
-					weight = 4;
+					weight = max(weight, 4);
 					break;
 				}
 			}
@@ -263,8 +263,10 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 				ath = 500;
 				break;
 			}
-			Train(Skill::ACROBATICS, acro);
-			Train(Skill::ATHLETICS, ath);
+			if(acro > 0)
+				Train(Skill::ACROBATICS, acro);
+			if(ath > 0)
+				Train(Skill::ATHLETICS, ath);
 		}
 		break;
 	case TrainWhat::Block:
@@ -326,7 +328,7 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 		sk = "none";
 	else
 		sk = SkillInfo::skills[(int)skill].id;
-	Info("Train %s (%g, %d, %s) - %s", s, value, level, sk, player_info->name.c_str());
+	Info("Train %s (%g, %d, %s) - %s", s, value, level, sk, name.c_str());
 }
 
 //=================================================================================================
@@ -335,6 +337,7 @@ void PlayerController::Train(Attribute attrib, int points)
 	int a = (int)attrib;
 	points = (int)(unit->GetAptitudeMod(attrib) * points);
 	assert(points != 0);
+	Info("--- %s %d", AttributeInfo::attributes[(int)attrib].name.c_str(), points);
 
 	ap[a] += points;
 
@@ -385,6 +388,7 @@ void PlayerController::Train(Skill skill, int points)
 	int s = (int)skill;
 	int mod_points = (int)(unit->GetAptitudeMod(skill) * points);
 	assert(mod_points != 0);
+	Info(Format("--- %s %d (%d)", SkillInfo::skills[s].name.c_str(), mod_points, points));
 
 	sp[s] += mod_points;
 
@@ -428,15 +432,18 @@ void PlayerController::Train(Skill skill, int points)
 		}
 	}
 
-	auto& info = SkillInfo::skills[s];
-	if(info.similar == SimilarSkill::Weapon)
+	if(skill != Skill::ONE_HANDED_WEAPON)
 	{
-		// train in one handed weapon
-		Train(Skill::ONE_HANDED_WEAPON, points);
+		auto& info = SkillInfo::skills[s];
+		if(info.similar == SimilarSkill::Weapon)
+		{
+			// train in one handed weapon
+			Train(Skill::ONE_HANDED_WEAPON, points);
+		}
+		Train(info.attrib, (int)(info.attrib_ratio * points));
+		if(info.attrib2 != Attribute::NONE)
+			Train(info.attrib2, (int)((1.f - info.attrib_ratio) * points));
 	}
-	Train(info.attrib, (int)(info.attrib_ratio * points));
-	if(info.attrib2 != Attribute::NONE)
-		Train(info.attrib2, (int)((1.f - info.attrib_ratio) * points));
 }
 
 //=================================================================================================

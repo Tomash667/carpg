@@ -453,6 +453,7 @@ profile cleric {
 	wisdom 70
 	charisma 55
 
+	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
 	axe 15
@@ -478,6 +479,7 @@ profile hunter {
 	wisdom 60
 	charisma 45
 
+	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
 	axe 15
@@ -522,6 +524,7 @@ profile mage {
 	wisdom 50
 	charisma 50
 
+	one_handed_weapon 0
 	short_blade 5
 	long_blade 5
 	axe 0
@@ -545,6 +548,7 @@ profile rogue {
 	wisdom 50
 	charisma 55
 
+	one_handed_weapon 15
 	short_blade 20
 	long_blade 15
 	axe 10
@@ -598,6 +602,7 @@ profile warrior {
 	wisdom 50
 	charisma 50
 
+	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
 	axe 15
@@ -769,6 +774,7 @@ profile fighter {
 	wisdom 50
 	charisma 50
 
+	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
 	axe 15
@@ -815,6 +821,7 @@ profile shaman {
 	wisdom 45
 	charisma 30
 
+	one_handed_weapon 10
 	short_blade 10
 	long_blade 10
 	axe 15
@@ -838,6 +845,7 @@ profile orc {
 	wisdom 40
 	charisma 30
 
+	one_handed_weapon 15
 	short_blade 10
 	long_blade 10
 	axe 15
@@ -859,7 +867,8 @@ profile orc_blacksmith {
 	inteligence 50
 	wisdom 40
 	charisma 30
-
+	
+	one_handed_weapon 10
 	short_blade 10
 	long_blade 10
 	axe 15
@@ -882,6 +891,7 @@ profile goblin {
 	wisdom 40
 	charisma 30
 
+	one_handed_weapon 10
 	short_blade 15
 	long_blade 10
 	axe 10
@@ -913,7 +923,8 @@ profile skeleton {
 	inteligence 1
 	wisdom 1
 	charisma 1
-
+	
+	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
 	axe 15

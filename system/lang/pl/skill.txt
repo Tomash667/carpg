@@ -14,7 +14,7 @@ skill short_blade {
 }
 skill long_blade {
 	name "D³ugie ostrze"
-	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku dla d³ugi mieczy i sejmitarów."
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku dla d³ugich mieczy i sejmitarów."
 }
 skill axe {
 	name "Topór"

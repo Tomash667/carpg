@@ -2938,7 +2938,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						uint team_count = (player.action == PlayerController::Action_Trade ? 0 : min((uint)count, slot.team_count));
 						AddItem(unit, slot.item, (uint)count, team_count, false);
 						if(player.action == PlayerController::Action_Trade)
-							unit.gold -= GetItemPrice(slot.item, unit, true) * count;
+						{
+							int price = GetItemPrice(slot.item, unit, true) * count;
+							unit.gold -= price;
+							player.Train(TrainWhat::Trade, (float)price, 0);
+						}
 						else if(player.action == PlayerController::Action_ShareItems && slot.item->type == IT_CONSUMABLE
 							&& slot.item->ToConsumable().effect == E_HEAL)
 							player.action_unit->ai->have_potion = 1;
@@ -3053,6 +3057,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						InsertItem(*player.chest_trade, slot.item, count, team_count);
 						int price = GetItemPrice(slot.item, unit, false);
+						player.Train(TrainWhat::Trade, (float)price * count, 0);
 						if(team_count)
 							AddGold(price * team_count);
 						uint normal_count = count - team_count;
@@ -3079,6 +3084,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							{
 								t->gold -= price;
 								unit.gold += price;
+								player.Train(TrainWhat::Trade, (float)price, 0);
 							}
 							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().effect == E_HEAL)
 								t->ai->have_potion = 2;
@@ -3130,6 +3136,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						InsertItem(*player.chest_trade, slot, 1u, 0u);
 						unit.gold += price;
+						player.Train(TrainWhat::Trade, (float)price, 0);
 					}
 					else
 					{
@@ -3141,6 +3148,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 								// sold for gold
 								player.action_unit->gold -= price;
 								unit.gold += price;
+								player.Train(TrainWhat::Trade, (float)price, 0);
 							}
 							UpdateUnitInventory(*player.action_unit);
 							NetChangePlayer& c = Add1(Net::player_changes);
