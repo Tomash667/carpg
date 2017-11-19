@@ -32,7 +32,8 @@ float Unit::CalculateMaxHp() const
 	{
 		float end = (float)Get(Attribute::END);
 		float ath = (float)Get(Skill::ATHLETICS);
-		return data->hp + (data->hp_bonus + (end - 50) / 5 + ath / 5) * (level + 2);
+		float lvl = IsPlayer() ? player->level : (float)level;
+		return data->hp + (data->hp_bonus + (end - 50) / 5 + ath / 5) * (lvl + 2);
 	}
 }
 

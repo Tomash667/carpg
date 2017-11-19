@@ -1,7 +1,7 @@
 ﻿FEATURE:
 *** new skills
 + Game::Train
-+ recalculate hp/atk/def on change level
++ recalculate hp on change level
 
 ? testing
 	? magic scroll generation
