@@ -4971,6 +4971,28 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			else
 				info.pc->RefreshCooldown();
 			break;
+		// player reads book
+		case NetChange::READ_BOOK:
+			{
+				int i_index;
+				if(!stream.Read(i_index))
+				{
+					Error("Update server: Broken READ_BOOK from %s.", info.name.c_str());
+					StreamError();
+				}
+				else
+				{
+					auto item = unit.GetIIndexItem(i_index);
+					if(item && item->type == IT_BOOK)
+						unit.player->OnReadBook(i_index);
+					else
+					{
+						Error("Update server: Player %s READ_BOOK, invalid item index %d.", info.name.c_str(), i_index);
+						StreamError();
+					}
+				}
+			}
+			break;
 		// invalid change
 		default:
 			Error("Update server: Invalid change type %u from %s.", type, info.name.c_str());
@@ -5074,6 +5096,7 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::USABLE_SOUND:
 		case NetChange::BREAK_ACTION:
 		case NetChange::PLAYER_ACTION:
+		case NetChange::USE_ITEM:
 			stream.Write(c.unit->netid);
 			break;
 		case NetChange::CAST_SPELL:
@@ -5444,7 +5467,6 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 			case NetChangePlayer::START_ARENA_COMBAT:
 			case NetChangePlayer::EXIT_ARENA:
 			case NetChangePlayer::END_FALLBACK:
-			case NetChangePlayer::ADDED_ITEM_MSG:
 				break;
 			case NetChangePlayer::START_TRADE:
 				stream.Write(c.id);
@@ -5546,6 +5568,9 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				break;
 			case NetChangePlayer::UPDATE_LEVEL:
 				stream.Write(c.v);
+				break;
+			case NetChangePlayer::GAME_MESSAGE:
+				stream.Write(c.id);
 				break;
 			default:
 				Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
@@ -8511,6 +8536,32 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
+		// player using item animation for player
+		case NetChange::USE_ITEM:
+			{
+				int netid;
+				if(!stream.Read(netid))
+				{
+					Error("Update client: Broken USE_ITEM.");
+					StreamError();
+				}
+				else
+				{
+					auto unit = FindUnit(netid);
+					if(!unit)
+					{
+						Error("Update client: USE_ITEM, missing units %d.", netid);
+						StreamError();
+					}
+					else
+					{
+						unit->action = A_USE_ITEM;
+						unit->mesh_inst->frame_end_info2 = false;
+						unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+					}
+				}
+			}
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);
@@ -9367,10 +9418,6 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// message about gaining item
-			case NetChangePlayer::ADDED_ITEM_MSG:
-				AddGameMsg3(GMS_ADDED_ITEM);
-				break;
 			// message about gaining multiple items
 			case NetChangePlayer::ADDED_ITEMS_MSG:
 				{
@@ -9460,6 +9507,19 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						pc->level = level;
 						pc->unit->level = (int)level;
 					}
+				}
+				break;
+			// show game message
+			case NetChangePlayer::GAME_MESSAGE:
+				{
+					int gm_id;
+					if(!stream.Read(gm_id))
+					{
+						Error("Update single client: Broken GAME_MESSAGE.");
+						StreamError();
+					}
+					else
+						AddGameMsg3((GMS)gm_id);
 				}
 				break;
 			default:
@@ -9681,6 +9741,9 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::CHEAT_STUN:
 			stream.Write(c.unit->netid);
 			stream.Write(c.f[0]);
+			break;
+		case NetChange::READ_BOOK:
+			stream.Write(c.id);
 			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);
@@ -10990,8 +11053,8 @@ bool Game::FilterOut(NetChangePlayer& c)
 	case NetChangePlayer::DEVMODE:
 	case NetChangePlayer::GOLD_RECEIVED:
 	case NetChangePlayer::GAIN_STAT:
-	case NetChangePlayer::ADDED_ITEM_MSG:
 	case NetChangePlayer::ADDED_ITEMS_MSG:
+	case NetChangePlayer::GAME_MESSAGE:
 		return false;
 	default:
 		return true;

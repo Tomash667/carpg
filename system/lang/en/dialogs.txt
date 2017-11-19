@@ -35,9 +35,10 @@ dialog merchant {
 	9 "Too bad."
 	10 "End dialog"
 	11 "Training"
-	12 "I can train you in haggle, it will take 10 days and cost you 200 gold pieces. Still interested?"
-	13 "Yes"
-	14 "No"
+	12 "I can train you in haggle or charisma, it will take 10 days and cost you 200 gold pieces. Still interested?"
+	13 "Charisma"
+	14 "Haggle"
+	15 "Cancel"
 }
 
 //==============================================================================
@@ -1990,7 +1991,8 @@ dialog sage {
 	}
 	1 "Training"
 	2 "End dialog"
-	3 "I can train you in literacy for small fee of 200 gold pieces. It will take 10 days. Are you ready?"
-	4 "Yes"
-	5 "No"
+	3 "I can train you for small fee of 200 gold pieces. It will take 10 days. Are you ready?"
+	4 "Inteligence"
+	5 "Wisdom"
+	6 "Literacy"
 }

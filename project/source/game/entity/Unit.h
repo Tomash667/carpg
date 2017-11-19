@@ -63,7 +63,8 @@ enum ACTION
 	//A_PAROWANIE
 	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
 	A_DASH,
-	A_DESPAWN
+	A_DESPAWN,
+	A_USE_ITEM
 };
 
 //-----------------------------------------------------------------------------
@@ -341,7 +342,7 @@ struct Unit
 	}
 	bool CanRun() const
 	{
-		if(IS_SET(data->flags, F_SLOW) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !run_attack) || action == A_SHOOT)
+		if(IS_SET(data->flags, F_SLOW) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !run_attack) || action == A_SHOOT || action == A_USE_ITEM)
 			return false;
 		else
 			return !IsOverloaded();

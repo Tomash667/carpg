@@ -471,7 +471,7 @@ void Game::UpdateTournament(float dt)
 								else
 								{
 									NetChangePlayer& c = Add1(Net::player_changes);
-									c.type = NetChangePlayer::ADDED_ITEM_MSG;
+									c.type = NetChangePlayer::ADDED_ITEMS_MSG;
 									c.ile = given_items;
 									c.pc = u.player;
 									GetPlayerInfo(c.pc).NeedUpdate();

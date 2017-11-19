@@ -365,7 +365,7 @@ void PlayerController::Train(Attribute attrib, int points)
 		recalculate_level = true;
 		unit->Set(attrib, value);
 		Game& game = Game::Get();
-		if(Net::IsLocal())
+		if(is_local)
 			game.ShowStatGain(false, a, gained);
 		else
 		{
@@ -416,7 +416,7 @@ void PlayerController::Train(Skill skill, int points)
 		recalculate_level = true;
 		unit->Set(skill, value);
 		Game& game = Game::Get();
-		if(Net::IsLocal())
+		if(is_local)
 			game.ShowStatGain(true, s, gained);
 		else
 		{
@@ -550,6 +550,9 @@ void PlayerController::Save(HANDLE file)
 		for(auto target : action_targets)
 			f << target->refid;
 	}
+	f << book_read.size();
+	for(auto book : book_read)
+		f << book->id;
 }
 
 //=================================================================================================
@@ -707,6 +710,15 @@ void PlayerController::Load(HANDLE file)
 		action_charges = GetAction().charges;
 	}
 
+	uint count;
+	f >> count;
+	book_read.reserve(count);
+	for(uint i = 0; i < count; ++i)
+	{
+		f.ReadStringBUF();
+		book_read.push_back(Item::Get(BUF));
+	}
+
 	action = Action_None;
 }
 
@@ -825,5 +837,51 @@ void PlayerController::RecalculateLevel()
 			c.v = level;
 			player_info->NeedUpdate();
 		}
+	}
+}
+
+//=================================================================================================
+void PlayerController::OnReadBook(int i_index)
+{
+	if(Net::IsLocal())
+	{
+		auto item = unit->GetIIndexItem(i_index);
+		assert(item->type == IT_BOOK);
+		if(IS_SET(item->flags, ITEM_MAGIC_SCROLL))
+		{
+			unit->action = A_USE_ITEM;
+			unit->used_item = item;
+			unit->mesh_inst->frame_end_info2 = false;
+			unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_ITEM;
+				c.unit = unit;
+			}
+		}
+		else
+		{
+			bool ok = true;
+			for(auto book : book_read)
+			{
+				if(book == item)
+				{
+					ok = false;
+					break;
+				}
+			}
+			if(ok)
+			{
+				Train(TrainWhat::Read, 0.f, 0);
+				book_read.push_back(item);
+			}
+		}
+	}
+	else
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::READ_BOOK;
+		c.id = i_index;
 	}
 }

@@ -6,6 +6,7 @@
 #include "Spell.h"
 #include "ParticleSystem.h"
 #include "ResourceManager.h"
+#include "SaveState.h"
 
 //=================================================================================================
 void Explo::Save(HANDLE file)
@@ -23,6 +24,7 @@ void Explo::Save(HANDLE file)
 	byte len = (byte)strlen(tex->filename);
 	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
 	WriteFile(file, tex->filename, len, &tmp, nullptr);
+	WriteFile(file, &stun, sizeof(stun), &tmp, nullptr);
 }
 
 //=================================================================================================
@@ -45,6 +47,10 @@ void Explo::Load(HANDLE file)
 	owner = Unit::GetByRefid(refid);
 	ReadString1(file);
 	tex = ResourceManager::Get<Texture>().GetLoaded(BUF);
+	if(LOAD_VERSION >= V_CURRENT)
+		ReadFile(file, &stun, sizeof(stun), &tmp, nullptr);
+	else
+		stun = false;
 }
 
 //=================================================================================================

@@ -686,6 +686,7 @@ reallyQuit = "Do you really want to quit from CaRpg?"
 secretAppear = "Out of nowhere appeared in your inventory a piece of paper."
 gmsAddedItem = "Received item"
 gmsAddedItems = "Received %d items"
+gmsTooComplicated = "This scroll is to complicated..."
 
 // plotki
 rumor_0 = "Apparently in $rcitynhere$ people seen elves."

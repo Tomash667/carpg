@@ -7756,13 +7756,13 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		// update effects and mouth moving
 		if(u.IsAlive())
 		{
+			u.UpdateEffects(dt);
+
 			if(Net::IsLocal())
 			{
 				// hurt sound timer since last hit, timer since last stun (to prevent stunlock)
 				u.hurt_timer -= dt;
 				u.last_bash -= dt;
-
-				u.UpdateEffects(dt);
 
 				if(u.moved)
 				{
@@ -8904,6 +8904,69 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			u.timer -= dt;
 			if(u.timer <= 0.f)
 				RemoveUnit(&u);
+			break;
+		case A_USE_ITEM:
+			if(u.mesh_inst->frame_end_info2)
+			{
+				if(Net::IsClient())
+				{
+					u.used_item = nullptr;
+					u.action = A_NONE;
+				}
+				else
+				{
+					int i_index = u.FindItem(u.used_item);
+					if(i_index != Unit::INVALID_IINDEX)
+					{
+						RemoveItem(u, i_index, 1);
+						int literacy = u.Get(Skill::LITERACY);
+						if(literacy >= 25)
+						{
+							Spell* spell = FindSpell("electro_shock");
+
+							Explo* explo = new Explo;
+							explo->pos = u.GetCenter();
+							explo->size = 0.f;
+							explo->sizemax = spell->explode_range;
+							explo->dmg = (float)spell->dmg;
+							explo->tex = spell->tex_explode;
+							explo->owner = &u;
+							explo->stun = IS_SET(spell->flags, Spell::Stun);
+
+							if(sound_volume)
+								PlaySound3d(spell->sound_hit, explo->pos, spell->sound_hit_dist.x, spell->sound_hit_dist.y);
+
+							ctx.explos->push_back(explo);
+
+							if(Net::IsOnline())
+							{
+								NetChange& c = Add1(Net::changes);
+								c.type = NetChange::CREATE_EXPLOSION;
+								c.spell = spell;
+								c.pos = explo->pos;
+							}
+						}
+						else
+						{
+							u.ApplyStun(Random(4.f, 5.f));
+							if(u.player->is_local)
+								AddGameMsg3(GMS_TOO_COMPLICATED);
+							else
+							{
+								NetChangePlayer& c = Add1(Net::player_changes);
+								c.type = NetChangePlayer::GAME_MESSAGE;
+								c.id = GMS_TOO_COMPLICATED;
+								c.pc = u.player;
+								u.player->player_info->NeedUpdate();
+							}
+						}
+						u.player->Train(TrainWhat::Read, 0.f, 0);
+					}
+
+					u.used_item = nullptr;
+					u.action = A_NONE;
+				}
+			}
 			break;
 		default:
 			assert(0);
@@ -11782,6 +11845,7 @@ void Game::SpellHitEffect(LevelContext& ctx, Bullet& bullet, const Vec3& pos, Un
 		explo->pos = pos;
 		explo->tex = spell.tex_explode;
 		explo->owner = bullet.owner;
+		explo->stun = IS_SET(spell.flags, Spell::Stun);
 		if(hitted)
 			explo->hitted.push_back(hitted);
 		ctx.explos->push_back(explo);
@@ -11847,6 +11911,9 @@ void Game::UpdateExplosions(LevelContext& ctx, float dt)
 						// zadaj obra¿enia
 						GiveDmg(ctx, e.owner, dmg, **it2, nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
 						e.hitted.push_back(*it2);
+
+						if(e.stun)
+							(*it2)->ApplyStun(Random(2.f, 2.5f));
 					}
 				}
 			}
@@ -12232,6 +12299,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 					explo->dmg = float(trap.base->dmg);
 					explo->tex = fireball->tex_explode;
 					explo->owner = nullptr;
+					explo->stun = IS_SET(fireball->flags, Spell::Stun);
 
 					if(sound_volume)
 						PlaySound3d(fireball->sound_hit, explo->pos, fireball->sound_hit_dist.x, fireball->sound_hit_dist.y);
@@ -19533,6 +19601,9 @@ void Game::AddGameMsg3(GMS id)
 		text = txGmsAddedItem;
 		repeat = true;
 		break;
+	case GMS_TOO_COMPLICATED:
+		text = txGmsTooComplicated;
+		break;
 	default:
 		assert(0);
 		return;
@@ -21508,13 +21579,16 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 	{
 		if(unit.IsPlayer())
 		{
-			// dodaj komunikat o dodaniu przedmiotu
-			NetChangePlayer& c = Add1(Net::player_changes);
-			c.type = NetChangePlayer::REMOVE_ITEMS;
-			c.pc = unit.player;
-			c.id = i_index;
-			c.ile = count;
-			GetPlayerInfo(c.pc).NeedUpdate();
+			if(!unit.player->is_local)
+			{
+				// dodaj komunikat o dodaniu przedmiotu
+				NetChangePlayer& c = Add1(Net::player_changes);
+				c.type = NetChangePlayer::REMOVE_ITEMS;
+				c.pc = unit.player;
+				c.id = i_index;
+				c.ile = count;
+				GetPlayerInfo(c.pc).NeedUpdate();
+			}
 		}
 		else
 		{

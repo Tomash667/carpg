@@ -817,6 +817,23 @@ void Unit::UpdateEffects(float dt)
 			_to_remove.push_back(index);
 	}
 
+	// remove expired effects
+	while(!_to_remove.empty())
+	{
+		index = _to_remove.back();
+		_to_remove.pop_back();
+		if(index == effects.size() - 1)
+			effects.pop_back();
+		else
+		{
+			std::iter_swap(effects.begin() + index, effects.end() - 1);
+			effects.pop_back();
+		}
+	}
+
+	if(Net::IsClient())
+		return;
+
 	// healing from food
 	if((best_reg > 0.f || food_heal > 0.f) && hp != hpmax)
 	{
@@ -904,20 +921,6 @@ void Unit::UpdateEffects(float dt)
 			stamina = stamina_max;
 		if(Net::IsServer() && player && player != game.pc)
 			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
-	}
-
-	// remove expired effects
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == effects.size() - 1)
-			effects.pop_back();
-		else
-		{
-			std::iter_swap(effects.begin() + index, effects.end() - 1);
-			effects.pop_back();
-		}
 	}
 }
 

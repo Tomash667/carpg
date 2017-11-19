@@ -179,7 +179,8 @@ enum GMS
 	GMS_NO_POTION,
 	GMS_GAME_SAVED,
 	GMS_PICK_CHARACTER,
-	GMS_ADDED_ITEM
+	GMS_ADDED_ITEM,
+	GMS_TOO_COMPLICATED
 };
 
 struct UnitWarpData
@@ -585,7 +586,7 @@ struct Game final : public Engine, public UnitEventHandler
 	cstring txPvpRefuse, txWin, txWinMp, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor,
 		txNeedKey, txLevelUp, txLevelDown, txLocationText, txLocationTextMap, txRegeneratingLevel, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed,
 		txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedItem, txReallyQuit, txSecretAppear,
-		txGmsAddedItem, txGmsAddedItems;
+		txGmsAddedItem, txGmsAddedItems, txGmsTooComplicated;
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
 		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2], txPvpTooFar,
@@ -1731,7 +1732,8 @@ public:
 	{
 		NetChangePlayer& c = Add1(Net::player_changes);
 		c.pc = player;
-		c.type = NetChangePlayer::ADDED_ITEM_MSG;
+		c.type = NetChangePlayer::GAME_MESSAGE;
+		c.id = GMS_ADDED_ITEM;
 		GetPlayerInfo(player).NeedUpdate();
 	}
 	void Net_AddItems(PlayerController* player, const Item* item, int ile, bool is_team)

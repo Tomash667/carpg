@@ -2016,13 +2016,6 @@ other wanted_letter {
 	flags {quest not_shop not_chest not_random important}
 }
 
-other magic_scroll {
-	weight 0.2
-	value 250
-	mesh "magic_scroll.qmsh"
-	type other
-}
-
 //------------------------------------------------------------------------------
 // BOOKS
 //------------------------------------------------------------------------------
@@ -2094,6 +2087,14 @@ book q_zlo_ksiega {
 	scheme book
 	flags {alpha not_shop not_chest not_random important}
 	runic 1
+}
+
+book magic_scroll {
+	weight 0.2
+	value 250
+	mesh "magic_scroll.qmsh"
+	scheme book
+	flags {not_shop not_chest not_random magic_scroll}
 }
 
 //------------------------------------------------------------------------------
@@ -2203,6 +2204,7 @@ list books {
 list rare_books {
 	book_ld
 	book_runic
+	magic_scroll
 }
 
 leveled_list short_blade {

@@ -221,7 +221,8 @@ private:
 			{ "hq", ITEM_HQ },
 			{ "magical", ITEM_MAGICAL },
 			{ "unique", ITEM_UNIQUE },
-			{ "alpha", ITEM_ALPHA }
+			{ "alpha", ITEM_ALPHA },
+			{ "magic_scroll", ITEM_MAGIC_SCROLL }
 		});
 
 		t.AddKeywords(G_ARMOR_SKILL, {

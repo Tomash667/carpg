@@ -129,6 +129,21 @@ spell mystic_ball {
 	sound_hit "explode.mp3" {4 15}
 }
 
+spell electro_shock {
+	type point
+	flags {explode stun}
+	dmg 100
+	cooldown {2.5 5}
+	range 50
+	speed 8
+	explode_range 10
+	tex "flare.png" 0.2
+	tex_particle "flare.png" 0.075
+	tex_explode "magic_shock.jpg"
+	sound_cast "rlaunch.mp3" {2 8}
+	sound_hit "zap.mp3" {2 8}
+} 
+
 //------------------------------------------------------------------------------
 // Alias for old typo
 alias spit_poison split_poison // fixed in 0.5

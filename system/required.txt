@@ -226,6 +226,7 @@ spell thunder_bolt // hardcoded spell in level loading for electro in net, creat
 spell raise // hardcoded spell effect in net
 spell heal // hardcoded spell effect in net
 spell fireball // hardcoded to cast for fire rune
+spell electro_shock // hardcoded for item magic_scroll
 
 //------------------------------------------------------------------------------
 // Required dialogs

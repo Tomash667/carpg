@@ -488,7 +488,7 @@ void Inventory::Update(float dt)
 					else if(item->type == IT_CONSUMABLE)
 						ConsumeItem(i_index);
 					else if(item->type == IT_BOOK)
-						ReadBook(item);
+						ReadBook(item, i_index);
 					else if(item->IsWearable())
 					{
 						ITEM_SLOT type = ItemTypeToSlot(item->type);
@@ -2241,9 +2241,15 @@ void Inventory::UpdateGrid(bool mine)
 }
 
 //=================================================================================================
-void Inventory::ReadBook(const Item* item)
+void Inventory::ReadBook(const Item* item, int i_index)
 {
 	assert(item && item->type == IT_BOOK);
-	game.game_gui->book_panel->Show((const Book*)item);
-	tooltip.Clear();
+	if(IS_SET(item->flags, ITEM_MAGIC_SCROLL))
+		Hide();
+	else
+	{
+		game.game_gui->book_panel->Show((const Book*)item);
+		tooltip.Clear();
+	}
+	game.pc->OnReadBook(i_index);
 }

@@ -33,22 +33,23 @@ dialog blacksmith
 dialog merchant
 {
 	if once
-	{
 		talk 0
-	}
 	choice 1
-	{
 		trade
-	}
 	choice 11
 	{
 		talk 12
 		choice 13
 		{
-			special "train_haggle"
+			special "train_cha"
  			end
 		}
-		escape choice 14
+		choice 14
+		{
+			special "train_haggle"
+			end
+		}
+		escape choice 15
 			restart
 		show_choices
 	}
@@ -4605,10 +4606,20 @@ dialog sage
 		talk 3
 		choice 4
 		{
+			special "train_int"
+			end
+		}
+		choice 5
+		{
+			special "train_wis"
+			end
+		}
+		choice 6
+		{
 			special "train_literacy"
  			end
 		}
-		escape choice 5
+		escape choice 2
 			end
 		show_choices
 	}

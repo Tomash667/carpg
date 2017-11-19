@@ -2,15 +2,9 @@
 *** new skills
 + Game::Train
 + recalculate hp/atk/def on change level
-+ new skills effects & training
-	+ literacy
-		+ magic scroll (literacy < 25 - stun user and disappear; else magic explosion)
-			+ effect
-			+ flags
-			+ desc, eng name desc
-			+ generation
 
 ? testing
+	? magic scroll generation
 	? double weapon skill in mp
 	? gorush change class
 	? mp
@@ -25,6 +19,8 @@
 	? recalculate hp/atk/def in mp
 	? trainer by client, train potion, train reward
 	? trade with hero, by server/client (check weight) - don't send all stats? only weight?
+	? hurt timer, on client side
+	? training, new cancel
 	! remove Train logging
 	! changelog
 
@@ -61,6 +57,7 @@
 + new mobility (dex + acro)
 + new stamina (end + acro)
 + new carry (str + ath)
++ recalculate hp, stamina on load in new version
 
 *** new enemies
 + units stats, new units
@@ -72,9 +69,12 @@
 	+ dire wolf (bigger warg)
 	+ giant skeleton
 	+ unleveled enemies
+	
++ book bestiary, magic artifacts
 
 ? test playthru
 	? leveling speed
+? test all traps with 2 clients, log playing sounds for all players
 ===============================================================================================================
 CURRENT:
 - traps are out of sync for client/server

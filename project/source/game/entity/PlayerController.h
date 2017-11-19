@@ -123,6 +123,7 @@ struct PlayerController : public HeroPlayerCommon
 	PlayerInfo* player_info;
 	vector<TakenPerk> perks;
 	vector<Unit*> action_targets;
+	vector<const Item*> book_read;
 
 	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f), action_cooldown(0.f), action_charges(0)
 	{
@@ -180,6 +181,8 @@ public:
 	bool IsHit(Unit* unit) const;
 
 	void RecalculateLevel();
+
+	void OnReadBook(int i_index);
 };
 
 //-----------------------------------------------------------------------------

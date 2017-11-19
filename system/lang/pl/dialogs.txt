@@ -35,9 +35,10 @@ dialog merchant {
 	9 "Nie to nie."
 	10 "Koniec rozmowy"
 	11 "Szkolenie"
-	12 "Mogê wyszkoliæ ciê w targowaniu, trening trwa 10 dni i kosztuje 200 sztuk z³ota. Zainteresowany?"
-	13 "Tak"
-	14 "Nie"
+	12 "Mogê wyszkoliæ ciê w targowaniu lub charyzmie, trening trwa 10 dni i kosztuje 200 sztuk z³ota. Zainteresowany?"
+	13 "Charyzma"
+	14 "Targowanie"
+	15 "Anuluj"
 }
 
 //==============================================================================
@@ -1990,7 +1991,8 @@ dialog sage {
 	}
 	1 "Szkolenie"
 	2 "Koniec rozmowy"
-	3 "Mogê ci wyszkoliæ w piœmiennictwie za niewielk¹ op³at¹ 200 sztuk z³ota. Zajmie to 10 dni. Jesteœ gotowy?"
-	4 "Tak"
-	5 "Nie"
+	3 "Mogê ci wyszkoliæ za niewielk¹ op³at¹ 200 sztuk z³ota. Zajmie to 10 dni. Co chcesz trenowaæ?"
+	4 "Inteligencja"
+	5 "M¹droœæ"
+	6 "Piœmiennictwo"
 }

@@ -46,11 +46,11 @@ struct NetChangePlayer
 		UPDATE_TRADER_GOLD, // update trader gold [int(id)-unit gold, int(ile)-count]
 		UPDATE_TRADER_INVENTORY, // update trader inventory after getting item [int(netid)-unit, ItemListTeam]
 		PLAYER_STATS, // update player statistics [byte(id)-flags, vector<int>-values]
-		ADDED_ITEM_MSG, // message about gaining item []
 		ADDED_ITEMS_MSG, // message about gaining multiple items [byte(ile)-count]
 		STAT_CHANGED, // player stat changed [byte(id)-ChangedStatType, byte(a)-stat id, int(ile)-value]
 		ADD_PERK, // add perk to player [byte(id)-perk, int(ile)-value]
 		UPDATE_LEVEL, // player level changed [float(v)]
+		GAME_MESSAGE, // show game message [int(id)-game message id]
 	} type;
 	PlayerController* pc;
 	int id, ile;
