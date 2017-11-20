@@ -18,6 +18,7 @@ Wersja 0.7 (2017-XX-YY):
 - naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
 - naprawiony bardzo dobry startowy przedmiot gdy postaæ ma bardzo nisk¹ wartoœæ umiejêtnoœci
 - naprawione nie znikanie efektów dzia³aj¹cych na postaæ po podró¿y u klientów
+- naprawiony crash gdy Gorush zmienia klasê
 
 --------------------------------------------------------------------------------
 Wersja 0.6 (2017-10-01):

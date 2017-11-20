@@ -408,6 +408,10 @@ struct Game final : public Engine, public UnitEventHandler
 			assert(type == CHEST || type == NONE);
 			return chest;
 		}
+
+		bool IsChest() const { return type == CHEST; }
+		bool IsObject() const { return type == OBJECT; }
+		bool IsUsable() const { return type == USABLE; }
 	};
 
 	void OnCleanup();

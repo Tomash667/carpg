@@ -398,7 +398,7 @@ void PlayerController::Train(TrainMode mode, int what, bool is_skill)
 			c2.pc = this;
 			c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
 			c2.a = what;
-			c2.ile = count;
+			c2.ile = value;
 
 			player_info->NeedUpdate();
 		}
@@ -521,7 +521,7 @@ void PlayerController::Train(Skill skill, int points, bool train_attrib)
 		}
 	}
 
-	if(!train_attrib)
+	if(train_attrib)
 	{
 		auto& info = SkillInfo::skills[s];
 		if(info.similar == SimilarSkill::Weapon)

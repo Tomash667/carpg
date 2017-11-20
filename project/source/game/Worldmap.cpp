@@ -4830,11 +4830,11 @@ void Game::SpawnCampObjects()
 		if(ok)
 		{
 			BaseObject* obj = camp_objs_ptrs[Rand() % n_camp_objs];
-			Object* o = SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
-			if(o && IS_SET(obj->flags, OBJ_IS_CHEST) && location->spawn != SG_BRAK) // empty chests for empty camps
+			auto e = SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
+			if(e.IsChest() && location->spawn != SG_BRAK) // empty chests for empty camps
 			{
 				int gold, level = location->st;
-				Chest* chest = (Chest*)o;
+				Chest* chest = (Chest*)e;
 
 				GenerateTreasure(level, 5, chest->items, gold, false);
 				InsertItemBare(chest->items, gold_item_ptr, (uint)gold);

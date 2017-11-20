@@ -236,7 +236,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			AttributeInfo& ai = AttributeInfo::attributes[id];
 			Attribute a = (Attribute)id;
 			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
-			if(!Game::Get().devmode)
+			if(!Game::Get().devmode || Net::IsClient())
 				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(a), ai.desc.c_str());
 			else
 			{
@@ -285,7 +285,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			SkillInfo& si = SkillInfo::skills[id];
 			Skill s = (Skill)id;
 			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
-			if(!Game::Get().devmode)
+			if(!Game::Get().devmode || Net::IsClient())
 				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(s), si.desc.c_str());
 			else
 			{

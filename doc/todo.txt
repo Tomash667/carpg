@@ -1,23 +1,18 @@
 ﻿FEATURE:
-*** new skills? testing
-	? magic scroll generation
-	? double weapon skill in mp
-	? gorush change class
+*** new skills
+- blood borders when changeing max hp for client
+? testing
 	? mp
 		? NetChange::ATTACK - check if train is not called twice for AID_Attack
 		? AID_Shoot, AID_RunningAttack - no sign of Train
 	? old saves
 	? StatsX.Upgrade
-	? client level calculate
 	? negative aptitude effect on units/player
+		- aptitude is 0 instead of -1
 	? rescaling required skill points
 	? mod client stats after loading
-	? recalculate hp/atk/def in mp
-	? trainer by client, train potion, train reward
 	? trade with hero, by server/client (check weight) - don't send all stats? only weight?
 	? hurt timer, on client side
-	? recalculate hp on change level
-	? training, new cancel, trainer/potion/tutorial/tournament win
 	! remove Train logging
 	! changelog
 
@@ -71,6 +66,8 @@
 
 ? test playthru
 	? leveling speed
+	- trainer train skills are too fast
+	- skill rise too fast
 ? test all traps with 2 clients, log playing sounds for all players
 ===============================================================================================================
 CURRENT:
@@ -79,6 +76,11 @@ CURRENT:
 - don't focus chest when there is user
 	+ looted is not set/sent
 - goblin in forest escape outside map and crashes pathfinding
+- sound volume doesn't work except with 0 or >0
+- target orc can spawn in closed room with gorush
+	19:10:56 INFO  - Generating location 'Podziemia Goldenchasm', seed 1915762242.
+	19:10:56 INFO  - Generating dungeon, level 3, target 0.
+- NetChange::ADD_LOCATION memory leak for client (T between 2 cities?)
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce

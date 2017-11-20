@@ -108,6 +108,7 @@ private:
 	void CheckSkillsUpdate();
 	void UpdateInventory();
 	void ResetDoll(bool instant);
+	void RandomAppearance();
 
 	Mode mode;
 	bool enter_name;

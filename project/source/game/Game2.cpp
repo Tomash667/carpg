@@ -3923,6 +3923,7 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog)
 	ctx.choices.clear();
 	ctx.can_skip = true;
 	ctx.dialog = dialog ? dialog : talker->data->dialog;
+	ctx.force_end = false;
 
 	if(Net::IsLocal())
 	{
@@ -4088,6 +4089,12 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 	{
 		ctx.dialog_pos = ctx.dialog_skip;
 		ctx.dialog_skip = -1;
+	}
+
+	if(ctx.force_end)
+	{
+		EndDialog(ctx);
+		return;
 	}
 
 	int if_level = ctx.dialog_level;
@@ -4770,9 +4777,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					{
 						ctx.dialog_s_text = Format(txNeedMoreGold, 200 - ctx.pc->unit->gold);
 						DialogTalk(ctx, ctx.dialog_s_text.c_str());
-						// resetuj dialog
-						ctx.dialog_pos = 0;
-						ctx.dialog_level = 0;
+						ctx.force_end = true;
 						return;
 					}
 

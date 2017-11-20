@@ -379,9 +379,6 @@ void Quest_Orcs2::SetProgress(int prog2)
 			delete game->news.back();
 			game->news.pop_back();
 			game->AddNews(game->txQuest[200]);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::TalkedAfterClearingCamp:
@@ -776,6 +773,13 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	orc->statsx = StatsX::GetRandom(&ud->GetStatProfile(), orc->level);
 	orc->CalculateStats();
 	game->ParseItemScript(*orc, ud->item_script);
+	for(auto item : orc->slots)
+	{
+		if(item)
+			game->PreloadItem(item);
+	}
+	for(auto& slot : orc->items)
+		game->PreloadItem(slot.item);
 	orc->MakeItemsTeam(false);
 	game->UpdateUnitInventory(*orc);
 

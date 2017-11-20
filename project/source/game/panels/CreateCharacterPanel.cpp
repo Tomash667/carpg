@@ -308,6 +308,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	case Mode::PickAppearance:
 		{
 			btCreate.Draw();
+			btRandomSet.Draw();
 			btBack.Draw();
 
 			if(!Net::IsOnline())
@@ -424,6 +425,9 @@ void CreateCharacterPanel::Update(float dt)
 
 			btCreate.mouse_focus = focus;
 			btCreate.Update(dt);
+
+			btRandomSet.mouse_focus = focus;
+			btRandomSet.Update(dt);
 
 			if(!Net::IsOnline())
 			{
@@ -569,10 +573,15 @@ void CreateCharacterPanel::Event(GuiEvent e)
 			unit->mesh_inst->need_update = true;
 			break;
 		case IdRandomSet:
-			cc.Random(clas);
-			RebuildSkillsFlow();
-			RebuildPerksFlow();
-			UpdateInventory();
+			if(mode == Mode::PickAppearance)
+				RandomAppearance();
+			else
+			{
+				cc.Random(clas);
+				RebuildSkillsFlow();
+				RebuildPerksFlow();
+				UpdateInventory();
+			}
 			break;
 		}
 	}
@@ -936,11 +945,8 @@ void CreateCharacterPanel::LoadData()
 }
 
 //=================================================================================================
-void CreateCharacterPanel::Show(bool _enter_name)
+void CreateCharacterPanel::RandomAppearance()
 {
-	clas = ClassInfo::GetRandomPlayer();
-	lbClasses.Select(lbClasses.FindIndex((int)clas));
-	ClassChanged();
 	Unit& u = *unit;
 	u.human_data->beard = Rand() % MAX_BEARD - 1;
 	u.human_data->hair = Rand() % MAX_HAIR - 1;
@@ -949,6 +955,15 @@ void CreateCharacterPanel::Show(bool _enter_name)
 	u.human_data->hair_color = g_hair_colors[hair_index];
 	u.human_data->height = Random(0.95f, 1.05f);
 	u.human_data->ApplyScale(game->aHumanBase);
+}
+
+//=================================================================================================
+void CreateCharacterPanel::Show(bool _enter_name)
+{
+	clas = ClassInfo::GetRandomPlayer();
+	lbClasses.Select(lbClasses.FindIndex((int)clas));
+	ClassChanged();
+	RandomAppearance();
 
 	reset_skills_perks = true;
 	enter_name = _enter_name;
