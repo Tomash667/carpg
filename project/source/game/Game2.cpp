@@ -1512,7 +1512,7 @@ void Game::UpdateFallback(float dt)
 					if(fallback_1 == 2)
 						TournamentTrain(*pc->unit);
 					else
-						Train(*pc->unit, fallback_1 == 1, fallback_2);
+						pc->Train(PlayerController::TM_NORMAL, fallback_2, fallback_1 == 1);
 					pc->Rest(10, false);
 					if(Net::IsOnline())
 						UseDays(pc, 10);
@@ -9604,7 +9604,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					void* ptr = (void*)callback.target;
 					if((ptr == tut_shield || ptr == tut_shield2) && tut_state == 12)
 					{
-						Train(*pc->unit, true, (int)Skill::BOW, 1);
+						pc->Train(PlayerController::TM_SINGLE_POINT, (int)Skill::BOW, true);
 						tut_state = 13;
 						int unlock = 6;
 						int activate = 8;
@@ -20194,91 +20194,6 @@ void Game::ProcessRemoveUnits()
 	for(vector<Unit*>::iterator it = to_remove.begin(), end = to_remove.end(); it != end; ++it)
 		DeleteUnit(*it);
 	to_remove.clear();
-}
-
-/* mode: 0 - normal training
-1 - gain 1 point (tutorial)
-2 - more points (potion) */
-void Game::Train(Unit& unit, bool is_skill, int co, int mode)
-{
-	/*int value, *train_points, *train_next;
-	if(is_skill)
-	{
-		if(unit.statsx->skill[co] == SkillInfo::MAX)
-		{
-			unit.player->sp[co] = unit.player->sn[co];
-			return;
-		}
-		value = unit.statsx->skill[co];
-		train_points = &unit.player->sp[co];
-		train_next = &unit.player->sn[co];
-	}
-	else
-	{
-		if(unit.statsx->attrib[co] == AttributeInfo::MAX)
-		{
-			unit.player->ap[co] = unit.player->an[co];
-			return;
-		}
-		value = unit.statsx->attrib[co];
-		train_points = &unit.player->ap[co];
-		train_next = &unit.player->an[co];
-	}
-
-	int ile;
-	if(mode == 0)
-		ile = 10 - value / 10;
-	else if(mode == 1)
-		ile = 1;
-	else
-		ile = 12 - value / 12;
-
-	if(ile >= 1)
-	{
-		value += ile;
-		*train_points /= 2;
-
-		if(is_skill)
-		{
-			*train_next = GetRequiredSkillPoints(value);
-			unit.Set((Skill)co, value);
-		}
-		else
-		{
-			*train_next = GetRequiredAttributePoints(value);
-			unit.Set((Attribute)co, value);
-		}
-
-		if(unit.player->IsLocal())
-			ShowStatGain(is_skill, co, ile);
-		else
-		{
-			NetChangePlayer&c = AddChange(NetChangePlayer::GAIN_STAT, unit.player);
-			c.id = (is_skill ? 1 : 0);
-			c.a = co;
-			c.ile = ile;
-
-			NetChangePlayer& c2 = AddChange(NetChangePlayer::STAT_CHANGED, unit.player);
-			c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
-			c2.a = co;
-			c2.ile = value;
-		}
-	}
-	else
-	{
-		float m;
-		if(ile == 0)
-			m = 0.5f;
-		else if(ile == -1)
-			m = 0.25f;
-		else
-			m = 0.125f;
-		float pts = m * *train_next;
-		if(is_skill)
-			unit.player->TrainMod2((Skill)co, pts);
-		else
-			unit.player->TrainMod((Attribute)co, pts);
-	}*/
 }
 
 void Game::ShowStatGain(bool is_skill, int what, int value)

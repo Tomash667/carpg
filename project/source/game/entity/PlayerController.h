@@ -136,9 +136,16 @@ struct PlayerController : public HeroPlayerCommon
 	void Update(float dt, bool is_local = true);
 	void TrainMove(float dist);
 	void Train(TrainWhat what, float value, int level, Skill skill = Skill::NONE);
+	enum TrainMode
+	{
+		TM_NORMAL,
+		TM_SINGLE_POINT,
+		TM_POTION
+	};
+	void Train(TrainMode mode, int what, bool is_skill);
 private:
 	void Train(Attribute attrib, int points);
-	void Train(Skill skill, int points);
+	void Train(Skill skill, int points, bool train_attrib = true);
 public:
 	void SetRequiredPoints();
 

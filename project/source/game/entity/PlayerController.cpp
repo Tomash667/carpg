@@ -332,6 +332,95 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 }
 
 //=================================================================================================
+void PlayerController::Train(TrainMode mode, int what, bool is_skill)
+{
+	int value, *train_points, *train_next;
+	if(is_skill)
+	{
+		if(unit->statsx->skill[what] == SkillInfo::MAX)
+		{
+			sp[what] = sn[what];
+			return;
+		}
+		value = unit->statsx->skill[what];
+		train_points = &sp[what];
+		train_next = &sn[what];
+	}
+	else
+	{
+		if(unit->statsx->attrib[what] == AttributeInfo::MAX)
+		{
+			ap[what] = an[what];
+			return;
+		}
+		value = unit->statsx->attrib[what];
+		train_points = &ap[what];
+		train_next = &an[what];
+	}
+
+	int count;
+	if(mode == TM_NORMAL)
+		count = 10 - value / 10;
+	else if(mode == TM_SINGLE_POINT)
+		count = 1;
+	else
+		count = 12 - value / 12;
+
+	if(count >= 1)
+	{
+		value += count;
+		*train_points /= 2;
+
+		if(is_skill)
+		{
+			*train_next = GetRequiredSkillPoints(value);
+			unit->Set((Skill)what, value);
+		}
+		else
+		{
+			*train_next = GetRequiredAttributePoints(value);
+			unit->Set((Attribute)what, value);
+		}
+
+		if(is_local)
+			Game::Get().ShowStatGain(is_skill, what, count);
+		else
+		{
+			NetChangePlayer& c = Add1(Net::player_changes);
+			c.type = NetChangePlayer::GAIN_STAT;
+			c.pc = this;
+			c.id = (is_skill ? 1 : 0);
+			c.a = what;
+			c.ile = count;
+
+			NetChangePlayer& c2 = Add1(Net::player_changes);
+			c2.type = NetChangePlayer::STAT_CHANGED;
+			c2.pc = this;
+			c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
+			c2.a = what;
+			c2.ile = count;
+
+			player_info->NeedUpdate();
+		}
+	}
+	else
+	{
+		float m;
+		if(count == 0)
+			m = 0.5f;
+		else if(count == -1)
+			m = 0.25f;
+		else
+			m = 0.125f;
+		int pts = (int)(m * *train_next);
+		if(is_skill)
+			Train((Skill)what, pts, false);
+		else
+			Train((Attribute)what, pts);
+	}
+}
+
+//=================================================================================================
 void PlayerController::Train(Attribute attrib, int points)
 {
 	int a = (int)attrib;
@@ -383,7 +472,7 @@ void PlayerController::Train(Attribute attrib, int points)
 }
 
 //=================================================================================================
-void PlayerController::Train(Skill skill, int points)
+void PlayerController::Train(Skill skill, int points, bool train_attrib)
 {
 	int s = (int)skill;
 	int mod_points = (int)(unit->GetAptitudeMod(skill) * points);
@@ -432,13 +521,13 @@ void PlayerController::Train(Skill skill, int points)
 		}
 	}
 
-	if(skill != Skill::ONE_HANDED_WEAPON)
+	if(!train_attrib)
 	{
 		auto& info = SkillInfo::skills[s];
 		if(info.similar == SimilarSkill::Weapon)
 		{
 			// train in one handed weapon
-			Train(Skill::ONE_HANDED_WEAPON, points);
+			Train(Skill::ONE_HANDED_WEAPON, points, false);
 		}
 		Train(info.attrib, (int)(info.attrib_ratio * points));
 		if(info.attrib2 != Attribute::NONE)
@@ -828,6 +917,14 @@ void PlayerController::RecalculateLevel()
 	{
 		level = new_level;
 		unit->level = (int)level;
+		unit->RecalculateHp();
+
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_HP;
+			c.unit = unit;
+		}
 
 		if(!is_local)
 		{

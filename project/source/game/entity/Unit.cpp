@@ -745,13 +745,13 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_NONE:
 		break;
 	case E_STR:
-		game.Train(*this, false, (int)Attribute::STR, 2);
+		player->Train(PlayerController::TM_POTION, (int)Attribute::STR, false);
 		break;
 	case E_END:
-		game.Train(*this, false, (int)Attribute::END, 2);
+		player->Train(PlayerController::TM_POTION, (int)Attribute::END, false);
 		break;
 	case E_DEX:
-		game.Train(*this, false, (int)Attribute::DEX, 2);
+		player->Train(PlayerController::TM_POTION, (int)Attribute::DEX, false);
 		break;
 	case E_FOOD:
 		{

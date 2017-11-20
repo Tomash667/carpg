@@ -1409,7 +1409,6 @@ public:
 	void CreateUnitPhysics(Unit& unit, bool position = false);
 	void UpdateUnitPhysics(Unit& unit, const Vec3& pos);
 	void WarpNearLocation(LevelContext& ctx, Unit& uint, const Vec3& pos, float extra_radius, bool allow_exact, int tries = 20);
-	void Train(Unit& unit, bool is_skill, int co, int mode = 0);
 	void ShowStatGain(bool is_skill, int what, int value);
 	void ActivateChangeLeaderButton(bool activate);
 	void RespawnTraps();

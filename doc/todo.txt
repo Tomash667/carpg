@@ -1,9 +1,5 @@
 ﻿FEATURE:
-*** new skills
-+ Game::Train
-+ recalculate hp on change level
-
-? testing
+*** new skills? testing
 	? magic scroll generation
 	? double weapon skill in mp
 	? gorush change class
@@ -20,7 +16,8 @@
 	? trainer by client, train potion, train reward
 	? trade with hero, by server/client (check weight) - don't send all stats? only weight?
 	? hurt timer, on client side
-	? training, new cancel
+	? recalculate hp on change level
+	? training, new cancel, trainer/potion/tutorial/tournament win
 	! remove Train logging
 	! changelog
 

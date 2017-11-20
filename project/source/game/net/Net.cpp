@@ -4580,7 +4580,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							StreamError();
 							break;
 						}
-						Train(unit, type == 1, stat_type);
+						unit.player->Train(PlayerController::TM_NORMAL, stat_type, type == 1);
 					}
 					player.Rest(10, false);
 					UseDays(&player, 10);

@@ -459,7 +459,7 @@ void Game::UpdateTutorial()
 				PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, 2.f, 10.f);
 			if(tut_state == 5)
 			{
-				Train(*pc->unit, true, (int)Skill::ONE_HANDED_WEAPON, 1);
+				pc->Train(PlayerController::TM_SINGLE_POINT, (int)Skill::ONE_HANDED_WEAPON, true);
 				tut_state = 6;
 				int activate = 4;
 				for(vector<TutorialText>::iterator it = ttexts.begin(), end = ttexts.end(); it != end; ++it)

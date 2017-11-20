@@ -576,20 +576,22 @@ void Game::TournamentTalk(cstring text)
 void Game::TournamentTrain(Unit& u)
 {
 	tournament_master = nullptr;
-	Train(u, false, (int)Attribute::STR);
-	Train(u, false, (int)Attribute::END);
-	Train(u, false, (int)Attribute::DEX);
+	u.player->Train(PlayerController::TM_NORMAL, (int)Attribute::STR, false);
+	u.player->Train(PlayerController::TM_NORMAL, (int)Attribute::END, false);
+	u.player->Train(PlayerController::TM_NORMAL, (int)Attribute::DEX, false);
 	if(u.HaveWeapon())
 	{
-		Train(u, true, (int)Skill::ONE_HANDED_WEAPON);
-		Train(u, true, (int)u.GetWeapon().GetInfo().skill);
+		u.player->Train(PlayerController::TM_NORMAL, (int)Skill::ONE_HANDED_WEAPON, true);
+		u.player->Train(PlayerController::TM_NORMAL, (int)u.GetWeapon().GetInfo().skill, true);
 	}
 	if(u.HaveBow())
-		Train(u, true, (int)Skill::BOW);
+		u.player->Train(PlayerController::TM_NORMAL, (int)Skill::BOW, true);
 	if(u.HaveShield())
-		Train(u, true, (int)Skill::SHIELD);
+		u.player->Train(PlayerController::TM_NORMAL, (int)Skill::SHIELD, true);
 	if(u.HaveArmor())
-		Train(u, true, (int)u.GetArmor().skill);
+		u.player->Train(PlayerController::TM_NORMAL, (int)u.GetArmor().skill, true);
+	u.player->Train(PlayerController::TM_NORMAL, (int)(u.GetBase(Skill::ATHLETICS) >= u.GetBase(Skill::ACROBATICS)
+		? Skill::ATHLETICS : Skill::ACROBATICS), true);
 }
 
 //=================================================================================================
