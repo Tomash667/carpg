@@ -94,6 +94,7 @@ inline float GetBaseAttributeMod(int v)
 //-----------------------------------------------------------------------------
 struct PlayerController : public HeroPlayerCommon
 {
+	PlayerInfo* player_info;
 	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
 	// a - attribute, s - skill
 	// *p - x points, *n - x next
@@ -133,7 +134,6 @@ struct PlayerController : public HeroPlayerCommon
 	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	UnitStats base_stats;
-	PlayerInfo* player_info;
 	StatState attrib_state[(int)Attribute::MAX], skill_state[(int)Skill::MAX];
 	vector<TakenPerk> perks;
 	vector<Unit*> action_targets;

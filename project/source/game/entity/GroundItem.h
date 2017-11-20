@@ -6,11 +6,11 @@ struct Item;
 //-----------------------------------------------------------------------------
 struct GroundItem
 {
-	Vec3 pos;
-	float rot;
+	int netid;
 	const Item* item;
 	uint count, team_count;
-	int netid;
+	Vec3 pos;
+	float rot;
 
 	static const int MIN_SIZE = 23;
 

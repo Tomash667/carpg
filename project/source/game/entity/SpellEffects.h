@@ -34,6 +34,7 @@ struct ElectroLine
 //-----------------------------------------------------------------------------
 struct Electro
 {
+	int netid;
 	vector<ElectroLine> lines;
 	vector<Unit*> hitted;
 	float dmg;
@@ -41,7 +42,6 @@ struct Electro
 	Spell* spell;
 	bool valid, hitsome;
 	Vec3 start_pos;
-	int netid;
 
 	static const int MIN_SIZE = 5;
 	static const int LINE_MIN_SIZE = 28;

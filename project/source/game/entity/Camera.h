@@ -1,34 +1,6 @@
 #pragma once
 
-/*template<typename T, int N=5>
-struct LerpBuffer
-{
-	T items[N];
-	int index, last;
-
-	inline void Reset()
-	{
-		index = 0;
-		last = 0;
-	}
-
-	inline T Update(const T& item)
-	{
-		assert(index <= N);
-
-		items[last] = item;
-		last = (last + 1)%N;
-		if(index < N)
-			++index;
-
-		T result = items[0];
-		for(int i = 1; i<index; ++i)
-			result += items[i];
-		result /= (float)index;
-		return result;
-	}
-};*/
-
+//-----------------------------------------------------------------------------
 class Camera
 {
 public:
