@@ -23,12 +23,13 @@ struct UsableRequest
 //-----------------------------------------------------------------------------
 struct Usable
 {
+	int netid;
+	BaseUsable* base;
 	Vec3 pos;
 	float rot;
 	Unit* user;
 	ItemContainer* container;
-	BaseUsable* base;
-	int refid, netid, variant;
+	int refid, variant;
 
 	static const int MIN_SIZE = 22;
 
@@ -60,7 +61,7 @@ struct Usable
 		usable->refid = (int)refid_table.size();
 		refid_table.push_back(usable);
 	}
-	
+
 	Mesh* GetMesh() const;
 
 	static vector<Usable*> refid_table;

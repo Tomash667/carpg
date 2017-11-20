@@ -31,11 +31,11 @@ struct Door
 
 	static const int MIN_SIZE = 31;
 
+	int netid;
 	Vec3 pos;
 	float rot;
 	Int2 pt;
 	int locked;
-	int netid;
 	bool door2;
 
 	// lokalne zmienne

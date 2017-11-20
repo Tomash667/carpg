@@ -21,11 +21,11 @@ struct ChestEventHandler
 //-----------------------------------------------------------------------------
 struct Chest : public ItemContainer
 {
+	int netid;
 	Vec3 pos;
 	float rot;
 	MeshInstance* mesh_inst;
 	ChestEventHandler* handler;
-	int netid;
 	bool looted; // czy skrzynia jest ograbiana - nie trzeba zapisywaæ
 
 	static const int MIN_SIZE = 20;

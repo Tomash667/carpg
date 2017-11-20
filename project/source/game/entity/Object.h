@@ -8,10 +8,10 @@
 // Object in game
 struct Object
 {
+	BaseObject* base;
 	Vec3 pos, rot;
 	float scale;
 	Mesh* mesh;
-	BaseObject* base;
 	bool require_split;
 
 	static const int MIN_SIZE = 29;
