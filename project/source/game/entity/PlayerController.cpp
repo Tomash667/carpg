@@ -136,11 +136,9 @@ void PlayerController::TrainMove(float dist)
 //=================================================================================================
 void PlayerController::Train(TrainWhat what, float value, int level, Skill skill)
 {
-	cstring s;
 	switch(what)
 	{
 	case TrainWhat::Attack:
-		s = "Attack";
 		{
 			if(skill == Skill::NONE)
 				skill = unit->GetWeaponSkill();
@@ -172,7 +170,6 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 		}
 		break;
 	case TrainWhat::Hit:
-		s = "Hit";
 		{
 			// value = 0 (no damage)
 			// value < 1 (damage scale)
@@ -189,7 +186,6 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 		}
 		break;
 	case TrainWhat::Move:
-		s = "Move";
 		{
 			int weight = 0;
 
@@ -270,7 +266,6 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 		}
 		break;
 	case TrainWhat::Block:
-		s = "Block";
 		{
 			auto& shield = unit->GetShield();
 			if(shield.req_str > unit->GetBase(Attribute::STR))
@@ -284,7 +279,6 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 		}
 		break;
 	case TrainWhat::TakeHit:
-		s = "TakeHit";
 		{
 			// train armor skill
 			if(unit->HaveArmor())
@@ -296,7 +290,6 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 		}
 		break;
 	case TrainWhat::TakeDamage:
-		s = "TakeDamage";
 		{
 			// train end
 			Train(Attribute::END, (int)(value * 1250));
@@ -306,29 +299,18 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 		}
 		break;
 	case TrainWhat::Regenerate:
-		s = "Regenerate";
 		Train(Attribute::END, (int)value);
 		break;
 	case TrainWhat::Stamina:
-		s = "Stamina";
 		Train(Attribute::END, (int)value);
 		break;
 	case TrainWhat::Trade:
-		s = "Trade";
 		Train(Skill::HAGGLE, (int)value);
 		break;
 	case TrainWhat::Read:
-		s = "Read";
 		Train(Skill::LITERACY, 2500);
 		break;
 	}
-
-	cstring sk;
-	if(skill == Skill::NONE)
-		sk = "none";
-	else
-		sk = SkillInfo::skills[(int)skill].id;
-	Info("Train %s (%g, %d, %s) - %s", s, value, level, sk, name.c_str());
 }
 
 //=================================================================================================
@@ -426,7 +408,6 @@ void PlayerController::Train(Attribute attrib, int points)
 	int a = (int)attrib;
 	points = (int)(unit->GetAptitudeMod(attrib) * points);
 	assert(points != 0);
-	Info("--- %s %d", AttributeInfo::attributes[(int)attrib].name.c_str(), points);
 
 	ap[a] += points;
 
@@ -477,7 +458,6 @@ void PlayerController::Train(Skill skill, int points, bool train_attrib)
 	int s = (int)skill;
 	int mod_points = (int)(unit->GetAptitudeMod(skill) * points);
 	assert(mod_points != 0);
-	Info(Format("--- %s %d (%d)", SkillInfo::skills[s].name.c_str(), mod_points, points));
 
 	sp[s] += mod_points;
 

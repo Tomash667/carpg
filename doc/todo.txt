@@ -1,10 +1,6 @@
 ﻿FEATURE:
 *** new skills
-- blood borders when changeing max hp for client
 ? testing
-	? mp
-		? NetChange::ATTACK - check if train is not called twice for AID_Attack
-		? AID_Shoot, AID_RunningAttack - no sign of Train
 	? old saves
 	? StatsX.Upgrade
 	? negative aptitude effect on units/player
@@ -12,8 +8,6 @@
 	? rescaling required skill points
 	? mod client stats after loading
 	? trade with hero, by server/client (check weight) - don't send all stats? only weight?
-	? hurt timer, on client side
-	! remove Train logging
 	! changelog
 
 *** perks
@@ -81,6 +75,7 @@ CURRENT:
 	19:10:56 INFO  - Generating location 'Podziemia Goldenchasm', seed 1915762242.
 	19:10:56 INFO  - Generating dungeon, level 3, target 0.
 - NetChange::ADD_LOCATION memory leak for client (T between 2 cities?)
+- quitting with sounds attached to player = crash
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce

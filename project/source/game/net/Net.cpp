@@ -6077,10 +6077,15 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						// handling of previous hp
 						float hp_dif = hp - unit->hp - hpmax + unit->hpmax;
+						if(hp_dif < 0.f)
+						{
+							float old_ratio = unit->hp / unit->hpmax;
+							float new_ratio = hp / hpmax;
+							if(old_ratio > new_ratio)
+								pc->last_dmg += -hp_dif;
+						}
 						unit->hp = hp;
 						unit->hpmax = hpmax;
-						if(hp_dif < 0.f)
-							pc->last_dmg += -hp_dif;
 					}
 					else
 					{
@@ -9458,7 +9463,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 								Error("Update single client: STAT_CHANGED, invalid attribute %u.", what);
 								StreamError();
 							}
-							else
+							else if(pc)
 								pc->unit->Set((Attribute)what, value);
 							break;
 						case ChangedStatType::SKILL:
@@ -9467,7 +9472,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 								Error("Update single client: STAT_CHANGED, invalid skill %u.", what);
 								StreamError();
 							}
-							else
+							else if(pc)
 								pc->unit->Set((Skill)what, value);
 							break;
 						default:
