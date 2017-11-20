@@ -164,6 +164,8 @@ struct Unit
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
 
+	int netid;
+	UnitData* data;
 	MeshInstance* mesh_inst;
 	Animation animation, current_animation;
 	Human* human_data;
@@ -178,7 +180,6 @@ struct Unit
 	WeaponType weapon_taken, weapon_hiding;
 	WeaponState weapon_state;
 	MeshInstance* bow_instance;
-	UnitData* data;
 	PlayerController* player;
 	const Item* used_item;
 	bool used_item_is_team;
@@ -191,7 +192,6 @@ struct Unit
 	UnitEventHandler* event_handler;
 	SpeechBubble* bubble;
 	Unit* look_target, *guard_target, *summoner;
-	int netid;
 	int ai_mode; // u klienta w MP (0x01-dont_attack, 0x02-assist, 0x04-not_idle)
 	enum Busy
 	{
@@ -443,28 +443,6 @@ struct Unit
 	bool CanUseArmor() const
 	{
 		return data->type == UNIT_TYPE::HUMAN;
-	}
-
-
-	static vector<Unit*> refid_table;
-	static vector<std::pair<Unit**, int>> refid_request;
-	static Unit* GetByRefid(int refid)
-	{
-		if(refid == -1 || refid >= (int)refid_table.size())
-			return nullptr;
-		else
-			return refid_table[refid];
-	}
-	static void AddRequest(Unit** unit, int refid)
-	{
-		assert(unit && refid != -1);
-		refid_request.push_back(std::pair<Unit**, int>(unit, refid));
-	}
-	static void AddRefid(Unit* unit)
-	{
-		assert(unit);
-		unit->refid = (int)refid_table.size();
-		refid_table.push_back(unit);
 	}
 
 
@@ -882,6 +860,29 @@ struct Unit
 
 	// calculate hp/stamina
 	void CalculateStats(bool initial = false);
+
+	//-----------------------------------------------------------------------------
+	static vector<Unit*> refid_table;
+	static vector<std::pair<Unit**, int>> refid_request;
+
+	static Unit* GetByRefid(int _refid)
+	{
+		if(_refid == -1 || _refid >= (int)refid_table.size())
+			return nullptr;
+		else
+			return refid_table[_refid];
+	}
+	static void AddRequest(Unit** unit, int refid)
+	{
+		assert(unit && refid != -1);
+		refid_request.push_back(std::pair<Unit**, int>(unit, refid));
+	}
+	static void AddRefid(Unit* unit)
+	{
+		assert(unit);
+		unit->refid = (int)refid_table.size();
+		refid_table.push_back(unit);
+	}
 };
 
 //-----------------------------------------------------------------------------

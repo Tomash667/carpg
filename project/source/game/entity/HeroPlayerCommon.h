@@ -10,8 +10,8 @@ struct Unit;
 //-----------------------------------------------------------------------------
 struct HeroPlayerCommon
 {
-	Class clas;
 	Unit* unit;
+	Class clas;
 	string name;
 	int credit;
 	bool on_credit;

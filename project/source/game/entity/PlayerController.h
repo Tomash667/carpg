@@ -82,6 +82,7 @@ namespace old
 //-----------------------------------------------------------------------------
 struct PlayerController : public HeroPlayerCommon
 {
+	PlayerInfo* player_info;
 	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown, level;
 	// a - attribute, s - skill
 	// *p - x points, *n - x next
@@ -120,7 +121,6 @@ struct PlayerController : public HeroPlayerCommon
 	DialogContext* dialog_ctx;
 	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
-	PlayerInfo* player_info;
 	vector<TakenPerk> perks;
 	vector<Unit*> action_targets;
 	vector<const Item*> book_read;

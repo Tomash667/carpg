@@ -43,6 +43,8 @@ struct PlayerInfo
 	};
 
 	string name;
+	PlayerController* pc;
+	Unit* u;
 	Class clas;
 	int id, ack, update_flags, buffs;
 	SystemAddress adr;
@@ -50,8 +52,6 @@ struct PlayerInfo
 	bool ready, devmode, warping, loaded;
 	HumanData hd;
 	CreatedCharacter cc;
-	PlayerController* pc;
-	Unit* u;
 	vector<string> notes;
 	LeftReason left;
 

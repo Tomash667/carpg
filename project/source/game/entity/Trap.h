@@ -10,8 +10,9 @@ struct Unit;
 //-----------------------------------------------------------------------------
 struct Trap
 {
+	int netid;
 	BaseTrap* base;
-	int state, dir, netid;
+	int state, dir;
 	float time;
 	vector<Unit*>* hitted;
 	Int2 tile;
