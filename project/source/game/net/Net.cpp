@@ -5440,7 +5440,6 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 					stream.Write(u.weight);
 					stream.Write(u.weight_max);
 					stream.Write(u.gold);
-					u.statsx->Write(stream);
 					WriteItemListTeam(stream, u.items);
 				}
 				break;
@@ -9039,7 +9038,6 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						if(!stream.Read(unit.weight)
 							|| !stream.Read(unit.weight_max)
 							|| !stream.Read(unit.gold)
-							|| !unit.statsx->Read(stream)
 							|| !ReadItemListTeam(stream, unit.items))
 						{
 							Error("Update single client: Broken %s.", name);

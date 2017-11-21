@@ -1302,14 +1302,8 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 			count = slot.count;
 			team_count = slot.team_count;
 		}
-
-		Unit* for_unit;
-		if(mode == LOOT_OTHER || mode == TRADE_OTHER)
-			for_unit = game.pc->unit;
-		else
-			for_unit = unit;
-
-		GetItemString(text, item, for_unit, (uint)count);
+		
+		GetItemString(text, item, game.pc->unit, (uint)count);
 		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
 		{
 			text += '\n';

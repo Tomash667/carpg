@@ -195,10 +195,10 @@ struct TopN
 		{
 			if(value > best_values[i])
 			{
-				for(uint j = i; j < COUNT - 1; ++j)
+				for(uint j = COUNT - 1; j > i; --j)
 				{
-					best_values[j + 1] = best_values[j];
-					best[j + 1] = best[j];
+					best_values[j] = best_values[j - 1];
+					best[j] = best[j - 1];
 				}
 				best[i] = entry;
 				best_values[i] = value;

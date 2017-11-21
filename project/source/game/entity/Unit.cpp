@@ -1487,18 +1487,20 @@ void Unit::Load(HANDLE file, bool local)
 		ReadFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
 		ReadFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
 	}
-	else
-	{
-		stamina_max = CalculateMaxStamina();
-		stamina = stamina_max;
-		stamina_action = SA_RESTORE_MORE;
-	}
 	if(LOAD_VERSION < V_0_5)
 	{
 		int old_type;
 		ReadFile(file, &old_type, sizeof(old_type), &tmp, nullptr);
 	}
+
 	ReadFile(file, &level, sizeof(level), &tmp, nullptr);
+	if(LOAD_VERSION < V_CURRENT)
+	{
+		// due to bug evil boss have random level 20-120 (with same stats)
+		if(data->id == "q_zlo_boss")
+			level = 20;
+	}
+
 	FileReader f(file);
 	if(LOAD_VERSION >= V_CURRENT)
 		statsx = StatsX::Load(f);
@@ -1798,6 +1800,18 @@ void Unit::Load(HANDLE file, bool local)
 			statsx->profile = data->stat_profile;
 			statsx->Upgrade();
 			player->SetRequiredPoints();
+			player->RecalculateLevel(true);
+
+			// rescale skill points counter
+			for(uint i = 0; i < (uint)Skill::MAX; ++i)
+			{
+				if(player->sp[i] > 0)
+				{
+					int old_required = old::GetRequiredSkillPoints(GetBase((Skill)i));
+					float ratio = float(player->sn[i]) / old_required;
+					player->sp[i] = (int)(ratio * player->sp[i]);
+				}
+			}
 		}
 		else
 		{
@@ -1805,6 +1819,12 @@ void Unit::Load(HANDLE file, bool local)
 			statsx = StatsX::GetRandom(&data->GetStatProfile(), level);
 		}
 		CalculateStats();
+	}
+	if(LOAD_VERSION < V_0_5)
+	{
+		stamina_max = CalculateMaxStamina();
+		stamina = stamina_max;
+		stamina_action = SA_RESTORE_MORE;
 	}
 }
 

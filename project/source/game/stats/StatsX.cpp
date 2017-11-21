@@ -70,7 +70,7 @@ void StatsX::Upgrade()
 	}
 
 	// calculate level
-	if(seed.level == -1)
+	if(seed.level == (byte)-1)
 		seed.level = (int)CalculateLevel();
 	int level = seed.level;
 
@@ -141,7 +141,7 @@ float StatsX::CalculateLevel()
 			if(weight > 0)
 			{
 				float v = (skill[i] - skill_base[i]) / skill_apt_mod[skill_apt[i]].y;
-				v /= weight;
+				v *= weight;
 				skill_level += v;
 				skill_count += weight;
 			}

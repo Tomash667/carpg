@@ -646,7 +646,10 @@ void PlayerController::Load(HANDLE file)
 	{
 		f >> ap;
 		if(LOAD_VERSION >= V_CURRENT)
+		{
 			f >> sp;
+			SetRequiredPoints();
+		}
 		else
 		{
 			int old_sp[(int)old::v1::Skill::MAX];
@@ -669,7 +672,6 @@ void PlayerController::Load(HANDLE file)
 			sp[(int)Skill::HAGGLE] = 0;
 			sp[(int)Skill::LITERACY] = 0;
 		}
-		SetRequiredPoints();
 	}
 	else
 	{
@@ -701,21 +703,6 @@ void PlayerController::Load(HANDLE file)
 		// size = sizeof(__int64) * T_MAX * (S_MAX + A_MAX)
 		// size = 8 * 4 * (5 + 3) = 256
 		f.Skip(256);
-
-		// SetRequiredPoints called from Unit::Load after setting new attributes/skills
-	}
-	if(LOAD_VERSION < V_CURRENT)
-	{
-		// rescale skill points counter
-		for(uint i = 0; i < (uint)Skill::MAX; ++i)
-		{
-			if(sp[i] > 0)
-			{
-				int old_required = old::GetRequiredSkillPoints(unit->GetBase((Skill)i));
-				float ratio = float(sn[i]) / old_required;
-				sp[i] = (int)(ratio * sp[i]);
-			}
-		}
 	}
 	ReadFile(file, &action_key, sizeof(action_key), &tmp, nullptr);
 	ReadFile(file, &next_action, sizeof(next_action), &tmp, nullptr);
@@ -779,13 +766,17 @@ void PlayerController::Load(HANDLE file)
 		action_charges = GetAction().charges;
 	}
 
-	uint count;
-	f >> count;
-	book_read.reserve(count);
-	for(uint i = 0; i < count; ++i)
+	// list of book read
+	if(LOAD_VERSION >= V_CURRENT)
 	{
-		f.ReadStringBUF();
-		book_read.push_back(Item::Get(BUF));
+		uint count;
+		f >> count;
+		book_read.reserve(count);
+		for(uint i = 0; i < count; ++i)
+		{
+			f.ReadStringBUF();
+			book_read.push_back(Item::Get(BUF));
+		}
 	}
 
 	action = Action_None;
@@ -887,32 +878,36 @@ bool PlayerController::IsHit(Unit* unit) const
 }
 
 //=================================================================================================
-void PlayerController::RecalculateLevel()
+void PlayerController::RecalculateLevel(bool initial)
 {
 	if(!recalculate_level || Net::IsClient())
 		return;
 	recalculate_level = false;
 	float new_level = unit->statsx->CalculateLevel();
-	if(new_level > level)
+	if(new_level > level || initial)
 	{
 		level = new_level;
 		unit->level = (int)level;
-		unit->RecalculateHp();
 
-		if(Net::IsServer())
+		if(!initial)
 		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_HP;
-			c.unit = unit;
-		}
+			unit->RecalculateHp();
 
-		if(!is_local)
-		{
-			NetChangePlayer& c = Add1(Net::player_changes);
-			c.type = NetChangePlayer::UPDATE_LEVEL;
-			c.pc = this;
-			c.v = level;
-			player_info->NeedUpdate();
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::UPDATE_HP;
+				c.unit = unit;
+			}
+
+			if(!is_local)
+			{
+				NetChangePlayer& c = Add1(Net::player_changes);
+				c.type = NetChangePlayer::UPDATE_LEVEL;
+				c.pc = this;
+				c.v = level;
+				player_info->NeedUpdate();
+			}
 		}
 	}
 }

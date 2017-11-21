@@ -2,6 +2,9 @@ Historia zmian
 
 --------------------------------------------------------------------------------
 Wersja 0.7 (2017-XX-YY):
++ nowe umiejêtnoœci: atletyka, akrobatyka, targowanie, pismiennictwo
++ nowy system walki
++ magiczny zwój
 + wczytywanie obiektów z pliku
 + wczytywanie grup przeciwników na arenie z pliku
 - naprawiony crash gdy npc w dru¿ynie chce przedmiot od innego npc w dru¿ynie [MikelkCZ]

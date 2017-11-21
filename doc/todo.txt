@@ -1,15 +1,4 @@
 ﻿FEATURE:
-*** new skills
-? testing
-	? old saves
-	? StatsX.Upgrade
-	? negative aptitude effect on units/player
-		? aptitude is 0 instead of -1
-	? rescaling required skill points
-	? mod client stats after loading
-	? trade with hero, by server/client (check weight) - don't send all stats? only weight?
-	! changelog
-
 *** perks
 + perk points
 + subprofile perks
@@ -57,11 +46,13 @@
 	+ unleveled enemies
 	
 + book bestiary, magic artifacts
++ level in team panel for server
 
 ? test playthru
 	? leveling speed
 	- trainer train skills are too fast
 	- skill rise too fast
+	- max level only 20? (well for hp/atk/def/perks only)
 ? test all traps with 2 clients, log playing sounds for all players
 ===============================================================================================================
 CURRENT:

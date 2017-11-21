@@ -31,5 +31,5 @@ const int STARTUP_TIMER = 1;
 const int STARTUP_TIMER = 3;
 #endif
 
-const int MAX_LEVEL = 20;
+const int MAX_LEVEL = 25;
 const float TRAIN_KILL_RATIO = 0.1f;

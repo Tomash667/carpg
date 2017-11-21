@@ -187,7 +187,7 @@ public:
 	void RefreshCooldown();
 	bool IsHit(Unit* unit) const;
 
-	void RecalculateLevel();
+	void RecalculateLevel(bool initial = false);
 
 	void OnReadBook(int i_index);
 };
