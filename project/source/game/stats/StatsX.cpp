@@ -18,9 +18,9 @@ const float StatsX::attrib_apt_mod[] = {
 };
 
 const float StatsX::player_apt_mod[] = {
-	0, // -4
-	0.25f, // -3
-	0.5f, // -2
+	0,25, // -4
+	0.4f, // -3
+	0.55f, // -2
 	0.75f, // -1
 	1.f, // 0
 	1.25f, // +1
@@ -79,14 +79,14 @@ void StatsX::Upgrade()
 	{
 		if(attrib[i] != -1)
 			continue;
-		int apt = attrib_apt[i];
+		int apt = max(0, attrib_apt[i]);
 		attrib[i] = attrib_base[i] + (int)(attrib_apt_mod[apt] * level);
 	}
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
 		if(skill[i] != -1)
 			continue;
-		int apt = skill_apt[i];
+		int apt = max(0, skill_apt[i]);
 		skill[i] = skill_base[i] + (int)(skill_apt_mod[apt].y * level);
 	}
 
@@ -249,13 +249,13 @@ StatsX* StatsX::GetLevelUp()
 //=================================================================================================
 int StatsX::AttributeToAptitude(int value)
 {
-	return Clamp((value - 50) / 5, 0, (int)countof(attrib_apt_mod) - 1);
+	return Clamp((value - 50) / 5, -4, (int)countof(attrib_apt_mod) - 1);
 }
 
 //=================================================================================================
 int StatsX::SkillToAptitude(int value)
 {
-	return Clamp(value / 5, 0, (int)countof(skill_apt_mod) - 1);
+	return Clamp(value / 5, -4, (int)countof(skill_apt_mod) - 1);
 }
 
 //=================================================================================================
@@ -340,12 +340,12 @@ StatsX* StatsX::Get(Entry& e)
 	{
 		for(int i = 0; i < (int)Attribute::MAX; ++i)
 		{
-			int apt = e.stats->attrib_apt[i];
+			int apt = max(0, e.stats->attrib_apt[i]);
 			e.stats->attrib[i] += (int)(attrib_apt_mod[apt] * level);
 		}
 		for(int i = 0; i < (int)Skill::MAX; ++i)
 		{
-			int apt = e.stats->skill_apt[i];
+			int apt = max(0, e.stats->skill_apt[i]);
 			e.stats->skill[i] += (int)(skill_apt_mod[apt].Lerp(e.stats->skill_tag[i]) * level);
 		}
 	}

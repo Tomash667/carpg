@@ -4,7 +4,7 @@
 	? old saves
 	? StatsX.Upgrade
 	? negative aptitude effect on units/player
-		- aptitude is 0 instead of -1
+		? aptitude is 0 instead of -1
 	? rescaling required skill points
 	? mod client stats after loading
 	? trade with hero, by server/client (check weight) - don't send all stats? only weight?
@@ -74,7 +74,7 @@ CURRENT:
 - target orc can spawn in closed room with gorush
 	19:10:56 INFO  - Generating location 'Podziemia Goldenchasm', seed 1915762242.
 	19:10:56 INFO  - Generating dungeon, level 3, target 0.
-- NetChange::ADD_LOCATION memory leak for client (T between 2 cities?)
+- NetChange::ADD_LOCATION memory leak for client (T between 2 cities with warp to inn?)
 - quitting with sounds attached to player = crash
 ===============================================================================================================
 NEW:
@@ -96,8 +96,6 @@ NEW:
 + randomized order of spawned objects
 - arena picks random units and try spawn them at specified levels but it is still limited to max level (for example orc 4)
 	it should pirst units at that level, if not possible lower/higher
-+ next system version:
-	+ attributes give bonus to skill (currently it isn't needed, player starts with good attribute values in useful skills)
 + modify units stats, perks -> will make unit unique
 + poison resistance from stamina
 + wisdom: skill/perk/bonus
