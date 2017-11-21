@@ -1,4 +1,20 @@
 ﻿FEATURE:
+*** better stamina
++ better stamina usage
++ don't regenerate instantly after shooting, when holding (when to remove?)
+	+ bow - remove stamina at start
+	+ weapon - remove at start -> remove more when holding
+	+ wait time before starting regeneration
+? can shoot without stamina
+	? test attack, continue attack, running attack, power, shoot, continue shoot, bash
+	+ add to changelog
+? blocking shots don't remove stamina
+	+ add to changelog (blocking don't remove stamina, units gain stamina when blocking on high levels of shield skill)
++ new mobility (dex + acro)
++ new stamina (end + acro)
++ new carry (str + ath)
++ recalculate hp, stamina on load in new version
+
 *** perks
 + perk points
 + subprofile perks
@@ -17,22 +33,6 @@
 + too low str effects (slower attack etc)
 + too low dex effects
 + unarmed attack formula
-
-*** better stamina
-+ better stamina usage
-+ don't regenerate instantly after shooting, when holding (when to remove?)
-	+ bow - remove stamina at start
-	+ weapon - remove at start -> remove more when holding
-	+ wait time before starting regeneration
-? can shoot without stamina
-	? test attack, continue attack, running attack, power, shoot, continue shoot, bash
-	+ add to changelog
-? blocking shots don't remove stamina
-	+ add to changelog (blocking don't remove stamina, units gain stamina when blocking on high levels of shield skill)
-+ new mobility (dex + acro)
-+ new stamina (end + acro)
-+ new carry (str + ath)
-+ recalculate hp, stamina on load in new version
 
 *** new enemies
 + units stats, new units
@@ -67,6 +67,8 @@ CURRENT:
 	19:10:56 INFO  - Generating dungeon, level 3, target 0.
 - NetChange::ADD_LOCATION memory leak for client (T between 2 cities with warp to inn?)
 - quitting with sounds attached to player = crash
+- arena picks random units and try spawn them at specified levels but it is still limited to max level (for example orc 4)
+	it should pirst units at that level, if not possible lower/higher
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce
@@ -83,17 +85,13 @@ NEW:
 + validate objects metadata (required objects, units)
 ? why version/stats thread start at menu, not while loading
 - grass under moon well
-+ exporter: when file has no ext or ends with .qmsh save as .qmsh.tmp
 + randomized order of spawned objects
-- arena picks random units and try spawn them at specified levels but it is still limited to max level (for example orc 4)
-	it should pirst units at that level, if not possible lower/higher
 + modify units stats, perks -> will make unit unique
-+ poison resistance from stamina
++ poison resistance from endurance
 + wisdom: skill/perk/bonus
 + shield different block types (physical/magical/fire/etc)
 + modify units stats, perks -> will make unit unique
 + skill: weapon style (weapon and shield, single weapon, dual weapons, two handed weapon, pole weapon)
-+ serverside travel on worldmap
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
