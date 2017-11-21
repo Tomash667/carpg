@@ -179,7 +179,8 @@ enum GMS
 	GMS_NO_POTION,
 	GMS_GAME_SAVED,
 	GMS_PICK_CHARACTER,
-	GMS_ADDED_ITEM
+	GMS_ADDED_ITEM,
+	GMS_TOO_COMPLICATED
 };
 
 struct UnitWarpData
@@ -407,6 +408,10 @@ struct Game final : public Engine, public UnitEventHandler
 			assert(type == CHEST || type == NONE);
 			return chest;
 		}
+
+		bool IsChest() const { return type == CHEST; }
+		bool IsObject() const { return type == OBJECT; }
+		bool IsUsable() const { return type == USABLE; }
 	};
 
 	void OnCleanup();
@@ -585,7 +590,7 @@ struct Game final : public Engine, public UnitEventHandler
 	cstring txPvpRefuse, txWin, txWinMp, txINeedWeapon, txNoHpp, txCantDo, txDontLootFollower, txDontLootArena, txUnlockedDoor,
 		txNeedKey, txLevelUp, txLevelDown, txLocationText, txLocationTextMap, txRegeneratingLevel, txGmsLooted, txGmsRumor, txGmsJournalUpdated, txGmsUsed,
 		txGmsUnitBusy, txGmsGatherTeam, txGmsNotLeader, txGmsNotInCombat, txGainTextAttrib, txGainTextSkill, txNeedItem, txReallyQuit, txSecretAppear,
-		txGmsAddedItem, txGmsAddedItems;
+		txGmsAddedItem, txGmsAddedItems, txGmsTooComplicated;
 	cstring txRumor[28], txRumorD[7];
 	cstring txMayorQFailed[3], txQuestAlreadyGiven[2], txMayorNoQ[2], txCaptainQFailed[2], txCaptainNoQ[2], txLocationDiscovered[2], txAllDiscovered[2], txCampDiscovered[2],
 		txAllCampDiscovered[2], txNoQRumors[2], txRumorQ[9], txNeedMoreGold, txNoNearLoc, txNearLoc, txNearLocEmpty[2], txNearLocCleared, txNearLocEnemy[2], txNoNews[2], txAllNews[2], txPvpTooFar,
@@ -919,7 +924,7 @@ public:
 
 	bool WantAttackTeam(Unit& u)
 	{
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 			return u.attack_team;
 		else
 			return IS_SET(u.ai_mode, 0x08);
@@ -1113,7 +1118,13 @@ public:
 	uint ValidateGameData(bool major);
 	uint TestGameData(bool major);
 	void TestUnitSpells(const SpellList& spells, string& errors, uint& count);
-	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, bool create_physics = true, bool custom = false);
+	enum CreateUnitFlags
+	{
+		CUF_NO_PHYSICS = 1 << 0,
+		CUF_CUSTOM = 1 << 1,
+		CUF_UNIQUE_STATSX = 1 << 2
+	};
+	Unit* CreateUnit(UnitData& base, int level = -1, Human* human_data = nullptr, Unit* test_unit = nullptr, int flags = 0);
 	void ParseItemScript(Unit& unit, const ItemScript* script);
 	bool IsEnemy(Unit& u1, Unit& u2, bool ignore_dont_attack = false);
 	bool IsFriend(Unit& u1, Unit& u2);
@@ -1133,8 +1144,11 @@ public:
 		ATTACK_CLEAN_HIT
 	};
 	ATTACK_RESULT DoAttack(LevelContext& ctx, Unit& unit);
-#define DMG_NO_BLOOD (1<<0)
-#define DMG_MAGICAL (1<<1)
+	enum DamageFlags
+	{
+		DMG_NO_BLOOD = 1 << 0,
+		DMG_MAGICAL = 1 << 1
+	};
 	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
 	void UpdateUnits(LevelContext& ctx, float dt);
 	void UpdateUnitInventory(Unit& unit, bool notify = true);
@@ -1171,7 +1185,7 @@ public:
 	Unit* SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
 	Unit* SpawnUnitNearLocation(LevelContext& ctx, const Vec3& pos, UnitData& unit, const Vec3* look_at = nullptr, int level = -1, float extra_radius = 2.f);
 	Unit* SpawnUnitInsideArea(LevelContext& ctx, const Box2d& area, UnitData& unit, int level = -1);
-	Unit* SpawnUnitInsideInn(UnitData& unit, int level = -1, InsideBuilding* inn = nullptr);
+	Unit* SpawnUnitInsideInn(UnitData& unit, int level = -1, InsideBuilding* inn = nullptr, bool temporary = false);
 	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
 	void ChangeLevel(int gdzie);
 	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
@@ -1368,14 +1382,14 @@ public:
 	void UpdateGame2(float dt);
 	bool IsUnitDontAttack(Unit& u)
 	{
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 			return u.dont_attack;
 		else
 			return IS_SET(u.ai_mode, 0x01);
 	}
 	bool IsUnitAssist(Unit& u)
 	{
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 			return u.assist;
 		else
 			return IS_SET(u.ai_mode, 0x02);
@@ -1399,7 +1413,6 @@ public:
 	void CreateUnitPhysics(Unit& unit, bool position = false);
 	void UpdateUnitPhysics(Unit& unit, const Vec3& pos);
 	void WarpNearLocation(LevelContext& ctx, Unit& uint, const Vec3& pos, float extra_radius, bool allow_exact, int tries = 20);
-	void Train(Unit& unit, bool is_skill, int co, int mode = 0);
 	void ShowStatGain(bool is_skill, int what, int value);
 	void ActivateChangeLeaderButton(bool activate);
 	void RespawnTraps();
@@ -1433,16 +1446,6 @@ public:
 	UnitData* GetRandomHeroData();
 	UnitData* GetUnitDataFromClass(Class clas, bool crazy);
 	void HandleQuestEvent(Quest_Event* event);
-
-	enum BLOCK_RESULT
-	{
-		BLOCK_PERFECT,
-		BLOCK_GOOD,
-		BLOCK_MEDIUM,
-		BLOCK_POOR,
-		BLOCK_BREAK
-	};
-	BLOCK_RESULT CheckBlock(Unit& hitted, float angle_dif, float attack_power, float skill, float str);
 
 	void DropGold(int count);
 
@@ -1639,7 +1642,6 @@ public:
 	};
 	vector<WarpData> mp_warps;
 	vector<Item*> quest_items;
-	float train_move; // u¿ywane przez klienta do trenowania przez chodzenie
 	bool anyone_talking;
 	// u¿ywane u klienta który nie zapamiêtuje zmiennej 'pc'
 	bool godmode, noclip, invisible;
@@ -1733,7 +1735,8 @@ public:
 	{
 		NetChangePlayer& c = Add1(Net::player_changes);
 		c.pc = player;
-		c.type = NetChangePlayer::ADDED_ITEM_MSG;
+		c.type = NetChangePlayer::GAME_MESSAGE;
+		c.id = GMS_ADDED_ITEM;
 		GetPlayerInfo(player).NeedUpdate();
 	}
 	void Net_AddItems(PlayerController* player, const Item* item, int ile, bool is_team)
@@ -1819,10 +1822,13 @@ public:
 		c.id = talker->netid;
 		GetPlayerInfo(player).NeedUpdate();
 	}
-#define WHERE_LEVEL_UP -1
-#define WHERE_LEVEL_DOWN -2
-#define WHERE_OUTSIDE -3
-#define WHERE_PORTAL 0
+	enum Where
+	{
+		WHERE_LEVEL_UP = -1,
+		WHERE_LEVEL_DOWN = -2,
+		WHERE_OUTSIDE = -3,
+		WHERE_PORTAL = 0
+	};
 	void Net_LeaveLocation(int where)
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1961,9 +1967,12 @@ public:
 	void GenerateMoonwell(Location& loc);
 	void SpawnMoonwellObjects();
 	void SpawnMoonwellUnits(const Vec3& team_pos);
-#define SOE_DONT_SPAWN_PARTICLES (1<<0)
-#define SOE_MAGIC_LIGHT (1<<1)
-#define SOE_DONT_CREATE_LIGHT (1<<2)
+	enum SpawnObjectExtrasFlags
+	{
+		SOE_DONT_SPAWN_PARTICLES = 1 << 0,
+		SOE_MAGIC_LIGHT = 1 << 1,
+		SOE_DONT_CREATE_LIGHT = 1 << 2
+	};
 	void SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale = 1.f, int flags = 0);
 	void GenerateSecretLocation(Location& loc);
 	void SpawnSecretLocationObjects();
@@ -2009,11 +2018,14 @@ public:
 	LocationEventHandler* location_event_handler; // obs³uga wydarzeñ lokacji
 	bool first_city;
 	vector<Int2> boss_levels; // dla oznaczenia gdzie graæ muzykê (x-lokacja, y-poziom)
-#define ENTER_FROM_PORTAL 0
-#define ENTER_FROM_OUTSIDE -1
-#define ENTER_FROM_UP_LEVEL -2
-#define ENTER_FROM_DOWN_LEVEL -3
-#define ENTER_FROM_UNKNOWN -4
+	enum EnterFrom
+	{
+		ENTER_FROM_PORTAL = 0,
+		ENTER_FROM_OUTSIDE = -1,
+		ENTER_FROM_UP_LEVEL = -2,
+		ENTER_FROM_DOWN_LEVEL = -3,
+		ENTER_FROM_UNKNOWN = -4
+	};
 	int enter_from; // sk¹d siê przysz³o (u¿ywane przy wczytywanie w MP gdy do³¹cza nowa postaæ)
 	bool g_have_well;
 	Int2 g_well_pt;
@@ -2027,6 +2039,7 @@ public:
 		WPM_SKIP
 	};
 	void WorldProgress(int days, WorldProgressMode mode);
+	void OnTravel(float dist);
 
 	int year; // rok w grze [zaczyna siê od 100, ustawiane w NewGame]
 	int month; // miesi¹c w grze [od 0 do 11, ustawiane w NewGame]

@@ -355,8 +355,6 @@ void Inventory::Update(float dt)
 
 	if(new_index >= 0)
 	{
-		//int t_index = new_index;
-
 		// pobierz przedmiot
 		const Item* item;
 		ItemSlot* slot;
@@ -490,7 +488,7 @@ void Inventory::Update(float dt)
 					else if(item->type == IT_CONSUMABLE)
 						ConsumeItem(i_index);
 					else if(item->type == IT_BOOK)
-						ReadBook(item);
+						ReadBook(item, i_index);
 					else if(item->IsWearable())
 					{
 						ITEM_SLOT type = ItemTypeToSlot(item->type);
@@ -709,7 +707,7 @@ void Inventory::Update(float dt)
 					if(slot_type == SLOT_WEAPON && slots[SLOT_WEAPON] == unit->used_item)
 					{
 						unit->used_item = nullptr;
-						if(Net::Net::IsServer())
+						if(Net::IsServer())
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::REMOVE_USED_ITEM;
@@ -726,7 +724,7 @@ void Inventory::Update(float dt)
 					if(Net::IsOnline())
 					{
 						NetChange& c = Add1(Net::changes);
-						if(Net::Net::IsServer())
+						if(Net::IsServer())
 						{
 							c.type = NetChange::CHANGE_EQUIPMENT;
 							c.unit = unit;
@@ -835,7 +833,7 @@ void Inventory::Update(float dt)
 						if(mode == INVENTORY)
 							tooltip.Clear();
 
-						if(Net::Net::IsLocal())
+						if(Net::IsLocal())
 						{
 							if(!t->IsBetterItem(item))
 								GUI.SimpleDialog(txWontTakeItem, this);
@@ -925,7 +923,7 @@ void Inventory::Update(float dt)
 				}
 				else
 				{
-					if(Net::Net::IsLocal())
+					if(Net::IsLocal())
 					{
 						if(t->IsBetterItem(item))
 						{
@@ -1063,7 +1061,7 @@ void Inventory::Event(GuiEvent e)
 					game.pc->unit->weight += unit_slots[i]->weight;
 					unit_slots[i] = nullptr;
 
-					if(Net::Net::IsServer())
+					if(Net::IsServer())
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHANGE_EQUIPMENT;
@@ -1110,7 +1108,7 @@ void Inventory::Event(GuiEvent e)
 		}
 		game.pc->chest_trade->clear();
 
-		if(!Net::Net::IsLocal())
+		if(!Net::IsLocal())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GET_ALL_ITEMS;
@@ -1164,7 +1162,7 @@ void Inventory::RemoveSlotItem(ITEM_SLOT slot)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CHANGE_EQUIPMENT;
-		if(Net::Net::IsServer())
+		if(Net::IsServer())
 		{
 			c.unit = unit;
 			c.id = slot;
@@ -1220,12 +1218,15 @@ void Inventory::EquipSlotItem(ITEM_SLOT slot, int i_index)
 	}
 
 	game.BuildTmpInventory(0);
+	last_index = INDEX_INVALID;
+	if(mode == INVENTORY)
+		tooltip.Clear();
 
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CHANGE_EQUIPMENT;
-		if(Net::Net::IsServer())
+		if(Net::IsServer())
 		{
 			c.unit = unit;
 			c.id = slot;
@@ -1301,14 +1302,8 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 			count = slot.count;
 			team_count = slot.team_count;
 		}
-
-		Unit* for_unit;
-		if(mode == LOOT_OTHER || mode == TRADE_OTHER)
-			for_unit = game.pc->unit;
-		else
-			for_unit = unit;
-
-		GetItemString(text, item, for_unit, (uint)count);
+		
+		GetItemString(text, item, game.pc->unit, (uint)count);
 		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
 		{
 			text += '\n';
@@ -1410,7 +1405,7 @@ void Inventory::OnTakeItem(int id)
 	unit->player->credit += slot.item->value / 2;
 	slot.team_count = 0;
 
-	if(Net::Net::IsLocal())
+	if(Net::IsLocal())
 		game.CheckCredit(true);
 	else
 	{
@@ -1482,6 +1477,8 @@ void Inventory::BuyItem(int index, uint count)
 		}
 		// usuñ z³oto
 		game.pc->unit->gold -= price;
+		if(Net::IsLocal())
+			game.pc->Train(TrainWhat::Trade, (float)price, 0);
 		// dodaj przedmiot graczowi
 		if(!game.pc->unit->AddItem(slot.item, count, 0u))
 			UpdateGrid(true);
@@ -1498,7 +1495,7 @@ void Inventory::BuyItem(int index, uint count)
 		else
 			FormatBox();
 		// komunikat
-		if(!Net::Net::IsLocal())
+		if(!Net::IsLocal())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::GET_ITEM;
@@ -1522,9 +1519,10 @@ void Inventory::SellItem(int index, uint count)
 		game.PlaySound2d(game.sCoins);
 	}
 	// dodaj z³oto
-	if(Net::Net::IsLocal())
+	if(Net::IsLocal())
 	{
 		int price = game.GetItemPrice(slot.item, *game.pc->unit, false);
+		game.pc->Train(TrainWhat::Trade, (float)price * count, 0);
 		if(team_count)
 			game.AddGold(price * team_count);
 		if(normal_count)
@@ -1550,7 +1548,7 @@ void Inventory::SellItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// komunikat
-	if(!Net::Net::IsLocal())
+	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
@@ -1571,7 +1569,10 @@ void Inventory::SellSlotItem(ITEM_SLOT slot)
 		game.PlaySound2d(game.sCoins);
 	}
 	// dodaj z³oto
-	unit->gold += game.GetItemPrice(item, *game.pc->unit, false);
+	int price = game.GetItemPrice(item, *game.pc->unit, false);
+	unit->gold += price;
+	if(Net::IsLocal())
+		game.pc->Train(TrainWhat::Trade, (float)price, 0);
 	// dodaj przedmiot kupcowi
 	InsertItem(*unit->player->chest_trade, item, 1, 0);
 	UpdateGrid(false);
@@ -1583,7 +1584,7 @@ void Inventory::SellSlotItem(ITEM_SLOT slot)
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
-		if(Net::Net::IsServer())
+		if(Net::IsServer())
 		{
 			c.type = NetChange::CHANGE_EQUIPMENT;
 			c.unit = unit;
@@ -1616,7 +1617,7 @@ void Inventory::OnPutGold(int id)
 		// dŸwiêk
 		if(game.sound_volume)
 			game.PlaySound2d(game.sCoins);
-		if(!Net::Net::IsLocal())
+		if(!Net::IsLocal())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::PUT_GOLD;
@@ -1652,7 +1653,7 @@ void Inventory::LootItem(int index, uint count)
 		if(slot.item == unit->used_item)
 		{
 			unit->used_item = nullptr;
-			if(Net::Net::IsServer())
+			if(Net::IsServer())
 			{
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::REMOVE_USED_ITEM;
@@ -1675,7 +1676,7 @@ void Inventory::LootItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// komunikat
-	if(!Net::Net::IsLocal())
+	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::GET_ITEM;
@@ -1738,7 +1739,7 @@ void Inventory::PutItem(int index, uint count)
 	}
 
 	// send change
-	if(!Net::Net::IsLocal())
+	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
@@ -1777,7 +1778,7 @@ void Inventory::PutSlotItem(ITEM_SLOT slot)
 	if(Net::IsOnline())
 	{
 		NetChange& c = Add1(Net::changes);
-		if(Net::Net::IsServer())
+		if(Net::IsServer())
 		{
 			c.type = NetChange::CHANGE_EQUIPMENT;
 			c.unit = unit;
@@ -1807,7 +1808,7 @@ void Inventory::OnGiveGold(int id)
 		if(game.sound_volume)
 			game.PlaySound2d(game.sCoins);
 		Unit* u = game.pc->action_unit;
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 		{
 			u->gold += counter;
 			if(u->IsPlayer() && u->player != game.pc)
@@ -1883,7 +1884,7 @@ void Inventory::ShareGiveItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// komunikat
-	if(!Net::Net::IsLocal())
+	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
@@ -1923,7 +1924,7 @@ void Inventory::ShareTakeItem(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// komunikat
-	if(!Net::Net::IsLocal())
+	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::GET_ITEM;
@@ -1969,7 +1970,7 @@ void Inventory::OnGiveItem(int id)
 	{
 	case 0: // kredyt
 		t->hero->credit += price;
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 			game.CheckCredit(true);
 		break;
 	case 1: // z³oto
@@ -1977,6 +1978,8 @@ void Inventory::OnGiveItem(int id)
 			return;
 		t->gold -= price;
 		unit->gold += price;
+		if(Net::IsLocal())
+			game.pc->Train(TrainWhat::Trade, (float)price, 0);
 		if(game.sound_volume)
 			game.PlaySound2d(game.sCoins);
 		break;
@@ -1995,7 +1998,7 @@ void Inventory::OnGiveItem(int id)
 	else
 	{
 		slots[slot_type] = nullptr;
-		if(Net::Net::IsServer())
+		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_EQUIPMENT;
@@ -2005,13 +2008,13 @@ void Inventory::OnGiveItem(int id)
 	}
 	UpdateGrid(true);
 	// ustaw przedmioty
-	if(Net::Net::IsLocal())
+	if(Net::IsLocal())
 	{
 		game.UpdateUnitInventory(*t);
 		game.BuildTmpInventory(1);
 	}
 	// komunikat
-	if(!Net::Net::IsLocal())
+	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
@@ -2063,7 +2066,7 @@ void Inventory::GivePotion(int index, uint count)
 		slot.team_count -= team_count;
 	}
 	// komunikat
-	if(!Net::Net::IsLocal())
+	if(!Net::IsLocal())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
@@ -2232,9 +2235,15 @@ void Inventory::UpdateGrid(bool mine)
 }
 
 //=================================================================================================
-void Inventory::ReadBook(const Item* item)
+void Inventory::ReadBook(const Item* item, int i_index)
 {
 	assert(item && item->type == IT_BOOK);
-	game.game_gui->book_panel->Show((const Book*)item);
-	tooltip.Clear();
+	if(IS_SET(item->flags, ITEM_MAGIC_SCROLL))
+		Hide();
+	else
+	{
+		game.game_gui->book_panel->Show((const Book*)item);
+		tooltip.Clear();
+	}
+	game.pc->OnReadBook(i_index);
 }

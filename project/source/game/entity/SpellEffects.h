@@ -17,6 +17,7 @@ struct Explo
 	TexturePtr tex;
 	vector<Unit*> hitted;
 	Unit* owner;
+	bool stun;
 
 	static const int MIN_SIZE = 21;
 

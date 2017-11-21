@@ -48,12 +48,12 @@ void CheckStartItems(Skill skill, bool required, uint& errors)
 
 	if(!have_0)
 	{
-		Error("Missing starting item for skill %s.", g_skills[(int)skill].id);
+		Error("Missing starting item for skill %s.", SkillInfo::skills[(int)skill].id);
 		++errors;
 	}
 	if(!have_heirloom)
 	{
-		Error("Missing heirloom item for skill %s.", g_skills[(int)skill].id);
+		Error("Missing heirloom item for skill %s.", SkillInfo::skills[(int)skill].id);
 		++errors;
 	}
 }

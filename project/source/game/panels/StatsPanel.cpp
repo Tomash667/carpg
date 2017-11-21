@@ -22,7 +22,8 @@ enum Group
 enum Stats
 {
 	STATS_DATE,
-	STATS_CLASS
+	STATS_CLASS,
+	STATS_ATTACK
 };
 
 //=================================================================================================
@@ -32,8 +33,7 @@ StatsPanel::StatsPanel() : last_update(0.f)
 
 	txAttributes = Str("attributes");
 	txStatsPanel = Str("statsPanel");
-	txTraitsClass = Str("traitsClass");
-	txTraitsText = Str("traitsText");
+	txClass = Str("class");
 	txStatsText = Str("statsText");
 	txYearMonthDay = Str("yearMonthDay");
 	txBase = Str("base");
@@ -42,6 +42,16 @@ StatsPanel::StatsPanel() : last_update(0.f)
 	txTraits = Str("traits");
 	txStats = Str("stats");
 	txStatsDate = Str("statsDate");
+	txHealth = Str("health");
+	txStamina = Str("stamina");
+	txAttack = Str("attack");
+	txDefense = Str("defense");
+	txMeleeAttack = Str("meleeAttack");
+	txRangedAttack = Str("rangedAttack");
+	txMobility = Str("mobility");
+	txCarryShort = Str("carryShort");
+	txGold = Str("gold");
+	txBlock = Str("block");
 
 	tooltip.Init(TooltipGetText(this, &StatsPanel::GetTooltip));
 }
@@ -131,24 +141,38 @@ void StatsPanel::SetText()
 	flowAttribs.Clear();
 	flowAttribs.Add()->Set(txAttributes);
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", g_attributes[i].name.c_str(), StatStateToColor(pc->attrib_state[i]), pc->unit->Get((Attribute)i)), G_ATTRIB, i);
+	{
+		StatState state;
+		int value = pc->unit->Get((Attribute)i, state);
+		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", AttributeInfo::attributes[i].name.c_str(), StatStateToColor(state), value), G_ATTRIB, i);
+	}
 	flowAttribs.Reposition();
 
 	// stats
 	flowStats.Clear();
 	flowStats.Add()->Set(txTraits);
+	flowStats.Add()->Set(Format("%s: %s", txClass, ClassInfo::classes[(int)pc->clas].name.c_str()), G_STATS, STATS_CLASS);
+	if(game.devmode)
+		flowStats.Add()->Set(Format("Level: %g (%d)", pc->level, pc->unit->level), G_INVALID, -1);
 	int hp = int(pc->unit->hp);
 	if(hp == 0 && pc->unit->hp > 0)
 		hp = 1;
-	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
-	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
-	flowStats.Add()->Set(Format(txTraitsClass, ClassInfo::classes[(int)pc->clas].name.c_str()), G_STATS, STATS_CLASS);
-	flowStats.Add()->Set(Format(txTraitsText, hp, int(pc->unit->hpmax), int(pc->unit->stamina), int(pc->unit->stamina_max), meleeAttack, rangedAttack,
-		(int)pc->unit->CalculateDefense(), (int)pc->unit->CalculateMobility(), float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
+	flowStats.Add()->Set(Format("%s: %d/%d", txHealth, hp, int(pc->unit->hpmax)), G_INVALID, -1);
+	flowStats.Add()->Set(Format("%s: %d/%d", txStamina, int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);
+	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "--");
+	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "--");
+	flowStats.Add()->Set(Format("%s: %s/%s", txAttack, meleeAttack, rangedAttack), G_STATS, STATS_ATTACK);
+	flowStats.Add()->Set(Format("%s: %d", txDefense, (int)pc->unit->CalculateDefense()), G_INVALID, -1);
+	cstring block = (pc->unit->HaveShield() ? Format("%d", (int)pc->unit->CalculateBlock()) : "--");
+	flowStats.Add()->Set(Format("%s: %s", txBlock, block), G_INVALID, -1);
+	flowStats.Add()->Set(Format("%s: %d", txMobility, (int)pc->unit->CalculateMobility()), G_INVALID, -1);
+	flowStats.Add()->Set(Format(txCarryShort, float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10), G_INVALID, -1);
+	flowStats.Add()->Set(Format(txGold, pc->unit->gold), G_INVALID, -1);
 	flowStats.Add()->Set(txStats);
 	flowStats.Add()->Set(Format(txStatsDate, game.year, game.month + 1, game.day + 1), G_STATS, STATS_DATE);
 	GameStats& game_stats = GameStats::Get();
-	flowStats.Add()->Set(Format(txStatsText, game_stats.hour, game_stats.minute, game_stats.second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken, pc->arena_fights), G_INVALID, -1);
+	flowStats.Add()->Set(Format(txStatsText, game_stats.hour, game_stats.minute, game_stats.second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken, pc->arena_fights),
+		G_INVALID, -1);
 	flowStats.Reposition();
 
 	// skills
@@ -156,15 +180,18 @@ void StatsPanel::SetText()
 	flowSkills.Clear();
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
-		if(pc->unit->GetUnmod((Skill)i) > 0)
+		Skill skill = (Skill)i;
+		if(pc->unit->GetBase(skill) > 0)
 		{
-			SkillInfo& info = g_skills[i];
+			SkillInfo& info = SkillInfo::skills[i];
 			if(info.group != last_group)
 			{
-				flowSkills.Add()->Set(g_skill_groups[(int)info.group].name.c_str());
+				flowSkills.Add()->Set(SkillGroupInfo::groups[(int)info.group].name.c_str());
 				last_group = info.group;
 			}
-			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), StatStateToColor(pc->skill_state[i]), pc->unit->Get((Skill)i)), G_SKILL, i);
+			StatState state;
+			int value = pc->unit->Get(skill, state);
+			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), StatStateToColor(state), value), G_SKILL, i);
 		}
 	}
 	flowSkills.Reposition();
@@ -206,15 +233,15 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 	{
 	case G_ATTRIB:
 		{
-			AttributeInfo& ai = g_attributes[id];
+			AttributeInfo& ai = AttributeInfo::attributes[id];
 			Attribute a = (Attribute)id;
 			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
-			if(!Game::Get().devmode)
-				tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(a), pc->GetBase(a), ai.desc.c_str());
+			if(!Game::Get().devmode || Net::IsClient())
+				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(a), ai.desc.c_str());
 			else
 			{
-				tooltip.text = Format("%s: %d/%d\n%s\n\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetUnmod(a), pc->GetBase(a), ai.desc.c_str(),
-					pc->ap[id], pc->an[id], float(pc->ap[id]) * 100 / pc->an[id]);
+				tooltip.text = Format("%s: %d (%d)\n%s\n\nAptitude: %+d\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetBase(a), pc->unit->statsx->attrib_base[id],
+					ai.desc.c_str(), pc->unit->GetAptitude(a), pc->ap[id], pc->an[id], FLT10(float(pc->ap[id]) * 100 / pc->an[id]));
 			}
 			tooltip.small_text.clear();
 		}
@@ -238,6 +265,15 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 				tooltip.small_text.clear();
 			}
 			break;
+		case STATS_ATTACK:
+			{
+				cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "--");
+				cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "--");
+				tooltip.big_text.clear();
+				tooltip.text = Format("%s: %s\n%s: %s", txMeleeAttack, meleeAttack, txRangedAttack, rangedAttack);
+				tooltip.small_text.clear();
+			}
+			break;
 		default:
 			assert(0);
 			tooltip.anything = false;
@@ -246,20 +282,23 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 		break;
 	case G_SKILL:
 		{
-			SkillInfo& si = g_skills[id];
+			SkillInfo& si = SkillInfo::skills[id];
 			Skill s = (Skill)id;
 			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
-			if(!Game::Get().devmode)
-				tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(s), pc->GetBase(s), si.desc.c_str());
+			if(!Game::Get().devmode || Net::IsClient())
+				tooltip.text = Format("%s: %d\n%s", txBase, pc->unit->GetBase(s), si.desc.c_str());
 			else
 			{
-				tooltip.text = Format("%s: %d/%d\n%s\n\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetUnmod(s), pc->GetBase(s), si.desc.c_str(),
-					pc->sp[id], pc->sn[id], float(pc->sp[id]) * 100 / pc->sn[id]);
+				tooltip.text = Format("%s: %d (%d)\n%s\n\nAptitude: %+d\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetBase(s), pc->unit->statsx->skill_base[id],
+					si.desc.c_str(), pc->unit->GetAptitude(s), pc->sp[id], pc->sn[id], FLT10(float(pc->sp[id]) * 100 / pc->sn[id]));
 			}
 			if(si.attrib2 != Attribute::NONE)
-				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str(), g_attributes[(int)si.attrib2].name.c_str());
+			{
+				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, AttributeInfo::attributes[(int)si.attrib].name.c_str(),
+					AttributeInfo::attributes[(int)si.attrib2].name.c_str());
+			}
 			else
-				tooltip.small_text = Format("%s: %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str());
+				tooltip.small_text = Format("%s: %s", txRelatedAttributes, AttributeInfo::attributes[(int)si.attrib].name.c_str());
 		}
 		break;
 	case G_PERK:
@@ -292,4 +331,25 @@ void StatsPanel::Hide()
 {
 	LostFocus();
 	visible = false;
+}
+
+//=================================================================================================
+char StatsPanel::StatStateToColor(StatState s)
+{
+	switch(s)
+	{
+	default:
+	case StatState::NORMAL:
+		return 'k';
+	case StatState::POSITIVE:
+		return 'g';
+	case StatState::POSITIVE_MIXED:
+		return '0';
+	case StatState::MIXED:
+		return 'y';
+	case StatState::NEGATIVE_MIXED:
+		return '1';
+	case StatState::NEGATIVE:
+		return 'r';
+	}
 }

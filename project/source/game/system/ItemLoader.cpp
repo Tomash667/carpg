@@ -48,7 +48,8 @@ class ItemLoader
 		P_TIME,
 		P_SPEED,
 		P_SCHEME,
-		P_RUNIC
+		P_RUNIC,
+		P_BLOCK,
 		// max 32 bits
 	};
 
@@ -167,7 +168,8 @@ private:
 			{ "time", P_TIME },
 			{ "speed", P_SPEED },
 			{ "scheme", P_SCHEME },
-			{ "runic", P_RUNIC }
+			{ "runic", P_RUNIC },
+			{ "block", P_BLOCK }
 		});
 
 		t.AddKeywords(G_WEAPON_TYPE, {
@@ -219,7 +221,8 @@ private:
 			{ "hq", ITEM_HQ },
 			{ "magical", ITEM_MAGICAL },
 			{ "unique", ITEM_UNIQUE },
-			{ "alpha", ITEM_ALPHA }
+			{ "alpha", ITEM_ALPHA },
+			{ "magic_scroll", ITEM_MAGIC_SCROLL }
 		});
 
 		t.AddKeywords(G_ARMOR_SKILL, {
@@ -281,7 +284,7 @@ private:
 			{ "next", BSP_NEXT }
 		});
 
-		for(SkillInfo& si : g_skills)
+		for(SkillInfo& si : SkillInfo::skills)
 			t.AddKeyword(si.id, (int)si.skill_id, G_SKILL);
 	}
 
@@ -307,7 +310,7 @@ private:
 			break;
 		case IT_SHIELD:
 			item = new Shield;
-			req |= BIT(P_DEFENSE) | BIT(P_REQ_STR) | BIT(P_MATERIAL);
+			req |= BIT(P_BLOCK) | BIT(P_DEFENSE) | BIT(P_REQ_STR) | BIT(P_MATERIAL);
 			break;
 		case IT_ARMOR:
 			item = new Armor;
@@ -474,6 +477,14 @@ private:
 						item->ToShield().def = def;
 					else
 						item->ToArmor().def = def;
+				}
+				break;
+			case P_BLOCK:
+				{
+					int block = t.MustGetInt();
+					if(block < 0)
+						t.Throw("Can't have negative block %d.", block);
+					item->ToShield().block = block;
 				}
 				break;
 			case P_MOBILITY:
@@ -1142,6 +1153,7 @@ private:
 			case IT_SHIELD:
 				{
 					Shield& s = item->ToShield();
+					crc.Update(s.block);
 					crc.Update(s.def);
 					crc.Update(s.req_str);
 					crc.Update(s.material);

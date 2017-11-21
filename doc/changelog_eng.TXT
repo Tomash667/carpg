@@ -2,6 +2,9 @@ Changelog
 
 --------------------------------------------------------------------------------
 Version 0.7 (2017-XX-YY):
++ new skills: athletics, acrobatics, haggle, literacy
++ combat system changes
++ magic scroll item
 + loading objects from file
 + loading arena unit groups from lists
 - fixed crash when team npc want item from another team npc [MikelkCZ]
@@ -16,6 +19,9 @@ Version 0.7 (2017-XX-YY):
 - fixed missing items in chests
 - fixed random crash when fighting with arena enemies and rolled to spawn mages and golems
 - fixed empty location where there should be mages and golems there
+- fixed very good starting item when player have very low skill
+- fixed effects not disappearing from clients after travel
+- fixed crash when Gorush changes class
 
 --------------------------------------------------------------------------------
 Version 0.6 (2017-10-01):

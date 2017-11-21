@@ -33,9 +33,9 @@ public:
 	{
 		cstring title;
 		Int2 size, force_size, force_pos;
-		bool fullscreen, vsync;
+		bool fullscreen, vsync, hidden_window;
 
-		StartupOptions() : title(nullptr), size(0, 0), force_size(-1, -1), force_pos(-1, -1), fullscreen(false), vsync(true)
+		StartupOptions() : title(nullptr), size(0, 0), force_size(-1, -1), force_pos(-1, -1), fullscreen(false), vsync(true), hidden_window(false)
 		{
 		}
 	};

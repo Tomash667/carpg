@@ -380,17 +380,17 @@ void Game::OnTick(float dt)
 		OpenPanel open = game_gui->GetOpenPanel(),
 			to_open = OpenPanel::None;
 
-		if (GKey.PressedRelease(GK_STATS))
+		if(GKey.PressedRelease(GK_STATS))
 			to_open = OpenPanel::Stats;
-		else if (GKey.PressedRelease(GK_INVENTORY))
+		else if(GKey.PressedRelease(GK_INVENTORY))
 			to_open = OpenPanel::Inventory;
-		else if (GKey.PressedRelease(GK_TEAM_PANEL))
+		else if(GKey.PressedRelease(GK_TEAM_PANEL))
 			to_open = OpenPanel::Team;
-		else if (GKey.PressedRelease(GK_JOURNAL))
+		else if(GKey.PressedRelease(GK_JOURNAL))
 			to_open = OpenPanel::Journal;
-		else if (GKey.PressedRelease(GK_MINIMAP))
+		else if(GKey.PressedRelease(GK_MINIMAP))
 			to_open = OpenPanel::Minimap;
-		else if (GKey.PressedRelease(GK_ACTION_PANEL))
+		else if(GKey.PressedRelease(GK_ACTION_PANEL))
 			to_open = OpenPanel::Action;
 		else if(open == OpenPanel::Trade && Key.PressedRelease(VK_ESCAPE))
 			to_open = OpenPanel::Trade; // ShowPanel hide when already opened
@@ -522,9 +522,10 @@ void Game::OnTick(float dt)
 			if(paused)
 			{
 				UpdateFallback(dt);
-				if (Net::IsLocal())
+				if(Net::IsLocal())
 				{
-					if (Net::IsOnline())
+					pc->Update(0.f);
+					if(Net::IsOnline())
 						UpdateWarpData(dt);
 					ProcessUnitWarps();
 				}
@@ -534,14 +535,15 @@ void Game::OnTick(float dt)
 			}
 			else if(GUI.HavePauseDialog())
 			{
-				if (Net::IsOnline())
+				if(Net::IsOnline())
 					UpdateGame(dt);
 				else
 				{
 					UpdateFallback(dt);
-					if (Net::IsLocal())
+					if(Net::IsLocal())
 					{
-						if (Net::IsOnline())
+						pc->Update(0.f);
+						if(Net::IsOnline())
 							UpdateWarpData(dt);
 						ProcessUnitWarps();
 					}
@@ -1814,6 +1816,7 @@ void Game::OnCleanup()
 	free_cave_data();
 	DeleteElements(game_players);
 	DeleteElements(old_players);
+	StatsX::Cleanup();
 
 	NetStats::Close();
 	if(peer)
@@ -2161,6 +2164,7 @@ void Game::SetGameText()
 	txSecretAppear = Str("secretAppear");
 	txGmsAddedItem = Str("gmsAddedItem");
 	txGmsAddedItems = Str("gmsAddedItems");
+	txGmsTooComplicated = Str("gmsTooComplicated");
 
 	// plotki
 	LOAD_ARRAY(txRumor, "rumor_");
@@ -2721,7 +2725,7 @@ void Game::PlayerYell(Unit& u)
 		Unit& u2 = **it;
 		if(u2.IsAI() && u2.IsStanding() && !IsEnemy(u, u2) && !IsFriend(u, u2) && u2.busy == Unit::Busy_No && u2.frozen == FROZEN::NO && !u2.usable
 			&& u2.ai->state == AIController::Idle && !IS_SET(u2.data->flags, F_AI_STAY)
-			&& 	(u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot
+			&& (u2.ai->idle_action == AIController::Idle_None || u2.ai->idle_action == AIController::Idle_Animation || u2.ai->idle_action == AIController::Idle_Rot
 				|| u2.ai->idle_action == AIController::Idle_Look))
 		{
 			u2.ai->idle_action = AIController::Idle_MoveAway;
@@ -3033,6 +3037,7 @@ uint Game::ValidateGameData(bool major)
 
 	uint err = TestGameData(major);
 
+	UnitData::Validate(err);
 	AttributeInfo::Validate(err);
 	SkillInfo::Validate(err);
 	ClassInfo::Validate(err);

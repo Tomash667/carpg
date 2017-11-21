@@ -104,7 +104,6 @@ struct NetChange
 		CREATE_EXPLOSION, // create explosion effect [string1(spell->id), Vec3(pos)]
 		REMOVE_TRAP, // remove trap [int(id)-trap netid]
 		TRIGGER_TRAP, // trigger trap [int(id)-trap netid]
-		TRAIN_MOVE, // player is training dexterity by moving []
 		EVIL_SOUND, // play evil sound []
 		ENCOUNTER, // start encounter on world map [string1(str)-encounter text]
 		CLOSE_ENCOUNTER, // close encounter message box []
@@ -155,6 +154,8 @@ struct NetChange
 		CHEAT_STUN, // player used cheat 'stun' [int(netid)-unit, f[0]-length]
 		PLAYER_ACTION, // player unit is using action, client[Vec3-pos/data] / server[int(netid)-unit]
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
+		READ_BOOK, // player is reading book [int(id)-i_index]
+		USE_ITEM, // play use item animation for player
 	} type;
 	union
 	{

@@ -41,6 +41,7 @@ enum ITEM_FLAGS
 	ITEM_MAGICAL = 1 << 23, // magic quality item icon
 	ITEM_UNIQUE = 1 << 24, // unique quality item icon
 	ITEM_ALPHA = 1 << 25, // item require alpha test
+	ITEM_MAGIC_SCROLL = 1 << 26,
 };
 
 //-----------------------------------------------------------------------------
@@ -289,9 +290,9 @@ struct Bow : public Item
 // Shield
 struct Shield : public Item
 {
-	Shield() : Item(IT_SHIELD), def(10), req_str(10), material(MAT_WOOD) {}
+	Shield() : Item(IT_SHIELD), block(10), def(10), req_str(10), material(MAT_WOOD) {}
 
-	int def, req_str;
+	int block, def, req_str;
 	MATERIAL_TYPE material;
 
 	static vector<Shield*> shields;

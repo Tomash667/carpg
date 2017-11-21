@@ -43,41 +43,33 @@ static StatGain gain[] = {
 
 //-----------------------------------------------------------------------------
 // List of all skills
-SkillInfo g_skills[(int)Skill::MAX] = {
-	SkillInfo(Skill::ONE_HANDED_WEAPON, "one_handed_weapon", SkillGroup::WEAPON, Attribute::STR, Attribute::DEX, SkillPack::WEAPON),
-	SkillInfo(Skill::SHORT_BLADE, "short_blade", SkillGroup::WEAPON, Attribute::DEX, Attribute::NONE, SkillPack::WEAPON),
-	SkillInfo(Skill::LONG_BLADE, "long_blade", SkillGroup::WEAPON, Attribute::STR, Attribute::DEX, SkillPack::WEAPON),
-	SkillInfo(Skill::BLUNT, "blunt", SkillGroup::WEAPON, Attribute::STR, Attribute::NONE, SkillPack::WEAPON),
-	SkillInfo(Skill::AXE, "axe", SkillGroup::WEAPON, Attribute::STR, Attribute::NONE, SkillPack::WEAPON),
-	SkillInfo(Skill::BOW, "bow", SkillGroup::WEAPON, Attribute::DEX, Attribute::NONE, SkillPack::NONE),
-	SkillInfo(Skill::UNARMED, "unarmed", SkillGroup::WEAPON, Attribute::DEX, Attribute::STR, SkillPack::NONE),
-	SkillInfo(Skill::SHIELD, "shield", SkillGroup::ARMOR, Attribute::STR, Attribute::DEX, SkillPack::NONE),
-	SkillInfo(Skill::LIGHT_ARMOR, "light_armor", SkillGroup::ARMOR, Attribute::DEX, Attribute::NONE, SkillPack::NONE),
-	SkillInfo(Skill::MEDIUM_ARMOR, "medium_armor", SkillGroup::ARMOR, Attribute::END, Attribute::DEX, SkillPack::NONE),
-	SkillInfo(Skill::HEAVY_ARMOR, "heavy_armor", SkillGroup::ARMOR, Attribute::STR, Attribute::END, SkillPack::NONE),
-	SkillInfo(Skill::NATURE_MAGIC, "nature_magic", SkillGroup::MAGIC, Attribute::WIS, Attribute::NONE, SkillPack::NONE),
-	SkillInfo(Skill::GODS_MAGIC, "gods_magic", SkillGroup::MAGIC, Attribute::WIS, Attribute::NONE, SkillPack::NONE),
-	SkillInfo(Skill::MYSTIC_MAGIC, "mystic_magic", SkillGroup::MAGIC, Attribute::INT, Attribute::NONE, SkillPack::NONE),
-	SkillInfo(Skill::SPELLCRAFT, "spellcraft", SkillGroup::MAGIC, Attribute::INT, Attribute::WIS, SkillPack::NONE),
-	SkillInfo(Skill::CONCENTRATION, "concentration", SkillGroup::MAGIC, Attribute::END, Attribute::WIS, SkillPack::NONE),
-	SkillInfo(Skill::IDENTIFICATION, "identification", SkillGroup::MAGIC, Attribute::INT, Attribute::NONE, SkillPack::NONE),
-	SkillInfo(Skill::LOCKPICK, "lockpick", SkillGroup::OTHER, Attribute::DEX, Attribute::INT, SkillPack::THIEF),
-	SkillInfo(Skill::SNEAK, "sneak", SkillGroup::OTHER, Attribute::DEX, Attribute::NONE, SkillPack::THIEF),
-	SkillInfo(Skill::TRAPS, "traps", SkillGroup::OTHER, Attribute::DEX, Attribute::INT, SkillPack::THIEF),
-	SkillInfo(Skill::STEAL, "steal", SkillGroup::OTHER, Attribute::DEX, Attribute::CHA, SkillPack::THIEF),
-	SkillInfo(Skill::ANIMAL_EMPATHY, "animal_empathy", SkillGroup::OTHER, Attribute::CHA, Attribute::WIS, SkillPack::NONE),
-	SkillInfo(Skill::SURVIVAL, "survival", SkillGroup::OTHER, Attribute::END, Attribute::WIS, SkillPack::NONE),
-	SkillInfo(Skill::PERSUASION, "persuasion", SkillGroup::OTHER, Attribute::CHA, Attribute::NONE, SkillPack::NONE),
-	SkillInfo(Skill::ALCHEMY, "alchemy", SkillGroup::OTHER, Attribute::INT, Attribute::NONE, SkillPack::NONE),
-	SkillInfo(Skill::CRAFTING, "crafting", SkillGroup::OTHER, Attribute::INT, Attribute::DEX, SkillPack::NONE),
-	SkillInfo(Skill::HEALING, "healing", SkillGroup::OTHER, Attribute::WIS, Attribute::NONE, SkillPack::NONE),
-	SkillInfo(Skill::ATHLETICS, "athletics", SkillGroup::OTHER, Attribute::END, Attribute::STR, SkillPack::NONE),
-	SkillInfo(Skill::RAGE, "rage", SkillGroup::OTHER, Attribute::END, Attribute::NONE, SkillPack::NONE),
+// ! order by group/skill_group
+SkillInfo SkillInfo::skills[(int)Skill::MAX] = {
+	// combat styles
+	SkillInfo(Skill::ONE_HANDED_WEAPON, "one_handed_weapon", SkillGroup::COMBAT_STYLE, Attribute::STR, Attribute::DEX, 0.5f, SimilarSkill::None),
+	// weapons (attrib_ratio is same as WeaponTypeInfo)
+	SkillInfo(Skill::SHORT_BLADE, "short_blade", SkillGroup::WEAPON, Attribute::DEX, Attribute::STR, 0.75f, SimilarSkill::Weapon),
+	SkillInfo(Skill::LONG_BLADE, "long_blade", SkillGroup::WEAPON, Attribute::STR, Attribute::DEX, 0.7f, SimilarSkill::Weapon),
+	SkillInfo(Skill::BLUNT, "blunt", SkillGroup::WEAPON, Attribute::STR, Attribute::DEX, 0.85f, SimilarSkill::Weapon),
+	SkillInfo(Skill::AXE, "axe", SkillGroup::WEAPON, Attribute::STR, Attribute::DEX, 0.8f, SimilarSkill::Weapon),
+	SkillInfo(Skill::BOW, "bow", SkillGroup::WEAPON, Attribute::DEX, Attribute::NONE, 1.f, SimilarSkill::None),
+	SkillInfo(Skill::UNARMED, "unarmed", SkillGroup::WEAPON, Attribute::DEX, Attribute::STR, 0.5f, SimilarSkill::None),
+	// shield & armor
+	SkillInfo(Skill::SHIELD, "shield", SkillGroup::ARMOR, Attribute::STR, Attribute::DEX, 0.75f, SimilarSkill::None),
+	SkillInfo(Skill::LIGHT_ARMOR, "light_armor", SkillGroup::ARMOR, Attribute::DEX, Attribute::END, 0.6f, SimilarSkill::Armor),
+	SkillInfo(Skill::MEDIUM_ARMOR, "medium_armor", SkillGroup::ARMOR, Attribute::END, Attribute::DEX, 0.5f, SimilarSkill::Armor),
+	SkillInfo(Skill::HEAVY_ARMOR, "heavy_armor", SkillGroup::ARMOR, Attribute::STR, Attribute::END, 0.6f, SimilarSkill::Armor),
+	// oher
+	SkillInfo(Skill::ATHLETICS, "athletics", SkillGroup::OTHER, Attribute::END, Attribute::STR, 0.5f, SimilarSkill::None),
+	SkillInfo(Skill::ACROBATICS, "acrobatics", SkillGroup::OTHER, Attribute::DEX, Attribute::END, 0.5f, SimilarSkill::None),
+	SkillInfo(Skill::HAGGLE, "haggle", SkillGroup::OTHER, Attribute::CHA, Attribute::NONE, 1.f, SimilarSkill::None),
+	SkillInfo(Skill::LITERACY, "literacy", SkillGroup::OTHER, Attribute::INT, Attribute::NONE, 1.f, SimilarSkill::None)
 };
 
 //-----------------------------------------------------------------------------
 // List of all skill groups
-SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX] = {
+SkillGroupInfo SkillGroupInfo::groups[(int)SkillGroup::MAX] = {
+	SkillGroupInfo(SkillGroup::COMBAT_STYLE, "combat_style"),
 	SkillGroupInfo(SkillGroup::WEAPON, "weapon"),
 	SkillGroupInfo(SkillGroup::ARMOR, "armor"),
 	SkillGroupInfo(SkillGroup::MAGIC, "magic"),
@@ -85,18 +77,18 @@ SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX] = {
 };
 
 //-----------------------------------------------------------------------------
-SubSkillInfo g_sub_skills[(int)SubSkill::MAX] = {
+/*SubSkillInfo g_sub_skills[(int)SubSkill::MAX] = {
 	SubSkill::FIND_TRAP, Skill::TRAPS,
 	SubSkill::SET_TRAP, Skill::TRAPS,
 	SubSkill::DISARM_TRAP, Skill::TRAPS,
 	SubSkill::HIDE, Skill::SNEAK,
 	SubSkill::MOVE_SILENTLY, Skill::SNEAK,
-};
+};*/
 
 //=================================================================================================
-SkillInfo* SkillInfo::Find(const string& id)
+SkillInfo* SkillInfo::Find(const AnyString& id)
 {
-	for(SkillInfo& si : g_skills)
+	for(SkillInfo& si : skills)
 	{
 		if(id == si.id)
 			return &si;
@@ -108,7 +100,7 @@ SkillInfo* SkillInfo::Find(const string& id)
 //=================================================================================================
 SkillGroupInfo* SkillGroupInfo::Find(const string& id)
 {
-	for(SkillGroupInfo& sgi : g_skill_groups)
+	for(SkillGroupInfo& sgi : groups)
 	{
 		if(id == sgi.id)
 			return &sgi;
@@ -122,7 +114,7 @@ void SkillInfo::Validate(uint& err)
 {
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
-		SkillInfo& si = g_skills[i];
+		SkillInfo& si = skills[i];
 		if(si.skill_id != (Skill)i)
 		{
 			Warn("Test: Skill %s: id mismatch.", si.id);
@@ -142,7 +134,7 @@ void SkillInfo::Validate(uint& err)
 
 	for(int i = 0; i < (int)SkillGroup::MAX; ++i)
 	{
-		SkillGroupInfo& sgi = g_skill_groups[i];
+		SkillGroupInfo& sgi = SkillGroupInfo::groups[i];
 		if(sgi.group_id != (SkillGroup)i)
 		{
 			Warn("Test: Skill group %s: id mismatch.", sgi.id);

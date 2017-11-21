@@ -202,6 +202,7 @@
     <ClInclude Include="source\game\entity\BloodType.h" />
     <ClInclude Include="source\game\entity\ItemContainer.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
+    <ClInclude Include="source\game\Combat.h" />
     <ClInclude Include="source\game\GameStats.h" />
     <ClInclude Include="source\game\net\GamePacket.h" />
     <ClInclude Include="source\game\net\NetChange.h" />
@@ -213,6 +214,7 @@
     <ClInclude Include="source\game\quests\QuestConsts.h" />
     <ClInclude Include="source\game\stats\Action.h" />
     <ClInclude Include="source\game\stats\Buff.h" />
+    <ClInclude Include="source\game\stats\StatsX.h" />
     <ClInclude Include="source\game\system\BaseObject.h" />
     <ClInclude Include="source\game\system\BaseUsable.h" />
     <ClInclude Include="source\game\system\Building.h" />
@@ -409,6 +411,7 @@
     <ClCompile Include="source\game\ConsoleCommands.cpp" />
     <ClCompile Include="source\game\entity\Camera.cpp" />
     <ClCompile Include="source\game\entity\ItemContainer.cpp" />
+    <ClCompile Include="source\game\Combat.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
     <ClCompile Include="source\game\net\NetStats.cpp" />
@@ -416,6 +419,7 @@
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
     <ClCompile Include="source\game\stats\Action.cpp" />
     <ClCompile Include="source\game\stats\Buff.cpp" />
+    <ClCompile Include="source\game\stats\StatsX.cpp" />
     <ClCompile Include="source\game\system\BaseObject.cpp" />
     <ClCompile Include="source\game\system\BaseUsable.cpp" />
     <ClCompile Include="source\game\system\Building.cpp" />

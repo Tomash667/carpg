@@ -2,6 +2,9 @@ Historia zmian
 
 --------------------------------------------------------------------------------
 Wersja 0.7 (2017-XX-YY):
++ nowe umiejêtnoœci: atletyka, akrobatyka, targowanie, pismiennictwo
++ nowy system walki
++ magiczny zwój
 + wczytywanie obiektów z pliku
 + wczytywanie grup przeciwników na arenie z pliku
 - naprawiony crash gdy npc w dru¿ynie chce przedmiot od innego npc w dru¿ynie [MikelkCZ]
@@ -16,6 +19,9 @@ Wersja 0.7 (2017-XX-YY):
 - naprawiony brak przedmiotów w skrzynkach
 - naprawiony crash przy wygenerowaniu magówi i golemów podczas walki na arenie
 - naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
+- naprawiony bardzo dobry startowy przedmiot gdy postaæ ma bardzo nisk¹ wartoœæ umiejêtnoœci
+- naprawione nie znikanie efektów dzia³aj¹cych na postaæ po podró¿y u klientów
+- naprawiony crash gdy Gorush zmienia klasê
 
 --------------------------------------------------------------------------------
 Wersja 0.6 (2017-10-01):

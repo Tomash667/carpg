@@ -22,9 +22,7 @@ enum AttackId
 enum class ChangedStatType
 {
 	ATTRIBUTE,
-	SKILL,
-	BASE_ATTRIBUTE,
-	BASE_SKILL
+	SKILL
 };
 
 //-----------------------------------------------------------------------------

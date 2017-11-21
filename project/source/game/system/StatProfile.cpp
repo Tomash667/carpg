@@ -10,13 +10,13 @@ vector<StatProfile*> StatProfile::profiles;
 bool StatProfile::operator != (const StatProfile& p) const
 {
 	bool result = false;
-	if(fixed != p.fixed)
+	if(flags != p.flags)
 		result = true;
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
 	{
 		if(attrib[i] != p.attrib[i])
 		{
-			Info("Attribute %s: %d and %d.", g_attributes[i].id, attrib[i], p.attrib[i]);
+			Info("Attribute %s: %d and %d.", AttributeInfo::attributes[i].id, attrib[i], p.attrib[i]);
 			result = true;
 		}
 	}
@@ -24,7 +24,7 @@ bool StatProfile::operator != (const StatProfile& p) const
 	{
 		if(skill[i] != p.skill[i])
 		{
-			Info("Skill %s: %d and %d.", g_skills[i].id, skill[i], p.skill[i]);
+			Info("Skill %s: %d and %d.", SkillInfo::skills[i].id, skill[i], p.skill[i]);
 			result = true;
 		}
 	}
@@ -32,67 +32,21 @@ bool StatProfile::operator != (const StatProfile& p) const
 }
 
 //=================================================================================================
-void StatProfile::Set(int level, int* attribs, int* skills) const
+SubProfile* StatProfile::TryGetSubprofile(const AnyString& id)
 {
-	assert(skills && attribs);
+	for(auto sub : subprofiles)
+	{
+		if(sub->id == id)
+			return sub;
+	}
 
-	if(level == 0 || fixed)
-	{
-		for(int i = 0; i < (int)Attribute::MAX; ++i)
-			attribs[i] = attrib[i];
-		for(int i = 0; i < (int)Skill::MAX; ++i)
-			skills[i] = max(0, skill[i]);
-	}
-	else
-	{
-		int unused;
-		float lvl = float(level) / 5;
-		for(int i = 0; i < (int)Attribute::MAX; ++i)
-			attribs[i] = attrib[i] + int(AttributeInfo::GetModifier(attrib[i], unused) * lvl);
-		for(int i = 0; i < (int)Skill::MAX; ++i)
-		{
-			int val = max(0, skill[i]);
-			skills[i] = val + int(SkillInfo::GetModifier(val, unused) * lvl);
-		}
-	}
+	return nullptr;
 }
 
 //=================================================================================================
-void StatProfile::SetForNew(int level, int* attribs, int* skills) const
+bool StatProfile::ShouldDoubleSkill(Skill s) const
 {
-	assert(skills && attribs);
-
-	if(level == 0 || fixed)
-	{
-		for(int i = 0; i < (int)Attribute::MAX; ++i)
-		{
-			if(attribs[i] == -1)
-				attribs[i] = attrib[i];
-		}
-		for(int i = 0; i < (int)Skill::MAX; ++i)
-		{
-			if(skills[i] == -1)
-				skills[i] = max(0, skill[i]);
-		}
-	}
-	else
-	{
-		int unused;
-		float lvl = float(level) / 5;
-		for(int i = 0; i < (int)Attribute::MAX; ++i)
-		{
-			if(attribs[i] == -1)
-				attribs[i] = attrib[i] + int(AttributeInfo::GetModifier(attrib[i], unused) * lvl);
-		}
-		for(int i = 0; i < (int)Skill::MAX; ++i)
-		{
-			if(skills[i] == -1)
-			{
-				int val = max(0, skill[i]);
-				skills[i] = val + int(SkillInfo::GetModifier(val, unused) * lvl);
-			}
-		}
-	}
+	return IS_SET(flags, F_DOUBLE_WEAPON_TAG_SKILL) && Any(s, Skill::SHORT_BLADE, Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT);
 }
 
 //=================================================================================================

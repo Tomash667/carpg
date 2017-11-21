@@ -15,6 +15,8 @@ const float Unit::STAMINA_BOW_ATTACK = 100.f;
 //=================================================================================================
 Unit::~Unit()
 {
+	if(statsx && statsx->unique)
+		delete statsx;
 	delete mesh_inst;
 	delete human_data;
 	delete hero;
@@ -24,11 +26,15 @@ Unit::~Unit()
 //=================================================================================================
 float Unit::CalculateMaxHp() const
 {
-	float v = 0.8f*Get(Attribute::END) + 0.2f*Get(Attribute::STR);
-	if(v >= 50.f)
-		return data->hp_bonus * (1.f + (v - 50) / 50);
+	if(IS_SET(data->flags3, F3_FIXED))
+		return (float)data->hp;
 	else
-		return data->hp_bonus * (1.f - (50 - v) / 100);
+	{
+		float end = (float)Get(Attribute::END);
+		float ath = (float)Get(Skill::ATHLETICS);
+		float lvl = IsPlayer() ? player->level : (float)level;
+		return data->hp + (data->hp_bonus + (end - 50) / 5 + ath / 5) * (lvl + 2);
+	}
 }
 
 //=================================================================================================
@@ -40,6 +46,8 @@ float Unit::CalculateMaxStamina() const
 //=================================================================================================
 float Unit::CalculateAttack() const
 {
+	if(IS_SET(data->flags3, F3_FIXED))
+		return (float)data->atk;
 	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
 	else
@@ -47,42 +55,58 @@ float Unit::CalculateAttack() const
 }
 
 //=================================================================================================
-float Unit::CalculateAttack(const Item* _weapon) const
+float Unit::CalculateAttack(const Item* weapon) const
 {
-	assert(_weapon && OR2_EQ(_weapon->type, IT_WEAPON, IT_BOW));
+	assert(weapon);
 
+	if(IS_SET(data->flags3, F3_FIXED))
+		return (float)data->atk;
+
+	float atk = float(data->atk + data->atk_bonus * level);
 	int str = Get(Attribute::STR),
 		dex = Get(Attribute::DEX);
 
-	if(_weapon->type == IT_WEAPON)
+	if(weapon->type == IT_WEAPON)
 	{
-		const Weapon& w = _weapon->ToWeapon();
+		const Weapon& w = weapon->ToWeapon();
 		const WeaponTypeInfo& wi = WeaponTypeInfo::info[w.weapon_type];
+		int skill = Get(wi.skill);
 		float p;
 		if(str >= w.req_str)
 			p = 1.f;
 		else
 			p = float(str) / w.req_str;
-		return wi.str2dmg * str + wi.dex2dmg * dex + (w.dmg * p * (1.f + 1.f / 200 * (Get(Skill::ONE_HANDED_WEAPON) + Get(wi.skill))));
+		atk += (w.dmg + wi.str2dmg * max(0, str - 50) + wi.dex2dmg * max(0, dex - 50)) * (p + skill / 100);
 	}
 	else
 	{
-		const Bow& b = _weapon->ToBow();
+		assert(weapon->type == IT_BOW);
+		const Bow& bow = weapon->ToBow();
+		int skill = Get(Skill::BOW);
 		float p;
-		if(str >= b.req_str)
+		if(str >= bow.req_str)
 			p = 1.f;
 		else
-			p = float(str) / b.req_str;
-		return ((float)dex + b.dmg * (1.f + 1.f / 100 * Get(Skill::BOW))) * p;
+			p = float(str) / bow.req_str;
+		atk += (bow.dmg + max(0, dex - 50)) * (p + skill / 100);
 	}
+
+	return atk;
 }
 
 //=================================================================================================
-float Unit::CalculateBlock(const Item* _shield) const
+float Unit::CalculateBlock(const Item* shield) const
 {
-	assert(_shield && _shield->type == IT_SHIELD);
+	if(IS_SET(data->flags3, F3_FIXED))
+		return (float)data->block;
 
-	const Shield& s = _shield->ToShield();
+	if(!shield)
+		shield = slots[SLOT_SHIELD];
+	if(!shield)
+		return 0.f;
+
+	assert(shield && shield->type == IT_SHIELD);
+	const Shield& s = shield->ToShield();
 	float p;
 	int str = Get(Attribute::STR);
 	if(str >= s.req_str)
@@ -90,7 +114,7 @@ float Unit::CalculateBlock(const Item* _shield) const
 	else
 		p = float(str) / s.req_str;
 
-	return float(s.def) * (1.f + 1.f / 100 * Get(Skill::SHIELD)) * p;
+	return data->block + level * data->block_bonus + (max(0, str - 50) + s.block) * (1.f + 1.f / 100 * Get(Skill::SHIELD)) * p;
 }
 
 //=================================================================================================
@@ -109,83 +133,72 @@ float Unit::CalculateWeaponBlock() const
 }
 
 //=================================================================================================
-// WZÓR NA OBRONÊ
-// kondycja/5 + pancerz * (skill * (1+max(1.f, si³a/wymagana)) + zrêcznoœæ/5*max(%obci¹¿enia, ciê¿ki_pancerz ? 0.5 : 0)
-float Unit::CalculateDefense() const
+float Unit::CalculateDefense(const Item* armor, const Item* shield) const
 {
-	float def = CalculateBaseDefense();
-	float load = GetLoad();
+	if(IS_SET(data->flags3, F3_FIXED))
+		return (float)data->def;
 
-	// pancerz
-	if(HaveArmor())
+	// base
+	float def = float(data->def + data->def_bonus * level);
+
+	// endurance bonus
+	float end = (float)Get(Attribute::END);
+	def += (end - 50) / 5;
+
+	// dexterity bonus
+	auto load_state = GetArmorLoadState(armor);
+	if(load_state < LS_HEAVY)
 	{
-		const Armor& a = GetArmor();
-
-		// pancerz daje tyle ile bazowo * skill
-		switch(a.skill)
-		{
-		case Skill::HEAVY_ARMOR:
-			load *= 0.5f;
-			break;
-		case Skill::MEDIUM_ARMOR:
-			load *= 0.75f;
-			break;
-		}
-
-		float skill_val = (float)Get(a.skill);
-		int str = Get(Attribute::STR);
-		if(str < a.req_str)
-			skill_val *= str / a.req_str;
-		def += (skill_val / 100 + 1)*a.def;
+		float dex = (float)Get(Attribute::DEX);
+		float bonus = max(0.f, (dex - 50) / 5);
+		if(load_state == LS_MEDIUM)
+			bonus /= 2;
+		def += bonus;
 	}
 
-	// zrêcznoœæ
-	if(load < 1.f)
+	// armor defense
+	if(!armor)
+		armor = slots[SLOT_ARMOR];
+	if(armor)
 	{
-		int dex = Get(Attribute::DEX);
-		if(dex > 50)
-			def += (float(dex - 50) / 3) * (1.f - load);
+		assert(armor->type == IT_ARMOR);
+		const Armor& a = armor->ToArmor();
+		float skill = (float)Get(a.skill);
+		def += a.def * (1.f + skill / 100);
+	}
+
+	// shield defense
+	if(!shield)
+		shield = slots[SLOT_SHIELD];
+	if(shield)
+	{
+		assert(shield->type == IT_SHIELD);
+		const Shield& s = shield->ToShield();
+		float skill = (float)Get(Skill::SHIELD);
+		def += s.def * (1.f + skill / 200);
 	}
 
 	return def;
 }
 
-//=================================================================================================
-float Unit::CalculateDefense(const Item* _armor) const
+Unit::LoadState Unit::GetArmorLoadState(const Item* armor) const
 {
-	assert(_armor && _armor->type == IT_ARMOR);
-
-	float def = CalculateBaseDefense();
-	float load = GetLoad();
-
-	const Armor& a = _armor->ToArmor();
-
-	// pancerz daje tyle ile bazowo * skill
-	switch(a.skill)
+	auto state = GetLoadState();
+	if(armor)
 	{
-	case Skill::HEAVY_ARMOR:
-		load *= 0.5f;
-		break;
-	case Skill::MEDIUM_ARMOR:
-		load *= 0.75f;
-		break;
+		auto skill = armor->ToArmor().skill;
+		if(skill == Skill::HEAVY_ARMOR)
+		{
+			if(state < LS_HEAVY)
+				state = LS_HEAVY;
+		}
+		else if(skill == Skill::MEDIUM_ARMOR)
+		{
+			if(state < LS_MEDIUM)
+				state = LS_MEDIUM;
+		}
 	}
-
-	float skill_val = (float)Get(a.skill);
-	int str = Get(Attribute::STR);
-	if(str < a.req_str)
-		skill_val *= str / a.req_str;
-	def += (skill_val / 100 + 1)*a.def;
-
-	// zrêcznoœæ
-	if(load < 1.f)
-	{
-		int dex = Get(Attribute::DEX);
-		if(dex > 50)
-			def += (float(dex - 50) / 3) * (1.f - load);
-	}
-
-	return def;
+	return state;
 }
 
 //=================================================================================================
@@ -203,7 +216,7 @@ bool Unit::DropItem(int index)
 	mesh_inst->groups[0].speed = 1.f;
 	mesh_inst->frame_end_info = false;
 
-	if(Net::Net::IsLocal())
+	if(Net::IsLocal())
 	{
 		GroundItem* item = new GroundItem;
 		item->item = s.item;
@@ -227,7 +240,7 @@ bool Unit::DropItem(int index)
 		if(!game.CheckMoonStone(item, *this))
 			game.AddGroundItem(game.GetContext(*this), item);
 
-		if(Net::Net::IsServer())
+		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::DROP_ITEM;
@@ -267,7 +280,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 	mesh_inst->groups[0].speed = 1.f;
 	mesh_inst->frame_end_info = false;
 
-	if(Net::Net::IsLocal())
+	if(Net::IsLocal())
 	{
 		GroundItem* item = new GroundItem;
 		item->item = item2;
@@ -322,7 +335,7 @@ bool Unit::DropItems(int index, uint count)
 	mesh_inst->groups[0].speed = 1.f;
 	mesh_inst->frame_end_info = false;
 
-	if(Net::Net::IsLocal())
+	if(Net::IsLocal())
 	{
 		GroundItem* item = new GroundItem;
 		item->item = s.item;
@@ -340,7 +353,7 @@ bool Unit::DropItems(int index, uint count)
 		}
 		game.AddGroundItem(game.GetContext(*this), item);
 
-		if(Net::Net::IsServer())
+		if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::DROP_ITEM;
@@ -468,7 +481,7 @@ int Unit::ConsumeItem(int index)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CONSUME_ITEM;
-		if(Net::Net::IsServer())
+		if(Net::IsServer())
 		{
 			c.unit = this;
 			c.id = (int)used_item;
@@ -632,7 +645,7 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 	Game& game = Game::Get();
 	if(item->type == IT_GOLD && Team.IsTeamMember(*this))
 	{
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 		{
 			if(team_count && IsTeamMember())
 			{
@@ -732,13 +745,13 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_NONE:
 		break;
 	case E_STR:
-		game.Train(*this, false, (int)Attribute::STR, 2);
+		player->Train(PlayerController::TM_POTION, (int)Attribute::STR, false);
 		break;
 	case E_END:
-		game.Train(*this, false, (int)Attribute::END, 2);
+		player->Train(PlayerController::TM_POTION, (int)Attribute::END, false);
 		break;
 	case E_DEX:
-		game.Train(*this, false, (int)Attribute::DEX, 2);
+		player->Train(PlayerController::TM_POTION, (int)Attribute::DEX, false);
 		break;
 	case E_FOOD:
 		{
@@ -805,6 +818,23 @@ void Unit::UpdateEffects(float dt)
 			_to_remove.push_back(index);
 	}
 
+	// remove expired effects
+	while(!_to_remove.empty())
+	{
+		index = _to_remove.back();
+		_to_remove.pop_back();
+		if(index == effects.size() - 1)
+			effects.pop_back();
+		else
+		{
+			std::iter_swap(effects.begin() + index, effects.end() - 1);
+			effects.pop_back();
+		}
+	}
+
+	if(Net::IsClient())
+		return;
+
 	// healing from food
 	if((best_reg > 0.f || food_heal > 0.f) && hp != hpmax)
 	{
@@ -841,7 +871,7 @@ void Unit::UpdateEffects(float dt)
 
 	// update poison damage
 	if(poison_dmg != 0.f)
-		game.GiveDmg(game.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, DMG_NO_BLOOD);
+		game.GiveDmg(game.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, Game::DMG_NO_BLOOD);
 	if(IsPlayer())
 	{
 		if(Net::IsOnline() && player != game.pc && player->last_dmg_poison != poison_dmg)
@@ -890,22 +920,8 @@ void Unit::UpdateEffects(float dt)
 		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt;
 		if(stamina > stamina_max)
 			stamina = stamina_max;
-		if(Net::Net::IsServer() && player && player != game.pc)
+		if(Net::IsServer() && player && player != game.pc)
 			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
-	}
-
-	// remove expired effects
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == effects.size() - 1)
-			effects.pop_back();
-		else
-		{
-			std::iter_swap(effects.begin() + index, effects.end() - 1);
-			effects.pop_back();
-		}
 	}
 }
 
@@ -1035,15 +1051,15 @@ void Unit::AddItemAndEquipIfNone(const Item* item, uint count)
 }
 
 //=================================================================================================
-void Unit::GetBox(Box& _box) const
+void Unit::GetBox(Box& box) const
 {
 	float radius = GetUnitRadius();
-	_box.v1.x = pos.x - radius;
-	_box.v1.y = pos.y;
-	_box.v1.z = pos.z - radius;
-	_box.v2.x = pos.x + radius;
-	_box.v2.y = pos.y + max(MIN_H, GetUnitHeight());
-	_box.v2.z = pos.z + radius;
+	box.v1.x = pos.x - radius;
+	box.v1.y = pos.y;
+	box.v1.z = pos.z - radius;
+	box.v2.x = pos.x + radius;
+	box.v2.y = pos.y + max(MIN_H, GetUnitHeight());
+	box.v2.z = pos.z + radius;
 }
 
 //=================================================================================================
@@ -1071,68 +1087,68 @@ Vec3 Unit::GetLootCenter() const
 }
 
 //=================================================================================================
-float Unit::CalculateWeaponPros(const Weapon& _weapon) const
+float Unit::CalculateWeaponPros(const Weapon& weapon) const
 {
 	// oblicz dps i tyle na t¹ wersjê
-	return CalculateAttack(&_weapon) * GetAttackSpeed(&_weapon);
+	return CalculateAttack(&weapon) * GetAttackSpeed(&weapon);
 }
 
 //=================================================================================================
-bool Unit::IsBetterWeapon(const Weapon& _weapon) const
+bool Unit::IsBetterWeapon(const Weapon& weapon) const
 {
 	if(!HaveWeapon())
 		return true;
 
-	return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(_weapon);
+	return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(weapon);
 }
 
 //=================================================================================================
-bool Unit::IsBetterWeapon(const Weapon& _weapon, int* value) const
+bool Unit::IsBetterWeapon(const Weapon& weapon, int* value) const
 {
 	if(!HaveWeapon())
 	{
 		if(value)
-			*value = (int)CalculateWeaponPros(_weapon);
+			*value = (int)CalculateWeaponPros(weapon);
 		return true;
 	}
 
 	if(value)
 	{
-		float v = CalculateWeaponPros(_weapon);
+		float v = CalculateWeaponPros(weapon);
 		*value = (int)v;
 		return CalculateWeaponPros(GetWeapon()) < v;
 	}
 	else
-		return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(_weapon);
+		return CalculateWeaponPros(GetWeapon()) < CalculateWeaponPros(weapon);
 }
 
 //=================================================================================================
-bool Unit::IsBetterArmor(const Armor& _armor) const
+bool Unit::IsBetterArmor(const Armor& armor) const
 {
 	if(!HaveArmor())
 		return true;
 
-	return CalculateDefense(&GetArmor()) < CalculateDefense(&_armor);
+	return CalculateDefense() < CalculateDefense(&armor, nullptr);
 }
 
 //=================================================================================================
-bool Unit::IsBetterArmor(const Armor& _armor, int* value) const
+bool Unit::IsBetterArmor(const Armor& armor, int* value) const
 {
 	if(!HaveArmor())
 	{
 		if(value)
-			*value = (int)CalculateDefense(&_armor);
+			*value = (int)CalculateDefense(&armor, nullptr);
 		return true;
 	}
 
 	if(value)
 	{
-		float v = CalculateDefense(&_armor);
+		float v = CalculateDefense(&armor, nullptr);
 		*value = (int)v;
-		return CalculateDefense(&GetArmor()) < v;
+		return CalculateDefense() < v;
 	}
 	else
-		return CalculateDefense(&GetArmor()) < CalculateDefense(&_armor);
+		return CalculateDefense() < CalculateDefense(&armor, nullptr);
 }
 
 //=================================================================================================
@@ -1295,8 +1311,7 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
 	WriteFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileWriter f(file);
-	stats.Save(f);
-	unmod_stats.Save(f);
+	statsx->Save(f);
 	WriteFile(file, &gold, sizeof(gold), &tmp, nullptr);
 	WriteFile(file, &invisible, sizeof(invisible), &tmp, nullptr);
 	WriteFile(file, &in_building, sizeof(in_building), &tmp, nullptr);
@@ -1472,39 +1487,66 @@ void Unit::Load(HANDLE file, bool local)
 		ReadFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
 		ReadFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
 	}
-	else
-	{
-		stamina_max = CalculateMaxStamina();
-		stamina = stamina_max;
-		stamina_action = SA_RESTORE_MORE;
-	}
 	if(LOAD_VERSION < V_0_5)
 	{
 		int old_type;
 		ReadFile(file, &old_type, sizeof(old_type), &tmp, nullptr);
 	}
+
 	ReadFile(file, &level, sizeof(level), &tmp, nullptr);
-	FileReader f(file);
-	if(LOAD_VERSION >= V_0_4)
+	if(LOAD_VERSION < V_CURRENT)
 	{
-		stats.Load(f);
-		unmod_stats.Load(f);
+		// due to bug evil boss have random level 20-120 (with same stats)
+		if(data->id == "q_zlo_boss")
+			level = 20;
+	}
+
+	FileReader f(file);
+	if(LOAD_VERSION >= V_CURRENT)
+		statsx = StatsX::Load(f);
+	else if(LOAD_VERSION >= V_0_4)
+	{
+		statsx = new StatsX;
+		// current stats (there was no modifiers then so current == base)
+		f.Skip(sizeof(old::UnitStats));
+		// base stats
+		f >> statsx->attrib;
+		int old_skill[(int)old::v1::Skill::MAX];
+		f >> old_skill;
+		statsx->skill[(int)Skill::ONE_HANDED_WEAPON] = old_skill[(int)old::v1::Skill::ONE_HANDED_WEAPON];
+		statsx->skill[(int)Skill::SHORT_BLADE] = old_skill[(int)old::v1::Skill::SHORT_BLADE];
+		statsx->skill[(int)Skill::LONG_BLADE] = old_skill[(int)old::v1::Skill::LONG_BLADE];
+		statsx->skill[(int)Skill::BLUNT] = old_skill[(int)old::v1::Skill::BLUNT];
+		statsx->skill[(int)Skill::AXE] = old_skill[(int)old::v1::Skill::AXE];
+		statsx->skill[(int)Skill::BOW] = old_skill[(int)old::v1::Skill::BOW];
+		statsx->skill[(int)Skill::SHIELD] = old_skill[(int)old::v1::Skill::SHIELD];
+		statsx->skill[(int)Skill::LIGHT_ARMOR] = old_skill[(int)old::v1::Skill::LIGHT_ARMOR];
+		statsx->skill[(int)Skill::MEDIUM_ARMOR] = old_skill[(int)old::v1::Skill::MEDIUM_ARMOR];
+		statsx->skill[(int)Skill::HEAVY_ARMOR] = old_skill[(int)old::v1::Skill::HEAVY_ARMOR];
+		statsx->skill[(int)Skill::UNARMED] = -1;
+		statsx->skill[(int)Skill::ATHLETICS] = -1;
+		statsx->skill[(int)Skill::ACROBATICS] = -1;
+		statsx->skill[(int)Skill::HAGGLE] = -1;
+		statsx->skill[(int)Skill::LITERACY] = -1;
+		statsx->seed.level = level;
 	}
 	else
 	{
+		statsx = new StatsX;
 		for(int i = 0; i < 3; ++i)
-			f >> unmod_stats.attrib[i];
+			f >> statsx->attrib[i];
 		for(int i = 3; i < 6; ++i)
-			unmod_stats.attrib[i] = -1;
+			statsx->attrib[i] = -1;
 		for(int i = 0; i < (int)Skill::MAX; ++i)
-			unmod_stats.skill[i] = -1;
-		int old_skill[(int)OldSkill::MAX];
+			statsx->skill[i] = -1;
+		int old_skill[(int)old::v0::Skill::MAX];
 		f >> old_skill;
-		unmod_stats.skill[(int)Skill::ONE_HANDED_WEAPON] = old_skill[(int)OldSkill::WEAPON];
-		unmod_stats.skill[(int)Skill::BOW] = old_skill[(int)OldSkill::BOW];
-		unmod_stats.skill[(int)Skill::SHIELD] = old_skill[(int)OldSkill::SHIELD];
-		unmod_stats.skill[(int)Skill::LIGHT_ARMOR] = old_skill[(int)OldSkill::LIGHT_ARMOR];
-		unmod_stats.skill[(int)Skill::HEAVY_ARMOR] = old_skill[(int)OldSkill::HEAVY_ARMOR];
+		statsx->skill[(int)Skill::ONE_HANDED_WEAPON] = old_skill[(int)old::v0::Skill::WEAPON];
+		statsx->skill[(int)Skill::BOW] = old_skill[(int)old::v0::Skill::BOW];
+		statsx->skill[(int)Skill::SHIELD] = old_skill[(int)old::v0::Skill::SHIELD];
+		statsx->skill[(int)Skill::LIGHT_ARMOR] = old_skill[(int)old::v0::Skill::LIGHT_ARMOR];
+		statsx->skill[(int)Skill::HEAVY_ARMOR] = old_skill[(int)old::v0::Skill::HEAVY_ARMOR];
+		statsx->seed.level = -1;
 	}
 	ReadFile(file, &gold, sizeof(gold), &tmp, nullptr);
 	ReadFile(file, &invisible, sizeof(invisible), &tmp, nullptr);
@@ -1677,7 +1719,6 @@ void Unit::Load(HANDLE file, bool local)
 		}
 
 		ReadFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
-
 		if(LOAD_VERSION >= V_0_5)
 			ReadFile(file, &moved, sizeof(moved), &tmp, nullptr);
 	}
@@ -1752,21 +1793,38 @@ void Unit::Load(HANDLE file, bool local)
 	}
 
 	// calculate new attributes
-	if(LOAD_VERSION < V_0_4)
+	if(LOAD_VERSION < V_CURRENT)
 	{
-		UnitData* ud = data;
-		if(IsPlayer())
-			level = CalculateLevel();
-
-		StatProfile& profile = ud->GetStatProfile();
-		profile.SetForNew(level, unmod_stats);
-		CalculateStats();
-
 		if(IsPlayer())
 		{
-			profile.Set(0, player->base_stats);
+			statsx->profile = data->stat_profile;
+			statsx->Upgrade();
 			player->SetRequiredPoints();
+			player->RecalculateLevel(true);
+
+			// rescale skill points counter
+			for(uint i = 0; i < (uint)Skill::MAX; ++i)
+			{
+				if(player->sp[i] > 0)
+				{
+					int old_required = old::GetRequiredSkillPoints(GetBase((Skill)i));
+					float ratio = float(player->sn[i]) / old_required;
+					player->sp[i] = (int)(ratio * player->sp[i]);
+				}
+			}
 		}
+		else
+		{
+			delete statsx;
+			statsx = StatsX::GetRandom(&data->GetStatProfile(), level);
+		}
+		CalculateStats();
+	}
+	if(LOAD_VERSION < V_0_5)
+	{
+		stamina_max = CalculateMaxStamina();
+		stamina = stamina_max;
+		stamina_action = SA_RESTORE_MORE;
 	}
 }
 
@@ -2033,7 +2091,7 @@ void Unit::RemoveEffect(ConsumeEffect effect)
 
 	if(!_to_remove.empty())
 	{
-		if(Net::IsOnline() && Net::Net::IsServer())
+		if(Net::IsOnline() && Net::IsServer())
 		{
 			auto& c = Add1(Net::changes);
 			c.type = NetChange::STUN;
@@ -2465,75 +2523,91 @@ int Unit::GetBuffs() const
 }
 
 //=================================================================================================
-int Unit::CalculateLevel()
+int Unit::Get(Skill s) const
 {
-	if(player)
-		return CalculateLevel(player->clas);
+	int index = (int)s;
+	int value = statsx->Get(s);
+	auto& info = SkillInfo::skills[index];
+
+	// similar skill bonus
+	if(info.similar != SimilarSkill::None)
+	{
+		int best = value;
+		for(int i = index - 1; i >= 0; --i)
+		{
+			auto& info2 = SkillInfo::skills[i];
+			if(info2.similar != info.similar)
+				break;
+			int value2 = statsx->Get((Skill)i);
+			if(value2 > best)
+				best = value2;
+		}
+		for(int i = index + 1; i < (int)Skill::MAX; ++i)
+		{
+			auto& info2 = SkillInfo::skills[i];
+			if(info2.similar != info.similar)
+				break;
+			int value2 = statsx->Get((Skill)i);
+			if(value2 > best)
+				best = value2;
+		}
+		if(best != value)
+			value += (best - value) / 2;
+
+		// combat style bonus
+		if(info.similar == SimilarSkill::Weapon)
+			value += GetBase(Skill::ONE_HANDED_WEAPON) / 10;
+	}
+
+	// attribute bonus
+	if(info.attrib2 != Attribute::NONE)
+	{
+		value += (GetBase(info.attrib) - 50) / 10;
+		value += (GetBase(info.attrib2) - 50) / 10;
+	}
 	else
-		return level;
+		value += (GetBase(info.attrib) - 50) / 5;
+
+	return value;
 }
 
 //=================================================================================================
-int Unit::CalculateLevel(Class clas)
+// Similar better skills get +4 aptitude bonus
+int Unit::GetAptitude(Skill s) const
 {
-	UnitData* ud = ClassInfo::classes[(int)clas].unit_data;
-
-	float tlevel = 0.f;
-	float weight_sum = 0.f;
-	StatProfile& profile = ud->GetStatProfile();
-
-	// calculate player level based on attributes and skills that are important for that class
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	int index = (int)s;
+	int apt = statsx->skill_apt[index];
+	int value = statsx->Get(s);
+	auto& info = SkillInfo::skills[index];
+	if(info.similar != SimilarSkill::None)
 	{
-		int base = profile.attrib[i] - 50;
-		if(base > 0 && unmod_stats.attrib[i] > 0)
+		int best = value;
+		for(int i = index - 1; i >= 0; --i)
 		{
-			int dif = unmod_stats.attrib[i] - profile.attrib[i], weight;
-			float mod = AttributeInfo::GetModifier(base, weight);
-			tlevel += (float(dif) / mod) * weight * 5;
-			weight_sum += weight;
+			auto& info2 = SkillInfo::skills[i];
+			if(info2.similar != info.similar)
+				break;
+			int value2 = statsx->Get((Skill)i);
+			if(value2 > best)
+				best = value2;
 		}
-	}
-
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-	{
-		int base = profile.skill[i];
-		if(base > 0 && unmod_stats.skill[i] > 0)
+		for(int i = index + 1; i < (int)Skill::MAX; ++i)
 		{
-			int dif = unmod_stats.skill[i] - base, weight;
-			float mod = SkillInfo::GetModifier(base, weight);
-			tlevel += (float(dif) / mod) * weight * 5;
-			weight_sum += weight;
+			auto& info2 = SkillInfo::skills[i];
+			if(info2.similar != info.similar)
+				break;
+			int value2 = statsx->Get((Skill)i);
+			if(value2 > best)
+				best = value2;
 		}
+		if(best != value)
+			apt += 4;
 	}
-
-	return (int)floor(tlevel / weight_sum);
+	return apt;
 }
 
 //=================================================================================================
-void Unit::RecalculateStat(Attribute a, bool apply)
-{
-	int id = (int)a;
-	int old = stats.attrib[id];
-	//StatState state;
-
-	// calculate value = base + effect modifiers
-	int value = unmod_stats.attrib[id]; // +GetEffectModifier(EffectType::Attribute, id, (IsPlayer() ? &state : nullptr));
-
-	if(value == old)
-		return;
-
-	// apply new value
-	stats.attrib[id] = value;
-	//if(IsPlayer())
-	//	player->attrib_state[id] = state;
-
-	if(apply)
-		ApplyStat(a, old, true);
-}
-
-//=================================================================================================
-void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
+void Unit::ApplyStat(Attribute a)
 {
 	// recalculate other stats
 	switch(a)
@@ -2541,17 +2615,14 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 	case Attribute::STR:
 		{
 			// hp/load depends on str
-			if(Net::Net::IsLocal())
+			if(Net::IsLocal())
 			{
 				RecalculateHp();
-				if(!fake_unit)
+				if(!fake_unit && Net::IsServer())
 				{
-					if(Net::Net::IsServer())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::UPDATE_HP;
-						c.unit = this;
-					}
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = this;
 				}
 			}
 			else
@@ -2563,20 +2634,17 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 		{
 			// hp/stamina depends on end
 			Game& game = Game::Get();
-			if(Net::Net::IsLocal())
+			if(Net::IsLocal())
 			{
 				RecalculateHp();
 				RecalculateStamina();
-				if(!fake_unit)
+				if(!fake_unit && Net::IsServer())
 				{
-					if(Net::Net::IsServer())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::UPDATE_HP;
-						c.unit = this;
-						if(IsPlayer() && player != game.pc)
-							game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
-					}
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = this;
+					if(IsPlayer() && player != game.pc)
+						game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
 				}
 			}
 			else
@@ -2590,10 +2658,10 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 		{
 			// stamina depends on dex
 			Game& game = Game::Get();
-			if(Net::Net::IsLocal())
+			if(Net::IsLocal())
 			{
 				RecalculateStamina();
-				if(!fake_unit && Net::Net::IsServer() && IsPlayer() && player != game.pc)
+				if(!fake_unit && Net::IsServer() && IsPlayer() && player != game.pc)
 					game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
 			}
 			else
@@ -2606,138 +2674,40 @@ void Unit::ApplyStat(Attribute a, int old, bool calculate_skill)
 		break;
 	}
 
-	if(calculate_skill)
-	{
-		// recalculate skills bonuses
-		int old_mod = old / 10;
-		int mod = stats.attrib[(int)a] / 10;
-		if(mod != old_mod)
-		{
-			for(SkillInfo& si : g_skills)
-			{
-				if(si.attrib == a || si.attrib2 == a)
-					RecalculateStat(si.skill_id, true);
-			}
-		}
-	}
+	if(player)
+		player->recalculate_level = true;
 }
 
 //=================================================================================================
-void Unit::RecalculateStat(Skill s, bool apply)
+void Unit::ApplyStat(Skill s)
 {
-	int id = (int)s;
-	int old = stats.skill[id];
-	StatState state;
-
-	// calculate value
-	int value = unmod_stats.skill[id];
-
-	// apply effect modifiers
-	ValueBuffer buf;
-	SkillInfo& info = g_skills[id];
-	if(IsPlayer())
-		value += buf.Get(state);
-	else
-		value += buf.Get();
-
-	// apply attributes bonus
-	if(info.attrib2 == Attribute::NONE)
-		value += Get(info.attrib) / 10;
-	else
-		value += Get(info.attrib) / 20 + Get(info.attrib2) / 20;
-
-	if(!apply)
-	{
-		stats.skill[id] = value;
-		return;
-	}
-
-	// apply skill synergy
-	//int type = 0;
-	switch(s)
-	{
-	case Skill::LIGHT_ARMOR:
-	case Skill::HEAVY_ARMOR:
-		{
-			int other_val = Get(Skill::MEDIUM_ARMOR);
-			if(other_val > value)
-				value += (other_val - value) / 2;
-			//type = 1;
-		}
-		break;
-	case Skill::MEDIUM_ARMOR:
-		{
-			int other_val = max(Get(Skill::LIGHT_ARMOR), Get(Skill::HEAVY_ARMOR));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-			//type = 1;
-		}
-		break;
-	case Skill::SHORT_BLADE:
-		{
-			int other_val = max(max(Get(Skill::LONG_BLADE), Get(Skill::BLUNT)), Get(Skill::AXE));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-			//type = 2;
-		}
-		break;
-	case Skill::LONG_BLADE:
-		{
-			int other_val = max(max(Get(Skill::SHORT_BLADE), Get(Skill::BLUNT)), Get(Skill::AXE));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-			//type = 2;
-		}
-		break;
-	case Skill::BLUNT:
-		{
-			int other_val = max(max(Get(Skill::LONG_BLADE), Get(Skill::SHORT_BLADE)), Get(Skill::AXE));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-			//type = 2;
-		}
-		break;
-	case Skill::AXE:
-		{
-			int other_val = max(max(Get(Skill::LONG_BLADE), Get(Skill::BLUNT)), Get(Skill::SHORT_BLADE));
-			if(other_val > value)
-				value += (other_val - value) / 2;
-			//type = 2;
-		}
-		break;
-	}
-
-	if(value == old)
-		return;
-
-	stats.skill[id] = value;
-	if(IsPlayer())
-		player->skill_state[id] = state;
+	if(player)
+		player->recalculate_level = true;
 }
 
 //=================================================================================================
-void Unit::CalculateStats()
+void Unit::CalculateStats(bool initial)
 {
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		RecalculateStat((Attribute)i, false);
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-		RecalculateStat((Skill)i, false);
-
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		ApplyStat((Attribute)i, -1, false);
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-		RecalculateStat((Skill)i, true);
-}
-
-//=================================================================================================
-/*int Unit::GetEffectModifier(EffectType type, int id, StatState* state) const
-{
-	ValueBuffer buf;
-	if(state)
-		return buf.Get(*state);
+	if(initial)
+	{
+		hp = hpmax = CalculateMaxHp();
+		stamina = stamina_max = CalculateMaxStamina();
+	}
 	else
-		return buf.Get();
-}*/
+	{
+		RecalculateHp();
+		RecalculateStamina();
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_HP;
+			c.unit = this;
+			if(IsPlayer() && !player->is_local)
+				player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
+		}
+	}
+	CalculateLoad();
+}
 
 //=================================================================================================
 int Unit::CalculateMobility() const
@@ -2779,14 +2749,14 @@ int Unit::CalculateMobility(const Armor& armor) const
 }
 
 //=================================================================================================
-int Unit::Get(SubSkill ss) const
+/*int Unit::Get(SubSkill ss) const
 {
 	int id = (int)ss;
 	SubSkillInfo& info = g_sub_skills[id];
 	int v = Get(info.skill);
 	ValueBuffer buf;
 	return v + buf.Get();
-}
+}*/
 
 struct TMod
 {
@@ -3100,7 +3070,7 @@ void Unit::CreateMesh(CREATE_MESH mode)
 //=================================================================================================
 void Unit::ApplyStun(float length)
 {
-	if(Net::Net::IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
+	if(Net::IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
 		length /= 2;
 
 	auto effect = FindEffect(E_STUN);
@@ -3115,7 +3085,7 @@ void Unit::ApplyStun(float length)
 		animation = ANI_STAND;
 	}
 
-	if(Net::IsOnline() && Net::Net::IsServer())
+	if(Net::IsOnline() && Net::IsServer())
 	{
 		auto& c = Add1(Net::changes);
 		c.type = NetChange::STUN;

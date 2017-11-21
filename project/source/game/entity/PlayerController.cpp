@@ -8,72 +8,40 @@
 #include "Class.h"
 #include "Action.h"
 
+const float level_mod[21] = {
+	0.5f, // -10
+	0.55f, // -9
+	0.64f, // -8
+	0.72f, // -7
+	0.79f, // -6
+	0.85f, // -5
+	0.9f, // -4
+	0.94f, // -3
+	0.97f, // -2
+	0.99f, // -1
+	1.f, // 0
+	1.01f, // 1
+	1.03f, // 2
+	1.06f, //3
+	1.1f, // 4
+	1.15f, // 5
+	1.21f, // 6
+	1.28f, // 7
+	1.36f, // 8
+	1.45f, // 9
+	1.5f, // 10
+};
+
+inline float GetLevelMod(int my_level, int target_level)
+{
+	return level_mod[Clamp(my_level - target_level + 10, 0, 20)];
+}
+
 //=================================================================================================
 PlayerController::~PlayerController()
 {
 	if(dialog_ctx && !dialog_ctx->is_local)
 		delete dialog_ctx;
-}
-
-//=================================================================================================
-float PlayerController::CalculateAttack() const
-{
-	WeaponType b;
-
-	switch(unit->weapon_state)
-	{
-	case WS_HIDING:
-		b = unit->weapon_hiding;
-		break;
-	case WS_HIDDEN:
-		if(ostatnia == W_NONE)
-		{
-			if(unit->HaveWeapon())
-				b = W_ONE_HANDED;
-			else if(unit->HaveBow())
-				b = W_BOW;
-			else
-				b = W_NONE;
-		}
-		else
-			b = ostatnia;
-		break;
-	case WS_TAKING:
-	case WS_TAKEN:
-		b = unit->weapon_taken;
-		break;
-	default:
-		assert(0);
-		break;
-	}
-
-	if(b == W_ONE_HANDED)
-	{
-		if(!unit->HaveWeapon())
-		{
-			if(!unit->HaveBow())
-				b = W_NONE;
-			else
-				b = W_BOW;
-		}
-	}
-	else if(b == W_BOW)
-	{
-		if(!unit->HaveBow())
-		{
-			if(!unit->HaveWeapon())
-				b = W_NONE;
-			else
-				b = W_ONE_HANDED;
-		}
-	}
-
-	if(b == W_ONE_HANDED)
-		return unit->CalculateAttack(&unit->GetWeapon());
-	else if(b == W_BOW)
-		return unit->CalculateAttack(&unit->GetBow());
-	else
-		return 0.5f * unit->Get(Attribute::STR) + 0.5f * unit->Get(Attribute::DEX);
 }
 
 //=================================================================================================
@@ -91,9 +59,8 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	noclip = false;
 	action = Action_None;
 	free_days = 0;
-	recalculate_level = false;
-
-	ResetStatState();
+	recalculate_level = true;
+	level = 0.f;
 
 	if(!partial)
 	{
@@ -113,16 +80,6 @@ void PlayerController::Init(Unit& _unit, bool partial)
 }
 
 //=================================================================================================
-void PlayerController::ResetStatState()
-{
-	// currently it isn't working
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		attrib_state[i] = StatState::NORMAL;
-	for(int i = 0; i < (int)Skill::MAX; ++i)
-		skill_state[i] = StatState::NORMAL;
-}
-
-//=================================================================================================
 void PlayerController::Update(float dt, bool is_local)
 {
 	if(is_local)
@@ -137,13 +94,10 @@ void PlayerController::Update(float dt, bool is_local)
 		poison_dmgc += (last_dmg_poison - poison_dmgc) * dt;
 		if(last_dmg_poison == 0.f && poison_dmgc < 0.1f)
 			poison_dmgc = 0.f;
-
-		if(recalculate_level)
-		{
-			recalculate_level = false;
-			unit->level = unit->CalculateLevel();
-		}
 	}
+
+	if(Net::IsLocal())
+		RecalculateLevel();
 
 	// update action
 	auto& action = GetAction();
@@ -168,15 +122,347 @@ void PlayerController::Update(float dt, bool is_local)
 }
 
 //=================================================================================================
-void PlayerController::Train(Skill skill, int points)
+void PlayerController::TrainMove(float dist)
 {
-	int s = (int)skill;
+	move_tick += dist;
+	if(move_tick >= 100.f)
+	{
+		float r = floor(move_tick / 100);
+		move_tick -= r * 100;
+		Train(TrainWhat::Move, r, 0);
+	}
+}
 
-	sp[s] += points;
+//=================================================================================================
+void PlayerController::Train(TrainWhat what, float value, int level, Skill skill)
+{
+	switch(what)
+	{
+	case TrainWhat::Attack:
+		{
+			if(skill == Skill::NONE)
+				skill = unit->GetWeaponSkill();
+
+			// train weapon skill
+			Train(skill, 50);
+
+			// train str when too low for weapon/bow/shield
+			int req_str;
+			if(skill == Skill::BOW)
+			{
+				auto& bow = unit->GetBow();
+				req_str = bow.req_str;
+			}
+			else if(skill == Skill::SHIELD)
+			{
+				auto& shield = unit->GetShield();
+				req_str = shield.req_str;
+			}
+			else if(skill != Skill::UNARMED)
+			{
+				auto& weapon = unit->GetWeapon();
+				req_str = weapon.req_str;
+			}
+			if(req_str > unit->GetBase(Attribute::STR))
+				Train(Attribute::STR, 50);
+
+			// train dex when too low for weapon/bow
+		}
+		break;
+	case TrainWhat::Hit:
+		{
+			// value = 0 (no damage)
+			// value < 1 (damage scale)
+			// vale >= 1 (killing hit, scale above 1)
+			float ratio = value;
+			if(ratio >= 1.f)
+				ratio = value - 1.f + TRAIN_KILL_RATIO;
+			if(skill == Skill::NONE)
+				skill = unit->GetWeaponSkill();
+
+			// train weapon skill
+			int points = (int)(Lerp(200.f, 2450.f, ratio) * GetLevelMod(unit->level, level));
+			Train(skill, points);
+		}
+		break;
+	case TrainWhat::Move:
+		{
+			int weight = 0;
+
+			if(unit->HaveArmor())
+			{
+				auto& armor = unit->GetArmor();
+				if(armor.req_str > unit->GetBase(Attribute::STR))
+				{
+					// train str when too low for armor
+					Train(Attribute::STR, 250);
+				}
+
+				// train armor skill
+				Train(armor.skill, 250);
+
+				switch(armor.skill)
+				{
+				case Skill::MEDIUM_ARMOR:
+					weight = 2;
+					break;
+				case Skill::HEAVY_ARMOR:
+					weight = 3;
+					break;
+				}
+			}
+
+			auto load_state = unit->GetLoadState();
+			if(load_state >= Unit::LS_MEDIUM)
+			{
+				// train str when overcarrying
+				float ratio;
+				switch(load_state)
+				{
+				case Unit::LS_MEDIUM:
+					ratio = 0.5f;
+					weight = max(weight, 1);
+					break;
+				case Unit::LS_HEAVY:
+					ratio = 1.f;
+					weight = max(weight, 3);
+					break;
+				default:
+					ratio = 1.5f;
+					weight = max(weight, 4);
+					break;
+				}
+			}
+
+			// train skills
+			int acro, ath;
+			switch(weight)
+			{
+			case 0:
+				acro = 300;
+				ath = 0;
+				break;
+			case 1:
+				acro = 250;
+				ath = 100;
+				break;
+			case 2:
+				acro = 200;
+				ath = 250;
+				break;
+			case 3:
+				acro = 100;
+				ath = 300;
+				break;
+			case 4:
+				acro = 0;
+				ath = 500;
+				break;
+			}
+			if(acro > 0)
+				Train(Skill::ACROBATICS, acro);
+			if(ath > 0)
+				Train(Skill::ATHLETICS, ath);
+		}
+		break;
+	case TrainWhat::Block:
+		{
+			auto& shield = unit->GetShield();
+			if(shield.req_str > unit->GetBase(Attribute::STR))
+			{
+				// train str when too low for shield
+				Train(Attribute::STR, 50);
+			}
+
+			// train shield skill
+			Train(Skill::SHIELD, (int)(value * 2000));
+		}
+		break;
+	case TrainWhat::TakeHit:
+		{
+			// train armor skill
+			if(unit->HaveArmor())
+				Train(unit->GetArmor().skill, (int)(value * 2000));
+
+			// train shield skill / 5
+			if(unit->HaveShield())
+				Train(Skill::SHIELD, (int)(value * 400));
+		}
+		break;
+	case TrainWhat::TakeDamage:
+		{
+			// train end
+			Train(Attribute::END, (int)(value * 1250));
+
+			// train athletics skill
+			Train(Skill::ATHLETICS, (int)(value * 2500));
+		}
+		break;
+	case TrainWhat::Regenerate:
+		Train(Attribute::END, (int)value);
+		break;
+	case TrainWhat::Stamina:
+		Train(Attribute::END, (int)value);
+		break;
+	case TrainWhat::Trade:
+		Train(Skill::HAGGLE, (int)value);
+		break;
+	case TrainWhat::Read:
+		Train(Skill::LITERACY, 2500);
+		break;
+	}
+}
+
+//=================================================================================================
+void PlayerController::Train(TrainMode mode, int what, bool is_skill)
+{
+	int value, *train_points, *train_next;
+	if(is_skill)
+	{
+		if(unit->statsx->skill[what] == SkillInfo::MAX)
+		{
+			sp[what] = sn[what];
+			return;
+		}
+		value = unit->statsx->skill[what];
+		train_points = &sp[what];
+		train_next = &sn[what];
+	}
+	else
+	{
+		if(unit->statsx->attrib[what] == AttributeInfo::MAX)
+		{
+			ap[what] = an[what];
+			return;
+		}
+		value = unit->statsx->attrib[what];
+		train_points = &ap[what];
+		train_next = &an[what];
+	}
+
+	int count;
+	if(mode == TM_NORMAL)
+		count = 10 - value / 10;
+	else if(mode == TM_SINGLE_POINT)
+		count = 1;
+	else
+		count = 12 - value / 12;
+
+	if(count >= 1)
+	{
+		value += count;
+		*train_points /= 2;
+
+		if(is_skill)
+		{
+			*train_next = GetRequiredSkillPoints(value);
+			unit->Set((Skill)what, value);
+		}
+		else
+		{
+			*train_next = GetRequiredAttributePoints(value);
+			unit->Set((Attribute)what, value);
+		}
+
+		if(is_local)
+			Game::Get().ShowStatGain(is_skill, what, count);
+		else
+		{
+			NetChangePlayer& c = Add1(Net::player_changes);
+			c.type = NetChangePlayer::GAIN_STAT;
+			c.pc = this;
+			c.id = (is_skill ? 1 : 0);
+			c.a = what;
+			c.ile = count;
+
+			NetChangePlayer& c2 = Add1(Net::player_changes);
+			c2.type = NetChangePlayer::STAT_CHANGED;
+			c2.pc = this;
+			c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
+			c2.a = what;
+			c2.ile = value;
+
+			player_info->NeedUpdate();
+		}
+	}
+	else
+	{
+		float m;
+		if(count == 0)
+			m = 0.5f;
+		else if(count == -1)
+			m = 0.25f;
+		else
+			m = 0.125f;
+		int pts = (int)(m * *train_next);
+		if(is_skill)
+			Train((Skill)what, pts, false);
+		else
+			Train((Attribute)what, pts);
+	}
+}
+
+//=================================================================================================
+void PlayerController::Train(Attribute attrib, int points)
+{
+	int a = (int)attrib;
+	points = (int)(unit->GetAptitudeMod(attrib) * points);
+	assert(points != 0);
+
+	ap[a] += points;
 
 	int gained = 0,
-		value = unit->GetUnmod(skill);
-	//base = base_stats.skill[s];
+		value = unit->GetBase(attrib);
+
+	while(ap[a] >= an[a])
+	{
+		ap[a] -= an[a];
+		if(unit->statsx->attrib[a] != AttributeInfo::MAX)
+		{
+			++gained;
+			++value;
+			an[a] = GetRequiredAttributePoints(value);
+		}
+		else
+		{
+			ap[a] = an[a];
+			break;
+		}
+	}
+
+	if(gained)
+	{
+		recalculate_level = true;
+		unit->Set(attrib, value);
+		Game& game = Game::Get();
+		if(is_local)
+			game.ShowStatGain(false, a, gained);
+		else
+		{
+			NetChangePlayer& c = game.AddChange(NetChangePlayer::GAIN_STAT, this);
+			c.id = 0;
+			c.a = a;
+			c.ile = gained;
+
+			NetChangePlayer& c2 = game.AddChange(NetChangePlayer::STAT_CHANGED, this);
+			c2.id = (int)ChangedStatType::ATTRIBUTE;
+			c2.a = a;
+			c2.ile = value;
+		}
+	}
+}
+
+//=================================================================================================
+void PlayerController::Train(Skill skill, int points, bool train_attrib)
+{
+	int s = (int)skill;
+	int mod_points = (int)(unit->GetAptitudeMod(skill) * points);
+	assert(mod_points != 0);
+
+	sp[s] += mod_points;
+
+	int gained = 0,
+		value = unit->GetBase(skill);
 
 	while(sp[s] >= sn[s])
 	{
@@ -199,7 +485,7 @@ void PlayerController::Train(Skill skill, int points)
 		recalculate_level = true;
 		unit->Set(skill, value);
 		Game& game = Game::Get();
-		if(Net::IsLocal())
+		if(is_local)
 			game.ShowStatGain(true, s, gained);
 		else
 		{
@@ -214,73 +500,19 @@ void PlayerController::Train(Skill skill, int points)
 			c2.ile = value;
 		}
 	}
-}
 
-//=================================================================================================
-void PlayerController::Train(Attribute attrib, int points)
-{
-	int a = (int)attrib;
-
-	ap[a] += points;
-
-	int gained = 0,
-		value = unit->GetUnmod(attrib);
-	//base = base_stats.attrib[a];
-
-	while(ap[a] >= an[a])
+	if(train_attrib)
 	{
-		ap[a] -= an[a];
-		if(unit->stats.attrib[a] != AttributeInfo::MAX)
+		auto& info = SkillInfo::skills[s];
+		if(info.similar == SimilarSkill::Weapon)
 		{
-			++gained;
-			++value;
-			an[a] = GetRequiredAttributePoints(value);
+			// train in one handed weapon
+			Train(Skill::ONE_HANDED_WEAPON, points, false);
 		}
-		else
-		{
-			ap[a] = an[a];
-			break;
-		}
+		Train(info.attrib, (int)(info.attrib_ratio * points));
+		if(info.attrib2 != Attribute::NONE)
+			Train(info.attrib2, (int)((1.f - info.attrib_ratio) * points));
 	}
-
-	if(gained)
-	{
-		recalculate_level = true;
-		unit->Set(attrib, value);
-		Game& game = Game::Get();
-		if(Net::IsLocal())
-			game.ShowStatGain(false, a, gained);
-		else
-		{
-			NetChangePlayer& c = game.AddChange(NetChangePlayer::GAIN_STAT, this);
-			c.id = 0;
-			c.a = a;
-			c.ile = gained;
-
-			NetChangePlayer& c2 = game.AddChange(NetChangePlayer::STAT_CHANGED, this);
-			c2.id = (int)ChangedStatType::ATTRIBUTE;
-			c2.a = a;
-			c2.ile = value;
-		}
-	}
-}
-
-//=================================================================================================
-void PlayerController::TrainMove(float dt, bool run)
-{
-	move_tick += (run ? dt : dt / 10);
-	if(move_tick >= 1.f)
-	{
-		move_tick -= 1.f;
-		Train(TrainWhat::Move, 0.f, 0);
-	}
-}
-
-//=================================================================================================
-void PlayerController::TravelTick()
-{
-	Rest(1, false, true);
-	Train(TrainWhat::Move, 0.f, 0);
 }
 
 //=================================================================================================
@@ -311,7 +543,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 		heal = min(heal, unit->hpmax - unit->hp);
 		unit->hp += heal;
 
-		Train(Attribute::END, int(heal));
+		Train(TrainWhat::Regenerate, heal, 0);
 	}
 
 	// send update
@@ -344,16 +576,11 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 //=================================================================================================
 void PlayerController::Save(HANDLE file)
 {
-	if(recalculate_level)
-	{
-		unit->level = unit->CalculateLevel();
-		recalculate_level = false;
-	}
+	RecalculateLevel();
 
 	WriteFile(file, &clas, sizeof(clas), &tmp, nullptr);
-	byte len = (byte)name.length();
-	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-	WriteFile(file, name.c_str(), len, &tmp, nullptr);
+	WriteString1(file, name);
+	WriteFile(file, &level, sizeof(level), &tmp, nullptr);
 	WriteFile(file, &move_tick, sizeof(move_tick), &tmp, nullptr);
 	WriteFile(file, &last_dmg, sizeof(last_dmg), &tmp, nullptr);
 	WriteFile(file, &last_dmg_poison, sizeof(last_dmg_poison), &tmp, nullptr);
@@ -377,9 +604,6 @@ void PlayerController::Save(HANDLE file)
 	WriteFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, nullptr);
 	WriteFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
 	FileWriter f(file);
-	base_stats.Save(f);
-	f << attrib_state;
-	f << skill_state;
 	f << (byte)perks.size();
 	for(TakenPerk& tp : perks)
 	{
@@ -395,6 +619,9 @@ void PlayerController::Save(HANDLE file)
 		for(auto target : action_targets)
 			f << target->refid;
 	}
+	f << book_read.size();
+	for(auto book : book_read)
+		f << book->id;
 }
 
 //=================================================================================================
@@ -403,11 +630,11 @@ void PlayerController::Load(HANDLE file)
 	ReadFile(file, &clas, sizeof(clas), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_4)
 		clas = ClassInfo::OldToNew(clas);
-	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-	BUF[len] = 0;
-	ReadFile(file, BUF, len, &tmp, nullptr);
-	name = BUF;
+	ReadString1(file, name);
+	if(LOAD_VERSION >= V_CURRENT)
+		ReadFile(file, &level, sizeof(level), &tmp, nullptr);
+	else
+		recalculate_level = true;
 	ReadFile(file, &move_tick, sizeof(move_tick), &tmp, nullptr);
 	ReadFile(file, &last_dmg, sizeof(last_dmg), &tmp, nullptr);
 	ReadFile(file, &last_dmg_poison, sizeof(last_dmg_poison), &tmp, nullptr);
@@ -417,25 +644,47 @@ void PlayerController::Load(HANDLE file)
 	FileReader f(file);
 	if(LOAD_VERSION >= V_0_4)
 	{
-		// attribute points
 		f >> ap;
-		// skill points
-		f >> sp;
+		if(LOAD_VERSION >= V_CURRENT)
+		{
+			f >> sp;
+			SetRequiredPoints();
+		}
+		else
+		{
+			int old_sp[(int)old::v1::Skill::MAX];
+			f >> old_sp;
 
-		SetRequiredPoints();
+			// map old skills to new
+			sp[(int)Skill::ONE_HANDED_WEAPON] = old_sp[(int)old::v1::Skill::ONE_HANDED_WEAPON];
+			sp[(int)Skill::SHORT_BLADE] = old_sp[(int)old::v1::Skill::SHORT_BLADE];
+			sp[(int)Skill::LONG_BLADE] = old_sp[(int)old::v1::Skill::LONG_BLADE];
+			sp[(int)Skill::BLUNT] = old_sp[(int)old::v1::Skill::BLUNT];
+			sp[(int)Skill::AXE] = old_sp[(int)old::v1::Skill::AXE];
+			sp[(int)Skill::BOW] = old_sp[(int)old::v1::Skill::BOW];
+			sp[(int)Skill::SHIELD] = old_sp[(int)old::v1::Skill::SHIELD];
+			sp[(int)Skill::LIGHT_ARMOR] = old_sp[(int)old::v1::Skill::LIGHT_ARMOR];
+			sp[(int)Skill::MEDIUM_ARMOR] = old_sp[(int)old::v1::Skill::MEDIUM_ARMOR];
+			sp[(int)Skill::HEAVY_ARMOR] = old_sp[(int)old::v1::Skill::HEAVY_ARMOR];
+			sp[(int)Skill::UNARMED] = 0;
+			sp[(int)Skill::ATHLETICS] = 0;
+			sp[(int)Skill::ACROBATICS] = 0;
+			sp[(int)Skill::HAGGLE] = 0;
+			sp[(int)Skill::LITERACY] = 0;
+		}
 	}
 	else
 	{
 		// skill points
-		int old_sp[(int)OldSkill::MAX];
+		int old_sp[(int)old::v0::Skill::MAX];
 		f >> old_sp;
 		for(int i = 0; i < (int)Skill::MAX; ++i)
 			sp[i] = 0;
-		sp[(int)Skill::ONE_HANDED_WEAPON] = old_sp[(int)OldSkill::WEAPON];
-		sp[(int)Skill::BOW] = old_sp[(int)OldSkill::BOW];
-		sp[(int)Skill::SHIELD] = old_sp[(int)OldSkill::SHIELD];
-		sp[(int)Skill::LIGHT_ARMOR] = old_sp[(int)OldSkill::LIGHT_ARMOR];
-		sp[(int)Skill::HEAVY_ARMOR] = old_sp[(int)OldSkill::HEAVY_ARMOR];
+		sp[(int)Skill::ONE_HANDED_WEAPON] = old_sp[(int)old::v0::Skill::WEAPON];
+		sp[(int)Skill::BOW] = old_sp[(int)old::v0::Skill::BOW];
+		sp[(int)Skill::SHIELD] = old_sp[(int)old::v0::Skill::SHIELD];
+		sp[(int)Skill::LIGHT_ARMOR] = old_sp[(int)old::v0::Skill::LIGHT_ARMOR];
+		sp[(int)Skill::HEAVY_ARMOR] = old_sp[(int)old::v0::Skill::HEAVY_ARMOR];
 		// skip skill need
 		f.Skip(5 * sizeof(int));
 		// attribute points (str, end, dex)
@@ -454,8 +703,6 @@ void PlayerController::Load(HANDLE file)
 		// size = sizeof(__int64) * T_MAX * (S_MAX + A_MAX)
 		// size = 8 * 4 * (5 + 3) = 256
 		f.Skip(256);
-
-		// SetRequiredPoints called from Unit::Load after setting new attributes/skills
 	}
 	ReadFile(file, &action_key, sizeof(action_key), &tmp, nullptr);
 	ReadFile(file, &next_action, sizeof(next_action), &tmp, nullptr);
@@ -479,9 +726,11 @@ void PlayerController::Load(HANDLE file)
 	ReadFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
 	if(LOAD_VERSION >= V_0_4)
 	{
-		base_stats.Load(f);
-		f >> attrib_state;
-		f >> skill_state;
+		if(LOAD_VERSION < V_CURRENT)
+		{
+			// skip old stats
+			f.Skip(sizeof(old::UnitStats) + sizeof(StatState) * ((int)Attribute::MAX + (int)old::v1::Skill::MAX));
+		}
 		// perks
 		byte count;
 		f >> count;
@@ -516,8 +765,19 @@ void PlayerController::Load(HANDLE file)
 		action_recharge = 0.f;
 		action_charges = GetAction().charges;
 	}
-	if(LOAD_VERSION < V_0_5_1)
-		ResetStatState();
+
+	// list of book read
+	if(LOAD_VERSION >= V_CURRENT)
+	{
+		uint count;
+		f >> count;
+		book_read.reserve(count);
+		for(uint i = 0; i < count; ++i)
+		{
+			f.ReadStringBUF();
+			book_read.push_back(Item::Get(BUF));
+		}
+	}
 
 	action = Action_None;
 }
@@ -526,205 +786,21 @@ void PlayerController::Load(HANDLE file)
 void PlayerController::SetRequiredPoints()
 {
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		an[i] = GetRequiredAttributePoints(unit->unmod_stats.attrib[i]);
+		an[i] = GetRequiredAttributePoints(unit->GetBase((Attribute)i));
 	for(int i = 0; i < (int)Skill::MAX; ++i)
-		sn[i] = GetRequiredSkillPoints(unit->unmod_stats.skill[i]);
-}
-
-const float level_mod[21] = {
-	0.5f, // -10
-	0.55f, // -9
-	0.64f, // -8
-	0.72f, // -7
-	0.79f, // -6
-	0.85f, // -5
-	0.9f, // -4
-	0.94f, // -3
-	0.97f, // -2
-	0.99f, // -1
-	1.f, // 0
-	1.01f, // 1
-	1.03f, // 2
-	1.06f, //3
-	1.1f, // 4
-	1.15f, // 5
-	1.21f, // 6
-	1.28f, // 7
-	1.36f, // 8
-	1.45f, // 9
-	1.5f, // 10
-};
-
-inline float GetLevelMod(int my_level, int target_level)
-{
-	return level_mod[Clamp(my_level - target_level + 10, 0, 20)];
-}
-
-//=================================================================================================
-void PlayerController::Train(TrainWhat what, float value, int level)
-{
-	switch(what)
-	{
-	case TrainWhat::TakeDamage:
-		TrainMod(Attribute::END, value * 2500 * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::TakeDamageArmor:
-		if(unit->HaveArmor())
-			TrainMod(unit->GetArmor().skill, value * 2000 * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::AttackStart:
-		{
-			const float c_points = 50.f;
-			const Weapon& weapon = unit->GetWeapon();
-			const WeaponTypeInfo& info = weapon.GetInfo();
-			if(weapon.req_str > unit->Get(Attribute::STR))
-				TrainMod(Attribute::STR, c_points);
-			TrainMod(Skill::ONE_HANDED_WEAPON, c_points);
-			TrainMod2(weapon.GetInfo().skill, c_points);
-			TrainMod(Attribute::STR, c_points * info.str2dmg);
-			TrainMod(Attribute::DEX, c_points * info.dex2dmg);
-		}
-		break;
-	case TrainWhat::AttackNoDamage:
-		{
-			const float c_points = 150.f;
-			const Weapon& weapon = unit->GetWeapon();
-			const WeaponTypeInfo& info = weapon.GetInfo();
-			TrainMod(Skill::ONE_HANDED_WEAPON, c_points);
-			TrainMod2(weapon.GetInfo().skill, c_points);
-			TrainMod(Attribute::STR, c_points * info.str2dmg);
-			TrainMod(Attribute::DEX, c_points * info.dex2dmg);
-		}
-		break;
-	case TrainWhat::AttackHit:
-		{
-			const float c_points = 2450.f * value;
-			const Weapon& weapon = unit->GetWeapon();
-			const WeaponTypeInfo& info = weapon.GetInfo();
-			TrainMod(Skill::ONE_HANDED_WEAPON, c_points);
-			TrainMod2(weapon.GetInfo().skill, c_points);
-			TrainMod(Attribute::STR, c_points * info.str2dmg);
-			TrainMod(Attribute::DEX, c_points * info.dex2dmg);
-		}
-		break;
-	case TrainWhat::BlockBullet:
-	case TrainWhat::BlockAttack:
-		TrainMod(Skill::SHIELD, value * 2000 * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::BashStart:
-		if(unit->GetShield().req_str > unit->Get(Attribute::STR))
-			TrainMod(Attribute::STR, 50.f);
-		TrainMod(Skill::SHIELD, 50.f);
-		break;
-	case TrainWhat::BashNoDamage:
-		TrainMod(Skill::SHIELD, 150.f * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::BashHit:
-		TrainMod(Skill::SHIELD, value * 1950 * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::BowStart:
-		if(unit->GetBow().req_str > unit->Get(Attribute::STR))
-			TrainMod(Attribute::STR, 50.f);
-		TrainMod(Skill::BOW, 50.f);
-		break;
-	case TrainWhat::BowNoDamage:
-		TrainMod(Skill::BOW, 150.f * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::BowAttack:
-		TrainMod(Skill::BOW, 2450.f * value * GetLevelMod(unit->level, level));
-		break;
-	case TrainWhat::Move:
-		{
-			int dex, str;
-
-			switch(unit->GetLoadState())
-			{
-			case 0: // brak
-				dex = 49;
-				str = 1;
-				break;
-			case 1: // lekkie
-				dex = 40;
-				str = 10;
-				break;
-			case 2: // œrednie
-				dex = 25;
-				str = 25;
-				break;
-			case 3: // ciê¿kie
-				dex = 10;
-				str = 40;
-				break;
-			case 4: // maksymalne
-			default:
-				dex = 1;
-				str = 49;
-				break;
-			}
-
-			if(unit->HaveArmor())
-			{
-				const Armor& armor = unit->GetArmor();
-				if(armor.req_str > unit->Get(Attribute::STR))
-					str += 50;
-				TrainMod(armor.skill, 50.f);
-			}
-
-			TrainMod(Attribute::STR, (float)str);
-			TrainMod(Attribute::DEX, (float)dex);
-		}
-		break;
-	case TrainWhat::Talk:
-		TrainMod(Attribute::CHA, 10.f);
-		break;
-	case TrainWhat::Trade:
-		TrainMod(Attribute::CHA, 100.f);
-		break;
-	case TrainWhat::Stamina:
-		TrainMod(Attribute::END, value * 0.75f);
-		TrainMod(Attribute::DEX, value * 0.5f);
-		break;
-	default:
-		assert(0);
-		break;
-	}
-}
-
-//=================================================================================================
-void PlayerController::TrainMod(Attribute a, float points)
-{
-	Train(a, int(points * GetBaseAttributeMod(GetBase(a))));
-}
-
-//=================================================================================================
-void PlayerController::TrainMod2(Skill s, float points)
-{
-	Train(s, int(points * GetBaseSkillMod(GetBase(s))));
-}
-
-//=================================================================================================
-void PlayerController::TrainMod(Skill s, float points)
-{
-	TrainMod2(s, points);
-	SkillInfo& info = g_skills[(int)s];
-	if(info.attrib2 != Attribute::NONE)
-	{
-		points /= 2;
-		TrainMod(info.attrib2, points);
-	}
-	TrainMod(info.attrib, points);
+		sn[i] = GetRequiredSkillPoints(unit->GetBase((Skill)i));
 }
 
 //=================================================================================================
 // Used to send per-player data in WritePlayerData
 void PlayerController::Write(BitStream& stream) const
 {
+	stream.Write(level);
 	stream.Write(kills);
 	stream.Write(dmg_done);
 	stream.Write(dmg_taken);
 	stream.Write(knocks);
 	stream.Write(arena_fights);
-	base_stats.Write(stream);
 	stream.WriteCasted<byte>(perks.size());
 	for(const TakenPerk& perk : perks)
 	{
@@ -741,26 +817,27 @@ void PlayerController::Write(BitStream& stream) const
 bool PlayerController::Read(BitStream& stream)
 {
 	byte count;
-	if(!stream.Read(kills) ||
-		!stream.Read(dmg_done) ||
-		!stream.Read(dmg_taken) ||
-		!stream.Read(knocks) ||
-		!stream.Read(arena_fights) ||
-		!base_stats.Read(stream) ||
-		!stream.Read(count)
+	if(!stream.Read(level)
+		|| !stream.Read(kills)
+		|| !stream.Read(dmg_done)
+		|| !stream.Read(dmg_taken)
+		|| !stream.Read(knocks)
+		|| !stream.Read(arena_fights)
+		|| !stream.Read(count)
 		|| !EnsureSize(stream, 5 * count))
 		return false;
 	perks.resize(count);
 	for(TakenPerk& perk : perks)
 	{
-		if(!stream.ReadCasted<byte>(perk.perk) ||
-			!stream.Read(perk.value))
+		if(!stream.ReadCasted<byte>(perk.perk)
+			|| !stream.Read(perk.value))
 			return false;
 	}
 	if(!stream.Read(action_cooldown)
 		|| !stream.Read(action_recharge)
 		|| !stream.Read(action_charges))
 		return false;
+	unit->level = (int)level;
 	return true;
 }
 
@@ -798,4 +875,85 @@ void PlayerController::RefreshCooldown()
 bool PlayerController::IsHit(Unit* unit) const
 {
 	return IsInside(action_targets, unit);
+}
+
+//=================================================================================================
+void PlayerController::RecalculateLevel(bool initial)
+{
+	if(!recalculate_level || Net::IsClient())
+		return;
+	recalculate_level = false;
+	float new_level = unit->statsx->CalculateLevel();
+	if(new_level > level || initial)
+	{
+		level = new_level;
+		unit->level = (int)level;
+
+		if(!initial)
+		{
+			unit->RecalculateHp();
+
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::UPDATE_HP;
+				c.unit = unit;
+			}
+
+			if(!is_local)
+			{
+				NetChangePlayer& c = Add1(Net::player_changes);
+				c.type = NetChangePlayer::UPDATE_LEVEL;
+				c.pc = this;
+				c.v = level;
+				player_info->NeedUpdate();
+			}
+		}
+	}
+}
+
+//=================================================================================================
+void PlayerController::OnReadBook(int i_index)
+{
+	if(Net::IsLocal())
+	{
+		auto item = unit->GetIIndexItem(i_index);
+		assert(item->type == IT_BOOK);
+		if(IS_SET(item->flags, ITEM_MAGIC_SCROLL))
+		{
+			unit->action = A_USE_ITEM;
+			unit->used_item = item;
+			unit->mesh_inst->frame_end_info2 = false;
+			unit->mesh_inst->Play("cast", PLAY_ONCE | PLAY_PRIO1, 1);
+			if(Net::IsServer())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_ITEM;
+				c.unit = unit;
+			}
+		}
+		else
+		{
+			bool ok = true;
+			for(auto book : book_read)
+			{
+				if(book == item)
+				{
+					ok = false;
+					break;
+				}
+			}
+			if(ok)
+			{
+				Train(TrainWhat::Read, 0.f, 0);
+				book_read.push_back(item);
+			}
+		}
+	}
+	else
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::READ_BOOK;
+		c.id = i_index;
+	}
 }

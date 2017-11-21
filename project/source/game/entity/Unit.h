@@ -11,6 +11,7 @@
 #include "Usable.h"
 #include "Effect.h"
 #include "Buff.h"
+#include "StatsX.h"
 
 //-----------------------------------------------------------------------------
 struct PlayerController;
@@ -62,7 +63,8 @@ enum ACTION
 	//A_PAROWANIE
 	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
 	A_DASH,
-	A_DESPAWN
+	A_DESPAWN,
+	A_USE_ITEM
 };
 
 //-----------------------------------------------------------------------------
@@ -201,7 +203,7 @@ struct Unit
 		Busy_Tournament
 	} busy; // nie zapisywane, powinno byæ Busy_No
 	EntityInterpolator* interp;
-	UnitStats stats, unmod_stats;
+	StatsX* statsx;
 	AutoTalkMode auto_talk;
 	float auto_talk_timer;
 	GameDialog* auto_talk_dialog;
@@ -216,12 +218,11 @@ struct Unit
 	float CalculateDexterityDefense(const Armor* armor = nullptr);
 	float CalculateBaseDefense() const;
 	// 	float CalculateArmor(float& def_natural, float& def_dex, float& def_armor);
-
 	float CalculateAttack() const;
 	float CalculateAttack(const Item* weapon) const;
-	float CalculateBlock(const Item* shield) const;
-	float CalculateDefense() const;
-	float CalculateDefense(const Item* armor) const;
+	float CalculateBlock(const Item* shield = nullptr) const;
+	float CalculateDefense() const { return CalculateDefense(nullptr, nullptr); }
+	float CalculateDefense(const Item* armor, const Item* shield) const;
 	// czy ¿yje i nie le¿y na ziemi
 	bool IsStanding() const { return live_state == ALIVE; }
 	// czy ¿yje
@@ -341,7 +342,7 @@ struct Unit
 	}
 	bool CanRun() const
 	{
-		if(IS_SET(data->flags, F_SLOW) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !run_attack) || action == A_SHOOT)
+		if(IS_SET(data->flags, F_SLOW) || action == A_BLOCK || action == A_BASH || (action == A_ATTACK && !run_attack) || action == A_SHOOT || action == A_USE_ITEM)
 			return false;
 		else
 			return !IsOverloaded();
@@ -443,6 +444,8 @@ struct Unit
 	{
 		return data->type == UNIT_TYPE::HUMAN;
 	}
+
+
 	void RemoveQuestItem(int quest_refid);
 	bool HaveItem(const Item* item);
 	float GetAttackSpeed(const Weapon* weapon = nullptr) const;
@@ -529,7 +532,7 @@ struct Unit
 		RemoveEffect(E_POISON);
 	}
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
-#define INVALID_IINDEX (-SLOT_INVALID-1)
+	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
 	int FindItem(const Item* item, int quest_refid = -1) const;
 	int FindQuestItem(int quest_refid) const;
 	void RemoveItem(int iindex, bool active_location = true);
@@ -650,6 +653,7 @@ struct Unit
 		else
 			return LS_MAX_OVERLOADED;
 	}
+	LoadState GetArmorLoadState(const Item* armor) const;
 	float GetRunLoad() const
 	{
 		switch(GetLoadState())
@@ -741,57 +745,13 @@ struct Unit
 			return true;
 	}
 
-	int CalculateLevel();
-	int CalculateLevel(Class clas);
-
-	int Get(Attribute a) const
-	{
-		return stats.attrib[(int)a];
-	}
-
-	int Get(Skill s) const
-	{
-		return stats.skill[(int)s];
-	}
-
-	// change unmod stat
-	void Set(Attribute a, int value)
-	{
-		//int dif = value - unmod_stats.attrib[(int)a];
-		unmod_stats.attrib[(int)a] = value;
-		RecalculateStat(a, true);
-	}
-	void Set(Skill s, int value)
-	{
-		//int dif = value - unmod_stats.skill[(int)s];
-		unmod_stats.skill[(int)s] = value;
-		RecalculateStat(s, true);
-	}
-
-	int GetUnmod(Attribute a) const
-	{
-		return unmod_stats.attrib[(int)a];
-	}
-	int GetUnmod(Skill s) const
-	{
-		return unmod_stats.skill[(int)s];
-	}
-
-	void CalculateStats();
-
-	//int GetEffectModifier(EffectType type, int id, StatState* state) const;
-
 	int CalculateMobility() const;
 	int CalculateMobility(const Armor& armor) const;
 
-	int Get(SubSkill s) const;
+	//int Get(SubSkill s) const;
 
 	Skill GetBestWeaponSkill() const;
 	Skill GetBestArmorSkill() const;
-
-	void RecalculateStat(Attribute a, bool apply);
-	void RecalculateStat(Skill s, bool apply);
-	void ApplyStat(Attribute a, int old, bool calculate_skill);
 
 	void ApplyHumanData(HumanData& hd)
 	{
@@ -829,6 +789,77 @@ struct Unit
 	void CreateMesh(CREATE_MESH mode);
 
 	void ApplyStun(float length);
+
+	Skill GetWeaponSkill() const
+	{
+		if(HaveWeapon())
+			return GetWeapon().GetInfo().skill;
+		else
+			return Skill::UNARMED;
+	}
+
+	//==============================================
+	// SKILLS & STATS
+	//==============================================
+	int Get(Attribute a) const
+	{
+		return statsx->Get(a);
+	}
+	int Get(Attribute a, StatState& state) const
+	{
+		state = StatState::NORMAL;
+		return Get(a);
+	}
+
+	int Get(Skill s) const;
+	int Get(Skill s, StatState& state) const
+	{
+		state = StatState::NORMAL;
+		return Get(s);
+	}
+
+	// get unmodified stats
+	int GetBase(Attribute a) const
+	{
+		return statsx->Get(a);
+	}
+	int GetBase(Skill s) const
+	{
+		return statsx->Get(s);
+	}
+
+	int GetAptitude(Attribute a) const
+	{
+		return statsx->attrib_apt[(int)a];
+	}
+	int GetAptitude(Skill s) const;
+	float GetAptitudeMod(Attribute a) const
+	{
+		int apt = GetAptitude(a);
+		return StatsX::GetModFromApt(apt);
+	}
+	float GetAptitudeMod(Skill s) const
+	{
+		int apt = GetAptitude(s);
+		return StatsX::GetModFromApt(apt);
+	}
+
+	void Set(Attribute a, int value)
+	{
+		statsx->Set(a, value);
+		ApplyStat(a);
+	}
+	void Set(Skill s, int value)
+	{
+		statsx->Set(s, value);
+		ApplyStat(s);
+	}
+
+	void ApplyStat(Attribute a);
+	void ApplyStat(Skill s);
+
+	// calculate hp/stamina
+	void CalculateStats(bool initial = false);
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

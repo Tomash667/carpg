@@ -263,7 +263,8 @@ uint LoadSpells(uint& out_crc, uint& errors)
 		{ "hold", Spell::Hold },
 		{ "triple", Spell::Triple },
 		{ "heal", Spell::Heal },
-		{ "non_combat", Spell::NonCombat }
+		{ "non_combat", Spell::NonCombat },
+		{ "stun", Spell::Stun }
 	});
 
 	Crc crc;

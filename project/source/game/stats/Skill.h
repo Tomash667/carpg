@@ -5,21 +5,72 @@
 #include "Attribute.h"
 
 //-----------------------------------------------------------------------------
-enum class OldSkill
+namespace old
 {
-	WEAPON,
-	BOW,
-	LIGHT_ARMOR,
-	HEAVY_ARMOR,
-	SHIELD,
-	MAX
-};
+	namespace v0
+	{
+		// pre 0.4
+		enum class Skill
+		{
+			WEAPON,
+			BOW,
+			LIGHT_ARMOR,
+			HEAVY_ARMOR,
+			SHIELD,
+			MAX
+		};
+	}
+	namespace v1
+	{
+		// pre 0.7
+		enum class Skill
+		{
+			// weapon
+			ONE_HANDED_WEAPON,
+			SHORT_BLADE,
+			LONG_BLADE,
+			BLUNT,
+			AXE,
+			BOW,
+			UNARMED,
+			// shield & armor
+			SHIELD,
+			LIGHT_ARMOR,
+			MEDIUM_ARMOR,
+			HEAVY_ARMOR,
+			// magic
+			NATURE_MAGIC,
+			GODS_MAGIC,
+			MYSTIC_MAGIC,
+			SPELLCRAFT,
+			CONCENTRATION,
+			IDENTIFICATION,
+			// other
+			LOCKPICK,
+			SNEAK,
+			TRAPS,
+			STEAL,
+			ANIMAL_EMPATHY,
+			SURVIVAL,
+			PERSUASION,
+			ALCHEMY,
+			CRAFTING,
+			HEALING,
+			ATHLETICS,
+			RAGE,
+
+			MAX,
+			NONE
+		};
+	}
+}
 
 //-----------------------------------------------------------------------------
 enum class Skill
 {
-	// weapon
+	// combat styles
 	ONE_HANDED_WEAPON,
+	// weapons
 	SHORT_BLADE,
 	LONG_BLADE,
 	BLUNT,
@@ -31,34 +82,24 @@ enum class Skill
 	LIGHT_ARMOR,
 	MEDIUM_ARMOR,
 	HEAVY_ARMOR,
-	// magic
-	NATURE_MAGIC,
-	GODS_MAGIC,
-	MYSTIC_MAGIC,
-	SPELLCRAFT,
-	CONCENTRATION,
-	IDENTIFICATION,
 	// other
-	LOCKPICK,
-	SNEAK,
-	TRAPS,
-	STEAL,
-	ANIMAL_EMPATHY,
-	SURVIVAL,
-	PERSUASION,
-	ALCHEMY,
-	CRAFTING,
-	HEALING,
 	ATHLETICS,
-	RAGE,
+	ACROBATICS,
+	HAGGLE,
+	LITERACY,
 
 	MAX,
-	NONE
+	NONE,
+
+	WEAPON_PROFILE,
+	ARMOR_PROFILE
 };
 
 //-----------------------------------------------------------------------------
+// used for grouping in StatsPanel
 enum class SkillGroup
 {
+	COMBAT_STYLE,
 	WEAPON,
 	ARMOR,
 	MAGIC,
@@ -69,14 +110,23 @@ enum class SkillGroup
 };
 
 //-----------------------------------------------------------------------------
-enum class SkillPack
+// gives bonus when using similar skill
+enum class SimilarSkill
+{
+	None,
+	Weapon,
+	Armor
+};
+
+//-----------------------------------------------------------------------------
+/*enum class SkillPack
 {
 	THIEF,
 	WEAPON,
 
 	MAX,
 	NONE
-};
+};*/
 
 //-----------------------------------------------------------------------------
 struct SkillInfo
@@ -86,16 +136,18 @@ struct SkillInfo
 	string name, desc;
 	SkillGroup group;
 	Attribute attrib, attrib2;
-	SkillPack pack;
+	float attrib_ratio;
+	SimilarSkill similar;
 
 	static const int MAX = 255;
 
-	SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2, SkillPack pack) : skill_id(skill_id), id(id), group(group), attrib(attrib),
-		attrib2(attrib2), pack(pack)
+	SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2, float attrib_ratio, SimilarSkill similar) : skill_id(skill_id), id(id),
+		group(group), attrib(attrib), attrib2(attrib2), attrib_ratio(attrib_ratio), similar(similar)
 	{
 	}
 
-	static SkillInfo* Find(const string& id);
+	static SkillInfo skills[(int)Skill::MAX];
+	static SkillInfo* Find(const AnyString& id);
 	static void Validate(uint& err);
 	static float GetModifier(int base, int& weight);
 };
@@ -111,11 +163,12 @@ struct SkillGroupInfo
 	{
 	}
 
+	static SkillGroupInfo groups[(int)SkillGroup::MAX];
 	static SkillGroupInfo* Find(const string& id);
 };
 
 //-----------------------------------------------------------------------------
-enum class SubSkill
+/*enum class SubSkill
 {
 	// TRAPS
 	FIND_TRAP,
@@ -139,6 +192,5 @@ struct SubSkillInfo
 };
 
 //-----------------------------------------------------------------------------
-extern SkillInfo g_skills[(int)Skill::MAX];
-extern SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX];
 extern SubSkillInfo g_sub_skills[(int)SubSkill::MAX];
+*/

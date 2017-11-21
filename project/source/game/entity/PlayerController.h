@@ -35,40 +35,29 @@ inline bool PoAkcjaTmpIndex(NextAction po)
 }
 
 //-----------------------------------------------------------------------------
-#define STAT_KILLS (1<<0)
-#define STAT_DMG_DONE (1<<1)
-#define STAT_DMG_TAKEN (1<<2)
-#define STAT_KNOCKS (1<<3)
-#define STAT_ARENA_FIGHTS (1<<4)
-#define STAT_MAX 0x1F
+enum PlayerStats
+{
+	STAT_KILLS = 1 << 0,
+	STAT_DMG_DONE = 1 << 1,
+	STAT_DMG_TAKEN = 1 << 2,
+	STAT_KNOCKS = 1 << 3,
+	STAT_ARENA_FIGHTS = 1 << 4,
+	STAT_MAX = 0x1F
+};
 
 //-----------------------------------------------------------------------------
 enum class TrainWhat
 {
-	TakeDamage, // player take damage [damage%, level]
-	NaturalHealing, // player heals [damage%, -]
-	TakeDamageArmor, // player block damage by armor [damage%, level]
-
-	AttackStart, // player start attack [0]
-	AttackNoDamage, // player hit target but deal no damage [0, level]
-	AttackHit, // player deal damage with weapon [damage%, level]
-
-	BlockBullet, // player block bullet [damage%, level]
-	BlockAttack, // player block hit [damage%, level]
-	BashStart, // player start bash [0]
-	BashNoDamage, // player bash hit but deal no damage [0, level]
-	BashHit, // player deal damage with base [damage%, level]
-
-	BowStart, // player start shooting [0]
-	BowNoDamage, // player hit target but deal no damage [0, level]
-	BowAttack, // player deal damage with bow [damage%, level]
-
-	Move, // player moved [0]
-
-	Talk, // player talked [0]
-	Trade, // player traded items [0]
-
-	Stamina, // player uses stamina [value]
+	Attack, // player starts attack [skill] - str when too low for weapon
+	Hit, // player hits target [skill, level, value (0-1)] - str when too low for weapon
+	Move, // player moved [value] - str when too low for armor, str when overcarrying
+	Block, // player blocked attack [attack blocked] - str when too low for shield
+	TakeHit, // player take attack [attack value]
+	TakeDamage, // player take damage [damage]
+	Regenerate, // player regenerate damage [value]
+	Stamina, // player is using stamina [value]
+	Trade, // player bought/sell goods [value]
+	Read, // player read book
 };
 
 inline int GetRequiredAttributePoints(int level)
@@ -78,24 +67,23 @@ inline int GetRequiredAttributePoints(int level)
 
 inline int GetRequiredSkillPoints(int level)
 {
-	return 3 * (level + 20)*(level + 25);
+	return 3 * (level + 15)*(level + 20);
 }
 
-inline float GetBaseSkillMod(int v)
+namespace old
 {
-	return float(v) / 60;
-}
-
-inline float GetBaseAttributeMod(int v)
-{
-	return float(max(0, v - 50)) / 40;
+	// pre 0.7
+	inline int GetRequiredSkillPoints(int level)
+	{
+		return 3 * (level + 20)*(level + 25);
+	}
 }
 
 //-----------------------------------------------------------------------------
 struct PlayerController : public HeroPlayerCommon
 {
 	PlayerInfo* player_info;
-	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
+	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown, level;
 	// a - attribute, s - skill
 	// *p - x points, *n - x next
 	int sp[(int)Skill::MAX], sn[(int)Skill::MAX], ap[(int)Attribute::MAX], an[(int)Attribute::MAX];
@@ -133,30 +121,32 @@ struct PlayerController : public HeroPlayerCommon
 	DialogContext* dialog_ctx;
 	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
-	UnitStats base_stats;
-	StatState attrib_state[(int)Attribute::MAX], skill_state[(int)Skill::MAX];
 	vector<TakenPerk> perks;
 	vector<Unit*> action_targets;
+	vector<const Item*> book_read;
 
 	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f), action_cooldown(0.f), action_charges(0)
 	{
 	}
 	~PlayerController();
 
-	float CalculateAttack() const;
-	void TravelTick();
 	void Rest(int days, bool resting, bool travel = false);
 
 	void Init(Unit& _unit, bool partial = false);
-	void ResetStatState();
 	void Update(float dt, bool is_local = true);
-	void Train(Skill s, int points);
-	void Train(Attribute a, int points);
-	void TrainMove(float dt, bool run);
-	void Train(TrainWhat what, float value, int level);
-	void TrainMod(Attribute a, float points);
-	void TrainMod2(Skill s, float points);
-	void TrainMod(Skill s, float points);
+	void TrainMove(float dist);
+	void Train(TrainWhat what, float value, int level, Skill skill = Skill::NONE);
+	enum TrainMode
+	{
+		TM_NORMAL,
+		TM_SINGLE_POINT,
+		TM_POTION
+	};
+	void Train(TrainMode mode, int what, bool is_skill);
+private:
+	void Train(Attribute attrib, int points);
+	void Train(Skill skill, int points, bool train_attrib = true);
+public:
 	void SetRequiredPoints();
 
 	void Save(HANDLE file);
@@ -183,24 +173,6 @@ struct PlayerController : public HeroPlayerCommon
 		return IsTrade(action);
 	}
 
-	int GetBase(Attribute a) const
-	{
-		return base_stats.attrib[(int)a];
-	}
-	int GetBase(Skill s) const
-	{
-		return base_stats.skill[(int)s];
-	}
-
-	// change base stats, don't modify Unit stats
-	void SetBase(Attribute a, int value)
-	{
-		base_stats.attrib[(int)a] = value;
-	}
-	void SetBase(Skill s, int value)
-	{
-		base_stats.skill[(int)s] = value;
-	}
 	bool IsLocal() const
 	{
 		return is_local;
@@ -214,6 +186,10 @@ struct PlayerController : public HeroPlayerCommon
 	bool UseActionCharge();
 	void RefreshCooldown();
 	bool IsHit(Unit* unit) const;
+
+	void RecalculateLevel(bool initial = false);
+
+	void OnReadBook(int i_index);
 };
 
 //-----------------------------------------------------------------------------

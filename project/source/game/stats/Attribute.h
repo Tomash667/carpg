@@ -26,10 +26,8 @@ struct AttributeInfo
 	{
 	}
 
-	static AttributeInfo* Find(const string& id);
+	static AttributeInfo attributes[(int)Attribute::MAX];
+	static AttributeInfo* Find(const AnyString& id);
 	static void Validate(uint& err);
 	static float GetModifier(int base, int& mod);
 };
-
-//-----------------------------------------------------------------------------
-extern AttributeInfo g_attributes[(int)Attribute::MAX];

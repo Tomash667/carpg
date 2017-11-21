@@ -10,17 +10,17 @@
 
 //-----------------------------------------------------------------------------
 PerkInfo g_perks[(int)Perk::Max] = {
-	PerkInfo(Perk::Weakness, "weakness", PerkInfo::Free | PerkInfo::Flaw | PerkInfo::History | PerkInfo::RequireFormat),
-	PerkInfo(Perk::Strength, "strength", PerkInfo::History | PerkInfo::RequireFormat),
-	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
-	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Free | PerkInfo::History | PerkInfo::RequireFormat),
-	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History | PerkInfo::RequireFormat),
-	//PerkInfo(Perk::CraftingTradition, "crafting_tradition", PerkInfo::History | PerkInfo::Check),
-	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History),
-	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::History),
-	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History | PerkInfo::Check, Perk::Wealthy),
-	PerkInfo(Perk::FamilyHeirloom, "heirloom", PerkInfo::History),
-	PerkInfo(Perk::Leader, "leader", PerkInfo::History),
+	PerkInfo(Perk::Weakness, "weakness", PerkInfo::Free | PerkInfo::Flaw | PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Attribute),
+	PerkInfo(Perk::Strength, "strength", PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Attribute),
+	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History, PerkInfo::None),
+	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Free | PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::None),
+	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Skill),
+	//PerkInfo(Perk::CraftingTradition, "crafting_tradition", PerkInfo::History | PerkInfo::Check, PerkInfo::None),
+	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History, PerkInfo::None),
+	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::History, PerkInfo::None),
+	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History | PerkInfo::Check, PerkInfo::None, Perk::Wealthy),
+	PerkInfo(Perk::FamilyHeirloom, "heirloom", PerkInfo::History, PerkInfo::None),
+	PerkInfo(Perk::Leader, "leader", PerkInfo::History, PerkInfo::None),
 };
 
 //-----------------------------------------------------------------------------
@@ -88,22 +88,22 @@ void TakenPerk::GetDesc(string& s) const
 		s.clear();
 		break;
 	case Perk::Weakness:
-		s = Format("%s: %s", txDecreasedAttrib, g_attributes[value].name.c_str());
+		s = Format("%s: %s", txDecreasedAttrib, AttributeInfo::attributes[value].name.c_str());
 		break;
 	case Perk::Strength:
-		s = Format("%s: %s", txIncreasedAttrib, g_attributes[value].name.c_str());
+		s = Format("%s: %s", txIncreasedAttrib, AttributeInfo::attributes[value].name.c_str());
 		break;
 	case Perk::SkillFocus:
 		{
 			int skill_p = (value & 0xFF),
 				skill_m1 = ((value & 0xFF00) >> 8),
 				skill_m2 = ((value & 0xFF0000) >> 16);
-			s = Format("%s: %s\n%s: %s, %s", txIncreasedSkill, g_skills[skill_p].name.c_str(), txDecreasedSkills,
-				g_skills[skill_m1].name.c_str(), g_skills[skill_m2].name.c_str());
+			s = Format("%s: %s\n%s: %s, %s", txIncreasedSkill, SkillInfo::skills[skill_p].name.c_str(), txDecreasedSkills,
+				SkillInfo::skills[skill_m1].name.c_str(), SkillInfo::skills[skill_m2].name.c_str());
 		}
 		break;
 	case Perk::Talent:
-		s = Format("%s: %s", txIncreasedSkill, g_skills[value].name.c_str());
+		s = Format("%s: %s", txIncreasedSkill, SkillInfo::skills[value].name.c_str());
 		break;
 	default:
 		assert(0);
@@ -256,10 +256,10 @@ void TakenPerk::Apply(PlayerController& pc) const
 	switch(perk)
 	{
 	case Perk::Strength:
-		pc.base_stats.attrib[value] += 5;
+		pc.unit->statsx->attrib[value] += 5;
 		break;
 	case Perk::Weakness:
-		pc.base_stats.attrib[value] -= 5;
+		pc.unit->statsx->attrib[value] -= 5;
 		break;
 	case Perk::Skilled:
 		// nothing to do here, only affects character creation
@@ -268,13 +268,13 @@ void TakenPerk::Apply(PlayerController& pc) const
 		{
 			int plus, minus, minus2;
 			Split3(value, plus, minus, minus2);
-			pc.base_stats.skill[plus] += 10;
-			pc.base_stats.skill[minus] -= 5;
-			pc.base_stats.skill[minus2] -= 5;
+			pc.unit->statsx->skill[plus] += 10;
+			pc.unit->statsx->skill[minus] -= 5;
+			pc.unit->statsx->skill[minus2] -= 5;
 		}
 		break;
 	case Perk::Talent:
-		pc.base_stats.skill[value] += 5;
+		pc.unit->statsx->skill[value] += 5;
 		break;
 		//case Perk::CraftingTradition:
 		//	pc.base_stats.skill[(int)Skill::CRAFTING] += 10;
@@ -371,14 +371,14 @@ cstring TakenPerk::FormatName()
 	{
 	case Perk::Weakness:
 	case Perk::Strength:
-		return Format("%s (%s)", p.name.c_str(), g_attributes[value].name.c_str());
+		return Format("%s (%s)", p.name.c_str(), AttributeInfo::attributes[value].name.c_str());
 	case Perk::SkillFocus:
 		{
 			int skill_p = (value & 0xFF);
-			return Format("%s (%s)", p.name.c_str(), g_skills[skill_p].name.c_str());
+			return Format("%s (%s)", p.name.c_str(), SkillInfo::skills[skill_p].name.c_str());
 		}
 	case Perk::Talent:
-		return Format("%s (%s)", p.name.c_str(), g_skills[value].name.c_str());
+		return Format("%s (%s)", p.name.c_str(), SkillInfo::skills[value].name.c_str());
 	default:
 		assert(0);
 		return p.name.c_str();

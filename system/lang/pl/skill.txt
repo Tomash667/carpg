@@ -1,3 +1,4 @@
+skill_group combat_style = "Style walki"
 skill_group weapon = "Walka broni¹"
 skill_group armor = "Tarcza & Pancerz"
 skill_group magic = "Magia"
@@ -13,7 +14,7 @@ skill short_blade {
 }
 skill long_blade {
 	name "D³ugie ostrze"
-	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku dla d³ugi mieczy i sejmitarów."
+	desc "Ma wp³yw na obra¿enia i szybkoœæ ataku dla d³ugich mieczy i sejmitarów."
 }
 skill axe {
 	name "Topór"
@@ -47,75 +48,19 @@ skill heavy_armor {
 	name "Ciê¿ki pancerz"
 	desc "Zwiêksza obronê i zmniejsza kary w czasie u¿ywania ciê¿kiego pancerza."
 }
-skill nature_magic {
-	name "Magia natury"
-	desc "Poprawia efekty czarów natury i pozwala na rzucanie potê¿niejszych zaklêæ."
-}
-skill gods_magic {
-	name "Magia bogów"
-	desc "Poprawia efekty czarów bogów i pozwala na rzucanie potê¿niejszych zaklêæ."
-}
-skill mystic_magic {
-	name "Magia mistyczna"
-	desc "Poprawia efekty czarów mistycznych i pozwala na rzucanie potê¿niejszych zaklêæ."
-}
-skill spellcraft {
-	name "Czarnoznastwo"
-	desc "Pozwala tworzyæ nowe potê¿niejsze czary."
-}
-skill concentration {
-	name "Koncentracja"
-	desc "Zwiêksza zasoby many i pozwala unikn¹æ przerwania czaru w przypadku otrzymania obra¿eñ."
-}
-skill identification {
-	name "Identyfikacja"
-	desc "Pozwala dziêki wiedzy poznaæ magiczne w³aœciwoœci przedmiotów."
-}
-skill lockpick {
-	name "Otwieranie zamków"
-	desc "Pozwala otwieraæ lepsze zamki i robiæ to szybciej."
-}
-skill sneak {
-	name "Skradanie"
-	desc "Pozwala unikn¹æ zobaczenia i us³yszenia przez wrogów."
-}
-skill traps {
-	name "Pu³apki"
-	desc "Wp³ywa na szansê znalezienia i rozbrojenia pu³apki oraz efektywnoœæ zastawionych pu³apek."
-}
-skill steal {
-	name "Kradzie¿"
-	desc "Zwiêksza szansê na pomyœlne okradzenie postaci."
-}
-skill animal_empathy {
-	name "Zwierzêca empatia"
-	desc "Pozwala na zrozumienie, uspokojenie i zrekrutowanie napotkanych zwierz¹t."	
-}
-skill survival {
-	name "Sztuka przetrwania"
-	desc "Pozwala zdobywaæ trofea ze zwierz¹t, unikaæ zasadzek. Zwiêksza szybkoœæ podró¿ny i szansê na znalezienie czegoœ przydatnego."
-}
-skill persuasion {
-	name "Perswazja"
-	desc "Pozwala lepiej targowaæ siê i przekonywaæ innych do swojej racji."
-}
-skill alchemy {
-	name "Alchemia"
-	desc "Umo¿liwia tworzenie lepszych mikstur alchemicznych."
-}
-skill crafting {
-	name "Rzemios³o"
-	desc "Umo¿liwia tworzenie broni i pancerza."
-}
-skill healing {
-	name "Leczenie"
-	desc "Pozwala leczyæ u¿ywaj¹c banda¿y i innych niemagicznych przedmiotów."
-}
 skill athletics {
 	name "Atletyka"
-	desc "Zwiêksza zdrowie, wytrzyma³oœæ i udŸwig postaci."
+	desc "Zwiêksza zdrowie i udŸwig postaci."
 }
-skill rage {
-	name "Sza³"
-	desc "Okreœla si³ê i czas trwania sza³u."
+skill acrobatics {
+	name "Akrobatyka"
+	desc "Zwiêksza mobilnoœæ oraz wytrzyma³oœæ."
+}
+skill haggle {
+	name "Targowanie"
+	desc "Wp³ywa na cenê kupna i sprzeda¿y przedmiotów."
+}
+skill literacy {
+	name "Piœmiennoœæ"
+	desc "Zwiêksza szanse na odczytanie ksi¹g i run."
 }

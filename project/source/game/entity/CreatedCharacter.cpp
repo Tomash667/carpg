@@ -195,13 +195,17 @@ int CreatedCharacter::Read(BitStream& stream)
 //=================================================================================================
 void CreatedCharacter::Apply(PlayerController& pc)
 {
-	pc.unit->data->GetStatProfile().Set(0, pc.base_stats);
+	pc.unit->statsx->ApplyBase(pc.unit->data->stat_profile);
 
 	// apply skills
 	for(int i = 0; i < (int)Skill::MAX; ++i)
 	{
 		if(s[i].add)
-			pc.base_stats.skill[i] += 5;
+		{
+			int value = (pc.unit->data->stat_profile->ShouldDoubleSkill((Skill)i) ? 10 : 5);
+			pc.unit->statsx->skill_base[i] += value;
+			pc.unit->statsx->skill_apt[i] = StatsX::SkillToAptitude(pc.unit->statsx->skill_base[i]);
+		}
 	}
 
 	// apply perks
@@ -211,15 +215,11 @@ void CreatedCharacter::Apply(PlayerController& pc)
 
 	// set stats
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		pc.unit->unmod_stats.attrib[i] = pc.base_stats.attrib[i];
+		pc.unit->statsx->attrib[i] = pc.unit->statsx->attrib_base[i];
 	for(int i = 0; i < (int)Skill::MAX; ++i)
-		pc.unit->unmod_stats.skill[i] = pc.base_stats.skill[i];
-
-	pc.unit->CalculateStats();
-	pc.unit->CalculateLoad();
-	pc.unit->hp = pc.unit->hpmax = pc.unit->CalculateMaxHp();
-	pc.unit->level = pc.unit->CalculateLevel();
-
+		pc.unit->statsx->skill[i] = pc.unit->statsx->skill_base[i];
+	pc.unit->CalculateStats(true);
+	pc.RecalculateLevel();
 	pc.SetRequiredPoints();
 
 	// inventory

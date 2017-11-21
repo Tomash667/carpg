@@ -26,7 +26,9 @@ class UnitLoader
 		G_ARMOR_TYPE,
 		G_ATTRIBUTE,
 		G_SKILL,
-		G_PROFILE_KEYWORD,
+		G_PROFILE_KEYWORDS,
+		G_PROFILE_FLAGS,
+		G_SUBPROFILE_KEYWORDS,
 		G_SOUND_TYPE,
 		G_FRAME_KEYWORD,
 		G_WEAPON_FLAG,
@@ -59,8 +61,14 @@ class UnitLoader
 		P_PROFILE,
 		P_FLAGS,
 		P_HP,
-		P_STAMINA,
+		P_HP_BONUS,
+		P_ATK,
+		P_ATK_BONUS,
 		P_DEF,
+		P_DEF_BONUS,
+		P_STAMINA,
+		P_BLOCK,
+		P_BLOCK_BONUS,
 		P_ITEMS,
 		P_SPELLS,
 		P_GOLD,
@@ -82,7 +90,17 @@ class UnitLoader
 
 	enum ProfileKeyword
 	{
-		PK_FIXED
+		PK_FLAGS,
+		PK_SUBPROFILE
+	};
+
+	enum SubprofileKeyword
+	{
+		SPK_WEAPON,
+		SPK_ARMOR,
+		SPK_SKILL,
+		SPK_TAG,
+		SPK_PERK
 	};
 
 	enum SoundType
@@ -153,6 +171,7 @@ public:
 						t.Throw("Id must be unique.");
 					Ptr<StatProfile> profile;
 					profile->id = id;
+					profile->unit_data = nullptr;
 					t.Next();
 					ParseProfile(profile);
 				}
@@ -266,8 +285,14 @@ private:
 			{ "profile", P_PROFILE },
 			{ "flags", P_FLAGS },
 			{ "hp", P_HP },
-			{ "stamina", P_STAMINA },
+			{ "hp_bonus", P_HP_BONUS },
+			{ "atk", P_ATK },
+			{ "atk_bonus", P_ATK_BONUS },
 			{ "def", P_DEF },
+			{ "def_bonus", P_DEF_BONUS },
+			{ "stamina", P_STAMINA },
+			{ "block", P_BLOCK },
+			{ "block_bonus", P_BLOCK_BONUS },
 			{ "items", P_ITEMS },
 			{ "spells", P_SPELLS },
 			{ "gold", P_GOLD },
@@ -375,7 +400,8 @@ private:
 			{ "dont_eat", F3_DONT_EAT },
 			{ "orc_food", F3_ORC_FOOD },
 			{ "miner", F3_MINER },
-			{ "talk_at_competition", F3_TALK_AT_COMPETITION }
+			{ "talk_at_competition", F3_TALK_AT_COMPETITION },
+			{ "fixed", F3_FIXED }
 		});
 
 		t.AddKeywords(G_GROUP, {
@@ -422,39 +448,26 @@ private:
 			{ "charisma", (int)Attribute::CHA }
 		});
 
-		t.AddKeywords(G_SKILL, {
-			{ "one_handed", (int)Skill::ONE_HANDED_WEAPON },
-			{ "short_blade", (int)Skill::SHORT_BLADE },
-			{ "long_blade", (int)Skill::LONG_BLADE },
-			{ "blunt", (int)Skill::BLUNT },
-			{ "axe", (int)Skill::AXE },
-			{ "bow", (int)Skill::BOW },
-			{ "unarmed", (int)Skill::UNARMED },
-			{ "shield", (int)Skill::SHIELD },
-			{ "light_armor", (int)Skill::LIGHT_ARMOR },
-			{ "medium_armor", (int)Skill::MEDIUM_ARMOR },
-			{ "heavy_armor", (int)Skill::HEAVY_ARMOR },
-			{ "nature_magic", (int)Skill::NATURE_MAGIC },
-			{ "gods_magic", (int)Skill::GODS_MAGIC },
-			{ "mystic_magic", (int)Skill::MYSTIC_MAGIC },
-			{ "spellcraft", (int)Skill::SPELLCRAFT },
-			{ "concentration", (int)Skill::CONCENTRATION },
-			{ "identification", (int)Skill::IDENTIFICATION },
-			{ "lockpick", (int)Skill::LOCKPICK },
-			{ "sneak", (int)Skill::SNEAK },
-			{ "traps", (int)Skill::TRAPS },
-			{ "steal", (int)Skill::STEAL },
-			{ "animal_empathy", (int)Skill::ANIMAL_EMPATHY },
-			{ "survival", (int)Skill::SURVIVAL },
-			{ "persuasion", (int)Skill::PERSUASION },
-			{ "alchemy", (int)Skill::ALCHEMY },
-			{ "crafting", (int)Skill::CRAFTING },
-			{ "healing", (int)Skill::HEALING },
-			{ "athletics", (int)Skill::ATHLETICS },
-			{ "rage", (int)Skill::RAGE }
+		for(uint i = 0; i < (uint)Skill::MAX; ++i)
+			t.AddKeyword(SkillInfo::skills[i].id, i, G_SKILL);
+
+		t.AddKeywords(G_PROFILE_KEYWORDS, {
+			{ "flags", PK_FLAGS },
+			{ "subprofile", PK_SUBPROFILE }
 		});
 
-		t.AddKeyword("fixed", PK_FIXED, G_PROFILE_KEYWORD);
+		t.AddKeywords(G_PROFILE_FLAGS, {
+			{ "fixed", StatProfile::F_FIXED },
+			{ "double_weapon_tag_skill", StatProfile::F_DOUBLE_WEAPON_TAG_SKILL }
+		});
+
+		t.AddKeywords(G_SUBPROFILE_KEYWORDS, {
+			{ "weapon", SPK_WEAPON },
+			{ "armor", SPK_ARMOR },
+			{ "skill", SPK_SKILL },
+			{ "tag", SPK_TAG },
+			{ "perk", SPK_PERK }
+		});
 
 		t.AddKeywords(G_SOUND_TYPE, {
 			{ "see_enemy", ST_SEE_ENEMY },
@@ -519,6 +532,7 @@ private:
 			auto parent = UnitData::TryGet(parent_id);
 			if(!parent)
 				t.Throw("Missing parent unit '%s'.", parent_id.c_str());
+			parent->flags3 |= F3_PARENT_DATA;
 			unit->CopyFrom(*parent);
 			crc.Update(parent_id);
 			t.Next();
@@ -570,6 +584,7 @@ private:
 				{
 					Ptr<StatProfile> profile;
 					unit->stat_profile = profile.Get();
+					unit->stat_profile->unit_data = unit.Get();
 					ParseProfile(profile);
 				}
 				else
@@ -597,20 +612,56 @@ private:
 				}
 				break;
 			case P_HP:
+				unit->hp = t.MustGetInt();
+				if(unit->hp < 0)
+					t.Throw("Invalid hp %d.", unit->hp);
+				crc.Update(unit->hp);
+				break;
+			case P_HP_BONUS:
 				unit->hp_bonus = t.MustGetInt();
 				if(unit->hp_bonus < 0)
 					t.Throw("Invalid hp bonus %d.", unit->hp_bonus);
 				crc.Update(unit->hp_bonus);
 				break;
+			case P_ATK:
+				unit->atk = t.MustGetInt();
+				if(unit->atk < 0)
+					t.Throw("Invalid attack %d.", unit->atk);
+				crc.Update(unit->atk);
+				break;
+			case P_ATK_BONUS:
+				unit->atk_bonus = t.MustGetInt();
+				if(unit->atk_bonus < 0)
+					t.Throw("Invalid attack bonus %d.", unit->atk_bonus);
+				crc.Update(unit->atk_bonus);
+				break;
+			case P_DEF:
+				unit->def = t.MustGetInt();
+				if(unit->def < 0)
+					t.Throw("Invalid defense %d.", unit->def);
+				crc.Update(unit->def);
+				break;
+			case P_DEF_BONUS:
+				unit->def_bonus = t.MustGetInt();
+				if(unit->def_bonus < 0)
+					t.Throw("Invalid defense bonus %d.", unit->def_bonus);
+				crc.Update(unit->def_bonus);
+				break;
 			case P_STAMINA:
 				unit->stamina_bonus = t.MustGetInt();
 				crc.Update(unit->stamina_bonus);
 				break;
-			case P_DEF:
-				unit->def_bonus = t.MustGetInt();
-				if(unit->def_bonus < 0)
-					t.Throw("Invalid def bonus %d.", unit->def_bonus);
-				crc.Update(unit->def_bonus);
+			case P_BLOCK:
+				unit->block = t.MustGetInt();
+				if(unit->block < 0)
+					t.Throw("Invalid block %d.", unit->block);
+				crc.Update(unit->block);
+				break;
+			case P_BLOCK_BONUS:
+				unit->block_bonus = t.MustGetInt();
+				if(unit->block_bonus < 0)
+					t.Throw("Invalid block bonus %d.", unit->block_bonus);
+				crc.Update(unit->block_bonus);
 				break;
 			case P_ITEMS:
 				if(t.IsSymbol('{'))
@@ -849,7 +900,7 @@ private:
 	//=================================================================================================
 	void ParseProfile(Ptr<StatProfile>& profile)
 	{
-		profile->fixed = false;
+		profile->flags = 0;
 		for(int i = 0; i < (int)Attribute::MAX; ++i)
 			profile->attrib[i] = 10;
 		for(int i = 0; i < (int)Skill::MAX; ++i)
@@ -861,12 +912,19 @@ private:
 
 		while(!t.IsSymbol('}'))
 		{
-			if(t.IsKeyword(PK_FIXED, G_PROFILE_KEYWORD))
+			if(t.IsKeywordGroup(G_PROFILE_KEYWORDS))
 			{
+				auto keyword = (ProfileKeyword)t.GetKeywordId(G_PROFILE_KEYWORDS);
 				t.Next();
-				profile->fixed = t.MustGetBool();
-				crc.Update(0);
-				crc.Update(profile->fixed);
+				switch(keyword)
+				{
+				case PK_FLAGS:
+					profile->flags = ReadFlags(t, G_PROFILE_FLAGS);
+					break;
+				case PK_SUBPROFILE:
+					ParseSubprofile(profile);
+					break;
+				}
 			}
 			else if(t.IsKeywordGroup(G_ATTRIBUTE))
 			{
@@ -874,7 +932,7 @@ private:
 				t.Next();
 				int val = t.MustGetInt();
 				if(val < 1)
-					t.Throw("Invalid attribute '%s' value %d.", g_attributes[a].id, val);
+					t.Throw("Invalid attribute '%s' value %d.", AttributeInfo::attributes[a].id, val);
 				profile->attrib[a] = val;
 				crc.Update(1);
 				crc.Update(a);
@@ -886,7 +944,7 @@ private:
 				t.Next();
 				int val = t.MustGetInt();
 				if(val < -1)
-					t.Throw("Invalid skill '%s' value %d.", g_skills[s].id, val);
+					t.Throw("Invalid skill '%s' value %d.", SkillInfo::skills[s].id, val);
 				profile->skill[s] = val;
 				crc.Update(2);
 				crc.Update(s);
@@ -894,14 +952,186 @@ private:
 			}
 			else
 			{
-				int a = PK_FIXED, b = G_PROFILE_KEYWORD, c = G_ATTRIBUTE, d = G_SKILL;
-				t.StartUnexpected().Add(tokenizer::T_KEYWORD, &a, &b).Add(tokenizer::T_KEYWORD_GROUP, &c).Add(tokenizer::T_KEYWORD_GROUP, &d).Throw();
+				t.StartUnexpected()
+					.AddList(tokenizer::T_KEYWORD_GROUP, { G_SKILL, G_ATTRIBUTE, G_PROFILE_KEYWORDS })
+					.Throw();
 			}
 
 			t.Next();
 		}
 
 		StatProfile::profiles.push_back(profile.Pin());
+	}
+
+	//=================================================================================================
+	void ParseSubprofile(StatProfile* profile)
+	{
+		Ptr<SubProfile> sub;
+
+		// id
+		sub->id = t.MustGetItem();
+		if(profile->TryGetSubprofile(sub->id))
+			t.Throw("Id must be unique.");
+		crc.Update(sub->id);
+		t.Next();
+
+		// {
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			auto keyword = (SubprofileKeyword)t.MustGetKeywordId(G_SUBPROFILE_KEYWORDS);
+			switch(keyword)
+			{
+			case SPK_WEAPON:
+				t.Next();
+				sub->weapons.clear();
+				crc.Update(SPK_WEAPON);
+				t.AssertSymbol('(');
+				t.Next();
+				while(!t.IsSymbol(')'))
+				{
+					auto skill = (Skill)t.MustGetKeywordId(G_SKILL);
+					if(skill != Skill::SHORT_BLADE && skill != Skill::LONG_BLADE && skill != Skill::AXE && skill != Skill::BLUNT)
+						t.Throw("Invalid weapon skill.");
+					sub->weapons.push_back(skill);
+					crc.Update(skill);
+					t.Next();
+				}
+				t.Next();
+				if(sub->weapons.size() < 2)
+					t.Throw("Subprofile with %u weapons.", sub->weapons.size());
+				break;
+			case SPK_ARMOR:
+				t.Next();
+				sub->armors.clear();
+				crc.Update(SPK_ARMOR);
+				t.AssertSymbol('(');
+				t.Next();
+				while(!t.IsSymbol(')'))
+				{
+					auto skill = (Skill)t.MustGetKeywordId(G_SKILL);
+					if(skill != Skill::LIGHT_ARMOR && skill != Skill::MEDIUM_ARMOR && skill != Skill::HEAVY_ARMOR)
+						t.Throw("Invalid armor skill.");
+					sub->armors.push_back(skill);
+					sub->weapons.push_back(skill);
+					t.Next();
+				}
+				t.Next();
+				if(sub->armors.size() < 2)
+					t.Throw("Subprofile with %u armors.", sub->armors.size());
+				break;
+			case SPK_SKILL:
+				{
+					bool is_tag;
+					float value;
+					t.Next();
+					if(t.IsKeyword(SPK_TAG, G_SUBPROFILE_KEYWORDS))
+					{
+						is_tag = true;
+						value = 1.f;
+					}
+					else if(t.IsNumber())
+					{
+						is_tag = false;
+						value = t.GetFloat();
+						if(value <= 0.f || value > 1.f)
+							t.Throw("Invalid skill value %g.", value);
+					}
+					else
+					{
+						int group = G_SUBPROFILE_KEYWORDS;
+						int keyword = SPK_TAG;
+						t.StartUnexpected()
+							.Add(tokenizer::T_FLOAT)
+							.Add(tokenizer::T_KEYWORD, &keyword, &group)
+							.Throw();
+					}
+					t.Next();
+
+					Skill skill;
+					if(t.IsKeywordGroup(G_SKILL))
+						skill = (Skill)t.GetKeywordId(G_SKILL);
+					else if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_KEYWORDS))
+					{
+						skill = Skill::WEAPON_PROFILE;
+						if(sub->weapons.empty())
+							t.Throw("Weapon skill without weapon skills declared.");
+					}
+					else if(t.IsKeyword(SPK_ARMOR, G_SUBPROFILE_KEYWORDS))
+					{
+						skill = Skill::ARMOR_PROFILE;
+						if(sub->armors.empty())
+							t.Throw("Armor skill without armor skills declared.");
+					}
+					else
+					{
+						int group = G_SKILL;
+						t.Unexpected(tokenizer::T_KEYWORD_GROUP, &group);
+					}
+					for(auto& s : sub->skills)
+					{
+						if(s.skill == skill)
+							t.Throw("Skill %s already used.", t.GetTokenString().c_str());
+					}
+					t.Next();
+
+					sub->skills.push_back({ skill, value, is_tag });
+					crc.Update(SPK_SKILL);
+					crc.Update(sub->skills.back());
+				}
+				break;
+			case SPK_PERK:
+				{
+					t.Next();
+					auto& id = t.MustGetItemKeyword();
+					auto perk = PerkInfo::Find(id);
+					if(!perk)
+						t.Throw("Missing perk '%s'.", id.c_str());
+					t.Next();
+
+					int value = 0;
+					switch(perk->required_value)
+					{
+					case PerkInfo::None:
+						break;
+					case PerkInfo::Attribute:
+						value = t.MustGetKeywordId(G_ATTRIBUTE);
+						t.Next();
+						break;
+					case PerkInfo::Skill:
+						if(t.IsKeywordGroup(G_SKILL))
+							value = t.MustGetKeywordId(G_SKILL);
+						else if(t.IsKeyword(SPK_WEAPON, G_SUBPROFILE_KEYWORDS))
+						{
+							value = (int)Skill::WEAPON_PROFILE;
+							if(sub->weapons.empty())
+								t.Throw("Weapon skill without weapon skills declared.");
+						}
+						else if(t.IsKeyword(SPK_ARMOR, G_SUBPROFILE_KEYWORDS))
+						{
+							value = (int)Skill::ARMOR_PROFILE;
+							if(sub->armors.empty())
+								t.Throw("Armor skill without armor skills declared.");
+						}
+						else
+							t.Unexpected();
+						t.Next();
+						break;
+					}
+
+					sub->perks.push_back({ perk->perk_id, value });
+				}
+				break;
+			default:
+				t.Unexpected();
+				break;
+			}
+		}
+
+		sub->variants = max(sub->weapons.size(), 1u) * max(sub->armors.size(), 1u);
+		profile->subprofiles.push_back(sub.Pin());
 	}
 
 	//=================================================================================================
