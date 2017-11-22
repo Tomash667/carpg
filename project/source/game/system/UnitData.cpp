@@ -27,7 +27,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	atk_bonus = ud.atk_bonus;
 	def = ud.def;
 	def_bonus = ud.def_bonus;
-	stamina_bonus = ud.stamina_bonus;
+	stamina = ud.stamina;
 	block = ud.block;
 	block_bonus = ud.block_bonus;
 	dmg_type = ud.dmg_type;

@@ -629,7 +629,7 @@ struct Unit
 	void AddItemAndEquipIfNone(const Item* item, uint count = 1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
 	float GetLoad() const { return float(weight) / weight_max; }
-	void CalculateLoad() { weight_max = Get(Attribute::STR) * 15; }
+	void CalculateLoad();
 	bool IsOverloaded() const
 	{
 		return weight >= weight_max;

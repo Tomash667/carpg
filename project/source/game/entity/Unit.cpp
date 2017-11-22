@@ -40,7 +40,16 @@ float Unit::CalculateMaxHp() const
 //=================================================================================================
 float Unit::CalculateMaxStamina() const
 {
-	return 50.f + (float)data->stamina_bonus + 2.5f * Get(Attribute::END) + 2.f * Get(Attribute::DEX);
+	if(IS_SET(data->flags3, F3_FIXED))
+		return (float)data->stamina;
+	else
+		return (float)(data->stamina + Get(Attribute::END) * 2 + Get(Skill::ATHLETICS));
+}
+
+//=================================================================================================
+void Unit::CalculateLoad()
+{
+	weight_max = 200 + Get(Attribute::STR) * 10 + Get(Skill::ATHLETICS) * 5;
 }
 
 //=================================================================================================

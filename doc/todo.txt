@@ -5,15 +5,15 @@
 	+ bow - remove stamina at start
 	+ weapon - remove at start -> remove more when holding
 	+ wait time before starting regeneration
-? can shoot without stamina
++ can shoot without stamina
 	? test attack, continue attack, running attack, power, shoot, continue shoot, bash
 	+ add to changelog
-? blocking shots don't remove stamina
++ blocking shots don't remove stamina
 	+ add to changelog (blocking don't remove stamina, units gain stamina when blocking on high levels of shield skill)
 + new mobility (dex + acro)
-+ new stamina (end + acro)
-+ new carry (str + ath)
-+ recalculate hp, stamina on load in new version
+? new stamina (end + acro)
+? new carry (str + ath)
+? recalculate hp, stamina on load in new version
 
 *** perks
 + perk points

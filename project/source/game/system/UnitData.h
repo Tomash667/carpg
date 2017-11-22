@@ -204,7 +204,7 @@ struct UnitData
 	MATERIAL_TYPE mat;
 	Int2 level;
 	StatProfile* stat_profile;
-	int hp, hp_bonus, atk, atk_bonus, def, def_bonus, stamina_bonus, block, block_bonus, dmg_type, flags, flags2, flags3;
+	int hp, hp_bonus, atk, atk_bonus, def, def_bonus, stamina, block, block_bonus, dmg_type, flags, flags2, flags3;
 	SpellList* spells;
 	Int2 gold, gold2;
 	GameDialog* dialog;
@@ -221,7 +221,7 @@ struct UnitData
 	ResourceState state;
 
 	UnitData() : mesh(nullptr), mat(MAT_BODY), level(0), stat_profile(nullptr), hp(100), hp_bonus(0), atk(10), atk_bonus(1), def(10), def_bonus(1),
-		stamina_bonus(0), block(10), block_bonus(1), dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), spells(nullptr), gold(0), gold2(0),
+		stamina(0), block(10), block_bonus(1), dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), spells(nullptr), gold(0), gold2(0),
 		dialog(nullptr), group(G_CITIZENS), walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED),
 		sounds(nullptr), frames(nullptr), tex(nullptr), armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN),
 		state(ResourceState::NotLoaded)
