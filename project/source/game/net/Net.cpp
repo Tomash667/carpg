@@ -2498,10 +2498,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.animation_state = 1;
 							unit.hitted = false;
+							unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina);
 						}
 						unit.player->Train(TrainWhat::Attack, 0.f, 0);
 						break;
-					case AID_PowerAttack:
+					case AID_PrepareAttack:
 						{
 							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
@@ -5961,7 +5962,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.hitted = false;
 					}
 					break;
-				case AID_PowerAttack:
+				case AID_PrepareAttack:
 					{
 						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);

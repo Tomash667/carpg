@@ -9,7 +9,7 @@
 enum AttackId
 {
 	AID_Attack,
-	AID_PowerAttack, // or just start holding attack key
+	AID_PrepareAttack,
 	AID_Shoot,
 	AID_StartShoot,
 	AID_Block,

@@ -1,6 +1,12 @@
 ﻿FEATURE:
 *** better stamina
++ always show celownik when holding bow
 + better stamina usage
+	! bow, shield, mp
+	+ po użyciu nie odnawia się przez sekundę
+	+ staminy ubywa odrazu po kliknięciu atak
+	+ potężny atak, najpierw 1 -> 1,5
+	+ stamina values
 + don't regenerate instantly after shooting, when holding (when to remove?)
 	+ bow - remove stamina at start
 	+ weapon - remove at start -> remove more when holding
@@ -11,12 +17,12 @@
 + blocking shots don't remove stamina
 	+ add to changelog (blocking don't remove stamina, units gain stamina when blocking on high levels of shield skill)
 + new mobility (dex + acro)
-	? calculation
-	? inventory box
 	+ speed effect
-? new stamina (end + acro)
-? new carry (str + ath)
-? recalculate hp, stamina on load in new version
+
+? mp testing
+	? mobility calculation
+		? speed effect
+	! remove log in Train,RemoveStamina
 
 *** perks
 + perk points

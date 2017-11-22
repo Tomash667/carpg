@@ -2953,7 +2953,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::ATTACK;
 			c.unit = &u;
-			c.id = (do_power_attack ? AID_PowerAttack : (w_biegu ? AID_RunningAttack : AID_Attack));
+			c.id = (do_power_attack ? AID_PrepareAttack : (w_biegu ? AID_RunningAttack : AID_Attack));
 			c.f[1] = speed;
 		}
 	}

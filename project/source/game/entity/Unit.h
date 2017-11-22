@@ -60,7 +60,6 @@ enum ACTION
 	A_ANIMATION, // animacja bez obiektu (np drapani siê, rozgl¹danie)
 	A_ANIMATION2, // u¿ywanie obiektu (0-podchodzi, 1-u¿ywa, 2-u¿ywa dŸwiêk, 3-odchodzi)
 	A_POSITION, // u¿ywa³ czegoœ ale dosta³ basha lub umar³, trzeba go przesun¹æ w normalne miejsce
-	//A_PAROWANIE
 	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
 	A_DASH,
 	A_DESPAWN,
@@ -163,6 +162,7 @@ struct Unit
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
+	static const float STAMINA_RESTORE_TIMER;
 
 	int netid;
 	UnitData* data;
@@ -208,6 +208,7 @@ struct Unit
 	float auto_talk_timer;
 	GameDialog* auto_talk_dialog;
 	StaminaAction stamina_action;
+	float stamina_timer;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),

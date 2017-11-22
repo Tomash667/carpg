@@ -11,6 +11,7 @@
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
+const float Unit::STAMINA_RESTORE_TIMER = 1.f;
 
 //=================================================================================================
 Unit::~Unit()
@@ -43,7 +44,7 @@ float Unit::CalculateMaxStamina() const
 	if(IS_SET(data->flags3, F3_FIXED))
 		return (float)data->stamina;
 	else
-		return (float)(data->stamina + Get(Attribute::END) * 2 + Get(Skill::ATHLETICS));
+		return (float)(data->stamina + Get(Attribute::END) * 2 + Get(Skill::ACROBATICS));
 }
 
 //=================================================================================================
@@ -154,17 +155,6 @@ float Unit::CalculateDefense(const Item* armor, const Item* shield) const
 	float end = (float)Get(Attribute::END);
 	def += (end - 50) / 5;
 
-	// dexterity bonus
-	auto load_state = GetArmorLoadState(armor);
-	if(load_state < LS_HEAVY)
-	{
-		float dex = (float)Get(Attribute::DEX);
-		float bonus = max(0.f, (dex - 50) / 5);
-		if(load_state == LS_MEDIUM)
-			bonus /= 2;
-		def += bonus;
-	}
-
 	// armor defense
 	if(!armor)
 		armor = slots[SLOT_ARMOR];
@@ -174,6 +164,17 @@ float Unit::CalculateDefense(const Item* armor, const Item* shield) const
 		const Armor& a = armor->ToArmor();
 		float skill = (float)Get(a.skill);
 		def += a.def * (1.f + skill / 100);
+	}
+
+	// dexterity bonus
+	auto load_state = GetArmorLoadState(armor);
+	if(load_state < LS_HEAVY)
+	{
+		float dex = (float)Get(Attribute::DEX);
+		float bonus = max(0.f, (dex - 50) / 5);
+		if(load_state == LS_MEDIUM)
+			bonus /= 2;
+		def += bonus;
 	}
 
 	// shield defense
@@ -418,7 +419,7 @@ int Unit::ConsumeItem(int index)
 			// jeœli chowa broñ to u¿yj miksturki jak schowa
 			if(IsPlayer())
 			{
-				if(player == Game::Get().pc)
+				if(player->is_local)
 				{
 					assert(Inventory::lock_id == LOCK_NO);
 					player->next_action = NA_CONSUME;
@@ -450,7 +451,7 @@ int Unit::ConsumeItem(int index)
 		HideWeapon();
 		if(IsPlayer())
 		{
-			assert(Inventory::lock_id == LOCK_NO && Game::Get().pc == player);
+			assert(Inventory::lock_id == LOCK_NO && player->is_local);
 			player->next_action = NA_CONSUME;
 			Inventory::lock_index = index;
 			Inventory::lock_id = LOCK_MY;
@@ -889,7 +890,9 @@ void Unit::UpdateEffects(float dt)
 	}
 
 	// restore stamina
-	if(stamina != stamina_max && (stamina_action != SA_DONT_RESTORE || best_stamina > 0.f))
+	if(stamina_timer > 0)
+		stamina_timer -= dt;
+	else if(stamina != stamina_max && (stamina_action != SA_DONT_RESTORE || best_stamina > 0.f))
 	{
 		float stamina_restore;
 		switch(stamina_action)
@@ -942,6 +945,7 @@ void Unit::EndEffects(int days, int* best_nat)
 
 	alcohol = 0.f;
 	stamina = stamina_max;
+	stamina_timer = 0;
 
 	if(effects.empty())
 		return;
@@ -1318,6 +1322,7 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
 	WriteFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
 	WriteFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
+	WriteFile(file, &stamina_timer, sizeof(stamina_timer), &tmp, nullptr);
 	WriteFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileWriter f(file);
 	statsx->Save(f);
@@ -1495,6 +1500,10 @@ void Unit::Load(HANDLE file, bool local)
 		ReadFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
 		ReadFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
 		ReadFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
+		if(LOAD_VERSION >= V_CURRENT)
+			ReadFile(file, &stamina_timer, sizeof(stamina_timer), &tmp, nullptr);
+		else
+			stamina_timer = 0;
 	}
 	if(LOAD_VERSION < V_0_5)
 	{
@@ -1834,6 +1843,7 @@ void Unit::Load(HANDLE file, bool local)
 		stamina_max = CalculateMaxStamina();
 		stamina = stamina_max;
 		stamina_action = SA_RESTORE_MORE;
+		stamina_timer = 0;
 	}
 }
 
@@ -2622,8 +2632,51 @@ void Unit::ApplyStat(Attribute a)
 	switch(a)
 	{
 	case Attribute::STR:
+		// load depends on str
+		CalculateLoad();
+		break;
+	case Attribute::END:
 		{
-			// hp/load depends on str
+			// hp/stamina depends on end
+			if(Net::IsLocal())
+			{
+				RecalculateHp();
+				RecalculateStamina();
+				if(!fake_unit && Net::IsServer())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = this;
+					if(IsPlayer() && !player->is_local)
+						player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
+				}
+			}
+			else
+			{
+				hpmax = CalculateMaxHp();
+				stamina_max = CalculateMaxStamina();
+			}
+		}
+		break;
+	case Attribute::DEX:
+	case Attribute::INT:
+	case Attribute::WIS:
+	case Attribute::CHA:
+		break;
+	}
+
+	if(player)
+		player->recalculate_level = true;
+}
+
+//=================================================================================================
+void Unit::ApplyStat(Skill s)
+{
+	switch(s)
+	{
+	case Skill::ATHLETICS:
+		{
+			// hp/load depends on athletics
 			if(Net::IsLocal())
 			{
 				RecalculateHp();
@@ -2639,57 +2692,21 @@ void Unit::ApplyStat(Attribute a)
 			CalculateLoad();
 		}
 		break;
-	case Attribute::END:
+	case Skill::ACROBATICS:
 		{
-			// hp/stamina depends on end
-			Game& game = Game::Get();
-			if(Net::IsLocal())
-			{
-				RecalculateHp();
-				RecalculateStamina();
-				if(!fake_unit && Net::IsServer())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::UPDATE_HP;
-					c.unit = this;
-					if(IsPlayer() && player != game.pc)
-						game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
-				}
-			}
-			else
-			{
-				hpmax = CalculateMaxHp();
-				stamina_max = CalculateMaxStamina();
-			}
-		}
-		break;
-	case Attribute::DEX:
-		{
-			// stamina depends on dex
-			Game& game = Game::Get();
+			// stamina depends on acrobatics
 			if(Net::IsLocal())
 			{
 				RecalculateStamina();
-				if(!fake_unit && Net::IsServer() && IsPlayer() && player != game.pc)
-					game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
+				if(!fake_unit && Net::IsServer() && IsPlayer() && !player->is_local)
+					player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
 			}
 			else
 				stamina_max = CalculateMaxStamina();
 		}
-		break;
-	case Attribute::INT:
-	case Attribute::WIS:
-	case Attribute::CHA:
 		break;
 	}
 
-	if(player)
-		player->recalculate_level = true;
-}
-
-//=================================================================================================
-void Unit::ApplyStat(Skill s)
-{
 	if(player)
 		player->recalculate_level = true;
 }
@@ -2734,7 +2751,7 @@ int Unit::CalculateMobility(const Armor* armor) const
 	{
 		// calculate armor mobility (0-100)
 		int armor_mobility = armor->mobility;
-		int skill = max(Get(armor->skill), 100);
+		int skill = min(Get(armor->skill), 100);
 		armor_mobility += skill / 4;
 		if(armor_mobility > 100)
 			armor_mobility = 100;
@@ -2771,8 +2788,7 @@ Skill Unit::GetBestWeaponSkill() const
 
 	for(Skill s : weapon_skills)
 	{
-		auto& info = GetWeaponTypeInfo(s);
-		int s_val = Get(s) + int(info.str2dmg * Get(Attribute::STR) + info.dex2dmg * Get(Attribute::DEX));
+		int s_val = Get(s);
 		if(s_val >= val)
 		{
 			val = s_val;
@@ -2794,22 +2810,15 @@ Skill Unit::GetBestArmorSkill() const
 	};
 
 	Skill best = Skill::NONE;
-	int val = 0, val2 = 0, index = 0;
+	int val = 0, index = 0;
 
 	for(Skill s : armor_skills)
 	{
 		int s_val = Get(s);
 		if(s_val >= val)
 		{
-			int s_val2 = int(armor_mod[index].str * Get(Attribute::STR)
-				+ armor_mod[index].end * Get(Attribute::END)
-				+ armor_mod[index].dex * Get(Attribute::DEX));
-			if(s_val2 > val2)
-			{
-				val = s_val;
-				val2 = s_val2;
-				best = s;
-			}
+			val = s_val;
+			best = s;
 		}
 		++index;
 	}
@@ -2920,7 +2929,10 @@ void Unit::UpdateStaminaAction()
 //=================================================================================================
 void Unit::RemoveStamina(float value)
 {
+	if(player)
+		Info("Stamina %s %g", player->name.c_str(), value);
 	stamina -= value;
+	stamina_timer = STAMINA_RESTORE_TIMER;
 	if(player)
 	{
 		player->Train(TrainWhat::Stamina, value, 0);
