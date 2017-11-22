@@ -569,7 +569,7 @@ armor al_leather {
 	material skin
 	defense 40
 	req_str 30
-	mobility 75
+	mobility 85
 }
 
 armor al_leather_hq {
@@ -581,7 +581,7 @@ armor al_leather_hq {
 	material skin
 	defense 50
 	req_str 30
-	mobility 80
+	mobility 90
 	flags hq
 }
 
@@ -594,7 +594,7 @@ armor al_leather_m {
 	material skin
 	defense 65
 	req_str 30
-	mobility 80
+	mobility 90
 	flags magical
 }
 
@@ -607,7 +607,7 @@ armor al_dragonskin {
 	material skin
 	defense 115
 	req_str 35
-	mobility 70
+	mobility 80
 	flags {magic_resistance10 magical}
 }
 
@@ -620,7 +620,7 @@ armor al_studded {
 	material skin
 	defense 60
 	req_str 35
-	mobility 60
+	mobility 80
 }
 
 armor al_studded_hq {
@@ -632,7 +632,7 @@ armor al_studded_hq {
 	material skin
 	defense 70
 	req_str 35
-	mobility 65
+	mobility 85
 	flags hq
 }
 
@@ -645,7 +645,7 @@ armor al_studded_m {
 	material skin
 	defense 85
 	req_str 35
-	mobility 65
+	mobility 85
 	flags magical
 }
 
@@ -658,7 +658,7 @@ armor al_shadow {
 	material skin
 	defense 60
 	req_str 30
-	mobility 90
+	mobility 85
 	flags {not_shop not_chest not_random unique}
 }
 
@@ -671,7 +671,7 @@ armor al_chain_shirt {
 	material metal
 	defense 75
 	req_str 40
-	mobility 60
+	mobility 75
 }
 
 armor al_chain_shirt_hq {
@@ -683,7 +683,7 @@ armor al_chain_shirt_hq {
 	material metal
 	defense 85
 	req_str 40
-	mobility 65
+	mobility 80
 	flags hq
 }
 
@@ -696,7 +696,7 @@ armor al_chain_shirt_m {
 	material metal
 	defense 100
 	req_str 40
-	mobility 65
+	mobility 80
 	flags magical
 }
 
@@ -710,7 +710,7 @@ armor al_chain_shirt_mith {
 	material metal
 	defense 110
 	req_str 30
-	mobility 75
+	mobility 90
 	flags magical
 }
 
@@ -736,7 +736,7 @@ armor am_hide {
 	material skin
 	defense 45
 	req_str 40
-	mobility 55
+	mobility 75
 }
 
 armor am_hide_hq {
@@ -748,7 +748,7 @@ armor am_hide_hq {
 	material skin
 	defense 55
 	req_str 40
-	mobility 60
+	mobility 80
 	flags hq
 }
 
@@ -761,7 +761,7 @@ armor am_hide_m {
 	material skin
 	defense 70
 	req_str 40
-	mobility 60
+	mobility 80
 	flags magical
 }
 
@@ -774,7 +774,7 @@ armor am_troll_hide {
 	material skin
 	defense 80
 	req_str 45
-	mobility 60
+	mobility 75
 	flags {not_shop not_chest not_random magical}
 }
 
@@ -787,7 +787,7 @@ armor am_chainmail {
 	material metal
 	defense 60
 	req_str 50
-	mobility 50
+	mobility 60
 }
 
 armor am_chainmail_hq {
@@ -799,7 +799,7 @@ armor am_chainmail_hq {
 	material metal
 	defense 70
 	req_str 50
-	mobility 55
+	mobility 65
 	flags hq
 }
 
@@ -812,7 +812,7 @@ armor am_chainmail_m {
 	material metal
 	defense 85
 	req_str 50
-	mobility 55
+	mobility 65
 	flags magical
 }
 
@@ -826,7 +826,7 @@ armor am_chainmail_mith {
 	material metal
 	defense 95
 	req_str 35
-	mobility 65
+	mobility 75
 	flags magical
 }
 
@@ -838,8 +838,8 @@ armor am_scale {
 	type human
 	material metal
 	defense 80
-	req_str 50
-	mobility 55
+	req_str 55
+	mobility 60
 }
 
 armor am_scale_hq {
@@ -891,7 +891,7 @@ armor am_breastplate {
 	material metal
 	defense 95
 	req_str 45
-	mobility 60
+	mobility 70
 }
 
 armor am_breastplate_hq {
@@ -903,7 +903,7 @@ armor am_breastplate_hq {
 	material metal
 	defense 105
 	req_str 45
-	mobility 65
+	mobility 75
 	flags hq
 }
 
@@ -916,7 +916,7 @@ armor am_breastplate_m {
 	material metal
 	defense 120
 	req_str 40
-	mobility 65
+	mobility 75
 	flags magical
 }
 
@@ -930,7 +930,7 @@ armor am_breastplate_mith {
 	material metal
 	defense 130
 	req_str 30
-	mobility 75
+	mobility 85
 	flags magical
 }
 
@@ -944,7 +944,7 @@ armor am_breastplate_adam {
 	material metal
 	defense 145
 	req_str 50
-	mobility 55
+	mobility 75
 	flags {magic_resistance10 magical}
 }
 
@@ -957,7 +957,7 @@ armor am_gladiator {
 	material metal
 	defense 150
 	req_str 45
-	mobility 65
+	mobility 75
 	flags {not_shop not_chest not_random unique}
 }
 
@@ -970,7 +970,7 @@ armor ah_splint {
 	material metal
 	defense 60
 	req_str 50
-	mobility 45
+	mobility 50
 }
 
 armor ah_splint_hq {
@@ -982,7 +982,7 @@ armor ah_splint_hq {
 	material metal
 	defense 70
 	req_str 50
-	mobility 50
+	mobility 55
 	flags hq
 }
 
@@ -995,7 +995,7 @@ armor ah_splint_m {
 	material metal
 	defense 85
 	req_str 50
-	mobility 50
+	mobility 55
 	flags magical
 }
 
@@ -1022,7 +1022,7 @@ armor ah_antimage {
 	material metal
 	defense 120
 	req_str 55
-	mobility 50
+	mobility 55
 	flags {not_shop not_chest not_random unique magic_resistance25}
 }
 
@@ -1035,7 +1035,7 @@ armor ah_plate {
 	material metal
 	defense 95
 	req_str 70
-	mobility 30
+	mobility 40
 }
 
 armor ah_plate_hq {
@@ -1047,7 +1047,7 @@ armor ah_plate_hq {
 	material metal
 	defense 105
 	req_str 70
-	mobility 35
+	mobility 45
 	flags hq
 }
 
@@ -1060,7 +1060,7 @@ armor ah_plate_m {
 	material metal
 	defense 120
 	req_str 65
-	mobility 35
+	mobility 45
 	flags magical
 }
 
@@ -1088,7 +1088,7 @@ armor ah_plate_adam {
 	material metal
 	defense 145
 	req_str 40
-	mobility 25
+	mobility 45
 	flags {magic_resistance10 magical}
 }
 
@@ -1101,7 +1101,7 @@ armor ah_black_armor {
 	material metal
 	defense 160
 	req_str 75
-	mobility 25
+	mobility 40
 	flags {not_shop not_chest not_random magic_resistance25 unique}
 }
 
@@ -1114,7 +1114,7 @@ armor ah_crystal {
 	material crystal
 	defense 125
 	req_str 80
-	mobility 20
+	mobility 25
 	flags hq
 }
 
@@ -1127,7 +1127,7 @@ armor ah_crystal_m {
 	material crystal
 	defense 150
 	req_str 80
-	mobility 20
+	mobility 25
 	flags {magic_resistance10 magical}
 }
 
@@ -1140,7 +1140,7 @@ armor ah_blood_crystal {
 	material crystal
 	defense 170
 	req_str 80
-	mobility 20
+	mobility 25
 	flags {not_shop not_chest not_random magic_resistance10 magical}
 }
 
@@ -1153,7 +1153,7 @@ armor al_blacksmith {
 	material skin
 	defense 50
 	req_str 30
-	mobility 60
+	mobility 85
 	flags not_blacksmith
 }
 
@@ -1166,7 +1166,7 @@ armor al_innkeeper {
 	material skin
 	defense 40
 	req_str 20
-	mobility 60
+	mobility 85
 	flags not_blacksmith
 }
 
@@ -1179,7 +1179,7 @@ armor al_goblin {
 	material skin
 	defense 30
 	req_str 20
-	mobility 75
+	mobility 90
 	flags {not_shop not_chest}
 }
 
@@ -1192,7 +1192,7 @@ armor al_orc {
 	material skin
 	defense 40
 	req_str 40
-	mobility 55
+	mobility 85
 	flags {not_shop not_chest}
 }
 
@@ -1205,7 +1205,7 @@ armor al_orc_shaman {
 	material skin
 	defense 40
 	req_str 50
-	mobility 55
+	mobility 85
 	flags {not_shop not_chest mage power1 magical}
 }
 
@@ -1218,7 +1218,7 @@ armor am_orc {
 	material metal
 	defense 60
 	req_str 60
-	mobility 35
+	mobility 60
 	flags {not_shop not_chest}
 }
 
@@ -1231,7 +1231,7 @@ armor al_mage {
 	material cloth
 	defense 30
 	req_str 20
-	mobility 70
+	mobility 90
 	flags {not_shop not_chest mage power1 magical}
 }
 
@@ -1245,7 +1245,7 @@ armor al_mage2 {
 	material cloth
 	defense 50
 	req_str 20
-	mobility 70
+	mobility 90
 	flags {not_shop not_chest mage power2 magic_resistance10 magical}
 }
 
@@ -1259,7 +1259,7 @@ armor al_mage3 {
 	material cloth
 	defense 70
 	req_str 20
-	mobility 70
+	mobility 90
 	flags {not_shop not_chest mage power3 magic_resistance10 magical}
 }
 
@@ -1273,7 +1273,7 @@ armor al_mage4 {
 	material cloth
 	defense 90
 	req_str 20
-	mobility 70
+	mobility 90
 	flags {not_shop not_chest mage power4 magic_resistance25 unique}
 }
 
@@ -1286,7 +1286,7 @@ armor al_necromancer {
 	material cloth
 	defense 75
 	req_str 25
-	mobility 65
+	mobility 80
 	flags {not_shop not_chest power2 magic_resistance10 magical}
 }
 
@@ -1299,7 +1299,7 @@ armor al_clothes {
 	material cloth
 	defense 25
 	req_str 20
-	mobility 75
+	mobility 100
 	flags {not_chest not_blacksmith}
 }
 
@@ -1312,7 +1312,7 @@ armor al_clothes2 {
 	material cloth
 	defense 25
 	req_str 20
-	mobility 75
+	mobility 100
 	flags {not_chest not_blacksmith}
 }
 
@@ -1326,7 +1326,7 @@ armor al_clothes2b {
 	material cloth
 	defense 25
 	req_str 20
-	mobility 75
+	mobility 100
 	flags {not_chest not_blacksmith}
 }
 
@@ -1339,7 +1339,7 @@ armor al_clothes3 {
 	material cloth
 	defense 25
 	req_str 20
-	mobility 75
+	mobility 100
 	flags {not_chest not_blacksmith hq}
 }
 
@@ -1353,7 +1353,7 @@ armor al_clothes3b {
 	material cloth
 	defense 25
 	req_str 20
-	mobility 75
+	mobility 100
 	flags {not_chest not_blacksmith hq}
 }
 

@@ -745,8 +745,7 @@ struct Unit
 			return true;
 	}
 
-	int CalculateMobility() const;
-	int CalculateMobility(const Armor& armor) const;
+	int CalculateMobility(const Armor* armor = nullptr) const;
 
 	//int Get(SubSkill s) const;
 

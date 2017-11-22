@@ -152,7 +152,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			Chainmail - Medium armor [(Does not fit)]
 			Defense: 30 (40 -> 50)
 			Required strength: $40$
-			Mobility: 50 (40) / Mobility: 50 (70->60)
+			Mobility: 50 (40 -> 50)
 			*/
 			const Armor& armor = item->ToArmor();
 			cstring mob_str, armor_type;
@@ -163,7 +163,9 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			else
 				armor_type = Format("%s (%s)", skill, txInvalidArmor);
 
-			int mob = unit->CalculateMobility(armor);
+			int old_mob = unit->CalculateMobility();
+			int new_mob = unit->CalculateMobility(&armor);
+			int mob = unit->CalculateMobility(&armor);
 			int dex = unit->Get(Attribute::DEX);
 			if(mob == dex)
 				mob_str = Format("(%d)", dex);

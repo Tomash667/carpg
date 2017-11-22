@@ -2719,58 +2719,42 @@ void Unit::CalculateStats(bool initial)
 }
 
 //=================================================================================================
-int Unit::CalculateMobility() const
+int Unit::CalculateMobility(const Armor* armor) const
 {
-	if(HaveArmor())
-		return CalculateMobility(GetArmor());
-	else
-		return Get(Attribute::DEX);
-}
+	if(IS_SET(data->flags3, F3_FIXED))
+		return 100;
 
-//=================================================================================================
-int Unit::CalculateMobility(const Armor& armor) const
-{
-	int dex = Get(Attribute::DEX);
-	int str = Get(Attribute::STR);
-	float dexf = (float)dex;
-	if(armor.req_str > str)
-		dexf *= float(str) / armor.req_str;
+	if(!armor)
+		armor = (const Armor*)slots[SLOT_ARMOR];
 
-	int max_dex;
-	switch(armor.skill)
+	// calculate base mobility (75-150)
+	float mobility = 75.f + 0.5f * Get(Attribute::DEX) + 0.25f * Get(Skill::ACROBATICS);
+
+	if(armor)
 	{
-	case Skill::LIGHT_ARMOR:
-	default:
-		max_dex = int((1.f + float(Get(Skill::LIGHT_ARMOR)) / 100)*armor.mobility);
-		break;
-	case Skill::MEDIUM_ARMOR:
-		max_dex = int((1.f + float(Get(Skill::MEDIUM_ARMOR)) / 150)*armor.mobility);
-		break;
-	case Skill::HEAVY_ARMOR:
-		max_dex = int((1.f + float(Get(Skill::HEAVY_ARMOR)) / 200)*armor.mobility);
-		break;
+		// calculate armor mobility (0-100)
+		int armor_mobility = armor->mobility;
+		int skill = max(Get(armor->skill), 100);
+		armor_mobility += skill / 4;
+		if(armor_mobility > 100)
+			armor_mobility = 100;
+		int str = Get(Attribute::STR);
+		if(str < armor->req_str)
+		{
+			armor_mobility -= armor->req_str - str;
+			if(armor_mobility < 0)
+				armor_mobility = 0;
+		}
+
+		// multiply mobility by armor mobility
+		mobility = (float(armor_mobility) / 100 * mobility);
 	}
 
-	if(dexf > (float)max_dex)
-		return max_dex + int((dexf - max_dex) * ((float)max_dex / dexf));
+	if(mobility > 150)
+		mobility = 150;
 
-	return (int)dexf;
+	return (int)mobility;
 }
-
-//=================================================================================================
-/*int Unit::Get(SubSkill ss) const
-{
-	int id = (int)ss;
-	SubSkillInfo& info = g_sub_skills[id];
-	int v = Get(info.skill);
-	ValueBuffer buf;
-	return v + buf.Get();
-}*/
-
-struct TMod
-{
-	float str, end, dex;
-};
 
 //=================================================================================================
 Skill Unit::GetBestWeaponSkill() const
@@ -2782,28 +2766,17 @@ Skill Unit::GetBestWeaponSkill() const
 		Skill::BLUNT
 	};
 
-	const TMod weapon_mod[] = {
-		0.5f, 0, 0.5f,
-		0.75f, 0, 0.25f,
-		0.85f, 0, 0.15f,
-		0.8f, 0, 0.2f
-	};
-
 	Skill best = Skill::NONE;
-	int val = 0, val2 = 0, index = 0;
+	int val = 0, index = 0;
 
 	for(Skill s : weapon_skills)
 	{
-		int s_val = Get(s);
+		auto& info = GetWeaponTypeInfo(s);
+		int s_val = Get(s) + int(info.str2dmg * Get(Attribute::STR) + info.dex2dmg * Get(Attribute::DEX));
 		if(s_val >= val)
 		{
-			int s_val2 = int(weapon_mod[index].str * Get(Attribute::STR) + weapon_mod[index].dex * Get(Attribute::DEX));
-			if(s_val2 > val2)
-			{
-				val = s_val;
-				val2 = s_val2;
-				best = s;
-			}
+			val = s_val;
+			best = s;
 		}
 		++index;
 	}
@@ -2818,12 +2791,6 @@ Skill Unit::GetBestArmorSkill() const
 		Skill::LIGHT_ARMOR,
 		Skill::MEDIUM_ARMOR,
 		Skill::HEAVY_ARMOR
-	};
-
-	const TMod armor_mod[] = {
-		0, 0, 1,
-		0, 0.5f, 0.5f,
-		0.5f, 0.5f, 0
 	};
 
 	Skill best = Skill::NONE;
