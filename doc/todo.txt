@@ -1,6 +1,6 @@
 ﻿FEATURE:
 *** better stamina
-+ always show celownik when holding bow
+? always show celownik when holding bow
 + better stamina usage
 	! bow, shield, mp
 	+ po użyciu nie odnawia się przez sekundę
