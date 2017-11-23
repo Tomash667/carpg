@@ -333,15 +333,15 @@ struct Unit
 	}
 	float GetRotationSpeed() const
 	{
-		return data->rot_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
+		return data->rot_speed * GetMobilityMod() * GetWalkLoad();
 	}
 	float GetWalkSpeed() const
 	{
-		return data->walk_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
+		return data->walk_speed * GetMobilityMod() * GetWalkLoad();
 	}
 	float GetRunSpeed() const
 	{
-		return data->run_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetRunLoad() * GetArmorMovement();
+		return data->run_speed * GetMobilityMod() * GetRunLoad();
 	}
 	bool CanRun() const
 	{
@@ -381,24 +381,6 @@ struct Unit
 	bool IsHoldingBow() const
 	{
 		return GetHoldWeapon() == W_BOW;
-	}
-	float GetArmorMovement() const
-	{
-		if(!HaveArmor())
-			return 1.f;
-		else
-		{
-			switch(GetArmor().skill)
-			{
-			case Skill::LIGHT_ARMOR:
-			default:
-				return 1.f + 1.f / 300 * Get(Skill::LIGHT_ARMOR);
-			case Skill::MEDIUM_ARMOR:
-				return 1.f + 1.f / 450 * Get(Skill::MEDIUM_ARMOR);
-			case Skill::HEAVY_ARMOR:
-				return 1.f + 1.f / 600 * Get(Skill::HEAVY_ARMOR);
-			}
-		}
 	}
 	Vec3 GetFrontPos() const
 	{
@@ -749,6 +731,7 @@ struct Unit
 	}
 
 	int CalculateMobility(const Armor* armor = nullptr) const;
+	float GetMobilityMod() const;
 
 	//int Get(SubSkill s) const;
 

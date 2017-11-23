@@ -1,9 +1,28 @@
 ﻿FEATURE:
 *** better stamina
+MOBILITY:
+<100 - decreased speed, attack speed
+100 - normal
+>100 - increased speed, attack speed
+max 150
+
+0 - 40%
+25 - 30%
+50 - 20%
+75 - 10%
+
+120 + 10%
+140 + 20%
+150 + 25%
+
++ load should just change mobility too
++ better values for run/walk/rotate
++ affect attack speed
++ don't limit mouse rotation, only unit
+
 - float train parts
 - archers stupidly come closer to target when out of stamina
 + ai next attack depends on ONE_HANDED_WEAPON
-+ stamina values
 + new mobility speed effect
 
 *** perks

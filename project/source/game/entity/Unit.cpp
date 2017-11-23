@@ -2769,10 +2769,34 @@ int Unit::CalculateMobility(const Armor* armor) const
 		mobility = (float(armor_mobility) / 100 * mobility);
 	}
 
+	auto load_state = GetLoadState();
+	switch(load_state)
+	{
+	case LS_MEDIUM:
+		mobility *= 0.95f;
+		break;
+	case LS_HEAVY:
+		mobility *= 0.85f;
+		break;
+	case LS_OVERLOADED:
+		mobility *= 0.5f;
+		break;
+	case LS_MAX_OVERLOADED:
+		mobility = 0;
+		break;
+	}
+
 	if(mobility > 150)
 		mobility = 150;
 
 	return (int)mobility;
+}
+
+//=================================================================================================
+float Unit::GetMobilityMod() const
+{
+	float mob = (float)CalculateMobility();
+	return 0.5f + mob / 200.f;
 }
 
 //=================================================================================================

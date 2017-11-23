@@ -9358,7 +9358,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					float blocked = min(atk, block_power) + 1;
 					atk -= blocked;
 					float stamina_used = blocked - hitted->Get(Skill::SHIELD);
-					float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted->Get(Skill::SHIELD)) / 100);
+					float block_stamina_loss = Lerp(1.f, 0.35f, float(hitted->Get(Skill::SHIELD)) / 100);
 					stamina_used *= block_stamina_loss;
 					if(stamina_used > 0)
 						hitted->RemoveStamina(stamina_used);
@@ -9482,7 +9482,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					float stamina_used = blocked * 2;
 					dmg -= blocked / 2;
 					stamina_used -= hitted->Get(Skill::SHIELD);
-					float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted->Get(Skill::SHIELD)) / 100);
+					float block_stamina_loss = Lerp(1.f, 0.35f, float(hitted->Get(Skill::SHIELD)) / 100);
 					stamina_used *= block_stamina_loss;
 					if(stamina_used > 0)
 						hitted->RemoveStamina(stamina_used);
@@ -10968,7 +10968,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			stamina_used *= 4.f / 3;
 		atk -= blocked;
 		stamina_used -= hitted.Get(Skill::SHIELD);
-		float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted.Get(Skill::SHIELD)) / 100);
+		float block_stamina_loss = Lerp(1.f, 0.35f, float(hitted.Get(Skill::SHIELD)) / 100);
 		stamina_used *= block_stamina_loss;
 		if(stamina_used > 0)
 			hitted.RemoveStamina(stamina_used);
