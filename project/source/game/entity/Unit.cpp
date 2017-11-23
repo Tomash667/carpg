@@ -11,6 +11,8 @@
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
+const float Unit::STAMINA_BASH_ATTACK = 50.f;
+const float Unit::STAMINA_UNARMED_ATTACK = 50.f;
 const float Unit::STAMINA_RESTORE_TIMER = 1.f;
 
 //=================================================================================================
@@ -2929,8 +2931,6 @@ void Unit::UpdateStaminaAction()
 //=================================================================================================
 void Unit::RemoveStamina(float value)
 {
-	if(player)
-		Info("Stamina %s %g", player->name.c_str(), value);
 	stamina -= value;
 	stamina_timer = STAMINA_RESTORE_TIMER;
 	if(player)

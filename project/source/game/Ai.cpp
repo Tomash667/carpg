@@ -2159,7 +2159,7 @@ void Game::UpdateAi(float dt)
 								u.mesh_inst->groups[1].speed = 2.f;
 								u.mesh_inst->frame_end_info2 = false;
 								u.hitted = false;
-								u.RemoveStamina(50.f);
+								u.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
 
 								if(Net::IsOnline())
 								{
@@ -2929,7 +2929,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 		if(u.HaveWeapon())
 			stamina *= u.GetWeapon().GetInfo().stamina;
 		else
-			stamina *= 50.f;
+			stamina *= Unit::STAMINA_UNARMED_ATTACK;
 		u.RemoveStamina(stamina);
 
 		float speed(do_power_attack ? ai.unit->GetPowerAttackSpeed() : ai.unit->GetAttackSpeed());

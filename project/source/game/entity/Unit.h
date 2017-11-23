@@ -162,6 +162,8 @@ struct Unit
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
+	static const float STAMINA_BASH_ATTACK;
+	static const float STAMINA_UNARMED_ATTACK;
 	static const float STAMINA_RESTORE_TIMER;
 
 	int netid;

@@ -1,28 +1,10 @@
 ﻿FEATURE:
 *** better stamina
-? always show celownik when holding bow
-+ better stamina usage
-	! bow, shield, mp
-	+ po użyciu nie odnawia się przez sekundę
-	+ staminy ubywa odrazu po kliknięciu atak
-	+ potężny atak, najpierw 1 -> 1,5
-	+ stamina values
-+ don't regenerate instantly after shooting, when holding (when to remove?)
-	+ bow - remove stamina at start
-	+ weapon - remove at start -> remove more when holding
-	+ wait time before starting regeneration
-+ can shoot without stamina
-	? test attack, continue attack, running attack, power, shoot, continue shoot, bash
-	+ add to changelog
-+ blocking shots don't remove stamina
-	+ add to changelog (blocking don't remove stamina, units gain stamina when blocking on high levels of shield skill)
-+ new mobility (dex + acro)
-	+ speed effect
-
-? mp testing
-	? mobility calculation
-		? speed effect
-	! remove log in Train,RemoveStamina
+- float train parts
+- archers stupidly come closer to target when out of stamina
++ ai next attack depends on ONE_HANDED_WEAPON
++ stamina values
++ new mobility speed effect
 
 *** perks
 + perk points
@@ -103,6 +85,7 @@ NEW:
 + skill: weapon style (weapon and shield, single weapon, dual weapons, two handed weapon, pole weapon)
 + shield give mobility penality (small 0, normal 5, big 10, tower 15)
 + ai telling player to wear something if naked
++ group ai - some archers should block enemy, others shoot
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

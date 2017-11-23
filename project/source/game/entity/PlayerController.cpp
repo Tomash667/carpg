@@ -140,7 +140,6 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 	{
 	case TrainWhat::Attack:
 		{
-			Info("Attack %s", name.c_str());
 			if(skill == Skill::NONE)
 				skill = unit->GetWeaponSkill();
 
