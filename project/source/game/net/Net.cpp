@@ -4125,7 +4125,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						int num = value;
 						if(type == NetChange::CHEAT_MODSTAT)
 							num += info.u->GetBase(skill);
-						int v = Clamp(num, 0, SkillInfo::MAX);
+						int v = Clamp(num, SkillInfo::MIN, SkillInfo::MAX);
 						if(v != info.u->GetBase(skill))
 						{
 							info.u->Set(skill, v);
@@ -4149,7 +4149,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						int num = value;
 						if(type == NetChange::CHEAT_MODSTAT)
 							num += info.u->GetBase(attrib);
-						int v = Clamp(num, 1, AttributeInfo::MAX);
+						int v = Clamp(num, AttributeInfo::MIN, AttributeInfo::MAX);
 						if(v != info.u->GetBase(attrib))
 						{
 							info.u->Set(attrib, v);

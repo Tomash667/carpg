@@ -1,14 +1,21 @@
 ﻿FEATURE:
 *** perks
 + perk points
+	every two levels, for heroes every 3 levels
 + subprofile perks
 + new history perks
+	Talent -> SkillFocus
+	Weakness -> specific perk
+	Strength ?
 + modifying apt (which perk modify starting value, which aptitude?)
 + new ingame perks
 + training perks
 + addperk, removeperk command
 + use subprofiles in creating random char
 + better starting items list (poor, wealthy etc effects)
++ compability
+	map old to new
+	add missing wealthy perk
 
 *** combat
 + str/dex formula changes
@@ -32,6 +39,7 @@
 + book bestiary, magic artifacts
 + level in team panel for server
 + ai next attack depends on ONE_HANDED_WEAPON
++ npc leveling according to player leveling
 
 ? test playthru
 	? leveling speed
@@ -39,6 +47,11 @@
 	- skill rise too fast
 	- max level only 20? (well for hp/atk/def/perks only)
 ? test all traps with 2 clients, log playing sounds for all players
+
+v2:
++ exp, exp from quests
++ int -> exp bonus
+
 ===============================================================================================================
 CURRENT:
 - traps are out of sync for client/server
@@ -83,6 +96,12 @@ NEW:
 + ai telling player to wear something if naked
 + group ai - some archers should block enemy, others shoot
 + block without shield (by golems for example)
++ effect PoisonResistance/immunity
++ perk Crafting Tradition
++ amulet pijanego mistrza - im bardziej pijany jest gracz tym większe obrażenia
++ perk: zmniejszenie stłuczeń o 25%, alkohol też zwiększa max o 25%
++ walki w karczmie na pieści
++ negative traits: for int/wis
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

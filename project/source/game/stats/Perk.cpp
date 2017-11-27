@@ -8,19 +8,30 @@
 #include "CreatedCharacter.h"
 #include "Unit.h"
 
+struct PerkContext
+{
+	PerkContext& HavePerkToReplace(Perk perk);
+	bool HavePerk(Perk perk);
+	TakenPerk* FindPerk(Perk perk);
+
+	CreatedCharacter* cc;
+	PlayerController* pc;
+	bool validate, startup;
+};
+
 //-----------------------------------------------------------------------------
 PerkInfo g_perks[(int)Perk::Max] = {
-	PerkInfo(Perk::Weakness, "weakness", PerkInfo::Free | PerkInfo::Flaw | PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Attribute),
-	PerkInfo(Perk::Strength, "strength", PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Attribute),
-	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History, PerkInfo::None),
-	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Free | PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::None),
-	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Skill),
-	//PerkInfo(Perk::CraftingTradition, "crafting_tradition", PerkInfo::History | PerkInfo::Check, PerkInfo::None),
-	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History, PerkInfo::None),
-	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::History, PerkInfo::None),
-	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History | PerkInfo::Check, PerkInfo::None, Perk::Wealthy),
-	PerkInfo(Perk::FamilyHeirloom, "heirloom", PerkInfo::History, PerkInfo::None),
-	PerkInfo(Perk::Leader, "leader", PerkInfo::History, PerkInfo::None),
+	PerkInfo(Perk::Weakness, "weakness", PerkInfo::Free | PerkInfo::Flaw | PerkInfo::History | PerkInfo::RequireFormat),
+	PerkInfo(Perk::Strength, "strength", PerkInfo::History | PerkInfo::RequireFormat),
+	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
+	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Free | PerkInfo::History | PerkInfo::RequireFormat),
+	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History | PerkInfo::RequireFormat),
+	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History),
+	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::History),
+	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History, [](PerkContext& c) { c.HavePerkToReplace(Perk::Wealthy); }),
+	PerkInfo(Perk::FilthyRich, "filthy_rich", PerkInfo::History, [](PerkContext& c) { c.HavePerkToReplace(Perk::FilthyRich); }),
+	PerkInfo(Perk::FamilyHeirloom, "heirloom", PerkInfo::History),
+	PerkInfo(Perk::Leader, "leader", PerkInfo::History)
 };
 
 //-----------------------------------------------------------------------------
@@ -79,10 +90,10 @@ void TakenPerk::GetDesc(string& s) const
 	switch(perk)
 	{
 	case Perk::Skilled:
-		//case Perk::CraftingTradition:
 	case Perk::AlchemistApprentice:
 	case Perk::Wealthy:
 	case Perk::VeryWealthy:
+	case Perk::FilthyRich:
 	case Perk::FamilyHeirloom:
 	case Perk::Leader:
 		s.clear();
@@ -113,191 +124,248 @@ void TakenPerk::GetDesc(string& s) const
 }
 
 //=================================================================================================
-int TakenPerk::Apply(CreatedCharacter& cc, bool validate) const
+cstring TakenPerk::FormatName()
 {
-	PerkInfo& info = g_perks[(int)perk];
+	PerkInfo& p = g_perks[(int)perk];
 
 	switch(perk)
 	{
-	case Perk::Strength:
-		if(validate)
-		{
-			if(value < 0 || value >= (int)Attribute::MAX)
-			{
-				Error("Perk 'strength', invalid attribute %d.", value);
-				return 2;
-			}
-			if(cc.a[value].mod)
-			{
-				Error("Perk 'strength', attribute %d is already modified.", value);
-				return 3;
-			}
-		}
-		cc.a[value].Mod(5, true);
-		break;
 	case Perk::Weakness:
-		if(validate)
+	case Perk::Strength:
+		return Format("%s (%s)", p.name.c_str(), AttributeInfo::attributes[value].name.c_str());
+	case Perk::SkillFocus:
 		{
-			if(value < 0 || value >= (int)Attribute::MAX)
-			{
-				Error("Perk 'weakness', invalid attribute %d.", value);
-				return 2;
-			}
-			if(cc.a[value].mod)
-			{
-				Error("Perk 'weakness', attribute %d is already modified.", value);
-				return 3;
-			}
+			int skill_p = (value & 0xFF);
+			return Format("%s (%s)", p.name.c_str(), SkillInfo::skills[skill_p].name.c_str());
 		}
-		cc.a[value].Mod(-5, true);
-		break;
-	case Perk::Skilled:
-		cc.update_skills = true;
-		cc.sp += 2;
-		cc.sp_max += 2;
+	case Perk::Talent:
+		return Format("%s (%s)", p.name.c_str(), SkillInfo::skills[value].name.c_str());
+	default:
+		assert(0);
+		return p.name.c_str();
+	}
+}
+
+//=================================================================================================
+// Check value of perk sent in mp
+bool TakenPerk::Validate()
+{
+	switch(perk)
+	{
+	case Perk::Strength:
+	case Perk::Weakness:
+		if(value < 0 || value >= (int)Attribute::MAX)
+		{
+			Error("Perk 'strength', invalid attribute %d.", value);
+			return false;
+		}
 		break;
 	case Perk::SkillFocus:
 		{
 			int v[3];
 			Split3(value, v[0], v[1], v[2]);
-			if(validate)
+			for(int i = 0; i < 3; ++i)
 			{
-				for(int i = 0; i < 3; ++i)
+				if(v[i] < 0 || v[i] >= (int)Skill::MAX)
 				{
-					if(v[i] < 0 || v[i] >= (int)Skill::MAX)
-					{
-						Error("Perk 'skill_focus', invalid skill %d (%d).", v[i], i);
-						return 2;
-					}
-					if(cc.a[v[i]].mod)
-					{
-						Error("Perk 'skill_focus', skill %d is already modified (%d).", v[i], i);
-						return 3;
-					}
+					Error("Perk 'skill_focus', invalid skill %d (%d).", v[i], i);
+					return false;
 				}
 			}
-			cc.to_update.push_back((Skill)v[0]);
-			cc.to_update.push_back((Skill)v[1]);
-			cc.to_update.push_back((Skill)v[2]);
-			cc.s[v[0]].Mod(10, true);
-			cc.s[v[1]].Mod(-5, true);
-			cc.s[v[2]].Mod(-5, true);
 		}
 		break;
 	case Perk::Talent:
-		if(validate)
+		if(value < 0 || value >= (int)Skill::MAX)
 		{
-			if(value < 0 || value >= (int)Skill::MAX)
-			{
-				Error("Perk 'talent', invalid skill %d.", value);
-				return 2;
-			}
-			if(cc.s[value].mod)
-			{
-				Error("Perk 'talent', skill %d is already modified.", value);
-				return 3;
-			}
+			Error("Perk 'talent', invalid skill %d.", value);
+			return false;
 		}
-		cc.s[value].Mod(5, true);
-		cc.to_update.push_back((Skill)value);
-		break;
-		/*case Perk::CraftingTradition:
-			if(validate)
-			{
-				if(cc.s[(int)Skill::CRAFTING].mod)
-				{
-					Error("Perk 'crafting_tradition', skill is already modified.");
-					return 3;
-				}
-			}
-			cc.s[(int)Skill::CRAFTING].Mod(10, true);
-			cc.to_update.push_back(Skill::CRAFTING);
-			break;*/
-	case Perk::VeryWealthy:
-		{
-			bool found = false;
-			for(uint i = 0; i < cc.taken_perks.size(); ++i)
-			{
-				if(cc.taken_perks[i].perk == Perk::Wealthy)
-				{
-					found = true;
-					cc.taken_perks.erase(cc.taken_perks.begin() + i);
-					break;
-				}
-			}
-			if(!found)
-				--cc.perks;
-		}
-		break;
-	case Perk::Wealthy:
-	case Perk::AlchemistApprentice:
-	case Perk::FamilyHeirloom:
-	case Perk::Leader:
-		break;
-	default:
-		assert(0);
 		break;
 	}
 
-	if(!IS_SET(info.flags, PerkInfo::Free))
-		--cc.perks;
-	if(IS_SET(info.flags, PerkInfo::Flaw))
-	{
-		++cc.perks;
-		++cc.perks_max;
-	}
-
-	return 0;
+	return true;
 }
 
-//=================================================================================================
-void TakenPerk::Apply(PlayerController& pc) const
+bool TakenPerk::CanTake(PerkContext& ctx)
 {
 	switch(perk)
 	{
+	case Perk::Weakness:
 	case Perk::Strength:
-		pc.unit->statsx->attrib[value] += 5;
+	case Perk::Skilled:
+	case Perk::SkillFocus:
+	case Perk::Talent:
+	case Perk::AlchemistApprentice:
+	case Perk::Wealthy:
+	case Perk::FamilyHeirloom:
+	case Perk::Leader:
+		return true;
+	case Perk::VeryWealthy:
+		return ctx.HavePerk(Perk::Wealthy);
+	case Perk::FilthyRich:
+		return ctx.HavePerk(Perk::VeryWealthy);
+	default:
+		assert(0);
+		return false;
+	}
+}
+
+void Unit::Mod(Attribute attrib, int value, bool startup)
+{
+	int a = (int)attrib;
+	if(startup)
+		statsx->attrib[a] += value;
+	else
+	{
+		int new_value = Clamp(statsx->attrib[a] + value, 1, AttributeInfo::MAX);
+		new_value = Clamp(new_value, 1, AttributeInfo::MIN, AttributeInfo::MAX);
+		Set(new_value);
+		// !!! new apt
+	}
+}
+
+void Unit::Mod(Skill skill, int value, bool startup)
+{
+	int s = (int)skill;
+	if(startup)
+		statsx->skill[a] += value;
+	else
+	{
+		int new_value = Clamp(statsx->attrib[a] + value, 1, AttributeInfo::MAX);
+		new_value = Clamp(new_value, 1, AttributeInfo::MIN, AttributeInfo::MAX);
+		Set(new_value);
+	}
+}
+
+bool TakenPerk::Apply(PerkContext& ctx)
+{
+	//PerkInfo& info = g_perks[(int)perk];
+
+	switch(perk)
+	{
+	case Perk::Strength:
+		if(ctx.validate && ctx.cc && ctx.cc->a[value].mod)
+		{
+			Error("Perk 'strength', attribute %d is already modified.", value);
+			return false;
+		}
+		if(ctx.cc)
+			ctx.cc->a[value].Mod(5, true);
+		else
+			ctx.pc->unit->statsx->attrib[value] += 5;
 		break;
 	case Perk::Weakness:
-		pc.unit->statsx->attrib[value] -= 5;
+		if(ctx.validate && ctx.cc && ctx.cc->a[value].mod)
+		{
+			Error("Perk 'weakness', attribute %d is already modified.", value);
+			return false;
+		}
+		if(ctx.cc)
+			ctx.cc->a[value].Mod(-5, true);
+		else
+			ctx.pc->unit->statsx->attrib[value] -= 5;
 		break;
 	case Perk::Skilled:
-		// nothing to do here, only affects character creation
+		if(ctx.cc)
+		{
+			ctx.cc->update_skills = true;
+			ctx.cc->sp += 3;
+			ctx.cc->sp_max += 3;
+		}
 		break;
 	case Perk::SkillFocus:
 		{
-			int plus, minus, minus2;
-			Split3(value, plus, minus, minus2);
-			pc.unit->statsx->skill[plus] += 10;
-			pc.unit->statsx->skill[minus] -= 5;
-			pc.unit->statsx->skill[minus2] -= 5;
+			int v[3];
+			Split3(value, v[0], v[1], v[2]);
+			if(ctx.validate && ctx.cc)
+			{
+				for(int i = 0; i < 3; ++i)
+				{
+					if(ctx.cc->a[v[i]].mod)
+					{
+						Error("Perk 'skill_focus', skill %d is already modified (%d).", v[i], i);
+						return false;
+					}
+				}
+			}
+			if(ctx.cc)
+			{
+				ctx.cc->to_update.push_back((Skill)v[0]);
+				ctx.cc->to_update.push_back((Skill)v[1]);
+				ctx.cc->to_update.push_back((Skill)v[2]);
+				ctx.cc->s[v[0]].Mod(10, true);
+				ctx.cc->s[v[1]].Mod(-5, true);
+				ctx.cc->s[v[2]].Mod(-5, true);
+			}
+			else
+			{
+				ctx.pc->unit->statsx->skill[plus] += v[0];
+				ctx.pc->unit->statsx->skill[minus] -= v[1];
+				ctx.pc->unit->statsx->skill[minus2] -= v[2];
+			}
 		}
 		break;
 	case Perk::Talent:
-		pc.unit->statsx->skill[value] += 5;
+		if(ctx.validate && ctx.cc && ctx.cc->s[value].mod)
+		{
+			Error("Perk 'talent', skill %d is already modified.", value);
+			return false;
+		}
+		if(ctx.cc)
+		{
+			ctx.cc->s[value].Mod(5, true);
+			ctx.cc->to_update.push_back((Skill)value);
+		}
+		else
+			ctx.pc->unit->statsx->skill[value] += 5;
 		break;
-		//case Perk::CraftingTradition:
-		//	pc.base_stats.skill[(int)Skill::CRAFTING] += 10;
-		//	break;
+	case Perk::Wealthy:
+		if(ctx.pc && !hidden && ctx.startup)
+			pc.unit->gold += 1000;
+		break;
+	case Perk::VeryWealthy:
+		{
+			auto perk = ctx.FindPerk(Perk::Wealthy);
+			if(perk)
+				perk->hidden = true;
+			if(ctx.pc && !hidden && ctx.startup)
+				pc.unit->gold += 5000;
+		}
+		break;
+	case Perk::FilthyRich:
+		{
+			auto perk = ctx.FindPerk(Perk::VeryWealthy);
+			if(perk)
+				perk->hidden = true;
+			if(ctx.pc && !hidden && ctx.startup)
+				pc.unit->gold += 100'000;
+		}
+		break;
 	case Perk::AlchemistApprentice:
 	case Perk::FamilyHeirloom:
 	case Perk::Leader:
-		// effects in CreatedCharacter::Apply
-		break;
-	case Perk::Wealthy:
-		pc.unit->gold += 500;
-		break;
-	case Perk::VeryWealthy:
-		pc.unit->gold += 2000;
 		break;
 	default:
 		assert(0);
 		break;
 	}
+
+	if(ctx.cc)
+	{
+		if(IS_SET(info.flags, PerkInfo::Flaw))
+		{
+			++ctx.cc->perks;
+			++ctx.cc->perks_max;
+		}
+		else
+			--ctx.cc->perks;
+	}
+
+	return true;
 }
 
 //=================================================================================================
-void TakenPerk::Remove(CreatedCharacter& cc, int index) const
+void TakenPerk::Remove(PerkContext& ctx)
 {
 	PerkInfo& info = g_perks[(int)perk];
 	bool add = false;
@@ -305,7 +373,10 @@ void TakenPerk::Remove(CreatedCharacter& cc, int index) const
 	switch(perk)
 	{
 	case Perk::Strength:
-		cc.a[value].Mod(-5, false);
+		if(ctx.cc)
+			ctx.cc->a[value].Mod(-5, false);
+		else
+			ctx.pc->unit->statsx->
 		break;
 	case Perk::Weakness:
 		cc.a[value].Mod(5, false);
@@ -331,10 +402,6 @@ void TakenPerk::Remove(CreatedCharacter& cc, int index) const
 		cc.s[value].Mod(-5, false);
 		cc.to_update.push_back((Skill)value);
 		break;
-		/*case Perk::CraftingTradition:
-			cc.s[(int)Skill::CRAFTING].Mod(-10, false);
-			cc.to_update.push_back(Skill::CRAFTING);
-			break;*/
 	case Perk::AlchemistApprentice:
 	case Perk::Wealthy:
 	case Perk::FamilyHeirloom:
@@ -360,27 +427,4 @@ void TakenPerk::Remove(CreatedCharacter& cc, int index) const
 
 	if(add)
 		cc.taken_perks.push_back(TakenPerk(Perk::Wealthy));
-}
-
-//=================================================================================================
-cstring TakenPerk::FormatName()
-{
-	PerkInfo& p = g_perks[(int)perk];
-
-	switch(perk)
-	{
-	case Perk::Weakness:
-	case Perk::Strength:
-		return Format("%s (%s)", p.name.c_str(), AttributeInfo::attributes[value].name.c_str());
-	case Perk::SkillFocus:
-		{
-			int skill_p = (value & 0xFF);
-			return Format("%s (%s)", p.name.c_str(), SkillInfo::skills[skill_p].name.c_str());
-		}
-	case Perk::Talent:
-		return Format("%s (%s)", p.name.c_str(), SkillInfo::skills[value].name.c_str());
-	default:
-		assert(0);
-		return p.name.c_str();
-	}
 }

@@ -139,6 +139,7 @@ struct SkillInfo
 	float attrib_ratio;
 	SimilarSkill similar;
 
+	static const int MIN = 0;
 	static const int MAX = 255;
 
 	SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2, float attrib_ratio, SimilarSkill similar) : skill_id(skill_id), id(id),

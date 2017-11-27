@@ -1229,10 +1229,11 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 			break;
 		case Perk::Skilled:
 		case Perk::Wealthy:
-		case Perk::AlchemistApprentice:
-		case Perk::FamilyHeirloom:
-		case Perk::Leader:
 		case Perk::VeryWealthy:
+		case Perk::FilthyRich:
+		case Perk::FamilyHeirloom:
+		case Perk::AlchemistApprentice:
+		case Perk::Leader:
 			AddPerk((Perk)id);
 			break;
 		case Perk::SkillFocus:
@@ -1242,9 +1243,6 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 		case Perk::Talent:
 			PickSkill(txPickSkillIncrease, Perk::Talent, false);
 			break;
-			//case Perk::CraftingTradition:
-			//	AddPerk(Perk::CraftingTradition);
-			//	break;
 		default:
 			assert(0);
 			break;
@@ -1289,6 +1287,7 @@ void CreateCharacterPanel::RebuildSkillsFlow()
 void CreateCharacterPanel::RebuildPerksFlow()
 {
 	// group perks by availability
+	PerkContext ctx;
 	available_perks.clear();
 	unavailable_perks.clear();
 	for(PerkInfo& perk : g_perks)
@@ -1307,7 +1306,9 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		}
 		if(!taken)
 		{
-			if(!IS_SET(perk.flags, PerkInfo::Check) || ValidatePerk(perk.perk_id))
+			TakenPerk taken;
+			taken.perk = perk.perk_id;
+			if(taken.CanTake(ctx))
 				available_perks.push_back(perk.perk_id);
 			else
 				unavailable_perks.push_back(perk.perk_id);
@@ -1545,21 +1546,6 @@ void CreateCharacterPanel::AddPerk(Perk perk, int value, bool apply)
 		}
 	}
 	RebuildPerksFlow();
-}
-
-//=================================================================================================
-bool CreateCharacterPanel::ValidatePerk(Perk perk)
-{
-	switch(perk)
-	{
-	//case Perk::CraftingTradition:
-	//	return !cc.s[(int)Skill::CRAFTING].mod;
-	case Perk::VeryWealthy:
-		return cc.HavePerk(Perk::Wealthy);
-	default:
-		assert(0);
-		return false;
-	}
 }
 
 //=================================================================================================

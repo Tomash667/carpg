@@ -532,7 +532,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									Skill skill = (Skill)type;
 									if(it->cmd == CMD_MODSTAT)
 										num += pc->unit->GetBase(skill);
-									int v = Clamp(num, 0, SkillInfo::MAX);
+									int v = Clamp(num, SkillInfo::MIN, SkillInfo::MAX);
 									if(v != pc->unit->GetBase(skill))
 										pc->unit->Set(skill, v);
 								}
@@ -541,7 +541,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									Attribute attrib = (Attribute)type;
 									if(it->cmd == CMD_MODSTAT)
 										num += pc->unit->GetBase(attrib);
-									int v = Clamp(num, 1, AttributeInfo::MAX);
+									int v = Clamp(num, AttributeInfo::MIN, AttributeInfo::MAX);
 									if(v != pc->unit->GetBase(attrib))
 										pc->unit->Set(attrib, v);
 								}

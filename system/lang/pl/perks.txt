@@ -31,21 +31,21 @@ perk talent {
 	name "Talent"
 	desc "Zwiêksza wybran¹ umiejêtnoœæ o 5 punktów."
 }
-/*perk crafting_tradition {
-	name "Tradycja rzemieœlnicza"
-	desc "Zwiêksza umiejêtnoœæ Rzemios³o o 10 punktów."
-}*/
 perk alchemist {
 	name "Uczeñ alchemika"
 	desc "Pracowa³eœ jako uczeñ alchemika. Nie nauczy³eœ siê warzenia mikstur ale zato zdoby³eœ spor¹ liczbê mikstur."
 }
 perk wealthy {
 	name "Bogaty"
-	desc "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 500 sztuk z³ota aby zakupiæ lepszy ekwipunek."
+	desc "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 1000 sztuk z³ota aby zakupiæ lepszy ekwipunek. Pocz¹tkowe przedmioty masz wy¿szej jakoœci."
 }
 perk very_wealthy {
 	name "Bardzo bogaty"
-	desc "Pochodzisz z bardzo bogatej. Otrzyma³eœ od niej niewielk¹ sumê 2000 sztuk z³ota, aby u³atwiæ ci rozpoczêcie przygód jako bohater."
+	desc "Pochodzisz z bardzo bogatej. Otrzyma³eœ od niej niewielk¹ sumê 5000 sztuk z³ota, aby u³atwiæ ci rozpoczêcie przygód jako bohater. Zaczynasz z lepszym wyposa¿eniem."
+}
+perk filthy_rich {
+	name "Obrzydliwie bogaty"
+	desc "Twoja rodzina jest jedn¹ z najbogatszych w kraju. Otrzyma³eœ od niej 100 000 sztuk z³ota na dobry pocz¹tek. Posiadasz te¿ o wiele lepsze pocz¹tkowe przedmioty."
 }
 perk heirloom {
 	name "Rodzinna pami¹tka"

@@ -5,17 +5,37 @@ struct CreatedCharacter;
 struct PlayerController;
 
 //-----------------------------------------------------------------------------
+namespace old
+{
+	enum class Perk
+	{
+		Weakness, // -5 attrib
+		Strength, // +5 attrib
+		Skilled, // +2 skill points
+		SkillFocus, // -5*2 skills, +10 one skill
+		Talent, // +5 skill
+		AlchemistApprentice, // more potions
+		Wealthy, // +500 gold
+		VeryWealthy, // +2k gold
+		FamilyHeirloom, // good starting item
+		Leader, // start with npc
+		Max,
+		None
+	};
+}
+
+//-----------------------------------------------------------------------------
 enum class Perk
 {
 	Weakness, // -5 attrib
 	Strength, // +5 attrib
-	Skilled, // +2 skill points
+	Skilled, // +3 skill points
 	SkillFocus, // -5*2 skills, +10 one skill
 	Talent, // +5 skill
-	//CraftingTradition,
 	AlchemistApprentice, // more potions
-	Wealthy, // +500 gold
-	VeryWealthy, // +2k gold
+	Wealthy, // +1k gold, better items
+	VeryWealthy, // +5k gold, better items
+	FilthyRich, // +100k gold, better items
 	FamilyHeirloom, // good starting item
 	Leader, // start with npc
 
@@ -39,6 +59,51 @@ enum class Perk
 	None
 };
 
+//enum class Perk
+//{
+//	// negative starting perks
+//	SlowLerner, // -1 apt to all skills
+//	Poor, // less gold, worse items
+//	BadBack, // -5 str, less carry
+//	ChronicDisease, // -5 end, 50% natural healing
+//	Sluggish, // -5 dex, slower
+//	Autistic, // -5 cha, worse prices
+//	
+//	// positive starting perks
+//	Wealthy, // +1k gold, better items
+//	VeryWealthy, // +5k gold, better items
+//	FilthyRich, // +100k gold, better items
+//	FamilyHeirloom, // good starting item
+//	Skilled, // +3 skill points
+//	AlchemistApprentice, // more potions
+//	Leader, // start with npc
+//	MilitaryTraining, // +50 hp, +5 atk/def
+//	SkillFocus, // +5 skill, +2 apt
+//
+//	// normal perks
+//	StrongBack, // +carry
+//	StrongerBack, // +carry
+//
+//	/*
+//	CON:
+//	Healthy, // (60 end, +50? hp)
+//	FastHealing, // 70 end, faster natural regeneration
+//	poison resistance
+//	regeneration
+//	natural armor
+//	more hp
+//
+//	DEX:
+//	move speed
+//	*/
+//
+//	Max,
+//	None
+//};
+
+//-----------------------------------------------------------------------------
+struct PerkContext;
+
 //-----------------------------------------------------------------------------
 struct PerkInfo
 {
@@ -46,27 +111,17 @@ struct PerkInfo
 	{
 		Flaw = 1 << 0,
 		History = 1 << 1,
-		Free = 1 << 2,
-		Multiple = 1 << 3,
-		Check = 1 << 4,
-		RequireFormat = 1 << 5,
+		Multiple = 1 << 2,
+		RequireFormat = 1 << 3
 	};
-
-	enum RequiredValue
-	{
-		None,
-		Attribute,
-		Skill
-	};
-
-	Perk perk_id, required;
+	
+	Perk perk_id;
 	cstring id;
 	string name, desc;
 	int flags;
-	RequiredValue required_value;
+	delegate<void(PerkContext&)> func;
 
-	PerkInfo(Perk perk_id, cstring id, int flags, RequiredValue required_value, Perk required = Perk::None) : perk_id(perk_id), id(id), flags(flags),
-		required_value(required_value), required(required)
+	PerkInfo(Perk perk_id, cstring id, int flags, delegate<void(PerkContext&)> func = nullptr) : perk_id(perk_id), id(id), flags(flags), func(func)
 	{
 	}
 
@@ -79,6 +134,7 @@ struct TakenPerk
 {
 	Perk perk;
 	int value;
+	bool hidden;
 
 	TakenPerk()
 	{
@@ -89,10 +145,13 @@ struct TakenPerk
 	}
 
 	void GetDesc(string& s) const;
-	int Apply(CreatedCharacter& cc, bool validate = false) const;
-	void Apply(PlayerController& pc) const;
 	void Remove(CreatedCharacter& cc, int index) const;
 	cstring FormatName();
+
+	bool Validate();
+	bool CanTake(PerkContext& ctx);
+	bool Apply(PerkContext& ctx);
+	void Remove(PerkContext& ctx);
 
 	static void LoadText();
 

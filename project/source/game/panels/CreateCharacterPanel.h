@@ -104,7 +104,6 @@ private:
 	void UpdateSkill(Skill s, int value, bool mod);
 	void UpdateSkillButtons();
 	void AddPerk(Perk perk, int value = 0, bool apply = true);
-	bool ValidatePerk(Perk perk);
 	void CheckSkillsUpdate();
 	void UpdateInventory();
 	void ResetDoll(bool instant);
