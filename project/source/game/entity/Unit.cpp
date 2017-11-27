@@ -63,7 +63,14 @@ float Unit::CalculateAttack() const
 	if(HaveWeapon())
 		return CalculateAttack(&GetWeapon());
 	else
-		return (1.f + 1.f / 200 * (Get(Skill::ONE_HANDED_WEAPON) + Get(Skill::UNARMED))) * (Get(Attribute::STR) + Get(Attribute::DEX) / 2);
+	{
+		float atk = float(data->atk + data->atk_bonus * level);
+		float mod = 1.f + 1.f / 100 * +Get(Skill::UNARMED);
+		int str = Get(Attribute::STR),
+			dex = Get(Attribute::DEX);
+		atk += (0.5f * max(str - 50, 0) + 0.5f * max(dex - 50, 0)) * mod;
+		return atk;
+	}
 }
 
 //=================================================================================================
@@ -127,21 +134,6 @@ float Unit::CalculateBlock(const Item* shield) const
 		p = float(str) / s.req_str;
 
 	return data->block + level * data->block_bonus + (max(0, str - 50) + s.block) * (1.f + 1.f / 100 * Get(Skill::SHIELD)) * p;
-}
-
-//=================================================================================================
-float Unit::CalculateWeaponBlock() const
-{
-	const Weapon& w = GetWeapon();
-
-	float p;
-	int str = Get(Attribute::STR);
-	if(str >= w.req_str)
-		p = 1.f;
-	else
-		p = float(str) / w.req_str;
-
-	return float(w.dmg) * 0.66f * (1.f + 0.008f*Get(Skill::SHIELD) + 0.002f*Get(Skill::ONE_HANDED_WEAPON)) * p;
 }
 
 //=================================================================================================
@@ -2014,6 +2006,9 @@ bool Unit::HaveItem(const Item* item)
 //=================================================================================================
 float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 {
+	if(IS_SET(data->flags3, F3_FIXED))
+		return 1.f;
+
 	const Weapon* wep;
 
 	if(used_weapon)
@@ -2029,32 +2024,59 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 	+ umiejêtnoœci
 	+ brakuj¹ca si³a
 	+ udŸwig */
+	float mod = 1.f;
+	float base_speed;
 	if(wep)
 	{
 		const WeaponTypeInfo& info = wep->GetInfo();
 
-		float mod = 1.f + float(Get(Skill::ONE_HANDED_WEAPON) + Get(info.skill)) / 400 + info.dex_speed*Get(Attribute::DEX) - GetAttackSpeedModFromStrength(*wep);
-
-		if(IsPlayer())
-			mod -= GetAttackSpeedModFromLoad();
-
-		if(mod < 0.1f)
-			mod = 0.1f;
-
-		return GetWeapon().GetInfo().base_speed * mod;
+		// max 0.25 at
+		//	125 dex for short blade (0.02)
+		//	150 dex for long blade (0.016)
+		//	175 dex for axe (0.014)
+		//	200 dex for blunt (0.0125)
+		float dex_mod = min(0.25f, info.dex_speed * Get(Attribute::DEX));
+		mod += float(Get(info.skill)) / 200 + dex_mod - GetAttackSpeedModFromStrength(*wep);
+		base_speed = info.base_speed;
 	}
 	else
-		return 1.f + float(Get(Skill::ONE_HANDED_WEAPON) + Get(Skill::UNARMED)) / 400 + 0.001f*Get(Attribute::DEX);
+	{
+		float dex_mod = min(0.25f, 0.02f * Get(Attribute::DEX));
+		mod += float(Get(Skill::UNARMED)) / 200 + dex_mod;
+		base_speed = 1.f;
+	}
+
+	float mobility = CalculateMobility();
+	if(mobility < 100)
+		mod -= Lerp(0.1f, 0.f, mobility / 100);
+	else if(mobility > 100)
+		mod += Lerp(0.f, 0.1f, (mobility - 100) / 100);
+
+	if(mod < 0.5f)
+		mod = 0.5f;
+
+	float speed = mod * base_speed;
+	return speed;
 }
 
 //=================================================================================================
 float Unit::GetBowAttackSpeed() const
 {
+	// values range 
+	//	1 dex, 0 skill = 0.8
+	// 50 dex, 10 skill = 1.1
+	// 100 dex, 100 skill = 1.7
 	float mod = 0.8f + float(Get(Skill::BOW)) / 200 + 0.004f*Get(Attribute::DEX) - GetAttackSpeedModFromStrength(GetBow());
-	if(IsPlayer())
-		mod -= GetAttackSpeedModFromLoad();
-	if(mod < 0.25f)
-		mod = 0.25f;
+
+	float mobility = CalculateMobility();
+	if(mobility < 100)
+		mod -= Lerp(0.1f, 0.f, mobility / 100);
+	else if(mobility > 100)
+		mod += Lerp(0.f, 0.1f, (mobility - 100) / 100);
+
+	if(mod < 0.5f)
+		mod = 0.5f;
+
 	return mod;
 }
 
@@ -2738,7 +2760,7 @@ void Unit::CalculateStats(bool initial)
 }
 
 //=================================================================================================
-int Unit::CalculateMobility(const Armor* armor) const
+float Unit::CalculateMobility(const Armor* armor) const
 {
 	if(IS_SET(data->flags3, F3_FIXED))
 		return 100;
@@ -2786,17 +2808,20 @@ int Unit::CalculateMobility(const Armor* armor) const
 		break;
 	}
 
-	if(mobility > 150)
-		mobility = 150;
+	if(mobility > 200)
+		mobility = 200;
 
-	return (int)mobility;
+	return mobility;
 }
 
 //=================================================================================================
-float Unit::GetMobilityMod() const
+float Unit::GetMobilityMod(bool run) const
 {
-	float mob = (float)CalculateMobility();
-	return 0.5f + mob / 200.f;
+	float mob = CalculateMobility();
+	float m = 0.5f + mob / 200.f;
+	if(!run && m < 1.f)
+		m = 1.f - (1.f - m) / 2;
+	return m;
 }
 
 //=================================================================================================

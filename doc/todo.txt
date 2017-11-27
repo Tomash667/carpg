@@ -1,29 +1,7 @@
 ﻿FEATURE:
 *** better stamina
-MOBILITY:
-<100 - decreased speed, attack speed
-100 - normal
->100 - increased speed, attack speed
-max 150
-
-0 - 40%
-25 - 30%
-50 - 20%
-75 - 10%
-
-120 + 10%
-140 + 20%
-150 + 25%
-
-+ load should just change mobility too
-+ better values for run/walk/rotate
-+ affect attack speed
-+ don't limit mouse rotation, only unit
-
 - float train parts
-- archers stupidly come closer to target when out of stamina
 + ai next attack depends on ONE_HANDED_WEAPON
-+ new mobility speed effect
 
 *** perks
 + perk points
@@ -79,6 +57,7 @@ CURRENT:
 - quitting with sounds attached to player = crash
 - arena picks random units and try spawn them at specified levels but it is still limited to max level (for example orc 4)
 	it should pirst units at that level, if not possible lower/higher
+- archers stupidly come closer to target when out of stamina
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce
@@ -105,6 +84,7 @@ NEW:
 + shield give mobility penality (small 0, normal 5, big 10, tower 15)
 + ai telling player to wear something if naked
 + group ai - some archers should block enemy, others shoot
++ block without shield (by golems for example)
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

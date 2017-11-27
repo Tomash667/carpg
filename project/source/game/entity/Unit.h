@@ -333,15 +333,15 @@ struct Unit
 	}
 	float GetRotationSpeed() const
 	{
-		return data->rot_speed * GetMobilityMod() * GetWalkLoad();
+		return data->rot_speed * GetMobilityMod(false);
 	}
 	float GetWalkSpeed() const
 	{
-		return data->walk_speed * GetMobilityMod() * GetWalkLoad();
+		return data->walk_speed * GetMobilityMod(false);
 	}
 	float GetRunSpeed() const
 	{
-		return data->run_speed * GetMobilityMod() * GetRunLoad();
+		return data->run_speed * GetMobilityMod(true);
 	}
 	bool CanRun() const
 	{
@@ -440,9 +440,9 @@ struct Unit
 		if(str >= wep.req_str)
 			return 0.f;
 		else if(str * 2 <= wep.req_str)
-			return 0.75f;
+			return 0.5f;
 		else
-			return 0.75f * float(wep.req_str - str) / (wep.req_str / 2);
+			return 0.5f * float(wep.req_str - str) / (wep.req_str / 2);
 	}
 	float GetPowerAttackSpeed() const
 	{
@@ -562,7 +562,6 @@ struct Unit
 	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)
 	float GetBlockSpeed() const;
 
-	float CalculateWeaponBlock() const;
 	float CalculateMagicResistance() const;
 	int CalculateMagicPower() const;
 	bool HaveEffect(ConsumeEffect effect) const;
@@ -639,43 +638,6 @@ struct Unit
 			return LS_MAX_OVERLOADED;
 	}
 	LoadState GetArmorLoadState(const Item* armor) const;
-	float GetRunLoad() const
-	{
-		switch(GetLoadState())
-		{
-		case LS_NONE:
-		case LS_LIGHT:
-			return 1.f;
-		case LS_MEDIUM:
-			return Lerp(1.f, 0.9f, float(weight - weight_max / 2) / (weight_max / 4));
-		case LS_HEAVY:
-			return Lerp(0.9f, 0.7f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
-		case LS_MAX_OVERLOADED:
-			return 0.f;
-		default:
-			assert(0);
-			return 0.f;
-		}
-	}
-	float GetWalkLoad() const
-	{
-		switch(GetLoadState())
-		{
-		case LS_NONE:
-		case LS_LIGHT:
-		case LS_MEDIUM:
-			return 1.f;
-		case LS_HEAVY:
-			return Lerp(1.f, 0.9f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
-		case LS_OVERLOADED:
-			return Lerp(0.9f, 0.5f, float(weight - weight_max) / weight_max);
-		case LS_MAX_OVERLOADED:
-			return 0.5f;
-		default:
-			assert(0);
-			return 0.f;
-		}
-	}
 	float GetAttackSpeedModFromLoad() const
 	{
 		switch(GetLoadState())
@@ -730,8 +692,8 @@ struct Unit
 			return true;
 	}
 
-	int CalculateMobility(const Armor* armor = nullptr) const;
-	float GetMobilityMod() const;
+	float CalculateMobility(const Armor* armor = nullptr) const;
+	float GetMobilityMod(bool run) const;
 
 	//int Get(SubSkill s) const;
 
