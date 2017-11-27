@@ -2733,7 +2733,6 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.run_attack = false;
 						u.hitted = false;
 						u.timer = 0.f;
-						u.raise_timer = 0.f; // stamina_leftover
 
 						if(Net::IsOnline())
 						{
@@ -2835,7 +2834,6 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.animation_state = 0;
 						u.run_attack = false;
 						u.timer = 0.f;
-						u.raise_timer = 0.f; // stamina_leftover
 
 						if(Net::IsOnline())
 						{
@@ -8283,13 +8281,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				{
 					float dif = p - u.timer;
 					float stamina_to_remove_total = u.GetWeapon().GetInfo().stamina / 2;
-					float stamina_used = dif / t * stamina_to_remove_total + u.raise_timer;
-					float stamina_used_round = floor(stamina_used);
-					float stamina_leftover = stamina_used - stamina_used_round;
-					u.raise_timer = stamina_leftover;
+					float stamina_used = dif / t * stamina_to_remove_total;
 					u.timer = p;
-					if(stamina_used_round > 0)
-						u.RemoveStamina(stamina_used_round);
+					u.RemoveStamina(stamina_used);
 				}
 			}
 			else

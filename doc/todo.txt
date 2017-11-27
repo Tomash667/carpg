@@ -1,8 +1,4 @@
 ﻿FEATURE:
-*** better stamina
-- float train parts
-+ ai next attack depends on ONE_HANDED_WEAPON
-
 *** perks
 + perk points
 + subprofile perks
@@ -35,6 +31,7 @@
 	
 + book bestiary, magic artifacts
 + level in team panel for server
++ ai next attack depends on ONE_HANDED_WEAPON
 
 ? test playthru
 	? leveling speed
@@ -58,6 +55,7 @@ CURRENT:
 - arena picks random units and try spawn them at specified levels but it is still limited to max level (for example orc 4)
 	it should pirst units at that level, if not possible lower/higher
 - archers stupidly come closer to target when out of stamina
+- removing player in mp game, update effect will show assert on GetPlayerInfo
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce

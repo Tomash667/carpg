@@ -241,7 +241,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			else
 			{
 				tooltip.text = Format("%s: %d (%d)\n%s\n\nAptitude: %+d\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetBase(a), pc->unit->statsx->attrib_base[id],
-					ai.desc.c_str(), pc->unit->GetAptitude(a), pc->ap[id], pc->an[id], FLT10(float(pc->ap[id]) * 100 / pc->an[id]));
+					ai.desc.c_str(), pc->unit->GetAptitude(a), pc->attrib_pts[id].value, pc->attrib_pts[id].next, pc->attrib_pts[id].Percentage());
 			}
 			tooltip.small_text.clear();
 		}
@@ -290,7 +290,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			else
 			{
 				tooltip.text = Format("%s: %d (%d)\n%s\n\nAptitude: %+d\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetBase(s), pc->unit->statsx->skill_base[id],
-					si.desc.c_str(), pc->unit->GetAptitude(s), pc->sp[id], pc->sn[id], FLT10(float(pc->sp[id]) * 100 / pc->sn[id]));
+					si.desc.c_str(), pc->unit->GetAptitude(s), pc->skill_pts[id].value, pc->skill_pts[id].next, pc->skill_pts[id].Percentage());
 			}
 			if(si.attrib2 != Attribute::NONE)
 			{

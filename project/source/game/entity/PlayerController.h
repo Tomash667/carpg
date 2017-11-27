@@ -80,13 +80,24 @@ namespace old
 }
 
 //-----------------------------------------------------------------------------
+struct TrainData
+{
+	int value;
+	int next;
+	float part;
+
+	float Percentage() const
+	{
+		return FLT10(float(value) * 100 / next);
+	}
+};
+
+//-----------------------------------------------------------------------------
 struct PlayerController : public HeroPlayerCommon
 {
 	PlayerInfo* player_info;
 	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown, level;
-	// a - attribute, s - skill
-	// *p - x points, *n - x next
-	int sp[(int)Skill::MAX], sn[(int)Skill::MAX], ap[(int)Attribute::MAX], an[(int)Attribute::MAX];
+	TrainData attrib_pts[(int)Attribute::MAX], skill_pts[(int)Skill::MAX];
 	byte action_key;
 	NextAction next_action;
 	union
@@ -144,8 +155,8 @@ struct PlayerController : public HeroPlayerCommon
 	};
 	void Train(TrainMode mode, int what, bool is_skill);
 private:
-	void Train(Attribute attrib, int points);
-	void Train(Skill skill, int points, bool train_attrib = true);
+	void Train(Attribute attrib, float points);
+	void Train(Skill skill, float points, bool train_attrib = true);
 public:
 	void SetRequiredPoints();
 

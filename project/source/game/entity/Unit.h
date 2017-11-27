@@ -638,25 +638,6 @@ struct Unit
 			return LS_MAX_OVERLOADED;
 	}
 	LoadState GetArmorLoadState(const Item* armor) const;
-	float GetAttackSpeedModFromLoad() const
-	{
-		switch(GetLoadState())
-		{
-		case LS_NONE:
-		case LS_LIGHT:
-		case LS_MEDIUM:
-			return 0.f;
-		case LS_HEAVY:
-			return Lerp(0.f, 0.1f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
-		case LS_OVERLOADED:
-			return Lerp(0.1f, 0.25f, float(weight - weight_max) / weight_max);
-		case LS_MAX_OVERLOADED:
-			return 0.25f;
-		default:
-			assert(0);
-			return 0.25f;
-		}
-	}
 	// zwraca wagê ekwipunku w kg
 	float GetWeight() const
 	{

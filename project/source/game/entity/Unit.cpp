@@ -1817,11 +1817,12 @@ void Unit::Load(HANDLE file, bool local)
 			// rescale skill points counter
 			for(uint i = 0; i < (uint)Skill::MAX; ++i)
 			{
-				if(player->sp[i] > 0)
+				auto& train_data = player->skill_pts[i];
+				if(train_data.value > 0)
 				{
 					int old_required = old::GetRequiredSkillPoints(GetBase((Skill)i));
-					float ratio = float(player->sn[i]) / old_required;
-					player->sp[i] = (int)(ratio * player->sp[i]);
+					float ratio = float(train_data.next) / old_required;
+					train_data.value = (int)(ratio * train_data.value);
 				}
 			}
 		}

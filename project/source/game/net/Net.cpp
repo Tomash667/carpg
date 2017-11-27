@@ -2513,7 +2513,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.hitted = false;
 							unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina);
 							unit.timer = 0.f;
-							unit.raise_timer = 0.f; // stamina_leftover
 						}
 						break;
 					case AID_Shoot:
