@@ -648,8 +648,8 @@ private:
 				crc.Update(unit->def_bonus);
 				break;
 			case P_STAMINA:
-				unit->stamina_bonus = t.MustGetInt();
-				crc.Update(unit->stamina_bonus);
+				unit->stamina = t.MustGetInt();
+				crc.Update(unit->stamina);
 				break;
 			case P_BLOCK:
 				unit->block = t.MustGetInt();

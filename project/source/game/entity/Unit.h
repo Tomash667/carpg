@@ -60,7 +60,6 @@ enum ACTION
 	A_ANIMATION, // animacja bez obiektu (np drapani siê, rozgl¹danie)
 	A_ANIMATION2, // u¿ywanie obiektu (0-podchodzi, 1-u¿ywa, 2-u¿ywa dŸwiêk, 3-odchodzi)
 	A_POSITION, // u¿ywa³ czegoœ ale dosta³ basha lub umar³, trzeba go przesun¹æ w normalne miejsce
-	//A_PAROWANIE
 	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
 	A_DASH,
 	A_DESPAWN,
@@ -163,6 +162,9 @@ struct Unit
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
+	static const float STAMINA_BASH_ATTACK;
+	static const float STAMINA_UNARMED_ATTACK;
+	static const float STAMINA_RESTORE_TIMER;
 
 	int netid;
 	UnitData* data;
@@ -208,6 +210,7 @@ struct Unit
 	float auto_talk_timer;
 	GameDialog* auto_talk_dialog;
 	StaminaAction stamina_action;
+	float stamina_timer;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
@@ -330,15 +333,15 @@ struct Unit
 	}
 	float GetRotationSpeed() const
 	{
-		return data->rot_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
+		return data->rot_speed * GetMobilityMod(false);
 	}
 	float GetWalkSpeed() const
 	{
-		return data->walk_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetWalkLoad() * GetArmorMovement();
+		return data->walk_speed * GetMobilityMod(false);
 	}
 	float GetRunSpeed() const
 	{
-		return data->run_speed * (0.6f + 1.f / 150 * CalculateMobility()) * GetRunLoad() * GetArmorMovement();
+		return data->run_speed * GetMobilityMod(true);
 	}
 	bool CanRun() const
 	{
@@ -378,24 +381,6 @@ struct Unit
 	bool IsHoldingBow() const
 	{
 		return GetHoldWeapon() == W_BOW;
-	}
-	float GetArmorMovement() const
-	{
-		if(!HaveArmor())
-			return 1.f;
-		else
-		{
-			switch(GetArmor().skill)
-			{
-			case Skill::LIGHT_ARMOR:
-			default:
-				return 1.f + 1.f / 300 * Get(Skill::LIGHT_ARMOR);
-			case Skill::MEDIUM_ARMOR:
-				return 1.f + 1.f / 450 * Get(Skill::MEDIUM_ARMOR);
-			case Skill::HEAVY_ARMOR:
-				return 1.f + 1.f / 600 * Get(Skill::HEAVY_ARMOR);
-			}
-		}
 	}
 	Vec3 GetFrontPos() const
 	{
@@ -455,9 +440,9 @@ struct Unit
 		if(str >= wep.req_str)
 			return 0.f;
 		else if(str * 2 <= wep.req_str)
-			return 0.75f;
+			return 0.5f;
 		else
-			return 0.75f * float(wep.req_str - str) / (wep.req_str / 2);
+			return 0.5f * float(wep.req_str - str) / (wep.req_str / 2);
 	}
 	float GetPowerAttackSpeed() const
 	{
@@ -577,7 +562,6 @@ struct Unit
 	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)
 	float GetBlockSpeed() const;
 
-	float CalculateWeaponBlock() const;
 	float CalculateMagicResistance() const;
 	int CalculateMagicPower() const;
 	bool HaveEffect(ConsumeEffect effect) const;
@@ -629,7 +613,7 @@ struct Unit
 	void AddItemAndEquipIfNone(const Item* item, uint count = 1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
 	float GetLoad() const { return float(weight) / weight_max; }
-	void CalculateLoad() { weight_max = Get(Attribute::STR) * 15; }
+	void CalculateLoad();
 	bool IsOverloaded() const
 	{
 		return weight >= weight_max;
@@ -654,62 +638,6 @@ struct Unit
 			return LS_MAX_OVERLOADED;
 	}
 	LoadState GetArmorLoadState(const Item* armor) const;
-	float GetRunLoad() const
-	{
-		switch(GetLoadState())
-		{
-		case LS_NONE:
-		case LS_LIGHT:
-			return 1.f;
-		case LS_MEDIUM:
-			return Lerp(1.f, 0.9f, float(weight - weight_max / 2) / (weight_max / 4));
-		case LS_HEAVY:
-			return Lerp(0.9f, 0.7f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
-		case LS_MAX_OVERLOADED:
-			return 0.f;
-		default:
-			assert(0);
-			return 0.f;
-		}
-	}
-	float GetWalkLoad() const
-	{
-		switch(GetLoadState())
-		{
-		case LS_NONE:
-		case LS_LIGHT:
-		case LS_MEDIUM:
-			return 1.f;
-		case LS_HEAVY:
-			return Lerp(1.f, 0.9f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
-		case LS_OVERLOADED:
-			return Lerp(0.9f, 0.5f, float(weight - weight_max) / weight_max);
-		case LS_MAX_OVERLOADED:
-			return 0.5f;
-		default:
-			assert(0);
-			return 0.f;
-		}
-	}
-	float GetAttackSpeedModFromLoad() const
-	{
-		switch(GetLoadState())
-		{
-		case LS_NONE:
-		case LS_LIGHT:
-		case LS_MEDIUM:
-			return 0.f;
-		case LS_HEAVY:
-			return Lerp(0.f, 0.1f, float(weight - weight_max * 3 / 4) / (weight_max / 4));
-		case LS_OVERLOADED:
-			return Lerp(0.1f, 0.25f, float(weight - weight_max) / weight_max);
-		case LS_MAX_OVERLOADED:
-			return 0.25f;
-		default:
-			assert(0);
-			return 0.25f;
-		}
-	}
 	// zwraca wagê ekwipunku w kg
 	float GetWeight() const
 	{
@@ -745,8 +673,8 @@ struct Unit
 			return true;
 	}
 
-	int CalculateMobility() const;
-	int CalculateMobility(const Armor& armor) const;
+	float CalculateMobility(const Armor* armor = nullptr) const;
+	float GetMobilityMod(bool run) const;
 
 	//int Get(SubSkill s) const;
 

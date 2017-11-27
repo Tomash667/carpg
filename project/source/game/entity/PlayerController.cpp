@@ -70,10 +70,16 @@ void PlayerController::Init(Unit& _unit, bool partial)
 		knocks = 0;
 		arena_fights = 0;
 
-		for(int i = 0; i < (int)Skill::MAX; ++i)
-			sp[i] = 0;
-		for(int i = 0; i < (int)Attribute::MAX; ++i)
-			ap[i] = 0;
+		for(auto& p : attrib_pts)
+		{
+			p.value = 0;
+			p.part = 0;
+		}
+		for(auto& p : skill_pts)
+		{
+			p.value = 0;
+			p.part = 0;
+		}
 
 		action_charges = GetAction().charges;
 	}
@@ -181,7 +187,7 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 				skill = unit->GetWeaponSkill();
 
 			// train weapon skill
-			int points = (int)(Lerp(200.f, 2450.f, ratio) * GetLevelMod(unit->level, level));
+			float points = Lerp(200.f, 2450.f, ratio) * GetLevelMod(unit->level, level);
 			Train(skill, points);
 		}
 		break;
@@ -235,7 +241,7 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 			}
 
 			// train skills
-			int acro, ath;
+			float acro, ath;
 			switch(weight)
 			{
 			case 0:
@@ -275,37 +281,37 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 			}
 
 			// train shield skill
-			Train(Skill::SHIELD, (int)(value * 2000));
+			Train(Skill::SHIELD, value * 2000);
 		}
 		break;
 	case TrainWhat::TakeHit:
 		{
 			// train armor skill
 			if(unit->HaveArmor())
-				Train(unit->GetArmor().skill, (int)(value * 2000));
+				Train(unit->GetArmor().skill, value * 2000);
 
 			// train shield skill / 5
 			if(unit->HaveShield())
-				Train(Skill::SHIELD, (int)(value * 400));
+				Train(Skill::SHIELD, value * 400);
 		}
 		break;
 	case TrainWhat::TakeDamage:
 		{
 			// train end
-			Train(Attribute::END, (int)(value * 1250));
+			Train(Attribute::END, value * 1250);
 
 			// train athletics skill
-			Train(Skill::ATHLETICS, (int)(value * 2500));
+			Train(Skill::ATHLETICS, value * 2500);
 		}
 		break;
 	case TrainWhat::Regenerate:
-		Train(Attribute::END, (int)value);
+		Train(Attribute::END, value);
 		break;
 	case TrainWhat::Stamina:
-		Train(Attribute::END, (int)value);
+		Train(Attribute::END, value);
 		break;
 	case TrainWhat::Trade:
-		Train(Skill::HAGGLE, (int)value);
+		Train(Skill::HAGGLE, value);
 		break;
 	case TrainWhat::Read:
 		Train(Skill::LITERACY, 2500);
@@ -316,28 +322,27 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 //=================================================================================================
 void PlayerController::Train(TrainMode mode, int what, bool is_skill)
 {
-	int value, *train_points, *train_next;
+	TrainData* train_data;
+	int value;
 	if(is_skill)
 	{
 		if(unit->statsx->skill[what] == SkillInfo::MAX)
 		{
-			sp[what] = sn[what];
+			skill_pts[what].value = skill_pts[what].next;
 			return;
 		}
 		value = unit->statsx->skill[what];
-		train_points = &sp[what];
-		train_next = &sn[what];
+		train_data = &skill_pts[what];
 	}
 	else
 	{
 		if(unit->statsx->attrib[what] == AttributeInfo::MAX)
 		{
-			ap[what] = an[what];
+			attrib_pts[what].value = attrib_pts[what].next;
 			return;
 		}
 		value = unit->statsx->attrib[what];
-		train_points = &ap[what];
-		train_next = &an[what];
+		train_data = &attrib_pts[what];
 	}
 
 	int count;
@@ -351,16 +356,16 @@ void PlayerController::Train(TrainMode mode, int what, bool is_skill)
 	if(count >= 1)
 	{
 		value += count;
-		*train_points /= 2;
+		train_data->value /= 2;
 
 		if(is_skill)
 		{
-			*train_next = GetRequiredSkillPoints(value);
+			train_data->next = GetRequiredSkillPoints(value);
 			unit->Set((Skill)what, value);
 		}
 		else
 		{
-			*train_next = GetRequiredAttributePoints(value);
+			train_data->next = GetRequiredAttributePoints(value);
 			unit->Set((Attribute)what, value);
 		}
 
@@ -394,7 +399,7 @@ void PlayerController::Train(TrainMode mode, int what, bool is_skill)
 			m = 0.25f;
 		else
 			m = 0.125f;
-		int pts = (int)(m * *train_next);
+		float pts = m * train_data->next;
 		if(is_skill)
 			Train((Skill)what, pts, false);
 		else
@@ -403,29 +408,33 @@ void PlayerController::Train(TrainMode mode, int what, bool is_skill)
 }
 
 //=================================================================================================
-void PlayerController::Train(Attribute attrib, int points)
+void PlayerController::Train(Attribute attrib, float points)
 {
 	int a = (int)attrib;
-	points = (int)(unit->GetAptitudeMod(attrib) * points);
-	assert(points != 0);
+	auto& train_data = attrib_pts[a];
+	points = unit->GetAptitudeMod(attrib) * points + train_data.part;
+	int points_i = (int)points;
+	train_data.part = points - points_i;
+	if(points_i == 0)
+		return;
 
-	ap[a] += points;
+	train_data.value += points_i;
 
 	int gained = 0,
 		value = unit->GetBase(attrib);
 
-	while(ap[a] >= an[a])
+	while(train_data.value >= train_data.next)
 	{
-		ap[a] -= an[a];
+		train_data.value -= train_data.next;
 		if(unit->statsx->attrib[a] != AttributeInfo::MAX)
 		{
 			++gained;
 			++value;
-			an[a] = GetRequiredAttributePoints(value);
+			train_data.next = GetRequiredAttributePoints(value);
 		}
 		else
 		{
-			ap[a] = an[a];
+			train_data.value = train_data.next;
 			break;
 		}
 	}
@@ -453,29 +462,33 @@ void PlayerController::Train(Attribute attrib, int points)
 }
 
 //=================================================================================================
-void PlayerController::Train(Skill skill, int points, bool train_attrib)
+void PlayerController::Train(Skill skill, float points, bool train_attrib)
 {
 	int s = (int)skill;
-	int mod_points = (int)(unit->GetAptitudeMod(skill) * points);
-	assert(mod_points != 0);
+	auto& train_data = skill_pts[s];
+	float mod_points = unit->GetAptitudeMod(skill) * points + train_data.part;
+	int points_i = (int)mod_points;
+	train_data.part = mod_points - points_i;
+	if(points_i == 0)
+		return;
 
-	sp[s] += mod_points;
+	train_data.value += points_i;
 
 	int gained = 0,
 		value = unit->GetBase(skill);
 
-	while(sp[s] >= sn[s])
+	while(train_data.value >= train_data.next)
 	{
-		sp[s] -= sn[s];
+		train_data.value -= train_data.next;
 		if(value != SkillInfo::MAX)
 		{
 			++gained;
 			++value;
-			sn[s] = GetRequiredSkillPoints(value);
+			train_data.next = GetRequiredSkillPoints(value);
 		}
 		else
 		{
-			sp[s] = sn[s];
+			train_data.value = train_data.next;
 			break;
 		}
 	}
@@ -509,9 +522,9 @@ void PlayerController::Train(Skill skill, int points, bool train_attrib)
 			// train in one handed weapon
 			Train(Skill::ONE_HANDED_WEAPON, points, false);
 		}
-		Train(info.attrib, (int)(info.attrib_ratio * points));
+		Train(info.attrib, info.attrib_ratio * points);
 		if(info.attrib2 != Attribute::NONE)
-			Train(info.attrib2, (int)((1.f - info.attrib_ratio) * points));
+			Train(info.attrib2, (1.f - info.attrib_ratio) * points);
 	}
 }
 
@@ -587,8 +600,8 @@ void PlayerController::Save(HANDLE file)
 	WriteFile(file, &dmgc, sizeof(dmgc), &tmp, nullptr);
 	WriteFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, nullptr);
 	WriteFile(file, &idle_timer, sizeof(idle_timer), &tmp, nullptr);
-	WriteFile(file, ap, sizeof(ap), &tmp, nullptr);
-	WriteFile(file, sp, sizeof(sp), &tmp, nullptr);
+	WriteFile(file, attrib_pts, sizeof(attrib_pts), &tmp, nullptr);
+	WriteFile(file, skill_pts, sizeof(skill_pts), &tmp, nullptr);
 	WriteFile(file, &action_key, sizeof(action_key), &tmp, nullptr);
 	WriteFile(file, &next_action, sizeof(next_action), &tmp, nullptr);
 	WriteFile(file, &next_action_idx, sizeof(next_action_idx), &tmp, nullptr);
@@ -642,36 +655,41 @@ void PlayerController::Load(HANDLE file)
 	ReadFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, nullptr);
 	ReadFile(file, &idle_timer, sizeof(idle_timer), &tmp, nullptr);
 	FileReader f(file);
-	if(LOAD_VERSION >= V_0_4)
+	if(LOAD_VERSION >= V_CURRENT)
 	{
-		f >> ap;
-		if(LOAD_VERSION >= V_CURRENT)
-		{
-			f >> sp;
-			SetRequiredPoints();
-		}
-		else
-		{
-			int old_sp[(int)old::v1::Skill::MAX];
-			f >> old_sp;
+		f >> attrib_pts;
+		f >> skill_pts;
+	}
+	else if(LOAD_VERSION >= V_0_4)
+	{
+		int old_ap[(int)Attribute::MAX];
+		int old_sp[(int)old::v1::Skill::MAX];
+		f >> old_ap;
+		f >> old_sp;
 
-			// map old skills to new
-			sp[(int)Skill::ONE_HANDED_WEAPON] = old_sp[(int)old::v1::Skill::ONE_HANDED_WEAPON];
-			sp[(int)Skill::SHORT_BLADE] = old_sp[(int)old::v1::Skill::SHORT_BLADE];
-			sp[(int)Skill::LONG_BLADE] = old_sp[(int)old::v1::Skill::LONG_BLADE];
-			sp[(int)Skill::BLUNT] = old_sp[(int)old::v1::Skill::BLUNT];
-			sp[(int)Skill::AXE] = old_sp[(int)old::v1::Skill::AXE];
-			sp[(int)Skill::BOW] = old_sp[(int)old::v1::Skill::BOW];
-			sp[(int)Skill::SHIELD] = old_sp[(int)old::v1::Skill::SHIELD];
-			sp[(int)Skill::LIGHT_ARMOR] = old_sp[(int)old::v1::Skill::LIGHT_ARMOR];
-			sp[(int)Skill::MEDIUM_ARMOR] = old_sp[(int)old::v1::Skill::MEDIUM_ARMOR];
-			sp[(int)Skill::HEAVY_ARMOR] = old_sp[(int)old::v1::Skill::HEAVY_ARMOR];
-			sp[(int)Skill::UNARMED] = 0;
-			sp[(int)Skill::ATHLETICS] = 0;
-			sp[(int)Skill::ACROBATICS] = 0;
-			sp[(int)Skill::HAGGLE] = 0;
-			sp[(int)Skill::LITERACY] = 0;
+		// map old attributes
+		for(int i = 0; i < (int)Attribute::MAX; ++i)
+		{
+			attrib_pts[i].value = old_ap[i];
+			attrib_pts[i].part = 0;
 		}
+
+		// map old skills
+		for(int i = 0; i < (int)Skill::MAX; ++i)
+		{
+			skill_pts[i].value = 0;
+			skill_pts[i].part = 0;
+		}
+		skill_pts[(int)Skill::ONE_HANDED_WEAPON].value = old_sp[(int)old::v1::Skill::ONE_HANDED_WEAPON];
+		skill_pts[(int)Skill::SHORT_BLADE].value = old_sp[(int)old::v1::Skill::SHORT_BLADE];
+		skill_pts[(int)Skill::LONG_BLADE].value = old_sp[(int)old::v1::Skill::LONG_BLADE];
+		skill_pts[(int)Skill::BLUNT].value = old_sp[(int)old::v1::Skill::BLUNT];
+		skill_pts[(int)Skill::AXE].value = old_sp[(int)old::v1::Skill::AXE];
+		skill_pts[(int)Skill::BOW].value = old_sp[(int)old::v1::Skill::BOW];
+		skill_pts[(int)Skill::SHIELD].value = old_sp[(int)old::v1::Skill::SHIELD];
+		skill_pts[(int)Skill::LIGHT_ARMOR].value = old_sp[(int)old::v1::Skill::LIGHT_ARMOR];
+		skill_pts[(int)Skill::MEDIUM_ARMOR].value = old_sp[(int)old::v1::Skill::MEDIUM_ARMOR];
+		skill_pts[(int)Skill::HEAVY_ARMOR].value = old_sp[(int)old::v1::Skill::HEAVY_ARMOR];
 	}
 	else
 	{
@@ -679,29 +697,32 @@ void PlayerController::Load(HANDLE file)
 		int old_sp[(int)old::v0::Skill::MAX];
 		f >> old_sp;
 		for(int i = 0; i < (int)Skill::MAX; ++i)
-			sp[i] = 0;
-		sp[(int)Skill::ONE_HANDED_WEAPON] = old_sp[(int)old::v0::Skill::WEAPON];
-		sp[(int)Skill::BOW] = old_sp[(int)old::v0::Skill::BOW];
-		sp[(int)Skill::SHIELD] = old_sp[(int)old::v0::Skill::SHIELD];
-		sp[(int)Skill::LIGHT_ARMOR] = old_sp[(int)old::v0::Skill::LIGHT_ARMOR];
-		sp[(int)Skill::HEAVY_ARMOR] = old_sp[(int)old::v0::Skill::HEAVY_ARMOR];
-		// skip skill need
+		{
+			skill_pts[i].value = 0;
+			skill_pts[i].part = 0;
+		}
+		skill_pts[(int)Skill::ONE_HANDED_WEAPON].value = old_sp[(int)old::v0::Skill::WEAPON];
+		skill_pts[(int)Skill::BOW].value = old_sp[(int)old::v0::Skill::BOW];
+		skill_pts[(int)Skill::SHIELD].value = old_sp[(int)old::v0::Skill::SHIELD];
+		skill_pts[(int)Skill::LIGHT_ARMOR].value = old_sp[(int)old::v0::Skill::LIGHT_ARMOR];
+		skill_pts[(int)Skill::HEAVY_ARMOR].value = old_sp[(int)old::v0::Skill::HEAVY_ARMOR];
+
+		// skip old skill need
 		f.Skip(5 * sizeof(int));
+
 		// attribute points (str, end, dex)
+		for(int i = 0; i < (int)Attribute::MAX; ++i)
+		{
+			attrib_pts[i].value = 0;
+			attrib_pts[i].part = 0;
+		}
 		for(int i = 0; i < 3; ++i)
-			f >> ap[i];
-		for(int i = 3; i < 6; ++i)
-			ap[i] = 0;
-		// skip attribute need
+			f >> attrib_pts[i].value;
+
+		// skip old attribute need
 		f.Skip(3 * sizeof(int));
 
-		// skip old version trainage data
-		// __int64 spg[(int)Skill::MAX][T_MAX], apg[(int)Attribute::MAX][T_MAX];
-		// T_MAX = 4
-		// Skill::MAX = 5
-		// Attribute::MAX = 3
-		// size = sizeof(__int64) * T_MAX * (S_MAX + A_MAX)
-		// size = 8 * 4 * (5 + 3) = 256
+		// skip old version train data
 		f.Skip(256);
 	}
 	ReadFile(file, &action_key, sizeof(action_key), &tmp, nullptr);
@@ -786,9 +807,9 @@ void PlayerController::Load(HANDLE file)
 void PlayerController::SetRequiredPoints()
 {
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		an[i] = GetRequiredAttributePoints(unit->GetBase((Attribute)i));
+		attrib_pts[i].next = GetRequiredAttributePoints(unit->GetBase((Attribute)i));
 	for(int i = 0; i < (int)Skill::MAX; ++i)
-		sn[i] = GetRequiredSkillPoints(unit->GetBase((Skill)i));
+		skill_pts[i].next = GetRequiredSkillPoints(unit->GetBase((Skill)i));
 }
 
 //=================================================================================================
