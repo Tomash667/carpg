@@ -1,5 +1,12 @@
 ﻿FEATURE:
 *** perks
+- hidden nie działa
+- opis dotyczący wymagań ? - niech nie będzie widać niedostępnych - u góry napis atuty
+- nie można wziąść słabości jak już jest max talentów, zły warunek
+- startowa kasa nie działa
+- niech plus wyświetla opis
+- flow allow scroll; remove spacing between scrollbar
+
 + perk points
 	every two levels, for heroes every 3 levels
 + subprofile perks
@@ -13,6 +20,7 @@
 + addperk, removeperk command
 + use subprofiles in creating random char
 + better starting items list (poor, wealthy etc effects)
++ move perks to StatsX
 + compability
 	map old to new
 	add missing wealthy perk
@@ -47,6 +55,7 @@
 	- skill rise too fast
 	- max level only 20? (well for hp/atk/def/perks only)
 ? test all traps with 2 clients, log playing sounds for all players
++ fix changelog 0.6.1, 0.6.2
 
 v2:
 + exp, exp from quests

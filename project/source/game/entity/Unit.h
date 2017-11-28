@@ -729,6 +729,7 @@ struct Unit
 	//==============================================
 	// SKILLS & STATS
 	//==============================================
+	// Get stat
 	int Get(Attribute a) const
 	{
 		return statsx->Get(a);
@@ -738,7 +739,6 @@ struct Unit
 		state = StatState::NORMAL;
 		return Get(a);
 	}
-
 	int Get(Skill s) const;
 	int Get(Skill s, StatState& state) const
 	{
@@ -746,7 +746,7 @@ struct Unit
 		return Get(s);
 	}
 
-	// get unmodified stats
+	// Get unmodified stats
 	int GetBase(Attribute a) const
 	{
 		return statsx->Get(a);
@@ -756,6 +756,7 @@ struct Unit
 		return statsx->Get(s);
 	}
 
+	// Get stat aptitude
 	int GetAptitude(Attribute a) const
 	{
 		return statsx->attrib_apt[(int)a];
@@ -772,6 +773,7 @@ struct Unit
 		return StatsX::GetModFromApt(apt);
 	}
 
+	// Set stat
 	void Set(Attribute a, int value)
 	{
 		statsx->Set(a, value);
@@ -783,10 +785,15 @@ struct Unit
 		ApplyStat(s);
 	}
 
+	// Set base stat
+	void SetBase(Attribute attrib, int value, bool startup, bool mod);
+	void SetBase(Skill skill, int value, bool startup, bool mod);
+
+	// Apply other stats based on skill/attribute (hp/atk/def)
 	void ApplyStat(Attribute a);
 	void ApplyStat(Skill s);
 
-	// calculate hp/stamina
+	// Calculate hp/stamina
 	void CalculateStats(bool initial = false);
 
 	//-----------------------------------------------------------------------------

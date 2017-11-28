@@ -53,7 +53,7 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 	txTakenPerks = Str("takenPerks");
 	txCreateCharTooMany = Str("createCharTooMany");
 
-	size = Int2(600, 500);
+	size = Int2(680, 540);
 	unit = new Unit;
 	unit->statsx = new StatsX;
 	unit->human_data = new Human;
@@ -162,26 +162,26 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 		s.hold_val = 25.f;
 	}
 
-	lbClasses.pos = Int2(16, 73 - 18);
-	lbClasses.size = Int2(198, 235 + 18);
+	lbClasses.pos = Int2(16, 55);
+	lbClasses.size = Int2(238, 273);
 	lbClasses.SetForceImageSize(Int2(20, 20));
 	lbClasses.SetItemHeight(24);
 	lbClasses.event_handler = DialogEvent(this, &CreateCharacterPanel::OnChangeClass);
 	lbClasses.parent = this;
 
-	tbClassDesc.pos = Int2(130, 335);
-	tbClassDesc.size = Int2(341, 93);
+	tbClassDesc.pos = Int2(130, 355);
+	tbClassDesc.size = Int2(381, 113);
 	tbClassDesc.SetReadonly(true);
 	tbClassDesc.AddScrollbar();
 
-	tbInfo.pos = Int2(130, 335);
-	tbInfo.size = Int2(341, 93);
+	tbInfo.pos = tbClassDesc.pos;
+	tbInfo.size = tbClassDesc.size;
 	tbInfo.SetReadonly(true);
 	tbInfo.SetText(Str("createCharText"));
 	tbInfo.AddScrollbar();
 
-	flow_pos = Int2(368, 73 - 18);
-	flow_size = Int2(198, 235 + 18);
+	flow_pos = Int2(426, 73 - 18);
+	flow_size = Int2(220, 273);
 	flow_scroll.pos = Int2(flow_pos.x + flow_size.x + 2, flow_pos.y);
 	flow_scroll.size = Int2(16, flow_size.y);
 	flow_scroll.total = 100;
@@ -189,13 +189,13 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 
 	tooltip.Init(TooltipGetText(this, &CreateCharacterPanel::GetTooltip));
 
-	flowSkills.size = Int2(198, 235 + 18);
+	flowSkills.size = Int2(238, 273);
 	flowSkills.pos = Int2(16, 73 - 18);
 	flowSkills.button_size = Int2(16, 16);
 	flowSkills.button_tex = custom_bt;
 	flowSkills.on_button = ButtonEvent(this, &CreateCharacterPanel::OnPickSkill);
 
-	flowPerks.size = Int2(198, 235 + 18);
+	flowPerks.size = Int2(238, 273);
 	flowPerks.pos = Int2(size.x - flowPerks.size.x - 16, 73 - 18);
 	flowPerks.button_size = Int2(16, 16);
 	flowPerks.button_tex = custom_bt;
@@ -227,7 +227,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 	GUI.DrawText(GUI.fBig, txCharacterCreation, DT_NOCLIP | DT_CENTER, BLACK, rect0);
 
 	// character
-	GUI.DrawSprite(game->tChar, Int2(pos.x + 228, pos.y + 64));
+	GUI.DrawSprite(game->tChar, Int2(pos.x + size.x/2 - 64, pos.y + 64));
 
 	// close button
 	btCancel.Draw();
@@ -295,11 +295,11 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 			tbInfo.Draw();
 
 			// left text "Skill points: X/Y"
-			Rect r = { global_pos.x + 16, global_pos.y + 310, global_pos.x + 216, global_pos.y + 360 };
+			Rect r = { global_pos.x + 16, global_pos.y + 330, global_pos.x + 216, global_pos.y + 360 };
 			GUI.DrawText(GUI.default_font, Format(txSkillPoints, cc.sp, cc.sp_max), 0, BLACK, r);
 
 			// right text "Perks: X/Y"
-			Rect r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
+			Rect r2 = { global_pos.x + size.x - 216, global_pos.y + 330, global_pos.x + size.x - 16, global_pos.y + 360 };
 			GUI.DrawText(GUI.default_font, Format(txPerkPoints, cc.perks, cc.perks_max), DT_RIGHT, BLACK, r2);
 
 			tooltip.Draw();
@@ -328,7 +328,7 @@ void CreateCharacterPanel::Update(float dt)
 	UpdateUnit(dt);
 
 	// rotating unit
-	if(PointInRect(GUI.cursor_pos, Int2(pos.x + 228, pos.y + 94), Int2(128, 256)) && Key.Focus() && focus)
+	if(PointInRect(GUI.cursor_pos, Int2(pos.x + size.x/2 - 64, pos.y + 94), Int2(128, 256)) && Key.Focus() && focus)
 	{
 		bool rotate = false;
 		if(rotating)
@@ -345,7 +345,7 @@ void CreateCharacterPanel::Update(float dt)
 		}
 
 		if(rotate)
-			unit->rot = Clip(unit->rot - float(GUI.cursor_pos.x - pos.x - 228 - 64) / 16 * dt);
+			unit->rot = Clip(unit->rot - float(GUI.cursor_pos.x - pos.x - size.x/2) / 16 * dt);
 	}
 	else
 		rotating = false;
@@ -1251,8 +1251,10 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 	else
 	{
 		// remove perk
+		PerkContext ctx(&cc);
+		ctx.index = id;
 		TakenPerk& taken = cc.taken_perks[id];
-		taken.Remove(cc, id);
+		taken.Remove(ctx);
 		CheckSkillsUpdate();
 		RebuildPerksFlow();
 	}
@@ -1287,7 +1289,7 @@ void CreateCharacterPanel::RebuildSkillsFlow()
 void CreateCharacterPanel::RebuildPerksFlow()
 {
 	// group perks by availability
-	PerkContext ctx;
+	PerkContext ctx(&cc);
 	available_perks.clear();
 	unavailable_perks.clear();
 	for(PerkInfo& perk : g_perks)
@@ -1343,7 +1345,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		for(Perk perk : available_perks)
 		{
 			PerkInfo& info = g_perks[(int)perk];
-			bool can_pick = (cc.perks == 0 && !IS_SET(info.flags, PerkInfo::Free));
+			bool can_pick = (cc.perks == 0);
 			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, can_pick);
 			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
 		}
@@ -1531,19 +1533,22 @@ void CreateCharacterPanel::AddPerk(Perk perk, int value, bool apply)
 	cc.taken_perks.push_back(taken);
 	if(apply)
 	{
-		taken.Apply(cc);
+		PerkContext ctx(&cc);
+		bool ok = taken.Apply(ctx);
+		assert(ok);
 		CheckSkillsUpdate();
 	}
 	else
 	{
 		PerkInfo& info = g_perks[(int)perk];
-		if(!IS_SET(info.flags, PerkInfo::Free))
-			--cc.perks;
 		if(IS_SET(info.flags, PerkInfo::Flaw))
 		{
 			++cc.perks;
 			++cc.perks_max;
 		}
+		else
+			--cc.perks;
+
 	}
 	RebuildPerksFlow();
 }

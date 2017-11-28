@@ -8,28 +8,17 @@
 #include "CreatedCharacter.h"
 #include "Unit.h"
 
-struct PerkContext
-{
-	PerkContext& HavePerkToReplace(Perk perk);
-	bool HavePerk(Perk perk);
-	TakenPerk* FindPerk(Perk perk);
-
-	CreatedCharacter* cc;
-	PlayerController* pc;
-	bool validate, startup;
-};
-
 //-----------------------------------------------------------------------------
 PerkInfo g_perks[(int)Perk::Max] = {
-	PerkInfo(Perk::Weakness, "weakness", PerkInfo::Free | PerkInfo::Flaw | PerkInfo::History | PerkInfo::RequireFormat),
-	PerkInfo(Perk::Strength, "strength", PerkInfo::History | PerkInfo::RequireFormat),
+	PerkInfo(Perk::Weakness, "weakness", PerkInfo::Flaw | PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Attribute),
+	PerkInfo(Perk::Strength, "strength", PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Attribute),
 	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
-	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Free | PerkInfo::History | PerkInfo::RequireFormat),
-	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History | PerkInfo::RequireFormat),
+	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::History | PerkInfo::RequireFormat),
+	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Skill),
 	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History),
 	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::History),
-	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History, [](PerkContext& c) { c.HavePerkToReplace(Perk::Wealthy); }),
-	PerkInfo(Perk::FilthyRich, "filthy_rich", PerkInfo::History, [](PerkContext& c) { c.HavePerkToReplace(Perk::FilthyRich); }),
+	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History),
+	PerkInfo(Perk::FilthyRich, "filthy_rich", PerkInfo::History),
 	PerkInfo(Perk::FamilyHeirloom, "heirloom", PerkInfo::History),
 	PerkInfo(Perk::Leader, "leader", PerkInfo::History)
 };
@@ -186,6 +175,8 @@ bool TakenPerk::Validate()
 	return true;
 }
 
+//=================================================================================================
+// Check if unit can take perk
 bool TakenPerk::CanTake(PerkContext& ctx)
 {
 	switch(perk)
@@ -210,37 +201,10 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	}
 }
 
-void Unit::Mod(Attribute attrib, int value, bool startup)
-{
-	int a = (int)attrib;
-	if(startup)
-		statsx->attrib[a] += value;
-	else
-	{
-		int new_value = Clamp(statsx->attrib[a] + value, 1, AttributeInfo::MAX);
-		new_value = Clamp(new_value, 1, AttributeInfo::MIN, AttributeInfo::MAX);
-		Set(new_value);
-		// !!! new apt
-	}
-}
-
-void Unit::Mod(Skill skill, int value, bool startup)
-{
-	int s = (int)skill;
-	if(startup)
-		statsx->skill[a] += value;
-	else
-	{
-		int new_value = Clamp(statsx->attrib[a] + value, 1, AttributeInfo::MAX);
-		new_value = Clamp(new_value, 1, AttributeInfo::MIN, AttributeInfo::MAX);
-		Set(new_value);
-	}
-}
-
+//=================================================================================================
+// Apply perk to unit
 bool TakenPerk::Apply(PerkContext& ctx)
 {
-	//PerkInfo& info = g_perks[(int)perk];
-
 	switch(perk)
 	{
 	case Perk::Strength:
@@ -252,7 +216,7 @@ bool TakenPerk::Apply(PerkContext& ctx)
 		if(ctx.cc)
 			ctx.cc->a[value].Mod(5, true);
 		else
-			ctx.pc->unit->statsx->attrib[value] += 5;
+			ctx.pc->unit->SetBase((Attribute)value, 5, ctx.startup, true);
 		break;
 	case Perk::Weakness:
 		if(ctx.validate && ctx.cc && ctx.cc->a[value].mod)
@@ -263,7 +227,7 @@ bool TakenPerk::Apply(PerkContext& ctx)
 		if(ctx.cc)
 			ctx.cc->a[value].Mod(-5, true);
 		else
-			ctx.pc->unit->statsx->attrib[value] -= 5;
+			ctx.pc->unit->SetBase((Attribute)value, -5, ctx.startup, true);
 		break;
 	case Perk::Skilled:
 		if(ctx.cc)
@@ -299,9 +263,9 @@ bool TakenPerk::Apply(PerkContext& ctx)
 			}
 			else
 			{
-				ctx.pc->unit->statsx->skill[plus] += v[0];
-				ctx.pc->unit->statsx->skill[minus] -= v[1];
-				ctx.pc->unit->statsx->skill[minus2] -= v[2];
+				ctx.pc->unit->SetBase((Skill)v[0], 10, ctx.startup, true);
+				ctx.pc->unit->SetBase((Skill)v[1], -5, ctx.startup, true);
+				ctx.pc->unit->SetBase((Skill)v[2], -5, ctx.startup, true);
 			}
 		}
 		break;
@@ -317,11 +281,11 @@ bool TakenPerk::Apply(PerkContext& ctx)
 			ctx.cc->to_update.push_back((Skill)value);
 		}
 		else
-			ctx.pc->unit->statsx->skill[value] += 5;
+			ctx.pc->unit->SetBase((Skill)value, 5, ctx.startup, true);
 		break;
 	case Perk::Wealthy:
 		if(ctx.pc && !hidden && ctx.startup)
-			pc.unit->gold += 1000;
+			ctx.pc->unit->gold += 1000;
 		break;
 	case Perk::VeryWealthy:
 		{
@@ -329,7 +293,7 @@ bool TakenPerk::Apply(PerkContext& ctx)
 			if(perk)
 				perk->hidden = true;
 			if(ctx.pc && !hidden && ctx.startup)
-				pc.unit->gold += 5000;
+				ctx.pc->unit->gold += 5000;
 		}
 		break;
 	case Perk::FilthyRich:
@@ -338,7 +302,7 @@ bool TakenPerk::Apply(PerkContext& ctx)
 			if(perk)
 				perk->hidden = true;
 			if(ctx.pc && !hidden && ctx.startup)
-				pc.unit->gold += 100'000;
+				ctx.pc->unit->gold += 100'000;
 		}
 		break;
 	case Perk::AlchemistApprentice:
@@ -352,6 +316,7 @@ bool TakenPerk::Apply(PerkContext& ctx)
 
 	if(ctx.cc)
 	{
+		PerkInfo& info = g_perks[(int)perk];
 		if(IS_SET(info.flags, PerkInfo::Flaw))
 		{
 			++ctx.cc->perks;
@@ -365,66 +330,135 @@ bool TakenPerk::Apply(PerkContext& ctx)
 }
 
 //=================================================================================================
+// Remove perk from unit
 void TakenPerk::Remove(PerkContext& ctx)
 {
-	PerkInfo& info = g_perks[(int)perk];
-	bool add = false;
-
 	switch(perk)
 	{
 	case Perk::Strength:
 		if(ctx.cc)
 			ctx.cc->a[value].Mod(-5, false);
 		else
-			ctx.pc->unit->statsx->
+			ctx.pc->unit->SetBase((Attribute)value, -5, ctx.startup, true);
 		break;
 	case Perk::Weakness:
-		cc.a[value].Mod(5, false);
+		if(ctx.cc)
+			ctx.cc->a[value].Mod(5, false);
+		else
+			ctx.pc->unit->SetBase((Attribute)value, -5, ctx.startup, true);
 		break;
 	case Perk::Skilled:
-		cc.update_skills = true;
-		cc.sp -= 2;
-		cc.sp_max -= 2;
+		if(ctx.cc)
+		{
+			ctx.cc->update_skills = true;
+			ctx.cc->sp -= 3;
+			ctx.cc->sp_max -= 3;
+		}
 		break;
 	case Perk::SkillFocus:
 		{
 			int plus, minus, minus2;
 			Split3(value, plus, minus, minus2);
-			cc.to_update.push_back((Skill)plus);
-			cc.to_update.push_back((Skill)minus);
-			cc.to_update.push_back((Skill)minus2);
-			cc.s[plus].Mod(-10, false);
-			cc.s[minus].Mod(5, false);
-			cc.s[minus2].Mod(5, false);
+			if(ctx.cc)
+			{
+				ctx.cc->to_update.push_back((Skill)plus);
+				ctx.cc->to_update.push_back((Skill)minus);
+				ctx.cc->to_update.push_back((Skill)minus2);
+				ctx.cc->s[plus].Mod(-10, false);
+				ctx.cc->s[minus].Mod(5, false);
+				ctx.cc->s[minus2].Mod(5, false);
+			}
+			else
+			{
+				ctx.pc->unit->SetBase((Skill)plus, -10, ctx.startup, true);
+				ctx.pc->unit->SetBase((Skill)minus, 5, ctx.startup, true);
+				ctx.pc->unit->SetBase((Skill)minus2, 5, ctx.startup, true);
+			}
 		}
 		break;
 	case Perk::Talent:
-		cc.s[value].Mod(-5, false);
-		cc.to_update.push_back((Skill)value);
+		if(ctx.cc)
+		{
+			ctx.cc->s[value].Mod(-5, false);
+			ctx.cc->to_update.push_back((Skill)value);
+		}
+		else
+			ctx.pc->unit->SetBase((Skill)value, -5, ctx.startup, true);
+		break;
+	case Perk::VeryWealthy:
+		{
+			auto perk = ctx.FindPerk(Perk::Wealthy);
+			if(perk)
+				perk->hidden = false;
+		}
+		break;
+	case Perk::FilthyRich:
+		{
+			auto perk = ctx.FindPerk(Perk::VeryWealthy);
+			if(perk)
+				perk->hidden = false;
+		}
 		break;
 	case Perk::AlchemistApprentice:
 	case Perk::Wealthy:
 	case Perk::FamilyHeirloom:
 	case Perk::Leader:
 		break;
-	case Perk::VeryWealthy:
-		add = true;
-		break;
 	default:
 		assert(0);
 		break;
 	}
 
-	if(!IS_SET(info.flags, PerkInfo::Free))
-		++cc.perks;
-	if(IS_SET(info.flags, PerkInfo::Flaw))
+	if(ctx.cc)
 	{
-		--cc.perks;
-		--cc.perks_max;
+		PerkInfo& info = g_perks[(int)perk];
+		if(IS_SET(info.flags, PerkInfo::Flaw))
+		{
+			--ctx.cc->perks;
+			--ctx.cc->perks_max;
+		}
+		else
+			++ctx.cc->perks;
+		ctx.cc->taken_perks.erase(ctx.cc->taken_perks.begin() + ctx.index);
 	}
+	else
+		ctx.pc->perks.erase(ctx.pc->perks.begin() + ctx.index);
+}
 
-	cc.taken_perks.erase(cc.taken_perks.begin() + index);
+//=================================================================================================
+bool PerkContext::HavePerk(Perk perk)
+{
+	if(cc)
+		return cc->HavePerk(perk);
+	else
+	{
+		for(auto& p : pc->perks)
+		{
+			if(p.perk == perk)
+				return true;
+		}
+		return false;
+	}
+}
 
-	if(add)
-		cc.taken_perks.push_back(TakenPerk(Perk::Wealthy));
+//=================================================================================================
+TakenPerk* PerkContext::FindPerk(Perk perk)
+{
+	if(cc)
+	{
+		for(auto& tp : cc->taken_perks)
+		{
+			if(tp.perk == perk)
+				return &tp;
+		}
+	}
+	else
+	{
+		for(auto& tp : pc->perks)
+		{
+			if(tp.perk == perk)
+				return &tp;
+		}
+	}
+	return nullptr;
 }

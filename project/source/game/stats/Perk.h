@@ -102,7 +102,21 @@ enum class Perk
 //};
 
 //-----------------------------------------------------------------------------
-struct PerkContext;
+struct TakenPerk;
+
+//-----------------------------------------------------------------------------
+struct PerkContext
+{
+	CreatedCharacter* cc;
+	PlayerController* pc;
+	int index;
+	bool validate, startup;
+
+	PerkContext(CreatedCharacter* cc) : cc(cc), pc(nullptr), validate(false), startup(true) {}
+	PerkContext(PlayerController* pc) : cc(nullptr), pc(pc), validate(false), startup(true) {}
+	bool HavePerk(Perk perk);
+	TakenPerk* FindPerk(Perk perk);
+};
 
 //-----------------------------------------------------------------------------
 struct PerkInfo
@@ -114,14 +128,22 @@ struct PerkInfo
 		Multiple = 1 << 2,
 		RequireFormat = 1 << 3
 	};
+
+	enum RequiredValue
+	{
+		None,
+		Attribute,
+		Skill
+	};
 	
 	Perk perk_id;
 	cstring id;
 	string name, desc;
 	int flags;
-	delegate<void(PerkContext&)> func;
+	RequiredValue required_value;
 
-	PerkInfo(Perk perk_id, cstring id, int flags, delegate<void(PerkContext&)> func = nullptr) : perk_id(perk_id), id(id), flags(flags), func(func)
+	PerkInfo(Perk perk_id, cstring id, int flags, RequiredValue required_value = RequiredValue::None) : perk_id(perk_id), id(id), flags(flags),
+		required_value(required_value)
 	{
 	}
 
@@ -145,7 +167,6 @@ struct TakenPerk
 	}
 
 	void GetDesc(string& s) const;
-	void Remove(CreatedCharacter& cc, int index) const;
 	cstring FormatName();
 
 	bool Validate();

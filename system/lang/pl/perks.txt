@@ -21,7 +21,7 @@ perk strength {
 }
 perk skilled {
 	name "Fachowiec"
-	desc "Daje dwa dodatkowe punkty umiejêtnoœci."
+	desc "Daje trzy dodatkowe punkty umiejêtnoœci."
 }
 perk skill_focus {
 	name "Skupienie na umiejêtnoœci"

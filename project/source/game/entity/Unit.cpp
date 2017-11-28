@@ -3131,3 +3131,13 @@ void Unit::ApplyStun(float length)
 		c.f[0] = length;
 	}
 }
+
+void Unit::SetBase(Attribute attrib, int value, bool startup, bool mod)
+{
+
+}
+
+void Unit::SetBase(Skill skill, int value, bool startup, bool mod)
+{
+
+}

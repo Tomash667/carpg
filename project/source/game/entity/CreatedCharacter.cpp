@@ -152,6 +152,8 @@ int CreatedCharacter::Read(BitStream& stream)
 	}
 
 	// perks
+	PerkContext ctx(this);
+	ctx.validate = true;
 	taken_perks.resize(count);
 	for(TakenPerk& tp : taken_perks)
 	{
@@ -162,7 +164,17 @@ int CreatedCharacter::Read(BitStream& stream)
 			Error("Invalid perk id '%d'.", tp.perk);
 			return 2;
 		}
-		tp.Apply(*this, true);
+		if(!tp.Validate())
+		{
+			auto& info = g_perks[(int)tp.perk];
+			Error("Broken perk '%s' value.", info.id);
+			return 2;
+		}
+		if(!tp.Apply(ctx))
+		{
+			Error("Failed to validate perks for character.");
+			return 3;
+		}
 	}
 
 	// search for duplicates
@@ -209,9 +221,10 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	}
 
 	// apply perks
+	PerkContext ctx(&pc);
 	pc.perks = taken_perks;
 	for(TakenPerk& tp : pc.perks)
-		tp.Apply(pc);
+		tp.Apply(ctx);
 
 	// set stats
 	for(int i = 0; i < (int)Attribute::MAX; ++i)

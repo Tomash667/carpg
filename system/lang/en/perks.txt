@@ -21,7 +21,7 @@ perk strength {
 }
 perk skilled {
 	name "Skilled"
-	desc "Gives two extra skill points."
+	desc "Gives three extra skill points."
 }
 perk skill_focus {
 	name "Skill focus"
@@ -41,11 +41,15 @@ perk alchemist {
 }
 perk wealthy {
 	name "Wealthy"
-	desc "You come from a wealthy family. You receive 500 gold to buy better equipment."
+	desc "You come from a wealthy family. You receive 1000 gold to buy better equipment. Yours starting equipment is of better quality."
 }
 perk very_wealthy {
 	name "Very wealthy"
-	desc "You come from a very wealthy. You received a small sum of 2,000 gold to help you start the adventure as a hero."
+	desc "You come from a very wealthy. You received a small sum of 5000 gold to help you start the adventure as a hero. You have better equipment."
+}
+perk filthy_rich {
+	name "Filthy rich"
+	desc "Your family is the richest in the country. You received 100 000 gold pieces for a good start. You have much better starting items."
 }
 perk heirloom {
 	name "Family heirloom"
