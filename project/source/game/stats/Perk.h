@@ -28,11 +28,14 @@ namespace old
 enum class Perk
 {
 	// negative starting perks
+	BadBack, // -5 str, less carry
+	ChronicDisease, // -5 end, 50% natural healing
+	Sluggish, // -5 dex, slower
 	SlowLearner, // -5 int, -1 apt to all skills
 	Asocial, // -5 cha, worse prices
 
 	// positive starting perks
-	Strength, // +5 attrib, +1 apt
+	Talent, // +5 attrib, +1 apt
 	Skilled, // +3 skill points
 	SkillFocus, // +5 skill, +1 apt
 	AlchemistApprentice, // more potions
@@ -41,6 +44,8 @@ enum class Perk
 	FilthyRich, // +100k gold, better items
 	FamilyHeirloom, // good starting item
 	Leader, // start with npc
+	//	Poor, // less gold, worse items
+	//	MilitaryTraining, // +50 hp, +5 atk/def
 
 	// normal perks
 	/*
@@ -63,49 +68,9 @@ enum class Perk
 	None
 };
 
-//enum class Perk
-//{
-//
-//
-//	Poor, // less gold, worse items
-//	BadBack, // -5 str, less carry
-//	ChronicDisease, // -5 end, 50% natural healing
-//	Sluggish, // -5 dex, slower
-//	Autistic, // -5 cha, worse prices
-//
-//
-//	Wealthy, // +1k gold, better items
-//	VeryWealthy, // +5k gold, better items
-//	FilthyRich, // +100k gold, better items
-//	FamilyHeirloom, // good starting item
-//	Skilled, // +3 skill points
-//	AlchemistApprentice, // more potions
-//	Leader, // start with npc
-//	MilitaryTraining, // +50 hp, +5 atk/def
-//	SkillFocus, // +5 skill, +2 apt
-//
-//
-//	StrongBack, // +carry
-//	StrongerBack, // +carry
-//
-//	/*
-//	CON:
-//	Healthy, // (60 end, +50? hp)
-//	FastHealing, // 70 end, faster natural regeneration
-//	poison resistance
-//	regeneration
-//	natural armor
-//	more hp
-//
-//	DEX:
-//	move speed
-//	*/
-//
-//	Max,
-//	None
-//};
-
 //-----------------------------------------------------------------------------
+enum class Attribute;
+enum class Skill;
 struct TakenPerk;
 
 //-----------------------------------------------------------------------------
@@ -120,6 +85,10 @@ struct PerkContext
 	PerkContext(PlayerController* pc) : cc(nullptr), pc(pc), validate(false), startup(true) {}
 	bool HavePerk(Perk perk);
 	TakenPerk* FindPerk(Perk perk);
+	bool CanMod(Attribute attrib);
+	bool CanMod(Skill skill);
+	void Mod(Attribute attrib, int value, bool mod = true);
+	void Mod(Skill skill, int value, bool mod = true);
 };
 
 //-----------------------------------------------------------------------------
@@ -172,7 +141,7 @@ struct TakenPerk
 	{
 	}
 
-	TakenPerk(Perk perk, int value = -1) : perk(perk), value(value)
+	TakenPerk(Perk perk, int value = -1) : perk(perk), value(value), hidden(false)
 	{
 	}
 

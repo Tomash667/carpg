@@ -201,6 +201,8 @@ void StatsPanel::SetText()
 	LocalVector2<string*> strs;
 	for(int i = 0; i < (int)pc->perks.size(); ++i)
 	{
+		if(pc->perks[i].hidden)
+			continue;
 		PerkInfo& perk = g_perks[(int)pc->perks[i].perk];
 		if(IS_SET(perk.flags, PerkInfo::RequireFormat))
 		{

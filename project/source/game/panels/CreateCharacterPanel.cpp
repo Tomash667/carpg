@@ -47,7 +47,9 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 	txPickAttribIncrease = Str("pickAttribIncrease");
 	txPickAttribDecrease = Str("pickAttribDecrease");
 	txPickSkillIncrease = Str("pickSkillIncrease");
-	txAvailablePerks = Str("availablePerks");
+	txAdvantages = Str("advantages");
+	txDisadvantages = Str("disadvantages");
+	txPerks = Str("perks");
 	txTakenPerks = Str("takenPerks");
 	txCreateCharTooMany = Str("createCharTooMany");
 	txFlawExtraPerk = Str("flawExtraPerk");
@@ -419,7 +421,7 @@ void CreateCharacterPanel::Update(float dt)
 			flowPerks.Update(dt);
 			flowPerks.GetSelected(group, id);
 
-			tooltip.UpdateTooltip(dt, group, id);
+			tooltip.UpdateTooltip(dt, (int)FlowGroupToTooltipGroup((Group)group), id);
 		}
 		break;
 	case Mode::PickAppearance:
@@ -1243,7 +1245,7 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 			PickAttribute(txPickAttribIncrease, (Perk)id);
 			break;
 		case PerkInfo::Skill:
-			PickAttribute(txPickSkillIncrease, (Perk)id);
+			PickSkill(txPickSkillIncrease, (Perk)id);
 			break;
 		case PerkInfo::None:
 			AddPerk((Perk)id);
@@ -1293,8 +1295,10 @@ void CreateCharacterPanel::RebuildSkillsFlow()
 //=================================================================================================
 void CreateCharacterPanel::RebuildPerksFlow()
 {
-	// group perks by availability
+	// group perks by categories
 	PerkContext ctx(&cc);
+	available_adv.clear();
+	available_disadv.clear();
 	available_perks.clear();
 	for(PerkInfo& perk : g_perks)
 	{
@@ -1313,7 +1317,14 @@ void CreateCharacterPanel::RebuildPerksFlow()
 			TakenPerk taken;
 			taken.perk = perk.perk_id;
 			if(taken.CanTake(ctx))
-				available_perks.push_back(perk.perk_id);
+			{
+				if(IS_SET(perk.flags, PerkInfo::Flaw))
+					available_disadv.push_back(perk.perk_id);
+				else if(IS_SET(perk.flags, PerkInfo::History))
+					available_adv.push_back(perk.perk_id);
+				else
+					available_perks.push_back(perk.perk_id);
+			}
 		}
 	}
 	taken_perks.clear();
@@ -1335,18 +1346,41 @@ void CreateCharacterPanel::RebuildPerksFlow()
 	}
 
 	// sort perks
+	std::sort(available_adv.begin(), available_adv.end(), SortPerks);
+	std::sort(available_disadv.begin(), available_disadv.end(), SortPerks);
 	std::sort(available_perks.begin(), available_perks.end(), SortPerks);
 	std::sort(taken_perks.begin(), taken_perks.end(), SortTakenPerks);
 
 	// fill flow
 	flowPerks.Clear();
+	if(!available_adv.empty())
+	{
+		flowPerks.Add()->Set(txAdvantages);
+		for(Perk perk : available_adv)
+		{
+			PerkInfo& info = g_perks[(int)perk];
+			bool disabled = (cc.perks == 0);
+			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, disabled);
+			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
+		}
+	}
+	if(!available_disadv.empty())
+	{
+		flowPerks.Add()->Set(txDisadvantages);
+		for(Perk perk : available_disadv)
+		{
+			PerkInfo& info = g_perks[(int)perk];
+			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, false);
+			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
+		}
+	}
 	if(!available_perks.empty())
 	{
-		flowPerks.Add()->Set(txAvailablePerks);
+		flowPerks.Add()->Set(txPerks);
 		for(Perk perk : available_perks)
 		{
 			PerkInfo& info = g_perks[(int)perk];
-			bool disabled = (cc.perks == 0 && !IS_SET(info.flags, PerkInfo::Flaw));
+			bool disabled = (cc.perks == 0);
 			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, disabled);
 			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
 		}
@@ -1602,4 +1636,26 @@ void CreateCharacterPanel::ResetDoll(bool instant)
 		unit->bow_instance = nullptr;
 	}
 	unit->action = A_NONE;
+}
+
+//=================================================================================================
+CreateCharacterPanel::Group CreateCharacterPanel::FlowGroupToTooltipGroup(Group group)
+{
+	switch(group)
+	{
+	case Group::Attribute:
+		return Group::Attribute;
+	case Group::Skill:
+	case Group::PickSkill_Button:
+		return Group::Skill;
+	case Group::Perk:
+	case Group::PickPerk_AddButton:
+	case Group::PickPerk_DisabledButton:
+		return Group::Perk;
+	case Group::TakenPerk:
+	case Group::PickPerk_RemoveButton:
+		return Group::TakenPerk;
+	default:
+		return group;
+	}
 }

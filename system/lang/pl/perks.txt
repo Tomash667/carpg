@@ -1,7 +1,9 @@
 pickAttribIncrease = "Wybierz atrybut do zwiêkszenia."
 pickAttribDecrease = "Wybierz atrybut do zmniejszenia."
 pickSkillIncrease = "Wybierz umiejêtnoœæ do zwiêkszenia."
-availablePerks = "Dostêpne"
+advantages = "Zalety"
+disadvantages = "Wady"
+perks = "Atuty"
 takenPerks = "Wybrane"
 increasedAttrib = "Zwiêkszony atrybut"
 increasedSkill = "Zwiêkszona umiejêtnoœæ"
@@ -10,8 +12,28 @@ decreasedSkill = "Zmniejszona umiejêtnoœæ"
 decreasedSkills = "Zmniejszone umiejêtnoœci"
 flawExtraPerk = "Pozwala wybraæ dodatkowy atut."
 
-perk strength {
-	name "Si³a"
+perk bad_back {
+	name "S³abe plecy"
+	desc "Twoje plecy nie nadaj¹ siê do noszenia ciê¿arów. Zmniejsza si³ê o 5 i zmniejsz maksymalny udŸwig."
+}
+perk chronic_disease {
+	name "Przewlek³a choroba"
+	desc "Od dziecka jesteœ bardziej chorowity ni¿ inni. Zmniejsza kondycjê o 5 i wolniej leczysz siê z obra¿eñ."
+}
+perk sluggish {
+	name "Ospa³y"
+	desc "Jesteœ powolny. Zmniejsza zrêcznoœæ o 5 i wolniej biegasz."
+}
+perk slow_learner {
+	name "Powolny uczeñ"
+	desc "Nauczenie nowych umiejêtnoœci przychodzi ci z trudem. Zmniejsz inteligencjê o 5 punktów i spowalnia szkolenie umiejêtnoœci."
+}
+perk asocial {
+	name "Aspo³eczny"
+	desc "Nie najlepiej dogadujesz siê z innymi osobami. Zmniejsz charyzmê o 5 punktów i zwiêksza ceny w sklepach."
+}
+perk talent {
+	name "Talent"
 	desc "Zwiêksza wybrany atrybut o 5 punktów. Przyœpiesza szybkoœæ zdobywania tego atrybutu."
 }
 perk skilled {
@@ -45,12 +67,4 @@ perk heirloom {
 perk leader {
 	name "Przywódca"
 	desc "Masz predyspozycje aby zostaæ wielkim przywódc¹. Ju¿ nawet zrekrutowa³eœ jednego bohatera aby z tob¹ podró¿owa³."
-}
-perk slow_learner {
-	name "Powolny uczeñ"
-	desc "Nauczenie nowych umiejêtnoœci przychodzi ci z trudem. Obni¿a inteligencjê o 5 punktów i spowalnia szkolenie umiejêtnoœci."
-}
-perk asocial {
-	name "Aspo³eczny"
-	desc "Nie najlepiej dogadujesz siê z innymi osobami. Obni¿a charyzmê o 5 punktów i zwiêksza ceny w sklepach."
 }

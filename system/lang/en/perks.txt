@@ -1,7 +1,9 @@
 pickAttribIncrease = "Pick attribute to increase."
 pickAttribDecrease = "Pick attribute to decrease."
 pickSkillIncrease = "Pick skill to increase."
-availablePerks = "Available"
+advantages = "Advantages"
+disadvantages = "Disadvantages"
+perks = "Feats"
 takenPerks = "Taken"
 increasedAttrib = "Increased attribute"
 increasedSkill = "Increased skill"
@@ -10,8 +12,28 @@ decreasedSkill = "Decreased skill"
 decreasedSkills = "Decreased skills"
 flawExtraPerk = "Allows to pick extra feat."
 
-perk strength {
-	name "Strength"
+perk bad_back {
+	name "Bad back"
+	desc "Your back is not suitable for carrying heavy loads. Reduced strength by 5 points and decreased carrying capacity."
+}
+perk chronic_disease {
+	name "Chronic disease"
+	desc "Since being child you are more sickly then others. Reduced endurance by 5 points and decreased wounds healing speed."
+}
+perk sluggish {
+	name "Sluggish"
+	desc "You are sluggish. Reduced dexterity by 5 points and slower running speed."
+}
+perks slow_learner {
+	name "Slow learner"
+	desc "Learning new skills comes for you with difficulty. Reduces intelligence by 5 points and slows down skills training."
+}
+perk asocial {
+	name "Asocial"
+	desc "You don't get along well with other people. Reduced charisma by 5 points and increases the prices in stores."
+}
+perk talent {
+	name "Talent"
 	desc "Increase chosen attribute by 5 points. Faster training of selected attribute."
 }
 perk skilled {
@@ -45,12 +67,4 @@ perk heirloom {
 perk leader {
 	name "Leader"
 	desc "You have a predisposition to become a great leader. You have even recruited one hero to come with you."
-}
-perks slow_learner {
-	name "Slow learner"
-	desc "Learning new skills comes for you with difficulty. Reduces intelligence by 5 points and slows down skills training."
-}
-perk asocial {
-	name "Asocial"
-	desc "You don't get along well with other people. Reduced charisma by 5 points and increases the prices in stores."
 }

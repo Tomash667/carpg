@@ -108,6 +108,7 @@ private:
 	void UpdateInventory();
 	void ResetDoll(bool instant);
 	void RandomAppearance();
+	Group FlowGroupToTooltipGroup(Group group);
 
 	Mode mode;
 	bool enter_name;
@@ -129,11 +130,11 @@ private:
 	// data
 	bool reset_skills_perks, rotating;
 	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes, txCreateCharWarn,
-		txSkillPoints, txPerkPoints, txPickAttribIncrease, txPickAttribDecrease, txPickSkillIncrease, txAvailablePerks, txUnavailablePerks, txTakenPerks,
+		txSkillPoints, txPerkPoints, txPickAttribIncrease, txPickAttribDecrease, txPickSkillIncrease, txAdvantages, txDisadvantages, txPerks, txTakenPerks,
 		txCreateCharTooMany, txFlawExtraPerk;
 	Perk picked_perk;
 	PickItemDialog* pickItemDialog;
-	vector<Perk> available_perks;
+	vector<Perk> available_adv, available_disadv, available_perks;
 	vector<std::pair<cstring, int>> taken_perks;
 	const Item* items[4];
 	TEX tKlasaCecha;

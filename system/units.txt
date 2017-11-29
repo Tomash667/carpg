@@ -508,7 +508,7 @@ profile hunter {
 		skill tag light_armor
 		skill tag acrobatics
 		skill 0.5 athletics
-		perk strength dexterity
+		perk talent dexterity
 		perk skill_focus bow
 	}
 	subprofile swordman {
@@ -517,7 +517,7 @@ profile hunter {
 		skill tag athletics
 		skill 0.5 shield
 		skill 0.25 acrobatics
-		perk strength dexterity
+		perk talent dexterity
 		perk skill_focus long_blade
 	}
 }
@@ -575,7 +575,7 @@ profile rogue {
 		skill tag light_armor
 		skill tag acrobatics
 		skill 0.75 short_blade
-		perk strength dexterity
+		perk talent dexterity
 		perk skill_focus bow
 	}
 	subprofile swordman {
@@ -584,7 +584,7 @@ profile rogue {
 		skill tag acrobatics
 		skill 0.5 shield
 		skill 0.25 athletics
-		perk strength dexterity
+		perk talent dexterity
 		perk skill_focus long_blade
 	}
 	subprofile criticalhitter {
@@ -593,7 +593,7 @@ profile rogue {
 		skill tag acrobatics
 		skill 0.25 athletics
 		skill 0.25 shield
-		perk strength dexterity
+		perk talent dexterity
 		perk skill_focus short_blade
 	}
 }
@@ -632,7 +632,7 @@ profile warrior {
 		skill tag shield
 		skill tag athletics
 		skill 0.75 weapon
-		perk strength endurance
+		perk talent endurance
 		perk skill_focus heavy_armor
 	}
 	subprofile bowman {
@@ -641,7 +641,7 @@ profile warrior {
 		skill tag long_blade
 		skill 0.5 athletics
 		skill 0.5 acrobatics
-		perk strength dexterity
+		perk talent dexterity
 		perk skill_focus bow
 	}
 	subprofile fighter {
@@ -652,7 +652,7 @@ profile warrior {
 		skill tag athletics
 		skill 0.5 shield
 		skill 0.25 acrobatics
-		perk strength strength
+		perk talent strength
 		perk skill_focus weapon
 	}
 }

@@ -10,9 +10,12 @@
 
 //-----------------------------------------------------------------------------
 PerkInfo g_perks[(int)Perk::Max] = {
+	PerkInfo(Perk::BadBack, "bad_back", PerkInfo::Flaw | PerkInfo::History),
+	PerkInfo(Perk::ChronicDisease, "chronic_disease", PerkInfo::Flaw | PerkInfo::History),
+	PerkInfo(Perk::Sluggish, "sluggish", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::SlowLearner, "slow_learner", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::Asocial, "asocial", PerkInfo::Flaw | PerkInfo::History),
-	PerkInfo(Perk::Strength, "strength", PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Attribute),
+	PerkInfo(Perk::Talent, "talent", PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Attribute),
 	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
 	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Skill),
 	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History),
@@ -85,11 +88,14 @@ void TakenPerk::GetDesc(string& s) const
 	case Perk::FilthyRich:
 	case Perk::FamilyHeirloom:
 	case Perk::Leader:
+	case Perk::BadBack:
+	case Perk::ChronicDisease:
+	case Perk::Sluggish:
 	case Perk::SlowLearner:
 	case Perk::Asocial:
 		s.clear();
 		break;
-	case Perk::Strength:
+	case Perk::Talent:
 		s = Format("%s: %s", txIncreasedAttrib, AttributeInfo::attributes[value].name.c_str());
 		break;
 	case Perk::SkillFocus:
@@ -109,7 +115,7 @@ cstring TakenPerk::FormatName()
 
 	switch(perk)
 	{
-	case Perk::Strength:
+	case Perk::Talent:
 		return Format("%s (%s)", p.name.c_str(), AttributeInfo::attributes[value].name.c_str());
 	case Perk::SkillFocus:
 		return Format("%s (%s)", p.name.c_str(), SkillInfo::skills[value].name.c_str());
@@ -125,7 +131,7 @@ bool TakenPerk::Validate()
 {
 	switch(perk)
 	{
-	case Perk::Strength:
+	case Perk::Talent:
 		if(value < 0 || value >= (int)Attribute::MAX)
 		{
 			Error("Perk 'strength', invalid attribute %d.", value);
@@ -149,25 +155,39 @@ bool TakenPerk::Validate()
 bool TakenPerk::CanTake(PerkContext& ctx)
 {
 	auto& info = g_perks[(int)perk];
+
+	// can take history perk only at startup
 	if(IS_SET(info.flags, PerkInfo::History) && !ctx.startup)
+		return false;
+
+	// can take more then 2 flaws
+	if(IS_SET(info.flags, PerkInfo::Flaw) && ctx.cc && ctx.cc->perks_max >= 4)
 		return false;
 
 	switch(perk)
 	{
-	case Perk::Strength:
+	case Perk::Talent:
 	case Perk::Skilled:
 	case Perk::SkillFocus:
 	case Perk::AlchemistApprentice:
 	case Perk::Wealthy:
 	case Perk::FamilyHeirloom:
 	case Perk::Leader:
-	case Perk::SlowLearner:
-	case Perk::Asocial:
 		return true;
 	case Perk::VeryWealthy:
 		return ctx.HavePerk(Perk::Wealthy);
 	case Perk::FilthyRich:
 		return ctx.HavePerk(Perk::VeryWealthy);
+	case Perk::BadBack:
+		return ctx.CanMod(Attribute::STR);
+	case Perk::ChronicDisease:
+		return ctx.CanMod(Attribute::END);
+	case Perk::Sluggish:
+		return ctx.CanMod(Attribute::DEX);
+	case Perk::SlowLearner:
+		return ctx.CanMod(Attribute::INT);
+	case Perk::Asocial:
+		return ctx.CanMod(Attribute::CHA);
 	default:
 		assert(0);
 		return false;
@@ -180,16 +200,13 @@ bool TakenPerk::Apply(PerkContext& ctx)
 {
 	switch(perk)
 	{
-	case Perk::Strength:
+	case Perk::Talent:
 		if(ctx.validate && ctx.cc && ctx.cc->a[value].mod)
 		{
 			Error("Perk 'strength', attribute %d is already modified.", value);
 			return false;
 		}
-		if(ctx.cc)
-			ctx.cc->a[value].Mod(5, true);
-		else
-			ctx.pc->unit->SetBase((Attribute)value, 5, ctx.startup, true);
+		ctx.Mod((Attribute)value, 5);
 		break;
 	case Perk::Skilled:
 		if(ctx.cc)
@@ -205,13 +222,7 @@ bool TakenPerk::Apply(PerkContext& ctx)
 			Error("Perk 'skill_focus', skill %d is already modified.", value);
 			return false;
 		}
-		if(ctx.cc)
-		{
-			ctx.cc->s[value].Mod(5, true);
-			ctx.cc->to_update.push_back((Skill)value);
-		}
-		else
-			ctx.pc->unit->SetBase((Skill)value, 5, ctx.startup, true);
+		ctx.Mod((Skill)value, 5);
 		break;
 	case Perk::Wealthy:
 		if(ctx.pc && !hidden && ctx.startup)
@@ -235,23 +246,24 @@ bool TakenPerk::Apply(PerkContext& ctx)
 				ctx.pc->unit->gold += 100'000;
 		}
 		break;
+	case Perk::BadBack:
+		ctx.Mod(Attribute::STR, -5);
+		break;
+	case Perk::ChronicDisease:
+		ctx.Mod(Attribute::END, -5);
+		break;
+	case Perk::Sluggish:
+		ctx.Mod(Attribute::DEX, -5);
+		break;
 	case Perk::SlowLearner:
-		if(ctx.cc)
-			ctx.cc->a[(int)Attribute::INT].Mod(-5, false);
-		else
-		{
-			ctx.pc->unit->SetBase(Attribute::INT, -5, ctx.startup, true);
+		ctx.Mod(Attribute::INT, -5);
+		if(ctx.pc)
 			ctx.pc->unit->statsx->perk_flags |= PerkFlags::PF_SLOW_LERNER;
-		}
 		break;
 	case Perk::Asocial:
-		if(ctx.cc)
-			ctx.cc->a[(int)Attribute::CHA].Mod(-5, false);
-		else
-		{
-			ctx.pc->unit->SetBase(Attribute::CHA, -5, ctx.startup, true);
+		ctx.Mod(Attribute::CHA, -5);
+		if(ctx.pc)
 			ctx.pc->unit->statsx->perk_flags |= PerkFlags::PF_ASOCIAL;
-		}
 		break;
 	case Perk::AlchemistApprentice:
 	case Perk::FamilyHeirloom:
@@ -283,11 +295,8 @@ void TakenPerk::Remove(PerkContext& ctx)
 {
 	switch(perk)
 	{
-	case Perk::Strength:
-		if(ctx.cc)
-			ctx.cc->a[value].Mod(-5, false);
-		else
-			ctx.pc->unit->SetBase((Attribute)value, -5, ctx.startup, true);
+	case Perk::Talent:
+		ctx.Mod((Attribute)value, -5, false);
 		break;
 	case Perk::Skilled:
 		if(ctx.cc)
@@ -298,13 +307,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 		}
 		break;
 	case Perk::SkillFocus:
-		if(ctx.cc)
-		{
-			ctx.cc->s[value].Mod(-5, false);
-			ctx.cc->to_update.push_back((Skill)value);
-		}
-		else
-			ctx.pc->unit->SetBase((Skill)value, -5, ctx.startup, true);
+		ctx.Mod((Skill)value, -5, false);
 		break;
 	case Perk::VeryWealthy:
 		{
@@ -320,23 +323,24 @@ void TakenPerk::Remove(PerkContext& ctx)
 				perk->hidden = false;
 		}
 		break;
+	case Perk::BadBack:
+		ctx.Mod(Attribute::STR, -5, false);
+		break;
+	case Perk::ChronicDisease:
+		ctx.Mod(Attribute::END, -5, false);
+		break;
+	case Perk::Sluggish:
+		ctx.Mod(Attribute::DEX, -5, false);
+		break;
 	case Perk::SlowLearner:
-		if(ctx.cc)
-			ctx.cc->a[(int)Attribute::INT].Mod(5, false);
-		else
-		{
-			ctx.pc->unit->SetBase(Attribute::INT, 5, ctx.startup, true);
+		ctx.Mod(Attribute::INT, -5, false);
+		if(ctx.pc)
 			ctx.pc->unit->statsx->perk_flags &= ~PerkFlags::PF_SLOW_LERNER;
-		}
 		break;
 	case Perk::Asocial:
-		if(ctx.cc)
-			ctx.cc->a[(int)Attribute::CHA].Mod(5, false);
-		else
-		{
-			ctx.pc->unit->SetBase(Attribute::CHA, 5, ctx.startup, true);
+		ctx.Mod(Attribute::CHA, -5, false);
+		if(ctx.pc)
 			ctx.pc->unit->statsx->perk_flags &= ~PerkFlags::PF_ASOCIAL;
-		}
 		break;
 	case Perk::AlchemistApprentice:
 	case Perk::Wealthy:
@@ -400,4 +404,41 @@ TakenPerk* PerkContext::FindPerk(Perk perk)
 		}
 	}
 	return nullptr;
+}
+
+//=================================================================================================
+bool PerkContext::CanMod(Attribute attrib)
+{
+	if(!cc)
+		return true;
+	return !cc->a[(int)attrib].mod;
+}
+
+//=================================================================================================
+bool PerkContext::CanMod(Skill skill)
+{
+	if(!cc)
+		return true;
+	return !cc->s[(int)skill].mod;
+}
+
+//=================================================================================================
+void PerkContext::Mod(Attribute attrib, int value, bool mod)
+{
+	if(cc)
+		cc->a[(int)attrib].Mod(value, mod);
+	else
+		pc->unit->SetBase(attrib, value, startup, true);
+}
+
+//=================================================================================================
+void PerkContext::Mod(Skill skill, int value, bool mod)
+{
+	if(cc)
+	{
+		cc->s[(int)skill].Mod(value, mod);
+		cc->to_update.push_back(skill);
+	}
+	else
+		pc->unit->SetBase(skill, value, startup, true);
 }

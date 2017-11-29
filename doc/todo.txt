@@ -1,19 +1,9 @@
 ﻿FEATURE:
 *** perks
-? niech plus wyświetla opis
-	
-+ startowe
-+ negatywne
-+ other
-+ wybrane
-? hidden nie działa
-? opis dotyczący wymagań ? - niech nie będzie widać niedostępnych - u góry napis atuty
-? nie można wziąść słabości jak już jest max talentów, zły warunek
-	- jeszcze gorzej
-- startowa kasa nie działa
-
-+ verify atrib/skill mod (prevent taking bonus to int and slow lerner)
++ move perks to statsx
 + save load perk flags
++ save/load hidden, compability
+? perk siła - zapytać dominika :P
 
 + perk points
 	every two levels, for heroes every 3 levels
@@ -22,6 +12,7 @@
 	Talent -> SkillFocus
 	Weakness -> specific perk
 	SkillFocus -> remove
+	Strength -> Talent
 + modifying apt (which perk modify starting value, which aptitude?)
 + new ingame perks
 + training perks
@@ -33,6 +24,14 @@
 	map old to new
 	add missing wealthy perk
 + show/hide unavailable perks when attribute is changes
++ perks effects
+	PF_ASOCIAL
+	better/worse starting gear
+	strength, extra apt
+	skill focus, extra apt
+	bad back
+	chronic disease
+	sluggish
 
 *** combat
 + str/dex formula changes
