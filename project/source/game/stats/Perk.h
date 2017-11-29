@@ -29,6 +29,7 @@ enum class Perk
 {
 	// negative starting perks
 	SlowLearner, // -5 int, -1 apt to all skills
+	Asocial, // -5 cha, worse prices
 
 	// positive starting perks
 	Strength, // +5 attrib, +1 apt
@@ -125,6 +126,7 @@ struct PerkContext
 enum PerkFlags
 {
 	PF_SLOW_LERNER = 1 << 0, // -1 apt to all skills
+	PF_ASOCIAL = 1 << 1, // worse prices
 };
 
 //-----------------------------------------------------------------------------

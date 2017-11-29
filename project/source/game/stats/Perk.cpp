@@ -11,6 +11,7 @@
 //-----------------------------------------------------------------------------
 PerkInfo g_perks[(int)Perk::Max] = {
 	PerkInfo(Perk::SlowLearner, "slow_learner", PerkInfo::Flaw | PerkInfo::History),
+	PerkInfo(Perk::Asocial, "asocial", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::Strength, "strength", PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Attribute),
 	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
 	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Skill),
@@ -85,6 +86,7 @@ void TakenPerk::GetDesc(string& s) const
 	case Perk::FamilyHeirloom:
 	case Perk::Leader:
 	case Perk::SlowLearner:
+	case Perk::Asocial:
 		s.clear();
 		break;
 	case Perk::Strength:
@@ -160,6 +162,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	case Perk::FamilyHeirloom:
 	case Perk::Leader:
 	case Perk::SlowLearner:
+	case Perk::Asocial:
 		return true;
 	case Perk::VeryWealthy:
 		return ctx.HavePerk(Perk::Wealthy);
@@ -241,6 +244,15 @@ bool TakenPerk::Apply(PerkContext& ctx)
 			ctx.pc->unit->statsx->perk_flags |= PerkFlags::PF_SLOW_LERNER;
 		}
 		break;
+	case Perk::Asocial:
+		if(ctx.cc)
+			ctx.cc->a[(int)Attribute::CHA].Mod(-5, false);
+		else
+		{
+			ctx.pc->unit->SetBase(Attribute::CHA, -5, ctx.startup, true);
+			ctx.pc->unit->statsx->perk_flags |= PerkFlags::PF_ASOCIAL;
+		}
+		break;
 	case Perk::AlchemistApprentice:
 	case Perk::FamilyHeirloom:
 	case Perk::Leader:
@@ -315,6 +327,15 @@ void TakenPerk::Remove(PerkContext& ctx)
 		{
 			ctx.pc->unit->SetBase(Attribute::INT, 5, ctx.startup, true);
 			ctx.pc->unit->statsx->perk_flags &= ~PerkFlags::PF_SLOW_LERNER;
+		}
+		break;
+	case Perk::Asocial:
+		if(ctx.cc)
+			ctx.cc->a[(int)Attribute::CHA].Mod(5, false);
+		else
+		{
+			ctx.pc->unit->SetBase(Attribute::CHA, 5, ctx.startup, true);
+			ctx.pc->unit->statsx->perk_flags &= ~PerkFlags::PF_ASOCIAL;
 		}
 		break;
 	case Perk::AlchemistApprentice:

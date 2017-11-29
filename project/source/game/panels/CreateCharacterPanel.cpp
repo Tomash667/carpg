@@ -179,9 +179,9 @@ CreateCharacterPanel::CreateCharacterPanel(DialogInfo& info) : GameDialogBox(inf
 	tbInfo.SetText(Str("createCharText"));
 	tbInfo.AddScrollbar();
 
-	flow_pos = Int2(426, 73 - 18);
+	flow_pos = Int2(428, 73 - 18);
 	flow_size = Int2(220, 273);
-	flow_scroll.pos = Int2(flow_pos.x + flow_size.x + 2, flow_pos.y);
+	flow_scroll.pos = Int2(flow_pos.x + flow_size.x - 1, flow_pos.y);
 	flow_scroll.size = Int2(16, flow_size.y);
 	flow_scroll.total = 100;
 	flow_scroll.part = 10;
@@ -373,7 +373,7 @@ void CreateCharacterPanel::Update(float dt)
 
 			if(!flow_scroll.clicked && PointInRect(GUI.cursor_pos, flow_pos + global_pos, flow_size))
 			{
-				if(Key.Focus())
+				if(focus && Key.Focus())
 					flow_scroll.ApplyMouseWheel();
 
 				int y = GUI.cursor_pos.y - global_pos.y - flow_pos.y + (int)flow_scroll.offset;
@@ -389,6 +389,8 @@ void CreateCharacterPanel::Update(float dt)
 						break;
 				}
 			}
+			else if(!flow_scroll.clicked && PointInRect(GUI.cursor_pos, flow_scroll.pos + global_pos, flow_scroll.size) && focus && Key.Focus())
+				flow_scroll.ApplyMouseWheel();
 
 			tooltip.UpdateTooltip(dt, group, id);
 		}
@@ -1234,22 +1236,17 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 	if(group == (int)Group::PickPerk_AddButton)
 	{
 		// add perk
-		switch((Perk)id)
+		auto& info = g_perks[id];
+		switch(info.required_value)
 		{
-		case Perk::Strength:
-			PickAttribute(txPickAttribIncrease, Perk::Strength);
+		case PerkInfo::Attribute:
+			PickAttribute(txPickAttribIncrease, (Perk)id);
 			break;
-		case Perk::Skilled:
-		case Perk::Wealthy:
-		case Perk::VeryWealthy:
-		case Perk::FilthyRich:
-		case Perk::FamilyHeirloom:
-		case Perk::AlchemistApprentice:
-		case Perk::Leader:
+		case PerkInfo::Skill:
+			PickAttribute(txPickSkillIncrease, (Perk)id);
+			break;
+		case PerkInfo::None:
 			AddPerk((Perk)id);
-			break;
-		case Perk::SkillFocus:
-			PickSkill(txPickSkillIncrease, Perk::SkillFocus, false);
 			break;
 		default:
 			assert(0);
@@ -1349,8 +1346,8 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		for(Perk perk : available_perks)
 		{
 			PerkInfo& info = g_perks[(int)perk];
-			bool can_pick = (cc.perks > 0 || IS_SET(info.flags, PerkInfo::Flaw));
-			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, can_pick);
+			bool disabled = (cc.perks == 0 && !IS_SET(info.flags, PerkInfo::Flaw));
+			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, disabled);
 			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
 		}
 	}

@@ -50,3 +50,7 @@ perks slow_learner {
 	name "Slow learner"
 	desc "Learning new skills comes for you with difficulty. Reduces intelligence by 5 points and slows down skills training."
 }
+perk asocial {
+	name "Asocial"
+	desc "You don't get along well with other people. Reduced charisma by 5 points and increases the prices in stores."
+}

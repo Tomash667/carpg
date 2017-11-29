@@ -1,14 +1,19 @@
 ﻿FEATURE:
 *** perks
+? niech plus wyświetla opis
+	
++ startowe
++ negatywne
++ other
++ wybrane
 ? hidden nie działa
 ? opis dotyczący wymagań ? - niech nie będzie widać niedostępnych - u góry napis atuty
 ? nie można wziąść słabości jak już jest max talentów, zły warunek
+	- jeszcze gorzej
 - startowa kasa nie działa
-? niech plus wyświetla opis
-? flow allow mouse scroll
-- remove spacing between scrollbar
-? flaw extra perk text
+
 + verify atrib/skill mod (prevent taking bonus to int and slow lerner)
++ save load perk flags
 
 + perk points
 	every two levels, for heroes every 3 levels

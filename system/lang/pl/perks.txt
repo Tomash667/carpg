@@ -50,3 +50,7 @@ perk slow_learner {
 	name "Powolny uczeñ"
 	desc "Nauczenie nowych umiejêtnoœci przychodzi ci z trudem. Obni¿a inteligencjê o 5 punktów i spowalnia szkolenie umiejêtnoœci."
 }
+perk asocial {
+	name "Aspo³eczny"
+	desc "Nie najlepiej dogadujesz siê z innymi osobami. Obni¿a charyzmê o 5 punktów i zwiêksza ceny w sklepach."
+}
