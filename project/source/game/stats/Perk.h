@@ -27,11 +27,13 @@ namespace old
 //-----------------------------------------------------------------------------
 enum class Perk
 {
-	Weakness, // -5 attrib
-	Strength, // +5 attrib
+	// negative starting perks
+	SlowLearner, // -5 int, -1 apt to all skills
+
+	// positive starting perks
+	Strength, // +5 attrib, +1 apt
 	Skilled, // +3 skill points
-	SkillFocus, // -5*2 skills, +10 one skill
-	Talent, // +5 skill
+	SkillFocus, // +5 skill, +1 apt
 	AlchemistApprentice, // more potions
 	Wealthy, // +1k gold, better items
 	VeryWealthy, // +5k gold, better items
@@ -39,6 +41,7 @@ enum class Perk
 	FamilyHeirloom, // good starting item
 	Leader, // start with npc
 
+	// normal perks
 	/*
 	STR:
 	StrongBack, // (60 str, +x kg)
@@ -61,15 +64,15 @@ enum class Perk
 
 //enum class Perk
 //{
-//	// negative starting perks
-//	SlowLerner, // -1 apt to all skills
+//
+//
 //	Poor, // less gold, worse items
 //	BadBack, // -5 str, less carry
 //	ChronicDisease, // -5 end, 50% natural healing
 //	Sluggish, // -5 dex, slower
 //	Autistic, // -5 cha, worse prices
-//	
-//	// positive starting perks
+//
+//
 //	Wealthy, // +1k gold, better items
 //	VeryWealthy, // +5k gold, better items
 //	FilthyRich, // +100k gold, better items
@@ -80,7 +83,7 @@ enum class Perk
 //	MilitaryTraining, // +50 hp, +5 atk/def
 //	SkillFocus, // +5 skill, +2 apt
 //
-//	// normal perks
+//
 //	StrongBack, // +carry
 //	StrongerBack, // +carry
 //
@@ -119,14 +122,19 @@ struct PerkContext
 };
 
 //-----------------------------------------------------------------------------
+enum PerkFlags
+{
+	PF_SLOW_LERNER = 1 << 0, // -1 apt to all skills
+};
+
+//-----------------------------------------------------------------------------
 struct PerkInfo
 {
 	enum Flags
 	{
 		Flaw = 1 << 0,
 		History = 1 << 1,
-		Multiple = 1 << 2,
-		RequireFormat = 1 << 3
+		RequireFormat = 1 << 2
 	};
 
 	enum RequiredValue
@@ -135,7 +143,7 @@ struct PerkInfo
 		Attribute,
 		Skill
 	};
-	
+
 	Perk perk_id;
 	cstring id;
 	string name, desc;

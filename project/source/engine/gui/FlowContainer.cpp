@@ -89,6 +89,8 @@ void FlowContainer::Update(float dt)
 				{
 					if(PointInRect(GUI.cursor_pos, p, fi->size))
 					{
+						group = fi->group;
+						id = fi->id;
 						GUI.cursor_mode = CURSOR_HAND;
 						if(fi->state == Button::DOWN)
 						{

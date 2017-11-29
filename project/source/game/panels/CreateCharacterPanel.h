@@ -128,12 +128,12 @@ private:
 	TooltipController tooltip;
 	// data
 	bool reset_skills_perks, rotating;
-	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes, txCreateCharWarn, txSkillPoints, txPerkPoints,
-		txPickAttribIncrease, txPickAttribDecrease, txPickTwoSkillsDecrease, txPickSkillIncrease, txAvailablePerks, txUnavailablePerks, txTakenPerks, txCreateCharTooMany;
+	cstring txHardcoreMode, txHair, txMustache, txBeard, txHairColor, txSize, txCharacterCreation, txName, txAttributes, txRelatedAttributes, txCreateCharWarn,
+		txSkillPoints, txPerkPoints, txPickAttribIncrease, txPickAttribDecrease, txPickSkillIncrease, txAvailablePerks, txUnavailablePerks, txTakenPerks,
+		txCreateCharTooMany, txFlawExtraPerk;
 	Perk picked_perk;
 	PickItemDialog* pickItemDialog;
-	int step, step_var, step_var2;
-	vector<Perk> available_perks, unavailable_perks;
+	vector<Perk> available_perks;
 	vector<std::pair<cstring, int>> taken_perks;
 	const Item* items[4];
 	TEX tKlasaCecha;

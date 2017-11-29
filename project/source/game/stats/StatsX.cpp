@@ -293,6 +293,7 @@ StatsX* StatsX::Get(Entry& e)
 	e.stats->unique = false;
 	e.stats->profile = e.profile;
 	e.stats->seed = e.seed;
+	e.stats->perk_flags = 0;
 	if(e.profile->subprofiles.empty())
 	{
 		e.stats->subprofile = nullptr;

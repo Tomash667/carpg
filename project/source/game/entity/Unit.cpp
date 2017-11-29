@@ -2063,7 +2063,7 @@ float Unit::GetAttackSpeed(const Weapon* used_weapon) const
 //=================================================================================================
 float Unit::GetBowAttackSpeed() const
 {
-	// values range 
+	// values range
 	//	1 dex, 0 skill = 0.8
 	// 50 dex, 10 skill = 1.1
 	// 100 dex, 100 skill = 1.7
@@ -2647,6 +2647,10 @@ int Unit::GetAptitude(Skill s) const
 		if(best != value)
 			apt += 4;
 	}
+
+	if(IS_SET(statsx->perk_flags, PF_SLOW_LERNER))
+		--apt;
+
 	return apt;
 }
 
@@ -3134,10 +3138,50 @@ void Unit::ApplyStun(float length)
 
 void Unit::SetBase(Attribute attrib, int value, bool startup, bool mod)
 {
+	int index = (int)attrib;
 
+	// calculate new base value
+	int new_base_value = mod ? (statsx->attrib_base[index] + value) : value;
+	new_base_value = Clamp(new_base_value, AttributeInfo::MIN, AttributeInfo::MAX);
+	if(new_base_value == statsx->attrib_base[index])
+		return;
+
+	// calculate new value
+	int dif = new_base_value - statsx->attrib_base[index];
+	int new_value = statsx->attrib[index] + dif;
+	new_value = Clamp(new_value, AttributeInfo::MIN, AttributeInfo::MAX);
+
+	// apply new values
+	statsx->attrib_base[index] = new_base_value;
+	statsx->attrib[index] = new_value;
+	statsx->attrib_apt[index] = StatsX::AttributeToAptitude(new_base_value);
+	if(startup)
+		statsx->attrib[index] = new_value;
+	else
+		Set(attrib, new_value);
 }
 
 void Unit::SetBase(Skill skill, int value, bool startup, bool mod)
 {
+	int index = (int)skill;
 
+	// calculate new base value
+	int new_base_value = mod ? (statsx->skill_base[index] + value) : value;
+	new_base_value = Clamp(new_base_value, SkillInfo::MIN, SkillInfo::MAX);
+	if(new_base_value == statsx->skill_base[index])
+		return;
+
+	// calculate new value
+	int dif = new_base_value - statsx->skill_base[index];
+	int new_value = statsx->skill[index] + dif;
+	new_value = Clamp(new_value, SkillInfo::MIN, SkillInfo::MAX);
+
+	// apply new values
+	statsx->skill_base[index] = new_base_value;
+	statsx->skill[index] = new_value;
+	statsx->skill_apt[index] = StatsX::SkillToAptitude(new_base_value);
+	if(startup)
+		statsx->skill[index] = new_value;
+	else
+		Set(skill, new_value);
 }

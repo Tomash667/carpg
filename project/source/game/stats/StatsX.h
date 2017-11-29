@@ -33,6 +33,7 @@ struct StatsX
 	StatProfile* profile;
 	SubProfile* subprofile;
 	Skill weapon, armor;
+	int perk_flags;
 	int attrib[(int)Attribute::MAX];
 	int attrib_base[(int)Attribute::MAX];
 	int attrib_apt[(int)Attribute::MAX];

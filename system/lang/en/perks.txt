@@ -1,23 +1,18 @@
 pickAttribIncrease = "Pick attribute to increase."
 pickAttribDecrease = "Pick attribute to decrease."
-pickTwoSkillsDecrease = "Pick two skills to decrease."
 pickSkillIncrease = "Pick skill to increase."
 availablePerks = "Available"
-unavailablePerks = "Unavailable"
 takenPerks = "Taken"
 increasedAttrib = "Increased attribute"
 increasedSkill = "Increased skill"
 decreasedAttrib = "Decreased attribute"
 decreasedSkill = "Decreased skill"
 decreasedSkills = "Decreased skills"
+flawExtraPerk = "Allows to pick extra feat."
 
-perk weakness {
-	name "Weakness"
-	desc "Flaw - Decrease chosen attribute by 5 points. Allows to pick extra feat."
-}
 perk strength {
 	name "Strength"
-	desc "Increase chosen attribute by 5 points."
+	desc "Increase chosen attribute by 5 points. Faster training of selected attribute."
 }
 perk skilled {
 	name "Skilled"
@@ -25,16 +20,8 @@ perk skilled {
 }
 perk skill_focus {
 	name "Skill focus"
-	desc "Free - Decrease two skills by 5 points, increase one skill by 10 points."
+	desc "Increase chosen skill by 5 points. Faster training of selected skill."
 }
-perk talent {
-	name "Talent"
-	desc "Increase chosen skill by 5 points."
-}
-/*perk crafting_tradition {
-	name "Crafting tradition"
-	desc "Increase Crafting skill by 10 points."
-}*/
 perk alchemist {
 	name "Alchemist apprentice"
 	desc "You worked as an alchemist apprentice. You have not learned to brew potions, but earned a large number of potions."
@@ -58,4 +45,8 @@ perk heirloom {
 perk leader {
 	name "Leader"
 	desc "You have a predisposition to become a great leader. You have even recruited one hero to come with you."
+}
+perks slow_learner {
+	name "Slow learner"
+	desc "Learning new skills comes for you with difficulty. Reduces intelligence by 5 points and slows down skills training."
 }

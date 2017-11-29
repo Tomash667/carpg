@@ -104,7 +104,7 @@ void CreatedCharacter::Random(Class c)
 	taken_perks.push_back(TakenPerk(Perk::Strength, (int)strength));
 	a[(int)strength].Mod(5, true);
 	Skill talent = RandomItem({ sk1, sk2, sk3 });
-	taken_perks.push_back(TakenPerk(Perk::Talent, (int)talent));
+	taken_perks.push_back(TakenPerk(Perk::SkillFocus, (int)talent));
 	s[(int)talent].Mod(5, true);
 
 	sp = 0;
@@ -181,15 +181,12 @@ int CreatedCharacter::Read(BitStream& stream)
 	for(vector<TakenPerk>::iterator it = taken_perks.begin(), end = taken_perks.end(); it != end; ++it)
 	{
 		const PerkInfo& info = g_perks[(int)it->perk];
-		if(!IS_SET(info.flags, PerkInfo::Multiple))
+		for(vector<TakenPerk>::iterator it2 = it + 1; it2 != end; ++it2)
 		{
-			for(vector<TakenPerk>::iterator it2 = it + 1; it2 != end; ++it2)
+			if(it->perk == it2->perk)
 			{
-				if(it->perk == it2->perk)
-				{
-					Error("Multiple same perks '%s'.", info.id);
-					return 3;
-				}
+				Error("Multiple same perks '%s'.", info.id);
+				return 3;
 			}
 		}
 	}
