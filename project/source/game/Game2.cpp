@@ -3965,10 +3965,8 @@ void Game::EndDialog(DialogContext& ctx)
 	{
 		if(!ctx.is_local)
 		{
-			NetChangePlayer& c = Add1(Net::player_changes);
+			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 			c.type = NetChangePlayer::END_DIALOG;
-			c.pc = ctx.pc;
-			GetPlayerInfo(c.pc->id).NeedUpdate();
 		}
 
 		return;
@@ -3980,10 +3978,8 @@ void Game::EndDialog(DialogContext& ctx)
 
 	if(!ctx.is_local)
 	{
-		NetChangePlayer& c = Add1(Net::player_changes);
+		NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 		c.type = NetChangePlayer::END_DIALOG;
-		c.pc = ctx.pc;
-		GetPlayerInfo(c.pc->id).NeedUpdate();
 	}
 }
 
@@ -4175,10 +4171,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else
 				{
 					ctx.choice_selected = -1;
-					NetChangePlayer& c = Add1(Net::player_changes);
+					NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 					c.type = NetChangePlayer::SHOW_DIALOG_CHOICES;
-					c.pc = ctx.pc;
-					GetPlayerInfo(c.pc->id).NeedUpdate();
 				}
 				return;
 			}
@@ -4239,11 +4233,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					StartTrade(I_TRADE, *ctx.pc->chest_trade, t);
 				else
 				{
-					NetChangePlayer& c = Add1(Net::player_changes);
+					NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 					c.type = NetChangePlayer::START_TRADE;
-					c.pc = ctx.pc;
 					c.id = t->netid;
-					GetPlayerInfo(c.pc->id).NeedUpdate();
 
 					trader_buy = old_trader_buy;
 				}
@@ -4496,11 +4488,10 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else
 					{
 						// wyœlij info o odpoczynku
-						NetChangePlayer& c = Add1(Net::player_changes);
+						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 						c.type = NetChangePlayer::REST;
-						c.pc = ctx.pc;
 						c.id = ile;
-						GetPlayerInfo(ctx.pc).NeedUpdateAndGold();
+						ctx.pc->player_info->UpdateGold();
 					}
 				}
 				else if(strcmp(msg, "gossip") == 0 || strcmp(msg, "gossip_drunk") == 0)
@@ -4800,12 +4791,11 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else
 					{
 						// wyœlij info o trenowaniu
-						NetChangePlayer& c = Add1(Net::player_changes);
+						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 						c.type = NetChangePlayer::TRAIN;
-						c.pc = ctx.pc;
 						c.id = (is_skill ? 1 : 0);
 						c.ile = what;
-						GetPlayerInfo(ctx.pc).NeedUpdateAndGold();
+						ctx.pc->player_info->UpdateGold();
 					}
 				}
 				else if(strcmp(msg, "near_loc") == 0)
@@ -4983,10 +4973,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						StartTrade(I_GIVE, *t);
 					else
 					{
-						NetChangePlayer& c = Add1(Net::player_changes);
+						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 						c.type = NetChangePlayer::START_GIVE;
-						c.pc = ctx.pc;
-						GetPlayerInfo(ctx.pc->id).NeedUpdate();
 					}
 					return;
 				}
@@ -5002,10 +4990,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						StartTrade(I_SHARE, *t);
 					else
 					{
-						NetChangePlayer& c = Add1(Net::player_changes);
+						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 						c.type = NetChangePlayer::START_SHARE;
-						c.pc = ctx.pc;
-						GetPlayerInfo(ctx.pc->id).NeedUpdate();
 					}
 					return;
 				}
@@ -5225,11 +5211,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 						}
 						else
 						{
-							NetChangePlayer& c = Add1(Net::player_changes);
+							NetChangePlayer& c = Add1(near_players[id]->player->player_info->changes);
 							c.type = NetChangePlayer::PVP;
-							c.pc = near_players[id]->player;
 							c.id = ctx.pc->id;
-							GetPlayerInfo(near_players[id]->player).NeedUpdate();
 						}
 
 						pvp_response.ok = true;
@@ -5268,12 +5252,10 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else
 					{
 						// wyœlij info o trenowaniu
-						NetChangePlayer& c = Add1(Net::player_changes);
+						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 						c.type = NetChangePlayer::TRAIN;
-						c.pc = ctx.pc;
 						c.id = 2;
 						c.ile = 0;
-						GetPlayerInfo(ctx.pc).NeedUpdate();
 					}
 				}
 				else if(strcmp(msg, "szaleni_powiedzial") == 0)
@@ -5288,12 +5270,11 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.pc->unit->gold += 10;
 					if(!ctx.is_local)
 					{
-						NetChangePlayer& c = Add1(Net::player_changes);
+						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 						c.type = NetChangePlayer::GOLD_MSG;
-						c.pc = ctx.pc;
 						c.ile = 10;
 						c.id = 1;
-						GetPlayerInfo(ctx.pc).UpdateGold();
+						ctx.pc->player_info->UpdateGold();
 					}
 					else
 						AddGameMsg(Format(txGoldPlus, 10), 3.f);
@@ -5303,12 +5284,11 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					ctx.pc->unit->gold += 1;
 					if(!ctx.is_local)
 					{
-						NetChangePlayer& c = Add1(Net::player_changes);
+						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 						c.type = NetChangePlayer::GOLD_MSG;
-						c.pc = ctx.pc;
 						c.ile = 1;
 						c.id = 1;
-						GetPlayerInfo(ctx.pc).UpdateGold();
+						ctx.pc->player_info->UpdateGold();
 					}
 					else
 						AddGameMsg(Format(txGoldPlus, 1), 3.f);
@@ -7837,7 +7817,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					}
 				}
 			}
-			
+
 			if(u.IsStanding() && u.talking)
 			{
 				u.talk_timer += dt;
@@ -8894,11 +8874,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 								AddGameMsg3(GMS_TOO_COMPLICATED);
 							else
 							{
-								NetChangePlayer& c = Add1(Net::player_changes);
+								NetChangePlayer& c = Add1(u.player->player_info->changes);
 								c.type = NetChangePlayer::GAME_MESSAGE;
 								c.id = GMS_TOO_COMPLICATED;
-								c.pc = u.player;
-								u.player->player_info->NeedUpdate();
 							}
 						}
 						u.player->Train(TrainWhat::Read, 0.f, 0);
@@ -15249,11 +15227,9 @@ void Game::StartArenaCombat(int level)
 	}
 	else
 	{
-		NetChangePlayer& c = Add1(Net::player_changes);
+		NetChangePlayer& c = Add1(current_dialog->pc->player_info->changes);
 		c.type = NetChangePlayer::ENTER_ARENA;
-		c.pc = current_dialog->pc;
 		current_dialog->pc->arena_fights++;
-		GetPlayerInfo(current_dialog->pc).NeedUpdate();
 	}
 
 	current_dialog->pc->unit->frozen = FROZEN::YES;
@@ -15292,10 +15268,8 @@ void Game::StartArenaCombat(int level)
 				}
 				else
 				{
-					NetChangePlayer& c = Add1(Net::player_changes);
+					NetChangePlayer& c = Add1(unit->player->player_info->changes);
 					c.type = NetChangePlayer::ENTER_ARENA;
-					c.pc = unit->player;
-					GetPlayerInfo(c.pc).NeedUpdate();
 				}
 
 				NetChange& c = Add1(Net::changes);
@@ -15773,12 +15747,11 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 				AddGameMsg(Format(msg, ile), time);
 			else
 			{
-				NetChangePlayer& c = Add1(Net::player_changes);
+				NetChangePlayer& c = Add1(u.player->player_info->changes);
 				c.type = NetChangePlayer::GOLD_MSG;
 				c.id = (defmsg ? 1 : 0);
 				c.ile = ile;
-				c.pc = u.player;
-				GetPlayerInfo(u.player->id).update_flags |= (PlayerInfo::UF_NET_CHANGES | PlayerInfo::UF_GOLD);
+				u.player->player_info->UpdateGold();
 			}
 		}
 		else if(!u.IsPlayer() && u.busy == Unit::Busy_Trading)
@@ -15786,12 +15759,10 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 			Unit* trader = FindPlayerTradingWithUnit(u);
 			if(trader != pc->unit)
 			{
-				NetChangePlayer& c = Add1(Net::player_changes);
+				NetChangePlayer& c = Add1(trader->player->player_info->changes);
 				c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
-				c.pc = trader->player;
 				c.id = u.netid;
 				c.ile = u.gold;
-				GetPlayerInfo(c.pc).NeedUpdate();
 			}
 		}
 		return;
@@ -15891,12 +15862,10 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 						GetPlayerInfo(u.player->id).update_flags |= PlayerInfo::UF_GOLD;
 						if(show)
 						{
-							NetChangePlayer& c = Add1(Net::player_changes);
+							NetChangePlayer& c = Add1(u.player->player_info->changes);
 							c.type = NetChangePlayer::GOLD_MSG;
 							c.id = (defmsg ? 1 : 0);
 							c.ile = u.player->gold_get;
-							c.pc = u.player;
-							GetPlayerInfo(c.pc).NeedUpdate();
 						}
 					}
 				}
@@ -15911,12 +15880,10 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 				Unit* trader = FindPlayerTradingWithUnit(u);
 				if(trader != pc->unit)
 				{
-					NetChangePlayer& c = Add1(Net::player_changes);
+					NetChangePlayer& c = Add1(trader->player->player_info->changes);
 					c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
-					c.pc = trader->player;
 					c.id = u.netid;
 					c.ile = u.gold;
-					GetPlayerInfo(c.pc).NeedUpdate();
 				}
 			}
 		}
@@ -18528,11 +18495,9 @@ void Game::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 
 		if(Net::IsOnline() && unit->IsPlayer() && unit->player != pc)
 		{
-			NetChangePlayer& c = Add1(Net::player_changes);
+			NetChangePlayer& c = Add1(unit->player->player_info->changes);
 			c.type = NetChangePlayer::LOOK_AT;
-			c.pc = unit->player;
 			c.id = -1;
-			GetPlayerInfo(c.pc).NeedUpdate();
 		}
 	}
 }
@@ -18686,10 +18651,8 @@ void Game::UpdateGame2(float dt)
 					(*it)->frozen = FROZEN::NO;
 					if((*it)->IsPlayer() && (*it)->player != pc)
 					{
-						NetChangePlayer& c = Add1(Net::player_changes);
+						NetChangePlayer& c = Add1((*it)->player->player_info->changes);
 						c.type = NetChangePlayer::START_ARENA_COMBAT;
-						c.pc = (*it)->player;
-						GetPlayerInfo(c.pc).NeedUpdate();
 					}
 				}
 			}
@@ -18769,10 +18732,8 @@ void Game::UpdateGame2(float dt)
 						}
 						else
 						{
-							NetChangePlayer& c = Add1(Net::player_changes);
+							NetChangePlayer& c = Add1((*it)->player->player_info->changes);
 							c.type = NetChangePlayer::EXIT_ARENA;
-							c.pc = (*it)->player;
-							GetPlayerInfo(c.pc).NeedUpdate();
 						}
 					}
 				}
@@ -19166,11 +19127,9 @@ void Game::UpdateContest(float dt)
 						BreakUnitAction(u, BREAK_ACTION_MODE::NORMAL, true);
 						if(u.player != pc)
 						{
-							NetChangePlayer& c = Add1(Net::player_changes);
+							NetChangePlayer& c = Add1(u.player->player_info->changes);
 							c.type = NetChangePlayer::LOOK_AT;
-							c.pc = u.player;
 							c.id = innkeeper.netid;
-							GetPlayerInfo(c.pc).NeedUpdate();
 						}
 					}
 				}

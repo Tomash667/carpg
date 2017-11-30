@@ -49,10 +49,11 @@ struct NetChangePlayer
 		ADDED_ITEMS_MSG, // message about gaining multiple items [byte(ile)-count]
 		STAT_CHANGED, // player stat changed [byte(id)-ChangedStatType, byte(a)-stat id, int(ile)-value]
 		ADD_PERK, // add perk to player [byte(id)-perk, int(ile)-value]
+		REMOVE_PERK, // remove perk from player [byte(id)-perk]
+		HIDE_PERK, // hide player perk [byte(id)-perk, bool(ile)-hide]
 		UPDATE_LEVEL, // player level changed [float(v)]
 		GAME_MESSAGE, // show game message [int(id)-game message id]
 	} type;
-	PlayerController* pc;
 	int id, ile;
 	union
 	{

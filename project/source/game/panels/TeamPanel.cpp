@@ -446,12 +446,11 @@ void TeamPanel::OnGiveGold(int id)
 			target->gold += counter;
 			if(target->IsPlayer() && target->player != game.pc)
 			{
-				NetChangePlayer& c = Add1(Net::player_changes);
+				NetChangePlayer& c = Add1(target->player->player_info->changes);
 				c.type = NetChangePlayer::GOLD_RECEIVED;
-				c.pc = target->player;
 				c.id = game.pc->id;
 				c.ile = counter;
-				game.GetPlayerInfo(target->player).NeedUpdateAndGold();
+				target->player->player_info->UpdateGold();
 			}
 		}
 		else

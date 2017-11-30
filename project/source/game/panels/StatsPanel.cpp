@@ -199,15 +199,16 @@ void StatsPanel::SetText()
 	// feats
 	perks.clear();
 	LocalVector2<string*> strs;
-	for(int i = 0; i < (int)pc->perks.size(); ++i)
+	for(int i = 0; i < (int)pc->unit->statsx->perks.size(); ++i)
 	{
-		if(pc->perks[i].hidden)
+		auto& taken_perk = pc->unit->statsx->perks[i];
+		if(taken_perk.hidden)
 			continue;
-		PerkInfo& perk = g_perks[(int)pc->perks[i].perk];
+		PerkInfo& perk = g_perks[(int)taken_perk.perk];
 		if(IS_SET(perk.flags, PerkInfo::RequireFormat))
 		{
 			string* s = StringPool.Get();
-			*s = pc->perks[i].FormatName();
+			*s = taken_perk.FormatName();
 			strs.push_back(s);
 			perks.push_back(std::pair<cstring, int>(s->c_str(), i));
 		}
@@ -305,7 +306,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 		break;
 	case G_PERK:
 		{
-			TakenPerk& perk = pc->perks[id];
+			TakenPerk& perk = pc->unit->statsx->perks[id];
 			PerkInfo& pi = g_perks[(int)perk.perk];
 			tooltip.img = nullptr;
 			tooltip.big_text = pi.name;

@@ -132,7 +132,6 @@ struct PlayerController : public HeroPlayerCommon
 	DialogContext* dialog_ctx;
 	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
-	vector<TakenPerk> perks;
 	vector<Unit*> action_targets;
 	vector<const Item*> book_read;
 

@@ -5,9 +5,11 @@
 #include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
+struct NetChangePlayer;
 struct PlayerController;
 
 //-----------------------------------------------------------------------------
+// Server side player info
 struct PlayerInfo
 {
 	// max 8 atm
@@ -54,19 +56,12 @@ struct PlayerInfo
 	CreatedCharacter cc;
 	vector<string> notes;
 	LeftReason left;
+	vector<NetChangePlayer> changes;
 
 	PlayerInfo();
-	void NeedUpdate()
-	{
-		update_flags |= PlayerInfo::UF_NET_CHANGES;
-	}
 	void UpdateGold()
 	{
 		update_flags |= PlayerInfo::UF_GOLD;
-	}
-	void NeedUpdateAndGold()
-	{
-		update_flags |= (PlayerInfo::UF_NET_CHANGES | PlayerInfo::UF_GOLD);
 	}
 	void Save(HANDLE file);
 	void Load(HANDLE file);

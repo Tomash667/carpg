@@ -373,21 +373,17 @@ void PlayerController::Train(TrainMode mode, int what, bool is_skill)
 			Game::Get().ShowStatGain(is_skill, what, count);
 		else
 		{
-			NetChangePlayer& c = Add1(Net::player_changes);
+			NetChangePlayer& c = Add1(player_info->changes);
 			c.type = NetChangePlayer::GAIN_STAT;
-			c.pc = this;
 			c.id = (is_skill ? 1 : 0);
 			c.a = what;
 			c.ile = count;
 
-			NetChangePlayer& c2 = Add1(Net::player_changes);
+			NetChangePlayer& c2 = Add1(player_info->changes);
 			c2.type = NetChangePlayer::STAT_CHANGED;
-			c2.pc = this;
 			c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
 			c2.a = what;
 			c2.ile = value;
-
-			player_info->NeedUpdate();
 		}
 	}
 	else
@@ -617,12 +613,6 @@ void PlayerController::Save(HANDLE file)
 	WriteFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, nullptr);
 	WriteFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
 	FileWriter f(file);
-	f << (byte)perks.size();
-	for(TakenPerk& tp : perks)
-	{
-		f << (byte)tp.perk;
-		f << tp.value;
-	}
 	f << action_cooldown;
 	f << action_recharge;
 	f << (byte)action_charges;
@@ -752,15 +742,16 @@ void PlayerController::Load(HANDLE file)
 			// skip old stats
 			f.Skip(sizeof(old::UnitStats) + sizeof(StatState) * ((int)Attribute::MAX + (int)old::v1::Skill::MAX));
 		}
+		// TODO
 		// perks
-		byte count;
+		/*byte count;
 		f >> count;
 		perks.resize(count);
 		for(TakenPerk& tp : perks)
 		{
 			tp.perk = (Perk)f.Read<byte>();
 			f >> tp.value;
-		}
+		}*/
 	}
 	if(LOAD_VERSION >= V_0_5)
 	{
@@ -822,12 +813,13 @@ void PlayerController::Write(BitStream& stream) const
 	stream.Write(dmg_taken);
 	stream.Write(knocks);
 	stream.Write(arena_fights);
-	stream.WriteCasted<byte>(perks.size());
+	// TODO
+	/*stream.WriteCasted<byte>(perks.size());
 	for(const TakenPerk& perk : perks)
 	{
 		stream.WriteCasted<byte>(perk.perk);
 		stream.Write(perk.value);
-	}
+	}*/
 	stream.Write(action_cooldown);
 	stream.Write(action_recharge);
 	stream.Write(action_charges);
@@ -847,13 +839,14 @@ bool PlayerController::Read(BitStream& stream)
 		|| !stream.Read(count)
 		|| !EnsureSize(stream, 5 * count))
 		return false;
-	perks.resize(count);
+	// TODO
+	/*perks.resize(count);
 	for(TakenPerk& perk : perks)
 	{
 		if(!stream.ReadCasted<byte>(perk.perk)
 			|| !stream.Read(perk.value))
 			return false;
-	}
+	}*/
 	if(!stream.Read(action_cooldown)
 		|| !stream.Read(action_recharge)
 		|| !stream.Read(action_charges))
@@ -923,11 +916,9 @@ void PlayerController::RecalculateLevel(bool initial)
 
 			if(!is_local)
 			{
-				NetChangePlayer& c = Add1(Net::player_changes);
+				NetChangePlayer& c = Add1(player_info->changes);
 				c.type = NetChangePlayer::UPDATE_LEVEL;
-				c.pc = this;
 				c.v = level;
-				player_info->NeedUpdate();
 			}
 		}
 	}

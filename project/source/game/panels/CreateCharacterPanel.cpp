@@ -1519,10 +1519,9 @@ void CreateCharacterPanel::UpdateSkillButtons()
 //=================================================================================================
 void CreateCharacterPanel::AddPerk(Perk perk, int value, bool apply)
 {
-	TakenPerk taken(perk, value);
-	cc.taken_perks.push_back(taken);
 	if(apply)
 	{
+		TakenPerk taken(perk, value);
 		PerkContext ctx(&cc);
 		bool ok = taken.Apply(ctx);
 		assert(ok);

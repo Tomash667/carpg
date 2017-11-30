@@ -7,6 +7,8 @@
 #include "PlayerController.h"
 #include "CreatedCharacter.h"
 #include "Unit.h"
+#include "Net.h"
+#include "PlayerInfo.h"
 
 //-----------------------------------------------------------------------------
 PerkInfo g_perks[(int)Perk::Max] = {
@@ -284,6 +286,18 @@ bool TakenPerk::Apply(PerkContext& ctx)
 		}
 		else
 			--ctx.cc->perks;
+		ctx.cc->taken_perks.push_back(*this);
+	}
+	else
+	{
+		ctx.pc->unit->statsx->perks.push_back(*this);
+		if(!ctx.pc->is_local)
+		{
+			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+			c.type = NetChangePlayer::ADD_PERK;
+			c.id = (byte)perk;
+			c.ile = value;
+		}
 	}
 
 	return true;
@@ -365,7 +379,15 @@ void TakenPerk::Remove(PerkContext& ctx)
 		ctx.cc->taken_perks.erase(ctx.cc->taken_perks.begin() + ctx.index);
 	}
 	else
-		ctx.pc->perks.erase(ctx.pc->perks.begin() + ctx.index);
+	{
+		ctx.pc->unit->statsx->perks.erase(ctx.pc->unit->statsx->perks.begin() + ctx.index);
+		if(!ctx.pc->is_local)
+		{
+			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+			c.type = NetChangePlayer::REMOVE_PERK;
+			c.id = perk;
+		}
+	}
 }
 
 //=================================================================================================

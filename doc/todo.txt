@@ -1,9 +1,16 @@
 ﻿FEATURE:
 *** perks
++ move PlayerInfo to Net/
++? remove GetPlayerInfo
+
 + move perks to statsx
 + save load perk flags
 + save/load hidden, compability
+	PlayerController Save/Load/Read/Write
+	CreatedCharacter Apply
 ? perk siła - zapytać dominika :P
++ send mp updates (base stats, perk flags, perks)
++ add perk to player
 
 + perk points
 	every two levels, for heroes every 3 levels

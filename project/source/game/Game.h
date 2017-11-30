@@ -1691,7 +1691,7 @@ public:
 	void UpdateServer(float dt);
 	bool ProcessControlMessageServer(BitStream& stream, PlayerInfo& info);
 	void WriteServerChanges(BitStream& stream);
-	int WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info);
+	void WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info);
 	void UpdateClient(float dt);
 	bool ProcessControlMessageClient(BitStream& stream, bool& exit_from_server);
 	bool ProcessControlMessageClientForMe(BitStream& stream);
@@ -1723,31 +1723,25 @@ public:
 	}
 	void Net_AddItem(PlayerController* player, const Item* item, bool is_team)
 	{
-		NetChangePlayer& c = Add1(Net::player_changes);
+		NetChangePlayer& c = Add1(player->player_info->changes);
 		c.type = NetChangePlayer::ADD_ITEMS;
-		c.pc = player;
 		c.item = item;
 		c.id = (is_team ? 1 : 0);
 		c.ile = 1;
-		GetPlayerInfo(player).NeedUpdate();
 	}
 	void Net_AddedItemMsg(PlayerController* player)
 	{
-		NetChangePlayer& c = Add1(Net::player_changes);
-		c.pc = player;
+		NetChangePlayer& c = Add1(player->player_info->changes);
 		c.type = NetChangePlayer::GAME_MESSAGE;
 		c.id = GMS_ADDED_ITEM;
-		GetPlayerInfo(player).NeedUpdate();
 	}
 	void Net_AddItems(PlayerController* player, const Item* item, int ile, bool is_team)
 	{
-		NetChangePlayer& c = Add1(Net::player_changes);
+		NetChangePlayer& c = Add1(player->player_info->changes);
 		c.type = NetChangePlayer::ADD_ITEMS;
-		c.pc = player;
 		c.item = item;
 		c.id = (is_team ? ile : 0);
 		c.ile = ile;
-		GetPlayerInfo(player).NeedUpdate();
 	}
 	void Net_UpdateQuest(int refid)
 	{
@@ -1770,11 +1764,9 @@ public:
 	}
 	void Net_RemoveQuestItem(PlayerController* player, int refid)
 	{
-		NetChangePlayer& c = Add1(Net::player_changes);
+		NetChangePlayer& c = Add1(player->player_info->changes);
 		c.type = NetChangePlayer::REMOVE_QUEST_ITEM;
-		c.pc = player;
 		c.id = refid;
-		GetPlayerInfo(player).NeedUpdate();
 	}
 	void Net_ChangeLocationState(int id, bool visited)
 	{
@@ -1809,18 +1801,14 @@ public:
 	}
 	void Net_PrepareWarp(PlayerController* player)
 	{
-		NetChangePlayer& c = Add1(Net::player_changes);
+		NetChangePlayer& c = Add1(player->player_info->changes);
 		c.type = NetChangePlayer::PREPARE_WARP;
-		c.pc = player;
-		GetPlayerInfo(player).NeedUpdate();
 	}
 	void Net_StartDialog(PlayerController* player, Unit* talker)
 	{
-		NetChangePlayer& c = Add1(Net::player_changes);
+		NetChangePlayer& c = Add1(player->player_info->changes);
 		c.type = NetChangePlayer::START_DIALOG;
-		c.pc = player;
 		c.id = talker->netid;
-		GetPlayerInfo(player).NeedUpdate();
 	}
 	enum Where
 	{
@@ -1872,10 +1860,8 @@ public:
 	NetChangePlayer& AddChange(NetChangePlayer::TYPE type, PlayerController* _pc)
 	{
 		assert(_pc);
-		NetChangePlayer& c = Add1(Net::player_changes);
+		NetChangePlayer& c = Add1(_pc->player_info->changes);
 		c.type = type;
-		c.pc = _pc;
-		_pc->player_info->NeedUpdate();
 		return c;
 	}
 

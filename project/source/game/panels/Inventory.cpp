@@ -1813,12 +1813,11 @@ void Inventory::OnGiveGold(int id)
 			u->gold += counter;
 			if(u->IsPlayer() && u->player != game.pc)
 			{
-				NetChangePlayer& c = Add1(Net::player_changes);
+				NetChangePlayer& c = Add1(u->player->player_info->changes);
 				c.type = NetChangePlayer::GOLD_RECEIVED;
-				c.pc = u->player;
 				c.id = game.pc->id;
 				c.ile = counter;
-				game.GetPlayerInfo(u->player).NeedUpdateAndGold();
+				u->player->player_info->UpdateGold();
 			}
 		}
 		else

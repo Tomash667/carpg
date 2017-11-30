@@ -22,7 +22,10 @@ enum AttackId
 enum class ChangedStatType
 {
 	ATTRIBUTE,
-	SKILL
+	BASE_ATTRIBUTE,
+	SKILL,
+	BASE_SKILL,
+	PERK_FLAGS
 };
 
 //-----------------------------------------------------------------------------
@@ -110,7 +113,6 @@ public:
 	}
 
 	static vector<NetChange> changes;
-	static vector<NetChangePlayer> player_changes;
 
 private:
 	static Mode mode;
