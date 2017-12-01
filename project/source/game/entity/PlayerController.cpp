@@ -747,18 +747,75 @@ void PlayerController::Load(HANDLE file)
 		{
 			old::Perk old_perk = (old::Perk)f.Read<byte>();
 			int value = f.Read<int>();
+			Perk perk;
 			switch(old_perk)
 			{
-
+			case old::Perk::Weakness:
+				switch((Attribute)value)
+				{
+				case Attribute::STR:
+					perk = Perk::BadBack;
+					break;
+				case Attribute::END:
+					perk = Perk::ChronicDisease;
+					break;
+				case Attribute::DEX:
+					perk = Perk::Sluggish;
+					break;
+				case Attribute::INT:
+					perk = Perk::SlowLearner;
+					break;
+				case Attribute::CHA:
+					perk = Perk::Asocial;
+					break;
+				default:
+					perk = Perk::None;
+					break;
+				}
+				value = 0;
+				break;
+			case old::Perk::Strength:
+				perk = Perk::Talent;
+				break;
+			case old::Perk::Skilled:
+				perk = Perk::Skilled;
+				break;
+			case old::Perk::SkillFocus:
+				perk = Perk::None;
+				break;
+			case old::Perk::Talent:
+				perk = Perk::SkillFocus;
+				break;
+			case old::Perk::AlchemistApprentice:
+				perk = Perk::AlchemistApprentice;
+				break;
+			case old::Perk::Wealthy:
+				perk = Perk::Wealthy;
+				break;
+			case old::Perk::VeryWealthy:
+				{
+					TakenPerk new_perk;
+					new_perk.perk = Perk::Wealthy;
+					new_perk.value = 0;
+					new_perk.hidden = true;
+					unit->statsx->perks.push_back(perk);
+					
+					perk = Perk::VeryWealthy;
+				}
+				break;
+			case old::Perk::FamilyHeirloom:
+				perk = Perk::FamilyHeirloom;
+				break;
+			case old::Perk::Leader:
+				perk = Perk::Leader;
+				break;
+			default:
+				perk = Perk::None;
+				break;
 			}
-		}
-		// TODOROTODO
-		for(TakenPerk& tp : perks)
-		{
-			old::Perk old_perk = (old::Perk)f.Read<byte>();
-			tp.perk = (Perk)f.Read<byte>();
-			f >> tp.value;
-			tp.hidden = true;
+
+			if(perk != Perk::None)
+				unit->statsx->perks.push_back(TakenPerk(perk, value));
 		}
 	}
 	if(LOAD_VERSION >= V_0_5)

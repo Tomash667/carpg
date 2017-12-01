@@ -223,12 +223,10 @@ void CreatedCharacter::Apply(PlayerController& pc)
 		}
 	}
 
-	// TODO
 	// apply perks
-	/*PerkContext ctx(&pc);
-	pc.perks = taken_perks;
-	for(TakenPerk& tp : pc.perks)
-		tp.Apply(ctx);*/
+	PerkContext ctx(&pc);
+	for(TakenPerk& tp : taken_perks)
+		tp.Apply(ctx);
 
 	// set stats
 	for(int i = 0; i < (int)Attribute::MAX; ++i)

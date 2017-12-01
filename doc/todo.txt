@@ -1,17 +1,8 @@
 ﻿FEATURE:
 *** perks
-+ save/load hidden, compability
-	PlayerController Save/Load/Read/Write
-	CreatedCharacter Apply
-
 + perk points
 	every two levels, for heroes every 3 levels
 + subprofile perks
-+ new history perks
-	Talent -> SkillFocus
-	Weakness -> specific perk
-	SkillFocus -> remove
-	Strength -> Talent
 + modifying apt (which perk modify starting value, which aptitude?)
 + new ingame perks
 + training perks
@@ -28,6 +19,7 @@
 	chronic disease
 	sluggish
 +? send mp updates - perk flags (currently it is server side logic only)
++ upgrade perks -> set perk flags
 ? tests
 	? old perks load
 	? replace old perks, add missing wealthy
