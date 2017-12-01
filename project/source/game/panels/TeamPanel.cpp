@@ -128,10 +128,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			if(Net::IsServer())
 			{
 				if(u != game.pc->unit)
-				{
-					PlayerInfo& info = game.GetPlayerInfo(u->player);
-					s += Format(txPing, game.peer->GetAveragePing(info.adr));
-				}
+					s += Format(txPing, game.peer->GetAveragePing(u->player->player_info->adr));
 			}
 			else if(u == game.pc->unit)
 				s += Format(txPing, game.peer->GetAveragePing(game.server));

@@ -1705,8 +1705,6 @@ public:
 	GroundItem* FindItemNetid(int netid, LevelContext** ctx = nullptr);
 	PlayerInfo& GetPlayerInfo(int id);
 	PlayerInfo* GetPlayerInfoTry(int id);
-	PlayerInfo& GetPlayerInfo(PlayerController* player) { return GetPlayerInfo(player->id); }
-	PlayerInfo* GetPlayerInfoTry(PlayerController* player) { return GetPlayerInfoTry(player->id); }
 	void UpdateWarpData(float dt);
 	void Net_AddQuest(int refid)
 	{

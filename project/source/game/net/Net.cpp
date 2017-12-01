@@ -3830,8 +3830,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						if(target->stamina != target->stamina_max)
 						{
 							target->stamina = target->stamina_max;
-							if(target->player && target->player != pc)
-								GetPlayerInfo(target->player).update_flags |= PlayerInfo::UF_STAMINA;
+							if(target->player && !target->player->is_local)
+								target->player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
 						}
 						target->RemovePoison();
 						target->RemoveEffect(E_STUN);

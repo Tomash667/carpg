@@ -646,27 +646,26 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 {
 	assert(item && count != 0 && team_count <= count);
 
-	Game& game = Game::Get();
 	if(item->type == IT_GOLD && Team.IsTeamMember(*this))
 	{
 		if(Net::IsLocal())
 		{
 			if(team_count && IsTeamMember())
 			{
-				game.AddGold(team_count);
+				Game::Get().AddGold(team_count);
 				uint normal_gold = count - team_count;
 				if(normal_gold)
 				{
 					gold += normal_gold;
-					if(IsPlayer() && player != game.pc)
-						game.GetPlayerInfo(player).UpdateGold();
+					if(IsPlayer() && !player->is_local)
+						player->player_info->UpdateGold();
 				}
 			}
 			else
 			{
 				gold += count;
-				if(IsPlayer() && player != game.pc)
-					game.GetPlayerInfo(player).UpdateGold();
+				if(IsPlayer() && !player->is_local)
+					player->player_info->UpdateGold();
 			}
 		}
 		return true;
@@ -680,8 +679,6 @@ bool Unit::AddItem(const Item* item, uint count, uint team_count)
 //=================================================================================================
 void Unit::ApplyConsumableEffect(const Consumable& item)
 {
-	Game& game = Game::Get();
-
 	switch(item.effect)
 	{
 	case E_HEAL:
@@ -741,8 +738,8 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			if(alcohol != 0.f)
 			{
 				alcohol = 0.f;
-				if(IsPlayer() && game.pc != player)
-					game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_ALCOHOL;
+				if(IsPlayer() && !player->is_local)
+					player->player_info->update_flags |= PlayerInfo::UF_ALCOHOL;
 			}
 		}
 		break;
@@ -861,16 +858,16 @@ void Unit::UpdateEffects(float dt)
 		alcohol += alco_sum*dt;
 		if(alcohol >= hpmax && live_state == ALIVE)
 			game.UnitFall(*this);
-		if(IsPlayer() && player != game.pc)
-			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_ALCOHOL;
+		if(IsPlayer() && !player->is_local)
+			player->player_info->update_flags |= PlayerInfo::UF_ALCOHOL;
 	}
 	else if(alcohol != 0.f)
 	{
 		alcohol -= dt / 10 * Get(Attribute::END);
 		if(alcohol < 0.f)
 			alcohol = 0.f;
-		if(IsPlayer() && player != game.pc)
-			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_ALCOHOL;
+		if(IsPlayer() && !player->is_local)
+			player->player_info->update_flags |= PlayerInfo::UF_ALCOHOL;
 	}
 
 	// update poison damage
@@ -878,8 +875,8 @@ void Unit::UpdateEffects(float dt)
 		game.GiveDmg(game.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, Game::DMG_NO_BLOOD);
 	if(IsPlayer())
 	{
-		if(Net::IsOnline() && player != game.pc && player->last_dmg_poison != poison_dmg)
-			game.game_players[player->id]->update_flags |= PlayerInfo::UF_POISON_DAMAGE;
+		if(Net::IsOnline() && !player->is_local && player->last_dmg_poison != poison_dmg)
+			player->player_info->update_flags |= PlayerInfo::UF_POISON_DAMAGE;
 		player->last_dmg_poison = poison_dmg;
 	}
 
@@ -926,8 +923,8 @@ void Unit::UpdateEffects(float dt)
 		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt;
 		if(stamina > stamina_max)
 			stamina = stamina_max;
-		if(Net::IsServer() && player && player != game.pc)
-			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
+		if(Net::IsServer() && player && !player->is_local)
+			player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
 	}
 }
 
@@ -2990,9 +2987,8 @@ void Unit::RemoveStamina(float value)
 	if(player)
 	{
 		player->Train(TrainWhat::Stamina, value, 0);
-		Game& game = Game::Get();
-		if(game.pc != player)
-			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
+		if(!player->is_local)
+			player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
 	}
 }
 

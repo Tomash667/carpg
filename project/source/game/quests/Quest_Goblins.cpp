@@ -297,7 +297,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			{
 				game->Net_UpdateQuest(refid);
 				if(!game->current_dialog->is_local)
-					game->GetPlayerInfo(game->current_dialog->pc).UpdateGold();
+					game->current_dialog->pc->player_info->UpdateGold();
 			}
 		}
 		break;

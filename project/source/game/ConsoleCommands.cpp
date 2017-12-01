@@ -760,8 +760,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								NetChange& c = Add1(Net::changes);
 								c.type = NetChange::UPDATE_HP;
 								c.unit = pc_data.selected_target;
-								if(pc_data.selected_target->player && pc_data.selected_target->player != pc)
-									GetPlayerInfo(pc_data.selected_target->player).update_flags |= PlayerInfo::UF_STAMINA;
+								if(pc_data.selected_target->player && !pc_data.selected_target->player->is_local)
+									pc_data.selected_target->player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
 							}
 						}
 						else
@@ -1271,11 +1271,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									if(info.left == PlayerInfo::LEFT_NO && info.devmode != b && info.id != 0)
 									{
 										info.devmode = b;
-										NetChangePlayer& c = Add1(Net::player_changes);
+										NetChangePlayer& c = Add1(info.u->player->player_info->changes);
 										c.type = NetChangePlayer::DEVMODE;
 										c.id = (b ? 1 : 0);
-										c.pc = info.u->player;
-										info.NeedUpdate();
 									}
 								}
 							}
@@ -1290,11 +1288,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									if(info.devmode != b)
 									{
 										info.devmode = b;
-										NetChangePlayer& c = Add1(Net::player_changes);
+										NetChangePlayer& c = Add1(info.u->player->player_info->changes);
 										c.type = NetChangePlayer::DEVMODE;
 										c.id = (b ? 1 : 0);
-										c.pc = info.u->player;
-										info.NeedUpdate();
 									}
 								}
 							}

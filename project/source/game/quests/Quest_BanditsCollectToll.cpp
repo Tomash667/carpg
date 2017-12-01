@@ -162,7 +162,7 @@ void Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
 		if(game->sound_volume)
 			game->PlaySound2d(game->sCoins);
 		if(!ctx.is_local)
-			game->GetPlayerInfo(ctx.pc->id).UpdateGold();
+			ctx.pc->player_info->UpdateGold();
 	}
 	else
 	{

@@ -385,7 +385,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 		{
 			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 			c.type = NetChangePlayer::REMOVE_PERK;
-			c.id = perk;
+			c.id = (int)perk;
 		}
 	}
 }
@@ -397,7 +397,7 @@ bool PerkContext::HavePerk(Perk perk)
 		return cc->HavePerk(perk);
 	else
 	{
-		for(auto& p : pc->perks)
+		for(auto& p : pc->unit->statsx->perks)
 		{
 			if(p.perk == perk)
 				return true;
@@ -419,7 +419,7 @@ TakenPerk* PerkContext::FindPerk(Perk perk)
 	}
 	else
 	{
-		for(auto& tp : pc->perks)
+		for(auto& tp : pc->unit->statsx->perks)
 		{
 			if(tp.perk == perk)
 				return &tp;

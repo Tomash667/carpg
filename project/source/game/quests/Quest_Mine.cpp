@@ -228,7 +228,7 @@ void Quest_Mine::SetProgress(int prog2)
 			{
 				game->Net_UpdateQuest(refid);
 				if(!game->current_dialog->is_local)
-					game->GetPlayerInfo(game->current_dialog->pc).update_flags |= PlayerInfo::UF_GOLD;
+					game->current_dialog->pc->player_info->update_flags |= PlayerInfo::UF_GOLD;
 			}
 		}
 		break;

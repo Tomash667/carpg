@@ -500,11 +500,9 @@ void Game::OnTick(float dt)
 							AddMsg(Format(txPvpRefuse, pvp_response.to->player->name.c_str()));
 						else
 						{
-							NetChangePlayer& c = Add1(Net::player_changes);
+							NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
 							c.type = NetChangePlayer::NO_PVP;
-							c.pc = pvp_response.from->player;
 							c.id = pvp_response.to->player->id;
-							GetPlayerInfo(c.pc).NeedUpdate();
 						}
 					}
 				}
@@ -562,7 +560,6 @@ void Game::OnTick(float dt)
 		if(Net::IsSingleplayer() && game_state != GS_MAIN_MENU)
 		{
 			assert(Net::changes.empty());
-			assert(Net::player_changes.empty());
 		}
 	}
 	else if(Net::IsOnline())
