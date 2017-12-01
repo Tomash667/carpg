@@ -3134,6 +3134,8 @@ void Unit::ApplyStun(float length)
 
 void Unit::SetBase(Attribute attrib, int value, bool startup, bool mod)
 {
+	assert(statsx->unique);
+
 	int index = (int)attrib;
 
 	// calculate new base value
@@ -3155,10 +3157,21 @@ void Unit::SetBase(Attribute attrib, int value, bool startup, bool mod)
 		statsx->attrib[index] = new_value;
 	else
 		Set(attrib, new_value);
+
+	// send update
+	if(!player->is_local)
+	{
+		NetChangePlayer& c = Add1(player->player_info->changes);
+		c.type = NetChangePlayer::STAT_CHANGED;
+		c.id = (int)ChangedStatType::BASE_ATTRIBUTE;
+		c.ile = new_base_value;
+	}
 }
 
 void Unit::SetBase(Skill skill, int value, bool startup, bool mod)
 {
+	assert(statsx->unique);
+
 	int index = (int)skill;
 
 	// calculate new base value
@@ -3180,4 +3193,13 @@ void Unit::SetBase(Skill skill, int value, bool startup, bool mod)
 		statsx->skill[index] = new_value;
 	else
 		Set(skill, new_value);
+
+	// send update
+	if(!player->is_local)
+	{
+		NetChangePlayer& c = Add1(player->player_info->changes);
+		c.type = NetChangePlayer::STAT_CHANGED;
+		c.id = (int)ChangedStatType::BASE_SKILL;
+		c.ile = new_base_value;
+	}
 }

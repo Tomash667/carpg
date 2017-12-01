@@ -734,23 +734,32 @@ void PlayerController::Load(HANDLE file)
 	ReadFile(file, &dmg_done, sizeof(dmg_done), &tmp, nullptr);
 	ReadFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, nullptr);
 	ReadFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
-	if(LOAD_VERSION >= V_0_4)
+	if(LOAD_VERSION >= V_0_4 && LOAD_VERSION < V_CURRENT)
 	{
-		if(LOAD_VERSION < V_CURRENT)
-		{
-			// skip old stats
-			f.Skip(sizeof(old::UnitStats) + sizeof(StatState) * ((int)Attribute::MAX + (int)old::v1::Skill::MAX));
-		}
-		// TODO
-		// perks
-		/*byte count;
+		// skip old stats
+		f.Skip(sizeof(old::UnitStats) + sizeof(StatState) * ((int)Attribute::MAX + (int)old::v1::Skill::MAX));
+
+		// load old perks
+		byte count;
 		f >> count;
-		perks.resize(count);
+		unit->statsx->perks.reserve(count);
+		for(byte i = 0; i < count; ++i)
+		{
+			old::Perk old_perk = (old::Perk)f.Read<byte>();
+			int value = f.Read<int>();
+			switch(old_perk)
+			{
+
+			}
+		}
+		// TODOROTODO
 		for(TakenPerk& tp : perks)
 		{
+			old::Perk old_perk = (old::Perk)f.Read<byte>();
 			tp.perk = (Perk)f.Read<byte>();
 			f >> tp.value;
-		}*/
+			tp.hidden = true;
+		}
 	}
 	if(LOAD_VERSION >= V_0_5)
 	{
@@ -812,13 +821,6 @@ void PlayerController::Write(BitStream& stream) const
 	stream.Write(dmg_taken);
 	stream.Write(knocks);
 	stream.Write(arena_fights);
-	// TODO
-	/*stream.WriteCasted<byte>(perks.size());
-	for(const TakenPerk& perk : perks)
-	{
-		stream.WriteCasted<byte>(perk.perk);
-		stream.Write(perk.value);
-	}*/
 	stream.Write(action_cooldown);
 	stream.Write(action_recharge);
 	stream.Write(action_charges);
@@ -838,14 +840,6 @@ bool PlayerController::Read(BitStream& stream)
 		|| !stream.Read(count)
 		|| !EnsureSize(stream, 5 * count))
 		return false;
-	// TODO
-	/*perks.resize(count);
-	for(TakenPerk& perk : perks)
-	{
-		if(!stream.ReadCasted<byte>(perk.perk)
-			|| !stream.Read(perk.value))
-			return false;
-	}*/
 	if(!stream.Read(action_cooldown)
 		|| !stream.Read(action_recharge)
 		|| !stream.Read(action_charges))

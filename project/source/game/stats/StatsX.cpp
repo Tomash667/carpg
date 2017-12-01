@@ -171,6 +171,8 @@ void StatsX::Save(FileWriter& f)
 		f << skill;
 		f << skill_base;
 		f << skill_apt;
+		f << perk_flags;
+		f.WriteVector1(perks);
 	}
 	else
 		f << seed;
@@ -201,6 +203,8 @@ StatsX* StatsX::Load(FileReader& f)
 		f >> stats->skill;
 		f >> stats->skill_base;
 		f >> stats->skill_apt;
+		f >> stats->perk_flags;
+		f.ReadVector1(stats->perks);
 		return stats;
 	}
 	else
@@ -217,13 +221,17 @@ void StatsX::Write(BitStream& stream)
 {
 	stream.Write(attrib);
 	stream.Write(skill);
+	stream.Write(perk_flags);
+	WriteVector<byte>(stream, perks);
 }
 
 //=================================================================================================
 bool StatsX::Read(BitStream& stream)
 {
 	return stream.Read(attrib)
-		&& stream.Read(skill);
+		&& stream.Read(skill)
+		&& stream.Read(perk_flags)
+		&& ReadVector<byte>(stream, perks);
 }
 
 //=================================================================================================

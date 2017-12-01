@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 struct CreatedCharacter;
 struct PlayerController;
+enum class Perk;
 
 //-----------------------------------------------------------------------------
 namespace old
@@ -22,6 +23,8 @@ namespace old
 		Max,
 		None
 	};
+
+	::Perk OldToNew(Perk perk);
 }
 
 //-----------------------------------------------------------------------------
@@ -87,6 +90,7 @@ struct PerkContext
 	PerkContext(PlayerController* pc) : cc(nullptr), pc(pc), validate(false), startup(true) {}
 	bool HavePerk(Perk perk);
 	TakenPerk* FindPerk(Perk perk);
+	void HidePerk(Perk perk, bool hide = true);
 	bool CanMod(Attribute attrib);
 	bool CanMod(Skill skill);
 	void Mod(Attribute attrib, int value, bool mod = true);

@@ -5518,6 +5518,13 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				stream.WriteCasted<byte>(c.id);
 				stream.Write(c.ile);
 				break;
+			case NetChangePlayer::REMOVE_PERK:
+				stream.WriteCasted<byte>(c.id);
+				break;
+			case NetChangePlayer::HIDE_PERK:
+				stream.WriteCasted<byte>(c.id);
+				WriteBool(stream, c.ile > 0);
+				break;
 			case NetChangePlayer::UPDATE_LEVEL:
 				stream.Write(c.v);
 				break;
@@ -9442,6 +9449,66 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 					else
 						pc->unit->statsx->perks.push_back(TakenPerk((Perk)id, value));
+				}
+				break;
+			// remove perk from player
+			case NetChangePlayer::REMOVE_PERK:
+				{
+					byte id;
+					if(!stream.Read(id))
+					{
+						Error("Update single client: Broken REMOVE_PERK.");
+						StreamError();
+					}
+					else
+					{
+						bool ok = false;
+						for(auto it = pc->unit->statsx->perks.begin(), end = pc->unit->statsx->perks.end(); it != end; ++it)
+						{
+							if(it->perk == (Perk)id)
+							{
+								pc->unit->statsx->perks.erase(it);
+								ok = true;
+								break;
+							}
+						}
+						if(!ok)
+						{
+							Error("Update single client: REMOVE_PERK, missing perk %u.", id);
+							StreamError();
+						}
+					}
+				}
+				break;
+			// hide player perk
+			case NetChangePlayer::HIDE_PERK:
+				{
+					byte id;
+					bool hide;
+					if(!stream.Read(id)
+						|| !ReadBool(stream, hide))
+					{
+						Error("Update single client: Broken HIDE_PERK.");
+						StreamError();
+					}
+					else
+					{
+						bool ok = false;
+						for(auto& perk : pc->unit->statsx->perks)
+						{
+							if(perk.perk == (Perk)id)
+							{
+								perk.hidden = hide;
+								ok = true;
+								break;
+							}
+						}
+						if(!ok)
+						{
+							Error("Update single client: HIDE_PERK, missing perk %u.", id);
+							StreamError();
+						}
+					}
 				}
 				break;
 			// player level changed

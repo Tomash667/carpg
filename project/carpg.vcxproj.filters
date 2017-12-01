@@ -16,12 +16,6 @@
     <Filter Include="3. game\entity">
       <UniqueIdentifier>{b0232feb-569a-409a-8131-6cd4a6fb9d0b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3. game\entity\unit">
-      <UniqueIdentifier>{ff232058-112e-449d-90cc-69b98daa92c8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3. game\entity\blood">
-      <UniqueIdentifier>{a2f80a72-d50d-4290-8e9c-954818534cd6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="3. game\generator">
       <UniqueIdentifier>{5c09d15a-bfc6-4c10-ae87-959327953243}</UniqueIdentifier>
     </Filter>
@@ -426,12 +420,6 @@
     <ClCompile Include="source\game\quests\Quest.cpp">
       <Filter>3. game\quests</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\entity\Unit.cpp">
-      <Filter>3. game\entity\unit</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\entity\Blood.cpp">
-      <Filter>3. game\entity\blood</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\entity\Camera.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
@@ -684,6 +672,12 @@
     </ClCompile>
     <ClCompile Include="source\game\net\PlayerInfo.cpp">
       <Filter>3. game\net</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\Unit.cpp">
+      <Filter>3. game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\Blood.cpp">
+      <Filter>3. game\entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1053,18 +1047,6 @@
     <ClInclude Include="source\game\Encounter.h">
       <Filter>3. game</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\entity\Unit.h">
-      <Filter>3. game\entity\unit</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\entity\UnitEventHandler.h">
-      <Filter>3. game\entity\unit</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\entity\Blood.h">
-      <Filter>3. game\entity\blood</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\entity\BloodType.h">
-      <Filter>3. game\entity\blood</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\Team.h">
       <Filter>3. game</Filter>
     </ClInclude>
@@ -1341,6 +1323,18 @@
     </ClInclude>
     <ClInclude Include="source\game\net\PlayerInfo.h">
       <Filter>3. game\net</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\UnitEventHandler.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Unit.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Blood.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\BloodType.h">
+      <Filter>3. game\entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

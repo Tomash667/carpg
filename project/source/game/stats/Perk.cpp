@@ -231,22 +231,14 @@ bool TakenPerk::Apply(PerkContext& ctx)
 			ctx.pc->unit->gold += 1000;
 		break;
 	case Perk::VeryWealthy:
-		{
-			auto perk = ctx.FindPerk(Perk::Wealthy);
-			if(perk)
-				perk->hidden = true;
-			if(ctx.pc && !hidden && ctx.startup)
-				ctx.pc->unit->gold += 5000;
-		}
+		ctx.HidePerk(Perk::Wealthy);
+		if(ctx.pc && !hidden && ctx.startup)
+			ctx.pc->unit->gold += 5000;
 		break;
 	case Perk::FilthyRich:
-		{
-			auto perk = ctx.FindPerk(Perk::VeryWealthy);
-			if(perk)
-				perk->hidden = true;
-			if(ctx.pc && !hidden && ctx.startup)
-				ctx.pc->unit->gold += 100'000;
-		}
+		ctx.HidePerk(Perk::VeryWealthy);
+		if(ctx.pc && !hidden && ctx.startup)
+			ctx.pc->unit->gold += 100'000;
 		break;
 	case Perk::BadBack:
 		ctx.Mod(Attribute::STR, -5);
@@ -324,18 +316,10 @@ void TakenPerk::Remove(PerkContext& ctx)
 		ctx.Mod((Skill)value, -5, false);
 		break;
 	case Perk::VeryWealthy:
-		{
-			auto perk = ctx.FindPerk(Perk::Wealthy);
-			if(perk)
-				perk->hidden = false;
-		}
+		ctx.HidePerk(Perk::Wealthy, false);
 		break;
 	case Perk::FilthyRich:
-		{
-			auto perk = ctx.FindPerk(Perk::VeryWealthy);
-			if(perk)
-				perk->hidden = false;
-		}
+		ctx.HidePerk(Perk::VeryWealthy, false);
 		break;
 	case Perk::BadBack:
 		ctx.Mod(Attribute::STR, -5, false);
@@ -426,6 +410,23 @@ TakenPerk* PerkContext::FindPerk(Perk perk)
 		}
 	}
 	return nullptr;
+}
+
+//=================================================================================================
+void PerkContext::HidePerk(Perk perk, bool hide)
+{
+	auto taken_perk = FindPerk(perk);
+	if(taken_perk && taken_perk->hidden != hide)
+	{
+		taken_perk->hidden = hide;
+		if(!startup && Net::IsServer() && !pc->is_local)
+		{
+			NetChangePlayer& c = Add1(pc->player_info->changes);
+			c.type = NetChangePlayer::HIDE_PERK;
+			c.id = (int)perk;
+			c.ile = (hide ? 1 : 0);
+		}
+	}
 }
 
 //=================================================================================================
