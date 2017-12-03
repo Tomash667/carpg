@@ -1103,7 +1103,7 @@ void CreateCharacterPanel::GetTooltip(TooltipController* _tool, int group, int i
 			tool.anything = true;
 			tool.img = nullptr;
 			tool.small_text.clear();
-			PerkInfo& pi = g_perks[id];
+			PerkInfo& pi = PerkInfo::perks[id];
 			tool.big_text = pi.name;
 			tool.text = pi.desc;
 			if(IS_SET(pi.flags, PerkInfo::Flaw))
@@ -1118,7 +1118,7 @@ void CreateCharacterPanel::GetTooltip(TooltipController* _tool, int group, int i
 			TakenPerk& taken = cc.taken_perks[id];
 			tool.anything = true;
 			tool.img = nullptr;
-			PerkInfo& pi = g_perks[(int)taken.perk];
+			PerkInfo& pi = PerkInfo::perks[(int)taken.perk];
 			tool.big_text = pi.name;
 			tool.text = pi.desc;
 			if(IS_SET(pi.flags, PerkInfo::Flaw))
@@ -1238,7 +1238,7 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 	if(group == (int)Group::PickPerk_AddButton)
 	{
 		// add perk
-		auto& info = g_perks[id];
+		auto& info = PerkInfo::perks[id];
 		switch(info.required_value)
 		{
 		case PerkInfo::Attribute:
@@ -1300,7 +1300,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 	available_adv.clear();
 	available_disadv.clear();
 	available_perks.clear();
-	for(PerkInfo& perk : g_perks)
+	for(PerkInfo& perk : PerkInfo::perks)
 	{
 		bool taken = false;
 		for(TakenPerk& tp : cc.taken_perks)
@@ -1333,7 +1333,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 	{
 		if(cc.taken_perks[i].hidden)
 			continue;
-		PerkInfo& perk = g_perks[(int)cc.taken_perks[i].perk];
+		PerkInfo& perk = PerkInfo::perks[(int)cc.taken_perks[i].perk];
 		if(IS_SET(perk.flags, PerkInfo::RequireFormat))
 		{
 			string* s = StringPool.Get();
@@ -1358,7 +1358,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		flowPerks.Add()->Set(txAdvantages);
 		for(Perk perk : available_adv)
 		{
-			PerkInfo& info = g_perks[(int)perk];
+			PerkInfo& info = PerkInfo::perks[(int)perk];
 			bool disabled = (cc.perks == 0);
 			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, disabled);
 			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
@@ -1369,7 +1369,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		flowPerks.Add()->Set(txDisadvantages);
 		for(Perk perk : available_disadv)
 		{
-			PerkInfo& info = g_perks[(int)perk];
+			PerkInfo& info = PerkInfo::perks[(int)perk];
 			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, false);
 			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
 		}
@@ -1379,7 +1379,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		flowPerks.Add()->Set(txPerks);
 		for(Perk perk : available_perks)
 		{
-			PerkInfo& info = g_perks[(int)perk];
+			PerkInfo& info = PerkInfo::perks[(int)perk];
 			bool disabled = (cc.perks == 0);
 			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, disabled);
 			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
@@ -1529,7 +1529,7 @@ void CreateCharacterPanel::AddPerk(Perk perk, int value, bool apply)
 	}
 	else
 	{
-		PerkInfo& info = g_perks[(int)perk];
+		PerkInfo& info = PerkInfo::perks[(int)perk];
 		if(IS_SET(info.flags, PerkInfo::Flaw))
 		{
 			++cc.perks;
@@ -1657,4 +1657,19 @@ CreateCharacterPanel::Group CreateCharacterPanel::FlowGroupToTooltipGroup(Group 
 	default:
 		return group;
 	}
+}
+
+//=================================================================================================
+int CreateCharacterPanel::GetItemsMod()
+{
+	if(cc.HavePerk(Perk::Poor))
+		return -1;
+	else if(cc.HavePerk(Perk::FilthyRich))
+		return +3;
+	else if(cc.HavePerk(Perk::VeryWealthy))
+		return +2;
+	else if(cc.HavePerk(Perk::Wealthy))
+		return +1;
+	else
+		return 0;
 }

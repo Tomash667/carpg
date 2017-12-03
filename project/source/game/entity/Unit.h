@@ -92,13 +92,6 @@ enum WeaponState
 };
 
 //-----------------------------------------------------------------------------
-struct Effect
-{
-	ConsumeEffect effect;
-	float time, power;
-};
-
-//-----------------------------------------------------------------------------
 enum class AutoTalkMode
 {
 	No,
@@ -407,8 +400,6 @@ struct Unit
 	int GetRandomAttack() const;
 	void Save(HANDLE file, bool local);
 	void Load(HANDLE file, bool local);
-	Effect* FindEffect(ConsumeEffect effect);
-	bool FindEffect(ConsumeEffect effect, float* value);
 	Vec3 GetCenter() const
 	{
 		Vec3 pt = pos;
@@ -511,11 +502,6 @@ struct Unit
 		Heal(0.15f * Get(Attribute::END) * days);
 	}
 	void HealPoison();
-	void RemoveEffect(ConsumeEffect effect);
-	void RemovePoison()
-	{
-		RemoveEffect(E_POISON);
-	}
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
 	int FindItem(const Item* item, int quest_refid = -1) const;
@@ -561,10 +547,6 @@ struct Unit
 
 	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)
 	float GetBlockSpeed() const;
-
-	float CalculateMagicResistance() const;
-	int CalculateMagicPower() const;
-	bool HaveEffect(ConsumeEffect effect) const;
 
 	//-----------------------------------------------------------------------------
 	// EKWIPUNEK
@@ -795,6 +777,22 @@ struct Unit
 
 	// Calculate hp/stamina
 	void CalculateStats(bool initial = false);
+
+	// Various other stats
+	float GetNaturalHealingMod() { return GetEffectModMultiply(EffectType::NaturalHealingMod); }
+	float CalculateMagicResistance() const;
+	int CalculateMagicPower() const;
+
+	//==============================================
+	// ACTIVE EFFECTS
+	//==============================================
+	bool HaveEffect(EffectType effect) const;
+	float GetEffectModMultiply(EffectType effect) const;
+	Effect* FindEffect(EffectType effect);
+	bool FindEffect(EffectType effect, float* value);
+	void RemoveEffects();
+	void RemoveEffect(EffectType effect);
+	void RemovePerkEffects(Perk perk, bool startup);
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

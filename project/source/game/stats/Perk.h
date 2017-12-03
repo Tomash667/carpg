@@ -23,19 +23,18 @@ namespace old
 		Max,
 		None
 	};
-
-	::Perk OldToNew(Perk perk);
 }
 
 //-----------------------------------------------------------------------------
 enum class Perk
 {
 	// negative starting perks
-	BadBack, // -5 str, less carry
+	BadBack, // -5 str, -25% carry
 	ChronicDisease, // -5 end, 50% natural healing
 	Sluggish, // -5 dex, slower
 	SlowLearner, // -5 int, -1 apt to all skills
 	Asocial, // -5 cha, worse prices
+	Poor, // 10% gold, worse items
 
 	// positive starting perks
 	Talent, // +5 attrib, +1 apt
@@ -43,17 +42,19 @@ enum class Perk
 	SkillFocus, // +5 skill, +1 apt
 	AlchemistApprentice, // more potions
 	Wealthy, // +1k gold, better items
-	VeryWealthy, // +5k gold, better items
-	FilthyRich, // +100k gold, better items
+	VeryWealthy, // [C] +5k gold, better items
+	FilthyRich, // [C] +100k gold, better items
 	FamilyHeirloom, // good starting item
 	Leader, // start with npc
-	//	Poor, // less gold, worse items
-	//	MilitaryTraining, // +50 hp, +5 atk/def
+	MilitaryTraining, // +50 hp, +5 atk/def
 
 	// normal perks
+	StrongBack, // (60 str or 25 ath) +25% carry
+	StrongerBack, // (80 str or 50 ath) [C] +50% carry
+	Tought, // (60 end) +100 hp
+	Toughter, // (80 end) [C] +250 hp
+	Toughtest, // (100 end) [C] +500 hp
 	/*
-	STR:
-	StrongBack, // (60 str, +x kg)
 
 	CON:
 	Healthy, // (60 end, +50? hp)
@@ -74,8 +75,16 @@ enum class Perk
 };
 
 //-----------------------------------------------------------------------------
+enum PerkFlags
+{
+	PF_SLOW_LERNER = 1 << 0, // -1 apt to all skills
+	PF_ASOCIAL = 1 << 1 // worse prices
+};
+
+//-----------------------------------------------------------------------------
 enum class Attribute;
 enum class Skill;
+enum class EffectType;
 struct TakenPerk;
 
 //-----------------------------------------------------------------------------
@@ -84,24 +93,22 @@ struct PerkContext
 	CreatedCharacter* cc;
 	PlayerController* pc;
 	int index;
-	bool validate, startup;
+	bool validate, startup, reapply;
 
-	PerkContext(CreatedCharacter* cc) : cc(cc), pc(nullptr), validate(false), startup(true) {}
-	PerkContext(PlayerController* pc) : cc(nullptr), pc(pc), validate(false), startup(true) {}
+	PerkContext(CreatedCharacter* cc) : cc(cc), pc(nullptr), validate(false), startup(true), reapply(false) {}
+	PerkContext(PlayerController* pc) : cc(nullptr), pc(pc), validate(false), startup(true), reapply(false) {}
 	bool HavePerk(Perk perk);
 	TakenPerk* FindPerk(Perk perk);
-	void HidePerk(Perk perk, bool hide = true);
+	TakenPerk* HidePerk(Perk perk, bool hide = true);
 	bool CanMod(Attribute attrib);
 	bool CanMod(Skill skill);
 	void Mod(Attribute attrib, int value, bool mod = true);
 	void Mod(Skill skill, int value, bool mod = true);
-};
-
-//-----------------------------------------------------------------------------
-enum PerkFlags
-{
-	PF_SLOW_LERNER = 1 << 0, // -1 apt to all skills
-	PF_ASOCIAL = 1 << 1, // worse prices
+	bool Have(Attribute attrib, int value);
+	bool Have(Skill skill, int value);
+	void AddFlag(PerkFlags flag);
+	void RemoveFlag(PerkFlags flag);
+	void AddEffect(TakenPerk* perk, EffectType effect, float value);
 };
 
 //-----------------------------------------------------------------------------
@@ -121,17 +128,18 @@ struct PerkInfo
 		Skill
 	};
 
-	Perk perk_id;
+	Perk perk_id, parent;
 	cstring id;
 	string name, desc;
 	int flags;
 	RequiredValue required_value;
 
-	PerkInfo(Perk perk_id, cstring id, int flags, RequiredValue required_value = RequiredValue::None) : perk_id(perk_id), id(id), flags(flags),
-		required_value(required_value)
+	PerkInfo(Perk perk_id, cstring id, int flags, Perk parent = Perk::None, RequiredValue required_value = RequiredValue::None) : perk_id(perk_id), id(id), flags(flags),
+		parent(Perk::None), required_value(required_value)
 	{
 	}
 
+	static PerkInfo perks[(int)Perk::Max];
 	static void Validate(uint& err);
 	static PerkInfo* Find(const string& id);
 };
@@ -165,12 +173,9 @@ struct TakenPerk
 };
 
 //-----------------------------------------------------------------------------
-extern PerkInfo g_perks[(int)Perk::Max];
-
-//-----------------------------------------------------------------------------
 inline bool SortPerks(Perk p1, Perk p2)
 {
-	return strcoll(g_perks[(int)p1].name.c_str(), g_perks[(int)p2].name.c_str()) < 0;
+	return strcoll(PerkInfo::perks[(int)p1].name.c_str(), PerkInfo::perks[(int)p2].name.c_str()) < 0;
 }
 inline bool SortTakenPerks(const std::pair<cstring, int>& tp1, const std::pair<cstring, int>& tp2)
 {

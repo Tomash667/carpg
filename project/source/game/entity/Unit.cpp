@@ -53,6 +53,8 @@ float Unit::CalculateMaxStamina() const
 void Unit::CalculateLoad()
 {
 	weight_max = 200 + Get(Attribute::STR) * 10 + Get(Skill::ATHLETICS) * 5;
+	float carry_mod = GetEffectModMultiply(EffectType::Carry);
+	weight_max = int(carry_mod * weight_max);
 }
 
 //=================================================================================================
@@ -697,9 +699,10 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		if(!IS_SET(data->flags, F_POISON_RES))
 		{
 			Effect& e = Add1(effects);
-			e.effect = item.effect;
+			e.effect = (item.effect == E_POISON ? EffectType::Poison : EffectType::Alcohol);
 			e.time = item.time;
 			e.power = item.power / item.time;
+			e.source = EffectSource::Potion;
 		}
 		break;
 	case E_REGENERATE:
@@ -708,9 +711,24 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_STAMINA:
 		{
 			Effect& e = Add1(effects);
-			e.effect = item.effect;
+			switch(item.effect)
+			{
+			case E_REGENERATE:
+				e.effect = EffectType::Regeneration;
+				break;
+			case E_NATURAL:
+				e.effect = EffectType::NaturalHealingMod;
+				break;
+			case E_ANTIMAGIC:
+				e.effect = EffectType::MagicResistance;
+				break;
+			case E_STAMINA:
+				e.effect = EffectType::StaminaRegeneration;
+				break;
+			}
 			e.time = item.time;
 			e.power = item.power;
+			e.source = EffectSource::Potion;
 		}
 		break;
 	case E_ANTIDOTE:
@@ -718,22 +736,11 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			uint index = 0;
 			for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 			{
-				if(it->effect == E_POISON)
+				if(it->effect == EffectType::Poison || it->effect == EffectType::Alcohol)
 					_to_remove.push_back(index);
 			}
 
-			while(!_to_remove.empty())
-			{
-				index = _to_remove.back();
-				_to_remove.pop_back();
-				if(index == effects.size() - 1)
-					effects.pop_back();
-				else
-				{
-					std::iter_swap(effects.begin() + index, effects.end() - 1);
-					effects.pop_back();
-				}
-			}
+			RemoveEffects();
 
 			if(alcohol != 0.f)
 			{
@@ -757,9 +764,10 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_FOOD:
 		{
 			Effect& e = Add1(effects);
-			e.effect = E_FOOD;
+			e.effect = EffectType::FoodRegeneration;
 			e.time = item.power;
 			e.power = 1.f;
+			e.source = EffectSource::Potion;
 		}
 		break;
 	case E_GREEN_HAIR:
@@ -786,37 +794,42 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 //=================================================================================================
 void Unit::UpdateEffects(float dt)
 {
-	Game& game = Game::Get();
-	float best_reg = 0.f, food_heal = 0.f, poison_dmg = 0.f, alco_sum = 0.f, best_stamina = 0.f;
+	EffectBuffer reg, stamina_reg;
+	float food_heal = 0.f, poison_dmg = 0.f, alco_sum = 0.f;
 
 	// update effects timer
 	uint index = 0;
-	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
+	for(auto& e : effects)
 	{
-		if(it->effect == E_NATURAL)
-			continue;
-		switch(it->effect)
+		if(e.effect == EffectType::NaturalHealingMod) // timer is in days
 		{
-		case E_REGENERATE:
-			if(it->power > best_reg)
-				best_reg = it->power;
+			++index;
+			continue;
+		}
+
+		switch(e.effect)
+		{
+		case EffectType::Regeneration:
+			reg += e;
 			break;
-		case E_POISON:
-			poison_dmg += it->power;
+		case EffectType::Poison:
+			poison_dmg += e.power;
 			break;
-		case E_ALCOHOL:
-			alco_sum += it->power;
+		case EffectType::Alcohol:
+			alco_sum += e.power;
 			break;
-		case E_FOOD:
+		case EffectType::FoodRegeneration:
 			food_heal += dt;
 			break;
-		case E_STAMINA:
-			if(it->power > best_stamina)
-				best_stamina = it->power;
+		case EffectType::StaminaRegeneration:
+			stamina_reg += e;
 			break;
 		}
-		if((it->time -= dt) <= 0.f)
+
+		if((e.time -= dt) <= 0.f)
 			_to_remove.push_back(index);
+
+		++index;
 	}
 
 	// remove expired effects
@@ -836,12 +849,11 @@ void Unit::UpdateEffects(float dt)
 	if(Net::IsClient())
 		return;
 
-	// healing from food
-	if((best_reg > 0.f || food_heal > 0.f) && hp != hpmax)
+	// health regeneration
+	if(hp != hpmax && (reg != 0.f || stamina_reg != 0.f))
 	{
-		float natural = 1.f;
-		FindEffect(E_NATURAL, &natural);
-		hp += (best_reg * dt + food_heal) * natural;
+		float natural = GetNaturalHealingMod();
+		hp += reg * dt + food_heal * natural;
 		if(hp > hpmax)
 			hp = hpmax;
 		if(Net::IsOnline())
@@ -857,7 +869,7 @@ void Unit::UpdateEffects(float dt)
 	{
 		alcohol += alco_sum*dt;
 		if(alcohol >= hpmax && live_state == ALIVE)
-			game.UnitFall(*this);
+			Game::Get().UnitFall(*this);
 		if(IsPlayer() && !player->is_local)
 			player->player_info->update_flags |= PlayerInfo::UF_ALCOHOL;
 	}
@@ -872,7 +884,7 @@ void Unit::UpdateEffects(float dt)
 
 	// update poison damage
 	if(poison_dmg != 0.f)
-		game.GiveDmg(game.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, Game::DMG_NO_BLOOD);
+		Game::Get().GiveDmg(Game::Get().GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, Game::DMG_NO_BLOOD);
 	if(IsPlayer())
 	{
 		if(Net::IsOnline() && !player->is_local && player->last_dmg_poison != poison_dmg)
@@ -883,7 +895,7 @@ void Unit::UpdateEffects(float dt)
 	// restore stamina
 	if(stamina_timer > 0)
 		stamina_timer -= dt;
-	else if(stamina != stamina_max && (stamina_action != SA_DONT_RESTORE || best_stamina > 0.f))
+	else if(stamina != stamina_max && (stamina_action != SA_DONT_RESTORE || stamina_reg > 0.f))
 	{
 		float stamina_restore;
 		switch(stamina_action)
@@ -920,7 +932,7 @@ void Unit::UpdateEffects(float dt)
 		}
 		if(stamina_restore < 0)
 			stamina_restore = 0;
-		stamina += ((stamina_max * stamina_restore / 100) + best_stamina) * dt;
+		stamina += ((stamina_max * stamina_restore / 100) + stamina_reg) * dt;
 		if(stamina > stamina_max)
 			stamina = stamina_max;
 		if(Net::IsServer() && player && !player->is_local)
@@ -941,67 +953,50 @@ void Unit::EndEffects(int days, int* best_nat)
 	if(effects.empty())
 		return;
 
+	// end effects
 	uint index = 0;
-	float best_reg = 0.f, best_natural = 1.f, food = 0.f;
-	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
+	EffectBuffer reg, natural(1);
+	float food = 0.f;
+	for(auto& e : effects)
 	{
-		switch(it->effect)
+		switch(e.effect)
 		{
-		case E_REGENERATE:
+		case EffectType::Regeneration:
 			{
-				float reg = it->power * it->time;
-				if(reg > best_reg)
-					best_reg = reg;
+				e.power *= e.time;
+				reg += e;
 				_to_remove.push_back(index);
 			}
 			break;
-		case E_POISON:
-			hp -= it->power * it->time;
+		case EffectType::Poison:
+			hp -= e.power * e.time;
 			_to_remove.push_back(index);
 			break;
-		case E_FOOD:
-			food += it->time;
+		case EffectType::FoodRegeneration:
+			food += e.time;
 			_to_remove.push_back(index);
 			break;
-		case E_ALCOHOL:
-		case E_ANTIMAGIC:
-		case E_STAMINA:
-		case E_STUN:
-			_to_remove.push_back(index);
-			break;
-		case E_NATURAL:
-			best_natural = 2.f;
-			if(best_nat)
-			{
-				int t = Roundi(it->time);
-				if(t > *best_nat)
-					*best_nat = t;
-			}
-			it->time -= days;
-			if(it->time <= 0.f)
+		case EffectType::NaturalHealingMod:
+			natural += e;
+			e.time -= days;
+			if(e.time <= 0.f)
 				_to_remove.push_back(index);
+			break;
+		default:
+			_to_remove.push_back(index);
 			break;
 		}
+
+		++index;
 	}
 
-	hp += (best_reg + food) * best_natural;
+	hp += reg + food * natural;
 	if(hp < 1.f)
 		hp = 1.f;
 	else if(hp > hpmax)
 		hp = hpmax;
 
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == effects.size() - 1)
-			effects.pop_back();
-		else
-		{
-			std::iter_swap(effects.begin() + index, effects.end() - 1);
-			effects.pop_back();
-		}
-	}
+	RemoveEffects();
 }
 
 //=================================================================================================
@@ -1751,11 +1746,53 @@ void Unit::Load(HANDLE file, bool local)
 		moved = false;
 	}
 
-	// efekty
+	// effects
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	effects.resize(ile);
 	if(ile)
-		ReadFile(file, &effects[0], sizeof(Effect)*ile, &tmp, nullptr);
+	{
+		if(LOAD_VERSION >= V_CURRENT)
+			ReadFile(file, effects.data(), sizeof(Effect)*ile, &tmp, nullptr);
+		else
+		{
+			for(auto& e : effects)
+			{
+				ConsumeEffect effect;
+				e.source = EffectSource::Potion;
+				ReadFile(file, &effect, sizeof(effect), &tmp, nullptr);
+				ReadFile(file, &e.time, sizeof(e.time), &tmp, nullptr);
+				ReadFile(file, &e.power, sizeof(e.power), &tmp, nullptr);
+				switch(effect)
+				{
+				case E_REGENERATE:
+					e.effect = EffectType::Regeneration;
+					break;
+				case E_NATURAL:
+					e.effect = EffectType::NaturalHealingMod;
+					break;
+				case E_POISON:
+					e.effect = EffectType::Poison;
+					break;
+				case E_ALCOHOL:
+					e.effect = EffectType::Alcohol;
+					break;
+				case E_ANTIMAGIC:
+					e.effect = EffectType::MagicResistance;
+					e.power = 0.5f;
+					break;
+				case E_FOOD:
+					e.effect = EffectType::FoodRegeneration;
+					break;
+				case E_STAMINA:
+					e.effect = EffectType::StaminaRegeneration;
+					break;
+				case E_STUN:
+					e.effect = EffectType::Stun;
+					break;
+				}
+			}
+		}
+	}
 
 	ReadFile(file, &b, sizeof(b), &tmp, nullptr);
 	if(b == 1)
@@ -1840,7 +1877,7 @@ void Unit::Load(HANDLE file, bool local)
 }
 
 //=================================================================================================
-Effect* Unit::FindEffect(ConsumeEffect effect)
+Effect* Unit::FindEffect(EffectType effect)
 {
 	for(Effect& e : effects)
 	{
@@ -1852,7 +1889,7 @@ Effect* Unit::FindEffect(ConsumeEffect effect)
 }
 
 //=================================================================================================
-bool Unit::FindEffect(ConsumeEffect effect, float* value)
+bool Unit::FindEffect(EffectType effect, float* value)
 {
 	Effect* top = nullptr;
 	float topv = 0.f;
@@ -2102,26 +2139,15 @@ void Unit::HealPoison()
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
-		if(it->effect == E_POISON)
+		if(it->effect == EffectType::Poison)
 			_to_remove.push_back(index);
 	}
 
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == effects.size() - 1)
-			effects.pop_back();
-		else
-		{
-			std::iter_swap(effects.begin() + index, effects.end() - 1);
-			effects.pop_back();
-		}
-	}
+	RemoveEffects();
 }
 
 //=================================================================================================
-void Unit::RemoveEffect(ConsumeEffect effect)
+void Unit::RemoveEffect(EffectType effect)
 {
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
@@ -2130,29 +2156,15 @@ void Unit::RemoveEffect(ConsumeEffect effect)
 			_to_remove.push_back(index);
 	}
 
-	if(!_to_remove.empty())
+	if(effect == EffectType::Stun && !_to_remove.empty() && Net::IsServer())
 	{
-		if(Net::IsOnline() && Net::IsServer())
-		{
-			auto& c = Add1(Net::changes);
-			c.type = NetChange::STUN;
-			c.unit = this;
-			c.f[0] = 0;
-		}
+		auto& c = Add1(Net::changes);
+		c.type = NetChange::STUN;
+		c.unit = this;
+		c.f[0] = 0;
 	}
 
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == effects.size() - 1)
-			effects.pop_back();
-		else
-		{
-			std::iter_swap(effects.begin() + index, effects.end() - 1);
-			effects.pop_back();
-		}
-	}
+	RemoveEffects();
 }
 
 //=================================================================================================
@@ -2489,8 +2501,8 @@ float Unit::CalculateMagicResistance() const
 		else if(IS_SET(s.flags, ITEM_MAGIC_RESISTANCE_25))
 			mres *= 0.75f;
 	}
-	if(HaveEffect(E_ANTIMAGIC))
-		mres *= 0.5f;
+	float effects_mres = GetEffectModMultiply(EffectType::MagicResistance);
+	mres *= effects_mres;
 	return mres;
 }
 
@@ -2511,7 +2523,7 @@ int Unit::CalculateMagicPower() const
 }
 
 //=================================================================================================
-bool Unit::HaveEffect(ConsumeEffect e) const
+bool Unit::HaveEffect(EffectType e) const
 {
 	for(vector<Effect>::const_iterator it = effects.begin(), end = effects.end(); it != end; ++it)
 	{
@@ -2526,32 +2538,36 @@ int Unit::GetBuffs() const
 {
 	int b = 0;
 
-	for(vector<Effect>::const_iterator it = effects.begin(), end = effects.end(); it != end; ++it)
+	for(auto& e : effects)
 	{
-		switch(it->effect)
+		// don't show perk effects
+		if(e.source == EffectSource::Perk)
+			continue;
+
+		switch(e.effect)
 		{
-		case E_POISON:
+		case EffectType::Poison:
 			b |= BUFF_POISON;
 			break;
-		case E_ALCOHOL:
+		case EffectType::Alcohol:
 			b |= BUFF_ALCOHOL;
 			break;
-		case E_REGENERATE:
+		case EffectType::Regeneration:
 			b |= BUFF_REGENERATION;
 			break;
-		case E_FOOD:
+		case EffectType::FoodRegeneration:
 			b |= BUFF_FOOD;
 			break;
-		case E_NATURAL:
+		case EffectType::NaturalHealingMod:
 			b |= BUFF_NATURAL;
 			break;
-		case E_ANTIMAGIC:
+		case EffectType::MagicResistance:
 			b |= BUFF_ANTIMAGIC;
 			break;
-		case E_STAMINA:
+		case EffectType::StaminaRegeneration:
 			b |= BUFF_STAMINA;
 			break;
-		case E_STUN:
+		case EffectType::Stun:
 			b |= BUFF_STUN;
 			break;
 		}
@@ -3111,13 +3127,14 @@ void Unit::ApplyStun(float length)
 	if(Net::IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
 		length /= 2;
 
-	auto effect = FindEffect(E_STUN);
+	auto effect = FindEffect(EffectType::Stun);
 	if(effect)
 		effect->time = max(effect->time, length);
 	else
 	{
 		auto& effect = Add1(effects);
-		effect.effect = E_STUN;
+		effect.effect = EffectType::Stun;
+		effect.source = EffectSource::Other;
 		effect.power = 0.f;
 		effect.time = length;
 		animation = ANI_STAND;
@@ -3132,6 +3149,7 @@ void Unit::ApplyStun(float length)
 	}
 }
 
+//=================================================================================================
 void Unit::SetBase(Attribute attrib, int value, bool startup, bool mod)
 {
 	assert(statsx->unique);
@@ -3168,6 +3186,7 @@ void Unit::SetBase(Attribute attrib, int value, bool startup, bool mod)
 	}
 }
 
+//=================================================================================================
 void Unit::SetBase(Skill skill, int value, bool startup, bool mod)
 {
 	assert(statsx->unique);
@@ -3201,5 +3220,60 @@ void Unit::SetBase(Skill skill, int value, bool startup, bool mod)
 		c.type = NetChangePlayer::STAT_CHANGED;
 		c.id = (int)ChangedStatType::BASE_SKILL;
 		c.ile = new_base_value;
+	}
+}
+
+//=================================================================================================
+float Unit::GetEffectModMultiply(EffectType effect) const
+{
+	EffectBuffer b;
+	b.sum = 1;
+	b.best_potion = 1;
+
+	for(auto& e : effects)
+	{
+		if(e.effect == effect)
+		{
+			if(e.source == EffectSource::Potion)
+			{
+				if(e.power > b.best_potion)
+					b.best_potion = e.power;
+			}
+			else
+				b.sum *= e.power;
+		}
+	}
+
+	b.sum *= b.best_potion;
+	return b.sum;
+}
+
+//=================================================================================================
+void Unit::RemoveEffects()
+{
+	while(!_to_remove.empty())
+	{
+		uint index = _to_remove.back();
+		_to_remove.pop_back();
+		if(index == effects.size() - 1)
+			effects.pop_back();
+		else
+		{
+			std::iter_swap(effects.begin() + index, effects.end() - 1);
+			effects.pop_back();
+		}
+	}
+}
+
+//=================================================================================================
+void Unit::RemovePerkEffects(Perk perk, bool startup)
+{
+	uint index = 0;
+	for(auto& e : effects)
+	{
+		if(e.source == EffectSource::Perk && e.source_id == (int)perk)
+		{
+			
+		}
 	}
 }

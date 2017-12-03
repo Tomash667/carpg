@@ -204,7 +204,7 @@ void StatsPanel::SetText()
 		auto& taken_perk = pc->unit->statsx->perks[i];
 		if(taken_perk.hidden)
 			continue;
-		PerkInfo& perk = g_perks[(int)taken_perk.perk];
+		PerkInfo& perk = PerkInfo::perks[(int)taken_perk.perk];
 		if(IS_SET(perk.flags, PerkInfo::RequireFormat))
 		{
 			string* s = StringPool.Get();
@@ -307,7 +307,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 	case G_PERK:
 		{
 			TakenPerk& perk = pc->unit->statsx->perks[id];
-			PerkInfo& pi = g_perks[(int)perk.perk];
+			PerkInfo& pi = PerkInfo::perks[(int)perk.perk];
 			tooltip.img = nullptr;
 			tooltip.big_text = pi.name;
 			tooltip.text = pi.desc;

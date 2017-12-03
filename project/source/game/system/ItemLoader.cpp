@@ -256,8 +256,7 @@ private:
 			{ "antimagic", E_ANTIMAGIC },
 			{ "food", E_FOOD },
 			{ "green_hair", E_GREEN_HAIR },
-			{ "stamina", E_STAMINA },
-			{ "stun", E_STUN }
+			{ "stamina", E_STAMINA }
 		});
 
 		t.AddKeywords(G_OTHER_TYPE, {

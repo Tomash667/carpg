@@ -2576,7 +2576,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 
 			if(u.raise_timer <= 0.f)
 			{
-				u.RemovePoison();
+				u.RemoveEffect(EffectType::Poison);
 
 				if(u.alcohol > u.hpmax)
 				{

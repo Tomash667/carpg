@@ -1304,7 +1304,7 @@ void Game::UpdateGame(float dt)
 		pc_data.autowalk = false;
 		pc_data.action_ready = false;
 	}
-	else if(!IsBlocking(pc->unit->action) && !pc->unit->HaveEffect(E_STUN))
+	else if(!IsBlocking(pc->unit->action) && !pc->unit->HaveEffect(EffectType::Stun))
 		UpdatePlayer(player_ctx, dt);
 	else
 	{
@@ -9407,7 +9407,8 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					Effect& e = Add1(hitted->effects);
 					e.power = it->poison_attack / 5;
 					e.time = 5.f;
-					e.effect = E_POISON;
+					e.effect = EffectType::Poison;
+					e.source = EffectSource::Other;
 				}
 			}
 			else
@@ -9481,7 +9482,8 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					Effect& e = Add1(hitted->effects);
 					e.power = dmg / 5;
 					e.time = 5.f;
-					e.effect = E_POISON;
+					e.effect = EffectType::Poison;
+					e.source = EffectSource::Other;
 				}
 
 				// apply spell effect
@@ -11045,7 +11047,8 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		Effect& e = Add1(hitted.effects);
 		e.power = dmg / 10;
 		e.time = 5.f;
-		e.effect = E_POISON;
+		e.effect = EffectType::Poison;
+		e.source = EffectSource::Other;
 	}
 
 	return (hitted.action == A_PAIN ? ATTACK_CLEAN_HIT : ATTACK_HIT);

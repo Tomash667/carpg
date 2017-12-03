@@ -70,7 +70,13 @@ enum CMD
 	CMD_CRASH,
 	CMD_FORCEQUEST,
 	CMD_STUN,
-	CMD_REFRESH_COOLDOWN
+	CMD_REFRESH_COOLDOWN,
+	CMD_LIST_EFFECTS,
+	CMD_LIST_PERKS,
+	CMD_ADD_PERK,
+	CMD_REMOVE_PERK,
+	CMD_ADD_EFFECT,
+	CMD_REMOVE_EFFECT
 };
 
 //-----------------------------------------------------------------------------

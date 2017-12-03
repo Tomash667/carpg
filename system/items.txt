@@ -1439,6 +1439,7 @@ consumable p_antimagic {
 	type potion
 	effect antimagic
 	time 300
+	power 0.5
 	flags ground_mesh
 }
 

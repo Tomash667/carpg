@@ -3760,8 +3760,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					unit.stamina = unit.stamina_max;
 					info.update_flags |= PlayerInfo::UF_STAMINA;
 				}
-				unit.RemovePoison();
-				unit.RemoveEffect(E_STUN);
+				unit.RemoveEffect(EffectType::Poison);
+				unit.RemoveEffect(EffectType::Stun);
 			}
 			else
 			{
@@ -3833,8 +3833,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							if(target->player && !target->player->is_local)
 								target->player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
 						}
-						target->RemovePoison();
-						target->RemoveEffect(E_STUN);
+						target->RemoveEffect(EffectType::Poison);
+						target->RemoveEffect(EffectType::Stun);
 					}
 				}
 			}
@@ -8490,7 +8490,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						if(length > 0)
 							unit->ApplyStun(length);
 						else
-							unit->RemoveEffect(E_STUN);
+							unit->RemoveEffect(EffectType::Stun);
 					}
 				}
 			}
@@ -9419,6 +9419,15 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							else if(pc)
 								pc->unit->Set((Attribute)what, value);
 							break;
+						case ChangedStatType::BASE_ATTRIBUTE:
+							if(what >= (byte)Attribute::MAX)
+							{
+								Error("Update single client: STAT_CHANGED, invalid base attribute %u.", what);
+								StreamError();
+							}
+							else if(pc)
+								pc->unit->statsx->attrib_base[what] = value;
+							break;
 						case ChangedStatType::SKILL:
 							if(what >= (byte)Skill::MAX)
 							{
@@ -9427,6 +9436,19 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							}
 							else if(pc)
 								pc->unit->Set((Skill)what, value);
+							break;
+						case ChangedStatType::BASE_SKILL:
+							if(what >= (byte)Skill::MAX)
+							{
+								Error("Update single client: STAT_CHANGED, invalid base skill %u.", what);
+								StreamError();
+							}
+							else if(pc)
+								pc->unit->statsx->skill_base[what] = value;
+							break;
+						case ChangedStatType::PERK_FLAGS:
+							if(pc)
+								pc->unit->statsx->perk_flags = value;
 							break;
 						default:
 							Error("Update single client: STAT_CHANGED, invalid change type %u.", type);

@@ -11,21 +11,28 @@
 #include "PlayerInfo.h"
 
 //-----------------------------------------------------------------------------
-PerkInfo g_perks[(int)Perk::Max] = {
+PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::BadBack, "bad_back", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::ChronicDisease, "chronic_disease", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::Sluggish, "sluggish", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::SlowLearner, "slow_learner", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::Asocial, "asocial", PerkInfo::Flaw | PerkInfo::History),
-	PerkInfo(Perk::Talent, "talent", PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Attribute),
+	PerkInfo(Perk::Poor, "poor", PerkInfo::Flaw | PerkInfo::History),
+	PerkInfo(Perk::Talent, "talent", PerkInfo::History | PerkInfo::RequireFormat, Perk::None, PerkInfo::Attribute),
 	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
-	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::History | PerkInfo::RequireFormat, PerkInfo::Skill),
+	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::History | PerkInfo::RequireFormat, Perk::None, PerkInfo::Skill),
 	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History),
 	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::History),
-	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History),
-	PerkInfo(Perk::FilthyRich, "filthy_rich", PerkInfo::History),
+	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History, Perk::Wealthy),
+	PerkInfo(Perk::FilthyRich, "filthy_rich", PerkInfo::History, Perk::VeryWealthy),
 	PerkInfo(Perk::FamilyHeirloom, "heirloom", PerkInfo::History),
-	PerkInfo(Perk::Leader, "leader", PerkInfo::History)
+	PerkInfo(Perk::Leader, "leader", PerkInfo::History),
+	PerkInfo(Perk::MilitaryTraining, "military_training", PerkInfo::History),
+	PerkInfo(Perk::StrongBack, "strong_back", 0),
+	PerkInfo(Perk::StrongerBack, "stronger_back", 0, Perk::StrongBack),
+	PerkInfo(Perk::Tought, "tought", 0),
+	PerkInfo(Perk::Toughter, "toughter", 0, Perk::Tought),
+	PerkInfo(Perk::Toughtest, "toughtest", 0, Perk::Toughter)
 };
 
 //-----------------------------------------------------------------------------
@@ -34,7 +41,7 @@ cstring TakenPerk::txIncreasedAttrib, TakenPerk::txIncreasedSkill, TakenPerk::tx
 //=================================================================================================
 PerkInfo* PerkInfo::Find(const string& id)
 {
-	for(PerkInfo& pi : g_perks)
+	for(PerkInfo& pi : PerkInfo::perks)
 	{
 		if(id == pi.id)
 			return &pi;
@@ -47,7 +54,7 @@ PerkInfo* PerkInfo::Find(const string& id)
 void PerkInfo::Validate(uint& err)
 {
 	int index = 0;
-	for(PerkInfo& pi : g_perks)
+	for(PerkInfo& pi : PerkInfo::perks)
 	{
 		if(pi.perk_id != (Perk)index)
 		{
@@ -95,6 +102,13 @@ void TakenPerk::GetDesc(string& s) const
 	case Perk::Sluggish:
 	case Perk::SlowLearner:
 	case Perk::Asocial:
+	case Perk::Poor:
+	case Perk::MilitaryTraining:
+	case Perk::StrongBack:
+	case Perk::StrongerBack:
+	case Perk::Tought:
+	case Perk::Toughter:
+	case Perk::Toughtest:
 		s.clear();
 		break;
 	case Perk::Talent:
@@ -113,7 +127,7 @@ void TakenPerk::GetDesc(string& s) const
 //=================================================================================================
 cstring TakenPerk::FormatName()
 {
-	PerkInfo& p = g_perks[(int)perk];
+	PerkInfo& p = PerkInfo::perks[(int)perk];
 
 	switch(perk)
 	{
@@ -156,7 +170,7 @@ bool TakenPerk::Validate()
 // Check if unit can take perk
 bool TakenPerk::CanTake(PerkContext& ctx)
 {
-	auto& info = g_perks[(int)perk];
+	auto& info = PerkInfo::perks[(int)perk];
 
 	// can take history perk only at startup
 	if(IS_SET(info.flags, PerkInfo::History) && !ctx.startup)
@@ -166,22 +180,26 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	if(IS_SET(info.flags, PerkInfo::Flaw) && ctx.cc && ctx.cc->perks_max >= 4)
 		return false;
 
+	// check if perk require parent perk
+	if(info.parent != Perk::None && !ctx.HavePerk(info.parent))
+		return false;
+
 	switch(perk)
 	{
 	case Perk::Talent:
 	case Perk::Skilled:
 	case Perk::SkillFocus:
 	case Perk::AlchemistApprentice:
-	case Perk::Wealthy:
-	case Perk::FamilyHeirloom:
 	case Perk::Leader:
-		return true;
+	case Perk::MilitaryTraining:
 	case Perk::VeryWealthy:
-		return ctx.HavePerk(Perk::Wealthy);
 	case Perk::FilthyRich:
-		return ctx.HavePerk(Perk::VeryWealthy);
+		return true;
+	case Perk::FamilyHeirloom:
+	case Perk::Wealthy:
+		return !ctx.HavePerk(Perk::Poor);
 	case Perk::BadBack:
-		return ctx.CanMod(Attribute::STR);
+		return !ctx.HavePerk(Perk::StrongBack) && ctx.CanMod(Attribute::STR);
 	case Perk::ChronicDisease:
 		return ctx.CanMod(Attribute::END);
 	case Perk::Sluggish:
@@ -190,6 +208,18 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return ctx.CanMod(Attribute::INT);
 	case Perk::Asocial:
 		return ctx.CanMod(Attribute::CHA);
+	case Perk::Poor:
+		return !ctx.HavePerk(Perk::Wealthy) && !ctx.HavePerk(Perk::FamilyHeirloom);
+	case Perk::StrongBack:
+		return !ctx.HavePerk(Perk::BadBack) && (ctx.Have(Attribute::STR, 60) || ctx.Have(Skill::ATHLETICS, 25));
+	case Perk::StrongerBack:
+		return ctx.Have(Attribute::STR, 80) || ctx.Have(Skill::ATHLETICS, 50);
+	case Perk::Tought:
+		return ctx.Have(Attribute::END, 60);
+	case Perk::Toughter:
+		return ctx.Have(Attribute::END, 80);
+	case Perk::Toughtest:
+		return ctx.Have(Attribute::END, 100);
 	default:
 		assert(0);
 		return false;
@@ -200,8 +230,19 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 // Apply perk to unit
 bool TakenPerk::Apply(PerkContext& ctx)
 {
+	auto& info = PerkInfo::perks[(int)perk];
+
+	// hide parent perk, remove it effect
+	if(info.parent != Perk::None)
+		ctx.HidePerk(info.parent);
+
 	switch(perk)
 	{
+	case Perk::AlchemistApprentice:
+	case Perk::FamilyHeirloom:
+	case Perk::Leader:
+	case Perk::MilitaryTraining:
+		break;
 	case Perk::Talent:
 		if(ctx.validate && ctx.cc && ctx.cc->a[value].mod)
 		{
@@ -231,17 +272,16 @@ bool TakenPerk::Apply(PerkContext& ctx)
 			ctx.pc->unit->gold += 1000;
 		break;
 	case Perk::VeryWealthy:
-		ctx.HidePerk(Perk::Wealthy);
 		if(ctx.pc && !hidden && ctx.startup)
 			ctx.pc->unit->gold += 5000;
 		break;
 	case Perk::FilthyRich:
-		ctx.HidePerk(Perk::VeryWealthy);
 		if(ctx.pc && !hidden && ctx.startup)
 			ctx.pc->unit->gold += 100'000;
 		break;
 	case Perk::BadBack:
 		ctx.Mod(Attribute::STR, -5);
+		ctx.AddEffect(this, EffectType::Carry, 0.75f);
 		break;
 	case Perk::ChronicDisease:
 		ctx.Mod(Attribute::END, -5);
@@ -251,44 +291,58 @@ bool TakenPerk::Apply(PerkContext& ctx)
 		break;
 	case Perk::SlowLearner:
 		ctx.Mod(Attribute::INT, -5);
-		if(ctx.pc)
-			ctx.pc->unit->statsx->perk_flags |= PerkFlags::PF_SLOW_LERNER;
+		ctx.AddFlag(PF_SLOW_LERNER);
 		break;
 	case Perk::Asocial:
 		ctx.Mod(Attribute::CHA, -5);
-		if(ctx.pc)
-			ctx.pc->unit->statsx->perk_flags |= PerkFlags::PF_ASOCIAL;
+		ctx.AddFlag(PF_ASOCIAL);
 		break;
-	case Perk::AlchemistApprentice:
-	case Perk::FamilyHeirloom:
-	case Perk::Leader:
+	case Perk::Poor:
+		if(ctx.pc && ctx.startup)
+			ctx.pc->unit->gold /= 10;
+		break;
+	case Perk::StrongBack:
+		ctx.AddEffect(this, EffectType::Carry, 1.25f);
+		break;
+	case Perk::StrongerBack:
+		ctx.AddEffect(this, EffectType::Carry, 1.5f);
+		break;
+	case Perk::Tought:
+		break;
+	case Perk::Toughter:
+		ctx.HidePerk(Perk::Tought);
+		break;
+	case Perk::Toughtest:
+		ctx.HidePerk(Perk::Toughter);
 		break;
 	default:
 		assert(0);
 		break;
 	}
 
-	if(ctx.cc)
+	if(!ctx.reapply)
 	{
-		PerkInfo& info = g_perks[(int)perk];
-		if(IS_SET(info.flags, PerkInfo::Flaw))
+		if(ctx.cc)
 		{
-			++ctx.cc->perks;
-			++ctx.cc->perks_max;
+			if(IS_SET(info.flags, PerkInfo::Flaw))
+			{
+				++ctx.cc->perks;
+				++ctx.cc->perks_max;
+			}
+			else
+				--ctx.cc->perks;
+			ctx.cc->taken_perks.push_back(*this);
 		}
 		else
-			--ctx.cc->perks;
-		ctx.cc->taken_perks.push_back(*this);
-	}
-	else
-	{
-		ctx.pc->unit->statsx->perks.push_back(*this);
-		if(!ctx.pc->is_local)
 		{
-			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-			c.type = NetChangePlayer::ADD_PERK;
-			c.id = (byte)perk;
-			c.ile = value;
+			ctx.pc->unit->statsx->perks.push_back(*this);
+			if(!ctx.pc->is_local)
+			{
+				NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+				c.type = NetChangePlayer::ADD_PERK;
+				c.id = (byte)perk;
+				c.ile = value;
+			}
 		}
 	}
 
@@ -299,8 +353,35 @@ bool TakenPerk::Apply(PerkContext& ctx)
 // Remove perk from unit
 void TakenPerk::Remove(PerkContext& ctx)
 {
+	// remove unit effects
+	if(ctx.pc)
+		ctx.pc->unit->RemovePerkEffects(perk, ctx.startup);
+
+	// reapply parent perk
+	auto& info = PerkInfo::perks[(int)perk];
+	if(info.parent != Perk::None)
+	{
+		auto old = ctx.HidePerk(info.parent, false);
+		if(old)
+		{
+			ctx.reapply = true;
+			old->Apply(ctx);
+		}
+	}
+
 	switch(perk)
 	{
+	case Perk::AlchemistApprentice:
+	case Perk::Wealthy:
+	case Perk::VeryWealthy:
+	case Perk::FilthyRich:
+	case Perk::FamilyHeirloom:
+	case Perk::Leader:
+	case Perk::Poor:
+	case Perk::MilitaryTraining:
+	case Perk::StrongBack:
+	case Perk::StrongerBack:
+		break;
 	case Perk::Talent:
 		ctx.Mod((Attribute)value, -5, false);
 		break;
@@ -315,12 +396,6 @@ void TakenPerk::Remove(PerkContext& ctx)
 	case Perk::SkillFocus:
 		ctx.Mod((Skill)value, -5, false);
 		break;
-	case Perk::VeryWealthy:
-		ctx.HidePerk(Perk::Wealthy, false);
-		break;
-	case Perk::FilthyRich:
-		ctx.HidePerk(Perk::VeryWealthy, false);
-		break;
 	case Perk::BadBack:
 		ctx.Mod(Attribute::STR, -5, false);
 		break;
@@ -332,18 +407,19 @@ void TakenPerk::Remove(PerkContext& ctx)
 		break;
 	case Perk::SlowLearner:
 		ctx.Mod(Attribute::INT, -5, false);
-		if(ctx.pc)
-			ctx.pc->unit->statsx->perk_flags &= ~PerkFlags::PF_SLOW_LERNER;
+		ctx.RemoveFlag(PF_SLOW_LERNER);
 		break;
 	case Perk::Asocial:
 		ctx.Mod(Attribute::CHA, -5, false);
-		if(ctx.pc)
-			ctx.pc->unit->statsx->perk_flags &= ~PerkFlags::PF_ASOCIAL;
+		ctx.RemoveFlag(PF_ASOCIAL);
 		break;
-	case Perk::AlchemistApprentice:
-	case Perk::Wealthy:
-	case Perk::FamilyHeirloom:
-	case Perk::Leader:
+	case Perk::Tought:
+		break;
+	case Perk::Toughter:
+		ctx.HidePerk(Perk::Tought, false);
+		break;
+	case Perk::Toughtest:
+		ctx.HidePerk(Perk::Toughter, false);
 		break;
 	default:
 		assert(0);
@@ -352,7 +428,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 
 	if(ctx.cc)
 	{
-		PerkInfo& info = g_perks[(int)perk];
+		PerkInfo& info = PerkInfo::perks[(int)perk];
 		if(IS_SET(info.flags, PerkInfo::Flaw))
 		{
 			--ctx.cc->perks;
@@ -413,7 +489,7 @@ TakenPerk* PerkContext::FindPerk(Perk perk)
 }
 
 //=================================================================================================
-void PerkContext::HidePerk(Perk perk, bool hide)
+TakenPerk* PerkContext::HidePerk(Perk perk, bool hide)
 {
 	auto taken_perk = FindPerk(perk);
 	if(taken_perk && taken_perk->hidden != hide)
@@ -426,7 +502,14 @@ void PerkContext::HidePerk(Perk perk, bool hide)
 			c.id = (int)perk;
 			c.ile = (hide ? 1 : 0);
 		}
+
+		if(pc)
+		{
+			// remove effect
+			pc->unit->RemovePerkEffects(taken_perk->perk, startup);
+		}
 	}
+	return taken_perk;
 }
 
 //=================================================================================================
@@ -464,4 +547,64 @@ void PerkContext::Mod(Skill skill, int value, bool mod)
 	}
 	else
 		pc->unit->SetBase(skill, value, startup, true);
+}
+
+//=================================================================================================
+bool PerkContext::Have(Attribute attrib, int value)
+{
+	if(cc)
+		return cc->a[(int)attrib].value >= value;
+	else
+		return pc->unit->GetBase(attrib) >= value;
+}
+
+//=================================================================================================
+bool PerkContext::Have(Skill skill, int value)
+{
+	if(cc)
+		return cc->s[(int)skill].value >= value;
+	else
+		return pc->unit->GetBase(skill) >= value;
+}
+
+//=================================================================================================
+void PerkContext::AddFlag(PerkFlags flag)
+{
+	if(cc || IS_SET(pc->unit->statsx->perk_flags, flag))
+		return;
+	pc->unit->statsx->perk_flags |= flag;
+	if(!pc->is_local)
+	{
+		NetChangePlayer& c = Add1(pc->player_info->changes);
+		c.type = NetChangePlayer::STAT_CHANGED;
+		c.id = (byte)ChangedStatType::PERK_FLAGS;
+		c.ile = pc->unit->statsx->perk_flags;
+	}
+}
+
+//=================================================================================================
+void PerkContext::RemoveFlag(PerkFlags flag)
+{
+	if(cc || !IS_SET(pc->unit->statsx->perk_flags, flag))
+		return;
+	pc->unit->statsx->perk_flags &= ~flag;
+	if(!pc->is_local)
+	{
+		NetChangePlayer& c = Add1(pc->player_info->changes);
+		c.type = NetChangePlayer::STAT_CHANGED;
+		c.id = (byte)ChangedStatType::PERK_FLAGS;
+		c.ile = pc->unit->statsx->perk_flags;
+	}
+}
+
+//=================================================================================================
+void PerkContext::AddEffect(TakenPerk* perk, EffectType effect, float value)
+{
+	if(cc)
+		return;
+	auto& e = Add1(pc->unit->effects);
+	e.effect = effect;
+	e.source = EffectSource::Perk;
+	e.source_id = (int)perk->perk;
+	e.power = value;
 }

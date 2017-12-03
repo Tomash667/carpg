@@ -32,6 +32,10 @@ perk asocial {
 	name "Asocial"
 	desc "You don't get along well with other people. Reduced charisma by 5 points and increases the prices in stores."
 }
+perk poor {
+	name "Poor"
+	desc "You start your adventure with the right empty purse. Your equipment is of lower quality."
+}
 perk talent {
 	name "Talent"
 	desc "Increase chosen attribute by 5 points. Faster training of selected attribute."
@@ -67,4 +71,28 @@ perk heirloom {
 perk leader {
 	name "Leader"
 	desc "You have a predisposition to become a great leader. You have even recruited one hero to come with you."
+}
+perk military_training {
+	name "Military training"
+	desc "You have undergone military training in your village. You get 50 health bonus and 5 to attack and defese."
+}
+perk strong_back {
+	name "Strong back"
+	desc "You can lift a lot. +25% to maximum carrying capacity."
+}
+perk stronger_back {
+	name "Stronger back"
+	desc "You can lift more then a lot. +50% to maximum carrying capacity."
+}
+perk tought {
+	name "Tought"
+	desc "You are tougter than others. +100 to maximum health."
+}
+perk toughter {
+	name "Toughter"
+	desc "You are as tought as rock. +250 to maximum health."
+}
+perk toughtest {
+	name "Toughtest"
+	desc "You are toughter then a rock. +500 to maximum health."
 }

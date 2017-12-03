@@ -1,12 +1,20 @@
 ﻿FEATURE:
 *** perks
+? test all old effects, sp & mp
+	- skip_days brak wpływu na bufffy ???w
++ sync effects server -> client
++ old effects compability
++ listeffects command, liststats (magic resistance, natural reg)
++ addeffect, removeeffect
+- invalid carry calculated, need recalculate, add Effect
+- get str 60 perk and then decrease it
++ Unit.RemovePerkEffects
 + perk points
 	every two levels, for heroes every 3 levels
 + subprofile perks
-+ modifying apt (which perk modify starting value, which aptitude?)
 + new ingame perks
 + training perks
-+ addperk, removeperk command
++ addperk, removeperk command, list perks
 + use subprofiles in creating random char
 + better starting items list (poor, wealthy etc effects)
 + show/hide unavailable perks when attribute is changes
@@ -15,14 +23,21 @@
 	better/worse starting gear
 	strength, extra apt
 	skill focus, extra apt
-	bad back
 	chronic disease
 	sluggish
+	military training
+	tought
 +? send mp updates - perk flags (currently it is server side logic only)
 + upgrade perks -> set perk flags
++ regeneration perk and world travel
++ EndEffects, better checking of days <-> power (have chronic disease and drink potion, should have normal healing for 10 days, end 1/2 healing etc)
 ? tests
 	? old perks load
 	? replace old perks, add missing wealthy
+	? magic resistance potion
+	? loading old effects
+! changelog
+	+ new commands, list types
 
 *** combat
 + str/dex formula changes

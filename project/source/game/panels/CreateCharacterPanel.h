@@ -109,6 +109,7 @@ private:
 	void ResetDoll(bool instant);
 	void RandomAppearance();
 	Group FlowGroupToTooltipGroup(Group group);
+	int GetItemsMod();
 
 	Mode mode;
 	bool enter_name;

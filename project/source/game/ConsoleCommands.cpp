@@ -121,6 +121,12 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_FORCEQUEST, "forcequest", "force next random quest to select (use list quest or none/reset)", F_SERVER | F_GAME | F_WORLD_MAP | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_STUN, "stun", "stun unit for time (stun [length=1] [1 = self])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REFRESH_COOLDOWN, "refresh_cooldown", "refresh action cooldown/charges", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_LIST_EFFECTS, "list_effects", "list effects affecting player", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_LIST_PERKS, "list_perks", "list player perks", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_PERK, "add_perk", "add new perk to player", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_PERK, "remove_perk", "remove perk from player", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to player (add_effect name power [timer source])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from player (remove_effect name [source]/remove_effect source [perk])", F_GAME | F_CHEAT));
 }
 
 //=================================================================================================
@@ -716,8 +722,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						pc->unit->hp = pc->unit->hpmax;
 						pc->unit->stamina = pc->unit->stamina_max;
-						pc->unit->RemovePoison();
-						pc->unit->RemoveEffect(E_STUN);
+						pc->unit->RemoveEffect(EffectType::Poison);
+						pc->unit->RemoveEffect(EffectType::Stun);
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
@@ -753,8 +759,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						{
 							pc_data.selected_target->hp = pc_data.selected_target->hpmax;
 							pc_data.selected_target->stamina = pc_data.selected_target->stamina_max;
-							pc_data.selected_target->RemovePoison();
-							pc_data.selected_target->RemoveEffect(E_STUN);
+							pc_data.selected_target->RemoveEffect(EffectType::Poison);
+							pc_data.selected_target->RemoveEffect(EffectType::Stun);
 							if(Net::IsOnline())
 							{
 								NetChange& c = Add1(Net::changes);
@@ -1649,6 +1655,44 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(!Net::IsLocal())
 						Net::PushChange(NetChange::CHEAT_REFRESH_COOLDOWN);
 					break;
+				case CMD_LIST_PERKS:
+				case CMD_ADD_PERK:
+				case CMD_REMOVE_PERK:
+					break;
+				case CMD_LIST_EFFECTS:
+					if(pc->unit->effects.empty())
+						Msg("No active effects.");
+					else
+					{
+						Msg("Effects (%u):", pc->unit->effects.size());
+						LocalString str;
+						for(auto& e : pc->unit->effects)
+						{
+							str = Format("%s - power:%g, source:", EffectInfo::effects[(int)e.effect].id, FLT10(e.power));
+							switch(e.source)
+							{
+							case EffectSource::Potion:
+								str += Format("potion, time:%g", FLT10(e.time));
+								break;
+							case EffectSource::Perk:
+								str += Format("perk(%s)", PerkInfo::perks[e.source_id].id);
+								break;
+							default:
+								str += "other";
+								break;
+							}
+							Msg(str.c_str());
+						}
+					}
+					break;
+				case CMD_ADD_EFFECT:
+					{
+						EffectType effect;
+						float power = 0.f, timer = 0.f;
+						EffectSource source = EffectSource::Other;
+					}
+				case CMD_REMOVE_EFFECT:
+					break;
 				default:
 					assert(0);
 					break;
@@ -1677,7 +1721,7 @@ void Game::CmdList(Tokenizer& t)
 {
 	if(!t.Next())
 	{
-		Msg("Display list of items/units/quests (item/items, itemn/item_names, unit/units, unitn/unit_names, quest/quests). Examples:");
+		Msg("Display list of items/units/quests/effects/perks (item/itemn, unit/unitn, quest, effect, perk). Examples:");
 		Msg("'list item' - list of items ordered by id");
 		Msg("'list itemn' - list of items ordered by name");
 		Msg("'list unit t' - list of units ordered by id starting from t");
@@ -1690,7 +1734,9 @@ void Game::CmdList(Tokenizer& t)
 		LIST_ITEM_NAME,
 		LIST_UNIT,
 		LIST_UNIT_NAME,
-		LIST_QUEST
+		LIST_QUEST,
+		LIST_EFFECT,
+		LIST_PERK
 	};
 
 	LIST_TYPE list_type;
@@ -1705,6 +1751,10 @@ void Game::CmdList(Tokenizer& t)
 		list_type = LIST_UNIT_NAME;
 	else if(lis == "quest" || lis == "quests")
 		list_type = LIST_QUEST;
+	else if(lis == "effect" || lis == "effects")
+		list_type = LIST_EFFECT;
+	else if(lis == "perk" || lis == "perks")
+		list_type = LIST_PERK;
 	else
 	{
 		Msg("Unknown list type '%s'!", lis.c_str());
@@ -1888,6 +1938,81 @@ void Game::CmdList(Tokenizer& t)
 			for(auto quest : quests)
 			{
 				cstring s2 = Format("%s (%s)", quest->name, quest_type[(int)quest->type]);
+				Msg(s2);
+				s += s2;
+				s += "\n";
+			}
+
+			Info(s.c_str());
+		}
+		break;
+	case LIST_EFFECT:
+		{
+			LocalVector2<const EffectInfo*> effects;
+			for(auto& e : EffectInfo::effects)
+			{
+				if(match.empty() || _strnicmp(match.c_str(), e.id, match.length()) == 0)
+					effects.push_back(&e);
+			}
+
+			if(effects.empty())
+			{
+				Msg("No effects found starting with '%s'.", match.c_str());
+				return;
+			}
+
+			std::sort(effects.begin(), effects.end(), [](const EffectInfo* effect1, const EffectInfo* effect2)
+			{
+				return strcoll(effect1->id, effect2->id) < 0;
+			});
+
+			LocalString s = Format("Effects list (%d):\n", effects.size());
+			Msg("Effects list (%d):", effects.size());
+
+			for(auto effect : effects)
+			{
+				cstring s2 = Format("%s - %s", effect->id, effect->desc);
+				Msg(s2);
+				s += s2;
+				s += "\n";
+			}
+
+			Info(s.c_str());
+		}
+		break;
+	case LIST_PERK:
+		{
+			LocalVector2<const PerkInfo*> perks;
+			for(auto& perk : PerkInfo::perks)
+			{
+				if(match.empty() || _strnicmp(match.c_str(), perk.id, match.length()) == 0)
+					perks.push_back(&perk);
+			}
+
+			if(perks.empty())
+			{
+				Msg("No perks found starting with '%s'.", match.c_str());
+				return;
+			}
+
+			std::sort(perks.begin(), perks.end(), [](const PerkInfo* perk1, const PerkInfo* perk2)
+			{
+				return strcoll(perk1->id, perk2->id) < 0;
+			});
+
+			LocalString s = Format("Perks list (%d):\n", perks.size());
+			Msg("Perks list (%d):", perks.size());
+
+			for(auto perk : perks)
+			{
+				cstring type;
+				if(IS_SET(perk->flags, PerkInfo::Flaw))
+					type = "Flaw";
+				else if(IS_SET(perk->flags, PerkInfo::History))
+					type = "History";
+				else
+					type = "Normal";
+				cstring s2 = Format("%s/%s (%s): %s", perk->id, perk->name.c_str(), type, perk->desc.c_str());
 				Msg(s2);
 				s += s2;
 				s += "\n";

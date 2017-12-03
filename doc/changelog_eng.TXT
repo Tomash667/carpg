@@ -3,6 +3,7 @@ Changelog
 --------------------------------------------------------------------------------
 Version 0.7 (2017-XX-YY):
 + new skills: athletics, acrobatics, haggle, literacy
++ new starting feats: filthy rich, military training, bad back, chronic disease, sluggish, slow lerner, asocial, poor
 + combat system changes
 + magic scroll item
 + loading objects from file

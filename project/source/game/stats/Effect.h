@@ -1,10 +1,24 @@
 #pragma once
 
-#include "UnitStats.h"
-
+//-----------------------------------------------------------------------------
+// Effects that can affect unit
+// in brackets what happens when there is multiple same effects
 enum class EffectType
 {
-	Attribute,
+	Health, // mod max hp
+	Carry, // mod carry
+	Poison, // takes poison damage (sum all)
+	Alcohol, // takes alcohol damage (sum all)
+	Regeneration, // regenerate hp (sum from perks and top from potion)
+	StaminaRegeneration, // regenerate stamina (sum from perks and top from potion)
+	FoodRegeneration, // food regenerate hp (sum all)
+	NaturalHealingMod, // natural healing mod (timer in days)
+	MagicResistance, // magic resistance mod
+	Stun, // unit is stunned
+
+	Max
+	
+	/*Attribute,
 	Skill,
 	SkillPack,
 	SubSkill,
@@ -15,10 +29,69 @@ enum class EffectType
 	DamageBurn,
 	Lifesteal,
 	DamageGain, // by default 5%, limit = 4/3 max
-	MagePower,
+	MagePower,*/
 };
 
-enum class BaseEffectId
+//-----------------------------------------------------------------------------
+enum class EffectSource
+{
+	Potion,
+	Perk,
+	Other
+};
+
+//-----------------------------------------------------------------------------
+struct Effect
+{
+	EffectType effect;
+	EffectSource source;
+	float time, power;
+	int source_id;
+};
+
+//-----------------------------------------------------------------------------
+struct EffectBuffer
+{
+	float best_potion;
+	float sum;
+	bool mul;
+
+	EffectBuffer(float def = 0.f) : best_potion(def), sum(def), mul(def == 1.f)
+	{
+	}
+
+	operator float() const
+	{
+		return mul ? (best_potion * sum) : (best_potion + sum);
+	}
+
+	void operator += (Effect& e)
+	{
+		if(e.source == EffectSource::Potion)
+		{
+			if(e.power > best_potion)
+				best_potion = e.power;
+		}
+		else
+		{
+			if(mul)
+				sum *= e.power;
+			else
+				sum += e.power;
+		}
+	}
+};
+
+//-----------------------------------------------------------------------------
+struct EffectInfo
+{
+	EffectType effect;
+	cstring id, desc;
+
+	static EffectInfo effects[(uint)EffectType::Max];
+};
+
+/*enum class BaseEffectId
 {
 	Mres10,
 	Mres15,
@@ -87,16 +160,4 @@ struct Effect2
 
 extern BaseEffect g_effects[];
 extern EffectList g_effect_lists[];
-
-struct ValueBuffer
-{
-	ValueBuffer() : min(), max()
-	{
-	}
-
-	void Add(int v);
-	int Get(StatState& ss) const;
-	int Get() const;
-
-	int min[3], max[3];
-};
+*/
