@@ -528,7 +528,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						PerkInfo* ci = PerkInfo::Find(id);
+						PerkInfo* ci = PerkInfo::TryGet(id);
 						if(!ci)
 							t.Throw("Invalid perk '%s'.", id.c_str());
 						t.Next();

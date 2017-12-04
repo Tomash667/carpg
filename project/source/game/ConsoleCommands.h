@@ -9,27 +9,22 @@ enum CMD
 	CMD_QUIT,
 	CMD_REVEAL,
 	CMD_MAP2CONSOLE,
-	CMD_ADDITEM,
-	CMD_ADDTEAM,
-	CMD_ADDGOLD,
-	CMD_ADDGOLD_TEAM,
-	CMD_SETSTAT,
-	CMD_MODSTAT,
+	CMD_ADD_ITEM,
+	CMD_ADD_TEAM_ITEM,
+	CMD_ADD_GOLD,
+	CMD_ADD_TEAM_GOLD,
+	CMD_SET_STAT,
+	CMD_MOD_STAT,
 	CMD_CMDS,
 	CMD_HELP,
-	CMD_SPAWNUNIT,
-	//CMD_SPAWNITEM,
+	CMD_SPAWN_UNIT,
 	CMD_HEAL,
 	CMD_KILL,
-	//CMD_CONTROL,
 	CMD_LIST,
-	CMD_HEALUNIT,
+	CMD_HEAL_UNIT,
 	CMD_SUICIDE,
-	//CMD_FRIEND,
-	//CMD_ENEMY,
 	CMD_CITIZEN,
 	CMD_SCREENSHOT,
-	CMD_REVEAL_LOCAL,
 	CMD_WARP,
 	CMD_SCARE,
 	CMD_INVISIBLE,
@@ -51,9 +46,6 @@ enum CMD
 	CMD_NOCLIP,
 	CMD_PLAYER_DEVMODE,
 	CMD_NOAI,
-	CMD_DROPGOLD,
-	CMD_GIVEGOLD,
-	CMD_PAYCREDIT,
 	CMD_PAUSE,
 	CMD_MULTISAMPLING,
 	CMD_QUICKSAVE,
@@ -76,7 +68,10 @@ enum CMD
 	CMD_ADD_PERK,
 	CMD_REMOVE_PERK,
 	CMD_ADD_EFFECT,
-	CMD_REMOVE_EFFECT
+	CMD_REMOVE_EFFECT,
+
+	CMD_MAX,
+	CMD_VAR
 };
 
 //-----------------------------------------------------------------------------
@@ -137,24 +132,28 @@ struct ConsoleCommand
 	{
 		assert(name && desc);
 	}
-	ConsoleCommand(bool* var, cstring name, cstring desc, int flags, VoidF changed = nullptr) : var(var), name(name), desc(desc), flags(flags), type(VAR_BOOL), changed(changed)
+	ConsoleCommand(bool* var, cstring name, cstring desc, int flags, VoidF changed = nullptr) : cmd(CMD_VAR), var(var), name(name), desc(desc), flags(flags),
+		type(VAR_BOOL), changed(changed)
 	{
 		assert(name && desc && var);
 	}
-	ConsoleCommand(int* var, cstring name, cstring desc, int flags, int _min = INT_MIN, int _max = INT_MAX, VoidF changed = nullptr) : var(var), name(name), desc(desc), flags(flags), type(VAR_INT),
+	ConsoleCommand(int* var, cstring name, cstring desc, int flags, int _min = INT_MIN, int _max = INT_MAX, VoidF changed = nullptr) : cmd(CMD_VAR), var(var),
+		name(name), desc(desc), flags(flags), type(VAR_INT),
 		changed(changed)
 	{
 		assert(name && desc && var);
 		_int.x = _min;
 		_int.y = _max;
 	}
-	ConsoleCommand(uint* var, cstring name, cstring desc, int flags, uint _min = 0, uint _max = UINT_MAX) : var(var), name(name), desc(desc), flags(flags), type(VAR_UINT)
+	ConsoleCommand(uint* var, cstring name, cstring desc, int flags, uint _min = 0, uint _max = UINT_MAX) : cmd(CMD_VAR), var(var), name(name), desc(desc),
+		flags(flags), type(VAR_UINT)
 	{
 		assert(name && desc && var);
 		_uint.x = _min;
 		_uint.y = _max;
 	}
-	ConsoleCommand(float* var, cstring name, cstring desc, int flags, float _min = -Inf(), float _max = Inf()) : var(var), name(name), desc(desc), flags(flags), type(VAR_FLOAT)
+	ConsoleCommand(float* var, cstring name, cstring desc, int flags, float _min = -Inf(), float _max = Inf()) : cmd(CMD_VAR), var(var), name(name),
+		desc(desc), flags(flags), type(VAR_FLOAT)
 	{
 		assert(name && desc && var);
 		_float.x = _min;

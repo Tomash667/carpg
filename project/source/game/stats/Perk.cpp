@@ -39,7 +39,7 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 cstring TakenPerk::txIncreasedAttrib, TakenPerk::txIncreasedSkill, TakenPerk::txDecreasedAttrib, TakenPerk::txDecreasedSkill, TakenPerk::txDecreasedSkills;
 
 //=================================================================================================
-PerkInfo* PerkInfo::Find(const string& id)
+PerkInfo* PerkInfo::TryGet(const AnyString& id)
 {
 	for(PerkInfo& pi : PerkInfo::perks)
 	{

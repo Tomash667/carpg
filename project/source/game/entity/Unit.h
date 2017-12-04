@@ -793,6 +793,8 @@ struct Unit
 	void RemoveEffects();
 	void RemoveEffect(EffectType effect);
 	void RemovePerkEffects(Perk perk, bool startup);
+	void ApplyEffect(const Effect& effect);
+	void RemoveEffect(const Effect& effect);
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

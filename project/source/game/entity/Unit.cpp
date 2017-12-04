@@ -3254,6 +3254,8 @@ void Unit::RemoveEffects()
 	while(!_to_remove.empty())
 	{
 		uint index = _to_remove.back();
+		auto& e = effects[index];
+		RemoveEffect(e);
 		_to_remove.pop_back();
 		if(index == effects.size() - 1)
 			effects.pop_back();
@@ -3272,8 +3274,27 @@ void Unit::RemovePerkEffects(Perk perk, bool startup)
 	for(auto& e : effects)
 	{
 		if(e.source == EffectSource::Perk && e.source_id == (int)perk)
-		{
-			
-		}
+			_to_remove.push_back(index);
+	}
+	RemoveEffects();
+}
+
+//=================================================================================================
+void Unit::ApplyEffect(const Effect& effect)
+{
+	switch(effect.effect)
+	{
+	default:
+		break;
+	}
+}
+
+//=================================================================================================
+void Unit::RemoveEffect(const Effect& effect)
+{
+	switch(effect.effect)
+	{
+	default:
+		break;
 	}
 }

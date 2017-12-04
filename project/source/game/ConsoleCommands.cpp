@@ -80,7 +80,7 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_SHOW_MINIMAP, "show_minimap", "reveal minimap", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SKIP_DAYS, "skip_days", "skip days [skip_days [count])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST, "list", "display list of types, don't enter type to list possible choices (list type [filter])", F_ANYWHERE));
-	cmds.push_back(ConsoleCommand(CMD_HEALUNIT, "healunit", "heal unit in front of player", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_HEAL_UNIT, "heal_unit", "heal unit in front of player", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SUICIDE, "suicide", "kill player", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_CITIZEN, "citizen", "citizens/crazies don't attack player or his team", F_GAME | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_SCREENSHOT, "screenshot", "save screenshot", F_ANYWHERE));
@@ -92,14 +92,14 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_VERSION, "version", "displays game version", F_ANYWHERE));
 	cmds.push_back(ConsoleCommand(CMD_REVEAL, "reveal", "reveal all locations on world map", F_GAME | F_CHEAT | F_WORLD_MAP));
 	cmds.push_back(ConsoleCommand(CMD_MAP2CONSOLE, "map2console", "draw dungeon map in console", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADDITEM, "additem", "add item to player inventory (additem id [count])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADDTEAM, "addteam", "add team item to player inventory (addteam id [count])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADDGOLD, "addgold", "give gold to player (addgold count)", F_GAME | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_ADDGOLD_TEAM, "addgold_team", "give gold to team (addgold_team count)", F_GAME | F_CHEAT | F_WORLD_MAP));
-	cmds.push_back(ConsoleCommand(CMD_SETSTAT, "setstat", "set player statistics, use ? to get list (setstat stat value)", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_MODSTAT, "modstat", "modify player statistics, use ? to get list (modstat stat value)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_ITEM, "add_item", "add item to player inventory (add_item id [count])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_TEAM_ITEM, "add_team", "add team item to player inventory (add_team id [count])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_GOLD, "add_gold", "give gold to player (addgold count)", F_GAME | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_ADD_TEAM_GOLD, "add_team_gold", "give gold to team (add_team_gold count)", F_GAME | F_CHEAT | F_WORLD_MAP));
+	cmds.push_back(ConsoleCommand(CMD_SET_STAT, "set_stat", "set player statistics, use ? to get list (set_stat stat value)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_MOD_STAT, "mod_stat", "modify player statistics, use ? to get list (mod_stat stat value)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_HELP, "help", "display information about command (help [command])", F_ANYWHERE));
-	cmds.push_back(ConsoleCommand(CMD_SPAWNUNIT, "spawnunit", "create unit in front of player (spawnunit id [level count arena])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_SPAWN_UNIT, "spawn_unit", "create unit in front of player (spawn_unit id [level count arena])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_HEAL, "heal", "heal player", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_KILL, "kill", "kill unit in front of player", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_PLAYER_DEVMODE, "player_devmode", "get/set player developer mode in multiplayer (player_devmode nick/all [0/1])", F_MULTIPLAYER | F_WORLD_MAP | F_CHEAT | F_SERVER));
@@ -125,8 +125,26 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_LIST_PERKS, "list_perks", "list player perks", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ADD_PERK, "add_perk", "add new perk to player", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REMOVE_PERK, "remove_perk", "remove perk from player", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to player (add_effect name power [timer source])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from player (remove_effect name [source]/remove_effect source [perk])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to player (add_effect name [power time source perk])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from player (remove_effect [effect_name] source [perk])", F_GAME | F_CHEAT));
+
+	// verify all commands are added
+#ifdef _DEBUG
+	for(uint i = 0; i < CMD_MAX; ++i)
+	{
+		bool ok = false;
+		for(auto& cmd : cmds)
+		{
+			if(cmd.cmd == i)
+			{
+				ok = true;
+				break;
+			}
+		}
+		if(!ok)
+			Error("Missing command %u.", i);
+	}
+#endif
 }
 
 //=================================================================================================
@@ -349,7 +367,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else
 						Msg("You need to be inside dungeon!");
 					break;
-				case CMD_ADDITEM:
+				case CMD_ADD_ITEM:
 					if(t.Next())
 					{
 						const string& item_name = t.MustGetItem();
@@ -376,7 +394,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else
 							{
 								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::CHEAT_ADDITEM;
+								c.type = NetChange::CHEAT_ADD_ITEM;
 								c.base_item = item;
 								c.ile = ile;
 								c.id = 0;
@@ -386,7 +404,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else
 						Msg("You need to enter item id!");
 					break;
-				case CMD_ADDTEAM:
+				case CMD_ADD_TEAM_ITEM:
 					if(t.Next())
 					{
 						const string& item_name = t.MustGetItem();
@@ -413,7 +431,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else
 							{
 								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::CHEAT_ADDITEM;
+								c.type = NetChange::CHEAT_ADD_ITEM;
 								c.base_item = item;
 								c.ile = ile;
 								c.id = 1;
@@ -423,45 +441,34 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else
 						Msg("You need to enter item id!");
 					break;
-				case CMD_ADDGOLD:
+				case CMD_ADD_GOLD:
+				case CMD_ADD_TEAM_GOLD:
 					if(t.Next())
 					{
-						int ile = t.MustGetInt();
+						bool is_team = (it->cmd == CMD_ADD_TEAM_GOLD);
+						int count = t.MustGetInt();
+						if(is_team && count <= 0)
+							Msg("Gold count must by positive!");
 						if(Net::IsLocal())
-							pc->unit->gold = max(pc->unit->gold + ile, 0);
+						{
+							if(is_team)
+								AddGold(count);
+							else
+								pc->unit->gold = max(pc->unit->gold + count, 0);
+						}
 						else
 						{
 							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::CHEAT_ADDGOLD;
-							c.id = ile;
+							c.type = NetChange::CHEAT_ADD_GOLD;
+							c.id = (is_team ? 1 : 0);
+							c.id = count;
 						}
 					}
 					else
 						Msg("You need to enter gold amount!");
 					break;
-				case CMD_ADDGOLD_TEAM:
-					if(t.Next())
-					{
-						int ile = t.MustGetInt();
-						if(ile <= 0)
-							Msg("Gold count must by positive!");
-						else
-						{
-							if(Net::IsLocal())
-								AddGold(ile);
-							else
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::CHEAT_ADDGOLD_TEAM;
-								c.id = ile;
-							}
-						}
-					}
-					else
-						Msg("You need to enter gold amount!");
-					break;
-				case CMD_SETSTAT:
-				case CMD_MODSTAT:
+				case CMD_SET_STAT:
+				case CMD_MOD_STAT:
 					if(!t.Next())
 						Msg("Enter name of attribute/skill and value. Use ? to get list of attributes/skills.");
 					else if(t.IsSymbol('?'))
@@ -536,7 +543,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								if(is_skill)
 								{
 									Skill skill = (Skill)type;
-									if(it->cmd == CMD_MODSTAT)
+									if(it->cmd == CMD_MOD_STAT)
 										num += pc->unit->GetBase(skill);
 									int v = Clamp(num, SkillInfo::MIN, SkillInfo::MAX);
 									if(v != pc->unit->GetBase(skill))
@@ -545,7 +552,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								else
 								{
 									Attribute attrib = (Attribute)type;
-									if(it->cmd == CMD_MODSTAT)
+									if(it->cmd == CMD_MOD_STAT)
 										num += pc->unit->GetBase(attrib);
 									int v = Clamp(num, AttributeInfo::MIN, AttributeInfo::MAX);
 									if(v != pc->unit->GetBase(attrib))
@@ -555,7 +562,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else
 							{
 								NetChange& c = Add1(Net::changes);
-								c.type = (it->cmd == CMD_SETSTAT ? NetChange::CHEAT_SETSTAT : NetChange::CHEAT_MODSTAT);
+								c.type = (it->cmd == CMD_SET_STAT ? NetChange::CHEAT_SET_STAT : NetChange::CHEAT_MOD_STAT);
 								c.id = type;
 								c.ile = (is_skill ? 1 : 0);
 								c.i = num;
@@ -661,7 +668,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					else
 						Msg("Enter 'cmds' or 'cmds all' to show list of commands. To get information about single command enter \"help CMD\". To get ID of item/unit use command \"list\".");
 					break;
-				case CMD_SPAWNUNIT:
+				case CMD_SPAWN_UNIT:
 					if(t.Next())
 					{
 						auto& id = t.MustGetItem();
@@ -752,7 +759,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_LIST:
 					CmdList(t);
 					break;
-				case CMD_HEALUNIT:
+				case CMD_HEAL_UNIT:
 					if(pc_data.selected_target)
 					{
 						if(Net::IsLocal())
@@ -773,7 +780,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						else
 						{
 							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::CHEAT_HEALUNIT;
+							c.type = NetChange::CHEAT_HEAL_UNIT;
 							c.unit = pc_data.selected_target;
 						}
 					}
@@ -1656,8 +1663,40 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Net::PushChange(NetChange::CHEAT_REFRESH_COOLDOWN);
 					break;
 				case CMD_LIST_PERKS:
+					if(pc->unit->statsx->perks.empty())
+						Msg("No perks.");
+					else
+					{
+						Msg("Perks (%u):", pc->unit->statsx->perks.size());
+						LocalString str;
+						for(auto& perk : pc->unit->statsx->perks)
+						{
+							auto& info = PerkInfo::perks[(int)perk.perk];
+							str = info.id;
+							if(info.required_value == PerkInfo::Attribute)
+								str += Format("(%s)", AttributeInfo::attributes[perk.value].id);
+							else if(info.required_value == PerkInfo::Skill)
+								str += Format("(%s)", SkillInfo::skills[perk.value].id);
+							str += " - ";
+							if(IS_SET(info.flags, PerkInfo::Flaw))
+								str += "Flaw";
+							else if(IS_SET(info.flags, PerkInfo::History))
+								str += "History";
+							else
+								str += "Normal";
+							if(perk.hidden)
+								str += ", Hidden";
+							Msg(str.c_str());
+						}
+					}
+					break;
 				case CMD_ADD_PERK:
+					break;
 				case CMD_REMOVE_PERK:
+					{
+						auto& id = t.MustGetItem();
+						// TODO
+					}
 					break;
 				case CMD_LIST_EFFECTS:
 					if(pc->unit->effects.empty())
@@ -1668,17 +1707,17 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						LocalString str;
 						for(auto& e : pc->unit->effects)
 						{
-							str = Format("%s - power:%g, source:", EffectInfo::effects[(int)e.effect].id, FLT10(e.power));
+							auto& source = EffectSourceInfo::sources[(int)e.source];
+							str = Format("%s - power:%g, source:%s", EffectInfo::effects[(int)e.effect].id, FLT10(e.power), source.id);
 							switch(e.source)
 							{
 							case EffectSource::Potion:
-								str += Format("potion, time:%g", FLT10(e.time));
+								str += Format(" time:%g", FLT10(e.time));
 								break;
 							case EffectSource::Perk:
-								str += Format("perk(%s)", PerkInfo::perks[e.source_id].id);
+								str += Format("(%s)", PerkInfo::perks[e.source_id].id);
 								break;
 							default:
-								str += "other";
 								break;
 							}
 							Msg(str.c_str());
@@ -1686,12 +1725,149 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					break;
 				case CMD_ADD_EFFECT:
+					if(!t.Next() || !t.IsItem())
+						Msg("Effect name required (use list effect).");
+					else
 					{
 						EffectType effect;
-						float power = 0.f, timer = 0.f;
+						float power = 0.f, time = 0.f;
 						EffectSource source = EffectSource::Other;
+						int effect_source_id = 0;
+
+						auto& id = t.MustGetItem();
+						auto effect_info = EffectInfo::TryGet(id);
+						if(!effect_info)
+						{
+							Msg("Invalid effect type '%s'.", id.c_str());
+							break;
+						}
+						effect = effect_info->effect;
+
+						if(t.Next())
+							power = t.MustGetNumberFloat();
+						if(t.Next())
+							time = t.MustGetNumberFloat();
+						if(t.Next())
+						{
+							auto& source_id = t.MustGetItem();
+							if(source_id == "other")
+								source = EffectSource::Other;
+							else if(source_id == "potion")
+								source = EffectSource::Potion;
+							else if(source_id == "perk")
+							{
+								t.Next();
+								auto& perk_id = t.MustGetItem();
+								auto perk_info = PerkInfo::TryGet(perk_id);
+								if(!perk_info)
+								{
+									Msg("Invalid perk '%s'.", perk_id.c_str());
+									break;
+								}
+								source = EffectSource::Perk;
+								effect_source_id = (int)perk_info->perk_id;
+							}
+						}
+
+						if(Net::IsLocal())
+						{
+							Effect e = Add1(pc->unit->effects);
+							e.effect = effect;
+							e.source = source;
+							e.source_id = effect_source_id;
+							e.power = power;
+							e.time = time;
+							pc->unit->ApplyEffect(e);
+						}
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CHEAT_ADD_EFFECT;
+							c.id = (byte)effect;
+							c.ile = (byte)source;
+							c.e_id = (byte)effect_source_id;
+							c.pos.x = power;
+							c.pos.y = time;
+						}
 					}
+					break;
 				case CMD_REMOVE_EFFECT:
+					{
+						EffectType effect_type = EffectType::None;
+						EffectSource source = EffectSource::None;
+						Perk source_id = Perk::None;
+
+						t.Next();
+						auto& id = t.MustGetItem();
+						bool next_ok = true;
+
+						// get effect type
+						auto effect_info = EffectInfo::TryGet(id);
+						if(effect_info)
+						{
+							effect_type = effect_info->effect;
+							next_ok = t.Next();
+						}
+
+						// get source
+						if(next_ok)
+						{
+							auto& source_id_text = t.MustGetItem();
+							auto source_info = EffectSourceInfo::TryGet(source_id_text);
+							if(!source_info)
+							{
+								if(effect_type == EffectType::None)
+									Msg("Invalid effect source/type '%s'.", source_id_text.c_str());
+								else
+									Msg("Invalid effect source '%s'.", source_id_text.c_str());
+								break;
+							}
+							source = source_info->source;
+
+							// get source perk
+							if(source == EffectSource::Perk && t.Next())
+							{
+								auto& perk_id = t.MustGetItem();
+								auto perk = PerkInfo::TryGet(perk_id);
+								if(!perk)
+								{
+									Msg("Invalid perk '%s'.", perk_id.c_str());
+									break;
+								}
+								source_id = perk->perk_id;
+							}
+						}
+
+						// verify
+						if(effect_type == EffectType::None || source == EffectSource::None)
+						{
+							Msg("Effect type/source required.");
+							break;
+						}
+
+						if(Net::IsLocal())
+						{
+							uint index = 0;
+							for(auto& e : pc->unit->effects)
+							{
+								if((e.effect == effect_type || effect_type == EffectType::None)
+									&& (e.source == source || source == EffectSource::None)
+									&& (e.source_id == (int)source_id || source_id == Perk::None))
+								{
+									_to_remove.push_back(index);
+								}
+								++index;
+							}
+							pc->unit->RemoveEffects();
+						}
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.id = (byte)effect_type;
+							c.ile = (byte)source;
+							c.e_id = (byte)source_id;
+						}
+					}
 					break;
 				default:
 					assert(0);

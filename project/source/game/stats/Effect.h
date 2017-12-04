@@ -16,8 +16,9 @@ enum class EffectType
 	MagicResistance, // magic resistance mod
 	Stun, // unit is stunned
 
-	Max
-	
+	Max,
+	None
+
 	/*Attribute,
 	Skill,
 	SkillPack,
@@ -30,15 +31,23 @@ enum class EffectType
 	Lifesteal,
 	DamageGain, // by default 5%, limit = 4/3 max
 	MagePower,*/
+
 };
+// saved as byte in mp
+static_assert((uint)EffectType::None <= 255, "too many EffectType");
 
 //-----------------------------------------------------------------------------
 enum class EffectSource
 {
 	Potion,
 	Perk,
-	Other
+	Other,
+
+	Max,
+	None
 };
+// saved as byte in mp
+static_assert((uint)EffectSource::None <= 255, "too many EffectSource");
 
 //-----------------------------------------------------------------------------
 struct Effect
@@ -89,6 +98,17 @@ struct EffectInfo
 	cstring id, desc;
 
 	static EffectInfo effects[(uint)EffectType::Max];
+	static EffectInfo* TryGet(const AnyString& s);
+};
+
+//-----------------------------------------------------------------------------
+struct EffectSourceInfo
+{
+	EffectSource source;
+	cstring id;
+
+	static EffectSourceInfo sources[(uint)EffectSource::Max];
+	static EffectSourceInfo* TryGet(const AnyString& s);
 };
 
 /*enum class BaseEffectId

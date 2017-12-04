@@ -1086,7 +1086,7 @@ private:
 				{
 					t.Next();
 					auto& id = t.MustGetItemKeyword();
-					auto perk = PerkInfo::Find(id);
+					auto perk = PerkInfo::TryGet(id);
 					if(!perk)
 						t.Throw("Missing perk '%s'.", id.c_str());
 					t.Next();

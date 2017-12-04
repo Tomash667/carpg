@@ -18,6 +18,32 @@ EffectInfo EffectInfo::effects[] = {
 	EffectType::Stun, "stun", "unit is stunned"
 };
 
+EffectSourceInfo EffectSourceInfo::sources[] = {
+	EffectSource::Potion, "potion",
+	EffectSource::Perk, "perk",
+	EffectSource::Other, "other"
+};
+
+EffectInfo* EffectInfo::TryGet(const AnyString& s)
+{
+	for(auto& e : effects)
+	{
+		if(s == e.id)
+			return &e;
+	}
+	return nullptr;
+}
+
+EffectSourceInfo* EffectSourceInfo::TryGet(const AnyString& s)
+{
+	for(auto& source : sources)
+	{
+		if(s == source.id)
+			return &source;
+	}
+	return nullptr;
+}
+
 
 //BaseEffect g_effects[] = {
 //	BaseEffectId::Mres10, EffectType::Resistance, (int)DamageType::Magic, 10,

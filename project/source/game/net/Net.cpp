@@ -3796,18 +3796,18 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'healunit'
-		case NetChange::CHEAT_HEALUNIT:
+		// player used cheat 'heal_unit'
+		case NetChange::CHEAT_HEAL_UNIT:
 			{
 				int netid;
 				if(!stream.Read(netid))
 				{
-					Error("Update server: Broken CHEAT_HEALUNIT from %s.", info.name.c_str());
+					Error("Update server: Broken CHEAT_HEAL_UNIT from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					Error("Update server: Player %s used CHEAT_HEALUNIT without devmode.", info.name.c_str());
+					Error("Update server: Player %s used CHEAT_HEAL_UNIT without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -3815,7 +3815,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					Unit* target = FindUnit(netid);
 					if(!target)
 					{
-						Error("Update server: CHEAT_HEALUNIT from %s, missing unit %d.", info.name.c_str(), netid);
+						Error("Update server: CHEAT_HEAL_UNIT from %s, missing unit %d.", info.name.c_str(), netid);
 						StreamError();
 					}
 					else
@@ -3873,52 +3873,44 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				StreamError();
 			}
 			break;
-		// player used cheat 'addgold'
-		case NetChange::CHEAT_ADDGOLD:
+		// player used cheat 'add_gold' or 'add_team_gold'
+		case NetChange::CHEAT_ADD_GOLD:
 			{
+				bool is_team;
 				int count;
-				if(!stream.Read(count))
+				if(!ReadBool(stream, is_team)
+					|| !stream.Read(count))
 				{
-					Error("Update server: Broken CHEAT_ADDGOLD from %s.", info.name.c_str());
+					Error("Update server: Broken CHEAT_ADD_GOLD from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					Error("Update server: Player %s used CHEAT_ADDGOLD without devmode.", info.name.c_str());
+					Error("Update server: Player %s used CHEAT_ADD_GOLD without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
 				{
-					unit.gold = max(unit.gold + count, 0);
-					info.UpdateGold();
+					if(is_team)
+					{
+						if(count <= 0)
+						{
+							Error("Update server: CHEAT_ADD_GOLD from %s, invalid count %d.", info.name.c_str(), count);
+							StreamError();
+						}
+						else
+							AddGold(count);
+					}
+					else
+					{
+						unit.gold = max(unit.gold + count, 0);
+						info.UpdateGold();
+					}
 				}
 			}
 			break;
-		// player used cheat 'addgold_team'
-		case NetChange::CHEAT_ADDGOLD_TEAM:
-			{
-				int count;
-				if(!stream.Read(count))
-				{
-					Error("Update server: Broken CHEAT_ADDGOLD_TEAM from %s.", info.name.c_str());
-					StreamError();
-				}
-				else if(!info.devmode)
-				{
-					Error("Update server: Player %s used CHEAT_ADDGOLD_TEAM without devmode.", info.name.c_str());
-					StreamError();
-				}
-				else if(count <= 0)
-				{
-					Error("Update server: CHEAT_ADDGOLD_TEAM from %s, invalid count %d.", info.name.c_str(), count);
-					StreamError();
-				}
-				else
-					AddGold(count);
-			}
-			break;
-		// player used cheat 'additem' or 'addteam'
-		case NetChange::CHEAT_ADDITEM:
+		// player used cheat 'add_item' or 'add_team_item'
+		case NetChange::CHEAT_ADD_ITEM:
 			{
 				int count;
 				bool is_team;
@@ -3926,12 +3918,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					|| !stream.Read(count)
 					|| !ReadBool(stream, is_team))
 				{
-					Error("Update server: Broken CHEAT_ADDITEM from %s.", info.name.c_str());
+					Error("Update server: Broken CHEAT_ADD_ITEM from %s.", info.name.c_str());
 					StreamError();
 				}
 				else if(!info.devmode)
 				{
-					Error("Update server: Player %s used CHEAT_ADDITEM without devmode.", info.name.c_str());
+					Error("Update server: Player %s used CHEAT_ADD_ITEM without devmode.", info.name.c_str());
 					StreamError();
 				}
 				else
@@ -3944,7 +3936,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					else
 					{
-						Error("Update server: CHEAT_ADDITEM from %s, missing item %s or invalid count %u.", info.name.c_str(), BUF, count);
+						Error("Update server: CHEAT_ADD_ITEM from %s, missing item %s or invalid count %u.", info.name.c_str(), BUF, count);
 						StreamError();
 					}
 				}
@@ -4057,11 +4049,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-		// player used cheat 'setstat' or 'modstat'
-		case NetChange::CHEAT_SETSTAT:
-		case NetChange::CHEAT_MODSTAT:
+		// player used cheat 'set_stat' or 'mod_stat'
+		case NetChange::CHEAT_SET_STAT:
+		case NetChange::CHEAT_MOD_STAT:
 			{
-				cstring name = (type == NetChange::CHEAT_SETSTAT ? "CHEAT_SETSTAT" : "CHEAT_MODSTAT");
+				cstring name = (type == NetChange::CHEAT_SET_STAT ? "CHEAT_SET_STAT" : "CHEAT_MOD_STAT");
 
 				byte what;
 				bool is_skill;
@@ -4084,7 +4076,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						Skill skill = (Skill)what;
 						int num = value;
-						if(type == NetChange::CHEAT_MODSTAT)
+						if(type == NetChange::CHEAT_MOD_STAT)
 							num += info.u->GetBase(skill);
 						int v = Clamp(num, SkillInfo::MIN, SkillInfo::MAX);
 						if(v != info.u->GetBase(skill))
@@ -4108,7 +4100,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						Attribute attrib = (Attribute)what;
 						int num = value;
-						if(type == NetChange::CHEAT_MODSTAT)
+						if(type == NetChange::CHEAT_MOD_STAT)
 							num += info.u->GetBase(attrib);
 						int v = Clamp(num, AttributeInfo::MIN, AttributeInfo::MAX);
 						if(v != info.u->GetBase(attrib))
@@ -9695,13 +9687,15 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::TALK:
 		case NetChange::LOOT_CHEST:
 		case NetChange::SKIP_DIALOG:
-		case NetChange::CHEAT_ADDGOLD:
-		case NetChange::CHEAT_ADDGOLD_TEAM:
 		case NetChange::CHEAT_SKIP_DAYS:
 		case NetChange::PAY_CREDIT:
 		case NetChange::DROP_GOLD:
 		case NetChange::TAKE_ITEM_CREDIT:
 			stream.Write(c.id);
+			break;
+		case NetChange::CHEAT_ADD_GOLD:
+			WriteBool(stream, c.id == 1);
+			stream.Write(c.ile);
 			break;
 		case NetChange::STOP_TRADE:
 		case NetChange::GET_ALL_ITEMS:
@@ -9732,13 +9726,13 @@ void Game::WriteClientChanges(BitStream& stream)
 			stream.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::CHEAT_KILL:
-		case NetChange::CHEAT_HEALUNIT:
+		case NetChange::CHEAT_HEAL_UNIT:
 		case NetChange::CHEAT_HURT:
 		case NetChange::CHEAT_BREAK_ACTION:
 		case NetChange::CHEAT_FALL:
 			stream.Write(c.unit->netid);
 			break;
-		case NetChange::CHEAT_ADDITEM:
+		case NetChange::CHEAT_ADD_ITEM:
 			WriteString1(stream, c.base_item->id);
 			stream.Write(c.ile);
 			WriteBool(stream, c.id != 0);
@@ -9749,8 +9743,8 @@ void Game::WriteClientChanges(BitStream& stream)
 			stream.WriteCasted<char>(c.id);
 			stream.WriteCasted<char>(c.i);
 			break;
-		case NetChange::CHEAT_SETSTAT:
-		case NetChange::CHEAT_MODSTAT:
+		case NetChange::CHEAT_SET_STAT:
+		case NetChange::CHEAT_MOD_STAT:
 			stream.WriteCasted<byte>(c.id);
 			WriteBool(stream, c.ile != 0);
 			stream.WriteCasted<char>(c.i);
@@ -11044,11 +11038,10 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::CHEAT_NOCLIP:
 	case NetChange::CHEAT_GODMODE:
 	case NetChange::CHEAT_INVISIBLE:
-	case NetChange::CHEAT_ADDITEM:
-	case NetChange::CHEAT_ADDGOLD:
-	case NetChange::CHEAT_ADDGOLD_TEAM:
-	case NetChange::CHEAT_SETSTAT:
-	case NetChange::CHEAT_MODSTAT:
+	case NetChange::CHEAT_ADD_ITEM:
+	case NetChange::CHEAT_ADD_GOLD:
+	case NetChange::CHEAT_SET_STAT:
+	case NetChange::CHEAT_MOD_STAT:
 	case NetChange::CHEAT_REVEAL:
 	case NetChange::GAME_OVER:
 	case NetChange::CHEAT_CITIZEN:

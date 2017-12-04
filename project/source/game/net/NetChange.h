@@ -70,15 +70,14 @@ struct NetChange
 		CHEAT_INVISIBLE, // player used cheat 'invisible' [bool(id)-state]
 		CHEAT_SCARE, // player used cheat 'scare' []
 		CHEAT_SUICIDE, // player used cheat 'suicide' []
-		CHEAT_HEALUNIT, // player used cheat 'healunit' [int(netid)-unit]
+		CHEAT_HEAL_UNIT, // player used cheat 'heal_unit' [int(netid)-unit]
 		CHEAT_KILL, // player used cheat 'kill' [int(netid)-unit]
 		CHEAT_HEAL, // player used cheat 'heal' []
 		CHEAT_SPAWN_UNIT, // player used cheat 'spawn_unit' [string1(base_unit)-unit id, byte(ile)-count, char(id)-level, char(i)-in_arena]
-		CHEAT_ADDITEM, // player used cheat 'additem' or 'addteam' [string1(base_item)-item id, byte(ile)-count, bool(id)-is team]
-		CHEAT_ADDGOLD, // player used cheat 'addgold' [int(ile)-count]
-		CHEAT_ADDGOLD_TEAM, // player used cheat 'addgold_team' [int(ile)-count]
-		CHEAT_SETSTAT, // player used cheat setstat [byte(id)-stat id, bool(ile)-is skill, char(i)-value]
-		CHEAT_MODSTAT, // player used cheat modstat [byte(id)-stat id, bool(ile)-is skill, char(i)-value]
+		CHEAT_ADD_ITEM, // player used cheat 'add_item' or 'add_team_item' [string1(base_item)-item id, byte(ile)-count, bool(id)-is team]
+		CHEAT_ADD_GOLD, // player used cheat 'add_gold' or 'add_team_gold' [bool(id)-is_team, int(ile)-count]
+		CHEAT_SET_STAT, // player used cheat 'set_stat' [byte(id)-stat id, bool(ile)-is skill, char(i)-value]
+		CHEAT_MOD_STAT, // player used cheat 'mod_stat' [byte(id)-stat id, bool(ile)-is skill, char(i)-value]
 		CHEAT_REVEAL, // player used cheat 'reveal' []
 		CHEAT_GOTO_MAP, // player used cheat 'goto_map' []
 		USE_USABLE, // unit uses usable object SERVER[int(netid)-unit, int(id)-usable netid, byte(ile)-state(0-stop,1-start,2-start special)] / CLIENT[int(id)-usable netid, byte(ile)-state(0-stop,1-start)]
@@ -156,6 +155,8 @@ struct NetChange
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
 		READ_BOOK, // player is reading book [int(id)-i_index]
 		USE_ITEM, // play use item animation for player
+		CHEAT_ADD_EFFECT, // player used cheat 'add_effect' [byte(id)-effect, byte(ile)-source, byte(e_id)-source_id, float(pos.x)-power, float(pos.y)-time]
+		CHEAT_REMOVE_EFFECT, // player used cheat 'remove_effect' [byte(id)-effect, byte(ile)-source, byte(e_id)-source_id]
 	} type;
 	union
 	{

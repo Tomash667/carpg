@@ -31,6 +31,7 @@
 + upgrade perks -> set perk flags
 + regeneration perk and world travel
 + EndEffects, better checking of days <-> power (have chronic disease and drink potion, should have normal healing for 10 days, end 1/2 healing etc)
++ client side effects for other units (graphics), stun for example
 ? tests
 	? old perks load
 	? replace old perks, add missing wealthy
@@ -38,6 +39,21 @@
 	? loading old effects
 ! changelog
 	+ new commands, list types
+	+ readme renames
+		additem -> add_item
+		addteam -> add_team_item
+		addgold -> add_gold
+		addgold_team -> add_team_gold
+		setstat -> set_stat
+		modstat -> mod_stat
+		spawnunit -> spawn_unit
+		healunit -> heal_unit
+		dropgold -> drop_gold
+		paycredit -> pay_credit
+		givegold -> give_gold
+		
+dialog for alchemist apperentice, cheaper potions :)
+dialog bandits, different text: solo vs team
 
 *** combat
 + str/dex formula changes

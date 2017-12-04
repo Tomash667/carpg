@@ -70,9 +70,9 @@ enum class Perk
 
 	Max,
 	None
-
-	// max 255 perks (send as byte in mp)
 };
+// saved as byte in mp
+static_assert((uint)Perk::None <= 255, "too many Perk");
 
 //-----------------------------------------------------------------------------
 enum PerkFlags
@@ -141,7 +141,7 @@ struct PerkInfo
 
 	static PerkInfo perks[(int)Perk::Max];
 	static void Validate(uint& err);
-	static PerkInfo* Find(const string& id);
+	static PerkInfo* TryGet(const AnyString& id);
 };
 
 //-----------------------------------------------------------------------------
