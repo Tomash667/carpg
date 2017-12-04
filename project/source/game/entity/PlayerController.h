@@ -107,7 +107,7 @@ struct PlayerController : public HeroPlayerCommon
 	};
 	WeaponType ostatnia;
 	bool godmode, noclip, is_local, recalculate_level;
-	int id, free_days, action_charges;
+	int id, free_days, action_charges, perk_points;
 	//----------------------
 	enum Action
 	{

@@ -62,6 +62,7 @@ struct Unit;
 struct Quest;
 struct Item;
 struct PlayerController;
+enum class Perk;
 
 //-----------------------------------------------------------------------------
 struct News
@@ -84,6 +85,14 @@ struct GameDialog
 	vector<string> strs;
 	vector<Text> texts;
 	int max_index;
+};
+
+//-----------------------------------------------------------------------------
+struct TrainDialog : ObjectPoolProxy<TrainDialog>
+{
+	virtual ~TrainDialog() {}
+
+	vector<Perk> perks;
 };
 
 //-----------------------------------------------------------------------------
@@ -123,6 +132,7 @@ struct DialogContext
 	const Item* team_share_item;
 	bool not_active, can_skip, force_end;
 	vector<Entry> prev;
+	TrainDialog* train_dialog;
 
 	cstring GetText(int index);
 };

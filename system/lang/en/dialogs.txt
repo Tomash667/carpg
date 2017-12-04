@@ -61,6 +61,7 @@ dialog alchemist {
 		"Stone with some runes? I know nothing about this."
 	}
 	9 "End dialog"
+	10 "I see that you know something about alchemy. I have good prices for you."
 }
 
 //==============================================================================
@@ -164,6 +165,9 @@ dialog trainer {
 	26 "End dialog"
 	27 "Athletics"
 	28 "Acrobatics"
+	29 "$$Feats ($perk_points$ points)"
+	30 "Currently, considering your attributes and skills, I can not teach you anything new."
+	31 "Training costs 200 gold and takes 10 days. What do you want to learn?"
 }
 
 //==============================================================================

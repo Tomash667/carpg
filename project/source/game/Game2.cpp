@@ -3929,6 +3929,7 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog)
 	ctx.can_skip = true;
 	ctx.dialog = dialog ? dialog : talker->data->dialog;
 	ctx.force_end = false;
+	ctx.train_dialog = nullptr;
 
 	if(Net::IsLocal())
 	{
@@ -3960,6 +3961,11 @@ void Game::EndDialog(DialogContext& ctx)
 	ctx.choices.clear();
 	ctx.prev.clear();
 	ctx.dialog_mode = false;
+	if(ctx.train_dialog)
+	{
+		ctx.train_dialog->Free();
+		ctx.train_dialog = nullptr;
+	}
 
 	if(ctx.talker->busy == Unit::Busy_Trading)
 	{
@@ -4112,7 +4118,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				cstring text = ctx.GetText((int)de.msg);
 				if(text[0] == '$')
 				{
-					if(strncmp(text, "$player", 7) == 0)
+					if(strncmp(text, "$$", 2) == 0)
+					{
+						// warning, currently only on formatted choice allowed this way!
+						FormatDialogText(ctx, ctx.dialog_s_text, text + 2);
+						ctx.choices.push_back(DialogChoice(ctx.dialog_pos + 1, ctx.dialog_s_text.c_str(), ctx.dialog_level + 1));
+					}
+					else if(strncmp(text, "$player", 7) == 0)
 					{
 						int id = int(text[7] - '1');
 						ctx.choices.push_back(DialogChoice(ctx.dialog_pos + 1, near_players_str[id].c_str(), ctx.dialog_level + 1));
@@ -4256,30 +4268,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(ctx.dialog_level == if_level)
 			{
 				cstring msg = ctx.GetText((int)de.msg);
-
-				static string str_part;
-				ctx.dialog_s_text.clear();
-
-				for(uint i = 0, len = strlen(msg); i < len; ++i)
-				{
-					if(msg[i] == '$')
-					{
-						str_part.clear();
-						++i;
-						while(msg[i] != '$')
-						{
-							str_part.push_back(msg[i]);
-							++i;
-						}
-						if(ctx.dialog_quest)
-							ctx.dialog_s_text += ctx.dialog_quest->FormatString(str_part);
-						else
-							ctx.dialog_s_text += FormatString(ctx, str_part);
-					}
-					else
-						ctx.dialog_s_text.push_back(msg[i]);
-				}
-
+				FormatDialogText(ctx, ctx.dialog_s_text, msg);
 				DialogTalk(ctx, ctx.dialog_s_text.c_str());
 				++ctx.dialog_pos;
 				return;
@@ -5351,6 +5340,26 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					else
 						AddGameMsg3(GMS_ADDED_ITEM);
 				}
+				else if(strcmp(msg, "list_perks") == 0)
+				{
+					if(!ctx.train_dialog)
+						ctx.train_dialog = TrainDialog::Get();
+					ctx.train_dialog->perks.clear();
+					PerkContext pctx(ctx.pc);
+					pctx.startup = false;
+					TakenPerk taken_perk;
+					for(auto& perk : PerkInfo::perks)
+					{
+						taken_perk.perk = perk.perk_id;
+						if(taken_perk.CanTake(pctx))
+							ctx.train_dialog->perks.push_back(perk.perk_id);
+					}
+					std::sort(ctx.train_dialog->perks.begin(), ctx.train_dialog->perks.end(), SortPerks);
+				}
+				else if(strcmp(msg, "pick_perk") == 0)
+				{
+					// todo
+				}
 				else
 				{
 					Warn("DT_SPECIAL: %s", msg);
@@ -5943,6 +5952,16 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(msg, "sekret_can_get_reward") == 0)
 				{
 					if(secret_state == SECRET_WIN)
+						++ctx.dialog_level;
+				}
+				else if(strcmp(msg, "alchemist_perk") == 0)
+				{
+					if(ctx.pc->unit->HavePerk(Perk::AlchemistApprentice))
+						++ctx.dialog_level;
+				}
+				else if(strcmp(msg, "empty_perks_list") == 0)
+				{
+					if(!ctx.train_dialog || ctx.train_dialog->perks.empty())
 						++ctx.dialog_level;
 				}
 				else
@@ -13067,6 +13086,34 @@ void Game::ClearGame()
 	ClearGui(true);
 }
 
+void Game::FormatDialogText(DialogContext& ctx, string& str, cstring msg)
+{
+	assert(msg);
+
+	static string str_part;
+	str.clear();
+
+	for(uint i = 0, len = strlen(msg); i < len; ++i)
+	{
+		if(msg[i] == '$')
+		{
+			str_part.clear();
+			++i;
+			while(msg[i] != '$')
+			{
+				str_part.push_back(msg[i]);
+				++i;
+			}
+			if(ctx.dialog_quest)
+				str += ctx.dialog_quest->FormatString(str_part);
+			else
+				str += FormatString(ctx, str_part);
+		}
+		else
+			str.push_back(msg[i]);
+	}
+}
+
 cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 {
 	if(str_part == "burmistrzem")
@@ -13109,6 +13156,8 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 	}
 	else if(str_part == "ritem")
 		return crazy_give_item->name.c_str();
+	else if(str_part == "perk_points")
+		return Format("%d", ctx.pc->perk_points);
 	else
 	{
 		assert(0);
@@ -21708,6 +21757,9 @@ int Game::GetItemPrice(const Item* item, Unit& unit, bool buy)
 	assert(item);
 
 	int haggle = unit.Get(Skill::HAGGLE);
+	if(unit.player->action_unit->data->id == "alchemist" && unit.HavePerk(Perk::AlchemistApprentice))
+		haggle += 20;
+
 	const float* mod_table;
 
 	if(item->type == IT_OTHER && item->ToOther().other_type == Valuable)

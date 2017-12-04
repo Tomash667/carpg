@@ -3277,3 +3277,14 @@ void Unit::RemovePerkEffects(Perk perk, bool startup)
 		}
 	}
 }
+
+//=================================================================================================
+bool Unit::HavePerk(Perk perk)
+{
+	for(auto& p : statsx->perks)
+	{
+		if(p.perk == perk)
+			return true;
+	}
+	return false;
+}

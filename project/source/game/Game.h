@@ -1247,6 +1247,7 @@ public:
 	// zwraca losowe miasto które nie jest this_city
 	int GetRandomCity(int this_city = -1);
 	void ClearGame();
+	void FormatDialogText(DialogContext& ctx, string& str, cstring msg);
 	cstring FormatString(DialogContext& ctx, const string& str_part);
 	int GetNearestLocation(const Vec2& pos, bool not_quest, bool not_city);
 	int GetNearestLocation2(const Vec2& pos, int flags, bool not_quest, int flagi_cel = -1);

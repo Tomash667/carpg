@@ -2,13 +2,9 @@
 dialog blacksmith
 {
 	if once
-	{
 		talk 0
-	}
 	choice 1
-	{
 		trade
-	}
 	choice 2
 	{
 		talk 3
@@ -23,9 +19,7 @@ dialog blacksmith
 		}
 	}
 	escape choice 6
-	{
 		end
-	}
 	show_choices
 }
 
@@ -78,19 +72,21 @@ dialog merchant
 		}
 	}
 	escape choice 10
-	{
 		end
-	}
 	show_choices
 }
 
 //==============================================================================
 dialog alchemist
 {
-	if once
+	if special "alchemist_perk"
+	if rand 2
 	{
-		talk 0
+		talk 10
+		do_once
 	}
+	if once
+		talk 0
 	if special "q_magowie_kup_miksture"
 	{
 		choice 1
@@ -108,9 +104,7 @@ dialog alchemist
 		}
 	}
 	choice 4
-	{
 		trade
-	}
 	choice 5
 	{
 		talk 6
@@ -125,9 +119,7 @@ dialog alchemist
 		}
 	}
 	escape choice 9
-	{
 		end
-	}
 	show_choices
 }
 
@@ -136,9 +128,7 @@ dialog mayor
 {
 	check_quest_timeout 0
 	if once
-	{
 		talk 0
-	}
 	if special "q_zlo_burmistrz"
 	{
 		choice 1
@@ -206,9 +196,7 @@ dialog mayor
 		}
 	}
 	escape choice 12
-	{
 		end
-	}
 	show_choices
 }
 
@@ -216,9 +204,7 @@ dialog mayor
 dialog citizen
 {
 	if once
-	{
 		talk 0
-	}
 	choice 1
 	{
 		special "news"
@@ -250,9 +236,7 @@ dialog citizen
 		}
 	}
 	escape choice 6
-	{
 		end
-	}
 	show_choices
 }
 
@@ -274,13 +258,23 @@ dialog guard
 dialog trainer
 {
 	if once
-	{
 		talk 0
-	}
 	choice 1
 	{
 		talk 2
 		talk 3
+		choice 29
+		{
+			special "list_perks"
+			if special "empty_perks_list"
+			{
+				talk 30
+				restart
+			}
+			talk 31
+			special "pick_perk"
+			end
+		}
 		choice 4
 		{
 			choice 5
@@ -299,9 +293,7 @@ dialog trainer
 				end
 			}
 			escape choice 8
-			{
 				restart
-			}
 			show_choices
 		}
 		choice 9
@@ -373,9 +365,7 @@ dialog trainer
 			show_choices
 		}
 		escape choice 21
-		{
 			restart
-		}
 		show_choices
 	}
 	choice 22
@@ -393,16 +383,12 @@ dialog trainer
 				restart
 			}
 			else
-			{
 				talk 25
-			}
 			restart
 		}
 	}
 	escape choice 26
-	{
 		end
-	}
 	show_choices
 }
 
@@ -442,13 +428,9 @@ dialog guard_captain
 			if once
 			{
 				if special "q_orkowie_to_miasto"
-				{
 					talk 0
-				}
 				else
-				{
 					talk 1
-				}
 			}
 		}
 		choice 2
@@ -464,13 +446,9 @@ dialog guard_captain
 			if once
 			{
 				if special "q_orkowie_zaakceptowano"
-				{
 					talk 3
-				}
 				else
-				{
 					talk 4
-				}
 			}
 		}
 		choice 5
@@ -488,9 +466,7 @@ dialog guard_captain
 		}
 	}
 	if once
-	{
 		talk 7
-	}
 	if special "q_magowie_poinformuj"
 	{
 		choice 8
@@ -531,9 +507,7 @@ dialog guard_captain
 		}
 	}
 	escape choice 16
-	{
 		end
-	}
 	show_choices
 }
 
@@ -546,9 +520,7 @@ dialog innkeeper
 		end
 	}
 	if once
-	{
 		talk 1
-	}
 	if special "q_gobliny_zapytaj"
 	{
 		choice 2
@@ -591,9 +563,7 @@ dialog innkeeper
 		}
 	}
 	choice 11
-	{
 		trade
-	}
 	choice 12
 	{
 		talk 13
@@ -606,9 +576,7 @@ dialog innkeeper
 				end
 			}
 			escape choice 17
-			{
 				restart
-			}
 			show_choices
 		}
 		choice 18
@@ -620,9 +588,7 @@ dialog innkeeper
 				end
 			}
 			escape choice 21
-			{
 				restart
-			}
 			show_choices
 		}
 		choice 22
@@ -634,9 +600,7 @@ dialog innkeeper
 				end
 			}
 			escape choice 25
-			{
 				restart
-			}
 			show_choices
 		}
 		choice 26
@@ -648,15 +612,11 @@ dialog innkeeper
 				end
 			}
 			escape choice 29
-			{
 				restart
-			}
 			show_choices
 		}
 		escape choice 30
-		{
 			restart
-		}
 		show_choices
 	}
 	choice 31
@@ -716,9 +676,7 @@ dialog innkeeper
 		}
 	}
 	escape choice 46
-	{
 		end
-	}
 	show_choices
 }
 
@@ -795,9 +753,7 @@ dialog arena_master
 			}
 		}
 		else
-		{
 			talk 13
-		}
 	}
 	choice 14
 	{
@@ -821,9 +777,7 @@ dialog arena_master
 				end
 			}
 			escape choice 20
-			{
 				restart
-			}
 			show_choices
 		}
 		else
@@ -837,13 +791,9 @@ dialog arena_master
 		if special "have_team"
 		{
 			if special "have_pc_team"
-			{
 				talk 23
-			}
 			if special "have_npc_team"
-			{
 				talk 24
-			}
 			special "pvp_gather"
 			if special "have_player1"
 			{
@@ -902,15 +852,11 @@ dialog arena_master
 				}
 			}
 			if choices 0
-			{
 				restart
-			}
 			else
 			{
 				escape choice 32
-				{
 					restart
-				}
 			}
 			show_choices
 		}
@@ -944,9 +890,7 @@ dialog arena_master
 					}
 				}
 				escape choice 42
-				{
 					restart
-				}
 				show_choices
 			}
 		}
@@ -969,18 +913,12 @@ dialog arena_master
 			if special "ironfist_here"
 			{
 				if special "ironfist_can_start"
-				{
 					talk 51
-				}
 				else
-				{
 					talk 52
-				}
 			}
 			else
-			{
 				talk2 53
-			}
 			restart
 		}
 		choice 54
@@ -989,9 +927,7 @@ dialog arena_master
 			restart
 		}
 		escape choice 56
-		{
 			restart
-		}
 		show_choices
 	}
 	choice 57
@@ -1009,9 +945,7 @@ dialog arena_master
 		}
 	}
 	escape choice 62
-	{
 		end
-	}
 	show_choices
 }
 
@@ -1021,9 +955,7 @@ dialog hero
 	if special "is_team_member"
 	{
 		if once
-		{
 			talk 0
-		}
 		if special "is_near_arena"
 		{
 			choice 1
@@ -1149,9 +1081,7 @@ dialog hero
 			}
 		}
 		escape choice 27
-		{
 			end
-		}
 		show_choices
 	}
 	else
@@ -1163,9 +1093,7 @@ dialog hero
 			talk2 28
 		}
 		if once
-		{
 			talk2 29
-		}
 		if have_quest_item not_active "$wanted_letter"
 		{
 			choice 30
@@ -1195,9 +1123,7 @@ dialog hero
 						end
 					}
 					escape choice 38
-					{
 						restart
-					}
 					show_choices
 				}
 				talk2 39
@@ -1216,9 +1142,7 @@ dialog hero
 					}
 				}
 				escape choice 43
-				{
 					restart
-				}
 				show_choices
 				restart
 			}
@@ -1229,9 +1153,7 @@ dialog hero
 			restart
 		}
 		escape choice 45
-		{
 			end
-		}
 		show_choices
 	}
 	end
@@ -1281,13 +1203,9 @@ dialog hero_buy_item
 dialog hero_pvp
 {
 	if special "is_lost_pvp"
-	{
 		talk 0
-	}
 	else
-	{
 		talk 1
-	}
 	end
 }
 
@@ -1297,9 +1215,7 @@ dialog crazy
 	if special "is_team_member"
 	{
 		if once
-		{
 			talk 0
-		}
 		if special "is_near_arena"
 		{
 			choice 1
@@ -1431,9 +1347,7 @@ dialog crazy
 			}
 		}
 		escape choice 28
-		{
 			end
-		}
 		show_choices
 	}
 	else
@@ -1489,9 +1403,7 @@ dialog crazy
 					}
 				}
 				escape choice 41
-				{
 					restart
-				}
 				show_choices
 				restart
 			}
@@ -1499,9 +1411,7 @@ dialog crazy
 		choice 42
 		{
 			if rand 2
-			{
 				talk 43
-			}
 			special "hero_about"
 			restart
 		}
@@ -1525,9 +1435,7 @@ dialog crazy
 			}
 		}
 		escape choice 49
-		{
 			end
-		}
 		show_choices
 	}
 	end
@@ -1595,13 +1503,9 @@ dialog crazy_buy_item
 dialog crazy_pvp
 {
 	if special "is_lost_pvp"
-	{
 		talk 0
-	}
 	else
-	{
 		talk 1
-	}
 	end
 }
 
@@ -1675,9 +1579,7 @@ dialog bandit
 		talk 2
 	}
 	else
-	{
 		talk 3
-	}
 	end
 }
 
