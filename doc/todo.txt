@@ -11,6 +11,8 @@
 + Unit.RemovePerkEffects
 + perk points
 	every two levels, for heroes every 3 levels
+	+ save/load/set/update/compability
+	+ command to mod
 + subprofile perks
 + new ingame perks
 + training perks

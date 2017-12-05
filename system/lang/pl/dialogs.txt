@@ -61,6 +61,7 @@ dialog alchemist {
 		"Kamieñ z jakimiœ runami? Nic o tym nie wiem."
 	}
 	9 "Koniec rozmowy"
+	10 "Widzê ¿e wiesz co nieco o alchemii. Mam dla ciebie promocyjne ceny."
 }
 
 //==============================================================================
@@ -164,6 +165,9 @@ dialog trainer {
 	26 "Koniec rozmowy"
 	27 "Atletyka"
 	28 "Akrobatyka"
+	29 "$$Atuty ($perk_points$ punktów)"
+	30 "Aktualnie bior¹c pod uwagê twoje atrybuty i umiejêtnoœci nie mogê nauczyæ ciê nic nowego."
+	31 "Szkolenie kosztuje 200 sztuk z³ota i trwa 10 dni. Czego chcesz siê nauczyæ?"
 }
 
 //==============================================================================
@@ -662,7 +666,7 @@ dialog bandits {
 		"Daj mi to z³oto albo sam je wezmê."
 	}
 	5 "Zap³aæ 100 sztuk z³ota"
-	6 "M¹dry wybór, mo¿ecie iœæ dalej."
+	6 "M¹dry wybór, mo¿esz iœæ dalej."
 	7 "Cholerny biedak, nawet z³ota nie ma!"
 	8 "Wynoœ siê st¹d i nie pokazuj siê bez z³ota!"
 	9 "Trudno, zarobimy na sprzeda¿y twojego ekwipunku."

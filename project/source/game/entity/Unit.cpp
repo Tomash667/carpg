@@ -3298,3 +3298,14 @@ void Unit::RemoveEffect(const Effect& effect)
 		break;
 	}
 }
+
+//=================================================================================================
+bool Unit::HavePerk(Perk perk)
+{
+	for(auto& p : statsx->perks)
+	{
+		if(p.perk == perk)
+			return true;
+	}
+	return false;
+}
