@@ -123,8 +123,8 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_REFRESH_COOLDOWN, "refresh_cooldown", "refresh action cooldown/charges", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST_EFFECTS, "list_effects", "list effects affecting player", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST_PERKS, "list_perks", "list player perks", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_PERK, "add_perk", "add new perk to player", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_REMOVE_PERK, "remove_perk", "remove perk from player", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_PERK, "add_perk", "add new perk to player (add_perk name [value])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_PERK, "remove_perk", "remove perk from player (remove_perk name)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to player (add_effect name [power time source perk])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from player (remove_effect [effect_name] source [perk])", F_GAME | F_CHEAT));
 
@@ -1691,11 +1691,91 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					break;
 				case CMD_ADD_PERK:
+					{
+						// get perk
+						auto& id = t.MustGetItem();
+						auto perk_info = PerkInfo::TryGet(id);
+						if(!perk_info)
+						{
+							Msg("Invalid perk '%s'.", id.c_str());
+							break;
+						}
+
+						// get perk value
+						int value = -1;
+						if(perk_info->required_value != PerkInfo::None)
+						{
+							if(!t.Next() || !t.IsItem())
+							{
+								Msg("Perk '%s' require %s.", perk_info->id, perk_info->required_value == PerkInfo::Attribute ? "attribute" : "skill");
+								break;
+							}
+							const auto& item = t.GetItem();
+							if(perk_info->required_value == PerkInfo::Attribute)
+							{
+								auto info = AttributeInfo::Find(item);
+								if(!info)
+								{
+									Msg("Invalid attribute '%s'.", item.c_str());
+									break;
+								}
+								value = (int)info->attrib_id;
+							}
+							else
+							{
+								auto info = SkillInfo::Find(item);
+								if(!info)
+								{
+									Msg("Invalid skill '%s'.", item.c_str());
+									break;
+								}
+								value = (int)info->skill_id;
+							}
+						}
+
+						// verify
+						if(pc->unit->HavePerk(perk_info->perk_id, value))
+						{
+							Msg("Player already have this perk.");
+							break;
+						}
+
+						// add
+						if(Net::IsLocal())
+							pc->unit->AddPerk(perk_info->perk_id, value);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CHEAT_ADD_PERK;
+							c.id = (byte)perk_info->perk_id;
+							c.ile = (value == -1 ? 0xFF : value);
+						}
+					}
 					break;
 				case CMD_REMOVE_PERK:
 					{
 						auto& id = t.MustGetItem();
-						// TODO
+						auto perk_info = PerkInfo::TryGet(id);
+						if(!perk_info)
+						{
+							Msg("Invalid perk '%s'.", id.c_str());
+							break;
+						}
+						int index = pc->unit->GetPerkIndex(perk_info->perk_id);
+						if(index == -1)
+						{
+							Msg("Player don't have this perk.");
+							break;
+						}
+
+						if(Net::IsLocal())
+							pc->unit->RemovePerk(index);
+						else
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CHEAT_REMOVE_PERK;
+							c.id = (byte)perk_info->perk_id;
+						}
 					}
 					break;
 				case CMD_LIST_EFFECTS:

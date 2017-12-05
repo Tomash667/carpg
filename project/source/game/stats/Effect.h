@@ -96,6 +96,7 @@ struct EffectInfo
 {
 	EffectType effect;
 	cstring id, desc;
+	bool observable;
 
 	static EffectInfo effects[(uint)EffectType::Max];
 	static EffectInfo* TryGet(const AnyString& s);

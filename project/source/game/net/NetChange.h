@@ -155,8 +155,11 @@ struct NetChange
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
 		READ_BOOK, // player is reading book [int(id)-i_index]
 		USE_ITEM, // play use item animation for player
+		CHEAT_ADD_PERK, // player used cheat 'add_perk' [byte(id)-perk_id, byte(ile)-value]
+		CHEAT_REMOVE_PERK, // player used cheat 'remove_perk' [byte(id)-perk_id]
 		CHEAT_ADD_EFFECT, // player used cheat 'add_effect' [byte(id)-effect, byte(ile)-source, byte(e_id)-source_id, float(pos.x)-power, float(pos.y)-time]
-		CHEAT_REMOVE_EFFECT, // player used cheat 'remove_effect' [byte(id)-effect, byte(ile)-source, byte(e_id)-source_id]
+		CHEAT_REMOVE_EFFECT, // player used cheat 'remove_effect' [byte(id)-effect, byte(ile)-source, byte(e_id)-source_id],
+		ADD_OBSERVABLE_EFFECT,
 	} type;
 	union
 	{

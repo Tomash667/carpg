@@ -6,16 +6,16 @@
 #include "Skill.h"
 
 EffectInfo EffectInfo::effects[] = {
-	EffectType::Health, "health", "modify max hp",
-	EffectType::Carry, "carry", "modify carry %",
-	EffectType::Poison, "poison", "deal poison damage",
-	EffectType::Alcohol, "alcohol", "deal alcohol damage",
-	EffectType::Regeneration, "regeneration", "regenerate hp",
-	EffectType::StaminaRegeneration, "stamina_regeneration", "regenerate stamina",
-	EffectType::FoodRegeneration, "food_regneration", "food regenerate hp",
-	EffectType::NaturalHealingMod, "natural_healing_mod", "natural healing modifier % (timer in days)",
-	EffectType::MagicResistance, "magic_resistance", "magic resistance mod %",
-	EffectType::Stun, "stun", "unit is stunned"
+	EffectType::Health, "health", "modify max hp", false,
+	EffectType::Carry, "carry", "modify carry %", false,
+	EffectType::Poison, "poison", "deal poison damage", false,
+	EffectType::Alcohol, "alcohol", "deal alcohol damage", false,
+	EffectType::Regeneration, "regeneration", "regenerate hp", false,
+	EffectType::StaminaRegeneration, "stamina_regeneration", "regenerate stamina", false,
+	EffectType::FoodRegeneration, "food_regneration", "food regenerate hp", false,
+	EffectType::NaturalHealingMod, "natural_healing_mod", "natural healing modifier % (timer in days)", false,
+	EffectType::MagicResistance, "magic_resistance", "magic resistance mod %", false,
+	EffectType::Stun, "stun", "unit is stunned", true
 };
 
 EffectSourceInfo EffectSourceInfo::sources[] = {

@@ -1,5 +1,6 @@
 ﻿FEATURE:
 *** perks
++ value -1 when unused for taken perks
 ? test all old effects, sp & mp
 	- skip_days brak wpływu na bufffy ???w
 + sync effects server -> client

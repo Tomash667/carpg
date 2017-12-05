@@ -53,6 +53,8 @@ struct NetChangePlayer
 		HIDE_PERK, // hide player perk [byte(id)-perk, bool(ile)-hide]
 		UPDATE_LEVEL, // player level changed [float(v)]
 		GAME_MESSAGE, // show game message [int(id)-game message id]
+		ADD_EFFECT,
+		REMOVE_EFFECT
 	} type;
 	int id, ile;
 	union

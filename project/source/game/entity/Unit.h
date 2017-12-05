@@ -783,7 +783,11 @@ struct Unit
 	float CalculateMagicResistance() const;
 	int CalculateMagicPower() const;
 
-	bool HavePerk(Perk perk);
+	// Perk functions
+	bool HavePerk(Perk perk, int value = -1);
+	int GetPerkIndex(Perk perk);
+	void AddPerk(Perk perk, int value);
+	void RemovePerk(int index);
 
 	//==============================================
 	// ACTIVE EFFECTS

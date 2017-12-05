@@ -3300,12 +3300,37 @@ void Unit::RemoveEffect(const Effect& effect)
 }
 
 //=================================================================================================
-bool Unit::HavePerk(Perk perk)
+bool Unit::HavePerk(Perk perk, int value)
 {
 	for(auto& p : statsx->perks)
 	{
-		if(p.perk == perk)
+		if(p.perk == perk && (value == -1 || p.value == value))
 			return true;
 	}
 	return false;
+}
+
+//=================================================================================================
+int Unit::GetPerkIndex(Perk perk)
+{
+	int index = 0;
+	for(auto& p : statsx->perks)
+	{
+		if(p.perk == perk)
+			return index;
+		++index;
+	}
+	return -1;
+}
+
+//=================================================================================================
+void Unit::AddPerk(Perk perk, int value)
+{
+
+}
+
+//=================================================================================================
+void Unit::RemovePerk(int index)
+{
+
 }
