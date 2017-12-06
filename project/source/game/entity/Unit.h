@@ -158,6 +158,7 @@ struct Unit
 	static const float STAMINA_BASH_ATTACK;
 	static const float STAMINA_UNARMED_ATTACK;
 	static const float STAMINA_RESTORE_TIMER;
+	static int netid_counter;
 
 	int netid;
 	UnitData* data;
@@ -178,7 +179,9 @@ struct Unit
 	PlayerController* player;
 	const Item* used_item;
 	bool used_item_is_team;
+private:
 	vector<Effect> effects;
+public:
 	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved;
 	AIController* ai;
 	btCollisionObject* cobj;
@@ -801,6 +804,8 @@ struct Unit
 	void RemovePerkEffects(Perk perk, bool startup);
 	void ApplyEffect(const Effect& effect);
 	void RemoveEffect(const Effect& effect);
+	void AddEffect(Effect& e);
+	const vector<Effect>& GetEffects() const { return effects; }
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

@@ -10059,14 +10059,15 @@ void Game::Net_OnNewGameServer()
 
 	if(!mp_load)
 	{
-		netid_counter = 0;
-		item_netid_counter = 0;
-		chest_netid_counter = 0;
+		Unit::netid_counter = 0;
+		GroundItem::netid_counter = 0;
+		Chest::netid_counter = 0;
 		skip_id_counter = 0;
-		usable_netid_counter = 0;
-		trap_netid_counter = 0;
-		door_netid_counter = 0;
-		electro_netid_counter = 0;
+		Usable::netid_counter = 0;
+		Trap::netid_counter = 0;
+		Door::netid_counter = 0;
+		Electro::netid_counter = 0;
+		Effect::netid_counter = 0;
 
 		server_panel->CheckAutopick();
 	}

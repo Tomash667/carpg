@@ -602,9 +602,11 @@ void PerkContext::AddEffect(TakenPerk* perk, EffectType effect, float value)
 {
 	if(cc)
 		return;
-	auto& e = Add1(pc->unit->effects);
+	Effect e;
 	e.effect = effect;
+	e.power = value;
+	e.time = 0;
 	e.source = EffectSource::Perk;
 	e.source_id = (int)perk->perk;
-	e.power = value;
+	pc->unit->AddEffect(e);
 }

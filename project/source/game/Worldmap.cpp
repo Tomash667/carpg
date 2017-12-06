@@ -1570,7 +1570,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 			u->rot = sdir;
 			u->user = nullptr;
 			if(Net::IsOnline())
-				u->netid = usable_netid_counter++;
+				u->netid = Usable::netid_counter++;
 
 			SpawnObjectExtras(ctx, stool, u->pos, u->rot, u);
 		}
@@ -1655,7 +1655,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 		u->variant = variant;
 
 		if(Net::IsOnline())
-			u->netid = usable_netid_counter++;
+			u->netid = Usable::netid_counter++;
 		ctx.usables->push_back(u);
 
 		SpawnObjectExtras(ctx, base, pos, rot, u, scale, flags);
@@ -1673,7 +1673,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 		chest->looted = false;
 		ctx.chests->push_back(chest);
 		if(Net::IsOnline())
-			chest->netid = chest_netid_counter++;
+			chest->netid = Chest::netid_counter++;
 
 		SpawnObjectExtras(ctx, base, pos, rot, nullptr, scale, flags);
 
@@ -2299,7 +2299,7 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 					door->phy->setCollisionShape(shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 					door->locked = LOCK_NONE;
-					door->netid = door_netid_counter++;
+					door->netid = Door::netid_counter++;
 
 					btTransform& tr = door->phy->getWorldTransform();
 					Vec3 pos = door->pos;
@@ -3207,7 +3207,7 @@ void Game::GenerateDungeonObjects2()
 					door->phy->setCollisionShape(shape_door);
 					door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 					door->locked = LOCK_NONE;
-					door->netid = door_netid_counter++;
+					door->netid = Door::netid_counter++;
 					btTransform& tr = door->phy->getWorldTransform();
 					Vec3 pos = door->pos;
 					pos.y += 1.319f;
@@ -6269,7 +6269,7 @@ void Game::PickableItemAdd(const Item* item)
 			gi->count = 1;
 			gi->team_count = 1;
 			gi->item = item;
-			gi->netid = item_netid_counter++;
+			gi->netid = GroundItem::netid_counter++;
 			gi->rot = Random(MAX_ANGLE);
 			float rot = PickableItem::o->rot.y,
 				s = sin(rot),

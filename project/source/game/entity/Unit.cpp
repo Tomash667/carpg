@@ -14,6 +14,7 @@ const float Unit::STAMINA_BOW_ATTACK = 100.f;
 const float Unit::STAMINA_BASH_ATTACK = 50.f;
 const float Unit::STAMINA_UNARMED_ATTACK = 50.f;
 const float Unit::STAMINA_RESTORE_TIMER = 1.f;
+int Unit::netid_counter;
 
 //=================================================================================================
 Unit::~Unit()
@@ -698,11 +699,13 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_ALCOHOL:
 		if(!IS_SET(data->flags, F_POISON_RES))
 		{
-			Effect& e = Add1(effects);
+			Effect e;
 			e.effect = (item.effect == E_POISON ? EffectType::Poison : EffectType::Alcohol);
 			e.time = item.time;
 			e.power = item.power / item.time;
 			e.source = EffectSource::Potion;
+			e.source_id = -1;
+			AddEffect(e);
 		}
 		break;
 	case E_REGENERATE:
@@ -710,7 +713,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_ANTIMAGIC:
 	case E_STAMINA:
 		{
-			Effect& e = Add1(effects);
+			Effect e;
 			switch(item.effect)
 			{
 			case E_REGENERATE:
@@ -729,6 +732,8 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			e.time = item.time;
 			e.power = item.power;
 			e.source = EffectSource::Potion;
+			e.source_id = -1;
+			AddEffect(e);
 		}
 		break;
 	case E_ANTIDOTE:
@@ -740,7 +745,13 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 					_to_remove.push_back(index);
 			}
 
-			RemoveEffects();
+			if(_to_remove.empty())
+			{
+				RemoveEffects();
+				//if(Net::IsServer() && )
+				{
+				}
+			}
 
 			if(alcohol != 0.f)
 			{
@@ -763,11 +774,12 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		break;
 	case E_FOOD:
 		{
-			Effect& e = Add1(effects);
+			Effect e;
 			e.effect = EffectType::FoodRegeneration;
 			e.time = item.power;
 			e.power = 1.f;
 			e.source = EffectSource::Potion;
+			e.source_id = -1;
 		}
 		break;
 	case E_GREEN_HAIR:
@@ -833,18 +845,7 @@ void Unit::UpdateEffects(float dt)
 	}
 
 	// remove expired effects
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == effects.size() - 1)
-			effects.pop_back();
-		else
-		{
-			std::iter_swap(effects.begin() + index, effects.end() - 1);
-			effects.pop_back();
-		}
-	}
+	RemoveEffects();
 
 	if(Net::IsClient())
 		return;
@@ -1759,6 +1760,7 @@ void Unit::Load(HANDLE file, bool local)
 			{
 				ConsumeEffect effect;
 				e.source = EffectSource::Potion;
+				e.source_id = -1;
 				ReadFile(file, &effect, sizeof(effect), &tmp, nullptr);
 				ReadFile(file, &e.time, sizeof(e.time), &tmp, nullptr);
 				ReadFile(file, &e.power, sizeof(e.power), &tmp, nullptr);
@@ -1788,8 +1790,10 @@ void Unit::Load(HANDLE file, bool local)
 					break;
 				case E_STUN:
 					e.effect = EffectType::Stun;
+					e.source = EffectSource::Other;
 					break;
 				}
+				e.netid = Effect::netid_counter++;
 			}
 		}
 	}
@@ -1847,6 +1851,7 @@ void Unit::Load(HANDLE file, bool local)
 			statsx->Upgrade();
 			player->SetRequiredPoints();
 			player->RecalculateLevel(true);
+			player->perk_points = level / 2;
 
 			// rescale skill points counter
 			for(uint i = 0; i < (uint)Skill::MAX; ++i)
@@ -3333,4 +3338,35 @@ void Unit::AddPerk(Perk perk, int value)
 void Unit::RemovePerk(int index)
 {
 
+}
+
+void Unit::AddEffect(Effect& e)
+{
+	e.netid = Effect::netid_counter++;
+	effects.push_back(e);
+
+	// effect stats update
+
+	if(Net::IsServer())
+	{
+		if(EffectInfo::effects[(int)e.effect].observable)
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::ADD_OBSERVABLE_EFFECT;
+			c.unit = this;
+			c.id = (byte)e.effect;
+			c.extra_f = e.time;
+		}
+
+		if(IsPlayer() && !player->is_local)
+		{
+			NetChangePlayer& c = Add1(player->player_info->changes);
+			c.type = NetChangePlayer::ADD_EFFECT;
+			c.id = (byte)e.effect;
+			c.ile = (byte)e.source;
+			c.a = (byte)(e.source_id == -1 ? 0xFF : e.source_id);
+			c.pos.x = e.power;
+			c.pos.y = e.time;
+		}
+	}
 }

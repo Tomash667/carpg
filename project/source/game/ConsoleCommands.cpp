@@ -1779,13 +1779,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					break;
 				case CMD_LIST_EFFECTS:
-					if(pc->unit->effects.empty())
+					if(pc->unit->GetEffects().empty())
 						Msg("No active effects.");
 					else
 					{
-						Msg("Effects (%u):", pc->unit->effects.size());
+						Msg("Effects (%u):", pc->unit->GetEffects().size());
 						LocalString str;
-						for(auto& e : pc->unit->effects)
+						for(auto& e : pc->unit->GetEffects())
 						{
 							auto& source = EffectSourceInfo::sources[(int)e.source];
 							str = Format("%s - power:%g, source:%s", EffectInfo::effects[(int)e.effect].id, FLT10(e.power), source.id);
@@ -1851,13 +1851,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 						if(Net::IsLocal())
 						{
-							Effect e = Add1(pc->unit->effects);
+							Effect e;
 							e.effect = effect;
-							e.source = source;
-							e.source_id = effect_source_id;
 							e.power = power;
 							e.time = time;
-							pc->unit->ApplyEffect(e);
+							e.source = source;
+							e.source_id = effect_source_id;
+							pc->unit->AddEffect(e);
 						}
 						else
 						{
@@ -1928,7 +1928,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(Net::IsLocal())
 						{
 							uint index = 0;
-							for(auto& e : pc->unit->effects)
+							for(auto& e : pc->unit->GetEffects())
 							{
 								if((e.effect == effect_type || effect_type == EffectType::None)
 									&& (e.source == source || source == EffectSource::None)

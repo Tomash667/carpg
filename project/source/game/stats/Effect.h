@@ -55,7 +55,9 @@ struct Effect
 	EffectType effect;
 	EffectSource source;
 	float time, power;
-	int source_id;
+	int source_id, netid;
+
+	static int netid_counter;
 };
 
 //-----------------------------------------------------------------------------

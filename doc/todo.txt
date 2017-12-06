@@ -1,6 +1,12 @@
 ﻿FEATURE:
 *** perks
-+ value -1 when unused for taken perks
++ effect
+	+ add command, list command, remove command, list effects
+	+ add using consumeable, remove on timeout/travel/rest
+	+ mp above
+	+ observable (remove on leave/command/timeout)
+	+ keep effects between save&load, travel, cheats travel
++ value -1 when unused for taken perks, effect source_id
 ? test all old effects, sp & mp
 	- skip_days brak wpływu na bufffy ???w
 + sync effects server -> client
@@ -12,7 +18,7 @@
 + Unit.RemovePerkEffects
 + perk points
 	every two levels, for heroes every 3 levels
-	+ save/load/set/update/compability
+	+ set/update
 	+ command to mod
 + subprofile perks
 + new ingame perks
@@ -87,6 +93,7 @@ dialog bandits, different text: solo vs team
 	- trainer train skills are too fast
 	- skill rise too fast
 	- max level only 20? (well for hp/atk/def/perks only)
+	- increased skill/attribute require higher attribute to level up
 ? test all traps with 2 clients, log playing sounds for all players
 + fix changelog 0.6.1, 0.6.2
 

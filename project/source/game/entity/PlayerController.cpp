@@ -624,6 +624,7 @@ void PlayerController::Save(HANDLE file)
 	f << book_read.size();
 	for(auto book : book_read)
 		f << book->id;
+	f << perk_points;
 }
 
 //=================================================================================================
@@ -799,7 +800,7 @@ void PlayerController::Load(HANDLE file)
 					new_perk.value = 0;
 					new_perk.hidden = true;
 					unit->statsx->perks.push_back(perk);
-					
+
 					perk = Perk::VeryWealthy;
 				}
 				break;
@@ -843,9 +844,9 @@ void PlayerController::Load(HANDLE file)
 		action_charges = GetAction().charges;
 	}
 
-	// list of book read
 	if(LOAD_VERSION >= V_CURRENT)
 	{
+		// list of book read
 		uint count;
 		f >> count;
 		book_read.reserve(count);
@@ -854,6 +855,9 @@ void PlayerController::Load(HANDLE file)
 			f.ReadStringBUF();
 			book_read.push_back(Item::Get(BUF));
 		}
+
+		// perk points
+		f >> perk_points;
 	}
 
 	action = Action_None;
@@ -881,6 +885,7 @@ void PlayerController::Write(BitStream& stream) const
 	stream.Write(action_cooldown);
 	stream.Write(action_recharge);
 	stream.Write(action_charges);
+	stream.Write(perk_points);
 }
 
 //=================================================================================================
@@ -899,7 +904,8 @@ bool PlayerController::Read(BitStream& stream)
 		return false;
 	if(!stream.Read(action_cooldown)
 		|| !stream.Read(action_recharge)
-		|| !stream.Read(action_charges))
+		|| !stream.Read(action_charges)
+		|| !stream.Read(perk_points))
 		return false;
 	unit->level = (int)level;
 	return true;

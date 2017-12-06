@@ -30,6 +30,7 @@ struct Door
 	};
 
 	static const int MIN_SIZE = 31;
+	static int netid_counter;
 
 	int netid;
 	Vec3 pos;

@@ -5,6 +5,8 @@
 #include "Attribute.h"
 #include "Skill.h"
 
+int Effect::netid_counter;
+
 EffectInfo EffectInfo::effects[] = {
 	EffectType::Health, "health", "modify max hp", false,
 	EffectType::Carry, "carry", "modify carry %", false,

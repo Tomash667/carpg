@@ -21,6 +21,7 @@ struct Trap
 	bool trigger; // u¿ywane u klienta w MP
 
 	static const int MIN_SIZE = 31;
+	static int netid_counter;
 
 	Trap() : hitted(nullptr)
 	{

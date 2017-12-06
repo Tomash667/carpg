@@ -8,6 +8,8 @@
 #include "ResourceManager.h"
 #include "SaveState.h"
 
+int Electro::netid_counter;
+
 //=================================================================================================
 void Explo::Save(HANDLE file)
 {

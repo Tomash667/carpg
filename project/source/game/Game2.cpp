@@ -6897,7 +6897,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	}
 
 	if(Net::IsServer())
-		u->netid = netid_counter++;
+		u->netid = Unit::netid_counter++;
 
 	return u;
 }
@@ -9423,11 +9423,13 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				// apply poison
 				if(it->poison_attack > 0.f && !IS_SET(hitted->data->flags, F_POISON_RES))
 				{
-					Effect& e = Add1(hitted->effects);
+					Effect e;
+					e.effect = EffectType::Poison;
 					e.power = it->poison_attack / 5;
 					e.time = 5.f;
-					e.effect = EffectType::Poison;
 					e.source = EffectSource::Other;
+					e.source_id = -1;
+					hitted->AddEffect(e);
 				}
 			}
 			else
@@ -9498,11 +9500,13 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				// apply poison
 				if(IS_SET(it->spell->flags, Spell::Poison) && !IS_SET(hitted->data->flags, F_POISON_RES))
 				{
-					Effect& e = Add1(hitted->effects);
+					Effect e;
+					e.effect = EffectType::Poison;
 					e.power = dmg / 5;
 					e.time = 5.f;
-					e.effect = EffectType::Poison;
 					e.source = EffectSource::Other;
+					e.source_id = -1;
+					hitted->AddEffect(e);
 				}
 
 				// apply spell effect
@@ -11063,11 +11067,12 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	// apply poison
 	if(IS_SET(attacker.data->flags, F_POISON_ATTACK) && !IS_SET(hitted.data->flags, F_POISON_RES))
 	{
-		Effect& e = Add1(hitted.effects);
+		Effect e;
+		e.effect = EffectType::Poison;
 		e.power = dmg / 10;
 		e.time = 5.f;
-		e.effect = EffectType::Poison;
 		e.source = EffectSource::Other;
+		hitted.AddEffect(e);
 	}
 
 	return (hitted.action == A_PAIN ? ATTACK_CLEAN_HIT : ATTACK_HIT);
@@ -11550,7 +11555,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 
 			if(Net::IsOnline())
 			{
-				e->netid = electro_netid_counter++;
+				e->netid = Electro::netid_counter++;
 
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CREATE_ELECTRO;
@@ -12304,7 +12309,7 @@ Trap* Game::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 	trap.obj.mesh = trap.base->mesh;
 	trap.obj.pos = trap.pos;
 	trap.obj.scale = 1.f;
-	trap.netid = trap_netid_counter++;
+	trap.netid = Trap::netid_counter++;
 
 	if(type == TRAP_ARROW || type == TRAP_POISON)
 	{
@@ -13429,7 +13434,7 @@ void Game::AddGroundItem(LevelContext& ctx, GroundItem* item)
 
 	if(Net::IsOnline())
 	{
-		item->netid = item_netid_counter++;
+		item->netid = GroundItem::netid_counter++;
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::SPAWN_ITEM;
 		c.item = item;
@@ -14066,7 +14071,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					item->count = 1;
 					item->team_count = 1;
 					item->item = kartka;
-					item->netid = item_netid_counter++;
+					item->netid = GroundItem::netid_counter++;
 					item->pos = o->pos;
 					item->rot = Random(MAX_ANGLE);
 					local_ctx.items->push_back(item);
@@ -16903,7 +16908,7 @@ GroundItem* Game::SpawnGroundItemInsideRoom(Room& room, const Item* item)
 			gi->rot = Random(MAX_ANGLE);
 			gi->pos = pos;
 			gi->item = item;
-			gi->netid = item_netid_counter++;
+			gi->netid = GroundItem::netid_counter++;
 			local_ctx.items->push_back(gi);
 			return gi;
 		}
@@ -16943,7 +16948,7 @@ GroundItem* Game::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos,
 			if(local_ctx.type == LevelContext::Outside)
 				terrain->SetH(gi->pos);
 			gi->item = item;
-			gi->netid = item_netid_counter++;
+			gi->netid = GroundItem::netid_counter++;
 			local_ctx.items->push_back(gi);
 			return gi;
 		}
@@ -16979,7 +16984,7 @@ GroundItem* Game::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos,
 			if(local_ctx.type == LevelContext::Outside)
 				terrain->SetH(gi->pos);
 			gi->item = item;
-			gi->netid = item_netid_counter++;
+			gi->netid = GroundItem::netid_counter++;
 			local_ctx.items->push_back(gi);
 			return gi;
 		}
@@ -18168,7 +18173,7 @@ bool Game::GenerateMine()
 			door->phy->setCollisionShape(shape_door);
 			door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 			door->locked = LOCK_MINE;
-			door->netid = door_netid_counter++;
+			door->netid = Door::netid_counter++;
 			btTransform& tr = door->phy->getWorldTransform();
 			Vec3 pos = door->pos;
 			pos.y += 1.319f;
@@ -18363,7 +18368,7 @@ bool Game::GenerateMine()
 							u->rot = rot;
 							u->base = (Rand() % 10 < zloto_szansa ? gold_vein : iron_vein);
 							u->user = nullptr;
-							u->netid = usable_netid_counter++;
+							u->netid = Usable::netid_counter++;
 							local_ctx.usables->push_back(u);
 
 							CollisionObject& c = Add1(local_ctx.colliders);
