@@ -799,11 +799,10 @@ public:
 	float GetEffectModMultiply(EffectType effect) const;
 	Effect* FindEffect(EffectType effect);
 	bool FindEffect(EffectType effect, float* value);
-	void RemoveEffects();
+	void RemoveEffects(bool notify = true);
 	void RemoveEffect(EffectType effect);
 	void RemovePerkEffects(Perk perk, bool startup);
-	void ApplyEffect(const Effect& effect);
-	void RemoveEffect(const Effect& effect);
+	void RemoveEffect(const Effect& effect, bool notify);
 	void AddEffect(Effect& e);
 	const vector<Effect>& GetEffects() const { return effects; }
 

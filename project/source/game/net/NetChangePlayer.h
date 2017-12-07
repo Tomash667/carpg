@@ -53,8 +53,8 @@ struct NetChangePlayer
 		HIDE_PERK, // hide player perk [byte(id)-perk, bool(ile)-hide]
 		UPDATE_LEVEL, // player level changed [float(v)]
 		GAME_MESSAGE, // show game message [int(id)-game message id]
-		ADD_EFFECT, // add effect to player [byte(id)-effect, byte(ile)-source, byte(a)-source_id, float(pos.x)-power, float(pos.y)-time]
-		REMOVE_EFFECT
+		ADD_EFFECT, // add effect to player [byte(id)-effect netid, byte(ile)-effect, byte(a)-source, byte(b)-source_id, float(pos.x)-power, float(pos.y)-time]
+		REMOVE_EFFECT, // remove effect from player [int(id)-effect netid]
 	} type;
 	int id, ile;
 	union
@@ -63,6 +63,10 @@ struct NetChangePlayer
 		Unit* unit;
 		float v;
 	};
-	const Item* item;
+	union
+	{
+		int b;
+		const Item* item;
+	};
 	Vec3 pos;
 };

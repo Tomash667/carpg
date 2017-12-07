@@ -745,13 +745,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 					_to_remove.push_back(index);
 			}
 
-			if(_to_remove.empty())
-			{
-				RemoveEffects();
-				//if(Net::IsServer() && )
-				{
-				}
-			}
+			RemoveEffects();
 
 			if(alcohol != 0.f)
 			{
@@ -838,14 +832,17 @@ void Unit::UpdateEffects(float dt)
 			break;
 		}
 
-		if((e.time -= dt) <= 0.f)
-			_to_remove.push_back(index);
+		if(e.source != EffectSource::Perk)
+		{
+			if((e.time -= dt) <= 0.f)
+				_to_remove.push_back(index);
+		}
 
 		++index;
 	}
 
 	// remove expired effects
-	RemoveEffects();
+	RemoveEffects(false);
 
 	if(Net::IsClient())
 		return;
@@ -2161,14 +2158,6 @@ void Unit::RemoveEffect(EffectType effect)
 			_to_remove.push_back(index);
 	}
 
-	if(effect == EffectType::Stun && !_to_remove.empty() && Net::IsServer())
-	{
-		auto& c = Add1(Net::changes);
-		c.type = NetChange::STUN;
-		c.unit = this;
-		c.f[0] = 0;
-	}
-
 	RemoveEffects();
 }
 
@@ -3137,20 +3126,14 @@ void Unit::ApplyStun(float length)
 		effect->time = max(effect->time, length);
 	else
 	{
-		auto& effect = Add1(effects);
-		effect.effect = EffectType::Stun;
-		effect.source = EffectSource::Other;
-		effect.power = 0.f;
-		effect.time = length;
+		Effect e;
+		e.effect = EffectType::Stun;
+		e.power = 0.f;
+		e.time = length;
+		e.source = EffectSource::Other;
+		e.source_id = -1;
+		AddEffect(e);
 		animation = ANI_STAND;
-	}
-
-	if(Net::IsOnline() && Net::IsServer())
-	{
-		auto& c = Add1(Net::changes);
-		c.type = NetChange::STUN;
-		c.unit = this;
-		c.f[0] = length;
 	}
 }
 
@@ -3254,25 +3237,6 @@ float Unit::GetEffectModMultiply(EffectType effect) const
 }
 
 //=================================================================================================
-void Unit::RemoveEffects()
-{
-	while(!_to_remove.empty())
-	{
-		uint index = _to_remove.back();
-		auto& e = effects[index];
-		RemoveEffect(e);
-		_to_remove.pop_back();
-		if(index == effects.size() - 1)
-			effects.pop_back();
-		else
-		{
-			std::iter_swap(effects.begin() + index, effects.end() - 1);
-			effects.pop_back();
-		}
-	}
-}
-
-//=================================================================================================
 void Unit::RemovePerkEffects(Perk perk, bool startup)
 {
 	uint index = 0;
@@ -3282,26 +3246,6 @@ void Unit::RemovePerkEffects(Perk perk, bool startup)
 			_to_remove.push_back(index);
 	}
 	RemoveEffects();
-}
-
-//=================================================================================================
-void Unit::ApplyEffect(const Effect& effect)
-{
-	switch(effect.effect)
-	{
-	default:
-		break;
-	}
-}
-
-//=================================================================================================
-void Unit::RemoveEffect(const Effect& effect)
-{
-	switch(effect.effect)
-	{
-	default:
-		break;
-	}
 }
 
 //=================================================================================================
@@ -3340,6 +3284,7 @@ void Unit::RemovePerk(int index)
 
 }
 
+//=================================================================================================
 void Unit::AddEffect(Effect& e)
 {
 	e.netid = Effect::netid_counter++;
@@ -3354,7 +3299,8 @@ void Unit::AddEffect(Effect& e)
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::ADD_OBSERVABLE_EFFECT;
 			c.unit = this;
-			c.id = (byte)e.effect;
+			c.id = e.netid;
+			c.ile = (byte)e.effect;
 			c.extra_f = e.time;
 		}
 
@@ -3362,11 +3308,55 @@ void Unit::AddEffect(Effect& e)
 		{
 			NetChangePlayer& c = Add1(player->player_info->changes);
 			c.type = NetChangePlayer::ADD_EFFECT;
-			c.id = (byte)e.effect;
-			c.ile = (byte)e.source;
-			c.a = (byte)(e.source_id == -1 ? 0xFF : e.source_id);
+			c.id = e.netid;
+			c.ile = (byte)e.effect;
+			c.a = (byte)e.source;
+			c.b = (byte)(e.source_id == -1 ? 0xFF : e.source_id);
 			c.pos.x = e.power;
 			c.pos.y = e.time;
+		}
+	}
+}
+
+//=================================================================================================
+void Unit::RemoveEffect(const Effect& effect, bool notify)
+{
+	// effect stats update
+
+	if(notify && Net::IsServer())
+	{
+		if(EffectInfo::effects[(int)effect.effect].observable)
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::REMOVE_OBSERVABLE_EFFECT;
+			c.unit = this;
+			c.id = effect.netid;
+		}
+
+		if(IsPlayer() && !player->is_local)
+		{
+			NetChangePlayer& c = Add1(player->player_info->changes);
+			c.type = NetChangePlayer::REMOVE_EFFECT;
+			c.id = effect.netid;
+		}
+	}
+}
+
+//=================================================================================================
+void Unit::RemoveEffects(bool notify)
+{
+	while(!_to_remove.empty())
+	{
+		uint index = _to_remove.back();
+		auto& e = effects[index];
+		RemoveEffect(e, notify);
+		_to_remove.pop_back();
+		if(index == effects.size() - 1)
+			effects.pop_back();
+		else
+		{
+			std::iter_swap(effects.begin() + index, effects.end() - 1);
+			effects.pop_back();
 		}
 	}
 }

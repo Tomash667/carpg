@@ -159,8 +159,8 @@ struct NetChange
 		CHEAT_REMOVE_PERK, // player used cheat 'remove_perk' [byte(id)-perk_id]
 		CHEAT_ADD_EFFECT, // player used cheat 'add_effect' [byte(id)-effect, byte(ile)-source, byte(e_id)-source_id, float(pos.x)-power, float(pos.y)-time]
 		CHEAT_REMOVE_EFFECT, // player used cheat 'remove_effect' [byte(id)-effect, byte(ile)-source, byte(e_id)-source_id],
-		ADD_OBSERVABLE_EFFECT, // add observable effect to unit [int(netid)-unit, byte(id)-effect, float(extra_f)-time]
-		REMOVE_OBSERVABLE_EFFECT
+		ADD_OBSERVABLE_EFFECT, // add observable effect to unit [int(netid)-unit, int(id)-effect netid, int(ile)-effect, float(extra_f)-time]
+		REMOVE_OBSERVABLE_EFFECT, // remove observable effect from unit [int(netid)-unit, int(id)-effect netid]
 	} type;
 	union
 	{

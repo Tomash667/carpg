@@ -1792,6 +1792,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							switch(e.source)
 							{
 							case EffectSource::Potion:
+							case EffectSource::Other:
 								str += Format(" time:%g", FLT10(e.time));
 								break;
 							case EffectSource::Perk:
@@ -1919,7 +1920,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 
 						// verify
-						if(effect_type == EffectType::None || source == EffectSource::None)
+						if(effect_type == EffectType::None && source == EffectSource::None)
 						{
 							Msg("Effect type/source required.");
 							break;

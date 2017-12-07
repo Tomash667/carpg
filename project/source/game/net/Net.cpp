@@ -4937,6 +4937,26 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
+		// player used cheat 'add_perk'
+		case NetChange::CHEAT_ADD_PERK:
+			{
+				Perk perk;
+				int value;
+				if(!stream.ReadCasted<byte>(perk)
+					|| !stream.ReadCasted<byte>(value))
+				{
+					Error("Update server: Broken CHEAT_ADD_PERK from '%s'.");
+					StreamError();
+					break;
+				}
+			}
+			break;
+		// player used cheat 'remove_perk'
+		case NetChange::CHEAT_REMOVE_PERK:
+		// player used cheat 'add_effect'
+		case NetChange::CHEAT_ADD_EFFECT:
+		// player used cheat 'remove_effect'
+		case NetChange::CHEAT_REMOVE_EFFECT:
 		// invalid change
 		default:
 			Error("Update server: Invalid change type %u from %s.", type, info.name.c_str());

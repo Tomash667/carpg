@@ -1,11 +1,13 @@
 ﻿FEATURE:
 *** perks
+??? EndEffects
 + effect
 	+ add command, list command, remove command, list effects
 	+ add using consumeable, remove on timeout/travel/rest
 	+ mp above
 	+ observable (remove on leave/command/timeout)
 	+ keep effects between save&load, travel, cheats travel
++ remove NetChange::STUN, ApplyStun - update timer
 + value -1 when unused for taken perks, effect source_id
 ? test all old effects, sp & mp
 	- skip_days brak wpływu na bufffy ???w
