@@ -2149,19 +2149,6 @@ void Unit::HealPoison()
 }
 
 //=================================================================================================
-void Unit::RemoveEffect(EffectType effect)
-{
-	uint index = 0;
-	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
-	{
-		if(it->effect == effect)
-			_to_remove.push_back(index);
-	}
-
-	RemoveEffects();
-}
-
-//=================================================================================================
 int Unit::FindItem(const Item* item, int quest_refid) const
 {
 	assert(item);
@@ -3287,7 +3274,8 @@ void Unit::RemovePerk(int index)
 //=================================================================================================
 void Unit::AddEffect(Effect& e)
 {
-	e.netid = Effect::netid_counter++;
+	if(Net::IsLocal())
+		e.netid = Effect::netid_counter++;
 	effects.push_back(e);
 
 	// effect stats update
@@ -3343,8 +3331,61 @@ void Unit::RemoveEffect(const Effect& effect, bool notify)
 }
 
 //=================================================================================================
+void Unit::RemoveEffect(EffectType effect)
+{
+	assert(Net::IsLocal());
+
+	uint index = 0;
+	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
+	{
+		if(it->effect == effect)
+			_to_remove.push_back(index);
+	}
+
+	RemoveEffects();
+}
+
+//=================================================================================================
+bool Unit::RemoveEffect(int netid)
+{
+	assert(Net::IsClient());
+
+	for(auto it = effects.begin(), end = effects.end(); it != end; ++it)
+	{
+		if(it->netid == netid)
+		{
+			RemoveEffect(*it, false);
+			effects.erase(it);
+			return true;
+		}
+	}
+	return false;
+}
+
+//=================================================================================================
+void Unit::RemoveEffects(EffectType effect, EffectSource source, Perk source_id)
+{
+	assert(Net::IsLocal());
+
+	uint index = 0;
+	for(auto& e : effects)
+	{
+		if((e.effect == effect || effect == EffectType::None)
+			&& (e.source == source || source == EffectSource::None)
+			&& (e.source_id == (int)source_id || source_id == Perk::None))
+		{
+			_to_remove.push_back(index);
+		}
+		++index;
+	}
+	RemoveEffects();
+}
+
+//=================================================================================================
 void Unit::RemoveEffects(bool notify)
 {
+	assert(Net::IsLocal());
+
 	while(!_to_remove.empty())
 	{
 		uint index = _to_remove.back();
@@ -3359,4 +3400,34 @@ void Unit::RemoveEffects(bool notify)
 			effects.pop_back();
 		}
 	}
+}
+
+//=================================================================================================
+void Unit::AddObservableEffect(EffectType effect, int netid, float time)
+{
+	assert(Net::IsClient());
+
+	Effect& e = Add1(effects);
+	e.effect = effect;
+	e.netid = netid;
+	e.power = 0;
+	e.time = time;
+	e.source = EffectSource::Other;
+	e.source_id = -1;
+}
+
+//=================================================================================================
+bool Unit::RemoveObservableEffect(int netid)
+{
+	assert(Net::IsClient());
+
+	for(auto it = effects.begin(), end = effects.end(); it != end; ++it)
+	{
+		if(it->netid == netid)
+		{
+			effects.erase(it);
+			return true;
+		}
+	}
+	return false;
 }

@@ -1867,6 +1867,12 @@ public:
 	BitStream& StreamStart(Packet* packet, StreamLogType type);
 	void StreamEnd();
 	void StreamError();
+	template<typename... Args>
+	inline void StreamError(cstring msg, const Args&... args)
+	{
+		Error(msg, args...);
+		StreamError();
+	}
 	void StreamWrite(vector<byte>& data, StreamLogType type, const SystemAddress& adr)
 	{
 		StreamWrite(data.data(), data.size(), type, adr);

@@ -1813,7 +1813,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						EffectType effect;
 						float power = 0.f, time = 0.f;
 						EffectSource source = EffectSource::Other;
-						int effect_source_id = 0;
+						int effect_source_id = -1;
 
 						auto& id = t.MustGetItem();
 						auto effect_info = EffectInfo::TryGet(id);
@@ -1866,7 +1866,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							c.type = NetChange::CHEAT_ADD_EFFECT;
 							c.id = (byte)effect;
 							c.ile = (byte)source;
-							c.e_id = (byte)effect_source_id;
+							c.e_id = (byte)(effect_source_id == -1 ? 0xFF : effect_source_id);
 							c.pos.x = power;
 							c.pos.y = time;
 						}
@@ -1927,26 +1927,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 
 						if(Net::IsLocal())
-						{
-							uint index = 0;
-							for(auto& e : pc->unit->GetEffects())
-							{
-								if((e.effect == effect_type || effect_type == EffectType::None)
-									&& (e.source == source || source == EffectSource::None)
-									&& (e.source_id == (int)source_id || source_id == Perk::None))
-								{
-									_to_remove.push_back(index);
-								}
-								++index;
-							}
-							pc->unit->RemoveEffects();
-						}
+							pc->unit->RemoveEffects(effect_type, source, source_id);
 						else
 						{
 							NetChange& c = Add1(Net::changes);
 							c.id = (byte)effect_type;
 							c.ile = (byte)source;
-							c.e_id = (byte)source_id;
+							c.e_id = (byte)(source_id == Perk::None ? 0xFF : (int)source_id);
 						}
 					}
 					break;
