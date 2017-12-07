@@ -2190,14 +2190,6 @@ void Game::UpdateServer(float dt)
 				info.u->player->stat_flags = 0;
 			}
 
-			// update bufs
-			int buffs = info.u->GetBuffs();
-			if(buffs != info.buffs)
-			{
-				info.buffs = buffs;
-				info.update_flags |= PlayerInfo::UF_BUFFS;
-			}
-
 			// write & send updates
 			if(!info.changes.empty() || info.update_flags)
 			{
@@ -5266,15 +5258,12 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::GAME_STATS:
 			stream.Write(total_kills);
 			break;
-		case NetChange::STUN:
-			stream.Write(c.unit->netid);
-			stream.Write(c.f[0]);
-			break;
 		case NetChange::ADD_OBSERVABLE_EFFECT:
 			stream.Write(c.unit->netid);
 			stream.Write(c.id);
 			stream.WriteCasted<byte>(c.ile);
 			stream.Write(c.extra_f);
+			WriteBool(stream, c.i == 1);
 			break;
 		case NetChange::REMOVE_OBSERVABLE_EFFECT:
 			stream.Write(c.unit->netid);
@@ -5475,6 +5464,7 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				stream.WriteCasted<byte>(c.b);
 				stream.Write(c.pos.x);
 				stream.Write(c.pos.y);
+				WriteBool(stream, c.c == 1);
 				break;
 			case NetChangePlayer::REMOVE_EFFECT:
 				stream.Write(c.id);
@@ -5492,8 +5482,6 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 		stream.Write(info.u->gold);
 	if(IS_SET(info.update_flags, PlayerInfo::UF_ALCOHOL))
 		stream.Write(info.u->alcohol);
-	if(IS_SET(info.update_flags, PlayerInfo::UF_BUFFS))
-		stream.WriteCasted<byte>(info.buffs);
 	if(IS_SET(info.update_flags, PlayerInfo::UF_STAMINA))
 		stream.Write(info.u->stamina);
 }
@@ -8414,35 +8402,6 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
-		// unit stun - not shield bash
-		case NetChange::STUN:
-			{
-				int netid;
-				float length;
-				if(!stream.Read(netid)
-					|| !stream.Read(length))
-				{
-					Error("Update client: Broken STUN.");
-					StreamError();
-				}
-				else
-				{
-					Unit* unit = FindUnit(netid);
-					if(!unit)
-					{
-						Error("Update client: STUN, missing unit %d.", netid);
-						StreamError();
-					}
-					else
-					{
-						if(length > 0)
-							unit->ApplyStun(length);
-						else
-							unit->RemoveEffect(EffectType::Stun);
-					}
-				}
-			}
-			break;
 		// player using item animation for player
 		case NetChange::USE_ITEM:
 			{
@@ -8475,10 +8434,12 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				int netid, effect_netid;
 				EffectType effect;
 				float time;
+				bool added;
 				if(!stream.Read(netid)
 					|| !stream.Read(effect_netid)
 					|| !stream.ReadCasted<byte>(effect)
-					|| !stream.Read(time))
+					|| !stream.Read(time)
+					|| !ReadBool(stream, added))
 				{
 					StreamError("Update client: Broken ADD_OBSERVABLE_EFFECT.");
 					break;
@@ -8495,7 +8456,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 				if(unit->player != pc)
-					unit->AddObservableEffect(effect, effect_netid, time);
+					unit->AddObservableEffect(effect, effect_netid, time, added);
 			}
 			break;
 		// remove observable effect from unit
@@ -9570,12 +9531,14 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					EffectSource source;
 					byte source_id;
 					float power, time;
+					bool added;
 					if(!stream.Read(netid)
 						|| !stream.ReadCasted<byte>(effect)
 						|| !stream.ReadCasted<byte>(source)
 						|| !stream.Read(source_id)
 						|| !stream.Read(power)
-						|| !stream.Read(time))
+						|| !stream.Read(time)
+						|| !ReadBool(stream, added))
 					{
 						StreamError("Update single client: Broken ADD_EFFECT.");
 						break;
@@ -9611,7 +9574,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					e.time = time;
 					e.source = source;
 					e.source_id = source_id_real;
-					pc->unit->AddEffect(e);
+					pc->unit->AddEffect(e, added);
 				}
 				break;
 			// remove effect from player
@@ -9668,19 +9631,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			return true;
 		}
 	}
-
-	// buffs
-	if(IS_SET(flags, PlayerInfo::UF_BUFFS))
-	{
-		auto player_info = pc ? pc->player_info : &GetPlayerInfo(my_id);
-		if(!stream.ReadCasted<byte>(player_info->buffs))
-		{
-			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_BUFFS.");
-			StreamError();
-			return true;
-		}
-	}
-
+	
 	// stamina
 	if(IS_SET(flags, PlayerInfo::UF_STAMINA))
 	{

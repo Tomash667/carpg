@@ -19,8 +19,7 @@ struct PlayerInfo
 		UF_NET_CHANGES = 1 << 1,
 		UF_GOLD = 1 << 2,
 		UF_ALCOHOL = 1 << 3,
-		UF_BUFFS = 1 << 4,
-		UF_STAMINA = 1 << 5
+		UF_STAMINA = 1 << 4
 	};
 
 	enum STATE
@@ -48,7 +47,7 @@ struct PlayerInfo
 	PlayerController* pc;
 	Unit* u;
 	Class clas;
-	int id, ack, update_flags, buffs;
+	int id, ack, update_flags;
 	SystemAddress adr;
 	float timer, update_timer, yspeed;
 	bool ready, devmode, warping, loaded;

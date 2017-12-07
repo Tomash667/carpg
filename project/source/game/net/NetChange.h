@@ -149,7 +149,6 @@ struct NetChange
 		YELL, // player yell to move ai []
 		ACADEMY_TEXT, // show when trying to enter academy []
 		BREAK_ACTION, // break unit action [int(netid)-unit]
-		STUN, // unit stun - not shield bash [int(netid)-unit, f[0]-length]
 		CHEAT_STUN, // player used cheat 'stun' [int(netid)-unit, f[0]-length]
 		PLAYER_ACTION, // player unit is using action, client[Vec3-pos/data] / server[int(netid)-unit]
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
@@ -159,7 +158,7 @@ struct NetChange
 		CHEAT_REMOVE_PERK, // player used cheat 'remove_perk' [byte(id)-perk_id]
 		CHEAT_ADD_EFFECT, // player used cheat 'add_effect' [byte(id)-effect, byte(ile)-source, byte(e_id)-source_id, float(pos.x)-power, float(pos.y)-time]
 		CHEAT_REMOVE_EFFECT, // player used cheat 'remove_effect' [byte(id)-effect, byte(ile)-source, byte(e_id)-source_id],
-		ADD_OBSERVABLE_EFFECT, // add observable effect to unit [int(netid)-unit, int(id)-effect netid, byte(ile)-effect, float(extra_f)-time]
+		ADD_OBSERVABLE_EFFECT, // add observable effect to unit [int(netid)-unit, int(id)-effect netid, byte(ile)-effect, float(extra_f)-time, bool(i)-update]
 		REMOVE_OBSERVABLE_EFFECT, // remove observable effect from unit [int(netid)-unit, int(id)-effect netid]
 	} type;
 	union

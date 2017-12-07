@@ -158,8 +158,9 @@ int CreatedCharacter::Read(BitStream& stream)
 	// perks
 	PerkContext ctx(this);
 	ctx.validate = true;
-	taken_perks.resize(count);
-	for(TakenPerk& tp : taken_perks)
+	TakenPerk tp;
+	taken_perks.reserve(count);
+	for(uint i=0; i<count; ++i)
 	{
 		if(!stream.ReadCasted<byte>(tp.perk) || !stream.Read(tp.value))
 			return 1;

@@ -1931,6 +1931,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						else
 						{
 							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CHEAT_REMOVE_EFFECT;
 							c.id = (byte)effect_type;
 							c.ile = (byte)source;
 							c.e_id = (byte)(source_id == Perk::None ? 0xFF : (int)source_id);

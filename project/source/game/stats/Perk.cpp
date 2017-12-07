@@ -336,7 +336,7 @@ bool TakenPerk::Apply(PerkContext& ctx)
 		else
 		{
 			ctx.pc->unit->statsx->perks.push_back(*this);
-			if(!ctx.pc->is_local)
+			if(!ctx.startup && !ctx.pc->is_local)
 			{
 				NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 				c.type = NetChangePlayer::ADD_PERK;
@@ -355,7 +355,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 {
 	// remove unit effects
 	if(ctx.pc)
-		ctx.pc->unit->RemovePerkEffects(perk, ctx.startup);
+		ctx.pc->unit->RemovePerkEffects(perk);
 
 	// reapply parent perk
 	auto& info = PerkInfo::perks[(int)perk];
@@ -506,7 +506,7 @@ TakenPerk* PerkContext::HidePerk(Perk perk, bool hide)
 		if(pc)
 		{
 			// remove effect
-			pc->unit->RemovePerkEffects(taken_perk->perk, startup);
+			pc->unit->RemovePerkEffects(taken_perk->perk);
 		}
 	}
 	return taken_perk;

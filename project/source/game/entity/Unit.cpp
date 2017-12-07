@@ -3107,21 +3107,15 @@ void Unit::ApplyStun(float length)
 {
 	if(Net::IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
 		length /= 2;
-
-	auto effect = FindEffect(EffectType::Stun);
-	if(effect)
-		effect->time = max(effect->time, length);
-	else
-	{
-		Effect e;
-		e.effect = EffectType::Stun;
-		e.power = 0.f;
-		e.time = length;
-		e.source = EffectSource::Other;
-		e.source_id = -1;
-		AddEffect(e);
-		animation = ANI_STAND;
-	}
+	
+	Effect e;
+	e.effect = EffectType::Stun;
+	e.power = 0.f;
+	e.time = length;
+	e.source = EffectSource::Other;
+	e.source_id = -1;
+	AddOrUpdateEffect(e);
+	animation = ANI_STAND;
 }
 
 //=================================================================================================
@@ -3152,7 +3146,7 @@ void Unit::SetBase(Attribute attrib, int value, bool startup, bool mod)
 		Set(attrib, new_value);
 
 	// send update
-	if(!player->is_local)
+	if(!player->is_local && player->player_info)
 	{
 		NetChangePlayer& c = Add1(player->player_info->changes);
 		c.type = NetChangePlayer::STAT_CHANGED;
@@ -3189,7 +3183,7 @@ void Unit::SetBase(Skill skill, int value, bool startup, bool mod)
 		Set(skill, new_value);
 
 	// send update
-	if(!player->is_local)
+	if(!player->is_local && player->player_info)
 	{
 		NetChangePlayer& c = Add1(player->player_info->changes);
 		c.type = NetChangePlayer::STAT_CHANGED;
@@ -3224,7 +3218,7 @@ float Unit::GetEffectModMultiply(EffectType effect) const
 }
 
 //=================================================================================================
-void Unit::RemovePerkEffects(Perk perk, bool startup)
+void Unit::RemovePerkEffects(Perk perk)
 {
 	uint index = 0;
 	for(auto& e : effects)
@@ -3272,11 +3266,38 @@ void Unit::RemovePerk(int index)
 }
 
 //=================================================================================================
-void Unit::AddEffect(Effect& e)
+void Unit::AddEffect(Effect& e, bool update)
 {
-	if(Net::IsLocal())
-		e.netid = Effect::netid_counter++;
-	effects.push_back(e);
+	bool added = false;
+	if(update)
+	{
+		if(Net::IsLocal())
+			added = true;
+		else
+		{
+			for(auto& ef : effects)
+			{
+				if(ef.netid == e.netid)
+				{
+					ef.effect = e.effect;
+					ef.power = e.power;
+					ef.time = e.time;
+					ef.source = e.source;
+					ef.source_id = e.source_id;
+
+					added = true;
+					break;
+				}
+			}
+		}
+	}
+
+	if(!added)
+	{
+		if(Net::IsLocal())
+			e.netid = Effect::netid_counter++;
+		effects.push_back(e);
+	}
 
 	// effect stats update
 
@@ -3290,9 +3311,10 @@ void Unit::AddEffect(Effect& e)
 			c.id = e.netid;
 			c.ile = (byte)e.effect;
 			c.extra_f = e.time;
+			c.i = (added ? 1 : 0);
 		}
 
-		if(IsPlayer() && !player->is_local)
+		if(IsPlayer() && !player->is_local && player->player_info)
 		{
 			NetChangePlayer& c = Add1(player->player_info->changes);
 			c.type = NetChangePlayer::ADD_EFFECT;
@@ -3302,8 +3324,30 @@ void Unit::AddEffect(Effect& e)
 			c.b = (byte)(e.source_id == -1 ? 0xFF : e.source_id);
 			c.pos.x = e.power;
 			c.pos.y = e.time;
+			c.c = added;
 		}
 	}
+}
+
+//=================================================================================================
+// Keep effect with longest time (power should don't matter - for example stun)
+void Unit::AddOrUpdateEffect(Effect& e)
+{
+	auto effect = FindEffect(e.effect);
+	if(effect)
+	{
+		if(effect->time < e.time)
+		{
+			effect->time = e.time;
+			effect->source = e.source;
+			effect->source_id = e.source_id;
+			AddEffect(*effect, true);
+		}
+		else
+			return;
+	}
+	else
+		AddEffect(e);
 }
 
 //=================================================================================================
@@ -3321,7 +3365,7 @@ void Unit::RemoveEffect(const Effect& effect, bool notify)
 			c.id = effect.netid;
 		}
 
-		if(IsPlayer() && !player->is_local)
+		if(IsPlayer() && !player->is_local && player->player_info)
 		{
 			NetChangePlayer& c = Add1(player->player_info->changes);
 			c.type = NetChangePlayer::REMOVE_EFFECT;
@@ -3384,8 +3428,6 @@ void Unit::RemoveEffects(EffectType effect, EffectSource source, Perk source_id)
 //=================================================================================================
 void Unit::RemoveEffects(bool notify)
 {
-	assert(Net::IsLocal());
-
 	while(!_to_remove.empty())
 	{
 		uint index = _to_remove.back();
@@ -3403,9 +3445,22 @@ void Unit::RemoveEffects(bool notify)
 }
 
 //=================================================================================================
-void Unit::AddObservableEffect(EffectType effect, int netid, float time)
+void Unit::AddObservableEffect(EffectType effect, int netid, float time, bool update)
 {
 	assert(Net::IsClient());
+
+	if(update)
+	{
+		for(auto& e : effects)
+		{
+			if(e.netid == netid)
+			{
+				e.effect = effect;
+				e.time = time;
+				return;
+			}
+		}
+	}
 
 	Effect& e = Add1(effects);
 	e.effect = effect;

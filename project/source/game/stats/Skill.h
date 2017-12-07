@@ -94,6 +94,8 @@ enum class Skill
 	WEAPON_PROFILE,
 	ARMOR_PROFILE
 };
+// saved as bit flags in mp
+static_assert((int)Skill::MAX < 32, "max 32 skills");
 
 //-----------------------------------------------------------------------------
 // used for grouping in StatsPanel

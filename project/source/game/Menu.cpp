@@ -897,7 +897,6 @@ void Game::UpdateClientConnectingIp(float dt)
 					info.update_flags = 0;
 					info.left = PlayerInfo::LEFT_NO;
 					info.loaded = false;
-					info.buffs = 0;
 
 					// read other players
 					for(int i = 0; i < count; ++i)
@@ -2621,7 +2620,6 @@ void Game::UpdateLobbyNetServer(float dt)
 					info.state = PlayerInfo::WAITING_FOR_HELLO;
 					info.timer = T_WAIT_FOR_HELLO;
 					info.devmode = default_player_devmode;
-					info.buffs = 0;
 					if(players > 1)
 						AddLobbyUpdate(Int2(Lobby_ChangeCount, 0));
 					++players;
