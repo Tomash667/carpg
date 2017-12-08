@@ -1,6 +1,20 @@
 ﻿FEATURE:
 *** perks
 ??? EndEffects
+	+ HeroData.PassTime
+		+ Game.WorldProgress (days >= 1) ???
+	+ PlayerController.Rest
+		+ NetChange::REST X
+		+ NetChange::TRAIN, 10
+		+ fallback TRAIN 10
+		+ fallback REST X
+		+ Game.WorldProgress, WPM_TRAVEL 1 / NORMAL not called
+	+ Game.LeaveLevel -> days=0, only used on ai staying in location
+	+ Game.LeaveLocation -> days=0, only when end_buffs=true
+		+ click on world map
+		+ cheat travel don't end buffs
+		+ using portals don't end buffs
+		? ExitToMap end buffs
 + effect
 	+ add using consumeable, remove on timeout/travel/rest
 	+ mp above
@@ -12,8 +26,7 @@
 	- skip_days brak wpływu na bufffy ???w
 + sync effects server -> client
 + old effects compability
-+ listeffects command, liststats (magic resistance, natural reg)
-+ addeffect, removeeffect
++ liststats command (magic resistance, natural reg)
 - invalid carry calculated, need recalculate, add Effect
 - get str 60 perk and then decrease it
 + Unit.RemovePerkEffects

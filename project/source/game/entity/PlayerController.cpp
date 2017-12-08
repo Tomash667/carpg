@@ -892,7 +892,6 @@ void PlayerController::Write(BitStream& stream) const
 // Used to sent per-player data in ReadPlayerData
 bool PlayerController::Read(BitStream& stream)
 {
-	byte count;
 	if(!stream.Read(level)
 		|| !stream.Read(kills)
 		|| !stream.Read(dmg_done)
