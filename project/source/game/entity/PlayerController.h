@@ -139,10 +139,9 @@ struct PlayerController : public HeroPlayerCommon
 	{
 	}
 	~PlayerController();
-
-	void Rest(int days, bool resting, bool travel = false);
-
+	
 	void Init(Unit& _unit, bool partial = false);
+	void OnRest();
 	void Update(float dt, bool is_local = true);
 	void TrainMove(float dist);
 	void Train(TrainWhat what, float value, int level, Skill skill = Skill::NONE);

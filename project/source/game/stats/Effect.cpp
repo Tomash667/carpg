@@ -23,6 +23,7 @@ EffectInfo EffectInfo::effects[] = {
 EffectSourceInfo EffectSourceInfo::sources[] = {
 	EffectSource::Potion, "potion",
 	EffectSource::Perk, "perk",
+	EffectSource::Action, "action",
 	EffectSource::Other, "other"
 };
 

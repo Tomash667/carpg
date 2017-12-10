@@ -546,6 +546,8 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 		else
 			stream.Write(zero);
 	}
+
+	// variables
 	stream.WriteCasted<byte>(unit.live_state);
 	stream.Write(unit.pos);
 	stream.Write(unit.rot);
@@ -554,6 +556,9 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	stream.Write(unit.netid);
 	stream.WriteCasted<char>(unit.in_arena);
 	WriteBool(stream, unit.summoner != nullptr);
+
+	// effects
+	unit.WriteObservableEffects(stream);
 
 	// hero/player data
 	byte b;
@@ -1528,6 +1533,10 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	}
 	unit.summoner = (summoner ? SUMMONER_PLACEHOLDER : nullptr);
 
+	// effects
+	if(!unit.ReadObservableEffects(stream))
+		return false;
+
 	// hero/player data
 	byte type;
 	if(!stream.Read(type))
@@ -1849,6 +1858,7 @@ void Game::SendPlayerData(int index)
 	unit.statsx->Write(stream);
 	stream.Write(unit.gold);
 	stream.Write(unit.stamina);
+	unit.WriteEffects(stream);
 	unit.player->Write(stream);
 
 	// other team members
@@ -1935,6 +1945,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 	if(!unit->statsx->Read(stream)
 		|| !stream.Read(unit->gold)
 		|| !stream.Read(unit->stamina)
+		|| !unit->ReadEffects(stream)
 		|| !pc->Read(stream))
 	{
 		Error("Read player data: Broken stats.");
@@ -4230,8 +4241,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					StreamError("Update server: Broken REST from %s.", info.name.c_str());
 				else
 				{
-					player.Rest(days, true);
-					UseDays(&player, days);
+					unit.PassTime(days, Unit::REST);
 					NetChangePlayer& c = Add1(info.changes);
 					c.type = NetChangePlayer::END_FALLBACK;
 				}
@@ -4270,7 +4280,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						}
 						unit.player->Train(PlayerController::TM_NORMAL, stat_type, type == 1);
 					}
-					player.Rest(10, false);
+					unit.PassTime(10, Unit::REST);
 					UseDays(&player, 10);
 					NetChangePlayer& c = Add1(info.changes);
 					c.type = NetChangePlayer::END_FALLBACK;
@@ -9586,8 +9596,11 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						StreamError("Update single client: Broken REMOVE_EFFECT.");
 						break;
 					}
-					if(!pc->unit->RemoveEffect(netid))
-						StreamError("Update single client: REMOVE_EFFECT, invalid netid %d.", netid);
+					if(pc)
+					{
+						if(!pc->unit->RemoveEffect(netid))
+							StreamError("Update single client: REMOVE_EFFECT, invalid netid %d.", netid);
+					}
 				}
 				break;
 			default:

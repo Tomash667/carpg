@@ -236,10 +236,6 @@ public:
 	void TakeWeapon(WeaponType type);
 	// dodaj efekt zjadanego przedmiotu
 	void ApplyConsumableEffect(const Consumable& item);
-	// aktualizuj efekty
-	void UpdateEffects(float dt);
-	// zakoñcz tymczasowe efekty po opuszczeniu lokacji
-	void EndEffects(int days = 0, int* best_nat = nullptr);
 	float GetSphereRadius() const
 	{
 		float radius = data->mesh->head.radius;
@@ -711,6 +707,14 @@ public:
 			return Skill::UNARMED;
 	}
 
+	enum PassTimeType
+	{
+		REST,
+		TRAVEL,
+		OTHER
+	};
+	void PassTime(int days, PassTimeType type);
+
 	//==============================================
 	// SKILLS & STATS
 	//==============================================
@@ -796,7 +800,8 @@ public:
 	// ACTIVE EFFECTS
 	//==============================================
 	bool HaveEffect(EffectType effect) const;
-	float GetEffectModMultiply(EffectType effect) const;
+	bool GetEffectModMultiply(EffectType effect, float& value) const;
+	float GetEffectModMultiply(EffectType effect) const { float value = 1.f; GetEffectModMultiply(effect, value); return value; }
 	Effect* FindEffect(EffectType effect);
 	bool FindEffect(EffectType effect, float* value);
 	void RemovePerkEffects(Perk perk);
@@ -808,8 +813,15 @@ public:
 	void RemoveEffects(EffectType effect, EffectSource source, Perk source_id);
 	void RemoveEffects(bool notify = true);
 	const vector<Effect>& GetEffects() const { return effects; }
+	void WriteEffects(BitStream& stream);
+	bool ReadEffects(BitStream& stream);
 	void AddObservableEffect(EffectType effect, int netid, float time, bool update);
 	bool RemoveObservableEffect(int netid);
+	void WriteObservableEffects(BitStream& stream);
+	bool ReadObservableEffects(BitStream& stream);
+	void UpdateEffects(float dt);
+	void EndEffects();
+	void EndLongEffects(int days);
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

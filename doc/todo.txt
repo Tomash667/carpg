@@ -1,31 +1,8 @@
 ﻿FEATURE:
 *** perks
-??? EndEffects
-	+ HeroData.PassTime
-		+ Game.WorldProgress (days >= 1) ???
-	+ PlayerController.Rest
-		+ NetChange::REST X
-		+ NetChange::TRAIN, 10
-		+ fallback TRAIN 10
-		+ fallback REST X
-		+ Game.WorldProgress, WPM_TRAVEL 1 / NORMAL not called
-	+ Game.LeaveLevel -> days=0, only used on ai staying in location
-	+ Game.LeaveLocation -> days=0, only when end_buffs=true
-		+ click on world map
-		+ cheat travel don't end buffs
-		+ using portals don't end buffs
-		? ExitToMap end buffs
-+ effect
-	+ add using consumeable, remove on timeout/travel/rest
-	+ mp above
-	+ observable (remove on leave/timeout)
-	+ keep effects between save&load, travel, cheats travel
-+ remove NetChange::STUN, ApplyStun - update timer
+- effect days not substracted for client
+-? Rest don't use days
 + value -1 when unused for taken perks, effect source_id
-? test all old effects, sp & mp
-	- skip_days brak wpływu na bufffy ???w
-+ sync effects server -> client
-+ old effects compability
 + liststats command (magic resistance, natural reg)
 - invalid carry calculated, need recalculate, add Effect
 - get str 60 perk and then decrease it
@@ -100,7 +77,7 @@ dialog bandits, different text: solo vs team
 + book bestiary, magic artifacts
 + level in team panel for server
 + ai next attack depends on ONE_HANDED_WEAPON
-+ npc leveling according to player leveling
++ npc leveling according to player leveling (currently max lvl is 20 for them)
 
 ? test playthru
 	? leveling speed

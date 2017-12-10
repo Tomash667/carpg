@@ -525,50 +525,8 @@ void PlayerController::Train(Skill skill, float points, bool train_attrib)
 }
 
 //=================================================================================================
-void PlayerController::Rest(int days, bool resting, bool travel)
+void PlayerController::OnRest()
 {
-	// update effects that work for days, end other
-	int best_nat;
-	float prev_hp = unit->hp,
-		prev_stamina = unit->stamina;
-	unit->EndEffects(days, &best_nat);
-
-	// regenerate hp
-	if(unit->hp != unit->hpmax)
-	{
-		float heal = 0.5f * unit->Get(Attribute::END);
-		if(resting)
-			heal *= 2;
-		if(best_nat)
-		{
-			if(best_nat != days)
-				heal = heal*best_nat * 2 + heal*(days - best_nat);
-			else
-				heal *= 2 * days;
-		}
-		else
-			heal *= days;
-
-		heal = min(heal, unit->hpmax - unit->hp);
-		unit->hp += heal;
-
-		Train(TrainWhat::Regenerate, heal, 0);
-	}
-
-	// send update
-	if(Net::IsOnline() && !travel)
-	{
-		if(unit->hp != prev_hp)
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::UPDATE_HP;
-			c.unit = unit;
-		}
-
-		if(unit->stamina != prev_stamina && !is_local)
-			player_info->update_flags |= PlayerInfo::UF_STAMINA;
-	}
-
 	// reset last damage
 	last_dmg = 0;
 	last_dmg_poison = 0;

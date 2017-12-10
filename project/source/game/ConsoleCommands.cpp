@@ -1792,7 +1792,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							switch(e.source)
 							{
 							case EffectSource::Potion:
-							case EffectSource::Other:
+							case EffectSource::Action:
 								str += Format(" time:%g", FLT10(e.time));
 								break;
 							case EffectSource::Perk:
@@ -1812,7 +1812,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						EffectType effect;
 						float power = 0.f, time = 0.f;
-						EffectSource source = EffectSource::Other;
+						EffectSource source = EffectSource::Action;
 						int effect_source_id = -1;
 
 						auto& id = t.MustGetItem();
@@ -1831,11 +1831,14 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(t.Next())
 						{
 							auto& source_id = t.MustGetItem();
-							if(source_id == "other")
-								source = EffectSource::Other;
-							else if(source_id == "potion")
-								source = EffectSource::Potion;
-							else if(source_id == "perk")
+							auto source_info = EffectSourceInfo::TryGet(source_id);
+							if(!source_info)
+							{
+								Msg("Invalid effect soruce '%s'.", source_id.c_str());
+								break;
+							}
+							source = source_info->source;
+							if(source == EffectSource::Perk)
 							{
 								t.Next();
 								auto& perk_id = t.MustGetItem();
@@ -1845,7 +1848,6 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 									Msg("Invalid perk '%s'.", perk_id.c_str());
 									break;
 								}
-								source = EffectSource::Perk;
 								effect_source_id = (int)perk_info->perk_id;
 							}
 						}

@@ -122,58 +122,6 @@ int HeroData::JoinCost() const
 }
 
 //=================================================================================================
-void HeroData::PassTime(int days, bool travel)
-{
-	// czy bohater odpoczywa?
-	bool resting;
-	if(Game::Get().city_ctx && !travel)
-	{
-		resting = true;
-		expe += days;
-	}
-	else
-	{
-		resting = false;
-		expe += days * 2;
-	}
-
-	// zdobywanie doœwiadczenia
-	if(unit->level != 20 && unit->IsHero() && unit->level != unit->data->level.y)
-	{
-		int req = (unit->level*(unit->level + 1) + 10) * 5;
-		if(expe >= req)
-		{
-			expe -= req;
-			LevelUp();
-		}
-	}
-
-	// koñczenie efektów
-	int best_nat;
-	unit->EndEffects(days, &best_nat);
-
-	// regeneracja hp
-	if(unit->hp != unit->hpmax)
-	{
-		float heal = 0.5f * unit->Get(Attribute::END);
-		if(resting)
-			heal *= 2;
-		if(best_nat)
-		{
-			if(best_nat != days)
-				heal = heal*best_nat * 2 + heal*(days - best_nat);
-			else
-				heal *= 2 * days;
-		}
-		else
-			heal *= days;
-
-		heal = min(heal, unit->hpmax - unit->hp);
-		unit->hp += heal;
-	}
-}
-
-//=================================================================================================
 void HeroData::LevelUp()
 {
 	if(unit->level >= MAX_LEVEL)

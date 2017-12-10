@@ -8,6 +8,7 @@
 #include "QuestManager.h"
 #include "AIController.h"
 #include "Team.h"
+#include "BitStreamFunc.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -832,7 +833,7 @@ void Unit::UpdateEffects(float dt)
 			break;
 		}
 
-		if(e.source != EffectSource::Perk)
+		if(e.IsTimed())
 		{
 			if((e.time -= dt) <= 0.f)
 				_to_remove.push_back(index);
@@ -939,11 +940,8 @@ void Unit::UpdateEffects(float dt)
 }
 
 //=================================================================================================
-void Unit::EndEffects(int days, int* best_nat)
+void Unit::EndEffects()
 {
-	if(best_nat)
-		*best_nat = 0;
-
 	alcohol = 0.f;
 	stamina = stamina_max;
 	stamina_timer = 0;
@@ -960,39 +958,60 @@ void Unit::EndEffects(int days, int* best_nat)
 		switch(e.effect)
 		{
 		case EffectType::Regeneration:
-			{
-				e.power *= e.time;
-				reg += e;
-				_to_remove.push_back(index);
-			}
+			e.power *= e.time;
+			reg += e;
 			break;
 		case EffectType::Poison:
 			hp -= e.power * e.time;
-			_to_remove.push_back(index);
 			break;
 		case EffectType::FoodRegeneration:
 			food += e.time;
-			_to_remove.push_back(index);
 			break;
 		case EffectType::NaturalHealingMod:
 			natural += e;
-			e.time -= days;
-			if(e.time <= 0.f)
-				_to_remove.push_back(index);
 			break;
 		default:
-			_to_remove.push_back(index);
 			break;
 		}
 
+		if(e.IsTimed() && e.effect != EffectType::NaturalHealingMod)
+			_to_remove.push_back(index);
+
 		++index;
 	}
+	
+	if(hp != hpmax)
+	{
+		hp += reg + food * natural;
+		if(hp < 1.f)
+			hp = 1.f;
+		else if(hp > hpmax)
+			hp = hpmax;
 
-	hp += reg + food * natural;
-	if(hp < 1.f)
-		hp = 1.f;
-	else if(hp > hpmax)
-		hp = hpmax;
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_HP;
+			c.unit = this;
+		}
+	}
+
+	RemoveEffects();
+}
+
+//=================================================================================================
+void Unit::EndLongEffects(int days)
+{
+	uint index = 0;
+	for(auto& e : effects)
+	{
+		if(e.IsTimed())
+		{
+			if((e.time -= days) <= 0.f)
+				_to_remove.push_back(index);
+		}
+		++index;
+	}
 
 	RemoveEffects();
 }
@@ -1787,7 +1806,7 @@ void Unit::Load(HANDLE file, bool local)
 					break;
 				case E_STUN:
 					e.effect = EffectType::Stun;
-					e.source = EffectSource::Other;
+					e.source = EffectSource::Action;
 					break;
 				}
 				e.netid = Effect::netid_counter++;
@@ -3112,7 +3131,7 @@ void Unit::ApplyStun(float length)
 	e.effect = EffectType::Stun;
 	e.power = 0.f;
 	e.time = length;
-	e.source = EffectSource::Other;
+	e.source = EffectSource::Action;
 	e.source_id = -1;
 	AddOrUpdateEffect(e);
 	animation = ANI_STAND;
@@ -3193,11 +3212,10 @@ void Unit::SetBase(Skill skill, int value, bool startup, bool mod)
 }
 
 //=================================================================================================
-float Unit::GetEffectModMultiply(EffectType effect) const
+bool Unit::GetEffectModMultiply(EffectType effect, float& value) const
 {
-	EffectBuffer b;
-	b.sum = 1;
-	b.best_potion = 1;
+	bool any = false;
+	EffectBuffer b(value);
 
 	for(auto& e : effects)
 	{
@@ -3210,11 +3228,12 @@ float Unit::GetEffectModMultiply(EffectType effect) const
 			}
 			else
 				b.sum *= e.power;
+			any = true;
 		}
 	}
 
-	b.sum *= b.best_potion;
-	return b.sum;
+	value = b.sum * b.best_potion;
+	return any;
 }
 
 //=================================================================================================
@@ -3445,6 +3464,44 @@ void Unit::RemoveEffects(bool notify)
 }
 
 //=================================================================================================
+void Unit::WriteEffects(BitStream& stream)
+{
+	stream.WriteCasted<byte>(effects.size());
+	for(auto& e : effects)
+	{
+		stream.Write(e.netid);
+		stream.WriteCasted<byte>(e.effect);
+		stream.Write(e.power);
+		stream.Write(e.time);
+		stream.WriteCasted<byte>(e.source);
+		stream.WriteCasted<byte>((e.source_id == -1 ? 0xFF : e.source_id));
+	}
+}
+
+//=================================================================================================
+bool Unit::ReadEffects(BitStream& stream)
+{
+	byte count;
+	if(!stream.Read(count) || !EnsureSize(stream, 15 * count))
+		return false;
+
+	effects.resize(count);
+	for(auto& e : effects)
+	{
+		stream.Read(e.netid);
+		stream.ReadCasted<byte>(e.effect);
+		stream.Read(e.power);
+		stream.Read(e.time);
+		stream.ReadCasted<byte>(e.source);
+		byte source_id;
+		stream.Read(source_id);
+		e.source_id = (source_id == 0xFF ? -1 : (int)source_id);
+	}
+
+	return true;
+}
+
+//=================================================================================================
 void Unit::AddObservableEffect(EffectType effect, int netid, float time, bool update)
 {
 	assert(Net::IsClient());
@@ -3467,7 +3524,7 @@ void Unit::AddObservableEffect(EffectType effect, int netid, float time, bool up
 	e.netid = netid;
 	e.power = 0;
 	e.time = time;
-	e.source = EffectSource::Other;
+	e.source = EffectSource::Action;
 	e.source_id = -1;
 }
 
@@ -3485,4 +3542,112 @@ bool Unit::RemoveObservableEffect(int netid)
 		}
 	}
 	return false;
+}
+
+//=================================================================================================
+void Unit::WriteObservableEffects(BitStream& stream)
+{
+	uint effects_count_pos = PatchByte(stream);
+	uint effects_count = 0u;
+	for(auto& e : effects)
+	{
+		auto& info = EffectInfo::effects[(int)e.effect];
+		if(info.observable)
+		{
+			++effects_count;
+			stream.Write(e.netid);
+			stream.WriteCasted<byte>(e.effect);
+			stream.Write(e.time);
+		}
+	}
+	if(effects_count)
+		PatchByteApply(stream, effects_count_pos, effects_count);
+}
+
+//=================================================================================================
+bool Unit::ReadObservableEffects(BitStream& stream)
+{
+	byte effects_count;
+	if(!stream.Read(effects_count) || !EnsureSize(stream, 9 * effects_count))
+		return false;
+
+	effects.resize(effects_count);
+	for(auto& e : effects)
+	{
+		stream.Read(e.netid);
+		stream.ReadCasted<byte>(e.effect);
+		stream.Read(e.time);
+		e.power = 0;
+		e.source = EffectSource::Action;
+		e.source_id = -1;
+	}
+
+	return true;
+}
+
+//=================================================================================================
+void Unit::PassTime(int days, PassTimeType type)
+{
+	// gaining experience by heroes
+	if(IsHero())
+	{
+		if(type == TRAVEL)
+			hero->expe += days;
+		hero->expe += days;
+
+		if(level != MAX_LEVEL && level != data->level.y)
+		{
+			int req = (level*(level + 1) + 10) * 5;
+			if(hero->expe >= req)
+			{
+				hero->expe -= req;
+				hero->LevelUp();
+			}
+		}
+	}
+
+	// update effects that work for days, end other
+	float prev_hp = hp,
+		prev_stamina = stamina;
+	EndEffects();
+
+	// regenerate hp
+	int days_left = days;
+	while(hp != hpmax && days_left > 0)
+	{
+		float heal = 1.f;
+		if(GetEffectModMultiply(EffectType::NaturalHealingMod, heal))
+			--days_left;
+		else
+		{
+			heal = (float)days_left;
+			days_left = 0;
+		}
+
+		heal *= 0.5f * Get(Attribute::END);
+		if(type == REST)
+			heal *= 2;
+
+		heal = min(heal, hpmax - hp);
+		hp += heal;
+	}
+
+	EndLongEffects(days);
+
+	if(IsPlayer() && hp > prev_hp)
+		player->Train(TrainWhat::Regenerate, hp - prev_hp, 0);
+
+	// send update
+	if(Net::IsOnline() && type != TRAVEL)
+	{
+		if(hp != prev_hp)
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::UPDATE_HP;
+			c.unit = this;
+		}
+
+		if(stamina != prev_stamina && IsPlayer() && !player->is_local)
+			player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
+	}	
 }

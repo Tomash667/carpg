@@ -41,6 +41,7 @@ enum class EffectSource
 {
 	Potion,
 	Perk,
+	Action,
 	Other,
 
 	Max,
@@ -58,6 +59,8 @@ struct Effect
 	int source_id, netid;
 
 	static int netid_counter;
+	
+	bool IsTimed() const { return source != EffectSource::Perk && source != EffectSource::Other; }
 };
 
 //-----------------------------------------------------------------------------

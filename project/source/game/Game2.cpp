@@ -1513,7 +1513,7 @@ void Game::UpdateFallback(float dt)
 						TournamentTrain(*pc->unit);
 					else
 						pc->Train(PlayerController::TM_NORMAL, fallback_2, fallback_1 == 1);
-					pc->Rest(10, false);
+					pc->unit->PassTime(10, Unit::OTHER);
 					if(Net::IsOnline())
 						UseDays(pc, 10);
 					else
@@ -1532,7 +1532,7 @@ void Game::UpdateFallback(float dt)
 			case FALLBACK::REST:
 				if(Net::IsLocal())
 				{
-					pc->Rest(fallback_1, true);
+					pc->unit->PassTime(fallback_1, Unit::REST);
 					if(Net::IsOnline())
 						UseDays(pc, fallback_1);
 					else
@@ -9427,7 +9427,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					e.effect = EffectType::Poison;
 					e.power = it->poison_attack / 5;
 					e.time = 5.f;
-					e.source = EffectSource::Other;
+					e.source = EffectSource::Action;
 					e.source_id = -1;
 					hitted->AddEffect(e);
 				}
@@ -9504,7 +9504,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					e.effect = EffectType::Poison;
 					e.power = dmg / 5;
 					e.time = 5.f;
-					e.source = EffectSource::Other;
+					e.source = EffectSource::Action;
 					e.source_id = -1;
 					hitted->AddEffect(e);
 				}

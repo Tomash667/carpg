@@ -49,10 +49,7 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 		{
 			if(autoheal)
 				unit->hp = unit->hpmax;
-			if(unit->IsHero())
-				unit->hero->PassTime(1, true);
-			else if(unit->IsPlayer())
-				unit->player->Rest(1, false, true);
+			unit->PassTime(1, Unit::TRAVEL);
 		}
 
 		// ubywanie wolnych dni
@@ -81,8 +78,8 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 	{
 		for(Unit* unit : Team.members)
 		{
-			if(unit->IsHero())
-				unit->hero->PassTime(days);
+			if(!unit->IsPlayer())
+				unit->PassTime(days, Unit::OTHER);
 		}
 	}
 
