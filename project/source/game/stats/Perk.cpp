@@ -245,7 +245,11 @@ bool TakenPerk::Apply(PerkContext& ctx)
 	case Perk::AlchemistApprentice:
 	case Perk::FamilyHeirloom:
 	case Perk::Leader:
+		break;
 	case Perk::MilitaryTraining:
+		ctx.AddEffect(this, EffectType::Health, 50.f);
+		ctx.AddEffect(this, EffectType::Attack, 5.f);
+		ctx.AddEffect(this, EffectType::Defense, 5.f);
 		break;
 	case Perk::Talent:
 		if(ctx.validate && ctx.cc && ctx.cc->a[value].mod)
@@ -289,6 +293,7 @@ bool TakenPerk::Apply(PerkContext& ctx)
 		break;
 	case Perk::ChronicDisease:
 		ctx.Mod(Attribute::END, -5);
+		ctx.AddEffect(this, EffectType::NaturalHealingMod, 0.5f);
 		break;
 	case Perk::Sluggish:
 		ctx.Mod(Attribute::DEX, -5);

@@ -1,8 +1,5 @@
 ﻿FEATURE:
 *** perks
-- add_perk - invalid perk add_perk
-+ addperk, removeperk command, list perks
-+ Unit.RemovePerkEffects
 + perk points
 	every two levels, for heroes every 3 levels
 	+ set/update
@@ -12,24 +9,21 @@
 + training perks
 + use subprofiles in creating random char
 + better starting items list (poor, wealthy etc effects)
-+ show/hide unavailable perks when attribute is changes
 + perks effects
 	PF_ASOCIAL
 	better/worse starting gear
-	strength, extra apt
+	talent, extra apt
 	skill focus, extra apt
-	chronic disease
 	sluggish
-	military training
 	tought
 +? send mp updates - perk flags (currently it is server side logic only)
 + upgrade perks -> set perk flags
-+ regeneration perk and world travel
 ? tests
 	? old perks load
 	? replace old perks, add missing wealthy
 	? magic resistance potion
 	? loading old effects
+	? add_perk, remove_perk, list_perks in MP
 ! changelog
 	+ new commands, list types
 	+ readme renames
@@ -102,6 +96,7 @@ CURRENT:
 	it should pirst units at that level, if not possible lower/higher
 - archers stupidly come closer to target when out of stamina
 - removing player in mp game, update effect will show assert on GetPlayerInfo
+- clear remove console history
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce

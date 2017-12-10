@@ -17,7 +17,9 @@ EffectInfo EffectInfo::effects[] = {
 	EffectType::FoodRegeneration, "food_regneration", "food regenerate hp", false,
 	EffectType::NaturalHealingMod, "natural_healing_mod", "natural healing modifier % (timer in days)", false,
 	EffectType::MagicResistance, "magic_resistance", "magic resistance mod %", false,
-	EffectType::Stun, "stun", "unit is stunned", true
+	EffectType::Stun, "stun", "unit is stunned", true,
+	EffectType::Attack, "attack", "modify attack", false,
+	EffectType::Defense, "defense", "modify defense", false
 };
 
 EffectSourceInfo EffectSourceInfo::sources[] = {

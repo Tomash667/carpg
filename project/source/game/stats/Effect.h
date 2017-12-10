@@ -15,6 +15,8 @@ enum class EffectType
 	NaturalHealingMod, // natural healing mod (timer in days)
 	MagicResistance, // magic resistance mod
 	Stun, // unit is stunned
+	Attack, // modify attack
+	Defense, // modify defense
 
 	Max,
 	None
@@ -80,7 +82,7 @@ struct EffectBuffer
 		return mul ? (best_potion * sum) : (best_potion + sum);
 	}
 
-	void operator += (Effect& e)
+	void operator += (const Effect& e)
 	{
 		if(e.source == EffectSource::Potion)
 		{

@@ -38,7 +38,10 @@ float Unit::CalculateMaxHp() const
 		float end = (float)Get(Attribute::END);
 		float ath = (float)Get(Skill::ATHLETICS);
 		float lvl = IsPlayer() ? player->level : (float)level;
-		return data->hp + (data->hp_bonus + (end - 50) / 5 + ath / 5) * (lvl + 2);
+		float hp = data->hp + (data->hp_bonus + (end - 50) / 5 + ath / 5) * (lvl + 2);
+		float effects_hp = GetEffectSum(EffectType::Health);
+		hp += effects_hp;
+		return hp;
 	}
 }
 
@@ -73,6 +76,8 @@ float Unit::CalculateAttack() const
 		int str = Get(Attribute::STR),
 			dex = Get(Attribute::DEX);
 		atk += (0.5f * max(str - 50, 0) + 0.5f * max(dex - 50, 0)) * mod;
+		float atk_bonus = GetEffectSum(EffectType::Attack);
+		atk += atk_bonus;
 		return atk;
 	}
 }
@@ -113,6 +118,9 @@ float Unit::CalculateAttack(const Item* weapon) const
 			p = float(str) / bow.req_str;
 		atk += (bow.dmg + max(0, dex - 50)) * (p + skill / 100);
 	}
+
+	float atk_bonus = GetEffectSum(EffectType::Attack);
+	atk += atk_bonus;
 
 	return atk;
 }
@@ -185,6 +193,9 @@ float Unit::CalculateDefense(const Item* armor, const Item* shield) const
 		float skill = (float)Get(Skill::SHIELD);
 		def += s.def * (1.f + skill / 200);
 	}
+
+	float def_bonus = GetEffectSum(EffectType::Defense);
+	def += def_bonus;
 
 	return def;
 }
@@ -2336,59 +2347,6 @@ float Unit::GetBlockSpeed() const
 }
 
 //=================================================================================================
-float Unit::CalculateArmorDefense(const Armor* in_armor)
-{
-	if(!in_armor && !HaveArmor())
-		return 0.f;
-
-	// pancerz daje tyle ile bazowo * skill
-	const Armor& armor = (in_armor ? *in_armor : GetArmor());
-	float skill_val = (float)Get(armor.skill);
-	int str = Get(Attribute::STR);
-	if(str < armor.req_str)
-		skill_val *= str / armor.req_str;
-
-	return (skill_val / 100 + 1)*armor.def;
-}
-
-//=================================================================================================
-float Unit::CalculateDexterityDefense(const Armor* in_armor)
-{
-	float load = GetLoad();
-	float mod;
-
-	// pancerz
-	if(in_armor || HaveArmor())
-	{
-		const Armor& armor = (in_armor ? *in_armor : GetArmor());
-		if(armor.skill == Skill::HEAVY_ARMOR)
-			mod = 0.2f;
-		else if(armor.skill == Skill::MEDIUM_ARMOR)
-			mod = 0.5f;
-		else
-			mod = 1.f;
-	}
-	else
-		mod = 2.f;
-
-	// zrêcznoœæ
-	if(load < 1.f)
-	{
-		int dex = Get(Attribute::DEX);
-		if(dex > 50)
-			return (float(dex - 50) / 3) * (1.f - load) * mod;
-	}
-
-	return 0.f;
-}
-
-//=================================================================================================
-float Unit::CalculateBaseDefense() const
-{
-	return 0.1f * Get(Attribute::END) + data->def_bonus;
-}
-
-//=================================================================================================
 bool Unit::IsBetterItem(const Item* item) const
 {
 	assert(item);
@@ -3232,6 +3190,18 @@ void Unit::SetBase(Skill skill, int value, bool startup, bool mod)
 }
 
 //=================================================================================================
+float Unit::GetEffectSum(EffectType effect) const
+{
+	EffectBuffer buf;
+	for(auto& e : effects)
+	{
+		if(e.effect == effect)
+			buf += e;
+	}
+	return buf;
+}
+
+//=================================================================================================
 bool Unit::GetEffectModMultiply(EffectType effect, float& value) const
 {
 	bool any = false;
@@ -3299,13 +3269,24 @@ int Unit::GetPerkIndex(Perk perk)
 //=================================================================================================
 void Unit::AddPerk(Perk perk, int value)
 {
+	assert(statsx->unique && player);
 
+	TakenPerk tp(perk, value);
+	PerkContext ctx(player);
+	ctx.startup = false;
+	tp.Apply(ctx);
 }
 
 //=================================================================================================
 void Unit::RemovePerk(int index)
 {
+	assert(statsx->unique && player);
 
+	TakenPerk& tp = statsx->perks[index];
+	PerkContext ctx(player);
+	ctx.startup = false;
+	ctx.index = index;
+	tp.Remove(ctx);
 }
 
 //=================================================================================================
@@ -3422,6 +3403,9 @@ void Unit::EffectStatUpdate(const Effect& e)
 {
 	switch(e.effect)
 	{
+	case EffectType::Health:
+		RecalculateHp();
+		break;
 	case EffectType::Carry:
 		CalculateLoad();
 		break;

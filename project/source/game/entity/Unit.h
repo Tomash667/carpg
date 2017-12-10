@@ -213,10 +213,6 @@ public:
 		human_data(nullptr), stamina_action(SA_RESTORE_MORE), summoner(nullptr), moved(false) {}
 	~Unit();
 
-	float CalculateArmorDefense(const Armor* armor = nullptr);
-	float CalculateDexterityDefense(const Armor* armor = nullptr);
-	float CalculateBaseDefense() const;
-	// 	float CalculateArmor(float& def_natural, float& def_dex, float& def_armor);
 	float CalculateAttack() const;
 	float CalculateAttack(const Item* weapon) const;
 	float CalculateBlock(const Item* shield = nullptr) const;
@@ -801,6 +797,7 @@ public:
 	//==============================================
 	bool HaveEffect(EffectType effect) const;
 	bool HaveEffect(int netid) const;
+	float GetEffectSum(EffectType effect) const;
 	bool GetEffectModMultiply(EffectType effect, float& value) const;
 	float GetEffectModMultiply(EffectType effect) const { float value = 1.f; GetEffectModMultiply(effect, value); return value; }
 	Effect* FindEffect(EffectType effect);

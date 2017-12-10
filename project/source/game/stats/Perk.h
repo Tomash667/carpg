@@ -135,7 +135,7 @@ struct PerkInfo
 	RequiredValue required_value;
 
 	PerkInfo(Perk perk_id, cstring id, int flags, Perk parent = Perk::None, RequiredValue required_value = RequiredValue::None) : perk_id(perk_id), id(id), flags(flags),
-		parent(Perk::None), required_value(required_value)
+		parent(parent), required_value(required_value)
 	{
 	}
 
