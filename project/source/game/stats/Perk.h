@@ -169,7 +169,7 @@ struct TakenPerk
 
 	static void LoadText();
 
-	static cstring txIncreasedAttrib, txIncreasedSkill, txDecreasedAttrib, txDecreasedSkill, txDecreasedSkills;
+	static cstring txIncreasedAttrib, txIncreasedSkill, txDecreasedAttrib, txDecreasedSkill, txDecreasedSkills, txPerksRemoved;
 };
 
 //-----------------------------------------------------------------------------

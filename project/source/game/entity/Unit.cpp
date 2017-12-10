@@ -1002,15 +1002,24 @@ void Unit::EndEffects()
 //=================================================================================================
 void Unit::EndLongEffects(int days)
 {
+	bool any = false;
 	uint index = 0;
 	for(auto& e : effects)
 	{
 		if(e.IsTimed())
 		{
-			if((e.time -= days) <= 0.f)
+			if((e.time -= days) <= 0.f && Net::IsLocal())
 				_to_remove.push_back(index);
+			any = true;
 		}
 		++index;
+	}
+
+	if(any && Net::IsServer() && IsPlayer() && !player->is_local)
+	{
+		NetChangePlayer& c = Add1(player->player_info->changes);
+		c.type = NetChangePlayer::UPDATE_LONG_EFFECTS;
+		c.id = days;
 	}
 
 	RemoveEffects();
@@ -2534,6 +2543,17 @@ bool Unit::HaveEffect(EffectType e) const
 }
 
 //=================================================================================================
+bool Unit::HaveEffect(int netid) const
+{
+	for(auto& e : effects)
+	{
+		if(e.netid == netid)
+			return true;
+	}
+	return false;
+}
+
+//=================================================================================================
 int Unit::GetBuffs() const
 {
 	int b = 0;
@@ -3215,6 +3235,7 @@ void Unit::SetBase(Skill skill, int value, bool startup, bool mod)
 bool Unit::GetEffectModMultiply(EffectType effect, float& value) const
 {
 	bool any = false;
+	bool potion_first = true;
 	EffectBuffer b(value);
 
 	for(auto& e : effects)
@@ -3223,8 +3244,11 @@ bool Unit::GetEffectModMultiply(EffectType effect, float& value) const
 		{
 			if(e.source == EffectSource::Potion)
 			{
-				if(e.power > b.best_potion)
+				if(e.power > b.best_potion || potion_first)
+				{
 					b.best_potion = e.power;
+					potion_first = false;
+				}
 			}
 			else
 				b.sum *= e.power;
@@ -3318,7 +3342,7 @@ void Unit::AddEffect(Effect& e, bool update)
 		effects.push_back(e);
 	}
 
-	// effect stats update
+	EffectStatUpdate(e);
 
 	if(Net::IsServer())
 	{
@@ -3372,7 +3396,7 @@ void Unit::AddOrUpdateEffect(Effect& e)
 //=================================================================================================
 void Unit::RemoveEffect(const Effect& effect, bool notify)
 {
-	// effect stats update
+	EffectStatUpdate(effect);
 
 	if(notify && Net::IsServer())
 	{
@@ -3394,6 +3418,17 @@ void Unit::RemoveEffect(const Effect& effect, bool notify)
 }
 
 //=================================================================================================
+void Unit::EffectStatUpdate(const Effect& e)
+{
+	switch(e.effect)
+	{
+	case EffectType::Carry:
+		CalculateLoad();
+		break;
+	}
+}
+
+//=================================================================================================
 void Unit::RemoveEffect(EffectType effect)
 {
 	assert(Net::IsLocal());
@@ -3411,14 +3446,13 @@ void Unit::RemoveEffect(EffectType effect)
 //=================================================================================================
 bool Unit::RemoveEffect(int netid)
 {
-	assert(Net::IsClient());
-
 	for(auto it = effects.begin(), end = effects.end(); it != end; ++it)
 	{
 		if(it->netid == netid)
 		{
-			RemoveEffect(*it, false);
+			Effect e = *it;
 			effects.erase(it);
+			RemoveEffect(e, true);
 			return true;
 		}
 	}
@@ -3450,8 +3484,7 @@ void Unit::RemoveEffects(bool notify)
 	while(!_to_remove.empty())
 	{
 		uint index = _to_remove.back();
-		auto& e = effects[index];
-		RemoveEffect(e, notify);
+		auto e = effects[index];
 		_to_remove.pop_back();
 		if(index == effects.size() - 1)
 			effects.pop_back();
@@ -3460,6 +3493,7 @@ void Unit::RemoveEffects(bool notify)
 			std::iter_swap(effects.begin() + index, effects.end() - 1);
 			effects.pop_back();
 		}
+		RemoveEffect(e, notify);
 	}
 }
 
@@ -3612,30 +3646,68 @@ void Unit::PassTime(int days, PassTimeType type)
 	EndEffects();
 
 	// regenerate hp
-	int days_left = days;
-	while(hp != hpmax && days_left > 0)
+	if(hp != hpmax)
 	{
-		float heal = 1.f;
-		if(GetEffectModMultiply(EffectType::NaturalHealingMod, heal))
-			--days_left;
-		else
+		struct Heal
 		{
-			heal = (float)days_left;
-			days_left = 0;
+			float power;
+			int days;
+			bool potion;
+		};
+		static vector<Heal> heal;
+		heal.clear();
+		for(auto& e : effects)
+		{
+			if(e.effect == EffectType::NaturalHealingMod)
+				heal.push_back({ e.power, (int)e.time, e.source == EffectSource::Potion });
 		}
+		float heal_mod;
+		if(!heal.empty())
+		{
+			heal_mod = 0.f;
+			for(int day = 0; day < days; ++day)
+			{
+				EffectBuffer buf(1.f);
+				bool any = false;
+				for(auto& h : heal)
+				{
+					if(day < h.days)
+					{
+						if(h.potion)
+						{
+							if(h.power > buf.best_potion)
+								buf.best_potion = h.power;
+						}
+						else
+							buf.sum *= h.power;
+						any = true;
+					}
+				}
+				if(any)
+					heal_mod += buf.sum * buf.best_potion;
+				else
+				{
+					heal_mod += (float)(days - day);
+					break;
+				}
+			}
+		}
+		else
+			heal_mod = (float)days;
 
-		heal *= 0.5f * Get(Attribute::END);
+		float hp_to_heal = heal_mod * 0.5f * Get(Attribute::END);
 		if(type == REST)
-			heal *= 2;
+			hp_to_heal *= 2;
 
-		heal = min(heal, hpmax - hp);
-		hp += heal;
+		hp_to_heal = min(hp_to_heal, hpmax - hp);
+		hp += hp_to_heal;
+
+		if(IsPlayer())
+			player->Train(TrainWhat::Regenerate, hp_to_heal, 0);
 	}
 
+	// end effects that work for days
 	EndLongEffects(days);
-
-	if(IsPlayer() && hp > prev_hp)
-		player->Train(TrainWhat::Regenerate, hp - prev_hp, 0);
 
 	// send update
 	if(Net::IsOnline() && type != TRAVEL)

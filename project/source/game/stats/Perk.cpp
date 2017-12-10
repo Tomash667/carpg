@@ -9,6 +9,8 @@
 #include "Unit.h"
 #include "Net.h"
 #include "PlayerInfo.h"
+#include "Gui.h"
+#include "Game.h"
 
 //-----------------------------------------------------------------------------
 PerkInfo PerkInfo::perks[(int)Perk::Max] = {
@@ -36,7 +38,8 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 };
 
 //-----------------------------------------------------------------------------
-cstring TakenPerk::txIncreasedAttrib, TakenPerk::txIncreasedSkill, TakenPerk::txDecreasedAttrib, TakenPerk::txDecreasedSkill, TakenPerk::txDecreasedSkills;
+cstring TakenPerk::txIncreasedAttrib, TakenPerk::txIncreasedSkill, TakenPerk::txDecreasedAttrib, TakenPerk::txDecreasedSkill, TakenPerk::txDecreasedSkills,
+TakenPerk::txPerksRemoved;
 
 //=================================================================================================
 PerkInfo* PerkInfo::TryGet(const AnyString& id)
@@ -83,6 +86,7 @@ void TakenPerk::LoadText()
 	txDecreasedAttrib = Str("decreasedAttrib");
 	txDecreasedSkill = Str("decreasedSkill");
 	txDecreasedSkills = Str("decreasedSkills");
+	txPerksRemoved = Str("perksRemoved");
 }
 
 //=================================================================================================
@@ -177,11 +181,11 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return false;
 
 	// can take more then 2 flaws
-	if(IS_SET(info.flags, PerkInfo::Flaw) && ctx.cc && ctx.cc->perks_max >= 4)
+	if(IS_SET(info.flags, PerkInfo::Flaw) && ctx.cc && ctx.cc->perks_max >= 4 && !ctx.reapply)
 		return false;
 
 	// check if perk require parent perk
-	if(info.parent != Perk::None && !ctx.HavePerk(info.parent))
+	if(info.parent != Perk::None && !ctx.HavePerk(info.parent) && !ctx.reapply)
 		return false;
 
 	switch(perk)
@@ -246,7 +250,7 @@ bool TakenPerk::Apply(PerkContext& ctx)
 	case Perk::Talent:
 		if(ctx.validate && ctx.cc && ctx.cc->a[value].mod)
 		{
-			Error("Perk 'strength', attribute %d is already modified.", value);
+			Error("Perk 'talent', attribute %d is already modified.", value);
 			return false;
 		}
 		ctx.Mod((Attribute)value, 5);
@@ -369,6 +373,8 @@ void TakenPerk::Remove(PerkContext& ctx)
 		}
 	}
 
+	bool revalidate = false;
+
 	switch(perk)
 	{
 	case Perk::AlchemistApprentice:
@@ -384,6 +390,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 		break;
 	case Perk::Talent:
 		ctx.Mod((Attribute)value, -5, false);
+		revalidate = true;
 		break;
 	case Perk::Skilled:
 		if(ctx.cc)
@@ -391,6 +398,7 @@ void TakenPerk::Remove(PerkContext& ctx)
 			ctx.cc->update_skills = true;
 			ctx.cc->sp -= 3;
 			ctx.cc->sp_max -= 3;
+			revalidate = true;
 		}
 		break;
 	case Perk::SkillFocus:
@@ -425,9 +433,34 @@ void TakenPerk::Remove(PerkContext& ctx)
 		assert(0);
 		break;
 	}
-
+	
 	if(ctx.cc)
 	{
+		if(revalidate)
+		{
+			static vector<Perk> removed;
+			ctx.reapply = true;
+			for(auto& p : ctx.cc->taken_perks)
+			{
+				if(!p.CanTake(ctx))
+				{
+					removed.push_back(p.perk);
+					p.Remove(ctx);
+				}
+			}
+			if(!removed.empty())
+			{
+				string str = txPerksRemoved;
+				for(Perk perk : removed)
+				{
+					str += '\n';
+					str += PerkInfo::perks[(int)perk].name;
+				}
+				GUI.SimpleDialog(str.c_str(), (Control*)Game::Get().create_character);
+			}
+			removed.clear();
+		}
+
 		PerkInfo& info = PerkInfo::perks[(int)perk];
 		if(IS_SET(info.flags, PerkInfo::Flaw))
 		{

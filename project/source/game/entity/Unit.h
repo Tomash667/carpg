@@ -800,6 +800,7 @@ public:
 	// ACTIVE EFFECTS
 	//==============================================
 	bool HaveEffect(EffectType effect) const;
+	bool HaveEffect(int netid) const;
 	bool GetEffectModMultiply(EffectType effect, float& value) const;
 	float GetEffectModMultiply(EffectType effect) const { float value = 1.f; GetEffectModMultiply(effect, value); return value; }
 	Effect* FindEffect(EffectType effect);
@@ -820,6 +821,7 @@ public:
 	void WriteObservableEffects(BitStream& stream);
 	bool ReadObservableEffects(BitStream& stream);
 	void UpdateEffects(float dt);
+	void EffectStatUpdate(const Effect& e);
 	void EndEffects();
 	void EndLongEffects(int days);
 

@@ -731,7 +731,7 @@ void PlayerController::Load(HANDLE file)
 					perk = Perk::None;
 					break;
 				}
-				value = 0;
+				value = -1;
 				break;
 			case old::Perk::Strength:
 				perk = Perk::Talent;
@@ -755,7 +755,7 @@ void PlayerController::Load(HANDLE file)
 				{
 					TakenPerk new_perk;
 					new_perk.perk = Perk::Wealthy;
-					new_perk.value = 0;
+					new_perk.value = -1;
 					new_perk.hidden = true;
 					unit->statsx->perks.push_back(perk);
 

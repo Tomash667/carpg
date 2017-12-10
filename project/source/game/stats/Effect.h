@@ -45,7 +45,8 @@ enum class EffectSource
 	Other,
 
 	Max,
-	None
+	None,
+	ToRemove
 };
 // saved as byte in mp
 static_assert((uint)EffectSource::None <= 255, "too many EffectSource");

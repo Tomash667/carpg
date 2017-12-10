@@ -126,7 +126,8 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_ADD_PERK, "add_perk", "add new perk to player (add_perk name [value])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REMOVE_PERK, "remove_perk", "remove perk from player (remove_perk name)", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to player (add_effect name [power time source perk])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from player (remove_effect [effect_name] source [perk])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from player (remove_effect netid/[effect_name] source [perk])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_LIST_STATS, "list_stats", "list player stats", F_GAME | F_CHEAT));
 
 	// verify all commands are added
 #ifdef _DEBUG
@@ -1691,6 +1692,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					break;
 				case CMD_ADD_PERK:
+					if(!t.Next())
+						Msg("Perk name required.");
+					else
 					{
 						// get perk
 						auto& id = t.MustGetItem();
@@ -1753,6 +1757,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					break;
 				case CMD_REMOVE_PERK:
+					if(!t.Next())
+						Msg("Perk name required.");
+					else
 					{
 						auto& id = t.MustGetItem();
 						auto perk_info = PerkInfo::TryGet(id);
@@ -1788,7 +1795,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						for(auto& e : pc->unit->GetEffects())
 						{
 							auto& source = EffectSourceInfo::sources[(int)e.source];
-							str = Format("%s - power:%g, source:%s", EffectInfo::effects[(int)e.effect].id, FLT10(e.power), source.id);
+							str = Format("%s - power:%g, source:%s", EffectInfo::effects[(int)e.effect].id, FLT100(e.power), source.id);
 							switch(e.source)
 							{
 							case EffectSource::Potion:
@@ -1801,6 +1808,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							default:
 								break;
 							}
+							str += Format(" [%d]", e.netid);
 							Msg(str.c_str());
 						}
 					}
@@ -1875,12 +1883,34 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					}
 					break;
 				case CMD_REMOVE_EFFECT:
+					if(!t.Next() || !(t.IsInt() || t.IsItem()))
+						Msg("Effect type/source/netid required.");
+					else if(t.IsInt())
+					{
+						int netid = t.GetInt();
+						if(Net::IsLocal())
+						{
+							if(!pc->unit->RemoveEffect(netid))
+								Msg("Invalid effect netid %d.", netid);
+						}
+						else
+						{
+							if(pc->unit->HaveEffect(netid))
+							{
+								NetChange& c = Add1(Net::changes);
+								c.type = NetChange::CHEAT_REMOVE_EFFECT_NETID;
+								c.id = netid;
+							}
+							else
+								Msg("Invalid effect netid %d.", netid);
+						}
+					}
+					else
 					{
 						EffectType effect_type = EffectType::None;
 						EffectSource source = EffectSource::None;
 						Perk source_id = Perk::None;
 
-						t.Next();
 						auto& id = t.MustGetItem();
 						bool next_ok = true;
 
@@ -1939,6 +1969,11 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							c.e_id = (byte)(source_id == Perk::None ? 0xFF : (int)source_id);
 						}
 					}
+					break;
+				case CMD_LIST_STATS:
+					Msg("Natural healing: %g%%", FLT10(pc->unit->GetNaturalHealingMod() * 100));
+					Msg("Magic resistance: %g%%", FLT10((1.f - pc->unit->CalculateMagicResistance()) * 100));
+					Msg("Carry capacity: %g%%", FLT10(pc->unit->GetEffectModMultiply(EffectType::Carry) * 100));
 					break;
 				default:
 					assert(0);

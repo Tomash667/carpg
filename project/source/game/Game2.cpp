@@ -11072,6 +11072,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		e.power = dmg / 10;
 		e.time = 5.f;
 		e.source = EffectSource::Other;
+		e.source_id = -1;
 		hitted.AddEffect(e);
 	}
 

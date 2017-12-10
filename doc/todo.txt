@@ -1,11 +1,7 @@
 ﻿FEATURE:
 *** perks
-- effect days not substracted for client
--? Rest don't use days
-+ value -1 when unused for taken perks, effect source_id
-+ liststats command (magic resistance, natural reg)
-- invalid carry calculated, need recalculate, add Effect
-- get str 60 perk and then decrease it
+- add_perk - invalid perk add_perk
++ addperk, removeperk command, list perks
 + Unit.RemovePerkEffects
 + perk points
 	every two levels, for heroes every 3 levels
@@ -14,7 +10,6 @@
 + subprofile perks
 + new ingame perks
 + training perks
-+ addperk, removeperk command, list perks
 + use subprofiles in creating random char
 + better starting items list (poor, wealthy etc effects)
 + show/hide unavailable perks when attribute is changes
@@ -30,8 +25,6 @@
 +? send mp updates - perk flags (currently it is server side logic only)
 + upgrade perks -> set perk flags
 + regeneration perk and world travel
-+ EndEffects, better checking of days <-> power (have chronic disease and drink potion, should have normal healing for 10 days, end 1/2 healing etc)
-+ client side effects for other units (graphics), stun for example
 ? tests
 	? old perks load
 	? replace old perks, add missing wealthy

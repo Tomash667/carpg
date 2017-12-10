@@ -4242,6 +4242,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				else
 				{
 					unit.PassTime(days, Unit::REST);
+					UseDays(&player, days);
 					NetChangePlayer& c = Add1(info.changes);
 					c.type = NetChangePlayer::END_FALLBACK;
 				}
@@ -4394,10 +4395,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				int count;
 				if(!stream.Read(count))
-				{
-					Error("Update server: Broken DROP_GOLD from %s.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Broken DROP_GOLD from %s.", info.name.c_str());
 				else if(count > 0 && count <= unit.gold && unit.IsStanding() && unit.action == A_NONE)
 				{
 					unit.gold -= count;
@@ -4428,10 +4426,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 				}
 				else
-				{
-					Error("Update server: DROP_GOLD from %s, invalid count %d or busy.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: DROP_GOLD from %s, invalid count %d or busy.", info.name.c_str());
 			}
 			break;
 		// player puts gold into container
@@ -4439,20 +4434,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				int count;
 				if(!stream.Read(count))
-				{
-					Error("Update server: Broken PUT_GOLD from %s.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Broken PUT_GOLD from %s.", info.name.c_str());
 				else if(count < 0 || count > unit.gold)
-				{
-					Error("Update server: PUT_GOLD from %s, invalid count %d (have %d).", info.name.c_str(), count, unit.gold);
-					StreamError();
-				}
+					StreamError("Update server: PUT_GOLD from %s, invalid count %d (have %d).", info.name.c_str(), count, unit.gold);
 				else if(player.action != PlayerController::Action_LootChest && player.action != PlayerController::Action_LootUnit
 					&& player.action != PlayerController::Action_LootContainer)
 				{
-					Error("Update server: PUT_GOLD from %s, player is not trading.", info.name.c_str());
-					StreamError();
+					StreamError("Update server: PUT_GOLD from %s, player is not trading.", info.name.c_str());
 				}
 				else
 				{
@@ -4466,25 +4454,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				byte location_index;
 				if(!stream.Read(location_index))
-				{
-					Error("Update server: Broken CHEAT_TRAVEL from %s.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Broken CHEAT_TRAVEL from %s.", info.name.c_str());
 				else if(!info.devmode)
-				{
-					Error("Update server: Player %s used CHEAT_TRAVEL without devmode.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Player %s used CHEAT_TRAVEL without devmode.", info.name.c_str());
 				else if(!Team.IsLeader(unit))
-				{
-					Error("Update server: CHEAT_TRAVEL from %s, player is not leader.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: CHEAT_TRAVEL from %s, player is not leader.", info.name.c_str());
 				else if(location_index >= locations.size() || !locations[location_index])
-				{
-					Error("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index);
-					StreamError();
-				}
+					StreamError("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index);
 				else
 				{
 					current_location = location_index;
@@ -4512,25 +4488,16 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				int netid;
 				if(!stream.Read(netid))
-				{
-					Error("Update server: Broken CHEAT_HURT from %s.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Broken CHEAT_HURT from %s.", info.name.c_str());
 				else if(!info.devmode)
-				{
-					Error("Update server: Player %s used CHEAT_HURT without devmode.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Player %s used CHEAT_HURT without devmode.", info.name.c_str());
 				else
 				{
 					Unit* target = FindUnit(netid);
 					if(target)
 						GiveDmg(GetContext(*target), nullptr, 100.f, *target);
 					else
-					{
-						Error("Update server: CHEAT_HURT from %s, missing unit %d.", info.name.c_str(), netid);
-						StreamError();
-					}
+						StreamError("Update server: CHEAT_HURT from %s, missing unit %d.", info.name.c_str(), netid);
 				}
 			}
 			break;
@@ -4539,25 +4506,16 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				int netid;
 				if(!stream.Read(netid))
-				{
-					Error("Update server: Broken CHEAT_BREAK_ACTION from %s.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Broken CHEAT_BREAK_ACTION from %s.", info.name.c_str());
 				else if(!info.devmode)
-				{
-					Error("Update server: Player %s used CHEAT_BREAK_ACTION without devmode.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Player %s used CHEAT_BREAK_ACTION without devmode.", info.name.c_str());
 				else
 				{
 					Unit* target = FindUnit(netid);
 					if(target)
 						BreakUnitAction(*target, BREAK_ACTION_MODE::NORMAL, true);
 					else
-					{
-						Error("Update server: CHEAT_BREAK_ACTION from %s, missing unit %d.", info.name.c_str(), netid);
-						StreamError();
-					}
+						StreamError("Update server: CHEAT_BREAK_ACTION from %s, missing unit %d.", info.name.c_str(), netid);
 				}
 			}
 			break;
@@ -4566,25 +4524,16 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				int netid;
 				if(!stream.Read(netid))
-				{
-					Error("Update server: Broken CHEAT_FALL from %s.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Broken CHEAT_FALL from %s.", info.name.c_str());
 				else if(!info.devmode)
-				{
-					Error("Update server: Player %s used CHEAT_FALL without devmode.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Player %s used CHEAT_FALL without devmode.", info.name.c_str());
 				else
 				{
 					Unit* target = FindUnit(netid);
 					if(target)
 						UnitFall(*target);
 					else
-					{
-						Error("Update server: CHEAT_FALL from %s, missing unit %d.", info.name.c_str(), netid);
-						StreamError();
-					}
+						StreamError("Update server: CHEAT_FALL from %s, missing unit %d.", info.name.c_str(), netid);
 				}
 			}
 			break;
@@ -4600,24 +4549,17 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!stream.Read(netid)
 					|| !stream.Read(length))
 				{
-					Error("Update server: Broken CHEAT_STUN from %s.", info.name.c_str());
-					StreamError();
+					StreamError("Update server: Broken CHEAT_STUN from %s.", info.name.c_str());
 				}
 				else if(!info.devmode)
-				{
-					Error("Update server: Player %s used CHEAT_STUN without devmode.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Player %s used CHEAT_STUN without devmode.", info.name.c_str());
 				else
 				{
 					Unit* target = FindUnit(netid);
 					if(target && length > 0)
 						target->ApplyStun(length);
 					else
-					{
-						Error("Update server: CHEAT_STUN from %s, missing unit %d.", info.name.c_str(), netid);
-						StreamError();
-					}
+						StreamError("Update server: CHEAT_STUN from %s, missing unit %d.", info.name.c_str(), netid);
 				}
 			}
 			break;
@@ -4626,10 +4568,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				Vec3 pos;
 				if(!stream.Read(pos))
-				{
-					Error("Update server: Broken PLAYER_ACTION from %s.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Broken PLAYER_ACTION from %s.", info.name.c_str());
 				else
 					UseAction(info.pc, false, &pos);
 			}
@@ -4637,10 +4576,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		// player used cheat 'refresh_cooldown'
 		case NetChange::CHEAT_REFRESH_COOLDOWN:
 			if(!info.devmode)
-			{
-				Error("Update server: Player %s used CHEAT_REFRESH_COOLDOWN without devmode.", info.name.c_str());
-				StreamError();
-			}
+				StreamError("Update server: Player %s used CHEAT_REFRESH_COOLDOWN without devmode.", info.name.c_str());
 			else
 				info.pc->RefreshCooldown();
 			break;
@@ -4649,20 +4585,14 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				int i_index;
 				if(!stream.Read(i_index))
-				{
-					Error("Update server: Broken READ_BOOK from %s.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("Update server: Broken READ_BOOK from %s.", info.name.c_str());
 				else
 				{
 					auto item = unit.GetIIndexItem(i_index);
 					if(item && item->type == IT_BOOK)
 						unit.player->OnReadBook(i_index);
 					else
-					{
-						Error("Update server: Player %s READ_BOOK, invalid item index %d.", info.name.c_str(), i_index);
-						StreamError();
-					}
+						StreamError("Update server: Player %s READ_BOOK, invalid item index %d.", info.name.c_str(), i_index);
 				}
 			}
 			break;
@@ -4674,52 +4604,38 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!stream.ReadCasted<byte>(perk)
 					|| !stream.ReadCasted<byte>(value))
 				{
-					Error("Update server: Broken CHEAT_ADD_PERK from '%s'.", info.name.c_str());
-					StreamError();
-					break;
+					StreamError("Update server: Broken CHEAT_ADD_PERK from '%s'.", info.name.c_str());
 				}
-				if(!info.devmode)
-				{
-					Error("Update server: Player %s used CHEAT_ADD_PERK without devmode.", info.name.c_str());
-					StreamError();
-					break;
-				}
-				if((int)perk < 0 || perk >= Perk::Max)
-				{
-					Error("Update server: CHEAT_ADD_PERK, invalid perk id %d from '%s'.", (int)perk, info.name.c_str());
-					StreamError();
-					break;
-				}
-				bool ok = true;
-				auto& perk_info = PerkInfo::perks[(int)perk];
-				if(perk_info.required_value == PerkInfo::Attribute)
-				{
-					if(value < 0 || value >= (int)Attribute::MAX)
-						ok = false;
-				}
-				else if(perk_info.required_value == PerkInfo::Skill)
-				{
-					if(value < 0 || value >= (int)Skill::MAX)
-						ok = false;
-				}
+				else if(!info.devmode)
+					StreamError("Update server: Player %s used CHEAT_ADD_PERK without devmode.", info.name.c_str());
+				else if((int)perk < 0 || perk >= Perk::Max)
+					StreamError("Update server: CHEAT_ADD_PERK, invalid perk id %d from '%s'.", (int)perk, info.name.c_str());
 				else
 				{
-					if(value != -1)
-						ok = false;
+					bool ok = true;
+					auto& perk_info = PerkInfo::perks[(int)perk];
+					if(perk_info.required_value == PerkInfo::Attribute)
+					{
+						if(value < 0 || value >= (int)Attribute::MAX)
+							ok = false;
+					}
+					else if(perk_info.required_value == PerkInfo::Skill)
+					{
+						if(value < 0 || value >= (int)Skill::MAX)
+							ok = false;
+					}
+					else
+					{
+						if(value != -1)
+							ok = false;
+					}
+					if(!ok)
+						StreamError("Update server: CHEAT_ADD_PERK, invalid perk '%s' value %d from '%s'.", perk_info.id, value, info.name.c_str());
+					else if(unit.HavePerk(perk))
+						StreamError("Update server: CHEAT_ADD_PERK, player '%s' already have perk '%s'.", info.name.c_str(), perk_info.id);
+					else
+						unit.AddPerk(perk, value);
 				}
-				if(!ok)
-				{
-					Error("Update server: CHEAT_ADD_PERK, invalid perk '%s' value %d from '%s'.", perk_info.id, value, info.name.c_str());
-					StreamError();
-					break;
-				}
-				if(unit.HavePerk(perk))
-				{
-					Error("Update server: CHEAT_ADD_PERK, player '%s' already have perk '%s'.", info.name.c_str(), perk_info.id);
-					StreamError();
-					break;
-				}
-				unit.AddPerk(perk, value);
 			}
 			break;
 		// player used cheat 'remove_perk'
@@ -4727,31 +4643,19 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				Perk perk;
 				if(!stream.ReadCasted<byte>(perk))
+					StreamError("Update server: Broken CHEAT_REMOVE_PERK from '%s'.", info.name.c_str());
+				else if(!info.devmode)
+					StreamError("Update server: Player %s used CHEAT_REMOVE_PERK without devmode.", info.name.c_str());
+				else if((int)perk < 0 || perk >= Perk::Max)
+					StreamError("Update server: CHEAT_ADD_PERK, invalid perk id %d from '%s'.", (int)perk, info.name.c_str());
+				else
 				{
-					Error("Update server: Broken CHEAT_REMOVE_PERK from '%s'.", info.name.c_str());
-					StreamError();
-					break;
+					int index = unit.GetPerkIndex(perk);
+					if(index == -1)
+						StreamError("Update server: CHEAT_REMOVE_PERK, player '%s' don't have perk '%s'.", info.name.c_str(), PerkInfo::perks[(int)perk].id);
+					else
+						unit.RemovePerk(index);
 				}
-				if(!info.devmode)
-				{
-					Error("Update server: Player %s used CHEAT_REMOVE_PERK without devmode.", info.name.c_str());
-					StreamError();
-					break;
-				}
-				if((int)perk < 0 || perk >= Perk::Max)
-				{
-					Error("Update server: CHEAT_ADD_PERK, invalid perk id %d from '%s'.", (int)perk, info.name.c_str());
-					StreamError();
-					break;
-				}
-				int index = unit.GetPerkIndex(perk);
-				if(index == -1)
-				{
-					Error("Update server: CHEAT_REMOVE_PERK, player '%s' don't have perk '%s'.", info.name.c_str(), PerkInfo::perks[(int)perk].id);
-					StreamError();
-					break;
-				}
-				unit.RemovePerk(index);
 			}
 			break;
 		// player used cheat 'add_effect'
@@ -4767,51 +4671,38 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					|| !stream.Read(power)
 					|| !stream.Read(time))
 				{
-					Error("Update server: Broken CHEAT_ADD_EFFECT from '%s'.", info.name.c_str());
-					StreamError();
-					break;
+					StreamError("Update server: Broken CHEAT_ADD_EFFECT from '%s'.", info.name.c_str());
 				}
-				if(!info.devmode)
+				else if(!info.devmode)
+					StreamError("Update server: Player %s used CHEAT_ADD_EFFECT without devmode.", info.name.c_str());
+				else if((int)effect < 0 || effect >= EffectType::Max)
+					StreamError("Update server: CHEAT_ADD_EFFECT, invalid effect type %d from '%s'.", (int)effect, info.name.c_str());
+				else if((int)source < 0 || source >= EffectSource::Max)
+					StreamError("Update server: CHEAT_ADD_EFFECT, invalid effect source %d from '%s'.", (int)source, info.name.c_str());
+				else
 				{
-					Error("Update server: Player %s used CHEAT_ADD_EFFECT without devmode.", info.name.c_str());
-					StreamError();
-					break;
-				}
-				if((int)effect < 0 || effect >= EffectType::Max)
-				{
-					Error("Update server: CHEAT_ADD_EFFECT, invalid effect type %d from '%s'.", (int)effect, info.name.c_str());
-					StreamError();
-					break;
-				}
-				if((int)source < 0 || source >= EffectSource::Max)
-				{
-					Error("Update server: CHEAT_ADD_EFFECT, invalid effect source %d from '%s'.", (int)source, info.name.c_str());
-					StreamError();
-					break;
-				}
-				bool ok = true;
-				int source_id_real = (source_id == 0xFF ? -1 : int(source_id));
-				if(source == EffectSource::Perk)
-				{
-					if(source_id_real < 0 || source_id_real >= (int)Perk::Max)
+					bool ok = true;
+					int source_id_real = (source_id == 0xFF ? -1 : int(source_id));
+					if(source == EffectSource::Perk)
+					{
+						if(source_id_real < 0 || source_id_real >= (int)Perk::Max)
+							ok = false;
+					}
+					else if(source_id_real != -1)
 						ok = false;
+					if(!ok)
+						StreamError("Update server: CHEAT_ADD_EFFECT, invalid effect source id %d from '%s'.", source_id_real, info.name.c_str());
+					else
+					{
+						Effect e;
+						e.effect = effect;
+						e.power = power;
+						e.time = time;
+						e.source = source;
+						e.source_id = source_id_real;
+						unit.AddEffect(e);
+					}
 				}
-				else if(source_id_real != -1)
-					ok = false;
-				if(!ok)
-				{
-					Error("Update server: CHEAT_ADD_EFFECT, invalid effect source id %d from '%s'.", source_id_real, info.name.c_str());
-					StreamError();
-					break;
-				}
-
-				Effect e;
-				e.effect = effect;
-				e.power = power;
-				e.time = time;
-				e.source = source;
-				e.source_id = source_id_real;
-				unit.AddEffect(e);
 			}
 			break;
 		// player used cheat 'remove_effect'
@@ -4824,68 +4715,62 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					|| !stream.ReadCasted<byte>(source)
 					|| !stream.Read(source_id))
 				{
-					Error("Update server: Broken CHEAT_REMOVE_EFFECT from '%s'.", info.name.c_str());
-					StreamError();
-					break;
+					StreamError("Update server: Broken CHEAT_REMOVE_EFFECT from '%s'.", info.name.c_str());
 				}
-				if(!info.devmode)
+				else if(!info.devmode)
+					StreamError("Update server: Player %s used CHEAT_REMOVE_EFFECT without devmode.", info.name.c_str());
+				else if(effect == EffectType::None && source == EffectSource::None)
+					StreamError("Update server: CHEAT_REMOVE_EFFECT, no effect or source from '%s'.", info.name.c_str());
+				else if(effect != EffectType::None && ((int)effect < 0 || effect >= EffectType::Max))
+					StreamError("Update server: CHEAT_REMOVE_EFFECT, invalid effect %d from '%s'.", effect, info.name.c_str());
+				else if(source != EffectSource::None && ((int)source < 0 || source >= EffectSource::Max))
+					StreamError("Update server: CHEAT_REMOVE_EFFECT, invalid source %d from '%s'.", source, info.name.c_str());
+				else
 				{
-					Error("Update server: Player %s used CHEAT_REMOVE_EFFECT without devmode.", info.name.c_str());
-					StreamError();
-					break;
-				}
-				if(effect == EffectType::None && source == EffectSource::None)
-				{
-					Error("Update server: CHEAT_REMOVE_EFFECT, no effect or source from '%s'.", info.name.c_str());
-					StreamError();
-					break;
-				}
-				if(effect != EffectType::None && ((int)effect < 0 || effect >= EffectType::Max))
-				{
-					Error("Update server: CHEAT_REMOVE_EFFECT, invalid effect %d from '%s'.", effect, info.name.c_str());
-					StreamError();
-					break;
-				}
-				if(source != EffectSource::None && ((int)source < 0 || source >= EffectSource::Max))
-				{
-					Error("Update server: CHEAT_REMOVE_EFFECT, invalid source %d from '%s'.", source, info.name.c_str());
-					StreamError();
-					break;
-				}
-				bool ok = true;
-				int source_id_real = (source_id == 0xFF ? -1 : int(source_id));
-				if(source_id_real != -1)
-				{
-					if(source == EffectSource::Perk)
+					bool ok = true;
+					int source_id_real = (source_id == 0xFF ? -1 : int(source_id));
+					if(source_id_real != -1)
 					{
-						if(source_id_real < 0 || source_id_real >= (int)Perk::Max)
+						if(source == EffectSource::Perk)
+						{
+							if(source_id_real < 0 || source_id_real >= (int)Perk::Max)
+								ok = false;
+						}
+						else
 							ok = false;
 					}
+					if(!ok)
+						StreamError("Update server: CHEAT_REMOVE_EFFECT, invalid source id %d from '%s'.", source_id_real, info.name.c_str());
 					else
-						ok = false;
+					{
+						Perk source_id_perk = (source_id_real == -1 ? Perk::None : (Perk)source_id_real);
+						unit.RemoveEffects(effect, source, source_id_perk);
+					}
 				}
-				if(!ok)
-				{
-					Error("Update server: CHEAT_REMOVE_EFFECT, invalid source id %d from '%s'.", source_id_real, info.name.c_str());
-					StreamError();
-					break;
-				}
-				Perk source_id_perk = (source_id_real == -1 ? Perk::None : (Perk)source_id_real);
-				unit.RemoveEffects(effect, source, source_id_perk);
+			}
+			break;
+		// player used cheat 'remove_effect' by netid
+		case NetChange::CHEAT_REMOVE_EFFECT_NETID:
+			{
+				int netid;
+				if(!stream.Read(netid))
+					StreamError("Update server: Broken CHEAT_REMOVE_EFFECT_NETID from '%s'.", info.name.c_str());
+				else if(!info.devmode)
+					StreamError("Update server: Player %s used CHEAT_REMOVE_EFFECT_NETID without devmode.", info.name.c_str());
+				else if(!unit.RemoveEffect(netid))
+					Error("Update server: CHEAT_REMOVE_EFFECT_NETID, invalid netid %d from '%s'.", netid, info.name.c_str());
 			}
 			break;
 		// invalid change
 		default:
-			Error("Update server: Invalid change type %u from %s.", type, info.name.c_str());
-			StreamError();
+			StreamError("Update server: Invalid change type %u from %s.", type, info.name.c_str());
 			break;
 		}
 
 		byte checksum = 0;
 		if(!stream.Read(checksum) || checksum != 0xFF)
 		{
-			Error("Update server: Invalid checksum from %s (%u).", info.name.c_str(), change_i);
-			StreamError();
+			StreamError("Update server: Invalid checksum from %s (%u).", info.name.c_str(), change_i);
 			return true;
 		}
 	}
@@ -5477,6 +5362,7 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				WriteBool(stream, c.c == 1);
 				break;
 			case NetChangePlayer::REMOVE_EFFECT:
+			case NetChangePlayer::UPDATE_LONG_EFFECTS:
 				stream.Write(c.id);
 				break;
 			default:
@@ -9603,6 +9489,16 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
+			// update effects that work for days
+			case NetChangePlayer::UPDATE_LONG_EFFECTS:
+				{
+					int days;
+					if(!stream.Read(days) || days <= 0)
+						StreamError("Update single client: Broken UPDATE_LONG_EFFECTS.");
+					else
+						pc->unit->EndLongEffects(days);
+				}
+				break;
 			default:
 				Warn("Update single client: Unknown player change type %d.", type);
 				StreamError();
@@ -9626,8 +9522,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			Skip(stream, sizeof(pc->unit->gold));
 		else if(!stream.Read(pc->unit->gold))
 		{
-			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
-			StreamError();
+			StreamError("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
 			return true;
 		}
 	}
@@ -9639,8 +9534,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			Skip(stream, sizeof(pc->unit->alcohol));
 		else if(!stream.Read(pc->unit->alcohol))
 		{
-			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
-			StreamError();
+			StreamError("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
 			return true;
 		}
 	}
@@ -9652,8 +9546,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			Skip(stream, sizeof(pc->unit->stamina));
 		else if(!stream.Read(pc->unit->stamina))
 		{
-			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_STAMINA.");
-			StreamError();
+			StreamError("Update single client: Broken ID_PLAYER_CHANGES at UF_STAMINA.");
 			return true;
 		}
 	}
@@ -9814,6 +9707,7 @@ void Game::WriteClientChanges(BitStream& stream)
 			stream.Write(c.f[0]);
 			break;
 		case NetChange::READ_BOOK:
+		case NetChange::CHEAT_REMOVE_EFFECT_NETID:
 			stream.Write(c.id);
 			break;
 		case NetChange::CHEAT_ADD_PERK:
@@ -11120,6 +11014,7 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::CHEAT_REMOVE_PERK:
 	case NetChange::CHEAT_ADD_EFFECT:
 	case NetChange::CHEAT_REMOVE_EFFECT:
+	case NetChange::CHEAT_REMOVE_EFFECT_NETID:
 		return false;
 	case NetChange::TALK:
 		if(Net::IsServer() && c.str)

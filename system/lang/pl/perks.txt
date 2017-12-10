@@ -11,6 +11,7 @@ decreasedAttrib = "Zmniejszony atrybut"
 decreasedSkill = "Zmniejszona umiejêtnoœæ"
 decreasedSkills = "Zmniejszone umiejêtnoœci"
 flawExtraPerk = "Pozwala wybraæ dodatkowy atut."
+perksRemoved = "Usuniêto poni¿sze atuty z powodu niespe³niania wymagañ:"
 
 perk bad_back {
 	name "S³abe plecy"

@@ -55,6 +55,9 @@ struct NetChangePlayer
 		GAME_MESSAGE, // show game message [int(id)-game message id]
 		ADD_EFFECT, // add effect to player [int(id)-effect netid, byte(ile)-effect, byte(a)-source, byte(b)-source_id, float(pos.x)-power, float(pos.y)-time, bool(c)-update]
 		REMOVE_EFFECT, // remove effect from player [int(id)-effect netid]
+		UPDATE_LONG_EFFECTS, // update effects that work for days [int(id)-days]
+
+		MAX
 	} type;
 	int id, ile;
 	union
@@ -71,3 +74,4 @@ struct NetChangePlayer
 	Vec3 pos;
 	bool c;
 };
+static_assert((int)NetChangePlayer::MAX <= 256, "too many NetChangePlayer");
