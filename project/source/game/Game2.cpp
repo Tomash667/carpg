@@ -9423,12 +9423,14 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				// apply poison
 				if(it->poison_attack > 0.f && !IS_SET(hitted->data->flags, F_POISON_RES))
 				{
-					Effect e;
-					e.effect = EffectType::Poison;
-					e.power = it->poison_attack / 5;
-					e.time = 5.f;
-					e.source = EffectSource::Action;
-					e.source_id = -1;
+					Effect* e = Effect::Get();
+					e->effect = EffectType::Poison;
+					e->value = -1;
+					e->power = it->poison_attack / 5;
+					e->time = 5.f;
+					e->source = EffectSource::Action;
+					e->source_id = -1;
+					e->refs = 1;
 					hitted->AddEffect(e);
 				}
 			}
@@ -9500,12 +9502,14 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				// apply poison
 				if(IS_SET(it->spell->flags, Spell::Poison) && !IS_SET(hitted->data->flags, F_POISON_RES))
 				{
-					Effect e;
-					e.effect = EffectType::Poison;
-					e.power = dmg / 5;
-					e.time = 5.f;
-					e.source = EffectSource::Action;
-					e.source_id = -1;
+					Effect* e = Effect::Get();
+					e->effect = EffectType::Poison;
+					e->value = -1;
+					e->power = dmg / 5;
+					e->time = 5.f;
+					e->source = EffectSource::Action;
+					e->source_id = -1;
+					e->refs = 1;
 					hitted->AddEffect(e);
 				}
 
@@ -11067,12 +11071,14 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	// apply poison
 	if(IS_SET(attacker.data->flags, F_POISON_ATTACK) && !IS_SET(hitted.data->flags, F_POISON_RES))
 	{
-		Effect e;
-		e.effect = EffectType::Poison;
-		e.power = dmg / 10;
-		e.time = 5.f;
-		e.source = EffectSource::Other;
-		e.source_id = -1;
+		Effect* e = Effect::Get();
+		e->effect = EffectType::Poison;
+		e->value = -1;
+		e->power = dmg / 10;
+		e->time = 5.f;
+		e->source = EffectSource::Other;
+		e->source_id = -1;
+		e->refs = 1;
 		hitted.AddEffect(e);
 	}
 

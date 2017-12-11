@@ -8,18 +8,21 @@
 int Effect::netid_counter;
 
 EffectInfo EffectInfo::effects[] = {
-	EffectType::Health, "health", "modify max hp", false,
-	EffectType::Carry, "carry", "modify carry %", false,
-	EffectType::Poison, "poison", "deal poison damage", false,
-	EffectType::Alcohol, "alcohol", "deal alcohol damage", false,
-	EffectType::Regeneration, "regeneration", "regenerate hp", false,
-	EffectType::StaminaRegeneration, "stamina_regeneration", "regenerate stamina", false,
-	EffectType::FoodRegeneration, "food_regneration", "food regenerate hp", false,
-	EffectType::NaturalHealingMod, "natural_healing_mod", "natural healing modifier % (timer in days)", false,
-	EffectType::MagicResistance, "magic_resistance", "magic resistance mod %", false,
-	EffectType::Stun, "stun", "unit is stunned", true,
-	EffectType::Attack, "attack", "modify attack", false,
-	EffectType::Defense, "defense", "modify defense", false
+	EffectType::Attribute, "attribute", "modify attribute", false, EffectInfo::Attribute,
+	EffectType::Skill, "skill", "modify skill", false, EffectInfo::Skill,
+	EffectType::Health, "health", "modify max hp", false, EffectInfo::None,
+	EffectType::Stamina, "stamina", "modify max stamina", false, EffectInfo::None,
+	EffectType::Carry, "carry", "modify carry %", false, EffectInfo::None,
+	EffectType::Poison, "poison", "deal poison damage", false, EffectInfo::None,
+	EffectType::Alcohol, "alcohol", "deal alcohol damage", false, EffectInfo::None,
+	EffectType::Regeneration, "regeneration", "regenerate hp", false, EffectInfo::None,
+	EffectType::StaminaRegeneration, "stamina_regeneration", "regenerate stamina", false, EffectInfo::None,
+	EffectType::FoodRegeneration, "food_regneration", "food regenerate hp", false, EffectInfo::None,
+	EffectType::NaturalHealingMod, "natural_healing_mod", "natural healing modifier % (timer in days)", false, EffectInfo::None,
+	EffectType::MagicResistance, "magic_resistance", "magic resistance mod %", false, EffectInfo::None,
+	EffectType::Stun, "stun", "unit is stunned", true, EffectInfo::None,
+	EffectType::Attack, "attack", "modify attack", false, EffectInfo::None,
+	EffectType::Defense, "defense", "modify defense", false, EffectInfo::None
 };
 
 EffectSourceInfo EffectSourceInfo::sources[] = {

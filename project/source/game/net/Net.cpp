@@ -4665,11 +4665,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				EffectSource source;
 				byte source_id;
 				float power, time;
+				int value;
 				if(!stream.ReadCasted<byte>(effect)
-					|| !stream.ReadCasted<byte>(source)
-					|| !stream.Read(source_id)
+					|| !stream.Read(value)
 					|| !stream.Read(power)
-					|| !stream.Read(time))
+					|| !stream.Read(time)
+					|| !stream.ReadCasted<byte>(source)
+					|| !stream.Read(source_id))
 				{
 					StreamError("Update server: Broken CHEAT_ADD_EFFECT from '%s'.", info.name.c_str());
 				}
@@ -4691,15 +4693,43 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					else if(source_id_real != -1)
 						ok = false;
 					if(!ok)
+					{
 						StreamError("Update server: CHEAT_ADD_EFFECT, invalid effect source id %d from '%s'.", source_id_real, info.name.c_str());
+						break;
+					}
+
+					auto& effect_info = EffectInfo::effects[(int)effect];
+					if(effect_info.required == EffectInfo::Attribute)
+					{
+						if(value < 0 || value >= (int)Attribute::MAX)
+							ok = false;
+					}
+					else if(effect_info.required == EffectInfo::Skill)
+					{
+						if(value < 0 || value >= (int)Skill::MAX)
+							ok = false;
+					}
 					else
 					{
-						Effect e;
-						e.effect = effect;
-						e.power = power;
-						e.time = time;
-						e.source = source;
-						e.source_id = source_id_real;
+						if(value != -1)
+							ok = false;
+					}
+
+					if(!ok)
+					{
+						StreamError("Update server: CHEAT_ADD_EFFECT, invalid effect value %d for effect '%s' from '%s'.",
+							value, effect_info.id, info.name.c_str());
+					}
+					else
+					{
+						Effect* e = Effect::Get();
+						e->effect = effect;
+						e->value = value;
+						e->power = power;
+						e->time = time;
+						e->source = source;
+						e->source_id = source_id_real;
+						e->refs = 1;
 						unit.AddEffect(e);
 					}
 				}
@@ -5154,11 +5184,11 @@ void Game::WriteServerChanges(BitStream& stream)
 			stream.Write(total_kills);
 			break;
 		case NetChange::ADD_OBSERVABLE_EFFECT:
-			stream.Write(c.unit->netid);
 			stream.Write(c.id);
-			stream.WriteCasted<byte>(c.ile);
-			stream.Write(c.extra_f);
-			WriteBool(stream, c.i == 1);
+			stream.WriteCasted<byte>(c.effect->effect);
+			stream.Write(c.effect->time);
+			WriteBool(stream, c.effect->update);
+			c.effect->Release();
 			break;
 		case NetChange::REMOVE_OBSERVABLE_EFFECT:
 			stream.Write(c.unit->netid);
@@ -5353,13 +5383,14 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				stream.Write(c.id);
 				break;
 			case NetChangePlayer::ADD_EFFECT:
-				stream.Write(c.id);
-				stream.WriteCasted<byte>(c.ile);
-				stream.WriteCasted<byte>(c.a);
-				stream.WriteCasted<byte>(c.b);
-				stream.Write(c.pos.x);
-				stream.Write(c.pos.y);
-				WriteBool(stream, c.c == 1);
+				stream.WriteCasted<byte>(c.effect->effect);
+				stream.Write(c.effect->value);
+				stream.Write(c.effect->power);
+				stream.Write(c.effect->time);
+				stream.WriteCasted<byte>(c.effect->source);
+				stream.WriteCasted<byte>(c.effect->source_id == -1 ? 0xFF : c.effect->source_id);
+				WriteBool(stream, c.effect->update);
+				c.effect->Release();
 				break;
 			case NetChangePlayer::REMOVE_EFFECT:
 			case NetChangePlayer::UPDATE_LONG_EFFECTS:
@@ -9422,7 +9453,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			// add effect to player
 			case NetChangePlayer::ADD_EFFECT:
 				{
-					int netid;
+					int netid, value;
 					EffectType effect;
 					EffectSource source;
 					byte source_id;
@@ -9430,10 +9461,11 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					bool added;
 					if(!stream.Read(netid)
 						|| !stream.ReadCasted<byte>(effect)
-						|| !stream.ReadCasted<byte>(source)
-						|| !stream.Read(source_id)
+						|| !stream.Read(value)
 						|| !stream.Read(power)
 						|| !stream.Read(time)
+						|| !stream.ReadCasted<byte>(source)
+						|| !stream.Read(source_id)
 						|| !ReadBool(stream, added))
 					{
 						StreamError("Update single client: Broken ADD_EFFECT.");
@@ -9463,13 +9495,15 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						StreamError("Update single client: ADD_EFFECT, invalid source id %d.", source_id_real);
 						break;
 					}
-					Effect e;
-					e.effect = effect;
-					e.netid = netid;
-					e.power = power;
-					e.time = time;
-					e.source = source;
-					e.source_id = source_id_real;
+					Effect* e = Effect::Get();
+					e->effect = effect;
+					e->netid = netid;
+					e->value = value;
+					e->power = power;
+					e->time = time;
+					e->source = source;
+					e->source_id = source_id_real;
+					e->refs = 1;
 					pc->unit->AddEffect(e, added);
 				}
 				break;
@@ -9538,7 +9572,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			return true;
 		}
 	}
-	
+
 	// stamina
 	if(IS_SET(flags, PlayerInfo::UF_STAMINA))
 	{
@@ -9718,11 +9752,13 @@ void Game::WriteClientChanges(BitStream& stream)
 			stream.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::CHEAT_ADD_EFFECT:
-			stream.WriteCasted<byte>(c.id);
-			stream.WriteCasted<byte>(c.ile);
-			stream.WriteCasted<byte>(c.e_id);
-			stream.Write(c.pos.x);
-			stream.Write(c.pos.y);
+			stream.WriteCasted<byte>(c.effect->effect);
+			stream.Write(c.effect->value);
+			stream.Write(c.effect->power);
+			stream.Write(c.effect->time);
+			stream.WriteCasted<byte>(c.effect->source);
+			stream.Write((byte)(c.effect->source_id == -1 ? 0xFF : c.effect->source_id));
+			c.effect->Release();
 			break;
 		case NetChange::CHEAT_REMOVE_EFFECT:
 			stream.WriteCasted<byte>(c.id);
@@ -11012,9 +11048,11 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::GAME_STATS:
 	case NetChange::CHEAT_ADD_PERK:
 	case NetChange::CHEAT_REMOVE_PERK:
-	case NetChange::CHEAT_ADD_EFFECT:
 	case NetChange::CHEAT_REMOVE_EFFECT:
 	case NetChange::CHEAT_REMOVE_EFFECT_NETID:
+		return false;
+	case NetChange::CHEAT_ADD_EFFECT:
+		c.effect->Release();
 		return false;
 	case NetChange::TALK:
 		if(Net::IsServer() && c.str)

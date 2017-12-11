@@ -5,6 +5,7 @@ attribute str {
 	name "Si³a"
 	desc "\tZwiêksza zadawane obra¿enia w walce wrêcz, udŸwig postaci i si³ê bloku. Wymagana do sprawnego u¿ywania ciê¿kich przedmiotów.\n\tU¿ywanie ciê¿kiej broni i pancerza oraz dŸwiganie przedmiotów trenuje si³ê.\n\tWp³ywa na umiejêtnoœci: broñ jednorêczna, d³ugie ostrze, broñ obuchowa, topór, walka bez broni, tarcza, ciê¿ki pancerz, atletyka."
 }
+dupa
 attribute end {
 	name "Kondycja"
 	desc "\tZwiêksza zdrowie, wytrzyma³oœæ i odpornoœæ postaci.\n\tOtrzymywanie obra¿eñ i ich leczenie trenuje kondycjê.\n\tWp³ywa na umiejêtnoœci: œredni pancerz, ciê¿ki pancerz, atletyka, akrobatyka."

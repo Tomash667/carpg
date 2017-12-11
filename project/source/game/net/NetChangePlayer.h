@@ -53,7 +53,7 @@ struct NetChangePlayer
 		HIDE_PERK, // hide player perk [byte(id)-perk, bool(ile)-hide]
 		UPDATE_LEVEL, // player level changed [float(v)]
 		GAME_MESSAGE, // show game message [int(id)-game message id]
-		ADD_EFFECT, // add effect to player [int(id)-effect netid, byte(ile)-effect, byte(a)-source, byte(b)-source_id, float(pos.x)-power, float(pos.y)-time, bool(c)-update]
+		ADD_EFFECT, // add effect to player [Effect effect]
 		REMOVE_EFFECT, // remove effect from player [int(id)-effect netid]
 		UPDATE_LONG_EFFECTS, // update effects that work for days [int(id)-days]
 
@@ -65,6 +65,7 @@ struct NetChangePlayer
 		int a;
 		Unit* unit;
 		float v;
+		Effect* effect;
 	};
 	union
 	{

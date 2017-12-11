@@ -1125,3 +1125,146 @@ namespace internal
 
 template<typename T>
 using SetContainer = std::unordered_set<T*, internal::Hash<T>, internal::Equals<T>>;
+
+//-----------------------------------------------------------------------------
+template<typename T>
+struct PointerVector
+{
+	typedef typename vector<T*> Vector;
+	typedef typename vector<T*>::iterator Iter;
+	typedef typename vector<T*>::const_iterator ConstIter;
+
+	struct Iterator
+	{
+		Iter it;
+
+		Iterator(Iter it) : it(it) {}
+		bool operator != (const Iterator& i)
+		{
+			return it != i.it;
+		}
+		void operator ++ ()
+		{
+			++it;
+		}
+		T& operator * ()
+		{
+			return **it;
+		}
+		T* operator -> ()
+		{
+			return *it;
+		}
+		Iterator operator + (int offset) const
+		{
+			return Iterator(it + offset);
+		}
+		Iterator operator - (int offset) const
+		{
+			return Iterator(it - offset);
+		}
+		T* ptr()
+		{
+			return *it;
+		}
+	};
+
+	struct ConstIterator
+	{
+		ConstIter it;
+
+		ConstIterator(ConstIter it) : it(it) {}
+		bool operator != (const ConstIterator& i)
+		{
+			return it != i.it;
+		}
+		void operator ++ ()
+		{
+			++it;
+		}
+		const T& operator * ()
+		{
+			return **it;
+		}
+		const T* operator -> () const
+		{
+			return *it;
+		}
+		ConstIterator operator + (int offset) const
+		{
+			return Iterator(it + offset);
+		}
+		ConstIterator operator - (int offset) const
+		{
+			return Iterator(it  offset);
+		}
+		const T* ptr() const
+		{
+			return *it;
+		}
+	};
+
+	Iterator begin()
+	{
+		return Iterator(v.begin());
+	}
+	ConstIterator begin() const
+	{
+		return ConstIterator(v.begin());
+	}
+	Iterator end()
+	{
+		return Iterator(v.end());
+	}
+	ConstIterator end() const
+	{
+		return ConstIterator(v.end());
+	}
+
+	bool empty() const
+	{
+		return v.empty();
+	}
+	uint size() const
+	{
+		return v.size();
+	}
+	T& operator [] (uint index)
+	{
+		return *v[index];
+	}
+	T* ptr(uint index)
+	{
+		return v[index];
+	}
+	void reserve(uint size)
+	{
+		v.reserve(size);
+	}
+	void resize(uint size)
+	{
+		v.resize(size);
+	}
+	void push_back(T* e)
+	{
+		v.push_back(e);
+	}
+	Iterator erase(Iterator it)
+	{
+		return Iterator(v.erase(it.it));
+	}
+	ConstIterator erase(ConstIterator it) const
+	{
+		return ConstIterator(v.erase(it.it));
+	}
+	void pop_back()
+	{
+		v.pop_back();
+	}
+	void clear()
+	{
+		v.clear();
+	}
+
+	Vector v;
+};

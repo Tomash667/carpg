@@ -5,7 +5,10 @@
 // in brackets what happens when there is multiple same effects
 enum class EffectType
 {
+	Attribute, // mod attribute
+	Skill, // mod skill
 	Health, // mod max hp
+	Stamina, // mod max stamina
 	Carry, // mod carry
 	Poison, // takes poison damage (sum all)
 	Alcohol, // takes alcohol damage (sum all)
@@ -21,18 +24,18 @@ enum class EffectType
 	Max,
 	None
 
-	/*Attribute,
-	Skill,
-	SkillPack,
-	SubSkill,
+	/*
 	Resistance,
-	Regeneration,
 	RegenerationAura,
 	ManaBurn,
 	DamageBurn,
 	Lifesteal,
 	DamageGain, // by default 5%, limit = 4/3 max
-	MagePower,*/
+	MagePower,
+	PowerAttack,
+	BackstabDamage,
+	CriticalChance,
+	CriticalDamage*/
 
 };
 // saved as byte in mp
@@ -54,16 +57,46 @@ enum class EffectSource
 static_assert((uint)EffectSource::None <= 255, "too many EffectSource");
 
 //-----------------------------------------------------------------------------
-struct Effect
+struct Effect : ObjectPoolProxy<Effect>
 {
 	EffectType effect;
 	EffectSource source;
 	float time, power;
-	int source_id, netid;
+	int value, source_id, netid, refs;
+	bool update;
 
 	static int netid_counter;
-	
-	bool IsTimed() const { return source != EffectSource::Perk && source != EffectSource::Other; }
+
+	bool IsTimed() const
+	{
+		return source != EffectSource::Perk && source != EffectSource::Other;
+	}
+	void Release()
+	{
+		if(--refs == 0)
+			Free();
+	}
+};
+
+//-----------------------------------------------------------------------------
+struct EffectVector : PointerVector<Effect>
+{
+	~EffectVector()
+	{
+		Effect::Free(v);
+	}
+	void clear()
+	{
+		Effect::Free(v);
+		PointerVector::clear();
+	}
+	Effect& add()
+	{
+		Effect* e = Effect::Get();
+		e->refs = 1;
+		push_back(e);
+		return *e;
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -102,9 +135,17 @@ struct EffectBuffer
 //-----------------------------------------------------------------------------
 struct EffectInfo
 {
+	enum Required
+	{
+		Attribute,
+		Skill,
+		None
+	};
+
 	EffectType effect;
 	cstring id, desc;
 	bool observable;
+	Required required;
 
 	static EffectInfo effects[(uint)EffectType::Max];
 	static EffectInfo* TryGet(const AnyString& s);

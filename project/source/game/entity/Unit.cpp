@@ -31,27 +31,32 @@ Unit::~Unit()
 //=================================================================================================
 float Unit::CalculateMaxHp() const
 {
+	float hp;
 	if(IS_SET(data->flags3, F3_FIXED))
-		return (float)data->hp;
+		hp = (float)data->hp;
 	else
 	{
 		float end = (float)Get(Attribute::END);
 		float ath = (float)Get(Skill::ATHLETICS);
 		float lvl = IsPlayer() ? player->level : (float)level;
-		float hp = data->hp + (data->hp_bonus + (end - 50) / 5 + ath / 5) * (lvl + 2);
-		float effects_hp = GetEffectSum(EffectType::Health);
-		hp += effects_hp;
-		return hp;
+		hp = data->hp + (data->hp_bonus + (end - 50) / 5 + ath / 5) * (lvl + 2);
 	}
+	float effects_hp = GetEffectSum(EffectType::Health);
+	hp += effects_hp;
+	return hp;
 }
 
 //=================================================================================================
 float Unit::CalculateMaxStamina() const
 {
+	float stamina;
 	if(IS_SET(data->flags3, F3_FIXED))
-		return (float)data->stamina;
+		stamina = (float)data->stamina;
 	else
-		return (float)(data->stamina + Get(Attribute::END) * 2 + Get(Skill::ACROBATICS));
+		stamina = (float)(data->stamina + Get(Attribute::END) * 2 + Get(Skill::ACROBATICS));
+	float effects_stamina = GetEffectSum(EffectType::Stamina);
+	stamina += effects_stamina;
+	return stamina;
 }
 
 //=================================================================================================
@@ -711,12 +716,14 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_ALCOHOL:
 		if(!IS_SET(data->flags, F_POISON_RES))
 		{
-			Effect e;
-			e.effect = (item.effect == E_POISON ? EffectType::Poison : EffectType::Alcohol);
-			e.time = item.time;
-			e.power = item.power / item.time;
-			e.source = EffectSource::Potion;
-			e.source_id = -1;
+			Effect* e = Effect::Get();
+			e->effect = (item.effect == E_POISON ? EffectType::Poison : EffectType::Alcohol);
+			e->time = item.time;
+			e->value = -1;
+			e->power = item.power / item.time;
+			e->source = EffectSource::Potion;
+			e->source_id = -1;
+			e->refs = 1;
 			AddEffect(e);
 		}
 		break;
@@ -725,36 +732,39 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_ANTIMAGIC:
 	case E_STAMINA:
 		{
-			Effect e;
+			Effect* e = Effect::Get();
 			switch(item.effect)
 			{
 			case E_REGENERATE:
-				e.effect = EffectType::Regeneration;
+				e->effect = EffectType::Regeneration;
 				break;
 			case E_NATURAL:
-				e.effect = EffectType::NaturalHealingMod;
+				e->effect = EffectType::NaturalHealingMod;
 				break;
 			case E_ANTIMAGIC:
-				e.effect = EffectType::MagicResistance;
+				e->effect = EffectType::MagicResistance;
 				break;
 			case E_STAMINA:
-				e.effect = EffectType::StaminaRegeneration;
+				e->effect = EffectType::StaminaRegeneration;
 				break;
 			}
-			e.time = item.time;
-			e.power = item.power;
-			e.source = EffectSource::Potion;
-			e.source_id = -1;
+			e->time = item.time;
+			e->value = -1;
+			e->power = item.power;
+			e->source = EffectSource::Potion;
+			e->source_id = -1;
+			e->refs = 1;
 			AddEffect(e);
 		}
 		break;
 	case E_ANTIDOTE:
 		{
 			uint index = 0;
-			for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
+			for(auto& e : effects)
 			{
-				if(it->effect == EffectType::Poison || it->effect == EffectType::Alcohol)
+				if(e.effect == EffectType::Poison || e.effect == EffectType::Alcohol)
 					_to_remove.push_back(index);
+				++index;
 			}
 
 			RemoveEffects();
@@ -780,12 +790,14 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		break;
 	case E_FOOD:
 		{
-			Effect e;
-			e.effect = EffectType::FoodRegeneration;
-			e.time = item.power;
-			e.power = 1.f;
-			e.source = EffectSource::Potion;
-			e.source_id = -1;
+			Effect* e = Effect::Get();
+			e->effect = EffectType::FoodRegeneration;
+			e->time = item.power;
+			e->power = 1.f;
+			e->source = EffectSource::Potion;
+			e->source_id = -1;
+			e->refs = 1;
+			AddEffect(e);
 		}
 		break;
 	case E_GREEN_HAIR:
@@ -990,7 +1002,7 @@ void Unit::EndEffects()
 
 		++index;
 	}
-	
+
 	if(hp != hpmax)
 	{
 		hp += reg + food * natural;
@@ -1789,7 +1801,10 @@ void Unit::Load(HANDLE file, bool local)
 	if(ile)
 	{
 		if(LOAD_VERSION >= V_CURRENT)
-			ReadFile(file, effects.data(), sizeof(Effect)*ile, &tmp, nullptr);
+		{
+			for(auto& e : effects)
+				ReadFile(file, &e, sizeof(Effect), &tmp, nullptr);
+		}
 		else
 		{
 			for(auto& e : effects)
@@ -1935,12 +1950,12 @@ bool Unit::FindEffect(EffectType effect, float* value)
 	Effect* top = nullptr;
 	float topv = 0.f;
 
-	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it)
+	for(auto& e : effects)
 	{
-		if(it->effect == effect && it->power > topv)
+		if(e.effect == effect && e.power > topv)
 		{
-			top = &*it;
-			topv = it->power;
+			top = &e;
+			topv = e.power;
 		}
 	}
 
@@ -2178,10 +2193,11 @@ void Unit::HealPoison()
 		hp = 1.f;
 
 	uint index = 0;
-	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
+	for(auto& e : effects)
 	{
-		if(it->effect == EffectType::Poison)
+		if(e.effect == EffectType::Poison)
 			_to_remove.push_back(index);
+		++index;
 	}
 
 	RemoveEffects();
@@ -2490,11 +2506,11 @@ int Unit::CalculateMagicPower() const
 }
 
 //=================================================================================================
-bool Unit::HaveEffect(EffectType e) const
+bool Unit::HaveEffect(EffectType effect) const
 {
-	for(vector<Effect>::const_iterator it = effects.begin(), end = effects.end(); it != end; ++it)
+	for(auto& e : effects)
 	{
-		if(it->effect == e)
+		if(e.effect == effect)
 			return true;
 	}
 	return false;
@@ -3104,13 +3120,15 @@ void Unit::ApplyStun(float length)
 {
 	if(Net::IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
 		length /= 2;
-	
-	Effect e;
-	e.effect = EffectType::Stun;
-	e.power = 0.f;
-	e.time = length;
-	e.source = EffectSource::Action;
-	e.source_id = -1;
+
+	Effect* e = Effect::Get();
+	e->effect = EffectType::Stun;
+	e->value = -1;
+	e->power = 0.f;
+	e->time = length;
+	e->source = EffectSource::Action;
+	e->source_id = -1;
+	e->refs = 1;
 	AddOrUpdateEffect(e);
 	animation = ANI_STAND;
 }
@@ -3290,7 +3308,7 @@ void Unit::RemovePerk(int index)
 }
 
 //=================================================================================================
-void Unit::AddEffect(Effect& e, bool update)
+void Unit::AddEffect(Effect* e, bool update)
 {
 	bool added = false;
 	if(update)
@@ -3301,13 +3319,14 @@ void Unit::AddEffect(Effect& e, bool update)
 		{
 			for(auto& ef : effects)
 			{
-				if(ef.netid == e.netid)
+				if(ef.netid == e->netid)
 				{
-					ef.effect = e.effect;
-					ef.power = e.power;
-					ef.time = e.time;
-					ef.source = e.source;
-					ef.source_id = e.source_id;
+					ef.effect = e->effect;
+					ef.power = e->power;
+					ef.time = e->time;
+					ef.source = e->source;
+					ef.source_id = e->source_id;
+					e->Release();
 
 					added = true;
 					break;
@@ -3319,81 +3338,75 @@ void Unit::AddEffect(Effect& e, bool update)
 	if(!added)
 	{
 		if(Net::IsLocal())
-			e.netid = Effect::netid_counter++;
+			e->netid = Effect::netid_counter++;
 		effects.push_back(e);
 	}
 
-	EffectStatUpdate(e);
+	EffectStatUpdate(*e);
 
 	if(Net::IsServer())
 	{
-		if(EffectInfo::effects[(int)e.effect].observable)
+		if(EffectInfo::effects[(int)e->effect].observable)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::ADD_OBSERVABLE_EFFECT;
-			c.unit = this;
-			c.id = e.netid;
-			c.ile = (byte)e.effect;
-			c.extra_f = e.time;
-			c.i = (added ? 1 : 0);
+			c.id = netid;
+			c.effect = e;
+			e->update = added;
+			e->refs++;
 		}
 
 		if(IsPlayer() && !player->is_local && player->player_info)
 		{
 			NetChangePlayer& c = Add1(player->player_info->changes);
 			c.type = NetChangePlayer::ADD_EFFECT;
-			c.id = e.netid;
-			c.ile = (byte)e.effect;
-			c.a = (byte)e.source;
-			c.b = (byte)(e.source_id == -1 ? 0xFF : e.source_id);
-			c.pos.x = e.power;
-			c.pos.y = e.time;
-			c.c = added;
+			c.effect = e;
+			e->update = added;
+			e->refs++;
 		}
 	}
 }
 
 //=================================================================================================
 // Keep effect with longest time (power should don't matter - for example stun)
-void Unit::AddOrUpdateEffect(Effect& e)
+void Unit::AddOrUpdateEffect(Effect* e)
 {
-	auto effect = FindEffect(e.effect);
+	auto effect = FindEffect(e->effect);
 	if(effect)
 	{
-		if(effect->time < e.time)
+		if(effect->time < e->time)
 		{
-			effect->time = e.time;
-			effect->source = e.source;
-			effect->source_id = e.source_id;
-			AddEffect(*effect, true);
+			effect->time = e->time;
+			effect->source = e->source;
+			effect->source_id = e->source_id;
+			AddEffect(effect, true);
 		}
-		else
-			return;
+		e->Free();
 	}
 	else
 		AddEffect(e);
 }
 
 //=================================================================================================
-void Unit::RemoveEffect(const Effect& effect, bool notify)
+void Unit::RemoveEffect(const Effect* effect, bool notify)
 {
-	EffectStatUpdate(effect);
+	EffectStatUpdate(*effect);
 
 	if(notify && Net::IsServer())
 	{
-		if(EffectInfo::effects[(int)effect.effect].observable)
+		if(EffectInfo::effects[(int)effect->effect].observable)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::REMOVE_OBSERVABLE_EFFECT;
 			c.unit = this;
-			c.id = effect.netid;
+			c.id = effect->netid;
 		}
 
 		if(IsPlayer() && !player->is_local && player->player_info)
 		{
 			NetChangePlayer& c = Add1(player->player_info->changes);
 			c.type = NetChangePlayer::REMOVE_EFFECT;
-			c.id = effect.netid;
+			c.id = effect->netid;
 		}
 	}
 }
@@ -3405,6 +3418,9 @@ void Unit::EffectStatUpdate(const Effect& e)
 	{
 	case EffectType::Health:
 		RecalculateHp();
+		break;
+	case EffectType::Stamina:
+		RecalculateStamina();
 		break;
 	case EffectType::Carry:
 		CalculateLoad();
@@ -3418,10 +3434,11 @@ void Unit::RemoveEffect(EffectType effect)
 	assert(Net::IsLocal());
 
 	uint index = 0;
-	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
+	for(auto& e : effects)
 	{
-		if(it->effect == effect)
+		if(e.effect == effect)
 			_to_remove.push_back(index);
+		++index;
 	}
 
 	RemoveEffects();
@@ -3434,9 +3451,10 @@ bool Unit::RemoveEffect(int netid)
 	{
 		if(it->netid == netid)
 		{
-			Effect e = *it;
+			Effect* e = it.ptr();
 			effects.erase(it);
 			RemoveEffect(e, true);
+			e->Free();
 			return true;
 		}
 	}
@@ -3468,7 +3486,7 @@ void Unit::RemoveEffects(bool notify)
 	while(!_to_remove.empty())
 	{
 		uint index = _to_remove.back();
-		auto e = effects[index];
+		auto e = effects.ptr(index);
 		_to_remove.pop_back();
 		if(index == effects.size() - 1)
 			effects.pop_back();
@@ -3478,6 +3496,7 @@ void Unit::RemoveEffects(bool notify)
 			effects.pop_back();
 		}
 		RemoveEffect(e, notify);
+		e->Free();
 	}
 }
 
@@ -3489,6 +3508,7 @@ void Unit::WriteEffects(BitStream& stream)
 	{
 		stream.Write(e.netid);
 		stream.WriteCasted<byte>(e.effect);
+		stream.Write(e.value);
 		stream.Write(e.power);
 		stream.Write(e.time);
 		stream.WriteCasted<byte>(e.source);
@@ -3503,11 +3523,16 @@ bool Unit::ReadEffects(BitStream& stream)
 	if(!stream.Read(count) || !EnsureSize(stream, 15 * count))
 		return false;
 
-	effects.resize(count);
-	for(auto& e : effects)
+	// clear existing observable effects
+	effects.clear();
+
+	effects.reserve(count);
+	for(uint i=0; i<count; ++i)
 	{
+		auto& e = effects.add();
 		stream.Read(e.netid);
 		stream.ReadCasted<byte>(e.effect);
+		stream.Read(e.value);
 		stream.Read(e.power);
 		stream.Read(e.time);
 		stream.ReadCasted<byte>(e.source);
@@ -3537,13 +3562,16 @@ void Unit::AddObservableEffect(EffectType effect, int netid, float time, bool up
 		}
 	}
 
-	Effect& e = Add1(effects);
-	e.effect = effect;
-	e.netid = netid;
-	e.power = 0;
-	e.time = time;
-	e.source = EffectSource::Action;
-	e.source_id = -1;
+	Effect* e = Effect::Get();
+	e->effect = effect;
+	e->netid = netid;
+	e->value = -1;
+	e->power = 0;
+	e->time = time;
+	e->source = EffectSource::Action;
+	e->source_id = -1;
+	e->refs = 1;
+	effects.push_back(e);
 }
 
 //=================================================================================================
@@ -3555,7 +3583,9 @@ bool Unit::RemoveObservableEffect(int netid)
 	{
 		if(it->netid == netid)
 		{
+			Effect* e = it.ptr();
 			effects.erase(it);
+			e->Free();
 			return true;
 		}
 	}
@@ -3589,9 +3619,10 @@ bool Unit::ReadObservableEffects(BitStream& stream)
 	if(!stream.Read(effects_count) || !EnsureSize(stream, 9 * effects_count))
 		return false;
 
-	effects.resize(effects_count);
-	for(auto& e : effects)
+	effects.reserve(effects_count);
+	for(uint i=0; i<effects_count; ++i)
 	{
+		auto& e = effects.add();
 		stream.Read(e.netid);
 		stream.ReadCasted<byte>(e.effect);
 		stream.Read(e.time);
@@ -3705,5 +3736,5 @@ void Unit::PassTime(int days, PassTimeType type)
 
 		if(stamina != prev_stamina && IsPlayer() && !player->is_local)
 			player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
-	}	
+	}
 }

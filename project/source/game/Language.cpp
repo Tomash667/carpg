@@ -322,12 +322,12 @@ static inline void GetStringOrEndBlock(Tokenizer& t, KEYWORD k, string& s)
 //=================================================================================================
 static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 {
-	cstring path = Format("%s/lang/%s/%s", g_system_dir.c_str(), g_lang_prefix.c_str(), filename);
-	Info("Reading text file \"%s\".", path);
+	LocalString path = Format("%s/lang/%s/%s", g_system_dir.c_str(), g_lang_prefix.c_str(), filename);
+	Info("Reading text file \"%s\".", path.c_str());
 
 	if(!t.FromFile(path))
 	{
-		Error("Failed to open language file '%s'.", path);
+		Error("Failed to open language file '%s'.", path.c_str());
 		return;
 	}
 
@@ -620,7 +620,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		Error("Failed to load language file '%s': %s", path, e.ToString());
+		Error("Failed to load language file '%s': %s", path.c_str(), e.ToString());
 	}
 }
 

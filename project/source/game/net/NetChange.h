@@ -1,6 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+struct Effect;
 struct GroundItem;
 struct Item;
 struct Spell;
@@ -156,10 +157,10 @@ struct NetChange
 		USE_ITEM, // play use item animation for player
 		CHEAT_ADD_PERK, // player used cheat 'add_perk' [byte(id)-perk_id, byte(ile)-value]
 		CHEAT_REMOVE_PERK, // player used cheat 'remove_perk' [byte(id)-perk_id]
-		CHEAT_ADD_EFFECT, // player used cheat 'add_effect' [byte(id)-effect, byte(ile)-source, byte(e_id)-source_id, float(pos.x)-power, float(pos.y)-time]
+		CHEAT_ADD_EFFECT, // player used cheat 'add_effect' [Effect effect]
 		CHEAT_REMOVE_EFFECT, // player used cheat 'remove_effect' [byte(id)-effect, byte(ile)-source, byte(e_id)-source_id],
 		CHEAT_REMOVE_EFFECT_NETID, // player used cheat 'remove_effect' by netid [int(id)-netid]
-		ADD_OBSERVABLE_EFFECT, // add observable effect to unit [int(netid)-unit, int(id)-effect netid, byte(ile)-effect, float(extra_f)-time, bool(i)-update]
+		ADD_OBSERVABLE_EFFECT, // add observable effect to unit [int(id)-unit netid, Effect effect]
 		REMOVE_OBSERVABLE_EFFECT, // remove observable effect from unit [int(netid)-unit, int(id)-effect netid]
 
 		MAX
@@ -172,6 +173,7 @@ struct NetChange
 		UnitData* base_unit;
 		int e_id;
 		Spell* spell;
+		Effect* effect;
 	};
 	union
 	{

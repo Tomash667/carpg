@@ -180,7 +180,7 @@ struct Unit
 	const Item* used_item;
 	bool used_item_is_team;
 private:
-	vector<Effect> effects;
+	EffectVector effects;
 public:
 	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved;
 	AIController* ai;
@@ -803,14 +803,14 @@ public:
 	Effect* FindEffect(EffectType effect);
 	bool FindEffect(EffectType effect, float* value);
 	void RemovePerkEffects(Perk perk);
-	void RemoveEffect(const Effect& effect, bool notify);
-	void AddEffect(Effect& e, bool update = false);
-	void AddOrUpdateEffect(Effect& e);
+	void RemoveEffect(const Effect* effect, bool notify);
+	void AddEffect(Effect* e, bool update = false);
+	void AddOrUpdateEffect(Effect* e);
 	void RemoveEffect(EffectType effect);
 	bool RemoveEffect(int netid);
 	void RemoveEffects(EffectType effect, EffectSource source, Perk source_id);
 	void RemoveEffects(bool notify = true);
-	const vector<Effect>& GetEffects() const { return effects; }
+	const EffectVector& GetEffects() const { return effects; }
 	void WriteEffects(BitStream& stream);
 	bool ReadEffects(BitStream& stream);
 	void AddObservableEffect(EffectType effect, int netid, float time, bool update);

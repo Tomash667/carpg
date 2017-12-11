@@ -125,8 +125,8 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_LIST_PERKS, "list_perks", "list player perks", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_ADD_PERK, "add_perk", "add new perk to player (add_perk name [value])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_REMOVE_PERK, "remove_perk", "remove perk from player (remove_perk name)", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to player (add_effect name [power time source perk])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from player (remove_effect netid/[effect_name] source [perk])", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_ADD_EFFECT, "add_effect", "add effect to player (add_effect name [value] [power time source perk]), value is required for some effects (attribute, skill)", F_GAME | F_CHEAT));
+	cmds.push_back(ConsoleCommand(CMD_REMOVE_EFFECT, "remove_effect", "remove effect from player (remove_effect netid/[effect_name value] source [perk])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST_STATS, "list_stats", "list player stats", F_GAME | F_CHEAT));
 
 	// verify all commands are added
@@ -1821,8 +1821,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						EffectType effect;
 						float power = 0.f, time = 0.f;
 						EffectSource source = EffectSource::Action;
-						int effect_source_id = -1;
+						int value = -1, effect_source_id = -1;
 
+						// effect
 						auto& id = t.MustGetItem();
 						auto effect_info = EffectInfo::TryGet(id);
 						if(!effect_info)
@@ -1832,10 +1833,46 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 						effect = effect_info->effect;
 
+						// value
+						if(effect_info->required != EffectInfo::None)
+						{
+							if(!t.Next() || !t.IsItem())
+							{
+								Msg("Effect '%s' require '%s'.", effect_info->id, effect_info->required == EffectInfo::Attribute ? "attribute" : "skill");
+								break;
+							}
+							auto& required_id = t.GetItem();
+							if(effect_info->required == EffectInfo::Attribute)
+							{
+								auto attrib_info = AttributeInfo::Find(required_id);
+								if(!attrib_info)
+								{
+									Msg("Invalid attribute '%s' for effect '%s'.", required_id.c_str(), effect_info->id);
+									break;
+								}
+								value = (int)attrib_info->attrib_id;
+							}
+							else
+							{
+								auto skill_info = SkillInfo::Find(required_id);
+								if(!skill_info)
+								{
+									Msg("Invalid skill '%s' for effect '%s'.", required_id.c_str(), effect_info->id);
+									break;
+								}
+								value = (int)skill_info->skill_id;
+							}
+						}
+
+						// power
 						if(t.Next())
 							power = t.MustGetNumberFloat();
+
+						// time
 						if(t.Next())
 							time = t.MustGetNumberFloat();
+
+						// source
 						if(t.Next())
 						{
 							auto& source_id = t.MustGetItem();
@@ -1860,25 +1897,21 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							}
 						}
 
+						Effect* e = Effect::Get();
+						e->effect = effect;
+						e->value = value;
+						e->power = power;
+						e->time = time;
+						e->source = source;
+						e->source_id = effect_source_id;
+						e->refs = 1;
 						if(Net::IsLocal())
-						{
-							Effect e;
-							e.effect = effect;
-							e.power = power;
-							e.time = time;
-							e.source = source;
-							e.source_id = effect_source_id;
 							pc->unit->AddEffect(e);
-						}
 						else
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::CHEAT_ADD_EFFECT;
-							c.id = (byte)effect;
-							c.ile = (byte)source;
-							c.e_id = (byte)(effect_source_id == -1 ? 0xFF : effect_source_id);
-							c.pos.x = power;
-							c.pos.y = time;
+							c.effect = e;
 						}
 					}
 					break;
