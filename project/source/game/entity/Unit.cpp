@@ -824,7 +824,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 //=================================================================================================
 void Unit::UpdateEffects(float dt)
 {
-	EffectBuffer reg, stamina_reg;
+	EffectSumBuffer reg, stamina_reg;
 	float food_heal = 0.f, poison_dmg = 0.f, alco_sum = 0.f;
 
 	// update effects timer
@@ -974,7 +974,8 @@ void Unit::EndEffects()
 
 	// end effects
 	uint index = 0;
-	EffectBuffer reg, natural(1);
+	EffectSumBuffer reg;
+	EffectMulBuffer natural;
 	float food = 0.f;
 	for(auto& e : effects)
 	{
@@ -1464,8 +1465,8 @@ void Unit::Save(HANDLE file, bool local)
 	// efekty
 	ile = effects.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	if(ile)
-		WriteFile(file, &effects[0], sizeof(Effect)*ile, &tmp, nullptr);
+	for(auto& e : effects)
+		WriteFile(file, &e, sizeof(Effect), &tmp, nullptr);
 
 	if(player)
 	{
@@ -1797,21 +1798,28 @@ void Unit::Load(HANDLE file, bool local)
 
 	// effects
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	effects.resize(ile);
+	effects.reserve(ile);
 	if(ile)
 	{
 		if(LOAD_VERSION >= V_CURRENT)
 		{
-			for(auto& e : effects)
+			for(uint i = 0; i < ile; ++i)
+			{
+				auto& e = effects.add();
 				ReadFile(file, &e, sizeof(Effect), &tmp, nullptr);
+				e.refs = 1;
+			}
 		}
 		else
 		{
-			for(auto& e : effects)
+			for(uint i = 0; i < ile; ++i)
 			{
+				auto& e = effects.add();
+
 				ConsumeEffect effect;
 				e.source = EffectSource::Potion;
 				e.source_id = -1;
+				e.value = -1;
 				ReadFile(file, &effect, sizeof(effect), &tmp, nullptr);
 				ReadFile(file, &e.time, sizeof(e.time), &tmp, nullptr);
 				ReadFile(file, &e.power, sizeof(e.power), &tmp, nullptr);
@@ -2574,6 +2582,12 @@ int Unit::GetBuffs() const
 }
 
 //=================================================================================================
+int Unit::Get(Attribute a, StatState& stat) const
+{
+	int value = statsx->Get(a);
+}
+
+//=================================================================================================
 int Unit::Get(Skill s) const
 {
 	int index = (int)s;
@@ -3220,6 +3234,17 @@ float Unit::GetEffectSum(EffectType effect) const
 }
 
 //=================================================================================================
+float Unit::GetEffectSum(EffectType effect, StatState& state) const
+{
+	EffectBuffer buf;
+	bool have_plus = false, have_minus = false;
+	for(auto& e : effects)
+	{
+
+	}
+}
+
+//=================================================================================================
 bool Unit::GetEffectModMultiply(EffectType effect, float& value) const
 {
 	bool any = false;
@@ -3381,7 +3406,7 @@ void Unit::AddOrUpdateEffect(Effect* e)
 			effect->source_id = e->source_id;
 			AddEffect(effect, true);
 		}
-		e->Free();
+		e->Release();
 	}
 	else
 		AddEffect(e);
@@ -3454,7 +3479,7 @@ bool Unit::RemoveEffect(int netid)
 			Effect* e = it.ptr();
 			effects.erase(it);
 			RemoveEffect(e, true);
-			e->Free();
+			e->Release();
 			return true;
 		}
 	}
@@ -3496,7 +3521,7 @@ void Unit::RemoveEffects(bool notify)
 			effects.pop_back();
 		}
 		RemoveEffect(e, notify);
-		e->Free();
+		e->Release();
 	}
 }
 
@@ -3585,7 +3610,7 @@ bool Unit::RemoveObservableEffect(int netid)
 		{
 			Effect* e = it.ptr();
 			effects.erase(it);
-			e->Free();
+			e->Release();
 			return true;
 		}
 	}

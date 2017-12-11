@@ -798,6 +798,7 @@ public:
 	bool HaveEffect(EffectType effect) const;
 	bool HaveEffect(int netid) const;
 	float GetEffectSum(EffectType effect) const;
+	float GetEffectSum(EffectType effect, StatState& state) const;
 	bool GetEffectModMultiply(EffectType effect, float& value) const;
 	float GetEffectModMultiply(EffectType effect) const { float value = 1.f; GetEffectModMultiply(effect, value); return value; }
 	Effect* FindEffect(EffectType effect);

@@ -1,10 +1,8 @@
 ﻿FEATURE:
 *** perks
-? CHEAT_ADD_EFFECT, AddEffect new parameter
 + new effects
 	+ attribute
 	+ skill
-	? stamina
 + perk points
 	every two levels, for heroes every 3 levels
 	+ set/update
@@ -28,6 +26,7 @@
 	? replace old perks, add missing wealthy
 	? magic resistance potion
 	? loading old effects
+	? add_effect (skill/attribute/stamina/health/attack/defense), remove_effect (by netid/effect); memory leaks
 	? add_perk, remove_perk, list_perks in MP
 ! changelog
 	+ new commands, list types

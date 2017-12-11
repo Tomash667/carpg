@@ -1,6 +1,9 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
+#include "UnitStats.h"
+
+//-----------------------------------------------------------------------------
 // Effects that can affect unit
 // in brackets what happens when there is multiple same effects
 enum class EffectType
@@ -83,7 +86,11 @@ struct EffectVector : PointerVector<Effect>
 {
 	~EffectVector()
 	{
-		Effect::Free(v);
+		for(auto e : v)
+		{
+			if(e)
+				e->Release();
+		}
 	}
 	void clear()
 	{
@@ -100,19 +107,46 @@ struct EffectVector : PointerVector<Effect>
 };
 
 //-----------------------------------------------------------------------------
-struct EffectBuffer
+struct EffectSumBuffer
 {
 	float best_potion;
 	float sum;
-	bool mul;
 
-	EffectBuffer(float def = 0.f) : best_potion(def), sum(def), mul(def == 1.f)
+	EffectSumBuffer(float def = 0.f) : best_potion(def), sum(def)
 	{
 	}
 
 	operator float() const
 	{
-		return mul ? (best_potion * sum) : (best_potion + sum);
+		return best_potion * sum;
+	}
+
+	void operator += (const Effect& e)
+	{
+		if(e.source == EffectSource::Potion)
+		{
+			if(e.power > best_potion)
+				best_potion = e.power;
+		}
+		else
+			sum += e.power;
+	}
+};
+
+//-----------------------------------------------------------------------------
+struct EffectSumBufferWithState
+{
+	float best_potion;
+	float sum;
+	bool have_plus, have_minus;
+
+	EffectSumBufferWithState(float def = 0.f) : best_potion(def), sum(def), have_plus(false), have_minus(false)
+	{
+	}
+
+	operator float() const
+	{
+		return best_potion + sum;
 	}
 
 	void operator += (const Effect& e)
@@ -124,11 +158,63 @@ struct EffectBuffer
 		}
 		else
 		{
-			if(mul)
-				sum *= e.power;
-			else
-				sum += e.power;
+			if(e.power > 0)
+				have_plus = true;
+			else if(e.power < 0)
+				have_minus = true;
+			sum += e.power;
 		}
+	}
+
+	StatState GetState()
+	{
+		if(best_potion > 0)
+			have_plus = true;
+		else if(best_potion < 0)
+			have_minus = true;
+		float total = sum + best_potion;
+		if(have_plus && have_minus)
+		{
+			if(total > 0)
+				return StatState::POSITIVE_MIXED;
+			else if(total == 0)
+				return StatState::MIXED;
+			else
+				return StatState::NEGATIVE_MIXED;
+		}
+		else if(have_plus)
+			return StatState::POSITIVE;
+		else if(have_minus)
+			return StatState::NEGATIVE;
+		else
+			return StatState::NORMAL;
+	}
+};
+
+//-----------------------------------------------------------------------------
+struct EffectMulBuffer
+{
+	float best_potion;
+	float mul;
+
+	EffectMulBuffer(float def = 1.f) : best_potion(def), mul(def)
+	{
+	}
+
+	operator float() const
+	{
+		return best_potion * mul;
+	}
+
+	void operator *= (const Effect& e)
+	{
+		if(e.source == EffectSource::Potion)
+		{
+			if(e.power > best_potion)
+				best_potion = e.power;
+		}
+		else
+			mul *= e.power;
 	}
 };
 

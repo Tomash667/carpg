@@ -1795,7 +1795,16 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						for(auto& e : pc->unit->GetEffects())
 						{
 							auto& source = EffectSourceInfo::sources[(int)e.source];
-							str = Format("%s - power:%g, source:%s", EffectInfo::effects[(int)e.effect].id, FLT100(e.power), source.id);
+							auto& info = EffectInfo::effects[(int)e.effect];
+							str = info.id;
+							if(info.required != EffectInfo::None)
+							{
+								if(info.required == EffectInfo::Attribute)
+									str += Format("(%s)", AttributeInfo::attributes[e.value].id);
+								else
+									str += Format("(%s)", SkillInfo::skills[e.value].id);
+							}
+							str += Format(" - power:%g, source:%s", FLT100(e.power), source.id);
 							switch(e.source)
 							{
 							case EffectSource::Potion:
