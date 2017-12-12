@@ -32,9 +32,18 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::MilitaryTraining, "military_training", PerkInfo::History),
 	PerkInfo(Perk::StrongBack, "strong_back", 0),
 	PerkInfo(Perk::StrongerBack, "stronger_back", 0, Perk::StrongBack),
+	PerkInfo(Perk::Aggressive, "aggressive", 0),
+	PerkInfo(Perk::VeryAggressive, "very_aggressive", 0, Perk::Aggressive),
+	PerkInfo(Perk::Berserker, "berserker", 0, Perk::VeryAggressive),
+	PerkInfo(Perk::Careful, "careful", 0),
 	PerkInfo(Perk::Tought, "tought", 0),
 	PerkInfo(Perk::Toughter, "toughter", 0, Perk::Tought),
-	PerkInfo(Perk::Toughtest, "toughtest", 0, Perk::Toughter)
+	PerkInfo(Perk::Toughtest, "toughtest", 0, Perk::Toughter),
+	PerkInfo(Perk::HardSkin, "hard_skin", 0),
+	PerkInfo(Perk::IronSkin, "iron_skin", 0, Perk::HardSkin),
+	PerkInfo(Perk::DiamondSkin, "diamond_skin", 0, Perk::IronSkin),
+	PerkInfo(Perk::ExtraordinaryHealth, "extraordinary_health", 0),
+	PerkInfo(Perk::PerfectHealth, "perfect_health", 0, Perk::ExtraordinaryHealth)
 };
 
 //-----------------------------------------------------------------------------
@@ -215,15 +224,29 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	case Perk::Poor:
 		return !ctx.HavePerk(Perk::Wealthy) && !ctx.HavePerk(Perk::FamilyHeirloom);
 	case Perk::StrongBack:
-		return !ctx.HavePerk(Perk::BadBack) && (ctx.Have(Attribute::STR, 60) || ctx.Have(Skill::ATHLETICS, 25));
+		return !ctx.HavePerk(Perk::BadBack) && ctx.Have(Attribute::STR, 60);
 	case Perk::StrongerBack:
-		return ctx.Have(Attribute::STR, 80) || ctx.Have(Skill::ATHLETICS, 50);
+		return ctx.Have(Attribute::STR, 80);
+	case Perk::Aggressive:
+		return ctx.Have(Attribute::STR, 80);
+	case Perk::VeryAggressive:
+		return ctx.Have(Attribute::STR, 100);
+	case Perk::Berserker:
+		return ctx.Have(Attribute::STR, 60);
+	case Perk::Careful:
+		return ctx.Have(Attribute::DEX, 60);
 	case Perk::Tought:
+	case Perk::HardSkin:
 		return ctx.Have(Attribute::END, 60);
 	case Perk::Toughter:
+	case Perk::IronSkin:
 		return ctx.Have(Attribute::END, 80);
 	case Perk::Toughtest:
+	case Perk::DiamondSkin:
+	case Perk::PerfectHealth:
 		return ctx.Have(Attribute::END, 100);
+	case Perk::ExtraordinaryHealth:
+		return !ctx.HavePerk(Perk::ChronicDisease) && ctx.Have(Attribute::END, 75);
 	default:
 		assert(0);
 		return false;
@@ -316,13 +339,41 @@ bool TakenPerk::Apply(PerkContext& ctx)
 	case Perk::StrongerBack:
 		ctx.AddEffect(this, EffectType::Carry, 1.5f);
 		break;
+	case Perk::Aggressive:
+		ctx.AddEffect(this, EffectType::Attack, 10.f);
+		break;
+	case Perk::VeryAggressive:
+		ctx.AddEffect(this, EffectType::Attack, 30.f);
+		break;
+	case Perk::Berserker:
+		ctx.AddEffect(this, EffectType::Attack, 60.f);
+		break;
+	case Perk::Careful:
+		ctx.AddEffect(this, EffectType::Defense, 10.f);
+		break;
 	case Perk::Tought:
+		ctx.AddEffect(this, EffectType::Health, 100.f);
 		break;
 	case Perk::Toughter:
-		ctx.HidePerk(Perk::Tought);
+		ctx.AddEffect(this, EffectType::Health, 250.f);
 		break;
 	case Perk::Toughtest:
-		ctx.HidePerk(Perk::Toughter);
+		ctx.AddEffect(this, EffectType::Health, 500.f);
+		break;
+	case Perk::HardSkin:
+		ctx.AddEffect(this, EffectType::Defense, 10.f);
+		break;
+	case Perk::IronSkin:
+		ctx.AddEffect(this, EffectType::Defense, 30.f);
+		break;
+	case Perk::DiamondSkin:
+		ctx.AddEffect(this, EffectType::Defense, 60.f);
+		break;
+	case Perk::ExtraordinaryHealth:
+		ctx.AddEffect(this, EffectType::Regeneration, 1.f);
+		break;
+	case Perk::PerfectHealth:
+		ctx.AddEffect(this, EffectType::Regeneration, 5.f);
 		break;
 	default:
 		assert(0);
@@ -392,6 +443,18 @@ void TakenPerk::Remove(PerkContext& ctx)
 	case Perk::MilitaryTraining:
 	case Perk::StrongBack:
 	case Perk::StrongerBack:
+	case Perk::Aggressive:
+	case Perk::VeryAggressive:
+	case Perk::Berserker:
+	case Perk::Careful:
+	case Perk::Tought:
+	case Perk::Toughter:
+	case Perk::Toughtest:
+	case Perk::HardSkin:
+	case Perk::IronSkin:
+	case Perk::DiamondSkin:
+	case Perk::ExtraordinaryHealth:
+	case Perk::PerfectHealth:
 		break;
 	case Perk::Talent:
 		ctx.Mod((Attribute)value, -5, false);
@@ -426,19 +489,11 @@ void TakenPerk::Remove(PerkContext& ctx)
 		ctx.Mod(Attribute::CHA, -5, false);
 		ctx.RemoveFlag(PF_ASOCIAL);
 		break;
-	case Perk::Tought:
-		break;
-	case Perk::Toughter:
-		ctx.HidePerk(Perk::Tought, false);
-		break;
-	case Perk::Toughtest:
-		ctx.HidePerk(Perk::Toughter, false);
-		break;
 	default:
 		assert(0);
 		break;
 	}
-	
+
 	if(ctx.cc)
 	{
 		if(revalidate)

@@ -5,18 +5,7 @@ Wersja 0.7 (2017-XX-YY):
 + nowe umiejêtnoœci: atletyka, akrobatyka, targowanie, pismiennictwo
 + nowy system walki
 + magiczny zwój
-+ wczytywanie obiektów z pliku
 + wczytywanie grup przeciwników na arenie z pliku
-- naprawiony crash gdy npc w dru¿ynie chce przedmiot od innego npc w dru¿ynie [MikelkCZ]
-- naprawione nieprawid³owe kolizje dla niektórych obiektów
-- naprawione kolizje gracza z znakami na budynkach
-- naprawiony nieprawid³owy model wioskowego ratuszu
-- naprawiona nieprawid³owa tekstura znaku sprzedawcy jedzenia
-- lepsze przekierowanie na stronê
-- naprawiona bazowa animacja czasami odtwarzana po animacji picia
-- naprawione nieoznaczanie u¿ywalnych obiektów jako wolne gdy klient przestaje ich u¿ywaæ, zepsuta animacja
-- naprawione przesy³anie informacji o u¿ywaniu drzwi pomiêdzy klientami
-- naprawiony brak przedmiotów w skrzynkach
 - naprawiony crash przy wygenerowaniu magówi i golemów podczas walki na arenie
 - naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
 - naprawiony bardzo dobry startowy przedmiot gdy postaæ ma bardzo nisk¹ wartoœæ umiejêtnoœci
@@ -25,6 +14,23 @@ Wersja 0.7 (2017-XX-YY):
 - naprawiona mo¿liwoœæ strzelania z ³uku bez wytrzyma³oœci
 - naprawione blokowanie strza³ nie zu¿ywa wytrzyma³oœci
 - naprawione blokowanie przy wysokim poziome blokowania przywraca wytrzyma³oœæ po trafieniu
+
+--------------------------------------------------------------------------------
+Wersja 0.6.2 (2017-10-08):
++ wczytywanie obiektów z pliku
+- naprawione nieprawid³owe kolizje dla niektórych obiektów
+- naprawione kolizje gracza z znakami na budynkach
+- naprawiony nieprawid³owy model wioskowego ratuszu
+- naprawiona nieprawid³owa tekstura znaku sprzedawcy jedzenia
+- naprawiona bazowa animacja czasami odtwarzana po animacji picia
+- naprawione nieoznaczanie u¿ywalnych obiektów jako wolne gdy klient przestaje ich u¿ywaæ, zepsuta animacja
+- naprawione przesy³anie informacji o u¿ywaniu drzwi pomiêdzy klientami
+- naprawiony brak przedmiotów w skrzynkach
+
+--------------------------------------------------------------------------------
+Wersja 0.6.1 (2017-10-02):
+- naprawiony crash gdy npc w dru¿ynie chce przedmiot od innego npc w dru¿ynie [MikelkCZ]
+- lepsze przekierowanie na stronê
 
 --------------------------------------------------------------------------------
 Wersja 0.6 (2017-10-01):

@@ -1032,9 +1032,6 @@
     <ClInclude Include="source\game\system\Content.h">
       <Filter>3. game\system</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\stats\MagicEffect.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\GameStats.h">
       <Filter>3. game</Filter>
     </ClInclude>

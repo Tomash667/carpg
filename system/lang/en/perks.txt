@@ -79,21 +79,57 @@ perk military_training {
 }
 perk strong_back {
 	name "Strong back"
-	desc "You can lift a lot. +25% to maximum carrying capacity."
+	desc "+25% to maximum carrying capacity."
 }
 perk stronger_back {
 	name "Stronger back"
-	desc "You can lift more then a lot. +50% to maximum carrying capacity."
+	desc "+50% to maximum carrying capacity."
+}
+perk aggressive {
+	name "Aggressive"
+	desc "+10 to attack."
+}
+perk very_aggressive {
+	name "Very aggressive"
+	desc "+30 to attack."
+}
+perk berserker {
+	name "Berserker"
+	desc "+60 to attack."
+}
+perk careful {
+	name "Careful"
+	desc "+10 to defense."
 }
 perk tought {
 	name "Tought"
-	desc "You are tougter than others. +100 to maximum health."
+	desc "+100 to maximum health."
 }
 perk toughter {
 	name "Toughter"
-	desc "You are as tought as rock. +250 to maximum health."
+	desc "+250 to maximum health."
 }
 perk toughtest {
 	name "Toughtest"
-	desc "You are toughter then a rock. +500 to maximum health."
+	desc "+500 to maximum health."
+}
+perk hard_skin {
+	name "Hard skin"
+	desc "+10 to defense."
+}
+perk iron_skin {
+	name "Iron skin"
+	desc "+30 to defense."
+}
+perk diamond_skin {
+	name "Diamond skin"
+	desc "+60 to defense."
+}
+perk extraordinary_health {
+	name "Extraordinary health"
+	desc "Gives 1 point per second of health regeneration."
+}
+perk perfect_health {
+	name "Perfect health"
+	desc "Gives 5 points per second of health regeneration."
 }

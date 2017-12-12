@@ -79,21 +79,57 @@ perk military_training {
 }
 perk strong_back {
 	name "Silne plecy"
-	desc "Jesteœ w stanie du¿o unieœæ. +25% do maksymalnego udŸwigu."
+	desc "+25% do maksymalnego udŸwigu."
 }
 perk stronger_back {
 	name "Silniejsze plecy"
-	desc "Jesteœ w stanie bardzo du¿o unieœæ. +50% do maksymalnego udŸwigu."
+	desc "+50% do maksymalnego udŸwigu."
+}
+perk aggressive {
+	name "Agresywny"
+	desc "+10 do ataku."
+}
+perk very_aggressive {
+	name "Bardzo agresywny"
+	desc "+30 do ataku."
+}
+perk berserker {
+	name "Berserker"
+	desc "+60 do ataku."
+}
+perk careful {
+	name "Ostro¿ny"
+	desc "+10 do obrony."
 }
 perk tought {
 	name "Twardy"
-	desc "Jesteœ twardszy ni¿ inni. +100 do maksymalnego zdrowia."
+	desc "+100 do maksymalnego zdrowia."
 }
 perk toughter {
 	name "Twardszy"
-	desc "Jesteœ twardy niczym kamieñ. +250 do maksymalnego zdrowia."
+	desc "+250 do maksymalnego zdrowia."
 }
 perk toughtest {
 	name "Najtwardszy"
-	desc "Jesteœ twardszy ni¿ kamieñ. +500 do maksymalnego zdrowia."
+	desc "+500 do maksymalnego zdrowia."
+}
+perk hard_skin {
+	name "Twarda skóra"
+	desc "+10 do obrony."
+}
+perk iron_skin {
+	name "¯elazna skóra"
+	desc "+30 do obrony."
+}
+perk diamond_skin {
+	name "Diamentowa skóra"
+	desc "+60 do obrony."
+}
+perk extraordinary_health {
+	name "Niezwyk³e zdrowie"
+	desc "Zapewnia 1 punkt na sekundê regeneracji zdrowia."
+}
+perk perfect_health {
+	name "Perfekcyjne zdrowie"
+	desc "Zapewnia 5 punktów na sekundê regeneracji zdrowia."
 }

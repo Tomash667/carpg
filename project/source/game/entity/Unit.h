@@ -715,20 +715,17 @@ public:
 	// SKILLS & STATS
 	//==============================================
 	// Get stat
+	int Get(Attribute a, StatState& state) const;
 	int Get(Attribute a) const
 	{
-		return statsx->Get(a);
+		StatState state;
+		return Get(a, state);
 	}
-	int Get(Attribute a, StatState& state) const
+	int Get(Skill s, StatState& state) const;
+	int Get(Skill s) const
 	{
-		state = StatState::NORMAL;
-		return Get(a);
-	}
-	int Get(Skill s) const;
-	int Get(Skill s, StatState& state) const
-	{
-		state = StatState::NORMAL;
-		return Get(s);
+		StatState state;
+		return Get(s, state);
 	}
 
 	// Get unmodified stats
@@ -798,7 +795,7 @@ public:
 	bool HaveEffect(EffectType effect) const;
 	bool HaveEffect(int netid) const;
 	float GetEffectSum(EffectType effect) const;
-	float GetEffectSum(EffectType effect, StatState& state) const;
+	float GetEffectSum(EffectType effect, int value, StatState& state) const;
 	bool GetEffectModMultiply(EffectType effect, float& value) const;
 	float GetEffectModMultiply(EffectType effect) const { float value = 1.f; GetEffectModMultiply(effect, value); return value; }
 	Effect* FindEffect(EffectType effect);

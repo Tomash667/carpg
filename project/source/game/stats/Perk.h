@@ -49,24 +49,20 @@ enum class Perk
 	MilitaryTraining, // +50 hp, +5 atk/def
 
 	// normal perks
-	StrongBack, // (60 str or 25 ath) +25% carry
-	StrongerBack, // (80 str or 50 ath) [C] +50% carry
+	StrongBack, // (60 str) +25% carry
+	StrongerBack, // (80 str) [C] +50% carry
+	Aggressive, // (60 str) +10 atk
+	VeryAggressive, // (80 str) [C] +30 atk
+	Berserker, // (100 str) [C] +60 atk
+	Careful, // (60 dex) +10 def
 	Tought, // (60 end) +100 hp
 	Toughter, // (80 end) [C] +250 hp
 	Toughtest, // (100 end) [C] +500 hp
-	/*
-
-	CON:
-	Healthy, // (60 end, +50? hp)
-	FastHealing, // 70 end, faster natural regeneration
-	poison resistance
-	regeneration
-	natural armor
-	more hp
-
-	DEX:
-	move speed
-	*/
+	HardSkin, // (60 end) +10 def
+	IronSkin, // (80 end) [C] +30 def
+	DiamondSkin, // (100 end) [C] +60 def
+	ExtraordinaryHealth, // (75 end) +1 hp reg
+	PerfectHealth, // (100 end) [C] +5 hp reg
 
 	Max,
 	None

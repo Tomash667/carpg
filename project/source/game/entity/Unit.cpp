@@ -992,7 +992,7 @@ void Unit::EndEffects()
 			food += e.time;
 			break;
 		case EffectType::NaturalHealingMod:
-			natural += e;
+			natural *= e;
 			break;
 		default:
 			break;
@@ -2582,13 +2582,17 @@ int Unit::GetBuffs() const
 }
 
 //=================================================================================================
-int Unit::Get(Attribute a, StatState& stat) const
+int Unit::Get(Attribute a, StatState& state) const
 {
 	int value = statsx->Get(a);
+	float effect_mod = GetEffectSum(EffectType::Attribute, (int)a, state);
+	value += (int)effect_mod;
+	value = Clamp(value, AttributeInfo::MIN, AttributeInfo::MAX);
+	return value;
 }
 
 //=================================================================================================
-int Unit::Get(Skill s) const
+int Unit::Get(Skill s, StatState& state) const
 {
 	int index = (int)s;
 	int value = statsx->Get(s);
@@ -2632,6 +2636,11 @@ int Unit::Get(Skill s) const
 	}
 	else
 		value += (GetBase(info.attrib) - 50) / 5;
+
+	// effects
+	float effect_mod = GetEffectSum(EffectType::Skill, index, state);
+	value += (int)effect_mod;
+	value = Clamp(value, SkillInfo::MIN, SkillInfo::MAX);
 
 	return value;
 }
@@ -3224,7 +3233,7 @@ void Unit::SetBase(Skill skill, int value, bool startup, bool mod)
 //=================================================================================================
 float Unit::GetEffectSum(EffectType effect) const
 {
-	EffectBuffer buf;
+	EffectSumBuffer buf;
 	for(auto& e : effects)
 	{
 		if(e.effect == effect)
@@ -3234,14 +3243,16 @@ float Unit::GetEffectSum(EffectType effect) const
 }
 
 //=================================================================================================
-float Unit::GetEffectSum(EffectType effect, StatState& state) const
+float Unit::GetEffectSum(EffectType effect, int value, StatState& state) const
 {
-	EffectBuffer buf;
-	bool have_plus = false, have_minus = false;
+	EffectSumBufferWithState buf;
 	for(auto& e : effects)
 	{
-
+		if(e.effect == effect && e.value == value)
+			buf += e;
 	}
+	state = buf.GetState();
+	return buf;
 }
 
 //=================================================================================================
@@ -3249,7 +3260,7 @@ bool Unit::GetEffectModMultiply(EffectType effect, float& value) const
 {
 	bool any = false;
 	bool potion_first = true;
-	EffectBuffer b(value);
+	EffectMulBuffer b(value);
 
 	for(auto& e : effects)
 	{
@@ -3264,12 +3275,12 @@ bool Unit::GetEffectModMultiply(EffectType effect, float& value) const
 				}
 			}
 			else
-				b.sum *= e.power;
+				b.mul *= e.power;
 			any = true;
 		}
 	}
 
-	value = b.sum * b.best_potion;
+	value = b.mul * b.best_potion;
 	return any;
 }
 
@@ -3441,6 +3452,12 @@ void Unit::EffectStatUpdate(const Effect& e)
 {
 	switch(e.effect)
 	{
+	case EffectType::Attribute:
+		ApplyStat((Attribute)e.value);
+		break;
+	case EffectType::Skill:
+		ApplyStat((Skill)e.value);
+		break;
 	case EffectType::Health:
 		RecalculateHp();
 		break;
@@ -3707,7 +3724,7 @@ void Unit::PassTime(int days, PassTimeType type)
 			heal_mod = 0.f;
 			for(int day = 0; day < days; ++day)
 			{
-				EffectBuffer buf(1.f);
+				EffectMulBuffer buf(1.f);
 				bool any = false;
 				for(auto& h : heal)
 				{
@@ -3719,12 +3736,12 @@ void Unit::PassTime(int days, PassTimeType type)
 								buf.best_potion = h.power;
 						}
 						else
-							buf.sum *= h.power;
+							buf.mul *= h.power;
 						any = true;
 					}
 				}
 				if(any)
-					heal_mod += buf.sum * buf.best_potion;
+					heal_mod += buf.mul * buf.best_potion;
 				else
 				{
 					heal_mod += (float)(days - day);

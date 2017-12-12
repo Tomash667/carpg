@@ -28,6 +28,9 @@ enum class EffectType
 	None
 
 	/*
+	ManaRegeneration
+	Mana
+	Attribute/Skill train mod
 	Resistance,
 	RegenerationAura,
 	ManaBurn,
@@ -38,7 +41,14 @@ enum class EffectType
 	PowerAttack,
 	BackstabDamage,
 	CriticalChance,
-	CriticalDamage*/
+	CriticalDamage
+	Dazed
+	Rooted
+	Bleeding
+	BleedHeal
+	StaminaRestoreMod
+	ManaRestoreMod
+	*/
 
 };
 // saved as byte in mp

@@ -323,7 +323,6 @@
     <ClInclude Include="source\game\stats\Const.h" />
     <ClInclude Include="source\game\stats\DamageTypes.h" />
     <ClInclude Include="source\game\stats\Effect.h" />
-    <ClInclude Include="source\game\stats\MagicEffect.h" />
     <ClInclude Include="source\game\stats\Material.h" />
     <ClInclude Include="source\game\stats\Music.h" />
     <ClInclude Include="source\game\stats\Perk.h" />

@@ -6,18 +6,7 @@ Version 0.7 (2017-XX-YY):
 + new starting feats: filthy rich, military training, bad back, chronic disease, sluggish, slow lerner, asocial, poor
 + combat system changes
 + magic scroll item
-+ loading objects from file
 + loading arena unit groups from lists
-- fixed crash when team npc want item from another team npc [MikelkCZ]
-- fixed some object wrongly having colliders
-- fixed building signs blocking player in city
-- fixed invalid village hall mesh
-- fixed invalid sign texture for food seller
-- better redirecting to website
-- fixed base animation played sometimes after drinking animation
-- fixed not marking usable object as free when client stopped using, broken animation
-- fixed opening/closing door not send between clients (only between client and server)
-- fixed missing items in chests
 - fixed random crash when fighting with arena enemies and rolled to spawn mages and golems
 - fixed empty location where there should be mages and golems there
 - fixed very good starting item when player have very low skill
@@ -26,6 +15,23 @@ Version 0.7 (2017-XX-YY):
 - fixed player can shoot without stamina
 - fixed blocking arrows don't remove stamina
 - fixed high shield skill give stamina from being hit
+
+--------------------------------------------------------------------------------
+Version 0.6.2 (2017-10-08):
++ loading objects from file
+- fixed some object wrongly having colliders
+- fixed building signs blocking player in city
+- fixed invalid village hall mesh
+- fixed invalid sign texture for food seller
+- fixed base animation played sometimes after drinking animation
+- fixed not marking usable object as free when client stopped using, broken animation
+- fixed opening/closing door not send between clients (only between client and server)
+- fixed missing items in chests
+
+--------------------------------------------------------------------------------
+Version 0.6.1 (2017-10-02):
+- fixed crash when team npc want item from another team npc [MikelkCZ]
+- better redirecting to website
 
 --------------------------------------------------------------------------------
 Version 0.6 (2017-10-01):

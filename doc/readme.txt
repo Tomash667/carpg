@@ -190,7 +190,7 @@ Dostêpne komendy bez trybu developera:
 	kick - wyrzuca gracza z serwera (kick nick).
 	leader - zmienia przywódcê dru¿yny (leader nick).
 	list - wyœwietla jednostki/przedmioty/zadania po id/nazwie, unit item unitn itemn quest (list typ [filtr]).
-	player_devmode - w³¹cza/wy³¹cza tryb developera dla innego gracza w multiplayer (playercheat nick/all 0/1).
+	player_devmode - w³¹cza/wy³¹cza tryb developera dla innego gracza w multiplayer (player_devmode nick/all 0/1).
 	quit - wychodzi z gry.
 	random - losuje liczbê 1-100 lub wybiera losow¹ postaæ (random, random [warrior/hunter/rogue]).
 	server - wyœwietla wiadomoœæ od serwera wszystkim graczom (say wiadomoœæ).
