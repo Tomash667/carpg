@@ -128,7 +128,7 @@ struct EffectSumBuffer
 
 	operator float() const
 	{
-		return best_potion * sum;
+		return best_potion + sum;
 	}
 
 	void operator += (const Effect& e)

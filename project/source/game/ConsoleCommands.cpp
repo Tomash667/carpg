@@ -2014,6 +2014,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_LIST_STATS:
 					Msg("Health mod: %+g", FLT10(pc->unit->GetEffectSum(EffectType::Health)));
+					Msg("Stamina mod: %+g", FLT10(pc->unit->GetEffectSum(EffectType::Stamina)));
 					Msg("Attack mod: %+g", FLT10(pc->unit->GetEffectSum(EffectType::Attack)));
 					Msg("Defense mod: %+g", FLT10(pc->unit->GetEffectSum(EffectType::Defense)));
 					Msg("Regeneration: %+g", FLT10(pc->unit->GetEffectSum(EffectType::Regeneration)));

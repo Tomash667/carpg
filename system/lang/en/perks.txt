@@ -133,3 +133,15 @@ perk perfect_health {
 	name "Perfect health"
 	desc "Gives 5 points per second of health regeneration."
 }
+perk strongman {
+	name "Strongman"
+	desc "+25% to maximum carrying capacity."
+}
+perk body_builder {
+	name "Body builder"
+	desc "+200 to maximum health."
+}
+perk decrypting_runes {
+	name "Decrypting runes"
+	desc "You can decrypt magical runes."
+}

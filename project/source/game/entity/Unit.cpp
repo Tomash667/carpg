@@ -3292,6 +3292,7 @@ void Unit::RemovePerkEffects(Perk perk)
 	{
 		if(e.source == EffectSource::Perk && e.source_id == (int)perk)
 			_to_remove.push_back(index);
+		++index;
 	}
 	RemoveEffects();
 }

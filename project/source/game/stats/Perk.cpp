@@ -43,7 +43,10 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::IronSkin, "iron_skin", 0, Perk::HardSkin),
 	PerkInfo(Perk::DiamondSkin, "diamond_skin", 0, Perk::IronSkin),
 	PerkInfo(Perk::ExtraordinaryHealth, "extraordinary_health", 0),
-	PerkInfo(Perk::PerfectHealth, "perfect_health", 0, Perk::ExtraordinaryHealth)
+	PerkInfo(Perk::PerfectHealth, "perfect_health", 0, Perk::ExtraordinaryHealth),
+	PerkInfo(Perk::Strongman, "strongman", 0),
+	PerkInfo(Perk::BodyBuilder, "body_builder", 0),
+	PerkInfo(Perk::DecryptingRunes, "decrypting_runes", 0)
 };
 
 //-----------------------------------------------------------------------------
@@ -103,27 +106,6 @@ void TakenPerk::GetDesc(string& s) const
 {
 	switch(perk)
 	{
-	case Perk::Skilled:
-	case Perk::AlchemistApprentice:
-	case Perk::Wealthy:
-	case Perk::VeryWealthy:
-	case Perk::FilthyRich:
-	case Perk::FamilyHeirloom:
-	case Perk::Leader:
-	case Perk::BadBack:
-	case Perk::ChronicDisease:
-	case Perk::Sluggish:
-	case Perk::SlowLearner:
-	case Perk::Asocial:
-	case Perk::Poor:
-	case Perk::MilitaryTraining:
-	case Perk::StrongBack:
-	case Perk::StrongerBack:
-	case Perk::Tought:
-	case Perk::Toughter:
-	case Perk::Toughtest:
-		s.clear();
-		break;
 	case Perk::Talent:
 		s = Format("%s: %s", txIncreasedAttrib, AttributeInfo::attributes[value].name.c_str());
 		break;
@@ -131,7 +113,6 @@ void TakenPerk::GetDesc(string& s) const
 		s = Format("%s: %s", txIncreasedSkill, SkillInfo::skills[value].name.c_str());
 		break;
 	default:
-		assert(0);
 		s.clear();
 		break;
 	}
@@ -158,19 +139,20 @@ cstring TakenPerk::FormatName()
 // Check value of perk sent in mp
 bool TakenPerk::Validate()
 {
-	switch(perk)
+	auto& info = PerkInfo::perks[(int)perk];
+	switch(info.required_value)
 	{
-	case Perk::Talent:
+	case PerkInfo::Attribute:
 		if(value < 0 || value >= (int)Attribute::MAX)
 		{
-			Error("Perk 'strength', invalid attribute %d.", value);
+			Error("Perk '%s', invalid attribute %d.", info.id, value);
 			return false;
 		}
 		break;
-	case Perk::SkillFocus:
+	case PerkInfo::Skill:
 		if(value < 0 || value >= (int)Skill::MAX)
 		{
-			Error("Perk 'skill_focus', invalid skill %d.", value);
+			Error("Perk '%s', invalid skill %d.", info.id, value);
 			return false;
 		}
 		break;
@@ -199,15 +181,6 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 
 	switch(perk)
 	{
-	case Perk::Talent:
-	case Perk::Skilled:
-	case Perk::SkillFocus:
-	case Perk::AlchemistApprentice:
-	case Perk::Leader:
-	case Perk::MilitaryTraining:
-	case Perk::VeryWealthy:
-	case Perk::FilthyRich:
-		return true;
 	case Perk::FamilyHeirloom:
 	case Perk::Wealthy:
 		return !ctx.HavePerk(Perk::Poor);
@@ -247,9 +220,14 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return ctx.Have(Attribute::END, 100);
 	case Perk::ExtraordinaryHealth:
 		return !ctx.HavePerk(Perk::ChronicDisease) && ctx.Have(Attribute::END, 75);
+	case Perk::Strongman:
+		return ctx.Have(Skill::ATHLETICS, 50);
+	case Perk::BodyBuilder:
+		return ctx.Have(Skill::ATHLETICS, 75);
+	case Perk::DecryptingRunes:
+		return ctx.Have(Skill::LITERACY, 25);
 	default:
-		assert(0);
-		return false;
+		return true;
 	}
 }
 
@@ -265,10 +243,6 @@ bool TakenPerk::Apply(PerkContext& ctx)
 
 	switch(perk)
 	{
-	case Perk::AlchemistApprentice:
-	case Perk::FamilyHeirloom:
-	case Perk::Leader:
-		break;
 	case Perk::MilitaryTraining:
 		ctx.AddEffect(this, EffectType::Health, 50.f);
 		ctx.AddEffect(this, EffectType::Attack, 5.f);
@@ -375,8 +349,11 @@ bool TakenPerk::Apply(PerkContext& ctx)
 	case Perk::PerfectHealth:
 		ctx.AddEffect(this, EffectType::Regeneration, 5.f);
 		break;
-	default:
-		assert(0);
+	case Perk::Strongman:
+		ctx.AddEffect(this, EffectType::Carry, 1.25f);
+		break;
+	case Perk::BodyBuilder:
+		ctx.AddEffect(this, EffectType::Health, 200.f);
 		break;
 	}
 
@@ -433,29 +410,6 @@ void TakenPerk::Remove(PerkContext& ctx)
 
 	switch(perk)
 	{
-	case Perk::AlchemistApprentice:
-	case Perk::Wealthy:
-	case Perk::VeryWealthy:
-	case Perk::FilthyRich:
-	case Perk::FamilyHeirloom:
-	case Perk::Leader:
-	case Perk::Poor:
-	case Perk::MilitaryTraining:
-	case Perk::StrongBack:
-	case Perk::StrongerBack:
-	case Perk::Aggressive:
-	case Perk::VeryAggressive:
-	case Perk::Berserker:
-	case Perk::Careful:
-	case Perk::Tought:
-	case Perk::Toughter:
-	case Perk::Toughtest:
-	case Perk::HardSkin:
-	case Perk::IronSkin:
-	case Perk::DiamondSkin:
-	case Perk::ExtraordinaryHealth:
-	case Perk::PerfectHealth:
-		break;
 	case Perk::Talent:
 		ctx.Mod((Attribute)value, -5, false);
 		revalidate = true;
@@ -488,9 +442,6 @@ void TakenPerk::Remove(PerkContext& ctx)
 	case Perk::Asocial:
 		ctx.Mod(Attribute::CHA, -5, false);
 		ctx.RemoveFlag(PF_ASOCIAL);
-		break;
-	default:
-		assert(0);
 		break;
 	}
 

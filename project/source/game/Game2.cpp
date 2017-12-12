@@ -8859,8 +8859,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					if(i_index != Unit::INVALID_IINDEX)
 					{
 						RemoveItem(u, i_index, 1);
-						int literacy = u.Get(Skill::LITERACY);
-						if(literacy >= 25)
+						if(u.HavePerk(Perk::DecryptingRunes))
 						{
 							Spell* spell = FindSpell("electro_shock");
 

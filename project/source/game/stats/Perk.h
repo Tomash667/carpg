@@ -64,6 +64,10 @@ enum class Perk
 	ExtraordinaryHealth, // (75 end) +1 hp reg
 	PerfectHealth, // (100 end) [C] +5 hp reg
 
+	Strongman, // (50 ath) +25% carry
+	BodyBuilder, // (75 ath) +200 hp
+	DecryptingRunes, // (25 lit) allow to use magic scroll
+
 	Max,
 	None
 };

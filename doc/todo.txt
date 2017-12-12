@@ -1,9 +1,5 @@
 ﻿FEATURE:
 *** perks
-+ new effects
-	? attribute
-	? skill
-? new perks, tought/aggressive/careful/hard skin/regeneration
 + perk points
 	every two levels, for heroes every 3 levels
 	+ set/update
@@ -19,7 +15,6 @@
 	talent, extra apt
 	skill focus, extra apt
 	sluggish
-	tought
 +? send mp updates - perk flags (currently it is server side logic only)
 + upgrade perks -> set perk flags
 ? tests

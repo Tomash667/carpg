@@ -133,3 +133,15 @@ perk perfect_health {
 	name "Perfekcyjne zdrowie"
 	desc "Zapewnia 5 punktów na sekundê regeneracji zdrowia."
 }
+perk strongman {
+	name "Strongman"
+	desc "+25% do maksymalnego udŸwigu."
+}
+perk body_builder {
+	name "Kulturysta"
+	desc "+200 do maksymalnego zdrowia."
+}
+perk decrypting_runes {
+	name "Rozszyfrowywanie run"
+	desc "Potrafisz rozszyfrowywaæ magiczne runy."
+}

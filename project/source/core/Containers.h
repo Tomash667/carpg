@@ -439,7 +439,7 @@ public:
 	static void Free(vector<T*>& ts) { GetPool().Free(ts); }
 	static void SafeFree(vector <T*>& ts) { GetPool().SafeFree(ts); }
 	static void Cleanup() { GetPool().Cleanup(); }
-	virtual void Free() { Free((T*)this); }
+	void Free() { Free((T*)this); }
 
 private:
 	static ObjectPool<T>& GetPool() { static ObjectPool<T> pool; return pool; }
