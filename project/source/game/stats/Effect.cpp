@@ -22,7 +22,8 @@ EffectInfo EffectInfo::effects[] = {
 	EffectType::MagicResistance, "magic_resistance", "magic resistance mod %", false, EffectInfo::None,
 	EffectType::Stun, "stun", "unit is stunned", true, EffectInfo::None,
 	EffectType::Attack, "attack", "modify attack", false, EffectInfo::None,
-	EffectType::Defense, "defense", "modify defense", false, EffectInfo::None
+	EffectType::Defense, "defense", "modify defense", false, EffectInfo::None,
+	EffectType::Mobility, "mobility", "modify mobility", false, EffectInfo::None
 };
 
 EffectSourceInfo EffectSourceInfo::sources[] = {

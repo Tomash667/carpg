@@ -97,9 +97,21 @@ perk berserker {
 	name "Berserker"
 	desc "+60 do ataku."
 }
+perk heavy_hitter {
+	name "Ciê¿ki cios"
+	desc "+10% do potê¿nego ataku."
+}
 perk careful {
 	name "Ostro¿ny"
 	desc "+10 do obrony."
+}
+perk mobility {
+	name "Mobilnoœæ"
+	desc "+10 do bazowej mobilnoœci."
+}
+perk enhanced_mobility {
+	name "Poprawiona mobilnoœæ"
+	desc "+25 do bazowej mobilnoœci."
 }
 perk tought {
 	name "Twardy"
@@ -133,6 +145,22 @@ perk perfect_health {
 	name "Perfekcyjne zdrowie"
 	desc "Zapewnia 5 punktów na sekundê regeneracji zdrowia."
 }
+perk energetic {
+	name "Energiczny"
+	desc "+50 do maksymalnej wytrzyma³oœci."
+}
+perk energetic {
+	name "Bardzo energiczny"
+	desc "+150 do maksymalnej wytrzyma³oœci."
+}
+perk adaptation {
+	name "Przystosowanie"
+	desc "Zapewnia odpornoœæ na trucizny."
+}
+perk healthy_diet {
+	name "Zdrowa dieta"
+	desc "+50% do naturalnego leczenia i wyd³u¿a efekt dzia³ania leczenia dziêki jedzeniu."
+}
 perk strongman {
 	name "Strongman"
 	desc "+25% do maksymalnego udŸwigu."
@@ -140,6 +168,14 @@ perk strongman {
 perk body_builder {
 	name "Kulturysta"
 	desc "+200 do maksymalnego zdrowia."
+}
+perk miracle_diet {
+	name "Cudowna dieta"
+	desc "+100% do naturalnego leczenia i jedzenia przywraca du¿¹ liczbê zdrowia."
+}
+perk flexible {
+	name "Wygimnastykowany"
+	desc "+25 do bazowej mobilnoœci."
 }
 perk decrypting_runes {
 	name "Rozszyfrowywanie run"

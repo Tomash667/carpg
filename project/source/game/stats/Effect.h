@@ -23,6 +23,7 @@ enum class EffectType
 	Stun, // unit is stunned
 	Attack, // modify attack
 	Defense, // modify defense
+	Mobility, // modify mobility
 
 	Max,
 	None

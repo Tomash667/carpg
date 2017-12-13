@@ -782,9 +782,11 @@ public:
 	float GetNaturalHealingMod() { return GetEffectModMultiply(EffectType::NaturalHealingMod); }
 	float CalculateMagicResistance() const;
 	int CalculateMagicPower() const;
+	float GetPowerAttackMod() const;
+	bool HavePoisonResistance() const;
 
 	// Perk functions
-	bool HavePerk(Perk perk, int value = -1);
+	bool HavePerk(Perk perk, int value = -1) const;
 	int GetPerkIndex(Perk perk);
 	void AddPerk(Perk perk, int value);
 	void RemovePerk(int index);

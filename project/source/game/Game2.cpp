@@ -7641,7 +7641,10 @@ Game::ATTACK_RESULT Game::DoAttack(LevelContext& ctx, Unit& unit)
 	if(!CheckForHit(ctx, unit, hitted, hitpoint))
 		return ATTACK_NOT_HIT;
 
-	return DoGenericAttack(ctx, unit, *hitted, hitpoint, unit.CalculateAttack()*unit.attack_power, unit.GetDmgType(), false);
+	float power_attack_mod = unit.GetPowerAttackMod();
+	float mod = Lerp(1.f, power_attack_mod, unit.attack_power - 1.f);
+
+	return DoGenericAttack(ctx, unit, *hitted, hitpoint, unit.CalculateAttack() * mod, unit.GetDmgType(), false);
 }
 
 void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint, int dmg_flags)
@@ -9420,7 +9423,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, 0);
 
 				// apply poison
-				if(it->poison_attack > 0.f && !IS_SET(hitted->data->flags, F_POISON_RES))
+				if(it->poison_attack > 0.f && !hitted->HavePoisonResistance())
 				{
 					Effect* e = Effect::Get();
 					e->effect = EffectType::Poison;
@@ -9499,7 +9502,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
 
 				// apply poison
-				if(IS_SET(it->spell->flags, Spell::Poison) && !IS_SET(hitted->data->flags, F_POISON_RES))
+				if(IS_SET(it->spell->flags, Spell::Poison) && !hitted->HavePoisonResistance())
 				{
 					Effect* e = Effect::Get();
 					e->effect = EffectType::Poison;
@@ -11068,7 +11071,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	GiveDmg(ctx, &attacker, dmg, hitted, &hitpoint);
 
 	// apply poison
-	if(IS_SET(attacker.data->flags, F_POISON_ATTACK) && !IS_SET(hitted.data->flags, F_POISON_RES))
+	if(IS_SET(attacker.data->flags, F_POISON_ATTACK) && !hitted.HavePoisonResistance())
 	{
 		Effect* e = Effect::Get();
 		e->effect = EffectType::Poison;

@@ -714,7 +714,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		break;
 	case E_POISON:
 	case E_ALCOHOL:
-		if(!IS_SET(data->flags, F_POISON_RES))
+		if(item.effect == E_ALCOHOL || !HavePoisonResistance())
 		{
 			Effect* e = Effect::Get();
 			e->effect = (item.effect == E_POISON ? EffectType::Poison : EffectType::Alcohol);
@@ -789,6 +789,19 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		player->Train(PlayerController::TM_POTION, (int)Attribute::DEX, false);
 		break;
 	case E_FOOD:
+		if(IS_SET(statsx->perk_flags, PF_MIRACLE_DIET))
+		{
+			hp += item.power * 10;
+			if(hp > hpmax)
+				hp = hpmax;
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::UPDATE_HP;
+				c.unit = this;
+			}
+		}
+		else
 		{
 			Effect* e = Effect::Get();
 			e->effect = EffectType::FoodRegeneration;
@@ -797,6 +810,8 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			e->source = EffectSource::Potion;
 			e->source_id = -1;
 			e->refs = 1;
+			if(IS_SET(statsx->perk_flags, PF_HEALTHY_DIET))
+				e->time *= 2;
 			AddEffect(e);
 		}
 		break;
@@ -2514,6 +2529,21 @@ int Unit::CalculateMagicPower() const
 }
 
 //=================================================================================================
+float Unit::GetPowerAttackMod() const
+{
+	float value = 1.5f;
+	if(IS_SET(statsx->perk_flags, PF_HEAVY_HITTER))
+		value * 1.1f;
+	return value;
+}
+
+//=================================================================================================
+bool Unit::HavePoisonResistance() const
+{
+	return IS_SET(data->flags, F_POISON_RES) || HavePerk(Perk::Adaptation);
+}
+
+//=================================================================================================
 bool Unit::HaveEffect(EffectType effect) const
 {
 	for(auto& e : effects)
@@ -2806,6 +2836,10 @@ float Unit::CalculateMobility(const Armor* armor) const
 	// calculate base mobility (75-150)
 	float mobility = 75.f + 0.5f * Get(Attribute::DEX) + 0.25f * Get(Skill::ACROBATICS);
 
+	// add bonus
+	float mobility_bonus = GetEffectSum(EffectType::Mobility);
+	mobility += mobility_bonus;
+
 	if(armor)
 	{
 		// calculate armor mobility (0-100)
@@ -2843,9 +2877,7 @@ float Unit::CalculateMobility(const Armor* armor) const
 		break;
 	}
 
-	if(mobility > 200)
-		mobility = 200;
-
+	mobility = Clamp(mobility, 1.f, 200.f);
 	return mobility;
 }
 
@@ -3298,7 +3330,7 @@ void Unit::RemovePerkEffects(Perk perk)
 }
 
 //=================================================================================================
-bool Unit::HavePerk(Perk perk, int value)
+bool Unit::HavePerk(Perk perk, int value) const
 {
 	for(auto& p : statsx->perks)
 	{

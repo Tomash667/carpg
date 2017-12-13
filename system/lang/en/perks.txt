@@ -97,9 +97,21 @@ perk berserker {
 	name "Berserker"
 	desc "+60 to attack."
 }
+perk heavy_hitter {
+	name "Heavy hitter"
+	desc "+10% to power attack."
+}
 perk careful {
 	name "Careful"
 	desc "+10 to defense."
+}
+perk mobility {
+	name "Mobility"
+	desc "+10 to base mobility."
+}
+perk enhanced_mobility {
+	name "Enhanced mobility"
+	desc "+25 to base mobility."
 }
 perk tought {
 	name "Tought"
@@ -133,6 +145,22 @@ perk perfect_health {
 	name "Perfect health"
 	desc "Gives 5 points per second of health regeneration."
 }
+perk energetic {
+	name "Energetic"
+	desc "+50 to maximum stamina."
+}
+perk energetic {
+	name "Very energetic"
+	desc "+150 to maximum stamina."
+}
+perk adaptation {
+	name "Adaptation"
+	desc "Gives resistance to poisons."
+}
+perk healthy_diet {
+	name "Healthy diet"
+	desc "+50% to natural healing and food restrore health for longer."
+}
 perk strongman {
 	name "Strongman"
 	desc "+25% to maximum carrying capacity."
@@ -140,6 +168,14 @@ perk strongman {
 perk body_builder {
 	name "Body builder"
 	desc "+200 to maximum health."
+}
+perk miracle_diet {
+	name "Miracle diet"
+	desc "+100% to natural healing and food restore large amount of health."
+}
+perk flexible {
+	name "Flexible"
+	desc "+25 to base mobility."
 }
 perk decrypting_runes {
 	name "Decrypting runes"

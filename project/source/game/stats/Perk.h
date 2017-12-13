@@ -31,7 +31,7 @@ enum class Perk
 	// negative starting perks
 	BadBack, // -5 str, -25% carry
 	ChronicDisease, // -5 end, 50% natural healing
-	Sluggish, // -5 dex, slower
+	Sluggish, // -5 dex, -25 mobility
 	SlowLearner, // -5 int, -1 apt to all skills
 	Asocial, // -5 cha, worse prices
 	Poor, // 10% gold, worse items
@@ -54,7 +54,10 @@ enum class Perk
 	Aggressive, // (60 str) +10 atk
 	VeryAggressive, // (80 str) [C] +30 atk
 	Berserker, // (100 str) [C] +60 atk
+	HeavyHitter, // (70 str) +10% power attack
 	Careful, // (60 dex) +10 def
+	Mobility, // (60 dex) +10 mobility
+	EnhancedMobility, // (80 dex) [C] +25 mobility
 	Tought, // (60 end) +100 hp
 	Toughter, // (80 end) [C] +250 hp
 	Toughtest, // (100 end) [C] +500 hp
@@ -63,9 +66,14 @@ enum class Perk
 	DiamondSkin, // (100 end) [C] +60 def
 	ExtraordinaryHealth, // (75 end) +1 hp reg
 	PerfectHealth, // (100 end) [C] +5 hp reg
-
+	Energetic, // (55 end) +stamina
+	VeryEnergetic, // (85 end) [C] ++stamina
+	Adaptation, // (90 end) poison immunity
+	HealthyDiet, // (25 ath) +50% natural healing, food heal for longer
 	Strongman, // (50 ath) +25% carry
 	BodyBuilder, // (75 ath) +200 hp
+	MiracleDiet, // (100 ath) [C] +100% natural healing, food instantly heal for more
+	Flexible, // (50 acro) +25 mobility
 	DecryptingRunes, // (25 lit) allow to use magic scroll
 
 	Max,
@@ -78,7 +86,10 @@ static_assert((uint)Perk::None <= 255, "too many Perk");
 enum PerkFlags
 {
 	PF_SLOW_LERNER = 1 << 0, // -1 apt to all skills
-	PF_ASOCIAL = 1 << 1 // worse prices
+	PF_ASOCIAL = 1 << 1, // worse prices
+	PF_HEALTHY_DIET = 1 << 2, // food heal for longer
+	PF_MIRACLE_DIET = 1 << 3, // food heal instantly for more
+	PF_HEAVY_HITTER = 1 << 4, // +10% power attack
 };
 
 //-----------------------------------------------------------------------------

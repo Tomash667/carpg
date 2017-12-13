@@ -35,7 +35,10 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::Aggressive, "aggressive", 0),
 	PerkInfo(Perk::VeryAggressive, "very_aggressive", 0, Perk::Aggressive),
 	PerkInfo(Perk::Berserker, "berserker", 0, Perk::VeryAggressive),
+	PerkInfo(Perk::HeavyHitter, "heavy_hitter", 0),
 	PerkInfo(Perk::Careful, "careful", 0),
+	PerkInfo(Perk::Mobility, "mobility", 0),
+	PerkInfo(Perk::EnhancedMobility, "enhanced_mobility", 0, Perk::Mobility),
 	PerkInfo(Perk::Tought, "tought", 0),
 	PerkInfo(Perk::Toughter, "toughter", 0, Perk::Tought),
 	PerkInfo(Perk::Toughtest, "toughtest", 0, Perk::Toughter),
@@ -44,8 +47,14 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::DiamondSkin, "diamond_skin", 0, Perk::IronSkin),
 	PerkInfo(Perk::ExtraordinaryHealth, "extraordinary_health", 0),
 	PerkInfo(Perk::PerfectHealth, "perfect_health", 0, Perk::ExtraordinaryHealth),
+	PerkInfo(Perk::Energetic, "energetic", 0),
+	PerkInfo(Perk::VeryEnergetic, "very_energetic", Perk::Energetic),
+	PerkInfo(Perk::Adaptation, "adaptation", 0),
+	PerkInfo(Perk::HealthyDiet, "healthy_diet", 0),
 	PerkInfo(Perk::Strongman, "strongman", 0),
 	PerkInfo(Perk::BodyBuilder, "body_builder", 0),
+	PerkInfo(Perk::MiracleDiet, "miracle_diet", 0, Perk::HealthyDiet),
+	PerkInfo(Perk::Flexible, "flexible", 0),
 	PerkInfo(Perk::DecryptingRunes, "decrypting_runes", 0)
 };
 
@@ -206,8 +215,13 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return ctx.Have(Attribute::STR, 100);
 	case Perk::Berserker:
 		return ctx.Have(Attribute::STR, 60);
+	case Perk::HeavyHitter:
+		return ctx.Have(Attribute::STR, 70);
 	case Perk::Careful:
+	case Perk::Mobility:
 		return ctx.Have(Attribute::DEX, 60);
+	case Perk::EnhancedMobility:
+		return ctx.Have(Attribute::DEX, 80);
 	case Perk::Tought:
 	case Perk::HardSkin:
 		return ctx.Have(Attribute::END, 60);
@@ -218,12 +232,24 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	case Perk::DiamondSkin:
 	case Perk::PerfectHealth:
 		return ctx.Have(Attribute::END, 100);
+	case Perk::Adaptation:
+		return ctx.Have(Attribute::END, 90);
 	case Perk::ExtraordinaryHealth:
 		return !ctx.HavePerk(Perk::ChronicDisease) && ctx.Have(Attribute::END, 75);
+	case Perk::Energetic:
+		return ctx.Have(Attribute::END, 55);
+	case Perk::VeryEnergetic:
+		return ctx.Have(Attribute::END, 85);
+	case Perk::HealthyDiet:
+		return ctx.Have(Skill::ATHLETICS, 25);
 	case Perk::Strongman:
 		return ctx.Have(Skill::ATHLETICS, 50);
 	case Perk::BodyBuilder:
 		return ctx.Have(Skill::ATHLETICS, 75);
+	case Perk::MiracleDiet:
+		return ctx.Have(Skill::ATHLETICS, 100);
+	case Perk::Flexible:
+		return ctx.Have(Skill::ACROBATICS, 50);
 	case Perk::DecryptingRunes:
 		return ctx.Have(Skill::LITERACY, 25);
 	default:
@@ -294,6 +320,7 @@ bool TakenPerk::Apply(PerkContext& ctx)
 		break;
 	case Perk::Sluggish:
 		ctx.Mod(Attribute::DEX, -5);
+		ctx.AddEffect(this, EffectType::Mobility, -25.f);
 		break;
 	case Perk::SlowLearner:
 		ctx.Mod(Attribute::INT, -5);
@@ -322,8 +349,16 @@ bool TakenPerk::Apply(PerkContext& ctx)
 	case Perk::Berserker:
 		ctx.AddEffect(this, EffectType::Attack, 60.f);
 		break;
+	case Perk::HeavyHitter:
+		ctx.AddFlag(PF_HEAVY_HITTER);
 	case Perk::Careful:
 		ctx.AddEffect(this, EffectType::Defense, 10.f);
+		break;
+	case Perk::Mobility:
+		ctx.AddEffect(this, EffectType::Mobility, 10.f);
+		break;
+	case Perk::EnhancedMobility:
+		ctx.AddEffect(this, EffectType::Mobility, 25.f);
 		break;
 	case Perk::Tought:
 		ctx.AddEffect(this, EffectType::Health, 100.f);
@@ -349,11 +384,28 @@ bool TakenPerk::Apply(PerkContext& ctx)
 	case Perk::PerfectHealth:
 		ctx.AddEffect(this, EffectType::Regeneration, 5.f);
 		break;
+	case Perk::Energetic:
+		ctx.AddEffect(this, EffectType::Stamina, 50.f);
+		break;
+	case Perk::VeryEnergetic:
+		ctx.AddEffect(this, EffectType::Stamina, 150.f);
+		break;
+	case Perk::HealthyDiet:
+		ctx.AddEffect(this, EffectType::NaturalHealingMod, 1.5f);
+		ctx.AddFlag(PF_HEALTHY_DIET);
+		break;
 	case Perk::Strongman:
 		ctx.AddEffect(this, EffectType::Carry, 1.25f);
 		break;
 	case Perk::BodyBuilder:
 		ctx.AddEffect(this, EffectType::Health, 200.f);
+		break;
+	case Perk::Flexible:
+		ctx.AddEffect(this, EffectType::Mobility, 25.f);
+		break;
+	case Perk::MiracleDiet:
+		ctx.AddEffect(this, EffectType::NaturalHealingMod, 2.f);
+		ctx.AddFlag(PF_MIRACLE_DIET);
 		break;
 	}
 
@@ -442,6 +494,15 @@ void TakenPerk::Remove(PerkContext& ctx)
 	case Perk::Asocial:
 		ctx.Mod(Attribute::CHA, -5, false);
 		ctx.RemoveFlag(PF_ASOCIAL);
+		break;
+	case Perk::HeavyHitter:
+		ctx.RemoveFlag(PF_HEAVY_HITTER);
+		break;
+	case Perk::HealthyDiet:
+		ctx.RemoveFlag(PF_HEALTHY_DIET);
+		break;
+	case Perk::MiracleDiet:
+		ctx.RemoveFlag(PF_MIRACLE_DIET);
 		break;
 	}
 
@@ -622,6 +683,7 @@ void PerkContext::AddFlag(PerkFlags flag)
 		NetChangePlayer& c = Add1(pc->player_info->changes);
 		c.type = NetChangePlayer::STAT_CHANGED;
 		c.id = (byte)ChangedStatType::PERK_FLAGS;
+		c.a = 0;
 		c.ile = pc->unit->statsx->perk_flags;
 	}
 }
@@ -637,6 +699,7 @@ void PerkContext::RemoveFlag(PerkFlags flag)
 		NetChangePlayer& c = Add1(pc->player_info->changes);
 		c.type = NetChangePlayer::STAT_CHANGED;
 		c.id = (byte)ChangedStatType::PERK_FLAGS;
+		c.a = 0;
 		c.ile = pc->unit->statsx->perk_flags;
 	}
 }
