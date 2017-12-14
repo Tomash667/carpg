@@ -113,6 +113,14 @@ perk enhanced_mobility {
 	name "Enhanced mobility"
 	desc "+25 to base mobility."
 }
+perk finesse {
+	name "Finesse"
+	desc "+5% critical hit chance."
+}
+perk critical_focus {
+	name "Critical focus"
+	desc "+50% to critical damage."
+}
 perk tought {
 	name "Tought"
 	desc "+100 to maximum health."

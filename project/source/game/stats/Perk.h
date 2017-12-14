@@ -58,6 +58,8 @@ enum class Perk
 	Careful, // (60 dex) +10 def
 	Mobility, // (60 dex) +10 mobility
 	EnhancedMobility, // (80 dex) [C] +25 mobility
+	Finesse, // (75 dex) +5% critical chance
+	CriticalFocus, // (90 dex) +50% critical damage
 	Tought, // (60 end) +100 hp
 	Toughter, // (80 end) [C] +250 hp
 	Toughtest, // (100 end) [C] +500 hp
@@ -90,6 +92,8 @@ enum PerkFlags
 	PF_HEALTHY_DIET = 1 << 2, // food heal for longer
 	PF_MIRACLE_DIET = 1 << 3, // food heal instantly for more
 	PF_HEAVY_HITTER = 1 << 4, // +10% power attack
+	PF_FINESSE = 1 << 5, // +5% critical chance
+	PF_CRITICAL_FOCUS = 1 << 6, // +50% critical damage
 };
 
 //-----------------------------------------------------------------------------

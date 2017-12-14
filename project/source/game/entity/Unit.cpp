@@ -1300,13 +1300,13 @@ int Unit::GetRandomAttack() const
 
 		switch(GetWeapon().weapon_type)
 		{
-		case WT_LONG:
+		case WT_LONG_BLADE:
 			a = A_LONG_BLADE;
 			break;
-		case WT_SHORT:
+		case WT_SHORT_BLADE:
 			a = A_SHORT_BLADE;
 			break;
-		case WT_MACE:
+		case WT_BLUNT:
 			a = A_BLUNT;
 			break;
 		case WT_AXE:
@@ -2541,6 +2541,80 @@ float Unit::GetPowerAttackMod() const
 bool Unit::HavePoisonResistance() const
 {
 	return IS_SET(data->flags, F_POISON_RES) || HavePerk(Perk::Adaptation);
+}
+
+//=================================================================================================
+int Unit::GetCriticalChance(const Item* item) const
+{
+	assert(item && In(item->type, { IT_WEAPON, IT_BOW, IT_SHIELD }));
+
+	int chance = 5;
+
+	if(IS_SET(statsx->perk_flags, PF_FINESSE))
+		chance += 5;
+
+	if(item->type == IT_WEAPON)
+	{
+		auto& weapon = item->ToWeapon();
+		if(weapon.type == WT_SHORT_BLADE)
+			chance += 5;
+	}
+	else if(item->type == IT_BOW)
+	{
+		chance += 5;
+	}
+	else
+	{
+		// shield
+		chance = 0;
+	}
+
+	return chance;
+}
+
+//=================================================================================================
+float Unit::GetCriticalDamage(const Item* item) const
+{
+	assert(item && In(item->type, { IT_WEAPON, IT_BOW, IT_SHIELD }));
+
+	int mod = 0;
+	if(item->type == IT_WEAPON)
+	{
+		auto& weapon = item->ToWeapon();
+		switch(weapon.type)
+		{
+		case WT_SHORT_BLADE:
+			mod = 20;
+			break;
+		case WT_LONG_BLADE:
+			mod = 50;
+			break;
+		case WT_AXE:
+			mod = 60;
+			break;
+		case WT_BLUNT:
+			mod = 60;
+			break;
+		}
+	}
+	else if(item->type == IT_BOW)
+	{
+		mod = 75;
+	}
+	else
+	{
+		// shield
+		mod = 30;
+	}
+
+	int bonus = 0;
+	if(IS_SET(statsx->perk_flags, PF_CRITICAL_FOCUS))
+		++bonus;
+
+	mod = (mod * (bonus + 2)) / 2;
+	mod += 100;
+
+	return float(mod) / 100;
 }
 
 //=================================================================================================

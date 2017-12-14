@@ -113,6 +113,14 @@ perk enhanced_mobility {
 	name "Poprawiona mobilnoœæ"
 	desc "+25 do bazowej mobilnoœci."
 }
+perk finesse {
+	name "Finezja"
+	desc "+5% szansy na trafienie krytyczne."
+}
+perk critical_focus {
+	name "Skupienie na krytykach"
+	desc "+50% do krytycznych obra¿eñ."
+}
 perk tought {
 	name "Twardy"
 	desc "+100 do maksymalnego zdrowia."

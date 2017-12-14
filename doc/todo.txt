@@ -2,7 +2,8 @@
 *** perks
 ? power attack mod
 ? new effect: mobility
-? perks heavy hitter/ healthy diet/ miracle diet/mobility(ex)/flexible/sluggish/adaptation/(very)energetic
+? perks heavy hitter/ healthy diet/ miracle diet/mobility(ex)/flexible/sluggish/adaptation/(very)energetic/finese/critical focus
++ show critic/power when hovering in devmode over attack
 ? perk flags after save/load/travel
 + perk points
 	every two levels, for heroes every 3 levels
@@ -122,6 +123,8 @@ NEW:
 + perk: zmniejszenie stłuczeń o 25%, alkohol też zwiększa max o 25%
 + walki w karczmie na pieści
 + negative traits: for int/wis
+- Nie można wykonać kopii zapasowej pliku Settings.php - upewnij się, że plik Settings_bak.php istnieje i można go zapisywać.
+- www admin layout panel is broken a bit
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

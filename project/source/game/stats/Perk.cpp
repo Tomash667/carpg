@@ -39,6 +39,8 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::Careful, "careful", 0),
 	PerkInfo(Perk::Mobility, "mobility", 0),
 	PerkInfo(Perk::EnhancedMobility, "enhanced_mobility", 0, Perk::Mobility),
+	PerkInfo(Perk::Finesse, "finesse", 0),
+	PerkInfo(Perk::CriticalFocus, "critical_focus", 0),
 	PerkInfo(Perk::Tought, "tought", 0),
 	PerkInfo(Perk::Toughter, "toughter", 0, Perk::Tought),
 	PerkInfo(Perk::Toughtest, "toughtest", 0, Perk::Toughter),
@@ -48,7 +50,7 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::ExtraordinaryHealth, "extraordinary_health", 0),
 	PerkInfo(Perk::PerfectHealth, "perfect_health", 0, Perk::ExtraordinaryHealth),
 	PerkInfo(Perk::Energetic, "energetic", 0),
-	PerkInfo(Perk::VeryEnergetic, "very_energetic", Perk::Energetic),
+	PerkInfo(Perk::VeryEnergetic, "very_energetic", 0, Perk::Energetic),
 	PerkInfo(Perk::Adaptation, "adaptation", 0),
 	PerkInfo(Perk::HealthyDiet, "healthy_diet", 0),
 	PerkInfo(Perk::Strongman, "strongman", 0),
@@ -222,6 +224,10 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return ctx.Have(Attribute::DEX, 60);
 	case Perk::EnhancedMobility:
 		return ctx.Have(Attribute::DEX, 80);
+	case Perk::Finesse:
+		return ctx.Have(Attribute::DEX, 75);
+	case Perk::CriticalFocus:
+		return ctx.Have(Attribute::DEX, 90);
 	case Perk::Tought:
 	case Perk::HardSkin:
 		return ctx.Have(Attribute::END, 60);
@@ -360,6 +366,12 @@ bool TakenPerk::Apply(PerkContext& ctx)
 	case Perk::EnhancedMobility:
 		ctx.AddEffect(this, EffectType::Mobility, 25.f);
 		break;
+	case Perk::Finesse:
+		ctx.AddFlag(PF_FINESSE);
+		break;
+	case Perk::CriticalFocus:
+		ctx.AddFlag(PF_CRITICAL_FOCUS);
+		break;
 	case Perk::Tought:
 		ctx.AddEffect(this, EffectType::Health, 100.f);
 		break;
@@ -497,6 +509,12 @@ void TakenPerk::Remove(PerkContext& ctx)
 		break;
 	case Perk::HeavyHitter:
 		ctx.RemoveFlag(PF_HEAVY_HITTER);
+		break;
+	case Perk::Finesse:
+		ctx.RemoveFlag(PF_FINESSE);
+		break;
+	case Perk::CriticalFocus:
+		ctx.RemoveFlag(PF_CRITICAL_FOCUS);
 		break;
 	case Perk::HealthyDiet:
 		ctx.RemoveFlag(PF_HEALTHY_DIET);

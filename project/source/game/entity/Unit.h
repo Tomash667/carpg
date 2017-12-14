@@ -784,6 +784,8 @@ public:
 	int CalculateMagicPower() const;
 	float GetPowerAttackMod() const;
 	bool HavePoisonResistance() const;
+	int GetCriticalChance(const Item* item) const;
+	float GetCriticalDamage(const Item* item) const;
 
 	// Perk functions
 	bool HavePerk(Perk perk, int value = -1) const;

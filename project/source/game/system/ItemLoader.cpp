@@ -173,10 +173,10 @@ private:
 		});
 
 		t.AddKeywords(G_WEAPON_TYPE, {
-			{ "short_blade", WT_SHORT },
-			{ "long_blade", WT_LONG },
+			{ "short_blade", WT_SHORT_BLADE },
+			{ "long_blade", WT_LONG_BLADE },
 			{ "axe", WT_AXE },
-			{ "blunt", WT_MACE }
+			{ "blunt", WT_BLUNT }
 		});
 
 		t.AddKeywords(G_MATERIAL, {

@@ -2019,9 +2019,9 @@ void Game::RestartGame()
 void Game::SetStatsText()
 {
 	// typ broni
-	WeaponTypeInfo::info[WT_SHORT].name = Str("wt_shortBlade");
-	WeaponTypeInfo::info[WT_LONG].name = Str("wt_longBlade");
-	WeaponTypeInfo::info[WT_MACE].name = Str("wt_blunt");
+	WeaponTypeInfo::info[WT_SHORT_BLADE].name = Str("wt_shortBlade");
+	WeaponTypeInfo::info[WT_LONG_BLADE].name = Str("wt_longBlade");
+	WeaponTypeInfo::info[WT_BLUNT].name = Str("wt_blunt");
 	WeaponTypeInfo::info[WT_AXE].name = Str("wt_axe");
 }
 
