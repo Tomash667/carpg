@@ -782,7 +782,7 @@ public:
 	float GetNaturalHealingMod() { return GetEffectModMultiply(EffectType::NaturalHealingMod); }
 	float CalculateMagicResistance() const;
 	int CalculateMagicPower() const;
-	float GetPowerAttackMod(WEAPON_TYPE type) const;
+	float GetPowerAttackMod() const;
 	bool HavePoisonResistance() const;
 	int GetCriticalChance(const Item* item, bool backstab, float ratio) const;
 	float GetCriticalDamage(const Item* item) const;

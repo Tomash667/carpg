@@ -270,11 +270,29 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			break;
 		case STATS_ATTACK:
 			{
-				cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "--");
-				cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "--");
 				tooltip.big_text.clear();
-				tooltip.text = Format("%s: %s\n%s: %s", txMeleeAttack, meleeAttack, txRangedAttack, rangedAttack);
 				tooltip.small_text.clear();
+				cstring meleeAttack, rangedAttack;
+				if(Game::Get().devmode)
+				{
+					meleeAttack = (pc->unit->HaveWeapon() ? Format("%d (crit %d%% x%g, power x%g)",
+						(int)pc->unit->CalculateAttack(&pc->unit->GetWeapon()),
+						pc->unit->GetCriticalChance(&pc->unit->GetWeapon(), false, 0.f),
+						FLT100(pc->unit->GetCriticalDamage(&pc->unit->GetWeapon())),
+						FLT100(pc->unit->GetPowerAttackMod())
+					) : "--");
+					rangedAttack = (pc->unit->HaveBow() ? Format("%d (crit %d%% x%g)",
+						(int)pc->unit->CalculateAttack(&pc->unit->GetBow()),
+						pc->unit->GetCriticalChance(&pc->unit->GetBow(), false, 0.f),
+						FLT100(pc->unit->GetCriticalDamage(&pc->unit->GetBow()))
+					) : "--");
+				}
+				else
+				{
+					meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "--");
+					rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "--");
+				}
+				tooltip.text = Format("%s: %s\n%s: %s", txMeleeAttack, meleeAttack, txRangedAttack, rangedAttack);
 			}
 			break;
 		default:

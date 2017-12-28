@@ -2562,12 +2562,12 @@ int Unit::CalculateMagicPower() const
 }
 
 //=================================================================================================
-float Unit::GetPowerAttackMod(WEAPON_TYPE type) const
+float Unit::GetPowerAttackMod() const
 {
 	float value = 1.5f;
 	if(IS_SET(statsx->perk_flags, PF_HEAVY_HITTER))
 		value *= 1.1f;
-	if(type == WT_AXE && HavePerk(Perk::Chopper))
+	if(HaveWeapon() && GetWeapon().type == WT_AXE && HavePerk(Perk::Chopper))
 		value *= 1.1f;
 	return value;
 }

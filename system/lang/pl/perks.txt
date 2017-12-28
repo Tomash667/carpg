@@ -185,6 +185,70 @@ perk charming {
 	name "Czaruj¹cy"
 	desc "Premia do zdobywanych nagród za wykonanie zadania."
 }
+perk short_blade_proficiency {
+	name "Bieg³oœæ w krótkim ostrzu"
+	desc "+10 do ataku krótkim ostrzem i +5% szansy na trafienie krytyczne."
+}
+perk backstabber {
+	name "Cios w plecy"
+	desc "Zwiêkszone obra¿enia oraz szansa na trafienie krytyczne przy ataku w plecy krótkim ostrzem."
+}
+perk short_blade_expert {
+	name "Ekspert krótkiego ostrza"
+	desc "Trafienie krytyczne krótkim ostrzem powoduje krwawienie."
+}
+perk short_blade_master {
+	name "Mistrz krótkiego ostrza"
+	desc "+25 do ataku krótkim ostrzem i +10% szansy na trafienie krytyczne."
+}
+perk long_blade_proficiency {
+	name "Bieg³oœæ w d³ugim ostrzu"
+	desc "+15 do ataku d³ugim ostrzem i +5% szansy na trafienie krytyczne."
+}
+perk defensive_combat_style {
+	name "Obronny styl walki"
+	desc "+25 do obrony w czasie korzystania z d³ugiego ostrza."
+}
+perk long_blade_expert {
+	name "Ekspert d³ugiego ostrza"
+	desc "Trafienie d³ugim ostrzem powoduje krwawienie."
+}
+perk long_blade_master {
+	name "Mistrz d³ugiego ostrza"
+	desc "+30 do ataku d³ugim ostrzem i +10% szansy na trafienie krytyczne."
+}
+perk axe_proficiency {
+	name "Bieg³oœæ w toporze"
+	desc "+15 do ataku toporem i +5% szansy na trafienie krytyczne."
+}
+perk chopper {
+	name "Siekacz"
+	desc "+10% do potê¿nego ataku toporem."
+}
+perk axe_expert {
+	name "Ekspert topora"
+	desc "+50% do krytycznych obra¿eñ topora."
+}
+perk axe_master {
+	name "Mistrz topora"
+	desc "+40 do ataku toporem i +10% szansy na trafienie krytyczne."
+}
+perk blunt_proficiency {
+	name "Bieg³oœæ w broni obuchowej"
+	desc "+15 do ataku broni¹ obuchow¹."
+}
+perk basher {
+	name "Cios w czerep"
+	desc "Trafienie krytyczne broni¹ obuchow¹ og³usza i zadaje zwiêkszone obra¿enia."
+}
+perk blunt_expert {
+	name "Ekspert broni obuchowej"
+	desc "+30% do krytycznych obra¿eñ broni obuchowej."
+}
+perk blunt_master {
+	name "Mistrz broni obuchowej"
+	desc "+40 do ataku toporem i +5% szansy na trafienie krytyczne."
+}
 perk bow_proficiency {
 	name "Bieg³oœæ w ³uku"
 	desc "+20 do ataku ³ukiem i +5% szansy na trafienie krytyczne."

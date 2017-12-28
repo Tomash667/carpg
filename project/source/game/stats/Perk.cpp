@@ -68,7 +68,7 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::AxeProficiency, "axe_proficiency", 0),
 	PerkInfo(Perk::Chopper, "chopper", 0),
 	PerkInfo(Perk::AxeExpert, "axe_expert", 0),
-	PerkInfo(Perk::AxeMaster, "axe_master", Perk::AxeProficiency),
+	PerkInfo(Perk::AxeMaster, "axe_master", 0, Perk::AxeProficiency),
 	PerkInfo(Perk::BluntProficiency, "blunt_proficiency", 0),
 	PerkInfo(Perk::Basher, "basher", 0),
 	PerkInfo(Perk::BluntExpert, "blunt_expert", 0),

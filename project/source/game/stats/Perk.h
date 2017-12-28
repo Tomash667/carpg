@@ -28,6 +28,7 @@ namespace old
 //-----------------------------------------------------------------------------
 enum class Perk
 {
+	//=========================================================================
 	// negative starting perks
 	BadBack, // -5 str, -25% carry
 	ChronicDisease, // -5 end, 50% natural healing
@@ -37,6 +38,7 @@ enum class Perk
 	Poor, // 10% gold, worse items
 	Unlucky, // 1/2 critical hit chance
 
+	//=========================================================================
 	// positive starting perks
 	Talent, // +5 attrib, +1 apt
 	Skilled, // +3 skill points
@@ -49,19 +51,24 @@ enum class Perk
 	Leader, // start with npc
 	MilitaryTraining, // +50 hp, +5 atk/def
 
+	//=========================================================================
 	// normal perks
+	//=========================================================================
+	// strength
 	StrongBack, // (60 str) +25% carry
 	StrongerBack, // (80 str) [C StrongBack] +50% carry
 	Aggressive, // (60 str) +10 atk
 	VeryAggressive, // (80 str) [C Aggressive] +30 atk
 	Berserker, // (100 str) [C VeryAggressive] +60 atk
 	HeavyHitter, // (70 str) +10% power attack
+	// dexterity
 	Careful, // (60 dex) +10 def
 	Mobility, // (60 dex) +10 mobility
 	EnhancedMobility, // (80 dex) [C Mobility] +25 mobility
 	Finesse, // (75 dex) +5% critical chance
 	CriticalFocus, // (90 dex) +50% critical damage
 	Dodge, // (100 dex) dodge one attack every 5 seconds
+	// endurance
 	Tought, // (60 end) +100 hp
 	Toughter, // (80 end) [C Tought] +250 hp
 	Toughtest, // (100 end) [C Toughtest] +500 hp
@@ -73,38 +80,49 @@ enum class Perk
 	Energetic, // (55 end) +stamina
 	VeryEnergetic, // (85 end) [C Energetic] ++stamina
 	Adaptation, // (90 end) poison immunity
+	// inteligence
 	Educated, // (60 int) more exp
+	// charisma
 	Leadership, // (60 cha) more exp for heroes
 	Charming, // (70 cha) more gold from quests
+	// short blade
 	ShortBladeProficiency, // (25 shb) +10 atk, +5% crit
 	Backstabber, // (50 shb) increased backstab damage, double crit chance (5/10->10/20%)
 	ShortBladeExpert, // (75 shb) bleeding
 	ShortBladeMaster, // (100 shb) [C ShortBladeProficiency] +25 atk, +10% crit
+	// long blade
 	LongBladeProficiency, // (25 lob) +15 atk, +5% crit
 	DefensiveCombatStyle, // (50 lob) +25 def
 	LongBladeExpert, // (75 lob) bleeding
 	LongBladeMaster, // (100 lob) [C LongBladeProficiency] +30 atk, +10% crit
+	// axe
 	AxeProficiency, // (25 axe) +15 atk, +5% crit
 	Chopper, // (50 axe) +10% power attack
 	AxeExpert, // (75 axe) +50% crit damage
 	AxeMaster, // (100 axe) [C AxeProficiency] +40 atk, +10% crit
+	// blunt
 	BluntProficiency, // (25 blu) +15 atk
 	Basher, // (50 blu) critical hits deal extra damage and stun
 	BluntExpert, // (75 blu) +30% crit damage
 	BluntMaster, // (100 blu) +40 atk, +5% crit
+	// bow
 	BowProficiency, // (25 bow) +20 atk, +5% crit
 	PreciseShot, // (50 bow) zoom when holding, increase accuracy, +15% crit
 	BowExpert, // (75 bow) [C BowProficiency] +50 atk, +10% crit, +15% crit dmg
 	BowMaster, // (100 bow) shoot two arrows at once, second deal 50% damage if hit same target
+	// athletics
 	HealthyDiet, // (25 ath) +50% natural healing, food heal for longer
 	Strongman, // (50 ath) +25% carry
 	BodyBuilder, // (75 ath) +200 hp
 	MiracleDiet, // (100 ath) [C HealthyDiet] +100% natural healing, food instantly heal for more
+	// acrobatics
 	Flexible, // (50 acro) +25 mobility
+	// haggle
 	TradingContract, // (25 hag) allow allies to use you haggle skill if better (ratio of train skill goes to owner), works with perks below
 	ExtraStock, // (50 hag) better/more items in shops
 	FreeMerchant, // (75 hag) can sell items anywhere
 	MasterMerchant, // (100 hag) buy=sell price
+	// literacy
 	DecryptingRunes, // (25 lit) allow to use magic scroll
 
 	Max,

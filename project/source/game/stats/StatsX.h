@@ -45,6 +45,8 @@ struct StatsX
 	Entry::Seed seed;
 	bool unique;
 
+	StatsX() : perk_flags(0) {}
+
 	void ApplyBase(StatProfile* profile);
 	void Upgrade();
 	float CalculateLevel();

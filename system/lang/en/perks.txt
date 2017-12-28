@@ -185,6 +185,70 @@ perk charming {
 	name "Charming"
 	desc "Bonus for rewards after finishing quest."
 }
+perk short_blade_proficiency {
+	name "Short blade proficiency"
+	desc "+10 to attack with short blade and +%5 to critical hit chance."
+}
+perk backstabber {
+	name "Backstabber"
+	desc "Increased damage and critical hit chance when hitting enemy back with short blade."
+}
+perk short_blade_expert {
+	name "Short blade expert"
+	desc "Critical hit with short blade cause bleeding."
+}
+perk short_blade_master {
+	name "Short blade master"
+	desc "+25 to attack with short blade and +%10 to critical hit chance."
+}
+perk long_blade_proficiency {
+	name "Long blade proficiency"
+	desc "+15 to attack with long blade and +%5 to critical hit chance."
+}
+perk defensive_combat_style {
+	name "Defensive combat style"
+	desc "+25 to defense when using long blade."
+}
+perk long_blade_expert {
+	name "Long blade expert"
+	desc "Critical hit with long blade cause bleeding."
+}
+perk long_blade_master {
+	name "Long blade master"
+	desc "+30 to attack with long blade and +%10 to critical hit chance."
+}
+perk axe_proficiency {
+	name "Axe proficiency"
+	desc "+15 to attack with axe and +%5 to critical hit chance."
+}
+perk chopper {
+	name "Chopper"
+	desc "+10% power attack when using axe."
+}
+perk axe_expert {
+	name "Axe expert"
+	desc "+50% critical damage when using axe."
+}
+perk axe_master {
+	name "Axe master"
+	desc "+40 to attack with axe and +%10 to critical hit chance."
+}
+perk blunt_proficiency {
+	name "Blunt proficiency"
+	desc "+15 to attack with blunt."
+}
+perk basher {
+	name "Basher"
+	desc "Trafienie krytyczne bronią obuchową ogłusza i zadaje zwiększone obrażenia."
+}
+perk blunt_expert {
+	name "Blunt expert"
+	desc "+30% critical damage when using blunt."
+}
+perk blunt_master {
+	name "Blunt master"
+	desc "+40 to attack with blunt and +%5 to critical hit chance."
+}
 perk bow_proficiency {
 	name "Bow proficiency"
 	desc "+20 to bow attack and +5% critical hit chance."
