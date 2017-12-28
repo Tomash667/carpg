@@ -109,7 +109,35 @@ float Unit::CalculateAttack(const Item* weapon) const
 			p = 1.f;
 		else
 			p = float(str) / w.req_str;
-		atk += (w.dmg + wi.str2dmg * max(0, str - 50) + wi.dex2dmg * max(0, dex - 50)) * (p + skill / 100);
+		int base_atk = w.dmg;
+		switch(w.weapon_type)
+		{
+		case WT_SHORT_BLADE:
+			if(HavePerk(Perk::ShortBladeMaster))
+				base_atk += 25;
+			else if(HavePerk(Perk::ShortBladeProficiency))
+				base_atk += 10;
+			break;
+		case WT_LONG_BLADE:
+			if(HavePerk(Perk::LongBladeMaster))
+				base_atk += 30;
+			else if(HavePerk(Perk::LongBladeProficiency))
+				base_atk += 15;
+			break;
+		case WT_AXE:
+			if(HavePerk(Perk::AxeMaster))
+				base_atk += 40;
+			else if(HavePerk(Perk::AxeProficiency))
+				base_atk += 15;
+			break;
+		case WT_BLUNT:
+			if(HavePerk(Perk::BluntMaster))
+				base_atk += 40;
+			else if(HavePerk(Perk::BluntProficiency))
+				base_atk += 15;
+			break;
+		}
+		atk += (base_atk + wi.str2dmg * max(0, str - 50) + wi.dex2dmg * max(0, dex - 50)) * (p + skill / 100);
 	}
 	else
 	{
@@ -121,7 +149,12 @@ float Unit::CalculateAttack(const Item* weapon) const
 			p = 1.f;
 		else
 			p = float(str) / bow.req_str;
-		atk += (bow.dmg + max(0, dex - 50)) * (p + skill / 100);
+		int base_atk = bow.dmg;
+		if(HavePerk(Perk::BowExpert))
+			base_atk += 50;
+		else if(HavePerk(Perk::BowProficiency))
+			base_atk += 20;
+		atk += (base_atk + max(0, dex - 50)) * (p + skill / 100);
 	}
 
 	float atk_bonus = GetEffectSum(EffectType::Attack);
@@ -2529,11 +2562,13 @@ int Unit::CalculateMagicPower() const
 }
 
 //=================================================================================================
-float Unit::GetPowerAttackMod() const
+float Unit::GetPowerAttackMod(WEAPON_TYPE type) const
 {
 	float value = 1.5f;
 	if(IS_SET(statsx->perk_flags, PF_HEAVY_HITTER))
-		value * 1.1f;
+		value *= 1.1f;
+	if(type == WT_AXE && HavePerk(Perk::Chopper))
+		value *= 1.1f;
 	return value;
 }
 
@@ -2544,7 +2579,7 @@ bool Unit::HavePoisonResistance() const
 }
 
 //=================================================================================================
-int Unit::GetCriticalChance(const Item* item) const
+int Unit::GetCriticalChance(const Item* item, bool backstab, float ratio) const
 {
 	assert(item && In(item->type, { IT_WEAPON, IT_BOW, IT_SHIELD }));
 
@@ -2553,21 +2588,63 @@ int Unit::GetCriticalChance(const Item* item) const
 	if(IS_SET(statsx->perk_flags, PF_FINESSE))
 		chance += 5;
 
+	if(backstab)
+		chance += 5;
+
 	if(item->type == IT_WEAPON)
 	{
 		auto& weapon = item->ToWeapon();
-		if(weapon.type == WT_SHORT_BLADE)
-			chance += 5;
+		switch(weapon.type)
+		{
+		case WT_SHORT_BLADE:
+			{
+				chance += 5;
+				int mod = 0;
+				if(HavePerk(Perk::ShortBladeMaster))
+					mod = 10;
+				else if(HavePerk(Perk::ShortBladeProficiency))
+					mod = 5;
+				chance += mod;
+				if(HavePerk(Perk::Backstabber) && backstab)
+					chance += mod;
+			}
+			break;
+		case WT_LONG_BLADE:
+			if(HavePerk(Perk::LongBladeMaster))
+				chance += 10;
+			else if(HavePerk(Perk::LongBladeProficiency))
+				chance += 5;
+			break;
+		case WT_AXE:
+			if(HavePerk(Perk::AxeMaster))
+				chance += 10;
+			else if(HavePerk(Perk::AxeProficiency))
+				chance += 5;
+			break;
+		case WT_BLUNT:
+			if(HavePerk(Perk::BluntMaster))
+				chance += 5;
+			break;
+		}
 	}
 	else if(item->type == IT_BOW)
 	{
 		chance += 5;
+		if(HavePerk(Perk::BowExpert))
+			chance += 10;
+		else if(HavePerk(Perk::BowProficiency))
+			chance += 5;
+		if(ratio > 0 && HavePerk(Perk::PreciseShot))
+			chance += ratio * 15;
 	}
 	else
 	{
 		// shield
 		chance = 0;
 	}
+
+	if(IS_SET(statsx->perk_flags, PF_UNLUCKY))
+		chance /= 2;
 
 	return chance;
 }
@@ -2577,41 +2654,47 @@ float Unit::GetCriticalDamage(const Item* item) const
 {
 	assert(item && In(item->type, { IT_WEAPON, IT_BOW, IT_SHIELD }));
 
-	int mod = 0;
+	int base, mod = 0;
 	if(item->type == IT_WEAPON)
 	{
 		auto& weapon = item->ToWeapon();
 		switch(weapon.type)
 		{
 		case WT_SHORT_BLADE:
-			mod = 20;
+			base = 20;
 			break;
 		case WT_LONG_BLADE:
-			mod = 50;
+			base = 50;
 			break;
 		case WT_AXE:
-			mod = 60;
+			base = 60;
+			if(HavePerk(Perk::AxeExpert))
+				mod = 50;
 			break;
 		case WT_BLUNT:
-			mod = 60;
+			base = 60;
+			if(HavePerk(Perk::BluntExpert))
+				mod = 30;
 			break;
 		}
 	}
 	else if(item->type == IT_BOW)
 	{
-		mod = 75;
+		base = 75;
+		if(HavePerk(Perk::BowExpert))
+			mod = 15;
 	}
 	else
 	{
 		// shield
-		mod = 30;
+		base = 30;
 	}
 
 	int bonus = 0;
 	if(IS_SET(statsx->perk_flags, PF_CRITICAL_FOCUS))
 		++bonus;
 
-	mod = (mod * (bonus + 2)) / 2;
+	mod += (base * (bonus + 2)) / 2;
 	mod += 100;
 
 	return float(mod) / 100;

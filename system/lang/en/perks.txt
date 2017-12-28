@@ -37,6 +37,10 @@ perk poor {
 	name "Poor"
 	desc "You start your adventure with the right empty purse. Your equipment is of lower quality."
 }
+perk unlucky {
+	name "Unlucky"
+	desc "You never had any luck. Your critical hit chance is always decreased by half."
+}
 perk talent {
 	name "Talent"
 	desc "Increase chosen attribute by 5 points. Faster training of selected attribute."
@@ -119,7 +123,11 @@ perk finesse {
 }
 perk critical_focus {
 	name "Critical focus"
-	desc "+50% to critical damage."
+	desc "+50% to base critical damage."
+}
+perk dodge {
+	name "Dodge"
+	desc "Allows you to dodge one attack every 5 seconds."
 }
 perk tought {
 	name "Tought"
@@ -157,13 +165,41 @@ perk energetic {
 	name "Energetic"
 	desc "+50 to maximum stamina."
 }
-perk energetic {
+perk very_energetic {
 	name "Very energetic"
 	desc "+150 to maximum stamina."
 }
 perk adaptation {
 	name "Adaptation"
 	desc "Gives resistance to poisons."
+}
+perk educated {
+	name "Educated"
+	desc "Bonus to gained experience."
+}
+perk leadership {
+	name "Born leader"
+	desc "Bonus to gained experience for whole team."
+}
+perk charming {
+	name "Charming"
+	desc "Bonus for rewards after finishing quest."
+}
+perk bow_proficiency {
+	name "Bow proficiency"
+	desc "+20 to bow attack and +5% critical hit chance."
+}
+perk precise_shot {
+	name "Precise shot"
+	desc "Aiming with bow increase accuracy and critical hit chance by 15%."
+}
+perk bow_expert {
+	name "Bow expert"
+	desc "+50 to bow attack, +10% critical hit chance and increased attack speed."
+}
+perk bow_master {
+	name "Bow master"
+	desc "You can shoot with two arrows at once, second arrow deals 50% damage."
 }
 perk healthy_diet {
 	name "Healthy diet"
@@ -184,6 +220,22 @@ perk miracle_diet {
 perk flexible {
 	name "Flexible"
 	desc "+25 to base mobility."
+}
+perk trading_contract {
+	name "Trading contract"
+	desc "Team members can use you haggle skill when trading, training it."
+}
+perk extra_stock {
+	name "Extra stock"
+	desc "Traders have specialy for you more items and of better quality."
+}
+perk free_merchant {
+	name "Free merchant"
+	desc "You can sell any item to any merchant."\
+}
+perk master_merchant {
+	name "Master merchant"
+	desc "You can buy and sell items with their real price."
 }
 perk decrypting_runes {
 	name "Decrypting runes"

@@ -37,6 +37,10 @@ perk poor {
 	name "Biedak"
 	desc "Rozpoczynasz swoj¹ przygodê z prawiê pust¹ sakiewk¹. Twój ekwipunek jest gorszej jakoœci."
 }
+perk unlucky {
+	name "Pechowiec"
+	desc "Nigdy nie mia³eœ szczêœcia. Zawsze zmniejsza szansê na trafienie krytyczne o po³owê."
+}
 perk talent {
 	name "Talent"
 	desc "Zwiêksza wybrany atrybut o 5 punktów. Przyœpiesza szybkoœæ zdobywania tego atrybutu."
@@ -119,7 +123,11 @@ perk finesse {
 }
 perk critical_focus {
 	name "Skupienie na krytykach"
-	desc "+50% do krytycznych obra¿eñ."
+	desc "+50% do bazowych krytycznych obra¿eñ."
+}
+perk dodge {
+	name "Uniki"
+	desc "Pozwala unikn¹æ jednego ataku co 5 sekund."
 }
 perk tought {
 	name "Twardy"
@@ -157,13 +165,41 @@ perk energetic {
 	name "Energiczny"
 	desc "+50 do maksymalnej wytrzyma³oœci."
 }
-perk energetic {
+perk very_energetic {
 	name "Bardzo energiczny"
 	desc "+150 do maksymalnej wytrzyma³oœci."
 }
 perk adaptation {
 	name "Przystosowanie"
 	desc "Zapewnia odpornoœæ na trucizny."
+}
+perk educated {
+	name "Wykszta³cony"
+	desc "Premia do zdobywanego doœwiadczenia."
+}
+perk leadership {
+	name "Urodzony przywódca"
+	desc "Premia do zdobywanego doœwiadczenia przez wszystkich cz³onków dru¿yny."
+}
+perk charming {
+	name "Czaruj¹cy"
+	desc "Premia do zdobywanych nagród za wykonanie zadania."
+}
+perk bow_proficiency {
+	name "Bieg³oœæ w ³uku"
+	desc "+20 do ataku ³ukiem i +5% szansy na trafienie krytyczne."
+}
+perk precise_shot {
+	name "Precyzyjny strza³"
+	desc "Celowanie z ³uku zwiêksza celnoœæ i szansê na trafienie krytyczne o 15%."
+}
+perk bow_expert {
+	name "Ekspert ³uku"
+	desc "+50 do ataku ³ukiem, +10% szansy na trafienie krytyczne i zwiêkszona szybkoœæ."
+}
+perk bow_master {
+	name "Mistrz ³uku"
+	desc "Potrafisz strzelaæ dwoma strza³ami naraz, druga strza³a zadaje zadaje 50% obra¿eñ."
 }
 perk healthy_diet {
 	name "Zdrowa dieta"
@@ -184,6 +220,22 @@ perk miracle_diet {
 perk flexible {
 	name "Wygimnastykowany"
 	desc "+25 do bazowej mobilnoœci."
+}
+perk trading_contract {
+	name "Kontrakt handlowy"
+	desc "Cz³onkowie dru¿yny mog¹ korzystaæ z twojej umiejêtnoœci handlu, trenuj¹c j¹."
+}
+perk extra_stock {
+	name "Zwiêkszony asortyment"
+	desc "Handlarze maj¹ dla ciebie wiêcej przedmiotów które s¹ lepszej jakoœci."
+}
+perk free_merchant {
+	name "Wolny kupiec"
+	desc "Mo¿esz sprzedawaæ dowolny przedmiot u ka¿dego z handlarzy."
+}
+perk master_merchant {
+	name "Mistrz kupiecki"
+	desc "Mo¿esz sprzedawaæ i kupowaæ przedmioty na podstawie ich rzeczywistej wartoœci."
 }
 perk decrypting_runes {
 	name "Rozszyfrowywanie run"

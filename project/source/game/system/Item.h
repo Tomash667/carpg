@@ -226,7 +226,8 @@ enum WEAPON_TYPE
 	WT_SHORT_BLADE,
 	WT_LONG_BLADE,
 	WT_BLUNT,
-	WT_AXE
+	WT_AXE,
+	WT_NONE
 };
 
 //-----------------------------------------------------------------------------

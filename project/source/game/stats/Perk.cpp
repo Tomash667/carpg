@@ -20,6 +20,7 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::SlowLearner, "slow_learner", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::Asocial, "asocial", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::Poor, "poor", PerkInfo::Flaw | PerkInfo::History),
+	PerkInfo(Perk::Unlucky, "unlucky", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::Talent, "talent", PerkInfo::History | PerkInfo::RequireFormat, Perk::None, PerkInfo::Attribute),
 	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
 	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::History | PerkInfo::RequireFormat, Perk::None, PerkInfo::Skill),
@@ -41,6 +42,7 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::EnhancedMobility, "enhanced_mobility", 0, Perk::Mobility),
 	PerkInfo(Perk::Finesse, "finesse", 0),
 	PerkInfo(Perk::CriticalFocus, "critical_focus", 0),
+	PerkInfo(Perk::Dodge, "dodge", 0),
 	PerkInfo(Perk::Tought, "tought", 0),
 	PerkInfo(Perk::Toughter, "toughter", 0, Perk::Tought),
 	PerkInfo(Perk::Toughtest, "toughtest", 0, Perk::Toughter),
@@ -52,11 +54,38 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::Energetic, "energetic", 0),
 	PerkInfo(Perk::VeryEnergetic, "very_energetic", 0, Perk::Energetic),
 	PerkInfo(Perk::Adaptation, "adaptation", 0),
+	PerkInfo(Perk::Educated, "educated", 0),
+	PerkInfo(Perk::Leadership, "leadership", 0),
+	PerkInfo(Perk::Charming, "charming", 0),
+	PerkInfo(Perk::ShortBladeProficiency, "short_blade_proficiency", 0),
+	PerkInfo(Perk::Backstabber, "backstabber", 0),
+	PerkInfo(Perk::ShortBladeExpert, "short_blade_expert", 0),
+	PerkInfo(Perk::ShortBladeMaster, "short_blade_master", 0, Perk::ShortBladeProficiency),
+	PerkInfo(Perk::LongBladeProficiency, "long_blade_proficiency", 0),
+	PerkInfo(Perk::DefensiveCombatStyle, "defensive_combat_style", 0),
+	PerkInfo(Perk::LongBladeExpert, "long_blade_expert", 0),
+	PerkInfo(Perk::LongBladeMaster, "long_blade_master", 0, Perk::LongBladeProficiency),
+	PerkInfo(Perk::AxeProficiency, "axe_proficiency", 0),
+	PerkInfo(Perk::Chopper, "chopper", 0),
+	PerkInfo(Perk::AxeExpert, "axe_expert", 0),
+	PerkInfo(Perk::AxeMaster, "axe_master", Perk::AxeProficiency),
+	PerkInfo(Perk::BluntProficiency, "blunt_proficiency", 0),
+	PerkInfo(Perk::Basher, "basher", 0),
+	PerkInfo(Perk::BluntExpert, "blunt_expert", 0),
+	PerkInfo(Perk::BluntMaster, "blunt_master", 0, Perk::BluntProficiency),
+	PerkInfo(Perk::BowProficiency, "bow_proficiency", 0),
+	PerkInfo(Perk::PreciseShot, "precise_shot", 0),
+	PerkInfo(Perk::BowExpert, "bow_expert", 0, Perk::BowProficiency),
+	PerkInfo(Perk::BowMaster, "bow_master", 0),
 	PerkInfo(Perk::HealthyDiet, "healthy_diet", 0),
 	PerkInfo(Perk::Strongman, "strongman", 0),
 	PerkInfo(Perk::BodyBuilder, "body_builder", 0),
 	PerkInfo(Perk::MiracleDiet, "miracle_diet", 0, Perk::HealthyDiet),
 	PerkInfo(Perk::Flexible, "flexible", 0),
+	PerkInfo(Perk::TradingContract, "trading_contract", 0),
+	PerkInfo(Perk::ExtraStock, "extra_stock", 0),
+	PerkInfo(Perk::FreeMerchant, "free_merchant", 0),
+	PerkInfo(Perk::MasterMerchant, "master_merchant", 0),
 	PerkInfo(Perk::DecryptingRunes, "decrypting_runes", 0)
 };
 
@@ -218,7 +247,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	case Perk::Berserker:
 		return ctx.Have(Attribute::STR, 60);
 	case Perk::HeavyHitter:
-		return ctx.Have(Attribute::STR, 70);
+		return ctx.Have(Attribute::STR, 70) && ctx.HavePerk(Perk::Aggressive);
 	case Perk::Careful:
 	case Perk::Mobility:
 		return ctx.Have(Attribute::DEX, 60);
@@ -227,7 +256,9 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	case Perk::Finesse:
 		return ctx.Have(Attribute::DEX, 75);
 	case Perk::CriticalFocus:
-		return ctx.Have(Attribute::DEX, 90);
+		return ctx.Have(Attribute::DEX, 90) && ctx.HavePerk(Perk::Finesse);
+	case Perk::Dodge:
+		return ctx.Have(Attribute::DEX, 100) && ctx.HavePerk(Perk::EnhancedMobility);
 	case Perk::Tought:
 	case Perk::HardSkin:
 		return ctx.Have(Attribute::END, 60);
@@ -239,13 +270,59 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	case Perk::PerfectHealth:
 		return ctx.Have(Attribute::END, 100);
 	case Perk::Adaptation:
-		return ctx.Have(Attribute::END, 90);
+		return ctx.Have(Attribute::END, 90) && ctx.HavePerk(Perk::Tought);
 	case Perk::ExtraordinaryHealth:
 		return !ctx.HavePerk(Perk::ChronicDisease) && ctx.Have(Attribute::END, 75);
 	case Perk::Energetic:
 		return ctx.Have(Attribute::END, 55);
 	case Perk::VeryEnergetic:
 		return ctx.Have(Attribute::END, 85);
+	case Perk::Educated:
+		return ctx.Have(Attribute::INT, 60);
+	case Perk::Leadership:
+		return ctx.Have(Attribute::CHA, 60);
+	case Perk::Charming:
+		return ctx.Have(Attribute::CHA, 70);
+	case Perk::ShortBladeProficiency:
+		return ctx.Have(Skill::SHORT_BLADE, 25);
+	case Perk::Backstabber:
+		return ctx.Have(Skill::SHORT_BLADE, 50) && ctx.HavePerk(Perk::ShortBladeProficiency);
+	case Perk::ShortBladeExpert:
+		return ctx.Have(Skill::SHORT_BLADE, 75) && ctx.HavePerk(Perk::ShortBladeProficiency);
+	case Perk::ShortBladeMaster:
+		return ctx.Have(Skill::SHORT_BLADE, 100) && ctx.HavePerk(Perk::ShortBladeExpert);
+	case Perk::LongBladeProficiency:
+		return ctx.Have(Skill::LONG_BLADE, 25);
+	case Perk::DefensiveCombatStyle:
+		return ctx.Have(Skill::LONG_BLADE, 50) && ctx.HavePerk(Perk::LongBladeProficiency);
+	case Perk::LongBladeExpert:
+		return ctx.Have(Skill::LONG_BLADE, 75) && ctx.HavePerk(Perk::LongBladeProficiency);
+	case Perk::LongBladeMaster:
+		return ctx.Have(Skill::LONG_BLADE, 100) && ctx.HavePerk(Perk::LongBladeExpert);
+	case Perk::AxeProficiency:
+		return ctx.Have(Skill::AXE, 25);
+	case Perk::Chopper:
+		return ctx.Have(Skill::AXE, 50) && ctx.HavePerk(Perk::AxeProficiency);
+	case Perk::AxeExpert:
+		return ctx.Have(Skill::AXE, 75) && ctx.HavePerk(Perk::AxeProficiency);
+	case Perk::AxeMaster:
+		return ctx.Have(Skill::AXE, 100) && ctx.HavePerk(Perk::AxeExpert);
+	case Perk::BluntProficiency:
+		return ctx.Have(Skill::BLUNT, 25);
+	case Perk::Basher:
+		return ctx.Have(Skill::BLUNT, 50) && ctx.HavePerk(Perk::Basher);
+	case Perk::BluntExpert:
+		return ctx.Have(Skill::BLUNT, 75) && ctx.HavePerk(Perk::Basher);
+	case Perk::BluntMaster:
+		return ctx.Have(Skill::BLUNT, 100) && ctx.HavePerk(Perk::BluntExpert);
+	case Perk::BowProficiency:
+		return ctx.Have(Skill::BOW, 25);
+	case Perk::PreciseShot:
+		return ctx.Have(Skill::BOW, 50) && ctx.HavePerk(Perk::BowProficiency);
+	case Perk::BowExpert:
+		return ctx.Have(Skill::BOW, 75);
+	case Perk::BowMaster:
+		return ctx.Have(Skill::BOW, 100) && ctx.HavePerk(Perk::BowExpert);
 	case Perk::HealthyDiet:
 		return ctx.Have(Skill::ATHLETICS, 25);
 	case Perk::Strongman:
@@ -256,6 +333,14 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return ctx.Have(Skill::ATHLETICS, 100);
 	case Perk::Flexible:
 		return ctx.Have(Skill::ACROBATICS, 50);
+	case Perk::TradingContract:
+		return ctx.Have(Skill::HAGGLE, 25);
+	case Perk::ExtraStock:
+		return ctx.Have(Skill::HAGGLE, 50);
+	case Perk::FreeMerchant:
+		return ctx.Have(Skill::HAGGLE, 75);
+	case Perk::MasterMerchant:
+		return ctx.Have(Skill::HAGGLE, 100);
 	case Perk::DecryptingRunes:
 		return ctx.Have(Skill::LITERACY, 25);
 	default:
@@ -339,6 +424,9 @@ bool TakenPerk::Apply(PerkContext& ctx)
 	case Perk::Poor:
 		if(ctx.pc && ctx.startup)
 			ctx.pc->unit->gold /= 10;
+		break;
+	case Perk::Unlucky:
+		ctx.AddFlag(PF_UNLUCKY);
 		break;
 	case Perk::StrongBack:
 		ctx.AddEffect(this, EffectType::Carry, 1.25f);
@@ -506,6 +594,9 @@ void TakenPerk::Remove(PerkContext& ctx)
 	case Perk::Asocial:
 		ctx.Mod(Attribute::CHA, -5, false);
 		ctx.RemoveFlag(PF_ASOCIAL);
+		break;
+	case Perk::Unlucky:
+		ctx.RemoveFlag(PF_UNLUCKY);
 		break;
 	case Perk::HeavyHitter:
 		ctx.RemoveFlag(PF_HEAVY_HITTER);

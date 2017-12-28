@@ -1,9 +1,10 @@
 ﻿FEATURE:
 *** perks
++ new perks desc
 ? power attack mod
 ? new effect: mobility
-? perks heavy hitter/ healthy diet/ miracle diet/mobility(ex)/flexible/sluggish/adaptation/(very)energetic/finese/critical focus
-+ show critic/power when hovering in devmode over attack
+? perks heavy hitter/ healthy diet/ miracle diet/mobility(ex)/flexible/sluggish/adaptation/(very)energetic/finese/critical focus/unlucky/short blade prof/short blade master, long blade prof/long blade master/axe prof/chopper/axe expert/axe master/blunt prof/blunt expert/blunt master/bow prof/bow expert
++ show critic/power when hovering in devmode over attack/power attack mod
 ? perk flags after save/load/travel
 + perk points
 	every two levels, for heroes every 3 levels
@@ -19,6 +20,13 @@
 	better/worse starting gear
 	talent, extra apt
 	skill focus, extra apt
+	precise shot, bow master
+	dodge
+	educated
+	charming
+	leadership
+	trading contract, extra stock, free merchant, master merchant
+	defensive combat style, basher
 + upgrade perks -> set perk flags
 ? tests
 	? old perks load
@@ -27,11 +35,13 @@
 	? loading old effects
 	? add_effect (skill/attribute/stamina/health/attack/defense), remove_effect (by netid/effect); memory leaks
 	? add_perk, remove_perk, list_perks in MP
+	? can take perk master when have expert
 ! changelog
 	+ new commands, list types
 		
 dialog for alchemist apperentice, cheaper potions :)
 dialog bandits, different text: solo vs team
+hitting menequin, shield (show damage)
 
 *** combat
 + str/dex formula changes
@@ -40,6 +50,8 @@ dialog bandits, different text: solo vs team
 + too low str effects (slower attack etc)
 + too low dex effects
 + unarmed attack formula
++ crit chance/mod (backstab, power shot)
++ bleeding (short/long blade expert)
 
 *** new enemies
 + units stats, new units
