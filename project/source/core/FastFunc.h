@@ -22,7 +22,7 @@ namespace ssvu
 	{
 		class __single_inheritance AnyClass;
 		class AnyClass {};
-		using AnyPtrThis = AnyClass*;
+		using AnyPtrThis = AnyClass * ;
 		using AnyPtrFunc = void(AnyClass::*)();
 		template<typename TReturn = void, typename... TArgs> using AnyPtrFuncT = TReturn(AnyClass::*)(TArgs...);
 		template<typename TReturn = void, typename... TArgs> using AnyPtrStaticFuncT = TReturn(*)(TArgs...);
@@ -246,14 +246,7 @@ namespace ssvu
 
 		inline FastFunc() noexcept = default;
 
-		template<typename TFunc, ENABLE_IF_SAME_TYPE(FastFunc, TFunc)>
-		inline FastFunc(TFunc&& mFunc, ENABLE_IF_CONV_TO_FUN_PTR(TFunc))
-		{
-			using FuncType = typename std::decay<TFunc>::type;
-			this->bind(&mFunc, &FuncType::operator());
-		}
-		template<typename TFunc, ENABLE_IF_SAME_TYPE(FastFunc, TFunc)>
-		inline FastFunc(TFunc&& mFunc, ENABLE_IF_NOT_CONV_TO_FUN_PTR(TFunc))
+		template<typename TFunc, typename = typename std::enable_if<!std::is_same<FastFunc, typename std::decay<TFunc>::type>{}>::type> inline FastFunc(TFunc&& mFunc)
 			: storage(operator new(sizeof(TFunc)), funcDeleter<typename std::decay<TFunc>::type>)
 		{
 			using FuncType = typename std::decay<TFunc>::type;
@@ -274,7 +267,7 @@ namespace ssvu
 	namespace Internal
 	{
 		class AnyClass;
-		using AnyPtrThis = AnyClass*;
+		using AnyPtrThis = AnyClass * ;
 		using AnyPtrFunc = void(AnyClass::*)();
 		template<typename TReturn = void, typename... TArgs> using AnyPtrFuncT = TReturn(AnyClass::*)(TArgs...);
 		template<typename TReturn = void, typename... TArgs> using AnyPtrStaticFuncT = TReturn(*)(TArgs...);

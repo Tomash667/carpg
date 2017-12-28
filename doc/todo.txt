@@ -79,6 +79,7 @@ hitting menequin, shield (show damage)
 	- fix stamina values, use stamina when running ?
 ? test all traps with 2 clients, log playing sounds for all players
 + fix changelog 0.6.1, 0.6.2
+! undo FastFunc changes, use new delegates ?
 
 v2:
 + exp, exp from quests
@@ -137,6 +138,7 @@ NEW:
 + negative traits: for int/wis
 - Nie można wykonać kopii zapasowej pliku Settings.php - upewnij się, że plik Settings_bak.php istnieje i można go zapisywać.
 - www admin layout panel is broken a bit
++ web: load indiedb after ready, fix admin panel
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
