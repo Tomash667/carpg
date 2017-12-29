@@ -265,6 +265,22 @@ perk bow_master {
 	name "Bow master"
 	desc "You can shoot with two arrows at once, second arrow deals 50% damage."
 }
+perk shield_proficiency {
+	name "Shield proficiency"
+	desc "+10% to block power and less stamina usage."
+}
+perk shielder {
+	name "Shielder"
+	desc "+25% to block power and less stamina usage."
+}
+perk battle_shielder {
+	name "Battle shielder"
+	desc "+50% shield attack, can criticaly hit and stun target."
+}
+perk magic_shielder {
+	name "Magic shielder"
+	desc "+50% to block power and less stamina usage. Blocking magic attacks is more effective."
+}
 perk healthy_diet {
 	name "Healthy diet"
 	desc "+50% to natural healing and food restrore health for longer."

@@ -110,6 +110,26 @@ enum class Perk
 	PreciseShot, // (50 bow) zoom when holding, increase accuracy, +15% crit
 	BowExpert, // (75 bow) [C BowProficiency] +50 atk, +10% crit, +15% crit dmg
 	BowMaster, // (100 bow) shoot two arrows at once, second deal 50% damage if hit same target
+	// shield
+	ShieldProficiency, // (25 shi) +10% block power, less stamina used
+	Shielder, // (50 shi) [C ShieldProficiency] +25% block power, less stamina used
+	BattleShielder, // (75 shi) +50% shield damage, can criticaly hit and stun
+	MagicShielder, // (100 shi) +50% block power, less stamina used, no penalty for blocking magic attacks
+	// light armor
+	LightArmorProficiency, // (25 lia) +10 def
+	LightArmorMobility, // (50 lia) +25 mobility
+	LightArmorExpert, // (75 lia) [C LightArmorProficiency]  +30 def
+	LightArmorMaster, // (100 lia) dodge
+	// medium armor
+	MediumArmorProficiency, // (25 mea) +15 def
+	MediumArmorAdjustment, // (50 mea) +50% armor mobility
+	MediumArmorExpert, // (75 mea) [C MediumArmorProficiency] +40 def
+	MediumArmorMaster, // (100 mea) 5% protection
+	// heavy armor
+	HeavyArmorProficiency, // (25 hea) +20 def
+	HeavyArmorAdjustment, // (50 hea) -50% armor weight, +25% armor mobility
+	HeavyArmorExpert, // (75 hea) [C HeavyArmorProficiency] +50 def
+	HeavyArmorMaster, // (100 hea) 10% protection
 	// athletics
 	HealthyDiet, // (25 ath) +50% natural healing, food heal for longer
 	Strongman, // (50 ath) +25% carry

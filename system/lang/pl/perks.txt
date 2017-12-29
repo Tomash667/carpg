@@ -265,6 +265,60 @@ perk bow_master {
 	name "Mistrz ³uku"
 	desc "Potrafisz strzelaæ dwoma strza³ami naraz, druga strza³a zadaje zadaje 50% obra¿eñ."
 }
+perk shield_proficiency {
+	name "Bieg³oœæ w tarczy"
+	desc "+10% do mocy bloku i mniejsze zu¿ycie wytrzyma³oœci."
+}
+perk shielder {
+	name "Tarczownik"
+	desc "+25% do mocy bloku i mniejsze zu¿ycie wytrzyma³oœci."
+}
+perk battle_shielder {
+	name "Bojowy tarczownik"
+	desc "+50% do ataku tarcz¹, mo¿na trafiæ krytycznie i og³uszyæ cel."
+}
+perk magic_shielder {
+	name "Magiczny tarczownik"
+	desc "+50% do mocy bloku i mniejsze zu¿ycie wytrzyma³oœci. Blokowanie magicznych pocisków jest skuteczniejsze."
+}
+perk light_armor_proficiency {
+	name "Bieg³oœæ w lekkim pancerzu"
+	desc "+10 do obrony w lekkim pancerzu."
+}
+perk light_armor_mobility {
+}
+perk light_armor_expert {
+	name "Ekspert lekkiego pancerza"
+	desc "+30 do obrony w lekkim pancerzu."
+}
+perk light_armor_master {
+}
+perk medium_armor_proficiency {
+	name "Bieg³oœæ w œrednim pancerzu"
+	desc "+15 do obrony w œrednim pancerzu."
+}
+perk medium_armor_adjustment {
+	name "Przystosowanie do œredniego pancerza"
+	//desc "Zwiêk"
+}
+perk medium_armor_expert {
+	name "Ekspert œredniego pancerza"
+	desc "+40 do obrony w œrednim pancerzu."
+}
+perk medium_armor_master {
+}
+perk heavy_armor_proficiency {
+	name "Bieg³oœæ w ciê¿kim pancerzu"
+	desc "+20 do obrony w ciê¿kim pancerzu."
+}
+perk heavy_armor_adjustment {
+}
+perk heavy_armor_expert {
+	name "Ekspert ciê¿kiego pancerza"
+	desc "+50 do obrony w ciê¿kim pancerzu."
+}
+perk heavy_armor_master {
+}
 perk healthy_diet {
 	name "Zdrowa dieta"
 	desc "+50% do naturalnego leczenia i wyd³u¿a efekt dzia³ania leczenia dziêki jedzeniu."

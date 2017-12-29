@@ -1,5 +1,6 @@
 ﻿FEATURE:
 *** perks
++ block in stats, shield attack in stats
 ? power attack mod
 ? new effect: mobility
 ? perks heavy hitter/ healthy diet/ miracle diet/mobility(ex)/flexible/sluggish/adaptation/(very)energetic/finese/critical focus/unlucky/short blade prof/short blade master, long blade prof/long blade master/axe prof/chopper/axe expert/axe master/blunt prof/blunt expert/blunt master/bow prof/bow expert
@@ -25,6 +26,7 @@
 	leadership
 	trading contract, extra stock, free merchant, master merchant
 	defensive combat style, basher
+	shield prof, shielder, battle shielder, magic shielder
 + upgrade perks -> set perk flags
 ? tests
 	? old perks load
@@ -138,6 +140,7 @@ NEW:
 - Nie można wykonać kopii zapasowej pliku Settings.php - upewnij się, że plik Settings_bak.php istnieje i można go zapisywać.
 - www admin layout panel is broken a bit
 + web: load indiedb after ready, fix admin panel
++ shield with spikes (can crit without battle shielder, +5% crit then)
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

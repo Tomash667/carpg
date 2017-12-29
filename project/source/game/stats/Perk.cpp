@@ -14,6 +14,8 @@
 
 //-----------------------------------------------------------------------------
 PerkInfo PerkInfo::perks[(int)Perk::Max] = {
+	//=========================================================================
+	// negative starting perks
 	PerkInfo(Perk::BadBack, "bad_back", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::ChronicDisease, "chronic_disease", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::Sluggish, "sluggish", PerkInfo::Flaw | PerkInfo::History),
@@ -21,6 +23,8 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::Asocial, "asocial", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::Poor, "poor", PerkInfo::Flaw | PerkInfo::History),
 	PerkInfo(Perk::Unlucky, "unlucky", PerkInfo::Flaw | PerkInfo::History),
+	//=========================================================================
+	// positive starting perks
 	PerkInfo(Perk::Talent, "talent", PerkInfo::History | PerkInfo::RequireFormat, Perk::None, PerkInfo::Attribute),
 	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
 	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::History | PerkInfo::RequireFormat, Perk::None, PerkInfo::Skill),
@@ -31,18 +35,24 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::FamilyHeirloom, "heirloom", PerkInfo::History),
 	PerkInfo(Perk::Leader, "leader", PerkInfo::History),
 	PerkInfo(Perk::MilitaryTraining, "military_training", PerkInfo::History),
+	//=========================================================================
+	// normal perks
+	//=========================================================================
+	// strength
 	PerkInfo(Perk::StrongBack, "strong_back", 0),
 	PerkInfo(Perk::StrongerBack, "stronger_back", 0, Perk::StrongBack),
 	PerkInfo(Perk::Aggressive, "aggressive", 0),
 	PerkInfo(Perk::VeryAggressive, "very_aggressive", 0, Perk::Aggressive),
 	PerkInfo(Perk::Berserker, "berserker", 0, Perk::VeryAggressive),
 	PerkInfo(Perk::HeavyHitter, "heavy_hitter", 0),
+	// dexterity
 	PerkInfo(Perk::Careful, "careful", 0),
 	PerkInfo(Perk::Mobility, "mobility", 0),
 	PerkInfo(Perk::EnhancedMobility, "enhanced_mobility", 0, Perk::Mobility),
 	PerkInfo(Perk::Finesse, "finesse", 0),
 	PerkInfo(Perk::CriticalFocus, "critical_focus", 0),
 	PerkInfo(Perk::Dodge, "dodge", 0),
+	// endurance
 	PerkInfo(Perk::Tought, "tought", 0),
 	PerkInfo(Perk::Toughter, "toughter", 0, Perk::Tought),
 	PerkInfo(Perk::Toughtest, "toughtest", 0, Perk::Toughter),
@@ -54,38 +64,69 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::Energetic, "energetic", 0),
 	PerkInfo(Perk::VeryEnergetic, "very_energetic", 0, Perk::Energetic),
 	PerkInfo(Perk::Adaptation, "adaptation", 0),
+	// inteligence
 	PerkInfo(Perk::Educated, "educated", 0),
+	// charisma
 	PerkInfo(Perk::Leadership, "leadership", 0),
 	PerkInfo(Perk::Charming, "charming", 0),
+	// short blade
 	PerkInfo(Perk::ShortBladeProficiency, "short_blade_proficiency", 0),
 	PerkInfo(Perk::Backstabber, "backstabber", 0),
 	PerkInfo(Perk::ShortBladeExpert, "short_blade_expert", 0),
 	PerkInfo(Perk::ShortBladeMaster, "short_blade_master", 0, Perk::ShortBladeProficiency),
+	// long blade
 	PerkInfo(Perk::LongBladeProficiency, "long_blade_proficiency", 0),
 	PerkInfo(Perk::DefensiveCombatStyle, "defensive_combat_style", 0),
 	PerkInfo(Perk::LongBladeExpert, "long_blade_expert", 0),
 	PerkInfo(Perk::LongBladeMaster, "long_blade_master", 0, Perk::LongBladeProficiency),
+	// axe
 	PerkInfo(Perk::AxeProficiency, "axe_proficiency", 0),
 	PerkInfo(Perk::Chopper, "chopper", 0),
 	PerkInfo(Perk::AxeExpert, "axe_expert", 0),
 	PerkInfo(Perk::AxeMaster, "axe_master", 0, Perk::AxeProficiency),
+	// blunt
 	PerkInfo(Perk::BluntProficiency, "blunt_proficiency", 0),
 	PerkInfo(Perk::Basher, "basher", 0),
 	PerkInfo(Perk::BluntExpert, "blunt_expert", 0),
 	PerkInfo(Perk::BluntMaster, "blunt_master", 0, Perk::BluntProficiency),
+	// bow
 	PerkInfo(Perk::BowProficiency, "bow_proficiency", 0),
 	PerkInfo(Perk::PreciseShot, "precise_shot", 0),
 	PerkInfo(Perk::BowExpert, "bow_expert", 0, Perk::BowProficiency),
 	PerkInfo(Perk::BowMaster, "bow_master", 0),
+	// shield
+	PerkInfo(Perk::ShieldProficiency, "shield_proficiency", 0),
+	PerkInfo(Perk::Shielder, "shielder", 0, Perk::ShieldProficiency),
+	PerkInfo(Perk::BattleShielder, "battle_shielder", 0),
+	PerkInfo(Perk::MagicShielder, "magic_shielder", 0, Perk::Shielder),
+	// light armor
+	PerkInfo(Perk::LightArmorProficiency, "light_armor_proficiency", 0),
+	PerkInfo(Perk::LightArmorMobility, "light_armor_mobility", 0),
+	PerkInfo(Perk::LightArmorExpert, "light_armor_expert", 0, Perk::LightArmorProficiency),
+	PerkInfo(Perk::LightArmorMaster, "light_armor_master", 0),
+	// medium armor
+	PerkInfo(Perk::MediumArmorProficiency, "medium_armor_proficiency", 0),
+	PerkInfo(Perk::MediumArmorAdjustment, "medium_armor_adjustment", 0),
+	PerkInfo(Perk::MediumArmorExpert, "medium_armor_expert", 0, Perk::MediumArmorProficiency),
+	PerkInfo(Perk::MediumArmorMaster, "medium_armor_master", 0),
+	// heavy armor
+	PerkInfo(Perk::HeavyArmorProficiency, "heavy_armor_proficiency", 0),
+	PerkInfo(Perk::HeavyArmorAdjustment, "heavy_armor_adjustment", 0),
+	PerkInfo(Perk::HeavyArmorExpert, "heavy_armor_expert", 0, Perk::HeavyArmorAdjustment),
+	PerkInfo(Perk::HeavyArmorMaster, "heavy_armor_master", 0),
+	// athletics
 	PerkInfo(Perk::HealthyDiet, "healthy_diet", 0),
 	PerkInfo(Perk::Strongman, "strongman", 0),
 	PerkInfo(Perk::BodyBuilder, "body_builder", 0),
 	PerkInfo(Perk::MiracleDiet, "miracle_diet", 0, Perk::HealthyDiet),
+	// acrobatics
 	PerkInfo(Perk::Flexible, "flexible", 0),
+	// haggle
 	PerkInfo(Perk::TradingContract, "trading_contract", 0),
 	PerkInfo(Perk::ExtraStock, "extra_stock", 0),
 	PerkInfo(Perk::FreeMerchant, "free_merchant", 0),
 	PerkInfo(Perk::MasterMerchant, "master_merchant", 0),
+	// literacy
 	PerkInfo(Perk::DecryptingRunes, "decrypting_runes", 0)
 };
 
@@ -323,6 +364,38 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return ctx.Have(Skill::BOW, 75);
 	case Perk::BowMaster:
 		return ctx.Have(Skill::BOW, 100) && ctx.HavePerk(Perk::BowExpert);
+	case Perk::ShieldProficiency:
+		return ctx.Have(Skill::SHIELD, 25);
+	case Perk::Shielder:
+		return ctx.Have(Skill::SHIELD, 50);
+	case Perk::BattleShielder:
+		return ctx.Have(Skill::SHIELD, 75) && ctx.HavePerk(Perk::Shielder);
+	case Perk::MagicShielder:
+		return ctx.Have(Skill::SHIELD, 100);
+	case Perk::LightArmorProficiency:
+		return ctx.Have(Skill::LIGHT_ARMOR, 25);
+	case Perk::LightArmorMobility:
+		return ctx.Have(Skill::LIGHT_ARMOR, 50) && ctx.HavePerk(Perk::LightArmorProficiency);
+	case Perk::LightArmorExpert:
+		return ctx.Have(Skill::LIGHT_ARMOR, 75);
+	case Perk::LightArmorMaster:
+		return ctx.Have(Skill::LIGHT_ARMOR, 100) && ctx.HavePerk(Perk::LightArmorExpert);
+	case Perk::MediumArmorProficiency:
+		return ctx.Have(Skill::MEDIUM_ARMOR, 25);
+	case Perk::MediumArmorAdjustment:
+		return ctx.Have(Skill::MEDIUM_ARMOR, 50) && ctx.HavePerk(Perk::MediumArmorProficiency);
+	case Perk::MediumArmorExpert:
+		return ctx.Have(Skill::MEDIUM_ARMOR, 75);
+	case Perk::MediumArmorMaster:
+		return ctx.Have(Skill::MEDIUM_ARMOR, 100) && ctx.HavePerk(Perk::MediumArmorExpert);
+	case Perk::HeavyArmorProficiency:
+		return ctx.Have(Skill::HEAVY_ARMOR, 25);
+	case Perk::HeavyArmorAdjustment:
+		return ctx.Have(Skill::HEAVY_ARMOR, 50) && ctx.HavePerk(Perk::HeavyArmorProficiency);
+	case Perk::HeavyArmorExpert:
+		return ctx.Have(Skill::HEAVY_ARMOR, 75);
+	case Perk::HeavyArmorMaster:
+		return ctx.Have(Skill::HEAVY_ARMOR, 100) && ctx.HavePerk(Perk::HeavyArmorExpert);
 	case Perk::HealthyDiet:
 		return ctx.Have(Skill::ATHLETICS, 25);
 	case Perk::Strongman:

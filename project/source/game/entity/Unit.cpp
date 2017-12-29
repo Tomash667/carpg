@@ -183,7 +183,15 @@ float Unit::CalculateBlock(const Item* shield) const
 	else
 		p = float(str) / s.req_str;
 
-	return data->block + level * data->block_bonus + (max(0, str - 50) + s.block) * (1.f + 1.f / 100 * Get(Skill::SHIELD)) * p;
+	int shield_block = s.block;
+	if(HavePerk(Perk::MagicShielder))
+		shield_block = shield_block * 3 / 2;
+	else if(HavePerk(Perk::Shielder))
+		shield_block = shield_block * 5 / 4;
+	else if(HavePerk(Perk::ShieldProficiency))
+		shield_block = shield_block * 11 / 10;
+
+	return data->block + level * data->block_bonus + (max(0, str - 50) + shield_block) * (1.f + 1.f / 100 * Get(Skill::SHIELD)) * p;
 }
 
 //=================================================================================================
@@ -2640,7 +2648,8 @@ int Unit::GetCriticalChance(const Item* item, bool backstab, float ratio) const
 	else
 	{
 		// shield
-		chance = 0;
+		if(!HavePerk(Perk::BattleShielder))
+			chance = 0;
 	}
 
 	if(IS_SET(statsx->perk_flags, PF_UNLUCKY))
