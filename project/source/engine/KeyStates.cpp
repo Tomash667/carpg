@@ -2,6 +2,10 @@
 #include "Core.h"
 #include "KeyStates.h"
 
+KeyStates::KeyStates() : mouse_wheel(0), mouse_dif(0, 0), key_callback(nullptr)
+{
+}
+
 // change keys state from pressed->down and released->up
 void KeyStates::Update()
 {
@@ -48,6 +52,13 @@ void KeyStates::ReleaseKeys()
 // handle key down/up
 void KeyStates::Process(byte key, bool down)
 {
+	if(key_callback)
+	{
+		if(down)
+			key_callback(key);
+		return;
+	}
+
 	auto& k = keystate[key];
 	if(key != VK_SNAPSHOT)
 	{
@@ -73,5 +84,6 @@ void KeyStates::ProcessDoubleClick(byte key)
 {
 	assert(key >= VK_LBUTTON && key <= VK_XBUTTON2);
 	Process(key, true);
-	doubleclk[key] = true;
+	if(!key_callback)
+		doubleclk[key] = true;
 }

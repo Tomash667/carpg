@@ -2643,7 +2643,7 @@ int Unit::GetCriticalChance(const Item* item, bool backstab, float ratio) const
 		else if(HavePerk(Perk::BowProficiency))
 			chance += 5;
 		if(ratio > 0 && HavePerk(Perk::PreciseShot))
-			chance += ratio * 15;
+			chance += int(ratio * 15);
 	}
 	else
 	{

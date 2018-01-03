@@ -22,9 +22,14 @@ enum ShortcutKey
 };
 
 //-----------------------------------------------------------------------------
+typedef delegate<void(int)> KeyDownCallback;
+
+//-----------------------------------------------------------------------------
 // stan klawiatury
 struct KeyStates
 {
+	KeyStates();
+
 	// proste sprawdzanie czy klawisz zosta³ wciœniêty, wyciœniêty, jest wciœniêty, jest wyciœniêty
 	bool Pressed(byte key) const { return keystate[key] == IS_PRESSED; }
 	bool Released(byte key) const { return keystate[key] == IS_RELEASED; }
@@ -140,11 +145,20 @@ struct KeyStates
 		return doubleclk[key];
 	}
 
+	float GetMouseWheel() const { return mouse_wheel; }
+	const Int2& GetMouseDif() const { return mouse_dif; }
+	void UpdateMouseWheel(float mouse_wheel) { this->mouse_wheel = mouse_wheel; }
+	void UpdateMouseDif(const Int2& mouse_dif) { this->mouse_dif = mouse_dif; }
+
+	KeyDownCallback key_callback;
+
 private:
 	vector<byte> to_release;
 	byte keystate[256];
 	bool keyrepeat[256];
 	bool doubleclk[5];
+	Int2 mouse_dif;
+	float mouse_wheel;
 	int shortcut_state;
 	bool focus;
 };

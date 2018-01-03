@@ -445,7 +445,7 @@ void Controls::SelectCell(int item, int column, int button)
 		picked = item;
 		picked_n = column - 1;
 		cursor_tick = 0.f;
-		game->key_callback = KeyDownCallback(this, &Controls::OnKey);
+		Key.key_callback = KeyDownCallback(this, &Controls::OnKey);
 		game->cursor_allow_move = false;
 	}
 	else
@@ -458,14 +458,14 @@ void Controls::OnKey(int key)
 	if(key == VK_ESCAPE)
 	{
 		picked = -1;
-		game->key_callback = nullptr;
+		Key.key_callback = nullptr;
 		game->cursor_allow_move = true;
 	}
 	else if(key < n_texts && IS_SET(in_text[key], 0x01))
 	{
 		GKey[picked][picked_n] = (byte)key;
 		picked = -1;
-		game->key_callback = nullptr;
+		Key.key_callback = nullptr;
 		game->cursor_allow_move = true;
 		changed = true;
 	}

@@ -13,10 +13,9 @@ KeyStates Key;
 extern string g_system_dir;
 
 //=================================================================================================
-Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), fmod_system(nullptr),
-phy_config(nullptr), phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), cursor_visible(true), replace_cursor(false),
-locked_cursor(true), lost_device(false), clear_color(BLACK), mouse_wheel(0), music_ended(false), disabled_sound(false), key_callback(nullptr),
-res_freed(false), vsync(true), active(false), mouse_dif(0, 0), activation_point(-1, -1)
+Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), fmod_system(nullptr), phy_config(nullptr),
+phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true),
+lost_device(false), clear_color(BLACK), music_ended(false), disabled_sound(false), res_freed(false), vsync(true), active(false), activation_point(-1, -1)
 {
 	engine = this;
 }
@@ -65,7 +64,7 @@ void Engine::ChangeMode()
 
 	// reset cursor
 	replace_cursor = true;
-	mouse_dif = Int2(0, 0);
+	Key.UpdateMouseDif(Int2::Zero);
 	unlock_point = real_size / 2;
 }
 
@@ -436,7 +435,7 @@ void Engine::DoTick(bool update_game)
 	UpdateActivity(is_active);
 
 	// handle cursor movement
-	mouse_dif = Int2(0, 0);
+	Int2 mouse_dif = Int2::Zero;
 	if(active)
 	{
 		if(locked_cursor)
@@ -455,6 +454,7 @@ void Engine::DoTick(bool update_game)
 	}
 	else if(!locked_cursor && lock_on_focus)
 		locked_cursor = true;
+	Key.UpdateMouseDif(mouse_dif);
 
 	// update keyboard shortcuts info
 	Key.UpdateShortcuts();
@@ -479,7 +479,7 @@ void Engine::DoTick(bool update_game)
 		}
 		return;
 	}
-	mouse_wheel = 0;
+	Key.UpdateMouseWheel(0);
 
 	Render();
 	Key.Update();
@@ -544,16 +544,11 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 	// handle keyboard
 	case WM_SYSKEYDOWN:
 	case WM_KEYDOWN:
-		down = true;
+		Key.Process((byte)wParam, true);
+		return 0;
 	case WM_SYSKEYUP:
 	case WM_KEYUP:
-		if(key_callback)
-		{
-			if(down)
-				key_callback(wParam);
-		}
-		else
-			Key.Process((byte)wParam, down);
+		Key.Process((byte)wParam, false);
 		return 0;
 
 	// handle mouse
@@ -561,24 +556,15 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	case WM_XBUTTONDOWN:
-		down = true;
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
 	case WM_MBUTTONUP:
 	case WM_XBUTTONUP:
-		if(key_callback)
 		{
 			byte key;
-			int ret;
-			MsgToKey(msg, wParam, key, ret);
+			int result;
+			bool down = MsgToKey(msg, wParam, key, result);
 
-			if(down)
-				key_callback(key);
-
-			return ret;
-		}
-		else
-		{
 			if((!locked_cursor || !active) && down && lock_on_focus)
 			{
 				ShowCursor(false);
@@ -594,17 +580,11 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 				if(active)
 					locked_cursor = true;
 
-				if(msg == WM_XBUTTONDOWN)
-					return TRUE;
-				else
-					return 0;
+				return result;
 			}
 
-			byte key;
-			int ret;
-			MsgToKey(msg, wParam, key, ret);
 			Key.Process(key, down);
-			return ret;
+			return result;
 		}
 
 	// handle double click
@@ -614,10 +594,10 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 	case WM_XBUTTONDBLCLK:
 		{
 			byte key;
-			int ret = 0;
-			MsgToKey(msg, wParam, key, ret);
+			int result = 0;
+			MsgToKey(msg, wParam, key, result);
 			Key.ProcessDoubleClick(key);
-			return ret;
+			return result;
 		}
 
 	// close alt+space menu
@@ -632,7 +612,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 	// handle mouse wheel
 	case WM_MOUSEWHEEL:
-		mouse_wheel += float(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA;
+		Key.UpdateMouseWheel(Key.GetMouseWheel() + float(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA);
 		return 0;
 	}
 
@@ -642,9 +622,9 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 //=================================================================================================
 // Convert message to virtual key
-void Engine::MsgToKey(UINT msg, WPARAM wParam, byte& key, int& result)
+bool Engine::MsgToKey(UINT msg, WPARAM wParam, byte& key, int& result)
 {
-	result = 0;
+	bool down = false;
 
 	switch(msg)
 	{
@@ -652,27 +632,36 @@ void Engine::MsgToKey(UINT msg, WPARAM wParam, byte& key, int& result)
 		assert(0);
 		break;
 	case WM_LBUTTONDOWN:
+		down = true;
 	case WM_LBUTTONUP:
 	case WM_LBUTTONDBLCLK:
 		key = VK_LBUTTON;
+		result = 0;
 		break;
 	case WM_RBUTTONDOWN:
+		down = true;
 	case WM_RBUTTONUP:
 	case WM_RBUTTONDBLCLK:
 		key = VK_RBUTTON;
+		result = 0;
 		break;
 	case WM_MBUTTONDOWN:
+		down = true;
 	case WM_MBUTTONUP:
 	case WM_MBUTTONDBLCLK:
 		key = VK_MBUTTON;
+		result = 0;
 		break;
 	case WM_XBUTTONDOWN:
+		down = true;
 	case WM_XBUTTONUP:
 	case WM_XBUTTONDBLCLK:
 		key = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? VK_XBUTTON1 : VK_XBUTTON2);
 		result = TRUE;
 		break;
 	}
+
+	return down;
 }
 
 //=================================================================================================
@@ -961,7 +950,7 @@ void Engine::InitWindow(StartupOptions& options)
 
 	// reset cursor
 	replace_cursor = true;
-	mouse_dif = Int2(0, 0);
+	Key.UpdateMouseDif(Int2::Zero);
 	unlock_point = real_size / 2;
 
 	Info("Engine: Window created.");

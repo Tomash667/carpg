@@ -1299,11 +1299,11 @@ void IGUI::Update(float dt, float mouse_speed)
 
 	// update cursor
 	cursor_mode = CURSOR_NORMAL;
-	mouse_wheel = engine.GetMouseWheel();
+	mouse_wheel = Key.GetMouseWheel();
 	prev_cursor_pos = cursor_pos;
 	if(NeedCursor() && mouse_speed > 0)
 	{
-		cursor_pos += engine.GetMouseDif() * mouse_speed;
+		cursor_pos += Key.GetMouseDif() * mouse_speed;
 		if(cursor_pos.x < 0)
 			cursor_pos.x = 0;
 		if(cursor_pos.y < 0)
