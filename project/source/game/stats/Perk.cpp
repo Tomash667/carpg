@@ -64,11 +64,17 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::Energetic, "energetic", 0),
 	PerkInfo(Perk::VeryEnergetic, "very_energetic", 0, Perk::Energetic),
 	PerkInfo(Perk::Adaptation, "adaptation", 0),
+	PerkInfo(Perk::IronMan, "iron_man", 0),
 	// inteligence
 	PerkInfo(Perk::Educated, "educated", 0),
 	// charisma
 	PerkInfo(Perk::Leadership, "leadership", 0),
 	PerkInfo(Perk::Charming, "charming", 0),
+	// single handed
+	PerkInfo(Perk::SingleHandedWeaponProficiency, "single_handed_weapon_proficiency", 0),
+	PerkInfo(Perk::SingleHandedWeaponExpert, "single_handed_weapon_expert", 0, Perk::SingleHandedWeaponProficiency),
+	PerkInfo(Perk::SingleHandedCriticalFocus, "single_handed_critical_focus", 0),
+	PerkInfo(Perk::SingleHandedWeaponMaster, "single_handed_weapon_master", 0, Perk::SingleHandedWeaponExpert),
 	// short blade
 	PerkInfo(Perk::ShortBladeProficiency, "short_blade_proficiency", 0),
 	PerkInfo(Perk::Backstabber, "backstabber", 0),
@@ -120,7 +126,10 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::BodyBuilder, "body_builder", 0),
 	PerkInfo(Perk::MiracleDiet, "miracle_diet", 0, Perk::HealthyDiet),
 	// acrobatics
+	PerkInfo(Perk::Sprint, "sprint", 0),
 	PerkInfo(Perk::Flexible, "flexible", 0),
+	PerkInfo(Perk::LongDistanceRunner, "long_distance_runner", 0),
+	PerkInfo(Perk::Hyperactive, "hyperactive", 0),
 	// haggle
 	PerkInfo(Perk::TradingContract, "trading_contract", 0),
 	PerkInfo(Perk::ExtraStock, "extra_stock", 0),
@@ -309,6 +318,7 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 	case Perk::Toughtest:
 	case Perk::DiamondSkin:
 	case Perk::PerfectHealth:
+	case Perk::IronMan:
 		return ctx.Have(Attribute::END, 100);
 	case Perk::Adaptation:
 		return ctx.Have(Attribute::END, 90) && ctx.HavePerk(Perk::Tought);
@@ -324,6 +334,14 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return ctx.Have(Attribute::CHA, 60);
 	case Perk::Charming:
 		return ctx.Have(Attribute::CHA, 70);
+	case Perk::SingleHandedWeaponProficiency:
+		return ctx.Have(Skill::ONE_HANDED_WEAPON, 25);
+	case Perk::SingleHandedWeaponExpert:
+		return ctx.Have(Skill::ONE_HANDED_WEAPON, 50);
+	case Perk::SingleHandedCriticalFocus:
+		return ctx.Have(Skill::ONE_HANDED_WEAPON, 75) && ctx.HavePerk(Perk::SingleHandedWeaponExpert);
+	case Perk::SingleHandedWeaponMaster:
+		return ctx.Have(Skill::ONE_HANDED_WEAPON, 100);
 	case Perk::ShortBladeProficiency:
 		return ctx.Have(Skill::SHORT_BLADE, 25);
 	case Perk::Backstabber:
@@ -404,8 +422,14 @@ bool TakenPerk::CanTake(PerkContext& ctx)
 		return ctx.Have(Skill::ATHLETICS, 75);
 	case Perk::MiracleDiet:
 		return ctx.Have(Skill::ATHLETICS, 100);
+	case Perk::Sprint:
+		return ctx.Have(Skill::ACROBATICS, 25);
 	case Perk::Flexible:
 		return ctx.Have(Skill::ACROBATICS, 50);
+	case Perk::LongDistanceRunner:
+		return ctx.Have(Skill::ACROBATICS, 75) && ctx.HavePerk(Perk::Sprint);
+	case Perk::Hyperactive:
+		return ctx.Have(Skill::ACROBATICS, 100);
 	case Perk::TradingContract:
 		return ctx.Have(Skill::HAGGLE, 25);
 	case Perk::ExtraStock:
@@ -579,6 +603,9 @@ bool TakenPerk::Apply(PerkContext& ctx)
 	case Perk::MiracleDiet:
 		ctx.AddEffect(this, EffectType::NaturalHealingMod, 2.f);
 		ctx.AddFlag(PF_MIRACLE_DIET);
+		break;
+	case Perk::LongDistanceRunner:
+		ctx.AddEffect(this, EffectType::Stamina, 100.f);
 		break;
 	}
 

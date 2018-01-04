@@ -1048,12 +1048,12 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 
 	// strza³ka w górê/dó³
 	bool moved = false;
-	if(ctx.choice_selected != 0 && game.KeyPressedReleaseAllowed(GK_MOVE_FORWARD))
+	if(ctx.choice_selected != 0 && GKey.KeyPressedReleaseAllowed(GK_MOVE_FORWARD))
 	{
 		--ctx.choice_selected;
 		moved = true;
 	}
-	if(ctx.choice_selected != choices - 1 && game.KeyPressedReleaseAllowed(GK_MOVE_BACK))
+	if(ctx.choice_selected != choices - 1 && GKey.KeyPressedReleaseAllowed(GK_MOVE_BACK))
 	{
 		++ctx.choice_selected;
 		moved = true;
@@ -1068,7 +1068,7 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	}
 
 	// wybór opcji dialogowej z klawiatury (1,2,3,..,9)
-	if(game.AllowKeyboard() && !Key.Down(VK_SHIFT))
+	if(GKey.AllowKeyboard() && !Key.Down(VK_SHIFT))
 	{
 		for(int i = 0; i <= min(8, choices); ++i)
 		{
@@ -1081,16 +1081,16 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 	}
 
 	// wybieranie enterem/esc/spacj¹
-	if(game.KeyPressedReleaseAllowed(GK_SELECT_DIALOG))
+	if(GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG))
 		return true;
-	else if(ctx.dialog_esc != -1 && game.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
+	else if(ctx.dialog_esc != -1 && GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
 	{
 		ctx.choice_selected = ctx.dialog_esc;
 		return true;
 	}
 
 	// wybieranie klikniêciem
-	if(game.AllowMouse() && cursor_choice != -1 && Key.PressedRelease(VK_LBUTTON))
+	if(GKey.AllowMouse() && cursor_choice != -1 && Key.PressedRelease(VK_LBUTTON))
 	{
 		if(ctx.is_local)
 			game.pc_data.wasted_key = VK_LBUTTON;

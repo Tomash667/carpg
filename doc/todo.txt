@@ -1,32 +1,40 @@
 ﻿FEATURE:
 *** perks
-+ block in stats, shield attack in stats
+? block in stats, shield attack in stats
 ? power attack mod
 ? new effect: mobility
+? PF_ASOCIAL
 ? perks heavy hitter/ healthy diet/ miracle diet/mobility(ex)/flexible/sluggish/adaptation/(very)energetic/finese/critical focus/unlucky/short blade prof/short blade master, long blade prof/long blade master/axe prof/chopper/axe expert/axe master/blunt prof/blunt expert/blunt master/bow prof/bow expert
+	single weapon prof/expert/critic/master
+	light/medium/heavy armor prof/expert
+	light armor mobility
+	medium/heavy armor adaptation
+	long distance runner stamina
 ? perk flags after save/load/travel
 + perk points
 	every two levels, for heroes every 3 levels
 	+ set/update
 	+ command to mod
+	+ extra perk after winning tournament (only once), after finishing important quest
 + subprofile perks
-+ new ingame perks
 + training perks
 + use subprofiles in creating random char
 + better starting items list (poor, wealthy etc effects)
 + perks effects
-	PF_ASOCIAL
 	better/worse starting gear
 	talent, extra apt
 	skill focus, extra apt
 	precise shot, bow master
-	dodge
+	dodge, light armor master
 	educated
 	charming
 	leadership
 	trading contract, extra stock, free merchant, master merchant
 	defensive combat style, basher
 	shield prof, shielder, battle shielder, magic shielder
+	heavy armor adaptation weight
+	medium/heavy armor master, iron man
+	sprint, long distance runner, hyperactive
 + upgrade perks -> set perk flags
 ? tests
 	? old perks load
@@ -39,6 +47,16 @@
 	? perk_flags after new game, load, after upgrade, after new game/travel/load in MP
 ! changelog
 	+ new commands, list types
+	+ new perks
+	
+thinkering:
+hp atk def values
+atk def formula
+protections?
+perks bonuses to atk/def/crit
+crit chance/damage
+rescale food/potions healing values, stamina?
+armor gives protection
 		
 dialog for alchemist apperentice, cheaper potions :)
 dialog bandits, different text: solo vs team
@@ -53,6 +71,8 @@ hitting menequin, shield (show damage)
 + unarmed attack formula
 + crit chance/mod (backstab, power shot)
 + bleeding (short/long blade expert)
++ bandages - cures bleeding
++ power attack jak w risen, inne animacje
 
 *** new enemies
 + units stats, new units
@@ -86,6 +106,9 @@ v2:
 + exp, exp from quests
 + int -> exp bonus
 
+===============================================================================================================
+NEXT:
++ shortcuts bar
 ===============================================================================================================
 CURRENT:
 - traps are out of sync for client/server
@@ -141,6 +164,9 @@ NEW:
 - www admin layout panel is broken a bit
 + web: load indiedb after ready, fix admin panel
 + shield with spikes (can crit without battle shielder, +5% crit then)
++ perk armor: critics protection
++ negative history: pacifist (-to combat skills, +non combat skills, can't take aggressive perk)
++ perk: chance to see encounter and escape before it happens, better encounters
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

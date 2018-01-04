@@ -48,6 +48,7 @@ StatsPanel::StatsPanel() : last_update(0.f)
 	txDefense = Str("defense");
 	txMeleeAttack = Str("meleeAttack");
 	txRangedAttack = Str("rangedAttack");
+	txShieldAttack = Str("shieldAttack");
 	txMobility = Str("mobility");
 	txCarryShort = Str("carryShort");
 	txGold = Str("gold");
@@ -272,7 +273,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			{
 				tooltip.big_text.clear();
 				tooltip.small_text.clear();
-				cstring meleeAttack, rangedAttack;
+				cstring meleeAttack, rangedAttack, shieldAttack;
 				if(Game::Get().devmode)
 				{
 					meleeAttack = (pc->unit->HaveWeapon() ? Format("%d (crit %d%% x%g, power x%g)",
@@ -286,13 +287,20 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 						pc->unit->GetCriticalChance(&pc->unit->GetBow(), false, 0.f),
 						FLT100(pc->unit->GetCriticalDamage(&pc->unit->GetBow()))
 					) : "--");
+					shieldAttack = (pc->unit->HaveShield() ? Format("%d (crit %d%% x%g)",
+						(int)pc->unit->CalculateAttack(&pc->unit->GetShield()),
+						pc->unit->GetCriticalChance(&pc->unit->GetShield(), false, 0.f),
+						FLT100(pc->unit->GetCriticalDamage(&pc->unit->GetShield()))
+					) : "--");
 				}
 				else
 				{
 					meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "--");
 					rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "--");
+					shieldAttack = (pc->unit->HaveShield() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetShield())) : "--");
+
 				}
-				tooltip.text = Format("%s: %s\n%s: %s", txMeleeAttack, meleeAttack, txRangedAttack, rangedAttack);
+				tooltip.text = Format("%s: %s\n%s: %s\n%s: %s", txMeleeAttack, meleeAttack, txRangedAttack, rangedAttack, txShieldAttack, shieldAttack);
 			}
 			break;
 		default:

@@ -441,11 +441,11 @@ void Controls::SelectCell(int item, int column, int button)
 {
 	if(button == 0)
 	{
-		Key.SetState(VK_LBUTTON, IS_UP);
+		Key.SetState(VK_LBUTTON, KeyStates::IS_UP);
 		picked = item;
 		picked_n = column - 1;
 		cursor_tick = 0.f;
-		Key.key_callback = KeyDownCallback(this, &Controls::OnKey);
+		Key.key_callback = KeyStates::KeyDownCallback(this, &Controls::OnKey);
 		game->cursor_allow_move = false;
 	}
 	else

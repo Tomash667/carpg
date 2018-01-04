@@ -107,13 +107,13 @@ void Scrollbar::Update(float dt)
 			int pos_o = hscrollbar ? int(float(cpos.x)*total / size.x) : int(float(cpos.y)*total / size.y);
 			if(hscrollbar ? (pos_o >= offset && pos_o < offset + part) : (pos_o + 2 >= offset && pos_o + 2 < offset + part))
 			{
-				Key.SetState(VK_LBUTTON, IS_DOWN);
+				Key.SetState(VK_LBUTTON, KeyStates::IS_DOWN);
 				clicked = true;
 				click_pt = cpos;
 			}
 			else
 			{
-				Key.SetState(VK_LBUTTON, IS_UP);
+				Key.SetState(VK_LBUTTON, KeyStates::IS_UP);
 				if(pos_o < offset)
 				{
 					if(!manual_change)

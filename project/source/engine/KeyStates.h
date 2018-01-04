@@ -5,15 +5,6 @@
 #define VK_NONE 0
 
 //-----------------------------------------------------------------------------
-// stan klawisza
-enum InputState
-{
-	IS_UP,			// 00
-	IS_RELEASED,	// 01
-	IS_DOWN,		// 10
-	IS_PRESSED		// 11
-};
-
 enum ShortcutKey
 {
 	KEY_SHIFT = 1 << 0,
@@ -22,12 +13,20 @@ enum ShortcutKey
 };
 
 //-----------------------------------------------------------------------------
-typedef delegate<void(int)> KeyDownCallback;
-
-//-----------------------------------------------------------------------------
 // stan klawiatury
 struct KeyStates
 {
+	typedef delegate<void(int)> KeyDownCallback;
+
+	// key input state
+	enum InputState
+	{
+		IS_UP,			// 00
+		IS_RELEASED,	// 01
+		IS_DOWN,		// 10
+		IS_PRESSED		// 11
+	};
+
 	KeyStates();
 
 	// proste sprawdzanie czy klawisz zosta³ wciœniêty, wyciœniêty, jest wciœniêty, jest wyciœniêty

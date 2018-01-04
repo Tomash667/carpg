@@ -80,11 +80,17 @@ enum class Perk
 	Energetic, // (55 end) +stamina
 	VeryEnergetic, // (85 end) [C Energetic] ++stamina
 	Adaptation, // (90 end) poison immunity
+	IronMan, // (100 end) 10% protection
 	// inteligence
 	Educated, // (60 int) more exp
 	// charisma
 	Leadership, // (60 cha) more exp for heroes
 	Charming, // (70 cha) more gold from quests
+	// single handed
+	SingleHandedWeaponProficiency, // (25 shw) +10 atk
+	SingleHandedWeaponExpert, // (50 shw) [C SingleHandedWeaponProficiency] +20 atk, +25% crit damage
+	SingleHandedCriticalFocus, // (75 shw) +5% crit
+	SingleHandedWeaponMaster, // (100 shw) [C SingleHandedWeaponExpert] +30 atk, +50% crit damage
 	// short blade
 	ShortBladeProficiency, // (25 shb) +10 atk, +5% crit
 	Backstabber, // (50 shb) increased backstab damage, double crit chance (5/10->10/20%)
@@ -136,7 +142,10 @@ enum class Perk
 	BodyBuilder, // (75 ath) +200 hp
 	MiracleDiet, // (100 ath) [C HealthyDiet] +100% natural healing, food instantly heal for more
 	// acrobatics
+	Sprint, // (25 acro) allows sprint
 	Flexible, // (50 acro) +25 mobility
+	LongDistanceRunner, // (75 acro) +100 stamina, can longer sprint
+	Hyperactive, // (100 acro) faster stamina regen, smaller delay
 	// haggle
 	TradingContract, // (25 hag) allow allies to use you haggle skill if better (ratio of train skill goes to owner), works with perks below
 	ExtraStock, // (50 hag) better/more items in shops

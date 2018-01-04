@@ -40,7 +40,7 @@ void Console::Update(float dt)
 	itb.Update(dt);
 	if(Key.Focus())
 	{
-		if(game->KeyDownUp(GK_CONSOLE))
+		if(GKey.KeyDownUp(GK_CONSOLE))
 		{
 			Event(GuiEvent_LostFocus);
 			GUI.CloseDialog(this);

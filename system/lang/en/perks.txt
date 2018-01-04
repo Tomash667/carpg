@@ -25,7 +25,7 @@ perk sluggish {
 	name "Sluggish"
 	desc "You are sluggish. Reduced dexterity by 5 points and slower running speed."
 }
-perks slow_learner {
+perk slow_learner {
 	name "Slow learner"
 	desc "Learning new skills comes for you with difficulty. Reduces intelligence by 5 points and slows down skills training."
 }
@@ -173,6 +173,10 @@ perk adaptation {
 	name "Adaptation"
 	desc "Gives resistance to poisons."
 }
+perk iron_man {
+	name "Iron man"
+	desc "10% protection against physical damage."
+}
 perk educated {
 	name "Educated"
 	desc "Bonus to gained experience."
@@ -184,6 +188,22 @@ perk leadership {
 perk charming {
 	name "Charming"
 	desc "Bonus for rewards after finishing quest."
+}
+perk single_handed_weapon_proficiency {
+	name "Single handed weapon proficiency"
+	desc "+10 to attack when using single handed weapon."
+}
+perk single_handed_weapon_expert {
+	name "Single handed weapon expert"
+	desc "+20 to attack when using single handed weapon and increased critical hit damage by 25%."
+}
+perk single_handed_critical_focus {
+	name "Single handed weapon critical focus"
+	desc "+5% critical hit chance when using single handed weapon."
+}
+perk single_handed_weapon_master {
+	name "Single handed weapon master"
+	desc "+30 to attack when using single handed weapon and increased critical hit damage by 50%."
 }
 perk short_blade_proficiency {
 	name "Short blade proficiency"
@@ -281,6 +301,54 @@ perk magic_shielder {
 	name "Magic shielder"
 	desc "+50% to block power and less stamina usage. Blocking magic attacks is more effective."
 }
+perk light_armor_proficiency {
+	name "Light armor proficiency"
+	desc "+10 to defense in light armor."
+}
+perk light_armor_mobility {
+	name "Light armor mobility"
+	desc "+25 to mobility in light armor."
+}
+perk light_armor_expert {
+	name "Light armor expert"
+	desc "+30 to defense in light armor."
+}
+perk light_armor_master {
+	name "Light armor master"
+	desc "Can dodge one attack every 5 seconds."
+}
+perk medium_armor_proficiency {
+	name "Medium armor proficiency"
+	desc "+15 to defense in medium armor."
+}
+perk medium_armor_adjustment {
+	name "Medium armor adjustment"
+	desc "Decrease mobility armor penalty in medium armor by 25."
+}
+perk medium_armor_expert {
+	name "Medium armor expert"
+	desc "+40 to defense in medium armor."
+}
+perk medium_armor_master {
+	name "Medium armor master"
+	desc "5% physical attacks protection in medium armor."
+}
+perk heavy_armor_proficiency {
+	name "Heavy armor armor proficiency"
+	desc "+20 to defense in heavy armor."
+}
+perk heavy_armor_adjustment {
+	name "Heavy armor adjustment"
+	desc "Decrease mobility armor penalty in heavy armor by 10 and equipped heavy armor weight by 50%."
+}
+perk heavy_armor_expert {
+	name "Heavy armor expert"
+	desc "+50 to defense in heavy armor."
+}
+perk heavy_armor_master {
+	name "Heavy armor master"
+	desc "10% physical attacks protection in heavy armor."
+}
 perk healthy_diet {
 	name "Healthy diet"
 	desc "+50% to natural healing and food restrore health for longer."
@@ -297,9 +365,21 @@ perk miracle_diet {
 	name "Miracle diet"
 	desc "+100% to natural healing and food restore large amount of health."
 }
+perk sprint {
+	name "Sprint"
+	desc "Allows to sprint."
+}
 perk flexible {
 	name "Flexible"
 	desc "+25 to base mobility."
+}
+perk long_distance_runner {
+	name "Long-distance runner"
+	desc "+100 to stamina and slower usage of stamina while sprinting."
+}
+perk hyperactive {
+	name "Hyperactive"
+	desc "Faster stamina regeeration and shorter delay before starting to regenerate stamina."
 }
 perk trading_contract {
 	name "Trading contract"
@@ -311,7 +391,7 @@ perk extra_stock {
 }
 perk free_merchant {
 	name "Free merchant"
-	desc "You can sell any item to any merchant."\
+	desc "You can sell any item to any merchant."
 }
 perk master_merchant {
 	name "Master merchant"

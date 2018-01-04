@@ -57,7 +57,7 @@ void GetTextDialog::Update(float dt)
 			{
 				if(!textBox.IsMultiline() || Key.Down(VK_SHIFT))
 				{
-					Key.SetState(VK_RETURN, IS_UP);
+					Key.SetState(VK_RETURN, KeyStates::IS_UP);
 					result = BUTTON_OK;
 				}
 			}

@@ -1003,7 +1003,7 @@ void Game::UpdateGame(float dt)
 	if(Net::IsLocal())
 		pc->last_dmg_poison = 0.f;
 
-	if(devmode && AllowKeyboard())
+	if(devmode && GKey.AllowKeyboard())
 	{
 		if(!location->outside)
 		{
@@ -1112,7 +1112,7 @@ void Game::UpdateGame(float dt)
 		}
 		else
 		{
-			if(allow_input == ALLOW_INPUT || allow_input == ALLOW_MOUSE)
+			if(GKey.AllowMouse())
 			{
 				const float c_cam_angle_min = PI + 0.1f;
 				const float c_cam_angle_max = PI*1.8f - 0.1f;
@@ -1126,7 +1126,7 @@ void Game::UpdateGame(float dt)
 
 				if(!cam.free_rot)
 				{
-					cam.free_rot_key = KeyDoReturn(GK_ROTATE_CAMERA, &KeyStates::Pressed);
+					cam.free_rot_key = GKey.KeyDoReturn(GK_ROTATE_CAMERA, &KeyStates::Pressed);
 					if(cam.free_rot_key != VK_NONE)
 					{
 						cam.real_rot.x = Clip(pc->unit->rot + PI);
@@ -1135,7 +1135,7 @@ void Game::UpdateGame(float dt)
 				}
 				else
 				{
-					if(KeyUpAllowed(cam.free_rot_key))
+					if(GKey.KeyUpAllowed(cam.free_rot_key))
 						cam.free_rot = false;
 					else
 						cam.real_rot.x = Clip(cam.real_rot.x + float(Key.GetMouseDif().x) * mouse_sensitivity_f / 400);
@@ -1163,7 +1163,7 @@ void Game::UpdateGame(float dt)
 	}
 
 	// przybli¿anie/oddalanie kamery
-	if(AllowMouse())
+	if(GKey.AllowMouse())
 	{
 		if(!dialog_context.dialog_mode || !dialog_context.show_choices || !game_gui->IsMouseInsideDialog())
 		{
@@ -1201,7 +1201,7 @@ void Game::UpdateGame(float dt)
 				++death_screen;
 			}
 		}
-		if(death_screen >= 2 && AllowKeyboard() && Key.Pressed2Release(VK_ESCAPE, VK_RETURN))
+		if(death_screen >= 2 && GKey.AllowKeyboard() && Key.Pressed2Release(VK_ESCAPE, VK_RETURN))
 		{
 			ExitToMenu();
 			return;
@@ -1647,7 +1647,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	{
 		if(u.action == A_ANIMATION2 && OR2_EQ(u.animation_state, AS_ANIMATION2_USING, AS_ANIMATION2_USING_SOUND))
 		{
-			if(KeyPressedReleaseAllowed(GK_ATTACK_USE) || KeyPressedReleaseAllowed(GK_USE))
+			if(GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE) || GKey.KeyPressedReleaseAllowed(GK_USE))
 				Unit_StopUsingUsable(ctx, u);
 		}
 		UpdatePlayerView();
@@ -1674,42 +1674,42 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			u.animation = ANI_BATTLE_BOW;
 
 		int rotate = 0;
-		if(KeyDownAllowed(GK_ROTATE_LEFT))
+		if(GKey.KeyDownAllowed(GK_ROTATE_LEFT))
 			--rotate;
-		if(KeyDownAllowed(GK_ROTATE_RIGHT))
+		if(GKey.KeyDownAllowed(GK_ROTATE_RIGHT))
 			++rotate;
 		if(u.frozen == FROZEN::NO)
 		{
-			bool cancel_autowalk = (KeyPressedReleaseAllowed(GK_MOVE_FORWARD) || KeyDownAllowed(GK_MOVE_BACK));
+			bool cancel_autowalk = (GKey.KeyPressedReleaseAllowed(GK_MOVE_FORWARD) || GKey.KeyDownAllowed(GK_MOVE_BACK));
 			if(cancel_autowalk)
 				pc_data.autowalk = false;
-			else if(KeyPressedReleaseAllowed(GK_AUTOWALK))
+			else if(GKey.KeyPressedReleaseAllowed(GK_AUTOWALK))
 				pc_data.autowalk = !pc_data.autowalk;
 
 			if(u.run_attack)
 			{
 				move = 10;
-				if(KeyDownAllowed(GK_MOVE_RIGHT))
+				if(GKey.KeyDownAllowed(GK_MOVE_RIGHT))
 					++move;
-				if(KeyDownAllowed(GK_MOVE_LEFT))
+				if(GKey.KeyDownAllowed(GK_MOVE_LEFT))
 					--move;
 			}
 			else
 			{
-				if(KeyDownAllowed(GK_MOVE_RIGHT))
+				if(GKey.KeyDownAllowed(GK_MOVE_RIGHT))
 					++move;
-				if(KeyDownAllowed(GK_MOVE_LEFT))
+				if(GKey.KeyDownAllowed(GK_MOVE_LEFT))
 					--move;
-				if(KeyDownAllowed(GK_MOVE_FORWARD) || pc_data.autowalk)
+				if(GKey.KeyDownAllowed(GK_MOVE_FORWARD) || pc_data.autowalk)
 					move += 10;
-				if(KeyDownAllowed(GK_MOVE_BACK))
+				if(GKey.KeyDownAllowed(GK_MOVE_BACK))
 					move -= 10;
 			}
 		}
 		else
 			pc_data.autowalk = false;
 
-		if(u.action == A_NONE && !u.talking && KeyPressedReleaseAllowed(GK_YELL))
+		if(u.action == A_NONE && !u.talking && GKey.KeyPressedReleaseAllowed(GK_YELL))
 		{
 			if(Net::IsLocal())
 				PlayerYell(u);
@@ -1717,7 +1717,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				Net::PushChange(NetChange::YELL);
 		}
 
-		if((allow_input == ALLOW_INPUT || allow_input == ALLOW_MOUSE) && !cam.free_rot)
+		if(GKey.AllowMouse() && !cam.free_rot)
 		{
 			int div = (pc->unit->action == A_SHOOT ? 800 : 400);
 			pc_data.rot_buf *= (1.f - dt * 2);
@@ -1758,7 +1758,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				// ustal k¹t i szybkoœæ ruchu
 				float angle = u.rot;
 				bool run = true;
-				if(!u.run_attack && (KeyDownAllowed(GK_WALK) || !u.CanRun()))
+				if(!u.run_attack && (GKey.KeyDownAllowed(GK_WALK) || !u.CanRun()))
 					run = false;
 
 				switch(move)
@@ -1855,7 +1855,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 	if(u.action == A_NONE || u.action == A_TAKE_WEAPON || u.CanDoWhileUsing())
 	{
-		if(KeyPressedReleaseAllowed(GK_TAKE_WEAPON))
+		if(GKey.KeyPressedReleaseAllowed(GK_TAKE_WEAPON))
 		{
 			idle = false;
 			if(u.weapon_state == WS_TAKEN || u.weapon_state == WS_TAKING)
@@ -1978,7 +1978,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 			}
 		}
-		else if(u.HaveWeapon() && KeyPressedReleaseAllowed(GK_MELEE_WEAPON))
+		else if(u.HaveWeapon() && GKey.KeyPressedReleaseAllowed(GK_MELEE_WEAPON))
 		{
 			idle = false;
 			if(u.weapon_state == WS_HIDDEN)
@@ -2099,7 +2099,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 			}
 		}
-		else if(u.HaveBow() && KeyPressedReleaseAllowed(GK_RANGED_WEAPON))
+		else if(u.HaveBow() && GKey.KeyPressedReleaseAllowed(GK_RANGED_WEAPON))
 		{
 			idle = false;
 			if(u.weapon_state == WS_HIDDEN)
@@ -2221,7 +2221,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 		}
 
-		if(KeyPressedReleaseAllowed(GK_POTION) && !Equal(u.hp, u.hpmax))
+		if(GKey.KeyPressedReleaseAllowed(GK_POTION) && !Equal(u.hp, u.hpmax))
 		{
 			idle = false;
 			// wypij miksturkê lecznicz¹
@@ -2369,7 +2369,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 	// u¿yj czegoœ przed graczem
 	if(u.frozen == FROZEN::NO && pc_data.before_player != BP_NONE && !pc_data.action_ready
-		&& (KeyPressedReleaseAllowed(GK_USE) || (u.IsNotFighting() && KeyPressedReleaseAllowed(GK_ATTACK_USE))))
+		&& (GKey.KeyPressedReleaseAllowed(GK_USE) || (u.IsNotFighting() && GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE))))
 	{
 		idle = false;
 		if(pc_data.before_player == BP_UNIT)
@@ -2697,7 +2697,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			{
 				if(u.animation_state == 0)
 				{
-					if(KeyUpAllowed(pc->action_key))
+					if(GKey.KeyUpAllowed(pc->action_key))
 					{
 						// release attack
 						u.attack_power = u.mesh_inst->groups[1].time / u.GetAttackFrame(0);
@@ -2720,7 +2720,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 				else if(u.animation_state == 2)
 				{
-					byte k = KeyDoReturn(GK_ATTACK_USE, &KeyStates::Down);
+					byte k = GKey.KeyDoReturn(GK_ATTACK_USE, &KeyStates::Down);
 					if(k != VK_NONE && u.stamina > 0)
 					{
 						// prepare next attack
@@ -2750,7 +2750,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 			else if(u.action == A_BLOCK)
 			{
-				if(KeyUpAllowed(pc->action_key))
+				if(GKey.KeyUpAllowed(pc->action_key))
 				{
 					// stop blocking
 					u.action = A_NONE;
@@ -2768,7 +2768,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 				else if(!u.mesh_inst->groups[1].IsBlending() && u.HaveShield())
 				{
-					if(KeyDownAllowed(GK_ATTACK_USE) && u.stamina > 0)
+					if(GKey.KeyDownAllowed(GK_ATTACK_USE) && u.stamina > 0)
 					{
 						// shield bash
 						u.action = A_BASH;
@@ -2795,9 +2795,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					}
 				}
 			}
-			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !KeyDownAllowed(GK_BLOCK))
+			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !GKey.KeyDownAllowed(GK_BLOCK))
 			{
-				byte k = KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc_data.wasted_key);
+				byte k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc_data.wasted_key);
 				if(k != VK_NONE && u.stamina > 0)
 				{
 					u.action = A_ATTACK;
@@ -2863,7 +2863,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 				if(oks != 1)
 				{
-					byte k = KeyDoReturnIgnore(GK_BLOCK, &KeyStates::Down, pc_data.wasted_key);
+					byte k = GKey.KeyDoReturnIgnore(GK_BLOCK, &KeyStates::Down, pc_data.wasted_key);
 					if(k != VK_NONE)
 					{
 						// start blocking
@@ -2890,7 +2890,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			// shoting from bow
 			if(u.action == A_SHOOT)
 			{
-				if(u.animation_state == 0 && KeyUpAllowed(pc->action_key))
+				if(u.animation_state == 0 && GKey.KeyUpAllowed(pc->action_key))
 				{
 					u.animation_state = 1;
 
@@ -2906,7 +2906,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 			else if(u.frozen == FROZEN::NO)
 			{
-				byte k = KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc_data.wasted_key);
+				byte k = GKey.KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc_data.wasted_key);
 				if(k != VK_NONE && u.stamina > 0)
 				{
 					float speed = u.GetBowAttackSpeed();
@@ -2939,7 +2939,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 	// action
 	if(!pc_data.action_ready)
 	{
-		if(u.frozen == FROZEN::NO && u.action == A_NONE && KeyPressedReleaseAllowed(GK_ACTION) && pc->CanUseAction() && !in_tutorial)
+		if(u.frozen == FROZEN::NO && u.action == A_NONE && GKey.KeyPressedReleaseAllowed(GK_ACTION) && pc->CanUseAction() && !in_tutorial)
 		{
 			pc_data.action_ready = true;
 			pc_data.action_ok = false;
@@ -2982,7 +2982,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			}
 		}
 
-		pc_data.wasted_key = KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
+		pc_data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
 		if(pc_data.wasted_key != VK_NONE)
 		{
 			if(pc_data.action_ok)
@@ -2992,7 +2992,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		}
 		else
 		{
-			pc_data.wasted_key = KeyDoReturn(GK_BLOCK, &KeyStates::PressedRelease);
+			pc_data.wasted_key = GKey.KeyDoReturn(GK_BLOCK, &KeyStates::PressedRelease);
 			if(pc_data.wasted_key != VK_NONE)
 				pc_data.action_ready = false;
 		}
@@ -4061,11 +4061,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			bool skip = false;
 			if(ctx.can_skip)
 			{
-				if(KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || (AllowKeyboard() && Key.PressedRelease(VK_ESCAPE)))
+				if(GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG)
+					|| GKey.KeyPressedReleaseAllowed(GK_SKIP_DIALOG)
+					|| (GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE)))
 					skip = true;
 				else
 				{
-					pc_data.wasted_key = KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
+					pc_data.wasted_key = GKey.KeyDoReturn(GK_ATTACK_USE, &KeyStates::PressedRelease);
 					if(pc_data.wasted_key != VK_NONE)
 						skip = true;
 				}
@@ -19745,8 +19747,10 @@ void Game::UpdateGameDialogClient()
 	}
 	else if(dialog_context.dialog_wait > 0.f && dialog_context.skip_id != -1)
 	{
-		if(KeyPressedReleaseAllowed(GK_SKIP_DIALOG) || KeyPressedReleaseAllowed(GK_SELECT_DIALOG) || KeyPressedReleaseAllowed(GK_ATTACK_USE) ||
-			(AllowKeyboard() && Key.PressedRelease(VK_ESCAPE)))
+		if(GKey.KeyPressedReleaseAllowed(GK_SKIP_DIALOG)
+			|| GKey.KeyPressedReleaseAllowed(GK_SELECT_DIALOG)
+			|| GKey.KeyPressedReleaseAllowed(GK_ATTACK_USE)
+			|| (GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE)))
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::SKIP_DIALOG;
@@ -21773,6 +21777,8 @@ int Game::GetItemPrice(const Item* item, Unit& unit, bool buy)
 	int haggle = unit.Get(Skill::HAGGLE);
 	if(unit.player->action_unit->data->id == "alchemist" && unit.HavePerk(Perk::AlchemistApprentice))
 		haggle += 20;
+	if(IS_SET(unit.statsx->perk_flags, PF_ASOCIAL))
+		haggle -= 20;
 
 	const float* mod_table;
 

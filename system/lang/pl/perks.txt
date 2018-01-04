@@ -173,6 +173,10 @@ perk adaptation {
 	name "Przystosowanie"
 	desc "Zapewnia odpornoœæ na trucizny."
 }
+perk iron_man {
+	name "¯elazny cz³owiek"
+	desc "10% odpornoœci na obra¿enia fizyczne."
+}
 perk educated {
 	name "Wykszta³cony"
 	desc "Premia do zdobywanego doœwiadczenia."
@@ -184,6 +188,22 @@ perk leadership {
 perk charming {
 	name "Czaruj¹cy"
 	desc "Premia do zdobywanych nagród za wykonanie zadania."
+}
+perk single_handed_weapon_proficiency {
+	name "Bieg³oœæ w broni jednorêcznej"
+	desc "+10 do ataku broni¹ jednorêczn¹."
+}
+perk single_handed_weapon_expert {
+	name "Ekspert broni jednorêcznej"
+	desc "+20 do ataku broni¹ jednorêczn¹ i +25% do obra¿eñ krytycznych."
+}
+perk single_handed_critical_focus {
+	name "Skupienie na krytykach broni jednorêcznej"
+	desc "+5% szansy na trafienie krytyczne przy u¿yciu broni jednorêcznej."
+}
+perk single_handed_weapon_master {
+	name "Mistrz broni jednorêcznej"
+	desc "+30 do ataku broni¹ jednorêczn¹ i +50% do obra¿eñ krytycznych."
 }
 perk short_blade_proficiency {
 	name "Bieg³oœæ w krótkim ostrzu"
@@ -286,12 +306,16 @@ perk light_armor_proficiency {
 	desc "+10 do obrony w lekkim pancerzu."
 }
 perk light_armor_mobility {
+	name "Mobilnoœæ w lekkim pancerzu"
+	desc "+25 do mobilnoœci w lekkim pancerzu."
 }
 perk light_armor_expert {
 	name "Ekspert lekkiego pancerza"
 	desc "+30 do obrony w lekkim pancerzu."
 }
 perk light_armor_master {
+	name "Mistrz lekkiego pancerza"
+	desc "Pozwala unikn¹æ jednego ciosu co 5 sekund."
 }
 perk medium_armor_proficiency {
 	name "Bieg³oœæ w œrednim pancerzu"
@@ -299,25 +323,31 @@ perk medium_armor_proficiency {
 }
 perk medium_armor_adjustment {
 	name "Przystosowanie do œredniego pancerza"
-	//desc "Zwiêk"
+	desc "Zmniejsza ograniczenie mobilnoœci w œrednim pancerzu o 25."
 }
 perk medium_armor_expert {
 	name "Ekspert œredniego pancerza"
 	desc "+40 do obrony w œrednim pancerzu."
 }
 perk medium_armor_master {
+	name "Mistrz œredniego pancerza"
+	desc "5% odpornoœci na fizyczne ataki w œrednim pancerzu."
 }
 perk heavy_armor_proficiency {
 	name "Bieg³oœæ w ciê¿kim pancerzu"
 	desc "+20 do obrony w ciê¿kim pancerzu."
 }
 perk heavy_armor_adjustment {
+	name "Przystosowanie do ciê¿kiego pancerza"
+	desc "Zmniejsza ograniczenie mobilnoœci w ciê¿kim pancerzu o 10 oraz wagê za³o¿onego ciê¿kiego pancerza o 50%."
 }
 perk heavy_armor_expert {
 	name "Ekspert ciê¿kiego pancerza"
 	desc "+50 do obrony w ciê¿kim pancerzu."
 }
 perk heavy_armor_master {
+	name "Mistrz ciê¿kiego pancerza"
+	desc "10% odpornoœci na fizyczne ataki w ciê¿kim pancerzu."
 }
 perk healthy_diet {
 	name "Zdrowa dieta"
@@ -335,9 +365,21 @@ perk miracle_diet {
 	name "Cudowna dieta"
 	desc "+100% do naturalnego leczenia i jedzenia przywraca du¿¹ liczbê zdrowia."
 }
+perk sprint {
+	name "Sprint"
+	desc "Pozwala na sprint."
+}
 perk flexible {
 	name "Wygimnastykowany"
 	desc "+25 do bazowej mobilnoœci."
+}
+perk long_distance_runner {
+	name "D³ugodystansowy biegacz"
+	desc "+100 do wytrzyma³oœci i wolniejsze zu¿ywanie wytrzyma³oœci podczas sprintu."
+}
+perk hyperactive {
+	name "Hiperaktywnoœæ"
+	desc "Szybsza regeneracja wytrzyma³oœci i krótszy odstêp przy regneracji wytrzyma³oœci."
 }
 perk trading_contract {
 	name "Kontrakt handlowy"

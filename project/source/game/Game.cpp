@@ -300,7 +300,7 @@ void Game::OnTick(float dt)
 			GameStats::Get().Update(dt);
 	}
 
-	allow_input = ALLOW_INPUT;
+	GKey.allow_input = GameKeys::ALLOW_INPUT;
 
 	// utracono urz¹dzenie directx lub okno nie aktywne
 	if(IsLostDevice() || !IsActive() || !IsCursorLocked())
@@ -327,19 +327,19 @@ void Game::OnTick(float dt)
 	if(koniec_gry)
 	{
 		death_fade += dt;
-		if(death_fade >= 1.f && AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
+		if(death_fade >= 1.f && GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
 		{
 			ExitToMenu();
 			koniec_gry = false;
 		}
-		allow_input = ALLOW_NONE;
+		GKey.allow_input = GameKeys::ALLOW_NONE;
 	}
 
 	// globalna obs³uga klawiszy
-	if(allow_input == ALLOW_INPUT)
+	if(GKey.allow_input == GameKeys::ALLOW_INPUT)
 	{
 		// konsola
-		if(!GUI.HaveTopDialog("dialog_alt_f4") && !GUI.HaveDialog("console") && KeyDownUpAllowed(GK_CONSOLE))
+		if(!GUI.HaveTopDialog("dialog_alt_f4") && !GUI.HaveDialog("console") && GKey.KeyDownUpAllowed(GK_CONSOLE))
 			GUI.ShowDialog(console);
 
 		// uwolnienie myszki
@@ -355,7 +355,7 @@ void Game::OnTick(float dt)
 			TakeScreenshot(Key.Down(VK_SHIFT));
 
 		// zatrzymywanie/wznawianie gry
-		if(KeyPressedReleaseAllowed(GK_PAUSE))
+		if(GKey.KeyPressedReleaseAllowed(GK_PAUSE))
 		{
 			if(Net::IsSingleplayer())
 				paused = !paused;
@@ -374,8 +374,8 @@ void Game::OnTick(float dt)
 
 	// obs³uga paneli
 	if(GUI.HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
-		allow_input = ALLOW_NONE;
-	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
+		GKey.allow_input = GameKeys::ALLOW_NONE;
+	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
 		OpenPanel open = game_gui->GetOpenPanel(),
 			to_open = OpenPanel::None;
@@ -404,7 +404,7 @@ void Game::OnTick(float dt)
 		case OpenPanel::Minimap:
 		default:
 			if(game_gui->use_cursor)
-				allow_input = ALLOW_KEYBOARD;
+				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
 		case OpenPanel::Inventory:
@@ -412,21 +412,23 @@ void Game::OnTick(float dt)
 		case OpenPanel::Trade:
 		case OpenPanel::Action:
 		case OpenPanel::Journal:
-			allow_input = ALLOW_KEYBOARD;
+			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		}
 	}
 
 	// quicksave, quickload
 	bool console_open = GUI.HaveTopDialog("console");
-	bool special_key_allowed = (allow_input == ALLOW_KEYBOARD || allow_input == ALLOW_INPUT || (!GUI.HaveDialog() || console_open));
-	if(KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
+	bool special_key_allowed = (GKey.allow_input == GameKeys::ALLOW_KEYBOARD
+		|| GKey.allow_input == GameKeys::ALLOW_INPUT
+		|| (!GUI.HaveDialog() || console_open));
+	if(GKey.KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
 		Quicksave(console_open);
-	if(KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
+	if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
 		Quickload(console_open);
 
 	// mp box
-	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && KeyPressedReleaseAllowed(GK_TALK_BOX))
+	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
 		game_gui->mp_box->visible = !game_gui->mp_box->visible;
 
 	// update gui
@@ -445,8 +447,8 @@ void Game::OnTick(float dt)
 
 	// handle blocking input by gui
 	if(GUI.HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
-		allow_input = ALLOW_NONE;
-	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
+		GKey.allow_input = GameKeys::ALLOW_NONE;
+	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
 		switch(game_gui->GetOpenPanel())
 		{
@@ -454,7 +456,7 @@ void Game::OnTick(float dt)
 		case OpenPanel::Minimap:
 		default:
 			if(game_gui->use_cursor)
-				allow_input = ALLOW_KEYBOARD;
+				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
 		case OpenPanel::Inventory:
@@ -462,15 +464,15 @@ void Game::OnTick(float dt)
 		case OpenPanel::Trade:
 		case OpenPanel::Action:
 		case OpenPanel::Journal:
-			allow_input = ALLOW_KEYBOARD;
+			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		}
 	}
 	else
-		allow_input = ALLOW_INPUT;
+		GKey.allow_input = GameKeys::ALLOW_INPUT;
 
 	// otwórz menu
-	if(AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
+	if(GKey.AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
 		ShowMenu();
 
 	if(game_menu->visible)
@@ -566,7 +568,7 @@ void Game::OnTick(float dt)
 		UpdateGameNet(dt);
 
 	// aktywacja mp_box
-	if(AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
+	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
 	{
 		game_gui->mp_box->itb.focus = true;
 		game_gui->mp_box->Event(GuiEvent_GainFocus);

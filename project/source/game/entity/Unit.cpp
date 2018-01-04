@@ -137,11 +137,16 @@ float Unit::CalculateAttack(const Item* weapon) const
 				base_atk += 15;
 			break;
 		}
+		if(HavePerk(Perk::SingleHandedWeaponMaster))
+			base_atk += 30;
+		else if(HavePerk(Perk::SingleHandedWeaponExpert))
+			base_atk += 20;
+		else if(HavePerk(Perk::SingleHandedWeaponProficiency))
+			base_atk += 10;
 		atk += (base_atk + wi.str2dmg * max(0, str - 50) + wi.dex2dmg * max(0, dex - 50)) * (p + skill / 100);
 	}
-	else
+	else if(weapon->type == IT_BOW)
 	{
-		assert(weapon->type == IT_BOW);
 		const Bow& bow = weapon->ToBow();
 		int skill = Get(Skill::BOW);
 		float p;
@@ -155,6 +160,11 @@ float Unit::CalculateAttack(const Item* weapon) const
 		else if(HavePerk(Perk::BowProficiency))
 			base_atk += 20;
 		atk += (base_atk + max(0, dex - 50)) * (p + skill / 100);
+	}
+	else
+	{
+		assert(weapon->type == IT_SHIELD);
+
 	}
 
 	float atk_bonus = GetEffectSum(EffectType::Attack);
@@ -215,7 +225,29 @@ float Unit::CalculateDefense(const Item* armor, const Item* shield) const
 		assert(armor->type == IT_ARMOR);
 		const Armor& a = armor->ToArmor();
 		float skill = (float)Get(a.skill);
-		def += a.def * (1.f + skill / 100);
+		int armor_def = a.def;
+		switch(a.skill)
+		{
+		case Skill::LIGHT_ARMOR:
+			if(HavePerk(Perk::LightArmorExpert))
+				armor_def += 30;
+			else if(HavePerk(Perk::LightArmorProficiency))
+				armor_def += 10;
+			break;
+		case Skill::MEDIUM_ARMOR:
+			if(HavePerk(Perk::MediumArmorExpert))
+				armor_def += 40;
+			else if(HavePerk(Perk::MediumArmorProficiency))
+				armor_def += 15;
+			break;
+		case Skill::HEAVY_ARMOR:
+			if(HavePerk(Perk::HeavyArmorExpert))
+				armor_def += 50;
+			else if(HavePerk(Perk::HeavyArmorProficiency))
+				armor_def += 20;
+			break;
+		}
+		def += armor_def * (1.f + skill / 100);
 	}
 
 	// dexterity bonus
@@ -2634,6 +2666,8 @@ int Unit::GetCriticalChance(const Item* item, bool backstab, float ratio) const
 				chance += 5;
 			break;
 		}
+		if(HavePerk(Perk::SingleHandedCriticalFocus))
+			chance += 5;
 	}
 	else if(item->type == IT_BOW)
 	{
@@ -2663,7 +2697,7 @@ float Unit::GetCriticalDamage(const Item* item) const
 {
 	assert(item && In(item->type, { IT_WEAPON, IT_BOW, IT_SHIELD }));
 
-	int base, mod = 0;
+	int base, mod = 0, bonus = 0;
 	if(item->type == IT_WEAPON)
 	{
 		auto& weapon = item->ToWeapon();
@@ -2686,6 +2720,11 @@ float Unit::GetCriticalDamage(const Item* item) const
 				mod = 30;
 			break;
 		}
+
+		if(HavePerk(Perk::SingleHandedWeaponMaster))
+			bonus += 2;
+		else if(HavePerk(Perk::SingleHandedWeaponExpert))
+			bonus += 1;
 	}
 	else if(item->type == IT_BOW)
 	{
@@ -2699,11 +2738,10 @@ float Unit::GetCriticalDamage(const Item* item) const
 		base = 30;
 	}
 
-	int bonus = 0;
 	if(IS_SET(statsx->perk_flags, PF_CRITICAL_FOCUS))
-		++bonus;
+		bonus += 2;
 
-	mod += (base * (bonus + 2)) / 2;
+	mod += (base * (bonus + 4)) / 4;
 	mod += 100;
 
 	return float(mod) / 100;
@@ -3010,6 +3048,16 @@ float Unit::CalculateMobility(const Armor* armor) const
 	{
 		// calculate armor mobility (0-100)
 		int armor_mobility = armor->mobility;
+		if(armor->skill == Skill::MEDIUM_ARMOR)
+		{
+			if(HavePerk(Perk::MediumArmorAdjustment))
+				armor_mobility += 25;
+		}
+		else if(armor->skill == Skill::HEAVY_ARMOR)
+		{
+			if(HavePerk(Perk::MediumArmorAdjustment))
+				armor_mobility += 10;
+		}
 		int skill = min(Get(armor->skill), 100);
 		armor_mobility += skill / 4;
 		if(armor_mobility > 100)
@@ -3021,6 +3069,9 @@ float Unit::CalculateMobility(const Armor* armor) const
 			if(armor_mobility < 0)
 				armor_mobility = 0;
 		}
+
+		if(armor->skill == Skill::LIGHT_ARMOR && HavePerk(Perk::LightArmorMobility))
+			mobility += 25.f;
 
 		// multiply mobility by armor mobility
 		mobility = (float(armor_mobility) / 100 * mobility);
