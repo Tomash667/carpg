@@ -862,20 +862,21 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		player->Train(PlayerController::TM_POTION, (int)Attribute::DEX, false);
 		break;
 	case E_FOOD:
-		if(IS_SET(statsx->perk_flags, PF_MIRACLE_DIET))
 		{
-			hp += item.power * 10;
-			if(hp > hpmax)
-				hp = hpmax;
-			if(Net::IsOnline())
+			if(IS_SET(statsx->perk_flags, PF_MIRACLE_DIET))
 			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::UPDATE_HP;
-				c.unit = this;
+				float mod = GetNaturalHealingMod() + 8.f;
+				hp += item.power * mod;
+				if(hp > hpmax)
+					hp = hpmax;
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = this;
+				}
 			}
-		}
-		else
-		{
+
 			Effect* e = Effect::Get();
 			e->effect = EffectType::FoodRegeneration;
 			e->time = item.power;
@@ -883,7 +884,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			e->source = EffectSource::Potion;
 			e->source_id = -1;
 			e->refs = 1;
-			if(IS_SET(statsx->perk_flags, PF_HEALTHY_DIET))
+			if(IS_SET(statsx->perk_flags, PF_HEALTHY_DIET | PF_MIRACLE_DIET))
 				e->time *= 2;
 			AddEffect(e);
 		}
@@ -960,7 +961,7 @@ void Unit::UpdateEffects(float dt)
 		return;
 
 	// health regeneration
-	if(hp != hpmax && (reg != 0.f || stamina_reg != 0.f))
+	if(hp != hpmax && (reg != 0.f || food_heal != 0.f))
 	{
 		float natural = GetNaturalHealingMod();
 		hp += reg * dt + food_heal * natural;
@@ -2607,7 +2608,7 @@ float Unit::GetPowerAttackMod() const
 	float value = 1.5f;
 	if(IS_SET(statsx->perk_flags, PF_HEAVY_HITTER))
 		value *= 1.1f;
-	if(HaveWeapon() && GetWeapon().type == WT_AXE && HavePerk(Perk::Chopper))
+	if(HaveWeapon() && GetWeapon().weapon_type == WT_AXE && HavePerk(Perk::Chopper))
 		value *= 1.1f;
 	return value;
 }
@@ -2634,7 +2635,7 @@ int Unit::GetCriticalChance(const Item* item, bool backstab, float ratio) const
 	if(item->type == IT_WEAPON)
 	{
 		auto& weapon = item->ToWeapon();
-		switch(weapon.type)
+		switch(weapon.weapon_type)
 		{
 		case WT_SHORT_BLADE:
 			{
@@ -2701,7 +2702,7 @@ float Unit::GetCriticalDamage(const Item* item) const
 	if(item->type == IT_WEAPON)
 	{
 		auto& weapon = item->ToWeapon();
-		switch(weapon.type)
+		switch(weapon.weapon_type)
 		{
 		case WT_SHORT_BLADE:
 			base = 20;

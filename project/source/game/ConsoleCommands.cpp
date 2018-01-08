@@ -2017,6 +2017,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					Msg("Stamina mod: %+g", FLT10(pc->unit->GetEffectSum(EffectType::Stamina)));
 					Msg("Attack mod: %+g", FLT10(pc->unit->GetEffectSum(EffectType::Attack)));
 					Msg("Defense mod: %+g", FLT10(pc->unit->GetEffectSum(EffectType::Defense)));
+					Msg("Mobility mod: %+g", FLT10(pc->unit->GetEffectSum(EffectType::Mobility)));
 					Msg("Regeneration: %+g", FLT10(pc->unit->GetEffectSum(EffectType::Regeneration)));
 					Msg("Natural healing: %g%%", FLT10(pc->unit->GetNaturalHealingMod() * 100));
 					Msg("Magic resistance: %g%%", FLT10((1.f - pc->unit->CalculateMagicResistance()) * 100));

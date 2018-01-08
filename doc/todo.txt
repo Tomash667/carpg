@@ -1,15 +1,12 @@
 ﻿FEATURE:
 *** perks
-? block in stats, shield attack in stats
-? power attack mod
-? new effect: mobility
+- changeing armor while running have no effect on animation speed
++ shield attack calculations in CalculateAttack
+? food effect leak - unknown when
 ? PF_ASOCIAL
-? perks heavy hitter/ healthy diet/ miracle diet/mobility(ex)/flexible/sluggish/adaptation/(very)energetic/finese/critical focus/unlucky/short blade prof/short blade master, long blade prof/long blade master/axe prof/chopper/axe expert/axe master/blunt prof/blunt expert/blunt master/bow prof/bow expert
-	single weapon prof/expert/critic/master
+? perks
 	light/medium/heavy armor prof/expert
-	light armor mobility
 	medium/heavy armor adaptation
-	long distance runner stamina
 ? perk flags after save/load/travel
 + perk points
 	every two levels, for heroes every 3 levels
@@ -109,6 +106,7 @@ v2:
 ===============================================================================================================
 NEXT:
 + shortcuts bar
++ eating lots of food before combat can grant very fast regeneration for up to 60 sec (honeycomb with healthy diet)..., on the other hand 100 end perk gives only 5 regen/sec, maybe it should be %/sec, limit max active healing from food to 5/10 ?
 ===============================================================================================================
 CURRENT:
 - traps are out of sync for client/server
@@ -167,6 +165,7 @@ NEW:
 + perk armor: critics protection
 + negative history: pacifist (-to combat skills, +non combat skills, can't take aggressive perk)
 + perk: chance to see encounter and escape before it happens, better encounters
++ better perk names, for example axe master is not upgrade from expert so player have two perks (expert and master)
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

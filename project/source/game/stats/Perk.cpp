@@ -542,6 +542,7 @@ bool TakenPerk::Apply(PerkContext& ctx)
 		break;
 	case Perk::HeavyHitter:
 		ctx.AddFlag(PF_HEAVY_HITTER);
+		break;
 	case Perk::Careful:
 		ctx.AddEffect(this, EffectType::Defense, 10.f);
 		break;

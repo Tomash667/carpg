@@ -531,8 +531,6 @@ void Engine::GatherParams(D3DPRESENT_PARAMETERS& d3dpp)
 // Handle windows events
 LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	bool down = false;
-
 	switch(msg)
 	{
 	// window closed/destroyed
