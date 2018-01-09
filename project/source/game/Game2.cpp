@@ -9114,7 +9114,9 @@ bool Game::DoShieldSmash(LevelContext& ctx, Unit& attacker)
 		}
 	}
 
-	DoGenericAttack(ctx, attacker, *hitted, hitpoint, attacker.CalculateShieldAttack(), DMG_BLUNT, true);
+	float atk = attacker.CalculateAttack(&attacker.GetShield());
+
+	DoGenericAttack(ctx, attacker, *hitted, hitpoint, atk, DMG_BLUNT, true);
 
 	return true;
 }

@@ -1,12 +1,12 @@
 ﻿FEATURE:
 *** perks
-- changeing armor while running have no effect on animation speed
-+ shield attack calculations in CalculateAttack
+- changing armor while running have no effect on animation speed
 ? food effect leak - unknown when
 ? PF_ASOCIAL
 ? perks
 	light/medium/heavy armor prof/expert
 	medium/heavy armor adaptation
+	better/worse items - poor/very wealthy/filthy rich
 ? perk flags after save/load/travel
 + perk points
 	every two levels, for heroes every 3 levels
@@ -16,9 +16,7 @@
 + subprofile perks
 + training perks
 + use subprofiles in creating random char
-+ better starting items list (poor, wealthy etc effects)
 + perks effects
-	better/worse starting gear
 	talent, extra apt
 	skill focus, extra apt
 	precise shot, bow master
@@ -69,7 +67,10 @@ hitting menequin, shield (show damage)
 + crit chance/mod (backstab, power shot)
 + bleeding (short/long blade expert)
 + bandages - cures bleeding
-+ power attack jak w risen, inne animacje
++ sidestep left/right, roll, jump back
++ power attack glow like in risen
++ enemies with power attacks that can't be blocked
++ can shoot thru allies
 
 *** new enemies
 + units stats, new units
@@ -80,6 +81,7 @@ hitting menequin, shield (show damage)
 	+ blood skeleton (lifesteal)
 	+ dire wolf (bigger warg)
 	+ giant skeleton
+	+ rock zombie
 	+ unleveled enemies
 
 + book bestiary, magic artifacts
@@ -102,6 +104,7 @@ hitting menequin, shield (show damage)
 v2:
 + exp, exp from quests
 + int -> exp bonus
++ grab enemy
 
 ===============================================================================================================
 NEXT:

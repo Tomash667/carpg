@@ -344,7 +344,6 @@ public:
 	{
 		return weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED && HaveShield();
 	}
-	float CalculateShieldAttack() const;
 
 	WeaponType GetHoldWeapon() const
 	{

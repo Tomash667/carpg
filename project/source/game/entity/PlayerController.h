@@ -139,7 +139,7 @@ struct PlayerController : public HeroPlayerCommon
 	{
 	}
 	~PlayerController();
-	
+
 	void Init(Unit& _unit, bool partial = false);
 	void OnRest();
 	void Update(float dt, bool is_local = true);

@@ -271,6 +271,14 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 	items[SLOT_SHIELD] = nullptr;
 	items[SLOT_ARMOR] = nullptr;
 
+	int mod = 0;
+	if(HavePerk(Perk::Poor))
+		mod = -5;
+	else if(HavePerk(Perk::VeryWealthy))
+		mod = 5;
+	else if(HavePerk(Perk::FilthyRich))
+		mod = 10;
+
 	if(HavePerk(Perk::FamilyHeirloom))
 	{
 		// find best skill for family heirloom
@@ -353,21 +361,21 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			}
 		}
 
-		items[SLOT_WEAPON] = StartItem::GetStartItem(best, val);
+		items[SLOT_WEAPON] = StartItem::GetStartItem(best, max(0, val + mod));
 	}
 
 	// bow
 	if(!items[SLOT_BOW])
 	{
 		int val = s[(int)Skill::BOW].value;
-		items[SLOT_BOW] = StartItem::GetStartItem(Skill::BOW, val);
+		items[SLOT_BOW] = StartItem::GetStartItem(Skill::BOW, max(0, val + mod));
 	}
 
 	// shield
 	if(!items[SLOT_SHIELD])
 	{
 		int val = s[(int)Skill::SHIELD].value;
-		items[SLOT_SHIELD] = StartItem::GetStartItem(Skill::SHIELD, val);
+		items[SLOT_SHIELD] = StartItem::GetStartItem(Skill::SHIELD, max(0, val + mod));
 	}
 
 	// armor
@@ -407,7 +415,7 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			++index;
 		}
 
-		items[SLOT_ARMOR] = StartItem::GetStartItem(best, val);
+		items[SLOT_ARMOR] = StartItem::GetStartItem(best, max(0, val + mod));
 	}
 }
 

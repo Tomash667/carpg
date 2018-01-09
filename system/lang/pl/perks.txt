@@ -59,7 +59,7 @@ perk alchemist {
 }
 perk wealthy {
 	name "Bogaty"
-	desc "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 1000 sztuk z³ota aby zakupiæ lepszy ekwipunek. Pocz¹tkowe przedmioty masz wy¿szej jakoœci."
+	desc "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 1000 sztuk z³ota aby zakupiæ lepszy ekwipunek."
 }
 perk very_wealthy {
 	name "Bardzo bogaty"

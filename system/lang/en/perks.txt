@@ -59,7 +59,7 @@ perk alchemist {
 }
 perk wealthy {
 	name "Wealthy"
-	desc "You come from a wealthy family. You receive 1000 gold to buy better equipment. Yours starting equipment is of better quality."
+	desc "You come from a wealthy family. You receive 1000 gold to buy better equipment."
 }
 perk very_wealthy {
 	name "Very wealthy"

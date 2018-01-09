@@ -165,6 +165,15 @@ float Unit::CalculateAttack(const Item* weapon) const
 	{
 		assert(weapon->type == IT_SHIELD);
 
+		const Shield& s = weapon->ToShield();
+		float p;
+		if(str >= s.req_str)
+			p = 1.f;
+		else
+			p = float(str) / s.req_str;
+
+		int base_atk = s.def;
+		atk += 0.5f * str + (base_atk * p * (1.f + float(Get(Skill::SHIELD)) / 200));
 	}
 
 	float atk_bonus = GetEffectSum(EffectType::Attack);
@@ -1307,23 +1316,6 @@ void Unit::RecalculateStamina()
 	float p = stamina / stamina_max;
 	stamina_max = CalculateMaxStamina();
 	stamina = stamina_max * p;
-}
-
-//=================================================================================================
-float Unit::CalculateShieldAttack() const
-{
-	assert(HaveShield());
-
-	const Shield& s = GetShield();
-	float p;
-
-	int str = Get(Attribute::STR);
-	if(str >= s.req_str)
-		p = 1.f;
-	else
-		p = float(str) / s.req_str;
-
-	return 0.5f * str / 2 + 0.25f * Get(Attribute::DEX) + (s.def * p * (1.f + float(Get(Skill::SHIELD)) / 200));
 }
 
 //=================================================================================================

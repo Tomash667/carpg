@@ -148,7 +148,7 @@ private:
 	static Engine* engine;
 	int multisampling, multisampling_quality;
 	uint frames;
-	float frame_time;
+	float frame_time, fps;
 	Timer timer;
 	bool engine_shutdown, lost_device, res_freed, cursor_visible, replace_cursor, locked_cursor, lock_on_focus;
 	bool r_alphatest, r_nozwrite, r_nocull, r_alphablend;
@@ -156,7 +156,6 @@ private:
 	// window
 	HWND hwnd;
 	Int2 wnd_size, real_size, unlock_point, activation_point;
-	float fps;
 	bool active, fullscreen;
 
 	// render
