@@ -203,6 +203,7 @@
     <ClInclude Include="source\game\entity\ItemContainer.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\Combat.h" />
+    <ClInclude Include="source\game\entity\VarsContainer.h" />
     <ClInclude Include="source\game\GameStats.h" />
     <ClInclude Include="source\game\net\GamePacket.h" />
     <ClInclude Include="source\game\net\NetChange.h" />
@@ -411,6 +412,7 @@
     <ClCompile Include="source\game\entity\Camera.cpp" />
     <ClCompile Include="source\game\entity\ItemContainer.cpp" />
     <ClCompile Include="source\game\Combat.cpp" />
+    <ClCompile Include="source\game\entity\VarsContainer.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
     <ClCompile Include="source\game\net\NetStats.cpp" />

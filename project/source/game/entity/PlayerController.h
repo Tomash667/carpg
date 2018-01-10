@@ -6,6 +6,7 @@
 #include "ItemSlot.h"
 #include "Perk.h"
 #include "KeyStates.h"
+#include "VarsContainer.h"
 
 //-----------------------------------------------------------------------------
 struct Chest;
@@ -134,6 +135,7 @@ struct PlayerController : public HeroPlayerCommon
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	vector<Unit*> action_targets;
 	vector<const Item*> book_read;
+	ObjectPoolRef<VarsContainer> vars;
 
 	PlayerController() : dialog_ctx(nullptr), stat_flags(0), player_info(nullptr), is_local(false), action_recharge(0.f), action_cooldown(0.f), action_charges(0)
 	{
@@ -199,6 +201,8 @@ public:
 	void RecalculateLevel(bool initial = false);
 
 	void OnReadBook(int i_index);
+
+	void AddPerkPoint();
 };
 
 //-----------------------------------------------------------------------------

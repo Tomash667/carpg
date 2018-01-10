@@ -583,6 +583,7 @@ void PlayerController::Save(HANDLE file)
 	for(auto book : book_read)
 		f << book->id;
 	f << perk_points;
+	vars->Write(f);
 }
 
 //=================================================================================================
@@ -816,6 +817,9 @@ void PlayerController::Load(HANDLE file)
 
 		// perk points
 		f >> perk_points;
+
+		// vars
+		vars->Read(f);
 	}
 
 	action = Action_None;
@@ -979,4 +983,10 @@ void PlayerController::OnReadBook(int i_index)
 		c.type = NetChange::READ_BOOK;
 		c.id = i_index;
 	}
+}
+
+//=================================================================================================
+void PlayerController::AddPerkPoint()
+{
+	// TODO
 }

@@ -585,6 +585,13 @@ void Game::TournamentTrain(Unit& u)
 		u.player->Train(PlayerController::TM_NORMAL, (int)u.GetArmor().skill, true);
 	u.player->Train(PlayerController::TM_NORMAL, (int)(u.GetBase(Skill::ATHLETICS) >= u.GetBase(Skill::ACROBATICS)
 		? Skill::ATHLETICS : Skill::ACROBATICS), true);
+
+	auto var = u.player->vars->GetVar("tournament_win");
+	if(!var->Is(true))
+	{
+		u.player->AddPerkPoint();
+		var->Set(true);
+	}
 }
 
 //=================================================================================================
