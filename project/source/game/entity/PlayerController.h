@@ -202,7 +202,7 @@ public:
 
 	void OnReadBook(int i_index);
 
-	void AddPerkPoint();
+	void AddPerkPoint(int count = 1);
 };
 
 //-----------------------------------------------------------------------------

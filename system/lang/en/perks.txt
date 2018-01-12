@@ -12,6 +12,8 @@ decreasedSkill = "Decreased skill"
 decreasedSkills = "Decreased skills"
 flawExtraPerk = "Allows to pick extra feat."
 perksRemoved = "Following perks removed due to not meeting the requirements:"
+addedPerkPoint = "+%d learning point"
+perkPointStats = "Learning points"
 
 perk bad_back {
 	name "Bad back"

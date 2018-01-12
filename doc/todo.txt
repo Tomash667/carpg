@@ -9,10 +9,13 @@
 	better/worse items - poor/very wealthy/filthy rich
 ? perk flags after save/load/travel
 + perk points
-	every two levels, for heroes every 3 levels
-	+ set/update
+	+ gained by heroes every 3 levels
+	? every two levels for players
+	? set initial value
 	+ command to mod
-	+ extra perk after winning tournament (only once), after finishing important quest
+	? extra perk after winning tournament (only once)
+	+ extra perks after finishing important quest
+	? show in stats panel in perks at bottom
 + subprofile perks
 + training perks
 + use subprofiles in creating random char

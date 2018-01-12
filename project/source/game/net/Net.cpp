@@ -5396,6 +5396,9 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 			case NetChangePlayer::UPDATE_LONG_EFFECTS:
 				stream.Write(c.id);
 				break;
+			case NetChangePlayer::ADD_PERK_POINT:
+				stream.WriteCasted<byte>(c.ile);
+				break;
 			default:
 				Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
 				assert(0);
@@ -5411,6 +5414,8 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 		stream.Write(info.u->alcohol);
 	if(IS_SET(info.update_flags, PlayerInfo::UF_STAMINA))
 		stream.Write(info.u->stamina);
+	if(IS_SET(info.update_flags, PlayerInfo::UF_PERK_POINTS))
+		stream.Write(info.pc->perk_points);
 }
 
 //=================================================================================================
@@ -9533,6 +9538,16 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						pc->unit->EndLongEffects(days);
 				}
 				break;
+			// show message about gaining perk points [byte(ile)-count]
+			case NetChangePlayer::ADD_PERK_POINT:
+				{
+					byte count;
+					if(!stream.Read(count) || count == 0)
+						StreamError("Update single client: Broken ADD_PERK_POINT.");
+					else
+						AddGameMsg(Format(txAddedPerkPoint, count), 3.f);
+				}
+				break;
 			default:
 				Warn("Update single client: Unknown player change type %d.", type);
 				StreamError();
@@ -9581,6 +9596,18 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 		else if(!stream.Read(pc->unit->stamina))
 		{
 			StreamError("Update single client: Broken ID_PLAYER_CHANGES at UF_STAMINA.");
+			return true;
+		}
+	}
+
+	// perk points
+	if(IS_SET(flags, PlayerInfo::UF_PERK_POINTS))
+	{
+		if(!pc)
+			Skip(stream, sizeof(pc->perk_points));
+		else if(!stream.Read(pc->perk_points))
+		{
+			StreamError("Update single client: Broken ID_PLAYER_CHANGES at UF_PERK_POINTS.");
 			return true;
 		}
 	}

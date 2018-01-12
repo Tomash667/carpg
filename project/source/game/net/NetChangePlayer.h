@@ -56,6 +56,7 @@ struct NetChangePlayer
 		ADD_EFFECT, // add effect to player [Effect effect]
 		REMOVE_EFFECT, // remove effect from player [int(id)-effect netid]
 		UPDATE_LONG_EFFECTS, // update effects that work for days [int(id)-days]
+		ADD_PERK_POINT, // show message about gaining perk points [byte(ile)-count]
 
 		MAX
 	} type;

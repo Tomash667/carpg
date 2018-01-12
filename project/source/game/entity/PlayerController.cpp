@@ -916,11 +916,22 @@ void PlayerController::RecalculateLevel(bool initial)
 	if(new_level > level || initial)
 	{
 		level = new_level;
+		int prev_level = unit->level;
 		unit->level = (int)level;
 
 		if(!initial)
 		{
 			unit->RecalculateHp();
+
+			// add perk points every two levels (2, 4, 6...)
+			int gained_points = 0;
+			for(int i = prev_level + 1; i <= unit->level; ++i)
+			{
+				if(i % 2 == 0)
+					++gained_points;
+			}
+			if(gained_points)
+				AddPerkPoint(gained_points);
 
 			if(Net::IsServer())
 			{
@@ -986,7 +997,20 @@ void PlayerController::OnReadBook(int i_index)
 }
 
 //=================================================================================================
-void PlayerController::AddPerkPoint()
+void PlayerController::AddPerkPoint(int count)
 {
-	// TODO
+	assert(count > 0);
+	perk_points += count;
+	if(is_local)
+	{
+		auto& game = Game::Get();
+		game.AddGameMsg(Format(game.txAddedPerkPoint, count), 3.f);
+	}
+	else
+	{
+		player_info->update_flags |= PlayerInfo::UF_PERK_POINTS;
+		NetChangePlayer& c = Add1(player_info->changes);
+		c.type = NetChangePlayer::ADD_PERK_POINT;
+		c.ile = count;
+	}
 }

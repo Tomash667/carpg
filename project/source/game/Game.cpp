@@ -2164,6 +2164,7 @@ void Game::SetGameText()
 	txGmsAddedItem = Str("gmsAddedItem");
 	txGmsAddedItems = Str("gmsAddedItems");
 	txGmsTooComplicated = Str("gmsTooComplicated");
+	txAddedPerkPoint = Str("addedPerkPoint");
 
 	// plotki
 	LOAD_ARRAY(txRumor, "rumor_");

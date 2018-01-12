@@ -53,6 +53,7 @@ StatsPanel::StatsPanel() : last_update(0.f)
 	txCarryShort = Str("carryShort");
 	txGold = Str("gold");
 	txBlock = Str("block");
+	txPerkPointStats = Str("perkPointStats");
 
 	tooltip.Init(TooltipGetText(this, &StatsPanel::GetTooltip));
 }
@@ -221,6 +222,7 @@ void StatsPanel::SetText()
 	flowFeats.Add()->Set(txFeats);
 	for(auto& perk : perks)
 		flowFeats.Add()->Set(perk.first, G_PERK, perk.second);
+	flowFeats.Add()->Set(Format("\n%s: %d", txPerkPointStats, game.pc->perk_points), G_INVALID, 0);
 	flowFeats.Reposition();
 	StringPool.Free(strs.Get());
 

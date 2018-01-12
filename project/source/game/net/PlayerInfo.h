@@ -19,7 +19,8 @@ struct PlayerInfo
 		UF_NET_CHANGES = 1 << 1,
 		UF_GOLD = 1 << 2,
 		UF_ALCOHOL = 1 << 3,
-		UF_STAMINA = 1 << 4
+		UF_STAMINA = 1 << 4,
+		UF_PERK_POINTS = 1 << 5
 	};
 
 	enum STATE
