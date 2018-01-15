@@ -172,6 +172,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 		if(t.IsSymbol('#'))
 		{
+			Msg(_str.c_str());
 			if(!devmode)
 			{
 				Msg("You can't use script command without devmode.");
@@ -181,9 +182,14 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 			cstring code = t.GetTextRest();
 			if(Net::IsLocal())
 			{
+				string& output = script_mgr->OpenOutput();
 				script_mgr->SetContext(pc);
-				if(!script_mgr->RunScript(code))
-					Msg("Script failed, check log for details.");
+				bool ok = script_mgr->RunScript(code);
+				if(!output.empty())
+					Msg(output.c_str());
+				script_mgr->CloseOutput();
+				if(!ok)
+					Msg("Script failed.");
 			}
 			else
 			{

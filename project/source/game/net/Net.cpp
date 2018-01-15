@@ -25,6 +25,7 @@
 #include "Spell.h"
 #include "Team.h"
 #include "Action.h"
+#include "ScriptManager.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -4794,16 +4795,31 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		// run script
 		case NetChange::RUN_SCRIPT:
 			{
-				string code;
-				if(!ReadString<uint>(code))
+				string* code = StringPool.Get();
+				if(!ReadString<uint>(stream, *code))
 					StreamError("Update server: Broken RUN_SCRIPT from '%s'.", info.name.c_str());
 				else if(!info.devmode)
 					StreamError("Update server: Player %s used RUN_SCRIPT without devmode.", info.name.c_str());
 				else
 				{
+					string& output = script_mgr->OpenOutput();
 					script_mgr->SetContext(info.pc);
-					if(!script_mgr->)
+					bool ok = script_mgr->RunScript(code->c_str());
+
+					NetChangePlayer& c = Add1(info.changes);
+					c.type = NetChangePlayer::RUN_SCRIPT_RESULT;
+					c.id = (ok ? 1 : 0);
+					if(output.empty())
+						c.str = nullptr;
+					else
+					{
+						c.str = StringPool.Get();
+						*c.str = output;
+					}
+					
+					script_mgr->CloseOutput();
 				}
+				StringPool.Free(code);
 			}
 			break;
 		// invalid change
@@ -5413,6 +5429,19 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				break;
 			case NetChangePlayer::ADD_PERK_POINT:
 				stream.WriteCasted<byte>(c.ile);
+				break;
+			case NetChangePlayer::RUN_SCRIPT_RESULT:
+				WriteBool(stream, c.id == 1);
+				if(c.str)
+				{
+					WriteString<uint>(stream, *c.str);
+					StringPool.Free(c.str);
+				}
+				else
+				{
+					uint zero;
+					stream.Write(zero);
+				}
 				break;
 			default:
 				Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
@@ -9563,6 +9592,21 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						AddGameMsg(Format(txAddedPerkPoint, count), 3.f);
 				}
 				break;
+			// run script result
+			case NetChangePlayer::RUN_SCRIPT_RESULT:
+				{
+					bool ok;
+					string* output = StringPool.Get();
+					if(!ReadBool(stream, ok) || !ReadString<uint>(stream, *output))
+						StreamError("Update single client: Broken RUN_SCRIPT_RESULT.");
+					else
+					{
+						AddConsoleMsg(output->c_str());
+						if(!ok)
+							AddConsoleMsg("Script failed.");
+					}
+				}
+				break;
 			default:
 				Warn("Update single client: Unknown player change type %d.", type);
 				StreamError();
@@ -9806,6 +9850,10 @@ void Game::WriteClientChanges(BitStream& stream)
 			stream.WriteCasted<byte>(c.id);
 			stream.WriteCasted<byte>(c.ile);
 			stream.WriteCasted<byte>(c.e_id);
+			break;
+		case NetChange::RUN_SCRIPT:
+			WriteString<uint>(stream, *c.str);
+			StringPool.Free(c.str);
 			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);
@@ -11104,6 +11152,9 @@ bool Game::FilterOut(NetChange& c)
 			c.str = nullptr;
 		}
 		return true;
+	case NetChange::RUN_SCRIPT:
+		StringPool.Free(c.str);
+		return true;
 	default:
 		return true;
 	}
@@ -11120,6 +11171,7 @@ bool Game::FilterOut(NetChangePlayer& c)
 	case NetChangePlayer::GAIN_STAT:
 	case NetChangePlayer::ADDED_ITEMS_MSG:
 	case NetChangePlayer::GAME_MESSAGE:
+	case NetChangePlayer::RUN_SCRIPT_RESULT:
 		return false;
 	default:
 		return true;
