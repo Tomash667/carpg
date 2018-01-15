@@ -4791,6 +4791,21 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					Error("Update server: CHEAT_REMOVE_EFFECT_NETID, invalid netid %d from '%s'.", netid, info.name.c_str());
 			}
 			break;
+		// run script
+		case NetChange::RUN_SCRIPT:
+			{
+				string code;
+				if(!ReadString<uint>(code))
+					StreamError("Update server: Broken RUN_SCRIPT from '%s'.", info.name.c_str());
+				else if(!info.devmode)
+					StreamError("Update server: Player %s used RUN_SCRIPT without devmode.", info.name.c_str());
+				else
+				{
+					script_mgr->SetContext(info.pc);
+					if(!script_mgr->)
+				}
+			}
+			break;
 		// invalid change
 		default:
 			StreamError("Update server: Invalid change type %u from %s.", type, info.name.c_str());

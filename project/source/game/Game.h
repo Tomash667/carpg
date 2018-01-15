@@ -52,6 +52,7 @@ class PickServerPanel;
 class SaveLoad;
 class ServerPanel;
 class WorldMapGui;
+class ScriptManager;
 
 //#define DRAW_LOCAL_PATH
 #ifdef DRAW_LOCAL_PATH
@@ -430,6 +431,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void SetGameText();
 	void SetStatsText();
 	void ConfigureGame();
+	void InitScripts();
 
 	// loading data
 	void LoadData();
@@ -441,6 +443,7 @@ struct Game final : public Engine, public UnitEventHandler
 
 	QUICKSTART quickstart;
 	bool disable_net_stats;
+	ScriptManager* script_mgr;
 
 	// supershader
 	string sshader_code;
