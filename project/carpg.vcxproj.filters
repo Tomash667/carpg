@@ -64,6 +64,9 @@
     <Filter Include="3. game\system\unit">
       <UniqueIdentifier>{2110a0ec-a4bb-43a5-bcc7-ad64a4a78f1a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3. game\script">
+      <UniqueIdentifier>{686e4789-ffae-4b38-8307-8b1d7e1d50e1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\resource\PickLanguage.cpp">
@@ -681,6 +684,9 @@
     </ClCompile>
     <ClCompile Include="source\game\entity\VarsContainer.cpp">
       <Filter>3. game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\script\ScriptManager.cpp">
+      <Filter>3. game\script</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1338,6 +1344,9 @@
     </ClInclude>
     <ClInclude Include="source\game\entity\VarsContainer.h">
       <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\script\ScriptManager.h">
+      <Filter>3. game\script</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
