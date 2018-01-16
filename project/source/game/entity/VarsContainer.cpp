@@ -67,6 +67,7 @@ void VarsContainer::Read(FileReader& f)
 		//	f >> *var->_string;
 		//	break;
 		}
+		vars.insert(var);
 	}
 }
 

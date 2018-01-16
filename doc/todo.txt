@@ -12,7 +12,6 @@
 	+ gained by heroes every 3 levels
 	? every two levels for players
 	? set initial value
-	+ command to mod
 	? extra perk after winning tournament (only once)
 	+ extra perks after finishing important quest
 	? show in stats panel in perks at bottom

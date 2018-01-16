@@ -19,6 +19,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "Bullet\build\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SLikeNet", "SLikeNet\Lib\LibStatic\SLikeNet.vcxproj", "{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "angelscript", "angelscript_sdk\angelscript\projects\msvc2015\angelscript.vcxproj", "{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "angelscript_addon", "angelscript_sdk\add_on\angelscript_addon.vcxproj", "{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD} = {39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,6 +40,14 @@ Global
 		{745DEC58-EBB3-47A9-A9B8-4C6627C01BF8}.Release|Win32.ActiveCfg = Release|Win32
 		{745DEC58-EBB3-47A9-A9B8-4C6627C01BF8}.Release|Win32.Build.0 = Release|Win32
 		{745DEC58-EBB3-47A9-A9B8-4C6627C01BF8}.Release|x64.ActiveCfg = Release|Win32
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|Win32.Build.0 = Debug|Win32
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|x64.ActiveCfg = Debug|x64
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|x64.Build.0 = Debug|x64
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|Win32.ActiveCfg = Release|Win32
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|Win32.Build.0 = Release|Win32
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|x64.ActiveCfg = Release|x64
+		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|x64.Build.0 = Release|x64
 		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}.Debug|Win32.ActiveCfg = Debug|Win32
 		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}.Debug|Win32.Build.0 = Debug|Win32
 		{54AE91C7-48D4-9C49-A5B1-0CED554CADFA}.Debug|x64.ActiveCfg = Debug|x64
@@ -57,19 +72,24 @@ Global
 		{58D08522-C69F-904C-A7ED-733DA229F1BA}.Release|Win32.Build.0 = Release|Win32
 		{58D08522-C69F-904C-A7ED-733DA229F1BA}.Release|x64.ActiveCfg = Release|x64
 		{58D08522-C69F-904C-A7ED-733DA229F1BA}.Release|x64.Build.0 = Release|x64
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|Win32.ActiveCfg = Debug|Win32
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|Win32.Build.0 = Debug|Win32
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|x64.ActiveCfg = Debug|x64
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Debug|x64.Build.0 = Debug|x64
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|Win32.ActiveCfg = Release|Win32
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|Win32.Build.0 = Release|Win32
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|x64.ActiveCfg = Release|x64
-		{6533BDAE-0F0C-45E4-8FE7-ADD0F37FE063}.Release|x64.Build.0 = Release|x64
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Debug|Win32.Build.0 = Debug|Win32
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Debug|x64.ActiveCfg = Debug|x64
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Debug|x64.Build.0 = Debug|x64
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Release|Win32.ActiveCfg = Release|Win32
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Release|Win32.Build.0 = Release|Win32
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Release|x64.ActiveCfg = Release|x64
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Release|x64.Build.0 = Release|x64
+		{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}.Debug|Win32.Build.0 = Debug|Win32
+		{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}.Debug|x64.ActiveCfg = Debug|x64
+		{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}.Debug|x64.Build.0 = Debug|x64
+		{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}.Release|Win32.ActiveCfg = Release|Win32
+		{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}.Release|Win32.Build.0 = Release|Win32
+		{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}.Release|x64.ActiveCfg = Release|x64
+		{A0BA4E27-2235-40F9-B4EC-2845EC92F3D3}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {62B11B75-740B-4852-BC56-D55C458A462B}
 	EndGlobalSection
 EndGlobal

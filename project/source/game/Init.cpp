@@ -15,6 +15,7 @@
 #include "Action.h"
 #include "NetStats.h"
 #include "UnitGroup.h"
+#include "ScriptManager.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -165,7 +166,7 @@ void Game::PreloadData()
 void Game::LoadSystem()
 {
 	Info("Game: Loading system.");
-	load_screen->Setup(0.f, 0.33f, 14, txCreatingListOfFiles);
+	load_screen->Setup(0.f, 0.33f, 15, txCreatingListOfFiles);
 
 	AddFilesystem();
 	LoadDatafiles();
@@ -173,6 +174,7 @@ void Game::LoadSystem()
 	load_screen->Tick(txLoadingShaders);
 	LoadShaders();
 	ConfigureGame();
+	InitScripts();
 }
 
 //=================================================================================================
@@ -301,6 +303,15 @@ void Game::ConfigureGame()
 
 	if(!disable_net_stats)
 		NetStats::Get().Initialize();
+}
+
+//=================================================================================================
+// Init game scripts
+//=================================================================================================
+void Game::InitScripts()
+{
+	script_mgr = new ScriptManager;
+	script_mgr->Init();
 }
 
 //=================================================================================================

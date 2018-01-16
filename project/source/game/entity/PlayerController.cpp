@@ -999,7 +999,8 @@ void PlayerController::OnReadBook(int i_index)
 //=================================================================================================
 void PlayerController::AddPerkPoint(int count)
 {
-	assert(count > 0);
+	if(count <= 0)
+		return;
 	perk_points += count;
 	if(is_local)
 	{
