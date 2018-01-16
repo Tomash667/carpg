@@ -4,6 +4,7 @@
 #include <angelscript.h>
 #include <scriptarray/scriptarray.h>
 #include <scriptstdstring/scriptstdstring.h>
+#include "TypeBuilder.h"
 #include "PlayerController.h"
 
 #ifdef _DEBUG
@@ -73,13 +74,32 @@ void PlayerController_SetPerkPoints(PlayerController* pc, uint perk_points)
 		pc->player_info->update_flags |= PlayerInfo::UF_PERK_POINTS;
 }
 
+VarsContainer::Var* PlayerController_GetVar(PlayerController* pc, const string& name)
+{
+	return pc->vars->GetVar(name);
+}
+
 void ScriptManager::Register()
 {
-	CHECKED(engine->RegisterObjectType("Player", 0, asOBJ_REF | asOBJ_NOCOUNT));
-	CHECKED(engine->RegisterObjectMethod("Player", "void AddPerkPoint(uint points = 0)", asMETHOD(PlayerController, AddPerkPoint), asCALL_THISCALL));
-	CHECKED(engine->RegisterObjectMethod("Player", "uint get_perk_points()", asFUNCTION(PlayerController_GetPerkPoints), asCALL_CDECL_OBJFIRST));
-	CHECKED(engine->RegisterObjectMethod("Player", "void set_perk_points(uint)", asFUNCTION(PlayerController_SetPerkPoints), asCALL_CDECL_OBJFIRST));
-	CHECKED(engine->RegisterGlobalProperty("Player@ pc", &pc));
+	AddType("Var")
+		.Method("bool IsNone() const", asMETHOD(VarsContainer::Var, IsNone))
+		.Method("bool IsBool() const", asMETHODPR(VarsContainer::Var, IsBool, () const, bool))
+		.Method("bool IsBool(bool) const", asMETHODPR(VarsContainer::Var, IsBool, (bool) const, bool))
+		.Method("bool IsInt() const", asMETHODPR(VarsContainer::Var, IsInt, () const, bool))
+		.Method("bool IsInt(int) const", asMETHODPR(VarsContainer::Var, IsInt, (int) const, bool))
+		.Method("bool IsFloat() const", asMETHODPR(VarsContainer::Var, IsFloat, () const, bool))
+		.Method("bool IsFloat(float) const", asMETHODPR(VarsContainer::Var, IsFloat, (float) const, bool))
+		.Method("void SetNone()", asMETHOD(VarsContainer::Var, SetNone))
+		.Method("void SetBool(bool)", asMETHOD(VarsContainer::Var, SetBool))
+		.Method("void SetInt(int)", asMETHOD(VarsContainer::Var, SetInt))
+		.Method("void SetFloat(float)", asMETHOD(VarsContainer::Var, SetFloat));
+
+	AddType("Player")
+		.Method("void AddPerkPoint(uint points = 0)", asMETHOD(PlayerController, AddPerkPoint))
+		.Method("uint get_perk_points()", asFUNCTION(PlayerController_GetPerkPoints))
+		.Method("void set_perk_points(uint)", asFUNCTION(PlayerController_SetPerkPoints))
+		.Method("Var@ GetVar(string& in)", asFUNCTION(PlayerController_GetVar))
+		.WithInstance("Player@ pc", &pc);
 }
 
 void ScriptManager::SetContext(PlayerController* pc)
@@ -167,4 +187,18 @@ void ScriptManager::Log(Logger::Level level, cstring msg)
 	}
 	else
 		Logger::global->Log(level, msg);
+}
+
+TypeBuilder ScriptManager::AddType(cstring name)
+{
+	assert(name);
+	CHECKED(engine->RegisterObjectType(name, 0, asOBJ_REF | asOBJ_NOCOUNT));
+	return ForType(name);
+}
+
+TypeBuilder ScriptManager::ForType(cstring name)
+{
+	assert(name);
+	TypeBuilder builder(name, engine);
+	return builder;
 }

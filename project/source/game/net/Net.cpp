@@ -4816,7 +4816,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						c.str = StringPool.Get();
 						*c.str = output;
 					}
-					
+
 					script_mgr->CloseOutput();
 				}
 				StringPool.Free(code);

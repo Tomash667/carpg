@@ -1348,6 +1348,9 @@
     <ClInclude Include="source\game\script\ScriptManager.h">
       <Filter>3. game\script</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\script\TypeBuilder.h">
+      <Filter>3. game\script</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">

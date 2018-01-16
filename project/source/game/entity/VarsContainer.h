@@ -24,30 +24,50 @@ public:
 			//string* _string;
 		};
 
-		bool Is(bool value) const
+		bool IsNone() const
+		{
+			return type == None;
+		}
+		bool IsBool() const
+		{
+			return type == Bool;
+		}
+		bool IsInt() const
+		{
+			return type == Int;
+		}
+		bool IsFloat() const
+		{
+			return type == Float;
+		}
+		bool IsBool(bool value) const
 		{
 			return type == Bool && _bool == value;
 		}
-		bool Is(int value) const
+		bool IsInt(int value) const
 		{
 			return type == Int && _int == value;
 		}
-		bool Is(float value) const
+		bool IsFloat(float value) const
 		{
 			return type == Float && _float == value;
 		}
 
-		void Set(bool value)
+		void SetNone()
+		{
+			type = None;
+		}
+		void SetBool(bool value)
 		{
 			type = Bool;
 			_bool = value;
 		}
-		void Set(int value)
+		void SetInt(int value)
 		{
 			type = Int;
 			_int = value;
 		}
-		void Set(float value)
+		void SetFloat(float value)
 		{
 			type = Float;
 			_float = value;

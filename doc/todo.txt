@@ -1,4 +1,9 @@
 ﻿FEATURE:
+*** script
+? mp
++ Format/Log
+? GetVar
+
 *** perks
 - changing armor while running have no effect on animation speed
 ? food effect leak - unknown when

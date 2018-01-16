@@ -587,10 +587,10 @@ void Game::TournamentTrain(Unit& u)
 		? Skill::ATHLETICS : Skill::ACROBATICS), true);
 
 	auto var = u.player->vars->GetVar("tournament_win");
-	if(!var->Is(true))
+	if(!var->IsBool(true))
 	{
 		u.player->AddPerkPoint();
-		var->Set(true);
+		var->SetBool(true);
 	}
 }
 

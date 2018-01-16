@@ -1,7 +1,14 @@
 #pragma once
 
+#ifdef _DEBUG
+#	define CHECKED(x) { int _r = (x); assert(_r >= 0); }
+#else
+#	define CHECKED(x) x
+#endif
+
 class asIScriptEngine;
 class asIScriptModule;
+class TypeBuilder;
 struct PlayerController;
 
 class ScriptManager
@@ -16,6 +23,8 @@ public:
 	string& OpenOutput();
 	void CloseOutput();
 	void Log(Logger::Level level, cstring msg);
+	TypeBuilder AddType(cstring name);
+	TypeBuilder ForType(cstring name);
 
 private:
 	asIScriptEngine* engine;
