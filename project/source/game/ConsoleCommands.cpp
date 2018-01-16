@@ -18,6 +18,7 @@
 #include "SaveState.h"
 #include "QuestManager.h"
 #include "BuildingGroup.h"
+#include "ScriptManager.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
@@ -161,6 +162,39 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 	{
 		if(!t.Next())
 			return;
+
+		if(t.IsSymbol('#'))
+		{
+			Msg(_str.c_str());
+			if(!devmode)
+			{
+				Msg("You can't use script command without devmode.");
+				return;
+			}
+
+			cstring code = t.GetTextRest();
+			if(Net::IsLocal())
+			{
+				string& output = script_mgr->OpenOutput();
+				script_mgr->SetContext(pc);
+				bool ok = script_mgr->RunScript(code);
+				if(!output.empty())
+					Msg(output.c_str());
+				script_mgr->CloseOutput();
+				if(!ok)
+					Msg("Script failed.");
+			}
+			else
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::RUN_SCRIPT;
+				c.str = StringPool.Get();
+				*c.str = code;
+			}
+
+			return;
+		}
+
 		const string& token = t.MustGetItem();
 
 		for(vector<ConsoleCommand>::iterator it = cmds.begin(), end = cmds.end(); it != end; ++it)

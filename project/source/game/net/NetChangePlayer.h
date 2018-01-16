@@ -50,6 +50,7 @@ struct NetChangePlayer
 		STAT_CHANGED, // player stat changed [byte(id)-ChangedStatType, byte(a)-stat id, int(ile)-value]
 		ADD_PERK, // add perk to player [byte(id)-perk, int(ile)-value]
 		GAME_MESSAGE, // show game message [int(id)-game message id]
+		RUN_SCRIPT_RESULT, // run script result [bool(id)-ok, string(str)-output]
 
 		MAX
 	} type;
@@ -58,6 +59,7 @@ struct NetChangePlayer
 	{
 		int a;
 		Unit* unit;
+		string* str;
 	};
 	const Item* item;
 	Vec3 pos;
