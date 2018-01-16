@@ -4813,13 +4813,15 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						c.str = nullptr;
 					else
 					{
-						c.str = StringPool.Get();
+						c.str = code;
 						*c.str = output;
+						code = nullptr;
 					}
 
 					script_mgr->CloseOutput();
 				}
-				StringPool.Free(code);
+				if(code)
+					StringPool.Free(code);
 			}
 			break;
 		// invalid change
@@ -5439,7 +5441,7 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					uint zero;
+					uint zero = 0;
 					stream.Write(zero);
 				}
 				break;
@@ -9605,6 +9607,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						if(!ok)
 							AddConsoleMsg("Script failed.");
 					}
+					StringPool.Free(output);
 				}
 				break;
 			default:

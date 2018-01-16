@@ -24,6 +24,19 @@ public:
 			//string* _string;
 		};
 
+		bool GetBool() const
+		{
+			return _bool;
+		}
+		int GetInt() const
+		{
+			return _int;
+		}
+		float GetFloat() const
+		{
+			return _float;
+		}
+
 		bool IsNone() const
 		{
 			return type == None;
