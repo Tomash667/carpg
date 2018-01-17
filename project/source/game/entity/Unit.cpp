@@ -259,6 +259,10 @@ float Unit::CalculateDefense(const Item* armor, const Item* shield) const
 		def += armor_def * (1.f + skill / 100);
 	}
 
+	// defensive combat style
+	if(weapon_state == WS_TAKEN && weapon_taken == W_ONE_HANDED && GetWeapon().weapon_type == WT_LONG_BLADE && HavePerk(Perk::DefensiveCombatStyle))
+		def += 25;
+
 	// dexterity bonus
 	auto load_state = GetArmorLoadState(armor);
 	if(load_state < LS_HEAVY)

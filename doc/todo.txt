@@ -1,6 +1,6 @@
 ﻿FEATURE:
 *** perks
-- changing armor while running have no effect on animation speed
+- changing armor while running have no effect on animation speed, same problem with slows/debuffs etc
 ? food effect leak - unknown when
 ? PF_ASOCIAL
 ? perks
@@ -14,7 +14,7 @@
 	? set initial value
 	? extra perk after winning tournament (only once)
 	+ extra perks after finishing important quest
-	? show in stats panel in perks at bottom
+	? defensive combat style
 + subprofile perks
 + training perks
 + use subprofiles in creating random char
@@ -27,7 +27,7 @@
 	charming
 	leadership
 	trading contract, extra stock, free merchant, master merchant
-	defensive combat style, basher
+	basher
 	shield prof, shielder, battle shielder, magic shielder
 	heavy armor adaptation weight
 	medium/heavy armor master, iron man
@@ -100,7 +100,6 @@ hitting menequin, shield (show damage)
 	- rescale food/potions healing values
 	- fix stamina values, use stamina when running ?
 ? test all traps with 2 clients, log playing sounds for all players
-+ fix changelog 0.6.1, 0.6.2
 ! undo FastFunc changes, use new delegates ?
 
 v2:
