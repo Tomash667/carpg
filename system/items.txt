@@ -2452,6 +2452,18 @@ stock orc_blacksmith {
 	random 1 2 al_orc
 	random 1 2 am_orc
 	al_orc_shaman
+	
+	// city here is small hack to perk extra_stock
+	// more orcish items - not much use, maybe some unique items in feature
+	city {
+		random 1 3 sword_orcish
+		random 1 3 axe_orcish
+		random 1 3 blunt_orcish
+		blunt_orcish_shaman
+		random 1 2 al_orc
+		random 1 2 am_orc
+		al_orc_shaman
+	}
 }
 
 stock alchemist_apprentice {

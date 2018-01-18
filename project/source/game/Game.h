@@ -930,7 +930,8 @@ public:
 	int tmp_inventory_shift[2];
 
 	void BuildTmpInventory(int index);
-	int GetItemPrice(const Item* item, Unit& unit, bool buy);
+	int GetItemPrice(const Item* item, Unit& unit, bool buy, bool* trading_contract);
+	void TrainTrade(PlayerController& player, int value, bool trading_contract);
 
 	enum class BREAK_ACTION_MODE
 	{
@@ -987,7 +988,7 @@ public:
 	void EndDialog(DialogContext& ctx);
 	void UpdateGameDialog(DialogContext& ctx, float dt);
 	void GenerateStockItems();
-	void GenerateMerchantItems(vector<ItemSlot>& items, int price_limit);
+	void GenerateMerchantItems(vector<ItemSlot>& items, int price_limit, bool extra_stock);
 	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
 	void ApplyLocationTexturePack(TexturePack& pack, LocationTexturePack::Entry& e, TexturePack& pack_def);
 	void SetDungeonParamsAndTextures(BaseLocation& base);

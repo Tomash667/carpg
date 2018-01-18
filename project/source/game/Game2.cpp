@@ -14005,8 +14005,9 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 						if(u)
 							u->dont_attack = true;
 
+						// hack - city is used as ExtraStock perk
 						vector<ItemSlot>& items = quest_orcs2->wares;
-						Stock::Get("orc_blacksmith")->Parse(0, false, items);
+						Stock::Get("orc_blacksmith")->Parse(0, Team.HavePerk(Perk::ExtraStock), items);
 						SortItems(items);
 					}
 				}
@@ -19125,6 +19126,8 @@ void Game::UpdateGame2(float dt)
 			at_arena.clear();
 		}
 	}
+
+	Team.UpdateTeamTrader();
 }
 
 void Game::UpdateContest(float dt)
@@ -21772,52 +21775,81 @@ const float price_mod_sell[] = { 0.25f, 0.5f, 0.6f, 0.7f, 0.75f };
 const float price_mod_buy_v[] = { 2.f, 1.25f, 1.f, 0.95f, 0.9f };
 const float price_mod_sell_v[] = { 0.5f, 0.65f, 0.75f, 0.85f, 0.9f };
 
-int Game::GetItemPrice(const Item* item, Unit& unit, bool buy)
+int Game::GetItemPrice(const Item* item, Unit& unit, bool buy, bool* trading_contract)
 {
 	assert(item);
 
-	int haggle = unit.Get(Skill::HAGGLE);
-	if(unit.player->action_unit->data->id == "alchemist" && unit.HavePerk(Perk::AlchemistApprentice))
-		haggle += 20;
-	if(IS_SET(unit.statsx->perk_flags, PF_ASOCIAL))
-		haggle -= 20;
-
-	const float* mod_table;
-
-	if(item->type == IT_OTHER && item->ToOther().other_type == Valuable)
-	{
-		if(buy)
-			mod_table = price_mod_buy_v;
-		else
-			mod_table = price_mod_sell_v;
-	}
-	else
-	{
-		if(buy)
-			mod_table = price_mod_buy;
-		else
-			mod_table = price_mod_sell;
-	}
-
 	float mod;
-	if(haggle <= -10)
-		mod = mod_table[0];
-	else if(haggle <= 0)
-		mod = Lerp(mod_table[0], mod_table[1], float(haggle + 10) / 10);
-	else if(haggle <= 10)
-		mod = Lerp(mod_table[1], mod_table[2], float(haggle) / 10);
-	else if(haggle <= 35)
-		mod = Lerp(mod_table[2], mod_table[3], float(haggle - 10) / 25);
-	else if(haggle <= 100)
-		mod = Lerp(mod_table[3], mod_table[4], float(haggle - 35) / 65);
+	bool used_trading_contract = false;;
+
+	if(Team.master_merchant || unit.HavePerk(Perk::MasterMerchant))
+		mod = 1.f;
 	else
-		mod = mod_table[4];
+	{
+
+		int haggle = unit.Get(Skill::HAGGLE);
+		if(Team.trading_contract_skill > haggle)
+		{
+			haggle = Team.trading_contract_skill;
+			used_trading_contract = true;
+		}
+
+		if(unit.player->action_unit->data->id == "alchemist" && unit.HavePerk(Perk::AlchemistApprentice))
+			haggle += 20;
+		if(IS_SET(unit.statsx->perk_flags, PF_ASOCIAL))
+			haggle -= 20;
+
+		const float* mod_table;
+
+		if(item->type == IT_OTHER && item->ToOther().other_type == Valuable)
+		{
+			if(buy)
+				mod_table = price_mod_buy_v;
+			else
+				mod_table = price_mod_sell_v;
+		}
+		else
+		{
+			if(buy)
+				mod_table = price_mod_buy;
+			else
+				mod_table = price_mod_sell;
+		}
+
+		if(haggle <= -10)
+			mod = mod_table[0];
+		else if(haggle <= 0)
+			mod = Lerp(mod_table[0], mod_table[1], float(haggle + 10) / 10);
+		else if(haggle <= 10)
+			mod = Lerp(mod_table[1], mod_table[2], float(haggle) / 10);
+		else if(haggle <= 35)
+			mod = Lerp(mod_table[2], mod_table[3], float(haggle - 10) / 25);
+		else if(haggle <= 100)
+			mod = Lerp(mod_table[3], mod_table[4], float(haggle - 35) / 65);
+		else
+			mod = mod_table[4];
+	}
 
 	int price = int(mod * item->value);
 	if(price == 0 && buy)
 		price = 1;
 
+	if(trading_contract)
+		*trading_contract = used_trading_contract;
+
 	return price;
+}
+
+void Game::TrainTrade(PlayerController& player, int value, bool trading_contract)
+{
+	if(!trading_contract || player.id == Team.trading_contract_id)
+		player.Train(TrainWhat::Trade, (float)value, 0);
+	else
+	{
+		player.Train(TrainWhat::Trade, 0.5f * value, 0);
+		if(Team.trading_contract_id != -1)
+			Team.GetPlayer(Team.trading_contract_id)->Train(TrainWhat::Trade, 0.5f * value, 0);
+	}
 }
 
 void Game::VerifyObjects()

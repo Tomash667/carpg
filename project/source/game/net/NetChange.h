@@ -163,7 +163,7 @@ struct NetChange
 		ADD_OBSERVABLE_EFFECT, // add observable effect to unit [int(id)-unit netid, Effect effect]
 		REMOVE_OBSERVABLE_EFFECT, // remove observable effect from unit [int(netid)-unit, int(id)-effect netid]
 		RUN_SCRIPT, // run script [string(str)-code]
-
+		UPDATE_TEAM_TRADER, // update team trader values [int-skill, int-player id, bool-free merchant, bool-master merchant]
 		MAX
 	} type;
 	union

@@ -2585,6 +2585,19 @@ void Game::RespawnUnits(LevelContext& ctx)
 	}
 }
 
+template<typename T>
+void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_limit, int exclude_flags, uint count = 1)
+{
+	for(int i = 0; i < 100; ++i)
+	{
+		T* item = items[Rand() % items.size()];
+		if(item->value > price_limit || IS_SET(item->flags, exclude_flags))
+			continue;
+		InsertItemBare(container, item, count);
+		return;
+	}
+}
+
 void Game::GenerateStockItems()
 {
 	Location& loc = *locations[current_location];
@@ -2595,53 +2608,64 @@ void Game::GenerateStockItems()
 	const Item* item;
 	int price_limit, price_limit2, count_mod;
 	bool is_city;
+	bool extra_stock = Team.HavePerk(Perk::ExtraStock);
 
 	if(!city.IsVillage())
 	{
-		price_limit = Random(2000, 2500);
-		price_limit2 = 99999;
-		count_mod = 0;
+		if(extra_stock)
+		{
+			price_limit = Random(3000, 3750);
+			count_mod = Random(1, 3);
+			price_limit2 = 999999;
+		}
+		else
+		{
+			price_limit = Random(2000, 2500);
+			count_mod = 0;
+			price_limit2 = 99999;
+		}
 		is_city = true;
 	}
 	else
 	{
-		price_limit = Random(500, 1000);
-		price_limit2 = Random(1250, 2500);
-		count_mod = -Random(1, 3);
+		if(extra_stock)
+		{
+			price_limit = Random(750, 1500);
+			count_mod = 0;
+			price_limit2 = Random(2000, 3500);
+		}
+		else
+		{
+			price_limit = Random(500, 1000);
+			count_mod = -Random(1, 3);
+			price_limit2 = Random(1250, 2500);
+		}
 		is_city = false;
 	}
 
 	// merchant
 	if(IS_SET(city.flags, City::HaveMerchant))
-		GenerateMerchantItems(chest_merchant, price_limit);
+		GenerateMerchantItems(chest_merchant, price_limit, extra_stock);
 
 	// blacksmith
 	if(IS_SET(city.flags, City::HaveBlacksmith))
 	{
 		chest_blacksmith.clear();
-		for(int i = 0, ile = Random(12, 18) + count_mod; i < ile; ++i)
+		for(int i = 0, count = Random(12, 18) + count_mod; i < count; ++i)
 		{
 			switch(Rand() % 4)
 			{
-			case 0: // broñ
-				while((item = Weapon::weapons[Rand() % Weapon::weapons.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH))
-					;
-				InsertItemBare(chest_blacksmith, item);
+			case IT_WEAPON:
+				InsertRandomItem(chest_blacksmith, Weapon::weapons, price_limit2, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
 				break;
-			case 1: // ³uk
-				while((item = Bow::bows[Rand() % Bow::bows.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH))
-					;
-				InsertItemBare(chest_blacksmith, item);
+			case IT_BOW:
+				InsertRandomItem(chest_blacksmith, Bow::bows, price_limit2, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
 				break;
-			case 2: // tarcza
-				while((item = Shield::shields[Rand() % Shield::shields.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH))
-					;
-				InsertItemBare(chest_blacksmith, item);
+			case IT_SHIELD:
+				InsertRandomItem(chest_blacksmith, Shield::shields, price_limit2, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
 				break;
-			case 3: // pancerz
-				while((item = Armor::armors[Rand() % Armor::armors.size()])->value > price_limit2 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH))
-					;
-				InsertItemBare(chest_blacksmith, item);
+			case IT_ARMOR:
+				InsertRandomItem(chest_blacksmith, Armor::armors, price_limit2, ITEM_NOT_SHOP | ITEM_NOT_BLACKSMITH);
 				break;
 			}
 		}
@@ -2653,13 +2677,10 @@ void Game::GenerateStockItems()
 	// alchemist
 	if(IS_SET(city.flags, City::HaveAlchemist))
 	{
+		int extra = (extra_stock ? 2 : 0);
 		chest_alchemist.clear();
-		for(int i = 0, ile = Random(8, 12) + count_mod; i < ile; ++i)
-		{
-			while(IS_SET((item = Consumable::consumables[Rand() % Consumable::consumables.size()])->flags, ITEM_NOT_SHOP | ITEM_NOT_ALCHEMIST))
-				;
-			InsertItemBare(chest_alchemist, item, Random(3, 6));
-		}
+		for(int i = 0, count = Random(8, 12) + count_mod; i < count; ++i)
+			InsertRandomItem(chest_alchemist, Consumable::consumables, 99999, ITEM_NOT_SHOP | ITEM_NOT_ALCHEMIST, Random(3, 6) + extra);
 		SortItems(chest_alchemist);
 	}
 
@@ -2677,65 +2698,72 @@ void Game::GenerateStockItems()
 	// food seller
 	if(IS_SET(city.flags, City::HaveFoodSeller))
 	{
+		int chance, extra;
+		if(extra_stock)
+		{
+			chance = 3;
+			extra = 50;
+		}
+		else
+		{
+			chance = 4;
+			extra = 0;
+		}
 		chest_food_seller.clear();
 		const ItemList* lis = ItemList::Get("food_and_drink").lis;
 		for(const Item* item : lis->items)
 		{
-			uint value = Random(50, 100);
+			uint value = Random(50, 100) + extra;
 			if(!is_city)
 				value /= 2;
 			InsertItemBare(chest_food_seller, item, value / item->value);
 		}
-		if(Rand() % 4 == 0)
+		if(Rand() % chance == 0)
 			InsertItemBare(chest_food_seller, Item::Get("frying_pan"));
-		if(Rand() % 4 == 0)
+		if(Rand() % chance == 0)
 			InsertItemBare(chest_food_seller, Item::Get("ladle"));
 		SortItems(chest_food_seller);
 	}
 }
 
-void Game::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit)
+void Game::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit, bool extra_stock)
 {
-	const Item* item;
 	items.clear();
-	InsertItemBare(items, Item::Get("p_nreg"), Random(5, 10));
-	InsertItemBare(items, Item::Get("p_hp"), Random(5, 10));
-	for(int i = 0, ile = Random(15, 20); i < ile; ++i)
+	InsertItemBare(items, Item::Get("p_nreg"), extra_stock ? Random(7, 15) : Random(5, 10));
+	InsertItemBare(items, Item::Get("p_hp"), extra_stock ? Random(7, 15) : Random(5, 10));
+
+	int extra = 0;
+	if(extra_stock)
+	{
+		InsertItemBare(items, Item::Get("p_hp2"), Random(2, 5));
+		extra += 2;
+	}
+
+	for(int i = 0, count = (extra_stock ? Random(20, 25) : Random(15, 20)); i < count; ++i)
 	{
 		switch(Rand() % 6)
 		{
-		case 0: // broñ
-			while((item = Weapon::weapons[Rand() % Weapon::weapons.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
-				;
-			InsertItemBare(items, item);
+		case IT_WEAPON:
+			InsertRandomItem(items, Weapon::weapons, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
 			break;
-		case 1: // ³uk
-			while((item = Bow::bows[Rand() % Bow::bows.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
-				;
-			InsertItemBare(items, item);
+		case IT_BOW:
+			InsertRandomItem(items, Bow::bows, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
 			break;
-		case 2: // tarcza
-			while((item = Shield::shields[Rand() % Shield::shields.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
-				;
-			InsertItemBare(items, item);
+		case IT_SHIELD:
+			InsertRandomItem(items, Shield::shields, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
 			break;
-		case 3: // pancerz
-			while((item = Armor::armors[Rand() % Armor::armors.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
-				;
-			InsertItemBare(items, item);
+		case IT_ARMOR:
+			InsertRandomItem(items, Armor::armors, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
 			break;
-		case 4: // jadalne
-			while((item = Consumable::consumables[Rand() % Consumable::consumables.size()])->value > price_limit / 5 || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
-				;
-			InsertItemBare(items, item, Random(2, 5));
+		case IT_CONSUMABLE:
+			InsertRandomItem(items, Consumable::consumables, price_limit / 5, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT, Random(2, 5) + extra);
 			break;
-		case 5: // inne
-			while((item = OtherItem::others[Rand() % OtherItem::others.size()])->value > price_limit || IS_SET(item->flags, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT))
-				;
-			InsertItemBare(items, item);
+		case IT_OTHER:
+			InsertRandomItem(items, OtherItem::others, price_limit, ITEM_NOT_SHOP | ITEM_NOT_MERCHANT);
 			break;
 		}
 	}
+
 	SortItems(items);
 }
 
@@ -3923,7 +3951,8 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 				group_name = "merchant_guards";
 				ile = Random(2, 4);
 				poziom = Random(3, 8);
-				GenerateMerchantItems(chest_merchant, 1000);
+				bool extra_stock = Team.HavePerk(Perk::ExtraStock);
+				GenerateMerchantItems(chest_merchant, extra_stock ? 1500 : 1000, extra_stock);
 			}
 			break;
 		case 3: // bohaterowie

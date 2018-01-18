@@ -2,6 +2,8 @@
 
 struct Item;
 struct Unit;
+struct PlayerController;
+enum class Perk;
 
 struct TeamInfo
 {
@@ -38,14 +40,20 @@ public:
 	void Reset();
 	void Save(HANDLE file);
 	void SaveOnWorldmap(HANDLE file);
+	bool HavePerk(Perk perk);
+	void UpdateTeamTrader();
+	PlayerController* GetPlayer(int id);
 
 	vector<Unit*> members; // all team members
 	vector<Unit*> active_members; // team members that get gold (without quest units)
 	Unit* leader;
 	int team_gold; // not divided team gold
+	int trading_contract_skill, trading_contract_id;
 	bool crazies_attack, // team attacked by crazies on current level
 		free_recruit, // first hero joins for free if playing alone
-		is_bandit; // attacked npc, now npc's are aggresive
+		is_bandit, // attacked npc, now npc's are aggresive
+		free_merchant, // can sell items anywhere
+		master_merchant; // buy = sell price
 };
 
 extern TeamSingleton Team;

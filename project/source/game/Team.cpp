@@ -2,6 +2,8 @@
 #include "Core.h"
 #include "Team.h"
 #include "Unit.h"
+#include "Net.h"
+#include "Perk.h"
 
 TeamSingleton Team;
 
@@ -195,6 +197,10 @@ void TeamSingleton::Reset()
 	crazies_attack = false;
 	is_bandit = false;
 	free_recruit = true;
+	free_merchant = false;
+	master_merchant = false;
+	trading_contract_skill = -1;
+	trading_contract_id = -1;
 }
 
 void TeamSingleton::Save(HANDLE file)
@@ -228,4 +234,67 @@ void TeamSingleton::SaveOnWorldmap(HANDLE file)
 		unit->refid = (int)Unit::refid_table.size();
 		Unit::refid_table.push_back(unit);
 	}
+}
+
+bool TeamSingleton::HavePerk(Perk perk)
+{
+	for(auto member : members)
+	{
+		if(member->HavePerk(perk))
+			return true;
+	}
+	return false;
+}
+
+void TeamSingleton::UpdateTeamTrader()
+{
+	bool new_free_merchant = false,
+		new_master_merchant = false;
+	int new_trading_contract_skill = -1,
+		new_trading_contract_id = -1;
+
+	Unit* best_unit = nullptr;
+	for(auto unit : members)
+	{
+		if(unit->HavePerk(Perk::TradingContract))
+		{
+			int skill = unit->Get(Skill::HAGGLE);
+			if(skill > new_trading_contract_skill)
+			{
+				best_unit = unit;
+				new_trading_contract_skill = skill;
+			}
+
+			if(!new_free_merchant && unit->HavePerk(Perk::FreeMerchant))
+				new_free_merchant = true;
+			if(!new_master_merchant && unit->HavePerk(Perk::MasterMerchant))
+				new_master_merchant = true;
+		}
+	}
+
+	if(best_unit && best_unit->IsPlayer())
+		new_trading_contract_id = best_unit->player->id;
+
+	if(Net::IsServer() && (new_free_merchant != free_merchant || new_master_merchant != master_merchant
+		|| new_trading_contract_skill != trading_contract_skill || new_trading_contract_id != trading_contract_id))
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::UPDATE_TEAM_TRADER;
+	}
+
+	free_merchant = new_free_merchant;
+	master_merchant = new_master_merchant;
+	trading_contract_skill = new_trading_contract_skill;
+	trading_contract_id = new_trading_contract_id;
+}
+
+PlayerController* TeamSingleton::GetPlayer(int id)
+{
+	for(auto unit : active_members)
+	{
+		if(unit->IsPlayer() && unit->player->id == id)
+			return unit->player;
+	}
+
+	return nullptr;
 }

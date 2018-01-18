@@ -1302,7 +1302,7 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 			count = slot.count;
 			team_count = slot.team_count;
 		}
-		
+
 		GetItemString(text, item, game.pc->unit, (uint)count);
 		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
 		{
@@ -1314,7 +1314,7 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 		if(mode == TRADE_MY)
 		{
 			text += '\n';
-			int price = game.GetItemPrice(item, *game.pc->unit, false);
+			int price = game.GetItemPrice(item, *game.pc->unit, false, nullptr);
 			if(price == 0 || !game.CanBuySell(item))
 				text += txWontBuy;
 			else
@@ -1322,7 +1322,7 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 		}
 		else if(mode == TRADE_OTHER)
 		{
-			int price = game.GetItemPrice(item, *game.pc->unit, true);
+			int price = game.GetItemPrice(item, *game.pc->unit, true, nullptr);
 			text += '\n';
 			text += Format(txPrice, price);
 		}
@@ -1460,7 +1460,8 @@ void Inventory::OnSellItem(int id)
 void Inventory::BuyItem(int index, uint count)
 {
 	ItemSlot& slot = items->at(index);
-	int price = game.GetItemPrice(slot.item, *game.pc->unit, true) * count;
+	bool trading_contract;
+	int price = game.GetItemPrice(slot.item, *game.pc->unit, true, &trading_contract) * count;
 
 	if(price > game.pc->unit->gold)
 	{
@@ -1478,7 +1479,7 @@ void Inventory::BuyItem(int index, uint count)
 		// usuñ z³oto
 		game.pc->unit->gold -= price;
 		if(Net::IsLocal())
-			game.pc->Train(TrainWhat::Trade, (float)price, 0);
+			game.TrainTrade(*game.pc, price, trading_contract);
 		// dodaj przedmiot graczowi
 		if(!game.pc->unit->AddItem(slot.item, count, 0u))
 			UpdateGrid(true);
@@ -1521,8 +1522,9 @@ void Inventory::SellItem(int index, uint count)
 	// dodaj z³oto
 	if(Net::IsLocal())
 	{
-		int price = game.GetItemPrice(slot.item, *game.pc->unit, false);
-		game.pc->Train(TrainWhat::Trade, (float)price * count, 0);
+		bool trading_contract;
+		int price = game.GetItemPrice(slot.item, *game.pc->unit, false, &trading_contract);
+		game.TrainTrade(*game.pc, price * count, trading_contract);
 		if(team_count)
 			game.AddGold(price * team_count);
 		if(normal_count)
@@ -1569,10 +1571,11 @@ void Inventory::SellSlotItem(ITEM_SLOT slot)
 		game.PlaySound2d(game.sCoins);
 	}
 	// dodaj z³oto
-	int price = game.GetItemPrice(item, *game.pc->unit, false);
+	bool trading_contract;
+	int price = game.GetItemPrice(item, *game.pc->unit, false, &trading_contract);
 	unit->gold += price;
 	if(Net::IsLocal())
-		game.pc->Train(TrainWhat::Trade, (float)price, 0);
+		game.TrainTrade(*game.pc, price, trading_contract);
 	// dodaj przedmiot kupcowi
 	InsertItem(*unit->player->chest_trade, item, 1, 0);
 	UpdateGrid(false);
@@ -1964,7 +1967,8 @@ void Inventory::OnGiveItem(int id)
 
 	// dodaj
 	Unit* t = unit->player->action_unit;
-	int price = game.GetItemPrice(item, *game.pc->unit, false);
+	bool trading_contract;
+	int price = game.GetItemPrice(item, *game.pc->unit, false, &trading_contract);
 	switch(give_item_mode)
 	{
 	case 0: // kredyt
@@ -1978,7 +1982,7 @@ void Inventory::OnGiveItem(int id)
 		t->gold -= price;
 		unit->gold += price;
 		if(Net::IsLocal())
-			game.pc->Train(TrainWhat::Trade, (float)price, 0);
+			game.TrainTrade(*game.pc, price, trading_contract);
 		if(game.sound_volume)
 			game.PlaySound2d(game.sCoins);
 		break;

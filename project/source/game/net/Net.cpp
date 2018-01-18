@@ -2874,9 +2874,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						AddItem(unit, slot.item, (uint)count, team_count, false);
 						if(player.action == PlayerController::Action_Trade)
 						{
-							int price = GetItemPrice(slot.item, unit, true) * count;
+							bool trading_contract;
+							int price = GetItemPrice(slot.item, unit, true, &trading_contract) * count;
 							unit.gold -= price;
-							player.Train(TrainWhat::Trade, (float)price, 0);
+							TrainTrade(player, price, trading_contract);
 						}
 						else if(player.action == PlayerController::Action_ShareItems && slot.item->type == IT_CONSUMABLE
 							&& slot.item->ToConsumable().effect == E_HEAL)
@@ -2986,8 +2987,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					else if(player.action == PlayerController::Action_Trade)
 					{
 						InsertItem(*player.chest_trade, slot.item, count, team_count);
-						int price = GetItemPrice(slot.item, unit, false);
-						player.Train(TrainWhat::Trade, (float)price * count, 0);
+						bool trading_contract;
+						int price = GetItemPrice(slot.item, unit, false, &trading_contract);
+						TrainTrade(player, price * count, trading_contract);
 						if(team_count)
 							AddGold(price * team_count);
 						uint normal_count = count - team_count;
@@ -3009,12 +3011,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						else if(player.action == PlayerController::Action_GiveItems)
 						{
 							add_as_team = 0;
-							int price = GetItemPrice(slot.item, unit, false);
+							bool trading_contract;
+							int price = GetItemPrice(slot.item, unit, false, &trading_contract);
 							if(t->gold >= price)
 							{
 								t->gold -= price;
 								unit.gold += price;
-								player.Train(TrainWhat::Trade, (float)price, 0);
+								TrainTrade(player, price, trading_contract);
 							}
 							if(slot.item->type == IT_CONSUMABLE && slot.item->ToConsumable().effect == E_HEAL)
 								t->ai->have_potion = 2;
@@ -3053,7 +3056,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 
 					const Item*& slot = unit.slots[type];
-					int price = GetItemPrice(slot, unit, false);
+					bool trading_contract;
+					int price = GetItemPrice(slot, unit, false, &trading_contract);
 					// add new item
 					if(player.action == PlayerController::Action_LootChest)
 						AddItem(*player.action_chest, slot, 1u, 0u, false);
@@ -3063,7 +3067,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					{
 						InsertItem(*player.chest_trade, slot, 1u, 0u);
 						unit.gold += price;
-						player.Train(TrainWhat::Trade, (float)price, 0);
+						TrainTrade(player, price, trading_contract);
 					}
 					else
 					{
@@ -3075,7 +3079,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 								// sold for gold
 								player.action_unit->gold -= price;
 								unit.gold += price;
-								player.Train(TrainWhat::Trade, (float)price, 0);
+								TrainTrade(player, price, trading_contract);
 							}
 							UpdateUnitInventory(*player.action_unit);
 							NetChangePlayer& c = Add1(info.changes);
@@ -5226,6 +5230,12 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::REMOVE_OBSERVABLE_EFFECT:
 			stream.Write(c.unit->netid);
 			stream.Write(c.id);
+			break;
+		case NetChange::UPDATE_TEAM_TRADER:
+			stream.Write(Team.trading_contract_skill);
+			stream.Write(Team.trading_contract_id);
+			WriteBool(stream, Team.free_merchant);
+			WriteBool(stream, Team.master_merchant);
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -8458,6 +8468,26 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					if(!unit->RemoveObservableEffect(effect_netid))
 						StreamError("Update client: REMOVE_OBSERVABLE_EFFECT, missing effect %d for unit %d.", effect_netid, netid);
 				}
+			}
+			break;
+		 // update team trader values [int-skill, int-player id, bool-free merchant, bool-master merchant]
+		case NetChange::UPDATE_TEAM_TRADER:
+			{
+				int skill, id;
+				bool free_merchant, master_merchant;
+				if(!stream.Read(skill)
+					|| !stream.Read(id)
+					|| !ReadBool(stream, free_merchant)
+					|| !ReadBool(stream, master_merchant))
+				{
+					StreamError("Update client: Broken UPDATE_TEAM_TRADER.");
+					break;
+				}
+
+				Team.trading_contract_skill = skill;
+				Team.trading_contract_id = id;
+				Team.free_merchant = free_merchant;
+				Team.master_merchant = master_merchant;
 			}
 			break;
 		// invalid change

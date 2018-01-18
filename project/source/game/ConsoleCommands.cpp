@@ -2056,6 +2056,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					Msg("Natural healing: %g%%", FLT10(pc->unit->GetNaturalHealingMod() * 100));
 					Msg("Magic resistance: %g%%", FLT10((1.f - pc->unit->CalculateMagicResistance()) * 100));
 					Msg("Carry capacity: %g%%", FLT10(pc->unit->GetEffectModMultiply(EffectType::Carry) * 100));
+					Msg("Trading contract [skill:%d, player:%d, free:%d, master:%d]", Team.trading_contract_skill, Team.trading_contract_id,
+						Team.free_merchant, Team.master_merchant);
 					break;
 				default:
 					assert(0);

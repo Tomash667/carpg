@@ -2742,6 +2742,10 @@ void Game::PlayerYell(Unit& u)
 bool Game::CanBuySell(const Item* item)
 {
 	assert(item);
+
+	if(Team.free_merchant || pc->unit->HavePerk(Perk::FreeMerchant))
+		return true;
+
 	if(!trader_buy[item->type])
 	{
 		if(pc->action_unit->data->id == "food_seller")
@@ -2751,6 +2755,7 @@ bool Game::CanBuySell(const Item* item)
 		}
 		return false;
 	}
+
 	if(item->type == IT_CONSUMABLE)
 	{
 		if(pc->action_unit->data->id == "alchemist")
@@ -2764,6 +2769,7 @@ bool Game::CanBuySell(const Item* item)
 				return false;
 		}
 	}
+
 	return true;
 }
 

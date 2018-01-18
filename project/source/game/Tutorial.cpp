@@ -363,7 +363,7 @@ void Game::StartTutorial()
 	}
 
 	// przedmioty na handel
-	GenerateMerchantItems(chest_merchant, 500);
+	GenerateMerchantItems(chest_merchant, 500, false);
 
 	// go!
 	LoadResources("", false);
