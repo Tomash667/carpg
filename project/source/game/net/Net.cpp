@@ -8190,7 +8190,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		// game saved notification
 		case NetChange::GAME_SAVED:
 			AddMultiMsg(txGameSaved);
-			AddGameMsg2(txGameSaved, 1.f, GMS_GAME_SAVED);
+			AddGameMsg3(GMS_GAME_SAVED);
 			break;
 		// ai left team due too many team members
 		case NetChange::HERO_LEAVE:
@@ -9621,7 +9621,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					if(!stream.Read(count) || count == 0)
 						StreamError("Update single client: Broken ADD_PERK_POINT.");
 					else
-						AddGameMsg(Format(txAddedPerkPoint, count), 3.f);
+						AddGameMsg4(GMS_ADDED_PERK_POINT, -1, count);
 				}
 				break;
 			// run script result

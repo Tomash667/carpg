@@ -1530,7 +1530,7 @@ void Game::Quicksave(bool from_console)
 	if(SaveGameSlot(MAX_SAVE_SLOTS, txQuickSave))
 	{
 		if(!from_console)
-			AddGameMsg2(txGameSaved, 1.f, GMS_GAME_SAVED);
+			AddGameMsg3(GMS_GAME_SAVED);
 	}
 }
 

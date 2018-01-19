@@ -4,13 +4,13 @@
 #include "Control.h"
 
 //-----------------------------------------------------------------------------
-struct GameMsg
+struct GameMsg : public ObjectPoolProxy<GameMsg>
 {
-	string msg;
+	string msg, pattern;
 	float time, fade;
 	Vec2 pos;
 	Int2 size;
-	int type;
+	int type, id, value;
 };
 
 //-----------------------------------------------------------------------------
@@ -25,11 +25,12 @@ public:
 	void Reset();
 	void Save(FileWriter& f) const;
 	void Load(FileReader& f);
-	void AddMessage(cstring text, float time, int type);
+	GameMsg& AddMessage(cstring text, float time, int type);
 	void AddMessageIfNotExists(cstring text, float time, int type);
+	void AddOrUpdateMessageWithPattern(cstring pattern, int type, int id, int value, float time);
 
 private:
-	list<GameMsg> msgs;
+	vector<GameMsg*> msgs;
 	int msgs_h;
 	cstring txGamePausedBig;
 };

@@ -1003,10 +1003,7 @@ void PlayerController::AddPerkPoint(int count)
 		return;
 	perk_points += count;
 	if(is_local)
-	{
-		auto& game = Game::Get();
-		game.AddGameMsg(Format(game.txAddedPerkPoint, count), 3.f);
-	}
+		Game::Get().AddGameMsg4(GMS_ADDED_PERK_POINT, -1, count);
 	else
 	{
 		player_info->update_flags |= PlayerInfo::UF_PERK_POINTS;

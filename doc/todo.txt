@@ -2,8 +2,9 @@
 *** perks
 - changing armor while running have no effect on animation speed, same problem with slows/debuffs etc
 + GetItemPrice change tables
-+ ai buy/sell training player
-+ join messages before they disappear (Learning points +1) -> (Lerning points +2) for attrib/skill/pp
+? join messages before they disappear (Learning points +1) -> (Lerning points +2) for attrib/skill/pp
+	? save/load/upgrade
+	? test AddOrUpdateGameMessage when fading in/out
 ? food effect leak - unknown when
 ? PF_ASOCIAL
 ? perks

@@ -163,7 +163,10 @@ enum GMS
 	GMS_GAME_SAVED,
 	GMS_PICK_CHARACTER,
 	GMS_ADDED_ITEM,
-	GMS_TOO_COMPLICATED
+	GMS_TOO_COMPLICATED,
+	GMS_ADDED_PERK_POINT,
+	GMS_ATTRIBUTE_MOD,
+	GMS_SKILL_MOD
 };
 
 struct UnitWarpData
@@ -1134,6 +1137,7 @@ public:
 	void AddGameMsg(cstring msg, float time);
 	void AddGameMsg2(cstring msg, float time, int id = -1);
 	void AddGameMsg3(GMS id);
+	void AddGameMsg4(GMS id, int msg_id, int value);
 	int CalculateQuestReward(int gold);
 	void AddReward(int gold) { AddGold(CalculateQuestReward(gold), nullptr, true, txQuestCompletedGold, 4.f, false); }
 	void CreateCityMinimap();
