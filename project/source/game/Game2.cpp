@@ -21840,14 +21840,22 @@ int Game::GetItemPrice(const Item* item, Unit& unit, bool buy, bool* trading_con
 	return price;
 }
 
-void Game::TrainTrade(PlayerController& player, int value, bool trading_contract)
+void Game::TrainTrade(Unit& unit, int value, bool trading_contract)
 {
-	if(!trading_contract || player.id == Team.trading_contract_id)
-		player.Train(TrainWhat::Trade, (float)value, 0);
+	if(unit.IsPlayer())
+	{
+		if(!trading_contract || unit.player->id == Team.trading_contract_id)
+			unit.player->Train(TrainWhat::Trade, (float)value, 0);
+		else
+		{
+			unit.player->Train(TrainWhat::Trade, 0.5f * value, 0);
+			if(Team.trading_contract_id != -1)
+				Team.GetPlayer(Team.trading_contract_id)->Train(TrainWhat::Trade, 0.5f * value, 0);
+		}
+	}
 	else
 	{
-		player.Train(TrainWhat::Trade, 0.5f * value, 0);
-		if(Team.trading_contract_id != -1)
+		if(trading_contract && Team.trading_contract_id != -1)
 			Team.GetPlayer(Team.trading_contract_id)->Train(TrainWhat::Trade, 0.5f * value, 0);
 	}
 }

@@ -3,6 +3,7 @@
 - changing armor while running have no effect on animation speed, same problem with slows/debuffs etc
 + GetItemPrice change tables
 + ai buy/sell training player
++ join messages before they disappear (Learning points +1) -> (Lerning points +2) for attrib/skill/pp
 ? food effect leak - unknown when
 ? PF_ASOCIAL
 ? perks
@@ -10,7 +11,7 @@
 	medium/heavy armor adaptation
 	better/worse items - poor/very wealthy/filthy rich
 	defensive combat style
-	extra stock, free merchant, master merchant
+	trading contract, extra stock, free merchant, master merchant
 ? perk flags after save/load/travel
 + perk points
 	+ gained by heroes every 3 levels
@@ -29,7 +30,6 @@
 	educated
 	charming
 	leadership
-	trading contract, 
 	basher
 	shield prof, shielder, battle shielder, magic shielder
 	heavy armor adaptation weight

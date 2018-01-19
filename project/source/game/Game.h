@@ -931,7 +931,7 @@ public:
 
 	void BuildTmpInventory(int index);
 	int GetItemPrice(const Item* item, Unit& unit, bool buy, bool* trading_contract);
-	void TrainTrade(PlayerController& player, int value, bool trading_contract);
+	void TrainTrade(Unit& unit, int value, bool trading_contract);
 
 	enum class BREAK_ACTION_MODE
 	{

@@ -470,25 +470,28 @@ void Game::BuyTeamItems()
 		if(u.IsPlayer())
 			continue;
 
-		// sprzedaj stare przedmioty, policz miksturki
-		int ile_hp = 0, ile_hp2 = 0, ile_hp3 = 0;
+		// sell old items, count potions
+		int count_hp = 0, count_hp2 = 0, count_hp3 = 0;
 		for(vector<ItemSlot>::iterator it2 = u.items.begin(), end2 = u.items.end(); it2 != end2;)
 		{
 			assert(it2->item);
 			if(it2->item->type == IT_CONSUMABLE)
 			{
 				if(it2->item == hp1)
-					ile_hp += it2->count;
+					count_hp += it2->count;
 				else if(it2->item == hp2)
-					ile_hp2 += it2->count;
+					count_hp2 += it2->count;
 				else if(it2->item == hp3)
-					ile_hp3 += it2->count;
+					count_hp3 += it2->count;
 				++it2;
 			}
 			else if(it2->item->IsWearable() && it2->team_count == 0)
 			{
 				u.weight -= it2->item->weight;
-				u.gold += it2->item->value / 2;
+				bool trading_contract;
+				int value = GetItemPrice(it2->item, u, false, &trading_contract);
+				TrainTrade(u, value, trading_contract);
+				u.gold += value;
 				if(it2 + 1 == end2)
 				{
 					u.items.pop_back();
@@ -504,7 +507,8 @@ void Game::BuyTeamItems()
 				++it2;
 		}
 
-		// kup miksturki
+		// buy potions
+		// ai buys them for half price or they would walk naked
 		int p1, p2, p3;
 		if(u.level < 4)
 		{
@@ -537,108 +541,146 @@ void Game::BuyTeamItems()
 			p3 = 4;
 		}
 
-		while(ile_hp3 < p3 && u.gold >= hp3->value / 2)
+		bool trading_contract;
+		int price = GetItemPrice(hp3, u, true, &trading_contract) / 2;
+		int to_buy = min(u.gold / price, p3 - count_hp3);
+		if(to_buy > 0)
 		{
-			u.AddItem(hp3, 1, false);
-			u.gold -= hp3->value / 2;
-			++ile_hp3;
-		}
-		while(ile_hp2 < p2 && u.gold >= hp2->value / 2)
-		{
-			u.AddItem(hp2, 1, false);
-			u.gold -= hp2->value / 2;
-			++ile_hp2;
-		}
-		while(ile_hp < p1 && u.gold >= hp1->value / 2)
-		{
-			u.AddItem(hp1, 1, false);
-			u.gold -= hp1->value / 2;
-			++ile_hp;
+			u.AddItem(hp3, to_buy, false);
+			u.gold -= price * to_buy;
+			TrainTrade(u, price * to_buy, trading_contract);
+			count_hp3 += to_buy;
 		}
 
-		// darmowe miksturki dla biedaków
-		int ile = p1 / 2 - ile_hp;
-		if(ile > 0)
-			u.AddItem(hp1, (uint)ile, false);
-		ile = p2 / 2 - ile_hp2;
-		if(ile > 0)
-			u.AddItem(hp2, (uint)ile, false);
-		ile = p3 / 2 - ile_hp3;
-		if(ile > 0)
-			u.AddItem(hp3, (uint)ile, false);
+		price = GetItemPrice(hp2, u, true, &trading_contract) / 2;
+		to_buy = min(u.gold / price, p2 - count_hp2);
+		if(to_buy > 0)
+		{
+			u.AddItem(hp2, to_buy, false);
+			u.gold -= price * to_buy;
+			TrainTrade(u, price * to_buy, trading_contract);
+			count_hp2 += to_buy;
+		}
 
-		// kup przedmioty
+		price = GetItemPrice(hp1, u, true, &trading_contract) / 2;
+		to_buy = min(u.gold / price, p2 - count_hp);
+		if(to_buy > 0)
+		{
+			u.AddItem(hp1, to_buy, false);
+			u.gold -= price * to_buy;
+			TrainTrade(u, price * to_buy, trading_contract);
+			count_hp += to_buy;
+		}
+
+		// free potions for the poor
+		int count = p1 / 2 - count_hp;
+		if(count > 0)
+			u.AddItem(hp1, (uint)count, false);
+		count = p2 / 2 - count_hp2;
+		if(count > 0)
+			u.AddItem(hp2, (uint)count, false);
+		count = p3 / 2 - count_hp3;
+		if(count > 0)
+			u.AddItem(hp3, (uint)count, false);
+
+		// buy items
 		const ItemList* lis = ItemList::Get("base_items").lis;
-		// kup broñ
+
+		// buy weapon
 		if(!u.HaveWeapon())
-			u.AddItem(UnitHelper::GetBaseWeapon(u, lis));
+			u.AddItem(UnitHelper::GetBaseWeapon(u, lis)); // free weapon when have none
 		else
 		{
 			const Item* weapon = u.slots[SLOT_WEAPON];
 			while(true)
 			{
 				const Item* item = GetBetterItem(weapon);
-				if(item && u.gold >= item->value)
+				if(!item)
+					break;
+
+				bool trading_contract;
+				int price = GetItemPrice(item, u, true, &trading_contract);
+				if(u.gold < price)
+					break;
+
+				if(u.IsBetterWeapon(item->ToWeapon()))
 				{
-					if(u.IsBetterWeapon(item->ToWeapon()))
-					{
-						u.AddItem(item, 1, false);
-						u.gold -= item->value;
-						break;
-					}
-					else
-						weapon = item;
+					u.AddItem(item, 1, false);
+					u.gold -= price;
+					TrainTrade(u, price, trading_contract);
+					break;
 				}
 				else
-					break;
+					weapon = item;
 			}
 		}
 
-		// kup ³uk
+		// buy bow
 		const Item* item;
 		if(!u.HaveBow())
 			item = UnitHelper::GetBaseBow(lis);
 		else
 			item = GetBetterItem(&u.GetBow());
-		if(item && u.gold >= item->value)
+		if(item)
 		{
-			u.AddItem(item, 1, false);
-			u.gold -= item->value;
+			bool trading_contract;
+			int price = GetItemPrice(item, u, true, &trading_contract);
+			if(u.gold >= price)
+			{
+				u.AddItem(item, 1, false);
+				u.gold -= price;
+				TrainTrade(u, price, trading_contract);
+			}
 		}
 
-		// kup pancerz
+		// buy armor
 		if(!u.HaveArmor())
 			item = UnitHelper::GetBaseArmor(u, lis);
 		else
 			item = GetBetterItem(&u.GetArmor());
-		if(item && u.gold >= item->value && u.IsBetterArmor(item->ToArmor()))
+		if(item)
 		{
-			u.AddItem(item, 1, false);
-			u.gold -= item->value;
+			bool trading_contract;
+			int price = GetItemPrice(item, u, true, &trading_contract);
+			if(u.gold >= price)
+			{
+				u.AddItem(item, 1, false);
+				u.gold -= price;
+				TrainTrade(u, price, trading_contract);
+			}
 		}
 
-		// kup tarcze
+		// buy shield
 		if(!u.HaveShield())
 			item = UnitHelper::GetBaseShield(lis);
 		else
 			item = GetBetterItem(&u.GetShield());
-		if(item && u.gold >= item->value)
+		if(item)
 		{
-			u.AddItem(item, 1, false);
-			u.gold -= item->value;
+			bool trading_contract;
+			int price = GetItemPrice(item, u, true, &trading_contract);
+			if(u.gold >= price)
+			{
+				u.AddItem(item, 1, false);
+				u.gold -= price;
+				TrainTrade(u, price, trading_contract);
+			}
 		}
 
-		// za³ó¿ nowe przedmioty
+		// equip new items
 		UpdateUnitInventory(u, false);
 		u.ai->have_potion = 2;
 
-		// sprzedaj stare przedmioty
+		// sell old items
 		for(vector<ItemSlot>::iterator it2 = u.items.begin(), end2 = u.items.end(); it2 != end2;)
 		{
 			if(it2->item && it2->item->type != IT_CONSUMABLE && it2->item->IsWearable() && it2->team_count == 0)
 			{
+				bool trading_contract;
+				int price = GetItemPrice(item, u, false, &trading_contract);
 				u.weight -= it2->item->weight;
-				u.gold += it2->item->value / 2;
+				u.gold += price;
+				TrainTrade(u, price, trading_contract);
 				if(it2 + 1 == end2)
 				{
 					u.items.pop_back();
@@ -657,12 +699,13 @@ void Game::BuyTeamItems()
 
 	// buying potions by old mage
 	if(quest_mages2->scholar
-		&& In(quest_mages2->mages_state, { Quest_Mages2::State::MageRecruited, Quest_Mages2::State::OldMageJoined, Quest_Mages2::State::OldMageRemembers, Quest_Mages2::State::BuyPotion }))
+		&& In(quest_mages2->mages_state, { Quest_Mages2::State::MageRecruited, Quest_Mages2::State::OldMageJoined, Quest_Mages2::State::OldMageRemembers,
+			Quest_Mages2::State::BuyPotion }))
 	{
-		int ile = max(0, 3 - quest_mages2->scholar->CountItem(hp2));
-		if(ile)
+		int count = max(0, 3 - quest_mages2->scholar->CountItem(hp2));
+		if(count)
 		{
-			quest_mages2->scholar->AddItem(hp2, ile, false);
+			quest_mages2->scholar->AddItem(hp2, count, false);
 			quest_mages2->scholar->ai->have_potion = 2;
 		}
 	}
@@ -670,36 +713,36 @@ void Game::BuyTeamItems()
 	// buying potions by orc
 	if(quest_orcs2->orc && (quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || quest_orcs2->orcs_state >= Quest_Orcs2::State::CompletedJoined))
 	{
-		int ile1, ile2;
+		int count1, count2;
 		switch(quest_orcs2->GetOrcClass())
 		{
 		case Quest_Orcs2::OrcClass::None:
-			ile1 = 6;
-			ile2 = 0;
+			count1 = 6;
+			count2 = 0;
 			break;
 		case Quest_Orcs2::OrcClass::Shaman:
-			ile1 = 6;
-			ile2 = 1;
+			count1 = 6;
+			count2 = 1;
 			break;
 		case Quest_Orcs2::OrcClass::Hunter:
-			ile1 = 6;
-			ile2 = 2;
+			count1 = 6;
+			count2 = 2;
 			break;
 		case Quest_Orcs2::OrcClass::Warrior:
-			ile1 = 7;
-			ile2 = 3;
+			count1 = 7;
+			count2 = 3;
 			break;
 		}
 
-		int ile = max(0, ile1 - quest_orcs2->orc->CountItem(hp2));
-		if(ile)
-			quest_orcs2->orc->AddItem(hp2, ile, false);
+		int count = max(0, count1 - quest_orcs2->orc->CountItem(hp2));
+		if(count)
+			quest_orcs2->orc->AddItem(hp2, count, false);
 
-		if(ile2)
+		if(count2)
 		{
-			ile = max(0, ile2 - quest_orcs2->orc->CountItem(hp3));
-			if(ile)
-				quest_orcs2->orc->AddItem(hp3, ile, false);
+			count = max(0, count2 - quest_orcs2->orc->CountItem(hp3));
+			if(count)
+				quest_orcs2->orc->AddItem(hp3, count, false);
 		}
 
 		quest_orcs2->orc->ai->have_potion = 2;
@@ -712,10 +755,10 @@ void Game::BuyTeamItems()
 
 		if(u)
 		{
-			int ile = max(0, 5 - u->CountItem(hp2));
-			if(ile)
+			int count = max(0, 5 - u->CountItem(hp2));
+			if(count)
 			{
-				u->AddItem(hp2, ile, false);
+				u->AddItem(hp2, count, false);
 				u->ai->have_potion = 2;
 			}
 		}
@@ -825,11 +868,13 @@ void Game::CheckUnitOverload(Unit& unit)
 		ItemToSell& to_sell = items_to_sell.back();
 		ItemSlot& slot = unit.items[to_sell.index];
 		__assume(slot.item != nullptr);
-		int price = GetItemPrice(slot.item, unit, false);
+		bool trading_contract;
+		int price = GetItemPrice(slot.item, unit, false, &trading_contract);
 		if(slot.team_count == 0)
 			unit.gold += price;
 		else
 			team_gold += price;
+		TrainTrade(unit, price, trading_contract);
 		unit.weight -= slot.item->weight;
 		slot.item = nullptr;
 		items_to_sell.pop_back();
