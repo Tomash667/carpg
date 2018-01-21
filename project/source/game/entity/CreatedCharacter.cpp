@@ -226,7 +226,7 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	PerkContext ctx(&pc);
 	for(TakenPerk& tp : taken_perks)
 		tp.Apply(ctx);
-	pc.perk_points = perks_max - perks;
+	pc.perk_points = perks;
 
 	// set stats
 	for(int i = 0; i < (int)Attribute::MAX; ++i)

@@ -71,8 +71,7 @@ enum CMD
 	CMD_REMOVE_EFFECT,
 	CMD_LIST_STATS,
 
-	CMD_MAX,
-	CMD_VAR
+	CMD_MAX
 };
 
 //-----------------------------------------------------------------------------
@@ -133,28 +132,27 @@ struct ConsoleCommand
 	{
 		assert(name && desc);
 	}
-	ConsoleCommand(bool* var, cstring name, cstring desc, int flags, VoidF changed = nullptr) : cmd(CMD_VAR), var(var), name(name), desc(desc), flags(flags),
-		type(VAR_BOOL), changed(changed)
+	ConsoleCommand(bool* var, cstring name, cstring desc, int flags, VoidF changed = nullptr) : var(var), name(name), desc(desc), flags(flags), type(VAR_BOOL),
+		changed(changed)
 	{
 		assert(name && desc && var);
 	}
-	ConsoleCommand(int* var, cstring name, cstring desc, int flags, int _min = INT_MIN, int _max = INT_MAX, VoidF changed = nullptr) : cmd(CMD_VAR), var(var),
-		name(name), desc(desc), flags(flags), type(VAR_INT),
-		changed(changed)
+	ConsoleCommand(int* var, cstring name, cstring desc, int flags, int _min = INT_MIN, int _max = INT_MAX, VoidF changed = nullptr) : var(var), name(name), desc(desc),
+		flags(flags), type(VAR_INT), changed(changed)
 	{
 		assert(name && desc && var);
 		_int.x = _min;
 		_int.y = _max;
 	}
-	ConsoleCommand(uint* var, cstring name, cstring desc, int flags, uint _min = 0, uint _max = UINT_MAX) : cmd(CMD_VAR), var(var), name(name), desc(desc),
-		flags(flags), type(VAR_UINT)
+	ConsoleCommand(uint* var, cstring name, cstring desc, int flags, uint _min = 0, uint _max = UINT_MAX) : var(var), name(name), desc(desc), flags(flags),
+		type(VAR_UINT)
 	{
 		assert(name && desc && var);
 		_uint.x = _min;
 		_uint.y = _max;
 	}
-	ConsoleCommand(float* var, cstring name, cstring desc, int flags, float _min = -Inf(), float _max = Inf()) : cmd(CMD_VAR), var(var), name(name),
-		desc(desc), flags(flags), type(VAR_FLOAT)
+	ConsoleCommand(float* var, cstring name, cstring desc, int flags, float _min = -Inf(), float _max = Inf()) : var(var), name(name), desc(desc), flags(flags),
+		type(VAR_FLOAT)
 	{
 		assert(name && desc && var);
 		_float.x = _min;

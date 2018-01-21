@@ -12,6 +12,12 @@ GameMessages::GameMessages()
 }
 
 //=================================================================================================
+GameMessages::~GameMessages()
+{
+	GameMsg::Free(msgs);
+}
+
+//=================================================================================================
 void GameMessages::Draw(ControlDrawData*)
 {
 	for(auto p_msg : msgs)
@@ -57,6 +63,7 @@ void GameMessages::Update(float dt)
 			if(m.fade < -0.1f)
 			{
 				msgs_h -= m.size.y;
+				m.Free();
 				it = msgs.erase(it);
 				end = msgs.end();
 				if(it == end)

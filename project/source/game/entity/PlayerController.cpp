@@ -1001,7 +1001,15 @@ void PlayerController::AddPerkPoint(int count)
 {
 	if(count <= 0)
 		return;
+
+	if(Net::IsClient())
+	{
+		Game::Get().AddGameMsg4(GMS_ADDED_PERK_POINT, -1, count);
+		return;
+	}
+
 	perk_points += count;
+	
 	if(is_local)
 		Game::Get().AddGameMsg4(GMS_ADDED_PERK_POINT, -1, count);
 	else

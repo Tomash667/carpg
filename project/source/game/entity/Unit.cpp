@@ -3052,7 +3052,7 @@ float Unit::CalculateMobility(const Armor* armor) const
 		}
 		else if(armor->skill == Skill::HEAVY_ARMOR)
 		{
-			if(HavePerk(Perk::MediumArmorAdjustment))
+			if(HavePerk(Perk::HeavyArmorAdjustment))
 				armor_mobility += 10;
 		}
 		int skill = min(Get(armor->skill), 100);

@@ -118,7 +118,7 @@ PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	// heavy armor
 	PerkInfo(Perk::HeavyArmorProficiency, "heavy_armor_proficiency", 0),
 	PerkInfo(Perk::HeavyArmorAdjustment, "heavy_armor_adjustment", 0),
-	PerkInfo(Perk::HeavyArmorExpert, "heavy_armor_expert", 0, Perk::HeavyArmorAdjustment),
+	PerkInfo(Perk::HeavyArmorExpert, "heavy_armor_expert", 0, Perk::HeavyArmorProficiency),
 	PerkInfo(Perk::HeavyArmorMaster, "heavy_armor_master", 0),
 	// athletics
 	PerkInfo(Perk::HealthyDiet, "healthy_diet", 0),

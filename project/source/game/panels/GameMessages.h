@@ -18,6 +18,7 @@ class GameMessages : public Control
 {
 public:
 	GameMessages();
+	~GameMessages();
 
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Update(float dt) override;

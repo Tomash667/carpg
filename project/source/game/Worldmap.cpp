@@ -2605,7 +2605,6 @@ void Game::GenerateStockItems()
 	assert(loc.type == L_CITY);
 
 	City& city = (City&)loc;
-	const Item* item;
 	int price_limit, price_limit2, count_mod;
 	bool is_city;
 	bool extra_stock = Team.HavePerk(Perk::ExtraStock);

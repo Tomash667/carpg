@@ -2,24 +2,18 @@
 *** perks
 - changing armor while running have no effect on animation speed, same problem with slows/debuffs etc
 + GetItemPrice change tables
-? join messages before they disappear (Learning points +1) -> (Lerning points +2) for attrib/skill/pp
-	? save/load/upgrade
-	? test AddOrUpdateGameMessage when fading in/out
++ set player id to 0 when loading
 ? food effect leak - unknown when
-? PF_ASOCIAL
 ? perks
-	light/medium/heavy armor prof/expert
-	medium/heavy armor adaptation
-	better/worse items - poor/very wealthy/filthy rich
-	defensive combat style
 	trading contract, extra stock, free merchant, master merchant
 ? perk flags after save/load/travel
 + perk points
 	+ gained by heroes every 3 levels
-	? every two levels for players
-	? set initial value
 	? extra perk after winning tournament (only once)
 	+ extra perks after finishing important quest
+	? MP
+		? every two levels for players
+		? set initial value
 + subprofile perks
 + training perks
 + use subprofiles in creating random char
@@ -46,6 +40,7 @@
 	? add_perk, remove_perk, list_perks in MP
 	? can take perk master when have expert
 	? perk_flags after new game, load, after upgrade, after new game/travel/load in MP
+	? all perks in MP
 	? trade perks in MP
 ! changelog
 	+ new commands, list types
@@ -104,6 +99,7 @@ hitting menequin, shield (show damage)
 	- increased skill/attribute require higher attribute to level up
 	- rescale food/potions healing values
 	- fix stamina values, use stamina when running ?
+	- poor/very wealthy/filthy rich has not much of effect on better equipment now
 ? test all traps with 2 clients, log playing sounds for all players
 ! undo FastFunc changes, use new delegates ?
 

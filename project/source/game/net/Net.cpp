@@ -9621,7 +9621,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					if(!stream.Read(count) || count == 0)
 						StreamError("Update single client: Broken ADD_PERK_POINT.");
 					else
-						AddGameMsg4(GMS_ADDED_PERK_POINT, -1, count);
+						pc->AddPerkPoint(count);
 				}
 				break;
 			// run script result
