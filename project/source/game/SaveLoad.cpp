@@ -969,6 +969,8 @@ void Game::LoadGame(HANDLE file)
 	Unit* player;
 	f >> player;
 	pc = player->player;
+	if(!mp_load)
+		pc->id = 0;
 	cam.real_rot.x = pc->unit->rot;
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;

@@ -294,7 +294,7 @@ public:
 			res_mgr.LoadMeshMetadata(mesh);
 		}
 	};
-	
+
 	//-----------------------------------------------------------------------------
 	// Texture type manager
 	template<>
@@ -438,7 +438,7 @@ public:
 	bool HaveTasks() const { return !tasks.empty(); }
 	int GetLoadTasksCount() const { return to_load; }
 	bool IsLoadScreen() const { return mode != Mode::Instant; }
-	
+
 	template<typename T>
 	TypeManager<T> For()
 	{
@@ -466,7 +466,7 @@ private:
 	void UpdateLoadScreen();
 	void TickLoadScreen();
 	void ReleaseMutex();
-	
+
 	Resource* AddResource(cstring filename, cstring path);
 	Resource* CreateResource(ResourceType type);
 	Resource* TryGetResource(const AnyString& filename, ResourceType type);

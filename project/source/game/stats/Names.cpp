@@ -8,28 +8,6 @@ cstring txNameFrom, txNameSonOf, txNameSonOfPost, txNameSonOfInvalid, txNamePref
 vector<string> name_random, nickname_random, crazy_name;
 
 //=================================================================================================
-void LoadStrArray(vector<cstring>& items, cstring name)
-{
-	assert(name);
-
-	cstring scount = StrT(Format("%s_count", name), false);
-	if(!scount)
-		goto err;
-	int count = atoi(scount);
-	if(count <= 0)
-		goto err;
-
-	items.resize(count);
-	for(int i = 0; i < count; ++i)
-		items[i] = Str(Format("%s%d", name, i));
-	return;
-
-err:
-	Error("Missing texts for array '%s'.", name);
-	items.push_back("!MissingArray!");
-}
-
-//=================================================================================================
 void Game::SetHeroNames()
 {
 	txNameFrom = Str("name_from");
@@ -42,28 +20,28 @@ void Game::SetHeroNames()
 //=================================================================================================
 void Game::GenerateHeroName(HeroData& hero)
 {
-	return GenerateHeroName(hero.clas, IS_SET(hero.unit->data->flags, F_CRAZY), hero.name);
+	GenerateHeroName(hero.clas, IS_SET(hero.unit->data->flags, F_CRAZY), hero.name);
 }
 
 //=================================================================================================
-void Game::GenerateHeroName(Class clas, bool szalony, string& hero_name)
+void Game::GenerateHeroName(int clas, bool crazy, string& hero_name)
 {
-	if(szalony)
+	if(crazy)
 	{
 		hero_name = random_item(crazy_name);
 		return;
 	}
 
-	ClassInfo& ci = ClassInfo::classes[(int)clas];
+	Class& c = *Class::classes[clas];
 	if(Rand() % 2 == 0)
-		hero_name = random_item(ci.names);
+		hero_name = random_item(c.names);
 	else
 		hero_name = random_item(name_random);
 
 	hero_name += " ";
 
-	int co = Rand() % 7;
-	if(co == 0)
+	int type = Rand() % 7;
+	if(type == 0)
 	{
 		cstring kto;
 		if(txNameSonOfInvalid[0])
@@ -79,15 +57,15 @@ void Game::GenerateHeroName(Class clas, bool szalony, string& hero_name)
 		hero_name += kto;
 		hero_name += txNameSonOfPost;
 	}
-	else if(co == 1 && !locations.empty())
+	else if(type == 1 && !locations.empty())
 	{
 		hero_name += txNameFrom;
 		hero_name += locations[Rand() % settlements]->name;
 	}
-	else if(InRange(co, 2, 5))
+	else if(InRange(type, 2, 5))
 	{
 		hero_name += txNamePrefix;
-		hero_name += random_item(ci.nicknames);
+		hero_name += random_item(c.nicknames);
 	}
 	else
 	{

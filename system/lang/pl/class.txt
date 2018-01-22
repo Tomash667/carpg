@@ -48,3 +48,8 @@ class warrior {
 	desc "Bieg³y zbrojny, mo¿e u¿ywaæ dowolnej broni, tarczy i pancerza. Preferuje walkê w zwarciu. Mo¿e specjalizowaæ siê w okreœlonej broni.\n\nSpecjalna akcja: Bycza szar¿a"
 	about "Jestem wojownikiem. Zarabiam zabijaj¹c potwory, bandytów i inne œcierwo. Polegam g³ównie na broni do walki wrêcz, ciê¿kim pancerzu i tarczy."
 }
+class merchant {
+	name "Wêdrowny kupiec"
+	desc ""
+	about ""
+}

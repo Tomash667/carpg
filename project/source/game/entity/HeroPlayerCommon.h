@@ -11,7 +11,7 @@ struct Unit;
 struct HeroPlayerCommon
 {
 	Unit* unit;
-	Class clas;
+	int clas;
 	string name;
 	int credit;
 	bool on_credit;

@@ -184,6 +184,27 @@ nickname mage {
 	"Hydromag"
 }
 
+name merchant {
+	"Marco"
+	"Cleon"
+	"Marcus"
+	"Helgi"
+	"Gilbert"
+	"Adornes"
+}
+
+nickname merchant {
+	"Sk¹py"
+	"Sknerus"
+	"Sknera"
+	"Z³oty"
+	"Srebrny"
+	"Miedziany"
+	"Bogaty"
+	"Kupiec"
+	"Dusigrosz"
+}
+
 name crazy {
 	"Xio Xio"
 	"Ao"

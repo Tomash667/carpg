@@ -1185,6 +1185,71 @@ idles spider {
 	"idle"
 }
 
+// *********** LIST OF INGAME CLASSES ************
+// ! ADD NEW CLASSES AT END - ORDER IS IMPORTANT !
+// ***********************************************
+
+class barbarian {
+	pickable false
+	icon "icon_barbarian.png"
+}
+
+class bard {
+	pickable false
+	icon "icon_bard.png"
+}
+
+class cleric {
+	pickable false
+	icon "icon_cleric.png"
+}
+
+class druid {
+	pickable false
+	icon "icon_druid.png"
+}
+
+class hunter {
+	pickable true
+	unit "base_hunter"
+	icon "icon_hunter.png"
+	action "summon_wolf"
+}
+
+class mage {
+	pickable false
+	icon "icon_mage.png"
+}
+
+class monk {
+	pickable false
+	icon "icon_monk.png"
+}
+
+class paladin {
+	pickable false
+	icon "icon_paladin.png"
+}
+
+class rogue {
+	pickable true
+	unit "base_rogue"
+	icon "icon_rogue.png"
+	action "dash"
+}
+
+class warrior {
+	pickable true
+	unit "base_warrior"
+	icon "icon_warrior.png"
+	action "bull_charge"
+}
+
+class merchant {
+	pickable false
+	icon "icon_merchant.png"
+}
+
 //------------------------------------------------------------------------------
 // BASE PLAYER UNITS
 //------------------------------------------------------------------------------
@@ -1216,6 +1281,7 @@ unit base_warrior : base_human {
 	}
 	gold 85
 	group player
+	class warrior
 }
 
 unit base_hunter : base_human {
@@ -1226,6 +1292,7 @@ unit base_hunter : base_human {
 	}
 	gold 60
 	group player
+	class hunter
 }
 
 unit base_rogue : base_human {
@@ -1237,6 +1304,7 @@ unit base_rogue : base_human {
 	}
 	gold 100
 	group player
+	class rogue
 }
 
 //------------------------------------------------------------------------------
@@ -1442,7 +1510,7 @@ unit viewer : base_human {
 unit captive : base_human {
 	level {1 5}
 	profile commoner
-	flags | {ai_wanders hero specific_name no_class}
+	flags | {ai_wanders hero specific_name}
 	items {
 		if chance 40
 			random {al_clothes3 al_clothes3b}
@@ -1587,6 +1655,7 @@ unit q_magowie_stary : base_human {
 	gold {{15 30}{150 300}}
 	spells mage
 	dialog q_mages2
+	class mage
 }
 
 unit q_orkowie_straznik : base_human {
@@ -1625,13 +1694,13 @@ unit friendly_orc : base_orc {
 }
 
 unit base_gorush : friendly_orc {
-	flags | {hero ai_train specific_name class_flag tournament}
+	flags | {hero ai_train specific_name tournament}
 	gold {{5 20}{10 30}}
 }
 
 unit q_orkowie_gorush : base_gorush {
 	level 5
-	flags | {warrior contest_50}
+	flags | contest_50
 	items {
 		p_hp
 		al_orc
@@ -1640,6 +1709,7 @@ unit q_orkowie_gorush : base_gorush {
 		bow_short
 		random 0 2 !orc_food
 	}
+	class warrior
 }
 
 unit q_orkowie_gorush_woj : base_gorush {
@@ -1667,7 +1737,7 @@ unit q_orkowie_gorush_woj : base_gorush {
 		athletics 15
 	}
 	def 15
-	flags | {warrior melee contest sit_on_throne}
+	flags | {melee contest sit_on_throne}
 	items {
 		p_hp2
 		am_orc
@@ -1676,6 +1746,7 @@ unit q_orkowie_gorush_woj : base_gorush {
 		bow_long
 		random 3 5 !orc_food
 	}
+	class warrior
 }
 
 unit q_orkowie_gorush_lowca : base_gorush {
@@ -1702,7 +1773,7 @@ unit q_orkowie_gorush_lowca : base_gorush {
 		athletics 10
 	}
 	def 10
-	flags | {archer hunter contest_50 sit_on_throne}
+	flags | {archer contest_50 sit_on_throne}
 	items {
 		p_hp2
 		bow_composite
@@ -1711,12 +1782,13 @@ unit q_orkowie_gorush_lowca : base_gorush {
 		al_orc
 		random 3 5 !orc_food
 	}
+	class hunter
 }
 
 unit q_orkowie_gorush_szaman : base_gorush {
 	level 10
 	profile shaman
-	flags | {mage sit_on_throne}
+	flags | sit_on_throne
 	items {
 		p_hp
 		al_orc_shaman
@@ -1726,6 +1798,7 @@ unit q_orkowie_gorush_szaman : base_gorush {
 	}
 	spells orc_shaman
 	tex orc_shaman
+	class mage
 }
 
 unit q_orkowie_slaby : friendly_orc {
@@ -2640,6 +2713,69 @@ unit hero_rogue : base_hero {
 	flags | {ai_train contest_50 melee_50 backstab}
 	items rogue
 	gold {{7 20}{70 200}}
+}
+
+unit hero_merchant : base_hero {
+	profile {
+		strength 50
+		endurance 50
+		dexterity 50
+		inteligence 55
+		wisdom 55
+		charisma 60
+
+		short_blade 5
+		long_blade 0
+		axe 0
+		blunt 5
+		bow 10
+
+		shield 0
+		light_armor 5
+		medium_armor 0
+
+		haggle 15
+		literacy 10
+		
+		subprofile x {
+			skill tag haggle
+			skill tag bow
+			skill tag light_armor
+			skill 0.5 short_blade
+			skill 0.5 blunt
+			perk talent charisma
+			perk skill_focus haggle
+			perk trading_contract // 3 - 32
+			perk charming // 6 - 44
+			perk extra_stock // 9 - 56
+			perk bow_proficiency // 12 - 68
+			perk free_merchant // 15 - 80
+			perk precise_shot // 18 - 92
+			perk master_merchant // 21 - 100+
+			perk light_armor_proficiency // 24
+			
+		}
+	}
+	flags | {archer ai_train contest_25}
+	items {
+		if chance 25
+			!-2light_armor
+		else
+			random {al_clothes3 al_clothes3b}
+		if chance 25
+			!-2blunt
+		else
+			!-2short_blade
+		!-1bow
+		if level 12
+			chance 50 p_hp
+		else if level 8
+			chance 25 p_hp
+		else
+			chance 10 p_hp
+		random 1 3 !normal_food
+	}
+	gold {{200 300} {2000 3000}}
 }
 
 //------------------------------------------------------------------------------

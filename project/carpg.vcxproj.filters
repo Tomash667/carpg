@@ -207,9 +207,6 @@
     <ClCompile Include="source\game\stats\BaseTrap.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\Class.cpp">
-      <Filter>3. game\stats</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\Material.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
@@ -688,6 +685,9 @@
     <ClCompile Include="source\game\script\ScriptManager.cpp">
       <Filter>3. game\script</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\stats\ClassOld.cpp">
+      <Filter>3. game\stats</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -817,9 +817,6 @@
       <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\BaseTrap.h">
-      <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\Class.h">
       <Filter>3. game\stats</Filter>
     </ClInclude>
     <ClInclude Include="source\game\stats\Const.h">
@@ -1350,6 +1347,12 @@
     </ClInclude>
     <ClInclude Include="source\game\script\TypeBuilder.h">
       <Filter>3. game\script</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\system\Class.h">
+      <Filter>3. game\system\unit</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\stats\ClassOld.h">
+      <Filter>3. game\stats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

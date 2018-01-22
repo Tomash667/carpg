@@ -1,8 +1,13 @@
 ﻿FEATURE:
 *** perks
++ traveling merchant
+	? level up perks
+	+ spawning
+	+ icon
+	+ dialogs
+	+ name
 - changing armor while running have no effect on animation speed, same problem with slows/debuffs etc
 + GetItemPrice change tables
-+ set player id to 0 when loading
 ? food effect leak - unknown when
 ? perks
 	trading contract, extra stock, free merchant, master merchant

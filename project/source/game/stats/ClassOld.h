@@ -2,7 +2,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-enum class Class
+/*enum class Class
 {
 	BARBARIAN,
 	BARD,
@@ -64,3 +64,4 @@ inline bool ClassInfo::IsPickable(Class c)
 		return false;
 	return ClassInfo::classes[(int)c].pickable;
 }
+*/

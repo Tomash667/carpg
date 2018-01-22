@@ -1218,7 +1218,7 @@ public:
 	void DeleteUnit(Unit* unit);
 	void DialogTalk(DialogContext& ctx, cstring msg);
 	void GenerateHeroName(HeroData& hero);
-	void GenerateHeroName(Class klasa, bool szalony, string& name);
+	void GenerateHeroName(int clas, bool crazy, string& name);
 	bool WantExitLevel()
 	{
 		return !GKey.KeyDownAllowed(GK_WALK);

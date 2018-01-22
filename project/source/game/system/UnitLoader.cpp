@@ -7,7 +7,10 @@
 #include "ItemScript.h"
 #include "Item.h"
 #include "Spell.h"
+#include "Class.h"
 #include "Crc.h"
+#include "ResourceManager.h"
+#include "Action.h"
 
 //-----------------------------------------------------------------------------
 class UnitLoader
@@ -35,7 +38,8 @@ class UnitLoader
 		G_NULL,
 		G_SPELL_KEYWORD,
 		G_ITEM_KEYWORD,
-		G_GROUP_KEYWORD
+		G_GROUP_KEYWORD,
+		G_CLASS_KEYWORD
 	};
 
 	enum UnitDataType
@@ -50,7 +54,8 @@ class UnitLoader
 		T_IDLES,
 		T_ALIAS,
 		T_GROUP,
-		T_GROUP_LIST
+		T_GROUP_LIST,
+		T_CLASS
 	};
 
 	enum Property
@@ -85,7 +90,8 @@ class UnitLoader
 		P_IDLES,
 		P_WIDTH,
 		P_ATTACK_RANGE,
-		P_ARMOR_TYPE
+		P_ARMOR_TYPE,
+		P_CLASS
 	};
 
 	enum ProfileKeyword
@@ -147,6 +153,14 @@ class UnitLoader
 		IFS_START_INLINE,
 		IFS_ELSE,
 		IFS_ELSE_INLINE
+	};
+
+	enum ClassKeyword
+	{
+		CK_PICKABLE,
+		CK_UNIT,
+		CK_ICON,
+		CK_ACTION
 	};
 
 public:
@@ -245,6 +259,9 @@ public:
 			case T_GROUP_LIST:
 				ParseGroupList(id);
 				break;
+			case T_CLASS:
+				ParseClass(id);
+				break;
 			default:
 				assert(0);
 				break;
@@ -275,7 +292,8 @@ private:
 			{ "idles", T_IDLES },
 			{ "alias", T_ALIAS },
 			{ "group", T_GROUP },
-			{ "group_list", T_GROUP_LIST }
+			{ "group_list", T_GROUP_LIST },
+			{ "class", T_CLASS }
 		});
 
 		t.AddKeywords(G_PROPERTY, {
@@ -309,7 +327,8 @@ private:
 			{ "idles", P_IDLES },
 			{ "width", P_WIDTH },
 			{ "attack_range", P_ATTACK_RANGE },
-			{ "armor_type", P_ARMOR_TYPE }
+			{ "armor_type", P_ARMOR_TYPE },
+			{ "class", P_CLASS }
 		});
 
 		t.AddKeywords(G_MATERIAL, {
@@ -509,6 +528,13 @@ private:
 		t.AddKeywords(G_GROUP_KEYWORD, {
 			{ "leader", GK_LEADER },
 			{ "group", GK_GROUP }
+		});
+
+		t.AddKeywords(G_CLASS_KEYWORD, {
+			{ "pickable", CK_PICKABLE },
+			{ "unit", CK_UNIT },
+			{ "icon", CK_ICON },
+			{ "action", CK_ACTION }
 		});
 	}
 
@@ -1882,6 +1908,59 @@ private:
 		UnitGroupList::lists.push_back(list.Pin());
 	}
 
+	//=================================================================================================
+	void ParseClass(const string& id)
+	{
+		Ptr<Class> clas;
+		clas->id = id;
+		if(Class::TryGet(clas->id))
+			t.Throw("Class with that id already exists.");
+		crc.Update(clas->id);
+		t.Next();
+
+		t.AssertSymbol('{');
+		t.Next();
+
+		while(!t.IsSymbol('}'))
+		{
+			auto key = (ClassKeyword)t.MustGetKeywordId(G_CLASS_KEYWORD);
+			t.Next();
+
+			switch(key)
+			{
+			case CK_PICKABLE:
+				clas->pickable = t.MustGetBool();
+				crc.Update(clas->pickable);
+				break;
+			case CK_UNIT:
+				clas->unit_data_id = t.MustGetString();
+				crc.Update(clas->unit_data_id);
+				break;
+			case CK_ICON:
+				{
+					auto& icon_id = t.MustGetString();
+					ResourceManager::Get().For<Texture>().AddLoadTask(icon_id, clas->icon);
+					crc.Update(icon_id);
+				}
+				break;
+			case CK_ACTION:
+				{
+					auto& action_id = t.MustGetString();
+					clas->action = Action::Find(action_id);
+					if(!clas->action)
+						t.Throw("Invalid action '%s'.", action_id.c_str());
+					crc.Update(action_id);
+				}
+				break;
+			}
+
+			t.Next();
+		}
+
+		clas->index = Class::classes.size();
+		Class::classes.push_back(clas.Pin());
+	}
+
 	Tokenizer t;
 	Crc crc;
 };
@@ -1906,4 +1985,5 @@ void content::CleanupUnits()
 	DeleteElements(UnitData::units);
 	DeleteElements(UnitGroup::groups);
 	DeleteElements(UnitGroupList::lists);
+	DeleteElements(Class::classes);
 }

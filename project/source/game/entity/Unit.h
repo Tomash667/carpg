@@ -459,7 +459,7 @@ public:
 	{
 		return IsFollower() && hero->mode == HeroData::Follow;
 	}
-	Class GetClass() const
+	/*Class GetClass() const
 	{
 		if(IsPlayer())
 			return player->clas;
@@ -470,7 +470,7 @@ public:
 			assert(0);
 			return Class::WARRIOR;
 		}
-	}
+	}*/
 	bool CanFollow() const
 	{
 		return IsHero() && hero->mode == HeroData::Follow && in_arena == -1 && frozen == FROZEN::NO;
