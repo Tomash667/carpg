@@ -16833,7 +16833,7 @@ void Game::SpawnHeroesInsideDungeon()
 	p = sprawdzone.back().first;
 	for(int i = 0; i < ile; ++i)
 	{
-		Unit* u = SpawnUnitInsideRoom(*p, GetHero(ClassInfo::GetRandom()), Random(2, 15));
+		Unit* u = SpawnUnitInsideRoom(*p, Class::GetRandomHeroData(), Random(2, 15));
 		if(u)
 			heroes->push_back(u);
 		else
@@ -20876,34 +20876,6 @@ cstring Game::GetRandomIdleText(Unit& u)
 	}
 }
 
-UnitData* Game::GetRandomHeroData()
-{
-	cstring id;
-
-	switch(Rand() % 8)
-	{
-	case 0:
-	case 1:
-	case 2:
-		id = "hero_warrior";
-		break;
-	case 3:
-	case 4:
-		id = "hero_hunter";
-		break;
-	case 5:
-	case 6:
-		id = "hero_rogue";
-		break;
-	case 7:
-	default:
-		id = "hero_mage";
-		break;
-	}
-
-	return UnitData::Get(id);
-}
-
 void Game::CheckCraziesStone()
 {
 	quest_crazies->check_stone = false;
@@ -21046,32 +21018,6 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 	}
 
 	return false;
-}
-
-UnitData* Game::GetUnitDataFromClass(Class clas, bool crazy)
-{
-	cstring id = nullptr;
-
-	switch(clas)
-	{
-	case Class::WARRIOR:
-		id = (crazy ? "crazy_warrior" : "hero_warrior");
-		break;
-	case Class::HUNTER:
-		id = (crazy ? "crazy_hunter" : "hero_hunter");
-		break;
-	case Class::ROGUE:
-		id = (crazy ? "crazy_rogue" : "hero_rogue");
-		break;
-	case Class::MAGE:
-		id = (crazy ? "crazy_mage" : "hero_mage");
-		break;
-	}
-
-	if(id)
-		return UnitData::TryGet(id);
-	else
-		return nullptr;
 }
 
 int xdif(int a, int b)
@@ -21772,30 +21718,6 @@ void Game::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit)
 	BuildTmpInventory(0);
 	BuildTmpInventory(1);
 	game_gui->gp_trade->Show();
-}
-
-UnitData& Game::GetHero(Class clas, bool crazy)
-{
-	cstring id;
-
-	switch(clas)
-	{
-	default:
-	case Class::WARRIOR:
-		id = (crazy ? "crazy_warrior" : "hero_warrior");
-		break;
-	case Class::HUNTER:
-		id = (crazy ? "crazy_hunter" : "hero_hunter");
-		break;
-	case Class::ROGUE:
-		id = (crazy ? "crazy_rogue" : "hero_rogue");
-		break;
-	case Class::MAGE:
-		id = (crazy ? "crazy_mage" : "hero_mage");
-		break;
-	}
-
-	return *UnitData::Get(id);
 }
 
 void Game::ShowAcademyText()

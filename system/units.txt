@@ -1189,66 +1189,17 @@ idles spider {
 // ! ADD NEW CLASSES AT END - ORDER IS IMPORTANT !
 // ***********************************************
 
-class barbarian {
-	pickable false
-	icon "icon_barbarian.png"
-}
-
-class bard {
-	pickable false
-	icon "icon_bard.png"
-}
-
-class cleric {
-	pickable false
-	icon "icon_cleric.png"
-}
-
-class druid {
-	pickable false
-	icon "icon_druid.png"
-}
-
-class hunter {
-	pickable true
-	unit "base_hunter"
-	icon "icon_hunter.png"
-	action "summon_wolf"
-}
-
-class mage {
-	pickable false
-	icon "icon_mage.png"
-}
-
-class monk {
-	pickable false
-	icon "icon_monk.png"
-}
-
-class paladin {
-	pickable false
-	icon "icon_paladin.png"
-}
-
-class rogue {
-	pickable true
-	unit "base_rogue"
-	icon "icon_rogue.png"
-	action "dash"
-}
-
-class warrior {
-	pickable true
-	unit "base_warrior"
-	icon "icon_warrior.png"
-	action "bull_charge"
-}
-
-class merchant {
-	pickable false
-	icon "icon_merchant.png"
-}
+class barbarian ;
+class bard ;
+class cleric ;
+class druid ;
+class hunter ;
+class mage ;
+class monk ;
+class paladin ;
+class rogue ;
+class warrior ;
+class merchant ;
 
 //------------------------------------------------------------------------------
 // BASE PLAYER UNITS
@@ -2869,6 +2820,68 @@ unit unk {
 	}
 	width 0.4
 	attack_range 1.5
+}
+
+//------------------------------------------------------------------------------
+// Unit classes
+//------------------------------------------------------------------------------
+class barbarian {
+	icon "icon_barbarian.png"
+}
+
+class bard {
+	icon "icon_bard.png"
+}
+
+class cleric {
+	icon "icon_cleric.png"
+}
+
+class druid {
+	icon "icon_druid.png"
+}
+
+class hunter {
+	player "base_hunter"
+	hero "hero_hunter"
+	crazy "crazy_hunter"
+	icon "icon_hunter.png"
+	action "summon_wolf"
+}
+
+class mage {
+	hero "hero_mage"
+	crazy "crazy_mage"
+	icon "icon_mage.png"
+}
+
+class monk {
+	icon "icon_monk.png"
+}
+
+class paladin {
+	icon "icon_paladin.png"
+}
+
+class rogue {
+	player "base_rogue"
+	hero "hero_rogue"
+	crazy "crazy_rogue"
+	icon "icon_rogue.png"
+	action "dash"
+}
+
+class warrior {
+	player "base_warrior"
+	hero "hero_warrior"
+	crazy "crazy_warrior"
+	icon "icon_warrior.png"
+	action "bull_charge"
+}
+
+class merchant {
+	hero "hero_merchant"
+	icon "icon_merchant.png"
 }
 
 //------------------------------------------------------------------------------

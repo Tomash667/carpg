@@ -5148,7 +5148,7 @@ void Game::SpawnTmpUnits(City* city)
 
 	for(uint i = 0; i < count; ++i)
 	{
-		UnitData& ud = GetHero(ClassInfo::GetRandom());
+		UnitData& ud = Class::GetRandomHeroClass();
 
 		if(Rand() % 2 == 0 || !training_grounds)
 		{

@@ -157,8 +157,9 @@ class UnitLoader
 
 	enum ClassKeyword
 	{
-		CK_PICKABLE,
-		CK_UNIT,
+		CK_PLAYER,
+		CK_HERO,
+		CK_CRAZY,
 		CK_ICON,
 		CK_ACTION
 	};
@@ -531,8 +532,9 @@ private:
 		});
 
 		t.AddKeywords(G_CLASS_KEYWORD, {
-			{ "pickable", CK_PICKABLE },
-			{ "unit", CK_UNIT },
+			{ "player", CK_PLAYER },
+			{ "hero", CK_HERO },
+			{ "crazy", CK_CRAZY },
 			{ "icon", CK_ICON },
 			{ "action", CK_ACTION }
 		});
@@ -1928,13 +1930,32 @@ private:
 
 			switch(key)
 			{
-			case CK_PICKABLE:
-				clas->pickable = t.MustGetBool();
-				crc.Update(clas->pickable);
+			case CK_PLAYER:
+				{
+					auto& unit_id = t.MustGetString();
+					clas->player_data = UnitData::TryGet(unit_id);
+					if(!clas->player_data)
+						t.Throw("Missing unit '%s'.", unit_id.c_str());
+					crc.Update(unit_id);
+				}
 				break;
-			case CK_UNIT:
-				clas->unit_data_id = t.MustGetString();
-				crc.Update(clas->unit_data_id);
+			case CK_HERO:
+				{
+					auto& unit_id = t.MustGetString();
+					clas->hero_data = UnitData::TryGet(unit_id);
+					if(!clas->hero_data)
+						t.Throw("Missing unit '%s'.", unit_id.c_str());
+					crc.Update(unit_id);
+				}
+				break;
+			case CK_CRAZY:
+				{
+					auto& unit_id = t.MustGetString();
+					clas->crazy_data = UnitData::TryGet(unit_id);
+					if(!clas->crazy_data)
+						t.Throw("Missing unit '%s'.", unit_id.c_str());
+					crc.Update(unit_id);
+				}
 				break;
 			case CK_ICON:
 				{

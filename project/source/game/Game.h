@@ -1327,8 +1327,6 @@ public:
 	}
 	Unit* GetRandomArenaHero();
 	cstring GetRandomIdleText(Unit& u);
-	UnitData* GetRandomHeroData();
-	UnitData* GetUnitDataFromClass(Class clas, bool crazy);
 	void HandleQuestEvent(Quest_Event* event);
 
 	void DropGold(int count);
@@ -1376,7 +1374,6 @@ public:
 	void PlayerYell(Unit& u);
 	bool CanBuySell(const Item* item);
 	void SetOutsideParams();
-	UnitData& GetHero(Class clas, bool crazy = false);
 	const Item* GetRandomBook();
 
 	// level area
@@ -1426,8 +1423,7 @@ public:
 
 	//-----------------------------------------------------------------
 	// MENU / MAIN MENU / OPTIONS
-	Class quickstart_class, autopick_class; // mo¿na po³¹czyæ
-	string quickstart_name;
+	string quickstart_class_id, autopick_class_id, quickstart_name;
 	bool check_updates, skip_tutorial;
 	string save_input_text;
 	int hair_redo_index;
@@ -1445,13 +1441,13 @@ public:
 	void ShowLoadPanel();
 	void StartNewGame();
 	void StartTutorial();
-	void NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
+	void NewGameCommon(int clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
 	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
 	void StartQuickGame();
 	void MultiplayerPanelEvent(int id);
 	void CreateServerEvent(int id);
 	// set for Random player character (clas is in/out)
-	void RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc);
+	void RandomCharacter(int& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc);
 	void OnEnterIp(int id);
 	void GenericInfoBoxUpdate(float dt);
 	void UpdateClientConnectingIp(float dt);

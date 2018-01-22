@@ -18,7 +18,7 @@ void Quest_Wanted::Start()
 	type = QuestType::Captain;
 	level = Random(5, 15);
 	crazy = (Rand() % 5 == 0);
-	clas = ClassInfo::GetRandomEvil();
+	clas = Class::GetRandomHeroClass(crazy);
 	target_unit = nullptr;
 	in_location = -1;
 }
@@ -57,7 +57,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			if(!target.active_quest)
 			{
 				target.active_quest = this;
-				unit_to_spawn = game->GetUnitDataFromClass(clas, crazy);
+				unit_to_spawn = &Class::GetHeroData(clas, crazy);
 				unit_dont_attack = true;
 				unit_event_handler = this;
 				send_spawn_event = true;
@@ -301,7 +301,7 @@ bool Quest_Wanted::Load(HANDLE file)
 
 	if(!done)
 	{
-		unit_to_spawn = game->GetUnitDataFromClass(clas, crazy);
+		unit_to_spawn = Class::GetHeroData(clas, crazy);
 		unit_dont_attack = true;
 		unit_event_handler = this;
 		send_spawn_event = true;
