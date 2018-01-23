@@ -15,7 +15,7 @@ const Item* UnitHelper::GetBaseWeapon(const Unit& unit, const ItemList* lis)
 {
 	EnsureList(lis);
 
-	if(IS_SET(unit.data->flags, F_MAGE))
+	if(IS_SET(unit.data->flags, F_SPELLCASTER))
 	{
 		for(const Item* item : lis->items)
 		{
@@ -39,7 +39,7 @@ const Item* UnitHelper::GetBaseArmor(const Unit& unit, const ItemList* lis)
 {
 	EnsureList(lis);
 
-	if(IS_SET(unit.data->flags, F_MAGE))
+	if(IS_SET(unit.data->flags, F_SPELLCASTER))
 	{
 		for(const Item* item : lis->items)
 		{

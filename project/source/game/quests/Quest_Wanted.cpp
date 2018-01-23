@@ -289,7 +289,7 @@ bool Quest_Wanted::Load(HANDLE file)
 	f >> crazy;
 	f >> clas;
 	if(LOAD_VERSION < V_0_4)
-		clas = ClassInfo::OldToNew(clas);
+		clas = Class::OldToNew((old::ClassId)clas);
 	f >> unit_name;
 	f >> target_unit;
 	if(LOAD_VERSION >= V_0_4)
@@ -301,7 +301,7 @@ bool Quest_Wanted::Load(HANDLE file)
 
 	if(!done)
 	{
-		unit_to_spawn = Class::GetHeroData(clas, crazy);
+		unit_to_spawn = &Class::GetHeroData(clas, crazy);
 		unit_dont_attack = true;
 		unit_event_handler = this;
 		send_spawn_event = true;

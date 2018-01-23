@@ -291,14 +291,7 @@ void Game::ConfigureGame()
 		else
 			g_spawn_groups[i].unit_group = UnitGroup::Get(g_spawn_groups[i].unit_group_id);
 	}
-
-	for (ClassInfo& ci : ClassInfo::classes)
-	{
-		ci.unit_data = UnitData::TryGet(ci.unit_data_id);
-		if (ci.action_id)
-			ci.action = Action::Find(string(ci.action_id));
-	}
-
+	
 	CreateTextures();
 
 	if(!disable_net_stats)
@@ -505,8 +498,6 @@ void Game::AddLoadTasks()
 	tex_mgr.AddLoadTask("czern.bmp", tCzern);
 	tex_mgr.AddLoadTask("rip.jpg", tRip);
 	tex_mgr.AddLoadTask("dark_portal.png", tPortal);
-	for(ClassInfo& ci : ClassInfo::classes)
-		tex_mgr.AddLoadTask(ci.icon_file, ci.icon);
 	tex_mgr.AddLoadTask("warning.png", tWarning);
 	tex_mgr.AddLoadTask("error.png", tError);
 	Action::LoadData();

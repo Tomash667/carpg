@@ -29,4 +29,5 @@ struct HeroData : public HeroPlayerCommon
 	void Save(HANDLE file);
 	void Load(HANDLE file);
 	void LevelUp();
+	void SetupMelee();
 };

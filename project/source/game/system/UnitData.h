@@ -10,9 +10,9 @@
 #include "DamageTypes.h"
 #include "ItemScript.h"
 #include "FrameInfo.h"
+#include "Class.h"
 
 //-----------------------------------------------------------------------------
-struct Class;
 struct Spell;
 struct GameDialog;
 
@@ -60,10 +60,10 @@ enum UNIT_GROUP
 // Unit flags
 enum UNIT_FLAGS
 {
-	F_HUMAN = 1 << 0, // u¿ywa przedmiotów, widaæ zbrojê, ma brodê i w³osy
-	F_HUMANOID = 1 << 1, // u¿ywa przedmiotów
-	F_COWARD = 1 << 2, // ucieka gdy ma ma³o hp albo ktoœ zginie
-	F_DONT_ESCAPE = 1 << 3, // nigdy nie ucieka
+	F_HUMAN = 1 << 0, // use items, have armor/hair/beard
+	F_HUMANOID = 1 << 1, // use items
+	F_COWARD = 1 << 2, // escapes when allies die or have small hp amount
+	F_DONT_ESCAPE = 1 << 3, // never escapes
 	F_ARCHER = 1 << 4, // preferuje walkê broni¹ dystansow¹
 	F_LEADER = 1 << 5, // inni go chroni¹ ?
 	F_PIERCE_RES25 = 1 << 6, // odpornoœæ na k³ute 25%
@@ -82,7 +82,7 @@ enum UNIT_FLAGS
 	F_SLIGHT = 1 << 19, // nie uruchamia pu³apek
 	F_SECRET = 1 << 20, // nie mo¿na zespawnowaæ
 	F_DONT_SUFFER = 1 << 21, // odpornoœæ na ból
-	F_MAGE = 1 << 22, // próbuje staæ jak najdalej od przeciwnika
+	F_SPELLCASTER = 1 << 22, // keeps distance from enemy, use mage weapons
 	F_POISON_RES = 1 << 23, // odpornoœæ na trucizny
 	F_GRAY_HAIR = 1 << 24, // dla nieumar³ych i nekromantów
 	F_NO_POWER_ATTACK = 1 << 25, // nie posiada potê¿nego ataku
@@ -100,20 +100,20 @@ enum UNIT_FLAGS2
 {
 	F2_AI_TRAIN = 1 << 0, // trenuje walkê na manekinie/celu strzelniczym
 	F2_SPECIFIC_NAME = 1 << 1, // nie generuje imienia
-	F2_NO_CLASS = 1 << 2, // ta postaæ tak na prawde nie jest bohaterem ale ma imie/mo¿e pod¹¿aæ za graczem
+	// 1 << 2 - unused
 	F2_CONTEST = 1 << 3, // do³¹cza do zawodów w piciu
 	F2_CONTEST_50 = 1 << 4, // 50% ¿e do³¹czy do zawodów w piciu
-	F2_CLASS_FLAG = 1 << 5, // ma flagê klasy
-	F2_WARRIOR = 1 << 6, // okreœlona klasa - wojownik
-	F2_HUNTER = 1 << 7, // okreœlona klasa - ³owca
-	F2_ROGUE = 1 << 8, // okreœlona klasa - ³otrzyk
+	// 1 << 5 - unused
+	// 1 << 6 - unused
+	// 1 << 7 - unused
+	// 1 << 8 - unused
 	F2_OLD = 1 << 9, // siwe w³osy
 	F2_MELEE = 1 << 10, // walczy wrêcz nawet jak ma ³uk a wróg jest daleko
 	F2_MELEE_50 = 1 << 11, // walczy wrêcz 50%
 	F2_BOSS = 1 << 12, // muzyka bossa
 	F2_BLOODLESS = 1 << 13, // nie mo¿na rzuciæ wyssania hp
 	F2_LIMITED_ROT = 1 << 14, // stoi w miarê prosto - karczmarz za lad¹
-	F2_CLERIC = 1 << 15, // okreœlona klasa - kap³an
+	// 1 << 15 - unused
 	F2_STUN_RESISTANCE = 1 << 16, // 50% resistance to stuns
 	F2_SIT_ON_THRONE = 1 << 17, // siada na tronie
 	F2_ORC_SOUNDS = 1 << 18, // dŸwiêk gadania
@@ -204,7 +204,7 @@ struct UnitData
 	MeshPtr mesh;
 	MATERIAL_TYPE mat;
 	Int2 level;
-	Class* clas;
+	ClassId clas;
 	StatProfile* stat_profile;
 	int hp, hp_bonus, atk, atk_bonus, def, def_bonus, stamina, block, block_bonus, dmg_type, flags, flags2, flags3;
 	SpellList* spells;
@@ -226,7 +226,7 @@ struct UnitData
 		stamina(0), block(10), block_bonus(1), dmg_type(DMG_BLUNT), flags(0), flags2(0), flags3(0), spells(nullptr), gold(0), gold2(0),
 		dialog(nullptr), group(G_CITIZENS), walk_speed(1.5f), run_speed(5.f), rot_speed(3.f), width(0.3f), attack_range(1.f), blood(BLOOD_RED),
 		sounds(nullptr), frames(nullptr), tex(nullptr), armor_type(ArmorUnitType::NONE), item_script(nullptr), idles(nullptr), type(UNIT_TYPE::HUMAN),
-		state(ResourceState::NotLoaded), clas(nullptr)
+		state(ResourceState::NotLoaded), clas(ClassId::None)
 	{
 	}
 

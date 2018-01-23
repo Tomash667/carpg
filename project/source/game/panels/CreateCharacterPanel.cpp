@@ -922,10 +922,11 @@ void CreateCharacterPanel::Init()
 {
 	unit->mesh_inst = new MeshInstance(game->aHumanBase);
 
-	for(ClassInfo& ci : ClassInfo::classes)
+	for(Class* p_c : Class::classes)
 	{
-		if(ci.IsPickable())
-			lbClasses.Add(new DefaultGuiElement(ci.name.c_str(), (int)ci.class_id, ci.icon));
+		Class& c = *p_c;
+		if(c.IsPickable())
+			lbClasses.Add(new DefaultGuiElement(c.name.c_str(), c.index, c.icon));
 	}
 	lbClasses.Sort();
 	lbClasses.Initialize();
@@ -966,7 +967,7 @@ void CreateCharacterPanel::RandomAppearance()
 //=================================================================================================
 void CreateCharacterPanel::Show(bool _enter_name)
 {
-	clas = ClassInfo::GetRandomPlayer();
+	clas = Class::GetRandomPlayerClass();
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
 	ClassChanged();
 	RandomAppearance();
@@ -983,7 +984,7 @@ void CreateCharacterPanel::Show(bool _enter_name)
 }
 
 //=================================================================================================
-void CreateCharacterPanel::ShowRedo(Class _clas, int _hair_index, HumanData& hd, CreatedCharacter& _cc)
+void CreateCharacterPanel::ShowRedo(ClassId _clas, int _hair_index, HumanData& hd, CreatedCharacter& _cc)
 {
 	clas = _clas;
 	lbClasses.Select(lbClasses.FindIndex((int)clas));
@@ -1030,7 +1031,7 @@ void CreateCharacterPanel::SetCharacter()
 //=================================================================================================
 void CreateCharacterPanel::OnChangeClass(int index)
 {
-	clas = (Class)lbClasses.GetItem()->value;
+	clas = (ClassId)lbClasses.GetItem()->value;
 	ClassChanged();
 	reset_skills_perks = true;
 	ResetDoll(false);
@@ -1135,8 +1136,8 @@ void CreateCharacterPanel::GetTooltip(TooltipController* _tool, int group, int i
 //=================================================================================================
 void CreateCharacterPanel::ClassChanged()
 {
-	ClassInfo& ci = ClassInfo::classes[(int)clas];
-	unit->data = ci.unit_data;
+	Class& ci = *Class::classes[(int)clas];
+	unit->data = ci.player_data;
 	anim = DA_STOI;
 	t = 1.f;
 	tbClassDesc.Reset();
@@ -1147,7 +1148,7 @@ void CreateCharacterPanel::ClassChanged()
 
 	int y = 0;
 
-	StatProfile& profile = ci.unit_data->GetStatProfile();
+	StatProfile& profile = unit->data->GetStatProfile();
 	unit->statsx->ApplyBase(&profile);
 
 	// attributes

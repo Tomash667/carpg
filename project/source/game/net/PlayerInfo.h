@@ -47,7 +47,8 @@ struct PlayerInfo
 	string name;
 	PlayerController* pc;
 	Unit* u;
-	int id, ack, update_flags, clas;
+	int id, ack, update_flags;
+	ClassId clas;
 	SystemAddress adr;
 	float timer, update_timer, yspeed;
 	bool ready, devmode, warping, loaded;

@@ -207,7 +207,7 @@ void ServerPanel::Event(GuiEvent e)
 		case IdPickCharacter: // pick character / change character
 			{
 				PlayerInfo& info = *game->game_players[0];
-				if(info.clas != Class::INVALID)
+				if(info.clas != ClassId::None)
 				{
 					// already have character, redo
 					if(info.ready)
@@ -357,7 +357,7 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 		cell.text_color->color = (info.id == game->leader_id ? 0xFFFFD700 : BLACK);
 	}
 	else
-		cell.text = (info.clas == Class::INVALID ? txNone : ClassInfo::classes[(int)info.clas].name.c_str());
+		cell.text = (info.clas == ClassId::None ? txNone : Class::classes[(int)info.clas]->name.c_str());
 }
 
 //=================================================================================================
@@ -474,7 +474,7 @@ void ServerPanel::UseLoadedCharacter(bool have)
 	if(have)
 	{
 		Info("ServerPanel: Joined loaded game with existing character.");
-		game->autopick_class = Class::INVALID;
+		game->autopick_class_id.clear();
 		bts[0].state = Button::DISABLED;
 		bts[1].state = Button::NONE;
 		AddMsg(txLoadedCharInfo);
@@ -489,16 +489,31 @@ void ServerPanel::UseLoadedCharacter(bool have)
 //=================================================================================================
 void ServerPanel::CheckAutopick()
 {
-	if(game->autopick_class != Class::INVALID)
+	if(!game->autopick_class_id.empty())
 	{
-		Info("ServerPanel: Autopicking character.");
-		PickClass(game->autopick_class, true);
-		game->autopick_class = Class::INVALID;
+		ClassId clas = ClassId::None;
+		if(game->autopick_class_id == "random")
+			clas = ClassId::Random;
+		else
+		{
+			Class* ci = Class::TryGet(game->autopick_class_id);
+			if(ci && ci->IsPickable())
+				clas = (ClassId)ci->index;
+			else
+				Warn("ServerPanel: Invalid autopick class '%s'.", game->autopick_class_id.c_str());
+		}
+
+		game->autopick_class_id.clear();
+		if(clas != ClassId::None)
+		{
+			Info("ServerPanel: Autopicking character.");
+			PickClass(clas, true);
+		}
 	}
 }
 
 //=================================================================================================
-void ServerPanel::PickClass(Class clas, bool ready)
+void ServerPanel::PickClass(ClassId clas, bool ready)
 {
 	PlayerInfo& info = *game->game_players[0];
 	info.clas = clas;

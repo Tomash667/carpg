@@ -5,9 +5,43 @@ struct Action;
 struct UnitData;
 
 //-----------------------------------------------------------------------------
+enum class ClassId
+{
+	None = -1,
+	Random = -2
+};
+
+//-----------------------------------------------------------------------------
+namespace old
+{
+	// pre 0.4 classes
+	enum class ClassId
+	{
+		Warrior,
+		Hunter,
+		Rogue,
+		Mage,
+		Cleric,
+		Max
+	};
+}
+
+//-----------------------------------------------------------------------------
 struct Class
 {
+	struct ClassesInfo
+	{
+		ClassId old_to_new[(int)old::ClassId::Max];
+		vector<ClassId> player_classes;
+		vector<std::pair<ClassId, uint>> hero_classes;
+		vector<std::pair<ClassId, uint>> crazy_classes;
+		uint hero_total, crazy_total;
+
+		void Initialize();
+	};
+
 	int index;
+	uint chance;
 	string id;
 	// localized data
 	string name, desc, about;
@@ -15,43 +49,24 @@ struct Class
 	TEX icon;
 	UnitData* player_data, *hero_data, *crazy_data;
 	Action* action;
-	bool pickable;
 
-	Class() : icon(nullptr), player_data(nullptr), hero_data(nullptr), crazy_data(nullptr), action(nullptr), pickable(false)
+	Class() : icon(nullptr), player_data(nullptr), hero_data(nullptr), crazy_data(nullptr), action(nullptr), chance(0)
 	{
 	}
 
-	/*ClassInfo(Class class_id, cstring id, cstring unit_data_id, cstring icon_file, bool pickable, cstring action_id) : class_id(class_id), id(id),
-		unit_data_id(unit_data_id), icon_file(icon_file), icon(nullptr), pickable(pickable), unit_data(nullptr), action_id(action_id), action(nullptr)
+	bool IsPickable() const
 	{
-	}*/
-
-	/*bool IsPickable() const
-	{
-		return pickable;
-	}*/
-
-	/*static ClassInfo* Find(const string& id);
-	static bool IsPickable(Class c);
-	static Class GetRandom();
-	static Class GetRandomPlayer();
-	static Class GetRandomEvil();
-	static void Validate(uint &err);
-	static Class OldToNew(Class c);*/
+		return player_data != nullptr;
+	}
 
 	static Class* TryGet(const AnyString& id);
-	static int GetRandomHeroClass(bool crazy = false);
+	static ClassId GetRandomPlayerClass();
+	static ClassId GetRandomHeroClass(bool crazy = false);
 	static UnitData& GetRandomHeroData(bool crazy = false);
-	static UnitData& GetHeroData(int clas, bool crazy = false);
+	static UnitData& GetHeroData(ClassId clas, bool crazy = false);
+	static ClassId OldToNew(old::ClassId clas);
+	static bool IsPickable(ClassId clas); // spr czy nie jest Invalid/Random
+	static void Validate(uint& errors);
 	static vector<Class*> classes;
-	static const int RANDOM = -1;
-	static const int INVALID = -2;
+	static ClassesInfo info;
 };
-
-//=================================================================================================
-//inline bool ClassInfo::IsPickable(Class c)
-//{
-//	if(c < (Class)0 || c >= Class::MAX)
-//		return false;
-//	return ClassInfo::classes[(int)c].pickable;
-//}

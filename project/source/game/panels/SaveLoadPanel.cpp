@@ -200,11 +200,11 @@ void SaveLoad::SetText()
 		s += slot.player_name;
 		jest = true;
 	}
-	if(slot.player_class != Class::INVALID)
+	if(slot.player_class != ClassId::None)
 	{
 		if(jest)
 			s += " ";
-		s += ClassInfo::classes[(int)slot.player_class].name;
+		s += Class::classes[(int)slot.player_class]->name;
 		jest = true;
 	}
 	if(slot.hardcore)

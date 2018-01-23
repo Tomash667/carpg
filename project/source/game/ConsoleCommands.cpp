@@ -1191,22 +1191,22 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						{
 							if(t.IsSymbol('?'))
 							{
-								LocalVector2<Class> classes;
-								for(ClassInfo& ci : ClassInfo::classes)
+								LocalVector2<Class*> classes;
+								for(Class* ci : Class::classes)
 								{
-									if(ci.pickable)
-										classes.push_back(ci.class_id);
+									if(ci->IsPickable())
+										classes.push_back(ci);
 								}
 								std::sort(classes.begin(), classes.end(),
-									[](Class c1, Class c2) -> bool
+									[](Class* c1, Class* c2) -> bool
 								{
-									return strcmp(ClassInfo::classes[(int)c1].id, ClassInfo::classes[(int)c2].id) < 0;
+									return strcmp(c1->id.c_str(), c2->id.c_str()) < 0;
 								});
 								LocalString str = "List of classes: ";
 								Join(classes.Get(), str.get_ref(), ", ",
-									[](Class c)
+									[](Class* c)
 								{
-									return ClassInfo::classes[(int)c].id;
+									return c->id;
 								});
 								str += ".";
 								Msg(str.c_str());
@@ -1214,12 +1214,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else
 							{
 								const string& clas = t.MustGetItem();
-								ClassInfo* ci = ClassInfo::Find(clas);
+								Class* ci = Class::TryGet(clas);
 								if(ci)
 								{
-									if(ClassInfo::IsPickable(ci->class_id))
+									if(ci->IsPickable())
 									{
-										server_panel->PickClass(ci->class_id, false);
+										server_panel->PickClass((ClassId)ci->index, false);
 										Msg("You picked Random character.");
 									}
 									else
@@ -1231,7 +1231,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 						else
 						{
-							server_panel->PickClass(Class::RANDOM, false);
+							server_panel->PickClass(ClassId::Random, false);
 							Msg("You picked Random character.");
 						}
 					}
@@ -1513,8 +1513,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							PlayerInfo& info = *game_players[0];
 							if(!info.ready)
 							{
-								if(info.clas == Class::INVALID)
-									server_panel->PickClass(Class::RANDOM, true);
+								if(info.clas == ClassId::None)
+									server_panel->PickClass(ClassId::Random, true);
 								else
 								{
 									info.ready = true;
@@ -1555,8 +1555,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						PlayerInfo& info = *game_players[0];
 						if(!info.ready)
 						{
-							if(info.clas == Class::INVALID)
-								server_panel->PickClass(Class::RANDOM, true);
+							if(info.clas == ClassId::None)
+								server_panel->PickClass(ClassId::Random, true);
 							else
 							{
 								info.ready = true;

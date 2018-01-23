@@ -15,9 +15,9 @@ struct TakeRatio
 };
 
 //=================================================================================================
-void CreatedCharacter::Clear(Class c)
+void CreatedCharacter::Clear(ClassId c)
 {
-	ClassInfo& info = ClassInfo::classes[(int)c];
+	Class& info = *Class::classes[(int)c];
 
 	sp_max = 3;
 	perks_max = 2;
@@ -25,7 +25,7 @@ void CreatedCharacter::Clear(Class c)
 	sp = sp_max;
 	perks = perks_max;
 
-	StatProfile& profile = info.unit_data->GetStatProfile();
+	StatProfile& profile = info.player_data->GetStatProfile();
 
 	for(int i = 0; i < (int)Attribute::MAX; ++i)
 	{
@@ -46,23 +46,17 @@ void CreatedCharacter::Clear(Class c)
 }
 
 //=================================================================================================
-void CreatedCharacter::Random(Class c)
+void CreatedCharacter::Random(ClassId c)
 {
 	Clear(c);
 
+	Class& ci = *Class::classes[(int)c];
+
 	int profile;
-	switch(c)
-	{
-	case Class::WARRIOR:
+	if(ci.id == "warrior")
 		profile = Rand() % 2 + 1;
-		break;
-	default:
-		assert(0);
-	case Class::HUNTER:
-	case Class::ROGUE:
+	else
 		profile = Rand() % 2;
-		break;
-	}
 
 	Skill sk1, sk2, sk3;
 	Attribute talent;
@@ -421,7 +415,7 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 }
 
 //=================================================================================================
-void WriteCharacterData(BitStream& stream, Class c, const HumanData& hd, const CreatedCharacter& cc)
+void WriteCharacterData(BitStream& stream, ClassId c, const HumanData& hd, const CreatedCharacter& cc)
 {
 	stream.WriteCasted<byte>(c);
 	hd.Write(stream);
@@ -429,11 +423,11 @@ void WriteCharacterData(BitStream& stream, Class c, const HumanData& hd, const C
 }
 
 //=================================================================================================
-int ReadCharacterData(BitStream& stream, Class& c, HumanData& hd, CreatedCharacter& cc)
+int ReadCharacterData(BitStream& stream, ClassId& c, HumanData& hd, CreatedCharacter& cc)
 {
 	if(!stream.ReadCasted<byte>(c))
 		return 1;
-	if(!ClassInfo::IsPickable(c))
+	if(!Class::IsPickable(c))
 		return 2;
 	cc.Clear(c);
 	int result = 1;

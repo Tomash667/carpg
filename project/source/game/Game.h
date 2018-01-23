@@ -1218,7 +1218,7 @@ public:
 	void DeleteUnit(Unit* unit);
 	void DialogTalk(DialogContext& ctx, cstring msg);
 	void GenerateHeroName(HeroData& hero);
-	void GenerateHeroName(int clas, bool crazy, string& name);
+	void GenerateHeroName(ClassId clas, bool crazy, string& name);
 	bool WantExitLevel()
 	{
 		return !GKey.KeyDownAllowed(GK_WALK);
@@ -1441,13 +1441,13 @@ public:
 	void ShowLoadPanel();
 	void StartNewGame();
 	void StartTutorial();
-	void NewGameCommon(int clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
+	void NewGameCommon(ClassId clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial);
 	void ShowCreateCharacterPanel(bool enter_name, bool redo = false);
 	void StartQuickGame();
 	void MultiplayerPanelEvent(int id);
 	void CreateServerEvent(int id);
 	// set for Random player character (clas is in/out)
-	void RandomCharacter(int& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc);
+	void RandomCharacter(ClassId& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc);
 	void OnEnterIp(int id);
 	void GenericInfoBoxUpdate(float dt);
 	void UpdateClientConnectingIp(float dt);

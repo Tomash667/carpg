@@ -459,14 +459,14 @@ public:
 	{
 		return IsFollower() && hero->mode == HeroData::Follow;
 	}
-	int GetClass() const
+	ClassId GetClass() const
 	{
 		if(IsPlayer())
 			return player->clas;
 		else if(IsHero())
 			return hero->clas;
 		else
-			return Class::INVALID;
+			return ClassId::None;
 	}
 	bool CanFollow() const
 	{

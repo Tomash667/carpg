@@ -101,9 +101,10 @@ void TeamPanel::Draw(ControlDrawData*)
 	Matrix mat;
 	for(Unit* u : Team.members)
 	{
-		if(!u->IsHero() || !IS_SET(u->data->flags2, F2_NO_CLASS))
+		ClassId clas = u->GetClass();
+		if(clas != ClassId::None)
 		{
-			TEX t = Class::classes[u->GetClass()]->icon;
+			TEX t = Class::classes[(int)u->GetClass()]->icon;
 			Int2 img_size;
 			Vec2 scale;
 			Control::ResizeImage(t, Int2(32, 32), img_size, scale);

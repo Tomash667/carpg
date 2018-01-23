@@ -333,7 +333,16 @@ void Game::StartQuickGame()
 {
 	Net::SetMode(Net::Mode::Singleplayer);
 
-	Class clas = quickstart_class;
+	ClassId clas = ClassId::Random;
+	if(!game->quickstart_class_id.empty() && game->quickstart_class_id != "random")
+	{
+		Class* ci = Class::TryGet(game->quickstart_class_id);
+		if(ci && ci->IsPickable())
+			clas = (ClassId)ci->index;
+		else
+			Warn("StartQuickGame: Invalid quickstart class '%s'.", game->quickstart_class_id.c_str());
+	}
+
 	HumanData hd;
 	CreatedCharacter cc;
 	int hair_index;
@@ -343,7 +352,7 @@ void Game::StartQuickGame()
 }
 
 //=================================================================================================
-void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial)
+void Game::NewGameCommon(ClassId clas, cstring name, HumanData& hd, CreatedCharacter& cc, bool tutorial)
 {
 	in_tutorial = tutorial;
 	main_menu->visible = false;
@@ -351,7 +360,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	game_state = GS_LEVEL;
 	hardcore_mode = hardcore_option;
 
-	UnitData& ud = *ClassInfo::classes[(int)clas].unit_data;
+	UnitData& ud = *Class::classes[(int)clas]->player_data;
 
 	Unit* u = CreateUnit(ud, -1, nullptr, nullptr, CUF_NO_PHYSICS | CUF_UNIQUE_STATSX);
 	u->ApplyHumanData(hd);
@@ -392,10 +401,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 		npc->hero->know_name = true;
 		AddTeamMember(npc, false);
 		Team.free_recruit = false;
-		if(IS_SET(npc->data->flags2, F2_MELEE))
-			npc->hero->melee = true;
-		else if(IS_SET(npc->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
-			npc->hero->melee = true;
+		npc->hero->SetupMelee();
 	}
 	game_gui->Setup();
 
@@ -603,10 +609,10 @@ void Game::AddMsg(cstring msg)
 }
 
 //=================================================================================================
-void Game::RandomCharacter(Class& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc)
+void Game::RandomCharacter(ClassId& clas, int& hair_index, HumanData& hd, CreatedCharacter& cc)
 {
-	if(clas == Class::RANDOM)
-		clas = ClassInfo::GetRandomPlayer();
+	if(clas == ClassId::Random)
+		clas = Class::GetRandomPlayerClass();
 	// appearance
 	hd.beard = Rand() % MAX_BEARD - 1;
 	hd.hair = Rand() % MAX_HAIR - 1;
@@ -890,7 +896,7 @@ void Game::UpdateClientConnectingIp(float dt)
 					auto pinfo = new PlayerInfo;
 					game_players.push_back(pinfo);
 					auto& info = *pinfo;
-					info.clas = Class::INVALID;
+					info.clas = ClassId::None;
 					info.ready = false;
 					info.name = player_name;
 					info.id = my_id;
@@ -922,7 +928,7 @@ void Game::UpdateClientConnectingIp(float dt)
 						}
 
 						// verify player class
-						if(!ClassInfo::IsPickable(info2.clas) && info2.clas != Class::INVALID)
+						if(!Class::IsPickable(info2.clas))
 						{
 							Error("NM_CONNECT_IP(2): Broken packet ID_JOIN, player %s has class %d.", info2.name.c_str(), info2.clas);
 							StreamError();
@@ -1587,7 +1593,7 @@ void Game::UpdateServerTransfer(float dt)
 			Unit* u;
 			if(!info.loaded)
 			{
-				UnitData& ud = *ClassInfo::classes[(int)info.clas].unit_data;
+				UnitData& ud = *Class::classes[(int)info.clas]->player_data;
 
 				u = CreateUnit(ud, -1, nullptr, nullptr, create_unit_flags);
 				info.u = u;
@@ -1683,15 +1689,12 @@ void Game::UpdateServerTransfer(float dt)
 
 		if(!mp_load && leader_perk > 0 && Team.GetActiveTeamSize() < MAX_TEAM_SIZE)
 		{
-			Unit* npc = CreateUnit(Class::GetRandomHeroClass(), 2 * leader_perk, nullptr, nullptr, CUF_NO_PHYSICS);
+			Unit* npc = CreateUnit(Class::GetRandomHeroData(), 2 * leader_perk, nullptr, nullptr, CUF_NO_PHYSICS);
 			npc->ai = new AIController;
 			npc->ai->Init(npc);
 			npc->hero->know_name = true;
 			AddTeamMember(npc, false);
-			if(IS_SET(npc->data->flags2, F2_MELEE))
-				npc->hero->melee = true;
-			else if(IS_SET(npc->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
-				npc->hero->melee = true;
+			npc->hero->SetupMelee();
 		}
 
 		// recalculate credit if someone left
@@ -2455,7 +2458,7 @@ void Game::UpdateLobbyNetClient(float dt)
 					Warn("UpdateLobbyNet: Character pick refused.");
 					PlayerInfo& info = *game_players[0];
 					info.ready = false;
-					info.clas = Class::INVALID;
+					info.clas = ClassId::None;
 					server_panel->bts[0].state = Button::NONE;
 					server_panel->bts[0].text = server_panel->txPickChar;
 					server_panel->bts[1].state = Button::DISABLED;
@@ -2893,7 +2896,7 @@ void Game::UpdateLobbyNetServer(float dt)
 				Warn("UpdateLobbyNet: Packet ID_PICK_CHARACTER from player not in lobby %s.", packet->systemAddress.ToString());
 			else
 			{
-				Class old_class = info->clas;
+				ClassId old_class = info->clas;
 				bool old_ready = info->ready;
 				int result = ReadCharacterData(stream, info->clas, info->hd, info->cc);
 				byte ok = 0;
@@ -2925,7 +2928,7 @@ void Game::UpdateLobbyNetServer(float dt)
 				if(ok == 0)
 				{
 					info->ready = false;
-					info->clas = Class::INVALID;
+					info->clas = ClassId::None;
 				}
 				CheckReady();
 
@@ -3156,7 +3159,7 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 					Error("UpdateLobbyNet: Broken Lobby_UpdatePlayer.");
 					return false;
 				}
-				if(!ClassInfo::IsPickable(info.clas))
+				if(!Class::IsPickable(info.clas))
 				{
 					Error("UpdateLobbyNet: Broken Lobby_UpdatePlayer, player %d have class %d: %s.", id, info.clas);
 					return false;
@@ -3258,7 +3261,7 @@ void Game::OnCreateCharacter(int id)
 		server_panel->bts[1].state = Button::NONE;
 		server_panel->bts[0].text = server_panel->txChangeChar;
 		// set data
-		Class old_class = info.clas;
+		ClassId old_class = info.clas;
 		info.clas = create_character->clas;
 		info.hd.Get(*create_character->unit->human_data);
 		info.cc = create_character->cc;

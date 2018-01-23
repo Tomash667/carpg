@@ -4902,7 +4902,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				else if(strcmp(msg, "hero_about") == 0)
 				{
 					assert(ctx.talker->IsHero());
-					DialogTalk(ctx, ClassInfo::classes[(int)ctx.talker->hero->clas].about.c_str());
+					DialogTalk(ctx, Class::classes[(int)ctx.talker->hero->clas]->about.c_str());
 					++ctx.dialog_pos;
 					return;
 				}
@@ -4914,10 +4914,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					AddTeamMember(ctx.talker, false);
 					ctx.talker->temporary = false;
 					Team.free_recruit = false;
-					if(IS_SET(ctx.talker->data->flags2, F2_MELEE))
-						ctx.talker->hero->melee = true;
-					else if(IS_SET(ctx.talker->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
-						ctx.talker->hero->melee = true;
+					ctx.talker->hero->SetupMelee();
 					if(Net::IsOnline() && !ctx.is_local)
 						ctx.pc->player_info->UpdateGold();
 				}
@@ -5837,7 +5834,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "is_not_mage") == 0)
 				{
-					if(ctx.talker->hero->clas != Class::MAGE)
+					if(!IS_SET(ctx.talker->data->flags, F_SPELLCASTER))
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "prefer_melee") == 0)
@@ -8940,7 +8937,7 @@ void Game::UpdateUnitInventory(Unit& u, bool notify)
 				it->item = nullptr;
 				changes = true;
 			}
-			else if(IS_SET(u.data->flags, F_MAGE))
+			else if(IS_SET(u.data->flags, F_SPELLCASTER))
 			{
 				if(IS_SET(it->item->flags, ITEM_MAGE))
 				{
@@ -8993,7 +8990,7 @@ void Game::UpdateUnitInventory(Unit& u, bool notify)
 				it->item = nullptr;
 				changes = true;
 			}
-			else if(IS_SET(u.data->flags, F_MAGE))
+			else if(IS_SET(u.data->flags, F_SPELLCASTER))
 			{
 				if(IS_SET(it->item->flags, ITEM_MAGE))
 				{
@@ -13167,7 +13164,8 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 	else if(str_part == "rhero")
 	{
 		static string str;
-		GenerateHeroName(ClassInfo::GetRandom(), Rand() % 4 == 0, str);
+		bool crazy = (Rand() % 4 == 0);
+		GenerateHeroName(Class::GetRandomHeroClass(crazy), crazy, str);
 		return str.c_str();
 	}
 	else if(str_part == "ritem")
@@ -16007,7 +16005,7 @@ bool Game::IsBetterItem(Unit& unit, const Item* item, int* value)
 	switch(item->type)
 	{
 	case IT_WEAPON:
-		if(!IS_SET(unit.data->flags, F_MAGE))
+		if(!IS_SET(unit.data->flags, F_SPELLCASTER))
 			return unit.IsBetterWeapon(item->ToWeapon(), value);
 		else
 		{
@@ -16039,7 +16037,7 @@ bool Game::IsBetterItem(Unit& unit, const Item* item, int* value)
 				return false;
 		}
 	case IT_ARMOR:
-		if(!IS_SET(unit.data->flags, F_MAGE))
+		if(!IS_SET(unit.data->flags, F_SPELLCASTER))
 			return unit.IsBetterArmor(item->ToArmor(), value);
 		else
 		{
@@ -20836,7 +20834,7 @@ cstring Game::GetRandomIdleText(Unit& u)
 			type = 1;
 		break;
 	case G_MAGES:
-		if(IS_SET(u.data->flags, F_MAGE) && n < 50)
+		if(IS_SET(u.data->flags, F_SPELLCASTER) && n < 50)
 			return random_string(txAiMageText);
 		else
 			type = 1;

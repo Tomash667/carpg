@@ -5,7 +5,7 @@
 #include "Net.h"
 
 //=================================================================================================
-PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(Class::INVALID), left(LEFT_NO), update_flags(0), ready(false), loaded(false), warping(false)
+PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(ClassId::None), left(LEFT_NO), update_flags(0), ready(false), loaded(false), warping(false)
 {
 }
 
@@ -28,7 +28,7 @@ void PlayerInfo::Load(HANDLE file)
 	ReadString1(file, name);
 	ReadFile(file, &clas, sizeof(clas), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_4)
-		clas = ClassInfo::OldToNew(clas);
+		clas = Class::OldToNew((old::ClassId)clas);
 	ReadFile(file, &id, sizeof(id), &tmp, nullptr);
 	ReadFile(file, &devmode, sizeof(devmode), &tmp, nullptr);
 	int old_left;

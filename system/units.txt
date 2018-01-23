@@ -1857,6 +1857,7 @@ unit q_zlo_kaplan : base_human {
 		{heal 0}
 	}
 	dialog q_evil
+	class cleric
 }
 
 unit q_zlo_mag : base_human {
@@ -2328,6 +2329,7 @@ unit mage : base_human {
 	spells mage
 	dialog mage_bodyguard
 	group mages
+	class mage
 }
 
 unit mage_q : mage {
@@ -2430,6 +2432,7 @@ unit q_magowie_boss : base_human {
 	}
 	dialog q_mages2
 	group mages
+	class mage
 }
 
 //------------------------------------------------------------------------------
@@ -2552,6 +2555,7 @@ unit wild_hunter : base_human {
 		"crazy_hunter.jpg"
 		null
 	}
+	class hunter
 }
 
 unit q_szaleni_szaleniec : wild_hunter {
@@ -2590,6 +2594,7 @@ unit crazy_mage : base_crazy {
 	items mage
 	gold {{10 25}{100 250}}
 	spells mage
+	class mage
 }
 
 unit crazy_warrior : base_crazy {
@@ -2597,6 +2602,7 @@ unit crazy_warrior : base_crazy {
 	flags | {ai_train contest melee}
 	items warrior
 	gold {{8 22}{80 220}}
+	class warrior
 }
 
 unit crazy_hunter : base_crazy {
@@ -2604,6 +2610,7 @@ unit crazy_hunter : base_crazy {
 	flags | {archer ai_train contest_50}
 	items hunter
 	gold {{6 18}{60 180}}
+	class hunter
 }
 
 unit crazy_rogue : base_crazy {
@@ -2611,6 +2618,7 @@ unit crazy_rogue : base_crazy {
 	flags | {ai_train contest_50 melee_50 backstab}
 	items rogue
 	gold {{7 20}{70 200}}
+	class rogue
 }
 
 unit crazy_cook : base_crazy {
@@ -2643,6 +2651,7 @@ unit hero_mage : base_hero {
 	items mage
 	gold {{10 25}{100 250}}
 	spells mage
+	class mage
 }
 
 unit hero_warrior : base_hero {
@@ -2650,6 +2659,7 @@ unit hero_warrior : base_hero {
 	flags | {ai_train contest melee}
 	items warrior
 	gold {{8 22}{80 220}}
+	class warrior
 }
 
 unit hero_hunter : base_hero {
@@ -2657,6 +2667,7 @@ unit hero_hunter : base_hero {
 	flags | {archer ai_train contest_50}
 	items hunter
 	gold {{6 18}{60 180}}
+	class hunter
 }
 
 unit hero_rogue : base_hero {
@@ -2664,6 +2675,7 @@ unit hero_rogue : base_hero {
 	flags | {ai_train contest_50 melee_50 backstab}
 	items rogue
 	gold {{7 20}{70 200}}
+	class rogue
 }
 
 unit hero_merchant : base_hero {
@@ -2727,6 +2739,7 @@ unit hero_merchant : base_hero {
 		random 1 3 !normal_food
 	}
 	gold {{200 300} {2000 3000}}
+	class merchant
 }
 
 //------------------------------------------------------------------------------
@@ -2847,12 +2860,14 @@ class hunter {
 	crazy "crazy_hunter"
 	icon "icon_hunter.png"
 	action "summon_wolf"
+	chance 2
 }
 
 class mage {
 	hero "hero_mage"
 	crazy "crazy_mage"
 	icon "icon_mage.png"
+	chance 1
 }
 
 class monk {
@@ -2869,6 +2884,7 @@ class rogue {
 	crazy "crazy_rogue"
 	icon "icon_rogue.png"
 	action "dash"
+	chance 2
 }
 
 class warrior {
@@ -2877,11 +2893,13 @@ class warrior {
 	crazy "crazy_warrior"
 	icon "icon_warrior.png"
 	action "bull_charge"
+	chance 2
 }
 
 class merchant {
 	hero "hero_merchant"
 	icon "icon_merchant.png"
+	chance 0
 }
 
 //------------------------------------------------------------------------------

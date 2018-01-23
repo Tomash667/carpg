@@ -323,7 +323,6 @@
     <ClInclude Include="source\game\stats\Attribute.h" />
     <ClInclude Include="source\game\stats\BaseLocation.h" />
     <ClInclude Include="source\game\stats\BaseTrap.h" />
-    <ClInclude Include="source\game\stats\ClassOld.h" />
     <ClInclude Include="source\game\stats\Const.h" />
     <ClInclude Include="source\game\stats\DamageTypes.h" />
     <ClInclude Include="source\game\stats\Effect.h" />
@@ -432,6 +431,7 @@
     <ClCompile Include="source\game\system\BuildingGroup.cpp" />
     <ClCompile Include="source\game\system\BuildingLoader.cpp" />
     <ClCompile Include="source\game\system\BuildingScript.cpp" />
+    <ClCompile Include="source\game\system\Class.cpp" />
     <ClCompile Include="source\game\system\Content.cpp" />
     <ClCompile Include="source\game\Dialogs.cpp" />
     <ClCompile Include="source\game\entity\AIController.cpp" />
@@ -527,7 +527,6 @@
     <ClCompile Include="source\game\stats\Attribute.cpp" />
     <ClCompile Include="source\game\stats\BaseLocation.cpp" />
     <ClCompile Include="source\game\stats\BaseTrap.cpp" />
-    <ClCompile Include="source\game\stats\ClassOld.cpp" />
     <ClCompile Include="source\game\stats\Effect.cpp" />
     <ClCompile Include="source\game\stats\Material.cpp" />
     <ClCompile Include="source\game\stats\Music.cpp" />

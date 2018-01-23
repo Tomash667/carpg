@@ -57,8 +57,8 @@ struct CreatedCharacter
 	bool update_skills;
 	vector<Skill> to_update;
 
-	void Clear(Class c);
-	void Random(Class c);
+	void Clear(ClassId c);
+	void Random(ClassId c);
 	void Write(BitStream& stream) const;
 	// 0 - ok, 1 - read error, 2 - value error, 3 - validation error
 	int Read(BitStream& stream);
@@ -78,6 +78,6 @@ struct CreatedCharacter
 };
 
 //-----------------------------------------------------------------------------
-void WriteCharacterData(BitStream& stream, Class c, const HumanData& hd, const CreatedCharacter& cc);
+void WriteCharacterData(BitStream& stream, ClassId c, const HumanData& hd, const CreatedCharacter& cc);
 // 0 - ok, 1 - read error, 2 - value error, 3 - validation error
-int ReadCharacterData(BitStream& stream, Class& c, HumanData& hd, CreatedCharacter& cc);
+int ReadCharacterData(BitStream& stream, ClassId& c, HumanData& hd, CreatedCharacter& cc);

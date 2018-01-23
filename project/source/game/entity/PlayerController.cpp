@@ -591,7 +591,7 @@ void PlayerController::Load(HANDLE file)
 {
 	ReadFile(file, &clas, sizeof(clas), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_4)
-		clas = ClassInfo::OldToNew(clas);
+		clas = Class::OldToNew((old::ClassId)clas);
 	ReadString1(file, name);
 	if(LOAD_VERSION >= V_CURRENT)
 		ReadFile(file, &level, sizeof(level), &tmp, nullptr);
@@ -873,7 +873,7 @@ bool PlayerController::Read(BitStream& stream)
 //=================================================================================================
 Action& PlayerController::GetAction()
 {
-	auto action = ClassInfo::classes[(int)clas].action;
+	auto action = Class::classes[(int)clas]->action;
 	assert(action);
 	return *action;
 }

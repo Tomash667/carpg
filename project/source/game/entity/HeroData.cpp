@@ -20,44 +20,7 @@ void HeroData::Init(Unit& _unit)
 	melee = false;
 	phase = false;
 	phase_timer = 0.f;
-
-	if(!IS_SET(unit->data->flags2, F2_NO_CLASS))
-	{
-		if(IS_SET(unit->data->flags2, F2_CLASS_FLAG))
-		{
-			if(IS_SET(unit->data->flags, F_MAGE))
-				clas = Class::MAGE;
-			else if(IS_SET(unit->data->flags2, F2_WARRIOR))
-				clas = Class::WARRIOR;
-			else if(IS_SET(unit->data->flags2, F2_HUNTER))
-				clas = Class::HUNTER;
-			else if(IS_SET(unit->data->flags2, F2_CLERIC))
-				clas = Class::CLERIC;
-			else
-			{
-				assert(IS_SET(unit->data->flags2, F2_ROGUE));
-				clas = Class::ROGUE;
-			}
-		}
-		else
-		{
-			const string& id = unit->data->id;
-
-			if(id == "hero_mage" || id == "crazy_mage")
-				clas = Class::MAGE;
-			else if(id == "hero_warrior" || id == "crazy_warrior")
-				clas = Class::WARRIOR;
-			else if(id == "hero_hunter" || id == "crazy_hunter")
-				clas = Class::HUNTER;
-			else
-			{
-				assert(id == "hero_rogue" || id == "crazy_rogue");
-				clas = Class::ROGUE;
-			}
-		}
-	}
-	else
-		clas = Class::ROGUE;
+	clas = unit->data->clas;
 
 	if(!IS_SET(unit->data->flags2, F2_SPECIFIC_NAME))
 		Game::Get().GenerateHeroName(*this);
@@ -93,7 +56,7 @@ void HeroData::Load(HANDLE file)
 	ReadFile(file, (void*)name.c_str(), len, &tmp, nullptr);
 	ReadFile(file, &clas, sizeof(clas), &tmp, nullptr);
 	if(LOAD_VERSION < V_0_4)
-		clas = ClassInfo::OldToNew(clas);
+		clas = Class::OldToNew((old::ClassId)clas);
 	ReadFile(file, &know_name, sizeof(know_name), &tmp, nullptr);
 	ReadFile(file, &team_member, sizeof(team_member), &tmp, nullptr);
 	ReadFile(file, &mode, sizeof(mode), &tmp, nullptr);
@@ -130,4 +93,13 @@ void HeroData::LevelUp()
 	++unit->level;
 	unit->statsx = unit->statsx->GetLevelUp();
 	unit->CalculateStats();
+}
+
+//=================================================================================================
+void HeroData::SetupMelee()
+{
+	if(IS_SET(unit->data->flags2, F2_MELEE))
+		melee = true;
+	else if(IS_SET(unit->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
+		melee = true;
 }

@@ -36,7 +36,7 @@ public:
 	void StopStartup();
 	void UseLoadedCharacter(bool have);
 	void CheckAutopick();
-	void PickClass(Class clas, bool ready);
+	void PickClass(ClassId clas, bool ready);
 	void LoadData();
 
 	Grid grid;

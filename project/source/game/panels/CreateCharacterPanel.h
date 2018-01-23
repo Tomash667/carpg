@@ -54,14 +54,14 @@ public:
 	void Init();
 	void LoadData();
 	void Show(bool enter_name);
-	void ShowRedo(Class clas, int hair_index, HumanData& hd, CreatedCharacter& cc);
+	void ShowRedo(ClassId clas, int hair_index, HumanData& hd, CreatedCharacter& cc);
 
 	// data
 	CustomButton custom_x, custom_bt[2];
 
 	// results
 	CreatedCharacter cc;
-	Class clas;
+	ClassId clas;
 	string player_name;
 	Unit* unit;
 	int hair_index;

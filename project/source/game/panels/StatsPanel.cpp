@@ -153,7 +153,7 @@ void StatsPanel::SetText()
 	// stats
 	flowStats.Clear();
 	flowStats.Add()->Set(txTraits);
-	flowStats.Add()->Set(Format("%s: %s", txClass, Class::classes[pc->clas]->name.c_str()), G_STATS, STATS_CLASS);
+	flowStats.Add()->Set(Format("%s: %s", txClass, Class::classes[(int)pc->clas]->name.c_str()), G_STATS, STATS_CLASS);
 	if(game.devmode)
 		flowStats.Add()->Set(Format("Level: %g (%d)", pc->level, pc->unit->level), G_INVALID, -1);
 	int hp = int(pc->unit->hp);
@@ -265,7 +265,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 			break;
 		case STATS_CLASS:
 			{
-				ClassInfo& info = *ClassInfo::classes[pc->clas];
+				Class& info = *Class::classes[(int)pc->clas];
 				tooltip.big_text = info.name;
 				tooltip.text = info.desc;
 				tooltip.small_text.clear();

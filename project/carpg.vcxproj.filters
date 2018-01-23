@@ -685,8 +685,8 @@
     <ClCompile Include="source\game\script\ScriptManager.cpp">
       <Filter>3. game\script</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\stats\ClassOld.cpp">
-      <Filter>3. game\stats</Filter>
+    <ClCompile Include="source\game\system\Class.cpp">
+      <Filter>3. game\system\unit</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1350,9 +1350,6 @@
     </ClInclude>
     <ClInclude Include="source\game\system\Class.h">
       <Filter>3. game\system\unit</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\stats\ClassOld.h">
-      <Filter>3. game\stats</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

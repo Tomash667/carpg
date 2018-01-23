@@ -1555,7 +1555,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			|| !stream.Read(flags)
 			|| !stream.Read(unit.hero->credit))
 			return false;
-		if(unit.hero->clas >= Class::MAX)
+		if((uint)unit.hero->clas >= Class::classes.size())
 		{
 			Error("Invalid hero class %d.", unit.hero->clas);
 			return false;
@@ -1586,7 +1586,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 			Error("Invalid player %d free days %d.", unit.player->id, unit.player->free_days);
 			return false;
 		}
-		if(!ClassInfo::IsPickable(unit.player->clas))
+		if(!Class::IsPickable(unit.player->clas))
 		{
 			Error("Invalid player %d class %d.", unit.player->id, unit.player->clas);
 			return false;

@@ -24,7 +24,7 @@ void Game::GenerateHeroName(HeroData& hero)
 }
 
 //=================================================================================================
-void Game::GenerateHeroName(int clas, bool crazy, string& hero_name)
+void Game::GenerateHeroName(ClassId clas, bool crazy, string& hero_name)
 {
 	if(crazy)
 	{
@@ -32,7 +32,7 @@ void Game::GenerateHeroName(int clas, bool crazy, string& hero_name)
 		return;
 	}
 
-	Class& c = *Class::classes[clas];
+	Class& c = *Class::classes[(int)clas];
 	if(Rand() % 2 == 0)
 		hero_name = random_item(c.names);
 	else

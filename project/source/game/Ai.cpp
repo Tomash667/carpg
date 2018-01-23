@@ -1584,7 +1584,7 @@ void Game::UpdateAi(float dt)
 						// co wyj¹œæ? broñ do walki wrêcz czy ³uk?
 						WeaponType bron = W_NONE;
 
-						if(u.PreferMelee() || IS_SET(u.data->flags, F_MAGE))
+						if(u.PreferMelee() || IS_SET(u.data->flags, F_SPELLCASTER))
 							bron = W_ONE_HANDED;
 						else if(IS_SET(u.data->flags, F_ARCHER))
 						{
@@ -1682,7 +1682,7 @@ void Game::UpdateAi(float dt)
 							break;
 					}
 
-					if(u.IsHoldingBow() || IS_SET(u.data->flags, F_MAGE))
+					if(u.IsHoldingBow() || IS_SET(u.data->flags, F_SPELLCASTER))
 					{
 						// trzymanie dystansu przez ³uczników i magów
 						move_type = KeepDistanceCheck;
@@ -1756,7 +1756,7 @@ void Game::UpdateAi(float dt)
 						}
 
 						// stay close but not too close
-						if(ai.state == AIController::Fighting && enemy && !(u.IsHoldingBow() || IS_SET(u.data->flags, F_MAGE)))
+						if(ai.state == AIController::Fighting && enemy && !(u.IsHoldingBow() || IS_SET(u.data->flags, F_SPELLCASTER)))
 						{
 							look_at = LookAtTarget;
 							target_pos = enemy->pos;

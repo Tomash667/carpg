@@ -403,7 +403,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						ClassInfo* ci = ClassInfo::Find(id);
+						Class* ci = Class::TryGet(id);
 						if(!ci)
 							t.Throw("Invalid class '%s'.", id.c_str());
 						t.Next();
@@ -459,7 +459,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 						}
 						else
 						{
-							ClassInfo* ci = ClassInfo::Find(t.MustGetItem());
+							Class* ci = Class::TryGet(t.MustGetItem());
 							if(ci)
 							{
 								if(nickname)

@@ -379,10 +379,6 @@ void Quest_Mages2::SetProgress(int prog2)
 			loc.state = LS_HIDDEN;
 			loc.st = 15;
 			loc.active_quest = this;
-			do
-			{
-				game->GenerateHeroName(Class::MAGE, false, evil_mage_name);
-			} while(good_mage_name == evil_mage_name);
 			done = false;
 			unit_event_handler = this;
 			unit_auto_talk = true;
@@ -391,6 +387,10 @@ void Quest_Mages2::SetProgress(int prog2)
 			unit_dont_attack = true;
 			unit_to_spawn2 = UnitData::Get("golem_iron");
 			spawn_2_guard_1 = true;
+			do
+			{
+				game->GenerateHeroName(unit_to_spawn->clas, false, evil_mage_name);
+			} while(good_mage_name == evil_mage_name);
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);

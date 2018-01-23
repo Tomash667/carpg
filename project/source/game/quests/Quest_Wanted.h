@@ -39,7 +39,8 @@ public:
 	bool IfNeedTalk(cstring topic) const override;
 
 private:
-	int level, in_location, clas;
+	int level, in_location;
+	ClassId clas;
 	bool crazy;
 	string unit_name;
 	OtherItem letter;

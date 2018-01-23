@@ -114,7 +114,12 @@ stock alchemist_apprentice
 //------------------------------------------------------------------------------
 // Required classes
 //------------------------------------------------------------------------------
-class 
+// old saves compability
+class warrior
+class hunter
+class rogue
+class mage
+class cleric
 
 //------------------------------------------------------------------------------
 // Required units

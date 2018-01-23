@@ -1,5 +1,10 @@
 ﻿FEATURE:
 *** perks
++ class Validate
++ class chance, call Initialize
+? class
+	? all heroes/crazy types icon/about/name gen
+	? gorush/cleric/captive
 + traveling merchant
 	? level up perks
 	+ spawning
@@ -179,6 +184,7 @@ NEW:
 + stock scripts in files, using extra_stock perk
 + npc to recruit: merchant
 + server side validation: trader_buy items
++ barbarian starting items: axe2, light armor, vodka, healing potions
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

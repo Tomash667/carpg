@@ -678,27 +678,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	// autopicked class in MP
-	{
-		const string& clas = cfg.GetString("autopick", "");
-		if(!clas.empty())
-		{
-			if(clas == "random")
-				game.autopick_class = Class::RANDOM;
-			else
-			{
-				ClassInfo* ci = ClassInfo::Find(clas);
-				if(ci)
-				{
-					if(ClassInfo::IsPickable(ci->class_id))
-						game.autopick_class = ci->class_id;
-					else
-						Warn("Settings [autopick]: Class '%s' is not pickable by players.", clas.c_str());
-				}
-				else
-					Warn("Settings [autopick]: Invalid class '%s'.", clas.c_str());
-			}
-		}
-	}
+	game.autopick_class_id = cfg.GetString("autopick", "");
 
 	// autostart serwera
 	game.autostart_count = cfg.GetInt("autostart");
@@ -711,22 +691,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	game.mp_port = Clamp(cfg.GetInt("port", PORT), 0, 0xFFFF);
 
 	// autopicked class in quickstart
-	{
-		const string& clas = cfg.GetString("class", "");
-		if(!clas.empty())
-		{
-			ClassInfo* ci = ClassInfo::Find(clas);
-			if(ci)
-			{
-				if(ClassInfo::IsPickable(ci->class_id))
-					game.quickstart_class = ci->class_id;
-				else
-					Warn("Settings [class]: Class '%s' is not pickable by players.", clas.c_str());
-			}
-			else
-				Warn("Settings [class]: Invalid class '%s'.", clas.c_str());
-		}
-	}
+	game.quickstart_class_id = cfg.GetString("class", "");
 
 	game.quickstart_name = cfg.GetString("name", "Test");
 	if(game.quickstart_name.empty())
