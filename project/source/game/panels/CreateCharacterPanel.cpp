@@ -926,7 +926,7 @@ void CreateCharacterPanel::Init()
 	{
 		Class& c = *p_c;
 		if(c.IsPickable())
-			lbClasses.Add(new DefaultGuiElement(c.name.c_str(), c.index, c.icon));
+			lbClasses.Add(new DefaultGuiElement(c.name.c_str(), c.index, c.icon->tex));
 	}
 	lbClasses.Sort();
 	lbClasses.Initialize();

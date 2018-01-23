@@ -889,6 +889,16 @@ private:
 				unit->armor_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_TYPE);
 				crc.Update(unit->armor_type);
 				break;
+			case P_CLASS:
+				{
+					const string& id = t.MustGetItemKeyword();
+					Class* clas = Class::TryGet(id);
+					if(!clas)
+						t.Throw("Invalid class '%s'.", id.c_str());
+					unit->clas = (ClassId)clas->index;
+					crc.Update(unit->clas);
+				}
+				break;
 			default:
 				t.Unexpected();
 				break;
@@ -1907,10 +1917,34 @@ private:
 	//=================================================================================================
 	void ParseClass(const string& id)
 	{
-		Ptr<Class> clas;
-		clas->id = id;
-		if(Class::TryGet(clas->id))
+		Class* existing_clas = Class::TryGet(id);
+		if(existing_clas && existing_clas->defined)
 			t.Throw("Class with that id already exists.");
+		t.Next();
+
+		if(t.IsSymbol(';'))
+		{
+			// class declaration
+			if(existing_clas)
+				t.Throw("Class already declared.");
+			Class* clas = new Class;
+			clas->id = id;
+			clas->index = Class::classes.size();
+			Class::classes.push_back(clas);
+			return;
+		}
+		
+		Ptr<Class> p_clas(nullptr);
+		Class* clas;
+		if(existing_clas)
+			clas = existing_clas;
+		else
+		{
+			p_clas.Ensure();
+			clas = p_clas.Get();
+			clas->id = id;
+		}
+		clas->defined = true;
 		crc.Update(clas->id);
 		t.Next();
 
@@ -1954,7 +1988,7 @@ private:
 			case CK_ICON:
 				{
 					auto& icon_id = t.MustGetString();
-					ResourceManager::Get().For<Texture>().AddLoadTask(icon_id, clas->icon);
+					clas->icon = ResourceManager::Get().For<Texture>().TryGet(icon_id);
 					crc.Update(icon_id);
 				}
 				break;
@@ -1972,8 +2006,11 @@ private:
 			t.Next();
 		}
 
-		clas->index = Class::classes.size();
-		Class::classes.push_back(clas.Pin());
+		if(!existing_clas)
+		{
+			clas->index = Class::classes.size();
+			Class::classes.push_back(p_clas.Pin());
+		}
 	}
 
 	Tokenizer t;
@@ -1985,6 +2022,7 @@ void content::LoadUnits()
 {
 	UnitLoader loader;
 	loader.Load();
+	Class::info.Initialize();
 }
 
 //=================================================================================================

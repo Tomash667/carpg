@@ -501,6 +501,11 @@ void Game::AddLoadTasks()
 	tex_mgr.AddLoadTask("warning.png", tWarning);
 	tex_mgr.AddLoadTask("error.png", tError);
 	Action::LoadData();
+	for(Class* ci : Class::classes)
+	{
+		if(ci->icon)
+			tex_mgr.AddLoadTask(ci->icon);
+	}
 
 	// preload terrain textures
 	tTrawa = tex_mgr.Get("trawa.jpg");

@@ -1486,7 +1486,7 @@ unit traveler : base_human {
 unit artur_drwal : base_human {
 	level 5
 	profile worker
-	flags | {ai_stay hero specific_name no_class contest_50}
+	flags | {ai_stay hero specific_name contest_50}
 	items {
 		al_studded
 		axe_battle
@@ -1516,7 +1516,7 @@ unit drwal : base_human {
 unit inwestor : base_human {
 	level 10
 	profile clerk
-	flags | {ai_stay hero specific_name no_class}
+	flags | {ai_stay hero specific_name}
 	items {
 		random {al_clothes3 al_clothes3b}
 		dagger_rapier
@@ -1565,7 +1565,7 @@ unit pijak : base_human {
 unit mistrz_agentow : base_human {
 	level {10 15}
 	profile rogue
-	flags | {ai_stay hero specific_name no_class backstab dont_eat}
+	flags | {ai_stay hero specific_name backstab dont_eat}
 	items rogue
 	gold {{50 200}{100 300}}
 	dialog q_bandits
@@ -1583,7 +1583,7 @@ unit guard_q_bandyci : base_human {
 unit agent : base_human {
 	level {6 12}
 	profile rogue
-	flags | {ai_stay hero no_class specific_name dont_eat}
+	flags | {ai_stay hero specific_name dont_eat}
 	items rogue
 	gold {{10 50}{20 60}}
 	dialog q_bandits
@@ -1601,7 +1601,7 @@ unit q_magowie_uczony : base_human {
 unit q_magowie_stary : base_human {
 	level {3 15}
 	profile mage
-	flags | {mage hero old class_flag drunk_mage}
+	flags | {spellcaster hero old drunk_mage}
 	items mage
 	gold {{15 30}{150 300}}
 	spells mage
@@ -1805,7 +1805,7 @@ unit q_orkowie_orc_chief : friendly_orc {
 unit q_orkowie_orc_shaman : friendly_orc {
 	level {6 11}
 	profile shaman
-	flags | mage
+	flags | spellcaster
 	items orc_shaman
 	gold {{20 40}{30 60}}
 	spells orc_shaman
@@ -1815,7 +1815,7 @@ unit q_orkowie_orc_shaman : friendly_orc {
 unit q_gobliny_szlachcic : base_human {
 	level 18
 	profile rogue
-	flags | {ai_stay hero specific_name no_class}
+	flags | {ai_stay hero specific_name}
 	items mayor
 	gold {250 500}
 	dialog q_goblins
@@ -1833,7 +1833,7 @@ unit q_gobliny_poslaniec : base_human {
 unit q_gobliny_mag : base_human {
 	level {3 15}
 	profile mage
-	flags | mage
+	flags | spellcaster
 	items mage
 	gold {{15 30}{150 300}}
 	spells mage
@@ -1843,7 +1843,7 @@ unit q_gobliny_mag : base_human {
 unit q_zlo_kaplan : base_human {
 	level {0 20}
 	profile cleric
-	flags | {hero ai_stay ai_train class_flag specific_name cleric}
+	flags | {hero ai_stay ai_train specific_name}
 	items {
 		blunt_morningstar
 		shield_iron
@@ -1863,7 +1863,7 @@ unit q_zlo_kaplan : base_human {
 unit q_zlo_mag : base_human {
 	level {3 15}
 	profile mage
-	flags | mage
+	flags | spellcaster
 	items mage
 	gold {{15 30}{150 300}}
 	spells mage
@@ -1929,7 +1929,7 @@ unit goblin_chief_q : goblin_chief {
 unit q_gobliny_szlachcic2 : base_human {
 	level 18
 	profile rogue
-	flags | {archer hero ai_wanders leader specific_name no_class boss sit_on_throne mark not_goblin}
+	flags | {archer hero ai_wanders leader specific_name boss sit_on_throne mark not_goblin}
 	hp 500
 	def 35
 	items {
@@ -2009,7 +2009,7 @@ unit orc_chief_q : orc_chief {
 unit orc_shaman : base_orc {
 	level {6 11}
 	profile shaman
-	flags | mage
+	flags | spellcaster
 	items orc_shaman
 	gold {{20 40}{30 60}}
 	spells orc_shaman
@@ -2135,7 +2135,7 @@ unit skeleton_fighter : base_skeleton {
 unit skeleton_mage : base_skeleton {
 	level {4 12}
 	profile skeleton_mage
-	flags | mage
+	flags | spellcaster
 	items skeleton_mage
 	spells skeleton_mage
 }
@@ -2143,7 +2143,7 @@ unit skeleton_mage : base_skeleton {
 unit necromancer : base_human {
 	level {3 15}
 	profile mage
-	flags | {mage leader gray_hair}
+	flags | {spellcaster leader gray_hair}
 	items necromancer
 	gold {{15 30}{120 240}}
 	spells necromancer
@@ -2323,7 +2323,7 @@ unit q_bandyci_szef : base_bandit {
 unit mage : base_human {
 	level {3 15}
 	profile mage
-	flags | mage
+	flags | spellcaster
 	items mage
 	gold {{15 30}{150 300}}
 	spells mage
@@ -2412,7 +2412,7 @@ unit q_magowie_golem : golem_stone {
 unit q_magowie_boss : base_human {
 	level 20
 	profile mage
-	flags | {mage old boss mark guarded}
+	flags | {spellcaster old boss mark guarded}
 	hp 500
 	def 35
 	items {
@@ -2482,7 +2482,7 @@ unit white_wolf_sum : wolf {
 	}
 	items null
 	group citizens
-	flags | {hero specific_name no_class}
+	flags | {hero specific_name}
 }
 
 unit base_spider {
@@ -2590,7 +2590,7 @@ unit base_crazy : base_human {
 
 unit crazy_mage : base_crazy {
 	profile mage
-	flags | {mage contest_25}
+	flags | {spellcaster contest_25}
 	items mage
 	gold {{10 25}{100 250}}
 	spells mage
@@ -2647,7 +2647,7 @@ unit base_hero : base_human {
 
 unit hero_mage : base_hero {
 	profile mage
-	flags | {mage contest_25}
+	flags | {spellcaster contest_25}
 	items mage
 	gold {{10 25}{100 250}}
 	spells mage

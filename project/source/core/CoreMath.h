@@ -142,6 +142,8 @@ T GetRandomWeight(const vector<std::pair<T, uint>>& v, uint total)
 		if(j < sum)
 			return e.first;
 	}
+	assert(0);
+	return v[0].first;
 }
 
 //-----------------------------------------------------------------------------

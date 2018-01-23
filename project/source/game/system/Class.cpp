@@ -34,9 +34,9 @@ UnitData& Class::GetRandomHeroData(bool crazy)
 	ClassId clas = GetRandomHeroClass(crazy);
 	Class* c = classes[(int)clas];
 	if(crazy)
-		return c->crazy_data;
+		return *c->crazy_data;
 	else
-		return c->hero_data;
+		return *c->hero_data;
 }
 
 UnitData& Class::GetHeroData(ClassId clas, bool crazy)
@@ -71,58 +71,64 @@ bool Class::IsPickable(ClassId clas)
 
 void Class::Validate(uint& errors)
 {
-	// TODO
-	/*for(int i = 0; i < (int)Class::MAX; ++i)
+	for(Class* p_clas : classes)
 	{
-		ClassInfo& ci = ClassInfo::classes[i];
-		if(ci.class_id != (Class)i)
-		{
-			++err;
-			Warn("Test: Class %s: id mismatch.", ci.id);
-		}
+		Class& ci = *p_clas;
 		if(ci.name.empty())
 		{
-			++err;
-			Warn("Test: Class %s: empty name.", ci.id);
+			++errors;
+			Warn("Test: Class %s: empty name.", ci.id.c_str());
 		}
 		if(ci.desc.empty())
 		{
-			++err;
-			Warn("Test: Class %s: empty desc.", ci.id);
+			++errors;
+			Warn("Test: Class %s: empty desc.", ci.id.c_str());
 		}
 		if(ci.about.empty())
 		{
-			++err;
-			Warn("Test: Class %s: empty about.", ci.id);
+			++errors;
+			Warn("Test: Class %s: empty about.", ci.id.c_str());
 		}
-		if(!ci.icon)
+		if(!ci.icon && (ci.player_data || ci.hero_data || ci.crazy_data))
 		{
-			++err;
-			Warn("Test: Class %s: missing icon file '%s'.", ci.id, ci.icon_file);
+			++errors;
+			Warn("Test: Class %s: missing icon file.", ci.id.c_str());
 		}
-		if(IsPickable(ci.class_id))
-		{
-			if(!ci.unit_data_id)
-			{
-				++err;
-				Warn("Test: Class %s: missing unit data.", ci.id);
-			}
-			else if(!ci.unit_data)
-			{
-				++err;
-				Warn("Test: Class %s: invalid unit data '%s'.", ci.id, ci.unit_data_id);
-			}
-		}
-	}*/
+	}
+
+	if(info.player_classes.empty())
+	{
+		++errors;
+		Error("Test: No player classes.");
+	}
+	if(info.hero_total == 0)
+	{
+		++errors;
+		Error("Test: No hero classes.");
+	}
+	if(info.crazy_total == 0)
+	{
+		++errors;
+		Error("Test: No crazy classes.");
+	}
+}
+
+ClassId Class::ClassesInfo::TryGetIndex(cstring id)
+{
+	Class* clas = TryGet(id);
+	if(clas)
+		return (ClassId)clas->index;
+	else
+		return ClassId::None;
 }
 
 void Class::ClassesInfo::Initialize()
 {
-	old_to_new[(int)old::ClassId::Warrior] = (ClassId)TryGet("warrior")->index;
-	old_to_new[(int)old::ClassId::Hunter] = (ClassId)TryGet("hunter")->index;
-	old_to_new[(int)old::ClassId::Rogue] = (ClassId)TryGet("rogue")->index;
-	old_to_new[(int)old::ClassId::Mage] = (ClassId)TryGet("mage")->index;
-	old_to_new[(int)old::ClassId::Cleric] = (ClassId)TryGet("cleric")->index;
+	old_to_new[(int)old::ClassId::Warrior] = TryGetIndex("warrior");
+	old_to_new[(int)old::ClassId::Hunter] = TryGetIndex("hunter");
+	old_to_new[(int)old::ClassId::Rogue] = TryGetIndex("rogue");
+	old_to_new[(int)old::ClassId::Mage] = TryGetIndex("mage");
+	old_to_new[(int)old::ClassId::Cleric] = TryGetIndex("cleric");
 
 	hero_total = 0;
 	crazy_total = 0;

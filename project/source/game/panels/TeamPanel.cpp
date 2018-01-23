@@ -104,7 +104,7 @@ void TeamPanel::Draw(ControlDrawData*)
 		ClassId clas = u->GetClass();
 		if(clas != ClassId::None)
 		{
-			TEX t = Class::classes[(int)u->GetClass()]->icon;
+			TEX t = Class::classes[(int)u->GetClass()]->icon->tex;
 			Int2 img_size;
 			Vec2 scale;
 			Control::ResizeImage(t, Int2(32, 32), img_size, scale);

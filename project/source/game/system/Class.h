@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Resource.h"
+
 //-----------------------------------------------------------------------------
 struct Action;
 struct UnitData;
@@ -37,6 +39,7 @@ struct Class
 		vector<std::pair<ClassId, uint>> crazy_classes;
 		uint hero_total, crazy_total;
 
+		ClassId TryGetIndex(cstring id);
 		void Initialize();
 	};
 
@@ -46,11 +49,12 @@ struct Class
 	// localized data
 	string name, desc, about;
 	vector<string> names, nicknames;
-	TEX icon;
+	TexturePtr icon;
 	UnitData* player_data, *hero_data, *crazy_data;
 	Action* action;
+	bool defined;
 
-	Class() : icon(nullptr), player_data(nullptr), hero_data(nullptr), crazy_data(nullptr), action(nullptr), chance(0)
+	Class() : icon(nullptr), player_data(nullptr), hero_data(nullptr), crazy_data(nullptr), action(nullptr), chance(0), defined(false)
 	{
 	}
 
