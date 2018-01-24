@@ -183,6 +183,27 @@ nickname mage {
 	"Hydromage"
 }
 
+name merchant {
+	"Marco"
+	"Cleon"
+	"Marcus"
+	"Helgi"
+	"Gilbert"
+	"Adornes"
+}
+
+nickname merchant {
+	"Stingy"
+	"Greedy"
+	"Miser"
+	"Golden"
+	"Silver"
+	"Copper"
+	"Rich"
+	"Trader"
+	"Niggard"
+}
+
 name crazy {
 	"Xio Xio"
 	"Ao"

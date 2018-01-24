@@ -2,10 +2,16 @@ Historia zmian
 
 --------------------------------------------------------------------------------
 Wersja 0.7 (2017-XX-YY):
++ wêdrowny kupiec - rekrutowalny npc
 + nowe umiejêtnoœci: atletyka, akrobatyka, targowanie, pismiennictwo
++ nowe pocz¹tkowe atuty: s³abe plecy, przewlek³a choroba, ospa³y, powolny uczeñ, aspo³eczny, biedak, pechowiec, obrzydliwie bogaty, trening wojskowy
++ nowe atuty: silne plecy, silniejsze plecy, agresywny, bardzo agresywny, berserker, ciê¿ki cios, ostro¿ny, mobilnoœæ, poprawiona mobilnoœæ, finezja, skupienie na krytykach, uniki, twardy, twardszy, najtwardszy, twarda skóra, ¿elazna skóra, diamentowa skóra, niezwyk³e zdrowie, perfekcyjne zdrowie, energiczny, bardzo energiczny, przystosowanie, ¿elazny cz³owiek, wykszta³cony, urodzony przywódca, czaruj¹cy, bieg³oœæ/ekspert/mistrz broni jednorêcznej, skupienie na krytykach broni jednorêcznej, bieg³oœæ/ekspert/mistrz krótkiego ostrza, cios w plecy, bieg³oœæ/ekspert/mistrz d³ugiego ostrza, obronny styl walki, bieg³oœæ/ekspert/mistrz topora, siekacz, bieg³oœæ/ekspert/mistrz broni obuchowej, cios w czerep, bieg³oœæ/ekspert/mistrz ³uku, precyzyjny strza³, bieg³oœæ w tarczy, tarczownik, bojowy tarczownik, magiczny tarczownik, bieg³oœæ/ekspert/mistrz lekkiego pancerza, mobilnoœæ w lekkim pancerzu, bieg³oœæ/ekspert/mistrz œredniego pancerza, przystosowanie do œredniego pancerza, bieg³oœæ/ekspert/mistrz ciê¿kiego pancerza, przystosowanie do ciê¿kiego pancerza, zdrowa dieta, strongman, kulturysta, cudowna dieta, sprint, wygimnastykowany, d³ugodystansowy biegacz, hiperaktywnoœæ, kontrakt handlowy, zwiêkszony asortyment, wolny kupiec, mistrz kupiecki, rozszyfrowywanie run
++ uczenie nowych atutów w trakcie gry
 + nowy system walki
 + magiczny zwój
 + wczytywanie grup przeciwników na arenie z pliku
++ wczytywanie klas z pliku
++ jêzyk skryptowy
 - naprawiony crash przy wygenerowaniu magówi i golemów podczas walki na arenie
 - naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
 - naprawiony bardzo dobry startowy przedmiot gdy postaæ ma bardzo nisk¹ wartoœæ umiejêtnoœci

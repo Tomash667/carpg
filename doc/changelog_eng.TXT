@@ -2,11 +2,16 @@ Changelog
 
 --------------------------------------------------------------------------------
 Version 0.7 (2017-XX-YY):
++ traveling merchant recruitable npc
 + new skills: athletics, acrobatics, haggle, literacy
-+ new starting feats: filthy rich, military training, bad back, chronic disease, sluggish, slow lerner, asocial, poor
++ new starting feats: filthy rich, military training, bad back, chronic disease, sluggish, slow lerner, asocial, poor, unlucky
++ new feats: strong back, stronger back, aggressive, very aggresive, berserker, heavy hitter, careful, mobility, enhanced mobility, finesse, critical focus, dodge, tought, toughter, toughtest, hard skin, iron skin, diamond skin, extraordinary health, energetic, very energetic, adaptation, iron man, educated, leadership, charming, single handed weapon proficiency/expert/critical focus/master, short blade proficiency/expert/master, backstaber, long blade proficiency/expert/master, defensive combat style, axe proficiency/expert/master, chopper, blunt proficiency/expert/master, basher, bow proficiency/expert/master, precise shot, shield proficiency, shielder, battle shielder, magic shielder, light armor proficiency/mobility/expert/master, medium armor proficiency/adjustment/expert/master, heavy armor proficiency/adjustment/expert/master, healthy diet, strongman, body builder, miracle diet, sprint, flexible, long distance runner, hyperactive, trading contract, extra stock, free merchant, master merchant, decrypting runes
++ lerning new feats in game
 + combat system changes
 + magic scroll item
 + loading arena unit groups from lists
++ loading classes from file
++ scripting language
 - fixed random crash when fighting with arena enemies and rolled to spawn mages and golems
 - fixed empty location where there should be mages and golems there
 - fixed very good starting item when player have very low skill

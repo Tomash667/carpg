@@ -50,6 +50,6 @@ class warrior {
 }
 class merchant {
 	name "Wêdrowny kupiec"
-	desc ""
-	about ""
+	desc "?"
+	about "Jestem wêdrownym kupcem. Znam siê g³ównie na handlu ale potrafiê te¿ walczyæ jeœli jest taka potrzeba, preferujê bezpieczn¹ walkê z dystansu."
 }

@@ -2860,14 +2860,14 @@ class hunter {
 	crazy "crazy_hunter"
 	icon "icon_hunter.png"
 	action "summon_wolf"
-	chance 2
+	chance 4 // 26% (hero), 28% (crazy)
 }
 
 class mage {
 	hero "hero_mage"
 	crazy "crazy_mage"
 	icon "icon_mage.png"
-	chance 1
+	chance 2 // 13% (hero), 14% (crazy)
 }
 
 class monk {
@@ -2884,7 +2884,7 @@ class rogue {
 	crazy "crazy_rogue"
 	icon "icon_rogue.png"
 	action "dash"
-	chance 2
+	chance 4 // 26% (hero), 28% (crazy)
 }
 
 class warrior {
@@ -2893,13 +2893,13 @@ class warrior {
 	crazy "crazy_warrior"
 	icon "icon_warrior.png"
 	action "bull_charge"
-	chance 2
+	chance 4 // 26% (hero), 28% (crazy)
 }
 
 class merchant {
 	hero "hero_merchant"
 	icon "icon_merchant.png"
-	chance 0
+	chance 1 // 6% (hero) 0% (crazy)
 }
 
 //------------------------------------------------------------------------------

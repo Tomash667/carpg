@@ -161,7 +161,8 @@ class UnitLoader
 		CK_HERO,
 		CK_CRAZY,
 		CK_ICON,
-		CK_ACTION
+		CK_ACTION,
+		CK_CHANCE
 	};
 
 public:
@@ -530,7 +531,8 @@ private:
 			{ "hero", CK_HERO },
 			{ "crazy", CK_CRAZY },
 			{ "icon", CK_ICON },
-			{ "action", CK_ACTION }
+			{ "action", CK_ACTION },
+			{ "chance", CK_CHANCE }
 		});
 	}
 
@@ -1933,7 +1935,7 @@ private:
 			Class::classes.push_back(clas);
 			return;
 		}
-		
+
 		Ptr<Class> p_clas(nullptr);
 		Class* clas;
 		if(existing_clas)
@@ -1946,7 +1948,6 @@ private:
 		}
 		clas->defined = true;
 		crc.Update(clas->id);
-		t.Next();
 
 		t.AssertSymbol('{');
 		t.Next();
@@ -2000,6 +2001,11 @@ private:
 						t.Throw("Invalid action '%s'.", action_id.c_str());
 					crc.Update(action_id);
 				}
+				break;
+			case CK_CHANCE:
+				clas->chance = t.MustGetInt();
+				if(clas->chance < 0)
+					t.Throw("Invalid chance %d.", clas->chance);
 				break;
 			}
 

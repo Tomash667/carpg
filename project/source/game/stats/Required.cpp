@@ -25,7 +25,8 @@ enum RequiredType
 	R_BUILDING,
 	R_BUILDING_SCRIPT,
 	R_OBJECT,
-	R_USABLE
+	R_USABLE,
+	R_CLASS
 };
 
 //=================================================================================================
@@ -177,7 +178,8 @@ bool Game::LoadRequiredStats(uint& errors)
 		{ "building", R_BUILDING },
 		{ "building_script", R_BUILDING_SCRIPT },
 		{ "object", R_OBJECT },
-		{ "usable", R_USABLE }
+		{ "usable", R_USABLE },
+		{ "class", R_CLASS }
 	});
 
 	try
@@ -347,7 +349,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_OBJECT:
 					{
-						auto obj = BaseObject::TryGet(str.c_str());
+						auto obj = BaseObject::TryGet(str);
 						if(!obj)
 						{
 							Error("Missing required object '%s'.", str.c_str());
@@ -357,10 +359,20 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_USABLE:
 					{
-						auto use = BaseUsable::TryGet(str.c_str());
+						auto use = BaseUsable::TryGet(str);
 						if(!use)
 						{
 							Error("Missing required usable object '%s'.", str.c_str());
+							++errors;
+						}
+					}
+					break;
+				case R_CLASS:
+					{
+						Class* clas = Class::TryGet(str);
+						if(!clas)
+						{
+							Error("Missing required class '%s'.", str.c_str());
 							++errors;
 						}
 					}
