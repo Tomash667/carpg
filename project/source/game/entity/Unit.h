@@ -782,6 +782,8 @@ public:
 	bool HavePoisonResistance() const;
 	int GetCriticalChance(const Item* item, bool backstab, float ratio) const;
 	float GetCriticalDamage(const Item* item) const;
+	int CanDodge() const;
+	void Dodge(int perks);
 
 	// Perk functions
 	bool HavePerk(Perk perk, int value = -1) const;

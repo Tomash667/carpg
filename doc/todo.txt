@@ -9,6 +9,10 @@
 	+ icon
 	? dialogs
 	? name
++ dodge
+	+ msg
+	+ mp
+	? testing
 - changing armor while running have no effect on animation speed, same problem with slows/debuffs etc
 + GetItemPrice change tables
 ? food effect leak - unknown when

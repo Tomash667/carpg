@@ -11033,6 +11033,20 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			return ATTACK_BLOCKED;
 		}
 	}
+	else
+	{
+		int dodge = hitted.CanDodge();
+		if(dodge)
+		{
+			if(attacker.IsPlayer())
+				AttackReaction(hitted, attacker);
+			if(hitted.IsPlayer())
+				hitted.player->Train(TrainWhat::Dodge, 0.f, attacker.level);
+			hitted.Dodge(dodge);
+			// add msg
+			return ATTACK_DODGE;
+		}
+	}
 
 	// calculate damage
 	float dmg = game::CalculateDamage(atk, def);

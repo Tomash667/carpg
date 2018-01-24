@@ -23,7 +23,8 @@ EffectInfo EffectInfo::effects[] = {
 	EffectType::Stun, "stun", "unit is stunned", true, EffectInfo::None,
 	EffectType::Attack, "attack", "modify attack", false, EffectInfo::None,
 	EffectType::Defense, "defense", "modify defense", false, EffectInfo::None,
-	EffectType::Mobility, "mobility", "modify mobility", false, EffectInfo::None
+	EffectType::Mobility, "mobility", "modify mobility", false, EffectInfo::None,
+	EffectType::Dodged, "dodged", "unit dodged attack recently", false, EffectInfo::None
 };
 
 EffectSourceInfo EffectSourceInfo::sources[] = {

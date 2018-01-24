@@ -24,6 +24,7 @@ enum class EffectType
 	Attack, // modify attack
 	Defense, // modify defense
 	Mobility, // modify mobility
+	Dodged, // unit dodged attack recently
 
 	Max,
 	None

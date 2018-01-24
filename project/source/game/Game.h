@@ -1025,7 +1025,8 @@ public:
 		ATTACK_BLOCKED,
 		ATTACK_NO_DAMAGE,
 		ATTACK_HIT,
-		ATTACK_CLEAN_HIT
+		ATTACK_CLEAN_HIT,
+		ATTACK_DODGE
 	};
 	ATTACK_RESULT DoAttack(LevelContext& ctx, Unit& unit);
 	enum DamageFlags

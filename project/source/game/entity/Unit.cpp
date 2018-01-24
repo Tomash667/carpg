@@ -2745,6 +2745,35 @@ float Unit::GetCriticalDamage(const Item* item) const
 }
 
 //=================================================================================================
+int Unit::CanDodge() const
+{
+	bool dodge = HavePerk(Perk::Dodge);
+	bool light_armor_master = (HaveArmor() && GetArmor().skill == Skill::LIGHT_ARMOR && HavePerk(Perk::LightArmorMaster));
+	if(dodge || light_armor_master)
+	{
+		if(HaveEffect(EffectType::Dodged))
+			return 0;
+		return (dodge && light_armor_master) ? 2 : 1;
+	}
+	else
+		return 0;
+}
+
+//=================================================================================================
+void Unit::Dodge(int perks)
+{
+	Effect* e = Effect::Get();
+	e->effect = EffectType::Dodged;
+	e->time = (perks == 2 ? 4.f : 5.f);
+	e->value = -1;
+	e->power = 0;
+	e->source = EffectSource::Action;
+	e->source_id = -1;
+	e->refs = 1;
+	AddEffect(e);
+}
+
+//=================================================================================================
 bool Unit::HaveEffect(EffectType effect) const
 {
 	for(auto& e : effects)
