@@ -85,6 +85,7 @@ door = "Drzwi"
 doorLocked = "Zamkniête drzwi"
 gamePausedBig = "GRA ZATRZYMANA"
 pressEsc = "(Wciœnij ESC aby wróciæ do menu)"
+dodge = "Unik!"
 
 // ekwipunek
 inventory = "Ekwipunek"

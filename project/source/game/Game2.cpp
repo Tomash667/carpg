@@ -11043,7 +11043,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			if(hitted.IsPlayer())
 				hitted.player->Train(TrainWhat::Dodge, 0.f, attacker.level);
 			hitted.Dodge(dodge);
-			// add msg
+			game_gui->AddMessage3D(txDodge, hitpoint);
 			return ATTACK_DODGE;
 		}
 	}

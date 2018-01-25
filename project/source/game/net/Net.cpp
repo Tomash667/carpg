@@ -5237,6 +5237,11 @@ void Game::WriteServerChanges(BitStream& stream)
 			WriteBool(stream, Team.free_merchant);
 			WriteBool(stream, Team.master_merchant);
 			break;
+		case NetChange::MSG_3D:
+			WriteString1(stream, *c.str);
+			stream.Write(c.pos);
+			StringPool.Free(c.str);
+			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
 			assert(0);
@@ -8490,6 +8495,19 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				Team.master_merchant = master_merchant;
 			}
 			break;
+		// show 3d message
+		case NetChange::MSG_3D:
+			{
+				Vec3 pos;
+				if(!ReadString1(stream)
+					|| !stream.Read(pos))
+				{
+					StreamError("Update client: Broken MSG_3D.");
+					break;
+				}
+				game_gui->AddMessage3D(BUF, pos);
+			}
+			break;
 		// invalid change
 		default:
 			Warn("Update client: Unknown change type %d.", type);
@@ -11186,6 +11204,7 @@ bool Game::FilterOut(NetChange& c)
 		}
 		return true;
 	case NetChange::RUN_SCRIPT:
+	case NetChange::MSG_3D:
 		StringPool.Free(c.str);
 		return true;
 	default:

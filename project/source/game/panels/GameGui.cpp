@@ -19,6 +19,7 @@
 #include "Action.h"
 #include "ActionPanel.h"
 #include "BookPanel.h"
+#include "SaveState.h"
 
 //-----------------------------------------------------------------------------
 enum class TooltipGroup
@@ -186,8 +187,8 @@ void GameGui::DrawFront()
 			if(u.IsAI())
 			{
 				AIController& ai = *u.ai;
-				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, LVL:%d\nAni:%d, A:%d, Ai:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.level,
-					u.animation, u.action, str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer,
+				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, LVL:%d\nAni:%d, A:%d, Ai:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen,
+					u.level, u.animation, u.action, str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer,
 					ai.unit->run_attack ? 1 : 0), u, text_pos, -1);
 			}
 			else
@@ -467,7 +468,8 @@ void GameGui::DrawFront()
 				t = tShortcutHover;
 			else
 				t = tShortcutDown;
-			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
+			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f,
+				&Vec2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
 			GUI.DrawSprite2(t, mat, nullptr, nullptr, WHITE);
 			GUI.DrawSprite2(tSideButton[i], mat, nullptr, nullptr, WHITE);
 		}
@@ -987,6 +989,7 @@ void GameGui::AddSpeechBubble(Unit* unit, cstring text)
 	unit->bubble->length = 1.5f + float(strlen(text)) / 20;
 	unit->bubble->visible = false;
 	unit->bubble->last_pos = unit->GetHeadPoint();
+	unit->bubble->msg3d = false;
 
 	unit->talking = true;
 	unit->talk_timer = 0.f;
@@ -1010,6 +1013,7 @@ void GameGui::AddSpeechBubble(const Vec3& pos, cstring text)
 	sb->length = 1.5f + float(strlen(text)) / 20;
 	sb->visible = true;
 	sb->last_pos = pos;
+	sb->msg3d = false;
 
 	speech_bbs.push_back(sb);
 }
@@ -1031,7 +1035,8 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 
 	// element pod kursorem
 	int cursor_choice = -1;
-	if(GUI.cursor_pos.x >= offset.x && GUI.cursor_pos.x < offset.x + dsize.x - 16 && GUI.cursor_pos.y >= offset.y && GUI.cursor_pos.y < offset.y + dsize.y - 12)
+	if(GUI.cursor_pos.x >= offset.x && GUI.cursor_pos.x < offset.x + dsize.x - 16
+		&& GUI.cursor_pos.y >= offset.y && GUI.cursor_pos.y < offset.y + dsize.y - 12)
 	{
 		int w = (GUI.cursor_pos.y - offset.y + int(scrollbar.offset)) / GUI.default_font->height;
 		if(w < choices)
@@ -1409,12 +1414,16 @@ void GameGui::Save(FileWriter& f) const
 	{
 		const SpeechBubble& sb = *p_sb;
 		f.WriteString2(sb.text);
-		f << (sb.unit ? sb.unit->refid : -1);
 		f << sb.size;
 		f << sb.time;
 		f << sb.length;
 		f << sb.visible;
 		f << sb.last_pos;
+		f << sb.msg3d;
+		if(sb.msg3d)
+			f << sb.dir;
+		else
+			f << (sb.unit ? sb.unit->refid : -1);
 	}
 }
 
@@ -1426,13 +1435,31 @@ void GameGui::Load(FileReader& f)
 	{
 		*it = SpeechBubblePool.Get();
 		SpeechBubble& sb = **it;
-		f.ReadString2(sb.text);
-		sb.unit = Unit::GetByRefid(f.Read<int>());
-		f >> sb.size;
-		f >> sb.time;
-		f >> sb.length;
-		f >> sb.visible;
-		f >> sb.last_pos;
+		if(LOAD_VERSION < V_CURRENT)
+		{
+			f.ReadString2(sb.text);
+			sb.unit = Unit::GetByRefid(f.Read<int>());
+			f >> sb.size;
+			f >> sb.time;
+			f >> sb.length;
+			f >> sb.visible;
+			f >> sb.last_pos;
+			sb.msg3d = false;
+		}
+		else
+		{
+			f.ReadString2(sb.text);
+			f >> sb.size;
+			f >> sb.time;
+			f >> sb.length;
+			f >> sb.visible;
+			f >> sb.last_pos;
+			f >> sb.msg3d;
+			if(sb.msg3d)
+				f >> sb.dir;
+			else
+				sb.unit = Unit::GetByRefid(f.Read<int>());
+		}
 	}
 }
 
@@ -1454,4 +1481,17 @@ void GameGui::SortUnits()
 	{
 		return a.dist > b.dist;
 	});
+}
+
+//=================================================================================================
+void GameGui::AddMessage3D(const AnyString& msg, const Vec3& pos)
+{
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::MSG_3D;
+		c.str = StringPool.Get();
+		*c.str = msg.s;
+		c.pos = pos;
+	}
 }

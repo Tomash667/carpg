@@ -4,10 +4,9 @@
 #include "Stock.h"
 #include "ContentLoader.h"
 #include "ResourceManager.h"
-#include "Crc.h"
 
 //-----------------------------------------------------------------------------
-class ItemLoader
+class ItemLoader : public ContentLoader
 {
 	enum Group
 	{
@@ -72,61 +71,50 @@ class ItemLoader
 		BSP_NEXT
 	};
 
-public:
 	//=================================================================================================
-	void Load()
+	void LoadEntity(int top, const string& id) override
 	{
-		InitTokenizer();
-
-		bool require_id[IT_MAX];
-		std::fill_n(require_id, IT_MAX, true);
-		require_id[IT_START_ITEMS] = false;
-		require_id[IT_BETTER_ITEMS] = false;
-
-		ContentLoader loader;
-		bool ok = loader.Load(t, "items.txt", G_ITEM_TYPE, [&, this](int top, const string& id)
+		ITEM_TYPE type = (ITEM_TYPE)top;
+		switch(type)
 		{
-			ITEM_TYPE type = (ITEM_TYPE)top;
-			switch(type)
-			{
-			default:
-				ParseItem(type, id);
-				break;
-			case IT_LIST:
-				ParseItemList(id);
-				break;
-			case IT_LEVELED_LIST:
-				ParseLeveledItemList(id);
-				break;
-			case IT_STOCK:
-				ParseStock(id);
-				break;
-			case IT_BOOK_SCHEME:
-				ParseBookScheme(id);
-				break;
-			case IT_START_ITEMS:
-				ParseStartItems();
-				break;
-			case IT_BETTER_ITEMS:
-				ParseBetterItems();
-				break;
-			case IT_ALIAS:
-				ParseAlias(id);
-				break;
-			}
-		}, require_id);
-		if(!ok)
-			return;
+		default:
+			ParseItem(type, id);
+			break;
+		case IT_LIST:
+			ParseItemList(id);
+			break;
+		case IT_LEVELED_LIST:
+			ParseLeveledItemList(id);
+			break;
+		case IT_STOCK:
+			ParseStock(id);
+			break;
+		case IT_BOOK_SCHEME:
+			ParseBookScheme(id);
+			break;
+		case IT_START_ITEMS:
+			ParseStartItems();
+			break;
+		case IT_BETTER_ITEMS:
+			ParseBetterItems();
+			break;
+		case IT_ALIAS:
+			ParseAlias(id);
+			break;
+		}
+	}
 
+	//=================================================================================================
+	void Finalize() override
+	{
 		CalculateCrc();
 
 		Info("Loaded items (%u), lists (%u) - crc %p.", Item::items.size(), ItemList::lists.size() + LeveledItemList::lists.size(),
 			content::crc[(int)content::Id::Items]);
 	}
 
-private:
 	//=================================================================================================
-	void InitTokenizer()
+	void InitTokenizer() override
 	{
 		t.SetFlags(Tokenizer::F_UNESCAPE | Tokenizer::F_MULTI_KEYWORDS);
 
@@ -1233,14 +1221,29 @@ private:
 		content::crc[(int)content::Id::Items] = crc.Get();
 	}
 
-	Tokenizer t;
+public:
+	//=================================================================================================
+	ItemLoader()
+	{
+	}
+
+	//=================================================================================================
+	void DoLoading()
+	{
+		bool require_id[IT_MAX];
+		std::fill_n(require_id, IT_MAX, true);
+		require_id[IT_START_ITEMS] = false;
+		require_id[IT_BETTER_ITEMS] = false;
+
+		Load("items.txt", G_ITEM_TYPE, require_id);
+	}
 };
 
 //=================================================================================================
 void content::LoadItems()
 {
 	ItemLoader loader;
-	loader.Load();
+	loader.DoLoading();
 }
 
 //=================================================================================================

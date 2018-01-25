@@ -5,10 +5,9 @@
 #include "Building.h"
 #include "BuildingScript.h"
 #include "UnitData.h"
-#include "Crc.h"
 
 //=================================================================================================
-class BuildingLoader
+class BuildingLoader : public ContentLoader
 {
 	enum Group
 	{
@@ -70,44 +69,6 @@ class BuildingLoader
 		SK2_END
 	};
 
-public:
-	//=================================================================================================
-	BuildingLoader() : t(Tokenizer::F_JOIN_MINUS | Tokenizer::F_MULTI_KEYWORDS | Tokenizer::F_UNESCAPE | Tokenizer::F_HIDE_ID)
-	{
-	}
-
-	//=================================================================================================
-	void Load()
-	{
-		InitTokenizer();
-
-		ContentLoader loader;
-		bool ok = loader.Load(t, "buildings.txt", G_TOP, [this](int top, const string& id)
-		{
-			switch(top)
-			{
-			case T_BUILDING:
-				ParseBuilding(id);
-				break;
-			case T_BUILDING_GROUP:
-				ParseBuildingGroup(id);
-				break;
-			case T_BUILDING_SCRIPT:
-				ParseBuildingScript(id);
-				break;
-			}
-		});
-		if(!ok)
-			return;
-
-		SetupBuildingGroups();
-		CalculateCrc();
-
-		Info("Loaded buildings (%u), groups (%u), scripts (%u) - crc %p.", Building::buildings.size(), BuildingGroup::groups.size(),
-			BuildingScript::scripts.size(), content::crc[(int)content::Id::Buildings]);
-	}
-
-private:
 	struct Var
 	{
 		string name;
@@ -116,7 +77,34 @@ private:
 	};
 
 	//=================================================================================================
-	void InitTokenizer()
+	void LoadEntity(int top, const string& id) override
+	{
+		switch(top)
+		{
+		case T_BUILDING:
+			ParseBuilding(id);
+			break;
+		case T_BUILDING_GROUP:
+			ParseBuildingGroup(id);
+			break;
+		case T_BUILDING_SCRIPT:
+			ParseBuildingScript(id);
+			break;
+		}
+	}
+
+	//=================================================================================================
+	void Finalize() override
+	{
+		SetupBuildingGroups();
+		CalculateCrc();
+
+		Info("Loaded buildings (%u), groups (%u), scripts (%u) - crc %p.", Building::buildings.size(), BuildingGroup::groups.size(),
+			BuildingScript::scripts.size(), content::crc[(int)content::Id::Buildings]);
+	}
+
+	//=================================================================================================
+	void InitTokenizer() override
 	{
 		t.AddKeywords(G_TOP, {
 			{ "building", T_BUILDING },
@@ -880,14 +868,25 @@ private:
 	BuildingScript::Variant* variant;
 	vector<int>* code;
 	vector<Var> vars;
-	Tokenizer t;
+
+public:
+	//=================================================================================================
+	BuildingLoader() : ContentLoader(Tokenizer::F_JOIN_MINUS | Tokenizer::F_MULTI_KEYWORDS | Tokenizer::F_UNESCAPE | Tokenizer::F_HIDE_ID)
+	{
+	}
+
+	//=================================================================================================
+	void DoLoading()
+	{
+		Load("buildings.txt", G_TOP);
+	}
 };
 
 //=================================================================================================
 void content::LoadBuildings()
 {
 	BuildingLoader loader;
-	loader.Load();
+	loader.DoLoading();
 }
 
 //=================================================================================================

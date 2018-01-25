@@ -688,6 +688,9 @@
     <ClCompile Include="source\game\system\Class.cpp">
       <Filter>3. game\system\unit</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\system\ContentLoader.cpp">
+      <Filter>3. game\system</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">

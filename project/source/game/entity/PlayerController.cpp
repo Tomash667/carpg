@@ -316,6 +316,13 @@ void PlayerController::Train(TrainWhat what, float value, int level, Skill skill
 	case TrainWhat::Read:
 		Train(Skill::LITERACY, 2500);
 		break;
+	case TrainWhat::Dodge:
+		{
+			float v = 500.f * GetLevelMod(unit->level, level);
+			Train(Attribute::DEX, v);
+			Train(Skill::ACROBATICS, v);
+		}
+		break;
 	}
 }
 
@@ -1009,7 +1016,7 @@ void PlayerController::AddPerkPoint(int count)
 	}
 
 	perk_points += count;
-	
+
 	if(is_local)
 		Game::Get().AddGameMsg4(GMS_ADDED_PERK_POINT, -1, count);
 	else

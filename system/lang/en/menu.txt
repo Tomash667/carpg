@@ -85,6 +85,7 @@ door = "Door"
 doorLocked = "Locked door"
 gamePausedBig = "GAME PAUSED"
 pressEsc = "(Press ESC to exit to menu)"
+dodge = "Dodge!"
 
 // inventory
 inventory = "Inventory"

@@ -7,11 +7,16 @@
 	? level up perks
 	? spawning
 	+ icon
+		http://game-icons.net/delapouite/originals/two-coins.html
 	? dialogs
 	? name
 + dodge
 	+ msg
-	+ mp
+		+ draw
+		+ update
+		? testing (show on click)
+		? upgrade
+	? mp
 	? testing
 - changing armor while running have no effect on animation speed, same problem with slows/debuffs etc
 + GetItemPrice change tables
@@ -20,6 +25,7 @@
 	? SP - trading contract, extra stock, free merchant, master merchant
 	? all perks in MP
 	? trade perks in MP
+	? dodge, light armor master
 ? perk flags after save/load/travel
 + perk points
 	+ gained by heroes every 3 levels
@@ -35,7 +41,6 @@
 	talent, extra apt
 	skill focus, extra apt
 	precise shot, bow master
-	dodge, light armor master
 	educated
 	charming
 	leadership
@@ -188,6 +193,8 @@ NEW:
 + npc to recruit: merchant
 + server side validation: trader_buy items
 + barbarian starting items: axe2, light armor, vodka, healing potions
++ use ContentLoader.LoadError for other loaders
++ server side language != player language will cause some texts to use server language, some will use player language
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

@@ -264,6 +264,7 @@ void Game::LoadLanguageFiles()
 	txGenerateWorld = Str("generateWorld");
 
 	txHaveErrors = Str("haveErrors");
+	txDodge = Str("dodge");
 }
 
 //=================================================================================================

@@ -102,6 +102,7 @@ public:
 	void Load(FileReader& f);
 	bool IsMouseInsideDialog() const { return PointInRect(GUI.cursor_pos, dialog_pos, dialog_size); }
 	void Setup();
+	void AddMessage3D(const AnyString& text, const Vec3& pos);
 
 	// panels
 	GamePanelContainer* gp_trade;

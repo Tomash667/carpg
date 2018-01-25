@@ -59,6 +59,7 @@ enum class TrainWhat
 	Stamina, // player is using stamina [value]
 	Trade, // player bought/sell goods [value]
 	Read, // player read book
+	Dodge, // player dodged attack
 };
 
 inline int GetRequiredAttributePoints(int level)
