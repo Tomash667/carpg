@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.7 (2017-XX-YY):
+Wersja 0.7 (2018-XX-YY):
 + wêdrowny kupiec - rekrutowalny npc
 + nowe umiejêtnoœci: atletyka, akrobatyka, targowanie, pismiennictwo
 + nowe pocz¹tkowe atuty: s³abe plecy, przewlek³a choroba, ospa³y, powolny uczeñ, aspo³eczny, biedak, pechowiec, obrzydliwie bogaty, trening wojskowy
@@ -12,6 +12,7 @@ Wersja 0.7 (2017-XX-YY):
 + wczytywanie grup przeciwników na arenie z pliku
 + wczytywanie klas z pliku
 + jêzyk skryptowy
++ nowe komendy konsoli: list_effects (wyœwietla efekty które ma gracz), list_perks (wyœwietla atuty gracza), add_perk, remove_perk, add_effect, remove_effect, list_stats; zmienione nazwy: add_item, add_team_item, add_gold, add_team_gold, set_stat, mod_stat, spawn_unit, heal_unit; nowe listy dla komendy list: effect, perk
 - naprawiony crash przy wygenerowaniu magówi i golemów podczas walki na arenie
 - naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
 - naprawiony bardzo dobry startowy przedmiot gdy postaæ ma bardzo nisk¹ wartoœæ umiejêtnoœci

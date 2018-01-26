@@ -10,16 +10,13 @@
 		http://game-icons.net/delapouite/originals/two-coins.html
 	? dialogs
 	? name
-+ dodge
-	+ msg
-		+ draw
-		+ update
-		? testing (show on click)
-		? upgrade
++ 3d msg
 	? mp
 	? testing
 - changing armor while running have no effect on animation speed, same problem with slows/debuffs etc
-+ GetItemPrice change tables
+	? sp
+	? mp - overve server, observe client
+	! changelog
 ? food effect leak - unknown when
 ? perks
 	? SP - trading contract, extra stock, free merchant, master merchant
@@ -59,11 +56,7 @@
 	? add_perk, remove_perk, list_perks in MP
 	? can take perk master when have expert
 	? perk_flags after new game, load, after upgrade, after new game/travel/load in MP
-	
-! changelog
-	+ new commands, list types
-	+ new perks
-	
+
 thinkering:
 hp atk def values
 atk def formula
@@ -195,6 +188,7 @@ NEW:
 + barbarian starting items: axe2, light armor, vodka, healing potions
 + use ContentLoader.LoadError for other loaders
 + server side language != player language will cause some texts to use server language, some will use player language
++ hunters guild, quests (wielki łowczy), bad wolf boss
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

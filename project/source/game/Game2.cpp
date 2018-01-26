@@ -7905,6 +7905,23 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			}
 			u.current_animation = u.animation;
 		}
+		else if(!Net::IsClient())
+		{
+			switch(u.current_animation)
+			{
+			case ANI_WALK:
+			case ANI_WALK_TYL:
+				u.mesh_inst->groups[0].speed = u.GetWalkSpeed() / u.data->walk_speed;
+				break;
+			case ANI_RUN:
+				u.mesh_inst->groups[0].speed = u.GetRunSpeed() / u.data->run_speed;
+				break;
+			case ANI_LEFT:
+			case ANI_RIGHT:
+				u.mesh_inst->groups[0].speed = u.GetRotationSpeed() / u.data->rot_speed;
+				break;
+			}
+		}
 
 		// aktualizuj animacjê
 		u.mesh_inst->Update(dt);
@@ -21740,10 +21757,11 @@ void Game::ShowAcademyText()
 		Net::PushChange(NetChange::ACADEMY_TEXT);
 }
 
-const float price_mod_buy[] = { 2.f, 1.25f, 1.f, 0.9f, 0.75f };
-const float price_mod_sell[] = { 0.25f, 0.5f, 0.6f, 0.7f, 0.75f };
-const float price_mod_buy_v[] = { 2.f, 1.25f, 1.f, 0.95f, 0.9f };
-const float price_mod_sell_v[] = { 0.5f, 0.65f, 0.75f, 0.85f, 0.9f };
+//									-10		0		10		35		100
+const float price_mod_buy[] =		{ 2.f,	1.5f,	1.25f,	1.1f,	1.f };
+const float price_mod_buy_v[] =		{ 1.5f,	1.3f,	1.1f,	1.05f,	1.f };
+const float price_mod_sell[] =		{ 0.25f, 0.5f,	0.6f,	0.7f,	0.75f };
+const float price_mod_sell_v[] =	{ 0.5f, 0.65f,	0.75f,	0.85f,	0.9f };
 
 int Game::GetItemPrice(const Item* item, Unit& unit, bool buy, bool* trading_contract)
 {

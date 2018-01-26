@@ -662,8 +662,13 @@ void GameGui::DrawSpeechBubbles()
 			it.pt.y = GUI.wnd_size.y - sb.size.y / 2;
 
 		Rect rect = Rect::Create(Int2(it.pt.x - sb.size.x / 2, it.pt.y - sb.size.y / 2), sb.size);
-		GUI.DrawItem(tBubble, rect.LeftTop(), sb.size, a1);
-		GUI.DrawText(GUI.fSmall, sb.text, DT_CENTER | DT_VCENTER, a2, rect);
+		if(sb.msg3d)
+			GUI.DrawText(GUI.default_font, sb.text, DT_CENTER | DT_VCENTER, a2, rect);
+		else
+		{
+			GUI.DrawItem(tBubble, rect.LeftTop(), sb.size, a1);
+			GUI.DrawText(GUI.fSmall, sb.text, DT_CENTER | DT_VCENTER, a2, rect);
+		}
 	}
 }
 
@@ -912,7 +917,7 @@ void GameGui::UpdateSpeechBubbles(float dt)
 		sb.length -= dt;
 		if(sb.length > 0.f)
 		{
-			if(sb.visible)
+			if(sb.visible || sb.msg3d)
 				sb.time = min(sb.time + dt * 2, 0.75f);
 			else
 				sb.time = max(sb.time - dt * 2, 0.f);
@@ -935,6 +940,9 @@ void GameGui::UpdateSpeechBubbles(float dt)
 				removes = true;
 			}
 		}
+
+		if(sb.msg3d)
+			sb.last_pos += sb.dir * dt;
 	}
 
 	if(removes)
@@ -1486,6 +1494,23 @@ void GameGui::SortUnits()
 //=================================================================================================
 void GameGui::AddMessage3D(const AnyString& msg, const Vec3& pos)
 {
+	// calculate size
+	Int2 s = GUI.default_font->CalculateSize(msg.s);
+	int total = s.x;
+	int lines = 1 + total / 400;
+
+	SpeechBubble* bubble = SpeechBubblePool.Get();
+	bubble->text = msg.s;
+	bubble->unit = nullptr;
+	bubble->size = Int2(total / lines + 20, s.y*lines + 20);
+	bubble->time = 0.f;
+	bubble->length = 1.5f;
+	bubble->visible = false;
+	bubble->last_pos = pos;
+	bubble->msg3d = true;
+	bubble->dir = Vec3::Random(Vec3(-1.f, 0.5f, -1.f), Vec3(1.f, 1.f, 1.f));
+	speech_bbs.push_back(bubble);
+
 	if(Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);

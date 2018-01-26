@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version 0.7 (2017-XX-YY):
+Version 0.7 (2018-XX-YY):
 + traveling merchant recruitable npc
 + new skills: athletics, acrobatics, haggle, literacy
 + new starting feats: filthy rich, military training, bad back, chronic disease, sluggish, slow lerner, asocial, poor, unlucky
@@ -11,6 +11,7 @@ Version 0.7 (2017-XX-YY):
 + magic scroll item
 + loading arena unit groups from lists
 + loading classes from file
++ new console commands: list_effects (show effects affecting player), list_perks (show player perks), add_perk, remove_perk, add_effect, remove_effect, list_stats; changed names: add_item, add_team_item, add_gold, add_team_gold, set_stat, mod_stat, spawn_unit, heal_unit; new lists for list command: effect, perk
 + scripting language
 - fixed random crash when fighting with arena enemies and rolled to spawn mages and golems
 - fixed empty location where there should be mages and golems there

@@ -57,8 +57,8 @@ struct SpeechBubble
 	Int2 size;
 	float time, length;
 	int skip_id;
-	Vec3 last_pos;
-	bool visible;
+	Vec3 last_pos, dir;
+	bool visible, msg3d;
 };
 
 //-----------------------------------------------------------------------------
