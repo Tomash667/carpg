@@ -323,7 +323,7 @@ StatsX* StatsX::Get(Entry& e)
 
 	e.stats->ApplyBase(e.profile);
 
-	// perks / tag skills
+	// tag skills
 	if(e.stats->subprofile)
 	{
 		for(auto& se : e.stats->subprofile->skills)
@@ -340,6 +340,20 @@ StatsX* StatsX::Get(Entry& e)
 				e.stats->skill_apt[(int)skill] = SkillToAptitude(e.stats->skill[(int)skill]);
 			}
 			e.stats->skill_tag[(int)skill] = se.value;
+		}
+	}
+
+	// add perks
+	if(!e.stats->unique && e.stats->subprofile && !e.stats->subprofile->perks.empty())
+	{
+		int pp = min(2 + e.seed.level / 3, (int)e.stats->subprofile->perks.size());
+		for(int i = 0; i < pp; ++i)
+		{
+			auto& p = e.stats->subprofile->perks[i];
+			PerkContext ctx(e.stats);
+			ctx.startup = false;
+			TakenPerk perk(p.perk, p.value);
+			perk.Apply(ctx);
 		}
 	}
 
@@ -387,5 +401,30 @@ void StatsX::ApplyBase(StatProfile* profile)
 		skill_base[i] = skill[i];
 		skill_apt[i] = SkillToAptitude(profile->skill[i]);
 		skill_tag[i] = 0.f;
+	}
+}
+
+//=================================================================================================
+void StatsX::SetBase(int what, bool is_skill, bool mod, int value)
+{
+	if(is_skill)
+	{
+		int dif;
+		if(mod)
+			dif = value;
+		else
+			dif = value - skill_base[what];
+		skill_base[what] = min(skill_base[what] + dif, SkillInfo::MAX);
+		skill_apt[what] = SkillToAptitude(skill_base[what]);
+	}
+	else
+	{
+		int dif;
+		if(mod)
+			dif = value;
+		else
+			dif = value - attrib_base[what];
+		attrib_base[what] = min(attrib_base[what] + dif, AttributeInfo::MAX);
+		attrib_apt[what] = AttributeToAptitude(attrib_base[what]);
 	}
 }

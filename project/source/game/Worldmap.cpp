@@ -5146,24 +5146,24 @@ void Game::SpawnTmpUnits(City* city)
 		level = Int2(2, 15);
 	}
 
-	for(uint i = 0; i < count; ++i)
-	{
-		UnitData& ud = Class::GetRandomHeroData();
+	//for(uint i = 0; i < count; ++i)
+	//{
+	//	UnitData& ud = Class::GetRandomHeroData();
 
-		if(Rand() % 2 == 0 || !training_grounds)
-		{
-			// inside inn
-			SpawnUnitInsideInn(ud, level.Random(), inn, true);
-		}
-		else
-		{
-			// on training grounds
-			Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*training_grounds->unit_pt.x + 1, 0, 2.f*training_grounds->unit_pt.y + 1), ud, nullptr,
-				level.Random(), 8.f);
-			if(u)
-				u->temporary = true;
-		}
-	}
+	//	if(Rand() % 2 == 0 || !training_grounds)
+	//	{
+	//		// inside inn
+	//		SpawnUnitInsideInn(ud, level.Random(), inn, true);
+	//	}
+	//	else
+	//	{
+	//		// on training grounds
+	//		Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*training_grounds->unit_pt.x + 1, 0, 2.f*training_grounds->unit_pt.y + 1), ud, nullptr,
+	//			level.Random(), 8.f);
+	//		if(u)
+	//			u->temporary = true;
+	//	}
+	//}
 
 	// quest traveler (100% chance in city, 50% in village)
 	if(!city_ctx->IsVillage() || Rand() % 2 == 0)

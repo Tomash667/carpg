@@ -2,7 +2,8 @@
 
 //-----------------------------------------------------------------------------
 struct CreatedCharacter;
-struct PlayerController;
+struct Unit;
+struct StatsX;
 enum class Perk;
 
 //-----------------------------------------------------------------------------
@@ -183,12 +184,14 @@ struct TakenPerk;
 struct PerkContext
 {
 	CreatedCharacter* cc;
-	PlayerController* pc;
+	Unit* u;
+	StatsX* x;
 	int index;
-	bool validate, startup, reapply;
+	bool validate, startup, reapply, reapply_statsx;
 
-	PerkContext(CreatedCharacter* cc) : cc(cc), pc(nullptr), validate(false), startup(true), reapply(false) {}
-	PerkContext(PlayerController* pc) : cc(nullptr), pc(pc), validate(false), startup(true), reapply(false) {}
+	PerkContext(CreatedCharacter* cc) : cc(cc), u(nullptr), x(nullptr), validate(false), startup(true), reapply(false), reapply_statsx(false) {}
+	PerkContext(Unit* u) : cc(nullptr), u(u), x(nullptr), validate(false), startup(true), reapply(false), reapply_statsx(false) {}
+	PerkContext(StatsX* x) : cc(nullptr), u(nullptr), x(x), validate(false), startup(true), reapply(false), reapply_statsx(false) {}
 	bool HavePerk(Perk perk);
 	TakenPerk* FindPerk(Perk perk);
 	TakenPerk* HidePerk(Perk perk, bool hide = true);
@@ -247,7 +250,7 @@ struct TakenPerk
 	{
 	}
 
-	TakenPerk(Perk perk, int value = -1) : perk(perk), value(value), hidden(false)
+	explicit TakenPerk(Perk perk, int value = -1) : perk(perk), value(value), hidden(false)
 	{
 	}
 

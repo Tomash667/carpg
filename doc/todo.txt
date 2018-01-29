@@ -1,5 +1,17 @@
 ﻿FEATURE:
 *** perks
+! uncomment SpawnTmpUnits
+- client have no perks in C
+- arena master skill_focus (null)
++ create statsx with attrib/skill talent, reapply on creating
+- arena master rolled bow build but have items for melee (no bow)
+- hero merchant at lvl 20 spawn with clothes
+- effect 30 vs 100 haggle is minimal
+- max hero spawn level is 20
++ hero with stats created
++ levelup
++ save/load
++ initial skill/attrib values changed
 ? class
 	? all heroes/crazy types icon/about/name gen
 	? gorush/cleric/captive
@@ -33,6 +45,7 @@
 		? set initial value
 + subprofile perks
 + training perks
++ npc perk lists
 + use subprofiles in creating random char
 + perks effects
 	talent, extra apt

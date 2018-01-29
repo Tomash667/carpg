@@ -57,7 +57,7 @@ struct NetChangePlayer
 		REMOVE_EFFECT, // remove effect from player [int(id)-effect netid]
 		UPDATE_LONG_EFFECTS, // update effects that work for days [int(id)-days]
 		ADD_PERK_POINT, // show message about gaining perk points [byte(ile)-count]
-		RUN_SCRIPT_RESULT, // run script result [bool(id)-ok, string(str)-output]
+		RUN_SCRIPT_RESULT, // run script result [string(str)-output]
 
 		MAX
 	} type;

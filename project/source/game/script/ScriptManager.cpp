@@ -241,6 +241,43 @@ void ScriptManager::RegisterCommon()
 }
 
 #include "PlayerInfo.h"
+#include "Unit.h"
+
+PlayerController* Unit_GetPlayer(Unit* unit)
+{
+	return unit->player;
+}
+
+void Unit_ListPerks(Unit* unit)
+{
+	if(unit->statsx->perks.empty())
+	{
+		SM->Log(Logger::L_INFO, "No perks.");
+		return;
+	}
+
+	SM->Log(Logger::L_INFO, Format("Perks (%u):", unit->statsx->perks.size()));
+	LocalString str;
+	for(auto& perk : unit->statsx->perks)
+	{
+		auto& info = PerkInfo::perks[(int)perk.perk];
+		str = info.id;
+		if(info.required_value == PerkInfo::Attribute)
+			str += Format("(%s)", AttributeInfo::attributes[perk.value].id);
+		else if(info.required_value == PerkInfo::Skill)
+			str += Format("(%s)", SkillInfo::skills[perk.value].id);
+		str += " - ";
+		if(IS_SET(info.flags, PerkInfo::Flaw))
+			str += "Flaw";
+		else if(IS_SET(info.flags, PerkInfo::History))
+			str += "History";
+		else
+			str += "Normal";
+		if(perk.hidden)
+			str += ", Hidden";
+		SM->Log(Logger::L_INFO, str.c_str());
+	}
+}
 
 uint PlayerController_GetPerkPoints(PlayerController* pc)
 {
@@ -257,6 +294,11 @@ void PlayerController_SetPerkPoints(PlayerController* pc, uint perk_points)
 VarsContainer::Var* PlayerController_GetVar(PlayerController* pc, const string& name)
 {
 	return pc->vars->GetVar(name);
+}
+
+Unit* PlayerController_GetUnit(PlayerController* pc)
+{
+	return pc->unit;
 }
 
 void ScriptManager::RegisterGame()
@@ -277,17 +319,26 @@ void ScriptManager::RegisterGame()
 		.Method("void SetInt(int)", asMETHOD(VarsContainer::Var, SetInt))
 		.Method("void SetFloat(float)", asMETHOD(VarsContainer::Var, SetFloat));
 
-	AddType("Player")
+	AddType("Player");
+
+	AddType("Unit")
+		.Method("Player@ get_player()", asFUNCTION(Unit_GetPlayer))
+		.Method("void ListPerks()", asFUNCTION(Unit_ListPerks))
+		.WithInstance("Unit@ target", &target);
+
+	ForType("Player")
 		.Method("void AddPerkPoint(uint points = 1)", asMETHOD(PlayerController, AddPerkPoint))
 		.Method("uint get_perk_points()", asFUNCTION(PlayerController_GetPerkPoints))
 		.Method("void set_perk_points(uint)", asFUNCTION(PlayerController_SetPerkPoints))
 		.Method("Var@ GetVar(string& in)", asFUNCTION(PlayerController_GetVar))
+		.Method("Unit@ get_unit()", asFUNCTION(PlayerController_GetUnit))
 		.WithInstance("Player@ pc", &pc);
 }
 
-void ScriptManager::SetContext(PlayerController* pc)
+void ScriptManager::SetContext(PlayerController* pc, Unit* target)
 {
 	this->pc = pc;
+	this->target = target;
 }
 
 bool ScriptManager::RunScript(cstring code)
@@ -301,7 +352,7 @@ bool ScriptManager::RunScript(cstring code)
 	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
 	if(r < 0)
 	{
-		Error("ScriptManager: Failed to parse script (%d): %.100s", r, code);
+		Log(Logger::L_ERROR, Format("Failed to parse script (%d).", r), code);
 		return false;
 	}
 
@@ -319,15 +370,12 @@ bool ScriptManager::RunScript(cstring code)
 	{
 		if(r == asEXECUTION_EXCEPTION)
 		{
-			if(!last_exception)
-				Error("ScriptManager: Failed to run script, exception thrown \"%s\" at %s(%d): %.100s", tmp_context->GetExceptionString(),
-					tmp_context->GetExceptionFunction()->GetName(), tmp_context->GetExceptionLineNumber(), code);
-			else
-				Error("ScriptManager: Failed to run script, script exception thrown \"%s\" at %s(%d): %.100s", last_exception,
-					tmp_context->GetExceptionFunction()->GetName(), tmp_context->GetExceptionLineNumber(), code);
+			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
+			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
+				tmp_context->GetExceptionFunction()), code);
 		}
 		else
-			Error("ScriptManager: Failed to run script (%d): %.100s", r, code);
+			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r), code);
 	}
 
 	func->Release();
@@ -348,8 +396,10 @@ void ScriptManager::CloseOutput()
 	output.clear();
 }
 
-void ScriptManager::Log(Logger::Level level, cstring msg)
+void ScriptManager::Log(Logger::Level level, cstring msg, cstring code)
 {
+	if(code)
+		Logger::global->Log(level, Format("ScriptManager: %s Code:\n%s", msg, code));
 	if(gather_output)
 	{
 		if(!output.empty())

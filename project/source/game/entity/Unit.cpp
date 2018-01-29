@@ -3602,7 +3602,7 @@ void Unit::AddPerk(Perk perk, int value)
 	assert(statsx->unique && player);
 
 	TakenPerk tp(perk, value);
-	PerkContext ctx(player);
+	PerkContext ctx(this);
 	ctx.startup = false;
 	tp.Apply(ctx);
 }
@@ -3613,7 +3613,7 @@ void Unit::RemovePerk(int index)
 	assert(statsx->unique && player);
 
 	TakenPerk& tp = statsx->perks[index];
-	PerkContext ctx(player);
+	PerkContext ctx(this);
 	ctx.startup = false;
 	ctx.index = index;
 	tp.Remove(ctx);

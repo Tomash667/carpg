@@ -162,7 +162,7 @@ struct NetChange
 		CHEAT_REMOVE_EFFECT_NETID, // player used cheat 'remove_effect' by netid [int(id)-netid]
 		ADD_OBSERVABLE_EFFECT, // add observable effect to unit [int(id)-unit netid, Effect effect]
 		REMOVE_OBSERVABLE_EFFECT, // remove observable effect from unit [int(netid)-unit, int(id)-effect netid]
-		RUN_SCRIPT, // run script [string(str)-code]
+		RUN_SCRIPT, // run script [string(str)-code, int(id)-target netid]
 		UPDATE_TEAM_TRADER, // update team trader values [int-skill, int-player id, bool-free merchant, bool-master merchant]
 		MSG_3D, // show 3d message [string(str)-text, Vec3-pos]
 		MAX

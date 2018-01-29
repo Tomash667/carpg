@@ -11,6 +11,7 @@
 #include "PlayerInfo.h"
 #include "Gui.h"
 #include "Game.h"
+#include "StatsX.h"
 
 //-----------------------------------------------------------------------------
 PerkInfo PerkInfo::perks[(int)Perk::Max] = {
@@ -487,16 +488,16 @@ bool TakenPerk::Apply(PerkContext& ctx)
 		ctx.Mod((Skill)value, 5);
 		break;
 	case Perk::Wealthy:
-		if(ctx.pc && !hidden && ctx.startup)
-			ctx.pc->unit->gold += 1000;
+		if(ctx.u && !hidden && ctx.startup)
+			ctx.u->gold += 1000;
 		break;
 	case Perk::VeryWealthy:
-		if(ctx.pc && !hidden && ctx.startup)
-			ctx.pc->unit->gold += 5000;
+		if(ctx.u && !hidden && ctx.startup)
+			ctx.u->gold += 5000;
 		break;
 	case Perk::FilthyRich:
-		if(ctx.pc && !hidden && ctx.startup)
-			ctx.pc->unit->gold += 100'000;
+		if(ctx.u && !hidden && ctx.startup)
+			ctx.u->gold += 100'000;
 		break;
 	case Perk::BadBack:
 		ctx.Mod(Attribute::STR, -5);
@@ -519,8 +520,8 @@ bool TakenPerk::Apply(PerkContext& ctx)
 		ctx.AddFlag(PF_ASOCIAL);
 		break;
 	case Perk::Poor:
-		if(ctx.pc && ctx.startup)
-			ctx.pc->unit->gold /= 10;
+		if(ctx.u && ctx.startup)
+			ctx.u->gold /= 10;
 		break;
 	case Perk::Unlucky:
 		ctx.AddFlag(PF_UNLUCKY);
@@ -623,17 +624,19 @@ bool TakenPerk::Apply(PerkContext& ctx)
 				--ctx.cc->perks;
 			ctx.cc->taken_perks.push_back(*this);
 		}
-		else
+		else if(ctx.u)
 		{
-			ctx.pc->unit->statsx->perks.push_back(*this);
-			if(!ctx.startup && !ctx.pc->is_local)
+			ctx.u->statsx->perks.push_back(*this);
+			if(!ctx.startup && ctx.u->player && !ctx.u->player->is_local)
 			{
-				NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+				NetChangePlayer& c = Add1(ctx.u->player->player_info->changes);
 				c.type = NetChangePlayer::ADD_PERK;
 				c.id = (byte)perk;
 				c.ile = value;
 			}
 		}
+		else
+			ctx.x->perks.push_back(*this);
 	}
 
 	return true;
@@ -644,8 +647,8 @@ bool TakenPerk::Apply(PerkContext& ctx)
 void TakenPerk::Remove(PerkContext& ctx)
 {
 	// remove unit effects
-	if(ctx.pc)
-		ctx.pc->unit->RemovePerkEffects(perk);
+	if(ctx.u)
+		ctx.u->RemovePerkEffects(perk);
 
 	// reapply parent perk
 	auto& info = PerkInfo::perks[(int)perk];
@@ -755,10 +758,10 @@ void TakenPerk::Remove(PerkContext& ctx)
 	}
 	else
 	{
-		ctx.pc->unit->statsx->perks.erase(ctx.pc->unit->statsx->perks.begin() + ctx.index);
-		if(!ctx.pc->is_local)
+		ctx.u->statsx->perks.erase(ctx.u->statsx->perks.begin() + ctx.index);
+		if(ctx.u->player && !ctx.u->player->is_local)
 		{
-			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+			NetChangePlayer& c = Add1(ctx.u->player->player_info->changes);
 			c.type = NetChangePlayer::REMOVE_PERK;
 			c.id = (int)perk;
 		}
@@ -772,9 +775,10 @@ bool PerkContext::HavePerk(Perk perk)
 		return cc->HavePerk(perk);
 	else
 	{
-		for(auto& p : pc->unit->statsx->perks)
+		StatsX* stats = (u ? u->statsx : x);
+		for(TakenPerk& tp : stats->perks)
 		{
-			if(p.perk == perk)
+			if(tp.perk == perk)
 				return true;
 		}
 		return false;
@@ -794,7 +798,8 @@ TakenPerk* PerkContext::FindPerk(Perk perk)
 	}
 	else
 	{
-		for(auto& tp : pc->unit->statsx->perks)
+		StatsX* stats = (u ? u->statsx : x);
+		for(TakenPerk& tp : stats->perks)
 		{
 			if(tp.perk == perk)
 				return &tp;
@@ -810,18 +815,18 @@ TakenPerk* PerkContext::HidePerk(Perk perk, bool hide)
 	if(taken_perk && taken_perk->hidden != hide)
 	{
 		taken_perk->hidden = hide;
-		if(!startup && Net::IsServer() && !pc->is_local)
+		if(!startup && Net::IsServer() && u && u->player && !u->player->is_local)
 		{
-			NetChangePlayer& c = Add1(pc->player_info->changes);
+			NetChangePlayer& c = Add1(u->player->player_info->changes);
 			c.type = NetChangePlayer::HIDE_PERK;
 			c.id = (int)perk;
 			c.ile = (hide ? 1 : 0);
 		}
 
-		if(pc)
+		if(u)
 		{
 			// remove effect
-			pc->unit->RemovePerkEffects(taken_perk->perk);
+			u->RemovePerkEffects(taken_perk->perk);
 		}
 	}
 	return taken_perk;
@@ -848,8 +853,10 @@ void PerkContext::Mod(Attribute attrib, int value, bool mod)
 {
 	if(cc)
 		cc->a[(int)attrib].Mod(value, mod);
+	else if(u)
+		u->SetBase(attrib, value, startup, true);
 	else
-		pc->unit->SetBase(attrib, value, startup, true);
+		x->SetBase((int)attrib, false, mod, value);
 }
 
 //=================================================================================================
@@ -860,8 +867,10 @@ void PerkContext::Mod(Skill skill, int value, bool mod)
 		cc->s[(int)skill].Mod(value, mod);
 		cc->to_update.push_back(skill);
 	}
+	else if(u)
+		u->SetBase(skill, value, startup, true);
 	else
-		pc->unit->SetBase(skill, value, startup, true);
+		x->SetBase((int)skill, true, mod, value);
 }
 
 //=================================================================================================
@@ -869,8 +878,10 @@ bool PerkContext::Have(Attribute attrib, int value)
 {
 	if(cc)
 		return cc->a[(int)attrib].value >= value;
+	else if(u)
+		return u->GetBase(attrib) >= value;
 	else
-		return pc->unit->GetBase(attrib) >= value;
+		return x->Get(attrib) >= value;
 }
 
 //=================================================================================================
@@ -878,46 +889,50 @@ bool PerkContext::Have(Skill skill, int value)
 {
 	if(cc)
 		return cc->s[(int)skill].value >= value;
+	else if(u)
+		return u->GetBase(skill) >= value;
 	else
-		return pc->unit->GetBase(skill) >= value;
+		return x->Get(skill) >= value;
 }
 
 //=================================================================================================
 void PerkContext::AddFlag(PerkFlags flag)
 {
-	if(cc || IS_SET(pc->unit->statsx->perk_flags, flag))
+	StatsX* stats = (cc ? nullptr : (u ? u->statsx : x));
+	if(!stats || IS_SET(stats->perk_flags, flag))
 		return;
-	pc->unit->statsx->perk_flags |= flag;
-	if(!pc->is_local)
+	stats->perk_flags |= flag;
+	if(u && u->player && !u->player->is_local)
 	{
-		NetChangePlayer& c = Add1(pc->player_info->changes);
+		NetChangePlayer& c = Add1(u->player->player_info->changes);
 		c.type = NetChangePlayer::STAT_CHANGED;
 		c.id = (byte)ChangedStatType::PERK_FLAGS;
 		c.a = 0;
-		c.ile = pc->unit->statsx->perk_flags;
+		c.ile = u->statsx->perk_flags;
 	}
 }
 
 //=================================================================================================
 void PerkContext::RemoveFlag(PerkFlags flag)
 {
-	if(cc || !IS_SET(pc->unit->statsx->perk_flags, flag))
+	StatsX* stats = (cc ? nullptr : (u ? u->statsx : x));
+	if(!stats || !IS_SET(stats->perk_flags, flag))
 		return;
-	pc->unit->statsx->perk_flags &= ~flag;
-	if(!pc->is_local)
+	stats->perk_flags &= ~flag;
+	if(u && u->player && !u->player->is_local)
 	{
-		NetChangePlayer& c = Add1(pc->player_info->changes);
+		NetChangePlayer& c = Add1(u->player->player_info->changes);
 		c.type = NetChangePlayer::STAT_CHANGED;
 		c.id = (byte)ChangedStatType::PERK_FLAGS;
 		c.a = 0;
-		c.ile = pc->unit->statsx->perk_flags;
+		c.ile = u->statsx->perk_flags;
 	}
 }
 
 //=================================================================================================
 void PerkContext::AddEffect(TakenPerk* perk, EffectType effect, float value)
 {
-	if(cc)
+	if(!u)
 		return;
 	Effect* e = Effect::Get();
 	e->effect = effect;
@@ -927,5 +942,5 @@ void PerkContext::AddEffect(TakenPerk* perk, EffectType effect, float value)
 	e->source = EffectSource::Perk;
 	e->source_id = (int)perk->perk;
 	e->refs = 1;
-	pc->unit->AddEffect(e);
+	u->AddEffect(e);
 }

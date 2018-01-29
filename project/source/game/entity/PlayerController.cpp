@@ -765,7 +765,7 @@ void PlayerController::Load(HANDLE file)
 					new_perk.perk = Perk::Wealthy;
 					new_perk.value = -1;
 					new_perk.hidden = true;
-					unit->statsx->perks.push_back(perk);
+					unit->statsx->perks.push_back(new_perk);
 
 					perk = Perk::VeryWealthy;
 				}
@@ -931,14 +931,11 @@ void PlayerController::RecalculateLevel(bool initial)
 			unit->RecalculateHp();
 
 			// add perk points every two levels (2, 4, 6...)
-			int gained_points = 0;
-			for(int i = prev_level + 1; i <= unit->level; ++i)
-			{
-				if(i % 2 == 0)
-					++gained_points;
-			}
-			if(gained_points)
-				AddPerkPoint(gained_points);
+			int pp_have = prev_level / 2;
+			int pp_should_have = unit->level / 2;
+			int pp_gained = pp_should_have - pp_have;
+			if(pp_gained)
+				AddPerkPoint(pp_gained);
 
 			if(Net::IsServer())
 			{

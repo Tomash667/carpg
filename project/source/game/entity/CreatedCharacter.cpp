@@ -217,7 +217,7 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	}
 
 	// apply perks
-	PerkContext ctx(&pc);
+	PerkContext ctx(pc.unit);
 	for(TakenPerk& tp : taken_perks)
 		tp.Apply(ctx);
 	pc.perk_points = perks;

@@ -5342,7 +5342,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					if(!ctx.train_dialog)
 						ctx.train_dialog = TrainDialog::Get();
 					ctx.train_dialog->perks.clear();
-					PerkContext pctx(ctx.pc);
+					PerkContext pctx(ctx.pc->unit);
 					pctx.startup = false;
 					TakenPerk taken_perk;
 					for(auto& perk : PerkInfo::perks)
@@ -13104,7 +13104,8 @@ void Game::ClearGame()
 			if(unit->interp)
 				interpolators.Free(unit->interp);
 
-			delete unit->ai;
+			if(unit->ai != (AIController*)1)
+				delete unit->ai;
 			delete unit;
 		}
 

@@ -72,6 +72,7 @@ struct StatsX
 		assert(unique);
 		skill[(int)s] = value;
 	}
+	void SetBase(int what, bool is_skil, bool mod, int value);
 
 	static StatsX* GetRandom(StatProfile* profile, int level);
 	static StatsX* Get(Entry& e);
