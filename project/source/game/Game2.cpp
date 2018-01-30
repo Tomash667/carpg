@@ -16861,9 +16861,11 @@ void Game::SpawnHeroesInsideDungeon()
 	int ile = Random(2, 4);
 	LocalVector<Unit*> heroes;
 	p = sprawdzone.back().first;
+	int team_level = Random(5, 15);
 	for(int i = 0; i < ile; ++i)
 	{
-		Unit* u = SpawnUnitInsideRoom(*p, Class::GetRandomHeroData(), Random(2, 15));
+		int level = team_level + Random(-3, 3);
+		Unit* u = SpawnUnitInsideRoom(*p, Class::GetRandomHeroData(), level);
 		if(u)
 			heroes->push_back(u);
 		else

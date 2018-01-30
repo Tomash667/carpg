@@ -79,7 +79,7 @@ void Game::GenerateTournamentUnits()
 	int ile = Random(6, 9);
 	for(int i = 0; i < ile; ++i)
 	{
-		Unit* u = SpawnUnitNearLocation(local_ctx, pos, Class::GetRandomHeroData(), nullptr, Random(5, 20), 12.f);
+		Unit* u = SpawnUnitNearLocation(local_ctx, pos, Class::GetRandomHeroData(), nullptr, Random(10, 22), 12.f);
 		if(u)
 		{
 			u->temporary = true;

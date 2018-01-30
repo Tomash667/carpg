@@ -315,10 +315,20 @@ items warrior {
 }
 
 items hunter {
-	random {!-1light_armor !-1medium_armor}
-	!bow
-	!-2shield
-	random {!-2long_blade !-2axe !-2blunt !-2short_blade}
+	if subprofile "bowman"
+	{
+		!-1light_armor
+		random {!-2long_blade !-2axe !-2blunt !-2short_blade}
+		!-2shield
+		!bow
+	}
+	else
+	{
+		!-1medium_armor
+		!long_blade
+		!-1shield
+		!-2bow
+	}
 	if level 15 {
 		p_hp3
 		p_hp2
@@ -338,9 +348,22 @@ items hunter {
 }
 
 items rogue {
-	random {!short_blade !long_blade}
+	if profile "bowman"
+	{
+		!-2short_blade
+		!bow
+	}
+	else if profile "criticalhitter"
+	{
+		!short_blade
+		random {!-2bow !-2shield}
+	}
+	else
+	{
+		!long_blade
+		!-1shield
+	}
 	!light_armor
-	random {!-2bow !-2shield}
 	if level 15 {
 		p_hp3
 		p_hp2
@@ -475,6 +498,8 @@ profile cleric {
 	athletics 10
 	literacy 15
 	haggle 15
+	
+	priority {weapon armor shield bow}
 }
 
 profile hunter {
@@ -510,6 +535,7 @@ profile hunter {
 		skill 0.5 athletics
 		perk talent dexterity
 		perk skill_focus bow
+		priority {bow armor weapon shield}
 	}
 	subprofile swordman {
 		skill tag long_blade
@@ -519,6 +545,7 @@ profile hunter {
 		skill 0.25 acrobatics
 		perk talent dexterity
 		perk skill_focus long_blade
+		priority {weapon armor shield bow}
 	}
 }
 
@@ -544,6 +571,8 @@ profile mage {
 
 	literacy 20
 	haggle 5
+	
+	priority {weapon armor shield bow}
 }
 
 profile rogue {
@@ -577,6 +606,7 @@ profile rogue {
 		skill 0.75 short_blade
 		perk talent dexterity
 		perk skill_focus bow
+		priority {bow armor weapon shield}
 	}
 	subprofile swordman {
 		skill tag long_blade
@@ -586,6 +616,7 @@ profile rogue {
 		skill 0.25 athletics
 		perk talent dexterity
 		perk skill_focus long_blade
+		priority {weapon light_armor shield bow}
 	}
 	subprofile criticalhitter {
 		skill tag short_blade
@@ -595,6 +626,7 @@ profile rogue {
 		skill 0.25 shield
 		perk talent dexterity
 		perk skill_focus short_blade
+		priority {weapon light_armor shield bow}
 	}
 }
 
@@ -627,13 +659,14 @@ profile warrior {
 	literacy 0
 
 	subprofile tank {
-		weapon (axe blunt long_blade)
+		weapon {axe blunt long_blade}
 		skill tag heavy_armor
 		skill tag shield
 		skill tag athletics
 		skill 0.75 weapon
 		perk talent endurance
 		perk skill_focus heavy_armor
+		priority {armor shield weapon bow}
 	}
 	subprofile bowman {
 		skill tag medium_armor
@@ -643,10 +676,11 @@ profile warrior {
 		skill 0.5 acrobatics
 		perk talent dexterity
 		perk skill_focus bow
+		priority {bow armor weapon shield}
 	}
 	subprofile fighter {
-		armor (medium_armor heavy_armor)
-		weapon (axe blunt long_blade)
+		armor {medium_armor heavy_armor}
+		weapon {axe blunt long_blade}
 		skill tag armor
 		skill tag weapon
 		skill tag athletics
@@ -654,6 +688,7 @@ profile warrior {
 		skill 0.25 acrobatics
 		perk talent strength
 		perk skill_focus weapon
+		priority {weapon armor shield bow}
 	}
 }
 
@@ -1841,7 +1876,7 @@ unit q_gobliny_mag : base_human {
 }
 
 unit q_zlo_kaplan : base_human {
-	level {0 20}
+	level {0 25}
 	profile cleric
 	flags | {hero ai_stay ai_train specific_name}
 	items {
@@ -2576,7 +2611,7 @@ unit q_szaleni_szaleniec : wild_hunter {
 // CRAZIES
 //------------------------------------------------------------------------------
 unit base_crazy : base_human {
-	level {2 20}
+	level {2 25}
 	flags | {crazy hero tournament ai_wanders}
 	hp 410
 	def 15
@@ -2640,7 +2675,7 @@ unit crazy_cook : base_crazy {
 // HEROES
 //------------------------------------------------------------------------------
 unit base_hero : base_human {
-	level {2 20}
+	level {2 25}
 	flags | {hero ai_wanders tournament}
 	dialog hero
 }
@@ -2716,15 +2751,20 @@ unit hero_merchant : base_hero {
 			perk precise_shot // 18 - 92
 			perk master_merchant // 21 - 100+
 			perk light_armor_proficiency // 24
-			
+			profile {bow armor weapon shield}
 		}
 	}
 	flags | {archer ai_train contest_25}
 	items {
-		if chance 25
+		if level 6
 			!-2light_armor
 		else
-			random {al_clothes3 al_clothes3b}
+		{
+			if chance 25
+				!-2light_armor
+			else
+				random {al_clothes3 al_clothes3b}
+		}
 		if chance 25
 			!-2blunt
 		else
@@ -2738,7 +2778,7 @@ unit hero_merchant : base_hero {
 			chance 10 p_hp
 		random 1 3 !normal_food
 	}
-	level {3 20} // always starts with trading contract
+	level {3 25} // always starts with trading contract
 	gold {{200 300} {2000 3000}}
 	class merchant
 }
@@ -2747,7 +2787,7 @@ unit hero_merchant : base_hero {
 // OTHER
 //------------------------------------------------------------------------------
 unit tomashu : base_human {
-	level 25
+	level 26
 	profile {
 		flags fixed
 

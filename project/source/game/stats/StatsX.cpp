@@ -349,10 +349,26 @@ StatsX* StatsX::Get(Entry& e)
 		int pp = min(2 + e.seed.level / 3, (int)e.stats->subprofile->perks.size());
 		for(int i = 0; i < pp; ++i)
 		{
-			auto& p = e.stats->subprofile->perks[i];
+			SubProfile::PerkPoint& p = e.stats->subprofile->perks[i];
 			PerkContext ctx(e.stats);
 			ctx.startup = false;
-			TakenPerk perk(p.perk, p.value);
+			int value = p.value;
+			PerkInfo& info = PerkInfo::perks[(int)p.perk];
+			if(info.required_value == PerkInfo::Skill)
+			{
+				assert(value != -1);
+				if(value == (int)Skill::WEAPON_PROFILE)
+				{
+					value = (int)e.stats->weapon;
+					assert(value != -1);
+				}
+				else if(value == (int)Skill::ARMOR_PROFILE)
+				{
+					value = (int)e.stats->armor;
+					assert(value != -1);
+				}
+			}
+			TakenPerk perk(p.perk, value);
 			perk.Apply(ctx);
 		}
 	}

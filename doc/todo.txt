@@ -1,13 +1,15 @@
 ﻿FEATURE:
 *** perks
+??? po co są perki? żeby bardziej zróżnicować klasy, czy guard, arena master itp potrzebuje perków, czy tylko herosi?
 ! uncomment SpawnTmpUnits
+- mp new game crashed once on loading units, need testing
 - client have no perks in C
-- arena master skill_focus (null)
+? arena master skill_focus (null)
 + create statsx with attrib/skill talent, reapply on creating
 - arena master rolled bow build but have items for melee (no bow)
-- hero merchant at lvl 20 spawn with clothes
+? hero merchant at lvl 20 spawn with clothes
 - effect 30 vs 100 haggle is minimal
-- max hero spawn level is 20
+? max hero spawn level is 20
 + hero with stats created
 + levelup
 + save/load
@@ -20,6 +22,7 @@
 	? spawning
 	+ icon
 		http://game-icons.net/delapouite/originals/two-coins.html
+		require better texture, rescaled from website is poor
 	? dialogs
 	? name
 + 3d msg
