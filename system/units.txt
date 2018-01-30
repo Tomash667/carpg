@@ -281,7 +281,23 @@ items evil_cleric {
 	random 1 3 raw_meat
 }
 
+TODO TODO
 items warrior {
+	if subprofile "bowman" {
+		!-1medium_armor
+		
+	}
+	else if subprofile "tank" {
+		!heavy_armor
+		!shield
+		random {!-1long_blade !-1axe !-1blunt}
+	}
+	else {
+		!!weapon
+		!!armor
+		!-2bow
+		
+	}
 	if chance 50 {
 		!heavy_armor
 		random {!long_blade !axe !blunt}
@@ -348,12 +364,12 @@ items hunter {
 }
 
 items rogue {
-	if profile "bowman"
+	if subprofile "bowman"
 	{
 		!-2short_blade
 		!bow
 	}
-	else if profile "criticalhitter"
+	else if subprofile "criticalhitter"
 	{
 		!short_blade
 		random {!-2bow !-2shield}

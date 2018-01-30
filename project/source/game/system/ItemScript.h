@@ -17,7 +17,8 @@ enum ParseScript
 	PS_ITEM,
 	PS_LIST,
 	PS_LEVELED_LIST,
-	PS_LEVELED_LIST_MOD
+	PS_LEVELED_LIST_MOD,
+	PS_IF_SUBPROFILE
 };
 
 //-----------------------------------------------------------------------------
