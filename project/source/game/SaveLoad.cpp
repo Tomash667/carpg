@@ -336,6 +336,7 @@ void Game::SaveGame(HANDLE file)
 	f << VERSION;
 	f << SAVE_VERSION;
 	f << start_version;
+	f << content::version;
 
 	// czy online / dev
 	byte flags = (Net::IsOnline() ? SF_ONLINE : 0);
@@ -683,6 +684,18 @@ void Game::LoadGame(HANDLE file)
 		f >> start_version;
 	else
 		start_version = version;
+
+	// content version
+	if(LOAD_VERSION >= V_0_7)
+	{
+		uint content_version;
+		f >> content_version;
+		content::require_update = (content::version != content_version);
+	}
+	else
+		content::require_update = true;
+	if(content::require_update)
+		Info("Loading old system version. Content update required.");
 
 	// czy online / dev
 	byte flags;
@@ -1046,7 +1059,11 @@ void Game::LoadGame(HANDLE file)
 				}
 			}
 			if(ok)
+			{
 				SortItems(*qir->items);
+				if(qir->unit && content::require_update)
+					qir->unit->RecalculateWeight();
+			}
 		}
 		delete *it;
 	}

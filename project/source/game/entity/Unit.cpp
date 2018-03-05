@@ -8,6 +8,7 @@
 #include "QuestManager.h"
 #include "AIController.h"
 #include "Team.h"
+#include "Content.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -1567,7 +1568,8 @@ void Unit::Load(HANDLE file, bool local)
 	if(can_sort && LOAD_VERSION < V_0_2_20)
 		SortItems(items);
 	ReadFile(file, &weight, sizeof(weight), &tmp, nullptr);
-	RecalculateWeight();
+	if(can_sort && content::require_update)
+		RecalculateWeight();
 
 	int guard_refid;
 	ReadFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);

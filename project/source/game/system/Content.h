@@ -27,8 +27,11 @@ namespace content
 	extern uint errors;
 	extern uint warnings;
 	extern uint crc[(int)Id::Max];
+	extern uint version;
+	extern bool require_update;
 
 	void LoadContent(delegate<void(Id)> callback);
+	void LoadVersion();
 	void LoadItems();
 	void LoadObjects();
 	void LoadUnits();

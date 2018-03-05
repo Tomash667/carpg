@@ -755,6 +755,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	options.force_pos.x = cfg.GetInt("wnd_pos_x");
 	options.force_pos.y = cfg.GetInt("wnd_pos_y");
 
+	options.hidden_window = cfg.GetBool("hidden_window");
+
 	// multisampling
 	int multisampling = cfg.GetInt("multisampling", 0),
 		multisampling_quality = cfg.GetInt("multisampling_quality", 0);

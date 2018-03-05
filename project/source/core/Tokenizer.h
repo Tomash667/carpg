@@ -458,6 +458,11 @@ namespace tokenizer
 		}
 		void AssertEof() const { AssertToken(T_EOF); }
 		void AssertItem() const { AssertToken(T_ITEM); }
+		void AssertItem(cstring item)
+		{
+			if(!IsItem(item))
+				Unexpected(T_ITEM, (int*)item);
+		}
 		void AssertString() const { AssertToken(T_STRING); }
 		void AssertChar() const { AssertToken(T_CHAR); }
 		void AssertChar(char c) const

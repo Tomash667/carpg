@@ -1,0 +1,5 @@
+// change version when content is system changed
+// currently it is used for:
+//	+ recalculate item weights in inventory
+
+version 0

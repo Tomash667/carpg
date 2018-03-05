@@ -21,12 +21,16 @@ static_assert(countof(content_id) == (int)content::Id::Max, "Missing content_id.
 string content::system_dir;
 uint content::errors, content::warnings;
 uint content::crc[(int)content::Id::Max];
+uint content::version;
+bool content::require_update;
 static uint client_crc[(int)content::Id::Max];
 
 //=================================================================================================
 void content::LoadContent(delegate<void(Id)> callback)
 {
 	uint loaded;
+
+	LoadVersion();
 
 	Info("Game: Loading items.");
 	LoadItems();
@@ -58,6 +62,31 @@ void content::LoadContent(delegate<void(Id)> callback)
 	loaded = LoadMusics(errors);
 	Info("Game: Loaded music: %u.", loaded);
 	callback(Id::Musics);
+}
+
+//=================================================================================================
+void content::LoadVersion()
+{
+	cstring path = Format("%s/system.txt", system_dir.c_str());
+	Tokenizer t;
+
+	try
+	{
+		if(!t.FromFile(path))
+			t.Throw("Failed to open file '%s'.", path);
+		t.Next();
+		t.AssertItem("version");
+		t.Next();
+		version = t.GetUint();
+		t.Next();
+		t.AssertEof();
+
+		Info("Game: System version %u.", version);
+	}
+	catch(Tokenizer::Exception& e)
+	{
+		Error("Game: Failed to load system version: %s", e.ToString());
+	}
 }
 
 //=================================================================================================

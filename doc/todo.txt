@@ -6,6 +6,7 @@ CURRENT:
 - don't focus chest when there is user
 	+ looted is not set/sent
 ! undo FastFunc
+? test save/load/load old, recalculate weight, recalculate weight with quest item
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce
