@@ -3014,5 +3014,4 @@ group_list arena_hard {
 // Unit alias for old names (for save compability)
 // alias unit_id other_id
 //------------------------------------------------------------------------------
-alias necromancer necromant // fixed in 0.2.5
 alias citizen citzen // fixed in 0.4

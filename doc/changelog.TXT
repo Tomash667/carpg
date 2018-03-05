@@ -3,6 +3,7 @@ Historia zmian
 --------------------------------------------------------------------------------
 Wersja 0.7 (2018-XX-YY):
 + wczytywanie grup przeciwników na arenie z pliku
++ lepiej widoczny celownik w ciemnoœci
 - naprawiony crash przy wygenerowaniu magówi i golemów podczas walki na arenie
 - naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
 - naprawione przeliczanie wagi ekwipunku dla wczytywania starych zapisów
@@ -11,7 +12,6 @@ Wersja 0.7 (2018-XX-YY):
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):
 + wczytywanie obiektów z pliku
-- naprawiony crash gdy npc w dru¿ynie chce przedmiot od innego npc w dru¿ynie [MikelkCZ]
 - naprawione nieprawid³owe kolizje dla niektórych obiektów
 - naprawione kolizje gracza z znakami na budynkach
 - naprawiony nieprawid³owy model wioskowego ratuszu
@@ -21,6 +21,11 @@ Wersja 0.6.2 (2017-10-08):
 - naprawione nieoznaczanie u¿ywalnych obiektów jako wolne gdy klient przestaje ich u¿ywaæ, zepsuta animacja
 - naprawione przesy³anie informacji o u¿ywaniu drzwi pomiêdzy klientami
 - naprawiony brak przedmiotów w skrzynkach
+
+--------------------------------------------------------------------------------
+Wersja 0.6.1 (2017-10-02):
+- naprawiony crash gdy npc w dru¿ynie chce przedmiot od innego npc w dru¿ynie [MikelkCZ]
+- lepsze przekierowanie na stronê
 
 --------------------------------------------------------------------------------
 Wersja 0.6 (2017-10-01):

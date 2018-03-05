@@ -6,8 +6,48 @@ CURRENT:
 - don't focus chest when there is user
 	+ looted is not set/sent
 + copy f_perks console commands, angelscript parser
-? search for bugs in other branches, some txt leftovers ?
-- sound volume only works 0/1
+? client leave - 3 player tests:
+	? while talking
+	? while using object
+	? while looting chest
+	? while looting body
+	? while looting bookcase
+	? while leaving level
+	? on worldmap
+	? pvp
+	? arena
+	? solo arena
+	? tournamnt before, in combat
+	? in contest
+- verify distance for contest (especialy in village), ai should move closer, show warning when player is too far and is enlisted
+	tournament too
+? break dialogs in contest, verify that they drink anyway
+
+angelscript2 and more:
+? test recruiting gorush/jozan in 0.5, if they don't tell name in clients write as fixed
+-? UpdateGold but change is added too
+
+f_new_combat_system:
+- fixed very good starting item when player have very low skill
+- fixed effects not disappearing from clients after travel
+- fixed crash when Gorush changes class
+- fixed player can shoot without stamina
+- fixed blocking arrows don't remove stamina
+- fixed high shield skill give stamina from being hit
+- goblin in forest escape outside map and crashes pathfinding
+- sound volume doesn't work except with 0 or >0
+- target orc can spawn in closed room with gorush
+	19:10:56 INFO  - Generating location 'Podziemia Goldenchasm', seed 1915762242.
+	19:10:56 INFO  - Generating dungeon, level 3, target 0.
+- NetChange::ADD_LOCATION memory leak for client (T between 2 cities with warp to inn?)
+- quitting with sounds attached to player = crash
+- arena picks random units and try spawn them at specified levels but it is still limited to max level (for example orc 4)
+	it should pick units at that level, if not possible lower/higher
+- archers stupidly come closer to target when out of stamina
+- removing player in mp game, update effect will show assert on GetPlayerInfo
+
+f_perks:
+-? clear remove console history
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce
@@ -29,6 +69,45 @@ NEW:
 - arena picks random units and try spawn them at specified levels but it is still limited to max level (for example orc 4)
 	it should pickt units at that level, if not possible lower/higher
 + upgrade visual leak detector, fmod, bullet, slikenet, zlib
++ join dungeon & crypt
++ join herodata with unit, anyone can join team etc
++ JoinCost use skill check
++ order ai to fallow other unit, protect it
++ poison resistance from endurance
++ wisdom: skill/perk/bonus
++ shield different block types (physical/magical/fire/etc)
++ modify units stats, perks -> will make unit unique
++ skill: weapon style (weapon and shield, single weapon, dual weapons, two handed weapon, pole weapon)
++ shield give mobility penality (small 0, normal 5, big 10, tower 15)
++ ai telling player to wear something if naked
++ ai yield to hide weapon
++ group ai - some archers should block enemy, others shoot
++ block without shield (by golems for example)
++ effect PoisonResistance/immunity
++ perk Crafting Tradition
++ amulet pijanego mistrza - im bardziej pijany jest gracz tym większe obrażenia
++ perk: zmniejszenie stłuczeń o 25%, alkohol też zwiększa max o 25%
++ walki w karczmie na pieści
++ negative traits: for int/wis
+- Nie można wykonać kopii zapasowej pliku Settings.php - upewnij się, że plik Settings_bak.php istnieje i można go zapisywać.
+- www admin layout panel is broken a bit
++ web: load indiedb after ready, fix admin panel
++ shield with spikes (can crit without battle shielder, +5% crit then)
++ perk armor: critics protection
++ negative history: pacifist (-to combat skills, +non combat skills, can't take aggressive perk)
++ perk: chance to see encounter and escape before it happens, better encounters
++ better perk names, for example axe master is not upgrade from expert so player have two perks (expert and master)
++ stock scripts in files, using extra_stock perk
++ npc to recruit: merchant
++ server side validation: trader_buy items
++ barbarian starting items: axe2, light armor, vodka, healing potions
++ use ContentLoader.LoadError for other loaders
++ server side language != player language will cause some texts to use server language, some will use player language
++ hunters guild, quests (wielki łowczy), bad wolf boss
++ space - take out/hide weapon, hold to show circle with choices (melee, ranged, [unarmed] etc)
++ divide classes into groups - tank, assassin, support
++ barbarian clothes -haggle +damage 10%
++ north barabrian - cold resistance, different clothes
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

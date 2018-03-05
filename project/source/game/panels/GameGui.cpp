@@ -153,9 +153,9 @@ void GameGui::DrawFront()
 		return;
 	}
 
-	// celownik
+	// crosshair
 	if(game.pc->unit->action == A_SHOOT)
-		GUI.DrawSprite(tCelownik, Center(32, 32));
+		GUI.DrawSprite(tCrosshair, Center(32, 32));
 
 	// obwódka bólu
 	if(game.pc->dmgc > 0.f)
@@ -1243,7 +1243,7 @@ void GameGui::ClosePanels(bool close_mp_box)
 void GameGui::LoadData()
 {
 	auto& tex_mgr = ResourceManager::Get<Texture>();
-	tex_mgr.AddLoadTask("celownik.png", tCelownik);
+	tex_mgr.AddLoadTask("crosshair.png", tCrosshair);
 	tex_mgr.AddLoadTask("bubble.png", tBubble);
 	tex_mgr.AddLoadTask("czerwono.png", tObwodkaBolu);
 	tex_mgr.AddLoadTask("bar.png", tBar);

@@ -1,7 +1,0 @@
-FOR ITEMS.TXT
-
-item_(\w+) = 
-item $1 = {\n\tname = 
-
-desc_(\w+) = (\".*\")
-\tdesc = $2\n}
