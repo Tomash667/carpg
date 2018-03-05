@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "Core.h"
+#include <Shellapi.h>
 
 DWORD tmp;
 char BUF[256];
@@ -194,4 +195,10 @@ cstring io::FilenameFromPath(cstring path)
 		return filename + 1;
 	else
 		return path;
+}
+
+//=================================================================================================
+void io::OpenUrl(AnyString url)
+{
+	ShellExecute(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
 }

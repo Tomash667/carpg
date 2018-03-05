@@ -366,9 +366,9 @@ inline bool Any(const T& item, const Arg& arg, const Args&... args)
 //-----------------------------------------------------------------------------
 #include "Containers.h"
 #include "CoreMath.h"
-#include "File.h"
 #include "Logger.h"
 #include "Profiler.h"
 #include "Text.h"
 #include "Tokenizer.h"
+#include "File.h"
 #include "Algorithm.h"

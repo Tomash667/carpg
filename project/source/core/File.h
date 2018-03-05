@@ -24,6 +24,8 @@ namespace io
 	bool LoadFileToString(cstring path, string& str, uint max_size = (uint)-1);
 	// simple encryption (pass encrypted to decrypt data)
 	void Crypt(char* inp, uint inplen, cstring key, uint keylen);
+	// open url in default web browser
+	void OpenUrl(AnyString url);
 }
 
 //-----------------------------------------------------------------------------

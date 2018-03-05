@@ -1,6 +1,8 @@
 #include "Pch.h"
 #include "Core.h"
 #include "Stream.h"
+#undef FAR
+#include <zlib.h>
 
 //-----------------------------------------------------------------------------
 ObjectPool<Buffer> BufferPool;

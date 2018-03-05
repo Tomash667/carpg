@@ -73,7 +73,7 @@ void Game::MainMenuEvent(int id)
 		GUI.SimpleDialog(Format(main_menu->txInfoText, VERSION_STR, g_ctime.c_str()), nullptr);
 		break;
 	case MainMenu::IdWebsite:
-		ShellExecute(nullptr, "open", Format("http://carpg.pl/redirect.php?language=%s", g_lang_prefix.c_str()), nullptr, nullptr, SW_SHOWNORMAL);
+		io::OpenUrl(Format("http://carpg.pl/redirect.php?language=%s", g_lang_prefix.c_str()));
 		break;
 	case MainMenu::IdQuit:
 		Quit();

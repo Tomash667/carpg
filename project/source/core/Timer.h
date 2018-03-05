@@ -21,7 +21,5 @@ public:
 private:
 	double ticks_per_sec;
 	LONGLONG last_time;
-	float old_time;
-	bool use_hpc;
 	bool started;
 };

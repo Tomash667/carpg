@@ -5,6 +5,7 @@ CURRENT:
 - can talk to unit while it's exiting building, dialog is thru door then
 - don't focus chest when there is user
 	+ looted is not set/sent
+! undo FastFunc
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce
@@ -25,6 +26,7 @@ NEW:
 + randomized order of spawned objects
 - arena picks random units and try spawn them at specified levels but it is still limited to max level (for example orc 4)
 	it should pirst units at that level, if not possible lower/higher
++ upgrade visual leak detector, fmod, bullet, slikenet, zlib
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

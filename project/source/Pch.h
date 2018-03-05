@@ -43,7 +43,6 @@
 #else
 #	include <Windows.h>
 #endif
-#include <Shellapi.h>
 #include <ctime>
 #include <vector>
 #include <list>
@@ -56,7 +55,6 @@
 #	include <fmod.hpp>
 #	include <btBulletCollisionCommon.h>
 #	include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
-#	include <zlib.h>
 #endif
 #include <map>
 #include <set>
