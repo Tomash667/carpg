@@ -1,6 +1,6 @@
 // obs³uga zawodów na arenie
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "Game.h"
 #include "Quest_Mages.h"
 #include "City.h"

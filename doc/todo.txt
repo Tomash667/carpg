@@ -26,7 +26,7 @@ NEW:
 + exporter: when file has no ext or ends with .qmsh save as .qmsh.tmp
 + randomized order of spawned objects
 - arena picks random units and try spawn them at specified levels but it is still limited to max level (for example orc 4)
-	it should pirst units at that level, if not possible lower/higher
+	it should pickt units at that level, if not possible lower/higher
 + upgrade visual leak detector, fmod, bullet, slikenet, zlib
 ===============================================================================================================
 VERIFY:

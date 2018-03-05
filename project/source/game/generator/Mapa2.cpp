@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "Mapa2.h"
 #include "BitStreamFunc.h"
 #include "SaveState.h"

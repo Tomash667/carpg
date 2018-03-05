@@ -83,9 +83,6 @@ typedef const char* cstring;
 
 //-----------------------------------------------------------------------------
 // Inne typy
-#ifndef COMMON_ONLY
-typedef FMOD::Sound* SOUND;
-#endif
 struct Mesh;
 struct MeshInstance;
 struct VertexData;

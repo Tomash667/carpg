@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "GameMenu.h"
 #include "Language.h"
 #include "KeyStates.h"

@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "EngineCore.h"
 #include "Layout.h"
 #include "Gui.h"
 #include "ResourceManager.h"

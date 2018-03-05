@@ -1,6 +1,6 @@
 // dane bohatera - jednostki któr¹ mo¿na zrekrutowaæ
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "Game.h"
 #include "SaveState.h"
 

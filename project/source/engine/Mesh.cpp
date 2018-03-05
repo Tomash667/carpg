@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "EngineCore.h"
 #include "Mesh.h"
 #include "BitStreamFunc.h"
 #include "ResourceManager.h"

@@ -1,10 +1,11 @@
 #include "Pch.h"
-#include "Core.h"
+#include "EngineCore.h"
 #include "ResourceManager.h"
 #include "LoadScreen.h"
 #include "Engine.h"
 #include "Mesh.h"
 #include "Utility.h"
+#include <fmod.hpp>
 
 //-----------------------------------------------------------------------------
 ResourceManager ResourceManager::manager;

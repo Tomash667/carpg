@@ -1,6 +1,6 @@
 // dane poziomu lokacji
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "InsideLocationLevel.h"
 #include "Game.h"
 #include "SaveState.h"

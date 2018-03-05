@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "Game.h"
 #include "GameStats.h"
 #include "ParticleSystem.h"
@@ -42,6 +42,7 @@
 #include "ItemContainer.h"
 #include "Stock.h"
 #include "UnitGroup.h"
+#include <fmod.hpp>
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;

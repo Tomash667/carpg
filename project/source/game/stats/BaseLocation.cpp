@@ -1,6 +1,6 @@
 // bazowe typy podziemi i krypt
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "BaseLocation.h"
 #include "ResourceManager.h"
 

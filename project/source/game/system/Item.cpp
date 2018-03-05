@@ -1,6 +1,6 @@
 // przedmiot
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "Item.h"
 #include "Crc.h"
 #include "ResourceManager.h"

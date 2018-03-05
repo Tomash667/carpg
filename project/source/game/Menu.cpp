@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "Game.h"
 #include "Language.h"
 #include "Terrain.h"
@@ -26,6 +26,7 @@
 #include "BitStreamFunc.h"
 #include "Team.h"
 #include "SaveState.h"
+#include <fmod.hpp>
 
 extern string g_ctime;
 

@@ -1,6 +1,6 @@
 // zapisywanie/wczytywanie gry
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "Game.h"
 #include "SaveState.h"
 #include "Version.h"

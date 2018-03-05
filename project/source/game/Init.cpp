@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "Game.h"
 #include "Language.h"
 #include "Terrain.h"
@@ -15,6 +15,7 @@
 #include "Action.h"
 #include "NetStats.h"
 #include "UnitGroup.h"
+#include <fmod.hpp>
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;

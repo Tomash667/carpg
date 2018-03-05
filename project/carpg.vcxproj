@@ -147,6 +147,7 @@
     <ClInclude Include="source\core\Tokenizer.h" />
     <ClInclude Include="source\engine\BitStreamFunc.h" />
     <ClInclude Include="source\engine\Font.h" />
+    <ClInclude Include="source\engine\EngineCore.h" />
     <ClInclude Include="source\engine\gui\AreaLayout.h" />
     <ClInclude Include="source\engine\gui\Button.h" />
     <ClInclude Include="source\engine\gui\CheckBox.h" />
@@ -202,6 +203,7 @@
     <ClInclude Include="source\game\entity\BloodType.h" />
     <ClInclude Include="source\game\entity\ItemContainer.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
+    <ClInclude Include="source\game\GameCore.h" />
     <ClInclude Include="source\game\GameStats.h" />
     <ClInclude Include="source\game\net\GamePacket.h" />
     <ClInclude Include="source\game\net\NetChange.h" />

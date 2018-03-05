@@ -1,6 +1,6 @@
 // dane cz³owieka
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "HumanData.h"
 #include "Mesh.h"
 #include "SaveState.h"

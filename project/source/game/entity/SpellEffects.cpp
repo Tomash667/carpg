@@ -1,6 +1,6 @@
 // efekty czarów, eksplozje, electro, drain
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "SpellEffects.h"
 #include "Unit.h"
 #include "Spell.h"

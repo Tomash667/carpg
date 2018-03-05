@@ -1,6 +1,6 @@
 // character creation screen
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "CreateCharacterPanel.h"
 #include "Game.h"
 #include "Language.h"

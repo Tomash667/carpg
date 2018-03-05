@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "SpawnGroup.h"
 #include "UnitData.h"
 #include "UnitGroup.h"

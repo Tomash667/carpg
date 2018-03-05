@@ -52,7 +52,6 @@
 #include <fstream>
 #include <algorithm>
 #ifndef COMMON_ONLY
-#	include <fmod.hpp>
 #	include <btBulletCollisionCommon.h>
 #	include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
 #endif

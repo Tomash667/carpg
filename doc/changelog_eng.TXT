@@ -5,6 +5,7 @@ Version 0.7 (2018-XX-YY):
 + loading arena unit groups from lists
 - fixed random crash when fighting with arena enemies and rolled to spawn mages and golems
 - fixed empty location where there should be mages and golems there
+- fixed recalculating inventory weight when loading old saves
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

@@ -1,6 +1,6 @@
 // kontroler ai
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "AIController.h"
 #include "Unit.h"
 #include "Game.h"

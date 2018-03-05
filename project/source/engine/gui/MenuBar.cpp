@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "EngineCore.h"
 #include "MenuBar.h"
 #include "MenuStrip.h"
 #include "KeyStates.h"

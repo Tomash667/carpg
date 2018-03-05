@@ -1,6 +1,6 @@
 // podziemia
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "InsideLocation.h"
 
 //=================================================================================================

@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "TerrainTile.h"
 
 extern const TerrainTileInfo terrain_tile_info[TT_MAX] = {

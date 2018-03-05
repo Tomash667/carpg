@@ -1,6 +1,6 @@
 // kontekst poziomu
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "LevelContext.h"
 #include "Game.h"
 #include "Chest.h"

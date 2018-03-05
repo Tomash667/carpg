@@ -1,6 +1,6 @@
 // zal¹¿ek inteligentnego GUI, samo ustala która kontrolka jest aktywna, aktualizuje po³o¿enie, rysuje, aktualizuje
 #include "Pch.h"
-#include "Core.h"
+#include "EngineCore.h"
 #include "GuiContainer.h"
 #include "KeyStates.h"
 

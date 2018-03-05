@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "Item.h"
 #include "Stock.h"
 #include "ContentLoader.h"

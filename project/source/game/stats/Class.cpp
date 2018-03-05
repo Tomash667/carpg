@@ -1,6 +1,6 @@
 // character class
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "Class.h"
 #include "UnitData.h"
 

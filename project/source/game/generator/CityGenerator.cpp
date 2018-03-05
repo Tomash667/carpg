@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "CityGenerator.h"
 
 const float SPAWN_RATIO = 0.2f;

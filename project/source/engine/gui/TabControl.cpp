@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "EngineCore.h"
 #include "TabControl.h"
 #include "Panel.h"
 #include "KeyStates.h"

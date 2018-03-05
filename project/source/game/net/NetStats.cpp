@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "NetStats.h"
 #include "Crc.h"
 #include "Version.h"

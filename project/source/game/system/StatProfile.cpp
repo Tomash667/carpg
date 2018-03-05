@@ -1,6 +1,6 @@
 // attributes & skill profiles
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "StatProfile.h"
 
 //-----------------------------------------------------------------------------

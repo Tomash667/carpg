@@ -1,6 +1,6 @@
 // drzwi
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "Door.h"
 #include "Game.h"
 #include "SaveState.h"

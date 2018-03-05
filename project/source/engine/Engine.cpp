@@ -1,7 +1,8 @@
 ﻿#include "Pch.h"
-#include "Core.h"
+#include "EngineCore.h"
 #include "Engine.h"
 #include "ResourceManager.h"
+#include <fmod.hpp>
 
 //-----------------------------------------------------------------------------
 const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);

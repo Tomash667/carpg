@@ -5,6 +5,7 @@ Wersja 0.7 (2018-XX-YY):
 + wczytywanie grup przeciwników na arenie z pliku
 - naprawiony crash przy wygenerowaniu magówi i golemów podczas walki na arenie
 - naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
+- naprawione przeliczanie wagi ekwipunku dla wczytywania starych zapisów
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):

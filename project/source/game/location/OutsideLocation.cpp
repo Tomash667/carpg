@@ -1,6 +1,6 @@
 // zewnêtrzna lokacja
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "OutsideLocation.h"
 #include "SaveState.h"
 #include "Unit.h"
