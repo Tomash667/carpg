@@ -6,6 +6,7 @@ Version 0.7 (2018-XX-YY):
 - fixed random crash when fighting with arena enemies and rolled to spawn mages and golems
 - fixed empty location where there should be mages and golems there
 - fixed recalculating inventory weight when loading old saves
+- fixed crash after killing spider [xweert123]
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

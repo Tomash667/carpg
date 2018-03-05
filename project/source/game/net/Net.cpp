@@ -6106,7 +6106,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Error("Update client: HURT_SOUND, missing unit %d.", netid);
 						StreamError();
 					}
-					else if(sound_volume)
+					else if(sound_volume && unit->data->sounds->sound[SOUND_PAIN])
 						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_PAIN]->sound, 2.f, 15.f);
 				}
 			}
@@ -7307,7 +7307,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Error("Update client: SHOUT, missing unit %d.", netid);
 						StreamError();
 					}
-					else if(sound_volume)
+					else if(sound_volume && unit->data->sounds->sound[SOUND_SEE_ENEMY])
 						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
 				}
 			}

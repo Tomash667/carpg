@@ -2546,8 +2546,10 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	// dŸwiêk
 	if(sound_volume)
 	{
-		SOUND snd = u.data->sounds->sound[SOUND_DEATH]->sound;
-		if(!snd)
+		SOUND snd = nullptr;
+		if(u.data->sounds->sound[SOUND_DEATH])
+			snd = u.data->sounds->sound[SOUND_DEATH]->sound;
+		else if(u.data->sounds->sound[SOUND_PAIN])
 			snd = u.data->sounds->sound[SOUND_PAIN]->sound;
 		if(snd)
 			PlayUnitSound(u, snd, 2.f);

@@ -301,6 +301,7 @@ Podziêkowania za znalezione b³êdy:
 	thebard88
 	Vinur_Gamall
 	XNautPhD
+	xweert123
 	Zettaton
 	Zinny
 
