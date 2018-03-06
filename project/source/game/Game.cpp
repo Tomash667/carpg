@@ -832,8 +832,7 @@ void Game::DoExitToMenu()
 	prev_game_state = game_state;
 	game_state = GS_EXIT_TO_MENU;
 
-	sound_mgr->StopSounds();
-	attached_sounds.clear();
+	StopAllSounds();
 	ClearGame();
 
 	auto& res_mgr = ResourceManager::Get();

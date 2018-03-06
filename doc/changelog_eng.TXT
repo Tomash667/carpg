@@ -8,6 +8,9 @@ Version 0.7 (2018-XX-YY):
 - fixed empty location where there should be mages and golems there
 - fixed recalculating inventory weight when loading old saves
 - fixed crash after killing spider [xweert123]
+- fixed some sounds not ending after loading game
+- fixed error when loading sounds when sound was turned off in configuration
+- fixed animation error when eating/drinking when sitting
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

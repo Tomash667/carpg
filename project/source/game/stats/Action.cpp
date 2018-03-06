@@ -2,6 +2,8 @@
 #include "GameCore.h"
 #include "Action.h"
 #include "ResourceManager.h"
+#include "SoundManager.h"
+#include "Engine.h"
 
 //-----------------------------------------------------------------------------
 Action Action::actions[] = {
@@ -28,11 +30,12 @@ void Action::LoadData()
 {
 	auto& tex_mgr = ResourceManager::Get<Texture>();
 	auto& sound_mgr = ResourceManager::Get<Sound>();
+	bool load_sounds = !Engine::Get().sound_mgr->IsSoundDisabled();
 
 	for (auto& action : actions)
 	{
 		action.tex = tex_mgr.GetLoaded(Format("%s.png", action.id));
-		if (action.sound_id)
+		if (action.sound_id && load_sounds)
 			action.sound = sound_mgr.GetLoaded(action.sound_id);
 	}
 }

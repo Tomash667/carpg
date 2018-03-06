@@ -10970,6 +10970,12 @@ void Game::PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax)
 	}
 }
 
+void Game::StopAllSounds()
+{
+	sound_mgr->StopSounds();
+	attached_sounds.clear();
+}
+
 Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Unit& hitted, const Vec3& hitpoint, float start_dmg, int dmg_type, bool bash)
 {
 	int mod = ObliczModyfikator(dmg_type, hitted.data->flags);
@@ -21766,14 +21772,14 @@ Unit* Game::SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, Unit
 	return nullptr;
 }
 
-Unit* Game::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn)
+Unit* Game::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, bool main_room)
 {
 	if(!inn)
 		inn = city_ctx->FindInn();
 
 	Vec3 pos;
 	bool ok = false;
-	if(Rand() % 5 != 0)
+	if(main_room || Rand() % 5 != 0)
 	{
 		if(WarpToArea(inn->ctx, inn->arena1, ud.GetRadius(), pos, 20) ||
 			WarpToArea(inn->ctx, inn->arena2, ud.GetRadius(), pos, 10))
@@ -21803,7 +21809,7 @@ void Game::SpawnDrunkmans()
 	int ile = Random(4, 6);
 	for(int i = 0; i < ile; ++i)
 	{
-		Unit* u = SpawnUnitInsideInn(pijak, Random(2, 15), inn);
+		Unit* u = SpawnUnitInsideInn(pijak, Random(2, 15), inn, true);
 		if(u)
 		{
 			u->temporary = true;

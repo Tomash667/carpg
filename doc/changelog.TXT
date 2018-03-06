@@ -8,6 +8,9 @@ Wersja 0.7 (2018-XX-YY):
 - naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
 - naprawione przeliczanie wagi ekwipunku dla wczytywania starych zapisów
 - naprawiony crash po zabiciu paj¹ka [xweert123]
+- naprawione nieprzerywanie niektórych dŸwiêków po wczytaniu
+- naprawiony b³¹d wczytywania dŸwiêków przy wy³¹czonym dŸwiêku w konfiguracji
+- naprawiony b³¹d animacji podczas jedzenia/picia siedz¹c
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):

@@ -635,8 +635,7 @@ void Game::LoadGame(HANDLE file)
 
 	ClearGame();
 	ClearGameVarsOnLoad();
-	sound_mgr->StopSounds();
-	attached_sounds.clear();
+	StopAllSounds();
 	in_tutorial = false;
 	arena_free = true;
 	pc_data.autowalk = false;

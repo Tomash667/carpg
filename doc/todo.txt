@@ -1,6 +1,17 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
+- s fall while using stool, animation is bad for c standup
+- c break action using stool, on c2 c shakes randomly
+- can click and press space when looking at stool for c, it will break weapon state for c; s works ok
+- break action by c on ai cause Invalid usable user: traveler is using stool but the user is nullptr. and crash; test for sp first (any difference between sp/mp code?)
+? 3 players
+	? ai stop using
+	? ai break
+	? ai fall
+	? ai using break
+	? ai using fall
+	? base animation after drinking in dialog
 + copy f_perks console commands, angelscript parser
 ? client leave - 3 player tests:
 	? while talking
@@ -15,10 +26,20 @@ CURRENT:
 	? solo arena
 	? tournamnt before, in combat
 	? in contest
-- verify distance for contest (especialy in village), ai should move closer, show warning when player is too far and is enlisted
-	tournament too
-? break dialogs in contest, verify that they drink anyway
-? using cheats to exit from arena/tournament (goto_map, warp)
+	
+contest:
++ warning when out of range
+- player breaks dialog but can move and rotate
+- ai can move, some keeps eating and crashes when eating at the same time
+? exiting while in contest
+
+tournament:
+? spawning
++ warning when out of range
+? break dialogs in contest, verify that they fight anyway
+? exiting while in tournament
+? exiting while in arena with cheat
+
 ? arena sounds for 3 clients (win/lose/etc)
 
 angelscript2 and more:
@@ -36,10 +57,7 @@ f_new_combat_system:
 f_perks:
 -? clear remove console history
 
-? attached sounds are not stopped with StopSounds ?
-? update music when nomusic, load after enabling
-? playing sounds tests
-? musics tracks chaning, music intro ending
+- break action while consume item will make it diseapear without effect, item also diappear from hand instantly
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce
@@ -76,6 +94,8 @@ NEW:
 + server side language != player language will cause some texts to use server language, some will use player language
 + hunters guild, quests (wielki łowczy), bad wolf boss
 + space - take out/hide weapon, hold to show circle with choices (melee, ranged, [unarmed] etc)
++ attach sounds to scene node, not to unit
++ allow to save on arena/tournament/contest/travel/tutorial
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

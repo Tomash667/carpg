@@ -248,6 +248,7 @@ FMOD::Channel* SoundManager::CreateChannel(FMOD::Sound* sound, const Vec3& pos, 
 	channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
 	channel->set3DMinMaxDistance(smin, 10000.f/*smax*/);
 	channel->setPaused(false);
+	playing_sounds.push_back(channel);
 	return channel;
 }
 

@@ -140,10 +140,10 @@ void Game::PreloadData()
 	// intro music
 	if(!sound_mgr->IsMusicDisabled())
 	{
-		Music* music = new Music;
+		Ptr<Music> music;
 		music->music = ResourceManager::Get<Sound>().GetLoadedMusic("Intro.ogg");
 		music->type = MusicType::Intro;
-		Music::musics.push_back(music);
+		Music::musics.push_back(music.Pin());
 		SetMusic(MusicType::Intro);
 	}
 }

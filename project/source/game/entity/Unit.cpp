@@ -528,7 +528,7 @@ void Unit::ConsumeItemAnim(const Consumable& cons)
 	}
 
 	animation_state = 0;
-	if(current_animation == ANI_PLAY)
+	if(current_animation == ANI_PLAY && !usable)
 	{
 		animation = ANI_STAND;
 		current_animation = ANI_NONE;
