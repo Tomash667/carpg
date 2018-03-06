@@ -838,29 +838,8 @@ void ResourceManager::LoadVertexData(VertexData* vd)
 //=================================================================================================
 void ResourceManager::LoadSoundOrMusic(Sound* sound)
 {
-	assert(fmod_system);
-
-	int flags = FMOD_HARDWARE | FMOD_LOWMEM;
-	if(sound->is_music)
-		flags |= FMOD_2D;
-	else
-		flags |= FMOD_3D | FMOD_LOOP_OFF;
-
-	FMOD_RESULT result;
-	if(sound->IsFile())
-		result = fmod_system->createStream(sound->path.c_str(), flags, nullptr, &sound->sound);
-	else
-	{
-		BufferHandle&& buf = GetBuffer(sound);
-		FMOD_CREATESOUNDEXINFO info = { 0 };
-		info.cbsize = sizeof(info);
-		info.length = buf->Size();
-		result = fmod_system->createStream((cstring)buf->Data(), flags | FMOD_OPENMEMORY, &info, &sound->sound);
-		if(result == FMOD_OK)
-			sound_bufs.push_back(buf.Pin());
-	}
-
-	if(result != FMOD_OK)
+	int result = sound_mgr->LoadSound(sound);
+	if(result != 0)
 		throw Format("ResourceManager: Failed to load %s '%s' (%d).", sound->is_music ? "music" : "sound", sound->path.c_str(), result);
 }
 

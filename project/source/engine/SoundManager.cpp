@@ -2,6 +2,8 @@
 #include "EngineCore.h"
 #include "SoundManager.h"
 #include "StartupOptions.h"
+#include "Stream.h"
+#include "ResourceManager.h"
 #include <fmod.hpp>
 
 //=================================================================================================
@@ -145,9 +147,9 @@ void SoundManager::Update(float dt)
 }
 
 //=================================================================================================
-void SoundManager::LoadSound(Sound* sound)
+int SoundManager::LoadSound(Sound* sound)
 {
-	/*assert(sound);
+	assert(sound);
 
 	int flags = FMOD_HARDWARE | FMOD_LOWMEM;
 	if(sound->is_music)
@@ -157,28 +159,31 @@ void SoundManager::LoadSound(Sound* sound)
 
 	FMOD_RESULT result;
 	if(sound->IsFile())
-		result = fmod_system->createStream(sound->path.c_str(), flags, nullptr, &sound->sound);
+		result = system->createStream(sound->path.c_str(), flags, nullptr, &sound->sound);
 	else
 	{
-		BufferHandle&& buf = GetBuffer(sound);
+		BufferHandle&& buf = ResourceManager::Get().GetBuffer(sound);
 		FMOD_CREATESOUNDEXINFO info = { 0 };
 		info.cbsize = sizeof(info);
 		info.length = buf->Size();
-		result = fmod_system->createStream((cstring)buf->Data(), flags | FMOD_OPENMEMORY, &info, &sound->sound);
+		result = system->createStream((cstring)buf->Data(), flags | FMOD_OPENMEMORY, &info, &sound->sound);
 		if(result == FMOD_OK)
 			sound_bufs.push_back(buf.Pin());
 	}
 
-	if(result != FMOD_OK)
-		throw Format("ResourceManager: Failed to load %s '%s' (%d).", sound->is_music ? "music" : "sound", sound->path.c_str(), result);*/
+	return (int)result;
 }
 
 //=================================================================================================
 void SoundManager::PlayMusic(FMOD::Sound* music)
 {
-	if(nomusic || !music && !current_music)
+	if(nomusic || (!music && !current_music))
+	{
+		music_ended = true;
 		return;
+	}
 
+	music_ended = false;
 	if(music && current_music)
 	{
 		FMOD::Sound* music_sound;
@@ -193,7 +198,7 @@ void SoundManager::PlayMusic(FMOD::Sound* music)
 
 	if(music)
 	{
-		fmod_system->playSound(FMOD_CHANNEL_FREE, music, true, &current_music);
+		system->playSound(FMOD_CHANNEL_FREE, music, true, &current_music);
 		current_music->setVolume(0.f);
 		current_music->setPaused(false);
 		current_music->setChannelGroup(group_music);
@@ -211,7 +216,7 @@ void SoundManager::PlaySound2d(FMOD::Sound* sound)
 		return;
 
 	FMOD::Channel* channel;
-	fmod_system->playSound(FMOD_CHANNEL_FREE, sound, false, &channel);
+	system->playSound(FMOD_CHANNEL_FREE, sound, false, &channel);
 	channel->setChannelGroup(group_default);
 	playing_sounds.push_back(channel);
 }

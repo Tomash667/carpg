@@ -474,8 +474,8 @@ void Game::AddLoadTasks()
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 	auto& vd_mgr = ResourceManager::Get<VertexData>();
 	auto& sound_mgr = ResourceManager::Get<Sound>();
-	bool nosound = sound_mgr->IsSoundDisabled();
-	bool nomusic = sound_mgr->IsMusicDisabled();
+	bool nosound = this->sound_mgr->IsSoundDisabled();
+	bool nomusic = this->sound_mgr->IsMusicDisabled();
 
 	// gui textures
 	res_mgr.AddTaskCategory(txLoadGuiTextures);

@@ -40,4 +40,10 @@ struct Chest : public ItemContainer
 
 	void Save(HANDLE file, bool local);
 	void Load(HANDLE file, bool local);
+	Vec3 GetCenter() const
+	{
+		Vec3 p = pos;
+		p.y += 0.5f;
+		return p;
+	}
 };

@@ -2495,9 +2495,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					// animacja / dŸwiêk
 					pc->action_chest->mesh_inst->Play(&pc->action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-					Vec3 pos = pc->action_chest->pos;
-					pos.y += 0.5f;
-					sound_mgr->PlaySound3d(sChestOpen, pos, 2.f, 5.f);
+					sound_mgr->PlaySound3d(sChestOpen, pc->action_chest->GetCenter(), 2.f, 5.f);
 
 					// event handler
 					if(pc_data.before_player_ptr.chest->handler)
@@ -2537,12 +2535,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 					door->mesh_inst->frame_end_info = false;
 					if(Rand() % 2 == 0)
-					{
-						// skrzypienie
-						Vec3 pos = door->pos;
-						pos.y += 1.5f;
-						sound_mgr->PlaySound3d(sDoor[Rand() % 3], pos, 2.f, 5.f);
-					}
+						sound_mgr->PlaySound3d(sDoor[Rand() % 3], door->GetCenter(), 2.f, 5.f);
 					if(Net::IsOnline())
 					{
 						NetChange& c = Add1(Net::changes);
@@ -2568,11 +2561,10 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						break;
 					}
 
+					Vec3 center = door->GetCenter();
 					if(key && pc->unit->HaveItem(Item::Get(key)))
 					{
-						Vec3 pos = door->pos;
-						pos.y += 1.5f;
-						sound_mgr->PlaySound3d(sUnlock, pos, 2.f, 5.f);
+						sound_mgr->PlaySound3d(sUnlock, center, 2.f, 5.f);
 						AddGameMsg2(txUnlockedDoor, 3.f, GMS_UNLOCK_DOOR);
 						if(!location->outside)
 							minimap_opened_doors = true;
@@ -2581,12 +2573,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 						door->mesh_inst->frame_end_info = false;
 						if(Rand() % 2 == 0)
-						{
-							// skrzypienie
-							Vec3 pos = door->pos;
-							pos.y += 1.5f;
-							sound_mgr->PlaySound3d(sDoor[Rand() % 3], pos, 2.f, 5.f);
-						}
+							sound_mgr->PlaySound3d(sDoor[Rand() % 3], center, 2.f, 5.f);
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
@@ -2598,9 +2585,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					else
 					{
 						AddGameMsg2(txNeedKey, 3.f, GMS_NEED_KEY);
-						Vec3 pos = door->pos;
-						pos.y += 1.5f;
-						sound_mgr->PlaySound3d(sDoorClosed[Rand() % 2], pos, 2.f, 5.f);
+						sound_mgr->PlaySound3d(sDoorClosed[Rand() % 2], center, 2.f, 5.f);
 					}
 				}
 			}
@@ -2617,9 +2602,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						snd = sDoorClose;
 					else
 						snd = sDoor[Rand() % 3];
-					Vec3 pos = door->pos;
-					pos.y += 1.5f;
-					sound_mgr->PlaySound3d(snd, pos, 2.f, 5.f);
+					sound_mgr->PlaySound3d(snd, door->GetCenter(), 2.f, 5.f);
 				}
 				if(Net::IsOnline())
 				{
@@ -15541,9 +15524,7 @@ void Game::DeleteUnit(Unit* unit)
 					unit->player->action_chest->looted = false;
 					unit->player->action_chest->mesh_inst->Play(&unit->player->action_chest->mesh_inst->mesh->anims[0],
 						PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-					Vec3 pos = unit->player->action_chest->pos;
-					pos.y += 0.5f;
-					sound_mgr->PlaySound3d(sChestClose, pos, 2.f, 5.f);
+					sound_mgr->PlaySound3d(sChestClose, unit->player->action_chest->GetCenter(), 2.f, 5.f);
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::CHEST_CLOSE;
 					c.id = unit->player->action_chest->netid;
@@ -19708,9 +19689,7 @@ void Game::OnCloseInventory()
 	{
 		pc->action_chest->looted = false;
 		pc->action_chest->mesh_inst->Play(&pc->action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-		Vec3 pos = pc->action_chest->pos;
-		pos.y += 0.5f;
-		sound_mgr->PlaySound3d(sChestClose, pos, 2.f, 5.f);
+		sound_mgr->PlaySound3d(sChestClose, pc->action_chest->GetCenter(), 2.f, 5.f);
 	}
 	else if(inventory_mode == I_LOOT_CONTAINER)
 	{

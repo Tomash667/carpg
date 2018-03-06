@@ -2546,13 +2546,9 @@ void Game::UpdateAi(float dt)
 							door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 							door.mesh_inst->frame_end_info = false;
 
+							// play sound
 							if(Rand() % 2 == 0)
-							{
-								// skrzypienie
-								Vec3 pos = door.pos;
-								pos.y += 1.5f;
-								sound_mgr->PlaySound3d(sDoor[Rand() % 3], pos, 2.f, 5.f);
-							}
+								sound_mgr->PlaySound3d(sDoor[Rand() % 3], door.GetCenter(), 2.f, 5.f);
 
 							if(Net::IsOnline())
 							{

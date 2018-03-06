@@ -2853,9 +2853,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 					// animation / sound
 					chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-					Vec3 pos = chest->pos;
-					pos.y += 0.5f;
-					sound_mgr->PlaySound3d(sChestOpen, pos, 2.f, 5.f);
+					sound_mgr->PlaySound3d(sChestOpen, chest->GetCenter(), 2.f, 5.f);
 
 					// event handler
 					if(chest->handler)
@@ -3230,9 +3228,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				player.action_chest->looted = false;
 				player.action_chest->mesh_inst->Play(&player.action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-				Vec3 pos = player.action_chest->pos;
-				pos.y += 0.5f;
-				sound_mgr->PlaySound3d(sChestClose, pos, 2.f, 5.f);
+				sound_mgr->PlaySound3d(sChestClose, player.action_chest->GetCenter(), 2.f, 5.f);
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEST_CLOSE;
 				c.id = player.action_chest->netid;
@@ -4338,9 +4334,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						snd = sDoorClose;
 					else
 						snd = sDoor[Rand() % 3];
-					Vec3 pos = door->pos;
-					pos.y += 1.5f;
-					sound_mgr->PlaySound3d(snd, pos, 2.f, 5.f);
+					sound_mgr->PlaySound3d(snd, door->GetCenter(), 2.f, 5.f);
 				}
 
 				// send to other players
@@ -7448,9 +7442,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 								snd = sDoorClose;
 							else
 								snd = sDoor[Rand() % 3];
-							Vec3 pos = door->pos;
-							pos.y += 1.5f;
-							sound_mgr->PlaySound3d(snd, pos, 2.f, 5.f);
+							sound_mgr->PlaySound3d(snd, door->GetCenter(), 2.f, 5.f);
 						}
 					}
 				}
@@ -7476,9 +7468,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else
 					{
 						chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-						Vec3 pos = chest->pos;
-						pos.y += 0.5f;
-						sound_mgr->PlaySound3d(sChestOpen, pos, 2.f, 5.f);
+						sound_mgr->PlaySound3d(sChestOpen, chest->GetCenter(), 2.f, 5.f);
 					}
 				}
 			}
@@ -7503,9 +7493,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else
 					{
 						chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-						Vec3 pos = chest->pos;
-						pos.y += 0.5f;
-						sound_mgr->PlaySound3d(sChestClose, pos, 2.f, 5.f);
+						sound_mgr->PlaySound3d(sChestClose, chest->GetCenter(), 2.f, 5.f);
 					}
 				}
 			}

@@ -7,7 +7,7 @@ public:
 	~SoundManager();
 	void Init(StartupOptions& options);
 	void Update(float dt);
-	void LoadSound(Sound* sound);
+	int LoadSound(Sound* sound);
 	void PlayMusic(FMOD::Sound* music);
 	void PlaySound2d(FMOD::Sound* sound);
 	void PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float smin, float smax = 0.f); // smax jest nieu¿ywane
@@ -21,6 +21,7 @@ public:
 	bool IsDisabled() const { return disabled_sound; }
 	bool IsSoundDisabled() const { return nosound; }
 	bool IsMusicDisabled() const { return nomusic; }
+	bool IsMusicEnded() const { return music_ended; }
 	bool CanPlaySound() const { return play_sound; }
 	int GetSoundVolume() const { return sound_volume; }
 	int GetMusicVolume() const { return music_volume; }
@@ -31,6 +32,7 @@ private:
 	FMOD::Channel* current_music;
 	vector<FMOD::Channel*> playing_sounds;
 	vector<FMOD::Channel*> fallbacks;
+	vector<Buffer*> sound_bufs;
 	int sound_volume, music_volume; // 0-100
 	bool music_ended, disabled_sound, play_sound, nosound, nomusic;
 };

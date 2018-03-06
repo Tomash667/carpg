@@ -36,12 +36,10 @@ f_new_combat_system:
 f_perks:
 -? clear remove console history
 
-+ PlaySound3d get pos to function
-? sound manager, update music
-+ ustawianie play_sound, play_music na podstawie innych zmiennych
 ? attached sounds are not stopped with StopSounds ?
 ? update music when nomusic, load after enabling
 ? playing sounds tests
+? musics tracks chaning, music intro ending
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce

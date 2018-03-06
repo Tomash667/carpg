@@ -77,16 +77,15 @@ void Game::SetupTracks()
 	track_id = 0;
 	last_music = tracks.front();
 	sound_mgr->PlayMusic(last_music->music->sound);
-	music_ended = false;
 }
 
 //=================================================================================================
 void Game::UpdateMusic()
 {
-	if(nomusic || music_type == MusicType::None || tracks.empty())
+	if(sound_mgr->IsMusicDisabled() || music_type == MusicType::None || tracks.empty())
 		return;
 
-	if(music_ended)
+	if(sound_mgr->IsMusicEnded())
 	{
 		if(music_type == MusicType::Intro)
 		{
@@ -105,7 +104,6 @@ void Game::UpdateMusic()
 			++track_id;
 			last_music = tracks[track_id];
 			sound_mgr->PlayMusic(last_music->music->sound);
-			music_ended = false;
 		}
 	}
 }
@@ -113,7 +111,7 @@ void Game::UpdateMusic()
 //=================================================================================================
 void Game::SetMusic()
 {
-	if(nomusic)
+	if(sound_mgr->IsMusicDisabled())
 		return;
 
 	if(!Net::Net::IsLocal() && boss_level_mp)

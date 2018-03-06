@@ -361,6 +361,9 @@ inline bool Any(const T& item, const Arg& arg, const Args&... args)
 }
 
 //-----------------------------------------------------------------------------
+class Buffer;
+
+//-----------------------------------------------------------------------------
 #include "Containers.h"
 #include "CoreMath.h"
 #include "Logger.h"
