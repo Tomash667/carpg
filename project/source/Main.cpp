@@ -6,6 +6,7 @@
 #include "Language.h"
 #include "ErrorHandler.h"
 #include "Utility.h"
+#include "StartupOptions.h"
 
 //-----------------------------------------------------------------------------
 cstring RESTART_MUTEX_NAME = "CARPG-RESTART-MUTEX";
@@ -439,7 +440,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LogProcessorFeatures();
 
 	Game game;
-	Engine::StartupOptions options;
+	StartupOptions options;
 	Bool3 windowed = None,
 		console = None;
 	game.cfg_file = "carpg.cfg";
@@ -496,9 +497,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			else if(strcmp(arg, "fullscreen") == 0)
 				windowed = False;
 			else if(strcmp(arg, "nosound") == 0)
-				game.nosound = true;
+				options.nosound = true;
 			else if(strcmp(arg, "nomusic") == 0)
-				game.nomusic = true;
+				options.nomusic = true;
 			else if(strcmp(arg, "test") == 0)
 			{
 				game.testing = true;
@@ -610,42 +611,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if(cfg.GetBool3("inactive_update", False) == True)
 		game.inactive_update = true;
 
-	// dŸwiêk / muzyka
-	bool play_sound = true, play_music = true;
-	if(cfg.GetBool3("play_sound", True) == False)
+	// sound/music settings
+	if(options.nosound || cfg.GetBool("nosound"))
 	{
-		cfg.Remove("play_sound");
-		play_sound = false;
-	}
-	if(cfg.GetBool3("play_music", True) == False)
-	{
-		cfg.Remove("play_music");
-		play_music = false;
-	}
-	if(game.nosound || cfg.GetBool3("nosound", False) == True)
-	{
-		game.nosound = true;
+		options.nosound = true;
 		Info("Settings: no sound.");
 	}
-	if(game.nomusic || cfg.GetBool3("nomusic", False) == True)
+	if(options.nomusic || cfg.GetBool("nomusic"))
 	{
-		game.nomusic = true;
+		options.nomusic = true;
 		Info("Settings: no music.");
 	}
-	if(game.nomusic && game.nosound)
-		game.disabled_sound = true;
-	game.sound_volume = Clamp(cfg.GetInt("sound_volume", 100), 0, 100);
-	game.music_volume = Clamp(cfg.GetInt("music_volume", 100), 0, 100);
-	if(!play_sound)
-	{
-		game.sound_volume = 0;
-		cfg.Add("sound_volume", "0");
-	}
-	if(!play_music)
-	{
-		game.music_volume = 0;
-		cfg.Add("music_volume", "0");
-	}
+	options.sound_volume = Clamp(cfg.GetInt("sound_volume", 100), 0, 100);
+	options.music_volume = Clamp(cfg.GetInt("music_volume", 100), 0, 100);
 
 	// ustawienia myszki
 	game.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);

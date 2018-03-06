@@ -26,7 +26,7 @@
 #include "BitStreamFunc.h"
 #include "Team.h"
 #include "SaveState.h"
-#include <fmod.hpp>
+#include "SoundManager.h"
 
 extern string g_ctime;
 
@@ -137,12 +137,10 @@ void Game::OptionsEvent(int index)
 	case Options::IdChangeRes:
 		break;
 	case Options::IdSoundVolume:
-		sound_volume = options->sound_volume;
-		group_default->setVolume(float(sound_volume) / 100);
+		sound_mgr->SetSoundVolume(options->sound_volume);
 		break;
 	case Options::IdMusicVolume:
-		music_volume = options->music_volume;
-		group_music->setVolume(float(music_volume) / 100);
+		sound_mgr->SetMusicVolume(options->music_volume);
 		break;
 	case Options::IdMouseSensitivity:
 		mouse_sensitivity = options->mouse_sensitivity;
@@ -256,8 +254,8 @@ void Game::SaveOptions()
 	cfg.Add("cl_glow", cl_glow);
 	cfg.Add("cl_normalmap", cl_normalmap);
 	cfg.Add("cl_specularmap", cl_specularmap);
-	cfg.Add("sound_volume", Format("%d", sound_volume));
-	cfg.Add("music_volume", Format("%d", music_volume));
+	cfg.Add("sound_volume", Format("%d", sound_mgr->GetSoundVolume()));
+	cfg.Add("music_volume", Format("%d", sound_mgr->GetMusicVolume()));
 	cfg.Add("mouse_sensitivity", Format("%d", mouse_sensitivity));
 	cfg.Add("grass_range", Format("%g", grass_range));
 	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
@@ -408,7 +406,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	{
 		GenerateWorld();
 		InitQuests();
-		if(!nomusic)
+		if(!sound_mgr->IsMusicDisabled())
 		{
 			LoadMusic(MusicType::Boss, false);
 			LoadMusic(MusicType::Death, false);
@@ -1525,7 +1523,7 @@ void Game::UpdateServerTransfer(float dt)
 			clear_color = BLACK;
 			GenerateWorld();
 			InitQuests();
-			if(!nomusic)
+			if(!sound_mgr->IsMusicDisabled())
 			{
 				LoadMusic(MusicType::Boss, false);
 				LoadMusic(MusicType::Death, false);

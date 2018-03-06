@@ -6,6 +6,7 @@
 #include "Language.h"
 #include "GetNumberDialog.h"
 #include "Team.h"
+#include "SoundManager.h"
 
 //-----------------------------------------------------------------------------
 enum ButtonId
@@ -337,8 +338,7 @@ void TeamPanel::OnPayCredit(int id)
 		else
 			SimpleDialog(Format(txPaidCreditPart, ile, game.pc->credit - ile));
 		game.pc->unit->gold -= ile;
-		if(game.sound_volume)
-			game.PlaySound2d(game.sCoins);
+		game.sound_mgr->PlaySound2d(game.sCoins);
 		if(Net::Net::IsLocal())
 			game.PayCredit(game.pc, ile);
 		else
@@ -439,8 +439,7 @@ void TeamPanel::OnGiveGold(int id)
 	else
 	{
 		game.pc->unit->gold -= counter;
-		if(game.sound_volume)
-			game.PlaySound2d(game.sCoins);
+		game.sound_mgr->PlaySound2d(game.sCoins);
 		if(Net::Net::IsLocal())
 		{
 			target->gold += counter;

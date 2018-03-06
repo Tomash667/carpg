@@ -32,6 +32,7 @@
 #include "Spell.h"
 #include "Team.h"
 #include "Journal.h"
+#include "SoundManager.h"
 
 // SF_DEV, SF_BETA removed in 0.4
 #define SF_ONLINE (1<<0)
@@ -634,7 +635,7 @@ void Game::LoadGame(HANDLE file)
 
 	ClearGame();
 	ClearGameVarsOnLoad();
-	StopSounds();
+	sound_mgr->StopSounds();
 	attached_sounds.clear();
 	in_tutorial = false;
 	arena_free = true;
@@ -1406,7 +1407,7 @@ void Game::LoadGame(HANDLE file)
 
 	// load music
 	LoadingStep(txLoadMusic);
-	if(!nomusic)
+	if(!sound_mgr->IsMusicDisabled())
 	{
 		LoadMusic(MusicType::Boss, false);
 		LoadMusic(MusicType::Death, false);

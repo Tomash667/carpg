@@ -193,6 +193,8 @@
     <ClInclude Include="source\engine\Physics.h" />
     <ClInclude Include="source\engine\Resource.h" />
     <ClInclude Include="source\engine\ResourceManager.h" />
+    <ClInclude Include="source\engine\SoundManager.h" />
+    <ClInclude Include="source\engine\StartupOptions.h" />
     <ClInclude Include="source\engine\Terrain.h" />
     <ClInclude Include="source\engine\VertexData.h" />
     <ClInclude Include="source\engine\VertexDeclaration.h" />
@@ -404,6 +406,7 @@
     <ClCompile Include="source\engine\ParticleSystem.cpp" />
     <ClCompile Include="source\engine\Physics.cpp" />
     <ClCompile Include="source\engine\ResourceManager.cpp" />
+    <ClCompile Include="source\engine\SoundManager.cpp" />
     <ClCompile Include="source\engine\Terrain.cpp" />
     <ClCompile Include="source\engine\VertexData.cpp" />
     <ClCompile Include="source\ErrorHandler.cpp" />

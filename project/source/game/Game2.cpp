@@ -42,7 +42,7 @@
 #include "ItemContainer.h"
 #include "Stock.h"
 #include "UnitGroup.h"
-#include <fmod.hpp>
+#include "SoundManager.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -778,9 +778,7 @@ void Game::SetupCamera(float dt)
 	cam.frustum.Set(cam.matViewProj);
 
 	// centrum dŸwiêku 3d
-	Vec3 listener_pos = target->GetHeadSoundPos();
-	fmod_system->set3DListenerAttributes(0, (const FMOD_VECTOR*)&listener_pos, nullptr, (const FMOD_VECTOR*)&Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)),
-		(const FMOD_VECTOR*)&Vec3(0, 1, 0));
+	sound_mgr->SetListenerPosition(target->GetHeadSoundPos(), Vec3(sin(target->rot + PI), 0, cos(target->rot + PI)));
 }
 
 //=================================================================================================
@@ -2497,12 +2495,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					// animacja / dŸwiêk
 					pc->action_chest->mesh_inst->Play(&pc->action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-					if(sound_volume)
-					{
-						Vec3 pos = pc->action_chest->pos;
-						pos.y += 0.5f;
-						PlaySound3d(sChestOpen, pos, 2.f, 5.f);
-					}
+					Vec3 pos = pc->action_chest->pos;
+					pos.y += 0.5f;
+					sound_mgr->PlaySound3d(sChestOpen, pos, 2.f, 5.f);
 
 					// event handler
 					if(pc_data.before_player_ptr.chest->handler)
@@ -2541,12 +2536,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					door->state = Door::Opening;
 					door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 					door->mesh_inst->frame_end_info = false;
-					if(sound_volume && Rand() % 2 == 0)
+					if(Rand() % 2 == 0)
 					{
 						// skrzypienie
 						Vec3 pos = door->pos;
 						pos.y += 1.5f;
-						PlaySound3d(sDoor[Rand() % 3], pos, 2.f, 5.f);
+						sound_mgr->PlaySound3d(sDoor[Rand() % 3], pos, 2.f, 5.f);
 					}
 					if(Net::IsOnline())
 					{
@@ -2575,12 +2570,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 
 					if(key && pc->unit->HaveItem(Item::Get(key)))
 					{
-						if(sound_volume)
-						{
-							Vec3 pos = door->pos;
-							pos.y += 1.5f;
-							PlaySound3d(sUnlock, pos, 2.f, 5.f);
-						}
+						Vec3 pos = door->pos;
+						pos.y += 1.5f;
+						sound_mgr->PlaySound3d(sUnlock, pos, 2.f, 5.f);
 						AddGameMsg2(txUnlockedDoor, 3.f, GMS_UNLOCK_DOOR);
 						if(!location->outside)
 							minimap_opened_doors = true;
@@ -2588,12 +2580,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						door->state = Door::Opening;
 						door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 						door->mesh_inst->frame_end_info = false;
-						if(sound_volume && Rand() % 2 == 0)
+						if(Rand() % 2 == 0)
 						{
 							// skrzypienie
 							Vec3 pos = door->pos;
 							pos.y += 1.5f;
-							PlaySound3d(sDoor[Rand() % 3], pos, 2.f, 5.f);
+							sound_mgr->PlaySound3d(sDoor[Rand() % 3], pos, 2.f, 5.f);
 						}
 						if(Net::IsOnline())
 						{
@@ -2606,12 +2598,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					else
 					{
 						AddGameMsg2(txNeedKey, 3.f, GMS_NEED_KEY);
-						if(sound_volume)
-						{
-							Vec3 pos = door->pos;
-							pos.y += 1.5f;
-							PlaySound3d(sDoorClosed[Rand() % 2], pos, 2.f, 5.f);
-						}
+						Vec3 pos = door->pos;
+						pos.y += 1.5f;
+						sound_mgr->PlaySound3d(sDoorClosed[Rand() % 2], pos, 2.f, 5.f);
 					}
 				}
 			}
@@ -2621,7 +2610,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				door->state = Door::Closing;
 				door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND | PLAY_BACK, 0);
 				door->mesh_inst->frame_end_info = false;
-				if(sound_volume && Rand() % 2 == 0)
+				if(Rand() % 2 == 0)
 				{
 					SOUND snd;
 					if(Rand() % 2 == 0)
@@ -2630,7 +2619,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						snd = sDoor[Rand() % 3];
 					Vec3 pos = door->pos;
 					pos.y += 1.5f;
-					PlaySound3d(snd, pos, 2.f, 5.f);
+					sound_mgr->PlaySound3d(snd, pos, 2.f, 5.f);
 				}
 				if(Net::IsOnline())
 				{
@@ -2659,8 +2648,8 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				{
 					AddItem(u, item);
 
-					if(item.item->type == IT_GOLD && sound_volume)
-						PlaySound2d(sCoins);
+					if(item.item->type == IT_GOLD)
+						sound_mgr->PlaySound2d(sCoins);
 
 					if(Net::IsOnline())
 					{
@@ -3041,7 +3030,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 		return;
 
 	auto& action = p->GetAction();
-	if(action.sound && sound_volume)
+	if(action.sound)
 		PlayAttachedSound(*p->unit, action.sound->sound, action.sound_dist);
 
 	if(!from_server)
@@ -3157,7 +3146,7 @@ void Game::SpawnUnitEffect(Unit& unit)
 {
 	Vec3 real_pos = unit.pos;
 	real_pos.y += 1.f;
-	PlaySound3d(sSummon, real_pos, 1.5f);
+	sound_mgr->PlaySound3d(sSummon, real_pos, 1.5f);
 
 	ParticleEmitter* pe = new ParticleEmitter;
 	pe->tex = tSpawn;
@@ -3940,8 +3929,7 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog)
 		SOUND snd = GetTalkSound(*ctx.talker);
 		if(snd)
 		{
-			if(sound_volume)
-				PlayAttachedSound(*ctx.talker, snd, 2.f, 5.f);
+			PlayAttachedSound(*ctx.talker, snd, 2.f, 5.f);
 			if(Net::IsServer())
 			{
 				NetChange& c = Add1(Net::changes);
@@ -5091,8 +5079,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					{
 						ctx.pc->unit->gold -= ile;
 						ctx.talker->gold += ile;
-						if(sound_volume)
-							PlaySound2d(sCoins);
+						sound_mgr->PlaySound2d(sCoins);
 						if(!ctx.is_local)
 							GetPlayerInfo(ctx.pc->id).UpdateGold();
 					}
@@ -7822,8 +7809,7 @@ void Game::GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const
 		// unit hurt sound
 		if(taker.hurt_timer <= 0.f && taker.data->sounds->sound[SOUND_PAIN])
 		{
-			if(sound_volume)
-				PlayAttachedSound(taker, taker.data->sounds->sound[SOUND_PAIN]->sound, 2.f, 15.f);
+			PlayAttachedSound(taker, taker.data->sounds->sound[SOUND_PAIN]->sound, 2.f, 15.f);
 			taker.hurt_timer = Random(1.f, 1.5f);
 			if(IS_SET(dmg_flags, DMG_NO_BLOOD))
 				taker.hurt_timer += 1.f;
@@ -8298,8 +8284,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					ctx.tpes->push_back(tpe2);
 					b.trail2 = tpe2;
 
-					if(sound_volume)
-						PlaySound3d(sBow[Rand() % 2], b.pos, 2.f, 8.f);
+					sound_mgr->PlaySound3d(sBow[Rand() % 2], b.pos, 2.f, 8.f);
 
 					if(Net::IsOnline())
 					{
@@ -8521,8 +8506,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				float p = u.mesh_inst->GetProgress2();
 				if(p >= 28.f / 52.f && u.animation_state == 0)
 				{
-					if(sound_volume)
-						PlayUnitSound(u, sGulp);
+					PlayUnitSound(u, sGulp);
 					u.animation_state = 1;
 					if(Net::IsLocal())
 						u.ApplyConsumableEffect(u.used_item->ToConsumable());
@@ -8552,8 +8536,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				if(p >= 32.f / 70 && u.animation_state == 0)
 				{
 					u.animation_state = 1;
-					if(sound_volume)
-						PlayUnitSound(u, sEat);
+					PlayUnitSound(u, sEat);
 				}
 				if(p >= 48.f / 70 && u.animation_state == 1)
 				{
@@ -8705,8 +8688,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 								if(u.animation_state == AS_ANIMATION2_USING)
 								{
 									u.animation_state = AS_ANIMATION2_USING_SOUND;
-									if(sound_volume)
-										PlaySound3d(bu.sound->sound, u.GetCenter(), 2.f, 5.f);
+									sound_mgr->PlaySound3d(bu.sound->sound, u.GetCenter(), 2.f, 5.f);
 									if(Net::IsServer())
 									{
 										NetChange& c = Add1(Net::changes);
@@ -9399,8 +9381,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 							{
 								MATERIAL_TYPE mat = hitted->GetShield().material;
-								if(sound_volume)
-									PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
+								sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
 								if(Net::IsOnline())
 								{
 									NetChange& c = Add1(Net::changes);
@@ -9454,8 +9435,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							dmg -= blocked;
 
 							MATERIAL_TYPE mat = hitted->GetShield().material;
-							if(sound_volume)
-								PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
+							sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
 							if(Net::IsOnline())
 							{
 								NetChange& c = Add1(Net::changes);
@@ -9541,8 +9521,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 							if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 							{
 								MATERIAL_TYPE mat = hitted->GetShield().material;
-								if(sound_volume)
-									PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
+								sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
 								if(Net::IsOnline())
 								{
 									NetChange& c = Add1(Net::changes);
@@ -9605,8 +9584,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					// trafiono w obiekt
 					if(!it->spell)
 					{
-						if(sound_volume)
-							PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), callback.hitpoint, 2.f, 10.f);
+						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), callback.hitpoint, 2.f, 10.f);
 
 						ParticleEmitter* pe = new ParticleEmitter;
 						pe->tex = tIskra;
@@ -10991,20 +10969,18 @@ SOUND Game::GetMaterialSound(MATERIAL_TYPE atakuje, MATERIAL_TYPE trafiony)
 
 void Game::PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax)
 {
-	assert(sound && sound_volume > 0);
+	assert(sound);
+
+	if(!sound_mgr->CanPlaySound())
+		return;
 
 	Vec3 pos = unit.GetHeadSoundPos();
 
 	if(&unit == pc->unit)
-		PlaySound2d(sound);
+		sound_mgr->PlaySound2d(sound);
 	else
 	{
-		FMOD::Channel* channel;
-		fmod_system->playSound(FMOD_CHANNEL_FREE, sound, true, &channel);
-		channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
-		channel->set3DMinMaxDistance(smin, 10000.f/*smax*/);
-		channel->setPaused(false);
-
+		FMOD::Channel* channel = sound_mgr->CreateChannel(sound, pos, smin);
 		AttachedSound& s = Add1(attached_sounds);
 		s.channel = channel;
 		s.unit = &unit;
@@ -11077,8 +11053,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			c.id = weapon_mat;
 			c.ile = hitted_mat;
 		}
-		if(sound_volume)
-			PlaySound3d(GetMaterialSound(weapon_mat, hitted_mat), hitpoint, 2.f, 10.f);
+		sound_mgr->PlaySound3d(GetMaterialSound(weapon_mat, hitted_mat), hitpoint, 2.f, 10.f);
 
 		// train blocking
 		if(hitted.IsPlayer())
@@ -11857,8 +11832,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 	// dŸwiêk
 	if(spell.sound_cast)
 	{
-		if(sound_volume)
-			PlaySound3d(spell.sound_cast, coord, spell.sound_cast_dist.x, spell.sound_cast_dist.y);
+		sound_mgr->PlaySound3d(spell.sound_cast, coord, spell.sound_cast_dist.x, spell.sound_cast_dist.y);
 		if(Net::IsOnline())
 		{
 			NetChange& c = Add1(Net::changes);
@@ -11874,8 +11848,8 @@ void Game::SpellHitEffect(LevelContext& ctx, Bullet& bullet, const Vec3& pos, Un
 	Spell& spell = *bullet.spell;
 
 	// dŸwiêk
-	if(spell.sound_hit && sound_volume)
-		PlaySound3d(spell.sound_hit, pos, spell.sound_hit_dist.x, spell.sound_hit_dist.y);
+	if(spell.sound_hit)
+		sound_mgr->PlaySound3d(spell.sound_hit, pos, spell.sound_hit_dist.x, spell.sound_hit_dist.y);
 
 	// cz¹steczki
 	if(spell.tex_particle && spell.type == Spell::Ball)
@@ -12047,8 +12021,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 				if(jest)
 				{
 					// ktoœ nadepn¹³
-					if(sound_volume)
-						PlaySound3d(trap.base->sound->sound, trap.pos, 1.f, 4.f);
+					sound_mgr->PlaySound3d(trap.base->sound->sound, trap.pos, 1.f, 4.f);
 					trap.state = 1;
 					trap.time = Random(0.5f, 0.75f);
 
@@ -12070,8 +12043,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 					trap.time = 0.f;
 
 					// dŸwiêk wychodzenia
-					if(sound_volume)
-						PlaySound3d(trap.base->sound2->sound, trap.pos, 2.f, 8.f);
+					sound_mgr->PlaySound3d(trap.base->sound2->sound, trap.pos, 2.f, 8.f);
 				}
 			}
 			else if(trap.state == 2)
@@ -12126,8 +12098,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 								dmg -= def;
 
 								// dŸwiêk trafienia
-								if(sound_volume)
-									PlaySound3d(GetMaterialSound(MAT_IRON, hitted->GetBodyMaterial()), hitted->pos + Vec3(0, 1.f, 0), 2.f, 8.f);
+								sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, hitted->GetBodyMaterial()), hitted->pos + Vec3(0, 1.f, 0), 2.f, 8.f);
 
 								// train player armor skill
 								if(hitted->IsPlayer())
@@ -12159,8 +12130,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 				{
 					trap.state = 4;
 					trap.time = 1.5f;
-					if(sound_volume)
-						PlaySound3d(trap.base->sound3->sound, trap.pos, 1.f, 4.f);
+					sound_mgr->PlaySound3d(trap.base->sound3->sound, trap.pos, 1.f, 4.f);
 				}
 			}
 			else if(trap.state == 4)
@@ -12269,13 +12239,9 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						ctx.tpes->push_back(tpe2);
 						b.trail2 = tpe2;
 
-						if(sound_volume)
-						{
-							// dŸwiêk nadepniêcia
-							PlaySound3d(trap.base->sound->sound, trap.pos, 1.f, 4.f);
-							// dŸwiêk strza³u
-							PlaySound3d(sBow[Rand() % 2], b.pos, 2.f, 8.f);
-						}
+						// play sounds
+						sound_mgr->PlaySound3d(trap.base->sound->sound, trap.pos, 1.f, 4.f);
+						sound_mgr->PlaySound3d(sBow[Rand() % 2], b.pos, 2.f, 8.f);
 
 						if(Net::IsServer())
 						{
@@ -12366,8 +12332,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 					explo->tex = fireball->tex_explode;
 					explo->owner = nullptr;
 
-					if(sound_volume)
-						PlaySound3d(fireball->sound_hit, explo->pos, fireball->sound_hit_dist.x, fireball->sound_hit_dist.y);
+					sound_mgr->PlaySound3d(fireball->sound_hit, explo->pos, fireball->sound_hit_dist.x, fireball->sound_hit_dist.y);
 
 					ctx.explos->push_back(explo);
 
@@ -12731,8 +12696,8 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 					GiveDmg(ctx, e.owner, e.dmg, *e.hitted.back(), nullptr, DMG_NO_BLOOD | DMG_MAGICAL);
 				}
 
-				if(sound_volume && e.spell->sound_hit)
-					PlaySound3d(e.spell->sound_hit, e.lines.back().pts.back(), e.spell->sound_hit_dist.x, e.spell->sound_hit_dist.y);
+				if(e.spell->sound_hit)
+					sound_mgr->PlaySound3d(e.spell->sound_hit, e.lines.back().pts.back(), e.spell->sound_hit_dist.x, e.spell->sound_hit_dist.y);
 
 				// cz¹steczki
 				if(e.spell->tex_particle)
@@ -12854,8 +12819,8 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 			{
 				e.hitsome = false;
 
-				if(sound_volume && e.spell->sound_hit)
-					PlaySound3d(e.spell->sound_hit, e.lines.back().pts.back(), e.spell->sound_hit_dist.x, e.spell->sound_hit_dist.y);
+				if(e.spell->sound_hit)
+					sound_mgr->PlaySound3d(e.spell->sound_hit, e.lines.back().pts.back(), e.spell->sound_hit_dist.x, e.spell->sound_hit_dist.y);
 
 				// cz¹steczki
 				if(e.spell->tex_particle)
@@ -12955,13 +12920,7 @@ void Game::UpdateAttachedSounds(float dt)
 	uint index = 0;
 	for(vector<AttachedSound>::iterator it = attached_sounds.begin(), end = attached_sounds.end(); it != end; ++it, ++index)
 	{
-		bool is_playing;
-		if(it->channel->isPlaying(&is_playing) == FMOD_OK && is_playing)
-		{
-			Vec3 pos = it->unit->GetHeadSoundPos();
-			it->channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
-		}
-		else
+		if(!sound_mgr->UpdateChannelPosition(it->channel, it->unit->GetHeadSoundPos()))
 			_to_remove.push_back(index);
 	}
 
@@ -14705,8 +14664,7 @@ void Game::UpdateContext(LevelContext& ctx, float dt)
 						door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_NO_BLEND | PLAY_STOP_AT_END, 0);
 						door.mesh_inst->frame_end_info = false;
 						// mo¿na by daæ lepszy punkt dŸwiêku
-						if(sound_volume)
-							PlaySound3d(sDoorBudge, door.pos, 2.f, 5.f);
+						sound_mgr->PlaySound3d(sDoorBudge, door.pos, 2.f, 5.f);
 					}
 				}
 			}
@@ -14847,13 +14805,10 @@ int Game::GetDungeonLevelChest()
 
 void Game::PlayHitSound(MATERIAL_TYPE mat2, MATERIAL_TYPE mat, const Vec3& hitpoint, float range, bool dmg)
 {
-	if(sound_volume)
-	{
-		PlaySound3d(GetMaterialSound(mat2, mat), hitpoint, range, 10.f);
-
-		if(mat != MAT_BODY && dmg)
-			PlaySound3d(GetMaterialSound(mat2, MAT_BODY), hitpoint, range, 10.f);
-	}
+	// sounds
+	sound_mgr->PlaySound3d(GetMaterialSound(mat2, mat), hitpoint, range, 10.f);
+	if(mat != MAT_BODY && dmg)
+		sound_mgr->PlaySound3d(GetMaterialSound(mat2, MAT_BODY), hitpoint, range, 10.f);
 
 	if(Net::IsOnline())
 	{
@@ -15036,7 +14991,7 @@ void Game::PreloadResources(bool worldmap)
 		if(RequireLoadingResources(location))
 		{
 			// load music
-			if(!nomusic)
+			if(!sound_mgr->IsMusicDisabled())
 				LoadMusic(GetLocationMusic(), false, true);
 
 			// load objects
@@ -15586,12 +15541,9 @@ void Game::DeleteUnit(Unit* unit)
 					unit->player->action_chest->looted = false;
 					unit->player->action_chest->mesh_inst->Play(&unit->player->action_chest->mesh_inst->mesh->anims[0],
 						PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-					if(sound_volume)
-					{
-						Vec3 pos = unit->player->action_chest->pos;
-						pos.y += 0.5f;
-						PlaySound3d(sChestClose, pos, 2.f, 5.f);
-					}
+					Vec3 pos = unit->player->action_chest->pos;
+					pos.y += 0.5f;
+					sound_mgr->PlaySound3d(sChestClose, pos, 2.f, 5.f);
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::CHEST_CLOSE;
 					c.id = unit->player->action_chest->netid;
@@ -18798,8 +18750,8 @@ void Game::UpdateGame2(float dt)
 			arena_t += dt;
 			if(arena_t >= 2.f)
 			{
-				if(sound_volume && GetArena()->ctx.building_id == pc->unit->in_building)
-					PlaySound2d(sArenaFight);
+				if(GetArena()->ctx.building_id == pc->unit->in_building)
+					sound_mgr->PlaySound2d(sArenaFight);
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
@@ -18868,8 +18820,8 @@ void Game::UpdateGame2(float dt)
 					victory_sound = true;
 				}
 
-				if(sound_volume && GetArena()->ctx.building_id == pc->unit->in_building)
-					PlaySound2d(victory_sound ? sArenaWin : sArenaLost);
+				if(GetArena()->ctx.building_id == pc->unit->in_building)
+					sound_mgr->PlaySound2d(victory_sound ? sArenaWin : sArenaLost);
 				if(Net::IsOnline())
 				{
 					NetChange& c = Add1(Net::changes);
@@ -19076,8 +19028,7 @@ void Game::UpdateGame2(float dt)
 			if(u.IsStanding() && u.IsPlayer() && Vec3::Distance(u.pos, quest_evil->pos) < 5.f && CanSee(u.pos, quest_evil->pos))
 			{
 				quest_evil->evil_state = Quest_Evil::State::Summoning;
-				if(sound_volume)
-					PlaySound2d(sEvil);
+				sound_mgr->PlaySound2d(sEvil);
 				quest_evil->SetProgress(Quest_Evil::Progress::AltarEvent);
 				// spawn undead
 				InsideLocation* inside = (InsideLocation*)location;
@@ -19757,12 +19708,9 @@ void Game::OnCloseInventory()
 	{
 		pc->action_chest->looted = false;
 		pc->action_chest->mesh_inst->Play(&pc->action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-		if(sound_volume)
-		{
-			Vec3 pos = pc->action_chest->pos;
-			pos.y += 0.5f;
-			PlaySound3d(sChestClose, pos, 2.f, 5.f);
-		}
+		Vec3 pos = pc->action_chest->pos;
+		pos.y += 0.5f;
+		sound_mgr->PlaySound3d(sChestClose, pos, 2.f, 5.f);
 	}
 	else if(inventory_mode == I_LOOT_CONTAINER)
 	{
@@ -21397,8 +21345,7 @@ void Game::RemoveTeamMember(Unit* unit)
 void Game::DropGold(int ile)
 {
 	pc->unit->gold -= ile;
-	if(sound_volume)
-		PlaySound2d(sCoins);
+	sound_mgr->PlaySound2d(sCoins);
 
 	// animacja wyrzucania
 	pc->unit->action = A_ANIMATION;

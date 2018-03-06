@@ -418,7 +418,7 @@ public:
 		return manager;
 	}
 
-	void Init(IDirect3DDevice9* device, FMOD::System* fmod_system);
+	void Init(IDirect3DDevice9* device, SoundManager* sound_mgr);
 	void Cleanup();
 
 	bool AddDir(cstring dir, bool subdir = true);
@@ -485,7 +485,7 @@ private:
 
 	Mode mode;
 	IDirect3DDevice9* device;
-	FMOD::System* fmod_system;
+	SoundManager* sound_mgr;
 	ResourceContainer resources;
 	Resource res_search;
 	std::map<cstring, ResourceType, CstringComparer> exts;

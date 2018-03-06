@@ -5,7 +5,7 @@
 #include "Engine.h"
 #include "Mesh.h"
 #include "Utility.h"
-#include <fmod.hpp>
+#include "SoundManager.h"
 
 //-----------------------------------------------------------------------------
 ResourceManager ResourceManager::manager;
@@ -22,10 +22,10 @@ ResourceManager::~ResourceManager()
 }
 
 //=================================================================================================
-void ResourceManager::Init(IDirect3DDevice9* device, FMOD::System* fmod_system)
+void ResourceManager::Init(IDirect3DDevice9* device, SoundManager* sound_mgr)
 {
 	this->device = device;
-	this->fmod_system = fmod_system;
+	this->sound_mgr = sound_mgr;
 
 	RegisterExtensions();
 

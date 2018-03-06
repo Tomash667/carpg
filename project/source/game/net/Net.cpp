@@ -25,6 +25,7 @@
 #include "Spell.h"
 #include "Team.h"
 #include "Action.h"
+#include "SoundManager.h"
 
 vector<NetChange> Net::changes;
 vector<NetChangePlayer> Net::player_changes;
@@ -1410,7 +1411,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		Error("Read level: Broken music.");
 		return false;
 	}
-	if(!nomusic)
+	if(!sound_mgr->IsMusicDisabled())
 		LoadMusic(music, false);
 
 	// checksum
@@ -2485,7 +2486,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						}
 						else
 						{
-							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
+							if(unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
@@ -2499,7 +2500,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						break;
 					case AID_PowerAttack:
 						{
-							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
+							if(unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
@@ -2559,7 +2560,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						break;
 					case AID_RunningAttack:
 						{
-							if(sound_volume && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
+							if(unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 							unit.action = A_ATTACK;
 							unit.attack_id = ((typeflags & 0xF0) >> 4);
@@ -2852,12 +2853,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 
 					// animation / sound
 					chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-					if(sound_volume)
-					{
-						Vec3 pos = chest->pos;
-						pos.y += 0.5f;
-						PlaySound3d(sChestOpen, pos, 2.f, 5.f);
-					}
+					Vec3 pos = chest->pos;
+					pos.y += 0.5f;
+					sound_mgr->PlaySound3d(sChestOpen, pos, 2.f, 5.f);
 
 					// event handler
 					if(chest->handler)
@@ -3232,12 +3230,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			{
 				player.action_chest->looted = false;
 				player.action_chest->mesh_inst->Play(&player.action_chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-				if(sound_volume)
-				{
-					Vec3 pos = player.action_chest->pos;
-					pos.y += 0.5f;
-					PlaySound3d(sChestClose, pos, 2.f, 5.f);
-				}
+				Vec3 pos = player.action_chest->pos;
+				pos.y += 0.5f;
+				sound_mgr->PlaySound3d(sChestClose, pos, 2.f, 5.f);
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::CHEST_CLOSE;
 				c.id = player.action_chest->netid;
@@ -4336,7 +4331,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						ok = false;
 				}
 
-				if(ok && sound_volume && Rand() == 0)
+				if(ok && Rand() == 0)
 				{
 					SOUND snd;
 					if(is_closing && Rand() % 2 == 0)
@@ -4345,7 +4340,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						snd = sDoor[Rand() % 3];
 					Vec3 pos = door->pos;
 					pos.y += 1.5f;
-					PlaySound3d(snd, pos, 2.f, 5.f);
+					sound_mgr->PlaySound3d(snd, pos, 2.f, 5.f);
 				}
 
 				// send to other players
@@ -4689,8 +4684,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						else
 						{
 							AddMultiMsg(Format(txReceivedGold, count, info.name.c_str()));
-							if(sound_volume)
-								PlaySound2d(sCoins);
+							sound_mgr->PlaySound2d(sCoins);
 						}
 					}
 					else if(player.IsTradingWith(target))
@@ -5913,7 +5907,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					}
 					else
 					{
-						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
+						if(unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
@@ -5926,7 +5920,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				case AID_PowerAttack:
 					{
-						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
+						if(unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
@@ -5975,7 +5969,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				case AID_RunningAttack:
 					{
-						if(sound_volume > 0 && unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
+						if(unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 						unit.action = A_ATTACK;
 						unit.attack_id = ((typeflags & 0xF0) >> 4);
@@ -6106,7 +6100,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Error("Update client: HURT_SOUND, missing unit %d.", netid);
 						StreamError();
 					}
-					else if(sound_volume && unit->data->sounds->sound[SOUND_PAIN])
+					else if(unit->data->sounds->sound[SOUND_PAIN])
 						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_PAIN]->sound, 2.f, 15.f);
 				}
 			}
@@ -6306,8 +6300,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Error("Update client: Broken HIT_SOUND.");
 					StreamError();
 				}
-				else if(sound_volume)
-					PlaySound3d(GetMaterialSound(mat1, mat2), pos, 2.f, 10.f);
+				else
+					sound_mgr->PlaySound3d(GetMaterialSound(mat1, mat2), pos, 2.f, 10.f);
 			}
 			break;
 		// unit get stunned
@@ -6417,8 +6411,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					ctx.tpes->push_back(tpe2);
 					b.trail2 = tpe2;
 
-					if(sound_volume)
-						PlaySound3d(sBow[Rand() % 2], b.pos, 2.f, 8.f);
+					sound_mgr->PlaySound3d(sBow[Rand() % 2], b.pos, 2.f, 8.f);
 				}
 			}
 			break;
@@ -6516,7 +6509,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else
 					{
 						SOUND snd = GetTalkSound(*unit);
-						if(sound_volume && snd)
+						if(snd)
 							PlayAttachedSound(*unit, snd, 2.f, 5.f);
 					}
 				}
@@ -7277,7 +7270,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Error("Update client: Broken ARENA_SOUND.");
 					StreamError();
 				}
-				else if(sound_volume && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && GetArena()->ctx.building_id == pc->unit->in_building)
+				else if(city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && GetArena()->ctx.building_id == pc->unit->in_building)
 				{
 					SOUND snd;
 					if(type == 0)
@@ -7286,7 +7279,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						snd = sArenaWin;
 					else
 						snd = sArenaLost;
-					PlaySound2d(snd);
+					sound_mgr->PlaySound2d(snd);
 				}
 			}
 			break;
@@ -7307,7 +7300,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Error("Update client: SHOUT, missing unit %d.", netid);
 						StreamError();
 					}
-					else if(sound_volume && unit->data->sounds->sound[SOUND_SEE_ENEMY])
+					else if(unit->data->sounds->sound[SOUND_SEE_ENEMY])
 						PlayAttachedSound(*unit, unit->data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
 				}
 			}
@@ -7448,7 +7441,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 								ok = false;
 						}
 
-						if(ok && sound_volume && Rand() == 0)
+						if(ok && Rand() == 0)
 						{
 							SOUND snd;
 							if(is_closing && Rand() % 2 == 0)
@@ -7457,7 +7450,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 								snd = sDoor[Rand() % 3];
 							Vec3 pos = door->pos;
 							pos.y += 1.5f;
-							PlaySound3d(snd, pos, 2.f, 5.f);
+							sound_mgr->PlaySound3d(snd, pos, 2.f, 5.f);
 						}
 					}
 				}
@@ -7483,12 +7476,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else
 					{
 						chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END, 0);
-						if(sound_volume)
-						{
-							Vec3 pos = chest->pos;
-							pos.y += 0.5f;
-							PlaySound3d(sChestOpen, pos, 2.f, 5.f);
-						}
+						Vec3 pos = chest->pos;
+						pos.y += 0.5f;
+						sound_mgr->PlaySound3d(sChestOpen, pos, 2.f, 5.f);
 					}
 				}
 			}
@@ -7513,12 +7503,9 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else
 					{
 						chest->mesh_inst->Play(&chest->mesh_inst->mesh->anims[0], PLAY_PRIO1 | PLAY_ONCE | PLAY_STOP_AT_END | PLAY_BACK, 0);
-						if(sound_volume)
-						{
-							Vec3 pos = chest->pos;
-							pos.y += 0.5f;
-							PlaySound3d(sChestClose, pos, 2.f, 5.f);
-						}
+						Vec3 pos = chest->pos;
+						pos.y += 0.5f;
+						sound_mgr->PlaySound3d(sChestClose, pos, 2.f, 5.f);
 					}
 				}
 			}
@@ -7558,8 +7545,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				explo->tex = spell.tex_explode;
 				explo->owner = nullptr;
 
-				if(sound_volume)
-					PlaySound3d(spell.sound_hit, explo->pos, spell.sound_hit_dist.x, spell.sound_hit_dist.y);
+				sound_mgr->PlaySound3d(spell.sound_hit, explo->pos, spell.sound_hit_dist.x, spell.sound_hit_dist.y);
 
 				GetContext(pos).explos->push_back(explo);
 			}
@@ -7604,8 +7590,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 			break;
 		// play evil sound
 		case NetChange::EVIL_SOUND:
-			if(sound_volume)
-				PlaySound2d(sEvil);
+			sound_mgr->PlaySound2d(sEvil);
 			break;
 		// start encounter on world map
 		case NetChange::ENCOUNTER:
@@ -7959,11 +7944,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					break;
 				}
 
-				if(sound_volume)
-				{
-					Spell& spell = *spell_ptr;
-					PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist.x, spell.sound_cast_dist.y);
-				}
+				Spell& spell = *spell_ptr;
+				sound_mgr->PlaySound3d(spell.sound_cast, pos, spell.sound_cast_dist.x, spell.sound_cast_dist.y);
 			}
 			break;
 		// drain blood effect
@@ -8071,8 +8053,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Spell* spell = FindSpell("thunder_bolt");
 
 					// sound
-					if(sound_volume && spell->sound_hit)
-						PlaySound3d(spell->sound_hit, pos, spell->sound_hit_dist.x, spell->sound_hit_dist.y);
+					if(spell->sound_hit)
+						sound_mgr->PlaySound3d(spell->sound_hit, pos, spell->sound_hit_dist.x, spell->sound_hit_dist.y);
 
 					// particles
 					if(spell->tex_particle)
@@ -8413,8 +8395,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						Error("Update client: USABLE_SOUND, unit %d (%s) don't use usable.", netid, unit->data->id.c_str());
 						StreamError();
 					}
-					else if(sound_volume && unit != pc->unit)
-						PlaySound3d(unit->usable->base->sound->sound, unit->GetCenter(), 2.f, 5.f);
+					else if(unit != pc->unit)
+						sound_mgr->PlaySound3d(unit->usable->base->sound->sound, unit->GetCenter(), 2.f, 5.f);
 				}
 			}
 			break;
@@ -8576,8 +8558,8 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					else
 					{
 						AddItem(*pc->unit, pc_data.picking_item->item, (uint)count, (uint)team_count);
-						if(pc_data.picking_item->item->type == IT_GOLD && sound_volume)
-							PlaySound2d(sCoins);
+						if(pc_data.picking_item->item->type == IT_GOLD)
+							sound_mgr->PlaySound2d(sCoins);
 						if(pc_data.picking_item_state == 2)
 							delete pc_data.picking_item;
 						pc_data.picking_item_state = 0;
@@ -9219,8 +9201,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						else
 						{
 							AddMultiMsg(Format(txReceivedGold, count, info->name.c_str()));
-							if(sound_volume)
-								PlaySound2d(sCoins);
+							sound_mgr->PlaySound2d(sCoins);
 						}
 					}
 				}
@@ -10558,7 +10539,7 @@ bool Game::ReadWorldData(BitStream& stream)
 	}
 
 	// load music
-	if(!nomusic)
+	if(!sound_mgr->IsMusicDisabled())
 	{
 		LoadMusic(MusicType::Boss, false);
 		LoadMusic(MusicType::Death, false);

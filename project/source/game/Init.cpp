@@ -15,7 +15,7 @@
 #include "Action.h"
 #include "NetStats.h"
 #include "UnitGroup.h"
-#include <fmod.hpp>
+#include "SoundManager.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -60,18 +60,6 @@ void Game::PreconfigureGame()
 	Info("Game: Preconfiguring game.");
 
 	UnlockCursor(false);
-
-	// set sound vars
-	if(!disabled_sound)
-	{
-		group_default->setVolume(float(sound_volume) / 100);
-		group_music->setVolume(float(music_volume) / 100);
-	}
-	else
-	{
-		nosound = true;
-		nomusic = true;
-	}
 
 	// set animesh callback
 	MeshInstance::Predraw = HumanPredraw;
@@ -150,7 +138,7 @@ void Game::PreloadData()
 	GUI.SetShader(eGui);
 
 	// intro music
-	if(!nomusic)
+	if(!sound_mgr->IsMusicDisabled())
 	{
 		Music* music = new Music;
 		music->music = ResourceManager::Get<Sound>().GetLoadedMusic("Intro.ogg");
@@ -486,6 +474,8 @@ void Game::AddLoadTasks()
 	auto& mesh_mgr = ResourceManager::Get<Mesh>();
 	auto& vd_mgr = ResourceManager::Get<VertexData>();
 	auto& sound_mgr = ResourceManager::Get<Sound>();
+	bool nosound = sound_mgr->IsSoundDisabled();
+	bool nomusic = sound_mgr->IsMusicDisabled();
 
 	// gui textures
 	res_mgr.AddTaskCategory(txLoadGuiTextures);

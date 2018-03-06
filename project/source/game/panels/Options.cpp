@@ -5,6 +5,7 @@
 #include "KeyStates.h"
 #include "Game.h"
 #include "MenuList.h"
+#include "SoundManager.h"
 
 //-----------------------------------------------------------------------------
 cstring txQuality, txMsNone;
@@ -427,14 +428,15 @@ void Options::SetOptions()
 		}
 	}
 
-	if(sound_volume != game->sound_volume)
+	SoundManager* sound_mgr = game->sound_mgr;
+	if(sound_volume != sound_mgr->GetSoundVolume())
 	{
-		sound_volume = game->sound_volume;
+		sound_volume = sound_mgr->GetSoundVolume();
 		scroll[0].SetValue(float(sound_volume) / 100.f);
 	}
-	if(music_volume != game->music_volume)
+	if(music_volume != sound_mgr->GetMusicVolume())
 	{
-		music_volume = game->music_volume;
+		music_volume = sound_mgr->GetMusicVolume();
 		scroll[1].SetValue(float(music_volume) / 100.f);
 	}
 	if(mouse_sensitivity != game->mouse_sensitivity)

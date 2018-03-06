@@ -5,6 +5,7 @@
 #include "KeyStates.h"
 #include "ResourceManager.h"
 #include "Game.h"
+#include "SoundManager.h"
 
 //=================================================================================================
 BookPanel::BookPanel() : book(nullptr), scale(0, 0)
@@ -118,9 +119,7 @@ void BookPanel::Show(const Book* book)
 	Event(GuiEvent_Show);
 	GainFocus();
 
-	auto& game = Game::Get();
-	if(game.sound_volume)
-		game.PlaySound2d(sound);
+	Game::Get().sound_mgr->PlaySound2d(sound);
 }
 
 //=================================================================================================
@@ -197,7 +196,5 @@ void BookPanel::LoadData()
 void BookPanel::ChangePage(int change)
 {
 	current_page += change;
-	auto& game = Game::Get();
-	if(game.sound_volume)
-		game.PlaySound2d(sound);
+	Game::Get().sound_mgr->PlaySound2d(sound);
 }

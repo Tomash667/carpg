@@ -2,6 +2,12 @@
 
 #include "Core.h"
 
+// Engine types
+struct Sound;
+struct StartupOptions;
+class SoundManager;
+
+// FMod types
 namespace FMOD
 {
 	class Channel;
@@ -9,5 +15,4 @@ namespace FMOD
 	class Sound;
 	class System;
 }
-
 typedef FMOD::Sound* SOUND;

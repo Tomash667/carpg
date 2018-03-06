@@ -654,11 +654,10 @@ public:
 
 	//---------------------------------
 	// KONSOLA I KOMENDY
-	bool have_console, inactive_update, nosound, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander,
-		nomusic;
+	bool have_console, inactive_update, noai, devmode, default_devmode, default_player_devmode, debug_info, debug_info2, dont_wander;
 	string cfg_file;
 	vector<ConsoleCommand> cmds;
-	int sound_volume, music_volume, mouse_sensitivity;
+	int mouse_sensitivity;
 	float mouse_sensitivity_f;
 	vector<ConfigVar> config_vars;
 

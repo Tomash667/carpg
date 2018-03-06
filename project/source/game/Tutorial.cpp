@@ -8,6 +8,7 @@
 #include "WorldMapGui.h"
 #include "LoadScreen.h"
 #include "Journal.h"
+#include "SoundManager.h"
 
 char mapa_t[] = {
 	"$$$$$$$$###########$$$"
@@ -455,8 +456,7 @@ void Game::UpdateTutorial()
 			pe->Init();
 			local_ctx.pes->push_back(pe);
 			// jest kolizja
-			if(sound_volume)
-				PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, 2.f, 10.f);
+			sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, 2.f, 10.f);
 			if(tut_state == 5)
 			{
 				Train(*pc->unit, true, (int)Skill::ONE_HANDED_WEAPON, 1);

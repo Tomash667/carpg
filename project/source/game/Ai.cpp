@@ -8,6 +8,7 @@
 #include "GameGui.h"
 #include "Spell.h"
 #include "Team.h"
+#include "SoundManager.h"
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
 const float JUMP_BACK_TIMER = 0.2f;
@@ -2545,12 +2546,12 @@ void Game::UpdateAi(float dt)
 							door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
 							door.mesh_inst->frame_end_info = false;
 
-							if(nosound && Rand() % 2 == 0)
+							if(Rand() % 2 == 0)
 							{
 								// skrzypienie
 								Vec3 pos = door.pos;
 								pos.y += 1.5f;
-								PlaySound3d(sDoor[Rand() % 3], pos, 2.f, 5.f);
+								sound_mgr->PlaySound3d(sDoor[Rand() % 3], pos, 2.f, 5.f);
 							}
 
 							if(Net::IsOnline())
@@ -2868,8 +2869,7 @@ void Game::AI_Shout(LevelContext& ctx, AIController& ai)
 	if(!unit.data->sounds->sound[SOUND_SEE_ENEMY])
 		return;
 
-	if(sound_volume)
-		PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
+	PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
 
 	if(Net::IsOnline())
 	{
@@ -2901,7 +2901,7 @@ void Game::AI_DoAttack(AIController& ai, Unit* target, bool w_biegu)
 
 	if(u.action == A_NONE && (u.mesh_inst->mesh->head.n_groups == 1 || u.weapon_state == WS_TAKEN) && ai.next_attack <= 0.f && u.stamina > 0)
 	{
-		if(sound_volume && u.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
+		if(u.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 			PlayAttachedSound(u, u.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
 		u.action = A_ATTACK;
 		u.attack_id = u.GetRandomAttack();
@@ -2977,8 +2977,7 @@ void Game::AI_HitReaction(Unit& unit, const Vec3& pos)
 		if(!unit.data->sounds->sound[SOUND_SEE_ENEMY])
 			return;
 
-		if(sound_volume)
-			PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
+		PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_SEE_ENEMY]->sound, 3.f, 20.f);
 
 		if(Net::IsOnline())
 		{

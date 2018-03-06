@@ -2,7 +2,8 @@
 #include "EngineCore.h"
 #include "Engine.h"
 #include "ResourceManager.h"
-#include <fmod.hpp>
+#include "SoundManager.h"
+#include "StartupOptions.h"
 
 //-----------------------------------------------------------------------------
 const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);
@@ -14,10 +15,10 @@ KeyStates Key;
 extern string g_system_dir;
 
 //=================================================================================================
-Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), fmod_system(nullptr),
-phy_config(nullptr), phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), current_music(nullptr), cursor_visible(true), replace_cursor(false),
-locked_cursor(true), lost_device(false), clear_color(BLACK), mouse_wheel(0), music_ended(false), disabled_sound(false), key_callback(nullptr),
-res_freed(false), vsync(true), active(false), mouse_dif(0, 0), activation_point(-1, -1)
+Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), phy_config(nullptr),
+phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true), lost_device(false),
+clear_color(BLACK), mouse_wheel(0), key_callback(nullptr), res_freed(false), vsync(true), active(false), mouse_dif(0, 0), activation_point(-1, -1),
+sound_mgr(nullptr)
 {
 	engine = this;
 }
@@ -213,9 +214,7 @@ void Engine::Cleanup()
 	delete phy_dispatcher;
 	delete phy_config;
 
-	// FMOD
-	if(fmod_system)
-		fmod_system->release();
+	delete sound_mgr;
 }
 
 //=================================================================================================
@@ -463,8 +462,6 @@ void Engine::DoTick(bool update_game)
 	// update game
 	if(update_game)
 		OnTick(dt);
-	else
-		UpdateMusic(dt);
 	if(engine_shutdown)
 	{
 		if(active && locked_cursor)
@@ -484,8 +481,7 @@ void Engine::DoTick(bool update_game)
 
 	Render();
 	Key.Update();
-	if(!disabled_sound)
-		UpdateMusic(dt);
+	sound_mgr->Update(dt);
 }
 
 //=================================================================================================
@@ -829,83 +825,6 @@ void Engine::InitRender()
 }
 
 //=================================================================================================
-// Initialize FMOD library
-void Engine::InitSound()
-{
-	// if disabled, log it
-	if(disabled_sound)
-	{
-		Info("Engine: Sound and music is disabled.");
-		return;
-	}
-
-	// create FMOD system
-	FMOD_RESULT result = FMOD::System_Create(&fmod_system);
-	if(result != FMOD_OK)
-		throw Format("Engine: Failed to create FMOD system (%d).", result);
-
-	// get number of drivers
-	int count;
-	result = fmod_system->getNumDrivers(&count);
-	if(result != FMOD_OK)
-		throw Format("Engine: Failed to get FMOD number of drivers (%d).", result);
-	if(count == 0)
-	{
-		Warn("Engine: No sound drivers.");
-		disabled_sound = true;
-		return;
-	}
-
-	// log drivers
-	Info("Engine: Sound drivers (%d):", count);
-	for(int i = 0; i < count; ++i)
-	{
-		result = fmod_system->getDriverInfo(i, BUF, 256, nullptr);
-		if(result == FMOD_OK)
-			Info("Engine: Driver %d - %s", i, BUF);
-		else
-			Error("Engine: Failed to get driver %d info (%d).", i, result);
-	}
-
-	// get info about selected driver and output device
-	int driver;
-	FMOD_OUTPUTTYPE output;
-	fmod_system->getDriver(&driver);
-	fmod_system->getOutput(&output);
-	Info("Engine: Using driver %d and output type %d.", driver, output);
-
-	// initialize FMOD system
-	const int tries = 3;
-	bool ok = false;
-	for(int i = 0; i < 3; ++i)
-	{
-		result = fmod_system->init(128, FMOD_INIT_NORMAL, nullptr);
-		if(result != FMOD_OK)
-		{
-			Error("Engine: Failed to initialize FMOD system (%d).", result);
-			Sleep(100);
-		}
-		else
-		{
-			ok = true;
-			break;
-		}
-	}
-	if(!ok)
-	{
-		Error("Engine: Failed to initialize FMOD, disabling sound!");
-		disabled_sound = true;
-		return;
-	}
-
-	// create group for sounds and music
-	fmod_system->createChannelGroup("default", &group_default);
-	fmod_system->createChannelGroup("music", &group_music);
-
-	Info("Engine: FMOD sound system created.");
-}
-
-//=================================================================================================
 // Create window
 void Engine::InitWindow(StartupOptions& options)
 {
@@ -1001,63 +920,6 @@ void Engine::PlaceCursor()
 	p.y = real_size.y / 2;
 	ClientToScreen(hwnd, &p);
 	SetCursorPos(p.x, p.y);
-}
-
-//=================================================================================================
-// Play music
-void Engine::PlayMusic(FMOD::Sound* music)
-{
-	if(!music && !current_music)
-		return;
-
-	if(music && current_music)
-	{
-		FMOD::Sound* music_sound;
-		current_music->getCurrentSound(&music_sound);
-
-		if(music_sound == music)
-			return;
-	}
-
-	if(current_music)
-		fallbacks.push_back(current_music);
-
-	if(music)
-	{
-		fmod_system->playSound(FMOD_CHANNEL_FREE, music, true, &current_music);
-		current_music->setVolume(0.f);
-		current_music->setPaused(false);
-		current_music->setChannelGroup(group_music);
-	}
-	else
-		current_music = nullptr;
-}
-
-//=================================================================================================
-// Play 2d sound
-void Engine::PlaySound2d(FMOD::Sound* sound)
-{
-	assert(sound);
-
-	FMOD::Channel* channel;
-	fmod_system->playSound(FMOD_CHANNEL_FREE, sound, false, &channel);
-	channel->setChannelGroup(group_default);
-	playing_sounds.push_back(channel);
-}
-
-//=================================================================================================
-// Play 3d sound
-void Engine::PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float smin, float smax)
-{
-	assert(sound);
-
-	FMOD::Channel* channel;
-	fmod_system->playSound(FMOD_CHANNEL_FREE, sound, true, &channel);
-	channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
-	channel->set3DMinMaxDistance(smin, 10000.f/*smax*/);
-	channel->setPaused(false);
-	channel->setChannelGroup(group_default);
-	playing_sounds.push_back(channel);
 }
 
 //=================================================================================================
@@ -1306,9 +1168,10 @@ bool Engine::Start(StartupOptions& options)
 	{
 		InitWindow(options);
 		InitRender();
-		InitSound();
+		sound_mgr = new SoundManager;
+		sound_mgr->Init(options);
 		InitPhysics();
-		ResourceManager::Get().Init(device, fmod_system);
+		ResourceManager::Get().Init(device, sound_mgr);
 	}
 	catch(cstring e)
 	{
@@ -1341,15 +1204,6 @@ bool Engine::Start(StartupOptions& options)
 	// cleanup
 	Cleanup();
 	return true;
-}
-
-//=================================================================================================
-// Stop all sounds
-void Engine::StopSounds()
-{
-	for(vector<FMOD::Channel*>::iterator it = playing_sounds.begin(), end = playing_sounds.end(); it != end; ++it)
-		(*it)->stop();
-	playing_sounds.clear();
 }
 
 //=================================================================================================
@@ -1389,47 +1243,6 @@ void Engine::LockCursor()
 		ShowCursor(false);
 		PlaceCursor();
 	}
-}
-
-//=================================================================================================
-// Update music
-void Engine::UpdateMusic(float dt)
-{
-	bool deletions = false;
-	float volume;
-
-	for(vector<FMOD::Channel*>::iterator it = fallbacks.begin(), end = fallbacks.end(); it != end; ++it)
-	{
-		(*it)->getVolume(&volume);
-		if((volume -= dt) <= 0.f)
-		{
-			(*it)->stop();
-			*it = nullptr;
-			deletions = true;
-		}
-		else
-			(*it)->setVolume(volume);
-	}
-
-	if(deletions)
-		RemoveNullElements(fallbacks);
-
-	if(current_music)
-	{
-		current_music->getVolume(&volume);
-		if(volume != 1.f)
-		{
-			volume = min(1.f, volume + dt);
-			current_music->setVolume(volume);
-		}
-
-		bool playing;
-		current_music->isPlaying(&playing);
-		if(!playing)
-			music_ended = true;
-	}
-
-	fmod_system->update();
 }
 
 //=================================================================================================

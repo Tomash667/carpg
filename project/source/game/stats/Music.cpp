@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "Game.h"
 #include "Content.h"
+#include "SoundManager.h"
 
 //-----------------------------------------------------------------------------
 vector<Music*> Music::musics;
@@ -38,7 +39,7 @@ MusicType Game::GetLocationMusic()
 //=================================================================================================
 void Game::SetMusic(MusicType type)
 {
-	if(nomusic || type == music_type)
+	if(sound_mgr->IsMusicDisabled() || type == music_type)
 		return;
 
 	music_type = type;
@@ -61,7 +62,7 @@ void Game::SetupTracks()
 
 	if(tracks.empty())
 	{
-		PlayMusic(nullptr);
+		sound_mgr->PlayMusic(nullptr);
 		return;
 	}
 
@@ -75,7 +76,7 @@ void Game::SetupTracks()
 
 	track_id = 0;
 	last_music = tracks.front();
-	PlayMusic(last_music->music->sound);
+	sound_mgr->PlayMusic(last_music->music->sound);
 	music_ended = false;
 }
 
@@ -92,7 +93,7 @@ void Game::UpdateMusic()
 			if(game_state == GS_LOAD)
 			{
 				music_type = MusicType::None;
-				PlayMusic(nullptr);
+				sound_mgr->PlayMusic(nullptr);
 			}
 			else
 				SetMusic(MusicType::Title);
@@ -103,7 +104,7 @@ void Game::UpdateMusic()
 		{
 			++track_id;
 			last_music = tracks[track_id];
-			PlayMusic(last_music->music->sound);
+			sound_mgr->PlayMusic(last_music->music->sound);
 			music_ended = false;
 		}
 	}

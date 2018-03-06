@@ -9,6 +9,7 @@
 #include "QuestManager.h"
 #include "GameGui.h"
 #include "AIController.h"
+#include "SoundManager.h"
 
 //=================================================================================================
 void Quest_Mages::Start()
@@ -152,8 +153,7 @@ void Quest_Mages::Special(DialogContext& ctx, cstring msg)
 		{
 			ctx.talker->gold += ctx.pc->unit->gold;
 			ctx.pc->unit->gold = 0;
-			if(game->sound_volume)
-				game->PlaySound2d(game->sCoins);
+			game->sound_mgr->PlaySound2d(game->sCoins);
 			if(!ctx.is_local)
 				game->GetPlayerInfo(ctx.pc->id).UpdateGold();
 		}

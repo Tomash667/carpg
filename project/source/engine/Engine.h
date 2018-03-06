@@ -29,17 +29,6 @@ struct CompileShaderParams
 class Engine
 {
 public:
-	struct StartupOptions
-	{
-		cstring title;
-		Int2 size, force_size, force_pos;
-		bool fullscreen, vsync, hidden_window;
-
-		StartupOptions() : title(nullptr), size(0, 0), force_size(-1, -1), force_pos(-1, -1), fullscreen(false), vsync(true), hidden_window(false)
-		{
-		}
-	};
-
 	Engine();
 	virtual ~Engine() {}
 
@@ -54,17 +43,12 @@ public:
 	void DoPseudotick();
 	void EngineShutdown();
 	void FatalError(cstring err);
-	void PlayMusic(FMOD::Sound* music);
-	void PlaySound2d(FMOD::Sound* sound);
-	void PlaySound3d(FMOD::Sound* sound, const Vec3& pos, float smin, float smax = 0.f); // smax jest nieu¿ywane
 	void Render(bool dont_call_present = false);
 	bool Reset(bool force);
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
 	bool Start(StartupOptions& options);
-	void StopSounds();
 	void UnlockCursor(bool lock_on_focus = true);
 	void LockCursor();
-	void UpdateMusic(float dt);
 
 	bool IsActive() const { return active; }
 	bool IsCursorLocked() const { return locked_cursor; }
@@ -102,14 +86,6 @@ public:
 	DWORD clear_color;
 	int wnd_hz, used_adapter, shader_version;
 
-	// FMOD
-	FMOD::System* fmod_system;
-	FMOD::ChannelGroup* group_default, *group_music;
-	FMOD::Channel* current_music;
-	vector<FMOD::Channel*> playing_sounds;
-	vector<FMOD::Channel*> fallbacks;
-	bool music_ended, disabled_sound;
-
 	// bullet physics
 	btDefaultCollisionConfiguration* phy_config;
 	btCollisionDispatcher* phy_dispatcher;
@@ -119,6 +95,8 @@ public:
 	// constants
 	static const Int2 MIN_WINDOW_SIZE;
 	static const Int2 DEFAULT_WINDOW_SIZE;
+
+	SoundManager* sound_mgr;
 
 protected:
 	// funkcje implementowane przez Game
@@ -142,7 +120,6 @@ private:
 	void MsgToKey(UINT msg, WPARAM wParam, byte& key, int& result);
 	void InitPhysics();
 	void InitRender();
-	void InitSound();
 	void InitWindow(StartupOptions& options);
 	void LogMultisampling();
 	void PlaceCursor();

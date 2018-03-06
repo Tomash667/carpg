@@ -8,6 +8,7 @@
 #include "Encounter.h"
 #include "City.h"
 #include "GameGui.h"
+#include "SoundManager.h"
 
 //=================================================================================================
 void Quest_BanditsCollectToll::Start()
@@ -159,8 +160,7 @@ void Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
 	{
 		ctx.talker->gold += 500;
 		ctx.pc->unit->gold -= 500;
-		if(game->sound_volume)
-			game->PlaySound2d(game->sCoins);
+		game->sound_mgr->PlaySound2d(game->sCoins);
 		if(!ctx.is_local)
 			game->GetPlayerInfo(ctx.pc->id).UpdateGold();
 	}
