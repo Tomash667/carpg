@@ -3235,14 +3235,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			}
 			else if(player.action == PlayerController::Action_LootContainer)
 			{
-				player.action_container->user = nullptr;
-				player.unit->usable = nullptr;
+				player.unit->UseUsable(nullptr);
 
 				NetChange& c = Add1(Net::changes);
 				c.type = NetChange::USE_USABLE;
 				c.unit = info.u;
 				c.id = player.action_container->netid;
-				c.ile = 0;
+				c.ile = USE_USABLE_STOP;
 			}
 			else
 			{
@@ -3469,9 +3468,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		case NetChange::USE_USABLE:
 			{
 				int usable_netid;
-				byte state; // 0-stop, 1-start
+				USE_USABLE_STATE state;
 				if(!stream.Read(usable_netid)
-					|| !stream.Read(state))
+					|| !stream.ReadCasted<byte>(state))
 				{
 					Error("Update server: Broken USE_USABLE from %s.", info.name.c_str());
 					StreamError();
@@ -3486,7 +3485,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					break;
 				}
 
-				if(state == 1)
+				if(state == USE_USABLE_START)
 				{
 					// use usable
 					if(usable->user)
@@ -3506,14 +3505,13 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.animation = ANI_PLAY;
 							unit.mesh_inst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
 							unit.mesh_inst->groups[0].speed = 1.f;
-							unit.usable = usable;
 							unit.target_pos = unit.pos;
 							unit.target_pos2 = usable->pos;
 							if(usable->base->limit_rot == 4)
 								unit.target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 							unit.timer = 0.f;
 							unit.animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-							unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.usable->pos);
+							unit.use_rot = Vec3::LookAtAngle(unit.pos, usable->pos);
 							unit.used_item = base.item;
 							if(unit.used_item)
 							{
@@ -3535,14 +3533,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							player.chest_trade = &usable->container->items;
 						}
 
-						usable->user = &unit;
-
-						// send info to players
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::USE_USABLE;
-						c.unit = info.u;
-						c.id = usable_netid;
-						c.ile = state;
+						unit.UseUsable(usable);
 					}
 				}
 				else
@@ -3550,28 +3541,28 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					// stop using usable
 					if(usable->user == &unit)
 					{
-						BaseUsable& base = *usable->base;
-						if(!IS_SET(base.use_flags, BaseUsable::CONTAINER))
+						if(state == USE_USABLE_STOP)
 						{
-							unit.action = A_NONE;
-							unit.animation = ANI_STAND;
-							if(unit.live_state == Unit::ALIVE)
-								unit.used_item = nullptr;
+							BaseUsable& base = *usable->base;
+							if(!IS_SET(base.use_flags, BaseUsable::CONTAINER))
+							{
+								unit.action = A_NONE;
+								unit.animation = ANI_STAND;
+								if(unit.live_state == Unit::ALIVE)
+									unit.used_item = nullptr;
+							}
 						}
-
-						// send info to other players
-						if(players > 2)
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::USE_USABLE;
-							c.unit = info.u;
-							c.id = usable_netid;
-							c.ile = state;
-						}
+						else if(state == USE_USABLE_END)
+							unit.UseUsable(nullptr);
 					}
-
-					usable->user = nullptr;
 				}
+
+				// send info to players
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_USABLE;
+				c.unit = info.u;
+				c.id = usable_netid;
+				c.ile = state;
 			}
 			break;
 		// player used cheat 'suicide'
@@ -7006,10 +6997,10 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::USE_USABLE:
 			{
 				int netid, usable_netid;
-				byte state;
+				USE_USABLE_STATE state;
 				if(!stream.Read(netid)
 					|| !stream.Read(usable_netid)
-					|| !stream.Read(state))
+					|| !stream.ReadCasted<byte>(state))
 				{
 					Error("Update client: Broken USE_USABLE.");
 					StreamError();
@@ -7033,22 +7024,21 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 
 				BaseUsable& base = *usable->base;
-				if(state == 1 || state == 2)
+				if(state == USE_USABLE_START || state == USE_USABLE_START_SPECIAL)
 				{
 					if(!IS_SET(base.use_flags, BaseUsable::CONTAINER))
 					{
 						unit->action = A_ANIMATION2;
 						unit->animation = ANI_PLAY;
-						unit->mesh_inst->Play(state == 2 ? "czyta_papiery" : base.anim.c_str(), PLAY_PRIO1, 0);
+						unit->mesh_inst->Play(state == USE_USABLE_START_SPECIAL ? "czyta_papiery" : base.anim.c_str(), PLAY_PRIO1, 0);
 						unit->mesh_inst->groups[0].speed = 1.f;
-						unit->usable = usable;
 						unit->target_pos = unit->pos;
 						unit->target_pos2 = usable->pos;
 						if(base.limit_rot == 4)
 							unit->target_pos2 -= Vec3(sin(usable->rot)*1.5f, 0, cos(usable->rot)*1.5f);
 						unit->timer = 0.f;
 						unit->animation_state = AS_ANIMATION2_MOVE_TO_OBJECT;
-						unit->use_rot = Vec3::LookAtAngle(unit->pos, unit->usable->pos);
+						unit->use_rot = Vec3::LookAtAngle(unit->pos, usable->pos);
 						unit->used_item = base.item;
 						if(unit->used_item)
 						{
@@ -7057,18 +7047,13 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							unit->weapon_state = WS_HIDDEN;
 						}
 					}
-					else if(unit->player == pc)
-					{
 
-					}
-					usable->user = unit;
-
+					unit->UseUsable(usable);
 					if(pc_data.before_player == BP_USABLE && pc_data.before_player_ptr.usable == usable)
 						pc_data.before_player = BP_NONE;
 				}
 				else
 				{
-					usable->user = nullptr;
 					if(unit->player != pc && !IS_SET(base.use_flags, BaseUsable::CONTAINER))
 					{
 						unit->action = A_NONE;
@@ -7076,6 +7061,15 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						if(unit->live_state == Unit::ALIVE)
 							unit->used_item = nullptr;
 					}
+
+					if(usable->user != unit)
+					{
+						Error("Update client: USE_USABLE, unit %d not using %d.", netid, usable_netid);
+						StreamError();
+						unit->usable = nullptr;
+					}
+					else if(state == USE_USABLE_END)
+						unit->UseUsable(nullptr);
 				}
 			}
 			break;

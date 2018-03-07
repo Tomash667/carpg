@@ -8,6 +8,15 @@ struct Unit;
 struct UnitData;
 
 //-----------------------------------------------------------------------------
+enum USE_USABLE_STATE
+{
+	USE_USABLE_STOP,
+	USE_USABLE_END,
+	USE_USABLE_START,
+	USE_USABLE_START_SPECIAL
+};
+
+//-----------------------------------------------------------------------------
 struct NetChange
 {
 	enum TYPE
@@ -81,7 +90,7 @@ struct NetChange
 		CHEAT_MODSTAT, // player used cheat modstat [byte(id)-stat id, bool(ile)-is skill, char(i)-value]
 		CHEAT_REVEAL, // player used cheat 'reveal' []
 		CHEAT_GOTO_MAP, // player used cheat 'goto_map' []
-		USE_USABLE, // unit uses usable object SERVER[int(netid)-unit, int(id)-usable netid, byte(ile)-state(0-stop,1-start,2-start special)] / CLIENT[int(id)-usable netid, byte(ile)-state(0-stop,1-start)]
+		USE_USABLE, // unit uses usable object SERVER[int(netid)-unit, int(id)-usable netid, byte(ile)-state(USE_USABLE_STATE)] / CLIENT[int(id)-usable netid, byte(ile)-state(USE_USABLE_STATE)]
 		STAND_UP, // unit stands up SERVER[int(netid)-unit] / CLIENT[]
 		GAME_OVER, // game over []
 		RECRUIT_NPC, // recruit npc to team [int(netid)-unit, auto:bool-is free]

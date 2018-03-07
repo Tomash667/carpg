@@ -1292,16 +1292,16 @@ void Game::UpdateAi(float dt)
 											{
 												u.action = A_ANIMATION2;
 												u.animation = ANI_PLAY;
-												bool czyta_papiery = false;
+												bool read_papers = false;
 												if(use.base == chair && IS_SET(u.data->flags, F_AI_CLERK))
 												{
-													czyta_papiery = true;
+													read_papers = true;
 													u.mesh_inst->Play("czyta_papiery", PLAY_PRIO3, 0);
 												}
 												else
 													u.mesh_inst->Play(base.anim.c_str(), PLAY_PRIO1, 0);
 												u.mesh_inst->groups[0].speed = 1.f;
-												u.usable = &use;
+												u.UseUsable(&use);
 												u.target_pos = u.pos;
 												u.target_pos2 = use.pos;
 												if(use.base->limit_rot == 4)
@@ -1324,14 +1324,13 @@ void Game::UpdateAi(float dt)
 													else
 														ai.timer = Random(5.f, 10.f);
 												}
-												use.user = &u;
 												if(Net::IsOnline())
 												{
 													NetChange& c = Add1(Net::changes);
 													c.type = NetChange::USE_USABLE;
 													c.unit = &u;
 													c.id = use.netid;
-													c.ile = (czyta_papiery ? 2 : 1);
+													c.ile = (read_papers ? USE_USABLE_START_SPECIAL : USE_USABLE_START);
 												}
 											}
 											else

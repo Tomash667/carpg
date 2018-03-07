@@ -829,6 +829,7 @@ struct Unit
 	void CreateMesh(CREATE_MESH mode);
 
 	void ApplyStun(float length);
+	void UseUsable(Usable* usable);
 
 	//-----------------------------------------------------------------------------
 	static vector<Unit*> refid_table;

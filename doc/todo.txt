@@ -1,17 +1,11 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-- s fall while using stool, animation is bad for c standup
-- c break action using stool, on c2 c shakes randomly
+! undo dialog.txt drunkmans
 - can click and press space when looking at stool for c, it will break weapon state for c; s works ok
-- break action by c on ai cause Invalid usable user: traveler is using stool but the user is nullptr. and crash; test for sp first (any difference between sp/mp code?)
-? 3 players
-	? ai stop using
-	? ai break
-	? ai fall
-	? ai using break
-	? ai using fall
-	? base animation after drinking in dialog
+- c/c2 fall not smooth interpolation for s/c2
+? loot container tests, close inventory
+? 3 players - base animation after drinking in dialog
 + copy f_perks console commands, angelscript parser
 ? client leave - 3 player tests:
 	? while talking
