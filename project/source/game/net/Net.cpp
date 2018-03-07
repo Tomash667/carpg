@@ -4097,15 +4097,15 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else if(is_skill)
 				{
-					if(what < (int)Skill::MAX)
+					if(what < (int)SkillId::MAX)
 					{
 						int num = +value;
 						if(type == NetChange::CHEAT_MODSTAT)
 							num += info.u->unmod_stats.skill[what];
-						int v = Clamp(num, 0, SkillInfo::MAX);
+						int v = Clamp(num, 0, Skill::MAX);
 						if(v != info.u->unmod_stats.skill[what])
 						{
-							info.u->Set((Skill)what, v);
+							info.u->Set((SkillId)what, v);
 							NetChangePlayer& c = AddChange(NetChangePlayer::STAT_CHANGED, info.pc);
 							c.id = (int)ChangedStatType::SKILL;
 							c.a = what;
@@ -4120,15 +4120,15 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 				else
 				{
-					if(what < (int)Attribute::MAX)
+					if(what < (int)AttributeId::MAX)
 					{
 						int num = +value;
 						if(type == NetChange::CHEAT_MODSTAT)
 							num += info.u->unmod_stats.attrib[what];
-						int v = Clamp(num, 1, AttributeInfo::MAX);
+						int v = Clamp(num, 1, Attribute::MAX);
 						if(v != info.u->unmod_stats.attrib[what])
 						{
-							info.u->Set((Attribute)what, v);
+							info.u->Set((AttributeId)what, v);
 							NetChangePlayer& c = AddChange(NetChangePlayer::STAT_CHANGED, info.pc);
 							c.id = (int)ChangedStatType::ATTRIBUTE;
 							c.a = what;
@@ -4545,12 +4545,12 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						cstring error = nullptr;
 						if(type == 0)
 						{
-							if(stat_type >= (byte)Attribute::MAX)
+							if(stat_type >= (byte)AttributeId::MAX)
 								error = "attribute";
 						}
 						else
 						{
-							if(stat_type >= (byte)Skill::MAX)
+							if(stat_type >= (byte)SkillId::MAX)
 								error = "skill";
 						}
 						if(error)
@@ -6027,10 +6027,15 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					{
 						// handling of previous hp
 						float hp_dif = hp - unit->hp - hpmax + unit->hpmax;
+						if(hp_dif < 0.f)
+						{
+							float old_ratio = unit->hp / unit->hpmax;
+							float new_ratio = hp / hpmax;
+							if(old_ratio > new_ratio)
+								pc->last_dmg += -hp_dif;
+						}
 						unit->hp = hp;
 						unit->hpmax = hpmax;
-						if(hp_dif < 0.f)
-							pc->last_dmg += -hp_dif;
 					}
 					else
 					{
@@ -9364,40 +9369,40 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						switch((ChangedStatType)type)
 						{
 						case ChangedStatType::ATTRIBUTE:
-							if(what >= (byte)Attribute::MAX)
+							if(what >= (byte)AttributeId::MAX)
 							{
 								Error("Update single client: STAT_CHANGED, invalid attribute %u.", what);
 								StreamError();
 							}
 							else
-								pc->unit->Set((Attribute)what, value);
+								pc->unit->Set((AttributeId)what, value);
 							break;
 						case ChangedStatType::SKILL:
-							if(what >= (byte)Skill::MAX)
+							if(what >= (byte)SkillId::MAX)
 							{
 								Error("Update single client: STAT_CHANGED, invalid skill %u.", what);
 								StreamError();
 							}
 							else
-								pc->unit->Set((Skill)what, value);
+								pc->unit->Set((SkillId)what, value);
 							break;
 						case ChangedStatType::BASE_ATTRIBUTE:
-							if(what >= (byte)Attribute::MAX)
+							if(what >= (byte)AttributeId::MAX)
 							{
 								Error("Update single client: STAT_CHANGED, invalid base attribute %u.", what);
 								StreamError();
 							}
 							else
-								pc->SetBase((Attribute)what, value);
+								pc->SetBase((AttributeId)what, value);
 							break;
 						case ChangedStatType::BASE_SKILL:
-							if(what >= (byte)Skill::MAX)
+							if(what >= (byte)SkillId::MAX)
 							{
 								Error("Update single client: STAT_CHANGED, invalid base skill %u.", what);
 								StreamError();
 							}
 							else
-								pc->SetBase((Skill)what, value);
+								pc->SetBase((SkillId)what, value);
 							break;
 						default:
 							Error("Update single client: STAT_CHANGED, invalid change type %u.", type);
@@ -9437,50 +9442,55 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 			}
 		}
 	}
-	if(pc)
+
+	// gold
+	if(IS_SET(flags, PlayerInfo::UF_GOLD))
 	{
-		// gold
-		if(IS_SET(flags, PlayerInfo::UF_GOLD))
+		if(!pc)
+			Skip(stream, sizeof(pc->unit->gold));
+		else if(!stream.Read(pc->unit->gold))
 		{
-			if(!stream.Read(pc->unit->gold))
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
-				StreamError();
-				return true;
-			}
+			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
+			StreamError();
+			return true;
 		}
+	}
 
-		// alcohol
-		if(IS_SET(flags, PlayerInfo::UF_ALCOHOL))
+	// alcohol
+	if(IS_SET(flags, PlayerInfo::UF_ALCOHOL))
+	{
+		if(!pc)
+			Skip(stream, sizeof(pc->unit->alcohol));
+		else if(!stream.Read(pc->unit->alcohol))
 		{
-			if(!stream.Read(pc->unit->alcohol))
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
-				StreamError();
-				return true;
-			}
+			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_GOLD.");
+			StreamError();
+			return true;
 		}
+	}
 
-		// buffs
-		if(IS_SET(flags, PlayerInfo::UF_BUFFS))
+	// buffs
+	if(IS_SET(flags, PlayerInfo::UF_BUFFS))
+	{
+		auto player_info = pc ? pc->player_info : &GetPlayerInfo(my_id);
+		if(!stream.ReadCasted<byte>(player_info->buffs))
 		{
-			if(!stream.ReadCasted<byte>(pc->player_info->buffs))
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_BUFFS.");
-				StreamError();
-				return true;
-			}
+			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_BUFFS.");
+			StreamError();
+			return true;
 		}
+	}
 
-		// stamina
-		if(IS_SET(flags, PlayerInfo::UF_STAMINA))
+	// stamina
+	if(IS_SET(flags, PlayerInfo::UF_STAMINA))
+	{
+		if(!pc)
+			Skip(stream, sizeof(pc->unit->stamina));
+		else if(!stream.Read(pc->unit->stamina))
 		{
-			if(!stream.Read(pc->unit->stamina))
-			{
-				Error("Update single client: Broken ID_PLAYER_CHANGES at UF_STAMINA.");
-				StreamError();
-				return true;
-			}
+			Error("Update single client: Broken ID_PLAYER_CHANGES at UF_STAMINA.");
+			StreamError();
+			return true;
 		}
 	}
 

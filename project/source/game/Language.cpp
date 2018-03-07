@@ -350,7 +350,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						AttributeInfo* ai = AttributeInfo::Find(id);
+						Attribute* ai = Attribute::Find(id);
 						if(!ai)
 							t.Throw("Invalid attribute '%s'.", id.c_str());
 						t.Next();
@@ -366,7 +366,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						SkillGroupInfo* sgi = SkillGroupInfo::Find(id);
+						SkillGroup* sgi = SkillGroup::Find(id);
 						if(!sgi)
 							t.Throw("Invalid skill group '%s'.", id.c_str());
 						t.Next();
@@ -383,7 +383,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						SkillInfo* si = SkillInfo::Find(id);
+						Skill* si = Skill::Find(id);
 						if(!si)
 							t.Throw("Invalid skill '%s'.", id.c_str());
 						t.Next();

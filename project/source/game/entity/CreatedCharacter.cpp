@@ -27,13 +27,13 @@ void CreatedCharacter::Clear(Class c)
 
 	StatProfile& profile = info.unit_data->GetStatProfile();
 
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 	{
 		a[i].value = profile.attrib[i];
 		a[i].mod = false;
 	}
 
-	for(int i = 0; i < (int)Skill::MAX; ++i)
+	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		s[i].value = profile.skill[i];
 		s[i].add = false;
@@ -64,36 +64,36 @@ void CreatedCharacter::Random(Class c)
 		break;
 	}
 
-	Skill sk1, sk2, sk3;
-	Attribute strength;
+	SkillId sk1, sk2, sk3;
+	AttributeId strength;
 
 	switch(profile)
 	{
 	case 0: // light
 		{
-			sk1 = Skill::LIGHT_ARMOR;
+			sk1 = SkillId::LIGHT_ARMOR;
 			if(Rand() % 2 == 0)
-				sk2 = Skill::SHORT_BLADE;
+				sk2 = SkillId::SHORT_BLADE;
 			else
-				sk2 = RandomItem({ Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });
-			sk3 = Skill::BOW;
-			strength = Attribute::DEX;
+				sk2 = RandomItem({ SkillId::LONG_BLADE, SkillId::AXE, SkillId::BLUNT });
+			sk3 = SkillId::BOW;
+			strength = AttributeId::DEX;
 		}
 		break;
 	case 1: // medium
 		{
-			sk1 = Skill::MEDIUM_ARMOR;
-			sk2 = RandomItem({ Skill::SHORT_BLADE, Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });
-			sk3 = RandomItem({ Skill::BOW, Skill::SHIELD });
-			strength = RandomItem({ Attribute::DEX, Attribute::END });
+			sk1 = SkillId::MEDIUM_ARMOR;
+			sk2 = RandomItem({ SkillId::SHORT_BLADE, SkillId::LONG_BLADE, SkillId::AXE, SkillId::BLUNT });
+			sk3 = RandomItem({ SkillId::BOW, SkillId::SHIELD });
+			strength = RandomItem({ AttributeId::DEX, AttributeId::END });
 		}
 		break;
 	case 2: // heavy
 		{
-			sk1 = Skill::HEAVY_ARMOR;
-			sk2 = RandomItem({ Skill::LONG_BLADE, Skill::AXE, Skill::BLUNT });
-			sk3 = Skill::SHIELD;
-			strength = RandomItem({ Attribute::STR, Attribute::END });
+			sk1 = SkillId::HEAVY_ARMOR;
+			sk2 = RandomItem({ SkillId::LONG_BLADE, SkillId::AXE, SkillId::BLUNT });
+			sk3 = SkillId::SHIELD;
+			strength = RandomItem({ AttributeId::STR, AttributeId::END });
 		}
 		break;
 	}
@@ -103,7 +103,7 @@ void CreatedCharacter::Random(Class c)
 	s[(int)sk3].Add(5, true);
 	taken_perks.push_back(TakenPerk(Perk::Strength, (int)strength));
 	a[(int)strength].Mod(5, true);
-	Skill talent = RandomItem({ sk1, sk2, sk3 });
+	SkillId talent = RandomItem({ sk1, sk2, sk3 });
 	taken_perks.push_back(TakenPerk(Perk::Talent, (int)talent));
 	s[(int)talent].Mod(5, true);
 
@@ -116,7 +116,7 @@ void CreatedCharacter::Write(BitStream& stream) const
 {
 	// picked skills
 	int sk = 0;
-	for(int i = 0; i < (int)Skill::MAX; ++i)
+	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		if(s[i].add)
 			sk |= (1 << i);
@@ -142,7 +142,7 @@ int CreatedCharacter::Read(BitStream& stream)
 	if(!stream.Read(sk) || !stream.Read(count))
 		return 1;
 
-	for(int i = 0; i < (int)Skill::MAX; ++i)
+	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		if(IS_SET(sk, 1 << i))
 		{
@@ -198,7 +198,7 @@ void CreatedCharacter::Apply(PlayerController& pc)
 	pc.unit->data->GetStatProfile().Set(0, pc.base_stats);
 
 	// apply skills
-	for(int i = 0; i < (int)Skill::MAX; ++i)
+	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		if(s[i].add)
 			pc.base_stats.skill[i] += 5;
@@ -210,9 +210,9 @@ void CreatedCharacter::Apply(PlayerController& pc)
 		tp.Apply(pc);
 
 	// set stats
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 		pc.unit->unmod_stats.attrib[i] = pc.base_stats.attrib[i];
-	for(int i = 0; i < (int)Skill::MAX; ++i)
+	for(int i = 0; i < (int)SkillId::MAX; ++i)
 		pc.unit->unmod_stats.skill[i] = pc.base_stats.skill[i];
 
 	pc.unit->CalculateStats();
@@ -260,16 +260,16 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 	if(HavePerk(Perk::FamilyHeirloom))
 	{
 		// find best skill for family heirloom
-		const Skill to_check[] = {
-			Skill::SHORT_BLADE,
-			Skill::LONG_BLADE,
-			Skill::AXE,
-			Skill::BLUNT,
-			Skill::BOW,
-			Skill::SHIELD,
-			Skill::LIGHT_ARMOR,
-			Skill::MEDIUM_ARMOR,
-			Skill::HEAVY_ARMOR
+		const SkillId to_check[] = {
+			SkillId::SHORT_BLADE,
+			SkillId::LONG_BLADE,
+			SkillId::AXE,
+			SkillId::BLUNT,
+			SkillId::BOW,
+			SkillId::SHIELD,
+			SkillId::LIGHT_ARMOR,
+			SkillId::MEDIUM_ARMOR,
+			SkillId::HEAVY_ARMOR
 		};
 
 		const TakeRatio ratio[] = {
@@ -284,18 +284,18 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			0.5f, 0.5f, 0
 		};
 
-		Skill best = Skill::NONE;
+		SkillId best = SkillId::NONE;
 		int val = 0, val2 = 0;
 
 		int index = 0;
-		for(Skill sk : to_check)
+		for(SkillId sk : to_check)
 		{
 			int s_val = s[(int)sk].value;
 			if(s_val >= val)
 			{
-				int s_val2 = int(ratio[index].str * Get(Attribute::STR)
-					+ ratio[index].end * Get(Attribute::END)
-					+ ratio[index].dex * Get(Attribute::DEX));
+				int s_val2 = int(ratio[index].str * Get(AttributeId::STR)
+					+ ratio[index].end * Get(AttributeId::END)
+					+ ratio[index].dex * Get(AttributeId::DEX));
 				if(s_val > val || s_val2 > val2)
 				{
 					val = s_val;
@@ -313,23 +313,23 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 	// weapon
 	if(!items[SLOT_WEAPON])
 	{
-		const Skill to_check[] = {
-			Skill::SHORT_BLADE,
-			Skill::LONG_BLADE,
-			Skill::AXE,
-			Skill::BLUNT
+		const SkillId to_check[] = {
+			SkillId::SHORT_BLADE,
+			SkillId::LONG_BLADE,
+			SkillId::AXE,
+			SkillId::BLUNT
 		};
 
-		Skill best = Skill::NONE;
+		SkillId best = SkillId::NONE;
 		int val = 0, val2 = 0;
 
-		for(Skill sk : to_check)
+		for(SkillId sk : to_check)
 		{
 			int s_val = s[(int)sk].value;
 			if(s_val >= val)
 			{
 				const WeaponTypeInfo& info = GetWeaponTypeInfo(sk);
-				int s_val2 = int(info.str2dmg * Get(Attribute::STR) + info.dex2dmg * Get(Attribute::DEX));
+				int s_val2 = int(info.str2dmg * Get(AttributeId::STR) + info.dex2dmg * Get(AttributeId::DEX));
 				if(s_val > val || s_val2 > val2)
 				{
 					val = s_val;
@@ -345,24 +345,24 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 	// bow
 	if(!items[SLOT_BOW])
 	{
-		int val = s[(int)Skill::BOW].value;
-		items[SLOT_BOW] = StartItem::GetStartItem(Skill::BOW, val);
+		int val = s[(int)SkillId::BOW].value;
+		items[SLOT_BOW] = StartItem::GetStartItem(SkillId::BOW, val);
 	}
 
 	// shield
 	if(!items[SLOT_SHIELD])
 	{
-		int val = s[(int)Skill::SHIELD].value;
-		items[SLOT_SHIELD] = StartItem::GetStartItem(Skill::SHIELD, val);
+		int val = s[(int)SkillId::SHIELD].value;
+		items[SLOT_SHIELD] = StartItem::GetStartItem(SkillId::SHIELD, val);
 	}
 
 	// armor
 	if(!items[SLOT_ARMOR])
 	{
-		const Skill to_check[] = {
-			Skill::HEAVY_ARMOR,
-			Skill::MEDIUM_ARMOR,
-			Skill::LIGHT_ARMOR
+		const SkillId to_check[] = {
+			SkillId::HEAVY_ARMOR,
+			SkillId::MEDIUM_ARMOR,
+			SkillId::LIGHT_ARMOR
 		};
 
 		const TakeRatio ratio[] = {
@@ -371,18 +371,18 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 			0.5f, 0.5f, 0.f
 		};
 
-		Skill best = Skill::NONE;
+		SkillId best = SkillId::NONE;
 		int val = 0, val2 = 0;
 
 		int index = 0;
-		for(Skill sk : to_check)
+		for(SkillId sk : to_check)
 		{
 			int s_val = s[(int)sk].value;
 			if(s_val >= val)
 			{
-				int s_val2 = int(ratio[index].str * Get(Attribute::STR)
-					+ ratio[index].end * Get(Attribute::END)
-					+ ratio[index].dex * Get(Attribute::DEX));
+				int s_val2 = int(ratio[index].str * Get(AttributeId::STR)
+					+ ratio[index].end * Get(AttributeId::END)
+					+ ratio[index].dex * Get(AttributeId::DEX));
 				if(s_val > val || s_val2 > val2)
 				{
 					val = s_val;

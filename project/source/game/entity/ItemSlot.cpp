@@ -106,7 +106,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				(int)unit->CalculateAttack(item),
 				dmg_type,
 				txRequiredStrength,
-				(unit->Get(Attribute::STR) >= weapon.req_str ? '-' : 'r'),
+				(unit->Get(AttributeId::STR) >= weapon.req_str ? '-' : 'r'),
 				weapon.req_str);
 		}
 		break;
@@ -124,7 +124,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				(int)unit->CalculateAttack(item),
 				txDTPierce,
 				txRequiredStrength,
-				(unit->Get(Attribute::STR) >= bow.req_str ? '-' : 'r'),
+				(unit->Get(AttributeId::STR) >= bow.req_str ? '-' : 'r'),
 				bow.req_str);
 		}
 		break;
@@ -139,14 +139,14 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			const Armor& armor = item->ToArmor();
 			cstring mob_str, armor_type;
 
-			cstring skill = g_skills[(int)armor.skill].name.c_str();
+			cstring skill = Skill::skills[(int)armor.skill].name.c_str();
 			if(unit->data->armor_type == armor.armor_type)
 				armor_type = skill;
 			else
 				armor_type = Format("%s (%s)", skill, txInvalidArmor);
 
 			int mob = unit->CalculateMobility(armor);
-			int dex = unit->Get(Attribute::DEX);
+			int dex = unit->Get(AttributeId::DEX);
 			if(mob == dex)
 				mob_str = Format("(%d)", dex);
 			else
@@ -158,7 +158,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				armor.def,
 				(int)unit->CalculateDefense(item),
 				txRequiredStrength,
-				(unit->Get(Attribute::STR) >= armor.req_str ? '-' : 'r'),
+				(unit->Get(AttributeId::STR) >= armor.req_str ? '-' : 'r'),
 				armor.req_str,
 				txMobility,
 				armor.mobility,
@@ -178,7 +178,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				shield.def,
 				(int)unit->CalculateBlock(item),
 				txRequiredStrength,
-				(unit->Get(Attribute::STR) >= shield.req_str ? '-' : 'r'),
+				(unit->Get(AttributeId::STR) >= shield.req_str ? '-' : 'r'),
 				shield.req_str);
 		}
 		break;

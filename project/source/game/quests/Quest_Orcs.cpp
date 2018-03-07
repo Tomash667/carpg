@@ -379,9 +379,6 @@ void Quest_Orcs2::SetProgress(int prog2)
 			delete game->news.back();
 			game->news.pop_back();
 			game->AddNews(game->txQuest[200]);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::TalkedAfterClearingCamp:

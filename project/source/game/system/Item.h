@@ -234,24 +234,24 @@ struct WeaponTypeInfo
 {
 	cstring name;
 	float str2dmg, dex2dmg, power_speed, base_speed, dex_speed;
-	Skill skill;
+	SkillId skill;
 	float stamina;
 
 	static WeaponTypeInfo info[];
 };
 
-inline const WeaponTypeInfo& GetWeaponTypeInfo(Skill s)
+inline const WeaponTypeInfo& GetWeaponTypeInfo(SkillId s)
 {
 	switch(s)
 	{
 	default:
-	case Skill::SHORT_BLADE:
+	case SkillId::SHORT_BLADE:
 		return WeaponTypeInfo::info[WT_SHORT];
-	case Skill::LONG_BLADE:
+	case SkillId::LONG_BLADE:
 		return WeaponTypeInfo::info[WT_LONG];
-	case Skill::AXE:
+	case SkillId::AXE:
 		return WeaponTypeInfo::info[WT_AXE];
-	case Skill::BLUNT:
+	case SkillId::BLUNT:
 		return WeaponTypeInfo::info[WT_MACE];
 	}
 }
@@ -301,7 +301,7 @@ struct Shield : public Item
 // Armor
 struct Armor : public Item
 {
-	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), skill(Skill::LIGHT_ARMOR), armor_type(ArmorUnitType::HUMAN) {}
+	Armor() : Item(IT_ARMOR), def(10), req_str(10), mobility(100), material(MAT_SKIN), skill(SkillId::LIGHT_ARMOR), armor_type(ArmorUnitType::HUMAN) {}
 
 	const TexId* GetTextureOverride() const
 	{
@@ -313,7 +313,7 @@ struct Armor : public Item
 
 	int def, req_str, mobility;
 	MATERIAL_TYPE material;
-	Skill skill;
+	SkillId skill;
 	ArmorUnitType armor_type;
 	vector<TexId> tex_override;
 
@@ -516,14 +516,14 @@ inline const Item* ItemList::GetItem(const AnyString& id)
 //-----------------------------------------------------------------------------
 struct StartItem
 {
-	Skill skill;
+	SkillId skill;
 	const Item* item;
 	int value;
 
-	StartItem(Skill skill, const Item* item = nullptr, int value = 0) : skill(skill), item(item), value(value) {}
+	StartItem(SkillId skill, const Item* item = nullptr, int value = 0) : skill(skill), item(item), value(value) {}
 
 	static vector<StartItem> start_items;
-	static const Item* GetStartItem(Skill skill, int value);
+	static const Item* GetStartItem(SkillId skill, int value);
 };
 
 //-----------------------------------------------------------------------------

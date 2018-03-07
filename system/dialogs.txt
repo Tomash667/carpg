@@ -295,17 +295,17 @@ dialog trainer
 		{
 			choice 10
 			{
-				special "train_wep"
+				special "train_one_handed_weapon"
 				end
 			}
 			choice 11
 			{
-				special "train_shb"
+				special "train_short_blade"
 				end
 			}
 			choice 12
 			{
-				special "train_lob"
+				special "train_long_blade"
 				end
 			}
 			choice 13
@@ -315,7 +315,7 @@ dialog trainer
 			}
 			choice 14
 			{
-				special "train_blu"
+				special "train_blunt"
 				end
 			}
 			choice 15
@@ -325,22 +325,22 @@ dialog trainer
 			}
 			choice 16
 			{
-				special "train_shi"
+				special "train_shield"
 				end
 			}
 			choice 17
 			{
-				special "train_lia"
+				special "train_light_armor"
 				end
 			}
 			choice 18
 			{
-				special "train_mea"
+				special "train_medium_armor"
 				end
 			}
 			choice 19
 			{
-				special "train_hea"
+				special "train_heavy_armor"
 				end
 			}
 			escape choice 20

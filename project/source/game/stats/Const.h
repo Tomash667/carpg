@@ -11,8 +11,11 @@ const int MAX_TEAM_SIZE = 8;
 const int PORT = 37557; // port gry
 
 // server flags
-#define SERVER_PASSWORD 0x01
-#define SERVER_SAVED 0x02
+enum ServerFlags
+{
+	SERVER_PASSWORD = 0x01,
+	SERVER_SAVED = 0x02
+};
 
 // czas oczekiwania
 const float T_WAIT_FOR_DISCONNECT = 1.f;

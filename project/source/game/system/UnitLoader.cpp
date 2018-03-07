@@ -414,44 +414,44 @@ private:
 		});
 
 		t.AddKeywords(G_ATTRIBUTE, {
-			{ "strength", (int)Attribute::STR },
-			{ "endurance", (int)Attribute::END },
-			{ "dexterity", (int)Attribute::DEX },
-			{ "inteligence", (int)Attribute::INT },
-			{ "wisdom", (int)Attribute::WIS },
-			{ "charisma", (int)Attribute::CHA }
+			{ "strength", (int)AttributeId::STR },
+			{ "endurance", (int)AttributeId::END },
+			{ "dexterity", (int)AttributeId::DEX },
+			{ "inteligence", (int)AttributeId::INT },
+			{ "wisdom", (int)AttributeId::WIS },
+			{ "charisma", (int)AttributeId::CHA }
 		});
 
 		t.AddKeywords(G_SKILL, {
-			{ "one_handed", (int)Skill::ONE_HANDED_WEAPON },
-			{ "short_blade", (int)Skill::SHORT_BLADE },
-			{ "long_blade", (int)Skill::LONG_BLADE },
-			{ "blunt", (int)Skill::BLUNT },
-			{ "axe", (int)Skill::AXE },
-			{ "bow", (int)Skill::BOW },
-			{ "unarmed", (int)Skill::UNARMED },
-			{ "shield", (int)Skill::SHIELD },
-			{ "light_armor", (int)Skill::LIGHT_ARMOR },
-			{ "medium_armor", (int)Skill::MEDIUM_ARMOR },
-			{ "heavy_armor", (int)Skill::HEAVY_ARMOR },
-			{ "nature_magic", (int)Skill::NATURE_MAGIC },
-			{ "gods_magic", (int)Skill::GODS_MAGIC },
-			{ "mystic_magic", (int)Skill::MYSTIC_MAGIC },
-			{ "spellcraft", (int)Skill::SPELLCRAFT },
-			{ "concentration", (int)Skill::CONCENTRATION },
-			{ "identification", (int)Skill::IDENTIFICATION },
-			{ "lockpick", (int)Skill::LOCKPICK },
-			{ "sneak", (int)Skill::SNEAK },
-			{ "traps", (int)Skill::TRAPS },
-			{ "steal", (int)Skill::STEAL },
-			{ "animal_empathy", (int)Skill::ANIMAL_EMPATHY },
-			{ "survival", (int)Skill::SURVIVAL },
-			{ "persuasion", (int)Skill::PERSUASION },
-			{ "alchemy", (int)Skill::ALCHEMY },
-			{ "crafting", (int)Skill::CRAFTING },
-			{ "healing", (int)Skill::HEALING },
-			{ "athletics", (int)Skill::ATHLETICS },
-			{ "rage", (int)Skill::RAGE }
+			{ "one_handed", (int)SkillId::ONE_HANDED_WEAPON },
+			{ "short_blade", (int)SkillId::SHORT_BLADE },
+			{ "long_blade", (int)SkillId::LONG_BLADE },
+			{ "blunt", (int)SkillId::BLUNT },
+			{ "axe", (int)SkillId::AXE },
+			{ "bow", (int)SkillId::BOW },
+			{ "unarmed", (int)SkillId::UNARMED },
+			{ "shield", (int)SkillId::SHIELD },
+			{ "light_armor", (int)SkillId::LIGHT_ARMOR },
+			{ "medium_armor", (int)SkillId::MEDIUM_ARMOR },
+			{ "heavy_armor", (int)SkillId::HEAVY_ARMOR },
+			{ "nature_magic", (int)SkillId::NATURE_MAGIC },
+			{ "gods_magic", (int)SkillId::GODS_MAGIC },
+			{ "mystic_magic", (int)SkillId::MYSTIC_MAGIC },
+			{ "spellcraft", (int)SkillId::SPELLCRAFT },
+			{ "concentration", (int)SkillId::CONCENTRATION },
+			{ "identification", (int)SkillId::IDENTIFICATION },
+			{ "lockpick", (int)SkillId::LOCKPICK },
+			{ "sneak", (int)SkillId::SNEAK },
+			{ "traps", (int)SkillId::TRAPS },
+			{ "steal", (int)SkillId::STEAL },
+			{ "animal_empathy", (int)SkillId::ANIMAL_EMPATHY },
+			{ "survival", (int)SkillId::SURVIVAL },
+			{ "persuasion", (int)SkillId::PERSUASION },
+			{ "alchemy", (int)SkillId::ALCHEMY },
+			{ "crafting", (int)SkillId::CRAFTING },
+			{ "healing", (int)SkillId::HEALING },
+			{ "athletics", (int)SkillId::ATHLETICS },
+			{ "rage", (int)SkillId::RAGE }
 		});
 
 		t.AddKeyword("fixed", PK_FIXED, G_PROFILE_KEYWORD);
@@ -850,9 +850,9 @@ private:
 	void ParseProfile(Ptr<StatProfile>& profile)
 	{
 		profile->fixed = false;
-		for(int i = 0; i < (int)Attribute::MAX; ++i)
+		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 			profile->attrib[i] = 10;
-		for(int i = 0; i < (int)Skill::MAX; ++i)
+		for(int i = 0; i < (int)SkillId::MAX; ++i)
 			profile->skill[i] = -1;
 
 		// {
@@ -874,7 +874,7 @@ private:
 				t.Next();
 				int val = t.MustGetInt();
 				if(val < 1)
-					t.Throw("Invalid attribute '%s' value %d.", g_attributes[a].id, val);
+					t.Throw("Invalid attribute '%s' value %d.", Attribute::attributes[a].id, val);
 				profile->attrib[a] = val;
 				crc.Update(1);
 				crc.Update(a);
@@ -886,7 +886,7 @@ private:
 				t.Next();
 				int val = t.MustGetInt();
 				if(val < -1)
-					t.Throw("Invalid skill '%s' value %d.", g_skills[s].id, val);
+					t.Throw("Invalid skill '%s' value %d.", Skill::skills[s].id, val);
 				profile->skill[s] = val;
 				crc.Update(2);
 				crc.Update(s);

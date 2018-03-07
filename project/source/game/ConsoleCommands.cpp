@@ -347,7 +347,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(t.Next())
 					{
 						const string& item_name = t.MustGetItem();
-						const Item* item = Item::Get(item_name);
+						const Item* item = Item::TryGet(item_name);
 						if(!item || IS_SET(item->flags, ITEM_SECRET))
 							Msg("Can't find item with id '%s'!", item_name.c_str());
 						else
@@ -460,35 +460,35 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Msg("Enter name of attribute/skill and value. Use ? to get list of attributes/skills.");
 					else if(t.IsSymbol('?'))
 					{
-						LocalVector2<Attribute> attribs;
-						for(int i = 0; i < (int)Attribute::MAX; ++i)
-							attribs.push_back((Attribute)i);
+						LocalVector2<AttributeId> attribs;
+						for(int i = 0; i < (int)AttributeId::MAX; ++i)
+							attribs.push_back((AttributeId)i);
 						std::sort(attribs.begin(), attribs.end(),
-							[](Attribute a1, Attribute a2) -> bool
+							[](AttributeId a1, AttributeId a2) -> bool
 						{
-							return strcmp(g_attributes[(int)a1].id, g_attributes[(int)a2].id) < 0;
+							return strcmp(Attribute::attributes[(int)a1].id, Attribute::attributes[(int)a2].id) < 0;
 						});
-						LocalVector2<Skill> skills;
-						for(int i = 0; i < (int)Skill::MAX; ++i)
-							skills.push_back((Skill)i);
+						LocalVector2<SkillId> skills;
+						for(int i = 0; i < (int)SkillId::MAX; ++i)
+							skills.push_back((SkillId)i);
 						std::sort(skills.begin(), skills.end(),
-							[](Skill s1, Skill s2) -> bool
+							[](SkillId s1, SkillId s2) -> bool
 						{
-							return strcmp(g_skills[(int)s1].id, g_skills[(int)s2].id) < 0;
+							return strcmp(Skill::skills[(int)s1].id, Skill::skills[(int)s2].id) < 0;
 						});
 						LocalString str = "List of attributes: ";
 						Join(attribs.Get(), str.get_ref(), ", ",
-							[](Attribute a)
+							[](AttributeId a)
 						{
-							return g_attributes[(int)a].id;
+							return Attribute::attributes[(int)a].id;
 						});
 						str += ".";
 						Msg(str.c_str());
 						str = "List of skills: ";
 						Join(skills.Get(), str.get_ref(), ", ",
-							[](Skill s)
+							[](SkillId s)
 						{
-							return g_skills[(int)s].id;
+							return Skill::skills[(int)s].id;
 						});
 						str += ".";
 						Msg(str.c_str());
@@ -498,7 +498,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						int co;
 						bool skill;
 						const string& s = t.MustGetItem();
-						AttributeInfo* ai = AttributeInfo::Find(s);
+						Attribute* ai = Attribute::Find(s);
 						if(ai)
 						{
 							co = (int)ai->attrib_id;
@@ -506,7 +506,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 						else
 						{
-							SkillInfo* si = SkillInfo::Find(s);
+							Skill* si = Skill::Find(s);
 							if(si)
 							{
 								co = (int)si->skill_id;
@@ -531,17 +531,17 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								{
 									if(it->cmd == CMD_MODSTAT)
 										num += pc->unit->unmod_stats.skill[co];
-									int v = Clamp(num, 0, SkillInfo::MAX);
+									int v = Clamp(num, 0, Skill::MAX);
 									if(v != pc->unit->unmod_stats.skill[co])
-										pc->unit->Set((Skill)co, v);
+										pc->unit->Set((SkillId)co, v);
 								}
 								else
 								{
 									if(it->cmd == CMD_MODSTAT)
 										num += pc->unit->unmod_stats.attrib[co];
-									int v = Clamp(num, 1, AttributeInfo::MAX);
+									int v = Clamp(num, 1, Attribute::MAX);
 									if(v != pc->unit->unmod_stats.attrib[co])
-										pc->unit->Set((Attribute)co, v);
+										pc->unit->Set((AttributeId)co, v);
 								}
 							}
 							else

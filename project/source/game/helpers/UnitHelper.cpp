@@ -24,7 +24,7 @@ const Item* UnitHelper::GetBaseWeapon(const Unit& unit, const ItemList* lis)
 		}
 	}
 
-	Skill best_skill = unit.GetBestWeaponSkill();
+	SkillId best_skill = unit.GetBestWeaponSkill();
 	for(const Item* item : lis->items)
 	{
 		if(item->ToWeapon().GetInfo().skill == best_skill)
@@ -48,7 +48,7 @@ const Item* UnitHelper::GetBaseArmor(const Unit& unit, const ItemList* lis)
 		}
 	}
 
-	Skill best_skill = unit.GetBestArmorSkill();
+	SkillId best_skill = unit.GetBestArmorSkill();
 	for(const Item* item : lis->items)
 	{
 		if(item->type == IT_ARMOR && item->ToArmor().skill == best_skill)

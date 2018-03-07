@@ -19,6 +19,7 @@ public:
 	void Draw(ControlDrawData* cdd = nullptr) override;
 	void Event(GuiEvent e) override;
 	void Update(float dt) override;
+	static char StatStateToColor(StatState s);
 
 	void Show();
 	void Hide();

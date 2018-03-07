@@ -174,3 +174,49 @@ struct TreeItem
 		return Iterator(nullptr, false);
 	}
 };
+
+//-----------------------------------------------------------------------------
+// Get N best entry/value pairs
+template<typename T, uint COUNT, typename ValueT = int>
+struct TopN
+{
+	TopN(T default_best, ValueT default_value)
+	{
+		for(uint i = 0; i < COUNT; ++i)
+		{
+			best[i] = default_best;
+			best_values[i] = default_value;
+		}
+	}
+
+	void Add(T entry, ValueT value)
+	{
+		for(uint i = 0; i < COUNT; ++i)
+		{
+			if(value > best_values[i])
+			{
+				for(uint j = COUNT - 1; j > i; --j)
+				{
+					best_values[j] = best_values[j - 1];
+					best[j] = best[j - 1];
+				}
+				best[i] = entry;
+				best_values[i] = value;
+				break;
+			}
+		}
+	}
+
+	bool Is(T entry) const
+	{
+		for(uint i = 0; i < COUNT; ++i)
+		{
+			if(best[i] == entry)
+				return true;
+		}
+		return false;
+	}
+
+	T best[COUNT];
+	ValueT best_values[COUNT];
+};

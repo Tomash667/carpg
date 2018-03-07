@@ -155,7 +155,7 @@ void HeroData::PassTime(int days, bool travel)
 	// regeneracja hp
 	if(unit->hp != unit->hpmax)
 	{
-		float heal = 0.5f * unit->Get(Attribute::END);
+		float heal = 0.5f * unit->Get(AttributeId::END);
 		if(resting)
 			heal *= 2;
 		if(best_nat)

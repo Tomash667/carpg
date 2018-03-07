@@ -4,8 +4,8 @@
 
 enum class EffectType
 {
-	Attribute,
-	Skill,
+	AttributeId,
+	SkillId,
 	SkillPack,
 	SubSkill,
 	Resistance,

@@ -126,7 +126,7 @@ void TeamPanel::Draw(ControlDrawData*)
 		s += Format(txCharInTeam, u->GetName(), u->IsPlayer() ? pc_share : (u->hero->free ? 0 : 10), GetCredit(*u));
 		if(u->IsPlayer() && Net::IsOnline())
 		{
-			if(Net::Net::IsServer())
+			if(Net::IsServer())
 			{
 				if(u != game.pc->unit)
 				{
@@ -239,8 +239,8 @@ void TeamPanel::Event(GuiEvent e)
 		scrollbar.LostFocus();
 		break;
 	case GuiEvent_Show:
-		bt[2].state = ((Net::Net::IsServer() || game.IsLeader()) ? Button::NONE : Button::DISABLED);
-		bt[3].state = (Net::Net::IsServer() ? Button::NONE : Button::DISABLED);
+		bt[2].state = ((Net::IsServer() || game.IsLeader()) ? Button::NONE : Button::DISABLED);
+		bt[3].state = (Net::IsServer() ? Button::NONE : Button::DISABLED);
 		picking = false;
 		Changed();
 		UpdateButtons();
@@ -339,7 +339,7 @@ void TeamPanel::OnPayCredit(int id)
 			SimpleDialog(Format(txPaidCreditPart, ile, game.pc->credit - ile));
 		game.pc->unit->gold -= ile;
 		game.sound_mgr->PlaySound2d(game.sCoins);
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 			game.PayCredit(game.pc, ile);
 		else
 		{
@@ -371,7 +371,7 @@ void TeamPanel::ChangeLeader()
 	{
 		if(game.IsLeader())
 			SimpleDialog(txAlreadyLeader);
-		else if(Net::Net::IsServer())
+		else if(Net::IsServer())
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::CHANGE_LEADER;
@@ -387,13 +387,13 @@ void TeamPanel::ChangeLeader()
 	}
 	else if(Team.IsLeader(target))
 		SimpleDialog(Format(txPcAlreadyLeader, target->GetName()));
-	else if(game.IsLeader() || Net::Net::IsServer())
+	else if(game.IsLeader() || Net::IsServer())
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::CHANGE_LEADER;
 		c.id = target->player->id;
 
-		if(Net::Net::IsServer())
+		if(Net::IsServer())
 		{
 			game.leader_id = c.id;
 			Team.leader = target;
@@ -440,7 +440,7 @@ void TeamPanel::OnGiveGold(int id)
 	{
 		game.pc->unit->gold -= counter;
 		game.sound_mgr->PlaySound2d(game.sCoins);
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 		{
 			target->gold += counter;
 			if(target->IsPlayer() && target->player != game.pc)

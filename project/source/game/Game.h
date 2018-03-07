@@ -407,6 +407,10 @@ struct Game final : public Engine, public UnitEventHandler
 			assert(type == CHEST || type == NONE);
 			return chest;
 		}
+
+		bool IsChest() const { return type == CHEST; }
+		bool IsObject() const { return type == OBJECT; }
+		bool IsUsable() const { return type == USABLE; }
 	};
 
 	void OnCleanup();
@@ -918,7 +922,7 @@ public:
 
 	bool WantAttackTeam(Unit& u)
 	{
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 			return u.attack_team;
 		else
 			return IS_SET(u.ai_mode, 0x08);
@@ -1132,8 +1136,11 @@ public:
 		ATTACK_CLEAN_HIT
 	};
 	ATTACK_RESULT DoAttack(LevelContext& ctx, Unit& unit);
-#define DMG_NO_BLOOD (1<<0)
-#define DMG_MAGICAL (1<<1)
+	enum DamageFlags
+	{
+		DMG_NO_BLOOD = 1 << 0,
+		DMG_MAGICAL = 1 << 1
+	};
 	void GiveDmg(LevelContext& ctx, Unit* giver, float dmg, Unit& taker, const Vec3* hitpoint = nullptr, int dmg_flags = 0);
 	void UpdateUnits(LevelContext& ctx, float dt);
 	void UpdateUnitInventory(Unit& unit, bool notify = true);
@@ -1368,14 +1375,14 @@ public:
 	void UpdateGame2(float dt);
 	bool IsUnitDontAttack(Unit& u)
 	{
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 			return u.dont_attack;
 		else
 			return IS_SET(u.ai_mode, 0x01);
 	}
 	bool IsUnitAssist(Unit& u)
 	{
-		if(Net::Net::IsLocal())
+		if(Net::IsLocal())
 			return u.assist;
 		else
 			return IS_SET(u.ai_mode, 0x02);
@@ -1433,16 +1440,6 @@ public:
 	UnitData* GetRandomHeroData();
 	UnitData* GetUnitDataFromClass(Class clas, bool crazy);
 	void HandleQuestEvent(Quest_Event* event);
-
-	enum BLOCK_RESULT
-	{
-		BLOCK_PERFECT,
-		BLOCK_GOOD,
-		BLOCK_MEDIUM,
-		BLOCK_POOR,
-		BLOCK_BREAK
-	};
-	BLOCK_RESULT CheckBlock(Unit& hitted, float angle_dif, float attack_power, float skill, float str);
 
 	void DropGold(int count);
 
@@ -1819,10 +1816,13 @@ public:
 		c.id = talker->netid;
 		GetPlayerInfo(player).NeedUpdate();
 	}
-#define WHERE_LEVEL_UP -1
-#define WHERE_LEVEL_DOWN -2
-#define WHERE_OUTSIDE -3
-#define WHERE_PORTAL 0
+	enum Where
+	{
+		WHERE_LEVEL_UP = -1,
+		WHERE_LEVEL_DOWN = -2,
+		WHERE_OUTSIDE = -3,
+		WHERE_PORTAL = 0
+	};
 	void Net_LeaveLocation(int where)
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1961,9 +1961,12 @@ public:
 	void GenerateMoonwell(Location& loc);
 	void SpawnMoonwellObjects();
 	void SpawnMoonwellUnits(const Vec3& team_pos);
-#define SOE_DONT_SPAWN_PARTICLES (1<<0)
-#define SOE_MAGIC_LIGHT (1<<1)
-#define SOE_DONT_CREATE_LIGHT (1<<2)
+	enum SpawnObjectExtrasFlags
+	{
+		SOE_DONT_SPAWN_PARTICLES = 1 << 0,
+		SOE_MAGIC_LIGHT = 1 << 1,
+		SOE_DONT_CREATE_LIGHT = 1 << 2
+	};
 	void SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale = 1.f, int flags = 0);
 	void GenerateSecretLocation(Location& loc);
 	void SpawnSecretLocationObjects();
@@ -2009,11 +2012,14 @@ public:
 	LocationEventHandler* location_event_handler; // obs³uga wydarzeñ lokacji
 	bool first_city;
 	vector<Int2> boss_levels; // dla oznaczenia gdzie graæ muzykê (x-lokacja, y-poziom)
-#define ENTER_FROM_PORTAL 0
-#define ENTER_FROM_OUTSIDE -1
-#define ENTER_FROM_UP_LEVEL -2
-#define ENTER_FROM_DOWN_LEVEL -3
-#define ENTER_FROM_UNKNOWN -4
+	enum EnterFrom
+	{
+		ENTER_FROM_PORTAL = 0,
+		ENTER_FROM_OUTSIDE = -1,
+		ENTER_FROM_UP_LEVEL = -2,
+		ENTER_FROM_DOWN_LEVEL = -3,
+		ENTER_FROM_UNKNOWN = -4
+	};
 	int enter_from; // sk¹d siê przysz³o (u¿ywane przy wczytywanie w MP gdy do³¹cza nowa postaæ)
 	bool g_have_well;
 	Int2 g_well_pt;

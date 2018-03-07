@@ -25,10 +25,10 @@ std::map<const Item*, Item*> better_items;
 //-----------------------------------------------------------------------------
 // adding new types here will require changes in CreatedCharacter::GetStartingItems
 WeaponTypeInfo WeaponTypeInfo::info[] = {
-	nullptr, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, Skill::SHORT_BLADE, 40.f, // WT_SHORT
-	nullptr, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, Skill::LONG_BLADE, 50.f, // WT_LONG
-	nullptr, 0.85f, 0.15f, 0.29f, 0.9f, 0.00075f, Skill::BLUNT, 60.f, // WT_MACE
-	nullptr, 0.8f, 0.2f, 0.31f, 0.95f, 0.001f, Skill::AXE, 60.f, // WT_AXE
+	nullptr, 0.5f, 0.5f, 0.4f, 1.1f, 0.002f, SkillId::SHORT_BLADE, 40.f, // WT_SHORT
+	nullptr, 0.75f, 0.25f, 0.33f, 1.f, 0.0015f, SkillId::LONG_BLADE, 50.f, // WT_LONG
+	nullptr, 0.85f, 0.15f, 0.29f, 0.9f, 0.00075f, SkillId::BLUNT, 60.f, // WT_MACE
+	nullptr, 0.8f, 0.2f, 0.31f, 0.95f, 0.001f, SkillId::AXE, 60.f, // WT_AXE
 };
 
 vector<const Item*> items_to_add;
@@ -187,7 +187,7 @@ bool ItemCmp(const Item* a, const Item* b)
 				a2 = b->ToArmor().armor_type;
 			if(a1 != a2)
 				return a1 < a2;
-			Skill s1 = a->ToArmor().skill,
+			SkillId s1 = a->ToArmor().skill,
 				s2 = b->ToArmor().skill;
 			if(s1 != s2)
 				return s1 < s2;
@@ -300,7 +300,7 @@ void Item::Validate(uint& err)
 }
 
 //=================================================================================================
-const Item* StartItem::GetStartItem(Skill skill, int value)
+const Item* StartItem::GetStartItem(SkillId skill, int value)
 {
 	auto it = std::lower_bound(StartItem::start_items.begin(), StartItem::start_items.end(), StartItem(skill),
 		[](const StartItem& si1, const StartItem& si2) { return si1.skill > si2.skill; });

@@ -114,7 +114,7 @@ void Game::SetMusic()
 	if(sound_mgr->IsMusicDisabled())
 		return;
 
-	if(!Net::Net::IsLocal() && boss_level_mp)
+	if(!Net::IsLocal() && boss_level_mp)
 	{
 		SetMusic(MusicType::Boss);
 		return;

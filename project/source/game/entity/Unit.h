@@ -386,13 +386,13 @@ struct Unit
 		{
 			switch(GetArmor().skill)
 			{
-			case Skill::LIGHT_ARMOR:
+			case SkillId::LIGHT_ARMOR:
 			default:
-				return 1.f + 1.f / 300 * Get(Skill::LIGHT_ARMOR);
-			case Skill::MEDIUM_ARMOR:
-				return 1.f + 1.f / 450 * Get(Skill::MEDIUM_ARMOR);
-			case Skill::HEAVY_ARMOR:
-				return 1.f + 1.f / 600 * Get(Skill::HEAVY_ARMOR);
+				return 1.f + 1.f / 300 * Get(SkillId::LIGHT_ARMOR);
+			case SkillId::MEDIUM_ARMOR:
+				return 1.f + 1.f / 450 * Get(SkillId::MEDIUM_ARMOR);
+			case SkillId::HEAVY_ARMOR:
+				return 1.f + 1.f / 600 * Get(SkillId::HEAVY_ARMOR);
 			}
 		}
 	}
@@ -448,7 +448,7 @@ struct Unit
 	float GetAttackSpeed(const Weapon* weapon = nullptr) const;
 	float GetAttackSpeedModFromStrength(const Weapon& wep) const
 	{
-		int str = Get(Attribute::STR);
+		int str = Get(AttributeId::STR);
 		if(str >= wep.req_str)
 			return 0.f;
 		else if(str * 2 <= wep.req_str)
@@ -466,7 +466,7 @@ struct Unit
 	float GetBowAttackSpeed() const;
 	float GetAttackSpeedModFromStrength(const Bow& b) const
 	{
-		int str = Get(Attribute::STR);
+		int str = Get(AttributeId::STR);
 		if(str >= b.req_str)
 			return 0.f;
 		else if(str * 2 <= b.req_str)
@@ -520,7 +520,7 @@ struct Unit
 	}
 	void NaturalHealing(int days)
 	{
-		Heal(0.15f * Get(Attribute::END) * days);
+		Heal(0.15f * Get(AttributeId::END) * days);
 	}
 	void HealPoison();
 	void RemoveEffect(ConsumeEffect effect);
@@ -626,7 +626,7 @@ struct Unit
 	void AddItemAndEquipIfNone(const Item* item, uint count = 1);
 	// zwraca udŸwig postaci (0-brak obci¹¿enia, 1-maksymalne, >1 przeci¹¿ony)
 	float GetLoad() const { return float(weight) / weight_max; }
-	void CalculateLoad() { weight_max = Get(Attribute::STR) * 15; }
+	void CalculateLoad() { weight_max = Get(AttributeId::STR) * 15; }
 	bool IsOverloaded() const
 	{
 		return weight >= weight_max;
@@ -744,35 +744,35 @@ struct Unit
 	int CalculateLevel();
 	int CalculateLevel(Class clas);
 
-	int Get(Attribute a) const
+	int Get(AttributeId a) const
 	{
 		return stats.attrib[(int)a];
 	}
 
-	int Get(Skill s) const
+	int Get(SkillId s) const
 	{
 		return stats.skill[(int)s];
 	}
 
 	// change unmod stat
-	void Set(Attribute a, int value)
+	void Set(AttributeId a, int value)
 	{
 		//int dif = value - unmod_stats.attrib[(int)a];
 		unmod_stats.attrib[(int)a] = value;
 		RecalculateStat(a, true);
 	}
-	void Set(Skill s, int value)
+	void Set(SkillId s, int value)
 	{
 		//int dif = value - unmod_stats.skill[(int)s];
 		unmod_stats.skill[(int)s] = value;
 		RecalculateStat(s, true);
 	}
 
-	int GetUnmod(Attribute a) const
+	int GetUnmod(AttributeId a) const
 	{
 		return unmod_stats.attrib[(int)a];
 	}
-	int GetUnmod(Skill s) const
+	int GetUnmod(SkillId s) const
 	{
 		return unmod_stats.skill[(int)s];
 	}
@@ -786,12 +786,12 @@ struct Unit
 
 	int Get(SubSkill s) const;
 
-	Skill GetBestWeaponSkill() const;
-	Skill GetBestArmorSkill() const;
+	SkillId GetBestWeaponSkill() const;
+	SkillId GetBestArmorSkill() const;
 
-	void RecalculateStat(Attribute a, bool apply);
-	void RecalculateStat(Skill s, bool apply);
-	void ApplyStat(Attribute a, int old, bool calculate_skill);
+	void RecalculateStat(AttributeId a, bool apply);
+	void RecalculateStat(SkillId s, bool apply);
+	void ApplyStat(AttributeId a, int old, bool calculate_skill);
 
 	void ApplyHumanData(HumanData& hd)
 	{
@@ -806,7 +806,7 @@ struct Unit
 	float GetArrowSpeed() const
 	{
 		float s = (float)GetBow().speed;
-		s *= 1.f + float(Get(Skill::BOW)) / 666;
+		s *= 1.f + float(Get(SkillId::BOW)) / 666;
 		return s;
 	}
 

@@ -586,6 +586,10 @@ struct Vec2 : XMFLOAT2
 	bool InBounds(const Vec2& bounds) const;
 	float Length() const;
 	float LengthSquared() const;
+	float Lerp(float t) const
+	{
+		return ::Lerp(x, y, t);
+	}
 	Vec2& Normalize();
 	void Normalize(Vec2& v) const;
 	Vec2 Normalized() const;

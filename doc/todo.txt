@@ -53,11 +53,14 @@ f_new_combat_system:
 - fixed player can shoot without stamina
 - fixed blocking arrows don't remove stamina
 - fixed high shield skill give stamina from being hit
+? shoot without stamina
+? empty chests in camp
 
 f_perks:
 -? clear remove console history
 
 - break action while consume item will make it diseapear without effect, item also diappear from hand instantly
++ anystring to Cstring, don't pass by ref&
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce

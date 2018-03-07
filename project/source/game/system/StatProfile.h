@@ -9,8 +9,8 @@ struct StatProfile
 {
 	string id;
 	bool fixed;
-	int attrib[(int)Attribute::MAX];
-	int skill[(int)Skill::MAX];
+	int attrib[(int)AttributeId::MAX];
+	int skill[(int)SkillId::MAX];
 
 	bool operator != (const StatProfile& p) const;
 

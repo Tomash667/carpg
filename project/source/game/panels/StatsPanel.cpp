@@ -130,8 +130,8 @@ void StatsPanel::SetText()
 	// attributes
 	flowAttribs.Clear();
 	flowAttribs.Add()->Set(txAttributes);
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
-		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", g_attributes[i].name.c_str(), StatStateToColor(pc->attrib_state[i]), pc->unit->Get((Attribute)i)), G_ATTRIB, i);
+	for(int i = 0; i < (int)AttributeId::MAX; ++i)
+		flowAttribs.Add()->Set(Format("%s: $c%c%d$c-", Attribute::attributes[i].name.c_str(), StatStateToColor(pc->attrib_state[i]), pc->unit->Get((AttributeId)i)), G_ATTRIB, i);
 	flowAttribs.Reposition();
 
 	// stats
@@ -152,19 +152,19 @@ void StatsPanel::SetText()
 	flowStats.Reposition();
 
 	// skills
-	SkillGroup last_group = SkillGroup::NONE;
+	SkillGroupId last_group = SkillGroupId::NONE;
 	flowSkills.Clear();
-	for(int i = 0; i < (int)Skill::MAX; ++i)
+	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
-		if(pc->unit->GetUnmod((Skill)i) > 0)
+		if(pc->unit->GetUnmod((SkillId)i) > 0)
 		{
-			SkillInfo& info = g_skills[i];
+			Skill& info = Skill::skills[i];
 			if(info.group != last_group)
 			{
-				flowSkills.Add()->Set(g_skill_groups[(int)info.group].name.c_str());
+				flowSkills.Add()->Set(SkillGroup::groups[(int)info.group].name.c_str());
 				last_group = info.group;
 			}
-			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), StatStateToColor(pc->skill_state[i]), pc->unit->Get((Skill)i)), G_SKILL, i);
+			flowSkills.Add()->Set(Format("%s: $c%c%d$c-", info.name.c_str(), StatStateToColor(pc->skill_state[i]), pc->unit->Get((SkillId)i)), G_SKILL, i);
 		}
 	}
 	flowSkills.Reposition();
@@ -206,8 +206,8 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 	{
 	case G_ATTRIB:
 		{
-			AttributeInfo& ai = g_attributes[id];
-			Attribute a = (Attribute)id;
+			Attribute& ai = Attribute::attributes[id];
+			AttributeId a = (AttributeId)id;
 			tooltip.big_text = Format("%s: %d", ai.name.c_str(), pc->unit->Get(a));
 			if(!Game::Get().devmode)
 				tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(a), pc->GetBase(a), ai.desc.c_str());
@@ -246,8 +246,8 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 		break;
 	case G_SKILL:
 		{
-			SkillInfo& si = g_skills[id];
-			Skill s = (Skill)id;
+			Skill& si = Skill::skills[id];
+			SkillId s = (SkillId)id;
 			tooltip.big_text = Format("%s: %d", si.name.c_str(), pc->unit->Get(s));
 			if(!Game::Get().devmode)
 				tooltip.text = Format("%s: %d/%d\n%s", txBase, pc->unit->GetUnmod(s), pc->GetBase(s), si.desc.c_str());
@@ -256,10 +256,10 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 				tooltip.text = Format("%s: %d/%d\n%s\n\nTrain: %d/%d (%g%%)", txBase, pc->unit->GetUnmod(s), pc->GetBase(s), si.desc.c_str(),
 					pc->sp[id], pc->sn[id], float(pc->sp[id]) * 100 / pc->sn[id]);
 			}
-			if(si.attrib2 != Attribute::NONE)
-				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str(), g_attributes[(int)si.attrib2].name.c_str());
+			if(si.attrib2 != AttributeId::NONE)
+				tooltip.small_text = Format("%s: %s, %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str(), Attribute::attributes[(int)si.attrib2].name.c_str());
 			else
-				tooltip.small_text = Format("%s: %s", txRelatedAttributes, g_attributes[(int)si.attrib].name.c_str());
+				tooltip.small_text = Format("%s: %s", txRelatedAttributes, Attribute::attributes[(int)si.attrib].name.c_str());
 		}
 		break;
 	case G_PERK:
@@ -292,4 +292,25 @@ void StatsPanel::Hide()
 {
 	LostFocus();
 	visible = false;
+}
+
+//=================================================================================================
+char StatsPanel::StatStateToColor(StatState s)
+{
+	switch(s)
+	{
+	default:
+	case StatState::NORMAL:
+		return 'k';
+	case StatState::POSITIVE:
+		return 'g';
+	case StatState::POSITIVE_MIXED:
+		return '0';
+	case StatState::MIXED:
+		return 'y';
+	case StatState::NEGATIVE_MIXED:
+		return '1';
+	case StatState::NEGATIVE:
+		return 'r';
+	}
 }
