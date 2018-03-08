@@ -299,5 +299,5 @@ void MainMenu::PlaceButtons()
 void MainMenu::OnNewVersion(int id)
 {
 	if(id == BUTTON_YES)
-		io::OpenUrl(Format("http://carpg.pl/redirect.php?action=download&language=%s", g_lang_prefix.c_str()));
+		io::OpenUrl(Format("http://carpg.pl/redirect.php?action=download&language=%s", Language::prefix.c_str()));
 }

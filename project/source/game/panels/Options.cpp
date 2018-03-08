@@ -227,12 +227,12 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 	language.size = Int2(250, 25);
 	language.event_handler = DialogEvent(this, &Options::OnChangeLanguage);
 	index = 0;
-	for(vector<LanguageMap*>::iterator it = g_languages.begin(), end = g_languages.end(); it != end; ++it, ++index)
+	for(Language::LanguageMap* p_lmap : Language::GetLanguages())
 	{
-		LanguageMap& lmap = **it;
+		Language::LanguageMap& lmap = *p_lmap;
 		string& dir = lmap["dir"];
 		language.Add(new LanguageItem(dir, Format("%s, %s, %s", dir.c_str(), lmap["englishName"].c_str(), lmap["localName"].c_str())));
-		if(dir == g_lang_prefix)
+		if(dir == Language::prefix)
 			language.SetIndex(index);
 	}
 	language.Initialize();
@@ -487,7 +487,7 @@ void Options::ChangeLanguage(int id)
 {
 	if(id == BUTTON_YES)
 	{
-		g_lang_prefix = language_id;
+		Language::prefix = language_id;
 		game->SaveOptions();
 		game->RestartGame();
 	}
@@ -498,7 +498,7 @@ void Options::ChangeLanguage(int id)
 		int index = 0;
 		for(vector<LanguageItem*>::iterator it = langs.begin(), end = langs.end(); it != end; ++it, ++index)
 		{
-			if((*it)->id == g_lang_prefix)
+			if((*it)->id == Language::prefix)
 			{
 				language.SetIndex(index);
 				break;

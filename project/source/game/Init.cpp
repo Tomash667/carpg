@@ -106,7 +106,7 @@ void Game::CreatePlaceholderResources()
 //=================================================================================================
 void Game::PreloadLanguage()
 {
-	LoadLanguageFile("preload.txt");
+	Language::LoadFile("preload.txt");
 
 	txCreatingListOfFiles = Str("creatingListOfFiles");
 	txConfiguringGame = Str("configuringGame");
@@ -228,9 +228,9 @@ void Game::LoadLanguageFiles()
 	Info("Game: Loading language files.");
 	load_screen->Tick(txLoadingLanguageFiles);
 
-	LoadLanguageFile("menu.txt");
-	LoadLanguageFile("stats.txt");
-	::LoadLanguageFiles();
+	Language::LoadFile("menu.txt");
+	Language::LoadFile("stats.txt");
+	Language::LoadLanguageFiles();
 	LoadDialogTexts();
 
 	GUI.SetText();

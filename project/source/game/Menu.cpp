@@ -74,7 +74,7 @@ void Game::MainMenuEvent(int id)
 		GUI.SimpleDialog(Format(main_menu->txInfoText, VERSION_STR, g_ctime.c_str()), nullptr);
 		break;
 	case MainMenu::IdWebsite:
-		io::OpenUrl(Format("http://carpg.pl/redirect.php?language=%s", g_lang_prefix.c_str()));
+		io::OpenUrl(Format("http://carpg.pl/redirect.php?language=%s", Language::prefix.c_str()));
 		break;
 	case MainMenu::IdQuit:
 		Quit();
@@ -261,7 +261,7 @@ void Game::SaveOptions()
 	cfg.Add("resolution", Format("%dx%d", GetWindowSize().x, GetWindowSize().y));
 	cfg.Add("refresh", Format("%d", wnd_hz));
 	cfg.Add("skip_tutorial", skip_tutorial);
-	cfg.Add("language", g_lang_prefix.c_str());
+	cfg.Add("language", Language::prefix.c_str());
 	int ms, msq;
 	GetMultisampling(ms, msq);
 	cfg.Add("multisampling", Format("%d", ms));

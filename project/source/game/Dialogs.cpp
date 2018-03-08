@@ -3,9 +3,9 @@
 #include "Dialog.h"
 #include "Game.h"
 #include "Crc.h"
+#include "Language.h"
 
 extern string g_system_dir;
-extern string g_lang_prefix;
 typedef std::map<cstring, GameDialog*, CstringComparer> DialogsMap;
 DialogsMap dialogs;
 
@@ -696,7 +696,7 @@ bool LoadDialogText(Tokenizer& t)
 void LoadDialogTexts()
 {
 	Tokenizer t;
-	cstring path = Format("%s/lang/%s/dialogs.txt", g_system_dir.c_str(), g_lang_prefix.c_str());
+	cstring path = Format("%s/lang/%s/dialogs.txt", g_system_dir.c_str(), Language::prefix.c_str());
 
 	if(!t.FromFile(path))
 	{

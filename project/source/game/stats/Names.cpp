@@ -12,7 +12,7 @@ void LoadStrArray(vector<cstring>& items, cstring name)
 {
 	assert(name);
 
-	cstring scount = StrT(Format("%s_count", name), false);
+	cstring scount = Language::TryGetString(Format("%s_count", name), false);
 	if(!scount)
 		goto err;
 	int count = atoi(scount);

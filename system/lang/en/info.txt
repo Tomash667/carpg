@@ -1,6 +1,5 @@
 // locale info from http://support.microsoft.com/kb/193080
 
-[PickLanguage]
 dir = "en"
 englishName = "English"
 localName = "English"
@@ -9,8 +8,3 @@ title = "Select language"
 text = "Select language (can be changed later in options):"
 bOk = "OK"
 bCancel = "Cancel"
-
-[Crash]
-bOk = "OK"
-crashTop = "Something went wrong and CaRpg crashed. Please report this error on forum.\nPlease upload this files and post link:"
-crashBottom = "Remember to write some info too. Thank you!"

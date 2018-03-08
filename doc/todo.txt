@@ -66,6 +66,7 @@ f_new_combat_system:
 
 	GetItemString(text, item, for_unit, (uint)count);
 	shift - to show stats for companion
+? stats panel attack/skills title pl/en
 
 f_perks:
 -? clear remove console history

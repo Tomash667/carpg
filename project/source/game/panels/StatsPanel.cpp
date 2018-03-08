@@ -22,7 +22,8 @@ enum Group
 enum Stats
 {
 	STATS_DATE,
-	STATS_CLASS
+	STATS_CLASS,
+	STATS_ATTACK
 };
 
 //=================================================================================================
@@ -30,18 +31,24 @@ StatsPanel::StatsPanel() : last_update(0.f)
 {
 	visible = false;
 
-	txAttributes = Str("attributes");
-	txStatsPanel = Str("statsPanel");
-	txTraitsClass = Str("traitsClass");
-	txTraitsText = Str("traitsText");
-	txStatsText = Str("statsText");
-	txYearMonthDay = Str("yearMonthDay");
-	txBase = Str("base");
-	txRelatedAttributes = Str("relatedAttributes");
-	txFeats = Str("feats");
-	txTraits = Str("traits");
-	txStats = Str("stats");
-	txStatsDate = Str("statsDate");
+	auto section = Language::GetSection("StatsPanel");
+	txAttributes = section.Get("attributes");
+	txTitle = section.Get("title");
+	txClass = section.Get("class");
+	txTraitsStart = section.Get("traitsStart");
+	txTraitsEnd = section.Get("traitsEnd");
+	txStatsText = section.Get("statsText");
+	txYearMonthDay = section.Get("yearMonthDay");
+	txBase = section.Get("base");
+	txRelatedAttributes = section.Get("relatedAttributes");
+	txFeats = section.Get("feats");
+	txTraits = section.Get("traits");
+	txStats = section.Get("stats");
+	txSkills = section.Get("skills");
+	txDate = section.Get("date");
+	txAttack = section.Get("attack");
+	txMeleeAttack = section.Get("meleeAttack");
+	txRangedAttack = section.Get("rangedAttack");
 
 	tooltip.Init(TooltipGetText(this, &StatsPanel::GetTooltip));
 }
@@ -57,7 +64,7 @@ void StatsPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	GUI.DrawText(GUI.fBig, txStatsPanel, DT_TOP | DT_CENTER, BLACK, rect);
+	GUI.DrawText(GUI.fBig, txTitle, DT_TOP | DT_CENTER, BLACK, rect);
 
 	flowAttribs.Draw();
 	flowStats.Draw();
@@ -140,15 +147,16 @@ void StatsPanel::SetText()
 	int hp = int(pc->unit->hp);
 	if(hp == 0 && pc->unit->hp > 0)
 		hp = 1;
-	flowStats.Add()->Set(Format(txTraitsClass, ClassInfo::classes[(int)pc->clas].name.c_str()), G_STATS, STATS_CLASS);
+	flowStats.Add()->Set(Format("%s: %s", txClass, ClassInfo::classes[(int)pc->clas].name.c_str()), G_STATS, STATS_CLASS);
+	flowStats.Add()->Set(Format(txTraitsStart, hp, int(pc->unit->hpmax), int(pc->unit->stamina), int(pc->unit->stamina_max)), G_INVALID, -1);
 	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
 	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
+	flowStats.Add()->Set(Format("%s: %s/%s", txAttack, meleeAttack, rangedAttack), G_STATS, STATS_ATTACK);
 	cstring blockDesc = (pc->unit->HaveShield() ? Format("%d", (int)pc->unit->CalculateBlock()) : "-");
-	flowStats.Add()->Set(Format(txTraitsText, hp, int(pc->unit->hpmax), int(pc->unit->stamina), int(pc->unit->stamina_max), meleeAttack, rangedAttack,
-		(int)pc->unit->CalculateDefense(), blockDesc, (int)pc->unit->CalculateMobility(), float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10,
-		pc->unit->gold), G_INVALID, -1);
+	flowStats.Add()->Set(Format(txTraitsEnd, (int)pc->unit->CalculateDefense(), blockDesc, (int)pc->unit->CalculateMobility(), float(pc->unit->weight) / 10,
+		float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
 	flowStats.Add()->Set(txStats);
-	flowStats.Add()->Set(Format(txStatsDate, game.year, game.month + 1, game.day + 1), G_STATS, STATS_DATE);
+	flowStats.Add()->Set(Format(txDate, game.year, game.month + 1, game.day + 1), G_STATS, STATS_DATE);
 	GameStats& game_stats = GameStats::Get();
 	flowStats.Add()->Set(Format(txStatsText, game_stats.hour, game_stats.minute, game_stats.second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken,
 		pc->arena_fights), G_INVALID, -1);
@@ -157,6 +165,7 @@ void StatsPanel::SetText()
 	// skills
 	SkillGroupId last_group = SkillGroupId::NONE;
 	flowSkills.Clear();
+	flowSkills.Add()->Set(txSkills);
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		if(pc->unit->GetUnmod((SkillId)i) > 0)
@@ -238,6 +247,15 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 				ClassInfo& info = ClassInfo::classes[(int)pc->clas];
 				tooltip.big_text = info.name;
 				tooltip.text = info.desc;
+				tooltip.small_text.clear();
+			}
+			break;
+		case STATS_ATTACK:
+			{
+				cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "--");
+				cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "--");
+				tooltip.big_text.clear();
+				tooltip.text = Format("%s: %s\n%s: %s", txMeleeAttack, meleeAttack, txRangedAttack, rangedAttack);
 				tooltip.small_text.clear();
 			}
 			break;

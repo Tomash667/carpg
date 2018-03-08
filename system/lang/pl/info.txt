@@ -1,6 +1,5 @@
 // locale info from http://support.microsoft.com/kb/193080
 
-[PickLanguage]
 dir = "pl"
 englishName = "Polish"
 localName = "Polski"
@@ -9,8 +8,3 @@ title = "Wybierz jêzyk"
 text = "Wybierz jêzyk (mo¿na potem zmieniæ w opcjach):"
 bOk = "OK"
 bCancel = "Anuluj"
-
-[Crash]
-bOk = "OK"
-crashTop = "Coœ posz³o nie tak. Zg³oœ ten b³¹d na forum.\nJeœli mo¿esz to wrzuæ gdzieœ te pliki i podaj link:"
-crashBottom = "Nie zapomnij napisaæ kiedy siê to wydarzy³o. Dziêki!"
