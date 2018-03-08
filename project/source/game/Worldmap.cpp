@@ -5113,9 +5113,7 @@ void Game::SpawnTmpUnits(City* city)
 			if(Rand() % 2 == 0 || !pola)
 			{
 				// w karczmie
-				Unit* u = SpawnUnitInsideInn(ud, Random(2, 5), inn);
-				if(u)
-					u->temporary = true;
+				SpawnUnitInsideInn(ud, Random(2, 5), inn, SU_TEMPORARY);
 			}
 			else
 			{
@@ -5155,11 +5153,7 @@ void Game::SpawnTmpUnits(City* city)
 
 	// quest traveler (100% chance in city, 50% in village)
 	if(!city_ctx->IsVillage() || Rand() % 2 == 0)
-	{
-		Unit* u = SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn);
-		if(u)
-			u->temporary = true;
-	}
+		SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn, SU_TEMPORARY);
 }
 
 void Game::RemoveTmpUnits(City* city)

@@ -774,6 +774,13 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	orc->RecalculateHp();
 	orc->data = ud;
 	game->ParseItemScript(*orc, ud->item_script);
+	for(auto item : orc->slots)
+	{
+		if(item)
+			game->PreloadItem(item);
+	}
+	for(auto& slot : orc->items)
+		game->PreloadItem(slot.item);
 	orc->MakeItemsTeam(false);
 	game->UpdateUnitInventory(*orc);
 

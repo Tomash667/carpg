@@ -121,7 +121,7 @@ struct DialogContext
 	vector<std::pair<int, bool>> active_locations;
 	int team_share_id;
 	const Item* team_share_item;
-	bool not_active, can_skip;
+	bool not_active, can_skip, force_end;
 	vector<Entry> prev;
 
 	cstring GetText(int index);

@@ -65,7 +65,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 		{
 			/*
 			Rapier - Short blade
-			Attack: 30 (40) piercing
+			Attack: 30 (40 -> 50) piercing
 			Required strength: $50$
 			*/
 			const Weapon& weapon = item->ToWeapon();
@@ -99,11 +99,19 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 				break;
 			}
 
-			str += Format(" - %s\n%s: %d (%d) %s\n%s: $c%c%d$c-\n",
+			int old_attack = (unit->HaveWeapon() ? (int)unit->CalculateAttack() : 0);
+			int new_attack = (int)unit->CalculateAttack(item);
+			cstring atk_desc;
+			if(old_attack == new_attack)
+				atk_desc = Format("%d", old_attack);
+			else
+				atk_desc = Format("%d -> %d", old_attack, new_attack);
+
+			str += Format(" - %s\n%s: %d (%s) %s\n%s: $c%c%d$c-\n",
 				WeaponTypeInfo::info[weapon.weapon_type].name,
 				txAttack,
 				weapon.dmg,
-				(int)unit->CalculateAttack(item),
+				atk_desc,
 				dmg_type,
 				txRequiredStrength,
 				(unit->Get(AttributeId::STR) >= weapon.req_str ? '-' : 'r'),
@@ -114,14 +122,23 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 		{
 			/*
 			Long bow
-			Attack: 30 (40) piercing
+			Attack: 30 (40 -> 50) piercing
 			Required strength: $40$
 			*/
 			const Bow& bow = item->ToBow();
-			str += Format("\n%s: %d (%d) %s\n%s: $c%c%d$c-\n",
+
+			int old_attack = (unit->HaveBow() ? (int)unit->CalculateAttack(&unit->GetBow()) : 0);
+			int new_attack = (int)unit->CalculateAttack(item);
+			cstring atk_desc;
+			if(old_attack == new_attack)
+				atk_desc = Format("%d", old_attack);
+			else
+				atk_desc = Format("%d -> %d", old_attack, new_attack);
+
+			str += Format("\n%s: %d (%s) %s\n%s: $c%c%d$c-\n",
 				txAttack,
 				bow.dmg,
-				(int)unit->CalculateAttack(item),
+				atk_desc,
 				txDTPierce,
 				txRequiredStrength,
 				(unit->Get(AttributeId::STR) >= bow.req_str ? '-' : 'r'),
@@ -132,9 +149,9 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 		{
 			/*
 			Chainmail - Medium armor [(Does not fit)]
-			Defense: 30 (40)
+			Defense: 30 (40 -> 50)
 			Required strength: $40$
-			Mobility: 50 (40) / Mobility: 50 (70->60)
+			Mobility: 50 (40 -> 50)
 			*/
 			const Armor& armor = item->ToArmor();
 			cstring mob_str, armor_type;
@@ -145,18 +162,26 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			else
 				armor_type = Format("%s (%s)", skill, txInvalidArmor);
 
-			int mob = unit->CalculateMobility(armor);
-			int dex = unit->Get(AttributeId::DEX);
-			if(mob == dex)
-				mob_str = Format("(%d)", dex);
+			int old_mob = (int)unit->CalculateMobility();
+			int new_mob = (int)unit->CalculateMobility(armor);
+			if(old_mob == new_mob)
+				mob_str = Format("%d", new_mob);
 			else
-				mob_str = Format("(%d->%d)", dex, mob);
+				mob_str = Format("%d -> %d", old_mob, new_mob);
 
-			str += Format(" - %s\n%s: %d (%d)\n%s: $c%c%d$c-\n%s: %d %s\n",
+			int old_def = (int)unit->CalculateDefense();
+			int new_def = (int)unit->CalculateDefense(item);
+			cstring def_desc;
+			if(old_def == new_def)
+				def_desc = Format("%d", old_def);
+			else
+				def_desc = Format("%d -> %d", old_def, new_def);
+
+			str += Format(" - %s\n%s: %d (%s)\n%s: $c%c%d$c-\n%s: %d (%s)\n",
 				armor_type,
 				txDefense,
 				armor.def,
-				(int)unit->CalculateDefense(item),
+				def_desc,
 				txRequiredStrength,
 				(unit->Get(AttributeId::STR) >= armor.req_str ? '-' : 'r'),
 				armor.req_str,
@@ -169,14 +194,28 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 		{
 			/*
 			Iron shield
-			Defense: 30 (40)
+			Defense: 30 (40 -> 50)
 			Required strength: $40$
 			*/
 			const Shield& shield = item->ToShield();
-			str += Format("\n%s: %d (%d)\n%s: $c%c%d$c-\n",
+
+			cstring block_desc;
+			int new_block = (int)unit->CalculateDefense(item);
+			if(unit->HaveShield())
+			{
+				int old_block = (int)unit->CalculateBlock();
+				if(old_block == new_block)
+					block_desc = Format("%d", new_block);
+				else
+					block_desc = Format("%d -> %d", old_block, new_block);
+			}
+			else
+				block_desc = Format("%d", new_block);
+
+			str += Format("\n%s: %d (%s)\n%s: $c%c%d$c-\n",
 				txDefense,
 				shield.def,
-				(int)unit->CalculateBlock(item),
+				block_desc,
 				txRequiredStrength,
 				(unit->Get(AttributeId::STR) >= shield.req_str ? '-' : 'r'),
 				shield.req_str);

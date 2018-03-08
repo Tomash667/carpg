@@ -422,37 +422,8 @@ private:
 			{ "charisma", (int)AttributeId::CHA }
 		});
 
-		t.AddKeywords(G_SKILL, {
-			{ "one_handed", (int)SkillId::ONE_HANDED_WEAPON },
-			{ "short_blade", (int)SkillId::SHORT_BLADE },
-			{ "long_blade", (int)SkillId::LONG_BLADE },
-			{ "blunt", (int)SkillId::BLUNT },
-			{ "axe", (int)SkillId::AXE },
-			{ "bow", (int)SkillId::BOW },
-			{ "unarmed", (int)SkillId::UNARMED },
-			{ "shield", (int)SkillId::SHIELD },
-			{ "light_armor", (int)SkillId::LIGHT_ARMOR },
-			{ "medium_armor", (int)SkillId::MEDIUM_ARMOR },
-			{ "heavy_armor", (int)SkillId::HEAVY_ARMOR },
-			{ "nature_magic", (int)SkillId::NATURE_MAGIC },
-			{ "gods_magic", (int)SkillId::GODS_MAGIC },
-			{ "mystic_magic", (int)SkillId::MYSTIC_MAGIC },
-			{ "spellcraft", (int)SkillId::SPELLCRAFT },
-			{ "concentration", (int)SkillId::CONCENTRATION },
-			{ "identification", (int)SkillId::IDENTIFICATION },
-			{ "lockpick", (int)SkillId::LOCKPICK },
-			{ "sneak", (int)SkillId::SNEAK },
-			{ "traps", (int)SkillId::TRAPS },
-			{ "steal", (int)SkillId::STEAL },
-			{ "animal_empathy", (int)SkillId::ANIMAL_EMPATHY },
-			{ "survival", (int)SkillId::SURVIVAL },
-			{ "persuasion", (int)SkillId::PERSUASION },
-			{ "alchemy", (int)SkillId::ALCHEMY },
-			{ "crafting", (int)SkillId::CRAFTING },
-			{ "healing", (int)SkillId::HEALING },
-			{ "athletics", (int)SkillId::ATHLETICS },
-			{ "rage", (int)SkillId::RAGE }
-		});
+		for(uint i = 0; i < (uint)SkillId::MAX; ++i)
+			t.AddKeyword(Skill::skills[i].id, i, G_SKILL);
 
 		t.AddKeyword("fixed", PK_FIXED, G_PROFILE_KEYWORD);
 
@@ -519,6 +490,7 @@ private:
 			auto parent = UnitData::TryGet(parent_id);
 			if(!parent)
 				t.Throw("Missing parent unit '%s'.", parent_id.c_str());
+			parent->flags3 |= F3_PARENT_DATA;
 			unit->CopyFrom(*parent);
 			crc.Update(parent_id);
 			t.Next();

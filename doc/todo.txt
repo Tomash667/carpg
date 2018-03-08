@@ -49,12 +49,29 @@ angelscript2 and more:
 f_new_combat_system:
 - fixed very good starting item when player have very low skill
 - fixed effects not disappearing from clients after travel
-- fixed crash when Gorush changes class
-- fixed player can shoot without stamina
+? fixed crash when Gorush changes class; test sp/mp
 - fixed blocking arrows don't remove stamina
 - fixed high shield skill give stamina from being hit
 ? shoot without stamina
-? empty chests in camp
+? spawning camp chests
+? force_end dialog
+? power attack stamina s/c/ai (add changelog)
+? hold block and attack fix
+? attack & stamina s/c/ai
+? mobility/atk(wep/bow)/def(arm/shi) calculations in inventory
+? consume item when hiding weapon
+-? verify old ver - heavy armor give bigger dex bonus then light
+? Inventory.cpp
+	GetItemString(text, item, game.pc->unit, (uint)count);
+	instead of
+	Unit* for_unit;
+	if(mode == LOOT_OTHER || mode == TRADE_OTHER)
+		for_unit = game.pc->unit;
+	else
+		for_unit = unit;
+
+	GetItemString(text, item, for_unit, (uint)count);
+	shift - to show stats for companion
 
 f_perks:
 -? clear remove console history
@@ -99,6 +116,7 @@ NEW:
 + space - take out/hide weapon, hold to show circle with choices (melee, ranged, [unarmed] etc)
 + attach sounds to scene node, not to unit
 + allow to save on arena/tournament/contest/travel/tutorial
++ rename ItemSlot to something better, is it equipped slots or not ?
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

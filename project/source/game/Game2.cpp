@@ -2697,10 +2697,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						}
 
 						if(Net::IsLocal())
-						{
 							u.player->Train(TrainWhat::AttackStart, 0.f, 0);
-							u.RemoveStamina(u.GetWeapon().GetInfo().stamina * ((u.attack_power - 1.f) / 2 + 1.f));
-						}
 					}
 				}
 				else if(u.animation_state == 2)
@@ -2717,15 +2714,19 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						u.animation_state = 0;
 						u.run_attack = false;
 						u.hitted = false;
+						u.timer = 0.f;
 
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
-							c.id = AID_PowerAttack;
+							c.id = AID_PrepareAttack;
 							c.f[1] = u.mesh_inst->groups[1].speed;
 						}
+
+						if(Net::IsLocal())
+							u.RemoveStamina(u.GetWeapon().GetInfo().stamina);
 					}
 				}
 			}
@@ -2771,12 +2772,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						if(Net::IsLocal())
 						{
 							u.player->Train(TrainWhat::BashStart, 0.f, 0);
-							u.RemoveStamina(50.f);
+							u.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
 						}
 					}
 				}
 			}
-			else if(u.action == A_NONE && u.frozen == FROZEN::NO)
+			else if(u.action == A_NONE && u.frozen == FROZEN::NO && !KeyDownAllowed(GK_BLOCK))
 			{
 				byte k = KeyDoReturnIgnore(GK_ATTACK_USE, &KeyStates::Down, pc_data.wasted_key);
 				if(k != VK_NONE && u.stamina > 0)
@@ -2814,15 +2815,19 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						pc->action_key = k;
 						u.animation_state = 0;
 						u.run_attack = false;
+						u.timer = 0.f;
 
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::ATTACK;
 							c.unit = pc->unit;
-							c.id = AID_PowerAttack;
+							c.id = AID_PrepareAttack;
 							c.f[1] = u.mesh_inst->groups[1].speed;
 						}
+
+						if(Net::IsLocal())
+							u.RemoveStamina(u.GetWeapon().GetInfo().stamina);
 					}
 					u.hitted = false;
 				}
@@ -2867,7 +2872,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			// shoting from bow
 			if(u.action == A_SHOOT)
 			{
-				if(u.animation_state == 0 && u.stamina > 0 && KeyUpAllowed(pc->action_key))
+				if(u.animation_state == 0 && KeyUpAllowed(pc->action_key))
 				{
 					u.animation_state = 1;
 
@@ -2879,9 +2884,6 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						c.id = AID_Shoot;
 						c.f[1] = 1.f;
 					}
-
-					if(Net::IsLocal())
-						u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 				}
 			}
 			else if(u.frozen == FROZEN::NO)
@@ -2908,6 +2910,9 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						c.id = AID_StartShoot;
 						c.f[1] = speed;
 					}
+
+					if(Net::IsLocal())
+						u.RemoveStamina(Unit::STAMINA_BOW_ATTACK);
 				}
 			}
 		}
@@ -3905,6 +3910,7 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog)
 	ctx.choices.clear();
 	ctx.can_skip = true;
 	ctx.dialog = dialog ? dialog : talker->data->dialog;
+	ctx.force_end = false;
 
 	if(Net::IsLocal())
 	{
@@ -4069,6 +4075,12 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 	{
 		ctx.dialog_pos = ctx.dialog_skip;
 		ctx.dialog_skip = -1;
+	}
+
+	if(ctx.force_end)
+	{
+		EndDialog(ctx);
+		return;
 	}
 
 	int if_level = ctx.dialog_level;
@@ -4753,9 +4765,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					{
 						ctx.dialog_s_text = Format(txNeedMoreGold, 200 - ctx.pc->unit->gold);
 						DialogTalk(ctx, ctx.dialog_s_text.c_str());
-						// resetuj dialog
-						ctx.dialog_pos = 0;
-						ctx.dialog_level = 0;
+						ctx.force_end = true;
 						return;
 					}
 
@@ -8088,6 +8098,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			}
 			break;
 		case A_SHOOT:
+			u.stamina_timer = Unit::STAMINA_RESTORE_TIMER;
 			if(u.animation_state == 0)
 			{
 				if(u.mesh_inst->GetProgress2() > 20.f / 40)
@@ -8261,140 +8272,77 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			u.bow_instance->need_update = true;
 			break;
 		case A_ATTACK:
+			u.stamina_timer = Unit::STAMINA_RESTORE_TIMER;
 			if(u.animation_state == 0)
 			{
+				int index = u.mesh_inst->mesh->head.n_groups == 1 ? 0 : 1;
 				float t = u.GetAttackFrame(0);
-				if(u.mesh_inst->mesh->head.n_groups == 1)
+				float p = u.mesh_inst->GetProgress(index);
+				if(p > t)
 				{
-					if(u.mesh_inst->GetProgress() > t)
+					if(Net::IsLocal() && u.IsAI())
 					{
-						if(Net::IsLocal() && u.IsAI())
+						u.mesh_inst->groups[index].speed = 1.f + u.GetAttackSpeed();
+						u.attack_power = 2.f;
+						++u.animation_state;
+						if(Net::IsOnline())
 						{
-							u.mesh_inst->groups[0].speed = 1.f + u.GetAttackSpeed();
-							u.attack_power = 2.f;
-							++u.animation_state;
-							if(Net::IsOnline())
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::ATTACK;
-								c.unit = &u;
-								c.id = AID_Attack;
-								c.f[1] = u.mesh_inst->groups[0].speed;
-							}
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::ATTACK;
+							c.unit = &u;
+							c.id = AID_Attack;
+							c.f[1] = u.mesh_inst->groups[index].speed;
 						}
-						else
-							u.mesh_inst->groups[0].time = t*u.mesh_inst->groups[0].anim->length;
 					}
+					else
+						u.mesh_inst->groups[index].time = t * u.mesh_inst->groups[index].anim->length;
 				}
-				else
+				else if(u.IsPlayer() && Net::IsLocal())
 				{
-					if(u.mesh_inst->GetProgress2() > t)
-					{
-						if(Net::IsLocal() && u.IsAI())
-						{
-							u.mesh_inst->groups[1].speed = 1.f + u.GetAttackSpeed();
-							u.attack_power = 2.f;
-							++u.animation_state;
-							if(Net::IsOnline())
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::ATTACK;
-								c.unit = &u;
-								c.id = AID_Attack;
-								c.f[1] = u.mesh_inst->groups[1].speed;
-							}
-						}
-						else
-							u.mesh_inst->groups[1].time = t*u.mesh_inst->groups[1].anim->length;
-					}
+					float dif = p - u.timer;
+					float stamina_to_remove_total = u.GetWeapon().GetInfo().stamina / 2;
+					float stamina_used = dif / t * stamina_to_remove_total;
+					u.timer = p;
+					u.RemoveStamina(stamina_used);
 				}
 			}
 			else
 			{
-				if(u.mesh_inst->mesh->head.n_groups > 1)
+				int index = u.mesh_inst->mesh->head.n_groups == 1 ? 0 : 1;
+				if(u.animation_state == 1 && u.mesh_inst->GetProgress(index) > u.GetAttackFrame(0))
 				{
-					if(u.animation_state == 1 && u.mesh_inst->GetProgress2() > u.GetAttackFrame(0))
+					if(Net::IsLocal() && !u.hitted && u.mesh_inst->GetProgress(index) >= u.GetAttackFrame(1))
 					{
-						if(Net::IsLocal() && !u.hitted && u.mesh_inst->GetProgress2() >= u.GetAttackFrame(1))
-						{
-							ATTACK_RESULT result = DoAttack(ctx, u);
-							if(result != ATTACK_NOT_HIT)
-							{
-								/*if(result == ATTACK_PARRIED)
-								{
-									u.mesh_inst->frame_end_info2 = false;
-									u.mesh_inst->Play(Rand()%2 == 0 ? "atak1_p" : "atak2_p", PLAY_PRIO1|PLAY_ONCE, 1);
-									u.action = A_PAIN;
-									if(Net::IsLocal() && u.IsAI())
-									{
-										float v = 1.f - float(u.skill[S_WEAPON])/100;
-										u.ai->next_attack = 1.f+Random(v/2, v);
-									}
-								}
-								else*/
-								u.hitted = true;
-							}
-						}
-						if(u.mesh_inst->GetProgress2() >= u.GetAttackFrame(2) || u.mesh_inst->frame_end_info2)
-						{
-							// koniec mo¿liwego ataku
-							u.animation_state = 2;
-							u.mesh_inst->groups[1].speed = 1.f;
-							u.run_attack = false;
-						}
+						ATTACK_RESULT result = DoAttack(ctx, u);
+						if(result != ATTACK_NOT_HIT)
+							u.hitted = true;
 					}
-					if(u.animation_state == 2 && u.mesh_inst->frame_end_info2)
+					if(u.mesh_inst->GetProgress2() >= u.GetAttackFrame(2) || u.mesh_inst->frame_end_info2)
 					{
+						// koniec mo¿liwego ataku
+						u.animation_state = 2;
+						u.mesh_inst->groups[index].speed = 1.f;
 						u.run_attack = false;
-						u.mesh_inst->Deactivate(1);
-						u.mesh_inst->frame_end_info2 = false;
-						u.action = A_NONE;
-						if(Net::IsLocal() && u.IsAI())
-						{
-							float v = 1.f - float(u.Get(SkillId::ONE_HANDED_WEAPON)) / 100;
-							u.ai->next_attack = Random(v / 2, v);
-						}
 					}
 				}
-				else
+				if(u.animation_state == 2 && u.mesh_inst->frame_end_info2)
 				{
-					if(u.animation_state == 1 && u.mesh_inst->GetProgress() > u.GetAttackFrame(0))
+					u.run_attack = false;
+					if(index == 0)
 					{
-						if(Net::IsLocal() && !u.hitted && u.mesh_inst->GetProgress() >= u.GetAttackFrame(1))
-						{
-							ATTACK_RESULT result = DoAttack(ctx, u);
-							if(result != ATTACK_NOT_HIT)
-							{
-								/*u.mesh_inst->Deactivate(0);
-								u.atak_w_biegu = false;
-								u.action = A_NONE;
-								if(Net::IsLocal() && u.IsAI())
-								{
-									float v = 1.f - float(u.skill[S_WEAPON])/100;
-									u.ai->next_attack = Random(v/2, v);
-								}*/
-								u.hitted = true;
-							}
-						}
-						if(u.mesh_inst->GetProgress() >= u.GetAttackFrame(2) || u.mesh_inst->frame_end_info)
-						{
-							// koniec mo¿liwego ataku
-							u.animation_state = 2;
-							u.mesh_inst->groups[0].speed = 1.f;
-							u.run_attack = false;
-						}
-					}
-					if(u.animation_state == 2 && u.mesh_inst->frame_end_info)
-					{
-						u.run_attack = false;
 						u.animation = ANI_BATTLE;
 						u.current_animation = ANI_STAND;
-						u.action = A_NONE;
-						if(Net::IsLocal() && u.IsAI())
-						{
-							float v = 1.f - float(u.Get(SkillId::ONE_HANDED_WEAPON)) / 100;
-							u.ai->next_attack = Random(v / 2, v);
-						}
+					}
+					else
+					{
+						u.mesh_inst->Deactivate(1);
+						u.mesh_inst->frame_end_info2 = false;
+					}
+					u.action = A_NONE;
+					if(Net::IsLocal() && u.IsAI())
+					{
+						float v = 1.f - float(u.Get(SkillId::ONE_HANDED_WEAPON)) / 100;
+						u.ai->next_attack = Random(v / 2, v);
 					}
 				}
 			}
@@ -8402,6 +8350,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 		case A_BLOCK:
 			break;
 		case A_BASH:
+			u.stamina_timer = Unit::STAMINA_RESTORE_TIMER;
 			if(u.animation_state == 0)
 			{
 				if(u.mesh_inst->GetProgress2() >= u.data->frames->t[F_BASH])
@@ -8419,14 +8368,6 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				u.mesh_inst->Deactivate(1);
 			}
 			break;
-			/*case A_PAROWANIE:
-				if(u.mesh_inst->frame_end_info2)
-				{
-					u.action = A_NONE;
-					u.mesh_inst->frame_end_info2 = false;
-					u.mesh_inst->Deactivate(1);
-				}
-				break;*/
 		case A_DRINK:
 			{
 				float p = u.mesh_inst->GetProgress2();
@@ -9359,7 +9300,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 				if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
 				{
-					float blocked = hitted->CalculateBlock(&hitted->GetShield()) * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
+					float blocked = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
 					dmg -= blocked;
 
 					MATERIAL_TYPE mat = hitted->GetShield().material;
@@ -9475,7 +9416,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 				if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
 				{
-					float blocked = hitted->CalculateBlock(&hitted->GetShield()) * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
+					float blocked = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
 					dmg -= blocked / 2;
 
 					if(hitted->IsPlayer())
@@ -10965,7 +10906,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 			--block_value;
 
 		// reduce damage
-		float blocked = hitted.CalculateBlock(&hitted.GetShield());
+		float blocked = hitted.CalculateBlock();
 		hitted_mat = hitted.GetShield().material;
 		blocked *= block_value;
 		dmg -= blocked;
@@ -11034,7 +10975,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	else if(hitted.HaveShield() && hitted.action != A_PAIN)
 	{
 		// defense bonus from shield
-		base_def += hitted.CalculateBlock(&hitted.GetShield()) / 5;
+		base_def += hitted.CalculateBlock() / 5;
 	}
 
 	// decrease defense when stunned
@@ -21588,7 +21529,7 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 bool Game::RemoveItem(Unit& unit, const Item* item, uint count)
 {
 	int i_index = unit.FindItem(item);
-	if(i_index == INVALID_IINDEX)
+	if(i_index == Unit::INVALID_IINDEX)
 		return false;
 	RemoveItem(unit, i_index, count);
 	return true;
@@ -21649,14 +21590,14 @@ Unit* Game::SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, Unit
 	return nullptr;
 }
 
-Unit* Game::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, bool main_room)
+Unit* Game::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, int flags)
 {
 	if(!inn)
 		inn = city_ctx->FindInn();
 
 	Vec3 pos;
 	bool ok = false;
-	if(main_room || Rand() % 5 != 0)
+	if(IS_SET(flags, SU_MAIN_ROOM) || Rand() % 5 != 0)
 	{
 		if(WarpToArea(inn->ctx, inn->arena1, ud.GetRadius(), pos, 20) ||
 			WarpToArea(inn->ctx, inn->arena2, ud.GetRadius(), pos, 10))
@@ -21672,7 +21613,10 @@ Unit* Game::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, boo
 	if(ok)
 	{
 		float rot = Random(MAX_ANGLE);
-		return CreateUnitWithAI(inn->ctx, ud, level, nullptr, &pos, &rot);
+		Unit* u = CreateUnitWithAI(inn->ctx, ud, level, nullptr, &pos, &rot);
+		if(u && IS_SET(flags, SU_TEMPORARY))
+			u->temporary = true;
+		return u;
 	}
 	else
 		return nullptr;
@@ -21686,13 +21630,9 @@ void Game::SpawnDrunkmans()
 	int ile = Random(4, 6);
 	for(int i = 0; i < ile; ++i)
 	{
-		Unit* u = SpawnUnitInsideInn(pijak, Random(2, 15), inn, true);
-		if(u)
-		{
-			u->temporary = true;
-			if(Net::IsOnline())
-				Net_SpawnUnit(u);
-		}
+		Unit* u = SpawnUnitInsideInn(pijak, Random(2, 15), inn, SU_TEMPORARY | SU_MAIN_ROOM);
+		if(u && Net::IsOnline())
+			Net_SpawnUnit(u);
 	}
 }
 

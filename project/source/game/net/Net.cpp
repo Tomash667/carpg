@@ -2482,7 +2482,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.animation_state = 1;
 							unit.mesh_inst->groups[1].speed = unit.attack_power + unit.GetAttackSpeed();
 							unit.attack_power += 1.f;
-							unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina * ((unit.attack_power - 1.f) / 2 + 1.f));
 						}
 						else
 						{
@@ -2498,7 +2497,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						}
 						unit.player->Train(TrainWhat::AttackStart, 0.f, 0);
 						break;
-					case AID_PowerAttack:
+					case AID_PrepareAttack:
 						{
 							if(unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 								PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);
@@ -2509,6 +2508,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.mesh_inst->groups[1].speed = attack_speed;
 							unit.animation_state = 0;
 							unit.hitted = false;
+							unit.RemoveStamina(unit.GetWeapon().GetInfo().stamina);
+							unit.timer = 0.f;
 						}
 						break;
 					case AID_Shoot:
@@ -2555,7 +2556,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							unit.mesh_inst->frame_end_info2 = false;
 							unit.hitted = false;
 							unit.player->Train(TrainWhat::BashStart, 0.f, 0);
-							unit.RemoveStamina(50.f);
+							unit.RemoveStamina(Unit::STAMINA_BASH_ATTACK);
 						}
 						break;
 					case AID_RunningAttack:
@@ -5912,7 +5913,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						unit.hitted = false;
 					}
 					break;
-				case AID_PowerAttack:
+				case AID_PrepareAttack:
 					{
 						if(unit.data->sounds->sound[SOUND_ATTACK] && Rand() % 4 == 0)
 							PlayAttachedSound(unit, unit.data->sounds->sound[SOUND_ATTACK]->sound, 1.f, 10.f);

@@ -154,7 +154,7 @@ void GameGui::DrawFront()
 	}
 
 	// crosshair
-	if(game.pc->unit->action == A_SHOOT)
+	if(game.pc->unit->weapon_state == WS_TAKEN && game.pc->unit->weapon_taken == W_BOW)
 		GUI.DrawSprite(tCrosshair, Center(32, 32));
 
 	// obwódka bólu

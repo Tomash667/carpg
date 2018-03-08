@@ -170,7 +170,7 @@ Unit* Game::FindUnitWithQuestItem(LevelAreaContext* lac, int quest_refid, LevelA
 			if(unit->IsAlive() && IsEnemy(*unit, *pc->unit))
 			{
 				int iindex = unit->FindQuestItem(quest_refid);
-				if(iindex != INVALID_IINDEX)
+				if(iindex != Unit::INVALID_IINDEX)
 				{
 					if(entry)
 						*entry = &e;

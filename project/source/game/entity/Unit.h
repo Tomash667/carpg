@@ -59,7 +59,6 @@ enum ACTION
 	A_ANIMATION, // animacja bez obiektu (np drapani siê, rozgl¹danie)
 	A_ANIMATION2, // u¿ywanie obiektu (0-podchodzi, 1-u¿ywa, 2-u¿ywa dŸwiêk, 3-odchodzi)
 	A_POSITION, // u¿ywa³ czegoœ ale dosta³ basha lub umar³, trzeba go przesun¹æ w normalne miejsce
-	//A_PAROWANIE
 	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
 	A_DASH,
 	A_DESPAWN
@@ -161,6 +160,9 @@ struct Unit
 	static const int MIN_SIZE = 36;
 	static const float AUTO_TALK_WAIT;
 	static const float STAMINA_BOW_ATTACK;
+	static const float STAMINA_BASH_ATTACK;
+	static const float STAMINA_UNARMED_ATTACK;
+	static const float STAMINA_RESTORE_TIMER;
 
 	int netid;
 	UnitData* data;
@@ -206,6 +208,7 @@ struct Unit
 	float auto_talk_timer;
 	GameDialog* auto_talk_dialog;
 	StaminaAction stamina_action;
+	float stamina_timer;
 
 	//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	Unit() : mesh_inst(nullptr), hero(nullptr), ai(nullptr), player(nullptr), cobj(nullptr), interp(nullptr), bow_instance(nullptr), fake_unit(false),
@@ -219,9 +222,8 @@ struct Unit
 
 	float CalculateAttack() const;
 	float CalculateAttack(const Item* weapon) const;
-	float CalculateBlock(const Item* shield) const;
-	float CalculateDefense() const;
-	float CalculateDefense(const Item* armor) const;
+	float CalculateBlock(const Item* shield = nullptr) const;
+	float CalculateDefense(const Item* armor = nullptr) const;
 	// czy ¿yje i nie le¿y na ziemi
 	bool IsStanding() const { return live_state == ALIVE; }
 	// czy ¿yje
@@ -529,7 +531,7 @@ struct Unit
 		RemoveEffect(E_POISON);
 	}
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
-#define INVALID_IINDEX (-SLOT_INVALID-1)
+	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
 	int FindItem(const Item* item, int quest_refid = -1) const;
 	int FindQuestItem(int quest_refid) const;
 	void RemoveItem(int iindex, bool active_location = true);
@@ -574,7 +576,6 @@ struct Unit
 	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)
 	float GetBlockSpeed() const;
 
-	float CalculateWeaponBlock() const;
 	float CalculateMagicResistance() const;
 	int CalculateMagicPower() const;
 	bool HaveEffect(ConsumeEffect effect) const;

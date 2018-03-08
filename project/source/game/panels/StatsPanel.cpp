@@ -140,15 +140,18 @@ void StatsPanel::SetText()
 	int hp = int(pc->unit->hp);
 	if(hp == 0 && pc->unit->hp > 0)
 		hp = 1;
+	flowStats.Add()->Set(Format(txTraitsClass, ClassInfo::classes[(int)pc->clas].name.c_str()), G_STATS, STATS_CLASS);
 	cstring meleeAttack = (pc->unit->HaveWeapon() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetWeapon())) : "-");
 	cstring rangedAttack = (pc->unit->HaveBow() ? Format("%d", (int)pc->unit->CalculateAttack(&pc->unit->GetBow())) : "-");
-	flowStats.Add()->Set(Format(txTraitsClass, ClassInfo::classes[(int)pc->clas].name.c_str()), G_STATS, STATS_CLASS);
+	cstring blockDesc = (pc->unit->HaveShield() ? Format("%d", (int)pc->unit->CalculateBlock()) : "-");
 	flowStats.Add()->Set(Format(txTraitsText, hp, int(pc->unit->hpmax), int(pc->unit->stamina), int(pc->unit->stamina_max), meleeAttack, rangedAttack,
-		(int)pc->unit->CalculateDefense(), (int)pc->unit->CalculateMobility(), float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
+		(int)pc->unit->CalculateDefense(), blockDesc, (int)pc->unit->CalculateMobility(), float(pc->unit->weight) / 10, float(pc->unit->weight_max) / 10,
+		pc->unit->gold), G_INVALID, -1);
 	flowStats.Add()->Set(txStats);
 	flowStats.Add()->Set(Format(txStatsDate, game.year, game.month + 1, game.day + 1), G_STATS, STATS_DATE);
 	GameStats& game_stats = GameStats::Get();
-	flowStats.Add()->Set(Format(txStatsText, game_stats.hour, game_stats.minute, game_stats.second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken, pc->arena_fights), G_INVALID, -1);
+	flowStats.Add()->Set(Format(txStatsText, game_stats.hour, game_stats.minute, game_stats.second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken,
+		pc->arena_fights), G_INVALID, -1);
 	flowStats.Reposition();
 
 	// skills

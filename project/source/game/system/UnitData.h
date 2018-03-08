@@ -142,6 +142,7 @@ enum UNIT_FLAGS3
 	F3_ORC_FOOD = 1 << 4, // je orkowe jedzenie a nie normalne
 	F3_MINER = 1 << 5, // 50% szansy ¿e zajmie siê wydobywaniem
 	F3_TALK_AT_COMPETITION = 1 << 6, // nie gada o pierdo³ach na zawodach
+	F3_PARENT_DATA = 1 << 7, // unit data is inherited
 };
 
 //-----------------------------------------------------------------------------
@@ -249,4 +250,5 @@ struct UnitData
 	static std::map<string, UnitData*> aliases;
 	static UnitData* TryGet(const AnyString& id);
 	static UnitData* Get(const AnyString& id);
+	static void Validate(uint& err);
 };

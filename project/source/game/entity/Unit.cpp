@@ -12,6 +12,9 @@
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
+const float Unit::STAMINA_BASH_ATTACK = 50.f;
+const float Unit::STAMINA_UNARMED_ATTACK = 50.f;
+const float Unit::STAMINA_RESTORE_TIMER = 1.f;
 
 //=================================================================================================
 Unit::~Unit()
@@ -79,11 +82,13 @@ float Unit::CalculateAttack(const Item* _weapon) const
 }
 
 //=================================================================================================
-float Unit::CalculateBlock(const Item* _shield) const
+float Unit::CalculateBlock(const Item* shield) const
 {
-	assert(_shield && _shield->type == IT_SHIELD);
+	if(!shield)
+		shield = slots[SLOT_SHIELD];
+	assert(shield && shield->type == IT_SHIELD);
 
-	const Shield& s = _shield->ToShield();
+	const Shield& s = shield->ToShield();
 	float p;
 	int str = Get(AttributeId::STR);
 	if(str >= s.req_str)
@@ -95,41 +100,26 @@ float Unit::CalculateBlock(const Item* _shield) const
 }
 
 //=================================================================================================
-float Unit::CalculateWeaponBlock() const
+float Unit::CalculateDefense(const Item* armor) const
 {
-	const Weapon& w = GetWeapon();
-
-	float p;
-	int str = Get(AttributeId::STR);
-	if(str >= w.req_str)
-		p = 1.f;
-	else
-		p = float(str) / w.req_str;
-
-	return float(w.dmg) * 0.66f * (1.f + 0.008f*Get(SkillId::SHIELD) + 0.002f*Get(SkillId::ONE_HANDED_WEAPON)) * p;
-}
-
-//=================================================================================================
-// WZÓR NA OBRONÊ
-// kondycja/5 + pancerz * (skill * (1+max(1.f, si³a/wymagana)) + zrêcznoœæ/5*max(%obci¹¿enia, ciê¿ki_pancerz ? 0.5 : 0)
-float Unit::CalculateDefense() const
-{
+	// base
 	float def = CalculateBaseDefense();
 	float load = GetLoad();
 
-	// pancerz
-	if(HaveArmor())
+	// armor defense
+	if(!armor)
+		armor = slots[SLOT_ARMOR];
+	if(armor)
 	{
-		const Armor& a = GetArmor();
+		const Armor& a = armor->ToArmor();
 
-		// pancerz daje tyle ile bazowo * skill
 		switch(a.skill)
 		{
 		case SkillId::HEAVY_ARMOR:
-			load *= 0.5f;
+			load = max(load, 0.5f);
 			break;
 		case SkillId::MEDIUM_ARMOR:
-			load *= 0.75f;
+			load = max(load, 0.25f);
 			break;
 		}
 
@@ -140,45 +130,7 @@ float Unit::CalculateDefense() const
 		def += (skill_val / 100 + 1)*a.def;
 	}
 
-	// zrêcznoœæ
-	if(load < 1.f)
-	{
-		int dex = Get(AttributeId::DEX);
-		if(dex > 50)
-			def += (float(dex - 50) / 3) * (1.f - load);
-	}
-
-	return def;
-}
-
-//=================================================================================================
-float Unit::CalculateDefense(const Item* _armor) const
-{
-	assert(_armor && _armor->type == IT_ARMOR);
-
-	float def = CalculateBaseDefense();
-	float load = GetLoad();
-
-	const Armor& a = _armor->ToArmor();
-
-	// pancerz daje tyle ile bazowo * skill
-	switch(a.skill)
-	{
-	case SkillId::HEAVY_ARMOR:
-		load *= 0.5f;
-		break;
-	case SkillId::MEDIUM_ARMOR:
-		load *= 0.75f;
-		break;
-	}
-
-	float skill_val = (float)Get(a.skill);
-	int str = Get(AttributeId::STR);
-	if(str < a.req_str)
-		skill_val *= str / a.req_str;
-	def += (skill_val / 100 + 1)*a.def;
-
-	// zrêcznoœæ
+	// dexterity bonus
 	if(load < 1.f)
 	{
 		int dex = Get(AttributeId::DEX);
@@ -397,7 +349,7 @@ int Unit::ConsumeItem(int index)
 			// jeœli chowa broñ to u¿yj miksturki jak schowa
 			if(IsPlayer())
 			{
-				if(player == Game::Get().pc)
+				if(player->is_local)
 				{
 					assert(Inventory::lock_id == LOCK_NO);
 					player->next_action = NA_CONSUME;
@@ -429,7 +381,7 @@ int Unit::ConsumeItem(int index)
 		HideWeapon();
 		if(IsPlayer())
 		{
-			assert(Inventory::lock_id == LOCK_NO && Game::Get().pc == player);
+			assert(Inventory::lock_id == LOCK_NO && player->is_local);
 			player->next_action = NA_CONSUME;
 			Inventory::lock_index = index;
 			Inventory::lock_id = LOCK_MY;
@@ -851,7 +803,9 @@ void Unit::UpdateEffects(float dt)
 	}
 
 	// restore stamina
-	if(stamina != stamina_max && (stamina_action != SA_DONT_RESTORE || best_stamina > 0.f))
+	if(stamina_timer > 0)
+		stamina_timer -= dt;
+	else if(stamina != stamina_max && (stamina_action != SA_DONT_RESTORE || best_stamina > 0.f))
 	{
 		float stamina_restore;
 		switch(stamina_action)
@@ -918,6 +872,7 @@ void Unit::EndEffects(int days, int* best_nat)
 
 	alcohol = 0.f;
 	stamina = stamina_max;
+	stamina_timer = 0;
 
 	if(effects.empty())
 		return;
@@ -1113,7 +1068,7 @@ bool Unit::IsBetterArmor(const Armor& armor) const
 	if(!HaveArmor())
 		return true;
 
-	return CalculateDefense(&GetArmor()) < CalculateDefense(&armor);
+	return CalculateDefense() < CalculateDefense(&armor);
 }
 
 //=================================================================================================
@@ -1130,10 +1085,10 @@ bool Unit::IsBetterArmor(const Armor& armor, int* value) const
 	{
 		float v = CalculateDefense(&armor);
 		*value = (int)v;
-		return CalculateDefense(&GetArmor()) < v;
+		return CalculateDefense() < v;
 	}
 	else
-		return CalculateDefense(&GetArmor()) < CalculateDefense(&armor);
+		return CalculateDefense() < CalculateDefense(&armor);
 }
 
 //=================================================================================================
@@ -1294,6 +1249,7 @@ void Unit::Save(HANDLE file, bool local)
 	WriteFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
 	WriteFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
 	WriteFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
+	WriteFile(file, &stamina_timer, sizeof(stamina_timer), &tmp, nullptr);
 	WriteFile(file, &level, sizeof(level), &tmp, nullptr);
 	FileWriter f(file);
 	stats.Save(f);
@@ -1472,12 +1428,17 @@ void Unit::Load(HANDLE file, bool local)
 		ReadFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
 		ReadFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
 		ReadFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
+		if(LOAD_VERSION >= V_CURRENT)
+			ReadFile(file, &stamina_timer, sizeof(stamina_timer), &tmp, nullptr);
+		else
+			stamina_timer = 0;
 	}
 	else
 	{
 		stamina_max = CalculateMaxStamina();
 		stamina = stamina_max;
 		stamina_action = SA_RESTORE_MORE;
+		stamina_timer = 0;
 	}
 	if(LOAD_VERSION < V_0_5)
 	{
@@ -2976,6 +2937,7 @@ void Unit::UpdateStaminaAction()
 void Unit::RemoveStamina(float value)
 {
 	stamina -= value;
+	stamina_timer = STAMINA_RESTORE_TIMER;
 	if(player)
 	{
 		player->Train(TrainWhat::Stamina, value, 0);
