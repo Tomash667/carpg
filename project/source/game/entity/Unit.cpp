@@ -3086,3 +3086,20 @@ void Unit::ApplyStun(float length)
 		c.f[0] = length;
 	}
 }
+
+//=================================================================================================
+void Unit::UseUsable(Usable* new_usable)
+{
+	if(new_usable)
+	{
+		assert(!usable && !new_usable->user);
+		usable = new_usable;
+		usable->user = this;
+	}
+	else
+	{
+		assert(usable && usable->user == this);
+		usable->user = nullptr;
+		usable = nullptr;
+	}
+}

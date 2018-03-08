@@ -11,6 +11,7 @@ Version 0.7 (2018-XX-YY):
 - fixed some sounds not ending after loading game
 - fixed error when loading sounds when sound was turned off in configuration
 - fixed animation error when eating/drinking when sitting
+- fixed animations and other bugs when using objects
 - fixed player can shoot without stamina
 - fixed crash when Gorush changes class
 

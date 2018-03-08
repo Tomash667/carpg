@@ -181,8 +181,7 @@ void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify, bool
 		{
 			unit.action = A_NONE;
 			unit.SetAnimationAtEnd(NAMES::ani_stand);
-			unit.usable->user = nullptr;
-			unit.usable = nullptr;
+			unit.UseUsable(nullptr);
 			unit.used_item = nullptr;
 			unit.animation = ANI_STAND;
 		}
@@ -190,7 +189,7 @@ void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify, bool
 		{
 			unit.target_pos2 = unit.target_pos = unit.pos;
 			const Item* prev_used_item = unit.used_item;
-			Unit_StopUsingUsable(GetContext(unit), unit, mode != BREAK_ACTION_MODE::FALL);
+			Unit_StopUsingUsable(GetContext(unit), unit, mode != BREAK_ACTION_MODE::FALL && notify);
 			if(prev_used_item && unit.slots[SLOT_WEAPON] == prev_used_item && !unit.HaveShield())
 			{
 				unit.weapon_state = WS_TAKEN;
@@ -8503,19 +8502,19 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					u.timer += dt;
 					if(allow_move && u.timer >= 0.5f)
 					{
+						u.action = A_NONE;
 						u.visual_pos = u.pos = u.target_pos;
-						u.usable->user = nullptr;
-						if(Net::IsServer())
+						u.changed = true;
+						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::USE_USABLE;
 							c.unit = &u;
 							c.id = u.usable->netid;
-							c.ile = 0;
+							c.ile = USE_USABLE_END;
 						}
-						u.usable = nullptr;
-						u.action = A_NONE;
-						u.changed = true;
+						if(Net::IsLocal())
+							u.UseUsable(nullptr);
 						break;
 					}
 
@@ -8658,8 +8657,16 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			}
 			break;
 		case A_POSITION:
-			if(Net::IsClient() && u.player != pc)
-				break;
+			if(Net::IsClient())
+			{
+				if(u.player != pc)
+					break;
+			}
+			else
+			{
+				if(u.player && u.player != pc)
+					break;
+			}
 			u.timer += dt;
 			if(u.animation_state == 1)
 			{
@@ -8682,18 +8689,17 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			}
 			if(u.timer >= 0.5f)
 			{
-				u.visual_pos = u.pos = u.target_pos;
-				u.usable->user = nullptr;
-				if(Net::IsServer())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::USE_USABLE;
-					c.unit = &u;
-					c.id = u.usable->netid;
-					c.ile = 0;
-				}
-				u.usable = nullptr;
 				u.action = A_NONE;
+				u.visual_pos = u.pos = u.target_pos;
+
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::USE_USABLE;
+				c.unit = &u;
+				c.id = u.usable->netid;
+				c.ile = USE_USABLE_END;
+
+				if(Net::IsLocal())
+					u.UseUsable(nullptr);
 			}
 			else
 				u.visual_pos = u.pos = Vec3::Lerp(u.target_pos2, u.target_pos, u.timer * 2);
@@ -13456,23 +13462,13 @@ void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
 	if(u.cobj)
 		UpdateUnitPhysics(u, u.target_pos);
 
-	if(send)
+	if(send && Net::IsOnline())
 	{
-		if(Net::IsServer())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_USABLE;
-			c.unit = &u;
-			c.id = u.usable->netid;
-			c.ile = 3;
-		}
-		else if(Net::IsClient())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::USE_USABLE;
-			c.id = u.usable->netid;
-			c.ile = 0;
-		}
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::USE_USABLE;
+		c.unit = &u;
+		c.id = u.usable->netid;
+		c.ile = USE_USABLE_STOP;
 	}
 }
 
@@ -14117,8 +14113,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 			if((*it)->usable)
 			{
 				Unit_StopUsingUsable(ctx, **it);
-				(*it)->usable->user = nullptr;
-				(*it)->usable = nullptr;
+				(*it)->UseUsable(nullptr);
 				(*it)->visual_pos = (*it)->pos = (*it)->target_pos;
 			}
 
@@ -15431,8 +15426,7 @@ void Game::DeleteUnit(Unit* unit)
 				unit->player->action_unit->look_target = nullptr;
 				break;
 			case PlayerController::Action_LootContainer:
-				unit->player->action_container->user = nullptr;
-				unit->usable = nullptr;
+				unit->UseUsable(nullptr);
 				break;
 			}
 		}
@@ -19591,10 +19585,9 @@ void Game::OnCloseInventory()
 				c.type = NetChange::USE_USABLE;
 				c.unit = pc->unit;
 				c.id = pc->unit->usable->netid;
-				c.ile = 0;
+				c.ile = USE_USABLE_STOP;
 			}
-			pc->action_container->user = nullptr;
-			pc->unit->usable = nullptr;
+			pc->unit->UseUsable(nullptr);
 		}
 		else
 			Net::PushChange(NetChange::STOP_TRADE);
@@ -20329,8 +20322,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 
 	if(Net::IsLocal())
 	{
-		u.usable = &use;
-		u.usable->user = &u;
+		u.UseUsable(&use);
 		pc_data.before_player = BP_NONE;
 
 		if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
@@ -20372,7 +20364,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 			c.type = NetChange::USE_USABLE;
 			c.unit = &u;
 			c.id = u.usable->netid;
-			c.ile = 1;
+			c.ile = USE_USABLE_START;
 		}
 	}
 	else
@@ -20380,7 +20372,7 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::USE_USABLE;
 		c.id = pc_data.before_player_ptr.usable->netid;
-		c.ile = 1;
+		c.ile = USE_USABLE_START;
 
 		if(IS_SET(bu.use_flags, BaseUsable::CONTAINER))
 		{

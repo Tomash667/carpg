@@ -11,6 +11,7 @@ Wersja 0.7 (2018-XX-YY):
 - naprawione nieprzerywanie niektórych dŸwiêków po wczytaniu
 - naprawiony b³¹d wczytywania dŸwiêków przy wy³¹czonym dŸwiêku w konfiguracji
 - naprawiony b³¹d animacji podczas jedzenia/picia siedz¹c
+- naprawione b³êdy animacji i inne problemy podczas u¿ywania obiektów
 - naprawiona mo¿liwoœæ strzelania z ³uku bez wytrzyma³oœci przez gracza
 - naprawiony crash gdy Gorush zmienia klasê postaci
 
