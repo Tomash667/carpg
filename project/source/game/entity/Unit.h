@@ -59,10 +59,10 @@ enum ACTION
 	A_ANIMATION, // animacja bez obiektu (np drapani siê, rozgl¹danie)
 	A_ANIMATION2, // u¿ywanie obiektu (0-podchodzi, 1-u¿ywa, 2-u¿ywa dŸwiêk, 3-odchodzi)
 	A_POSITION, // u¿ywa³ czegoœ ale dosta³ basha lub umar³, trzeba go przesun¹æ w normalne miejsce
-	//A_PAROWANIE
 	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
 	A_DASH,
-	A_DESPAWN
+	A_DESPAWN,
+	A_PREPARE, // mp client want to use object, waiting for response
 };
 
 //-----------------------------------------------------------------------------

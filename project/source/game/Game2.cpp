@@ -8808,11 +8808,14 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				u.action = A_NONE;
 				u.visual_pos = u.pos = u.target_pos;
 
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::USE_USABLE;
-				c.unit = &u;
-				c.id = u.usable->netid;
-				c.ile = USE_USABLE_END;
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::USE_USABLE;
+					c.unit = &u;
+					c.id = u.usable->netid;
+					c.ile = USE_USABLE_END;
+				}
 
 				if(Net::IsLocal())
 					u.UseUsable(nullptr);
@@ -8984,6 +8987,9 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			u.timer -= dt;
 			if(u.timer <= 0.f)
 				RemoveUnit(&u);
+			break;
+		case A_PREPARE:
+			assert(Net::IsClient());
 			break;
 		default:
 			assert(0);
@@ -19216,21 +19222,18 @@ void Game::UpdateContest(float dt)
 				}
 				else
 				{
+					BreakUnitAction(u, BREAK_ACTION_MODE::NORMAL, true);
+					if(u.IsPlayer() && u.player != pc)
+					{
+						NetChangePlayer& c = Add1(Net::player_changes);
+						c.type = NetChangePlayer::LOOK_AT;
+						c.pc = u.player;
+						c.id = innkeeper.netid;
+						GetPlayerInfo(c.pc).NeedUpdate();
+					}
 					u.busy = Unit::Busy_Yes;
 					u.look_target = &innkeeper;
 					u.event_handler = this;
-					if(u.IsPlayer())
-					{
-						BreakUnitAction(u, BREAK_ACTION_MODE::NORMAL, true);
-						if(u.player != pc)
-						{
-							NetChangePlayer& c = Add1(Net::player_changes);
-							c.type = NetChangePlayer::LOOK_AT;
-							c.pc = u.player;
-							c.id = innkeeper.netid;
-							GetPlayerInfo(c.pc).NeedUpdate();
-						}
-					}
 				}
 			}
 			if(removed)
@@ -19701,7 +19704,7 @@ void Game::OnCloseInventory()
 				c.type = NetChange::USE_USABLE;
 				c.unit = pc->unit;
 				c.id = pc->unit->usable->netid;
-				c.ile = USE_USABLE_STOP;
+				c.ile = USE_USABLE_END;
 			}
 			pc->unit->UseUsable(nullptr);
 		}
@@ -20496,6 +20499,8 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 			pc->action_container = pc_data.before_player_ptr.usable;
 			pc->chest_trade = &pc->action_container->container->items;
 		}
+
+		pc->unit->action = A_PREPARE;
 	}
 }
 

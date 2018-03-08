@@ -12,6 +12,8 @@ Version 0.7 (2018-XX-YY):
 - fixed error when loading sounds when sound was turned off in configuration
 - fixed animation error when eating/drinking when sitting
 - fixed animations and other bugs when using objects
+- fixed bug when client take out weapon and use object in same time
+- fixed errors during drinking contest (missing player blockade when he was talking during start, crash when ai was sitting on stoll and eating)
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):
