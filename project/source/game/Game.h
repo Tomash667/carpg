@@ -1735,7 +1735,8 @@ public:
 	{
 		NetChangePlayer& c = Add1(Net::player_changes);
 		c.pc = player;
-		c.type = NetChangePlayer::ADDED_ITEM_MSG;
+		c.type = NetChangePlayer::GAME_MESSAGE;
+		c.id = GMS_ADDED_ITEM;
 		GetPlayerInfo(player).NeedUpdate();
 	}
 	void Net_AddItems(PlayerController* player, const Item* item, int ile, bool is_team)

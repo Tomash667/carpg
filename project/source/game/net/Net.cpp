@@ -5414,7 +5414,6 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 			case NetChangePlayer::START_ARENA_COMBAT:
 			case NetChangePlayer::EXIT_ARENA:
 			case NetChangePlayer::END_FALLBACK:
-			case NetChangePlayer::ADDED_ITEM_MSG:
 				break;
 			case NetChangePlayer::START_TRADE:
 				stream.Write(c.id);
@@ -5513,6 +5512,9 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 			case NetChangePlayer::ADD_PERK:
 				stream.WriteCasted<byte>(c.id);
 				stream.Write(c.ile);
+				break;
+			case NetChangePlayer::GAME_MESSAGE:
+				stream.Write(c.id);
 				break;
 			default:
 				Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
@@ -9325,10 +9327,6 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 				}
 				break;
-			// message about gaining item
-			case NetChangePlayer::ADDED_ITEM_MSG:
-				AddGameMsg3(GMS_ADDED_ITEM);
-				break;
 			// message about gaining multiple items
 			case NetChangePlayer::ADDED_ITEMS_MSG:
 				{
@@ -9420,6 +9418,19 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 					}
 					else
 						pc->perks.push_back(TakenPerk((Perk)id, value));
+				}
+				break;
+			// show game message
+			case NetChangePlayer::GAME_MESSAGE:
+				{
+					int gm_id;
+					if(!stream.Read(gm_id))
+					{
+						Error("Update single client: Broken GAME_MESSAGE.");
+						StreamError();
+					}
+					else
+						AddGameMsg3((GMS)gm_id);
 				}
 				break;
 			default:
@@ -10953,8 +10964,8 @@ bool Game::FilterOut(NetChangePlayer& c)
 	case NetChangePlayer::DEVMODE:
 	case NetChangePlayer::GOLD_RECEIVED:
 	case NetChangePlayer::GAIN_STAT:
-	case NetChangePlayer::ADDED_ITEM_MSG:
 	case NetChangePlayer::ADDED_ITEMS_MSG:
+	case NetChangePlayer::GAME_MESSAGE:
 		return false;
 	default:
 		return true;

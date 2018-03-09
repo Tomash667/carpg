@@ -14,6 +14,7 @@ Version 0.7 (2018-XX-YY):
 - fixed animations and other bugs when using objects
 - fixed player can shoot without stamina
 - fixed crash when Gorush changes class
+- fixed very good starting item when player have very low skill
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

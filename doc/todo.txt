@@ -41,7 +41,7 @@ angelscript2 and more:
 -? UpdateGold but change is added too
 
 f_new_combat_system:
-- fixed very good starting item when player have very low skill
+? fixed very good starting item when player have very low skill
 - fixed effects not disappearing from clients after travel
 ? fixed crash when Gorush changes class; test sp/mp
 - fixed blocking arrows don't remove stamina
@@ -67,9 +67,10 @@ f_new_combat_system:
 	GetItemString(text, item, for_unit, (uint)count);
 	shift - to show stats for companion
 ? stats panel attack/skills title pl/en
+? mp get item msg
 
 f_perks:
--? clear remove console history
+- clear remove console history
 
 - break action while consume item will make it diseapear without effect, item also diappear from hand instantly
 + anystring to Cstring, don't pass by ref&
