@@ -7788,80 +7788,84 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 	{
 		Unit& u = **it;
 
-		// licznik okrzyku od ostatniego trafienia
-		u.hurt_timer -= dt;
-		u.last_bash -= dt;
-
-		// aktualizuj efekty i machanie ustami
+		// update effects and mouth moving
 		if(u.IsAlive())
 		{
 			u.UpdateEffects(dt);
-			if(Net::IsLocal() && u.moved)
+
+			if(Net::IsLocal())
 			{
-				// unstuck units after being force moved (by bull charge)
-				static vector<Unit*> targets;
-				targets.clear();
-				float t;
-				bool in_dash = false;
-				ContactTest(u.cobj, [&](btCollisionObject* obj, bool second)
+				// hurt sound timer since last hit, timer since last stun (to prevent stunlock)
+				u.hurt_timer -= dt;
+				u.last_bash -= dt;
+
+				if(u.moved)
 				{
-					if(!second)
+					// unstuck units after being force moved (by bull charge)
+					static vector<Unit*> targets;
+					targets.clear();
+					float t;
+					bool in_dash = false;
+					ContactTest(u.cobj, [&](btCollisionObject* obj, bool second)
 					{
-						int flags = obj->getCollisionFlags();
-						if(!IS_SET(flags, CG_UNIT))
-							return false;
+						if(!second)
+						{
+							int flags = obj->getCollisionFlags();
+							if(!IS_SET(flags, CG_UNIT))
+								return false;
+							else
+							{
+								if(obj->getUserPointer() == &u)
+									return false;
+								return true;
+							}
+						}
 						else
 						{
-							if(obj->getUserPointer() == &u)
-								return false;
+							Unit* target = (Unit*)obj->getUserPointer();
+							if(target->action == A_DASH)
+								in_dash = true;
+							targets.push_back(target);
 							return true;
 						}
-					}
-					else
-					{
-						Unit* target = (Unit*)obj->getUserPointer();
-						if(target->action == A_DASH)
-							in_dash = true;
-						targets.push_back(target);
-						return true;
-					}
-				}, true);
+					}, true);
 
-				if(!in_dash)
-				{
-					if(targets.empty())
-						u.moved = false;
-					else
+					if(!in_dash)
 					{
-						Vec3 center(0, 0, 0);
-						for(auto target : targets)
+						if(targets.empty())
+							u.moved = false;
+						else
 						{
-							center += u.pos - target->pos;
-							target->moved = true;
-						}
-						center /= (float)targets.size();
-						center.y = 0;
-						center.Normalize();
-						center *= dt;
-						LineTest(u.cobj->getCollisionShape(), u.pos, center, [&](btCollisionObject* obj, bool)
-						{
+							Vec3 center(0, 0, 0);
+							for(auto target : targets)
+							{
+								center += u.pos - target->pos;
+								target->moved = true;
+							}
+							center /= (float)targets.size();
+							center.y = 0;
+							center.Normalize();
+							center *= dt;
+							LineTest(u.cobj->getCollisionShape(), u.pos, center, [&](btCollisionObject* obj, bool)
+							{
 								int flags = obj->getCollisionFlags();
 								if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
 									return LT_IGNORE;
 								return LT_COLLIDE;
-						}, t);
-						if(t == 1.f)
-						{
-							u.pos += center;
-							MoveUnit(u, false, true);
+							}, t);
+							if(t == 1.f)
+							{
+								u.pos += center;
+								MoveUnit(u, false, true);
+							}
 						}
 					}
 				}
-			}
-			if(u.IsStanding() && u.talking)
-			{
-				u.talk_timer += dt;
-				u.mesh_inst->need_update = true;
+				if(u.IsStanding() && u.talking)
+				{
+					u.talk_timer += dt;
+					u.mesh_inst->need_update = true;
+				}
 			}
 		}
 
@@ -21460,13 +21464,16 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 	{
 		if(unit.IsPlayer())
 		{
-			// dodaj komunikat o dodaniu przedmiotu
-			NetChangePlayer& c = Add1(Net::player_changes);
-			c.type = NetChangePlayer::REMOVE_ITEMS;
-			c.pc = unit.player;
-			c.id = i_index;
-			c.ile = count;
-			GetPlayerInfo(c.pc).NeedUpdate();
+			if(!unit.player->is_local)
+			{
+				// dodaj komunikat o dodaniu przedmiotu
+				NetChangePlayer& c = Add1(Net::player_changes);
+				c.type = NetChangePlayer::REMOVE_ITEMS;
+				c.pc = unit.player;
+				c.id = i_index;
+				c.ile = count;
+				GetPlayerInfo(c.pc).NeedUpdate();
+			}
 		}
 		else
 		{

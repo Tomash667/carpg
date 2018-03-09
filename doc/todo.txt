@@ -37,10 +37,12 @@ angelscript2 and more:
 
 f_new_combat_system:
 ? fixed very good starting item when player have very low skill
-- fixed effects not disappearing from clients after travel
+?? fixed effects not disappearing from clients after travel
 ? fixed crash when Gorush changes class; test sp/mp
 - fixed blocking arrows don't remove stamina
+	Game2.cpp
 - fixed high shield skill give stamina from being hit
+	Game2.cpp
 ? shoot without stamina
 ? spawning camp chests
 ? force_end dialog
@@ -63,12 +65,44 @@ f_new_combat_system:
 	shift - to show stats for companion
 ? stats panel attack/skills title pl/en
 ? mp get item msg
-
+-? verify old ver - gain stat while trave = crash ?
+	case NetChangePlayer::STAT_CHANGED: check if pc is not null
+	add to todo
 f_perks:
 - clear remove console history
 
-- break action while consume item will make it diseapear without effect, item also diappear from hand instantly
 + anystring to Cstring, don't pass by ref&
+
+!? Game2.cpp:RemoveItem in mp from server
+if(!unit.player->is_local)
+{
+	// dodaj komunikat o dodaniu przedmiotu
+	NetChangePlayer& c = Add1(Net::player_changes);
+	c.type = NetChangePlayer::REMOVE_ITEMS;
+	c.pc = unit.player;
+	c.id = i_index;
+	c.ile = count;
+	GetPlayerInfo(c.pc).NeedUpdate();
+}
+
++ player Train
+Game.h
+Game2.cpp
+Tournament.cpp
+Tutorial.cpp
+PlayerContorller.cpp
+Unit.cpp
+Net.cpp
+WorldMapGui.cpp
+
++ better mobility calculations
+Unit.cpp
+
++ train haggle/cha from trade
+Game2.cpp
+Net.cpp
+Inventory.cpp
+
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce

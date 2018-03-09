@@ -9370,7 +9370,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 								Error("Update single client: STAT_CHANGED, invalid attribute %u.", what);
 								StreamError();
 							}
-							else
+							else if(pc)
 								pc->unit->Set((AttributeId)what, value);
 							break;
 						case ChangedStatType::SKILL:
@@ -9379,7 +9379,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 								Error("Update single client: STAT_CHANGED, invalid skill %u.", what);
 								StreamError();
 							}
-							else
+							else if(pc)
 								pc->unit->Set((SkillId)what, value);
 							break;
 						case ChangedStatType::BASE_ATTRIBUTE:
@@ -9388,7 +9388,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 								Error("Update single client: STAT_CHANGED, invalid base attribute %u.", what);
 								StreamError();
 							}
-							else
+							else if(pc)
 								pc->SetBase((AttributeId)what, value);
 							break;
 						case ChangedStatType::BASE_SKILL:
@@ -9397,7 +9397,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 								Error("Update single client: STAT_CHANGED, invalid base skill %u.", what);
 								StreamError();
 							}
-							else
+							else if(pc)
 								pc->SetBase((SkillId)what, value);
 							break;
 						default:

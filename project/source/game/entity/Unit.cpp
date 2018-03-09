@@ -758,6 +758,23 @@ void Unit::UpdateEffects(float dt)
 			_to_remove.push_back(index);
 	}
 
+	// remove expired effects
+	while(!_to_remove.empty())
+	{
+		index = _to_remove.back();
+		_to_remove.pop_back();
+		if(index == effects.size() - 1)
+			effects.pop_back();
+		else
+		{
+			std::iter_swap(effects.begin() + index, effects.end() - 1);
+			effects.pop_back();
+		}
+	}
+
+	if(Net::IsClient())
+		return;
+
 	// healing from food
 	if((best_reg > 0.f || food_heal > 0.f) && hp != hpmax)
 	{
@@ -847,20 +864,6 @@ void Unit::UpdateEffects(float dt)
 			stamina = stamina_max;
 		if(Net::IsServer() && player && player != game.pc)
 			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
-	}
-
-	// remove expired effects
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == effects.size() - 1)
-			effects.pop_back();
-		else
-		{
-			std::iter_swap(effects.begin() + index, effects.end() - 1);
-			effects.pop_back();
-		}
 	}
 }
 
@@ -2506,14 +2509,11 @@ void Unit::ApplyStat(AttributeId a, int old, bool calculate_skill)
 			if(Net::IsLocal())
 			{
 				RecalculateHp();
-				if(!fake_unit)
+				if(!fake_unit && Net::IsServer())
 				{
-					if(Net::IsServer())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::UPDATE_HP;
-						c.unit = this;
-					}
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = this;
 				}
 			}
 			else
@@ -2529,16 +2529,13 @@ void Unit::ApplyStat(AttributeId a, int old, bool calculate_skill)
 			{
 				RecalculateHp();
 				RecalculateStamina();
-				if(!fake_unit)
+				if(!fake_unit && Net::IsServer())
 				{
-					if(Net::IsServer())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::UPDATE_HP;
-						c.unit = this;
-						if(IsPlayer() && player != game.pc)
-							game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
-					}
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::UPDATE_HP;
+					c.unit = this;
+					if(IsPlayer() && player != game.pc)
+						game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
 				}
 			}
 			else
