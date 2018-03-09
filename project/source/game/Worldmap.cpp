@@ -4830,11 +4830,11 @@ void Game::SpawnCampObjects()
 		if(ok)
 		{
 			BaseObject* obj = camp_objs_ptrs[Rand() % n_camp_objs];
-			Object* o = SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
-			if(o && IS_SET(obj->flags, OBJ_IS_CHEST) && location->spawn != SG_BRAK) // empty chests for empty camps
+			auto e = SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
+			if(e.IsChest() && location->spawn != SG_BRAK) // empty chests for empty camps
 			{
 				int gold, level = location->st;
-				Chest* chest = (Chest*)o;
+				Chest* chest = (Chest*)e;
 
 				GenerateTreasure(level, 5, chest->items, gold, false);
 				InsertItemBare(chest->items, gold_item_ptr, (uint)gold);
@@ -5100,66 +5100,46 @@ int Game::GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_ta
 void Game::SpawnTmpUnits(City* city)
 {
 	InsideBuilding* inn = city->FindInn();
-	CityBuilding* pola = city->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS);
+	CityBuilding* training_grounds = city->FindBuilding(BuildingGroup::BG_TRAINING_GROUNDS);
 
-	// bohaterowie
+	// heroes
+	uint count;
+	Int2 level;
+
 	if(first_city)
 	{
 		first_city = false;
-		for(int i = 0; i < 4; ++i)
-		{
-			UnitData& ud = GetHero(ClassInfo::GetRandom());
-
-			if(Rand() % 2 == 0 || !pola)
-			{
-				// w karczmie
-				Unit* u = SpawnUnitInsideInn(ud, Random(2, 5), inn);
-				if(u)
-					u->temporary = true;
-			}
-			else
-			{
-				// na polu treningowym
-				Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*pola->unit_pt.x + 1, 0, 2.f*pola->unit_pt.y + 1), ud, nullptr, Random(2, 5), 8.f);
-				if(u)
-					u->temporary = true;
-			}
-		}
+		count = 4;
+		level = Int2(2, 5);
 	}
 	else
 	{
-		int ile = Random(1, 4);
-		for(int i = 0; i < ile; ++i)
-		{
-			UnitData& ud = GetHero(ClassInfo::GetRandom());
+		count = Random(1u, 4u);
+		level = Int2(2, 15);
+	}
 
-			if(Rand() % 2 == 0 || !pola)
-			{
-				// w karczmie
-				Unit* u = SpawnUnitInsideArea(inn->ctx, (Rand() % 5 == 0 ? inn->arena2 : inn->arena1), ud, Random(2, 15));
-				if(u)
-				{
-					u->rot = Random(MAX_ANGLE);
-					u->temporary = true;
-				}
-			}
-			else
-			{
-				// na polu treningowym
-				Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*pola->unit_pt.x + 1, 0, 2.f*pola->unit_pt.y + 1), ud, nullptr, Random(2, 15), 8.f);
-				if(u)
-					u->temporary = true;
-			}
+	for(uint i = 0; i < count; ++i)
+	{
+		UnitData& ud = GetHero(ClassInfo::GetRandom());
+
+		if(Rand() % 2 == 0 || !training_grounds)
+		{
+			// inside inn
+			SpawnUnitInsideInn(ud, level.Random(), inn, true);
+		}
+		else
+		{
+			// on training grounds
+			Unit* u = SpawnUnitNearLocation(local_ctx, Vec3(2.f*training_grounds->unit_pt.x + 1, 0, 2.f*training_grounds->unit_pt.y + 1), ud, nullptr,
+				level.Random(), 8.f);
+			if(u)
+				u->temporary = true;
 		}
 	}
 
 	// quest traveler (100% chance in city, 50% in village)
 	if(!city_ctx->IsVillage() || Rand() % 2 == 0)
-	{
-		Unit* u = SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn);
-		if(u)
-			u->temporary = true;
-	}
+		SpawnUnitInsideInn(*UnitData::Get("traveler"), -2, inn, SU_TEMPORARY);
 }
 
 void Game::RemoveTmpUnits(City* city)
@@ -5790,7 +5770,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 
 		if(IS_SET(obj->flags, OBJ_PHY_BLOCKS_CAM))
 			c.ptr = CAM_COLLIDER;
-		
+
 		if(IS_SET(obj->flags, OBJ_DOUBLE_PHYSICS))
 			SpawnObjectExtras(ctx, obj->next_obj, pos, rot, user_ptr, scale, flags);
 		else if(IS_SET(obj->flags, OBJ_MULTI_PHYSICS))

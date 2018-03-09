@@ -14,6 +14,10 @@ Wersja 0.7 (2018-XX-YY):
 - naprawione b³êdy animacji i inne problemy podczas u¿ywania obiektów
 - naprawiony b³¹d gdy klient jednoczeœnie u¿yje obiektu i zacznie wyjmowaæ broñ
 - naprawione b³¹dy podczas zawodów w piciu (brak blokady gracza gdy rozmawia³ w trakcie rozpoczêcia, crash gdy ai siedzia³ na sto³ku i coœ jad³)
+- naprawiona mo¿liwoœæ strzelania z ³uku bez wytrzyma³oœci przez gracza
+- naprawiony crash gdy Gorush zmienia klasê postaci
+- naprawione bardzo dobre pocz¹tkowe przedmioty gracza przy bardzo niskiej umiejêtnoœci
+- naprawiony brak aktualizacji efektów u klienta po podró¿y
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):

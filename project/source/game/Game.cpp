@@ -1755,7 +1755,7 @@ void Game::OnCleanup()
 	DeleteElements(bow_instances);
 	ClearQuadtree();
 	CleanupDialogs();
-	ClearLanguages();
+	Language::Cleanup();
 
 	// shadery
 	ReleaseShaders();
@@ -3032,8 +3032,9 @@ uint Game::ValidateGameData(bool major)
 
 	uint err = TestGameData(major);
 
-	AttributeInfo::Validate(err);
-	SkillInfo::Validate(err);
+	UnitData::Validate(err);
+	Attribute::Validate(err);
+	Skill::Validate(err);
 	ClassInfo::Validate(err);
 	Item::Validate(err);
 	PerkInfo::Validate(err);

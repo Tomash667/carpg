@@ -16,7 +16,7 @@ enum class OldSkill
 };
 
 //-----------------------------------------------------------------------------
-enum class Skill
+enum class SkillId
 {
 	// weapon
 	ONE_HANDED_WEAPON,
@@ -57,7 +57,7 @@ enum class Skill
 };
 
 //-----------------------------------------------------------------------------
-enum class SkillGroup
+enum class SkillGroupId
 {
 	WEAPON,
 	ARMOR,
@@ -79,39 +79,41 @@ enum class SkillPack
 };
 
 //-----------------------------------------------------------------------------
-struct SkillInfo
+struct Skill
 {
-	Skill skill_id;
+	SkillId skill_id;
 	cstring id;
 	string name, desc;
-	SkillGroup group;
-	Attribute attrib, attrib2;
+	SkillGroupId group;
+	AttributeId attrib, attrib2;
 	SkillPack pack;
 
 	static const int MAX = 255;
 
-	SkillInfo(Skill skill_id, cstring id, SkillGroup group, Attribute attrib, Attribute attrib2, SkillPack pack) : skill_id(skill_id), id(id), group(group), attrib(attrib),
+	Skill(SkillId skill_id, cstring id, SkillGroupId group, AttributeId attrib, AttributeId attrib2, SkillPack pack) : skill_id(skill_id), id(id), group(group), attrib(attrib),
 		attrib2(attrib2), pack(pack)
 	{
 	}
 
-	static SkillInfo* Find(const string& id);
+	static Skill skills[(int)SkillId::MAX];
+	static Skill* Find(const string& id);
 	static void Validate(uint& err);
 	static float GetModifier(int base, int& weight);
 };
 
 //-----------------------------------------------------------------------------
-struct SkillGroupInfo
+struct SkillGroup
 {
-	SkillGroup group_id;
+	SkillGroupId group_id;
 	cstring id;
 	string name;
 
-	SkillGroupInfo(SkillGroup group_id, cstring id) : group_id(group_id), id(id)
+	SkillGroup(SkillGroupId group_id, cstring id) : group_id(group_id), id(id)
 	{
 	}
 
-	static SkillGroupInfo* Find(const string& id);
+	static SkillGroup groups[(int)SkillGroupId::MAX];
+	static SkillGroup* Find(const string& id);
 };
 
 //-----------------------------------------------------------------------------
@@ -135,10 +137,8 @@ enum class SubSkill
 struct SubSkillInfo
 {
 	SubSkill id;
-	Skill skill;
+	SkillId skill;
 };
 
 //-----------------------------------------------------------------------------
-extern SkillInfo g_skills[(int)Skill::MAX];
-extern SkillGroupInfo g_skill_groups[(int)SkillGroup::MAX];
 extern SubSkillInfo g_sub_skills[(int)SubSkill::MAX];

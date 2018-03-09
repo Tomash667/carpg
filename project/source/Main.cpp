@@ -827,15 +827,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//-------------------------------------------------------------------------
 	// jêzyk
-	LoadLanguages();
+	Language::Init();
+	Language::LoadLanguages();
 	const string& lang = cfg.GetString("language", "");
-	extern string g_lang_prefix;
 	if(lang == "")
 	{
 		LocalString s;
 		if(!ShowPickLanguageDialog(s.get_ref()))
 		{
-			ClearLanguages();
+			Language::Cleanup();
 			delete[] cmd_line;
 			delete[] argv;
 			delete Logger::global;
@@ -843,12 +843,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 		else
 		{
-			g_lang_prefix = s;
+			Language::prefix = s;
 			cfg.Add("language", s->c_str());
 		}
 	}
 	else
-		g_lang_prefix = lang;
+		Language::prefix = lang;
 
 	//-------------------------------------------------------------------------
 	// pseudolosowoœæ

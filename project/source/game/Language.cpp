@@ -12,193 +12,107 @@
 #include "BaseUsable.h"
 
 //-----------------------------------------------------------------------------
-string g_lang_prefix;
-LanguageMap g_language;
-LanguageSections g_language2;
-LanguageMap* tmp_language_map;
-vector<LanguageMap*> g_languages;
 extern string g_system_dir;
 extern vector<string> name_random, nickname_random, crazy_name, txLocationStart, txLocationEnd;
-string tstr, tstr2;
+string Language::prefix, Language::tstr;
+Language::LanguageMap Language::strs;
+Language::LanguageSections Language::sections;
+vector<Language::LanguageMap*> Language::languages;
 
 //=================================================================================================
-void LoadLanguageFile(cstring filename)
+void Language::Init()
 {
-	cstring path = Format("%s/lang/%s/%s", g_system_dir.c_str(), g_lang_prefix.c_str(), filename);
-
-	Tokenizer t;
-	if(!t.FromFile(path))
-	{
-		Error("LANG: Failed to open file \"%s\".", path);
-		return;
-	}
-
-	Info("Reading text file \"%s\".", path);
-
-	LocalString id, str;
-
-	try
-	{
-		while(true)
-		{
-			// id
-			t.Next();
-			if(t.IsEof())
-				break;
-			if(t.IsKeyword())
-				tstr = t.GetKeyword()->name;
-			else
-				tstr = t.MustGetItem();
-
-			// =
-			t.Next();
-			t.AssertSymbol('=');
-			t.Next();
-
-			// text
-			tstr2 = t.MustGetString();
-
-			// sprawdü czy juø istnieje, dodaj jeúli nie
-			std::pair<LanguageMap::iterator, bool> const& r = g_language.insert(LanguageMap::value_type(tstr, tstr2));
-			if(!r.second)
-				Warn("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str());
-		}
-	}
-	catch(const Tokenizer::Exception& e)
-	{
-		Error("LANG: Error while parsing file \"%s\": %s", path, e.ToString());
-	}
+	sections[""] = &strs;
+	sections["(placeholder)"] = new LanguageMap;
 }
 
 //=================================================================================================
-bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
+void Language::Cleanup()
+{
+	for(auto& section : sections)
+	{
+		if(section.second != &strs)
+			delete section.second;
+	}
+	sections.clear();
+	DeleteElements(languages);
+}
+
+//=================================================================================================
+bool Language::LoadFile(cstring filename)
 {
 	assert(filename);
+	LocalString path = Format("%s/lang/%s/%s", g_system_dir.c_str(), prefix.c_str(), filename);
+	return LoadFileInternal(path);
+}
+
+//=================================================================================================
+// If lmap is passed it is used instead and sections are ignored
+bool Language::LoadFileInternal(cstring path, LanguageMap* lmap)
+{
+	assert(path);
 
 	Tokenizer t;
-	t.FromFile(filename);
-
 	LocalString current_section;
-	LanguageMap* clmap;
-	bool inside, added;
-
-	if(!section)
-	{
-		LanguageSections::iterator it = g_language2.find(string());
-		if(it == g_language2.end())
-		{
-			if(!tmp_language_map)
-				tmp_language_map = new LanguageMap;
-			clmap = tmp_language_map;
-			added = false;
-		}
-		else
-		{
-			clmap = it->second;
-			added = true;
-		}
-		inside = true;
-	}
-	else
-	{
-		assert(lmap);
-		if(strlen(section) == 0)
-		{
-			clmap = lmap;
-			inside = true;
-		}
-		else
-		{
-			clmap = nullptr;
-			inside = false;
-		}
-		added = true;
-	}
+	LanguageMap* lm = lmap ? lmap : sections[""];
 
 	try
 	{
+		if(!t.FromFile(path))
+			t.Throw("Failed to open file.");
+
 		while(t.Next())
 		{
 			if(t.IsSymbol('['))
 			{
-				// close previous section
-				if(clmap && !added && clmap->size() != 0)
-				{
-					g_language2[current_section.get_ref()] = clmap;
-					tmp_language_map = nullptr;
-				}
-				// get next section
+				// open section
 				t.Next();
-				current_section = t.MustGetItem();
-				t.Next();
-				t.AssertSymbol(']');
-				if(!section)
-				{
-					LanguageSections::iterator it = g_language2.find(current_section.get_ref());
-					if(it == g_language2.end())
-					{
-						if(!tmp_language_map)
-							tmp_language_map = new LanguageMap;
-						clmap = tmp_language_map;
-						added = false;
-					}
-					else
-					{
-						clmap = it->second;
-						added = true;
-					}
-					inside = true;
-				}
+				if(t.IsSymbol(']'))
+					current_section->clear();
 				else
 				{
-					if(current_section == section)
+					current_section = t.MustGetItem();
+					t.Next();
+					t.AssertSymbol(']');
+				}
+
+				if(!lmap)
+				{
+					LanguageSections::iterator it = sections.find(current_section.get_ref());
+					if(it == sections.end())
 					{
-						clmap = lmap;
-						inside = true;
+						lm = new LanguageMap;
+						sections.insert(it, LanguageSections::value_type(current_section, lm));
 					}
 					else
-					{
-						clmap = nullptr;
-						inside = false;
-					}
+						lm = it->second;
 				}
 			}
 			else
 			{
+				// add new string
 				tstr = t.MustGetItem();
 				t.Next();
 				t.AssertSymbol('=');
 				t.Next();
-				if(inside)
+				const string& text = t.MustGetString();
+				std::pair<LanguageMap::iterator, bool> const& r = lm->insert(LanguageMap::value_type(tstr, text));
+				if(!r.second)
 				{
-					tstr2 = t.MustGetString();
-					std::pair<LanguageMap::iterator, bool> const& r = clmap->insert(LanguageMap::value_type(tstr, tstr2));
-					if(!r.second)
+					if(current_section->empty())
+						Warn("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), text.c_str());
+					else
 					{
-						if(current_section->empty())
-							Warn("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str());
-						else
-							Warn("LANG: String '[%s]%s' already exists: \"%s\"; new text: \"%s\".", current_section->c_str(), tstr.c_str(),
-								r.first->second.c_str(), tstr2.c_str());
+						Warn("LANG: String '%s.%s' already exists: \"%s\"; new text: \"%s\".", current_section->c_str(), tstr.c_str(),
+							r.first->second.c_str(), text.c_str());
 					}
 				}
-				else
-					t.AssertString();
 			}
-		}
-
-		// close previous section
-		if(clmap && !added && clmap->size() != 0)
-		{
-			g_language2[current_section.get_ref()] = clmap;
-			tmp_language_map = nullptr;
 		}
 	}
 	catch(const Tokenizer::Exception& e)
 	{
-		if(clmap && !added)
-			tmp_language_map->clear();
-		Error("Failed to load language file '%s': %s", filename, e.ToString());
+		Error("Failed to load language file '%s': %s", path, e.ToString());
 		return false;
 	}
 
@@ -206,7 +120,7 @@ bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap)
 }
 
 //=================================================================================================
-void LoadLanguages()
+void Language::LoadLanguages()
 {
 	WIN32_FIND_DATA data;
 	HANDLE fhandle = FindFirstFile(Format("%s/lang/*", g_system_dir.c_str()), &data);
@@ -227,7 +141,7 @@ void LoadLanguages()
 				lmap->clear();
 			else
 				lmap = new LanguageMap;
-			if(LoadLanguageFile2(path, "PickLanguage", lmap))
+			if(LoadFileInternal(path, lmap))
 			{
 				LanguageMap::iterator it = lmap->find("dir"), end = lmap->end();
 				if(!(it != end && it->second == data.cFileName && lmap->find("englishName") != end && lmap->find("localName") != end && lmap->find("locale") != end))
@@ -235,7 +149,7 @@ void LoadLanguages()
 					Warn("File '%s' is invalid language file.", path->c_str());
 					continue;
 				}
-				g_languages.push_back(lmap);
+				languages.push_back(lmap);
 				lmap = nullptr;
 			}
 		}
@@ -244,12 +158,6 @@ void LoadLanguages()
 	if(lmap)
 		delete lmap;
 	FindClose(fhandle);
-}
-
-//=================================================================================================
-void ClearLanguages()
-{
-	DeleteElements(g_languages);
 }
 
 enum KEYWORD
@@ -276,7 +184,7 @@ enum KEYWORD
 };
 
 //=================================================================================================
-static void PrepareTokenizer(Tokenizer& t)
+void Language::PrepareTokenizer(Tokenizer& t)
 {
 	t.AddKeywords(0, {
 		{ "name", K_NAME },
@@ -302,7 +210,7 @@ static void PrepareTokenizer(Tokenizer& t)
 }
 
 //=================================================================================================
-static inline void GetString(Tokenizer& t, KEYWORD k, string& s)
+inline void GetString(Tokenizer& t, KEYWORD k, string& s)
 {
 	t.AssertKeyword(k);
 	t.Next();
@@ -311,18 +219,9 @@ static inline void GetString(Tokenizer& t, KEYWORD k, string& s)
 }
 
 //=================================================================================================
-static inline void GetStringOrEndBlock(Tokenizer& t, KEYWORD k, string& s)
+void Language::LoadObjectFile(Tokenizer& t, cstring filename)
 {
-	if(t.IsSymbol('}'))
-		return;
-	GetString(t, k, s);
-	t.AssertSymbol('}');
-}
-
-//=================================================================================================
-static void LoadLanguageFile3(Tokenizer& t, cstring filename)
-{
-	cstring path = Format("%s/lang/%s/%s", g_system_dir.c_str(), g_lang_prefix.c_str(), filename);
+	cstring path = Format("%s/lang/%s/%s", g_system_dir.c_str(), prefix.c_str(), filename);
 	Info("Reading text file \"%s\".", path);
 
 	if(!t.FromFile(path))
@@ -350,7 +249,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						AttributeInfo* ai = AttributeInfo::Find(id);
+						Attribute* ai = Attribute::Find(id);
 						if(!ai)
 							t.Throw("Invalid attribute '%s'.", id.c_str());
 						t.Next();
@@ -366,7 +265,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						SkillGroupInfo* sgi = SkillGroupInfo::Find(id);
+						SkillGroup* sgi = SkillGroup::Find(id);
 						if(!sgi)
 							t.Throw("Invalid skill group '%s'.", id.c_str());
 						t.Next();
@@ -383,7 +282,7 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 					{
 						t.Next();
 						const string& id = t.MustGetText();
-						SkillInfo* si = SkillInfo::Find(id);
+						Skill* si = Skill::Find(id);
 						if(!si)
 							t.Throw("Invalid skill '%s'.", id.c_str());
 						t.Next();
@@ -611,10 +510,10 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 				t.Next();
 				t.AssertSymbol('=');
 				t.Next();
-				tstr2 = t.MustGetString();
-				std::pair<LanguageMap::iterator, bool> const& r = g_language.insert(LanguageMap::value_type(tstr, tstr2));
+				const string& text = t.MustGetString();
+				std::pair<LanguageMap::iterator, bool> const& r = strs.insert(LanguageMap::value_type(tstr, text));
 				if(!r.second)
-					Warn("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), tstr2.c_str());
+					Warn("LANG: String '%s' already exists: \"%s\"; new text: \"%s\".", tstr.c_str(), r.first->second.c_str(), text.c_str());
 			}
 		}
 	}
@@ -625,22 +524,22 @@ static void LoadLanguageFile3(Tokenizer& t, cstring filename)
 }
 
 //=================================================================================================
-void LoadLanguageFiles()
+void Language::LoadLanguageFiles()
 {
 	Tokenizer t;
 
 	PrepareTokenizer(t);
 
-	LoadLanguageFile3(t, "actions.txt");
-	LoadLanguageFile3(t, "attribute.txt");
-	LoadLanguageFile3(t, "skill.txt");
-	LoadLanguageFile3(t, "class.txt");
-	LoadLanguageFile3(t, "names.txt");
-	LoadLanguageFile3(t, "items.txt");
-	LoadLanguageFile3(t, "perks.txt");
-	LoadLanguageFile3(t, "units.txt");
-	LoadLanguageFile3(t, "buildings.txt");
-	LoadLanguageFile3(t, "objects.txt");
+	LoadObjectFile(t, "actions.txt");
+	LoadObjectFile(t, "attribute.txt");
+	LoadObjectFile(t, "skill.txt");
+	LoadObjectFile(t, "class.txt");
+	LoadObjectFile(t, "names.txt");
+	LoadObjectFile(t, "items.txt");
+	LoadObjectFile(t, "perks.txt");
+	LoadObjectFile(t, "units.txt");
+	LoadObjectFile(t, "buildings.txt");
+	LoadObjectFile(t, "objects.txt");
 
 	if(txLocationStart.empty() || txLocationEnd.empty())
 		throw "Missing locations names.";
@@ -655,5 +554,45 @@ void LoadLanguageFiles()
 	{
 		if(usable->name.empty())
 			Warn("Usables '%s' don't have name.", usable->name.c_str());
+	}
+}
+
+//=================================================================================================
+cstring Language::TryGetString(cstring str, bool err)
+{
+	assert(str);
+	auto it = strs.find(str);
+	if(it != strs.end())
+		return it->second.c_str();
+	else
+	{
+		if(err)
+			Error("Missing text string for '%s'.", str);
+		return nullptr;
+	}
+}
+
+//=================================================================================================
+Language::LanguageSection Language::GetSection(cstring name)
+{
+	assert(name);
+	auto it = sections.find(name);
+	if(it != sections.end())
+		return LanguageSection(*it->second, name);
+	else
+		return LanguageSection(*sections["(default)"], name);
+}
+
+//=================================================================================================
+cstring Language::LanguageSection::Get(cstring str)
+{
+	assert(str);
+	auto it = lm.find(str);
+	if(it != lm.end())
+		return it->second.c_str();
+	else
+	{
+		Error("Missing text string for '%s.%s'.", name, str);
+		return nullptr;
 	}
 }

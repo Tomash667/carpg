@@ -129,18 +129,25 @@ sellFreeItem = "This item is better than one I use. I don't have %d gold coins.\
 givePotionCount = "How many potions give?"
 npcCantCarry = "%s can't carry that much."
 
-// stats panel
-statsPanel = "Character"
-skills = "Skills"
+[StatsPanel]
+title = "Character"
 traits = "Traits"
 stats = "Statistics"
+skills = "Skills"
 feats = "Feats"
-traitsClass = "Class: %s"
-traitsText = "Health: %d/%dStamina: %d/%d\nAttack: %s/%s\nDefense: %d\nMobility: %d\nCarry capacity: %g/%g kg\nGold: %d gp"
+traitsClass = "Class"
+traitsStart = "Health: %d/%dStamina: %d/%d"
+attack = "Attack"
+meleeAttack = "Melee attack"
+rangedAttack = "Ranged attack"
+traitsEnd = "Defense: %d\nBlock: %s\nMobility: %d\nCarry capacity: %g/%g kg\nGold: %d gp"
 statsText = "Game time: %02d:%02d:%02d\nDefeated enemies: %d\nKnocked: %d\nDamage given: %d\nDamage taken: %d\nArena combats: %d"
 yearMonthDay = "Year: %d\nMonth: %d\nDay: %d"
 base = "Base"
-statsDate = "Date: %d.%02d.%02d"
+date = "Date: %d.%02d.%02d"
+attributes = "Attributes"
+relatedAttributes = "Related attributes"
+[]
 
 // team panel
 giveGold = "Give gold"

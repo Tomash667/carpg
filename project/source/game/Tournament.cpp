@@ -471,7 +471,7 @@ void Game::UpdateTournament(float dt)
 								else
 								{
 									NetChangePlayer& c = Add1(Net::player_changes);
-									c.type = NetChangePlayer::ADDED_ITEM_MSG;
+									c.type = NetChangePlayer::ADDED_ITEMS_MSG;
 									c.ile = given_items;
 									c.pc = u.player;
 									GetPlayerInfo(c.pc).NeedUpdate();
@@ -576,18 +576,18 @@ void Game::TournamentTalk(cstring text)
 void Game::TournamentTrain(Unit& u)
 {
 	tournament_master = nullptr;
-	Train(u, false, (int)Attribute::STR);
-	Train(u, false, (int)Attribute::END);
-	Train(u, false, (int)Attribute::DEX);
+	Train(u, false, (int)AttributeId::STR);
+	Train(u, false, (int)AttributeId::END);
+	Train(u, false, (int)AttributeId::DEX);
 	if(u.HaveWeapon())
 	{
-		Train(u, true, (int)Skill::ONE_HANDED_WEAPON);
+		Train(u, true, (int)SkillId::ONE_HANDED_WEAPON);
 		Train(u, true, (int)u.GetWeapon().GetInfo().skill);
 	}
 	if(u.HaveBow())
-		Train(u, true, (int)Skill::BOW);
+		Train(u, true, (int)SkillId::BOW);
 	if(u.HaveShield())
-		Train(u, true, (int)Skill::SHIELD);
+		Train(u, true, (int)SkillId::SHIELD);
 	if(u.HaveArmor())
 		Train(u, true, (int)u.GetArmor().skill);
 }

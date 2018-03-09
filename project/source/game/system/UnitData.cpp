@@ -24,7 +24,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	dmg_type = ud.dmg_type;
 	flags = ud.flags;
 	flags2 = ud.flags2;
-	flags3 = ud.flags3;
+	flags3 = ud.flags3 & ~F3_PARENT_DATA;
 	spells = ud.spells;
 	gold = ud.gold;
 	gold2 = ud.gold2;
@@ -111,4 +111,16 @@ UnitData* UnitData::Get(const AnyString& id)
 	if(!unit)
 		throw Format("Can't find unit data '%s'!", id.s);
 	return unit;
+}
+
+void UnitData::Validate(uint& err)
+{
+	for(auto unit : units)
+	{
+		if(unit->name.empty() && !IS_SET(unit->flags3, F3_PARENT_DATA))
+		{
+			++err;
+			Error("Test: Missing unit '%s' name.", unit->id.c_str());
+		}
+	}
 }

@@ -223,9 +223,9 @@ private:
 		});
 
 		t.AddKeywords(G_ARMOR_SKILL, {
-			{ "light_armor", (int)Skill::LIGHT_ARMOR },
-			{ "medium_armor", (int)Skill::MEDIUM_ARMOR },
-			{ "heavy_armor", (int)Skill::HEAVY_ARMOR }
+			{ "light_armor", (int)SkillId::LIGHT_ARMOR },
+			{ "medium_armor", (int)SkillId::MEDIUM_ARMOR },
+			{ "heavy_armor", (int)SkillId::HEAVY_ARMOR }
 		});
 
 		t.AddKeywords(G_ARMOR_UNIT_TYPE, {
@@ -281,7 +281,7 @@ private:
 			{ "next", BSP_NEXT }
 		});
 
-		for(SkillInfo& si : g_skills)
+		for(Skill& si : Skill::skills)
 			t.AddKeyword(si.id, (int)si.skill_id, G_SKILL);
 	}
 
@@ -485,7 +485,7 @@ private:
 				}
 				break;
 			case P_SKILL:
-				item->ToArmor().skill = (Skill)t.MustGetKeywordId(G_ARMOR_SKILL);
+				item->ToArmor().skill = (SkillId)t.MustGetKeywordId(G_ARMOR_SKILL);
 				break;
 			case P_TEX_OVERRIDE:
 				{
@@ -1025,7 +1025,7 @@ private:
 
 		while(!t.IsSymbol('}'))
 		{
-			Skill skill = (Skill)t.MustGetKeywordId(G_SKILL);
+			SkillId skill = (SkillId)t.MustGetKeywordId(G_SKILL);
 			t.Next();
 			t.AssertSymbol('{');
 			t.Next();

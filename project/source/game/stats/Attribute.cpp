@@ -11,7 +11,7 @@ struct StatGain
 };
 
 //-----------------------------------------------------------------------------
-// Skill gain table - used for calculating player level and values for specific level based od skills at 0 level.
+// SkillId gain table - used for calculating player level and values for specific level based od skills at 0 level.
 // For example warrior has 65 str at 0 level which is 15 base bonus. At level 10 he should have 77 str: 10
 // Even idiot with 35 base int gains some int, otherwise weaklings will be always stuck with small str. But in other way barbarian
 // don't need that int/wis/cha.
@@ -51,19 +51,19 @@ static StatGain gain[] = {
 
 //-----------------------------------------------------------------------------
 // All attributes
-AttributeInfo g_attributes[(int)Attribute::MAX] = {
-	AttributeInfo(Attribute::STR, "str"),
-	AttributeInfo(Attribute::END, "end"),
-	AttributeInfo(Attribute::DEX, "dex"),
-	AttributeInfo(Attribute::INT, "int"),
-	AttributeInfo(Attribute::WIS, "wis"),
-	AttributeInfo(Attribute::CHA, "cha")
+Attribute Attribute::attributes[(int)AttributeId::MAX] = {
+	Attribute(AttributeId::STR, "str"),
+	Attribute(AttributeId::END, "end"),
+	Attribute(AttributeId::DEX, "dex"),
+	Attribute(AttributeId::INT, "int"),
+	Attribute(AttributeId::WIS, "wis"),
+	Attribute(AttributeId::CHA, "cha")
 };
 
 //=================================================================================================
-AttributeInfo* AttributeInfo::Find(const string& id)
+Attribute* Attribute::Find(const AnyString& id)
 {
-	for(AttributeInfo& ai : g_attributes)
+	for(Attribute& ai : attributes)
 	{
 		if(id == ai.id)
 			return &ai;
@@ -73,31 +73,31 @@ AttributeInfo* AttributeInfo::Find(const string& id)
 }
 
 //=================================================================================================
-void AttributeInfo::Validate(uint& err)
+void Attribute::Validate(uint& err)
 {
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 	{
-		AttributeInfo& ai = g_attributes[i];
-		if(ai.attrib_id != (Attribute)i)
+		Attribute& ai = attributes[i];
+		if(ai.attrib_id != (AttributeId)i)
 		{
-			Warn("Test: Attribute %s: id mismatch.", ai.id);
+			Warn("Test: AttributeId %s: id mismatch.", ai.id);
 			++err;
 		}
 		if(ai.name.empty())
 		{
-			Warn("Test: Attribute %s: empty name.", ai.id);
+			Warn("Test: AttributeId %s: empty name.", ai.id);
 			++err;
 		}
 		if(ai.desc.empty())
 		{
-			Warn("Test: Attribute %s: empty desc.", ai.id);
+			Warn("Test: AttributeId %s: empty desc.", ai.id);
 			++err;
 		}
 	}
 }
 
 //=================================================================================================
-float AttributeInfo::GetModifier(int base, int& weight)
+float Attribute::GetModifier(int base, int& weight)
 {
 	if(base <= -5)
 	{

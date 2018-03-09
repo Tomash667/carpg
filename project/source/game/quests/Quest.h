@@ -8,9 +8,12 @@
 #include "QuestConsts.h"
 
 //-----------------------------------------------------------------------------
-#define QUEST_DIALOG_START 0
-#define QUEST_DIALOG_FAIL 1
-#define QUEST_DIALOG_NEXT 2
+enum QuestDialog
+{
+	QUEST_DIALOG_START,
+	QUEST_DIALOG_FAIL,
+	QUEST_DIALOG_NEXT
+};
 
 //-----------------------------------------------------------------------------
 struct DialogEntry;

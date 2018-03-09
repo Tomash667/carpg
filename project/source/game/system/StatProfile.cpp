@@ -12,19 +12,19 @@ bool StatProfile::operator != (const StatProfile& p) const
 	bool result = false;
 	if(fixed != p.fixed)
 		result = true;
-	for(int i = 0; i < (int)Attribute::MAX; ++i)
+	for(int i = 0; i < (int)AttributeId::MAX; ++i)
 	{
 		if(attrib[i] != p.attrib[i])
 		{
-			Info("Attribute %s: %d and %d.", g_attributes[i].id, attrib[i], p.attrib[i]);
+			Info("AttributeId %s: %d and %d.", Attribute::attributes[i].id, attrib[i], p.attrib[i]);
 			result = true;
 		}
 	}
-	for(int i = 0; i < (int)Skill::MAX; ++i)
+	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		if(skill[i] != p.skill[i])
 		{
-			Info("Skill %s: %d and %d.", g_skills[i].id, skill[i], p.skill[i]);
+			Info("SkillId %s: %d and %d.", Skill::skills[i].id, skill[i], p.skill[i]);
 			result = true;
 		}
 	}
@@ -38,21 +38,21 @@ void StatProfile::Set(int level, int* attribs, int* skills) const
 
 	if(level == 0 || fixed)
 	{
-		for(int i = 0; i < (int)Attribute::MAX; ++i)
+		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 			attribs[i] = attrib[i];
-		for(int i = 0; i < (int)Skill::MAX; ++i)
+		for(int i = 0; i < (int)SkillId::MAX; ++i)
 			skills[i] = max(0, skill[i]);
 	}
 	else
 	{
 		int unused;
 		float lvl = float(level) / 5;
-		for(int i = 0; i < (int)Attribute::MAX; ++i)
-			attribs[i] = attrib[i] + int(AttributeInfo::GetModifier(attrib[i], unused) * lvl);
-		for(int i = 0; i < (int)Skill::MAX; ++i)
+		for(int i = 0; i < (int)AttributeId::MAX; ++i)
+			attribs[i] = attrib[i] + int(Attribute::GetModifier(attrib[i], unused) * lvl);
+		for(int i = 0; i < (int)SkillId::MAX; ++i)
 		{
 			int val = max(0, skill[i]);
-			skills[i] = val + int(SkillInfo::GetModifier(val, unused) * lvl);
+			skills[i] = val + int(Skill::GetModifier(val, unused) * lvl);
 		}
 	}
 }
@@ -64,12 +64,12 @@ void StatProfile::SetForNew(int level, int* attribs, int* skills) const
 
 	if(level == 0 || fixed)
 	{
-		for(int i = 0; i < (int)Attribute::MAX; ++i)
+		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 		{
 			if(attribs[i] == -1)
 				attribs[i] = attrib[i];
 		}
-		for(int i = 0; i < (int)Skill::MAX; ++i)
+		for(int i = 0; i < (int)SkillId::MAX; ++i)
 		{
 			if(skills[i] == -1)
 				skills[i] = max(0, skill[i]);
@@ -79,17 +79,17 @@ void StatProfile::SetForNew(int level, int* attribs, int* skills) const
 	{
 		int unused;
 		float lvl = float(level) / 5;
-		for(int i = 0; i < (int)Attribute::MAX; ++i)
+		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 		{
 			if(attribs[i] == -1)
-				attribs[i] = attrib[i] + int(AttributeInfo::GetModifier(attrib[i], unused) * lvl);
+				attribs[i] = attrib[i] + int(Attribute::GetModifier(attrib[i], unused) * lvl);
 		}
-		for(int i = 0; i < (int)Skill::MAX; ++i)
+		for(int i = 0; i < (int)SkillId::MAX; ++i)
 		{
 			if(skills[i] == -1)
 			{
 				int val = max(0, skill[i]);
-				skills[i] = val + int(SkillInfo::GetModifier(val, unused) * lvl);
+				skills[i] = val + int(Skill::GetModifier(val, unused) * lvl);
 			}
 		}
 	}

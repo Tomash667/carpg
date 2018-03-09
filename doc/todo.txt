@@ -36,17 +36,73 @@ angelscript2 and more:
 -? UpdateGold but change is added too
 
 f_new_combat_system:
-- fixed very good starting item when player have very low skill
-- fixed effects not disappearing from clients after travel
-- fixed crash when Gorush changes class
-- fixed player can shoot without stamina
+? fixed very good starting item when player have very low skill
+?? fixed effects not disappearing from clients after travel
+? fixed crash when Gorush changes class; test sp/mp
 - fixed blocking arrows don't remove stamina
+	Game2.cpp
 - fixed high shield skill give stamina from being hit
+	Game2.cpp
+? shoot without stamina
+? spawning camp chests
+? force_end dialog
+? power attack stamina s/c/ai (add changelog)
+? hold block and attack fix
+? attack & stamina s/c/ai
+? mobility/atk(wep/bow)/def(arm/shi) calculations in inventory
+? consume item when hiding weapon
+-? verify old ver - heavy armor give bigger dex bonus then light
+? Inventory.cpp
+	GetItemString(text, item, game.pc->unit, (uint)count);
+	instead of
+	Unit* for_unit;
+	if(mode == LOOT_OTHER || mode == TRADE_OTHER)
+		for_unit = game.pc->unit;
+	else
+		for_unit = unit;
 
+	GetItemString(text, item, for_unit, (uint)count);
+	shift - to show stats for companion
+? stats panel attack/skills title pl/en
+? mp get item msg
+-? verify old ver - gain stat while trave = crash ?
+	case NetChangePlayer::STAT_CHANGED: check if pc is not null
+	add to todo
 f_perks:
--? clear remove console history
+- clear remove console history
 
-- break action while consume item will make it diseapear without effect, item also diappear from hand instantly
++ anystring to Cstring, don't pass by ref&
+
+!? Game2.cpp:RemoveItem in mp from server
+if(!unit.player->is_local)
+{
+	// dodaj komunikat o dodaniu przedmiotu
+	NetChangePlayer& c = Add1(Net::player_changes);
+	c.type = NetChangePlayer::REMOVE_ITEMS;
+	c.pc = unit.player;
+	c.id = i_index;
+	c.ile = count;
+	GetPlayerInfo(c.pc).NeedUpdate();
+}
+
++ player Train
+Game.h
+Game2.cpp
+Tournament.cpp
+Tutorial.cpp
+PlayerContorller.cpp
+Unit.cpp
+Net.cpp
+WorldMapGui.cpp
+
++ better mobility calculations
+Unit.cpp
+
++ train haggle/cha from trade
+Game2.cpp
+Net.cpp
+Inventory.cpp
+
 ===============================================================================================================
 NEW:
 - green screen, cannot reproduce
@@ -86,6 +142,7 @@ NEW:
 + attach sounds to scene node, not to unit
 + allow to save on arena/tournament/contest/travel/tutorial
 + searching bookshelf animation
++ rename ItemSlot to something better, is it equipped slots or not ?
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

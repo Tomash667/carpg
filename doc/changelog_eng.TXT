@@ -14,6 +14,10 @@ Version 0.7 (2018-XX-YY):
 - fixed animations and other bugs when using objects
 - fixed bug when client take out weapon and use object in same time
 - fixed errors during drinking contest (missing player blockade when he was talking during start, crash when ai was sitting on stoll and eating)
+- fixed player can shoot without stamina
+- fixed crash when Gorush changes class
+- fixed very good starting item when player have very low skill
+- fixed effects not disappearing from clients after travel
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

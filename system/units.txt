@@ -453,7 +453,7 @@ profile barbarian {
 	wisdom 50
 	charisma 40
 	
-	one_handed 20
+	one_handed_weapon 20
 	short_blade 15
 	long_blade 20
 	axe 20
@@ -481,7 +481,7 @@ profile bard {
 	wisdom 50
 	charisma 65
 	
-	one_handed 15
+	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
 	axe 10
@@ -514,7 +514,7 @@ profile cleric {
 	wisdom 70
 	charisma 55
 	
-	one_handed 15
+	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
 	axe 15
@@ -545,7 +545,7 @@ profile druid {
 	wisdom 70
 	charisma 40
 	
-	one_handed 15
+	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
 	axe 15
@@ -577,7 +577,7 @@ profile hunter {
 	wisdom 60
 	charisma 45
 	
-	one_handed 15
+	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
 	axe 15
@@ -606,7 +606,7 @@ profile mage {
 	wisdom 50
 	charisma 50
 	
-	one_handed 5
+	one_handed_weapon 5
 	short_blade 5
 	long_blade 5
 	axe 0
@@ -634,7 +634,7 @@ profile monk {
 	wisdom 55
 	charisma 45
 	
-	one_handed 10
+	one_handed_weapon 10
 	short_blade 10
 	long_blade 10
 	axe 10
@@ -664,7 +664,7 @@ profile paladin {
 	wisdom 60
 	charisma 55
 	
-	one_handed 20
+	one_handed_weapon 20
 	short_blade 10
 	long_blade 20
 	axe 15
@@ -693,7 +693,7 @@ profile rogue {
 	wisdom 50
 	charisma 55
 	
-	one_handed 15
+	one_handed_weapon 15
 	short_blade 20
 	long_blade 15
 	axe 10
@@ -724,7 +724,7 @@ profile warrior {
 	wisdom 50
 	charisma 50
 	
-	one_handed 20
+	one_handed_weapon 20
 	short_blade 20
 	long_blade 20
 	axe 20
@@ -752,7 +752,7 @@ profile blacksmith {
 	wisdom 50
 	charisma 50
 	
-	one_handed 10
+	one_handed_weapon 10
 	short_blade 10
 	long_blade 10
 	axe 10
@@ -779,7 +779,7 @@ profile merchant {
 	wisdom 55
 	charisma 55
 	
-	one_handed 5
+	one_handed_weapon 5
 	short_blade 5
 	long_blade 5
 	axe 5
@@ -805,7 +805,7 @@ profile alchemist {
 	wisdom 50
 	charisma 50
 	
-	one_handed 5
+	one_handed_weapon 5
 	short_blade 5
 	long_blade 5
 	axe 5
@@ -830,7 +830,7 @@ profile commoner {
 	wisdom 50
 	charisma 50
 	
-	one_handed 5
+	one_handed_weapon 5
 	short_blade 5
 	long_blade 5
 	axe 5
@@ -852,7 +852,7 @@ profile clerk {
 	inteligence 55
 	wisdom 55
 	charisma 55
-	one_handed 5
+	one_handed_weapon 5
 	short_blade 5
 	long_blade 5
 	axe 5
@@ -874,7 +874,7 @@ profile fighter {
 	wisdom 50
 	charisma 50
 	
-	one_handed 15
+	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
 	axe 15
@@ -900,7 +900,7 @@ profile worker {
 	wisdom 50
 	charisma 50
 	
-	one_handed 10
+	one_handed_weapon 10
 	short_blade 5
 	long_blade 5
 	axe 10
@@ -926,7 +926,7 @@ profile shaman {
 	wisdom 45
 	charisma 30
 	
-	one_handed 15
+	one_handed_weapon 15
 	short_blade 10
 	long_blade 10
 	axe 15
@@ -954,7 +954,7 @@ profile orc {
 	wisdom 40
 	charisma 30
 	
-	one_handed 15
+	one_handed_weapon 15
 	short_blade 10
 	long_blade 10
 	axe 15
@@ -980,7 +980,7 @@ profile orc_blacksmith {
 	wisdom 40
 	charisma 30
 	
-	one_handed 15
+	one_handed_weapon 15
 	short_blade 10
 	long_blade 10
 	axe 15
@@ -1006,7 +1006,7 @@ profile goblin {
 	wisdom 40
 	charisma 30
 	
-	one_handed 15
+	one_handed_weapon 15
 	short_blade 15
 	long_blade 10
 	axe 10
@@ -1033,7 +1033,7 @@ profile zombie {
 	wisdom 1
 	charisma 1 
 	
-	one_handed 10
+	one_handed_weapon 10
 	unarmed 10
 	sneak 5
 }
@@ -1046,7 +1046,7 @@ profile skeleton {
 	wisdom 1
 	charisma 1
 	
-	one_handed 15
+	one_handed_weapon 15
 	short_blade 15
 	long_blade 15
 	axe 15
@@ -1068,7 +1068,7 @@ profile skeleton_mage {
 	wisdom 1
 	charisma 1
 	
-	one_handed 5
+	one_handed_weapon 5
 	short_blade 5
 	long_blade 5
 	axe 5
@@ -1090,7 +1090,7 @@ profile golem {
 	wisdom 1
 	charisma 1
 	
-	one_handed 10
+	one_handed_weapon 10
 	unarmed 10
 }
 
@@ -1102,7 +1102,7 @@ profile animal {
 	wisdom 25
 	charisma 10
 	
-	one_handed 15
+	one_handed_weapon 15
 	unarmed 15
 	sneak 15
 	traps 5
@@ -1753,7 +1753,7 @@ unit q_orkowie_gorush_woj : base_gorush {
 		wisdom 50
 		charisma 40
 		
-		one_handed 20
+		one_handed_weapon 20
 		short_blade 20
 		long_blade 20
 		axe 20
@@ -1794,7 +1794,7 @@ unit q_orkowie_gorush_lowca : base_gorush {
 		wisdom 60
 		charisma 35
 		
-		one_handed 15
+		one_handed_weapon 15
 		short_blade 15
 		long_blade 15
 		axe 15
@@ -2306,7 +2306,7 @@ unit q_zlo_boss : base_human {
 		wisdom 90
 		charisma 60
 		
-		one_handed 90
+		one_handed_weapon 90
 		short_blade 50
 		long_blade 60
 		axe 70
@@ -2764,7 +2764,7 @@ unit tomashu : base_human {
 		wisdom 120
 		charisma 120
 		
-		one_handed 120
+		one_handed_weapon 120
 		short_blade 120
 		long_blade 120
 		axe 120
@@ -2825,7 +2825,7 @@ unit unk {
 		wisdom 1
 		charisma 1
 		
-		one_handed 15
+		one_handed_weapon 15
 		unarmed 15
 		sneak 15
 		survival 15

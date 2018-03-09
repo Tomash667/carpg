@@ -154,7 +154,7 @@ void GameGui::DrawFront()
 	}
 
 	// crosshair
-	if(game.pc->unit->action == A_SHOOT)
+	if(game.pc->unit->weapon_state == WS_TAKEN && game.pc->unit->weapon_taken == W_BOW)
 		GUI.DrawSprite(tCrosshair, Center(32, 32));
 
 	// obwódka bólu
@@ -162,7 +162,7 @@ void GameGui::DrawFront()
 		GUI.DrawSpriteFull(tObwodkaBolu, COLOR_RGBA(255, 255, 255, (int)Clamp<float>(game.pc->dmgc / game.pc->unit->hp * 5 * 255, 0.f, 255.f)));
 
 	// debug info
-	if(game.debug_info && (!Net::Net::IsLocal() || !game.devmode))
+	if(game.debug_info && (!Net::IsLocal() || !game.devmode))
 		game.debug_info = false;
 	if(game.debug_info)
 	{
@@ -331,7 +331,7 @@ void GameGui::DrawFront()
 
 			// tekst
 			LocalString s;
-			if(Net::Net::IsLocal())
+			if(Net::IsLocal())
 			{
 				for(uint i = 0; i < game.dialog_context.choices.size(); ++i)
 				{
@@ -360,7 +360,7 @@ void GameGui::DrawFront()
 
 	// get buffs
 	int buffs;
-	if(Net::Net::IsLocal())
+	if(Net::IsLocal())
 		buffs = game.pc->unit->GetBuffs();
 	else
 		buffs = game.GetPlayerInfo(game.pc).buffs;
@@ -741,7 +741,7 @@ void GameGui::Update(float dt)
 
 	// buffs
 	int buffs;
-	if(Net::Net::IsLocal())
+	if(Net::IsLocal())
 		buffs = game.pc->unit->GetBuffs();
 	else
 		buffs = game.GetPlayerInfo(game.pc).buffs;

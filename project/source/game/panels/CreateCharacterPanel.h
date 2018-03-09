@@ -27,8 +27,8 @@ public:
 	enum class Group
 	{
 		Section,
-		Attribute,
-		Skill,
+		AttributeId,
+		SkillId,
 		Perk,
 		TakenPerk,
 		PickSkill_Button,
@@ -101,13 +101,14 @@ private:
 	void PickSkill(cstring text, Perk picked_perk, bool positive = true, int multiple = 0);
 	void OnPickAttributeForPerk(int id);
 	void OnPickSkillForPerk(int id);
-	void UpdateSkill(Skill s, int value, bool mod);
+	void UpdateSkill(SkillId s, int value, bool mod);
 	void UpdateSkillButtons();
 	void AddPerk(Perk perk, int value = 0, bool apply = true);
 	bool ValidatePerk(Perk perk);
 	void CheckSkillsUpdate();
 	void UpdateInventory();
 	void ResetDoll(bool instant);
+	void RandomAppearance();
 
 	Mode mode;
 	bool enter_name;

@@ -129,17 +129,25 @@ sellFreeItem = "Ten przedmiot jest lepszy od tego co mam aktualnie. Niestety nie
 givePotionCount = "Ile daæ miksturek?"
 npcCantCarry = "%s nie mo¿e tyle dŸwigaæ."
 
-// ekran statystyk
-statsPanel = "Postaæ"
+[StatsPanel]
+title = "Postaæ"
 traits = "Cechy"
 stats = "Statystyki"
+skills = "Skills"
 feats = "Atuty"
-traitsClass = "Klasa: %s"
-traitsText = "Zdrowie: %d/%d\nWytrzyma³oœæ: %d/%d\nAtak: %s/%s\nObrona: %d\nMobilnoœæ: %d\nUdŸwig: %g/%g kg\nZ³oto: %d sz"
+class = "Klasa"
+traitsStart = "Zdrowie: %d/%d\nWytrzyma³oœæ: %d/%d"
+attack = "Atak"
+meleeAttack = "Atak wrêcz"
+rangedAttack = "Atak dystansowy"
+traitsEnd = "Obrona: %d\nBlok: %s\nMobilnoœæ: %d\nUdŸwig: %g/%g kg\nZ³oto: %d sz"
 statsText = "Czas gry: %02d:%02d:%02d\nPokonani wrogowie: %d\nPobicia: %d\nZadane obra¿enia: %d\nOtrzymane obra¿enia: %d\nWalki na arenie: %d"
 yearMonthDay = "Rok: %d\nMiesi¹c: %d\nDzieñ: %d"
 base = "Bazowo"
-statsDate = "Data: %d.%02d.%02d"
+date = "Data: %d.%02d.%02d"
+attributes = "Atrybuty"
+relatedAttributes = "Powi¹zane atrybuty"
+[]
 
 // ekran dru¿yny
 giveGold = "Daj z³oto"

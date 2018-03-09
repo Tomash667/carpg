@@ -98,7 +98,7 @@ struct PlayerController : public HeroPlayerCommon
 	float move_tick, last_dmg, last_dmg_poison, dmgc, poison_dmgc, idle_timer, action_recharge, action_cooldown;
 	// a - attribute, s - skill
 	// *p - x points, *n - x next
-	int sp[(int)Skill::MAX], sn[(int)Skill::MAX], ap[(int)Attribute::MAX], an[(int)Attribute::MAX];
+	int sp[(int)SkillId::MAX], sn[(int)SkillId::MAX], ap[(int)AttributeId::MAX], an[(int)AttributeId::MAX];
 	byte action_key;
 	NextAction next_action;
 	union
@@ -134,7 +134,7 @@ struct PlayerController : public HeroPlayerCommon
 	vector<ItemSlot>* chest_trade; // zale¿ne od action (dla LootUnit,ShareItems,GiveItems ekw jednostki, dla LootChest zawartoœæ skrzyni, dla Trade skrzynia kupca)
 	int kills, dmg_done, dmg_taken, knocks, arena_fights, stat_flags;
 	UnitStats base_stats;
-	StatState attrib_state[(int)Attribute::MAX], skill_state[(int)Skill::MAX];
+	StatState attrib_state[(int)AttributeId::MAX], skill_state[(int)SkillId::MAX];
 	vector<TakenPerk> perks;
 	vector<Unit*> action_targets;
 
@@ -150,13 +150,13 @@ struct PlayerController : public HeroPlayerCommon
 	void Init(Unit& _unit, bool partial = false);
 	void ResetStatState();
 	void Update(float dt, bool is_local = true);
-	void Train(Skill s, int points);
-	void Train(Attribute a, int points);
+	void Train(SkillId s, int points);
+	void Train(AttributeId a, int points);
 	void TrainMove(float dt, bool run);
 	void Train(TrainWhat what, float value, int level);
-	void TrainMod(Attribute a, float points);
-	void TrainMod2(Skill s, float points);
-	void TrainMod(Skill s, float points);
+	void TrainMod(AttributeId a, float points);
+	void TrainMod2(SkillId s, float points);
+	void TrainMod(SkillId s, float points);
 	void SetRequiredPoints();
 
 	void Save(HANDLE file);
@@ -183,21 +183,21 @@ struct PlayerController : public HeroPlayerCommon
 		return IsTrade(action);
 	}
 
-	int GetBase(Attribute a) const
+	int GetBase(AttributeId a) const
 	{
 		return base_stats.attrib[(int)a];
 	}
-	int GetBase(Skill s) const
+	int GetBase(SkillId s) const
 	{
 		return base_stats.skill[(int)s];
 	}
 
 	// change base stats, don't modify Unit stats
-	void SetBase(Attribute a, int value)
+	void SetBase(AttributeId a, int value)
 	{
 		base_stats.attrib[(int)a] = value;
 	}
-	void SetBase(Skill s, int value)
+	void SetBase(SkillId s, int value)
 	{
 		base_stats.skill[(int)s] = value;
 	}

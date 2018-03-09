@@ -29,7 +29,7 @@ enum RequiredType
 };
 
 //=================================================================================================
-void CheckStartItems(Skill skill, bool required, uint& errors)
+void CheckStartItems(SkillId skill, bool required, uint& errors)
 {
 	bool have_0 = !required, have_heirloom = false;
 
@@ -48,12 +48,12 @@ void CheckStartItems(Skill skill, bool required, uint& errors)
 
 	if(!have_0)
 	{
-		Error("Missing starting item for skill %s.", g_skills[(int)skill].id);
+		Error("Missing starting item for skill %s.", Skill::skills[(int)skill].id);
 		++errors;
 	}
 	if(!have_heirloom)
 	{
-		Error("Missing heirloom item for skill %s.", g_skills[(int)skill].id);
+		Error("Missing heirloom item for skill %s.", Skill::skills[(int)skill].id);
 		++errors;
 	}
 }
@@ -126,13 +126,13 @@ void CheckBaseItems(uint& errors)
 			{
 				switch(item->ToArmor().skill)
 				{
-				case Skill::LIGHT_ARMOR:
+				case SkillId::LIGHT_ARMOR:
 					++have_light_armor;
 					break;
-				case Skill::MEDIUM_ARMOR:
+				case SkillId::MEDIUM_ARMOR:
 					++have_medium_armor;
 					break;
-				case Skill::HEAVY_ARMOR:
+				case SkillId::HEAVY_ARMOR:
 					++have_heavy_armor;
 					break;
 				}
@@ -383,15 +383,15 @@ bool Game::LoadRequiredStats(uint& errors)
 		++errors;
 	}
 
-	CheckStartItems(Skill::SHORT_BLADE, true, errors);
-	CheckStartItems(Skill::LONG_BLADE, true, errors);
-	CheckStartItems(Skill::AXE, true, errors);
-	CheckStartItems(Skill::BLUNT, true, errors);
-	CheckStartItems(Skill::BOW, false, errors);
-	CheckStartItems(Skill::SHIELD, false, errors);
-	CheckStartItems(Skill::LIGHT_ARMOR, true, errors);
-	CheckStartItems(Skill::MEDIUM_ARMOR, true, errors);
-	CheckStartItems(Skill::HEAVY_ARMOR, true, errors);
+	CheckStartItems(SkillId::SHORT_BLADE, true, errors);
+	CheckStartItems(SkillId::LONG_BLADE, true, errors);
+	CheckStartItems(SkillId::AXE, true, errors);
+	CheckStartItems(SkillId::BLUNT, true, errors);
+	CheckStartItems(SkillId::BOW, false, errors);
+	CheckStartItems(SkillId::SHIELD, false, errors);
+	CheckStartItems(SkillId::LIGHT_ARMOR, true, errors);
+	CheckStartItems(SkillId::MEDIUM_ARMOR, true, errors);
+	CheckStartItems(SkillId::HEAVY_ARMOR, true, errors);
 
 	CheckBaseItems(errors);
 

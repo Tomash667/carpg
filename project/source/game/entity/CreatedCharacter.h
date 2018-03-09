@@ -51,11 +51,11 @@ struct CreatedCharacter
 	};
 
 	vector<TakenPerk> taken_perks;
-	AttributeData a[(int)Attribute::MAX];
-	SkillData s[(int)Skill::MAX];
+	AttributeData a[(int)AttributeId::MAX];
+	SkillData s[(int)SkillId::MAX];
 	int sp, sp_max, perks, perks_max;
 	bool update_skills;
-	vector<Skill> to_update;
+	vector<SkillId> to_update;
 
 	void Clear(Class c);
 	void Random(Class c);
@@ -66,12 +66,12 @@ struct CreatedCharacter
 	bool HavePerk(Perk perk) const;
 	void GetStartingItems(const Item* (&items)[SLOT_MAX]);
 
-	int Get(Attribute attrib) const
+	int Get(AttributeId attrib) const
 	{
 		return a[(int)attrib].value;
 	}
 
-	int Get(Skill sk) const
+	int Get(SkillId sk) const
 	{
 		return s[(int)sk].value;
 	}

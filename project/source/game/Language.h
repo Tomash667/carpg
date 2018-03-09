@@ -1,38 +1,46 @@
 #pragma once
 
-typedef std::map<string, string> LanguageMap;
-typedef std::map<string, LanguageMap*> LanguageSections;
-
 //-----------------------------------------------------------------------------
-extern string g_lang_prefix;
-extern LanguageMap g_language;
-extern LanguageSections g_language2;
-extern vector<LanguageMap*> g_languages;
-
-//-----------------------------------------------------------------------------
-void LoadLanguageFile(cstring filename);
-bool LoadLanguageFile2(cstring filename, cstring section, LanguageMap* lmap = nullptr);
-void LoadLanguages();
-void ClearLanguages();
-void LoadLanguageFiles();
-
-//-----------------------------------------------------------------------------
-inline cstring StrT(cstring str, bool err = true)
+class Language
 {
-	LanguageMap::const_iterator it = g_language.find(str);
-	if(it != g_language.end())
-		return it->second.c_str();
-	else
+public:
+	typedef std::map<string, string> LanguageMap;
+	typedef std::map<string, LanguageMap*> LanguageSections;
+
+	struct LanguageSection
 	{
-		if(err)
-			Error("Missing text string for '%s'.", str);
-		return nullptr;
-	}
-}
+		LanguageSection(LanguageMap& lm, cstring name) : lm(lm), name(name) {}
+		cstring Get(cstring str);
+	private:
+		LanguageMap& lm;
+		cstring name;
+	};
+
+	static void Init();
+	static void Cleanup();
+	static bool LoadFile(cstring filename);
+	static void LoadLanguages();
+	static void LoadLanguageFiles();
+	static cstring TryGetString(cstring str, bool err = true);
+	static LanguageSection GetSection(cstring name);
+	static vector<LanguageMap*>& GetLanguages() { return languages; }
+
+	static string prefix;
+
+private:
+	static bool LoadFileInternal(cstring path, LanguageMap* lmap = nullptr);
+	static void PrepareTokenizer(Tokenizer& t);
+	static void LoadObjectFile(Tokenizer& t, cstring filename);
+
+	static LanguageMap strs;
+	static LanguageSections sections;
+	static vector<LanguageMap*> languages;
+	static string tstr;
+};
 
 //-----------------------------------------------------------------------------
-inline const cstring Str(cstring str)
+inline cstring Str(cstring str)
 {
-	cstring s = StrT(str);
+	cstring s = Language::TryGetString(str);
 	return s ? s : "";
 }

@@ -31,9 +31,9 @@ static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, UINT uMsg, WPARAM w
 			Tokenizer t;
 
 			// szukaj plików z informacj¹ o jêzyku
-			for(vector<LanguageMap*>::iterator it = g_languages.begin(), end = g_languages.end(); it != end; ++it, ++index)
+			for(Language::LanguageMap* p_lmap : Language::GetLanguages())
 			{
-				LanguageMap& lmap = **it;
+				Language::LanguageMap& lmap = *p_lmap;
 
 				// parse locale
 				t.FromString(lmap["locale"]);
@@ -135,7 +135,7 @@ bool ShowPickLanguageDialog(string& lang)
 	dialog_result = -1;
 	dialog_state = 0;
 
-	if(g_languages.empty())
+	if(Language::GetLanguages().empty())
 	{
 		MessageBox(nullptr, "Failed to load languaged data files!", "Language error", MB_APPLMODAL);
 		return false;
@@ -171,8 +171,8 @@ bool ShowPickLanguageDialog(string& lang)
 static void UpdateTexts(HWND hwndDlg, int select_index)
 {
 	// update texts
-	LanguageMap& lmap = *g_languages[select_index];
-	LanguageMap::iterator it = lmap.find("text"), end = lmap.end();
+	Language::LanguageMap& lmap = *Language::GetLanguages()[select_index];
+	auto it = lmap.find("text"), end = lmap.end();
 	if(it != end)
 		SetDlgItemText(hwndDlg, IDC_STATIC1, it->second.c_str());
 	it = lmap.find("title");

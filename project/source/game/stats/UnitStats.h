@@ -27,27 +27,6 @@ enum class StatState
 };
 
 //-----------------------------------------------------------------------------
-inline char StatStateToColor(StatState s)
-{
-	switch(s)
-	{
-	default:
-	case StatState::NORMAL:
-		return 'k';
-	case StatState::POSITIVE:
-		return 'g';
-	case StatState::POSITIVE_MIXED:
-		return '0';
-	case StatState::MIXED:
-		return 'y';
-	case StatState::NEGATIVE_MIXED:
-		return '1';
-	case StatState::NEGATIVE:
-		return 'r';
-	}
-}
-
-//-----------------------------------------------------------------------------
 struct StatInfo
 {
 	int value, unmod, base;
@@ -57,8 +36,8 @@ struct StatInfo
 //-----------------------------------------------------------------------------
 struct UnitStats
 {
-	int attrib[(int)Attribute::MAX];
-	int skill[(int)Skill::MAX];
+	int attrib[(int)AttributeId::MAX];
+	int skill[(int)SkillId::MAX];
 
 	void WriteAttributes(BitStream& stream) const
 	{

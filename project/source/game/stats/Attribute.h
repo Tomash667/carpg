@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-enum class Attribute
+enum class AttributeId
 {
 	STR,
 	END,
@@ -14,22 +14,20 @@ enum class Attribute
 };
 
 //-----------------------------------------------------------------------------
-struct AttributeInfo
+struct Attribute
 {
-	Attribute attrib_id;
+	AttributeId attrib_id;
 	cstring id;
 	string name, desc;
 
 	static const int MAX = 255;
 
-	AttributeInfo(Attribute attrib_id, cstring id) : attrib_id(attrib_id), id(id)
+	Attribute(AttributeId attrib_id, cstring id) : attrib_id(attrib_id), id(id)
 	{
 	}
 
-	static AttributeInfo* Find(const string& id);
+	static Attribute attributes[(int)AttributeId::MAX];
+	static Attribute* Find(const AnyString& id);
 	static void Validate(uint& err);
 	static float GetModifier(int base, int& mod);
 };
-
-//-----------------------------------------------------------------------------
-extern AttributeInfo g_attributes[(int)Attribute::MAX];

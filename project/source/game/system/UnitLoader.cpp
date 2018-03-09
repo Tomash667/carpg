@@ -414,45 +414,16 @@ private:
 		});
 
 		t.AddKeywords(G_ATTRIBUTE, {
-			{ "strength", (int)Attribute::STR },
-			{ "endurance", (int)Attribute::END },
-			{ "dexterity", (int)Attribute::DEX },
-			{ "inteligence", (int)Attribute::INT },
-			{ "wisdom", (int)Attribute::WIS },
-			{ "charisma", (int)Attribute::CHA }
+			{ "strength", (int)AttributeId::STR },
+			{ "endurance", (int)AttributeId::END },
+			{ "dexterity", (int)AttributeId::DEX },
+			{ "inteligence", (int)AttributeId::INT },
+			{ "wisdom", (int)AttributeId::WIS },
+			{ "charisma", (int)AttributeId::CHA }
 		});
 
-		t.AddKeywords(G_SKILL, {
-			{ "one_handed", (int)Skill::ONE_HANDED_WEAPON },
-			{ "short_blade", (int)Skill::SHORT_BLADE },
-			{ "long_blade", (int)Skill::LONG_BLADE },
-			{ "blunt", (int)Skill::BLUNT },
-			{ "axe", (int)Skill::AXE },
-			{ "bow", (int)Skill::BOW },
-			{ "unarmed", (int)Skill::UNARMED },
-			{ "shield", (int)Skill::SHIELD },
-			{ "light_armor", (int)Skill::LIGHT_ARMOR },
-			{ "medium_armor", (int)Skill::MEDIUM_ARMOR },
-			{ "heavy_armor", (int)Skill::HEAVY_ARMOR },
-			{ "nature_magic", (int)Skill::NATURE_MAGIC },
-			{ "gods_magic", (int)Skill::GODS_MAGIC },
-			{ "mystic_magic", (int)Skill::MYSTIC_MAGIC },
-			{ "spellcraft", (int)Skill::SPELLCRAFT },
-			{ "concentration", (int)Skill::CONCENTRATION },
-			{ "identification", (int)Skill::IDENTIFICATION },
-			{ "lockpick", (int)Skill::LOCKPICK },
-			{ "sneak", (int)Skill::SNEAK },
-			{ "traps", (int)Skill::TRAPS },
-			{ "steal", (int)Skill::STEAL },
-			{ "animal_empathy", (int)Skill::ANIMAL_EMPATHY },
-			{ "survival", (int)Skill::SURVIVAL },
-			{ "persuasion", (int)Skill::PERSUASION },
-			{ "alchemy", (int)Skill::ALCHEMY },
-			{ "crafting", (int)Skill::CRAFTING },
-			{ "healing", (int)Skill::HEALING },
-			{ "athletics", (int)Skill::ATHLETICS },
-			{ "rage", (int)Skill::RAGE }
-		});
+		for(uint i = 0; i < (uint)SkillId::MAX; ++i)
+			t.AddKeyword(Skill::skills[i].id, i, G_SKILL);
 
 		t.AddKeyword("fixed", PK_FIXED, G_PROFILE_KEYWORD);
 
@@ -519,6 +490,7 @@ private:
 			auto parent = UnitData::TryGet(parent_id);
 			if(!parent)
 				t.Throw("Missing parent unit '%s'.", parent_id.c_str());
+			parent->flags3 |= F3_PARENT_DATA;
 			unit->CopyFrom(*parent);
 			crc.Update(parent_id);
 			t.Next();
@@ -850,9 +822,9 @@ private:
 	void ParseProfile(Ptr<StatProfile>& profile)
 	{
 		profile->fixed = false;
-		for(int i = 0; i < (int)Attribute::MAX; ++i)
+		for(int i = 0; i < (int)AttributeId::MAX; ++i)
 			profile->attrib[i] = 10;
-		for(int i = 0; i < (int)Skill::MAX; ++i)
+		for(int i = 0; i < (int)SkillId::MAX; ++i)
 			profile->skill[i] = -1;
 
 		// {
@@ -874,7 +846,7 @@ private:
 				t.Next();
 				int val = t.MustGetInt();
 				if(val < 1)
-					t.Throw("Invalid attribute '%s' value %d.", g_attributes[a].id, val);
+					t.Throw("Invalid attribute '%s' value %d.", Attribute::attributes[a].id, val);
 				profile->attrib[a] = val;
 				crc.Update(1);
 				crc.Update(a);
@@ -886,7 +858,7 @@ private:
 				t.Next();
 				int val = t.MustGetInt();
 				if(val < -1)
-					t.Throw("Invalid skill '%s' value %d.", g_skills[s].id, val);
+					t.Throw("Invalid skill '%s' value %d.", Skill::skills[s].id, val);
 				profile->skill[s] = val;
 				crc.Update(2);
 				crc.Update(s);
