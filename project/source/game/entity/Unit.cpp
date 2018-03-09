@@ -1017,11 +1017,11 @@ Vec3 Unit::GetLootCenter() const
 	Mesh::Point* point2 = mesh_inst->mesh->GetPoint("centrum");
 
 	if(!point2)
-		return pos;
+		return visual_pos;
 
 	const Mesh::Point& point = *point2;
 	Matrix matBone = point.mat * mesh_inst->mat_bones[point.bone];
-	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(pos));
+	matBone = matBone * (Matrix::RotationY(rot) * Matrix::Translation(visual_pos));
 	Vec3 center = Vec3::TransformZero(matBone);
 	return center;
 }

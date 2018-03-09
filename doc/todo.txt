@@ -1,11 +1,6 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-! undo dialog.txt drunkmans
-- can click and press space when looking at stool for c, it will break weapon state for c; s works ok
-- c/c2 fall not smooth interpolation for s/c2
-? loot container tests, close inventory
-? 3 players - base animation after drinking in dialog
 + copy f_perks console commands, angelscript parser
 ? client leave - 3 player tests:
 	? while talking
@@ -23,9 +18,8 @@ CURRENT:
 	
 contest:
 + warning when out of range
-- player breaks dialog but can move and rotate
-- ai can move, some keeps eating and crashes when eating at the same time
 ? exiting while in contest
+? 3 player
 
 tournament:
 ? spawning
@@ -33,6 +27,7 @@ tournament:
 ? break dialogs in contest, verify that they fight anyway
 ? exiting while in tournament
 ? exiting while in arena with cheat
+? 3 players
 
 ? arena sounds for 3 clients (win/lose/etc)
 
@@ -112,6 +107,7 @@ NEW:
 + space - take out/hide weapon, hold to show circle with choices (melee, ranged, [unarmed] etc)
 + attach sounds to scene node, not to unit
 + allow to save on arena/tournament/contest/travel/tutorial
++ searching bookshelf animation
 + rename ItemSlot to something better, is it equipped slots or not ?
 ===============================================================================================================
 VERIFY:

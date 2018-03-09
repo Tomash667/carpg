@@ -12,6 +12,8 @@ Wersja 0.7 (2018-XX-YY):
 - naprawiony b³¹d wczytywania dŸwiêków przy wy³¹czonym dŸwiêku w konfiguracji
 - naprawiony b³¹d animacji podczas jedzenia/picia siedz¹c
 - naprawione b³êdy animacji i inne problemy podczas u¿ywania obiektów
+- naprawiony b³¹d gdy klient jednoczeœnie u¿yje obiektu i zacznie wyjmowaæ broñ
+- naprawione b³¹dy podczas zawodów w piciu (brak blokady gracza gdy rozmawia³ w trakcie rozpoczêcia, crash gdy ai siedzia³ na sto³ku i coœ jad³)
 - naprawiona mo¿liwoœæ strzelania z ³uku bez wytrzyma³oœci przez gracza
 - naprawiony crash gdy Gorush zmienia klasê postaci
 - naprawione bardzo dobre pocz¹tkowe przedmioty gracza przy bardzo niskiej umiejêtnoœci

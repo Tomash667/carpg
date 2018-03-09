@@ -61,7 +61,8 @@ enum ACTION
 	A_POSITION, // u¿ywa³ czegoœ ale dosta³ basha lub umar³, trzeba go przesun¹æ w normalne miejsce
 	A_PICKUP, // póki co dzia³a jak animacja, potem doda siê punkt podnoszenia
 	A_DASH,
-	A_DESPAWN
+	A_DESPAWN,
+	A_PREPARE, // mp client want to use object, waiting for response
 };
 
 //-----------------------------------------------------------------------------

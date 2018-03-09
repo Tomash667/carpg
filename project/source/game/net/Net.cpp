@@ -3242,7 +3242,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				c.type = NetChange::USE_USABLE;
 				c.unit = info.u;
 				c.id = player.action_container->netid;
-				c.ile = USE_USABLE_STOP;
+				c.ile = USE_USABLE_END;
 			}
 			else
 			{
@@ -3496,6 +3496,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						c.type = NetChangePlayer::USE_USABLE;
 						c.pc = &player;
 						info.NeedUpdate();
+						break;
 					}
 					else
 					{
@@ -8914,6 +8915,8 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 				AddGameMsg3(GMS_USED);
 				if(pc->action == PlayerController::Action_LootContainer)
 					pc->action = PlayerController::Action_None;
+				if(pc->unit->action == A_PREPARE)
+					pc->unit->action = A_NONE;
 				break;
 			// change development mode for player
 			case NetChangePlayer::DEVMODE:
