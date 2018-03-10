@@ -2749,7 +2749,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				}
 				else if(!u.mesh_inst->groups[1].IsBlending() && u.HaveShield())
 				{
-					if(KeyDownAllowed(GK_ATTACK_USE) && u.stamina > 0)
+					if(KeyPressedUpAllowed(GK_ATTACK_USE) && u.stamina > 0)
 					{
 						// shield bash
 						u.action = A_BASH;

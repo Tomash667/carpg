@@ -72,7 +72,7 @@ item axe_crystal {
 }
 item axe_giant {
 	name "Topór giganta"
-	desc "Magiczny topór. Zwiêksza si³e u¿ytkownika tak ¿e zadaje ona wiêksze obra¿enia."
+	desc "Magiczny topór. Zwiêksza si³e u¿ytkownika tak ¿e zadaje on wiêksze obra¿enia."
 }
 item axe_ripper {
 	name "Rozpruwacz"

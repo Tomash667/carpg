@@ -133,7 +133,6 @@ npcCantCarry = "%s nie mo¿e tyle dŸwigaæ."
 title = "Postaæ"
 traits = "Cechy"
 stats = "Statystyki"
-skills = "Skills"
 feats = "Atuty"
 class = "Klasa"
 traitsStart = "Zdrowie: %d/%d\nWytrzyma³oœæ: %d/%d"
@@ -1121,9 +1120,10 @@ dirNW = "pó³nocny zachód"
 dirSE = "po³udniowy wschód"
 dirSW = "po³udniowy zachód"
 
-// statystyki przedmiotów
+[ItemStats]
 attack = "Atak"
 defense = "Obrona"
+block = "Blok"
 mobility = "Mobilnoœæ"
 requiredStrength = "Wymagana si³a"
 dtBlunt = "mia¿d¿one"
@@ -1135,6 +1135,8 @@ dtSlashPierce = "ciête/k³ute"
 dtMagical = "magiczne"
 weight = "Waga: %g kg"
 value = "Wartoœæ: %d sz"
+invalidArmor = "Nie pasuje"
+[]
 
 // menu net
 enterIp = "Podaj adres ip serwera:"

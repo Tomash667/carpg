@@ -18,6 +18,8 @@ Version 0.7 (2018-XX-YY):
 - fixed crash when Gorush changes class
 - fixed very good starting item when player have very low skill
 - fixed effects not disappearing from clients after travel
+- heavy/medium armor don't gives better defense from dexterity bonus then light armor
+- info about gaining skill/attribute shows up for client not for server
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

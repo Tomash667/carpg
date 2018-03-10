@@ -133,9 +133,8 @@ npcCantCarry = "%s can't carry that much."
 title = "Character"
 traits = "Traits"
 stats = "Statistics"
-skills = "Skills"
 feats = "Feats"
-traitsClass = "Class"
+class = "Class"
 traitsStart = "Health: %d/%dStamina: %d/%d"
 attack = "Attack"
 meleeAttack = "Melee attack"
@@ -1121,9 +1120,10 @@ dirNW = "north west"
 dirSE = "south east"
 dirSW = "south west"
 
-// item stats
+[ItemStats]
 attack = "Attack"
 defense = "Defense"
+block = "Block"
 mobility = "Mobility"
 requiredStrength = "Required strength"
 dtBlunt = "bludgeoning"
@@ -1133,9 +1133,10 @@ dtBluntPierce = "piercing/bludgeoning"
 dtBluntSlash = "slashing/bludgeoning"
 dtSlashPierce = "slashing/piercing"
 dtMagical = "magical"
-
 weight = "Weight: %g kg"
 value = "Value: %d gp"
+invalidArmor = "Does not fit"
+[]
 
 // menu net
 enterIp = "Enter server ip address:"

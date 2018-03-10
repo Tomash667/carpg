@@ -70,6 +70,8 @@ static INT_PTR CALLBACK PickLanguageDialogProc(HWND hwndDlg, UINT uMsg, WPARAM w
 				item->text = Format("%s, %s, %s", dir.c_str(), lmap["englishName"].c_str(), lmap["localName"].c_str());
 				dialog_items.push_back(item);
 				SendMessage(list, LB_ADDSTRING, 0, (LPARAM)item->text.c_str());
+
+				++index;
 			}
 
 			// select something

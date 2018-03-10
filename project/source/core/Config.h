@@ -104,5 +104,5 @@ private:
 	vector<Entry> entries;
 	string tmpstr, error;
 	int version;
-	static Tokenizer t;
+	Tokenizer t;
 };

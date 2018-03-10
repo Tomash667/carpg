@@ -116,10 +116,10 @@ float Unit::CalculateDefense(const Item* armor) const
 		switch(a.skill)
 		{
 		case SkillId::HEAVY_ARMOR:
-			load = max(load, 0.5f);
+			load = max(load * 2.f, 0.5f);
 			break;
 		case SkillId::MEDIUM_ARMOR:
-			load = max(load, 0.25f);
+			load = max(load * 1.5f, 0.25f);
 			break;
 		}
 

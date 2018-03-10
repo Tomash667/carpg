@@ -1,6 +1,38 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
+- shader crash
+	12:39:21 INFO  - Compiling super shader: 60
+	12:39:21 ERROR - Engine: Game error!
+	Engine: Failed to compile shader 'super.fx' (-2147467259).
+	F:\carpg\bin\memory(24,3): error: "Normal mapping require binormals!"
+
+	went to hall for deliver letter quest
+	went to village with orc quest
+	goto dungeon
+	killall -> 3 level
+	recruit gorush
+	go up = crash
+
+	1
+	2
+	4    1   60
+	8    1   56
+	16   1   48
+	32   1   
+
+
+	NIE SceneNode::F_ANIMATED
+	NIE SceneNode::F_BINORMALS
+	TAK cl_fog
+	TAK cl_specularmap && IS_SET(node->flags, SceneNode::F_SPECULAR_MAP)
+	TAK cl_normalmap && IS_SET(node->flags, SceneNode::F_NORMAL_MAP)
+	TAK cl_lighting && !outside
+- leaving level with units dying cause no blood and unpickable
+- crayzies attacked normal heroes and hit player by incident, gorush was runing back and forth but didn't attack, have state seend enemy
++ current train don't handle floats so gain 0 in some cases
++ stamina changes
+
 + copy f_perks console commands, angelscript parser
 ? client leave - 3 player tests:
 	? while talking
@@ -18,6 +50,7 @@ CURRENT:
 	
 contest:
 + warning when out of range
+	stash
 ? exiting while in contest
 ? 3 player
 
@@ -36,22 +69,13 @@ angelscript2 and more:
 -? UpdateGold but change is added too
 
 f_new_combat_system:
-? fixed very good starting item when player have very low skill
 ?? fixed effects not disappearing from clients after travel
-? fixed crash when Gorush changes class; test sp/mp
 - fixed blocking arrows don't remove stamina
 	Game2.cpp
 - fixed high shield skill give stamina from being hit
 	Game2.cpp
-? shoot without stamina
-? spawning camp chests
-? force_end dialog
 ? power attack stamina s/c/ai (add changelog)
-? hold block and attack fix
 ? attack & stamina s/c/ai
-? mobility/atk(wep/bow)/def(arm/shi) calculations in inventory
-? consume item when hiding weapon
--? verify old ver - heavy armor give bigger dex bonus then light
 ? Inventory.cpp
 	GetItemString(text, item, game.pc->unit, (uint)count);
 	instead of
@@ -63,11 +87,6 @@ f_new_combat_system:
 
 	GetItemString(text, item, for_unit, (uint)count);
 	shift - to show stats for companion
-? stats panel attack/skills title pl/en
-? mp get item msg
--? verify old ver - gain stat while trave = crash ?
-	case NetChangePlayer::STAT_CHANGED: check if pc is not null
-	add to todo
 f_perks:
 - clear remove console history
 
@@ -105,10 +124,8 @@ Inventory.cpp
 
 ===============================================================================================================
 NEW:
-- green screen, cannot reproduce
 + 404 handling on website
 + when npc have item in his inventory and in pc, it will first ask for pc one
-+ move chest to usables
 + particles in objects, not hardcoded water_effect, blood_effect
 + remove hardcoded bench variants in base usable
 + remove hardcoded ai to use read papers animation on chair, eat food on stool
@@ -121,12 +138,10 @@ NEW:
 + JoinCost use skill check
 + poison resistance from endurance
 + wisdom: skill/perk/bonus
-+ modify units stats, perks -> will make unit unique
 + effect PoisonResistance/immunity
 + perk Crafting Tradition
 + amulet pijanego mistrza - im bardziej pijany jest gracz tym większe obrażenia
 + perk: zmniejszenie stłuczeń o 25%, alkohol też zwiększa max o 25%
-+ walki w karczmie na pieści
 + negative traits: for int/wis
 + perk armor: critics protection
 + negative history: pacifist (-to combat skills, +non combat skills, can't take aggressive perk)
@@ -140,9 +155,11 @@ NEW:
 + hunters guild, quests (wielki łowczy), bad wolf boss
 + space - take out/hide weapon, hold to show circle with choices (melee, ranged, [unarmed] etc)
 + attach sounds to scene node, not to unit
-+ allow to save on arena/tournament/contest/travel/tutorial
 + searching bookshelf animation
 + rename ItemSlot to something better, is it equipped slots or not ?
++ openable city gates, mechanism
++ lock/unlock commands for door
++ better camp objects layout
 ===============================================================================================================
 VERIFY:
 ? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]

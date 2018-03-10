@@ -5,26 +5,28 @@
 #include "Unit.h"
 #include "Language.h"
 
-cstring txAttack, txDefense, txMobility, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical, txWeight,
-txValue, txInvalidArmor;
+cstring txAttack, txDefense, txBlock, txMobility, txRequiredStrength, txDTBlunt, txDTPierce, txDTSlash, txDTBluntPierce, txDTBluntSlash, txDTSlashPierce, txDTMagical,
+txWeight, txValue, txInvalidArmor;
 
 //=================================================================================================
 void SetItemStatsText()
 {
-	txAttack = Str("attack");
-	txDefense = Str("defense");
-	txMobility = Str("mobility");
-	txRequiredStrength = Str("requiredStrength");
-	txDTBlunt = Str("dtBlunt");
-	txDTPierce = Str("dtPierce");
-	txDTSlash = Str("dtSlash");
-	txDTBluntPierce = Str("dtBluntPierce");
-	txDTBluntSlash = Str("dtBluntSlash");
-	txDTSlashPierce = Str("dtSlashPierce");
-	txDTMagical = Str("dtMagical");
-	txWeight = Str("weight");
-	txValue = Str("value");
-	txInvalidArmor = Str("invalidArmor");
+	auto section = Language::GetSection("ItemStats");
+	txAttack = section.Get("attack");
+	txDefense = section.Get("defense");
+	txBlock = section.Get("block");
+	txMobility = section.Get("mobility");
+	txRequiredStrength = section.Get("requiredStrength");
+	txDTBlunt = section.Get("dtBlunt");
+	txDTPierce = section.Get("dtPierce");
+	txDTSlash = section.Get("dtSlash");
+	txDTBluntPierce = section.Get("dtBluntPierce");
+	txDTBluntSlash = section.Get("dtBluntSlash");
+	txDTSlashPierce = section.Get("dtSlashPierce");
+	txDTMagical = section.Get("dtMagical");
+	txWeight = section.Get("weight");
+	txValue = section.Get("value");
+	txInvalidArmor = section.Get("invalidArmor");
 }
 
 //=================================================================================================
@@ -51,6 +53,14 @@ void SortItems(vector<ItemSlot>& items)
 	// usuñ puste elementy
 	while(!items.empty() && !items.back().item)
 		items.pop_back();
+}
+
+char IsBetterColor(int old_value, int new_value)
+{
+	if(old_value >= new_value)
+		return 'r';
+	else
+		return 'g';
 }
 
 void GetItemString(string& str, const Item* item, Unit* unit, uint count)
@@ -105,7 +115,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			if(old_attack == new_attack)
 				atk_desc = Format("%d", old_attack);
 			else
-				atk_desc = Format("%d -> %d", old_attack, new_attack);
+				atk_desc = Format("$c%c%d -> %d$c-", IsBetterColor(old_attack, new_attack), old_attack, new_attack);
 
 			str += Format(" - %s\n%s: %d (%s) %s\n%s: $c%c%d$c-\n",
 				WeaponTypeInfo::info[weapon.weapon_type].name,
@@ -133,7 +143,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			if(old_attack == new_attack)
 				atk_desc = Format("%d", old_attack);
 			else
-				atk_desc = Format("%d -> %d", old_attack, new_attack);
+				atk_desc = Format("$c%c%d -> %d$c-", IsBetterColor(old_attack, new_attack), old_attack, new_attack);
 
 			str += Format("\n%s: %d (%s) %s\n%s: $c%c%d$c-\n",
 				txAttack,
@@ -167,7 +177,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			if(old_mob == new_mob)
 				mob_str = Format("%d", new_mob);
 			else
-				mob_str = Format("%d -> %d", old_mob, new_mob);
+				mob_str = Format("$c%c%d -> %d$c-", IsBetterColor(old_mob, new_mob), old_mob, new_mob);
 
 			int old_def = (int)unit->CalculateDefense();
 			int new_def = (int)unit->CalculateDefense(item);
@@ -175,7 +185,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 			if(old_def == new_def)
 				def_desc = Format("%d", old_def);
 			else
-				def_desc = Format("%d -> %d", old_def, new_def);
+				def_desc = Format("$c%c%d -> %d$c-", IsBetterColor(old_def, new_def), old_def, new_def);
 
 			str += Format(" - %s\n%s: %d (%s)\n%s: $c%c%d$c-\n%s: %d (%s)\n",
 				armor_type,
@@ -194,26 +204,26 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 		{
 			/*
 			Iron shield
-			Defense: 30 (40 -> 50)
+			Block: 30 (40 -> 50)
 			Required strength: $40$
 			*/
 			const Shield& shield = item->ToShield();
 
 			cstring block_desc;
-			int new_block = (int)unit->CalculateDefense(item);
+			int new_block = (int)unit->CalculateBlock(item);
 			if(unit->HaveShield())
 			{
 				int old_block = (int)unit->CalculateBlock();
 				if(old_block == new_block)
 					block_desc = Format("%d", new_block);
 				else
-					block_desc = Format("%d -> %d", old_block, new_block);
+					block_desc = Format("$c%c%d -> %d$c-", IsBetterColor(old_block, new_block), old_block, new_block);
 			}
 			else
 				block_desc = Format("%d", new_block);
 
 			str += Format("\n%s: %d (%s)\n%s: $c%c%d$c-\n",
-				txDefense,
+				txBlock,
 				shield.def,
 				block_desc,
 				txRequiredStrength,

@@ -234,6 +234,7 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 		language.Add(new LanguageItem(dir, Format("%s, %s, %s", dir.c_str(), lmap["englishName"].c_str(), lmap["localName"].c_str())));
 		if(dir == Language::prefix)
 			language.SetIndex(index);
+		++index;
 	}
 	language.Initialize();
 
