@@ -1,7 +1,6 @@
 // stats
 hp = "Health"
 stamina = "Stamina"
-invalidArmor = "Does not fit"
 
 // weapon types
 wt_shortBlade = "Short blade"

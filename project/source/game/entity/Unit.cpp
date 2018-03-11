@@ -96,7 +96,7 @@ float Unit::CalculateBlock(const Item* shield) const
 	else
 		p = float(str) / s.req_str;
 
-	return float(s.def) * (1.f + 1.f / 100 * Get(SkillId::SHIELD)) * p;
+	return float(s.block) * (1.f + 1.f / 100 * Get(SkillId::SHIELD)) * p;
 }
 
 //=================================================================================================
@@ -116,10 +116,10 @@ float Unit::CalculateDefense(const Item* armor) const
 		switch(a.skill)
 		{
 		case SkillId::HEAVY_ARMOR:
-			load = max(load, 0.5f);
+			load = max(load * 2.f, 0.5f);
 			break;
 		case SkillId::MEDIUM_ARMOR:
-			load = max(load, 0.25f);
+			load = max(load * 1.5f, 0.25f);
 			break;
 		}
 
@@ -1128,7 +1128,7 @@ float Unit::CalculateShieldAttack() const
 	else
 		p = float(str) / s.req_str;
 
-	return 0.5f * str / 2 + 0.25f * Get(AttributeId::DEX) + (s.def * p * (1.f + float(Get(SkillId::SHIELD)) / 200));
+	return 0.5f * str / 2 + 0.25f * Get(AttributeId::DEX) + (s.block / 3 * p * (1.f + float(Get(SkillId::SHIELD)) / 200));
 }
 
 //=================================================================================================
@@ -2942,6 +2942,15 @@ void Unit::RemoveStamina(float value)
 		if(game.pc != player)
 			game.GetPlayerInfo(player).update_flags |= PlayerInfo::UF_STAMINA;
 	}
+}
+
+//=================================================================================================
+void Unit::RemoveStaminaBlock(float value)
+{
+	float skill = (float)Get(SkillId::SHIELD);
+	value *= Lerp(0.5f, 0.25f, Max(skill, 100.f) / 100.f);
+	if(value > 0.f)
+		RemoveStamina(value);
 }
 
 //=================================================================================================

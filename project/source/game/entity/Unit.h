@@ -827,6 +827,7 @@ struct Unit
 
 	void UpdateStaminaAction();
 	void RemoveStamina(float value);
+	void RemoveStaminaBlock(float value);
 
 	void CreateMesh(CREATE_MESH mode);
 

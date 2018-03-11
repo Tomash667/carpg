@@ -44,7 +44,6 @@ StatsPanel::StatsPanel() : last_update(0.f)
 	txFeats = section.Get("feats");
 	txTraits = section.Get("traits");
 	txStats = section.Get("stats");
-	txSkills = section.Get("skills");
 	txDate = section.Get("date");
 	txAttack = section.Get("attack");
 	txMeleeAttack = section.Get("meleeAttack");
@@ -165,7 +164,6 @@ void StatsPanel::SetText()
 	// skills
 	SkillGroupId last_group = SkillGroupId::NONE;
 	flowSkills.Clear();
-	flowSkills.Add()->Set(txSkills);
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
 	{
 		if(pc->unit->GetUnmod((SkillId)i) > 0)

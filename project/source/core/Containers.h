@@ -262,11 +262,20 @@ inline bool IsInside(const vector<T>* v, const T& elem)
 //-----------------------------------------------------------------------------
 // kontener u¿ywany na tymczasowe obiekty które s¹ potrzebne od czasu do czasu
 //-----------------------------------------------------------------------------
-//#define CHECK_POOL_LEAK
-#if defined(CHECK_POOL_LEAK) && !defined(_DEBUG)
-#	pragma message("Warning: Disabling CHECK_POOL_LEAK in release mode.")
-#	undef CHECK_POOL_LEAK
+#ifdef _DEBUG
+struct ObjectPoolLeakManager
+{
+	struct CallStackEntry;
+	~ObjectPoolLeakManager();
+	void Register(void* ptr);
+	void Unregister(void* ptr);
+	static ObjectPoolLeakManager instance;
+private:
+	vector<CallStackEntry*> call_stack_pool;
+	std::unordered_map<void*, CallStackEntry*> call_stacks;
+};
 #endif
+
 template<typename T>
 struct ObjectPool
 {
@@ -294,6 +303,9 @@ struct ObjectPool
 		{
 			t->OnGet();
 		}
+#ifdef _DEBUG
+		ObjectPoolLeakManager::instance.Register(t);
+#endif
 		return t;
 	}
 
@@ -320,16 +332,14 @@ struct ObjectPool
 		assert(e);
 #ifdef _DEBUG
 		VerifyElement(e);
+		ObjectPoolLeakManager::instance.Unregister(e);
 #endif
 		__if_exists(T::OnFree)
 		{
 			e->OnFree();
 		}
-#ifdef CHECK_POOL_LEAK
-		delete e;
-#else
+
 		pool.push_back(e);
-#endif
 	}
 
 	void Free(vector<T*>& elems)
@@ -346,20 +356,18 @@ struct ObjectPool
 			}
 		}
 
-#ifdef CHECK_POOL_LEAK
-		DeleteElementsChecked(elems);
-#else
 #ifdef _DEBUG
 		CheckDuplicates(elems);
 		for(T* e : elems)
 		{
 			assert(e);
 			VerifyElement(e);
+			ObjectPoolLeakManager::instance.Unregister(e);
 		}
 #endif
+
 		pool.insert(pool.end(), elems.begin(), elems.end());
 		elems.clear();
-#endif
 	}
 
 	void SafeFree(T* e)
@@ -372,6 +380,9 @@ struct ObjectPool
 			__if_exists(T::OnFree)
 			{
 				e->OnFree();
+#ifdef _DEBUG
+				ObjectPoolLeakManager::instance.Unregister(e);
+#endif
 			}
 			delete e;
 		}
@@ -390,16 +401,13 @@ struct ObjectPool
 				{
 #ifdef _DEBUG
 					VerifyElement(e);
+					ObjectPoolLeakManager::instance.Unregister(e);
 #endif
 					__if_exists(T::OnFree)
 					{
 						e->OnFree();
 					}
-#ifdef CHECK_POOL_LEAK
-					delete e;
-#else
 					pool.push_back(e);
-#endif
 				}
 			}
 		}
@@ -413,6 +421,9 @@ struct ObjectPool
 					{
 						e->OnFree();
 					}
+#ifdef _DEBUG
+					ObjectPoolLeakManager::instance.Unregister(e);
+#endif
 					delete e;
 				}
 			}

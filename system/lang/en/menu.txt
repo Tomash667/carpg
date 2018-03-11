@@ -86,7 +86,7 @@ doorLocked = "Locked door"
 gamePausedBig = "GAME PAUSED"
 pressEsc = "(Press ESC to exit to menu)"
 
-// inventory
+[Inventory]
 inventory = "Inventory"
 goldAndCredit = "Gold: %d\nCredit: %d"
 goldDropInfo = "Click here to drop gold."
@@ -116,7 +116,7 @@ takeAll = "Take all"
 shareItems = "Share items"
 giveItems = "Give item"
 putGold = "Click here to store gold."
-giveGold2 = "Click here to give gold."
+giveGold = "Click here to give gold."
 giveGoldCount = "How much gold give?"
 shareGiveItemCount = "How much give?"
 canCarryTeamOnly = "Your companion can only carry team items."
@@ -128,14 +128,15 @@ sellItem = "This item is better than one I use. I will buy it from you for %d\ng
 sellFreeItem = "This item is better than one I use. I don't have %d gold coins.\nMaybe you can give me it for free? :3"
 givePotionCount = "How many potions give?"
 npcCantCarry = "%s can't carry that much."
+showStatsFor = "SHIFT - show stats %s"
+statsFor = "Stats for %s"
 
 [StatsPanel]
 title = "Character"
 traits = "Traits"
 stats = "Statistics"
-skills = "Skills"
 feats = "Feats"
-traitsClass = "Class"
+class = "Class"
 traitsStart = "Health: %d/%dStamina: %d/%d"
 attack = "Attack"
 meleeAttack = "Melee attack"
@@ -689,6 +690,8 @@ reallyQuit = "Do you really want to quit from CaRpg?"
 secretAppear = "Out of nowhere appeared in your inventory a piece of paper."
 gmsAddedItem = "Received item"
 gmsAddedItems = "Received %d items"
+gmsGettingOutOfRange = "Leaving event range"
+gmsLeftEvent = "You have left event"
 
 // plotki
 rumor_0 = "Apparently in $rcitynhere$ people seen elves."
@@ -1121,9 +1124,10 @@ dirNW = "north west"
 dirSE = "south east"
 dirSW = "south west"
 
-// item stats
+[ItemStats]
 attack = "Attack"
 defense = "Defense"
+block = "Block"
 mobility = "Mobility"
 requiredStrength = "Required strength"
 dtBlunt = "bludgeoning"
@@ -1133,9 +1137,10 @@ dtBluntPierce = "piercing/bludgeoning"
 dtBluntSlash = "slashing/bludgeoning"
 dtSlashPierce = "slashing/piercing"
 dtMagical = "magical"
-
 weight = "Weight: %g kg"
 value = "Value: %d gp"
+invalidArmor = "Does not fit"
+[]
 
 // menu net
 enterIp = "Enter server ip address:"

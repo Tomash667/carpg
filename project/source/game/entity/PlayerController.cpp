@@ -199,7 +199,7 @@ void PlayerController::Train(SkillId skill, int points)
 		recalculate_level = true;
 		unit->Set(skill, value);
 		Game& game = Game::Get();
-		if(Net::IsLocal())
+		if(is_local)
 			game.ShowStatGain(true, s, gained);
 		else
 		{
@@ -248,7 +248,7 @@ void PlayerController::Train(AttributeId attrib, int points)
 		recalculate_level = true;
 		unit->Set(attrib, value);
 		Game& game = Game::Get();
-		if(Net::IsLocal())
+		if(is_local)
 			game.ShowStatGain(false, a, gained);
 		else
 		{

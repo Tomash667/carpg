@@ -4,6 +4,7 @@ Historia zmian
 Wersja 0.7 (2018-XX-YY):
 + wczytywanie grup przeciwników na arenie z pliku
 + lepiej widoczny celownik w ciemnoœci
++ info o opuszczaniu obszaru wydarzenia
 - naprawiony crash przy wygenerowaniu magówi i golemów podczas walki na arenie
 - naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
 - naprawione przeliczanie wagi ekwipunku dla wczytywania starych zapisów
@@ -18,6 +19,11 @@ Wersja 0.7 (2018-XX-YY):
 - naprawiony crash gdy Gorush zmienia klasê postaci
 - naprawione bardzo dobre pocz¹tkowe przedmioty gracza przy bardzo niskiej umiejêtnoœci
 - naprawiony brak aktualizacji efektów u klienta po podró¿y
+- ciê¿ki/œredni pancerz nie daje lepszej tylko gorsz¹ premie do obrony od zrêcznoœci
+- informacja o zdobyciu atrybutu/umiejêtnoœci pojawia siê u gracza a nie serwera
+- efekty dla klientów po podró¿y poprawnie siê aktualizuj¹
+- blokowanie strza³ i czarów zu¿ywa ju¿ wytrzyma³oœæ
+- wysoka umiejêtnoœæ tarczy nie przywraca wytrzyma³oœci po trafieniu
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):

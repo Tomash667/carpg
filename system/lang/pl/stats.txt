@@ -1,7 +1,6 @@
 // stats
 hp = "Zdrowie"
 stamina = "Wytrzyma³oœæ"
-invalidArmor = "Nie pasuje"
 
 // weapon types
 wt_shortBlade = "Krótkie ostrze"

@@ -34,6 +34,6 @@ private:
 	FlowContainer flowAttribs, flowStats, flowSkills, flowFeats;
 	float last_update;
 	cstring txAttributes, txTitle, txClass, txTraitsStart, txTraitsEnd, txStatsText, txYearMonthDay, txBase, txRelatedAttributes, txFeats, txTraits, txStats,
-		txSkills, txDate, txAttack, txMeleeAttack, txRangedAttack;
+		txDate, txAttack, txMeleeAttack, txRangedAttack;
 	vector<std::pair<cstring, int>> perks;
 };

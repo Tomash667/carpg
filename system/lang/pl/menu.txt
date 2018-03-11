@@ -86,7 +86,7 @@ doorLocked = "Zamkniête drzwi"
 gamePausedBig = "GRA ZATRZYMANA"
 pressEsc = "(Wciœnij ESC aby wróciæ do menu)"
 
-// ekwipunek
+[Inventory]
 inventory = "Ekwipunek"
 goldAndCredit = "Z³oto: %d\nKredyt: %d"
 goldDropInfo = "Kliknij tutaj aby upuœciæ z³oto."
@@ -116,7 +116,7 @@ takeAll = "Zabierz wszystko"
 shareItems = "Wymiana"
 giveItems = "Daj przedmiot"
 putGold = "Kliknij tutaj aby schowaæ z³oto."
-giveGold2 = "Kliknij tutaj aby daæ z³oto."
+giveGold = "Kliknij tutaj aby daæ z³oto."
 giveGoldCount = "Ile daæ z³ota?"
 shareGiveItemCount = "Ile daæ przedmiotów?"
 canCarryTeamOnly = "Twój towarzysz mo¿e nosiæ tylko przedmioty dru¿ynowe."
@@ -128,12 +128,13 @@ sellItem = "Ten przedmiot jest lepszy od tego co mam aktualnie. Odkupiê go od ci
 sellFreeItem = "Ten przedmiot jest lepszy od tego co mam aktualnie. Niestety nie mam %d\nsztuk z³ota. Mo¿esz mi go oddaæ za darmo jeœli chcesz? :3"
 givePotionCount = "Ile daæ miksturek?"
 npcCantCarry = "%s nie mo¿e tyle dŸwigaæ."
+showStatsFor = "SHIFT - poka¿ statystyki dla %s"
+statsFor = "Statystyki dla %s"
 
 [StatsPanel]
 title = "Postaæ"
 traits = "Cechy"
 stats = "Statystyki"
-skills = "Skills"
 feats = "Atuty"
 class = "Klasa"
 traitsStart = "Zdrowie: %d/%d\nWytrzyma³oœæ: %d/%d"
@@ -689,6 +690,8 @@ reallyQuit = "Na pewno chcesz wyjœæ z CaRpg?"
 secretAppear = "Znik¹d pojawi³ siê w twoim ekwipunku kawa³ek papieru."
 gmsAddedItem = "Otrzyma³eœ przedmiot"
 gmsAddedItems = "Otrzyma³eœ %d przedmioty"
+gmsGettingOutOfRange = "Opuszczasz obszar wydarzenia"
+gmsLeftEvent = "Opuœci³eœ wydarzenie"
 
 // plotki
 rumor_0 = "Ponoæ w $rcitynhere$ widziano elfy."
@@ -1121,9 +1124,10 @@ dirNW = "pó³nocny zachód"
 dirSE = "po³udniowy wschód"
 dirSW = "po³udniowy zachód"
 
-// statystyki przedmiotów
+[ItemStats]
 attack = "Atak"
 defense = "Obrona"
+block = "Blok"
 mobility = "Mobilnoœæ"
 requiredStrength = "Wymagana si³a"
 dtBlunt = "mia¿d¿one"
@@ -1135,6 +1139,8 @@ dtSlashPierce = "ciête/k³ute"
 dtMagical = "magiczne"
 weight = "Waga: %g kg"
 value = "Wartoœæ: %d sz"
+invalidArmor = "Nie pasuje"
+[]
 
 // menu net
 enterIp = "Podaj adres ip serwera:"

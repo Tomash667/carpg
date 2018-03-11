@@ -94,7 +94,7 @@ public:
 		txDropNoGold, txDropNotNow, txDropItemCount, txWontBuy, txPrice, txNeedMoreGoldItem, txBuyItemCount, txSellItemCount, txLooting, txLootingChest,
 		txTrading, txPutGoldCount, txLootItemCount, txPutItemCount, txTakeAll, txInventory, txShareItems, txGiveItems, txPutGold, txGiveGold, txGiveGoldCount,
 		txShareGiveItemCount, txCanCarryTeamOnly, txWontGiveItem, txShareTakeItemCount, txWontTakeItem, txSellTeamItem, txSellItem, txSellFreeItem,
-		txGivePotionCount, txNpcCantCarry;
+		txGivePotionCount, txNpcCantCarry, txShowStatsFor, txStatsFor;
 	Scrollbar scrollbar;
 	Button bt;
 	int counter, give_item_mode;
@@ -113,9 +113,11 @@ private:
 	void UpdateGrid(bool mine);
 	void ReadBook(const Item* item);
 	void FormatBox(int group, string& text, string& small_text, TEX& img);
+	bool AllowForUnit() { return Any(mode, GIVE_MY, GIVE_OTHER, SHARE_MY, SHARE_OTHER); }
 
 	static TooltipController tooltip;
 	Game& game;
 	float rot;
 	const Item* item_visible;
+	bool for_unit;
 };

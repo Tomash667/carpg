@@ -4,7 +4,6 @@
 #include "Config.h"
 
 const int CONFIG_VERSION = 1;
-Tokenizer Config::t;
 
 //=================================================================================================
 void Config::Add(cstring name, cstring value)

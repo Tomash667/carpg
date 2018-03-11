@@ -27,7 +27,7 @@ public:
 	bool NeedCursor() const override { return true; }
 
 	void DrawBox();
-	void UpdateBoxIndex(float dt, int index, int index2 = -1);
+	void UpdateBoxIndex(float dt, int index, int index2 = -1, bool refresh = false);
 	virtual void FormatBox() {}
 
 	static TEX tBackground;
