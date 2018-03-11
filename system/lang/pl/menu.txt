@@ -86,7 +86,7 @@ doorLocked = "Zamkniête drzwi"
 gamePausedBig = "GRA ZATRZYMANA"
 pressEsc = "(Wciœnij ESC aby wróciæ do menu)"
 
-// ekwipunek
+[Inventory]
 inventory = "Ekwipunek"
 goldAndCredit = "Z³oto: %d\nKredyt: %d"
 goldDropInfo = "Kliknij tutaj aby upuœciæ z³oto."
@@ -116,7 +116,7 @@ takeAll = "Zabierz wszystko"
 shareItems = "Wymiana"
 giveItems = "Daj przedmiot"
 putGold = "Kliknij tutaj aby schowaæ z³oto."
-giveGold2 = "Kliknij tutaj aby daæ z³oto."
+giveGold = "Kliknij tutaj aby daæ z³oto."
 giveGoldCount = "Ile daæ z³ota?"
 shareGiveItemCount = "Ile daæ przedmiotów?"
 canCarryTeamOnly = "Twój towarzysz mo¿e nosiæ tylko przedmioty dru¿ynowe."
@@ -128,6 +128,8 @@ sellItem = "Ten przedmiot jest lepszy od tego co mam aktualnie. Odkupiê go od ci
 sellFreeItem = "Ten przedmiot jest lepszy od tego co mam aktualnie. Niestety nie mam %d\nsztuk z³ota. Mo¿esz mi go oddaæ za darmo jeœli chcesz? :3"
 givePotionCount = "Ile daæ miksturek?"
 npcCantCarry = "%s nie mo¿e tyle dŸwigaæ."
+showStatsFor = "SHIFT - poka¿ statystyki dla %s"
+statsFor = "Statystyki dla %s"
 
 [StatsPanel]
 title = "Postaæ"
@@ -688,6 +690,8 @@ reallyQuit = "Na pewno chcesz wyjœæ z CaRpg?"
 secretAppear = "Znik¹d pojawi³ siê w twoim ekwipunku kawa³ek papieru."
 gmsAddedItem = "Otrzyma³eœ przedmiot"
 gmsAddedItems = "Otrzyma³eœ %d przedmioty"
+gmsGettingOutOfRange = "Opuszczasz obszar wydarzenia"
+gmsLeftEvent = "Opuœci³eœ wydarzenie"
 
 // plotki
 rumor_0 = "Ponoæ w $rcitynhere$ widziano elfy."

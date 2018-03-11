@@ -5115,9 +5115,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					contest_time = 0;
 					contest_units.clear();
 					contest_units.push_back(ctx.pc->unit);
+					ctx.pc->leaving_event = false;
 				}
 				else if(strcmp(msg, "chlanie_udzial") == 0)
+				{
 					contest_units.push_back(ctx.pc->unit);
+					ctx.pc->leaving_event = false;
+				}
 				else if(strcmp(msg, "chlanie_nagroda") == 0)
 				{
 					contest_winner = nullptr;
@@ -5905,7 +5909,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "ironfist_winner") == 0)
 				{
-					if(ctx.pc->unit == tournament_winner)
+					//if(ctx.pc->unit == tournament_winner)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "szaleni_nie_zapytano") == 0)
@@ -9262,7 +9266,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 			{
 				if(it->owner && IsFriend(*it->owner, *hitted) || it->attack < -50.f)
 				{
-					// frendly fire
+					// friendly fire
 					if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
@@ -9298,7 +9302,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					m += 0.1f; // 10% do dmg jeœli ma schowan¹ broñ
 
 				// backstab bonus damage
-				float kat = AngleDiff(it->rot.y, hitted->rot);
+				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
 				float backstab_mod;
 				if(it->backstab == 0)
 					backstab_mod = 0.25f;
@@ -9308,16 +9312,18 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					backstab_mod = 0.75f;
 				if(IS_SET(hitted->data->flags2, F2_BACKSTAB_RES))
 					backstab_mod /= 2;
-				m += kat / PI*backstab_mod;
+				m += angle_dif / PI*backstab_mod;
 
 				// modyfikator obra¿eñ
 				dmg *= m;
 				float base_dmg = dmg;
 
-				if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
+				if(hitted->action == A_BLOCK && angle_dif < PI * 2 / 5)
 				{
-					float blocked = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
-					dmg -= blocked;
+					float block = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - angle_dif / (PI * 2 / 5));
+					float stamina = min(block, dmg);
+					dmg -= block;
+					hitted->RemoveStaminaBlock(stamina);
 
 					MATERIAL_TYPE mat = hitted->GetShield().material;
 					sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
@@ -9427,13 +9433,15 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				float dmg = it->attack;
 				if(it->owner)
 					dmg += it->owner->level * it->spell->dmg_bonus;
-				float kat = AngleDiff(Clip(it->rot.y + PI), hitted->rot);
+				float angle_dif = AngleDiff(it->rot.y, hitted->rot);
 				float base_dmg = dmg;
 
-				if(hitted->action == A_BLOCK && kat < PI * 2 / 5)
+				if(hitted->action == A_BLOCK && angle_dif < PI * 2 / 5)
 				{
-					float blocked = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - kat / (PI * 2 / 5));
-					dmg -= blocked / 2;
+					float block = hitted->CalculateBlock() * hitted->mesh_inst->groups[1].GetBlendT() * (1.f - angle_dif / (PI * 2 / 5));
+					float stamina = min(dmg, block);
+					dmg -= block / 2;
+					hitted->RemoveStaminaBlock(stamina);
 
 					if(hitted->IsPlayer())
 					{
@@ -10892,7 +10900,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		m += 0.1f;
 
 	// backstab bonus
-	float kat = AngleDiff(Clip(attacker.rot + PI), hitted.rot);
+	float angle_dif = AngleDiff(Clip(attacker.rot + PI), hitted.rot);
 	float backstab_mod = 0.25f;
 	if(IS_SET(attacker.data->flags, F2_BACKSTAB))
 		backstab_mod += 0.25f;
@@ -10900,7 +10908,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		backstab_mod += 0.25f;
 	if(IS_SET(hitted.data->flags2, F2_BACKSTAB_RES))
 		backstab_mod /= 2;
-	m += kat / PI*backstab_mod;
+	m += angle_dif / PI*backstab_mod;
 
 	// apply modifiers
 	float dmg = start_dmg * m;
@@ -10912,27 +10920,20 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		base_def = hitted.CalculateBaseDefense();
 
 	// blocking
-	if(hitted.action == A_BLOCK && kat < PI / 2)
+	if(hitted.action == A_BLOCK && angle_dif < PI / 2)
 	{
-		int block_value = 3;
-		MATERIAL_TYPE hitted_mat;
-		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
-			--block_value;
-		if(attacker.attack_power >= 1.9f)
-			--block_value;
-
 		// reduce damage
-		float blocked = hitted.CalculateBlock();
-		hitted_mat = hitted.GetShield().material;
-		blocked *= block_value;
-		dmg -= blocked;
-		float stamina = blocked;
-		stamina -= hitted.Get(SkillId::SHIELD);
-		float block_stamina_loss = Lerp(0.5f, 0.25f, float(hitted.Get(SkillId::SHIELD)) / 100);
-		stamina *= block_stamina_loss;
-		hitted.RemoveStamina(stamina);
+		float block = hitted.CalculateBlock() * hitted.mesh_inst->groups[1].GetBlendT();
+		float stamina = min(dmg, block);
+		if(IS_SET(attacker.data->flags2, F2_IGNORE_BLOCK))
+			block *= 2.f / 3;
+		if(attacker.attack_power >= 1.9f)
+			stamina *= 4.f / 3;
+		dmg -= block;
+		hitted.RemoveStaminaBlock(stamina);
 
 		// play sound
+		MATERIAL_TYPE hitted_mat = hitted.GetShield().material;
 		MATERIAL_TYPE weapon_mat = (!bash ? attacker.GetWeaponMaterial() : attacker.GetShield().material);
 		if(Net::IsServer())
 		{
@@ -10991,7 +10992,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 	else if(hitted.HaveShield() && hitted.action != A_PAIN)
 	{
 		// defense bonus from shield
-		base_def += hitted.CalculateBlock() / 5;
+		base_def += hitted.CalculateBlock() / 20;
 	}
 
 	// decrease defense when stunned
@@ -19056,6 +19057,22 @@ void Game::UpdateContest(float dt)
 		InsideBuilding* inn = city_ctx->FindInn(id);
 		Unit& innkeeper = *inn->FindUnit(UnitData::Get("innkeeper"));
 
+		// info about getting out of range
+		for(Unit* unit : contest_units)
+		{
+			if(!unit->IsPlayer())
+				continue;
+			float dist = Vec3::Distance2d(unit->pos, innkeeper.pos);
+			bool leaving_event = (dist > 10.f || unit->in_building != id);
+			if(leaving_event != unit->player->leaving_event)
+			{
+				unit->player->leaving_event = leaving_event;
+				if(leaving_event)
+					AddGameMsg3(unit->player, GMS_GETTING_OUT_OF_RANGE);
+			}
+		}
+
+		// update timer
 		if(innkeeper.busy == Unit::Busy_No)
 		{
 			float prev = contest_time;
@@ -19066,8 +19083,10 @@ void Game::UpdateContest(float dt)
 
 		if(contest_time >= 15.f && innkeeper.busy != Unit::Busy_Talking)
 		{
+			// start contest
 			contest_state = CONTEST_IN_PROGRESS;
-			// zbierz jednostki
+
+			// gather units
 			for(vector<Unit*>::iterator it = inn->ctx.units->begin(), end = inn->ctx.units->end(); it != end; ++it)
 			{
 				Unit& u = **it;
@@ -19098,13 +19117,21 @@ void Game::UpdateContest(float dt)
 			}
 			contest_state2 = 0;
 
-			// patrzenie siê postaci i usuniêcie zajêtych
+			// start looking at innkeeper, remove busy units/players out of range
 			bool removed = false;
 			for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
 			{
 				Unit& u = **it;
-				if(u.in_building != id || u.frozen != FROZEN::NO || !u.IsStanding())
+				bool kick = false;
+				if(u.IsPlayer())
 				{
+					float dist = Vec3::Distance2d(u.pos, innkeeper.pos);
+					kick = (dist > 10.f || u.in_building != id);
+				}
+				if(kick || u.in_building != id || u.frozen != FROZEN::NO || !u.IsStanding())
+				{
+					if(u.IsPlayer())
+						AddGameMsg3(u.player, GMS_LEFT_EVENT);
 					*it = nullptr;
 					removed = true;
 				}
@@ -19491,6 +19518,12 @@ void Game::AddGameMsg3(GMS id)
 		text = txGmsAddedItem;
 		repeat = true;
 		break;
+	case GMS_GETTING_OUT_OF_RANGE:
+		text = txGmsGettingOutOfRange;
+		break;
+	case GMS_LEFT_EVENT:
+		text = txGmsLeftEvent;
+		break;
 	default:
 		assert(0);
 		return;
@@ -19500,6 +19533,21 @@ void Game::AddGameMsg3(GMS id)
 		AddGameMsg(text, time);
 	else
 		AddGameMsg2(text, time, id);
+}
+
+void Game::AddGameMsg3(PlayerController* player, GMS id)
+{
+	assert(player);
+	if(player->is_local)
+		AddGameMsg3(id);
+	else
+	{
+		NetChangePlayer& c = Add1(Net::player_changes);
+		c.type = NetChangePlayer::GAME_MESSAGE;
+		c.id = id;
+		c.pc = player;
+		player->player_info->NeedUpdate();
+	}
 }
 
 void Game::UpdatePlayerView()
@@ -21466,7 +21514,7 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 		{
 			if(!unit.player->is_local)
 			{
-				// dodaj komunikat o dodaniu przedmiotu
+				// dodaj komunikat o usuniêciu przedmiotu
 				NetChangePlayer& c = Add1(Net::player_changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS;
 				c.pc = unit.player;

@@ -4,6 +4,7 @@ Changelog
 Version 0.7 (2018-XX-YY):
 + loading arena unit groups from lists
 + better visible crosshair in dark places
++ info about leaving event area
 - fixed random crash when fighting with arena enemies and rolled to spawn mages and golems
 - fixed empty location where there should be mages and golems there
 - fixed recalculating inventory weight when loading old saves
@@ -20,6 +21,9 @@ Version 0.7 (2018-XX-YY):
 - fixed effects not disappearing from clients after travel
 - heavy/medium armor don't gives better defense from dexterity bonus then light armor
 - info about gaining skill/attribute shows up for client not for server
+- fixed effects not disappearing from clients after travel
+- fixed blocking arrows don't remove stamina
+- fixed high shield skill give stamina from being hit
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

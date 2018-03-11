@@ -460,7 +460,7 @@ shield shield_wood {
 	weight 2.2
 	value 5
 	mesh "drewniana_tarcza.qmsh"
-	defense 10
+	block 50
 	req_str 25
 	material wood
 }
@@ -469,7 +469,7 @@ shield shield_iron {
 	weight 2.7
 	value 20
 	mesh "zelazna_tarcza.qmsh"
-	defense 20
+	block 75
 	req_str 35
 	material metal
 }
@@ -478,7 +478,7 @@ shield shield_steel {
 	weight 2.7
 	value 200
 	mesh "stalowa_tarcza.qmsh"
-	defense 30
+	block 100
 	req_str 40
 	material metal
 }
@@ -487,7 +487,7 @@ shield shield_mithril {
 	weight 1.3
 	value 3000
 	mesh "tarcza_mit.qmsh"
-	defense 50
+	block 150
 	req_str 20
 	material metal
 	flags hq
@@ -497,7 +497,7 @@ shield shield_adamantine {
 	weight 3
 	value 10000
 	mesh "tarcza_adam.qmsh"
-	defense 80
+	block 200
 	req_str 45
 	material metal
 	flags {magic_resistance10 magical}
@@ -507,7 +507,7 @@ shield shield_unique {
 	weight 3.5
 	value 30000
 	mesh "tarcza_mur.qmsh"
-	defense 100
+	block 250
 	req_str 60
 	material rock
 	flags {not_shop not_chest not_random magic_resistance25 unique}

@@ -1,39 +1,21 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-- shader crash
-	12:39:21 INFO  - Compiling super shader: 60
-	12:39:21 ERROR - Engine: Game error!
-	Engine: Failed to compile shader 'super.fx' (-2147467259).
-	F:\carpg\bin\memory(24,3): error: "Normal mapping require binormals!"
+- 8 memory leaks while staying in village for 21.09 + 1 day rest, server quit first; ADD_LOCATION Camp
+- client rest get him stuck in Frozen2 for server, can't join contest
+	? enter building
+	? exit building
+	? warp
+	? warp from usable
+	? change location
+	? change location up/down
+	? enter arena
+	? rest
+	? train
+	? ironfist train
+	? pvp
+	! undo ironfist_winner
 
-	went to hall for deliver letter quest
-	went to village with orc quest
-	goto dungeon
-	killall -> 3 level
-	recruit gorush
-	go up = crash
-
-	1
-	2
-	4    1   60
-	8    1   56
-	16   1   48
-	32   1   
-
-
-	NIE SceneNode::F_ANIMATED
-	NIE SceneNode::F_BINORMALS
-	TAK cl_fog
-	TAK cl_specularmap && IS_SET(node->flags, SceneNode::F_SPECULAR_MAP)
-	TAK cl_normalmap && IS_SET(node->flags, SceneNode::F_NORMAL_MAP)
-	TAK cl_lighting && !outside
-- leaving level with units dying cause no blood and unpickable
-- crayzies attacked normal heroes and hit player by incident, gorush was runing back and forth but didn't attack, have state seend enemy
-+ current train don't handle floats so gain 0 in some cases
-+ stamina changes
-
-+ copy f_perks console commands, angelscript parser
 ? client leave - 3 player tests:
 	? while talking
 	? while using object
@@ -45,64 +27,31 @@ CURRENT:
 	? pvp
 	? arena
 	? solo arena
-	? tournamnt before, in combat
+	? tournament before, in combat
 	? in contest
 	
-contest:
-+ warning when out of range
-	stash
-? exiting while in contest
-? 3 player
-
 tournament:
 ? spawning
+	? rest
+	? enter on exact day
 + warning when out of range
 ? break dialogs in contest, verify that they fight anyway
 ? exiting while in tournament
 ? exiting while in arena with cheat
 ? 3 players
+? test s/c frozen state at tournament
 
 ? arena sounds for 3 clients (win/lose/etc)
 
-angelscript2 and more:
++ verify old branches for bugs n fixes
+f_perks, angelscript2 and more:
 ? test recruiting gorush/jozan in 0.5, if they don't tell name in clients write as fixed
 -? UpdateGold but change is added too
-
-f_new_combat_system:
-?? fixed effects not disappearing from clients after travel
-- fixed blocking arrows don't remove stamina
-	Game2.cpp
-- fixed high shield skill give stamina from being hit
-	Game2.cpp
-? power attack stamina s/c/ai (add changelog)
-? attack & stamina s/c/ai
-? Inventory.cpp
-	GetItemString(text, item, game.pc->unit, (uint)count);
-	instead of
-	Unit* for_unit;
-	if(mode == LOOT_OTHER || mode == TRADE_OTHER)
-		for_unit = game.pc->unit;
-	else
-		for_unit = unit;
-
-	GetItemString(text, item, for_unit, (uint)count);
-	shift - to show stats for companion
-f_perks:
-- clear remove console history
++ copy f_perks console commands, angelscript parser
 
 + anystring to Cstring, don't pass by ref&
-
-!? Game2.cpp:RemoveItem in mp from server
-if(!unit.player->is_local)
-{
-	// dodaj komunikat o dodaniu przedmiotu
-	NetChangePlayer& c = Add1(Net::player_changes);
-	c.type = NetChangePlayer::REMOVE_ITEMS;
-	c.pc = unit.player;
-	c.id = i_index;
-	c.ile = count;
-	GetPlayerInfo(c.pc).NeedUpdate();
-}
++ current train don't handle floats so gain 0 in some cases
++ stamina changes
 
 + player Train
 Game.h
@@ -149,27 +98,16 @@ NEW:
 + better perk names, for example axe master is not upgrade from expert so player have two perks (expert and master)
 + stock scripts in files, using extra_stock perk
 + npc to recruit: merchant
-+ server side validation: trader_buy items
-+ use ContentLoader.LoadError for other loaders
 + server side language != player language will cause some texts to use server language, some will use player language
 + hunters guild, quests (wielki łowczy), bad wolf boss
-+ space - take out/hide weapon, hold to show circle with choices (melee, ranged, [unarmed] etc)
 + attach sounds to scene node, not to unit
-+ searching bookshelf animation
-+ rename ItemSlot to something better, is it equipped slots or not ?
-+ openable city gates, mechanism
-+ lock/unlock commands for door
-+ better camp objects layout
 ===============================================================================================================
 VERIFY:
-? da się pogadać gdy leży, wtedy wstaje od razu [da się pogadać jak wstaje]
 - w questowych lokacjach krew/zwłoki nie znikają
 - da sie wlezc w kogos
 - ANGLE!
-- (tile?) fov may not work good when near borders
 - verify dialogs ending with end/restart
 - without human flag and mesh crash when spawned, log error
 - ai look at angle nie jest clipowane, albo coś?
 - trochę da się widzieć przez ściany :/
-? heal and death_screen
 ? raknet wysyła wiadomości do zdisconnectowanych przy broadcast jeśli nie wyśle jeszcze disconnect

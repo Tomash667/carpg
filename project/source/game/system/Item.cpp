@@ -67,7 +67,7 @@ Item& Item::operator = (const Item& i)
 		{
 			auto& s = ToShield();
 			auto& s2 = i.ToShield();
-			s.def = s2.def;
+			s.block = s2.block;
 			s.req_str = s2.req_str;
 			s.material = s2.material;
 		}

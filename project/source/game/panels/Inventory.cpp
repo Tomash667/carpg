@@ -31,7 +31,7 @@ cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarr
 	Inventory::txTakeAll, Inventory::txInventory, Inventory::txShareItems, Inventory::txGiveItems, Inventory::txPutGold, Inventory::txGiveGold,
 	Inventory::txGiveGoldCount, Inventory::txShareGiveItemCount, Inventory::txCanCarryTeamOnly, Inventory::txWontGiveItem, Inventory::txShareTakeItemCount,
 	Inventory::txWontTakeItem, Inventory::txSellTeamItem, Inventory::txSellItem, Inventory::txSellFreeItem, Inventory::txGivePotionCount,
-	Inventory::txNpcCantCarry;
+	Inventory::txNpcCantCarry, Inventory::txStatsFor, Inventory::txShowStatsFor;
 LOCK_MODE Inventory::lock_id;
 int Inventory::lock_index;
 bool Inventory::lock_give;
@@ -43,7 +43,7 @@ TooltipController Inventory::tooltip;
 #define INDEX_CARRY -3
 
 //=================================================================================================
-Inventory::Inventory() : last_item(nullptr), i_items(nullptr), game(Game::Get())
+Inventory::Inventory() : last_item(nullptr), i_items(nullptr), game(Game::Get()), for_unit(false)
 {
 	scrollbar.total = 100;
 	scrollbar.offset = 0;
@@ -56,47 +56,50 @@ Inventory::Inventory() : last_item(nullptr), i_items(nullptr), game(Game::Get())
 //=================================================================================================
 void Inventory::LoadText()
 {
-	txGoldAndCredit = Str("goldAndCredit");
-	txGoldDropInfo = Str("goldDropInfo");
-	txCarryShort = Str("carryShort");
-	txCarry = Str("carry");
-	txCarryInfo = Str("carryInfo");
-	txTeamItem = Str("teamItem");
-	txCantWear = Str("cantWear");
-	txCantDoNow = Str("cantDoNow");
-	txBuyTeamDialog = Str("buyTeamDialog");
-	txDropGoldCount = Str("dropGoldCount");
-	txDropNoGold = Str("dropNoGold");
-	txDropNotNow = Str("dropNotNow");
-	txDropItemCount = Str("dropItemCount");
-	txWontBuy = Str("wontBuy");
-	txPrice = Str("price");
-	txNeedMoreGoldItem = Str("needMoreGoldItem");
-	txBuyItemCount = Str("buyItemCount");
-	txSellItemCount = Str("sellItemCount");
-	txLooting = Str("looting");
-	txLootingChest = Str("lootingChest");
-	txTrading = Str("trading");
-	txPutGoldCount = Str("putGoldCount");
-	txLootItemCount = Str("lootItemCount");
-	txPutItemCount = Str("putItemCount");
-	txTakeAll = Str("takeAll");
-	txInventory = Str("inventory");
-	txShareItems = Str("shareItems");
-	txGiveItems = Str("giveItems");
-	txPutGold = Str("putGold");
-	txGiveGold = Str("giveGold2");
-	txGiveGoldCount = Str("giveGoldCount");
-	txShareGiveItemCount = Str("shareGiveItemCount");
-	txCanCarryTeamOnly = Str("canCarryTeamOnly");
-	txWontGiveItem = Str("wontGiveItem");
-	txShareTakeItemCount = Str("shareTakeItemCount");
-	txWontTakeItem = Str("wontTakeItem");
-	txSellTeamItem = Str("sellTeamItem");
-	txSellItem = Str("sellItem");
-	txSellFreeItem = Str("sellFreeItem");
-	txGivePotionCount = Str("givePotionCount");
-	txNpcCantCarry = Str("npcCantCarry");
+	auto section = Language::GetSection("Inventory");
+	txGoldAndCredit = section.Get("goldAndCredit");
+	txGoldDropInfo = section.Get("goldDropInfo");
+	txCarryShort = section.Get("carryShort");
+	txCarry = section.Get("carry");
+	txCarryInfo = section.Get("carryInfo");
+	txTeamItem = section.Get("teamItem");
+	txCantWear = section.Get("cantWear");
+	txCantDoNow = section.Get("cantDoNow");
+	txBuyTeamDialog = section.Get("buyTeamDialog");
+	txDropGoldCount = section.Get("dropGoldCount");
+	txDropNoGold = section.Get("dropNoGold");
+	txDropNotNow = section.Get("dropNotNow");
+	txDropItemCount = section.Get("dropItemCount");
+	txWontBuy = section.Get("wontBuy");
+	txPrice = section.Get("price");
+	txNeedMoreGoldItem = section.Get("needMoreGoldItem");
+	txBuyItemCount = section.Get("buyItemCount");
+	txSellItemCount = section.Get("sellItemCount");
+	txLooting = section.Get("looting");
+	txLootingChest = section.Get("lootingChest");
+	txTrading = section.Get("trading");
+	txPutGoldCount = section.Get("putGoldCount");
+	txLootItemCount = section.Get("lootItemCount");
+	txPutItemCount = section.Get("putItemCount");
+	txTakeAll = section.Get("takeAll");
+	txInventory = section.Get("inventory");
+	txShareItems = section.Get("shareItems");
+	txGiveItems = section.Get("giveItems");
+	txPutGold = section.Get("putGold");
+	txGiveGold = section.Get("giveGold");
+	txGiveGoldCount = section.Get("giveGoldCount");
+	txShareGiveItemCount = section.Get("shareGiveItemCount");
+	txCanCarryTeamOnly = section.Get("canCarryTeamOnly");
+	txWontGiveItem = section.Get("wontGiveItem");
+	txShareTakeItemCount = section.Get("shareTakeItemCount");
+	txWontTakeItem = section.Get("wontTakeItem");
+	txSellTeamItem = section.Get("sellTeamItem");
+	txSellItem = section.Get("sellItem");
+	txSellFreeItem = section.Get("sellFreeItem");
+	txGivePotionCount = section.Get("givePotionCount");
+	txNpcCantCarry = section.Get("npcCantCarry");
+	txStatsFor = section.Get("statsFor");
+	txShowStatsFor = section.Get("showStatsFor");
 }
 
 //=================================================================================================
@@ -344,7 +347,12 @@ void Inventory::Update(float dt)
 		tooltip.UpdateTooltip(dt, new_index, -1);
 	else
 	{
-		UpdateBoxIndex(dt, new_index);
+		bool old_for_unit = for_unit;
+		if(AllowForUnit())
+			for_unit = Key.Down(VK_SHIFT);
+		else
+			for_unit = false;
+		UpdateBoxIndex(dt, new_index, -1, old_for_unit != for_unit);
 		if(box_state == BOX_NOT_VISIBLE)
 			item_visible = nullptr;
 	}
@@ -1300,13 +1308,13 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 			team_count = slot.team_count;
 		}
 
-		Unit* for_unit;
-		if(mode == LOOT_OTHER || mode == TRADE_OTHER)
-			for_unit = game.pc->unit;
+		Unit* target;
+		if(for_unit)
+			target = game.pc->action_unit;
 		else
-			for_unit = unit;
+			target = game.pc->unit;
 
-		GetItemString(text, item, for_unit, (uint)count);
+		GetItemString(text, item, target, (uint)count);
 		if(mode != TRADE_OTHER && team_count && Team.GetActiveTeamSize() > 1)
 		{
 			text += '\n';
@@ -1330,6 +1338,15 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 			text += Format(txPrice, price);
 		}
 		small_text = item->desc;
+		if(AllowForUnit())
+		{
+			if(!small_text.empty())
+				small_text += '\n';
+			if(for_unit)
+				small_text += Format(txStatsFor, game.pc->action_unit->GetName());
+			else
+				small_text += Format(txShowStatsFor, game.pc->action_unit->GetName());
+		}
 
 		if(item->mesh)
 		{

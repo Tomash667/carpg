@@ -2161,6 +2161,8 @@ void Game::SetGameText()
 	txSecretAppear = Str("secretAppear");
 	txGmsAddedItem = Str("gmsAddedItem");
 	txGmsAddedItems = Str("gmsAddedItems");
+	txGmsGettingOutOfRange = Str("gmsGettingOutOfRange");
+	txGmsLeftEvent = Str("gmsLeftEvent");
 
 	// plotki
 	LOAD_ARRAY(txRumor, "rumor_");

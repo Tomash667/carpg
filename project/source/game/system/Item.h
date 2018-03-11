@@ -289,9 +289,9 @@ struct Bow : public Item
 // Shield
 struct Shield : public Item
 {
-	Shield() : Item(IT_SHIELD), def(10), req_str(10), material(MAT_WOOD) {}
+	Shield() : Item(IT_SHIELD), block(10), req_str(10), material(MAT_WOOD) {}
 
-	int def, req_str;
+	int block, req_str;
 	MATERIAL_TYPE material;
 
 	static vector<Shield*> shields;

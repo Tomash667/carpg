@@ -241,7 +241,7 @@ void GamePanel::DrawBoxInternal()
 }
 
 //=================================================================================================
-void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
+void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 {
 	if(index != INDEX_INVALID)
 	{
@@ -261,15 +261,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 			{
 				box_state = BOX_VISIBLE;
 				box_alpha = 0.f;
-
-				FormatBox();
-
-				if(box_img)
-				{
-					D3DSURFACE_DESC desc;
-					box_img->GetLevelDesc(0, &desc);
-					box_img_size = Int2(desc.Width, desc.Height);
-				}
+				refresh = true;
 			}
 		}
 		else
@@ -277,6 +269,17 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2)
 			box_alpha += dt * 5;
 			if(box_alpha >= 1.f)
 				box_alpha = 1.f;
+		}
+
+		if(refresh)
+		{
+			FormatBox();
+			if(box_img)
+			{
+				D3DSURFACE_DESC desc;
+				box_img->GetLevelDesc(0, &desc);
+				box_img_size = Int2(desc.Width, desc.Height);
+			}
 		}
 	}
 	else

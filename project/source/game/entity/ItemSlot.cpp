@@ -224,7 +224,7 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 
 			str += Format("\n%s: %d (%s)\n%s: $c%c%d$c-\n",
 				txBlock,
-				shield.def,
+				shield.block,
 				block_desc,
 				txRequiredStrength,
 				(unit->Get(AttributeId::STR) >= shield.req_str ? '-' : 'r'),

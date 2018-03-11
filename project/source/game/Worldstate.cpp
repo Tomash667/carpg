@@ -72,8 +72,6 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 					if(unit->IsPlayer() && unit->player->free_days == maks)
 						--unit->player->free_days;
 				}
-
-				Net::PushChange(NetChange::UPDATE_FREE_DAYS);
 			}
 		}
 	}
