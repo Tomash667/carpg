@@ -302,9 +302,6 @@
     <ClCompile Include="source\game\stats\Skill.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\entity\PlayerInfo.cpp">
-      <Filter>3. game\entity</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\panels\Controls.cpp">
       <Filter>3. game\panels</Filter>
     </ClCompile>
@@ -676,6 +673,9 @@
     <ClCompile Include="source\engine\SoundManager.cpp">
       <Filter>2. engine</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\net\PlayerInfo.cpp">
+      <Filter>3. game\net</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -906,9 +906,6 @@
     </ClInclude>
     <ClInclude Include="source\game\stats\Skill.h">
       <Filter>3. game\stats</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\entity\PlayerInfo.h">
-      <Filter>3. game\entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\panels\Controls.h">
       <Filter>3. game\panels</Filter>
@@ -1338,6 +1335,9 @@
     </ClInclude>
     <ClInclude Include="source\engine\StartupOptions.h">
       <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\net\PlayerInfo.h">
+      <Filter>3. game\net</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

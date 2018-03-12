@@ -211,6 +211,7 @@
     <ClInclude Include="source\game\net\NetChange.h" />
     <ClInclude Include="source\game\net\NetChangePlayer.h" />
     <ClInclude Include="source\game\net\NetStats.h" />
+    <ClInclude Include="source\game\net\PlayerInfo.h" />
     <ClInclude Include="source\game\panels\ActionPanel.h" />
     <ClInclude Include="source\game\panels\BookPanel.h" />
     <ClInclude Include="source\game\panels\GameDialogBox.h" />
@@ -240,7 +241,6 @@
     <ClInclude Include="source\game\entity\Light.h" />
     <ClInclude Include="source\game\entity\Object.h" />
     <ClInclude Include="source\game\entity\PlayerController.h" />
-    <ClInclude Include="source\game\entity\PlayerInfo.h" />
     <ClInclude Include="source\game\entity\SceneNode.h" />
     <ClInclude Include="source\game\entity\SpellEffects.h" />
     <ClInclude Include="source\game\entity\Trap.h" />
@@ -417,6 +417,7 @@
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
     <ClCompile Include="source\game\net\NetStats.cpp" />
+    <ClCompile Include="source\game\net\PlayerInfo.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
     <ClCompile Include="source\game\stats\Action.cpp" />
@@ -442,7 +443,6 @@
     <ClCompile Include="source\game\entity\Light.cpp" />
     <ClCompile Include="source\game\entity\Object.cpp" />
     <ClCompile Include="source\game\entity\PlayerController.cpp" />
-    <ClCompile Include="source\game\entity\PlayerInfo.cpp" />
     <ClCompile Include="source\game\entity\SpellEffects.cpp" />
     <ClCompile Include="source\game\entity\Trap.cpp" />
     <ClCompile Include="source\game\entity\Unit.cpp" />
