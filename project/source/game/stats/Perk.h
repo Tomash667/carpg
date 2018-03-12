@@ -12,28 +12,11 @@ enum class Perk
 	Skilled,
 	SkillFocus,
 	Talent,
-	//CraftingTradition,
 	AlchemistApprentice, // more potions
 	Wealthy, // +500 gold
 	VeryWealthy, // +2k gold
 	FamilyHeirloom,
 	Leader,
-
-	/*
-	STR:
-	StrongBack, // (60 str, +x kg)
-
-	CON:
-	Healthy, // (60 end, +50? hp)
-	FastHealing, // 70 end, faster natural regeneration
-	poison resistance
-	regeneration
-	natural armor
-	more hp
-
-	DEX:
-	move speed
-	*/
 
 	Max,
 	None
@@ -61,6 +44,7 @@ struct PerkInfo
 	{
 	}
 
+	static PerkInfo perks[(int)Perk::Max];
 	static void Validate(uint& err);
 	static PerkInfo* Find(const string& id);
 };
@@ -91,12 +75,9 @@ struct TakenPerk
 };
 
 //-----------------------------------------------------------------------------
-extern PerkInfo g_perks[(int)Perk::Max];
-
-//-----------------------------------------------------------------------------
 inline bool SortPerks(Perk p1, Perk p2)
 {
-	return strcoll(g_perks[(int)p1].name.c_str(), g_perks[(int)p2].name.c_str()) < 0;
+	return strcoll(PerkInfo::perks[(int)p1].name.c_str(), PerkInfo::perks[(int)p2].name.c_str()) < 0;
 }
 inline bool SortTakenPerks(const std::pair<cstring, int>& tp1, const std::pair<cstring, int>& tp2)
 {

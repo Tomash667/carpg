@@ -50,7 +50,7 @@ inline void WriteVector(BitStream& stream, const vector<T>& v)
 	uint count = v.size();
 	assert(count <= std::numeric_limits<COUNT_TYPE>::max());
 	stream.WriteCasted<COUNT_TYPE>(count);
-	stream.Write(v.data(), sizeof(T)*count);
+	stream.Write((char*)v.data(), sizeof(T)*count);
 }
 
 template<typename CAST_TYPE, typename COUNT_TYPE = uint, typename T>
@@ -140,7 +140,7 @@ inline bool ReadBool(BitStream& stream, bool& boo)
 }
 
 template<typename COUNT_TYPE, typename T>
-inline void ReadVector(BitStream& stream, vector<T>& v)
+inline bool ReadVector(BitStream& stream, vector<T>& v)
 {
 	COUNT_TYPE count;
 	if(!stream.Read(count)
@@ -149,7 +149,7 @@ inline void ReadVector(BitStream& stream, vector<T>& v)
 	if(count)
 	{
 		v.resize(count);
-		stream.Read(v.data(), sizeof(T)*count);
+		stream.Read((char*)v.data(), sizeof(T)*count);
 	}
 	return true;
 }

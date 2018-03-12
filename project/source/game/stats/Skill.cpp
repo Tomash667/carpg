@@ -84,15 +84,6 @@ SkillGroup SkillGroup::groups[(int)SkillGroupId::MAX] = {
 	SkillGroup(SkillGroupId::OTHER, "other")
 };
 
-//-----------------------------------------------------------------------------
-SubSkillInfo g_sub_skills[(int)SubSkill::MAX] = {
-	SubSkill::FIND_TRAP, SkillId::TRAPS,
-	SubSkill::SET_TRAP, SkillId::TRAPS,
-	SubSkill::DISARM_TRAP, SkillId::TRAPS,
-	SubSkill::HIDE, SkillId::SNEAK,
-	SubSkill::MOVE_SILENTLY, SkillId::SNEAK,
-};
-
 //=================================================================================================
 Skill* Skill::Find(const string& id)
 {

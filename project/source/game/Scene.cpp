@@ -1117,7 +1117,7 @@ void Game::ListDrawObjectsUnit(LevelContext* ctx, FrustumPlanes& frustum, bool o
 	// add stun effect
 	if(u.IsAlive())
 	{
-		auto effect = u.FindEffect(E_STUN);
+		auto effect = u.FindEffect(EffectId::Stun);
 		if(effect)
 		{
 			auto& stun = Add1(draw_batch.stuns);

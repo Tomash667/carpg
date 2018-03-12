@@ -1102,7 +1102,7 @@ void CreateCharacterPanel::GetTooltip(TooltipController* _tool, int group, int i
 			tool.anything = true;
 			tool.img = nullptr;
 			tool.small_text.clear();
-			PerkInfo& pi = g_perks[id];
+			PerkInfo& pi = PerkInfo::perks[id];
 			tool.big_text = pi.name;
 			tool.text = pi.desc;
 			if(IS_SET(pi.flags, PerkInfo::Flaw))
@@ -1117,7 +1117,7 @@ void CreateCharacterPanel::GetTooltip(TooltipController* _tool, int group, int i
 			TakenPerk& taken = cc.taken_perks[id];
 			tool.anything = true;
 			tool.img = nullptr;
-			PerkInfo& pi = g_perks[(int)taken.perk];
+			PerkInfo& pi = PerkInfo::perks[(int)taken.perk];
 			tool.big_text = pi.name;
 			tool.text = pi.desc;
 			taken.GetDesc(tool.small_text);
@@ -1310,7 +1310,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 	// group perks by availability
 	available_perks.clear();
 	unavailable_perks.clear();
-	for(PerkInfo& perk : g_perks)
+	for(PerkInfo& perk : PerkInfo::perks)
 	{
 		bool taken = false;
 		if(!IS_SET(perk.flags, PerkInfo::Multiple))
@@ -1336,7 +1336,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 	LocalVector2<string*> strs;
 	for(int i = 0; i < (int)cc.taken_perks.size(); ++i)
 	{
-		PerkInfo& perk = g_perks[(int)cc.taken_perks[i].perk];
+		PerkInfo& perk = PerkInfo::perks[(int)cc.taken_perks[i].perk];
 		if(IS_SET(perk.flags, PerkInfo::RequireFormat))
 		{
 			string* s = StringPool.Get();
@@ -1360,7 +1360,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		flowPerks.Add()->Set(txAvailablePerks);
 		for(Perk perk : available_perks)
 		{
-			PerkInfo& info = g_perks[(int)perk];
+			PerkInfo& info = PerkInfo::perks[(int)perk];
 			bool can_pick = (cc.perks == 0 && !IS_SET(info.flags, PerkInfo::Free));
 			flowPerks.Add()->Set((int)Group::PickPerk_AddButton, (int)perk, 0, can_pick);
 			flowPerks.Add()->Set(info.name.c_str(), (int)Group::Perk, (int)perk);
@@ -1372,7 +1372,7 @@ void CreateCharacterPanel::RebuildPerksFlow()
 		for(Perk p : unavailable_perks)
 		{
 			flowPerks.Add()->Set((int)Group::PickPerk_DisabledButton, (int)p, 0, true);
-			flowPerks.Add()->Set(g_perks[(int)p].name.c_str(), (int)Group::Perk, (int)p);
+			flowPerks.Add()->Set(PerkInfo::perks[(int)p].name.c_str(), (int)Group::Perk, (int)p);
 		}
 	}
 	if(!cc.taken_perks.empty())
@@ -1554,7 +1554,7 @@ void CreateCharacterPanel::AddPerk(Perk perk, int value, bool apply)
 	}
 	else
 	{
-		PerkInfo& info = g_perks[(int)perk];
+		PerkInfo& info = PerkInfo::perks[(int)perk];
 		if(!IS_SET(info.flags, PerkInfo::Free))
 			--cc.perks;
 		if(IS_SET(info.flags, PerkInfo::Flaw))

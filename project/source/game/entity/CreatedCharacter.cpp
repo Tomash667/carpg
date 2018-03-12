@@ -168,7 +168,7 @@ int CreatedCharacter::Read(BitStream& stream)
 	// search for duplicates
 	for(vector<TakenPerk>::iterator it = taken_perks.begin(), end = taken_perks.end(); it != end; ++it)
 	{
-		const PerkInfo& info = g_perks[(int)it->perk];
+		const PerkInfo& info = PerkInfo::perks[(int)it->perk];
 		if(!IS_SET(info.flags, PerkInfo::Multiple))
 		{
 			for(vector<TakenPerk>::iterator it2 = it + 1; it2 != end; ++it2)

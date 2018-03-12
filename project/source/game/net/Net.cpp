@@ -3732,7 +3732,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					info.update_flags |= PlayerInfo::UF_STAMINA;
 				}
 				unit.RemovePoison();
-				unit.RemoveEffect(E_STUN);
+				unit.RemoveEffect(EffectId::Stun);
 			}
 			else
 			{
@@ -3805,7 +3805,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 								target->player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
 						}
 						target->RemovePoison();
-						target->RemoveEffect(E_STUN);
+						target->RemoveEffect(EffectId::Stun);
 					}
 				}
 			}
@@ -8413,7 +8413,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						if(length > 0)
 							unit->ApplyStun(length);
 						else
-							unit->RemoveEffect(E_STUN);
+							unit->RemoveEffect(EffectId::Stun);
 					}
 				}
 			}

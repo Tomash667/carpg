@@ -184,7 +184,7 @@ void StatsPanel::SetText()
 	LocalVector2<string*> strs;
 	for(int i = 0; i < (int)pc->perks.size(); ++i)
 	{
-		PerkInfo& perk = g_perks[(int)pc->perks[i].perk];
+		PerkInfo& perk = PerkInfo::perks[(int)pc->perks[i].perk];
 		if(IS_SET(perk.flags, PerkInfo::RequireFormat))
 		{
 			string* s = StringPool.Get();
@@ -284,7 +284,7 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 	case G_PERK:
 		{
 			TakenPerk& perk = pc->perks[id];
-			PerkInfo& pi = g_perks[(int)perk.perk];
+			PerkInfo& pi = PerkInfo::perks[(int)perk.perk];
 			tooltip.img = nullptr;
 			tooltip.big_text = pi.name;
 			tooltip.text = pi.desc;

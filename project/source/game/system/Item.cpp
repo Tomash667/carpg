@@ -406,3 +406,37 @@ const Item* FindItemOrList(const AnyString& id, ItemListResult& lis)
 	lis = ItemList::TryGet(id);
 	return nullptr;
 }
+
+EffectId Consumable::ToEffect() const
+{
+	switch(effect)
+	{
+	case E_NONE:
+		return EffectId::None;
+	case E_HEAL:
+	case E_ANTIDOTE:
+	case E_STR:
+	case E_END:
+	case E_DEX:
+	case E_GREEN_HAIR:
+		// instant effects
+		assert(0);
+		return EffectId::None;
+	case E_REGENERATE:
+		return EffectId::Regeneration;
+	case E_NATURAL:
+		return EffectId::NaturalHealingMod;
+	case E_POISON:
+		return EffectId::Poison;
+	case E_ALCOHOL:
+		return EffectId::Alcohol;
+	case E_ANTIMAGIC:
+		return EffectId::MagicResistance;
+	case E_FOOD:
+		return EffectId::FoodRegeneration;
+	case E_STAMINA:
+		return EffectId::StaminaRegeneration;
+	case E_STUN:
+		return EffectId::Stun;
+	}
+}

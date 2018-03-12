@@ -8,6 +8,7 @@
 #include "ItemType.h"
 #include "ArmorUnitType.h"
 #include "Resource.h"
+#include "Effect.h"
 
 //-----------------------------------------------------------------------------
 static const int HEIRLOOM = -1;
@@ -371,6 +372,7 @@ struct Consumable : public Item
 	ConsumeEffect effect;
 	float power, time;
 	ConsumableType cons_type;
+	EffectId ToEffect() const;
 
 	static vector<Consumable*> consumables;
 };

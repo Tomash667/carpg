@@ -635,7 +635,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 		if(!IS_SET(data->flags, F_POISON_RES))
 		{
 			Effect& e = Add1(effects);
-			e.effect = item.effect;
+			e.effect = item.ToEffect();
 			e.time = item.time;
 			e.power = item.power / item.time;
 		}
@@ -646,7 +646,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_STAMINA:
 		{
 			Effect& e = Add1(effects);
-			e.effect = item.effect;
+			e.effect = item.ToEffect();
 			e.time = item.time;
 			e.power = item.power;
 		}
@@ -656,22 +656,11 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 			uint index = 0;
 			for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 			{
-				if(it->effect == E_POISON)
+				if(it->effect == EffectId::Poison || it->effect == EffectId::Alcohol)
 					_to_remove.push_back(index);
 			}
 
-			while(!_to_remove.empty())
-			{
-				index = _to_remove.back();
-				_to_remove.pop_back();
-				if(index == effects.size() - 1)
-					effects.pop_back();
-				else
-				{
-					std::iter_swap(effects.begin() + index, effects.end() - 1);
-					effects.pop_back();
-				}
-			}
+			RemoveEffects();
 
 			if(alcohol != 0.f)
 			{
@@ -695,7 +684,7 @@ void Unit::ApplyConsumableEffect(const Consumable& item)
 	case E_FOOD:
 		{
 			Effect& e = Add1(effects);
-			e.effect = E_FOOD;
+			e.effect = item.ToEffect();
 			e.time = item.power;
 			e.power = 1.f;
 		}
@@ -731,7 +720,7 @@ void Unit::UpdateEffects(float dt)
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
-		if(it->effect == E_NATURAL)
+		if(it->effect == EffectId::NaturalHealingMod)
 			continue;
 		switch(it->effect)
 		{
@@ -778,7 +767,7 @@ void Unit::UpdateEffects(float dt)
 	if((best_reg > 0.f || food_heal > 0.f) && hp != hpmax)
 	{
 		float natural = 1.f;
-		FindEffect(E_NATURAL, &natural);
+		FindEffect(EffectId::NaturalHealingMod, &natural);
 		hp += (best_reg * dt + food_heal) * natural;
 		if(hp > hpmax)
 			hp = hpmax;
@@ -928,18 +917,7 @@ void Unit::EndEffects(int days, int* best_nat)
 	else if(hp > hpmax)
 		hp = hpmax;
 
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == effects.size() - 1)
-			effects.pop_back();
-		else
-		{
-			std::iter_swap(effects.begin() + index, effects.end() - 1);
-			effects.pop_back();
-		}
-	}
+	RemoveEffects();
 }
 
 //=================================================================================================
@@ -1735,7 +1713,7 @@ void Unit::Load(HANDLE file, bool local)
 }
 
 //=================================================================================================
-Effect* Unit::FindEffect(ConsumeEffect effect)
+Effect* Unit::FindEffect(EffectId effect)
 {
 	for(Effect& e : effects)
 	{
@@ -1747,7 +1725,7 @@ Effect* Unit::FindEffect(ConsumeEffect effect)
 }
 
 //=================================================================================================
-bool Unit::FindEffect(ConsumeEffect effect, float* value)
+bool Unit::FindEffect(EffectId effect, float* value)
 {
 	Effect* top = nullptr;
 	float topv = 0.f;
@@ -1959,6 +1937,8 @@ void Unit::MakeItemsTeam(bool team)
 }
 
 //=================================================================================================
+// Used when unit stand up
+// Restore hp to 1 and heal poison
 void Unit::HealPoison()
 {
 	if(hp < 1.f)
@@ -1967,26 +1947,15 @@ void Unit::HealPoison()
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
 	{
-		if(it->effect == E_POISON)
+		if(it->effect == EffectId::Poison)
 			_to_remove.push_back(index);
 	}
 
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == effects.size() - 1)
-			effects.pop_back();
-		else
-		{
-			std::iter_swap(effects.begin() + index, effects.end() - 1);
-			effects.pop_back();
-		}
-	}
+	RemoveEffects();
 }
 
 //=================================================================================================
-void Unit::RemoveEffect(ConsumeEffect effect)
+void Unit::RemoveEffect(EffectId effect)
 {
 	uint index = 0;
 	for(vector<Effect>::iterator it = effects.begin(), end = effects.end(); it != end; ++it, ++index)
@@ -1995,29 +1964,15 @@ void Unit::RemoveEffect(ConsumeEffect effect)
 			_to_remove.push_back(index);
 	}
 
-	if(!_to_remove.empty())
+	if(effect == EffectId::Stun && !_to_remove.empty() && Net::IsServer())
 	{
-		if(Net::IsOnline() && Net::IsServer())
-		{
-			auto& c = Add1(Net::changes);
-			c.type = NetChange::STUN;
-			c.unit = this;
-			c.f[0] = 0;
-		}
+		auto& c = Add1(Net::changes);
+		c.type = NetChange::STUN;
+		c.unit = this;
+		c.f[0] = 0;
 	}
 
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == effects.size() - 1)
-			effects.pop_back();
-		else
-		{
-			std::iter_swap(effects.begin() + index, effects.end() - 1);
-			effects.pop_back();
-		}
-	}
+	RemoveEffects();
 }
 
 //=================================================================================================
@@ -2354,7 +2309,7 @@ float Unit::CalculateMagicResistance() const
 		else if(IS_SET(s.flags, ITEM_MAGIC_RESISTANCE_25))
 			mres *= 0.75f;
 	}
-	if(HaveEffect(E_ANTIMAGIC))
+	if(HaveEffect(EffectId::MagicResistance))
 		mres *= 0.5f;
 	return mres;
 }
@@ -2376,7 +2331,7 @@ int Unit::CalculateMagicPower() const
 }
 
 //=================================================================================================
-bool Unit::HaveEffect(ConsumeEffect e) const
+bool Unit::HaveEffect(EffectId e) const
 {
 	for(vector<Effect>::const_iterator it = effects.begin(), end = effects.end(); it != end; ++it)
 	{
@@ -2384,6 +2339,23 @@ bool Unit::HaveEffect(ConsumeEffect e) const
 			return true;
 	}
 	return false;
+}
+
+//=================================================================================================
+void Unit::RemoveEffects()
+{
+	while(!_to_remove.empty())
+	{
+		uint index = _to_remove.back();
+		_to_remove.pop_back();
+		if(index == effects.size() - 1)
+			effects.pop_back();
+		else
+		{
+			std::iter_swap(effects.begin() + index, effects.end() - 1);
+			effects.pop_back();
+		}
+	}
 }
 
 //=================================================================================================
@@ -2395,28 +2367,28 @@ int Unit::GetBuffs() const
 	{
 		switch(it->effect)
 		{
-		case E_POISON:
+		case EffectId::Poison:
 			b |= BUFF_POISON;
 			break;
-		case E_ALCOHOL:
+		case EffectId::Alcohol:
 			b |= BUFF_ALCOHOL;
 			break;
-		case E_REGENERATE:
+		case EffectId::Regeneration:
 			b |= BUFF_REGENERATION;
 			break;
-		case E_FOOD:
+		case EffectId::FoodRegeneration:
 			b |= BUFF_FOOD;
 			break;
-		case E_NATURAL:
+		case EffectId::NaturalHealingMod:
 			b |= BUFF_NATURAL;
 			break;
-		case E_ANTIMAGIC:
+		case EffectId::MagicResistance:
 			b |= BUFF_ANTIMAGIC;
 			break;
-		case E_STAMINA:
+		case EffectId::StaminaRegeneration:
 			b |= BUFF_STAMINA;
 			break;
-		case E_STUN:
+		case EffectId::Stun:
 			b |= BUFF_STUN;
 			break;
 		}
@@ -2523,7 +2495,6 @@ void Unit::ApplyStat(AttributeId a, int old, bool calculate_skill)
 	case AttributeId::END:
 		{
 			// hp/stamina depends on end
-			Game& game = Game::Get();
 			if(Net::IsLocal())
 			{
 				RecalculateHp();
@@ -2547,7 +2518,6 @@ void Unit::ApplyStat(AttributeId a, int old, bool calculate_skill)
 	case AttributeId::DEX:
 		{
 			// stamina depends on dex
-			Game& game = Game::Get();
 			if(Net::IsLocal())
 			{
 				RecalculateStamina();
@@ -2585,20 +2555,12 @@ void Unit::RecalculateStat(SkillId s, bool apply)
 {
 	int id = (int)s;
 	int old = stats.skill[id];
-	StatState state;
 
 	// calculate value
 	int value = unmod_stats.skill[id];
 
-	// apply effect modifiers
-	ValueBuffer buf;
-	Skill& info = Skill::skills[id];
-	if(IsPlayer())
-		value += buf.Get(state);
-	else
-		value += buf.Get();
-
 	// apply attributes bonus
+	Skill& info = Skill::skills[id];
 	if(info.attrib2 == AttributeId::NONE)
 		value += Get(info.attrib) / 10;
 	else
@@ -2670,7 +2632,7 @@ void Unit::RecalculateStat(SkillId s, bool apply)
 
 	stats.skill[id] = value;
 	if(IsPlayer())
-		player->skill_state[id] = state;
+		player->skill_state[id] = StatState::NORMAL;
 }
 
 //=================================================================================================
@@ -2734,16 +2696,6 @@ int Unit::CalculateMobility(const Armor& armor) const
 		return max_dex + int((dexf - max_dex) * ((float)max_dex / dexf));
 
 	return (int)dexf;
-}
-
-//=================================================================================================
-int Unit::Get(SubSkill ss) const
-{
-	int id = (int)ss;
-	SubSkillInfo& info = g_sub_skills[id];
-	int v = Get(info.skill);
-	ValueBuffer buf;
-	return v + buf.Get();
 }
 
 struct TMod
@@ -3070,13 +3022,13 @@ void Unit::ApplyStun(float length)
 	if(Net::IsLocal() && IS_SET(data->flags2, F2_STUN_RESISTANCE))
 		length /= 2;
 
-	auto effect = FindEffect(E_STUN);
+	auto effect = FindEffect(EffectId::Stun);
 	if(effect)
 		effect->time = max(effect->time, length);
 	else
 	{
 		auto& effect = Add1(effects);
-		effect.effect = E_STUN;
+		effect.effect = EffectId::Stun;
 		effect.power = 0.f;
 		effect.time = length;
 		animation = ANI_STAND;

@@ -9,13 +9,12 @@
 #include "Unit.h"
 
 //-----------------------------------------------------------------------------
-PerkInfo g_perks[(int)Perk::Max] = {
+PerkInfo PerkInfo::perks[(int)Perk::Max] = {
 	PerkInfo(Perk::Weakness, "weakness", PerkInfo::Free | PerkInfo::Flaw | PerkInfo::History | PerkInfo::RequireFormat),
 	PerkInfo(Perk::Strength, "strength", PerkInfo::History | PerkInfo::RequireFormat),
 	PerkInfo(Perk::Skilled, "skilled", PerkInfo::History),
 	PerkInfo(Perk::SkillFocus, "skill_focus", PerkInfo::Free | PerkInfo::History | PerkInfo::RequireFormat),
 	PerkInfo(Perk::Talent, "talent", PerkInfo::Multiple | PerkInfo::History | PerkInfo::RequireFormat),
-	//PerkInfo(Perk::CraftingTradition, "crafting_tradition", PerkInfo::History | PerkInfo::Check),
 	PerkInfo(Perk::AlchemistApprentice, "alchemist", PerkInfo::History),
 	PerkInfo(Perk::Wealthy, "wealthy", PerkInfo::History),
 	PerkInfo(Perk::VeryWealthy, "very_wealthy", PerkInfo::History | PerkInfo::Check, Perk::Wealthy),
@@ -29,7 +28,7 @@ cstring TakenPerk::txIncreasedAttrib, TakenPerk::txIncreasedSkill, TakenPerk::tx
 //=================================================================================================
 PerkInfo* PerkInfo::Find(const string& id)
 {
-	for(PerkInfo& pi : g_perks)
+	for(PerkInfo& pi : PerkInfo::perks)
 	{
 		if(id == pi.id)
 			return &pi;
@@ -42,7 +41,7 @@ PerkInfo* PerkInfo::Find(const string& id)
 void PerkInfo::Validate(uint& err)
 {
 	int index = 0;
-	for(PerkInfo& pi : g_perks)
+	for(PerkInfo& pi : PerkInfo::perks)
 	{
 		if(pi.perk_id != (Perk)index)
 		{
@@ -115,7 +114,7 @@ void TakenPerk::GetDesc(string& s) const
 //=================================================================================================
 int TakenPerk::Apply(CreatedCharacter& cc, bool validate) const
 {
-	PerkInfo& info = g_perks[(int)perk];
+	PerkInfo& info = PerkInfo::perks[(int)perk];
 
 	switch(perk)
 	{
@@ -299,7 +298,7 @@ void TakenPerk::Apply(PlayerController& pc) const
 //=================================================================================================
 void TakenPerk::Remove(CreatedCharacter& cc, int index) const
 {
-	PerkInfo& info = g_perks[(int)perk];
+	PerkInfo& info = PerkInfo::perks[(int)perk];
 	bool add = false;
 
 	switch(perk)
@@ -365,7 +364,7 @@ void TakenPerk::Remove(CreatedCharacter& cc, int index) const
 //=================================================================================================
 cstring TakenPerk::FormatName()
 {
-	PerkInfo& p = g_perks[(int)perk];
+	PerkInfo& p = PerkInfo::perks[(int)perk];
 
 	switch(perk)
 	{

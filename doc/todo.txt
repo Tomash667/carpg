@@ -45,12 +45,13 @@ tournament:
 
 + verify old branches for bugs n fixes
 f_perks, angelscript2 and more:
-? test recruiting gorush/jozan in 0.5, if they don't tell name in clients write as fixed
+-? test recruiting gorush/jozan in 0.5, if they don't tell name in clients write as fixed
 -? UpdateGold but change is added too
 + copy f_perks console commands, angelscript parser
 ? weakness free perk text
 ? flow container - tooltip when over button, scrollbar working
 ? net - 3 clients
++ EffectId::MagicResistance multiply
 
 + anystring to Cstring, don't pass by ref&
 + current train don't handle floats so gain 0 in some cases

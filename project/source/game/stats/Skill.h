@@ -116,30 +116,3 @@ struct SkillGroup
 	static SkillGroup groups[(int)SkillGroupId::MAX];
 	static SkillGroup* Find(const string& id);
 };
-
-//-----------------------------------------------------------------------------
-enum class SubSkill
-{
-	// TRAPS
-	FIND_TRAP,
-	SET_TRAP,
-	DISARM_TRAP,
-
-	// SNEAK
-	HIDE,
-	MOVE_SILENTLY,
-
-	// SURVIVAL
-
-	MAX
-};
-
-//-----------------------------------------------------------------------------
-struct SubSkillInfo
-{
-	SubSkill id;
-	SkillId skill;
-};
-
-//-----------------------------------------------------------------------------
-extern SubSkillInfo g_sub_skills[(int)SubSkill::MAX];

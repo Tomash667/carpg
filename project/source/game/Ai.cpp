@@ -109,7 +109,7 @@ void Game::UpdateAi(float dt)
 			UnitTryStandup(u, dt);
 			continue;
 		}
-		else if(u.HaveEffect(E_STUN))
+		else if(u.HaveEffect(EffectId::Stun))
 			continue;
 
 		LevelContext& ctx = GetContext(u);

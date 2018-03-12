@@ -91,13 +91,6 @@ enum WeaponState
 };
 
 //-----------------------------------------------------------------------------
-struct Effect
-{
-	ConsumeEffect effect;
-	float time, power;
-};
-
-//-----------------------------------------------------------------------------
 enum class AutoTalkMode
 {
 	No,
@@ -424,8 +417,8 @@ struct Unit
 	int GetRandomAttack() const;
 	void Save(HANDLE file, bool local);
 	void Load(HANDLE file, bool local);
-	Effect* FindEffect(ConsumeEffect effect);
-	bool FindEffect(ConsumeEffect effect, float* value);
+	Effect* FindEffect(EffectId effect);
+	bool FindEffect(EffectId effect, float* value);
 	Vec3 GetCenter() const
 	{
 		Vec3 pt = pos;
@@ -526,10 +519,10 @@ struct Unit
 		Heal(0.15f * Get(AttributeId::END) * days);
 	}
 	void HealPoison();
-	void RemoveEffect(ConsumeEffect effect);
+	void RemoveEffect(EffectId effect);
 	void RemovePoison()
 	{
-		RemoveEffect(E_POISON);
+		RemoveEffect(EffectId::Poison);
 	}
 	// szuka przedmiotu w ekwipunku, zwraca i_index (INVALID_IINDEX jeœli nie ma takiego przedmiotu)
 	static const int INVALID_IINDEX = (-SLOT_INVALID - 1);
@@ -579,7 +572,8 @@ struct Unit
 
 	float CalculateMagicResistance() const;
 	int CalculateMagicPower() const;
-	bool HaveEffect(ConsumeEffect effect) const;
+	bool HaveEffect(EffectId effect) const;
+	void RemoveEffects();
 
 	//-----------------------------------------------------------------------------
 	// EKWIPUNEK
@@ -785,8 +779,6 @@ struct Unit
 
 	int CalculateMobility() const;
 	int CalculateMobility(const Armor& armor) const;
-
-	int Get(SubSkill s) const;
 
 	SkillId GetBestWeaponSkill() const;
 	SkillId GetBestArmorSkill() const;
