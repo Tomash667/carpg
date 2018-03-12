@@ -224,6 +224,7 @@ perkPoints = "Feats: %d/%d"
 createCharText = "Pick your starting skills and feats. You can increase skill only once. You can't pick multiple feats that alter same attribute/skill."
 createCharTooMany = "You spend too many skill points/feats."
 randomSet = "Random"
+flawExtraPerk = "Allows to pick extra feat."
 
 // net panel
 join = "Join"

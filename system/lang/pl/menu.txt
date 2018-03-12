@@ -224,6 +224,7 @@ perkPoints = "Atuty: %d/%d"
 createCharText = "Wybierz pocz¹tkowe umiejêtnoœci i atuty. Mo¿esz zwiêkszyæ ka¿d¹ umiejêtnoœæ tylko raz. Nie mo¿esz wybraæ atutów które wp³ywaj¹ na ten sam atrybut/umiejêtnoœæ."
 createCharTooMany = "Wyda³eœ zbyt du¿o punktów umiejêtnoœci/atutów."
 randomSet = "Losowo"
+flawExtraPerk = "Pozwala wybraæ dodatkowy atut."
 
 // net panel
 join = "Do³¹cz"

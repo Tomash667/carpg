@@ -28,7 +28,6 @@
 #include "SoundManager.h"
 
 vector<NetChange> Net::changes;
-vector<NetChangePlayer> Net::player_changes;
 Net::Mode Net::mode;
 extern bool merchant_buy[];
 extern bool blacksmith_buy[];
@@ -2175,10 +2174,6 @@ void Game::UpdateServer(float dt)
 		peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		StreamWrite(net_stream, Stream_UpdateGameServer, UNASSIGNED_SYSTEM_ADDRESS);
 
-#ifdef _DEBUG
-		int _net_player_updates = (int)Net::player_changes.size();
-#endif
-
 		for(auto pinfo : game_players)
 		{
 			auto& info = *pinfo;
@@ -2188,13 +2183,10 @@ void Game::UpdateServer(float dt)
 			// update stats
 			if(info.u->player->stat_flags != 0)
 			{
-				NetChangePlayer& c = Add1(Net::player_changes);
-				c.pc = info.u->player;
-				c.id = c.pc->stat_flags;
+				NetChangePlayer& c = Add1(info.changes);
+				c.id = info.u->player->stat_flags;
 				c.type = NetChangePlayer::PLAYER_STATS;
-				info.NeedUpdate();
-				c.pc->stat_flags = 0;
-				DEBUG_DO(++_net_player_updates);
+				info.u->player->stat_flags = 0;
 			}
 
 			// update bufs
@@ -2206,27 +2198,16 @@ void Game::UpdateServer(float dt)
 			}
 
 			// write & send updates
-			if(info.update_flags)
+			if(!info.changes.empty() || info.update_flags)
 			{
 				net_stream.Reset();
-				int changes = WriteServerChangesForPlayer(net_stream, info);
-				DEBUG_DO(_net_player_updates -= changes);
+				WriteServerChangesForPlayer(net_stream, info);
 				peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, info.adr, false);
 				StreamWrite(net_stream, Stream_UpdateGameServer, info.adr);
 				info.update_flags = 0;
+				info.changes.clear();
 			}
 		}
-
-#ifdef _DEBUG
-		for(vector<NetChangePlayer>::iterator it = Net::player_changes.begin(), end = Net::player_changes.end(); it != end; ++it)
-		{
-			if(GetPlayerInfo(it->pc).left)
-				--_net_player_updates;
-		}
-#endif
-
-		assert(_net_player_updates == 0);
-		Net::player_changes.clear();
 	}
 }
 
@@ -2290,11 +2271,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					// player is now stuck inside something, unstuck him
 					unit.interp->Add(unit.pos, rot);
-					NetChangePlayer& c = Add1(Net::player_changes);
+					NetChangePlayer& c = Add1(info.changes);
 					c.type = NetChangePlayer::UNSTUCK;
-					c.pc = &player;
 					c.pos = unit.pos;
-					info.NeedUpdate();
 				}
 			}
 		}
@@ -2732,12 +2711,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				unit.mesh_inst->frame_end_info = false;
 
 				// send pickup acceptation
-				NetChangePlayer& c = Add1(Net::player_changes);
-				c.pc = &player;
+				NetChangePlayer& c = Add1(info.changes);
 				c.type = NetChangePlayer::PICKUP;
 				c.id = item->count;
 				c.ile = item->team_count;
-				info.NeedUpdate();
 
 				// send remove item to all players
 				NetChange& c2 = Add1(Net::changes);
@@ -2791,9 +2768,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					break;
 				}
 
-				NetChangePlayer& c = Add1(Net::player_changes);
+				NetChangePlayer& c = Add1(info.changes);
 				c.type = NetChangePlayer::LOOT;
-				c.pc = &player;
 				if(looted_unit->busy == Unit::Busy_Looted)
 				{
 					// someone else is already looting unit
@@ -2808,7 +2784,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					player.action_unit = looted_unit;
 					player.chest_trade = &looted_unit->items;
 				}
-				info.NeedUpdate();
 			}
 			break;
 		// player wants to loot chest
@@ -2830,9 +2805,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					break;
 				}
 
-				NetChangePlayer& c = Add1(Net::player_changes);
+				NetChangePlayer& c = Add1(info.changes);
 				c.type = NetChangePlayer::LOOT;
-				c.pc = info.u->player;
 				if(chest->looted)
 				{
 					// someone else is already looting this chest
@@ -2860,7 +2834,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					if(chest->handler)
 						chest->handler->HandleChestEvent(ChestEventHandler::Opened);
 				}
-				info.NeedUpdate();
 			}
 			break;
 		// player gets item from unit or container
@@ -3084,11 +3057,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							if(player.action == PlayerController::Action_GiveItems)
 							{
 								UpdateUnitInventory(*t);
-								NetChangePlayer& c = Add1(Net::player_changes);
+								NetChangePlayer& c = Add1(info.changes);
 								c.type = NetChangePlayer::UPDATE_TRADER_INVENTORY;
-								c.pc = &player;
 								c.unit = t;
-								info.NeedUpdate();
 							}
 						}
 					}
@@ -3136,11 +3107,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 								unit.gold += price;
 							}
 							UpdateUnitInventory(*player.action_unit);
-							NetChangePlayer& c = Add1(Net::player_changes);
+							NetChangePlayer& c = Add1(info.changes);
 							c.type = NetChangePlayer::UPDATE_TRADER_INVENTORY;
-							c.pc = &player;
 							c.id = player.action_unit->netid;
-							info.NeedUpdate();
 						}
 					}
 					// remove equipped
@@ -3334,8 +3303,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					break;
 				}
 
-				NetChangePlayer& c = Add1(Net::player_changes);
-				c.pc = &player;
+				NetChangePlayer& c = Add1(info.changes);
 				c.type = NetChangePlayer::START_DIALOG;
 				if(talk_to->busy != Unit::Busy_No || !talk_to->CanTalk())
 				{
@@ -3348,7 +3316,6 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					c.id = talk_to->netid;
 					StartDialog(*player.dialog_ctx, talk_to);
 				}
-				info.NeedUpdate();
 			}
 			break;
 		// player selected dialog choice
@@ -3492,10 +3459,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					if(usable->user)
 					{
 						// someone else is already using this
-						NetChangePlayer& c = Add1(Net::player_changes);
+						NetChangePlayer& c = Add1(info.changes);
 						c.type = NetChangePlayer::USE_USABLE;
-						c.pc = &player;
-						info.NeedUpdate();
 						break;
 					}
 					else
@@ -3524,11 +3489,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						else
 						{
 							// start looting container
-							NetChangePlayer& c = Add1(Net::player_changes);
+							NetChangePlayer& c = Add1(info.changes);
 							c.type = NetChangePlayer::LOOT;
-							c.pc = info.u->player;
 							c.id = 1;
-							info.NeedUpdate();
 
 							player.action = PlayerController::Action_LootContainer;
 							player.action_container = usable;
@@ -3710,11 +3673,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					break;
 				}
 
-				NetChangePlayer& c = Add1(Net::player_changes);
+				NetChangePlayer& c = Add1(info.changes);
 				c.type = NetChangePlayer::IS_BETTER_ITEM;
 				c.id = 0;
-				c.pc = &player;
-				info.NeedUpdate();
 
 				if(player.action == PlayerController::Action_GiveItems)
 				{
@@ -3840,8 +3801,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						if(target->stamina != target->stamina_max)
 						{
 							target->stamina = target->stamina_max;
-							if(target->player && target->player != pc)
-								GetPlayerInfo(target->player).update_flags |= PlayerInfo::UF_STAMINA;
+							if(target->player && !target->player->is_local)
+								target->player->player_info->update_flags |= PlayerInfo::UF_STAMINA;
 						}
 						target->RemovePoison();
 						target->RemoveEffect(E_STUN);
@@ -4095,7 +4056,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						int num = +value;
 						if(type == NetChange::CHEAT_MODSTAT)
 							num += info.u->unmod_stats.skill[what];
-						int v = Clamp(num, 0, Skill::MAX);
+						int v = Clamp(num, Skill::MIN, Skill::MAX);
 						if(v != info.u->unmod_stats.skill[what])
 						{
 							info.u->Set((SkillId)what, v);
@@ -4118,7 +4079,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						int num = +value;
 						if(type == NetChange::CHEAT_MODSTAT)
 							num += info.u->unmod_stats.attrib[what];
-						int v = Clamp(num, 1, Attribute::MAX);
+						int v = Clamp(num, Attribute::MIN, Attribute::MAX);
 						if(v != info.u->unmod_stats.attrib[what])
 						{
 							info.u->Set((AttributeId)what, v);
@@ -4161,11 +4122,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						}
 						else
 						{
-							NetChangePlayer& c = Add1(Net::player_changes);
+							NetChangePlayer& c = Add1(pvp_response.from->player->player_info->changes);
 							c.type = NetChangePlayer::NO_PVP;
-							c.pc = pvp_response.from->player;
 							c.id = pvp_response.to->player->id;
-							GetPlayerInfo(pvp_response.from->player).NeedUpdate();
 						}
 					}
 
@@ -4237,11 +4196,9 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					else
 					{
 						// can't leave
-						NetChangePlayer& c = Add1(Net::player_changes);
+						NetChangePlayer& c = Add1(info.changes);
 						c.type = NetChangePlayer::CANT_LEAVE_LOCATION;
-						c.pc = &player;
 						c.id = (int)result;
-						info.NeedUpdate();
 					}
 				}
 			}
@@ -4512,10 +4469,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				{
 					player.Rest(days, true);
 					UseDays(&player, days);
-					NetChangePlayer& c = Add1(Net::player_changes);
+					NetChangePlayer& c = Add1(info.changes);
 					c.type = NetChangePlayer::END_FALLBACK;
-					c.pc = &player;
-					info.NeedUpdate();
 				}
 			}
 			break;
@@ -4556,10 +4511,8 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					}
 					player.Rest(10, false);
 					UseDays(&player, 10);
-					NetChangePlayer& c = Add1(Net::player_changes);
+					NetChangePlayer& c = Add1(info.changes);
 					c.type = NetChangePlayer::END_FALLBACK;
-					c.pc = &player;
-					info.NeedUpdate();
 				}
 			}
 			break;
@@ -4661,12 +4614,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 						// message about getting gold
 						if(target->player != pc)
 						{
-							NetChangePlayer& c = Add1(Net::player_changes);
+							NetChangePlayer& c = Add1(target->player->player_info->changes);
 							c.type = NetChangePlayer::GOLD_RECEIVED;
 							c.id = info.id;
 							c.ile = count;
-							c.pc = target->player;
-							GetPlayerInfo(target->player).NeedUpdateAndGold();
+							target->player->player_info->UpdateGold();
 						}
 						else
 						{
@@ -4677,12 +4629,11 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 					else if(player.IsTradingWith(target))
 					{
 						// message about changing trader gold
-						NetChangePlayer& c = Add1(Net::player_changes);
+						NetChangePlayer& c = Add1(info.changes);
 						c.type = NetChangePlayer::UPDATE_TRADER_GOLD;
-						c.pc = &player;
 						c.id = target->netid;
 						c.ile = target->gold;
-						info.NeedUpdateAndGold();
+						info.UpdateGold();
 					}
 				}
 			}
@@ -5350,10 +5301,12 @@ void Game::WriteServerChanges(BitStream& stream)
 }
 
 //=================================================================================================
-int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
+void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 {
-	int changes = 0;
 	PlayerController& player = *info.pc;
+
+	if(!info.changes.empty())
+		info.update_flags |= PlayerInfo::UF_NET_CHANGES;
 
 	stream.WriteCasted<byte>(ID_PLAYER_CHANGES);
 	stream.WriteCasted<byte>(info.update_flags);
@@ -5361,13 +5314,12 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 		stream.Write(player.last_dmg_poison);
 	if(IS_SET(info.update_flags, PlayerInfo::UF_NET_CHANGES))
 	{
-		uint pos = PatchByte(stream);
-		for(NetChangePlayer& c : Net::player_changes)
-		{
-			if(c.pc != &player)
-				continue;
+		stream.WriteCasted<byte>(info.changes.size());
+		if(info.changes.size() > 0xFF)
+			Error("Update server: Too many changes for player %s.", info.name.c_str());
 
-			++changes;
+		for(NetChangePlayer& c : info.changes)
+		{
 			stream.WriteCasted<byte>(c.type);
 
 			switch(c.type)
@@ -5525,9 +5477,6 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 
 			stream.WriteCasted<byte>(0xFF);
 		}
-		if(changes > 0xFF)
-			Error("Update server: Too many changes for player %s.", info.name.c_str());
-		PatchByteApply(stream, pos, changes);
 	}
 	if(IS_SET(info.update_flags, PlayerInfo::UF_GOLD))
 		stream.Write(info.u->gold);
@@ -5537,8 +5486,6 @@ int Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 		stream.WriteCasted<byte>(info.buffs);
 	if(IS_SET(info.update_flags, PlayerInfo::UF_STAMINA))
 		stream.Write(info.u->stamina);
-
-	return changes;
 }
 
 //=================================================================================================
@@ -9881,11 +9828,9 @@ void Game::UpdateWarpData(float dt)
 				}
 			}
 
-			NetChangePlayer& c = Add1(Net::player_changes);
+			NetChangePlayer& c = Add1(it->u->player->player_info->changes);
 			c.type = NetChangePlayer::SET_FROZEN;
-			c.pc = it->u->player;
 			c.id = 0;
-			GetPlayerInfo(c.pc->id).NeedUpdate();
 
 			it->u->frozen = FROZEN::NO;
 
@@ -9979,7 +9924,6 @@ void Game::Net_OnNewGameServer()
 		Net::changes.clear(); // przy wczytywaniu jest czyszczone przed wczytaniem i w net_changes s¹ zapisane quest_items
 	if(!net_talk.empty())
 		StringPool.Free(net_talk);
-	Net::player_changes.clear();
 	max_players2 = max_players;
 	server_name2 = server_name;
 	enter_pswd = (server_pswd.empty() ? "" : "1");
@@ -11023,24 +10967,27 @@ void Game::Net_FilterServerChanges()
 			++it;
 	}
 
-	for(vector<NetChangePlayer>::iterator it = Net::player_changes.begin(), end = Net::player_changes.end(); it != end;)
+	for(PlayerInfo* info : game_players)
 	{
-		if(FilterOut(*it))
+		for(vector<NetChangePlayer>::iterator it = info->changes.begin(), end = info->changes.end(); it != end;)
 		{
-			if(it + 1 == end)
+			if(FilterOut(*it))
 			{
-				Net::player_changes.pop_back();
-				break;
+				if(it + 1 == end)
+				{
+					info->changes.pop_back();
+					break;
+				}
+				else
+				{
+					std::iter_swap(it, end - 1);
+					info->changes.pop_back();
+					end = info->changes.end();
+				}
 			}
 			else
-			{
-				std::iter_swap(it, end - 1);
-				Net::player_changes.pop_back();
-				end = Net::player_changes.end();
-			}
+				++it;
 		}
-		else
-			++it;
 	}
 }
 
@@ -11055,7 +11002,6 @@ void Game::ClosePeer(bool wait)
 	if(Net::IsClient())
 		was_client = true;
 	Net::changes.clear();
-	Net::player_changes.clear();
 	Net::SetMode(Net::Mode::Singleplayer);
 }
 

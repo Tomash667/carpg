@@ -88,6 +88,7 @@ struct Skill
 	AttributeId attrib, attrib2;
 	SkillPack pack;
 
+	static const int MIN = 0;
 	static const int MAX = 255;
 
 	Skill(SkillId skill_id, cstring id, SkillGroupId group, AttributeId attrib, AttributeId attrib2, SkillPack pack) : skill_id(skill_id), id(id), group(group), attrib(attrib),

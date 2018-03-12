@@ -13,7 +13,7 @@ decreasedSkills = "Decreased skills"
 
 perk weakness {
 	name "Weakness"
-	desc "Flaw - Decrease chosen attribute by 5 points. Allows to pick extra feat."
+	desc "Flaw - Decrease chosen attribute by 5 points."
 }
 perk strength {
 	name "Strength"

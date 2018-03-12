@@ -13,7 +13,7 @@ decreasedSkills = "Zmniejszone umiejêtnoœci"
 
 perk weakness {
 	name "S³aboœæ"
-	desc "Wada - Zmniejsza wybrany atrybut o 5 punktów. Pozwala wybraæ dodatkowy atut."
+	desc "Wada - Zmniejsza wybrany atrybut o 5 punktów."
 }
 perk strength {
 	name "Si³a"

@@ -375,12 +375,10 @@ void Game::TeamShareGiveItemCredit(DialogContext& ctx)
 			tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
 			if(!ctx.is_local && tsi.from == ctx.pc->unit)
 			{
-				NetChangePlayer& c = Add1(Net::player_changes);
+				NetChangePlayer& c = Add1(tsi.from->player->player_info->changes);
 				c.type = NetChangePlayer::REMOVE_ITEMS;
-				c.pc = tsi.from->player;
 				c.id = tsi.index;
 				c.ile = 1;
-				GetPlayerInfo(c.pc).NeedUpdate();
 			}
 			UpdateUnitInventory(*tsi.to);
 			CheckUnitOverload(*tsi.to);
@@ -409,12 +407,11 @@ void Game::TeamShareSellItem(DialogContext& ctx)
 		tsi.from->items.erase(tsi.from->items.begin() + tsi.index);
 		if(!ctx.is_local)
 		{
-			NetChangePlayer& c = Add1(Net::player_changes);
+			NetChangePlayer& c = Add1(tsi.from->player->player_info->changes);
 			c.type = NetChangePlayer::REMOVE_ITEMS;
-			c.pc = tsi.from->player;
 			c.id = tsi.index;
 			c.ile = 1;
-			GetPlayerInfo(c.pc).NeedUpdateAndGold();
+			tsi.from->player->player_info->UpdateGold();
 		}
 		UpdateUnitInventory(*tsi.to);
 		CheckUnitOverload(*tsi.to);

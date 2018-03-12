@@ -315,7 +315,6 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 	}
 
 	// send update
-	Game& game = Game::Get();
 	if(Net::IsOnline() && !travel)
 	{
 		if(unit->hp != prev_hp)
@@ -325,8 +324,8 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 			c.unit = unit;
 		}
 
-		if(unit->stamina != prev_stamina && this != game.pc)
-			game.GetPlayerInfo(this).update_flags |= PlayerInfo::UF_STAMINA;
+		if(unit->stamina != prev_stamina && !is_local)
+			player_info->update_flags |= PlayerInfo::UF_STAMINA;
 	}
 
 	// reset last damage

@@ -1816,7 +1816,7 @@ void Game::UpdateServerTransfer(float dt)
 
 				// find player that was in save and is playing now (first check leader)
 				Unit* center_unit = nullptr;
-				if(GetPlayerInfo(Team.leader->player).loaded)
+				if(Team.leader->player->player_info->loaded)
 					center_unit = Team.leader;
 				else
 				{

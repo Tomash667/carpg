@@ -129,10 +129,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			if(Net::IsServer())
 			{
 				if(u != game.pc->unit)
-				{
-					PlayerInfo& info = game.GetPlayerInfo(u->player);
-					s += Format(txPing, game.peer->GetAveragePing(info.adr));
-				}
+					s += Format(txPing, game.peer->GetAveragePing(u->player->player_info->adr));
 			}
 			else if(u == game.pc->unit)
 				s += Format(txPing, game.peer->GetAveragePing(game.server));
@@ -445,12 +442,11 @@ void TeamPanel::OnGiveGold(int id)
 			target->gold += counter;
 			if(target->IsPlayer() && target->player != game.pc)
 			{
-				NetChangePlayer& c = Add1(Net::player_changes);
+				NetChangePlayer& c = Add1(target->player->player_info->changes);
 				c.type = NetChangePlayer::GOLD_RECEIVED;
-				c.pc = target->player;
 				c.id = game.pc->id;
 				c.ile = counter;
-				game.GetPlayerInfo(target->player).NeedUpdateAndGold();
+				target->player->player_info->UpdateGold();
 			}
 		}
 		else

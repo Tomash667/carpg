@@ -51,7 +51,6 @@ struct NetChangePlayer
 		ADD_PERK, // add perk to player [byte(id)-perk, int(ile)-value]
 		GAME_MESSAGE, // show game message [int(id)-game message id]
 	} type;
-	PlayerController* pc;
 	int id, ile;
 	union
 	{

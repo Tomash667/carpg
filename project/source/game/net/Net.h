@@ -112,7 +112,6 @@ public:
 	}
 
 	static vector<NetChange> changes;
-	static vector<NetChangePlayer> player_changes;
 
 private:
 	static Mode mode;

@@ -155,7 +155,7 @@ void Quest_Mages::Special(DialogContext& ctx, cstring msg)
 			ctx.pc->unit->gold = 0;
 			game->sound_mgr->PlaySound2d(game->sCoins);
 			if(!ctx.is_local)
-				game->GetPlayerInfo(ctx.pc->id).UpdateGold();
+				ctx.pc->player_info->UpdateGold();
 		}
 		game->quest_mages2->paid = true;
 	}
@@ -354,7 +354,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			{
 				game->Net_AddItem(game->current_dialog->pc, item, false);
 				game->Net_AddedItemMsg(game->current_dialog->pc);
-				game->GetPlayerInfo(game->current_dialog->pc).update_flags |= PlayerInfo::UF_GOLD;
+				game->current_dialog->pc->player_info->update_flags |= PlayerInfo::UF_GOLD;
 			}
 			else
 				game->AddGameMsg3(GMS_ADDED_ITEM);

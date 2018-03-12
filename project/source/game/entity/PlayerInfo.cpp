@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "PlayerInfo.h"
 #include "SaveState.h"
+#include "NetChangePlayer.h"
 
 //=================================================================================================
 PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(Class::INVALID), left(LEFT_NO), update_flags(0), ready(false), loaded(false), warping(false)

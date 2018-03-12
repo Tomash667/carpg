@@ -363,7 +363,7 @@ void GameGui::DrawFront()
 	if(Net::IsLocal())
 		buffs = game.pc->unit->GetBuffs();
 	else
-		buffs = game.GetPlayerInfo(game.pc).buffs;
+		buffs = game.pc->player_info->buffs;
 
 	// healthbar
 	float wnd_scale = float(GUI.wnd_size.x) / 800;
@@ -744,7 +744,7 @@ void GameGui::Update(float dt)
 	if(Net::IsLocal())
 		buffs = game.pc->unit->GetBuffs();
 	else
-		buffs = game.GetPlayerInfo(game.pc).buffs;
+		buffs = game.pc->player_info->buffs;
 
 	buff_scale = GUI.wnd_size.x / 1024.f;
 	float off = buff_scale * 33;

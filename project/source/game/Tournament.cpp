@@ -310,10 +310,8 @@ void Game::UpdateTournament(float dt)
 							}
 							else
 							{
-								NetChangePlayer& c = Add1(Net::player_changes);
+								NetChangePlayer& c = Add1(p.first->player->player_info->changes);
 								c.type = NetChangePlayer::ENTER_ARENA;
-								c.pc = p.first->player;
-								GetPlayerInfo(c.pc).NeedUpdate();
 							}
 						}
 
@@ -331,10 +329,8 @@ void Game::UpdateTournament(float dt)
 							}
 							else
 							{
-								NetChangePlayer& c = Add1(Net::player_changes);
+								NetChangePlayer& c = Add1(p.second->player->player_info->changes);
 								c.type = NetChangePlayer::ENTER_ARENA;
-								c.pc = p.second->player;
-								GetPlayerInfo(c.pc).NeedUpdate();
 							}
 						}
 					}
@@ -470,11 +466,9 @@ void Game::UpdateTournament(float dt)
 									Net_AddedItemMsg(u.player);
 								else
 								{
-									NetChangePlayer& c = Add1(Net::player_changes);
+									NetChangePlayer& c = Add1(u.player->player_info->changes);
 									c.type = NetChangePlayer::ADDED_ITEMS_MSG;
 									c.ile = given_items;
-									c.pc = u.player;
-									GetPlayerInfo(c.pc).NeedUpdate();
 								}
 							}
 						}
@@ -511,12 +505,11 @@ void Game::UpdateTournament(float dt)
 						tournament_winner->busy = Unit::Busy_No;
 						if(tournament_winner->player != pc)
 						{
-							NetChangePlayer& c = Add1(Net::player_changes);
+							NetChangePlayer& c = Add1(tournament_winner->player->player_info->changes);
 							c.type = NetChangePlayer::GOLD_MSG;
 							c.id = 1;
 							c.ile = NAGRODA;
-							c.pc = tournament_winner->player;
-							GetPlayerInfo(c.pc).NeedUpdateAndGold();
+							tournament_winner->player->player_info->UpdateGold();
 						}
 						else
 							AddGameMsg(Format(txGoldPlus, NAGRODA), 3.f);

@@ -63,12 +63,18 @@ void FlowContainer::Update(float dt)
 				scroll.ApplyMouseWheel();
 
 			Int2 off(0, (int)scroll.offset);
+			bool have_button = false;
 
 			for(FlowItem* fi : items)
 			{
 				Int2 p = fi->pos - off + global_pos;
 				if(fi->type == FlowItem::Item)
 				{
+					if(have_button)
+					{
+						p.y -= 2;
+						have_button = false;
+					}
 					if(fi->group != -1 && PointInRect(GUI.cursor_pos, p, fi->size))
 					{
 						group = fi->group;
@@ -87,8 +93,11 @@ void FlowContainer::Update(float dt)
 				}
 				else if(fi->type == FlowItem::Button && fi->state != Button::DISABLED)
 				{
+					have_button = true;
 					if(PointInRect(GUI.cursor_pos, p, fi->size))
 					{
+						group = fi->group;
+						id = fi->id;
 						GUI.cursor_mode = CURSOR_HAND;
 						if(fi->state == Button::DOWN)
 						{
@@ -107,6 +116,8 @@ void FlowContainer::Update(float dt)
 					else
 						fi->state = Button::NONE;
 				}
+				else
+					have_button = false;
 			}
 		}
 
