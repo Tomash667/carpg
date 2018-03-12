@@ -420,7 +420,7 @@ void CreateCharacterPanel::Update(float dt)
 			flowPerks.Update(dt);
 			flowPerks.GetSelected(group, id);
 
-			tooltip.UpdateTooltip(dt, (int)FlowGroupToTooltipGroup((Group)group), id);
+			tooltip.UpdateTooltip(dt, group, id);
 		}
 		break;
 	case Mode::PickAppearance:
@@ -1674,26 +1674,4 @@ void CreateCharacterPanel::ResetDoll(bool instant)
 		unit->bow_instance = nullptr;
 	}
 	unit->action = A_NONE;
-}
-
-//=================================================================================================
-CreateCharacterPanel::Group CreateCharacterPanel::FlowGroupToTooltipGroup(Group group)
-{
-	switch(group)
-	{
-	case Group::Attribute:
-		return Group::Attribute;
-	case Group::Skill:
-	case Group::PickSkill_Button:
-		return Group::Skill;
-	case Group::Perk:
-	case Group::PickPerk_AddButton:
-	case Group::PickPerk_DisabledButton:
-		return Group::Perk;
-	case Group::TakenPerk:
-	case Group::PickPerk_RemoveButton:
-		return Group::TakenPerk;
-	default:
-		return group;
-	}
 }

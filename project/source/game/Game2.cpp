@@ -1608,7 +1608,10 @@ void Game::UpdateFallback(float dt)
 				}
 			}
 			else if(fallback_co == FALLBACK::CLIENT2)
+			{
 				pc->unit->frozen = FROZEN::NO;
+				Net::PushChange(NetChange::END_FALLBACK);
+			}
 			fallback_co = FALLBACK::NO;
 		}
 	}
@@ -5212,6 +5215,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					StartTournament(ctx.talker);
 					tournament_units.push_back(ctx.pc->unit);
 					ctx.pc->unit->gold -= 100;
+					ctx.pc->leaving_event = false;
 					if(!ctx.is_local)
 						ctx.pc->player_info->UpdateGold();
 				}
@@ -5219,6 +5223,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				{
 					tournament_units.push_back(ctx.pc->unit);
 					ctx.pc->unit->gold -= 100;
+					ctx.pc->leaving_event = false;
 					if(!ctx.is_local)
 						ctx.pc->player_info->UpdateGold();
 				}
@@ -5889,7 +5894,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(strcmp(msg, "ironfist_winner") == 0)
 				{
-					//if(ctx.pc->unit == tournament_winner)
+					if(ctx.pc->unit == tournament_winner)
 						++ctx.dialog_level;
 				}
 				else if(strcmp(msg, "szaleni_nie_zapytano") == 0)
@@ -15441,7 +15446,7 @@ void Game::DeleteUnit(Unit* unit)
 			if(tournament_skipped_unit == unit)
 				tournament_skipped_unit = nullptr;
 			if(tournament_other_fighter == unit)
-				tournament_skipped_unit = nullptr;
+				tournament_other_fighter = nullptr;
 		}
 
 		if(unit->usable)
@@ -17233,6 +17238,9 @@ void Game::GenerateQuestUnits()
 				Info("Generated quest unit '%s'.", u->GetRealName());
 		}
 	}
+
+	if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && current_location == tournament_city && !tournament_generated)
+		GenerateTournamentUnits();
 }
 
 void Game::GenerateQuestUnits2(bool on_enter)
@@ -17436,7 +17444,7 @@ void Game::UpdateQuests(int days)
 		tournament_city = GetRandomCity(tournament_city);
 		tournament_master = nullptr;
 	}
-	if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && current_location == tournament_city)
+	if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && current_location == tournament_city && !tournament_generated)
 		GenerateTournamentUnits();
 	if(month > 2 || (month == 2 && day > 6))
 		tournament_year = year;
@@ -19964,6 +19972,9 @@ void Game::StartPvp(PlayerController* player, Unit* unit)
 
 void Game::UpdateGameNet(float dt)
 {
+	if(info_box->visible)
+		return;
+
 	if(Net::IsServer())
 		UpdateServer(dt);
 	else

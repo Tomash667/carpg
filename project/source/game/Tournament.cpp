@@ -21,6 +21,7 @@ void Game::StartTournament(Unit* arena_master)
 	tournament_winner = nullptr;
 	tournament_pairs.clear();
 	tournament_skipped_unit = nullptr;
+	city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA, tournament_arena);
 }
 
 //=================================================================================================
@@ -94,12 +95,23 @@ void Game::GenerateTournamentUnits()
 //=================================================================================================
 void Game::UpdateTournament(float dt)
 {
+	// info about getting out of range
+	for(Unit* unit : tournament_units)
+		VerifyTournamentUnit(*unit);
+	for(auto& pair : tournament_pairs)
+	{
+		VerifyTournamentUnit(*pair.first);
+		VerifyTournamentUnit(*pair.second);
+	}
+	if(tournament_skipped_unit)
+		VerifyTournamentUnit(*tournament_skipped_unit);
+
 	if(tournament_state == TOURNAMENT_STARTING)
 	{
 		if(tournament_master->busy == Unit::Busy_No)
 			tournament_timer += dt;
 
-		// do³¹czanie cz³onków dru¿yny
+		// team members joining
 		const Vec3& walk_pt = city_ctx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
 		for(Unit* unit : Team.members)
 		{
@@ -145,7 +157,6 @@ void Game::UpdateTournament(float dt)
 					}
 				}
 
-				city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA, tournament_arena);
 				tournament_state2 = 3;
 				tournament_round = 0;
 				tournament_master->busy = Unit::Busy_Yes;
@@ -275,6 +286,8 @@ void Game::UpdateTournament(float dt)
 						tournament_state3 = 2;
 						tournament_other_fighter = p.second;
 						TournamentTalk(Format(txTour[11], p.first->GetRealName()));
+						if(p.first->IsPlayer())
+							AddGameMsg3(p.first->player, GMS_LEFT_EVENT);
 					}
 					else if(!p.second->IsStanding() || p.second->frozen != FROZEN::NO || !(Vec3::Distance2d(p.second->pos, tournament_master->pos) <= 64.f
 						|| p.second->in_building == tournament_arena))
@@ -282,6 +295,8 @@ void Game::UpdateTournament(float dt)
 						tournament_state3 = 3;
 						tournament_units.push_back(p.first);
 						TournamentTalk(Format(txTour[12], p.second->GetRealName(), p.first->GetRealName()));
+						if(p.second->IsPlayer())
+							AddGameMsg3(p.second->player, GMS_LEFT_EVENT);
 					}
 					else
 					{
@@ -348,6 +363,8 @@ void Game::UpdateTournament(float dt)
 								|| tournament_other_fighter->in_building == tournament_arena))
 						{
 							TournamentTalk(Format(txTour[13], tournament_other_fighter->GetRealName()));
+							if(tournament_other_fighter->IsPlayer())
+								AddGameMsg3(tournament_other_fighter->player, GMS_LEFT_EVENT);
 						}
 						else
 						{
@@ -533,6 +550,25 @@ void Game::UpdateTournament(float dt)
 				}
 			}
 		}
+	}
+}
+
+//=================================================================================================
+void Game::VerifyTournamentUnit(Unit& u)
+{
+	if(!u.IsPlayer())
+		return;
+	bool leaving_event = true;
+	if(u.in_building == tournament_arena)
+		leaving_event = false;
+	else if(u.in_building == -1)
+		leaving_event = Vec3::Distance2d(u.pos, tournament_master->pos) > 16.f;
+
+	if(leaving_event != u.player->leaving_event)
+	{
+		u.player->leaving_event = leaving_event;
+		if(leaving_event)
+			AddGameMsg3(GMS_GETTING_OUT_OF_RANGE);
 	}
 }
 

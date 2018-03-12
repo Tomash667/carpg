@@ -24,6 +24,9 @@ Version 0.7 (2018-XX-YY):
 - fixed effects not disappearing from clients after travel
 - fixed blocking arrows don't remove stamina
 - fixed high shield skill give stamina from being hit
+- fixed going up/down in dungeon kicking client
+- rest before drinking contest was blocking join for clients
+- tournament heroes wasn't spawning when entered at exact day
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

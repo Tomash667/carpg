@@ -24,6 +24,9 @@ Wersja 0.7 (2018-XX-YY):
 - efekty dla klientów po podró¿y poprawnie siê aktualizuj¹
 - blokowanie strza³ i czarów zu¿ywa ju¿ wytrzyma³oœæ
 - wysoka umiejêtnoœæ tarczy nie przywraca wytrzyma³oœci po trafieniu
+- podró¿ w górê/dó³ nie wyrzuca ju¿ klienta z gry
+- odpoczywanie przed zawodami w piciu blokowa³o udzia³ dla klientów
+- wejœcie do miasta w dniu zawodów powodowa³o nie pojawienie siê uczestników zawodów
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):

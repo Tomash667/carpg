@@ -808,6 +808,7 @@ public:
 	bool IfUnitJoinTournament(Unit& u);
 	void GenerateTournamentUnits();
 	void UpdateTournament(float dt);
+	void VerifyTournamentUnit(Unit& u);
 	void StartTournamentRound();
 	void TournamentTalk(cstring text);
 	void TournamentTrain(Unit& u);

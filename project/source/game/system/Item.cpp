@@ -419,6 +419,7 @@ EffectId Consumable::ToEffect() const
 	case E_END:
 	case E_DEX:
 	case E_GREEN_HAIR:
+	default:
 		// instant effects
 		assert(0);
 		return EffectId::None;

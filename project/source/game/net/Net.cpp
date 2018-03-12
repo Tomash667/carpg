@@ -4893,6 +4893,10 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 			else
 				info.pc->RefreshCooldown();
 			break;
+		// client fallback ended
+		case NetChange::END_FALLBACK:
+			info.u->frozen = FROZEN::NO;
+			break;
 		// invalid change
 		default:
 			Error("Update server: Invalid change type %u from %s.", type, info.name.c_str());
@@ -5580,8 +5584,6 @@ void Game::UpdateClient(float dt)
 				}
 				else
 				{
-					byte loc = packet->data[1];
-					byte level = packet->data[2];
 					current_location = loc;
 					location = locations[loc];
 					dungeon_level = level;
@@ -9541,6 +9543,7 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::CLOSE_ENCOUNTER:
 		case NetChange::YELL:
 		case NetChange::CHEAT_REFRESH_COOLDOWN:
+		case NetChange::END_FALLBACK:
 			break;
 		case NetChange::ADD_NOTE:
 			WriteString1(stream, game_gui->journal->GetNotes().back());

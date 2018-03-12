@@ -2,19 +2,6 @@
 ===============================================================================================================
 CURRENT:
 - 8 memory leaks while staying in village for 21.09 + 1 day rest, server quit first; ADD_LOCATION Camp
-- client rest get him stuck in Frozen2 for server, can't join contest
-	? enter building
-	? exit building
-	? warp
-	? warp from usable
-	? change location
-	? change location up/down
-	? enter arena
-	? rest
-	? train
-	? ironfist train
-	? pvp
-	! undo ironfist_winner
 
 ? client leave - 3 player tests:
 	? while talking
@@ -31,16 +18,11 @@ CURRENT:
 	? in contest
 	
 tournament:
-? spawning
-	? rest
-	? enter on exact day
-+ warning when out of range
 ? break dialogs in contest, verify that they fight anyway
 ? exiting while in tournament
 ? exiting while in arena with cheat
 ? 3 players
 ? test s/c frozen state at tournament
-
 ? arena sounds for 3 clients (win/lose/etc)
 
 + verify old branches for bugs n fixes
@@ -48,11 +30,10 @@ f_perks, angelscript2 and more:
 -? test recruiting gorush/jozan in 0.5, if they don't tell name in clients write as fixed
 -? UpdateGold but change is added too
 + copy f_perks console commands, angelscript parser
-? weakness free perk text
-? flow container - tooltip when over button, scrollbar working
 ? net - 3 clients
-+ EffectId::MagicResistance multiply
 
++ EffectId::MagicResistance multiply
++ rotate create char using wheel, class desc wheel
 + anystring to Cstring, don't pass by ref&
 + current train don't handle floats so gain 0 in some cases
 + stamina changes
