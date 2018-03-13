@@ -29,6 +29,7 @@ struct Chest : public ItemContainer
 	bool looted; // czy skrzynia jest ograbiana - nie trzeba zapisywaæ
 
 	static const int MIN_SIZE = 20;
+	static int netid_counter;
 
 	Chest() : mesh_inst(nullptr)
 	{

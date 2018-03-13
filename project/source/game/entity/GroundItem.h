@@ -13,6 +13,7 @@ struct GroundItem
 	float rot;
 
 	static const int MIN_SIZE = 23;
+	static int netid_counter;
 
 	void Save(HANDLE file);
 	void Load(HANDLE file);

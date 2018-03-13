@@ -3,6 +3,8 @@
 #include "Trap.h"
 #include "Game.h"
 
+int Trap::netid_counter;
+
 //=================================================================================================
 void Trap::Save(HANDLE file, bool local)
 {

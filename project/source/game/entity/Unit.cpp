@@ -15,6 +15,7 @@ const float Unit::STAMINA_BOW_ATTACK = 100.f;
 const float Unit::STAMINA_BASH_ATTACK = 50.f;
 const float Unit::STAMINA_UNARMED_ATTACK = 50.f;
 const float Unit::STAMINA_RESTORE_TIMER = 1.f;
+int Unit::netid_counter;
 
 //=================================================================================================
 Unit::~Unit()
@@ -747,18 +748,7 @@ void Unit::UpdateEffects(float dt)
 	}
 
 	// remove expired effects
-	while(!_to_remove.empty())
-	{
-		index = _to_remove.back();
-		_to_remove.pop_back();
-		if(index == effects.size() - 1)
-			effects.pop_back();
-		else
-		{
-			std::iter_swap(effects.begin() + index, effects.end() - 1);
-			effects.pop_back();
-		}
-	}
+	RemoveEffects();
 
 	if(Net::IsClient())
 		return;

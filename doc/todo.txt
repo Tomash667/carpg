@@ -29,8 +29,9 @@ tournament:
 f_perks, angelscript2 and more:
 -? test recruiting gorush/jozan in 0.5, if they don't tell name in clients write as fixed
 -? UpdateGold but change is added too
-+ copy f_perks console commands, angelscript parser
++ copy angelscript parser
 ? net - 3 clients
+? test commands - add_item,add_team_item,add_gold,add_team_gold
 
 + EffectId::MagicResistance multiply
 + rotate create char using wheel, class desc wheel

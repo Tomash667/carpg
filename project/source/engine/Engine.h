@@ -11,9 +11,6 @@
 #define ZBUFFER_FORMAT D3DFMT_D24S8
 
 //-----------------------------------------------------------------------------
-typedef delegate<void(int)> KeyDownCallback;
-
-//-----------------------------------------------------------------------------
 struct CompileShaderParams
 {
 	cstring name;
@@ -59,8 +56,6 @@ public:
 	bool IsMultisamplingEnabled() const { return multisampling != 0; }
 
 	float GetFps() const { return fps; }
-	const Int2& GetMouseDif() const { return mouse_dif; }
-	float GetMouseWheel() const { return mouse_wheel; }
 	void GetMultisampling(int& ms, int& msq) const { ms = multisampling; msq = multisampling_quality; }
 	float GetWindowAspect() const { return float(wnd_size.x) / wnd_size.y; }
 	HWND GetWindowHandle() const { return hwnd; }
@@ -77,8 +72,6 @@ public:
 	void SetVsync(bool vsync);
 
 	// ----- ZMIENNE -----
-	KeyDownCallback key_callback;
-
 	// directx
 	IDirect3D9* d3d;
 	IDirect3DDevice9* device;
@@ -117,7 +110,7 @@ private:
 	void DoTick(bool update_game);
 	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);
 	LRESULT HandleEvent(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	void MsgToKey(UINT msg, WPARAM wParam, byte& key, int& result);
+	bool MsgToKey(UINT msg, WPARAM wParam, byte& key, int& result);
 	void InitPhysics();
 	void InitRender();
 	void InitWindow(StartupOptions& options);
@@ -139,8 +132,8 @@ private:
 
 	// window
 	HWND hwnd;
-	Int2 wnd_size, real_size, mouse_dif, unlock_point, activation_point;
-	float fps, mouse_wheel;
+	Int2 wnd_size, real_size, unlock_point, activation_point;
+	float fps;
 	bool active, fullscreen;
 
 	// render

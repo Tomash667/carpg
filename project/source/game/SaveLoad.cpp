@@ -552,14 +552,14 @@ void Game::SaveGame(HANDLE file)
 				info->Save(file);
 		}
 		WriteFile(file, &kick_id, sizeof(kick_id), &tmp, nullptr);
-		WriteFile(file, &netid_counter, sizeof(netid_counter), &tmp, nullptr);
-		WriteFile(file, &item_netid_counter, sizeof(item_netid_counter), &tmp, nullptr);
-		WriteFile(file, &chest_netid_counter, sizeof(chest_netid_counter), &tmp, nullptr);
-		WriteFile(file, &usable_netid_counter, sizeof(usable_netid_counter), &tmp, nullptr);
+		WriteFile(file, &Unit::netid_counter, sizeof(Unit::netid_counter), &tmp, nullptr);
+		WriteFile(file, &GroundItem::netid_counter, sizeof(GroundItem::netid_counter), &tmp, nullptr);
+		WriteFile(file, &Chest::netid_counter, sizeof(Chest::netid_counter), &tmp, nullptr);
+		WriteFile(file, &Usable::netid_counter, sizeof(Usable::netid_counter), &tmp, nullptr);
 		WriteFile(file, &skip_id_counter, sizeof(skip_id_counter), &tmp, nullptr);
-		WriteFile(file, &trap_netid_counter, sizeof(trap_netid_counter), &tmp, nullptr);
-		WriteFile(file, &door_netid_counter, sizeof(door_netid_counter), &tmp, nullptr);
-		WriteFile(file, &electro_netid_counter, sizeof(electro_netid_counter), &tmp, nullptr);
+		WriteFile(file, &Trap::netid_counter, sizeof(Trap::netid_counter), &tmp, nullptr);
+		WriteFile(file, &Door::netid_counter, sizeof(Door::netid_counter), &tmp, nullptr);
+		WriteFile(file, &Electro::netid_counter, sizeof(Electro::netid_counter), &tmp, nullptr);
 		WriteFile(file, &mp_use_interp, sizeof(mp_use_interp), &tmp, nullptr);
 		WriteFile(file, &mp_interp, sizeof(mp_interp), &tmp, nullptr);
 
@@ -1347,14 +1347,14 @@ void Game::LoadGame(HANDLE file)
 			old_players[i]->Load(file);
 		}
 		ReadFile(file, &kick_id, sizeof(kick_id), &tmp, nullptr);
-		ReadFile(file, &netid_counter, sizeof(netid_counter), &tmp, nullptr);
-		ReadFile(file, &item_netid_counter, sizeof(item_netid_counter), &tmp, nullptr);
-		ReadFile(file, &chest_netid_counter, sizeof(chest_netid_counter), &tmp, nullptr);
-		ReadFile(file, &usable_netid_counter, sizeof(usable_netid_counter), &tmp, nullptr);
+		ReadFile(file, &Unit::netid_counter, sizeof(Unit::netid_counter), &tmp, nullptr);
+		ReadFile(file, &GroundItem::netid_counter, sizeof(GroundItem::netid_counter), &tmp, nullptr);
+		ReadFile(file, &Chest::netid_counter, sizeof(Chest::netid_counter), &tmp, nullptr);
+		ReadFile(file, &Usable::netid_counter, sizeof(Usable::netid_counter), &tmp, nullptr);
 		ReadFile(file, &skip_id_counter, sizeof(skip_id_counter), &tmp, nullptr);
-		ReadFile(file, &trap_netid_counter, sizeof(trap_netid_counter), &tmp, nullptr);
-		ReadFile(file, &door_netid_counter, sizeof(door_netid_counter), &tmp, nullptr);
-		ReadFile(file, &electro_netid_counter, sizeof(electro_netid_counter), &tmp, nullptr);
+		ReadFile(file, &Trap::netid_counter, sizeof(Trap::netid_counter), &tmp, nullptr);
+		ReadFile(file, &Door::netid_counter, sizeof(Door::netid_counter), &tmp, nullptr);
+		ReadFile(file, &Electro::netid_counter, sizeof(Electro::netid_counter), &tmp, nullptr);
 		ReadFile(file, &mp_use_interp, sizeof(mp_use_interp), &tmp, nullptr);
 		ReadFile(file, &mp_interp, sizeof(mp_interp), &tmp, nullptr);
 

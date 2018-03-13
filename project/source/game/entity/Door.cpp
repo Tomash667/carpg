@@ -5,6 +5,8 @@
 #include "Game.h"
 #include "SaveState.h"
 
+int Door::netid_counter;
+
 //=================================================================================================
 void Door::Save(HANDLE file, bool local)
 {

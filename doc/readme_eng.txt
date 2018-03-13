@@ -179,10 +179,10 @@ See changelog_eng.txt file.
 To open console press ~ [to the left from 1]. Some commands are only available
 in multiplayer on lobby. Devmode must be activated (devmode 1).
 Available commands:
-	addgold - give gold to player (addgold count).
-	addgold_team - give gold to team (addgold_team count).
-	additem - add item to player inventory (additem id [count]).
-	addteam - add team item to player inventory (addteam id [count]).
+	add_gold - give gold to player (add_gold count).
+	add_team_gold - give gold to team (add_team_gold count).
+	add_item - add item to player inventory (add_item id [count]).
+	add_team_item - add team item to player inventory (add_team_item id [count]).
 	break_action - break unit current action ('break 1' targets self)
 	citizen - citizens/crazies don't attack player or his team.
 	clear - clear text.
@@ -196,17 +196,15 @@ Available commands:
 	draw_particle_sphere - draw particle extents sphere (draw_particle_sphere 0/1).
 	draw_phy - draw physical colliders (draw_phy 0/1).
 	draw_unit_radius - draw units radius (draw_unit_radius 0/1).
-	dropgold - drop gold on ground (dropgold count).
 	exit - exit to menu.
 	fall - unit fall on ground for some time ('fall 1' targets self)
 	fog - draw fog (fog 0/1).
-	forcequest - force next random quest to select (use list quest or none/reset)
-	givegold - gives gold to another character (givegold nick count).
+	force_quest - force next random quest to select (use list quest or none/reset)
 	godmode - player can't be killed (godmode 0/1).
 	goto_map - transport player to world map.
 	grass_range - grass draw range (grass_range 0-100).
 	heal - heal player.
-	healunit - heal unit in front of player.
+	heal_unit - heal unit in front of player.
 	help - display information about command (help [command]).
 	hurt - deal 100 damage to unit ('hurt 1' targets self)
 	invisible - ai can't see player (invisible 0/1).
@@ -218,7 +216,7 @@ Available commands:
 	list - display list of types, don't enter type to list possible choices (list type [filter]).
 	load - load game (load 1-10).
 	map2console - draw dungeon map in console.
-	modstat - modify player statistics (modstat stat value), use modstat ? to get list of stats.
+	mod_stat - modify player statistics (modstat stat value), use modstat ? to get list of stats.
 	mp_interp - interpolation interval (mp_interp 0.f-1.f).
 	mp_use_interp - set use of interpolation (mp_use_interp 0/1).
 	multisampling - sets multisampling (multisampling type [quality]).
@@ -226,7 +224,6 @@ Available commands:
 	noai - disable ai (noai 0/1).
 	noclip - turn off player collisions (noclip 0/1).
 	pause - pause/unpause.
-	paycredit - you pay credit with your gold, without count you pay as much as you can (paycredit [count]).
 	play_music - sets if play music (play_music 0/1).
 	play_sound - sets if play sound (play_sound 0/1).
 	player_devmode - allow/disallow developer mode for player in multiplayer (playercheat nick/all 0/1).
@@ -247,12 +244,12 @@ Available commands:
 	scare - enemies escape.
 	screenshot - save screenshot.
 	server - send message from server to all players (server msg).
-	setstat - set player statistics (setstat stat value), use setstat ? to get list of stats.
+	set_stat - set player statistics (setstat stat value), use setstat ? to get list of stats.
 	set_seed - set randomness seed (set_seed uint).
 	shader_version - force shader version (shader_version 2/3).
 	show_minimap - reveal minimap.
 	skip_days - skip days [skip_days [count]).
-	spawnunit - create unit in front of player (spawnunit id [level count arena]).
+	spawn_unit - create unit in front of player (spawn_unit id [level count arena]).
 	speed - game speed (speed 0-10).
 	start - start server.
 	stun - stun unit for time (stun [length=1] [1 = self]).

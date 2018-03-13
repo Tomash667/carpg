@@ -45,6 +45,7 @@ struct Electro
 
 	static const int MIN_SIZE = 5;
 	static const int LINE_MIN_SIZE = 28;
+	static int netid_counter;
 
 	void AddLine(const Vec3& from, const Vec3& to);
 	void Save(HANDLE file);

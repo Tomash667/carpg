@@ -23,6 +23,8 @@ enum OLD_USABLE_ID
 	U_MAX
 };
 
+int Usable::netid_counter;
+
 //=================================================================================================
 Mesh* Usable::GetMesh() const
 {

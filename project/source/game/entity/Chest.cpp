@@ -4,6 +4,8 @@
 #include "Chest.h"
 #include "Game.h"
 
+int Chest::netid_counter;
+
 //=================================================================================================
 void Chest::Save(HANDLE file, bool local)
 {

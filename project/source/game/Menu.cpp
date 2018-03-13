@@ -774,8 +774,7 @@ void Game::UpdateClientConnectingIp(float dt)
 				|| !stream.Read(flags)
 				|| !ReadString1(stream))
 			{
-				Error("NM_CONNECT_IP(0): Broken server message.");
-				StreamError();
+				StreamError("NM_CONNECT_IP(0): Broken server message.");
 				peer->DeallocatePacket(packet);
 				EndConnecting(txConnectInvalid);
 				return;
@@ -876,8 +875,7 @@ void Game::UpdateClientConnectingIp(float dt)
 						!stream.ReadCasted<byte>(leader_id) ||
 						!stream.ReadCasted<byte>(count))
 					{
-						Error("NM_CONNECT_IP(2): Broken packet ID_JOIN.");
-						StreamError();
+						StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN.");
 						peer->DeallocatePacket(packet);
 						EndConnecting(txCantJoin, true);
 						return;
@@ -913,8 +911,7 @@ void Game::UpdateClientConnectingIp(float dt)
 							!stream.ReadCasted<byte>(info2.clas) ||
 							!ReadString1(stream, info2.name))
 						{
-							Error("NM_CONNECT_IP(2): Broken packet ID_JOIN(2).");
-							StreamError();
+							StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN(2).");
 							peer->DeallocatePacket(packet);
 							EndConnecting(txCantJoin, true);
 							return;
@@ -923,8 +920,7 @@ void Game::UpdateClientConnectingIp(float dt)
 						// verify player class
 						if(!ClassInfo::IsPickable(info2.clas) && info2.clas != Class::INVALID)
 						{
-							Error("NM_CONNECT_IP(2): Broken packet ID_JOIN, player %s has class %d.", info2.name.c_str(), info2.clas);
-							StreamError();
+							StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN, player %s has class %d.", info2.name.c_str(), info2.clas);
 							peer->DeallocatePacket(packet);
 							EndConnecting(txCantJoin, true);
 							return;
@@ -934,16 +930,14 @@ void Game::UpdateClientConnectingIp(float dt)
 					// read save information
 					if(!stream.ReadCasted<byte>(load_char))
 					{
-						Error("NM_CONNECT_IP(2): Broken packet ID_JOIN(4).");
-						StreamError();
+						StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN(4).");
 						peer->DeallocatePacket(packet);
 						EndConnecting(txCantJoin, true);
 						return;
 					}
 					if(load_char == 2 && !stream.ReadCasted<byte>(game_players[0]->clas))
 					{
-						Error("NM_CONNECT_IP(2): Broken packet ID_JOIN(3).");
-						StreamError();
+						StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN(3).");
 						peer->DeallocatePacket(packet);
 						EndConnecting(txCantJoin, true);
 						return;
@@ -1126,10 +1120,7 @@ void Game::UpdateClientTransfer(float dt)
 					}
 				}
 				else
-				{
-					Error("NM_TRANSFER: Broken packet ID_STATE.");
-					StreamError();
-				}
+					StreamError("NM_TRANSFER: Broken packet ID_STATE.");
 			}
 			break;
 		case ID_WORLD_DATA:
@@ -1157,18 +1148,14 @@ void Game::UpdateClientTransfer(float dt)
 				}
 				else
 				{
-					Error("NM_TRANSFER: Failed to read world data.");
-					StreamError();
+					StreamError("NM_TRANSFER: Failed to read world data.");
 					peer->DeallocatePacket(packet);
 					ClearAndExitToMenu(txWorldDataError);
 					return;
 				}
 			}
 			else
-			{
-				Error("NM_TRANSFER: Received ID_WORLD_DATA with net state %d.", net_state);
-				StreamError();
-			}
+				StreamError("NM_TRANSFER: Received ID_WORLD_DATA with net state %d.", net_state);
 			break;
 		case ID_PLAYER_START_DATA:
 			if(net_state == NetState::Client_ReceivedWorldData)
@@ -1190,18 +1177,14 @@ void Game::UpdateClientTransfer(float dt)
 				}
 				else
 				{
-					Error("NM_TRANSFER: Failed to read player data.");
-					StreamError();
+					StreamError("NM_TRANSFER: Failed to read player data.");
 					peer->DeallocatePacket(packet);
 					ClearAndExitToMenu(txPlayerDataError);
 					return;
 				}
 			}
 			else
-			{
-				Error("NM_TRANSFER: Received ID_PLAYER_START_DATA with net state %d.", net_state);
-				StreamError();
-			}
+				StreamError("NM_TRANSFER: Received ID_PLAYER_START_DATA with net state %d.", net_state);
 			break;
 		case ID_CHANGE_LEVEL:
 			if(net_state == NetState::Client_ReceivedPlayerStartData)
@@ -1224,22 +1207,13 @@ void Game::UpdateClientTransfer(float dt)
 						info_box->Show(txGeneratingLocation);
 					}
 					else
-					{
-						Error("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL, invalid location %u.", loc);
-						StreamError();
-					}
+						StreamError("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL, invalid location %u.", loc);
 				}
 				else
-				{
-					Error("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL.");
-					StreamError();
-				}
+					StreamError("NM_TRANSFER: Broken packet ID_CHANGE_LEVEL.");
 			}
 			else
-			{
-				Error("NM_TRANSFER: Received ID_CHANGE_LEVEL with net state %d.", net_state);
-				StreamError();
-			}
+				StreamError("NM_TRANSFER: Received ID_CHANGE_LEVEL with net state %d.", net_state);
 			break;
 		case ID_LEVEL_DATA:
 			if(net_state == NetState::Client_ChangingLevel)
@@ -1249,8 +1223,7 @@ void Game::UpdateClientTransfer(float dt)
 				LoadingStep("");
 				if(!ReadLevelData(stream))
 				{
-					Error("NM_TRANSFER: Failed to read location data.");
-					StreamError();
+					StreamError("NM_TRANSFER: Failed to read location data.");
 					peer->DeallocatePacket(packet);
 					ClearAndExitToMenu(txLoadingLocationError);
 					return;
@@ -1265,10 +1238,7 @@ void Game::UpdateClientTransfer(float dt)
 				}
 			}
 			else
-			{
-				Error("NM_TRANSFER: Received ID_LEVEL_DATA with net state %d.", net_state);
-				StreamError();
-			}
+				StreamError("NM_TRANSFER: Received ID_LEVEL_DATA with net state %d.", net_state);
 			break;
 		case ID_PLAYER_DATA:
 			if(net_state == NetState::Client_ReceivedLevelData)
@@ -1278,8 +1248,7 @@ void Game::UpdateClientTransfer(float dt)
 				LoadingStep("");
 				if(!ReadPlayerData(stream))
 				{
-					Error("NM_TRANSFER: Failed to read player data.");
-					StreamError();
+					StreamError("NM_TRANSFER: Failed to read player data.");
 					peer->DeallocatePacket(packet);
 					ClearAndExitToMenu(txLoadingCharsError);
 					return;
@@ -1295,10 +1264,7 @@ void Game::UpdateClientTransfer(float dt)
 				}
 			}
 			else
-			{
-				Error("NM_TRANSFER: Received ID_PLAYER_DATA with net state %d.", net_state);
-				StreamError();
-			}
+				StreamError("NM_TRANSFER: Received ID_PLAYER_DATA with net state %d.", net_state);
 			break;
 		case ID_START:
 			if(mp_load_worldmap)
@@ -1329,8 +1295,7 @@ void Game::UpdateClientTransfer(float dt)
 				}
 				else
 				{
-					Error("NM_TRANSFER: Received ID_START at worldmap with net state %d.", net_state);
-					StreamError();
+					StreamError("NM_TRANSFER: Received ID_START at worldmap with net state %d.", net_state);
 					break;
 				}
 			}
@@ -1361,10 +1326,7 @@ void Game::UpdateClientTransfer(float dt)
 					OnEnterLevelOrLocation();
 				}
 				else
-				{
-					Error("NM_TRANSFER: Received ID_START with net state %d.", net_state);
-					StreamError();
-				}
+					StreamError("NM_TRANSFER: Received ID_START with net state %d.", net_state);
 			}
 			return;
 		default:
@@ -1962,10 +1924,7 @@ void Game::UpdateServerSend(float dt)
 			{
 				int ack;
 				if(!stream.Read(ack))
-				{
-					Error("NM_SERVER_SEND: Broken packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str());
-					StreamError();
-				}
+					StreamError("NM_SERVER_SEND: Broken packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str());
 				else if(info.state != PlayerInfo::WAITING_FOR_RESPONSE || ack != info.ack)
 				{
 					Warn("NM_SERVER_SEND: Unexpected packet ID_SND_RECEIPT_ACKED from %s.", info.name.c_str());
@@ -1984,10 +1943,7 @@ void Game::UpdateServerSend(float dt)
 			break;
 		case ID_READY:
 			if(info.state == PlayerInfo::IN_GAME || info.state == PlayerInfo::WAITING_FOR_RESPONSE)
-			{
-				Error("NM_SERVER_SEND: Unexpected packet ID_READY from %s.", info.name.c_str());
-				StreamError();
-			}
+				StreamError("NM_SERVER_SEND: Unexpected packet ID_READY from %s.", info.name.c_str());
 			else if(info.state == PlayerInfo::WAITING_FOR_DATA)
 			{
 				Info("NM_SERVER_SEND: Send player data to %s.", info.name.c_str());
@@ -2421,10 +2377,7 @@ void Game::UpdateLobbyNetClient(float dt)
 			}
 		case ID_TIMER:
 			if(packet->length != 2)
-			{
-				Error("UpdateLobbyNet: Broken packet ID_TIMER.");
-				StreamError();
-			}
+				StreamError("UpdateLobbyNet: Broken packet ID_TIMER.");
 			else
 			{
 				Info("UpdateLobbyNet: Starting in %d...", packet->data[1]);
@@ -2437,10 +2390,7 @@ void Game::UpdateLobbyNetClient(float dt)
 			break;
 		case ID_PICK_CHARACTER:
 			if(packet->length != 2)
-			{
-				Error("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER.");
-				StreamError();
-			}
+				StreamError("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER.");
 			else
 			{
 				bool ok = (packet->data[1] != 0);
@@ -2460,10 +2410,7 @@ void Game::UpdateLobbyNetClient(float dt)
 			break;
 		case ID_STARTUP:
 			if(packet->length != 2)
-			{
-				Error("UpdateLobbyNet: Broken packet ID_STARTUP.");
-				StreamError();
-			}
+				StreamError("UpdateLobbyNet: Broken packet ID_STARTUP.");
 			else
 			{
 				Info("UpdateLobbyNet: Starting in 0...");
@@ -2835,10 +2782,7 @@ void Game::UpdateLobbyNetServer(float dt)
 				bool ready;
 
 				if(!ReadBool(stream, ready))
-				{
-					Error("UpdateLobbyNet: Broken packet ID_CHANGE_READY from client %s.", info->name.c_str());
-					StreamError();
-				}
+					StreamError("UpdateLobbyNet: Broken packet ID_CHANGE_READY from client %s.", info->name.c_str());
 				else if(ready != info->ready)
 				{
 					info->ready = ready;
@@ -2902,10 +2846,7 @@ void Game::UpdateLobbyNetServer(float dt)
 						Info("Received character from '%s'.", info->name.c_str());
 					}
 					else
-					{
-						Error("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER from '%s'.", info->name.c_str());
-						StreamError();
-					}
+						StreamError("UpdateLobbyNet: Broken packet ID_PICK_CHARACTER from '%s'.", info->name.c_str());
 				}
 				else
 				{
@@ -2915,8 +2856,7 @@ void Game::UpdateLobbyNetServer(float dt)
 						"validation error"
 					};
 
-					Error("UpdateLobbyNet: Packet ID_PICK_CHARACTER from '%s' %s.", info->name.c_str(), err[result - 1]);
-					StreamError();
+					StreamError("UpdateLobbyNet: Packet ID_PICK_CHARACTER from '%s' %s.", info->name.c_str(), err[result - 1]);
 				}
 
 				if(ok == 0)

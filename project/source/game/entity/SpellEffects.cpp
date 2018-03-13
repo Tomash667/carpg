@@ -7,6 +7,8 @@
 #include "ParticleSystem.h"
 #include "ResourceManager.h"
 
+int Electro::netid_counter;
+
 //=================================================================================================
 void Explo::Save(HANDLE file)
 {

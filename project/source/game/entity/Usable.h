@@ -32,6 +32,7 @@ struct Usable
 	int refid, variant;
 
 	static const int MIN_SIZE = 22;
+	static int netid_counter;
 
 	Usable() : variant(-1), container(nullptr) {}
 	~Usable() { delete container; }

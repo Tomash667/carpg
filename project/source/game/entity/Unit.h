@@ -157,6 +157,7 @@ struct Unit
 	static const float STAMINA_BASH_ATTACK;
 	static const float STAMINA_UNARMED_ATTACK;
 	static const float STAMINA_RESTORE_TIMER;
+	static int netid_counter;
 
 	int netid;
 	UnitData* data;

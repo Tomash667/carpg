@@ -6,6 +6,8 @@
 #include "QuestConsts.h"
 #include "QuestManager.h"
 
+int GroundItem::netid_counter;
+
 //=================================================================================================
 void GroundItem::Save(HANDLE file)
 {

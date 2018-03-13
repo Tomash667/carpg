@@ -1635,7 +1635,7 @@ public:
 	BitStream net_stream, net_stream2;
 	bool change_title_a;
 	bool level_generated;
-	int netid_counter, item_netid_counter, chest_netid_counter, usable_netid_counter, skip_id_counter, trap_netid_counter, door_netid_counter, electro_netid_counter;
+	int skip_id_counter;
 	vector<string*> net_talk;
 	struct WarpData
 	{
@@ -1870,6 +1870,12 @@ public:
 	BitStream& StreamStart(Packet* packet, StreamLogType type);
 	void StreamEnd();
 	void StreamError();
+	template<typename... Args>
+	inline void StreamError(cstring msg, const Args&... args)
+	{
+		Error(msg, args...);
+		StreamError();
+	}
 	void StreamWrite(vector<byte>& data, StreamLogType type, const SystemAddress& adr)
 	{
 		StreamWrite(data.data(), data.size(), type, adr);
