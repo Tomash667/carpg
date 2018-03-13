@@ -101,7 +101,7 @@ struct NetChange
 		CHEAT_CITIZEN, // player used cheat 'citizen' []
 		CHEAT_SHOW_MINIMAP, // player used cheat 'show_minimap'
 		CHANGE_ARENA_STATE, // change unit arena state, reset cooldown when entering arena [int(netid)-unit, auto:char-state]
-		ARENA_SOUND, // plays arena sound [byte(id)-type]
+		ARENA_SOUND, // plays arena sound [byte(id)-type (0-start,1-win,2-lose)]
 		SHOUT, // unit shout after seeing enemy [int(netid)-unit]
 		LEAVE_LOCATION, // leader wants to leave location or leaving notification SERVER[] / CLIENT[char(id)-type]
 		EXIT_TO_MAP, // exit to map []

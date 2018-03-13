@@ -2647,20 +2647,23 @@ void Game::UnitStandup(Unit& u)
 		u.action = A_NONE;
 	u.used_item = nullptr;
 
-	if(Net::IsLocal() && u.IsAI())
+	if(Net::IsLocal())
 	{
-		if(u.ai->state != AIController::Idle)
+		if(u.IsAI())
 		{
-			u.ai->state = AIController::Idle;
-			u.ai->change_ai_mode = true;
+			if(u.ai->state != AIController::Idle)
+			{
+				u.ai->state = AIController::Idle;
+				u.ai->change_ai_mode = true;
+			}
+			u.ai->alert_target = nullptr;
+			u.ai->idle_action = AIController::Idle_None;
+			u.ai->target = nullptr;
+			u.ai->timer = Random(2.f, 5.f);
 		}
-		u.ai->alert_target = nullptr;
-		u.ai->idle_action = AIController::Idle_None;
-		u.ai->target = nullptr;
-		u.ai->timer = Random(2.f, 5.f);
-	}
 
-	WarpUnit(u, u.pos);
+		WarpUnit(u, u.pos);
+	}
 }
 
 //=================================================================================================

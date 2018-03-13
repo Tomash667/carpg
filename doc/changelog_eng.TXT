@@ -27,6 +27,7 @@ Version 0.7 (2018-XX-YY):
 - fixed going up/down in dungeon kicking client
 - rest before drinking contest was blocking join for clients
 - tournament heroes wasn't spawning when entered at exact day
+- removed memory leaks when spawning and removing camps
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

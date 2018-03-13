@@ -1,8 +1,6 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-- 8 memory leaks while staying in village for 21.09 + 1 day rest, server quit first; ADD_LOCATION Camp
-
 ? client leave - 3 player tests:
 	? while talking
 	? while using object
@@ -16,23 +14,15 @@ CURRENT:
 	? solo arena
 	? tournament before, in combat
 	? in contest
-	
-tournament:
-? break dialogs in contest, verify that they fight anyway
-? exiting while in tournament
-? exiting while in arena with cheat
-? 3 players
-? test s/c frozen state at tournament
-? arena sounds for 3 clients (win/lose/etc)
+? using cheats to exit from arena
+	? arena combat
+	? pvp
+	? tournament
 
-+ verify old branches for bugs n fixes
-f_perks, angelscript2 and more:
++ verify old branches for bugs n fixes (f_angelscript, angelscript, older)
 -? test recruiting gorush/jozan in 0.5, if they don't tell name in clients write as fixed
 -? UpdateGold but change is added too
 + copy angelscript parser
-? net - 3 clients
-? test commands - add_item,add_team_item,add_gold,add_team_gold
-? test single group enemy attack
 
 + EffectId::MagicResistance multiply
 + rotate create char using wheel, class desc wheel

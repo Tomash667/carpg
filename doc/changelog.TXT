@@ -27,6 +27,7 @@ Wersja 0.7 (2018-XX-YY):
 - podró¿ w górê/dó³ nie wyrzuca ju¿ klienta z gry
 - odpoczywanie przed zawodami w piciu blokowa³o udzia³ dla klientów
 - wejœcie do miasta w dniu zawodów powodowa³o nie pojawienie siê uczestników zawodów
+- usuniête wycieki pamiêci przy tworzeniu i usuwaniu obozów
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):

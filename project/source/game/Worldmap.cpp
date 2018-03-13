@@ -4465,6 +4465,13 @@ void Game::DoWorldProgress(int days)
 				camp->units.clear();
 				delete *it;
 
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::REMOVE_CAMP;
+					c.id = index;
+				}
+
 				if(it + 1 == end)
 				{
 					locations.pop_back();
@@ -4474,13 +4481,6 @@ void Game::DoWorldProgress(int days)
 				{
 					*it = nullptr;
 					++empty_locations;
-				}
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::REMOVE_CAMP;
-					c.id = index;
 				}
 			}
 		}

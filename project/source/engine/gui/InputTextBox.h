@@ -21,7 +21,7 @@ public:
 	void OnChar(char c) override;
 
 	void Init();
-	void Reset();
+	void Reset(bool cache = false);
 	void Add(StringOrCstring str);
 	void CheckLines();
 

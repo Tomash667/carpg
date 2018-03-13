@@ -272,16 +272,17 @@ void InputTextBox::Init()
 }
 
 //=================================================================================================
-void InputTextBox::Reset()
+void InputTextBox::Reset(bool reset_cache)
 {
 	input.clear();
 	text.clear();
 	lines.clear();
 	input_counter = -1;
-	last_input_counter = 0;
 	caret_blink = 0.f;
 	scrollbar.offset = 0.f;
 	scrollbar.total = 0;
+	if(reset_cache)
+		last_input_counter = 0;
 }
 
 //=================================================================================================
