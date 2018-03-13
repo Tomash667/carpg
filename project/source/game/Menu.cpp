@@ -363,6 +363,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	u->player = new PlayerController;
 	pc = u->player;
 	pc->clas = clas;
+	pc->id = 0;
 	pc->Init(*u);
 	pc->name = name;
 	pc->is_local = true;

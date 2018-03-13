@@ -505,11 +505,11 @@ void GameGui::DrawBack()
 		cstring text;
 		if(game.devmode)
 		{
-			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT_1(u.pos.x), FLT_1(u.pos.y), FLT_1(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2), FLT_2(u.rot),
-				kierunek_nazwa_s[AngleToDir(Clip(u.rot))], FLT_1(game.GetFps()));
+			text = Format("Pos: %g; %g; %g (%d; %d)\nRot: %g %s\nFps: %g", FLT10(u.pos.x), FLT10(u.pos.y), FLT10(u.pos.z), int(u.pos.x / 2), int(u.pos.z / 2),
+				FLT100(u.rot), kierunek_nazwa_s[AngleToDir(Clip(u.rot))], FLT10(game.GetFps()));
 		}
 		else
-			text = Format("Fps: %g", FLT_1(game.GetFps()));
+			text = Format("Fps: %g", FLT10(game.GetFps()));
 		Int2 s = GUI.default_font->CalculateSize(text);
 		if(Int2::Distance(s, debug_info_size) < 32)
 			debug_info_size = Int2::Max(s, debug_info_size);

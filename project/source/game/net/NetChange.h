@@ -164,6 +164,8 @@ struct NetChange
 		PLAYER_ACTION, // player unit is using action, client[Vec3-pos/data] / server[int(netid)-unit]
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
 		END_FALLBACK, // client fallback ended []
+
+		MAX
 	} type;
 	union
 	{
@@ -196,3 +198,4 @@ struct NetChange
 		int extra_netid;
 	};
 };
+static_assert((int)NetChange::MAX <= 256, "too many NetChanges");

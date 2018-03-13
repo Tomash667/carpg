@@ -50,6 +50,8 @@ struct NetChangePlayer
 		STAT_CHANGED, // player stat changed [byte(id)-ChangedStatType, byte(a)-stat id, int(ile)-value]
 		ADD_PERK, // add perk to player [byte(id)-perk, int(ile)-value]
 		GAME_MESSAGE, // show game message [int(id)-game message id]
+
+		MAX
 	} type;
 	int id, ile;
 	union
@@ -60,3 +62,4 @@ struct NetChangePlayer
 	const Item* item;
 	Vec3 pos;
 };
+static_assert((int)NetChangePlayer::MAX <= 256, "too many NetChangePlayer");

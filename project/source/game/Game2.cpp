@@ -8309,7 +8309,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						if(result != ATTACK_NOT_HIT)
 							u.hitted = true;
 					}
-					if(u.mesh_inst->GetProgress2() >= u.GetAttackFrame(2) || u.mesh_inst->frame_end_info2)
+					if(u.mesh_inst->GetProgress(index) >= u.GetAttackFrame(2) || u.mesh_inst->GetEndResult(index))
 					{
 						// koniec mo¿liwego ataku
 						u.animation_state = 2;
@@ -8317,7 +8317,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 						u.run_attack = false;
 					}
 				}
-				if(u.animation_state == 2 && u.mesh_inst->frame_end_info2)
+				if(u.animation_state == 2 && u.mesh_inst->GetEndResult(index))
 				{
 					u.run_attack = false;
 					if(index == 0)

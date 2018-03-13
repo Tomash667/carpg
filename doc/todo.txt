@@ -32,6 +32,7 @@ f_perks, angelscript2 and more:
 + copy angelscript parser
 ? net - 3 clients
 ? test commands - add_item,add_team_item,add_gold,add_team_gold
+? test single group enemy attack
 
 + EffectId::MagicResistance multiply
 + rotate create char using wheel, class desc wheel

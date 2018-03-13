@@ -30,6 +30,7 @@ const float MAX_ANGLE = PI - FLT_EPSILON;
 #define SET_BIT_VALUE(flaga,bit,wartos) { if(wartos) SET_BIT(flaga,bit); else CLEAR_BIT(flaga,bit); }
 #define COPY_BIT(flaga,flaga2,bit) { if(((flaga2) & (bit)) != 0) SET_BIT(flaga,bit); else CLEAR_BIT(flaga,bit); }
 #define FLT10(x) (float(int((x)*10))/10)
+#define FLT100(x) (float(int((x)*100))/100)
 #define OR2_EQ(var,val1,val2) (((var) == (val1)) || ((var) == (val2)))
 #define OR3_EQ(var,val1,val2,val3) (((var) == (val1)) || ((var) == (val2)) || ((var) == (val3)))
 // makro na rozmiar tablicy
@@ -43,9 +44,6 @@ char(&_ArraySizeHelper(T(&array)[N]))[N];
 #endif
 #define _JOIN(a,b) a##b
 #define JOIN(a,b) _JOIN(a,b)
-#define FLT_(x, m) (float(int(x*m))/m)
-#define FLT_1(x) FLT_(x, 10)
-#define FLT_2(x) FLT_(x, 100)
 
 //-----------------------------------------------------------------------------
 // Debugowanie

@@ -269,6 +269,12 @@ public:
 		return GetFileSize(file, nullptr);
 	}
 
+	bool Read0()
+	{
+		byte v;
+		return Read(v) && v == 0;
+	}
+
 	HANDLE file;
 	bool own_handle;
 };
@@ -392,6 +398,10 @@ public:
 	void Write0()
 	{
 		WriteCasted<byte>(0);
+	}
+	void Write1()
+	{
+		WriteCasted<byte>(1);
 	}
 
 	template<typename T>
