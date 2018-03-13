@@ -232,6 +232,8 @@ void TextBox::Update(float dt)
 		}
 		if(scrollbar && !is_new)
 		{
+			if(mouse_focus && PointInRect(GUI.cursor_pos, global_pos, size + Int2(18, 0)))
+				scrollbar->ApplyMouseWheel();
 			scrollbar->mouse_focus = mouse_focus;
 			scrollbar->Update(dt);
 		}

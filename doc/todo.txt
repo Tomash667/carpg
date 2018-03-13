@@ -25,7 +25,6 @@ CURRENT:
 + copy angelscript parser
 
 + EffectId::MagicResistance multiply
-+ rotate create char using wheel, class desc wheel
 + anystring to Cstring, don't pass by ref&
 + current train don't handle floats so gain 0 in some cases
 + stamina changes

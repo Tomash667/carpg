@@ -14772,6 +14772,11 @@ void Game::LoadResources(cstring text, bool worldmap)
 		res_mgr.CancelLoadScreen();
 	}
 
+	// spawn blood for units that are dead and their mesh just loaded
+	for(Unit* unit : blood_to_spawn)
+		CreateBlood(GetContext(*unit), *unit, true);
+	blood_to_spawn.clear();
+
 	// finished
 	if((Net::IsLocal() || !mp_load_worldmap) && !location->outside)
 		SetDungeonParamsToMeshes();
@@ -16554,7 +16559,8 @@ void Game::SpawnHeroesInsideDungeon()
 
 	Room* p = lvl.GetUpStairsRoom();
 	int room_id = lvl.GetRoomId(p);
-	int szansa = 23;
+	int chance = 23;
+	bool first = true;
 
 	vector<std::pair<Room*, int> > sprawdzone;
 	vector<int> ok_room;
@@ -16575,9 +16581,11 @@ void Game::SpawnHeroesInsideDungeon()
 					break;
 				}
 			}
-			if(ok && (Rand() % 20 < szansa || Rand() % 3 == 0))
+			if(ok && (Rand() % 20 < chance || Rand() % 3 == 0 || first))
 				ok_room.push_back(room_id);
 		}
+
+		first = false;
 
 		if(ok_room.empty())
 			break;
@@ -16586,7 +16594,7 @@ void Game::SpawnHeroesInsideDungeon()
 			room_id = ok_room[Rand() % ok_room.size()];
 			ok_room.clear();
 			sprawdzone.push_back(std::make_pair(&lvl.rooms[room_id], room_id));
-			--szansa;
+			--chance;
 		}
 	}
 
@@ -16638,10 +16646,15 @@ void Game::SpawnHeroesInsideDungeon()
 					}
 					u.gold = 0;
 					u.live_state = Unit::DEAD;
-					u.animation = u.current_animation = ANI_DIE;
-					u.SetAnimationAtEnd(NAMES::ani_die);
+					if(u.data->mesh->IsLoaded())
+					{
+						u.animation = u.current_animation = ANI_DIE;
+						u.SetAnimationAtEnd(NAMES::ani_die);
+						CreateBlood(local_ctx, u, true);
+					}
+					else
+						blood_to_spawn.push_back(&u);
 					u.hp = 0.f;
-					CreateBlood(local_ctx, u, true);
 					++total_kills;
 
 					// przenieœ fizyke

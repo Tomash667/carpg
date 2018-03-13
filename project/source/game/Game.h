@@ -627,6 +627,7 @@ public:
 	TEX missing_texture;
 	vector<std::pair<Unit*, bool>> units_mesh_load;
 	std::set<const Item*> items_load;
+	vector<Unit*> blood_to_spawn;
 
 	//---------------------------------
 	// GUI / HANDEL
