@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "ScriptManager.h"
 #include <angelscript.h>
 #include <scriptarray/scriptarray.h>
@@ -207,9 +207,9 @@ void ScriptManager::RegisterCommon()
 	string func_sign = "string Format(const string& in)";
 	for(int i = 1; i <= 9; ++i)
 	{
+		CHECKED(engine->RegisterGlobalFunction(func_sign.c_str(), asFUNCTION(FormatStrGeneric), asCALL_GENERIC));
 		func_sign.pop_back();
 		func_sign += ", ?& in)";
-		CHECKED(engine->RegisterGlobalFunction(func_sign.c_str(), asFUNCTION(FormatStrGeneric), asCALL_GENERIC));
 	}
 
 	/*sm.AddStruct<Int2>("Int2")
@@ -242,26 +242,131 @@ void ScriptManager::RegisterCommon()
 
 #include "PlayerInfo.h"
 
-uint PlayerController_GetPerkPoints(PlayerController* pc)
+struct Var
 {
-	return pc->perk_points;
-}
+	enum class Type
+	{
+		None,
+		Bool,
+		Int,
+		Float
+	};
+	Type type;
+	union
+	{
+		bool _bool;
+		int _int;
+		float _float;
+	};
 
-void PlayerController_SetPerkPoints(PlayerController* pc, uint perk_points)
-{
-	pc->perk_points = perk_points;
-	if(pc->player_info)
-		pc->player_info->update_flags |= PlayerInfo::UF_PERK_POINTS;
-}
+	bool IsNone() const
+	{
+		return type == Type::None;
+	}
+	bool IsBool() const
+	{
+		return type == Type::Bool;
+	}
+	bool IsBool(bool value) const
+	{
+		return IsBool() && _bool == value;
+	}
+	bool IsInt() const
+	{
+		return type == Type::Int;
+	}
+	bool IsInt(int value) const
+	{
+		return IsInt() && _int == value;
+	}
+	bool IsFloat() const
+	{
+		return type == Type::Float;
+	}
+	bool IsFloat(float value) const
+	{
+		return IsFloat() && _float == value;
+	}
+	bool IsVar(Var* var) const
+	{
+		return type == var->type && _int == var->_int;
+	}
 
-VarsContainer::Var* PlayerController_GetVar(PlayerController* pc, const string& name)
+	void SetNone()
+	{
+		type = Type::None;
+	}
+	Var* SetBool(bool value)
+	{
+		type = Type::Bool;
+		_bool = value;
+		return this;
+	}
+	Var* SetInt(int value)
+	{
+		type = Type::Int;
+		_int = value;
+		return this;
+	}
+	Var* SetFloat(float value)
+	{
+		type = Type::Float;
+		_float = value;
+		return this;
+	}
+	Var* SetVar(Var* var)
+	{
+		type = var->type;
+		_int = var->_int;
+		return this;
+	}
+
+	bool GetBool() const
+	{
+		return _bool;
+	}
+	int GetInt() const
+	{
+		return _int;
+	}
+	float GetFloat() const
+	{
+		return _float;
+	}
+};
+
+struct VarsContainer
 {
-	return pc->vars->GetVar(name);
+	Var* Get(const string& id)
+	{
+		auto it = vars.lower_bound(id);
+		if(it != vars.end() && !(vars.key_comp()(id, it->first)))
+			return it->second;
+		else
+		{
+			Var* var = new Var;
+			var->type = Var::Type::None;
+			vars.insert(it, std::map<string, Var*>::value_type(id, var));
+			return var;
+		}
+	}
+
+	std::map<string, Var*> vars;
+};
+
+Var test_var;
+VarsContainer globals;
+VarsContainer* p_globals = &globals;
+
+Var* PlayerController_GetVar(void* pc)
+{
+	test_var.type = Var::Type::None;
+	return &test_var;
 }
 
 void ScriptManager::RegisterGame()
 {
-	AddType("Var")
+	/*AddType("Var")
 		.Method("bool GetBool() const", asMETHOD(VarsContainer::Var, GetBool))
 		.Method("int GetInt() const", asMETHOD(VarsContainer::Var, GetInt))
 		.Method("float GetFloat() const", asMETHOD(VarsContainer::Var, GetFloat))
@@ -275,13 +380,39 @@ void ScriptManager::RegisterGame()
 		.Method("void SetNone()", asMETHOD(VarsContainer::Var, SetNone))
 		.Method("void SetBool(bool)", asMETHOD(VarsContainer::Var, SetBool))
 		.Method("void SetInt(int)", asMETHOD(VarsContainer::Var, SetInt))
-		.Method("void SetFloat(float)", asMETHOD(VarsContainer::Var, SetFloat));
+		.Method("void SetFloat(float)", asMETHOD(VarsContainer::Var, SetFloat));*/
+
+	// use generic type ??? for get is set
+
+	AddType("Var")
+		.Method("bool IsNone() const", asMETHOD(Var, IsNone))
+		.Method("bool IsBool() const", asMETHODPR(Var, IsBool, () const, bool))
+		.Method("bool IsBool(bool) const", asMETHODPR(Var, IsBool, (bool) const, bool))
+		.Method("bool IsInt() const", asMETHODPR(Var, IsInt, () const, bool))
+		.Method("bool IsInt(int) const", asMETHODPR(Var, IsInt, (int) const, bool))
+		.Method("bool IsFloat() const", asMETHODPR(Var, IsFloat, () const, bool))
+		.Method("bool IsFloat(float) const", asMETHODPR(Var, IsFloat, (float) const, bool))
+		.Method("bool IsVar(Var@) const", asMETHOD(Var, IsVar))
+		.Method("bool opEquals(bool) const", asMETHODPR(Var, IsBool, (bool) const, bool))
+		.Method("bool opEquals(int) const", asMETHODPR(Var, IsInt, (int) const, bool))
+		.Method("bool opEquals(float) const", asMETHODPR(Var, IsFloat, (float) const, bool))
+		.Method("bool opEquals(Var@) const", asMETHOD(Var, IsVar))
+		.Method("Var@ SetBool(bool)", asMETHOD(Var, SetBool))
+		.Method("Var@ SetInt(int)", asMETHOD(Var, SetInt))
+		.Method("Var@ SetFloat(float)", asMETHOD(Var, SetFloat))
+		.Method("Var@ opAssign(bool)", asMETHOD(Var, SetBool))
+		.Method("Var@ opAssign(int)", asMETHOD(Var, SetInt))
+		.Method("Var@ opAssign(float)", asMETHOD(Var, SetFloat))
+		.Method("Var@ opAssign(Var@)", asMETHOD(Var, SetVar))
+		.Method("bool GetBool() const", asMETHOD(Var, GetBool))
+		.Method("int GetInt() const", asMETHOD(Var, GetInt))
+		.Method("float GetFloat() const", asMETHOD(Var, GetFloat));
+
+	AddType("VarsContainer")
+		.Method("Var@ opIndex(const string& in)", asMETHOD(VarsContainer, Get))
+		.WithInstance("VarsContainer@ globals", &p_globals);
 
 	AddType("Player")
-		.Method("void AddPerkPoint(uint points = 1)", asMETHOD(PlayerController, AddPerkPoint))
-		.Method("uint get_perk_points()", asFUNCTION(PlayerController_GetPerkPoints))
-		.Method("void set_perk_points(uint)", asFUNCTION(PlayerController_SetPerkPoints))
-		.Method("Var@ GetVar(string& in)", asFUNCTION(PlayerController_GetVar))
 		.WithInstance("Player@ pc", &pc);
 }
 
@@ -390,4 +521,13 @@ TypeBuilder ScriptManager::ForType(cstring name)
 	assert(name);
 	TypeBuilder builder(name, engine);
 	return builder;
+}
+
+void sm_tests()
+{
+	PlayerController pc;
+	SM = new ScriptManager;
+	SM->Init();
+	SM->SetContext(&pc);
+	SM->RunScript("globals[\"a\"] = 3; Info(\"\"+globals[\"a\"].GetInt());");
 }
