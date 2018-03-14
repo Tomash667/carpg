@@ -28,6 +28,9 @@ Version 0.7 (2018-XX-YY):
 - rest before drinking contest was blocking join for clients
 - tournament heroes wasn't spawning when entered at exact day
 - removed memory leaks when spawning and removing camps
+- fixed crash when when entering dungeon corpses where generated
+- leaving location when unit is dying don't block looting it or spawning blood
+- fixed crash during pvp when challenged player quit
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

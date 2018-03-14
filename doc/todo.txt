@@ -1,24 +1,28 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
+- alcohol doesn't work after effects rework? contest after c/c2 quitting
+- contest - if look_target winner quit it will crash ?
+	-? other instances of look_target
 ? client leave - 3 player tests:
-	? while talking
-	? while using object
-	? while looting chest
-	? while looting body
-	? while looting bookcase
-	? while leaving level
-	? on worldmap
-	? pvp
-	? arena
-	? solo arena
-	? tournament before, in combat
-	? in contest
+	- talking about round fights, pair can have null, smart ptr?
+	- talking before fight
+	- when null it will silently add units to tournament_units
+	- both units left, no winner will crash
+	- tournament winner quit will crash
+	? leave before combat
+	? leave on combat
+	? leave after combat
+	? leave when free round
+	- things get bugged when c left, no info about him losing, for c there was units standing and doing nothing
 ? using cheats to exit from arena
 	? arena combat
+	? arena combat city
 	? pvp
+	? pvp city
 	? tournament
-
+	? tournament city
+	
 + verify old branches for bugs n fixes (f_angelscript, angelscript, older)
 -? test recruiting gorush/jozan in 0.5, if they don't tell name in clients write as fixed
 -? UpdateGold but change is added too
@@ -77,6 +81,7 @@ NEW:
 + server side language != player language will cause some texts to use server language, some will use player language
 + hunters guild, quests (wielki łowczy), bad wolf boss
 + attach sounds to scene node, not to unit
++ ai talking about contest/tournament
 ===============================================================================================================
 VERIFY:
 - w questowych lokacjach krew/zwłoki nie znikają

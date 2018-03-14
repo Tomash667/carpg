@@ -28,6 +28,9 @@ Wersja 0.7 (2018-XX-YY):
 - odpoczywanie przed zawodami w piciu blokowa³o udzia³ dla klientów
 - wejœcie do miasta w dniu zawodów powodowa³o nie pojawienie siê uczestników zawodów
 - usuniête wycieki pamiêci przy tworzeniu i usuwaniu obozów
+- naprawiony crash przy wchodzeniu do podziemi gdy generowa³o zw³oki
+- opuszczanie lokalizacji z umieraj¹cymi jednostkami nie blokuje ich póŸniejsze ograbienie i tworzy krew
+- naprawiony crash gdy podczas pvp wyzwany gracz opuœci grê
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):
