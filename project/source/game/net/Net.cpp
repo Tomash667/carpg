@@ -7889,6 +7889,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							AddGameMsg(Format(txGoldPlus, count), 3.f);
 						else
 							AddGameMsg(Format(txQuestCompletedGold, count), 4.f);
+						sound_mgr->PlaySound2d(sCoins);
 					}
 				}
 				break;

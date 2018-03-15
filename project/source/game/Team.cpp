@@ -54,6 +54,28 @@ Unit* TeamSingleton::FindTeamMember(cstring id)
 	return nullptr;
 }
 
+uint TeamSingleton::GetActiveNpcCount()
+{
+	uint count = 0;
+	for(Unit* unit : active_members)
+	{
+		if(!unit->player)
+			++count;
+	}
+	return count;
+}
+
+uint TeamSingleton::GetNpcCount()
+{
+	uint count = 0;
+	for(Unit* unit : members)
+	{
+		if(!unit->player)
+			++count;
+	}
+	return count;
+}
+
 int TeamSingleton::GetPCShare()
 {
 	uint pc = 0, npc = 0;
@@ -127,6 +149,52 @@ void TeamSingleton::GetTeamInfo(TeamInfo& info)
 				++info.free_members;
 		}
 	}
+}
+
+uint TeamSingleton::GetPlayersCount()
+{
+	uint count = 0;
+	for(Unit* unit : active_members)
+	{
+		if(unit->player)
+			++count;
+	}
+	return count;
+}
+
+bool TeamSingleton::HaveActiveNpc()
+{
+	for(Unit* unit : active_members)
+	{
+		if(!unit->player)
+			return true;
+	}
+	return false;
+}
+
+bool TeamSingleton::HaveNpc()
+{
+	for(Unit* unit : members)
+	{
+		if(!unit->player)
+			return true;
+	}
+	return false;
+}
+
+bool TeamSingleton::HaveOtherPlayer()
+{
+	bool first = true;
+	for(Unit* unit : active_members)
+	{
+		if(unit->player)
+		{
+			if(!first)
+				return true;
+			first = false;
+		}
+	}
+	return false;
 }
 
 bool TeamSingleton::IsAnyoneAlive()

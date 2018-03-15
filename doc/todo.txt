@@ -22,11 +22,30 @@ CURRENT:
 	? pvp city
 	? tournament
 	? tournament city
+? angelscript
+	? console
+	? script
+	? if_script
+	? negated if
 	
-+ verify old branches for bugs n fixes (f_angelscript, angelscript, older)
--? test recruiting gorush/jozan in 0.5, if they don't tell name in clients write as fixed
--? UpdateGold but change is added too
-+ copy angelscript parser
+-? hero go wander, don't make them wander, SetMode sets city_wander to false
+	void HeroData::SetMode(Mode new_mode)
+	{
+		if(mode == new_mode)
+			return;
+		mode = new_mode;
+		switch(mode)
+		{
+		case Mode::Follow:
+		case Mode::Wander:
+		case Mode::Wait:
+			assert(unit->IsFollower());
+			unit->ai->city_wander = false;
+			if(mode == Wander)
+				unit->ai->loc_timer = Random(5.f, 10.f);
+			break;
+		}
+	}
 -? crash on cleanup for s
 void Game::ClearGame()
 {

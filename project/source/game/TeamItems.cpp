@@ -60,7 +60,7 @@ bool UniqueTeamShares(const TeamShareItem& t1, const TeamShareItem& t2)
 //=================================================================================================
 void Game::CheckTeamItemShares()
 {
-	if(!HaveTeamMemberNPC())
+	if(!Team.HaveActiveNpc())
 	{
 		team_share_id = -1;
 		return;

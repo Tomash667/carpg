@@ -1608,7 +1608,7 @@ void Game::UpdateServerTransfer(float dt)
 				Team.members.push_back(unit);
 			else
 			{
-				if(Team.active_members.size() < MAX_TEAM_SIZE)
+				if(Team.active_members.size() < Team.GetMaxSize())
 				{
 					Team.members.push_back(unit);
 					Team.active_members.push_back(unit);
@@ -1637,7 +1637,7 @@ void Game::UpdateServerTransfer(float dt)
 			}
 		}
 
-		if(!mp_load && leader_perk > 0 && Team.GetActiveTeamSize() < MAX_TEAM_SIZE)
+		if(!mp_load && leader_perk > 0 && Team.GetActiveTeamSize() < Team.GetMaxSize())
 		{
 			Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2 * leader_perk, nullptr, nullptr, false);
 			npc->ai = new AIController;

@@ -59,7 +59,9 @@ enum Keyword
 	K_QUEST_EVENT,
 	K_DO_ONCE,
 	K_NOT_ACTIVE,
-	K_QUEST_SPECIAL
+	K_QUEST_SPECIAL,
+	K_NOT,
+	K_SCRIPT
 };
 
 enum IfState
@@ -251,6 +253,14 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
 						t.Next();
 
+						if(k == K_NOT)
+						{
+							dialog->code.push_back({ DT_NOT,nullptr });
+							crc.Update(DT_NOT);
+							k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
+							t.Next();
+						}
+
 						switch(k)
 						{
 						case K_QUEST_TIMEOUT:
@@ -373,6 +383,16 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								crc.Update(dialog->strs.back());
 							}
 							break;
+						case K_SCRIPT:
+							{
+								int index = dialog->strs.size();
+								dialog->strs.push_back(t.MustGetString());
+								t.Next();
+								dialog->code.push_back({ DT_IF_SCRIPT, (cstring)index });
+								crc.Update(DT_IF_SCRIPT);
+								crc.Update(dialog->strs.back());
+							}
+							break;
 						default:
 							t.Unexpected();
 							break;
@@ -440,6 +460,16 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						t.Next();
 						dialog->code.push_back({ DT_QUEST_SPECIAL, (cstring)index });
 						crc.Update(DT_QUEST_SPECIAL);
+						crc.Update(dialog->strs.back());
+					}
+					break;
+				case K_SCRIPT:
+					{
+						int index = dialog->strs.size();
+						dialog->strs.push_back(t.MustGetString());
+						t.Next();
+						dialog->code.push_back({ DT_SCRIPT, (cstring)index });
+						crc.Update(DT_SCRIPT);
 						crc.Update(dialog->strs.back());
 					}
 					break;
@@ -563,7 +593,9 @@ uint LoadDialogs(uint& out_crc, uint& errors)
 		{ "quest_event", K_QUEST_EVENT },
 		{ "do_once", K_DO_ONCE },
 		{ "not_active", K_NOT_ACTIVE },
-		{ "quest_special", K_QUEST_SPECIAL }
+		{ "quest_special", K_QUEST_SPECIAL },
+		{ "not", K_NOT },
+		{ "script", K_SCRIPT }
 	});
 
 	Crc crc;

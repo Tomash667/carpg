@@ -36,7 +36,10 @@ enum DialogType
 	DT_DO_ONCE,
 	DT_NOT_ACTIVE,
 	DT_IF_QUEST_SPECIAL,
-	DT_QUEST_SPECIAL
+	DT_QUEST_SPECIAL,
+	DT_NOT,
+	DT_SCRIPT,
+	DT_IF_SCRIPT
 };
 
 //-----------------------------------------------------------------------------
@@ -121,7 +124,7 @@ struct DialogContext
 	vector<std::pair<int, bool>> active_locations;
 	int team_share_id;
 	const Item* team_share_item;
-	bool not_active, can_skip, force_end;
+	bool not_active, can_skip, force_end, negate_if;
 	vector<Entry> prev;
 
 	cstring GetText(int index);
