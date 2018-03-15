@@ -18,6 +18,7 @@ public:
 	void SetMusicVolume(int volume);
 	bool UpdateChannelPosition(FMOD::Channel* channel, const Vec3& pos);
 
+	bool IsPlaying(FMOD::Channel* channel);
 	bool IsDisabled() const { return disabled_sound; }
 	bool IsSoundDisabled() const { return nosound; }
 	bool IsMusicDisabled() const { return nomusic; }

@@ -247,6 +247,7 @@ FMOD::Channel* SoundManager::CreateChannel(FMOD::Sound* sound, const Vec3& pos, 
 	system->playSound(FMOD_CHANNEL_FREE, sound, true, &channel);
 	channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
 	channel->set3DMinMaxDistance(smin, 10000.f/*smax*/);
+	channel->setChannelGroup(group_default);
 	channel->setPaused(false);
 	playing_sounds.push_back(channel);
 	return channel;
@@ -300,6 +301,17 @@ bool SoundManager::UpdateChannelPosition(FMOD::Channel* channel, const Vec3& pos
 		channel->set3DAttributes((const FMOD_VECTOR*)&pos, nullptr);
 		return true;
 	}
+	else
+		return false;
+}
+
+//=================================================================================================
+bool SoundManager::IsPlaying(FMOD::Channel* channel)
+{
+	assert(channel);
+	bool is_playing;
+	if(channel->isPlaying(&is_playing) == FMOD_OK)
+		return is_playing;
 	else
 		return false;
 }

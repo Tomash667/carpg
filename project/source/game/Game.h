@@ -145,7 +145,7 @@ extern const float MIN_H;
 struct AttachedSound
 {
 	FMOD::Channel* channel;
-	Unit* unit;
+	SmartPtr<Unit> unit;
 };
 
 static_assert(sizeof(time_t) == sizeof(__int64), "time_t needs to be 64 bit");

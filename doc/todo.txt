@@ -2,8 +2,6 @@
 ===============================================================================================================
 CURRENT:
 - alcohol doesn't work after effects rework? contest after c/c2 quitting
-- contest - if look_target winner quit it will crash ?
-	-? other instances of look_target
 ? client leave - 3 player tests:
 	- talking about round fights, pair can have null, smart ptr?
 	- talking before fight
@@ -22,6 +20,13 @@ CURRENT:
 	? pvp city
 	? tournament
 	? tournament city
+? test SmartPtr
+	? attached sound
+	? look target
+		? remove ai unit
+		? remove player unit
+		? cleanup
+	! add changelog
 	
 + verify old branches for bugs n fixes (f_angelscript, angelscript, older)
 -? test recruiting gorush/jozan in 0.5, if they don't tell name in clients write as fixed
@@ -82,6 +87,7 @@ NEW:
 + hunters guild, quests (wielki łowczy), bad wolf boss
 + attach sounds to scene node, not to unit
 + ai talking about contest/tournament
++ yell sound
 ===============================================================================================================
 VERIFY:
 - w questowych lokacjach krew/zwłoki nie znikają

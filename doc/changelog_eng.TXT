@@ -31,6 +31,8 @@ Version 0.7 (2018-XX-YY):
 - fixed crash when when entering dungeon corpses where generated
 - leaving location when unit is dying don't block looting it or spawning blood
 - fixed crash during pvp when challenged player quit
+- fixed sound volume not working for some sound
+- fixed crash when client have sound attached and quits
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

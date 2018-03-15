@@ -27,6 +27,16 @@ Unit::~Unit()
 }
 
 //=================================================================================================
+void Unit::Release()
+{
+	if(--refs == 0)
+	{
+		assert(to_remove);
+		delete this;
+	}
+}
+
+//=================================================================================================
 float Unit::CalculateMaxHp() const
 {
 	float v = 0.8f*Get(AttributeId::END) + 0.2f*Get(AttributeId::STR);

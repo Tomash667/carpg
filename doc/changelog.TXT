@@ -31,6 +31,8 @@ Wersja 0.7 (2018-XX-YY):
 - naprawiony crash przy wchodzeniu do podziemi gdy generowa³o zw³oki
 - opuszczanie lokalizacji z umieraj¹cymi jednostkami nie blokuje ich póŸniejsze ograbienie i tworzy krew
 - naprawiony crash gdy podczas pvp wyzwany gracz opuœci grê
+- naprawiony brak dzia³ania ustawieñ g³oœnoœci dla niektórych dŸwiêków
+- naprawiony crash gdy dŸwiêk jest przypiêty do klienta a on opuœci grê
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):

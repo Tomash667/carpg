@@ -144,6 +144,9 @@ void Game::UpdateAi(float dt)
 			continue;
 		}
 
+		if(u.look_target && u.look_target->to_remove)
+			u.look_target = nullptr;
+
 		if(u.action == A_ANIMATION)
 		{
 			if(u.look_target)
