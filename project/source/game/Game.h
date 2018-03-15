@@ -756,8 +756,6 @@ public:
 
 	//--------------------------------------
 	// ARENA
-	// etapy: 0-brak, 1-walka wchodzenie, 2-walka oczekiwanie, 3-walka, 4-walka oczekiwanie po, 5-walka koniec
-	// 10-pvp wchodzenie, 11-pvp oczekiwanie, 12-pvp 13-pvp oczekiwanie po, 14-pvp koniec
 	enum TrybArena
 	{
 		Arena_Brak,
@@ -791,6 +789,7 @@ public:
 	PlayerController* pvp_player;
 	vector<Unit*> arena_viewers;
 
+	void UpdateArena(float dt);
 	void CleanArena();
 
 	//--------------------------------------
@@ -812,7 +811,7 @@ public:
 	bool IfUnitJoinTournament(Unit& u);
 	void GenerateTournamentUnits();
 	void UpdateTournament(float dt);
-	void VerifyTournamentUnit(Unit& u);
+	void VerifyTournamentUnit(Unit* unit);
 	void StartTournamentRound();
 	void TournamentTalk(cstring text);
 	void TournamentTrain(Unit& u);
@@ -1191,7 +1190,7 @@ public:
 	};
 	Unit* SpawnUnitInsideInn(UnitData& unit, int level = -1, InsideBuilding* inn = nullptr, int flags = 0);
 	Unit* CreateUnitWithAI(LevelContext& ctx, UnitData& unit, int level = -1, Human* human_data = nullptr, const Vec3* pos = nullptr, const float* rot = nullptr, AIController** ai = nullptr);
-	void ChangeLevel(int gdzie);
+	void ChangeLevel(int where);
 	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
 	void OpenDoorsByTeam(const Int2& pt);
 	void ExitToMap();

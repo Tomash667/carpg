@@ -21,6 +21,7 @@ void Game::StartTournament(Unit* arena_master)
 	tournament_winner = nullptr;
 	tournament_pairs.clear();
 	tournament_skipped_unit = nullptr;
+	tournament_other_fighter = nullptr;
 	city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA, tournament_arena);
 }
 
@@ -97,14 +98,14 @@ void Game::UpdateTournament(float dt)
 {
 	// info about getting out of range
 	for(Unit* unit : tournament_units)
-		VerifyTournamentUnit(*unit);
+		VerifyTournamentUnit(unit);
 	for(auto& pair : tournament_pairs)
 	{
-		VerifyTournamentUnit(*pair.first);
-		VerifyTournamentUnit(*pair.second);
+		VerifyTournamentUnit(pair.first);
+		VerifyTournamentUnit(pair.second);
 	}
-	if(tournament_skipped_unit)
-		VerifyTournamentUnit(*tournament_skipped_unit);
+	VerifyTournamentUnit(tournament_skipped_unit);
+	VerifyTournamentUnit(tournament_other_fighter);
 
 	if(tournament_state == TOURNAMENT_STARTING)
 	{
@@ -554,19 +555,19 @@ void Game::UpdateTournament(float dt)
 }
 
 //=================================================================================================
-void Game::VerifyTournamentUnit(Unit& u)
+void Game::VerifyTournamentUnit(Unit* unit)
 {
-	if(!u.IsPlayer())
+	if(!unit || !unit->IsPlayer())
 		return;
 	bool leaving_event = true;
-	if(u.in_building == tournament_arena)
+	if(unit->in_building == tournament_arena)
 		leaving_event = false;
-	else if(u.in_building == -1)
-		leaving_event = Vec3::Distance2d(u.pos, tournament_master->pos) > 16.f;
+	else if(unit->in_building == -1)
+		leaving_event = Vec3::Distance2d(unit->pos, tournament_master->pos) > 16.f;
 
-	if(leaving_event != u.player->leaving_event)
+	if(leaving_event != unit->player->leaving_event)
 	{
-		u.player->leaving_event = leaving_event;
+		unit->player->leaving_event = leaving_event;
 		if(leaving_event)
 			AddGameMsg3(GMS_GETTING_OUT_OF_RANGE);
 	}

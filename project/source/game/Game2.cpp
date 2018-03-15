@@ -10461,11 +10461,11 @@ const Int2 g_kierunekk[4] = {
 	Int2(1,0)
 };
 
-void Game::ChangeLevel(int gdzie)
+void Game::ChangeLevel(int where)
 {
-	assert(gdzie == 1 || gdzie == -1);
+	assert(where == 1 || where == -1);
 
-	Info(gdzie == 1 ? "Changing level to lower." : "Changing level to upper.");
+	Info(where == 1 ? "Changing level to lower." : "Changing level to upper.");
 
 	location_event_handler = nullptr;
 	UpdateDungeonMinimap(false);
@@ -10475,17 +10475,17 @@ void Game::ChangeLevel(int gdzie)
 
 	if(Net::IsOnline() && players > 1)
 	{
-		int poziom = dungeon_level;
-		if(gdzie == -1)
-			--poziom;
+		int level = dungeon_level;
+		if(where == -1)
+			--level;
 		else
-			++poziom;
-		if(poziom >= 0)
+			++level;
+		if(level >= 0)
 		{
 			packet_data.resize(3);
 			packet_data[0] = ID_CHANGE_LEVEL;
 			packet_data[1] = (byte)current_location;
-			packet_data[2] = (byte)poziom;
+			packet_data[2] = (byte)level;
 			int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			StreamWrite(packet_data.data(), 3, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 			for(auto info : game_players)
@@ -10504,7 +10504,7 @@ void Game::ChangeLevel(int gdzie)
 		Net_FilterServerChanges();
 	}
 
-	if(gdzie == -1)
+	if(where == -1)
 	{
 		// poziom w górê
 		if(dungeon_level == 0)
@@ -14091,72 +14091,76 @@ void Game::LeaveLevel(bool clear)
 
 void Game::LeaveLevel(LevelContext& ctx, bool clear)
 {
-	// posprz¹taj jednostki
-	// usuñ MeshInstance i btCollisionShape
+	// cleanup units
 	if(Net::IsLocal() && !clear)
 	{
 		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 		{
-			// fizyka
-			delete (*it)->cobj->getCollisionShape();
-			(*it)->cobj = nullptr;
+			Unit& unit = **it;
+
+			// physics
+			delete unit.cobj->getCollisionShape();
+			unit.cobj = nullptr;
 
 			// speech bubble
-			(*it)->bubble = nullptr;
-			(*it)->talking = false;
+			unit.bubble = nullptr;
+			unit.talking = false;
 
-			// jeœli u¿ywa jakiegoœ obiektu to przesuñ
-			if((*it)->usable)
+			// if using object, end it and move to free space
+			if(unit.usable)
 			{
 				Unit_StopUsingUsable(ctx, **it);
-				(*it)->UseUsable(nullptr);
-				(*it)->visual_pos = (*it)->pos = (*it)->target_pos;
+				unit.UseUsable(nullptr);
+				unit.visual_pos = unit.pos = unit.target_pos;
 			}
 
-			if((*it)->bow_instance)
+			if(unit.bow_instance)
 			{
-				bow_instances.push_back((*it)->bow_instance);
-				(*it)->bow_instance = nullptr;
+				bow_instances.push_back(unit.bow_instance);
+				unit.bow_instance = nullptr;
 			}
 
-			// model
-			if((*it)->IsAI())
+			// mesh
+			if(unit.IsAI())
 			{
-				if((*it)->IsFollower())
+				if(unit.IsFollower())
 				{
-					if(!(*it)->IsAlive())
+					if(!unit.IsAlive())
 					{
-						(*it)->hp = 1.f;
-						(*it)->live_state = Unit::ALIVE;
+						unit.hp = 1.f;
+						unit.live_state = Unit::ALIVE;
 					}
-					(*it)->hero->mode = HeroData::Follow;
-					(*it)->talking = false;
-					(*it)->mesh_inst->need_update = true;
-					(*it)->ai->Reset();
+					unit.hero->mode = HeroData::Follow;
+					unit.talking = false;
+					unit.mesh_inst->need_update = true;
+					unit.ai->Reset();
 					*it = nullptr;
 				}
 				else
 				{
-					if((*it)->ai->goto_inn && city_ctx)
+					if(unit.live_state == Unit::DYING)
 					{
-						// przenieœ do karczmy przy opuszczaniu lokacji
+						unit.live_state = Unit::DEAD;
+						unit.mesh_inst->SetToEnd();
+						CreateBlood(ctx, unit, true);
+					}
+					if(unit.ai->goto_inn && city_ctx)
+					{
+						// warp to inn if unit wanted to go there
 						WarpToInn(**it);
 					}
-					delete (*it)->mesh_inst;
-					(*it)->mesh_inst = nullptr;
-					delete (*it)->ai;
-					(*it)->ai = nullptr;
-					(*it)->EndEffects();
-
-					if((*it)->usable)
-						(*it)->pos = (*it)->target_pos;
+					delete unit.mesh_inst;
+					unit.mesh_inst = nullptr;
+					delete unit.ai;
+					unit.ai = nullptr;
+					unit.EndEffects();
 				}
 			}
 			else
 			{
-				(*it)->talking = false;
-				(*it)->mesh_inst->need_update = true;
-				(*it)->usable = nullptr;
+				unit.talking = false;
+				unit.mesh_inst->need_update = true;
+				unit.usable = nullptr;
 				*it = nullptr;
 			}
 		}
@@ -14171,21 +14175,21 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 			if(!*it)
 				continue;
 
-			if((*it)->cobj)
-				delete (*it)->cobj->getCollisionShape();
+			Unit& unit = **it;
 
-			if((*it)->bow_instance)
-				bow_instances.push_back((*it)->bow_instance);
+			if(unit.cobj)
+				delete unit.cobj->getCollisionShape();
 
-			// speech bubble
-			(*it)->bubble = nullptr;
-			(*it)->talking = false;
+			if(unit.bow_instance)
+				bow_instances.push_back(unit.bow_instance);
 
-			// zwolnij EntityInterpolator
-			if((*it)->interp)
-				interpolators.Free((*it)->interp);
+			unit.bubble = nullptr;
+			unit.talking = false;
 
-			delete (*it)->ai;
+			if(unit.interp)
+				interpolators.Free(unit.interp);
+
+			delete unit.ai;
 			delete *it;
 		}
 
@@ -15431,11 +15435,15 @@ void Game::DeleteUnit(Unit* unit)
 		if(contest_state >= CONTEST_STARTING)
 			RemoveElementTry(contest_units, unit);
 		if(!arena_free)
+		{
 			RemoveElementTry(at_arena, unit);
+			if(arena_fighter == unit)
+				arena_fighter = nullptr;
+		}
 		if(tournament_state >= TOURNAMENT_IN_PROGRESS)
 		{
 			RemoveElementTry(tournament_units, unit);
-			for(vector<std::pair<Unit*, Unit*> >::iterator it = tournament_pairs.begin(), end = tournament_pairs.end(); it != end; ++it)
+			for(vector<std::pair<Unit*, Unit*>>::iterator it = tournament_pairs.begin(), end = tournament_pairs.end(); it != end; ++it)
 			{
 				if(it->first == unit)
 				{
@@ -18553,303 +18561,16 @@ void Game::UpdateGame2(float dt)
 {
 	// arena
 	if(arena_tryb != Arena_Brak)
-	{
-		if(arena_etap == Arena_OdliczanieDoPrzeniesienia)
-		{
-			arena_t += dt * 2;
-			if(arena_t >= 1.f)
-			{
-				if(arena_tryb == Arena_Walka)
-				{
-					for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-					{
-						if((*it)->in_arena == 0)
-						{
-							UnitWarpData& uwd = Add1(unit_warp_data);
-							uwd.unit = *it;
-							uwd.where = -2;
-						}
-					}
-				}
-				else
-				{
-					for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-					{
-						UnitWarpData& uwd = Add1(unit_warp_data);
-						uwd.unit = *it;
-						uwd.where = -2;
-					}
+		UpdateArena(dt);
 
-					at_arena[0]->in_arena = 0;
-					at_arena[1]->in_arena = 1;
-
-					if(Net::IsOnline())
-					{
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::CHANGE_ARENA_STATE;
-							c.unit = at_arena[0];
-						}
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::CHANGE_ARENA_STATE;
-							c.unit = at_arena[1];
-						}
-					}
-				}
-
-				// reset cooldowns
-				for(auto unit : at_arena)
-				{
-					if(unit->IsPlayer())
-						unit->player->RefreshCooldown();
-				}
-
-				arena_etap = Arena_OdliczanieDoStartu;
-				arena_t = 0.f;
-			}
-		}
-		else if(arena_etap == Arena_OdliczanieDoStartu)
-		{
-			arena_t += dt;
-			if(arena_t >= 2.f)
-			{
-				if(GetArena()->ctx.building_id == pc->unit->in_building)
-					sound_mgr->PlaySound2d(sArenaFight);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::ARENA_SOUND;
-					c.id = 0;
-				}
-				arena_etap = Arena_TrwaWalka;
-				for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-				{
-					(*it)->frozen = FROZEN::NO;
-					if((*it)->IsPlayer() && (*it)->player != pc)
-					{
-						NetChangePlayer& c = Add1((*it)->player->player_info->changes);
-						c.type = NetChangePlayer::START_ARENA_COMBAT;
-					}
-				}
-			}
-		}
-		else if(arena_etap == Arena_TrwaWalka)
-		{
-			// gadanie przez obserwatorów
-			for(vector<Unit*>::iterator it = arena_viewers.begin(), end = arena_viewers.end(); it != end; ++it)
-			{
-				Unit& u = **it;
-				u.ai->loc_timer -= dt;
-				if(u.ai->loc_timer <= 0.f)
-				{
-					u.ai->loc_timer = Random(6.f, 12.f);
-
-					cstring text;
-					if(Rand() % 2 == 0)
-						text = random_string(txArenaText);
-					else
-						text = Format(random_string(txArenaTextU), GetRandomArenaHero()->GetRealName());
-
-					UnitTalk(u, text);
-				}
-			}
-
-			// sprawdŸ ile osób jeszcze ¿yje
-			int ile[2] = { 0 };
-			for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-			{
-				if((*it)->live_state != Unit::DEAD)
-					++ile[(*it)->in_arena];
-			}
-
-			if(ile[0] == 0 || ile[1] == 0)
-			{
-				arena_etap = Arena_OdliczanieDoKonca;
-				arena_t = 0.f;
-				bool victory_sound;
-				if(ile[0] == 0)
-				{
-					arena_wynik = 1;
-					if(arena_tryb == Arena_Walka)
-						victory_sound = false;
-					else
-						victory_sound = true;
-				}
-				else
-				{
-					arena_wynik = 0;
-					victory_sound = true;
-				}
-
-				if(GetArena()->ctx.building_id == pc->unit->in_building)
-					sound_mgr->PlaySound2d(victory_sound ? sArenaWin : sArenaLost);
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::ARENA_SOUND;
-					c.id = victory_sound ? 1 : 2;
-				}
-			}
-		}
-		else if(arena_etap == Arena_OdliczanieDoKonca)
-		{
-			arena_t += dt;
-			if(arena_t >= 2.f)
-			{
-				for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-				{
-					(*it)->frozen = FROZEN::YES;
-					if((*it)->IsPlayer())
-					{
-						if((*it)->player == pc)
-						{
-							fallback_co = FALLBACK::ARENA_EXIT;
-							fallback_t = -1.f;
-						}
-						else
-						{
-							NetChangePlayer& c = Add1((*it)->player->player_info->changes);
-							c.type = NetChangePlayer::EXIT_ARENA;
-						}
-					}
-				}
-
-				arena_etap = Arena_OdliczanieDoWyjscia;
-				arena_t = 0.f;
-			}
-		}
-		else
-		{
-			arena_t += dt * 2;
-			if(arena_t >= 1.f)
-			{
-				if(arena_tryb == Arena_Walka)
-				{
-					if(arena_wynik == 0)
-					{
-						int ile;
-						switch(arena_poziom)
-						{
-						case 1:
-							ile = 150;
-							break;
-						case 2:
-							ile = 350;
-							break;
-						case 3:
-							ile = 750;
-							break;
-						}
-
-						AddGoldArena(ile);
-					}
-
-					for(Unit* unit : at_arena)
-					{
-						if(unit->in_arena != 0)
-						{
-							RemoveUnit(unit);
-							continue;
-						}
-
-						unit->frozen = FROZEN::NO;
-						unit->in_arena = -1;
-						if(unit->hp <= 0.f)
-						{
-							unit->HealPoison();
-							unit->live_state = Unit::ALIVE;
-							unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-							unit->mesh_inst->groups[0].speed = 1.f;
-							unit->action = A_ANIMATION;
-							unit->animation = ANI_PLAY;
-							if(unit->IsAI())
-								unit->ai->Reset();
-							if(Net::IsOnline())
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::STAND_UP;
-								c.unit = unit;
-							}
-						}
-
-						UnitWarpData& warp_data = Add1(unit_warp_data);
-						warp_data.unit = unit;
-						warp_data.where = -1;
-
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::CHANGE_ARENA_STATE;
-							c.unit = unit;
-						}
-					}
-				}
-				else
-				{
-					for(Unit* unit : at_arena)
-					{
-						unit->frozen = FROZEN::NO;
-						unit->in_arena = -1;
-						if(unit->hp <= 0.f)
-						{
-							unit->HealPoison();
-							unit->live_state = Unit::ALIVE;
-							unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
-							unit->mesh_inst->groups[0].speed = 1.f;
-							unit->action = A_ANIMATION;
-							unit->animation = ANI_PLAY;
-							if(unit->IsAI())
-								unit->ai->Reset();
-							if(Net::IsOnline())
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::STAND_UP;
-								c.unit = unit;
-							}
-						}
-
-						UnitWarpData& warp_data = Add1(unit_warp_data);
-						warp_data.unit = unit;
-						warp_data.where = -1;
-
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::CHANGE_ARENA_STATE;
-							c.unit = unit;
-						}
-					}
-
-					if(arena_tryb == Arena_Pvp && arena_fighter->IsHero())
-					{
-						arena_fighter->hero->lost_pvp = (arena_wynik == 0);
-						StartDialog2(pvp_player, arena_fighter, FindDialog(IS_SET(arena_fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
-					}
-				}
-
-				if(arena_tryb != Arena_Zawody)
-				{
-					RemoveArenaViewers();
-					arena_viewers.clear();
-					at_arena.clear();
-				}
-				else
-					tournament_state3 = 5;
-				arena_tryb = Arena_Brak;
-				arena_free = true;
-			}
-		}
-	}
-
-	// zawody
+	// tournament
 	if(tournament_state != TOURNAMENT_NOT_DONE)
 		UpdateTournament(dt);
 
 	// sharing of team items between team members
 	UpdateTeamItemShares();
 
-	// zawody w piciu
+	// contest
 	UpdateContest(dt);
 
 	// quest bandits
@@ -19029,6 +18750,301 @@ void Game::UpdateGame2(float dt)
 			}
 
 			at_arena.clear();
+		}
+	}
+}
+
+void Game::UpdateArena(float dt)
+{
+	if(arena_etap == Arena_OdliczanieDoPrzeniesienia)
+	{
+		arena_t += dt * 2;
+		if(arena_t >= 1.f)
+		{
+			if(arena_tryb == Arena_Walka)
+			{
+				for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
+				{
+					if((*it)->in_arena == 0)
+					{
+						UnitWarpData& uwd = Add1(unit_warp_data);
+						uwd.unit = *it;
+						uwd.where = -2;
+					}
+				}
+			}
+			else
+			{
+				for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
+				{
+					UnitWarpData& uwd = Add1(unit_warp_data);
+					uwd.unit = *it;
+					uwd.where = -2;
+				}
+
+				at_arena[0]->in_arena = 0;
+				at_arena[1]->in_arena = 1;
+
+				if(Net::IsOnline())
+				{
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::CHANGE_ARENA_STATE;
+						c.unit = at_arena[0];
+					}
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::CHANGE_ARENA_STATE;
+						c.unit = at_arena[1];
+					}
+				}
+			}
+
+			// reset cooldowns
+			for(auto unit : at_arena)
+			{
+				if(unit->IsPlayer())
+					unit->player->RefreshCooldown();
+			}
+
+			arena_etap = Arena_OdliczanieDoStartu;
+			arena_t = 0.f;
+		}
+	}
+	else if(arena_etap == Arena_OdliczanieDoStartu)
+	{
+		arena_t += dt;
+		if(arena_t >= 2.f)
+		{
+			if(GetArena()->ctx.building_id == pc->unit->in_building)
+				sound_mgr->PlaySound2d(sArenaFight);
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::ARENA_SOUND;
+				c.id = 0;
+			}
+			arena_etap = Arena_TrwaWalka;
+			for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
+			{
+				(*it)->frozen = FROZEN::NO;
+				if((*it)->IsPlayer() && (*it)->player != pc)
+				{
+					NetChangePlayer& c = Add1((*it)->player->player_info->changes);
+					c.type = NetChangePlayer::START_ARENA_COMBAT;
+				}
+			}
+		}
+	}
+	else if(arena_etap == Arena_TrwaWalka)
+	{
+		// talking by observers
+		for(vector<Unit*>::iterator it = arena_viewers.begin(), end = arena_viewers.end(); it != end; ++it)
+		{
+			Unit& u = **it;
+			u.ai->loc_timer -= dt;
+			if(u.ai->loc_timer <= 0.f)
+			{
+				u.ai->loc_timer = Random(6.f, 12.f);
+
+				cstring text;
+				if(Rand() % 2 == 0)
+					text = random_string(txArenaText);
+				else
+					text = Format(random_string(txArenaTextU), GetRandomArenaHero()->GetRealName());
+
+				UnitTalk(u, text);
+			}
+		}
+
+		// count how many are still alive
+		int count[2] = { 0 }, alive[2] = { 0 };
+		for(Unit* unit : at_arena)
+		{
+			++count[unit->in_arena];
+			if(unit->live_state != Unit::DEAD)
+				++alive[unit->in_arena];
+		}
+
+		if(alive[0] == 0 || alive[1] == 0)
+		{
+			arena_etap = Arena_OdliczanieDoKonca;
+			arena_t = 0.f;
+			bool victory_sound;
+			if(alive[0] == 0)
+			{
+				arena_wynik = 1;
+				victory_sound = false;
+			}
+			else
+			{
+				arena_wynik = 0;
+				victory_sound = true;
+			}
+			if(arena_tryb != Arena_Walka)
+			{
+				if(count[0] == 0 || count[1] == 0)
+					victory_sound = false; // someone quit
+				else
+					victory_sound = true;
+			}
+
+			if(GetArena()->ctx.building_id == pc->unit->in_building)
+				sound_mgr->PlaySound2d(victory_sound ? sArenaWin : sArenaLost);
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::ARENA_SOUND;
+				c.id = victory_sound ? 1 : 2;
+			}
+		}
+	}
+	else if(arena_etap == Arena_OdliczanieDoKonca)
+	{
+		arena_t += dt;
+		if(arena_t >= 2.f)
+		{
+			for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
+			{
+				(*it)->frozen = FROZEN::YES;
+				if((*it)->IsPlayer())
+				{
+					if((*it)->player == pc)
+					{
+						fallback_co = FALLBACK::ARENA_EXIT;
+						fallback_t = -1.f;
+					}
+					else
+					{
+						NetChangePlayer& c = Add1((*it)->player->player_info->changes);
+						c.type = NetChangePlayer::EXIT_ARENA;
+					}
+				}
+			}
+
+			arena_etap = Arena_OdliczanieDoWyjscia;
+			arena_t = 0.f;
+		}
+	}
+	else
+	{
+		arena_t += dt * 2;
+		if(arena_t >= 1.f)
+		{
+			if(arena_tryb == Arena_Walka)
+			{
+				if(arena_wynik == 0)
+				{
+					int ile;
+					switch(arena_poziom)
+					{
+					case 1:
+						ile = 150;
+						break;
+					case 2:
+						ile = 350;
+						break;
+					case 3:
+						ile = 750;
+						break;
+					}
+
+					AddGoldArena(ile);
+				}
+
+				for(Unit* unit : at_arena)
+				{
+					if(unit->in_arena != 0)
+					{
+						RemoveUnit(unit);
+						continue;
+					}
+
+					unit->frozen = FROZEN::NO;
+					unit->in_arena = -1;
+					if(unit->hp <= 0.f)
+					{
+						unit->HealPoison();
+						unit->live_state = Unit::ALIVE;
+						unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+						unit->mesh_inst->groups[0].speed = 1.f;
+						unit->action = A_ANIMATION;
+						unit->animation = ANI_PLAY;
+						if(unit->IsAI())
+							unit->ai->Reset();
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::STAND_UP;
+							c.unit = unit;
+						}
+					}
+
+					UnitWarpData& warp_data = Add1(unit_warp_data);
+					warp_data.unit = unit;
+					warp_data.where = -1;
+
+					if(Net::IsOnline())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::CHANGE_ARENA_STATE;
+						c.unit = unit;
+					}
+				}
+			}
+			else
+			{
+				for(Unit* unit : at_arena)
+				{
+					unit->frozen = FROZEN::NO;
+					unit->in_arena = -1;
+					if(unit->hp <= 0.f)
+					{
+						unit->HealPoison();
+						unit->live_state = Unit::ALIVE;
+						unit->mesh_inst->Play("wstaje2", PLAY_ONCE | PLAY_PRIO3, 0);
+						unit->mesh_inst->groups[0].speed = 1.f;
+						unit->action = A_ANIMATION;
+						unit->animation = ANI_PLAY;
+						if(unit->IsAI())
+							unit->ai->Reset();
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::STAND_UP;
+							c.unit = unit;
+						}
+					}
+
+					UnitWarpData& warp_data = Add1(unit_warp_data);
+					warp_data.unit = unit;
+					warp_data.where = -1;
+
+					if(Net::IsOnline())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::CHANGE_ARENA_STATE;
+						c.unit = unit;
+					}
+				}
+
+				if(arena_tryb == Arena_Pvp && arena_fighter && arena_fighter->IsHero())
+				{
+					arena_fighter->hero->lost_pvp = (arena_wynik == 0);
+					StartDialog2(pvp_player, arena_fighter, FindDialog(IS_SET(arena_fighter->data->flags, F_CRAZY) ? "crazy_pvp" : "hero_pvp"));
+				}
+			}
+
+			if(arena_tryb != Arena_Zawody)
+			{
+				RemoveArenaViewers();
+				arena_viewers.clear();
+				at_arena.clear();
+			}
+			else
+				tournament_state3 = 5;
+			arena_tryb = Arena_Brak;
+			arena_free = true;
 		}
 	}
 }
