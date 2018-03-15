@@ -538,6 +538,7 @@
     <ClCompile Include="source\game\stats\SpawnGroup.cpp" />
     <ClCompile Include="source\game\stats\Spell.cpp" />
     <ClCompile Include="source\game\stats\UnitStats.cpp" />
+    <ClCompile Include="source\game\system\ContentLoader.cpp" />
     <ClCompile Include="source\game\system\FrameInfo.cpp" />
     <ClCompile Include="source\game\system\Item.cpp" />
     <ClCompile Include="source\game\system\ItemLoader.cpp" />

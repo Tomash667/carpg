@@ -27,11 +27,40 @@ CURRENT:
 -? test recruiting gorush/jozan in 0.5, if they don't tell name in clients write as fixed
 -? UpdateGold but change is added too
 + copy angelscript parser
+-? crash on cleanup for s
+void Game::ClearGame()
+{
+Info("Clearing game.");
+
+draw_batch.Clear();
+
+LeaveLocation(true, false);
+
+if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && open_location == -1 && Net::IsLocal() && !was_client)
+{
+	for(Unit* unit : Team.members)
+	{
+		if(unit->bow_instance)
+			bow_instances.push_back(unit->bow_instance);
+		if(unit->interp)
+			interpolators.Free(unit->interp);
+
+		if(unit->ai != (AIController*)1) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+			delete unit->ai;
+		delete unit;
+	}
+
+	prev_game_state = GS_LOAD;
+}
 
 + EffectId::MagicResistance multiply
 + anystring to Cstring, don't pass by ref&
 + current train don't handle floats so gain 0 in some cases
 + stamina changes
++ Class is UnitData
+	+ load from units.txt, copy
+	+ set in HeroData.Init
+	+ remove useless flags
 
 + player Train
 Game.h

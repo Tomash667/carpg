@@ -391,10 +391,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 		npc->hero->know_name = true;
 		AddTeamMember(npc, false);
 		Team.free_recruit = false;
-		if(IS_SET(npc->data->flags2, F2_MELEE))
-			npc->hero->melee = true;
-		else if(IS_SET(npc->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
-			npc->hero->melee = true;
+		npc->hero->SetupMelee();
 	}
 	game_gui->Setup();
 
@@ -1647,10 +1644,7 @@ void Game::UpdateServerTransfer(float dt)
 			npc->ai->Init(npc);
 			npc->hero->know_name = true;
 			AddTeamMember(npc, false);
-			if(IS_SET(npc->data->flags2, F2_MELEE))
-				npc->hero->melee = true;
-			else if(IS_SET(npc->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
-				npc->hero->melee = true;
+			npc->hero->SetupMelee();
 		}
 
 		// recalculate credit if someone left

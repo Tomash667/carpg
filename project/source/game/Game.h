@@ -1339,7 +1339,7 @@ public:
 	void DeleteUnit(Unit* unit);
 	void DialogTalk(DialogContext& ctx, cstring msg);
 	void GenerateHeroName(HeroData& hero);
-	void GenerateHeroName(Class klasa, bool szalony, string& name);
+	void GenerateHeroName(Class clas, bool crazy, string& name);
 	bool WantExitLevel()
 	{
 		return !KeyDownAllowed(GK_WALK);

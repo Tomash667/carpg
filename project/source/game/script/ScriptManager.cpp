@@ -412,13 +412,17 @@ void ScriptManager::RegisterGame()
 		.Method("Var@ opIndex(const string& in)", asMETHOD(VarsContainer, Get))
 		.WithInstance("VarsContainer@ globals", &p_globals);
 
+	AddType("Unit")
+		.WithInstance("Unit@ target", &target);
+
 	AddType("Player")
 		.WithInstance("Player@ pc", &pc);
 }
 
-void ScriptManager::SetContext(PlayerController* pc)
+void ScriptManager::SetContext(PlayerController* pc, Unit* target)
 {
 	this->pc = pc;
+	this->target = target;
 }
 
 bool ScriptManager::RunScript(cstring code)
@@ -432,7 +436,7 @@ bool ScriptManager::RunScript(cstring code)
 	int r = tmp_module->CompileFunction("RunScript", packed_code, -1, 0, &func);
 	if(r < 0)
 	{
-		Error("ScriptManager: Failed to parse script (%d): %.100s", r, code);
+		Log(Logger::L_ERROR, Format("Failed to parse script (%d).", r), code);
 		return false;
 	}
 
@@ -450,15 +454,12 @@ bool ScriptManager::RunScript(cstring code)
 	{
 		if(r == asEXECUTION_EXCEPTION)
 		{
-			if(!last_exception)
-				Error("ScriptManager: Failed to run script, exception thrown \"%s\" at %s(%d): %.100s", tmp_context->GetExceptionString(),
-					tmp_context->GetExceptionFunction()->GetName(), tmp_context->GetExceptionLineNumber(), code);
-			else
-				Error("ScriptManager: Failed to run script, script exception thrown \"%s\" at %s(%d): %.100s", last_exception,
-					tmp_context->GetExceptionFunction()->GetName(), tmp_context->GetExceptionLineNumber(), code);
+			cstring msg = last_exception ? last_exception : tmp_context->GetExceptionString();
+			Log(Logger::L_ERROR, Format("Script exception thrown \"%s\" in %s(%d).", msg, tmp_context->GetExceptionFunction()->GetName(),
+				tmp_context->GetExceptionFunction()), code);
 		}
 		else
-			Error("ScriptManager: Failed to run script (%d): %.100s", r, code);
+			Log(Logger::L_ERROR, Format("Script execution failed (%d).", r), code);
 	}
 
 	func->Release();
@@ -479,8 +480,10 @@ void ScriptManager::CloseOutput()
 	output.clear();
 }
 
-void ScriptManager::Log(Logger::Level level, cstring msg)
+void ScriptManager::Log(Logger::Level level, cstring msg, cstring code)
 {
+	if(code)
+		Logger::global->Log(level, Format("ScriptManager: %s Code:\n%s", msg, code));
 	if(gather_output)
 	{
 		if(!output.empty())
@@ -523,11 +526,19 @@ TypeBuilder ScriptManager::ForType(cstring name)
 	return builder;
 }
 
+#include <iostream>
+
 void sm_tests()
 {
 	PlayerController pc;
 	SM = new ScriptManager;
 	SM->Init();
-	SM->SetContext(&pc);
-	SM->RunScript("globals[\"a\"] = 3; Info(\"\"+globals[\"a\"].GetInt());");
+	SM->SetContext(&pc, nullptr);
+	string s;
+	while(true)
+	{
+		std::getline(std::cin, s);
+		SM->RunScript(s.c_str());
+	}
+
 }

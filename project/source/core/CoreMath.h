@@ -131,6 +131,21 @@ inline T Chance(int chance_a, int chance_b, int chance_c, T a, T b, T c)
 		return c;
 }
 
+template<typename T>
+T GetRandomWeight(const vector<std::pair<T, uint>>& v, uint total)
+{
+	uint sum = 0;
+	uint j = Rand() % total;
+	for(auto& e : v)
+	{
+		sum += e.second;
+		if(j < sum)
+			return e.first;
+	}
+	assert(0);
+	return v[0].first;
+}
+
 //-----------------------------------------------------------------------------
 // Math functions
 //-----------------------------------------------------------------------------

@@ -3,12 +3,11 @@
 #include "ContentLoader.h"
 #include "BaseObject.h"
 #include "BaseUsable.h"
-#include "Crc.h"
 
 static vector<VariantObject*> variant_objects;
 
 //=================================================================================================
-class ObjectLoader
+class ObjectLoader : public ContentLoader
 {
 	enum Group
 	{
@@ -45,43 +44,37 @@ class ObjectLoader
 		UP_LIMIT_ROT
 	};
 
-public:
 	//=================================================================================================
-	void Load()
+	void LoadEntity(int top, const string& id)
 	{
-		InitTokenizer();
+		if(BaseObject::TryGet(id.c_str()))
+			t.Throw("Id must be unique.");
 
-		ContentLoader loader;
-		bool ok = loader.Load(t, "objects.txt", G_TOP, [&, this](int top, const string& id)
+		switch(top)
 		{
-			if(BaseObject::TryGet(id.c_str()))
-				t.Throw("Id must be unique.");
+		case T_OBJECT:
+			ParseObject(id);
+			break;
+		case T_USABLE:
+			ParseUsable(id);
+			break;
+		case T_GROUP:
+			ParseGroup(id);
+			break;
+		}
+	}
 
-			switch(top)
-			{
-			case T_OBJECT:
-				ParseObject(id);
-				break;
-			case T_USABLE:
-				ParseUsable(id);
-				break;
-			case T_GROUP:
-				ParseGroup(id);
-				break;
-			}
-		});
-		if(!ok)
-			return;
-
+	//=================================================================================================
+	void Finalize() override
+	{
 		CalculateCrc();
 
 		Info("Loaded objects (%u), usables (%u) - crc %p.",
 			BaseObject::objs.size() - BaseUsable::usables.size(), BaseUsable::usables.size(), content::crc[(int)content::Id::Objects]);
 	}
 
-private:
 	//=================================================================================================
-	void InitTokenizer()
+	void InitTokenizer() override
 	{
 		t.AddKeywords(G_TOP, {
 			{ "object", T_OBJECT },
@@ -461,14 +454,24 @@ private:
 		}
 	}
 
-	Tokenizer t;
+public:
+	//=================================================================================================
+	ObjectLoader()
+	{
+	}
+
+	//=================================================================================================
+	void DoLoading()
+	{
+		Load("objects.txt", G_TOP);
+	}
 };
 
 //=================================================================================================
 void content::LoadObjects()
 {
 	ObjectLoader loader;
-	loader.Load();
+	loader.DoLoading();
 }
 
 //=================================================================================================

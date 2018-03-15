@@ -1984,7 +1984,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else
 				{
 					// komunikat o braku broni
-					AddGameMsg2(txINeedWeapon, 2.f, GMS_NEED_WEAPON);
+					AddGameMsg3(GMS_NEED_WEAPON);
 				}
 			}
 		}
@@ -2273,7 +2273,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			if(wypij != -1)
 				u.ConsumeItem(wypij);
 			else
-				AddGameMsg2(txNoHpp, 2.f, GMS_NO_POTION);
+				AddGameMsg3(GMS_NO_POTION);
 		}
 	} // allow_input == ALLOW_INPUT || allow_input == ALLOW_KEYBOARD
 
@@ -2396,17 +2396,15 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else if(u2->live_state == Unit::FALL)
 				{
 					// nie mo¿na okradaæ osoby która zaraz wstanie
-					AddGameMsg2(txCantDo, 3.f, GMS_CANT_DO);
+					AddGameMsg3(GMS_CANT_DO);
 				}
 				else if(u2->IsFollower() || u2->IsPlayer())
 				{
 					// nie mo¿na okradaæ sojuszników
-					AddGameMsg2(txDontLootFollower, 3.f, GMS_DONT_LOOT_FOLLOWER);
+					AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
 				}
 				else if(u2->in_arena != -1)
-				{
-					AddGameMsg2(txDontLootArena, 3.f, GMS_DONT_LOOT_ARENA);
-				}
+					AddGameMsg3(GMS_DONT_LOOT_ARENA);
 				else if(Net::IsLocal())
 				{
 					if(Net::IsOnline() && u2->busy == Unit::Busy_Looted)
@@ -2567,7 +2565,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(key && pc->unit->HaveItem(Item::Get(key)))
 					{
 						sound_mgr->PlaySound3d(sUnlock, center, 2.f, 5.f);
-						AddGameMsg2(txUnlockedDoor, 3.f, GMS_UNLOCK_DOOR);
+						AddGameMsg3(GMS_UNLOCK_DOOR);
 						if(!location->outside)
 							minimap_opened_doors = true;
 						door->locked = LOCK_NONE;
@@ -2586,7 +2584,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					}
 					else
 					{
-						AddGameMsg2(txNeedKey, 3.f, GMS_NEED_KEY);
+						AddGameMsg3(GMS_NEED_KEY);
 						sound_mgr->PlaySound3d(sDoorClosed[Rand() % 2], center, 2.f, 5.f);
 					}
 				}
@@ -4910,10 +4908,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					AddTeamMember(ctx.talker, false);
 					ctx.talker->temporary = false;
 					Team.free_recruit = false;
-					if(IS_SET(ctx.talker->data->flags2, F2_MELEE))
-						ctx.talker->hero->melee = true;
-					else if(IS_SET(ctx.talker->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
-						ctx.talker->hero->melee = true;
+					ctx.talker->hero->SetupMelee();
 					if(Net::IsOnline() && !ctx.is_local)
 						ctx.pc->player_info->UpdateGold();
 				}
@@ -4922,10 +4917,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					AddTeamMember(ctx.talker, false);
 					Team.free_recruit = false;
 					ctx.talker->temporary = false;
-					if(IS_SET(ctx.talker->data->flags2, F2_MELEE))
-						ctx.talker->hero->melee = true;
-					else if(IS_SET(ctx.talker->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
-						ctx.talker->hero->melee = true;
+					ctx.talker->hero->SetupMelee();
 				}
 				else if(strcmp(msg, "follow_me") == 0)
 				{
@@ -16741,12 +16733,14 @@ void Game::SpawnHeroesInsideDungeon()
 	}
 
 	// stwórz bohaterów
-	int ile = Random(2, 4);
+	int count = Random(2, 4);
 	LocalVector<Unit*> heroes;
 	p = sprawdzone.back().first;
-	for(int i = 0; i < ile; ++i)
+	int team_level = Random(4, 13);
+	for(int i = 0; i < count; ++i)
 	{
-		Unit* u = SpawnUnitInsideRoom(*p, GetHero(ClassInfo::GetRandom()), Random(2, 15));
+		int level = team_level + Random(-2, 2);
+		Unit* u = SpawnUnitInsideRoom(*p, GetHero(ClassInfo::GetRandom()), level);
 		if(u)
 			heroes->push_back(u);
 		else
@@ -19519,6 +19513,33 @@ void Game::AddGameMsg3(GMS id)
 		break;
 	case GMS_LEFT_EVENT:
 		text = txGmsLeftEvent;
+		break;
+	case GMS_GAME_SAVED:
+		text = txGameSaved;
+		time = 1.f;
+		break;
+	case GMS_NEED_WEAPON:
+		text = txINeedWeapon;
+		time = 2.f;
+		break;
+	case GMS_NO_POTION:
+		text = txNoHpp;
+		time = 2.f;
+		break;
+	case GMS_CANT_DO:
+		text = txCantDo;
+		break;
+	case GMS_DONT_LOOT_FOLLOWER:
+		text = txDontLootFollower;
+		break;
+	case GMS_DONT_LOOT_ARENA:
+		text = txDontLootArena;
+		break;
+	case GMS_UNLOCK_DOOR:
+		text = txUnlockedDoor;
+		break;
+	case GMS_NEED_KEY:
+		text = txNeedKey;
 		break;
 	default:
 		assert(0);

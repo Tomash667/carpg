@@ -171,18 +171,21 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				Msg("You can't use script command without devmode.");
 				return;
 			}
+			if(game_state != GS_LEVEL)
+			{
+				Msg("Script commands can only be used ingame.");
+				return;
+			}
 
 			cstring code = t.GetTextRest();
 			if(Net::IsLocal())
 			{
 				string& output = script_mgr->OpenOutput();
-				script_mgr->SetContext(pc);
+				script_mgr->SetContext(pc, pc_data.selected_target);
 				bool ok = script_mgr->RunScript(code);
 				if(!output.empty())
 					Msg(output.c_str());
 				script_mgr->CloseOutput();
-				if(!ok)
-					Msg("Script failed.");
 			}
 			else
 			{
@@ -190,6 +193,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				c.type = NetChange::RUN_SCRIPT;
 				c.str = StringPool.Get();
 				*c.str = code;
+				c.id = (pc_data.selected_target ? pc_data.selected_target->netid : -1);
 			}
 
 			return;

@@ -11,6 +11,7 @@ class asIScriptModule;
 class TypeBuilder;
 struct asSFuncPtr;
 struct PlayerController;
+struct Unit;
 
 struct ScriptException
 {
@@ -28,12 +29,12 @@ public:
 	void Init();
 	void RegisterCommon();
 	void RegisterGame();
-	void SetContext(PlayerController* pc);
+	void SetContext(PlayerController* pc, Unit* target);
 	void SetException(cstring ex) { last_exception = ex; }
 	bool RunScript(cstring code);
 	string& OpenOutput();
 	void CloseOutput();
-	void Log(Logger::Level level, cstring msg);
+	void Log(Logger::Level level, cstring msg, cstring code = nullptr);
 	void AddFunction(cstring decl, const asSFuncPtr& funcPointer);
 	TypeBuilder AddType(cstring name);
 	TypeBuilder ForType(cstring name);
@@ -45,5 +46,7 @@ private:
 	cstring last_exception;
 	bool gather_output;
 
+	// context
 	PlayerController* pc;
+	Unit* target;
 };
