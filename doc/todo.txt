@@ -116,30 +116,18 @@ NEW:
 + validate objects metadata (required objects, units)
 ? why version/stats thread start at menu, not while loading
 + randomized order of spawned objects
-+ upgrade visual leak detector, fmod, bullet, slikenet, zlib
 + join herodata with unit, anyone can join team etc
 + JoinCost use skill check
 + poison resistance from endurance
-+ wisdom: skill/perk/bonus
 + effect PoisonResistance/immunity
-+ perk Crafting Tradition
 + amulet pijanego mistrza - im bardziej pijany jest gracz tym większe obrażenia
-+ perk: zmniejszenie stłuczeń o 25%, alkohol też zwiększa max o 25%
 + negative traits: for int/wis
-+ perk armor: critics protection
-+ negative history: pacifist (-to combat skills, +non combat skills, can't take aggressive perk)
-+ perk: chance to see encounter and escape before it happens, better encounters
-+ better perk names, for example axe master is not upgrade from expert so player have two perks (expert and master)
-+ stock scripts in files, using extra_stock perk
 + npc to recruit: merchant
-+ server side language != player language will cause some texts to use server language, some will use player language
 + hunters guild, quests (wielki łowczy), bad wolf boss
 + attach sounds to scene node, not to unit
-+ ai talking about contest/tournament
-+ yell sound
++ add perks from f_perks to issues
 ===============================================================================================================
 VERIFY:
-- w questowych lokacjach krew/zwłoki nie znikają
 - da sie wlezc w kogos
 - ANGLE!
 - verify dialogs ending with end/restart
