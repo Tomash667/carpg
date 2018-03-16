@@ -872,11 +872,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// zapisz konfiguracjê
 	game.SaveCfg();
 
-
-	void sm_tests();
-	sm_tests();
-
-
 	//-------------------------------------------------------------------------
 	// rozpocznij grê
 	Info("Starting game engine.");
