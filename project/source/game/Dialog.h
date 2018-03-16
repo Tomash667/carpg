@@ -36,7 +36,10 @@ enum DialogType
 	DT_DO_ONCE,
 	DT_NOT_ACTIVE,
 	DT_IF_QUEST_SPECIAL,
-	DT_QUEST_SPECIAL
+	DT_QUEST_SPECIAL,
+	DT_NOT,
+	DT_SCRIPT,
+	DT_IF_SCRIPT
 };
 
 //-----------------------------------------------------------------------------
@@ -79,10 +82,17 @@ struct GameDialog
 		bool exists;
 	};
 
+	struct Script
+	{
+		uint index;
+		bool is_if;
+	};
+
 	string id;
 	vector<DialogEntry> code;
 	vector<string> strs;
 	vector<Text> texts;
+	vector<Script> scripts;
 	int max_index;
 };
 
@@ -121,7 +131,7 @@ struct DialogContext
 	vector<std::pair<int, bool>> active_locations;
 	int team_share_id;
 	const Item* team_share_item;
-	bool not_active, can_skip, force_end;
+	bool not_active, can_skip, force_end, negate_if;
 	vector<Entry> prev;
 
 	cstring GetText(int index);
@@ -132,3 +142,4 @@ uint LoadDialogs(uint& crc, uint& errors);
 void LoadDialogTexts();
 GameDialog* FindDialog(cstring id);
 void CleanupDialogs();
+void VerifyDialogs(ScriptManager* script_mgr, uint& errors);

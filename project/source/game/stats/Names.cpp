@@ -8,28 +8,6 @@ cstring txNameFrom, txNameSonOf, txNameSonOfPost, txNameSonOfInvalid, txNamePref
 vector<string> name_random, nickname_random, crazy_name;
 
 //=================================================================================================
-void LoadStrArray(vector<cstring>& items, cstring name)
-{
-	assert(name);
-
-	cstring scount = Language::TryGetString(Format("%s_count", name), false);
-	if(!scount)
-		goto err;
-	int count = atoi(scount);
-	if(count <= 0)
-		goto err;
-
-	items.resize(count);
-	for(int i = 0; i < count; ++i)
-		items[i] = Str(Format("%s%d", name, i));
-	return;
-
-err:
-	Error("Missing texts for array '%s'.", name);
-	items.push_back("!MissingArray!");
-}
-
-//=================================================================================================
 void Game::SetHeroNames()
 {
 	txNameFrom = Str("name_from");

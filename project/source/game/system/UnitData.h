@@ -59,10 +59,10 @@ enum UNIT_GROUP
 // Unit flags
 enum UNIT_FLAGS
 {
-	F_HUMAN = 1 << 0, // u¿ywa przedmiotów, widaæ zbrojê, ma brodê i w³osy
-	F_HUMANOID = 1 << 1, // u¿ywa przedmiotów
-	F_COWARD = 1 << 2, // ucieka gdy ma ma³o hp albo ktoœ zginie
-	F_DONT_ESCAPE = 1 << 3, // nigdy nie ucieka
+	F_HUMAN = 1 << 0, // use items, have armor/hair/beard
+	F_HUMANOID = 1 << 1, // use items
+	F_COWARD = 1 << 2, // escapes when allies die or have small hp amount
+	F_DONT_ESCAPE = 1 << 3, // never escapes
 	F_ARCHER = 1 << 4, // preferuje walkê broni¹ dystansow¹
 	F_LEADER = 1 << 5, // inni go chroni¹ ?
 	F_PIERCE_RES25 = 1 << 6, // odpornoœæ na k³ute 25%

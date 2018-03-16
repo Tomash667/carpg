@@ -164,6 +164,7 @@ struct NetChange
 		PLAYER_ACTION, // player unit is using action, client[Vec3-pos/data] / server[int(netid)-unit]
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
 		END_FALLBACK, // client fallback ended []
+		RUN_SCRIPT, // run script [string(str)-code, int(id)-target netid]
 
 		MAX
 	} type;

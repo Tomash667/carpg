@@ -980,6 +980,8 @@ void Game::LoadGame(HANDLE file)
 	Unit* player;
 	f >> player;
 	pc = player->player;
+	if(!mp_load)
+		pc->id = 0;
 	cam.real_rot.x = pc->unit->rot;
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;
@@ -1543,7 +1545,7 @@ void Game::Quicksave(bool from_console)
 	if(SaveGameSlot(MAX_SAVE_SLOTS, txQuickSave))
 	{
 		if(!from_console)
-			AddGameMsg2(txGameSaved, 1.f, GMS_GAME_SAVED);
+			AddGameMsg3(GMS_GAME_SAVED);
 	}
 }
 

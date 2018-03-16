@@ -2,13 +2,9 @@
 dialog blacksmith
 {
 	if once
-	{
 		talk 0
-	}
 	choice 1
-	{
 		trade
-	}
 	choice 2
 	{
 		talk 3
@@ -23,9 +19,7 @@ dialog blacksmith
 		}
 	}
 	escape choice 6
-	{
 		end
-	}
 	show_choices
 }
 
@@ -33,13 +27,9 @@ dialog blacksmith
 dialog merchant
 {
 	if once
-	{
 		talk 0
-	}
 	choice 1
-	{
 		trade
-	}
 	choice 2
 	{
 		talk 3
@@ -65,9 +55,7 @@ dialog merchant
 		}
 	}
 	escape choice 10
-	{
 		end
-	}
 	show_choices
 }
 
@@ -75,9 +63,7 @@ dialog merchant
 dialog alchemist
 {
 	if once
-	{
 		talk 0
-	}
 	if special "q_magowie_kup_miksture"
 	{
 		choice 1
@@ -95,9 +81,7 @@ dialog alchemist
 		}
 	}
 	choice 4
-	{
 		trade
-	}
 	choice 5
 	{
 		talk 6
@@ -112,9 +96,7 @@ dialog alchemist
 		}
 	}
 	escape choice 9
-	{
 		end
-	}
 	show_choices
 }
 
@@ -123,9 +105,7 @@ dialog mayor
 {
 	check_quest_timeout 0
 	if once
-	{
 		talk 0
-	}
 	if special "q_zlo_burmistrz"
 	{
 		choice 1
@@ -193,9 +173,7 @@ dialog mayor
 		}
 	}
 	escape choice 12
-	{
 		end
-	}
 	show_choices
 }
 
@@ -203,9 +181,7 @@ dialog mayor
 dialog citizen
 {
 	if once
-	{
 		talk 0
-	}
 	choice 1
 	{
 		special "news"
@@ -219,13 +195,9 @@ dialog citizen
 	choice 3
 	{
 		if special "is_drunk"
-		{
 			special "gossip_drunk"
-		}
 		else
-		{
 			special "gossip"
-		}
 		restart
 	}
 	if have_item q_szaleni_kamien
@@ -237,9 +209,7 @@ dialog citizen
 		}
 	}
 	escape choice 6
-	{
 		end
-	}
 	show_choices
 }
 
@@ -261,9 +231,7 @@ dialog guard
 dialog trainer
 {
 	if once
-	{
 		talk 0
-	}
 	choice 1
 	{
 		talk 2
@@ -286,9 +254,7 @@ dialog trainer
 				end
 			}
 			escape choice 8
-			{
 				restart
-			}
 			show_choices
 		}
 		choice 9
@@ -344,15 +310,11 @@ dialog trainer
 				end
 			}
 			escape choice 20
-			{
 				restart
-			}
 			show_choices
 		}
 		escape choice 21
-		{
 			restart
-		}
 		show_choices
 	}
 	choice 22
@@ -370,16 +332,12 @@ dialog trainer
 				restart
 			}
 			else
-			{
 				talk 25
-			}
 			restart
 		}
 	}
 	escape choice 26
-	{
 		end
-	}
 	show_choices
 }
 
@@ -419,13 +377,9 @@ dialog guard_captain
 			if once
 			{
 				if special "q_orkowie_to_miasto"
-				{
 					talk 0
-				}
 				else
-				{
 					talk 1
-				}
 			}
 		}
 		choice 2
@@ -441,13 +395,9 @@ dialog guard_captain
 			if once
 			{
 				if special "q_orkowie_zaakceptowano"
-				{
 					talk 3
-				}
 				else
-				{
 					talk 4
-				}
 			}
 		}
 		choice 5
@@ -465,9 +415,7 @@ dialog guard_captain
 		}
 	}
 	if once
-	{
 		talk 7
-	}
 	if special "q_magowie_poinformuj"
 	{
 		choice 8
@@ -508,9 +456,7 @@ dialog guard_captain
 		}
 	}
 	escape choice 16
-	{
 		end
-	}
 	show_choices
 }
 
@@ -523,9 +469,7 @@ dialog innkeeper
 		end
 	}
 	if once
-	{
 		talk 1
-	}
 	if special "q_gobliny_zapytaj"
 	{
 		choice 2
@@ -568,9 +512,7 @@ dialog innkeeper
 		}
 	}
 	choice 11
-	{
 		trade
-	}
 	choice 12
 	{
 		talk 13
@@ -583,9 +525,7 @@ dialog innkeeper
 				end
 			}
 			escape choice 17
-			{
 				restart
-			}
 			show_choices
 		}
 		choice 18
@@ -597,9 +537,7 @@ dialog innkeeper
 				end
 			}
 			escape choice 21
-			{
 				restart
-			}
 			show_choices
 		}
 		choice 22
@@ -611,9 +549,7 @@ dialog innkeeper
 				end
 			}
 			escape choice 25
-			{
 				restart
-			}
 			show_choices
 		}
 		choice 26
@@ -625,15 +561,11 @@ dialog innkeeper
 				end
 			}
 			escape choice 29
-			{
 				restart
-			}
 			show_choices
 		}
 		escape choice 30
-		{
 			restart
-		}
 		show_choices
 	}
 	choice 31
@@ -693,9 +625,7 @@ dialog innkeeper
 		}
 	}
 	escape choice 46
-	{
 		end
-	}
 	show_choices
 }
 
@@ -721,7 +651,7 @@ dialog arena_master
 			talk 1
 			choice 2
 			{
-				if special "have_100"
+				if script "pc.unit.gold >= 100"
 				{
 					special "ironfist_join"
 					talk 3
@@ -746,10 +676,7 @@ dialog arena_master
 		talk 7
 		end
 	}
-	if special "is_arena_free"
-	{
-	}
-	else
+	if not special "is_arena_free"
 	{
 		talk 8
 		end
@@ -772,9 +699,7 @@ dialog arena_master
 			}
 		}
 		else
-		{
 			talk 13
-		}
 	}
 	choice 14
 	{
@@ -798,9 +723,7 @@ dialog arena_master
 				end
 			}
 			escape choice 20
-			{
 				restart
-			}
 			show_choices
 		}
 		else
@@ -814,13 +737,9 @@ dialog arena_master
 		if special "have_team"
 		{
 			if special "have_pc_team"
-			{
 				talk 23
-			}
 			if special "have_npc_team"
-			{
 				talk 24
-			}
 			special "pvp_gather"
 			if special "have_player1"
 			{
@@ -879,15 +798,11 @@ dialog arena_master
 				}
 			}
 			if choices 0
-			{
 				restart
-			}
 			else
 			{
 				escape choice 32
-				{
 					restart
-				}
 			}
 			show_choices
 		}
@@ -908,7 +823,7 @@ dialog arena_master
 				talk 38
 				choice 39
 				{
-					if special "have_100"
+					if script "pc.unit.gold >= 100"
 					{
 						special "ironfist_start"
 						talk 40
@@ -921,9 +836,7 @@ dialog arena_master
 					}
 				}
 				escape choice 42
-				{
 					restart
-				}
 				show_choices
 			}
 		}
@@ -946,18 +859,12 @@ dialog arena_master
 			if special "ironfist_here"
 			{
 				if special "ironfist_can_start"
-				{
 					talk 51
-				}
 				else
-				{
 					talk 52
-				}
 			}
 			else
-			{
 				talk2 53
-			}
 			restart
 		}
 		choice 54
@@ -966,9 +873,7 @@ dialog arena_master
 			restart
 		}
 		escape choice 56
-		{
 			restart
-		}
 		show_choices
 	}
 	choice 57
@@ -986,9 +891,7 @@ dialog arena_master
 		}
 	}
 	escape choice 62
-	{
 		end
-	}
 	show_choices
 }
 
@@ -998,9 +901,7 @@ dialog hero
 	if special "is_team_member"
 	{
 		if once
-		{
 			talk 0
-		}
 		if special "is_near_arena"
 		{
 			choice 1
@@ -1126,9 +1027,7 @@ dialog hero
 			}
 		}
 		escape choice 27
-		{
 			end
-		}
 		show_choices
 	}
 	else
@@ -1140,9 +1039,7 @@ dialog hero
 			talk2 28
 		}
 		if once
-		{
 			talk2 29
-		}
 		if have_quest_item not_active "$wanted_letter"
 		{
 			choice 30
@@ -1172,9 +1069,7 @@ dialog hero
 						end
 					}
 					escape choice 38
-					{
 						restart
-					}
 					show_choices
 				}
 				talk2 39
@@ -1193,9 +1088,7 @@ dialog hero
 					}
 				}
 				escape choice 43
-				{
 					restart
-				}
 				show_choices
 				restart
 			}
@@ -1206,9 +1099,7 @@ dialog hero
 			restart
 		}
 		escape choice 45
-		{
 			end
-		}
 		show_choices
 	}
 	end
@@ -1258,13 +1149,9 @@ dialog hero_buy_item
 dialog hero_pvp
 {
 	if special "is_lost_pvp"
-	{
 		talk 0
-	}
 	else
-	{
 		talk 1
-	}
 	end
 }
 
@@ -1274,9 +1161,7 @@ dialog crazy
 	if special "is_team_member"
 	{
 		if once
-		{
 			talk 0
-		}
 		if special "is_near_arena"
 		{
 			choice 1
@@ -1408,9 +1293,7 @@ dialog crazy
 			}
 		}
 		escape choice 28
-		{
 			end
-		}
 		show_choices
 	}
 	else
@@ -1422,9 +1305,7 @@ dialog crazy
 			talk2 29
 		}
 		if once
-		{
 			talk 30
-		}
 		if have_quest_item not_active "$wanted_letter"
 		{
 			choice 31
@@ -1466,9 +1347,7 @@ dialog crazy
 					}
 				}
 				escape choice 41
-				{
 					restart
-				}
 				show_choices
 				restart
 			}
@@ -1476,9 +1355,7 @@ dialog crazy
 		choice 42
 		{
 			if rand 2
-			{
 				talk 43
-			}
 			special "hero_about"
 			restart
 		}
@@ -1502,9 +1379,7 @@ dialog crazy
 			}
 		}
 		escape choice 49
-		{
 			end
-		}
 		show_choices
 	}
 	end
@@ -1572,13 +1447,9 @@ dialog crazy_buy_item
 dialog crazy_pvp
 {
 	if special "is_lost_pvp"
-	{
 		talk 0
-	}
 	else
-	{
 		talk 1
-	}
 	end
 }
 
@@ -1609,7 +1480,7 @@ dialog bandits
 	talk 4
 	choice 5
 	{
-		if special "have_gold_100"
+		if script "pc.unit.gold >= 100"
 		{
 			talk 6
 			special "pay_100"
@@ -1652,9 +1523,7 @@ dialog bandit
 		talk 2
 	}
 	else
-	{
 		talk 3
-	}
 	end
 }
 
@@ -1748,9 +1617,7 @@ dialog captive
 			show_choices
 		}
 		escape choice 12
-		{
 			end
-		}
 		show_choices
 	}
 	else
@@ -1788,13 +1655,9 @@ dialog captive
 dialog guards_encounter
 {
 	if special "taken_guards_reward"
-	{
 		talk 0
-	}
 	else
-	{
 		talk 1
-	}
 	end
 }
 
@@ -1849,9 +1712,7 @@ dialog traveler
 		end
 	}
 	escape choice 7
-	{
 		end
-	}
 	show_choices
 }
 
@@ -1945,9 +1806,7 @@ dialog q_evil
 dialog q_tutorial
 {
 	if once
-	{
 		talk 0
-	}
 	choice 1
 	{
 		talk 2
@@ -1960,9 +1819,7 @@ dialog q_tutorial
 		end
 	}
 	escape choice 5
-	{
 		end
-	}
 	show_choices
 }
 
@@ -1996,15 +1853,15 @@ dialog crazies_encounter
 				talk 3
 				choice 4
 				{
-					if special "have_1"
+					if script "pc.unit.gold >= 1"
 					{
-						special "take_1"
+						script "pc.unit.gold -= 1"
 						talk 5
 					}
 					else
 					{
 						talk 6
-						special "give_1"
+						script "pc.unit.gold += 1"
 						talk 7
 					}
 					end
@@ -2098,9 +1955,7 @@ dialog tomashu
 			talk 3
 		}
 		else
-		{
 			talk2 4
-		}
 		talk 5
 	}
 	choice 6
@@ -2137,13 +1992,9 @@ dialog tomashu
 		{
 			talk 18
 			if special "sekret_win"
-			{
 				talk 19
-			}
 			else
-			{
 				talk 20
-			}
 			restart
 		}
 	}
@@ -2173,13 +2024,9 @@ dialog mage_bodyguard
 dialog foodseller
 {
 	if once
-	{
 		talk 0
-	}
 	choice 1
-	{
 		trade
-	}
 	choice 2
 	{
 		talk 3
@@ -2194,9 +2041,7 @@ dialog foodseller
 		}
 	}
 	escape choice 6
-	{
 		end
-	}
 	show_choices
 }
 
@@ -2265,9 +2110,7 @@ dialog q_bandits_master
 				restart
 			}
 			escape choice 24
-			{
 				end
-			}
 			show_choices
 		}
 		talk 25
@@ -2303,9 +2146,7 @@ dialog q_bandits_master
 			end
 		}
 		escape choice 35
-		{
 			end
-		}
 		show_choices
 	}
 	if quest_progress 5
@@ -2413,13 +2254,9 @@ dialog q_bandits_captain
 dialog q_bandits_guard
 {
 	if quest_progress 7
-	{
 		talk 0
-	}
 	else
-	{
 		talk 1
-	}
 	end
 }
 
@@ -2436,9 +2273,7 @@ dialog q_bandits_agent
 		talk 4
 	}
 	else
-	{
 		talk 5
-	}
 	end
 }
 
@@ -2465,9 +2300,7 @@ dialog q_bandits_collect_toll_start
 		end
 	}
 	escape choice 5
-	{
 		end
-	}
 	show_choices
 }
 
@@ -2496,7 +2329,7 @@ dialog q_bandits_collect_toll_talk
 	talk 1
 	choice 2
 	{
-		if quest_special "have_500"
+		if script "pc.unit.gold >= 500"
 		{
 			talk 3
 			quest_special "pay_500"
@@ -2533,9 +2366,7 @@ dialog q_camp_near_city_start
 		end
 	}
 	escape choice 6
-	{
 		end
-	}
 	show_choices
 }
 
@@ -2581,9 +2412,7 @@ dialog q_deliver_letter_start
 		end
 	}
 	escape choice 4
-	{
 		end
-	}
 	show_choices
 }
 
@@ -2635,9 +2464,7 @@ dialog q_deliver_parcel_start
 		end
 	}
 	escape choice 5
-	{
 		end
-	}
 	show_choices
 }
 
@@ -2820,25 +2647,17 @@ dialog q_evil_cleric
 	if quest_progress 10
 	{
 		if quest_special "q_zlo_tutaj"
-		{
 			talk 32
-		}
 		else
-		{
 			talk2 33
-		}
 		end
 	}
 	if quest_progress 12
 	{
 		if quest_special "q_zlo_tutaj"
-		{
 			talk 34
-		}
 		else
-		{
 			talk2 35
-		}
 		end
 	}
 	if quest_progress 13
@@ -2869,9 +2688,7 @@ dialog q_evil_mage
 			end
 		}
 		escape choice 6
-		{
 			end
-		}
 		show_choices
 	}
 	talk 7
@@ -2934,9 +2751,7 @@ dialog q_find_artifact_start
 		end
 	}
 	escape choice 5
-	{
 		end
-	}
 	show_choices
 }
 
@@ -3023,9 +2838,7 @@ dialog q_goblins_nobleman
 			end
 		}
 		escape choice 27
-		{
 			end
-		}
 		show_choices
 	}
 	if quest_progress 4
@@ -3048,9 +2861,7 @@ dialog q_goblins_nobleman
 				end
 			}
 			escape choice 35
-			{
 				end
-			}
 			show_choices
 		}
 		else
@@ -3125,7 +2936,7 @@ dialog q_goblins_mage
 		talk 9
 		choice 10
 		{
-			if special "have_100"
+			if script "pc.unit.gold >= 100"
 			{
 				talk 11
 				talk 12
@@ -3139,9 +2950,7 @@ dialog q_goblins_mage
 			}
 		}
 		escape choice 14
-		{
 			end
-		}
 		show_choices
 	}
 	talk2 15
@@ -3182,9 +2991,7 @@ dialog q_kill_animals_start
 		end
 	}
 	escape choice 5
-	{
 		end
-	}
 	show_choices
 }
 
@@ -3218,9 +3025,7 @@ dialog q_lost_artifact_start
 		end
 	}
 	escape choice 5
-	{
 		end
-	}
 	show_choices
 }
 
@@ -3299,9 +3104,7 @@ dialog q_mages_scholar
 dialog q_mages_golem
 {
 	if quest_progress 2
-	{
 		set_quest_progress 3
-	}
 	if quest_special "q_magowie_zaplacono"
 	{
 		talk 0
@@ -3405,13 +3208,9 @@ dialog q_mages2_mage
 	if quest_progress 11
 	{
 		if quest_special "q_magowie_u_bossa"
-		{
 			talk2 4
-		}
 		else
-		{
 			talk2 5
-		}
 		end
 	}
 	if quest_progress 10
@@ -3468,9 +3267,7 @@ dialog q_mages2_mage
 				restart
 			}
 			escape choice 28
-			{
 				end
-			}
 			show_choices
 		}
 		end
@@ -3507,9 +3304,7 @@ dialog q_mages2_mage
 			talk2 34
 		}
 		else
-		{
 			talk 35
-		}
 	}
 	if quest_progress 2
 	{
@@ -3572,9 +3367,7 @@ dialog q_mages2_mage
 				end
 			}
 			escape choice 56
-			{
 				end
-			}
 			show_choices
 		}
 	}
@@ -3584,9 +3377,7 @@ dialog q_mages2_mage
 		end
 	}
 	escape choice 59
-	{
 		end
-	}
 	show_choices
 }
 
@@ -3595,9 +3386,7 @@ dialog q_mages2_boss
 {
 	talk 0
 	if quest_progress 11
-	{
 		talk2 1
-	}
 	talk 2
 	special "attack"
 	end
@@ -3620,9 +3409,7 @@ dialog q_mine_investor
 		else
 		{
 			if once
-			{
 				talk 2
-			}
 		}
 		choice 3
 		{
@@ -3650,9 +3437,7 @@ dialog q_mine_investor
 			restart
 		}
 		escape choice 15
-		{
 			end
-		}
 		show_choices
 	}
 	else
@@ -3660,25 +3445,15 @@ dialog q_mine_investor
 		if once
 		{
 			if quest_progress 1
-			{
 				talk 16
-			}
 			if quest_progress 2
-			{
 				talk 17
-			}
 			if quest_progress 3
-			{
 				talk 18
-			}
 			if quest_progress 4
-			{
 				talk 19
-			}
 			if quest_progress 5
-			{
 				talk 20
-			}
 			if quest_progress 6
 			{
 				set_quest_progress 7
@@ -3691,33 +3466,19 @@ dialog q_mine_investor
 				restart
 			}
 			if quest_progress 7
-			{
 				talk 27
-			}
 			if quest_progress 8
-			{
 				talk 28
-			}
 			if quest_progress 9
-			{
 				talk 29
-			}
 			if quest_progress 10
-			{
 				talk 30
-			}
 			if quest_progress 11
-			{
 				talk 31
-			}
 			if quest_progress 12
-			{
 				talk 32
-			}
 			if quest_progress 13
-			{
 				talk 33
-			}
 		}
 		if quest_progress 7
 		{
@@ -3725,7 +3486,7 @@ dialog q_mine_investor
 			{
 				choice 34
 				{
-					if quest_special "have_10000"
+					if script "pc.unit.gold >= 10000"
 					{
 						set_quest_progress 9
 						talk 35
@@ -3742,7 +3503,7 @@ dialog q_mine_investor
 			{
 				choice 37
 				{
-					if quest_special "have_12000"
+					if script "pc.unit.gold >= 12000"
 					{
 						set_quest_progress 9
 						talk 38
@@ -3789,9 +3550,7 @@ dialog q_mine_investor
 			restart
 		}
 		escape choice 52
-		{
 			end
-		}
 		show_choices
 	}
 }
@@ -3848,37 +3607,21 @@ dialog q_mine_messenger4
 dialog q_mine_boss
 {
 	if quest_progress 3
-	{
 		talk 0
-	}
 	if quest_progress 4
-	{
 		talk 1
-	}
 	if quest_progress 5
-	{
 		talk 2
-	}
 	if quest_progress 6
-	{
 		talk 3
-	}
 	if quest_progress 7
-	{
 		talk 4
-	}
 	if quest_progress 8
-	{
 		talk 5
-	}
 	if quest_progress 9
-	{
 		talk 6
-	}
 	if quest_progress 10
-	{
 		talk 7
-	}
 	if quest_progress 11
 	{
 		set_quest_progress 12
@@ -3889,13 +3632,9 @@ dialog q_mine_boss
 		end
 	}
 	if quest_progress 12
-	{
 		talk 12
-	}
 	if quest_progress 13
-	{
 		talk 13
-	}
 	end
 }
 
@@ -4033,19 +3772,13 @@ dialog q_orcs2_gorush
 			{
 				set_quest_progress 11
 				if quest_special "q_orkowie_woj"
-				{
 					talk 24
-				}
 				else
 				{
 					if quest_special "q_orkowie_lowca"
-					{
 						talk 25
-					}
 					else
-					{
 						talk 26
-					}
 				}
 				end
 			}
@@ -4102,9 +3835,7 @@ dialog q_orcs2_gorush
 		choice 46
 		{
 			if quest_special "q_orkowie_na_miejscu"
-			{
 				talk 47
-			}
 			else
 			{
 				talk2 48
@@ -4144,9 +3875,7 @@ dialog q_orcs2_gorush
 		end
 	}
 	escape choice 66
-	{
 		end
-	}
 	show_choices
 }
 
@@ -4154,13 +3883,9 @@ dialog q_orcs2_gorush
 dialog q_orcs2_weak_orc
 {
 	if quest_progress 16
-	{
 		talk 0
-	}
 	else
-	{
 		talk 1
-	}
 	end
 }
 
@@ -4176,9 +3901,7 @@ dialog q_orcs2_blacksmith
 			end
 		}
 		escape choice 2
-		{
 			end
-		}
 		show_choices
 	}
 	else
@@ -4204,20 +3927,14 @@ dialog q_rescue_captive_start
 	{
 		set_quest_progress 1
 		if special "is_camp"
-		{
 			talk2 3
-		}
 		else
-		{
 			talk2 4
-		}
 		talk 5
 		end
 	}
 	escape choice 6
-	{
 		end
-	}
 	show_choices
 }
 
@@ -4290,20 +4007,14 @@ dialog q_retrieve_package_start
 	{
 		set_quest_progress 1
 		if special "is_camp"
-		{
 			talk2 2
-		}
 		else
-		{
 			talk2 3
-		}
 		talk 4
 		end
 	}
 	escape choice 5
-	{
 		end
-	}
 	show_choices
 }
 
@@ -4397,13 +4108,9 @@ dialog q_sawmill_talk
 					if quest_progress 4
 					{
 						if quest_special "czy_tartak"
-						{
 							talk 26
-						}
 						else
-						{
 							talk 27
-						}
 						end
 					}
 					else
@@ -4445,13 +4152,9 @@ dialog q_spread_news_start
 	choice 1
 	{
 		if rand 3
-		{
 			talk2 2
-		}
 		else
-		{
 			talk2 3
-		}
 		talk 4
 		talk2 5
 		talk 6
@@ -4459,9 +4162,7 @@ dialog q_spread_news_start
 		end
 	}
 	escape choice 7
-	{
 		end
-	}
 	show_choices
 }
 
@@ -4503,9 +4204,7 @@ dialog q_stolen_artifact_start
 		end
 	}
 	escape choice 5
-	{
 		end
-	}
 	show_choices
 }
 
@@ -4542,9 +4241,7 @@ dialog q_wanted_start
 		end
 	}
 	escape choice 7
-	{
 		end
-	}
 	show_choices
 }
 

@@ -7,10 +7,9 @@
 #include "ItemScript.h"
 #include "Item.h"
 #include "Spell.h"
-#include "Crc.h"
 
 //-----------------------------------------------------------------------------
-class UnitLoader
+class UnitLoader : public ContentLoader
 {
 	enum Group
 	{
@@ -131,117 +130,111 @@ class UnitLoader
 		IFS_ELSE_INLINE
 	};
 
-public:
 	//=================================================================================================
-	void Load()
+	void LoadEntity(int top, const string& id) override
 	{
-		InitTokenizer();
+		crc.Update(id);
 
-		ContentLoader loader;
-		bool ok = loader.Load(t, "units.txt", G_TYPE, [&, this](int top, const string& id)
+		switch(top)
 		{
-			crc.Update(id);
-
-			switch(top)
+		case T_UNIT:
+			ParseUnit(id);
+			break;
+		case T_PROFILE:
 			{
-			case T_UNIT:
-				ParseUnit(id);
-				break;
-			case T_PROFILE:
-				{
-					if(StatProfile::TryGet(id))
-						t.Throw("Id must be unique.");
-					Ptr<StatProfile> profile;
-					profile->id = id;
-					t.Next();
-					ParseProfile(profile);
-				}
-				break;
-			case T_ITEMS:
-				{
-					if(ItemScript::TryGet(id))
-						t.Throw("Id must be unique.");
-					Ptr<ItemScript> script;
-					script->id = id;
-					t.Next();
-					ParseItems(script);
-				}
-				break;
-			case T_SPELLS:
-				{
-					if(SpellList::TryGet(id))
-						t.Throw("Id must be unique.");
-					Ptr<SpellList> list;
-					list->id = id;
-					t.Next();
-					ParseSpells(list);
-				}
-				break;
-			case T_SOUNDS:
-				{
-					if(SoundPack::TryGet(id))
-						t.Throw("Id must be unique.");
-					Ptr<SoundPack> pack;
-					pack->id = id;
-					t.Next();
-					ParseSounds(pack);
-				}
-				break;
-			case T_FRAMES:
-				{
-					if(FrameInfo::TryGet(id))
-						t.Throw("Id must be unique.");
-					Ptr<FrameInfo> frames;
-					frames->id = id;
-					t.Next();
-					ParseFrames(frames);
-				}
-				break;
-			case T_TEX:
-				{
-					if(TexPack::TryGet(id))
-						t.Throw("Id must be unique.");
-					Ptr<TexPack> pack;
-					pack->id = id;
-					t.Next();
-					ParseTextures(pack);
-				}
-				break;
-			case T_IDLES:
-				{
-					if(IdlePack::TryGet(id))
-						t.Throw("Id must be unique.");
-					Ptr<IdlePack> pack;
-					pack->id = id;
-					t.Next();
-					ParseIdles(pack);
-				}
-				break;
-			case T_ALIAS:
-				ParseAlias(id);
-				break;
-			case T_GROUP:
-				ParseGroup(id);
-				break;
-			case T_GROUP_LIST:
-				ParseGroupList(id);
-				break;
-			default:
-				assert(0);
-				break;
+				if(StatProfile::TryGet(id))
+					t.Throw("Id must be unique.");
+				Ptr<StatProfile> profile;
+				profile->id = id;
+				t.Next();
+				ParseProfile(profile);
 			}
-		});
-		if(!ok)
-			return;
+			break;
+		case T_ITEMS:
+			{
+				if(ItemScript::TryGet(id))
+					t.Throw("Id must be unique.");
+				Ptr<ItemScript> script;
+				script->id = id;
+				t.Next();
+				ParseItems(script);
+			}
+			break;
+		case T_SPELLS:
+			{
+				if(SpellList::TryGet(id))
+					t.Throw("Id must be unique.");
+				Ptr<SpellList> list;
+				list->id = id;
+				t.Next();
+				ParseSpells(list);
+			}
+			break;
+		case T_SOUNDS:
+			{
+				if(SoundPack::TryGet(id))
+					t.Throw("Id must be unique.");
+				Ptr<SoundPack> pack;
+				pack->id = id;
+				t.Next();
+				ParseSounds(pack);
+			}
+			break;
+		case T_FRAMES:
+			{
+				if(FrameInfo::TryGet(id))
+					t.Throw("Id must be unique.");
+				Ptr<FrameInfo> frames;
+				frames->id = id;
+				t.Next();
+				ParseFrames(frames);
+			}
+			break;
+		case T_TEX:
+			{
+				if(TexPack::TryGet(id))
+					t.Throw("Id must be unique.");
+				Ptr<TexPack> pack;
+				pack->id = id;
+				t.Next();
+				ParseTextures(pack);
+			}
+			break;
+		case T_IDLES:
+			{
+				if(IdlePack::TryGet(id))
+					t.Throw("Id must be unique.");
+				Ptr<IdlePack> pack;
+				pack->id = id;
+				t.Next();
+				ParseIdles(pack);
+			}
+			break;
+		case T_ALIAS:
+			ParseAlias(id);
+			break;
+		case T_GROUP:
+			ParseGroup(id);
+			break;
+		case T_GROUP_LIST:
+			ParseGroupList(id);
+			break;
+		default:
+			assert(0);
+			break;
+		}
+	}
 
+	//=================================================================================================
+	void Finalize() override
+	{
 		content::crc[(int)content::Id::Units] = crc.Get();
 
 		Info("Loaded units (%u) - crc %p.", UnitData::units.size(), content::crc[(int)content::Id::Units]);
 	}
 
-private:
 	//=================================================================================================
-	void InitTokenizer()
+	void InitTokenizer() override
 	{
 		t.SetFlags(Tokenizer::F_UNESCAPE | Tokenizer::F_JOIN_MINUS | Tokenizer::F_MULTI_KEYWORDS);
 
@@ -1624,15 +1617,24 @@ private:
 		UnitGroupList::lists.push_back(list.Pin());
 	}
 
-	Tokenizer t;
-	Crc crc;
+public:
+	//=================================================================================================
+	UnitLoader()
+	{
+	}
+
+	//=================================================================================================
+	void DoLoading()
+	{
+		Load("units.txt", G_TYPE);
+	}
 };
 
 //=================================================================================================
 void content::LoadUnits()
 {
 	UnitLoader loader;
-	loader.Load();
+	loader.DoLoading();
 }
 
 //=================================================================================================

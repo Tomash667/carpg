@@ -43,6 +43,7 @@
 #include "Stock.h"
 #include "UnitGroup.h"
 #include "SoundManager.h"
+#include "ScriptManager.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -1987,7 +1988,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else
 				{
 					// komunikat o braku broni
-					AddGameMsg2(txINeedWeapon, 2.f, GMS_NEED_WEAPON);
+					AddGameMsg3(GMS_NEED_WEAPON);
 				}
 			}
 		}
@@ -2276,7 +2277,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			if(wypij != -1)
 				u.ConsumeItem(wypij);
 			else
-				AddGameMsg2(txNoHpp, 2.f, GMS_NO_POTION);
+				AddGameMsg3(GMS_NO_POTION);
 		}
 	} // allow_input == ALLOW_INPUT || allow_input == ALLOW_KEYBOARD
 
@@ -2399,17 +2400,15 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				else if(u2->live_state == Unit::FALL)
 				{
 					// nie mo¿na okradaæ osoby która zaraz wstanie
-					AddGameMsg2(txCantDo, 3.f, GMS_CANT_DO);
+					AddGameMsg3(GMS_CANT_DO);
 				}
 				else if(u2->IsFollower() || u2->IsPlayer())
 				{
 					// nie mo¿na okradaæ sojuszników
-					AddGameMsg2(txDontLootFollower, 3.f, GMS_DONT_LOOT_FOLLOWER);
+					AddGameMsg3(GMS_DONT_LOOT_FOLLOWER);
 				}
 				else if(u2->in_arena != -1)
-				{
-					AddGameMsg2(txDontLootArena, 3.f, GMS_DONT_LOOT_ARENA);
-				}
+					AddGameMsg3(GMS_DONT_LOOT_ARENA);
 				else if(Net::IsLocal())
 				{
 					if(Net::IsOnline() && u2->busy == Unit::Busy_Looted)
@@ -2570,7 +2569,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					if(key && pc->unit->HaveItem(Item::Get(key)))
 					{
 						sound_mgr->PlaySound3d(sUnlock, center, 2.f, 5.f);
-						AddGameMsg2(txUnlockedDoor, 3.f, GMS_UNLOCK_DOOR);
+						AddGameMsg3(GMS_UNLOCK_DOOR);
 						if(!location->outside)
 							minimap_opened_doors = true;
 						door->locked = LOCK_NONE;
@@ -2589,7 +2588,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					}
 					else
 					{
-						AddGameMsg2(txNeedKey, 3.f, GMS_NEED_KEY);
+						AddGameMsg3(GMS_NEED_KEY);
 						sound_mgr->PlaySound3d(sDoorClosed[Rand() % 2], center, 2.f, 5.f);
 					}
 				}
@@ -3916,6 +3915,7 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog)
 	ctx.can_skip = true;
 	ctx.dialog = dialog ? dialog : talker->data->dialog;
 	ctx.force_end = false;
+	ctx.negate_if = false;
 
 	if(Net::IsLocal())
 	{
@@ -4277,1078 +4277,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(ctx.dialog_level == if_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-				QuestManager& quest_manager = QuestManager::Get();
-
-				if(strcmp(msg, "burmistrz_quest") == 0)
-				{
-					bool have_quest = true;
-					if(city_ctx->quest_mayor == CityQuestState::Failed)
-					{
-						DialogTalk(ctx, random_string(txMayorQFailed));
-						++ctx.dialog_pos;
-						return;
-					}
-					else if(worldtime - city_ctx->quest_mayor_time > 30 || city_ctx->quest_mayor_time == -1)
-					{
-						if(city_ctx->quest_mayor == CityQuestState::InProgress)
-						{
-							Quest* quest = quest_manager.FindUnacceptedQuest(current_location, QuestType::Mayor);
-							DeleteElement(quest_manager.unaccepted_quests, quest);
-						}
-
-						// jest nowe zadanie (mo¿e), czas starego min¹³
-						city_ctx->quest_mayor_time = worldtime;
-						city_ctx->quest_mayor = CityQuestState::InProgress;
-
-						Quest* quest = QuestManager::Get().GetMayorQuest();
-						if(quest)
-						{
-							// add new quest
-							quest->refid = quest_manager.quest_counter++;
-							quest->Start();
-							quest_manager.unaccepted_quests.push_back(quest);
-							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
-						}
-						else
-							have_quest = false;
-					}
-					else if(city_ctx->quest_mayor == CityQuestState::InProgress)
-					{
-						// ju¿ ma przydzielone zadanie ?
-						Quest* quest = quest_manager.FindUnacceptedQuest(current_location, QuestType::Mayor);
-						if(quest)
-						{
-							// quest nie zosta³ zaakceptowany
-							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
-						}
-						else
-						{
-							quest = quest_manager.FindQuest(current_location, QuestType::Mayor);
-							if(quest)
-							{
-								DialogTalk(ctx, random_string(txQuestAlreadyGiven));
-								++ctx.dialog_pos;
-								return;
-							}
-							else
-								have_quest = false;
-						}
-					}
-					else
-						have_quest = false;
-					if(!have_quest)
-					{
-						DialogTalk(ctx, random_string(txMayorNoQ));
-						++ctx.dialog_pos;
-						return;
-					}
-				}
-				else if(strcmp(msg, "dowodca_quest") == 0)
-				{
-					bool have_quest = true;
-					if(city_ctx->quest_captain == CityQuestState::Failed)
-					{
-						DialogTalk(ctx, random_string(txCaptainQFailed));
-						++ctx.dialog_pos;
-						return;
-					}
-					else if(worldtime - city_ctx->quest_captain_time > 30 || city_ctx->quest_captain_time == -1)
-					{
-						if(city_ctx->quest_captain == CityQuestState::InProgress)
-						{
-							Quest* quest = quest_manager.FindUnacceptedQuest(current_location, QuestType::Captain);
-							DeleteElement(quest_manager.unaccepted_quests, quest);
-						}
-
-						// jest nowe zadanie (mo¿e), czas starego min¹³
-						city_ctx->quest_captain_time = worldtime;
-						city_ctx->quest_captain = CityQuestState::InProgress;
-
-						Quest* quest = QuestManager::Get().GetCaptainQuest();
-						if(quest)
-						{
-							// add new quest
-							quest->refid = quest_manager.quest_counter++;
-							quest->Start();
-							quest_manager.unaccepted_quests.push_back(quest);
-							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
-						}
-						else
-							have_quest = false;
-					}
-					else if(city_ctx->quest_captain == CityQuestState::InProgress)
-					{
-						// ju¿ ma przydzielone zadanie
-						Quest* quest = quest_manager.FindUnacceptedQuest(current_location, QuestType::Captain);
-						if(quest)
-						{
-							// quest nie zosta³ zaakceptowany
-							StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
-						}
-						else
-						{
-							quest = quest_manager.FindQuest(current_location, QuestType::Captain);
-							if(quest)
-							{
-								DialogTalk(ctx, random_string(txQuestAlreadyGiven));
-								++ctx.dialog_pos;
-								return;
-							}
-							else
-								have_quest = false;
-						}
-					}
-					else
-						have_quest = false;
-					if(!have_quest)
-					{
-						DialogTalk(ctx, random_string(txCaptainNoQ));
-						++ctx.dialog_pos;
-						return;
-					}
-				}
-				else if(strcmp(msg, "przedmiot_quest") == 0)
-				{
-					if(ctx.talker->quest_refid == -1)
-					{
-						Quest* quest = QuestManager::Get().GetAdventurerQuest();
-						quest->refid = quest_manager.quest_counter++;
-						ctx.talker->quest_refid = quest->refid;
-						quest->Start();
-						quest_manager.unaccepted_quests.push_back(quest);
-						StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
-					}
-					else
-					{
-						Quest* quest = quest_manager.FindUnacceptedQuest(ctx.talker->quest_refid);
-						StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
-					}
-				}
-				else if(strcmp(msg, "arena_combat1") == 0 || strcmp(msg, "arena_combat2") == 0 || strcmp(msg, "arena_combat3") == 0)
-					StartArenaCombat(msg[strlen("arena_combat")] - '0');
-				else if(strcmp(msg, "rest1") == 0 || strcmp(msg, "rest5") == 0 || strcmp(msg, "rest10") == 0 || strcmp(msg, "rest30") == 0)
-				{
-					// odpoczynek w karczmie
-					// ustal ile to dni i ile kosztuje
-					int ile, koszt;
-					if(strcmp(msg, "rest1") == 0)
-					{
-						ile = 1;
-						koszt = 5;
-					}
-					else if(strcmp(msg, "rest5") == 0)
-					{
-						ile = 5;
-						koszt = 20;
-					}
-					else if(strcmp(msg, "rest10") == 0)
-					{
-						ile = 10;
-						koszt = 35;
-					}
-					else
-					{
-						ile = 30;
-						koszt = 100;
-					}
-
-					// czy gracz ma z³oto?
-					if(ctx.pc->unit->gold < koszt)
-					{
-						ctx.dialog_s_text = Format(txNeedMoreGold, koszt - ctx.pc->unit->gold);
-						DialogTalk(ctx, ctx.dialog_s_text.c_str());
-						// resetuj dialog
-						ctx.dialog_pos = 0;
-						ctx.dialog_level = 0;
-						return;
-					}
-
-					// zabierz z³oto i zamróŸ
-					ctx.pc->unit->gold -= koszt;
-					ctx.pc->unit->frozen = FROZEN::YES;
-					if(ctx.is_local)
-					{
-						// lokalny fallback
-						fallback_co = FALLBACK::REST;
-						fallback_t = -1.f;
-						fallback_1 = ile;
-					}
-					else
-					{
-						// wyœlij info o odpoczynku
-						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-						c.type = NetChangePlayer::REST;
-						c.id = ile;
-						ctx.pc->player_info->UpdateGold();
-					}
-				}
-				else if(strcmp(msg, "gossip") == 0 || strcmp(msg, "gossip_drunk") == 0)
-				{
-					QuestManager& quest_manager = QuestManager::Get();
-					bool pijak = (strcmp(msg, "gossip_drunk") == 0);
-					if(!pijak && (Rand() % 3 == 0 || (Key.Down(VK_SHIFT) && devmode)))
-					{
-						int co = Rand() % 3;
-						if(quest_manager.quest_rumor_counter != 0 && Rand() % 2 == 0)
-							co = 2;
-						if(devmode)
-						{
-							if(Key.Down('1'))
-								co = 0;
-							else if(Key.Down('2'))
-								co = 1;
-							else if(Key.Down('3'))
-								co = 2;
-						}
-						switch(co)
-						{
-						case 0:
-							// info o nieznanej lokacji
-							{
-								int id = Rand() % locations.size();
-								int id2 = id;
-								bool ok = false;
-								do
-								{
-									if(locations[id2] && locations[id2]->state == LS_UNKNOWN)
-									{
-										ok = true;
-										break;
-									}
-									else
-									{
-										++id2;
-										if(id2 == locations.size())
-											id2 = 0;
-									}
-								} while(id != id2);
-								if(ok)
-								{
-									Location& loc = *locations[id2];
-									loc.state = LS_KNOWN;
-									Location& cloc = *locations[current_location];
-									cstring s_daleko;
-									float dist = Vec2::Distance(loc.pos, cloc.pos);
-									if(dist <= 300)
-										s_daleko = txNear;
-									else if(dist <= 500)
-										s_daleko = "";
-									else if(dist <= 700)
-										s_daleko = txFar;
-									else
-										s_daleko = txVeryFar;
-
-									ctx.dialog_s_text = Format(random_string(txLocationDiscovered), s_daleko, GetLocationDirName(cloc.pos, loc.pos), loc.name.c_str());
-									DialogTalk(ctx, ctx.dialog_s_text.c_str());
-									++ctx.dialog_pos;
-
-									if(Net::IsOnline())
-										Net_ChangeLocationState(id2, false);
-									return;
-								}
-								else
-								{
-									DialogTalk(ctx, random_string(txAllDiscovered));
-									++ctx.dialog_pos;
-									return;
-								}
-							}
-							break;
-						case 1:
-							// info o obozie
-							{
-								Location* new_camp = nullptr;
-								static vector<Location*> camps;
-								for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
-								{
-									if(*it && (*it)->type == L_CAMP && (*it)->state != LS_HIDDEN)
-									{
-										camps.push_back(*it);
-										if((*it)->state == LS_UNKNOWN && !new_camp)
-											new_camp = *it;
-									}
-								}
-
-								if(!new_camp && !camps.empty())
-									new_camp = camps[Rand() % camps.size()];
-
-								camps.clear();
-
-								if(new_camp)
-								{
-									Location& loc = *new_camp;
-									Location& cloc = *locations[current_location];
-									cstring s_daleko;
-									float dist = Vec2::Distance(loc.pos, cloc.pos);
-									if(dist <= 300)
-										s_daleko = txNear;
-									else if(dist <= 500)
-										s_daleko = "";
-									else if(dist <= 700)
-										s_daleko = txFar;
-									else
-										s_daleko = txVeryFar;
-
-									cstring co;
-									switch(loc.spawn)
-									{
-									case SG_ORKOWIE:
-										co = txSGOOrcs;
-										break;
-									case SG_BANDYCI:
-										co = txSGOBandits;
-										break;
-									case SG_GOBLINY:
-										co = txSGOGoblins;
-										break;
-									default:
-										assert(0);
-										co = txSGOEnemies;
-										break;
-									}
-
-									if(loc.state == LS_UNKNOWN)
-									{
-										loc.state = LS_KNOWN;
-										if(Net::IsOnline())
-											Net_ChangeLocationState(FindLocationId(new_camp), false);
-									}
-
-									ctx.dialog_s_text = Format(random_string(txCampDiscovered), s_daleko, GetLocationDirName(cloc.pos, loc.pos), co);
-									DialogTalk(ctx, ctx.dialog_s_text.c_str());
-									++ctx.dialog_pos;
-									return;
-								}
-								else
-								{
-									DialogTalk(ctx, random_string(txAllCampDiscovered));
-									++ctx.dialog_pos;
-									return;
-								}
-							}
-							break;
-						case 2:
-							// plotka o quescie
-							if(quest_manager.quest_rumor_counter == 0)
-							{
-								DialogTalk(ctx, random_string(txNoQRumors));
-								++ctx.dialog_pos;
-								return;
-							}
-							else
-							{
-								co = Rand() % P_MAX;
-								while(quest_manager.quest_rumor[co])
-									co = (co + 1) % P_MAX;
-								--quest_manager.quest_rumor_counter;
-								quest_manager.quest_rumor[co] = true;
-
-								switch(co)
-								{
-								case P_TARTAK:
-									ctx.dialog_s_text = Format(txRumorQ[0], locations[quest_sawmill->start_loc]->name.c_str());
-									break;
-								case P_KOPALNIA:
-									ctx.dialog_s_text = Format(txRumorQ[1], locations[quest_mine->start_loc]->name.c_str());
-									break;
-								case P_ZAWODY_W_PICIU:
-									ctx.dialog_s_text = txRumorQ[2];
-									break;
-								case P_BANDYCI:
-									ctx.dialog_s_text = Format(txRumorQ[3], locations[quest_bandits->start_loc]->name.c_str());
-									break;
-								case P_MAGOWIE:
-									ctx.dialog_s_text = Format(txRumorQ[4], locations[quest_mages->start_loc]->name.c_str());
-									break;
-								case P_MAGOWIE2:
-									ctx.dialog_s_text = txRumorQ[5];
-									break;
-								case P_ORKOWIE:
-									ctx.dialog_s_text = Format(txRumorQ[6], locations[quest_orcs->start_loc]->name.c_str());
-									break;
-								case P_GOBLINY:
-									ctx.dialog_s_text = Format(txRumorQ[7], locations[quest_goblins->start_loc]->name.c_str());
-									break;
-								case P_ZLO:
-									ctx.dialog_s_text = Format(txRumorQ[8], locations[quest_evil->start_loc]->name.c_str());
-									break;
-								default:
-									assert(0);
-									return;
-								}
-
-								game_gui->journal->AddRumor(ctx.dialog_s_text.c_str());
-								DialogTalk(ctx, ctx.dialog_s_text.c_str());
-								++ctx.dialog_pos;
-								return;
-							}
-							break;
-						default:
-							assert(0);
-							break;
-						}
-					}
-					else
-					{
-						int ile = countof(txRumor);
-						if(pijak)
-							ile += countof(txRumorD);
-						cstring plotka;
-						do
-						{
-							int co = Rand() % ile;
-							if(co < countof(txRumor))
-								plotka = txRumor[co];
-							else
-								plotka = txRumorD[co - countof(txRumor)];
-						} while(ctx.ostatnia_plotka == plotka);
-						ctx.ostatnia_plotka = plotka;
-
-						static string str, str_part;
-						str.clear();
-						for(uint i = 0, len = strlen(plotka); i < len; ++i)
-						{
-							if(plotka[i] == '$')
-							{
-								str_part.clear();
-								++i;
-								while(plotka[i] != '$')
-								{
-									str_part.push_back(plotka[i]);
-									++i;
-								}
-								str += FormatString(ctx, str_part);
-							}
-							else
-								str.push_back(plotka[i]);
-						}
-
-						DialogTalk(ctx, str.c_str());
-						++ctx.dialog_pos;
-						return;
-					}
-				}
-				else if(strncmp(msg, "train_", 6) == 0)
-				{
-					cstring s = msg + 6;
-					bool is_skill;
-					int what;
-
-					auto attrib = Attribute::Find(s);
-					if(attrib)
-					{
-						is_skill = false;
-						what = (int)attrib->attrib_id;
-					}
-					else
-					{
-						auto skill = Skill::Find(s);
-						if(skill)
-						{
-							is_skill = true;
-							what = (int)skill->skill_id;
-						}
-						else
-						{
-							assert(0);
-							is_skill = false;
-							what = (int)AttributeId::STR;
-						}
-					}
-
-					// czy gracz ma z³oto?
-					if(ctx.pc->unit->gold < 200)
-					{
-						ctx.dialog_s_text = Format(txNeedMoreGold, 200 - ctx.pc->unit->gold);
-						DialogTalk(ctx, ctx.dialog_s_text.c_str());
-						ctx.force_end = true;
-						return;
-					}
-
-					// zabierz z³oto i zamróŸ
-					ctx.pc->unit->gold -= 200;
-					ctx.pc->unit->frozen = FROZEN::YES;
-					if(ctx.is_local)
-					{
-						// lokalny fallback
-						fallback_co = FALLBACK::TRAIN;
-						fallback_t = -1.f;
-						fallback_1 = (is_skill ? 1 : 0);
-						fallback_2 = what;
-					}
-					else
-					{
-						// wyœlij info o trenowaniu
-						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-						c.type = NetChangePlayer::TRAIN;
-						c.id = (is_skill ? 1 : 0);
-						c.ile = what;
-						ctx.pc->player_info->UpdateGold();
-					}
-				}
-				else if(strcmp(msg, "near_loc") == 0)
-				{
-					if(ctx.update_locations == 1)
-					{
-						ctx.active_locations.clear();
-
-						int index = 0;
-						for(Location* loc : locations)
-						{
-							if(loc && loc->type != L_CITY && loc->type != L_ACADEMY && Vec2::Distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
-								ctx.active_locations.push_back(std::pair<int, bool>(index, loc->state == LS_UNKNOWN));
-							++index;
-						}
-
-						if(!ctx.active_locations.empty())
-						{
-							std::random_shuffle(ctx.active_locations.begin(), ctx.active_locations.end(), MyRand);
-							std::sort(ctx.active_locations.begin(), ctx.active_locations.end(),
-								[](const std::pair<int, bool>& l1, const std::pair<int, bool>& l2) -> bool { return l1.second < l2.second; });
-							ctx.update_locations = 0;
-						}
-						else
-							ctx.update_locations = -1;
-					}
-
-					if(ctx.update_locations == -1)
-					{
-						DialogTalk(ctx, txNoNearLoc);
-						++ctx.dialog_pos;
-						return;
-					}
-					else if(ctx.active_locations.empty())
-					{
-						DialogTalk(ctx, txAllNearLoc);
-						++ctx.dialog_pos;
-						return;
-					}
-
-					int id = ctx.active_locations.back().first;
-					ctx.active_locations.pop_back();
-					Location& loc = *locations[id];
-					if(loc.state == LS_UNKNOWN)
-					{
-						loc.state = LS_KNOWN;
-						if(Net::IsOnline())
-							Net_ChangeLocationState(id, false);
-					}
-					ctx.dialog_s_text = Format(txNearLoc, GetLocationDirName(world_pos, loc.pos), loc.name.c_str());
-					if(loc.spawn == SG_BRAK)
-					{
-						if(loc.type != L_CAVE && loc.type != L_FOREST && loc.type != L_MOONWELL)
-							ctx.dialog_s_text += random_string(txNearLocEmpty);
-					}
-					else if(loc.state == LS_CLEARED)
-						ctx.dialog_s_text += Format(txNearLocCleared, g_spawn_groups[loc.spawn].name);
-					else
-					{
-						SpawnGroup& sg = g_spawn_groups[loc.spawn];
-						cstring jacy;
-						if(loc.st < 5)
-						{
-							if(sg.k == K_I)
-								jacy = txELvlVeryWeak[0];
-							else
-								jacy = txELvlVeryWeak[1];
-						}
-						else if(loc.st < 8)
-						{
-							if(sg.k == K_I)
-								jacy = txELvlWeak[0];
-							else
-								jacy = txELvlWeak[1];
-						}
-						else if(loc.st < 11)
-						{
-							if(sg.k == K_I)
-								jacy = txELvlAverage[0];
-							else
-								jacy = txELvlAverage[1];
-						}
-						else if(loc.st < 14)
-						{
-							if(sg.k == K_I)
-								jacy = txELvlQuiteStrong[0];
-							else
-								jacy = txELvlQuiteStrong[1];
-						}
-						else
-						{
-							if(sg.k == K_I)
-								jacy = txELvlStrong[0];
-							else
-								jacy = txELvlStrong[1];
-						}
-						ctx.dialog_s_text += Format(random_string(txNearLocEnemy), jacy, g_spawn_groups[loc.spawn].name);
-					}
-
-					DialogTalk(ctx, ctx.dialog_s_text.c_str());
-					++ctx.dialog_pos;
-					return;
-				}
-				else if(strcmp(msg, "tell_name") == 0)
-				{
-					assert(ctx.talker->IsHero());
-					ctx.talker->hero->know_name = true;
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::TELL_NAME;
-						c.unit = ctx.talker;
-					}
-				}
-				else if(strcmp(msg, "hero_about") == 0)
-				{
-					assert(ctx.talker->IsHero());
-					DialogTalk(ctx, ClassInfo::classes[(int)ctx.talker->hero->clas].about.c_str());
-					++ctx.dialog_pos;
-					return;
-				}
-				else if(strcmp(msg, "recruit") == 0)
-				{
-					int koszt = ctx.talker->hero->JoinCost();
-					ctx.pc->unit->gold -= koszt;
-					ctx.talker->gold += koszt;
-					AddTeamMember(ctx.talker, false);
-					ctx.talker->temporary = false;
-					Team.free_recruit = false;
-					if(IS_SET(ctx.talker->data->flags2, F2_MELEE))
-						ctx.talker->hero->melee = true;
-					else if(IS_SET(ctx.talker->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
-						ctx.talker->hero->melee = true;
-					if(Net::IsOnline() && !ctx.is_local)
-						ctx.pc->player_info->UpdateGold();
-				}
-				else if(strcmp(msg, "recruit_free") == 0)
-				{
-					AddTeamMember(ctx.talker, false);
-					Team.free_recruit = false;
-					ctx.talker->temporary = false;
-					if(IS_SET(ctx.talker->data->flags2, F2_MELEE))
-						ctx.talker->hero->melee = true;
-					else if(IS_SET(ctx.talker->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
-						ctx.talker->hero->melee = true;
-				}
-				else if(strcmp(msg, "follow_me") == 0)
-				{
-					assert(ctx.talker->IsFollower());
-					ctx.talker->hero->mode = HeroData::Follow;
-					ctx.talker->ai->city_wander = false;
-				}
-				else if(strcmp(msg, "go_free") == 0)
-				{
-					assert(ctx.talker->IsFollower());
-					ctx.talker->hero->mode = HeroData::Wander;
-					ctx.talker->ai->city_wander = false;
-					ctx.talker->ai->loc_timer = Random(5.f, 10.f);
-				}
-				else if(strcmp(msg, "wait") == 0)
-				{
-					assert(ctx.talker->IsFollower());
-					ctx.talker->hero->mode = HeroData::Wait;
-					ctx.talker->ai->city_wander = false;
-				}
-				else if(strcmp(msg, "give_item") == 0)
-				{
-					Unit* t = ctx.talker;
-					t->busy = Unit::Busy_Trading;
-					EndDialog(ctx);
-					ctx.pc->action = PlayerController::Action_GiveItems;
-					ctx.pc->action_unit = t;
-					ctx.pc->chest_trade = &t->items;
-					if(ctx.is_local)
-						StartTrade(I_GIVE, *t);
-					else
-					{
-						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-						c.type = NetChangePlayer::START_GIVE;
-					}
-					return;
-				}
-				else if(strcmp(msg, "share_items") == 0)
-				{
-					Unit* t = ctx.talker;
-					t->busy = Unit::Busy_Trading;
-					EndDialog(ctx);
-					ctx.pc->action = PlayerController::Action_ShareItems;
-					ctx.pc->action_unit = t;
-					ctx.pc->chest_trade = &t->items;
-					if(ctx.is_local)
-						StartTrade(I_SHARE, *t);
-					else
-					{
-						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-						c.type = NetChangePlayer::START_SHARE;
-					}
-					return;
-				}
-				else if(strcmp(msg, "kick_npc") == 0)
-				{
-					RemoveTeamMember(ctx.talker);
-					if(city_ctx)
-						ctx.talker->hero->mode = HeroData::Wander;
-					else
-						ctx.talker->hero->mode = HeroData::Leave;
-					ctx.talker->hero->credit = 0;
-					ctx.talker->ai->city_wander = true;
-					ctx.talker->ai->loc_timer = Random(5.f, 10.f);
-					CheckCredit(false);
-					ctx.talker->temporary = true;
-				}
-				else if(strcmp(msg, "give_item_credit") == 0)
-					TeamShareGiveItemCredit(ctx);
-				else if(strcmp(msg, "sell_item") == 0)
-					TeamShareSellItem(ctx);
-				else if(strcmp(msg, "share_decline") == 0)
-					TeamShareDecline(ctx);
-				else if(strcmp(msg, "pvp") == 0)
-				{
-					// walka z towarzyszem
-					StartPvp(ctx.pc, ctx.talker);
-				}
-				else if(strcmp(msg, "pay_100") == 0)
-				{
-					int ile = min(100, ctx.pc->unit->gold);
-					if(ile > 0)
-					{
-						ctx.pc->unit->gold -= ile;
-						ctx.talker->gold += ile;
-						sound_mgr->PlaySound2d(sCoins);
-						if(!ctx.is_local)
-							ctx.pc->player_info->UpdateGold();
-					}
-				}
-				else if(strcmp(msg, "attack") == 0)
-				{
-					// ta komenda jest zbyt ogólna, jeœli bêdzie kilka takich grup to wystarczy ¿e jedna tego u¿yje to wszyscy zaatakuj¹, nie obs³uguje te¿ budynków
-					if(ctx.talker->data->group == G_CRAZIES)
-					{
-						if(!Team.crazies_attack)
-						{
-							Team.crazies_attack = true;
-							if(Net::IsOnline())
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::CHANGE_FLAGS;
-							}
-						}
-					}
-					else
-					{
-						for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
-						{
-							if((*it)->dont_attack && IsEnemy(**it, *Team.leader, true))
-							{
-								(*it)->dont_attack = false;
-								(*it)->ai->change_ai_mode = true;
-							}
-						}
-					}
-				}
-				else if(strcmp(msg, "force_attack") == 0)
-				{
-					ctx.talker->dont_attack = false;
-					ctx.talker->attack_team = true;
-					ctx.talker->ai->change_ai_mode = true;
-				}
-				else if(strcmp(msg, "ginger_hair") == 0)
-				{
-					ctx.pc->unit->human_data->hair_color = g_hair_colors[8];
-					if(Net::IsServer())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::HAIR_COLOR;
-						c.unit = ctx.pc->unit;
-					}
-				}
-				else if(strcmp(msg, "random_hair") == 0)
-				{
-					if(Rand() % 2 == 0)
-					{
-						Vec4 kolor = ctx.pc->unit->human_data->hair_color;
-						do
-						{
-							ctx.pc->unit->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
-						} while(kolor.Equal(ctx.pc->unit->human_data->hair_color));
-					}
-					else
-					{
-						Vec4 kolor = ctx.pc->unit->human_data->hair_color;
-						do
-						{
-							ctx.pc->unit->human_data->hair_color = Vec4(Random(0.f, 1.f), Random(0.f, 1.f), Random(0.f, 1.f), 1.f);
-						} while(kolor.Equal(ctx.pc->unit->human_data->hair_color));
-					}
-					if(Net::IsServer())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::HAIR_COLOR;
-						c.unit = ctx.pc->unit;
-					}
-				}
-				else if(strcmp(msg, "captive_join") == 0)
-				{
-					AddTeamMember(ctx.talker, true);
-					ctx.talker->dont_attack = true;
-				}
-				else if(strcmp(msg, "captive_escape") == 0)
-				{
-					if(ctx.talker->hero->team_member)
-						RemoveTeamMember(ctx.talker);
-					ctx.talker->hero->mode = HeroData::Leave;
-					ctx.talker->dont_attack = false;
-				}
-				else if(strcmp(msg, "use_arena") == 0)
-					arena_free = false;
-				else if(strcmp(msg, "chlanie_start") == 0)
-				{
-					contest_state = CONTEST_STARTING;
-					contest_time = 0;
-					contest_units.clear();
-					contest_units.push_back(ctx.pc->unit);
-					ctx.pc->leaving_event = false;
-				}
-				else if(strcmp(msg, "chlanie_udzial") == 0)
-				{
-					contest_units.push_back(ctx.pc->unit);
-					ctx.pc->leaving_event = false;
-				}
-				else if(strcmp(msg, "chlanie_nagroda") == 0)
-				{
-					contest_winner = nullptr;
-					AddItem(*ctx.pc->unit, ItemList::GetItem("contest_reward"), 1, false);
-					if(ctx.is_local)
-						AddGameMsg3(GMS_ADDED_ITEM);
-					else
-						Net_AddedItemMsg(ctx.pc);
-				}
-				else if(strcmp(msg, "news") == 0)
-				{
-					if(ctx.update_news)
-					{
-						ctx.update_news = false;
-						ctx.active_news = news;
-						if(ctx.active_news.empty())
-						{
-							DialogTalk(ctx, random_string(txNoNews));
-							++ctx.dialog_pos;
-							return;
-						}
-					}
-
-					if(ctx.active_news.empty())
-					{
-						DialogTalk(ctx, random_string(txAllNews));
-						++ctx.dialog_pos;
-						return;
-					}
-
-					int id = Rand() % ctx.active_news.size();
-					News* news = ctx.active_news[id];
-					ctx.active_news.erase(ctx.active_news.begin() + id);
-
-					DialogTalk(ctx, news->text.c_str());
-					++ctx.dialog_pos;
-					return;
-				}
-				else if(strcmp(msg, "go_melee") == 0)
-				{
-					assert(ctx.talker->IsHero());
-					ctx.talker->hero->melee = true;
-				}
-				else if(strcmp(msg, "go_ranged") == 0)
-				{
-					assert(ctx.talker->IsHero());
-					ctx.talker->hero->melee = false;
-				}
-				else if(strcmp(msg, "pvp_gather") == 0)
-				{
-					near_players.clear();
-					for(Unit* unit : Team.active_members)
-					{
-						if(unit->IsPlayer() && unit->player != ctx.pc && Vec3::Distance2d(unit->pos, city_ctx->arena_pos) < 5.f)
-							near_players.push_back(unit);
-					}
-					near_players_str.resize(near_players.size());
-					for(uint i = 0, size = near_players.size(); i != size; ++i)
-						near_players_str[i] = Format(txPvpWith, near_players[i]->player->name.c_str());
-				}
-				else if(strncmp(msg, "pvp", 3) == 0)
-				{
-					int id = int(msg[3] - '1');
-					Unit* u = near_players[id];
-					if(Vec3::Distance2d(u->pos, city_ctx->arena_pos) > 5.f)
-					{
-						ctx.dialog_s_text = Format(txPvpTooFar, u->player->name.c_str());
-						DialogTalk(ctx, ctx.dialog_s_text.c_str());
-						++ctx.dialog_pos;
-						return;
-					}
-					else
-					{
-						if(u->player->is_local)
-						{
-							DialogInfo info;
-							info.event = DialogEvent(this, &Game::Event_Pvp);
-							info.name = "pvp";
-							info.order = ORDER_TOP;
-							info.parent = nullptr;
-							info.pause = false;
-							info.text = Format(txPvp, ctx.pc->name.c_str());
-							info.type = DIALOG_YESNO;
-							dialog_pvp = GUI.ShowDialog(info);
-							pvp_unit = near_players[id];
-						}
-						else
-						{
-							NetChangePlayer& c = Add1(near_players[id]->player->player_info->changes);
-							c.type = NetChangePlayer::PVP;
-							c.id = ctx.pc->id;
-						}
-
-						pvp_response.ok = true;
-						pvp_response.from = ctx.pc->unit;
-						pvp_response.to = u;
-						pvp_response.timer = 0.f;
-					}
-				}
-				else if(strcmp(msg, "ironfist_start") == 0)
-				{
-					StartTournament(ctx.talker);
-					tournament_units.push_back(ctx.pc->unit);
-					ctx.pc->unit->gold -= 100;
-					ctx.pc->leaving_event = false;
-					if(!ctx.is_local)
-						ctx.pc->player_info->UpdateGold();
-				}
-				else if(strcmp(msg, "ironfist_join") == 0)
-				{
-					tournament_units.push_back(ctx.pc->unit);
-					ctx.pc->unit->gold -= 100;
-					ctx.pc->leaving_event = false;
-					if(!ctx.is_local)
-						ctx.pc->player_info->UpdateGold();
-				}
-				else if(strcmp(msg, "ironfist_train") == 0)
-				{
-					tournament_winner = nullptr;
-					ctx.pc->unit->frozen = FROZEN::YES;
-					if(ctx.is_local)
-					{
-						// lokalny fallback
-						fallback_co = FALLBACK::TRAIN;
-						fallback_t = -1.f;
-						fallback_1 = 2;
-						fallback_2 = 0;
-					}
-					else
-					{
-						// wyœlij info o trenowaniu
-						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-						c.type = NetChangePlayer::TRAIN;
-						c.id = 2;
-						c.ile = 0;
-					}
-				}
-				else if(strcmp(msg, "szaleni_powiedzial") == 0)
-				{
-					ctx.talker->ai->morale = -100.f;
-					quest_crazies->crazies_state = Quest_Crazies::State::TalkedWithCrazy;
-				}
-				else if(strcmp(msg, "szaleni_sprzedaj") == 0)
-				{
-					const Item* kamien = Item::Get("q_szaleni_kamien");
-					RemoveItem(*ctx.pc->unit, kamien, 1);
-					ctx.pc->unit->gold += 10;
-					if(!ctx.is_local)
-					{
-						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-						c.type = NetChangePlayer::GOLD_MSG;
-						c.ile = 10;
-						c.id = 1;
-						ctx.pc->player_info->UpdateGold();
-					}
-					else
-						AddGameMsg(Format(txGoldPlus, 10), 3.f);
-				}
-				else if(strcmp(msg, "give_1") == 0)
-				{
-					ctx.pc->unit->gold += 1;
-					if(!ctx.is_local)
-					{
-						NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-						c.type = NetChangePlayer::GOLD_MSG;
-						c.ile = 1;
-						c.id = 1;
-						ctx.pc->player_info->UpdateGold();
-					}
-					else
-						AddGameMsg(Format(txGoldPlus, 1), 3.f);
-				}
-				else if(strcmp(msg, "take_1") == 0)
-				{
-					ctx.pc->unit->gold -= 1;
-					if(!ctx.is_local)
-						ctx.pc->player_info->UpdateGold();
-				}
-				else if(strcmp(msg, "crazy_give_item") == 0)
-				{
-					crazy_give_item = GetRandomItem(100);
-					ctx.pc->unit->AddItem(crazy_give_item, 1, false);
-					if(!ctx.is_local)
-					{
-						Net_AddItem(ctx.pc, crazy_give_item, false);
-						Net_AddedItemMsg(ctx.pc);
-					}
-					else
-						AddGameMsg3(GMS_ADDED_ITEM);
-				}
-				else if(strcmp(msg, "sekret_atak") == 0)
-				{
-					secret_state = SECRET_FIGHT;
-					at_arena.clear();
-
-					ctx.talker->in_arena = 1;
-					at_arena.push_back(ctx.talker);
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHANGE_ARENA_STATE;
-						c.unit = ctx.talker;
-					}
-
-					for(Unit* unit : Team.members)
-					{
-						unit->in_arena = 0;
-						at_arena.push_back(unit);
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::CHANGE_ARENA_STATE;
-							c.unit = unit;
-						}
-					}
-				}
-				else if(strcmp(msg, "sekret_daj") == 0)
-				{
-					secret_state = SECRET_REWARD;
-					const Item* item = Item::Get("sword_forbidden");
-					PreloadItem(item);
-					ctx.pc->unit->AddItem(item, 1, true);
-					if(!ctx.is_local)
-					{
-						Net_AddItem(ctx.pc, item, true);
-						Net_AddedItemMsg(ctx.pc);
-					}
-					else
-						AddGameMsg3(GMS_ADDED_ITEM);
-				}
-				else
-				{
-					Warn("DT_SPECIAL: %s", msg);
-					assert(0);
-				}
+				ExecuteGameDialogSpecial(ctx, msg, if_level);
 			}
 			break;
 		case DT_SET_QUEST_PROGRESS:
@@ -5367,7 +4296,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
-				if(ctx.dialog_quest->IsActive() && ctx.dialog_quest->IsTimedout())
+				bool ok = (ctx.dialog_quest->IsActive() && ctx.dialog_quest->IsTimedout());
+				if(ctx.negate_if)
+				{
+					ctx.negate_if = false;
+					ok = !ok;
+				}
+				if(ok)
 					++ctx.dialog_level;
 			}
 			++if_level;
@@ -5375,7 +4310,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_RAND:
 			if(if_level == ctx.dialog_level)
 			{
-				if(Rand() % int(de.msg) == 0)
+				bool ok = (Rand() % int(de.msg) == 0);
+				if(ctx.negate_if)
+				{
+					ctx.negate_if = false;
+					ok = !ok;
+				}
+				if(ok)
 					++ctx.dialog_level;
 			}
 			++if_level;
@@ -5383,7 +4324,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DT_IF_ONCE:
 			if(if_level == ctx.dialog_level)
 			{
-				if(ctx.dialog_once)
+				bool ok = ctx.dialog_once;
+				if(ctx.negate_if)
+				{
+					ctx.negate_if = false;
+					ok = !ok;
+				}
+				if(ok)
 				{
 					ctx.dialog_once = false;
 					++ctx.dialog_level;
@@ -5416,7 +4363,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-				if(FindQuestItem2(ctx.pc->unit, msg, nullptr, nullptr, ctx.not_active))
+				bool ok = FindQuestItem2(ctx.pc->unit, msg, nullptr, nullptr, ctx.not_active);
+				if(ctx.negate_if)
+				{
+					ctx.negate_if = false;
+					ok = !ok;
+				}
+				if(ok)
 					++ctx.dialog_level;
 				ctx.not_active = false;
 			}
@@ -5436,7 +4389,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
-				if(ctx.dialog_quest->prog == (int)de.msg)
+				bool ok = (ctx.dialog_quest->prog == (int)de.msg);
+				if(ctx.negate_if)
+				{
+					ctx.negate_if = false;
+					ok = !ok;
+				}
+				if(ok)
 					++ctx.dialog_level;
 			}
 			++if_level;
@@ -5448,7 +4407,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				int x = int(de.msg) & 0xFFFF;
 				int y = (int(de.msg) & 0xFFFF0000) >> 16;
 				assert(y > x);
-				if(InRange(ctx.dialog_quest->prog, x, y))
+				bool ok = InRange(ctx.dialog_quest->prog, x, y);
+				if(ctx.negate_if)
+				{
+					ctx.negate_if = false;
+					ok = !ok;
+				}
+				if(ok)
 					++ctx.dialog_level;
 			}
 			++if_level;
@@ -5457,10 +4422,19 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
+				bool negate = false;
+				if(ctx.negate_if)
+				{
+					ctx.negate_if = false;
+					negate = true;
+				}
 
 				for(Quest* quest : QuestManager::Get().quests)
 				{
-					if(quest->IsActive() && quest->IfNeedTalk(msg))
+					bool ok = (quest->IsActive() && quest->IfNeedTalk(msg));
+					if(negate)
+						ok = !ok;
+					if(ok)
 					{
 						++ctx.dialog_level;
 						break;
@@ -5492,464 +4466,27 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-
-				if(strcmp(msg, "arena_combat") == 0)
+				bool ok = ExecuteGameDialogIfSpecial(ctx, msg);
+				if(ctx.negate_if)
 				{
-					int t = city_ctx->arena_time;
-					if(t == -1)
-						++ctx.dialog_level;
-					else
-					{
-						int rok = t / 360;
-						t -= rok * 360;
-						rok += 100;
-						int miesiac = t / 30;
-						t -= miesiac * 30;
-						int dekadzien = t / 10;
-
-						if(rok != year || miesiac != month || dekadzien != day / 10)
-							++ctx.dialog_level;
-					}
+					ctx.negate_if = false;
+					ok = !ok;
 				}
-				else if(strcmp(msg, "have_team") == 0)
-				{
-					if(Team.HaveTeamMember())
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "have_pc_team") == 0)
-				{
-					if(HaveTeamMemberPC())
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "have_npc_team") == 0)
-				{
-					if(HaveTeamMemberNPC())
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_drunk") == 0)
-				{
-					if(IS_SET(ctx.talker->data->flags, F_AI_DRUNKMAN) && ctx.talker->in_building != -1)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_team_member") == 0)
-				{
-					if(Team.IsTeamMember(*ctx.talker))
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_not_known") == 0)
-				{
-					assert(ctx.talker->IsHero());
-					if(!ctx.talker->hero->know_name)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_inside_dungeon") == 0)
-				{
-					if(local_ctx.type == LevelContext::Inside)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_team_full") == 0)
-				{
-					if(Team.GetActiveTeamSize() >= MAX_TEAM_SIZE)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "can_join") == 0)
-				{
-					if(ctx.pc->unit->gold >= ctx.talker->hero->JoinCost())
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_inside_town") == 0)
-				{
-					if(city_ctx)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_free") == 0)
-				{
-					assert(ctx.talker->IsHero());
-					if(ctx.talker->hero->mode == HeroData::Wander)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_not_free") == 0)
-				{
-					assert(ctx.talker->IsHero());
-					if(ctx.talker->hero->mode != HeroData::Wander)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_not_follow") == 0)
-				{
-					assert(ctx.talker->IsHero());
-					if(ctx.talker->hero->mode != HeroData::Follow)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_not_waiting") == 0)
-				{
-					assert(ctx.talker->IsHero());
-					if(ctx.talker->hero->mode != HeroData::Wait)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_safe_location") == 0)
-				{
-					if(city_ctx)
-						++ctx.dialog_level;
-					else if(location->outside)
-					{
-						if(location->state == LS_CLEARED)
-							++ctx.dialog_level;
-					}
-					else
-					{
-						InsideLocation* inside = (InsideLocation*)location;
-						if(inside->IsMultilevel())
-						{
-							MultiInsideLocation* multi = (MultiInsideLocation*)inside;
-							if(multi->IsLevelClear())
-							{
-								if(dungeon_level == 0)
-								{
-									if(!multi->from_portal)
-										++ctx.dialog_level;
-								}
-								else
-									++ctx.dialog_level;
-							}
-						}
-						else if(location->state == LS_CLEARED)
-							++ctx.dialog_level;
-					}
-				}
-				else if(strcmp(msg, "is_near_arena") == 0)
-				{
-					if(city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && Vec3::Distance2d(ctx.talker->pos, city_ctx->arena_pos) < 5.f)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_lost_pvp") == 0)
-				{
-					assert(ctx.talker->IsHero());
-					if(ctx.talker->hero->lost_pvp)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_healthy") == 0)
-				{
-					if(ctx.talker->GetHpp() >= 0.75f)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_arena_free") == 0)
-				{
-					if(arena_free)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_bandit") == 0)
-				{
-					if(Team.is_bandit)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "have_gold_100") == 0)
-				{
-					if(ctx.pc->unit->gold >= 100)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_ginger") == 0)
-				{
-					if(ctx.pc->unit->human_data->hair_color.Equal(g_hair_colors[8]))
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_bald") == 0)
-				{
-					if(ctx.pc->unit->human_data->hair == -1)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_camp") == 0)
-				{
-					if(target_loc_is_camp)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "taken_guards_reward") == 0)
-				{
-					if(!guards_enc_reward)
-					{
-						AddGold(250, nullptr, true);
-						guards_enc_reward = true;
-						++ctx.dialog_level;
-					}
-				}
-				else if(strcmp(msg, "dont_have_quest") == 0)
-				{
-					if(ctx.talker->quest_refid == -1)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "have_unaccepted_quest") == 0)
-				{
-					if(QuestManager::Get().FindUnacceptedQuest(ctx.talker->quest_refid))
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "have_completed_quest") == 0)
-				{
-					Quest* q = QuestManager::Get().FindQuest(ctx.talker->quest_refid, false);
-					if(q && !q->IsActive())
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "contest_done") == 0)
-				{
-					if(contest_state == CONTEST_DONE)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "contest_here") == 0)
-				{
-					if(contest_where == current_location)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "contest_today") == 0)
-				{
-					if(contest_state == CONTEST_TODAY)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "chlanie_trwa") == 0)
-				{
-					if(contest_state == CONTEST_IN_PROGRESS)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "contest_started") == 0)
-				{
-					if(contest_state == CONTEST_STARTING)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "contest_joined") == 0)
-				{
-					for(Unit* unit : contest_units)
-					{
-						if(unit == ctx.pc->unit)
-						{
-							++ctx.dialog_level;
-							break;
-						}
-					}
-				}
-				else if(strcmp(msg, "contest_winner") == 0)
-				{
-					if(ctx.pc->unit == contest_winner)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
-				{
-					if(quest_bandits->prog == Quest_Bandits::Progress::NeedTalkWithCaptain && current_location == quest_bandits->start_loc)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_magowie_to_miasto") == 0)
-				{
-					if(quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain && current_location == quest_mages2->start_loc)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_magowie_poinformuj") == 0)
-				{
-					if(quest_mages2->mages_state == Quest_Mages2::State::EncounteredGolem)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_magowie_kup_miksture") == 0)
-				{
-					if(quest_mages2->mages_state == Quest_Mages2::State::BuyPotion)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_magowie_kup") == 0)
-				{
-					if(ctx.pc->unit->gold >= 150)
-					{
-						quest_mages2->SetProgress(Quest_Mages2::Progress::BoughtPotion);
-						++ctx.dialog_level;
-					}
-				}
-				else if(strcmp(msg, "q_orkowie_to_miasto") == 0)
-				{
-					if(current_location == quest_orcs->start_loc)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_orkowie_zaakceptowano") == 0)
-				{
-					if(quest_orcs2->orcs_state >= Quest_Orcs2::State::Accepted)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_magowie_nie_ukonczono") == 0)
-				{
-					if(quest_mages2->mages_state != Quest_Mages2::State::Completed)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_orkowie_nie_ukonczono") == 0)
-				{
-					if(quest_orcs2->orcs_state < Quest_Orcs2::State::Completed)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_free_recruit") == 0)
-				{
-					if(ctx.talker->level < 6 && Team.free_recruit)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "have_unique_quest") == 0)
-				{
-					if(((quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
-						&& quest_orcs->start_loc == current_location)
-						|| (quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain
-							&& quest_mages2->mages_state < Quest_Mages2::State::Completed
-							&& quest_mages2->start_loc == current_location))
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "have_100") == 0)
-				{
-					if(ctx.pc->unit->gold >= 100)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_gobliny_zapytaj") == 0)
-				{
-					if(quest_goblins->goblins_state >= Quest_Goblins::State::MageTalked
-						&& quest_goblins->goblins_state < Quest_Goblins::State::KnownLocation
-						&& current_location == quest_goblins->start_loc
-						&& quest_goblins->prog != Quest_Goblins::Progress::TalkedWithInnkeeper)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_zlo_kapitan") == 0)
-				{
-					if(current_location == quest_evil->mage_loc
-						&& quest_evil->evil_state >= Quest_Evil::State::GeneratedMage
-						&& quest_evil->evil_state < Quest_Evil::State::ClosingPortals
-						&& InRange((Quest_Evil::Progress)quest_evil->prog, Quest_Evil::Progress::MageToldAboutStolenBook, Quest_Evil::Progress::TalkedWithMayor))
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_zlo_burmistrz") == 0)
-				{
-					if(current_location == quest_evil->mage_loc
-						&& quest_evil->evil_state >= Quest_Evil::State::GeneratedMage
-						&& quest_evil->evil_state < Quest_Evil::State::ClosingPortals
-						&& quest_evil->prog == Quest_Evil::Progress::TalkedWithCaptain)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_not_mage") == 0)
-				{
-					if(ctx.talker->hero->clas != Class::MAGE)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "prefer_melee") == 0)
-				{
-					if(ctx.talker->hero->melee)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "is_leader") == 0)
-				{
-					if(ctx.pc->unit == Team.leader)
-						++ctx.dialog_level;
-				}
-				else if(strncmp(msg, "have_player", 11) == 0)
-				{
-					int id = int(msg[11] - '1');
-					if(id < (int)near_players.size())
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "waiting_for_pvp") == 0)
-				{
-					if(pvp_response.ok)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "in_city") == 0)
-				{
-					if(city_ctx)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "ironfist_can_start") == 0)
-				{
-					if(tournament_state == TOURNAMENT_NOT_DONE && tournament_city == current_location && day == 6 && month == 2 && tournament_year != year)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "ironfist_done") == 0)
-				{
-					if(tournament_year == year)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "ironfist_here") == 0)
-				{
-					if(current_location == tournament_city)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "ironfist_preparing") == 0)
-				{
-					if(tournament_state == TOURNAMENT_STARTING)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "ironfist_started") == 0)
-				{
-					if(tournament_state == TOURNAMENT_IN_PROGRESS)
-					{
-						// zwyciêzca mo¿e pogadaæ i przerwaæ gadanie
-						if(tournament_winner == dialog_context.pc->unit && tournament_state2 == 2 && tournament_state3 == 1)
-						{
-							tournament_master->look_target = nullptr;
-							tournament_state = TOURNAMENT_NOT_DONE;
-						}
-						else
-							++ctx.dialog_level;
-					}
-				}
-				else if(strcmp(msg, "ironfist_joined") == 0)
-				{
-					for(Unit* unit : tournament_units)
-					{
-						if(unit == ctx.pc->unit)
-						{
-							++ctx.dialog_level;
-							break;
-						}
-					}
-				}
-				else if(strcmp(msg, "ironfist_winner") == 0)
-				{
-					if(ctx.pc->unit == tournament_winner)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "szaleni_nie_zapytano") == 0)
-				{
-					if(quest_crazies->crazies_state == Quest_Crazies::State::None)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "q_szaleni_trzeba_pogadac") == 0)
-				{
-					if(quest_crazies->crazies_state == Quest_Crazies::State::FirstAttack)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "have_1") == 0)
-				{
-					if(ctx.pc->unit->gold != 0)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "secret_first_dialog") == 0)
-				{
-					if(secret_state == SECRET_GENERATED2)
-					{
-						secret_state = SECRET_TALKED;
-						++ctx.dialog_level;
-					}
-				}
-				else if(strcmp(msg, "sekret_can_fight") == 0)
-				{
-					if(secret_state == SECRET_TALKED)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "sekret_win") == 0)
-				{
-					if(secret_state == SECRET_WIN || secret_state == SECRET_REWARD)
-						++ctx.dialog_level;
-				}
-				else if(strcmp(msg, "sekret_can_get_reward") == 0)
-				{
-					if(secret_state == SECRET_WIN)
-						++ctx.dialog_level;
-				}
-				else
-				{
-					Warn("DT_IF_SPECIAL: %s", msg);
-					assert(0);
-				}
+				if(ok)
+					++ctx.dialog_level;
 			}
 			++if_level;
 			break;
 		case DT_IF_CHOICES:
 			if(if_level == ctx.dialog_level)
 			{
-				if(ctx.choices.size() == (int)de.msg)
+				bool ok = (ctx.choices.size() == (int)de.msg);
+				if(ctx.negate_if)
+				{
+					ctx.negate_if = false;
+					ok = !ok;
+				}
+				if(ok)
 					++ctx.dialog_level;
 			}
 			++if_level;
@@ -5986,7 +4523,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				const Item* item = (const Item*)de.msg;
-				if(ctx.pc->unit->HaveItem(item))
+				bool ok = ctx.pc->unit->HaveItem(item);
+				if(ctx.negate_if)
+				{
+					ctx.negate_if = false;
+					ok = !ok;
+				}
+				if(ok)
 					++ctx.dialog_level;
 			}
 			++if_level;
@@ -5995,7 +4538,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
-				if(ctx.dialog_quest->IfQuestEvent())
+				bool ok = ctx.dialog_quest->IfQuestEvent();
+				if(ctx.negate_if)
+				{
+					ctx.negate_if = false;
+					ok = !ok;
+				}
+				if(ok)
 					++ctx.dialog_level;
 			}
 			++if_level;
@@ -6011,7 +4560,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				assert(ctx.dialog_quest);
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-				if(ctx.dialog_quest->IfSpecial(ctx, msg))
+				bool ok = ctx.dialog_quest->IfSpecial(ctx, msg);
+				if(ctx.negate_if)
+				{
+					ctx.negate_if = false;
+					ok = !ok;
+				}
+				if(ok)
 					++ctx.dialog_level;
 			}
 			++if_level;
@@ -6024,6 +4579,34 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				ctx.dialog_quest->Special(ctx, msg);
 			}
 			break;
+		case DT_NOT:
+			if(if_level == ctx.dialog_level)
+				ctx.negate_if = true;
+			break;
+		case DT_SCRIPT:
+			if(if_level == ctx.dialog_level)
+			{
+				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
+				script_mgr->SetContext(ctx.pc, nullptr);
+				script_mgr->RunScript(msg);
+			}
+			break;
+		case DT_IF_SCRIPT:
+			if(if_level == ctx.dialog_level)
+			{
+				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
+				script_mgr->SetContext(ctx.pc, nullptr);
+				bool ok = script_mgr->RunIfScript(msg);
+				if(ctx.negate_if)
+				{
+					ctx.negate_if = false;
+					ok = !ok;
+				}
+				if(ok)
+					++ctx.dialog_level;
+			}
+			++if_level;
+			break;
 		default:
 			assert(0 && "Unknown dialog type!");
 			break;
@@ -6031,6 +4614,1491 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 		++ctx.dialog_pos;
 	}
+}
+
+void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level)
+{
+	QuestManager& quest_manager = QuestManager::Get();
+
+	if(strcmp(msg, "burmistrz_quest") == 0)
+	{
+		bool have_quest = true;
+		if(city_ctx->quest_mayor == CityQuestState::Failed)
+		{
+			DialogTalk(ctx, random_string(txMayorQFailed));
+			++ctx.dialog_pos;
+			return;
+		}
+		else if(worldtime - city_ctx->quest_mayor_time > 30 || city_ctx->quest_mayor_time == -1)
+		{
+			if(city_ctx->quest_mayor == CityQuestState::InProgress)
+			{
+				Quest* quest = quest_manager.FindUnacceptedQuest(current_location, QuestType::Mayor);
+				DeleteElement(quest_manager.unaccepted_quests, quest);
+			}
+
+			// jest nowe zadanie (mo¿e), czas starego min¹³
+			city_ctx->quest_mayor_time = worldtime;
+			city_ctx->quest_mayor = CityQuestState::InProgress;
+
+			Quest* quest = QuestManager::Get().GetMayorQuest();
+			if(quest)
+			{
+				// add new quest
+				quest->refid = quest_manager.quest_counter++;
+				quest->Start();
+				quest_manager.unaccepted_quests.push_back(quest);
+				StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
+			}
+			else
+				have_quest = false;
+		}
+		else if(city_ctx->quest_mayor == CityQuestState::InProgress)
+		{
+			// ju¿ ma przydzielone zadanie ?
+			Quest* quest = quest_manager.FindUnacceptedQuest(current_location, QuestType::Mayor);
+			if(quest)
+			{
+				// quest nie zosta³ zaakceptowany
+				StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
+			}
+			else
+			{
+				quest = quest_manager.FindQuest(current_location, QuestType::Mayor);
+				if(quest)
+				{
+					DialogTalk(ctx, random_string(txQuestAlreadyGiven));
+					++ctx.dialog_pos;
+					return;
+				}
+				else
+					have_quest = false;
+			}
+		}
+		else
+			have_quest = false;
+		if(!have_quest)
+		{
+			DialogTalk(ctx, random_string(txMayorNoQ));
+			++ctx.dialog_pos;
+			return;
+		}
+	}
+	else if(strcmp(msg, "dowodca_quest") == 0)
+	{
+		bool have_quest = true;
+		if(city_ctx->quest_captain == CityQuestState::Failed)
+		{
+			DialogTalk(ctx, random_string(txCaptainQFailed));
+			++ctx.dialog_pos;
+			return;
+		}
+		else if(worldtime - city_ctx->quest_captain_time > 30 || city_ctx->quest_captain_time == -1)
+		{
+			if(city_ctx->quest_captain == CityQuestState::InProgress)
+			{
+				Quest* quest = quest_manager.FindUnacceptedQuest(current_location, QuestType::Captain);
+				DeleteElement(quest_manager.unaccepted_quests, quest);
+			}
+
+			// jest nowe zadanie (mo¿e), czas starego min¹³
+			city_ctx->quest_captain_time = worldtime;
+			city_ctx->quest_captain = CityQuestState::InProgress;
+
+			Quest* quest = QuestManager::Get().GetCaptainQuest();
+			if(quest)
+			{
+				// add new quest
+				quest->refid = quest_manager.quest_counter++;
+				quest->Start();
+				quest_manager.unaccepted_quests.push_back(quest);
+				StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
+			}
+			else
+				have_quest = false;
+		}
+		else if(city_ctx->quest_captain == CityQuestState::InProgress)
+		{
+			// ju¿ ma przydzielone zadanie
+			Quest* quest = quest_manager.FindUnacceptedQuest(current_location, QuestType::Captain);
+			if(quest)
+			{
+				// quest nie zosta³ zaakceptowany
+				StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
+			}
+			else
+			{
+				quest = quest_manager.FindQuest(current_location, QuestType::Captain);
+				if(quest)
+				{
+					DialogTalk(ctx, random_string(txQuestAlreadyGiven));
+					++ctx.dialog_pos;
+					return;
+				}
+				else
+					have_quest = false;
+			}
+		}
+		else
+			have_quest = false;
+		if(!have_quest)
+		{
+			DialogTalk(ctx, random_string(txCaptainNoQ));
+			++ctx.dialog_pos;
+			return;
+		}
+	}
+	else if(strcmp(msg, "przedmiot_quest") == 0)
+	{
+		if(ctx.talker->quest_refid == -1)
+		{
+			Quest* quest = QuestManager::Get().GetAdventurerQuest();
+			quest->refid = quest_manager.quest_counter++;
+			ctx.talker->quest_refid = quest->refid;
+			quest->Start();
+			quest_manager.unaccepted_quests.push_back(quest);
+			StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
+		}
+		else
+		{
+			Quest* quest = quest_manager.FindUnacceptedQuest(ctx.talker->quest_refid);
+			StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
+		}
+	}
+	else if(strcmp(msg, "arena_combat1") == 0 || strcmp(msg, "arena_combat2") == 0 || strcmp(msg, "arena_combat3") == 0)
+		StartArenaCombat(msg[strlen("arena_combat")] - '0');
+	else if(strcmp(msg, "rest1") == 0 || strcmp(msg, "rest5") == 0 || strcmp(msg, "rest10") == 0 || strcmp(msg, "rest30") == 0)
+	{
+		// odpoczynek w karczmie
+		// ustal ile to dni i ile kosztuje
+		int ile, koszt;
+		if(strcmp(msg, "rest1") == 0)
+		{
+			ile = 1;
+			koszt = 5;
+		}
+		else if(strcmp(msg, "rest5") == 0)
+		{
+			ile = 5;
+			koszt = 20;
+		}
+		else if(strcmp(msg, "rest10") == 0)
+		{
+			ile = 10;
+			koszt = 35;
+		}
+		else
+		{
+			ile = 30;
+			koszt = 100;
+		}
+
+		// czy gracz ma z³oto?
+		if(ctx.pc->unit->gold < koszt)
+		{
+			ctx.dialog_s_text = Format(txNeedMoreGold, koszt - ctx.pc->unit->gold);
+			DialogTalk(ctx, ctx.dialog_s_text.c_str());
+			// resetuj dialog
+			ctx.dialog_pos = 0;
+			ctx.dialog_level = 0;
+			return;
+		}
+
+		// zabierz z³oto i zamróŸ
+		ctx.pc->unit->gold -= koszt;
+		ctx.pc->unit->frozen = FROZEN::YES;
+		if(ctx.is_local)
+		{
+			// lokalny fallback
+			fallback_co = FALLBACK::REST;
+			fallback_t = -1.f;
+			fallback_1 = ile;
+		}
+		else
+		{
+			// wyœlij info o odpoczynku
+			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+			c.type = NetChangePlayer::REST;
+			c.id = ile;
+			ctx.pc->player_info->UpdateGold();
+		}
+	}
+	else if(strcmp(msg, "gossip") == 0 || strcmp(msg, "gossip_drunk") == 0)
+	{
+		QuestManager& quest_manager = QuestManager::Get();
+		bool pijak = (strcmp(msg, "gossip_drunk") == 0);
+		if(!pijak && (Rand() % 3 == 0 || (Key.Down(VK_SHIFT) && devmode)))
+		{
+			int co = Rand() % 3;
+			if(quest_manager.quest_rumor_counter != 0 && Rand() % 2 == 0)
+				co = 2;
+			if(devmode)
+			{
+				if(Key.Down('1'))
+					co = 0;
+				else if(Key.Down('2'))
+					co = 1;
+				else if(Key.Down('3'))
+					co = 2;
+			}
+			switch(co)
+			{
+			case 0:
+				// info o nieznanej lokacji
+				{
+					int id = Rand() % locations.size();
+					int id2 = id;
+					bool ok = false;
+					do
+					{
+						if(locations[id2] && locations[id2]->state == LS_UNKNOWN)
+						{
+							ok = true;
+							break;
+						}
+						else
+						{
+							++id2;
+							if(id2 == locations.size())
+								id2 = 0;
+						}
+					} while(id != id2);
+					if(ok)
+					{
+						Location& loc = *locations[id2];
+						loc.state = LS_KNOWN;
+						Location& cloc = *locations[current_location];
+						cstring s_daleko;
+						float dist = Vec2::Distance(loc.pos, cloc.pos);
+						if(dist <= 300)
+							s_daleko = txNear;
+						else if(dist <= 500)
+							s_daleko = "";
+						else if(dist <= 700)
+							s_daleko = txFar;
+						else
+							s_daleko = txVeryFar;
+
+						ctx.dialog_s_text = Format(random_string(txLocationDiscovered), s_daleko, GetLocationDirName(cloc.pos, loc.pos), loc.name.c_str());
+						DialogTalk(ctx, ctx.dialog_s_text.c_str());
+						++ctx.dialog_pos;
+
+						if(Net::IsOnline())
+							Net_ChangeLocationState(id2, false);
+						return;
+					}
+					else
+					{
+						DialogTalk(ctx, random_string(txAllDiscovered));
+						++ctx.dialog_pos;
+						return;
+					}
+				}
+				break;
+			case 1:
+				// info o obozie
+				{
+					Location* new_camp = nullptr;
+					static vector<Location*> camps;
+					for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
+					{
+						if(*it && (*it)->type == L_CAMP && (*it)->state != LS_HIDDEN)
+						{
+							camps.push_back(*it);
+							if((*it)->state == LS_UNKNOWN && !new_camp)
+								new_camp = *it;
+						}
+					}
+
+					if(!new_camp && !camps.empty())
+						new_camp = camps[Rand() % camps.size()];
+
+					camps.clear();
+
+					if(new_camp)
+					{
+						Location& loc = *new_camp;
+						Location& cloc = *locations[current_location];
+						cstring s_daleko;
+						float dist = Vec2::Distance(loc.pos, cloc.pos);
+						if(dist <= 300)
+							s_daleko = txNear;
+						else if(dist <= 500)
+							s_daleko = "";
+						else if(dist <= 700)
+							s_daleko = txFar;
+						else
+							s_daleko = txVeryFar;
+
+						cstring co;
+						switch(loc.spawn)
+						{
+						case SG_ORKOWIE:
+							co = txSGOOrcs;
+							break;
+						case SG_BANDYCI:
+							co = txSGOBandits;
+							break;
+						case SG_GOBLINY:
+							co = txSGOGoblins;
+							break;
+						default:
+							assert(0);
+							co = txSGOEnemies;
+							break;
+						}
+
+						if(loc.state == LS_UNKNOWN)
+						{
+							loc.state = LS_KNOWN;
+							if(Net::IsOnline())
+								Net_ChangeLocationState(FindLocationId(new_camp), false);
+						}
+
+						ctx.dialog_s_text = Format(random_string(txCampDiscovered), s_daleko, GetLocationDirName(cloc.pos, loc.pos), co);
+						DialogTalk(ctx, ctx.dialog_s_text.c_str());
+						++ctx.dialog_pos;
+						return;
+					}
+					else
+					{
+						DialogTalk(ctx, random_string(txAllCampDiscovered));
+						++ctx.dialog_pos;
+						return;
+					}
+				}
+				break;
+			case 2:
+				// plotka o quescie
+				if(quest_manager.quest_rumor_counter == 0)
+				{
+					DialogTalk(ctx, random_string(txNoQRumors));
+					++ctx.dialog_pos;
+					return;
+				}
+				else
+				{
+					co = Rand() % P_MAX;
+					while(quest_manager.quest_rumor[co])
+						co = (co + 1) % P_MAX;
+					--quest_manager.quest_rumor_counter;
+					quest_manager.quest_rumor[co] = true;
+
+					switch(co)
+					{
+					case P_TARTAK:
+						ctx.dialog_s_text = Format(txRumorQ[0], locations[quest_sawmill->start_loc]->name.c_str());
+						break;
+					case P_KOPALNIA:
+						ctx.dialog_s_text = Format(txRumorQ[1], locations[quest_mine->start_loc]->name.c_str());
+						break;
+					case P_ZAWODY_W_PICIU:
+						ctx.dialog_s_text = txRumorQ[2];
+						break;
+					case P_BANDYCI:
+						ctx.dialog_s_text = Format(txRumorQ[3], locations[quest_bandits->start_loc]->name.c_str());
+						break;
+					case P_MAGOWIE:
+						ctx.dialog_s_text = Format(txRumorQ[4], locations[quest_mages->start_loc]->name.c_str());
+						break;
+					case P_MAGOWIE2:
+						ctx.dialog_s_text = txRumorQ[5];
+						break;
+					case P_ORKOWIE:
+						ctx.dialog_s_text = Format(txRumorQ[6], locations[quest_orcs->start_loc]->name.c_str());
+						break;
+					case P_GOBLINY:
+						ctx.dialog_s_text = Format(txRumorQ[7], locations[quest_goblins->start_loc]->name.c_str());
+						break;
+					case P_ZLO:
+						ctx.dialog_s_text = Format(txRumorQ[8], locations[quest_evil->start_loc]->name.c_str());
+						break;
+					default:
+						assert(0);
+						return;
+					}
+
+					game_gui->journal->AddRumor(ctx.dialog_s_text.c_str());
+					DialogTalk(ctx, ctx.dialog_s_text.c_str());
+					++ctx.dialog_pos;
+					return;
+				}
+				break;
+			default:
+				assert(0);
+				break;
+			}
+		}
+		else
+		{
+			int ile = countof(txRumor);
+			if(pijak)
+				ile += countof(txRumorD);
+			cstring plotka;
+			do
+			{
+				int co = Rand() % ile;
+				if(co < countof(txRumor))
+					plotka = txRumor[co];
+				else
+					plotka = txRumorD[co - countof(txRumor)];
+			} while(ctx.ostatnia_plotka == plotka);
+			ctx.ostatnia_plotka = plotka;
+
+			static string str, str_part;
+			str.clear();
+			for(uint i = 0, len = strlen(plotka); i < len; ++i)
+			{
+				if(plotka[i] == '$')
+				{
+					str_part.clear();
+					++i;
+					while(plotka[i] != '$')
+					{
+						str_part.push_back(plotka[i]);
+						++i;
+					}
+					str += FormatString(ctx, str_part);
+				}
+				else
+					str.push_back(plotka[i]);
+			}
+
+			DialogTalk(ctx, str.c_str());
+			++ctx.dialog_pos;
+			return;
+		}
+	}
+	else if(strncmp(msg, "train_", 6) == 0)
+	{
+		cstring s = msg + 6;
+		bool is_skill;
+		int what;
+
+		auto attrib = Attribute::Find(s);
+		if(attrib)
+		{
+			is_skill = false;
+			what = (int)attrib->attrib_id;
+		}
+		else
+		{
+			auto skill = Skill::Find(s);
+			if(skill)
+			{
+				is_skill = true;
+				what = (int)skill->skill_id;
+			}
+			else
+			{
+				assert(0);
+				is_skill = false;
+				what = (int)AttributeId::STR;
+			}
+		}
+
+		// czy gracz ma z³oto?
+		if(ctx.pc->unit->gold < 200)
+		{
+			ctx.dialog_s_text = Format(txNeedMoreGold, 200 - ctx.pc->unit->gold);
+			DialogTalk(ctx, ctx.dialog_s_text.c_str());
+			ctx.force_end = true;
+			return;
+		}
+
+		// zabierz z³oto i zamróŸ
+		ctx.pc->unit->gold -= 200;
+		ctx.pc->unit->frozen = FROZEN::YES;
+		if(ctx.is_local)
+		{
+			// lokalny fallback
+			fallback_co = FALLBACK::TRAIN;
+			fallback_t = -1.f;
+			fallback_1 = (is_skill ? 1 : 0);
+			fallback_2 = what;
+		}
+		else
+		{
+			// wyœlij info o trenowaniu
+			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+			c.type = NetChangePlayer::TRAIN;
+			c.id = (is_skill ? 1 : 0);
+			c.ile = what;
+			ctx.pc->player_info->UpdateGold();
+		}
+	}
+	else if(strcmp(msg, "near_loc") == 0)
+	{
+		if(ctx.update_locations == 1)
+		{
+			ctx.active_locations.clear();
+
+			int index = 0;
+			for(Location* loc : locations)
+			{
+				if(loc && loc->type != L_CITY && loc->type != L_ACADEMY && Vec2::Distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
+					ctx.active_locations.push_back(std::pair<int, bool>(index, loc->state == LS_UNKNOWN));
+				++index;
+			}
+
+			if(!ctx.active_locations.empty())
+			{
+				std::random_shuffle(ctx.active_locations.begin(), ctx.active_locations.end(), MyRand);
+				std::sort(ctx.active_locations.begin(), ctx.active_locations.end(),
+					[](const std::pair<int, bool>& l1, const std::pair<int, bool>& l2) -> bool { return l1.second < l2.second; });
+				ctx.update_locations = 0;
+			}
+			else
+				ctx.update_locations = -1;
+		}
+
+		if(ctx.update_locations == -1)
+		{
+			DialogTalk(ctx, txNoNearLoc);
+			++ctx.dialog_pos;
+			return;
+		}
+		else if(ctx.active_locations.empty())
+		{
+			DialogTalk(ctx, txAllNearLoc);
+			++ctx.dialog_pos;
+			return;
+		}
+
+		int id = ctx.active_locations.back().first;
+		ctx.active_locations.pop_back();
+		Location& loc = *locations[id];
+		if(loc.state == LS_UNKNOWN)
+		{
+			loc.state = LS_KNOWN;
+			if(Net::IsOnline())
+				Net_ChangeLocationState(id, false);
+		}
+		ctx.dialog_s_text = Format(txNearLoc, GetLocationDirName(world_pos, loc.pos), loc.name.c_str());
+		if(loc.spawn == SG_BRAK)
+		{
+			if(loc.type != L_CAVE && loc.type != L_FOREST && loc.type != L_MOONWELL)
+				ctx.dialog_s_text += random_string(txNearLocEmpty);
+		}
+		else if(loc.state == LS_CLEARED)
+			ctx.dialog_s_text += Format(txNearLocCleared, g_spawn_groups[loc.spawn].name);
+		else
+		{
+			SpawnGroup& sg = g_spawn_groups[loc.spawn];
+			cstring jacy;
+			if(loc.st < 5)
+			{
+				if(sg.k == K_I)
+					jacy = txELvlVeryWeak[0];
+				else
+					jacy = txELvlVeryWeak[1];
+			}
+			else if(loc.st < 8)
+			{
+				if(sg.k == K_I)
+					jacy = txELvlWeak[0];
+				else
+					jacy = txELvlWeak[1];
+			}
+			else if(loc.st < 11)
+			{
+				if(sg.k == K_I)
+					jacy = txELvlAverage[0];
+				else
+					jacy = txELvlAverage[1];
+			}
+			else if(loc.st < 14)
+			{
+				if(sg.k == K_I)
+					jacy = txELvlQuiteStrong[0];
+				else
+					jacy = txELvlQuiteStrong[1];
+			}
+			else
+			{
+				if(sg.k == K_I)
+					jacy = txELvlStrong[0];
+				else
+					jacy = txELvlStrong[1];
+			}
+			ctx.dialog_s_text += Format(random_string(txNearLocEnemy), jacy, g_spawn_groups[loc.spawn].name);
+		}
+
+		DialogTalk(ctx, ctx.dialog_s_text.c_str());
+		++ctx.dialog_pos;
+		return;
+	}
+	else if(strcmp(msg, "tell_name") == 0)
+	{
+		assert(ctx.talker->IsHero());
+		ctx.talker->hero->know_name = true;
+		if(Net::IsOnline())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::TELL_NAME;
+			c.unit = ctx.talker;
+		}
+	}
+	else if(strcmp(msg, "hero_about") == 0)
+	{
+		assert(ctx.talker->IsHero());
+		DialogTalk(ctx, ClassInfo::classes[(int)ctx.talker->hero->clas].about.c_str());
+		++ctx.dialog_pos;
+		return;
+	}
+	else if(strcmp(msg, "recruit") == 0)
+	{
+		int koszt = ctx.talker->hero->JoinCost();
+		ctx.pc->unit->gold -= koszt;
+		ctx.talker->gold += koszt;
+		AddTeamMember(ctx.talker, false);
+		ctx.talker->temporary = false;
+		Team.free_recruit = false;
+		ctx.talker->hero->SetupMelee();
+		if(Net::IsOnline() && !ctx.is_local)
+			ctx.pc->player_info->UpdateGold();
+	}
+	else if(strcmp(msg, "recruit_free") == 0)
+	{
+		AddTeamMember(ctx.talker, false);
+		Team.free_recruit = false;
+		ctx.talker->temporary = false;
+		ctx.talker->hero->SetupMelee();
+	}
+	else if(strcmp(msg, "follow_me") == 0)
+	{
+		assert(ctx.talker->IsFollower());
+		ctx.talker->hero->mode = HeroData::Follow;
+		ctx.talker->ai->city_wander = false;
+	}
+	else if(strcmp(msg, "go_free") == 0)
+	{
+		assert(ctx.talker->IsFollower());
+		ctx.talker->hero->mode = HeroData::Wander;
+		ctx.talker->ai->city_wander = false;
+		ctx.talker->ai->loc_timer = Random(5.f, 10.f);
+	}
+	else if(strcmp(msg, "wait") == 0)
+	{
+		assert(ctx.talker->IsFollower());
+		ctx.talker->hero->mode = HeroData::Wait;
+		ctx.talker->ai->city_wander = false;
+	}
+	else if(strcmp(msg, "give_item") == 0)
+	{
+		Unit* t = ctx.talker;
+		t->busy = Unit::Busy_Trading;
+		EndDialog(ctx);
+		ctx.pc->action = PlayerController::Action_GiveItems;
+		ctx.pc->action_unit = t;
+		ctx.pc->chest_trade = &t->items;
+		if(ctx.is_local)
+			StartTrade(I_GIVE, *t);
+		else
+		{
+			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+			c.type = NetChangePlayer::START_GIVE;
+		}
+		return;
+	}
+	else if(strcmp(msg, "share_items") == 0)
+	{
+		Unit* t = ctx.talker;
+		t->busy = Unit::Busy_Trading;
+		EndDialog(ctx);
+		ctx.pc->action = PlayerController::Action_ShareItems;
+		ctx.pc->action_unit = t;
+		ctx.pc->chest_trade = &t->items;
+		if(ctx.is_local)
+			StartTrade(I_SHARE, *t);
+		else
+		{
+			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+			c.type = NetChangePlayer::START_SHARE;
+		}
+		return;
+	}
+	else if(strcmp(msg, "kick_npc") == 0)
+	{
+		RemoveTeamMember(ctx.talker);
+		if(city_ctx)
+			ctx.talker->hero->mode = HeroData::Wander;
+		else
+			ctx.talker->hero->mode = HeroData::Leave;
+		ctx.talker->hero->credit = 0;
+		ctx.talker->ai->city_wander = true;
+		ctx.talker->ai->loc_timer = Random(5.f, 10.f);
+		CheckCredit(false);
+		ctx.talker->temporary = true;
+	}
+	else if(strcmp(msg, "give_item_credit") == 0)
+		TeamShareGiveItemCredit(ctx);
+	else if(strcmp(msg, "sell_item") == 0)
+		TeamShareSellItem(ctx);
+	else if(strcmp(msg, "share_decline") == 0)
+		TeamShareDecline(ctx);
+	else if(strcmp(msg, "pvp") == 0)
+	{
+		// walka z towarzyszem
+		StartPvp(ctx.pc, ctx.talker);
+	}
+	else if(strcmp(msg, "pay_100") == 0)
+	{
+		int ile = min(100, ctx.pc->unit->gold);
+		if(ile > 0)
+		{
+			ctx.pc->unit->gold -= ile;
+			ctx.talker->gold += ile;
+			sound_mgr->PlaySound2d(sCoins);
+			if(!ctx.is_local)
+				ctx.pc->player_info->UpdateGold();
+		}
+	}
+	else if(strcmp(msg, "attack") == 0)
+	{
+		// ta komenda jest zbyt ogólna, jeœli bêdzie kilka takich grup to wystarczy ¿e jedna tego u¿yje to wszyscy zaatakuj¹, nie obs³uguje te¿ budynków
+		if(ctx.talker->data->group == G_CRAZIES)
+		{
+			if(!Team.crazies_attack)
+			{
+				Team.crazies_attack = true;
+				if(Net::IsOnline())
+				{
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::CHANGE_FLAGS;
+				}
+			}
+		}
+		else
+		{
+			for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
+			{
+				if((*it)->dont_attack && IsEnemy(**it, *Team.leader, true))
+				{
+					(*it)->dont_attack = false;
+					(*it)->ai->change_ai_mode = true;
+				}
+			}
+		}
+	}
+	else if(strcmp(msg, "force_attack") == 0)
+	{
+		ctx.talker->dont_attack = false;
+		ctx.talker->attack_team = true;
+		ctx.talker->ai->change_ai_mode = true;
+	}
+	else if(strcmp(msg, "ginger_hair") == 0)
+	{
+		ctx.pc->unit->human_data->hair_color = g_hair_colors[8];
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::HAIR_COLOR;
+			c.unit = ctx.pc->unit;
+		}
+	}
+	else if(strcmp(msg, "random_hair") == 0)
+	{
+		if(Rand() % 2 == 0)
+		{
+			Vec4 kolor = ctx.pc->unit->human_data->hair_color;
+			do
+			{
+				ctx.pc->unit->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
+			} while(kolor.Equal(ctx.pc->unit->human_data->hair_color));
+		}
+		else
+		{
+			Vec4 kolor = ctx.pc->unit->human_data->hair_color;
+			do
+			{
+				ctx.pc->unit->human_data->hair_color = Vec4(Random(0.f, 1.f), Random(0.f, 1.f), Random(0.f, 1.f), 1.f);
+			} while(kolor.Equal(ctx.pc->unit->human_data->hair_color));
+		}
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::HAIR_COLOR;
+			c.unit = ctx.pc->unit;
+		}
+	}
+	else if(strcmp(msg, "captive_join") == 0)
+	{
+		AddTeamMember(ctx.talker, true);
+		ctx.talker->dont_attack = true;
+	}
+	else if(strcmp(msg, "captive_escape") == 0)
+	{
+		if(ctx.talker->hero->team_member)
+			RemoveTeamMember(ctx.talker);
+		ctx.talker->hero->mode = HeroData::Leave;
+		ctx.talker->dont_attack = false;
+	}
+	else if(strcmp(msg, "use_arena") == 0)
+		arena_free = false;
+	else if(strcmp(msg, "chlanie_start") == 0)
+	{
+		contest_state = CONTEST_STARTING;
+		contest_time = 0;
+		contest_units.clear();
+		contest_units.push_back(ctx.pc->unit);
+		ctx.pc->leaving_event = false;
+	}
+	else if(strcmp(msg, "chlanie_udzial") == 0)
+	{
+		contest_units.push_back(ctx.pc->unit);
+		ctx.pc->leaving_event = false;
+	}
+	else if(strcmp(msg, "chlanie_nagroda") == 0)
+	{
+		contest_winner = nullptr;
+		AddItem(*ctx.pc->unit, ItemList::GetItem("contest_reward"), 1, false);
+		if(ctx.is_local)
+			AddGameMsg3(GMS_ADDED_ITEM);
+		else
+			Net_AddedItemMsg(ctx.pc);
+	}
+	else if(strcmp(msg, "news") == 0)
+	{
+		if(ctx.update_news)
+		{
+			ctx.update_news = false;
+			ctx.active_news = news;
+			if(ctx.active_news.empty())
+			{
+				DialogTalk(ctx, random_string(txNoNews));
+				++ctx.dialog_pos;
+				return;
+			}
+		}
+
+		if(ctx.active_news.empty())
+		{
+			DialogTalk(ctx, random_string(txAllNews));
+			++ctx.dialog_pos;
+			return;
+		}
+
+		int id = Rand() % ctx.active_news.size();
+		News* news = ctx.active_news[id];
+		ctx.active_news.erase(ctx.active_news.begin() + id);
+
+		DialogTalk(ctx, news->text.c_str());
+		++ctx.dialog_pos;
+		return;
+	}
+	else if(strcmp(msg, "go_melee") == 0)
+	{
+		assert(ctx.talker->IsHero());
+		ctx.talker->hero->melee = true;
+	}
+	else if(strcmp(msg, "go_ranged") == 0)
+	{
+		assert(ctx.talker->IsHero());
+		ctx.talker->hero->melee = false;
+	}
+	else if(strcmp(msg, "pvp_gather") == 0)
+	{
+		near_players.clear();
+		for(Unit* unit : Team.active_members)
+		{
+			if(unit->IsPlayer() && unit->player != ctx.pc && Vec3::Distance2d(unit->pos, city_ctx->arena_pos) < 5.f)
+				near_players.push_back(unit);
+		}
+		near_players_str.resize(near_players.size());
+		for(uint i = 0, size = near_players.size(); i != size; ++i)
+			near_players_str[i] = Format(txPvpWith, near_players[i]->player->name.c_str());
+	}
+	else if(strncmp(msg, "pvp", 3) == 0)
+	{
+		int id = int(msg[3] - '1');
+		Unit* u = near_players[id];
+		if(Vec3::Distance2d(u->pos, city_ctx->arena_pos) > 5.f)
+		{
+			ctx.dialog_s_text = Format(txPvpTooFar, u->player->name.c_str());
+			DialogTalk(ctx, ctx.dialog_s_text.c_str());
+			++ctx.dialog_pos;
+			return;
+		}
+		else
+		{
+			if(u->player->is_local)
+			{
+				DialogInfo info;
+				info.event = DialogEvent(this, &Game::Event_Pvp);
+				info.name = "pvp";
+				info.order = ORDER_TOP;
+				info.parent = nullptr;
+				info.pause = false;
+				info.text = Format(txPvp, ctx.pc->name.c_str());
+				info.type = DIALOG_YESNO;
+				dialog_pvp = GUI.ShowDialog(info);
+				pvp_unit = near_players[id];
+			}
+			else
+			{
+				NetChangePlayer& c = Add1(near_players[id]->player->player_info->changes);
+				c.type = NetChangePlayer::PVP;
+				c.id = ctx.pc->id;
+			}
+
+			pvp_response.ok = true;
+			pvp_response.from = ctx.pc->unit;
+			pvp_response.to = u;
+			pvp_response.timer = 0.f;
+		}
+	}
+	else if(strcmp(msg, "ironfist_start") == 0)
+	{
+		StartTournament(ctx.talker);
+		tournament_units.push_back(ctx.pc->unit);
+		ctx.pc->unit->gold -= 100;
+		ctx.pc->leaving_event = false;
+		if(!ctx.is_local)
+			ctx.pc->player_info->UpdateGold();
+	}
+	else if(strcmp(msg, "ironfist_join") == 0)
+	{
+		tournament_units.push_back(ctx.pc->unit);
+		ctx.pc->unit->gold -= 100;
+		ctx.pc->leaving_event = false;
+		if(!ctx.is_local)
+			ctx.pc->player_info->UpdateGold();
+	}
+	else if(strcmp(msg, "ironfist_train") == 0)
+	{
+		tournament_winner = nullptr;
+		ctx.pc->unit->frozen = FROZEN::YES;
+		if(ctx.is_local)
+		{
+			// lokalny fallback
+			fallback_co = FALLBACK::TRAIN;
+			fallback_t = -1.f;
+			fallback_1 = 2;
+			fallback_2 = 0;
+		}
+		else
+		{
+			// wyœlij info o trenowaniu
+			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+			c.type = NetChangePlayer::TRAIN;
+			c.id = 2;
+			c.ile = 0;
+		}
+	}
+	else if(strcmp(msg, "szaleni_powiedzial") == 0)
+	{
+		ctx.talker->ai->morale = -100.f;
+		quest_crazies->crazies_state = Quest_Crazies::State::TalkedWithCrazy;
+	}
+	else if(strcmp(msg, "szaleni_sprzedaj") == 0)
+	{
+		const Item* kamien = Item::Get("q_szaleni_kamien");
+		RemoveItem(*ctx.pc->unit, kamien, 1);
+		ctx.pc->unit->gold += 10;
+		if(!ctx.is_local)
+		{
+			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
+			c.type = NetChangePlayer::GOLD_MSG;
+			c.ile = 10;
+			c.id = 1;
+			ctx.pc->player_info->UpdateGold();
+		}
+		else
+			AddGameMsg(Format(txGoldPlus, 10), 3.f);
+	}
+	else if(strcmp(msg, "crazy_give_item") == 0)
+	{
+		crazy_give_item = GetRandomItem(100);
+		ctx.pc->unit->AddItem(crazy_give_item, 1, false);
+		if(!ctx.is_local)
+		{
+			Net_AddItem(ctx.pc, crazy_give_item, false);
+			Net_AddedItemMsg(ctx.pc);
+		}
+		else
+			AddGameMsg3(GMS_ADDED_ITEM);
+	}
+	else if(strcmp(msg, "sekret_atak") == 0)
+	{
+		secret_state = SECRET_FIGHT;
+		at_arena.clear();
+
+		ctx.talker->in_arena = 1;
+		at_arena.push_back(ctx.talker);
+		if(Net::IsOnline())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CHANGE_ARENA_STATE;
+			c.unit = ctx.talker;
+		}
+
+		for(Unit* unit : Team.members)
+		{
+			unit->in_arena = 0;
+			at_arena.push_back(unit);
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHANGE_ARENA_STATE;
+				c.unit = unit;
+			}
+		}
+	}
+	else if(strcmp(msg, "sekret_daj") == 0)
+	{
+		secret_state = SECRET_REWARD;
+		const Item* item = Item::Get("sword_forbidden");
+		PreloadItem(item);
+		ctx.pc->unit->AddItem(item, 1, true);
+		if(!ctx.is_local)
+		{
+			Net_AddItem(ctx.pc, item, true);
+			Net_AddedItemMsg(ctx.pc);
+		}
+		else
+			AddGameMsg3(GMS_ADDED_ITEM);
+	}
+	else
+	{
+		Warn("DT_SPECIAL: %s", msg);
+		assert(0);
+	}
+}
+
+bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "arena_combat") == 0)
+	{
+		int t = city_ctx->arena_time;
+		if(t == -1)
+			return true;
+		else
+		{
+			int rok = t / 360;
+			t -= rok * 360;
+			rok += 100;
+			int miesiac = t / 30;
+			t -= miesiac * 30;
+			int dekadzien = t / 10;
+
+			if(rok != year || miesiac != month || dekadzien != day / 10)
+				return true;
+		}
+	}
+	else if(strcmp(msg, "have_team") == 0)
+	{
+		if(Team.HaveTeamMember())
+			return true;
+	}
+	else if(strcmp(msg, "have_pc_team") == 0)
+	{
+		if(Team.HaveOtherPlayer())
+			return true;
+	}
+	else if(strcmp(msg, "have_npc_team") == 0)
+	{
+		if(Team.HaveActiveNpc())
+			return true;
+	}
+	else if(strcmp(msg, "is_drunk") == 0)
+	{
+		if(IS_SET(ctx.talker->data->flags, F_AI_DRUNKMAN) && ctx.talker->in_building != -1)
+			return true;
+	}
+	else if(strcmp(msg, "is_team_member") == 0)
+	{
+		if(Team.IsTeamMember(*ctx.talker))
+			return true;
+	}
+	else if(strcmp(msg, "is_not_known") == 0)
+	{
+		assert(ctx.talker->IsHero());
+		if(!ctx.talker->hero->know_name)
+			return true;
+	}
+	else if(strcmp(msg, "is_inside_dungeon") == 0)
+	{
+		if(local_ctx.type == LevelContext::Inside)
+			return true;
+	}
+	else if(strcmp(msg, "is_team_full") == 0)
+	{
+		if(Team.GetActiveTeamSize() >= Team.GetMaxSize())
+			return true;
+	}
+	else if(strcmp(msg, "can_join") == 0)
+	{
+		if(ctx.pc->unit->gold >= ctx.talker->hero->JoinCost())
+			return true;
+	}
+	else if(strcmp(msg, "is_inside_town") == 0)
+	{
+		if(city_ctx)
+			return true;
+	}
+	else if(strcmp(msg, "is_free") == 0)
+	{
+		assert(ctx.talker->IsHero());
+		if(ctx.talker->hero->mode == HeroData::Wander)
+			return true;
+	}
+	else if(strcmp(msg, "is_not_free") == 0)
+	{
+		assert(ctx.talker->IsHero());
+		if(ctx.talker->hero->mode != HeroData::Wander)
+			return true;
+	}
+	else if(strcmp(msg, "is_not_follow") == 0)
+	{
+		assert(ctx.talker->IsHero());
+		if(ctx.talker->hero->mode != HeroData::Follow)
+			return true;
+	}
+	else if(strcmp(msg, "is_not_waiting") == 0)
+	{
+		assert(ctx.talker->IsHero());
+		if(ctx.talker->hero->mode != HeroData::Wait)
+			return true;
+	}
+	else if(strcmp(msg, "is_safe_location") == 0)
+	{
+		if(city_ctx)
+			return true;
+		else if(location->outside)
+		{
+			if(location->state == LS_CLEARED)
+				return true;
+		}
+		else
+		{
+			InsideLocation* inside = (InsideLocation*)location;
+			if(inside->IsMultilevel())
+			{
+				MultiInsideLocation* multi = (MultiInsideLocation*)inside;
+				if(multi->IsLevelClear())
+				{
+					if(dungeon_level == 0)
+					{
+						if(!multi->from_portal)
+							return true;
+					}
+					else
+						return true;
+				}
+			}
+			else if(location->state == LS_CLEARED)
+				return true;
+		}
+	}
+	else if(strcmp(msg, "is_near_arena") == 0)
+	{
+		if(city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && Vec3::Distance2d(ctx.talker->pos, city_ctx->arena_pos) < 5.f)
+			return true;
+	}
+	else if(strcmp(msg, "is_lost_pvp") == 0)
+	{
+		assert(ctx.talker->IsHero());
+		if(ctx.talker->hero->lost_pvp)
+			return true;
+	}
+	else if(strcmp(msg, "is_healthy") == 0)
+	{
+		if(ctx.talker->GetHpp() >= 0.75f)
+			return true;
+	}
+	else if(strcmp(msg, "is_arena_free") == 0)
+	{
+		if(arena_free)
+			return true;
+	}
+	else if(strcmp(msg, "is_bandit") == 0)
+	{
+		if(Team.is_bandit)
+			return true;
+	}
+	else if(strcmp(msg, "is_ginger") == 0)
+	{
+		if(ctx.pc->unit->human_data->hair_color.Equal(g_hair_colors[8]))
+			return true;
+	}
+	else if(strcmp(msg, "is_bald") == 0)
+	{
+		if(ctx.pc->unit->human_data->hair == -1)
+			return true;
+	}
+	else if(strcmp(msg, "is_camp") == 0)
+	{
+		if(target_loc_is_camp)
+			return true;
+	}
+	else if(strcmp(msg, "taken_guards_reward") == 0)
+	{
+		if(!guards_enc_reward)
+		{
+			AddGold(250, nullptr, true);
+			guards_enc_reward = true;
+			return true;
+		}
+	}
+	else if(strcmp(msg, "dont_have_quest") == 0)
+	{
+		if(ctx.talker->quest_refid == -1)
+			return true;
+	}
+	else if(strcmp(msg, "have_unaccepted_quest") == 0)
+	{
+		if(QuestManager::Get().FindUnacceptedQuest(ctx.talker->quest_refid))
+			return true;
+	}
+	else if(strcmp(msg, "have_completed_quest") == 0)
+	{
+		Quest* q = QuestManager::Get().FindQuest(ctx.talker->quest_refid, false);
+		if(q && !q->IsActive())
+			return true;
+	}
+	else if(strcmp(msg, "contest_done") == 0)
+	{
+		if(contest_state == CONTEST_DONE)
+			return true;
+	}
+	else if(strcmp(msg, "contest_here") == 0)
+	{
+		if(contest_where == current_location)
+			return true;
+	}
+	else if(strcmp(msg, "contest_today") == 0)
+	{
+		if(contest_state == CONTEST_TODAY)
+			return true;
+	}
+	else if(strcmp(msg, "chlanie_trwa") == 0)
+	{
+		if(contest_state == CONTEST_IN_PROGRESS)
+			return true;
+	}
+	else if(strcmp(msg, "contest_started") == 0)
+	{
+		if(contest_state == CONTEST_STARTING)
+			return true;
+	}
+	else if(strcmp(msg, "contest_joined") == 0)
+	{
+		for(Unit* unit : contest_units)
+		{
+			if(unit == ctx.pc->unit)
+				return true;
+		}
+	}
+	else if(strcmp(msg, "contest_winner") == 0)
+	{
+		if(ctx.pc->unit == contest_winner)
+			return true;
+	}
+	else if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
+	{
+		if(quest_bandits->prog == Quest_Bandits::Progress::NeedTalkWithCaptain && current_location == quest_bandits->start_loc)
+			return true;
+	}
+	else if(strcmp(msg, "q_magowie_to_miasto") == 0)
+	{
+		if(quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain && current_location == quest_mages2->start_loc)
+			return true;
+	}
+	else if(strcmp(msg, "q_magowie_poinformuj") == 0)
+	{
+		if(quest_mages2->mages_state == Quest_Mages2::State::EncounteredGolem)
+			return true;
+	}
+	else if(strcmp(msg, "q_magowie_kup_miksture") == 0)
+	{
+		if(quest_mages2->mages_state == Quest_Mages2::State::BuyPotion)
+			return true;
+	}
+	else if(strcmp(msg, "q_magowie_kup") == 0)
+	{
+		if(ctx.pc->unit->gold >= 150)
+		{
+			quest_mages2->SetProgress(Quest_Mages2::Progress::BoughtPotion);
+			return true;
+		}
+	}
+	else if(strcmp(msg, "q_orkowie_to_miasto") == 0)
+	{
+		if(current_location == quest_orcs->start_loc)
+			return true;
+	}
+	else if(strcmp(msg, "q_orkowie_zaakceptowano") == 0)
+	{
+		if(quest_orcs2->orcs_state >= Quest_Orcs2::State::Accepted)
+			return true;
+	}
+	else if(strcmp(msg, "q_magowie_nie_ukonczono") == 0)
+	{
+		if(quest_mages2->mages_state != Quest_Mages2::State::Completed)
+			return true;
+	}
+	else if(strcmp(msg, "q_orkowie_nie_ukonczono") == 0)
+	{
+		if(quest_orcs2->orcs_state < Quest_Orcs2::State::Completed)
+			return true;
+	}
+	else if(strcmp(msg, "is_free_recruit") == 0)
+	{
+		if(ctx.talker->level < 6 && Team.free_recruit)
+			return true;
+	}
+	else if(strcmp(msg, "have_unique_quest") == 0)
+	{
+		if(((quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
+			&& quest_orcs->start_loc == current_location)
+			|| (quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain
+				&& quest_mages2->mages_state < Quest_Mages2::State::Completed
+				&& quest_mages2->start_loc == current_location))
+			return true;
+	}
+	else if(strcmp(msg, "q_gobliny_zapytaj") == 0)
+	{
+		if(quest_goblins->goblins_state >= Quest_Goblins::State::MageTalked
+			&& quest_goblins->goblins_state < Quest_Goblins::State::KnownLocation
+			&& current_location == quest_goblins->start_loc
+			&& quest_goblins->prog != Quest_Goblins::Progress::TalkedWithInnkeeper)
+			return true;
+	}
+	else if(strcmp(msg, "q_zlo_kapitan") == 0)
+	{
+		if(current_location == quest_evil->mage_loc
+			&& quest_evil->evil_state >= Quest_Evil::State::GeneratedMage
+			&& quest_evil->evil_state < Quest_Evil::State::ClosingPortals
+			&& InRange((Quest_Evil::Progress)quest_evil->prog, Quest_Evil::Progress::MageToldAboutStolenBook, Quest_Evil::Progress::TalkedWithMayor))
+			return true;
+	}
+	else if(strcmp(msg, "q_zlo_burmistrz") == 0)
+	{
+		if(current_location == quest_evil->mage_loc
+			&& quest_evil->evil_state >= Quest_Evil::State::GeneratedMage
+			&& quest_evil->evil_state < Quest_Evil::State::ClosingPortals
+			&& quest_evil->prog == Quest_Evil::Progress::TalkedWithCaptain)
+			return true;
+	}
+	else if(strcmp(msg, "is_not_mage") == 0)
+	{
+		if(ctx.talker->hero->clas != Class::MAGE)
+			return true;
+	}
+	else if(strcmp(msg, "prefer_melee") == 0)
+	{
+		if(ctx.talker->hero->melee)
+			return true;
+	}
+	else if(strcmp(msg, "is_leader") == 0)
+	{
+		if(ctx.pc->unit == Team.leader)
+			return true;
+	}
+	else if(strncmp(msg, "have_player", 11) == 0)
+	{
+		int id = int(msg[11] - '1');
+		if(id < (int)near_players.size())
+			return true;
+	}
+	else if(strcmp(msg, "waiting_for_pvp") == 0)
+	{
+		if(pvp_response.ok)
+			return true;
+	}
+	else if(strcmp(msg, "in_city") == 0)
+	{
+		if(city_ctx)
+			return true;
+	}
+	else if(strcmp(msg, "ironfist_can_start") == 0)
+	{
+		if(tournament_state == TOURNAMENT_NOT_DONE && tournament_city == current_location && day == 6 && month == 2 && tournament_year != year)
+			return true;
+	}
+	else if(strcmp(msg, "ironfist_done") == 0)
+	{
+		if(tournament_year == year)
+			return true;
+	}
+	else if(strcmp(msg, "ironfist_here") == 0)
+	{
+		if(current_location == tournament_city)
+			return true;
+	}
+	else if(strcmp(msg, "ironfist_preparing") == 0)
+	{
+		if(tournament_state == TOURNAMENT_STARTING)
+			return true;
+	}
+	else if(strcmp(msg, "ironfist_started") == 0)
+	{
+		if(tournament_state == TOURNAMENT_IN_PROGRESS)
+		{
+			// zwyciêzca mo¿e pogadaæ i przerwaæ gadanie
+			if(tournament_winner == dialog_context.pc->unit && tournament_state2 == 2 && tournament_state3 == 1)
+			{
+				tournament_master->look_target = nullptr;
+				tournament_state = TOURNAMENT_NOT_DONE;
+			}
+			else
+				return true;
+		}
+	}
+	else if(strcmp(msg, "ironfist_joined") == 0)
+	{
+		for(Unit* unit : tournament_units)
+		{
+			if(unit == ctx.pc->unit)
+				return true;
+		}
+	}
+	else if(strcmp(msg, "ironfist_winner") == 0)
+	{
+		if(ctx.pc->unit == tournament_winner)
+			return true;
+	}
+	else if(strcmp(msg, "szaleni_nie_zapytano") == 0)
+	{
+		if(quest_crazies->crazies_state == Quest_Crazies::State::None)
+			return true;
+	}
+	else if(strcmp(msg, "q_szaleni_trzeba_pogadac") == 0)
+	{
+		if(quest_crazies->crazies_state == Quest_Crazies::State::FirstAttack)
+			return true;
+	}
+	else if(strcmp(msg, "secret_first_dialog") == 0)
+	{
+		if(secret_state == SECRET_GENERATED2)
+		{
+			secret_state = SECRET_TALKED;
+			return true;
+		}
+	}
+	else if(strcmp(msg, "sekret_can_fight") == 0)
+	{
+		if(secret_state == SECRET_TALKED)
+			return true;
+	}
+	else if(strcmp(msg, "sekret_win") == 0)
+	{
+		if(secret_state == SECRET_WIN || secret_state == SECRET_REWARD)
+			return true;
+	}
+	else if(strcmp(msg, "sekret_can_get_reward") == 0)
+	{
+		if(secret_state == SECRET_WIN)
+			return true;
+	}
+	else
+	{
+		Warn("DT_IF_SPECIAL: %s", msg);
+		assert(0);
+	}
+
+	return false;
 }
 
 //=============================================================================
@@ -15664,32 +15732,6 @@ void Game::SpawnOutsideBariers()
 	}
 }
 
-bool Game::HaveTeamMemberNPC()
-{
-	if(Team.GetActiveTeamSize() < 2)
-		return false;
-	for(Unit* unit : Team.active_members)
-	{
-		if(!unit->IsPlayer())
-			return true;
-	}
-	return false;
-}
-
-bool Game::HaveTeamMemberPC()
-{
-	if(Net::IsSingleplayer())
-		return false;
-	if(Team.GetActiveTeamSize() < 2)
-		return false;
-	for(Unit* unit : Team.active_members)
-	{
-		if(unit->IsPlayer() && unit != pc->unit)
-			return true;
-	}
-	return false;
-}
-
 Vec2 Game::GetMapPosition(Unit& unit)
 {
 	if(unit.in_building == -1)
@@ -16753,12 +16795,14 @@ void Game::SpawnHeroesInsideDungeon()
 	}
 
 	// stwórz bohaterów
-	int ile = Random(2, 4);
+	int count = Random(2, 4);
 	LocalVector<Unit*> heroes;
 	p = sprawdzone.back().first;
-	for(int i = 0; i < ile; ++i)
+	int team_level = Random(4, 13);
+	for(int i = 0; i < count; ++i)
 	{
-		Unit* u = SpawnUnitInsideRoom(*p, GetHero(ClassInfo::GetRandom()), Random(2, 15));
+		int level = team_level + Random(-2, 2);
+		Unit* u = SpawnUnitInsideRoom(*p, GetHero(ClassInfo::GetRandom()), level);
 		if(u)
 			heroes->push_back(u);
 		else
@@ -19531,6 +19575,33 @@ void Game::AddGameMsg3(GMS id)
 		break;
 	case GMS_LEFT_EVENT:
 		text = txGmsLeftEvent;
+		break;
+	case GMS_GAME_SAVED:
+		text = txGameSaved;
+		time = 1.f;
+		break;
+	case GMS_NEED_WEAPON:
+		text = txINeedWeapon;
+		time = 2.f;
+		break;
+	case GMS_NO_POTION:
+		text = txNoHpp;
+		time = 2.f;
+		break;
+	case GMS_CANT_DO:
+		text = txCantDo;
+		break;
+	case GMS_DONT_LOOT_FOLLOWER:
+		text = txDontLootFollower;
+		break;
+	case GMS_DONT_LOOT_ARENA:
+		text = txDontLootArena;
+		break;
+	case GMS_UNLOCK_DOOR:
+		text = txUnlockedDoor;
+		break;
+	case GMS_NEED_KEY:
+		text = txNeedKey;
 		break;
 	default:
 		assert(0);

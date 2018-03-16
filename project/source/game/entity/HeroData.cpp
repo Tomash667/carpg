@@ -184,3 +184,12 @@ void HeroData::LevelUp()
 	unit->CalculateStats();
 	unit->RecalculateHp();
 }
+
+//=================================================================================================
+void HeroData::SetupMelee()
+{
+	if(IS_SET(unit->data->flags2, F2_MELEE))
+		melee = true;
+	else if(IS_SET(unit->data->flags2, F2_MELEE_50) && Rand() % 2 == 0)
+		melee = true;
+}

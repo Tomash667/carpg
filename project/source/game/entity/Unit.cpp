@@ -9,6 +9,7 @@
 #include "AIController.h"
 #include "Team.h"
 #include "Content.h"
+#include "SoundManager.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -150,6 +151,32 @@ float Unit::CalculateDefense(const Item* armor) const
 	}
 
 	return def;
+}
+
+//=================================================================================================
+void Unit::SetGold(int new_gold)
+{
+	if(new_gold == gold)
+		return;
+	int dif = new_gold - gold;
+	gold = new_gold;
+	if(IsPlayer())
+	{
+		if(player->is_local)
+		{
+			Game& game = Game::Get();
+			game.AddGameMsg(Format(game.txGoldPlus, dif), 3.f);
+			game.sound_mgr->PlaySound2d(game.sCoins);
+		}
+		else
+		{
+			NetChangePlayer& c = Add1(player->player_info->changes);
+			c.type = NetChangePlayer::GOLD_MSG;
+			c.ile = dif;
+			c.id = 1;
+			player->player_info->UpdateGold();
+		}
+	}
 }
 
 //=================================================================================================

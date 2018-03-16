@@ -5,6 +5,7 @@ Wersja 0.7 (2018-XX-YY):
 + wczytywanie grup przeciwników na arenie z pliku
 + lepiej widoczny celownik w ciemnoœci
 + info o opuszczaniu obszaru wydarzenia
++ obs³uga jêzyka skryptowego AngelScript w konsoli
 - naprawiony crash przy wygenerowaniu magówi i golemów podczas walki na arenie
 - naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
 - naprawione przeliczanie wagi ekwipunku dla wczytywania starych zapisów

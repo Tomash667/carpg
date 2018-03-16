@@ -20,14 +20,22 @@ public:
 	Unit* FindActiveTeamMember(int netid);
 	bool FindItemInTeam(const Item* item, int refid, Unit** unit_result, int* i_index, bool check_npc = true);
 	Unit* FindTeamMember(cstring id);
+	uint GetActiveNpcCount();
 	uint GetActiveTeamSize() { return active_members.size(); }
 	Unit* GetLeader() { return leader; }
+	uint GetMaxSize() { return 8u; }
+	uint GetNpcCount();
 	int GetPCShare();
 	int GetPCShare(int pc, int npc);
 	Unit* GetRandomSaneHero();
 	void GetTeamInfo(TeamInfo& info);
+	uint GetPlayersCount();
 	uint GetTeamSize() { return members.size(); }
+	bool HaveActiveNpc();
 	bool HaveQuestItem(const Item* item, int refid = -1) { return FindItemInTeam(item, refid, nullptr, nullptr, true); }
+	bool HaveNpc();
+	bool HaveOtherActiveTeamMember() { return GetActiveTeamSize() > 1u; }
+	bool HaveOtherPlayer();
 	bool HaveTeamMember() { return GetActiveTeamSize() > 1u; }
 	bool IsAnyoneAlive();
 	bool IsLeader(const Unit& unit) { return &unit == GetLeader(); }

@@ -26,6 +26,7 @@
 #include "Team.h"
 #include "Action.h"
 #include "SoundManager.h"
+#include "ScriptManager.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -4551,6 +4552,48 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 		case NetChange::END_FALLBACK:
 			info.u->frozen = FROZEN::NO;
 			break;
+		// run script
+		case NetChange::RUN_SCRIPT:
+			{
+				LocalString code;
+				int target_netid;
+				if(!ReadString<uint>(stream, *code)
+					|| !stream.Read(target_netid))
+				{
+					StreamError("Update server: Broken RUN_SCRIPT from '%s'.", info.name.c_str());
+					break;
+				}
+
+				if(!info.devmode)
+				{
+					StreamError("Update server: Player %s used RUN_SCRIPT without devmode.", info.name.c_str());
+					break;
+				}
+
+				Unit* target = FindUnit(target_netid);
+				if(!target && target_netid != -1)
+				{
+					StreamError("Update server: RUN_SCRIPT, invalid target %d from %s.", target_netid, info.name.c_str());
+					break;
+				}
+
+				string& output = script_mgr->OpenOutput();
+				script_mgr->SetContext(info.pc, target);
+				script_mgr->RunScript(code->c_str());
+
+				NetChangePlayer& c = Add1(info.changes);
+				c.type = NetChangePlayer::RUN_SCRIPT_RESULT;
+				if(output.empty())
+					c.str = nullptr;
+				else
+				{
+					c.str = code.Pin();
+					*c.str = output;
+				}
+
+				script_mgr->CloseOutput();
+			}
+			break;
 		// invalid change
 		default:
 			StreamError("Update server: Invalid change type %u from %s.", type, info.name.c_str());
@@ -5124,6 +5167,18 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				break;
 			case NetChangePlayer::GAME_MESSAGE:
 				stream.Write(c.id);
+				break;
+			case NetChangePlayer::RUN_SCRIPT_RESULT:
+				if(c.str)
+				{
+					WriteString<uint>(stream, *c.str);
+					StringPool.Free(c.str);
+				}
+				else
+				{
+					uint zero = 0;
+					stream.Write(zero);
+				}
 				break;
 			default:
 				Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
@@ -7531,7 +7586,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		// game saved notification
 		case NetChange::GAME_SAVED:
 			AddMultiMsg(txGameSaved);
-			AddGameMsg2(txGameSaved, 1.f, GMS_GAME_SAVED);
+			AddGameMsg3(GMS_GAME_SAVED);
 			break;
 		// ai left team due too many team members
 		case NetChange::HERO_LEAVE:
@@ -7834,6 +7889,7 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 							AddGameMsg(Format(txGoldPlus, count), 3.f);
 						else
 							AddGameMsg(Format(txQuestCompletedGold, count), 4.f);
+						sound_mgr->PlaySound2d(sCoins);
 					}
 				}
 				break;
@@ -8511,6 +8567,17 @@ bool Game::ProcessControlMessageClientForMe(BitStream& stream)
 						AddGameMsg3((GMS)gm_id);
 				}
 				break;
+			// run script result
+			case NetChangePlayer::RUN_SCRIPT_RESULT:
+				{
+					string* output = StringPool.Get();
+					if(!ReadString<uint>(stream, *output))
+						StreamError("Update single client: Broken RUN_SCRIPT_RESULT.");
+					else
+						AddConsoleMsg(output->c_str());
+					StringPool.Free(output);
+				}
+				break;
 			default:
 				Warn("Update single client: Unknown player change type %d.", type);
 				StreamError();
@@ -8729,6 +8796,11 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::CHEAT_STUN:
 			stream.Write(c.unit->netid);
 			stream.Write(c.f[0]);
+			break;
+		case NetChange::RUN_SCRIPT:
+			WriteString<uint>(stream, *c.str);
+			StringPool.Free(c.str);
+			stream.Write(c.id);
 			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);
@@ -10005,6 +10077,9 @@ bool Game::FilterOut(NetChange& c)
 			c.str = nullptr;
 		}
 		return true;
+	case NetChange::RUN_SCRIPT:
+		StringPool.Free(c.str);
+		return true;
 	default:
 		return true;
 		break;
@@ -10022,6 +10097,7 @@ bool Game::FilterOut(NetChangePlayer& c)
 	case NetChangePlayer::GAIN_STAT:
 	case NetChangePlayer::ADDED_ITEMS_MSG:
 	case NetChangePlayer::GAME_MESSAGE:
+	case NetChangePlayer::RUN_SCRIPT_RESULT:
 		return false;
 	default:
 		return true;

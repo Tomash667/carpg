@@ -347,7 +347,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_OBJECT:
 					{
-						auto obj = BaseObject::TryGet(str.c_str());
+						auto obj = BaseObject::TryGet(str);
 						if(!obj)
 						{
 							Error("Missing required object '%s'.", str.c_str());
@@ -357,7 +357,7 @@ bool Game::LoadRequiredStats(uint& errors)
 					break;
 				case R_USABLE:
 					{
-						auto use = BaseUsable::TryGet(str.c_str());
+						auto use = BaseUsable::TryGet(str);
 						if(!use)
 						{
 							Error("Missing required usable object '%s'.", str.c_str());

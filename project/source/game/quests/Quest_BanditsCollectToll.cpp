@@ -171,18 +171,6 @@ void Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
 }
 
 //=================================================================================================
-bool Quest_BanditsCollectToll::IfSpecial(DialogContext& ctx, cstring msg)
-{
-	if(strcmp(msg, "have_500") == 0)
-		return (ctx.pc->unit->gold >= 500);
-	else
-	{
-		assert(0);
-		return false;
-	}
-}
-
-//=================================================================================================
 void Quest_BanditsCollectToll::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)

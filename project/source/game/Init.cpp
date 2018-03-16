@@ -16,6 +16,7 @@
 #include "NetStats.h"
 #include "UnitGroup.h"
 #include "SoundManager.h"
+#include "ScriptManager.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -162,6 +163,7 @@ void Game::LoadSystem()
 	load_screen->Tick(txLoadingShaders);
 	LoadShaders();
 	ConfigureGame();
+	InitScripts();
 }
 
 //=================================================================================================
@@ -290,6 +292,15 @@ void Game::ConfigureGame()
 
 	if(!disable_net_stats)
 		NetStats::Get().Initialize();
+}
+
+//=================================================================================================
+// Init game scripts
+//=================================================================================================
+void Game::InitScripts()
+{
+	script_mgr = new ScriptManager;
+	script_mgr->Init();
 }
 
 //=================================================================================================

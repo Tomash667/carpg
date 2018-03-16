@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "Crc.h"
 #include "Language.h"
+#include "ScriptManager.h"
 
 extern string g_system_dir;
 typedef std::map<cstring, GameDialog*, CstringComparer> DialogsMap;
@@ -59,7 +60,9 @@ enum Keyword
 	K_QUEST_EVENT,
 	K_DO_ONCE,
 	K_NOT_ACTIVE,
-	K_QUEST_SPECIAL
+	K_QUEST_SPECIAL,
+	K_NOT,
+	K_SCRIPT
 };
 
 enum IfState
@@ -251,6 +254,14 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
 						t.Next();
 
+						if(k == K_NOT)
+						{
+							dialog->code.push_back({ DT_NOT,nullptr });
+							crc.Update(DT_NOT);
+							k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
+							t.Next();
+						}
+
 						switch(k)
 						{
 						case K_QUEST_TIMEOUT:
@@ -373,6 +384,17 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								crc.Update(dialog->strs.back());
 							}
 							break;
+						case K_SCRIPT:
+							{
+								int index = dialog->strs.size();
+								dialog->strs.push_back(t.MustGetString());
+								t.Next();
+								dialog->code.push_back({ DT_IF_SCRIPT, (cstring)index });
+								dialog->scripts.push_back({ (uint)index, true });
+								crc.Update(DT_IF_SCRIPT);
+								crc.Update(dialog->strs.back());
+							}
+							break;
 						default:
 							t.Unexpected();
 							break;
@@ -440,6 +462,17 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						t.Next();
 						dialog->code.push_back({ DT_QUEST_SPECIAL, (cstring)index });
 						crc.Update(DT_QUEST_SPECIAL);
+						crc.Update(dialog->strs.back());
+					}
+					break;
+				case K_SCRIPT:
+					{
+						int index = dialog->strs.size();
+						dialog->strs.push_back(t.MustGetString());
+						t.Next();
+						dialog->code.push_back({ DT_SCRIPT, (cstring)index });
+						dialog->scripts.push_back({ (uint)index, false });
+						crc.Update(DT_SCRIPT);
 						crc.Update(dialog->strs.back());
 					}
 					break;
@@ -563,7 +596,9 @@ uint LoadDialogs(uint& out_crc, uint& errors)
 		{ "quest_event", K_QUEST_EVENT },
 		{ "do_once", K_DO_ONCE },
 		{ "not_active", K_NOT_ACTIVE },
-		{ "quest_special", K_QUEST_SPECIAL }
+		{ "quest_special", K_QUEST_SPECIAL },
+		{ "not", K_NOT },
+		{ "script", K_SCRIPT }
 	});
 
 	Crc crc;
@@ -791,4 +826,28 @@ void CleanupDialogs()
 {
 	for(auto& it : dialogs)
 		delete it.second;
+}
+
+//=================================================================================================
+void VerifyDialogs(ScriptManager* script_mgr, uint& errors)
+{
+	Info("Test: Checking dialogs...");
+
+	for(auto& it : dialogs)
+	{
+		GameDialog* dialog = it.second;
+
+		// verify scripts
+		for(auto& script : dialog->scripts)
+		{
+			cstring str = dialog->strs[script.index].c_str();
+			bool ok;
+			if(script.is_if)
+				ok = script_mgr->RunIfScript(str, true);
+			else
+				ok = script_mgr->RunScript(str, true);
+			if(!ok)
+				++errors;
+		}
+	}
 }

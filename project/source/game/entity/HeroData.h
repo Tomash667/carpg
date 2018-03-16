@@ -30,4 +30,5 @@ struct HeroData : public HeroPlayerCommon
 	void Load(HANDLE file);
 	void PassTime(int days = 1, bool travel = false);
 	void LevelUp();
+	void SetupMelee();
 };

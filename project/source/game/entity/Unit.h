@@ -587,6 +587,8 @@ struct Unit
 	vector<ItemSlot> items;
 	int weight, weight_max;
 	//-----------------------------------------------------------------------------
+	int GetGold() const { return gold; }
+	void SetGold(int gold);
 	bool HaveWeapon() const { return slots[SLOT_WEAPON] != nullptr; }
 	bool HaveBow() const { return slots[SLOT_BOW] != nullptr; }
 	bool HaveShield() const { return slots[SLOT_SHIELD] != nullptr; }

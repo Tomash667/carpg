@@ -530,7 +530,8 @@ struct LocalString
 
 	~LocalString()
 	{
-		StringPool.Free(s);
+		if(s)
+			StringPool.Free(s);
 	}
 
 	void operator = (cstring str)
@@ -573,6 +574,11 @@ struct LocalString
 	operator cstring() const
 	{
 		return s->c_str();
+	}
+
+	string& operator * ()
+	{
+		return *s;
 	}
 
 	string& get_ref()
@@ -643,6 +649,13 @@ struct LocalString
 	uint length() const
 	{
 		return s->length();
+	}
+
+	string* Pin()
+	{
+		string* str = s;
+		s = nullptr;
+		return str;
 	}
 
 private:
