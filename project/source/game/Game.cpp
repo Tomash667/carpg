@@ -2378,10 +2378,7 @@ bool Game::IsDrunkman(Unit& u)
 //=================================================================================================
 void Game::PlayUnitSound(Unit& u, SOUND snd, float range)
 {
-	if(&u == pc->unit)
-		sound_mgr->PlaySound2d(snd);
-	else
-		sound_mgr->PlaySound3d(snd, u.GetHeadSoundPos(), range);
+	sound_mgr->PlaySound3d(snd, u.GetHeadSoundPos(), range);
 }
 
 //=================================================================================================

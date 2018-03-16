@@ -167,6 +167,55 @@ namespace internal
 }
 
 //-----------------------------------------------------------------------------
+template<typename T>
+class SmartPtr
+{
+public:
+	SmartPtr() : ptr(nullptr) {}
+	SmartPtr(T* p) : ptr(p)
+	{
+		if(p)
+			p->AddRef();
+	}
+	~SmartPtr()
+	{
+		if(ptr)
+			ptr->Release();
+	}
+
+	T* operator -> ()
+	{
+		return ptr;
+	}
+
+	operator bool() const
+	{
+		return ptr != nullptr;
+	}
+
+	SmartPtr& operator = (T* p)
+	{
+		if(ptr)
+			ptr->Release();
+		ptr = p;
+		if(ptr)
+			ptr->AddRef();
+		return *this;
+	}
+
+	SmartPtr& operator = (nullptr_t)
+	{
+		if(ptr)
+			ptr->Release();
+		ptr = nullptr;
+		return *this;
+	}
+
+private:
+	T * ptr;
+};
+
+//-----------------------------------------------------------------------------
 // RAII for simple pointer
 template<typename T, typename Allocator = internal::StandardAllocator<T>>
 class Ptr

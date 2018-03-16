@@ -1215,7 +1215,10 @@ void Game::UpdateGame(float dt)
 		Vec3 pos;
 		if(pc->unit->look_target)
 		{
-			pos = pc->unit->look_target->pos;
+			if(pc->unit->look_target->to_remove)
+				pc->unit->look_target = nullptr;
+			else
+				pos = pc->unit->look_target->pos;
 			pc->unit->animation = ANI_STAND;
 		}
 		else if(inventory_mode == I_LOOT_CHEST)
@@ -6861,7 +6864,6 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	u->quest_refid = -1;
 	u->bubble = nullptr;
 	u->busy = Unit::Busy_No;
-	u->look_target = nullptr;
 	u->interp = nullptr;
 	u->dont_attack = false;
 	u->assist = false;
@@ -10952,16 +10954,11 @@ void Game::PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax)
 		return;
 
 	Vec3 pos = unit.GetHeadSoundPos();
-
-	if(&unit == pc->unit)
-		sound_mgr->PlaySound2d(sound);
-	else
-	{
-		FMOD::Channel* channel = sound_mgr->CreateChannel(sound, pos, smin);
-		AttachedSound& s = Add1(attached_sounds);
-		s.channel = channel;
-		s.unit = &unit;
-	}
+	FMOD::Channel* channel = sound_mgr->CreateChannel(sound, pos, smin);
+	AttachedSound& s = Add1(attached_sounds);
+	s.channel = channel;
+	s.unit = &unit;
+	unit.AddRef();
 }
 
 void Game::StopAllSounds()
@@ -12896,11 +12893,23 @@ void Game::UpdateAttachedSounds(float dt)
 	uint index = 0;
 	for(vector<AttachedSound>::iterator it = attached_sounds.begin(), end = attached_sounds.end(); it != end; ++it, ++index)
 	{
-		if(!sound_mgr->UpdateChannelPosition(it->channel, it->unit->GetHeadSoundPos()))
-			_to_remove.push_back(index);
+		if(it->unit)
+		{
+			if(it->unit->to_remove)
+				it->unit = nullptr;
+			else if(!sound_mgr->UpdateChannelPosition(it->channel, it->unit->GetHeadSoundPos()))
+			{
+				it->unit = nullptr;
+				_to_remove.push_back(index);
+			}
+		}
+		if(!it->unit)
+		{
+			if(!sound_mgr->IsPlaying(it->channel))
+				_to_remove.push_back(index);
+		}
 	}
 
-	// usuñ
 	while(!_to_remove.empty())
 	{
 		index = _to_remove.back();
@@ -14175,7 +14184,7 @@ void Game::LeaveLevel(bool clear)
 	ais.clear();
 	RemoveColliders();
 	unit_views.clear();
-	attached_sounds.clear();
+	StopAllSounds();
 	cam_colliders.clear();
 
 	ClearQuadtree();
@@ -15589,7 +15598,10 @@ void Game::DeleteUnit(Unit* unit)
 		delete unit->cobj;
 	}
 
-	delete unit;
+	unit->look_target = nullptr;
+
+	if(--unit->refs == 0)
+		delete unit;
 }
 
 void Game::DialogTalk(DialogContext& ctx, cstring msg)
