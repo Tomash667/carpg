@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "Crc.h"
 #include "Language.h"
+#include "ScriptManager.h"
 
 extern string g_system_dir;
 typedef std::map<cstring, GameDialog*, CstringComparer> DialogsMap;
@@ -389,6 +390,7 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								dialog->strs.push_back(t.MustGetString());
 								t.Next();
 								dialog->code.push_back({ DT_IF_SCRIPT, (cstring)index });
+								dialog->scripts.push_back({ (uint)index, true });
 								crc.Update(DT_IF_SCRIPT);
 								crc.Update(dialog->strs.back());
 							}
@@ -469,6 +471,7 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
 						dialog->code.push_back({ DT_SCRIPT, (cstring)index });
+						dialog->scripts.push_back({ (uint)index, false });
 						crc.Update(DT_SCRIPT);
 						crc.Update(dialog->strs.back());
 					}
@@ -823,4 +826,28 @@ void CleanupDialogs()
 {
 	for(auto& it : dialogs)
 		delete it.second;
+}
+
+//=================================================================================================
+void VerifyDialogs(ScriptManager* script_mgr, uint& errors)
+{
+	Info("Test: Checking dialogs...");
+
+	for(auto& it : dialogs)
+	{
+		GameDialog* dialog = it.second;
+
+		// verify scripts
+		for(auto& script : dialog->scripts)
+		{
+			cstring str = dialog->strs[script.index].c_str();
+			bool ok;
+			if(script.is_if)
+				ok = script_mgr->RunIfScript(str, true);
+			else
+				ok = script_mgr->RunScript(str, true);
+			if(!ok)
+				++errors;
+		}
+	}
 }

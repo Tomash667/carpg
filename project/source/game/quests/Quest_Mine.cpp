@@ -334,10 +334,6 @@ bool Quest_Mine::IfSpecial(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "udzialy_w_kopalni") == 0)
 		return mine_state == State::Shares;
-	else if(strcmp(msg, "have_10000") == 0)
-		return ctx.pc->unit->gold >= 10000;
-	else if(strcmp(msg, "have_12000") == 0)
-		return ctx.pc->unit->gold >= 12000;
 	else
 	{
 		assert(0);

@@ -218,6 +218,7 @@
     <ClInclude Include="source\game\quests\QuestConsts.h" />
     <ClInclude Include="source\game\script\TypeBuilder.h" />
     <ClInclude Include="source\game\script\ScriptManager.h" />
+    <ClInclude Include="source\game\script\Var.h" />
     <ClInclude Include="source\game\stats\Action.h" />
     <ClInclude Include="source\game\stats\Buff.h" />
     <ClInclude Include="source\game\system\BaseObject.h" />

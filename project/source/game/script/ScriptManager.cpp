@@ -256,22 +256,6 @@ Var* PlayerController_GetVar(void* pc)
 
 void ScriptManager::RegisterGame()
 {
-	/*AddType("Var")
-		.Method("bool GetBool() const", asMETHOD(VarsContainer::Var, GetBool))
-		.Method("int GetInt() const", asMETHOD(VarsContainer::Var, GetInt))
-		.Method("float GetFloat() const", asMETHOD(VarsContainer::Var, GetFloat))
-		.Method("bool IsNone() const", asMETHOD(VarsContainer::Var, IsNone))
-		.Method("bool IsBool() const", asMETHODPR(VarsContainer::Var, IsBool, () const, bool))
-		.Method("bool IsBool(bool) const", asMETHODPR(VarsContainer::Var, IsBool, (bool) const, bool))
-		.Method("bool IsInt() const", asMETHODPR(VarsContainer::Var, IsInt, () const, bool))
-		.Method("bool IsInt(int) const", asMETHODPR(VarsContainer::Var, IsInt, (int) const, bool))
-		.Method("bool IsFloat() const", asMETHODPR(VarsContainer::Var, IsFloat, () const, bool))
-		.Method("bool IsFloat(float) const", asMETHODPR(VarsContainer::Var, IsFloat, (float) const, bool))
-		.Method("void SetNone()", asMETHOD(VarsContainer::Var, SetNone))
-		.Method("void SetBool(bool)", asMETHOD(VarsContainer::Var, SetBool))
-		.Method("void SetInt(int)", asMETHOD(VarsContainer::Var, SetInt))
-		.Method("void SetFloat(float)", asMETHOD(VarsContainer::Var, SetFloat));*/
-
 	// use generic type ??? for get is set
 
 	AddType("Var")
@@ -303,9 +287,12 @@ void ScriptManager::RegisterGame()
 		.WithInstance("VarsContainer@ globals", &p_globals);
 
 	AddType("Unit")
+		.Method("int get_gold() const", asMETHOD(Unit, GetGold))
+		.Method("void set_gold(int)", asMETHOD(Unit, SetGold))
 		.WithInstance("Unit@ target", &target);
 
 	AddType("Player")
+		.Member("Unit@ unit", offsetof(PlayerController, unit))
 		.WithInstance("Player@ pc", &pc);
 }
 
@@ -315,7 +302,7 @@ void ScriptManager::SetContext(PlayerController* pc, Unit* target)
 	this->target = target;
 }
 
-bool ScriptManager::RunScript(cstring code)
+bool ScriptManager::RunScript(cstring code, bool validate)
 {
 	assert(code);
 
@@ -327,7 +314,14 @@ bool ScriptManager::RunScript(cstring code)
 	if(r < 0)
 	{
 		Log(Logger::L_ERROR, Format("Failed to parse script (%d).", r), code);
+		engine->DiscardModule("RunScriptModule");
 		return false;
+	}
+
+	if(validate)
+	{
+		engine->DiscardModule("RunScriptModule");
+		return true;
 	}
 
 	// run
@@ -354,11 +348,12 @@ bool ScriptManager::RunScript(cstring code)
 
 	func->Release();
 	engine->ReturnContext(tmp_context);
+	engine->DiscardModule("RunScriptModule");
 
 	return finished;
 }
 
-bool ScriptManager::RunIfScript(cstring code)
+bool ScriptManager::RunIfScript(cstring code, bool validate)
 {
 	assert(code);
 
@@ -370,7 +365,14 @@ bool ScriptManager::RunIfScript(cstring code)
 	if(r < 0)
 	{
 		Log(Logger::L_ERROR, Format("Failed to parse if script (%d).", r), code);
+		engine->DiscardModule("RunScriptModule");
 		return false;
+	}
+
+	if(validate)
+	{
+		engine->DiscardModule("RunScriptModule");
+		return true;
 	}
 
 	// run
@@ -401,6 +403,7 @@ bool ScriptManager::RunIfScript(cstring code)
 
 	func->Release();
 	engine->ReturnContext(tmp_context);
+	engine->DiscardModule("RunScriptModule");
 
 	return ok;
 }

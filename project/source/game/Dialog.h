@@ -82,10 +82,17 @@ struct GameDialog
 		bool exists;
 	};
 
+	struct Script
+	{
+		uint index;
+		bool is_if;
+	};
+
 	string id;
 	vector<DialogEntry> code;
 	vector<string> strs;
 	vector<Text> texts;
+	vector<Script> scripts;
 	int max_index;
 };
 
@@ -135,3 +142,4 @@ uint LoadDialogs(uint& crc, uint& errors);
 void LoadDialogTexts();
 GameDialog* FindDialog(cstring id);
 void CleanupDialogs();
+void VerifyDialogs(ScriptManager* script_mgr, uint& errors);

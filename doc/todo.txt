@@ -32,6 +32,7 @@ CURRENT:
 	? script
 	? if_script
 	? negated if
+		? if not special "is_arena_free"
 	
 -? hero go wander, don't make them wander, SetMode sets city_wander to false
 	void HeroData::SetMode(Mode new_mode)

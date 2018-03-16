@@ -31,8 +31,8 @@ public:
 	void RegisterGame();
 	void SetContext(PlayerController* pc, Unit* target);
 	void SetException(cstring ex) { last_exception = ex; }
-	bool RunScript(cstring code);
-	bool RunIfScript(cstring code);
+	bool RunScript(cstring code, bool validate = false);
+	bool RunIfScript(cstring code, bool validate = false);
 	string& OpenOutput();
 	void CloseOutput();
 	void Log(Logger::Level level, cstring msg, cstring code = nullptr);

@@ -23,7 +23,6 @@ public:
 	bool IsTimedout() const override;
 	bool OnTimeout(TimeoutType ttype) override;
 	void Special(DialogContext& ctx, cstring msg) override;
-	bool IfSpecial(DialogContext& ctx, cstring msg) override;
 	void HandleLocationEvent(LocationEventHandler::Event event) override;
 	bool IfNeedTalk(cstring topic) const override;
 	void Save(HANDLE file) override;

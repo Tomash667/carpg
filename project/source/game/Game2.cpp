@@ -4587,6 +4587,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
+				script_mgr->SetContext(ctx.pc, nullptr);
 				script_mgr->RunScript(msg);
 			}
 			break;
@@ -4594,6 +4595,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
+				script_mgr->SetContext(ctx.pc, nullptr);
 				bool ok = script_mgr->RunIfScript(msg);
 				if(ctx.negate_if)
 				{
@@ -5605,26 +5607,6 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		else
 			AddGameMsg(Format(txGoldPlus, 10), 3.f);
 	}
-	else if(strcmp(msg, "give_1") == 0)
-	{
-		ctx.pc->unit->gold += 1;
-		if(!ctx.is_local)
-		{
-			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-			c.type = NetChangePlayer::GOLD_MSG;
-			c.ile = 1;
-			c.id = 1;
-			ctx.pc->player_info->UpdateGold();
-		}
-		else
-			AddGameMsg(Format(txGoldPlus, 1), 3.f);
-	}
-	else if(strcmp(msg, "take_1") == 0)
-	{
-		ctx.pc->unit->gold -= 1;
-		if(!ctx.is_local)
-			ctx.pc->player_info->UpdateGold();
-	}
 	else if(strcmp(msg, "crazy_give_item") == 0)
 	{
 		crazy_give_item = GetRandomItem(100);
@@ -5835,11 +5817,6 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 		if(Team.is_bandit)
 			return true;
 	}
-	else if(strcmp(msg, "have_gold_100") == 0)
-	{
-		if(ctx.pc->unit->gold >= 100)
-			return true;
-	}
 	else if(strcmp(msg, "is_ginger") == 0)
 	{
 		if(ctx.pc->unit->human_data->hair_color.Equal(g_hair_colors[8]))
@@ -5980,11 +5957,6 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 				&& quest_mages2->start_loc == current_location))
 			return true;
 	}
-	else if(strcmp(msg, "have_100") == 0)
-	{
-		if(ctx.pc->unit->gold >= 100)
-			return true;
-	}
 	else if(strcmp(msg, "q_gobliny_zapytaj") == 0)
 	{
 		if(quest_goblins->goblins_state >= Quest_Goblins::State::MageTalked
@@ -6095,11 +6067,6 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "q_szaleni_trzeba_pogadac") == 0)
 	{
 		if(quest_crazies->crazies_state == Quest_Crazies::State::FirstAttack)
-			return true;
-	}
-	else if(strcmp(msg, "have_1") == 0)
-	{
-		if(ctx.pc->unit->gold != 0)
 			return true;
 	}
 	else if(strcmp(msg, "secret_first_dialog") == 0)

@@ -3041,6 +3041,7 @@ uint Game::ValidateGameData(bool major)
 	Item::Validate(err);
 	PerkInfo::Validate(err);
 	RoomType::Validate(err);
+	VerifyDialogs(script_mgr, err);
 
 	if(err == 0)
 		Info("Test: Validation succeeded.");
