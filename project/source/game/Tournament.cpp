@@ -97,7 +97,7 @@ void Game::GenerateTournamentUnits()
 void Game::UpdateTournament(float dt)
 {
 	// info about getting out of range
-	for(Unit* unit : tournament_units)
+	for(auto& unit : tournament_units)
 		VerifyTournamentUnit(unit);
 	for(auto& pair : tournament_pairs)
 	{
@@ -131,6 +131,7 @@ void Game::UpdateTournament(float dt)
 		{
 			if(tournament_timer >= 5.f)
 			{
+				// tell to join
 				tournament_state2 = 1;
 				TournamentTalk(txTour[0]);
 			}
@@ -139,6 +140,7 @@ void Game::UpdateTournament(float dt)
 		{
 			if(tournament_timer >= 30.f)
 			{
+				// tell to join 2
 				tournament_state2 = 2;
 				TournamentTalk(txTour[1]);
 			}
@@ -147,7 +149,7 @@ void Game::UpdateTournament(float dt)
 		{
 			if(tournament_timer >= 60.f)
 			{
-				// zbierz npc
+				// gather npc's
 				for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 				{
 					Unit& u = **it;
@@ -158,6 +160,7 @@ void Game::UpdateTournament(float dt)
 					}
 				}
 
+				// start tournament
 				tournament_state2 = 3;
 				tournament_round = 0;
 				tournament_master->busy = Unit::Busy_Yes;
@@ -172,12 +175,14 @@ void Game::UpdateTournament(float dt)
 			{
 				if(!tournament_pairs.empty())
 				{
+					// tell how many units joined
 					tournament_state2 = 4;
 					TournamentTalk(Format(txTour[3], tournament_pairs.size() * 2 + (tournament_skipped_unit ? 1 : 0)));
 					SpawnArenaViewers(5);
 				}
 				else
 				{
+					// not enought units
 					tournament_state2 = 5;
 					TournamentTalk(txTour[22]);
 				}
@@ -196,14 +201,8 @@ void Game::UpdateTournament(float dt)
 		{
 			if(!tournament_master->talking)
 			{
-				tournament_state = TOURNAMENT_NOT_DONE;
-				for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
-				{
-					Unit& u = **it;
-					if(u.busy == Unit::Busy_Tournament)
-						u.busy = Unit::Busy_No;
-				}
-				tournament_master->busy = Unit::Busy_No;
+				// not enough units, end tournament
+				CleanTournament();
 			}
 		}
 	}
@@ -211,7 +210,7 @@ void Game::UpdateTournament(float dt)
 	{
 		if(tournament_state2 == 0)
 		{
-			// gadanie przed walk¹
+			// introduce all fight in this round
 			if(!tournament_master->talking)
 			{
 				cstring text;
@@ -219,7 +218,7 @@ void Game::UpdateTournament(float dt)
 					text = Format(txTour[4], tournament_round + 1);
 				else if(tournament_state3 <= (int)tournament_pairs.size())
 				{
-					std::pair<Unit*, Unit*>& p = tournament_pairs[tournament_state3 - 1];
+					auto& p = tournament_pairs[tournament_state3 - 1];
 					text = Format(txTour[5], p.first->GetRealName(), p.second->GetRealName());
 				}
 				else if(tournament_state3 == (int)tournament_pairs.size() + 1)
@@ -235,16 +234,16 @@ void Game::UpdateTournament(float dt)
 				TournamentTalk(text);
 
 				++tournament_state3;
-				bool koniec = false;
+				bool end = false;
 				if(tournament_state3 == (int)tournament_pairs.size() + 1)
 				{
 					if(!tournament_skipped_unit)
-						koniec = true;
+						end = true;
 				}
 				else if(tournament_state3 == (int)tournament_pairs.size() + 2)
-					koniec = true;
+					end = true;
 
-				if(koniec)
+				if(end)
 				{
 					tournament_state2 = 1;
 					tournament_state3 = 0;
@@ -256,52 +255,43 @@ void Game::UpdateTournament(float dt)
 		{
 			if(tournament_state3 == 0)
 			{
-				// gadanie przed walk¹
+				// tell next fight participants
 				if(!tournament_master->talking)
 				{
-					std::pair<Unit*, Unit*>& p = tournament_pairs.back();
-					if(p.first && p.second)
-						TournamentTalk(Format(txTour[9], p.first->GetRealName(), p.second->GetRealName()));
-					else
-						TournamentTalk(txTour[10]);
+					auto& p = tournament_pairs.back();
+					TournamentTalk(Format(txTour[9], p.first->GetRealName(), p.second->GetRealName()));
 					tournament_state3 = 1;
 				}
 			}
 			else if(tournament_state3 == 1)
 			{
-				// sprawdza czy s¹ w pobli¿u, rozpoczyna walkê lub mówi ¿e ich nie ma na arenie
+				// check if units are ready to fight
 				if(!tournament_master->talking)
 				{
-					std::pair<Unit*, Unit*> p = tournament_pairs.back();
-					tournament_pairs.pop_back();
-					if(!p.first || !p.second)
+					auto& p = tournament_pairs.back();
+					if(p.first->to_remove || !p.first->IsStanding() || p.first->frozen != FROZEN::NO
+						|| !(Vec3::Distance2d(p.first->pos, tournament_master->pos) <= 64.f || p.first->in_building == tournament_arena))
 					{
-						if(p.first)
-							tournament_units.push_back(p.first);
-						else if(p.second)
-							tournament_units.push_back(p.second);
-					}
-					else if(!p.first->IsStanding() || p.first->frozen != FROZEN::NO || !(Vec3::Distance2d(p.first->pos, tournament_master->pos) <= 64.f
-						|| p.first->in_building == tournament_arena))
-					{
+						// first unit left or can't fight, check other
 						tournament_state3 = 2;
 						tournament_other_fighter = p.second;
 						TournamentTalk(Format(txTour[11], p.first->GetRealName()));
-						if(p.first->IsPlayer())
+						if(!p.first->to_remove && p.first->IsPlayer())
 							AddGameMsg3(p.first->player, GMS_LEFT_EVENT);
 					}
-					else if(!p.second->IsStanding() || p.second->frozen != FROZEN::NO || !(Vec3::Distance2d(p.second->pos, tournament_master->pos) <= 64.f
-						|| p.second->in_building == tournament_arena))
+					else if(p.second->to_remove || !p.second->IsStanding() || p.second->frozen != FROZEN::NO
+						|| !(Vec3::Distance2d(p.second->pos, tournament_master->pos) <= 64.f || p.second->in_building == tournament_arena))
 					{
+						// second unit left or can't fight, first automaticaly goes to next round
 						tournament_state3 = 3;
 						tournament_units.push_back(p.first);
 						TournamentTalk(Format(txTour[12], p.second->GetRealName(), p.first->GetRealName()));
-						if(p.second->IsPlayer())
+						if(!p.second->to_remove && p.second->IsPlayer())
 							AddGameMsg3(p.second->player, GMS_LEFT_EVENT);
 					}
 					else
 					{
-						// walka
+						// fight
 						tournament_master->busy = Unit::Busy_No;
 						tournament_state3 = 4;
 						arena_free = false;
@@ -350,45 +340,45 @@ void Game::UpdateTournament(float dt)
 							}
 						}
 					}
+					tournament_pairs.pop_back();
 				}
 			}
 			else if(tournament_state3 == 2)
 			{
-				// sprawdŸ czy drugi zawodnik przyszed³
+				// check if second unit is here
 				if(!tournament_master->talking)
 				{
-					if(tournament_other_fighter)
+					if(tournament_other_fighter->to_remove || !tournament_other_fighter->IsStanding() || tournament_other_fighter->frozen != FROZEN::NO
+						|| !(Vec3::Distance2d(tournament_other_fighter->pos, tournament_master->pos) <= 64.f
+							|| tournament_other_fighter->in_building == tournament_arena))
 					{
-						if(!tournament_other_fighter->IsStanding() || tournament_other_fighter->frozen != FROZEN::NO
-							|| !(Vec3::Distance2d(tournament_other_fighter->pos, tournament_master->pos) <= 64.f
-								|| tournament_other_fighter->in_building == tournament_arena))
-						{
-							TournamentTalk(Format(txTour[13], tournament_other_fighter->GetRealName()));
-							if(tournament_other_fighter->IsPlayer())
-								AddGameMsg3(tournament_other_fighter->player, GMS_LEFT_EVENT);
-						}
-						else
-						{
-							tournament_units.push_back(tournament_other_fighter);
-							TournamentTalk(Format(txTour[14], tournament_other_fighter->GetRealName()));
-						}
+						// second unit left too
+						TournamentTalk(Format(txTour[13], tournament_other_fighter->GetRealName()));
+						if(!tournament_other_fighter->to_remove && tournament_other_fighter->IsPlayer())
+							AddGameMsg3(tournament_other_fighter->player, GMS_LEFT_EVENT);
 					}
-
+					else
+					{
+						// second unit is here, go automaticaly to next round
+						tournament_units.push_back(tournament_other_fighter);
+						TournamentTalk(Format(txTour[14], tournament_other_fighter->GetRealName()));
+					}
+					tournament_other_fighter = nullptr;
 					tournament_state3 = 3;
 				}
 			}
 			else if(tournament_state3 == 3)
 			{
-				// jeden lub obaj zawodnicy nie przyszli
-				// lub pogada³ po walce
+				// one or more units left
+				// or talking after combat
 				if(!tournament_master->talking)
 				{
 					if(tournament_pairs.empty())
 					{
-						// nie ma ju¿ walk w tej rundzie
+						// no more fights in this round
 						if(tournament_units.size() <= 1 && !tournament_skipped_unit)
 						{
-							// jest zwyciêzca / lub nie ma nikogo
+							// is there a winner?
 							if(!tournament_units.empty())
 								tournament_winner = tournament_units.back();
 							else
@@ -396,14 +386,15 @@ void Game::UpdateTournament(float dt)
 
 							if(!tournament_winner)
 							{
+								// no winner
 								TournamentTalk(txTour[15]);
 								tournament_state3 = 1;
 								AddNews(txTour[17]);
-								tournament_state = TOURNAMENT_NOT_DONE;
-								tournament_master->busy = Unit::Busy_No;
+								CleanTournament();
 							}
 							else
 							{
+								// there is winner
 								TournamentTalk(Format(txTour[16], tournament_winner->GetRealName()));
 								tournament_state3 = 0;
 								AddNews(Format(txTour[18], tournament_winner->GetRealName()));
@@ -417,7 +408,7 @@ void Game::UpdateTournament(float dt)
 						}
 						else
 						{
-							// kolejna runda
+							// next round
 							++tournament_round;
 							StartTournamentRound();
 							tournament_state2 = 0;
@@ -426,21 +417,21 @@ void Game::UpdateTournament(float dt)
 					}
 					else
 					{
-						// kolejna walka
+						// next fight
 						tournament_state3 = 0;
 					}
 				}
 			}
 			else if(tournament_state3 == 4)
 			{
-				// trwa walka, obs³ugiwane przez kod areny
+				// fight is going on, handled by arena code
 			}
 			else if(tournament_state3 == 5)
 			{
-				// po walce
+				// after combat
 				if(!tournament_master->talking && tournament_master->busy == Unit::Busy_No)
 				{
-					// daj miksturki lecznicze
+					// give healing potions
 					static const Item* p1 = Item::Get("p_hp");
 					static const Item* p2 = Item::Get("p_hp2");
 					static const Item* p3 = Item::Get("p_hp3");
@@ -492,11 +483,11 @@ void Game::UpdateTournament(float dt)
 						}
 					}
 
-					// zwyciêzca
-					Unit* wygrany = at_arena[arena_wynik];
-					wygrany->busy = Unit::Busy_Tournament;
-					tournament_units.push_back(wygrany);
-					TournamentTalk(Format(txTour[Rand() % 2 == 0 ? 19 : 20], wygrany->GetRealName()));
+					// winner goes to next round
+					Unit* winner = at_arena[arena_wynik];
+					winner->busy = Unit::Busy_Tournament;
+					tournament_units.push_back(winner);
+					TournamentTalk(Format(txTour[Rand() % 2 == 0 ? 19 : 20], winner->GetRealName()));
 					tournament_state3 = 3;
 					at_arena.clear();
 				}
@@ -508,38 +499,27 @@ void Game::UpdateTournament(float dt)
 			{
 				if(tournament_state3 == 0)
 				{
-					const int NAGRODA = 5000;
+					// give reward to winner
+					const int REWARD = 5000;
 
 					tournament_state3 = 1;
 					tournament_master->look_target = tournament_winner;
-					tournament_winner->gold += NAGRODA;
+					tournament_winner->ModGold(REWARD);
 					if(tournament_winner->IsHero())
 					{
 						tournament_winner->look_target = tournament_master;
 						tournament_winner->hero->LevelUp();
 					}
 					else
-					{
 						tournament_winner->busy = Unit::Busy_No;
-						if(tournament_winner->player != pc)
-						{
-							NetChangePlayer& c = Add1(tournament_winner->player->player_info->changes);
-							c.type = NetChangePlayer::GOLD_MSG;
-							c.id = 1;
-							c.ile = NAGRODA;
-							tournament_winner->player->player_info->UpdateGold();
-						}
-						else
-							AddGameMsg(Format(txGoldPlus, NAGRODA), 3.f);
-					}
-					TournamentTalk(Format(txTour[21], tournament_winner->GetRealName()));
 
+					TournamentTalk(Format(txTour[21], tournament_winner->GetRealName()));
 					tournament_master->busy = Unit::Busy_No;
 					tournament_master->ai->idle_action = AIController::Idle_None;
 				}
 				else if(tournament_state3 == 1)
 				{
-					// koniec zawodów
+					// end of tournament
 					if(tournament_winner && tournament_winner->IsHero())
 					{
 						tournament_winner->look_target = nullptr;
@@ -547,7 +527,7 @@ void Game::UpdateTournament(float dt)
 						tournament_winner->busy = Unit::Busy_No;
 					}
 					tournament_master->look_target = nullptr;
-					tournament_state = TOURNAMENT_NOT_DONE;
+					CleanTournament();
 				}
 			}
 		}
@@ -557,7 +537,7 @@ void Game::UpdateTournament(float dt)
 //=================================================================================================
 void Game::VerifyTournamentUnit(Unit* unit)
 {
-	if(!unit || !unit->IsPlayer())
+	if(!unit || !unit->IsPlayer() || unit->to_remove)
 		return;
 	bool leaving_event = true;
 	if(unit->in_building == tournament_arena)
@@ -580,13 +560,13 @@ void Game::StartTournamentRound()
 	tournament_pairs.clear();
 
 	Unit* first = tournament_skipped_unit;
-	for(vector<Unit*>::iterator it = tournament_units.begin(), end = tournament_units.end(); it != end; ++it)
+	for(auto& unit : tournament_units)
 	{
 		if(!first)
-			first = *it;
+			first = unit;
 		else
 		{
-			tournament_pairs.push_back(std::pair<Unit*, Unit*>(first, *it));
+			tournament_pairs.push_back(std::pair<SmartPtr<Unit>, SmartPtr<Unit>>(first, unit));
 			first = nullptr;
 		}
 	}
@@ -657,14 +637,13 @@ void Game::CleanTournament()
 	if(!arena_free)
 		CleanArena();
 
-	// zmieñ zajêtoœæ
-	for(vector<Unit*>::iterator it = tournament_units.begin(), end = tournament_units.end(); it != end; ++it)
-		(*it)->busy = Unit::Busy_No;
+	for(auto& unit : tournament_units)
+		unit->busy = Unit::Busy_No;
 	tournament_units.clear();
-	for(vector<std::pair<Unit*, Unit*> >::iterator it2 = tournament_pairs.begin(), end2 = tournament_pairs.end(); it2 != end2; ++it2)
+	for(auto& p : tournament_pairs)
 	{
-		it2->first->busy = Unit::Busy_No;
-		it2->second->busy = Unit::Busy_No;
+		p.first->busy = Unit::Busy_No;
+		p.second->busy = Unit::Busy_No;
 	}
 	tournament_pairs.clear();
 	if(tournament_skipped_unit)

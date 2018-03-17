@@ -2605,7 +2605,6 @@ void Game::GenerateStockItems()
 	assert(loc.type == L_CITY);
 
 	City& city = (City&)loc;
-	const Item* item;
 	int price_limit, price_limit2, count_mod;
 	bool is_city;
 
@@ -2697,7 +2696,6 @@ void Game::GenerateStockItems()
 
 void Game::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit)
 {
-	const Item* item;
 	items.clear();
 	InsertItemBare(items, Item::Get("p_nreg"), Random(5, 10));
 	InsertItemBare(items, Item::Get("p_hp"), Random(5, 10));
@@ -2731,6 +2729,16 @@ void Game::GenerateMerchantItems(vector<ItemSlot>& items, int price_limit)
 // dru¿yna opuœci³a lokacje
 void Game::LeaveLocation(bool clear, bool end_buffs)
 {
+	if(Net::IsLocal())
+	{
+		// zawody
+		if(tournament_state != TOURNAMENT_NOT_DONE)
+			CleanTournament();
+		// arena
+		if(!arena_free)
+			CleanArena();
+	}
+
 	if(clear)
 	{
 		if(open_location != -1)
@@ -2769,16 +2777,6 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		contest_state = CONTEST_DONE;
 		contest_units.clear();
 		AddNews(txContestNoWinner);
-	}
-
-	if(Net::IsLocal())
-	{
-		// zawody
-		if(tournament_state != TOURNAMENT_NOT_DONE)
-			CleanTournament();
-		// arena
-		if(!arena_free)
-			CleanArena();
 	}
 
 	// clear blood & bodies from orc base

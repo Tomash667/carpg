@@ -3904,8 +3904,12 @@ void Game::StartDialog(DialogContext& ctx, Unit* talker, GameDialog* dialog)
 	ctx.dialog_skip = -1;
 	ctx.dialog_esc = -1;
 	ctx.talker = talker;
-	ctx.talker->busy = Unit::Busy_Talking;
-	ctx.talker->look_target = ctx.pc->unit;
+	if(Net::IsLocal())
+	{
+		// this vars are useless for clients, don't increase ref counter
+		ctx.talker->busy = Unit::Busy_Talking;
+		ctx.talker->look_target = ctx.pc->unit;
+	}
 	ctx.update_news = true;
 	ctx.update_locations = 1;
 	ctx.pc->action = PlayerController::Action_Talk;
@@ -6048,7 +6052,7 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 	}
 	else if(strcmp(msg, "ironfist_joined") == 0)
 	{
-		for(Unit* unit : tournament_units)
+		for(auto& unit : tournament_units)
 		{
 			if(unit == ctx.pc->unit)
 				return true;
@@ -10925,7 +10929,6 @@ void Game::PlayAttachedSound(Unit& unit, SOUND sound, float smin, float smax)
 	AttachedSound& s = Add1(attached_sounds);
 	s.channel = channel;
 	s.unit = &unit;
-	unit.AddRef();
 }
 
 void Game::StopAllSounds()
@@ -12863,14 +12866,18 @@ void Game::UpdateAttachedSounds(float dt)
 		if(it->unit)
 		{
 			if(it->unit->to_remove)
+			{
 				it->unit = nullptr;
+				if(!sound_mgr->IsPlaying(it->channel))
+					_to_remove.push_back(index);
+			}
 			else if(!sound_mgr->UpdateChannelPosition(it->channel, it->unit->GetHeadSoundPos()))
 			{
 				it->unit = nullptr;
 				_to_remove.push_back(index);
 			}
 		}
-		if(!it->unit)
+		else
 		{
 			if(!sound_mgr->IsPlaying(it->channel))
 				_to_remove.push_back(index);
@@ -15516,27 +15523,6 @@ void Game::DeleteUnit(Unit* unit)
 			RemoveElementTry(at_arena, unit);
 			if(arena_fighter == unit)
 				arena_fighter = nullptr;
-		}
-		if(tournament_state >= TOURNAMENT_IN_PROGRESS)
-		{
-			RemoveElementTry(tournament_units, unit);
-			for(vector<std::pair<Unit*, Unit*>>::iterator it = tournament_pairs.begin(), end = tournament_pairs.end(); it != end; ++it)
-			{
-				if(it->first == unit)
-				{
-					it->first = nullptr;
-					break;
-				}
-				else if(it->second == unit)
-				{
-					it->second = nullptr;
-					break;
-				}
-			}
-			if(tournament_skipped_unit == unit)
-				tournament_skipped_unit = nullptr;
-			if(tournament_other_fighter == unit)
-				tournament_other_fighter = nullptr;
 		}
 
 		if(unit->usable)

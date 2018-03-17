@@ -13,6 +13,16 @@ CURRENT:
 	? leave after combat
 	? leave when free round
 	- things get bugged when c left, no info about him losing, for c there was units standing and doing nothing
+	? tournament not enough units
+	? first player leave
+	? second player leave
+	? both players leave
+	? no winner
+	? winner lookat
+	?? verify all refs [R]
+	- one of tournament units is invisible for clients, unit was warped from building (?)
+	- talk with hero is invalid when asked about, restart don't work?
+	- ai don't regenerate hp when eating?
 ? using cheats to exit from arena
 	? arena combat
 	? arena combat city
@@ -20,19 +30,6 @@ CURRENT:
 	? pvp city
 	? tournament
 	? tournament city
-? test SmartPtr
-	? attached sound
-	? look target
-		? remove ai unit
-		? remove player unit
-		? cleanup
-	! add changelog
-? angelscript
-	? console
-	? script
-	? if_script
-	? negated if
-		? if not special "is_arena_free"
 	
 -? hero go wander, don't make them wander, SetMode sets city_wander to false
 	void HeroData::SetMode(Mode new_mode)
@@ -126,6 +123,7 @@ NEW:
 + hunters guild, quests (wielki łowczy), bad wolf boss
 + attach sounds to scene node, not to unit
 + add perks from f_perks to issues
++ human eye model
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos

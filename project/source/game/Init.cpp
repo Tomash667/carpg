@@ -17,6 +17,7 @@
 #include "UnitGroup.h"
 #include "SoundManager.h"
 #include "ScriptManager.h"
+#include "SaveState.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -422,36 +423,54 @@ void Game::StartGameMode()
 		StartQuickGame();
 		break;
 	case QUICKSTART_HOST:
-		if(!player_name.empty())
+	case QUICKSTART_LOAD_MP:
+		if(player_name.empty())
 		{
-			if(!server_name.empty())
-			{
-				try
-				{
-					InitServer();
-				}
-				catch(cstring err)
-				{
-					GUI.SimpleDialog(err, nullptr);
-					break;
-				}
-
-				server_panel->Show();
-				Net_OnNewGameServer();
-				UpdateServerInfo();
-
-				if(change_title_a)
-					ChangeTitle();
-			}
-			else
-				Warn("Quickstart: Can't create server, no server name.");
-		}
-		else
 			Warn("Quickstart: Can't create server, no player nick.");
+			break;
+		}
+		if(server_name.empty())
+		{
+			Warn("Quickstart: Can't create server, no server name.");
+			break;
+		}
+
+		if(quickstart == QUICKSTART_LOAD_MP)
+		{
+			try
+			{
+				mp_load = true;
+				LoadGameSlot(quickstart_slot);
+				autoready = true;
+			}
+			catch(const SaveException& ex)
+			{
+				GUI.SimpleDialog(ex.localized_msg, nullptr);
+				break;
+			}
+		}
+
+		try
+		{
+			InitServer();
+		}
+		catch(cstring err)
+		{
+			GUI.SimpleDialog(err, nullptr);
+			break;
+		}
+
+		server_panel->Show();
+		Net_OnNewGameServer();
+		UpdateServerInfo();
+
+		if(change_title_a)
+			ChangeTitle();
 		break;
 	case QUICKSTART_JOIN_LAN:
 		if(!player_name.empty())
 		{
+			autoready = true;
 			pick_autojoin = true;
 			pick_server_panel->Show();
 		}
@@ -462,12 +481,18 @@ void Game::StartGameMode()
 		if(!player_name.empty())
 		{
 			if(!server_ip.empty())
+			{
+				autoready = true;
 				QuickJoinIp();
+			}
 			else
 				Warn("Quickstart: Can't join server, no server ip.");
 		}
 		else
 			Warn("Quickstart: Can't join server, no player nick.");
+		break;
+	case QUICKSTART_LOAD:
+		LoadGameSlot(quickstart_slot);
 		break;
 	default:
 		assert(0);

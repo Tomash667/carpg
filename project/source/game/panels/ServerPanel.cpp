@@ -494,6 +494,7 @@ void ServerPanel::CheckAutopick()
 		Info("ServerPanel: Autopicking character.");
 		PickClass(game->autopick_class, true);
 		game->autopick_class = Class::INVALID;
+		game->autoready = false;
 	}
 }
 

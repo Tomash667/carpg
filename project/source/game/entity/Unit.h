@@ -588,6 +588,7 @@ struct Unit
 	int weight, weight_max;
 	//-----------------------------------------------------------------------------
 	int GetGold() const { return gold; }
+	void ModGold(int gold_change) { SetGold(gold + gold_change); }
 	void SetGold(int gold);
 	bool HaveWeapon() const { return slots[SLOT_WEAPON] != nullptr; }
 	bool HaveBow() const { return slots[SLOT_BOW] != nullptr; }

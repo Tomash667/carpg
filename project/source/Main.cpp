@@ -490,6 +490,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				game.quickstart = QUICKSTART_JOIN_LAN;
 			else if(strcmp(arg, "joinip") == 0)
 				game.quickstart = QUICKSTART_JOIN_IP;
+			else if(strcmp(arg, "load") == 0)
+				game.quickstart = QUICKSTART_LOAD;
+			else if(strcmp(arg, "loadmp") == 0)
+				game.quickstart = QUICKSTART_LOAD_MP;
+			else if(strcmp(arg, "loadslot") == 0)
+			{
+				if(argc != i + 1 && argv[i + 1][0] != '-')
+				{
+					++i;
+					int slot;
+					if(!TextHelper::ToInt(argv[i], slot) || slot < 1 || slot > MAX_SAVE_SLOTS)
+						Warn("Invalid loadslot value '%s'.", argv[i]);
+					else
+						game.quickstart_slot;
+				}
+				else
+					Warn("No argument for parameter '-loadslot'!");
+			}
 			else if(strcmp(arg, "console") == 0)
 				console = True;
 			else if(strcmp(arg, "windowed") == 0)
@@ -653,7 +671,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			game.quickstart = QUICKSTART_JOIN_LAN;
 		else if(mode == "joinip")
 			game.quickstart = QUICKSTART_JOIN_IP;
+		else if(mode == "load")
+			game.quickstart = QUICKSTART_LOAD;
+		else if(mode == "loadmp")
+			game.quickstart = QUICKSTART_LOAD_MP;
 	}
+	int slot = cfg.GetInt("loadslot");
+	if(slot != -1 && slot >= 1 && slot <= MAX_SAVE_SLOTS)
+		game.quickstart_slot = slot;
 
 	// autopicked class in MP
 	{

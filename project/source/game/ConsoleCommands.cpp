@@ -182,7 +182,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 			{
 				string& output = script_mgr->OpenOutput();
 				script_mgr->SetContext(pc, pc_data.selected_target);
-				bool ok = script_mgr->RunScript(code);
+				script_mgr->RunScript(code);
 				if(!output.empty())
 					Msg(output.c_str());
 				script_mgr->CloseOutput();

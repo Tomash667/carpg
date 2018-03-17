@@ -162,7 +162,7 @@ void GameGui::DrawFront()
 		GUI.DrawSpriteFull(tObwodkaBolu, COLOR_RGBA(255, 255, 255, (int)Clamp<float>(game.pc->dmgc / game.pc->unit->hp * 5 * 255, 0.f, 255.f)));
 
 	// debug info
-	if(game.debug_info && (!Net::IsLocal() || !game.devmode))
+	if(game.debug_info && !game.devmode)
 		game.debug_info = false;
 	if(game.debug_info)
 	{
@@ -183,18 +183,22 @@ void GameGui::DrawFront()
 			Unit& u = *it.unit;
 			Vec3 text_pos = u.visual_pos;
 			text_pos.y += u.GetUnitHeight();
-			if(u.IsAI())
+			LocalString str;
+			if(Net::IsOnline())
+				str = Format("%d - ", u.netid);
+			str += Format("%s (%s) [%u]", u.GetRealName(), u.data->id.c_str(), u.refs);
+			if(Net::IsLocal())
 			{
-				AIController& ai = *u.ai;
-				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, LVL:%d\nAni:%d, A:%d, Ai:%s %.2f\n%s, %d %.2f %d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.level,
-					u.animation, u.action, str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer,
-					ai.unit->run_attack ? 1 : 0), u, text_pos, -1);
+				if(u.IsAI())
+				{
+					AIController& ai = *u.ai;
+					str += Format("\nB:%d, F:%d, LVL:%d\nAni:%d, A:%d, Ai:%s %.2f\n%s, %d %.2f %d", u.busy, u.frozen, u.level, u.animation, u.action,
+						str_ai_state[ai.state], ai.timer, str_ai_idle[ai.idle_action], ai.city_wander ? 1 : 0, ai.loc_timer, ai.unit->run_attack ? 1 : 0);
+				}
+				else
+					str += Format("\nB:%d, F:%d, Ani:%d, A:%d", u.busy, u.frozen, u.animation, u.player->action);
 			}
-			else
-			{
-				DrawUnitInfo(Format("%s (%s)\nB:%d, F:%d, Ani:%d, A:%d", u.GetName(), u.data->id.c_str(), u.busy, u.frozen, u.animation, u.player->action),
-					u, text_pos, -1);
-			}
+			DrawUnitInfo(str, u, text_pos, -1);
 		}
 	}
 	else

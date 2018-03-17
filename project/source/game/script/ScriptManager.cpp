@@ -314,13 +314,12 @@ bool ScriptManager::RunScript(cstring code, bool validate)
 	if(r < 0)
 	{
 		Log(Logger::L_ERROR, Format("Failed to parse script (%d).", r), code);
-		engine->DiscardModule("RunScriptModule");
 		return false;
 	}
 
 	if(validate)
 	{
-		engine->DiscardModule("RunScriptModule");
+		func->Release();
 		return true;
 	}
 
@@ -348,7 +347,6 @@ bool ScriptManager::RunScript(cstring code, bool validate)
 
 	func->Release();
 	engine->ReturnContext(tmp_context);
-	engine->DiscardModule("RunScriptModule");
 
 	return finished;
 }
@@ -365,13 +363,12 @@ bool ScriptManager::RunIfScript(cstring code, bool validate)
 	if(r < 0)
 	{
 		Log(Logger::L_ERROR, Format("Failed to parse if script (%d).", r), code);
-		engine->DiscardModule("RunScriptModule");
 		return false;
 	}
 
 	if(validate)
 	{
-		engine->DiscardModule("RunScriptModule");
+		func->Release();
 		return true;
 	}
 
@@ -403,7 +400,6 @@ bool ScriptManager::RunIfScript(cstring code, bool validate)
 
 	func->Release();
 	engine->ReturnContext(tmp_context);
-	engine->DiscardModule("RunScriptModule");
 
 	return ok;
 }

@@ -80,7 +80,9 @@ enum QUICKSTART
 	QUICKSTART_SINGLE,
 	QUICKSTART_HOST,
 	QUICKSTART_JOIN_LAN,
-	QUICKSTART_JOIN_IP
+	QUICKSTART_JOIN_IP,
+	QUICKSTART_LOAD,
+	QUICKSTART_LOAD_MP
 };
 
 //-----------------------------------------------------------------------------
@@ -461,6 +463,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void StartGameMode();
 
 	QUICKSTART quickstart;
+	int quickstart_slot;
 	bool disable_net_stats;
 	ScriptManager* script_mgr;
 
@@ -801,10 +804,11 @@ public:
 		TOURNAMENT_IN_PROGRESS
 	} tournament_state;
 	int tournament_year, tournament_city_year, tournament_city, tournament_state2, tournament_state3, tournament_round, tournament_arena;
-	vector<Unit*> tournament_units;
+	vector<SmartPtr<Unit>> tournament_units;
 	float tournament_timer;
-	Unit* tournament_master, *tournament_skipped_unit, *tournament_other_fighter, *tournament_winner;
-	vector<std::pair<Unit*, Unit*> > tournament_pairs;
+	Unit* tournament_master;
+	SmartPtr<Unit> tournament_skipped_unit, tournament_other_fighter, tournament_winner;
+	vector<std::pair<SmartPtr<Unit>, SmartPtr<Unit>>> tournament_pairs;
 	bool tournament_generated;
 
 	void StartTournament(Unit* arena_master);
@@ -1550,7 +1554,7 @@ public:
 	// MENU / MAIN MENU / OPTIONS
 	Class quickstart_class, autopick_class; // mo¿na po³¹czyæ
 	string quickstart_name;
-	bool check_updates, skip_tutorial;
+	bool check_updates, skip_tutorial, autoready;
 	string save_input_text;
 	int hair_redo_index;
 

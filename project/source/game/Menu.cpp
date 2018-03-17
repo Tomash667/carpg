@@ -2292,6 +2292,17 @@ bool Game::ValidateNick(cstring nick)
 
 void Game::UpdateLobbyNet(float dt)
 {
+	if(autoready)
+	{
+		PlayerInfo& info = *game_players[0];
+		if(!info.ready)
+		{
+			info.ready = true;
+			ChangeReady();
+		}
+		autoready = false;
+	}
+
 	if(Net::IsServer())
 		UpdateLobbyNetServer(dt);
 	else
