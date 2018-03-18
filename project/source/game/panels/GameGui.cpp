@@ -1079,14 +1079,22 @@ bool GameGui::UpdateChoice(DialogContext& ctx, int choices)
 			scrollbar.offset = float(scrollbar.total - scrollbar.part);
 	}
 
-	// wybór opcji dialogowej z klawiatury (1,2,3,..,9)
+	// wybór opcji dialogowej z klawiatury (1,2,3,..,9,0)
 	if(game.AllowKeyboard() && !Key.Down(VK_SHIFT))
 	{
-		for(int i = 0; i <= min(8, choices); ++i)
+		for(int i = 0; i < min(10, choices); ++i)
 		{
 			if(Key.PressedRelease((byte)'1' + i))
 			{
 				ctx.choice_selected = i;
+				return true;
+			}
+		}
+		if(choices >= 10)
+		{
+			if(Key.PressedRelease('0'))
+			{
+				ctx.choice_selected = 9;
 				return true;
 			}
 		}

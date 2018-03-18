@@ -257,7 +257,16 @@ void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify, bool
 		}
 	}
 	else if(Net::IsLocal())
+	{
 		unit.ai->potion = -1;
+		if(unit.busy == Unit::Busy_Talking)
+		{
+			DialogContext* ctx = FindDialogContext(&unit);
+			if(ctx)
+				EndDialog(*ctx);
+			unit.busy = Unit::Busy_No;
+		}
+	}
 }
 
 //=================================================================================================
@@ -3964,6 +3973,7 @@ void Game::EndDialog(DialogContext& ctx)
 
 	ctx.talker->busy = Unit::Busy_No;
 	ctx.talker->look_target = nullptr;
+	ctx.talker = nullptr;
 	ctx.pc->action = PlayerController::Action_None;
 
 	if(!ctx.is_local)
@@ -14530,8 +14540,20 @@ void Game::ProcessUnitWarps()
 			}
 		}
 
-		pt1 /= (float)count1;
-		pt2 /= (float)count2;
+		if(count1 > 0)
+			pt1 /= (float)count1;
+		else
+		{
+			InsideBuilding& building = *GetArena();
+			pt1 = ((building.arena1.Midpoint() + building.arena2.Midpoint()) / 2).XZ();
+		}
+		if(count2 > 0)
+			pt2 /= (float)count2;
+		else
+		{
+			InsideBuilding& building = *GetArena();
+			pt2 = ((building.arena1.Midpoint() + building.arena2.Midpoint()) / 2).XZ();
+		}
 
 		for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
 			(*it)->rot = Vec3::LookAtAngle((*it)->pos, (*it)->in_arena == 0 ? pt2 : pt1);
@@ -18804,7 +18826,7 @@ void Game::UpdateArena(float dt)
 	if(arena_etap == Arena_OdliczanieDoPrzeniesienia)
 	{
 		arena_t += dt * 2;
-		if(arena_t >= 1.f)
+		if(arena_t >= 10.f) // !!!!!!!!!
 		{
 			if(arena_tryb == Arena_Walka)
 			{
@@ -18820,27 +18842,31 @@ void Game::UpdateArena(float dt)
 			}
 			else
 			{
-				for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
+				for(auto unit : at_arena)
 				{
 					UnitWarpData& uwd = Add1(unit_warp_data);
-					uwd.unit = *it;
+					uwd.unit = unit;
 					uwd.where = -2;
 				}
 
-				at_arena[0]->in_arena = 0;
-				at_arena[1]->in_arena = 1;
-
-				if(Net::IsOnline())
+				if(!at_arena.empty())
 				{
+					at_arena[0]->in_arena = 0;
+					if(Net::IsOnline())
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::CHANGE_ARENA_STATE;
 						c.unit = at_arena[0];
 					}
+					if(at_arena.size() >= 2)
 					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::CHANGE_ARENA_STATE;
-						c.unit = at_arena[1];
+						at_arena[1]->in_arena = 1;
+						if(Net::IsOnline())
+						{
+							NetChange& c = Add1(Net::changes);
+							c.type = NetChange::CHANGE_ARENA_STATE;
+							c.unit = at_arena[1];
+						}
 					}
 				}
 			}
@@ -20148,6 +20174,22 @@ void Game::StartDialog2(PlayerController* player, Unit* talker, GameDialog* dial
 	StartDialog(ctx, talker, dialog);
 }
 
+DialogContext* Game::FindDialogContext(Unit* talker)
+{
+	assert(talker);
+	if(dialog_context.talker == talker)
+		return &dialog_context;
+	if(Net::IsOnline())
+	{
+		for(PlayerInfo* player : game_players)
+		{
+			if(player->pc->dialog_ctx->talker == talker)
+				return player->pc->dialog_ctx;
+		}
+	}
+	return nullptr;
+}
+
 void Game::CreateUnitPhysics(Unit& unit, bool position)
 {
 	btCapsuleShape* caps = new btCapsuleShape(unit.GetUnitRadius(), max(MIN_H, unit.GetUnitHeight()));
@@ -20202,6 +20244,17 @@ void Game::WarpNearLocation(LevelContext& ctx, Unit& unit, const Vec3& pos, floa
 	unit.pos = tmp_pos;
 	MoveUnit(unit, true);
 	unit.visual_pos = unit.pos;
+
+	if(Net::IsOnline())
+	{
+		if(unit.interp)
+			unit.interp->Reset(unit.pos, unit.rot);
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::WARP;
+		c.unit = &unit;
+		if(unit.IsPlayer())
+			unit.player->player_info->warping = true;
+	}
 
 	if(unit.cobj)
 		UpdateUnitPhysics(unit, unit.pos);

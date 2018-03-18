@@ -53,12 +53,15 @@ void Game::GenerateTournamentUnits()
 	Vec3 pos = city_ctx->FindBuilding(BuildingGroup::BG_ARENA)->walk_pt;
 	tournament_master = FindUnitByIdLocal("arena_master");
 
-	// przenieœ herosów przed arenê
+	// warp heroes in front of arena
 	for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 	{
 		Unit& u = **it;
 		if(IfUnitJoinTournament(u) && !u.IsFollowingTeamMember())
+		{
+			BreakUnitAction(u, BREAK_ACTION_MODE::INSTANT, true);
 			WarpNearLocation(local_ctx, u, pos, 12.f, false);
+		}
 	}
 	InsideBuilding* inn = city_ctx->FindInn();
 	for(vector<Unit*>::iterator it = inn->units.begin(), end = inn->units.end(); it != end;)
@@ -66,7 +69,7 @@ void Game::GenerateTournamentUnits()
 		Unit& u = **it;
 		if(IfUnitJoinTournament(u) && !u.IsFollowingTeamMember())
 		{
-			BreakUnitAction(u, BREAK_ACTION_MODE::NORMAL, true);
+			BreakUnitAction(u, BREAK_ACTION_MODE::INSTANT, true);
 			u.in_building = -1;
 			WarpNearLocation(local_ctx, u, pos, 12.f, false);
 			local_ctx.units->push_back(&u);

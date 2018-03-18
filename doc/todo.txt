@@ -1,8 +1,6 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-- one of tournament units is invisible for clients, unit was warped from building (?)
-- quiting at Arena_OdliczanieDoPrzeniesienia for pvp/tournament cause crash
 -? hero go wander, don't make them wander, SetMode sets city_wander to false
 	void HeroData::SetMode(Mode new_mode)
 	{

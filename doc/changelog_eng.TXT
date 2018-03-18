@@ -36,6 +36,7 @@ Version 0.7 (2018-XX-YY):
 - fixed crash when client have sound attached and quits
 - when npc is looking at player in some quests and player quits it won't make npc freeze
 - fixed bugs and crashes when player leave game during tournament
+- pressing next available dialog option button don't crash, 9 and 0 can be used now
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

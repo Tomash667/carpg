@@ -719,6 +719,8 @@ public:
 	vector<string> dialog_choices; // u¿ywane w MP u klienta
 	string predialog;
 
+	DialogContext* FindDialogContext(Unit* talker);
+
 	//---------------------------------
 	// PATHFINDING
 	vector<APoint> a_map;
