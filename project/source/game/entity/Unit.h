@@ -744,6 +744,7 @@ struct Unit
 		else
 			return true;
 	}
+	bool CanAct();
 
 	int CalculateLevel();
 	int CalculateLevel(Class clas);

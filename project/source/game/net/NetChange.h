@@ -50,6 +50,7 @@ struct NetChange
 		HELLO, // play unit hello sound [int(netid)-unit]
 		ALL_QUESTS_COMPLETED, // info about completing all unique quests []
 		TALK, // unit talks or player start dialog SERVER[int(netid)-unit, byte(id)-animation, int(ile)-skip id, string1(str)-text] / CLIENT[int(netid)-unit]
+		TALK_POS, // show talk text at position [Vec3(pos), string1(str)-text]
 		LOOT_CHEST, // player wants to loot chest [int(id)-chest netid]
 		CHEST_OPEN, // chest opening animation [int(id)-chest netid]
 		CHEST_CLOSE, // chest closing animation [int(id)-chest netid]

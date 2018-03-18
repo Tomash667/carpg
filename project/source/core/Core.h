@@ -221,6 +221,16 @@ public:
 		return *this;
 	}
 
+	SmartPtr& operator = (const SmartPtr& sptr)
+	{
+		if(ptr)
+			ptr->Release();
+		ptr = sptr.ptr;
+		if(ptr)
+			ptr->AddRef();
+		return *this;
+	}
+
 	bool operator == (T* ptr2) const
 	{
 		return ptr == ptr2;
@@ -235,11 +245,16 @@ private:
 	T* ptr;
 };
 
-//template<typename T>
-//inline bool operator == (T* ptr, const SmartPtr<T>& sptr)
-//{
-//	return sptr == ptr;
-//}
+template<typename T>
+inline bool operator == (T* ptr, SmartPtr<T>& sptr)
+{
+	return sptr == ptr;
+}
+template<typename T>
+inline bool operator != (T* ptr, SmartPtr<T>& sptr)
+{
+	return sptr != ptr;
+}
 
 //-----------------------------------------------------------------------------
 // RAII for simple pointer

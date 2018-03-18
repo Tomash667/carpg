@@ -35,6 +35,7 @@ Wersja 0.7 (2018-XX-YY):
 - naprawiony brak dzia³ania ustawieñ g³oœnoœci dla niektórych dŸwiêków
 - naprawiony crash gdy dŸwiêk jest przypiêty do klienta a on opuœci grê
 - opuszczenie gry przez gracza na którego patrzy siê npc w niektórych questach nie powoduje jej zawieszenia
+- naprawione bugi i crashe w czasie zawodów gdy gracz opuœci grê
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):

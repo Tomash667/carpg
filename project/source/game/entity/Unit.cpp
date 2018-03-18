@@ -762,20 +762,20 @@ void Unit::UpdateEffects(float dt)
 			continue;
 		switch(it->effect)
 		{
-		case E_REGENERATE:
+		case EffectId::Regeneration:
 			if(it->power > best_reg)
 				best_reg = it->power;
 			break;
-		case E_POISON:
+		case EffectId::Poison:
 			poison_dmg += it->power;
 			break;
-		case E_ALCOHOL:
+		case EffectId::Alcohol:
 			alco_sum += it->power;
 			break;
-		case E_FOOD:
+		case EffectId::FoodRegeneration:
 			food_heal += dt;
 			break;
-		case E_STAMINA:
+		case EffectId::StaminaRegeneration:
 			if(it->power > best_stamina)
 				best_stamina = it->power;
 			break;
@@ -901,7 +901,7 @@ void Unit::EndEffects(int days, int* best_nat)
 	{
 		switch(it->effect)
 		{
-		case E_REGENERATE:
+		case EffectId::Regeneration:
 			{
 				float reg = it->power * it->time;
 				if(reg > best_reg)
@@ -909,21 +909,21 @@ void Unit::EndEffects(int days, int* best_nat)
 				_to_remove.push_back(index);
 			}
 			break;
-		case E_POISON:
+		case EffectId::Poison:
 			hp -= it->power * it->time;
 			_to_remove.push_back(index);
 			break;
-		case E_FOOD:
+		case EffectId::FoodRegeneration:
 			food += it->time;
 			_to_remove.push_back(index);
 			break;
-		case E_ALCOHOL:
-		case E_ANTIMAGIC:
-		case E_STAMINA:
-		case E_STUN:
+		case EffectId::Alcohol:
+		case EffectId::MagicResistance:
+		case EffectId::StaminaRegeneration:
+		case EffectId::Stun:
 			_to_remove.push_back(index);
 			break;
-		case E_NATURAL:
+		case EffectId::NaturalHealingMod:
 			best_natural = 2.f;
 			if(best_nat)
 			{
@@ -2425,6 +2425,19 @@ int Unit::GetBuffs() const
 		b |= BUFF_ALCOHOL;
 
 	return b;
+}
+
+//=================================================================================================
+bool Unit::CanAct()
+{
+	if(talking || !IsStanding())
+		return false;
+	if(ai)
+	{
+		if(ai->state != AIController::Idle)
+			return false;
+	}
+	return true;
 }
 
 //=================================================================================================

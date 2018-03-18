@@ -407,6 +407,7 @@ const Item* FindItemOrList(const AnyString& id, ItemListResult& lis)
 	return nullptr;
 }
 
+//=================================================================================================
 EffectId Consumable::ToEffect() const
 {
 	switch(effect)

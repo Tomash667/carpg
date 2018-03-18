@@ -4793,6 +4793,12 @@ void Game::WriteServerChanges(BitStream& stream)
 			StringPool.Free(c.str);
 			RemoveElement(net_talk, c.str);
 			break;
+		case NetChange::TALK_POS:
+			stream.Write(c.pos);
+			WriteString1(stream, *c.str);
+			StringPool.Free(c.str);
+			RemoveElement(net_talk, c.str);
+			break;
 		case NetChange::CHANGE_LOCATION_STATE:
 			stream.WriteCasted<byte>(c.id);
 			stream.WriteCasted<byte>(c.ile);
@@ -6114,6 +6120,19 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 						}
 					}
 				}
+			}
+			break;
+		// show talk text at position
+		case NetChange::TALK_POS:
+			{
+				Vec3 pos;
+				if(!stream.Read(pos)
+					|| !ReadString1(stream))
+				{
+					StreamError("Update client: Broken TALK_POS.");
+					break;
+				}
+				game_gui->AddSpeechBubble(pos, BUF);
 			}
 			break;
 		// change location state
@@ -10070,6 +10089,7 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::GAME_STATS:
 		return false;
 	case NetChange::TALK:
+	case NetChange::TALK_POS:
 		if(Net::IsServer() && c.str)
 		{
 			StringPool.Free(c.str);

@@ -1,36 +1,8 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-- alcohol doesn't work after effects rework? contest after c/c2 quitting
-? client leave - 3 player tests:
-	- talking about round fights, pair can have null, smart ptr?
-	- talking before fight
-	- when null it will silently add units to tournament_units
-	- both units left, no winner will crash
-	- tournament winner quit will crash
-	? leave before combat
-	? leave on combat
-	? leave after combat
-	? leave when free round
-	- things get bugged when c left, no info about him losing, for c there was units standing and doing nothing
-	? tournament not enough units
-	? first player leave
-	? second player leave
-	? both players leave
-	? no winner
-	? winner lookat
-	?? verify all refs [R]
-	- one of tournament units is invisible for clients, unit was warped from building (?)
-	- talk with hero is invalid when asked about, restart don't work?
-	- ai don't regenerate hp when eating?
-? using cheats to exit from arena
-	? arena combat
-	? arena combat city
-	? pvp
-	? pvp city
-	? tournament
-	? tournament city
-	
+- one of tournament units is invisible for clients, unit was warped from building (?)
+- quiting at Arena_OdliczanieDoPrzeniesienia for pvp/tournament cause crash
 -? hero go wander, don't make them wander, SetMode sets city_wander to false
 	void HeroData::SetMode(Mode new_mode)
 	{
@@ -124,6 +96,8 @@ NEW:
 + attach sounds to scene node, not to unit
 + add perks from f_perks to issues
 + human eye model
++ tournament - don't repeat for final fight (X vs Y, starting fight X vs Y)
++ rescale alcohol values - contest is always for extra rounds
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos

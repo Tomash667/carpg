@@ -77,9 +77,9 @@ void Game::GenerateTournamentUnits()
 			++it;
 	}
 
-	// generuj herosów
-	int ile = Random(6, 9);
-	for(int i = 0; i < ile; ++i)
+	// generate heroes
+	int count = Random(6, 9);
+	for(int i = 0; i < count; ++i)
 	{
 		Unit* u = SpawnUnitNearLocation(local_ctx, pos, *GetRandomHeroData(), nullptr, Random(5, 20), 12.f);
 		if(u)
@@ -96,6 +96,12 @@ void Game::GenerateTournamentUnits()
 //=================================================================================================
 void Game::UpdateTournament(float dt)
 {
+	if(arena_free && !tournament_master->IsAlive())
+	{
+		CleanTournament();
+		return;
+	}
+
 	// info about getting out of range
 	for(auto& unit : tournament_units)
 		VerifyTournamentUnit(unit);
@@ -109,7 +115,7 @@ void Game::UpdateTournament(float dt)
 
 	if(tournament_state == TOURNAMENT_STARTING)
 	{
-		if(tournament_master->busy == Unit::Busy_No)
+		if(tournament_master->busy == Unit::Busy_No && tournament_master->IsStanding() && tournament_master->ai->state == AIController::Idle)
 			tournament_timer += dt;
 
 		// team members joining
@@ -171,7 +177,7 @@ void Game::UpdateTournament(float dt)
 		}
 		else if(tournament_state2 == 3)
 		{
-			if(!tournament_master->talking)
+			if(tournament_master->CanAct())
 			{
 				if(!tournament_pairs.empty())
 				{
@@ -190,7 +196,7 @@ void Game::UpdateTournament(float dt)
 		}
 		else if(tournament_state2 == 4)
 		{
-			if(!tournament_master->talking)
+			if(tournament_master->CanAct())
 			{
 				tournament_state = TOURNAMENT_IN_PROGRESS;
 				tournament_state2 = 0;
@@ -199,7 +205,7 @@ void Game::UpdateTournament(float dt)
 		}
 		else
 		{
-			if(!tournament_master->talking)
+			if(tournament_master->CanAct())
 			{
 				// not enough units, end tournament
 				CleanTournament();
@@ -211,7 +217,7 @@ void Game::UpdateTournament(float dt)
 		if(tournament_state2 == 0)
 		{
 			// introduce all fight in this round
-			if(!tournament_master->talking)
+			if(tournament_master->CanAct())
 			{
 				cstring text;
 				if(tournament_state3 == 0)
@@ -256,7 +262,7 @@ void Game::UpdateTournament(float dt)
 			if(tournament_state3 == 0)
 			{
 				// tell next fight participants
-				if(!tournament_master->talking)
+				if(tournament_master->CanAct())
 				{
 					auto& p = tournament_pairs.back();
 					TournamentTalk(Format(txTour[9], p.first->GetRealName(), p.second->GetRealName()));
@@ -266,7 +272,7 @@ void Game::UpdateTournament(float dt)
 			else if(tournament_state3 == 1)
 			{
 				// check if units are ready to fight
-				if(!tournament_master->talking)
+				if(tournament_master->CanAct())
 				{
 					auto& p = tournament_pairs.back();
 					if(p.first->to_remove || !p.first->IsStanding() || p.first->frozen != FROZEN::NO
@@ -346,7 +352,7 @@ void Game::UpdateTournament(float dt)
 			else if(tournament_state3 == 2)
 			{
 				// check if second unit is here
-				if(!tournament_master->talking)
+				if(tournament_master->CanAct())
 				{
 					if(tournament_other_fighter->to_remove || !tournament_other_fighter->IsStanding() || tournament_other_fighter->frozen != FROZEN::NO
 						|| !(Vec3::Distance2d(tournament_other_fighter->pos, tournament_master->pos) <= 64.f
@@ -371,7 +377,7 @@ void Game::UpdateTournament(float dt)
 			{
 				// one or more units left
 				// or talking after combat
-				if(!tournament_master->talking)
+				if(tournament_master->CanAct())
 				{
 					if(tournament_pairs.empty())
 					{
@@ -388,9 +394,7 @@ void Game::UpdateTournament(float dt)
 							{
 								// no winner
 								TournamentTalk(txTour[15]);
-								tournament_state3 = 1;
-								AddNews(txTour[17]);
-								CleanTournament();
+								tournament_state3 = 2;
 							}
 							else
 							{
@@ -429,7 +433,7 @@ void Game::UpdateTournament(float dt)
 			else if(tournament_state3 == 5)
 			{
 				// after combat
-				if(!tournament_master->talking && tournament_master->busy == Unit::Busy_No)
+				if(tournament_master->CanAct() && tournament_master->busy == Unit::Busy_No)
 				{
 					// give healing potions
 					static const Item* p1 = Item::Get("p_hp");
@@ -495,7 +499,7 @@ void Game::UpdateTournament(float dt)
 		}
 		else if(tournament_state2 == 2)
 		{
-			if(!tournament_master->talking)
+			if(tournament_master->CanAct())
 			{
 				if(tournament_state3 == 0)
 				{
@@ -527,6 +531,12 @@ void Game::UpdateTournament(float dt)
 						tournament_winner->busy = Unit::Busy_No;
 					}
 					tournament_master->look_target = nullptr;
+					CleanTournament();
+				}
+				else if(tournament_state3 == 2)
+				{
+					// no winner
+					AddNews(txTour[17]);
 					CleanTournament();
 				}
 			}
@@ -579,7 +589,17 @@ void Game::StartTournamentRound()
 void Game::TournamentTalk(cstring text)
 {
 	UnitTalk(*tournament_master, text);
-	game_gui->AddSpeechBubble(GetArena()->exit_area.Midpoint().XZ(1.5f), text);
+	Vec3 pos = GetArena()->exit_area.Midpoint().XZ(1.5f);
+	game_gui->AddSpeechBubble(pos, text);
+	if(Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::TALK_POS;
+		c.pos = pos;
+		c.str = StringPool.Get();
+		*c.str = text;
+		net_talk.push_back(c.str);
+	}
 }
 
 //=================================================================================================

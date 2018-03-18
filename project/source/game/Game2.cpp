@@ -4281,7 +4281,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(ctx.dialog_level == if_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-				ExecuteGameDialogSpecial(ctx, msg, if_level);
+				if(ExecuteGameDialogSpecial(ctx, msg, if_level))
+					return;
 			}
 			break;
 		case DT_SET_QUEST_PROGRESS:
@@ -4620,7 +4621,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 	}
 }
 
-void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level)
+bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level)
 {
 	QuestManager& quest_manager = QuestManager::Get();
 
@@ -4631,7 +4632,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		{
 			DialogTalk(ctx, random_string(txMayorQFailed));
 			++ctx.dialog_pos;
-			return;
+			return true;
 		}
 		else if(worldtime - city_ctx->quest_mayor_time > 30 || city_ctx->quest_mayor_time == -1)
 		{
@@ -4673,7 +4674,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				{
 					DialogTalk(ctx, random_string(txQuestAlreadyGiven));
 					++ctx.dialog_pos;
-					return;
+					return true;
 				}
 				else
 					have_quest = false;
@@ -4685,7 +4686,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		{
 			DialogTalk(ctx, random_string(txMayorNoQ));
 			++ctx.dialog_pos;
-			return;
+			return true;
 		}
 	}
 	else if(strcmp(msg, "dowodca_quest") == 0)
@@ -4695,7 +4696,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		{
 			DialogTalk(ctx, random_string(txCaptainQFailed));
 			++ctx.dialog_pos;
-			return;
+			return true;
 		}
 		else if(worldtime - city_ctx->quest_captain_time > 30 || city_ctx->quest_captain_time == -1)
 		{
@@ -4737,7 +4738,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				{
 					DialogTalk(ctx, random_string(txQuestAlreadyGiven));
 					++ctx.dialog_pos;
-					return;
+					return true;
 				}
 				else
 					have_quest = false;
@@ -4749,7 +4750,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		{
 			DialogTalk(ctx, random_string(txCaptainNoQ));
 			++ctx.dialog_pos;
-			return;
+			return true;
 		}
 	}
 	else if(strcmp(msg, "przedmiot_quest") == 0)
@@ -4805,7 +4806,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			// resetuj dialog
 			ctx.dialog_pos = 0;
 			ctx.dialog_level = 0;
-			return;
+			return true;
 		}
 
 		// zabierz z³oto i zamróŸ
@@ -4889,13 +4890,13 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 
 						if(Net::IsOnline())
 							Net_ChangeLocationState(id2, false);
-						return;
+						return true;
 					}
 					else
 					{
 						DialogTalk(ctx, random_string(txAllDiscovered));
 						++ctx.dialog_pos;
-						return;
+						return true;
 					}
 				}
 				break;
@@ -4962,13 +4963,13 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 						ctx.dialog_s_text = Format(random_string(txCampDiscovered), s_daleko, GetLocationDirName(cloc.pos, loc.pos), co);
 						DialogTalk(ctx, ctx.dialog_s_text.c_str());
 						++ctx.dialog_pos;
-						return;
+						return true;
 					}
 					else
 					{
 						DialogTalk(ctx, random_string(txAllCampDiscovered));
 						++ctx.dialog_pos;
-						return;
+						return true;
 					}
 				}
 				break;
@@ -4978,7 +4979,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				{
 					DialogTalk(ctx, random_string(txNoQRumors));
 					++ctx.dialog_pos;
-					return;
+					return true;
 				}
 				else
 				{
@@ -5019,13 +5020,13 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 						break;
 					default:
 						assert(0);
-						return;
+						return true;
 					}
 
 					game_gui->journal->AddRumor(ctx.dialog_s_text.c_str());
 					DialogTalk(ctx, ctx.dialog_s_text.c_str());
 					++ctx.dialog_pos;
-					return;
+					return true;
 				}
 				break;
 			default:
@@ -5070,7 +5071,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 
 			DialogTalk(ctx, str.c_str());
 			++ctx.dialog_pos;
-			return;
+			return true;
 		}
 	}
 	else if(strncmp(msg, "train_", 6) == 0)
@@ -5107,7 +5108,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			ctx.dialog_s_text = Format(txNeedMoreGold, 200 - ctx.pc->unit->gold);
 			DialogTalk(ctx, ctx.dialog_s_text.c_str());
 			ctx.force_end = true;
-			return;
+			return true;
 		}
 
 		// zabierz z³oto i zamróŸ
@@ -5160,13 +5161,13 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		{
 			DialogTalk(ctx, txNoNearLoc);
 			++ctx.dialog_pos;
-			return;
+			return true;
 		}
 		else if(ctx.active_locations.empty())
 		{
 			DialogTalk(ctx, txAllNearLoc);
 			++ctx.dialog_pos;
-			return;
+			return true;
 		}
 
 		int id = ctx.active_locations.back().first;
@@ -5230,7 +5231,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 
 		DialogTalk(ctx, ctx.dialog_s_text.c_str());
 		++ctx.dialog_pos;
-		return;
+		return true;
 	}
 	else if(strcmp(msg, "tell_name") == 0)
 	{
@@ -5248,7 +5249,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		assert(ctx.talker->IsHero());
 		DialogTalk(ctx, ClassInfo::classes[(int)ctx.talker->hero->clas].about.c_str());
 		++ctx.dialog_pos;
-		return;
+		return true;
 	}
 	else if(strcmp(msg, "recruit") == 0)
 	{
@@ -5303,7 +5304,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 			c.type = NetChangePlayer::START_GIVE;
 		}
-		return;
+		return true;
 	}
 	else if(strcmp(msg, "share_items") == 0)
 	{
@@ -5320,7 +5321,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 			c.type = NetChangePlayer::START_SHARE;
 		}
-		return;
+		return true;
 	}
 	else if(strcmp(msg, "kick_npc") == 0)
 	{
@@ -5472,7 +5473,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			{
 				DialogTalk(ctx, random_string(txNoNews));
 				++ctx.dialog_pos;
-				return;
+				return true;
 			}
 		}
 
@@ -5480,7 +5481,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		{
 			DialogTalk(ctx, random_string(txAllNews));
 			++ctx.dialog_pos;
-			return;
+			return true;
 		}
 
 		int id = Rand() % ctx.active_news.size();
@@ -5489,7 +5490,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 
 		DialogTalk(ctx, news->text.c_str());
 		++ctx.dialog_pos;
-		return;
+		return true;
 	}
 	else if(strcmp(msg, "go_melee") == 0)
 	{
@@ -5522,7 +5523,7 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			ctx.dialog_s_text = Format(txPvpTooFar, u->player->name.c_str());
 			DialogTalk(ctx, ctx.dialog_s_text.c_str());
 			++ctx.dialog_pos;
-			return;
+			return true;
 		}
 		else
 		{
@@ -5668,6 +5669,8 @@ void Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		Warn("DT_SPECIAL: %s", msg);
 		assert(0);
 	}
+
+	return false;
 }
 
 bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
@@ -19093,12 +19096,39 @@ void Game::UpdateArena(float dt)
 
 void Game::UpdateContest(float dt)
 {
+	if(Any(contest_state, CONTEST_NOT_DONE, CONTEST_DONE, CONTEST_TODAY))
+		return;
+
+	int id;
+	InsideBuilding* inn = city_ctx->FindInn(id);
+	Unit& innkeeper = *inn->FindUnit(UnitData::Get("innkeeper"));
+
+	if(!innkeeper.IsAlive())
+	{
+		for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
+		{
+			Unit& u = **it;
+			u.busy = Unit::Busy_No;
+			u.look_target = nullptr;
+			u.event_handler = nullptr;
+			if(u.IsPlayer())
+			{
+				BreakUnitAction(u, BREAK_ACTION_MODE::NORMAL, true);
+				if(u.player != pc)
+				{
+					NetChangePlayer& c = Add1(u.player->player_info->changes);
+					c.type = NetChangePlayer::LOOK_AT;
+					c.id = -1;
+				}
+			}
+		}
+		contest_state = CONTEST_DONE;
+		innkeeper.busy = Unit::Busy_No;
+		return;
+	}
+
 	if(contest_state == CONTEST_STARTING)
 	{
-		int id;
-		InsideBuilding* inn = city_ctx->FindInn(id);
-		Unit& innkeeper = *inn->FindUnit(UnitData::Get("innkeeper"));
-
 		// info about getting out of range
 		for(Unit* unit : contest_units)
 		{
@@ -19115,7 +19145,7 @@ void Game::UpdateContest(float dt)
 		}
 
 		// update timer
-		if(innkeeper.busy == Unit::Busy_No)
+		if(innkeeper.busy == Unit::Busy_No && innkeeper.IsStanding() && innkeeper.ai->state == AIController::Idle)
 		{
 			float prev = contest_time;
 			contest_time += dt;
@@ -19217,8 +19247,6 @@ void Game::UpdateContest(float dt)
 	}
 	else if(contest_state == CONTEST_IN_PROGRESS)
 	{
-		InsideBuilding* inn = city_ctx->FindInn();
-		Unit& innkeeper = *inn->FindUnit(UnitData::Get("innkeeper"));
 		bool talking = true;
 		cstring next_text = nullptr, next_drink = nullptr;
 
@@ -19306,7 +19334,7 @@ void Game::UpdateContest(float dt)
 
 		if(talking)
 		{
-			if(!innkeeper.bubble)
+			if(innkeeper.CanAct())
 			{
 				if(next_text)
 					UnitTalk(innkeeper, next_text);
@@ -19353,10 +19381,7 @@ void Game::UpdateContest(float dt)
 	}
 	else if(contest_state == CONTEST_FINISH)
 	{
-		InsideBuilding* inn = city_ctx->FindInn();
-		Unit& innkeeper = *inn->FindUnit(UnitData::Get("innkeeper"));
-
-		if(!innkeeper.bubble)
+		if(innkeeper.CanAct())
 		{
 			switch(contest_state2)
 			{
