@@ -418,7 +418,7 @@ void Game::SaveGame(HANDLE file)
 		WriteFile(file, &location_event_handler_quest_refid, sizeof(location_event_handler_quest_refid), &tmp, nullptr);
 	}
 	else
-		Team.SaveOnWorldmap(file);
+		Team.SaveOnWorldmap(f);
 	WriteFile(file, &first_city, sizeof(first_city), &tmp, nullptr);
 	ile = boss_levels.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
@@ -471,7 +471,7 @@ void Game::SaveGame(HANDLE file)
 	++check_id;
 
 	// zapisz dru¿ynê
-	Team.Save(file);
+	Team.Save(f);
 
 	// save quests
 	QuestManager::Get().Save(file);
@@ -689,7 +689,7 @@ void Game::LoadGame(HANDLE file)
 		start_version = version;
 
 	// content version
-	if(LOAD_VERSION >= V_0_7)
+	if(LOAD_VERSION >= V_CURRENT)
 	{
 		uint content_version;
 		f >> content_version;
@@ -1021,7 +1021,7 @@ void Game::LoadGame(HANDLE file)
 	++check_id;
 
 	// wczytaj dru¿ynê
-	Team.Load(file);
+	Team.Load(f);
 	CheckCredit(false, true);
 
 	// load quests

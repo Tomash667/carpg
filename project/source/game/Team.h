@@ -25,8 +25,8 @@ public:
 	Unit* GetLeader() { return leader; }
 	uint GetMaxSize() { return 8u; }
 	uint GetNpcCount();
-	int GetPCShare();
-	int GetPCShare(int pc, int npc);
+	Vec2 GetShare();
+	Vec2 GetShare(int pc, int npc);
 	Unit* GetRandomSaneHero();
 	void GetTeamInfo(TeamInfo& info);
 	uint GetPlayersCount();
@@ -42,15 +42,14 @@ public:
 	bool IsLeader(const Unit* unit) { assert(unit); return unit == GetLeader(); }
 	bool IsTeamMember(Unit& unit);
 	bool IsTeamNotBusy();
-	void Load(HANDLE file);
+	void Load(FileReader& f);
 	void Reset();
-	void Save(HANDLE file);
-	void SaveOnWorldmap(HANDLE file);
+	void Save(FileWriter& f);
+	void SaveOnWorldmap(FileWriter& f);
 
 	vector<Unit*> members; // all team members
 	vector<Unit*> active_members; // team members that get gold (without quest units)
 	Unit* leader;
-	int team_gold; // not divided team gold
 	bool crazies_attack, // team attacked by crazies on current level
 		free_recruit, // first hero joins for free if playing alone
 		is_bandit; // attacked npc, now npc's are aggresive

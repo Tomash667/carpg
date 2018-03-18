@@ -90,7 +90,7 @@ void TeamPanel::Draw(ControlDrawData*)
 	Int2 offset = global_pos + Int2(8, 40 - scrollbar.offset);
 	rect = Rect::Create(Int2(global_pos.x + 8, global_pos.y + 40), Int2(size.x - 52, size.y - 96));
 
-	int pc_share = Team.GetPCShare();
+	int pc_share = (int)round(Team.GetShare().x * 100);
 	LocalString s;
 
 	if(!picking)

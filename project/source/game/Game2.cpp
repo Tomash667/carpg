@@ -15763,33 +15763,25 @@ Vec2 Game::GetMapPosition(Unit& unit)
 //=============================================================================
 // Rozdziela z³oto pomiêdzy cz³onków dru¿yny
 //=============================================================================
-void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float time, bool defmsg)
+void Game::AddGold(int count, vector<Unit*>* units, bool show, cstring msg, float time, bool defmsg)
 {
 	if(!units)
 		units = &Team.active_members;
 
-	// reszta z poprzednich podzia³ów, dodaje siê tylko jak jest wiêksza ni¿ 10 bo inaczej npc nic nie dostaje przy ma³ych kwotach
-	int a = Team.team_gold / 10;
-	if(a)
-	{
-		ile += a * 10;
-		Team.team_gold -= a * 10;
-	}
-
 	if(units->size() == 1)
 	{
 		Unit& u = *(*units)[0];
-		u.gold += ile;
+		u.gold += count;
 		if(show && u.IsPlayer())
 		{
 			if(&u == pc->unit)
-				AddGameMsg(Format(msg, ile), time);
+				AddGameMsg(Format(msg, count), time);
 			else
 			{
 				NetChangePlayer& c = Add1(u.player->player_info->changes);
 				c.type = NetChangePlayer::GOLD_MSG;
 				c.id = (defmsg ? 1 : 0);
-				c.ile = ile;
+				c.ile = count;
 				u.player->player_info->UpdateGold();
 			}
 		}
@@ -15807,7 +15799,7 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 		return;
 	}
 
-	int kasa = 0, ile_pc = 0, ile_npc = 0;
+	int pc_count = 0, npc_count = 0;
 	bool credit_info = false;
 
 	for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
@@ -15815,78 +15807,70 @@ void Game::AddGold(int ile, vector<Unit*>* units, bool show, cstring msg, float 
 		Unit& u = **it;
 		if(u.IsPlayer())
 		{
-			++ile_pc;
+			++pc_count;
 			u.player->on_credit = false;
 			u.player->gold_get = 0;
 		}
 		else
 		{
-			++ile_npc;
+			++npc_count;
 			u.hero->on_credit = false;
 			u.hero->gained_gold = false;
 		}
 	}
 
-	for(int i = 0; i < 2 && ile > 0; ++i)
+	for(int i = 0; i < 2 && count > 0; ++i)
 	{
-		int pc_share, npc_share;
-		if(ile_pc > 0)
-		{
-			pc_share = Team.GetPCShare(ile_pc, ile_npc),
-				npc_share = 10;
-		}
-		else
-			npc_share = 100 / ile_npc;
+		Vec2 share = Team.GetShare(pc_count, npc_count);
+		int gold_left = 0;
 
 		for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
 		{
 			Unit& u = **it;
-			int& credit = (u.IsPlayer() ? u.player->credit : u.hero->credit);
-			bool& on_credit = (u.IsPlayer() ? u.player->on_credit : u.hero->on_credit);
-			if(on_credit)
+			HeroPlayerCommon& hpc = *(u.IsPlayer() ? (HeroPlayerCommon*)u.player : u.hero);
+			if(hpc.on_credit)
 				continue;
 
-			int zysk = ile * (u.IsHero() ? npc_share : pc_share) / 100;
-			if(credit > zysk)
+			float gain = (u.IsPlayer() ? share.x : share.y) * count + hpc.split_gold;
+			float gained_f;
+			hpc.split_gold = modf(gain, &gained_f);
+			int gained = (int)gained_f;
+			if(hpc.credit > gained)
 			{
 				credit_info = true;
-				credit -= zysk;
-				on_credit = true;
+				hpc.credit -= gained;
+				gold_left += gained;
+				hpc.on_credit = true;
 				if(u.IsPlayer())
-					--ile_pc;
+					--pc_count;
 				else
-					--ile_npc;
+					--npc_count;
 			}
-			else if(credit)
+			else if(hpc.credit)
 			{
 				credit_info = true;
-				zysk -= credit;
-				credit = 0;
-				u.gold += zysk;
-				kasa += zysk;
+				gained -= hpc.credit;
+				gold_left += hpc.credit;
+				hpc.credit = 0;
+				u.gold += gained;
 				if(u.IsPlayer())
-					u.player->gold_get += zysk;
+					u.player->gold_get += gained;
 				else
 					u.hero->gained_gold = true;
 			}
 			else
 			{
-				u.gold += zysk;
-				kasa += zysk;
+				u.gold += gained;
 				if(u.IsPlayer())
-					u.player->gold_get += zysk;
+					u.player->gold_get += gained;
 				else
 					u.hero->gained_gold = true;
 			}
 		}
 
-		ile -= kasa;
-		kasa = 0;
+		count = gold_left;
 	}
-
-	Team.team_gold += ile;
-	assert(Team.team_gold >= 0);
-
+	
 	if(Net::IsOnline())
 	{
 		for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
@@ -15939,7 +15923,7 @@ int Game::CalculateQuestReward(int gold)
 	return gold * (90 + Team.GetActiveTeamSize() * 10) / 100;
 }
 
-void Game::AddGoldArena(int ile)
+void Game::AddGoldArena(int count)
 {
 	vector<Unit*> v;
 	for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
@@ -15948,7 +15932,7 @@ void Game::AddGoldArena(int ile)
 			v.push_back(*it);
 	}
 
-	AddGold(ile * (85 + v.size() * 15) / 100, &v, true);
+	AddGold(count * (85 + v.size() * 15) / 100, &v, true);
 }
 
 void Game::EventTakeItem(int id)
@@ -20152,11 +20136,7 @@ void Game::CheckCredit(bool require_update, bool ignore)
 		}
 	}
 	else
-	{
-		pc->unit->gold += Team.team_gold;
-		Team.team_gold = 0;
 		pc->credit = 0;
-	}
 
 	if(!ignore && require_update && Net::IsOnline())
 		Net::PushChange(NetChange::UPDATE_CREDIT);

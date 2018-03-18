@@ -1371,7 +1371,7 @@ void Unit::Save(HANDLE file, bool local)
 	{
 		byte b = 1;
 		WriteFile(file, &b, sizeof(b), &tmp, nullptr);
-		player->Save(file);
+		player->Save(f);
 	}
 	else
 	{
@@ -1380,7 +1380,7 @@ void Unit::Save(HANDLE file, bool local)
 	}
 
 	if(hero)
-		hero->Save(file);
+		hero->Save(f);
 }
 
 //=================================================================================================
@@ -1681,7 +1681,7 @@ void Unit::Load(HANDLE file, bool local)
 	{
 		player = new PlayerController;
 		player->unit = this;
-		player->Load(file);
+		player->Load(f);
 	}
 	else
 		player = nullptr;
@@ -1693,7 +1693,7 @@ void Unit::Load(HANDLE file, bool local)
 	{
 		hero = new HeroData;
 		hero->unit = this;
-		hero->Load(file);
+		hero->Load(f);
 	}
 	else
 		hero = nullptr;

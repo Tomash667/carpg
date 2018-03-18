@@ -1302,8 +1302,8 @@ public:
 		else
 			return leader_id == my_id;
 	}
-	void AddGold(int ile, vector<Unit*>* to = nullptr, bool show = false, cstring msg = txGoldPlus, float time = 3.f, bool defmsg = true);
-	void AddGoldArena(int ile);
+	void AddGold(int count, vector<Unit*>* to = nullptr, bool show = false, cstring msg = txGoldPlus, float time = 3.f, bool defmsg = true);
+	void AddGoldArena(int count);
 	void CheckTeamItemShares();
 	bool CheckTeamShareItem(TeamShareItem& tsi);
 	void UpdateTeamItemShares();

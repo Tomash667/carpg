@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "Team.h"
 #include "Unit.h"
+#include "SaveState.h"
 
 TeamSingleton Team;
 
@@ -76,7 +77,7 @@ uint TeamSingleton::GetNpcCount()
 	return count;
 }
 
-int TeamSingleton::GetPCShare()
+Vec2 TeamSingleton::GetShare()
 {
 	uint pc = 0, npc = 0;
 	for(Unit* unit : active_members)
@@ -86,13 +87,23 @@ int TeamSingleton::GetPCShare()
 		else if(!unit->hero->free)
 			++npc;
 	}
-	return GetPCShare(pc, npc);
+	return GetShare(pc, npc);
 }
 
-int TeamSingleton::GetPCShare(int pc, int npc)
+Vec2 TeamSingleton::GetShare(int pc, int npc)
 {
-	int r = 100 - npc * 10;
-	return r / pc;
+	if(pc == 0)
+	{
+		if(npc == 0)
+			return Vec2(1, 1);
+		else
+			return Vec2(0, 1.f / npc);
+	}
+	else
+	{
+		float r = 1.f - npc * 0.1f;
+		return Vec2(r / pc, 0.1f);
+	}
 }
 
 Unit* TeamSingleton::GetRandomSaneHero()
@@ -229,70 +240,70 @@ bool TeamSingleton::IsTeamNotBusy()
 	return true;
 }
 
-void TeamSingleton::Load(HANDLE file)
+void TeamSingleton::Load(FileReader& f)
 {
-	int refid;
-	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	members.resize(count);
+	members.resize(f.Read<uint>());
 	for(Unit*& unit : members)
-	{
-		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-		unit = Unit::GetByRefid(refid);
-	}
+		unit = Unit::GetByRefid(f.Read<int>());
 
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	active_members.resize(count);
+	active_members.resize(f.Read<uint>());
 	for(Unit*& unit : active_members)
-	{
-		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-		unit = Unit::GetByRefid(refid);
-	}
+		unit = Unit::GetByRefid(f.Read<int>());
 
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	leader = Unit::GetByRefid(refid);
-	ReadFile(file, &team_gold, sizeof(team_gold), &tmp, nullptr);
-	ReadFile(file, &crazies_attack, sizeof(crazies_attack), &tmp, nullptr);
-	ReadFile(file, &is_bandit, sizeof(is_bandit), &tmp, nullptr);
-	ReadFile(file, &free_recruit, sizeof(free_recruit), &tmp, nullptr);
+	leader = Unit::GetByRefid(f.Read<int>());
+	if(LOAD_VERSION < V_CURRENT)
+	{
+		int team_gold;
+		f >> team_gold;
+		if(team_gold > 0)
+		{
+			Vec2 share = GetShare();
+			for(Unit* unit : active_members)
+			{
+				float gold = (unit->IsPlayer() ? share.x : share.y) * team_gold;
+				float gold_int, part = modf(gold, &gold_int);
+				unit->gold += (int)gold_int;
+				if(unit->IsPlayer())
+					unit->player->split_gold = part;
+				else
+					unit->hero->split_gold = part;
+			}
+		}
+	}
+	f >> crazies_attack;
+	f >> is_bandit;
+	f >> free_recruit;
 }
 
 void TeamSingleton::Reset()
 {
-	team_gold = 0;
 	crazies_attack = false;
 	is_bandit = false;
 	free_recruit = true;
 }
 
-void TeamSingleton::Save(HANDLE file)
+void TeamSingleton::Save(FileWriter& f)
 {
-	DWORD tmp;
-	uint count = GetTeamSize();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
+	f << GetTeamSize();
 	for(Unit* unit : members)
-		WriteFile(file, &unit->refid, sizeof(unit->refid), &tmp, nullptr);
+		f << unit->refid;
 
-	count = GetActiveTeamSize();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
+	f << GetActiveTeamSize();
 	for(Unit* unit : active_members)
-		WriteFile(file, &unit->refid, sizeof(unit->refid), &tmp, nullptr);
+		f << unit->refid;
 
-	WriteFile(file, &leader->refid, sizeof(leader->refid), &tmp, nullptr);
-	WriteFile(file, &team_gold, sizeof(team_gold), &tmp, nullptr);
-	WriteFile(file, &crazies_attack, sizeof(crazies_attack), &tmp, nullptr);
-	WriteFile(file, &is_bandit, sizeof(is_bandit), &tmp, nullptr);
-	WriteFile(file, &free_recruit, sizeof(free_recruit), &tmp, nullptr);
+	f << leader->refid;
+	f << crazies_attack;
+	f << is_bandit;
+	f << free_recruit;
 }
 
-void TeamSingleton::SaveOnWorldmap(HANDLE file)
+void TeamSingleton::SaveOnWorldmap(FileWriter& f)
 {
-	DWORD tmp;
-	uint count = GetTeamSize();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
+	f << GetTeamSize();
 	for(Unit* unit : members)
 	{
-		unit->Save(file, false);
+		unit->Save(f.file, false);
 		unit->refid = (int)Unit::refid_table.size();
 		Unit::refid_table.push_back(unit);
 	}

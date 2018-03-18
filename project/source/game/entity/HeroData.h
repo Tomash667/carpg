@@ -26,8 +26,8 @@ struct HeroData : public HeroPlayerCommon
 
 	void Init(Unit& unit);
 	int JoinCost() const;
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 	void PassTime(int days = 1, bool travel = false);
 	void LevelUp();
 	void SetupMelee();

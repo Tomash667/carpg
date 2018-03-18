@@ -20,6 +20,7 @@ void HeroData::Init(Unit& _unit)
 	melee = false;
 	phase = false;
 	phase_timer = 0.f;
+	split_gold = 0.f;
 
 	if(!IS_SET(unit->data->flags2, F2_NO_CLASS))
 	{
@@ -64,52 +65,49 @@ void HeroData::Init(Unit& _unit)
 }
 
 //=================================================================================================
-void HeroData::Save(HANDLE file)
+void HeroData::Save(FileWriter& f)
 {
-	byte len = (byte)name.length();
-	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-	WriteFile(file, name.c_str(), len, &tmp, nullptr);
-	WriteFile(file, &clas, sizeof(clas), &tmp, nullptr);
-	WriteFile(file, &know_name, sizeof(know_name), &tmp, nullptr);
-	WriteFile(file, &team_member, sizeof(team_member), &tmp, nullptr);
-	WriteFile(file, &mode, sizeof(mode), &tmp, nullptr);
-	int refid = (following ? following->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	WriteFile(file, &credit, sizeof(credit), &tmp, nullptr);
-	WriteFile(file, &expe, sizeof(expe), &tmp, nullptr);
-	WriteFile(file, &melee, sizeof(melee), &tmp, nullptr);
-	WriteFile(file, &phase, sizeof(phase), &tmp, nullptr);
-	WriteFile(file, &phase_timer, sizeof(phase_timer), &tmp, nullptr);
-	WriteFile(file, &free, sizeof(free), &tmp, nullptr);
-	WriteFile(file, &lost_pvp, sizeof(lost_pvp), &tmp, nullptr);
+	f << name;
+	f << clas;
+	f << know_name;
+	f << team_member;
+	f << mode;
+	f << (following ? following->refid : -1);
+	f << credit;
+	f << expe;
+	f << melee;
+	f << phase;
+	f << phase_timer;
+	f << free;
+	f << lost_pvp;
+	f << split_gold;
 }
 
 //=================================================================================================
-void HeroData::Load(HANDLE file)
+void HeroData::Load(FileReader& f)
 {
-	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-	name.resize(len);
-	ReadFile(file, (void*)name.c_str(), len, &tmp, nullptr);
-	ReadFile(file, &clas, sizeof(clas), &tmp, nullptr);
+	f >> name;
+	f >> clas;
 	if(LOAD_VERSION < V_0_4)
 		clas = ClassInfo::OldToNew(clas);
-	ReadFile(file, &know_name, sizeof(know_name), &tmp, nullptr);
-	ReadFile(file, &team_member, sizeof(team_member), &tmp, nullptr);
-	ReadFile(file, &mode, sizeof(mode), &tmp, nullptr);
-	int refid;
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	following = Unit::GetByRefid(refid);
-	ReadFile(file, &credit, sizeof(credit), &tmp, nullptr);
-	ReadFile(file, &expe, sizeof(expe), &tmp, nullptr);
-	ReadFile(file, &melee, sizeof(melee), &tmp, nullptr);
-	ReadFile(file, &phase, sizeof(phase), &tmp, nullptr);
-	ReadFile(file, &phase_timer, sizeof(phase_timer), &tmp, nullptr);
-	ReadFile(file, &free, sizeof(free), &tmp, nullptr);
+	f >> know_name;
+	f >> team_member;
+	f >> mode;
+	following = Unit::GetByRefid(f.Read<int>());
+	f >> credit;
+	f >> expe;
+	f >> melee;
+	f >> phase;
+	f >> phase_timer;
+	f >> free;
 	if(LOAD_VERSION >= V_0_6)
-		ReadFile(file, &lost_pvp, sizeof(lost_pvp), &tmp, nullptr);
+		f >> lost_pvp;
 	else
 		lost_pvp = false;
+	if(LOAD_VERSION >= V_CURRENT)
+		f >> split_gold;
+	else
+		split_gold = 0.f;
 }
 
 //=================================================================================================

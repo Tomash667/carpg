@@ -162,8 +162,8 @@ struct PlayerController : public HeroPlayerCommon
 	void TrainMod(SkillId s, float points);
 	void SetRequiredPoints();
 
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 	void Write(BitStream& stream) const;
 	bool Read(BitStream& stream);
 

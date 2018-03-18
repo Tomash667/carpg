@@ -37,6 +37,7 @@ Version 0.7 (2018-XX-YY):
 - when npc is looking at player in some quests and player quits it won't make npc freeze
 - fixed bugs and crashes when player leave game during tournament
 - pressing next available dialog option button don't crash, 9 and 0 can be used now
+- better dividing gold between team members
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

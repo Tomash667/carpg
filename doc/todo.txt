@@ -19,31 +19,6 @@ CURRENT:
 			break;
 		}
 	}
--? crash on cleanup for s
-void Game::ClearGame()
-{
-Info("Clearing game.");
-
-draw_batch.Clear();
-
-LeaveLocation(true, false);
-
-if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && open_location == -1 && Net::IsLocal() && !was_client)
-{
-	for(Unit* unit : Team.members)
-	{
-		if(unit->bow_instance)
-			bow_instances.push_back(unit->bow_instance);
-		if(unit->interp)
-			interpolators.Free(unit->interp);
-
-		if(unit->ai != (AIController*)1) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-			delete unit->ai;
-		delete unit;
-	}
-
-	prev_game_state = GS_LOAD;
-}
 
 + EffectId::MagicResistance multiply
 + anystring to Cstring, don't pass by ref&
@@ -96,6 +71,8 @@ NEW:
 + human eye model
 + tournament - don't repeat for final fight (X vs Y, starting fight X vs Y)
 + rescale alcohol values - contest is always for extra rounds
++ better gold split with credit, paying credit still get some part from that
++ alt when using chat shows right menu
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos

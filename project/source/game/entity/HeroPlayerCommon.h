@@ -14,5 +14,6 @@ struct HeroPlayerCommon
 	Class clas;
 	string name;
 	int credit;
+	float split_gold;
 	bool on_credit;
 };

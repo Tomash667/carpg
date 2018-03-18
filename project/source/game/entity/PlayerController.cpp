@@ -92,6 +92,7 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	action = Action_None;
 	free_days = 0;
 	recalculate_level = false;
+	split_gold = 0.f;
 
 	ResetStatState();
 
@@ -341,7 +342,7 @@ void PlayerController::Rest(int days, bool resting, bool travel)
 }
 
 //=================================================================================================
-void PlayerController::Save(HANDLE file)
+void PlayerController::Save(FileWriter& f)
 {
 	if(recalculate_level)
 	{
@@ -349,33 +350,30 @@ void PlayerController::Save(HANDLE file)
 		recalculate_level = false;
 	}
 
-	WriteFile(file, &clas, sizeof(clas), &tmp, nullptr);
-	byte len = (byte)name.length();
-	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-	WriteFile(file, name.c_str(), len, &tmp, nullptr);
-	WriteFile(file, &move_tick, sizeof(move_tick), &tmp, nullptr);
-	WriteFile(file, &last_dmg, sizeof(last_dmg), &tmp, nullptr);
-	WriteFile(file, &last_dmg_poison, sizeof(last_dmg_poison), &tmp, nullptr);
-	WriteFile(file, &dmgc, sizeof(dmgc), &tmp, nullptr);
-	WriteFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, nullptr);
-	WriteFile(file, &idle_timer, sizeof(idle_timer), &tmp, nullptr);
-	WriteFile(file, ap, sizeof(ap), &tmp, nullptr);
-	WriteFile(file, sp, sizeof(sp), &tmp, nullptr);
-	WriteFile(file, &action_key, sizeof(action_key), &tmp, nullptr);
-	WriteFile(file, &next_action, sizeof(next_action), &tmp, nullptr);
-	WriteFile(file, &next_action_idx, sizeof(next_action_idx), &tmp, nullptr);
-	WriteFile(file, &ostatnia, sizeof(ostatnia), &tmp, nullptr);
-	WriteFile(file, &credit, sizeof(credit), &tmp, nullptr);
-	WriteFile(file, &godmode, sizeof(godmode), &tmp, nullptr);
-	WriteFile(file, &noclip, sizeof(noclip), &tmp, nullptr);
-	WriteFile(file, &id, sizeof(id), &tmp, nullptr);
-	WriteFile(file, &free_days, sizeof(free_days), &tmp, nullptr);
-	WriteFile(file, &kills, sizeof(kills), &tmp, nullptr);
-	WriteFile(file, &knocks, sizeof(knocks), &tmp, nullptr);
-	WriteFile(file, &dmg_done, sizeof(dmg_done), &tmp, nullptr);
-	WriteFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, nullptr);
-	WriteFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
-	FileWriter f(file);
+	f << clas;
+	f << name;
+	f << move_tick;
+	f << last_dmg;
+	f << last_dmg_poison;
+	f << dmgc;
+	f << poison_dmgc;
+	f << idle_timer;
+	f << ap;
+	f << sp;
+	f << action_key;
+	f << next_action;
+	f << next_action_idx;
+	f << ostatnia;
+	f << credit;
+	f << godmode;
+	f << noclip;
+	f << id;
+	f << free_days;
+	f << kills;
+	f << knocks;
+	f << dmg_done;
+	f << dmg_taken;
+	f << arena_fights;
 	base_stats.Save(f);
 	f << attrib_state;
 	f << skill_state;
@@ -394,26 +392,22 @@ void PlayerController::Save(HANDLE file)
 		for(auto target : action_targets)
 			f << target->refid;
 	}
+	f << split_gold;
 }
 
 //=================================================================================================
-void PlayerController::Load(HANDLE file)
+void PlayerController::Load(FileReader& f)
 {
-	ReadFile(file, &clas, sizeof(clas), &tmp, nullptr);
+	f >> clas;
 	if(LOAD_VERSION < V_0_4)
 		clas = ClassInfo::OldToNew(clas);
-	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-	BUF[len] = 0;
-	ReadFile(file, BUF, len, &tmp, nullptr);
-	name = BUF;
-	ReadFile(file, &move_tick, sizeof(move_tick), &tmp, nullptr);
-	ReadFile(file, &last_dmg, sizeof(last_dmg), &tmp, nullptr);
-	ReadFile(file, &last_dmg_poison, sizeof(last_dmg_poison), &tmp, nullptr);
-	ReadFile(file, &dmgc, sizeof(dmgc), &tmp, nullptr);
-	ReadFile(file, &poison_dmgc, sizeof(poison_dmgc), &tmp, nullptr);
-	ReadFile(file, &idle_timer, sizeof(idle_timer), &tmp, nullptr);
-	FileReader f(file);
+	f >> name;
+	f >> move_tick;
+	f >> last_dmg;
+	f >> last_dmg_poison;
+	f >> dmgc;
+	f >> poison_dmgc;
+	f >> idle_timer;
 	if(LOAD_VERSION >= V_0_4)
 	{
 		// attribute points
@@ -456,26 +450,22 @@ void PlayerController::Load(HANDLE file)
 
 		// SetRequiredPoints called from Unit::Load after setting new attributes/skills
 	}
-	ReadFile(file, &action_key, sizeof(action_key), &tmp, nullptr);
-	ReadFile(file, &next_action, sizeof(next_action), &tmp, nullptr);
-	ReadFile(file, &next_action_idx, sizeof(next_action_idx), &tmp, nullptr);
-	ReadFile(file, &ostatnia, sizeof(ostatnia), &tmp, nullptr);
+	f >> action_key;
+	f >> next_action;
+	f >> next_action_idx;
+	f >> ostatnia;
 	if(LOAD_VERSION < V_0_2_20)
-	{
-		// stary raise_timer, teraz jest w Unit
-		float raise_timer;
-		ReadFile(file, &raise_timer, sizeof(raise_timer), &tmp, nullptr);
-	}
-	ReadFile(file, &credit, sizeof(credit), &tmp, nullptr);
-	ReadFile(file, &godmode, sizeof(godmode), &tmp, nullptr);
-	ReadFile(file, &noclip, sizeof(noclip), &tmp, nullptr);
-	ReadFile(file, &id, sizeof(id), &tmp, nullptr);
-	ReadFile(file, &free_days, sizeof(free_days), &tmp, nullptr);
-	ReadFile(file, &kills, sizeof(kills), &tmp, nullptr);
-	ReadFile(file, &knocks, sizeof(knocks), &tmp, nullptr);
-	ReadFile(file, &dmg_done, sizeof(dmg_done), &tmp, nullptr);
-	ReadFile(file, &dmg_taken, sizeof(dmg_taken), &tmp, nullptr);
-	ReadFile(file, &arena_fights, sizeof(arena_fights), &tmp, nullptr);
+		f.Skip<float>(); // old rise_timer
+	f >> credit;
+	f >> godmode;
+	f >> noclip;
+	f >> id;
+	f >> free_days;
+	f >> kills;
+	f >> knocks;
+	f >> dmg_done;
+	f >> dmg_taken;
+	f >> arena_fights;
 	if(LOAD_VERSION >= V_0_4)
 	{
 		base_stats.Load(f);
@@ -517,6 +507,10 @@ void PlayerController::Load(HANDLE file)
 	}
 	if(LOAD_VERSION < V_0_5_1)
 		ResetStatState();
+	if(LOAD_VERSION >= V_CURRENT)
+		f >> split_gold;
+	else
+		split_gold = 0.f;
 
 	action = Action_None;
 }
