@@ -58,7 +58,7 @@ struct NetChange
 		SKIP_DIALOG, // skip dialog by player [int(id)-skip id]
 		CHANGE_LOCATION_STATE, // change location state [byte(id)-location index, byte(ile)-state(0-known,1-visited)]
 		ADD_RUMOR, // add rumor to journal [string1(rumors[id])-text]
-		TELL_NAME, // hero tells his name [int(netid)-unit]
+		TELL_NAME, // hero tells his name [int(netid)-unit, bool(id)-set_name, string1-name if set]
 		HAIR_COLOR, // change unit hair color [int(netid)-unit, auto:Vec4-color]
 		ENTER_BUILDING, // player wants to enter building [byte(id)-building index]
 		EXIT_BUILDING, // player wants to exit building []

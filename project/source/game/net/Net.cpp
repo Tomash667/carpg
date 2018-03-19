@@ -4689,7 +4689,6 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::DROP_ITEM:
 		case NetChange::STUNNED:
 		case NetChange::HELLO:
-		case NetChange::TELL_NAME:
 		case NetChange::STAND_UP:
 		case NetChange::SHOUT:
 		case NetChange::CREATE_DRAIN:
@@ -4699,6 +4698,12 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::BREAK_ACTION:
 		case NetChange::PLAYER_ACTION:
 			stream.Write(c.unit->netid);
+			break;
+		case NetChange::TELL_NAME:
+			stream.Write(c.unit->netid);
+			WriteBool(stream, c.id == 1);
+			if(c.id == 1)
+				WriteString1(stream, c.unit->hero->name);
 			break;
 		case NetChange::CAST_SPELL:
 			stream.Write(c.unit->netid);
@@ -6179,7 +6184,11 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 		case NetChange::TELL_NAME:
 			{
 				int netid;
-				if(!stream.Read(netid))
+				bool set_name;
+				bool ok = (stream.Read(netid) && ReadBool(stream, set_name));
+				if(ok && set_name)
+					ok = ReadString1(stream);
+				if(!ok)
 					StreamError("Update client: Broken TELL_NAME.");
 				else
 				{
@@ -6189,7 +6198,11 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					else if(!unit->IsHero())
 						StreamError("Update client: TELL_NAME, unit %d (%s) is not a hero.", netid, unit->data->id.c_str());
 					else
+					{
 						unit->hero->know_name = true;
+						if(set_name)
+							unit->hero->name = BUF;
+					}
 				}
 			}
 			break;

@@ -571,6 +571,7 @@ struct Unit
 		else
 			return data->name.c_str();
 	}
+	void RevealName(bool set_name);
 
 	// szybkoœæ blokowania aktualnie u¿ywanej tarczy (im mniejsza tym lepiej)
 	float GetBlockSpeed() const;

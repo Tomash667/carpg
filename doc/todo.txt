@@ -1,25 +1,9 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
--? hero go wander, don't make them wander, SetMode sets city_wander to false
-	void HeroData::SetMode(Mode new_mode)
-	{
-		if(mode == new_mode)
-			return;
-		mode = new_mode;
-		switch(mode)
-		{
-		case Mode::Follow:
-		case Mode::Wander:
-		case Mode::Wait:
-			assert(unit->IsFollower());
-			unit->ai->city_wander = false;
-			if(mode == Wander)
-				unit->ai->loc_timer = Random(5.f, 10.f);
-			break;
-		}
-	}
-
+- enter sawmill at first stage cause assert on loading_index == loading_steps in LoadingStep, not enough steps
+- reenter sawmill cause problems, artur drwal don't have ai set, crash on WriteUnit
+?- forest items spawn mainly out of map
 + anystring to Cstring, don't pass by ref&
 + current train don't handle floats so gain 0 in some cases
 + stamina changes
@@ -67,11 +51,9 @@ NEW:
 + hunters guild, quests (wielki łowczy), bad wolf boss
 + attach sounds to scene node, not to unit
 + add perks from f_perks to issues
-+ human eye model
 + tournament - don't repeat for final fight (X vs Y, starting fight X vs Y)
 + rescale alcohol values - contest is always for extra rounds
 + better gold split with credit, paying credit still get some part from that
-+ alt when using chat shows right menu
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos

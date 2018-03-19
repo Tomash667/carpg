@@ -39,6 +39,7 @@ Version 0.7 (2018-XX-YY):
 - pressing next available dialog option button don't crash, 9 and 0 can be used now
 - better dividing gold between team members
 - fixed crash when used 'scare' command on unaware target, better escape handling
+- Gorush correctly reveals his name for other players
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

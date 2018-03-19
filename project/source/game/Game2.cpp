@@ -5244,16 +5244,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		return true;
 	}
 	else if(strcmp(msg, "tell_name") == 0)
-	{
-		assert(ctx.talker->IsHero());
-		ctx.talker->hero->know_name = true;
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::TELL_NAME;
-			c.unit = ctx.talker;
-		}
-	}
+		ctx.talker->RevealName(false);
 	else if(strcmp(msg, "hero_about") == 0)
 	{
 		assert(ctx.talker->IsHero());

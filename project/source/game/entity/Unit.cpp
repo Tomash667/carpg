@@ -3103,3 +3103,19 @@ void Unit::UseUsable(Usable* new_usable)
 		usable = nullptr;
 	}
 }
+
+//=================================================================================================
+void Unit::RevealName(bool set_name)
+{
+	assert(hero);
+	if(!hero || hero->know_name)
+		return;
+	hero->know_name = true;
+	if(Net::IsServer())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::TELL_NAME;
+		c.unit = this;
+		c.id = set_name ? 1 : 0;
+	}
+}

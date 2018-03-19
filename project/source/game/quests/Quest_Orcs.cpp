@@ -296,7 +296,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// zapisz gorusha
 		{
 			orc = game->current_dialog->talker;
-			orc->hero->know_name = true;
+			orc->RevealName(true);
 			orc->hero->name = game->txQuest[216];
 		}
 		break;
