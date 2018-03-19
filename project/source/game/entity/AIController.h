@@ -125,6 +125,7 @@ struct AIController
 	void Load(HANDLE file);
 	bool CheckPotion(bool in_combat = true);
 	void Reset();
+	float GetMorale() const;
 };
 
 //-----------------------------------------------------------------------------

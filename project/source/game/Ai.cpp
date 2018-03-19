@@ -192,40 +192,28 @@ void Game::UpdateAi(float dt)
 
 		CheckAutoTalk(u, dt);
 
-		// uciekanie
-		if(enemy && ai.state != AIController::Escape && !IS_SET(u.data->flags, F_DONT_ESCAPE))
+		// ai escape
+		if(enemy && ai.state != AIController::Escape && !IS_SET(u.data->flags, F_DONT_ESCAPE) && ai.GetMorale() < 0.f)
 		{
-			float morale = ai.morale,
-				hpp = u.GetHpp();
-
-			if(hpp < 0.1f)
-				morale -= 3.f;
-			else if(hpp < 0.25f)
-				morale -= 2.f;
-			else if(hpp < 0.5f)
-				morale -= 1.f;
-
-			if(morale < 0.f)
+			if(u.action == A_BLOCK)
 			{
-				if(u.action == A_BLOCK)
+				u.action = A_NONE;
+				u.mesh_inst->frame_end_info2 = false;
+				u.mesh_inst->Deactivate(1);
+				if(Net::IsOnline())
 				{
-					u.action = A_NONE;
-					u.mesh_inst->frame_end_info2 = false;
-					u.mesh_inst->Deactivate(1);
-					if(Net::IsOnline())
-					{
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::ATTACK;
-						c.unit = &u;
-						c.id = AID_StopBlock;
-						c.f[1] = 1.f;
-					}
+					NetChange& c = Add1(Net::changes);
+					c.type = NetChange::ATTACK;
+					c.unit = &u;
+					c.id = AID_StopBlock;
+					c.f[1] = 1.f;
 				}
-				ai.state = AIController::Escape;
-				ai.timer = Random(2.5f, 5.f);
-				ai.escape_room = nullptr;
-				ai.ignore = 0.f;
 			}
+			ai.state = AIController::Escape;
+			ai.timer = Random(2.5f, 5.f);
+			ai.escape_room = nullptr;
+			ai.ignore = 0.f;
+			ai.target_last_pos = enemy->pos;
 		}
 
 		MOVE_TYPE move_type = DontMove;
@@ -1988,11 +1976,28 @@ void Game::UpdateAi(float dt)
 			// uciekaj
 			case AIController::Escape:
 				{
-					// sprawdŸ czy mo¿esz wypiæ miksturkê
+					// try to heal if you can and should
 					ai.CheckPotion();
+
+					// check if should finish escaping
+					ai.timer -= dt;
+					if(ai.timer <= 0.f)
+					{
+						if(ai.GetMorale() > 0.f)
+						{
+							ai.state = AIController::Fighting;
+							ai.timer = 0.f;
+							ai.escape_room = nullptr;
+							repeat = true;
+							break;
+						}
+						else
+							ai.timer = Random(2.f, 4.f);
+					}
 
 					if(enemy)
 					{
+						ai.target_last_pos = enemy->pos;
 						if(location->outside)
 						{
 							// zaawansowane uciekanie tylko w podziemiach, na zewn¹trz uciekaj przed siebie
@@ -2082,15 +2087,6 @@ void Game::UpdateAi(float dt)
 								target_pos = ai.escape_room->Center();
 							}
 						}
-
-						// koniec uciekania
-						ai.timer -= dt;
-						if(ai.timer <= 0.f)
-						{
-							ai.state = AIController::Fighting;
-							ai.timer = 0.f;
-							ai.escape_room = nullptr;
-						}
 					}
 					else
 					{
@@ -2098,13 +2094,7 @@ void Game::UpdateAi(float dt)
 						if(ai.escape_room)
 						{
 							// dobiegnij na miejsce
-							if(ai.escape_room->IsInside(u.pos))
-							{
-								ai.escape_room = nullptr;
-								ai.state = AIController::Fighting;
-								ai.timer = 0.f;
-							}
-							else
+							if(!ai.escape_room->IsInside(u.pos))
 							{
 								move_type = MovePoint;
 								look_at = LookAtWalk;
@@ -2113,9 +2103,9 @@ void Game::UpdateAi(float dt)
 						}
 						else
 						{
-							ai.escape_room = nullptr;
-							ai.state = AIController::Fighting;
-							ai.timer = 0.f;
+							move_type = MoveAway;
+							look_at = LookAtWalk;
+							target_pos = ai.target_last_pos;
 						}
 					}
 

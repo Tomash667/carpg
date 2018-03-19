@@ -366,3 +366,19 @@ void AIController::Reset()
 	unit->run_attack = false;
 	pf_state = PFS_NOT_USING;
 }
+
+//=================================================================================================
+float AIController::GetMorale() const
+{
+	float m = morale;
+	float hpp = unit->GetHpp();
+
+	if(hpp < 0.1f)
+		m -= 3.f;
+	else if(hpp < 0.25f)
+		m -= 2.f;
+	else if(hpp < 0.5f)
+		m -= 1.f;
+
+	return morale;
+}

@@ -2336,9 +2336,13 @@ float Unit::CalculateMagicResistance() const
 		else if(IS_SET(s.flags, ITEM_MAGIC_RESISTANCE_25))
 			mres *= 0.75f;
 	}
-	if(HaveEffect(EffectId::MagicResistance))
-		mres *= 0.5f;
-	return mres;
+	float effect_mres = 1.f;
+	for(const Effect& e : effects)
+	{
+		if(e.effect == EffectId::MagicResistance)
+			effect_mres *= (1.f - e.power);
+	}
+	return mres * effect_mres;
 }
 
 //=================================================================================================

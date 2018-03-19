@@ -808,10 +808,13 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 				case CMD_SCARE:
 					if(Net::IsLocal())
 					{
-						for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
+						for(AIController* ai : ais)
 						{
-							if(IsEnemy(*(*it)->unit, *pc->unit) && Vec3::Distance((*it)->unit->pos, pc->unit->pos) < ALERT_RANGE.x && CanSee(*(*it)->unit, *pc->unit))
-								(*it)->morale = -10;
+							if(IsEnemy(*ai->unit, *pc->unit) && Vec3::Distance(ai->unit->pos, pc->unit->pos) < ALERT_RANGE.x && CanSee(*ai->unit, *pc->unit))
+							{
+								ai->morale = -10;
+								ai->target_last_pos = pc->unit->pos;
+							}
 						}
 					}
 					else

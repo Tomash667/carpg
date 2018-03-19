@@ -38,6 +38,7 @@ Wersja 0.7 (2018-XX-YY):
 - naprawione bugi i crashe w czasie zawodów gdy gracz opuœci grê
 - wybranie klawisza nastêpnej niedostêpnej opcji dialogowej nie powoduje ju¿ crasha, obs³uga klawiszy 9 i 0
 - poprawione dzia³ania podzia³u z³ota
+- naprawiony crash po u¿yciu komendy 'scare' na nieœwiadomym celu, lepsza obs³uga uciekania
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):

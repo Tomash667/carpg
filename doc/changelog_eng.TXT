@@ -38,6 +38,7 @@ Version 0.7 (2018-XX-YY):
 - fixed bugs and crashes when player leave game during tournament
 - pressing next available dialog option button don't crash, 9 and 0 can be used now
 - better dividing gold between team members
+- fixed crash when used 'scare' command on unaware target, better escape handling
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

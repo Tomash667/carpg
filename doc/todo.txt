@@ -20,7 +20,6 @@ CURRENT:
 		}
 	}
 
-+ EffectId::MagicResistance multiply
 + anystring to Cstring, don't pass by ref&
 + current train don't handle floats so gain 0 in some cases
 + stamina changes
