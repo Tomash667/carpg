@@ -213,10 +213,7 @@ void Quest_Mine::SetProgress(int prog2)
 		break;
 	case Progress::Invested:
 		{
-			if(mine_state == State::Shares)
-				game->current_dialog->pc->unit->gold -= 10000;
-			else
-				game->current_dialog->pc->unit->gold -= 12000;
+			game->current_dialog->pc->unit->ModGold(mine_state == State::Shares ? -10000 : -12000);
 			msgs.push_back(game->txQuest[142]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -225,11 +222,7 @@ void Quest_Mine::SetProgress(int prog2)
 			days_required = Random(30, 45);
 
 			if(Net::IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				if(!game->current_dialog->is_local)
-					game->current_dialog->pc->player_info->update_flags |= PlayerInfo::UF_GOLD;
-			}
 		}
 		break;
 	case Progress::UpgradedMine:

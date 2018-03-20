@@ -149,14 +149,8 @@ void Quest_Mages::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_magowie_zaplac") == 0)
 	{
-		if(ctx.pc->unit->gold)
-		{
-			ctx.talker->gold += ctx.pc->unit->gold;
-			ctx.pc->unit->gold = 0;
-			game->sound_mgr->PlaySound2d(game->sCoins);
-			if(!ctx.is_local)
-				ctx.pc->player_info->UpdateGold();
-		}
+		ctx.talker->gold += ctx.pc->unit->gold;
+		ctx.pc->unit->SetGold(0);
 		game->quest_mages2->paid = true;
 	}
 	else
@@ -348,13 +342,12 @@ void Quest_Mages2::SetProgress(int prog2)
 			const Item* item = Item::Get("q_magowie_potion");
 			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, false);
-			game->current_dialog->pc->unit->gold -= 150;
+			game->current_dialog->pc->unit->ModGold(-150);
 
 			if(Net::IsOnline() && !game->current_dialog->is_local)
 			{
 				game->Net_AddItem(game->current_dialog->pc, item, false);
 				game->Net_AddedItemMsg(game->current_dialog->pc);
-				game->current_dialog->pc->player_info->update_flags |= PlayerInfo::UF_GOLD;
 			}
 			else
 				game->AddGameMsg3(GMS_ADDED_ITEM);

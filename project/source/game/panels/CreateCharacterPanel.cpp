@@ -1261,9 +1261,6 @@ void CreateCharacterPanel::OnPickPerk(int group, int id)
 		case Perk::Talent:
 			PickSkill(txPickSkillIncrease, Perk::Talent, false);
 			break;
-			//case Perk::CraftingTradition:
-			//	AddPerk(Perk::CraftingTradition);
-			//	break;
 		default:
 			assert(0);
 			break;
@@ -1571,8 +1568,6 @@ bool CreateCharacterPanel::ValidatePerk(Perk perk)
 {
 	switch(perk)
 	{
-		//case Perk::CraftingTradition:
-		//	return !cc.s[(int)SkillId::CRAFTING].mod;
 	case Perk::VeryWealthy:
 		return cc.HavePerk(Perk::Wealthy);
 	default:

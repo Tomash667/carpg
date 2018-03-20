@@ -285,7 +285,7 @@ void Quest_Goblins::SetProgress(int prog2)
 	case Progress::PayedAndTalkedAboutBow:
 		// zap³aci³eœ i powiedzia³eœ o ³uku
 		{
-			game->current_dialog->pc->unit->gold -= 100;
+			game->current_dialog->pc->unit->ModGold(-100);
 
 			state = Quest::Started;
 			msgs.push_back(game->txQuest[228]);
@@ -294,11 +294,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			goblins_state = State::MageTalked;
 
 			if(Net::IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				if(!game->current_dialog->is_local)
-					game->current_dialog->pc->player_info->UpdateGold();
-			}
 		}
 		break;
 	case Progress::TalkedWithInnkeeper:

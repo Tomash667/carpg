@@ -158,11 +158,8 @@ void Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "pay_500") == 0)
 	{
+		ctx.pc->unit->ModGold(-500);
 		ctx.talker->gold += 500;
-		ctx.pc->unit->gold -= 500;
-		game->sound_mgr->PlaySound2d(game->sCoins);
-		if(!ctx.is_local)
-			ctx.pc->player_info->UpdateGold();
 	}
 	else
 	{

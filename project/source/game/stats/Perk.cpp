@@ -78,7 +78,6 @@ void TakenPerk::GetDesc(string& s) const
 	switch(perk)
 	{
 	case Perk::Skilled:
-		//case Perk::CraftingTradition:
 	case Perk::AlchemistApprentice:
 	case Perk::Wealthy:
 	case Perk::VeryWealthy:
@@ -200,18 +199,6 @@ int TakenPerk::Apply(CreatedCharacter& cc, bool validate) const
 		cc.s[value].Mod(5, true);
 		cc.to_update.push_back((SkillId)value);
 		break;
-		/*case Perk::CraftingTradition:
-			if(validate)
-			{
-				if(cc.s[(int)SkillId::CRAFTING].mod)
-				{
-					Error("Perk 'crafting_tradition', skill is already modified.");
-					return 3;
-				}
-			}
-			cc.s[(int)SkillId::CRAFTING].Mod(10, true);
-			cc.to_update.push_back(SkillId::CRAFTING);
-			break;*/
 	case Perk::VeryWealthy:
 		{
 			bool found = false;
@@ -275,9 +262,6 @@ void TakenPerk::Apply(PlayerController& pc) const
 	case Perk::Talent:
 		pc.base_stats.skill[value] += 5;
 		break;
-		//case Perk::CraftingTradition:
-		//	pc.base_stats.skill[(int)SkillId::CRAFTING] += 10;
-		//	break;
 	case Perk::AlchemistApprentice:
 	case Perk::FamilyHeirloom:
 	case Perk::Leader:
@@ -330,10 +314,6 @@ void TakenPerk::Remove(CreatedCharacter& cc, int index) const
 		cc.s[value].Mod(-5, false);
 		cc.to_update.push_back((SkillId)value);
 		break;
-		/*case Perk::CraftingTradition:
-			cc.s[(int)SkillId::CRAFTING].Mod(-10, false);
-			cc.to_update.push_back(SkillId::CRAFTING);
-			break;*/
 	case Perk::AlchemistApprentice:
 	case Perk::Wealthy:
 	case Perk::FamilyHeirloom:

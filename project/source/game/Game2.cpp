@@ -4784,58 +4784,54 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		StartArenaCombat(msg[strlen("arena_combat")] - '0');
 	else if(strcmp(msg, "rest1") == 0 || strcmp(msg, "rest5") == 0 || strcmp(msg, "rest10") == 0 || strcmp(msg, "rest30") == 0)
 	{
-		// odpoczynek w karczmie
-		// ustal ile to dni i ile kosztuje
-		int ile, koszt;
+		// rest in inn
+		int days, cost;
 		if(strcmp(msg, "rest1") == 0)
 		{
-			ile = 1;
-			koszt = 5;
+			days = 1;
+			cost = 5;
 		}
 		else if(strcmp(msg, "rest5") == 0)
 		{
-			ile = 5;
-			koszt = 20;
+			days = 5;
+			cost = 20;
 		}
 		else if(strcmp(msg, "rest10") == 0)
 		{
-			ile = 10;
-			koszt = 35;
+			days = 10;
+			cost = 35;
 		}
 		else
 		{
-			ile = 30;
-			koszt = 100;
+			days = 30;
+			cost = 100;
 		}
 
-		// czy gracz ma z³oto?
-		if(ctx.pc->unit->gold < koszt)
+		// does player have enough gold?
+		if(ctx.pc->unit->gold < cost)
 		{
-			ctx.dialog_s_text = Format(txNeedMoreGold, koszt - ctx.pc->unit->gold);
+			// restart dialog
+			ctx.dialog_s_text = Format(txNeedMoreGold, cost - ctx.pc->unit->gold);
 			DialogTalk(ctx, ctx.dialog_s_text.c_str());
-			// resetuj dialog
 			ctx.dialog_pos = 0;
 			ctx.dialog_level = 0;
 			return true;
 		}
 
-		// zabierz z³oto i zamróŸ
-		ctx.pc->unit->gold -= koszt;
+		// give gold and freeze
+		ctx.pc->unit->ModGold(-cost);
 		ctx.pc->unit->frozen = FROZEN::YES;
 		if(ctx.is_local)
 		{
-			// lokalny fallback
 			fallback_co = FALLBACK::REST;
 			fallback_t = -1.f;
-			fallback_1 = ile;
+			fallback_1 = days;
 		}
 		else
 		{
-			// wyœlij info o odpoczynku
 			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 			c.type = NetChangePlayer::REST;
-			c.id = ile;
-			ctx.pc->player_info->UpdateGold();
+			c.id = days;
 		}
 	}
 	else if(strcmp(msg, "gossip") == 0 || strcmp(msg, "gossip_drunk") == 0)
@@ -5086,6 +5082,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	}
 	else if(strncmp(msg, "train_", 6) == 0)
 	{
+		const int cost = 200;
 		cstring s = msg + 6;
 		bool is_skill;
 		int what;
@@ -5112,21 +5109,20 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			}
 		}
 
-		// czy gracz ma z³oto?
-		if(ctx.pc->unit->gold < 200)
+		// does player have enough gold?
+		if(ctx.pc->unit->gold < cost)
 		{
-			ctx.dialog_s_text = Format(txNeedMoreGold, 200 - ctx.pc->unit->gold);
+			ctx.dialog_s_text = Format(txNeedMoreGold, cost - ctx.pc->unit->gold);
 			DialogTalk(ctx, ctx.dialog_s_text.c_str());
 			ctx.force_end = true;
 			return true;
 		}
 
-		// zabierz z³oto i zamróŸ
-		ctx.pc->unit->gold -= 200;
+		// give gold and freeze
+		ctx.pc->unit->ModGold(-cost);
 		ctx.pc->unit->frozen = FROZEN::YES;
 		if(ctx.is_local)
 		{
-			// lokalny fallback
 			fallback_co = FALLBACK::TRAIN;
 			fallback_t = -1.f;
 			fallback_1 = (is_skill ? 1 : 0);
@@ -5134,12 +5130,10 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		}
 		else
 		{
-			// wyœlij info o trenowaniu
 			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
 			c.type = NetChangePlayer::TRAIN;
 			c.id = (is_skill ? 1 : 0);
 			c.ile = what;
-			ctx.pc->player_info->UpdateGold();
 		}
 	}
 	else if(strcmp(msg, "near_loc") == 0)
@@ -5254,9 +5248,9 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	}
 	else if(strcmp(msg, "recruit") == 0)
 	{
-		int koszt = ctx.talker->hero->JoinCost();
-		ctx.pc->unit->gold -= koszt;
-		ctx.talker->gold += koszt;
+		int cost = ctx.talker->hero->JoinCost();
+		ctx.pc->unit->ModGold(-cost);
+		ctx.talker->gold += cost;
 		AddTeamMember(ctx.talker, false);
 		ctx.talker->temporary = false;
 		Team.free_recruit = false;
@@ -5347,18 +5341,6 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	{
 		// walka z towarzyszem
 		StartPvp(ctx.pc, ctx.talker);
-	}
-	else if(strcmp(msg, "pay_100") == 0)
-	{
-		int ile = min(100, ctx.pc->unit->gold);
-		if(ile > 0)
-		{
-			ctx.pc->unit->gold -= ile;
-			ctx.talker->gold += ile;
-			sound_mgr->PlaySound2d(sCoins);
-			if(!ctx.is_local)
-				ctx.pc->player_info->UpdateGold();
-		}
 	}
 	else if(strcmp(msg, "attack") == 0)
 	{
@@ -5558,18 +5540,14 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	{
 		StartTournament(ctx.talker);
 		tournament_units.push_back(ctx.pc->unit);
-		ctx.pc->unit->gold -= 100;
+		ctx.pc->unit->ModGold(-100);
 		ctx.pc->leaving_event = false;
-		if(!ctx.is_local)
-			ctx.pc->player_info->UpdateGold();
 	}
 	else if(strcmp(msg, "ironfist_join") == 0)
 	{
 		tournament_units.push_back(ctx.pc->unit);
-		ctx.pc->unit->gold -= 100;
+		ctx.pc->unit->ModGold(-100);
 		ctx.pc->leaving_event = false;
-		if(!ctx.is_local)
-			ctx.pc->player_info->UpdateGold();
 	}
 	else if(strcmp(msg, "ironfist_train") == 0)
 	{
@@ -5601,17 +5579,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	{
 		const Item* kamien = Item::Get("q_szaleni_kamien");
 		RemoveItem(*ctx.pc->unit, kamien, 1);
-		ctx.pc->unit->gold += 10;
-		if(!ctx.is_local)
-		{
-			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-			c.type = NetChangePlayer::GOLD_MSG;
-			c.ile = 10;
-			c.id = 1;
-			ctx.pc->player_info->UpdateGold();
-		}
-		else
-			AddGameMsg(Format(txGoldPlus, 10), 3.f);
+		ctx.pc->unit->ModGold(10);
 	}
 	else if(strcmp(msg, "crazy_give_item") == 0)
 	{
@@ -15861,7 +15829,7 @@ void Game::AddGold(int count, vector<Unit*>* units, bool show, cstring msg, floa
 
 		count = gold_left;
 	}
-	
+
 	if(Net::IsOnline())
 	{
 		for(vector<Unit*>::iterator it = units->begin(), end = units->end(); it != end; ++it)
