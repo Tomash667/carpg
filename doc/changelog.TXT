@@ -40,6 +40,11 @@ Wersja 0.7 (2018-XX-YY):
 - poprawione dzia³ania podzia³u z³ota
 - naprawiony crash po u¿yciu komendy 'scare' na nieœwiadomym celu, lepsza obs³uga uciekania
 - Gorush poprawnie ujawnia jak siê nazywa u innych graczy
+- poprawiona informacja o zdobywaniu z³ota przez klientów
+- naprawiony rzadki crash gdy wyst¹pi spotkanie tu¿ przed dotarciem do lokalizacji
+- naprawiony brak wrogów w lesie
+- naprawiony crash po ponownym odwiedzeniu tartaku
+- naprawiony crash przy natrafieniu na bandytów atakuj¹cych podró¿nych
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):

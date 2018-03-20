@@ -319,10 +319,11 @@ int Game::FindPlayerIndex(const SystemAddress& adr)
 }
 
 //=================================================================================================
-void Game::PrepareLevelData(BitStream& stream)
+void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 {
 	stream.WriteCasted<byte>(ID_LEVEL_DATA);
 	WriteBool(stream, mp_load);
+	WriteBool(stream, loaded_resources);
 
 	if(location->outside)
 	{
@@ -683,7 +684,9 @@ bool Game::ReadLevelData(BitStream& stream)
 	boss_level_mp = false;
 	open_location = 0;
 
-	if(!ReadBool(stream, mp_load))
+	bool loaded_resources;
+	if(!ReadBool(stream, mp_load)
+		|| !ReadBool(stream, loaded_resources))
 	{
 		Error("Read level: Broken packet for loading info.");
 		return false;
@@ -695,6 +698,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		inside->SetActiveLevel(dungeon_level);
 	}
 	ApplyContext(location, local_ctx);
+	RequireLoadingResources(location, &loaded_resources);
 	local_ctx_valid = true;
 	city_ctx = nullptr;
 
@@ -1185,7 +1189,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		Error("Read level: Broken portals.");
 		return false;
 	}
-
+	
 	// items to preload
 	uint items_load_count;
 	if(!stream.Read(items_load_count)
@@ -4108,6 +4112,19 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
+		// leader finished travel
+		case NetChange::END_TRAVEL:
+			if(world_state == WS_TRAVEL)
+			{
+				world_state = WS_MAIN;
+				current_location = picked_location;
+				Location& loc = *locations[current_location];
+				if(loc.state == LS_KNOWN)
+					SetLocationVisited(loc);
+				world_pos = loc.pos;
+				Net::PushChange(NetChange::END_TRAVEL);
+			}
+			break;
 		// enter current location
 		case NetChange::ENTER_LOCATION:
 			if(game_state == GS_WORLDMAP && world_state == WS_MAIN && Team.IsLeader(info.u))
@@ -4784,6 +4801,7 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::END_OF_GAME:
 		case NetChange::GAME_SAVED:
 		case NetChange::ACADEMY_TEXT:
+		case NetChange::END_TRAVEL:
 			break;
 		case NetChange::CHEST_OPEN:
 		case NetChange::CHEST_CLOSE:
@@ -6824,6 +6842,18 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				}
 			}
 			break;
+		// leader finished travel
+		case NetChange::END_TRAVEL:
+			if(world_state == WS_TRAVEL)
+			{
+				world_state = WS_MAIN;
+				current_location = picked_location;
+				Location& loc = *locations[current_location];
+				if(loc.state == LS_KNOWN)
+					SetLocationVisited(loc);
+				world_pos = loc.pos;
+			}
+			break;
 		// change world time
 		case NetChange::WORLD_TIME:
 			{
@@ -7051,6 +7081,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 				dialog_enc = GUI.ShowDialog(info);
 				if(!IsLeader())
 					dialog_enc->bts[0].state = Button::DISABLED;
+				assert(world_state == WS_TRAVEL);
 				world_state = WS_ENCOUNTER;
 			}
 			break;
@@ -8769,6 +8800,7 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::YELL:
 		case NetChange::CHEAT_REFRESH_COOLDOWN:
 		case NetChange::END_FALLBACK:
+		case NetChange::END_TRAVEL:
 			break;
 		case NetChange::ADD_NOTE:
 			WriteString1(stream, game_gui->journal->GetNotes().back());

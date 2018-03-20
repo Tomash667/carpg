@@ -4602,7 +4602,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-				script_mgr->SetContext(ctx.pc, nullptr);
+				script_mgr->SetContext(ctx.pc, ctx.talker);
 				script_mgr->RunScript(msg);
 			}
 			break;
@@ -4610,7 +4610,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-				script_mgr->SetContext(ctx.pc, nullptr);
+				script_mgr->SetContext(ctx.pc, ctx.talker);
 				bool ok = script_mgr->RunIfScript(msg);
 				if(ctx.negate_if)
 				{
@@ -10628,6 +10628,7 @@ void Game::ChangeLevel(int where)
 	local_ctx_valid = true;
 	location->last_visit = worldtime;
 	CheckIfLocationCleared();
+	bool loaded_resources = RequireLoadingResources(location, nullptr);
 	LoadResources(txLoadingComplete, false);
 
 	SetMusic();
@@ -10637,7 +10638,7 @@ void Game::ChangeLevel(int where)
 		net_mode = NM_SERVER_SEND;
 		net_state = NetState::Server_Send;
 		net_stream.Reset();
-		PrepareLevelData(net_stream);
+		PrepareLevelData(net_stream, loaded_resources);
 		Info("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed());
 		info_box->Show(txWaitingForPlayers);
 	}
@@ -14855,20 +14856,23 @@ void Game::LoadResources(cstring text, bool worldmap)
 	LoadingStep(text, 2);
 }
 
-bool Game::RequireLoadingResources(Location* loc)
+// set if passed, returns prev value
+bool Game::RequireLoadingResources(Location* loc, bool* to_set)
 {
 	bool result;
 	if(loc->GetLastLevel() == 0)
 	{
-		result = !loc->loaded_resources;
-		loc->loaded_resources = true;
+		result = loc->loaded_resources;
+		if(to_set)
+			loc->loaded_resources = *to_set;
 	}
 	else
 	{
 		MultiInsideLocation* multi = (MultiInsideLocation*)loc;
 		auto& info = multi->infos[dungeon_level];
-		result = !info.loaded_resources;
-		info.loaded_resources = true;
+		result = info.loaded_resources;
+		if(to_set)
+			info.loaded_resources = *to_set;
 	}
 	return result;
 }
@@ -14929,7 +14933,8 @@ void Game::PreloadResources(bool worldmap)
 			}
 		}
 
-		if(RequireLoadingResources(location))
+		bool new_value = true;
+		if(RequireLoadingResources(location, &new_value) == false)
 		{
 			// load music
 			if(!sound_mgr->IsMusicDisabled())

@@ -1111,6 +1111,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 						RemoveNullElements(local_ctx.units);
 					}
 
+					LoadingStep(txGeneratingUnits);
 					bool have_sawmill = false;
 					if(current_location == quest_sawmill->target_loc)
 					{
@@ -1120,18 +1121,21 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 						{
 							GenerateSawmill(true);
 							have_sawmill = true;
+							location->loaded_resources = false;
 						}
 						else if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working
 							&& quest_sawmill->build_state != Quest_Sawmill::BuildState::Finished)
 						{
 							GenerateSawmill(false);
 							have_sawmill = true;
+							location->loaded_resources = false;
 						}
+						else
+							RespawnUnits();
 					}
 					else
 					{
 						// respawn units
-						LoadingStep(txGeneratingUnits);
 						RespawnUnits();
 					}
 
@@ -1184,6 +1188,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		{
 			// ustaw wskaŸniki
 			OutsideLocation* enc = (OutsideLocation*)location;
+			enc->loaded_resources = false;
 			city_ctx = nullptr;
 			ApplyContext(enc, local_ctx);
 
@@ -1424,6 +1429,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		CalculateQuadtree();
 	}
 
+	bool loaded_resources = RequireLoadingResources(location, nullptr);
 	LoadResources(txLoadingComplete, false);
 
 	l.last_visit = worldtime;
@@ -1446,7 +1452,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		if(players > 1)
 		{
 			net_stream.Reset();
-			PrepareLevelData(net_stream);
+			PrepareLevelData(net_stream, loaded_resources);
 			Info("Generated location packet: %d.", net_stream.GetNumberOfBytesUsed());
 		}
 		else
@@ -3596,7 +3602,7 @@ void Game::SpawnForestUnits(const Vec3& team_pos)
 	{
 		groups[i].entries.clear();
 		groups[i].total = 0;
-		for(auto& entry : groups[i].entries)
+		for(auto& entry : groups[i].group->entries)
 		{
 			if(entry.ud->level.x <= level)
 			{
@@ -5498,7 +5504,7 @@ void Game::SpawnMoonwellUnits(const Vec3& team_pos)
 	{
 		groups[i].entries.clear();
 		groups[i].total = 0;
-		for(auto& entry : groups[i].entries)
+		for(auto& entry : groups[i].group->entries)
 		{
 			if(entry.ud->level.x <= level)
 			{

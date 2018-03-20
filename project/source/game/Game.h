@@ -1327,7 +1327,7 @@ public:
 	void LoadingStart(int steps);
 	void LoadingStep(cstring text = nullptr, int end = 0);
 	void LoadResources(cstring text, bool worldmap);
-	bool RequireLoadingResources(Location* loc);
+	bool RequireLoadingResources(Location* loc, bool* to_set);
 	void PreloadResources(bool worldmap);
 	void PreloadUsables(vector<Usable*>& usable);
 	void PreloadUnits(vector<Unit*>& units);
@@ -1685,7 +1685,7 @@ public:
 	void AddMsg(cstring msg);
 	void OnEnterPassword(int id);
 	void ForceRedraw();
-	void PrepareLevelData(BitStream& stream);
+	void PrepareLevelData(BitStream& stream, bool loaded_resources);
 	void WriteUnit(BitStream& stream, Unit& unit);
 	void WriteDoor(BitStream& stream, Door& door);
 	void WriteItem(BitStream& stream, GroundItem& item);

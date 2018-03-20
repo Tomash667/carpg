@@ -1869,7 +1869,7 @@ void Game::UpdateServerTransfer(float dt)
 				if(players > 1)
 				{
 					net_stream.Reset();
-					PrepareLevelData(net_stream);
+					PrepareLevelData(net_stream, true);
 					Info("NM_TRANSFER_SERVER: Generated level packet: %d.", net_stream.GetNumberOfBytesUsed());
 					info_box->Show(txWaitingForPlayers);
 				}

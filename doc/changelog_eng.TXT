@@ -40,6 +40,11 @@ Version 0.7 (2018-XX-YY):
 - better dividing gold between team members
 - fixed crash when used 'scare' command on unaware target, better escape handling
 - Gorush correctly reveals his name for other players
+- improved information about getting gold for clients
+- fixed rare crash when there was encounter just before entering location
+- fixed missing enemies inside forest
+- fixed crash when revisiting sawmill
+- fixed crash when encountered bandits attacking travelers
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

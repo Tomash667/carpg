@@ -1,13 +1,8 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-? gold
-	? add/remove gold text/sound inn/train/recruit/tournament
-		? sp - inn/train
-		? mp - inn
-	? bandits take 100 gold
-- enter sawmill at first stage cause assert on loading_index == loading_steps in LoadingStep, not enough steps
-- reenter sawmill cause problems, artur drwal don't have ai set, crash on WriteUnit
+?- mine objects, gold ore mesh load, portal
+? bloody altar, change, revisit, load, cleanup
 ?- forest items spawn mainly out of map
 + anystring to Cstring, don't pass by ref&
 + current train don't handle floats so gain 0 in some cases

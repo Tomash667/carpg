@@ -1483,7 +1483,7 @@ dialog bandits
 		if script "pc.unit.gold >= 100"
 		{
 			talk 6
-			script "talker.gold += 100; pc.unit.gold -= 100;"
+			script "target.gold += 100; pc.unit.gold -= 100;"
 			end
 		}
 		else
@@ -1492,7 +1492,7 @@ dialog bandits
 			if rand 2
 			{
 				talk 8
-				script "talker.gold += pc.unit.gold; pc.unit.gold = 0;"
+				script "target.gold += pc.unit.gold; pc.unit.gold = 0;"
 				end
 			}
 			else

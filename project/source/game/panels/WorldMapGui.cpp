@@ -146,7 +146,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		GUI.DrawSprite(tMover, WorldPosToScreen(Int2(game.world_pos.x - 8, game.world_pos.y + 8)), 0xBBFFFFFF);
 
 	// szansa na spotkanie
-	if(game.devmode)
+	if(game.devmode && Net::IsLocal())
 		s += Format("\n\nEncounter: %d%% (%g)", int(float(max(0, (int)game.szansa_na_spotkanie - 25)) * 100 / 500), game.szansa_na_spotkanie);
 
 	// tekst
@@ -240,14 +240,21 @@ void WorldMapGui::Update(float dt)
 
 		if(game.travel_time * 3 >= dist / TRAVEL_SPEED)
 		{
-			// koniec podró¿y
-			game.world_state = WS_MAIN;
-			game.current_location = game.picked_location;
-			Location& loc = *game.locations[game.current_location];
-			if(loc.state == LS_KNOWN)
-				game.SetLocationVisited(loc);
-			game.world_pos = end_pt;
-			goto update_worldmap;
+			if(game.IsLeader())
+			{
+				// end of travel
+				if(Net::IsOnline())
+					Net::PushChange(NetChange::END_TRAVEL);
+				game.world_state = WS_MAIN;
+				game.current_location = game.picked_location;
+				Location& loc = *game.locations[game.current_location];
+				if(loc.state == LS_KNOWN)
+					game.SetLocationVisited(loc);
+				game.world_pos = end_pt;
+				goto update_worldmap;
+			}
+			else
+				game.world_pos = end_pt;
 		}
 		else
 		{
