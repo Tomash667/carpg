@@ -11,7 +11,6 @@ struct Unit;
 struct HeroPlayerCommon
 {
 	Unit* unit;
-	Class clas;
 	string name;
 	int credit;
 	float split_gold;

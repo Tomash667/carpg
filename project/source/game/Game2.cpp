@@ -5241,8 +5241,9 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		ctx.talker->RevealName(false);
 	else if(strcmp(msg, "hero_about") == 0)
 	{
-		assert(ctx.talker->IsHero());
-		DialogTalk(ctx, ClassInfo::classes[(int)ctx.talker->hero->clas].about.c_str());
+		Class clas = ctx.talker->GetClass();
+		if(clas < Class::MAX)
+			DialogTalk(ctx, ClassInfo::classes[(int)clas].about.c_str());
 		++ctx.dialog_pos;
 		return true;
 	}
@@ -5959,7 +5960,7 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 	}
 	else if(strcmp(msg, "is_not_mage") == 0)
 	{
-		if(ctx.talker->hero->clas != Class::MAGE)
+		if(ctx.talker->GetClass() != Class::MAGE)
 			return true;
 	}
 	else if(strcmp(msg, "prefer_melee") == 0)

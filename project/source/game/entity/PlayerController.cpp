@@ -350,7 +350,6 @@ void PlayerController::Save(FileWriter& f)
 		recalculate_level = false;
 	}
 
-	f << clas;
 	f << name;
 	f << move_tick;
 	f << last_dmg;
@@ -398,9 +397,8 @@ void PlayerController::Save(FileWriter& f)
 //=================================================================================================
 void PlayerController::Load(FileReader& f)
 {
-	f >> clas;
-	if(LOAD_VERSION < V_0_4)
-		clas = ClassInfo::OldToNew(clas);
+	if(LOAD_VERSION < V_CURRENT)
+		f.Skip<Class>(); // old class info
 	f >> name;
 	f >> move_tick;
 	f >> last_dmg;
@@ -760,7 +758,7 @@ bool PlayerController::Read(BitStream& stream)
 //=================================================================================================
 Action& PlayerController::GetAction()
 {
-	auto action = ClassInfo::classes[(int)clas].action;
+	auto action = ClassInfo::classes[(int)unit->GetClass()].action;
 	assert(action);
 	return *action;
 }

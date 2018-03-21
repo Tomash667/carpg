@@ -7,10 +7,6 @@ CURRENT:
 + anystring to Cstring, don't pass by ref&
 + current train don't handle floats so gain 0 in some cases
 + stamina changes
-+ Class is UnitData
-	+ load from units.txt, copy
-	+ set in HeroData.Init
-	+ remove useless flags
 
 + player Train
 Game.h
@@ -56,6 +52,8 @@ NEW:
 + tournament - don't repeat for final fight (X vs Y, starting fight X vs Y)
 + rescale alcohol values - contest is always for extra rounds
 + better gold split with credit, paying credit still get some part from that
++ very heavy armor, make unit mesh bigger and higher
++ EE powiedz coś po orkowemu - ulumulu!
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos

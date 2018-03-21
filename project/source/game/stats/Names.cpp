@@ -20,7 +20,7 @@ void Game::SetHeroNames()
 //=================================================================================================
 void Game::GenerateHeroName(HeroData& hero)
 {
-	return GenerateHeroName(hero.clas, IS_SET(hero.unit->data->flags, F_CRAZY), hero.name);
+	return GenerateHeroName(hero.unit->GetClass(), IS_SET(hero.unit->data->flags, F_CRAZY), hero.name);
 }
 
 //=================================================================================================
@@ -33,43 +33,43 @@ void Game::GenerateHeroName(Class clas, bool szalony, string& hero_name)
 	}
 
 	ClassInfo& ci = ClassInfo::classes[(int)clas];
-	if(Rand() % 2 == 0)
+	if(Rand() % 2 == 0 && !ci.names.empty())
 		hero_name = random_item(ci.names);
 	else
 		hero_name = random_item(name_random);
 
 	hero_name += " ";
-
-	int co = Rand() % 7;
-	if(co == 0)
-	{
-		cstring kto;
-		if(txNameSonOfInvalid[0])
-		{
-			do
-			{
-				kto = random_item(name_random).c_str();
-			} while(kto[strlen(kto) - 1] == txNameSonOfInvalid[0]);
-		}
-		else
-			kto = random_item(name_random).c_str();
-		hero_name += txNameSonOf;
-		hero_name += kto;
-		hero_name += txNameSonOfPost;
-	}
-	else if(co == 1 && !locations.empty())
-	{
-		hero_name += txNameFrom;
-		hero_name += locations[Rand() % settlements]->name;
-	}
-	else if(InRange(co, 2, 5))
+	
+	int type = Rand() % 7;
+	if(type < 4 && !ci.nicknames.empty())
 	{
 		hero_name += txNamePrefix;
 		hero_name += random_item(ci.nicknames);
 	}
-	else
+	else if((type == 0 || type == 4) && !locations.empty())
+	{
+		hero_name += txNameFrom;
+		hero_name += locations[Rand() % settlements]->name;
+	}
+	else if(type == 0 || type == 1 || type == 4 || type == 5)
 	{
 		hero_name += txNamePrefix;
 		hero_name += random_item(nickname_random);
+	}
+	else
+	{
+		cstring who;
+		if(txNameSonOfInvalid[0])
+		{
+			do
+			{
+				who = random_item(name_random).c_str();
+			} while(who[strlen(who) - 1] == txNameSonOfInvalid[0]);
+		}
+		else
+			who = random_item(name_random).c_str();
+		hero_name += txNameSonOf;
+		hero_name += who;
+		hero_name += txNameSonOfPost;
 	}
 }

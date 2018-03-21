@@ -42,6 +42,7 @@ void UnitData::CopyFrom(UnitData& ud)
 	idles = ud.idles;
 	armor_type = ud.armor_type;
 	item_script = ud.item_script;
+	clas = ud.clas;
 }
 
 

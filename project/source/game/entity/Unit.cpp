@@ -2448,7 +2448,7 @@ bool Unit::CanAct()
 int Unit::CalculateLevel()
 {
 	if(player)
-		return CalculateLevel(player->clas);
+		return CalculateLevel(GetClass());
 	else
 		return level;
 }

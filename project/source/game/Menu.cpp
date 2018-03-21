@@ -362,7 +362,6 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	u->player = new PlayerController;
 	pc = u->player;
-	pc->clas = clas;
 	pc->id = 0;
 	pc->Init(*u);
 	pc->name = name;
@@ -1553,7 +1552,6 @@ void Game::UpdateServerTransfer(float dt)
 				u->fake_unit = true; // to prevent sending hp changed message set temporary as fake unit
 				u->player = new PlayerController;
 				u->player->id = info.id;
-				u->player->clas = info.clas;
 				u->player->name = info.name;
 				u->player->Init(*u);
 				info.cc.Apply(*u->player);
@@ -1869,7 +1867,7 @@ void Game::UpdateServerTransfer(float dt)
 				if(players > 1)
 				{
 					net_stream.Reset();
-					PrepareLevelData(net_stream, true);
+					PrepareLevelData(net_stream, false);
 					Info("NM_TRANSFER_SERVER: Generated level packet: %d.", net_stream.GetNumberOfBytesUsed());
 					info_box->Show(txWaitingForPlayers);
 				}

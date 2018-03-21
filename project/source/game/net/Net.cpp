@@ -570,7 +570,6 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	if(unit.IsHero())
 	{
 		WriteString1(stream, unit.hero->name);
-		stream.WriteCasted<byte>(unit.hero->clas);
 		b = 0;
 		if(unit.hero->know_name)
 			b |= 0x01;
@@ -582,7 +581,6 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	else if(unit.IsPlayer())
 	{
 		WriteString1(stream, unit.player->name);
-		stream.WriteCasted<byte>(unit.player->clas);
 		stream.WriteCasted<byte>(unit.player->id);
 		stream.Write(unit.player->credit);
 		stream.Write(unit.player->free_days);
@@ -1547,15 +1545,9 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		unit.hero = new HeroData;
 		unit.hero->unit = &unit;
 		if(!ReadString1(stream, unit.hero->name)
-			|| !stream.ReadCasted<byte>(unit.hero->clas)
 			|| !stream.Read(flags)
 			|| !stream.Read(unit.hero->credit))
 			return false;
-		if(unit.hero->clas >= Class::MAX)
-		{
-			Error("Invalid hero class %d.", unit.hero->clas);
-			return false;
-		}
 		unit.hero->know_name = IS_SET(flags, 0x01);
 		unit.hero->team_member = IS_SET(flags, 0x02);
 	}
@@ -1567,7 +1559,6 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		unit.player = new PlayerController;
 		unit.player->unit = &unit;
 		if(!ReadString1(stream, unit.player->name) ||
-			!stream.ReadCasted<byte>(unit.player->clas) ||
 			!stream.ReadCasted<byte>(unit.player->id) ||
 			!stream.Read(unit.player->credit) ||
 			!stream.Read(unit.player->free_days))
@@ -1580,11 +1571,6 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		if(unit.player->free_days < 0)
 		{
 			Error("Invalid player %d free days %d.", unit.player->id, unit.player->free_days);
-			return false;
-		}
-		if(!ClassInfo::IsPickable(unit.player->clas))
-		{
-			Error("Invalid player %d class %d.", unit.player->id, unit.player->clas);
 			return false;
 		}
 		PlayerInfo* info = GetPlayerInfoTry(unit.player->id);

@@ -22,44 +22,6 @@ void HeroData::Init(Unit& _unit)
 	phase_timer = 0.f;
 	split_gold = 0.f;
 
-	if(!IS_SET(unit->data->flags2, F2_NO_CLASS))
-	{
-		if(IS_SET(unit->data->flags2, F2_CLASS_FLAG))
-		{
-			if(IS_SET(unit->data->flags, F_MAGE))
-				clas = Class::MAGE;
-			else if(IS_SET(unit->data->flags2, F2_WARRIOR))
-				clas = Class::WARRIOR;
-			else if(IS_SET(unit->data->flags2, F2_HUNTER))
-				clas = Class::HUNTER;
-			else if(IS_SET(unit->data->flags2, F2_CLERIC))
-				clas = Class::CLERIC;
-			else
-			{
-				assert(IS_SET(unit->data->flags2, F2_ROGUE));
-				clas = Class::ROGUE;
-			}
-		}
-		else
-		{
-			const string& id = unit->data->id;
-
-			if(id == "hero_mage" || id == "crazy_mage")
-				clas = Class::MAGE;
-			else if(id == "hero_warrior" || id == "crazy_warrior")
-				clas = Class::WARRIOR;
-			else if(id == "hero_hunter" || id == "crazy_hunter")
-				clas = Class::HUNTER;
-			else
-			{
-				assert(id == "hero_rogue" || id == "crazy_rogue");
-				clas = Class::ROGUE;
-			}
-		}
-	}
-	else
-		clas = Class::ROGUE;
-
 	if(!IS_SET(unit->data->flags2, F2_SPECIFIC_NAME))
 		Game::Get().GenerateHeroName(*this);
 }
@@ -68,7 +30,6 @@ void HeroData::Init(Unit& _unit)
 void HeroData::Save(FileWriter& f)
 {
 	f << name;
-	f << clas;
 	f << know_name;
 	f << team_member;
 	f << mode;
@@ -87,9 +48,8 @@ void HeroData::Save(FileWriter& f)
 void HeroData::Load(FileReader& f)
 {
 	f >> name;
-	f >> clas;
-	if(LOAD_VERSION < V_0_4)
-		clas = ClassInfo::OldToNew(clas);
+	if(LOAD_VERSION < V_CURRENT)
+		f.Skip<Class>(); // old class info
 	f >> know_name;
 	f >> team_member;
 	f >> mode;

@@ -489,15 +489,7 @@ struct Unit
 	}
 	Class GetClass() const
 	{
-		if(IsPlayer())
-			return player->clas;
-		else if(IsHero())
-			return hero->clas;
-		else
-		{
-			assert(0);
-			return Class::WARRIOR;
-		}
+		return data->clas;
 	}
 	bool CanFollow() const
 	{

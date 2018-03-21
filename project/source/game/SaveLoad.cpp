@@ -127,7 +127,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 		ss.game_year = year;
 		ss.location = GetCurrentLocationText();
 		ss.player_name = pc->name;
-		ss.player_class = pc->clas;
+		ss.player_class = pc->unit->GetClass();
 		ss.save_date = time(nullptr);
 		ss.text = (text[0] != 0 ? text : Format(txSavedGameN, slot));
 		ss.hardcore = hardcore_mode;

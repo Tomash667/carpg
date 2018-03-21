@@ -415,14 +415,14 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// losowo
 		{
 			OrcClass clas;
-			if(game->current_dialog->pc->unit->player->clas == Class::WARRIOR)
+			if(game->current_dialog->pc->unit->GetClass() == Class::WARRIOR)
 			{
 				if(Rand() % 2 == 0)
 					clas = OrcClass::Hunter;
 				else
 					clas = OrcClass::Shaman;
 			}
-			else if(game->current_dialog->pc->unit->player->clas == Class::HUNTER)
+			else if(game->current_dialog->pc->unit->GetClass() == Class::HUNTER)
 			{
 				if(Rand() % 2 == 0)
 					clas = OrcClass::Warrior;
@@ -741,7 +741,6 @@ void Quest_Orcs2::LoadOld(HANDLE file)
 void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 {
 	cstring class_name, udi;
-	Class clas;
 
 	orc_class = new_orc_class;
 
@@ -751,28 +750,23 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	default:
 		class_name = game->txQuest[207];
 		udi = "q_orkowie_gorush_woj";
-		clas = Class::WARRIOR;
 		break;
 	case OrcClass::Hunter:
 		class_name = game->txQuest[208];
 		udi = "q_orkowie_gorush_lowca";
-		clas = Class::HUNTER;
 		break;
 	case OrcClass::Shaman:
 		class_name = game->txQuest[209];
 		udi = "q_orkowie_gorush_szaman";
-		clas = Class::MAGE;
 		break;
 	}
 
 	UnitData* ud = UnitData::Get(udi);
-	orc->hero->clas = clas;
-
+	orc->data = ud;
 	orc->level = ud->level.x;
 	orc->data->GetStatProfile().Set(orc->level, orc->unmod_stats.attrib, orc->unmod_stats.skill);
 	orc->CalculateStats();
 	orc->RecalculateHp();
-	orc->data = ud;
 	game->ParseItemScript(*orc, ud->item_script);
 	for(auto item : orc->slots)
 	{
@@ -792,9 +786,14 @@ void Quest_Orcs2::ChangeClass(OrcClass new_orc_class)
 	orcs_state = State::PickedClass;
 	days = Random(30, 60);
 
-	if(clas == Class::WARRIOR)
+	if(orc->GetClass() == Class::WARRIOR)
 		orc->hero->melee = true;
 
 	if(Net::IsOnline())
+	{
 		game->Net_UpdateQuest(refid);
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::CHANGE_UNIT_BASE;
+		c.unit = orc;
+	}
 }

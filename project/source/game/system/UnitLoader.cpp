@@ -32,7 +32,8 @@ class UnitLoader : public ContentLoader
 		G_NULL,
 		G_SPELL_KEYWORD,
 		G_ITEM_KEYWORD,
-		G_GROUP_KEYWORD
+		G_GROUP_KEYWORD,
+		G_CLASS
 	};
 
 	enum UnitDataType
@@ -76,7 +77,8 @@ class UnitLoader : public ContentLoader
 		P_IDLES,
 		P_WIDTH,
 		P_ATTACK_RANGE,
-		P_ARMOR_TYPE
+		P_ARMOR_TYPE,
+		P_CLASS
 	};
 
 	enum ProfileKeyword
@@ -277,7 +279,8 @@ class UnitLoader : public ContentLoader
 			{ "idles", P_IDLES },
 			{ "width", P_WIDTH },
 			{ "attack_range", P_ATTACK_RANGE },
-			{ "armor_type", P_ARMOR_TYPE }
+			{ "armor_type", P_ARMOR_TYPE },
+			{ "class", P_CLASS }
 		});
 
 		t.AddKeywords(G_MATERIAL, {
@@ -329,20 +332,14 @@ class UnitLoader : public ContentLoader
 		t.AddKeywords(G_FLAGS2, {
 			{ "ai_train", F2_AI_TRAIN },
 			{ "specific_name", F2_SPECIFIC_NAME },
-			{ "no_class", F2_NO_CLASS },
 			{ "contest", F2_CONTEST },
 			{ "contest_50", F2_CONTEST_50 },
-			{ "class_flag", F2_CLASS_FLAG },
-			{ "warrior", F2_WARRIOR },
-			{ "hunter", F2_HUNTER },
-			{ "rogue", F2_ROGUE },
 			{ "old", F2_OLD },
 			{ "melee", F2_MELEE },
 			{ "melee_50", F2_MELEE_50 },
 			{ "boss", F2_BOSS },
 			{ "bloodless", F2_BLOODLESS },
 			{ "limited_rot", F2_LIMITED_ROT },
-			{ "cleric", F2_CLERIC },
 			{ "stun_res", F2_STUN_RESISTANCE },
 			{ "sit_on_throne", F2_SIT_ON_THRONE },
 			{ "orc_sounds", F2_ORC_SOUNDS },
@@ -461,6 +458,9 @@ class UnitLoader : public ContentLoader
 			{ "leader", GK_LEADER },
 			{ "group", GK_GROUP }
 		});
+
+		for(ClassInfo& clas : ClassInfo::classes)
+			t.AddKeyword(clas.id, (int)clas.class_id, G_CLASS);
 	}
 
 	//=================================================================================================
@@ -780,6 +780,10 @@ class UnitLoader : public ContentLoader
 			case P_ARMOR_TYPE:
 				unit->armor_type = (ArmorUnitType)t.MustGetKeywordId(G_ARMOR_TYPE);
 				crc.Update(unit->armor_type);
+				break;
+			case P_CLASS:
+				unit->clas = (Class)t.MustGetKeywordId(G_CLASS);
+				crc.Update(unit->clas);
 				break;
 			default:
 				t.Unexpected();
