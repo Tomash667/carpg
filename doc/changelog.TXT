@@ -45,6 +45,7 @@ Wersja 0.7 (2018-XX-YY):
 - naprawiony brak wrogów w lesie
 - naprawiony crash po ponownym odwiedzeniu tartaku
 - naprawiony crash przy natrafieniu na bandytów atakuj¹cych podró¿nych
+- naprawiony b³¹d gdy ork z kluczem wygeneruje siê za zamkniêtymi drzwiami
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):

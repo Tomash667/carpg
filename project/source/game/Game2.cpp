@@ -6788,7 +6788,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	if(level == -2)
 		u->level = base.level.Random();
 	else if(level == -3)
-		u->level = base.level.Clamp(dungeon_level);
+		u->level = base.level.Clamp(location->st);
 	else
 		u->level = base.level.Clamp(level);
 	u->player = nullptr;
@@ -18548,7 +18548,7 @@ bool Game::RemoveQuestItem(const Item* item, int refid)
 Room& Game::GetRoom(InsideLocationLevel& lvl, RoomTarget target, bool down_stairs)
 {
 	if(target == RoomTarget::None)
-		return lvl.GetFarRoom(down_stairs);
+		return lvl.GetFarRoom(down_stairs, true);
 	else
 	{
 		int id = lvl.FindRoomId(target);

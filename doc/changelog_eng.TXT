@@ -45,6 +45,7 @@ Version 0.7 (2018-XX-YY):
 - fixed missing enemies inside forest
 - fixed crash when revisiting sawmill
 - fixed crash when encountered bandits attacking travelers
+- fixed spawning orc with key behind locked doors
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):
