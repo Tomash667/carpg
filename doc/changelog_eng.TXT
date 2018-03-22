@@ -46,6 +46,8 @@ Version 0.7 (2018-XX-YY):
 - fixed crash when revisiting sawmill
 - fixed crash when encountered bandits attacking travelers
 - fixed spawning orc with key behind locked doors
+- fixed crash after revisiting mine
+- fixed generating too strong enemies on encounters
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

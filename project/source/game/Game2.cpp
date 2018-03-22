@@ -10320,18 +10320,8 @@ void Game::GenerateDungeonUnits()
 	for(int i = 0; i < 3; ++i)
 	{
 		TmpUnitGroup& part = Add1(groups);
-		part.total = 0;
-		part.max_level = level;
-
-		for(auto& entry : group.entries)
-		{
-			if(entry.ud->level.x <= level)
-			{
-				part.entries.push_back(entry);
-				part.total += entry.count;
-			}
-		}
-
+		part.group = &group;
+		part.Fill(level);
 		level = min(base_level - i - 1, base_level * 4 / (i + 5));
 	}
 
@@ -11112,21 +11102,10 @@ void Game::GenerateLabirynthUnits()
 		count = 20;
 		tries = 100;
 	}
-	UnitGroup* group = UnitGroup::TryGet(group_id);
+	int level = GetDungeonLevel();
 	static TmpUnitGroup t;
 	t.group = UnitGroup::TryGet(group_id);
-	t.total = 0;
-	t.entries.clear();
-	int level = GetDungeonLevel();
-
-	for(auto& entry : group->entries)
-	{
-		if(entry.ud->level.x <= level)
-		{
-			t.entries.push_back(entry);
-			t.total += entry.count;
-		}
-	}
+	t.Fill(level);
 
 	// generuj jednostki
 	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
@@ -11352,18 +11331,7 @@ void Game::GenerateCaveUnits()
 
 	// ustal wrogów
 	for(int i = 0; i < 3; ++i)
-	{
-		e[i].entries.clear();
-		e[i].total = 0;
-		for(auto& entry : e[i].group->entries)
-		{
-			if(entry.ud->level.x <= level)
-			{
-				e[i].total += entry.count;
-				e[i].entries.push_back(entry);
-			}
-		}
-	}
+		e[i].Fill(level);
 
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
 	{
@@ -17754,6 +17722,7 @@ bool Game::GenerateMine()
 	}
 
 	CaveLocation* cave = (CaveLocation*)location;
+	cave->loaded_resources = false;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 
 	bool respawn_units = true;

@@ -52,4 +52,6 @@ struct TmpUnitGroup
 	UnitGroup* group;
 	vector<UnitGroup::Entry> entries;
 	int total, max_level;
+
+	void Fill(int level);
 };

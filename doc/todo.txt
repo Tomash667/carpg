@@ -1,9 +1,6 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-?- mine objects, gold ore mesh load, portal
-? bloody altar, change, revisit, load, cleanup
-?- forest items spawn mainly out of map
 + current train don't handle floats so gain 0 in some cases
 + stamina changes
 

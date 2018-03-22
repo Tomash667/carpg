@@ -3599,18 +3599,7 @@ void Game::SpawnForestUnits(const Vec3& team_pos)
 
 	// ustal wrogów
 	for(int i = 0; i < 4; ++i)
-	{
-		groups[i].entries.clear();
-		groups[i].total = 0;
-		for(auto& entry : groups[i].group->entries)
-		{
-			if(entry.ud->level.x <= level)
-			{
-				groups[i].total += entry.count;
-				groups[i].entries.push_back(entry);
-			}
-		}
-	}
+		groups[i].Fill(level);
 
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
 	{
@@ -3863,7 +3852,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 	UnitData* essential = nullptr;
 	cstring group_name = nullptr, group_name2 = nullptr;
 	bool dont_attack = false, od_tylu = false, kamien = false;
-	int ile, poziom, ile2, poziom2;
+	int count, level, count2, level2;
 	dialog = nullptr;
 	quest = nullptr;
 	far_encounter = false;
@@ -3890,8 +3879,8 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			break;
 		}
 
-		ile = Random(3, 5);
-		poziom = Random(6, 12);
+		count = Random(3, 5);
+		level = Random(6, 12);
 	}
 	else if(enc_tryb == 1)
 	{
@@ -3900,39 +3889,39 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		case 0: // mag
 			essential = UnitData::Get("crazy_mage");
 			group_name = nullptr;
-			ile = 1;
-			poziom = Random(10, 16);
+			count = 1;
+			level = Random(10, 16);
 			dialog = FindDialog("crazy_mage_encounter");
 			break;
 		case 1: // szaleñcy
 			group_name = "crazies";
-			ile = Random(2, 4);
-			poziom = Random(2, 15);
+			count = Random(2, 4);
+			level = Random(2, 15);
 			dialog = FindDialog("crazies_encounter");
 			break;
 		case 2: // kupiec
 			{
 				essential = UnitData::Get("merchant");
 				group_name = "merchant_guards";
-				ile = Random(2, 4);
-				poziom = Random(3, 8);
+				count = Random(2, 4);
+				level = Random(3, 8);
 				GenerateMerchantItems(chest_merchant, 1000);
 			}
 			break;
 		case 3: // bohaterowie
 			group_name = "heroes";
-			ile = Random(2, 4);
-			poziom = Random(2, 15);
+			count = Random(2, 4);
+			level = Random(2, 15);
 			break;
 		case 4: // bandyci i wóz
 			{
 				far_encounter = true;
 				group_name = "bandits";
-				ile = Random(4, 6);
-				poziom = Random(5, 10);
+				count = Random(4, 6);
+				level = Random(5, 10);
 				group_name2 = "wagon_guards";
-				ile2 = Random(2, 3);
-				poziom2 = Random(3, 8);
+				count2 = Random(2, 3);
+				level2 = Random(3, 8);
 				SpawnObjectNearLocation(local_ctx, BaseObject::Get("wagon"), Vec2(128, 128), Random(MAX_ANGLE));
 				Chest* chest = SpawnObjectNearLocation(local_ctx, BaseObject::Get("chest"), Vec2(128, 128), Random(MAX_ANGLE), 6.f);
 				if(chest)
@@ -3948,69 +3937,69 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		case 5: // bohaterowie walcz¹
 			far_encounter = true;
 			group_name = "heroes";
-			ile = Random(2, 4);
-			poziom = Random(2, 15);
+			count = Random(2, 4);
+			level = Random(2, 15);
 			switch(Rand() % 4)
 			{
 			case 0:
 				group_name2 = "bandits";
-				ile2 = Random(3, 5);
-				poziom2 = Random(6, 12);
+				count2 = Random(3, 5);
+				level2 = Random(6, 12);
 				break;
 			case 1:
 				group_name2 = "orcs";
-				ile2 = Random(3, 5);
-				poziom2 = Random(6, 12);
+				count2 = Random(3, 5);
+				level2 = Random(6, 12);
 				break;
 			case 2:
 				group_name2 = "goblins";
-				ile2 = Random(3, 5);
-				poziom2 = Random(6, 12);
+				count2 = Random(3, 5);
+				level2 = Random(6, 12);
 				break;
 			case 3:
 				group_name2 = "crazies";
-				ile2 = Random(2, 4);
-				poziom2 = Random(2, 15);
+				count2 = Random(2, 4);
+				level2 = Random(2, 15);
 				break;
 			}
 			break;
 		case 6:
 			group_name = nullptr;
 			essential = UnitData::Get("q_magowie_golem");
-			poziom = 8;
+			level = 8;
 			dont_attack = true;
 			dialog = FindDialog("q_mages");
-			ile = 1;
+			count = 1;
 			break;
 		case 7:
 			group_name = nullptr;
 			essential = UnitData::Get("q_szaleni_szaleniec");
-			poziom = 13;
+			level = 13;
 			dont_attack = true;
 			dialog = FindDialog("q_crazies");
-			ile = 1;
+			count = 1;
 			quest_crazies->check_stone = true;
 			kamien = true;
 			break;
 		case 8:
 			group_name = "unk";
-			poziom = 13;
+			level = 13;
 			od_tylu = true;
 			if(quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
 			{
 				quest_crazies->crazies_state = Quest_Crazies::State::FirstAttack;
-				ile = 1;
+				count = 1;
 				quest_crazies->SetProgress(Quest_Crazies::Progress::Started);
 			}
 			else
-				ile = Random(1, 3);
+				count = Random(1, 3);
 			break;
 		case 9:
 			group_name = nullptr;
 			essential = UnitData::Get("crazy_cook");
-			poziom = -2;
+			level = -2;
 			dialog = essential->dialog;
-			ile = 1;
+			count = 1;
 			break;
 		}
 	}
@@ -4034,8 +4023,8 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			break;
 		}
 
-		ile = Random(3, 5);
-		poziom = Random(6, 12);
+		count = Random(3, 5);
+		level = Random(6, 12);
 		dialog = game_enc->dialog;
 		dont_attack = game_enc->dont_attack;
 		quest = game_enc->quest;
@@ -4071,11 +4060,10 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 
 	if(essential)
 	{
-		talker = SpawnUnitNearLocation(local_ctx, spawn_pos, *essential, &look_pt, Clamp(essential->level.Random(), poziom / 2, poziom), 4.f);
+		talker = SpawnUnitNearLocation(local_ctx, spawn_pos, *essential, &look_pt, Clamp(essential->level.Random(), level / 2, level), 4.f);
 		talker->dont_attack = dont_attack;
-		//assert(talker->level <= poziom);
 		best_dist = Vec3::Distance(talker->pos, look_pt);
-		--ile;
+		--count;
 
 		if(kamien)
 		{
@@ -4085,50 +4073,46 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		}
 	}
 
-	for(int i = 0; i < ile; ++i)
+	// first group of units
+	SpawnUnitsGroup(local_ctx, spawn_pos, &look_pt, count, group, level, [&](Unit* u)
 	{
-		int x = Rand() % group->total,
+		u->dont_attack = dont_attack;
+		dist = Vec3::Distance(u->pos, look_pt);
+		if(!talker || dist < best_dist)
+		{
+			talker = u;
+			best_dist = dist;
+		}
+	});
+	
+	// second group of units
+	if(group_name2)
+	{
+		group = UnitGroup::TryGet(group_name2);
+		SpawnUnitsGroup(local_ctx, spawn_pos, &look_pt, count2, group, level2,
+			[&](Unit* u) { u->dont_attack = dont_attack; });
+	}
+}
+
+void Game::SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback)
+{
+	static TmpUnitGroup tgroup;
+	tgroup.group = group;
+	tgroup.Fill(level);
+
+	for(uint i = 0; i < count; ++i)
+	{
+		int x = Rand() % tgroup.total,
 			y = 0;
-		for(auto& entry : group->entries)
+		for(auto& entry : tgroup.entries)
 		{
 			y += entry.count;
 			if(x < y)
 			{
-				Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pos, *entry.ud, &look_pt, Clamp(entry.ud->level.Random(), poziom / 2, poziom), 4.f);
-				//assert(u->level <= poziom);
-				// ^ w czasie spotkania mo¿e wygenerowaæ silniejszych wrogów ni¿ poziom :(
-				u->dont_attack = dont_attack;
-				dist = Vec3::Distance(u->pos, look_pt);
-				if(!talker || dist < best_dist)
-				{
-					talker = u;
-					best_dist = dist;
-				}
+				Unit* u = SpawnUnitNearLocation(ctx, pos, *entry.ud, look_at, Clamp(entry.ud->level.Random(), level / 2, level), 4.f);
+				if(u && callback)
+					callback(u);
 				break;
-			}
-		}
-	}
-
-	// druga grupa
-	if(group_name2)
-	{
-		group = UnitGroup::TryGet(group_name2);
-
-		for(int i = 0; i < ile2; ++i)
-		{
-			int x = Rand() % group->total,
-				y = 0;
-			for(auto& entry : group->entries)
-			{
-				y += entry.count;
-				if(x < y)
-				{
-					Unit* u = SpawnUnitNearLocation(local_ctx, spawn_pos, *entry.ud, &look_pt, Clamp(entry.ud->level.Random(), poziom2 / 2, poziom2), 4.f);
-					//assert(u->level <= poziom2);
-					// ^ w czasie spotkania mo¿e wygenerowaæ silniejszych wrogów ni¿ poziom :(
-					u->dont_attack = dont_attack;
-					break;
-				}
 			}
 		}
 	}
@@ -4872,16 +4856,7 @@ void Game::SpawnCampUnits()
 
 	// ustal wrogów
 	group.group = UnitGroup::TryGet(group_name);
-	group.total = 0;
-	group.entries.clear();
-	for(auto& entry : group.group->entries)
-	{
-		if(entry.ud->level.x <= level)
-		{
-			group.total += entry.count;
-			group.entries.push_back(entry);
-		}
-	}
+	group.Fill(level);
 
 	for(int added = 0, tries = 50; added < 5 && tries>0; --tries)
 	{
@@ -5501,18 +5476,7 @@ void Game::SpawnMoonwellUnits(const Vec3& team_pos)
 
 	// ustal wrogów
 	for(int i = 0; i < 4; ++i)
-	{
-		groups[i].entries.clear();
-		groups[i].total = 0;
-		for(auto& entry : groups[i].group->entries)
-		{
-			if(entry.ud->level.x <= level)
-			{
-				groups[i].total += entry.count;
-				groups[i].entries.push_back(entry);
-			}
-		}
-	}
+		groups[i].Fill(level);
 
 	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
 	{

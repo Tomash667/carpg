@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "UnitGroup.h"
+#include "UnitData.h"
 
 //-----------------------------------------------------------------------------
 vector<UnitGroup*> UnitGroup::groups;
@@ -28,4 +29,21 @@ UnitGroupList* UnitGroupList::TryGet(Cstring id)
 	}
 
 	return nullptr;
+}
+
+//=================================================================================================
+void TmpUnitGroup::Fill(int level)
+{
+	assert(group);
+	max_level = level;
+	total = 0;
+	entries.clear();
+	for(auto& entry : group->entries)
+	{
+		if(entry.ud->level.x <= level)
+		{
+			entries.push_back(entry);
+			total += entry.count;
+		}
+	}
 }

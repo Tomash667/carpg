@@ -1936,6 +1936,7 @@ public:
 	void Event_RandomEncounter(int id);
 	void GenerateEncounterMap(Location& loc);
 	void SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest);
+	void SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
 	void SpawnEncounterObjects();
 	void SpawnEncounterTeam();
 	Encounter* AddEncounter(int& id);
