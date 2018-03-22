@@ -424,6 +424,7 @@
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
     <ClCompile Include="source\game\script\ScriptManager.cpp" />
+    <ClCompile Include="source\game\script\Var.cpp" />
     <ClCompile Include="source\game\stats\Action.cpp" />
     <ClCompile Include="source\game\stats\Buff.cpp" />
     <ClCompile Include="source\game\system\BaseObject.cpp" />

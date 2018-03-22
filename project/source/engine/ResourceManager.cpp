@@ -407,7 +407,7 @@ Resource* ResourceManager::CreateResource(ResourceType type)
 }
 
 //=================================================================================================
-Resource* ResourceManager::TryGetResource(const AnyString& filename, ResourceType type)
+Resource* ResourceManager::TryGetResource(Cstring filename, ResourceType type)
 {
 	res_search.filename = filename;
 	auto it = resources.find(&res_search);
@@ -421,7 +421,7 @@ Resource* ResourceManager::TryGetResource(const AnyString& filename, ResourceTyp
 }
 
 //=================================================================================================
-Resource* ResourceManager::GetResource(const AnyString& filename, ResourceType type)
+Resource* ResourceManager::GetResource(Cstring filename, ResourceType type)
 {
 	Resource* res = TryGetResource(filename, type);
 	if(!res)
@@ -572,7 +572,7 @@ StreamReader ResourceManager::GetStream(Resource* res, StreamType type)
 }
 
 //=================================================================================================
-void ResourceManager::AddTaskCategory(const AnyString& category)
+void ResourceManager::AddTaskCategory(Cstring category)
 {
 	assert(mode == Mode::LoadScreenPrepare);
 

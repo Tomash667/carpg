@@ -460,7 +460,7 @@ void StreamReader::Refresh()
 }
 
 //=================================================================================================
-StreamWriter::StreamWriter(const AnyString& path)
+StreamWriter::StreamWriter(Cstring path)
 {
 	source = StreamSourcePool::Get<FileSource>(true, string(path));
 }

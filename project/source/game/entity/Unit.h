@@ -558,7 +558,7 @@ struct Unit
 	{
 		if(IsPlayer())
 			return player->name.c_str();
-		else if(IsHero())
+		else if(IsHero() && !hero->name.empty())
 			return hero->name.c_str();
 		else
 			return data->name.c_str();

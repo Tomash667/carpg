@@ -174,7 +174,7 @@ void ItemScript::Test(string& errors, uint& count)
 }
 
 //=================================================================================================
-ItemScript* ItemScript::TryGet(const AnyString& id)
+ItemScript* ItemScript::TryGet(Cstring id)
 {
 	for(auto script : scripts)
 	{

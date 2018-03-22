@@ -20,8 +20,8 @@ struct BuildingGroup
 	static BuildingGroup* BG_MERCHANT;
 
 	static vector<BuildingGroup*> groups;
-	static BuildingGroup* TryGet(const AnyString& id);
-	static BuildingGroup* Get(const AnyString& id)
+	static BuildingGroup* TryGet(Cstring id);
+	static BuildingGroup* Get(Cstring id)
 	{
 		auto group = TryGet(id);
 		assert(group);

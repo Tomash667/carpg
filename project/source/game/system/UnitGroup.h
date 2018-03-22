@@ -21,8 +21,8 @@ struct UnitGroup
 	int total;
 
 	static vector<UnitGroup*> groups;
-	static UnitGroup* TryGet(const AnyString& id);
-	static UnitGroup* Get(const AnyString& id)
+	static UnitGroup* TryGet(Cstring id);
+	static UnitGroup* Get(Cstring id)
 	{
 		auto group = TryGet(id);
 		assert(group);
@@ -37,8 +37,8 @@ struct UnitGroupList
 	vector<UnitGroup*> groups;
 
 	static vector<UnitGroupList*> lists;
-	static UnitGroupList* TryGet(const AnyString& id);
-	static UnitGroupList* Get(const AnyString& id)
+	static UnitGroupList* TryGet(Cstring id);
+	static UnitGroupList* Get(Cstring id)
 	{
 		auto list = TryGet(id);
 		assert(list);

@@ -25,6 +25,23 @@ inline void DeleteElements(std::unordered_set<T, Hash, Equals>& v)
 {
 	for(auto e : v)
 		delete e;
+	v.clear();
+}
+
+template<typename Key, typename Value>
+inline void DeleteElements(std::map<Key, Value>& v)
+{
+	for(auto& e : v)
+		delete e.second;
+	v.clear();
+}
+
+template<typename Key, typename Value>
+inline void DeleteElements(std::unordered_map<Key, Value>& v)
+{
+	for(auto& e : v)
+		delete e.second;
+	v.clear();
 }
 
 template<typename T>

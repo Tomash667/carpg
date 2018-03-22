@@ -65,8 +65,8 @@ struct Building
 	Building() : size(0, 0), shift(), flags(0), mesh(nullptr), inside_mesh(nullptr), group(nullptr), unit(nullptr), state(ResourceState::NotLoaded) {}
 
 	static vector<Building*> buildings;
-	static Building* TryGet(const AnyString& id);
-	static Building* Get(const AnyString& id)
+	static Building* TryGet(Cstring id);
+	static Building* Get(Cstring id)
 	{
 		auto building = TryGet(id);
 		assert(building);

@@ -1669,7 +1669,7 @@ unit guard_q_bandyci : base_human {
 unit agent : base_human {
 	level {6 12}
 	profile rogue
-	flags | {ai_stay dont_eat hero}
+	flags | {ai_stay dont_eat hero specific_name}
 	items rogue
 	gold {{10 50}{20 60}}
 	dialog q_bandits

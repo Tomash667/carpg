@@ -12,6 +12,7 @@ class TypeBuilder;
 struct asSFuncPtr;
 struct PlayerController;
 struct Unit;
+struct VarsContainer;
 
 struct ScriptException
 {
@@ -39,6 +40,10 @@ public:
 	void AddFunction(cstring decl, const asSFuncPtr& funcPointer);
 	TypeBuilder AddType(cstring name);
 	TypeBuilder ForType(cstring name);
+	VarsContainer* GetVars(Unit* unit);
+	void Clear();
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 
 private:
 	asIScriptEngine* engine;
@@ -46,6 +51,7 @@ private:
 	string output;
 	cstring last_exception;
 	bool gather_output;
+	std::unordered_map<Unit*, VarsContainer*> unit_vars;
 
 	// context
 	PlayerController* pc;

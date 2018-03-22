@@ -8,7 +8,7 @@
 vector<BuildingScript*> BuildingScript::scripts;
 
 //=================================================================================================
-BuildingScript* BuildingScript::TryGet(const AnyString& id)
+BuildingScript* BuildingScript::TryGet(Cstring id)
 {
 	for(auto script : scripts)
 	{

@@ -47,7 +47,7 @@ void UnitData::CopyFrom(UnitData& ud)
 
 
 
-SpellList* SpellList::TryGet(const AnyString& id)
+SpellList* SpellList::TryGet(Cstring id)
 {
 	for(auto list : lists)
 	{
@@ -58,7 +58,7 @@ SpellList* SpellList::TryGet(const AnyString& id)
 	return nullptr;
 }
 
-SoundPack* SoundPack::TryGet(const AnyString& id)
+SoundPack* SoundPack::TryGet(Cstring id)
 {
 	for(auto pack : packs)
 	{
@@ -69,7 +69,7 @@ SoundPack* SoundPack::TryGet(const AnyString& id)
 	return nullptr;
 }
 
-IdlePack* IdlePack::TryGet(const AnyString& id)
+IdlePack* IdlePack::TryGet(Cstring id)
 {
 	for(auto pack : packs)
 	{
@@ -80,7 +80,7 @@ IdlePack* IdlePack::TryGet(const AnyString& id)
 	return nullptr;
 }
 
-TexPack* TexPack::TryGet(const AnyString& id)
+TexPack* TexPack::TryGet(Cstring id)
 {
 	for(auto pack : packs)
 	{
@@ -91,7 +91,7 @@ TexPack* TexPack::TryGet(const AnyString& id)
 	return nullptr;
 }
 
-UnitData* UnitData::TryGet(const AnyString& id)
+UnitData* UnitData::TryGet(Cstring id)
 {
 	static UnitData unit_data_search;
 	unit_data_search.id = id;
@@ -106,7 +106,7 @@ UnitData* UnitData::TryGet(const AnyString& id)
 	return nullptr;
 }
 
-UnitData* UnitData::Get(const AnyString& id)
+UnitData* UnitData::Get(Cstring id)
 {
 	auto unit = TryGet(id);
 	if(!unit)

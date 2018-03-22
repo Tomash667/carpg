@@ -6,7 +6,7 @@
 vector<FrameInfo*> FrameInfo::frames;
 
 //=================================================================================================
-FrameInfo* FrameInfo::TryGet(const AnyString& id)
+FrameInfo* FrameInfo::TryGet(Cstring id)
 {
 	for(auto frame : frames)
 	{

@@ -3866,7 +3866,17 @@ dialog q_orcs2_gorush
 		talk 60
 		talk 61
 		talk 62
+		script "Var@ v = target.vars[\"gorush_talk\"]; if(v != 2) v = 1;"
 		end
+	}
+	if script "target.vars[\"gorush_talk\"] == 1"
+	{
+		choice 67
+		{
+			talk 68
+			script "target.vars[\"gorush_talk\"] = 2"
+			end
+		}
 	}
 	choice 63
 	{

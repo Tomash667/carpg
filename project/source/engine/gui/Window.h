@@ -33,7 +33,7 @@ namespace gui
 		void SetAreaSize(const Int2& size);
 		void SetEventProxy(Control* _event_proxy) { event_proxy = _event_proxy; }
 		void SetMenu(MenuBar* menu);
-		void SetText(const AnyString& s) { text = s.s; }
+		void SetText(Cstring s) { text = s.s; }
 		void SetToolStrip(ToolStrip* toolstrip);
 
 	private:

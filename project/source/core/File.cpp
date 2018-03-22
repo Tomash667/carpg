@@ -198,7 +198,7 @@ cstring io::FilenameFromPath(cstring path)
 }
 
 //=================================================================================================
-void io::OpenUrl(AnyString url)
+void io::OpenUrl(Cstring url)
 {
 	ShellExecute(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
 }

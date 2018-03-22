@@ -6,7 +6,7 @@
 vector<BaseUsable*> BaseUsable::usables;
 
 //=================================================================================================
-BaseUsable* BaseUsable::TryGet(const AnyString& id)
+BaseUsable* BaseUsable::TryGet(Cstring id)
 {
 	for(auto use : usables)
 	{

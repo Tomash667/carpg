@@ -33,6 +33,7 @@
 #include "Team.h"
 #include "Journal.h"
 #include "SoundManager.h"
+#include "ScriptManager.h"
 
 enum SaveFlags
 {
@@ -476,6 +477,7 @@ void Game::SaveGame(HANDLE file)
 	// save quests
 	QuestManager::Get().Save(file);
 	SaveQuestsData(file);
+	script_mgr->Save(f);
 
 	// newsy
 	uint count = news.size();
@@ -1074,6 +1076,7 @@ void Game::LoadGame(HANDLE file)
 	}
 	quest_manager.quest_item_requests.clear();
 	LoadQuestsData(file);
+	script_mgr->Load(f);
 
 	// newsy
 	uint count;

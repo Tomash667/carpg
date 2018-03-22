@@ -209,8 +209,8 @@ struct Item
 	ResourceState state;
 
 	static ItemsMap items;
-	static Item* TryGet(const AnyString& id);
-	static Item* Get(const AnyString& id)
+	static Item* TryGet(Cstring id);
+	static Item* Get(Cstring id)
 	{
 		auto item = TryGet(id);
 		assert(item);
@@ -409,7 +409,7 @@ struct BookScheme
 	vector<Rect> regions;
 
 	static vector<BookScheme*> book_schemes;
-	static BookScheme* TryGet(const AnyString& id);
+	static BookScheme* TryGet(Cstring id);
 };
 
 struct Book : public Item
@@ -438,9 +438,9 @@ struct ItemList
 	void Get(int count, const Item** result) const;
 
 	static vector<ItemList*> lists;
-	static ItemListResult TryGet(const AnyString& id);
-	static ItemListResult Get(const AnyString& id);
-	static const Item* GetItem(const AnyString& id);
+	static ItemListResult TryGet(Cstring id);
+	static ItemListResult Get(Cstring id);
+	static const Item* GetItem(Cstring id);
 };
 
 //-----------------------------------------------------------------------------
@@ -501,14 +501,14 @@ struct ItemListResult
 	}
 };
 
-inline ItemListResult ItemList::Get(const AnyString& id)
+inline ItemListResult ItemList::Get(Cstring id)
 {
 	auto result = TryGet(id);
 	assert(result.lis != nullptr);
 	return result;
 }
 
-inline const Item* ItemList::GetItem(const AnyString& id)
+inline const Item* ItemList::GetItem(Cstring id)
 {
 	auto result = Get(id);
 	assert(!result.is_leveled);
@@ -530,7 +530,7 @@ struct StartItem
 
 //-----------------------------------------------------------------------------
 bool ItemCmp(const Item* a, const Item* b);
-const Item* FindItemOrList(const AnyString& id, ItemListResult& lis);
+const Item* FindItemOrList(Cstring id, ItemListResult& lis);
 void CreateItemCopy(Item& item, const Item* base_item);
 Item* CreateItemCopy(const Item* item);
 

@@ -20,5 +20,5 @@ struct StatProfile
 	void SetForNew(int level, UnitStats& stats) const { Set(level, stats.attrib, stats.skill); }
 
 	static vector<StatProfile*> profiles;
-	static StatProfile* TryGet(const AnyString& id);
+	static StatProfile* TryGet(Cstring id);
 };

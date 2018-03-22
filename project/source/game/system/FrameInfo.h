@@ -64,5 +64,5 @@ struct FrameInfo
 	}
 
 	static vector<FrameInfo*> frames;
-	static FrameInfo* TryGet(const AnyString& id);
+	static FrameInfo* TryGet(Cstring id);
 };

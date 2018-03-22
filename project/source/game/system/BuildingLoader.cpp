@@ -648,7 +648,7 @@ class BuildingLoader : public ContentLoader
 	}
 
 	//=================================================================================================
-	void AddVar(const AnyString& id, bool is_const = false)
+	void AddVar(Cstring id, bool is_const = false)
 	{
 		Var v;
 		v.name = id.s;

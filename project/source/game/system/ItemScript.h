@@ -30,5 +30,5 @@ struct ItemScript
 	void CheckItem(const int*& ps, string& errors, uint& count);
 
 	static vector<ItemScript*> scripts;
-	static ItemScript* TryGet(const AnyString& id);
+	static ItemScript* TryGet(Cstring id);
 };

@@ -12953,6 +12953,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	cam.Reset();
 	lights_dt = 1.f;
 	pc_data.Reset();
+	script_mgr->Clear();
 
 #ifdef DRAW_LOCAL_PATH
 	marked = nullptr;

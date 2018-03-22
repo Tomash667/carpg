@@ -74,8 +74,8 @@ public:
 	bool HaveBuilding(BuildingGroup* group, Variant* variant) const;
 
 	static vector<BuildingScript*> scripts;
-	static BuildingScript* TryGet(const AnyString& id);
-	static BuildingScript* Get(const AnyString& id)
+	static BuildingScript* TryGet(Cstring id);
+	static BuildingScript* Get(Cstring id)
 	{
 		auto script = TryGet(id);
 		assert(script);

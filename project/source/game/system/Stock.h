@@ -35,8 +35,8 @@ private:
 
 public:
 	static vector<Stock*> stocks;
-	static Stock* TryGet(const AnyString& id);
-	static Stock* Get(const AnyString& id)
+	static Stock* TryGet(Cstring id);
+	static Stock* Get(Cstring id)
 	{
 		auto stock = TryGet(id);
 		assert(stock);

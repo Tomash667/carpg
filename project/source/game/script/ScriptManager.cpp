@@ -49,6 +49,7 @@ ScriptManager::~ScriptManager()
 {
 	if(engine)
 		engine->ShutDownAndRelease();
+	DeleteElements(unit_vars);
 }
 
 void ScriptManager::Init()
@@ -243,15 +244,12 @@ void ScriptManager::RegisterCommon()
 
 #include "PlayerInfo.h"
 
-
-Var test_var;
 VarsContainer globals;
 VarsContainer* p_globals = &globals;
 
-Var* PlayerController_GetVar(void* pc)
+VarsContainer* Unit_GetVars(Unit* unit)
 {
-	test_var.type = Var::Type::None;
-	return &test_var;
+	return SM->GetVars(unit);
 }
 
 void ScriptManager::RegisterGame()
@@ -289,6 +287,7 @@ void ScriptManager::RegisterGame()
 	AddType("Unit")
 		.Method("int get_gold() const", asMETHOD(Unit, GetGold))
 		.Method("void set_gold(int)", asMETHOD(Unit, SetGold))
+		.Method("VarsContainer@ get_vars()", asFUNCTION(Unit_GetVars))
 		.WithInstance("Unit@ target", &target);
 
 	AddType("Player")
@@ -460,4 +459,55 @@ TypeBuilder ScriptManager::ForType(cstring name)
 	assert(name);
 	TypeBuilder builder(name, engine);
 	return builder;
+}
+
+VarsContainer* ScriptManager::GetVars(Unit* unit)
+{
+	assert(unit);
+	auto it = unit_vars.lower_bound(unit);
+	if(it == unit_vars.end() || it->first != unit)
+	{
+		VarsContainer* vars = new VarsContainer;
+		unit_vars.insert(it, std::unordered_map<Unit*, VarsContainer*>::value_type(unit, vars));
+		return vars;
+	}
+	else
+		return it->second;
+}
+
+void ScriptManager::Clear()
+{
+	DeleteElements(unit_vars);
+}
+
+void ScriptManager::Save(FileWriter& f)
+{
+	uint count = 0;
+	uint pos = f.BeginPatch(count);
+	for(auto& e : unit_vars)
+	{
+		if(e.second->vars.empty())
+			continue;
+		++count;
+		f << e.first->refid;
+		e.second->Save(f);
+	}
+	if(count > 0)
+		f.Patch(pos, count);
+}
+
+void ScriptManager::Load(FileReader& f)
+{
+	uint count;
+	f >> count;
+	if(count == 0)
+		return;
+
+	for(uint i = 0; i < count; ++i)
+	{
+		Unit* unit = Unit::refid_table[f.Read<int>()];
+		VarsContainer* vars = new VarsContainer;
+		vars->Load(f);
+		unit_vars[unit] = vars;
+	}
 }

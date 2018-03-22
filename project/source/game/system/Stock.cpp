@@ -192,7 +192,7 @@ void Stock::AddItems(vector<ItemSlot>& items, StockEntry type, int code, int lev
 }
 
 //=================================================================================================
-Stock* Stock::TryGet(const AnyString& id)
+Stock* Stock::TryGet(Cstring id)
 {
 	for(auto stock : stocks)
 	{

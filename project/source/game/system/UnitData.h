@@ -29,7 +29,7 @@ struct SpellList
 	SpellList() : spell(), name(), level(), have_non_combat(false) {}
 
 	static vector<SpellList*> lists;
-	static SpellList* TryGet(const AnyString& id);
+	static SpellList* TryGet(Cstring id);
 };
 
 //-----------------------------------------------------------------------------
@@ -169,7 +169,7 @@ struct SoundPack
 	SoundPack() : inited(false), sound() {}
 
 	static vector<SoundPack*> packs;
-	static SoundPack* TryGet(const AnyString& id);
+	static SoundPack* TryGet(Cstring id);
 };
 
 //-----------------------------------------------------------------------------
@@ -179,7 +179,7 @@ struct IdlePack
 	vector<string> anims;
 
 	static vector<IdlePack*> packs;
-	static IdlePack* TryGet(const AnyString& id);
+	static IdlePack* TryGet(Cstring id);
 };
 
 //-----------------------------------------------------------------------------
@@ -192,7 +192,7 @@ struct TexPack
 	TexPack() : inited(false) {}
 
 	static vector<TexPack*> packs;
-	static TexPack* TryGet(const AnyString& id);
+	static TexPack* TryGet(Cstring id);
 };
 
 //-----------------------------------------------------------------------------
@@ -250,7 +250,7 @@ struct UnitData
 
 	static SetContainer<UnitData> units;
 	static std::map<string, UnitData*> aliases;
-	static UnitData* TryGet(const AnyString& id);
-	static UnitData* Get(const AnyString& id);
+	static UnitData* TryGet(Cstring id);
+	static UnitData* Get(Cstring id);
 	static void Validate(uint& err);
 };

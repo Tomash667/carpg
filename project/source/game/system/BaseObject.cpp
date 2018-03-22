@@ -43,7 +43,7 @@ BaseObject::~BaseObject()
 }
 
 //=================================================================================================
-BaseObject* BaseObject::TryGet(const AnyString& id, bool* is_group)
+BaseObject* BaseObject::TryGet(Cstring id, bool* is_group)
 {
 	// find object
 	static BaseObject obj;

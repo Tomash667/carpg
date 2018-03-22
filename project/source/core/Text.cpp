@@ -283,7 +283,7 @@ bool Unescape(const string& str_in, uint pos, uint size, string& str_out)
 }
 
 //=================================================================================================
-cstring Escape(const InString& s, char quote)
+cstring Escape(Cstring s, char quote)
 {
 	cstring str = s.s;
 	char* out = format_buf[format_marker];
@@ -316,7 +316,7 @@ cstring Escape(const InString& s, char quote)
 }
 
 //=================================================================================================
-cstring Escape(const InString& str, string& out, char quote)
+cstring Escape(Cstring str, string& out, char quote)
 {
 	cstring s = str.s;
 	out.clear();

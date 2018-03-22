@@ -9,7 +9,7 @@
 vector<Building*> Building::buildings;
 
 //=================================================================================================
-Building* Building::TryGet(const AnyString& id)
+Building* Building::TryGet(Cstring id)
 {
 	for(auto building : buildings)
 	{

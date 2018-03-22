@@ -4,7 +4,6 @@ CURRENT:
 ?- mine objects, gold ore mesh load, portal
 ? bloody altar, change, revisit, load, cleanup
 ?- forest items spawn mainly out of map
-+ anystring to Cstring, don't pass by ref&
 + current train don't handle floats so gain 0 in some cases
 + stamina changes
 
@@ -53,7 +52,6 @@ NEW:
 + rescale alcohol values - contest is always for extra rounds
 + better gold split with credit, paying credit still get some part from that
 + very heavy armor, make unit mesh bigger and higher
-+ EE powiedz coś po orkowemu - ulumulu!
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos

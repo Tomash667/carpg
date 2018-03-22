@@ -7,7 +7,7 @@ vector<UnitGroup*> UnitGroup::groups;
 vector<UnitGroupList*> UnitGroupList::lists;
 
 //=================================================================================================
-UnitGroup* UnitGroup::TryGet(const AnyString& id)
+UnitGroup* UnitGroup::TryGet(Cstring id)
 {
 	for(auto group : groups)
 	{
@@ -19,7 +19,7 @@ UnitGroup* UnitGroup::TryGet(const AnyString& id)
 }
 
 //=================================================================================================
-UnitGroupList* UnitGroupList::TryGet(const AnyString& id)
+UnitGroupList* UnitGroupList::TryGet(Cstring id)
 {
 	for(auto list : lists)
 	{

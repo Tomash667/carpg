@@ -74,8 +74,8 @@ struct BaseUsable : public BaseObject
 	}
 
 	static vector<BaseUsable*> usables;
-	static BaseUsable* TryGet(const AnyString& id);
-	static BaseUsable* Get(const AnyString& id)
+	static BaseUsable* TryGet(Cstring id);
+	static BaseUsable* Get(Cstring id)
 	{
 		auto usable = TryGet(id);
 		assert(usable);

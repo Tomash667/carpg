@@ -1763,6 +1763,8 @@ dialog q_orcs2_gorush {
 	64 "Odejdê gdy sp³acê mój d³ug wobec ciebie."
 	65 "Nie wczeœniej."
 	66 "Koniec rozmowy"
+	67 "Powiedz coœ po orkowemu"
+	68 "Ulu-mulu!"
 }
 
 //==============================================================================

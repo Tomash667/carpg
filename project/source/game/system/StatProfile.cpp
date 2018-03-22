@@ -96,7 +96,7 @@ void StatProfile::SetForNew(int level, int* attribs, int* skills) const
 }
 
 //=================================================================================================
-StatProfile* StatProfile::TryGet(const AnyString& id)
+StatProfile* StatProfile::TryGet(Cstring id)
 {
 	for(auto profile : profiles)
 	{

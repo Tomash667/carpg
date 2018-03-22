@@ -95,19 +95,10 @@ struct Var
 
 struct VarsContainer
 {
-	Var* Get(const string& id)
-	{
-		auto it = vars.lower_bound(id);
-		if(it != vars.end() && !(vars.key_comp()(id, it->first)))
-			return it->second;
-		else
-		{
-			Var* var = new Var;
-			var->type = Var::Type::None;
-			vars.insert(it, std::map<string, Var*>::value_type(id, var));
-			return var;
-		}
-	}
+	~VarsContainer();
+	Var* Get(const string& id);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 
 	std::map<string, Var*> vars;
 };

@@ -61,7 +61,7 @@ Attribute Attribute::attributes[(int)AttributeId::MAX] = {
 };
 
 //=================================================================================================
-Attribute* Attribute::Find(const AnyString& id)
+Attribute* Attribute::Find(Cstring id)
 {
 	for(Attribute& ai : attributes)
 	{

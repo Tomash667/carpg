@@ -34,7 +34,7 @@ namespace gui
 		void SetCustomLayout(LabelLayout* layout);
 		void SetFont(Font* font);
 		void SetPadding(const Int2& padding);
-		void SetText(const AnyString& s);
+		void SetText(Cstring s);
 		void SetSize(const Int2& size);
 
 	private:

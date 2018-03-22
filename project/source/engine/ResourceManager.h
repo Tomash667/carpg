@@ -206,19 +206,19 @@ public:
 		}
 
 		// Try to return resource, if not exists return null
-		T* TryGet(const AnyString& filename)
+		T* TryGet(Cstring filename)
 		{
 			return (T*)res_mgr.TryGetResource(filename, Type);
 		}
 
 		// Return resource, if not exists throws
-		T* Get(const AnyString& filename)
+		T* Get(Cstring filename)
 		{
 			return (T*)res_mgr.GetResource(filename, Type);
 		}
 
 		// Return loaded resource, if not exists or can't load throws
-		T* GetLoaded(const AnyString& filename)
+		T* GetLoaded(Cstring filename)
 		{
 			auto res = res_mgr.GetResource(filename, Type);
 			res_mgr.LoadResource(res);
@@ -232,13 +232,13 @@ public:
 		}
 
 		// Add task category
-		void AddTaskCategory(const AnyString& name)
+		void AddTaskCategory(Cstring name)
 		{
 			res_mgr.AddTaskCategory(name);
 		}
 
 		// Add load task, if not exists throws, if failed throws later
-		T* AddLoadTask(const AnyString& filename)
+		T* AddLoadTask(Cstring filename)
 		{
 			auto res = res_mgr.GetResource(filename, Type);
 			res_mgr.AddLoadTask(res);
@@ -252,7 +252,7 @@ public:
 		}
 
 		// Add load task, if not exists throws, if failed throws later, after loading run callback
-		void AddLoadTask(const AnyString& filename, void* ptr, TaskCallback callback, bool required = false)
+		void AddLoadTask(Cstring filename, void* ptr, TaskCallback callback, bool required = false)
 		{
 			auto res = res_mgr.GetResource(filename, Type);
 			res_mgr.AddLoadTask(res, ptr, callback, required);
@@ -307,13 +307,13 @@ public:
 
 		using BaseTypeManager::AddLoadTask;
 
-		TEX GetLoadedRaw(const AnyString& filename)
+		TEX GetLoadedRaw(Cstring filename)
 		{
 			auto tex = (Texture*)res_mgr.GetResource(filename, Type);
 			res_mgr.LoadResource(tex);
 			return tex->tex;
 		}
-		void AddLoadTask(const AnyString& filename, TEX& tex)
+		void AddLoadTask(Cstring filename, TEX& tex)
 		{
 			auto res = (Texture*)res_mgr.GetResource(filename, Type);
 			res_mgr.AddLoadTask(res, &tex, TaskCallback(&res_mgr, &ResourceManager::ApplyRawTextureCallback), true);
@@ -336,45 +336,45 @@ public:
 
 		using BaseTypeManager::AddLoadTask;
 
-		void AddLoadTask(const AnyString& filename, SOUND& sound)
+		void AddLoadTask(Cstring filename, SOUND& sound)
 		{
 			Sound* res = (Sound*)res_mgr.GetResource(filename, Type);
 			assert(!res->is_music);
 			res_mgr.AddLoadTask(res, &sound, TaskCallback(&res_mgr, &ResourceManager::ApplyRawSoundCallback), true);
 		}
 
-		Sound* TryGetSound(const AnyString& filename)
+		Sound* TryGetSound(Cstring filename)
 		{
 			return TryGetInternal(filename, false);
 		}
 
-		Sound* TryGetMusic(const AnyString& filename)
+		Sound* TryGetMusic(Cstring filename)
 		{
 			return TryGetInternal(filename, true);
 		}
 
-		Sound* GetSound(const AnyString& filename)
+		Sound* GetSound(Cstring filename)
 		{
 			return GetInternal(filename, false);
 		}
 
-		Sound* GetMusic(const AnyString& filename)
+		Sound* GetMusic(Cstring filename)
 		{
 			return GetInternal(filename, true);
 		}
 
-		Sound* GetLoadedSound(const AnyString& filename)
+		Sound* GetLoadedSound(Cstring filename)
 		{
 			return GetLoadedInternal(filename, false);
 		}
 
-		Sound* GetLoadedMusic(const AnyString& filename)
+		Sound* GetLoadedMusic(Cstring filename)
 		{
 			return GetLoadedInternal(filename, true);
 		}
 
 	private:
-		Sound* TryGetInternal(const AnyString& filename, bool is_music)
+		Sound* TryGetInternal(Cstring filename, bool is_music)
 		{
 			Sound* res = (Sound*)res_mgr.TryGetResource(filename, Type);
 			if(res)
@@ -385,7 +385,7 @@ public:
 			return res;
 		}
 
-		Sound* GetInternal(const AnyString& filename, bool is_music)
+		Sound* GetInternal(Cstring filename, bool is_music)
 		{
 			Sound* res = (Sound*)res_mgr.GetResource(filename, Type);
 			assert(res->state == ResourceState::NotLoaded || res->is_music == is_music);
@@ -393,7 +393,7 @@ public:
 			return res;
 		}
 
-		Sound* GetLoadedInternal(const AnyString& filename, bool is_music)
+		Sound* GetLoadedInternal(Cstring filename, bool is_music)
 		{
 			Sound* res = GetInternal(filename, is_music);
 			res_mgr.LoadResource(res);
@@ -428,7 +428,7 @@ public:
 	BufferHandle GetBuffer(Resource* res);
 	cstring GetPath(Resource* res);
 	StreamReader GetStream(Resource* res, StreamType type);
-	void AddTaskCategory(const AnyString& name);
+	void AddTaskCategory(Cstring name);
 	void AddTask(void* ptr, TaskCallback callback);
 	void NextTask(cstring next_category = nullptr);
 	void SetLoadScreen(LoadScreen* _load_screen) { load_screen = _load_screen; }
@@ -469,8 +469,8 @@ private:
 	
 	Resource* AddResource(cstring filename, cstring path);
 	Resource* CreateResource(ResourceType type);
-	Resource* TryGetResource(const AnyString& filename, ResourceType type);
-	Resource* GetResource(const AnyString& filename, ResourceType type);
+	Resource* TryGetResource(Cstring filename, ResourceType type);
+	Resource* GetResource(Cstring filename, ResourceType type);
 	void AddLoadTask(Resource* res);
 	void AddLoadTask(Resource* res, void* ptr, TaskCallback callback, bool required);
 	void LoadResource(Resource* res);

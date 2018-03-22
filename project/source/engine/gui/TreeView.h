@@ -92,7 +92,7 @@ namespace gui
 
 		void SetCollapsed(bool new_collapsed);
 		void SetData(void* new_data) { data = new_data; }
-		void SetText(const AnyString& s);
+		void SetText(Cstring s);
 
 	private:
 		void CalculateWidth();

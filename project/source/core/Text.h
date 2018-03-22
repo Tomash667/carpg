@@ -4,16 +4,14 @@
 extern string g_tmp_string;
 
 //-----------------------------------------------------------------------------
-struct AnyString
+struct Cstring
 {
-	AnyString(cstring s) : s(s)
+	Cstring(cstring s) : s(s)
 	{
 		assert(s);
-		assert(strlen(s) > 0);
 	}
-	AnyString(const string& str) : s(str.c_str())
+	Cstring(const string& str) : s(str.c_str())
 	{
-		assert(!str.empty());
 	}
 
 	operator cstring() const
@@ -24,85 +22,40 @@ struct AnyString
 	cstring s;
 };
 
-inline bool operator == (const string& s1, const AnyString& s2)
+inline bool operator == (const string& s1, Cstring s2)
 {
 	return s1 == s2.s;
 }
-inline bool operator == (const AnyString& s1, const string& s2)
+inline bool operator == (Cstring s1, const string& s2)
 {
 	return s2 == s1.s;
 }
-inline bool operator == (cstring s1, const AnyString& s2)
+inline bool operator == (cstring s1, Cstring s2)
 {
 	return strcmp(s1, s2.s) == 0;
 }
-inline bool operator == (const AnyString& s1, cstring s2)
+inline bool operator == (Cstring s1, cstring s2)
 {
 	return strcmp(s1.s, s2) == 0;
 }
-inline bool operator != (const string& s1, const AnyString& s2)
+inline bool operator != (const string& s1, Cstring s2)
 {
 	return s1 != s2.s;
 }
-inline bool operator != (const AnyString& s1, const string& s2)
+inline bool operator != (Cstring s1, const string& s2)
 {
 	return s2 != s1.s;
 }
-inline bool operator != (cstring s1, const AnyString& s2)
+inline bool operator != (cstring s1, Cstring s2)
 {
 	return strcmp(s1, s2.s) != 0;
 }
-inline bool operator != (const AnyString& s1, cstring s2)
+inline bool operator != (Cstring s1, cstring s2)
 {
 	return strcmp(s1.s, s2) != 0;
 }
 
 //-----------------------------------------------------------------------------
-struct AnyStringNull
-{
-	AnyStringNull(cstring s) : s(s)
-	{
-		if(s)
-			assert(strlen(s) > 0);
-	}
-	AnyStringNull(const string& str) : s(str.c_str())
-	{
-		assert(!str.empty());
-	}
-
-	operator cstring() const
-	{
-		return s;
-	}
-
-	cstring s;
-};
-
-//-----------------------------------------------------------------------------
-template<bool AllowNull, uint MinLength>
-struct _InString
-{
-	_InString(cstring s) : s(s)
-	{
-		if(!AllowNull)
-			assert(s);
-		if(MinLength > 0u)
-			assert(s && strlen(s) >= MinLength);
-	}
-
-	_InString(const string& str) : s(str.c_str())
-	{
-		if(MinLength > 0u)
-			assert(str.length() >= MinLength);
-	}
-
-	cstring s;
-};
-
-typedef _InString<false, 0> InString;
-typedef _InString<false, 1> InString1;
-typedef _InString<true, 0> InStringN;
-
 cstring Format(cstring fmt, ...);
 cstring FormatList(cstring fmt, va_list lis);
 void FormatStr(string& str, cstring fmt, ...);
@@ -114,8 +67,8 @@ inline bool Unescape(const string& str_in, string& str_out)
 	return Unescape(str_in, 0u, str_in.length(), str_out);
 }
 bool StringInString(cstring s1, cstring s2);
-cstring Escape(const InString& str, char quote = '"');
-cstring Escape(const InString& str, string& out, char quote = '"');
+cstring Escape(Cstring str, char quote = '"');
+cstring Escape(Cstring str, string& out, char quote = '"');
 cstring EscapeChar(char c);
 cstring EscapeChar(char c, string& out);
 string* ToString(const wchar_t* str);

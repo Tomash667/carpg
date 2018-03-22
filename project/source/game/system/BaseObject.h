@@ -138,8 +138,8 @@ struct BaseObject
 	}
 
 	static SetContainer<BaseObject> objs;
-	static BaseObject* TryGet(const AnyString& id, bool* is_group = nullptr);
-	static BaseObject* Get(const AnyString& id, bool* is_group = nullptr)
+	static BaseObject* TryGet(Cstring id, bool* is_group = nullptr);
+	static BaseObject* Get(Cstring id, bool* is_group = nullptr)
 	{
 		BaseObject* obj = TryGet(id, is_group);
 		assert(obj && "Missing BaseObject!");

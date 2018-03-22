@@ -69,7 +69,7 @@ void Label::SetPadding(const Int2& padding)
 	CalculateSize();
 }
 
-void Label::SetText(const AnyString& s)
+void Label::SetText(Cstring s)
 {
 	text = s.s;
 	CalculateSize();

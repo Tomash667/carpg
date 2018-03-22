@@ -14,7 +14,7 @@ BuildingGroup* BuildingGroup::BG_BLACKSMITH;
 BuildingGroup* BuildingGroup::BG_MERCHANT;
 
 //=================================================================================================
-BuildingGroup* BuildingGroup::TryGet(const AnyString& id)
+BuildingGroup* BuildingGroup::TryGet(Cstring id)
 {
 	for(auto group : groups)
 	{

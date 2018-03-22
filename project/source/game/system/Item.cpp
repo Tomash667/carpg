@@ -328,7 +328,7 @@ const Item* StartItem::GetStartItem(SkillId skill, int value)
 }
 
 //=================================================================================================
-Item* Item::TryGet(const AnyString& id)
+Item* Item::TryGet(Cstring id)
 {
 	// search item
 	auto it = items.find(id);
@@ -344,7 +344,7 @@ Item* Item::TryGet(const AnyString& id)
 }
 
 //=================================================================================================
-BookScheme* BookScheme::TryGet(const AnyString& id)
+BookScheme* BookScheme::TryGet(Cstring id)
 {
 	for(auto scheme : book_schemes)
 	{
@@ -356,7 +356,7 @@ BookScheme* BookScheme::TryGet(const AnyString& id)
 }
 
 //=================================================================================================
-ItemListResult ItemList::TryGet(const AnyString& _id)
+ItemListResult ItemList::TryGet(Cstring _id)
 {
 	ItemListResult result;
 	cstring id = _id.s;
@@ -394,7 +394,7 @@ ItemListResult ItemList::TryGet(const AnyString& _id)
 }
 
 //=================================================================================================
-const Item* FindItemOrList(const AnyString& id, ItemListResult& lis)
+const Item* FindItemOrList(Cstring id, ItemListResult& lis)
 {
 	auto item = Item::TryGet(id);
 	if(item)

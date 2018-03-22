@@ -203,7 +203,7 @@ void TreeNode::SetCollapsed(bool new_collapsed)
 		tree->CalculatePos();
 }
 
-void TreeNode::SetText(const AnyString& s)
+void TreeNode::SetText(Cstring s)
 {
 	if(tree && parent)
 	{

@@ -25,7 +25,7 @@ namespace io
 	// simple encryption (pass encrypted to decrypt data)
 	void Crypt(char* inp, uint inplen, cstring key, uint keylen);
 	// open url in default web browser
-	void OpenUrl(AnyString url);
+	void OpenUrl(Cstring url);
 }
 
 //-----------------------------------------------------------------------------
@@ -428,6 +428,24 @@ public:
 	uint GetSize() const
 	{
 		return GetFileSize(file, nullptr);
+	}
+
+
+	template<typename T>
+	uint BeginPatch(const T& e)
+	{
+		uint pos = SetFilePointer(file, 0, nullptr, FILE_CURRENT);
+		Write(e);
+		return pos;
+	}
+
+	template<typename T>
+	void Patch(uint pos, const T& e)
+	{
+		uint prev_pos = SetFilePointer(file, 0, nullptr, FILE_CURRENT);
+		SetFilePointer(file, pos, nullptr, FILE_BEGIN);
+		Write(e);
+		SetFilePointer(file, prev_pos, nullptr, FILE_BEGIN);
 	}
 
 	HANDLE file;
