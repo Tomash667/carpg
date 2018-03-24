@@ -11884,28 +11884,28 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 		case TRAP_SPEAR:
 			if(trap.state == 0)
 			{
-				// sprawdü czy ktoú nadepnπ≥
-				bool jest = false;
+				// check if someone is step on it
+				bool trigger = false;
 				if(is_local)
 				{
-					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
+					for(Unit* unit : *ctx.units)
 					{
-						if((*it2)->IsStanding() && !IS_SET((*it2)->data->flags, F_SLIGHT) && CircleToCircle(trap.pos.x, trap.pos.z, trap.base->rw, (*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius()))
+						if(unit->IsStanding() && !IS_SET(unit->data->flags, F_SLIGHT)
+							&& CircleToCircle(trap.pos.x, trap.pos.z, trap.base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 						{
-							jest = true;
+							trigger = true;
 							break;
 						}
 					}
 				}
 				else if(trap.trigger)
 				{
-					jest = true;
+					trigger = true;
 					trap.trigger = false;
 				}
 
-				if(jest)
+				if(trigger)
 				{
-					// ktoú nadepnπ≥
 					sound_mgr->PlaySound3d(trap.base->sound->sound, trap.pos, 1.f, 4.f);
 					trap.state = 1;
 					trap.time = Random(0.5f, 0.75f);
@@ -11920,57 +11920,73 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 			}
 			else if(trap.state == 1)
 			{
-				// odliczaj czas do wyjúcia w≥Ûczni
-				trap.time -= dt;
-				if(trap.time <= 0.f)
+				// count timer to spears come out
+				bool trigger = false;
+				if(is_local)
+				{
+					trap.time -= dt;
+					if(trap.time <= 0.f)
+						trigger = true;
+				}
+				else if(trap.trigger)
+				{
+					trigger = true;
+					trap.trigger = false;
+				}
+
+				if(trigger)
 				{
 					trap.state = 2;
 					trap.time = 0.f;
 
-					// düwiÍk wychodzenia
 					sound_mgr->PlaySound3d(trap.base->sound2->sound, trap.pos, 2.f, 8.f);
+
+					if(Net::IsServer())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::TRIGGER_TRAP;
+						c.id = trap.netid;
+					}
 				}
 			}
 			else if(trap.state == 2)
 			{
 				// wychodzenie w≥Ûczni
-				bool koniec = false;
+				bool end = false;
 				trap.time += dt;
 				if(trap.time >= 0.27f)
 				{
 					trap.time = 0.27f;
-					koniec = true;
+					end = true;
 				}
 
 				trap.obj2.pos.y = trap.obj.pos.y - 2.f + 2.f*(trap.time / 0.27f);
 
 				if(is_local)
 				{
-					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
+					for(Unit* unit : *ctx.units)
 					{
-						if(!(*it2)->IsAlive())
+						if(!unit->IsAlive())
 							continue;
-						if(CircleToCircle(trap.obj2.pos.x, trap.obj2.pos.z, trap.base->rw, (*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius()))
+						if(CircleToCircle(trap.obj2.pos.x, trap.obj2.pos.z, trap.base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 						{
-							bool jest = false;
-							for(vector<Unit*>::iterator it3 = trap.hitted->begin(), end3 = trap.hitted->end(); it3 != end3; ++it3)
+							bool found = false;
+							for(Unit* unit2 : *trap.hitted)
 							{
-								if(*it2 == *it3)
+								if(unit == unit2)
 								{
-									jest = true;
+									found = true;
 									break;
 								}
 							}
 
-							if(!jest)
+							if(!found)
 							{
-								Unit* hitted = *it2;
-
-								// uderzenie w≥Ûczniami
+								// hit unit with spears
 								float dmg = float(trap.base->dmg),
-									def = hitted->CalculateDefense();
+									def = unit->CalculateDefense();
 
-								int mod = ObliczModyfikator(DMG_PIERCE, hitted->data->flags);
+								int mod = ObliczModyfikator(DMG_PIERCE, unit->data->flags);
 								float m = 1.f;
 								if(mod == -1)
 									m += 0.25f;
@@ -11983,23 +11999,23 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 								dmg -= def;
 
 								// düwiÍk trafienia
-								sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, hitted->GetBodyMaterial()), hitted->pos + Vec3(0, 1.f, 0), 2.f, 8.f);
+								sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, unit->GetBodyMaterial()), unit->pos + Vec3(0, 1.f, 0), 2.f, 8.f);
 
 								// train player armor skill
-								if(hitted->IsPlayer())
-									hitted->player->Train(TrainWhat::TakeDamageArmor, base_dmg / hitted->hpmax, 4);
+								if(unit->IsPlayer())
+									unit->player->Train(TrainWhat::TakeDamageArmor, base_dmg / unit->hpmax, 4);
 
 								// obraøenia
 								if(dmg > 0)
-									GiveDmg(ctx, nullptr, dmg, **it2);
+									GiveDmg(ctx, nullptr, dmg, *unit);
 
-								trap.hitted->push_back(hitted);
+								trap.hitted->push_back(unit);
 							}
 						}
 					}
 				}
 
-				if(koniec)
+				if(end)
 				{
 					trap.state = 3;
 					if(is_local)
@@ -12009,7 +12025,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 			}
 			else if(trap.state == 3)
 			{
-				// w≥Ûcznie wysz≥y, odliczaj czas do chowania
+				// count timer to hide spears
 				trap.time -= dt;
 				if(trap.time <= 0.f)
 				{
@@ -12020,7 +12036,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 			}
 			else if(trap.state == 4)
 			{
-				// chowanie w≥Ûczni
+				// hiding spears
 				trap.time -= dt;
 				if(trap.time <= 0.f)
 				{
@@ -12032,27 +12048,41 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 			}
 			else if(trap.state == 5)
 			{
-				// w≥Ûcznie schowane, odliczaj czas do ponownej aktywacji
-				trap.time -= dt;
-				if(trap.time <= 0.f)
+				// spears are hidden, wait until unit moves away to reactivate
+				bool reactivate;
+				if(is_local)
 				{
-					if(is_local)
+					reactivate = true;
+					for(Unit* unit : *ctx.units)
 					{
-						// jeúli ktoú stoi to nie aktywuj
-						bool ok = true;
-						for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
+						if(!IS_SET(unit->data->flags, F_SLIGHT)
+							&& CircleToCircle(trap.obj2.pos.x, trap.obj2.pos.z, trap.base->rw, unit->pos.x, unit->pos.z, unit->GetUnitRadius()))
 						{
-							if(!IS_SET((*it2)->data->flags, F_SLIGHT) && CircleToCircle(trap.obj2.pos.x, trap.obj2.pos.z, trap.base->rw, (*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius()))
-							{
-								ok = false;
-								break;
-							}
+							reactivate = false;
+							break;
 						}
-						if(ok)
-							trap.state = 0;
+					}
+				}
+				else
+				{
+					if(trap.trigger)
+					{
+						reactivate = true;
+						trap.trigger = false;
 					}
 					else
-						trap.state = 0;
+						reactivate = false;
+				}
+
+				if(reactivate)
+				{
+					trap.state = 0;
+					if(Net::IsServer())
+					{
+						NetChange& c = Add1(Net::changes);
+						c.type = NetChange::TRIGGER_TRAP;
+						c.id = trap.netid;
+					}
 				}
 			}
 			break;
@@ -12060,31 +12090,32 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 		case TRAP_POISON:
 			if(trap.state == 0)
 			{
-				// sprawdü czy ktoú nadepnπ≥
-				bool jest = false;
+				// check if someone is step on it
+				bool trigger = false;
 				if(is_local)
 				{
-					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
+					for(Unit* unit : *ctx.units)
 					{
-						if((*it2)->IsStanding() && !IS_SET((*it2)->data->flags, F_SLIGHT) &&
-							CircleToRectangle((*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
+						if(unit->IsStanding() && !IS_SET(unit->data->flags, F_SLIGHT) &&
+							CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
 						{
-							jest = true;
+							trigger = true;
 							break;
 						}
 					}
 				}
 				else if(trap.trigger)
 				{
-					jest = true;
+					trigger = true;
 					trap.trigger = false;
 				}
 
-				if(jest)
+				if(trigger)
 				{
-					// ktoú nadepnπ≥, wystrzel strza≥Í
-					trap.state = 1;
+					// someone step on trap, shoot arrow
+					trap.state = is_local ? 1 : 2;
 					trap.time = Random(5.f, 7.5f);
+					sound_mgr->PlaySound3d(trap.base->sound->sound, trap.pos, 1.f, 4.f);
 
 					if(is_local)
 					{
@@ -12096,6 +12127,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						b.pos = Vec3(2.f*trap.tile.x + trap.pos.x - float(int(trap.pos.x / 2) * 2) + Random(-trap.base->rw, trap.base->rw) - 1.2f*g_kierunek2[trap.dir].x,
 							Random(0.5f, 1.5f),
 							2.f*trap.tile.y + trap.pos.z - float(int(trap.pos.z / 2) * 2) + Random(-trap.base->h, trap.base->h) - 1.2f*g_kierunek2[trap.dir].y);
+						b.start_pos = b.pos;
 						b.rot = Vec3(0, dir_to_rot(trap.dir), 0);
 						b.owner = nullptr;
 						b.pe = nullptr;
@@ -12124,8 +12156,6 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						ctx.tpes->push_back(tpe2);
 						b.trail2 = tpe2;
 
-						// play sounds
-						sound_mgr->PlaySound3d(trap.base->sound->sound, trap.pos, 1.f, 4.f);
 						sound_mgr->PlaySound3d(sBow[Rand() % 2], b.pos, 2.f, 8.f);
 
 						if(Net::IsServer())
@@ -12154,27 +12184,33 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 			}
 			else
 			{
-				// sprawdü czy zeszli
-				bool jest = false;
+				// check if units leave trap
+				bool empty;
 				if(is_local)
 				{
-					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
+					empty = true;
+					for(Unit* unit : *ctx.units)
 					{
-						if(!IS_SET((*it2)->data->flags, F_SLIGHT) &&
-							CircleToRectangle((*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
+						if(!IS_SET(unit->data->flags, F_SLIGHT) &&
+							CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
 						{
-							jest = true;
+							empty = false;
 							break;
 						}
 					}
 				}
-				else if(trap.trigger)
+				else
 				{
-					jest = true;
-					trap.trigger = false;
+					if(trap.trigger)
+					{
+						empty = true;
+						trap.trigger = false;
+					}
+					else
+						empty = false;
 				}
 
-				if(!jest)
+				if(empty)
 				{
 					trap.state = 0;
 					if(Net::IsServer())
@@ -12191,18 +12227,18 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 				if(!is_local)
 					break;
 
-				bool jest = false;
-				for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
+				bool trigger = false;
+				for(Unit* unit : *ctx.units)
 				{
-					if((*it2)->IsStanding()
-						&& CircleToRectangle((*it2)->pos.x, (*it2)->pos.z, (*it2)->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
+					if(unit->IsStanding()
+						&& CircleToRectangle(unit->pos.x, unit->pos.z, unit->GetUnitRadius(), trap.pos.x, trap.pos.z, trap.base->rw, trap.base->h))
 					{
-						jest = true;
+						trigger = true;
 						break;
 					}
 				}
 
-				if(jest)
+				if(trigger)
 				{
 					_to_remove.push_back(index);
 

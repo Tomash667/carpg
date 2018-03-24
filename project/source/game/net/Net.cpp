@@ -5972,6 +5972,7 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 					Bullet& b = Add1(ctx.bullets);
 					b.mesh = aArrow;
 					b.pos = pos;
+					b.start_pos = pos;
 					b.rot = Vec3(rotX, rotY, 0);
 					b.yspeed = speedY;
 					b.owner = nullptr;
