@@ -2352,14 +2352,19 @@ void Game::UpdateAi(float dt)
 					if(top)
 					{
 						look_at = LookAtTarget;
-						if(best_dist < 1.5f)
-							move_type = MoveAway;
-						else if(best_dist > 2.f)
-						{
-							move_type = MovePoint;
-							run_type = Walk;
-						}
 						target_pos = top->pos;
+						if(u.IsHoldingBow() || IS_SET(u.data->flags, F_MAGE))
+							move_type = KeepDistanceCheck;
+						else
+						{
+							if(best_dist < 1.5f)
+								move_type = MoveAway;
+							else if(best_dist > 2.f)
+							{
+								move_type = MovePoint;
+								run_type = Walk;
+							}
+						}
 					}
 
 					// end of waiting or no enemies

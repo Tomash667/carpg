@@ -15,7 +15,7 @@ const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
 const float Unit::STAMINA_BASH_ATTACK = 50.f;
 const float Unit::STAMINA_UNARMED_ATTACK = 50.f;
-const float Unit::STAMINA_RESTORE_TIMER = 1.f;
+const float Unit::STAMINA_RESTORE_TIMER = 0.5f;
 int Unit::netid_counter;
 
 //=================================================================================================
@@ -843,14 +843,14 @@ void Unit::UpdateEffects(float dt)
 		switch(stamina_action)
 		{
 		case SA_RESTORE_MORE:
-			stamina_restore = 30.f;
+			stamina_restore = 66.66f;
 			break;
 		case SA_RESTORE:
 		default:
-			stamina_restore = 20.f;
+			stamina_restore = 33.33f;
 			break;
 		case SA_RESTORE_SLOW:
-			stamina_restore = 15.f;
+			stamina_restore = 20.f;
 			break;
 		case SA_DONT_RESTORE:
 			stamina_restore = 0.f;
@@ -2914,12 +2914,9 @@ void Unit::UpdateStaminaAction()
 		case ANI_LEFT:
 		case ANI_RIGHT:
 		case ANI_KNEELS:
+		case ANI_RUN:
 			if(stamina_action == SA_RESTORE_MORE)
 				stamina_action = SA_RESTORE;
-			break;
-		case ANI_RUN:
-			if(stamina_action > SA_RESTORE_SLOW)
-				stamina_action = SA_RESTORE_SLOW;
 			break;
 		}
 	}

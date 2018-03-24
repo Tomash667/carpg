@@ -6,6 +6,7 @@ Version 0.7 (2018-XX-YY):
 + better visible crosshair in dark places
 + info about leaving event area
 + using AngelScript language in console
++ changes in stamina regeneration speed
 - fixed random crash when fighting with arena enemies and rolled to spawn mages and golems
 - fixed empty location where there should be mages and golems there
 - fixed recalculating inventory weight when loading old saves
@@ -48,6 +49,8 @@ Version 0.7 (2018-XX-YY):
 - fixed spawning orc with key behind locked doors
 - fixed crash after revisiting mine
 - fixed generating too strong enemies on encounters
+- fixed crash when looking at down stairs in one type of dungeons
+- archers don't come near target when they run out of stamina
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

@@ -1,29 +1,6 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-+ current train don't handle floats so gain 0 in some cases
-+ stamina changes
-
-+ player Train
-Game.h
-Game2.cpp
-Tournament.cpp
-Tutorial.cpp
-PlayerContorller.cpp
-Unit.cpp
-Net.cpp
-WorldMapGui.cpp
-
-+ better mobility calculations
-Unit.cpp
-
-+ train haggle/cha from trade
-Game2.cpp
-Net.cpp
-Inventory.cpp
-
-! checkpoint
-	? load old versions
 ===============================================================================================================
 NEW:
 + 404 handling on website
@@ -35,20 +12,6 @@ NEW:
 + validate objects metadata (required objects, units)
 ? why version/stats thread start at menu, not while loading
 + randomized order of spawned objects
-+ join herodata with unit, anyone can join team etc
-+ JoinCost use skill check
-+ poison resistance from endurance
-+ effect PoisonResistance/immunity
-+ amulet pijanego mistrza - im bardziej pijany jest gracz tym większe obrażenia
-+ negative traits: for int/wis
-+ npc to recruit: merchant
-+ hunters guild, quests (wielki łowczy), bad wolf boss
-+ attach sounds to scene node, not to unit
-+ add perks from f_perks to issues
-+ tournament - don't repeat for final fight (X vs Y, starting fight X vs Y)
-+ rescale alcohol values - contest is always for extra rounds
-+ better gold split with credit, paying credit still get some part from that
-+ very heavy armor, make unit mesh bigger and higher
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos

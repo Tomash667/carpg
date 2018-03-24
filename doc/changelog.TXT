@@ -6,6 +6,7 @@ Wersja 0.7 (2018-XX-YY):
 + lepiej widoczny celownik w ciemnoœci
 + info o opuszczaniu obszaru wydarzenia
 + obs³uga jêzyka skryptowego AngelScript w konsoli
++ zmiany w szybkoœci regneracji wytrzyma³oœci
 - naprawiony crash przy wygenerowaniu magówi i golemów podczas walki na arenie
 - naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
 - naprawione przeliczanie wagi ekwipunku dla wczytywania starych zapisów
@@ -48,6 +49,8 @@ Wersja 0.7 (2018-XX-YY):
 - naprawiony b³¹d gdy ork z kluczem wygeneruje siê za zamkniêtymi drzwiami
 - naprawiony crash po ponownym odwiedzeniu kopalni
 - naprawione generowanie zbyt silnych wrogów podczas podró¿y
+- naprawiony crash w jednym rodzaju podziemi podczas renderowania schodów w dó³
+- ³ucznicy nie podchodz¹ do celu gdy skoñczy siê im wytrzyma³oœæ
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):
