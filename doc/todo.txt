@@ -1,6 +1,26 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
+- bullet collision point is a bit off; ceil only now, walls y
++ each room with random y
+	+ floor/ceil physics
+	+ camera collide with floor/ceil
+	+ bullets collide with floor/ceil
+	+ enemy shoot/magic
+	- spawn wolf - floor is colliding
+	? low ceil heigh phy
+	- warp area invalid pos
+	- stairs down invalid unit pos
++ ramps, good y
+	? how to store y?
+	+ units
+	+ items
+	+ blood
+	+ physics
+	+ colliders
+	+ prevent spawning traps on ramps
+! iskra.png
+! particle settings FIXME
 ===============================================================================================================
 NEW:
 + 404 handling on website
@@ -12,6 +32,8 @@ NEW:
 + validate objects metadata (required objects, units)
 ? why version/stats thread start at menu, not while loading
 + randomized order of spawned objects
++ arrow on hit, update trail particle to final position
++ campfire damage, avoid by ai
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos

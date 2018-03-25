@@ -2877,6 +2877,12 @@ void Game::GenerateDungeon(Location& _loc)
 		opcje.schody_dol = (inside->HaveDownStairs() ? OpcjeMapy::LOSOWO : OpcjeMapy::BRAK);
 		opcje.kraty_szansa = base.bars_chance;
 		opcje.devmode = devmode;
+		opcje.ramp_chance = 20;
+		opcje.ramp_chance_min = 2;
+		opcje.ramp_chance_other = 20;
+		opcje.ramp_decrease_chance = 5;
+		opcje.ramp_go_up = false;
+		opcje.ramp_length = Int2(3, 6);
 
 		// ostatni poziom krypty
 		if(inside->type == L_CRYPT && !inside->HaveDownStairs())
@@ -2982,6 +2988,10 @@ void Game::GenerateDungeon(Location& _loc)
 		lvl.staircase_down = opcje.schody_dol_pozycja;
 		lvl.staircase_down_dir = opcje.schody_dol_kierunek;
 		lvl.staircase_down_in_wall = opcje.schody_dol_w_scianie;
+
+		//for(Room& room : lvl.rooms)
+		//	room.y = Random(-5.f, 5.f);
+		//lvl.GetUpStairsRoom()->y = 1.f;
 
 		// inna tekstura pokoju w krypcie
 		if(inside->type == L_CRYPT && !inside->HaveDownStairs())
@@ -3101,7 +3111,7 @@ void Game::GenerateDungeonObjects2()
 	{
 		Object* o = new Object;
 		o->mesh = aStairsUp;
-		o->pos = pt_to_pos(lvl.staircase_up);
+		o->pos = lvl.GetPos(lvl.staircase_up);
 		o->rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
 		o->scale = 1;
 		o->base = nullptr;
@@ -3115,7 +3125,7 @@ void Game::GenerateDungeonObjects2()
 	{
 		Object* o = new Object;
 		o->mesh = (lvl.staircase_down_in_wall ? aStairsDown2 : aStairsDown);
-		o->pos = pt_to_pos(lvl.staircase_down);
+		o->pos = lvl.GetPos(lvl.staircase_down);
 		o->rot = Vec3(0, dir_to_rot(lvl.staircase_down_dir), 0);
 		o->scale = 1;
 		o->base = nullptr;
@@ -3130,31 +3140,34 @@ void Game::GenerateDungeonObjects2()
 			POLE p = lvl.map[x + y*lvl.w].type;
 			if(p == KRATKA || p == KRATKA_PODLOGA)
 			{
+				Room* room = lvl.GetRoom(Int2(x, y));
 				Object* o = new Object;
 				o->mesh = aGrating;
 				o->rot = Vec3(0, 0, 0);
-				o->pos = Vec3(float(x * 2), 0, float(y * 2));
+				o->pos = Vec3(float(x * 2), room ? room->y : 0.f, float(y * 2));
 				o->scale = 1;
 				o->base = nullptr;
 				local_ctx.objects->push_back(o);
 			}
 			if(p == KRATKA || p == KRATKA_SUFIT)
 			{
+				Room* room = lvl.GetRoom(Int2(x, y));
 				Object* o = new Object;
 				o->mesh = aGrating;
 				o->rot = Vec3(0, 0, 0);
-				o->pos = Vec3(float(x * 2), 4, float(y * 2));
+				o->pos = Vec3(float(x * 2), (room ? room->y : 0.f) + 4.f, float(y * 2));
 				o->scale = 1;
 				o->base = nullptr;
 				local_ctx.objects->push_back(o);
 			}
 			if(p == DRZWI)
 			{
+				Room* room = lvl.GetRoom(Int2(x, y));
 				Object* o = new Object;
 				o->mesh = aDoorWall;
 				if(IS_SET(lvl.map[x + y*lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
 					o->mesh = aDoorWall2;
-				o->pos = Vec3(float(x * 2) + 1, 0, float(y * 2) + 1);
+				o->pos = Vec3(float(x * 2) + 1, room ? room->y : 0.f, float(y * 2) + 1);
 				o->scale = 1;
 				o->base = nullptr;
 				local_ctx.objects->push_back(o);

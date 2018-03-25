@@ -109,4 +109,10 @@ struct InsideLocationLevel : public LevelArea
 	Unit* FindUnit(UnitData* data);
 	Chest* FindChestWithItem(const Item* item, int* index);
 	Chest* FindChestWithQuestItem(int quest_refid, int* index);
+
+	Vec3 GetPos(const Int2& pt)
+	{
+		Room* room = GetRoom(pt);
+		return pt_to_pos(pt, room ? room->y : 0.f);
+	}
 };

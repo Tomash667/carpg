@@ -138,22 +138,39 @@ enum class RoomTarget
 	Portal,
 	Prison,
 	Throne,
-	PortalCreate
+	PortalCreate,
+	Ramp
 };
 
 //-----------------------------------------------------------------------------
 // Struktura opisuj¹ca pomieszczenie w podziemiach
 struct Room
 {
+	enum Corner
+	{
+		TOP_LEFT,
+		TOP_RIGHT,
+		BOTTOM_LEFT,
+		BOTTOM_RIGHT
+	};
+
 	Int2 pos, size;
 	vector<int> connected;
 	RoomTarget target;
+	union
+	{
+		float y;
+		float yb[4];
+	};
+	short level, counter;
 
 	static const int MIN_SIZE = 19;
+	static const float HEIGHT;
+	static const float HEIGHT_LOW;
 
 	Vec3 Center() const
 	{
-		return Vec3(float(pos.x * 2 + size.x), 0, float(pos.y * 2 + size.y));
+		return Vec3(float(pos.x * 2 + size.x), y, float(pos.y * 2 + size.y));
 	}
 	Int2 CenterTile() const
 	{
@@ -180,7 +197,7 @@ struct Room
 	}
 	Vec3 GetRandomPos() const
 	{
-		return Vec3(Random(2.f*(pos.x + 1), 2.f*(pos.x + size.x - 1)), 0, Random(2.f*(pos.y + 1), 2.f*(pos.y + size.y - 1)));
+		return Vec3(Random(2.f*(pos.x + 1), 2.f*(pos.x + size.x - 1)), y, Random(2.f*(pos.y + 1), 2.f*(pos.y + size.y - 1)));
 	}
 	bool GetRandomPos(float margin, Vec3& out_pos) const
 	{
@@ -189,7 +206,7 @@ struct Room
 			return false;
 		out_pos = Vec3(
 			Random(2.f*(pos.x + 1) + margin, 2.f*(pos.x + size.x - 1) - margin),
-			0,
+			y,
 			Random(2.f*(pos.y + 1) + margin, 2.f*(pos.y + size.y - 1) - margin));
 		return true;
 	}
@@ -198,11 +215,13 @@ struct Room
 		assert(margin * 2 < (min(size.x, size.y) - 1) * 2.f);
 		return Vec3(
 			Random(2.f*(pos.x + 1) + margin, 2.f*(pos.x + size.x - 1) - margin),
-			0,
+			y,
 			Random(2.f*(pos.y + 1) + margin, 2.f*(pos.y + size.y - 1) - margin));
 	}
 
 	bool IsCorridor() const { return target == RoomTarget::Corridor; }
+	bool IsRamp() const { return target == RoomTarget::Ramp; }
+	bool IsCorridorOrRamp() const {	return IsCorridor() || IsRamp(); }
 	bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsDown; }
 
 	void Save(HANDLE file);
@@ -234,11 +253,16 @@ struct OpcjeMapy
 
 	// input
 	int w, h;
-	Int2 rozmiar_pokoj, rozmiar_korytarz;
-	int korytarz_szansa, polacz_korytarz, polacz_pokoj, kraty_szansa;
+	Int2 rozmiar_pokoj, rozmiar_korytarz, ramp_length;
+	int korytarz_szansa, polacz_korytarz, polacz_pokoj, kraty_szansa,
+		ramp_chance_min, // minimum number of rooms before trying to generate ramp
+		ramp_chance, // chance % per room count above minimum to generate ramp
+		ramp_chance_other, // chance % to generate ramp in oposite direction
+		ramp_decrease_chance; // decrease chance when ramp is generated for other ramp in same room
 	KSZTALT_MAPY ksztalt;
 	GDZIE_SCHODY schody_gora, schody_dol;
-	bool stop;
+	bool stop,
+		ramp_go_up; // true - down, false - up
 
 	// input/output
 	Pole* mapa;

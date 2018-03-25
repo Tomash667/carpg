@@ -1039,7 +1039,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 
 			switch(shape->getShapeType())
 			{
-			case BOX_SHAPE_PROXYTYPE:
+			/*case BOX_SHAPE_PROXYTYPE:
 				{
 					const btBoxShape* box = (const btBoxShape*)shape;
 					DebugSceneNode* node = debug_node_pool.Get();
@@ -1092,7 +1092,17 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 						}
 					}
 				}
-				break;
+				break;*/
+			case TRIANGLE_MESH_SHAPE_PROXYTYPE:
+				{
+					DebugSceneNode* node = debug_node_pool.Get();
+					const btBvhTriangleMeshShape* trimesh = (const btBvhTriangleMeshShape*)shape;
+					node->type = DebugSceneNode::TriMesh;
+					node->group = DebugSceneNode::Physic;
+					node->mat = m3 * cam.matViewProj;
+					node->mesh_ptr = (void*)trimesh->getMeshInterface();
+					draw_batch.debug_nodes.push_back(node);
+				}
 			default:
 				break;
 			}
@@ -2134,9 +2144,9 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 		int index = 0;
 		for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
 		{
-			box.v1 = Vec3(float(it->pos.x * 2), 0, float(it->pos.y * 2));
+			box.v1 = Vec3(float(it->pos.x * 2), it->y, float(it->pos.y * 2));
 			box.v2 = box.v1;
-			box.v2 += Vec3(float(it->size.x * 2), 4, float(it->size.y * 2));
+			box.v2 += Vec3(float(it->size.x * 2), it->y + 4.f, float(it->size.y * 2));
 
 			if(!frustum.BoxToFrustum(box))
 				continue;
@@ -2228,7 +2238,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 					// ustaw macierze
 					int matrix_id = draw_batch.matrices.size();
 					NodeMatrix& m = Add1(draw_batch.matrices);
-					m.matWorld = Matrix::Translation(2.f*(it->pos.x + x), 0, 2.f*(it->pos.y + y));
+					m.matWorld = Matrix::Translation(2.f*(it->pos.x + x), it->y, 2.f*(it->pos.y + y));
 					m.matCombined = m.matWorld * cam.matViewProj;
 
 					int tex_id = (IS_SET(p.flags, Pole::F_DRUGA_TEKSTURA) ? 1 : 0);
@@ -3522,7 +3532,7 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 {
 	SetAlphaTest(false);
 	SetAlphaBlend(false);
-	SetNoCulling(false);
+	SetNoCulling(true);
 	SetNoZWrite(false);
 
 	V(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME));
@@ -3551,17 +3561,31 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 	{
 		const DebugSceneNode& node = **it;
 
-		Mesh* mesh = meshes[node.type];
-		V(device->SetVertexDeclaration(vertex_decl[mesh->vertex_decl]));
-		V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
-		V(device->SetIndices(mesh->ib));
-
 		V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&colors[node.group]));
 		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&node.mat));
-		V(eMesh->CommitChanges());
 
-		for(int i = 0; i < mesh->head.n_subs; ++i)
-			V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
+		if(node.type == DebugSceneNode::TriMesh)
+		{
+			btTriangleIndexVertexArray* mesh = (btTriangleIndexVertexArray*)node.mesh_ptr;
+			// currently only dungeon mesh is supported here
+			assert(mesh == dungeon_shape_data);
+			V(device->SetVertexDeclaration(vertex_decl[VDI_POS]));
+			V(eMesh->CommitChanges());
+
+			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, dungeon_shape_pos.size(), dungeon_shape_index.size() / 3, dungeon_shape_index.data(),
+				D3DFMT_INDEX32, dungeon_shape_pos.data(), sizeof(Vec3)));
+		}
+		else
+		{
+			Mesh* mesh = meshes[node.type];
+			V(device->SetVertexDeclaration(vertex_decl[mesh->vertex_decl]));
+			V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
+			V(device->SetIndices(mesh->ib));
+			V(eMesh->CommitChanges());
+
+			for(int i = 0; i < mesh->head.n_subs; ++i)
+				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
+		}
 	}
 
 	V(eMesh->EndPass());

@@ -1732,8 +1732,9 @@ void Game::ClearPointers()
 	shape_schody = nullptr;
 	shape_summon = nullptr;
 	shape_barrier = nullptr;
-	obj_arrow = nullptr;
-	obj_spell = nullptr;
+	shape_arrow = nullptr;
+	dungeon_shape = nullptr;
+	dungeon_shape_data = nullptr;
 
 	// vertex declarations
 	for(int i = 0; i < VDI_MAX; ++i)
@@ -1802,10 +1803,9 @@ void Game::OnCleanup()
 	delete shape_summon;
 	delete shape_barrier;
 	delete shape_schody;
-	if(obj_arrow)
-		delete obj_arrow->getCollisionShape();
-	delete obj_arrow;
-	delete obj_spell;
+	delete shape_arrow;
+	delete dungeon_shape;
+	delete dungeon_shape_data;
 
 	draw_batch.Clear();
 	free_cave_data();

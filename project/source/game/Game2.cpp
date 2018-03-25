@@ -6243,25 +6243,29 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		Int2 pt = pos_to_pt(unit.pos);
 
+		Room* room = lvl.GetRoom(pt);
+		if(room)
+			unit.pos.y = room->y;
+
 		if(pt == lvl.staircase_up)
 		{
 			Box2d box;
 			switch(lvl.staircase_up_dir)
 			{
 			case 0:
-				unit.pos.y = (unit.pos.z - 2.f*lvl.staircase_up.y) / 2;
+				unit.pos.y += (unit.pos.z - 2.f*lvl.staircase_up.y) / 2;
 				box = Box2d(2.f*lvl.staircase_up.x, 2.f*lvl.staircase_up.y + 1.4f, 2.f*(lvl.staircase_up.x + 1), 2.f*(lvl.staircase_up.y + 1));
 				break;
 			case 1:
-				unit.pos.y = (unit.pos.x - 2.f*lvl.staircase_up.x) / 2;
+				unit.pos.y += (unit.pos.x - 2.f*lvl.staircase_up.x) / 2;
 				box = Box2d(2.f*lvl.staircase_up.x + 1.4f, 2.f*lvl.staircase_up.y, 2.f*(lvl.staircase_up.x + 1), 2.f*(lvl.staircase_up.y + 1));
 				break;
 			case 2:
-				unit.pos.y = (2.f*lvl.staircase_up.y - unit.pos.z) / 2 + 1.f;
+				unit.pos.y += (2.f*lvl.staircase_up.y - unit.pos.z) / 2 + 1.f;
 				box = Box2d(2.f*lvl.staircase_up.x, 2.f*lvl.staircase_up.y, 2.f*(lvl.staircase_up.x + 1), 2.f*lvl.staircase_up.y + 0.6f);
 				break;
 			case 3:
-				unit.pos.y = (2.f*lvl.staircase_up.x - unit.pos.x) / 2 + 1.f;
+				unit.pos.y += (2.f*lvl.staircase_up.x - unit.pos.x) / 2 + 1.f;
 				box = Box2d(2.f*lvl.staircase_up.x, 2.f*lvl.staircase_up.y, 2.f*lvl.staircase_up.x + 0.6f, 2.f*(lvl.staircase_up.y + 1));
 				break;
 			}
@@ -6349,8 +6353,6 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 					AddGameMsg3(GMS_NOT_LEADER);
 			}
 		}
-		else
-			unit.pos.y = 0.f;
 
 		if(warped)
 			return;
@@ -8244,19 +8246,20 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 
 					b.rot.y = Clip(b.rot.y);
 
+					// FIXME
 					TrailParticleEmitter* tpe = new TrailParticleEmitter;
-					tpe->fade = 0.3f;
-					tpe->color1 = Vec4(1, 1, 1, 0.5f);
+					tpe->fade = 5.3f;
+					tpe->color1 = Vec4(1, 1, 1, 1);
 					tpe->color2 = Vec4(1, 1, 1, 0);
-					tpe->Init(50);
+					tpe->Init(500);
 					ctx.tpes->push_back(tpe);
 					b.trail = tpe;
 
 					TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
-					tpe2->fade = 0.3f;
-					tpe2->color1 = Vec4(1, 1, 1, 0.5f);
+					tpe2->fade = 5.3f;
+					tpe2->color1 = Vec4(1, 1, 1, 1);
 					tpe2->color2 = Vec4(1, 1, 1, 0);
-					tpe2->Init(50);
+					tpe2->Init(500);
 					ctx.tpes->push_back(tpe2);
 					b.trail2 = tpe2;
 
@@ -9162,51 +9165,28 @@ Vec4 Game::GetLightColor()
 	//return Vec4(0.5f,0.5f,0.5f,1);
 }
 
-struct BulletCallback : public btCollisionWorld::ContactResultCallback
+struct BulletCallback : public btCollisionWorld::ConvexResultCallback
 {
-	BulletCallback(btCollisionObject* _bullet, btCollisionObject* _ignore) : target(nullptr), hit(false), bullet(_bullet), ignore(_ignore), hit_unit(false)
+	BulletCallback(btCollisionObject* ignore) : target(nullptr), ignore(ignore)
 	{
-		assert(_bullet);
 		CLEAR_BIT(m_collisionFilterMask, CG_BARRIER);
 	}
 
-	btScalar addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap, int partId1, int index1)
+	btScalar addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace) override
 	{
-		if(colObj0Wrap->getCollisionObject() == bullet)
-		{
-			if(colObj1Wrap->getCollisionObject() == ignore)
-				return 1.f;
-			hitpoint = ToVec3(cp.getPositionWorldOnA());
-			if(!target)
-			{
-				if(IS_SET(colObj1Wrap->getCollisionObject()->getCollisionFlags(), CG_UNIT))
-					hit_unit = true;
-				// to nie musi byæ jednostka :/
-				target = (Unit*)colObj1Wrap->getCollisionObject()->getUserPointer();
-			}
-		}
-		else
-		{
-			if(colObj0Wrap->getCollisionObject() == ignore)
-				return 1.f;
-			hitpoint = ToVec3(cp.getPositionWorldOnB());
-			if(!target)
-			{
-				if(IS_SET(colObj0Wrap->getCollisionObject()->getCollisionFlags(), CG_UNIT))
-					hit_unit = true;
-				// to nie musi byæ jednostka :/
-				target = (Unit*)colObj0Wrap->getCollisionObject()->getUserPointer();
-			}
-		}
+		assert(m_closestHitFraction > convexResult.m_hitFraction);
 
-		hit = true;
+		if(convexResult.m_hitCollisionObject == ignore)
+			return 1.f;
+
+		m_closestHitFraction = convexResult.m_hitFraction;
+		hitpoint = convexResult.m_hitPointLocal;
+		target = (btCollisionObject*)convexResult.m_hitCollisionObject;
 		return 0.f;
 	}
 
-	btCollisionObject* bullet, *ignore;
-	Unit* target;
-	Vec3 hitpoint;
-	bool hit, hit_unit;
+	btCollisionObject* ignore, *target;
+	btVector3 hitpoint;
 };
 
 void Game::UpdateBullets(LevelContext& ctx, float dt)
@@ -9216,6 +9196,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 	for(vector<Bullet>::iterator it = ctx.bullets->begin(), end = ctx.bullets->end(); it != end; ++it)
 	{
 		// update position
+		Vec3 prev_pos = it->pos;
 		it->pos += Vec3(sin(it->rot.y)*it->speed, it->yspeed, cos(it->rot.y)*it->speed) * dt;
 		if(it->spell && it->spell->type == Spell::Ball)
 			it->yspeed -= 10.f*dt;
@@ -9257,26 +9238,28 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 		}
 
 		// do contact test
-		btCollisionObject* cobj;
-
+		btCollisionShape* shape;
 		if(!it->spell)
-			cobj = obj_arrow;
+			shape = shape_arrow;
 		else
-		{
-			cobj = obj_spell;
-			cobj->setCollisionShape(it->spell->shape);
-		}
+			shape = it->spell->shape;
+		assert(shape->isConvex());
 
-		btTransform& tr = cobj->getWorldTransform();
-		tr.setOrigin(ToVector3(it->pos));
-		tr.setRotation(btQuaternion(it->rot.y, it->rot.x, it->rot.z));
+		btTransform tr_from, tr_to;
+		tr_from.setOrigin(ToVector3(prev_pos));
+		tr_from.setRotation(btQuaternion(it->rot.y, it->rot.x, it->rot.z));
+		tr_to.setOrigin(ToVector3(it->pos));
+		tr_to.setRotation(tr_from.getRotation());
 
-		BulletCallback callback(cobj, it->owner ? it->owner->cobj : nullptr);
-		phy_world->contactTest(cobj, callback);
-		if(!callback.hit)
+		BulletCallback callback(it->owner ? it->owner->cobj : nullptr);
+		phy_world->convexSweepTest((btConvexShape*)shape, tr_from, tr_to, callback);
+		if(!callback.hasHit())
 			continue;
 
-		Unit* hitted = callback.target;
+		Vec3 hitpoint = ToVec3(callback.hitpoint);
+		Unit* hitted = nullptr;
+		if(IS_SET(callback.target->getCollisionFlags(), CG_UNIT))
+			hitted = (Unit*)callback.target->getUserPointer();
 
 		// something was hit, remove bullet
 		it->remove = true;
@@ -9289,7 +9272,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 		if(it->pe)
 			it->pe->destroy = true;
 
-		if(callback.hit_unit && hitted)
+		if(hitted)
 		{
 			if(!Net::IsLocal())
 				continue;
@@ -9302,18 +9285,18 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
-						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
+						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, 2.f, 10.f);
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::HIT_SOUND;
 							c.id = MAT_IRON;
 							c.ile = mat;
-							c.pos = callback.hitpoint;
+							c.pos = hitpoint;
 						}
 					}
 					else
-						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, false);
+						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, 2.f, false);
 					continue;
 				}
 
@@ -9358,14 +9341,14 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					hitted->RemoveStaminaBlock(stamina);
 
 					MATERIAL_TYPE mat = hitted->GetShield().material;
-					sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
+					sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, 2.f, 10.f);
 					if(Net::IsOnline())
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::HIT_SOUND;
 						c.id = MAT_IRON;
 						c.ile = mat;
-						c.pos = callback.hitpoint;
+						c.pos = hitpoint;
 					}
 
 					if(hitted->IsPlayer())
@@ -9396,7 +9379,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					hitted->player->Train(TrainWhat::TakeDamageArmor, base_dmg / hitted->hpmax, it->level);
 
 				// hit sound
-				PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, dmg > 0.f);
+				PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, 2.f, dmg > 0.f);
 
 				if(dmg < 0)
 				{
@@ -9421,7 +9404,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					it->owner->player->Train(TrainWhat::BowAttack, v, hitted->level);
 				}
 
-				GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, 0);
+				GiveDmg(ctx, it->owner, dmg, *hitted, &hitpoint, 0);
 
 				// apply poison
 				if(it->poison_attack > 0.f && !IS_SET(hitted->data->flags, F_POISON_RES))
@@ -9438,24 +9421,24 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				if(it->owner && IsFriend(*it->owner, *hitted))
 				{
 					// frendly fire
-					SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
+					SpellHitEffect(ctx, *it, hitpoint, hitted);
 
 					// dŸwiêk trafienia w postaæ
 					if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
-						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
+						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, 2.f, 10.f);
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::HIT_SOUND;
 							c.id = MAT_IRON;
 							c.ile = mat;
-							c.pos = callback.hitpoint;
+							c.pos = hitpoint;
 						}
 					}
 					else
-						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, false);
+						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, 2.f, false);
 					continue;
 				}
 
@@ -9484,12 +9467,12 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					if(dmg < 0)
 					{
 						// blocked by shield
-						SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
+						SpellHitEffect(ctx, *it, hitpoint, hitted);
 						continue;
 					}
 				}
 
-				GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
+				GiveDmg(ctx, it->owner, dmg, *hitted, &hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
 
 				// apply poison
 				if(IS_SET(it->spell->flags, Spell::Poison) && !IS_SET(hitted->data->flags, F_POISON_RES))
@@ -9501,7 +9484,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				}
 
 				// apply spell effect
-				SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
+				SpellHitEffect(ctx, *it, hitpoint, hitted);
 			}
 		}
 		else
@@ -9509,29 +9492,39 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 			// trafiono w obiekt
 			if(!it->spell)
 			{
-				sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), callback.hitpoint, 2.f, 10.f);
+				sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, 2.f, 10.f);
 
-				ParticleEmitter* pe = new ParticleEmitter;
+				Object* obj = new Object;
+				obj->base = BaseObject::Get("box");
+				obj->mesh = obj->base->mesh;
+				obj->pos = hitpoint;
+				obj->rot = Vec3(0, 0, 0);
+				obj->scale = 1.f;
+
+				ctx.objects->push_back(obj);
+
+				// FIXME
+				/*ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = tIskra;
 				pe->emision_interval = 0.01f;
 				pe->life = 5.f;
-				pe->particle_life = 0.5f;
+				pe->particle_life = 2.f; //0.5f;
 				pe->emisions = 1;
-				pe->spawn_min = 10;
-				pe->spawn_max = 15;
-				pe->max_particles = 15;
+				pe->spawn_min = 30;
+				pe->spawn_max = 30;
+				pe->max_particles = 30;
 				pe->pos = callback.hitpoint;
 				pe->speed_min = Vec3(-1, 0, -1);
 				pe->speed_max = Vec3(1, 1, 1);
 				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
 				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
-				pe->size = 0.3f;
-				pe->op_size = POP_LINEAR_SHRINK;
-				pe->alpha = 0.9f;
-				pe->op_alpha = POP_LINEAR_SHRINK;
+				pe->size = 1.0f; //0.3f
+				pe->op_size = POP_CONST;// POP_LINEAR_SHRINK;
+				pe->alpha = 1.0f;
+				pe->op_alpha = POP_CONST; // POP_LINEAR_SHRINK;
 				pe->mode = 0;
 				pe->Init();
-				ctx.pes->push_back(pe);
+				ctx.pes->push_back(pe);*/
 
 				if(Net::IsLocal() && in_tutorial && callback.target)
 				{
@@ -9564,7 +9557,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 			else
 			{
 				// trafienie czarem w obiekt
-				SpellHitEffect(ctx, *it, callback.hitpoint, nullptr);
+				SpellHitEffect(ctx, *it, hitpoint, nullptr);
 			}
 		}
 	}
@@ -9582,8 +9575,6 @@ void Game::SpawnDungeonColliders()
 	Pole* m = lvl.map;
 	int w = lvl.w,
 		h = lvl.h;
-
-	btCollisionObject* cobj;
 
 	for(int y = 1; y < h - 1; ++y)
 	{
@@ -9622,16 +9613,62 @@ void Game::SpawnDungeonColliders()
 			SpawnDungeonCollider(Vec3(2.f*i + 1.f, 2.f, 1.f));
 	}
 
-	// schody w górê
+	// up stairs
 	if(inside->HaveUpStairs())
 	{
-		cobj = new btCollisionObject;
+		btCollisionObject* cobj = new btCollisionObject;
 		cobj->setCollisionShape(shape_schody);
 		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
 		cobj->getWorldTransform().setOrigin(btVector3(2.f*lvl.staircase_up.x + 1.f, 0.f, 2.f*lvl.staircase_up.y + 1.f));
 		cobj->getWorldTransform().setRotation(btQuaternion(dir_to_rot(lvl.staircase_up_dir), 0, 0));
 		phy_world->addCollisionObject(cobj, CG_BUILDING);
 	}
+
+	// room floors/ceilings
+	dungeon_shape_pos.clear();
+	dungeon_shape_index.clear();
+	int index = 0;
+	for(Room& room : lvl.rooms)
+	{
+		// floor
+		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, room.y, 2.f * room.pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * room.pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_index.push_back(index);
+		dungeon_shape_index.push_back(index + 1);
+		dungeon_shape_index.push_back(index + 2);
+		dungeon_shape_index.push_back(index + 2);
+		dungeon_shape_index.push_back(index + 1);
+		dungeon_shape_index.push_back(index + 3);
+		index += 4;
+
+		// ceil
+		const float h = (room.IsCorridor() ? Room::HEIGHT_LOW : Room::HEIGHT);
+		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, room.y + h, 2.f * room.pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * room.pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_index.push_back(index);
+		dungeon_shape_index.push_back(index + 1);
+		dungeon_shape_index.push_back(index + 2);
+		dungeon_shape_index.push_back(index + 2);
+		dungeon_shape_index.push_back(index + 1);
+		dungeon_shape_index.push_back(index + 3);
+		index += 4;
+	}
+
+	delete dungeon_shape;
+	delete dungeon_shape_data;
+
+	dungeon_shape_data = new btTriangleIndexVertexArray(dungeon_shape_index.size() / 3, dungeon_shape_index.data(), sizeof(int) * 3,
+		dungeon_shape_pos.size(), (btScalar*)dungeon_shape_pos.data(), sizeof(Vec3));
+	dungeon_shape = new btBvhTriangleMeshShape(dungeon_shape_data, true);
+
+	obj_dungeon = new btCollisionObject;
+	obj_dungeon->setCollisionShape(dungeon_shape);
+	obj_dungeon->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
+	phy_world->addCollisionObject(obj_dungeon, CG_BUILDING);
 }
 
 void Game::SpawnDungeonCollider(const Vec3& pos)
@@ -9681,17 +9718,7 @@ void Game::CreateCollisionShapes()
 
 	Mesh::Point* point = aArrow->FindPoint("Empty");
 	assert(point && point->IsBox());
-
-	btBoxShape* box = new btBoxShape(ToVector3(point->size));
-
-	/*btCompoundShape* comp = new btCompoundShape;
-	btTransform tr(btQuaternion(), btVector3(0.f,point->size.y,0.f));
-	comp->addChildShape(tr, box);*/
-
-	obj_arrow = new btCollisionObject;
-	obj_arrow->setCollisionShape(box);
-
-	obj_spell = new btCollisionObject;
+	shape_arrow = new btBoxShape(ToVector3(point->size));
 }
 
 Vec3 Game::PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const
@@ -9956,9 +9983,9 @@ Game::ObjectEntity Game::GenerateDungeonObject(InsideLocationLevel& lvl, Room& r
 		rot = dir_to_rot(dir);
 
 		if(dir == 2 || dir == 3)
-			pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f) + 2, 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f) + 2);
+			pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f) + 2, room.y, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f) + 2);
 		else
-			pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f), 0.f, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f));
+			pos = Vec3(2.f*tile.x + sin(rot)*(2.f - shift.y - 0.01f), room.y, 2.f*tile.y + cos(rot)*(2.f - shift.y - 0.01f));
 
 		if(IS_SET(base->flags, OBJ_ON_WALL))
 		{
@@ -12125,7 +12152,7 @@ void Game::UpdateTraps(LevelContext& ctx, float dt)
 						b.attack = float(trap.base->dmg);
 						b.mesh = aArrow;
 						b.pos = Vec3(2.f*trap.tile.x + trap.pos.x - float(int(trap.pos.x / 2) * 2) + Random(-trap.base->rw, trap.base->rw) - 1.2f*g_kierunek2[trap.dir].x,
-							Random(0.5f, 1.5f),
+							trap.pos.y + Random(0.5f, 1.5f),
 							2.f*trap.tile.y + trap.pos.z - float(int(trap.pos.z / 2) * 2) + Random(-trap.base->h, trap.base->h) - 1.2f*g_kierunek2[trap.dir].y);
 						b.start_pos = b.pos;
 						b.rot = Vec3(0, dir_to_rot(trap.dir), 0);
@@ -12299,17 +12326,19 @@ struct TrapLocation
 	int dist, dir;
 };
 
-Trap* Game::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
+Trap* Game::CreateTrap(InsideLocationLevel& lvl, Int2 pt, TRAP_TYPE type, bool timed)
 {
 	Trap* t = new Trap;
 	Trap& trap = *t;
 	local_ctx.traps->push_back(t);
 
+	Room* room = lvl.GetRoom(pt);
+
 	auto& base = BaseTrap::traps[type];
 	trap.base = &base;
 	trap.hitted = nullptr;
 	trap.state = 0;
-	trap.pos = Vec3(2.f*pt.x + Random(trap.base->rw, 2.f - trap.base->rw), 0.f, 2.f*pt.y + Random(trap.base->h, 2.f - trap.base->h));
+	trap.pos = Vec3(2.f*pt.x + Random(trap.base->rw, 2.f - trap.base->rw), room ? room->y : 0.f, 2.f*pt.y + Random(trap.base->h, 2.f - trap.base->h));
 	trap.obj.base = nullptr;
 	trap.obj.mesh = trap.base->mesh;
 	trap.obj.pos = trap.pos;
@@ -16442,7 +16471,7 @@ void Game::GenerateTraps()
 				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
 			{
 				if(Rand() % 500 < szansa + max(0, 30 - Int2::Distance(pt, Int2(x, y))))
-					CreateTrap(Int2(x, y), traps[Rand() % traps.size()]);
+					CreateTrap(lvl, Int2(x, y), traps[Rand() % traps.size()]);
 			}
 		}
 	}
@@ -16569,7 +16598,7 @@ void Game::RegenerateTraps()
 					}
 
 					if(ok)
-						CreateTrap(Int2(x, y), TRAP_FIREBALL);
+						CreateTrap(lvl, Int2(x, y), TRAP_FIREBALL);
 				}
 			}
 		}

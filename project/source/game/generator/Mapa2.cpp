@@ -4,6 +4,9 @@
 #include "BitStreamFunc.h"
 #include "SaveState.h"
 
+const float Room::HEIGHT = 4.f;
+const float Room::HEIGHT_LOW = 3.f;
+
 //-----------------------------------------------------------------------------
 // Kod b³êdu
 #define ZLE_DANE 1
@@ -53,7 +56,8 @@ namespace Mapa
 	{
 		NIE_DODAWAJ,
 		DODAJ_POKOJ,
-		DODAJ_KORYTARZ
+		DODAJ_KORYTARZ,
+		DODAJ_RAMPA
 	};
 
 	//-----------------------------------------------------------------------------
@@ -74,20 +78,24 @@ namespace Mapa
 	};
 
 	bool czy_sciana_laczaca(int x, int y, int id1, int id2);
-	void dodaj_pokoj(int x, int y, int w, int h, DODAJ dodaj, int id = -1);
-	void dodaj_pokoj(const Room& pokoj, int id = -1) { dodaj_pokoj(pokoj.pos.x, pokoj.pos.y, pokoj.size.x, pokoj.size.y, NIE_DODAWAJ, id); }
+	Room* dodaj_pokoj(int parent_room, int x, int y, int w, int h, DODAJ dodaj, int id = -1);
+	void dodaj_pokoj(const Room& pokoj, int id = -1) { dodaj_pokoj(-1, pokoj.pos.x, pokoj.pos.y, pokoj.size.x, pokoj.size.y, NIE_DODAWAJ, id); }
 	void generuj();
 	void oznacz_korytarze();
 	void polacz_korytarze();
 	void polacz_pokoje();
 	void rysuj();
 	bool sprawdz_pokoj(int x, int y, int w, int h);
-	void stworz_korytarz(Int2& pt, DIR dir);
+	Room* stworz_korytarz(int parent_room, Int2& pt, DIR dir);
 	void szukaj_polaczenia(int x, int y, int id);
+	void szukaj_polaczenia(Room& room, int id);
 	void ustaw_flagi();
 	void ustaw_sciane(POLE& pole);
 	void ustaw_wzor();
 	DIR wolna_droga(int id);
+	// 0 no; 1 up; -1 down
+	int CanGenerateRamp(int room_index);
+	Room* CreateRamp(int parent_room, const Int2& _pt, DIR dir, bool up);
 
 #define H(_x,_y) mapa[(_x)+(_y)*opcje->w].type
 #define HR(_x,_y) mapa[(_x)+(_y)*opcje->w].room
@@ -128,7 +136,7 @@ namespace Mapa
 	//=================================================================================================
 	// Dodaje pokój/korytarz (NS)
 	//=================================================================================================
-	void dodaj_pokoj(int x, int y, int w, int h, DODAJ dodaj, int _id)
+	Room* dodaj_pokoj(int parent_room, int x, int y, int w, int h, DODAJ dodaj, int _id)
 	{
 		assert(x >= 0 && y >= 0 && w >= 3 && h >= 3 && x + w < int(opcje->w) && y + h < int(opcje->h));
 
@@ -164,19 +172,22 @@ namespace Mapa
 			HR(x + w - 1, y + i) = (word)id;
 		}
 
-		for(int i = 1; i < w - 1; ++i)
+		if(dodaj != DODAJ_RAMPA)
 		{
-			if(wolna_droga(x + i + y*opcje->w) != BRAK)
-				wolne.push_back(x + i + y*opcje->w);
-			if(wolna_droga(x + i + (y + h - 1)*opcje->w) != BRAK)
-				wolne.push_back(x + i + (y + h - 1)*opcje->w);
-		}
-		for(int i = 1; i < h - 1; ++i)
-		{
-			if(wolna_droga(x + (y + i)*opcje->w) != BRAK)
-				wolne.push_back(x + (y + i)*opcje->w);
-			if(wolna_droga(x + w - 1 + (y + i)*opcje->w) != BRAK)
-				wolne.push_back(x + w - 1 + (y + i)*opcje->w);
+			for(int i = 1; i < w - 1; ++i)
+			{
+				if(wolna_droga(x + i + y * opcje->w) != BRAK)
+					wolne.push_back(x + i + y * opcje->w);
+				if(wolna_droga(x + i + (y + h - 1)*opcje->w) != BRAK)
+					wolne.push_back(x + i + (y + h - 1)*opcje->w);
+			}
+			for(int i = 1; i < h - 1; ++i)
+			{
+				if(wolna_droga(x + (y + i)*opcje->w) != BRAK)
+					wolne.push_back(x + (y + i)*opcje->w);
+				if(wolna_droga(x + w - 1 + (y + i)*opcje->w) != BRAK)
+					wolne.push_back(x + w - 1 + (y + i)*opcje->w);
+			}
 		}
 
 		if(dodaj != NIE_DODAWAJ)
@@ -186,8 +197,36 @@ namespace Mapa
 			room.pos.y = y;
 			room.size.x = w;
 			room.size.y = h;
-			room.target = (dodaj == DODAJ_KORYTARZ ? RoomTarget::Corridor : RoomTarget::None);
+			switch(dodaj)
+			{
+			default:
+			case DODAJ_POKOJ:
+				room.target = RoomTarget::None;
+				break;
+			case DODAJ_KORYTARZ:
+				room.target = RoomTarget::Corridor;
+				break;
+			case DODAJ_RAMPA:
+				room.target = RoomTarget::Ramp;
+				break;
+			}
+			if(parent_room != -1)
+			{
+				Room& r = opcje->rooms->at(parent_room);
+				room.level = r.level;
+				room.counter = r.counter + 1;
+				room.y = r.y;
+			}
+			else
+			{
+				room.level = 0;
+				room.counter = 0;
+				room.y = 0.f;
+			}
+			return &room;
 		}
+
+		return nullptr;
 	}
 
 	//=================================================================================================
@@ -210,7 +249,9 @@ namespace Mapa
 			// stwórz pocz¹tkowy pokój
 			int w = opcje->rozmiar_pokoj.Random(),
 				h = opcje->rozmiar_pokoj.Random();
-			dodaj_pokoj((opcje->w - w) / 2, (opcje->h - h) / 2, w, h, DODAJ_POKOJ);
+			Room* room = dodaj_pokoj(-1, (opcje->w - w) / 2, (opcje->h - h) / 2, w, h, DODAJ_POKOJ);
+			room->level = 0;
+			room->counter = 0;
 		}
 
 		// generuj
@@ -227,11 +268,21 @@ namespace Mapa
 			if(dir == BRAK)
 				continue;
 
+			word parent_room = mapa[id].room;
+			assert(parent_room != -1);
+			int ramp = CanGenerateRamp(parent_room);
+
 			Int2 pt(id%opcje->w, id / opcje->w);
+
+			if(ramp != 0)
+			{
+				CreateRamp(parent_room, pt, dir, ramp == 1);
+				continue;
+			}
 
 			// pokój czy korytarz
 			if(Rand() % 100 < opcje->korytarz_szansa)
-				stworz_korytarz(pt, dir);
+				stworz_korytarz(parent_room, pt, dir);
 			else
 			{
 				int w = opcje->rozmiar_pokoj.Random(),
@@ -255,12 +306,9 @@ namespace Mapa
 				if(sprawdz_pokoj(pt.x, pt.y, w, h))
 				{
 					mapa[id].type = DRZWI;
-					dodaj_pokoj(pt.x, pt.y, w, h, DODAJ_POKOJ);
+					dodaj_pokoj(parent_room, pt.x, pt.y, w, h, DODAJ_POKOJ);
 				}
 			}
-
-			//rysuj();
-			//_getch();
 		}
 
 		// szukaj po³¹czeñ pomiêdzy pokojami/korytarzami
@@ -293,8 +341,8 @@ namespace Mapa
 			{
 				for(int x = 1; x < opcje->h - 1; ++x)
 				{
-					Pole& p = mapa[x + y*opcje->w];
-					if(p.type == PUSTE && Rand() % 100 < opcje->kraty_szansa)
+					Pole& p = mapa[x + y * opcje->w];
+					if(p.type == PUSTE && Rand() % 100 < opcje->kraty_szansa && !opcje->rooms->at(p.room).IsRamp())
 					{
 						if(!IS_SET(p.flags, Pole::F_NISKI_SUFIT))
 						{
@@ -329,13 +377,124 @@ namespace Mapa
 	}
 
 	//=================================================================================================
+	// 0 no; 1 up; -1 down
+	int CanGenerateRamp(int room_index)
+	{
+		Room& room = opcje->rooms->at(room_index);
+		int chance = (room.counter - opcje->ramp_chance_min);
+		if(chance <= 0)
+			return 0;
+		chance *= opcje->ramp_chance;
+		if(Rand() % 100 >= chance)
+			return 0;
+		bool go_up = opcje->ramp_go_up;
+		if(Rand() % 100 < opcje->ramp_chance_other)
+			go_up = !go_up;
+		if(opcje->ramp_go_up)
+		{
+			if(room.level == 0 && !go_up)
+				go_up = true;
+		}
+		else
+		{
+			if(room.level == 0 && go_up)
+				go_up = false;
+		}
+		room.counter -= opcje->ramp_decrease_chance;
+		return go_up ? 1 : -1;
+	}
+
+	//=================================================================================================
+	Room* CreateRamp(int parent_room, const Int2& _pt, DIR dir, bool up)
+	{
+		int length = opcje->ramp_length.Random();
+		int ychange = length - 2;
+		int w, h;
+		Room& r = opcje->rooms->at(parent_room);
+		int new_level = r.level + ychange / 2;
+		float y1 = r.y,
+			y2 = 0.5f * new_level;
+
+		Int2 pt(_pt);
+		Int2 end_pt;
+		float yb[4];
+
+		switch(dir)
+		{
+		case LEWO:
+			end_pt = Int2(pt.x - length, pt.y);
+			pt.x -= length - 1;
+			pt.y -= 1;
+			w = length;
+			h = 3;
+			yb[Room::TOP_LEFT] = y2;
+			yb[Room::TOP_RIGHT] = y1;
+			yb[Room::BOTTOM_LEFT] = y2;
+			yb[Room::BOTTOM_RIGHT] = y1;
+			break;
+		case PRAWO:
+			end_pt = pt;
+			pt.y -= 1;
+			w = length;
+			h = 3;
+			yb[Room::TOP_LEFT] = y1;
+			yb[Room::TOP_RIGHT] = y2;
+			yb[Room::BOTTOM_LEFT] = y1;
+			yb[Room::BOTTOM_RIGHT] = y2;
+			break;
+		case GORA:
+			end_pt = pt;
+			pt.x -= 1;
+			w = 3;
+			h = length;
+			yb[Room::TOP_LEFT] = y2;
+			yb[Room::TOP_RIGHT] = y2;
+			yb[Room::BOTTOM_LEFT] = y1;
+			yb[Room::BOTTOM_RIGHT] = y1;
+			break;
+		case DOL:
+			end_pt = Int2(pt.x, pt.y - length);
+			pt.y -= length - 1;
+			pt.x -= 1;
+			w = 3;
+			h = length;
+			yb[Room::TOP_LEFT] = y1;
+			yb[Room::TOP_RIGHT] = y1;
+			yb[Room::BOTTOM_LEFT] = y2;
+			yb[Room::BOTTOM_RIGHT] = y2;
+			break;
+		}
+
+		if(sprawdz_pokoj(pt.x, pt.y, w, h))
+		{
+			H(_pt.x, _pt.y) = DRZWI;
+			Room* room = dodaj_pokoj(parent_room, pt.x, pt.y, w, h, DODAJ_RAMPA);
+			room->level = new_level;
+			memcpy(room->yb, yb, sizeof(yb));
+
+			if(wolna_droga(pt.x - 1 + pt.y * opcje->w) != BRAK)
+				wolne.push_back(pt.x - 1 + pt.y * opcje->w);
+			if(wolna_droga(pt.x + 1 + pt.y * opcje->w) != BRAK)
+				wolne.push_back(pt.x + 1 + pt.y * opcje->w);
+			if(wolna_droga(pt.x + (pt.y - 1) * opcje->w) != BRAK)
+				wolne.push_back(pt.x + (pt.y - 1) * opcje->w);
+			if(wolna_droga(pt.x + (pt.y + 1) * opcje->w) != BRAK)
+				wolne.push_back(pt.x + (pt.y + 1) * opcje->w);
+
+			return room;
+		}
+
+		return nullptr;
+	}
+
+	//=================================================================================================
 	// Oznacza pola na mapie niskim sufitem tam gdzie jest korytarz
 	//=================================================================================================
 	void oznacz_korytarze()
 	{
 		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it)
 		{
-			if(!it->IsCorridor())
+			if(!it->IsCorridorOrRamp())
 				continue;
 
 			for(int y = 0; y < it->size.y; ++y)
@@ -358,43 +517,46 @@ namespace Mapa
 		int index = 0;
 		for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
 		{
-			if(!it->IsCorridor())
+			if(!it->IsCorridorOrRamp())
 				continue;
 
-			Room& r = *it;
-
-			for(vector<int>::iterator it2 = r.connected.begin(), end2 = r.connected.end(); it2 != end2; ++it2)
+			if(it->IsCorridor())
 			{
-				Room& r2 = opcje->rooms->at(*it2);
+				Room& r = *it;
 
-				if(!r2.IsCorridor() || Rand() % 100 >= opcje->polacz_korytarz)
-					continue;
-
-				int x1 = max(r.pos.x, r2.pos.x),
-					x2 = min(r.pos.x + r.size.x, r2.pos.x + r2.size.x),
-					y1 = max(r.pos.y, r2.pos.y),
-					y2 = min(r.pos.y + r.size.y, r2.pos.y + r2.size.y);
-
-				assert(x1 < x2 && y1 < y2);
-
-				for(int y = y1; y < y2; ++y)
+				for(vector<int>::iterator it2 = r.connected.begin(), end2 = r.connected.end(); it2 != end2; ++it2)
 				{
-					for(int x = x1; x < x2; ++x)
+					Room& r2 = opcje->rooms->at(*it2);
+
+					if(!r2.IsCorridor() || Rand() % 100 >= opcje->polacz_korytarz)
+						continue;
+
+					int x1 = max(r.pos.x, r2.pos.x),
+						x2 = min(r.pos.x + r.size.x, r2.pos.x + r2.size.x),
+						y1 = max(r.pos.y, r2.pos.y),
+						y2 = min(r.pos.y + r.size.y, r2.pos.y + r2.size.y);
+
+					assert(x1 < x2 && y1 < y2);
+
+					for(int y = y1; y < y2; ++y)
 					{
-						Pole& po = mapa[x + y*opcje->w];
-						if(po.type == DRZWI)
+						for(int x = x1; x < x2; ++x)
 						{
-							assert(po.room == index || po.room == *it2);
-							po.type = PUSTE;
-							goto usunieto_drzwi;
+							Pole& po = mapa[x + y * opcje->w];
+							if(po.type == DRZWI)
+							{
+								assert(po.room == index || po.room == *it2);
+								po.type = PUSTE;
+								goto usunieto_drzwi;
+							}
 						}
 					}
+
+					// brak po³¹czenia albo zosta³o ju¿ usuniête
+
+				usunieto_drzwi:
+					continue;
 				}
-
-				// brak po³¹czenia albo zosta³o ju¿ usuniête
-
-			usunieto_drzwi:
-				continue;
 			}
 
 			// oznacz niski sufit
@@ -563,7 +725,7 @@ namespace Mapa
 	//=================================================================================================
 	// Tworzy korytarz
 	//=================================================================================================
-	void stworz_korytarz(Int2& _pt, DIR dir)
+	Room* stworz_korytarz(int parent_room, Int2& _pt, DIR dir)
 	{
 		int dl = opcje->rozmiar_korytarz.Random();
 		int w, h;
@@ -600,8 +762,10 @@ namespace Mapa
 		if(sprawdz_pokoj(pt.x, pt.y, w, h))
 		{
 			H(_pt.x, _pt.y) = DRZWI;
-			dodaj_pokoj(pt.x, pt.y, w, h, DODAJ_KORYTARZ);
+			return dodaj_pokoj(parent_room, pt.x, pt.y, w, h, DODAJ_KORYTARZ);
 		}
+
+		return nullptr;
 	}
 
 	//=================================================================================================
@@ -609,100 +773,62 @@ namespace Mapa
 	//=================================================================================================
 	void szukaj_polaczenia(int x, int y, int id)
 	{
+		if(H(x, y) != DRZWI)
+			return;
+
 		Room& r = opcje->rooms->at(id);
 
-		if(H(x, y) == DRZWI)
+		if(x > 0 && H(x - 1, y) == PUSTE)
 		{
-			if(x > 0 && H(x - 1, y) == PUSTE)
-			{
-				int to_id = HR(x - 1, y);
-				if(to_id != id)
-				{
-					bool jest = false;
-					for(vector<int>::iterator it = r.connected.begin(), end = r.connected.end(); it != end; ++it)
-					{
-						if(*it == to_id)
-						{
-							jest = true;
-							break;
-						}
-					}
-					if(!jest)
-					{
-						r.connected.push_back(to_id);
-						return;
-					}
-				}
-			}
+			int to_id = HR(x - 1, y);
+			if(to_id != id)
+				szukaj_polaczenia(r, to_id);
+		}
 
-			if(x<int(opcje->w - 1) && H(x + 1, y) == PUSTE)
-			{
-				int to_id = HR(x + 1, y);
-				if(to_id != id)
-				{
-					bool jest = false;
-					for(vector<int>::iterator it = r.connected.begin(), end = r.connected.end(); it != end; ++it)
-					{
-						if(*it == to_id)
-						{
-							jest = true;
-							break;
-						}
-					}
-					if(!jest)
-					{
-						r.connected.push_back(to_id);
-						return;
-					}
-				}
-			}
+		if(x<int(opcje->w - 1) && H(x + 1, y) == PUSTE)
+		{
+			int to_id = HR(x + 1, y);
+			if(to_id != id)
+				szukaj_polaczenia(r, to_id);
+		}
 
-			if(y > 0 && H(x, y - 1) == PUSTE)
-			{
-				int to_id = HR(x, y - 1);
-				if(to_id != id)
-				{
-					bool jest = false;
-					for(vector<int>::iterator it = r.connected.begin(), end = r.connected.end(); it != end; ++it)
-					{
-						if(*it == to_id)
-						{
-							jest = true;
-							break;
-						}
-					}
-					if(!jest)
-					{
-						r.connected.push_back(to_id);
-						return;
-					}
-				}
-			}
+		if(y > 0 && H(x, y - 1) == PUSTE)
+		{
+			int to_id = HR(x, y - 1);
+			if(to_id != id)
+				szukaj_polaczenia(r, to_id);
+		}
 
-			if(y<int(opcje->h - 1) && H(x, y + 1) == PUSTE)
-			{
-				int to_id = HR(x, y + 1);
-				if(to_id != id)
-				{
-					bool jest = false;
-					for(vector<int>::iterator it = r.connected.begin(), end = r.connected.end(); it != end; ++it)
-					{
-						if(*it == to_id)
-						{
-							jest = true;
-							break;
-						}
-					}
-					if(!jest)
-					{
-						r.connected.push_back(to_id);
-						return;
-					}
-				}
-			}
+		if(y<int(opcje->h - 1) && H(x, y + 1) == PUSTE)
+		{
+			int to_id = HR(x, y + 1);
+			if(to_id != id)
+				szukaj_polaczenia(r, to_id);
 		}
 	}
 
+	//=================================================================================================
+	void szukaj_polaczenia(Room& room, int id)
+	{
+		Room& room2 = opcje->rooms->at(id);
+		if(room.level != room2.level)
+			return;
+
+		bool added = false;
+		for(vector<int>::iterator it = room.connected.begin(), end = room.connected.end(); it != end; ++it)
+		{
+			if(*it == id)
+			{
+				added = true;
+				break;
+			}
+		}
+
+		if(!added)
+			room.connected.push_back(id);
+	}
+
+	//=================================================================================================
 	void ustaw_flagi()
 	{
 		for(int y = 0; y < opcje->h; ++y)
@@ -964,7 +1090,7 @@ bool dodaj_schody(OpcjeMapy& _opcje, Room& room, Int2& _pozycja, int& _kierunek,
 		for(int x = max(1, room.pos.x); x < min(_opcje.w - 1, room.size.x + room.pos.x); ++x)
 		{
 			Pole& p = _opcje.mapa[x + y*_opcje.w];
-			if(p.type == PUSTE)
+			if(p.type == PUSTE && !_opcje.rooms->at(p.room).IsRamp())
 			{
 				const bool left = (x > 0);
 				const bool right = (x<int(_opcje.w - 1));
