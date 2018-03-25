@@ -150,6 +150,8 @@ struct Room
 	RoomTarget target;
 
 	static const int MIN_SIZE = 19;
+	static const float HEIGHT;
+	static const float HEIGHT_LOW;
 
 	Vec3 Center() const
 	{

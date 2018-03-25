@@ -68,6 +68,7 @@ struct DebugSceneNode
 		Cylinder,
 		Sphere,
 		Capsule,
+		TriMesh,
 		MaxType
 	} type;
 	enum Group
@@ -80,6 +81,7 @@ struct DebugSceneNode
 		MaxGroup
 	} group;
 	Matrix mat;
+	void* mesh_ptr;
 };
 
 //-----------------------------------------------------------------------------

@@ -9162,51 +9162,28 @@ Vec4 Game::GetLightColor()
 	//return Vec4(0.5f,0.5f,0.5f,1);
 }
 
-struct BulletCallback : public btCollisionWorld::ContactResultCallback
+struct BulletCallback : public btCollisionWorld::ConvexResultCallback
 {
-	BulletCallback(btCollisionObject* _bullet, btCollisionObject* _ignore) : target(nullptr), hit(false), bullet(_bullet), ignore(_ignore), hit_unit(false)
+	BulletCallback(btCollisionObject* ignore) : target(nullptr), ignore(ignore)
 	{
-		assert(_bullet);
 		CLEAR_BIT(m_collisionFilterMask, CG_BARRIER);
 	}
 
-	btScalar addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap, int partId1, int index1)
+	btScalar addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace) override
 	{
-		if(colObj0Wrap->getCollisionObject() == bullet)
-		{
-			if(colObj1Wrap->getCollisionObject() == ignore)
-				return 1.f;
-			hitpoint = ToVec3(cp.getPositionWorldOnA());
-			if(!target)
-			{
-				if(IS_SET(colObj1Wrap->getCollisionObject()->getCollisionFlags(), CG_UNIT))
-					hit_unit = true;
-				// to nie musi byæ jednostka :/
-				target = (Unit*)colObj1Wrap->getCollisionObject()->getUserPointer();
-			}
-		}
-		else
-		{
-			if(colObj0Wrap->getCollisionObject() == ignore)
-				return 1.f;
-			hitpoint = ToVec3(cp.getPositionWorldOnB());
-			if(!target)
-			{
-				if(IS_SET(colObj0Wrap->getCollisionObject()->getCollisionFlags(), CG_UNIT))
-					hit_unit = true;
-				// to nie musi byæ jednostka :/
-				target = (Unit*)colObj0Wrap->getCollisionObject()->getUserPointer();
-			}
-		}
+		assert(m_closestHitFraction >= convexResult.m_hitFraction);
 
-		hit = true;
+		if(convexResult.m_hitCollisionObject == ignore)
+			return 1.f;
+
+		m_closestHitFraction = convexResult.m_hitFraction;
+		hitpoint = convexResult.m_hitPointLocal;
+		target = (btCollisionObject*)convexResult.m_hitCollisionObject;
 		return 0.f;
 	}
 
-	btCollisionObject* bullet, *ignore;
-	Unit* target;
-	Vec3 hitpoint;
-	bool hit, hit_unit;
+	btCollisionObject* ignore, *target;
+	btVector3 hitpoint;
 };
 
 void Game::UpdateBullets(LevelContext& ctx, float dt)
@@ -9216,6 +9193,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 	for(vector<Bullet>::iterator it = ctx.bullets->begin(), end = ctx.bullets->end(); it != end; ++it)
 	{
 		// update position
+		Vec3 prev_pos = it->pos;
 		it->pos += Vec3(sin(it->rot.y)*it->speed, it->yspeed, cos(it->rot.y)*it->speed) * dt;
 		if(it->spell && it->spell->type == Spell::Ball)
 			it->yspeed -= 10.f*dt;
@@ -9257,26 +9235,28 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 		}
 
 		// do contact test
-		btCollisionObject* cobj;
-
+		btCollisionShape* shape;
 		if(!it->spell)
-			cobj = obj_arrow;
+			shape = shape_arrow;
 		else
-		{
-			cobj = obj_spell;
-			cobj->setCollisionShape(it->spell->shape);
-		}
+			shape = it->spell->shape;
+		assert(shape->isConvex());
 
-		btTransform& tr = cobj->getWorldTransform();
-		tr.setOrigin(ToVector3(it->pos));
-		tr.setRotation(btQuaternion(it->rot.y, it->rot.x, it->rot.z));
+		btTransform tr_from, tr_to;
+		tr_from.setOrigin(ToVector3(prev_pos));
+		tr_from.setRotation(btQuaternion(it->rot.y, it->rot.x, it->rot.z));
+		tr_to.setOrigin(ToVector3(it->pos));
+		tr_to.setRotation(tr_from.getRotation());
 
-		BulletCallback callback(cobj, it->owner ? it->owner->cobj : nullptr);
-		phy_world->contactTest(cobj, callback);
-		if(!callback.hit)
+		BulletCallback callback(it->owner ? it->owner->cobj : nullptr);
+		phy_world->convexSweepTest((btConvexShape*)shape, tr_from, tr_to, callback);
+		if(!callback.hasHit())
 			continue;
 
-		Unit* hitted = callback.target;
+		Vec3 hitpoint = ToVec3(callback.hitpoint);
+		Unit* hitted = nullptr;
+		if(IS_SET(callback.target->getCollisionFlags(), CG_UNIT))
+			hitted = (Unit*)callback.target->getUserPointer();
 
 		// something was hit, remove bullet
 		it->remove = true;
@@ -9289,7 +9269,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 		if(it->pe)
 			it->pe->destroy = true;
 
-		if(callback.hit_unit && hitted)
+		if(hitted)
 		{
 			if(!Net::IsLocal())
 				continue;
@@ -9302,18 +9282,18 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
-						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
+						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, 2.f, 10.f);
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::HIT_SOUND;
 							c.id = MAT_IRON;
 							c.ile = mat;
-							c.pos = callback.hitpoint;
+							c.pos = hitpoint;
 						}
 					}
 					else
-						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, false);
+						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, 2.f, false);
 					continue;
 				}
 
@@ -9358,14 +9338,14 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					hitted->RemoveStaminaBlock(stamina);
 
 					MATERIAL_TYPE mat = hitted->GetShield().material;
-					sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
+					sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, 2.f, 10.f);
 					if(Net::IsOnline())
 					{
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::HIT_SOUND;
 						c.id = MAT_IRON;
 						c.ile = mat;
-						c.pos = callback.hitpoint;
+						c.pos = hitpoint;
 					}
 
 					if(hitted->IsPlayer())
@@ -9396,7 +9376,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					hitted->player->Train(TrainWhat::TakeDamageArmor, base_dmg / hitted->hpmax, it->level);
 
 				// hit sound
-				PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, dmg > 0.f);
+				PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, 2.f, dmg > 0.f);
 
 				if(dmg < 0)
 				{
@@ -9421,7 +9401,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					it->owner->player->Train(TrainWhat::BowAttack, v, hitted->level);
 				}
 
-				GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, 0);
+				GiveDmg(ctx, it->owner, dmg, *hitted, &hitpoint, 0);
 
 				// apply poison
 				if(it->poison_attack > 0.f && !IS_SET(hitted->data->flags, F_POISON_RES))
@@ -9438,24 +9418,24 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				if(it->owner && IsFriend(*it->owner, *hitted))
 				{
 					// frendly fire
-					SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
+					SpellHitEffect(ctx, *it, hitpoint, hitted);
 
 					// dŸwiêk trafienia w postaæ
 					if(hitted->action == A_BLOCK && AngleDiff(Clip(it->rot.y + PI), hitted->rot) < PI * 2 / 5)
 					{
 						MATERIAL_TYPE mat = hitted->GetShield().material;
-						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), callback.hitpoint, 2.f, 10.f);
+						sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, mat), hitpoint, 2.f, 10.f);
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::HIT_SOUND;
 							c.id = MAT_IRON;
 							c.ile = mat;
-							c.pos = callback.hitpoint;
+							c.pos = hitpoint;
 						}
 					}
 					else
-						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), callback.hitpoint, 2.f, false);
+						PlayHitSound(MAT_IRON, hitted->GetBodyMaterial(), hitpoint, 2.f, false);
 					continue;
 				}
 
@@ -9484,12 +9464,12 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					if(dmg < 0)
 					{
 						// blocked by shield
-						SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
+						SpellHitEffect(ctx, *it, hitpoint, hitted);
 						continue;
 					}
 				}
 
-				GiveDmg(ctx, it->owner, dmg, *hitted, &callback.hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
+				GiveDmg(ctx, it->owner, dmg, *hitted, &hitpoint, !IS_SET(it->spell->flags, Spell::Poison) ? DMG_MAGICAL : 0);
 
 				// apply poison
 				if(IS_SET(it->spell->flags, Spell::Poison) && !IS_SET(hitted->data->flags, F_POISON_RES))
@@ -9501,7 +9481,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				}
 
 				// apply spell effect
-				SpellHitEffect(ctx, *it, callback.hitpoint, hitted);
+				SpellHitEffect(ctx, *it, hitpoint, hitted);
 			}
 		}
 		else
@@ -9509,7 +9489,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 			// trafiono w obiekt
 			if(!it->spell)
 			{
-				sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), callback.hitpoint, 2.f, 10.f);
+				sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, 2.f, 10.f);
 
 				ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = tIskra;
@@ -9520,7 +9500,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				pe->spawn_min = 10;
 				pe->spawn_max = 15;
 				pe->max_particles = 15;
-				pe->pos = callback.hitpoint;
+				pe->pos = hitpoint;
 				pe->speed_min = Vec3(-1, 0, -1);
 				pe->speed_max = Vec3(1, 1, 1);
 				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
@@ -9564,7 +9544,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 			else
 			{
 				// trafienie czarem w obiekt
-				SpellHitEffect(ctx, *it, callback.hitpoint, nullptr);
+				SpellHitEffect(ctx, *it, hitpoint, nullptr);
 			}
 		}
 	}
@@ -9582,8 +9562,6 @@ void Game::SpawnDungeonColliders()
 	Pole* m = lvl.map;
 	int w = lvl.w,
 		h = lvl.h;
-
-	btCollisionObject* cobj;
 
 	for(int y = 1; y < h - 1; ++y)
 	{
@@ -9622,16 +9600,62 @@ void Game::SpawnDungeonColliders()
 			SpawnDungeonCollider(Vec3(2.f*i + 1.f, 2.f, 1.f));
 	}
 
-	// schody w górê
+	// up stairs
 	if(inside->HaveUpStairs())
 	{
-		cobj = new btCollisionObject;
+		btCollisionObject* cobj = new btCollisionObject;
 		cobj->setCollisionShape(shape_schody);
 		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
 		cobj->getWorldTransform().setOrigin(btVector3(2.f*lvl.staircase_up.x + 1.f, 0.f, 2.f*lvl.staircase_up.y + 1.f));
 		cobj->getWorldTransform().setRotation(btQuaternion(dir_to_rot(lvl.staircase_up_dir), 0, 0));
 		phy_world->addCollisionObject(cobj, CG_BUILDING);
 	}
+
+	// room floors/ceilings
+	dungeon_shape_pos.clear();
+	dungeon_shape_index.clear();
+	int index = 0;
+	for(Room& room : lvl.rooms)
+	{
+		// floor
+		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, 0, 2.f * room.pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), 0, 2.f * room.pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, 0, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), 0, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_index.push_back(index);
+		dungeon_shape_index.push_back(index + 1);
+		dungeon_shape_index.push_back(index + 2);
+		dungeon_shape_index.push_back(index + 2);
+		dungeon_shape_index.push_back(index + 1);
+		dungeon_shape_index.push_back(index + 3);
+		index += 4;
+
+		// ceil
+		const float h = (room.IsCorridor() ? Room::HEIGHT_LOW : Room::HEIGHT);
+		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, h, 2.f * room.pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), h, 2.f * room.pos.y));
+		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, h, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), h, 2.f * (room.pos.y + room.size.y)));
+		dungeon_shape_index.push_back(index);
+		dungeon_shape_index.push_back(index + 1);
+		dungeon_shape_index.push_back(index + 2);
+		dungeon_shape_index.push_back(index + 2);
+		dungeon_shape_index.push_back(index + 1);
+		dungeon_shape_index.push_back(index + 3);
+		index += 4;
+	}
+
+	delete dungeon_shape;
+	delete dungeon_shape_data;
+
+	dungeon_shape_data = new btTriangleIndexVertexArray(dungeon_shape_index.size() / 3, dungeon_shape_index.data(), sizeof(int) * 3,
+		dungeon_shape_pos.size(), (btScalar*)dungeon_shape_pos.data(), sizeof(Vec3));
+	dungeon_shape = new btBvhTriangleMeshShape(dungeon_shape_data, true);
+
+	obj_dungeon = new btCollisionObject;
+	obj_dungeon->setCollisionShape(dungeon_shape);
+	obj_dungeon->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
+	phy_world->addCollisionObject(obj_dungeon, CG_BUILDING);
 }
 
 void Game::SpawnDungeonCollider(const Vec3& pos)
@@ -9681,17 +9705,7 @@ void Game::CreateCollisionShapes()
 
 	Mesh::Point* point = aArrow->FindPoint("Empty");
 	assert(point && point->IsBox());
-
-	btBoxShape* box = new btBoxShape(ToVector3(point->size));
-
-	/*btCompoundShape* comp = new btCompoundShape;
-	btTransform tr(btQuaternion(), btVector3(0.f,point->size.y,0.f));
-	comp->addChildShape(tr, box);*/
-
-	obj_arrow = new btCollisionObject;
-	obj_arrow->setCollisionShape(box);
-
-	obj_spell = new btCollisionObject;
+	shape_arrow = new btBoxShape(ToVector3(point->size));
 }
 
 Vec3 Game::PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const

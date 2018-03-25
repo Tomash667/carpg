@@ -243,8 +243,8 @@ void Game::BuildDungeon()
 	// krawêdzie musz¹ na siebie lekko zachodziæ, inaczej widaæ dziury pomiêdzy kafelkami
 	const float L = -0.001f; // pozycja lewej krawêdzi
 	const float R = 2.001f; // pozycja prawej krawêdzi
-	const float H = 4.f; // wysokoœæ sufitu
-	const float HS = 3.f; // wysokoœæ niskiego sufitu
+	const float H = Room::HEIGHT; // wysokoœæ sufitu
+	const float HS = Room::HEIGHT_LOW; // wysokoœæ niskiego sufitu
 	const float Z = 0.f; // wysokoœæ pod³ogi
 	const float U = H + 0.001f; // wysokoœæ œciany
 	const float D = Z - 0.001f; // poziom pod³ogi œciany
@@ -1093,6 +1093,16 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					}
 				}
 				break;
+			case TRIANGLE_MESH_SHAPE_PROXYTYPE:
+				{
+					DebugSceneNode* node = debug_node_pool.Get();
+					const btBvhTriangleMeshShape* trimesh = (const btBvhTriangleMeshShape*)shape;
+					node->type = DebugSceneNode::TriMesh;
+					node->group = DebugSceneNode::Physic;
+					node->mat = m3 * cam.matViewProj;
+					node->mesh_ptr = (void*)trimesh->getMeshInterface();
+					draw_batch.debug_nodes.push_back(node);
+				}
 			default:
 				break;
 			}
@@ -3522,7 +3532,7 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 {
 	SetAlphaTest(false);
 	SetAlphaBlend(false);
-	SetNoCulling(false);
+	SetNoCulling(true);
 	SetNoZWrite(false);
 
 	V(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME));
@@ -3551,17 +3561,31 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 	{
 		const DebugSceneNode& node = **it;
 
-		Mesh* mesh = meshes[node.type];
-		V(device->SetVertexDeclaration(vertex_decl[mesh->vertex_decl]));
-		V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
-		V(device->SetIndices(mesh->ib));
-
 		V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&colors[node.group]));
 		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&node.mat));
-		V(eMesh->CommitChanges());
 
-		for(int i = 0; i < mesh->head.n_subs; ++i)
-			V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
+		if(node.type == DebugSceneNode::TriMesh)
+		{
+			btTriangleIndexVertexArray* mesh = (btTriangleIndexVertexArray*)node.mesh_ptr;
+			// currently only dungeon mesh is supported here
+			assert(mesh == dungeon_shape_data);
+			V(device->SetVertexDeclaration(vertex_decl[VDI_POS]));
+			V(eMesh->CommitChanges());
+
+			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, dungeon_shape_pos.size(), dungeon_shape_index.size() / 3, dungeon_shape_index.data(),
+				D3DFMT_INDEX32, dungeon_shape_pos.data(), sizeof(Vec3)));
+		}
+		else
+		{
+			Mesh* mesh = meshes[node.type];
+			V(device->SetVertexDeclaration(vertex_decl[mesh->vertex_decl]));
+			V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
+			V(device->SetIndices(mesh->ib));
+			V(eMesh->CommitChanges());
+
+			for(int i = 0; i < mesh->head.n_subs; ++i)
+				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
+		}
 	}
 
 	V(eMesh->EndPass());

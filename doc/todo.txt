@@ -12,6 +12,8 @@ NEW:
 + validate objects metadata (required objects, units)
 ? why version/stats thread start at menu, not while loading
 + randomized order of spawned objects
++ arrow on hit, update trail particle to final position
++ campfire damage, avoid by ai
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos

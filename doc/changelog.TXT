@@ -53,6 +53,7 @@ Wersja 0.7 (2018-XX-YY):
 - ³ucznicy nie podchodz¹ do celu gdy skoñczy siê im wytrzyma³oœæ
 - poprawiona synchronizacja pu³apek pomiêdzy klientem a serwerem
 - naprawione niewidoczne strza³y u klientów wystrzelone z pu³apek
+- poprawiony punkt trafienia strza³y w obiekt
 
 --------------------------------------------------------------------------------
 Wersja 0.6.2 (2017-10-08):

@@ -736,10 +736,14 @@ public:
 	btCollisionShape* shape_wall, *shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2],
 		*shape_summon, *shape_barrier;
 	btHeightfieldTerrainShape* terrain_shape;
-	btCollisionObject* obj_arrow, *obj_terrain, *obj_spell;
+	btBvhTriangleMeshShape* dungeon_shape;
+	btCollisionObject* obj_terrain, *obj_dungeon;
 	vector<CollisionObject> global_col; // wektor na tymczasowe obiekty, czêsto u¿ywany przy zbieraniu obiektów do kolizji
 	vector<btCollisionShape*> shapes;
 	vector<CameraCollider> cam_colliders;
+	vector<Vec3> dungeon_shape_pos;
+	vector<int> dungeon_shape_index;
+	btTriangleIndexVertexArray* dungeon_shape_data;
 
 	//---------------------------------
 	// WCZYTYWANIE

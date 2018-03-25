@@ -4,6 +4,9 @@
 #include "BitStreamFunc.h"
 #include "SaveState.h"
 
+const float Room::HEIGHT = 4.f;
+const float Room::HEIGHT_LOW = 3.f;
+
 //-----------------------------------------------------------------------------
 // Kod b³êdu
 #define ZLE_DANE 1
