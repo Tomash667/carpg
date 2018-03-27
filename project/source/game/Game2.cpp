@@ -8246,20 +8246,19 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 
 					b.rot.y = Clip(b.rot.y);
 
-					// FIXME
 					TrailParticleEmitter* tpe = new TrailParticleEmitter;
-					tpe->fade = 5.3f;
-					tpe->color1 = Vec4(1, 1, 1, 1);
+					tpe->fade = 0.3f;
+					tpe->color1 = Vec4(1, 1, 1, 0.5f);
 					tpe->color2 = Vec4(1, 1, 1, 0);
-					tpe->Init(500);
+					tpe->Init(50);
 					ctx.tpes->push_back(tpe);
 					b.trail = tpe;
 
 					TrailParticleEmitter* tpe2 = new TrailParticleEmitter;
-					tpe2->fade = 5.3f;
-					tpe2->color1 = Vec4(1, 1, 1, 1);
+					tpe2->fade = 0.3f;
+					tpe2->color1 = Vec4(1, 1, 1, 0.5f);
 					tpe2->color2 = Vec4(1, 1, 1, 0);
-					tpe2->Init(500);
+					tpe2->Init(50);
 					ctx.tpes->push_back(tpe2);
 					b.trail2 = tpe2;
 
@@ -9174,7 +9173,7 @@ struct BulletCallback : public btCollisionWorld::ConvexResultCallback
 
 	btScalar addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace) override
 	{
-		assert(m_closestHitFraction > convexResult.m_hitFraction);
+		assert(m_closestHitFraction >= convexResult.m_hitFraction);
 
 		if(convexResult.m_hitCollisionObject == ignore)
 			return 1.f;
@@ -9494,37 +9493,27 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 			{
 				sound_mgr->PlaySound3d(GetMaterialSound(MAT_IRON, MAT_ROCK), hitpoint, 2.f, 10.f);
 
-				Object* obj = new Object;
-				obj->base = BaseObject::Get("box");
-				obj->mesh = obj->base->mesh;
-				obj->pos = hitpoint;
-				obj->rot = Vec3(0, 0, 0);
-				obj->scale = 1.f;
-
-				ctx.objects->push_back(obj);
-
-				// FIXME
-				/*ParticleEmitter* pe = new ParticleEmitter;
+				ParticleEmitter* pe = new ParticleEmitter;
 				pe->tex = tIskra;
 				pe->emision_interval = 0.01f;
 				pe->life = 5.f;
-				pe->particle_life = 2.f; //0.5f;
+				pe->particle_life = 0.5f;
 				pe->emisions = 1;
-				pe->spawn_min = 30;
-				pe->spawn_max = 30;
-				pe->max_particles = 30;
-				pe->pos = callback.hitpoint;
+				pe->spawn_min = 10;
+				pe->spawn_max = 15;
+				pe->max_particles = 15;
+				pe->pos = hitpoint;
 				pe->speed_min = Vec3(-1, 0, -1);
 				pe->speed_max = Vec3(1, 1, 1);
 				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
 				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
-				pe->size = 1.0f; //0.3f
-				pe->op_size = POP_CONST;// POP_LINEAR_SHRINK;
-				pe->alpha = 1.0f;
-				pe->op_alpha = POP_CONST; // POP_LINEAR_SHRINK;
+				pe->size = 0.3f
+				pe->op_size = POP_LINEAR_SHRINK;
+				pe->alpha = 0.9f;
+				pe->op_alpha = POP_LINEAR_SHRINK;
 				pe->mode = 0;
 				pe->Init();
-				ctx.pes->push_back(pe);*/
+				ctx.pes->push_back(pe);
 
 				if(Net::IsLocal() && in_tutorial && callback.target)
 				{

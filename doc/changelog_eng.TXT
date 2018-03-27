@@ -53,6 +53,7 @@ Version 0.7 (2018-XX-YY):
 - archers don't come near target when they run out of stamina
 - improved synchronization of traps between client and server
 - fixed invisible arrows shoot from traps for clients
+- fixed hitpoint of arrow and object
 
 --------------------------------------------------------------------------------
 Version 0.6.2 (2017-10-08):

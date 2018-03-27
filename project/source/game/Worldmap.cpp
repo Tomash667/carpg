@@ -2989,6 +2989,7 @@ void Game::GenerateDungeon(Location& _loc)
 		lvl.staircase_down_dir = opcje.schody_dol_kierunek;
 		lvl.staircase_down_in_wall = opcje.schody_dol_w_scianie;
 
+		// TODO
 		//for(Room& room : lvl.rooms)
 		//	room.y = Random(-5.f, 5.f);
 		//lvl.GetUpStairsRoom()->y = 1.f;
