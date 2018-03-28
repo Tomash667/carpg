@@ -9507,7 +9507,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 				pe->speed_max = Vec3(1, 1, 1);
 				pe->pos_min = Vec3(-0.1f, -0.1f, -0.1f);
 				pe->pos_max = Vec3(0.1f, 0.1f, 0.1f);
-				pe->size = 0.3f
+				pe->size = 0.3f;
 				pe->op_size = POP_LINEAR_SHRINK;
 				pe->alpha = 0.9f;
 				pe->op_alpha = POP_LINEAR_SHRINK;
@@ -9565,7 +9565,7 @@ void Game::SpawnDungeonColliders()
 	int w = lvl.w,
 		h = lvl.h;
 
-	for(int y = 1; y < h - 1; ++y)
+	/*for(int y = 1; y < h - 1; ++y)
 	{
 		for(int x = 1; x < w - 1; ++x)
 		{
@@ -9611,7 +9611,7 @@ void Game::SpawnDungeonColliders()
 		cobj->getWorldTransform().setOrigin(btVector3(2.f*lvl.staircase_up.x + 1.f, 0.f, 2.f*lvl.staircase_up.y + 1.f));
 		cobj->getWorldTransform().setRotation(btQuaternion(dir_to_rot(lvl.staircase_up_dir), 0, 0));
 		phy_world->addCollisionObject(cobj, CG_BUILDING);
-	}
+	}*/
 
 	// room floors/ceilings
 	dungeon_shape_pos.clear();
@@ -9619,6 +9619,9 @@ void Game::SpawnDungeonColliders()
 	int index = 0;
 	for(Room& room : lvl.rooms)
 	{
+		room.pos += Int2(1, 1);
+		room.size -= Int2(2, 2);
+
 		// floor
 		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, room.y, 2.f * room.pos.y));
 		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * room.pos.y));
@@ -9645,6 +9648,24 @@ void Game::SpawnDungeonColliders()
 		dungeon_shape_index.push_back(index + 1);
 		dungeon_shape_index.push_back(index + 3);
 		index += 4;
+
+		// left wall
+		/*int start = -1;
+		for(int y = 1; y < room.size.y - 1; ++y)
+		{
+			if(czy_blokuje2(m[room.pos.x + (room.pos.y + y) * w]))
+			{
+				if(start == -1)
+					start = y;
+				else
+				{
+					// wall from start to y
+					start = -1;
+				}
+			}
+		}
+		if(start != -1)*/
+		//dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + 1), room.y, 2.f * (room.pos.y + 1
 	}
 
 	delete dungeon_shape;
@@ -9658,6 +9679,13 @@ void Game::SpawnDungeonColliders()
 	obj_dungeon->setCollisionShape(dungeon_shape);
 	obj_dungeon->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
 	phy_world->addCollisionObject(obj_dungeon, CG_BUILDING);
+
+
+
+	FIXME!!1;
+
+	//draw_flags = 49152;
+	draw_phy = true;
 }
 
 void Game::SpawnDungeonCollider(const Vec3& pos)
@@ -13765,15 +13793,15 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 		{
 			// podziemia, wygeneruj schody, drzwi, kratki
 			LoadingStep(txGeneratingObjects);
-			GenerateDungeonObjects2();
-			GenerateDungeonObjects();
-			GenerateTraps();
+			//GenerateDungeonObjects2();
+			//GenerateDungeonObjects();
+			//GenerateTraps();
 
 			if(!IS_SET(base.options, BLO_LABIRYNTH))
 			{
 				LoadingStep(txGeneratingUnits);
-				GenerateDungeonUnits();
-				GenerateDungeonFood();
+				//GenerateDungeonUnits();
+				//GenerateDungeonFood();
 			}
 			else
 			{

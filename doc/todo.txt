@@ -1,7 +1,15 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-- bullet collision point is a bit off; ceil only now, walls y
+- room size at generator
+- doors should be part of one of rooms
+- joining rooms, create small room or resize one of them
+1. create dungeon physics
+2. ramps physics
+moving player
+3. dungeon mesh
+4. navmesh
+5. positioning
 + each room with random y
 	+ floor/ceil physics
 	+ camera collide with floor/ceil
@@ -19,8 +27,8 @@ CURRENT:
 	+ physics
 	+ colliders
 	+ prevent spawning traps on ramps
-! iskra.png
-! particle settings FIXME
++ save/load/compability
+! FIXME
 ===============================================================================================================
 NEW:
 + 404 handling on website

@@ -1103,16 +1103,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					node->mesh_ptr = (void*)trimesh->getMeshInterface();
 					draw_batch.debug_nodes.push_back(node);
 				}
-			case TRIANGLE_MESH_SHAPE_PROXYTYPE:
-				{
-					DebugSceneNode* node = debug_node_pool.Get();
-					const btBvhTriangleMeshShape* trimesh = (const btBvhTriangleMeshShape*)shape;
-					node->type = DebugSceneNode::TriMesh;
-					node->group = DebugSceneNode::Physic;
-					node->mat = m3 * cam.matViewProj;
-					node->mesh_ptr = (void*)trimesh->getMeshInterface();
-					draw_batch.debug_nodes.push_back(node);
-				}
+				break;
 			default:
 				break;
 			}
@@ -3543,7 +3534,7 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 	SetAlphaTest(false);
 	SetAlphaBlend(false);
 	SetNoCulling(true);
-	SetNoZWrite(false);
+	SetNoZWrite(true);
 
 	V(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME));
 	V(device->SetRenderState(D3DRS_ZENABLE, FALSE));
@@ -3567,42 +3558,51 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 		Vec4(163.f / 255,73.f / 255,164.f / 255,1.f)
 	};
 
-	for(vector<DebugSceneNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
+	for(int i = 0; i < 2; ++i)
 	{
-		const DebugSceneNode& node = **it;
-
-		V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&colors[node.group]));
-		V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&node.mat));
-
-		if(node.type == DebugSceneNode::TriMesh)
+		for(vector<DebugSceneNode*>::const_iterator it = nodes.begin(), end = nodes.end(); it != end; ++it)
 		{
-			btTriangleIndexVertexArray* mesh = (btTriangleIndexVertexArray*)node.mesh_ptr;
-			// currently only dungeon mesh is supported here
-			assert(mesh == dungeon_shape_data);
-			V(device->SetVertexDeclaration(vertex_decl[VDI_POS]));
-			V(eMesh->CommitChanges());
+			const DebugSceneNode& node = **it;
 
-			V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, dungeon_shape_pos.size(), dungeon_shape_index.size() / 3, dungeon_shape_index.data(),
-				D3DFMT_INDEX32, dungeon_shape_pos.data(), sizeof(Vec3)));
-		}
-		else
-		{
-			Mesh* mesh = meshes[node.type];
-			V(device->SetVertexDeclaration(vertex_decl[mesh->vertex_decl]));
-			V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
-			V(device->SetIndices(mesh->ib));
-			V(eMesh->CommitChanges());
+			Vec4 color = colors[node.group];
+			if(i == 1)
+				color.w = 0.25f;
 
-			for(int i = 0; i < mesh->head.n_subs; ++i)
-				V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
+			V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&color));
+			V(eMesh->SetMatrix(hMeshCombined, (D3DXMATRIX*)&node.mat));
+
+			if(node.type == DebugSceneNode::TriMesh)
+			{
+				btTriangleIndexVertexArray* mesh = (btTriangleIndexVertexArray*)node.mesh_ptr;
+				// currently only dungeon mesh is supported here
+				assert(mesh == dungeon_shape_data);
+				V(device->SetVertexDeclaration(vertex_decl[VDI_POS]));
+				V(eMesh->CommitChanges());
+
+				V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, dungeon_shape_pos.size(), dungeon_shape_index.size() / 3, dungeon_shape_index.data(),
+					D3DFMT_INDEX32, dungeon_shape_pos.data(), sizeof(Vec3)));
+			}
+			else
+			{
+				Mesh* mesh = meshes[node.type];
+				V(device->SetVertexDeclaration(vertex_decl[mesh->vertex_decl]));
+				V(device->SetStreamSource(0, mesh->vb, 0, mesh->vertex_size));
+				V(device->SetIndices(mesh->ib));
+				V(eMesh->CommitChanges());
+
+				for(int i = 0; i < mesh->head.n_subs; ++i)
+					V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, mesh->subs[i].min_ind, mesh->subs[i].n_ind, mesh->subs[i].first * 3, mesh->subs[i].tris));
+			}
 		}
+
+		V(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
+		V(device->SetRenderState(D3DRS_ZENABLE, TRUE));
+		SetAlphaBlend(true);
+		SetNoZWrite(false);
 	}
 
 	V(eMesh->EndPass());
 	V(eMesh->End());
-
-	V(device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
-	V(device->SetRenderState(D3DRS_ZENABLE, TRUE));
 }
 
 //=================================================================================================

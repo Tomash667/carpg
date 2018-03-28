@@ -34,8 +34,9 @@
 extern const float TRAVEL_SPEED = 28.f;
 extern Matrix m1, m2, m3, m4;
 
-//#define START_LOCATION L_VILLAGE
-//#define START_LOCATION2 MAGE_TOWER
+FIXME
+#define START_LOCATION L_DUNGEON
+#define START_LOCATION2 HUMAN_FORT
 
 // z powodu zmian (po³¹czenie Location i Location2) musze tymczasowo u¿ywaæ tego w add_locations a potem w generate_world ustawiaæ odpowiedni obiekt
 struct TmpLocation : public Location
@@ -411,7 +412,7 @@ void Game::GenerateWorld()
 			}
 
 #ifdef START_LOCATION2
-			if(inside->cel == START_LOCATION2)
+			if(inside->target == START_LOCATION2)
 				temp_location = index;
 #endif
 		}
@@ -2867,8 +2868,8 @@ void Game::GenerateDungeon(Location& _loc)
 		OpcjeMapy opcje;
 		opcje.korytarz_szansa = base.corridor_chance;
 		opcje.w = opcje.h = base.size + base.size_lvl * dungeon_level;
-		opcje.rozmiar_korytarz = base.corridor_size;
-		opcje.rozmiar_pokoj = base.room_size;
+		opcje.corridor_size = base.corridor_size;
+		opcje.room_size = base.room_size;
 		opcje.rooms = &lvl.rooms;
 		opcje.polacz_korytarz = base.join_corridor;
 		opcje.polacz_pokoj = base.join_room;
@@ -2989,7 +2990,7 @@ void Game::GenerateDungeon(Location& _loc)
 		lvl.staircase_down_dir = opcje.schody_dol_kierunek;
 		lvl.staircase_down_in_wall = opcje.schody_dol_w_scianie;
 
-		// TODO
+		FIXME
 		//for(Room& room : lvl.rooms)
 		//	room.y = Random(-5.f, 5.f);
 		//lvl.GetUpStairsRoom()->y = 1.f;

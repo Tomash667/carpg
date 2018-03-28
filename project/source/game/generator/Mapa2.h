@@ -253,7 +253,7 @@ struct OpcjeMapy
 
 	// input
 	int w, h;
-	Int2 rozmiar_pokoj, rozmiar_korytarz, ramp_length;
+	Int2 room_size, corridor_size, ramp_length;
 	int korytarz_szansa, polacz_korytarz, polacz_pokoj, kraty_szansa,
 		ramp_chance_min, // minimum number of rooms before trying to generate ramp
 		ramp_chance, // chance % per room count above minimum to generate ramp
