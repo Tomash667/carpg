@@ -48,16 +48,16 @@ struct IBOX
 	{
 		return IBOX(x + s / 2, y + s / 2, s / 2, l, t);
 	}
-	void PushTop(vector<Int2>& top) const
+	void PushTop(vector<Int2>& top, int size) const
 	{
 		top.push_back(Int2(x, y));
-		if(x < 59)
+		if(x < size - 1)
 		{
 			top.push_back(Int2(x + 1, y));
-			if(y < 59)
+			if(y < size - 1)
 				top.push_back(Int2(x + 1, y + 1));
 		}
-		if(y < 59)
+		if(y < size - 1)
 			top.push_back(Int2(x, y + 1));
 	}
 };
@@ -2325,6 +2325,8 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 	{
 		static vector<IBOX> tocheck;
 		static vector<Int2> tiles;
+		assert(lvl.w == lvl.h);
+		const int size = lvl.w;
 
 		// podziel na kawa³ki u¿ywaj¹c pseudo quad-tree i frustum culling
 		tocheck.push_back(IBOX(0, 0, 64, -4.f, 8.f));
@@ -2334,10 +2336,10 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			IBOX ibox = tocheck.back();
 			tocheck.pop_back();
 
-			if(ibox.x < 60 && ibox.y < 60 && ibox.IsVisible(frustum))
+			if(ibox.x < size && ibox.y < size && ibox.IsVisible(frustum))
 			{
 				if(ibox.IsTop())
-					ibox.PushTop(tiles);
+					ibox.PushTop(tiles, size);
 				else
 				{
 					tocheck.push_back(ibox.GetLeftTop());

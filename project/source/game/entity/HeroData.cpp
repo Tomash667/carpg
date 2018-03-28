@@ -48,7 +48,7 @@ void HeroData::Save(FileWriter& f)
 void HeroData::Load(FileReader& f)
 {
 	f >> name;
-	if(LOAD_VERSION < V_CURRENT)
+	if(LOAD_VERSION < V_0_7)
 		f.Skip<Class>(); // old class info
 	f >> know_name;
 	f >> team_member;
@@ -64,7 +64,7 @@ void HeroData::Load(FileReader& f)
 		f >> lost_pvp;
 	else
 		lost_pvp = false;
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_0_7)
 		f >> split_gold;
 	else
 		split_gold = 0.f;

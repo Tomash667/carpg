@@ -1435,7 +1435,7 @@ void Unit::Load(HANDLE file, bool local)
 		ReadFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
 		ReadFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
 		ReadFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
-		if(LOAD_VERSION >= V_CURRENT)
+		if(LOAD_VERSION >= V_0_7)
 			ReadFile(file, &stamina_timer, sizeof(stamina_timer), &tmp, nullptr);
 		else
 			stamina_timer = 0;

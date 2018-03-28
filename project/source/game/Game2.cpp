@@ -45,7 +45,7 @@
 #include "SoundManager.h"
 #include "ScriptManager.h"
 
-const int SAVE_VERSION = V_CURRENT;
+const int SAVE_VERSION = V_0_7;
 int LOAD_VERSION;
 const int MIN_SUPPORT_LOAD_VERSION = V_0_2_10;
 
@@ -9615,6 +9615,43 @@ void Game::SpawnDungeonColliders()
 	dungeon_shape_pos.clear();
 	dungeon_shape_index.clear();
 	int index = 0;
+
+	if((inside->type == L_DUNGEON && inside->target == LABIRYNTH) || inside->type == L_CAVE)
+	{
+		const float h = Room::HEIGHT;
+		for(int x = 0; x < 16; ++x)
+		{
+			for(int y = 0; y < 16; ++y)
+			{
+				// floor
+				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl.w / 16, 0, 2.f * y * lvl.h / 16));
+				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl.w / 16, 0, 2.f * y * lvl.h / 16));
+				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl.w / 16, 0, 2.f * (y + 1) * lvl.h / 16));
+				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl.w / 16, 0, 2.f * (y + 1) * lvl.h / 16));
+				dungeon_shape_index.push_back(index);
+				dungeon_shape_index.push_back(index + 1);
+				dungeon_shape_index.push_back(index + 2);
+				dungeon_shape_index.push_back(index + 2);
+				dungeon_shape_index.push_back(index + 1);
+				dungeon_shape_index.push_back(index + 3);
+				index += 4;
+
+				// ceil
+				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl.w / 16, h, 2.f * y * lvl.h / 16));
+				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl.w / 16, h, 2.f * y * lvl.h / 16));
+				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl.w / 16, h, 2.f * (y + 1) * lvl.h / 16));
+				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl.w / 16, h, 2.f * (y + 1) * lvl.h / 16));
+				dungeon_shape_index.push_back(index);
+				dungeon_shape_index.push_back(index + 2);
+				dungeon_shape_index.push_back(index + 1);
+				dungeon_shape_index.push_back(index + 2);
+				dungeon_shape_index.push_back(index + 3);
+				dungeon_shape_index.push_back(index + 1);
+				index += 4;
+			}
+		}
+	}
+
 	for(Room& room : lvl.rooms)
 	{
 		// floor
@@ -9637,11 +9674,11 @@ void Game::SpawnDungeonColliders()
 		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, h, 2.f * (room.pos.y + room.size.y)));
 		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), h, 2.f * (room.pos.y + room.size.y)));
 		dungeon_shape_index.push_back(index);
-		dungeon_shape_index.push_back(index + 1);
-		dungeon_shape_index.push_back(index + 2);
 		dungeon_shape_index.push_back(index + 2);
 		dungeon_shape_index.push_back(index + 1);
+		dungeon_shape_index.push_back(index + 2);
 		dungeon_shape_index.push_back(index + 3);
+		dungeon_shape_index.push_back(index + 1);
 		index += 4;
 	}
 

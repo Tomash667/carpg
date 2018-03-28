@@ -251,7 +251,7 @@ void TeamSingleton::Load(FileReader& f)
 		unit = Unit::GetByRefid(f.Read<int>());
 
 	leader = Unit::GetByRefid(f.Read<int>());
-	if(LOAD_VERSION < V_CURRENT)
+	if(LOAD_VERSION < V_0_7)
 	{
 		int team_gold;
 		f >> team_gold;

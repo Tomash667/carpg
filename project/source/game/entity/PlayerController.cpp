@@ -397,7 +397,7 @@ void PlayerController::Save(FileWriter& f)
 //=================================================================================================
 void PlayerController::Load(FileReader& f)
 {
-	if(LOAD_VERSION < V_CURRENT)
+	if(LOAD_VERSION < V_0_7)
 		f.Skip<Class>(); // old class info
 	f >> name;
 	f >> move_tick;
@@ -505,7 +505,7 @@ void PlayerController::Load(FileReader& f)
 	}
 	if(LOAD_VERSION < V_0_5_1)
 		ResetStatState();
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_0_7)
 		f >> split_gold;
 	else
 		split_gold = 0.f;
