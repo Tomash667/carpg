@@ -271,6 +271,12 @@ struct Unit
 		else
 			return data->mesh->head.bbox.SizeY();
 	}
+	Vec3 GetPhysicsPos() const
+	{
+		Vec3 p = pos;
+		p.y += max(1.5f, GetUnitHeight()) * 0.5f + 0.4f;
+		return p;
+	}
 	Vec3 GetHeadPoint() const
 	{
 		Vec3 pt = visual_pos;

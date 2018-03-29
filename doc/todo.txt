@@ -31,7 +31,6 @@ moving player
 ! FIXME
 ===============================================================================================================
 NEW:
-+ 404 handling on website
 + when npc have item in his inventory and in pc, it will first ask for pc one
 + particles in objects, not hardcoded water_effect, blood_effect
 + remove hardcoded bench variants in base usable
@@ -39,9 +38,6 @@ NEW:
 + remove obj_alpha
 + validate objects metadata (required objects, units)
 ? why version/stats thread start at menu, not while loading
-+ randomized order of spawned objects
-+ arrow on hit, update trail particle to final position
-+ campfire damage, avoid by ai
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos
@@ -50,4 +46,3 @@ VERIFY:
 - without human flag and mesh crash when spawned, log error
 - ai look at angle nie jest clipowane, albo coś?
 - trochę da się widzieć przez ściany :/
-? raknet wysyła wiadomości do zdisconnectowanych przy broadcast jeśli nie wyśle jeszcze disconnect

@@ -1763,7 +1763,7 @@ dialog q_orcs2_gorush {
 	64 "I'll leave when I pay back my debt to you."
 	65 "Not before."
 	66 "End dialog"
-	67 "Say something in orcish
+	67 "Say something in orcish"
 	68 "Ulu-mulu!"
 }
 

@@ -41,11 +41,11 @@ perk alchemist {
 }
 perk wealthy {
 	name "Wealthy"
-	desc "You come from a wealthy family. You receive 500 gold to buy better equipment."
+	desc "You come from a wealthy family. You receive 1000 gold to buy better equipment."
 }
 perk very_wealthy {
 	name "Very wealthy"
-	desc "You come from a very wealthy. You received a small sum of 2,000 gold to help you start the adventure as a hero."
+	desc "You come from a very wealthy. You received a small sum of 2500 gold to help you start the adventure as a hero."
 }
 perk heirloom {
 	name "Family heirloom"

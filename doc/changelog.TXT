@@ -1,7 +1,10 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja 0.7 (2018-XX-YY):
+Wersja 0.8 (2018-04-30):
+
+--------------------------------------------------------------------------------
+Wersja 0.7 (2018-03-31):
 + wczytywanie grup przeciwników na arenie z pliku
 + lepiej widoczny celownik w ciemnoœci
 + info o opuszczaniu obszaru wydarzenia

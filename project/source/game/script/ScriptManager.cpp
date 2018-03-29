@@ -7,6 +7,7 @@
 #include "TypeBuilder.h"
 #include "PlayerController.h"
 #include "Var.h"
+#include "SaveState.h"
 
 #ifdef _DEBUG
 #	define CHECKED(x) { int _r = (x); assert(_r >= 0); }
@@ -498,6 +499,9 @@ void ScriptManager::Save(FileWriter& f)
 
 void ScriptManager::Load(FileReader& f)
 {
+	if(LOAD_VERSION < V_0_7)
+		return;
+
 	uint count;
 	f >> count;
 	if(count == 0)

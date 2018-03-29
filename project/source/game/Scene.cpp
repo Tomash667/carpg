@@ -48,16 +48,16 @@ struct IBOX
 	{
 		return IBOX(x + s / 2, y + s / 2, s / 2, l, t);
 	}
-	void PushTop(vector<Int2>& top) const
+	void PushTop(vector<Int2>& top, int size) const
 	{
 		top.push_back(Int2(x, y));
-		if(x < 59)
+		if(x < size - 1)
 		{
 			top.push_back(Int2(x + 1, y));
-			if(y < 59)
+			if(y < size - 1)
 				top.push_back(Int2(x + 1, y + 1));
 		}
-		if(y < 59)
+		if(y < size - 1)
 			top.push_back(Int2(x, y + 1));
 	}
 };
@@ -1874,6 +1874,7 @@ void Game::PrepareAreaPath()
 
 	const float h = 0.06f;
 	const Vec3& pos = pc->unit->pos;
+	Vec3 from = pc->unit->GetPhysicsPos();
 
 	if (action.area == Action::LINE)
 	{
@@ -1884,7 +1885,7 @@ void Game::PrepareAreaPath()
 		float t;
 		Vec3 dir(sin(rot)*action.area_size.x, 0, cos(rot)*action.area_size.x);
 		bool ignore_units = IS_SET(action.flags, Action::F_IGNORE_UNITS);
-		LineTest(pc->unit->cobj->getCollisionShape(), pos, dir, [this, ignore_units](btCollisionObject* obj, bool)
+		LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
 		{
 			int flags = obj->getCollisionFlags();
 			if (IS_SET(flags, CG_TERRAIN))
@@ -1995,7 +1996,6 @@ void Game::PrepareAreaPath()
 		float t, end_t;
 		Vec3 dir_normal(sin(rot), 0, cos(rot));
 		Vec3 dir = dir_normal * range;
-		Vec3 from = pos;
 		LineTest(shape_summon, from, dir, clbk, t, &t_forward, true, &end_t);
 		LineTest(shape_summon, from + dir, -dir, clbk, t, &t_backward);
 
@@ -2326,6 +2326,8 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 	{
 		static vector<IBOX> tocheck;
 		static vector<Int2> tiles;
+		assert(lvl.w == lvl.h);
+		const int size = lvl.w;
 
 		// podziel na kawa³ki u¿ywaj¹c pseudo quad-tree i frustum culling
 		tocheck.push_back(IBOX(0, 0, 64, -4.f, 8.f));
@@ -2335,10 +2337,10 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 			IBOX ibox = tocheck.back();
 			tocheck.pop_back();
 
-			if(ibox.x < 60 && ibox.y < 60 && ibox.IsVisible(frustum))
+			if(ibox.x < size && ibox.y < size && ibox.IsVisible(frustum))
 			{
 				if(ibox.IsTop())
-					ibox.PushTop(tiles);
+					ibox.PushTop(tiles, size);
 				else
 				{
 					tocheck.push_back(ibox.GetLeftTop());

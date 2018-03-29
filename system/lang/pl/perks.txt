@@ -41,11 +41,11 @@ perk alchemist {
 }
 perk wealthy {
 	name "Bogaty"
-	desc "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 500 sztuk z³ota aby zakupiæ lepszy ekwipunek."
+	desc "Pochodzisz z bogatej rodziny. Otrzyma³eœ od niej 1000 sztuk z³ota aby zakupiæ lepszy ekwipunek."
 }
 perk very_wealthy {
 	name "Bardzo bogaty"
-	desc "Pochodzisz z bardzo bogatej. Otrzyma³eœ od niej niewielk¹ sumê 2000 sztuk z³ota, aby u³atwiæ ci rozpoczêcie przygód jako bohater."
+	desc "Pochodzisz z bardzo bogatej. Otrzyma³eœ od niej niewielk¹ sumê 2500 sztuk z³ota, aby u³atwiæ ci rozpoczêcie przygód jako bohater."
 }
 perk heirloom {
 	name "Rodzinna pami¹tka"

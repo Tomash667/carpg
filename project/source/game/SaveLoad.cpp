@@ -691,7 +691,7 @@ void Game::LoadGame(HANDLE file)
 		start_version = version;
 
 	// content version
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_0_7)
 	{
 		uint content_version;
 		f >> content_version;
