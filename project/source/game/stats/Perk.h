@@ -13,8 +13,8 @@ enum class Perk
 	SkillFocus,
 	Talent,
 	AlchemistApprentice, // more potions
-	Wealthy, // +500 gold
-	VeryWealthy, // +2k gold
+	Wealthy, // +1k gold
+	VeryWealthy, // +2.5k gold
 	FamilyHeirloom,
 	Leader,
 

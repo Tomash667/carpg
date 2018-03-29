@@ -641,7 +641,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		Info("Settings: no music.");
 	}
 	options.sound_volume = Clamp(cfg.GetInt("sound_volume", 100), 0, 100);
-	options.music_volume = Clamp(cfg.GetInt("music_volume", 100), 0, 100);
+	options.music_volume = Clamp(cfg.GetInt("music_volume", 50), 0, 100);
 
 	// ustawienia myszki
 	game.mouse_sensitivity = Clamp(cfg.GetInt("mouse_sensitivity", 50), 0, 100);

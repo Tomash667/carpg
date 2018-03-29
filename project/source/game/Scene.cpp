@@ -1873,6 +1873,7 @@ void Game::PrepareAreaPath()
 
 	const float h = 0.06f;
 	const Vec3& pos = pc->unit->pos;
+	Vec3 from = pc->unit->GetPhysicsPos();
 
 	if (action.area == Action::LINE)
 	{
@@ -1883,7 +1884,7 @@ void Game::PrepareAreaPath()
 		float t;
 		Vec3 dir(sin(rot)*action.area_size.x, 0, cos(rot)*action.area_size.x);
 		bool ignore_units = IS_SET(action.flags, Action::F_IGNORE_UNITS);
-		LineTest(pc->unit->cobj->getCollisionShape(), pos, dir, [this, ignore_units](btCollisionObject* obj, bool)
+		LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
 		{
 			int flags = obj->getCollisionFlags();
 			if (IS_SET(flags, CG_TERRAIN))
@@ -1994,7 +1995,6 @@ void Game::PrepareAreaPath()
 		float t, end_t;
 		Vec3 dir_normal(sin(rot), 0, cos(rot));
 		Vec3 dir = dir_normal * range;
-		Vec3 from = pos;
 		LineTest(shape_summon, from, dir, clbk, t, &t_forward, true, &end_t);
 		LineTest(shape_summon, from + dir, -dir, clbk, t, &t_backward);
 

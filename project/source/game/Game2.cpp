@@ -53,7 +53,7 @@ const Vec2 ALERT_RANGE(20.f, 30.f);
 const float PICKUP_RANGE = 2.f;
 const float TRAP_ARROW_SPEED = 45.f;
 const float ARROW_TIMER = 5.f;
-const float MIN_H = 1.5f;
+const float MIN_H = 1.5f; // hardcoded in GetPhysicsPos
 const float TRAIN_KILL_RATIO = 0.1f;
 const float SS = 0.25f;//0.25f/8;
 const int NN = 64;
@@ -7882,7 +7882,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							center.y = 0;
 							center.Normalize();
 							center *= dt;
-							LineTest(u.cobj->getCollisionShape(), u.pos, center, [&](btCollisionObject* obj, bool)
+							LineTest(u.cobj->getCollisionShape(), u.GetPhysicsPos(), center, [&](btCollisionObject* obj, bool)
 							{
 								int flags = obj->getCollisionFlags();
 								if(IS_SET(flags, CG_TERRAIN | CG_UNIT))
@@ -8767,11 +8767,12 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 				Vec3 dir(sin(u.use_rot)*(len + eps), 0, cos(u.use_rot)*(len + eps));
 				Vec3 dir_normal = dir.Normalized();
 				bool ok = true;
+				Vec3 from = u.GetPhysicsPos();
 
 				if(u.animation_state == 0)
 				{
 					// dash
-					LineTest(u.cobj->getCollisionShape(), u.pos, dir, [&u](btCollisionObject* obj, bool)
+					LineTest(u.cobj->getCollisionShape(), from, dir, [&u](btCollisionObject* obj, bool)
 					{
 						int flags = obj->getCollisionFlags();
 						if(IS_SET(flags, CG_TERRAIN))
@@ -8786,7 +8787,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					// bull charge, do line test and find targets
 					static vector<Unit*> targets;
 					targets.clear();
-					LineTest(u.cobj->getCollisionShape(), u.pos, dir, [&](btCollisionObject* obj, bool second)
+					LineTest(u.cobj->getCollisionShape(), from, dir, [&](btCollisionObject* obj, bool second)
 					{
 						int flags = obj->getCollisionFlags();
 						if(!second)
@@ -8851,7 +8852,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 								move_dir.Normalize();
 								move_dir *= len;
 								float t;
-								LineTest(unit->cobj->getCollisionShape(), unit->pos, move_dir, unit_clbk, t);
+								LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), move_dir, unit_clbk, t);
 								if(t == 1.f)
 								{
 									unit->moved = true;
@@ -8869,7 +8870,7 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 							{
 								float t;
 								Vec3& actual_dir = (best_dir < 0 ? dir_left : dir_right);
-								LineTest(unit->cobj->getCollisionShape(), unit->pos, actual_dir, unit_clbk, t);
+								LineTest(unit->cobj->getCollisionShape(), unit->GetPhysicsPos(), actual_dir, unit_clbk, t);
 								if(t == 1.f)
 								{
 									inner_ok = true;
@@ -9737,7 +9738,7 @@ void Game::CreateCollisionShapes()
 	tr.setOrigin(btVector3(0.95f, 2.f, 0.f));
 	s->addChildShape(tr, b);
 	shape_schody = s;
-	shape_summon = new btCylinderShape(btVector3(1.5f / 2, 1.5f, 1.5f / 2));
+	shape_summon = new btCylinderShape(btVector3(1.5f / 2, 0.75f, 1.5f / 2));
 	shape_barrier = new btBoxShape(btVector3(size / 2, 40.f, border / 2));
 
 	Mesh::Point* point = aArrow->FindPoint("Empty");

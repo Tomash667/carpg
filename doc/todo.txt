@@ -15,6 +15,7 @@ NEW:
 + arrow on hit, update trail particle to final position
 + campfire damage, avoid by ai
 + load specific save (for tests)
++ location name synonyms (las/puszcza/etc)
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos
