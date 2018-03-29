@@ -45,7 +45,7 @@
 #include "SoundManager.h"
 #include "ScriptManager.h"
 
-const int SAVE_VERSION = V_0_7;
+const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
 const int MIN_SUPPORT_LOAD_VERSION = V_0_2_10;
 
