@@ -47,7 +47,7 @@
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
-const int MIN_SUPPORT_LOAD_VERSION = V_0_2_10;
+const int MIN_SUPPORT_LOAD_VERSION = V_0_2_12;
 
 const Vec2 ALERT_RANGE(20.f, 30.f);
 const float PICKUP_RANGE = 2.f;

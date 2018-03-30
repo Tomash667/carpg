@@ -369,9 +369,6 @@ building_script village {
 object tombstone_1
 // pre 0.3 remove walls, gate
 object to_remove
-// pre 0.2.12 convert chairs into stools
-usable chair
-usable stool
 // pre 0.2.20 convert bench into bench_dir
 usable bench
 usable bench_dir

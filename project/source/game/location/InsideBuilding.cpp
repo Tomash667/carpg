@@ -261,19 +261,6 @@ void InsideBuilding::Load(HANDLE file, bool local)
 		for(vector<Bullet>::iterator it = ctx.bullets->begin(), end = ctx.bullets->end(); it != end; ++it)
 			it->Load(f);
 	}
-
-	// konwersja krzese³ w sto³ki
-	if(LOAD_VERSION < V_0_2_12 && type->group == BuildingGroup::BG_INN)
-	{
-		auto chair = BaseUsable::Get("chair"),
-			stool = BaseUsable::Get("stool");
-		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
-		{
-			Usable& u = **it;
-			if(u.base == chair)
-				u.base = stool;
-		}
-	}
 }
 
 //=================================================================================================
