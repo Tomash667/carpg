@@ -76,8 +76,8 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_START, "start", "start server", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp inn/arena/hall)", F_CHEAT | F_GAME));
 	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-10 [text])", F_GAME | F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10)", F_GAME | F_MENU | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-10 [text] or filename)", F_GAME | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10 or filename)", F_GAME | F_MENU | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_SHOW_MINIMAP, "show_minimap", "reveal minimap", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SKIP_DAYS, "skip_days", "skip days [skip_days [count])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST, "list", "display list of types, don't enter type to list possible choices (list type [filter])", F_ANYWHERE));
@@ -923,11 +923,22 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						LocalString text;
 						if(t.Next())
 						{
-							slot = Clamp(t.MustGetInt(), 1, 10);
-							if(t.Next())
-								text = t.MustGetString();
+							if(t.IsString())
+							{
+								slot = -1;
+								text = t.GetString();
+							}
+							else
+							{
+								slot = Clamp(t.MustGetInt(), 1, 10);
+								if(t.Next())
+									text = t.MustGetString();
+							}
 						}
-						SaveGameSlot(slot, text->c_str());
+						if(slot != -1)
+							SaveGameSlot(slot, text->c_str());
+						else
+							SaveGameFilename(text.get_ref());
 					}
 					else
 						Msg("You can't save game in this moment.");
@@ -936,13 +947,25 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(CanLoadGame())
 					{
 						Net::SetMode(Net::Mode::Singleplayer);
+						LocalString name;
 						int slot = 1;
 						if(t.Next())
-							slot = Clamp(t.MustGetInt(), 1, 10);
+						{
+							if(t.IsString())
+							{
+								name = t.GetString();
+								slot = -1;
+							}
+							else
+								slot = Clamp(t.MustGetInt(), 1, 10);
+						}
 
 						try
 						{
-							LoadGameSlot(slot);
+							if(slot != -1)
+								LoadGameSlot(slot);
+							else
+								LoadGameFilename(name.get_ref());
 							GUI.CloseDialog(console);
 						}
 						catch(const SaveException& ex)

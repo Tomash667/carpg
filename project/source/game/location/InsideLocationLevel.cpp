@@ -337,19 +337,6 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	ReadFile(file, &staircase_down_dir, sizeof(staircase_down_dir), &tmp, nullptr);
 	ReadFile(file, &staircase_down_in_wall, sizeof(staircase_down_in_wall), &tmp, nullptr);
 
-	// konwersja krzese³ w sto³ki
-	if(LOAD_VERSION < V_0_2_12)
-	{
-		auto chair = BaseUsable::Get("chair"),
-			stool = BaseUsable::Get("stool");
-		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
-		{
-			Usable& u = **it;
-			if(u.base == chair)
-				u.base = stool;
-		}
-	}
-
 	// konwersja ³awy w obrócon¹ ³awê i ustawienie wariantu
 	if(LOAD_VERSION < V_0_2_20)
 	{

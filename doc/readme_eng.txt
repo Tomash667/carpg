@@ -214,7 +214,7 @@ Available commands:
 	leader - change team leader (leader nick).
 	lighting - use lighting (lighting 0/1).
 	list - display list of types, don't enter type to list possible choices (list type [filter]).
-	load - load game (load 1-10).
+	load - load game (load 1-10 or name).
 	map2console - draw dungeon map in console.
 	mod_stat - modify player statistics (modstat stat value), use modstat ? to get list of stats.
 	mp_interp - interpolation interval (mp_interp 0.f-1.f).
@@ -239,7 +239,7 @@ Available commands:
 	reveal - reveal all locations on world map.
 	refresh_cooldown - refresh action cooldown/charges.
 	s - send message to all players, short from say (say msg).
-	save - save game (save 1-10 [text]).
+	save - save game (save 1-10 [text] or name).
 	say - send message to all players (say msg).
 	scare - enemies escape.
 	screenshot - save screenshot.

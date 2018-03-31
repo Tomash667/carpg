@@ -2601,8 +2601,6 @@ better_items {
 //------------------------------------------------------------------------------
 // ALIASES (new id, old id)
 //------------------------------------------------------------------------------
-// typo fixed in 0.2.10
-alias emerald vs_emerals
 // renamed armors in 0.4
 alias al_leather armor_leather
 alias al_studded armor_studded

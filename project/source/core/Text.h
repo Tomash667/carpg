@@ -73,6 +73,12 @@ cstring EscapeChar(char c);
 cstring EscapeChar(char c, string& out);
 string* ToString(const wchar_t* str);
 void Replace(string& s, cstring in_chars, cstring out_chars);
+inline bool EndsWith(std::string const& value, std::string const& ending)
+{
+	if(ending.size() > value.size())
+		return false;
+	return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
 
 // return index of character in cstring
 inline int StrCharIndex(cstring chrs, char c)
