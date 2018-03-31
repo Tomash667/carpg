@@ -1,0 +1,664 @@
+Historia zmian
+
+--------------------------------------------------------------------------------
+Wersja 0.8 (2018-04-30):
+! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.10 lub starszej
+
+--------------------------------------------------------------------------------
+Wersja 0.7 (2018-03-31):
++ wczytywanie grup przeciwników na arenie z pliku
++ lepiej widoczny celownik w ciemnoœci
++ info o opuszczaniu obszaru wydarzenia
++ obs³uga jêzyka skryptowego AngelScript w konsoli
++ zmiany w szybkoœci regneracji wytrzyma³oœci
+- naprawiony crash przy wygenerowaniu magówi i golemów podczas walki na arenie
+- naprawiony brak wrogów w lokalizacji gdy powinni byæ tam magowie i golemy
+- naprawione przeliczanie wagi ekwipunku dla wczytywania starych zapisów
+- naprawiony crash po zabiciu paj¹ka [xweert123]
+- naprawione nieprzerywanie niektórych dŸwiêków po wczytaniu
+- naprawiony b³¹d wczytywania dŸwiêków przy wy³¹czonym dŸwiêku w konfiguracji
+- naprawiony b³¹d animacji podczas jedzenia/picia siedz¹c
+- naprawione b³êdy animacji i inne problemy podczas u¿ywania obiektów
+- naprawiony b³¹d gdy klient jednoczeœnie u¿yje obiektu i zacznie wyjmowaæ broñ
+- naprawione b³¹dy podczas zawodów w piciu (brak blokady gracza gdy rozmawia³ w trakcie rozpoczêcia, crash gdy ai siedzia³ na sto³ku i coœ jad³)
+- naprawiona mo¿liwoœæ strzelania z ³uku bez wytrzyma³oœci przez gracza
+- naprawiony crash gdy Gorush zmienia klasê postaci
+- naprawione bardzo dobre pocz¹tkowe przedmioty gracza przy bardzo niskiej umiejêtnoœci
+- naprawiony brak aktualizacji efektów u klienta po podró¿y
+- ciê¿ki/œredni pancerz nie daje lepszej tylko gorsz¹ premie do obrony od zrêcznoœci
+- informacja o zdobyciu atrybutu/umiejêtnoœci pojawia siê u gracza a nie serwera
+- efekty dla klientów po podró¿y poprawnie siê aktualizuj¹
+- blokowanie strza³ i czarów zu¿ywa ju¿ wytrzyma³oœæ
+- wysoka umiejêtnoœæ tarczy nie przywraca wytrzyma³oœci po trafieniu
+- podró¿ w górê/dó³ nie wyrzuca ju¿ klienta z gry
+- odpoczywanie przed zawodami w piciu blokowa³o udzia³ dla klientów
+- wejœcie do miasta w dniu zawodów powodowa³o nie pojawienie siê uczestników zawodów
+- usuniête wycieki pamiêci przy tworzeniu i usuwaniu obozów
+- naprawiony crash przy wchodzeniu do podziemi gdy generowa³o zw³oki
+- opuszczanie lokalizacji z umieraj¹cymi jednostkami nie blokuje ich póŸniejsze ograbienie i tworzy krew
+- naprawiony crash gdy podczas pvp wyzwany gracz opuœci grê
+- naprawiony brak dzia³ania ustawieñ g³oœnoœci dla niektórych dŸwiêków
+- naprawiony crash gdy dŸwiêk jest przypiêty do klienta a on opuœci grê
+- opuszczenie gry przez gracza na którego patrzy siê npc w niektórych questach nie powoduje jej zawieszenia
+- naprawione bugi i crashe w czasie zawodów gdy gracz opuœci grê
+- wybranie klawisza nastêpnej niedostêpnej opcji dialogowej nie powoduje ju¿ crasha, obs³uga klawiszy 9 i 0
+- poprawione dzia³ania podzia³u z³ota
+- naprawiony crash po u¿yciu komendy 'scare' na nieœwiadomym celu, lepsza obs³uga uciekania
+- Gorush poprawnie ujawnia jak siê nazywa u innych graczy
+- poprawiona informacja o zdobywaniu z³ota przez klientów
+- naprawiony rzadki crash gdy wyst¹pi spotkanie tu¿ przed dotarciem do lokalizacji
+- naprawiony brak wrogów w lesie
+- naprawiony crash po ponownym odwiedzeniu tartaku
+- naprawiony crash przy natrafieniu na bandytów atakuj¹cych podró¿nych
+- naprawiony b³¹d gdy ork z kluczem wygeneruje siê za zamkniêtymi drzwiami
+- naprawiony crash po ponownym odwiedzeniu kopalni
+- naprawione generowanie zbyt silnych wrogów podczas podró¿y
+- naprawiony crash w jednym rodzaju podziemi podczas renderowania schodów w dó³
+- ³ucznicy nie podchodz¹ do celu gdy skoñczy siê im wytrzyma³oœæ
+- poprawiona synchronizacja pu³apek pomiêdzy klientem a serwerem
+- naprawione niewidoczne strza³y u klientów wystrzelone z pu³apek
+- poprawiony punkt trafienia strza³y w obiekt
+
+--------------------------------------------------------------------------------
+Wersja 0.6.2 (2017-10-08):
++ wczytywanie obiektów z pliku
+- naprawione nieprawid³owe kolizje dla niektórych obiektów
+- naprawione kolizje gracza z znakami na budynkach
+- naprawiony nieprawid³owy model wioskowego ratuszu
+- naprawiona nieprawid³owa tekstura znaku sprzedawcy jedzenia
+- lepsze przekierowanie na stronê
+- naprawiona bazowa animacja czasami odtwarzana po animacji picia
+- naprawione nieoznaczanie u¿ywalnych obiektów jako wolne gdy klient przestaje ich u¿ywaæ, zepsuta animacja
+- naprawione przesy³anie informacji o u¿ywaniu drzwi pomiêdzy klientami
+- naprawiony brak przedmiotów w skrzynkach
+
+--------------------------------------------------------------------------------
+Wersja 0.6.1 (2017-10-02):
+- naprawiony crash gdy npc w dru¿ynie chce przedmiot od innego npc w dru¿ynie [MikelkCZ]
+- lepsze przekierowanie na stronê
+
+--------------------------------------------------------------------------------
+Wersja 0.6 (2017-10-01):
++ mo¿liwoœæ czytania ksi¹¿ek
++ u¿ywalna biblioteczka
++ obracanie przedmiotów w ekwipunku
++ sortowanie tekstu jednostek wed³ug dystansu
++ optymalizacje renderowania otwartych lokalizacji
+- naprawiony nie dzia³aj¹cy tryb multiplayer z wersji 0.5
+- naprawione brakuj¹ce animacje dla klientów w trybie multiplayer
+- naprawiony crash i brakuj¹ce komunikaty dla 3+ graczy gdy klient traci po³¹czenie pomiêdzy wczytywanymi poziomami/œwiatem
+- naprawiony crash gdy nowy gracz do³¹cza do wczytywanej gry
+- naprawiony crash i nieprawid³owe dzia³anie lobby gdy jest wczytywana gra z 3+ graczami
+- naprawiony crash przy alt-tabowaniu na samym pocz¹tku inicjalizacji gry [Zettaton]
+- naprawiony crash po zabicu z³ego bossa [Medarc]
+- naprawiony b³¹d wczytywania klientów gdy serwer opuœci grê na mapie œwiata a potem rozpocznie now¹ grê
+- naprawiona komenda warp gdy jednostka u¿ywa obiektu
+- naprawiony b³¹d z losowym wyœwietlaniem kolorów przy atrybutach/umiejêtnoœciach
+- naprawione u¿ywanie komendy goto_map w budynku i powrót do tej samej lokacji
+- naprawiona nieprawid³owa informacja ¿e zosta³eœ wyrzucony zamiast informacji o wy³¹czaniu serwera
+- naprawiony losowy crash przy wybieraniu ³atwej walki na arenie
+- naprawiony b³¹d z prawid³owym odtwarzaniem dŸwiêków areny w multiplayer
+- usuniêta szara obwódka wokó³ minimapy w podziemiach
+- naprawione nieprawid³owe teksty plotek w dzienniku dla niektórych questów
+- naprawione przywo³ywanie wilka na arenie
+- naprawione losowe zgadzenie/odmawianie pvp przez npc po wczytaniu gry
+- naprawione losowe generowanie jednostke z o wiele slabszymi przedmiotami ni¿ ich poziom
+- naprawione przywo³ywanie wilka za œcian¹/drzwiami/na arenie
+- naprawiony crash po przywo³aniu wilka w œrodku œciany
+- naprawione nie dzia³aj¹ca obs³uga klawiszy, eksplozja pozycji, nieprawid³owe animacje przy niskim fps
+- naprawiony brak animacji postaci czasami
+- naprawione zapisywanie i wczytywanie nazwy postaci/zapisu zawieraj¹cej cudzys³ów
+- naprawione nierównomierne generowanie jednostek w karczmie/na arenie
+- naprawiony brak komunikatu o pobliskich wrogach przy próbie opuszczenia lokacji przez klienta
+
+--------------------------------------------------------------------------------
+Wersja 0.5 (2017-09-07):
++ specjalne akcje (³otrzyk - zryw, ³owca - zwierzêcy sojusznik, wojownik - bycza szarza)
++ wytrzyma³oœæ - u¿ywana do atakowania, blokowania
++ nowe przedmioty: kielich, z³oty kielich, talerz, kie³basa, zupa, gulasz, surowa ryba, ryba, lecz¹ce ziele, zielone ziele, patelnia
++ nowy menad¿er zasobów, wczytywanie gdy potrzeba a nie na pocz¹tku gry (jednostki, przedmioty, budynki, obiekty, tekstury, muzyka), nowy format pak
++ wczytywanie z pliku zaklêæ, dialogów, jednostek, budynków
++ wczytywanie listy wymaganych encji z pliku
++ szybkoœæ strza³y zale¿y od umiejêtnoœci i rodzaju ³uku [Paradox Edge]
++ automatyczne chodzenie (domyœlnie klawisz F)
++ obs³uga brakuj¹cych tekstur i modeli dla przedmiotów w trakcie wczytywania
++ mo¿liwoœæ w³¹czenia gry bez g³oœników/s³uchawek
++ tymczasowo usuniêty g³owny quest dopóki nie jest ukoñczony
++ przezroczyste przedmioty
++ nowe komendy konsoli forcequest, stun, refresh_cooldown
+- naprawiony rzadki crash podczas wyszukiwania œcie¿ek w mieœcie/wiosce
+- naprawiony b³¹d z losowym nie wysy³anie mapy œwiata do klientów
+- naprawiony brak widocznoœci ostatniego elementu na liœcie sterowania
+- ork gorush nie zawsze wybiera losowo szamana
+- ork gorush ma wiêcej miksturek gdy awansuje
+- naprawiona nieprawid³owa liczba przedmiotów wygenerowana u handlarzy
+- naprawiony crash przy wchodzeniu do jaskini/losowego spotkania ze zwierzêtami
+- naprawiony crash przy u¿ywaniu $ w polach tekstowych
+- naprawiony crash przy braku paczki podczas spotkania w queœcie z dostarczaniem paczki
+- naprawiony crash serwera gdy gracz opuœci grê podczas wczytywania mapy œwiata
+- naprawiony rzadki crash przy generowaniu wioski
+- naprawiony b³¹d z generowanie uczestników turnieju w innych miastach ni¿ docelowe
+- naprawiony b³¹d z wykrywaniem ¿e okno gry jest aktywne
+- naprawione problemy z kursorem gdy okno jest przesuniête
+- naprawione nieprawid³owe imie gracza
+- naprawiony wp³yw obci¹¿enia na szybkoœæ biegu i niektóre animacjie (wyrzucanie, podnoszenie przedmiotów)
+- naprawiona niekompatybilnoœæ z wioskami z przed wersji 0.3
+- naprawione tekstury pola w wioskach
+- naprawione generowanie obrazków przedmiotów które maj¹ inne tekstury (mithrilowe)
+- naprawione generowanie obiektów z wioski w œrodku ratusza
+- naprawione blokowanie szybkiego zapisu/wczytywanie przez otwarty dziennik
+
+--------------------------------------------------------------------------------
+Wersja 0.4.20 (2016-04-29):
++ dodana obs³uga nieudanego wczytywania czcionek w windows 10 [XNautPhD]
++ dodana obs³uga wy³¹czania dŸwiêku w przypadku b³êdów inicjalizacji sterownika dŸwiêku [XNautPhD]
++ aktualizacja biblioteki FmodEx do najnowszej wersji
+- naprawione wyœwietlanie komunikatu o nowej wersji
+- naprawione ai nie kupowa³ œredniego pancerza gdy nie mia³ ¿adnego a by³ to najlepszy skill
+- naprawiona z³a wyœwietlana iloœæ przedmiotów na ziemi w MP gdy by³o ich ponad 255
+- naprawione wycieki pamiêci z poprzedniej wersji
+- naprawiony wyciek pamiêci z animacji strzelania i fizyki w ekranie tworzenia postaci
+- naprawiony wyciek pamiêci w oknach dialogowych z checkboxem
+- naprawiona szansa 10% bandyty ³ucznika na posiadanie dwóch ³uków
+- naprawione nie znikanie jedzonego przedmiotu gdy postaæ umiera w MP
+- naprawione wycieki pamiêci przy wczytywaniu pancerzy z pliku
+- naprawione nie wyœwietlanie ikony na pasku zadañ gdy wyskoczy³ b³¹d
+- naprawione literówki w zadaniu dostarczenia listu w angielskiej wersji
+- naprawiony b³¹d gdy postaæ wyci¹ga ³uk przy zmianie poziomu [Vinur_Gamall]
+- naprawione pojawianie siê bosa w losowym pokoju po wczytaniu w jednym zadaniu (zapisy z przed 0.4)
+- naprawione zabijanie/przerywanie akcji jednostki powodowa³o uwiêzienie w obiekcie
+- naprawione przerywanie akcji jedz¹cej jednostki powodowa³ pozostanie przedmiotu w d³oni
+- naprawiona wiadomoœæ o niezaakceptowaniu pvp gdy siê to zrobi³o
+- naprawiony ultra rzadki crash na ekranie tworzenia postaci [Vinur_Gamall]
+- naprawiona animacja ³uku na ekranie tworzenia postaci [Vinur_Gamall]
+
+--------------------------------------------------------------------------------
+Wersja 0.4.10 (2015-12-28):
++ przepisana obs³uga paketiów w mp aby logowa³a wszystkie b³êdy i nie crashowa³a
++ w czasie celowania celownik porusza siê wolniej
++ dodane logowanie sterowników dŸwiêku
++ lepsza synchronizacja ujawniania lokalizacji na mapie œwiata w MP
+- naprawiony b³¹d z proszeniem ai o orkowy pancerz i zak³adanie go [Leinnan]
+- naprawiony bia³y ekran po rozpoczêciu gdy (czasami na kartach ati) [Zielu]
+- naprawione czarne paski na postaci na ekranie tworzenia (czasami na ati) [Zielu]
+- naprawiony b³¹d gdy nowa postaæ do³¹czy³a do gry i pojawi³a siê w budynku ale by³a zapisana jako na zewn¹trz (nie mia³a zielonego nicku), po opuszczeniu
+	budynku crashowa³a serwer
+- naprawiony crash serwera gdy nowy gracz do³¹cza do gry i zawiesi siê na wczytywaniu [Leinnan]
+- naprawiona mo¿liwoœæ pojawienia siê nowej postaci w budynku ale za œcian¹ (tymczasowo postaæ pojawi¹ siê przy drzwiach)
+- naprawiony crash przy wy³¹czaniu gry gdy okno dialogowe zosta³o zamkniête automatycznie (pvp/g³ówny quest)
+- naprawiony b³¹d z cz³onkiem dru¿yny niewidocznym ale widocznym na minimapie [DerpyBarns]
+- naprawiona niedzia³aj¹ca komenda 'killall' w MP
+- naprawiona zmiana klasy Gorush nie dzia³aj¹ca w MP
+- naprawiony potêcjalny crash gdy postaæ rzuca³a czar w MP
+- naprawiony czar electro w MP
+- naprawione niedzia³aj¹ce stanie w œrodku areny gdy jest twoja kolej na walkê (trzeba by³o staæ przed drzwiami)
+- naprawione generowanie zbugowanego labiryntu (1.5% szansy)
+- naprawiony dŸwiêk okrzyku u klienta
+- naprawiony brak zmiany kolorów w³osów u klienta
+- naprawiony czerwony ekran przy u¿ywaniu kodów do zmniejszenia si³y/wytrzyma³oœci u klienta
+- naprawione zepsute komendy say/whisper/server
+- naprawiona mo¿liwoœæ rzucania czarów nie bojowych na zbyt niskim poziomie
+- naprawiony b³¹d z generowanie podziemi bez wiêzienia
+- puszczenie myszki w sliderze przy tworzeniu postaci ma poprawny efekt [Vinur_Gamall]
+- naprawione strzelanie z ³uku, nie trzeba klikn¹æ po ataku, wystarczy klikn¹æ po strzale
+- naprawione b³êdy gdy postaæ zosta³¹ og³yszona w czasie przeszukiwanie skrzyni/cia³a, handlu/wymiany/dialogu
+- naprawione obracanie siê postaci w miejscu przy wejœciu/wyjœciu do/z budynku po stronie serwera
+- naprawione nieprawid³owe skalowanie postaci po zmianie poziomu dopóki nie odtworzy siê animacja
+- naprawione skalowanie przedmiotów do rozmiaru postaci [Vinur_Gamall]
+- naprawiony mipmaping terenu
+- naprawiony b³¹d w dzienniku przez który czasami nie by³o odstêpu pomiêdzy wpisami
+- naprawiony kolejny crash serwera gdy klient siê nie wczyta³
+- naprawione dialogi dla questa z roznoszeniem wieœci
+- naprawiony quest z odzyskaniem paczki dla klienta
+- naprawiony crash po ukoñczniu questa uratuj zak³adnika w MP
+- docelowa lokalizacja jest ujawniana dla klienta w queœci znajdŸ artefakt
+- naprawiony crash gdy klient rozpoczyna³ quest z agentem króla
+- u¿ywanie portalu nie spowoduje zawieszenie siê klienta i wyrzucenie go z gry
+- naprawione nie znikanie buffu antymagi po zmianie lokalizacji
+- naprawione usuwanie buffów po u¿yciu portalu
+- naprawione nie aktualizowanie siê dziennika w queœcie z zgubionym ³ukiem u klienta
+- docelowa lokalizacja jest ujawniana dla klienta w queœcie z zgubionym ³ukiem
+- naprawione podwójne dodawanie wiadomoœci o zamkniêciu portalu u klienta
+- naprawiony crash gdy ai próbuje wêdrowaæ poza mapê w podziemiach
+
+--------------------------------------------------------------------------------
+Wersja 0.4 (2015-10-20):
++ nowe rodzaje pancerzy (przeszywnica, skóra, zbroja ³uskowa, zbroja paskowa), pancerz wysokiej jakoœci, magiczny pancerz
++ nowe umiejêtnoœci (d³ugie ostrze, krótkie ostrze, topór, broñ obuchowa, œredni pancerz)
++ nowe atrybuty (inteligencja, m¹droœæ, charyzma)
++ perki
++ zmieniony ekran tworzenia postaci
++ nowe dŸwiêki/muzyka [Vinur_Gamall]
++ bonus ³otrzyka do ciosu w plecy dzia³a dla ³uku
++ lepsza kamera, mo¿na obracaæ wokó³ postaci
++ konwersja projektu z vs2008 do vs2013
++ komenda setstat
++ ulepszony obs³uga up³ywu czasu questa
++ mieszkañcy nie powtarzaj¹ siê podczas pytania o okoliczne lokalizacje
+- naprawiona obs³uga portu w konfiguracji [dookey]
+- naprawione obliczanie zrêcznoœci (dla lekkiego pancerza sprawdza³o ciê¿ki)
+- naprawione obliczanie szybkoœci strzelania z ³uku (u¿ywa³o umiejêtnoœci walki broni¹ zamiast ³uku)
+- naprawione anulowanie edycji postaci które zmiania³o postaæ
+- naprawione brakuj¹ce aktualizacje questów w MP
+- klikniêcie na opcji dialogowej nie spowoduje ju¿ ataku gdy trzyma siê broñ [Vinur_Gamall]
+- naprawiony rzadki crash przy wchodzeniu do miasta/wioski
+- naprawiony b³¹d w queœcie z szaleñcami, po zdobyciu kamienia i zapisaniu nie by³o postêpów
+- naprawione rzadki crash przy generowaniu dróg w mieœcie
+- naprawione generowanie kratek w korytarzach [Minister of Death]
+- naprawiony crash przy wchodzniu do wioski z wersji < 0.3 [Minister of Death]
+- naprawiona kompatybilnoœæ ze starymi zapisami w których karczma ma inny rozmiar
+- teraz po za³o¿eniu gry w mp nie mamy wybranej postaci z poprzedniej gry
+- naprawiony crash po wczytaniu gry z questowymi przedmiotami [Medarc]
+- naprawiony crash gdy skoñczy siê czas na wykonanie zadania z obozem [Medarc]
+- naprawione z³e wartoœci kredytu/wolnych dni po wczytaniu
+- naprawione duplikowanie przedmiotów w ekwipunku npc na ostatnim miejscu
+- naprawione nie czyszczenie opcji dialogowych po wczytaniu
+- naprawione nie czyszczenie kodów po wczytaniu
+- naprawione nie znikanie obozu jeœli jest ostatni¹ lokalizacj¹ jak¹ siê odwiedzi³o pomimo up³ywu czasu
+- [Uratuj porwanego] naprawione b³êdy gdy porawny zginie przed rozmow¹
+- [Uratuj porwanego] porwany znika gdy minie czas na questa
+- [Uratuj porwanego] naprawiony crash gdy zaakceptuje siê questa po wczytaniu
+- [List goñczy] naprawione nie generowanie celu po wczytaniu
+- [List goñczy] naprawiony crash gdy cel jest w dru¿ynie gdy minie czas
+- [List goñczy] naprawiony crash gdy cel opuœci lokalizacjê
+- [Dostarcz list] naprawiona z³a nazwa listu po wczytaniu
+- [Tartak] naprawiony wyciek pamiêci po wygenerowaniu drwali
+- [Tartak] naprawione nie zapisywanie wygl¹du Artura Drwala
+- [Gorush] naprawiony brak postêpu po oczyszczeniu obozu jeœli siê wczyta³o pomiêdzy informacj¹ o obozie a zapytaniu gdzie jest
+- [Gorush] naprawione generowani przywódca orków w zamkniêtym pomieszczeniu do którego to on ma klucz
+- [Golemy na drodze] nie mo¿na ju¿ pomijaæ animacji picia
+- [Golemy na drodze] naprawiony crash gdy nie przyjmie siê starego maga do dru¿yny i opuœci lokalizacjê
+- [Z³o] naprawiony z³y dialog po zamkniêciu wszystkich portali
+- naprawione z³e oœwietlenie krwii w podziemiach
+- naprawione znikanie npc którzy poszli do karczmy (ale tylko questowo)
+- naprawione opuszczanie miasta przez npc w miejscu starych bram zamiast dojœcie do zielonej strefy
+- naprawiony tearing przy du¿ym fps przy œwiat³ach w podziemiach
+- naprawiony b³¹d z teleportowaniem cz³onka dru¿yny do u¿ywalnego obiektu [Minister of Death]
+- poprawne usuwanie postaci gdy gracz zcrashuje przy wczytywaniu mapy œwiata
+
+--------------------------------------------------------------------------------
+Wersja 0.3 (2015-05-16):
++ oznaczanie celu rysuje otoczkê
++ normal mapping
++ cache shaderów
++ specular / specular mapping
++ lepsze oœwietlenie w budynkach
++ nowe mury i brama zrobione przez Leinnana
++ nowe budynki w wioskach (Leinnan)
++ obiekty wokó³ budynków (Leinnan)
++ nowy generator wiosek/miast
++ trawa / pola
++ nowe imiona dla bohaterów
++ mo¿liwoœæ wy³¹czenia vsync
++ ustawienia rozszerzenia dla zrzutów ekranu
++ przet³umaczony tekst okna wyboru jêzyka
++ Ctrl + V w konsoli
++ lepsze wyszukiwanie œcie¿ek
++ ai pod¹¿aj¹c za graczem nie stara siê unikaæ trawy w mieœcie
+- naprawione uv tekstur w podziemiach
+- wrogowie generuj¹ siê dalej od dru¿yny, dru¿yna nie generuje siê za blisko krawêdzi lasu [Docucat]
+- otwieranie drzwi przez ai w budynku nie crashuje
+- naprawiona blokada do³¹czania od serwerów z inn¹ wersj¹
+- naprawione generowanie obiektów blokuj¹cych drogê w podziemiach
+- usuniête wycieki pamiêci przy wczytywaniu gdy brak jednego z graczy przy wczytywaniu
+- naprawiony b³¹d z zajêt¹ postaci¹ gdy jad³a coœ w czasie zmiany poziomu
+- naprawione gadanie przy plotkach o dacie dodania
+- usuniêty rzadki crash przy wchodzeniu do lokalizacji
+
+--------------------------------------------------------------------------------
+Wersja 0.2.23 (2015-01-31):
+- naprawiony crash w MP w czasie wczytywania zapisu [Leinnan]
+- naprawione dzia³anie okrzyku u klienta
+- naprawione brakuj¹ce animacje gdy postaæ coœ mówi
+- naprawiony brak animacji w MP po odtworzeniu animacji
+- usuniêto kilka ma³ych wycieków pamiêci
+- poprawki w gui
+- po zabiciu gracza trucizn¹ nie wstaje on po jakimœ czasie [Minister of Death]
+- naprawiony b³êdny stan tarczy gdy postaæ zostanie pobita blokuj¹c
+- naprawione popsute stan broni u klienta gdy zostanie pobity chowaj¹c/wyjmuj¹c broñ
+- naprawiona mo¿liwoœæ u¿ywania okna rozmów na mapie œwiata
+- naprawiony rzadki crash po wejœciu do lokacji zwi¹zany z generowaniem skrzyni [Minister of Death]
+- naprawione crashe po wczytywaniu gry spowodowane przez wykonywane w czasie zapisywania akcje klienta [Minister of Death/Leinnan]
+- naprawione nie przerywanie przez ai u¿ywanie obiektu [Minister of Death]
+- naprawione blokowanie siê ai cz³onków dru¿yny gdy u¿yj¹ obiektu pod¹¿aj¹c z graczem [Minister of Death]
+- naprawione nie u¿ywanie przez ai jedzenia i picia gdy siedz¹ [Minister of Death]
+- naprawiony rzadki crash gdy ginie postaæ strzelaj¹ca z ³uku
+- po walce ai nie stoi w miejscu przez d³u¿szy czas (dotyczy g³ównie miasta)
+- naprawione u¿ywanie kowad³a trzymaj¹c broñ w rêce [Minister of Death]
+- naprawiony spawn jednostek w studni [Minister of Death]
+- magowie nie wol¹ u¿ywaæ ³uku [Minister of Death]
+- naprawione odtwarzane dŸwiêku u klienta mimo ¿e jest wy³¹czony w czasie ataku wrogów
+- naprawiony crash gdy wróg bez broni zabija klienta zdala od hosta
+- naprawiona animacja wrogów po ataku u klienta gdy nie u¿ywaj¹ broni
+- nie mo¿na sprzedawaæ miksturek u sprzedawcy jedzenia, nie mo¿na sprzedawaæ jedzenia/picia u alchemika [Minister of Death]
+- naprawiona fizyka lady w karczmie [Minister of Death]
+- naprawiona animacja trenuj¹cych ai
+- komenda "killall 3" nie crashuje u klienta
+- naprawione animacje silnego ataku przez ai u klienta
+- nie mo¿na u¿ywaæ komendy speed w MP
+
+--------------------------------------------------------------------------------
+Wersja 0.2.22 (2015-01-24):
++ mo¿na zmieniæ klawisz konsoli
++ mo¿na opuœciæ miasto w czasie trwania zawodów
+- naprawiony crash przy dostawaniu z³ota jeœli gracz a po nim npc wezm¹ kredyt [Minister of Death]
+- naprawione zawieszanie w mp przy wchodzeniu do lokacji [thebard88]
+- naprawiona brakuj¹ca fizyka krzes³a
+- naprawiona z³a tekstura w skrytce bandytów
+- naprawiony z³y wygl¹d klienta u serwera gdy wybra³ zerowe w³osy, w¹sy lub brodê [Leinnan]
+- naprawiony z³y zasiêg rysowania cz¹steczek
+- nie mo¿na rozmawiaæ z wrogami bêd¹c niewidzialnym
+- naprawiono znikaj¹cego Jozana [Minister of Death]
+- naprawiono zabijanie mieszkañców jednym strza³em nie agregowa³o [Minister of Death]
+- naprawiony crash po daniu miksturki oczyszczenia umys³u magowi [Minister of Death]
+- naprawione angielskie dialogi
+- naprawione brakuj¹ce dialogi starego maga po wchodzeniu do lokacji
+- naprawiony nie przet³umaczony test w ekwipunku gracza [Zinny]
+- przedmioty w mieœcie odnawiaj¹ siê
+- naprawiony b³¹d: gracz maj¹c wyci¹gniêt¹ broñ zleca wypicie miksturki, gdy chowa broñ przerywa akcjê, nie mo¿na wykonywaæ ¿adnych akcji w ekwipunku
+- naprawiony b³¹d podobny do tego powy¿ej ale multiplayer gdy klient zleca wypicie miksturki maj¹c wyci¹gniêt¹ broñ, powoduje problemy z ekwipunkiem u serwera
+- naprawiony crash gdy w zawodach bior¹ udzia³ mniej ni¿ 2 osoby
+- naprawiony brak mo¿liwoœci opuszczenia miasta po wygranych zawodach [fire]
+- naprawione b³êdy ai po walce na arenie
+- naprawiony b³¹d gdy postaæ zosta³a pobity w czasie chowania/wyjmowania broni, mia³a wyjêt¹ broñ ale nie by³a w trybie walki, blokowa³o to akcjê ai
+- naprawiony b³¹d gdy jest dzieñ zawodów przenosi³o bohaterów przed arenê, w tym cz³onków dru¿yny, postacie przeniesione z karczmy by³y niewidzialne [fire]
+- naprawiony crash podczas pytania o plotki [Minister of Death]
+- czar piorun nie przechodzi ju¿ przez œciany
+- naprawiony brak synchronizacji broni jeœli gracz za szybko przerwie wyjmowanie/chowanie broni
+
+--------------------------------------------------------------------------------
+Wersja 0.2.21 (2015-01-04):
++ mo¿na przeganiaæ neutralnych NPC (domyœlnie klawisz Y)
++ konfigurowalny timeout
++ lepsze logowanie
++ synchronizacja debuffa zatruty z paskiem hp
+- usuniêty crash serwera gdy klient zostanie wyrzucony przez timeout [thebard88]
+- naprawione teksty o wczytywaniu modeli (null)
+- usuniêty crash przy wczytywaniu gry na mapie œwiata gdy ma siê NPC w dru¿ynie [Paradox Edge]
+- usuniêty crash gdy ork chcia³ usi¹œæ na tronie [Zinny]
+- usuniêty crash przy rozmowie z Jozanem (po przyniesieniu ksiêgi) i agentem w angielskiej wersji [Zinny]
+- usuniêty crash po zawodach [Zinny]
+- naprawiony b³¹d z magami Ÿle okreœlaj¹cymi dystans do wroga
+- usuniêty crash przy opuszczaniu lokacji gdy jednostka wygenerowana po graczu u¿ywa obiektu (postacie które opuœci³y dru¿ynê, pos³añcy itp.) [Zinny]
+- naprawiony b³¹d z wczytywanie zapisów z wersji starszej ni¿ 0.2.20 (psu³o akcjê postaci)
+
+--------------------------------------------------------------------------------
+Wersja 0.2.20 (2014-12-12):
+Informacja o zapisach:
+* Zapisy z ka¿dej wersji powinny dzia³aæ w tej wersji.
+* Nowe budynki i obiekty nie pojawi¹ siê w ju¿ wygenerowanych miastach/wioskach.
+* W wygenerowanych lokacjach nie pojawi¹ siê nowe przedmioty dopóki siê nie zresetuj¹.
+* £awy zostaj¹ zamienione na obrócone w dobr¹ stronê.
+* Aktualnie trwaj¹ce efekty alkoholu nie zostan¹ zmienione na nowe.
+Dodane:
++ u¿ywanie miksturek w MP dla indeksów wiêkszych ni¿ 255
++ jedzenie (miêso, surowe miêso, chleb, jab³ko, plaster miodu, ser, ry¿, grzyb), modele stworzone przez MarkK
++ nowe komendy: hurt, break_action, fall
++ stary pijany mag bierze udzia³ w zawodach w piciu o ile go nie wyleczymy, bierze udzia³ w zawodach na arenie o ile go wyleczymy, pije po drodze, nowe teksty
++ pijacy po zawodach trenuj¹ do kolejnych
++ mieszkañcy miasta/wioski i magowie mog¹ wzi¹æ udzia³ w zawodach
++ jedzenie, picie, chowanie/wyjmowanie broni siedz¹c
++ lepsza aktualizacja tekstów w ekwipunku gdy robi siê coœ z 1 przedmiotem (wyrzuca, podnosi, u¿ywa itp.)
++ numer buildu w exe i zapisie
++ lepsze wyœwietlanie pobliskich postaci
++ nowy efekt po wypiciu alkoholu
++ niektóre przedmioty na ziemi maj¹ widoczny model a nie worek
++ zbieralne grzyby w jaskiniach
++ jedzenie jedzenia przez AI
++ buffy wyœwietlaj¹ siê nad paskiem hp
++ mikstura naturalnego leczenia wp³ywa teraz te¿ na miksturê regeneracji i jedzenie
++ wa¿ne przedmioty s¹ wyœwietlane na z³oto na minimapie
++ sklep z jedzeniem
++ przedmioty w mieœcie (w karczmie, u sprzedawców), mo¿esz je zabraæ jeœli jesteœ biedakiem :P
++ lepsze oznaczanie u¿ywanego celu przed graczem
++ animacja podnoszenia przedmiotów nie z ziemi
++ wiadomoœæ "Otrzymano przedmiot"
++ data dodania plotki do dziennika
++ t³o przy wczytywaniu
++ neutralni herosi w podziemiach ograbiaj¹ zw³oki i siê nie przeci¹¿aj¹
++ lepsze generowanie jednostek w karczmie (powinno to zmniejszyæ szansê na brak miejsca dla questowych jednostek)
++ mo¿na usun¹æ przypisany klawisz w opcjach klikaj¹c na nim prawy przyciskiem myszki
++ szarzenie po œmierci
++ zmienna dostêpna te¿ w pliku cfg: c_postfx - mo¿na wy³¹czyæ post effects
++ skrzynie mo¿na otwieraæ tylko z dobrej strony
++ górnicy czêœciej zajmuj¹ siê tym czym powinni
++ obszar zmiany poziomu jest widoczny tylko gdy siê podejdzie, jest te¿ w podziemiach
++ jedzenie w podziemiach
++ 50% szansy na studnie w mieœcie, model Leinnana
++ nowy model kocio³ka i 4 modele ³aw zrobione przez Leinnana
++ gorsze przedmioty w wiosce, jedzenie u karczmarza, brak jedzenia u handlarza bo jest sprzedawca jedzenia
++ nowe dialogi pijaków, sprzedawców
++ obelisk w otwartych mapach, uschniête drzewo
++ lepsze ustawianie pozycji wiadomoœci gry
++ nowe nagrobki, krzes³o i beczki zrobione przez Leinnana
++ wiêksza szansa ¿e ai u¿yje miksturki leczniczej
++ ai szybciej zaczyna jeœæ gdy usi¹dzie w karczmie
++ nowe tekstury zrobione/znalezione przez Leinnana
+Naprawione:
+- naprawiony brak dachu i obraz w œcianie u so³tysa
+- naprawiony brak krwii przy wrogach zabitych przez bohaterów w podziemiach
+- naprawiona mo¿liwoœæ u¿ywana kowad³a/¿y³y rudy gdy potrzebny przedmiot jest za³o¿ony
+- naprawione b³êdy w gui gdy jest w³¹czone windowsowe skalowanie DPI
+- nie da siê usi¹œæ na ³awie przed karczm¹ ze z³ej strony
+- naprawiony dŸwiêk przenoszenia magicznej kuli
+- w wyniku b³êdu w wiosce nigdy nie by³o kowala, teraz jest szansa ¿e siê wygeneruje
+- przedmioty w skrzyniach w obozie i w ataku na wóz bandytów by³y nie posortowane
+- naprawione rzadkie z³e sortowanie przedmiotów co mog³o doprowadziæ do posiadania kilku stacków takich samych przedmiotów
+- naprawiony rzadki crash przy wczytywaniu gdy postaæ/skrzynia mia³a questowy przedmiot
+- usuniêty memory leak zwi¹zany z niektórymi questowymi spotkaniami na mapie
+- naprawiony brakuj¹cy dŸwiêk podnoszenia z³ota z ziemi u klienta
+- zmiana poziomu gdy cz³onkowie dru¿yny u¿ywaj¹ jakiegoœ przedmiotu nie sprawia ¿e ca³y czas go potem trzymaj¹ w rêce
+- usuniêty b³¹d z ai, w podziemiach pozycja zamkniêtych drzwi dla testowania czy coœ widzi zawsze by³a na œrodku kratki wiêc móg³ ciê widzieæ gdy stan¹³eœ za drzwiami lub nie widzieæ gdy stan¹³eœ tu¿ przed nimi
+- usuniêty b³¹d z wyszukiwaniem œcie¿ek ai, postacie które nie mog¹ otwieraæ drzwi nie mog³y wejœæ na pole z zamkniêtymi drzwiami nawet gdy drzwi by³ przy krawêdzi pola
+- usuniêty rzadki crash gdy ai szuka celu do postaci która jest przy krawêdzi mapy
+- naprawiony rzadki brak animacji podnoszenia przedmiotu z ziemi
+- blokada opuszczenia lokacji jest przypisana do chodzenia a nie do klawisza Shift, dzia³a te¿ w podziemiach
+- ai potrafi³ wydobywaæ rudê tylko z dwóch z czterech kierunków
+- usuniêty b³¹d, gdy rozpoczn¹ siê zawody w piciu a gracz siedzi to wbije siê w sto³ek
+- naprawiony z³y napis po przegranej, gracze opuszczali grê i mog³o pisaæ ¿e podró¿owa³eœ samotnie
+- naprawiony brakuj¹cy dŸwiêk u klienta gdy ktoœ u¿ywa obiektu
+- dŸwiêki 3d przyczepione do postaci Ÿle uwzglêdnia³y zasiêg
+- po pogadaniu postacie nie zamyka³y ust dopóki siê nie ruszy³y
+- usuniêty rzadki crash przy generowaniu jednostek w lesie/ksiê¿ycowej studni
+
+--------------------------------------------------------------------------------
+Wersja 0.2.12 (2014-11-20):
++ ai w czasie wyjmowania ³uku mo¿e siê ruszaæ
++ nowe obiekty: pó³ki, sto³ek, bania
++ nowe modele (stó³, biurko, tron, biblioteczka, ³ó¿ko, namiot, skrzynki, obrazy, drewniana tarcza, chochla)
++ skrypt patch
++ wiêcej budynków w mieœcie
++ migotanie pochodni
+- naprawione liczenie walk na arenie
+- naprawiony b³¹d w oknie dialogowym z checkboxem
+- naprawiony brakuj¹cy przedmiot z wersji 0.2/0.2.1 z powodu literówki (emerals zamiast emerald)
+- naprawiony b³¹d z generowanie obiektów na œcianie w obiektach przy œcianie (np gobelin i ³ó¿ko)
+- usuniêty memory leak przy sprawdzaniu wersji gry
+- usuniêty memory leak u serwera gdy laguje a klient szybko strzela z ³uku
+- usuniêty crash rzadko wystêpuj¹cy przy strzelaniu z ³uku
+
+--------------------------------------------------------------------------------
+Wersja 0.2.10 (2014-11-09):
+Najwa¿niejsze zmiany:
+* ulepszone gui (ekwipunek, panel postaci, handel, minimapa itp)
+* wczytywanie t³umaczenia z pliku
+* wiele pomniejszych ulepszeñ i naprawionych b³êdów
+Zmiany:
++ animacja wyci¹gania/chowania broni jednorêcznej bez tarczy
++ nowy ekwipunek, przedmioty s¹ automatycznie sortowane, nieskoñczone miejsce, mo¿na wyrzucaæ/sprzedawaæ za³o¿one przedmioty
++ lepsza konsola (przewijanie tekstu, zapamiêtywanie ostatnich komend)
++ mo¿liwoœæ wybrania dowolnej rozdzielczoœci
++ skróty klawiszowe dziennika
++ aktualizacja dziennika gdy jest on otwarty
++ aktualizacja minimapy po otwarciu drzwi
++ skrót do zabierania wszystkich przedmiotów
++ wczytywanie nazw i opisów przedmiotów z pliku
++ blokowanie jest o wiele przydatniejsze
++ zaktualizowany raknet
++ wygenerowana dru¿yna otwiera drzwi jeœli pojawi siê po drugiej stronie
++ miniaturka w zapisach na mapie
++ ³atwiejszy wybór opcji dialogowych myszk¹
++ celnoœæ ³uku zale¿y od umiejêtnoœci
++ szybkoœæ blokowania zale¿y od umiejêtnoœci
++ umiejêtnoœæ u¿ywania pancerza zwiêksza limit zrêcznoœci
++ w trybie hardcore u¿ywa przy zapisywaniu domyœlnie starej nazwy zapisu
++ artefakty daj¹ odpornoœæ na czary, mikstura antymagii
++ przedmioty zwiêkszaj¹ obra¿enia od magii
++ grzbietok³uj i niektóre postacie zadaj¹ wiêksze obra¿enia ciosem w plecy, nieumarli i konstrukty s¹ odporne na cios w plecy
++ otwieranie dziennika na mapie œwiata
++ wyœwietlanie na minimapie innych postaci, przedmiotów i portali (aby ³atwiej by³o ukoñczyæ niektóre zadania)
++ lepsze rzucanie czarów celowanych na poruszaj¹cy siê cel lub samego siebie (leczenie)
++ w zadaniu 'Z³o' stara œwi¹tynia ma minimum 2 poziomy, koñcowy boss jest ³atwiejszy
++ ai rzuca czar leczenia na najbardziej rannych, o¿ywienia na najsilniejszych
++ kap³an leczy dru¿ynê w czasie podró¿y
++ nie mo¿na co chwila og³uszaæ jednostek
++ niektórzy bossowie maj¹ teraz obstawê która nie atakuje dopóki oni nie zaatakuj¹
++ aktualizacja FmodEx z 4.40.06 do 4.44.46
+Naprawione b³êdy:
+- naprawione kiepskie odwzorowanie pozycji w grze na minimapie
+- przytrzymanie klawisza nie dzia³a jak kilkukrotne wciskanie
+- przerwanie wypijania mikstury nie zmienia jej na dru¿ynow¹
+- przedmioty zdobyte samemu nie s¹ dru¿ynowe gdy ktoœ do ciebie do³¹czy
+- usuniêty b³¹d z kierunkiem schodów w prawym górnym rogu
+- naprawione brakuj¹ce t³umaczenia
+- bohaterowie wygenerowani w podziemiach otwieraj¹ drzwi, nie stoj¹ w korytarzu
+- usuniêty memleak przy wczytywaniu zapisu z mapy œwiata i wychodzeniu do menu
+- usuniêty b³¹d przy wczytywaniu gry w MP gdy serwer u¿ywa³ innej postaci
+- usuniêty b³¹d w generowaniu postaci gdy przywódca jest now¹ postaci¹ w zapisie
+- usuniêty b³¹d z wyrzucaniem z³ota przez klienta (nie wysy³a³ komunikatu do serwera, tak na prawdê nic nie wyrzuca³)
+- klient opuszczaj¹c grê nie blokuje npc jeœli z nim handluje/rozmawia
+- usuniêty memleak zwi¹zany z tekstami w czasie rozmowy w mp
+- u¿ycie komendy 'trainage' przez klienta na mapie œwiata nie crashuje
+- obudowa drzwi w skarbcu krypty ma tak¹ sam¹ teksturê jak œciana
+- naprawione dzia³anie noclip u klienta
+- naprawiony kolor t³a w miniaturkach zapisów
+- npc nie uruchamia portalu przechodz¹c przez przypadek przez niego
+- staro¿ytna zbrojownia: usuniêty nadmiarowy portal, skrzynia z artefaktami jest w odleg³ej skrzyni
+- szept dzia³a u klienta który chce rozmawiaæ z klientami którzy do³¹czyli po nim
+- w³¹czenie kodów w samouczku nie crashuje
+- usuniêty crash przy zamykaniu gry jeœli by³o siê w podziemiach a potem w nie podziemiach u¿ywa³o alt-tab w fullscreen
+- usuniêty b³¹d z blokowaniem siê jednostek które koñcza u¿ywaæ obiekt
+- naprawione b³êdy zwi¹zane ze szkoleniem i piciem miksturki zwiêkszaj¹cej atrybuty (nie zwiêksza³o wymagañ)
+- usuniêty b³¹d z kluczem w zadaniu "Orkowa banda"
+- usuniêty b³¹d z blokowaniem gdy nie ma wrogów przez ai
+- usuniêty b³¹d z niewysy³aniem komunikatów o koñcu blokowania
+- usuniêty b³¹d w komendzie "list itemn"
+- w jaskini na minimapie s¹ rysowane schody
+- usuniêty b³¹d w generowaniu jaskini
+- usuniêty b³¹d dotycz¹cy wczytywania gry gdzie ai trenuje strzelanie (nie strzela)
+- usuniêty memoryleak przy wczytywaniu gry (ParticleEmitter)
+- bossowie którzy chc¹ powiedzieæ coœ przed walk¹ nie biegaj¹ po pokojach gdy us³ysz¹ jakiœ okrzyk
+- ai nie przerywa dialogu ¿eby rzuciæ czar
+- po rzuceniu czaru leczenia/o¿ywienia postaæ nie bêdzie szukaæ wrogów jeœli zginêli
+- portal w queœcie 'Z³o' po wygenerowaniu by³ widoczny te¿ na wy¿szych poziomach
+- chowanie/wyjmowanie broni w czasie zmiany poziomu jest poprawnie obs³ugiwane
+- usuniêty b³¹d w generowaniu schodów ko³o drzwi
+- usuniêty crash po wczytywaniu gdy by³y jakieœ pociski w grze
+- boss w queœcie 'Z³o' nie pojawia siê w o³tarzu, lepiej modli siê przy o³tarzu
+- usuniêty b³¹d w spotkaniu z szaleñcami na drodze
+- usuniêty b³¹d w zaklêciu o¿ywiania, o¿ywali tam gdzie stali blokuj¹c siê w innych wrogach
+- czar wyssania ¿ycia nie dzia³a na sojuszników
+- magowie sprawdzaj¹ czy nie ma kogoœ na lini strza³u
+- usuniêty b³¹d, po przejœciu questa 'Z³o' lokacja nigdy nie jest resetowana (nowi wrogowie siê pojawiaj¹ a starzy nie znikaj¹)
+- usuniêty rzadki crash po wchodzeniu do miasta/wioski
+- usuniêty b³¹d w generowaniu obrazów nachodz¹cych na siebie (i inny obiektów wisz¹cych na œcianie)
+- po zawodach jeœli nie weŸmie siê w nich udzia³u poprawnie mówi ¿e ju¿ w tym roku by³y
+- pogadanie z ochroniarzami w queœcie 'Zaginiony ³uk' crashowa³o
+- ochroniarz i boss w queœcie 'Zaginony ³uk' mia³ teksty goblina
+- usuniêty crash w sekretnej lokacji
+- usuniêty b³¹d z wp³ywem œmierci wroga na morale cz³onków dru¿yny gracza
+- usuniêty b³¹d w queœcie 'Dziwny kamieñ', nie liczy³ siê do ukoñczonych unikalnych zadañ, nie da³o siê przejœæ na 100% gry
+- bohaterowie przed zawodami nie rozchodz¹ siê, wczytywanie po ich wygenerowniu nie crashuje
+- usuniêty b³¹d w MP przy wczytywaniu questowych przedmiotów
+- w MP nie crashuje po wczytaniu zapisu gdzie ktoœ chowa/wyjmuje broñ
+- w MP nie crashuje po wczytaniu zapisu w czasie spotkania na mapie œwiata gdy siê je opuszcza
+- w MP p³acenie bandytom i magowie u¿ywa³o z³ota serwera a nie gracza
+
+--------------------------------------------------------------------------------
+Wersja 0.2.5 (2014-06-22):
++ angielska wersja jêzykowa
++ zawody na arenie
++ unikalny quest zwi¹zany z szaleñcami
++ powtarzalny quest "List goñczy"
++ tryb hardcore
++ szybkie zapisywanie i wczytywanie
++ nowa lokacja, ksiê¿ycowa studnia
++ kilof, animacja wydobywania rudy
++ tron, animacja siedzenia
++ magiczne coœ u magów, nowe obrazy
++ wiêcej nazw lokacji, imion bohaterów, tekstów
++ udŸwig cz³onków dru¿yny
++ screenshot w zapisie
++ lepsza minimapa, wiêkszy zasiêg odkrywania
++ przesuwanie tekstów na mapie miasta tak ¿eby nie nachodzi³y na siebie
++ lepsze celowanie z ³uku
++ obrazek klasy kap³ana, czar leczenia
++ lepsze rzucanie o¿ywienia nieumar³ych przez nekromantów
++ ESC w g³ównym menu pyta czy na pewno zamkn¹æ
++ screenshot bez gui
++ zapamiêtywanie wyjêcia broni przy zmianie poziomu
++ wiêcej interakcji z szaleñcami
++ chowania broni przed u¿ywania kowad³a/kocio³ka
++ licznik zabitych przez siebie / innych po œmierci
++ alt+f4 w multiplayer
++ timeout przy ³¹czeniu klienta do serwera
++ wyœwietlanie innych wersji na czerwono przy szukaniu serwerów LAN
++ herosi mówi¹ ¿e nie maj¹ ju¿ miksturek
++ gadanie herosów po wejœciu, obserwatorów na arenie
++ unikalna jednostka per quest gdy potrzeba
++ wiêcej standardowego ekwipunku u kowala
++ po³¹czenie komunikatów o wzroœcie atrybutu/umiejêtnoœci
++ zmiany w ekwipunku NPC (pos³añcy i pijacy nie nosz¹ lepszych ubrañ)
+- wczytywanie eksplozji w multiplayer dla czaszki
+- naprawiony b³¹d przy chowaniu broni jeœli od razu wciœnie siê spacjê
+- usuniête wiêcej memleaków
+- nie zawiesza siê gdy uruchomimy serwer bez innych graczy
+- multisampling a obrazek postaci, ikony przedmiotów (darktorq)
+- grabienie zw³ok odwraca w dobr¹ stronê
+- serwer w czasie gry nie og³asza ¿e mo¿na do³¹czyæ
+- lepszy pathfinding (wybiera szybsz¹ drogê, nie szuka drogi poza mury miasta)
+- naprawione wczytywanie na mapie œwiata
+- quest "porwany" - dzia³a po wczytaniu
+- przy wymianie kilka razy pyta³ o ten sam przedmiot
+- potwory w jaskini siê nie resetowa³y
+- w mieœcie nie znika³a krew/zw³oki
+- poprawione uciekanie na otwartym terenie
+- ograniczenie w okrzyku bojowym przez wrogów
+- usuniêty b³¹d w MP powoduj¹cy zawieszanie siê przy zmianie poziomu z pu³apkami
+- brakuj¹ce animacje u klienta
+- lepsze u¿ywanie obiektów u klienta
+- w czasie u¿ywania obiektu rysuje nicki dru¿yny
+- strzelanie z ³uku przy zmianie poziomu mog³o zcrashowaæ przy strzelaniu
+- lepsza synchronizacja wyjêcia broni w MP
+- na arenie siê nie umiera
+- poprawne wyœwietlanie kredytu i dni po wczytaniu u klienta
+- krew w podziemiach na schodach uwzglêdnia pozycjê schodów
+- zawieszanie po wczytaniu w MP gdy by³a tworzona jednostka na danym poziomie, bez ¿adnych zmian poziomów (dotyczy g³ównie spawnunit i kilku questów)
+- poprawione wykrywanie kolizji atakowania
+- wygranie zawodów i odebranie nagrody mog³o zcrashowaæ grê, próbowa³o daæ nieistniej¹c¹ miksturkê
+- naprawiony b³¹d szukania œcie¿ki poza mury miasta który móg³ spowolniæ grê
+- trening nie aktualizowa³ hp/udŸwigu
+- tartak blokuje kamerê
+
+--------------------------------------------------------------------------------
+Wersja 0.2.1 (2014-06-05):
++ dodany multisampling
++ logowanie mo¿liwoœci procesora
++ wykrywanie duplikatów plików
++ szybsze wczytywanie jeœli wy³¹czymy dŸwiêk lub muzykê
+- usuniêty crash przy zapisywaniu siê w questowej lokacji 2 razy
+- usuniêty crash przy otwieraniu dziennika jeœli wczeœniej by³ otwarty na stronie z zadaniem a teraz nie mamy ¿adnego
+- usuniête wycieki pamiêci które po d³u¿szym graniu mog¹ doprowadziæ do braku pamiêci i crashu
+
+--------------------------------------------------------------------------------
+Wersja 0.2 (2014-06-03):
+Pierwsza dostêpna publicznie wersja.
+Za du¿o ¿eby wszystko wymieniaæ wiêc tylko najwa¿niejsze zmiany od wersji 0.1:
+	* tarcza, ³uk, ró¿ne miksturki, inne przedmioty
+	* potê¿ny cios, strzelanie, blokowanie, bash
+	* lepsze ai, pathfinding
+	* mapa œwiata, ró¿ne lokacje, miasta, wioski
+	* zadania, plotki, newsy
+	* zapisywanie i wczytywanie
+	* pu³apki, czary wrogów
+	* dialogi
