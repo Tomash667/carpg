@@ -93,10 +93,30 @@ bool Game::SaveGameSlot(int slot, cstring text)
 		return false;
 	}
 
+	cstring filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
+	return SaveGameCommon(filename, true, text);
+}
+
+//=================================================================================================
+void Game::SaveGameFilename(const string& name)
+{
+	string filename = "saves/";
+	if(Net::IsOnline())
+		filename += "multi/";
+	else
+		filename += "single/";
+	filename += name;
+	if(!EndsWith(filename, ".sav"))
+		filename += ".sav";
+
+	SaveGameCommon(filename.c_str(), -1, nullptr);
+}
+
+//=================================================================================================
+bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
+{
 	CreateDirectory("saves", nullptr);
 	CreateDirectory(Net::IsOnline() ? "saves/multi" : "saves/single", nullptr);
-
-	cstring filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
 
 	if(io::FileExists(filename))
 	{
@@ -112,15 +132,16 @@ bool Game::SaveGameSlot(int slot, cstring text)
 		GUI.SimpleDialog(txSaveFailed, saveload->visible ? saveload : nullptr);
 		return false;
 	}
-	else
+
+	SaveGame(file);
+	CloseHandle(file);
+
+	cstring msg = Format("Game saved '%s'.", filename);
+	AddConsoleMsg(msg);
+	Info(msg);
+
+	if(slot != -1)
 	{
-		SaveGame(file);
-		CloseHandle(file);
-
-		cstring msg = Format("Game saved '%s'.", filename);
-		AddConsoleMsg(msg);
-		Info(msg);
-
 		SaveSlot& ss = (Net::IsOnline() ? multi_saves[slot - 1] : single_saves[slot - 1]);
 		ss.valid = true;
 		ss.game_day = day;
@@ -154,16 +175,16 @@ bool Game::SaveGameSlot(int slot, cstring text)
 
 		string path = Format("saves/%s/%d.jpg", Net::IsOnline() ? "multi" : "single", slot);
 		CreateSaveImage(path.c_str());
-
-		if(hardcore_mode)
-		{
-			Info("Hardcore mode, exiting to menu.");
-			ExitToMenu();
-			return false;
-		}
-
-		return true;
 	}
+
+	if(hardcore_mode)
+	{
+		Info("Hardcore mode, exiting to menu.");
+		ExitToMenu();
+		return false;
+	}
+
+	return true;
 }
 
 //=================================================================================================
@@ -172,9 +193,27 @@ void Game::LoadGameSlot(int slot)
 	assert(InRange(slot, 1, MAX_SAVE_SLOTS));
 
 	cstring filename = Format(mp_load ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
+	LoadGameCommon(filename, slot);
+}
 
-	Info("Loading saved game '%s'.", filename);
+//=================================================================================================
+void Game::LoadGameFilename(const string& name)
+{
+	string filename = "saves/";
+	if(Net::IsOnline())
+		filename += "multi/";
+	else
+		filename += "single/";
+	filename += name;
+	if(!EndsWith(name, ".sav"))
+		filename += ".sav";
 
+	return LoadGameCommon(filename.c_str(), -1);
+}
+
+//=================================================================================================
+void Game::LoadGameCommon(cstring filename, int slot)
+{
 	HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if(file == INVALID_HANDLE_VALUE)
 	{
@@ -217,14 +256,20 @@ void Game::LoadGameSlot(int slot)
 
 	if(hardcore_mode)
 	{
-		SaveSlot& s = single_saves[slot - 1];
-		s.valid = false;
-		hardcore_savename = s.text;
-
 		Info("Hardcore mode, deleting save.");
-		DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
-		DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.txt" : "saves/single/%d.txt", slot));
-		DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.jpg" : "saves/single/%d.jpg", slot));
+
+		if(slot == -1)
+		{
+			SaveSlot& s = single_saves[slot - 1];
+			s.valid = false;
+			hardcore_savename = s.text;
+
+			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot));
+			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.txt" : "saves/single/%d.txt", slot));
+			DeleteFile(Format(Net::IsOnline() ? "saves/multi/%d.jpg" : "saves/single/%d.jpg", slot));
+		}
+		else
+			DeleteFile(filename);
 	}
 
 	if(!mp_load)

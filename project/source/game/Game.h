@@ -1249,7 +1249,11 @@ public:
 	void UpdateAttachedSounds(float dt);
 	void BuildRefidTables();
 	bool SaveGameSlot(int slot, cstring text);
+	void SaveGameFilename(const string& name);
+	bool SaveGameCommon(cstring filename, int slot, cstring text);
 	void LoadGameSlot(int slot);
+	void LoadGameFilename(const string& name);
+	void LoadGameCommon(cstring filename, int slot);
 	void LoadSaveSlots();
 	void Quicksave(bool from_console);
 	bool Quickload(bool from_console);
