@@ -405,6 +405,14 @@ void GetCompileTime()
 //=================================================================================================
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
+#ifdef _DEBUG
+	if(IsDebuggerPresent() && !io::FileExists("D3DX9_43.dll"))
+	{
+		MessageBox(nullptr, "Invalid debug working directory.", nullptr, MB_OK | MB_ICONERROR);
+		return 1;
+	}
+#endif
+
 	ErrorHandler& error_handler = ErrorHandler::Get();
 	error_handler.RegisterHandler();
 
@@ -456,6 +464,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	Info("Parsing command line.");
 	int argc = ParseCmdLine(cmd_line, &argv);
 	bool restarted = false;
+	int delay = 0;
 
 	for(int i = 0; i < argc; ++i)
 	{
@@ -524,13 +533,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				console = True;
 			}
 			else if(strcmp(arg, "delay-1") == 0)
-				utility::InitDelayLock();
+				delay = 1;
 			else if(strcmp(arg, "delay-2") == 0)
-				utility::WaitForDelayLock(2);
+				delay = 2;
 			else if(strcmp(arg, "delay-3") == 0)
-				utility::WaitForDelayLock(3);
+				delay = 3;
 			else if(strcmp(arg, "delay-4") == 0)
-				utility::WaitForDelayLock(4);
+				delay = 4;
 			else if(strcmp(arg, "restart") == 0)
 			{
 				if(!restarted)
@@ -565,6 +574,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		Error("Config file parse error '%s' : %s", game.cfg_file.c_str(), cfg.GetError().c_str());
 
 	error_handler.ReadConfiguration(cfg);
+
+	//-------------------------------------------------------------------------
+	// startup delay to synchronize mp game on localhost
+	delay = cfg.GetInt("delay", delay);
+	if(delay > 0)
+	{
+		if(delay == 1)
+			utility::InitDelayLock();
+		else
+			utility::WaitForDelayLock(delay);
+	}
 
 	// konsola
 	if(console == None)

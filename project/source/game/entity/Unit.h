@@ -161,9 +161,12 @@ struct Unit
 
 	int netid;
 	UnitData* data;
+	PlayerController* player;
+	AIController* ai;
+	HeroData* hero;
+	Human* human_data;
 	MeshInstance* mesh_inst;
 	Animation animation, current_animation;
-	Human* human_data;
 	LiveState live_state;
 	Vec3 pos; // pozycja postaci
 	Vec3 visual_pos; // graficzna pozycja postaci, u¿ywana w MP
@@ -175,15 +178,12 @@ struct Unit
 	WeaponType weapon_taken, weapon_hiding;
 	WeaponState weapon_state;
 	MeshInstance* bow_instance;
-	PlayerController* player;
 	const Item* used_item;
 	bool used_item_is_team;
 	vector<Effect> effects;
 	bool hitted, invisible, talking, run_attack, to_remove, temporary, changed, dont_attack, assist, attack_team, fake_unit, moved;
-	AIController* ai;
 	btCollisionObject* cobj;
 	Usable* usable;
-	HeroData* hero;
 	UnitEventHandler* event_handler;
 	SpeechBubble* bubble;
 	SmartPtr<Unit> look_target;

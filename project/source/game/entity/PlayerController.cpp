@@ -93,6 +93,7 @@ void PlayerController::Init(Unit& _unit, bool partial)
 	free_days = 0;
 	recalculate_level = false;
 	split_gold = 0.f;
+	always_run = true;
 
 	ResetStatState();
 
@@ -392,6 +393,7 @@ void PlayerController::Save(FileWriter& f)
 			f << target->refid;
 	}
 	f << split_gold;
+	f << always_run;
 }
 
 //=================================================================================================
@@ -509,6 +511,10 @@ void PlayerController::Load(FileReader& f)
 		f >> split_gold;
 	else
 		split_gold = 0.f;
+	if(LOAD_VERSION >= V_CURRENT)
+		f >> always_run;
+	else
+		always_run = true;
 
 	action = Action_None;
 }
@@ -725,6 +731,7 @@ void PlayerController::Write(BitStream& stream) const
 	stream.Write(action_cooldown);
 	stream.Write(action_recharge);
 	stream.Write(action_charges);
+	WriteBool(stream, always_run);
 }
 
 //=================================================================================================
@@ -750,7 +757,8 @@ bool PlayerController::Read(BitStream& stream)
 	}
 	if(!stream.Read(action_cooldown)
 		|| !stream.Read(action_recharge)
-		|| !stream.Read(action_charges))
+		|| !stream.Read(action_charges)
+		|| !ReadBool(stream, always_run))
 		return false;
 	return true;
 }

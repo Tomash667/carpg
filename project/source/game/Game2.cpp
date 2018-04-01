@@ -1687,6 +1687,17 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 		else if(u.weapon_taken == W_BOW)
 			u.animation = ANI_BATTLE_BOW;
 
+		if(KeyPressedReleaseAllowed(GK_TOGGLE_WALK))
+		{
+			pc->always_run = !pc->always_run;
+			if(Net::IsClient())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHANGE_ALWAYS_RUN;
+				c.id = (pc->always_run ? 1 : 0);
+			}
+		}
+
 		int rotate = 0;
 		if(KeyDownAllowed(GK_ROTATE_LEFT))
 			--rotate;
@@ -1771,9 +1782,16 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			{
 				// ustal k¹t i szybkoœæ ruchu
 				float angle = u.rot;
-				bool run = true;
-				if(!u.run_attack && (KeyDownAllowed(GK_WALK) || !u.CanRun()))
-					run = false;
+				bool run = pc->always_run;
+				if(!u.run_attack)
+				{
+					if(KeyDownAllowed(GK_WALK))
+						run = !run;
+					if(!u.CanRun())
+						run = false;
+				}
+				else
+					run = true;
 
 				switch(move)
 				{

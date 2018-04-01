@@ -4566,7 +4566,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				if(!ReadString<uint>(stream, *code)
 					|| !stream.Read(target_netid))
 				{
-					StreamError("Update server: Broken RUN_SCRIPT from '%s'.", info.name.c_str());
+					StreamError("Update server: Broken RUN_SCRIPT from %s.", info.name.c_str());
 					break;
 				}
 
@@ -4598,6 +4598,16 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 
 				script_mgr->CloseOutput();
+			}
+			break;
+		// player toggle always run - notify to save it
+		case NetChange::CHANGE_ALWAYS_RUN:
+			{
+				bool always_run;
+				if(!ReadBool(stream, always_run))
+					StreamError("Update server: Broken CHANGE_ALWAYS_RUN from %s.", info.name.c_str());
+				else
+					info.pc->always_run = always_run;
 			}
 			break;
 		// invalid change
@@ -8752,6 +8762,7 @@ void Game::WriteClientChanges(BitStream& stream)
 		case NetChange::CHEAT_GODMODE:
 		case NetChange::CHEAT_INVISIBLE:
 		case NetChange::CHEAT_NOCLIP:
+		case NetChange::CHANGE_ALWAYS_RUN:
 			WriteBool(stream, c.id != 0);
 			break;
 		case NetChange::PICKUP_ITEM:
@@ -10122,6 +10133,7 @@ bool Game::FilterOut(NetChange& c)
 	case NetChange::PAUSED:
 	case NetChange::CLOSE_ENCOUNTER:
 	case NetChange::GAME_STATS:
+	case NetChange::CHANGE_ALWAYS_RUN:
 		return false;
 	case NetChange::TALK:
 	case NetChange::TALK_POS:
