@@ -110,7 +110,7 @@ struct PlayerController : public HeroPlayerCommon
 		Usable* next_action_usable;
 	};
 	WeaponType ostatnia;
-	bool godmode, noclip, is_local, recalculate_level, leaving_event;
+	bool godmode, noclip, is_local, recalculate_level, leaving_event, always_run;
 	int id, free_days, action_charges;
 	//----------------------
 	enum Action

@@ -12,11 +12,11 @@ struct ParticleEmitter;
 //-----------------------------------------------------------------------------
 struct Explo
 {
+	Unit* owner;
 	Vec3 pos;
 	float size, sizemax, dmg;
 	TexturePtr tex;
 	vector<Unit*> hitted;
-	Unit* owner;
 
 	static const int MIN_SIZE = 21;
 
@@ -35,11 +35,11 @@ struct ElectroLine
 struct Electro
 {
 	int netid;
+	Spell* spell;
+	Unit* owner;
 	vector<ElectroLine> lines;
 	vector<Unit*> hitted;
 	float dmg;
-	Unit* owner;
-	Spell* spell;
 	bool valid, hitsome;
 	Vec3 start_pos;
 

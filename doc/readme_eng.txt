@@ -64,6 +64,7 @@ people. Expect changes for the better!
 	3 - use action
 	H - drink healing potion
 	F - auto walk forward
+	Caps Lock - toggle run/walk
 	Y - yell
 	TAB - character screen, team, inventory
 	J - journal

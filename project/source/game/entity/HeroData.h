@@ -15,14 +15,13 @@ struct HeroData : public HeroPlayerCommon
 		Leave
 	};
 
-	bool know_name, team_member, lost_pvp, melee, phase;
-	bool free; // don't get shares
 	Mode mode;
 	Unit* following; // pod¹¿a za t¹ postaci¹ w czasie warpowania, nieu¿ywane?
 	int expe;
 	float phase_timer;
-	// phase = antyblokowanie sojuszników
-	bool gained_gold;
+	bool know_name, team_member, lost_pvp, melee, phase,
+		free, // don't get shares
+		gained_gold;
 
 	void Init(Unit& unit);
 	int JoinCost() const;

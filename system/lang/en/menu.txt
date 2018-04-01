@@ -403,6 +403,7 @@ keyYell = "Yell"
 keyConsole = "Console"
 keyRotateCamera = "Rotate camera"
 keyAutowalk = "Autowalk"
+keyToggleWalk = "Toggle walk"
 
 // sterowanie
 resetKeys = "Reset"

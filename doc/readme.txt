@@ -63,6 +63,7 @@ osoby. Oczekuj zmian na lepsze!
 	2 - wybierz broñ dystansow¹
 	3 - u¿yj akcji
 	F - automatyczny ruch do przodu
+	Caps Lock - prze³¹cz bieganie/chodzenie
 	Y - okrzyk
 	TAB - ekran postaci, ekwipunek, dru¿yna
 	J - dziennik

@@ -10,6 +10,7 @@ NEW:
 + remove obj_alpha
 + validate objects metadata (required objects, units)
 ? why version/stats thread start at menu, not while loading
++ don't modify config when nothing changed
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos

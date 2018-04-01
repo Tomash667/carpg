@@ -79,8 +79,6 @@ uint __stdcall CheckVersion(void*)
 
 	uint error = 0, version = 0;
 	CheckVersionResult result = CheckVersion(internet, "http://carpg.pl/carpgdata/wersja", error, version);
-	if(result != CVR_Ok)
-		result = CheckVersion(internet, "http://dhost.info/radsun/carpgdata/wersja", error, version);
 
 	InternetCloseHandle(internet);
 	csCheckVersion.Enter();

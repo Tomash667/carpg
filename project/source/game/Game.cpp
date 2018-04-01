@@ -1912,6 +1912,7 @@ void Game::InitGameKeys()
 	GKey[GK_CONSOLE].id = "keyConsole";
 	GKey[GK_ROTATE_CAMERA].id = "keyRotateCamera";
 	GKey[GK_AUTOWALK].id = "keyAutowalk";
+	GKey[GK_TOGGLE_WALK].id = "keyToggleWalk";
 
 	for(int i = 0; i < GK_MAX; ++i)
 		GKey[i].text = Str(GKey[i].id);
@@ -1952,6 +1953,7 @@ void Game::ResetGameKeys()
 	GKey[GK_CONSOLE].Set(VK_OEM_3);
 	GKey[GK_ROTATE_CAMERA].Set('V');
 	GKey[GK_AUTOWALK].Set('F');
+	GKey[GK_TOGGLE_WALK].Set(VK_CAPITAL);
 }
 
 //=================================================================================================

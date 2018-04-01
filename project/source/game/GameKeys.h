@@ -38,6 +38,7 @@ enum GAME_KEYS
 	GK_CONSOLE, // ~
 	GK_ROTATE_CAMERA, // V
 	GK_AUTOWALK, // F
+	GK_TOGGLE_WALK, // none
 	GK_MAX
 };
 
