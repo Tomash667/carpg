@@ -44,6 +44,7 @@
 #include "UnitGroup.h"
 #include "SoundManager.h"
 #include "ScriptManager.h"
+#include "CaveGenerator.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -11248,7 +11249,7 @@ void Game::GenerateCave(Location& l)
 	CaveLocation* cave = (CaveLocation*)&l;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 
-	generate_cave(lvl.map, 52, lvl.staircase_up, lvl.staircase_up_dir, cave->holes, &cave->ext, devmode);
+	cave_gen->Generate(lvl.map, 52, lvl.staircase_up, lvl.staircase_up_dir, cave->holes, &cave->ext, devmode);
 
 	lvl.w = lvl.h = 52;
 }
@@ -18318,10 +18319,10 @@ bool Game::GenerateMine()
 	}
 
 	if(!nowe.empty())
-		regenerate_cave_flags(lvl.map, lvl.w);
+		cave_gen->RegenerateFlags(lvl.map, lvl.w);
 
 	if(rysuj_m && devmode)
-		rysuj_mape_konsola(lvl.map, lvl.w, lvl.h);
+		cave_gen->Draw(lvl.map, lvl.w, lvl.h);
 
 	// generuj rudê
 	if(generuj_rude)

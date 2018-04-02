@@ -207,6 +207,10 @@
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameCore.h" />
     <ClInclude Include="source\game\GameStats.h" />
+    <ClInclude Include="source\game\generator\CaveGenerator.h" />
+    <ClInclude Include="source\game\generator\DungeonGenerator.h" />
+    <ClInclude Include="source\game\generator\LabyrinthGenerator.h" />
+    <ClInclude Include="source\game\generator\MapGenerator.h" />
     <ClInclude Include="source\game\net\GamePacket.h" />
     <ClInclude Include="source\game\net\NetChange.h" />
     <ClInclude Include="source\game\net\NetChangePlayer.h" />
@@ -254,7 +258,6 @@
     <ClInclude Include="source\game\GameFile.h" />
     <ClInclude Include="source\game\GameKeys.h" />
     <ClInclude Include="source\game\generator\CityGenerator.h" />
-    <ClInclude Include="source\game\generator\Mapa2.h" />
     <ClInclude Include="source\game\helpers\LocationHelper.h" />
     <ClInclude Include="source\game\helpers\UnitHelper.h" />
     <ClInclude Include="source\game\Language.h" />
@@ -419,6 +422,10 @@
     <ClCompile Include="source\game\entity\ItemContainer.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
+    <ClCompile Include="source\game\generator\CaveGenerator.cpp" />
+    <ClCompile Include="source\game\generator\DungeonGenerator.cpp" />
+    <ClCompile Include="source\game\generator\LabyrinthGenerator.cpp" />
+    <ClCompile Include="source\game\generator\MapGenerator.cpp" />
     <ClCompile Include="source\game\net\NetStats.cpp" />
     <ClCompile Include="source\game\net\PlayerInfo.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
@@ -458,7 +465,6 @@
     <ClCompile Include="source\game\GameCommon.cpp" />
     <ClCompile Include="source\game\Game_LevelArea.cpp" />
     <ClCompile Include="source\game\generator\CityGenerator.cpp" />
-    <ClCompile Include="source\game\generator\Mapa2.cpp" />
     <ClCompile Include="source\game\GameGuiInit.cpp" />
     <ClCompile Include="source\game\helpers\UnitHelper.cpp" />
     <ClCompile Include="source\game\Init.cpp" />

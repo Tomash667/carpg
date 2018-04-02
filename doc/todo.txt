@@ -29,6 +29,8 @@ moving player
 	+ prevent spawning traps on ramps
 + save/load/compability
 ! FIXME
+? labirynth, cave, tutorial
+? old save
 ===============================================================================================================
 NEW:
 + when npc have item in his inventory and in pc, it will first ask for pc one

@@ -577,7 +577,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//-------------------------------------------------------------------------
 	// startup delay to synchronize mp game on localhost
-	delay = cfg.GetInt("delay", delay);
+	if(delay == 0)
+		delay = cfg.GetInt("delay", delay);
 	if(delay > 0)
 	{
 		if(delay == 1)

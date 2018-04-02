@@ -21,7 +21,7 @@
 #include "UnitEventHandler.h"
 #include "LevelArea.h"
 #include "SaveSlot.h"
-#include "Mapa2.h"
+#include "MapGenerator.h"
 #include "Location.h"
 #include "Unit.h"
 #include "ResourceManager.h"
@@ -314,6 +314,8 @@ struct SuperShader
 };
 
 class CityGenerator;
+struct CaveGenerator;
+struct DungeonGenerator;
 
 class Quest_Sawmill;
 class Quest_Mine;
@@ -2041,6 +2043,8 @@ public:
 	int enter_from; // sk¹d siê przysz³o (u¿ywane przy wczytywanie w MP gdy do³¹cza nowa postaæ)
 	bool g_have_well;
 	Int2 g_well_pt;
+	CaveGenerator* cave_gen;
+	DungeonGenerator* dungeon_gen;
 
 	//-----------------------------------------------------------------
 	// WORLD STATE

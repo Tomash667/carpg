@@ -9,6 +9,7 @@
 #include "LoadScreen.h"
 #include "Journal.h"
 #include "SoundManager.h"
+#include "DungeonGenerator.h"
 
 char mapa_t[] = {
 	"$$$$$$$$###########$$$"
@@ -351,7 +352,7 @@ void Game::StartTutorial()
 	}
 
 	// obiekty
-	ustaw_flagi(lvl.map, 22);
+	dungeon_gen->SetFlags(lvl.map, 22);
 	GenerateDungeonObjects2();
 	GenerateDungeonObjects();
 

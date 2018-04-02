@@ -1,33 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "Light.h"
-
-/* BUDOWA MAPY
-
- h = 5+- - - - - +
-	 4|# # # # # |
-	 3|# # # # # |
-	 2|# # # # # |
-	 1|# # # # # |
-  +  0|# # # # # |
-  Y   +- - - - - +
-  -    0 1 2 3 4 5 = w
-	 -X+
-
-Do zrobienia w przysz³oœci:
-+ okreœlony uk³ad mapy, pocz¹tkowe niektóre pola s¹ zablokowane np. ko³o, krzy¿
-+ tajne drzwi tam gdzie nie ma drzwi na koñcu korytarza
-+ tajna œciana do zniszczenia na koñcu korytarza
-+ usuwanie niektórych murów ³¹cz¹cych pomieszczenia
-+ okr¹g³e pomieszczenia
-+ drzwi ukryte za np gobelinem
-+ szansa na kontynuowanie korytarza
-+ usuwanie œlepych uliczek
-
-*/
-
-//-----------------------------------------------------------------------------
 // Rodzaj pola mapy
 enum POLE : byte
 {
@@ -221,7 +194,7 @@ struct Room
 
 	bool IsCorridor() const { return target == RoomTarget::Corridor; }
 	bool IsRamp() const { return target == RoomTarget::Ramp; }
-	bool IsCorridorOrRamp() const {	return IsCorridor() || IsRamp(); }
+	bool IsCorridorOrRamp() const { return IsCorridor() || IsRamp(); }
 	bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsDown; }
 
 	void Save(HANDLE file);
@@ -264,7 +237,7 @@ struct OpcjeMapy
 	bool stop,
 		ramp_go_up; // true - down, false - up
 
-	// input/output
+					// input/output
 	Pole* mapa;
 	vector<Room>* rooms;
 	Room* schody_gora_pokoj, *schody_dol_pokoj;
@@ -282,18 +255,15 @@ struct OpcjeMapy
 };
 
 //-----------------------------------------------------------------------------
-bool generuj_mape2(OpcjeMapy& opcje, bool recreate = false);
-bool kontynuuj_generowanie_mapy(OpcjeMapy& opcje);
-bool generuj_schody(OpcjeMapy& opcje);
-void rysuj_mape_konsola(Pole* mapa, uint w, uint h);
-// zwraca pole które ³¹czy dwa pomieszczenia, zak³ada ¿e po³¹czenie istnieje!, operuje na danych u¿ytych w generuj_mape2
-Int2 pole_laczace(int pokoj1, int pokoj2);
-void ustaw_flagi(Pole* mapa, uint wh);
+struct MapGenerator
+{
+	void SetFlags(Pole* mapa, uint wh);
+	void Draw(Pole* mapa, uint w, uint h);
 
-//-----------------------------------------------------------------------------
-void generate_labirynth(Pole*& mapa, const Int2& size, const Int2& room_size, Int2& stairs, int& stairs_dir, Int2& room_pos, int kratki_szansa, bool devmode);
+protected:
+	void SetFlags();
+	void Draw();
 
-//-----------------------------------------------------------------------------
-void generate_cave(Pole*& mapa, int size, Int2& stairs, int& stairs_dir, vector<Int2>& holes, Rect* ext, bool devmode);
-void regenerate_cave_flags(Pole* mapa, int size);
-void free_cave_data();
+	Pole* mapa;
+	OpcjeMapy* opcje;
+};

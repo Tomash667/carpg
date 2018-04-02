@@ -30,6 +30,8 @@
 #include "BuildingGroup.h"
 #include "Stock.h"
 #include "UnitGroup.h"
+#include "LabyrinthGenerator.h"
+#include "DungeonGenerator.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern Matrix m1, m2, m3, m4;
@@ -2931,7 +2933,7 @@ void Game::GenerateDungeon(Location& _loc)
 
 			while(true)
 			{
-				if(!generuj_mape2(opcje, !first))
+				if(!dungeon_gen->Generate(opcje, !first))
 				{
 					assert(0);
 					throw Format("Failed to generate dungeon map (%d)!", opcje.blad);
@@ -2959,12 +2961,12 @@ void Game::GenerateDungeon(Location& _loc)
 				int id = mozliwe_pokoje[Rand() % mozliwe_pokoje.size()];
 				lvl.rooms[id].target = RoomTarget::Prison;
 				// dodaj drzwi
-				Int2 pt = pole_laczace(id, lvl.rooms[id].connected.front());
+				Int2 pt = dungeon_gen->GetConnectingTile(id, lvl.rooms[id].connected.front());
 				Pole& p = opcje.mapa[pt.x + pt.y*opcje.w];
 				p.type = DRZWI;
 				p.flags |= Pole::F_SPECJALNE;
 
-				if(!kontynuuj_generowanie_mapy(opcje))
+				if(!dungeon_gen->ContinueGenerate())
 				{
 					assert(0);
 					throw Format("Failed to generate dungeon map 2 (%d)!", opcje.blad);
@@ -2975,7 +2977,7 @@ void Game::GenerateDungeon(Location& _loc)
 		}
 		else
 		{
-			if(!generuj_mape2(opcje))
+			if(!dungeon_gen->Generate(opcje))
 			{
 				assert(0);
 				throw Format("Failed to generate dungeon map (%d)!", opcje.blad);
@@ -3092,7 +3094,8 @@ void Game::GenerateDungeon(Location& _loc)
 	else
 	{
 		Int2 pokoj_pos;
-		generate_labirynth(lvl.map, Int2(base.size, base.size), base.room_size, lvl.staircase_up, lvl.staircase_up_dir, pokoj_pos, base.bars_chance, devmode);
+		LabyrinthGenerator gen;
+		gen.Generate(lvl.map, Int2(base.size, base.size), base.room_size, lvl.staircase_up, lvl.staircase_up_dir, pokoj_pos, base.bars_chance, devmode);
 
 		lvl.w = lvl.h = base.size;
 		Room& r = Add1(lvl.rooms);

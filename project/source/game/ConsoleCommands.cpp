@@ -19,6 +19,7 @@
 #include "QuestManager.h"
 #include "BuildingGroup.h"
 #include "ScriptManager.h"
+#include "DungeonGenerator.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
@@ -394,7 +395,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(game_state == GS_LEVEL && !location->outside)
 					{
 						InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
-						rysuj_mape_konsola(lvl.map, lvl.w, lvl.h);
+						dungeon_gen->Draw(lvl.map, lvl.w, lvl.h);
 					}
 					else
 						Msg("You need to be inside dungeon!");

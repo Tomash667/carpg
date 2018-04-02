@@ -4,7 +4,7 @@
 #include "Location.h"
 #include "Item.h"
 #include "Unit.h"
-#include "Mapa2.h"
+#include "MapGenerator.h"
 #include "QuestConsts.h"
 
 //-----------------------------------------------------------------------------

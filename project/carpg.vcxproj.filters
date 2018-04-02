@@ -165,9 +165,6 @@
     <ClCompile Include="source\game\generator\CityGenerator.cpp">
       <Filter>3. game\generator</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\generator\Mapa2.cpp">
-      <Filter>3. game\generator</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\location\Camp.cpp">
       <Filter>3. game\location</Filter>
     </ClCompile>
@@ -688,6 +685,18 @@
     <ClCompile Include="source\game\script\Var.cpp">
       <Filter>3. game\script</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\generator\LabyrinthGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\MapGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\CaveGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\DungeonGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -772,9 +781,6 @@
       <Filter>3. game\entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\CityGenerator.h">
-      <Filter>3. game\generator</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\generator\Mapa2.h">
       <Filter>3. game\generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\Camp.h">
@@ -1359,6 +1365,18 @@
     </ClInclude>
     <ClInclude Include="source\game\script\Var.h">
       <Filter>3. game\script</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\LabyrinthGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\MapGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\CaveGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\DungeonGenerator.h">
+      <Filter>3. game\generator</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

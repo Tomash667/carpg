@@ -28,6 +28,8 @@
 #include "StartupOptions.h"
 #include "SoundManager.h"
 #include "ScriptManager.h"
+#include "CaveGenerator.h"
+#include "DungeonGenerator.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -85,6 +87,8 @@ disable_net_stats(false), script_mgr(nullptr), quickstart_slot(MAX_SAVE_SLOTS), 
 	cam.draw_range = 80.f;
 
 	gen = new CityGenerator;
+	cave_gen = new CaveGenerator;
+	dungeon_gen = new DungeonGenerator;
 
 	SetupConfigVars();
 }
@@ -93,6 +97,8 @@ disable_net_stats(false), script_mgr(nullptr), quickstart_slot(MAX_SAVE_SLOTS), 
 Game::~Game()
 {
 	delete gen;
+	delete cave_gen;
+	delete dungeon_gen;
 }
 
 //=================================================================================================
@@ -1808,7 +1814,6 @@ void Game::OnCleanup()
 	delete dungeon_shape_data;
 
 	draw_batch.Clear();
-	free_cave_data();
 	DeleteElements(game_players);
 	DeleteElements(old_players);
 

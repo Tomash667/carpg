@@ -1,7 +1,7 @@
 // dane poziomu lokacji
 #pragma once
 
-#include "Mapa2.h"
+#include "MapGenerator.h"
 #include "Unit.h"
 #include "Chest.h"
 #include "Trap.h"
@@ -11,6 +11,7 @@
 #include "Object.h"
 #include "GameCommon.h"
 #include "LevelArea.h"
+#include "Light.h"
 
 //-----------------------------------------------------------------------------
 struct InsideLocationLevel : public LevelArea
