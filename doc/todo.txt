@@ -1,15 +1,15 @@
 ﻿FEATURE:
 ===============================================================================================================
 CURRENT:
-- room size at generator
-- doors should be part of one of rooms
+1. fix rooms size
 - joining rooms, create small room or resize one of them
-1. create dungeon physics
-2. ramps physics
+2. create dungeon physics
+3. dungeon mesh vb, ib
+4. ramps physics
+validate options in DungeonGenerator::Generate
 moving player
-3. dungeon mesh
-4. navmesh
-5. positioning
+5. navmesh
+6. positioning
 + each room with random y
 	+ floor/ceil physics
 	+ camera collide with floor/ceil
@@ -33,19 +33,11 @@ moving player
 ? old save
 ===============================================================================================================
 NEW:
-+ when npc have item in his inventory and in pc, it will first ask for pc one
-+ particles in objects, not hardcoded water_effect, blood_effect
-+ remove hardcoded bench variants in base usable
-+ remove hardcoded ai to use read papers animation on chair, eat food on stool
-+ remove obj_alpha
-+ validate objects metadata (required objects, units)
-? why version/stats thread start at menu, not while loading
-+ don't modify config when nothing changed
++ allow to spawn new room doors not in middle of room, check for allowed size/position
 ===============================================================================================================
 VERIFY:
 - da sie wlezc w kogos
 - ANGLE!
-- verify dialogs ending with end/restart
 - without human flag and mesh crash when spawned, log error
 - ai look at angle nie jest clipowane, albo coś?
 - trochę da się widzieć przez ściany :/

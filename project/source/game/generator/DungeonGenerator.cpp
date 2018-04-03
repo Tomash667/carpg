@@ -44,7 +44,7 @@ bool DungeonGenerator::Generate(OpcjeMapy& _opcje, bool recreate)
 	if(!recreate)
 		mapa = new Pole[_opcje.w * _opcje.h];
 	opcje = &_opcje;
-	wolne.clear();
+	free.clear();
 
 	_opcje.blad = 0;
 	_opcje.mapa = mapa;
@@ -83,6 +83,9 @@ bool DungeonGenerator::ContinueGenerate()
 //=================================================================================================
 void DungeonGenerator::GenerateInternal()
 {
+	FIXME;
+	Srand(0);
+
 	// ustaw wzÛr obszaru (np wype≥nij obszar nieuøytkiem, na oko≥o blokada)
 	SetPattern();
 
@@ -98,31 +101,29 @@ void DungeonGenerator::GenerateInternal()
 		// stwÛrz poczπtkowy pokÛj
 		int w = opcje->room_size.Random(),
 			h = opcje->room_size.Random();
-		Room* room = AddRoom(-1, (opcje->w - w) / 2, (opcje->h - h) / 2, w, h, DODAJ_POKOJ);
-		room->level = 0;
-		room->counter = 0;
+		AddRoom(Room::INVALID_ROOM, (opcje->w - w) / 2, (opcje->h - h) / 2, w, h, ADD_ROOM);
 	}
 
 	// generuj
-	while(!wolne.empty())
+	while(!free.empty())
 	{
-		int idx = Rand() % wolne.size();
-		int id = wolne[idx];
-		if(idx != wolne.size() - 1)
-			std::iter_swap(wolne.begin() + idx, wolne.end() - 1);
-		wolne.pop_back();
+		int idx = Rand() % free.size();
+		int id = free[idx];
+		if(idx != free.size() - 1)
+			std::iter_swap(free.begin() + idx, free.end() - 1);
+		free.pop_back();
 
 		// sprawdü czy to miejsce jest dobre
 		DIR dir = IsFreeWay(id);
 		if(dir == BRAK)
 			continue;
 
-		word parent_room = mapa[id].room;
-		assert(parent_room != -1);
+		Int2 pt(id % opcje->w, id / opcje->w);
+		Int2 parent_pt = pt + dir_shift[opposite_dir[dir]];
+		word parent_room = mapa[parent_pt(opcje->w)].room;
+		assert(parent_room != Room::INVALID_ROOM);
 		int ramp = CanCreateRamp(parent_room);
-
-		Int2 pt(id%opcje->w, id / opcje->w);
-
+		
 		if(ramp != 0)
 		{
 			CreateRamp(parent_room, pt, dir, ramp == 1);
@@ -139,23 +140,29 @@ void DungeonGenerator::GenerateInternal()
 
 			if(dir == LEWO)
 			{
-				pt.x -= w - 1;
+				pt.x -= w;
 				pt.y -= h / 2;
 			}
 			else if(dir == PRAWO)
+			{
+				pt.x += 1;
 				pt.y -= h / 2;
+			}
 			else if(dir == GORA)
+			{
 				pt.x -= w / 2;
+				pt.y += 1;
+			}
 			else
 			{
 				pt.x -= w / 2;
-				pt.y -= h - 1;
+				pt.y -= h;
 			}
 
 			if(CanCreateRoom(pt.x, pt.y, w, h))
 			{
 				mapa[id].type = DRZWI;
-				AddRoom(parent_room, pt.x, pt.y, w, h, DODAJ_POKOJ);
+				AddRoom(parent_room, pt.x, pt.y, w, h, ADD_ROOM);
 			}
 		}
 	}
@@ -228,8 +235,12 @@ void DungeonGenerator::GenerateInternal()
 //=================================================================================================
 void DungeonGenerator::SetPattern()
 {
-	memset(mapa, 0, sizeof(Pole)*opcje->w*opcje->h);
-
+	Pole def;
+	def.type = NIEUZYTE;
+	def.flags = 0;
+	def.room = Room::INVALID_ROOM;
+	std::fill(mapa, mapa + (opcje->w * opcje->h), def);
+	
 	if(opcje->ksztalt == OpcjeMapy::PROSTOKAT)
 	{
 		for(int x = 0; x < opcje->w; ++x)
@@ -276,12 +287,12 @@ void SetWall(POLE& pole)
 }
 
 //=================================================================================================
-Room* DungeonGenerator::AddRoom(int parent_room, int x, int y, int w, int h, DODAJ dodaj, int _id)
+Room* DungeonGenerator::AddRoom(int parent_room, int x, int y, int w, int h, ADD add, int _id)
 {
 	assert(x >= 0 && y >= 0 && w >= 1 && h >= 1 && x + w < int(opcje->w) && y + h < int(opcje->h));
 
 	int id;
-	if(dodaj == NIE_DODAWAJ)
+	if(add == ADD_NO)
 		id = _id;
 	else
 		id = (int)opcje->rooms->size();
@@ -299,7 +310,7 @@ Room* DungeonGenerator::AddRoom(int parent_room, int x, int y, int w, int h, DOD
 	}
 
 	// mark tiles as walls
-	for(int i = 0; i < w; ++i)
+	for(int i = -1; i <= w; ++i)
 	{
 		SetWall(H(x + i, y - 1));
 		HR(x + i, y - 1) = (word)id;
@@ -315,45 +326,45 @@ Room* DungeonGenerator::AddRoom(int parent_room, int x, int y, int w, int h, DOD
 	}
 
 	// check if there can be room/corridor behind wall
-	if(dodaj != DODAJ_RAMPA)
+	if(add != ADD_RAMP)
 	{
 		for(int i = 0; i < w; ++i)
 		{
 			if(IsFreeWay(x + i + (y - 1) * opcje->w) != BRAK)
-				wolne.push_back(x + i + (y - 1) * opcje->w);
+				free.push_back(x + i + (y - 1) * opcje->w);
 			if(IsFreeWay(x + i + (y + h)*opcje->w) != BRAK)
-				wolne.push_back(x + i + (y + h)*opcje->w);
+				free.push_back(x + i + (y + h)*opcje->w);
 		}
 		for(int i = 0; i < h; ++i)
 		{
 			if(IsFreeWay(x - 1 + (y + i)*opcje->w) != BRAK)
-				wolne.push_back(x - 1 + (y + i)*opcje->w);
+				free.push_back(x - 1 + (y + i)*opcje->w);
 			if(IsFreeWay(x + w + (y + i)*opcje->w) != BRAK)
-				wolne.push_back(x + w + (y + i)*opcje->w);
+				free.push_back(x + w + (y + i)*opcje->w);
 		}
 	}
 
-	if(dodaj != NIE_DODAWAJ)
+	if(add != ADD_NO)
 	{
 		Room& room = Add1(*opcje->rooms);
 		room.pos.x = x;
 		room.pos.y = y;
 		room.size.x = w;
 		room.size.y = h;
-		switch(dodaj)
+		switch(add)
 		{
 		default:
-		case DODAJ_POKOJ:
+		case ADD_ROOM:
 			room.target = RoomTarget::None;
 			break;
-		case DODAJ_KORYTARZ:
+		case ADD_CORRIDOR:
 			room.target = RoomTarget::Corridor;
 			break;
-		case DODAJ_RAMPA:
+		case ADD_RAMP:
 			room.target = RoomTarget::Ramp;
 			break;
 		}
-		if(parent_room != -1)
+		if(parent_room != Room::INVALID_ROOM)
 		{
 			Room& r = opcje->rooms->at(parent_room);
 			room.level = r.level;
@@ -420,6 +431,8 @@ DungeonGenerator::DIR DungeonGenerator::IsFreeWay(int id)
 // 0 no; 1 up; -1 down
 int DungeonGenerator::CanCreateRamp(int room_index)
 {
+	return 0;
+
 	Room& room = opcje->rooms->at(room_index);
 	int chance = (room.counter - opcje->ramp_chance_min);
 	if(chance <= 0)
@@ -445,7 +458,7 @@ int DungeonGenerator::CanCreateRamp(int room_index)
 }
 
 //=================================================================================================
-Room* DungeonGenerator::CreateRamp(int parent_room, const Int2& _pt, DIR dir, bool up)
+Room* DungeonGenerator::CreateRamp(int parent_room, const Int2& start_pt, DIR dir, bool up)
 {
 	int length = opcje->ramp_length.Random();
 	int ychange = length - 2;
@@ -455,7 +468,7 @@ Room* DungeonGenerator::CreateRamp(int parent_room, const Int2& _pt, DIR dir, bo
 	float y1 = r.y,
 		y2 = 0.5f * new_level;
 
-	Int2 pt(_pt);
+	Int2 pt(start_pt);
 	Int2 end_pt;
 	float yb[4];
 
@@ -507,19 +520,19 @@ Room* DungeonGenerator::CreateRamp(int parent_room, const Int2& _pt, DIR dir, bo
 
 	if(CanCreateRoom(pt.x, pt.y, w, h))
 	{
-		H(_pt.x, _pt.y) = DRZWI;
-		Room* room = AddRoom(parent_room, pt.x, pt.y, w, h, DODAJ_RAMPA);
+		H(start_pt.x, start_pt.y) = DRZWI;
+		Room* room = AddRoom(parent_room, pt.x, pt.y, w, h, ADD_RAMP);
 		room->level = new_level;
 		memcpy(room->yb, yb, sizeof(yb));
 
 		if(IsFreeWay(pt.x - 1 + pt.y * opcje->w) != BRAK)
-			wolne.push_back(pt.x - 1 + pt.y * opcje->w);
+			free.push_back(pt.x - 1 + pt.y * opcje->w);
 		if(IsFreeWay(pt.x + 1 + pt.y * opcje->w) != BRAK)
-			wolne.push_back(pt.x + 1 + pt.y * opcje->w);
+			free.push_back(pt.x + 1 + pt.y * opcje->w);
 		if(IsFreeWay(pt.x + (pt.y - 1) * opcje->w) != BRAK)
-			wolne.push_back(pt.x + (pt.y - 1) * opcje->w);
+			free.push_back(pt.x + (pt.y - 1) * opcje->w);
 		if(IsFreeWay(pt.x + (pt.y + 1) * opcje->w) != BRAK)
-			wolne.push_back(pt.x + (pt.y + 1) * opcje->w);
+			free.push_back(pt.x + (pt.y + 1) * opcje->w);
 
 		return room;
 	}
@@ -528,44 +541,51 @@ Room* DungeonGenerator::CreateRamp(int parent_room, const Int2& _pt, DIR dir, bo
 }
 
 //=================================================================================================
-Room* DungeonGenerator::CreateCorridor(int parent_room, Int2& _pt, DIR dir)
+Room* DungeonGenerator::CreateCorridor(int parent_room, Int2& start_pt, DIR dir)
 {
 	int dl = opcje->corridor_size.Random();
 	int w, h;
 
-	Int2 pt(_pt);
+	Int2 pt(start_pt);
+	Int2 size_shift;
 
 	if(dir == LEWO)
 	{
-		pt.x -= dl - 1;
-		pt.y -= 1;
+		pt.x -= dl;
 		w = dl;
-		h = 3;
+		h = 1;
+		size_shift = Int2(1, 0);
 	}
 	else if(dir == PRAWO)
 	{
-		pt.y -= 1;
+		pt.x += 1;
 		w = dl;
-		h = 3;
+		h = 1;
+		size_shift = Int2(-1, 0);
 	}
 	else if(dir == GORA)
 	{
-		pt.x -= 1;
-		w = 3;
+		pt.y += 1;
+		w = 1;
 		h = dl;
+		size_shift = Int2(-1, 0);
 	}
 	else
 	{
-		pt.y -= dl - 1;
-		pt.x -= 1;
-		w = 3;
+		pt.y -= dl;
+		w = 1;
 		h = dl;
+		size_shift = Int2(1, 0);
 	}
 
 	if(CanCreateRoom(pt.x, pt.y, w, h))
 	{
-		H(_pt.x, _pt.y) = DRZWI;
-		return AddRoom(parent_room, pt.x, pt.y, w, h, DODAJ_KORYTARZ);
+		Room* room = AddRoom(parent_room, pt.x, pt.y, w, h, ADD_CORRIDOR);
+		room->size += size_shift;
+		Pole& p = F(start_pt.x, start_pt.y);
+		p.type = DRZWI;
+		p.room = word(opcje->rooms->size() - 1);
+		return room;
 	}
 
 	return nullptr;
@@ -574,6 +594,11 @@ Room* DungeonGenerator::CreateCorridor(int parent_room, Int2& _pt, DIR dir)
 //=================================================================================================
 bool DungeonGenerator::CanCreateRoom(int x, int y, int w, int h)
 {
+	--x;
+	--y;
+	w += 2;
+	h += 2;
+
 	if(!(x >= 0 && y >= 0 && w >= 3 && h >= 3 && x + w < int(opcje->w) && y + h < int(opcje->h)))
 		return false;
 
@@ -839,25 +864,25 @@ bool DungeonGenerator::IsConnectingWall(int x, int y, int id1, int id2)
 // #    #    #
 // ###########
 // jeúli jest kilka takich pÛl to zwraca pierwsze
-Int2 DungeonGenerator::GetConnectingTile(int pokoj1, int pokoj2)
+Int2 DungeonGenerator::GetConnectingTile(int room1, int room2)
 {
-	assert(pokoj1 >= 0 && pokoj2 >= 0 && max(pokoj1, pokoj2) < (int)opcje->rooms->size());
+	assert(room1 >= 0 && room2 >= 0 && max(room1, room2) < (int)opcje->rooms->size());
 
-	Room& r1 = opcje->rooms->at(pokoj1);
-	Room& r2 = opcje->rooms->at(pokoj2);
+	Room& r1 = opcje->rooms->at(room1);
+	Room& r2 = opcje->rooms->at(room2);
 
 	// sprawdü czy istnieje po≥πczenie
 #ifdef _DEBUG
 	bool ok = false;
 	for(vector<int>::iterator it = r1.connected.begin(), end = r1.connected.end(); it != end; ++it)
 	{
-		if(*it == pokoj2)
+		if(*it == room2)
 		{
 			ok = true;
 			break;
 		}
 	}
-	assert(ok && "Pokoj1 i pokoj2 nie sπ po≥πczone!");
+	assert(ok && "Rooms aren't connected!");
 #endif
 
 	// znajdü wspÛlne pola
@@ -896,8 +921,8 @@ bool DungeonGenerator::GenerateStairs()
 
 	if(opcje->schody_gora != OpcjeMapy::BRAK)
 	{
-		bool w_scianie;
-		if(!AddStairs(rooms, opcje->schody_gora, opcje->schody_gora_pokoj, opcje->schody_gora_pozycja, opcje->schody_gora_kierunek, true, w_scianie))
+		bool inside_wall;
+		if(!AddStairs(rooms, opcje->schody_gora, opcje->schody_gora_pokoj, opcje->schody_gora_pozycja, opcje->schody_gora_kierunek, true, inside_wall))
 		{
 			rooms.clear();
 			return false;
@@ -918,9 +943,9 @@ bool DungeonGenerator::GenerateStairs()
 }
 
 //=================================================================================================
-bool DungeonGenerator::AddStairs(vector<Room*>& rooms, OpcjeMapy::GDZIE_SCHODY gdzie, Room*& room, Int2& pozycja, int& kierunek, bool gora, bool& w_scianie)
+bool DungeonGenerator::AddStairs(vector<Room*>& rooms, OpcjeMapy::GDZIE_SCHODY where, Room*& room, Int2& pt, int& dir, bool up, bool& inside_wall)
 {
-	switch(gdzie)
+	switch(where)
 	{
 	case OpcjeMapy::LOSOWO:
 		while(!rooms.empty())
@@ -931,9 +956,9 @@ bool DungeonGenerator::AddStairs(vector<Room*>& rooms, OpcjeMapy::GDZIE_SCHODY g
 				std::iter_swap(rooms.begin() + id, rooms.end() - 1);
 			rooms.pop_back();
 
-			if(CreateStairs(*r, pozycja, kierunek, (gora ? SCHODY_GORA : SCHODY_DOL), w_scianie))
+			if(CreateStairs(*r, pt, dir, (up ? SCHODY_GORA : SCHODY_DOL), inside_wall))
 			{
-				r->target = (gora ? RoomTarget::StairsUp : RoomTarget::StairsDown);
+				r->target = (up ? RoomTarget::StairsUp : RoomTarget::StairsDown);
 				room = r;
 				return true;
 			}
@@ -958,9 +983,9 @@ bool DungeonGenerator::AddStairs(vector<Room*>& rooms, OpcjeMapy::GDZIE_SCHODY g
 				int p_id = p.back().x;
 				p.pop_back();
 
-				if(CreateStairs(*rooms[p_id], pozycja, kierunek, (gora ? SCHODY_GORA : SCHODY_DOL), w_scianie))
+				if(CreateStairs(*rooms[p_id], pt, dir, (up ? SCHODY_GORA : SCHODY_DOL), inside_wall))
 				{
-					rooms[p_id]->target = (gora ? RoomTarget::StairsUp : RoomTarget::StairsDown);
+					rooms[p_id]->target = (up ? RoomTarget::StairsUp : RoomTarget::StairsDown);
 					room = rooms[p_id];
 					return true;
 				}
@@ -984,15 +1009,15 @@ struct PosDir
 {
 	Int2 pos;
 	int dir, prio;
-	bool w_scianie;
+	bool inside_wall;
 
-	PosDir(int _x, int _y, int _dir, bool _w_scianie, const Room& room) : pos(_x, _y), dir(_dir), prio(0), w_scianie(_w_scianie)
+	PosDir(int x, int y, int dir, bool inside_wall, const Room& room) : pos(x, y), dir(dir), prio(0), inside_wall(inside_wall)
 	{
-		if(w_scianie)
+		if(inside_wall)
 			prio += (room.size.x + room.size.y) * 2;
-		_x -= room.pos.x;
-		_y -= room.pos.y;
-		prio -= abs(room.size.x / 2 - _x) + abs(room.size.y / 2 - _y);
+		x -= room.pos.x;
+		y -= room.pos.y;
+		prio -= abs(room.size.x / 2 - x) + abs(room.size.y / 2 - y);
 	}
 
 	bool operator < (const PosDir& p)
@@ -1002,7 +1027,7 @@ struct PosDir
 };
 
 //=================================================================================================
-bool DungeonGenerator::CreateStairs(Room& room, Int2& pozycja, int& kierunek, POLE schody, bool& w_scianie)
+bool DungeonGenerator::CreateStairs(Room& room, Int2& pt, int& dir, POLE stairs_type, bool& inside_wall)
 {
 #define B(_xx,_yy) (czy_blokuje2(opcje->mapa[x+_xx+(y+_yy)*opcje->w].type))
 #define P(_xx,_yy) (!czy_blokuje21(opcje->mapa[x+_xx+(y+_yy)*opcje->w].type))
@@ -1135,9 +1160,9 @@ bool DungeonGenerator::CreateStairs(Room& room, Int2& pozycja, int& kierunek, PO
 	}
 
 	PosDir& pd = wybor[Rand() % ile];
-	pozycja = pd.pos;
-	opcje->mapa[pd.pos.x + pd.pos.y*opcje->w].type = schody;
-	w_scianie = pd.w_scianie;
+	pt = pd.pos;
+	opcje->mapa[pd.pos.x + pd.pos.y*opcje->w].type = stairs_type;
+	inside_wall = pd.inside_wall;
 
 	for(int y = max(0, pd.pos.y - 1); y <= min(int(opcje->h), pd.pos.y + 1); ++y)
 	{
@@ -1157,99 +1182,99 @@ bool DungeonGenerator::CreateStairs(Room& room, Int2& pozycja, int& kierunek, PO
 		assert(0);
 		return false;
 	case BIT(0):
-		kierunek = 0;
+		dir = 0;
 		break;
 	case BIT(1):
-		kierunek = 1;
+		dir = 1;
 		break;
 	case BIT(2):
-		kierunek = 2;
+		dir = 2;
 		break;
 	case BIT(3):
-		kierunek = 3;
+		dir = 3;
 		break;
 	case BIT(0) | BIT(1):
 		if(Rand() % 2 == 0)
-			kierunek = 0;
+			dir = 0;
 		else
-			kierunek = 1;
+			dir = 1;
 		break;
 	case BIT(0) | BIT(2):
 		if(Rand() % 2 == 0)
-			kierunek = 0;
+			dir = 0;
 		else
-			kierunek = 2;
+			dir = 2;
 		break;
 	case BIT(0) | BIT(3):
 		if(Rand() % 2 == 0)
-			kierunek = 0;
+			dir = 0;
 		else
-			kierunek = 3;
+			dir = 3;
 		break;
 	case BIT(1) | BIT(2):
 		if(Rand() % 2 == 0)
-			kierunek = 1;
+			dir = 1;
 		else
-			kierunek = 2;
+			dir = 2;
 		break;
 	case BIT(1) | BIT(3):
 		if(Rand() % 2 == 0)
-			kierunek = 1;
+			dir = 1;
 		else
-			kierunek = 3;
+			dir = 3;
 		break;
 	case BIT(2) | BIT(3):
 		if(Rand() % 2 == 0)
-			kierunek = 2;
+			dir = 2;
 		else
-			kierunek = 3;
+			dir = 3;
 		break;
 	case BIT(0) | BIT(1) | BIT(2):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
-				kierunek = 0;
+				dir = 0;
 			else if(t == 1)
-				kierunek = 1;
+				dir = 1;
 			else
-				kierunek = 2;
+				dir = 2;
 		}
 		break;
 	case BIT(0) | BIT(1) | BIT(3):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
-				kierunek = 0;
+				dir = 0;
 			else if(t == 1)
-				kierunek = 1;
+				dir = 1;
 			else
-				kierunek = 3;
+				dir = 3;
 		}
 		break;
 	case BIT(0) | BIT(2) | BIT(3):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
-				kierunek = 0;
+				dir = 0;
 			else if(t == 1)
-				kierunek = 2;
+				dir = 2;
 			else
-				kierunek = 3;
+				dir = 3;
 		}
 		break;
 	case BIT(1) | BIT(2) | BIT(3):
 		{
 			int t = Rand() % 3;
 			if(t == 0)
-				kierunek = 1;
+				dir = 1;
 			else if(t == 1)
-				kierunek = 2;
+				dir = 2;
 			else
-				kierunek = 3;
+				dir = 3;
 		}
 		break;
 	case BIT(0) | BIT(1) | BIT(2) | BIT(3):
-		kierunek = Rand() % 4;
+		dir = Rand() % 4;
 		break;
 	default:
 		assert(0);

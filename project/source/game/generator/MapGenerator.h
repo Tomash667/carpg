@@ -201,6 +201,8 @@ struct Room
 	void Load(HANDLE file);
 	void Write(BitStream& stream) const;
 	bool Read(BitStream& stream);
+
+	static const word INVALID_ROOM = (word)-1;
 };
 
 //-----------------------------------------------------------------------------

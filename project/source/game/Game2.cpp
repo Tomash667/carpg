@@ -9585,7 +9585,7 @@ void Game::SpawnDungeonColliders()
 	int w = lvl.w,
 		h = lvl.h;
 
-	/*for(int y = 1; y < h - 1; ++y)
+	for(int y = 1; y < h - 1; ++y)
 	{
 		for(int x = 1; x < w - 1; ++x)
 		{
@@ -9631,7 +9631,7 @@ void Game::SpawnDungeonColliders()
 		cobj->getWorldTransform().setOrigin(btVector3(2.f*lvl.staircase_up.x + 1.f, 0.f, 2.f*lvl.staircase_up.y + 1.f));
 		cobj->getWorldTransform().setRotation(btQuaternion(dir_to_rot(lvl.staircase_up_dir), 0, 0));
 		phy_world->addCollisionObject(cobj, CG_BUILDING);
-	}*/
+	}
 
 	// room floors/ceilings
 	dungeon_shape_pos.clear();
@@ -9676,9 +9676,6 @@ void Game::SpawnDungeonColliders()
 
 	for(Room& room : lvl.rooms)
 	{
-		room.pos += Int2(1, 1);
-		room.size -= Int2(2, 2);
-
 		// floor
 		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, room.y, 2.f * room.pos.y));
 		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * room.pos.y));
@@ -9739,10 +9736,10 @@ void Game::SpawnDungeonColliders()
 
 
 
-	FIXME!!1;
+	//FIXME!!1;
 
 	//draw_flags = 49152;
-	draw_phy = true;
+	//draw_phy = true;
 }
 
 void Game::SpawnDungeonCollider(const Vec3& pos)
