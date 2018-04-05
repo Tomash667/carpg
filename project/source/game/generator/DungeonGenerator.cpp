@@ -166,29 +166,11 @@ void DungeonGenerator::GenerateInternal()
 			}
 		}
 	}
-
-	// szukaj po³¹czeñ pomiêdzy pokojami/korytarzami
-	int index = 0;
-	for(Room& room : *opcje->rooms)
-	{
-		for(int x = 1; x < room.size.x - 1; ++x)
-		{
-			SearchForConnection(room.pos.x + x, room.pos.y, index);
-			SearchForConnection(room.pos.x + x, room.pos.y + room.size.y - 1, index);
-		}
-		for(int y = 1; y < room.size.y - 1; ++y)
-		{
-			SearchForConnection(room.pos.x, room.pos.y + y, index);
-			SearchForConnection(room.pos.x + room.size.x - 1, room.pos.y + y, index);
-		}
-		++index;
-	}
-
+	
 	// po³¹cz korytarze
 	if(opcje->polacz_korytarz > 0)
 		JoinCorridors();
-	else
-		MarkCorridors();
+	MarkCorridors();
 
 	// losowe dziury
 	if(opcje->kraty_szansa > 0)
@@ -221,8 +203,8 @@ void DungeonGenerator::GenerateInternal()
 		return;
 
 	// po³¹cz pokoje
-	if(opcje->polacz_pokoj > 0)
-		JoinRooms();
+	//if(opcje->polacz_pokoj > 0)
+	//	JoinRooms();
 
 	// generowanie schodów
 	if(opcje->schody_dol != OpcjeMapy::BRAK || opcje->schody_gora != OpcjeMapy::BRAK)
@@ -351,6 +333,7 @@ Room* DungeonGenerator::AddRoom(int parent_room, int x, int y, int w, int h, ADD
 		room.pos.y = y;
 		room.size.x = w;
 		room.size.y = h;
+
 		switch(add)
 		{
 		default:
@@ -364,12 +347,15 @@ Room* DungeonGenerator::AddRoom(int parent_room, int x, int y, int w, int h, ADD
 			room.target = RoomTarget::Ramp;
 			break;
 		}
+
 		if(parent_room != Room::INVALID_ROOM)
 		{
 			Room& r = opcje->rooms->at(parent_room);
 			room.level = r.level;
 			room.counter = r.counter + 1;
 			room.y = r.y;
+			room.connected.push_back(parent_room);
+			r.connected.push_back(id);
 		}
 		else
 		{
@@ -377,6 +363,7 @@ Room* DungeonGenerator::AddRoom(int parent_room, int x, int y, int w, int h, ADD
 			room.counter = 0;
 			room.y = 0.f;
 		}
+
 		return &room;
 	}
 
@@ -545,43 +532,53 @@ Room* DungeonGenerator::CreateCorridor(int parent_room, Int2& start_pt, DIR dir)
 {
 	int dl = opcje->corridor_size.Random();
 	int w, h;
-
 	Int2 pt(start_pt);
-	Int2 size_shift;
 
 	if(dir == LEWO)
 	{
 		pt.x -= dl;
 		w = dl;
 		h = 1;
-		size_shift = Int2(1, 0);
 	}
 	else if(dir == PRAWO)
 	{
 		pt.x += 1;
 		w = dl;
 		h = 1;
-		size_shift = Int2(-1, 0);
 	}
 	else if(dir == GORA)
 	{
 		pt.y += 1;
 		w = 1;
 		h = dl;
-		size_shift = Int2(-1, 0);
 	}
 	else
 	{
 		pt.y -= dl;
 		w = 1;
 		h = dl;
-		size_shift = Int2(1, 0);
 	}
 
 	if(CanCreateRoom(pt.x, pt.y, w, h))
 	{
 		Room* room = AddRoom(parent_room, pt.x, pt.y, w, h, ADD_CORRIDOR);
-		room->size += size_shift;
+		switch(dir)
+		{
+		case LEWO:
+			++room->size.x;
+			break;
+		case PRAWO:
+			--room->pos.x;
+			++room->size.x;
+			break;
+		case DOL:
+			++room->size.y;
+			break;
+		case GORA:
+			--room->pos.y;
+			++room->size.y;
+			break;
+		}
 		Pole& p = F(start_pt.x, start_pt.y);
 		p.type = DRZWI;
 		p.room = word(opcje->rooms->size() - 1);
@@ -635,119 +632,44 @@ bool DungeonGenerator::CanCreateRoom(int x, int y, int w, int h)
 }
 
 //=================================================================================================
-void DungeonGenerator::SearchForConnection(int x, int y, int id)
-{
-	if(H(x, y) != DRZWI)
-		return;
-
-	Room& r = opcje->rooms->at(id);
-
-	if(x > 0 && H(x - 1, y) == PUSTE)
-	{
-		int to_id = HR(x - 1, y);
-		if(to_id != id)
-			SearchForConnection(r, to_id);
-	}
-
-	if(x<int(opcje->w - 1) && H(x + 1, y) == PUSTE)
-	{
-		int to_id = HR(x + 1, y);
-		if(to_id != id)
-			SearchForConnection(r, to_id);
-	}
-
-	if(y > 0 && H(x, y - 1) == PUSTE)
-	{
-		int to_id = HR(x, y - 1);
-		if(to_id != id)
-			SearchForConnection(r, to_id);
-	}
-
-	if(y<int(opcje->h - 1) && H(x, y + 1) == PUSTE)
-	{
-		int to_id = HR(x, y + 1);
-		if(to_id != id)
-			SearchForConnection(r, to_id);
-	}
-}
-
-//=================================================================================================
-void DungeonGenerator::SearchForConnection(Room& room, int id)
-{
-	Room& room2 = opcje->rooms->at(id);
-	if(room.level != room2.level)
-		return;
-
-	bool added = false;
-	for(vector<int>::iterator it = room.connected.begin(), end = room.connected.end(); it != end; ++it)
-	{
-		if(*it == id)
-		{
-			added = true;
-			break;
-		}
-	}
-
-	if(!added)
-		room.connected.push_back(id);
-}
-
-//=================================================================================================
+// Chance to remove doors between corridors
 void DungeonGenerator::JoinCorridors()
 {
 	int index = 0;
 	for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
 	{
-		if(!it->IsCorridorOrRamp())
+		if(!it->IsCorridor())
 			continue;
 
-		if(it->IsCorridor())
+		Room& r = *it;
+
+		for(vector<int>::iterator it2 = r.connected.begin(), end2 = r.connected.end(); it2 != end2; ++it2)
 		{
-			Room& r = *it;
+			Room& r2 = opcje->rooms->at(*it2);
 
-			for(vector<int>::iterator it2 = r.connected.begin(), end2 = r.connected.end(); it2 != end2; ++it2)
+			if(!r2.IsCorridor() || Rand() % 100 >= opcje->polacz_korytarz)
+				continue;
+
+			int x1 = max(r.pos.x - 1, r2.pos.x - 1),
+				x2 = min(r.pos.x + r.size.x + 1, r2.pos.x + r2.size.x + 1),
+				y1 = max(r.pos.y - 1, r2.pos.y - 1),
+				y2 = min(r.pos.y + r.size.y + 1, r2.pos.y + r2.size.y + 1);
+
+			assert(x1 < x2 && y1 < y2);
+
+			bool removed = false;
+			for(int y = y1; y < y2 && !removed; ++y)
 			{
-				Room& r2 = opcje->rooms->at(*it2);
-
-				if(!r2.IsCorridor() || Rand() % 100 >= opcje->polacz_korytarz)
-					continue;
-
-				int x1 = max(r.pos.x, r2.pos.x),
-					x2 = min(r.pos.x + r.size.x, r2.pos.x + r2.size.x),
-					y1 = max(r.pos.y, r2.pos.y),
-					y2 = min(r.pos.y + r.size.y, r2.pos.y + r2.size.y);
-
-				assert(x1 < x2 && y1 < y2);
-
-				for(int y = y1; y < y2; ++y)
+				for(int x = x1; x < x2; ++x)
 				{
-					for(int x = x1; x < x2; ++x)
+					Pole& po = mapa[x + y * opcje->w];
+					if(po.type == DRZWI && (po.room == index || po.room == *it2))
 					{
-						Pole& po = mapa[x + y * opcje->w];
-						if(po.type == DRZWI)
-						{
-							assert(po.room == index || po.room == *it2);
-							po.type = PUSTE;
-							goto usunieto_drzwi;
-						}
+						po.type = PUSTE;
+						removed = true;
+						break;
 					}
 				}
-
-				// brak po³¹czenia albo zosta³o ju¿ usuniête
-
-			usunieto_drzwi:
-				continue;
-			}
-		}
-
-		// oznacz niski sufit
-		for(int y = 0; y < it->size.y; ++y)
-		{
-			for(int x = 0; x < it->size.x; ++x)
-			{
-				Pole& p = mapa[x + it->pos.x + (y + it->pos.y)*opcje->w];
-				if(p.type == PUSTE || p.type == DRZWI || p.type == KRATKA_PODLOGA)
-					p.flags = Pole::F_NISKI_SUFIT;
 			}
 		}
 	}
@@ -756,16 +678,16 @@ void DungeonGenerator::JoinCorridors()
 //=================================================================================================
 void DungeonGenerator::MarkCorridors()
 {
-	for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it)
+	for(Room& room : *opcje->rooms)
 	{
-		if(!it->IsCorridorOrRamp())
+		if(!room.IsCorridorOrRamp())
 			continue;
 
-		for(int y = 0; y < it->size.y; ++y)
+		for(int y = 0; y < room.size.y; ++y)
 		{
-			for(int x = 0; x < it->size.x; ++x)
+			for(int x = 0; x < room.size.x; ++x)
 			{
-				Pole& p = mapa[x + it->pos.x + (y + it->pos.y)*opcje->w];
+				Pole& p = mapa[x + room.pos.x + (y + room.pos.y)*opcje->w];
 				if(p.type == PUSTE || p.type == DRZWI || p.type == KRATKA_PODLOGA)
 					p.flags = Pole::F_NISKI_SUFIT;
 			}
@@ -792,10 +714,10 @@ void DungeonGenerator::JoinRooms()
 				continue;
 
 			// znajdŸ wspólny obszar
-			int x1 = max(r.pos.x, r2.pos.x),
-				x2 = min(r.pos.x + r.size.x, r2.pos.x + r2.size.x),
-				y1 = max(r.pos.y, r2.pos.y),
-				y2 = min(r.pos.y + r.size.y, r2.pos.y + r2.size.y);
+			int x1 = max(r.pos.x - 1, r2.pos.x - 1),
+				x2 = min(r.pos.x + r.size.x + 1, r2.pos.x + r2.size.x + 1),
+				y1 = max(r.pos.y - 1, r2.pos.y - 1),
+				y2 = min(r.pos.y + r.size.y + 1, r2.pos.y + r2.size.y + 1);
 
 			if(x1 == 0)
 				++x1;

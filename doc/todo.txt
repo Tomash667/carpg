@@ -3,6 +3,8 @@
 CURRENT:
 1. fix rooms size
 - joining rooms, create small room or resize one of them
+- verify with screenshot
++ GetConnectingTile fix after joining rooms
 2. create dungeon physics
 3. dungeon mesh vb, ib
 4. ramps physics

@@ -36,8 +36,6 @@ private:
 	Room* CreateRamp(int parent_room, const Int2& pt, DIR dir, bool up);
 	Room* CreateCorridor(int parent_room, Int2& pt, DIR dir);
 	bool CanCreateRoom(int x, int y, int w, int h);
-	void SearchForConnection(int x, int y, int id);
-	void SearchForConnection(Room& room, int id);
 	void JoinCorridors();
 	void MarkCorridors();
 	void JoinRooms();
