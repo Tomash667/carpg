@@ -944,7 +944,7 @@ void Game::LoadGame(HANDLE file)
 
 	// ustaw wskaüniki postaci/uøywalnych
 	LoadingStep(txLoadingData);
-	for(vector<std::pair<Unit**, int> >::iterator it = Unit::refid_request.begin(), end = Unit::refid_request.end(); it != end; ++it)
+	for(vector<std::pair<Unit**, int>>::iterator it = Unit::refid_request.begin(), end = Unit::refid_request.end(); it != end; ++it)
 		*(it->first) = Unit::refid_table[it->second];
 	Unit::refid_request.clear();
 	for(vector<UsableRequest>::iterator it = Usable::refid_request.begin(), end = Usable::refid_request.end(); it != end; ++it)

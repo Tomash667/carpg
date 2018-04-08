@@ -511,7 +511,7 @@ using ObjectPoolVectorRef = VectorPtr<T, internal::ObjectPoolVectorAllocator<T>>
 
 // tymczasowe stringi
 extern ObjectPool<string> StringPool;
-extern ObjectPool<vector<void*> > VectorPool;
+extern ObjectPool<vector<void*>> VectorPool;
 
 //-----------------------------------------------------------------------------
 // Lokalny string który wykorzystuje StringPool

@@ -302,7 +302,7 @@ void Game::Draw()
 	SetAlphaTest(false);
 	SetNoZWrite(false);
 
-	for(vector<std::pair<Vec2, int> >::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
+	for(vector<std::pair<Vec2, int>>::iterator it = test_pf.begin(), end = test_pf.end(); it != end; ++it)
 	{
 		Vec3 v[4] = {
 			Vec3(it->first.x, 0.1f, it->first.y + SS),
@@ -9740,6 +9740,7 @@ void Game::SpawnDungeonColliders()
 
 	//draw_flags = 49152;
 	//draw_phy = true;
+	ParseCommand("show_minimap");
 }
 
 void Game::SpawnDungeonCollider(const Vec3& pos)
@@ -9901,11 +9902,9 @@ void Game::GenerateDungeonObjects()
 
 	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
 	{
-		if(it->IsCorridor())
+		if(it->IsNotRoom())
 			continue;
-
-		AddRoomColliders(lvl, *it, blocks);
-
+		
 		// choose room type
 		RoomType* rt;
 		if(it->target != RoomTarget::None)
@@ -10013,12 +10012,9 @@ void Game::GenerateDungeonObjects()
 		for(int i = 0; i < 100; ++i)
 		{
 			on_wall.clear();
-			blocks.clear();
 			Room& r = lvl.rooms[Rand() % lvl.rooms.size()];
 			if(r.target == RoomTarget::None)
 			{
-				AddRoomColliders(lvl, r, blocks);
-
 				auto e = GenerateDungeonObject(lvl, r, base, on_wall, blocks, flags);
 				if(e)
 				{
@@ -10199,55 +10195,6 @@ Game::ObjectEntity Game::GenerateDungeonObject(InsideLocationLevel& lvl, Room& r
 		on_wall.push_back(pos);
 
 	return SpawnObjectEntity(local_ctx, base, pos, rot, 1.f, flags);
-}
-
-void Game::AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks)
-{
-	// add colliding blocks
-	for(int x = 0; x < room.size.x; ++x)
-	{
-		// top
-		POLE co = lvl.map[room.pos.x + x + (room.pos.y + room.size.y - 1)*lvl.w].type;
-		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-		{
-			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
-			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 2));
-		}
-		else if(co == SCIANA || co == BLOKADA_SCIANA)
-			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
-
-		// bottom
-		co = lvl.map[room.pos.x + x + room.pos.y*lvl.w].type;
-		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-		{
-			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
-			blocks.push_back(Int2(room.pos.x + x, room.pos.y + 1));
-		}
-		else if(co == SCIANA || co == BLOKADA_SCIANA)
-			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
-	}
-	for(int y = 0; y < room.size.y; ++y)
-	{
-		// left
-		POLE co = lvl.map[room.pos.x + (room.pos.y + y)*lvl.w].type;
-		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-		{
-			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
-			blocks.push_back(Int2(room.pos.x + 1, room.pos.y + y));
-		}
-		else if(co == SCIANA || co == BLOKADA_SCIANA)
-			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
-
-		// right
-		co = lvl.map[room.pos.x + room.size.x - 1 + (room.pos.y + y)*lvl.w].type;
-		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
-		{
-			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
-			blocks.push_back(Int2(room.pos.x + room.size.x - 2, room.pos.y + y));
-		}
-		else if(co == SCIANA || co == BLOKADA_SCIANA)
-			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
-	}
 }
 
 void Game::GenerateDungeonTreasure(vector<Chest*>& chests, int level, bool extra)
@@ -10449,10 +10396,10 @@ void Game::GenerateDungeonUnits()
 	{
 		int ile;
 
-		if(it->target == RoomTarget::Treasury || it->target == RoomTarget::Prison)
+		if(it->target == RoomTarget::Treasury || it->target == RoomTarget::Prison || it->target == RoomTarget::Doors)
 			continue;
 
-		if(it->IsCorridor())
+		if(it->IsCorridor() || it->IsRamp())
 		{
 			if(Rand() % 100 < szansa_na_wrog_w_korytarz)
 				ile = 1;
@@ -12756,7 +12703,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 
 				if(e.dmg >= 10.f)
 				{
-					static vector<std::pair<Unit*, float> > targets;
+					static vector<std::pair<Unit*, float>> targets;
 
 					// traf w kolejny cel
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
@@ -12782,7 +12729,7 @@ void Game::UpdateElectros(LevelContext& ctx, float dt)
 						Unit* target = nullptr;
 						float dist;
 
-						for(vector<std::pair<Unit*, float> >::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
+						for(vector<std::pair<Unit*, float>>::iterator it2 = targets.begin(), end2 = targets.end(); it2 != end2; ++it2)
 						{
 							Vec3 hitpoint;
 							Unit* hitted;
@@ -12977,7 +12924,7 @@ void Game::UpdateAttachedSounds(float dt)
 }
 
 vector<Unit*> Unit::refid_table;
-vector<std::pair<Unit**, int> > Unit::refid_request;
+vector<std::pair<Unit**, int>> Unit::refid_request;
 vector<ParticleEmitter*> ParticleEmitter::refid_table;
 vector<TrailParticleEmitter*> TrailParticleEmitter::refid_table;
 vector<Usable*> Usable::refid_table;
@@ -13845,17 +13792,18 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 		}
 		else
 		{
+			FIXME;
 			// podziemia, wygeneruj schody, drzwi, kratki
 			LoadingStep(txGeneratingObjects);
-			//GenerateDungeonObjects2();
-			//GenerateDungeonObjects();
-			//GenerateTraps();
+			GenerateDungeonObjects2();
+			GenerateDungeonObjects();
+			GenerateTraps();
 
 			if(!IS_SET(base.options, BLO_LABIRYNTH))
 			{
 				LoadingStep(txGeneratingUnits);
-				//GenerateDungeonUnits();
-				//GenerateDungeonFood();
+				GenerateDungeonUnits();
+				GenerateDungeonFood();
 			}
 			else
 			{
@@ -14056,7 +14004,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 						UnitData* ud = UnitData::Get("q_orkowie_slaby");
 						for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
 						{
-							if(!it->IsCorridor() && Rand() % 2 == 0)
+							if(!it->IsNotRoom() && Rand() % 2 == 0)
 							{
 								Unit* u = SpawnUnitInsideRoom(*it, *ud, -2, Int2(-999, -999), Int2(-999, -999));
 								if(u)
@@ -16689,18 +16637,19 @@ void Game::SpawnHeroesInsideDungeon()
 	int chance = 23;
 	bool first = true;
 
-	vector<std::pair<Room*, int> > sprawdzone;
+	vector<std::pair<Room*, int>> sprawdzone;
 	vector<int> ok_room;
 	sprawdzone.push_back(std::make_pair(p, room_id));
 
 	while(true)
 	{
+		int index = sprawdzone.back().second;
 		p = sprawdzone.back().first;
 		for(vector<int>::iterator it = p->connected.begin(), end = p->connected.end(); it != end; ++it)
 		{
 			room_id = *it;
 			bool ok = true;
-			for(vector<std::pair<Room*, int> >::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
+			for(vector<std::pair<Room*, int>>::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
 			{
 				if(room_id == it2->second)
 				{
@@ -16720,6 +16669,14 @@ void Game::SpawnHeroesInsideDungeon()
 		{
 			room_id = ok_room[Rand() % ok_room.size()];
 			ok_room.clear();
+			Room& r = lvl.rooms[room_id];
+			if(r.target == RoomTarget::Doors)
+			{
+				sprawdzone.push_back(std::make_pair(&lvl.rooms[room_id], room_id));
+				room_id = r.connected[0];
+				if(index == room_id)
+					room_id = r.connected[1];
+			}
 			sprawdzone.push_back(std::make_pair(&lvl.rooms[room_id], room_id));
 			--chance;
 		}
@@ -16735,7 +16692,7 @@ void Game::SpawnHeroesInsideDungeon()
 
 	// pozabijaj jednostki w pokojach, ograb skrzynie
 	// trochê to nieefektywne :/
-	vector<std::pair<Room*, int> >::iterator end = sprawdzone.end();
+	vector<std::pair<Room*, int>>::iterator end = sprawdzone.end();
 	if(Rand() % 2 == 0)
 		--end;
 	for(vector<Unit*>::iterator it2 = local_ctx.units->begin(), end2 = local_ctx.units->end(); it2 != end2; ++it2)
@@ -16743,7 +16700,7 @@ void Game::SpawnHeroesInsideDungeon()
 		Unit& u = **it2;
 		if(u.IsAlive() && IsEnemy(*pc->unit, u))
 		{
-			for(vector<std::pair<Room*, int> >::iterator it = sprawdzone.begin(); it != end; ++it)
+			for(vector<std::pair<Room*, int>>::iterator it = sprawdzone.begin(); it != end; ++it)
 			{
 				if(it->first->IsInside(u.pos))
 				{
@@ -16799,7 +16756,7 @@ void Game::SpawnHeroesInsideDungeon()
 	}
 	for(vector<Chest*>::iterator it2 = local_ctx.chests->begin(), end2 = local_ctx.chests->end(); it2 != end2; ++it2)
 	{
-		for(vector<std::pair<Room*, int> >::iterator it = sprawdzone.begin(); it != end; ++it)
+		for(vector<std::pair<Room*, int>>::iterator it = sprawdzone.begin(); it != end; ++it)
 		{
 			if(it->first->IsInside((*it2)->pos))
 			{
@@ -16827,16 +16784,16 @@ void Game::SpawnHeroesInsideDungeon()
 	}
 
 	// otwórz drzwi pomiêdzy obszarami
-	for(vector<std::pair<Room*, int> >::iterator it2 = sprawdzone.begin(), end2 = sprawdzone.end(); it2 != end2; ++it2)
+	for(auto prev = sprawdzone.begin(), next = prev + 1, end = sprawdzone.end(); next != end; ++prev, ++next)
 	{
-		Room& a = *it2->first,
-			&b = lvl.rooms[it2->second];
+		Room& a = *prev->first,
+			&b = *next->first;
 
 		// wspólny obszar pomiêdzy pokojami
-		int x1 = max(a.pos.x, b.pos.x),
-			x2 = min(a.pos.x + a.size.x, b.pos.x + b.size.x),
-			y1 = max(a.pos.y, b.pos.y),
-			y2 = min(a.pos.y + a.size.y, b.pos.y + b.size.y);
+		int x1 = max(a.pos.x - 1, b.pos.x - 1),
+			x2 = min(a.pos.x + a.size.x + 1, b.pos.x + b.size.x + 1),
+			y1 = max(a.pos.y - 1, b.pos.y - 1),
+			y2 = min(a.pos.y + a.size.y + 1, b.pos.y + b.size.y + 1);
 
 		// szukaj drzwi
 		for(int y = y1; y < y2; ++y)
@@ -16844,7 +16801,7 @@ void Game::SpawnHeroesInsideDungeon()
 			for(int x = x1; x < x2; ++x)
 			{
 				Pole& po = lvl.map[x + y*lvl.w];
-				if(po.type == DRZWI)
+				if(po.type == DRZWI && (po.room == prev->second || po.room == next->second))
 				{
 					Door* door = lvl.FindDoor(Int2(x, y));
 					if(door && door->state == Door::Closed)
@@ -21793,7 +21750,7 @@ GroundItem* Game::SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const I
 	while(true)
 	{
 		int id = Rand() % lvl.rooms.size();
-		if(!lvl.rooms[id].IsCorridor())
+		if(!lvl.rooms[id].IsNotRoom())
 		{
 			GroundItem* item2 = SpawnGroundItemInsideRoom(lvl.rooms[id], item);
 			if(item2)

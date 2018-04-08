@@ -89,9 +89,9 @@ Room* InsideLocationLevel::GetRoom(const Int2& pt)
 }
 
 //=================================================================================================
-bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, int& _rot, bool nocol)
+bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& tile, int& rot, bool nocol)
 {
-	_rot = Rand() % 4;
+	rot = Rand() % 4;
 
 	int tries = 0;
 
@@ -99,16 +99,16 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, i
 	{
 		int tries2 = 10;
 
-		switch(_rot)
+		switch(rot)
 		{
 		case 2:
 			// górna œciana, obj \/
 			do
 			{
-				_tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
-				_tile.y = room.pos.y + 1;
+				tile.x = room.pos.x + Random(0, room.size.x);
+				tile.y = room.pos.y;
 
-				if(czy_blokuje2(map[_tile.x + (_tile.y - 1)*w]) && !czy_blokuje21(map[_tile.x + _tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x + (_tile.y + 1)*w])))
+				if(czy_blokuje2(map[tile.x + (tile.y - 1)*w]) && !czy_blokuje21(map[tile.x + tile.y*w]) && (nocol || !czy_blokuje21(map[tile.x + (tile.y + 1)*w])))
 					return true;
 
 				--tries2;
@@ -118,10 +118,10 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, i
 			// prawa œciana, obj <
 			do
 			{
-				_tile.x = room.pos.x + room.size.x - 2;
-				_tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
+				tile.x = room.pos.x + room.size.x - 1;
+				tile.y = room.pos.y + Random(0, room.size.y);
 
-				if(czy_blokuje2(map[_tile.x + 1 + _tile.y*w]) && !czy_blokuje21(map[_tile.x + _tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x - 1 + _tile.y*w])))
+				if(czy_blokuje2(map[tile.x + 1 + tile.y*w]) && !czy_blokuje21(map[tile.x + tile.y*w]) && (nocol || !czy_blokuje21(map[tile.x - 1 + tile.y*w])))
 					return true;
 
 				--tries2;
@@ -131,10 +131,10 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, i
 			// dolna œciana, obj /|
 			do
 			{
-				_tile.x = Random(room.pos.x + 1, room.pos.x + room.size.x - 2);
-				_tile.y = room.pos.y + room.size.y - 2;
+				tile.x = room.pos.x + Random(0, room.size.x);
+				tile.y = room.pos.y + room.size.y - 1;
 
-				if(czy_blokuje2(map[_tile.x + (_tile.y + 1)*w]) && !czy_blokuje21(map[_tile.x + _tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x + (_tile.y - 1)*w])))
+				if(czy_blokuje2(map[tile.x + (tile.y + 1)*w]) && !czy_blokuje21(map[tile.x + tile.y*w]) && (nocol || !czy_blokuje21(map[tile.x + (tile.y - 1)*w])))
 					return true;
 
 				--tries2;
@@ -144,10 +144,10 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, i
 			// lewa œciana, obj >
 			do
 			{
-				_tile.x = room.pos.x + 1;
-				_tile.y = Random(room.pos.y + 1, room.pos.y + room.size.y - 2);
+				tile.x = room.pos.x;
+				tile.y = room.pos.y + Random(0, room.size.y);
 
-				if(czy_blokuje2(map[_tile.x - 1 + _tile.y*w]) && !czy_blokuje21(map[_tile.x + _tile.y*w]) && (nocol || !czy_blokuje21(map[_tile.x + 1 + _tile.y*w])))
+				if(czy_blokuje2(map[tile.x - 1 + tile.y*w]) && !czy_blokuje21(map[tile.x + tile.y*w]) && (nocol || !czy_blokuje21(map[tile.x + 1 + tile.y*w])))
 					return true;
 
 				--tries2;
@@ -156,7 +156,7 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, i
 		}
 
 		++tries;
-		_rot = (_rot + 1) % 4;
+		rot = (rot + 1) % 4;
 	} while(tries <= 3);
 
 	return false;
@@ -367,7 +367,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 
 		for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		{
-			if(it->IsCorridor() || (no_target && it->target != RoomTarget::None))
+			if(it->IsNotRoom() || (no_target && it->target != RoomTarget::None))
 				continue;
 			dist = Int2::Distance(it->pos, gora->pos) + Int2::Distance(it->pos, dol->pos);
 			if(!best || dist > best_dist)
@@ -387,7 +387,7 @@ Room& InsideLocationLevel::GetFarRoom(bool have_down_stairs, bool no_target)
 
 		for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		{
-			if(it->IsCorridor() || (no_target && it->target != RoomTarget::None))
+			if(it->IsNotRoom() || (no_target && it->target != RoomTarget::None))
 				continue;
 			dist = Int2::Distance(it->pos, gora->pos);
 			if(!best || dist > best_dist)

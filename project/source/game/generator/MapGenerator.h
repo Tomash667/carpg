@@ -112,7 +112,8 @@ enum class RoomTarget
 	Prison,
 	Throne,
 	PortalCreate,
-	Ramp
+	Ramp,
+	Doors
 };
 
 //-----------------------------------------------------------------------------
@@ -170,31 +171,31 @@ struct Room
 	}
 	Vec3 GetRandomPos() const
 	{
-		return Vec3(Random(2.f*(pos.x + 1), 2.f*(pos.x + size.x - 1)), y, Random(2.f*(pos.y + 1), 2.f*(pos.y + size.y - 1)));
+		return Vec3(
+			Random(2.f*pos.x, 2.f*(pos.x + size.x)),
+			y,
+			Random(2.f*pos.y, 2.f*(pos.y + size.y)));
 	}
 	bool GetRandomPos(float margin, Vec3& out_pos) const
 	{
-		float min_size = (min(size.x, size.y) - 1) * 2.f;
+		float min_size = min(size.x, size.y) * 2.f;
 		if(margin * 2 >= min_size)
 			return false;
-		out_pos = Vec3(
-			Random(2.f*(pos.x + 1) + margin, 2.f*(pos.x + size.x - 1) - margin),
-			y,
-			Random(2.f*(pos.y + 1) + margin, 2.f*(pos.y + size.y - 1) - margin));
+		out_pos = GetRandomPos(margin);
 		return true;
 	}
 	Vec3 GetRandomPos(float margin) const
 	{
-		assert(margin * 2 < (min(size.x, size.y) - 1) * 2.f);
+		assert(margin * 2 < min(size.x, size.y) * 2.f);
 		return Vec3(
-			Random(2.f*(pos.x + 1) + margin, 2.f*(pos.x + size.x - 1) - margin),
+			Random(2.f*pos.x + margin, 2.f*(pos.x + size.x) - margin),
 			y,
-			Random(2.f*(pos.y + 1) + margin, 2.f*(pos.y + size.y - 1) - margin));
+			Random(2.f*pos.y + margin, 2.f*(pos.y + size.y) - margin));
 	}
 
 	bool IsCorridor() const { return target == RoomTarget::Corridor; }
 	bool IsRamp() const { return target == RoomTarget::Ramp; }
-	bool IsCorridorOrRamp() const { return IsCorridor() || IsRamp(); }
+	bool IsNotRoom() const { return Any(target, RoomTarget::Corridor, RoomTarget::Ramp, RoomTarget::Doors); }
 	bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsDown; }
 
 	void Save(HANDLE file);

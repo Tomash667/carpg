@@ -2,14 +2,13 @@
 ===============================================================================================================
 CURRENT:
 1. fix rooms size
-- joining rooms, create small room or resize one of them
-- verify with screenshot
-+ GetConnectingTile fix after joining rooms
+? orc prison
 2. create dungeon physics
 3. dungeon mesh vb, ib
 4. ramps physics
 validate options in DungeonGenerator::Generate
 moving player
+? GenerateDungeonObjects2 - spawning door fragments near corridor/door rooms (FindPath/SetupCamera uses this too)
 5. navmesh
 6. positioning
 + each room with random y
@@ -30,6 +29,7 @@ moving player
 	+ colliders
 	+ prevent spawning traps on ramps
 + save/load/compability
++ gray dots on minimap when there is doors
 ! FIXME
 ? labirynth, cave, tutorial
 ? old save

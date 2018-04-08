@@ -680,7 +680,7 @@ void Quest_Evil::GeneratePortal()
 	Vec3 srodek(float(lvl.w), 0, float(lvl.h));
 
 	// szukaj pokoju
-	static vector<std::pair<int, float> > dobre;
+	static vector<std::pair<int, float>> dobre;
 	int index = 0;
 	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it, ++index)
 	{

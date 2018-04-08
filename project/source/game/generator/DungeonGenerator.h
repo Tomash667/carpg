@@ -16,7 +16,6 @@ struct DungeonGenerator : MapGenerator
 
 	bool Generate(OpcjeMapy& opcje, bool recreate = false);
 	bool ContinueGenerate();
-	Int2 GetConnectingTile(int room1, int room2);
 
 private:
 	enum ADD

@@ -727,7 +727,7 @@ public:
 	// PATHFINDING
 	vector<APoint> a_map;
 #ifdef DRAW_LOCAL_PATH
-	vector<std::pair<Vec2, int> > test_pf;
+	vector<std::pair<Vec2, int>> test_pf;
 	Unit* marked;
 	bool test_pf_outside;
 #endif
@@ -1190,7 +1190,6 @@ public:
 	void SpawnTerrainCollider();
 	void GenerateDungeonObjects();
 	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall, vector<Int2>& blocks, int flags);
-	void AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks);
 	void GenerateDungeonTreasure(vector<Chest*>& chests, int level, bool extra = false);
 	void GenerateDungeonUnits();
 	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));

@@ -2961,7 +2961,7 @@ void Game::GenerateDungeon(Location& _loc)
 				int id = mozliwe_pokoje[Rand() % mozliwe_pokoje.size()];
 				lvl.rooms[id].target = RoomTarget::Prison;
 				// dodaj drzwi
-				Int2 pt = dungeon_gen->GetConnectingTile(id, lvl.rooms[id].connected.front());
+				Int2 pt = lvl.rooms[lvl.rooms[id].connected.front()].pos;
 				Pole& p = opcje.mapa[pt.x + pt.y*opcje.w];
 				p.type = DRZWI;
 				p.flags |= Pole::F_SPECJALNE;
@@ -3023,7 +3023,7 @@ void Game::GenerateDungeon(Location& _loc)
 			}
 
 			Room& r = lvl.rooms[id];
-			vector<std::pair<Int2, int> > good_pts;
+			vector<std::pair<Int2, int>> good_pts;
 
 			for(int y = 1; y < r.size.y - 1; ++y)
 			{
