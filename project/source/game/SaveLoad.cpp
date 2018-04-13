@@ -950,7 +950,7 @@ void Game::LoadGame(HANDLE file)
 	for(vector<UsableRequest>::iterator it = Usable::refid_request.begin(), end = Usable::refid_request.end(); it != end; ++it)
 	{
 		Usable* u = Usable::refid_table[it->refid];
-		if(u->user != it->user)
+		if(it->user && u->user != it->user)
 		{
 			Warn("Invalid usable %s (%d) user %s.", u->base->id.c_str(), u->refid, it->user->data->id.c_str());
 			*it->usable = nullptr;
@@ -1110,10 +1110,10 @@ void Game::LoadGame(HANDLE file)
 					break;
 				}
 			}
-			if(ok)
+			if(ok && (LOAD_VERSION < V_MAIN || content::require_update))
 			{
 				SortItems(*qir->items);
-				if(qir->unit && content::require_update)
+				if(qir->unit)
 					qir->unit->RecalculateWeight();
 			}
 		}
@@ -1495,10 +1495,12 @@ void Game::LoadGame(HANDLE file)
 //=================================================================================================
 void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 {
-	bool can_sort = true;
-
 	uint count;
 	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+	if(count == 0)
+		return;
+
+	bool can_sort = true;
 	cnt.resize(count);
 	for(vector<ItemSlot>::iterator it = cnt.begin(), end = cnt.end(); it != end; ++it)
 	{
@@ -1516,7 +1518,7 @@ void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 		}
 	}
 
-	if(can_sort && LOAD_VERSION < V_0_2_20 && !cnt.empty())
+	if(can_sort && (LOAD_VERSION < V_0_2_20 || content::require_update))
 		SortItems(cnt);
 }
 

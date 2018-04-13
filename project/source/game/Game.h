@@ -1417,7 +1417,7 @@ public:
 	void SetUnitWeaponState(Unit& unit, bool wyjmuje, WeaponType co);
 	void UpdatePlayerView();
 	void OnCloseInventory();
-	void CloseInventory(bool do_close = true);
+	void CloseInventory();
 	void CloseAllPanels(bool close_mp_box = false);
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();

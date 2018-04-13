@@ -23,7 +23,7 @@ last_index to tutaj t_index
 */
 
 //-----------------------------------------------------------------------------
-TEX Inventory::tItemBar, Inventory::tEquipped, Inventory::tGold, Inventory::tStarHq, Inventory::tStarM, Inventory::tStarU;
+TEX Inventory::tItemBar, Inventory::tEquipped, Inventory::tGold, Inventory::tStarHq, Inventory::tStarM, Inventory::tStarU, Inventory::tTeamItem;
 cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarryShort, Inventory::txCarry, Inventory::txCarryInfo, Inventory::txTeamItem,
 	Inventory::txCantWear, Inventory::txCantDoNow, Inventory::txBuyTeamDialog, Inventory::txDropGoldCount, Inventory::txDropNoGold, Inventory::txDropNotNow,
 	Inventory::txDropItemCount, Inventory::txWontBuy, Inventory::txPrice, Inventory::txNeedMoreGoldItem, Inventory::txBuyItemCount, Inventory::txSellItemCount,
@@ -32,10 +32,7 @@ cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarr
 	Inventory::txGiveGoldCount, Inventory::txShareGiveItemCount, Inventory::txCanCarryTeamOnly, Inventory::txWontGiveItem, Inventory::txShareTakeItemCount,
 	Inventory::txWontTakeItem, Inventory::txSellTeamItem, Inventory::txSellItem, Inventory::txSellFreeItem, Inventory::txGivePotionCount,
 	Inventory::txNpcCantCarry, Inventory::txStatsFor, Inventory::txShowStatsFor;
-LOCK_MODE Inventory::lock_id;
-int Inventory::lock_index;
-bool Inventory::lock_give;
-float Inventory::lock_timer;
+Inventory::ItemLock Inventory::lock;
 TooltipController Inventory::tooltip;
 
 //-----------------------------------------------------------------------------
@@ -112,6 +109,7 @@ void Inventory::LoadData()
 	tex_mgr.AddLoadTask("star_hq.png", tStarHq);
 	tex_mgr.AddLoadTask("star_m.png", tStarM);
 	tex_mgr.AddLoadTask("star_u.png", tStarU);
+	tex_mgr.AddLoadTask("team_item.png", tTeamItem);
 }
 
 //=================================================================================================
@@ -182,22 +180,30 @@ void Inventory::Draw(ControlDrawData*)
 	}
 
 	// rysuj przedmioty
+	bool have_team = Team.GetActiveTeamSize() > 1 && mode != TRADE_OTHER;
 	int shift = int(scrollbar.offset / 63)*ile_w;
 	for(int i = 0, ile = min(ile_w*ile_h, (int)i_items->size() - shift); i < ile; ++i)
 	{
 		int i_item = i_items->at(i + shift);
 		const Item* item;
-		int count;
+		int count, team;
 		if(i_item < 0)
 		{
 			item = slots[-i_item - 1];
 			count = 1;
+			team = 0;
 		}
 		else
 		{
 			ItemSlot& slot = items->at(i_item);
 			item = slot.item;
 			count = slot.count;
+			if(slot.count == slot.team_count)
+				team = 2;
+			else if(slot.team_count == 0)
+				team = 0;
+			else
+				team = 1;
 		}
 
 		int x = i%ile_w,
@@ -206,6 +212,9 @@ void Inventory::Draw(ControlDrawData*)
 		// obrazek za³o¿onego przedmiotu
 		if(i_item < 0)
 			GUI.DrawSprite(tEquipped, Int2(shift_x + x * 63, shift_y + y * 63));
+
+		// item icon
+		GUI.DrawSprite(item->icon, Int2(shift_x + x * 63, shift_y + y * 63));
 
 		// item quality icon
 		TEX icon;
@@ -218,12 +227,13 @@ void Inventory::Draw(ControlDrawData*)
 		else
 			icon = nullptr;
 		if(icon)
-			GUI.DrawSprite(icon, Int2(shift_x + x * 63, shift_y + (y + 1) * 63 - 32));
+			GUI.DrawSprite(icon, Int2(shift_x + x * 63, shift_y + (y + 1) * 63 - 24));
 
-		// obrazek przedmiotu
-		GUI.DrawSprite(item->icon, Int2(shift_x + x * 63, shift_y + y * 63));
+		// team item icon
+		if(have_team && team != 0)
+			GUI.DrawSprite(tTeamItem, Int2(shift_x + x * 63, shift_y + y * 63), team == 2 ? BLACK : COLOR_RGBA(0, 0, 0, 128));
 
-		// iloœæ
+		// count
 		if(count > 1)
 		{
 			Rect rect3 = Rect::Create(Int2(shift_x + x * 63 + 2, shift_y + y * 63), Int2(64, 63));
@@ -245,14 +255,13 @@ void Inventory::Update(float dt)
 	if(game.game_gui->book_panel->visible)
 		return;
 
-	if(lock_id == LOCK_TRADE_MY && lock_give)
+	if(lock && lock.is_give)
 	{
-		lock_timer -= dt;
-		if(lock_timer <= 0.f)
+		lock.timer -= dt;
+		if(lock.timer <= 0.f)
 		{
 			Error("IS_BETTER_ITEM timed out.");
-			lock_id = LOCK_NO;
-			lock_give = false;
+			lock = nullptr;
 		}
 	}
 
@@ -384,13 +393,12 @@ void Inventory::Update(float dt)
 
 		last_item = item;
 
-		if(!focus || !(game.pc->unit->action == A_NONE || game.pc->unit->CanDoWhileUsing()) || lock_give || lock_id != LOCK_NO)
+		if(!focus || !(game.pc->unit->action == A_NONE || game.pc->unit->CanDoWhileUsing()) || lock)
 			return;
 
 		// obs³uga kilkania w ekwipunku
 		if(mode == INVENTORY && Key.Focus() && Key.PressedRelease(VK_RBUTTON) && game.pc->unit->action == A_NONE)
 		{
-			// wyrzucanie przedmiotu
 			// wyrzuæ przedmiot
 			if(IS_SET(item->flags, ITEM_DONT_DROP) && game.IsAnyoneTalking())
 				GUI.SimpleDialog(txCantDoNow, this);
@@ -400,13 +408,12 @@ void Inventory::Update(float dt)
 				{
 					if(SlotRequireHideWeapon(slot_type))
 					{
-						// ma wyjêty ten przedmiot, schowaj go
+						// drop item after hiding it
 						unit->HideWeapon();
-						// potem wyrzuæ
-						assert(lock_id == LOCK_NO);
 						unit->player->next_action = NA_DROP;
-						lock_id = LOCK_MY;
-						lock_index = SlotToIIndex(slot_type);
+						unit->player->next_action_data.slot = slot_type;
+						if(Net::IsClient())
+							Net::PushChange(NetChange::SET_NEXT_ACTION);
 					}
 					else
 						DropSlotItem(slot_type);
@@ -440,10 +447,8 @@ void Inventory::Update(float dt)
 					else
 					{
 						// wyrzuæ okreœlon¹ liczbê
-						assert(lock_id == LOCK_NO);
 						counter = 1;
-						lock_id = LOCK_MY;
-						lock_index = i_index;
+						lock.Lock(i_index, *slot);
 						GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnDropItem), txDropItemCount, 0, slot->count, &counter);
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
@@ -463,13 +468,12 @@ void Inventory::Update(float dt)
 					// zdejmij przedmiot
 					if(SlotRequireHideWeapon(slot_type))
 					{
-						// schowaj broñ
+						// hide weapon & add next action to unequip
 						unit->HideWeapon();
-						// ustaw ¿eby j¹ zdj¹æ
-						assert(lock_id == LOCK_NO);
-						lock_id = LOCK_MY;
-						lock_index = SlotToIIndex(slot_type);
 						unit->player->next_action = NA_REMOVE;
+						unit->player->next_action_data.slot = slot_type;
+						if(Net::IsClient())
+							Net::PushChange(NetChange::SET_NEXT_ACTION);
 					}
 					else
 						RemoveSlotItem(slot_type);
@@ -478,7 +482,6 @@ void Inventory::Update(float dt)
 				{
 					if(item->IsWearableByHuman() && slot->team_count > 0 && Team.GetActiveTeamSize() > 1)
 					{
-						assert(lock_id == LOCK_NO);
 						DialogInfo di;
 						di.event = delegate<void(int)>(this, &Inventory::OnTakeItem);
 						di.name = "takeover_item";
@@ -488,8 +491,7 @@ void Inventory::Update(float dt)
 						di.order = ORDER_NORMAL;
 						di.type = DIALOG_YESNO;
 						GUI.ShowDialog(di);
-						lock_id = LOCK_MY;
-						lock_index = i_index;
+						lock.Lock(i_index, *slot);
 						last_index = INDEX_INVALID;
 						if(mode == INVENTORY)
 							tooltip.Clear();
@@ -503,12 +505,13 @@ void Inventory::Update(float dt)
 						ITEM_SLOT type = ItemTypeToSlot(item->type);
 						if(SlotRequireHideWeapon(type))
 						{
-							// ma wyjêty przedmiot, schowaj go a potem za³ó¿ nowy
-							assert(lock_id == LOCK_NO);
+							// hide equipped item & equip new one
 							unit->HideWeapon();
 							unit->player->next_action = NA_EQUIP;
-							lock_id = LOCK_MY;
-							lock_index = i_index;
+							unit->player->next_action_data.item = item;
+							unit->player->next_action_data.index = i_index;
+							if(Net::IsClient())
+								Net::PushChange(NetChange::SET_NEXT_ACTION);
 						}
 						else
 						{
@@ -538,12 +541,10 @@ void Inventory::Update(float dt)
 					// za³o¿ony przedmiot
 					if(SlotRequireHideWeapon(slot_type))
 					{
-						// ma wyjêty ten przedmiot, schowaj go i sprzedaj
-						assert(Inventory::lock_id == LOCK_NO);
-						lock_id = LOCK_TRADE_MY;
-						lock_index = SlotToIIndex(slot_type);
+						// hide equipped item and sell it
 						unit->HideWeapon();
 						unit->player->next_action = NA_SELL;
+						unit->player->next_action_data.slot = slot_type;
 					}
 					else
 						SellSlotItem(slot_type);
@@ -561,10 +562,8 @@ void Inventory::Update(float dt)
 							ile = 1;
 						else
 						{
-							assert(lock_id == LOCK_NO);
 							counter = 1;
-							lock_id = LOCK_TRADE_MY;
-							lock_index = i_index;
+							lock.Lock(i_index, *slot);
 							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnSellItem), txSellItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
@@ -591,10 +590,8 @@ void Inventory::Update(float dt)
 							ile = 1;
 						else
 						{
-							assert(lock_id == LOCK_NO);
 							counter = 1;
-							lock_id = LOCK_TRADE_OTHER;
-							lock_index = i_index;
+							lock.Lock(i_index, *slot);
 							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnBuyItem), txBuyItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
@@ -622,10 +619,8 @@ void Inventory::Update(float dt)
 							ile = 1;
 						else
 						{
-							assert(lock_id == LOCK_NO);
 							counter = 1;
-							lock_id = LOCK_TRADE_MY;
-							lock_index = i_index;
+							lock.Lock(i_index, *slot);
 							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnPutItem), txPutItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
@@ -643,12 +638,10 @@ void Inventory::Update(float dt)
 					// za³o¿ony przedmiot
 					if(SlotRequireHideWeapon(slot_type))
 					{
-						// ma wyjêty ten przedmiot, schowaj go a potem wyrzuæ
-						assert(lock_id == LOCK_NO);
-						lock_id = LOCK_TRADE_MY;
-						lock_index = SlotToIIndex(slot_type);
+						// hide equipped item and put it in container
 						unit->HideWeapon();
 						unit->player->next_action = NA_PUT;
+						unit->player->next_action_data.slot = slot_type;
 					}
 					else
 						PutSlotItem(slot_type);
@@ -687,10 +680,8 @@ void Inventory::Update(float dt)
 							ile = 1;
 						else
 						{
-							assert(lock_id == LOCK_NO);
 							counter = 1;
-							lock_id = LOCK_TRADE_OTHER;
-							lock_index = i_index;
+							lock.Lock(i_index, *slot);
 							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnLootItem), txLootItemCount, 0, slot->count, &counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
@@ -761,10 +752,8 @@ void Inventory::Update(float dt)
 							ile = slot->team_count;
 						else
 						{
-							assert(lock_id == LOCK_NO);
 							counter = 1;
-							lock_id = LOCK_TRADE_MY;
-							lock_index = i_index;
+							lock.Lock(i_index, *slot);
 							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnShareGiveItem),
 								txShareGiveItemCount, 0, slot->team_count, &counter);
 							last_index = INDEX_INVALID;
@@ -805,11 +794,10 @@ void Inventory::Update(float dt)
 							ile = slot->team_count;
 						else
 						{
-							assert(lock_id == LOCK_NO);
 							counter = 1;
-							lock_id = LOCK_TRADE_OTHER;
-							lock_index = i_index;
-							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnShareTakeItem), txShareTakeItemCount, 0, slot->team_count, &counter);
+							lock.Lock(i_index, *slot);
+							GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnShareTakeItem), txShareTakeItemCount, 0, slot->team_count,
+								&counter);
 							last_index = INDEX_INVALID;
 							if(mode == INVENTORY)
 								tooltip.Clear();
@@ -866,9 +854,7 @@ void Inventory::Update(float dt)
 									info.text = Format(txSellFreeItem, item->value / 2);
 									give_item_mode = 2;
 								}
-								assert(lock_id == LOCK_NO);
-								lock_id = LOCK_TRADE_MY;
-								lock_index = i_index;
+								lock.Lock(i_index, *slot);
 								info.event = delegate<void(int)>(this, &Inventory::OnGiveItem);
 								info.order = ORDER_NORMAL;
 								info.parent = this;
@@ -881,11 +867,7 @@ void Inventory::Update(float dt)
 						}
 						else
 						{
-							assert(lock_id == LOCK_NO);
-							lock_id = LOCK_TRADE_MY;
-							lock_index = i_index;
-							lock_give = true;
-							lock_timer = 1.f;
+							lock.Lock(i_index, *slot, true);
 							NetChange& c = Add1(Net::changes);
 							c.type = NetChange::IS_BETTER_ITEM;
 							c.id = i_index;
@@ -902,10 +884,8 @@ void Inventory::Update(float dt)
 								ile = slot->count;
 							else
 							{
-								assert(lock_id == LOCK_NO);
 								counter = 1;
-								lock_id = LOCK_TRADE_MY;
-								lock_index = i_index;
+								lock.Lock(i_index, *slot);
 								GetNumberDialog::Show(this, delegate<void(int)>(this, &Inventory::OnGivePotion), txGivePotionCount, 0, slot->count, &counter);
 								last_index = INDEX_INVALID;
 								if(mode == INVENTORY)
@@ -940,12 +920,10 @@ void Inventory::Update(float dt)
 							{
 								if(SlotRequireHideWeapon(slot_type))
 								{
-									// ma wyjêty ten przedmiot, schowaj go a potem daj
-									assert(lock_id == LOCK_NO);
-									lock_id = LOCK_TRADE_MY;
-									lock_index = SlotToIIndex(slot_type);
+									// hide equipped item and give it
 									unit->HideWeapon();
 									unit->player->next_action = NA_GIVE;
+									unit->player->next_action_data.slot = slot_type;
 								}
 								else
 									GiveSlotItem(slot_type);
@@ -963,11 +941,7 @@ void Inventory::Update(float dt)
 					}
 					else
 					{
-						assert(lock_id == LOCK_NO);
-						lock_id = LOCK_TRADE_MY;
-						lock_index = i_index;
-						lock_give = true;
-						lock_timer = 1.f;
+						lock.Lock(slot_type, true);
 						NetChange& c = Add1(Net::changes);
 						c.type = NetChange::IS_BETTER_ITEM;
 						c.id = i_index;
@@ -977,7 +951,7 @@ void Inventory::Update(float dt)
 			}
 		}
 	}
-	else if(new_index == INDEX_GOLD && mode != GIVE_OTHER && mode != SHARE_OTHER && lock_id == LOCK_NO)
+	else if(new_index == INDEX_GOLD && mode != GIVE_OTHER && mode != SHARE_OTHER && !lock)
 	{
 		// wyrzucanie/chowanie/dawanie z³ota
 		if(Key.PressedRelease(VK_LBUTTON))
@@ -1395,17 +1369,15 @@ void Inventory::OnDropGold(int id)
 //=================================================================================================
 void Inventory::OnDropItem(int id)
 {
-	assert(lock_id == LOCK_MY);
-	lock_id = LOCK_NO;
-
-	if(id == BUTTON_CANCEL || counter == 0 || lock_index == LOCK_REMOVED)
+	int index = GetLockIndexAndRelease();
+	if(id == BUTTON_CANCEL || counter == 0 || index == -1)
 		return;
 
 	if(unit->action != A_NONE || unit->live_state != Unit::ALIVE)
 		GUI.SimpleDialog(txDropNotNow, this);
 	else
 	{
-		if(unit->DropItems(lock_index, counter))
+		if(unit->DropItems(index, counter))
 		{
 			game.BuildTmpInventory(0);
 			UpdateScrollbar();
@@ -1416,12 +1388,11 @@ void Inventory::OnDropItem(int id)
 //=================================================================================================
 void Inventory::OnTakeItem(int id)
 {
-	assert(lock_id == LOCK_MY);
-	lock_id = LOCK_NO;
-	if(id == BUTTON_NO || lock_index == LOCK_REMOVED)
+	int index = GetLockIndexAndRelease();
+	if(id == BUTTON_NO || index == -1)
 		return;
 
-	ItemSlot& slot = items->at(lock_index);
+	ItemSlot& slot = items->at(index);
 	unit->player->credit += slot.item->value / 2;
 	slot.team_count = 0;
 
@@ -1431,7 +1402,7 @@ void Inventory::OnTakeItem(int id)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::TAKE_ITEM_CREDIT;
-		c.id = lock_index;
+		c.id = index;
 	}
 }
 
@@ -1461,19 +1432,17 @@ void Inventory::UpdateScrollbar()
 //=================================================================================================
 void Inventory::OnBuyItem(int id)
 {
-	assert(lock_id == LOCK_TRADE_OTHER);
-	lock_id = LOCK_NO;
-	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
-		BuyItem(lock_index, counter);
+	int index = GetLockIndexAndRelease();
+	if(id == BUTTON_OK && counter > 0 && index != -1)
+		BuyItem(index, counter);
 }
 
 //=================================================================================================
 void Inventory::OnSellItem(int id)
 {
-	assert(lock_id == LOCK_TRADE_MY);
-	lock_id = LOCK_NO;
-	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
-		SellItem(lock_index, counter);
+	int index = GetLockIndexAndRelease();
+	if(id == BUTTON_OK && counter > 0 && index != -1)
+		SellItem(index, counter);
 }
 
 //=================================================================================================
@@ -1633,10 +1602,9 @@ void Inventory::OnPutGold(int id)
 //=================================================================================================
 void Inventory::OnLootItem(int id)
 {
-	assert(lock_id == LOCK_TRADE_OTHER);
-	lock_id = LOCK_NO;
-	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
-		LootItem(lock_index, counter);
+	int index = GetLockIndexAndRelease();
+	if(id == BUTTON_OK && counter > 0 && index != -1)
+		LootItem(index, counter);
 }
 
 //=================================================================================================
@@ -1691,10 +1659,9 @@ void Inventory::LootItem(int index, uint count)
 //=================================================================================================
 void Inventory::OnPutItem(int id)
 {
-	assert(lock_id == LOCK_TRADE_MY);
-	lock_id = LOCK_NO;
-	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
-		PutItem(lock_index, counter);
+	int index = GetLockIndexAndRelease();
+	if(id == BUTTON_OK && counter > 0 && index != -1)
+		PutItem(index, counter);
 }
 
 //=================================================================================================
@@ -1833,13 +1800,12 @@ void Inventory::OnGiveGold(int id)
 //=================================================================================================
 void Inventory::OnShareGiveItem(int id)
 {
-	assert(lock_id == LOCK_TRADE_MY);
-	lock_id = LOCK_NO;
-	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
+	int index = GetLockIndexAndRelease();
+	if(id == BUTTON_OK && counter > 0 && index != -1)
 	{
 		Unit* t = unit->player->action_unit;
-		if(t->CanTake(items->at(lock_index).item, counter))
-			ShareGiveItem(lock_index, counter);
+		if(t->CanTake(items->at(index).item, counter))
+			ShareGiveItem(index, counter);
 		else
 			GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
 	}
@@ -1848,10 +1814,9 @@ void Inventory::OnShareGiveItem(int id)
 //=================================================================================================
 void Inventory::OnShareTakeItem(int id)
 {
-	assert(lock_id == LOCK_TRADE_OTHER);
-	lock_id = LOCK_NO;
-	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
-		ShareTakeItem(lock_index, counter);
+	int index = GetLockIndexAndRelease();
+	if(id == BUTTON_OK && counter > 0 && index != -1)
+		ShareTakeItem(index, counter);
 }
 
 //=================================================================================================
@@ -1935,9 +1900,8 @@ void Inventory::ShareTakeItem(int index, uint count)
 //=================================================================================================
 void Inventory::OnGiveItem(int id)
 {
-	assert(lock_id == LOCK_TRADE_MY);
-	lock_id = LOCK_NO;
-	if(id != BUTTON_YES || lock_index == LOCK_REMOVED)
+	int iindex = GetLockIndexOrSlotAndRelease();
+	if(id != BUTTON_YES || iindex == Unit::INVALID_IINDEX)
 		return;
 
 	last_index = INDEX_INVALID;
@@ -1947,16 +1911,16 @@ void Inventory::OnGiveItem(int id)
 	ItemSlot* slot;
 	ITEM_SLOT slot_type;
 
-	if(lock_index >= 0)
+	if(iindex >= 0)
 	{
-		slot = &items->at(lock_index);
+		slot = &items->at(iindex);
 		slot_type = SLOT_INVALID;
 		item = slot->item;
 	}
 	else
 	{
 		slot = nullptr;
-		slot_type = IIndexToSlot(lock_index);
+		slot_type = IIndexToSlot(iindex);
 		item = slots[slot_type];
 	}
 
@@ -1987,7 +1951,7 @@ void Inventory::OnGiveItem(int id)
 	// usuñ
 	unit->weight -= item->weight;
 	if(slot)
-		items->erase(items->begin() + lock_index);
+		items->erase(items->begin() + iindex);
 	else
 	{
 		slots[slot_type] = nullptr;
@@ -2011,7 +1975,7 @@ void Inventory::OnGiveItem(int id)
 	{
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PUT_ITEM;
-		c.id = lock_index;
+		c.id = iindex;
 		c.ile = 1;
 	}
 }
@@ -2019,13 +1983,12 @@ void Inventory::OnGiveItem(int id)
 //=================================================================================================
 void Inventory::OnGivePotion(int id)
 {
-	assert(lock_id == LOCK_TRADE_MY);
-	lock_id = LOCK_NO;
-	if(id == BUTTON_OK && counter > 0 && lock_index != LOCK_REMOVED)
+	int index = GetLockIndexAndRelease();
+	if(id == BUTTON_OK && counter > 0 && index != -1)
 	{
 		Unit* t = unit->player->action_unit;
-		if(t->CanTake(items->at(lock_index).item, counter))
-			GivePotion(lock_index, counter);
+		if(t->CanTake(items->at(index).item, counter))
+			GivePotion(index, counter);
 		else
 			GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
 	}
@@ -2090,9 +2053,7 @@ void Inventory::GiveSlotItem(ITEM_SLOT slot)
 		give_item_mode = 2;
 	}
 
-	assert(lock_id == LOCK_NO);
-	lock_id = LOCK_TRADE_MY;
-	lock_index = SlotToIIndex(slot);
+	lock.Lock(slot);
 	info.event = delegate<void(int)>(this, &Inventory::OnGiveItem);
 	info.order = ORDER_NORMAL;
 	info.parent = this;
@@ -2104,91 +2065,77 @@ void Inventory::GiveSlotItem(ITEM_SLOT slot)
 //=================================================================================================
 void Inventory::IsBetterItemResponse(bool is_better)
 {
-	if(lock_id == LOCK_TRADE_MY && lock_give)
+	if(!lock || !lock.is_give)
 	{
-		lock_id = LOCK_NO;
-		lock_give = false;
+		Error("Inventory::IsBetterItemResponse, inventory not is_give locked.");
+		return;
+	}
 
-		if(lock_index == LOCK_REMOVED)
-			Warn("Inventory::IsBetterItem, item removed (%d).", lock_index);
-		else if(game.pc->action != PlayerController::Action_GiveItems)
-			Warn("Inventory::IsBetterItem, no longer giving items.");
-		else if(!is_better)
-			GUI.SimpleDialog(txWontTakeItem, this);
-		else
+	int iindex = GetLockIndexOrSlotAndRelease();
+	if(iindex == Unit::INVALID_IINDEX)
+		Warn("Inventory::IsBetterItem, item removed.");
+	else if(game.pc->action != PlayerController::Action_GiveItems)
+		Warn("Inventory::IsBetterItem, no longer giving items.");
+	else if(!is_better)
+		GUI.SimpleDialog(txWontTakeItem, this);
+	else
+	{
+		Unit* t = game.pc->action_unit;
+		if(iindex >= 0)
 		{
-			Unit* t = game.pc->action_unit;
-			if(lock_index >= 0)
-			{
-				// przedmiot w ekwipunku
-				if(lock_index >= (int)unit->items.size())
-					Error("Inventory::IsBetterItem, invalid item index %d.", lock_index);
-				else
-				{
-					ItemSlot& slot = unit->items[lock_index];
-					if(!t->CanTake(slot.item))
-						GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
-					else
-					{
-						DialogInfo info;
-						if(slot.team_count > 0)
-						{
-							// daj dru¿ynowy przedmiot
-							info.text = Format(txSellTeamItem, slot.item->value / 2);
-							give_item_mode = 0;
-						}
-						else if(t->gold >= slot.item->value / 2)
-						{
-							// odkup przedmiot
-							info.text = Format(txSellItem, slot.item->value / 2);
-							give_item_mode = 1;
-						}
-						else
-						{
-							// zaproponuj inn¹ cenê
-							info.text = Format(txSellFreeItem, slot.item->value / 2);
-							give_item_mode = 2;
-						}
-						assert(lock_id == LOCK_NO);
-						lock_id = LOCK_TRADE_MY;
-						info.event = delegate<void(int)>(this, &Inventory::OnGiveItem);
-						info.order = ORDER_NORMAL;
-						info.parent = this;
-						info.type = DIALOG_YESNO;
-						info.pause = false;
-						GUI.ShowDialog(info);
-					}
-				}
-			}
+			// not equipped item
+			ItemSlot& slot = unit->items[iindex];
+			if(!t->CanTake(slot.item))
+				GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
 			else
 			{
-				// za³o¿ony przedmiot
-				ITEM_SLOT slot_type = IIndexToSlot(lock_index);
-				if(slot_type == SLOT_INVALID)
-					Error("Inventory::IsBetterItem, invalid slot index %d.", lock_index);
+				DialogInfo info;
+				if(slot.team_count > 0)
+				{
+					// give team item
+					info.text = Format(txSellTeamItem, slot.item->value / 2);
+					give_item_mode = 0;
+				}
+				else if(t->gold >= slot.item->value / 2)
+				{
+					// sell item
+					info.text = Format(txSellItem, slot.item->value / 2);
+					give_item_mode = 1;
+				}
 				else
 				{
-					const Item*& item = unit->slots[slot_type];
-					if(!item)
-						Error("Inventory::IsBetterItem, missing slot item %d.", slot_type);
-					else if(!t->CanTake(item))
-						GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
-					else if(SlotRequireHideWeapon(slot_type))
-					{
-						// ma wyjêty ten przedmiot, schowaj go a potem daj
-						assert(lock_id == LOCK_NO);
-						lock_id = LOCK_TRADE_MY;
-						unit->HideWeapon();
-						unit->player->next_action = NA_GIVE;
-					}
-					else
-						GiveSlotItem(slot_type);
+					// give item for free
+					info.text = Format(txSellFreeItem, slot.item->value / 2);
+					give_item_mode = 2;
 				}
+
+				lock.Lock(iindex, slot);
+				info.event = delegate<void(int)>(this, &Inventory::OnGiveItem);
+				info.order = ORDER_NORMAL;
+				info.parent = this;
+				info.type = DIALOG_YESNO;
+				info.pause = false;
+				GUI.ShowDialog(info);
 			}
 		}
+		else
+		{
+			// equipped item
+			ITEM_SLOT slot_type = IIndexToSlot(iindex);
+			const Item*& item = unit->slots[slot_type];
+			if(!t->CanTake(item))
+				GUI.SimpleDialog(Format(txNpcCantCarry, t->GetName()), this);
+			else if(SlotRequireHideWeapon(slot_type))
+			{
+				// hide equipped item and give it
+				unit->HideWeapon();
+				unit->player->next_action = NA_GIVE;
+				unit->player->next_action_data.slot = slot_type;
+			}
+			else
+				GiveSlotItem(slot_type);
+		}
 	}
-	else
-		Error("Inventory::IsBetterItemResponse, inventory not locked (%d) or no give lock (%d).", lock_id, lock_give ? 1 : 0);
 }
 
 //=================================================================================================
@@ -2232,4 +2179,32 @@ void Inventory::ReadBook(const Item* item)
 	assert(item && item->type == IT_BOOK);
 	game.game_gui->book_panel->Show((const Book*)item);
 	tooltip.Clear();
+}
+
+//=================================================================================================
+int Inventory::GetLockIndexAndRelease()
+{
+	assert(lock);
+	int index = FindItemIndex(*items, lock.index, lock.item, lock.is_team);
+	lock = nullptr;
+	return index;
+}
+
+//=================================================================================================
+int Inventory::GetLockIndexOrSlotAndRelease()
+{
+	assert(lock);
+	int iindex;
+	if(lock.slot == SLOT_INVALID)
+	{
+		iindex = FindItemIndex(*items, lock.index, lock.item, lock.is_team);
+		if(iindex == -1)
+			iindex = Unit::INVALID_IINDEX;
+	}
+	else if(slots && slots[(int)lock.slot])
+		iindex = SlotToIIndex(lock.slot);
+	else
+		iindex = Unit::INVALID_IINDEX;
+	lock = nullptr;
+	return iindex;
 }

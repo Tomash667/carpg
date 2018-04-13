@@ -1,6 +1,18 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
+Wersja X ():
++ sortowanie dru¿ynowych przedmiotów, ikona w ekwipunku
+- naprawione niedzia³anie trybu multiplayer
+- naprawiony crash po wczytaniu gry z zapisan¹ akcj¹ po schowaniu broni, zapisywanie akcji po schowaniu broni w MP
+- naprawione blokowanie akcji gracza po wczytaniu szybkiego zapisu podczas korzystania z biblioteczki
+- naprawiony crash po od³o¿eniu na biblioteczkê przedmiotu trzymanego w d³oni
+- zamkniêcie ekwipunku podczas chowania broni w celu oddania/sprzedania jej poprawnie przerywa akcjê
+- naprawiony crash gdy klient da npc za³o¿ony przedmiot
+- naprawione u¿ywanie biblioteczki przez klientów
+- naprawiony d³ugi czas przejœcia podczas walki na arenie
+
+--------------------------------------------------------------------------------
 Wersja 0.8 (2018-04-30):
 ! nie mo¿na wczytywaæ ju¿ zapisów z wersji 0.2.10 lub starszej
 + klawisz prze³¹cz bieg/chodzenie

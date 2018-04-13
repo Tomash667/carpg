@@ -226,7 +226,7 @@ void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify, bool
 		if(&player == pc)
 		{
 			pc_data.action_ready = false;
-			Inventory::lock_id = LOCK_NO;
+			Inventory::lock = nullptr;
 			if(inventory_mode > I_INVENTORY)
 				CloseInventory();
 
@@ -1937,8 +1937,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				if(bron != W_NONE)
 				{
 					pc->ostatnia = bron;
-					pc->next_action = NA_NONE;
-					Inventory::lock_id = LOCK_NO;
+					if(pc->next_action != NA_NONE)
+					{
+						pc->next_action = NA_NONE;
+						if(Net::IsClient())
+							Net::PushChange(NetChange::SET_NEXT_ACTION);
+					}
 
 					switch(u.weapon_state)
 					{
@@ -2030,8 +2034,12 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				u.weapon_state = WS_TAKING;
 				u.action = A_TAKE_WEAPON;
 				u.animation_state = 0;
-				pc->next_action = NA_NONE;
-				Inventory::lock_id = LOCK_NO;
+				if(pc->next_action != NA_NONE)
+				{
+					pc->next_action = NA_NONE;
+					if(Net::IsClient())
+						Net::PushChange(NetChange::SET_NEXT_ACTION);
+				}
 
 				if(Net::IsOnline())
 				{
@@ -2080,8 +2088,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					// chowa ³uk, dodaj info ¿eby wyj¹³ broñ
 					u.weapon_taken = W_ONE_HANDED;
 				}
-				pc->next_action = NA_NONE;
-				Inventory::lock_id = LOCK_NO;
+
+				if(pc->next_action != NA_NONE)
+				{
+					pc->next_action = NA_NONE;
+					if(Net::IsClient())
+						Net::PushChange(NetChange::SET_NEXT_ACTION);
+				}
 			}
 			else if(u.weapon_state == WS_TAKING)
 			{
@@ -2105,8 +2118,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						SET_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
-				pc->next_action = NA_NONE;
-				Inventory::lock_id = LOCK_NO;
+
+				if(pc->next_action != NA_NONE)
+				{
+					pc->next_action = NA_NONE;
+					if(Net::IsClient())
+						Net::PushChange(NetChange::SET_NEXT_ACTION);
+				}
 
 				if(Net::IsOnline())
 				{
@@ -2127,8 +2145,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					u.animation_state = 0;
 					u.action = A_TAKE_WEAPON;
 					u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_BACK | PLAY_ONCE | PLAY_PRIO1, 1);
-					pc->next_action = NA_NONE;
-					Inventory::lock_id = LOCK_NO;
+
+					if(pc->next_action != NA_NONE)
+					{
+						pc->next_action = NA_NONE;
+						if(Net::IsClient())
+							Net::PushChange(NetChange::SET_NEXT_ACTION);
+					}
 
 					if(Net::IsOnline())
 					{
@@ -2151,8 +2174,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				u.action = A_TAKE_WEAPON;
 				u.animation_state = 0;
 				u.mesh_inst->Play(NAMES::ani_take_bow, PLAY_ONCE | PLAY_PRIO1, 1);
-				pc->next_action = NA_NONE;
-				Inventory::lock_id = LOCK_NO;
+
+				if(pc->next_action != NA_NONE)
+				{
+					pc->next_action = NA_NONE;
+					if(Net::IsClient())
+						Net::PushChange(NetChange::SET_NEXT_ACTION);
+				}
 
 				if(Net::IsOnline())
 				{
@@ -2193,8 +2221,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					// chowa broñ, dodaj info ¿eby wyj¹³ broñ
 					u.weapon_taken = W_BOW;
 				}
-				pc->next_action = NA_NONE;
-				Inventory::lock_id = LOCK_NO;
+
+				if(pc->next_action != NA_NONE)
+				{
+					pc->next_action = NA_NONE;
+					if(Net::IsClient())
+						Net::PushChange(NetChange::SET_NEXT_ACTION);
+				}
 
 				if(Net::IsOnline())
 				{
@@ -2226,8 +2259,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 						SET_BIT(u.mesh_inst->groups[1].state, MeshInstance::FLAG_BACK);
 					}
 				}
-				pc->next_action = NA_NONE;
-				Inventory::lock_id = LOCK_NO;
+
+				if(pc->next_action != NA_NONE)
+				{
+					pc->next_action = NA_NONE;
+					if(Net::IsClient())
+						Net::PushChange(NetChange::SET_NEXT_ACTION);
+				}
 
 				if(Net::IsOnline())
 				{
@@ -2248,8 +2286,13 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					u.weapon_state = WS_HIDING;
 					u.animation_state = 0;
 					u.action = A_TAKE_WEAPON;
-					pc->next_action = NA_NONE;
-					Inventory::lock_id = LOCK_NO;
+
+					if(pc->next_action != NA_NONE)
+					{
+						pc->next_action = NA_NONE;
+						if(Net::IsClient())
+							Net::PushChange(NetChange::SET_NEXT_ACTION);
+					}
 
 					if(Net::IsOnline())
 					{
@@ -8082,65 +8125,62 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					{
 						switch(pc->next_action)
 						{
-						// zdejmowanie za³o¿onego przedmiotu
+						// unequip item
 						case NA_REMOVE:
-							assert(Inventory::lock_id == LOCK_MY);
-							Inventory::lock_id = LOCK_NO;
-							if(Inventory::lock_index != LOCK_REMOVED)
-								game_gui->inventory->RemoveSlotItem(IIndexToSlot(Inventory::lock_index));
+							if(u.slots[pc->next_action_data.slot])
+								game_gui->inventory->RemoveSlotItem(pc->next_action_data.slot);
 							break;
-						// zak³adanie przedmiotu po zdjêciu innego
+						// equip item after unequiping old one
 						case NA_EQUIP:
-							assert(Inventory::lock_id == LOCK_MY);
-							Inventory::lock_id = LOCK_NO;
-							if(Inventory::lock_id != LOCK_REMOVED)
-								game_gui->inventory->EquipSlotItem(Inventory::lock_index);
+							{
+								int index = pc->GetNextActionItemIndex();
+								if(index != -1)
+									game_gui->inventory->EquipSlotItem(index);
+							}
 							break;
-						// wyrzucanie za³o¿onego przedmiotu
+						// drop item after hiding it
 						case NA_DROP:
-							assert(Inventory::lock_id == LOCK_MY);
-							Inventory::lock_id = LOCK_NO;
-							if(Inventory::lock_index != LOCK_REMOVED)
-								game_gui->inventory->DropSlotItem(IIndexToSlot(Inventory::lock_index));
+							if(u.slots[pc->next_action_data.slot])
+								game_gui->inventory->DropSlotItem(pc->next_action_data.slot);
 							break;
-						// wypijanie miksturki
+						// use consumable
 						case NA_CONSUME:
-							assert(Inventory::lock_id == LOCK_MY);
-							Inventory::lock_id = LOCK_NO;
-							if(Inventory::lock_index != LOCK_REMOVED)
-								game_gui->inventory->ConsumeItem(Inventory::lock_index);
+							{
+								int index = pc->GetNextActionItemIndex();
+								if(index != -1)
+									game_gui->inventory->ConsumeItem(index);
+							}
 							break;
-						// u¿yj obiekt
+						//  use usable
 						case NA_USE:
-							if(pc_data.before_player == BP_USABLE && pc_data.before_player_ptr.usable == pc->next_action_usable)
-								PlayerUseUsable(pc->next_action_usable, true);
+							if(!pc->next_action_data.usable->user)
+								PlayerUseUsable(pc->next_action_data.usable, true);
 							break;
-						// sprzedawanie za³o¿onego przedmiotu
+						// sell equipped item
 						case NA_SELL:
-							assert(Inventory::lock_id == LOCK_TRADE_MY);
-							Inventory::lock_id = LOCK_NO;
-							if(Inventory::lock_index != LOCK_REMOVED)
-								game_gui->inv_trade_mine->SellSlotItem(IIndexToSlot(Inventory::lock_index));
+							if(u.slots[pc->next_action_data.slot])
+								game_gui->inv_trade_mine->SellSlotItem(pc->next_action_data.slot);
 							break;
-						// chowanie za³o¿onego przedmiotu do kontenera
+						// put equipped item in container
 						case NA_PUT:
-							assert(Inventory::lock_id == LOCK_TRADE_MY);
-							Inventory::lock_id = LOCK_NO;
-							if(Inventory::lock_index != LOCK_REMOVED)
-								game_gui->inv_trade_mine->PutSlotItem(IIndexToSlot(Inventory::lock_index));
+							if(u.slots[pc->next_action_data.slot])
+								game_gui->inv_trade_mine->PutSlotItem(pc->next_action_data.slot);
 							break;
-						// daj przedmiot po schowaniu
+						// give equipped item
 						case NA_GIVE:
-							assert(Inventory::lock_id == LOCK_TRADE_MY);
-							Inventory::lock_id = LOCK_NO;
-							if(Inventory::lock_index != LOCK_REMOVED)
-								game_gui->inv_trade_mine->GiveSlotItem(IIndexToSlot(Inventory::lock_index));
+							if(u.slots[pc->next_action_data.slot])
+								game_gui->inv_trade_mine->GiveSlotItem(pc->next_action_data.slot);
 							break;
 						}
-						pc->next_action = NA_NONE;
-						assert(Inventory::lock_id == LOCK_NO);
 
-						if(u.action == A_NONE && u.usable)
+						if(pc->next_action != NA_NONE)
+						{
+							pc->next_action = NA_NONE;
+							if(Net::IsClient())
+								Net::PushChange(NetChange::SET_NEXT_ACTION);
+						}
+
+						if(u.action == A_NONE && u.usable && !u.usable->container)
 						{
 							u.action = A_ANIMATION2;
 							u.animation_state = AS_ANIMATION2_USING;
@@ -13019,8 +13059,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	dialog_enc = nullptr;
 	dialog_pvp = nullptr;
 	game_gui->visible = false;
-	Inventory::lock_id = LOCK_NO;
-	Inventory::lock_give = false;
+	Inventory::lock = nullptr;
 	picked_location = -1;
 	post_effects.clear();
 	grayout = 0.f;
@@ -13763,8 +13802,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 		Info("Entering location '%s' level %d.", location->name.c_str(), dungeon_level + 1);
 
 	show_mp_panel = true;
-	Inventory::lock_id = LOCK_NO;
-	Inventory::lock_give = false;
+	Inventory::lock = nullptr;
 
 	InsideLocation* inside = (InsideLocation*)location;
 	inside->SetActiveLevel(dungeon_level);
@@ -18851,7 +18889,7 @@ void Game::UpdateArena(float dt)
 	if(arena_etap == Arena_OdliczanieDoPrzeniesienia)
 	{
 		arena_t += dt * 2;
-		if(arena_t >= 10.f) // !!!!!!!!!
+		if(arena_t >= 1.f)
 		{
 			if(arena_tryb == Arena_Walka)
 			{
@@ -19801,15 +19839,17 @@ void Game::OnCloseInventory()
 		}
 	}
 
+	if(Any(pc->next_action, NA_PUT, NA_GIVE, NA_SELL))
+		pc->next_action = NA_NONE;
+
 	pc->action = PlayerController::Action_None;
 	inventory_mode = I_NONE;
 }
 
 // zamyka ekwipunek i wszystkie okna które on móg³by utworzyæ
-void Game::CloseInventory(bool do_close)
+void Game::CloseInventory()
 {
-	if(do_close)
-		OnCloseInventory();
+	OnCloseInventory();
 	inventory_mode = I_NONE;
 	if(game_gui)
 	{
@@ -20524,7 +20564,9 @@ void Game::PlayerUseUsable(Usable* usable, bool after_action)
 				return;
 			u.HideWeapon();
 			pc->next_action = NA_USE;
-			pc->next_action_usable = &use;
+			pc->next_action_data.usable = &use;
+			if(Net::IsClient())
+				Net::PushChange(NetChange::SET_NEXT_ACTION);
 			ok = false;
 		}
 		else
@@ -21398,29 +21440,6 @@ void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bo
 {
 	assert(item && count && team_count <= count);
 
-	// ustal docelowy ekwipunek (o ile jest)
-	Inventory* inv = nullptr;
-	ItemSlot slot;
-	switch(Inventory::lock_id)
-	{
-	case LOCK_NO:
-		break;
-	case LOCK_MY:
-		if(game_gui->inventory->unit == &unit)
-			inv = game_gui->inventory;
-		break;
-	case LOCK_TRADE_MY:
-		if(game_gui->inv_trade_mine->unit == &unit)
-			inv = game_gui->inv_trade_mine;
-		break;
-	case LOCK_TRADE_OTHER:
-		if(pc->action == PlayerController::Action_LootUnit && game_gui->inv_trade_other->unit == &unit)
-			inv = game_gui->inv_trade_other;
-		break;
-	}
-	if(inv && Inventory::lock_index >= 0)
-		slot = inv->items->at(Inventory::lock_index);
-
 	// dodaj przedmiot
 	unit.AddItem(item, count, team_count);
 
@@ -21476,32 +21495,11 @@ void Game::AddItem(Unit& unit, const Item* item, uint count, uint team_count, bo
 		rebuild_id = 1;
 	if(rebuild_id != -1)
 		BuildTmpInventory(rebuild_id);
-
-	// aktualizuj zlockowany przedmiot
-	if(inv)
-	{
-		while(1)
-		{
-			ItemSlot& s = inv->items->at(Inventory::lock_index);
-			if(s.item == slot.item && s.count >= slot.count)
-				break;
-			++Inventory::lock_index;
-		}
-	}
 }
 
 void Game::AddItem(Chest& chest, const Item* item, uint count, uint team_count, bool send_msg)
 {
 	assert(item && count && team_count <= count);
-
-	// ustal docelowy ekwipunek (o ile jest)
-	Inventory* inv = nullptr;
-	ItemSlot slot;
-	if(Inventory::lock_id == LOCK_TRADE_OTHER && pc->action == PlayerController::Action_LootChest && pc->action_chest == &chest && Inventory::lock_index >= 0)
-	{
-		inv = game_gui->inv_trade_other;
-		slot = inv->items->at(Inventory::lock_index);
-	}
 
 	// dodaj przedmiot
 	chest.AddItem(item, count, team_count);
@@ -21525,18 +21523,6 @@ void Game::AddItem(Chest& chest, const Item* item, uint count, uint team_count, 
 	// czy trzeba przebudowaæ tymczasowy ekwipunek
 	if(game_gui->gp_trade->visible && pc->action == PlayerController::Action_LootChest && pc->action_chest == &chest)
 		BuildTmpInventory(1);
-
-	// aktualizuj zlockowany przedmiot
-	if(inv)
-	{
-		while(1)
-		{
-			ItemSlot& s = inv->items->at(Inventory::lock_index);
-			if(s.item == slot.item && s.count >= slot.count)
-				break;
-			++Inventory::lock_index;
-		}
-	}
 }
 
 // zbuduj tymczasowy ekwipunek który ³¹czy slots i items postaci
@@ -21603,31 +21589,6 @@ Unit* Game::FindChestUserIfPlayer(Chest* chest)
 
 void Game::RemoveItem(Unit& unit, int i_index, uint count)
 {
-	// ustal docelowy ekwipunek (o ile jest)
-	Inventory* inv = nullptr;
-	ItemSlot slot;
-	switch(Inventory::lock_id)
-	{
-	default:
-		assert(0);
-	case LOCK_NO:
-		break;
-	case LOCK_MY:
-		if(game_gui->inventory->unit == &unit)
-			inv = game_gui->inventory;
-		break;
-	case LOCK_TRADE_MY:
-		if(game_gui->inv_trade_mine->unit == &unit)
-			inv = game_gui->inv_trade_mine;
-		break;
-	case LOCK_TRADE_OTHER:
-		if(pc->action == PlayerController::Action_LootUnit && game_gui->inv_trade_other->unit == &unit)
-			inv = game_gui->inv_trade_other;
-		break;
-	}
-	if(inv && Inventory::lock_index >= 0)
-		slot = inv->items->at(Inventory::lock_index);
-
 	// usuñ przedmiot
 	bool removed = false;
 	if(i_index >= 0)
@@ -21708,23 +21669,6 @@ void Game::RemoveItem(Unit& unit, int i_index, uint count)
 	}
 	else if(game_gui->gp_trade->visible && game_gui->inv_trade_other->unit == &unit)
 		BuildTmpInventory(1);
-
-	// aktualizuj zlockowany przedmiot
-	if(inv && removed)
-	{
-		if(i_index == Inventory::lock_index)
-			Inventory::lock_index = LOCK_REMOVED;
-		else if(i_index < Inventory::lock_index)
-		{
-			while(1)
-			{
-				ItemSlot& s = inv->items->at(Inventory::lock_index);
-				if(s.item == slot.item && s.count == slot.count)
-					break;
-				--Inventory::lock_index;
-			}
-		}
-	}
 }
 
 bool Game::RemoveItem(Unit& unit, const Item* item, uint count)

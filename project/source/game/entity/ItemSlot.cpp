@@ -39,7 +39,17 @@ static bool SortItemsPred(const ItemSlot& s1, const ItemSlot& s2)
 		return false;
 	if(!s2.item)
 		return true;
-	return ItemCmp(s1.item, s2.item);
+	if(s1.item != s2.item)
+		return ItemCmp(s1.item, s2.item);
+	else
+	{
+		if(s1.item->IsStackable())
+			return false;
+		else if(s1.team_count < s2.team_count)
+			return true;
+		else
+			return false;
+	}
 }
 
 //=================================================================================================
@@ -68,6 +78,8 @@ void GetItemString(string& str, const Item* item, Unit* unit, uint count)
 	assert(item);
 
 	str = item->name;
+	if(item->IsStackable() && count > 1)
+		str += Format(" (%d)", count);
 
 	switch(item->type)
 	{
@@ -379,4 +391,34 @@ void InsertItemBare(vector<ItemSlot>& items, const Item* item, uint count, uint 
 		slot.team_count = 1;
 		items.resize(items.size() + team_count, slot);
 	}
+}
+
+bool CompareItemsForIndex(const ItemSlot& slot, const Item* item, bool is_team)
+{
+	if(slot.item != item)
+		return false;
+	if(item->IsStackable())
+		return true;
+	return (slot.team_count > 0) == is_team;
+}
+
+int FindItemIndex(const vector<ItemSlot>& items, int index, const Item* item, bool is_team)
+{
+	assert(index >= 0 && item);
+
+	if((uint)index < items.size())
+	{
+		const ItemSlot& slot = items[index];
+		if(CompareItemsForIndex(slot, item, is_team))
+			return index;
+	}
+
+	ItemSlot slot;
+	slot.item = item;
+	slot.team_count = (is_team && !item->IsStackable()) ? 1 : 0;
+	auto it = std::lower_bound(items.begin(), items.end(), slot, SortItemsPred);
+	if(it == items.end() || it->item != item || !CompareItemsForIndex(*it, item, is_team))
+		return -1;
+	else
+		return it - items.begin();
 }

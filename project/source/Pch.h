@@ -31,7 +31,6 @@
 
 //-----------------------------------------------------------------------------
 #ifndef COMMON_ONLY
-#	define __BITSTREAM_NATIVE_END
 #	include <slikenet/peerinterface.h>
 #	include <slikenet/MessageIdentifiers.h>
 #	include <slikenet/BitStream.h>

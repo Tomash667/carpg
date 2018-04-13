@@ -1,6 +1,18 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Version X ():
++ sorting team items, icon in inventory
+- fixed multiplayer not working
+- fixed crash after loading game with saved action after hiding weapon, saving action after hiding weapon in MP
+- fixed blocking player after loading saved game while using bookcase
+- fixed crash after puting welded item to bookcase
+- closing inventory when hiding weapon to sell/give it correctly cancels action
+- fixed crash when client gives npc equipped item
+- fixed using bookcase by clients
+- fixed long transition time when fighting on arena
+
+--------------------------------------------------------------------------------
 Version 0.8 (2018-04-30):
 ! cannot load saves from version 0.2.10 or older
 + key to toggle run/walk
