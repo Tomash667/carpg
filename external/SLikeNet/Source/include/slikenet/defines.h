@@ -52,7 +52,7 @@
 /// Define __BITSTREAM_NATIVE_END to NOT support endian swapping in the BitStream class.  This is faster and is what you should use
 /// unless you actually plan to have different endianness systems connect to each other
 /// Enabled by default.
-// #define __BITSTREAM_NATIVE_END
+#define __BITSTREAM_NATIVE_END
 
 /// Maximum (stack) size to use with _alloca before using new and delete instead.
 #ifndef MAX_ALLOCA_STACK_ALLOCATION
