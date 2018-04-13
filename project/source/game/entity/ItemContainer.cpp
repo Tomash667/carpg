@@ -4,6 +4,7 @@
 #include "ItemContainer.h"
 #include "QuestManager.h"
 #include "SaveState.h"
+#include "Content.h"
 
 //=================================================================================================
 void ItemContainer::Save(HANDLE file)
@@ -50,7 +51,7 @@ void ItemContainer::Load(HANDLE file)
 		}
 	}
 
-	if(can_sort && LOAD_VERSION < V_0_2_20 && !items.empty())
+	if(can_sort && !items.empty() && (LOAD_VERSION < V_0_2_20 || content::require_update))
 		SortItems(items);
 }
 

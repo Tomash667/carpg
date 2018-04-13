@@ -49,7 +49,7 @@ void Usable::Save(HANDLE file, bool local)
 	if(IS_SET(base->use_flags, BaseUsable::CONTAINER))
 		container->Save(file);
 
-	if(local)
+	if(local && !IS_SET(base->use_flags, BaseUsable::CONTAINER))
 	{
 		int refid = (user ? user->refid : -1);
 		WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
@@ -127,9 +127,26 @@ void Usable::Load(HANDLE file, bool local)
 
 	if(local)
 	{
-		int refid;
-		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-		user = Unit::GetByRefid(refid);
+		if(LOAD_VERSION >= V_MAIN)
+		{
+			if(IS_SET(base->use_flags, BaseUsable::CONTAINER))
+				user = nullptr;
+			else
+			{
+				int refid;
+				ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
+				user = Unit::GetByRefid(refid);
+			}
+		}
+		else
+		{
+			int refid;
+			ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
+			if(IS_SET(base->use_flags, BaseUsable::CONTAINER))
+				user = nullptr;
+			else
+				user = Unit::GetByRefid(refid);
+		}
 	}
 	else
 		user = nullptr;

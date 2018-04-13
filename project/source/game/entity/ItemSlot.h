@@ -67,11 +67,11 @@ struct ItemSlot
 		team_count = slot.team_count;
 	}
 
-	void Set(const Item* _item, uint _count, uint _team_count = 0)
+	void Set(const Item* item, uint count, uint team_count = 0)
 	{
-		item = _item;
-		count = _count;
-		team_count = _team_count;
+		this->item = item;
+		this->count = count;
+		this->team_count = team_count;
 	}
 };
 
@@ -111,3 +111,5 @@ inline void RemoveNullItems(vector<ItemSlot>& items)
 {
 	RemoveElements(items, IsEmpty);
 }
+
+int FindItemIndex(const vector<ItemSlot>& items, int index, const Item* item, bool is_team);

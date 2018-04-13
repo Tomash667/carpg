@@ -697,8 +697,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	pc_data.before_player = BP_NONE;
 	arena_free = true; //zabezpieczenie :3
 	unit_views.clear();
-	Inventory::lock_id = LOCK_NO;
-	Inventory::lock_give = false;
+	Inventory::lock = nullptr;
 
 	bool first = false;
 	int steps;

@@ -19,20 +19,15 @@ struct PlayerInfo;
 enum NextAction
 {
 	NA_NONE,
-	NA_REMOVE, // zdejmowanie za³o¿onego przedmiotu, Inventory::lock_index
-	NA_EQUIP, // zak³adanie przedmiotu, Inventory::lock_index
-	NA_DROP, // wyrzucanie za³o¿onego przedmiotu, Inventory::lock_index
-	NA_CONSUME, // picie miksturki, Inventory::lock_index
-	NA_USE, // u¿ywanie u¿ywalnego obiektu
-	NA_SELL, // sprzeda¿ za³o¿onego przedmiotu, Inventory::lock_index
-	NA_PUT, // chowanie za³o¿onego przedmiotu, Inventory::lock_index
-	NA_GIVE // oddawanie za³o¿onego przedmiotu, Inventory::lock_index
+	NA_REMOVE, // unequip item
+	NA_EQUIP, // equip item after unequiping old one
+	NA_DROP, // drop item after hiding it
+	NA_CONSUME, // use consumable
+	NA_USE, // use usable
+	NA_SELL, // sell equipped item
+	NA_PUT, // put equipped item in container
+	NA_GIVE // give equipped item
 };
-
-inline bool PoAkcjaTmpIndex(NextAction po)
-{
-	return po == NA_EQUIP || po == NA_CONSUME;
-}
 
 //-----------------------------------------------------------------------------
 enum PlayerStats
@@ -106,9 +101,14 @@ struct PlayerController : public HeroPlayerCommon
 	NextAction next_action;
 	union
 	{
-		int next_action_idx;
-		Usable* next_action_usable;
-	};
+		ITEM_SLOT slot;
+		Usable* usable;
+		struct
+		{
+			const Item* item;
+			int index;
+		};
+	} next_action_data;
 	WeaponType ostatnia;
 	bool godmode, noclip, is_local, recalculate_level, leaving_event;
 	int id, free_days, action_charges;
@@ -217,6 +217,7 @@ struct PlayerController : public HeroPlayerCommon
 	bool UseActionCharge();
 	void RefreshCooldown();
 	bool IsHit(Unit* unit) const;
+	int GetNextActionItemIndex() const;
 };
 
 //-----------------------------------------------------------------------------

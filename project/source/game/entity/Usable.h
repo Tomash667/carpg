@@ -52,7 +52,7 @@ struct Usable
 
 	static void AddRequest(Usable** usable, int refid, Unit* user)
 	{
-		assert(usable && refid != -1 && user);
+		assert(usable && refid != -1);
 		refid_request.push_back(UsableRequest(usable, refid, user));
 	}
 
