@@ -1,4 +1,4 @@
 ﻿CURRENT:
-! remove celownik.png
 ===============================================================================================================
 NEW:
++ drinking contest/tournament reward should be only possible to get in settlement when it was won

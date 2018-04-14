@@ -11,6 +11,11 @@ Version X ():
 - fixed crash when client gives npc equipped item
 - fixed using bookcase by clients
 - fixed long transition time when fighting on arena
+- fixed crash after loading game and gaining new fake parcel for bandits quest
+- fixed rare crash when encountered crazies and they give item to player
+- fixed crash after receiving reward from drinking contest
+- fixed snychronization of inventory bug after receiving potions after tournament combat
+- fixed crash when encountered crazy mage/crazy cook/quest madman/quest golem
 
 --------------------------------------------------------------------------------
 Version 0.7 (2018-03-31):

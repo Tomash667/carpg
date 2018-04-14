@@ -88,6 +88,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		if(prog == Progress::FoundBandits)
 		{
 			const Item* item = Item::Get("q_bandyci_paczka");
+			game->PreloadItem(item);
 			if(!game->current_dialog->pc->unit->HaveItem(item))
 			{
 				game->current_dialog->pc->unit->AddItem(item, 1, true);

@@ -11,6 +11,11 @@ Wersja X ():
 - naprawiony crash gdy klient da npc za³o¿ony przedmiot
 - naprawione u¿ywanie biblioteczki przez klientów
 - naprawiony d³ugi czas przejœcia podczas walki na arenie
+- naprawiony crash po wczytaniu gry i otrzymaniu kolejnej fa³szywej paczki w zadaniu z bandytami
+- naprawiony rzadki crash po natrafieniu na szaleñców i otrzymanie od nich przedmiotu
+- naprawiony crash po otrzymaniu nagrody za zawody w piciu
+- naprawiony b³¹d synchronizacji ekwipunku po otrzymaniu przez klienta miksturek po walce w zawodach
+- naprawiony crash podczas losowego spotkania szalonego maga/szalonego kucharza/questowego szaleñca/questowego golema
 
 --------------------------------------------------------------------------------
 Wersja 0.7 (2018-03-31):

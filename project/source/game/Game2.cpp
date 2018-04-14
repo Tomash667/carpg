@@ -5628,6 +5628,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	else if(strcmp(msg, "crazy_give_item") == 0)
 	{
 		crazy_give_item = GetRandomItem(100);
+		PreloadItem(crazy_give_item);
 		ctx.pc->unit->AddItem(crazy_give_item, 1, false);
 		if(!ctx.is_local)
 		{
