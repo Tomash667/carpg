@@ -1,5 +1,3 @@
 ﻿CURRENT:
-- equipped items aren't marked as team, no text/no icon
-- invalid stream order ID_HELLO ID_JOIN
 ===============================================================================================================
 NEW:

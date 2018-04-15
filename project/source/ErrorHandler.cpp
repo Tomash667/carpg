@@ -356,6 +356,21 @@ void ErrorHandler::StreamEnd(bool ok)
 	stream_log.Write(current_packet->length);
 	stream_log.Write(current_packet->data, current_packet->length);
 
+	if(!write_packets.empty())
+	{
+		for(WritePacket* packet : write_packets)
+		{
+			stream_log.Write<byte>(0xFF);
+			stream_log.Write<byte>(2);
+			stream_log.Write<byte>(packet->type);
+			stream_log.Write(packet->adr.address);
+			stream_log.Write(packet->size);
+			stream_log.Write(packet->data.data(), packet->size);
+			packet->Free();
+		}
+		write_packets.clear();
+	}
+
 	current_packet = nullptr;
 }
 
@@ -367,10 +382,23 @@ void ErrorHandler::StreamWrite(const void* data, uint size, int type, const Syst
 	if (!stream_log.IsOpen() || stream_log_mode != StreamLogMode::Full)
 		return;
 
-	stream_log.Write<byte>(0xFF);
-	stream_log.Write<byte>(2);
-	stream_log.Write<byte>(type);
-	stream_log.Write(adr.address);
-	stream_log.Write(size);
-	stream_log.Write(data, size);
+	if(current_packet)
+	{
+		WritePacket* packet = WritePacket::Get();
+		packet->data.resize(size);
+		memcpy(packet->data.data(), data, size);
+		packet->size = size;
+		packet->type = type;
+		packet->adr = adr;
+		write_packets.push_back(packet);
+	}
+	else
+	{
+		stream_log.Write<byte>(0xFF);
+		stream_log.Write<byte>(2);
+		stream_log.Write<byte>(type);
+		stream_log.Write(adr.address);
+		stream_log.Write(size);
+		stream_log.Write(data, size);
+	}
 }

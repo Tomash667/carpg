@@ -20,6 +20,7 @@ Version X ():
 - fixed alt tab moving cursor/view
 - automatic loading game after startup don't crash if save is invalid
 - fixed crash when using alt tab at loading in fullscreen mode
+- fixed npc asking player about better items
 
 --------------------------------------------------------------------------------
 Version 0.7 (2018-03-31):

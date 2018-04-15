@@ -20,6 +20,7 @@ Wersja X ():
 - naprawione przesuwanie kursora/widoku przed alt tab
 - automatyczne wczytywanie gry po uruchomieniu nie crashuje gdy zapis jest nieprawid³owy
 - naprawiony crash po u¿yciu alt tab w trakcie wczytywania gry w trybie pe³noekranowym
+- naprawione pytanie gracza przez npc o lepsze przedmioty 
 
 --------------------------------------------------------------------------------
 Wersja 0.7 (2018-03-31):

@@ -71,6 +71,16 @@ public:
 	void StreamWrite(const void* data, uint size, int type, const SystemAddress& adr);
 
 private:
+	struct WritePacket : ObjectPoolProxy<WritePacket>
+	{
+		virtual ~WritePacket() {}
+
+		vector<byte> data;
+		uint size;
+		int type;
+		SystemAddress adr;
+	};
+
 	ErrorHandler();
 
 	long HandleCrash(EXCEPTION_POINTERS* exc);
@@ -82,4 +92,5 @@ private:
 	FileWriter stream_log;
 	Packet* current_packet;
 	int current_stream_type;
+	vector<WritePacket*> write_packets;
 };

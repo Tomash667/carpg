@@ -228,6 +228,7 @@ struct TeamShareItem
 	Unit* from, *to;
 	const Item* item;
 	int index, value, priority;
+	bool is_team;
 };
 
 enum DRAW_FLAGS

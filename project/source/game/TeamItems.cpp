@@ -9,16 +9,29 @@
 #include "Team.h"
 
 // Team shares only work for equippable items, that have only 1 count in slot!
+// NPCs first asks about best to worst weapons, then bows, then armor then shields
+// if there are two same items it will check priority below
 
 //-----------------------------------------------------------------------------
-// powinno sortowaæ w takiej kolejnoœci:
-// najlepsza broñ, gorsza broñ, najgorsza broñ, najlepszy ³uk, œreni ³uk, najgorszy ³uk, najlepszy pancerz, œredni pancerz, najgorszy pancerz, najlepsza tarcza,
-//	œrednia tarcza, najgorsza tarcza
+// items sort order:
+// best to worst weapon, best to worst bow, best to worst armor, best to worst shield
 const int item_type_prio[4] = {
 	0, // IT_WEAPON
 	1, // IT_BOW
 	3, // IT_SHIELD
 	2  // IT_ARMOR
+};
+
+//-----------------------------------------------------------------------------
+// lower priority is better
+enum TeamItemPriority
+{
+	PRIO_MY_ITEM,
+	PRIO_MY_TEAM_ITEM,
+	PRIO_NPC_TEAM_ITEM,
+	PRIO_PC_TEAM_ITEM,
+	PRIO_NPC_ITEM,
+	PRIO_PC_ITEM
 };
 
 //-----------------------------------------------------------------------------
@@ -32,22 +45,16 @@ struct SortTeamShares
 
 	bool operator () (const TeamShareItem& t1, const TeamShareItem& t2) const
 	{
-		if(t1.item->type == t2.item->type)
-			return t1.value > t2.value;
-		else
+		if(t1.item->type != t2.item->type)
 		{
 			int p1 = item_type_prio[t1.item->type];
 			int p2 = item_type_prio[t2.item->type];
-			if(p1 != p2)
-				return p1 < p2;
-			else
-			{
-				if(t1.priority != t2.priority)
-					return t1.priority < t2.priority;
-				else
-					return t1.value < t2.value;
-			}
+			return p1 < p2;
 		}
+		else if(t1.value != t2.value)
+			return t1.value > t2.value;
+		else
+			return t1.priority < t2.priority;
 	}
 };
 
@@ -85,7 +92,10 @@ void Game::CheckTeamItemShares()
 				{
 					// don't check if can't buy
 					if(slot.team_count == 0 && slot.item->value / 2 > unit->gold && unit != other_unit)
+					{
+						++index;
 						continue;
+					}
 
 					int value;
 					if(IsBetterItem(*unit, slot.item, &value))
@@ -96,28 +106,29 @@ void Game::CheckTeamItemShares()
 						tsi.item = slot.item;
 						tsi.index = index;
 						tsi.value = value;
+						tsi.is_team = (slot.team_count != 0);
 						if(unit == other_unit)
 						{
 							if(slot.team_count == 0)
-								tsi.priority = 0; // my item
+								tsi.priority = PRIO_MY_ITEM;
 							else
-								tsi.priority = 1; // team item i have
+								tsi.priority = PRIO_MY_TEAM_ITEM;
 						}
 						else
 						{
 							if(slot.team_count != 0)
 							{
 								if(other_unit->IsPlayer())
-									tsi.priority = 3; // team item that player have
+									tsi.priority = PRIO_PC_TEAM_ITEM;
 								else
-									tsi.priority = 2; // team item that ai have
+									tsi.priority = PRIO_NPC_TEAM_ITEM;
 							}
 							else
 							{
 								if(other_unit->IsPlayer())
-									tsi.priority = 5; // item that player own
+									tsi.priority = PRIO_PC_ITEM;
 								else
-									tsi.priority = 4; // item that ai own
+									tsi.priority = PRIO_NPC_ITEM;
 							}
 						}
 					}
@@ -145,84 +156,11 @@ void Game::CheckTeamItemShares()
 //=================================================================================================
 bool Game::CheckTeamShareItem(TeamShareItem& tsi)
 {
-	int search_next;
-
-	if((int)tsi.from->items.size() <= tsi.index)
-	{
-		// index jest za du¿y, sprawdŸ czy przedmiotu nie ma wczeœniej
-		search_next = false;
-	}
-	else if(tsi.from->items[tsi.index].item == tsi.item)
-	{
-		// wszystko ok
-		return true;
-	}
-	else
-	{
-		// na tym miejscu jest inny przedmiot
-		if(tsi.index + 1 == (int)tsi.from->items.size())
-		{
-			// to jest ostatni przedmiot, szukaj wczeœniej
-			search_next = false;
-		}
-		else if(ItemCmp(tsi.item, tsi.from->items[tsi.index].item))
-		{
-			// poszukiwany przedmiot powinien byæ wczeœniej
-			search_next = false;
-		}
-		else
-		{
-			// poszukiwany przedmiot powinien byæ póŸniej
-			search_next = true;
-		}
-	}
-
-	// szukaj
-	int index = tsi.index;
-	if(search_next)
-	{
-		while(true)
-		{
-			++index;
-			if(index == (int)tsi.from->items.size())
-				return false;
-			const Item* item = tsi.from->items[index].item;
-			if(item == tsi.item)
-			{
-				// znaleziono przedmiot
-				tsi.index = index;
-				return true;
-			}
-			else if(ItemCmp(tsi.item, item))
-			{
-				// przedmiot powinien byæ przed tym przedmiotem ale go nie by³o
-				return false;
-			}
-		}
-	}
-	else
-	{
-		while(index > 0 && index >= (int)tsi.from->items.size())
-			--index;
-		while(true)
-		{
-			--index;
-			if(index == -1)
-				return false;
-			const Item* item = tsi.from->items[index].item;
-			if(item == tsi.item)
-			{
-				// znaleziono przedmiot
-				tsi.index = index;
-				return true;
-			}
-			else if(!ItemCmp(tsi.item, item))
-			{
-				// przedmiot powinien byæ po tym przedmiocie ale go nie by³o
-				return false;
-			}
-		}
-	}
+	int index = FindItemIndex(tsi.from->items, tsi.index, tsi.item, tsi.is_team);
+	if(index == -1)
+		return false;
+	tsi.index = index;
+	return true;
 }
 
 //=================================================================================================
@@ -656,8 +594,8 @@ void Game::BuyTeamItems()
 	}
 
 	// buying potions by old mage
-	if(quest_mages2->scholar
-		&& In(quest_mages2->mages_state, { Quest_Mages2::State::MageRecruited, Quest_Mages2::State::OldMageJoined, Quest_Mages2::State::OldMageRemembers, Quest_Mages2::State::BuyPotion }))
+	if(quest_mages2->scholar && In(quest_mages2->mages_state, { Quest_Mages2::State::MageRecruited, Quest_Mages2::State::OldMageJoined,
+		Quest_Mages2::State::OldMageRemembers, Quest_Mages2::State::BuyPotion }))
 	{
 		int ile = max(0, 3 - quest_mages2->scholar->CountItem(hp2));
 		if(ile)

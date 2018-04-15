@@ -213,7 +213,7 @@ void Inventory::Draw(ControlDrawData*)
 		{
 			item = slots[-i_item - 1];
 			count = 1;
-			team = 0;
+			team = (mode == LOOT_OTHER ? 1 : 0);
 		}
 		else
 		{
@@ -1295,7 +1295,7 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 		{
 			item = slots[-i_index - 1];
 			count = 1;
-			team_count = 0;
+			team_count = (mode == LOOT_OTHER ? 1 : 0);
 		}
 		else
 		{
