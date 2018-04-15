@@ -12,18 +12,6 @@ struct Unit;
 struct Game;
 
 //-----------------------------------------------------------------------------
-//enum LOCK_MODE
-//{
-//	LOCK_NO,
-//	LOCK_MY,
-//	LOCK_TRADE_MY,
-//	LOCK_TRADE_OTHER
-//};
-//
-////-----------------------------------------------------------------------------
-//const int LOCK_REMOVED = -SLOT_INVALID - 1;
-
-//-----------------------------------------------------------------------------
 class Inventory : public GamePanel
 {
 public:
@@ -48,6 +36,8 @@ public:
 
 	static void LoadText();
 	static void LoadData();
+	static void OnReset();
+	static void OnReload();
 
 	void FormatBox();
 	void InitTooltip();
@@ -155,6 +145,7 @@ private:
 	int GetLockIndexOrSlotAndRelease();
 
 	static TooltipController tooltip;
+	static bool tex_replaced;
 	Game& game;
 	float rot;
 	const Item* item_visible;

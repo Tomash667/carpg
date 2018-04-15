@@ -854,7 +854,7 @@ void GameGui::Update(float dt)
 		sidebar -= dt * 5;
 	sidebar = Clamp(sidebar, 0.f, 1.f);
 
-	if(sidebar > 0.f && !GUI.HaveDialog())
+	if(sidebar > 0.f && !GUI.HaveDialog() && show_tooltips)
 	{
 		int img_size = 64 * GUI.wnd_size.x / 1920;
 		int offset = img_size + 2;

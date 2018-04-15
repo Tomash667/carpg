@@ -28,6 +28,7 @@
 #include "StartupOptions.h"
 #include "SoundManager.h"
 #include "ScriptManager.h"
+#include "Inventory.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -682,16 +683,17 @@ void Game::OnReload()
 	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
 		V(it->e->OnResetDevice());
 
-
 	CreateTextures();
 	BuildDungeon();
 	RebuildMinimap();
+	Inventory::OnReload();
 }
 
 //=================================================================================================
 void Game::OnReset()
 {
 	GUI.OnReset();
+	Inventory::OnReset();
 
 	if(eMesh)
 		V(eMesh->OnLostDevice());

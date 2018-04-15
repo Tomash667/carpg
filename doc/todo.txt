@@ -1,12 +1,5 @@
 ﻿CURRENT:
 - equipped items aren't marked as team, no text/no icon
-- alt tab at loading fullscreen cause crash at creating some textures
 - invalid stream order ID_HELLO ID_JOIN
-- if someone joins server with same nick it will make server "Start" grayed out, need to unready & ready
-- minimap tooltip is kept visible after clicking with alt
-- alt tab, polish letters -> bugs alt menu
 ===============================================================================================================
 NEW:
-+ drinking contest/tournament reward should be only possible to get in settlement when it was won
-+ optimize website for mobile: https://search.google.com/test/mobile-friendly?utm_source=gws&utm_medium=metaline&utm_campaign=notmobilefriendy&id=0SLcOXkFjIFnhCVE6pKZig
-+ don't render when window is minmized ?

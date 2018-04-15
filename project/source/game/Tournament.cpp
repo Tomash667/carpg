@@ -451,7 +451,7 @@ void Game::UpdateTournament(float dt)
 							u.ai->have_potion = 2;
 						if(mhp >= 600.f)
 						{
-							int count = floor(mhp / 600.f);
+							int count = (int)floor(mhp / 600.f);
 							AddItem(u, p3, count, false, true);
 							mhp -= 600.f * count;
 							given_items += count;
@@ -464,7 +464,7 @@ void Game::UpdateTournament(float dt)
 						}
 						if(mhp > 0.f)
 						{
-							int count = ceil(mhp / 200.f);
+							int count = (int)ceil(mhp / 200.f);
 							AddItem(u, p1, count, false, true);
 							mhp -= 200.f * count;
 							given_items += count;

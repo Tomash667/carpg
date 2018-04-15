@@ -156,7 +156,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 		ABC abc[256];
 		if(GetCharABCWidths(hdc, 0, 255, abc) == 0)
 		{
-			Error("B³¹d pobierania szerokoœci znaków (%s, rozmiar:%d, waga:%d, b³¹d:%d).", name, size, weight, GetLastError());
+			Error("Failed to get font glyphs (%s, size:%d, weight:%d, error:%d).", name, size, weight, GetLastError());
 			SelectObject(hdc, prev);
 			DeleteObject(font);
 			ReleaseDC(nullptr, hdc);
@@ -175,20 +175,6 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 	SelectObject(hdc, prev);
 	DeleteObject(font);
 	ReleaseDC(nullptr, hdc);
-
-	// stwórz render target
-	if(!tFontTarget || tex_size > max_tex_size)
-	{
-		SafeRelease(tFontTarget);
-		hr = device->CreateTexture(tex_size, tex_size, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tFontTarget, nullptr);
-		if(FAILED(hr))
-		{
-			Error("B³¹d tworzenia tekstury render target czcionki (rozmiar:%d, b³¹d:%d).", tex_size, hr);
-			dx_font->Release();
-			return nullptr;
-		}
-		max_tex_size = tex_size;
-	}
 
 	// stwórz czcionkê
 	Font* f = new Font;
@@ -215,7 +201,7 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 				if(warn_once && offset.y + height > tex_size)
 				{
 					warn_once = false;
-					Warn("Czcionka %s (%d) nie mieœci siê w teksturze %d.", name, size, tex_size);
+					Warn("Font %s (%d) it too large for texture %d.", name, size, tex_size);
 				}
 			}
 			Glyph& g = f->glyph[i];
@@ -273,6 +259,33 @@ Font* IGUI::CreateFont(cstring name, int size, int weight, int tex_size, int out
 //=================================================================================================
 bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline)
 {
+	while(true)
+	{
+		int result = TryCreateFontInternal(font, dx_font, tex_size, outline, max_outline);
+		if(result == 0)
+			return true;
+		else if(result == 1)
+			return false;
+	}
+}
+
+//=================================================================================================
+// 0-ok, 1-failed, 2-retry
+int IGUI::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline)
+{
+	// stwórz render target
+	if(!tFontTarget || tex_size > max_tex_size)
+	{
+		SafeRelease(tFontTarget);
+		HRESULT hr = device->CreateTexture(tex_size, tex_size, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &tFontTarget, nullptr);
+		if(FAILED(hr))
+		{
+			Error("Failed to create font render target texture (size:%d, error:%d).", tex_size, hr);
+			return 1;
+		}
+		max_tex_size = tex_size;
+	}
+
 	// rozpocznij renderowanie do tekstury
 	SURFACE surf;
 	V(tFontTarget->GetSurfaceLevel(0, &surf));
@@ -345,14 +358,29 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 	HRESULT hr = device->CreateTexture(tex_size, tex_size, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tex, nullptr);
 	if(FAILED(hr))
 	{
-		Error("B³¹d tworzenia tekstury czcionki (rozmiar: %d, b³¹d: %d).", tex_size, hr);
-		return false;
+		Error("Failed to create font texture (size: %d, error: %d).", tex_size, hr);
+		return 1;
 	}
 
 	// kopiuj do nowej tekstury
 	SURFACE out_surf;
 	V(tex->GetSurfaceLevel(0, &out_surf));
-	V(D3DXLoadSurfaceFromSurface(out_surf, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0));
+	hr = D3DXLoadSurfaceFromSurface(out_surf, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0);
+	if(hr == D3DERR_DEVICELOST)
+	{
+		SURFACE backbuffer;
+		V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backbuffer));
+		V(device->SetRenderTarget(0, backbuffer));
+		backbuffer->Release();
+		surf->Release();
+		Engine::Get().WaitReset();
+		return 2;
+	}
+	else if(FAILED(hr))
+	{
+		Error("Failed to copy font to texture (size: %d, error: %d).", tex_size, hr);
+		return 1;
+	}
 	surf->Release();
 	out_surf->Release();
 
@@ -361,7 +389,7 @@ bool IGUI::CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int 
 	else
 		font->tex = tex;
 
-	return true;
+	return 0;
 }
 
 //=================================================================================================

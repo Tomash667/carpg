@@ -4,6 +4,7 @@ Historia zmian
 Wersja X ():
 + sortowanie dru¿ynowych przedmiotów, ikona w ekwipunku
 - naprawione niedzia³anie trybu multiplayer
+- naprawiony crash po u¿yciu alt tab w trybie pe³noekranowym po przegl¹daniu ekwipunku
 - naprawiony crash po wczytaniu gry z zapisan¹ akcj¹ po schowaniu broni, zapisywanie akcji po schowaniu broni w MP
 - naprawione blokowanie akcji gracza po wczytaniu szybkiego zapisu podczas korzystania z biblioteczki
 - naprawiony crash po od³o¿eniu na biblioteczkê przedmiotu trzymanego w d³oni
@@ -18,6 +19,7 @@ Wersja X ():
 - naprawiony crash podczas losowego spotkania szalonego maga/szalonego kucharza/questowego szaleñca/questowego golema
 - naprawione przesuwanie kursora/widoku przed alt tab
 - automatyczne wczytywanie gry po uruchomieniu nie crashuje gdy zapis jest nieprawid³owy
+- naprawiony crash po u¿yciu alt tab w trakcie wczytywania gry w trybie pe³noekranowym
 
 --------------------------------------------------------------------------------
 Wersja 0.7 (2018-03-31):

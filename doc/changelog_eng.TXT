@@ -4,6 +4,7 @@ Changelog
 Version X ():
 + sorting team items, icon in inventory
 - fixed multiplayer not working
+- fixed crash when using alt tab in fullscreen mode after opening inventory
 - fixed crash after loading game with saved action after hiding weapon, saving action after hiding weapon in MP
 - fixed blocking player after loading saved game while using bookcase
 - fixed crash after puting welded item to bookcase
@@ -18,6 +19,7 @@ Version X ():
 - fixed crash when encountered crazy mage/crazy cook/quest madman/quest golem
 - fixed alt tab moving cursor/view
 - automatic loading game after startup don't crash if save is invalid
+- fixed crash when using alt tab at loading in fullscreen mode
 
 --------------------------------------------------------------------------------
 Version 0.7 (2018-03-31):

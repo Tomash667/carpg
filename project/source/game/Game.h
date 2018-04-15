@@ -1078,6 +1078,7 @@ public:
 	void ExitToMenu();
 	void DoExitToMenu();
 	void GenerateItemImage(TaskData& task_data);
+	TEX TryGenerateItemImage(const Item& item);
 	SURFACE DrawItemImage(const Item& item, TEX tex, SURFACE surface, float rot);
 	void SetupObject(BaseObject& obj);
 	void SetupCamera(float dt);
