@@ -449,23 +449,25 @@ void Game::UpdateTournament(float dt)
 						int given_items = 0;
 						if(mhp > 0.f && u.IsAI())
 							u.ai->have_potion = 2;
-						while(mhp >= 600.f)
+						if(mhp >= 600.f)
 						{
-							u.AddItem(p3, 1, false);
-							mhp -= 600.f;
-							++given_items;
+							int count = (int)floor(mhp / 600.f);
+							AddItem(u, p3, count, false, true);
+							mhp -= 600.f * count;
+							given_items += count;
 						}
 						if(mhp >= 400.f)
 						{
-							u.AddItem(p2, 1, false);
+							AddItem(u, p2, 1, false, true);
 							mhp -= 400.f;
 							++given_items;
 						}
-						while(mhp > 0.f)
+						if(mhp > 0.f)
 						{
-							u.AddItem(p1, 1, false);
-							mhp -= 200.f;
-							++given_items;
+							int count = (int)ceil(mhp / 200.f);
+							AddItem(u, p1, count, false, true);
+							mhp -= 200.f * count;
+							given_items += count;
 						}
 						if(u.IsPlayer() && given_items)
 						{

@@ -12,18 +12,6 @@ struct Unit;
 struct Game;
 
 //-----------------------------------------------------------------------------
-enum LOCK_MODE
-{
-	LOCK_NO,
-	LOCK_MY,
-	LOCK_TRADE_MY,
-	LOCK_TRADE_OTHER
-};
-
-//-----------------------------------------------------------------------------
-const int LOCK_REMOVED = -SLOT_INVALID - 1;
-
-//-----------------------------------------------------------------------------
 class Inventory : public GamePanel
 {
 public:
@@ -48,6 +36,8 @@ public:
 
 	static void LoadText();
 	static void LoadData();
+	static void OnReset();
+	static void OnReload();
 
 	void FormatBox();
 	void InitTooltip();
@@ -100,13 +90,50 @@ public:
 	int counter, give_item_mode;
 	Mode mode;
 
-	static TEX tItemBar, tEquipped, tGold, tStarHq, tStarM, tStarU;
-	// sposób na aktualizacje ekwipunku gdy dziej¹ siê dwie rzeczy na raz
-	// np. chcesz wypiæ miksturkê, zaczynasz chowaæ broñ a w tym czasie z nik¹d pojawi siê jakiœ przedmiot, indeks miksturki siê zmienia
-	static LOCK_MODE lock_id;
-	static int lock_index;
-	static bool lock_give;
-	static float lock_timer;
+	static TEX tItemBar, tEquipped, tGold, tStarHq, tStarM, tStarU, tTeamItem;
+
+	// item lock - keeps track of item while inventory is changing
+	struct ItemLock
+	{
+		ITEM_SLOT slot;
+		int index;
+		const Item* item;
+		float timer;
+		bool is_team, is_give;
+
+		ItemLock() : index(-1) {}
+
+		operator bool() const
+		{
+			return index != -1;
+		}
+
+		void operator = (nullptr_t)
+		{
+			index = -1;
+			slot = SLOT_INVALID;
+		}
+
+		void Lock(int index, ItemSlot& slot, bool is_give = false)
+		{
+			assert(index >= 0 && slot.item);
+			this->index = index;
+			this->is_give = is_give;
+			this->slot = SLOT_INVALID;
+			item = slot.item;
+			is_team = slot.team_count > 0;
+			timer = 1.f;
+		}
+
+		void Lock(ITEM_SLOT slot, bool is_give = false)
+		{
+			index = 0;
+			this->slot = slot;
+			this->is_give = is_give;
+			timer = 1.f;
+		}
+	};
+	static ItemLock lock;
 
 private:
 	void GetTooltip(TooltipController* tooltip, int group, int id);
@@ -114,8 +141,11 @@ private:
 	void ReadBook(const Item* item);
 	void FormatBox(int group, string& text, string& small_text, TEX& img);
 	bool AllowForUnit() { return Any(mode, GIVE_MY, GIVE_OTHER, SHARE_MY, SHARE_OTHER); }
+	int GetLockIndexAndRelease();
+	int GetLockIndexOrSlotAndRelease();
 
 	static TooltipController tooltip;
+	static bool tex_replaced;
 	Game& game;
 	float rot;
 	const Item* item_visible;

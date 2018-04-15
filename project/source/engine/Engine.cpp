@@ -396,7 +396,7 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 
 //=================================================================================================
 // Do pseudo update tick, used to render in update loop
-void Engine::DoPseudotick()
+void Engine::DoPseudotick(bool msg_only)
 {
 	MSG msg = { 0 };
 	if(!timer.IsStarted())
@@ -408,7 +408,10 @@ void Engine::DoPseudotick()
 		DispatchMessage(&msg);
 	}
 
-	DoTick(false);
+	if(msg_only)
+		timer.Tick();
+	else
+		DoTick(false);
 }
 
 //=================================================================================================
@@ -429,8 +432,7 @@ void Engine::DoTick(bool update_game)
 	}
 
 	// update activity state
-	HWND foreground = GetForegroundWindow();
-	bool is_active = (foreground == hwnd);
+	bool is_active = IsWindowActive();
 	bool was_active = active;
 	UpdateActivity(is_active);
 
@@ -482,6 +484,15 @@ void Engine::DoTick(bool update_game)
 	Render();
 	Key.Update();
 	sound_mgr->Update(dt);
+}
+
+//=================================================================================================
+bool Engine::IsWindowActive()
+{
+	HWND foreground = GetForegroundWindow();
+	if(foreground != hwnd)
+		return false;
+	return !IsIconic(hwnd);
 }
 
 //=================================================================================================
@@ -933,7 +944,7 @@ void Engine::Render(bool dont_call_present)
 			}
 		}
 		else
-			throw Format("Engine: Lost directx device (%d)!", hr);
+			throw Format("Engine: Lost directx device (%d).", hr);
 	}
 
 	OnDraw();
@@ -946,7 +957,7 @@ void Engine::Render(bool dont_call_present)
 			if(hr == D3DERR_DEVICELOST)
 				lost_device = true;
 			else
-				throw Format("Engine: Failed to present screen (%d)!", hr);
+				throw Format("Engine: Failed to present screen (%d).", hr);
 		}
 	}
 }
@@ -974,10 +985,15 @@ bool Engine::Reset(bool force)
 	if(FAILED(hr))
 	{
 		if(force || hr != D3DERR_DEVICELOST)
-			throw Format("Engine: Failed to reset directx device (%d)!", hr);
+		{
+			if(hr == D3DERR_INVALIDCALL)
+				throw "Engine: Device reset returned D3DERR_INVALIDCALL, not all resources was released.";
+			else
+				throw Format("Engine: Failed to reset directx device (%d).", hr);
+		}
 		else
 		{
-			Warn("Failed to reset device.");
+			Warn("Engine: Failed to reset device.");
 			return false;
 		}
 	}
@@ -990,6 +1006,66 @@ bool Engine::Reset(bool force)
 	res_freed = false;
 
 	return true;
+}
+
+//=================================================================================================
+void Engine::WaitReset()
+{
+	Info("Engine: Device lost at loading. Waiting for reset.");
+
+	// free resources
+	if(!res_freed)
+	{
+		res_freed = true;
+		V(sprite->OnLostDevice());
+		OnReset();
+	}
+	UpdateActivity(false);
+
+	// gather params
+	D3DPRESENT_PARAMETERS d3dpp = { 0 };
+	GatherParams(d3dpp);
+
+	// wait for reset
+	while(true)
+	{
+		DoPseudotick(true);
+
+		HRESULT hr = device->TestCooperativeLevel();
+		if(hr == D3DERR_DEVICELOST)
+		{
+			Info("Engine: Device lost, waiting...");
+		}
+		else if(hr == D3DERR_DEVICENOTRESET)
+		{
+			Info("Engine: Device can be reseted, trying...");
+
+			// reset
+			hr = device->Reset(&d3dpp);
+			if(FAILED(hr))
+			{
+				if(hr == D3DERR_DEVICELOST)
+					Warn("Engine: Can't reset, device is lost.");
+				else if(hr == D3DERR_INVALIDCALL)
+					throw "Engine: Device reset returned D3DERR_INVALIDCALL, not all resources was released.";
+				else
+					throw Format("Engine: Device reset returned error (%u).", hr);
+			}
+			else
+				break;
+		}
+		else
+			throw Format("Engine: Device lost and cannot reset (%u).", hr);
+		Sleep(500);
+	}
+
+	// reload resources
+	Info("Engine: Device reset successful. Reloading resources.");
+	SetDefaultRenderState();
+	OnReload();
+	V(sprite->OnResetDevice());
+	lost_device = false;
+	res_freed = false;
 }
 
 namespace E

@@ -8,6 +8,7 @@
 #include "PlayerController.h"
 #include "Var.h"
 #include "SaveState.h"
+#include "Game.h"
 
 #ifdef _DEBUG
 #	define CHECKED(x) { int _r = (x); assert(_r >= 0); }
@@ -253,6 +254,13 @@ VarsContainer* Unit_GetVars(Unit* unit)
 	return SM->GetVars(unit);
 }
 
+void Unit_RemoveItem(Unit* unit, const string& id)
+{
+	Item* item = Item::TryGet(id);
+	if(item)
+		Game::Get().RemoveItem(*unit, item, 1u);
+}
+
 void ScriptManager::RegisterGame()
 {
 	// use generic type ??? for get is set
@@ -289,6 +297,7 @@ void ScriptManager::RegisterGame()
 		.Method("int get_gold() const", asMETHOD(Unit, GetGold))
 		.Method("void set_gold(int)", asMETHOD(Unit, SetGold))
 		.Method("VarsContainer@ get_vars()", asFUNCTION(Unit_GetVars))
+		.Method("void RemoveItem(const string& in)", asFUNCTION(Unit_RemoveItem))
 		.WithInstance("Unit@ target", &target);
 
 	AddType("Player")

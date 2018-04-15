@@ -445,7 +445,13 @@ void Game::StartGameMode()
 			}
 			catch(const SaveException& ex)
 			{
-				GUI.SimpleDialog(ex.localized_msg, nullptr);
+				Error("Failed to quickload multiplayer game: %s", ex.msg);
+				cstring dialog_text;
+				if(ex.localized_msg)
+					dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
+				else
+					dialog_text = txLoadErrorGeneric;
+				GUI.SimpleDialog(dialog_text, nullptr);
 				break;
 			}
 		}
@@ -492,7 +498,21 @@ void Game::StartGameMode()
 			Warn("Quickstart: Can't join server, no player nick.");
 		break;
 	case QUICKSTART_LOAD:
-		LoadGameSlot(quickstart_slot);
+		try
+		{
+			LoadGameSlot(quickstart_slot);
+		}
+		catch(const SaveException& ex)
+		{
+			Error("Failed to quickload game: %s", ex.msg);
+			cstring dialog_text;
+			if(ex.localized_msg)
+				dialog_text = Format("%s%s", txLoadError, ex.localized_msg);
+			else
+				dialog_text = txLoadErrorGeneric;
+			GUI.SimpleDialog(dialog_text, nullptr);
+			break;
+		}
 		break;
 	default:
 		assert(0);

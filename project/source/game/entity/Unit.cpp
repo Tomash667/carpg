@@ -379,6 +379,9 @@ int Unit::ConsumeItem(int index)
 {
 	assert(index >= 0 && index < int(items.size()));
 
+	ItemSlot& slot = items[index];
+	assert(slot.item && slot.item->type == IT_CONSUMABLE);
+
 	// jeœli coœ robi to nie mo¿e u¿yæ
 	if(action != A_NONE)
 	{
@@ -389,10 +392,11 @@ int Unit::ConsumeItem(int index)
 			{
 				if(player->is_local)
 				{
-					assert(Inventory::lock_id == LOCK_NO);
 					player->next_action = NA_CONSUME;
-					Inventory::lock_index = index;
-					Inventory::lock_id = LOCK_MY;
+					player->next_action_data.index = index;
+					player->next_action_data.item = slot.item;
+					if(Net::IsClient())
+						Net::PushChange(NetChange::SET_NEXT_ACTION);
 					return 2;
 				}
 				else
@@ -419,19 +423,18 @@ int Unit::ConsumeItem(int index)
 		HideWeapon();
 		if(IsPlayer())
 		{
-			assert(Inventory::lock_id == LOCK_NO && player->is_local);
+			assert(player->is_local);
 			player->next_action = NA_CONSUME;
-			Inventory::lock_index = index;
-			Inventory::lock_id = LOCK_MY;
+			player->next_action_data.index = index;
+			player->next_action_data.item = slot.item;
+			if(Net::IsClient())
+				Net::PushChange(NetChange::SET_NEXT_ACTION);
 		}
 		else
 			ai->potion = index;
 		return 2;
 	}
 
-	ItemSlot& slot = items[index];
-
-	assert(slot.item && slot.item->type == IT_CONSUMABLE);
 
 	const Consumable& cons = slot.item->ToConsumable();
 
@@ -1339,7 +1342,7 @@ void Unit::Save(HANDLE file, bool local)
 			WriteFile(file, &b, sizeof(b), &tmp, nullptr);
 		}
 
-		if(usable)
+		if(usable && !usable->container)
 		{
 			if(usable->user != this)
 			{
@@ -1533,7 +1536,7 @@ void Unit::Load(HANDLE file, bool local)
 		Game::Get().load_unit_handler.push_back(this);
 	}
 	CalculateLoad();
-	if(can_sort && LOAD_VERSION < V_0_2_20)
+	if(can_sort && (LOAD_VERSION < V_0_2_20 || content::require_update))
 		SortItems(items);
 	ReadFile(file, &weight, sizeof(weight), &tmp, nullptr);
 	if(can_sort && content::require_update)

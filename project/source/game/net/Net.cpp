@@ -1187,7 +1187,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		Error("Read level: Broken portals.");
 		return false;
 	}
-	
+
 	// items to preload
 	uint items_load_count;
 	if(!stream.Read(items_load_count)
@@ -3051,7 +3051,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 							UpdateUnitInventory(*player.action_unit);
 							NetChangePlayer& c = Add1(info.changes);
 							c.type = NetChangePlayer::UPDATE_TRADER_INVENTORY;
-							c.id = player.action_unit->netid;
+							c.unit = player.action_unit;
 						}
 					}
 					// remove equipped
@@ -4188,7 +4188,7 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 			}
 			break;
-			// player used cheat 'noai'
+		// player used cheat 'noai'
 		case NetChange::CHEAT_NOAI:
 			{
 				bool state;
@@ -4598,6 +4598,80 @@ bool Game::ProcessControlMessageServer(BitStream& stream, PlayerInfo& info)
 				}
 
 				script_mgr->CloseOutput();
+			}
+			break;
+		// player set next action
+		case NetChange::SET_NEXT_ACTION:
+			{
+				if(!stream.ReadCasted<byte>(info.pc->next_action))
+				{
+					StreamError("Update server: Broken SET_NEXT_ACTION from '%s'.", info.name.c_str());
+					info.pc->next_action = NA_NONE;
+					break;
+				}
+				switch(info.pc->next_action)
+				{
+				case NA_NONE:
+					break;
+				case NA_REMOVE:
+				case NA_DROP:
+					if(!stream.ReadCasted<byte>(info.pc->next_action_data.slot))
+					{
+						StreamError("Update server: Broken SET_NEXT_ACTION(2) from '%s'.", info.name.c_str());
+						info.pc->next_action = NA_NONE;
+					}
+					else if(!IsValid(info.pc->next_action_data.slot) || !info.pc->unit->slots[info.pc->next_action_data.slot])
+					{
+						StreamError("Update server: SET_NEXT_ACTION, invalid slot %d from '%s'.", info.pc->next_action_data.slot, info.name.c_str());
+						info.pc->next_action = NA_NONE;
+					}
+					break;
+				case NA_EQUIP:
+				case NA_CONSUME:
+					if(!stream.Read(info.pc->next_action_data.index) || !ReadString1(stream))
+					{
+						StreamError("Update server: Broken SET_NEXT_ACTION(3) from '%s'.", info.name.c_str());
+						info.pc->next_action = NA_NONE;
+					}
+					else if(info.pc->next_action_data.index < 0 || (uint)info.pc->next_action_data.index >= info.u->items.size())
+					{
+						StreamError("Update server: SET_NEXT_ACTION, invalid index %d from '%s'.", info.pc->next_action_data.index, info.name.c_str());
+						info.pc->next_action = NA_NONE;
+					}
+					else
+					{
+						info.pc->next_action_data.item = Item::TryGet(BUF);
+						if(!info.pc->next_action_data.item)
+						{
+							StreamError("Update server: SET_NEXT_ACTION, invalid item '%s' from '%s'.", BUF, info.name.c_str());
+							info.pc->next_action = NA_NONE;
+						}
+					}
+					break;
+				case NA_USE:
+					{
+						int netid;
+						if(!stream.Read(netid))
+						{
+							StreamError("Update server: Broken SET_NEXT_ACTION(4) from '%s'.", info.name.c_str());
+							info.pc->next_action = NA_NONE;
+						}
+						else
+						{
+							info.pc->next_action_data.usable = FindUsable(netid);
+							if(!info.pc->next_action_data.usable)
+							{
+								StreamError("Update server: SET_NEXT_ACTION, invalid usable %d from '%s'.", netid, info.name.c_str());
+								info.pc->next_action = NA_NONE;
+							}
+						}
+					}
+					break;
+				default:
+					StreamError("Update server: SET_NEXT_ACTION, invalid action %d from '%s'.", info.pc->next_action, info.name.c_str());
+					info.pc->next_action = NA_NONE;
+					break;
+				}
 			}
 			break;
 		// player toggle always run - notify to save it
@@ -6598,6 +6672,8 @@ bool Game::ProcessControlMessageClient(BitStream& stream, bool& exit_from_server
 							unit->weapon_state = WS_HIDDEN;
 						}
 					}
+					else
+						unit->action = A_NONE;
 
 					unit->UseUsable(usable);
 					if(pc_data.before_player == BP_USABLE && pc_data.before_player_ptr.usable == usable)
@@ -8866,6 +8942,29 @@ void Game::WriteClientChanges(BitStream& stream)
 			WriteString<uint>(stream, *c.str);
 			StringPool.Free(c.str);
 			stream.Write(c.id);
+			break;
+		case NetChange::SET_NEXT_ACTION:
+			stream.WriteCasted<byte>(pc->next_action);
+			switch(pc->next_action)
+			{
+			case NA_NONE:
+				break;
+			case NA_REMOVE:
+			case NA_DROP:
+				stream.WriteCasted<byte>(pc->next_action_data.slot);
+				break;
+			case NA_EQUIP:
+			case NA_CONSUME:
+				stream.Write(pc->next_action_data.index);
+				WriteString1(stream, pc->next_action_data.item->id);
+				break;
+			case NA_USE:
+				stream.Write(pc->next_action_data.usable->netid);
+				break;
+			default:
+				assert(0);
+				break;
+			}
 			break;
 		default:
 			Error("UpdateClient: Unknown change %d.", c.type);

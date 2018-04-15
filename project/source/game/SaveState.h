@@ -17,10 +17,16 @@ enum SAVE_VERSION
 	V_0_6 = 9, // 0.6/0.6.1
 	V_0_6_2 = 10, // 0.6.2
 	V_0_7 = 11, // 0.7
-	V_0_8 = 12, // 0.8
+	V_0_7_1 = 12, // 0.7.1
+	V_NEXT = 13,
 
-	V_CURRENT = V_0_8,
-	V_FEATURE = V_CURRENT
+	// save version used by saves
+	V_CURRENT = V_NEXT,
+
+	// use this versions in development on different branches
+	V_MAIN = V_NEXT, // main bugfix branch
+	V_DEV = V_NEXT, // development branch
+	V_FEATURE = V_NEXT // feature branch
 };
 
 //-----------------------------------------------------------------------------

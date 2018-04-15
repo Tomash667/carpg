@@ -37,11 +37,12 @@ public:
 	bool CheckDisplay(const Int2& size, int& hz); // dla zera zwraca najlepszy hz
 	ID3DXEffect* CompileShader(cstring name);
 	ID3DXEffect* CompileShader(CompileShaderParams& params);
-	void DoPseudotick();
+	void DoPseudotick(bool msg_only = false);
 	void EngineShutdown();
 	void FatalError(cstring err);
 	void Render(bool dont_call_present = false);
 	bool Reset(bool force);
+	void WaitReset();
 	void ShowError(cstring msg, Logger::Level level = Logger::L_ERROR);
 	bool Start(StartupOptions& options);
 	void UnlockCursor(bool lock_on_focus = true);
@@ -121,6 +122,7 @@ private:
 	void ShowCursor(bool show);
 	void UpdateActivity(bool is_active);
 	void WindowLoop();
+	bool IsWindowActive();
 
 	static Engine* engine;
 	int multisampling, multisampling_quality;

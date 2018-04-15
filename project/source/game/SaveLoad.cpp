@@ -89,7 +89,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 	if(!CanSaveGame())
 	{
 		// w tej chwili nie mo¿na zapisaæ gry
-		GUI.SimpleDialog(txCantSaveGame, saveload->visible ? saveload : nullptr);
+		GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveGame, saveload->visible ? saveload : nullptr);
 		return false;
 	}
 
@@ -950,7 +950,7 @@ void Game::LoadGame(HANDLE file)
 	for(vector<UsableRequest>::iterator it = Usable::refid_request.begin(), end = Usable::refid_request.end(); it != end; ++it)
 	{
 		Usable* u = Usable::refid_table[it->refid];
-		if(u->user != it->user)
+		if(it->user && u->user != it->user)
 		{
 			Warn("Invalid usable %s (%d) user %s.", u->base->id.c_str(), u->refid, it->user->data->id.c_str());
 			*it->usable = nullptr;
@@ -1110,10 +1110,10 @@ void Game::LoadGame(HANDLE file)
 					break;
 				}
 			}
-			if(ok)
+			if(ok && (LOAD_VERSION < V_0_7_1 || content::require_update))
 			{
 				SortItems(*qir->items);
-				if(qir->unit && content::require_update)
+				if(qir->unit)
 					qir->unit->RecalculateWeight();
 			}
 		}
@@ -1495,10 +1495,12 @@ void Game::LoadGame(HANDLE file)
 //=================================================================================================
 void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 {
-	bool can_sort = true;
-
 	uint count;
 	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+	if(count == 0)
+		return;
+
+	bool can_sort = true;
 	cnt.resize(count);
 	for(vector<ItemSlot>::iterator it = cnt.begin(), end = cnt.end(); it != end; ++it)
 	{
@@ -1516,7 +1518,7 @@ void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 		}
 	}
 
-	if(can_sort && LOAD_VERSION < V_0_2_20 && !cnt.empty())
+	if(can_sort && (LOAD_VERSION < V_0_2_20 || content::require_update))
 		SortItems(cnt);
 }
 
@@ -1584,9 +1586,9 @@ void Game::Quicksave(bool from_console)
 	if(!CanSaveGame())
 	{
 		if(from_console)
-			AddConsoleMsg("Can't save game now.");
+			AddConsoleMsg(Net::IsClient() ? "Only server can save game." : "Can't save game now.");
 		else
-			GUI.SimpleDialog(txCantSaveNow, nullptr);
+			GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanSave : txCantSaveNow, nullptr);
 		return;
 	}
 
@@ -1603,9 +1605,9 @@ bool Game::Quickload(bool from_console)
 	if(!CanLoadGame())
 	{
 		if(from_console)
-			AddConsoleMsg("Can't load game now.");
+			AddConsoleMsg(Net::IsClient() ? "Only server can load game." : "Can't load game now.");
 		else
-			GUI.SimpleDialog(txCantLoadGame, nullptr);
+			GUI.SimpleDialog(Net::IsClient() ? txOnlyServerCanLoad : txCantLoadGame, nullptr);
 		return true;
 	}
 

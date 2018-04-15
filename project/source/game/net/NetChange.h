@@ -167,6 +167,7 @@ struct NetChange
 		CHEAT_REFRESH_COOLDOWN, // player used cheat 'refresh_cooldown'
 		END_FALLBACK, // client fallback ended []
 		RUN_SCRIPT, // run script [string(str)-code, int(id)-target netid]
+		SET_NEXT_ACTION, // player set next action [auto: byte-next_action, ...]
 		CHANGE_ALWAYS_RUN, // player toggle always run - notify to save it [bool(id)]
 
 		MAX

@@ -77,8 +77,8 @@ void Game::AddCommands()
 	cmds.push_back(ConsoleCommand(CMD_START, "start", "start server", F_LOBBY));
 	cmds.push_back(ConsoleCommand(CMD_WARP, "warp", "move player into building (warp inn/arena/hall)", F_CHEAT | F_GAME));
 	cmds.push_back(ConsoleCommand(CMD_KILLALL, "killall", "kills all enemy units in current level, with 1 it kills allies too, ignore unit in front of player (killall [0/1])", F_GAME | F_CHEAT));
-	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-10 [text] or filename)", F_GAME | F_SERVER));
-	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10 or filename)", F_GAME | F_MENU | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_SAVE, "save", "save game (save 1-10 [text] or filename)", F_GAME | F_WORLD_MAP | F_SERVER));
+	cmds.push_back(ConsoleCommand(CMD_LOAD, "load", "load game (load 1-10 or filename)", F_GAME | F_WORLD_MAP | F_MENU | F_SERVER));
 	cmds.push_back(ConsoleCommand(CMD_SHOW_MINIMAP, "show_minimap", "reveal minimap", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_SKIP_DAYS, "skip_days", "skip days [skip_days [count])", F_GAME | F_CHEAT));
 	cmds.push_back(ConsoleCommand(CMD_LIST, "list", "display list of types, don't enter type to list possible choices (list type [filter])", F_ANYWHERE));
@@ -942,7 +942,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							SaveGameFilename(text.get_ref());
 					}
 					else
-						Msg("You can't save game in this moment.");
+						Msg(Net::IsClient() ? "Only server can save game." : "You can't save game in this moment.");
 					break;
 				case CMD_LOAD:
 					if(CanLoadGame())
@@ -979,7 +979,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						Msg("You can't load game in this moment.");
+						Msg(Net::IsClient() ? "Only server can load game." : "You can't load game in this moment.");
 					break;
 				case CMD_SHOW_MINIMAP:
 					if(Net::IsLocal())

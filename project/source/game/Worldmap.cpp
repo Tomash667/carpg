@@ -700,8 +700,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	pc_data.before_player = BP_NONE;
 	arena_free = true; //zabezpieczenie :3
 	unit_views.clear();
-	Inventory::lock_id = LOCK_NO;
-	Inventory::lock_give = false;
+	Inventory::lock = nullptr;
 
 	bool first = false;
 	int steps;
@@ -4049,10 +4048,6 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		location_event_handler = game_enc->location_event_handler;
 	}
 
-	UnitGroup* group = nullptr;
-	if(group_name)
-		group = UnitGroup::TryGet(group_name);
-
 	talker = nullptr;
 	float dist, best_dist;
 
@@ -4092,21 +4087,25 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 	}
 
 	// first group of units
-	SpawnUnitsGroup(local_ctx, spawn_pos, &look_pt, count, group, level, [&](Unit* u)
+	if(group_name)
 	{
-		u->dont_attack = dont_attack;
-		dist = Vec3::Distance(u->pos, look_pt);
-		if(!talker || dist < best_dist)
+		UnitGroup* group = UnitGroup::TryGet(group_name);
+		SpawnUnitsGroup(local_ctx, spawn_pos, &look_pt, count, group, level, [&](Unit* u)
 		{
-			talker = u;
-			best_dist = dist;
-		}
-	});
+			u->dont_attack = dont_attack;
+			dist = Vec3::Distance(u->pos, look_pt);
+			if(!talker || dist < best_dist)
+			{
+				talker = u;
+				best_dist = dist;
+			}
+		});
+	}
 	
 	// second group of units
 	if(group_name2)
 	{
-		group = UnitGroup::TryGet(group_name2);
+		UnitGroup* group = UnitGroup::TryGet(group_name2);
 		SpawnUnitsGroup(local_ctx, spawn_pos, &look_pt, count2, group, level2,
 			[&](Unit* u) { u->dont_attack = dont_attack; });
 	}

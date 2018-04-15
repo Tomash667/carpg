@@ -361,8 +361,30 @@ void PlayerController::Save(FileWriter& f)
 	f << ap;
 	f << sp;
 	f << action_key;
-	f << next_action;
-	f << next_action_idx;
+	NextAction saved_next_action = next_action;
+	if(Any(saved_next_action, NA_SELL, NA_PUT, NA_GIVE))
+		saved_next_action = NA_NONE; // inventory is closed, don't save this next action
+	f << saved_next_action;
+	switch(saved_next_action)
+	{
+	case NA_NONE:
+		break;
+	case NA_REMOVE:
+	case NA_DROP:
+		f << next_action_data.slot;
+		break;
+	case NA_EQUIP:
+	case NA_CONSUME:
+		f << next_action_data.index;
+		f << next_action_data.item->id;
+		break;
+	case NA_USE:
+		f << next_action_data.usable->refid;
+		break;
+	default:
+		assert(0);
+		break;
+	}
 	f << ostatnia;
 	f << credit;
 	f << godmode;
@@ -452,7 +474,39 @@ void PlayerController::Load(FileReader& f)
 	}
 	f >> action_key;
 	f >> next_action;
-	f >> next_action_idx;
+	if(LOAD_VERSION < V_0_7_1)
+	{
+		next_action = NA_NONE;
+		f.Skip<int>();
+	}
+	else
+	{
+		switch(next_action)
+		{
+		case NA_NONE:
+			break;
+		case NA_REMOVE:
+		case NA_DROP:
+			f >> next_action_data.slot;
+			break;
+		case NA_EQUIP:
+		case NA_CONSUME:
+			f >> next_action_data.index;
+			f.ReadStringBUF();
+			next_action_data.item = Item::Get(BUF);
+			break;
+		case NA_USE:
+			Usable::AddRequest(&next_action_data.usable, f.Read<int>(), nullptr);
+			break;
+		case NA_SELL:
+		case NA_PUT:
+		case NA_GIVE:
+		default:
+			assert(0);
+			next_action = NA_NONE;
+			break;
+		}
+	}
 	f >> ostatnia;
 	if(LOAD_VERSION < V_0_2_20)
 		f.Skip<float>(); // old rise_timer
@@ -511,7 +565,7 @@ void PlayerController::Load(FileReader& f)
 		f >> split_gold;
 	else
 		split_gold = 0.f;
-	if(LOAD_VERSION >= V_CURRENT)
+	if(LOAD_VERSION >= V_DEV)
 		f >> always_run;
 	else
 		always_run = true;
@@ -732,10 +786,30 @@ void PlayerController::Write(BitStream& stream) const
 	stream.Write(action_recharge);
 	stream.Write(action_charges);
 	WriteBool(stream, always_run);
+	stream.WriteCasted<byte>(next_action);
+	switch(next_action)
+	{
+	case NA_NONE:
+		break;
+	case NA_REMOVE:
+	case NA_DROP:
+		stream.WriteCasted<byte>(next_action_data.slot);
+		break;
+	case NA_EQUIP:
+	case NA_CONSUME:
+		stream.Write(GetNextActionItemIndex());
+		break;
+	case NA_USE:
+		stream.Write(next_action_data.usable->netid);
+		break;
+	default:
+		assert(0);
+		break;
+	}
 }
 
 //=================================================================================================
-// Used to sent per-player data in ReadPlayerData
+// Used to read per-player data in ReadPlayerData
 bool PlayerController::Read(BitStream& stream)
 {
 	byte count;
@@ -758,8 +832,41 @@ bool PlayerController::Read(BitStream& stream)
 	if(!stream.Read(action_cooldown)
 		|| !stream.Read(action_recharge)
 		|| !stream.Read(action_charges)
-		|| !ReadBool(stream, always_run))
+		|| !ReadBool(stream, always_run)
+		|| !stream.ReadCasted<byte>(next_action))
 		return false;
+	switch(next_action)
+	{
+	case NA_NONE:
+		break;
+	case NA_REMOVE:
+	case NA_DROP:
+		if(!stream.ReadCasted<byte>(next_action_data.slot))
+			return false;
+		break;
+	case NA_EQUIP:
+	case NA_CONSUME:
+		{
+			if(!stream.Read(next_action_data.index))
+				return false;
+			if(next_action_data.index == -1)
+				next_action = NA_NONE;
+			else
+				next_action_data.item = unit->items[next_action_data.index].item;
+		}
+		break;
+	case NA_USE:
+		{
+			int index;
+			if(!stream.Read(index))
+				return false;
+			next_action_data.usable = Game::Get().FindUsable(index);
+		}
+		break;
+	default:
+		assert(0);
+		break;
+	}
 	return true;
 }
 
@@ -797,4 +904,10 @@ void PlayerController::RefreshCooldown()
 bool PlayerController::IsHit(Unit* unit) const
 {
 	return IsInside(action_targets, unit);
+}
+
+//=================================================================================================
+int PlayerController::GetNextActionItemIndex() const
+{
+	return FindItemIndex(unit->items, next_action_data.index, next_action_data.item, false);
 }
