@@ -280,6 +280,7 @@ private:
 	void Flush(bool lock = false);
 	void SkipLine(cstring text, uint line_begin, uint line_end, HitboxContext* hc);
 	bool CreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline);
+	int TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, int outline, int max_outline);
 	void UpdateNotifications(float dt);
 	void DrawNotifications();
 	void AddRect(const Vec2& left_top, const Vec2& right_bottom, const Vec4& color);

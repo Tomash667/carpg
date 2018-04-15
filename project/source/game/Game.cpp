@@ -28,6 +28,7 @@
 #include "StartupOptions.h"
 #include "SoundManager.h"
 #include "ScriptManager.h"
+#include "Inventory.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -682,16 +683,17 @@ void Game::OnReload()
 	for(vector<SuperShader>::iterator it = sshaders.begin(), end = sshaders.end(); it != end; ++it)
 		V(it->e->OnResetDevice());
 
-
 	CreateTextures();
 	BuildDungeon();
 	RebuildMinimap();
+	Inventory::OnReload();
 }
 
 //=================================================================================================
 void Game::OnReset()
 {
 	GUI.OnReset();
+	Inventory::OnReset();
 
 	if(eMesh)
 		V(eMesh->OnLostDevice());
@@ -2122,7 +2124,9 @@ void Game::SetGameText()
 	txLoadingQuests = Str("loadingQuests");
 	txEndOfLoading = Str("endOfLoading");
 	txCantSaveNow = Str("cantSaveNow");
+	txOnlyServerCanSave = Str("onlyServerCanSave");
 	txCantLoadGame = Str("cantLoadGame");
+	txOnlyServerCanLoad = Str("onlyServerCanLoad");
 	txLoadSignature = Str("loadSignature");
 	txLoadVersion = Str("loadVersion");
 	txLoadSaveVersionOld = Str("loadSaveVersionOld");
@@ -3042,7 +3046,8 @@ uint Game::ValidateGameData(bool major)
 	Item::Validate(err);
 	PerkInfo::Validate(err);
 	RoomType::Validate(err);
-	VerifyDialogs(script_mgr, err);
+	if(major)
+		VerifyDialogs(script_mgr, err);
 
 	if(err == 0)
 		Info("Test: Validation succeeded.");

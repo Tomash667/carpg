@@ -127,7 +127,7 @@ void Usable::Load(HANDLE file, bool local)
 
 	if(local)
 	{
-		if(LOAD_VERSION >= V_MAIN)
+		if(LOAD_VERSION >= V_0_7_1)
 		{
 			if(IS_SET(base->use_flags, BaseUsable::CONTAINER))
 				user = nullptr;

@@ -371,21 +371,34 @@ void Game::GenerateItemImage(TaskData& task_data)
 	}
 	else
 		it = item_texture_map.end();
+	
+	TEX t = TryGenerateItemImage(item);
+	item.icon = t;
+	if(it != item_texture_map.end())
+		item_texture_map.insert(it, ItemTextureMap::value_type(item.mesh, t));
+}
 
-	auto surf = DrawItemImage(item, tItemRegion, sItemRegion, 0.f);
-
-	// stwórz now¹ teksturê i skopuj obrazek do niej
+//=================================================================================================
+TEX Game::TryGenerateItemImage(const Item& item)
+{
 	TEX t;
 	SURFACE out_surface;
 	V(device->CreateTexture(ITEM_IMAGE_SIZE, ITEM_IMAGE_SIZE, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &t, nullptr));
 	V(t->GetSurfaceLevel(0, &out_surface));
-	V(D3DXLoadSurfaceFromSurface(out_surface, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0));
-	surf->Release();
-	out_surface->Release();
 
-	item.icon = t;
-	if(it != item_texture_map.end())
-		item_texture_map.insert(it, ItemTextureMap::value_type(item.mesh, t));
+	while(true)
+	{
+		SURFACE surf = DrawItemImage(item, tItemRegion, sItemRegion, 0.f);
+		HRESULT hr = D3DXLoadSurfaceFromSurface(out_surface, nullptr, nullptr, surf, nullptr, nullptr, D3DX_DEFAULT, 0);
+		surf->Release();
+		if(hr == D3DERR_DEVICELOST)
+			WaitReset();
+		else
+			break;
+	}
+
+	out_surface->Release();
+	return t;
 }
 
 //=================================================================================================
@@ -468,21 +481,21 @@ SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float ro
 
 	// koniec renderowania
 	V(device->EndScene());
-
+	
 	// kopiuj do tekstury
 	if(surface)
 	{
 		V(tex->GetSurfaceLevel(0, &surf));
 		V(device->StretchRect(surface, nullptr, surf, nullptr, D3DTEXF_NONE));
 	}
-	auto result = surf;
 
 	// przywróæ stary render target
-	V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &surf));
-	V(device->SetRenderTarget(0, surf));
-	surf->Release();
+	SURFACE backbuffer;
+	V(device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backbuffer));
+	V(device->SetRenderTarget(0, backbuffer));
+	backbuffer->Release();
 
-	return result;
+	return surf;
 }
 
 //=================================================================================================
@@ -5646,6 +5659,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	else if(strcmp(msg, "crazy_give_item") == 0)
 	{
 		crazy_give_item = GetRandomItem(100);
+		PreloadItem(crazy_give_item);
 		ctx.pc->unit->AddItem(crazy_give_item, 1, false);
 		if(!ctx.is_local)
 		{
@@ -9574,7 +9588,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 				if(Net::IsLocal() && in_tutorial && callback.target)
 				{
-					void* ptr = (void*)callback.target;
+					void* ptr = callback.target->getUserPointer();
 					if((ptr == tut_shield || ptr == tut_shield2) && tut_state == 12)
 					{
 						Train(*pc->unit, true, (int)SkillId::BOW, 1);

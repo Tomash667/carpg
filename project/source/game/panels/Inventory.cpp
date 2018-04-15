@@ -34,6 +34,7 @@ cstring Inventory::txGoldAndCredit, Inventory::txGoldDropInfo, Inventory::txCarr
 	Inventory::txNpcCantCarry, Inventory::txStatsFor, Inventory::txShowStatsFor;
 Inventory::ItemLock Inventory::lock;
 TooltipController Inventory::tooltip;
+bool Inventory::tex_replaced;
 
 //-----------------------------------------------------------------------------
 #define INDEX_GOLD -2
@@ -110,6 +111,27 @@ void Inventory::LoadData()
 	tex_mgr.AddLoadTask("star_m.png", tStarM);
 	tex_mgr.AddLoadTask("star_u.png", tStarU);
 	tex_mgr.AddLoadTask("team_item.png", tTeamItem);
+}
+
+//=================================================================================================
+void Inventory::OnReset()
+{
+	if(tooltip.img == Game::Get().tItemRegionRot)
+	{
+		tooltip.img = nullptr;
+		tex_replaced = true;
+	}
+}
+
+//=================================================================================================
+void Inventory::OnReload()
+{
+	if(tex_replaced)
+	{
+		if(!tooltip.img)
+			tooltip.img = Game::Get().tItemRegionRot;
+		tex_replaced = false;
+	}
 }
 
 //=================================================================================================
@@ -191,7 +213,7 @@ void Inventory::Draw(ControlDrawData*)
 		{
 			item = slots[-i_item - 1];
 			count = 1;
-			team = 0;
+			team = (mode == LOOT_OTHER ? 1 : 0);
 		}
 		else
 		{
@@ -367,7 +389,8 @@ void Inventory::Update(float dt)
 	}
 	if(item_visible)
 	{
-		game.DrawItemImage(*item_visible, game.tItemRegionRot, game.sItemRegionRot, rot);
+		SURFACE surface = game.DrawItemImage(*item_visible, game.tItemRegionRot, game.sItemRegionRot, rot);
+		surface->Release();
 		rot += PI * dt;
 	}
 
@@ -1272,7 +1295,7 @@ void Inventory::FormatBox(int group, string& text, string& small_text, TEX& img)
 		{
 			item = slots[-i_index - 1];
 			count = 1;
-			team_count = 0;
+			team_count = (mode == LOOT_OTHER ? 1 : 0);
 		}
 		else
 		{

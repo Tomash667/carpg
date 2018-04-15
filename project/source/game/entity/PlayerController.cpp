@@ -474,7 +474,7 @@ void PlayerController::Load(FileReader& f)
 	}
 	f >> action_key;
 	f >> next_action;
-	if(LOAD_VERSION < V_MAIN)
+	if(LOAD_VERSION < V_0_7_1)
 	{
 		next_action = NA_NONE;
 		f.Skip<int>();
