@@ -9570,7 +9570,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 				if(Net::IsLocal() && in_tutorial && callback.target)
 				{
-					void* ptr = (void*)callback.target;
+					void* ptr = callback.target->getUserPointer();
 					if((ptr == tut_shield || ptr == tut_shield2) && tut_state == 12)
 					{
 						Train(*pc->unit, true, (int)SkillId::BOW, 1);

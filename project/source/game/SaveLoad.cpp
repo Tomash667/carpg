@@ -1065,7 +1065,7 @@ void Game::LoadGame(HANDLE file)
 					break;
 				}
 			}
-			if(ok && (LOAD_VERSION < V_MAIN || content::require_update))
+			if(ok && (LOAD_VERSION < V_0_7_1 || content::require_update))
 			{
 				SortItems(*qir->items);
 				if(qir->unit)

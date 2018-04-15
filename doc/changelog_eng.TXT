@@ -1,7 +1,7 @@
 Changelog
 
 --------------------------------------------------------------------------------
-Version X ():
+Version 0.7.1 (2018-04-15):
 + sorting team items, icon in inventory
 - fixed multiplayer not working
 - fixed crash when using alt tab in fullscreen mode after opening inventory

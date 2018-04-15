@@ -1,7 +1,7 @@
 Historia zmian
 
 --------------------------------------------------------------------------------
-Wersja X ():
+Wersja 0.7.1 (2018-04-15):
 + sortowanie dru¿ynowych przedmiotów, ikona w ekwipunku
 - naprawione niedzia³anie trybu multiplayer
 - naprawiony crash po u¿yciu alt tab w trybie pe³noekranowym po przegl¹daniu ekwipunku
