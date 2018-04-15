@@ -16,6 +16,8 @@ Wersja X ():
 - naprawiony crash po otrzymaniu nagrody za zawody w piciu
 - naprawiony b³¹d synchronizacji ekwipunku po otrzymaniu przez klienta miksturek po walce w zawodach
 - naprawiony crash podczas losowego spotkania szalonego maga/szalonego kucharza/questowego szaleñca/questowego golema
+- naprawione przesuwanie kursora/widoku przed alt tab
+- automatyczne wczytywanie gry po uruchomieniu nie crashuje gdy zapis jest nieprawid³owy
 
 --------------------------------------------------------------------------------
 Wersja 0.7 (2018-03-31):

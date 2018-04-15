@@ -930,7 +930,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						SaveGameSlot(slot, text->c_str());
 					}
 					else
-						Msg("You can't save game in this moment.");
+						Msg(Net::IsClient() ? "Only server can save game." : "You can't save game in this moment.");
 					break;
 				case CMD_LOAD:
 					if(CanLoadGame())
@@ -955,7 +955,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						}
 					}
 					else
-						Msg("You can't load game in this moment.");
+						Msg(Net::IsClient() ? "Only server can load game." : "You can't load game in this moment.");
 					break;
 				case CMD_SHOW_MINIMAP:
 					if(Net::IsLocal())

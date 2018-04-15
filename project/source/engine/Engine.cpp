@@ -429,8 +429,7 @@ void Engine::DoTick(bool update_game)
 	}
 
 	// update activity state
-	HWND foreground = GetForegroundWindow();
-	bool is_active = (foreground == hwnd);
+	bool is_active = IsWindowActive();
 	bool was_active = active;
 	UpdateActivity(is_active);
 
@@ -482,6 +481,15 @@ void Engine::DoTick(bool update_game)
 	Render();
 	Key.Update();
 	sound_mgr->Update(dt);
+}
+
+//=================================================================================================
+bool Engine::IsWindowActive()
+{
+	HWND foreground = GetForegroundWindow();
+	if(foreground != hwnd)
+		return false;
+	return !IsIconic(hwnd);
 }
 
 //=================================================================================================

@@ -121,6 +121,7 @@ private:
 	void ShowCursor(bool show);
 	void UpdateActivity(bool is_active);
 	void WindowLoop();
+	bool IsWindowActive();
 
 	static Engine* engine;
 	int multisampling, multisampling_quality;
