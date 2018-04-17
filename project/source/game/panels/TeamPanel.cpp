@@ -113,7 +113,7 @@ void TeamPanel::Draw(ControlDrawData*)
 		}
 		if(u == Team.leader)
 			GUI.DrawSprite(tKorona, Int2(offset.x + 32, offset.y), WHITE, &rect);
-		if(!u->IsStanding())
+		if(!u->IsAlive())
 			GUI.DrawSprite(tCzaszka, Int2(offset.x + 64, offset.y), WHITE, &rect);
 
 		Rect r2 = {

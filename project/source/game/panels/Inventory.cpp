@@ -1383,7 +1383,7 @@ void Inventory::OnDropGold(int id)
 
 	if(counter > unit->gold)
 		GUI.SimpleDialog(txDropNoGold, this);
-	else if(unit->action != A_NONE || unit->live_state != Unit::ALIVE)
+	else if(!unit->CanAct())
 		GUI.SimpleDialog(txDropNotNow, this);
 	else
 		game.DropGold(counter);
@@ -1396,7 +1396,7 @@ void Inventory::OnDropItem(int id)
 	if(id == BUTTON_CANCEL || counter == 0 || index == -1)
 		return;
 
-	if(unit->action != A_NONE || unit->live_state != Unit::ALIVE)
+	if(!unit->CanAct())
 		GUI.SimpleDialog(txDropNotNow, this);
 	else
 	{

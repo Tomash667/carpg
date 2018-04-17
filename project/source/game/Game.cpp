@@ -2643,7 +2643,7 @@ void Game::UnitStandup(Unit& u)
 	{
 		u.mesh_inst->Play(anim, PLAY_ONCE | PLAY_PRIO3, 0);
 		u.mesh_inst->groups[0].speed = 1.f;
-		u.action = A_ANIMATION;
+		u.action = A_STAND_UP;
 		u.animation = ANI_PLAY;
 	}
 	else

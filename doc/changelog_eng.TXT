@@ -1,6 +1,11 @@
 Changelog
 
 --------------------------------------------------------------------------------
+Fixes:
+- fixed talking with unit that is standing up
+- fixed units rotating when talking for clients
+
+--------------------------------------------------------------------------------
 Version 0.7.1 (2018-04-15):
 + sorting team items, icon in inventory
 - fixed multiplayer not working
