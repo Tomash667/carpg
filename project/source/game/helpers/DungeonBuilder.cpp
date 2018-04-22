@@ -4,9 +4,10 @@
 #include "InsideLocation.h"
 #include "BaseLocation.h"
 #include "Physics.h"
+#include "Engine.h"
 
 DungeonBuilder::DungeonBuilder() : phy_world(nullptr), inside(nullptr), shape_stairs(nullptr), shape_wall(nullptr), shape_stairs_part(), dungeon_shape(nullptr),
-dungeon_shape_data(nullptr)
+dungeon_shape_data(nullptr), mesh_vb(nullptr), mesh_ib(nullptr)
 {
 }
 
@@ -18,6 +19,8 @@ DungeonBuilder::~DungeonBuilder()
 	delete shape_wall;
 	delete dungeon_shape;
 	delete dungeon_shape_data;
+	SafeRelease(mesh_vb);
+	SafeRelease(mesh_ib);
 }
 
 void DungeonBuilder::Init(CustomCollisionWorld* phy_world)
@@ -43,10 +46,14 @@ void DungeonBuilder::Init(CustomCollisionWorld* phy_world)
 	shape_stairs = s;
 }
 
-void DungeonBuilder::SpawnColliders(InsideLocation* inside)
+void DungeonBuilder::Setup(InsideLocation* inside)
 {
 	assert(inside);
 	this->inside = inside;
+}
+
+void DungeonBuilder::SpawnColliders()
+{
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	SpawnStairsCollider(lvl);
 	if((inside->type == L_DUNGEON && inside->target == LABIRYNTH) || inside->type == L_CAVE)
@@ -57,6 +64,12 @@ void DungeonBuilder::SpawnColliders(InsideLocation* inside)
 	else
 		SpawnNewColliders(lvl);
 	SpawnDungeonTrimesh();
+}
+
+void DungeonBuilder::GenerateMesh()
+{
+	InsideLocationLevel& lvl = inside->GetLevelData();
+	BuildMesh(lvl);
 }
 
 void DungeonBuilder::SpawnSimpleColliders(InsideLocationLevel& lvl)
@@ -303,4 +316,57 @@ void DungeonBuilder::AddFace(const Vec3& pos, const Vec3& shift, const Vec3& shi
 	dungeon_mesh.index.push_back(index + 1);
 	dungeon_mesh.index.push_back(index + 3);
 	index += 4;
+}
+
+void DungeonBuilder::BuildMesh(InsideLocationLevel& lvl)
+{
+	int index = 0;
+	mesh_v.clear();
+	mesh_i.clear();
+
+#define NTB_PX Vec3(1,0,0), Vec3(0,0,1), Vec3(0,-1,0)
+#define NTB_MX Vec3(-1,0,0), Vec3(0,0,-1), Vec3(0,-1,0)
+#define NTB_PY Vec3(0,1,0), Vec3(1,0,0), Vec3(0,0,-1)
+#define NTB_MY Vec3(0,-1,0), Vec3(1,0,0), Vec3(0,0,1)
+#define NTB_PZ Vec3(0,0,1), Vec3(-1,0,0), Vec3(0,-1,0)
+#define NTB_MZ Vec3(0,0,-1), Vec3(1,0,0), Vec3(0,-1,0)
+
+	for(Room& room : lvl.rooms)
+	{
+		// floor
+		mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + room.size.y)),
+			Vec2(0, (float)room.size.y), NTB_PY));
+		mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + room.size.y)),
+			Vec2((float)room.size.x, (float)room.size.y), NTB_PY));
+		mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * room.pos.y),
+			Vec2(0, 0), NTB_PY));
+		mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * room.pos.y),
+			Vec2((float)room.size.x, 0), NTB_PY));
+		mesh_i.push_back(index);
+		mesh_i.push_back(index + 1);
+		mesh_i.push_back(index + 2);
+		mesh_i.push_back(index + 2);
+		mesh_i.push_back(index + 1);
+		mesh_i.push_back(index + 3);
+		index += 4;
+	}
+
+	SafeRelease(mesh_vb);
+	SafeRelease(mesh_ib);
+
+	IDirect3DDevice9* device = Engine::Get().device;
+	void* data;
+
+	V(device->CreateVertexBuffer(sizeof(VTangent) * mesh_v.size(), D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &mesh_vb, nullptr));
+	V(mesh_vb->Lock(0, 0, &data, 0));
+	memcpy(data, mesh_v.data(), sizeof(VTangent) * mesh_v.size());
+	V(mesh_vb->Unlock());
+
+	V(device->CreateIndexBuffer(sizeof(word) * mesh_i.size(), D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_MANAGED, &mesh_ib, nullptr));
+	V(mesh_ib->Lock(0, 0, &data, 0));
+	memcpy(data, mesh_i.data(), sizeof(word) * mesh_i.size());
+	V(mesh_ib->Unlock());
+
+	primitive_count = mesh_i.size() / 3;
+	vertex_count = mesh_v.size();
 }

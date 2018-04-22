@@ -64,5 +64,6 @@ feature requirements:
 + don't recreate dungeon physics/mesh when loading same level
 + tower stairs should be rotated clock-wise to help defend for right handed
 + stairs physics collider
++ use D3DPOOL_DEFAULT and rebuild dungeon mesh
 
 - map2console mine uses Pole::ZAJETE which is not in array

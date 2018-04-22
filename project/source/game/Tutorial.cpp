@@ -376,7 +376,7 @@ void Game::StartTutorial()
 
 	// go!
 	LoadResources("", false);
-	SpawnDungeonColliders();
+	GenerateDungeonMesh();
 	CreateDungeonMinimap();
 	AddPlayerTeam(Vec3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0, false, true);
 	location_event_handler = nullptr;

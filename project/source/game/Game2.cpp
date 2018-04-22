@@ -9633,16 +9633,19 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 		RemoveElements(ctx.bullets, [](const Bullet& b) { return b.remove; });
 }
 
-void Game::SpawnDungeonColliders()
+void Game::GenerateDungeonMesh()
 {
 	assert(!location->outside);
 
 	InsideLocation* inside = (InsideLocation*)location;
-	dungeon_builder->SpawnColliders(inside);
+
+	dungeon_builder->Setup(inside);
+	dungeon_builder->SpawnColliders();
+	dungeon_builder->GenerateMesh();
 
 	//FIXME
-	draw_flags = 49152;
-	draw_phy = true;
+	//draw_flags = 49152;
+	//draw_phy = true;
 	pc->noclip = true;
 	//ParseCommand("show_minimap");
 }
@@ -13945,9 +13948,9 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 		&& !location->active_quest && dungeon_level == 0)
 		SpawnHeroesInsideDungeon();
 
-	// stwórz obiekty kolizji
+	// stwórz obiekty kolizji / model
 	if(!reenter)
-		SpawnDungeonColliders();
+		GenerateDungeonMesh();
 
 	// generuj minimapê
 	LoadingStep(txGeneratingMinimap);

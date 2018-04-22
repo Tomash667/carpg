@@ -1162,7 +1162,7 @@ public:
 	Vec4 GetLightColor();
 	Vec4 GetLightDir();
 	void UpdateBullets(LevelContext& ctx, float dt);
-	void SpawnDungeonColliders();
+	void GenerateDungeonMesh();
 	void RemoveColliders();
 	void CreateCollisionShapes();
 	bool AllowKeyboard() const { return IS_SET(allow_input, ALLOW_KEYBOARD); }

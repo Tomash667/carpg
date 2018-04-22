@@ -1068,7 +1068,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		BaseLocation& base = g_base_locations[inside->target];
 		SetDungeonParamsAndTextures(base);
 
-		SpawnDungeonColliders();
+		GenerateDungeonMesh();
 		CreateDungeonMinimap();
 	}
 

@@ -1182,7 +1182,7 @@ void Game::LoadGame(HANDLE file)
 			SetDungeonParamsAndTextures(base);
 
 			RespawnObjectColliders(false);
-			SpawnDungeonColliders();
+			GenerateDungeonMesh();
 			CreateDungeonMinimap();
 		}
 
