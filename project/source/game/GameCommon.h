@@ -4,6 +4,21 @@
 void SetGameCommonText();
 
 //-----------------------------------------------------------------------------
+
+enum COLLISION_GROUP
+{
+	CG_TERRAIN = 1 << 7,
+	CG_BUILDING = 1 << 8,
+	CG_UNIT = 1 << 9,
+	CG_OBJECT = 1 << 10,
+	CG_DOOR = 1 << 11,
+	CG_COLLIDER = 1 << 12,
+	CG_CAMERA_COLLIDER = 1 << 13,
+	CG_BARRIER = 1 << 14, // blocks only units
+	 // max 1 << 15
+};
+
+//-----------------------------------------------------------------------------
 enum GAME_DIR
 {
 	GDIR_DOWN,
@@ -13,9 +28,9 @@ enum GAME_DIR
 };
 
 //-----------------------------------------------------------------------------
-inline float dir_to_rot(int _dir)
+inline float dir_to_rot(int dir)
 {
-	switch(_dir)
+	switch(dir)
 	{
 	case GDIR_DOWN:
 		return 0;
@@ -32,9 +47,9 @@ inline float dir_to_rot(int _dir)
 }
 
 //-----------------------------------------------------------------------------
-inline Int2 dir_to_pos(int _dir)
+inline Int2 dir_to_pos(int dir)
 {
-	assert(InRange(_dir, 0, 4));
+	assert(InRange(dir, 0, 4));
 
 	const Int2 k[4] = {
 		Int2(0,-1),
@@ -43,13 +58,13 @@ inline Int2 dir_to_pos(int _dir)
 		Int2(1,0)
 	};
 
-	return k[_dir];
+	return k[dir];
 }
 
 //-----------------------------------------------------------------------------
-inline Vec3 pt_to_pos(const Int2& _pt, float _y = 0)
+inline Vec3 pt_to_pos(const Int2& pt, float y = 0)
 {
-	return Vec3(float(_pt.x * 2) + 1, _y, float(_pt.y * 2) + 1);
+	return Vec3(float(pt.x * 2) + 1, y, float(pt.y * 2) + 1);
 }
 
 //-----------------------------------------------------------------------------

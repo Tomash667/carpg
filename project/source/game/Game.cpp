@@ -31,6 +31,7 @@
 #include "Inventory.h"
 #include "CaveGenerator.h"
 #include "DungeonGenerator.h"
+#include "DungeonBuilder.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -64,7 +65,8 @@ sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cur
 cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
 grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), quickstart_class(Class::RANDOM),
 autopick_class(Class::INVALID), current_packet(nullptr), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false),
-disable_net_stats(false), script_mgr(nullptr), quickstart_slot(MAX_SAVE_SLOTS), tournament_state(TOURNAMENT_NOT_DONE), arena_free(true), autoready(false)
+disable_net_stats(false), script_mgr(nullptr), quickstart_slot(MAX_SAVE_SLOTS), tournament_state(TOURNAMENT_NOT_DONE), arena_free(true), autoready(false),
+dungeon_builder(nullptr)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -100,6 +102,14 @@ Game::~Game()
 	delete gen;
 	delete cave_gen;
 	delete dungeon_gen;
+	delete dungeon_builder;
+}
+
+//=================================================================================================
+void Game::InitSubsystems()
+{
+	dungeon_builder = new DungeonBuilder;
+	dungeon_builder->Init(phy_world);
 }
 
 //=================================================================================================
@@ -1729,20 +1739,14 @@ void Game::ClearPointers()
 	terrain_shape = nullptr;
 
 	// fizyka
-	shape_wall = nullptr;
 	shape_low_ceiling = nullptr;
 	shape_ceiling = nullptr;
 	shape_floor = nullptr;
 	shape_door = nullptr;
 	shape_block = nullptr;
-	shape_schody_c[0] = nullptr;
-	shape_schody_c[1] = nullptr;
-	shape_schody = nullptr;
 	shape_summon = nullptr;
 	shape_barrier = nullptr;
 	shape_arrow = nullptr;
-	dungeon_shape = nullptr;
-	dungeon_shape_data = nullptr;
 
 	// vertex declarations
 	for(int i = 0; i < VDI_MAX; ++i)
@@ -1800,20 +1804,14 @@ void Game::OnCleanup()
 	delete terrain_shape;
 
 	// fizyka
-	delete shape_wall;
 	delete shape_low_ceiling;
 	delete shape_ceiling;
 	delete shape_floor;
 	delete shape_door;
 	delete shape_block;
-	delete shape_schody_c[0];
-	delete shape_schody_c[1];
 	delete shape_summon;
 	delete shape_barrier;
-	delete shape_schody;
 	delete shape_arrow;
-	delete dungeon_shape;
-	delete dungeon_shape_data;
 
 	draw_batch.Clear();
 	DeleteElements(game_players);

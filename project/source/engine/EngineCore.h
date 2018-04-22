@@ -5,6 +5,7 @@
 // Engine types
 struct Sound;
 struct StartupOptions;
+class CustomCollisionWorld;
 class SoundManager;
 
 // FMod types

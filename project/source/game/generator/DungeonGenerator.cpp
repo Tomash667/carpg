@@ -770,15 +770,15 @@ void DungeonGenerator::JoinRooms()
 								r_door.size.x += (r_door.pos.x - x);
 								r_door.pos.x = x;
 							}
-							else if(x > r_door.pos.x)
-								r_door.size.x += (x - r_door.pos.x);
+							else if(x >= r_door.pos.x + r_door.size.x)
+								++r_door.size.x;
 							if(y < r_door.pos.y)
 							{
 								r_door.size.y += (r_door.pos.y - y);
 								r_door.pos.y = y;
 							}
-							else if(y > r_door.pos.y)
-								r_door.size.y += (y - r_door.pos.y);
+							else if(y >= r_door.pos.y + r_door.size.y)
+								++r_door.size.y;
 						}
 					}
 				}

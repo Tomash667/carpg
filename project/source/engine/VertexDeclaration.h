@@ -105,3 +105,10 @@ struct VPos
 {
 	Vec3 pos;
 };
+
+//-----------------------------------------------------------------------------
+struct SimpleMesh
+{
+	vector<Vec3> pos;
+	vector<int> index;
+};

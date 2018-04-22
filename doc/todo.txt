@@ -1,13 +1,19 @@
 ﻿FEATURE:
-1. fix rooms size
-? orc prison
+- objects can spawn on blocking position, in front of door/joined rooms
 2. create dungeon physics
+- moving outside of level crash in MoveUnit, tries to get room
++ small & big ceil connection
+? test with culling
 3. dungeon mesh vb, ib
++ big vb & ib
++ each room have polygons to draw info
++ drawing whole room at once
 4. ramps physics
 validate options in DungeonGenerator::Generate
 moving player
 ? GenerateDungeonObjects2 - spawning door fragments near corridor/door rooms (FindPath/SetupCamera uses this too)
 5. navmesh
++ pathfinding room -> tile -> minitile
 6. positioning
 + each room with random y
 	+ floor/ceil physics
@@ -33,4 +39,27 @@ moving player
 ? old save
 ===============================================================================================================
 NEW:
-+ allow to spawn new room doors not in middle of room, check for allowed size/position
+2. ramp, small step
+3. test jumping (no animation)
+4. big step - animation phy moving (require jump key)
+5. very big step - longer anim (jump grab)
+6. hitting ceil with head - small corridor (same room)
+7. deep hole - R to restart position
+8. overhangs - move under, jump grab
+9b. draw debug phy
+10. create navmesh
+10b. draw navmesh
+11. draw path to player (Key - mark start pos, Key - change allow fall or not)
+
+
+x. rooms pathfinding
+
+feature requirements:
+0. falling to lower level - navmesh -> allow fall
+1. holes - navmesh -> don't fall
+2. climb over small objects - detect step_size and use animation
+3. climp over big objects (jump) - like above but different animation
+5***. ropes
+7. fall damage
+
++ don't recreate dungeon physics/mesh when loading same level

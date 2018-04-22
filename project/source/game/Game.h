@@ -126,19 +126,6 @@ inline int KeyAllowState(byte k)
 		return ALLOW_NONE;
 }
 
-enum COLLISION_GROUP
-{
-	CG_TERRAIN = 1 << 7,
-	CG_BUILDING = 1 << 8,
-	CG_UNIT = 1 << 9,
-	CG_OBJECT = 1 << 10,
-	CG_DOOR = 1 << 11,
-	CG_COLLIDER = 1 << 12,
-	CG_CAMERA_COLLIDER = 1 << 13,
-	CG_BARRIER = 1 << 14, // blocks only units
-	// max 1 << 15
-};
-
 extern const float ATTACK_RANGE;
 extern const Vec2 ALERT_RANGE;
 extern const float PICKUP_RANGE;
@@ -444,6 +431,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void PreconfigureGame();
 	void PreloadLanguage();
 	void CreatePlaceholderResources();
+	void InitSubsystems();
 
 	// loading system
 	void LoadSystem();
@@ -737,17 +725,12 @@ public:
 
 	//---------------------------------
 	// FIZYKA
-	btCollisionShape* shape_wall, *shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block, *shape_schody, *shape_schody_c[2],
-		*shape_summon, *shape_barrier;
+	btCollisionShape* shape_low_ceiling, *shape_arrow, *shape_ceiling, *shape_floor, *shape_door, *shape_block, *shape_summon, *shape_barrier;
 	btHeightfieldTerrainShape* terrain_shape;
-	btBvhTriangleMeshShape* dungeon_shape;
-	btCollisionObject* obj_terrain, *obj_dungeon;
+	btCollisionObject* obj_terrain;
 	vector<CollisionObject> global_col; // wektor na tymczasowe obiekty, czêsto u¿ywany przy zbieraniu obiektów do kolizji
 	vector<btCollisionShape*> shapes;
 	vector<CameraCollider> cam_colliders;
-	vector<Vec3> dungeon_shape_pos;
-	vector<int> dungeon_shape_index;
-	btTriangleIndexVertexArray* dungeon_shape_data;
 
 	//---------------------------------
 	// WCZYTYWANIE
@@ -1180,7 +1163,6 @@ public:
 	Vec4 GetLightDir();
 	void UpdateBullets(LevelContext& ctx, float dt);
 	void SpawnDungeonColliders();
-	void SpawnDungeonCollider(const Vec3& pos);
 	void RemoveColliders();
 	void CreateCollisionShapes();
 	bool AllowKeyboard() const { return IS_SET(allow_input, ALLOW_KEYBOARD); }
@@ -2047,6 +2029,7 @@ public:
 	Int2 g_well_pt;
 	CaveGenerator* cave_gen;
 	DungeonGenerator* dungeon_gen;
+	DungeonBuilder* dungeon_builder;
 
 	//-----------------------------------------------------------------
 	// WORLD STATE

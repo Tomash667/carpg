@@ -1100,7 +1100,8 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 					node->type = DebugSceneNode::TriMesh;
 					node->group = DebugSceneNode::Physic;
 					node->mat = m3 * cam.matViewProj;
-					node->mesh_ptr = (void*)trimesh->getMeshInterface();
+					node->mesh_ptr = (SimpleMesh*)cobj->getUserPointer();
+					assert(node->mesh_ptr);
 					draw_batch.debug_nodes.push_back(node);
 				}
 				break;
@@ -3575,14 +3576,12 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 
 			if(node.type == DebugSceneNode::TriMesh)
 			{
-				btTriangleIndexVertexArray* mesh = (btTriangleIndexVertexArray*)node.mesh_ptr;
-				// currently only dungeon mesh is supported here
-				assert(mesh == dungeon_shape_data);
+				SimpleMesh* mesh = node.mesh_ptr;
 				V(device->SetVertexDeclaration(vertex_decl[VDI_POS]));
 				V(eMesh->CommitChanges());
 
-				V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, dungeon_shape_pos.size(), dungeon_shape_index.size() / 3, dungeon_shape_index.data(),
-					D3DFMT_INDEX32, dungeon_shape_pos.data(), sizeof(Vec3)));
+				V(device->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, mesh->pos.size(), mesh->index.size() / 3, mesh->index.data(),
+					D3DFMT_INDEX32, mesh->pos.data(), sizeof(Vec3)));
 			}
 			else
 			{

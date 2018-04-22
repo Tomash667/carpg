@@ -81,7 +81,7 @@ struct DebugSceneNode
 		MaxGroup
 	} group;
 	Matrix mat;
-	void* mesh_ptr;
+	SimpleMesh* mesh_ptr;
 };
 
 //-----------------------------------------------------------------------------

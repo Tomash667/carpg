@@ -1612,14 +1612,39 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						return;
 					break;
 				case CMD_TILE_INFO:
-					if(location->outside && pc->unit->in_building == -1 && terrain->IsInside(pc->unit->pos))
 					{
-						OutsideLocation* outside = (OutsideLocation*)location;
-						const TerrainTile& t = outside->tiles[pos_to_pt(pc->unit->pos)(outside->size)];
-						Msg(t.GetInfo());
+						bool ok = true;
+						if(location->outside)
+						{
+							if(pc->unit->in_building == -1 && terrain->IsInside(pc->unit->pos))
+							{
+								OutsideLocation* outside = (OutsideLocation*)location;
+								const TerrainTile& t = outside->tiles[pos_to_pt(pc->unit->pos)(outside->size)];
+								Msg(t.GetInfo());
+							}
+							else
+								ok = false;
+						}
+						else
+						{
+							InsideLocation* inside = (InsideLocation*)location;
+							InsideLocationLevel& lvl = inside->GetLevelData();
+							Int2 pt = pos_to_pt(pc->unit->pos);
+							if(lvl.IsInside(pt))
+							{
+								Pole& p = lvl.map[pt.x + pt.y * lvl.w];
+								Room* room = p.room != Room::INVALID_ROOM ? &lvl.rooms[p.room] : nullptr;
+								if(room)
+									Msg("Tile:%d;%d   Room:%u (target %d)", pt.x, pt.y, p.room, room->target);
+								else
+									Msg("Tile:%d;%d   Room:null", pt.x, pt.y);
+							}
+							else
+								ok = false;
+						}
+						if(!ok)
+							Msg("You must stand on terrain tile.");
 					}
-					else
-						Msg("You must stand on terrain tile.");
 					break;
 				case CMD_SET_SEED:
 					t.Next();

@@ -45,6 +45,7 @@
 #include "SoundManager.h"
 #include "ScriptManager.h"
 #include "CaveGenerator.h"
+#include "DungeonBuilder.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -9634,176 +9635,13 @@ void Game::SpawnDungeonColliders()
 	assert(!location->outside);
 
 	InsideLocation* inside = (InsideLocation*)location;
-	InsideLocationLevel& lvl = inside->GetLevelData();
-	Pole* m = lvl.map;
-	int w = lvl.w,
-		h = lvl.h;
+	dungeon_builder->SpawnColliders(inside);
 
-	for(int y = 1; y < h - 1; ++y)
-	{
-		for(int x = 1; x < w - 1; ++x)
-		{
-			if(czy_blokuje2(m[x + y*w]) && (!czy_blokuje2(m[x - 1 + (y - 1)*w]) || !czy_blokuje2(m[x + (y - 1)*w]) || !czy_blokuje2(m[x + 1 + (y - 1)*w]) ||
-				!czy_blokuje2(m[x - 1 + y*w]) || !czy_blokuje2(m[x + 1 + y*w]) ||
-				!czy_blokuje2(m[x - 1 + (y + 1)*w]) || !czy_blokuje2(m[x + (y + 1)*w]) || !czy_blokuje2(m[x + 1 + (y + 1)*w])))
-			{
-				SpawnDungeonCollider(Vec3(2.f*x + 1.f, 2.f, 2.f*y + 1.f));
-			}
-		}
-	}
-
-	// lewa/prawa œciana
-	for(int i = 1; i < h - 1; ++i)
-	{
-		// lewa
-		if(czy_blokuje2(m[i*w]) && !czy_blokuje2(m[1 + i*w]))
-			SpawnDungeonCollider(Vec3(1.f, 2.f, 2.f*i + 1.f));
-
-		// prawa
-		if(czy_blokuje2(m[i*w + w - 1]) && !czy_blokuje2(m[w - 2 + i*w]))
-			SpawnDungeonCollider(Vec3(2.f*(w - 1) + 1.f, 2.f, 2.f*i + 1.f));
-	}
-
-	// przednia/tylna œciana
-	for(int i = 1; i < lvl.w - 1; ++i)
-	{
-		// przednia
-		if(czy_blokuje2(m[i + (h - 1)*w]) && !czy_blokuje2(m[i + (h - 2)*w]))
-			SpawnDungeonCollider(Vec3(2.f*i + 1.f, 2.f, 2.f*(h - 1) + 1.f));
-
-		// tylna
-		if(czy_blokuje2(m[i]) && !czy_blokuje2(m[i + w]))
-			SpawnDungeonCollider(Vec3(2.f*i + 1.f, 2.f, 1.f));
-	}
-
-	// up stairs
-	if(inside->HaveUpStairs())
-	{
-		btCollisionObject* cobj = new btCollisionObject;
-		cobj->setCollisionShape(shape_schody);
-		cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
-		cobj->getWorldTransform().setOrigin(btVector3(2.f*lvl.staircase_up.x + 1.f, 0.f, 2.f*lvl.staircase_up.y + 1.f));
-		cobj->getWorldTransform().setRotation(btQuaternion(dir_to_rot(lvl.staircase_up_dir), 0, 0));
-		phy_world->addCollisionObject(cobj, CG_BUILDING);
-	}
-
-	// room floors/ceilings
-	dungeon_shape_pos.clear();
-	dungeon_shape_index.clear();
-	int index = 0;
-
-	if((inside->type == L_DUNGEON && inside->target == LABIRYNTH) || inside->type == L_CAVE)
-	{
-		const float h = Room::HEIGHT;
-		for(int x = 0; x < 16; ++x)
-		{
-			for(int y = 0; y < 16; ++y)
-			{
-				// floor
-				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl.w / 16, 0, 2.f * y * lvl.h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl.w / 16, 0, 2.f * y * lvl.h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl.w / 16, 0, 2.f * (y + 1) * lvl.h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl.w / 16, 0, 2.f * (y + 1) * lvl.h / 16));
-				dungeon_shape_index.push_back(index);
-				dungeon_shape_index.push_back(index + 1);
-				dungeon_shape_index.push_back(index + 2);
-				dungeon_shape_index.push_back(index + 2);
-				dungeon_shape_index.push_back(index + 1);
-				dungeon_shape_index.push_back(index + 3);
-				index += 4;
-
-				// ceil
-				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl.w / 16, h, 2.f * y * lvl.h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl.w / 16, h, 2.f * y * lvl.h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * x * lvl.w / 16, h, 2.f * (y + 1) * lvl.h / 16));
-				dungeon_shape_pos.push_back(Vec3(2.f * (x + 1) * lvl.w / 16, h, 2.f * (y + 1) * lvl.h / 16));
-				dungeon_shape_index.push_back(index);
-				dungeon_shape_index.push_back(index + 2);
-				dungeon_shape_index.push_back(index + 1);
-				dungeon_shape_index.push_back(index + 2);
-				dungeon_shape_index.push_back(index + 3);
-				dungeon_shape_index.push_back(index + 1);
-				index += 4;
-			}
-		}
-	}
-
-	for(Room& room : lvl.rooms)
-	{
-		// floor
-		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, room.y, 2.f * room.pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * room.pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + room.size.y)));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + room.size.y)));
-		dungeon_shape_index.push_back(index);
-		dungeon_shape_index.push_back(index + 1);
-		dungeon_shape_index.push_back(index + 2);
-		dungeon_shape_index.push_back(index + 2);
-		dungeon_shape_index.push_back(index + 1);
-		dungeon_shape_index.push_back(index + 3);
-		index += 4;
-
-		// ceil
-		const float h = (room.IsCorridor() ? Room::HEIGHT_LOW : Room::HEIGHT);
-		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, room.y + h, 2.f * room.pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * room.pos.y));
-		dungeon_shape_pos.push_back(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + room.size.y)));
-		dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + room.size.y)));
-		dungeon_shape_index.push_back(index);
-		dungeon_shape_index.push_back(index + 2);
-		dungeon_shape_index.push_back(index + 1);
-		dungeon_shape_index.push_back(index + 2);
-		dungeon_shape_index.push_back(index + 3);
-		dungeon_shape_index.push_back(index + 1);
-		index += 4;
-
-		// left wall
-		/*int start = -1;
-		for(int y = 1; y < room.size.y - 1; ++y)
-		{
-			if(czy_blokuje2(m[room.pos.x + (room.pos.y + y) * w]))
-			{
-				if(start == -1)
-					start = y;
-				else
-				{
-					// wall from start to y
-					start = -1;
-				}
-			}
-		}
-		if(start != -1)*/
-		//dungeon_shape_pos.push_back(Vec3(2.f * (room.pos.x + 1), room.y, 2.f * (room.pos.y + 1
-	}
-
-	delete dungeon_shape;
-	delete dungeon_shape_data;
-
-	dungeon_shape_data = new btTriangleIndexVertexArray(dungeon_shape_index.size() / 3, dungeon_shape_index.data(), sizeof(int) * 3,
-		dungeon_shape_pos.size(), (btScalar*)dungeon_shape_pos.data(), sizeof(Vec3));
-	dungeon_shape = new btBvhTriangleMeshShape(dungeon_shape_data, true);
-
-	obj_dungeon = new btCollisionObject;
-	obj_dungeon->setCollisionShape(dungeon_shape);
-	obj_dungeon->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
-	phy_world->addCollisionObject(obj_dungeon, CG_BUILDING);
-
-
-
-	//FIXME!!1;
-
-	//draw_flags = 49152;
-	//draw_phy = true;
-	ParseCommand("show_minimap");
-}
-
-void Game::SpawnDungeonCollider(const Vec3& pos)
-{
-	auto cobj = new btCollisionObject;
-	cobj->setCollisionShape(shape_wall);
-	cobj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BUILDING);
-	cobj->getWorldTransform().setOrigin(ToVector3(pos));
-	phy_world->addCollisionObject(cobj, CG_BUILDING);
+	//FIXME
+	draw_flags = 49152;
+	draw_phy = true;
+	pc->noclip = true;
+	//ParseCommand("show_minimap");
 }
 
 void Game::RemoveColliders()
@@ -9819,26 +9657,11 @@ void Game::CreateCollisionShapes()
 	const float size = 256.f;
 	const float border = 32.f;
 
-	shape_wall = new btBoxShape(btVector3(1.f, 2.f, 1.f));
 	shape_low_ceiling = new btBoxShape(btVector3(1.f, 0.5f, 1.f));
 	shape_ceiling = new btStaticPlaneShape(btVector3(0.f, -1.f, 0.f), 4.f);
 	shape_floor = new btStaticPlaneShape(btVector3(0.f, 1.f, 0.f), 0.f);
 	shape_door = new btBoxShape(btVector3(0.842f, 1.319f, 0.181f));
 	shape_block = new btBoxShape(btVector3(1.f, 4.f, 1.f));
-	btCompoundShape* s = new btCompoundShape;
-	btBoxShape* b = new btBoxShape(btVector3(1.f, 2.f, 0.1f));
-	shape_schody_c[0] = b;
-	btTransform tr;
-	tr.setIdentity();
-	tr.setOrigin(btVector3(0.f, 2.f, 0.95f));
-	s->addChildShape(tr, b);
-	b = new btBoxShape(btVector3(0.1f, 2.f, 1.f));
-	shape_schody_c[1] = b;
-	tr.setOrigin(btVector3(-0.95f, 2.f, 0.f));
-	s->addChildShape(tr, b);
-	tr.setOrigin(btVector3(0.95f, 2.f, 0.f));
-	s->addChildShape(tr, b);
-	shape_schody = s;
 	shape_summon = new btCylinderShape(btVector3(1.5f / 2, 0.75f, 1.5f / 2));
 	shape_barrier = new btBoxShape(btVector3(size / 2, 40.f, border / 2));
 
