@@ -134,52 +134,7 @@ void DungeonGenerator::GenerateInternal()
 		if(Rand() % 100 < opcje->korytarz_szansa)
 			CreateCorridor(parent_room, pt, dir);
 		else
-		{
-			int w = opcje->room_size.Random(),
-				h = opcje->room_size.Random();
-
-			if(dir == LEWO)
-			{
-				pt.x -= w;
-				pt.y -= h / 2;
-			}
-			else if(dir == PRAWO)
-			{
-				pt.x += 1;
-				pt.y -= h / 2;
-			}
-			else if(dir == GORA)
-			{
-				pt.x -= w / 2;
-				pt.y += 1;
-			}
-			else
-			{
-				pt.x -= w / 2;
-				pt.y -= h;
-			}
-
-			if(CanCreateRoom(pt.x, pt.y, w, h))
-			{
-				// create 1 tile room for doors
-				int door_room_id = opcje->rooms->size();
-				Room& door_room = Add1(opcje->rooms);
-				Room& p = opcje->rooms->at(parent_room);
-				door_room.target = RoomTarget::Doors;
-				door_room.connected.push_back(parent_room);
-				p.connected.push_back(door_room_id);
-				door_room.pos.x = id % opcje->w;
-				door_room.pos.y = id / opcje->w;
-				door_room.size = Int2(1, 1);
-				door_room.level = p.level;
-				door_room.counter = p.counter;
-				door_room.y = p.y;
-				mapa[id].type = DRZWI;
-				mapa[id].room = door_room_id;
-
-				AddRoom(door_room_id, pt.x, pt.y, w, h, ADD_ROOM);
-			}
-		}
+			CreateRoom(id, parent_room, pt, dir);
 	}
 	
 	// po³¹cz korytarze
@@ -189,30 +144,7 @@ void DungeonGenerator::GenerateInternal()
 
 	// losowe dziury
 	if(opcje->kraty_szansa > 0)
-	{
-		for(int y = 1; y < opcje->w - 1; ++y)
-		{
-			for(int x = 1; x < opcje->h - 1; ++x)
-			{
-				Pole& p = mapa[x + y * opcje->w];
-				if(p.type == PUSTE && Rand() % 100 < opcje->kraty_szansa && !opcje->rooms->at(p.room).IsRamp())
-				{
-					if(!IS_SET(p.flags, Pole::F_NISKI_SUFIT))
-					{
-						int j = Rand() % 3;
-						if(j == 0)
-							p.type = KRATKA_PODLOGA;
-						else if(j == 1)
-							p.type = KRATKA_SUFIT;
-						else
-							p.type = KRATKA;
-					}
-					else if(Rand() % 3 == 0)
-						p.type = KRATKA_PODLOGA;
-				}
-			}
-		}
-	}
+		CreateHoles();
 
 	if(opcje->stop)
 		return;
@@ -275,12 +207,9 @@ void DungeonGenerator::SetPattern()
 //=================================================================================================
 void SetWall(POLE& pole)
 {
-	assert(pole == NIEUZYTE || pole == SCIANA || pole == BLOKADA || pole == BLOKADA_SCIANA || pole == DRZWI);
-
+	assert(pole == NIEUZYTE || pole == SCIANA || pole == DRZWI);
 	if(pole == NIEUZYTE)
 		pole = SCIANA;
-	else if(pole == BLOKADA)
-		pole = BLOKADA_SCIANA;
 }
 
 //=================================================================================================
@@ -539,6 +468,57 @@ Room* DungeonGenerator::CreateRamp(int parent_room, const Int2& start_pt, DIR di
 }
 
 //=================================================================================================
+Room* DungeonGenerator::CreateRoom(int id, int parent_room, Int2& pt, DIR dir)
+{
+	int w = opcje->room_size.Random(),
+		h = opcje->room_size.Random();
+
+	if(dir == LEWO)
+	{
+		pt.x -= w;
+		pt.y -= h / 2;
+	}
+	else if(dir == PRAWO)
+	{
+		pt.x += 1;
+		pt.y -= h / 2;
+	}
+	else if(dir == GORA)
+	{
+		pt.x -= w / 2;
+		pt.y += 1;
+	}
+	else
+	{
+		pt.x -= w / 2;
+		pt.y -= h;
+	}
+
+	if(CanCreateRoom(pt.x, pt.y, w, h))
+	{
+		// create 1 tile room for doors
+		int door_room_id = opcje->rooms->size();
+		Room& door_room = Add1(opcje->rooms);
+		Room& p = opcje->rooms->at(parent_room);
+		door_room.target = (p.target == RoomTarget::Corridor ? RoomTarget::CorridorDoors : RoomTarget::Doors);
+		door_room.connected.push_back(parent_room);
+		p.connected.push_back(door_room_id);
+		door_room.pos.x = id % opcje->w;
+		door_room.pos.y = id / opcje->w;
+		door_room.size = Int2(1, 1);
+		door_room.level = p.level;
+		door_room.counter = p.counter;
+		door_room.y = p.y;
+		mapa[id].type = DRZWI;
+		mapa[id].room = door_room_id;
+
+		return AddRoom(door_room_id, pt.x, pt.y, w, h, ADD_ROOM);
+	}
+	else
+		return nullptr;
+}
+
+//=================================================================================================
 Room* DungeonGenerator::CreateCorridor(int parent_room, Int2& start_pt, DIR dir)
 {
 	int dl = opcje->corridor_size.Random();
@@ -622,20 +602,20 @@ bool DungeonGenerator::CanCreateRoom(int x, int y, int w, int h)
 	for(int i = 0; i < w; ++i)
 	{
 		POLE p = H(x + i, y);
-		if(p != NIEUZYTE && p != SCIANA && p != BLOKADA && p != BLOKADA_SCIANA)
+		if(p != NIEUZYTE && p != SCIANA)
 			return false;
 		p = H(x + i, y + h - 1);
-		if(p != NIEUZYTE && p != SCIANA && p != BLOKADA && p != BLOKADA_SCIANA)
+		if(p != NIEUZYTE && p != SCIANA)
 			return false;
 	}
 
 	for(int i = 0; i < h; ++i)
 	{
 		POLE p = H(x, y + i);
-		if(p != NIEUZYTE && p != SCIANA && p != BLOKADA && p != BLOKADA_SCIANA)
+		if(p != NIEUZYTE && p != SCIANA)
 			return false;
 		p = H(x + w - 1, y + i);
-		if(p != NIEUZYTE && p != SCIANA && p != BLOKADA && p != BLOKADA_SCIANA)
+		if(p != NIEUZYTE && p != SCIANA)
 			return false;
 	}
 
@@ -649,7 +629,7 @@ void DungeonGenerator::JoinCorridors()
 	int index = 0;
 	for(vector<Room>::iterator it = opcje->rooms->begin(), end = opcje->rooms->end(); it != end; ++it, ++index)
 	{
-		if(!it->IsCorridor())
+		if(it->target != RoomTarget::Corridor)
 			continue;
 
 		Room& r = *it;
@@ -661,7 +641,7 @@ void DungeonGenerator::JoinCorridors()
 
 			Room& r2 = opcje->rooms->at(index2);
 
-			if(!r2.IsCorridor() || Rand() % 100 > opcje->polacz_korytarz)
+			if(r2.target != RoomTarget::Corridor || Rand() % 100 > opcje->polacz_korytarz)
 				continue;
 
 			int x1 = max(r.pos.x - 1, r2.pos.x - 1),
@@ -694,7 +674,7 @@ void DungeonGenerator::MarkCorridors()
 {
 	for(Room& room : *opcje->rooms)
 	{
-		if(!room.IsCorridor())
+		if(room.IsRoom() || room.IsRamp() || room.target == RoomTarget::Doors)
 			continue;
 
 		for(int y = 0; y < room.size.y; ++y)
@@ -704,6 +684,33 @@ void DungeonGenerator::MarkCorridors()
 				Pole& p = mapa[x + room.pos.x + (y + room.pos.y)*opcje->w];
 				if(p.type == PUSTE || p.type == DRZWI || p.type == KRATKA_PODLOGA)
 					p.flags = Pole::F_NISKI_SUFIT;
+			}
+		}
+	}
+}
+
+//=================================================================================================
+void DungeonGenerator::CreateHoles()
+{
+	for(int y = 1; y < opcje->w - 1; ++y)
+	{
+		for(int x = 1; x < opcje->h - 1; ++x)
+		{
+			Pole& p = mapa[x + y * opcje->w];
+			if(p.type == PUSTE && Rand() % 100 < opcje->kraty_szansa && !opcje->rooms->at(p.room).IsRamp())
+			{
+				if(!IS_SET(p.flags, Pole::F_NISKI_SUFIT))
+				{
+					int j = Rand() % 3;
+					if(j == 0)
+						p.type = KRATKA_PODLOGA;
+					else if(j == 1)
+						p.type = KRATKA_SUFIT;
+					else
+						p.type = KRATKA;
+				}
+				else if(Rand() % 3 == 0)
+					p.type = KRATKA_PODLOGA;
 			}
 		}
 	}
@@ -948,9 +955,9 @@ bool DungeonGenerator::CreateStairs(Room& room, Int2& pt, int& dir, POLE stairs_
 	wybor.clear();
 	// im wiêkszy priorytet tym lepiej
 
-	for(int y = max(1, room.pos.y); y < min(opcje->h - 1, room.size.y + room.pos.y); ++y)
+	for(int y = max(1, room.pos.y - 1); y < min(opcje->h - 1, room.size.y + room.pos.y + 1); ++y)
 	{
-		for(int x = max(1, room.pos.x); x < min(opcje->w - 1, room.size.x + room.pos.x); ++x)
+		for(int x = max(1, room.pos.x - 1); x < min(opcje->w - 1, room.size.x + room.pos.x + 1); ++x)
 		{
 			Pole& p = opcje->mapa[x + y * opcje->w];
 			if(p.type == PUSTE && !opcje->rooms->at(p.room).IsRamp())
@@ -1027,7 +1034,7 @@ bool DungeonGenerator::CreateStairs(Room& room, Int2& pt, int& dir, POLE stairs_
 						wybor.push_back(PosDir(x, y, BIT(0) | BIT(1) | BIT(2) | BIT(3), false, room));
 				}
 			}
-			else if((p.type == SCIANA || p.type == BLOKADA_SCIANA) && (x > 0) && (x<int(opcje->w - 1)) && (y > 0) && (y<int(opcje->h - 1)))
+			else if(p.type == SCIANA && (x > 0) && (x<int(opcje->w - 1)) && (y > 0) && (y<int(opcje->h - 1)))
 			{
 				// ##
 				// #>_
@@ -1083,8 +1090,6 @@ bool DungeonGenerator::CreateStairs(Room& room, Int2& pt, int& dir, POLE stairs_
 			POLE& p = opcje->mapa[x + y * opcje->w].type;
 			if(p == NIEUZYTE)
 				p = SCIANA;
-			else if(p == BLOKADA)
-				p = BLOKADA_SCIANA;
 		}
 	}
 

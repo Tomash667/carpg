@@ -33,10 +33,12 @@ private:
 	DIR IsFreeWay(int id);
 	int CanCreateRamp(int room_index);
 	Room* CreateRamp(int parent_room, const Int2& pt, DIR dir, bool up);
+	Room* CreateRoom(int id, int parent_room, Int2& pt, DIR dir);
 	Room* CreateCorridor(int parent_room, Int2& pt, DIR dir);
 	bool CanCreateRoom(int x, int y, int w, int h);
 	void JoinCorridors();
 	void MarkCorridors();
+	void CreateHoles();
 	void JoinRooms();
 	bool IsConnectingWall(int x, int y, int id1, int id2);
 	bool GenerateStairs();

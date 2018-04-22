@@ -1174,6 +1174,7 @@ public:
 	void LoadItemsData();
 	void SpawnTerrainCollider();
 	void GenerateDungeonObjects();
+	void AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks);
 	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall, vector<Int2>& blocks, int flags);
 	void GenerateDungeonTreasure(vector<Chest*>& chests, int level, bool extra = false);
 	void GenerateDungeonUnits();

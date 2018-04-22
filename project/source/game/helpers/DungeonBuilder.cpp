@@ -139,30 +139,10 @@ void DungeonBuilder::SpawnFloorAndCeiling(InsideLocationLevel& lvl)
 		for(int y = 0; y < 16; ++y)
 		{
 			// floor
-			dungeon_mesh.pos.push_back(Vec3(2.f * x * lw / 16, 0, 2.f * y * lh / 16));
-			dungeon_mesh.pos.push_back(Vec3(2.f * (x + 1) * lw / 16, 0, 2.f * y * lh / 16));
-			dungeon_mesh.pos.push_back(Vec3(2.f * x * lw / 16, 0, 2.f * (y + 1) * lh / 16));
-			dungeon_mesh.pos.push_back(Vec3(2.f * (x + 1) * lw / 16, 0, 2.f * (y + 1) * lh / 16));
-			dungeon_mesh.index.push_back(index);
-			dungeon_mesh.index.push_back(index + 1);
-			dungeon_mesh.index.push_back(index + 2);
-			dungeon_mesh.index.push_back(index + 2);
-			dungeon_mesh.index.push_back(index + 1);
-			dungeon_mesh.index.push_back(index + 3);
-			index += 4;
+			AddFace(Vec3(2.f * x * lw / 16, 0, 2.f * (y + 1) * lh / 16), Vec3(2.f * lw / 16, 0, 0), Vec3(0, 0, -2.f * lh / 16), index);
 
 			// ceil
-			dungeon_mesh.pos.push_back(Vec3(2.f * x * lw / 16, h, 2.f * y * lh / 16));
-			dungeon_mesh.pos.push_back(Vec3(2.f * (x + 1) * lw / 16, h, 2.f * y * lh / 16));
-			dungeon_mesh.pos.push_back(Vec3(2.f * x * lw / 16, h, 2.f * (y + 1) * lh / 16));
-			dungeon_mesh.pos.push_back(Vec3(2.f * (x + 1) * lw / 16, h, 2.f * (y + 1) * lh / 16));
-			dungeon_mesh.index.push_back(index);
-			dungeon_mesh.index.push_back(index + 2);
-			dungeon_mesh.index.push_back(index + 1);
-			dungeon_mesh.index.push_back(index + 2);
-			dungeon_mesh.index.push_back(index + 3);
-			dungeon_mesh.index.push_back(index + 1);
-			index += 4;
+			AddFace(Vec3(2.f * x * lw / 16, h, 2.f * y * lh / 16), Vec3(2.f * lw / 16, 0, 0), Vec3(0, 0, 2.f * lh / 16), index);
 		}
 	}
 }
@@ -174,125 +154,123 @@ void DungeonBuilder::SpawnNewColliders(InsideLocationLevel& lvl)
 	Pole* m = lvl.map;
 	int index = 0,
 		lw = lvl.w,
-		lh = lvl.h;
+		start;
+	const float low_h_dif = Room::HEIGHT - Room::HEIGHT_LOW;
 
 	for(Room& room : lvl.rooms)
-	{
-		const float h = (room.IsCorridor() ? Room::HEIGHT_LOW : Room::HEIGHT);
+	{		
+		const bool is_corridor = room.IsCorridor();
+		const float h = (is_corridor ? Room::HEIGHT_LOW : Room::HEIGHT);
 
 		// floor
-		AddFace(Vec3(2.f * room.pos.x, room.y, 2.f * room.pos.y), Vec3(2.f * room.size.x, 0, 0), Vec3(0, 0, 2.f * room.size.y), index);
+		AddFace(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + room.size.y)), Vec3(2.f * room.size.x, 0, 0), Vec3(0, 0, -2.f * room.size.y), index);
 
 		// ceil
 		AddFace(Vec3(2.f * room.pos.x, room.y + h, 2.f * room.pos.y), Vec3(2.f * room.size.x, 0, 0), Vec3(0, 0, 2.f * room.size.y), index);
 
 		// left wall
-		if(room.pos.x > 0)
+		start = -1;
+		for(int y = 0; y < room.size.y; ++y)
 		{
-			int start = -1;
-			for(int y = 0; y < room.size.y; ++y)
+			Pole& p = m[room.pos.x - 1 + (room.pos.y + y) * lw];
+			if(czy_blokuje2(p))
 			{
-				if(czy_blokuje2(m[room.pos.x - 1 + (room.pos.y + y) * lw]))
-				{
-					if(start == -1)
-						start = y;
-				}
-				else if(start != -1)
-				{
-					int length = y - start;
-					AddFace(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + start)), Vec3(0, 0, 2.f * length), Vec3(0, -h, 0), index);
-					start = -1;
-				}
+				if(start == -1)
+					start = y;
 			}
-			if(start != -1)
+			else if(start != -1)
 			{
-				int length = room.size.y - start;
+				int length = y - start;
 				AddFace(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + start)), Vec3(0, 0, 2.f * length), Vec3(0, -h, 0), index);
+				start = -1;
 			}
+
+			if(!is_corridor && IS_SET(p.flags, Pole::F_NISKI_SUFIT))
+				AddFace(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + y)), Vec3(0, 0, 2.f), Vec3(0, -low_h_dif, 0), index);
 		}
-		else
-			AddFace(Vec3(2.f * room.pos.x, room.y + h, 2.f * room.pos.y), Vec3(0, 0, 2.f * room.size.y), Vec3(0, -h, 0), index);
+		if(start != -1)
+		{
+			int length = room.size.y - start;
+			AddFace(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + start)), Vec3(0, 0, 2.f * length), Vec3(0, -h, 0), index);
+		}
 		
 		// right wall
-		if(room.pos.x + room.size.x < lw)
+		start = -1;
+		for(int y = room.size.y - 1; y >= 0; --y)
 		{
-			int start = -1;
-			for(int y = room.size.y - 1; y >= 0; --y)
+			Pole& p = m[room.pos.x + room.size.x + (room.pos.y + y) * lw];
+			if(czy_blokuje2(p))
 			{
-				if(czy_blokuje2(m[room.pos.x + room.size.x + (room.pos.y + y) * lw]))
-				{
-					if(start == -1)
-						start = y;
-				}
-				else if(start != -1)
-				{
-					int length = (start - y);
-					AddFace(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + start + 1)), Vec3(0, 0, -2.f * length), Vec3(0, -h, 0), index);
-					start = -1;
-				}
+				if(start == -1)
+					start = y;
 			}
-			if(start != -1)
+			else if(start != -1)
 			{
-				int length = start + 1;
+				int length = (start - y);
 				AddFace(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + start + 1)), Vec3(0, 0, -2.f * length), Vec3(0, -h, 0), index);
+				start = -1;
 			}
+
+			if(!is_corridor && IS_SET(p.flags, Pole::F_NISKI_SUFIT))
+				AddFace(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + y + 1)), Vec3(0, 0, -2.f), Vec3(0, -low_h_dif, 0), index);
 		}
-		else
-			AddFace(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + room.size.y)), Vec3(0, 0, -2.f * room.size.y), Vec3(0, -h, 0), index);
-		
-		// front wall
-		if(room.pos.y + room.size.y < lh)
+		if(start != -1)
 		{
-			int start = -1;
-			for(int x = 0; x < room.size.x; ++x)
-			{
-				if(czy_blokuje2(m[room.pos.x + x + (room.pos.y + room.size.y) * lw]))
-				{
-					if(start == -1)
-						start = x;
-				}
-				else if(start != -1)
-				{
-					int length = x - start;
-					AddFace(Vec3(2.f * (room.pos.x + start), room.y + h, 2.f * (room.pos.y + room.size.y)), Vec3(2.f * length, 0, 0), Vec3(0, -h, 0), index);
-					start = -1;
-				}
-			}
-			if(start != -1)
-			{
-				int length = room.size.x - start;
-				AddFace(Vec3(2.f * (room.pos.x + start), room.y + h, 2.f * (room.pos.y + room.size.y)), Vec3(2.f * length, 0, 0), Vec3(0, -h, 0), index);
-			}
+			int length = start + 1;
+			AddFace(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + start + 1)), Vec3(0, 0, -2.f * length), Vec3(0, -h, 0), index);
 		}
-		else
-			AddFace(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + room.size.y)), Vec3(2.f * room.size.x, 0, 0), Vec3(0, -h, 0), index);
+
+		// front wall
+		start = -1;
+		for(int x = 0; x < room.size.x; ++x)
+		{
+			Pole& p = m[room.pos.x + x + (room.pos.y + room.size.y) * lw];
+			if(czy_blokuje2(p))
+			{
+				if(start == -1)
+					start = x;
+			}
+			else if(start != -1)
+			{
+				int length = x - start;
+				AddFace(Vec3(2.f * (room.pos.x + start), room.y + h, 2.f * (room.pos.y + room.size.y)), Vec3(2.f * length, 0, 0), Vec3(0, -h, 0), index);
+				start = -1;
+			}
+
+			if(!is_corridor && IS_SET(p.flags, Pole::F_NISKI_SUFIT))
+				AddFace(Vec3(2.f * (room.pos.x + x), room.y + h, 2.f * (room.pos.y + room.size.y)), Vec3(2.f, 0, 0), Vec3(0, -low_h_dif, 0), index);
+		}
+		if(start != -1)
+		{
+			int length = room.size.x - start;
+			AddFace(Vec3(2.f * (room.pos.x + start), room.y + h, 2.f * (room.pos.y + room.size.y)), Vec3(2.f * length, 0, 0), Vec3(0, -h, 0), index);
+		}
 
 		// back wall
-		if(room.pos.y > 0)
+		start = -1;
+		for(int x = room.size.x - 1; x >= 0; --x)
 		{
-			int start = -1;
-			for(int x = room.size.x - 1; x >= 0; --x)
+			Pole& p = m[room.pos.x + x + (room.pos.y - 1) * lw];
+			if(czy_blokuje2(p))
 			{
-				if(czy_blokuje2(m[room.pos.x + x + (room.pos.y - 1) * lw]))
-				{
-					if(start == -1)
-						start = x;
-				}
-				else if(start != -1)
-				{
-					int length = (start - x);
-					AddFace(Vec3(2.f * (room.pos.x + start + 1), room.y + h, 2.f * room.pos.y), Vec3(-2.f * length, 0, 0), Vec3(0, -h, 0), index);
-					start = -1;
-				}
+				if(start == -1)
+					start = x;
 			}
-			if(start != -1)
+			else if(start != -1)
 			{
-				int length = start + 1;
+				int length = (start - x);
 				AddFace(Vec3(2.f * (room.pos.x + start + 1), room.y + h, 2.f * room.pos.y), Vec3(-2.f * length, 0, 0), Vec3(0, -h, 0), index);
+				start = -1;
 			}
+
+			if(!is_corridor && IS_SET(p.flags, Pole::F_NISKI_SUFIT))
+				AddFace(Vec3(2.f * (room.pos.x + x + 1), room.y + h, 2.f * room.pos.y), Vec3(-2.f, 0, 0), Vec3(0, -low_h_dif, 0), index);
 		}
-		else
-			AddFace(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * room.pos.y), Vec3(-2.f * room.size.x, 0, 0), Vec3(0, -h, 0), index);
+		if(start != -1)
+		{
+			int length = start + 1;
+			AddFace(Vec3(2.f * (room.pos.x + start + 1), room.y + h, 2.f * room.pos.y), Vec3(-2.f * length, 0, 0), Vec3(0, -h, 0), index);
+		}
 	}
 }
 

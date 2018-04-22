@@ -6320,9 +6320,12 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		Int2 pt = pos_to_pt(unit.pos);
 
-		Room* room = lvl.GetRoom(pt);
-		if(room)
-			unit.pos.y = room->y;
+		// FIXME
+		unit.pos.y = 0.f;
+
+		//Room* room = lvl.GetRoom(pt);
+		//if(room)
+		//	unit.pos.y = room->y;
 
 		if(pt == lvl.staircase_up)
 		{
@@ -9781,6 +9784,8 @@ void Game::GenerateDungeonObjects()
 	{
 		if(it->IsNotRoom())
 			continue;
+
+		AddRoomColliders(lvl, *it, blocks);
 		
 		// choose room type
 		RoomType* rt;
@@ -9888,10 +9893,11 @@ void Game::GenerateDungeonObjects()
 		BaseObject* base = BaseObject::Get("chest");
 		for(int i = 0; i < 100; ++i)
 		{
-			on_wall.clear();
 			Room& r = lvl.rooms[Rand() % lvl.rooms.size()];
 			if(r.target == RoomTarget::None)
 			{
+				blocks.clear();
+				AddRoomColliders(lvl, r, blocks);
 				auto e = GenerateDungeonObject(lvl, r, base, on_wall, blocks, flags);
 				if(e)
 				{
@@ -9900,6 +9906,35 @@ void Game::GenerateDungeonObjects()
 				}
 			}
 		}
+	}
+}
+
+void Game::AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks)
+{
+	// add colliding blocks
+	for(int x = 0; x < room.size.x; ++x)
+	{
+		// top
+		POLE co = lvl.map[room.pos.x + x + (room.pos.y + room.size.y)*lvl.w].type;
+		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y + room.size.y - 1));
+
+		// bottom
+		co = lvl.map[room.pos.x + x + (room.pos.y - 1)*lvl.w].type;
+		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+			blocks.push_back(Int2(room.pos.x + x, room.pos.y));
+	}
+	for(int y = 0; y < room.size.y; ++y)
+	{
+		// left
+		POLE co = lvl.map[room.pos.x - 1 + (room.pos.y + y)*lvl.w].type;
+		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+			blocks.push_back(Int2(room.pos.x, room.pos.y + y));
+
+		// right
+		co = lvl.map[room.pos.x + room.size.x + (room.pos.y + y)*lvl.w].type;
+		if(co == PUSTE || co == KRATKA || co == KRATKA_PODLOGA || co == KRATKA_SUFIT || co == DRZWI || co == OTWOR_NA_DRZWI)
+			blocks.push_back(Int2(room.pos.x + room.size.x - 1, room.pos.y + y));
 	}
 }
 
@@ -13223,7 +13258,7 @@ void Game::CreateDungeonMinimap()
 			Pole& p = lvl.map[x + (lvl.w - 1 - y)*lvl.w];
 			if(IS_SET(p.flags, Pole::F_ODKRYTE))
 			{
-				if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
+				if(OR2_EQ(p.type, SCIANA, BLOKADA))
 					*pix = COLOR_RGB(100, 100, 100);
 				else if(p.type == DRZWI)
 					*pix = COLOR_RGB(127, 51, 0);
@@ -13298,7 +13333,7 @@ void Game::UpdateDungeonMinimap(bool send)
 		Pole& p = lvl.map[it->x + (lvl.w - it->y - 1)*lvl.w];
 		SET_BIT(p.flags, Pole::F_ODKRYTE);
 		DWORD* pix = ((DWORD*)(((byte*)lock.pBits) + lock.Pitch*it->y)) + it->x;
-		if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
+		if(OR2_EQ(p.type, SCIANA, BLOKADA))
 			*pix = COLOR_RGB(100, 100, 100);
 		else if(p.type == DRZWI)
 			*pix = COLOR_RGB(127, 51, 0);

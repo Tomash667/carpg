@@ -15,7 +15,6 @@ enum POLE : byte
 	KRATKA,
 	SCIANA,
 	BLOKADA,
-	BLOKADA_SCIANA,
 	ZAJETE
 };
 
@@ -75,7 +74,7 @@ struct Pole
 
 	bool IsWall() const
 	{
-		return type == SCIANA || type == BLOKADA_SCIANA;
+		return type == SCIANA;
 	}
 };
 
@@ -103,17 +102,20 @@ inline bool czy_blokuje21(const Pole& p)
 // Room target
 enum class RoomTarget
 {
-	None,
 	Corridor,
+	CorridorDoors,
+	Doors,
+	Ramp,
+
+	NormalRooms,
+	None,
 	StairsUp,
 	StairsDown,
 	Treasury,
 	Portal,
 	Prison,
 	Throne,
-	PortalCreate,
-	Ramp,
-	Doors
+	PortalCreate
 };
 
 //-----------------------------------------------------------------------------
@@ -193,9 +195,10 @@ struct Room
 			Random(2.f*pos.y + margin, 2.f*(pos.y + size.y) - margin));
 	}
 
-	bool IsCorridor() const { return target == RoomTarget::Corridor; }
+	bool IsCorridor() const { return target == RoomTarget::Corridor || target == RoomTarget::CorridorDoors; }
 	bool IsRamp() const { return target == RoomTarget::Ramp; }
-	bool IsNotRoom() const { return Any(target, RoomTarget::Corridor, RoomTarget::Ramp, RoomTarget::Doors); }
+	bool IsRoom() const { return target >= RoomTarget::None; }
+	bool IsNotRoom() const { return target < RoomTarget::None; }
 	bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsDown; }
 
 	void Save(HANDLE file);

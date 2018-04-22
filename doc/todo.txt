@@ -1,9 +1,4 @@
 ﻿FEATURE:
-- objects can spawn on blocking position, in front of door/joined rooms
-2. create dungeon physics
-- moving outside of level crash in MoveUnit, tries to get room
-+ small & big ceil connection
-? test with culling
 3. dungeon mesh vb, ib
 + big vb & ib
 + each room have polygons to draw info
@@ -33,10 +28,14 @@ moving player
 	+ colliders
 	+ prevent spawning traps on ramps
 + save/load/compability
+	+ BLOKADA_SCIANA removed
+	+ RoomTarget changed
+	+ resize level so rooms are not on border
 + gray dots on minimap when there is doors
 ! FIXME
 ? labirynth, cave, tutorial
-? old save
+	- lab uses old room size
+? old saves
 ===============================================================================================================
 NEW:
 2. ramp, small step
@@ -63,3 +62,7 @@ feature requirements:
 7. fall damage
 
 + don't recreate dungeon physics/mesh when loading same level
++ tower stairs should be rotated clock-wise to help defend for right handed
++ stairs physics collider
+
+- map2console mine uses Pole::ZAJETE which is not in array

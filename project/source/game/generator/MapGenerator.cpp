@@ -22,7 +22,6 @@ const char znak[] = {
 	'|', // KRATKA
 	'#', // SCIANA
 	'@', // BLOKADA
-	'$' // BLOKADA_SCIANA
 };
 
 //=================================================================================================
@@ -104,13 +103,13 @@ void MapGenerator::SetFlags()
 			}
 
 			// œciany
-			if(OR2_EQ(mapa[x - 1 + y * opcje->w].type, SCIANA, BLOKADA_SCIANA))
+			if(OR2_EQ(mapa[x - 1 + y * opcje->w].type, SCIANA, BLOKADA))
 				p.flags |= Pole::F_SCIANA_PRAWA;
-			if(OR2_EQ(mapa[x + 1 + y * opcje->w].type, SCIANA, BLOKADA_SCIANA))
+			if(OR2_EQ(mapa[x + 1 + y * opcje->w].type, SCIANA, BLOKADA))
 				p.flags |= Pole::F_SCIANA_LEWA;
-			if(OR2_EQ(mapa[x + (y - 1)*opcje->w].type, SCIANA, BLOKADA_SCIANA))
+			if(OR2_EQ(mapa[x + (y - 1)*opcje->w].type, SCIANA, BLOKADA))
 				p.flags |= Pole::F_SCIANA_TYL;
-			if(OR2_EQ(mapa[x + (y + 1)*opcje->w].type, SCIANA, BLOKADA_SCIANA))
+			if(OR2_EQ(mapa[x + (y + 1)*opcje->w].type, SCIANA, BLOKADA))
 				p.flags |= Pole::F_SCIANA_PRZOD;
 		}
 	}

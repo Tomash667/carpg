@@ -28,14 +28,14 @@ void LabyrinthGenerator::Generate(Pole*& mapa, const Int2& size, const Int2& roo
 	// blokady
 	for(int x = 0; x < size.x; ++x)
 	{
-		mapa[x].type = BLOKADA_SCIANA;
-		mapa[x + (size.y - 1)*size.x].type = BLOKADA_SCIANA;
+		mapa[x].type = BLOKADA;
+		mapa[x + (size.y - 1)*size.x].type = BLOKADA;
 	}
 
 	for(int y = 1; y < size.y - 1; ++y)
 	{
-		mapa[y*size.x].type = BLOKADA_SCIANA;
-		mapa[size.x - 1 + y * size.x].type = BLOKADA_SCIANA;
+		mapa[y*size.x].type = BLOKADA;
+		mapa[size.x - 1 + y * size.x].type = BLOKADA;
 	}
 
 	// schody

@@ -1096,7 +1096,6 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 			case TRIANGLE_MESH_SHAPE_PROXYTYPE:
 				{
 					DebugSceneNode* node = debug_node_pool.Get();
-					const btBvhTriangleMeshShape* trimesh = (const btBvhTriangleMeshShape*)shape;
 					node->type = DebugSceneNode::TriMesh;
 					node->group = DebugSceneNode::Physic;
 					node->mat = m3 * cam.matViewProj;
@@ -3600,6 +3599,7 @@ void Game::DrawDebugNodes(const vector<DebugSceneNode*>& nodes)
 		V(device->SetRenderState(D3DRS_ZENABLE, TRUE));
 		SetAlphaBlend(true);
 		SetNoZWrite(false);
+		SetNoCulling(false);
 	}
 
 	V(eMesh->EndPass());
