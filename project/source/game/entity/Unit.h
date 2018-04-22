@@ -63,6 +63,7 @@ enum ACTION
 	A_DASH,
 	A_DESPAWN,
 	A_PREPARE, // mp client want to use object, waiting for response
+	A_STAND_UP
 };
 
 //-----------------------------------------------------------------------------
@@ -78,7 +79,7 @@ enum AnimationState
 
 inline bool IsBlocking(ACTION a)
 {
-	return a == A_ANIMATION || a == A_PICKUP || a == A_DASH;
+	return a == A_ANIMATION || a == A_PICKUP || a == A_DASH || a == A_STAND_UP;
 }
 
 //-----------------------------------------------------------------------------
@@ -738,7 +739,7 @@ struct Unit
 	// nie sprawdza czy stoi/¿yje/czy chce gadaæ - tylko akcjê
 	bool CanTalk() const
 	{
-		if(action == A_EAT || action == A_DRINK || auto_talk == AutoTalkMode::Leader)
+		if(action == A_EAT || action == A_DRINK || action == A_STAND_UP || auto_talk == AutoTalkMode::Leader)
 			return false;
 		else
 			return true;

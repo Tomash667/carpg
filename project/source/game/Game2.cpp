@@ -211,7 +211,7 @@ void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify, bool
 	}
 	else
 	{
-		if(unit.action != A_ANIMATION || !allow_animation)
+		if(!Any(unit.action, A_ANIMATION, A_STAND_UP) || !allow_animation)
 			unit.action = A_NONE;
 	}
 
@@ -8987,6 +8987,14 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 			break;
 		case A_PREPARE:
 			assert(Net::IsClient());
+			break;
+		case A_STAND_UP:
+			if(u.mesh_inst->frame_end_info)
+			{
+				u.action = A_NONE;
+				u.animation = ANI_STAND;
+				u.current_animation = (Animation)-1;
+			}
 			break;
 		default:
 			assert(0);

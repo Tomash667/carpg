@@ -109,7 +109,7 @@ void Game::UpdateAi(float dt)
 			UnitTryStandup(u, dt);
 			continue;
 		}
-		else if(u.HaveEffect(EffectId::Stun))
+		else if(u.HaveEffect(EffectId::Stun) || u.action == A_STAND_UP)
 			continue;
 
 		LevelContext& ctx = GetContext(u);
@@ -164,6 +164,7 @@ void Game::UpdateAi(float dt)
 						const float d = Sign(ShortestArc(u.rot, dir)) * rot_speed;
 						u.rot = Clip(u.rot + d);
 					}
+					u.changed = true;
 				}
 			}
 			continue;
@@ -226,7 +227,8 @@ void Game::UpdateAi(float dt)
 		bool try_phase = false;
 
 		// rzucanie czarów nie do walki
-		if(u.data->spells && u.data->spells->have_non_combat && u.action == A_NONE && ai.state != AIController::Escape && ai.state != AIController::Cast && u.busy == Unit::Busy_No)
+		if(u.data->spells && u.data->spells->have_non_combat && u.action == A_NONE && ai.state != AIController::Escape && ai.state != AIController::Cast
+			&& u.busy == Unit::Busy_No)
 		{
 			for(int i = 0; i < 3; ++i)
 			{
@@ -828,8 +830,8 @@ void Game::UpdateAi(float dt)
 								int co;
 								if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
 									co = Rand() % 3;
-								else if((u.busy == Unit::Busy_Tournament || (u.IsHero() && !u.IsFollowingTeamMember() && tournament_generated)) && tournament_master &&
-									((dist = Vec3::Distance2d(u.pos, tournament_master->pos)) > 16.f || dist < 4.f))
+								else if((u.busy == Unit::Busy_Tournament || (u.IsHero() && !u.IsFollowingTeamMember() && tournament_generated)) && tournament_master
+									&& ((dist = Vec3::Distance2d(u.pos, tournament_master->pos)) > 16.f || dist < 4.f))
 								{
 									co = -1;
 									if(dist > 16.f)
@@ -931,8 +933,11 @@ void Game::UpdateAi(float dt)
 								}
 
 								// nie glêdzenie przez karczmarza/mistrza w czasie zawodów
-								if(co == I_GADAJ && IS_SET(u.data->flags3, F3_TALK_AT_COMPETITION) && (contest_state >= CONTEST_STARTING || tournament_state >= TOURNAMENT_STARTING))
+								if(co == I_GADAJ && IS_SET(u.data->flags3, F3_TALK_AT_COMPETITION)
+									&& (contest_state >= CONTEST_STARTING || tournament_state >= TOURNAMENT_STARTING))
+								{
 									co = I_PATRZ;
+								}
 
 								//								NORMAL STOI STRA¯
 								// 0 - animacja idle			 X      X    X
@@ -1182,7 +1187,8 @@ void Game::UpdateAi(float dt)
 											if(ai.idle_data.unit->IsStanding() && ai.idle_data.unit->IsAI())
 											{
 												AIController& ai2 = *ai.idle_data.unit->ai;
-												if(ai2.state == AIController::Idle && OR3_EQ(ai2.idle_action, AIController::Idle_None, AIController::Idle_Rot, AIController::Idle_Look))
+												if(ai2.state == AIController::Idle
+													&& OR3_EQ(ai2.idle_action, AIController::Idle_None, AIController::Idle_Rot, AIController::Idle_Look))
 												{
 													// odwzajemnij patrzenie siê
 													ai2.idle_action = AIController::Idle_Chat;
@@ -1778,8 +1784,8 @@ void Game::UpdateAi(float dt)
 
 							for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 							{
-								if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted &&
-									(*it2)->animation_state < 2)
+								if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted
+									&& (*it2)->animation_state < 2)
 								{
 									float dist = Vec3::Distance(u.pos, (*it2)->pos);
 									if(dist < best_dist)
@@ -2125,7 +2131,8 @@ void Game::UpdateAi(float dt)
 
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 					{
-						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted && (*it2)->animation_state < 2)
+						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) && (*it2)->action == A_ATTACK && !(*it2)->hitted
+							&& (*it2)->animation_state < 2)
 						{
 							float dist = Vec3::Distance(u.pos, (*it2)->pos);
 							if(dist < best_dist)
@@ -2201,7 +2208,7 @@ void Game::UpdateAi(float dt)
 
 					for(vector<Unit*>::iterator it2 = ctx.units->begin(), end2 = ctx.units->end(); it2 != end2; ++it2)
 					{
-						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2) /*&& (*it2)->action == A_ATTACK && !(*it2)->trafil && (*it2)->animation_state < 2*/)
+						if(!(*it2)->to_remove && (*it2)->IsStanding() && !(*it2)->invisible && IsEnemy(u, **it2))
 						{
 							float dist = Vec3::Distance(u.pos, (*it2)->pos);
 							if(dist < best_dist)
@@ -2504,9 +2511,10 @@ void Game::UpdateAi(float dt)
 				if(my_tile != target_tile)
 				{
 					// check is it time to use pathfinding
-					if(ai.pf_state == AIController::PFS_NOT_USING ||
-						Int2::Distance(ai.pf_target_tile, target_tile) > 1 ||
-						((ai.pf_state == AIController::PFS_WALKING || ai.pf_state == AIController::PFS_MANUAL_WALK) && target_tile != ai.pf_target_tile && ai.pf_timer <= 0.f))
+					if(ai.pf_state == AIController::PFS_NOT_USING
+						|| Int2::Distance(ai.pf_target_tile, target_tile) > 1
+						|| ((ai.pf_state == AIController::PFS_WALKING || ai.pf_state == AIController::PFS_MANUAL_WALK)
+							&& target_tile != ai.pf_target_tile && ai.pf_timer <= 0.f))
 					{
 						ai.pf_timer = Random(0.2f, 0.4f);
 						if(FindPath(ctx, my_tile, target_tile, ai.pf_path, !IS_SET(u.data->flags, F_DONT_OPEN), ai.city_wander && city_ctx != nullptr))

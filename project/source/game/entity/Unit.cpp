@@ -2437,7 +2437,7 @@ int Unit::GetBuffs() const
 //=================================================================================================
 bool Unit::CanAct()
 {
-	if(talking || !IsStanding())
+	if(talking || !IsStanding() || action == A_STAND_UP)
 		return false;
 	if(ai)
 	{
