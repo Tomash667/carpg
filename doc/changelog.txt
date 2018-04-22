@@ -6,6 +6,11 @@ Wersja 0.8 ():
 + klawisz prze³¹cz bieg/chodzenie
 
 --------------------------------------------------------------------------------
+Fixes:
+- naprawione rozmawianie z jednostkami które wstaj¹
+- naprawione obracanie jednostek podczas dialogu u klienta
+
+--------------------------------------------------------------------------------
 Wersja 0.7.1 (2018-04-15):
 + sortowanie dru¿ynowych przedmiotów, ikona w ekwipunku
 - naprawione niedzia³anie trybu multiplayer
