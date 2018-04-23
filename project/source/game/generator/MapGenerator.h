@@ -130,6 +130,12 @@ struct Room
 		BOTTOM_RIGHT
 	};
 
+	enum Flags
+	{
+		F_HAVE_FLOOR_HOLES = 1 << 0,
+		F_HAVE_CEIL_HOLES = 1 << 1
+	};
+
 	Int2 pos, size;
 	vector<int> connected;
 	RoomTarget target;
@@ -139,6 +145,7 @@ struct Room
 		float yb[4];
 	};
 	short level, counter;
+	int flags;
 
 	static const int MIN_SIZE = 19;
 	static const float HEIGHT;

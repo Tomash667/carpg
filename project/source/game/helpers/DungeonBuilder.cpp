@@ -344,26 +344,74 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 		const float h = (is_corridor ? Room::HEIGHT_LOW : Room::HEIGHT);
 
 		// floor
-		mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + room.size.y)),
-			Vec2(0, (float)room.size.y), NTB_PY));
-		mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + room.size.y)),
-			Vec2((float)room.size.x, (float)room.size.y), NTB_PY));
-		mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * room.pos.y),
-			Vec2(0, 0), NTB_PY));
-		mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * room.pos.y),
-			Vec2((float)room.size.x, 0), NTB_PY));
-		PushIndices();
+		if(IS_SET(room.flags, Room::F_HAVE_FLOOR_HOLES))
+		{
+			for(int x = room.pos.x; x < room.pos.x + room.size.x; ++x)
+			{
+				for(int y = room.pos.y; y < room.pos.y + room.size.y; ++y)
+				{
+					if(!Any(m[x + y * lw].type, KRATKA, KRATKA_PODLOGA))
+					{
+						mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * (y + 1)),
+							Vec2(0, 1), NTB_PY));
+						mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * (y + 1)),
+							Vec2(1, 1), NTB_PY));
+						mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * y),
+							Vec2(0, 0), NTB_PY));
+						mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * y),
+							Vec2(1, 0), NTB_PY));
+						PushIndices();
+					}
+				}
+			}
+		}
+		else
+		{
+			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + room.size.y)),
+				Vec2(0, (float)room.size.y), NTB_PY));
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + room.size.y)),
+				Vec2((float)room.size.x, (float)room.size.y), NTB_PY));
+			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * room.pos.y),
+				Vec2(0, 0), NTB_PY));
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * room.pos.y),
+				Vec2((float)room.size.x, 0), NTB_PY));
+			PushIndices();
+		}
 
 		// ceiling
-		mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * room.pos.y),
-			Vec2(0, 0), NTB_MY));
-		mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * room.pos.y),
-			Vec2((float)room.size.x, 0), NTB_MY));
-		mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + room.size.y)),
-			Vec2(0, (float)room.size.y), NTB_MY));
-		mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + room.size.y)),
-			Vec2((float)room.size.x, (float)room.size.y), NTB_MY));
-		PushIndices();
+		if(IS_SET(room.flags, Room::F_HAVE_CEIL_HOLES))
+		{
+			for(int x = room.pos.x; x < room.pos.x + room.size.x; ++x)
+			{
+				for(int y = room.pos.y; y < room.pos.y + room.size.y; ++y)
+				{
+					if(!Any(m[x + y * lw].type, KRATKA, KRATKA_SUFIT))
+					{
+						mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * y),
+							Vec2(0, 0), NTB_MY));
+						mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * y),
+							Vec2(1, 0), NTB_MY));
+						mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * (y + 1)),
+							Vec2(0, 1), NTB_MY));
+						mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * (y + 1)),
+							Vec2(1, 1), NTB_MY));
+						PushIndices();
+					}
+				}
+			}
+		}
+		else
+		{
+			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * room.pos.y),
+				Vec2(0, 0), NTB_MY));
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * room.pos.y),
+				Vec2((float)room.size.x, 0), NTB_MY));
+			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + room.size.y)),
+				Vec2(0, (float)room.size.y), NTB_MY));
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + room.size.y)),
+				Vec2((float)room.size.x, (float)room.size.y), NTB_MY));
+			PushIndices();
+		}
 
 		// left wall
 		start = -1;
@@ -571,6 +619,135 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1 - length), room.y, 2.f * room.pos.y),
 				Vec2((float)length, 0), NTB_PZ));
 			PushIndices();
+		}
+
+		// hole walls
+		if(IS_SET(room.flags, Room::F_HAVE_CEIL_HOLES | Room::F_HAVE_FLOOR_HOLES))
+		{
+			for(int x = room.pos.x; x < room.pos.x + room.size.x; ++x)
+			{
+				for(int y = room.pos.y; y < room.pos.y + room.size.y; ++y)
+				{
+					Pole& p = m[x + y * lw];
+					if(Any(p.type, KRATKA, KRATKA_PODLOGA))
+					{
+						// left
+						if(!Any(m[x - 1 + y * lw].type, KRATKA, KRATKA_PODLOGA))
+						{
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * y),
+								Vec2(0, V0), NTB_MX));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * (y + 1)),
+								Vec2(1, V0), NTB_MX));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y - h, 2.f * y),
+								Vec2(0, 0), NTB_MX));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y - h, 2.f * (y + 1)),
+								Vec2(1, 0), NTB_MX));
+							PushIndices();
+						}
+
+						// right
+						if(!Any(m[x + 1 + y * lw].type, KRATKA, KRATKA_PODLOGA))
+						{
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * (y + 1)),
+								Vec2(0, V0), NTB_PX));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * y),
+								Vec2(1, V0), NTB_PX));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y - h, 2.f * (y + 1)),
+								Vec2(0, 0), NTB_PX));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y - h, 2.f * y),
+								Vec2(1, 0), NTB_PX));
+							PushIndices();
+						}
+
+						// top
+						if(!Any(m[x + (y + 1) * lw].type, KRATKA, KRATKA_PODLOGA))
+						{
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * (y + 1)),
+								Vec2(0, V0), NTB_MZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * (y + 1)),
+								Vec2(1, V0), NTB_MZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y - h, 2.f * (y + 1)),
+								Vec2(0, 0), NTB_MZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y - h, 2.f * (y + 1)),
+								Vec2(1, 0), NTB_MZ));
+							PushIndices();
+						}
+
+						// bottom
+						if(!Any(m[x + (y - 1) * lw].type, KRATKA, KRATKA_PODLOGA))
+						{
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * y),
+								Vec2(0, V0), NTB_PZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * y),
+								Vec2(1, V0), NTB_PZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y - h, 2.f * y),
+								Vec2(0, 0), NTB_PZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y - h, 2.f * y),
+								Vec2(1, 0), NTB_PZ));
+							PushIndices();
+						}
+					}
+
+					if(Any(p.type, KRATKA, KRATKA_SUFIT))
+					{
+						// left
+						if(!Any(m[x - 1 + y * lw].type, KRATKA, KRATKA_SUFIT))
+						{
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h * 2, 2.f * y),
+								Vec2(0, V0), NTB_MX));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h * 2, 2.f * (y + 1)),
+								Vec2(1, V0), NTB_MX));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * y),
+								Vec2(0, 0), NTB_MX));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * (y + 1)),
+								Vec2(1, 0), NTB_MX));
+							PushIndices();
+						}
+
+						// right
+						if(!Any(m[x + 1 + y * lw].type, KRATKA, KRATKA_SUFIT))
+						{
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h * 2, 2.f * (y + 1)),
+								Vec2(0, V0), NTB_PX));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h * 2, 2.f * y),
+								Vec2(1, V0), NTB_PX));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * (y + 1)),
+								Vec2(0, 0), NTB_PX));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * y),
+								Vec2(1, 0), NTB_PX));
+							PushIndices();
+						}
+
+						// top
+						if(!Any(m[x + (y + 1) * lw].type, KRATKA, KRATKA_SUFIT))
+						{
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h * 2, 2.f * (y + 1)),
+								Vec2(0, V0), NTB_MZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h * 2, 2.f * (y + 1)),
+								Vec2(1, V0), NTB_MZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * (y + 1)),
+								Vec2(0, 0), NTB_MZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * (y + 1)),
+								Vec2(1, 0), NTB_MZ));
+							PushIndices();
+						}
+
+						// bottom
+						if(!Any(m[x + (y - 1) * lw].type, KRATKA, KRATKA_SUFIT))
+						{
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h * 2, 2.f * y),
+								Vec2(0, V0), NTB_PZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h * 2, 2.f * y),
+								Vec2(1, V0), NTB_PZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * y),
+								Vec2(0, 0), NTB_PZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * y),
+								Vec2(1, 0), NTB_PZ));
+							PushIndices();
+						}
+					}
+				}
+			}
 		}
 	}
 

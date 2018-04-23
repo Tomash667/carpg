@@ -711,6 +711,19 @@ void DungeonGenerator::CreateHoles()
 				}
 				else if(Rand() % 3 == 0)
 					p.type = KRATKA_PODLOGA;
+				else
+					continue;
+
+				if(p.room != Room::INVALID_ROOM)
+				{
+					Room& room = opcje->rooms->at(p.room);
+					if(p.type == KRATKA)
+						room.flags |= Room::F_HAVE_CEIL_HOLES | Room::F_HAVE_FLOOR_HOLES;
+					else if(p.type == KRATKA_PODLOGA)
+						room.flags |= Room::F_HAVE_FLOOR_HOLES;
+					else
+						room.flags |= Room::F_HAVE_CEIL_HOLES;
+				}
 			}
 		}
 	}

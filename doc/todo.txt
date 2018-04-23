@@ -1,6 +1,5 @@
 ﻿FEATURE:
 3. dungeon mesh vb, ib
-+ holes in mesh, other faces
 ? test uv texture
 + textures
 + each room have polygons to draw info
@@ -35,6 +34,7 @@ moving player
 	+ BLOKADA_SCIANA removed
 	+ RoomTarget changed
 	+ resize level so rooms are not on border
+	+ Room flags
 + gray dots on minimap when there is doors
 ! FIXME
 ? labirynth, cave, tutorial
