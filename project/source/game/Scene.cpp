@@ -3305,6 +3305,8 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 	if(parts.empty())
 		return; // FIXME
 
+	Texture* ttex = ResourceManager::Get().For<Texture>().GetLoaded("uv_test.png");
+
 	SetAlphaBlend(false);
 	SetAlphaTest(false);
 	SetNoCulling(false);
@@ -3358,7 +3360,7 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 		//{
 			//last_pack = dp.tp;
 			last_pack = parts[0].tp;
-			V(e->SetTexture(hSTexDiffuse, last_pack->diffuse->tex));
+			V(e->SetTexture(hSTexDiffuse, ttex->tex /*last_pack->diffuse->tex*/));
 			//if(cl_normalmap && last_pack->normal)
 			//	V(e->SetTexture(hSTexNormal, last_pack->normal->tex));
 			//if(cl_specularmap && last_pack->specular)

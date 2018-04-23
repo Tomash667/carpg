@@ -1,6 +1,5 @@
 ﻿FEATURE:
 3. dungeon mesh vb, ib
-? test uv texture
 + textures
 + each room have polygons to draw info
 + lights, normal mapping

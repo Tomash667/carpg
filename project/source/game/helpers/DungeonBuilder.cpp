@@ -353,13 +353,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 					if(!Any(m[x + y * lw].type, KRATKA, KRATKA_PODLOGA))
 					{
 						mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * (y + 1)),
-							Vec2(0, 1), NTB_PY));
-						mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * (y + 1)),
-							Vec2(1, 1), NTB_PY));
-						mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * y),
 							Vec2(0, 0), NTB_PY));
-						mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * y),
+						mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * (y + 1)),
 							Vec2(1, 0), NTB_PY));
+						mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * y),
+							Vec2(0, 1), NTB_PY));
+						mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * y),
+							Vec2(1, 1), NTB_PY));
 						PushIndices();
 					}
 				}
@@ -368,13 +368,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 		else
 		{
 			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + room.size.y)),
-				Vec2(0, (float)room.size.y), NTB_PY));
-			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + room.size.y)),
-				Vec2((float)room.size.x, (float)room.size.y), NTB_PY));
-			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * room.pos.y),
 				Vec2(0, 0), NTB_PY));
-			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * room.pos.y),
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + room.size.y)),
 				Vec2((float)room.size.x, 0), NTB_PY));
+			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * room.pos.y),
+				Vec2(0, (float)room.size.y), NTB_PY));
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * room.pos.y),
+				Vec2((float)room.size.x, (float)room.size.y), NTB_PY));
 			PushIndices();
 		}
 
@@ -427,13 +427,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 			{
 				int length = y - start;
 				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + start)),
-					Vec2(0, V0), NTB_MX));
-				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + start + length)),
-					Vec2((float)length, V0), NTB_MX));
-				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + start)),
 					Vec2(0, 0), NTB_MX));
-				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + start + length)),
+				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + start + length)),
 					Vec2((float)length, 0), NTB_MX));
+				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + start)),
+					Vec2(0, V0), NTB_MX));
+				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + start + length)),
+					Vec2((float)length, V0), NTB_MX));
 				PushIndices();
 				start = -1;
 			}
@@ -441,13 +441,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 			if(!is_corridor && IS_SET(p.flags, Pole::F_NISKI_SUFIT))
 			{
 				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + y)),
-					Vec2(0, V0), NTB_MX));
-				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + y + 1)),
-					Vec2(1.f, V0), NTB_MX));
-				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h - low_h_dif, 2.f * (room.pos.y + y)),
 					Vec2(0, Vlow), NTB_MX));
-				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h - low_h_dif, 2.f * (room.pos.y + y + 1)),
+				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + y + 1)),
 					Vec2(1.f, Vlow), NTB_MX));
+				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h - low_h_dif, 2.f * (room.pos.y + y)),
+					Vec2(0, V0), NTB_MX));
+				mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h - low_h_dif, 2.f * (room.pos.y + y + 1)),
+					Vec2(1.f, V0), NTB_MX));
 				PushIndices();
 			}
 		}
@@ -455,13 +455,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 		{
 			int length = room.size.y - start;
 			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + start)),
-				Vec2(0, V0), NTB_MX));
-			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + start + length)),
-				Vec2((float)length, V0), NTB_MX));
-			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + start)),
 				Vec2(0, 0), NTB_MX));
-			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + start + length)),
+			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y + h, 2.f * (room.pos.y + start + length)),
 				Vec2((float)length, 0), NTB_MX));
+			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + start)),
+				Vec2(0, V0), NTB_MX));
+			mesh_v.push_back(VTangent(Vec3(2.f * room.pos.x, room.y, 2.f * (room.pos.y + start + length)),
+				Vec2((float)length, V0), NTB_MX));
 			PushIndices();
 		}
 
@@ -479,13 +479,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 			{
 				int length = (start - y);
 				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + start + 1)),
-					Vec2(0, V0), NTB_PX));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + start + 1 - length)),
-					Vec2((float)length, V0), NTB_PX));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + start + 1)),
 					Vec2(0, 0), NTB_PX));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + start + 1 - length)),
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + start + 1 - length)),
 					Vec2((float)length, 0), NTB_PX));
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + start + 1)),
+					Vec2(0, V0), NTB_PX));
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + start + 1 - length)),
+					Vec2((float)length, V0), NTB_PX));
 				PushIndices();
 				start = -1;
 			}
@@ -493,13 +493,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 			if(!is_corridor && IS_SET(p.flags, Pole::F_NISKI_SUFIT))
 			{
 				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + y + 1)),
-					Vec2(0, V0), NTB_PX));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + y)),
-					Vec2(1, V0), NTB_PX));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h - low_h_dif, 2.f * (room.pos.y + y + 1)),
 					Vec2(0, Vlow), NTB_PX));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h - low_h_dif, 2.f * (room.pos.y + y)),
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + y)),
 					Vec2(1, Vlow), NTB_PX));
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h - low_h_dif, 2.f * (room.pos.y + y + 1)),
+					Vec2(0, V0), NTB_PX));
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h - low_h_dif, 2.f * (room.pos.y + y)),
+					Vec2(1, V0), NTB_PX));
 				PushIndices();
 			}
 		}
@@ -507,13 +507,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 		{
 			int length = start + 1;
 			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + start + 1)),
-				Vec2(0, V0), NTB_PX));
-			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + start + 1 - length)),
-				Vec2((float)length, V0), NTB_PX));
-			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + start + 1)),
 				Vec2(0, 0), NTB_PX));
-			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + start + 1 - length)),
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y + h, 2.f * (room.pos.y + start + 1 - length)),
 				Vec2((float)length, 0), NTB_PX));
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + start + 1)),
+				Vec2(0, V0), NTB_PX));
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + room.size.x), room.y, 2.f * (room.pos.y + start + 1 - length)),
+				Vec2((float)length, V0), NTB_PX));
 			PushIndices();
 		}
 
@@ -531,13 +531,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 			{
 				int length = x - start;
 				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start), room.y + h, 2.f * (room.pos.y + room.size.y)),
-					Vec2(0, V0), NTB_MZ));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + length), room.y + h, 2.f * (room.pos.y + room.size.y)),
-					Vec2((float)length, V0), NTB_MZ));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start), room.y, 2.f * (room.pos.y + room.size.y)),
 					Vec2(0, 0), NTB_MZ));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + length), room.y, 2.f * (room.pos.y + room.size.y)),
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + length), room.y + h, 2.f * (room.pos.y + room.size.y)),
 					Vec2((float)length, 0), NTB_MZ));
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start), room.y, 2.f * (room.pos.y + room.size.y)),
+					Vec2(0, V0), NTB_MZ));
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + length), room.y, 2.f * (room.pos.y + room.size.y)),
+					Vec2((float)length, V0), NTB_MZ));
 				PushIndices();
 				start = -1;
 			}
@@ -545,13 +545,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 			if(!is_corridor && IS_SET(p.flags, Pole::F_NISKI_SUFIT))
 			{
 				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x), room.y + h, 2.f * (room.pos.y + room.size.y)),
-					Vec2(0, V0), NTB_MZ));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x + 1), room.y + h, 2.f * (room.pos.y + room.size.y)),
-					Vec2(1, V0), NTB_MZ));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x), room.y + h - low_h_dif, 2.f * (room.pos.y + room.size.y)),
 					Vec2(0, Vlow), NTB_MZ));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x + 1), room.y + h - low_h_dif, 2.f * (room.pos.y + room.size.y)),
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x + 1), room.y + h, 2.f * (room.pos.y + room.size.y)),
 					Vec2(1, Vlow), NTB_MZ));
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x), room.y + h - low_h_dif, 2.f * (room.pos.y + room.size.y)),
+					Vec2(0, V0), NTB_MZ));
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x + 1), room.y + h - low_h_dif, 2.f * (room.pos.y + room.size.y)),
+					Vec2(1, V0), NTB_MZ));
 				PushIndices();
 			}
 		}
@@ -559,13 +559,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 		{
 			int length = room.size.x - start;
 			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start), room.y + h, 2.f * (room.pos.y + room.size.y)),
-				Vec2(0, V0), NTB_MZ));
-			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + length), room.y + h, 2.f * (room.pos.y + room.size.y)),
-				Vec2((float)length, V0), NTB_MZ));
-			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start), room.y, 2.f * (room.pos.y + room.size.y)),
 				Vec2(0, 0), NTB_MZ));
-			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + length), room.y, 2.f * (room.pos.y + room.size.y)),
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + length), room.y + h, 2.f * (room.pos.y + room.size.y)),
 				Vec2((float)length, 0), NTB_MZ));
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start), room.y, 2.f * (room.pos.y + room.size.y)),
+				Vec2(0, V0), NTB_MZ));
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + length), room.y, 2.f * (room.pos.y + room.size.y)),
+				Vec2((float)length, V0), NTB_MZ));
 			PushIndices();
 		}
 
@@ -583,13 +583,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 			{
 				int length = (start - x);
 				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1), room.y + h, 2.f * room.pos.y),
-					Vec2(0, V0), NTB_PZ));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1 - length), room.y + h, 2.f * room.pos.y),
-					Vec2((float)length, V0), NTB_PZ));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1), room.y, 2.f * room.pos.y),
 					Vec2(0, 0), NTB_PZ));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1 - length), room.y, 2.f * room.pos.y),
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1 - length), room.y + h, 2.f * room.pos.y),
 					Vec2((float)length, 0), NTB_PZ));
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1), room.y, 2.f * room.pos.y),
+					Vec2(0, V0), NTB_PZ));
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1 - length), room.y, 2.f * room.pos.y),
+					Vec2((float)length, V0), NTB_PZ));
 				PushIndices();
 				start = -1;
 			}
@@ -597,13 +597,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 			if(!is_corridor && IS_SET(p.flags, Pole::F_NISKI_SUFIT))
 			{
 				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x + 1), room.y + h, 2.f * room.pos.y),
-					Vec2(0, V0), NTB_PZ));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x), room.y + h, 2.f * room.pos.y),
-					Vec2(1, V0), NTB_PZ));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x + 1), room.y + h - low_h_dif, 2.f * room.pos.y),
 					Vec2(0, Vlow), NTB_PZ));
-				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x), room.y + h - low_h_dif, 2.f * room.pos.y),
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x), room.y + h, 2.f * room.pos.y),
 					Vec2(1, Vlow), NTB_PZ));
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x + 1), room.y + h - low_h_dif, 2.f * room.pos.y),
+					Vec2(0, V0), NTB_PZ));
+				mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + x), room.y + h - low_h_dif, 2.f * room.pos.y),
+					Vec2(1, V0), NTB_PZ));
 				PushIndices();
 			}
 		}
@@ -611,13 +611,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 		{
 			int length = start + 1;
 			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1), room.y + h, 2.f * room.pos.y),
-				Vec2(0, V0), NTB_PZ));
-			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1 - length), room.y + h, 2.f * room.pos.y),
-				Vec2((float)length, V0), NTB_PZ));
-			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1), room.y, 2.f * room.pos.y),
 				Vec2(0, 0), NTB_PZ));
-			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1 - length), room.y, 2.f * room.pos.y),
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1 - length), room.y + h, 2.f * room.pos.y),
 				Vec2((float)length, 0), NTB_PZ));
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1), room.y, 2.f * room.pos.y),
+				Vec2(0, V0), NTB_PZ));
+			mesh_v.push_back(VTangent(Vec3(2.f * (room.pos.x + start + 1 - length), room.y, 2.f * room.pos.y),
+				Vec2((float)length, V0), NTB_PZ));
 			PushIndices();
 		}
 
@@ -635,13 +635,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 						if(!Any(m[x - 1 + y * lw].type, KRATKA, KRATKA_PODLOGA))
 						{
 							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * y),
-								Vec2(0, V0), NTB_MX));
-							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * (y + 1)),
-								Vec2(1, V0), NTB_MX));
-							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y - h, 2.f * y),
 								Vec2(0, 0), NTB_MX));
-							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y - h, 2.f * (y + 1)),
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * (y + 1)),
 								Vec2(1, 0), NTB_MX));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y - h, 2.f * y),
+								Vec2(0, V0), NTB_MX));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y - h, 2.f * (y + 1)),
+								Vec2(1, V0), NTB_MX));
 							PushIndices();
 						}
 
@@ -649,13 +649,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 						if(!Any(m[x + 1 + y * lw].type, KRATKA, KRATKA_PODLOGA))
 						{
 							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * (y + 1)),
-								Vec2(0, V0), NTB_PX));
-							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * y),
-								Vec2(1, V0), NTB_PX));
-							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y - h, 2.f * (y + 1)),
 								Vec2(0, 0), NTB_PX));
-							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y - h, 2.f * y),
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * y),
 								Vec2(1, 0), NTB_PX));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y - h, 2.f * (y + 1)),
+								Vec2(0, V0), NTB_PX));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y - h, 2.f * y),
+								Vec2(1, V0), NTB_PX));
 							PushIndices();
 						}
 
@@ -663,13 +663,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 						if(!Any(m[x + (y + 1) * lw].type, KRATKA, KRATKA_PODLOGA))
 						{
 							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * (y + 1)),
-								Vec2(0, V0), NTB_MZ));
-							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * (y + 1)),
-								Vec2(1, V0), NTB_MZ));
-							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y - h, 2.f * (y + 1)),
 								Vec2(0, 0), NTB_MZ));
-							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y - h, 2.f * (y + 1)),
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * (y + 1)),
 								Vec2(1, 0), NTB_MZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y - h, 2.f * (y + 1)),
+								Vec2(0, V0), NTB_MZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y - h, 2.f * (y + 1)),
+								Vec2(1, V0), NTB_MZ));
 							PushIndices();
 						}
 
@@ -677,13 +677,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 						if(!Any(m[x + (y - 1) * lw].type, KRATKA, KRATKA_PODLOGA))
 						{
 							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y, 2.f * y),
-								Vec2(0, V0), NTB_PZ));
-							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * y),
-								Vec2(1, V0), NTB_PZ));
-							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y - h, 2.f * y),
 								Vec2(0, 0), NTB_PZ));
-							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y - h, 2.f * y),
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y, 2.f * y),
 								Vec2(1, 0), NTB_PZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y - h, 2.f * y),
+								Vec2(0, V0), NTB_PZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y - h, 2.f * y),
+								Vec2(1, V0), NTB_PZ));
 							PushIndices();
 						}
 					}
@@ -694,13 +694,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 						if(!Any(m[x - 1 + y * lw].type, KRATKA, KRATKA_SUFIT))
 						{
 							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h * 2, 2.f * y),
-								Vec2(0, V0), NTB_MX));
-							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h * 2, 2.f * (y + 1)),
-								Vec2(1, V0), NTB_MX));
-							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * y),
 								Vec2(0, 0), NTB_MX));
-							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * (y + 1)),
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h * 2, 2.f * (y + 1)),
 								Vec2(1, 0), NTB_MX));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * y),
+								Vec2(0, V0), NTB_MX));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * (y + 1)),
+								Vec2(1, V0), NTB_MX));
 							PushIndices();
 						}
 
@@ -708,13 +708,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 						if(!Any(m[x + 1 + y * lw].type, KRATKA, KRATKA_SUFIT))
 						{
 							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h * 2, 2.f * (y + 1)),
-								Vec2(0, V0), NTB_PX));
-							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h * 2, 2.f * y),
-								Vec2(1, V0), NTB_PX));
-							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * (y + 1)),
 								Vec2(0, 0), NTB_PX));
-							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * y),
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h * 2, 2.f * y),
 								Vec2(1, 0), NTB_PX));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * (y + 1)),
+								Vec2(0, V0), NTB_PX));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * y),
+								Vec2(1, V0), NTB_PX));
 							PushIndices();
 						}
 
@@ -722,13 +722,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 						if(!Any(m[x + (y + 1) * lw].type, KRATKA, KRATKA_SUFIT))
 						{
 							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h * 2, 2.f * (y + 1)),
-								Vec2(0, V0), NTB_MZ));
-							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h * 2, 2.f * (y + 1)),
-								Vec2(1, V0), NTB_MZ));
-							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * (y + 1)),
 								Vec2(0, 0), NTB_MZ));
-							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * (y + 1)),
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h * 2, 2.f * (y + 1)),
 								Vec2(1, 0), NTB_MZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * (y + 1)),
+								Vec2(0, V0), NTB_MZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * (y + 1)),
+								Vec2(1, V0), NTB_MZ));
 							PushIndices();
 						}
 
@@ -736,13 +736,13 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 						if(!Any(m[x + (y - 1) * lw].type, KRATKA, KRATKA_SUFIT))
 						{
 							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h * 2, 2.f * y),
-								Vec2(0, V0), NTB_PZ));
-							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h * 2, 2.f * y),
-								Vec2(1, V0), NTB_PZ));
-							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * y),
 								Vec2(0, 0), NTB_PZ));
-							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * y),
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h * 2, 2.f * y),
 								Vec2(1, 0), NTB_PZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * (x + 1), room.y + h, 2.f * y),
+								Vec2(0, V0), NTB_PZ));
+							mesh_v.push_back(VTangent(Vec3(2.f * x, room.y + h, 2.f * y),
+								Vec2(1, V0), NTB_PZ));
 							PushIndices();
 						}
 					}
