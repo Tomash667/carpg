@@ -1,8 +1,12 @@
 ﻿FEATURE:
 3. dungeon mesh vb, ib
-+ big vb & ib
++ holes in mesh, other faces
+? test uv texture
++ textures
 + each room have polygons to draw info
-+ drawing whole room at once
++ lights, normal mapping
+-? don't add doors overhang wall ?
++ remove old scene.cpp code
 4. ramps physics
 validate options in DungeonGenerator::Generate
 moving player

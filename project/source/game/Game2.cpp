@@ -9647,9 +9647,7 @@ void Game::GenerateDungeonMesh()
 
 	InsideLocation* inside = (InsideLocation*)location;
 
-	dungeon_builder->Setup(inside);
-	dungeon_builder->SpawnColliders();
-	dungeon_builder->GenerateMesh();
+	dungeon_builder->Build(inside);
 
 	//FIXME
 	//draw_flags = 49152;
