@@ -214,7 +214,7 @@ void Game::DrawGrass()
 			Matrix* m;
 			V(vbInstancing->Lock(0, 0, (void**)&m, D3DLOCK_DISCARD));
 			int index = 0;
-			for(vector< const vector<Matrix>* >::const_iterator it = grass_patches[j].begin(), end = grass_patches[j].end(); it != end; ++it)
+			for(vector<const vector<Matrix>*>::const_iterator it = grass_patches[j].begin(), end = grass_patches[j].end(); it != end; ++it)
 			{
 				const vector<Matrix>& vm = **it;
 				memcpy(&m[index], &vm[0], sizeof(Matrix)*vm.size());

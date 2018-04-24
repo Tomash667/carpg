@@ -133,7 +133,8 @@ struct Room
 	enum Flags
 	{
 		F_HAVE_FLOOR_HOLES = 1 << 0,
-		F_HAVE_CEIL_HOLES = 1 << 1
+		F_HAVE_CEIL_HOLES = 1 << 1,
+		F_SECOND_TEXTURE = 1 << 2
 	};
 
 	Int2 pos, size;

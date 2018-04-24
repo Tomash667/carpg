@@ -175,6 +175,12 @@ struct StunEffect
 };
 
 //-----------------------------------------------------------------------------
+struct RoomPart
+{
+	int room_index, texture_index;
+};
+
+//-----------------------------------------------------------------------------
 struct DrawBatch
 {
 	vector<SceneNode*> nodes;
@@ -195,6 +201,7 @@ struct DrawBatch
 	vector<DungeonPart> dungeon_parts;
 	vector<NodeMatrix> matrices;
 	vector<StunEffect> stuns;
+	vector<RoomPart> rooms;
 
 	void Clear();
 };

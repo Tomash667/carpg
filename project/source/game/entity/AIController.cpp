@@ -380,5 +380,5 @@ float AIController::GetMorale() const
 	else if(hpp < 0.5f)
 		m -= 1.f;
 
-	return morale;
+	return m;
 }

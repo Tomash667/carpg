@@ -338,12 +338,20 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 	Pole* m = lvl.map;
 	const float low_h_dif = Room::HEIGHT - Room::HEIGHT_LOW;
 
+	rooms.resize(lvl.rooms.size());
+	memset(rooms.data(), 0, sizeof(RoomInfo) * rooms.size());
+
+	int room_index = -1;
 	for(Room& room : lvl.rooms)
 	{
+		++room_index;
 		const bool is_corridor = room.IsCorridor();
 		const float h = (is_corridor ? Room::HEIGHT_LOW : Room::HEIGHT);
+		RoomInfo& ri = rooms[room_index];
+		ri.second_texture = 
 
 		// floor
+		StartRoomPart(ri, RoomInfo::FLOOR);
 		if(IS_SET(room.flags, Room::F_HAVE_FLOOR_HOLES))
 		{
 			for(int x = room.pos.x; x < room.pos.x + room.size.x; ++x)
@@ -379,6 +387,7 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 		}
 
 		// ceiling
+		StartRoomPart(ri, RoomInfo::CEIL);
 		if(IS_SET(room.flags, Room::F_HAVE_CEIL_HOLES))
 		{
 			for(int x = room.pos.x; x < room.pos.x + room.size.x; ++x)
@@ -414,6 +423,7 @@ void DungeonBuilder::FillMeshData(InsideLocationLevel& lvl)
 		}
 
 		// left wall
+		StartRoomPart(ri, RoomInfo::WALL);
 		start = -1;
 		for(int y = 0; y < room.size.y; ++y)
 		{
@@ -781,6 +791,12 @@ void DungeonBuilder::CreateMesh()
 	vertex_count = mesh_v.size();
 }
 
+void DungeonBuilder::StartRoomPart(RoomInfo& room, int current_index)
+{
+	room.index[current_index] = mesh_i.size();
+	room_primitives = &room.primitives[current_index];
+}
+
 void DungeonBuilder::PushIndices()
 {
 	mesh_i.push_back(index_counter);
@@ -790,4 +806,5 @@ void DungeonBuilder::PushIndices()
 	mesh_i.push_back(index_counter + 1);
 	mesh_i.push_back(index_counter + 3);
 	index_counter += 4;
+	*room_primitives += 2;
 }

@@ -81,6 +81,7 @@ void DrawBatch::Clear()
 	dungeon_parts.clear();
 	matrices.clear();
 	stuns.clear();
+	rooms.clear();
 
 	// empty lights
 	Lights& l = Add1(lights);
@@ -2148,13 +2149,21 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 		{
 			box.v1 = Vec3(float(it->pos.x * 2), it->y, float(it->pos.y * 2));
 			box.v2 = box.v1;
-			box.v2 += Vec3(float(it->size.x * 2), it->y + 4.f, float(it->size.y * 2));
+			box.v2 += Vec3(float(it->size.x * 2), it->y + Room::HEIGHT, float(it->size.y * 2));
 
 			if(!frustum.BoxToFrustum(box))
 				continue;
 
+			RoomInfo& ri = dungeon_builder->rooms[index];
+			int tex_offset = ri.second_texture ? 3 : 0;
+			for(int i = 0; i < 3; ++i)
+			{
+				if(ri.primitives[i] > 0)
+					draw_batch.rooms.push_back({ index, tex_offset + i });
+			}
+
 			// zbierz listê œwiate³ oœwietlaj¹ce ten pokój
-			Vec2 v1(box.v1.x, box.v1.z);
+			/*Vec2 v1(box.v1.x, box.v1.z);
 			Vec2 v2(box.v2.x, box.v2.z);
 			Vec2 ext = (v2 - v1) / 2;
 			Vec2 mid = v1 + ext;
@@ -2283,18 +2292,6 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 							dp.lights = lights_id;
 						}
 
-						// niskie
-						/*d2 = ((d & 0xF0)>>4);
-						if(d2 != 0)
-						{
-							DungeonPart& dp = Add1(draw_batch.dungeon_parts);
-							dp.tp = &tWall[tex_id];
-							dp.start_index = dungeon_part2[d2].x;
-							dp.primitive_count = dungeon_part2[d2].y;
-							dp.matrix = matrix_id;
-							dp.lights = lights_id;
-						}*/
-
 						// góra
 						d2 = ((d & 0xF00) >> 8);
 						if(d2 != 0)
@@ -2320,8 +2317,27 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 						}
 					}
 				}
-			}
+			}*/
 		}
+	
+		int prio[6];
+		for(int i = 0; i < 6; ++i)
+		{
+			if(dungeon_tex[i].diffuse == -1)
+				prio[i] = -1;
+			else
+				prio[i] = dungeon_tex[i].GetIndex();
+		}
+
+		std::sort(draw_batch.rooms.begin(), draw_batch.rooms.end(), [&](const RoomPart& rp1, const RoomPart& rp2)
+		{
+			int prio1 = prio[rp1.texture_index];
+			int prio2 = prio[rp2.texture_index];
+			if(prio1 == prio2)
+				return rp1.texture_index > rp2.texture_index;
+			else
+				return prio1 > prio2;
+		});
 	}
 	else
 	{
@@ -2880,6 +2896,11 @@ void Game::DrawScene(bool outside)
 		PROFILER_BLOCK("DrawDugneon");
 		DrawDungeon(draw_batch.dungeon_parts, draw_batch.lights, draw_batch.matrices);
 	}
+	else if(!draw_batch.rooms.empty())
+	{
+		PROFILER_BLOCK("DrawDugneon");
+		DrawDungeon2();
+	}
 
 	// modele
 	if(!draw_batch.nodes.empty())
@@ -3302,26 +3323,21 @@ void Game::DrawTerrain(const vector<uint>& parts)
 //=================================================================================================
 void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& lights, const vector<NodeMatrix>& matrices)
 {
-	if(parts.empty())
-		return; // FIXME
-
-	Texture* ttex = ResourceManager::Get().For<Texture>().GetLoaded("uv_test.png");
-
 	SetAlphaBlend(false);
 	SetAlphaTest(false);
 	SetNoCulling(false);
 	SetNoZWrite(false);
 
 	V(device->SetVertexDeclaration(vertex_decl[VDI_TANGENT]));
-	V(device->SetStreamSource(0, dungeon_builder->GetVertexBuffer(), 0, sizeof(VTangent)));
-	V(device->SetIndices(dungeon_builder->GetIndexBuffer()));
+	V(device->SetStreamSource(0, vbDungeon, 0, sizeof(VTangent)));
+	V(device->SetIndices(ibDungeon));
 
-	//int last_mode = -1;
+	int last_mode = -1;
 	ID3DXEffect* e = nullptr;
-	//bool first = true;
+	bool first = true;
 	TexturePack* last_pack = nullptr;
 
-	/*for(vector<DungeonPart>::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it)
+	for(vector<DungeonPart>::const_iterator it = parts.begin(), end = parts.end(); it != end; ++it)
 	{
 		const DungeonPart& dp = *it;
 		int mode = dp.tp->GetIndex();
@@ -3334,14 +3350,12 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 			{
 				V(e->EndPass());
 				V(e->End());
-			}*/
-			e = GetSuperShader(GetSuperShaderId(false, true, cl_fog, 
-				false, //cl_specularmap && dp.tp->specular != nullptr,
-				false, //cl_normalmap && dp.tp->normal != nullptr,
-				cl_lighting, false))->e;
-			//if(first)
-			//{
-			//	first = false;
+			}
+			e = GetSuperShader(GetSuperShaderId(false, true, cl_fog, cl_specularmap && dp.tp->specular != nullptr,
+				cl_normalmap && dp.tp->normal != nullptr, cl_lighting, false))->e;
+			if(first)
+			{
+				first = false;
 				V(e->SetVector(hSTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 				V(e->SetVector(hSAmbientColor, (D3DXVECTOR4*)&GetAmbientColor()));
 				V(e->SetVector(hSFogColor, (D3DXVECTOR4*)&GetFogColor()));
@@ -3350,43 +3364,88 @@ void Game::DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& l
 				V(e->SetVector(hSSpecularColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
 				V(e->SetFloat(hSSpecularIntensity, 0.2f));
 				V(e->SetFloat(hSSpecularHardness, 10));
-			//}
+			}
 			V(e->Begin(&passes, 0));
 			V(e->BeginPass(0));
-		//}
+		}
 
 		// set textures
-		//if(last_pack != dp.tp)
-		//{
-			//last_pack = dp.tp;
-			last_pack = parts[0].tp;
-			V(e->SetTexture(hSTexDiffuse, ttex->tex /*last_pack->diffuse->tex*/));
-			//if(cl_normalmap && last_pack->normal)
-			//	V(e->SetTexture(hSTexNormal, last_pack->normal->tex));
-			//if(cl_specularmap && last_pack->specular)
-			//	V(e->SetTexture(hSTexSpecular, last_pack->specular->tex));
-		//}
+		if(last_pack != dp.tp)
+		{
+			last_pack = dp.tp;
+			V(e->SetTexture(hSTexDiffuse, last_pack->diffuse->tex));
+			if(cl_normalmap && last_pack->normal)
+				V(e->SetTexture(hSTexNormal, last_pack->normal->tex));
+			if(cl_specularmap && last_pack->specular)
+				V(e->SetTexture(hSTexSpecular, last_pack->specular->tex));
+		}
 
 		// set matrices
-		//const NodeMatrix& m = matrices[dp.matrix];
-		//V(e->SetMatrix(hSMatCombined, (D3DXMATRIX*)&m.matCombined));
-		//V(e->SetMatrix(hSMatWorld, (D3DXMATRIX*)&m.matWorld));
-
-			Matrix world = Matrix::IdentityMatrix;
-			Matrix mat_combined = cam.matViewProj;
-
-			V(e->SetMatrix(hSMatCombined, (D3DXMATRIX*)&mat_combined));
-			V(e->SetMatrix(hSMatWorld, (D3DXMATRIX*)&world));
+		const NodeMatrix& m = matrices[dp.matrix];
+		V(e->SetMatrix(hSMatCombined, (D3DXMATRIX*)&m.matCombined));
+		V(e->SetMatrix(hSMatWorld, (D3DXMATRIX*)&m.matWorld));
 
 		// set lights
-		LightData ld[3] = {};
-		V(e->SetRawValue(hSLights, ld /* &lights[dp.lights].ld[0]*/, 0, sizeof(LightData) * 3));
+		V(e->SetRawValue(hSLights, &lights[dp.lights].ld[0], 0, sizeof(LightData) * 3));
 
 		// draw
 		V(e->CommitChanges());
-		//V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 76, dp.start_index, dp.primitive_count));
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, dungeon_builder->vertex_count, 0, dungeon_builder->primitive_count));
-	//}
+		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 76, dp.start_index, dp.primitive_count));
+	}
+
+	V(e->EndPass());
+	V(e->End());
+}
+
+//=================================================================================================
+void Game::DrawDungeon2()
+{	
+	SetAlphaBlend(false);
+	SetAlphaTest(false);
+	SetNoCulling(false);
+	SetNoZWrite(false);
+
+	V(device->SetVertexDeclaration(vertex_decl[VDI_TANGENT]));
+	V(device->SetStreamSource(0, dungeon_builder->GetVertexBuffer(), 0, sizeof(VTangent)));
+	V(device->SetIndices(dungeon_builder->GetIndexBuffer()));
+
+	ID3DXEffect* e = GetSuperShader(GetSuperShaderId(false, true, cl_fog, false, false, cl_lighting, false))->e;
+
+	V(e->SetVector(hSTint, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
+	V(e->SetVector(hSAmbientColor, (D3DXVECTOR4*)&GetAmbientColor()));
+	V(e->SetVector(hSFogColor, (D3DXVECTOR4*)&GetFogColor()));
+	V(e->SetVector(hSFogParams, (D3DXVECTOR4*)&GetFogParams()));
+	V(e->SetVector(hSCameraPos, (D3DXVECTOR4*)&cam.center));
+	V(e->SetVector(hSSpecularColor, (D3DXVECTOR4*)&Vec4(1, 1, 1, 1)));
+	V(e->SetFloat(hSSpecularIntensity, 0.2f));
+	V(e->SetFloat(hSSpecularHardness, 10));
+	V(e->SetMatrix(hSMatCombined, (D3DXMATRIX*)&cam.matViewProj));
+	V(e->SetMatrix(hSMatWorld, (D3DXMATRIX*)&Matrix::IdentityMatrix));
+
+	// TODO
+	LightData ld[3] = {};
+	V(e->SetRawValue(hSLights, ld, 0, sizeof(LightData) * 3));
+
+	V(e->Begin(&passes, 0));
+	V(e->BeginPass(0));
+
+	ID3DXEffect* e = GetSuperShader(GetSuperShaderId(false, true, cl_fog,
+		false, //cl_specularmap && dp.tp->specular != nullptr,
+		false, //cl_normalmap && dp.tp->normal != nullptr,
+		cl_lighting, false))->e;
+
+	for(RoomPart& room_part : draw_batch.rooms)
+	{
+		// ....
+
+		RoomInfo& ri = dungeon_builder->rooms[room_index];
+		for(int i = 0; i < 3; ++i)
+		{
+			V(e->SetTexture(hSTexDiffuse, dungeon_tex[i].diffuse->tex));
+			V(e->CommitChanges());
+			V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, dungeon_builder->vertex_count, ri.index[i], ri.primitives[i]));
+		}
+	}
 
 	V(e->EndPass());
 	V(e->End());

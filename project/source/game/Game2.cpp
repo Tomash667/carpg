@@ -9252,7 +9252,7 @@ Vec4 Game::GetLightColor()
 
 struct BulletCallback : public btCollisionWorld::ConvexResultCallback
 {
-	BulletCallback(btCollisionObject* ignore) : target(nullptr), ignore(ignore)
+	explicit BulletCallback(btCollisionObject* ignore) : target(nullptr), ignore(ignore)
 	{
 		CLEAR_BIT(m_collisionFilterMask, CG_BARRIER);
 	}
@@ -13599,6 +13599,9 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 
 	// tekstury podziemi
 	ApplyLocationTexturePack(tFloor[0], tWall[0], tCeil[0], base.tex);
+	dungeon_tex[RoomInfo::WALL] = tWall[0];
+	dungeon_tex[RoomInfo::CEIL] = tCeil[0];
+	dungeon_tex[RoomInfo::FLOOR] = tFloor[0];
 
 	// druga tekstura
 	if(base.tex2 != -1)

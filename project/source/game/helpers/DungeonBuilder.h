@@ -2,6 +2,19 @@
 
 #include "VertexDeclaration.h"
 
+struct RoomInfo
+{
+	enum Index
+	{
+		FLOOR,
+		CEIL,
+		WALL
+	};
+	int primitives[3];
+	int index[3];
+	bool second_texture;
+};
+
 class DungeonBuilder
 {
 public:
@@ -13,6 +26,7 @@ public:
 	IB GetIndexBuffer() { return mesh_ib; }
 
 	int primitive_count, vertex_count;
+	vector<RoomInfo> rooms;
 
 private:
 	void BuildPhysics(InsideLocationLevel& lvl);
@@ -27,6 +41,7 @@ private:
 	void BuildMesh(InsideLocationLevel& lvl);
 	void FillMeshData(InsideLocationLevel& lvl);
 	void CreateMesh();
+	void StartRoomPart(RoomInfo& room, int current_index);
 	void PushIndices();
 
 	CustomCollisionWorld* phy_world;
@@ -39,5 +54,6 @@ private:
 	vector<int> mesh_i;
 	VB mesh_vb;
 	IB mesh_ib;
-	int index_counter;
+	int index_counter, current_index;
+	int* room_primitives;
 };

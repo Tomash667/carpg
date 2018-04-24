@@ -1,10 +1,12 @@
 ﻿FEATURE:
 3. dungeon mesh vb, ib
-+ textures
-+ each room have polygons to draw info
-+ lights, normal mapping
++ sorting
++ lights
++ normal/specular texture
++ second texture
 -? don't add doors overhang wall ?
-+ remove old scene.cpp code
++ working cave/lab
+? crypt other texture
 4. ramps physics
 validate options in DungeonGenerator::Generate
 moving player
@@ -34,11 +36,19 @@ moving player
 	+ RoomTarget changed
 	+ resize level so rooms are not on border
 	+ Room flags
+	+ removed Pole.FLAGI.F_DRUGA_TEKSTURA (1<<30)
 + gray dots on minimap when there is doors
 ! FIXME
-? labirynth, cave, tutorial
+? labirynth, cave, mine, tutorial
 	- lab uses old room size
+	- mine use old room size
+	? verify lab/mine room flags/other vars
 ? old saves
+
+- if(slot == -1)
+	{
+		SaveSlot& s = single_saves[slot - 1]; <<<<<<< -2 index
+- map2console mine uses Pole::ZAJETE which is not in array
 ===============================================================================================================
 NEW:
 2. ramp, small step
@@ -68,5 +78,5 @@ feature requirements:
 + tower stairs should be rotated clock-wise to help defend for right handed
 + stairs physics collider
 + use D3DPOOL_DEFAULT and rebuild dungeon mesh
-
-- map2console mine uses Pole::ZAJETE which is not in array
++ room height is hardcoded in FillDrawBatchDungeonParts
+ 

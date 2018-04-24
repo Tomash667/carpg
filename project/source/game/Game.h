@@ -492,9 +492,10 @@ struct Game final : public Engine, public UnitEventHandler
 	LevelParts level_parts;
 	VB vbInstancing;
 	uint vb_instancing_max;
-	vector< const vector<Matrix>* > grass_patches[2];
+	vector<const vector<Matrix>*> grass_patches[2];
 	uint grass_count[2];
 	float lights_dt;
+	TexturePack dungeon_tex[6];
 
 	void InitScene();
 	void CreateVertexDeclarations();
@@ -516,6 +517,7 @@ struct Game final : public Engine, public UnitEventHandler
 	void DrawSkybox();
 	void DrawTerrain(const vector<uint>& parts);
 	void DrawDungeon(const vector<DungeonPart>& parts, const vector<Lights>& lights, const vector<NodeMatrix>& matrices);
+	void DrawDungeon2();
 	void DrawSceneNodes(const vector<SceneNode*>& nodes, const vector<Lights>& lights, bool outside);
 	void DrawDebugNodes(const vector<DebugSceneNode*>& nodes);
 	void DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<Lights>& lights);
