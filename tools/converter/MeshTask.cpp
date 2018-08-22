@@ -912,6 +912,7 @@ void LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 			t.AssertSymbol('{');
 			t.Next();
 
+			uint use_smooth = 0, use_flat = 0;
 			for (uint fi = 0; fi < NumFaces; fi++)
 			{
 				tmp::FACE & f = object->Faces[fi];
@@ -928,6 +929,10 @@ void LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 
 				t.AssertToken(Tokenizer::TOKEN_INTEGER);
 				f.Smooth = (t.MustGetUint4() > 0);
+				if(f.Smooth)
+					++use_smooth;
+				else
+					++use_flat;
 				t.Next();
 
 				// Wierzcho³ki tej œcianki
@@ -959,6 +964,14 @@ void LoadQmshTmpFile(tmp::QMSH *Out, const string &FileName)
 				f.Normal.z = t.MustGetFloat();
 				t.Next();
 			}
+
+			if(use_smooth > 0 && use_flat > 0)
+			{
+				Warning("Mixed smooth/flat shading. # invalid bones.");
+				object->vertex_normals = false;
+			}
+			else if(use_flat)
+				object->vertex_normals = false;
 
 			t.AssertSymbol('}');
 			t.Next();
