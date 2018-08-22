@@ -96,7 +96,7 @@ ServerPanel::ServerPanel(const DialogInfo& info) : GameDialogBox(info)
 	grid.size = Int2(320, 300);
 	grid.event = GridEvent(this, &ServerPanel::GetCell);
 	grid.selection_type = Grid::BACKGROUND;
-	grid.selection_color = COLOR_RGBA(0, 255, 0, 128);
+	grid.selection_color = Color(0, 255, 0, 128);
 	grid.AddColumn(Grid::IMG, 20);
 	grid.AddColumn(Grid::TEXT_COLOR, 140, txNick);
 	grid.AddColumn(Grid::TEXT, 140, txChar);
@@ -119,10 +119,10 @@ ServerPanel::ServerPanel(const DialogInfo& info) : GameDialogBox(info)
 void ServerPanel::Draw(ControlDrawData*)
 {
 	// t³o
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
+	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// przyciski
 	int ile = (Net::IsServer() ? 6 : 3);
@@ -137,7 +137,7 @@ void ServerPanel::Draw(ControlDrawData*)
 
 	// tekst
 	Rect r = { 340 + global_pos.x, 355 + global_pos.y, 340 + 185 + global_pos.x, 355 + 160 + global_pos.y };
-	GUI.DrawText(GUI.default_font, Format(txServerText, game->server_name2.c_str(), game->players, game->max_players2, game->enter_pswd.empty() ? GUI.txNo : GUI.txYes), 0, BLACK, r, &r);
+	GUI.DrawText(GUI.default_font, Format(txServerText, game->server_name2.c_str(), game->players, game->max_players2, game->enter_pswd.empty() ? GUI.txNo : GUI.txYes), 0, Color::Black, r, &r);
 }
 
 //=================================================================================================
@@ -354,7 +354,7 @@ void ServerPanel::GetCell(int item, int column, Cell& cell)
 	else if(column == 1)
 	{
 		cell.text_color->text = (info.state == PlayerInfo::IN_LOBBY ? info.name.c_str() : info.adr.ToString());
-		cell.text_color->color = (info.id == game->leader_id ? 0xFFFFD700 : BLACK);
+		cell.text_color->color = (info.id == game->leader_id ? 0xFFFFD700 : Color::Black);
 	}
 	else
 		cell.text = (info.clas == Class::INVALID ? txNone : ClassInfo::classes[(int)info.clas].name.c_str());

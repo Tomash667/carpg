@@ -160,9 +160,9 @@ void Inventory::Draw(ControlDrawData*)
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
 		load = unit->GetLoad();
-		GUI.DrawItem(tItemBar, Int2(shift_x, bar_y), Int2(bar_size, 32), WHITE, 4);
-		GUI.DrawItem(tEquipped, Int2(shift_x + bar_size + 10, bar_y), Int2(int(min(1.f, load)*bar_size), 32), WHITE, 4);
-		GUI.DrawItem(tItemBar, Int2(shift_x + bar_size + 10, bar_y), Int2(bar_size, 32), WHITE, 4);
+		GUI.DrawItem(tItemBar, Int2(shift_x, bar_y), Int2(bar_size, 32), Color::White, 4);
+		GUI.DrawItem(tEquipped, Int2(shift_x + bar_size + 10, bar_y), Int2(int(min(1.f, load)*bar_size), 32), Color::White, 4);
+		GUI.DrawItem(tItemBar, Int2(shift_x + bar_size + 10, bar_y), Int2(bar_size, 32), Color::White, 4);
 	}
 	else if(mode == LOOT_OTHER)
 		bt.Draw();
@@ -174,7 +174,7 @@ void Inventory::Draw(ControlDrawData*)
 		pos.x + size.x,
 		pos.y + size.y
 	};
-	GUI.DrawText(GUI.fBig, title, DT_CENTER | DT_SINGLELINE, BLACK, rect, &rect);
+	GUI.DrawText(GUI.fBig, title, DT_CENTER | DT_SINGLELINE, Color::Black, rect, &rect);
 
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
@@ -183,7 +183,7 @@ void Inventory::Draw(ControlDrawData*)
 
 		// z³oto
 		rect = Rect::Create(Int2(shift_x, bar_y), Int2(bar_size, 32));
-		GUI.DrawText(GUI.default_font, Format("%d", unit->gold), DT_CENTER | DT_VCENTER, BLACK, rect);
+		GUI.DrawText(GUI.default_font, Format("%d", unit->gold), DT_CENTER | DT_VCENTER, Color::Black, rect);
 
 		// udŸwig
 		rect.Left() = shift_x + bar_size + 10;
@@ -191,7 +191,7 @@ void Inventory::Draw(ControlDrawData*)
 		cstring weight_str = Format(txCarryShort, float(unit->weight) / 10, float(unit->weight_max) / 10);
 		int w = GUI.default_font->LineWidth(weight_str);
 		GUI.DrawText(GUI.default_font, (w > bar_size ? Format("%g/%g", float(unit->weight) / 10, float(unit->weight_max) / 10) : weight_str),
-			DT_CENTER | DT_VCENTER, (load > 1.f ? RED : BLACK), rect);
+			DT_CENTER | DT_VCENTER, (load > 1.f ? RED : Color::Black), rect);
 	}
 
 	// rysuj kratki
@@ -253,13 +253,13 @@ void Inventory::Draw(ControlDrawData*)
 
 		// team item icon
 		if(have_team && team != 0)
-			GUI.DrawSprite(tTeamItem, Int2(shift_x + x * 63, shift_y + y * 63), team == 2 ? BLACK : COLOR_RGBA(0, 0, 0, 128));
+			GUI.DrawSprite(tTeamItem, Int2(shift_x + x * 63, shift_y + y * 63), team == 2 ? Color::Black : Color(0, 0, 0, 128));
 
 		// count
 		if(count > 1)
 		{
 			Rect rect3 = Rect::Create(Int2(shift_x + x * 63 + 2, shift_y + y * 63), Int2(64, 63));
-			GUI.DrawText(GUI.default_font, Format("%d", count), DT_BOTTOM, BLACK, rect3);
+			GUI.DrawText(GUI.default_font, Format("%d", count), DT_BOTTOM, Color::Black, rect3);
 		}
 	}
 

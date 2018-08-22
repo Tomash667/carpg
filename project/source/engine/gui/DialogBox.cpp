@@ -17,9 +17,9 @@ need_delete(false)
 //=================================================================================================
 void DialogBox::Draw(ControlDrawData*)
 {
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
+	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 	pos = (GUI.wnd_size - size) / 2;
-	GUI.DrawItem(tDialog, pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+	GUI.DrawItem(tDialog, pos, size, Color::Alpha(222), 16);
 
 	for(uint i = 0; i < bts.size(); ++i)
 	{
@@ -28,7 +28,7 @@ void DialogBox::Draw(ControlDrawData*)
 	}
 
 	Rect r = { pos.x + 12, pos.y + 12, pos.x + size.x - 12, pos.y + size.y - 12 };
-	GUI.DrawText(GUI.default_font, text, DT_CENTER, BLACK, r);
+	GUI.DrawText(GUI.default_font, text, DT_CENTER, Color::Black, r);
 }
 
 //=================================================================================================
@@ -112,15 +112,15 @@ void DialogWithCheckbox::Event(GuiEvent e)
 DialogWithImage::DialogWithImage(const DialogInfo& info) : DialogBox(info), img(info.img)
 {
 	assert(img);
-	img_size = gui::GetImgSize(img);
+	img_size = gui::GetSize(img);
 }
 
 //=================================================================================================
 void DialogWithImage::Draw(ControlDrawData*)
 {
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
+	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 	pos = (GUI.wnd_size - size) / 2;
-	GUI.DrawItem(tDialog, pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+	GUI.DrawItem(tDialog, pos, size, Color::Alpha(222), 16);
 
 	for(uint i = 0; i < bts.size(); ++i)
 	{
@@ -129,7 +129,7 @@ void DialogWithImage::Draw(ControlDrawData*)
 	}
 
 	Rect r = text_rect + pos;
-	GUI.DrawText(GUI.default_font, text, DT_CENTER, BLACK, r);
+	GUI.DrawText(GUI.default_font, text, DT_CENTER, Color::Black, r);
 
 	GUI.DrawSprite(img, img_pos + pos);
 }

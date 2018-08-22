@@ -8,7 +8,7 @@
 void LoadScreen::Draw(ControlDrawData*)
 {
 	// background
-	GUI.DrawSpriteFull(tBackground, WHITE);
+	GUI.DrawSpriteFull(tBackground, Color::White);
 
 	// loadbar background
 	D3DSURFACE_DESC desc;
@@ -23,7 +23,7 @@ void LoadScreen::Draw(ControlDrawData*)
 
 	// text
 	Rect r2 = { 32, 0, GUI.wnd_size.x - 32, LONG(GUI.wnd_size.y - desc.Height - 32) };
-	GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_BOTTOM, WHITE, r2);
+	GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_BOTTOM, Color::White, r2);
 }
 
 //=================================================================================================

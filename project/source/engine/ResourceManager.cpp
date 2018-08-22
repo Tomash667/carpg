@@ -6,6 +6,7 @@
 #include "Mesh.h"
 #include "Utility.h"
 #include "SoundManager.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 ResourceManager ResourceManager::manager;

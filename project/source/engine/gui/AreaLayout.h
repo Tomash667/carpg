@@ -38,20 +38,20 @@ namespace gui
 		AreaLayout() : mode(None) {}
 		AreaLayout(DWORD color) : mode(Color), color(color) {}
 		AreaLayout(DWORD color, DWORD border_color, int width = 1) : mode(BorderColor), color(color), border_color(border_color), width(width) {}
-		AreaLayout(TEX tex) : mode(Texture), tex(tex), color(WHITE), region(0, 0, 1, 1), pad(0)
+		AreaLayout(TEX tex) : mode(Texture), tex(tex), color(Color::White), region(0, 0, 1, 1), pad(0)
 		{
 			SetFromArea(nullptr);
 		}
-		AreaLayout(TEX tex, DWORD background_color) : mode(TextureAndColor), tex(tex), color(WHITE), background_color(background_color),
+		AreaLayout(TEX tex, DWORD background_color) : mode(TextureAndColor), tex(tex), color(Color::White), background_color(background_color),
 			region(0, 0, 1, 1), pad(0) {}
-		AreaLayout(TEX tex, const Box2d& region) : mode(Texture), tex(tex), color(WHITE), background_color(WHITE), region(region), pad(0) {}
-		AreaLayout(TEX tex, const Box2d& region, DWORD background_color) : mode(TextureAndColor), tex(tex), color(WHITE),
+		AreaLayout(TEX tex, const Box2d& region) : mode(Texture), tex(tex), color(Color::White), background_color(Color::White), region(region), pad(0) {}
+		AreaLayout(TEX tex, const Box2d& region, DWORD background_color) : mode(TextureAndColor), tex(tex), color(Color::White),
 			background_color(background_color), region(region), pad(0) {}
-		AreaLayout(TEX tex, const Rect& area) : mode(Texture), tex(tex), color(WHITE), background_color(WHITE), pad(0)
+		AreaLayout(TEX tex, const Rect& area) : mode(Texture), tex(tex), color(Color::White), background_color(Color::White), pad(0)
 		{
 			SetFromArea(&area);
 		}
-		AreaLayout(TEX tex, const Rect& area, DWORD background_color) : mode(TextureAndColor), tex(tex), color(WHITE),
+		AreaLayout(TEX tex, const Rect& area, DWORD background_color) : mode(TextureAndColor), tex(tex), color(Color::White),
 			background_color(background_color), pad(0)
 		{
 			SetFromArea(&area);

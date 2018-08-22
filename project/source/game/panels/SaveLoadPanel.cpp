@@ -45,10 +45,10 @@ SaveLoad::SaveLoad(const DialogInfo& info) : DialogBox(info), choice(0), tMiniSa
 //=================================================================================================
 void SaveLoad::Draw(ControlDrawData* /*cdd*/)
 {
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
+	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
-	GUI.DrawText(GUI.fBig, save_mode ? txSaving : txLoading, DT_CENTER, BLACK, r);
+	GUI.DrawText(GUI.fBig, save_mode ? txSaving : txLoading, DT_CENTER, Color::Black, r);
 	for(int i = 0; i < 2; ++i)
 		bt[i].Draw();
 	textbox.Draw();
@@ -73,7 +73,7 @@ void SaveLoad::Draw(ControlDrawData* /*cdd*/)
 				text = Format(txEmptySlot, i + 1);
 		}
 
-		GUI.DrawText(GUI.default_font, text, DT_SINGLELINE | DT_VCENTER, choice == i ? GREEN : BLACK, r);
+		GUI.DrawText(GUI.default_font, text, DT_SINGLELINE | DT_VCENTER, choice == i ? GREEN : Color::Black, r);
 
 		r.Top() = r.Bottom() + 4;
 		r.Bottom() = r.Top() + 20;

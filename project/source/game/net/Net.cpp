@@ -5400,7 +5400,7 @@ void Game::UpdateClient(float dt)
 					LeaveLevel();
 					net_mode = NM_TRANSFER;
 					net_state = NetState::Client_ChangingLevel;
-					clear_color = BLACK;
+					clear_color = Color::Black;
 					load_screen->visible = true;
 					game_gui->visible = false;
 					world_map->visible = false;

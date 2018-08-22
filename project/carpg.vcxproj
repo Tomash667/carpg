@@ -127,6 +127,7 @@
   <ItemGroup>
     <ClInclude Include="source\core\Algorithm.h" />
     <ClInclude Include="source\core\Base64.h" />
+    <ClInclude Include="source\core\Color.h" />
     <ClInclude Include="source\core\Core.h" />
     <ClInclude Include="source\core\Config.h" />
     <ClInclude Include="source\core\Config2.h" />
@@ -146,6 +147,8 @@
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
     <ClInclude Include="source\engine\BitStreamFunc.h" />
+    <ClInclude Include="source\engine\DirectX.h" />
+    <ClInclude Include="source\engine\FileFormat.h" />
     <ClInclude Include="source\engine\Font.h" />
     <ClInclude Include="source\engine\EngineCore.h" />
     <ClInclude Include="source\engine\gui\AreaLayout.h" />

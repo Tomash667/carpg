@@ -19,6 +19,7 @@
 #include "QuestManager.h"
 #include "BuildingGroup.h"
 #include "ScriptManager.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;

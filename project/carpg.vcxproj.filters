@@ -1360,6 +1360,15 @@
     <ClInclude Include="source\game\script\Var.h">
       <Filter>3. game\script</Filter>
     </ClInclude>
+    <ClInclude Include="source\engine\DirectX.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\FileFormat.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\Color.h">
+      <Filter>1. core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">

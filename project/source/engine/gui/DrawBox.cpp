@@ -12,7 +12,7 @@ DrawBox::DrawBox() : Control(true), tex(nullptr), clicked(false)
 void DrawBox::Draw(ControlDrawData*)
 {
 	Rect r = Rect::Create(global_pos, size);
-	GUI.DrawArea(COLOR_RGB(150, 150, 150), r);
+	GUI.DrawArea(Color(150, 150, 150), r);
 
 	if(tex)
 	{
@@ -81,10 +81,7 @@ void DrawBox::SetTexture(TEX t)
 	assert(t);
 	tex = t;
 
-	D3DSURFACE_DESC desc;
-	tex->GetLevelDesc(0, &desc);
-
-	tex_size = Int2(desc.Width, desc.Height);
+	tex_size = gui::GetSize(t);
 	Vec2 sizef = Vec2(size);
 	Vec2 scale2 = Vec2(sizef.x / tex_size.x, sizef.y / tex_size.y);
 	scale = min(scale2.x, scale2.y);

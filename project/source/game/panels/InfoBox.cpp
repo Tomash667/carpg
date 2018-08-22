@@ -15,14 +15,14 @@ void InfoBox::Draw(ControlDrawData*)
 {
 	// t³o
 	if(!game->load_screen->visible)
-		GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
+		GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// tekst
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_VCENTER, BLACK, r);
+	GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_VCENTER, Color::Black, r);
 }
 
 //=================================================================================================

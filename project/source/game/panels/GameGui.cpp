@@ -159,7 +159,7 @@ void GameGui::DrawFront()
 
 	// obwódka bólu
 	if(game.pc->dmgc > 0.f)
-		GUI.DrawSpriteFull(tObwodkaBolu, COLOR_RGBA(255, 255, 255, (int)Clamp<float>(game.pc->dmgc / game.pc->unit->hp * 5 * 255, 0.f, 255.f)));
+		GUI.DrawSpriteFull(tObwodkaBolu, Color::Alpha((int)Clamp<float>(game.pc->dmgc / game.pc->unit->hp * 5 * 255, 0.f, 255.f)));
 
 	// debug info
 	if(game.debug_info && !game.devmode)
@@ -268,14 +268,14 @@ void GameGui::DrawFront()
 		{
 			Vec3 text_pos = game.pc_data.before_player_ptr.chest->pos;
 			text_pos.y += 0.75f;
-			GUI.DrawText3D(GUI.default_font, txChest, DT_OUTLINE, WHITE, text_pos);
+			GUI.DrawText3D(GUI.default_font, txChest, DT_OUTLINE, Color::White, text_pos);
 		}
 		break;
 	case BP_DOOR:
 		{
 			Vec3 text_pos = game.pc_data.before_player_ptr.door->pos;
 			text_pos.y += 1.75f;
-			GUI.DrawText3D(GUI.default_font, game.pc_data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, DT_OUTLINE, WHITE, text_pos);
+			GUI.DrawText3D(GUI.default_font, game.pc_data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, DT_OUTLINE, Color::White, text_pos);
 		}
 		break;
 	case BP_ITEM:
@@ -293,7 +293,7 @@ void GameGui::DrawFront()
 				text = item.item->name.c_str();
 			else
 				text = Format("%s (%d)", item.item->name.c_str(), item.count);
-			GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, WHITE, text_pos);
+			GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, Color::White, text_pos);
 		}
 		break;
 	case BP_USABLE:
@@ -301,7 +301,7 @@ void GameGui::DrawFront()
 			Usable& u = *game.pc_data.before_player_ptr.usable;
 			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;
-			GUI.DrawText3D(GUI.default_font, u.base->name, DT_OUTLINE, WHITE, text_pos);
+			GUI.DrawText3D(GUI.default_font, u.base->name, DT_OUTLINE, Color::White, text_pos);
 		}
 		break;
 	}
@@ -353,13 +353,13 @@ void GameGui::DrawFront()
 			}
 			Rect r2 = r;
 			r2 -= Int2(0, off);
-			GUI.DrawText(GUI.default_font, s, 0, BLACK, r2, &r);
+			GUI.DrawText(GUI.default_font, s, 0, Color::Black, r2, &r);
 
 			// pasek przewijania
 			scrollbar.Draw();
 		}
 		else if(game.dialog_context.dialog_text)
-			GUI.DrawText(GUI.default_font, game.dialog_context.dialog_text, DT_CENTER | DT_VCENTER, BLACK, r);
+			GUI.DrawText(GUI.default_font, game.dialog_context.dialog_text, DT_CENTER | DT_VCENTER, Color::Black, r);
 	}
 
 	// get buffs
@@ -375,22 +375,22 @@ void GameGui::DrawFront()
 	Rect part = { 0, 0, int(hpp * 256), 16 };
 	Matrix mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 35));
 	if(part.Right() > 0)
-		GUI.DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, mat, &part, nullptr, WHITE);
-	GUI.DrawSprite2(tBar, mat, nullptr, nullptr, WHITE);
+		GUI.DrawSprite2(!IS_SET(buffs, BUFF_POISON) ? tHpBar : tPoisonedHpBar, mat, &part, nullptr, Color::White);
+	GUI.DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
 
 	// stamina bar
 	float stamina_p = game.pc->unit->stamina / game.pc->unit->stamina_max;
 	part.Right() = int(stamina_p * 256);
 	mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(wnd_scale, wnd_scale), nullptr, 0.f, &Vec2(0.f, float(GUI.wnd_size.y) - wnd_scale * 17));
 	if(part.Right() > 0)
-		GUI.DrawSprite2(tStaminaBar, mat, &part, nullptr, WHITE);
-	GUI.DrawSprite2(tBar, mat, nullptr, nullptr, WHITE);
+		GUI.DrawSprite2(tStaminaBar, mat, &part, nullptr, Color::White);
+	GUI.DrawSprite2(tBar, mat, nullptr, nullptr, Color::White);
 
 	// buffs
 	for(BuffImage& img : buff_images)
 	{
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(buff_scale, buff_scale), nullptr, 0.f, &img.pos);
-		GUI.DrawSprite2(img.tex, mat, nullptr, nullptr, WHITE);
+		GUI.DrawSprite2(img.tex, mat, nullptr, nullptr, Color::White);
 	}
 
 	float scale;
@@ -446,7 +446,7 @@ void GameGui::DrawFront()
 		if(action.charges > 1)
 		{
 			Rect r(int(wnd_scale * (256 + pad * 2)), int(GUI.wnd_size.y - (pad * 2) * wnd_scale) - 12, 0, 0);
-			GUI.DrawText(GUI.fSmall, Format("%d/%d", pc.action_charges, action.charges), DT_SINGLELINE, BLACK, r);
+			GUI.DrawText(GUI.fSmall, Format("%d/%d", pc.action_charges, action.charges), DT_SINGLELINE, Color::Black, r);
 		}
 	}
 
@@ -454,7 +454,7 @@ void GameGui::DrawFront()
 	/*for(int i = 0; i<10; ++i)
 	{
 		mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(spos.x), float(spos.y)));
-		GUI.DrawSprite2(tShortcut, &mat, nullptr, nullptr, WHITE);
+		GUI.DrawSprite2(tShortcut, &mat, nullptr, nullptr, Color::White);
 		spos.x += offset;
 	}*/
 
@@ -476,8 +476,8 @@ void GameGui::DrawFront()
 			else
 				t = tShortcutDown;
 			mat = Matrix::Transform2D(nullptr, 0.f, &Vec2(scale, scale), nullptr, 0.f, &Vec2(float(GUI.wnd_size.x) - sidebar * offset, float(spos.y - i*offset)));
-			GUI.DrawSprite2(t, mat, nullptr, nullptr, WHITE);
-			GUI.DrawSprite2(tSideButton[i], mat, nullptr, nullptr, WHITE);
+			GUI.DrawSprite2(t, mat, nullptr, nullptr, Color::White);
+			GUI.DrawSprite2(tSideButton[i], mat, nullptr, nullptr, Color::White);
 		}
 	}
 
@@ -495,7 +495,7 @@ void GameGui::DrawFront()
 		else
 			alpha = int((1.f - game.fallback_t) * 255);
 
-		GUI.DrawSpriteFull(game.tCzern, COLOR_RGBA(255, 255, 255, alpha));
+		GUI.DrawSpriteFull(game.tCzern, Color::Alpha(alpha));
 	}
 }
 
@@ -519,9 +519,9 @@ void GameGui::DrawBack()
 			debug_info_size = Int2::Max(s, debug_info_size);
 		else
 			debug_info_size = s;
-		GUI.DrawItem(tDialog, Int2(0, 0), debug_info_size + Int2(24, 24), COLOR_RGBA(255, 255, 255, 128));
+		GUI.DrawItem(tDialog, Int2(0, 0), debug_info_size + Int2(24, 24), Color::Alpha(128));
 		Rect r = { 12, 12, 12 + s.x, 12 + s.y };
-		GUI.DrawText(GUI.default_font, text, DT_NOCLIP, BLACK, r);
+		GUI.DrawText(GUI.default_font, text, DT_NOCLIP, Color::Black, r);
 	}
 
 	// profiler
@@ -530,9 +530,9 @@ void GameGui::DrawBack()
 	{
 		Int2 block_size = GUI.default_font->CalculateSize(str) + Int2(24, 24);
 		profiler_size = Int2::Max(block_size, profiler_size);
-		GUI.DrawItem(tDialog, Int2(GUI.wnd_size.x - profiler_size.x, 0), profiler_size, COLOR_RGBA(255, 255, 255, 128));
+		GUI.DrawItem(tDialog, Int2(GUI.wnd_size.x - profiler_size.x, 0), profiler_size, Color::Alpha(128));
 		Rect rect = { GUI.wnd_size.x - profiler_size.x + 12, 12, GUI.wnd_size.x, GUI.wnd_size.y };
-		GUI.DrawText(GUI.default_font, str, DT_LEFT, BLACK, rect);
+		GUI.DrawText(GUI.default_font, str, DT_LEFT, Color::Black, rect);
 	}
 
 	// tooltip
@@ -550,7 +550,7 @@ void GameGui::DrawDeathScreen()
 	if(game.death_screen == 1)
 		color = (int(game.death_fade * 255) << 24) | 0x00FFFFFF;
 	else
-		color = WHITE;
+		color = Color::White;
 
 	if((color & 0xFF000000) != 0)
 		GUI.DrawSpriteFull(game.tCzern, color);
@@ -561,14 +561,12 @@ void GameGui::DrawDeathScreen()
 		if(game.death_screen == 2)
 			color = (int(game.death_fade * 255) << 24) | 0x00FFFFFF;
 		else
-			color = WHITE;
+			color = Color::White;
 
 		if((color & 0xFF000000) != 0)
 		{
-			D3DSURFACE_DESC desc;
-			V(game.tRip->GetLevelDesc(0, &desc));
-
-			GUI.DrawSprite(game.tRip, Center(desc.Width, desc.Height), color);
+			Int2 img_size = gui::GetSize(game.tRip);
+			GUI.DrawSprite(game.tRip, Center(img_size), color);
 
 			cstring text = Format(game.death_solo ? txDeathAlone : txDeath, game.pc->kills, game.total_kills - game.pc->kills);
 			cstring text2 = Format("%s\n\n%s", text, game.death_screen == 3 ? txPressEsc : "\n");
@@ -585,7 +583,7 @@ void GameGui::DrawEndOfGameScreen()
 	if(game.death_fade < 1.f)
 		color = (int(game.death_fade * 255) << 24) | 0x00FFFFFF;
 	else
-		color = WHITE;
+		color = Color::White;
 
 	GUI.DrawSpriteFull(game.tCzern, color);
 
@@ -655,8 +653,8 @@ void GameGui::DrawSpeechBubbles()
 		else
 		{
 			float alpha = (min(sb.time, 0.5f) - 0.25f) * 4;
-			a1 = COLOR_RGBA(255, 255, 255, int(alpha * 0x80));
-			a2 = COLOR_RGBA(255, 255, 255, int(alpha * 0xFF));
+			a1 = Color::Alpha(int(alpha * 0x80));
+			a2 = Color::Alpha(int(alpha * 0xFF));
 		}
 		if(it.pt.x < sb.size.x / 2)
 			it.pt.x = sb.size.x / 2;
@@ -679,13 +677,13 @@ void GameGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
 	DWORD text_color;
 	if(alpha == -1)
 	{
-		text_color = WHITE;
+		text_color = Color::White;
 		alpha = 255;
 	}
 	else if(game.IsEnemy(unit, *game.pc->unit))
-		text_color = COLOR_RGBA(255, 0, 0, alpha);
+		text_color = Color(255, 0, 0, alpha);
 	else
-		text_color = COLOR_RGBA(0, 255, 0, alpha);
+		text_color = Color(0, 255, 0, alpha);
 
 	// text
 	Rect r;
@@ -696,7 +694,7 @@ void GameGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
 			hpp = -1.f;
 		else
 			hpp = max(unit.GetHpp(), 0.f);
-		DWORD color = COLOR_RGBA(255, 255, 255, alpha);
+		DWORD color = Color::Alpha(alpha);
 
 		if(hpp >= 0.f)
 		{

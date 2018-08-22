@@ -8,17 +8,6 @@ const float G = 9.8105f;
 const float MAX_ANGLE = PI - FLT_EPSILON;
 
 //-----------------------------------------------------------------------------
-// Kolory DWORD
-#define BLACK 0xFF000000
-#define RED   0xFFFF0000
-#define GREEN 0xFF00FF00
-#define BLUE  0xFF0000FF
-#define WHITE 0xFFFFFFFF
-
-#define COLOR_RGB(r,g,b) D3DCOLOR_XRGB(r,g,b)
-#define COLOR_RGBA(r,g,b,a) D3DCOLOR_ARGB(a,r,g,b)
-
-//-----------------------------------------------------------------------------
 // Makra
 #undef NULL
 #define BIT(bit) (1<<(bit))
@@ -94,16 +83,6 @@ using delegate = ssvu::FastFunc<T>;
 typedef delegate<void()> VoidDelegate;
 typedef delegate<void()> VoidF;
 typedef delegate<void(cstring)> PrintMsgFunc;
-
-//-----------------------------------------------------------------------------
-// Typy zmiennych directx
-#ifndef NO_DIRECT_X
-typedef ID3DXFont* FONT;
-typedef LPDIRECT3DINDEXBUFFER9 IB;
-typedef IDirect3DTexture9* TEX;
-typedef IDirect3DSurface9* SURFACE;
-typedef LPDIRECT3DVERTEXBUFFER9 VB;
-#endif
 
 //-----------------------------------------------------------------------------
 // funkcja do zwalniania obiektów directx
@@ -454,6 +433,7 @@ class Buffer;
 //-----------------------------------------------------------------------------
 #include "Containers.h"
 #include "CoreMath.h"
+#include "Color.h"
 #include "Logger.h"
 #include "Profiler.h"
 #include "Text.h"

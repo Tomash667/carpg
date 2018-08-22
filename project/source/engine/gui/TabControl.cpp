@@ -94,7 +94,7 @@ void TabControl::Draw(ControlDrawData*)
 		GUI.DrawArea(tab->close_rect, *close);
 
 		if(tab->have_changes)
-			GUI.DrawArea(RED, Int2(tab->rect.LeftTop()), Int2(2, (int)tab->rect.SizeY()));
+			GUI.DrawArea(Color::Red, Int2(tab->rect.LeftTop()), Int2(2, (int)tab->rect.SizeY()));
 	}
 
 	if(selected)

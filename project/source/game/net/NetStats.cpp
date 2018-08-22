@@ -9,6 +9,7 @@
 #include <process.h>
 #include <Wincrypt.h>
 #include <Lmcons.h>
+#include "DirectX.h"
 
 NetStats* SingletonPtr<NetStats>::instance;
 static volatile bool shutdown_thread;

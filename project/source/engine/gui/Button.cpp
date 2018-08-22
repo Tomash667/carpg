@@ -20,7 +20,7 @@ void Button::Draw(ControlDrawData*)
 
 	if(!custom)
 	{
-		GUI.DrawItem(tex[real_state], global_pos, size, WHITE, 16);
+		GUI.DrawItem(tex[real_state], global_pos, size, Color::White, 16);
 
 		Rect r = {
 			global_pos.x + 4,
@@ -47,14 +47,14 @@ void Button::Draw(ControlDrawData*)
 			Control::ResizeImage(img, required_size, img_size, scale);
 			mat = Matrix::Transform2D(&Vec2(float(img_size.x) / 2, float(img_size.y) / 2), 0.f, &scale, nullptr, 0.f,
 				&Vec2((float)r.Left(), float(r.Top() + (required_size.y - img_size.y) / 2)));
-			GUI.DrawSprite2(img, mat, nullptr, &r, WHITE);
+			GUI.DrawSprite2(img, mat, nullptr, &r, Color::White);
 			r.Left() += img_size.x;
 		}
 
-		GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_VCENTER, BLACK, r, &r);
+		GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_VCENTER, Color::Black, r, &r);
 	}
 	else
-		GUI.DrawItem(custom->tex[real_state], global_pos, size, WHITE, 16);
+		GUI.DrawItem(custom->tex[real_state], global_pos, size, Color::White, 16);
 }
 
 //=================================================================================================

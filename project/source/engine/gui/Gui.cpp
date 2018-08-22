@@ -6,12 +6,24 @@
 #include "Language.h"
 #include "GuiRect.h"
 #include "Engine.h"
+#include "DirectX.h"
 
 using namespace gui;
+
+
+//-----------------------------------------------------------------------------
+Int2 gui::GetSize(TEX img)
+{
+	D3DSURFACE_DESC desc;
+	img->GetLevelDesc(0, &desc);
+	return Int2(desc.Width, desc.Height);
+}
+
 
 //-----------------------------------------------------------------------------
 IGUI GUI;
 TEX IGUI::tBox, IGUI::tBox2, IGUI::tPix, IGUI::tDown;
+
 
 //=================================================================================================
 IGUI::IGUI() : default_font(nullptr), tFontTarget(nullptr), vb(nullptr), vb2(nullptr), cursor_mode(CURSOR_NORMAL), vb2_locked(false), focused_ctrl(nullptr),
@@ -56,7 +68,7 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	V(D3DXCreateTexture(device, 1, 1, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tPixel));
 	D3DLOCKED_RECT lock;
 	V(tPixel->LockRect(0, &lock, nullptr, 0));
-	*((DWORD*)lock.pBits) = COLOR_RGB(255, 255, 255);
+	*((DWORD*)lock.pBits) = Color(255, 255, 255);
 	V(tPixel->UnlockRect(0));
 
 	// create vertex declaration
@@ -320,7 +332,7 @@ int IGUI::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, in
 					const float a = float(j)*PI / 4;
 					rect.Left() = offset.x + int(outline*sin(a));
 					rect.Top() = offset.y + int(outline*cos(a));
-					dx_font->DrawTextA(sprite, cbuf, 1, (RECT*)&rect, DT_LEFT | DT_NOCLIP, WHITE);
+					dx_font->DrawTextA(sprite, cbuf, 1, (RECT*)&rect, DT_LEFT | DT_NOCLIP, Color::White);
 				}
 
 				offset.x += g.width + 2 + extra;
@@ -342,7 +354,7 @@ int IGUI::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, in
 				}
 				rect.Left() = offset.x;
 				rect.Top() = offset.y;
-				dx_font->DrawTextA(sprite, cbuf, 1, (RECT*)&rect, DT_LEFT | DT_NOCLIP, WHITE);
+				dx_font->DrawTextA(sprite, cbuf, 1, (RECT*)&rect, DT_LEFT | DT_NOCLIP, Color::White);
 				offset.x += g.width + 2 + extra;
 			}
 		}
@@ -403,7 +415,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, c
 	int line_width, width = rect.SizeX();
 	cstring text = str.c_str();
 	uint text_end = str.length();
-	Vec4 current_color = gui::ColorFromDWORD(color);
+	Vec4 current_color = Color(color);
 	Vec4 default_color = current_color;
 	outline_alpha = current_color.w;
 	const Vec2 scale(1, 1);
@@ -1210,7 +1222,7 @@ void IGUI::DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, DWORD co
 	tCurrent = t;
 	Lock();
 
-	Vec4 col = gui::ColorFromDWORD(color);
+	Vec4 col = Color(color);
 
 	/*
 		0---1----------2---3
@@ -1390,7 +1402,7 @@ void IGUI::DrawSprite(TEX t, const Int2& pos, DWORD color, const Rect* clipping)
 	tCurrent = t;
 	Lock();
 
-	Vec4 col = gui::ColorFromDWORD(color);
+	Vec4 col = Color(color);
 
 	if(clip_result == 0)
 	{
@@ -1858,7 +1870,7 @@ void IGUI::DrawSpriteFull(TEX t, const DWORD color)
 	tCurrent = t;
 	Lock();
 
-	Vec4 col = gui::ColorFromDWORD(color);
+	Vec4 col = Color(color);
 
 	v->pos = Vec3(0, 0, 0);
 	v->color = col;
@@ -1935,7 +1947,7 @@ void IGUI::DrawSpriteRect(TEX t, const Rect& rect, DWORD color)
 	tCurrent = t;
 	Lock();
 
-	Vec4 col = gui::ColorFromDWORD(color);
+	Vec4 col = Color(color);
 
 	v->pos = Vec3(float(rect.Left()), float(rect.Top()), 0);
 	v->color = col;
@@ -2024,7 +2036,7 @@ void IGUI::DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, DWORD c
 
 	D3DSURFACE_DESC desc;
 	t->GetLevelDesc(0, &desc);
-	Vec4 col = gui::ColorFromDWORD(color);
+	Vec4 col = Color(color);
 	Box2d uv(float(part.Left()) / desc.Width, float(part.Top()) / desc.Height, float(part.Right()) / desc.Width, float(part.Bottom()) / desc.Height);
 
 	v->pos = Vec3(float(rect.Left()), float(rect.Top()), 0);
@@ -2072,7 +2084,7 @@ void IGUI::DrawSpriteTransform(TEX t, const Matrix& mat, DWORD color)
 	tCurrent = t;
 	Lock();
 
-	Vec4 col = gui::ColorFromDWORD(color);
+	Vec4 col = Color(color);
 
 	Vec2 leftTop(0, 0),
 		rightTop(float(desc.Width), 0),
@@ -2125,7 +2137,7 @@ void IGUI::DrawLine(const Vec2* lines, uint count, DWORD color, bool strip)
 
 	Lock();
 
-	Vec4 col = gui::ColorFromDWORD(color);
+	Vec4 col = Color(color);
 	uint ile = count;
 
 	if(strip)
@@ -2271,7 +2283,7 @@ void IGUI::DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, D
 
 	Box2d uv(float(part.Left()) / desc.Width, float(part.Top() / desc.Height), float(part.Right()) / desc.Width, float(part.Bottom()) / desc.Height);
 
-	Vec4 col = gui::ColorFromDWORD(color);
+	Vec4 col = Color(color);
 
 	Vec2 leftTop(part.LeftTop()),
 		rightTop(part.RightTop()),
@@ -2514,13 +2526,13 @@ void IGUI::DrawNotifications()
 		const int alpha = int(255 * n->t2);
 		Int2 offset(wnd_size.x - box_size.x - 8, 8);
 
-		DrawItem(Control::tDialog, offset, box_size, COLOR_RGBA(255, 255, 255, alpha), 12);
+		DrawItem(Control::tDialog, offset, box_size, Color::Alpha(alpha), 12);
 
 		if(n->icon)
-			DrawSprite(n->icon, offset + Int2(8, 8), COLOR_RGBA(255, 255, 255, alpha));
+			DrawSprite(n->icon, offset + Int2(8, 8), Color::Alpha(alpha));
 
 		Rect rect = { offset.x + 8 + 64, offset.y + 8, offset.x + box_size.x - 8, offset.y + box_size.y - 8 };
-		DrawText(default_font, n->text, DT_CENTER | DT_VCENTER, COLOR_RGBA(0, 0, 0, alpha), rect, &rect);
+		DrawText(default_font, n->text, DT_CENTER | DT_VCENTER, Color(0, 0, 0, alpha), rect, &rect);
 	}
 }
 
@@ -2531,7 +2543,7 @@ void IGUI::DrawArea(DWORD color, const Int2& pos, const Int2& size, const Box2d*
 	gui_rect.Set(pos, size);
 	if(!clip_rect || gui_rect.Clip(*clip_rect))
 	{
-		Vec4 col = gui::ColorFromDWORD(color);
+		Vec4 col = Color(color);
 		tCurrent = tPixel;
 		Lock();
 		gui_rect.Populate(v, col);
@@ -2563,7 +2575,7 @@ void IGUI::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2
 			assert(!clip_rect);
 			tCurrent = tPixel;
 			Lock();
-			AddRect(rect.LeftTop(), rect.RightBottom(), gui::ColorFromDWORD(area_layout.background_color));
+			AddRect(rect.LeftTop(), rect.RightBottom(), Color(area_layout.background_color));
 			in_buffer = 1;
 			Flush();
 		}
@@ -2587,7 +2599,7 @@ void IGUI::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2
 		}
 
 		Lock();
-		Vec4 col = gui::ColorFromDWORD(area_layout.color);
+		Vec4 col = Color(area_layout.color);
 		gui_rect.Populate(v, col);
 		in_buffer = 1;
 		Flush();
@@ -2598,7 +2610,7 @@ void IGUI::DrawArea(const Box2d& rect, const AreaLayout& area_layout, const Box2
 		// border
 		assert(!clip_rect);
 		tCurrent = tPixel;
-		col = gui::ColorFromDWORD(area_layout.border_color);
+		col = Color(area_layout.border_color);
 		Lock();
 
 		float s = (float)area_layout.width;
@@ -2703,7 +2715,7 @@ bool IGUI::DrawText2(DrawTextOptions& options)
 {
 	uint line_begin, line_end, line_index = 0;
 	int line_width, width = options.rect.SizeX();
-	Vec4 current_color = gui::ColorFromDWORD(options.color);
+	Vec4 current_color = Color(options.color);
 	Vec4 default_color = current_color;
 	outline_alpha = current_color.w;
 

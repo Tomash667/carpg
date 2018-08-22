@@ -171,13 +171,6 @@ struct Mesh : public Resource
 	Point* FindPoint(cstring name);
 	Point* FindNextPoint(cstring name, Point* point);
 
-	void DrawSubmesh(IDirect3DDevice9* device, uint i)
-	{
-		assert(device && i < head.n_subs);
-		Submesh& sub = subs[i];
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
-	}
-
 	Header head;
 	VB vb;
 	IB ib;

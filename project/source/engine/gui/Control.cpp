@@ -101,9 +101,7 @@ void Control::UpdateControl(Control* ctrl, float dt)
 
 void Control::ResizeImage(TEX t, Int2& new_size, Int2& img_size, Vec2& scale)
 {
-	D3DSURFACE_DESC desc;
-	t->GetLevelDesc(0, &desc);
-	img_size = Int2(desc.Width, desc.Height);
+	img_size = gui::GetSize(t);
 	if(new_size == Int2(0, 0))
 	{
 		new_size = img_size;

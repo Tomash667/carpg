@@ -711,7 +711,7 @@ public:
 	// SCREENSHOT
 	time_t last_screenshot;
 	uint screenshot_count;
-	D3DXIMAGE_FILEFORMAT screenshot_format;
+	ImageFormat screenshot_format;
 
 	//---------------------------------
 	// DIALOGI

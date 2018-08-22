@@ -4,7 +4,7 @@
 #include "KeyStates.h"
 
 //=================================================================================================
-Grid::Grid() : items(0), height(20), selected(-1), selection_type(COLOR), selection_color(WHITE), single_line(false), select_event(nullptr)
+Grid::Grid() : items(0), height(20), selected(-1), selection_type(COLOR), selection_color(Color::White), single_line(false), select_event(nullptr)
 {
 }
 
@@ -18,15 +18,15 @@ void Grid::Draw(ControlDrawData*)
 	for(vector<Column>::iterator it = columns.begin(), end = columns.end(); it != end; ++it)
 	{
 		// box nag³ówka
-		GUI.DrawItem(GUI.tBox, Int2(x, y), Int2(it->width, height), BLACK, 8, 32);
+		GUI.DrawItem(GUI.tBox, Int2(x, y), Int2(it->width, height), Color::Black, 8, 32);
 		// box zawartoœci
-		GUI.DrawItem(GUI.tBox, Int2(x, y + height), Int2(it->width, size.y - height), BLACK, 8, 32);
+		GUI.DrawItem(GUI.tBox, Int2(x, y + height), Int2(it->width, size.y - height), Color::Black, 8, 32);
 		// tekst nag³ówka
 		if(!it->title.empty())
 		{
 			r.Left() = x;
 			r.Right() = x + it->width;
-			GUI.DrawText(GUI.default_font, it->title, DT_CENTER | DT_VCENTER, BLACK, r, &r);
+			GUI.DrawText(GUI.default_font, it->title, DT_CENTER | DT_VCENTER, Color::Black, r, &r);
 		}
 		x += it->width;
 	}
@@ -83,7 +83,7 @@ void Grid::Draw(ControlDrawData*)
 
 				if(it->type == TEXT)
 				{
-					color = BLACK;
+					color = Color::Black;
 					event(i, n, cell);
 					text = cell.text;
 				}
@@ -141,7 +141,7 @@ void Grid::Draw(ControlDrawData*)
 					}
 				}
 
-				GUI.DrawSprite(cell.img, Int2(x + (it->width - 16) / 2, y + (height - 16) / 2), WHITE, clipping);
+				GUI.DrawSprite(cell.img, Int2(x + (it->width - 16) / 2, y + (height - 16) / 2), Color::White, clipping);
 			}
 			else //if(it->type == IMGSET)
 			{
@@ -185,7 +185,7 @@ void Grid::Draw(ControlDrawData*)
 					int x2 = x + startx;
 					for(uint j = 0; j < imgset.size(); ++j)
 					{
-						GUI.DrawSprite(imgset[j], Int2(x2, y2), WHITE, clipping);
+						GUI.DrawSprite(imgset[j], Int2(x2, y2), Color::White, clipping);
 						x2 += dist;
 					}
 				}

@@ -51,8 +51,8 @@ GameMenu::GameMenu(const DialogInfo& info) : DialogBox(info), prev_can_save(true
 //=================================================================================================
 void GameMenu::Draw(ControlDrawData* /*cdd*/)
 {
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
+	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	GUI.DrawSprite(tLogo, global_pos + Int2(8, 8));
 

@@ -20,56 +20,56 @@ void Layout::LoadDefault()
 	Font* font_big = GUI.fBig;
 	TEX t;
 
-	panel.background = AreaLayout(COLOR_RGB(245, 246, 247), COLOR_RGB(0xA0, 0xA0, 0xA0));
+	panel.background = AreaLayout(Color(245, 246, 247), Color(0xA0, 0xA0, 0xA0));
 
-	window.background = AreaLayout(COLOR_RGB(0xAB, 0xAB, 0xAB), BLACK);
-	window.header = AreaLayout(COLOR_RGB(128, 128, 128), BLACK);
+	window.background = AreaLayout(Color(0xAB, 0xAB, 0xAB), Color::Black);
+	window.header = AreaLayout(Color(128, 128, 128), Color::Black);
 	window.font = font_big;
-	window.font_color = BLACK;
+	window.font_color = Color::Black;
 	window.header_height = font_big->height + 4;
 	window.padding = Int2(2, 2);
 
-	menubar.background = AreaLayout(COLOR_RGB(245, 246, 247), COLOR_RGB(0xA0, 0xA0, 0xA0));
-	menubar.button = AreaLayout(COLOR_RGB(245, 246, 247));
-	menubar.button_hover = AreaLayout(COLOR_RGB(213, 231, 248), COLOR_RGB(122, 177, 232));
-	menubar.button_down = AreaLayout(COLOR_RGB(184, 216, 249), COLOR_RGB(98, 163, 229));
+	menubar.background = AreaLayout(Color(245, 246, 247), Color(0xA0, 0xA0, 0xA0));
+	menubar.button = AreaLayout(Color(245, 246, 247));
+	menubar.button_hover = AreaLayout(Color(213, 231, 248), Color(122, 177, 232));
+	menubar.button_down = AreaLayout(Color(184, 216, 249), Color(98, 163, 229));
 	menubar.font = def_font;
 	menubar.padding = Int2(4, 4);
 	menubar.item_padding = Int2(10, 2);
-	menubar.font_color = BLACK;
-	menubar.font_color_hover = BLACK;
-	menubar.font_color_down = BLACK;
+	menubar.font_color = Color::Black;
+	menubar.font_color_hover = Color::Black;
+	menubar.font_color_down = Color::Black;
 
-	menustrip.background = AreaLayout(COLOR_RGB(245, 246, 247), COLOR_RGB(0xA0, 0xA0, 0xA0));
-	menustrip.button_hover = AreaLayout(COLOR_RGB(51, 153, 255));
+	menustrip.background = AreaLayout(Color(245, 246, 247), Color(0xA0, 0xA0, 0xA0));
+	menustrip.button_hover = AreaLayout(Color(51, 153, 255));
 	menustrip.font = def_font;
 	menustrip.padding = Int2(2, 2);
 	menustrip.item_padding = Int2(2, 2);
-	menustrip.font_color = BLACK;
-	menustrip.font_color_hover = BLACK;
-	menustrip.font_color_disabled = COLOR_RGB(128, 128, 128);
+	menustrip.font_color = Color::Black;
+	menustrip.font_color_hover = Color::Black;
+	menustrip.font_color_disabled = Color(128, 128, 128);
 
-	tabctrl.background = AreaLayout(COLOR_RGB(245, 246, 247));
-	tabctrl.line = AreaLayout(COLOR_RGB(245, 246, 247), COLOR_RGB(0xA0, 0xA0, 0xA0));
-	tabctrl.button = AreaLayout(COLOR_RGB(238, 238, 238), COLOR_RGB(172, 172, 172));
-	tabctrl.button_hover = AreaLayout(COLOR_RGB(238, 238, 238), COLOR_RGB(142, 176, 200));
-	tabctrl.button_down = AreaLayout(COLOR_RGB(233, 243, 252), COLOR_RGB(126, 180, 234));
+	tabctrl.background = AreaLayout(Color(245, 246, 247));
+	tabctrl.line = AreaLayout(Color(245, 246, 247), Color(0xA0, 0xA0, 0xA0));
+	tabctrl.button = AreaLayout(Color(238, 238, 238), Color(172, 172, 172));
+	tabctrl.button_hover = AreaLayout(Color(238, 238, 238), Color(142, 176, 200));
+	tabctrl.button_down = AreaLayout(Color(233, 243, 252), Color(126, 180, 234));
 	tabctrl.font = def_font;
-	tabctrl.font_color = BLACK;
-	tabctrl.font_color_hover = BLACK;
-	tabctrl.font_color_down = BLACK;
+	tabctrl.font_color = Color::Black;
+	tabctrl.font_color_hover = Color::Black;
+	tabctrl.font_color_down = Color::Black;
 	tabctrl.padding = Int2(8, 4);
 	tabctrl.padding_active = Int2(8, 8);
 	t = tex_mgr.GetLoadedRaw("close_small.png");
 	tabctrl.close = AreaLayout(t);
 	tabctrl.close.size = Int2(12, 12);
-	tabctrl.close_hover = AreaLayout(t, COLOR_RGB(51, 153, 255));
+	tabctrl.close_hover = AreaLayout(t, Color(51, 153, 255));
 	tabctrl.close_hover.size = Int2(12, 12);
 	t = tex_mgr.GetLoadedRaw("tabctrl_arrow.png");
 	tabctrl.button_prev = AreaLayout(t, Rect(0, 0, 12, 16));
-	tabctrl.button_prev_hover = AreaLayout(t, Rect(0, 0, 12, 16), COLOR_RGB(51, 153, 255));
+	tabctrl.button_prev_hover = AreaLayout(t, Rect(0, 0, 12, 16), Color(51, 153, 255));
 	tabctrl.button_next = AreaLayout(t, Rect(16, 0, 28, 16));
-	tabctrl.button_next_hover = AreaLayout(t, Rect(16, 0, 28, 16), COLOR_RGB(51, 153, 255));
+	tabctrl.button_next_hover = AreaLayout(t, Rect(16, 0, 28, 16), Color(51, 153, 255));
 
 	t = tex_mgr.GetLoadedRaw("box.png");
 	tree_view.background = AreaLayout(t, 8, 32);
@@ -79,15 +79,15 @@ void Layout::LoadDefault()
 	tree_view.button_down = AreaLayout(t, Rect(32, 0, 48, 16));
 	tree_view.button_down_hover = AreaLayout(t, Rect(48, 0, 64, 16));
 	tree_view.font = def_font;
-	tree_view.font_color = BLACK;
-	tree_view.selected = AreaLayout(COLOR_RGB(51, 153, 255));
+	tree_view.font_color = Color::Black;
+	tree_view.selected = AreaLayout(Color(51, 153, 255));
 	tree_view.level_offset = 16;
 	t = tex_mgr.GetLoadedRaw("box2.png");
 	tree_view.text_box_background = t;
 	t = tex_mgr.GetLoadedRaw("drag_n_drop.png");
 	tree_view.drag_n_drop = t;
 
-	split_panel.background = AreaLayout(COLOR_RGB(0xAB, 0xAB, 0xAB), COLOR_RGB(0xA0, 0xA0, 0xA0));
+	split_panel.background = AreaLayout(Color(0xAB, 0xAB, 0xAB), Color(0xA0, 0xA0, 0xA0));
 	split_panel.padding = Int2(0, 0);
 	t = tex_mgr.GetLoadedRaw("split_panel.png");
 	split_panel.horizontal = AreaLayout(t, Rect(3, 2, 4, 5));
@@ -95,7 +95,7 @@ void Layout::LoadDefault()
 
 	label = new LabelLayout;
 	label->font = def_font;
-	label->color = BLACK;
+	label->color = Color::Black;
 	label->padding = Int2(0, 0);
 	label->align = DT_LEFT;
 
@@ -105,7 +105,7 @@ void Layout::LoadDefault()
 	check_box_group.box = AreaLayout(t, Rect(0, 0, 16, 16));
 	check_box_group.checked = AreaLayout(t, Rect(16, 0, 32, 16));
 	check_box_group.font = def_font;
-	check_box_group.font_color = BLACK;
+	check_box_group.font_color = Color::Black;
 }
 
 Box2d AreaLayout::CalculateRegion(const Int2& pos, const Int2& region)
@@ -120,14 +120,12 @@ Box2d AreaLayout::CalculateRegion(const Int2& pos, const Int2& region)
 
 void AreaLayout::SetFromArea(const Rect* area)
 {
-	D3DSURFACE_DESC desc;
-	tex->GetLevelDesc(0, &desc);
-
+	Int2 tex_size = gui::GetSize(tex);
 	if(area)
 	{
 		size = area->Size();
-		region = Box2d(*area) / Vec2((float)desc.Width, (float)desc.Height);
+		region = Box2d(*area) / Vec2((float)tex_size.x, (float)tex_size.y);
 	}
 	else
-		size = Int2(desc.Width, desc.Height);
+		size = tex_size;
 }

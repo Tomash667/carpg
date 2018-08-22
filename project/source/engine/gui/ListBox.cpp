@@ -28,13 +28,13 @@ void ListBox::Draw(ControlDrawData*)
 	if(collapsed)
 	{
 		// box
-		GUI.DrawItem(GUI.tBox, global_pos, size, WHITE, 8, 32);
+		GUI.DrawItem(GUI.tBox, global_pos, size, Color::White, 8, 32);
 
 		// element
 		if(selected != -1)
 		{
 			Rect rc = { global_pos.x + 2, global_pos.y + 2, global_pos.x + size.x - 12, global_pos.y + size.y - 2 };
-			GUI.DrawText(GUI.default_font, items[selected]->ToString(), DT_SINGLELINE, BLACK, rc, &rc);
+			GUI.DrawText(GUI.default_font, items[selected]->ToString(), DT_SINGLELINE, Color::Black, rc, &rc);
 		}
 
 		// obrazek
@@ -47,7 +47,7 @@ void ListBox::Draw(ControlDrawData*)
 	else
 	{
 		// box
-		GUI.DrawItem(GUI.tBox, global_pos, real_size, WHITE, 8, 32);
+		GUI.DrawItem(GUI.tBox, global_pos, real_size, Color::White, 8, 32);
 
 		// zaznaczenie
 		Rect rc = { global_pos.x, global_pos.y, global_pos.x + real_size.x, global_pos.y + real_size.y };
@@ -57,7 +57,7 @@ void ListBox::Draw(ControlDrawData*)
 			rs.Bottom() = rs.Top() + item_height;
 			Rect out;
 			if(Rect::Intersect(rs, rc, out))
-				GUI.DrawSpriteRect(GUI.tPix, out, COLOR_RGBA(0, 255, 0, 128));
+				GUI.DrawSpriteRect(GUI.tPix, out, Color(0, 255, 0, 128));
 		}
 
 		// elementy
@@ -72,12 +72,12 @@ void ListBox::Draw(ControlDrawData*)
 				Vec2 scale;
 				Control::ResizeImage(e->tex, required_size, img_size, scale);
 				mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)orig_x, float(r.Top() + (item_height - required_size.y) / 2)));
-				GUI.DrawSprite2(e->tex, mat, nullptr, &rc, WHITE);
+				GUI.DrawSprite2(e->tex, mat, nullptr, &rc, Color::White);
 				r.Left() = orig_x + required_size.x;
 			}
 			else
 				r.Left() = orig_x;
-			if(!GUI.DrawText(GUI.default_font, e->ToString(), DT_SINGLELINE, BLACK, r, &rc))
+			if(!GUI.DrawText(GUI.default_font, e->ToString(), DT_SINGLELINE, Color::Black, r, &rc))
 				break;
 			r.Top() += item_height;
 		}

@@ -155,7 +155,7 @@ void PickFileDialog::Draw(ControlDrawData*)
 	Window::Draw();
 
 	if(label_preview->visible)
-		GUI.DrawItem(TextBox::tBox, label_preview->global_pos, label_preview->size, WHITE, 4, 32);
+		GUI.DrawItem(TextBox::tBox, label_preview->global_pos, label_preview->size, Color::White, 4, 32);
 }
 
 void PickFileDialog::Event(GuiEvent e)

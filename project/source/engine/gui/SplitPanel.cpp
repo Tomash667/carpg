@@ -41,11 +41,11 @@ void SplitPanel::Event(GuiEvent e)
 			panel2 = new Panel;
 		panel2->parent = this;
 		// tmp
-		panel1->custom_color = RED;
+		panel1->custom_color = Color::Red;
 		panel1->use_custom_color = true;
-		panel2->custom_color = BLUE;
+		panel2->custom_color = Color::Blue;
 		panel2->use_custom_color = true;
-		custom_color = GREEN;
+		custom_color = Color::Green;
 		use_custom_color = true;
 		Update(e, true, true);
 		panel1->Initialize();

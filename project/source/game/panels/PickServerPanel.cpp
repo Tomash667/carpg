@@ -44,10 +44,10 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info)
 void PickServerPanel::Draw(ControlDrawData*)
 {
 	// t³o
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
+	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// przyciski
 	for(int i = 0; i < 2; ++i)
@@ -286,7 +286,7 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 	}
 	else
 	{
-		cell.text_color->color = (server.valid_version ? BLACK : RED);
+		cell.text_color->color = (server.valid_version ? Color::Black : RED);
 		if(column == 1)
 			cell.text_color->text = Format("%d/%d", server.players, server.max_players);
 		else

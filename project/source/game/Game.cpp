@@ -29,6 +29,7 @@
 #include "SoundManager.h"
 #include "ScriptManager.h"
 #include "Inventory.h"
+#include "DirectX.h"
 
 // limit fps
 #define LIMIT_DT 0.3f
@@ -60,7 +61,7 @@ contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64 * 1024), net_s
 paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
 sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr),
 cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
-grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(D3DXIFF_JPG), quickstart_class(Class::RANDOM),
+grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM),
 autopick_class(Class::INVALID), current_packet(nullptr), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false),
 disable_net_stats(false), script_mgr(nullptr), quickstart_slot(MAX_SAVE_SLOTS), tournament_state(TOURNAMENT_NOT_DONE), arena_free(true), autoready(false)
 {
@@ -786,27 +787,32 @@ void Game::TakeScreenshot(bool no_gui)
 		}
 
 		cstring ext;
+		D3DXIMAGE_FILEFORMAT format;
 		switch(screenshot_format)
 		{
 		case D3DXIFF_BMP:
 			ext = "bmp";
+			format = D3DXIFF_BMP;
 			break;
 		default:
 		case D3DXIFF_JPG:
 			ext = "jpg";
+			format = D3DXIFF_JPG;
 			break;
 		case D3DXIFF_TGA:
 			ext = "tga";
+			format = D3DXIFF_TGA;
 			break;
 		case D3DXIFF_PNG:
 			ext = "png";
+			format = D3DXIFF_PNG;
 			break;
 		}
 
 		cstring path = Format("screenshots\\%04d%02d%02d_%02d%02d%02d_%02d.%s", lt.tm_year + 1900, lt.tm_mon + 1,
 			lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, screenshot_count, ext);
 
-		D3DXSaveSurfaceToFileA(path, screenshot_format, back_buffer, nullptr, nullptr);
+		D3DXSaveSurfaceToFileA(path, format, back_buffer, nullptr, nullptr);
 
 		cstring msg = Format("Screenshot saved to '%s'.", path);
 		AddConsoleMsg(msg);

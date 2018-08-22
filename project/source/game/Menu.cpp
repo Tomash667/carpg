@@ -1272,7 +1272,7 @@ void Game::UpdateClientTransfer(float dt)
 					mp_load_worldmap = false;
 					net_state = NetState::Client_StartOnWorldmap;
 					Info("NM_TRANSFER: Starting at world map.");
-					clear_color = WHITE;
+					clear_color = Color::White;
 					game_state = GS_WORLDMAP;
 					load_screen->visible = false;
 					main_menu->visible = false;
@@ -1479,7 +1479,7 @@ void Game::UpdateServerTransfer(float dt)
 			fallback_t = -0.5f;
 			main_menu->visible = false;
 			load_screen->visible = true;
-			clear_color = BLACK;
+			clear_color = Color::Black;
 			GenerateWorld();
 			InitQuests();
 			if(!sound_mgr->IsMusicDisabled())
@@ -1740,7 +1740,7 @@ void Game::UpdateServerTransfer(float dt)
 				game_gui->visible = false;
 				main_menu->visible = false;
 				mp_load = false;
-				clear_color = WHITE;
+				clear_color = Color::White;
 				world_state = WS_MAIN;
 				update_timer = 0.f;
 				SetMusic(MusicType::Travel);

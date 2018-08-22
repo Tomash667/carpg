@@ -63,7 +63,7 @@ void StatsPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	GUI.DrawText(GUI.fBig, txTitle, DT_TOP | DT_CENTER, BLACK, rect);
+	GUI.DrawText(GUI.fBig, txTitle, DT_TOP | DT_CENTER, Color::Black, rect);
 
 	flowAttribs.Draw();
 	flowStats.Draw();

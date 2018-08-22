@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "BitStreamFunc.h"
 #include "ResourceManager.h"
+#include "DirectX.h"
 
 //---------------------------
 Matrix mat_zero;

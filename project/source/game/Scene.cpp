@@ -5,6 +5,7 @@
 #include "City.h"
 #include "InsideLocation.h"
 #include "Action.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 ObjectPool<SceneNode> node_pool;

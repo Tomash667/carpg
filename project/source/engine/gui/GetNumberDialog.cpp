@@ -15,21 +15,21 @@ GetNumberDialog::GetNumberDialog(const DialogInfo& info) : DialogBox(info), scro
 //=================================================================================================
 void GetNumberDialog::Draw(ControlDrawData* cdd/* =nullptr */)
 {
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
+	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	for(int i = 0; i < 2; ++i)
 		bts[i].Draw();
 
 	Rect r = { global_pos.x + 16,global_pos.y + 16,global_pos.x + size.x,global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, text, DT_CENTER, BLACK, r);
+	GUI.DrawText(GUI.default_font, text, DT_CENTER, Color::Black, r);
 
 	textBox.Draw();
 	scrollbar.Draw();
 
 	Rect r2 = { global_pos.x + 16,global_pos.y + 124,global_pos.x + size.x - 16,global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, Format("%d", min_value), DT_LEFT, BLACK, r2);
-	GUI.DrawText(GUI.default_font, Format("%d", max_value), DT_RIGHT, BLACK, r2);
+	GUI.DrawText(GUI.default_font, Format("%d", min_value), DT_LEFT, Color::Black, r2);
+	GUI.DrawText(GUI.default_font, Format("%d", max_value), DT_RIGHT, Color::Black, r2);
 }
 
 //=================================================================================================

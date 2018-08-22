@@ -4,6 +4,7 @@
 #include "ResourceManager.h"
 #include "SoundManager.h"
 #include "StartupOptions.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);
@@ -17,7 +18,7 @@ extern string g_system_dir;
 //=================================================================================================
 Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), phy_config(nullptr),
 phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true), lost_device(false),
-clear_color(BLACK), res_freed(false), vsync(true), active(false), activation_point(-1, -1), sound_mgr(nullptr)
+clear_color(Color::Black), res_freed(false), vsync(true), active(false), activation_point(-1, -1), sound_mgr(nullptr)
 {
 	engine = this;
 }

@@ -37,11 +37,7 @@
 #else
 #	include <cassert>
 #endif
-#ifndef NO_DIRECT_X
-#	include <d3dx9.h>
-#else
-#	include <Windows.h>
-#endif
+#include <Windows.h>
 #include <ctime>
 #include <vector>
 #include <list>

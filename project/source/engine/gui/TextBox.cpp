@@ -30,23 +30,23 @@ void TextBox::Draw(ControlDrawData* cdd)
 	{
 		cstring txt = (caret_blink >= 0.f ? Format("%s|", text.c_str()) : text.c_str());
 
-		GUI.DrawItem(background, global_pos, size, WHITE, 4, 32);
+		GUI.DrawItem(background, global_pos, size, Color::White, 4, 32);
 
 		Rect r = { global_pos.x + padding, global_pos.y + padding, global_pos.x + size.x - padding, global_pos.y + size.y - padding };
 
 		if(!scrollbar)
-			GUI.DrawText(GUI.default_font, txt, multiline ? DT_TOP : DT_VCENTER, BLACK, r);
+			GUI.DrawText(GUI.default_font, txt, multiline ? DT_TOP : DT_VCENTER, Color::Black, r);
 		else
 		{
 			Rect r2 = Rect(r) - Int2(0, int(scrollbar->offset));
-			GUI.DrawText(GUI.default_font, txt, DT_TOP, BLACK, r2, &r);
+			GUI.DrawText(GUI.default_font, txt, DT_TOP, Color::Black, r2, &r);
 			scrollbar->Draw();
 		}
 
 		if(label)
 		{
 			r.Top() -= 20;
-			GUI.DrawText(GUI.default_font, label, DT_NOCLIP, BLACK, r);
+			GUI.DrawText(GUI.default_font, label, DT_NOCLIP, Color::Black, r);
 		}
 	}
 	else
@@ -61,7 +61,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 		const int line_height = GUI.default_font->height;
 
 		// background
-		GUI.DrawItem(background, global_pos, real_size, WHITE, 4, 32, clip_rect);
+		GUI.DrawItem(background, global_pos, real_size, Color::White, 4, 32, clip_rect);
 
 		Rect rclip;
 		Rect textbox_rect = { global_pos.x + padding, global_pos.y + padding, global_pos.x + real_size.x - padding, global_pos.y + real_size.y - padding };
@@ -73,7 +73,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 		// selected
 		if(select_start_index != NOT_SELECTED && select_start_index != select_end_index)
 		{
-			DWORD color = (readonly ? COLOR_RGBA(100, 100, 100, 128) : COLOR_RGBA(0, 148, 255, 128));
+			DWORD color = (readonly ? Color(100, 100, 100, 128) : Color(0, 148, 255, 128));
 			int select_start_line = select_start_pos.y / line_height;
 			int select_end_line = select_end_pos.y / line_height;
 			int lines = select_end_line - select_start_line + 1;
@@ -142,7 +142,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 		};
 		Rect area = Rect::Intersect(r, rclip);
 		int draw_flags = (multiline ? DT_LEFT : DT_VCENTER | DT_SINGLELINE);
-		GUI.DrawText(GUI.default_font, text, draw_flags, BLACK, r, &area);
+		GUI.DrawText(GUI.default_font, text, draw_flags, Color::Black, r, &area);
 
 		// carret
 		if(caret_blink >= 0.f)
@@ -156,7 +156,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 			};
 			Rect caret_rect_clip;
 			if(Rect::Intersect(caret_rect, rclip, caret_rect_clip))
-				GUI.DrawArea(BLACK, caret_rect_clip.LeftTop(), caret_rect_clip.Size());
+				GUI.DrawArea(Color::Black, caret_rect_clip.LeftTop(), caret_rect_clip.Size());
 		}
 
 		if(require_scrollbar)
