@@ -286,7 +286,7 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 	}
 	else
 	{
-		cell.text_color->color = (server.valid_version ? Color::Black : RED);
+		cell.text_color->color = (server.valid_version ? Color::Black : Color::Red);
 		if(column == 1)
 			cell.text_color->text = Format("%d/%d", server.players, server.max_players);
 		else

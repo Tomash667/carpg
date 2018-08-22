@@ -13,7 +13,6 @@
 #include "Trap.h"
 #include "QuestManager.h"
 #include "Action.h"
-#include "NetStats.h"
 #include "UnitGroup.h"
 #include "SoundManager.h"
 #include "ScriptManager.h"
@@ -291,9 +290,6 @@ void Game::ConfigureGame()
 	}
 
 	CreateTextures();
-
-	if(!disable_net_stats)
-		NetStats::Get().Initialize();
 }
 
 //=================================================================================================

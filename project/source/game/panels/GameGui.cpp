@@ -588,9 +588,8 @@ void GameGui::DrawEndOfGameScreen()
 	GUI.DrawSpriteFull(game.tCzern, color);
 
 	// obrazek
-	D3DSURFACE_DESC desc;
-	V(game.tEmerytura->GetLevelDesc(0, &desc));
-	GUI.DrawSprite(game.tEmerytura, Center(desc.Width, desc.Height), color);
+	Int2 sprite_pos = Center(gui::GetSize(game.tEmerytura));
+	GUI.DrawSprite(game.tEmerytura, sprite_pos, color);
 
 	// tekst
 	cstring text = Format(txGameTimeout, game.pc->kills, game.total_kills - game.pc->kills);

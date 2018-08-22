@@ -14,6 +14,7 @@
 #include "MpBox.h"
 #include "GameMessages.h"
 #include "DialogBox.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 extern const float TRAVEL_SPEED;

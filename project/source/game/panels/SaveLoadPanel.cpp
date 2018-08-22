@@ -5,6 +5,7 @@
 #include "KeyStates.h"
 #include "Class.h"
 #include "Scrollbar.h"
+#include "DirectX.h"
 
 //=================================================================================================
 SaveLoad::SaveLoad(const DialogInfo& info) : DialogBox(info), choice(0), tMiniSave(nullptr)
@@ -73,7 +74,7 @@ void SaveLoad::Draw(ControlDrawData* /*cdd*/)
 				text = Format(txEmptySlot, i + 1);
 		}
 
-		GUI.DrawText(GUI.default_font, text, DT_SINGLELINE | DT_VCENTER, choice == i ? GREEN : Color::Black, r);
+		GUI.DrawText(GUI.default_font, text, DT_SINGLELINE | DT_VCENTER, choice == i ? Color::Green : Color::Black, r);
 
 		r.Top() = r.Bottom() + 4;
 		r.Bottom() = r.Top() + 20;

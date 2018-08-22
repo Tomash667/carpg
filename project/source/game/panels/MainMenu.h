@@ -46,5 +46,5 @@ private:
 	DialogEvent event;
 	int check_version; // 0 - nie sprawdzono, 1 - trwa sprawdzanie, 2 - b³¹d, 3 - brak nowej wersji, 4 - jest nowa wersja
 	string version_text;
-	bool check_updates, send_stats;
+	bool check_updates;
 };

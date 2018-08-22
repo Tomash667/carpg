@@ -613,9 +613,6 @@
     <ClCompile Include="source\game\entity\ItemContainer.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\net\NetStats.cpp">
-      <Filter>3. game\net</Filter>
-    </ClCompile>
     <ClCompile Include="source\core\TextWriter.cpp">
       <Filter>1. core</Filter>
     </ClCompile>
@@ -687,6 +684,9 @@
     </ClCompile>
     <ClCompile Include="source\game\script\Var.cpp">
       <Filter>3. game\script</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\Color.cpp">
+      <Filter>1. core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1278,9 +1278,6 @@
     </ClInclude>
     <ClInclude Include="source\game\entity\ItemContainer.h">
       <Filter>3. game\entity</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\net\NetStats.h">
-      <Filter>3. game\net</Filter>
     </ClInclude>
     <ClInclude Include="source\core\Base64.h">
       <Filter>1. core</Filter>

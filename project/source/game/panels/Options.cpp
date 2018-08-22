@@ -6,6 +6,7 @@
 #include "Game.h"
 #include "MenuList.h"
 #include "SoundManager.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 cstring txQuality, txMsNone;

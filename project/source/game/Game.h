@@ -465,7 +465,6 @@ struct Game final : public Engine, public UnitEventHandler
 
 	QUICKSTART quickstart;
 	int quickstart_slot;
-	bool disable_net_stats;
 	ScriptManager* script_mgr;
 
 	// supershader

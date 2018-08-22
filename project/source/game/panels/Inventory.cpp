@@ -12,6 +12,7 @@
 #include "Team.h"
 #include "BookPanel.h"
 #include "SoundManager.h"
+#include "DirectX.h"
 
 /* UWAGI CO DO ZMIENNYCH
 index - indeks do items [0, 1, 2, 3...]
@@ -191,7 +192,7 @@ void Inventory::Draw(ControlDrawData*)
 		cstring weight_str = Format(txCarryShort, float(unit->weight) / 10, float(unit->weight_max) / 10);
 		int w = GUI.default_font->LineWidth(weight_str);
 		GUI.DrawText(GUI.default_font, (w > bar_size ? Format("%g/%g", float(unit->weight) / 10, float(unit->weight_max) / 10) : weight_str),
-			DT_CENTER | DT_VCENTER, (load > 1.f ? RED : Color::Black), rect);
+			DT_CENTER | DT_VCENTER, (load > 1.f ? Color::Red : Color::Black), rect);
 	}
 
 	// rysuj kratki

@@ -23,7 +23,6 @@
 #include "AIController.h"
 #include "Spell.h"
 #include "Team.h"
-#include "NetStats.h"
 #include "RoomType.h"
 #include "StartupOptions.h"
 #include "SoundManager.h"
@@ -63,7 +62,7 @@ sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cur
 cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
 grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM),
 autopick_class(Class::INVALID), current_packet(nullptr), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false),
-disable_net_stats(false), script_mgr(nullptr), quickstart_slot(MAX_SAVE_SLOTS), tournament_state(TOURNAMENT_NOT_DONE), arena_free(true), autoready(false)
+script_mgr(nullptr), quickstart_slot(MAX_SAVE_SLOTS), tournament_state(TOURNAMENT_NOT_DONE), arena_free(true), autoready(false)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -1822,7 +1821,6 @@ void Game::OnCleanup()
 
 	delete script_mgr;
 
-	NetStats::Close();
 	if(peer)
 		SLNet::RakPeerInterface::DestroyInstance(peer);
 }

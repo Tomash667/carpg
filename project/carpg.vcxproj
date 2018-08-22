@@ -213,7 +213,6 @@
     <ClInclude Include="source\game\net\GamePacket.h" />
     <ClInclude Include="source\game\net\NetChange.h" />
     <ClInclude Include="source\game\net\NetChangePlayer.h" />
-    <ClInclude Include="source\game\net\NetStats.h" />
     <ClInclude Include="source\game\net\PlayerInfo.h" />
     <ClInclude Include="source\game\panels\ActionPanel.h" />
     <ClInclude Include="source\game\panels\BookPanel.h" />
@@ -356,6 +355,7 @@
     <ClInclude Include="source\Version.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\core\Color.cpp" />
     <ClCompile Include="source\core\CoreMath.cpp" />
     <ClCompile Include="source\core\BoxToBox.cpp" />
     <ClCompile Include="source\core\Bresenham.cpp" />
@@ -422,7 +422,6 @@
     <ClCompile Include="source\game\entity\ItemContainer.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
-    <ClCompile Include="source\game\net\NetStats.cpp" />
     <ClCompile Include="source\game\net\PlayerInfo.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />

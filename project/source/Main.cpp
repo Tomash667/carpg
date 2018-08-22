@@ -816,9 +816,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			game.screenshot_format = ImageFormat::JPG;
 		}
 	}
-
-	game.disable_net_stats = cfg.GetBool("disable_net_stats");
-
+	
 	game.SetConfigVarsFromFile();
 	game.ApplyConfigVars();
 

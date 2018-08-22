@@ -11,18 +11,17 @@ void LoadScreen::Draw(ControlDrawData*)
 	GUI.DrawSpriteFull(tBackground, Color::White);
 
 	// loadbar background
-	D3DSURFACE_DESC desc;
-	tLoadbarBg->GetLevelDesc(0, &desc);
-	Int2 pt((GUI.wnd_size.x - desc.Width) / 2, GUI.wnd_size.y - desc.Height - 16);
+	Int2 img_size = gui::GetSize(tLoadbarBg);
+	Int2 pt((GUI.wnd_size.x - img_size.x) / 2, GUI.wnd_size.y - img_size.y - 16);
 	GUI.DrawSprite(tLoadbarBg, pt);
 
 	// loadbar
-	Rect r = { pt.x, pt.y, pt.x + 8 + int(progress*(503 - 8)), LONG(pt.y + desc.Height) };
-	Rect rp = { 0, 0, 8 + int(progress*(503 - 8)), LONG(desc.Height) };
+	Rect r = { pt.x, pt.y, pt.x + 8 + int(progress*(503 - 8)), LONG(pt.y + img_size.y) };
+	Rect rp = { 0, 0, 8 + int(progress*(503 - 8)), LONG(img_size.y) };
 	GUI.DrawSpriteRectPart(tLoadbar, r, rp);
 
 	// text
-	Rect r2 = { 32, 0, GUI.wnd_size.x - 32, LONG(GUI.wnd_size.y - desc.Height - 32) };
+	Rect r2 = { 32, 0, GUI.wnd_size.x - 32, LONG(GUI.wnd_size.y - img_size.y - 32) };
 	GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_BOTTOM, Color::White, r2);
 }
 
