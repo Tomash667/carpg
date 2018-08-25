@@ -11,6 +11,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #define STRICT
+#define _WINSOCKAPI_ 
 
 //-----------------------------------------------------------------------------
 // warning o liœcie inicjalizacyjnej [struct C { C() : elem() {} int elem[10]; ]
@@ -30,13 +31,7 @@
 #endif
 
 //-----------------------------------------------------------------------------
-#ifndef COMMON_ONLY
-#	include <slikenet/peerinterface.h>
-#	include <slikenet/MessageIdentifiers.h>
-#	include <slikenet/BitStream.h>
-#else
-#	include <cassert>
-#endif
+#include <cassert>
 #include <Windows.h>
 #include <ctime>
 #include <vector>
@@ -64,9 +59,6 @@ using std::vector;
 using std::list;
 using std::min;
 using std::max;
-#ifndef COMMON_ONLY
-using namespace SLNet;
-#endif
 
 //-----------------------------------------------------------------------------
 // undef some useless macros

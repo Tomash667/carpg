@@ -1,7 +1,6 @@
 #include "Pch.h"
 #include "EngineCore.h"
 #include "MeshInstance.h"
-#include "BitStreamFunc.h"
 
 //---------------------------
 const int BLEND_TO_BIND_POSE = -1;
@@ -696,7 +695,7 @@ void MeshInstance::Load(HANDLE file)
 }
 
 //=================================================================================================
-void MeshInstance::Write(BitStream& stream) const
+void MeshInstance::Write(StreamWriter& stream) const
 {
 	int fai = 0;
 	if(frame_end_info)
@@ -714,14 +713,14 @@ void MeshInstance::Write(BitStream& stream) const
 		stream.WriteCasted<byte>(group.prio);
 		stream.WriteCasted<byte>(group.used_group);
 		if(group.anim)
-			WriteString1(stream, group.anim->name);
+			stream << group.anim->name;
 		else
 			stream.WriteCasted<byte>(0);
 	}
 }
 
 //=================================================================================================
-bool MeshInstance::Read(BitStream& stream)
+bool MeshInstance::Read(StreamReader& stream)
 {
 	int fai;
 	byte groups_count;
@@ -743,7 +742,7 @@ bool MeshInstance::Read(BitStream& stream)
 			stream.Read(group.state) &&
 			stream.ReadCasted<byte>(group.prio) &&
 			stream.ReadCasted<byte>(group.used_group) &&
-			ReadString1(stream))
+			stream.ReadString1())
 		{
 			if(BUF[0])
 			{

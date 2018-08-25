@@ -146,7 +146,6 @@
     <ClInclude Include="source\core\TextWriter.h" />
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
-    <ClInclude Include="source\engine\BitStreamFunc.h" />
     <ClInclude Include="source\engine\DirectX.h" />
     <ClInclude Include="source\engine\FileFormat.h" />
     <ClInclude Include="source\engine\Font.h" />
@@ -210,6 +209,7 @@
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameCore.h" />
     <ClInclude Include="source\game\GameStats.h" />
+    <ClInclude Include="source\game\net\BitStreamFunc.h" />
     <ClInclude Include="source\game\net\GamePacket.h" />
     <ClInclude Include="source\game\net\NetChange.h" />
     <ClInclude Include="source\game\net\NetChangePlayer.h" />
@@ -422,6 +422,7 @@
     <ClCompile Include="source\game\entity\ItemContainer.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
+    <ClCompile Include="source\game\net\BitStreamFunc.cpp" />
     <ClCompile Include="source\game\net\PlayerInfo.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />

@@ -688,6 +688,9 @@
     <ClCompile Include="source\core\Color.cpp">
       <Filter>1. core</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\net\BitStreamFunc.cpp">
+      <Filter>3. game\net</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1270,9 +1273,6 @@
     <ClInclude Include="source\engine\gui\Gui.h">
       <Filter>2. engine\gui</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\BitStreamFunc.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\panels\BookPanel.h">
       <Filter>3. game\panels</Filter>
     </ClInclude>
@@ -1365,6 +1365,9 @@
     </ClInclude>
     <ClInclude Include="source\core\Color.h">
       <Filter>1. core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\net\BitStreamFunc.h">
+      <Filter>3. game\net</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

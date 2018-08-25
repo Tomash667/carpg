@@ -101,7 +101,7 @@ class StreamSourcePool
 {
 public:
 	template<typename T, typename ...U>
-	static T* Get(U... args)
+	static T* Get(U&&... args)
 	{
 		static_assert(std::is_base_of<StreamSource, T>::value, "T must derive StreamSource");
 		static_assert(sizeof(T) <= size, "T size can't be larger then StreamSourcePool::size");
@@ -198,24 +198,6 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-// BitStream source
-class BitStreamSource : public StreamSource
-{
-public:
-	BitStreamSource(BitStream* bitstream, bool write);
-
-	bool IsFile() const override { return false; }
-	bool Read(void* ptr, uint data_size) override;
-	bool Skip(uint data_size) override;
-	void Write(const void* ptr, uint data_size) override;
-	void SetOffset(uint offset) override;
-
-private:
-	BitStream* bitstream;
-	bool write;
-};
-
-//-----------------------------------------------------------------------------
 // Base stream
 class Stream
 {
@@ -240,7 +222,7 @@ public:
 	StreamReader(HANDLE file, uint clamp_offset = 0, uint clamp_size = 0);
 	StreamReader(Buffer* buf);
 	StreamReader(BufferHandle& buf);
-	StreamReader(BitStream& bitstream);
+	StreamReader(StreamSource* source);
 
 	operator bool() const { return ok; }
 
@@ -260,6 +242,16 @@ public:
 	bool Read(T& obj)
 	{
 		return Read(&obj, sizeof(T));
+	}
+
+	template<typename DestType, typename SourceType>
+	bool ReadCasted(SourceType& a)
+	{
+		DestType b;
+		if(!Read<DestType>(b))
+			return false;
+		a = (SourceType)b;
+		return true;
 	}
 
 	template<typename T>
@@ -310,7 +302,7 @@ class StreamWriter : public Stream
 public:
 	StreamWriter(Cstring path);
 	StreamWriter(HANDLE file);
-	StreamWriter(BitStream& bitstream);
+	StreamWriter(StreamSource* source);
 
 	void Write(const void* ptr, uint size) { source->Write(ptr, size); }
 
@@ -318,6 +310,12 @@ public:
 	void Write(const T& obj)
 	{
 		Write(&obj, sizeof(T));
+	}
+
+	template<typename T, typename T2>
+	void WriteCasted(const T2& a)
+	{
+		Write(&a, sizeof(T));
 	}
 
 	bool Ensure(uint size) const { return source->Ensure(size); }
