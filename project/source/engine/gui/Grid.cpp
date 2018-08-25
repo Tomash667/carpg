@@ -78,7 +78,7 @@ void Grid::Draw(ControlDrawData*)
 		{
 			if(it->type == TEXT || it->type == TEXT_COLOR)
 			{
-				DWORD color;
+				Color color;
 				cstring text;
 
 				if(it->type == TEXT)

@@ -49,7 +49,7 @@ void Journal::Draw(ControlDrawData* /*cdd*/)
 				r = rect2;
 			r.Top() += it->y * font_height;
 
-			const DWORD color[3] = { Color::Black, Color::Red, Color::Green };
+			const Color color[3] = { Color::Black, Color::Red, Color::Green };
 
 			GUI.DrawText(GUI.default_font, it->text, 0, color[it->color], r);
 		}

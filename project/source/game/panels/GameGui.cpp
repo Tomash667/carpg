@@ -673,7 +673,7 @@ void GameGui::DrawSpeechBubbles()
 //=================================================================================================
 void GameGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
 {
-	DWORD text_color;
+	Color text_color;
 	if(alpha == -1)
 	{
 		text_color = Color::White;
@@ -693,7 +693,7 @@ void GameGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
 			hpp = -1.f;
 		else
 			hpp = max(unit.GetHpp(), 0.f);
-		DWORD color = Color::Alpha(alpha);
+		Color color = Color::Alpha(alpha);
 
 		if(hpp >= 0.f)
 		{

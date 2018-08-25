@@ -68,7 +68,7 @@ void IGUI::Init(IDirect3DDevice9* _device, ID3DXSprite* _sprite)
 	V(D3DXCreateTexture(device, 1, 1, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &tPixel));
 	D3DLOCKED_RECT lock;
 	V(tPixel->LockRect(0, &lock, nullptr, 0));
-	*((DWORD*)lock.pBits) = Color(255, 255, 255);
+	*((DWORD*)lock.pBits) = Color(255, 255, 255).value;
 	V(tPixel->UnlockRect(0));
 
 	// create vertex declaration
@@ -332,7 +332,7 @@ int IGUI::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, in
 					const float a = float(j)*PI / 4;
 					rect.Left() = offset.x + int(outline*sin(a));
 					rect.Top() = offset.y + int(outline*cos(a));
-					dx_font->DrawTextA(sprite, cbuf, 1, (RECT*)&rect, DT_LEFT | DT_NOCLIP, Color::White);
+					dx_font->DrawTextA(sprite, cbuf, 1, (RECT*)&rect, DT_LEFT | DT_NOCLIP, Color::White.value);
 				}
 
 				offset.x += g.width + 2 + extra;
@@ -354,7 +354,7 @@ int IGUI::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, in
 				}
 				rect.Left() = offset.x;
 				rect.Top() = offset.y;
-				dx_font->DrawTextA(sprite, cbuf, 1, (RECT*)&rect, DT_LEFT | DT_NOCLIP, Color::White);
+				dx_font->DrawTextA(sprite, cbuf, 1, (RECT*)&rect, DT_LEFT | DT_NOCLIP, Color::White.value);
 				offset.x += g.width + 2 + extra;
 			}
 		}
@@ -406,7 +406,7 @@ int IGUI::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, in
 
 //=================================================================================================
 // Draw text - rewritten from TFQ
-bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, const Rect& rect, const Rect* clipping, vector<Hitbox>* hitboxes,
+bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, Color color, const Rect& rect, const Rect* clipping, vector<Hitbox>* hitboxes,
 	int* hitbox_counter, const vector<TextLine>* lines)
 {
 	assert(font);
@@ -1191,7 +1191,7 @@ void IGUI::Add(Control* ctrl)
 }
 
 //=================================================================================================
-void IGUI::DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, DWORD color, int corner, int size, const Box2d* clip_rect)
+void IGUI::DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, Color color, int corner, int size, const Box2d* clip_rect)
 {
 	assert(t);
 
@@ -1388,7 +1388,7 @@ void IGUI::Update(float dt, float mouse_speed)
 }
 
 //=================================================================================================
-void IGUI::DrawSprite(TEX t, const Int2& pos, DWORD color, const Rect* clipping)
+void IGUI::DrawSprite(TEX t, const Int2& pos, Color color, const Rect* clipping)
 {
 	assert(t);
 
@@ -1863,7 +1863,7 @@ bool IGUI::HaveDialog() const
 }
 
 //=================================================================================================
-void IGUI::DrawSpriteFull(TEX t, const DWORD color)
+void IGUI::DrawSpriteFull(TEX t, const Color color)
 {
 	assert(t);
 
@@ -1940,7 +1940,7 @@ void IGUI::SimpleDialog(cstring text, Control* parent, cstring name)
 }
 
 //=================================================================================================
-void IGUI::DrawSpriteRect(TEX t, const Rect& rect, DWORD color)
+void IGUI::DrawSpriteRect(TEX t, const Rect& rect, Color color)
 {
 	assert(t);
 
@@ -2027,7 +2027,7 @@ void IGUI::OnResize()
 }
 
 //=================================================================================================
-void IGUI::DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, DWORD color)
+void IGUI::DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, Color color)
 {
 	assert(t);
 
@@ -2074,7 +2074,7 @@ void IGUI::DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, DWORD c
 }
 
 //=================================================================================================
-void IGUI::DrawSpriteTransform(TEX t, const Matrix& mat, DWORD color)
+void IGUI::DrawSpriteTransform(TEX t, const Matrix& mat, Color color)
 {
 	assert(t);
 
@@ -2131,7 +2131,7 @@ void IGUI::DrawSpriteTransform(TEX t, const Matrix& mat, DWORD color)
 }
 
 //=================================================================================================
-void IGUI::DrawLine(const Vec2* lines, uint count, DWORD color, bool strip)
+void IGUI::DrawLine(const Vec2* lines, uint count, Color color, bool strip)
 {
 	assert(lines && count);
 
@@ -2205,7 +2205,7 @@ bool IGUI::NeedCursor()
 }
 
 //=================================================================================================
-bool IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const Vec3& pos, Rect* text_rect)
+bool IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, Color color, const Vec3& pos, Rect* text_rect)
 {
 	assert(font);
 
@@ -2271,7 +2271,7 @@ bool IGUI::Intersect(vector<Hitbox>& hitboxes, const Int2& pt, int* index, int* 
 }
 
 //=================================================================================================
-void IGUI::DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, DWORD color)
+void IGUI::DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, Color color)
 {
 	assert(t);
 
@@ -2375,7 +2375,7 @@ DialogBox* IGUI::GetDialog(cstring name)
 }
 
 //=================================================================================================
-void IGUI::DrawSprite2(TEX t, const Matrix& mat, const Rect* part, const Rect* clipping, DWORD color)
+void IGUI::DrawSprite2(TEX t, const Matrix& mat, const Rect* part, const Rect* clipping, Color color)
 {
 	assert(t);
 
@@ -2400,7 +2400,7 @@ void IGUI::DrawSprite2(TEX t, const Matrix& mat, const Rect* part, const Rect* c
 	Lock();
 
 	// fill vertex buffer
-	Vec4 col = Vec4::FromColor(color);
+	Vec4 col = color;
 	rect.Populate(v, col);
 	in_buffer = 1;
 	Flush();
@@ -2537,7 +2537,7 @@ void IGUI::DrawNotifications()
 }
 
 //=================================================================================================
-void IGUI::DrawArea(DWORD color, const Int2& pos, const Int2& size, const Box2d* clip_rect)
+void IGUI::DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clip_rect)
 {
 	GuiRect gui_rect;
 	gui_rect.Set(pos, size);

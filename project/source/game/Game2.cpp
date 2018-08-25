@@ -13332,7 +13332,7 @@ void Game::CreateCityMinimap()
 		for(int x = 0; x < OutsideLocation::size; ++x)
 		{
 			const TerrainTile& t = loc->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size];
-			DWORD col;
+			Color col;
 			if(t.mode >= TM_BUILDING)
 				col = Color(128, 64, 0);
 			else if(t.alpha == 0)
@@ -13402,10 +13402,9 @@ void Game::CreateCityMinimap()
 			}
 			if(x < 16 || x > 128 - 16 || y < 16 || y > 128 - 16)
 			{
-				col = ((col & 0xFF) / 2) |
-					((((col & 0xFF00) >> 8) / 2) << 8) |
-					((((col & 0xFF0000) >> 16) / 2) << 16) |
-					0xFF000000;
+				col.r /= 2;
+				col.g /= 2;
+				col.b /= 2;
 			}
 			*pix = col;
 			++pix;
@@ -15733,7 +15732,7 @@ void Game::CreateForestMinimap()
 		for(int x = 0; x < OutsideLocation::size; ++x)
 		{
 			TERRAIN_TILE t = loc->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size].t;
-			DWORD col;
+			Color col;
 			if(t == TT_GRASS)
 				col = Color(0, 128, 0);
 			else if(t == TT_ROAD)

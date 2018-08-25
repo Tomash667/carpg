@@ -832,7 +832,6 @@ struct Vec4 : XMFLOAT4
 	static Vec4 CatmullRom(const Vec4& v1, const Vec4& v2, const Vec4& v3, const Vec4& v4, float t);
 	static float Distance(const Vec4& v1, const Vec4& v2);
 	static float DistanceSquared(const Vec4& v1, const Vec4& v2);
-	static Vec4 FromColor(DWORD color);
 	static void Hermite(const Vec4& v1, const Vec4& t1, const Vec4& v2, const Vec4& t2, float t, Vec4& result);
 	static Vec4 Hermite(const Vec4& v1, const Vec4& t1, const Vec4& v2, const Vec4& t2, float t);
 	static void Lerp(const Vec4& v1, const Vec4& v2, float t, Vec4& result);

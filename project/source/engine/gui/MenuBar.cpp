@@ -25,7 +25,7 @@ void MenuBar::Draw(ControlDrawData*)
 	for(Item* item : items)
 	{
 		AreaLayout* area_layout;
-		DWORD font_color;
+		Color font_color;
 		switch(item->mode)
 		{
 		case Item::Up:

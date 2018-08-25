@@ -73,7 +73,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 		// selected
 		if(select_start_index != NOT_SELECTED && select_start_index != select_end_index)
 		{
-			DWORD color = (readonly ? Color(100, 100, 100, 128) : Color(0, 148, 255, 128));
+			Color color = (readonly ? Color(100, 100, 100, 128) : Color(0, 148, 255, 128));
 			int select_start_line = select_start_pos.y / line_height;
 			int select_end_line = select_end_pos.y / line_height;
 			int lines = select_end_line - select_start_line + 1;

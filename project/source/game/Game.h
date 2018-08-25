@@ -751,7 +751,7 @@ public:
 	float loading_dt, loading_cap;
 	Timer loading_t;
 	int loading_steps, loading_index;
-	DWORD clear_color2;
+	Color clear_color2;
 
 	//---------------------------------
 	// MINIMAPA

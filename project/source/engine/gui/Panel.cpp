@@ -8,7 +8,7 @@ void Panel::Draw(ControlDrawData*)
 {
 	if(use_custom_color)
 	{
-		if(custom_color != 0)
+		if(custom_color != Color::None)
 			GUI.DrawArea(custom_color, global_pos, size);
 	}
 	else

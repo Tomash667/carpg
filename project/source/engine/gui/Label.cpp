@@ -30,7 +30,7 @@ void Label::SetAlign(DWORD align)
 	EnsureLayout()->align = align;
 }
 
-void Label::SetColor(DWORD color)
+void Label::SetColor(Color color)
 {
 	if(color == GetColor())
 		return;

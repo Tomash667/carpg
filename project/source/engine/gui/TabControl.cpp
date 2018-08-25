@@ -66,7 +66,7 @@ void TabControl::Draw(ControlDrawData*)
 		Tab* tab = tabs[i];
 		AreaLayout* button;
 		AreaLayout* close;
-		DWORD color;
+		Color color;
 		switch(tab->mode)
 		{
 		default:

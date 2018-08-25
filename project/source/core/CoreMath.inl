@@ -2018,16 +2018,6 @@ inline float Vec4::DistanceSquared(const Vec4& v1, const Vec4& v2)
 	return XMVectorGetX(X);
 }
 
-inline Vec4 Vec4::FromColor(DWORD color)
-{
-	Vec4 v;
-	v.x = float((color & 0xFF0000) >> 16) / 255;
-	v.y = float((color & 0xFF00) >> 8) / 255;
-	v.z = float(color & 0xFF) / 255;
-	v.w = float((color & 0xFF000000) >> 24) / 255;
-	return v;
-}
-
 inline void Vec4::Hermite(const Vec4& v1, const Vec4& t1, const Vec4& v2, const Vec4& t2, float t, Vec4& result)
 {
 	XMVECTOR x1 = XMLoadFloat4(&v1);

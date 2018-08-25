@@ -11,7 +11,7 @@ namespace gui
 
 		void Draw(ControlDrawData* cdd = nullptr) override;
 
-		DWORD custom_color;
+		Color custom_color;
 		bool use_custom_color;
 	};
 }

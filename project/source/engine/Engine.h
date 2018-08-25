@@ -77,7 +77,7 @@ public:
 	IDirect3D9* d3d;
 	IDirect3DDevice9* device;
 	ID3DXSprite* sprite;
-	DWORD clear_color;
+	Color clear_color;
 	int wnd_hz, used_adapter, shader_version;
 
 	// bullet physics

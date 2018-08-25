@@ -84,7 +84,7 @@ void MenuStrip::Draw(ControlDrawData*)
 		if(item.hover)
 			GUI.DrawArea(area, layout->menustrip.button_hover);
 
-		DWORD color;
+		Color color;
 		if(!item.enabled)
 			color = layout->menustrip.font_color_disabled;
 		else if(item.hover)
