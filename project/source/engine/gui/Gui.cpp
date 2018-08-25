@@ -6,6 +6,7 @@
 #include "Language.h"
 #include "GuiRect.h"
 #include "Engine.h"
+#include "Profiler.h"
 #include "DirectX.h"
 
 using namespace gui;

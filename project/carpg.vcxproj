@@ -130,7 +130,6 @@
     <ClInclude Include="source\core\Color.h" />
     <ClInclude Include="source\core\Core.h" />
     <ClInclude Include="source\core\Config.h" />
-    <ClInclude Include="source\core\Config2.h" />
     <ClInclude Include="source\core\Containers.h" />
     <ClInclude Include="source\core\CoreMath.h" />
     <ClInclude Include="source\core\Crc.h" />

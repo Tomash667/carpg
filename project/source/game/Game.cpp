@@ -28,6 +28,7 @@
 #include "SoundManager.h"
 #include "ScriptManager.h"
 #include "Inventory.h"
+#include "Profiler.h"
 #include "DirectX.h"
 
 // limit fps

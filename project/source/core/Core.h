@@ -435,7 +435,6 @@ class Buffer;
 #include "CoreMath.h"
 #include "Color.h"
 #include "Logger.h"
-#include "Profiler.h"
 #include "Text.h"
 #include "Tokenizer.h"
 #include "File.h"

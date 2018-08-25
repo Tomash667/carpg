@@ -19,6 +19,7 @@
 #include "Action.h"
 #include "ActionPanel.h"
 #include "BookPanel.h"
+#include "Profiler.h"
 
 //-----------------------------------------------------------------------------
 enum class TooltipGroup

@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Terrain.h"
 #include "LocationHelper.h"
+#include "Profiler.h"
 #include "DirectX.h"
 
 enum QuadPartType

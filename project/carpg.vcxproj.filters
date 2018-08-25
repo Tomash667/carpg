@@ -1035,9 +1035,6 @@
     <ClInclude Include="source\game\helpers\LocationHelper.h">
       <Filter>3. game\helpers</Filter>
     </ClInclude>
-    <ClInclude Include="source\core\Config2.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
     <ClInclude Include="source\core\FastFunc.h">
       <Filter>1. core</Filter>
     </ClInclude>
