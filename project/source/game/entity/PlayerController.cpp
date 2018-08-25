@@ -492,8 +492,7 @@ void PlayerController::Load(FileReader& f)
 		case NA_EQUIP:
 		case NA_CONSUME:
 			f >> next_action_data.index;
-			f.ReadStringBUF();
-			next_action_data.item = Item::Get(BUF);
+			next_action_data.item = Item::Get(f.ReadString1());
 			break;
 		case NA_USE:
 			Usable::AddRequest(&next_action_data.usable, f.Read<int>(), nullptr);

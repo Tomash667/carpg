@@ -5,7 +5,6 @@
 #include "VertexData.h"
 #include "VertexDeclaration.h"
 #include "Resource.h"
-#include "Stream.h"
 
 /*---------------------------
 NASTÊPNA WERSJA:

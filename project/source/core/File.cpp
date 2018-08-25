@@ -2,8 +2,168 @@
 #include "Core.h"
 #include <Shellapi.h>
 
-DWORD tmp;
+//-----------------------------------------------------------------------------
+static DWORD tmp;
+string StreamReader::buf;
 char BUF[256];
+
+
+//-----------------------------------------------------------------------------
+static_assert(sizeof(uint64) == sizeof(FILETIME), "Invalid FileTime size.");
+
+bool FileTime::operator == (const FileTime& file_time) const
+{
+	FILETIME ft1 = union_cast<FILETIME>(time);
+	FILETIME ft2 = union_cast<FILETIME>(file_time);
+	return CompareFileTime(&ft1, &ft2) == 0;
+}
+
+
+//-----------------------------------------------------------------------------
+FileReaderBase::~FileReaderBase()
+{
+	if(own_handle && file != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(file);
+		file = INVALID_HANDLE_VALUE;
+		ok = false;
+	}
+}
+
+bool FileReaderBase::Open(Cstring filename)
+{
+	file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	own_handle = true;
+	if(file != INVALID_HANDLE_VALUE)
+	{
+		size = GetFileSize(file, nullptr);
+		ok = true;
+	}
+	else
+	{
+		size = 0;
+		ok = false;
+	}
+	return ok;
+}
+
+void FileReaderBase::Read(void* ptr, uint size)
+{
+	BOOL result = ReadFile(file, ptr, size, &tmp, nullptr);
+	assert(result != FALSE);
+	ok = (size == tmp);
+}
+
+void FileReaderBase::ReadToString(string& s)
+{
+	DWORD size = GetFileSize(file, nullptr);
+	s.resize(size);
+	BOOL result = ReadFile(file, (char*)s.c_str(), size, &tmp, nullptr);
+	assert(result != FALSE);
+	assert(size == tmp);
+}
+
+Buffer* FileReaderBase::ReadToBuffer(Cstring path)
+{
+	FileReader f(path);
+	if(!f)
+		return nullptr;
+	Buffer* buffer = BufferPool.Get();
+	buffer->Resize(f.GetSize());
+	f.Read(buffer->Data(), buffer->Size());
+	return buffer;
+}
+
+Buffer* FileReaderBase::ReadToBuffer(Cstring path, uint offset, uint size)
+{
+	FileReader f(path);
+	if(!f)
+		return nullptr;
+	f.Skip(offset);
+	if(!f.Ensure(size))
+		return nullptr;
+	Buffer* buffer = BufferPool.Get();
+	buffer->Resize(size);
+	f.Read(buffer->Data(), size);
+	return buffer;
+}
+
+void FileReaderBase::Skip(uint bytes)
+{
+	ok = (ok && SetFilePointer(file, bytes, nullptr, FILE_CURRENT) != INVALID_SET_FILE_POINTER);
+}
+
+uint FileReaderBase::GetPos() const
+{
+	return (uint)SetFilePointer(file, 0, nullptr, FILE_CURRENT);
+}
+
+FileTime FileReaderBase::GetTime() const
+{
+	FILETIME file_time;
+	GetFileTime((HANDLE)file, nullptr, nullptr, &file_time);
+	return union_cast<FileTime>(file_time);
+}
+
+bool FileReaderBase::SetPos(uint pos)
+{
+	if(!ok || pos >= size)
+	{
+		pos = size;
+		ok = false;
+		return false;
+	}
+	SetFilePointer((HANDLE)file, pos, nullptr, FILE_BEGIN);
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------
+FileWriterBase::~FileWriterBase()
+{
+	if(own_handle && file != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(file);
+		file = INVALID_HANDLE_VALUE;
+	}
+}
+
+bool FileWriterBase::Open(cstring filename)
+{
+	assert(filename);
+	file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+	return (file != INVALID_HANDLE_VALUE);
+}
+
+void FileWriterBase::Write(const void* ptr, uint size)
+{
+	WriteFile(file, ptr, size, &tmp, nullptr);
+	assert(size == tmp);
+}
+
+void FileWriterBase::Flush()
+{
+	FlushFileBuffers(file);
+}
+
+uint FileWriterBase::GetSize() const
+{
+	return GetFileSize(file, nullptr);
+}
+
+void FileWriterBase::operator = (FileWriterBase& f)
+{
+	assert(file == INVALID_FILE_HANDLE && f.file != INVALID_HANDLE_VALUE);
+	file = f.file;
+	own_handle = f.own_handle;
+	f.file = INVALID_FILE_HANDLE;
+}
+
+void FileWriterBase::SetTime(FileTime file_time)
+{
+	FILETIME ft = union_cast<FILETIME>(file_time);
+	SetFileTime((HANDLE)file, nullptr, nullptr, &ft);
+}
 
 //=================================================================================================
 bool io::DeleteDirectory(cstring dir)

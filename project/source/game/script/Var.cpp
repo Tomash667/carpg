@@ -38,10 +38,10 @@ void VarsContainer::Load(FileReader& f)
 	f >> count;
 	for(uint i = 0; i < count; ++i)
 	{
-		f.ReadStringBUF();
+		const string& var_name = f.ReadString1();
 		Var* v = new Var;
 		f.ReadCasted<byte>(v->type);
 		f >> v->_int;
-		vars[BUF] = v;
+		vars[var_name] = v;
 	}
 }

@@ -2,8 +2,12 @@
 #include "GameCore.h"
 #include "BitStreamFunc.h"
 
+BitStream s;
+BitStreamWriter w(s);
+BitStreamReader r(s);
+
 //=================================================================================================
-BitStreamSource::BitStreamSource(BitStream& bitstream, bool write) : bitstream(bitstream), write(write)
+/*BitStreamSource::BitStreamSource(BitStream& bitstream, bool write) : bitstream(bitstream), write(write)
 {
 	size = bitstream.GetNumberOfBytesUsed();
 	offset = (write ? bitstream.GetWriteOffset() : bitstream.GetReadOffset()) / 8;
@@ -70,3 +74,4 @@ StreamReader&& CreateBitStreamReader(BitStream& bitstream)
 	BitStreamSource* source = StreamSourcePool::Get<BitStreamSource>(bitstream, false);
 	return std::move(StreamReader(source));
 }
+*/

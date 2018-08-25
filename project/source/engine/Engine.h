@@ -16,7 +16,7 @@ struct CompileShaderParams
 	cstring name;
 	cstring cache_name;
 	string* input;
-	FILETIME file_time;
+	FileTime file_time;
 	D3DXMACRO* macros;
 	ID3DXEffectPool* pool;
 };

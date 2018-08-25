@@ -402,9 +402,6 @@
     <ClCompile Include="source\game\entity\Light.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
-    <ClCompile Include="source\core\Stream.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\Required.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
@@ -612,9 +609,6 @@
     </ClCompile>
     <ClCompile Include="source\game\entity\ItemContainer.cpp">
       <Filter>3. game\entity</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\TextWriter.cpp">
-      <Filter>1. core</Filter>
     </ClCompile>
     <ClCompile Include="source\game\system\BaseObject.cpp">
       <Filter>3. game\system\objects</Filter>
@@ -1023,9 +1017,6 @@
     <ClInclude Include="source\game\entity\Light.h">
       <Filter>3. game\entity</Filter>
     </ClInclude>
-    <ClInclude Include="source\core\Stream.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\helpers\UnitHelper.h">
       <Filter>3. game\helpers</Filter>
     </ClInclude>
@@ -1061,9 +1052,6 @@
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_RetrievePackage.h">
       <Filter>3. game\quests</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\TextWriter.h">
-      <Filter>1. core</Filter>
     </ClInclude>
     <ClInclude Include="source\core\Logger.h">
       <Filter>1. core</Filter>

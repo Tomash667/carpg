@@ -603,7 +603,7 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 	if(mp_load)
 	{
 		stream.Write(unit.netid);
-		unit.mesh_inst->Write(CreateBitStreamWriter(stream));
+		unit.mesh_inst->Write(BitStreamWriter(stream));
 		stream.WriteCasted<byte>(unit.animation);
 		stream.WriteCasted<byte>(unit.current_animation);
 		stream.WriteCasted<byte>(unit.animation_state);
@@ -1626,7 +1626,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		// get current state in multiplayer
 		int usable_netid;
 		if(!stream.Read(unit.netid)
-			|| !unit.mesh_inst->Read(CreateBitStreamReader(stream))
+			|| !unit.mesh_inst->Read(BitStreamReader(stream))
 			|| !stream.ReadCasted<byte>(unit.animation)
 			|| !stream.ReadCasted<byte>(unit.current_animation)
 			|| !stream.ReadCasted<byte>(unit.animation_state)

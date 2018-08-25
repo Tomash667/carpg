@@ -725,8 +725,9 @@ bool MeshInstance::Read(StreamReader& stream)
 	int fai;
 	byte groups_count;
 
-	if(!stream.ReadCasted<byte>(fai)
-		|| !stream.Read(groups_count))
+	stream.ReadCasted<byte>(fai);
+	stream >> groups_count;
+	if(!stream)
 		return false;
 
 	frame_end_info = IS_SET(fai, 0x01);
@@ -737,36 +738,35 @@ bool MeshInstance::Read(StreamReader& stream)
 
 	for(Group& group : groups)
 	{
-		if(stream.Read(group.time) &&
-			stream.Read(group.speed) &&
-			stream.Read(group.state) &&
-			stream.ReadCasted<byte>(group.prio) &&
-			stream.ReadCasted<byte>(group.used_group) &&
-			stream.ReadString1())
+		stream.Read(group.time);
+		stream.Read(group.speed);
+		stream.Read(group.state);
+		stream.ReadCasted<byte>(group.prio);
+		stream.ReadCasted<byte>(group.used_group);
+		const string& anim_id = stream.ReadString1();
+		if(!stream)
+			return false;
+
+		if(!anim_id.empty())
 		{
-			if(BUF[0])
+			if(preload)
 			{
-				if(preload)
-				{
-					string* str = StringPool.Get();
-					*str = BUF;
-					group.anim = (Mesh::Animation*)str;
-				}
-				else
-				{
-					group.anim = mesh->GetAnimation(BUF);
-					if(!group.anim)
-					{
-						Error("Missing animation '%s'.", BUF);
-						return false;
-					}
-				}
+				string* str = StringPool.Get();
+				*str = anim_id;
+				group.anim = (Mesh::Animation*)str;
 			}
 			else
-				group.anim = nullptr;
+			{
+				group.anim = mesh->GetAnimation(anim_id.c_str());
+				if(!group.anim)
+				{
+					Error("Missing animation '%s'.", anim_id.c_str());
+					return false;
+				}
+			}
 		}
 		else
-			return false;
+			group.anim = nullptr;
 	}
 
 	need_update = true;

@@ -469,7 +469,7 @@ struct Game final : public Engine, public UnitEventHandler
 
 	// supershader
 	string sshader_code;
-	FILETIME sshader_edit_time;
+	FileTime sshader_edit_time;
 	ID3DXEffectPool* sshader_pool;
 	vector<SuperShader> sshaders;
 	D3DXHANDLE hSMatCombined, hSMatWorld, hSMatBones, hSTint, hSAmbientColor, hSFogColor, hSFogParams, hSLightDir, hSLightColor, hSLights, hSSpecularColor, hSSpecularIntensity,

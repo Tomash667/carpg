@@ -1,7 +1,7 @@
 // póki nie mam w³asnej klasy BitStream to musz¹ byæ zewnêtrzne funkcje
 #pragma once
 
-#include "Stream.h"
+#include "File.h"
 
 //=================================================================================================
 // ZAPIS
@@ -265,24 +265,32 @@ inline void PatchByteApply(BitStream& stream, uint pos, byte value)
 }
 
 //=================================================================================================
-// BitStreamSource
-//=================================================================================================
-class BitStreamSource : public StreamSource
+class BitStreamWriter final : public StreamWriter
 {
 public:
-	BitStreamSource(BitStream& bitstream, bool write);
+	BitStreamWriter(BitStream& bitstream);
 
-	bool IsFile() const override { return false; }
-	bool Read(void* ptr, uint data_size) override;
-	bool Skip(uint data_size) override;
-	void Write(const void* ptr, uint data_size) override;
-	void SetOffset(uint offset) override;
+	using StreamWriter::Write;
+	void Write(const void* ptr, uint size) override;
 
 private:
 	BitStream& bitstream;
-	bool write;
 };
 
-//-----------------------------------------------------------------------------
-StreamWriter&& CreateBitStreamWriter(BitStream& bitstream);
-StreamReader&& CreateBitStreamReader(BitStream& bitstream);
+//=================================================================================================
+class BitStreamReader final : public StreamReader
+{
+public:
+	BitStreamReader(BitStream& bitstream);
+
+	using StreamReader::Read;
+	void Read(void* ptr, uint size) override;
+	using StreamReader::Skip;
+	void Skip(uint size) override;
+	uint GetPos() const override;
+	uint GetSize() const override;
+	bool SetPos(uint pos) override;
+
+private:
+	BitStream& bitstream;
+};

@@ -140,9 +140,7 @@
     <ClInclude Include="source\core\Perlin.h" />
     <ClInclude Include="source\core\Profiler.h" />
     <ClInclude Include="source\core\QuadTree.h" />
-    <ClInclude Include="source\core\Stream.h" />
     <ClInclude Include="source\core\Text.h" />
-    <ClInclude Include="source\core\TextWriter.h" />
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
     <ClInclude Include="source\engine\DirectX.h" />
@@ -365,9 +363,7 @@
     <ClCompile Include="source\core\Logger.cpp" />
     <ClCompile Include="source\core\Perlin.cpp" />
     <ClCompile Include="source\core\Profiler.cpp" />
-    <ClCompile Include="source\core\Stream.cpp" />
     <ClCompile Include="source\core\Text.cpp" />
-    <ClCompile Include="source\core\TextWriter.cpp" />
     <ClCompile Include="source\core\Timer.cpp" />
     <ClCompile Include="source\core\Tokenizer.cpp" />
     <ClCompile Include="source\engine\Font.cpp" />

@@ -303,7 +303,7 @@ void TeamSingleton::SaveOnWorldmap(FileWriter& f)
 	f << GetTeamSize();
 	for(Unit* unit : members)
 	{
-		unit->Save(f.file, false);
+		unit->Save(f.GetHandle(), false);
 		unit->refid = (int)Unit::refid_table.size();
 		Unit::refid_table.push_back(unit);
 	}

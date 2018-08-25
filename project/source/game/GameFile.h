@@ -4,59 +4,60 @@
 #include "Unit.h"
 
 //-----------------------------------------------------------------------------
-class GameReader : public FileReader
+class GameReader : public FileReaderBase
 {
 public:
-	explicit GameReader(HANDLE file) : FileReader(file)
+	explicit GameReader(HANDLE file) : FileReaderBase(file)
 	{
 	}
 
-	explicit GameReader(cstring filename) : FileReader(filename)
+	explicit GameReader(cstring filename) : FileReaderBase(filename)
 	{
 	}
 
-	using FileReader::operator >> ;
+	using FileReaderBase::operator >> ;
 
 	void LoadArtifact(const Item*& item);
 
 	bool operator >> (Unit*& u)
 	{
 		int refid;
-		bool result = (FileReader::operator >> (refid));
+		FileReaderBase::operator >> (refid);
 		u = Unit::GetByRefid(refid);
-		return result;
+		return IsOk();
 	}
 
 	void operator >> (HumanData& hd)
 	{
-		hd.Load(file);
+		hd.Load((HWND)file);
 	}
 
 	void operator >> (const Item*& item)
 	{
-		if(ReadStringBUF())
-			item = Item::Get(BUF);
+		const string& id = ReadString1();
+		if(IsOk())
+			item = Item::Get(id);
 	}
 };
 
 //-----------------------------------------------------------------------------
-class GameWriter : public FileWriter
+class GameWriter : public FileWriterBase
 {
 public:
-	explicit GameWriter(HANDLE file) : FileWriter(file)
+	explicit GameWriter(HANDLE file) : FileWriterBase(file)
 	{
 	}
 
-	explicit GameWriter(cstring filename) : FileWriter(filename)
+	explicit GameWriter(cstring filename) : FileWriterBase(filename)
 	{
 	}
 
-	using FileWriter::operator <<;
+	using FileWriterBase::operator <<;
 
 	void operator << (Unit* u)
 	{
 		int refid = (u ? u->refid : -1);
-		FileWriter::operator << (refid);
+		FileWriterBase::operator << (refid);
 	}
 
 	void operator << (const HumanData& hd)

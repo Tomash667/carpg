@@ -2777,12 +2777,11 @@ void Game::InitSuperShader()
 	V(D3DXCreateEffectPool(&sshader_pool));
 
 	FileReader f(Format("%s/shaders/super.fx", g_system_dir.c_str()));
-	FILETIME file_time;
-	GetFileTime(f.file, nullptr, nullptr, &file_time);
-	if(CompareFileTime(&file_time, &sshader_edit_time) != 0)
+	FileTime file_time = f.GetTime();
+	if(file_time != sshader_edit_time)
 	{
 		f.ReadToString(sshader_code);
-		GetFileTime(f.file, nullptr, nullptr, &sshader_edit_time);
+		sshader_edit_time = file_time;
 	}
 
 	GetSuperShader(0);

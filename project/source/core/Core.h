@@ -428,6 +428,18 @@ inline bool Any(const T& item, const Arg& arg, const Args&... args)
 }
 
 //-----------------------------------------------------------------------------
+struct FileTime
+{
+	uint64 time;
+
+	bool operator == (const FileTime& file_time) const;
+	bool operator != (const FileTime& file_time) const
+	{
+		return !operator ==(file_time);
+	}
+};
+
+//-----------------------------------------------------------------------------
 class Buffer;
 
 //-----------------------------------------------------------------------------

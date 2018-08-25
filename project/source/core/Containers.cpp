@@ -8,10 +8,13 @@
 #include <Dbghelp.h>
 #pragma warning(pop)
 #endif
+#undef FAR
+#include <zlib.h>
 
 ObjectPool<string> StringPool;
 ObjectPool<vector<void*>> VectorPool;
 ObjectPool<vector<byte>> BufPool;
+ObjectPool<Buffer> BufferPool;
 
 #ifdef _DEBUG
 
@@ -93,3 +96,14 @@ void ObjectPoolLeakManager::Unregister(void* ptr)
 }
 
 #endif
+
+//=================================================================================================
+Buffer* Buffer::Decompress(uint real_size)
+{
+	Buffer* buf = BufferPool.Get();
+	buf->Resize(real_size);
+	uLong size = real_size;
+	uncompress((Bytef*)buf->Data(), &size, (const Bytef*)Data(), Size());
+	BufferPool.Free(this);
+	return buf;
+}

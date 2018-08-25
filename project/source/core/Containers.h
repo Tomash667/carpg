@@ -1310,3 +1310,63 @@ struct PointerVector
 
 	Vector v;
 };
+
+//-----------------------------------------------------------------------------
+// Buffer - used by MemoryStream
+class Buffer
+{
+public:
+	void* At(uint offset)
+	{
+		return data.data() + offset;
+	}
+	void* Data()
+	{
+		return data.data();
+	}
+	// decompress buffer to new buffer and return it, old one is freed
+	Buffer* Decompress(uint real_size);
+	void Resize(uint size)
+	{
+		data.resize(size);
+	}
+	uint Size() const
+	{
+		return data.size();
+	}
+
+private:
+	vector<byte> data;
+};
+extern ObjectPool<Buffer> BufferPool;
+
+//-----------------------------------------------------------------------------
+struct BufferHandle
+{
+	BufferHandle(Buffer* buf) : buf(buf) {}
+	~BufferHandle()
+	{
+		if(buf)
+			BufferPool.Free(buf);
+	}
+
+	operator bool() const
+	{
+		return buf != nullptr;
+	}
+
+	Buffer* operator -> ()
+	{
+		return buf;
+	}
+
+	Buffer* Pin()
+	{
+		Buffer* b = buf;
+		buf = nullptr;
+		return b;
+	}
+
+private:
+	Buffer* buf;
+};

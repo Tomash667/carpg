@@ -266,7 +266,7 @@ void Mesh::LoadMetadata(StreamReader& stream)
 	if(vb)
 		return;
 	LoadHeader(stream);
-	stream.SetOffset(head.points_offset);
+	stream.SetPos(head.points_offset);
 	LoadPoints(stream);
 }
 
@@ -274,7 +274,8 @@ void Mesh::LoadMetadata(StreamReader& stream)
 void Mesh::LoadHeader(StreamReader& stream)
 {
 	// head
-	if(!stream.Read(head))
+	stream.Read(head);
+	if(!stream)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);
@@ -507,7 +508,8 @@ void Mesh::LoadVertexData(VertexData* vd, StreamReader& stream)
 {
 	// read and check header
 	Header head;
-	if(!stream.Read(head))
+	stream >> head;
+	if(!stream)
 		throw "Failed to read file header.";
 	if(memcmp(head.format, "QMSH", 4) != 0)
 		throw Format("Invalid file signature '%.4s'.", head.format);

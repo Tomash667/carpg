@@ -18,7 +18,7 @@ void City::Save(HANDLE file, bool local)
 {
 	OutsideLocation::Save(file, local);
 
-	StreamWriter f(file);
+	FileWriter f(file);
 
 	f << citizens;
 	f << citizens_world;
@@ -67,7 +67,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 {
 	OutsideLocation::Load(file, local, token);
 
-	StreamReader f(file);
+	FileReader f(file);
 
 	f >> citizens;
 	f >> citizens_world;
@@ -86,7 +86,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			buildings.resize(count);
 			for(CityBuilding& b : buildings)
 			{
-				b.type = Building::Get(f.ReadString1C());
+				b.type = Building::Get(f.ReadString1());
 				assert(b.type != nullptr);
 			}
 		}
@@ -100,7 +100,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			buildings.resize(count);
 			for(CityBuilding& b : buildings)
 			{
-				b.type = Building::Get(f.ReadString1C());
+				b.type = Building::Get(f.ReadString1());
 				f >> b.pt;
 				f >> b.unit_pt;
 				f >> b.rot;
@@ -122,7 +122,6 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				++index;
 			}
 
-			f.Refresh();
 			f >> quest_mayor;
 			f >> quest_mayor_time;
 			f >> quest_captain;
@@ -197,7 +196,6 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 				++index;
 			}
 
-			f.Refresh();
 			f >> quest_mayor;
 			f >> quest_mayor_time;
 			f >> quest_captain;

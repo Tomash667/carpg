@@ -267,34 +267,29 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	{
 		if(!file.Open(filename))
 			throw Format("Engine: Failed to load shader '%s' (%d).", params.name, GetLastError());
-		GetFileTime(file.file, nullptr, nullptr, &params.file_time);
+		params.file_time = file.GetTime();
 	}
 
 	// check if in cache
 	{
 		FileReader cache_file(cache_path);
-		if(cache_file)
+		if(cache_file && params.file_time == cache_file.GetTime())
 		{
-			FILETIME cache_time;
-			GetFileTime(cache_file.file, nullptr, nullptr, &cache_time);
-			if(CompareFileTime(&params.file_time, &cache_time) == 0)
+			// same last modify time, use cache
+			cache_file.ReadToString(g_tmp_string);
+			ID3DXEffect* effect = nullptr;
+			hr = D3DXCreateEffect(device, g_tmp_string.c_str(), g_tmp_string.size(), params.macros, nullptr, flags, params.pool, &effect, &errors);
+			if(FAILED(hr))
 			{
-				// same last modify time, use cache
-				cache_file.ReadToString(g_tmp_string);
-				ID3DXEffect* effect = nullptr;
-				hr = D3DXCreateEffect(device, g_tmp_string.c_str(), g_tmp_string.size(), params.macros, nullptr, flags, params.pool, &effect, &errors);
-				if(FAILED(hr))
-				{
-					Error("Engine: Failed to create effect from cache '%s' (%d).\n%s", params.cache_name, hr,
-						errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
-					SafeRelease(errors);
-					SafeRelease(effect);
-				}
-				else
-				{
-					SafeRelease(errors);
-					return effect;
-				}
+				Error("Engine: Failed to create effect from cache '%s' (%d).\n%s", params.cache_name, hr,
+					errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
+				SafeRelease(errors);
+				SafeRelease(effect);
+			}
+			else
+			{
+				SafeRelease(errors);
+				return effect;
 			}
 		}
 	}
@@ -363,10 +358,9 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	FileWriter f(cache_path);
 	if(f)
 	{
-		FILETIME fake_time = { 0xFFFFFFFF, 0xFFFFFFFF };
-		SetFileTime(f.file, nullptr, nullptr, &fake_time);
+		// FIXME: verify cache is working
 		f.Write(effect_buffer->GetBufferPointer(), effect_buffer->GetBufferSize());
-		SetFileTime(f.file, nullptr, nullptr, &params.file_time);
+		f.SetTime(params.file_time);
 	}
 	else
 		Warn("Engine: Failed to save effect '%s' to cache (%d).", params.cache_name, GetLastError());

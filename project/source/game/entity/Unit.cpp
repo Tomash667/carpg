@@ -1498,11 +1498,11 @@ void Unit::Load(HANDLE file, bool local)
 		f >> auto_talk;
 		if(auto_talk != AutoTalkMode::No)
 		{
-			f.ReadStringBUF();
-			if(BUF[0])
-				auto_talk_dialog = FindDialog(BUF);
-			else
+			const string& dialog_id = f.ReadString1();
+			if(dialog_id.empty())
 				auto_talk_dialog = nullptr;
+			else
+				auto_talk_dialog = FindDialog(dialog_id.c_str());
 			f >> auto_talk_timer;
 		}
 	}
