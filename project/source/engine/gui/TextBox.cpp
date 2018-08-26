@@ -35,18 +35,18 @@ void TextBox::Draw(ControlDrawData* cdd)
 		Rect r = { global_pos.x + padding, global_pos.y + padding, global_pos.x + size.x - padding, global_pos.y + size.y - padding };
 
 		if(!scrollbar)
-			GUI.DrawText(GUI.default_font, txt, multiline ? DT_TOP : DT_VCENTER, Color::Black, r);
+			GUI.DrawText(GUI.default_font, txt, multiline ? DTF_TOP : DTF_VCENTER, Color::Black, r);
 		else
 		{
 			Rect r2 = Rect(r) - Int2(0, int(scrollbar->offset));
-			GUI.DrawText(GUI.default_font, txt, DT_TOP, Color::Black, r2, &r);
+			GUI.DrawText(GUI.default_font, txt, DTF_TOP, Color::Black, r2, &r);
 			scrollbar->Draw();
 		}
 
 		if(label)
 		{
 			r.Top() -= 20;
-			GUI.DrawText(GUI.default_font, label, DT_NOCLIP, Color::Black, r);
+			GUI.DrawText(GUI.default_font, label, 0, Color::Black, r);
 		}
 	}
 	else
@@ -141,7 +141,7 @@ void TextBox::Draw(ControlDrawData* cdd)
 			global_pos.y + real_size.y - padding
 		};
 		Rect area = Rect::Intersect(r, rclip);
-		int draw_flags = (multiline ? DT_LEFT : DT_VCENTER | DT_SINGLELINE);
+		int draw_flags = (multiline ? DTF_LEFT : DTF_VCENTER | DTF_SINGLELINE);
 		GUI.DrawText(GUI.default_font, text, draw_flags, Color::Black, r, &area);
 
 		// carret
@@ -845,7 +845,7 @@ void TextBox::GetCaretPos(const Int2& in_pos, Int2& out_index, Int2& out_pos, ui
 		else if(local_x < offset)
 			local_x = offset;
 
-		GUI.default_font->HitTest(text, real_size_without_pad.x, DT_SINGLELINE | DT_VCENTER, Int2(local_x, 0), index, index2, rect, uv, &font_lines);
+		GUI.default_font->HitTest(text, real_size_without_pad.x, DTF_SINGLELINE | DTF_VCENTER, Int2(local_x, 0), index, index2, rect, uv, &font_lines);
 	}
 	else
 	{
@@ -862,7 +862,7 @@ void TextBox::GetCaretPos(const Int2& in_pos, Int2& out_index, Int2& out_pos, ui
 		if(local_y > real_size_without_pad.y + offsety)
 			local_y = real_size_without_pad.y + offsety;
 
-		GUI.default_font->HitTest(text, real_size_without_pad.x, DT_LEFT, Int2(local_x, local_y), index, index2, rect, uv, &font_lines);
+		GUI.default_font->HitTest(text, real_size_without_pad.x, DTF_LEFT, Int2(local_x, local_y), index, index2, rect, uv, &font_lines);
 	}
 
 	if(uv >= 0.5f)
@@ -932,9 +932,9 @@ Int2 TextBox::IndexToPos(const Int2& index)
 	const Int2 real_size_without_pad = real_size - Int2(padding, padding) * 2;
 	int flags;
 	if(scrollbar)
-		flags = DT_LEFT;
+		flags = DTF_LEFT;
 	else
-		flags = DT_SINGLELINE | DT_VCENTER;
+		flags = DTF_SINGLELINE | DTF_VCENTER;
 	return GUI.default_font->IndexToPos(font_lines, index, text, real_size_without_pad.x, flags);
 }
 
@@ -1022,9 +1022,9 @@ void TextBox::UpdateFontLines()
 		return;
 	int flags;
 	if(multiline)
-		flags = DT_LEFT;
+		flags = DTF_LEFT;
 	else
-		flags = DT_SINGLELINE | DT_VCENTER;
+		flags = DTF_SINGLELINE | DTF_VCENTER;
 
 	bool old_require_scrollbar = require_scrollbar;
 	int size_x = size.x - padding * 2;

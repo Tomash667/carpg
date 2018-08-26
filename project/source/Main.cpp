@@ -369,6 +369,7 @@ void GetCompileTime()
 
 	// read position of header
 	int offset;
+	DWORD tmp;
 	SetFilePointer(file, 0x3C, nullptr, FILE_BEGIN);
 	ReadFile(file, &offset, sizeof(offset), &tmp, nullptr);
 	SetFilePointer(file, offset + 8, nullptr, FILE_BEGIN);

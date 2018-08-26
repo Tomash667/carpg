@@ -685,6 +685,9 @@
     <ClCompile Include="source\game\net\BitStreamFunc.cpp">
       <Filter>3. game\net</Filter>
     </ClCompile>
+    <ClCompile Include="source\core\CriticalSection.cpp">
+      <Filter>1. core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1353,6 +1356,12 @@
     </ClInclude>
     <ClInclude Include="source\game\net\BitStreamFunc.h">
       <Filter>3. game\net</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\WindowsIncludes.h">
+      <Filter>1. core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Key.h">
+      <Filter>2. engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

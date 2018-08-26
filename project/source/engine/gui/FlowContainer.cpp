@@ -147,7 +147,7 @@ void FlowContainer::Draw(ControlDrawData*)
 	Rect rect;
 	Rect clip = Rect::Create(global_pos + Int2(2, 2), Int2(sizex - 2, size.y - 2));
 	int offset = (int)scroll.offset;
-	DWORD flags = (word_warp ? 0 : DT_SINGLELINE) | DT_PARSE_SPECIAL;
+	uint flags = (word_warp ? 0 : DTF_SINGLELINE) | DTF_PARSE_SPECIAL;
 
 	for(FlowItem* fi : items)
 	{

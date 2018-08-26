@@ -32,7 +32,6 @@
 
 //-----------------------------------------------------------------------------
 #include <cassert>
-#include <Windows.h>
 #include <ctime>
 #include <vector>
 #include <list>
@@ -59,18 +58,3 @@ using std::vector;
 using std::list;
 using std::min;
 using std::max;
-
-//-----------------------------------------------------------------------------
-// undef some useless macros
-#undef far
-#undef near
-#undef small
-#undef DrawText
-#undef DialogBox
-#undef IN
-#undef OUT
-#undef ERROR
-
-//-----------------------------------------------------------------------------
-// use rand2
-#pragma deprecated (rand)

@@ -103,7 +103,7 @@ void PickItemDialog::Draw(ControlDrawData*)
 	btClose.Draw();
 
 	Rect r = { global_pos.x + 16, global_pos.y + 16, global_pos.x + size.x - 56, global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, text, DT_CENTER, Color::Black, r);
+	GUI.DrawText(GUI.default_font, text, DTF_CENTER, Color::Black, r);
 
 	flow.Draw();
 	if(get_tooltip)

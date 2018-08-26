@@ -1,5 +1,8 @@
 #include "Pch.h"
 #include "Core.h"
+#include <cstdarg>
+// for lstrlenW
+#include "WindowsIncludes.h"
 
 static const uint FORMAT_STRINGS = 8;
 static const uint FORMAT_LENGTH = 2048;

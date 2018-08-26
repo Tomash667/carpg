@@ -175,7 +175,7 @@ void Inventory::Draw(ControlDrawData*)
 		pos.x + size.x,
 		pos.y + size.y
 	};
-	GUI.DrawText(GUI.fBig, title, DT_CENTER | DT_SINGLELINE, Color::Black, rect, &rect);
+	GUI.DrawText(GUI.fBig, title, DTF_CENTER | DTF_SINGLELINE, Color::Black, rect, &rect);
 
 	if(mode != TRADE_OTHER && mode != LOOT_OTHER)
 	{
@@ -184,7 +184,7 @@ void Inventory::Draw(ControlDrawData*)
 
 		// z³oto
 		rect = Rect::Create(Int2(shift_x, bar_y), Int2(bar_size, 32));
-		GUI.DrawText(GUI.default_font, Format("%d", unit->gold), DT_CENTER | DT_VCENTER, Color::Black, rect);
+		GUI.DrawText(GUI.default_font, Format("%d", unit->gold), DTF_CENTER | DTF_VCENTER, Color::Black, rect);
 
 		// udŸwig
 		rect.Left() = shift_x + bar_size + 10;
@@ -192,7 +192,7 @@ void Inventory::Draw(ControlDrawData*)
 		cstring weight_str = Format(txCarryShort, float(unit->weight) / 10, float(unit->weight_max) / 10);
 		int w = GUI.default_font->LineWidth(weight_str);
 		GUI.DrawText(GUI.default_font, (w > bar_size ? Format("%g/%g", float(unit->weight) / 10, float(unit->weight_max) / 10) : weight_str),
-			DT_CENTER | DT_VCENTER, (load > 1.f ? Color::Red : Color::Black), rect);
+			DTF_CENTER | DTF_VCENTER, (load > 1.f ? Color::Red : Color::Black), rect);
 	}
 
 	// rysuj kratki
@@ -260,7 +260,7 @@ void Inventory::Draw(ControlDrawData*)
 		if(count > 1)
 		{
 			Rect rect3 = Rect::Create(Int2(shift_x + x * 63 + 2, shift_y + y * 63), Int2(64, 63));
-			GUI.DrawText(GUI.default_font, Format("%d", count), DT_BOTTOM, Color::Black, rect3);
+			GUI.DrawText(GUI.default_font, Format("%d", count), DTF_BOTTOM, Color::Black, rect3);
 		}
 	}
 

@@ -51,7 +51,7 @@ void Button::Draw(ControlDrawData*)
 			r.Left() += img_size.x;
 		}
 
-		GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_VCENTER, Color::Black, r, &r);
+		GUI.DrawText(GUI.default_font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
 	}
 	else
 		GUI.DrawItem(custom->tex[real_state], global_pos, size, Color::White, 16);

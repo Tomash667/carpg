@@ -407,7 +407,7 @@ int IGUI::TryCreateFontInternal(Font* font, ID3DXFont* dx_font, int tex_size, in
 
 //=================================================================================================
 // Draw text - rewritten from TFQ
-bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, Color color, const Rect& rect, const Rect* clipping, vector<Hitbox>* hitboxes,
+bool IGUI::DrawText(Font* font, StringOrCstring str, uint flags, Color color, const Rect& rect, const Rect* clipping, vector<Hitbox>* hitboxes,
 	int* hitbox_counter, const vector<TextLine>* lines)
 {
 	assert(font);
@@ -421,8 +421,8 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, Color color, c
 	outline_alpha = current_color.w;
 	const Vec2 scale(1, 1);
 
-	bool outline = (IS_SET(flags, DT_OUTLINE) && font->texOutline);
-	bool parse_special = IS_SET(flags, DT_PARSE_SPECIAL);
+	bool outline = (IS_SET(flags, DTF_OUTLINE) && font->texOutline);
+	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
 	bool bottom_clip = false;
 
 	tCurrent = font->tex;
@@ -452,7 +452,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, Color color, c
 
 #define CALL (this->*call)
 
-	if(!IS_SET(flags, DT_VCENTER | DT_BOTTOM))
+	if(!IS_SET(flags, DTF_VCENTER | DTF_BOTTOM))
 	{
 		int y = rect.Top();
 
@@ -463,9 +463,9 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, Color color, c
 			{
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
-				if(IS_SET(flags, DT_CENTER))
+				if(IS_SET(flags, DTF_CENTER))
 					x = rect.Left() + (width - line_width) / 2;
-				else if(IS_SET(flags, DT_RIGHT))
+				else if(IS_SET(flags, DTF_RIGHT))
 					x = rect.Right() - line_width;
 				else
 					x = rect.Left();
@@ -499,9 +499,9 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, Color color, c
 			{
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
-				if(IS_SET(flags, DT_CENTER))
+				if(IS_SET(flags, DTF_CENTER))
 					x = rect.Left() + (width - it->width) / 2;
-				else if(IS_SET(flags, DT_RIGHT))
+				else if(IS_SET(flags, DTF_RIGHT))
 					x = rect.Right() - it->width;
 				else
 					x = rect.Left();
@@ -547,7 +547,7 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, Color color, c
 
 		// pocz¹tkowa pozycja y
 		int y;
-		if(IS_SET(flags, DT_BOTTOM))
+		if(IS_SET(flags, DTF_BOTTOM))
 			y = rect.Bottom() - lines->size()*font->height;
 		else
 			y = rect.Top() + (rect.SizeY() - int(lines->size())*font->height) / 2;
@@ -556,9 +556,9 @@ bool IGUI::DrawText(Font* font, StringOrCstring str, DWORD flags, Color color, c
 		{
 			// pocz¹tkowa pozycja x w tej linijce
 			int x;
-			if(IS_SET(flags, DT_CENTER))
+			if(IS_SET(flags, DTF_CENTER))
 				x = rect.Left() + (width - it->width) / 2;
-			else if(IS_SET(flags, DT_RIGHT))
+			else if(IS_SET(flags, DTF_RIGHT))
 				x = rect.Right() - it->width;
 			else
 				x = rect.Left();
@@ -2206,7 +2206,7 @@ bool IGUI::NeedCursor()
 }
 
 //=================================================================================================
-bool IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, Color color, const Vec3& pos, Rect* text_rect)
+bool IGUI::DrawText3D(Font* font, StringOrCstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect)
 {
 	assert(font);
 
@@ -2216,7 +2216,7 @@ bool IGUI::DrawText3D(Font* font, StringOrCstring text, DWORD flags, Color color
 
 	Int2 size = font->CalculateSize(text);
 	Rect r = { pt.x - size.x / 2, pt.y - size.y - 4, pt.x + size.x / 2 + 1, pt.y - 4 };
-	DrawText(font, text, flags | DT_NOCLIP, color, r);
+	DrawText(font, text, flags, color, r);
 
 	if(text_rect)
 		*text_rect = r;
@@ -2533,7 +2533,7 @@ void IGUI::DrawNotifications()
 			DrawSprite(n->icon, offset + Int2(8, 8), Color::Alpha(alpha));
 
 		Rect rect = { offset.x + 8 + 64, offset.y + 8, offset.x + box_size.x - 8, offset.y + box_size.y - 8 };
-		DrawText(default_font, n->text, DT_CENTER | DT_VCENTER, Color(0, 0, 0, alpha), rect, &rect);
+		DrawText(default_font, n->text, DTF_CENTER | DTF_VCENTER, Color(0, 0, 0, alpha), rect, &rect);
 	}
 }
 
@@ -2720,8 +2720,8 @@ bool IGUI::DrawText2(DrawTextOptions& options)
 	Vec4 default_color = current_color;
 	outline_alpha = current_color.w;
 
-	bool outline = (IS_SET(options.flags, DT_OUTLINE) && options.font->texOutline);
-	bool parse_special = IS_SET(options.flags, DT_PARSE_SPECIAL);
+	bool outline = (IS_SET(options.flags, DTF_OUTLINE) && options.font->texOutline);
+	bool parse_special = IS_SET(options.flags, DTF_PARSE_SPECIAL);
 	bool bottom_clip = false;
 
 	tCurrent = options.font->tex;
@@ -2751,7 +2751,7 @@ bool IGUI::DrawText2(DrawTextOptions& options)
 
 #define CALL (this->*call)
 
-	if(!IS_SET(options.flags, DT_VCENTER | DT_BOTTOM))
+	if(!IS_SET(options.flags, DTF_VCENTER | DTF_BOTTOM))
 	{
 		int y = options.rect.Top();
 
@@ -2762,9 +2762,9 @@ bool IGUI::DrawText2(DrawTextOptions& options)
 			{
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
-				if(IS_SET(options.flags, DT_CENTER))
+				if(IS_SET(options.flags, DTF_CENTER))
 					x = options.rect.Left() + (width - line_width) / 2;
-				else if(IS_SET(options.flags, DT_RIGHT))
+				else if(IS_SET(options.flags, DTF_RIGHT))
 					x = options.rect.Right() - line_width;
 				else
 					x = options.rect.Left();
@@ -2804,9 +2804,9 @@ bool IGUI::DrawText2(DrawTextOptions& options)
 
 				// pocz¹tkowa pozycja x w tej linijce
 				int x;
-				if(IS_SET(options.flags, DT_CENTER))
+				if(IS_SET(options.flags, DTF_CENTER))
 					x = options.rect.Left() + (width - line_width) / 2;
-				else if(IS_SET(options.flags, DT_RIGHT))
+				else if(IS_SET(options.flags, DTF_RIGHT))
 					x = options.rect.Right() - line_width;
 				else
 					x = options.rect.Left();
@@ -2856,7 +2856,7 @@ bool IGUI::DrawText2(DrawTextOptions& options)
 
 		// pocz¹tkowa pozycja y
 		int y;
-		if(IS_SET(options.flags, DT_BOTTOM))
+		if(IS_SET(options.flags, DTF_BOTTOM))
 			y = options.rect.Bottom() - options.lines->size()*options.font->height;
 		else
 			y = options.rect.Top() + (options.rect.SizeY() - int(options.lines->size())*options.font->height) / 2;
@@ -2867,9 +2867,9 @@ bool IGUI::DrawText2(DrawTextOptions& options)
 
 			// pocz¹tkowa pozycja x w tej linijce
 			int x;
-			if(IS_SET(options.flags, DT_CENTER))
+			if(IS_SET(options.flags, DTF_CENTER))
 				x = options.rect.Left() + (width - line.width) / 2;
-			else if(IS_SET(options.flags, DT_RIGHT))
+			else if(IS_SET(options.flags, DTF_RIGHT))
 				x = options.rect.Right() - line.width;
 			else
 				x = options.rect.Left();

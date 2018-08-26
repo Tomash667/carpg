@@ -90,7 +90,7 @@ void TabControl::Draw(ControlDrawData*)
 
 		GUI.DrawArea(tab->rect, *button);
 		rect = Rect(tab->rect, layout->tabctrl.padding);
-		GUI.DrawText(layout->tabctrl.font, tab->text, DT_LEFT | DT_VCENTER, color, rect);
+		GUI.DrawText(layout->tabctrl.font, tab->text, DTF_LEFT | DTF_VCENTER, color, rect);
 		GUI.DrawArea(tab->close_rect, *close);
 
 		if(tab->have_changes)

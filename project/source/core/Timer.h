@@ -1,8 +1,4 @@
-// czasomierz
 #pragma once
-
-//-----------------------------------------------------------------------------
-typedef unsigned int uint;
 
 //-----------------------------------------------------------------------------
 class Timer
@@ -14,12 +10,12 @@ public:
 	float Tick();
 	void Reset();
 
-	void GetTime(LONGLONG& time) const { time = last_time; }
+	void GetTime(int64& time) const { time = last_time; }
 	double GetTicksPerSec() const { return ticks_per_sec; }
 	bool IsStarted() const { return started; }
 
 private:
 	double ticks_per_sec;
-	LONGLONG last_time;
+	int64 last_time;
 	bool started;
 };

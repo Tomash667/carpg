@@ -28,7 +28,7 @@ void DialogBox::Draw(ControlDrawData*)
 	}
 
 	Rect r = { pos.x + 12, pos.y + 12, pos.x + size.x - 12, pos.y + size.y - 12 };
-	GUI.DrawText(GUI.default_font, text, DT_CENTER, Color::Black, r);
+	GUI.DrawText(GUI.default_font, text, DTF_CENTER, Color::Black, r);
 }
 
 //=================================================================================================
@@ -129,7 +129,7 @@ void DialogWithImage::Draw(ControlDrawData*)
 	}
 
 	Rect r = text_rect + pos;
-	GUI.DrawText(GUI.default_font, text, DT_CENTER, Color::Black, r);
+	GUI.DrawText(GUI.default_font, text, DTF_CENTER, Color::Black, r);
 
 	GUI.DrawSprite(img, img_pos + pos);
 }

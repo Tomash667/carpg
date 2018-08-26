@@ -97,7 +97,7 @@ void Layout::LoadDefault()
 	label->font = def_font;
 	label->color = Color::Black;
 	label->padding = Int2(0, 0);
-	label->align = DT_LEFT;
+	label->align = DTF_LEFT;
 
 	t = tex_mgr.GetLoadedRaw("box.png");
 	check_box_group.background = AreaLayout(t, 8, 32);

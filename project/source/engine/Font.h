@@ -4,10 +4,19 @@
 #undef GetCharWidth
 
 //-----------------------------------------------------------------------------
-// W³asne flagi do rysowania tekstu
-// aktualnie obs³ugiwane DT_LEFT, DT_CENTER, DT_RIGHT, DT_TOP, DT_VCENTER, DT_BOTTOM, DT_SINGLELINE oraz te poni¿ej
-#define DT_PARSE_SPECIAL (1<<30) // parse $ to set color/hitbox
-#define DT_OUTLINE (1<<31) // draw outline around text
+// Draw text flags
+enum DrawTextFlag
+{
+	DTF_LEFT = 0,
+	DTF_TOP = 0,
+	DTF_CENTER = 1 << 0,
+	DTF_RIGHT = 1 << 1,
+	DTF_VCENTER = 1 << 2,
+	DTF_BOTTOM = 1 << 3,
+	DTF_SINGLELINE = 1 << 4,
+	DTF_PARSE_SPECIAL = 1 << 5, // parse $ to set color/hitbox
+	DTF_OUTLINE = 1 << 6 // draw outline around text
+};
 
 //-----------------------------------------------------------------------------
 // Opis znaku czcionki
@@ -94,7 +103,7 @@ struct Font
 	Int2 CalculateSize(StringOrCstring str, int limit_width = INT_MAX) const;
 	Int2 CalculateSizeWrap(StringOrCstring str, const Int2& max_size, int border = 32) const;
 	// split text between lines
-	bool SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_out_index, cstring text, uint text_end, DWORD flags, int width) const;
+	bool SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_out_index, cstring text, uint text_end, uint flags, int width) const;
 
 	static bool ParseGroupIndex(cstring text, uint line_end, uint& i, int& index, int& index2);
 	bool HitTest(StringOrCstring str, int limit_width, int flags, const Int2& pos, uint& index, Int2& index2, Rect& rect, float& uv,

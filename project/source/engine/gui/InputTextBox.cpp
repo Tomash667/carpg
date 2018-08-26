@@ -36,7 +36,7 @@ void InputTextBox::Draw(ControlDrawData*)
 
 	// input
 	Rect r2 = { inputbox_pos.x + 4, inputbox_pos.y, inputbox_pos.x + inputbox_size.x - 4, inputbox_pos.y + inputbox_size.y };
-	GUI.DrawText(GUI.default_font, caret_blink >= 0.f ? Format("%s|", input.c_str()) : input, DT_LEFT | DT_VCENTER, Color::Black, r2, &r2);
+	GUI.DrawText(GUI.default_font, caret_blink >= 0.f ? Format("%s|", input.c_str()) : input, DTF_LEFT | DTF_VCENTER, Color::Black, r2, &r2);
 
 	// scrollbar
 	scrollbar.Draw();

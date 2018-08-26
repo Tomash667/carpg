@@ -328,7 +328,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		break;
 	case Progress::BoughtPotion:
 		// kupno miksturki
-		// wywo³ywane z DT_IF_SPECAL q_magowie_kup
+		// wywo³ywane z DTF_IF_SPECAL q_magowie_kup
 		{
 			if(prog != Progress::BoughtPotion)
 			{

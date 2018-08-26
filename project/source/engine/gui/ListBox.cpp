@@ -34,7 +34,7 @@ void ListBox::Draw(ControlDrawData*)
 		if(selected != -1)
 		{
 			Rect rc = { global_pos.x + 2, global_pos.y + 2, global_pos.x + size.x - 12, global_pos.y + size.y - 2 };
-			GUI.DrawText(GUI.default_font, items[selected]->ToString(), DT_SINGLELINE, Color::Black, rc, &rc);
+			GUI.DrawText(GUI.default_font, items[selected]->ToString(), DTF_SINGLELINE, Color::Black, rc, &rc);
 		}
 
 		// obrazek
@@ -77,7 +77,7 @@ void ListBox::Draw(ControlDrawData*)
 			}
 			else
 				r.Left() = orig_x;
-			if(!GUI.DrawText(GUI.default_font, e->ToString(), DT_SINGLELINE, Color::Black, r, &rc))
+			if(!GUI.DrawText(GUI.default_font, e->ToString(), DTF_SINGLELINE, Color::Black, r, &rc))
 				break;
 			r.Top() += item_height;
 		}

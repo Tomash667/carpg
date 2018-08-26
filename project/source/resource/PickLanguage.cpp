@@ -1,5 +1,5 @@
 #include "Pch.h"
-#include "Core.h"
+#include "GameCore.h"
 #include "Language.h"
 #pragma warning (disable: 4005)
 #include "resource1.h"

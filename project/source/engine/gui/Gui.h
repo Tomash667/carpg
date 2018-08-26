@@ -157,7 +157,7 @@ public:
 	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
 	zwraca false je¿eli by³ clipping od do³u (nie kontuuj tekstu w flow)
-	Znak $ oznacza jak¹œ specjaln¹ czynnoœæ (o ile jest ustawiona flaga DT_PARSE_SPECIAL):
+	Znak $ oznacza jak¹œ specjaln¹ czynnoœæ (o ile jest ustawiona flaga DTF_PARSE_SPECIAL):
 		$$ - wstaw $
 		$c? - ustaw kolor (r-czerwony, g-zielony, y-¿ó³ty, b-czarny, w-bia³y, -przywróc domyœlny)
 		$h+ - informacja o hitboxie
@@ -165,7 +165,7 @@ public:
 		/$b - przerwa w tekœcie
 		/$n - nie przerywaj tekstu a¿ do nastêpnego takiego symbolu (np $njakiœ tekst$n - ten tekst nigdy nie zostanie rozdzielony pomiêdzy dwie linijki)
 	*/
-	bool DrawText(Font* font, StringOrCstring str, DWORD flags, Color color, const Rect& rect, const Rect* clipping = nullptr,
+	bool DrawText(Font* font, StringOrCstring str, uint flags, Color color, const Rect& rect, const Rect* clipping = nullptr,
 		vector<Hitbox>* hitboxes = nullptr, int* hitbox_counter = nullptr, const vector<TextLine>* lines = nullptr);
 	void Add(Control* ctrl);
 	void DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, Color color, int corner = 16, int size = 64, const Box2d* clip_rect = nullptr);
@@ -197,7 +197,7 @@ public:
 	void LineBegin();
 	void LineEnd();
 	bool NeedCursor();
-	bool DrawText3D(Font* font, StringOrCstring text, DWORD flags, Color color, const Vec3& pos, Rect* text_rect = nullptr);
+	bool DrawText3D(Font* font, StringOrCstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect = nullptr);
 	bool To2dPoint(const Vec3& pos, Int2& pt);
 	static bool Intersect(vector<Hitbox>& hitboxes, const Int2& pt, int* index, int* index2 = nullptr);
 	void DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, Color color = Color::White);
@@ -226,7 +226,7 @@ public:
 	{
 		Font* font;
 		cstring str;
-		DWORD flags;
+		uint flags;
 		Color color;
 		Rect rect;
 		const Rect* clipping;
@@ -238,7 +238,7 @@ public:
 		uint lines_end;
 		uint str_length;
 
-		DrawTextOptions(Font* font, StringOrCstring str) : font(font), str(str.c_str()), rect(rect), flags(DT_LEFT), color(Color::Black), clipping(nullptr),
+		DrawTextOptions(Font* font, StringOrCstring str) : font(font), str(str.c_str()), rect(rect), flags(DTF_LEFT), color(Color::Black), clipping(nullptr),
 			hitboxes(nullptr), hitbox_counter(nullptr), lines(nullptr), scale(Vec2::One), lines_start(0), lines_end(UINT_MAX), str_length(str.length())
 		{
 		}

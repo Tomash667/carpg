@@ -143,6 +143,7 @@
     <ClInclude Include="source\core\Text.h" />
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
+    <ClInclude Include="source\core\WindowsIncludes.h" />
     <ClInclude Include="source\engine\DirectX.h" />
     <ClInclude Include="source\engine\FileFormat.h" />
     <ClInclude Include="source\engine\Font.h" />
@@ -184,6 +185,7 @@
     <ClInclude Include="source\engine\gui\TooltipController.h" />
     <ClInclude Include="source\engine\gui\TreeView.h" />
     <ClInclude Include="source\engine\gui\Window.h" />
+    <ClInclude Include="source\engine\Key.h" />
     <ClInclude Include="source\engine\Mesh.h" />
     <ClInclude Include="source\engine\Engine.h" />
     <ClInclude Include="source\engine\KeyStates.h" />
@@ -359,6 +361,7 @@
     <ClCompile Include="source\core\Config.cpp" />
     <ClCompile Include="source\core\Containers.cpp" />
     <ClCompile Include="source\core\Crc.cpp" />
+    <ClCompile Include="source\core\CriticalSection.cpp" />
     <ClCompile Include="source\core\File.cpp" />
     <ClCompile Include="source\core\Logger.cpp" />
     <ClCompile Include="source\core\Perlin.cpp" />

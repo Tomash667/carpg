@@ -184,7 +184,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		// tekst
 		cstring text = Format(txGameTimeout, game.pc->kills, game.total_kills - game.pc->kills);
 		Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
-		GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_BOTTOM, color, rect);
+		GUI.DrawText(GUI.default_font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
 	}
 
 	if(mp_box->visible)

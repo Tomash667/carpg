@@ -97,12 +97,12 @@ void InsideBuilding::Save(HANDLE file, bool local)
 		ile = ctx.pes->size();
 		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		for(vector<ParticleEmitter*>::iterator it = ctx.pes->begin(), end = ctx.pes->end(); it != end; ++it)
-			(*it)->Save(file);
+			(*it)->Save(f);
 
 		ile = ctx.tpes->size();
 		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 		for(vector<TrailParticleEmitter*>::iterator it = ctx.tpes->begin(), end = ctx.tpes->end(); it != end; ++it)
-			(*it)->Save(file);
+			(*it)->Save(f);
 
 		ile = ctx.explos->size();
 		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
@@ -223,7 +223,7 @@ void InsideBuilding::Load(HANDLE file, bool local)
 		{
 			*it = new ParticleEmitter;
 			ParticleEmitter::AddRefid(*it);
-			(*it)->Load(file);
+			(*it)->Load(f);
 		}
 
 		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
@@ -232,7 +232,7 @@ void InsideBuilding::Load(HANDLE file, bool local)
 		{
 			*it = new TrailParticleEmitter;
 			TrailParticleEmitter::AddRefid(*it);
-			(*it)->Load(file);
+			(*it)->Load(f);
 		}
 
 		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);

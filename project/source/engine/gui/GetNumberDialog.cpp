@@ -22,14 +22,14 @@ void GetNumberDialog::Draw(ControlDrawData* cdd/* =nullptr */)
 		bts[i].Draw();
 
 	Rect r = { global_pos.x + 16,global_pos.y + 16,global_pos.x + size.x,global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, text, DT_CENTER, Color::Black, r);
+	GUI.DrawText(GUI.default_font, text, DTF_CENTER, Color::Black, r);
 
 	textBox.Draw();
 	scrollbar.Draw();
 
 	Rect r2 = { global_pos.x + 16,global_pos.y + 124,global_pos.x + size.x - 16,global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, Format("%d", min_value), DT_LEFT, Color::Black, r2);
-	GUI.DrawText(GUI.default_font, Format("%d", max_value), DT_RIGHT, Color::Black, r2);
+	GUI.DrawText(GUI.default_font, Format("%d", min_value), DTF_LEFT, Color::Black, r2);
+	GUI.DrawText(GUI.default_font, Format("%d", max_value), DTF_RIGHT, Color::Black, r2);
 }
 
 //=================================================================================================

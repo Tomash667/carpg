@@ -14,6 +14,9 @@ const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1024, 768);
 Engine* Engine::engine;
 KeyStates Key;
 extern string g_system_dir;
+#ifdef _DEBUG
+HRESULT _d_hr;
+#endif
 
 //=================================================================================================
 Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), phy_config(nullptr),
@@ -531,7 +534,7 @@ void Engine::GatherParams(D3DPRESENT_PARAMETERS& d3dpp)
 
 //=================================================================================================
 // Handle windows events
-LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+long Engine::HandleEvent(HWND in_hwnd, uint msg, uint wParam, long lParam)
 {
 	switch(msg)
 	{
@@ -622,7 +625,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 //=================================================================================================
 // Convert message to virtual key
-bool Engine::MsgToKey(UINT msg, WPARAM wParam, byte& key, int& result)
+bool Engine::MsgToKey(uint msg, uint wParam, byte& key, int& result)
 {
 	bool down = false;
 

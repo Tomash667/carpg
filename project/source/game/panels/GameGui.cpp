@@ -269,14 +269,14 @@ void GameGui::DrawFront()
 		{
 			Vec3 text_pos = game.pc_data.before_player_ptr.chest->pos;
 			text_pos.y += 0.75f;
-			GUI.DrawText3D(GUI.default_font, txChest, DT_OUTLINE, Color::White, text_pos);
+			GUI.DrawText3D(GUI.default_font, txChest, DTF_OUTLINE, Color::White, text_pos);
 		}
 		break;
 	case BP_DOOR:
 		{
 			Vec3 text_pos = game.pc_data.before_player_ptr.door->pos;
 			text_pos.y += 1.75f;
-			GUI.DrawText3D(GUI.default_font, game.pc_data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, DT_OUTLINE, Color::White, text_pos);
+			GUI.DrawText3D(GUI.default_font, game.pc_data.before_player_ptr.door->locked == LOCK_NONE ? txDoor : txDoorLocked, DTF_OUTLINE, Color::White, text_pos);
 		}
 		break;
 	case BP_ITEM:
@@ -294,7 +294,7 @@ void GameGui::DrawFront()
 				text = item.item->name.c_str();
 			else
 				text = Format("%s (%d)", item.item->name.c_str(), item.count);
-			GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, Color::White, text_pos);
+			GUI.DrawText3D(GUI.default_font, text, DTF_OUTLINE, Color::White, text_pos);
 		}
 		break;
 	case BP_USABLE:
@@ -302,7 +302,7 @@ void GameGui::DrawFront()
 			Usable& u = *game.pc_data.before_player_ptr.usable;
 			Vec3 text_pos = u.pos;
 			text_pos.y += u.GetMesh()->head.radius;
-			GUI.DrawText3D(GUI.default_font, u.base->name, DT_OUTLINE, Color::White, text_pos);
+			GUI.DrawText3D(GUI.default_font, u.base->name, DTF_OUTLINE, Color::White, text_pos);
 		}
 		break;
 	}
@@ -360,7 +360,7 @@ void GameGui::DrawFront()
 			scrollbar.Draw();
 		}
 		else if(game.dialog_context.dialog_text)
-			GUI.DrawText(GUI.default_font, game.dialog_context.dialog_text, DT_CENTER | DT_VCENTER, Color::Black, r);
+			GUI.DrawText(GUI.default_font, game.dialog_context.dialog_text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 	}
 
 	// get buffs
@@ -447,7 +447,7 @@ void GameGui::DrawFront()
 		if(action.charges > 1)
 		{
 			Rect r(int(wnd_scale * (256 + pad * 2)), int(GUI.wnd_size.y - (pad * 2) * wnd_scale) - 12, 0, 0);
-			GUI.DrawText(GUI.fSmall, Format("%d/%d", pc.action_charges, action.charges), DT_SINGLELINE, Color::Black, r);
+			GUI.DrawText(GUI.fSmall, Format("%d/%d", pc.action_charges, action.charges), DTF_SINGLELINE, Color::Black, r);
 		}
 	}
 
@@ -522,7 +522,7 @@ void GameGui::DrawBack()
 			debug_info_size = s;
 		GUI.DrawItem(tDialog, Int2(0, 0), debug_info_size + Int2(24, 24), Color::Alpha(128));
 		Rect r = { 12, 12, 12 + s.x, 12 + s.y };
-		GUI.DrawText(GUI.default_font, text, DT_NOCLIP, Color::Black, r);
+		GUI.DrawText(GUI.default_font, text, 0, Color::Black, r);
 	}
 
 	// profiler
@@ -533,7 +533,7 @@ void GameGui::DrawBack()
 		profiler_size = Int2::Max(block_size, profiler_size);
 		GUI.DrawItem(tDialog, Int2(GUI.wnd_size.x - profiler_size.x, 0), profiler_size, Color::Alpha(128));
 		Rect rect = { GUI.wnd_size.x - profiler_size.x + 12, 12, GUI.wnd_size.x, GUI.wnd_size.y };
-		GUI.DrawText(GUI.default_font, str, DT_LEFT, Color::Black, rect);
+		GUI.DrawText(GUI.default_font, str, DTF_LEFT, Color::Black, rect);
 	}
 
 	// tooltip
@@ -572,7 +572,7 @@ void GameGui::DrawDeathScreen()
 			cstring text = Format(game.death_solo ? txDeathAlone : txDeath, game.pc->kills, game.total_kills - game.pc->kills);
 			cstring text2 = Format("%s\n\n%s", text, game.death_screen == 3 ? txPressEsc : "\n");
 			Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
-			GUI.DrawText(GUI.default_font, text2, DT_CENTER | DT_BOTTOM, color, rect);
+			GUI.DrawText(GUI.default_font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
 		}
 	}
 }
@@ -596,7 +596,7 @@ void GameGui::DrawEndOfGameScreen()
 	cstring text = Format(txGameTimeout, game.pc->kills, game.total_kills - game.pc->kills);
 	cstring text2 = Format("%s\n\n%s", text, game.death_fade >= 1.f ? txPressEsc : "\n");
 	Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
-	GUI.DrawText(GUI.default_font, text2, DT_CENTER | DT_BOTTOM, color, rect);
+	GUI.DrawText(GUI.default_font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
 }
 
 //=================================================================================================
@@ -667,7 +667,7 @@ void GameGui::DrawSpeechBubbles()
 
 		Rect rect = Rect::Create(Int2(it.pt.x - sb.size.x / 2, it.pt.y - sb.size.y / 2), sb.size);
 		GUI.DrawItem(tBubble, rect.LeftTop(), sb.size, a1);
-		GUI.DrawText(GUI.fSmall, sb.text, DT_CENTER | DT_VCENTER, a2, rect);
+		GUI.DrawText(GUI.fSmall, sb.text, DTF_CENTER | DTF_VCENTER, a2, rect);
 	}
 }
 
@@ -687,7 +687,7 @@ void GameGui::DrawUnitInfo(cstring text, Unit& unit, const Vec3& pos, int alpha)
 
 	// text
 	Rect r;
-	if(GUI.DrawText3D(GUI.default_font, text, DT_OUTLINE, text_color, pos, &r))
+	if(GUI.DrawText3D(GUI.default_font, text, DTF_OUTLINE, text_color, pos, &r))
 	{
 		float hpp;
 		if(!unit.IsAlive() && !unit.IsFollower())

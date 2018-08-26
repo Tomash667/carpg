@@ -57,9 +57,9 @@ void Journal::Draw(ControlDrawData* /*cdd*/)
 
 	// numery stron
 	int pages = texts.back().x + 1;
-	GUI.DrawText(GUI.default_font, Format("%d/%d", x1 + 1, pages), DT_BOTTOM | DT_CENTER, Color::Black, rect);
+	GUI.DrawText(GUI.default_font, Format("%d/%d", x1 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect);
 	if(x2 != pages)
-		GUI.DrawText(GUI.default_font, Format("%d/%d", x2 + 1, pages), DT_BOTTOM | DT_CENTER, Color::Black, rect2);
+		GUI.DrawText(GUI.default_font, Format("%d/%d", x2 + 1, pages), DTF_BOTTOM | DTF_CENTER, Color::Black, rect2);
 
 	// strza³ki 32, 243
 	if(page != 0)

@@ -110,8 +110,8 @@ private:
 	void Cleanup();
 	void DoTick(bool update_game);
 	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);
-	LRESULT HandleEvent(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	bool MsgToKey(UINT msg, WPARAM wParam, byte& key, int& result);
+	long HandleEvent(HWND hwnd, uint msg, uint wParam, long lParam);
+	bool MsgToKey(uint msg, uint wParam, byte& key, int& result);
 	void InitPhysics();
 	void InitRender();
 	void InitWindow(StartupOptions& options);

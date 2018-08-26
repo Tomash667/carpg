@@ -70,7 +70,7 @@ void CreateServerPanel::Draw(ControlDrawData*)
 
 	// tekst
 	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
-	GUI.DrawText(GUI.fBig, txCreateServer, DT_TOP | DT_CENTER, Color::Black, r);
+	GUI.DrawText(GUI.fBig, txCreateServer, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// reszta
 	cont.Draw();

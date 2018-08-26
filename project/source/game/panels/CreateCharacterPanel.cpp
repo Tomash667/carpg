@@ -225,7 +225,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 	// top text
 	Rect rect0 = { 12 + pos.x, 12 + pos.y, pos.x + size.x - 12, 12 + pos.y + 72 };
-	GUI.DrawText(GUI.fBig, txCharacterCreation, DT_NOCLIP | DT_CENTER, Color::Black, rect0);
+	GUI.DrawText(GUI.fBig, txCharacterCreation, DTF_CENTER, Color::Black, rect0);
 
 	// character
 	GUI.DrawSprite(game->tChar, Int2(pos.x + 228, pos.y + 64));
@@ -264,7 +264,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 				if(fi.section)
 				{
 					r.Bottom() = r.Top() + SECTION_H;
-					if(!GUI.DrawText(GUI.fBig, item_text, DT_SINGLELINE, Color::Black, r, &rect))
+					if(!GUI.DrawText(GUI.fBig, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
 						break;
 				}
 				else
@@ -276,7 +276,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 						GUI.DrawSprite2(tKlasaCecha, mat, &part, &rect, Color::White);
 					}
 					r.Bottom() = r.Top() + VALUE_H;
-					if(!GUI.DrawText(GUI.default_font, item_text, DT_SINGLELINE, Color::Black, r, &rect))
+					if(!GUI.DrawText(GUI.default_font, item_text, DTF_SINGLELINE, Color::Black, r, &rect))
 						break;
 				}
 			}
@@ -301,7 +301,7 @@ void CreateCharacterPanel::Draw(ControlDrawData*)
 
 			// right text "Perks: X/Y"
 			Rect r2 = { global_pos.x + size.x - 216, global_pos.y + 310, global_pos.x + size.x - 16, global_pos.y + 360 };
-			GUI.DrawText(GUI.default_font, Format(txPerkPoints, cc.perks, cc.perks_max), DT_RIGHT, Color::Black, r2);
+			GUI.DrawText(GUI.default_font, Format(txPerkPoints, cc.perks, cc.perks_max), DTF_RIGHT, Color::Black, r2);
 
 			tooltip.Draw();
 		}

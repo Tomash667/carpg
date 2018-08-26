@@ -637,13 +637,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							s += str;
 							s += "\n";
 						}
-
-						HANDLE file = CreateFile("commands.txt", GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-						if(file)
-						{
-							WriteFile(file, s.c_str(), s.length(), &tmp, nullptr);
-							CloseHandle(file);
-						}
+						
+						TextWriter f("commands.txt");
+						f << s;
 					}
 					break;
 				case CMD_HELP:

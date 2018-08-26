@@ -417,7 +417,7 @@ void TreeView::Draw(TreeNode* node)
 				global_pos.x + size.x,
 				global_pos.y + item_height + offsety
 			};
-			GUI.DrawText(layout->tree_view.font, node->text, DT_LEFT | DT_VCENTER | DT_SINGLELINE, layout->tree_view.font_color, r, &Rect(clip_rect));
+			GUI.DrawText(layout->tree_view.font, node->text, DTF_LEFT | DTF_VCENTER | DTF_SINGLELINE, layout->tree_view.font_color, r, &Rect(clip_rect));
 		}
 	}
 

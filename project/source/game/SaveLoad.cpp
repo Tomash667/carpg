@@ -544,12 +544,12 @@ void Game::SaveGame(HANDLE file)
 		count = local_ctx.pes->size();
 		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
 		for(vector<ParticleEmitter*>::iterator it = local_ctx.pes->begin(), end = local_ctx.pes->end(); it != end; ++it)
-			(*it)->Save(file);
+			(*it)->Save(f);
 
 		count = local_ctx.tpes->size();
 		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
 		for(vector<TrailParticleEmitter*>::iterator it = local_ctx.tpes->begin(), end = local_ctx.tpes->end(); it != end; ++it)
-			(*it)->Save(file);
+			(*it)->Save(f);
 
 		// wybuchy
 		count = local_ctx.explos->size();
@@ -1193,7 +1193,7 @@ void Game::LoadGame(HANDLE file)
 		{
 			*it = new ParticleEmitter;
 			ParticleEmitter::AddRefid(*it);
-			(*it)->Load(file);
+			(*it)->Load(f);
 		}
 
 		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
@@ -1202,7 +1202,7 @@ void Game::LoadGame(HANDLE file)
 		{
 			*it = new TrailParticleEmitter;
 			TrailParticleEmitter::AddRefid(*it);
-			(*it)->Load(file);
+			(*it)->Load(f);
 		}
 
 		// wybuchy

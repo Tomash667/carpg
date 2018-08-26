@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Core.h"
 #ifdef _DEBUG
+#include "WindowsIncludes.h"
 #define IN
 #define OUT
 #pragma warning(push)

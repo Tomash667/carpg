@@ -23,7 +23,7 @@ void MenuList::Draw(ControlDrawData*)
 	Rect rect = { global_pos.x + 5, global_pos.y + 5, global_pos.x + size.x - 5, global_pos.y + 25 };
 	for(GuiElement* e : items)
 	{
-		GUI.DrawText(GUI.default_font, e->ToString(), DT_SINGLELINE, Color::Black, rect, &rect);
+		GUI.DrawText(GUI.default_font, e->ToString(), DTF_SINGLELINE, Color::Black, rect, &rect);
 		rect.Top() += 20;
 		rect.Bottom() += 20;
 	}

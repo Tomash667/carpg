@@ -91,7 +91,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		{
 			Int2 pt(Convert(text.pos));
 			Rect rect = { pt.x - text.size.x / 2, pt.y - text.size.y / 2, pt.x + text.size.x / 2, pt.y + text.size.y / 2 };
-			GUI.DrawText(GUI.default_font, text.text, DT_SINGLELINE, Color::Black, rect);
+			GUI.DrawText(GUI.default_font, text.text, DTF_SINGLELINE, Color::Black, rect);
 		}
 
 		// linie do tekstów
@@ -109,7 +109,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 
 	// nazwa lokacji
 	Rect rect = { 0,0,GUI.wnd_size.x - 8,GUI.wnd_size.y - 8 };
-	GUI.DrawText(GUI.default_font, game.GetCurrentLocationText(), DT_RIGHT | DT_OUTLINE, Color(255, 0, 0, 222), rect);
+	GUI.DrawText(GUI.default_font, game.GetCurrentLocationText(), DTF_RIGHT | DTF_OUTLINE, Color(255, 0, 0, 222), rect);
 }
 
 //=================================================================================================

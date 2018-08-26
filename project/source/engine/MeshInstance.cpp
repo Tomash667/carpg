@@ -636,59 +636,44 @@ float MeshInstance::Group::GetBlendT() const
 }
 
 //=================================================================================================
-void MeshInstance::Save(HANDLE file)
+void MeshInstance::Save(FileWriter& f)
 {
-	WriteFile(file, &frame_end_info, sizeof(frame_end_info), &tmp, nullptr);
-	WriteFile(file, &frame_end_info2, sizeof(frame_end_info2), &tmp, nullptr);
+	f << frame_end_info;
+	f << frame_end_info2;
 
-	for(vector<Group>::iterator it = groups.begin(), end = groups.end(); it != end; ++it)
+	for(Group& group : groups)
 	{
-		WriteFile(file, &it->time, sizeof(it->time), &tmp, nullptr);
-		WriteFile(file, &it->speed, sizeof(it->speed), &tmp, nullptr);
-		// nie zapisuj blendingu
-		int state = it->state;
-		state &= ~FLAG_BLENDING;
-		WriteFile(file, &state, sizeof(state), &tmp, nullptr);
-		WriteFile(file, &it->prio, sizeof(it->prio), &tmp, nullptr);
-		WriteFile(file, &it->used_group, sizeof(it->used_group), &tmp, nullptr);
-		if(it->anim)
-		{
-			byte len = (byte)it->anim->name.length();
-			WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-			WriteFile(file, it->anim->name.c_str(), len, &tmp, nullptr);
-		}
+		f << group.time;
+		f << group.speed;
+		f << (group.state & ~FLAG_BLENDING); // don't save blending
+		f << group.prio;
+		f << group.used_group;
+		if(group.anim)
+			f << group.anim->name;
 		else
-		{
-			byte len = 0;
-			WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		}
+			f.Write0();
 	}
 }
 
 //=================================================================================================
-void MeshInstance::Load(HANDLE file)
+void MeshInstance::Load(FileReader& f)
 {
-	ReadFile(file, &frame_end_info, sizeof(frame_end_info), &tmp, nullptr);
-	ReadFile(file, &frame_end_info2, sizeof(frame_end_info2), &tmp, nullptr);
+	f >> frame_end_info;
+	f >> frame_end_info2;
 
-	for(vector<Group>::iterator it = groups.begin(), end = groups.end(); it != end; ++it)
+	for(Group& group : groups)
 	{
-		ReadFile(file, &it->time, sizeof(it->time), &tmp, nullptr);
-		ReadFile(file, &it->speed, sizeof(it->speed), &tmp, nullptr);
-		it->blend_time = 0.f;
-		ReadFile(file, &it->state, sizeof(it->state), &tmp, nullptr);
-		ReadFile(file, &it->prio, sizeof(it->prio), &tmp, nullptr);
-		ReadFile(file, &it->used_group, sizeof(it->used_group), &tmp, nullptr);
-		byte len;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		if(len)
-		{
-			BUF[len] = 0;
-			ReadFile(file, BUF, len, &tmp, nullptr);
-			it->anim = mesh->GetAnimation(BUF);
-		}
+		f >> group.time;
+		f >> group.speed;
+		group.blend_time = 0.f;
+		f >> group.state;
+		f >> group.prio;
+		f >> group.used_group;
+		const string& anim_name = f.ReadString1();
+		if(anim_name.empty())
+			group.anim = nullptr;
 		else
-			it->anim = nullptr;
+			group.anim = mesh->GetAnimation(anim_name.c_str());
 	}
 
 	need_update = true;

@@ -3,6 +3,7 @@
 #include "SoundManager.h"
 #include "StartupOptions.h"
 #include "ResourceManager.h"
+#include "WindowsIncludes.h"
 #include <fmod.hpp>
 
 //=================================================================================================

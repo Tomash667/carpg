@@ -92,7 +92,7 @@ void MenuStrip::Draw(ControlDrawData*)
 		else
 			color = layout->menustrip.font_color;
 		r = Rect(area, layout->menustrip.item_padding);
-		GUI.DrawText(layout->menustrip.font, item.text, DT_LEFT, color, r);
+		GUI.DrawText(layout->menustrip.font, item.text, DTF_LEFT, color, r);
 
 		area += Vec2(0, offset);
 	}

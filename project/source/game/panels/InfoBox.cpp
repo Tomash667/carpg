@@ -22,7 +22,7 @@ void InfoBox::Draw(ControlDrawData*)
 
 	// tekst
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_VCENTER, Color::Black, r);
+	GUI.DrawText(GUI.default_font, text, DTF_CENTER | DTF_VCENTER, Color::Black, r);
 }
 
 //=================================================================================================

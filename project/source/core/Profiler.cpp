@@ -5,12 +5,12 @@
 struct Profiler::Entry
 {
 	cstring name;
-	LONGLONG tick, end;
+	int64 tick, end;
 	float percent;
 	int frames;
 	vector<Entry*> e;
 
-	void UpdatePercent(LONGLONG total);
+	void UpdatePercent(int64 total);
 	void Merge(Entry* e2);
 	void Free();
 	void Delete();
@@ -57,7 +57,7 @@ void Profiler::End()
 	timer.GetTime(e->end);
 
 	// update percentage
-	LONGLONG total = e->end - e->tick;
+	int64 total = e->end - e->tick;
 	e->UpdatePercent(total);
 
 	// merge and print
@@ -115,7 +115,7 @@ void Profiler::Print(Entry* e, int tab)
 		Print(*it, tab + 1);
 }
 
-void Profiler::Entry::UpdatePercent(LONGLONG total)
+void Profiler::Entry::UpdatePercent(int64 total)
 {
 	percent = 100.f*(end - tick) / total;
 	frames = 1;

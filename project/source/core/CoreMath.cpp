@@ -1,9 +1,6 @@
 #include "Pch.h"
 #include "Core.h"
 
-#ifdef _DEBUG
-HRESULT _d_hr;
-#endif
 RNG _RNG;
 
 #define FLOAT_ALMOST_ZERO(F) ((absolute_cast<unsigned>(F) & 0x7f800000L) == 0)

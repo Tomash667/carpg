@@ -26,7 +26,7 @@ void Grid::Draw(ControlDrawData*)
 		{
 			r.Left() = x;
 			r.Right() = x + it->width;
-			GUI.DrawText(GUI.default_font, it->title, DT_CENTER | DT_VCENTER, Color::Black, r, &r);
+			GUI.DrawText(GUI.default_font, it->title, DTF_CENTER | DTF_VCENTER, Color::Black, r, &r);
 		}
 		x += it->width;
 	}
@@ -38,9 +38,9 @@ void Grid::Draw(ControlDrawData*)
 	const int clip_y[4] = { global_pos.y, global_pos.y + height, global_pos.y + size.y - height, global_pos.y + size.y };
 	Rect clip_r;
 
-	DWORD text_flags = DT_CENTER | DT_VCENTER;
+	uint text_flags = DTF_CENTER | DTF_VCENTER;
 	if(single_line)
-		text_flags |= DT_SINGLELINE;
+		text_flags |= DTF_SINGLELINE;
 
 	for(int i = 0; i < items; ++i)
 	{

@@ -1,9 +1,10 @@
 #include "Pch.h"
 #include "Core.h"
+#include "WindowsIncludes.h"
 #include <Shellapi.h>
 
 //-----------------------------------------------------------------------------
-DWORD tmp;
+static DWORD tmp;
 string StreamReader::buf;
 char BUF[256];
 
@@ -286,7 +287,7 @@ bool io::FileExists(cstring filename)
 }
 
 //=================================================================================================
-bool io::FindFiles(cstring pattern, const std::function<bool(const WIN32_FIND_DATA&)>& func, bool exclude_special)
+bool io::FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func, bool exclude_special)
 {
 	assert(pattern);
 
@@ -303,9 +304,15 @@ bool io::FindFiles(cstring pattern, const std::function<bool(const WIN32_FIND_DA
 			continue;
 
 		// callback
-		if(!func(find_data))
+		FileInfo info =
+		{
+			find_data.cFileName,
+			IS_SET(find_data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY)
+		};
+		if(!func(info))
 			break;
-	} while(FindNextFile(find, &find_data) != 0);
+	}
+	while(FindNextFile(find, &find_data) != 0);
 
 	DWORD result = GetLastError();
 	FindClose(find);

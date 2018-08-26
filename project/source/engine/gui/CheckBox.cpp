@@ -21,7 +21,7 @@ void CheckBox::Draw(ControlDrawData* cdd/* =nullptr */)
 		GUI.DrawSprite(tTick, global_pos);
 
 	Rect r = { global_pos.x + bt_size.x + 4, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, text, DT_VCENTER, Color::Black, r);
+	GUI.DrawText(GUI.default_font, text, DTF_VCENTER, Color::Black, r);
 }
 
 //=================================================================================================

@@ -98,7 +98,7 @@ void TooltipController::Draw(ControlDrawData*)
 	{
 		r = r_big_text;
 		r += pos;
-		GUI.DrawText(GUI.fBig, big_text, DT_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
+		GUI.DrawText(GUI.fBig, big_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
 	}
 
 	// text
@@ -106,7 +106,7 @@ void TooltipController::Draw(ControlDrawData*)
 	{
 		r = r_text;
 		r += pos;
-		GUI.DrawText(GUI.default_font, text, DT_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
+		GUI.DrawText(GUI.default_font, text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
 	}
 
 	// small text
@@ -114,7 +114,7 @@ void TooltipController::Draw(ControlDrawData*)
 	{
 		r = r_small_text;
 		r += pos;
-		GUI.DrawText(GUI.fSmall, small_text, DT_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
+		GUI.DrawText(GUI.fSmall, small_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
 	}
 }
 

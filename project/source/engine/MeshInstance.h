@@ -135,8 +135,8 @@ struct MeshInstance
 	void SetToEnd(Mesh::Animation* anim, Matrix* mat_scale = nullptr);
 	void SetToEnd(Matrix* mat_scale = nullptr);
 	void ResetAnimation();
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 	void Write(StreamWriter& stream) const;
 	bool Read(StreamReader& stream);
 	bool ApplyPreload(Mesh* mesh);

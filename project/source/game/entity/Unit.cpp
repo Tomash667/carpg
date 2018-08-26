@@ -1303,7 +1303,7 @@ void Unit::Save(HANDLE file, bool local)
 
 	if(local)
 	{
-		mesh_inst->Save(file);
+		mesh_inst->Save(FileWriter(file));
 		WriteFile(file, &animation, sizeof(animation), &tmp, nullptr);
 		WriteFile(file, &current_animation, sizeof(current_animation), &tmp, nullptr);
 
@@ -1582,7 +1582,7 @@ void Unit::Load(HANDLE file, bool local)
 	if(local)
 	{
 		CreateMesh(CREATE_MESH::LOAD);
-		mesh_inst->Load(file);
+		mesh_inst->Load(FileReader(file));
 		ReadFile(file, &animation, sizeof(animation), &tmp, nullptr);
 		ReadFile(file, &current_animation, sizeof(current_animation), &tmp, nullptr);
 

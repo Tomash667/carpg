@@ -8,6 +8,10 @@ struct Sound;
 struct StartupOptions;
 class SoundManager;
 
+// Windows types
+struct HWND__;
+typedef HWND__* HWND;
+
 // DirectX types
 struct _D3DPRESENT_PARAMETERS_;
 struct _D3DXMACRO;

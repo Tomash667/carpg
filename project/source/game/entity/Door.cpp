@@ -19,7 +19,7 @@ void Door::Save(HANDLE file, bool local)
 	WriteFile(file, &door2, sizeof(door2), &tmp, nullptr);
 
 	if(local)
-		mesh_inst->Save(file);
+		mesh_inst->Save(FileWriter(file));
 }
 
 //=================================================================================================
@@ -39,7 +39,7 @@ void Door::Load(HANDLE file, bool local)
 		Game& game = Game::Get();
 
 		mesh_inst = new MeshInstance(door2 ? game.aDoor2 : game.aDoor);
-		mesh_inst->Load(file);
+		mesh_inst->Load(FileReader(file));
 
 		phy = new btCollisionObject;
 		phy->setCollisionShape(game.shape_door);

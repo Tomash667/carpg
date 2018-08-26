@@ -85,7 +85,7 @@ void TeamPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	GUI.DrawText(GUI.fBig, txTeam, DT_TOP | DT_CENTER, Color::Black, rect);
+	GUI.DrawText(GUI.fBig, txTeam, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	Int2 offset = global_pos + Int2(8, 40 - scrollbar.offset);
 	rect = Rect::Create(Int2(global_pos.x + 8, global_pos.y + 40), Int2(size.x - 52, size.y - 96));
@@ -136,7 +136,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			s += Format(txDays, u->player->free_days);
 		}
 		s += ")$h-";
-		if(!GUI.DrawText(GUI.default_font, s->c_str(), DT_VCENTER | DT_SINGLELINE | DT_PARSE_SPECIAL, (n == picked ? Color::White : Color::Black), r2, &rect, &hitboxes, &hitbox_counter))
+		if(!GUI.DrawText(GUI.default_font, s->c_str(), DTF_VCENTER | DTF_SINGLELINE | DTF_PARSE_SPECIAL, (n == picked ? Color::White : Color::Black), r2, &rect, &hitboxes, &hitbox_counter))
 			break;
 
 		offset.y += 32;
