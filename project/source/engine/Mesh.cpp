@@ -94,10 +94,9 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		stream.Read(sub.min_ind);
 		stream.Read(sub.n_ind);
 		stream.Read(sub.name);
-		stream.ReadString1();
-
-		if(BUF[0])
-			sub.tex = ResourceManager::Get<Texture>().GetLoaded(BUF);
+		const string& tex_name = stream.ReadString1();
+		if(!tex_name.empty())
+			sub.tex = ResourceManager::Get<Texture>().GetLoaded(tex_name);
 		else
 			sub.tex = nullptr;
 
@@ -109,10 +108,10 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 		// normalmap
 		if(IS_SET(head.flags, F_TANGENTS))
 		{
-			stream.ReadString1();
-			if(BUF[0])
+			const string& tex_name = stream.ReadString1();
+			if(!tex_name.empty())
 			{
-				sub.tex_normal = ResourceManager::Get<Texture>().GetLoaded(BUF);
+				sub.tex_normal = ResourceManager::Get<Texture>().GetLoaded(tex_name);
 				stream.Read(sub.normal_factor);
 			}
 			else
@@ -122,10 +121,10 @@ void Mesh::Load(StreamReader& stream, IDirect3DDevice9* device)
 			sub.tex_normal = nullptr;
 
 		// specular map
-		stream.ReadString1();
-		if(BUF[0])
+		const string& tex_name_specular = stream.ReadString1();
+		if(!tex_name_specular.empty())
 		{
-			sub.tex_specular = ResourceManager::Get<Texture>().GetLoaded(BUF);
+			sub.tex_specular = ResourceManager::Get<Texture>().GetLoaded(tex_name_specular);
 			stream.Read(sub.specular_factor);
 			stream.Read(sub.specular_color_factor);
 		}

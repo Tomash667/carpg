@@ -525,52 +525,6 @@ cstring ResourceManager::GetPath(Resource* res)
 }
 
 //=================================================================================================
-StreamReader&& ResourceManager::GetStream(Resource* res, StreamType type)
-{
-	assert(res);
-
-	if(res->pak_index == INVALID_PAK)
-	{
-		if(type == StreamType::Memory)
-			return std::move(MemoryReader(FileReader::ReadToBuffer(res->path)));
-		else
-			return std::move(FileReader(res->path));
-	}
-	else
-	{
-		Pak& pak = *paks[res->pak_index];
-		uint size, compressed_size, offset;
-		cstring key = nullptr;
-
-		if(pak.version == 0)
-		{
-			PakV0& pak0 = (PakV0&)pak;
-			PakV0::File& file = pak0.files[res->pak_file_index];
-			size = file.size;
-			compressed_size = file.size;
-			offset = file.offset;
-		}
-		else
-		{
-			PakV1& pak1 = (PakV1&)pak;
-			PakV1::File& file = pak1.files[res->pak_file_index];
-			size = file.size;
-			compressed_size = file.compressed_size;
-			offset = file.offset;
-			if(pak1.encrypted)
-				key = pak1.key.c_str();
-		}
-
-		Buffer* buf = pak.file.ReadToBuffer(offset, compressed_size);
-		if(key)
-			io::Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
-		if(size != compressed_size)
-			buf = buf->Decompress(size);
-		return std::move(MemoryReader(buf));
-	}
-}
-
-//=================================================================================================
 void ResourceManager::AddTaskCategory(Cstring category)
 {
 	assert(mode == Mode::LoadScreenPrepare);
@@ -792,11 +746,18 @@ void ResourceManager::LoadResourceInternal(Resource* res)
 //=================================================================================================
 void ResourceManager::LoadMesh(Mesh* mesh)
 {
-	StreamReader&& reader = GetStream(mesh, StreamType::FullFileOrMemory);
-
 	try
 	{
-		mesh->Load(reader, device);
+		if(mesh->IsFile())
+		{
+			FileReader f(mesh->path);
+			mesh->Load(f, device);
+		}
+		else
+		{
+			MemoryReader f(GetBuffer(mesh));
+			mesh->Load(f, device);
+		}
 	}
 	catch(cstring err)
 	{
@@ -807,11 +768,18 @@ void ResourceManager::LoadMesh(Mesh* mesh)
 //=================================================================================================
 void ResourceManager::LoadMeshMetadata(Mesh* mesh)
 {
-	StreamReader&& reader = GetStream(mesh, StreamType::FullFileOrMemory);
-
 	try
 	{
-		mesh->LoadMetadata(reader);
+		if(mesh->IsFile())
+		{
+			FileReader f(mesh->path);
+			mesh->LoadMetadata(f);
+		}
+		else
+		{
+			MemoryReader f(GetBuffer(mesh));
+			mesh->LoadMetadata(f);
+		}
 	}
 	catch(cstring err)
 	{
@@ -822,11 +790,18 @@ void ResourceManager::LoadMeshMetadata(Mesh* mesh)
 //=================================================================================================
 void ResourceManager::LoadVertexData(VertexData* vd)
 {
-	StreamReader&& reader = GetStream(vd, StreamType::FullFileOrMemory);
-
 	try
 	{
-		Mesh::LoadVertexData(vd, reader);
+		if(vd->IsFile())
+		{
+			FileReader f(vd->path);
+			Mesh::LoadVertexData(vd, f);
+		}
+		else
+		{
+			MemoryReader f(GetBuffer(vd));
+			Mesh::LoadVertexData(vd, f);
+		}
 	}
 	catch(cstring err)
 	{

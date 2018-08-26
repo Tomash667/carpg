@@ -8,14 +8,6 @@
 class LoadScreen;
 
 //-----------------------------------------------------------------------------
-enum class StreamType
-{
-	Memory,
-	FullFileOrMemory,
-	File
-};
-
-//-----------------------------------------------------------------------------
 struct ResourceComparer
 {
 	bool operator () (const Resource* r1, const Resource* r2) const
@@ -427,7 +419,6 @@ public:
 	ResourceType FilenameToResourceType(cstring filename);
 	Buffer* GetBuffer(Resource* res);
 	cstring GetPath(Resource* res);
-	StreamReader&& GetStream(Resource* res, StreamType type);
 	void AddTaskCategory(Cstring name);
 	void AddTask(void* ptr, TaskCallback callback);
 	void NextTask(cstring next_category = nullptr);

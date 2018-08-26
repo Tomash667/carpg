@@ -4,25 +4,25 @@
 #include "Unit.h"
 
 //-----------------------------------------------------------------------------
-class GameReader : public FileReaderBase
+class GameReader : public FileReader
 {
 public:
-	explicit GameReader(HANDLE file) : FileReaderBase(file)
+	explicit GameReader(HANDLE file) : FileReader(file)
 	{
 	}
 
-	explicit GameReader(cstring filename) : FileReaderBase(filename)
+	explicit GameReader(cstring filename) : FileReader(filename)
 	{
 	}
 
-	using FileReaderBase::operator >> ;
+	using FileReader::operator >> ;
 
 	void LoadArtifact(const Item*& item);
 
 	bool operator >> (Unit*& u)
 	{
 		int refid;
-		FileReaderBase::operator >> (refid);
+		FileReader::operator >> (refid);
 		u = Unit::GetByRefid(refid);
 		return IsOk();
 	}
@@ -41,23 +41,23 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class GameWriter : public FileWriterBase
+class GameWriter : public FileWriter
 {
 public:
-	explicit GameWriter(HANDLE file) : FileWriterBase(file)
+	explicit GameWriter(HANDLE file) : FileWriter(file)
 	{
 	}
 
-	explicit GameWriter(cstring filename) : FileWriterBase(filename)
+	explicit GameWriter(cstring filename) : FileWriter(filename)
 	{
 	}
 
-	using FileWriterBase::operator <<;
+	using FileWriter::operator <<;
 
 	void operator << (Unit* u)
 	{
 		int refid = (u ? u->refid : -1);
-		FileWriterBase::operator << (refid);
+		FileWriter::operator << (refid);
 	}
 
 	void operator << (const HumanData& hd)

@@ -2,76 +2,67 @@
 #include "GameCore.h"
 #include "BitStreamFunc.h"
 
-BitStream s;
-BitStreamWriter w(s);
-BitStreamReader r(s);
-
-//=================================================================================================
-/*BitStreamSource::BitStreamSource(BitStream& bitstream, bool write) : bitstream(bitstream), write(write)
+//-----------------------------------------------------------------------------
+BitStreamWriter::BitStreamWriter(BitStream& bitstream) : bitstream(bitstream)
 {
-	size = bitstream.GetNumberOfBytesUsed();
-	offset = (write ? bitstream.GetWriteOffset() : bitstream.GetReadOffset()) / 8;
-	valid = true;
 }
 
-//=================================================================================================
-bool BitStreamSource::Read(void* ptr, uint data_size)
+void BitStreamWriter::Write(const void* ptr, uint size)
 {
-	assert(ptr && !write);
-	if(!Ensure(data_size))
+	bitstream.Write((const char*)ptr, size);
+}
+
+uint BitStreamWriter::GetPos() const
+{
+	return BITS_TO_BYTES(bitstream.GetWriteOffset());
+}
+
+bool BitStreamWriter::SetPos(uint pos)
+{
+	uint size = bitstream.GetNumberOfBytesUsed();
+	if(pos > size)
 		return false;
-	bitstream.Read((char*)ptr, data_size);
-	offset += data_size;
+	bitstream.SetWriteOffset(BYTES_TO_BITS(pos));
 	return true;
 }
 
-//=================================================================================================
-bool BitStreamSource::Skip(uint data_size)
+//-----------------------------------------------------------------------------
+BitStreamReader::BitStreamReader(BitStream& bitstream) : bitstream(bitstream)
 {
-	assert(!write);
-	if(!Ensure(data_size))
-		return false;
-	offset += data_size;
-	uint pos = offset * 8;
-	if(write)
-		bitstream.SetWriteOffset(pos);
+	ok = true;
+}
+
+void BitStreamReader::Read(void* ptr, uint size)
+{
+	if(!ok || GetPos() + size > GetSize())
+		ok = false;
 	else
-		bitstream.SetReadOffset(pos);
-	return true;
+		bitstream.Read((char*)ptr, size);
 }
 
-//=================================================================================================
-void BitStreamSource::Write(const void* ptr, uint data_size)
+void BitStreamReader::Skip(uint size)
 {
-	assert(ptr && write);
-	bitstream.Write((const char*)ptr, data_size);
-	size += data_size;
-	offset += data_size;
-}
-
-//=================================================================================================
-void BitStreamSource::SetOffset(uint offset)
-{
-	assert(valid && offset <= size);
-	this->offset = offset;
-	uint pos = this->offset * 8;
-	if(write)
-		bitstream.SetWriteOffset(pos);
+	if(!ok || GetPos() + size > GetSize())
+		ok = false;
 	else
-		bitstream.SetReadOffset(pos);
+		bitstream.SetReadOffset(BYTES_TO_BITS(GetPos() + size));
 }
 
-//=================================================================================================
-StreamWriter&& CreateBitStreamWriter(BitStream& bitstream)
+uint BitStreamReader::GetPos() const
 {
-	BitStreamSource* source = StreamSourcePool::Get<BitStreamSource>(bitstream, true);
-	return std::move(StreamWriter(source));
+	return BITS_TO_BYTES(bitstream.GetReadOffset());
 }
 
-//=================================================================================================
-StreamReader&& CreateBitStreamReader(BitStream& bitstream)
+uint BitStreamReader::GetSize() const
 {
-	BitStreamSource* source = StreamSourcePool::Get<BitStreamSource>(bitstream, false);
-	return std::move(StreamReader(source));
+	return bitstream.GetNumberOfBytesUsed();
 }
-*/
+
+bool BitStreamReader::SetPos(uint pos)
+{
+	if(!ok || pos > GetSize())
+		ok = false;
+	else
+		bitstream.SetReadOffset(BYTES_TO_BITS(pos));
+	return ok;
+}

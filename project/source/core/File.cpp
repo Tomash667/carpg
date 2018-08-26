@@ -3,7 +3,7 @@
 #include <Shellapi.h>
 
 //-----------------------------------------------------------------------------
-static DWORD tmp;
+DWORD tmp;
 string StreamReader::buf;
 char BUF[256];
 
@@ -20,7 +20,7 @@ bool FileTime::operator == (const FileTime& file_time) const
 
 
 //-----------------------------------------------------------------------------
-FileReaderBase::~FileReaderBase()
+FileReader::~FileReader()
 {
 	if(own_handle && file != INVALID_HANDLE_VALUE)
 	{
@@ -30,7 +30,17 @@ FileReaderBase::~FileReaderBase()
 	}
 }
 
-bool FileReaderBase::Open(Cstring filename)
+void FileReader::operator = (FileReader& f)
+{
+	assert(file == INVALID_HANDLE_VALUE);
+	file = f.file;
+	own_handle = f.own_handle;
+	ok = f.ok;
+	size = f.size;
+	f.file = INVALID_HANDLE_VALUE;
+}
+
+bool FileReader::Open(Cstring filename)
 {
 	file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 	own_handle = true;
@@ -47,14 +57,14 @@ bool FileReaderBase::Open(Cstring filename)
 	return ok;
 }
 
-void FileReaderBase::Read(void* ptr, uint size)
+void FileReader::Read(void* ptr, uint size)
 {
 	BOOL result = ReadFile(file, ptr, size, &tmp, nullptr);
 	assert(result != FALSE);
 	ok = (size == tmp);
 }
 
-void FileReaderBase::ReadToString(string& s)
+void FileReader::ReadToString(string& s)
 {
 	DWORD size = GetFileSize(file, nullptr);
 	s.resize(size);
@@ -63,7 +73,7 @@ void FileReaderBase::ReadToString(string& s)
 	assert(size == tmp);
 }
 
-Buffer* FileReaderBase::ReadToBuffer(Cstring path)
+Buffer* FileReader::ReadToBuffer(Cstring path)
 {
 	FileReader f(path);
 	if(!f)
@@ -74,7 +84,7 @@ Buffer* FileReaderBase::ReadToBuffer(Cstring path)
 	return buffer;
 }
 
-Buffer* FileReaderBase::ReadToBuffer(Cstring path, uint offset, uint size)
+Buffer* FileReader::ReadToBuffer(Cstring path, uint offset, uint size)
 {
 	FileReader f(path);
 	if(!f)
@@ -88,26 +98,26 @@ Buffer* FileReaderBase::ReadToBuffer(Cstring path, uint offset, uint size)
 	return buffer;
 }
 
-void FileReaderBase::Skip(uint bytes)
+void FileReader::Skip(uint bytes)
 {
 	ok = (ok && SetFilePointer(file, bytes, nullptr, FILE_CURRENT) != INVALID_SET_FILE_POINTER);
 }
 
-uint FileReaderBase::GetPos() const
+uint FileReader::GetPos() const
 {
 	return (uint)SetFilePointer(file, 0, nullptr, FILE_CURRENT);
 }
 
-FileTime FileReaderBase::GetTime() const
+FileTime FileReader::GetTime() const
 {
 	FILETIME file_time;
 	GetFileTime((HANDLE)file, nullptr, nullptr, &file_time);
 	return union_cast<FileTime>(file_time);
 }
 
-bool FileReaderBase::SetPos(uint pos)
+bool FileReader::SetPos(uint pos)
 {
-	if(!ok || pos >= size)
+	if(!ok || pos > size)
 	{
 		pos = size;
 		ok = false;
@@ -119,7 +129,54 @@ bool FileReaderBase::SetPos(uint pos)
 
 
 //-----------------------------------------------------------------------------
-FileWriterBase::~FileWriterBase()
+MemoryReader::MemoryReader(BufferHandle& buf_handle) : buf(*buf_handle.Pin())
+{
+	ok = true;
+	pos = 0;
+}
+
+MemoryReader::MemoryReader(Buffer* p_buf) : buf(*p_buf)
+{
+	ok = true;
+	pos = 0;
+}
+
+MemoryReader::~MemoryReader()
+{
+	BufferPool.Free(&buf);
+}
+
+void MemoryReader::Read(void* ptr, uint size)
+{
+	if(!ok || GetPos() + size > GetSize())
+		ok = false;
+	else
+	{
+		memcpy(ptr, (byte*)buf.Data() + pos, size);
+		pos += size;
+	}
+}
+
+void MemoryReader::Skip(uint size)
+{
+	if(!ok || GetPos() + size > GetSize())
+		ok = false;
+	else
+		pos += size;
+}
+
+bool MemoryReader::SetPos(uint pos)
+{
+	if(!ok || pos > GetSize())
+		ok = false;
+	else
+		this->pos = pos;
+	return ok;
+}
+
+
+//-----------------------------------------------------------------------------
+FileWriter::~FileWriter()
 {
 	if(own_handle && file != INVALID_HANDLE_VALUE)
 	{
@@ -128,30 +185,35 @@ FileWriterBase::~FileWriterBase()
 	}
 }
 
-bool FileWriterBase::Open(cstring filename)
+bool FileWriter::Open(cstring filename)
 {
 	assert(filename);
 	file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 	return (file != INVALID_HANDLE_VALUE);
 }
 
-void FileWriterBase::Write(const void* ptr, uint size)
+void FileWriter::Write(const void* ptr, uint size)
 {
 	WriteFile(file, ptr, size, &tmp, nullptr);
 	assert(size == tmp);
 }
 
-void FileWriterBase::Flush()
+void FileWriter::Flush()
 {
 	FlushFileBuffers(file);
 }
 
-uint FileWriterBase::GetSize() const
+uint FileWriter::GetSize() const
 {
 	return GetFileSize(file, nullptr);
 }
 
-void FileWriterBase::operator = (FileWriterBase& f)
+uint FileWriter::GetPos() const
+{
+	return SetFilePointer(file, 0, nullptr, FILE_CURRENT);
+}
+
+void FileWriter::operator = (FileWriter& f)
 {
 	assert(file == INVALID_FILE_HANDLE && f.file != INVALID_HANDLE_VALUE);
 	file = f.file;
@@ -159,10 +221,18 @@ void FileWriterBase::operator = (FileWriterBase& f)
 	f.file = INVALID_FILE_HANDLE;
 }
 
-void FileWriterBase::SetTime(FileTime file_time)
+void FileWriter::SetTime(FileTime file_time)
 {
 	FILETIME ft = union_cast<FILETIME>(file_time);
 	SetFileTime((HANDLE)file, nullptr, nullptr, &ft);
+}
+
+bool FileWriter::SetPos(uint pos)
+{
+	if(pos >= GetFileSize(file, nullptr))
+		return false;
+	SetFilePointer(file, pos, nullptr, FILE_BEGIN);
+	return true;
 }
 
 //=================================================================================================

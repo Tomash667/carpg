@@ -358,7 +358,6 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	FileWriter f(cache_path);
 	if(f)
 	{
-		// FIXME: verify cache is working
 		f.Write(effect_buffer->GetBufferPointer(), effect_buffer->GetBufferSize());
 		f.SetTime(params.file_time);
 	}

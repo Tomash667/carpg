@@ -265,20 +265,22 @@ inline void PatchByteApply(BitStream& stream, uint pos, byte value)
 }
 
 //=================================================================================================
-class BitStreamWriter final : public StreamWriter
+class BitStreamWriter : public StreamWriter
 {
 public:
 	BitStreamWriter(BitStream& bitstream);
 
 	using StreamWriter::Write;
 	void Write(const void* ptr, uint size) override;
+	uint GetPos() const override;
+	bool SetPos(uint pos) override;
 
 private:
 	BitStream& bitstream;
 };
 
 //=================================================================================================
-class BitStreamReader final : public StreamReader
+class BitStreamReader : public StreamReader
 {
 public:
 	BitStreamReader(BitStream& bitstream);

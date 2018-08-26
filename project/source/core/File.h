@@ -117,6 +117,7 @@ class StreamReader
 {
 public:
 	StreamReader() : ok(false) {}
+	StreamReader(const StreamReader&) = delete;
 	virtual ~StreamReader() {}
 
 	virtual uint GetSize() const = 0;
@@ -299,13 +300,14 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class FileReaderBase : public StreamReader
+class FileReader : public StreamReader
 {
 public:
-	FileReaderBase() : file(INVALID_FILE_HANDLE), own_handle(false) {}
-	explicit FileReaderBase(FileHandle file) : file(file), own_handle(false) {}
-	explicit FileReaderBase(Cstring filename) { Open(filename); }
-	~FileReaderBase();
+	FileReader() : file(INVALID_FILE_HANDLE), own_handle(false) {}
+	explicit FileReader(FileHandle file) : file(file), own_handle(false) {}
+	explicit FileReader(Cstring filename) { Open(filename); }
+	~FileReader();
+	void operator = (FileReader& f);
 
 	bool Open(Cstring filename);
 	using StreamReader::Read;
@@ -330,28 +332,24 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class FileReader final : public FileReaderBase
-{
-public:
-	FileReader() {}
-	explicit FileReader(FileHandle file) : FileReaderBase(file) {}
-	explicit FileReader(Cstring filename) : FileReaderBase(filename) {}
-};
-
-//-----------------------------------------------------------------------------
-class MemoryReader final : public StreamReader
+class MemoryReader : public StreamReader
 {
 public:
 	MemoryReader(BufferHandle& buf);
 	MemoryReader(Buffer* buf);
+	~MemoryReader();
 
 	using StreamReader::Read;
 	void Read(void* ptr, uint size) override;
 	using StreamReader::Skip;
 	void Skip(uint size) override;
-	uint GetSize() const override;
-	uint GetPos() const override;
+	uint GetSize() const override { return buf.Size(); }
+	uint GetPos() const override { return pos; }
 	bool SetPos(uint pos) override;
+
+private:
+	Buffer& buf;
+	uint pos;
 };
 
 //-----------------------------------------------------------------------------
@@ -361,6 +359,8 @@ public:
 	virtual ~StreamWriter() {}
 
 	virtual void Write(const void* ptr, uint size) = 0;
+	virtual uint GetPos() const = 0;
+	virtual bool SetPos(uint pos) = 0;
 
 	template<typename T>
 	void Write(const T& a)
@@ -479,40 +479,50 @@ public:
 	{
 		WriteVector4(v);
 	}
+
+	template<typename T>
+	uint BeginPatch(const T& a)
+	{
+		uint pos = GetPos();
+		Write(a);
+		return pos;
+	}
+
+	template<typename T>
+	void Patch(uint pos, const T& a)
+	{
+		uint current_pos = GetPos();
+		SetPos(pos);
+		Write(a);
+		SetPos(current_pos);
+	}
 };
 
 //-----------------------------------------------------------------------------
-class FileWriterBase : public StreamWriter
+class FileWriter : public StreamWriter
 {
 public:
-	FileWriterBase() : file(INVALID_FILE_HANDLE), own_handle(true) {}
-	explicit FileWriterBase(FileHandle file) : file(file), own_handle(false) {}
-	explicit FileWriterBase(cstring filename) : own_handle(true) { Open(filename); }
-	~FileWriterBase();
+	FileWriter() : file(INVALID_FILE_HANDLE), own_handle(true) {}
+	explicit FileWriter(FileHandle file) : file(file), own_handle(false) {}
+	explicit FileWriter(cstring filename) : own_handle(true) { Open(filename); }
+	~FileWriter();
 
 	bool Open(cstring filename);
 	using StreamWriter::Write;
 	void Write(const void* ptr, uint size) override;
 	void Flush();
+	uint GetPos() const override;
 	uint GetSize() const;
 	FileHandle GetHandle() const { return file; }
 	bool IsOpen() const { return file != INVALID_FILE_HANDLE; }
 	operator bool() const { return IsOpen(); }
-	void operator = (FileWriterBase& f);
+	void operator = (FileWriter& f);
 	void SetTime(FileTime file_time);
+	bool SetPos(uint pos) override;
 
 protected:
 	FileHandle file;
 	bool own_handle;
-};
-
-//-----------------------------------------------------------------------------
-class FileWriter final : public FileWriterBase
-{
-public:
-	FileWriter() {}
-	explicit FileWriter(FileHandle file) : FileWriterBase(file) {}
-	explicit FileWriter(cstring filename) : FileWriterBase(filename) {}
 };
 
 //-----------------------------------------------------------------------------
