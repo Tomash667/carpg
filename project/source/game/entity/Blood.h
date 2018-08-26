@@ -3,7 +3,6 @@
 #include "BloodType.h"
 
 //-----------------------------------------------------------------------------
-// Krew na ziemi
 struct Blood
 {
 	BLOOD type;

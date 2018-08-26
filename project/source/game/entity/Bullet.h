@@ -1,14 +1,7 @@
-// pocisk (strza³a, czar)
 #pragma once
 
 //-----------------------------------------------------------------------------
 #include "Resource.h"
-
-//-----------------------------------------------------------------------------
-struct Unit;
-struct Spell;
-struct ParticleEmitter;
-struct TrailParticleEmitter;
 
 //-----------------------------------------------------------------------------
 struct Bullet

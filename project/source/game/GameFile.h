@@ -4,7 +4,7 @@
 #include "Unit.h"
 
 //-----------------------------------------------------------------------------
-class GameReader : public FileReader
+class GameReader final : public FileReader
 {
 public:
 	explicit GameReader(HANDLE file) : FileReader(file)
@@ -19,12 +19,10 @@ public:
 
 	void LoadArtifact(const Item*& item);
 
-	bool operator >> (Unit*& u)
+	void operator >> (Unit*& unit)
 	{
-		int refid;
-		FileReader::operator >> (refid);
-		u = Unit::GetByRefid(refid);
-		return IsOk();
+		int refid = Read<int>();
+		unit = Unit::GetByRefid(refid);
 	}
 
 	void operator >> (HumanData& hd)
@@ -39,6 +37,12 @@ public:
 			item = Item::Get(id);
 	}
 
+	void operator >> (Usable*& usable)
+	{
+		int refid = Read<int>();
+		usable = Usable::GetByRefid(refid);
+	}
+
 	const Item* ReadItemOptional()
 	{
 		const string& id = ReadString1();
@@ -50,7 +54,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class GameWriter : public FileWriter
+class GameWriter final : public FileWriter
 {
 public:
 	explicit GameWriter(HANDLE file) : FileWriter(file)

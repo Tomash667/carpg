@@ -62,6 +62,7 @@ void OutsideLocation::ApplyContext(LevelContext& ctx)
 //=================================================================================================
 void OutsideLocation::Save(HANDLE file, bool local)
 {
+	FileWriter f(file);
 	Location::Save(file, local);
 
 	if(last_visit != -1)
@@ -78,17 +79,15 @@ void OutsideLocation::Save(HANDLE file, bool local)
 		for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
 			(*it)->Save(file);
 
-		// skrzynie
-		ile = chests.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
-			(*it)->Save(file, local);
+		// chests
+		f << chests.size();
+		for(Chest* chest : chests)
+			chest->Save(f, local);
 
-		// przedmioty
-		ile = items.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-			(*it)->Save(file);
+		// ground items
+		f << items.size();
+		for(GroundItem* item : items)
+			item->Save(f);
 
 		// u¿ywalne
 		ile = usables.size();
@@ -114,6 +113,7 @@ void OutsideLocation::Save(HANDLE file, bool local)
 //=================================================================================================
 void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 {
+	FileReader f(file);
 	Location::Load(file, local, token);
 
 	if(last_visit != -1)
@@ -138,22 +138,20 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			(*it)->Load(file);
 		}
 
-		// skrzynie
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		chests.resize(ile);
-		for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
+		// chests
+		chests.resize(f.Read<uint>());
+		for(Chest*& chest : chests)
 		{
-			*it = new Chest;
-			(*it)->Load(file, local);
+			chest = new Chest;
+			chest->Load(f, local);
 		}
 
-		// przedmioty
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		items.resize(ile);
-		for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+		// ground items
+		items.resize(f.Read<uint>());
+		for(GroundItem*& item : items)
 		{
-			*it = new GroundItem;
-			(*it)->Load(file);
+			item = new GroundItem;
+			item->Load(f);
 		}
 
 		// u¿ywalne

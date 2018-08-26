@@ -165,6 +165,8 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, i
 //=================================================================================================
 void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 {
+	FileWriter f(file);
+
 	WriteFile(file, &w, sizeof(w), &tmp, nullptr);
 	WriteFile(file, &h, sizeof(h), &tmp, nullptr);
 	WriteFile(file, map, sizeof(Pole)*w*h, &tmp, nullptr);
@@ -177,11 +179,10 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
-	// skrzynie
-	ile = chests.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	// chests
+	f << chests.size();
+	for(Chest* chest : chests)
+		chest->Save(f, local);
 
 	// obiekty
 	ile = objects.size();
@@ -189,17 +190,15 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
 		(*it)->Save(file);
 
-	// drzwi
-	ile = doors.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Door*>::iterator it = doors.begin(), end = doors.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	// doors
+	f << doors.size();
+	for(Door* door : doors)
+		door->Save(f, local);
 
-	// przedmioty
-	ile = items.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-		(*it)->Save(file);
+	// ground items
+	f << items.size();
+	for(GroundItem* item : items)
+		item->Save(f);
 
 	// u¿ywalne
 	ile = usables.size();
@@ -208,7 +207,6 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 		(*it)->Save(file, local);
 
 	// krew
-	FileWriter f(file);
 	ile = bloods.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
@@ -241,6 +239,8 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 //=================================================================================================
 void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 {
+	FileReader f(file);
+
 	ReadFile(file, &w, sizeof(w), &tmp, nullptr);
 	ReadFile(file, &h, sizeof(h), &tmp, nullptr);
 	map = new Pole[w*h];
@@ -257,13 +257,12 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 		(*it)->Load(file, local);
 	}
 
-	// skrzynie
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	chests.resize(ile);
-	for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
+	// chests
+	chests.resize(f.Read<uint>());
+	for(Chest*& chest : chests)
 	{
-		*it = new Chest;
-		(*it)->Load(file, local);
+		chest = new Chest;
+		chest->Load(f, local);
 	}
 
 	// obiekty
@@ -275,22 +274,20 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 		(*it)->Load(file);
 	}
 
-	// drzwi
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	doors.resize(ile);
-	for(vector<Door*>::iterator it = doors.begin(), end = doors.end(); it != end; ++it)
+	// doors
+	doors.resize(f.Read<uint>());
+	for(Door*& door : doors)
 	{
-		*it = new Door;
-		(*it)->Load(file, local);
+		door = new Door;
+		door->Load(f, local);
 	}
 
-	// przedmioty
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	items.resize(ile);
-	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+	// ground items
+	items.resize(f.Read<int>());
+	for(GroundItem*& item : items)
 	{
-		*it = new GroundItem;
-		(*it)->Load(file);
+		item = new GroundItem;
+		item->Load(f);
 	}
 
 	// u¿ywalne
@@ -304,7 +301,6 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	}
 
 	// krew
-	FileReader f(file);
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	bloods.resize(ile);
 	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)

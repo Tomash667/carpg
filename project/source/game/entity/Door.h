@@ -1,4 +1,3 @@
-// drzwi
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -59,8 +58,8 @@ struct Door
 	{
 		return state == Closed;
 	}
-	void Save(HANDLE file, bool local);
-	void Load(HANDLE file, bool local);
+	void Save(FileWriter& f, bool local);
+	void Load(FileReader& f, bool local);
 	Vec3 GetCenter() const
 	{
 		Vec3 p = pos;

@@ -4,8 +4,10 @@
 #include "FileFormat.h"
 
 // Engine types
+struct ParticleEmitter;
 struct Sound;
 struct StartupOptions;
+struct TrailParticleEmitter;
 class SoundManager;
 
 // Windows types

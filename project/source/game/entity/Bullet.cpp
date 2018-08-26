@@ -1,4 +1,3 @@
-// pocisk (strza³a, czar)
 #include "Pch.h"
 #include "GameCore.h"
 #include "Bullet.h"

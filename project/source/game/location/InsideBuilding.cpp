@@ -42,6 +42,8 @@ void InsideBuilding::ApplyContext(LevelContext& ctx)
 //=================================================================================================
 void InsideBuilding::Save(HANDLE file, bool local)
 {
+	FileWriter f(file);
+
 	WriteFile(file, &offset, sizeof(offset), &tmp, nullptr);
 	WriteFile(file, &inside_spawn, sizeof(inside_spawn), &tmp, nullptr);
 	WriteFile(file, &outside_spawn, sizeof(outside_spawn), &tmp, nullptr);
@@ -62,27 +64,24 @@ void InsideBuilding::Save(HANDLE file, bool local)
 	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
-	ile = doors.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Door*>::iterator it = doors.begin(), end = doors.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	f << doors.size();
+	for(Door* door : doors)
+		door->Save(f, local);
 
 	ile = objects.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
 		(*it)->Save(file);
 
-	ile = items.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-		(*it)->Save(file);
+	f << items.size();
+	for(GroundItem* item : items)
+		item->Save(f);
 
 	ile = usables.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
-	FileWriter f(file);
 	ile = bloods.size();
 	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
@@ -128,6 +127,7 @@ void InsideBuilding::Save(HANDLE file, bool local)
 //=================================================================================================
 void InsideBuilding::Load(HANDLE file, bool local)
 {
+	FileReader f(file);
 	ApplyContext(ctx);
 
 	ReadFile(file, &offset, sizeof(offset), &tmp, nullptr);
@@ -169,12 +169,11 @@ void InsideBuilding::Load(HANDLE file, bool local)
 		(*it)->Load(file, local);
 	}
 
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	doors.resize(ile);
-	for(vector<Door*>::iterator it = doors.begin(), end = doors.end(); it != end; ++it)
+	doors.resize(f.Read<uint>());
+	for(Door*& door : doors)
 	{
-		*it = new Door;
-		(*it)->Load(file, local);
+		door = new Door;
+		door->Load(f, local);
 	}
 
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
@@ -185,12 +184,11 @@ void InsideBuilding::Load(HANDLE file, bool local)
 		(*it)->Load(file);
 	}
 
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	items.resize(ile);
-	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+	items.resize(f.Read<uint>());
+	for(GroundItem*& item : items)
 	{
-		*it = new GroundItem;
-		(*it)->Load(file);
+		item = new GroundItem;
+		item->Load(f);
 	}
 
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
@@ -202,7 +200,6 @@ void InsideBuilding::Load(HANDLE file, bool local)
 		(*it)->Load(file, local);
 	}
 
-	FileReader f(file);
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	bloods.resize(ile);
 	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)

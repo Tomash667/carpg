@@ -10,10 +10,6 @@
 #include "ItemSlot.h"
 
 //-----------------------------------------------------------------------------
-struct PlayerController;
-struct Item;
-
-//-----------------------------------------------------------------------------
 struct CreatedCharacter
 {
 	struct AttributeData

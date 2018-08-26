@@ -15,8 +15,26 @@
 
 using namespace SLNet;
 
+//-----------------------------------------------------------------------------
+class Camera;
+class GameReader;
+class GameWriter;
 class ScriptManager;
+struct AIController;
+struct Blood;
+struct Bullet;
+struct Chest;
+struct CreatedCharacter;
+struct Door;
+struct Item;
+struct Object;
+struct PlayerController;
+struct Room;
+struct Spell;
+struct Unit;
+struct Usable;
 
+// FIXME: remove
 extern DWORD tmp;
 
 //-----------------------------------------------------------------------------

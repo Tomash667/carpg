@@ -503,8 +503,8 @@ void Game::SaveGame(HANDLE file)
 	f << portal_anim;
 	f << drunk_anim;
 	f << ais.size();
-	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
-		(*it)->Save(file);
+	for(AIController* ai : ais)
+		ai->Save(f);
 
 	// game messages & speech bubbles
 	game_gui->game_messages->Save(f);
@@ -1040,12 +1040,11 @@ void Game::LoadGame(HANDLE file)
 		portal_anim = 0.f;
 		drunk_anim = 0.f;
 	}
-	f >> ile;
-	ais.resize(ile);
-	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
+	ais.resize(f.Read<uint>());
+	for(AIController*& ai : ais)
 	{
-		*it = new AIController;
-		(*it)->Load(file);
+		ai = new AIController;
+		ai->Load(f);
 	}
 
 	// game messages & speech bubbles
