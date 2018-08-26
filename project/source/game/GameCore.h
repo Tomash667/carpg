@@ -51,49 +51,7 @@ inline void WriteString1(HANDLE file, const string& s)
 	WriteString<byte>(file, s);
 }
 
-inline void WriteString2(HANDLE file, const string& s)
-{
-	WriteString<word>(file, s);
-}
-
 inline void ReadString1(HANDLE file, string& s)
 {
 	ReadString<byte>(file, s);
-}
-
-inline void ReadString1(HANDLE file)
-{
-	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-	if(len == 0)
-		BUF[0] = 0;
-	else
-	{
-		ReadFile(file, BUF, len, &tmp, nullptr);
-		BUF[len] = 0;
-	}
-}
-
-inline void ReadString2(HANDLE file, string& s)
-{
-	ReadString<word>(file, s);
-}
-
-template<typename COUNT_TYPE, typename STRING_SIZE_TYPE>
-inline void WriteStringArray(HANDLE file, vector<string>& strings)
-{
-	COUNT_TYPE ile = (COUNT_TYPE)strings.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<string>::iterator it = strings.begin(), end = strings.end(); it != end; ++it)
-		WriteString<STRING_SIZE_TYPE>(file, *it);
-}
-
-template<typename COUNT_TYPE, typename STRING_SIZE_TYPE>
-inline void ReadStringArray(HANDLE file, vector<string>& strings)
-{
-	COUNT_TYPE ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	strings.resize(ile);
-	for(vector<string>::iterator it = strings.begin(), end = strings.end(); it != end; ++it)
-		ReadString<STRING_SIZE_TYPE>(file, *it);
 }

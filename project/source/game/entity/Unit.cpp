@@ -10,6 +10,7 @@
 #include "Team.h"
 #include "Content.h"
 #include "SoundManager.h"
+#include "GameFile.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -1389,6 +1390,7 @@ void Unit::Save(HANDLE file, bool local)
 //=================================================================================================
 void Unit::Load(HANDLE file, bool local)
 {
+	GameReader f(file);
 	human_data = nullptr;
 
 	// unit data
@@ -1401,26 +1403,20 @@ void Unit::Load(HANDLE file, bool local)
 	// items
 	bool can_sort = true;
 	for(int i = 0; i < SLOT_MAX; ++i)
+		slots[i] = f.ReadItemOptional();
+	items.resize(f.Read<uint>());
+	for(ItemSlot& slot : items)
 	{
-		ReadString1(file);
-		slots[i] = (BUF[0] ? Item::Get(BUF) : nullptr);
-	}
-	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	items.resize(ile);
-	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-	{
-		ReadString1(file);
-		ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
-		ReadFile(file, &it->team_count, sizeof(it->team_count), &tmp, nullptr);
-		if(BUF[0] != '$')
-			it->item = Item::Get(BUF);
+		const string& item_id = f.ReadString1();
+		f >> slot.count;
+		f >> slot.team_count;
+		if(item_id[0] != '$')
+			slot.item = Item::Get(item_id);
 		else
 		{
-			int quest_item_refid;
-			ReadFile(file, &quest_item_refid, sizeof(quest_item_refid), &tmp, nullptr);
-			QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_item_refid, &items, this);
-			it->item = QUEST_ITEM_PLACEHOLDER;
+			int quest_item_refid = f.Read<int>();
+			QuestManager::Get().AddQuestItemRequest(&slot.item, item_id.c_str(), quest_item_refid, &items, this);
+			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
 	}
@@ -1456,7 +1452,6 @@ void Unit::Load(HANDLE file, bool local)
 		ReadFile(file, &old_type, sizeof(old_type), &tmp, nullptr);
 	}
 	ReadFile(file, &level, sizeof(level), &tmp, nullptr);
-	FileReader f(file);
 	if(LOAD_VERSION >= V_0_4)
 	{
 		stats.Load(f);
@@ -1674,6 +1669,7 @@ void Unit::Load(HANDLE file, bool local)
 	}
 
 	// efekty
+	uint ile;
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
 	effects.resize(ile);
 	if(ile)

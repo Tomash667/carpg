@@ -47,7 +47,7 @@ void Usable::Save(HANDLE file, bool local)
 	if(base->variants)
 		WriteFile(file, &variant, sizeof(variant), &tmp, nullptr);
 	if(IS_SET(base->use_flags, BaseUsable::CONTAINER))
-		container->Save(file);
+		container->Save(FileWriter(file));
 
 	if(local && !IS_SET(base->use_flags, BaseUsable::CONTAINER))
 	{
@@ -102,8 +102,8 @@ void Usable::Load(HANDLE file, bool local)
 	}
 	else
 	{
-		ReadString1(file);
-		base = BaseUsable::Get(BUF);
+		FileReader f(file);
+		base = BaseUsable::Get(f.ReadString1());
 	}
 	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
@@ -116,7 +116,7 @@ void Usable::Load(HANDLE file, bool local)
 	{
 		container = new ItemContainer;
 		if(LOAD_VERSION >= V_0_6)
-			container->Load(file);
+			container->Load(FileReader(file));
 		else
 		{
 			auto item = Game::Get().GetRandomBook();

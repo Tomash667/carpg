@@ -1284,8 +1284,8 @@ public:
 	void RebuildMinimap();
 	void UpdateDungeonMinimap(bool send);
 	void DungeonReveal(const Int2& tile);
-	void SaveStock(HANDLE file, vector<ItemSlot>& cnt);
-	void LoadStock(HANDLE file, vector<ItemSlot>& cnt);
+	void SaveStock(FileWriter& f, vector<ItemSlot>& cnt);
+	void LoadStock(FileReader& f, vector<ItemSlot>& cnt);
 	Door* FindDoor(LevelContext& ctx, const Int2& pt);
 	void AddGroundItem(LevelContext& ctx, GroundItem* item);
 	void GenerateDungeonObjects2();

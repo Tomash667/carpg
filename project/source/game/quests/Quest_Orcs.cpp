@@ -679,7 +679,7 @@ void Quest_Orcs2::Save(HANDLE file)
 	f << guard;
 	f << orc;
 	f << orc_class;
-	game->SaveStock(file, wares);
+	game->SaveStock(f, wares);
 }
 
 //=================================================================================================
@@ -699,7 +699,7 @@ bool Quest_Orcs2::Load(HANDLE file)
 		f >> guard;
 		f >> orc;
 		f >> orc_class;
-		game->LoadStock(file, wares);
+		game->LoadStock(f, wares);
 	}
 
 	if(!done)
@@ -734,7 +734,7 @@ void Quest_Orcs2::LoadOld(HANDLE file)
 	f >> guard;
 	f >> orc;
 	f >> orc_class;
-	game->LoadStock(file, wares);
+	game->LoadStock(f, wares);
 }
 
 //=================================================================================================

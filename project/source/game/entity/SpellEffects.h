@@ -21,7 +21,7 @@ struct Explo
 	static const int MIN_SIZE = 21;
 
 	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Load(FileReader& f);
 };
 
 //-----------------------------------------------------------------------------

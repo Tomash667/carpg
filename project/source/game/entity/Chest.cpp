@@ -9,7 +9,7 @@ int Chest::netid_counter;
 //=================================================================================================
 void Chest::Save(HANDLE file, bool local)
 {
-	ItemContainer::Save(file);
+	ItemContainer::Save(FileWriter(file));
 
 	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
@@ -38,7 +38,7 @@ void Chest::Save(HANDLE file, bool local)
 //=================================================================================================
 void Chest::Load(HANDLE file, bool local)
 {
-	ItemContainer::Load(file);
+	ItemContainer::Load(FileReader(file));
 
 	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
 	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);

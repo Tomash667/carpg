@@ -478,11 +478,11 @@ void Game::SaveGame(HANDLE file)
 	WriteFile(file, &cam.dist, sizeof(cam.dist), &tmp, nullptr);
 
 	// zapisz ekwipunek sprzedawców w mieœcie
-	SaveStock(file, chest_merchant);
-	SaveStock(file, chest_blacksmith);
-	SaveStock(file, chest_alchemist);
-	SaveStock(file, chest_innkeeper);
-	SaveStock(file, chest_food_seller);
+	SaveStock(f, chest_merchant);
+	SaveStock(f, chest_blacksmith);
+	SaveStock(f, chest_alchemist);
+	SaveStock(f, chest_innkeeper);
+	SaveStock(f, chest_food_seller);
 
 	// vars
 	f << devmode;
@@ -525,17 +525,17 @@ void Game::SaveGame(HANDLE file)
 	script_mgr->Save(f);
 
 	// newsy
-	uint count = news.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<News*>::iterator it = news.begin(), end = news.end(); it != end; ++it)
+	f << news.size();
+	for(News* n : news)
 	{
-		WriteFile(file, &(*it)->add_time, sizeof((*it)->add_time), &tmp, nullptr);
-		WriteString2(file, (*it)->text);
+		f << n->add_time;
+		f.WriteString2(n->text);
 	}
 
 	WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
 	++check_id;
 
+	uint count;
 	if(game_state == GS_LEVEL)
 	{
 		// gra
@@ -596,7 +596,7 @@ void Game::SaveGame(HANDLE file)
 		for(auto info : game_players)
 		{
 			if(info->left == PlayerInfo::LEFT_NO)
-				info->Save(file);
+				info->Save(f);
 		}
 		WriteFile(file, &kick_id, sizeof(kick_id), &tmp, nullptr);
 		WriteFile(file, &Unit::netid_counter, sizeof(Unit::netid_counter), &tmp, nullptr);
@@ -621,24 +621,20 @@ void Game::SaveGame(HANDLE file)
 }
 
 //=================================================================================================
-void Game::SaveStock(HANDLE file, vector<ItemSlot>& cnt)
+void Game::SaveStock(FileWriter& f, vector<ItemSlot>& cnt)
 {
-	uint count = cnt.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<ItemSlot>::iterator it = cnt.begin(), end = cnt.end(); it != end; ++it)
+	f << cnt.size();
+	for(ItemSlot& slot : cnt)
 	{
-		if(it->item)
+		if(slot.item)
 		{
-			WriteString1(file, it->item->id);
-			WriteFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
-			if(it->item->id[0] == '$')
-				WriteFile(file, &it->item->refid, sizeof(int), &tmp, nullptr);
+			f << slot.item->id;
+			f << slot.count;
+			if(slot.item->id[0] == '$')
+				f << slot.item->refid;
 		}
 		else
-		{
-			byte b = 0;
-			WriteFile(file, &b, sizeof(b), &tmp, nullptr);
-		}
+			f.Write0();
 	}
 }
 
@@ -967,12 +963,12 @@ void Game::LoadGame(HANDLE file)
 	pc_data.rot_buf = 0.f;
 
 	// ekwipunek sprzedawców w mieœcie
-	LoadStock(file, chest_merchant);
-	LoadStock(file, chest_blacksmith);
-	LoadStock(file, chest_alchemist);
-	LoadStock(file, chest_innkeeper);
+	LoadStock(f, chest_merchant);
+	LoadStock(f, chest_blacksmith);
+	LoadStock(f, chest_alchemist);
+	LoadStock(f, chest_innkeeper);
 	if(LOAD_VERSION >= V_0_2_20)
-		LoadStock(file, chest_food_seller);
+		LoadStock(f, chest_food_seller);
 	else
 		chest_food_seller.clear();
 
@@ -1125,13 +1121,13 @@ void Game::LoadGame(HANDLE file)
 
 	// newsy
 	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+	f >> count;
 	news.resize(count);
-	for(vector<News*>::iterator it = news.begin(), end = news.end(); it != end; ++it)
+	for(News*& n : news)
 	{
-		*it = new News;
-		ReadFile(file, &(*it)->add_time, sizeof((*it)->add_time), &tmp, nullptr);
-		ReadString2(file, (*it)->text);
+		n = new News;
+		f >> n->add_time;
+		f.ReadString2(n->text);
 	}
 
 	ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
@@ -1211,7 +1207,7 @@ void Game::LoadGame(HANDLE file)
 		for(vector<Explo*>::iterator it = local_ctx.explos->begin(), end = local_ctx.explos->end(); it != end; ++it)
 		{
 			*it = new Explo;
-			(*it)->Load(file);
+			(*it)->Load(f);
 		}
 
 		// elektrycznoœæ
@@ -1394,7 +1390,7 @@ void Game::LoadGame(HANDLE file)
 		for(uint i = 0; i < count; ++i)
 		{
 			old_players[i] = new PlayerInfo;
-			old_players[i]->Load(file);
+			old_players[i]->Load(f);
 		}
 		ReadFile(file, &kick_id, sizeof(kick_id), &tmp, nullptr);
 		ReadFile(file, &Unit::netid_counter, sizeof(Unit::netid_counter), &tmp, nullptr);
@@ -1493,27 +1489,27 @@ void Game::LoadGame(HANDLE file)
 }
 
 //=================================================================================================
-void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
+void Game::LoadStock(FileReader& f, vector<ItemSlot>& cnt)
 {
 	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+	f >> count;
 	if(count == 0)
 		return;
 
 	bool can_sort = true;
 	cnt.resize(count);
-	for(vector<ItemSlot>::iterator it = cnt.begin(), end = cnt.end(); it != end; ++it)
+	for(ItemSlot& slot : cnt)
 	{
-		ReadString1(file);
-		ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
-		if(BUF[0] != '$')
-			it->item = Item::Get(BUF);
+		const string& item_id = f.ReadString1();
+		f >> slot.count;
+		if(item_id[0] != '$')
+			slot.item = Item::Get(item_id);
 		else
 		{
 			int quest_refid;
-			ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
-			QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_refid, &cnt);
-			it->item = QUEST_ITEM_PLACEHOLDER;
+			f >> quest_refid;
+			QuestManager::Get().AddQuestItemRequest(&slot.item, BUF, quest_refid, &cnt);
+			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
 	}

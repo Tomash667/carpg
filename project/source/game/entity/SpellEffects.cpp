@@ -28,25 +28,17 @@ void Explo::Save(HANDLE file)
 }
 
 //=================================================================================================
-void Explo::Load(HANDLE file)
+void Explo::Load(FileReader& f)
 {
-	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	ReadFile(file, &size, sizeof(size), &tmp, nullptr);
-	ReadFile(file, &sizemax, sizeof(sizemax), &tmp, nullptr);
-	ReadFile(file, &dmg, sizeof(dmg), &tmp, nullptr);
-	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	hitted.resize(count);
-	int refid;
-	for(uint i = 0; i < count; ++i)
-	{
-		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-		hitted[i] = Unit::GetByRefid(refid);
-	}
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	owner = Unit::GetByRefid(refid);
-	ReadString1(file);
-	tex = ResourceManager::Get<Texture>().GetLoaded(BUF);
+	f >> pos;
+	f >> size;
+	f >> sizemax;
+	f >> dmg;
+	hitted.resize(f.Read<uint>());
+	for(uint i = 0; i < hitted.size(); ++i)
+		hitted[i] = Unit::GetByRefid(f.Read<int>());
+	owner = Unit::GetByRefid(f.Read<int>());
+	tex = ResourceManager::Get<Texture>().GetLoaded(f.ReadString1());
 }
 
 //=================================================================================================

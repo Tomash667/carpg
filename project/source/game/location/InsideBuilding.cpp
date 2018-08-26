@@ -141,8 +141,8 @@ void InsideBuilding::Load(HANDLE file, bool local)
 	ReadFile(file, &xsphere_radius, sizeof(xsphere_radius), &tmp, nullptr);
 	if(LOAD_VERSION >= V_0_5)
 	{
-		ReadString1(file);
-		type = Building::Get(BUF);
+		FileReader f(file);
+		type = Building::Get(f.ReadString1());
 	}
 	else
 	{
@@ -240,7 +240,7 @@ void InsideBuilding::Load(HANDLE file, bool local)
 		for(vector<Explo*>::iterator it = ctx.explos->begin(), end = ctx.explos->end(); it != end; ++it)
 		{
 			*it = new Explo;
-			(*it)->Load(file);
+			(*it)->Load(f);
 		}
 
 		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);

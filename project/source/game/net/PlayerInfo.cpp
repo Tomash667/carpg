@@ -10,43 +10,42 @@ PlayerInfo::PlayerInfo() : pc(nullptr), u(nullptr), clas(Class::INVALID), left(L
 }
 
 //=================================================================================================
-void PlayerInfo::Save(HANDLE file)
+void PlayerInfo::Save(FileWriter& f)
 {
-	WriteString1(file, name);
-	WriteFile(file, &clas, sizeof(clas), &tmp, nullptr);
-	WriteFile(file, &id, sizeof(id), &tmp, nullptr);
-	WriteFile(file, &devmode, sizeof(devmode), &tmp, nullptr);
-	hd.Save(file);
-	int refid = (u ? u->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	WriteStringArray<int, word>(file, notes);
+	f << name;
+	f << clas;
+	f << id;
+	f << devmode;
+	hd.Save(f.GetHandle());
+	f << (u ? u->refid : -1);
+	f.WriteStringArray<int, word>(notes);
 }
 
 //=================================================================================================
-void PlayerInfo::Load(HANDLE file)
+void PlayerInfo::Load(FileReader& f)
 {
-	ReadString1(file, name);
-	ReadFile(file, &clas, sizeof(clas), &tmp, nullptr);
+	f >> name;
+	f >> clas;
 	if(LOAD_VERSION < V_0_4)
 		clas = ClassInfo::OldToNew(clas);
-	ReadFile(file, &id, sizeof(id), &tmp, nullptr);
-	ReadFile(file, &devmode, sizeof(devmode), &tmp, nullptr);
+	f >> id;
+	f >> devmode;
 	int old_left;
 	if(LOAD_VERSION < V_0_5_1)
 	{
 		bool left;
-		ReadFile(file, &left, sizeof(left), &tmp, nullptr);
+		f >> left;
 		old_left = (left ? 1 : 0);
 	}
 	else
 		old_left = -1;
-	hd.Load(file);
+	hd.Load(f.GetHandle());
 	int refid;
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
+	f >> refid;
 	u = Unit::GetByRefid(refid);
-	ReadStringArray<int, word>(file, notes);
+	f.ReadStringArray<int, word>(notes);
 	if(LOAD_VERSION < V_0_5_1)
-		ReadFile(file, &left, sizeof(left), &tmp, nullptr);
+		f >> left;
 	if(old_left == 0 || old_left == -1)
 		left = LEFT_NO;
 	loaded = false;

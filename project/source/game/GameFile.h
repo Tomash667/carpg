@@ -38,6 +38,15 @@ public:
 		if(IsOk())
 			item = Item::Get(id);
 	}
+
+	const Item* ReadItemOptional()
+	{
+		const string& id = ReadString1();
+		if(id.empty())
+			return nullptr;
+		else
+			return Item::Get(id);
+	}
 };
 
 //-----------------------------------------------------------------------------

@@ -151,6 +151,20 @@ public:
 		ReadString1(s);
 	}
 
+	template<typename CountType, typename LengthType>
+	void ReadStringArray(vector<string>& strs)
+	{
+		CountType count = Read<CountType>();
+		if(!ok || count == 0)
+			strs.clear();
+		else
+		{
+			strs.resize(count);
+			for(string& str : strs)
+				ReadString<LengthType>(str);
+		}
+	}
+
 	template<typename T>
 	void Skip(typename std::enable_if<(sizeof(T) <= 8)>::type* = 0)
 	{
@@ -346,6 +360,15 @@ public:
 	void WriteString4(cstring str)
 	{
 		WriteString<uint>(str);
+	}
+
+	template<typename CountType, typename LengthType>
+	void WriteStringArray(const vector<string>& strs)
+	{
+		assert(strs.size() <= (uint)std::numeric_limits<CountType>::max());
+		WriteCasted<CountType>(strs.size());
+		for(const string& str : strs)
+			WriteString<LengthType>(str);
 	}
 
 	template<>
