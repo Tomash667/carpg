@@ -434,7 +434,7 @@ void Game::SaveGame(HANDLE file)
 				int levels = ((MultiInsideLocation*)(*it))->levels.size();
 				WriteFile(file, &levels, sizeof(levels), &tmp, nullptr);
 			}
-			(*it)->Save(file, (game_state == GS_LEVEL && location == *it));
+			(*it)->Save(f, (game_state == GS_LEVEL && location == *it));
 		}
 
 		WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
@@ -819,7 +819,7 @@ void Game::LoadGame(HANDLE file)
 				break;
 			}
 
-			(*it)->Load(file, (game_state2 == GS_LEVEL && current_location == index), loc_token);
+			(*it)->Load(f, (game_state2 == GS_LEVEL && current_location == index), loc_token);
 		}
 		else
 			*it = nullptr;

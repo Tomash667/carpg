@@ -1,4 +1,3 @@
-// podziemia z jednym poziomem
 #include "Pch.h"
 #include "GameCore.h"
 #include "SingleInsideLocation.h"
@@ -26,21 +25,21 @@ void SingleInsideLocation::ApplyContext(LevelContext& ctx)
 }
 
 //=================================================================================================
-void SingleInsideLocation::Save(HANDLE file, bool local)
+void SingleInsideLocation::Save(GameWriter& f, bool local)
 {
-	InsideLocation::Save(file, local);
+	InsideLocation::Save(f, local);
 
 	if(last_visit != -1)
-		SaveLevel(file, local);
+		SaveLevel(f, local);
 }
 
 //=================================================================================================
-void SingleInsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
+void SingleInsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 {
-	InsideLocation::Load(file, local, token);
+	InsideLocation::Load(f, local, token);
 
 	if(last_visit != -1)
-		LoadLevel(file, local);
+		LoadLevel(f, local);
 }
 
 //=================================================================================================

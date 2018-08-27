@@ -33,6 +33,7 @@ class GameWriter;
 class InfoBox;
 class Inventory;
 class Journal;
+class LevelAreaContext;
 class MainMenu;
 class Minimap;
 class MpBox;

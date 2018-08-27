@@ -1,4 +1,3 @@
-// wnêtrze budynku
 #include "Pch.h"
 #include "GameCore.h"
 #include "InsideBuilding.h"
@@ -41,24 +40,22 @@ void InsideBuilding::ApplyContext(LevelContext& ctx)
 }
 
 //=================================================================================================
-void InsideBuilding::Save(HANDLE file, bool local)
+void InsideBuilding::Save(GameWriter& f, bool local)
 {
-	GameWriter f(file);
-
-	WriteFile(file, &offset, sizeof(offset), &tmp, nullptr);
-	WriteFile(file, &inside_spawn, sizeof(inside_spawn), &tmp, nullptr);
-	WriteFile(file, &outside_spawn, sizeof(outside_spawn), &tmp, nullptr);
-	WriteFile(file, &xsphere_pos, sizeof(xsphere_pos), &tmp, nullptr);
-	WriteFile(file, &enter_area, sizeof(enter_area), &tmp, nullptr);
-	WriteFile(file, &exit_area, sizeof(exit_area), &tmp, nullptr);
-	WriteFile(file, &outside_rot, sizeof(outside_rot), &tmp, nullptr);
-	WriteFile(file, &top, sizeof(top), &tmp, nullptr);
-	WriteFile(file, &xsphere_radius, sizeof(xsphere_radius), &tmp, nullptr);
-	WriteString1(file, type->id);
-	WriteFile(file, &level_shift, sizeof(level_shift), &tmp, nullptr);
-	WriteFile(file, &arena1, sizeof(arena1), &tmp, nullptr);
-	WriteFile(file, &arena2, sizeof(arena2), &tmp, nullptr);
-	WriteFile(file, &enter_y, sizeof(enter_y), &tmp, nullptr);
+	f << offset;
+	f << inside_spawn;
+	f << outside_spawn;
+	f << xsphere_pos;
+	f << enter_area;
+	f << exit_area;
+	f << outside_rot;
+	f << top;
+	f << xsphere_radius;
+	f << type->id;
+	f << level_shift;
+	f << arena1;
+	f << arena2;
+	f << enter_y;
 
 	f << units.size();
 	for(Unit* unit : units)
@@ -117,37 +114,33 @@ void InsideBuilding::Save(HANDLE file, bool local)
 }
 
 //=================================================================================================
-void InsideBuilding::Load(HANDLE file, bool local)
+void InsideBuilding::Load(GameReader& f, bool local)
 {
-	GameReader f(file);
 	ApplyContext(ctx);
 
-	ReadFile(file, &offset, sizeof(offset), &tmp, nullptr);
-	ReadFile(file, &inside_spawn, sizeof(inside_spawn), &tmp, nullptr);
-	ReadFile(file, &outside_spawn, sizeof(outside_spawn), &tmp, nullptr);
-	ReadFile(file, &xsphere_pos, sizeof(xsphere_pos), &tmp, nullptr);
-	ReadFile(file, &enter_area, sizeof(enter_area), &tmp, nullptr);
-	ReadFile(file, &exit_area, sizeof(exit_area), &tmp, nullptr);
-	ReadFile(file, &outside_rot, sizeof(outside_rot), &tmp, nullptr);
-	ReadFile(file, &top, sizeof(top), &tmp, nullptr);
-	ReadFile(file, &xsphere_radius, sizeof(xsphere_radius), &tmp, nullptr);
+	f >> offset;
+	f >> inside_spawn;
+	f >> outside_spawn;
+	f >> xsphere_pos;
+	f >> enter_area;
+	f >> exit_area;
+	f >> outside_rot;
+	f >> top;
+	f >> xsphere_radius;
 	if(LOAD_VERSION >= V_0_5)
-	{
-		FileReader f(file);
 		type = Building::Get(f.ReadString1());
-	}
 	else
 	{
 		OLD_BUILDING old_type;
-		ReadFile(file, &old_type, sizeof(old_type), &tmp, nullptr);
+		f >> old_type;
 		type = Building::GetOld(old_type);
 	}
 	assert(type != nullptr);
-	ReadFile(file, &level_shift, sizeof(level_shift), &tmp, nullptr);
-	ReadFile(file, &arena1, sizeof(arena1), &tmp, nullptr);
-	ReadFile(file, &arena2, sizeof(arena2), &tmp, nullptr);
+	f >> level_shift;
+	f >> arena1;
+	f >> arena2;
 	if(LOAD_VERSION >= V_0_3)
-		ReadFile(file, &enter_y, sizeof(enter_y), &tmp, nullptr);
+		f >> enter_y;
 	else
 		enter_y = 1.1f;
 

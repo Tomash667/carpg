@@ -1,4 +1,3 @@
-// dane poziomu lokacji
 #pragma once
 
 #include "Mapa2.h"
@@ -77,8 +76,8 @@ struct InsideLocationLevel : public LevelArea
 		return GetRoom(staircase_down);
 	}
 
-	void SaveLevel(HANDLE file, bool local);
-	void LoadLevel(HANDLE file, bool local);
+	void SaveLevel(GameWriter& f, bool local);
+	void LoadLevel(GameReader& f, bool local);
 
 	void BuildRefidTable();
 

@@ -1,4 +1,3 @@
-// zewnêtrzna lokacja
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -27,8 +26,8 @@ struct OutsideLocation : public Location, public LevelArea
 	// from ILevel
 	void ApplyContext(LevelContext& ctx) override;
 	// from Location
-	void Save(HANDLE file, bool local) override;
-	void Load(HANDLE file, bool local, LOCATION_TOKEN token) override;
+	void Save(GameWriter& f, bool local) override;
+	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
 	void BuildRefidTable() override;
 	bool FindUnit(Unit* unit, int* level) override;
 	Unit* FindUnit(UnitData* data, int& at_level) override;

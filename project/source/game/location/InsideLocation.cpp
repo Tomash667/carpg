@@ -1,26 +1,26 @@
-// podziemia
 #include "Pch.h"
 #include "GameCore.h"
 #include "InsideLocation.h"
+#include "GameFile.h"
 
 //=================================================================================================
-void InsideLocation::Save(HANDLE file, bool local)
+void InsideLocation::Save(GameWriter& f, bool local)
 {
-	Location::Save(file, local);
+	Location::Save(f, local);
 
-	WriteFile(file, &target, sizeof(target), &tmp, nullptr);
-	WriteFile(file, &special_room, sizeof(special_room), &tmp, nullptr);
-	WriteFile(file, &from_portal, sizeof(from_portal), &tmp, nullptr);
+	f << target;
+	f << special_room;
+	f << from_portal;
 }
 
 //=================================================================================================
-void InsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
+void InsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 {
-	Location::Load(file, local, token);
+	Location::Load(f, local, token);
 
-	ReadFile(file, &target, sizeof(target), &tmp, nullptr);
-	ReadFile(file, &special_room, sizeof(special_room), &tmp, nullptr);
-	ReadFile(file, &from_portal, sizeof(from_portal), &tmp, nullptr);
+	f >> target;
+	f >> special_room;
+	f >> from_portal;
 }
 
 //=================================================================================================

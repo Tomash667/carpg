@@ -6,6 +6,7 @@
 #include "ResourceManager.h"
 #include "Object.h"
 #include "Unit.h"
+#include "GameFile.h"
 
 //=================================================================================================
 City::~City()
@@ -14,11 +15,9 @@ City::~City()
 }
 
 //=================================================================================================
-void City::Save(HANDLE file, bool local)
+void City::Save(GameWriter& f, bool local)
 {
-	OutsideLocation::Save(file, local);
-
-	FileWriter f(file);
+	OutsideLocation::Save(f, local);
 
 	f << citizens;
 	f << citizens_world;
@@ -51,7 +50,7 @@ void City::Save(HANDLE file, bool local)
 		f << inside_offset;
 		f << inside_buildings.size();
 		for(InsideBuilding* b : inside_buildings)
-			b->Save(file, local);
+			b->Save(f, local);
 
 		f << quest_mayor;
 		f << quest_mayor_time;
@@ -63,11 +62,9 @@ void City::Save(HANDLE file, bool local)
 }
 
 //=================================================================================================
-void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
+void City::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 {
-	OutsideLocation::Load(file, local, token);
-
-	FileReader f(file);
+	OutsideLocation::Load(f, local, token);
 
 	f >> citizens;
 	f >> citizens_world;
@@ -115,7 +112,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			for(InsideBuilding*& b : inside_buildings)
 			{
 				b = new InsideBuilding;
-				b->Load(file, local);
+				b->Load(f, local);
 				b->ctx.building_id = index;
 				b->ctx.mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
 				b->ctx.maxe = b->ctx.mine + Int2(256, 256);
@@ -189,7 +186,7 @@ void City::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			for(InsideBuilding*& b : inside_buildings)
 			{
 				b = new InsideBuilding;
-				b->Load(file, local);
+				b->Load(f, local);
 				b->ctx.building_id = index;
 				b->ctx.mine = Int2(b->level_shift.x * 256, b->level_shift.y * 256);
 				b->ctx.maxe = b->ctx.mine + Int2(256, 256);

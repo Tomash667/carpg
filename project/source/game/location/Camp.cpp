@@ -1,19 +1,20 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Camp.h"
+#include "GameFile.h"
 
 //=================================================================================================
-void Camp::Save(HANDLE file, bool local)
+void Camp::Save(GameWriter& f, bool local)
 {
-	OutsideLocation::Save(file, local);
+	OutsideLocation::Save(f, local);
 
-	WriteFile(file, &create_time, sizeof(create_time), &tmp, nullptr);
+	f << create_time;
 }
 
 //=================================================================================================
-void Camp::Load(HANDLE file, bool local, LOCATION_TOKEN token)
+void Camp::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 {
-	OutsideLocation::Load(file, local, token);
+	OutsideLocation::Load(f, local, token);
 
-	ReadFile(file, &create_time, sizeof(create_time), &tmp, nullptr);
+	f >> create_time;
 }

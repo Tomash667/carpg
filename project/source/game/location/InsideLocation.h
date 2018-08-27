@@ -1,4 +1,3 @@
-// podziemia
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -16,8 +15,8 @@ struct InsideLocation : public Location
 	}
 
 	// from Location
-	void Save(HANDLE file, bool local) override;
-	void Load(HANDLE file, bool local, LOCATION_TOKEN token) override;
+	void Save(GameWriter& f, bool local) override;
+	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
 
 	virtual void SetActiveLevel(int _level) = 0;
 	virtual bool HaveUpStairs() const = 0;

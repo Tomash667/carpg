@@ -1,4 +1,3 @@
-// dane poziomu lokacji
 #include "Pch.h"
 #include "GameCore.h"
 #include "InsideLocationLevel.h"
@@ -164,13 +163,11 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, i
 }
 
 //=================================================================================================
-void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
+void InsideLocationLevel::SaveLevel(GameWriter& f, bool local)
 {
-	GameWriter f(file);
-
-	WriteFile(file, &w, sizeof(w), &tmp, nullptr);
-	WriteFile(file, &h, sizeof(h), &tmp, nullptr);
-	WriteFile(file, map, sizeof(Pole)*w*h, &tmp, nullptr);
+	f << w;
+	f << h;
+	f.Write(map, sizeof(Pole)*w*h);
 	
 	// units
 	f << units.size();
@@ -209,8 +206,8 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 
 	// lights
 	f << lights.size();
-	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
-		it->Save(f);
+	for(Light& light : lights)
+		light.Save(f);
 
 	// rooms
 	f << rooms.size();
@@ -222,22 +219,20 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 	for(Trap* trap : traps)
 		trap->Save(f, local);
 
-	WriteFile(file, &staircase_up, sizeof(staircase_up), &tmp, nullptr);
-	WriteFile(file, &staircase_down, sizeof(staircase_down), &tmp, nullptr);
-	WriteFile(file, &staircase_up_dir, sizeof(staircase_up_dir), &tmp, nullptr);
-	WriteFile(file, &staircase_down_dir, sizeof(staircase_down_dir), &tmp, nullptr);
-	WriteFile(file, &staircase_down_in_wall, sizeof(staircase_down_in_wall), &tmp, nullptr);
+	f << staircase_up;
+	f << staircase_down;
+	f << staircase_up_dir;
+	f << staircase_down_dir;
+	f << staircase_down_in_wall;
 }
 
 //=================================================================================================
-void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
+void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 {
-	GameReader f(file);
-
-	ReadFile(file, &w, sizeof(w), &tmp, nullptr);
-	ReadFile(file, &h, sizeof(h), &tmp, nullptr);
+	f >> w;
+	f >> h;
 	map = new Pole[w*h];
-	ReadFile(file, map, sizeof(Pole)*w*h, &tmp, nullptr);
+	f.Read(map, sizeof(Pole)*w*h);
 
 	// units
 	units.resize(f.Read<uint>());
@@ -312,11 +307,11 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 		trap->Load(f, local);
 	}
 
-	ReadFile(file, &staircase_up, sizeof(staircase_up), &tmp, nullptr);
-	ReadFile(file, &staircase_down, sizeof(staircase_down), &tmp, nullptr);
-	ReadFile(file, &staircase_up_dir, sizeof(staircase_up_dir), &tmp, nullptr);
-	ReadFile(file, &staircase_down_dir, sizeof(staircase_down_dir), &tmp, nullptr);
-	ReadFile(file, &staircase_down_in_wall, sizeof(staircase_down_in_wall), &tmp, nullptr);
+	f >> staircase_up;
+	f >> staircase_down;
+	f >> staircase_up_dir;
+	f >> staircase_down_dir;
+	f >> staircase_down_in_wall;
 
 	// konwersja ³awy w obrócon¹ ³awê i ustawienie wariantu
 	if(LOAD_VERSION < V_0_2_20)

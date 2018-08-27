@@ -1,4 +1,3 @@
-// zewnêtrzna lokacja
 #include "Pch.h"
 #include "GameCore.h"
 #include "OutsideLocation.h"
@@ -61,10 +60,9 @@ void OutsideLocation::ApplyContext(LevelContext& ctx)
 }
 
 //=================================================================================================
-void OutsideLocation::Save(HANDLE file, bool local)
+void OutsideLocation::Save(GameWriter& f, bool local)
 {
-	GameWriter f(file);
-	Location::Save(file, local);
+	Location::Save(f, local);
 
 	if(last_visit != -1)
 	{
@@ -98,19 +96,18 @@ void OutsideLocation::Save(HANDLE file, bool local)
 		for(Blood& blood : bloods)
 			blood.Save(f);
 
-		// teren
-		WriteFile(file, tiles, sizeof(TerrainTile)*size*size, &tmp, nullptr);
+		// terrain
+		f.Write(tiles, sizeof(TerrainTile)*size*size);
 		int size2 = size + 1;
 		size2 *= size2;
-		WriteFile(file, h, sizeof(float)*size2, &tmp, nullptr);
+		f.Write(h, sizeof(float)*size2);
 	}
 }
 
 //=================================================================================================
-void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
+void OutsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 {
-	GameReader f(file);
-	Location::Load(file, local, token);
+	Location::Load(f, local, token);
 
 	if(last_visit != -1)
 	{
@@ -161,14 +158,14 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 		for(Blood& blood : bloods)
 			blood.Load(f);
 
-		// teren
+		// terrain
 		int size2 = size + 1;
 		size2 *= size2;
 		h = new float[size2];
 		tiles = new TerrainTile[size*size];
 		if(LOAD_VERSION >= V_0_3)
 		{
-			ReadFile(file, tiles, sizeof(TerrainTile)*size*size, &tmp, nullptr);
+			f.Read(tiles, sizeof(TerrainTile)*size*size);
 			if(LOAD_VERSION < V_0_5)
 			{
 				for(int i = 0; i < size*size; ++i)
@@ -182,7 +179,7 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 		else
 		{
 			OLD::TERRAIN_TILE* old_tiles = new OLD::TERRAIN_TILE[size*size];
-			ReadFile(file, old_tiles, sizeof(OLD::TERRAIN_TILE)*size*size, &tmp, nullptr);
+			f.Read(old_tiles, sizeof(OLD::TERRAIN_TILE)*size*size);
 			for(int i = 0; i < size*size; ++i)
 			{
 				TerrainTile& tt = tiles[i];
@@ -226,7 +223,7 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			}
 			delete[] old_tiles;
 		}
-		ReadFile(file, h, sizeof(float)*size2, &tmp, nullptr);
+		f.Read(h, sizeof(float)*size2);
 
 		// konwersja ³awy w obrócon¹ ³awê i ustawienie wariantu
 		if(LOAD_VERSION < V_0_2_20)
