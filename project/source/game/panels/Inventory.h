@@ -8,10 +8,6 @@
 #include "TooltipController.h"
 
 //-----------------------------------------------------------------------------
-struct Unit;
-struct Game;
-
-//-----------------------------------------------------------------------------
 class Inventory : public GamePanel
 {
 public:

@@ -73,31 +73,6 @@ enum LOCATION_STATE
 };
 
 //-----------------------------------------------------------------------------
-struct Quest_Dungeon;
-struct Location;
-
-//-----------------------------------------------------------------------------
-struct Portal
-{
-	Vec3 pos;
-	float rot;
-	int at_level;
-	int target; // portal wyjœciowy
-	int target_loc; // docelowa lokacja
-	Portal* next_portal;
-
-	static const int MIN_SIZE = 17;
-
-	void Save(HANDLE file);
-	void Load(Location* loc, HANDLE file);
-
-	Vec3 GetSpawnPos() const
-	{
-		return pos + Vec3(sin(rot) * 2, 0, cos(rot) * 2);
-	}
-};
-
-//-----------------------------------------------------------------------------
 // przypisanie takiego quest do lokacji spowoduje ¿e nie zostanie zajêta przez inny quest
 #define ACTIVE_QUEST_HOLDER 0xFFFFFFFE
 

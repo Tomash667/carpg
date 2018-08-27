@@ -420,9 +420,6 @@
     <ClCompile Include="source\game\quests\Quest.cpp">
       <Filter>3. game\quests</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\entity\Camera.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\GameFile.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
@@ -687,6 +684,12 @@
     </ClCompile>
     <ClCompile Include="source\core\CriticalSection.cpp">
       <Filter>1. core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\Portal.cpp">
+      <Filter>3. game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\Camera.cpp">
+      <Filter>3. game\entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1362,6 +1365,9 @@
     </ClInclude>
     <ClInclude Include="source\engine\Key.h">
       <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Portal.h">
+      <Filter>3. game\entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

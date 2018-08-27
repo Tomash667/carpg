@@ -16,18 +16,55 @@
 using namespace SLNet;
 
 //-----------------------------------------------------------------------------
-class Camera;
+class ActionPanel;
+class BookPanel;
+class Console;
+class Controls;
+class CreateCharacterPanel;
+class CreateServerPanel;
+class Game;
+class GameGui;
+class GameMenu;
+class GameMessages;
+class GamePanel;
+class GamePanelContainer;
 class GameReader;
 class GameWriter;
+class InfoBox;
+class Inventory;
+class Journal;
+class MainMenu;
+class Minimap;
+class MpBox;
+class MultiplayerPanel;
+class Options;
+class PickServerPanel;
+class QuestManager;
+class SaveLoad;
 class ScriptManager;
+class ServerPanel;
+class StatsPanel;
+class TeamPanel;
+class WorldMapGui;
+
+//-----------------------------------------------------------------------------
+struct Action;
 struct AIController;
 struct Blood;
+struct Book;
 struct Bullet;
+struct Camera;
+struct CameraCollider;
 struct Chest;
+struct City;
+struct CityBuilding;
+struct CollisionObject;
 struct CreatedCharacter;
 struct DialogContext;
+struct DialogEntry;
 struct Door;
 struct Electro;
+struct Encounter;
 struct EntityInterpolator;
 struct Explo;
 struct GameDialog;
@@ -36,19 +73,29 @@ struct HeroData;
 struct Human;
 struct HumanData;
 struct Item;
+struct InsideBuilding;
+struct InsideLocationLevel;
 struct Light;
+struct Location;
 struct Object;
 struct PlayerController;
 struct PlayerInfo;
 struct Portal;
+struct Quest_Dungeon;
+struct Quest_Event;
 struct Room;
 struct SpeechBubble;
 struct Spell;
+struct TerrainTile;
 struct Trap;
 struct Unit;
 struct UnitEventHandler;
 struct Usable;
 
+//-----------------------------------------------------------------------------
+enum TRAP_TYPE;
+
+//-----------------------------------------------------------------------------
 // FIXME: remove
 extern DWORD tmp;
 

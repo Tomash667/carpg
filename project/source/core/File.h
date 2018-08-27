@@ -267,19 +267,19 @@ public:
 
 	bool Open(Cstring filename);
 	using StreamReader::Read;
-	void Read(void* ptr, uint size) override;
+	void Read(void* ptr, uint size) override final;
 	void ReadToString(string& s);
 	using StreamReader::ReadToBuffer;
 	static Buffer* ReadToBuffer(Cstring path);
 	static Buffer* ReadToBuffer(Cstring path, uint offset, uint size);
 	using StreamReader::Skip;
-	void Skip(uint size) override;
-	uint GetSize() const override { return size; }
-	uint GetPos() const override;
+	void Skip(uint size) override final;
+	uint GetSize() const override final { return size; }
+	uint GetPos() const override final;
 	FileHandle GetHandle() const { return file; }
 	FileTime GetTime() const;
 	bool IsOpen() const { return file != INVALID_FILE_HANDLE; }
-	bool SetPos(uint pos) override;
+	bool SetPos(uint pos) override final;
 
 protected:
 	FileHandle file;
@@ -288,7 +288,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class MemoryReader : public StreamReader
+class MemoryReader final : public StreamReader
 {
 public:
 	MemoryReader(BufferHandle& buf);
@@ -484,16 +484,16 @@ public:
 
 	bool Open(cstring filename);
 	using StreamWriter::Write;
-	void Write(const void* ptr, uint size) override;
+	void Write(const void* ptr, uint size) override final;
 	void Flush();
-	uint GetPos() const override;
+	uint GetPos() const override final;
 	uint GetSize() const;
 	FileHandle GetHandle() const { return file; }
 	bool IsOpen() const { return file != INVALID_FILE_HANDLE; }
 	operator bool() const { return IsOpen(); }
 	void operator = (FileWriter& f);
 	void SetTime(FileTime file_time);
-	bool SetPos(uint pos) override;
+	bool SetPos(uint pos) override final;
 
 protected:
 	FileHandle file;

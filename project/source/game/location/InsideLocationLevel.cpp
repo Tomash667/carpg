@@ -4,6 +4,7 @@
 #include "InsideLocationLevel.h"
 #include "Game.h"
 #include "SaveState.h"
+#include "GameFile.h"
 
 //=================================================================================================
 InsideLocationLevel::~InsideLocationLevel()
@@ -165,19 +166,16 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, i
 //=================================================================================================
 void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 {
-	FileWriter f(file);
+	GameWriter f(file);
 
 	WriteFile(file, &w, sizeof(w), &tmp, nullptr);
 	WriteFile(file, &h, sizeof(h), &tmp, nullptr);
 	WriteFile(file, map, sizeof(Pole)*w*h, &tmp, nullptr);
-
-	uint ile;
-
-	// jednostki
-	ile = units.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	
+	// units
+	f << units.size();
+	for(Unit* unit : units)
+		unit->Save(f, local);
 
 	// chests
 	f << chests.size();
@@ -199,11 +197,10 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 	for(GroundItem* item : items)
 		item->Save(f);
 
-	// u¿ywalne
-	ile = usables.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	// usable objects
+	f << usables.size();
+	for(Usable* usable : usables)
+		usable->Save(f, local);
 
 	// bloods
 	f << bloods.size();
@@ -215,11 +212,10 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
 		it->Save(f);
 
-	// pokoje
-	ile = rooms.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
-		it->Save(file);
+	// rooms
+	f << rooms.size();
+	for(Room& room : rooms)
+		room.Save(f);
 
 	// traps
 	f << traps.size();
@@ -236,22 +232,20 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 //=================================================================================================
 void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 {
-	FileReader f(file);
+	GameReader f(file);
 
 	ReadFile(file, &w, sizeof(w), &tmp, nullptr);
 	ReadFile(file, &h, sizeof(h), &tmp, nullptr);
 	map = new Pole[w*h];
 	ReadFile(file, map, sizeof(Pole)*w*h, &tmp, nullptr);
 
-	// jednostki
-	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	units.resize(ile);
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
+	// units
+	units.resize(f.Read<uint>());
+	for(Unit*& unit : units)
 	{
-		*it = new Unit;
-		Unit::AddRefid(*it);
-		(*it)->Load(file, local);
+		unit = new Unit;
+		Unit::AddRefid(unit);
+		unit->Load(f, local);
 	}
 
 	// chests
@@ -286,14 +280,13 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 		item->Load(f);
 	}
 
-	// u¿ywalne
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	usables.resize(ile);
-	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
+	// usable objects
+	usables.resize(f.Read<uint>());
+	for(Usable*& usable : usables)
 	{
-		*it = new Usable;
-		Usable::AddRefid(*it);
-		(*it)->Load(file, local);
+		usable = new Usable;
+		Usable::AddRefid(usable);
+		usable->Load(f, local);
 	}
 
 	// bloods
@@ -306,11 +299,10 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	for(Light& light : lights)
 		light.Load(f);
 
-	// pokoje
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	rooms.resize(ile);
-	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
-		it->Load(file);
+	// rooms
+	rooms.resize(f.Read<uint>());
+	for(Room& room : rooms)
+		room.Load(f);
 
 	// traps
 	traps.resize(f.Read<uint>());

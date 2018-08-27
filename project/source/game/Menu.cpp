@@ -27,6 +27,7 @@
 #include "Team.h"
 #include "SaveState.h"
 #include "SoundManager.h"
+#include "Portal.h"
 
 extern string g_ctime;
 

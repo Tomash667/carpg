@@ -6,6 +6,7 @@
 #include "InsideLocation.h"
 #include "Action.h"
 #include "Profiler.h"
+#include "Portal.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------

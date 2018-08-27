@@ -511,7 +511,7 @@ void Game::SaveGame(HANDLE file)
 	game_gui->Save(f);
 
 	// rumors/notes
-	game_gui->journal->Save(file);
+	game_gui->journal->Save(f);
 
 	WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
 	++check_id;
@@ -893,7 +893,7 @@ void Game::LoadGame(HANDLE file)
 		for(uint i = 0; i < ile; ++i)
 		{
 			Unit* u = new Unit;
-			u->Load(file, false);
+			u->Load(f, false);
 			Unit::AddRefid(u);
 			u->CreateMesh(Unit::CREATE_MESH::ON_WORLDMAP);
 
@@ -1043,7 +1043,7 @@ void Game::LoadGame(HANDLE file)
 	game_gui->Load(f);
 
 	// rumors/notes
-	game_gui->journal->Load(file);
+	game_gui->journal->Load(f);
 
 	// arena
 	arena_tryb = Arena_Brak;

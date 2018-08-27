@@ -30,6 +30,7 @@
 #include "BuildingGroup.h"
 #include "Stock.h"
 #include "UnitGroup.h"
+#include "Portal.h"
 #include "DirectX.h"
 
 extern const float TRAVEL_SPEED = 28.f;

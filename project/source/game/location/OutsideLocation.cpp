@@ -7,6 +7,7 @@
 #include "Object.h"
 #include "Chest.h"
 #include "GroundItem.h"
+#include "GameFile.h"
 
 namespace OLD
 {
@@ -62,16 +63,15 @@ void OutsideLocation::ApplyContext(LevelContext& ctx)
 //=================================================================================================
 void OutsideLocation::Save(HANDLE file, bool local)
 {
-	FileWriter f(file);
+	GameWriter f(file);
 	Location::Save(file, local);
 
 	if(last_visit != -1)
 	{
-		// jednostki
-		uint ile = units.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
-			(*it)->Save(file, local);
+		// units
+		f << units.size();
+		for(Unit* unit : units)
+			unit->Save(f, local);
 
 		// objects
 		f << objects.size();
@@ -88,18 +88,15 @@ void OutsideLocation::Save(HANDLE file, bool local)
 		for(GroundItem* item : items)
 			item->Save(f);
 
-		// u¿ywalne
-		ile = usables.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
-			(*it)->Save(file, local);
+		// usable objects
+		f << usables.size();
+		for(Usable* usable : usables)
+			usable->Save(f, local);
 
-		// krew
-		FileWriter f(file);
-		ile = bloods.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
-			it->Save(f);
+		// blood
+		f << bloods.size();
+		for(Blood& blood : bloods)
+			blood.Save(f);
 
 		// teren
 		WriteFile(file, tiles, sizeof(TerrainTile)*size*size, &tmp, nullptr);
@@ -112,20 +109,18 @@ void OutsideLocation::Save(HANDLE file, bool local)
 //=================================================================================================
 void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 {
-	FileReader f(file);
+	GameReader f(file);
 	Location::Load(file, local, token);
 
 	if(last_visit != -1)
 	{
-		// jednostki
-		uint ile;
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		units.resize(ile);
-		for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
+		// units
+		units.resize(f.Read<uint>());
+		for(Unit*& unit : units)
 		{
-			*it = new Unit;
-			Unit::AddRefid(*it);
-			(*it)->Load(file, local);
+			unit = new Unit;
+			Unit::AddRefid(unit);
+			unit->Load(f, local);
 		}
 
 		// objects
@@ -152,22 +147,19 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			item->Load(f);
 		}
 
-		// u¿ywalne
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		usables.resize(ile);
-		for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
+		// usable objects
+		usables.resize(f.Read<uint>());
+		for(Usable*& usable : usables)
 		{
-			*it = new Usable;
-			Usable::AddRefid(*it);
-			(*it)->Load(file, local);
+			usable = new Usable;
+			Usable::AddRefid(usable);
+			usable->Load(f, local);
 		}
 
-		// krew
-		FileReader f(file);
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		bloods.resize(ile);
-		for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
-			it->Load(f);
+		// bloods
+		bloods.resize(f.Read<uint>());
+		for(Blood& blood : bloods)
+			blood.Load(f);
 
 		// teren
 		int size2 = size + 1;

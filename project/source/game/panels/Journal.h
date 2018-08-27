@@ -4,9 +4,6 @@
 #include "GamePanel.h"
 
 //-----------------------------------------------------------------------------
-struct Game;
-
-//-----------------------------------------------------------------------------
 class Journal : public GamePanel
 {
 public:
@@ -39,8 +36,8 @@ public:
 	void NeedUpdate(Mode mode, int quest_index = 0);
 	void LoadData();
 	void AddRumor(cstring text);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 
 	vector<string>& GetNotes() { return notes; }
 	vector<string>& GetRumors() { return rumors; }

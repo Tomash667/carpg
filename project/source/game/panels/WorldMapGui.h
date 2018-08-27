@@ -5,13 +5,6 @@
 #include "Location.h"
 
 //-----------------------------------------------------------------------------
-struct Game;
-struct City;
-class MpBox;
-class Journal;
-class GameMessages;
-
-//-----------------------------------------------------------------------------
 class WorldMapGui : public Control
 {
 public:

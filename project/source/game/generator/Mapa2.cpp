@@ -2084,38 +2084,29 @@ void free_cave_data()
 	Cave::free_cave_data();
 }
 
-extern DWORD tmp;
-
 //=================================================================================================
-void Room::Save(HANDLE file)
+void Room::Save(FileWriter& f)
 {
-	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	WriteFile(file, &size, sizeof(size), &tmp, nullptr);
-	uint ile = connected.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	if(ile)
-		WriteFile(file, &connected[0], sizeof(int)*ile, &tmp, nullptr);
-	WriteFile(file, &target, sizeof(target), &tmp, nullptr);
+	f << pos;
+	f << size;
+	f << connected;
+	f << target;
 }
 
 //=================================================================================================
-void Room::Load(HANDLE file)
+void Room::Load(FileReader& f)
 {
-	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	ReadFile(file, &size, sizeof(size), &tmp, nullptr);
-	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	connected.resize(ile);
-	if(ile)
-		ReadFile(file, &connected[0], sizeof(int)*ile, &tmp, nullptr);
+	f >> pos;
+	f >> size;
+	f >> connected;
 	if(LOAD_VERSION >= V_0_5)
-		ReadFile(file, &target, sizeof(target), &tmp, nullptr);
+		f >> target;
 	else
 	{
 		int old_target;
 		bool corridor;
-		ReadFile(file, &old_target, sizeof(old_target), &tmp, nullptr);
-		ReadFile(file, &corridor, sizeof(corridor), &tmp, nullptr);
+		f >> old_target;
+		f >> corridor;
 		if(old_target == 0)
 			target = (corridor ? RoomTarget::Corridor : RoomTarget::None);
 		else

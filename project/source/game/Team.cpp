@@ -3,6 +3,7 @@
 #include "Team.h"
 #include "Unit.h"
 #include "SaveState.h"
+#include "GameFile.h"
 
 TeamSingleton Team;
 
@@ -240,7 +241,7 @@ bool TeamSingleton::IsTeamNotBusy()
 	return true;
 }
 
-void TeamSingleton::Load(FileReader& f)
+void TeamSingleton::Load(GameReader& f)
 {
 	members.resize(f.Read<uint>());
 	for(Unit*& unit : members)
@@ -282,7 +283,7 @@ void TeamSingleton::Reset()
 	free_recruit = true;
 }
 
-void TeamSingleton::Save(FileWriter& f)
+void TeamSingleton::Save(GameWriter& f)
 {
 	f << GetTeamSize();
 	for(Unit* unit : members)
@@ -298,12 +299,12 @@ void TeamSingleton::Save(FileWriter& f)
 	f << free_recruit;
 }
 
-void TeamSingleton::SaveOnWorldmap(FileWriter& f)
+void TeamSingleton::SaveOnWorldmap(GameWriter& f)
 {
 	f << GetTeamSize();
 	for(Unit* unit : members)
 	{
-		unit->Save(f.GetHandle(), false);
+		unit->Save(f, false);
 		unit->refid = (int)Unit::refid_table.size();
 		Unit::refid_table.push_back(unit);
 	}

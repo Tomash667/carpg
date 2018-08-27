@@ -99,50 +99,34 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 {
 	assert(dir);
 
-	WIN32_FIND_DATA find_data;
-	HANDLE find = FindFirstFile(Format("%s/*.*", dir), &find_data);
+	int dirlen = strlen(dir) + 1;
 
-	if(find == INVALID_HANDLE_VALUE)
+	bool ok = io::FindFiles(Format("%s/*.*", dir), [=](const io::FileInfo& file_info)
+	{
+		if(file_info.is_dir && subdir)
+		{
+			LocalString path = Format("%s/%s", dir, file_info.filename);
+			AddDir(path);
+		}
+		else
+		{
+			cstring path = Format("%s/%s", dir, file_info.filename);
+			Resource* res = AddResource(file_info.filename, path);
+			if(res)
+			{
+				res->pak_index = INVALID_PAK;
+				res->path = path;
+				res->filename = res->path.c_str() + dirlen;
+			}
+		}
+	});
+
+	if(!ok)
 	{
 		DWORD result = GetLastError();
 		Error("ResourceManager: Failed to add directory '%s' (%u).", dir, result);
 		return false;
 	}
-
-	int dirlen = strlen(dir) + 1;
-
-	do
-	{
-		if(strcmp(find_data.cFileName, ".") != 0 && strcmp(find_data.cFileName, "..") != 0)
-		{
-			if(IS_SET(find_data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))
-			{
-				// subdirectory
-				if(subdir)
-				{
-					LocalString path = Format("%s/%s", dir, find_data.cFileName);
-					AddDir(path);
-				}
-			}
-			else
-			{
-				cstring path = Format("%s/%s", dir, find_data.cFileName);
-				Resource* res = AddResource(find_data.cFileName, path);
-				if(res)
-				{
-					res->pak_index = INVALID_PAK;
-					res->path = path;
-					res->filename = res->path.c_str() + dirlen;
-				}
-			}
-		}
-	} while(FindNextFile(find, &find_data) != 0);
-
-	DWORD result = GetLastError();
-	if(result != ERROR_NO_MORE_FILES)
-		Error("ResourceManager: Failed to add other files in directory '%s' (%u).", dir, result);
-
-	FindClose(find);
 
 	return true;
 }

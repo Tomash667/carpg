@@ -7,13 +7,9 @@
 class GameReader final : public FileReader
 {
 public:
-	explicit GameReader(HANDLE file) : FileReader(file)
-	{
-	}
-
-	explicit GameReader(cstring filename) : FileReader(filename)
-	{
-	}
+	explicit GameReader(HANDLE file) : FileReader(file) {}
+	explicit GameReader(cstring filename) : FileReader(filename) {}
+	explicit GameReader(const FileReader& f) : FileReader(f.GetHandle()) {}
 
 	using FileReader::operator >> ;
 
@@ -43,13 +39,13 @@ public:
 		usable = Usable::GetByRefid(refid);
 	}
 
-	const Item* ReadOptional()
+	void ReadOptional(const Item*& item)
 	{
 		const string& id = ReadString1();
 		if(id.empty())
-			return nullptr;
+			item = nullptr;
 		else
-			return Item::Get(id);
+			item = Item::Get(id);
 	}
 };
 
@@ -86,7 +82,7 @@ public:
 			Write<byte>(0);
 	}
 
-	const Item* WriteOptional(const Item* item)
+	void WriteOptional(const Item* item)
 	{
 		if(item)
 			WriteString1(item->id);

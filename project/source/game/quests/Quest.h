@@ -16,13 +16,6 @@ enum QuestDialog
 };
 
 //-----------------------------------------------------------------------------
-struct DialogEntry;
-struct Game;
-struct GameDialog;
-struct Item;
-class QuestManager;
-
-//-----------------------------------------------------------------------------
 enum TimeoutType
 {
 	TIMEOUT_NORMAL,

@@ -42,10 +42,10 @@ public:
 	bool IsLeader(const Unit* unit) { assert(unit); return unit == GetLeader(); }
 	bool IsTeamMember(Unit& unit);
 	bool IsTeamNotBusy();
-	void Load(FileReader& f);
+	void Load(GameReader& f);
 	void Reset();
-	void Save(FileWriter& f);
-	void SaveOnWorldmap(FileWriter& f);
+	void Save(GameWriter& f);
+	void SaveOnWorldmap(GameWriter& f);
 
 	vector<Unit*> members; // all team members
 	vector<Unit*> active_members; // team members that get gold (without quest units)

@@ -26,34 +26,6 @@
 #include "Unit.h"
 #include "ResourceManager.h"
 
-enum TRAP_TYPE;
-
-struct CameraCollider;
-struct City;
-struct CityBuilding;
-struct Encounter;
-struct InsideBuilding;
-struct InsideLocationLevel;
-struct Quest_Event;
-struct TerrainTile;
-
-class Console;
-class Controls;
-class CreateCharacterPanel;
-class CreateServerPanel;
-class DialogBox;
-class GameGui;
-class GameMenu;
-class InfoBox;
-class MainMenu;
-class MultiplayerPanel;
-class Options;
-class PickServerPanel;
-class SaveLoad;
-class ServerPanel;
-class WorldMapGui;
-class ScriptManager;
-
 //#define DRAW_LOCAL_PATH
 #ifdef DRAW_LOCAL_PATH
 #	ifndef _DEBUG
@@ -368,8 +340,9 @@ struct ConfigVar
 
 typedef std::map<Mesh*, TEX> ItemTextureMap;
 
-struct Game final : public Engine, public UnitEventHandler
+class Game final : public Engine, public UnitEventHandler
 {
+public:
 	Game();
 	~Game();
 

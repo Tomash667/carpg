@@ -12,6 +12,7 @@
 #include "GameGui.h"
 #include "AIController.h"
 #include "Team.h"
+#include "Portal.h"
 
 //=================================================================================================
 void Quest_Evil::Start()

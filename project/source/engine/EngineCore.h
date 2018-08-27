@@ -10,6 +10,10 @@ struct StartupOptions;
 struct TrailParticleEmitter;
 class SoundManager;
 
+// Gui types
+class DialogBox;
+class PickItemDialog;
+
 // Windows types
 struct HWND__;
 typedef HWND__* HWND;

@@ -5,6 +5,7 @@
 #include "InsideLocation.h"
 #include "City.h"
 #include "Team.h"
+#include "Portal.h"
 
 //=================================================================================================
 Minimap::Minimap()

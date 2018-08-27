@@ -1489,12 +1489,10 @@ void Unit::Load(GameReader& f, bool local)
 	if(can_sort && (LOAD_VERSION < V_0_2_20 || content::require_update))
 		SortItems(items);
 	f >> weight;
-	// TODO
 	if(can_sort && content::require_update)
 		RecalculateWeight();
 
-	int guard_refid;
-	ReadFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);
+	int guard_refid = f.Read<int>();
 	if(guard_refid == -1)
 		guard_target = nullptr;
 	else
@@ -1502,8 +1500,7 @@ void Unit::Load(GameReader& f, bool local)
 
 	if(LOAD_VERSION >= V_0_5)
 	{
-		int summoner_refid;
-		ReadFile(file, &summoner_refid, sizeof(summoner_refid), &tmp, nullptr);
+		int summoner_refid = f.Read<int>();
 		if(summoner_refid == -1)
 			summoner = nullptr;
 		else
@@ -1531,34 +1528,34 @@ void Unit::Load(GameReader& f, bool local)
 	if(local)
 	{
 		CreateMesh(CREATE_MESH::LOAD);
-		mesh_inst->Load(FileReader(file));
-		ReadFile(file, &animation, sizeof(animation), &tmp, nullptr);
-		ReadFile(file, &current_animation, sizeof(current_animation), &tmp, nullptr);
+		mesh_inst->Load(f);
+		f >> animation;
+		f >> current_animation;
 
-		ReadFile(file, &prev_pos, sizeof(prev_pos), &tmp, nullptr);
-		ReadFile(file, &speed, sizeof(speed), &tmp, nullptr);
-		ReadFile(file, &prev_speed, sizeof(prev_speed), &tmp, nullptr);
-		ReadFile(file, &animation_state, sizeof(animation_state), &tmp, nullptr);
-		ReadFile(file, &attack_id, sizeof(attack_id), &tmp, nullptr);
-		ReadFile(file, &action, sizeof(action), &tmp, nullptr);
+		f >> prev_pos;
+		f >> speed;
+		f >> prev_speed;
+		f >> animation_state;
+		f >> attack_id;
+		f >> action;
 		if(LOAD_VERSION < V_0_2_20 && action >= A_EAT)
 			action = ACTION(action + 1);
-		ReadFile(file, &weapon_taken, sizeof(weapon_taken), &tmp, nullptr);
-		ReadFile(file, &weapon_hiding, sizeof(weapon_hiding), &tmp, nullptr);
-		ReadFile(file, &weapon_state, sizeof(weapon_state), &tmp, nullptr);
-		ReadFile(file, &hitted, sizeof(hitted), &tmp, nullptr);
-		ReadFile(file, &hurt_timer, sizeof(hurt_timer), &tmp, nullptr);
-		ReadFile(file, &target_pos, sizeof(target_pos), &tmp, nullptr);
-		ReadFile(file, &target_pos2, sizeof(target_pos2), &tmp, nullptr);
-		ReadFile(file, &talking, sizeof(talking), &tmp, nullptr);
-		ReadFile(file, &talk_timer, sizeof(talk_timer), &tmp, nullptr);
-		ReadFile(file, &attack_power, sizeof(attack_power), &tmp, nullptr);
-		ReadFile(file, &run_attack, sizeof(run_attack), &tmp, nullptr);
-		ReadFile(file, &timer, sizeof(timer), &tmp, nullptr);
+		f >> weapon_taken;
+		f >> weapon_hiding;
+		f >> weapon_state;
+		f >> hitted;
+		f >> hurt_timer;
+		f >> target_pos;
+		f >> target_pos2;
+		f >> talking;
+		f >> talk_timer;
+		f >> attack_power;
+		f >> run_attack;
+		f >> timer;
 		if(LOAD_VERSION >= V_0_2_20)
 		{
-			ReadFile(file, &alcohol, sizeof(alcohol), &tmp, nullptr);
-			ReadFile(file, &raise_timer, sizeof(raise_timer), &tmp, nullptr);
+			f >> alcohol;
+			f >> raise_timer;
 		}
 		else
 		{
@@ -1568,27 +1565,23 @@ void Unit::Load(GameReader& f, bool local)
 			raise_timer = timer;
 		}
 
-		if (action == A_DASH)
-			ReadFile(file, &use_rot, sizeof(use_rot), &tmp, nullptr);
+		if(action == A_DASH)
+			f >> use_rot;
 
-		byte len;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		if(len)
+		const string& item_id = f.ReadString1();
+		if(!item_id.empty())
 		{
-			BUF[len] = 0;
-			ReadFile(file, BUF, len, &tmp, nullptr);
-			used_item = Item::Get(BUF);
-			ReadFile(file, &used_item_is_team, sizeof(used_item_is_team), &tmp, nullptr);
+			used_item = Item::Get(item_id);
+			f >> used_item_is_team;
 		}
 		else
 			used_item = nullptr;
 
-		int refi;
-		ReadFile(file, &refi, sizeof(refi), &tmp, nullptr);
-		if(refi == -1)
+		int usable_refid = f.Read<int>();
+		if(usable_refid == -1)
 			usable = nullptr;
 		else
-			Usable::AddRequest(&usable, refi, this);
+			Usable::AddRequest(&usable, usable_refid, this);
 
 		if(action == A_SHOOT)
 		{
@@ -1598,9 +1591,9 @@ void Unit::Load(GameReader& f, bool local)
 			bow_instance->groups[0].time = mesh_inst->groups[1].time;
 		}
 
-		ReadFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
+		f >> last_bash;
 		if(LOAD_VERSION >= V_0_5)
-			ReadFile(file, &moved, sizeof(moved), &tmp, nullptr);
+			f >> moved;
 	}
 	else
 	{
@@ -1622,16 +1615,9 @@ void Unit::Load(GameReader& f, bool local)
 		moved = false;
 	}
 
-	// efekty
-	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	effects.resize(ile);
-	if(ile)
-		ReadFile(file, &effects[0], sizeof(Effect)*ile, &tmp, nullptr);
+	f.ReadVector4(effects);
 
-	byte b;
-	ReadFile(file, &b, sizeof(b), &tmp, nullptr);
-	if(b == 1)
+	if(f.Read1())
 	{
 		player = new PlayerController;
 		player->unit = this;

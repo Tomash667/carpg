@@ -207,8 +207,8 @@ struct Room
 	bool IsCorridor() const { return target == RoomTarget::Corridor; }
 	bool CanJoinRoom() const { return target == RoomTarget::None || target == RoomTarget::StairsUp || target == RoomTarget::StairsDown; }
 
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 	void Write(BitStream& stream) const;
 	bool Read(BitStream& stream);
 };

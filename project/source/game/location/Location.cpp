@@ -6,6 +6,8 @@
 #include "City.h"
 #include "Quest.h"
 #include "BitStreamFunc.h"
+#include "Portal.h"
+#include "GameFile.h"
 
 //-----------------------------------------------------------------------------
 cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txAcademy;
@@ -136,18 +138,16 @@ void Location::Save(HANDLE file, bool)
 	WriteFile(file, &seed, sizeof(seed), &tmp, nullptr);
 	WriteFile(file, &image, sizeof(image), &tmp, nullptr);
 
+	// portals
+	GameWriter f(file);
 	Portal* p = portal;
-	const byte jeden = 1;
-
 	while(p)
 	{
-		WriteFile(file, &jeden, sizeof(jeden), &tmp, nullptr);
-		p->Save(file);
+		f.Write1();
+		p->Save(f);
 		p = p->next_portal;
 	}
-
-	const byte zero = 0;
-	WriteFile(file, &zero, sizeof(zero), &tmp, nullptr);
+	f.Write0();
 }
 
 //=================================================================================================
@@ -217,18 +217,16 @@ void Location::Load(HANDLE file, bool, LOCATION_TOKEN token)
 		}
 	}
 
-	byte stan;
-	ReadFile(file, &stan, sizeof(stan), &tmp, nullptr);
-	if(stan == 1)
+	// portals
+	GameReader f(file);
+	if(f.Read1())
 	{
 		Portal* p = new Portal;
 		portal = p;
-
 		while(true)
 		{
-			p->Load(this, file);
-			ReadFile(file, &stan, sizeof(stan), &tmp, nullptr);
-			if(stan == 1)
+			p->Load(f);
+			if(f.Read1())
 			{
 				Portal* np = new Portal;
 				p->next_portal = np;
@@ -345,24 +343,4 @@ bool Location::ReadPortals(BitStream& stream, int at_level)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-void Portal::Save(HANDLE file)
-{
-	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	WriteFile(file, &at_level, sizeof(at_level), &tmp, nullptr);
-	WriteFile(file, &target, sizeof(target), &tmp, nullptr);
-	WriteFile(file, &target_loc, sizeof(target_loc), &tmp, nullptr);
-}
-
-//=================================================================================================
-void Portal::Load(Location* loc, HANDLE file)
-{
-	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	ReadFile(file, &at_level, sizeof(at_level), &tmp, nullptr);
-	ReadFile(file, &target, sizeof(target), &tmp, nullptr);
-	ReadFile(file, &target_loc, sizeof(target_loc), &tmp, nullptr);
 }

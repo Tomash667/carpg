@@ -45,6 +45,7 @@
 #include "SoundManager.h"
 #include "ScriptManager.h"
 #include "Profiler.h"
+#include "Portal.h"
 #include "DirectX.h"
 
 const int SAVE_VERSION = V_CURRENT;

@@ -537,48 +537,15 @@ void Journal::AddRumor(cstring text)
 }
 
 //=================================================================================================
-void Journal::Save(HANDLE file)
+void Journal::Save(FileWriter& f)
 {
-	uint count = rumors.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
-	{
-		word len = (word)it->length();
-		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		WriteFile(file, it->c_str(), len, &tmp, nullptr);
-	}
-
-	count = notes.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<string>::iterator it = notes.begin(), end = notes.end(); it != end; ++it)
-	{
-		word len = (word)it->length();
-		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		WriteFile(file, it->c_str(), len, &tmp, nullptr);
-	}
+	f.WriteStringArray<uint, word>(rumors);
+	f.WriteStringArray<uint, word>(notes);
 }
 
 //=================================================================================================
-void Journal::Load(HANDLE file)
+void Journal::Load(FileReader& f)
 {
-	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	rumors.resize(count);
-	for(vector<string>::iterator it = rumors.begin(), end = rumors.end(); it != end; ++it)
-	{
-		word len;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		it->resize(len);
-		ReadFile(file, (void*)it->c_str(), len, &tmp, nullptr);
-	}
-
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	notes.resize(count);
-	for(vector<string>::iterator it = notes.begin(), end = notes.end(); it != end; ++it)
-	{
-		word len;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		it->resize(len);
-		ReadFile(file, (void*)it->c_str(), len, &tmp, nullptr);
-	}
+	f.ReadStringArray<uint, word>(rumors);
+	f.ReadStringArray<uint, word>(notes);
 }

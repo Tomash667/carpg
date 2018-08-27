@@ -2,10 +2,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-struct CollisionObject;
-struct Game;
-
-//-----------------------------------------------------------------------------
 typedef bool (Game::*CollisionCheck)(const CollisionObject& co, const Vec3& pos, float radius) const;
 typedef bool (Game::*CollisionCheckRect)(const CollisionObject& co, const Box2d& box) const;
 
