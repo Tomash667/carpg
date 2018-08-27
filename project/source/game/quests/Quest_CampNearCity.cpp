@@ -7,6 +7,7 @@
 #include "LocationHelper.h"
 #include "QuestManager.h"
 #include "GameGui.h"
+#include "GameFile.h"
 
 //=================================================================================================
 void Quest_CampNearCity::Start()
@@ -259,19 +260,19 @@ bool Quest_CampNearCity::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-void Quest_CampNearCity::Save(HANDLE file)
+void Quest_CampNearCity::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
+	Quest_Dungeon::Save(f);
 
-	WriteFile(file, &group, sizeof(group), &tmp, nullptr);
+	f << group;
 }
 
 //=================================================================================================
-bool Quest_CampNearCity::Load(HANDLE file)
+bool Quest_CampNearCity::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
+	Quest_Dungeon::Load(f);
 
-	ReadFile(file, &group, sizeof(group), &tmp, nullptr);
+	f >> group;
 
 	location_event_handler = this;
 

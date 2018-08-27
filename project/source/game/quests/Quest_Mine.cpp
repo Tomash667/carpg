@@ -349,11 +349,9 @@ void Quest_Mine::HandleChestEvent(ChestEventHandler::Event event)
 }
 
 //=================================================================================================
-void Quest_Mine::Save(HANDLE file)
+void Quest_Mine::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
-
-	GameWriter f(file);
+	Quest_Dungeon::Save(f);
 
 	f << sub.done;
 	f << dungeon_loc;
@@ -367,11 +365,9 @@ void Quest_Mine::Save(HANDLE file)
 }
 
 //=================================================================================================
-bool Quest_Mine::Load(HANDLE file)
+bool Quest_Mine::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
-
-	GameReader f(file);
+	Quest_Dungeon::Load(f);
 
 	f >> sub.done;
 	f >> dungeon_loc;
@@ -394,9 +390,8 @@ bool Quest_Mine::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Mine::LoadOld(HANDLE file)
+void Quest_Mine::LoadOld(GameReader& f)
 {
-	GameReader f(file);
 	int city, cave;
 
 	f >> mine_state;

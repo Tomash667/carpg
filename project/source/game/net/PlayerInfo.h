@@ -5,10 +5,6 @@
 #include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
-struct NetChangePlayer;
-struct PlayerController;
-
-//-----------------------------------------------------------------------------
 // Server side player info
 struct PlayerInfo
 {

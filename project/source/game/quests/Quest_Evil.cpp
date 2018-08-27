@@ -489,11 +489,9 @@ void Quest_Evil::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit)
 }
 
 //=================================================================================================
-void Quest_Evil::Save(HANDLE file)
+void Quest_Evil::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
-
-	GameWriter f(file);
+	Quest_Dungeon::Save(f);
 
 	f << mage_loc;
 	for(int i = 0; i < 3; ++i)
@@ -515,11 +513,9 @@ void Quest_Evil::Save(HANDLE file)
 }
 
 //=================================================================================================
-bool Quest_Evil::Load(HANDLE file)
+bool Quest_Evil::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
-
-	GameReader f(file);
+	Quest_Dungeon::Load(f);
 
 	f >> mage_loc;
 	for(int i = 0; i < 3; ++i)
@@ -568,9 +564,8 @@ bool Quest_Evil::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Evil::LoadOld(HANDLE file)
+void Quest_Evil::LoadOld(GameReader& f)
 {
-	GameReader f(file);
 	int old_refid, city, where, where2;
 
 	f >> evil_state;

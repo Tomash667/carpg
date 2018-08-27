@@ -25,8 +25,8 @@ public:
 	bool IsTimedout() const override;
 	bool OnTimeout(TimeoutType ttype) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
-	void Save(HANDLE file) override;
-	bool Load(HANDLE file) override;
+	void Save(GameWriter& f) override;
+	bool Load(GameReader& f) override;
 	int GetUnitEventHandlerQuestRefid() override
 	{
 		return refid;

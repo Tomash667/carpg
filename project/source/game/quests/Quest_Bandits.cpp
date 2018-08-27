@@ -389,11 +389,9 @@ void Quest_Bandits::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 }
 
 //=================================================================================================
-void Quest_Bandits::Save(HANDLE file)
+void Quest_Bandits::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
-
-	GameWriter f(file);
+	Quest_Dungeon::Save(f);
 
 	f << enc;
 	f << other_loc;
@@ -405,11 +403,9 @@ void Quest_Bandits::Save(HANDLE file)
 }
 
 //=================================================================================================
-bool Quest_Bandits::Load(HANDLE file)
+bool Quest_Bandits::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
-
-	GameReader f(file);
+	Quest_Dungeon::Load(f);
 
 	f >> enc;
 	f >> other_loc;
@@ -458,10 +454,8 @@ bool Quest_Bandits::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Bandits::LoadOld(HANDLE file)
+void Quest_Bandits::LoadOld(GameReader& f)
 {
-	GameReader f(file);
-
 	int old_refid, city, where;
 
 	f >> old_refid;

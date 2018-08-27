@@ -380,11 +380,9 @@ void Quest_Goblins::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 }
 
 //=================================================================================================
-void Quest_Goblins::Save(HANDLE file)
+void Quest_Goblins::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
-
-	GameWriter f(file);
+	Quest_Dungeon::Save(f);
 
 	f << enc;
 	f << goblins_state;
@@ -395,11 +393,9 @@ void Quest_Goblins::Save(HANDLE file)
 }
 
 //=================================================================================================
-bool Quest_Goblins::Load(HANDLE file)
+bool Quest_Goblins::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
-
-	GameReader f(file);
+	Quest_Dungeon::Load(f);
 
 	f >> enc;
 
@@ -458,9 +454,8 @@ bool Quest_Goblins::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Goblins::LoadOld(HANDLE file)
+void Quest_Goblins::LoadOld(GameReader& f)
 {
-	GameReader f(file);
 	int old_refid, city;
 
 	f >> goblins_state;

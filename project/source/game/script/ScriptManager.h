@@ -10,8 +10,6 @@ class asIScriptEngine;
 class asIScriptModule;
 class TypeBuilder;
 struct asSFuncPtr;
-struct PlayerController;
-struct Unit;
 struct VarsContainer;
 
 struct ScriptException

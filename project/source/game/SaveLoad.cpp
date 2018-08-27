@@ -405,7 +405,7 @@ void Game::SaveGame(HANDLE file)
 	WriteFile(file, &day, sizeof(day), &tmp, nullptr);
 	WriteFile(file, &worldtime, sizeof(worldtime), &tmp, nullptr);
 	WriteFile(file, &game_state, sizeof(game_state), &tmp, nullptr);
-	GameStats::Get().Save(file);
+	GameStats::Get().Save(f);
 
 	BuildRefidTables();
 
@@ -520,7 +520,7 @@ void Game::SaveGame(HANDLE file)
 	Team.Save(f);
 
 	// save quests
-	QuestManager::Get().Save(file);
+	QuestManager::Get().Save(f);
 	SaveQuestsData(file);
 	script_mgr->Save(f);
 
@@ -762,7 +762,7 @@ void Game::LoadGame(HANDLE file)
 	ReadFile(file, &day, sizeof(day), &tmp, nullptr);
 	ReadFile(file, &worldtime, sizeof(worldtime), &tmp, nullptr);
 	ReadFile(file, &game_state2, sizeof(game_state2), &tmp, nullptr);
-	GameStats::Get().Load(file);
+	GameStats::Get().Load(f);
 
 	Unit::refid_table.clear();
 	Usable::refid_table.clear();
@@ -1060,7 +1060,7 @@ void Game::LoadGame(HANDLE file)
 	// load quests
 	LoadingStep(txLoadingQuests);
 	QuestManager& quest_manager = QuestManager::Get();
-	quest_manager.Load(file);
+	quest_manager.Load(f);
 
 	quest_sawmill = (Quest_Sawmill*)quest_manager.FindQuestById(Q_SAWMILL);
 	quest_mine = (Quest_Mine*)quest_manager.FindQuestById(Q_MINE);
@@ -1509,14 +1509,15 @@ void Game::LoadQuestsData(HANDLE file)
 	// load quests old data (now are stored inside quest)
 	if(LOAD_VERSION < V_0_4)
 	{
-		quest_sawmill->LoadOld(file);
-		quest_mine->LoadOld(file);
-		quest_bandits->LoadOld(file);
-		quest_mages2->LoadOld(file);
-		quest_orcs2->LoadOld(file);
-		quest_goblins->LoadOld(file);
-		quest_evil->LoadOld(file);
-		quest_crazies->LoadOld(file);
+		GameReader f(file);
+		quest_sawmill->LoadOld(f);
+		quest_mine->LoadOld(f);
+		quest_bandits->LoadOld(f);
+		quest_mages2->LoadOld(f);
+		quest_orcs2->LoadOld(f);
+		quest_goblins->LoadOld(f);
+		quest_evil->LoadOld(f);
+		quest_crazies->LoadOld(f);
 	}
 
 	// sekret

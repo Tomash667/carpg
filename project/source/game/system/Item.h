@@ -45,19 +45,6 @@ enum ITEM_FLAGS
 };
 
 //-----------------------------------------------------------------------------
-struct Armor;
-struct Book;
-struct Bow;
-struct Consumable;
-struct Item;
-struct ItemList;
-struct ItemListResult;
-struct LeveledItemList;
-struct OtherItem;
-struct Shield;
-struct Weapon;
-
-//-----------------------------------------------------------------------------
 struct CstringHash
 {
 	size_t operator() (cstring s) const

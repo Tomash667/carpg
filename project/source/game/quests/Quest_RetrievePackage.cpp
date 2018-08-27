@@ -7,6 +7,7 @@
 #include "LocationHelper.h"
 #include "QuestManager.h"
 #include "GameGui.h"
+#include "GameFile.h"
 
 //=================================================================================================
 void Quest_RetrievePackage::Start()
@@ -211,22 +212,22 @@ const Item* Quest_RetrievePackage::GetQuestItem()
 }
 
 //=================================================================================================
-void Quest_RetrievePackage::Save(HANDLE file)
+void Quest_RetrievePackage::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
+	Quest_Dungeon::Save(f);
 
 	if(prog != Progress::Finished)
-		WriteFile(file, &from_loc, sizeof(from_loc), &tmp, nullptr);
+		f << from_loc;
 }
 
 //=================================================================================================
-bool Quest_RetrievePackage::Load(HANDLE file)
+bool Quest_RetrievePackage::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
+	Quest_Dungeon::Load(f);
 
 	if(prog != Progress::Finished)
 	{
-		ReadFile(file, &from_loc, sizeof(from_loc), &tmp, nullptr);
+		f >> from_loc;
 
 		const Item* base_item = Item::Get("parcel");
 		Location& loc = *game->locations[start_loc];

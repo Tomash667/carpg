@@ -264,21 +264,19 @@ const Item* Quest_StolenArtifact::GetQuestItem()
 }
 
 //=================================================================================================
-void Quest_StolenArtifact::Save(HANDLE file)
+void Quest_StolenArtifact::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
+	Quest_Dungeon::Save(f);
 
-	GameWriter f(file);
 	f << item;
 	f << group;
 }
 
 //=================================================================================================
-bool Quest_StolenArtifact::Load(HANDLE file)
+bool Quest_StolenArtifact::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
+	Quest_Dungeon::Load(f);
 
-	GameReader f(file);
 	f.LoadArtifact(item);
 	f >> group;
 

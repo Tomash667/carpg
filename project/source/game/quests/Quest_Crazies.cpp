@@ -110,11 +110,9 @@ bool Quest_Crazies::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-void Quest_Crazies::Save(HANDLE file)
+void Quest_Crazies::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
-
-	GameWriter f(file);
+	Quest_Dungeon::Save(f);
 
 	f << crazies_state;
 	f << days;
@@ -122,14 +120,12 @@ void Quest_Crazies::Save(HANDLE file)
 }
 
 //=================================================================================================
-bool Quest_Crazies::Load(HANDLE file)
+bool Quest_Crazies::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
+	Quest_Dungeon::Load(f);
 
 	if(LOAD_VERSION >= V_0_4)
 	{
-		GameReader f(file);
-
 		f >> crazies_state;
 		f >> days;
 		f >> check_stone;
@@ -139,11 +135,9 @@ bool Quest_Crazies::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Crazies::LoadOld(HANDLE file)
+void Quest_Crazies::LoadOld(GameReader& f)
 {
 	int old_refid;
-	GameReader f(file);
-
 	f >> crazies_state;
 	f >> old_refid;
 	f >> check_stone;

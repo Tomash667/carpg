@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "GameStats.h"
+#include "GameFile.h"
 
 GameStats Singleton<GameStats>::instance;
 
@@ -46,20 +47,18 @@ bool GameStats::Read(BitStream& stream)
 		&& stream.ReadCasted<byte>(second);
 }
 
-void GameStats::Save(HANDLE file)
+void GameStats::Save(GameWriter& f)
 {
-	DWORD tmp;
-	WriteFile(file, &hour, sizeof(hour), &tmp, nullptr);
-	WriteFile(file, &minute, sizeof(minute), &tmp, nullptr);
-	WriteFile(file, &second, sizeof(second), &tmp, nullptr);
-	WriteFile(file, &tick, sizeof(tick), &tmp, nullptr);
+	f << hour;
+	f << minute;
+	f << second;
+	f << tick;
 }
 
-void GameStats::Load(HANDLE file)
+void GameStats::Load(GameReader& f)
 {
-	DWORD tmp;
-	ReadFile(file, &hour, sizeof(hour), &tmp, nullptr);
-	ReadFile(file, &minute, sizeof(minute), &tmp, nullptr);
-	ReadFile(file, &second, sizeof(second), &tmp, nullptr);
-	ReadFile(file, &tick, sizeof(tick), &tmp, nullptr);
+	f >> hour;
+	f >> minute;
+	f >> second;
+	f >> tick;
 }

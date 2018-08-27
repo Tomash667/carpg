@@ -172,9 +172,9 @@ bool Quest_Mages::IfSpecial(DialogContext& ctx, cstring msg)
 }
 
 //=================================================================================================
-bool Quest_Mages::Load(HANDLE file)
+bool Quest_Mages::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
+	Quest_Dungeon::Load(f);
 
 	if(!done)
 	{
@@ -583,11 +583,9 @@ void Quest_Mages2::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit
 }
 
 //=================================================================================================
-void Quest_Mages2::Save(HANDLE file)
+void Quest_Mages2::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
-
-	GameWriter f(file);
+	Quest_Dungeon::Save(f);
 
 	f << mage_loc;
 	f << talked;
@@ -602,11 +600,9 @@ void Quest_Mages2::Save(HANDLE file)
 }
 
 //=================================================================================================
-bool Quest_Mages2::Load(HANDLE file)
+bool Quest_Mages2::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
-
-	GameReader f(file);
+	Quest_Dungeon::Load(f);
 
 	f >> mage_loc;
 	f >> talked;
@@ -638,10 +634,9 @@ bool Quest_Mages2::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Mages2::LoadOld(HANDLE file)
+void Quest_Mages2::LoadOld(GameReader& f)
 {
 	int old_refid, old_refid2, city, where;
-	GameReader f(file);
 
 	f >> mages_state;
 	f >> old_refid;

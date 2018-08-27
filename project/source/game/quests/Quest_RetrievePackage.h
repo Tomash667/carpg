@@ -23,8 +23,8 @@ public:
 	bool OnTimeout(TimeoutType ttype) override;
 	bool IfHaveQuestItem() const override;
 	const Item* GetQuestItem() override;
-	void Save(HANDLE file) override;
-	bool Load(HANDLE file) override;
+	void Save(GameWriter& f) override;
+	bool Load(GameReader& f) override;
 
 private:
 	int from_loc;

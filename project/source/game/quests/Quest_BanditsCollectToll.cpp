@@ -9,6 +9,7 @@
 #include "City.h"
 #include "GameGui.h"
 #include "SoundManager.h"
+#include "GameFile.h"
 
 //=================================================================================================
 void Quest_BanditsCollectToll::Start()
@@ -181,19 +182,19 @@ bool Quest_BanditsCollectToll::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-void Quest_BanditsCollectToll::Save(HANDLE file)
+void Quest_BanditsCollectToll::Save(GameWriter& f)
 {
-	Quest_Encounter::Save(file);
+	Quest_Encounter::Save(f);
 
-	WriteFile(file, &other_loc, sizeof(other_loc), &tmp, nullptr);
+	f << other_loc;
 }
 
 //=================================================================================================
-bool Quest_BanditsCollectToll::Load(HANDLE file)
+bool Quest_BanditsCollectToll::Load(GameReader& f)
 {
-	Quest_Encounter::Load(file);
+	Quest_Encounter::Load(f);
 
-	ReadFile(file, &other_loc, sizeof(other_loc), &tmp, nullptr);
+	f >> other_loc;
 
 	if(enc != -1)
 	{

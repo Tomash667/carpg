@@ -10,6 +10,6 @@ struct GameStats : public Singleton<GameStats>
 	void Update(float dt);
 	void Write(BitStream& stream);
 	bool Read(BitStream& stream);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 };

@@ -3,10 +3,6 @@
 #include "Resource.h"
 
 //-----------------------------------------------------------------------------
-struct BuildingGroup;
-struct UnitData;
-
-//-----------------------------------------------------------------------------
 // Old building enum - required for pre 0.5 compability
 enum class OLD_BUILDING
 {

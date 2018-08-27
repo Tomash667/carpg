@@ -407,21 +407,19 @@ bool Quest_RescueCaptive::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-void Quest_RescueCaptive::Save(HANDLE file)
+void Quest_RescueCaptive::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
+	Quest_Dungeon::Save(f);
 
-	GameWriter f(file);
 	f << group;
 	f << captive;
 }
 
 //=================================================================================================
-bool Quest_RescueCaptive::Load(HANDLE file)
+bool Quest_RescueCaptive::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
+	Quest_Dungeon::Load(f);
 
-	GameReader f(file);
 	if(LOAD_VERSION >= V_0_4)
 		f >> group;
 	else

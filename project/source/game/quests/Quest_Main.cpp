@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Quest_Main.h"
+#include "GameFile.h"
 
 //=================================================================================================
 void Quest_Main::Start()
@@ -25,16 +26,14 @@ cstring Quest_Main::FormatString(const string& str)
 }
 
 //=================================================================================================
-void Quest_Main::Save(HANDLE file)
+void Quest_Main::Save(GameWriter& f)
 {
 }
 
 //=================================================================================================
-bool Quest_Main::Load(HANDLE file)
+bool Quest_Main::Load(GameReader& f)
 {
-	Quest::Load(file);
-
-	FileReader f(file);
+	Quest::Load(f);
 
 	if(prog == Progress::TalkedWithMayor)
 	{

@@ -4,6 +4,7 @@
 #include "FileFormat.h"
 
 // Engine types
+struct Mesh;
 struct ParticleEmitter;
 struct Sound;
 struct StartupOptions;

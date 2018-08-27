@@ -3,6 +3,7 @@
 #include "BitStreamFunc.h"
 #include "QuestManager.h"
 #include "SaveState.h"
+#include "GameFile.h"
 
 #include "Quest_Bandits.h"
 #include "Quest_BanditsCollectToll.h"
@@ -317,17 +318,15 @@ bool QuestManager::Read(BitStream& stream)
 }
 
 //=================================================================================================
-void QuestManager::Save(HANDLE file)
+void QuestManager::Save(GameWriter& f)
 {
-	FileWriter f(file);
-
 	f << quests.size();
-	for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
-		(*it)->Save(file);
+	for(Quest* quest : quests)
+		quest->Save(f);
 
 	f << unaccepted_quests.size();
-	for(vector<Quest*>::iterator it = unaccepted_quests.begin(), end = unaccepted_quests.end(); it != end; ++it)
-		(*it)->Save(file);
+	for(Quest* quest : unaccepted_quests)
+		quest->Save(f);
 
 	f << quests_timeout.size();
 	for(Quest_Dungeon* q : quests_timeout)
@@ -346,12 +345,10 @@ void QuestManager::Save(HANDLE file)
 }
 
 //=================================================================================================
-void QuestManager::Load(HANDLE file)
+void QuestManager::Load(GameReader& f)
 {
-	FileReader f(file);
-
-	LoadQuests(file, quests);
-	LoadQuests(file, unaccepted_quests);
+	LoadQuests(f, quests);
+	LoadQuests(f, unaccepted_quests);
 
 	quests_timeout.resize(f.Read<uint>());
 	for(Quest_Dungeon*& q : quests_timeout)
@@ -384,25 +381,21 @@ void QuestManager::Load(HANDLE file)
 }
 
 //=================================================================================================
-void QuestManager::LoadQuests(HANDLE file, vector<Quest*>& quests)
+void QuestManager::LoadQuests(GameReader& f, vector<Quest*>& quests)
 {
-	DWORD tmp;
-
-	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	quests.clear();
+	uint count = f.Read<uint>();
 	quests.resize(count, nullptr);
 
 	uint quest_index = 0;
 	for(uint i = 0; i < count; ++i)
 	{
 		QUEST quest_type;
-		ReadFile(file, &quest_type, sizeof(quest_type), &tmp, nullptr);
+		f >> quest_type;
 
 		Quest* quest = CreateQuest(quest_type);
 		quest->quest_id = quest_type;
 		quest->quest_index = quest_index;
-		if(!quest->Load(file))
+		if(!quest->Load(f))
 		{
 			delete quest;
 			continue;

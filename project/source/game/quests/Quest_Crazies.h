@@ -29,9 +29,9 @@ public:
 	void SetProgress(int prog2) override;
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
-	void Save(HANDLE file) override;
-	bool Load(HANDLE file) override;
-	void LoadOld(HANDLE file);
+	void Save(GameWriter& f) override;
+	bool Load(GameReader& f) override;
+	void LoadOld(GameReader& f);
 
 	State crazies_state;
 	int days;

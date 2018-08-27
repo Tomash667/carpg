@@ -50,8 +50,14 @@ class WorldMapGui;
 //-----------------------------------------------------------------------------
 struct Action;
 struct AIController;
+struct Armor;
+struct BaseObject;
 struct Blood;
 struct Book;
+struct Bow;
+struct Building;
+struct BuildingGroup;
+struct BuildingScript;
 struct Bullet;
 struct Camera;
 struct CameraCollider;
@@ -59,6 +65,7 @@ struct Chest;
 struct City;
 struct CityBuilding;
 struct CollisionObject;
+struct Consumable;
 struct CreatedCharacter;
 struct DialogContext;
 struct DialogEntry;
@@ -73,27 +80,37 @@ struct HeroData;
 struct Human;
 struct HumanData;
 struct Item;
+struct ItemList;
+struct ItemListResult;
+struct ItemSlot;
 struct InsideBuilding;
 struct InsideLocationLevel;
+struct LeveledItemList;
 struct Light;
 struct Location;
+struct NetChangePlayer;
 struct Object;
+struct OtherItem;
 struct PlayerController;
 struct PlayerInfo;
 struct Portal;
 struct Quest_Dungeon;
 struct Quest_Event;
 struct Room;
+struct Shield;
 struct SpeechBubble;
 struct Spell;
 struct TerrainTile;
 struct Trap;
 struct Unit;
+struct UnitData;
 struct UnitEventHandler;
 struct Usable;
+struct Weapon;
 
 //-----------------------------------------------------------------------------
 enum TRAP_TYPE;
+enum class OLD_BUILDING;
 
 //-----------------------------------------------------------------------------
 // FIXME: remove

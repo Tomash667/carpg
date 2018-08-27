@@ -44,9 +44,9 @@ public:
 	void Special(DialogContext& ctx, cstring msg) override;
 	void HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
-	void Save(HANDLE file) override;
-	bool Load(HANDLE file) override;
-	void LoadOld(HANDLE file);
+	void Save(GameWriter& f) override;
+	bool Load(GameReader& f) override;
+	void LoadOld(GameReader& f);
 	int GetUnitEventHandlerQuestRefid() override
 	{
 		return refid;
