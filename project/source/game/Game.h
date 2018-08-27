@@ -1195,8 +1195,8 @@ public:
 	void GenerateCave(Location& l);
 	void GenerateCaveObjects();
 	void GenerateCaveUnits();
-	void SaveGame(HANDLE file);
-	void LoadGame(HANDLE file);
+	void SaveGame(GameWriter& f);
+	void LoadGame(GameReader& f);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelContext& ctx, int& err_count);
 	void CastSpell(LevelContext& ctx, Unit& unit);
@@ -1361,8 +1361,8 @@ public:
 	void GenerateQuestUnits();
 	void GenerateQuestUnits2(bool on_enter);
 	void UpdateQuests(int days);
-	void SaveQuestsData(HANDLE file);
-	void LoadQuestsData(HANDLE file);
+	void SaveQuestsData(GameWriter& f);
+	void LoadQuestsData(GameReader& f);
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);
 	void GenerateSawmill(bool in_progress);
