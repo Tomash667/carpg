@@ -27,8 +27,8 @@ struct Human
 
 	Vec2 GetScale();
 	void ApplyScale(Mesh* mesh);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 };
 
 //-----------------------------------------------------------------------------
@@ -42,8 +42,8 @@ struct HumanData
 	void Get(const Human& h);
 	void Set(Human& h) const;
 	void CopyFrom(HumanData& hd);
-	void Save(HANDLE file) const;
-	void Load(HANDLE file);
+	void Save(FileWriter& f) const;
+	void Load(FileReader& f);
 	void Write(BitStream& stream) const;
 	// 0 - ok, 1 - ready error, 2 - value error
 	int Read(BitStream& stream);

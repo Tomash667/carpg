@@ -68,10 +68,9 @@ void InsideBuilding::Save(HANDLE file, bool local)
 	for(Door* door : doors)
 		door->Save(f, local);
 
-	ile = objects.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
-		(*it)->Save(file);
+	f << objects.size();
+	for(Object* object : objects)
+		object->Save(f);
 
 	f << items.size();
 	for(GroundItem* item : items)
@@ -82,45 +81,39 @@ void InsideBuilding::Save(HANDLE file, bool local)
 	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
-	ile = bloods.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
-		it->Save(f);
+	f << bloods.size();
+	for(Blood& blood : bloods)
+		blood.Save(f);
 
 	f << lights.size();
-	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
-		it->Save(f);
+	for(Light& light : lights)
+		light.Save(f);
 
 	if(local)
 	{
-		ile = ctx.pes->size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<ParticleEmitter*>::iterator it = ctx.pes->begin(), end = ctx.pes->end(); it != end; ++it)
-			(*it)->Save(f);
+		f << ctx.pes->size();
+		for(ParticleEmitter* pe : *ctx.pes)
+			pe->Save(f);
 
-		ile = ctx.tpes->size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<TrailParticleEmitter*>::iterator it = ctx.tpes->begin(), end = ctx.tpes->end(); it != end; ++it)
-			(*it)->Save(f);
+		f << ctx.tpes->size();
+		for(TrailParticleEmitter* tpe : *ctx.tpes)
+			tpe->Save(f);
 
-		ile = ctx.explos->size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Explo*>::iterator it = ctx.explos->begin(), end = ctx.explos->end(); it != end; ++it)
-			(*it)->Save(file);
+		f << ctx.explos->size();
+		for(Explo* explo : *ctx.explos)
+			explo->Save(f);
 
-		ile = ctx.electros->size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Electro*>::iterator it = ctx.electros->begin(), end = ctx.electros->end(); it != end; ++it)
-			(*it)->Save(file);
+		f << ctx.electros->size();
+		for(Electro* electro : *ctx.electros)
+			electro->Save(f);
 
-		ile = ctx.drains->size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Drain>::iterator it = ctx.drains->begin(), end = ctx.drains->end(); it != end; ++it)
-			it->Save(file);
+		f << ctx.drains->size();
+		for(Drain& drain : *ctx.drains)
+			drain.Save(f);
 
 		f << ctx.bullets->size();
-		for(vector<Bullet>::iterator it = ctx.bullets->begin(), end = ctx.bullets->end(); it != end; ++it)
-			it->Save(f);
+		for(Bullet& bullet : *ctx.bullets)
+			bullet.Save(f);
 	}
 }
 
@@ -176,12 +169,11 @@ void InsideBuilding::Load(HANDLE file, bool local)
 		door->Load(f, local);
 	}
 
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	objects.resize(ile);
-	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
+	objects.resize(f.Read<uint>());
+	for(Object*& object : objects)
 	{
-		*it = new Object;
-		(*it)->Load(file);
+		object = new Object;
+		object->Load(f);
 	}
 
 	items.resize(f.Read<uint>());
@@ -200,63 +192,55 @@ void InsideBuilding::Load(HANDLE file, bool local)
 		(*it)->Load(file, local);
 	}
 
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	bloods.resize(ile);
-	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
-		it->Load(f);
+	bloods.resize(f.Read<uint>());
+	for(Blood& blood : bloods)
+		blood.Load(f);
 
-	f >> ile;
-	lights.resize(ile);
-	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
-		it->Load(f);
+	lights.resize(f.Read<uint>());
+	for(Light& light : lights)
+		light.Load(f);
 
 	if(local)
 	{
 		ctx.SetTmpCtx(Game::Get().tmp_ctx_pool.Get());
 
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		ctx.pes->resize(ile);
-		for(vector<ParticleEmitter*>::iterator it = ctx.pes->begin(), end = ctx.pes->end(); it != end; ++it)
+		ctx.pes->resize(f.Read<uint>());
+		for(ParticleEmitter*& pe : *ctx.pes)
 		{
-			*it = new ParticleEmitter;
-			ParticleEmitter::AddRefid(*it);
-			(*it)->Load(f);
+			pe = new ParticleEmitter;
+			ParticleEmitter::AddRefid(pe);
+			pe->Load(f);
 		}
 
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		ctx.tpes->resize(ile);
-		for(vector<TrailParticleEmitter*>::iterator it = ctx.tpes->begin(), end = ctx.tpes->end(); it != end; ++it)
+		ctx.tpes->resize(f.Read<uint>());
+		for(TrailParticleEmitter*& tpe : *ctx.tpes)
 		{
-			*it = new TrailParticleEmitter;
-			TrailParticleEmitter::AddRefid(*it);
-			(*it)->Load(f);
+			tpe = new TrailParticleEmitter;
+			TrailParticleEmitter::AddRefid(tpe);
+			tpe->Load(f);
 		}
 
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		ctx.explos->resize(ile);
-		for(vector<Explo*>::iterator it = ctx.explos->begin(), end = ctx.explos->end(); it != end; ++it)
+		ctx.explos->resize(f.Read<uint>());
+		for(Explo*& explo : *ctx.explos)
 		{
-			*it = new Explo;
-			(*it)->Load(f);
+			explo = new Explo;
+			explo->Load(f);
 		}
 
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		ctx.electros->resize(ile);
-		for(vector<Electro*>::iterator it = ctx.electros->begin(), end = ctx.electros->end(); it != end; ++it)
+		ctx.electros->resize(f.Read<uint>());
+		for(Electro*& electro : *ctx.electros)
 		{
-			*it = new Electro;
-			(*it)->Load(file);
+			electro = new Electro;
+			electro->Load(f);
 		}
 
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		ctx.drains->resize(ile);
-		for(vector<Drain>::iterator it = ctx.drains->begin(), end = ctx.drains->end(); it != end; ++it)
-			it->Load(file);
+		ctx.drains->resize(f.Read<uint>());
+		for(Drain& drain : *ctx.drains)
+			drain.Load(f);
 
-		f >> ile;
-		ctx.bullets->resize(ile);
-		for(vector<Bullet>::iterator it = ctx.bullets->begin(), end = ctx.bullets->end(); it != end; ++it)
-			it->Load(f);
+		ctx.bullets->resize(f.Read<uint>());
+		for(Bullet& bullet : *ctx.bullets)
+			bullet.Load(f);
 	}
 }
 

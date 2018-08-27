@@ -184,11 +184,10 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 	for(Chest* chest : chests)
 		chest->Save(f, local);
 
-	// obiekty
-	ile = objects.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
-		(*it)->Save(file);
+	// objects
+	f << objects.size();
+	for(Object* object : objects)
+		object->Save(f);
 
 	// doors
 	f << doors.size();
@@ -206,13 +205,12 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
 		(*it)->Save(file, local);
 
-	// krew
-	ile = bloods.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
-		it->Save(f);
+	// bloods
+	f << bloods.size();
+	for(Blood& blood : bloods)
+		blood.Save(f);
 
-	// œwiat³a
+	// lights
 	f << lights.size();
 	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
 		it->Save(f);
@@ -223,11 +221,10 @@ void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
 	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		it->Save(file);
 
-	// pu³apki
-	ile = traps.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Trap*>::iterator it = traps.begin(), end = traps.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	// traps
+	f << traps.size();
+	for(Trap* trap : traps)
+		trap->Save(f, local);
 
 	WriteFile(file, &staircase_up, sizeof(staircase_up), &tmp, nullptr);
 	WriteFile(file, &staircase_down, sizeof(staircase_down), &tmp, nullptr);
@@ -265,13 +262,12 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 		chest->Load(f, local);
 	}
 
-	// obiekty
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	objects.resize(ile);
-	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
+	// objects
+	objects.resize(f.Read<uint>());
+	for(Object*& object : objects)
 	{
-		*it = new Object;
-		(*it)->Load(file);
+		object = new Object;
+		object->Load(f);
 	}
 
 	// doors
@@ -300,17 +296,15 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 		(*it)->Load(file, local);
 	}
 
-	// krew
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	bloods.resize(ile);
-	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
-		it->Load(f);
+	// bloods
+	bloods.resize(f.Read<uint>());
+	for(Blood& blood : bloods)
+		blood.Load(f);
 
-	// œwiat³a
-	f >> ile;
-	lights.resize(ile);
-	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
-		it->Load(f);
+	// lights
+	lights.resize(f.Read<uint>());
+	for(Light& light : lights)
+		light.Load(f);
 
 	// pokoje
 	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
@@ -318,13 +312,12 @@ void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
 	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
 		it->Load(file);
 
-	// pu³apki
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	traps.resize(ile);
-	for(vector<Trap*>::iterator it = traps.begin(), end = traps.end(); it != end; ++it)
+	// traps
+	traps.resize(f.Read<uint>());
+	for(Trap*& trap : traps)
 	{
-		*it = new Trap;
-		(*it)->Load(file, local);
+		trap = new Trap;
+		trap->Load(f, local);
 	}
 
 	ReadFile(file, &staircase_up, sizeof(staircase_up), &tmp, nullptr);

@@ -4,14 +4,6 @@
 #include "MeshInstance.h"
 
 //-----------------------------------------------------------------------------
-struct Blood;
-struct Electro;
-struct Explo;
-struct ParticleEmitter;
-struct Portal;
-struct TrailParticleEmitter;
-
-//-----------------------------------------------------------------------------
 const int SPLIT_INDEX = 1 << 31;
 
 //-----------------------------------------------------------------------------

@@ -6,66 +6,57 @@
 #include "BitStreamFunc.h"
 
 //=================================================================================================
-void Object::Save(HANDLE file)
+void Object::Save(FileWriter& f)
 {
-	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	WriteFile(file, &scale, sizeof(scale), &tmp, nullptr);
+	f << pos;
+	f << rot;
+	f << scale;
 
 	if(base)
-		WriteString1(file, base->id);
+		f << base->id;
 	else
 	{
-		byte len = 0;
-		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		len = (byte)strlen(mesh->filename);
-		WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-		WriteFile(file, mesh->filename, len, &tmp, nullptr);
+		f.Write0();
+		f << mesh->filename;
 	}
 }
 
 //=================================================================================================
-void Object::Load(HANDLE file)
+void Object::Load(FileReader& f)
 {
-	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	ReadFile(file, &scale, sizeof(scale), &tmp, nullptr);
+	f >> pos;
+	f >> rot;
+	f >> scale;
 
-	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-
-	if(len)
+	const string& base_id = f.ReadString1();
+	if(!base_id.empty())
 	{
-		ReadFile(file, BUF, len, &tmp, nullptr);
-		BUF[len] = 0;
 		if(LOAD_VERSION >= V_0_2_20)
-			base = BaseObject::Get(BUF);
+			base = BaseObject::Get(base_id);
 		else
 		{
-			if(strcmp(BUF, "tombstone") == 0)
+			if(base_id == "tombstone")
 				base = BaseObject::Get("tombstone_1");
 			else
-				base = BaseObject::Get(BUF);
+				base = BaseObject::Get(base_id);
 		}
 		mesh = base->mesh;
 	}
 	else
 	{
 		base = nullptr;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		ReadFile(file, BUF, len, &tmp, nullptr);
-		BUF[len] = 0;
+		const string& mesh_id = f.ReadString1();
 		if(LOAD_VERSION >= V_0_3)
-			mesh = ResourceManager::Get<Mesh>().GetLoaded(BUF);
+			mesh = ResourceManager::Get<Mesh>().GetLoaded(mesh_id);
 		else
 		{
-			if(strcmp(BUF, "mur.qmsh") == 0 || strcmp(BUF, "mur2.qmsh") == 0 || strcmp(BUF, "brama.qmsh") == 0)
+			if(mesh_id == "mur.qmsh" || mesh_id == "mur2.qmsh" || mesh_id == "brama.qmsh")
 			{
 				base = BaseObject::Get("to_remove");
 				mesh = base->mesh;
 			}
 			else
-				mesh = ResourceManager::Get<Mesh>().GetLoaded(BUF);
+				mesh = ResourceManager::Get<Mesh>().GetLoaded(mesh_id);
 		}
 	}
 }

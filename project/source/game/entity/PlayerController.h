@@ -8,14 +8,6 @@
 #include "KeyStates.h"
 
 //-----------------------------------------------------------------------------
-struct Chest;
-struct DialogContext;
-struct Door;
-struct GroundItem;
-struct Usable;
-struct PlayerInfo;
-
-//-----------------------------------------------------------------------------
 enum NextAction
 {
 	NA_NONE,

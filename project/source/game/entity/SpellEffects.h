@@ -5,11 +5,6 @@
 #include "Resource.h"
 
 //-----------------------------------------------------------------------------
-struct Unit;
-struct Spell;
-struct ParticleEmitter;
-
-//-----------------------------------------------------------------------------
 struct Explo
 {
 	Unit* owner;
@@ -20,7 +15,7 @@ struct Explo
 
 	static const int MIN_SIZE = 21;
 
-	void Save(HANDLE file);
+	void Save(FileWriter& f);
 	void Load(FileReader& f);
 };
 
@@ -48,8 +43,8 @@ struct Electro
 	static int netid_counter;
 
 	void AddLine(const Vec3& from, const Vec3& to);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 };
 
 //-----------------------------------------------------------------------------
@@ -59,6 +54,6 @@ struct Drain
 	ParticleEmitter* pe;
 	float t;
 
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 };

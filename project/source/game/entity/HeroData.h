@@ -1,4 +1,3 @@
-// dane bohatera - jednostki któr¹ mo¿na zrekrutowaæ
 #pragma once
 
 //-----------------------------------------------------------------------------

@@ -10,21 +10,17 @@
 int Electro::netid_counter;
 
 //=================================================================================================
-void Explo::Save(HANDLE file)
+void Explo::Save(FileWriter& f)
 {
-	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	WriteFile(file, &size, sizeof(size), &tmp, nullptr);
-	WriteFile(file, &sizemax, sizeof(sizemax), &tmp, nullptr);
-	WriteFile(file, &dmg, sizeof(dmg), &tmp, nullptr);
-	uint count = hitted.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<Unit*>::iterator it = hitted.begin(), end = hitted.end(); it != end; ++it)
-		WriteFile(file, &(*it)->refid, sizeof((*it)->refid), &tmp, nullptr);
-	int refid = (owner ? owner->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	byte len = (byte)strlen(tex->filename);
-	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-	WriteFile(file, tex->filename, len, &tmp, nullptr);
+	f << pos;
+	f << size;
+	f << sizemax;
+	f << dmg;
+	f << hitted.size();
+	for(Unit* unit : hitted)
+		f << unit->refid;
+	f << (owner ? owner->refid : -1);
+	f << tex->filename;
 }
 
 //=================================================================================================
@@ -67,88 +63,64 @@ void Electro::AddLine(const Vec3& from, const Vec3& to)
 }
 
 //=================================================================================================
-void Electro::Save(HANDLE file)
+void Electro::Save(FileWriter& f)
 {
-	uint count = lines.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<ElectroLine>::iterator it = lines.begin(), end = lines.end(); it != end; ++it)
+	f << lines.size();
+	for(ElectroLine& line : lines)
 	{
-		count = it->pts.size();
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		if(count)
-			WriteFile(file, &it->pts[0], sizeof(Vec3)*count, &tmp, nullptr);
-		WriteFile(file, &it->t, sizeof(it->t), &tmp, nullptr);
+		f.WriteVector4(line.pts);
+		f << line.t;
 	}
-	count = hitted.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<Unit*>::iterator it = hitted.begin(), end = hitted.end(); it != end; ++it)
-		WriteFile(file, &(*it)->refid, sizeof((*it)->refid), &tmp, nullptr);
-	WriteFile(file, &dmg, sizeof(dmg), &tmp, nullptr);
-	int refid = (owner ? owner->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	WriteString1(file, spell->id);
-	WriteFile(file, &valid, sizeof(valid), &tmp, nullptr);
-	WriteFile(file, &hitsome, sizeof(hitsome), &tmp, nullptr);
-	WriteFile(file, &start_pos, sizeof(start_pos), &tmp, nullptr);
-	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
+	f << hitted.size();
+	for(Unit* unit : hitted)
+		f << unit->refid;
+	f << dmg;
+	f << (owner ? owner->refid : -1);
+	f << spell->id;
+	f << valid;
+	f << hitsome;
+	f << start_pos;
+	f << netid;
 }
 
 //=================================================================================================
-void Electro::Load(HANDLE file)
+void Electro::Load(FileReader& f)
 {
-	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	lines.resize(count);
-	for(vector<ElectroLine>::iterator it = lines.begin(), end = lines.end(); it != end; ++it)
+	lines.resize(f.Read<uint>());
+	for(ElectroLine& line : lines)
 	{
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-		it->pts.resize(count);
-		if(count)
-			ReadFile(file, &it->pts[0], sizeof(Vec3)*count, &tmp, nullptr);
-		ReadFile(file, &it->t, sizeof(it->t), &tmp, nullptr);
+		f.ReadVector4(line.pts);
+		f >> line.t;
 	}
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	hitted.resize(count);
-	int refid;
-	for(vector<Unit*>::iterator it = hitted.begin(), end = hitted.end(); it != end; ++it)
-	{
-		ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-		*it = Unit::GetByRefid(refid);
-	}
-	ReadFile(file, &dmg, sizeof(dmg), &tmp, nullptr);
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	owner = Unit::GetByRefid(refid);
-	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-	BUF[len] = 0;
-	ReadFile(file, BUF, len, &tmp, nullptr);
-	spell = FindSpell(BUF);
+	hitted.resize(f.Read<uint>());
+	for(Unit*& unit : hitted)
+		unit = Unit::GetByRefid(f.Read<int>());
+	f >> dmg;
+	owner = Unit::GetByRefid(f.Read<int>());
+	const string& spell_id = f.ReadString1();
+	spell = FindSpell(spell_id.c_str());
 	if(!spell)
-		throw Format("Missing spell '%s' for electro.", BUF);
-	ReadFile(file, &valid, sizeof(valid), &tmp, nullptr);
-	ReadFile(file, &hitsome, sizeof(hitsome), &tmp, nullptr);
-	ReadFile(file, &start_pos, sizeof(start_pos), &tmp, nullptr);
-	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
+		throw Format("Missing spell '%s' for electro.", spell_id.c_str());
+	f >> valid;
+	f >> hitsome;
+	f >> start_pos;
+	f >> netid;
 }
 
 //=================================================================================================
-void Drain::Save(HANDLE file)
+void Drain::Save(FileWriter& f)
 {
-	WriteFile(file, &from->refid, sizeof(from->refid), &tmp, nullptr);
-	WriteFile(file, &to->refid, sizeof(from->refid), &tmp, nullptr);
-	WriteFile(file, &pe->refid, sizeof(pe->refid), &tmp, nullptr);
-	WriteFile(file, &t, sizeof(t), &tmp, nullptr);
+	f << from->refid;
+	f << to->refid;
+	f << pe->refid;
+	f << t;
 }
 
 //=================================================================================================
-void Drain::Load(HANDLE file)
+void Drain::Load(FileReader& f)
 {
-	int refid;
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	from = Unit::GetByRefid(refid);
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	to = Unit::GetByRefid(refid);
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	pe = ParticleEmitter::GetByRefid(refid);
-	ReadFile(file, &t, sizeof(t), &tmp, nullptr);
+	from = Unit::GetByRefid(f.Read<int>());
+	to = Unit::GetByRefid(f.Read<int>());
+	pe = ParticleEmitter::GetByRefid(f.Read<int>());
+	f >> t;
 }

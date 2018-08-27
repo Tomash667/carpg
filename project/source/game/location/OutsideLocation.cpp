@@ -73,11 +73,10 @@ void OutsideLocation::Save(HANDLE file, bool local)
 		for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
 			(*it)->Save(file, local);
 
-		// obiekty
-		ile = objects.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
-			(*it)->Save(file);
+		// objects
+		f << objects.size();
+		for(Object* object : objects)
+			object->Save(f);
 
 		// chests
 		f << chests.size();
@@ -129,13 +128,12 @@ void OutsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
 			(*it)->Load(file, local);
 		}
 
-		// obiekty
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		objects.resize(ile);
-		for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
+		// objects
+		objects.resize(f.Read<uint>());
+		for(Object*& object : objects)
 		{
-			*it = new Object;
-			(*it)->Load(file);
+			object = new Object;
+			object->Load(f);
 		}
 
 		// chests

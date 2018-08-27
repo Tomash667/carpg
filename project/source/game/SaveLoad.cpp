@@ -535,47 +535,38 @@ void Game::SaveGame(HANDLE file)
 	WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
 	++check_id;
 
-	uint count;
 	if(game_state == GS_LEVEL)
 	{
-		// gra
-		//-----------------------
-		// cz¹steczki
-		count = local_ctx.pes->size();
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		for(vector<ParticleEmitter*>::iterator it = local_ctx.pes->begin(), end = local_ctx.pes->end(); it != end; ++it)
-			(*it)->Save(f);
+		// particles
+		f << local_ctx.pes->size();
+		for(ParticleEmitter* pe : *local_ctx.pes)
+			pe->Save(f);
 
-		count = local_ctx.tpes->size();
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		for(vector<TrailParticleEmitter*>::iterator it = local_ctx.tpes->begin(), end = local_ctx.tpes->end(); it != end; ++it)
-			(*it)->Save(f);
+		f << local_ctx.tpes->size();
+		for(TrailParticleEmitter* tpe : *local_ctx.tpes)
+			tpe->Save(f);
 
-		// wybuchy
-		count = local_ctx.explos->size();
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		for(vector<Explo*>::iterator it = local_ctx.explos->begin(), end = local_ctx.explos->end(); it != end; ++it)
-			(*it)->Save(file);
+		// explosions
+		f << local_ctx.explos->size();;
+		for(Explo* explo : *local_ctx.explos)
+			explo->Save(f);
 
-		// elektrycznoœæ
-		count = local_ctx.electros->size();
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		for(vector<Electro*>::iterator it = local_ctx.electros->begin(), end = local_ctx.electros->end(); it != end; ++it)
-			(*it)->Save(file);
+		// electric effects
+		f << local_ctx.electros->size();
+		for(Electro* electro : *local_ctx.electros)
+			electro->Save(f);
 
-		// wyssania ¿ycia
-		count = local_ctx.drains->size();
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		for(vector<Drain>::iterator it = local_ctx.drains->begin(), end = local_ctx.drains->end(); it != end; ++it)
-			it->Save(file);
+		// drain effects
+		f << local_ctx.drains->size();
+		for(Drain& drain : *local_ctx.drains)
+			drain.Save(f);
 
-		// pociski
-		FileWriter f(file);
+		// bullets
 		f << local_ctx.bullets->size();
-		for(vector<Bullet>::iterator it = local_ctx.bullets->begin(), end = local_ctx.bullets->end(); it != end; ++it)
-			it->Save(f);
+		for(Bullet& bullet : *local_ctx.bullets)
+			bullet.Save(f);
 
-		WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
+		f << check_id;
 		++check_id;
 	}
 
@@ -1181,57 +1172,50 @@ void Game::LoadGame(HANDLE file)
 			CreateDungeonMinimap();
 		}
 
-		// cz¹steczki
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-		local_ctx.pes->resize(count);
-		for(vector<ParticleEmitter*>::iterator it = local_ctx.pes->begin(), end = local_ctx.pes->end(); it != end; ++it)
+		// particles
+		local_ctx.pes->resize(f.Read<uint>());
+		for(ParticleEmitter*& pe : *local_ctx.pes)
 		{
-			*it = new ParticleEmitter;
-			ParticleEmitter::AddRefid(*it);
-			(*it)->Load(f);
+			pe = new ParticleEmitter;
+			ParticleEmitter::AddRefid(pe);
+			pe->Load(f);
 		}
 
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-		local_ctx.tpes->resize(count);
-		for(vector<TrailParticleEmitter*>::iterator it = local_ctx.tpes->begin(), end = local_ctx.tpes->end(); it != end; ++it)
+		local_ctx.tpes->resize(f.Read<uint>());
+		for(TrailParticleEmitter* tpe : *local_ctx.tpes)
 		{
-			*it = new TrailParticleEmitter;
-			TrailParticleEmitter::AddRefid(*it);
-			(*it)->Load(f);
+			tpe = new TrailParticleEmitter;
+			TrailParticleEmitter::AddRefid(tpe);
+			tpe->Load(f);
 		}
 
-		// wybuchy
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-		local_ctx.explos->resize(count);
-		for(vector<Explo*>::iterator it = local_ctx.explos->begin(), end = local_ctx.explos->end(); it != end; ++it)
+		// explosions
+		local_ctx.explos->resize(f.Read<uint>());
+		for(Explo*& explo : *local_ctx.explos)
 		{
-			*it = new Explo;
-			(*it)->Load(f);
+			explo = new Explo;
+			explo->Load(f);
 		}
 
-		// elektrycznoœæ
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-		local_ctx.electros->resize(count);
-		for(vector<Electro*>::iterator it = local_ctx.electros->begin(), end = local_ctx.electros->end(); it != end; ++it)
+		// electric effects
+		local_ctx.electros->resize(f.Read<uint>());
+		for(Electro*& electro : *local_ctx.electros)
 		{
-			*it = new Electro;
-			(*it)->Load(file);
+			electro = new Electro;
+			electro->Load(f);
 		}
 
-		// wyssania ¿ycia
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-		local_ctx.drains->resize(count);
-		for(vector<Drain>::iterator it = local_ctx.drains->begin(), end = local_ctx.drains->end(); it != end; ++it)
-			it->Load(file);
+		// drain effects
+		local_ctx.drains->resize(f.Read<uint>());
+		for(Drain& drain : *local_ctx.drains)
+			drain.Load(f);
 
-		// pociski
-		FileReader f(file);
-		f >> count;
-		local_ctx.bullets->resize(count);
-		for(vector<Bullet>::iterator it = local_ctx.bullets->begin(), end = local_ctx.bullets->end(); it != end; ++it)
-			it->Load(f);
+		// bullets
+		local_ctx.bullets->resize(f.Read<uint>());
+		for(Bullet& bullet : *local_ctx.bullets)
+			bullet.Load(f);
 
-		ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
+		f >> read_id;
 		if(read_id != check_id)
 			throw "Failed to read level data.";
 		++check_id;

@@ -27,7 +27,7 @@ public:
 
 	void operator >> (HumanData& hd)
 	{
-		hd.Load((HWND)file);
+		hd.Load(*this);
 	}
 
 	void operator >> (const Item*& item)
@@ -43,7 +43,7 @@ public:
 		usable = Usable::GetByRefid(refid);
 	}
 
-	const Item* ReadItemOptional()
+	const Item* ReadOptional()
 	{
 		const string& id = ReadString1();
 		if(id.empty())
@@ -75,7 +75,7 @@ public:
 
 	void operator << (const HumanData& hd)
 	{
-		hd.Save(file);
+		hd.Save(*this);
 	}
 
 	void operator << (const Item* item)
@@ -84,5 +84,13 @@ public:
 			WriteString1(item->id);
 		else
 			Write<byte>(0);
+	}
+
+	const Item* WriteOptional(const Item* item)
+	{
+		if(item)
+			WriteString1(item->id);
+		else
+			Write0();
 	}
 };

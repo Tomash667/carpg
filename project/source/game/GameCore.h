@@ -25,13 +25,28 @@ struct Blood;
 struct Bullet;
 struct Chest;
 struct CreatedCharacter;
+struct DialogContext;
 struct Door;
+struct Electro;
+struct EntityInterpolator;
+struct Explo;
+struct GameDialog;
+struct GroundItem;
+struct HeroData;
+struct Human;
+struct HumanData;
 struct Item;
+struct Light;
 struct Object;
 struct PlayerController;
+struct PlayerInfo;
+struct Portal;
 struct Room;
+struct SpeechBubble;
 struct Spell;
+struct Trap;
 struct Unit;
+struct UnitEventHandler;
 struct Usable;
 
 // FIXME: remove

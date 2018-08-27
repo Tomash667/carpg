@@ -70,6 +70,7 @@ public:
 	template<typename T>
 	T Read()
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		T a;
 		Read(&a, sizeof(T));
 		return a;
@@ -77,17 +78,20 @@ public:
 	template<typename T>
 	void Read(T& a)
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		Read(&a, sizeof(a));
 	}
 	template<typename T>
 	void operator >> (T& a)
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		Read(&a, sizeof(a));
 	}
 
 	template<typename T, typename T2>
 	void ReadCasted(T2& a)
 	{
+		static_assert(!std::is_pointer<T>::value && !std::is_pointer<T2>::value, "Value is pointer!");
 		a = (T2)Read<T>();
 	}
 
@@ -168,18 +172,30 @@ public:
 	template<typename T>
 	void Skip(typename std::enable_if<(sizeof(T) <= 8)>::type* = 0)
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		T val;
 		Read(val);
 	}
 	template<typename T>
 	void Skip(typename std::enable_if<(sizeof(T) > 8)>::type* = 0)
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		Skip(sizeof(T));
+	}
+
+	bool Read0()
+	{
+		return Read<byte>() == 0;
+	}
+	bool Read1()
+	{
+		return Read<byte>() == 1;
 	}
 
 	template<typename SizeType, typename T>
 	void ReadVector(vector<T>& v)
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		SizeType size = Read<SizeType>();
 		if(!ok || size == 0)
 			v.clear();
@@ -305,17 +321,20 @@ public:
 	template<typename T>
 	void Write(const T& a)
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		Write(&a, sizeof(a));
 	}
 	template<typename T>
 	void operator << (const T& a)
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		Write(&a, sizeof(a));
 	}
 
 	template<typename T, typename T2>
 	void WriteCasted(const T2& a)
 	{
+		static_assert(!std::is_pointer<T>::value && !std::is_pointer<T2>::value, "Value is pointer!");
 		Write(&a, sizeof(T));
 	}
 
@@ -394,10 +413,15 @@ public:
 	{
 		WriteCasted<byte>(0);
 	}
+	void Write1()
+	{
+		WriteCasted<byte>(1);
+	}
 
 	template<typename SizeType, typename T>
 	void WriteVector(const vector<T>& v)
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		assert(v.size() <= (size_t)std::numeric_limits<SizeType>::max());
 		SizeType size = (SizeType)v.size();
 		Write(size);
@@ -432,6 +456,7 @@ public:
 	template<typename T>
 	uint BeginPatch(const T& a)
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		uint pos = GetPos();
 		Write(a);
 		return pos;
@@ -440,6 +465,7 @@ public:
 	template<typename T>
 	void Patch(uint pos, const T& a)
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		uint current_pos = GetPos();
 		SetPos(pos);
 		Write(a);
