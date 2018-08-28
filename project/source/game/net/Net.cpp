@@ -27,6 +27,7 @@
 #include "Action.h"
 #include "SoundManager.h"
 #include "ScriptManager.h"
+#include "Portal.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;

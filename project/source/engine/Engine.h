@@ -22,7 +22,6 @@ struct CompileShaderParams
 };
 
 //-----------------------------------------------------------------------------
-// Silnik
 class Engine
 {
 public:

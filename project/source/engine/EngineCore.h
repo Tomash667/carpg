@@ -4,11 +4,17 @@
 #include "FileFormat.h"
 
 // Engine types
+struct Font;
 struct Mesh;
+struct MeshInstance;
 struct ParticleEmitter;
+struct Resource;
 struct Sound;
 struct StartupOptions;
+struct Terrain;
 struct TrailParticleEmitter;
+class Engine;
+class ResourceManager;
 class SoundManager;
 
 // Gui types
