@@ -27,6 +27,7 @@
 #include "Team.h"
 #include "SaveState.h"
 #include "SoundManager.h"
+#include "BitStreamFunc.h"
 #include "Portal.h"
 
 extern string g_ctime;
@@ -1093,8 +1094,9 @@ void Game::UpdateClientTransfer(float dt)
 	for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 	{
 		BitStream& stream = StreamStart(packet, Stream_Transfer);
+		BitStreamReader reader(stream);
 		byte msg_id;
-		stream.Read(msg_id);
+		reader >> msg_id;
 
 		switch(msg_id)
 		{
@@ -1111,7 +1113,8 @@ void Game::UpdateClientTransfer(float dt)
 		case ID_STATE:
 			{
 				byte state;
-				if(stream.Read(state) && InRange(state, 0ui8, 2ui8))
+				reader >> state;
+				if(reader.IsOk() && InRange(state, 0ui8, 2ui8))
 				{
 					switch(packet->data[1])
 					{
@@ -1143,7 +1146,7 @@ void Game::UpdateClientTransfer(float dt)
 				fallback_t = -0.5f;
 				net_state = NetState::Client_ReceivedWorldData;
 
-				if(ReadWorldData(stream))
+				if(ReadWorldData(reader))
 				{
 					// odeœlij informacje o gotowoœci
 					byte b[] = { ID_READY, 0 };
@@ -1169,7 +1172,7 @@ void Game::UpdateClientTransfer(float dt)
 			{
 				net_state = NetState::Client_ReceivedPlayerStartData;
 				LoadingStep("");
-				if(ReadPlayerStartData(stream))
+				if(ReadPlayerStartData(reader))
 				{
 					// odeœlij informacje o gotowoœci
 					if(mp_load_worldmap)
@@ -1198,8 +1201,9 @@ void Game::UpdateClientTransfer(float dt)
 			{
 				net_state = NetState::Client_ChangingLevel;
 				byte loc, level;
-				if(stream.Read(loc)
-					&& stream.Read(level))
+				reader >> loc;
+				reader >> level;
+				if(reader.IsOk())
 				{
 					if(loc < locations.size())
 					{
@@ -1228,7 +1232,7 @@ void Game::UpdateClientTransfer(float dt)
 				net_state = NetState::Client_ReceivedLevelData;
 				info_box->Show(txLoadingLocation);
 				LoadingStep("");
-				if(!ReadLevelData(stream))
+				if(!ReadLevelData(reader))
 				{
 					StreamError("NM_TRANSFER: Failed to read location data.");
 					peer->DeallocatePacket(packet);
@@ -1253,7 +1257,7 @@ void Game::UpdateClientTransfer(float dt)
 				net_state = NetState::Client_ReceivedPlayerData;
 				info_box->Show(txLoadingChars);
 				LoadingStep("");
-				if(!ReadPlayerData(stream))
+				if(!ReadPlayerData(reader))
 				{
 					StreamError("NM_TRANSFER: Failed to read player data.");
 					peer->DeallocatePacket(packet);

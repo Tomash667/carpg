@@ -92,8 +92,9 @@ void PickServerPanel::Update(float dt)
 	for(packet = game->peer->Receive(); packet; game->peer->DeallocatePacket(packet), packet = game->peer->Receive())
 	{
 		BitStream& stream = game->StreamStart(packet, Stream_PickServer);
+		BitStreamReader reader(stream);
 		byte msg_id;
-		stream.Read(msg_id);
+		reader >> msg_id;
 
 		switch(msg_id)
 		{
@@ -102,8 +103,9 @@ void PickServerPanel::Update(float dt)
 				// header
 				TimeMS time_ms;
 				char sign[2];
-				if(!stream.Read(time_ms)
-					|| !stream.Read<char[2]>(sign))
+				reader >> time_ms;
+				reader >> sign;
+				if(!reader)
 				{
 					game->StreamError("PickServer: Broken packet from %s.", packet->systemAddress.ToString());
 					break;
@@ -119,13 +121,12 @@ void PickServerPanel::Update(float dt)
 				// info about server
 				uint version;
 				byte players, players_max, flags;
-				string server_name;
-
-				if(!stream.Read(version) ||
-					!stream.Read(players) ||
-					!stream.Read(players_max) ||
-					!stream.Read(flags) ||
-					!ReadString1(stream, server_name))
+				reader >> version;
+				reader >> players;
+				reader >> players_max;
+				reader >> flags;
+				const string& server_name = reader.ReadString1();
+				if(!reader)
 				{
 					Warn("PickServer: Broken response from %.", packet->systemAddress.ToString());
 					game->StreamError();

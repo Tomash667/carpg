@@ -46,6 +46,7 @@
 #include "ScriptManager.h"
 #include "Profiler.h"
 #include "Portal.h"
+#include "BitStreamFunc.h"
 #include "DirectX.h"
 
 const int SAVE_VERSION = V_CURRENT;

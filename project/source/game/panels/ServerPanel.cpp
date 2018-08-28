@@ -440,9 +440,10 @@ void ServerPanel::OnInput(const string& str)
 		if(game->players != 1)
 		{
 			game->net_stream.Reset();
-			game->net_stream.Write(ID_SAY);
-			game->net_stream.WriteCasted<byte>(game->my_id);
-			WriteString1(game->net_stream, str);
+			BitStreamWriter f(game->net_stream);
+			f << ID_SAY;
+			f.WriteCasted<byte>(game->my_id);
+			f << str;
 			game->peer->Send(&game->net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game->server, Net::IsServer());
 			game->StreamWrite(game->net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game->server);
 		}
@@ -513,9 +514,10 @@ void ServerPanel::PickClass(Class clas, bool ready)
 		Info("ServerPanel: Sent pick class packet.");
 		BitStream& stream = game->net_stream;
 		stream.Reset();
-		stream.WriteCasted<byte>(ID_PICK_CHARACTER);
-		WriteCharacterData(stream, info.clas, info.hd, info.cc);
-		WriteBool(stream, ready);
+		BitStreamWriter f(stream);
+		f << ID_PICK_CHARACTER;
+		WriteCharacterData(f, info.clas, info.hd, info.cc);
+		f << ready;
 		game->peer->Send(&stream, IMMEDIATE_PRIORITY, RELIABLE, 0, game->server, false);
 		game->StreamWrite(stream, Stream_UpdateLobbyClient, game->server);
 	}

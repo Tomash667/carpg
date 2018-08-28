@@ -4,6 +4,7 @@
 #include "Spell.h"
 #include "Dialog.h"
 #include "Music.h"
+#include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
 static cstring content_id[] = {

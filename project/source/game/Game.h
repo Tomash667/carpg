@@ -1668,7 +1668,7 @@ public:
 	void AddMsg(cstring msg);
 	void OnEnterPassword(int id);
 	void ForceRedraw();
-	void PrepareLevelData(BitStreamWriter& f, bool loaded_resources);
+	void PrepareLevelData(BitStream& stream, bool loaded_resources);
 	void WriteUnit(BitStreamWriter& f, Unit& unit);
 	void WriteDoor(BitStreamWriter& f, Door& door);
 	void WriteItem(BitStreamWriter& f, GroundItem& item);
@@ -1681,11 +1681,11 @@ public:
 	bool ReadChest(BitStreamReader& f, Chest& chest);
 	bool ReadTrap(BitStreamReader& f, Trap& trap);
 	void SendPlayerData(int index);
-	bool ReadPlayerData(BitStream& stream);
+	bool ReadPlayerData(BitStreamReader& stream);
 	Unit* FindUnit(int netid);
 	Unit* FindUnit(delegate<bool(Unit*)> pred);
 	void UpdateServer(float dt);
-	bool ProcessControlMessageServer(BitStream& stream, PlayerInfo& info);
+	bool ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info);
 	void WriteServerChanges(BitStream& stream);
 	void WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info);
 	void UpdateClient(float dt);
