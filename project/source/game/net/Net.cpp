@@ -2153,7 +2153,8 @@ void Game::UpdateServer(float dt)
 
 		update_timer = 0;
 		net_stream.Reset();
-		net_stream.WriteCasted<byte>(ID_CHANGES);
+		BitStreamWriter f(net_stream);
+		f << ID_CHANGES;
 
 		// dodaj zmiany pozycji jednostek i ai_mode
 		if(game_state == GS_LEVEL)
@@ -2176,7 +2177,7 @@ void Game::UpdateServer(float dt)
 		}
 
 		// changes
-		WriteServerChanges(net_stream);
+		WriteServerChanges(f);
 		Net::changes.clear();
 		assert(net_talk.empty());
 		peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
@@ -2209,7 +2210,8 @@ void Game::UpdateServer(float dt)
 			if(!info.changes.empty() || info.update_flags)
 			{
 				net_stream.Reset();
-				WriteServerChangesForPlayer(net_stream, info);
+				BitStreamWriter f(net_stream);
+				WriteServerChangesForPlayer(f, info);
 				peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 0, info.adr, false);
 				StreamWrite(net_stream, Stream_UpdateGameServer, info.adr);
 				info.update_flags = 0;
@@ -4770,52 +4772,51 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 }
 
 //=================================================================================================
-// TODO FIXME
-void Game::WriteServerChanges(BitStream& stream)
+void Game::WriteServerChanges(BitStreamWriter& f)
 {
 	// count
-	stream.WriteCasted<word>(Net::changes.size());
+	f.WriteCasted<word>(Net::changes.size());
 	if(Net::changes.size() >= 0xFFFF)
 		Error("Too many changes %d!", Net::changes.size());
 
 	// changes
 	for(NetChange& c : Net::changes)
 	{
-		stream.WriteCasted<byte>(c.type);
+		f.WriteCasted<byte>(c.type);
 
 		switch(c.type)
 		{
 		case NetChange::UNIT_POS:
 			{
 				Unit& unit = *c.unit;
-				stream.Write(unit.netid);
-				stream.Write(unit.pos);
-				stream.Write(unit.rot);
-				stream.Write(unit.mesh_inst->groups[0].speed);
-				stream.WriteCasted<byte>(unit.animation);
+				f << unit.netid;
+				f << unit.pos;
+				f << unit.rot;
+				f << unit.mesh_inst->groups[0].speed;
+				f.WriteCasted<byte>(unit.animation);
 			}
 			break;
 		case NetChange::CHANGE_EQUIPMENT:
-			stream.Write(c.unit->netid);
-			stream.WriteCasted<byte>(c.id);
-			WriteBaseItem(stream, c.unit->slots[c.id]);
+			f << c.unit->netid;
+			f.WriteCasted<byte>(c.id);
+			WriteBaseItem(f, c.unit->slots[c.id]);
 			break;
 		case NetChange::TAKE_WEAPON:
 			{
 				Unit& u = *c.unit;
-				stream.Write(u.netid);
-				WriteBool(stream, c.id != 0);
-				stream.WriteCasted<byte>(c.id == 0 ? u.weapon_taken : u.weapon_hiding);
+				f << u.netid;
+				f << (c.id != 0);
+				f.WriteCasted<byte>(c.id == 0 ? u.weapon_taken : u.weapon_hiding);
 			}
 			break;
 		case NetChange::ATTACK:
 			{
 				Unit&u = *c.unit;
-				stream.Write(u.netid);
+				f << u.netid;
 				byte b = (byte)c.id;
 				b |= ((u.attack_id & 0xF) << 4);
-				stream.Write(b);
-				stream.Write(c.f[1]);
+				f << b;
+				f << c.f[1];
 			}
 			break;
 		case NetChange::CHANGE_FLAGS:
@@ -4827,17 +4828,17 @@ void Game::WriteServerChanges(BitStream& stream)
 					b |= 0x02;
 				if(anyone_talking)
 					b |= 0x04;
-				stream.Write(b);
+				f << b;
 			}
 			break;
 		case NetChange::UPDATE_HP:
-			stream.Write(c.unit->netid);
-			stream.Write(c.unit->hp);
-			stream.Write(c.unit->hpmax);
+			f << c.unit->netid;
+			f << c.unit->hp;
+			f << c.unit->hpmax;
 			break;
 		case NetChange::SPAWN_BLOOD:
-			stream.WriteCasted<byte>(c.id);
-			stream.Write(c.pos);
+			f.WriteCasted<byte>(c.id);
+			f << c.pos;
 			break;
 		case NetChange::HURT_SOUND:
 		case NetChange::DIE:
@@ -4853,80 +4854,78 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::USABLE_SOUND:
 		case NetChange::BREAK_ACTION:
 		case NetChange::PLAYER_ACTION:
-			stream.Write(c.unit->netid);
+			f << c.unit->netid;
 			break;
 		case NetChange::TELL_NAME:
-			stream.Write(c.unit->netid);
-			WriteBool(stream, c.id == 1);
+			f << c.unit->netid;
+			f << (c.id == 1);
 			if(c.id == 1)
-				WriteString1(stream, c.unit->hero->name);
+				f << c.unit->hero->name;
 			break;
 		case NetChange::CAST_SPELL:
-			stream.Write(c.unit->netid);
-			stream.WriteCasted<byte>(c.id);
+			f << c.unit->netid;
+			f.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::PICKUP_ITEM:
-			stream.Write(c.unit->netid);
-			WriteBool(stream, c.ile != 0);
+			f << c.unit->netid;
+			f << (c.ile != 0);
 			break;
 		case NetChange::SPAWN_ITEM:
-			WriteItem(stream, *c.item);
+			WriteItem(f, *c.item);
 			break;
 		case NetChange::REMOVE_ITEM:
-			stream.Write(c.id);
+			f << c.id;
 			break;
 		case NetChange::CONSUME_ITEM:
 			{
-				stream.Write(c.unit->netid);
 				const Item* item = (const Item*)c.id;
-				WriteString1(stream, item->id);
-				WriteBool(stream, c.ile != 0);
+				f << c.unit->netid;
+				f << item->id;
+				f << (c.ile != 0);
 			}
 			break;
 		case NetChange::HIT_SOUND:
-			stream.Write(c.pos);
-			stream.WriteCasted<byte>(c.id);
-			stream.WriteCasted<byte>(c.ile);
+			f << c.pos;
+			f.WriteCasted<byte>(c.id);
+			f.WriteCasted<byte>(c.ile);
 			break;
 		case NetChange::SHOOT_ARROW:
 			{
-				int netid = (c.unit ? c.unit->netid : -1);
-				stream.Write(netid);
-				stream.Write(c.pos);
-				stream.Write(c.vec3);
-				stream.Write(c.extra_f);
+				f << (c.unit ? c.unit->netid : -1);
+				f << c.pos;
+				f << c.vec3;
+				f << c.extra_f;
 			}
 			break;
 		case NetChange::UPDATE_CREDIT:
 			{
-				byte ile = (byte)Team.GetActiveTeamSize();
-				stream.Write(ile);
+				f << (byte)Team.GetActiveTeamSize();
 				for(Unit* unit : Team.active_members)
 				{
-					stream.Write(unit->netid);
-					stream.Write(unit->IsPlayer() ? unit->player->credit : unit->hero->credit);
+					f << unit->netid;
+					f << unit->GetCredit();
 				}
 			}
 			break;
 		case NetChange::UPDATE_FREE_DAYS:
 			{
 				byte count = 0;
-				uint pos = PatchByte(stream);
-				for(auto info : game_players)
+				uint pos = f.BeginPatch(count);
+				for(PlayerInfo* info : game_players)
 				{
 					if(info->left == PlayerInfo::LEFT_NO)
 					{
-						stream.Write(info->u->netid);
-						stream.Write(info->u->player->free_days);
+						f << info->u->netid;
+						f << info->u->player->free_days;
 						++count;
 					}
 				}
-				PatchByteApply(stream, pos, count);
+				f.Patch(pos, count);
 			}
 			break;
 		case NetChange::IDLE:
-			stream.Write(c.unit->netid);
-			stream.WriteCasted<byte>(c.id);
+			f << c.unit->netid;
+			f.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::ALL_QUESTS_COMPLETED:
 		case NetChange::GAME_OVER:
@@ -4948,81 +4947,81 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::REMOVE_UNIT:
 		case NetChange::REMOVE_TRAP:
 		case NetChange::TRIGGER_TRAP:
-			stream.Write(c.id);
+			f << c.id;
 			break;
 		case NetChange::TALK:
-			stream.Write(c.unit->netid);
-			stream.WriteCasted<byte>(c.id);
-			stream.Write(c.ile);
-			WriteString1(stream, *c.str);
+			f << c.unit->netid;
+			f << (byte)c.id;
+			f << c.ile;
+			f << *c.str;
 			StringPool.Free(c.str);
 			RemoveElement(net_talk, c.str);
 			break;
 		case NetChange::TALK_POS:
-			stream.Write(c.pos);
-			WriteString1(stream, *c.str);
+			f << c.pos;
+			f << *c.str;
 			StringPool.Free(c.str);
 			RemoveElement(net_talk, c.str);
 			break;
 		case NetChange::CHANGE_LOCATION_STATE:
-			stream.WriteCasted<byte>(c.id);
-			stream.WriteCasted<byte>(c.ile);
+			f.WriteCasted<byte>(c.id);
+			f.WriteCasted<byte>(c.ile);
 			break;
 		case NetChange::ADD_RUMOR:
-			WriteString1(stream, game_gui->journal->GetRumors()[c.id]);
+			f << game_gui->journal->GetRumors()[c.id];
 			break;
 		case NetChange::HAIR_COLOR:
-			stream.Write(c.unit->netid);
-			stream.Write(c.unit->human_data->hair_color);
+			f << c.unit->netid;
+			f << c.unit->human_data->hair_color;
 			break;
 		case NetChange::WARP:
-			stream.Write(c.unit->netid);
-			stream.WriteCasted<char>(c.unit->in_building);
-			stream.Write(c.unit->pos);
-			stream.Write(c.unit->rot);
+			f << c.unit->netid;
+			f.WriteCasted<char>(c.unit->in_building);
+			f << c.unit->pos;
+			f << c.unit->rot;
 			break;
 		case NetChange::REGISTER_ITEM:
 			{
-				WriteString1(stream, c.base_item->id);
-				WriteString1(stream, c.item2->id);
-				WriteString1(stream, c.item2->name);
-				WriteString1(stream, c.item2->desc);
-				stream.Write(c.item2->refid);
+				f << c.base_item->id;
+				f << c.item2->id;
+				f << c.item2->name;
+				f << c.item2->desc;
+				f << c.item2->refid;
 			}
 			break;
 		case NetChange::ADD_QUEST:
 			{
 				Quest* q = QuestManager::Get().FindQuest(c.id, false);
-				stream.Write(q->refid);
-				WriteString1(stream, q->name);
-				WriteString2(stream, q->msgs[0]);
-				WriteString2(stream, q->msgs[1]);
+				f << q->refid;
+				f << q->name;
+				f.WriteString2(q->msgs[0]);
+				f.WriteString2(q->msgs[1]);
 			}
 			break;
 		case NetChange::UPDATE_QUEST:
 			{
 				Quest* q = QuestManager::Get().FindQuest(c.id, false);
-				stream.Write(q->refid);
-				stream.WriteCasted<byte>(q->state);
-				WriteString2(stream, q->msgs.back());
+				f << q->refid;
+				f.WriteCasted<byte>(q->state);
+				f.WriteString2(q->msgs.back());
 			}
 			break;
 		case NetChange::RENAME_ITEM:
 			{
 				const Item* item = c.base_item;
-				stream.Write(item->refid);
-				WriteString1(stream, item->id);
-				WriteString1(stream, item->name);
+				f << item->refid;
+				f << item->id;
+				f << item->name;
 			}
 			break;
 		case NetChange::UPDATE_QUEST_MULTI:
 			{
 				Quest* q = QuestManager::Get().FindQuest(c.id, false);
-				stream.Write(q->refid);
-				stream.WriteCasted<byte>(q->state);
-				stream.WriteCasted<byte>(c.ile);
+				f << q->refid;
+				f.WriteCasted<byte>(q->state);
+				f.WriteCasted<byte>(c.ile);
 				for(int i = 0; i < c.ile; ++i)
-					WriteString2(stream, q->msgs[q->msgs.size() - c.ile + i]);
+					f.WriteString2(q->msgs[q->msgs.size() - c.ile + i]);
 			}
 			break;
 		case NetChange::CHANGE_LEADER:
@@ -5030,70 +5029,70 @@ void Game::WriteServerChanges(BitStream& stream)
 		case NetChange::TRAVEL:
 		case NetChange::CHEAT_TRAVEL:
 		case NetChange::REMOVE_CAMP:
-			stream.WriteCasted<byte>(c.id);
+			f.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::PAUSED:
 		case NetChange::CHEAT_NOAI:
-			WriteBool(stream, c.id != 0);
+			f << (c.id != 0);
 			break;
 		case NetChange::RANDOM_NUMBER:
-			stream.WriteCasted<byte>(c.unit->player->id);
-			stream.WriteCasted<byte>(c.id);
+			f.WriteCasted<byte>(c.unit->player->id);
+			f.WriteCasted<byte>(c.id);
 			break;
 		case NetChange::REMOVE_PLAYER:
-			stream.WriteCasted<byte>(c.id);
-			stream.WriteCasted<byte>(c.ile);
+			f.WriteCasted<byte>(c.id);
+			f.WriteCasted<byte>(c.ile);
 			break;
 		case NetChange::USE_USABLE:
-			stream.Write(c.unit->netid);
-			stream.Write(c.id);
-			stream.WriteCasted<byte>(c.ile);
+			f << c.unit->netid;
+			f << c.id;
+			f.WriteCasted<byte>(c.ile);
 			break;
 		case NetChange::RECRUIT_NPC:
-			stream.Write(c.unit->netid);
-			WriteBool(stream, c.unit->hero->free);
+			f << c.unit->netid;
+			f << c.unit->hero->free;
 			break;
 		case NetChange::SPAWN_UNIT:
-			WriteUnit(stream, *c.unit);
+			WriteUnit(f, *c.unit);
 			break;
 		case NetChange::CHANGE_ARENA_STATE:
-			stream.Write(c.unit->netid);
-			stream.WriteCasted<char>(c.unit->in_arena);
+			f << c.unit->netid;
+			f.WriteCasted<char>(c.unit->in_arena);
 			break;
 		case NetChange::WORLD_TIME:
-			stream.Write(worldtime);
-			stream.WriteCasted<byte>(day);
-			stream.WriteCasted<byte>(month);
-			stream.WriteCasted<byte>(year);
+			f << worldtime;
+			f.WriteCasted<byte>(day);
+			f.WriteCasted<byte>(month);
+			f.WriteCasted<byte>(year);
 			break;
 		case NetChange::USE_DOOR:
-			stream.Write(c.id);
-			WriteBool(stream, c.ile != 0);
+			f << c.id;
+			f << (c.ile != 0);
 			break;
 		case NetChange::CREATE_EXPLOSION:
-			WriteString1(stream, c.spell->id);
-			stream.Write(c.pos);
+			f << c.spell->id;
+			f << c.pos;
 			break;
 		case NetChange::ENCOUNTER:
-			WriteString1(stream, *c.str);
+			f << *c.str;
 			StringPool.Free(c.str);
 			break;
 		case NetChange::ADD_LOCATION:
 			{
 				Location& loc = *locations[c.id];
-				stream.WriteCasted<byte>(c.id);
-				stream.WriteCasted<byte>(loc.type);
+				f.WriteCasted<byte>(c.id);
+				f.WriteCasted<byte>(loc.type);
 				if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
-					stream.WriteCasted<byte>(loc.GetLastLevel() + 1);
-				stream.WriteCasted<byte>(loc.state);
-				stream.Write(loc.pos);
-				WriteString1(stream, loc.name);
-				stream.WriteCasted<byte>(loc.image);
+					f.WriteCasted<byte>(loc.GetLastLevel() + 1);
+				f.WriteCasted<byte>(loc.state);
+				f << loc.pos;
+				f << loc.name;
+				f.WriteCasted<byte>(loc.image);
 			}
 			break;
 		case NetChange::CHANGE_AI_MODE:
 			{
-				stream.Write(c.unit->netid);
+				f << c.unit->netid;
 				byte mode = 0;
 				if(c.unit->dont_attack)
 					mode |= 0x01;
@@ -5103,62 +5102,62 @@ void Game::WriteServerChanges(BitStream& stream)
 					mode |= 0x04;
 				if(c.unit->attack_team)
 					mode |= 0x08;
-				stream.Write(mode);
+				f << mode;
 			}
 			break;
 		case NetChange::CHANGE_UNIT_BASE:
-			stream.Write(c.unit->netid);
-			WriteString1(stream, c.unit->data->id);
+			f << c.unit->netid;
+			f << c.unit->data->id;
 			break;
 		case NetChange::CREATE_SPELL_BALL:
-			WriteString1(stream, c.spell->id);
-			stream.Write(c.pos);
-			stream.Write(c.f[0]);
-			stream.Write(c.f[1]);
-			stream.Write(c.extra_netid);
+			f << c.spell->id;
+			f << c.pos;
+			f << c.f[0];
+			f << c.f[1];
+			f << c.extra_netid;
 			break;
 		case NetChange::SPELL_SOUND:
-			WriteString1(stream, c.spell->id);
-			stream.Write(c.pos);
+			f << c.spell->id;
+			f << c.pos;
 			break;
 		case NetChange::CREATE_ELECTRO:
-			stream.Write(c.e_id);
-			stream.Write(c.pos);
-			stream.Write(c.vec3);
+			f << c.e_id;
+			f << c.pos;
+			f << c.vec3;
 			break;
 		case NetChange::UPDATE_ELECTRO:
-			stream.Write(c.e_id);
-			stream.Write(c.pos);
+			f << c.e_id;
+			f << c.pos;
 			break;
 		case NetChange::ELECTRO_HIT:
 		case NetChange::RAISE_EFFECT:
 		case NetChange::HEAL_EFFECT:
-			stream.Write(c.pos);
+			f << c.pos;
 			break;
 		case NetChange::REVEAL_MINIMAP:
-			stream.WriteCasted<word>(minimap_reveal_mp.size());
+			f.WriteCasted<word>(minimap_reveal_mp.size());
 			for(vector<Int2>::iterator it2 = minimap_reveal_mp.begin(), end2 = minimap_reveal_mp.end(); it2 != end2; ++it2)
 			{
-				stream.WriteCasted<byte>(it2->x);
-				stream.WriteCasted<byte>(it2->y);
+				f.WriteCasted<byte>(it2->x);
+				f.WriteCasted<byte>(it2->y);
 			}
 			minimap_reveal_mp.clear();
 			break;
 		case NetChange::CHANGE_MP_VARS:
-			WriteNetVars(stream);
+			WriteNetVars(f);
 			break;
 		case NetChange::SECRET_TEXT:
-			WriteString1(stream, GetSecretNote()->desc);
+			f << GetSecretNote()->desc;
 			break;
 		case NetChange::UPDATE_MAP_POS:
-			stream.Write(world_pos);
+			f << world_pos;
 			break;
 		case NetChange::GAME_STATS:
-			stream.Write(total_kills);
+			f << total_kills;
 			break;
 		case NetChange::STUN:
-			stream.Write(c.unit->netid);
-			stream.Write(c.f[0]);
+			f << c.unit->netid;
+			f << c.f[0];
 			break;
 		default:
 			Error("Update server: Unknown change %d.", c.type);
@@ -5166,68 +5165,68 @@ void Game::WriteServerChanges(BitStream& stream)
 			break;
 		}
 
-		stream.WriteCasted<byte>(0xFF);
+		f.WriteCasted<byte>(0xFF);
 	}
 }
 
 //=================================================================================================
-void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
+void Game::WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info)
 {
 	PlayerController& player = *info.pc;
 
 	if(!info.changes.empty())
 		info.update_flags |= PlayerInfo::UF_NET_CHANGES;
 
-	stream.WriteCasted<byte>(ID_PLAYER_CHANGES);
-	stream.WriteCasted<byte>(info.update_flags);
+	f.WriteCasted<byte>(ID_PLAYER_CHANGES);
+	f.WriteCasted<byte>(info.update_flags);
 	if(IS_SET(info.update_flags, PlayerInfo::UF_POISON_DAMAGE))
-		stream.Write(player.last_dmg_poison);
+		f << player.last_dmg_poison;
 	if(IS_SET(info.update_flags, PlayerInfo::UF_NET_CHANGES))
 	{
-		stream.WriteCasted<byte>(info.changes.size());
+		f.WriteCasted<byte>(info.changes.size());
 		if(info.changes.size() > 0xFF)
 			Error("Update server: Too many changes for player %s.", info.name.c_str());
 
 		for(NetChangePlayer& c : info.changes)
 		{
-			stream.WriteCasted<byte>(c.type);
+			f.WriteCasted<byte>(c.type);
 
 			switch(c.type)
 			{
 			case NetChangePlayer::PICKUP:
-				stream.Write(c.id);
-				stream.Write(c.ile);
+				f << c.id;
+				f << c.ile;
 				break;
 			case NetChangePlayer::LOOT:
-				WriteBool(stream, c.id != 0);
+				f << (c.id != 0);
 				if(c.id != 0)
-					WriteItemListTeam(stream, *player.chest_trade);
+					WriteItemListTeam(f, *player.chest_trade);
 				break;
 			case NetChangePlayer::START_SHARE:
 			case NetChangePlayer::START_GIVE:
 				{
 					Unit& u = *player.action_unit;
-					stream.Write(u.weight);
-					stream.Write(u.weight_max);
-					stream.Write(u.gold);
-					u.stats.Write(stream);
-					WriteItemListTeam(stream, u.items);
+					f << u.weight;
+					f << u.weight_max;
+					f << u.gold;
+					u.stats.Write(f);
+					WriteItemListTeam(f, u.items);
 				}
 				break;
 			case NetChangePlayer::GOLD_MSG:
-				WriteBool(stream, c.id != 0);
-				stream.Write(c.ile);
+				f << (c.id != 0);
+				f << c.ile;
 				break;
 			case NetChangePlayer::START_DIALOG:
-				stream.Write(c.id);
+				f << c.id;
 				break;
 			case NetChangePlayer::SHOW_DIALOG_CHOICES:
 				{
 					DialogContext& ctx = *player.dialog_ctx;
-					stream.WriteCasted<byte>(ctx.choices.size());
-					stream.WriteCasted<char>(ctx.dialog_esc);
+					f.WriteCasted<byte>(ctx.choices.size());
+					f.WriteCasted<char>(ctx.dialog_esc);
 					for(DialogChoice& choice : ctx.choices)
-						WriteString1(stream, choice.msg);
+						f << choice.msg;
 				}
 				break;
 			case NetChangePlayer::END_DIALOG:
@@ -5239,8 +5238,8 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 			case NetChangePlayer::END_FALLBACK:
 				break;
 			case NetChangePlayer::START_TRADE:
-				stream.Write(c.id);
-				WriteItemList(stream, *player.chest_trade);
+				f << c.id;
+				WriteItemList(f, *player.chest_trade);
 				break;
 			case NetChangePlayer::SET_FROZEN:
 			case NetChangePlayer::DEVMODE:
@@ -5248,108 +5247,105 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 			case NetChangePlayer::NO_PVP:
 			case NetChangePlayer::CANT_LEAVE_LOCATION:
 			case NetChangePlayer::REST:
-				stream.WriteCasted<byte>(c.id);
+				f.WriteCasted<byte>(c.id);
 				break;
 			case NetChangePlayer::IS_BETTER_ITEM:
-				WriteBool(stream, c.id != 0);
+				f << (c.id != 0);
 				break;
 			case NetChangePlayer::REMOVE_QUEST_ITEM:
 			case NetChangePlayer::LOOK_AT:
-				stream.Write(c.id);
+				f << c.id;
 				break;
 			case NetChangePlayer::ADD_ITEMS:
 				{
-					stream.Write(c.id);
-					stream.Write(c.ile);
-					WriteString1(stream, c.item->id);
+					f << c.id;
+					f << c.ile;
+					f << c.item->id;
 					if(c.item->id[0] == '$')
-						stream.Write(c.item->refid);
+						f << c.item->refid;
 				}
 				break;
 			case NetChangePlayer::TRAIN:
-				stream.WriteCasted<byte>(c.id);
-				stream.WriteCasted<byte>(c.ile);
+				f.WriteCasted<byte>(c.id);
+				f.WriteCasted<byte>(c.ile);
 				break;
 			case NetChangePlayer::UNSTUCK:
-				stream.Write(c.pos);
+				f << c.pos;
 				break;
 			case NetChangePlayer::GOLD_RECEIVED:
-				stream.WriteCasted<byte>(c.id);
-				stream.Write(c.ile);
+				f.WriteCasted<byte>(c.id);
+				f << c.ile;
 				break;
 			case NetChangePlayer::GAIN_STAT:
-				WriteBool(stream, c.id != 0);
-				stream.WriteCasted<byte>(c.a);
-				stream.WriteCasted<byte>(c.ile);
+				f << (c.id != 0);
+				f.WriteCasted<byte>(c.a);
+				f.WriteCasted<byte>(c.ile);
 				break;
 			case NetChangePlayer::ADD_ITEMS_TRADER:
-				stream.Write(c.id);
-				stream.Write(c.ile);
-				stream.Write(c.a);
-				WriteBaseItem(stream, c.item);
+				f << c.id;
+				f << c.ile;
+				f << c.a;
+				WriteBaseItem(f, c.item);
 				break;
 			case NetChangePlayer::ADD_ITEMS_CHEST:
-				stream.Write(c.id);
-				stream.Write(c.ile);
-				stream.Write(c.a);
-				WriteBaseItem(stream, c.item);
+				f << c.id;
+				f << c.ile;
+				f << c.a;
+				WriteBaseItem(f, c.item);
 				break;
 			case NetChangePlayer::REMOVE_ITEMS:
-				stream.Write(c.id);
-				stream.Write(c.ile);
+				f << c.id;
+				f << c.ile;
 				break;
 			case NetChangePlayer::REMOVE_ITEMS_TRADER:
-				stream.Write(c.id);
-				stream.Write(c.ile);
-				stream.Write(c.a);
+				f << c.id;
+				f << c.ile;
+				f << c.a;
 				break;
 			case NetChangePlayer::UPDATE_TRADER_GOLD:
-				stream.Write(c.id);
-				stream.Write(c.ile);
+				f << c.id;
+				f << c.ile;
 				break;
 			case NetChangePlayer::UPDATE_TRADER_INVENTORY:
-				stream.Write(c.unit->netid);
-				WriteItemListTeam(stream, c.unit->items);
+				f << c.unit->netid;
+				WriteItemListTeam(f, c.unit->items);
 				break;
 			case NetChangePlayer::PLAYER_STATS:
-				stream.WriteCasted<byte>(c.id);
+				f.WriteCasted<byte>(c.id);
 				if(IS_SET(c.id, STAT_KILLS))
-					stream.Write(player.kills);
+					f << player.kills;
 				if(IS_SET(c.id, STAT_DMG_DONE))
-					stream.Write(player.dmg_done);
+					f << player.dmg_done;
 				if(IS_SET(c.id, STAT_DMG_TAKEN))
-					stream.Write(player.dmg_taken);
+					f << player.dmg_taken;
 				if(IS_SET(c.id, STAT_KNOCKS))
-					stream.Write(player.knocks);
+					f << player.knocks;
 				if(IS_SET(c.id, STAT_ARENA_FIGHTS))
-					stream.Write(player.arena_fights);
+					f << player.arena_fights;
 				break;
 			case NetChangePlayer::ADDED_ITEMS_MSG:
-				stream.WriteCasted<byte>(c.ile);
+				f.WriteCasted<byte>(c.ile);
 				break;
 			case NetChangePlayer::STAT_CHANGED:
-				stream.WriteCasted<byte>(c.id);
-				stream.WriteCasted<byte>(c.a);
-				stream.Write(c.ile);
+				f.WriteCasted<byte>(c.id);
+				f.WriteCasted<byte>(c.a);
+				f << c.ile;
 				break;
 			case NetChangePlayer::ADD_PERK:
-				stream.WriteCasted<byte>(c.id);
-				stream.Write(c.ile);
+				f.WriteCasted<byte>(c.id);
+				f << c.ile;
 				break;
 			case NetChangePlayer::GAME_MESSAGE:
-				stream.Write(c.id);
+				f << c.id;
 				break;
 			case NetChangePlayer::RUN_SCRIPT_RESULT:
 				if(c.str)
 				{
-					WriteString<uint>(stream, *c.str);
+					f.WriteString4(*c.str);
 					StringPool.Free(c.str);
 				}
 				else
-				{
-					uint zero = 0;
-					stream.Write(zero);
-				}
+					f << 0u;
 				break;
 			default:
 				Error("Update server: Unknown player %s change %d.", info.name.c_str(), c.type);
@@ -5357,17 +5353,17 @@ void Game::WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info)
 				break;
 			}
 
-			stream.WriteCasted<byte>(0xFF);
+			f.WriteCasted<byte>(0xFF);
 		}
 	}
 	if(IS_SET(info.update_flags, PlayerInfo::UF_GOLD))
-		stream.Write(info.u->gold);
+		f << info.u->gold;
 	if(IS_SET(info.update_flags, PlayerInfo::UF_ALCOHOL))
-		stream.Write(info.u->alcohol);
+		f << info.u->alcohol;
 	if(IS_SET(info.update_flags, PlayerInfo::UF_BUFFS))
-		stream.WriteCasted<byte>(info.buffs);
+		f.WriteCasted<byte>(info.buffs);
 	if(IS_SET(info.update_flags, PlayerInfo::UF_STAMINA))
-		stream.Write(info.u->stamina);
+		f << info.u->stamina;
 }
 
 //=================================================================================================
@@ -9917,17 +9913,17 @@ bool Game::ReadWorldData(BitStream& stream)
 }
 
 //=================================================================================================
-void Game::WriteNetVars(BitStream& s)
+void Game::WriteNetVars(BitStreamWriter& f)
 {
-	WriteBool(s, mp_use_interp);
-	s.Write(mp_interp);
+	f << mp_use_interp;
+	f << mp_interp;
 }
 
 //=================================================================================================
-bool Game::ReadNetVars(BitStream& s)
+bool Game::ReadNetVars(BitStreamReader& f)
 {
-	return ReadBool(s, mp_use_interp) &&
-		s.Read(mp_interp);
+	f >> mp_use_interp;
+	f >> mp_interp;
 }
 
 //=================================================================================================

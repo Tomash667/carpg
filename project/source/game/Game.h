@@ -1686,8 +1686,8 @@ public:
 	Unit* FindUnit(delegate<bool(Unit*)> pred);
 	void UpdateServer(float dt);
 	bool ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info);
-	void WriteServerChanges(BitStream& stream);
-	void WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info);
+	void WriteServerChanges(BitStreamWriter& f);
+	void WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info);
 	void UpdateClient(float dt);
 	bool ProcessControlMessageClient(BitStream& stream, bool& exit_from_server);
 	bool ProcessControlMessageClientForMe(BitStream& stream);
@@ -1837,8 +1837,8 @@ public:
 	PlayerInfo* FindOldPlayer(cstring nick);
 	void PrepareWorldData(BitStream& stream);
 	bool ReadWorldData(BitStream& stream);
-	void WriteNetVars(BitStream& stream);
-	bool ReadNetVars(BitStream& stream);
+	void WriteNetVars(BitStreamWriter& f);
+	void ReadNetVars(BitStreamReader& f);
 	void WritePlayerStartData(BitStream& stream, PlayerInfo& info);
 	bool ReadPlayerStartData(BitStream& stream);
 	bool CheckMoveNet(Unit& unit, const Vec3& pos);
