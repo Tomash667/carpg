@@ -17,6 +17,8 @@ using namespace SLNet;
 
 //-----------------------------------------------------------------------------
 class ActionPanel;
+class BitStreamReader;
+class BitStreamWriter;
 class BookPanel;
 class Console;
 class Controls;

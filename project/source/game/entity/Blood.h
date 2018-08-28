@@ -14,6 +14,6 @@ struct Blood
 
 	void Save(FileWriter& f) const;
 	void Load(FileReader& f);
-	void Write(BitStream& stream) const;
-	bool Read(BitStream& stream);
+	void Write(BitStreamWriter& f) const;
+	void Read(BitStreamReader& f);
 };

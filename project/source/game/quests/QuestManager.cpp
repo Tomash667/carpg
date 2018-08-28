@@ -273,25 +273,25 @@ void QuestManager::Cleanup()
 }
 
 //=================================================================================================
-void QuestManager::Write(BitStream& stream)
+void QuestManager::Write(BitStreamWriter& f)
 {
-	stream.WriteCasted<word>(quests.size());
+	f.WriteCasted<word>(quests.size());
 	for(Quest* quest : quests)
 	{
-		stream.Write(quest->refid);
-		stream.WriteCasted<byte>(quest->state);
-		WriteString1(stream, quest->name);
-		WriteStringArray<byte, word>(stream, quest->msgs);
+		f << quest->refid;
+		f.WriteCasted<byte>(quest->state);
+		f << quest->name;
+		f.WriteStringArray<byte, word>(quest->msgs);
 	}
 }
 
 //=================================================================================================
-bool QuestManager::Read(BitStream& stream)
+bool QuestManager::Read(BitStreamReader& f)
 {
 	const int QUEST_MIN_SIZE = sizeof(int) + sizeof(byte) * 3;
 	word quest_count;
-	if(!stream.Read(quest_count)
-		|| !EnsureSize(stream, QUEST_MIN_SIZE * quest_count))
+	f >> quest_count;
+	if(!f.Ensure(QUEST_MIN_SIZE * quest_count))
 	{
 		Error("Read world: Broken packet for quests.");
 		return false;
@@ -303,10 +303,11 @@ bool QuestManager::Read(BitStream& stream)
 	{
 		quest = new PlaceholderQuest;
 		quest->quest_index = index;
-		if(!stream.Read(quest->refid) ||
-			!stream.ReadCasted<byte>(quest->state) ||
-			!ReadString1(stream, quest->name) ||
-			!ReadStringArray<byte, word>(stream, quest->msgs))
+		f >> quest->refid;
+		f.ReadCasted<byte>(quest->state);
+		f >> quest->name;
+		f.ReadStringArray<byte, word>(quest->msgs);
+		if(!f)
 		{
 			Error("Read world: Broken packet for quest %d.", index);
 			return false;

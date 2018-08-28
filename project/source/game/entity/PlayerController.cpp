@@ -767,39 +767,39 @@ void PlayerController::TrainMod(SkillId s, float points)
 
 //=================================================================================================
 // Used to send per-player data in WritePlayerData
-void PlayerController::Write(BitStream& stream) const
+void PlayerController::Write(BitStreamWriter& f) const
 {
-	stream.Write(kills);
-	stream.Write(dmg_done);
-	stream.Write(dmg_taken);
-	stream.Write(knocks);
-	stream.Write(arena_fights);
-	base_stats.Write(stream);
-	stream.WriteCasted<byte>(perks.size());
+	f << kills;
+	f << dmg_done;
+	f << dmg_taken;
+	f << knocks;
+	f << arena_fights;
+	base_stats.Write(f);
+	f.WriteCasted<byte>(perks.size());
 	for(const TakenPerk& perk : perks)
 	{
-		stream.WriteCasted<byte>(perk.perk);
-		stream.Write(perk.value);
+		f.WriteCasted<byte>(perk.perk);
+		f << perk.value;
 	}
-	stream.Write(action_cooldown);
-	stream.Write(action_recharge);
-	stream.Write(action_charges);
-	WriteBool(stream, always_run);
-	stream.WriteCasted<byte>(next_action);
+	f << action_cooldown;
+	f << action_recharge;
+	f << action_charges;
+	f << always_run;
+	f.WriteCasted<byte>(next_action);
 	switch(next_action)
 	{
 	case NA_NONE:
 		break;
 	case NA_REMOVE:
 	case NA_DROP:
-		stream.WriteCasted<byte>(next_action_data.slot);
+		f.WriteCasted<byte>(next_action_data.slot);
 		break;
 	case NA_EQUIP:
 	case NA_CONSUME:
-		stream.Write(GetNextActionItemIndex());
+		f << GetNextActionItemIndex();
 		break;
 	case NA_USE:
-		stream.Write(next_action_data.usable->netid);
+		f << next_action_data.usable->netid;
 		break;
 	default:
 		assert(0);
@@ -809,30 +809,30 @@ void PlayerController::Write(BitStream& stream) const
 
 //=================================================================================================
 // Used to read per-player data in ReadPlayerData
-bool PlayerController::Read(BitStream& stream)
+bool PlayerController::Read(BitStreamReader& f)
 {
 	byte count;
-	if(!stream.Read(kills) ||
-		!stream.Read(dmg_done) ||
-		!stream.Read(dmg_taken) ||
-		!stream.Read(knocks) ||
-		!stream.Read(arena_fights) ||
-		!base_stats.Read(stream) ||
-		!stream.Read(count)
-		|| !EnsureSize(stream, 5 * count))
+	f >> kills;
+	f >> dmg_done;
+	f >> dmg_taken;
+	f >> knocks;
+	f >> arena_fights;
+	base_stats.Read(f);
+	f >> count;
+	if(!f || !f.Ensure(5 * count))
 		return false;
 	perks.resize(count);
 	for(TakenPerk& perk : perks)
 	{
-		if(!stream.ReadCasted<byte>(perk.perk) ||
-			!stream.Read(perk.value))
-			return false;
+		f.ReadCasted<byte>(perk.perk);
+		f >> perk.value;
 	}
-	if(!stream.Read(action_cooldown)
-		|| !stream.Read(action_recharge)
-		|| !stream.Read(action_charges)
-		|| !ReadBool(stream, always_run)
-		|| !stream.ReadCasted<byte>(next_action))
+	f >> action_cooldown;
+	f >> action_recharge;
+	f >> action_charges;
+	f >> always_run;
+	f.ReadCasted<byte>(next_action);
+	if(!f)
 		return false;
 	switch(next_action)
 	{
@@ -840,13 +840,15 @@ bool PlayerController::Read(BitStream& stream)
 		break;
 	case NA_REMOVE:
 	case NA_DROP:
-		if(!stream.ReadCasted<byte>(next_action_data.slot))
+		f.ReadCasted<byte>(next_action_data.slot);
+		if(!f)
 			return false;
 		break;
 	case NA_EQUIP:
 	case NA_CONSUME:
 		{
-			if(!stream.Read(next_action_data.index))
+			f >> next_action_data.index;
+			if(!f)
 				return false;
 			if(next_action_data.index == -1)
 				next_action = NA_NONE;
@@ -856,8 +858,8 @@ bool PlayerController::Read(BitStream& stream)
 		break;
 	case NA_USE:
 		{
-			int index;
-			if(!stream.Read(index))
+			int index = f.Read<int>();
+			if(!f)
 				return false;
 			next_action_data.usable = Game::Get().FindUsable(index);
 		}

@@ -140,26 +140,27 @@ void Usable::Load(FileReader& f, bool local)
 }
 
 //=================================================================================================
-void Usable::Write(BitStream& stream) const
+void Usable::Write(BitStreamWriter& f) const
 {
-	stream.Write(netid);
-	WriteString1(stream, base->id);
-	stream.Write(pos);
-	stream.Write(rot);
-	stream.WriteCasted<byte>(variant);
+	f << netid;
+	f << base->id;
+	f << pos;
+	f << rot;
+	f.WriteCasted<byte>(variant);
 }
 
 //=================================================================================================
-bool Usable::Read(BitStream& stream)
+bool Usable::Read(BitStreamReader& f)
 {
-	if(!stream.Read(netid)
-		|| !ReadString1(stream)
-		|| !stream.Read(pos)
-		|| !stream.Read(rot)
-		|| !stream.ReadCasted<byte>(variant))
+	f >> netid;
+	const string& base_id = f.ReadString1();
+	f >> pos;
+	f >> rot;
+	f.ReadCasted<byte>(variant);
+	if(!f)
 		return false;
 	user = nullptr;
-	base = BaseUsable::TryGet(BUF);
+	base = BaseUsable::TryGet(base_id);
 	if(!base)
 	{
 		Error("Invalid usable type '%s'.", BUF);

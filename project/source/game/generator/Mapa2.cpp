@@ -2115,21 +2115,21 @@ void Room::Load(FileReader& f)
 }
 
 //=================================================================================================
-void Room::Write(BitStream& stream) const
+void Room::Write(BitStreamWriter& f) const
 {
-	stream.Write(pos);
-	stream.Write(size);
-	WriteVectorCast<byte, byte>(stream, connected);
-	stream.WriteCasted<byte>(target);
+	f << pos;
+	f << size;
+	f.WriteVectorCasted<byte, byte>(connected);
+	f.WriteCasted<byte>(target);
 }
 
 //=================================================================================================
-bool Room::Read(BitStream& stream)
+void Room::Read(BitStreamReader& f)
 {
-	return stream.Read(pos)
-		&& stream.Read(size)
-		&& ReadVectorCast<byte, byte>(stream, connected)
-		&& stream.ReadCasted<byte>(target);
+	f >> pos;
+	f >> size;
+	f.ReadVectorCasted<byte, byte>(connected);
+	f.ReadCasted<byte>(target);
 }
 
 // zwraca pole oznaczone ?

@@ -277,7 +277,7 @@ Portal* Location::TryGetPortal(int index) const
 }
 
 //=================================================================================================
-void Location::WritePortals(BitStream& stream) const
+void Location::WritePortals(BitStreamWriter& f) const
 {
 	// count
 	uint count = 0;
@@ -287,25 +287,24 @@ void Location::WritePortals(BitStream& stream) const
 		++count;
 		cportal = cportal->next_portal;
 	}
-	stream.WriteCasted<byte>(count);
+	f.WriteCasted<byte>(count);
 
 	// portals
 	cportal = portal;
 	while(cportal)
 	{
-		stream.Write(cportal->pos);
-		stream.Write(cportal->rot);
-		WriteBool(stream, cportal->target_loc != -1);
+		f << cportal->pos;
+		f << cportal->rot;
+		f << (cportal->target_loc != -1);
 		cportal = cportal->next_portal;
 	}
 }
 
 //=================================================================================================
-bool Location::ReadPortals(BitStream& stream, int at_level)
+bool Location::ReadPortals(BitStreamReader& f, int at_level)
 {
-	byte count;
-	if(!stream.Read(count)
-		|| !EnsureSize(stream, count * Portal::MIN_SIZE))
+	byte count = f.Read<byte>();
+	if(!f.Ensure(count * Portal::MIN_SIZE))
 		return false;
 
 	Portal* cportal = nullptr;
@@ -313,9 +312,10 @@ bool Location::ReadPortals(BitStream& stream, int at_level)
 	{
 		Portal* p = new Portal;
 		bool active;
-		if(!stream.Read(p->pos)
-			|| !stream.Read(p->rot)
-			|| !ReadBool(stream, active))
+		f >> p->pos;
+		f >> p->rot;
+		f >> active;
+		if(!f)
 		{
 			delete p;
 			return false;

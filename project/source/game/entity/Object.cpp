@@ -62,35 +62,36 @@ void Object::Load(FileReader& f)
 }
 
 //=================================================================================================
-void Object::Write(BitStream& stream) const
+void Object::Write(BitStreamWriter& f) const
 {
-	stream.Write(pos);
-	stream.Write(rot);
-	stream.Write(scale);
+	f << pos;
+	f << rot;
+	f << scale;
 	if(base)
-		WriteString1(stream, base->id);
+		f << base->id;
 	else
 	{
-		stream.Write<byte>(0);
-		WriteString1(stream, mesh->filename);
+		f.Write0();
+		f << mesh->filename;
 	}
 }
 
 //=================================================================================================
-bool Object::Read(BitStream& stream)
+bool Object::Read(BitStreamReader& f)
 {
-	if(!stream.Read(pos)
-		|| !stream.Read(rot)
-		|| !stream.Read(scale)
-		|| !ReadString1(stream))
+	f >> pos;
+	f >> rot;
+	f >> scale;
+	const string& base_id = f.ReadString1();
+	if(!f)
 		return false;
-	if(BUF[0])
+	if(!base_id.empty())
 	{
 		// use base obj
-		base = BaseObject::Get(BUF);
+		base = BaseObject::Get(base_id);
 		if(!base)
 		{
-			Error("Missing base object '%s'!", BUF);
+			Error("Missing base object '%s'!", base_id.c_str());
 			return false;
 		}
 		mesh = base->mesh;
@@ -98,9 +99,10 @@ bool Object::Read(BitStream& stream)
 	else
 	{
 		// use mesh
-		if(!ReadString1(stream))
+		const string& mesh_id = f.ReadString1();
+		if(!f)
 			return false;
-		mesh = ResourceManager::Get<Mesh>().GetLoaded(BUF);
+		mesh = ResourceManager::Get<Mesh>().GetLoaded(mesh_id);
 		base = nullptr;
 	}
 	return true;

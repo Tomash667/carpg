@@ -35,8 +35,8 @@ struct Usable
 
 	void Save(FileWriter& f, bool local);
 	void Load(FileReader& f, bool local);
-	void Write(BitStream& stream) const;
-	bool Read(BitStream& stream);
+	void Write(BitStreamWriter& f) const;
+	bool Read(BitStreamReader& f);
 
 	static Usable* GetByRefid(int _refid)
 	{

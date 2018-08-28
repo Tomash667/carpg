@@ -40,8 +40,8 @@ public:
 	void AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit = nullptr);
 	void Reset();
 	void Cleanup();
-	void Write(BitStream& stream);
-	bool Read(BitStream& stream);
+	void Write(BitStreamWriter& f);
+	bool Read(BitStreamReader& f);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
 	Quest* FindQuest(int location, QuestType type);

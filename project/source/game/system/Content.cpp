@@ -101,15 +101,15 @@ void content::CleanupContent()
 }
 
 //=================================================================================================
-bool content::ReadCrc(BitStream& stream)
+void content::WriteCrc(BitStreamWriter& f)
 {
-	return stream.Read(client_crc);
+	f << crc;
 }
 
 //=================================================================================================
-void content::WriteCrc(BitStream& stream)
+void content::ReadCrc(BitStreamReader& f)
 {
-	stream.Write(crc);
+	f >> crc;
 }
 
 //=================================================================================================

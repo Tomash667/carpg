@@ -38,6 +38,6 @@ struct Object
 	}
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
-	void Write(BitStream& stream) const;
-	bool Read(BitStream& stream);
+	void Write(BitStreamWriter& f) const;
+	bool Read(BitStreamReader& f);
 };

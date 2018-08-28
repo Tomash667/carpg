@@ -1,4 +1,3 @@
-// ró¿ne statystyki postaci
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -39,46 +38,17 @@ struct UnitStats
 	int attrib[(int)AttributeId::MAX];
 	int skill[(int)SkillId::MAX];
 
-	void WriteAttributes(BitStream& stream) const
-	{
-		stream.Write((cstring)attrib, sizeof(attrib));
-	}
-
-	void WriteSkills(BitStream& stream) const
-	{
-		stream.Write((cstring)skill, sizeof(skill));
-	}
-
-	void Write(BitStream& stream) const
-	{
-		WriteAttributes(stream);
-		WriteSkills(stream);
-	}
-
-	bool ReadAttributes(BitStream& stream)
-	{
-		return stream.Read((char*)attrib, sizeof(attrib));
-	}
-
-	bool ReadSkills(BitStream& stream)
-	{
-		return stream.Read((char*)skill, sizeof(skill));
-	}
-
-	bool Read(BitStream& stream)
-	{
-		return ReadAttributes(stream) && ReadSkills(stream);
-	}
-
 	void Save(FileWriter& f) const
 	{
 		f << attrib;
 		f << skill;
 	}
-
 	void Load(FileReader& f)
 	{
 		f >> attrib;
 		f >> skill;
 	}
+
+	void Write(BitStreamWriter& f) const;
+	void Read(BitStreamReader& f);
 };

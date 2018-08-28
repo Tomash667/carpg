@@ -231,6 +231,33 @@ public:
 		ReadVector4(v);
 	}
 
+	template<typename CastType, typename SizeType = uint, typename T>
+	void ReadVectorCasted(vector<T>& v)
+	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		SizeType size = Read<SizeType>();
+		if(!ok || size == 0)
+			v.clear();
+		else if(!Ensure(sizeof(CastType) * size))
+		{
+			ok = false;
+			v.clear();
+		}
+		else
+		{
+			Read((char*)v.data(), sizeof(CastType)*size);
+			T* to = v.data() + size - 1;
+			CastType* from = ((CastType*)v.data()) + size - 1;
+			while(size > 0)
+			{
+				*to = (T)*from;
+				--to;
+				--from;
+				--size;
+			}
+		}
+	}
+
 	Buffer* ReadToBuffer(uint size)
 	{
 		if(!Ensure(size))
@@ -451,6 +478,17 @@ public:
 	void operator << (const vector<T>& v)
 	{
 		WriteVector4(v);
+	}
+
+	template<typename CastType, typename SizeType = uint, typename T>
+	void WriteVectorCasted(const vector<T>& v)
+	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		assert(v.size() <= (size_t)std::numeric_limits<SizeType>::max());
+		SizeType size = (SizeType)v.size();
+		Write(size);
+		for(const T& e : v)
+			WriteCasted<CastType>(e);
 	}
 
 	template<typename T>

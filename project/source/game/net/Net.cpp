@@ -39,74 +39,76 @@ extern bool foodseller_buy[];
 static Unit* SUMMONER_PLACEHOLDER = (Unit*)0xFA4E1111;
 
 //=================================================================================================
-inline bool ReadItemSimple(BitStream& stream, const Item*& item)
+inline bool ReadItemSimple(BitStreamReader& f, const Item*& item)
 {
-	if(!ReadString1(stream))
+	const string& item_id = f.ReadString1();
+	if(!f)
 		return false;
 
-	if(BUF[0] == '$')
-		item = Item::TryGet(BUF + 1);
+	if(item_id[0] == '$')
+		item = Item::TryGet(item_id.c_str() + 1);
 	else
-		item = Item::TryGet(BUF);
+		item = Item::TryGet(item_id);
 
 	return (item != nullptr);
 }
 
 //=================================================================================================
-inline void WriteBaseItem(BitStream& stream, const Item& item)
+inline void WriteBaseItem(BitStreamWriter& f, const Item& item)
 {
-	WriteString1(stream, item.id);
+	f << item.id;
 	if(item.id[0] == '$')
-		stream.Write(item.refid);
+		f << item.refid;
 }
 
 //=================================================================================================
-inline void WriteBaseItem(BitStream& stream, const Item* item)
+inline void WriteBaseItem(BitStreamWriter& f, const Item* item)
 {
 	if(item)
-		WriteBaseItem(stream, *item);
+		WriteBaseItem(f, *item);
 	else
-		stream.WriteCasted<byte>(0);
+		f.Write0();
 }
 
 //=================================================================================================
-inline void WriteItemList(BitStream& stream, vector<ItemSlot>& items)
+inline void WriteItemList(BitStreamWriter& f, vector<ItemSlot>& items)
 {
-	stream.Write(items.size());
+	f << items.size();
 	for(ItemSlot& slot : items)
 	{
-		WriteBaseItem(stream, *slot.item);
-		stream.Write(slot.count);
+		WriteBaseItem(f, *slot.item);
+		f << slot.count;
 	}
 }
 
 //=================================================================================================
-inline void WriteItemListTeam(BitStream& stream, vector<ItemSlot>& items)
+inline void WriteItemListTeam(BitStreamWriter& f, vector<ItemSlot>& items)
 {
-	stream.Write(items.size());
+	f << items.size();
 	for(ItemSlot& slot : items)
 	{
-		WriteBaseItem(stream, *slot.item);
-		stream.Write(slot.count);
-		stream.Write(slot.team_count);
+		WriteBaseItem(f, *slot.item);
+		f << slot.count;
+		f << slot.team_count;
 	}
 }
 
 //=================================================================================================
-bool Game::ReadItemList(BitStream& stream, vector<ItemSlot>& items)
+bool Game::ReadItemList(BitStreamReader& f, vector<ItemSlot>& items)
 {
 	const int MIN_SIZE = 5;
 
-	uint count;
-	if(!stream.Read(count)
-		|| !EnsureSize(stream, count * MIN_SIZE))
+	uint count = f.Read<uint>();
+	if(!f.Ensure(count * MIN_SIZE))
 		return false;
 
 	items.resize(count);
 	for(ItemSlot& slot : items)
 	{
-		if(ReadItemAndFind(stream, slot.item) < 1
-			|| !stream.Read(slot.count))
+		if(ReadItemAndFind(f, slot.item) < 1)
+			return false;
+		f >> slot.count;
+		if(!f)
 			return false;
 		PreloadItem(slot.item);
 		slot.team_count = 0;
@@ -116,23 +118,24 @@ bool Game::ReadItemList(BitStream& stream, vector<ItemSlot>& items)
 }
 
 //=================================================================================================
-bool Game::ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items, bool skip)
+bool Game::ReadItemListTeam(BitStreamReader& f, vector<ItemSlot>& items, bool skip)
 {
 	const int MIN_SIZE = 9;
 
 	uint count;
-	if(!stream.Read(count)
-		|| !EnsureSize(stream, count * MIN_SIZE))
+	f >> count;
+	if(!f.Ensure(count * MIN_SIZE))
 		return false;
 
 	items.resize(count);
 	for(ItemSlot& slot : items)
 	{
-		if(ReadItemAndFind(stream, slot.item) < 1
-			|| !stream.Read(slot.count)
-			|| !stream.Read(slot.team_count))
+		if(ReadItemAndFind(f, slot.item) < 1)
 			return false;
-
+		f >> slot.count;
+		f >> slot.team_count;
+		if(!f)
+			return false;
 		if(!skip)
 			PreloadItem(slot.item);
 	}
@@ -208,18 +211,19 @@ void Game::UpdateServerInfo()
 	// 8 byte - flagi (0x01 - has³o, 0x02 - wczytana gra)
 	// 9+ byte - nazwa
 	server_info.Reset();
-	server_info.WriteCasted<byte>('C');
-	server_info.WriteCasted<byte>('A');
-	server_info.Write(VERSION);
-	server_info.WriteCasted<byte>(players);
-	server_info.WriteCasted<byte>(max_players);
+	BitStreamWriter f(server_info);
+	f.WriteCasted<byte>('C');
+	f.WriteCasted<byte>('A');
+	f << VERSION;
+	f.WriteCasted<byte>(players);
+	f.WriteCasted<byte>(max_players);
 	byte flags = 0;
 	if(!server_pswd.empty())
 		flags |= 0x01;
 	if(mp_load)
 		flags |= 0x02;
-	server_info.WriteCasted<byte>(flags);
-	WriteString1(server_info, server_name);
+	f.WriteCasted<byte>(flags);
+	f << server_name;
 
 	peer->SetOfflinePingResponse((cstring)server_info.GetData(), server_info.GetNumberOfBytesUsed());
 }
@@ -320,244 +324,243 @@ int Game::FindPlayerIndex(const SystemAddress& adr)
 }
 
 //=================================================================================================
-void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
+void Game::PrepareLevelData(BitStreamWriter& f, bool loaded_resources)
 {
-	stream.WriteCasted<byte>(ID_LEVEL_DATA);
-	WriteBool(stream, mp_load);
-	WriteBool(stream, loaded_resources);
+	f << ID_LEVEL_DATA;
+	f << mp_load;
+	f << loaded_resources;
 
 	if(location->outside)
 	{
 		// outside location
 		OutsideLocation* outside = (OutsideLocation*)location;
-		stream.Write((cstring)outside->tiles, sizeof(TerrainTile)*outside->size*outside->size);
-		stream.Write((cstring)outside->h, sizeof(float)*(outside->size + 1)*(outside->size + 1));
+		f.Write((cstring)outside->tiles, sizeof(TerrainTile)*outside->size*outside->size);
+		f.Write((cstring)outside->h, sizeof(float)*(outside->size + 1)*(outside->size + 1));
 		if(location->type == L_CITY)
 		{
 			City* city = (City*)location;
-			stream.WriteCasted<byte>(city->flags);
-			stream.WriteCasted<byte>(city->entry_points.size());
+			f.WriteCasted<byte>(city->flags);
+			f.WriteCasted<byte>(city->entry_points.size());
 			for(EntryPoint& entry_point : city->entry_points)
 			{
-				stream.Write(entry_point.exit_area);
-				stream.Write(entry_point.exit_y);
+				f << entry_point.exit_area;
+				f << entry_point.exit_y;
 			}
-			stream.WriteCasted<byte>(city->buildings.size());
+			f.WriteCasted<byte>(city->buildings.size());
 			for(CityBuilding& building : city->buildings)
 			{
-				WriteString1(stream, building.type->id);
-				stream.Write(building.pt);
-				stream.WriteCasted<byte>(building.rot);
+				f << building.type->id;
+				f << building.pt;
+				f.WriteCasted<byte>(building.rot);
 			}
-			stream.WriteCasted<byte>(city->inside_buildings.size());
+			f.WriteCasted<byte>(city->inside_buildings.size());
 			for(InsideBuilding* inside_building : city->inside_buildings)
 			{
 				InsideBuilding& ib = *inside_building;
-				stream.Write(ib.level_shift);
-				WriteString1(stream, ib.type->id);
+				f << ib.level_shift;
+				f << ib.type->id;
 				// usable objects
-				stream.WriteCasted<byte>(ib.usables.size());
+				f.WriteCasted<byte>(ib.usables.size());
 				for(Usable* usable : ib.usables)
-					usable->Write(stream);
+					usable->Write(f);
 				// units
-				stream.WriteCasted<byte>(ib.units.size());
+				f.WriteCasted<byte>(ib.units.size());
 				for(Unit* unit : ib.units)
-					WriteUnit(stream, *unit);
+					WriteUnit(f, *unit);
 				// doors
-				stream.WriteCasted<byte>(ib.doors.size());
+				f.WriteCasted<byte>(ib.doors.size());
 				for(Door* door : ib.doors)
-					WriteDoor(stream, *door);
+					WriteDoor(f, *door);
 				// ground items
-				stream.WriteCasted<byte>(ib.items.size());
+				f.WriteCasted<byte>(ib.items.size());
 				for(GroundItem* item : ib.items)
-					WriteItem(stream, *item);
+					WriteItem(f, *item);
 				// bloods
-				stream.WriteCasted<word>(ib.bloods.size());
+				f.WriteCasted<word>(ib.bloods.size());
 				for(Blood& blood : ib.bloods)
-					blood.Write(stream);
+					blood.Write(f);
 				// objects
-				stream.WriteCasted<byte>(ib.objects.size());
+				f.WriteCasted<byte>(ib.objects.size());
 				for(Object* object : ib.objects)
-					object->Write(stream);
+					object->Write(f);
 				// lights
-				stream.WriteCasted<byte>(ib.lights.size());
+				f.WriteCasted<byte>(ib.lights.size());
 				for(Light& light : ib.lights)
-					light.Write(stream);
+					light.Write(f);
 				// other
-				stream.Write(ib.xsphere_pos);
-				stream.Write(ib.enter_area);
-				stream.Write(ib.exit_area);
-				stream.Write(ib.top);
-				stream.Write(ib.xsphere_radius);
-				stream.Write(ib.enter_y);
+				f << ib.xsphere_pos;
+				f << ib.enter_area;
+				f << ib.exit_area;
+				f << ib.top;
+				f << ib.xsphere_radius;
+				f << ib.enter_y;
 			}
 		}
-		stream.Write(light_angle);
+		f << light_angle;
 	}
 	else
 	{
 		// inside location
 		InsideLocation* inside = (InsideLocation*)location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
-		stream.WriteCasted<byte>(inside->target);
-		WriteBool(stream, inside->from_portal);
+		f.WriteCasted<byte>(inside->target);
+		f << inside->from_portal;
 		// map
-		stream.WriteCasted<byte>(lvl.w);
-		stream.Write((cstring)lvl.map, sizeof(Pole)*lvl.w*lvl.h);
+		f.WriteCasted<byte>(lvl.w);
+		f.Write((cstring)lvl.map, sizeof(Pole)*lvl.w*lvl.h);
 		// lights
-		stream.WriteCasted<byte>(lvl.lights.size());
+		f.WriteCasted<byte>(lvl.lights.size());
 		for(Light& light : lvl.lights)
-			light.Write(stream);
+			light.Write(f);
 		// rooms
-		stream.WriteCasted<byte>(lvl.rooms.size());
+		f.WriteCasted<byte>(lvl.rooms.size());
 		for(Room& room : lvl.rooms)
-			room.Write(stream);
+			room.Write(f);
 		// traps
-		stream.WriteCasted<byte>(lvl.traps.size());
+		f.WriteCasted<byte>(lvl.traps.size());
 		for(Trap* trap : lvl.traps)
-			WriteTrap(stream, *trap);
+			WriteTrap(f, *trap);
 		// doors
-		stream.WriteCasted<byte>(lvl.doors.size());
+		f.WriteCasted<byte>(lvl.doors.size());
 		for(Door* door : lvl.doors)
-			WriteDoor(stream, *door);
+			WriteDoor(f, *door);
 		// stairs
-		stream.Write(lvl.staircase_up);
-		stream.Write(lvl.staircase_down);
-		stream.WriteCasted<byte>(lvl.staircase_up_dir);
-		stream.WriteCasted<byte>(lvl.staircase_down_dir);
-		WriteBool(stream, lvl.staircase_down_in_wall);
+		f << lvl.staircase_up;
+		f << lvl.staircase_down;
+		f.WriteCasted<byte>(lvl.staircase_up_dir);
+		f.WriteCasted<byte>(lvl.staircase_down_dir);
+		f << lvl.staircase_down_in_wall;
 	}
 
 	// usable objects
-	stream.WriteCasted<byte>(local_ctx.usables->size());
+	f.WriteCasted<byte>(local_ctx.usables->size());
 	for(Usable* usable : *local_ctx.usables)
-		usable->Write(stream);
+		usable->Write(f);
 	// units
-	stream.WriteCasted<byte>(local_ctx.units->size());
+	f.WriteCasted<byte>(local_ctx.units->size());
 	for(Unit* unit : *local_ctx.units)
-		WriteUnit(stream, *unit);
+		WriteUnit(f, *unit);
 	// ground items
-	stream.WriteCasted<byte>(local_ctx.items->size());
+	f.WriteCasted<byte>(local_ctx.items->size());
 	for(GroundItem* item : *local_ctx.items)
-		WriteItem(stream, *item);
+		WriteItem(f, *item);
 	// bloods
-	stream.WriteCasted<word>(local_ctx.bloods->size());
+	f.WriteCasted<word>(local_ctx.bloods->size());
 	for(Blood& blood : *local_ctx.bloods)
-		blood.Write(stream);
+		blood.Write(f);
 	// objects
-	stream.WriteCasted<word>(local_ctx.objects->size());
+	f.WriteCasted<word>(local_ctx.objects->size());
 	for(Object* object : *local_ctx.objects)
-		object->Write(stream);
+		object->Write(f);
 	// chests
-	stream.WriteCasted<byte>(local_ctx.chests->size());
+	f.WriteCasted<byte>(local_ctx.chests->size());
 	for(Chest* chest : *local_ctx.chests)
-		WriteChest(stream, *chest);
+		WriteChest(f, *chest);
 
-	location->WritePortals(stream);
+	location->WritePortals(f);
 
 	// items preload
-	stream.Write(items_load.size());
-	for(auto item : items_load)
+	f << items_load.size();
+	for(const Item* item : items_load)
 	{
-		WriteString1(stream, item->id);
+		f << item->id;
 		if(item->IsQuest())
-			stream.Write(item->refid);
+			f << item->refid;
 	}
 
 	// saved bullets, spells, explosions etc
 	if(mp_load)
 	{
 		// bullets
-		stream.WriteCasted<byte>(local_ctx.bullets->size());
+		f.WriteCasted<byte>(local_ctx.bullets->size());
 		for(Bullet& bullet : *local_ctx.bullets)
 		{
-			stream.Write(bullet.pos);
-			stream.Write(bullet.rot);
-			stream.Write(bullet.speed);
-			stream.Write(bullet.yspeed);
-			stream.Write(bullet.timer);
-			stream.Write(bullet.owner ? bullet.owner->netid : -1);
+			f << bullet.pos;
+			f << bullet.rot;
+			f << bullet.speed;
+			f << bullet.yspeed;
+			f << bullet.timer;
+			f << (bullet.owner ? bullet.owner->netid : -1);
 			if(bullet.spell)
-				WriteString1(stream, bullet.spell->id);
+				f << bullet.spell->id;
 			else
-				stream.Write0();
+				f.Write0();
 		}
 
 		// explosions
-		stream.WriteCasted<byte>(local_ctx.explos->size());
+		f.WriteCasted<byte>(local_ctx.explos->size());
 		for(Explo* explo : *local_ctx.explos)
 		{
-			WriteString1(stream, explo->tex->filename);
-			stream.Write(explo->pos);
-			stream.Write(explo->size);
-			stream.Write(explo->sizemax);
+			f << explo->tex->filename;
+			f << explo->pos;
+			f << explo->size;
+			f << explo->sizemax;
 		}
 
 		// electros
-		stream.WriteCasted<byte>(local_ctx.electros->size());
+		f.WriteCasted<byte>(local_ctx.electros->size());
 		for(Electro* electro : *local_ctx.electros)
 		{
-			stream.Write(electro->netid);
-			stream.WriteCasted<byte>(electro->lines.size());
+			f << electro->netid;
+			f.WriteCasted<byte>(electro->lines.size());
 			for(ElectroLine& line : electro->lines)
 			{
-				stream.Write(line.pts.front());
-				stream.Write(line.pts.back());
-				stream.Write(line.t);
+				f << line.pts.front();
+				f << line.pts.back();
+				f << line.t;
 			}
 		}
 	}
 
-	stream.WriteCasted<byte>(GetLocationMusic());
-	stream.WriteCasted<byte>(0xFF);
+	f.WriteCasted<byte>(GetLocationMusic());
+	f.WriteCasted<byte>(0xFF);
 }
 
 //=================================================================================================
-void Game::WriteUnit(BitStream& stream, Unit& unit)
+void Game::WriteUnit(BitStreamWriter& f, Unit& unit)
 {
 	// main
-	WriteString1(stream, unit.data->id);
-	stream.Write(unit.netid);
+	f << unit.data->id;
+	f << unit.netid;
 
 	// human data
 	if(unit.data->type == UNIT_TYPE::HUMAN)
 	{
-		stream.WriteCasted<byte>(unit.human_data->hair);
-		stream.WriteCasted<byte>(unit.human_data->beard);
-		stream.WriteCasted<byte>(unit.human_data->mustache);
-		stream.Write(unit.human_data->hair_color);
-		stream.Write(unit.human_data->height);
+		f.WriteCasted<byte>(unit.human_data->hair);
+		f.WriteCasted<byte>(unit.human_data->beard);
+		f.WriteCasted<byte>(unit.human_data->mustache);
+		f << unit.human_data->hair_color;
+		f << unit.human_data->height;
 	}
 
 	// items
 	if(unit.data->type != UNIT_TYPE::ANIMAL)
 	{
-		byte zero = 0;
 		if(unit.HaveWeapon())
-			WriteString1(stream, unit.GetWeapon().id);
+			f << unit.GetWeapon().id;
 		else
-			stream.Write(zero);
+			f.Write0();
 		if(unit.HaveBow())
-			WriteString1(stream, unit.GetBow().id);
+			f << unit.GetBow().id;
 		else
-			stream.Write(zero);
+			f.Write0();
 		if(unit.HaveShield())
-			WriteString1(stream, unit.GetShield().id);
+			f << unit.GetShield().id;
 		else
-			stream.Write(zero);
+			f.Write0();
 		if(unit.HaveArmor())
-			WriteString1(stream, unit.GetArmor().id);
+			f << unit.GetArmor().id;
 		else
-			stream.Write(zero);
+			f.Write0();
 	}
-	stream.WriteCasted<byte>(unit.live_state);
-	stream.Write(unit.pos);
-	stream.Write(unit.rot);
-	stream.Write(unit.hp);
-	stream.Write(unit.hpmax);
-	stream.Write(unit.netid);
-	stream.WriteCasted<char>(unit.in_arena);
-	WriteBool(stream, unit.summoner != nullptr);
+	f.WriteCasted<byte>(unit.live_state);
+	f << unit.pos;
+	f << unit.rot;
+	f << unit.hp;
+	f << unit.hpmax;
+	f << unit.netid;
+	f.WriteCasted<char>(unit.in_arena);
+	f << (unit.summoner != nullptr);
 
 	// hero/player data
 	byte b;
@@ -567,24 +570,24 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 		b = 2;
 	else
 		b = 0;
-	stream.Write(b);
+	f << b;
 	if(unit.IsHero())
 	{
-		WriteString1(stream, unit.hero->name);
+		f << unit.hero->name;
 		b = 0;
 		if(unit.hero->know_name)
 			b |= 0x01;
 		if(unit.hero->team_member)
 			b |= 0x02;
-		stream.Write(b);
-		stream.Write(unit.hero->credit);
+		f << b;
+		f << unit.hero->credit;
 	}
 	else if(unit.IsPlayer())
 	{
-		WriteString1(stream, unit.player->name);
-		stream.WriteCasted<byte>(unit.player->id);
-		stream.Write(unit.player->credit);
-		stream.Write(unit.player->free_days);
+		f << unit.player->name;
+		f.WriteCasted<byte>(unit.player->id);
+		f << unit.player->credit;
+		f << unit.player->free_days;
 	}
 	if(unit.IsAI())
 	{
@@ -597,85 +600,85 @@ void Game::WriteUnit(BitStream& stream, Unit& unit)
 			b |= 0x04;
 		if(unit.attack_team)
 			b |= 0x08;
-		stream.Write(b);
+		f << b;
 	}
 
 	// loaded data
 	if(mp_load)
 	{
-		stream.Write(unit.netid);
-		unit.mesh_inst->Write(BitStreamWriter(stream));
-		stream.WriteCasted<byte>(unit.animation);
-		stream.WriteCasted<byte>(unit.current_animation);
-		stream.WriteCasted<byte>(unit.animation_state);
-		stream.WriteCasted<byte>(unit.attack_id);
-		stream.WriteCasted<byte>(unit.action);
-		stream.WriteCasted<byte>(unit.weapon_taken);
-		stream.WriteCasted<byte>(unit.weapon_hiding);
-		stream.WriteCasted<byte>(unit.weapon_state);
-		stream.Write(unit.target_pos);
-		stream.Write(unit.target_pos2);
-		stream.Write(unit.timer);
+		f << unit.netid;
+		unit.mesh_inst->Write(f);
+		f.WriteCasted<byte>(unit.animation);
+		f.WriteCasted<byte>(unit.current_animation);
+		f.WriteCasted<byte>(unit.animation_state);
+		f.WriteCasted<byte>(unit.attack_id);
+		f.WriteCasted<byte>(unit.action);
+		f.WriteCasted<byte>(unit.weapon_taken);
+		f.WriteCasted<byte>(unit.weapon_hiding);
+		f.WriteCasted<byte>(unit.weapon_state);
+		f << unit.target_pos;
+		f << unit.target_pos2;
+		f << unit.timer;
 		if(unit.used_item)
-			WriteString1(stream, unit.used_item->id);
+			f << unit.used_item->id;
 		else
-			stream.WriteCasted<byte>(0);
-		stream.Write(unit.usable ? unit.usable->netid : -1);
+			f.Write0();
+		f << (unit.usable ? unit.usable->netid : -1);
 	}
 }
 
 //=================================================================================================
-void Game::WriteDoor(BitStream& stream, Door& door)
+void Game::WriteDoor(BitStreamWriter& f, Door& door)
 {
-	stream.Write(door.pos);
-	stream.Write(door.rot);
-	stream.Write(door.pt);
-	stream.WriteCasted<byte>(door.locked);
-	stream.WriteCasted<byte>(door.state);
-	stream.Write(door.netid);
-	WriteBool(stream, door.door2);
+	f << door.pos;
+	f << door.rot;
+	f << door.pt;
+	f.WriteCasted<byte>(door.locked);
+	f.WriteCasted<byte>(door.state);
+	f << door.netid;
+	f << door.door2;
 }
 
 //=================================================================================================
-void Game::WriteItem(BitStream& stream, GroundItem& item)
+void Game::WriteItem(BitStreamWriter& f, GroundItem& item)
 {
-	stream.Write(item.netid);
-	stream.Write(item.pos);
-	stream.Write(item.rot);
-	stream.Write(item.count);
-	stream.Write(item.team_count);
-	WriteString1(stream, item.item->id);
+	f << item.netid;
+	f << item.pos;
+	f << item.rot;
+	f << item.count;
+	f << item.team_count;
+	f << item.item->id;
 	if(item.item->IsQuest())
-		stream.Write(item.item->refid);
+		f << item.item->refid;
 }
 
 //=================================================================================================
-void Game::WriteChest(BitStream& stream, Chest& chest)
+void Game::WriteChest(BitStreamWriter& f, Chest& chest)
 {
-	stream.Write(chest.pos);
-	stream.Write(chest.rot);
-	stream.Write(chest.netid);
+	f << chest.pos;
+	f << chest.rot;
+	f << chest.netid;
 }
 
 //=================================================================================================
-void Game::WriteTrap(BitStream& stream, Trap& trap)
+void Game::WriteTrap(BitStreamWriter& f, Trap& trap)
 {
-	stream.WriteCasted<byte>(trap.base->type);
-	stream.WriteCasted<byte>(trap.dir);
-	stream.Write(trap.netid);
-	stream.Write(trap.tile);
-	stream.Write(trap.pos);
-	stream.Write(trap.obj.rot.y);
+	f.WriteCasted<byte>(trap.base->type);
+	f.WriteCasted<byte>(trap.dir);
+	f << trap.netid;
+	f << trap.tile;
+	f << trap.pos;
+	f << trap.obj.rot.y;
 
 	if(mp_load)
 	{
-		stream.WriteCasted<byte>(trap.state);
-		stream.Write(trap.time);
+		f.WriteCasted<byte>(trap.state);
+		f << trap.time;
 	}
 }
 
 //=================================================================================================
-bool Game::ReadLevelData(BitStream& stream)
+bool Game::ReadLevelData(BitStreamReader& f)
 {
 	cam.Reset();
 	pc_data.rot_buf = 0.f;
@@ -684,8 +687,9 @@ bool Game::ReadLevelData(BitStream& stream)
 	open_location = 0;
 
 	bool loaded_resources;
-	if(!ReadBool(stream, mp_load)
-		|| !ReadBool(stream, loaded_resources))
+	f >> mp_load;
+	f >> loaded_resources;
+	if(!f)
 	{
 		Error("Read level: Broken packet for loading info.");
 		return false;
@@ -715,8 +719,9 @@ bool Game::ReadLevelData(BitStream& stream)
 			outside->tiles = new TerrainTile[size11];
 		if(!outside->h)
 			outside->h = new float[size22];
-		if(!stream.Read((char*)outside->tiles, sizeof(TerrainTile)*size11)
-			|| !stream.Read((char*)outside->h, sizeof(float)*size22))
+		f.Read((char*)outside->tiles, sizeof(TerrainTile)*size11);
+		f.Read((char*)outside->h, sizeof(float)*size22);
+		if(!f)
 		{
 			Error("Read level: Broken packet for terrain.");
 			return false;
@@ -731,9 +736,9 @@ bool Game::ReadLevelData(BitStream& stream)
 			// entry points
 			const int ENTRY_POINT_MIN_SIZE = 20;
 			byte count;
-			if(!stream.ReadCasted<byte>(city->flags)
-				|| !stream.Read(count)
-				|| !EnsureSize(stream, count * ENTRY_POINT_MIN_SIZE))
+			f.ReadCasted<byte>(city->flags);
+			f >> count;
+			if(!f.Ensure(count * ENTRY_POINT_MIN_SIZE))
 			{
 				Error("Read level: Broken packet for city.");
 				return false;
@@ -741,18 +746,19 @@ bool Game::ReadLevelData(BitStream& stream)
 			city->entry_points.resize(count);
 			for(EntryPoint& entry : city->entry_points)
 			{
-				if(!stream.Read(entry.exit_area)
-					|| !stream.Read(entry.exit_y))
-				{
-					Error("Read level: Broken packet for entry points.");
-					return false;
-				}
+				f.Read(entry.exit_area);
+				f.Read(entry.exit_y);
+			}
+			if(!f)
+			{
+				Error("Read level: Broken packet for entry points.");
+				return false;
 			}
 
 			// buildings
 			const int BUILDING_MIN_SIZE = 10;
-			if(!stream.Read(count)
-				|| !EnsureSize(stream, BUILDING_MIN_SIZE * count))
+			f >> count;
+			if(f.Ensure(BUILDING_MIN_SIZE * count))
 			{
 				Error("Read level: Broken packet for buildings count.");
 				return false;
@@ -760,25 +766,26 @@ bool Game::ReadLevelData(BitStream& stream)
 			city->buildings.resize(count);
 			for(CityBuilding& building : city->buildings)
 			{
-				if(!ReadString1(stream)
-					|| !stream.Read(building.pt)
-					|| !stream.ReadCasted<byte>(building.rot))
+				const string& building_id = f.ReadString1();
+				f >> building.pt;
+				f.ReadCasted<byte>(building.rot);
+				if(!f)
 				{
 					Error("Read level: Broken packet for buildings.");
 					return false;
 				}
-				building.type =  Building::Get(BUF);
+				building.type =  Building::Get(building_id);
 				if(!building.type)
 				{
-					Error("Read level: Invalid building id '%s'.", BUF);
+					Error("Read level: Invalid building id '%s'.", building_id.c_str());
 					return false;
 				}
 			}
 
 			// inside buildings
 			const int INSIDE_BUILDING_MIN_SIZE = 73;
-			if(!stream.Read(count)
-				|| !EnsureSize(stream, INSIDE_BUILDING_MIN_SIZE * count))
+			f >> count;
+			if(!f.Ensure(INSIDE_BUILDING_MIN_SIZE * count))
 			{
 				Error("Read level: Broken packet for inside buildings count.");
 				return false;
@@ -791,24 +798,25 @@ bool Game::ReadLevelData(BitStream& stream)
 				InsideBuilding& ib = *ib_ptr;
 				ApplyContext(ib_ptr, ib_ptr->ctx);
 				ib.ctx.building_id = index;
-				if(!stream.Read(ib.level_shift)
-					|| !ReadString1(stream))
+				f >> ib.level_shift;
+				const string& building_id = f.ReadString1();
+				if(!f)
 				{
 					Error("Read level: Broken packet for %d inside building.", index);
 					return false;
 				}
-				ib.type = Building::Get(BUF);
+				ib.type = Building::Get(building_id);
 				if(!ib.type || !ib.type->inside_mesh)
 				{
-					Error("Read level: Invalid building id '%s' for building %d.", BUF, index);
+					Error("Read level: Invalid building id '%s' for building %d.", building_id.c_str(), index);
 					return false;
 				}
 				ib.offset = Vec2(512.f*ib.level_shift.x + 256.f, 512.f*ib.level_shift.y + 256.f);
 				ProcessBuildingObjects(ib.ctx, city_ctx, &ib, ib.type->inside_mesh, nullptr, 0, 0, Vec3(ib.offset.x, 0, ib.offset.y), ib.type, nullptr, true);
 
 				// usable objects
-				if(!stream.Read(count)
-					|| !EnsureSize(stream, Usable::MIN_SIZE * count))
+				f >> count;
+				if(f.Ensure(Usable::MIN_SIZE * count))
 				{
 					Error("Read level: Broken packet for usable object in %d inside building.", index);
 					return false;
@@ -817,7 +825,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				for(Usable*& usable : ib.usables)
 				{
 					usable = new Usable;
-					if(!usable->Read(stream))
+					if(!usable->Read(f))
 					{
 						Error("Read level: Broken packet for usable object in %d inside building.", index);
 						return false;
@@ -825,8 +833,8 @@ bool Game::ReadLevelData(BitStream& stream)
 				}
 
 				// units
-				if(!stream.Read(count)
-					|| !EnsureSize(stream, Unit::MIN_SIZE * count))
+				f >> count;
+				if(!f.Ensure(Unit::MIN_SIZE * count))
 				{
 					Error("Read level: Broken packet for unit count in %d inside building.", index);
 					return false;
@@ -835,7 +843,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				for(Unit*& unit : ib.units)
 				{
 					unit = new Unit;
-					if(!ReadUnit(stream, *unit))
+					if(!ReadUnit(f, *unit))
 					{
 						Error("Read level: Broken packet for unit in %d inside building.", index);
 						return false;
@@ -844,8 +852,8 @@ bool Game::ReadLevelData(BitStream& stream)
 				}
 
 				// doors
-				if(!stream.Read(count)
-					|| !EnsureSize(stream, count * Door::MIN_SIZE))
+				f >> count;
+				if(!f.Ensure(count * Door::MIN_SIZE))
 				{
 					Error("Read level: Broken packet for door count in %d inside building.", index);
 					return false;
@@ -854,7 +862,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				for(Door*& door : ib.doors)
 				{
 					door = new Door;
-					if(!ReadDoor(stream, *door))
+					if(!ReadDoor(f, *door))
 					{
 						Error("Read level: Broken packet for door in %d inside building.", index);
 						return false;
@@ -862,8 +870,8 @@ bool Game::ReadLevelData(BitStream& stream)
 				}
 
 				// ground items
-				if(!stream.Read(count)
-					|| !EnsureSize(stream, count * GroundItem::MIN_SIZE))
+				f >> count;
+				if(!f.Ensure(count * GroundItem::MIN_SIZE))
 				{
 					Error("Read level: Broken packet for ground item count in %d inside building.", index);
 					return false;
@@ -872,7 +880,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				for(GroundItem*& item : ib.items)
 				{
 					item = new GroundItem;
-					if(!ReadItem(stream, *item))
+					if(!ReadItem(f, *item))
 					{
 						Error("Read level: Broken packet for ground item in %d inside building.", index);
 						return false;
@@ -881,25 +889,24 @@ bool Game::ReadLevelData(BitStream& stream)
 
 				// bloods
 				word count2;
-				if(!stream.Read(count2)
-					|| !EnsureSize(stream, count2 * Blood::MIN_SIZE))
+				f >> count2;
+				if(!f.Ensure(count2 * Blood::MIN_SIZE))
 				{
 					Error("Read level: Broken packet for blood count in %d inside building.", index);
 					return false;
 				}
 				ib.bloods.resize(count2);
 				for(Blood& blood : ib.bloods)
+					blood.Read(f);
+				if(!f)
 				{
-					if(!blood.Read(stream))
-					{
-						Error("Read level: Broken packet for blood in %d inside building.", index);
-						return false;
-					}
+					Error("Read level: Broken packet for blood in %d inside building.", index);
+					return false;
 				}
 
 				// objects
-				if(!stream.Read(count)
-					|| !EnsureSize(stream, count * Object::MIN_SIZE))
+				f >> count;
+				if(!f.Ensure(count * Object::MIN_SIZE))
 				{
 					Error("Read level: Broken packet for object count in %d inside building.", index);
 					return false;
@@ -908,7 +915,7 @@ bool Game::ReadLevelData(BitStream& stream)
 				for(Object*& object : ib.objects)
 				{
 					object = new Object;
-					if(!object->Read(stream))
+					if(!object->Read(f))
 					{
 						Error("Read level: Broken packet for object in %d inside building.", index);
 						return false;
@@ -916,29 +923,29 @@ bool Game::ReadLevelData(BitStream& stream)
 				}
 
 				// lights
-				if(!stream.Read(count)
-					|| !EnsureSize(stream, count * Light::MIN_SIZE))
+				f >> count;
+				if(!f.Ensure(count * Light::MIN_SIZE))
 				{
 					Error("Read level: Broken packet for light count in %d inside building.", index);
 					return false;
 				}
 				ib.lights.resize(count);
 				for(Light& light : ib.lights)
+					light.Read(f);
+				if(!f)
 				{
-					if(!light.Read(stream))
-					{
-						Error("Read level: Broken packet for light in %d inside building.", index);
-						return false;
-					}
+					Error("Read level: Broken packet for light in %d inside building.", index);
+					return false;
 				}
 
 				// other
-				if(!stream.Read(ib.xsphere_pos)
-					|| !stream.Read(ib.enter_area)
-					|| !stream.Read(ib.exit_area)
-					|| !stream.Read(ib.top)
-					|| !stream.Read(ib.xsphere_radius)
-					|| !stream.Read(ib.enter_y))
+				f >> ib.xsphere_pos;
+				f >> ib.enter_area;
+				f >> ib.exit_area;
+				f >> ib.top;
+				f >> ib.xsphere_radius;
+				f >> ib.enter_y;
+				if(!f)
 				{
 					Error("Read level: Broken packet for inside building %d other data.", index);
 					return false;
@@ -953,7 +960,8 @@ bool Game::ReadLevelData(BitStream& stream)
 		}
 		else
 			CreateForestMinimap();
-		if(!stream.Read(light_angle))
+		// TODO FIXME
+		if(!f.Read(light_angle))
 		{
 			Error("Read level: Broken packet for light angle.");
 			return false;
@@ -965,10 +973,10 @@ bool Game::ReadLevelData(BitStream& stream)
 		// inside location
 		InsideLocation* inside = (InsideLocation*)location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
-		if(!stream.ReadCasted<byte>(inside->target)
-			|| !ReadBool(stream, inside->from_portal)
-			|| !stream.ReadCasted<byte>(lvl.w)
-			|| !EnsureSize(stream, lvl.w * lvl.w * sizeof(Pole)))
+		if(!f.ReadCasted<byte>(inside->target)
+			|| !ReadBool(f, inside->from_portal)
+			|| !f.ReadCasted<byte>(lvl.w)
+			|| !EnsureSize(f, lvl.w * lvl.w * sizeof(Pole)))
 		{
 			Error("Read level: Broken packet for inside location.");
 			return false;
@@ -978,7 +986,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		lvl.h = lvl.w;
 		if(!lvl.map)
 			lvl.map = new Pole[lvl.w * lvl.h];
-		if(!stream.Read((char*)lvl.map, lvl.w * lvl.h * sizeof(Pole)))
+		if(!f.Read((char*)lvl.map, lvl.w * lvl.h * sizeof(Pole)))
 		{
 			Error("Read level: Broken packet for inside location map.");
 			return false;
@@ -986,8 +994,8 @@ bool Game::ReadLevelData(BitStream& stream)
 
 		// lights
 		byte count;
-		if(!stream.Read(count)
-			|| !EnsureSize(stream, count * Light::MIN_SIZE))
+		if(!f.Read(count)
+			|| !EnsureSize(f, count * Light::MIN_SIZE))
 		{
 			Error("Read level: Broken packet for inside location light count.");
 			return false;
@@ -995,7 +1003,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		lvl.lights.resize(count);
 		for(Light& light : lvl.lights)
 		{
-			if(!light.Read(stream))
+			if(!light.Read(f))
 			{
 				Error("Read level: Broken packet for inside location light.");
 				return false;
@@ -1003,8 +1011,8 @@ bool Game::ReadLevelData(BitStream& stream)
 		}
 
 		// rooms
-		if(!stream.Read(count)
-			|| !EnsureSize(stream, count * Room::MIN_SIZE))
+		if(!f.Read(count)
+			|| !EnsureSize(f, count * Room::MIN_SIZE))
 		{
 			Error("Read level: Broken packet for inside location room count.");
 			return false;
@@ -1012,7 +1020,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		lvl.rooms.resize(count);
 		for(Room& room : lvl.rooms)
 		{
-			if(!room.Read(stream))
+			if(!room.Read(f))
 			{
 				Error("Read level: Broken packet for inside location room.");
 				return false;
@@ -1020,8 +1028,8 @@ bool Game::ReadLevelData(BitStream& stream)
 		}
 
 		// traps
-		if(!stream.Read(count)
-			|| !EnsureSize(stream, count * Trap::MIN_SIZE))
+		if(!f.Read(count)
+			|| !EnsureSize(f, count * Trap::MIN_SIZE))
 		{
 			Error("Read level: Broken packet for inside location trap count.");
 			return false;
@@ -1030,7 +1038,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		for(Trap*& trap : lvl.traps)
 		{
 			trap = new Trap;
-			if(!ReadTrap(stream, *trap))
+			if(!ReadTrap(f, *trap))
 			{
 				Error("Read level: Broken packet for inside location trap.");
 				return false;
@@ -1038,8 +1046,8 @@ bool Game::ReadLevelData(BitStream& stream)
 		}
 
 		// doors
-		if(!stream.Read(count)
-			|| !EnsureSize(stream, count * Door::MIN_SIZE))
+		if(!f.Read(count)
+			|| !EnsureSize(f, count * Door::MIN_SIZE))
 		{
 			Error("Read level: Broken packet for inside location door count.");
 			return false;
@@ -1048,7 +1056,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		for(Door*& door : lvl.doors)
 		{
 			door = new Door;
-			if(!ReadDoor(stream, *door))
+			if(!ReadDoor(f, *door))
 			{
 				Error("Read level: Broken packet for inside location door.");
 				return false;
@@ -1056,11 +1064,11 @@ bool Game::ReadLevelData(BitStream& stream)
 		}
 
 		// stairs
-		if(!stream.Read(lvl.staircase_up)
-			|| !stream.Read(lvl.staircase_down)
-			|| !stream.ReadCasted<byte>(lvl.staircase_up_dir)
-			|| !stream.ReadCasted<byte>(lvl.staircase_down_dir)
-			|| !ReadBool(stream, lvl.staircase_down_in_wall))
+		if(!f.Read(lvl.staircase_up)
+			|| !f.Read(lvl.staircase_down)
+			|| !f.ReadCasted<byte>(lvl.staircase_up_dir)
+			|| !f.ReadCasted<byte>(lvl.staircase_down_dir)
+			|| !ReadBool(f, lvl.staircase_down_in_wall))
 		{
 			Error("Read level: Broken packet for stairs.");
 			return false;
@@ -1075,8 +1083,8 @@ bool Game::ReadLevelData(BitStream& stream)
 
 	// usable objects
 	byte count;
-	if(!stream.Read(count)
-		|| !EnsureSize(stream, count * Usable::MIN_SIZE))
+	if(!f.Read(count)
+		|| !EnsureSize(f, count * Usable::MIN_SIZE))
 	{
 		Error("Read level: Broken usable object count.");
 		return false;
@@ -1085,7 +1093,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	for(Usable*& usable : *local_ctx.usables)
 	{
 		usable = new Usable;
-		if(!usable->Read(stream))
+		if(!usable->Read(f))
 		{
 			Error("Read level: Broken usable object.");
 			return false;
@@ -1093,8 +1101,8 @@ bool Game::ReadLevelData(BitStream& stream)
 	}
 
 	// units
-	if(!stream.Read(count)
-		|| !EnsureSize(stream, count * Unit::MIN_SIZE))
+	if(!f.Read(count)
+		|| !EnsureSize(f, count * Unit::MIN_SIZE))
 	{
 		Error("Read level: Broken unit count.");
 		return false;
@@ -1103,7 +1111,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	for(Unit*& unit : *local_ctx.units)
 	{
 		unit = new Unit;
-		if(!ReadUnit(stream, *unit))
+		if(!ReadUnit(f, *unit))
 		{
 			Error("Read level: Broken unit.");
 			return false;
@@ -1111,8 +1119,8 @@ bool Game::ReadLevelData(BitStream& stream)
 	}
 
 	// ground items
-	if(!stream.Read(count)
-		|| !EnsureSize(stream, count * GroundItem::MIN_SIZE))
+	if(!f.Read(count)
+		|| !EnsureSize(f, count * GroundItem::MIN_SIZE))
 	{
 		Error("Read level: Broken ground item count.");
 		return false;
@@ -1121,7 +1129,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	for(GroundItem*& item : *local_ctx.items)
 	{
 		item = new GroundItem;
-		if(!ReadItem(stream, *item))
+		if(!ReadItem(f, *item))
 		{
 			Error("Read level: Broken ground item.");
 			return false;
@@ -1130,8 +1138,8 @@ bool Game::ReadLevelData(BitStream& stream)
 
 	// bloods
 	word count2;
-	if(!stream.Read(count2)
-		|| !EnsureSize(stream, count2 * Blood::MIN_SIZE))
+	if(!f.Read(count2)
+		|| !EnsureSize(f, count2 * Blood::MIN_SIZE))
 	{
 		Error("Read level: Broken blood count.");
 		return false;
@@ -1139,7 +1147,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	local_ctx.bloods->resize(count2);
 	for(Blood& blood : *local_ctx.bloods)
 	{
-		if(!blood.Read(stream))
+		if(!blood.Read(f))
 		{
 			Error("Read level: Broken blood.");
 			return false;
@@ -1147,8 +1155,8 @@ bool Game::ReadLevelData(BitStream& stream)
 	}
 
 	// objects
-	if(!stream.Read(count2)
-		|| !EnsureSize(stream, count2 * Object::MIN_SIZE))
+	if(!f.Read(count2)
+		|| !EnsureSize(f, count2 * Object::MIN_SIZE))
 	{
 		Error("Read level: Broken object count.");
 		return false;
@@ -1157,7 +1165,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	for(Object*& object : *local_ctx.objects)
 	{
 		object = new Object;
-		if(!object->Read(stream))
+		if(!object->Read(f))
 		{
 			Error("Read level: Broken object.");
 			return false;
@@ -1165,8 +1173,8 @@ bool Game::ReadLevelData(BitStream& stream)
 	}
 
 	// chests
-	if(!stream.Read(count)
-		|| !EnsureSize(stream, count * Chest::MIN_SIZE))
+	if(!f.Read(count)
+		|| !EnsureSize(f, count * Chest::MIN_SIZE))
 	{
 		Error("Read level: Broken chest count.");
 		return false;
@@ -1175,7 +1183,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	for(Chest*& chest : *local_ctx.chests)
 	{
 		chest = new Chest;
-		if(!ReadChest(stream, *chest))
+		if(!ReadChest(f, *chest))
 		{
 			Error("Read level: Broken chest.");
 			return false;
@@ -1183,7 +1191,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	}
 
 	// portals
-	if(!location->ReadPortals(stream, dungeon_level))
+	if(!location->ReadPortals(f, dungeon_level))
 	{
 		Error("Read level: Broken portals.");
 		return false;
@@ -1191,8 +1199,8 @@ bool Game::ReadLevelData(BitStream& stream)
 
 	// items to preload
 	uint items_load_count;
-	if(!stream.Read(items_load_count)
-		|| !EnsureSize(stream, items_load_count * 2))
+	if(!f.Read(items_load_count)
+		|| !EnsureSize(f, items_load_count * 2))
 	{
 		Error("Read level: Broken items preload count.");
 		return false;
@@ -1200,7 +1208,7 @@ bool Game::ReadLevelData(BitStream& stream)
 	items_load.clear();
 	for(uint i = 0; i < items_load_count; ++i)
 	{
-		if(!ReadString1(stream))
+		if(!ReadString1(f))
 		{
 			Error("Read level: Broken item preload '%u'.", i);
 			return false;
@@ -1218,7 +1226,7 @@ bool Game::ReadLevelData(BitStream& stream)
 		else
 		{
 			int refid;
-			if(!stream.Read(refid))
+			if(!f.Read(refid))
 			{
 				Error("Read level: Broken quest item preload '%u'.", i);
 				return false;
@@ -1244,8 +1252,8 @@ bool Game::ReadLevelData(BitStream& stream)
 	if(mp_load)
 	{
 		// bullets
-		if(!stream.Read(count)
-			|| !EnsureSize(stream, count * Bullet::MIN_SIZE))
+		if(!f.Read(count)
+			|| !EnsureSize(f, count * Bullet::MIN_SIZE))
 		{
 			Error("Read level: Broken bullet count.");
 			return false;
@@ -1254,13 +1262,13 @@ bool Game::ReadLevelData(BitStream& stream)
 		for(Bullet& bullet : *local_ctx.bullets)
 		{
 			int netid;
-			if(!stream.Read(bullet.pos)
-				|| !stream.Read(bullet.rot)
-				|| !stream.Read(bullet.speed)
-				|| !stream.Read(bullet.yspeed)
-				|| !stream.Read(bullet.timer)
-				|| !stream.Read(netid)
-				|| !ReadString1(stream))
+			if(!f.Read(bullet.pos)
+				|| !f.Read(bullet.rot)
+				|| !f.Read(bullet.speed)
+				|| !f.Read(bullet.yspeed)
+				|| !f.Read(bullet.timer)
+				|| !f.Read(netid)
+				|| !ReadString1(f))
 			{
 				Error("Read level: Broken bullet.");
 				return false;
@@ -1350,8 +1358,8 @@ bool Game::ReadLevelData(BitStream& stream)
 		}
 
 		// explosions
-		if(!stream.Read(count)
-			|| !EnsureSize(stream, count * Explo::MIN_SIZE))
+		if(!f.Read(count)
+			|| !EnsureSize(f, count * Explo::MIN_SIZE))
 		{
 			Error("Read level: Broken explosion count.");
 			return false;
@@ -1360,10 +1368,10 @@ bool Game::ReadLevelData(BitStream& stream)
 		for(Explo*& explo : *local_ctx.explos)
 		{
 			explo = new Explo;
-			if(!ReadString1(stream)
-				|| !stream.Read(explo->pos)
-				|| !stream.Read(explo->size)
-				|| !stream.Read(explo->sizemax))
+			if(!ReadString1(f)
+				|| !f.Read(explo->pos)
+				|| !f.Read(explo->size)
+				|| !f.Read(explo->sizemax))
 			{
 				Error("Read level: Broken explosion.");
 				return false;
@@ -1373,8 +1381,8 @@ bool Game::ReadLevelData(BitStream& stream)
 		}
 
 		// electro
-		if(!stream.Read(count)
-			|| !EnsureSize(stream, count * Electro::MIN_SIZE))
+		if(!f.Read(count)
+			|| !EnsureSize(f, count * Electro::MIN_SIZE))
 		{
 			Error("Read level: Broken electro count.");
 			return false;
@@ -1386,9 +1394,9 @@ bool Game::ReadLevelData(BitStream& stream)
 			electro = new Electro;
 			electro->spell = electro_spell;
 			electro->valid = true;
-			if(!stream.Read(electro->netid)
-				|| !stream.Read(count)
-				|| !EnsureSize(stream, count * Electro::LINE_MIN_SIZE))
+			if(!f.Read(electro->netid)
+				|| !f.Read(count)
+				|| !EnsureSize(f, count * Electro::LINE_MIN_SIZE))
 			{
 				Error("Read level: Broken electro.");
 				return false;
@@ -1398,9 +1406,9 @@ bool Game::ReadLevelData(BitStream& stream)
 			float t;
 			for(byte i = 0; i < count; ++i)
 			{
-				stream.Read(from);
-				stream.Read(to);
-				stream.Read(t);
+				f.Read(from);
+				f.Read(to);
+				f.Read(t);
 				electro->AddLine(from, to);
 				electro->lines.back().t = t;
 			}
@@ -1409,7 +1417,7 @@ bool Game::ReadLevelData(BitStream& stream)
 
 	// music
 	MusicType music;
-	if(!stream.ReadCasted<byte>(music))
+	if(!f.ReadCasted<byte>(music))
 	{
 		Error("Read level: Broken music.");
 		return false;
@@ -1419,7 +1427,7 @@ bool Game::ReadLevelData(BitStream& stream)
 
 	// checksum
 	byte check;
-	if(!stream.Read(check) || check != 0xFF)
+	if(!f.Read(check) || check != 0xFF)
 	{
 		Error("Read level: Broken checksum.");
 		return false;
@@ -1437,11 +1445,11 @@ bool Game::ReadLevelData(BitStream& stream)
 }
 
 //=================================================================================================
-bool Game::ReadUnit(BitStream& stream, Unit& unit)
+bool Game::ReadUnit(BitStream& f, Unit& unit)
 {
 	// main
-	if(!ReadString1(stream)
-		|| !stream.Read(unit.netid))
+	if(!ReadString1(f)
+		|| !f.Read(unit.netid))
 		return false;
 
 	unit.data = UnitData::TryGet(BUF);
@@ -1455,11 +1463,11 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	if(unit.data->type == UNIT_TYPE::HUMAN)
 	{
 		unit.human_data = new Human;
-		if(!stream.ReadCasted<byte>(unit.human_data->hair)
-			|| !stream.ReadCasted<byte>(unit.human_data->beard)
-			|| !stream.ReadCasted<byte>(unit.human_data->mustache)
-			|| !stream.Read(unit.human_data->hair_color)
-			|| !stream.Read(unit.human_data->height))
+		if(!f.ReadCasted<byte>(unit.human_data->hair)
+			|| !f.ReadCasted<byte>(unit.human_data->beard)
+			|| !f.ReadCasted<byte>(unit.human_data->mustache)
+			|| !f.Read(unit.human_data->hair_color)
+			|| !f.Read(unit.human_data->height))
 			return false;
 		if(unit.human_data->hair == 0xFF)
 			unit.human_data->hair = -1;
@@ -1488,7 +1496,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	{
 		for(int i = 0; i < SLOT_MAX; ++i)
 		{
-			if(!ReadString1(stream))
+			if(!ReadString1(f))
 				return false;
 			if(!BUF[0])
 				unit.slots[i] = nullptr;
@@ -1517,14 +1525,14 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 
 	// variables
 	bool summoner;
-	if(!stream.ReadCasted<byte>(unit.live_state)
-		|| !stream.Read(unit.pos)
-		|| !stream.Read(unit.rot)
-		|| !stream.Read(unit.hp)
-		|| !stream.Read(unit.hpmax)
-		|| !stream.Read(unit.netid)
-		|| !stream.ReadCasted<char>(unit.in_arena)
-		|| !ReadBool(stream, summoner))
+	if(!f.ReadCasted<byte>(unit.live_state)
+		|| !f.Read(unit.pos)
+		|| !f.Read(unit.rot)
+		|| !f.Read(unit.hp)
+		|| !f.Read(unit.hpmax)
+		|| !f.Read(unit.netid)
+		|| !f.ReadCasted<char>(unit.in_arena)
+		|| !ReadBool(f, summoner))
 		return false;
 	if(unit.live_state >= Unit::LIVESTATE_MAX)
 	{
@@ -1535,7 +1543,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 
 	// hero/player data
 	byte type;
-	if(!stream.Read(type))
+	if(!f.Read(type))
 		return false;
 	if(type == 1)
 	{
@@ -1545,9 +1553,9 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		unit.player = nullptr;
 		unit.hero = new HeroData;
 		unit.hero->unit = &unit;
-		if(!ReadString1(stream, unit.hero->name)
-			|| !stream.Read(flags)
-			|| !stream.Read(unit.hero->credit))
+		if(!ReadString1(f, unit.hero->name)
+			|| !f.Read(flags)
+			|| !f.Read(unit.hero->credit))
 			return false;
 		unit.hero->know_name = IS_SET(flags, 0x01);
 		unit.hero->team_member = IS_SET(flags, 0x02);
@@ -1559,10 +1567,10 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 		unit.hero = nullptr;
 		unit.player = new PlayerController;
 		unit.player->unit = &unit;
-		if(!ReadString1(stream, unit.player->name) ||
-			!stream.ReadCasted<byte>(unit.player->id) ||
-			!stream.Read(unit.player->credit) ||
-			!stream.Read(unit.player->free_days))
+		if(!ReadString1(f, unit.player->name) ||
+			!f.ReadCasted<byte>(unit.player->id) ||
+			!f.Read(unit.player->credit) ||
+			!f.Read(unit.player->free_days))
 			return false;
 		if(unit.player->credit < 0)
 		{
@@ -1593,7 +1601,7 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	// ai variables
 	if(unit.IsAI())
 	{
-		if(!stream.ReadCasted<byte>(unit.ai_mode))
+		if(!f.ReadCasted<byte>(unit.ai_mode))
 			return false;
 	}
 
@@ -1626,21 +1634,21 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 	{
 		// get current state in multiplayer
 		int usable_netid;
-		if(!stream.Read(unit.netid)
-			|| !unit.mesh_inst->Read(BitStreamReader(stream))
-			|| !stream.ReadCasted<byte>(unit.animation)
-			|| !stream.ReadCasted<byte>(unit.current_animation)
-			|| !stream.ReadCasted<byte>(unit.animation_state)
-			|| !stream.ReadCasted<byte>(unit.attack_id)
-			|| !stream.ReadCasted<byte>(unit.action)
-			|| !stream.ReadCasted<byte>(unit.weapon_taken)
-			|| !stream.ReadCasted<byte>(unit.weapon_hiding)
-			|| !stream.ReadCasted<byte>(unit.weapon_state)
-			|| !stream.Read(unit.target_pos)
-			|| !stream.Read(unit.target_pos2)
-			|| !stream.Read(unit.timer)
-			|| !ReadString1(stream)
-			|| !stream.Read(usable_netid))
+		if(!f.Read(unit.netid)
+			|| !unit.mesh_inst->Read(BitStreamReader(f))
+			|| !f.ReadCasted<byte>(unit.animation)
+			|| !f.ReadCasted<byte>(unit.current_animation)
+			|| !f.ReadCasted<byte>(unit.animation_state)
+			|| !f.ReadCasted<byte>(unit.attack_id)
+			|| !f.ReadCasted<byte>(unit.action)
+			|| !f.ReadCasted<byte>(unit.weapon_taken)
+			|| !f.ReadCasted<byte>(unit.weapon_hiding)
+			|| !f.ReadCasted<byte>(unit.weapon_state)
+			|| !f.Read(unit.target_pos)
+			|| !f.Read(unit.target_pos2)
+			|| !f.Read(unit.timer)
+			|| !ReadString1(f)
+			|| !f.Read(usable_netid))
 			return false;
 		else
 		{
@@ -1704,15 +1712,15 @@ bool Game::ReadUnit(BitStream& stream, Unit& unit)
 }
 
 //=================================================================================================
-bool Game::ReadDoor(BitStream& stream, Door& door)
+bool Game::ReadDoor(BitStream& f, Door& door)
 {
-	if(!stream.Read(door.pos)
-		|| !stream.Read(door.rot)
-		|| !stream.Read(door.pt)
-		|| !stream.ReadCasted<byte>(door.locked)
-		|| !stream.ReadCasted<byte>(door.state)
-		|| !stream.Read(door.netid)
-		|| !ReadBool(stream, door.door2))
+	if(!f.Read(door.pos)
+		|| !f.Read(door.rot)
+		|| !f.Read(door.pt)
+		|| !f.ReadCasted<byte>(door.locked)
+		|| !f.ReadCasted<byte>(door.state)
+		|| !f.Read(door.netid)
+		|| !ReadBool(f, door.door2))
 		return false;
 
 	if(door.state >= Door::Max)
@@ -1745,40 +1753,40 @@ bool Game::ReadDoor(BitStream& stream, Door& door)
 }
 
 //=================================================================================================
-bool Game::ReadItem(BitStream& stream, GroundItem& item)
+bool Game::ReadItem(BitStream& f, GroundItem& item)
 {
-	if(!stream.Read(item.netid)
-		|| !stream.Read(item.pos)
-		|| !stream.Read(item.rot)
-		|| !stream.Read(item.count)
-		|| !stream.Read(item.team_count)
-		|| ReadItemAndFind(stream, item.item) <= 0)
+	if(!f.Read(item.netid)
+		|| !f.Read(item.pos)
+		|| !f.Read(item.rot)
+		|| !f.Read(item.count)
+		|| !f.Read(item.team_count)
+		|| ReadItemAndFind(f, item.item) <= 0)
 		return false;
 	else
 		return true;
 }
 
 //=================================================================================================
-bool Game::ReadChest(BitStream& stream, Chest& chest)
+bool Game::ReadChest(BitStream& f, Chest& chest)
 {
-	if(!stream.Read(chest.pos)
-		|| !stream.Read(chest.rot)
-		|| !stream.Read(chest.netid))
+	if(!f.Read(chest.pos)
+		|| !f.Read(chest.rot)
+		|| !f.Read(chest.netid))
 		return false;
 	chest.mesh_inst = new MeshInstance(aChest);
 	return true;
 }
 
 //=================================================================================================
-bool Game::ReadTrap(BitStream& stream, Trap& trap)
+bool Game::ReadTrap(BitStream& f, Trap& trap)
 {
 	TRAP_TYPE type;
-	if(!stream.ReadCasted<byte>(type)
-		|| !stream.ReadCasted<byte>(trap.dir)
-		|| !stream.Read(trap.netid)
-		|| !stream.Read(trap.tile)
-		|| !stream.Read(trap.pos)
-		|| !stream.Read(trap.obj.rot.y))
+	if(!f.ReadCasted<byte>(type)
+		|| !f.ReadCasted<byte>(trap.dir)
+		|| !f.Read(trap.netid)
+		|| !f.Read(trap.tile)
+		|| !f.Read(trap.pos)
+		|| !f.Read(trap.obj.rot.y))
 		return false;
 	trap.base = &BaseTrap::traps[type];
 
@@ -1793,8 +1801,8 @@ bool Game::ReadTrap(BitStream& stream, Trap& trap)
 
 	if(mp_load)
 	{
-		if(!stream.ReadCasted<byte>(trap.state)
-			|| !stream.Read(trap.time))
+		if(!f.ReadCasted<byte>(trap.state)
+			|| !f.Read(trap.time))
 			return false;
 	}
 
@@ -1821,37 +1829,37 @@ void Game::SendPlayerData(int index)
 {
 	PlayerInfo& info = *game_players[index];
 	Unit& unit = *info.u;
-	BitStream& stream = net_stream2;
+	BitStream& f = net_stream2;
 
-	stream.Reset();
-	stream.Write(ID_PLAYER_DATA);
-	stream.Write(unit.netid);
+	f.Reset();
+	f.Write(ID_PLAYER_DATA);
+	f.Write(unit.netid);
 
 	// items
 	for(int i = 0; i < SLOT_MAX; ++i)
 	{
 		if(unit.slots[i])
-			WriteString1(stream, unit.slots[i]->id);
+			WriteString1(f, unit.slots[i]->id);
 		else
-			stream.WriteCasted<byte>(0);
+			f.WriteCasted<byte>(0);
 	}
-	WriteItemListTeam(stream, unit.items);
+	WriteItemListTeam(f, unit.items);
 
 	// data
-	unit.stats.Write(stream);
-	unit.unmod_stats.Write(stream);
-	stream.Write(unit.gold);
-	stream.Write(unit.stamina);
-	unit.player->Write(stream);
+	unit.stats.Write(f);
+	unit.unmod_stats.Write(f);
+	f.Write(unit.gold);
+	f.Write(unit.stamina);
+	unit.player->Write(f);
 
 	// other team members
-	stream.WriteCasted<byte>(Team.members.size() - 1);
+	f.WriteCasted<byte>(Team.members.size() - 1);
 	for(Unit* other_unit : Team.members)
 	{
 		if(other_unit != &unit)
-			stream.Write(other_unit->netid);
+			f.Write(other_unit->netid);
 	}
-	stream.WriteCasted<byte>(leader_id);
+	f.WriteCasted<byte>(leader_id);
 
 	// multiplayer load data
 	if(mp_load)
@@ -1861,22 +1869,22 @@ void Game::SendPlayerData(int index)
 			flags |= 0x01;
 		if(unit.used_item_is_team)
 			flags |= 0x02;
-		stream.Write(unit.attack_power);
-		stream.Write(unit.raise_timer);
-		stream.WriteCasted<byte>(flags);
+		f.Write(unit.attack_power);
+		f.Write(unit.raise_timer);
+		f.WriteCasted<byte>(flags);
 	}
 
-	stream.WriteCasted<byte>(0xFF);
+	f.WriteCasted<byte>(0xFF);
 
-	peer->Send(&stream, HIGH_PRIORITY, RELIABLE, 0, info.adr, false);
-	StreamWrite(stream, Stream_TransferServer, info.adr);
+	peer->Send(&f, HIGH_PRIORITY, RELIABLE, 0, info.adr, false);
+	StreamWrite(f, Stream_TransferServer, info.adr);
 }
 
 //=================================================================================================
-bool Game::ReadPlayerData(BitStream& stream)
+bool Game::ReadPlayerData(BitStream& f)
 {
 	int netid;
-	if(!stream.Read(netid))
+	if(!f.Read(netid))
 	{
 		Error("Read player data: Broken packet.");
 		return false;
@@ -1897,7 +1905,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 	// items
 	for(int i = 0; i < SLOT_MAX; ++i)
 	{
-		if(!ReadString1(stream))
+		if(!ReadString1(f))
 		{
 			Error("Read player data: Broken item %d.", i);
 			return false;
@@ -1911,7 +1919,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 		else
 			unit->slots[i] = nullptr;
 	}
-	if(!ReadItemListTeam(stream, unit->items))
+	if(!ReadItemListTeam(f, unit->items))
 	{
 		Error("Read player data: Broken item list.");
 		return false;
@@ -1922,11 +1930,11 @@ bool Game::ReadPlayerData(BitStream& stream)
 
 	unit->player->Init(*unit, true);
 
-	if(!unit->stats.Read(stream)
-		|| !unit->unmod_stats.Read(stream)
-		|| !stream.Read(unit->gold)
-		|| !stream.Read(unit->stamina)
-		|| !pc->Read(stream))
+	if(!unit->stats.Read(f)
+		|| !unit->unmod_stats.Read(f)
+		|| !f.Read(unit->gold)
+		|| !f.Read(unit->stamina)
+		|| !pc->Read(f))
 	{
 		Error("Read player data: Broken stats.");
 		return false;
@@ -1951,15 +1959,15 @@ bool Game::ReadPlayerData(BitStream& stream)
 	Team.members.push_back(unit);
 	Team.active_members.push_back(unit);
 	byte count;
-	if(!stream.Read(count)
-		|| !EnsureSize(stream, sizeof(int) * count))
+	if(!f.Read(count)
+		|| !EnsureSize(f, sizeof(int) * count))
 	{
 		Error("Read player data: Broken team members.");
 		return false;
 	}
 	for(byte i = 0; i < count; ++i)
 	{
-		stream.Read(netid);
+		f.Read(netid);
 		Unit* team_member = FindUnit(netid);
 		if(!team_member)
 		{
@@ -1970,7 +1978,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 		if(team_member->IsPlayer() || !team_member->hero->free)
 			Team.active_members.push_back(team_member);
 	}
-	if(!stream.ReadCasted<byte>(leader_id))
+	if(!f.ReadCasted<byte>(leader_id))
 	{
 		Error("Read player data: Broken team leader.");
 		return false;
@@ -1992,9 +2000,9 @@ bool Game::ReadPlayerData(BitStream& stream)
 	if(mp_load)
 	{
 		byte flags;
-		if(!stream.Read(unit->attack_power)
-			|| !stream.Read(unit->raise_timer)
-			|| !stream.ReadCasted<byte>(flags))
+		if(!f.Read(unit->attack_power)
+			|| !f.Read(unit->raise_timer)
+			|| !f.ReadCasted<byte>(flags))
 		{
 			Error("Read player data: Broken multiplaye data.");
 			return false;
@@ -2005,7 +2013,7 @@ bool Game::ReadPlayerData(BitStream& stream)
 
 	// checksum
 	byte check;
-	if(!stream.Read(check) || check != 0xFF)
+	if(!f.Read(check) || check != 0xFF)
 	{
 		Error("Read player data: Broken checksum.");
 		return false;
@@ -8978,15 +8986,14 @@ void Game::WriteClientChanges(BitStream& stream)
 }
 
 //=================================================================================================
-void Game::Client_Say(BitStream& stream)
+void Game::Client_Say(BitStreamReader& f)
 {
 	byte id;
 
-	if(!stream.Read(id)
-		|| !ReadString1(stream))
-	{
+	f >> id;
+	const string& text = f.ReadString1();
+	if(!f)
 		StreamError("Client_Say: Broken packet.");
-	}
 	else
 	{
 		int index = GetPlayerIndex(id);
@@ -8995,24 +9002,23 @@ void Game::Client_Say(BitStream& stream)
 		else
 		{
 			PlayerInfo& info = *game_players[index];
-			cstring s = Format("%s: %s", info.name.c_str(), BUF);
+			cstring s = Format("%s: %s", info.name.c_str(), text.c_str());
 			AddMsg(s);
 			if(game_state == GS_LEVEL)
-				game_gui->AddSpeechBubble(info.u, BUF);
+				game_gui->AddSpeechBubble(info.u, text);
 		}
 	}
 }
 
 //=================================================================================================
-void Game::Client_Whisper(BitStream& stream)
+void Game::Client_Whisper(BitStreamReader& f)
 {
 	byte id;
 
-	if(!stream.Read(id)
-		|| !ReadString1(stream))
-	{
+	f >> id;
+	const string& text = f.ReadString1();
+	if(!f)
 		StreamError("Client_Whisper: Broken packet.");
-	}
 	else
 	{
 		int index = GetPlayerIndex(id);
@@ -9020,23 +9026,24 @@ void Game::Client_Whisper(BitStream& stream)
 			StreamError("Client_Whisper: Broken packet, missing player %d.", id);
 		else
 		{
-			cstring s = Format("%s@: %s", game_players[index]->name.c_str(), BUF);
+			cstring s = Format("%s@: %s", game_players[index]->name.c_str(), text.c_str());
 			AddMsg(s);
 		}
 	}
 }
 
 //=================================================================================================
-void Game::Client_ServerSay(BitStream& stream)
+void Game::Client_ServerSay(BitStreamReader& f)
 {
-	if(!ReadString1(stream))
+	const string& text = f.ReadString1();
+	if(!f)
 		StreamError("Client_ServerSay: Broken packet.");
 	else
-		AddServerMsg(BUF);
+		AddServerMsg(text);
 }
 
 //=================================================================================================
-void Game::Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet)
+void Game::Server_Say(BitStreamReader& f, PlayerInfo& info, Packet* packet)
 {
 	byte id;
 
@@ -9066,7 +9073,7 @@ void Game::Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet)
 }
 
 //=================================================================================================
-void Game::Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet)
+void Game::Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet)
 {
 	byte id;
 
@@ -9321,26 +9328,28 @@ Usable* Game::FindUsable(int netid)
 
 //=================================================================================================
 // -2 read error, -1 not found, 0 empty, 1 found
-int Game::ReadItemAndFind(BitStream& s, const Item*& item) const
+int Game::ReadItemAndFind(BitStreamReader& f, const Item*& item) const
 {
 	item = nullptr;
 
-	if(!ReadString1(s))
+	const string& item_id = f.ReadString1();
+	if(!f)
+		return -2;
 		return -2;
 
-	if(BUF[0] == 0)
+	if(item_id.empty())
 		return 0;
 
-	if(BUF[0] == '$')
+	if(item_id[0] == '$')
 	{
-		int quest_refid;
-		if(!s.Read(quest_refid))
+		int quest_refid = f.Read<int>();
+		if(!f)
 			return -2;
 
-		item = FindQuestItemClient(BUF, quest_refid);
+		item = FindQuestItemClient(Bitem_idUF, quest_refid);
 		if(!item)
 		{
-			Warn("Missing quest item '%s' (%d).", BUF, quest_refid);
+			Warn("Missing quest item '%s' (%d).", item_id.c_str(), quest_refid);
 			return -1;
 		}
 		else
@@ -9348,10 +9357,10 @@ int Game::ReadItemAndFind(BitStream& s, const Item*& item) const
 	}
 	else
 	{
-		item = Item::TryGet(BUF);
+		item = Item::TryGet(item_id);
 		if(!item)
 		{
-			Warn("Missing item '%s'.", BUF);
+			Warn("Missing item '%s'.", item_id.c_str());
 			return -1;
 		}
 		else

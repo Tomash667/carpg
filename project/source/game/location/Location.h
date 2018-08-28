@@ -117,8 +117,8 @@ struct Location : public ILevel
 	void GenerateName();
 	Portal* GetPortal(int index);
 	Portal* TryGetPortal(int index) const;
-	void WritePortals(BitStream& stream) const;
-	bool ReadPortals(BitStream& stream, int at_level);
+	void WritePortals(BitStreamWriter& f) const;
+	bool ReadPortals(BitStreamReader& f, int at_level);
 };
 
 //-----------------------------------------------------------------------------

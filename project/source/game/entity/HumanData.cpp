@@ -140,27 +140,28 @@ void HumanData::Load(FileReader& f)
 }
 
 //=================================================================================================
-void HumanData::Write(BitStream& stream) const
+void HumanData::Write(BitStreamWriter& f) const
 {
-	stream.WriteCasted<byte>(hair);
-	stream.WriteCasted<byte>(beard);
-	stream.WriteCasted<byte>(mustache);
-	stream.Write(hair_color.x);
-	stream.Write(hair_color.y);
-	stream.Write(hair_color.z);
-	stream.Write(height);
+	f.WriteCasted<byte>(hair);
+	f.WriteCasted<byte>(beard);
+	f.WriteCasted<byte>(mustache);
+	f << hair_color.x;
+	f << hair_color.y;
+	f << hair_color.z;
+	f << height;
 }
 
 //=================================================================================================
-int HumanData::Read(BitStream& stream)
+int HumanData::Read(BitStreamReader& f)
 {
-	if(!stream.ReadCasted<byte>(hair) ||
-		!stream.ReadCasted<byte>(beard) ||
-		!stream.ReadCasted<byte>(mustache) ||
-		!stream.Read(hair_color.x) ||
-		!stream.Read(hair_color.y) ||
-		!stream.Read(hair_color.z) ||
-		!stream.Read(height))
+	f.ReadCasted<byte>(hair);
+	f.ReadCasted<byte>(beard);
+	f.ReadCasted<byte>(mustache);
+	f >> hair_color.x;
+	f >> hair_color.y;
+	f >> hair_color.z;
+	f >> height;
+	if(!f)
 		return 1;
 
 	hair_color.w = 1.f;

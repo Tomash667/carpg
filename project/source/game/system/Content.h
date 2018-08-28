@@ -36,8 +36,8 @@ namespace content
 	void CleanupUnits();
 	void CleanupBuildings();
 	void CleanupMusics();
-	bool ReadCrc(BitStream& stream);
-	void WriteCrc(BitStream& stream);
+	void WriteCrc(BitStreamWriter& f);
+	void ReadCrc(BitStreamReader& f);
 	bool GetCrc(Id type, uint& my_crc, cstring& type_crc);
 	bool ValidateCrc(Id& type, uint& my_crc, uint& player_crc, cstring& type_str);
 }
