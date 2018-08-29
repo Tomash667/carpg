@@ -296,6 +296,7 @@ void PickFileDialog::LoadDir(bool keep_selected)
 				list_box->Add(item);
 			}
 		}
+		return true;
 	});
 
 	// sort items

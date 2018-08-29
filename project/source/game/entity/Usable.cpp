@@ -163,7 +163,7 @@ bool Usable::Read(BitStreamReader& f)
 	base = BaseUsable::TryGet(base_id);
 	if(!base)
 	{
-		Error("Invalid usable type '%s'.", BUF);
+		Error("Invalid usable type '%s'.", base_id.c_str());
 		return false;
 	}
 	if(IS_SET(base->use_flags, BaseUsable::CONTAINER))

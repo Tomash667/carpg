@@ -2,6 +2,7 @@
 #include "GameCore.h"
 #include "GameStats.h"
 #include "GameFile.h"
+#include "BitStreamFunc.h"
 
 GameStats Singleton<GameStats>::instance;
 
@@ -33,20 +34,6 @@ void GameStats::Update(float dt)
 	}
 }
 
-void GameStats::Write(BitStream& stream)
-{
-	stream.Write(hour);
-	stream.WriteCasted<byte>(minute);
-	stream.WriteCasted<byte>(second);
-}
-
-bool GameStats::Read(BitStream& stream)
-{
-	return stream.Read(hour)
-		&& stream.ReadCasted<byte>(minute)
-		&& stream.ReadCasted<byte>(second);
-}
-
 void GameStats::Save(GameWriter& f)
 {
 	f << hour;
@@ -61,4 +48,18 @@ void GameStats::Load(GameReader& f)
 	f >> minute;
 	f >> second;
 	f >> tick;
+}
+
+void GameStats::Write(BitStreamWriter& f)
+{
+	f << hour;
+	f.WriteCasted<byte>(minute);
+	f.WriteCasted<byte>(second);
+}
+
+void GameStats::Read(BitStreamReader& f)
+{
+	f >> hour;
+	f.ReadCasted<byte>(minute);
+	f.ReadCasted<byte>(second);
 }

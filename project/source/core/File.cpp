@@ -287,7 +287,7 @@ bool io::FileExists(cstring filename)
 }
 
 //=================================================================================================
-bool io::FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func, bool exclude_special)
+bool io::FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func)
 {
 	assert(pattern);
 
@@ -298,9 +298,8 @@ bool io::FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func, bool e
 
 	do
 	{
-		// exclude special files or directories
-		if((exclude_special && (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0))
-			|| IS_SET(find_data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))
+		// exclude special directories
+		if(strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
 			continue;
 
 		// callback

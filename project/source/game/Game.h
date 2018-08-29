@@ -536,13 +536,14 @@ public:
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *eGui, *ePostFx, *eGlow, *eGrass;
-	D3DXHANDLE techAnim, techHair, techAnimDir, techHairDir, techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox,
-		techTerrain, techArea, techTrail, techGlowMesh, techGlowAni, techGrass;
-	D3DXHANDLE hAniCombined, hAniWorld, hAniBones, hAniTex, hAniFogColor, hAniFogParam, hAniTint, hAniHairColor, hAniAmbientColor, hAniLightDir, hAniLightColor, hAniLights,
-		hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir, hMeshLightColor, hMeshLights,
-		hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange,
-		hTerrainCombined, hTerrainWorld, hTerrainTexBlend, hTerrainTex[5], hTerrainColorAmbient, hTerrainColorDiffuse, hTerrainLightDir, hTerrainFogColor, hTerrainFogParam,
-		hGuiSize, hGuiTex, hPostTex, hPostPower, hPostSkill, hGlowCombined, hGlowBones, hGlowColor, hGlowTex, hGrassViewProj, hGrassTex, hGrassFogColor, hGrassFogParams, hGrassAmbientColor;
+	D3DXHANDLE techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techTerrain, techArea, techTrail, techGlowMesh,
+		techGlowAni, techGrass;
+	D3DXHANDLE hAniCombined, hAniWorld, hAniBones, hAniTex, hAniFogColor, hAniFogParam, hAniTint, hAniHairColor, hAniAmbientColor, hAniLightDir,
+		hAniLightColor, hAniLights, hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir,
+		hMeshLightColor, hMeshLights, hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange,
+		hTerrainCombined, hTerrainWorld, hTerrainTexBlend, hTerrainTex[5], hTerrainColorAmbient, hTerrainColorDiffuse, hTerrainLightDir, hTerrainFogColor,
+		hTerrainFogParam, hGuiSize, hGuiTex, hPostTex, hPostPower, hPostSkill, hGlowCombined, hGlowBones, hGlowColor, hGlowTex, hGrassViewProj, hGrassTex,
+		hGrassFogColor, hGrassFogParams, hGrassAmbientColor;
 	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sTalk[4], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
 		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sXarTalk, sOrcTalk, sGoblinTalk, sGolemTalk, sEat, sSummon;
 	VB vbParticle;
@@ -1695,7 +1696,7 @@ public:
 	void Client_Say(BitStreamReader& f);
 	void Client_Whisper(BitStreamReader& f);
 	void Client_ServerSay(BitStreamReader& f);
-	void Server_Say(BitStreamReader& f, PlayerInfo& info, Packet* packet);
+	void Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet);
 	void Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet);
 	void ServerProcessUnits(vector<Unit*>& units);
 	GroundItem* FindItemNetid(int netid, LevelContext** ctx = nullptr);
@@ -1835,12 +1836,12 @@ public:
 	Electro* FindElectro(int netid);
 	void UseDays(PlayerController* player, int count);
 	PlayerInfo* FindOldPlayer(cstring nick);
-	void PrepareWorldData(BitStream& stream);
-	bool ReadWorldData(BitStream& stream);
+	void PrepareWorldData(BitStreamWriter& f);
+	bool ReadWorldData(BitStreamReader& f);
 	void WriteNetVars(BitStreamWriter& f);
 	void ReadNetVars(BitStreamReader& f);
-	void WritePlayerStartData(BitStream& stream, PlayerInfo& info);
-	bool ReadPlayerStartData(BitStream& stream);
+	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
+	bool ReadPlayerStartData(BitStreamReader& f);
 	bool CheckMoveNet(Unit& unit, const Vec3& pos);
 	void Net_PreSave();
 	bool FilterOut(NetChange& c);

@@ -1440,8 +1440,8 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						Info("NM_TRANSFER_SERVER: %s read world data.", info.name.c_str());
 						net_stream2.Reset();
-						net_stream2.WriteCasted<byte>(ID_PLAYER_START_DATA);
-						WritePlayerStartData(net_stream2, info);
+						BitStreamWriter f(net_stream2);
+						WritePlayerStartData(f, info);
 						peer->Send(&net_stream2, MEDIUM_PRIORITY, RELIABLE, 0, info.adr, false);
 						StreamWrite(net_stream2, Stream_TransferServer, info.adr);
 					}
@@ -1520,7 +1520,8 @@ void Game::UpdateServerTransfer(float dt)
 
 			// prepare & send world data
 			net_stream.Reset();
-			PrepareWorldData(net_stream);
+			BitStreamWriter f(net_stream);
+			PrepareWorldData(f);
 			peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			StreamWrite(net_stream, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 			Info("NM_TRANSFER_SERVER: Send world data, size %d.", net_stream.GetNumberOfBytesUsed());
@@ -2813,7 +2814,7 @@ void Game::UpdateLobbyNetServer(float dt)
 			if(!info)
 				Warn("UpdateLobbyNet: Packet ID_SAY from unconnected client %s.", packet->systemAddress.ToString());
 			else
-				Server_Say(reader, *info, packet);
+				Server_Say(stream, *info, packet);
 			break;
 		case ID_WHISPER:
 			if(!info)

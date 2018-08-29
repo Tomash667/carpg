@@ -119,6 +119,7 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 				res->filename = res->path.c_str() + dirlen;
 			}
 		}
+		return true;
 	});
 
 	if(!ok)

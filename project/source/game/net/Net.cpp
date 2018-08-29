@@ -2120,7 +2120,7 @@ void Game::UpdateServer(float dt)
 			info.left = (msg_id == ID_CONNECTION_LOST ? PlayerInfo::LEFT_DISCONNECTED : PlayerInfo::LEFT_QUIT);
 			break;
 		case ID_SAY:
-			Server_Say(reader, info, packet);
+			Server_Say(stream, info, packet);
 			break;
 		case ID_WHISPER:
 			Server_Whisper(reader, info, packet);
@@ -9142,9 +9142,10 @@ void Game::Client_ServerSay(BitStreamReader& f)
 }
 
 //=================================================================================================
-void Game::Server_Say(BitStreamReader& f, PlayerInfo& info, Packet* packet)
+void Game::Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet)
 {
 	byte id;
+	BitStreamReader f(stream);
 	f >> id;
 	const string& text = f.ReadString1();
 	if(!f)
@@ -9430,7 +9431,6 @@ int Game::ReadItemAndFind(BitStreamReader& f, const Item*& item) const
 	const string& item_id = f.ReadString1();
 	if(!f)
 		return -2;
-		return -2;
 
 	if(item_id.empty())
 		return 0;
@@ -9441,7 +9441,7 @@ int Game::ReadItemAndFind(BitStreamReader& f, const Item*& item) const
 		if(!f)
 			return -2;
 
-		item = FindQuestItemClient(Bitem_idUF, quest_refid);
+		item = FindQuestItemClient(item_id.c_str(), quest_refid);
 		if(!item)
 		{
 			Warn("Missing quest item '%s' (%d).", item_id.c_str(), quest_refid);
@@ -9629,100 +9629,99 @@ PlayerInfo* Game::FindOldPlayer(cstring nick)
 }
 
 //=================================================================================================
-void Game::PrepareWorldData(BitStream& stream)
+void Game::PrepareWorldData(BitStreamWriter& f)
 {
 	Info("Preparing world data.");
 
-	stream.Reset();
-	stream.WriteCasted<byte>(ID_WORLD_DATA);
+	f << ID_WORLD_DATA;
 
 	// locations
-	stream.WriteCasted<byte>(locations.size());
+	f.WriteCasted<byte>(locations.size());
 	for(Location* loc_ptr : locations)
 	{
 		if(!loc_ptr)
 		{
-			stream.WriteCasted<byte>(L_NULL);
+			f.WriteCasted<byte>(L_NULL);
 			continue;
 		}
 
 		Location& loc = *loc_ptr;
-		stream.WriteCasted<byte>(loc.type);
+		f.WriteCasted<byte>(loc.type);
 		if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
-			stream.WriteCasted<byte>(loc.GetLastLevel() + 1);
+			f.WriteCasted<byte>(loc.GetLastLevel() + 1);
 		else if(loc.type == L_CITY)
 		{
 			City& city = (City&)loc;
-			stream.WriteCasted<byte>(city.citizens);
-			stream.WriteCasted<word>(city.citizens_world);
-			stream.WriteCasted<byte>(city.settlement_type);
+			f.WriteCasted<byte>(city.citizens);
+			f.WriteCasted<word>(city.citizens_world);
+			f.WriteCasted<byte>(city.settlement_type);
 		}
-		stream.WriteCasted<byte>(loc.state);
-		stream.Write(loc.pos);
-		WriteString1(stream, loc.name);
-		stream.WriteCasted<byte>(loc.image);
+		f.WriteCasted<byte>(loc.state);
+		f << loc.pos;
+		f << loc.name;
+		f.WriteCasted<byte>(loc.image);
 	}
-	stream.WriteCasted<byte>(current_location);
+	f.WriteCasted<byte>(current_location);
 
 	// quests
-	QuestManager::Get().Write(stream);
+	QuestManager::Get().Write(f);
 
 	// rumors
-	WriteStringArray<byte, word>(stream, game_gui->journal->GetRumors());
+	f.WriteStringArray<byte, word>(game_gui->journal->GetRumors());
 
 	// time
-	stream.WriteCasted<byte>(year);
-	stream.WriteCasted<byte>(month);
-	stream.WriteCasted<byte>(day);
-	stream.Write(worldtime);
+	f.WriteCasted<byte>(year);
+	f.WriteCasted<byte>(month);
+	f.WriteCasted<byte>(day);
+	f << worldtime;
 
 	// stats
-	GameStats::Get().Write(stream);
+	GameStats::Get().Write(f);
 
 	// mp vars
-	WriteNetVars(stream);
+	WriteNetVars(f);
 
 	// quest items
-	stream.WriteCasted<word>(Net::changes.size());
+	f.WriteCasted<word>(Net::changes.size());
 	for(NetChange& c : Net::changes)
 	{
 		assert(c.type == NetChange::REGISTER_ITEM);
-		WriteString1(stream, c.base_item->id);
-		WriteString1(stream, c.item2->id);
-		WriteString1(stream, c.item2->name);
-		WriteString1(stream, c.item2->desc);
-		stream.Write(c.item2->refid);
+		f << c.base_item->id;
+		f << c.item2->id;
+		f << c.item2->name;
+		f << c.item2->desc;
+		f << c.item2->refid;
 	}
 	Net::changes.clear();
 	if(!net_talk.empty())
 		StringPool.Free(net_talk);
 
 	// secret note text
-	WriteString1(stream, GetSecretNote()->desc);
+	f << GetSecretNote()->desc;
 
 	// position on world map
 	if(world_state == WS_TRAVEL)
 	{
-		WriteBool(stream, true);
-		stream.Write(picked_location);
-		stream.Write(travel_day);
-		stream.Write(travel_time);
-		stream.Write(travel_start);
-		stream.Write(world_pos);
+		f << true;
+		f << picked_location;
+		f << travel_day;
+		f << travel_time;
+		f << travel_start;
+		f << world_pos;
 	}
 	else
-		WriteBool(stream, false);
+		f << false;
 
-	stream.WriteCasted<byte>(0xFF);
+	f.WriteCasted<byte>(0xFF);
 }
 
 //=================================================================================================
-bool Game::ReadWorldData(BitStream& stream)
+bool Game::ReadWorldData(BitStreamReader& f)
 {
 	// count of locations
 	byte count;
-	if(!stream.Read(count)
-		|| !EnsureSize(stream, count))
+	f >> count;
+	if(!f.Ensure(count))
 	{
 		Error("Read world: Broken packet.");
 		return false;
@@ -9734,8 +9733,8 @@ bool Game::ReadWorldData(BitStream& stream)
 	for(Location*& loc : locations)
 	{
 		LOCATION type;
-
-		if(!stream.ReadCasted<byte>(type))
+		f.ReadCasted<byte>(type);
+		if(!f)
 		{
 			Error("Read world: Broken packet for location %u.", index);
 			return false;
@@ -9754,7 +9753,8 @@ bool Game::ReadWorldData(BitStream& stream)
 		case L_CRYPT:
 			{
 				byte levels;
-				if(!stream.Read(levels))
+				f >> levels;
+				if(!f)
 				{
 					Error("Read world: Broken packet for dungeon location %u.", index);
 					return false;
@@ -9786,9 +9786,10 @@ bool Game::ReadWorldData(BitStream& stream)
 				byte citizens;
 				word world_citizens;
 				byte type;
-				if(!stream.Read(citizens)
-					|| !stream.Read(world_citizens)
-					|| !stream.Read(type))
+				f >> citizens;
+				f >> world_citizens;
+				f >> type;
+				if(!f)
 				{
 					Error("Read world: Broken packet for city location %u.", index);
 					return false;
@@ -9807,10 +9808,11 @@ bool Game::ReadWorldData(BitStream& stream)
 		}
 
 		// location data
-		if(!stream.ReadCasted<byte>(loc->state)
-			|| !stream.Read(loc->pos)
-			|| !ReadString1(stream, loc->name)
-			|| !stream.ReadCasted<byte>(loc->image))
+		f.ReadCasted<byte>(loc->state);
+		f >> loc->pos;
+		f >> loc->name;
+		f.ReadCasted<byte>(loc->image);
+		if(!f)
 		{
 			Error("Read world: Broken packet(2) for location %u.", index);
 			return false;
@@ -9826,7 +9828,8 @@ bool Game::ReadWorldData(BitStream& stream)
 	}
 
 	// current location
-	if(!stream.ReadCasted<byte>(current_location))
+	f.ReadCasted<byte>(current_location);
+	if(!f)
 	{
 		Error("Read world: Broken packet for current location.");
 		return false;
@@ -9841,29 +9844,32 @@ bool Game::ReadWorldData(BitStream& stream)
 	location->state = LS_VISITED;
 
 	// quests
-	if(!QuestManager::Get().Read(stream))
+	if(!QuestManager::Get().Read(f))
 		return false;
 
 	// rumors
-	if(!ReadStringArray<byte, word>(stream, game_gui->journal->GetRumors()))
+	f.ReadStringArray<byte, word>(game_gui->journal->GetRumors());
+	if(!f)
 	{
 		Error("Read world: Broken packet for rumors.");
 		return false;
 	}
 
 	// time
-	if(!stream.ReadCasted<byte>(year) ||
-		!stream.ReadCasted<byte>(month) ||
-		!stream.ReadCasted<byte>(day) ||
-		!stream.Read(worldtime) ||
-		!GameStats::Get().Read(stream))
+	f.ReadCasted<byte>(year);
+	f.ReadCasted<byte>(month);
+	f.ReadCasted<byte>(day);
+	f >> worldtime;
+	GameStats::Get().Read(f);
+	if(!f)
 	{
 		Error("Read world: Broken packet for time.");
 		return false;
 	}
 
 	// mp vars
-	if(!ReadNetVars(stream))
+	ReadNetVars(f);
+	if(!f)
 	{
 		Error("Read world: Broken packet for mp vars.");
 		return false;
@@ -9872,8 +9878,8 @@ bool Game::ReadWorldData(BitStream& stream)
 	// questowe przedmioty
 	const int QUEST_ITEM_MIN_SIZE = 7;
 	word quest_items_count;
-	if(!stream.Read(quest_items_count)
-		|| !EnsureSize(stream, QUEST_ITEM_MIN_SIZE * quest_items_count))
+	f >> quest_items_count;
+	if(f.Ensure(QUEST_ITEM_MIN_SIZE * quest_items_count))
 	{
 		Error("Read world: Broken packet for quest items.");
 		return false;
@@ -9882,7 +9888,7 @@ bool Game::ReadWorldData(BitStream& stream)
 	for(word i = 0; i < quest_items_count; ++i)
 	{
 		const Item* base_item;
-		if(!ReadItemSimple(stream, base_item))
+		if(!ReadItemSimple(f, base_item))
 		{
 			Error("Read world: Broken packet for quest item %u.", i);
 			return false;
@@ -9890,10 +9896,11 @@ bool Game::ReadWorldData(BitStream& stream)
 		else
 		{
 			Item* item = CreateItemCopy(base_item);
-			if(!ReadString1(stream, item->id)
-				|| !ReadString1(stream, item->name)
-				|| !ReadString1(stream, item->desc)
-				|| !stream.Read(item->refid))
+			f >> item->id;
+			f >> item->name;
+			f >> item->desc;
+			f >> item->refid;
+			if(!f)
 			{
 				Error("Read world: Broken packet for quest item %u (2).", i);
 				delete item;
@@ -9905,7 +9912,8 @@ bool Game::ReadWorldData(BitStream& stream)
 	}
 
 	// secret note text
-	if(!ReadString1(stream, GetSecretNote()->desc))
+	f >> GetSecretNote()->desc;
+	if(!f)
 	{
 		Error("Read world: Broken packet for secret note text.");
 		return false;
@@ -9913,7 +9921,8 @@ bool Game::ReadWorldData(BitStream& stream)
 
 	// position on world map
 	bool in_travel;
-	if(!ReadBool(stream, in_travel))
+	f >> in_travel;
+	if(!f)
 	{
 		Error("Read world: Broken packet for in travel data.");
 		return false;
@@ -9921,11 +9930,12 @@ bool Game::ReadWorldData(BitStream& stream)
 	if(in_travel)
 	{
 		world_state = WS_TRAVEL;
-		if(!stream.Read(picked_location) ||
-			!stream.Read(travel_day) ||
-			!stream.Read(travel_time) ||
-			!stream.Read(travel_start) ||
-			!stream.Read(world_pos))
+		f >> picked_location;
+		f >> travel_day;
+		f >> travel_time;
+		f >> travel_start;
+		f >> world_pos;
+		if(!f)
 		{
 			Error("Read world: Broken packet for in travel data (2).");
 			return false;
@@ -9934,7 +9944,8 @@ bool Game::ReadWorldData(BitStream& stream)
 
 	// checksum
 	byte check;
-	if(!stream.Read(check) || check != 0xFF)
+	f >> check;
+	if(!f || check != 0xFF)
 	{
 		Error("Read world: Broken checksum.");
 		return false;
@@ -9959,7 +9970,7 @@ void Game::WriteNetVars(BitStreamWriter& f)
 }
 
 //=================================================================================================
-bool Game::ReadNetVars(BitStreamReader& f)
+void Game::ReadNetVars(BitStreamReader& f)
 {
 	f >> mp_use_interp;
 	f >> mp_interp;
@@ -10105,8 +10116,10 @@ void Game::UpdateInterpolator(EntityInterpolator* e, float dt, Vec3& pos, float&
 }
 
 //=================================================================================================
-void Game::WritePlayerStartData(BitStream& stream, PlayerInfo& info)
+void Game::WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info)
 {
+	f << ID_PLAYER_START_DATA;
+
 	// flags
 	byte flags = 0;
 	if(info.devmode)
@@ -10122,21 +10135,21 @@ void Game::WritePlayerStartData(BitStream& stream, PlayerInfo& info)
 	}
 	if(noai)
 		flags |= 0x10;
-	stream.Write(flags);
+	f << flags;
 
 	// notes
-	WriteStringArray<word, word>(stream, info.notes);
+	f.WriteStringArray<word, word>(info.notes);
 
-	stream.WriteCasted<byte>(0xFF);
+	f.WriteCasted<byte>(0xFF);
 }
 
 //=================================================================================================
-bool Game::ReadPlayerStartData(BitStream& stream)
+bool Game::ReadPlayerStartData(BitStreamReader& f)
 {
 	byte flags;
-
-	if(!stream.Read(flags) ||
-		!ReadStringArray<word, word>(stream, game_gui->journal->GetNotes()))
+	f >> flags;
+	f.ReadStringArray<word, word>(game_gui->journal->GetNotes());
+	if(!f)
 		return false;
 
 	if(IS_SET(flags, 0x01))
@@ -10152,7 +10165,8 @@ bool Game::ReadPlayerStartData(BitStream& stream)
 
 	// checksum
 	byte check;
-	if(!stream.Read(check) || check != 0xFF)
+	f >> check;
+	if(!f || check != 0xFF)
 	{
 		Error("Read player start data: Broken checksum.");
 		return false;

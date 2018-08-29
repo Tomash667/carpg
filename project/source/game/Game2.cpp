@@ -840,8 +840,8 @@ void Game::SetupShaders()
 	techGlowMesh = eGlow->GetTechniqueByName("mesh");
 	techGlowAni = eGlow->GetTechniqueByName("ani");
 	techGrass = eGrass->GetTechniqueByName("grass");
-	assert(techAnim && techHair && techAnimDir && techHairDir && techMesh && techMeshDir && techMeshSimple && techMeshSimple2 && techMeshExplo && techParticle
-		&& techTrail && techSkybox && techTerrain && techArea && techGlowMesh && techGlowAni && techGrass);
+	assert(techMesh && techMeshDir && techMeshSimple && techMeshSimple2 && techMeshExplo && techParticle && techTrail && techSkybox && techTerrain && techArea
+		&& techGlowMesh && techGlowAni && techGrass);
 
 	hMeshCombined = eMesh->GetParameterByName(nullptr, "matCombined");
 	hMeshWorld = eMesh->GetParameterByName(nullptr, "matWorld");

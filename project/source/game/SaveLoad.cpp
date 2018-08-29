@@ -1456,7 +1456,7 @@ void Game::LoadStock(FileReader& f, vector<ItemSlot>& cnt)
 		{
 			int quest_refid;
 			f >> quest_refid;
-			QuestManager::Get().AddQuestItemRequest(&slot.item, BUF, quest_refid, &cnt);
+			QuestManager::Get().AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &cnt);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}

@@ -20,7 +20,7 @@ namespace io
 	// Check if file exists.
 	bool FileExists(cstring filename);
 	// Find files matching pattern, return false from func to stop.
-	bool FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func, bool exclude_special = true);
+	bool FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func);
 	// Call ShellExecute on file
 	void Execute(cstring file);
 	// get filename from path, returned string use same string as argument
