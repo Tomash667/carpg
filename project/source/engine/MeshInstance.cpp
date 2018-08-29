@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "EngineCore.h"
 #include "MeshInstance.h"
+#include "File.h"
 
 //---------------------------
 const int BLEND_TO_BIND_POSE = -1;

@@ -193,7 +193,7 @@ struct NetChange
 			};
 		};
 		float f[3];
-		VEC3P vec3;
+		POD::Vec3 vec3;
 		const Item* item2;
 	};
 	Vec3 pos;

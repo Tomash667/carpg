@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EngineCore.h"
+#include "File.h"
 #include "WindowsIncludes.h"
 #define far
 #define IN

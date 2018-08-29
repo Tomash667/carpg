@@ -2,6 +2,7 @@
 #include "Pch.h"
 #include "Core.h"
 #include "Config.h"
+#include "File.h"
 
 const int CONFIG_VERSION = 1;
 

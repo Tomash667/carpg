@@ -44,6 +44,11 @@ inline bool Int2::operator != (const Int2& i) const
 	return (x != i.x || y != i.y);
 }
 
+inline bool Int2::operator > (const Int2& i) const
+{
+	return x > i.x || y > i.y;
+}
+
 inline Int2& Int2::operator = (const Int2& i)
 {
 	x = i.x;
@@ -173,6 +178,38 @@ inline Int2 Int2::Min(const Int2& i1, const Int2& i2)
 	return Int2(min(i1.x, i2.x), min(i1.y, i2.y));
 }
 
+inline void Int2::MinMax(Int2& i1, Int2& i2)
+{
+	if(i1.x > i2.x)
+		std::swap(i1.x, i2.x);
+	if(i1.y > i2.y)
+		std::swap(i1.y, i2.y);
+}
+
+inline void Int2::MinMax(const Int2& i1, const Int2& i2, Int2& min, Int2& max)
+{
+	if(i1.x < i2.x)
+	{
+		min.x = i1.x;
+		max.x = i2.x;
+	}
+	else
+	{
+		min.x = i2.x;
+		max.x = i1.x;
+	}
+	if(i1.y < i2.y)
+	{
+		min.y = i1.y;
+		max.y = i2.y;
+	}
+	else
+	{
+		min.y = i2.y;
+		max.y = i1.y;
+	}
+}
+
 inline Int2 Int2::Random(const Int2& i1, const Int2& i2)
 {
 	return Int2(::Random(i1.x, i2.x), ::Random(i1.y, i2.y));
@@ -184,6 +221,10 @@ inline Int2 Int2::Random(const Int2& i1, const Int2& i2)
 //
 //*************************************************************************************************
 inline Rect::Rect()
+{
+}
+
+inline Rect::Rect(int x, int y) : p1(x, y), p2(x, y)
 {
 }
 
@@ -368,6 +409,11 @@ inline Rect Rect::Create(const Int2& pos, const Int2& size)
 	return box;
 }
 
+inline Rect Rect::Create(const Int2& pos, const Int2& size, int pad)
+{
+	return Rect(pos.x + pad, pos.y + pad, pos.x + size.x - pad, pos.y + size.y - pad);
+}
+
 inline Rect Rect::Intersect(const Rect& r1, const Rect& r2)
 {
 	Rect result;
@@ -389,6 +435,14 @@ inline bool Rect::Intersect(const Rect& r1, const Rect& r2, Rect& result)
 	}
 	else
 		return false;
+}
+
+inline bool Rect::IsInside(const Int2& pos, const Int2& size, const Int2& pt)
+{
+	return pt.x >= pos.x
+		&& pt.y >= pos.y
+		&& pt.x <= pos.x + size.x
+		&& pt.y <= pos.y + size.y;
 }
 
 //*************************************************************************************************
@@ -555,6 +609,11 @@ inline Vec2 Vec2::operator / (float s) const
 	Vec2 result;
 	XMStoreFloat2(&result, r);
 	return result;
+}
+
+inline Vec2 Vec2::operator / (const Int2& i) const
+{
+	return Vec2(x / i.x, y / i.y);
 }
 
 inline Vec2 operator * (float s, const Vec2& v)
@@ -1064,6 +1123,10 @@ inline Vec3::Vec3(const XMVECTORF32& v) : XMFLOAT3(v.f[0], v.f[1], v.f[2])
 {
 }
 
+inline Vec3::Vec3(const float* f) : XMFLOAT3(f[0], f[1], f[2])
+{
+}
+
 inline Vec3::operator XMVECTOR() const
 {
 	return XMLoadFloat3(this);
@@ -1297,6 +1360,21 @@ inline float Vec3::LengthSquared() const
 	XMVECTOR v1 = XMLoadFloat3(this);
 	XMVECTOR X = XMVector3LengthSq(v1);
 	return XMVectorGetX(X);
+}
+
+inline Vec3 Vec3::ModX(float value) const
+{
+	return Vec3(x + value, y, z);
+}
+
+inline Vec3 Vec3::ModY(float value) const
+{
+	return Vec3(x, y + value, z);
+}
+
+inline Vec3 Vec3::ModZ(float value) const
+{
+	return Vec3(x, y, z + value);
 }
 
 inline Vec3& Vec3::Normalize()
@@ -2378,6 +2456,17 @@ inline Vec2 Box2d::GetRandomPoint() const
 	return Vec2(::Random(v1.x, v2.x), ::Random(v1.y, v2.y));
 }
 
+inline Vec2 Box2d::GetRandomPoint(float offset) const
+{
+	assert(SizeX() >= offset * 2);
+	return Vec2(::Random(v1.x + offset, v2.x - offset), ::Random(v1.y + offset, v2.y - offset));
+}
+
+inline Box2d Box2d::Intersect(const Box2d& b) const
+{
+	return Intersect(*this, b);
+}
+
 inline bool Box2d::IsInside(const Vec2& v) const
 {
 	return v.x >= v1.x && v.y >= v1.y && v.x <= v2.x && v.y <= v2.y;
@@ -2418,6 +2507,34 @@ inline float Box2d::SizeY() const
 inline Vec2 Box2d::Size() const
 {
 	return Vec2(SizeX(), SizeY());
+}
+
+inline Box Box2d::ToBoxXZ(float y1, float y2) const
+{
+	return Box(v1.x, y1, v1.y, v2.x, y2, v2.y);
+}
+
+inline bool Box2d::Intersect(const Box2d& a, const Box2d& b, Box2d& result)
+{
+	float x = max(a.Left(), b.Left());
+	float x2 = min(a.Right(), b.Right());
+	float y = max(a.Top(), b.Top());
+	float y2 = min(a.Bottom(), b.Bottom());
+	if(x2 >= x && y2 >= y)
+	{
+		result = Box2d(x, y, x2, y2);
+		return true;
+	}
+	else
+		return false;
+}
+
+inline Box2d Box2d::Intersect(const Box2d& a, const Box2d& b)
+{
+	Box2d result;
+	if(!Intersect(a, b, result))
+		result = Box2d::Zero;
+	return result;
 }
 
 //*************************************************************************************************
@@ -2576,6 +2693,20 @@ inline float Box::SizeY() const
 inline float Box::SizeZ() const
 {
 	return abs(v2.z - v1.z);
+}
+
+//------------------------------------------------------------------------------
+// Static functions
+//------------------------------------------------------------------------------
+
+inline Box Box::Create(const Vec3& pos, const Vec3& size)
+{
+	return Box(pos, pos + size);
+}
+
+inline Box Box::CreateXZ(const Box2d& box2d, float y1, float y2)
+{
+	return Box(box2d.v1.x, y1, box2d.v1.y, box2d.v2.x, y2, box2d.v2.y);
 }
 
 //*************************************************************************************************
@@ -3154,6 +3285,16 @@ inline Matrix Matrix::CreateConstrainedBillboard(const Vec3& object, const Vec3&
 	Matrix R;
 	XMStoreFloat4x4(&R, M);
 	return R;
+}
+
+inline Matrix Matrix::CreateFromAxes(const Vec3& axisX, const Vec3& axisY, const Vec3& axisZ)
+{
+	return Matrix(
+		axisX.x, axisX.y, axisX.z, 0.0f,
+		axisY.x, axisY.y, axisY.z, 0.0f,
+		axisZ.x, axisZ.y, axisZ.z, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	);
 }
 
 inline Matrix Matrix::CreateFromAxisAngle(const Vec3& axis, float angle)

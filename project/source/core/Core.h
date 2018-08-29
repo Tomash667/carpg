@@ -15,10 +15,6 @@
 #define FLT100(x) (float(int((x)*100))/100)
 #define OR2_EQ(var,val1,val2) (((var) == (val1)) || ((var) == (val2)))
 #define OR3_EQ(var,val1,val2,val3) (((var) == (val1)) || ((var) == (val2)) || ((var) == (val3)))
-// makro na rozmiar tablicy
-template <typename T, size_t N>
-char(&_ArraySizeHelper(T(&array)[N]))[N];
-#define countof( array ) (sizeof( _ArraySizeHelper( array ) ))
 #define random_string(ss) ((cstring)((ss)[Rand()%countof(ss)]))
 #ifndef STRING
 #	define _STRING(str) #str
@@ -26,6 +22,10 @@ char(&_ArraySizeHelper(T(&array)[N]))[N];
 #endif
 #define _JOIN(a,b) a##b
 #define JOIN(a,b) _JOIN(a,b)
+
+//-----------------------------------------------------------------------------
+template<class T, size_t N>
+constexpr size_t countof(T(&)[N]) { return N; }
 
 //-----------------------------------------------------------------------------
 // Debugowanie
@@ -427,6 +427,17 @@ struct FileTime
 
 //-----------------------------------------------------------------------------
 class Buffer;
+class FileReader;
+class FileWriter;
+class MemoryReader;
+class MemoryWriter;
+class StreamReader;
+class StreamWriter;
+namespace tokenizer
+{
+	class Tokenizer;
+}
+using tokenizer::Tokenizer;
 
 //-----------------------------------------------------------------------------
 #include "Containers.h"
@@ -434,6 +445,3 @@ class Buffer;
 #include "Color.h"
 #include "Logger.h"
 #include "Text.h"
-#include "Tokenizer.h"
-#include "File.h"
-#include "Algorithm.h"

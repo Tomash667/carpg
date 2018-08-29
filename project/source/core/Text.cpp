@@ -467,3 +467,14 @@ void Replace(string& s, cstring in_chars, cstring out_chars)
 		}
 	}
 }
+
+//=================================================================================================
+void MakeDoubleZeroTerminated(char* dest, Cstring src)
+{
+	cstring s = src.s;
+	char c;
+	while((c = *s++) != 0)
+		*dest++ = c;
+	*dest++ = 0;
+	*dest = 0;
+}

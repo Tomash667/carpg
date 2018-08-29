@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "GameCore.h"
+#include "Tokenizer.h"
 #include "Content.h"
 #include "Spell.h"
 #include "Dialog.h"

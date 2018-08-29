@@ -116,7 +116,7 @@ struct ConsoleCommand
 	{
 		Vec2 _float;
 		Int2 _int;
-		UINT2 _uint;
+		POD::Uint2 _uint;
 	};
 	int flags;
 	VoidF changed;

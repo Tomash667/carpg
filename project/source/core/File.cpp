@@ -1,5 +1,6 @@
 #include "Pch.h"
 #include "Core.h"
+#include "File.h"
 #include "WindowsIncludes.h"
 #include <Shellapi.h>
 
@@ -241,12 +242,7 @@ bool io::DeleteDirectory(cstring dir)
 {
 	assert(dir);
 
-	char* s = BUF;
-	char c;
-	while((c = *dir++) != 0)
-		*s++ = c;
-	*s++ = 0;
-	*s = 0;
+	MakeDoubleZeroTerminated(BUF, dir);
 
 	SHFILEOPSTRUCT op = {
 		nullptr,
