@@ -54,6 +54,7 @@ public:
 
 	bool IsOk() const { return ok; }
 	operator bool() const { return IsOk(); }
+	const string& GetStringBuffer() const { return buf; }
 
 	bool Ensure(uint elements_size) const
 	{
@@ -95,10 +96,10 @@ public:
 		a = (T2)Read<T>();
 	}
 
-	template<typename SizeType>
+	template<typename LengthType>
 	const string& ReadString()
 	{
-		SizeType len = Read<SizeType>();
+		LengthType len = Read<LengthType>();
 		if(!ok || len == 0)
 			buf.clear();
 		else
@@ -121,10 +122,10 @@ public:
 		return ReadString<uint>();
 	}
 
-	template<typename SizeType>
+	template<typename LengthType>
 	void ReadString(string& s)
 	{
-		SizeType len = Read<SizeType>();
+		LengthType len = Read<LengthType>();
 		if(!ok || len == 0)
 			s.clear();
 		else
@@ -181,6 +182,27 @@ public:
 	{
 		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		Skip(sizeof(T));
+	}
+	template<typename LengthType>
+	void SkipString()
+	{
+		LengthType len = Read<LengthType>();
+		if(!ok || len == 0)
+			return;
+		Skip(len);
+	}
+	void SkipString1()
+	{
+		SkipString<byte>();
+	}
+	template<typename CountType, typename LengthType>
+	void SkipStringArray()
+	{
+		CountType count = Read<CountType>();
+		if(!ok || count == 0)
+			return;
+		for(CountType i = 0; i < count; ++i)
+			SkipString<LengthType>();
 	}
 
 	bool Read0()

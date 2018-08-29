@@ -1689,9 +1689,9 @@ public:
 	void WriteServerChanges(BitStreamWriter& f);
 	void WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info);
 	void UpdateClient(float dt);
-	bool ProcessControlMessageClient(BitStream& stream, bool& exit_from_server);
-	bool ProcessControlMessageClientForMe(BitStream& stream);
-	void WriteClientChanges(BitStream& stream);
+	bool ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server);
+	bool ProcessControlMessageClientForMe(BitStreamReader& f);
+	void WriteClientChanges(BitStreamWriter& f);
 	void Client_Say(BitStreamReader& f);
 	void Client_Whisper(BitStreamReader& f);
 	void Client_ServerSay(BitStreamReader& f);
