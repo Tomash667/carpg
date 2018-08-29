@@ -3,6 +3,7 @@
 using namespace DirectX;
 
 //-----------------------------------------------------------------------------
+// Declarations
 struct Int2;
 struct Rect;
 struct Vec2;
@@ -17,50 +18,33 @@ struct Quat;
 struct Plane;
 
 //-----------------------------------------------------------------------------
+// Global constants
+const float PI = 3.14159265358979323846f;
+const float SQRT_2 = 1.41421356237f;
+const float G = 9.8105f;
+const float MAX_ANGLE = PI - FLT_EPSILON;
+
+//-----------------------------------------------------------------------------
 // Random numbers
 //-----------------------------------------------------------------------------
-// Pseudo random number generator
-struct RNG
+namespace internal
 {
-	unsigned long val;
-
-	RNG() : val(1)
-	{
-	}
-
-	int Rand()
-	{
-		val = val * 214013L + 2531011L;
-		return ((val >> 16) & 0x7fff);
-	}
-
-	int RandTmp()
-	{
-		int tval = val * 214013L + 2531011L;
-		return ((tval >> 16) & 0x7fff);
-	}
+	extern std::minstd_rand rng;
 };
-extern RNG _RNG;
 
+void Srand();
+inline void Srand(uint seed)
+{
+	internal::rng.seed(seed);
+}
+int RandVal();
 inline int Rand()
 {
-	return _RNG.Rand();
+	return internal::rng();
 }
 inline int Rand(int a)
 {
-	return _RNG.Rand() % a;
-}
-inline void Srand(int x)
-{
-	_RNG.val = x;
-}
-inline uint RandVal()
-{
-	return _RNG.val;
-}
-inline int RandTmp()
-{
-	return _RNG.RandTmp();
+	return Rand() % a;
 }
 inline int MyRand(int a)
 {
@@ -70,7 +54,7 @@ inline int MyRand(int a)
 // Random float number in range <0,1>
 inline float Random()
 {
-	return (float)Rand() / RAND_MAX;
+	return (float)Rand() / internal::rng.max();
 }
 
 // Random number in range <0,a>
@@ -84,7 +68,25 @@ inline T Random(T a)
 template<>
 inline float Random(float a)
 {
-	return ((float)Rand() / RAND_MAX)*a;
+	return ((float)Rand() / internal::rng.max())*a;
+}
+
+inline int RandomNormal(int a)
+{
+	assert(a > 0);
+	std::binomial_distribution<> r(a);
+	return r(internal::rng);
+}
+inline int RandomNormal(int a, int b)
+{
+	if(a == b)
+		return a;
+	else
+	{
+		assert(b > a);
+		std::binomial_distribution<> r(b - a);
+		return a + r(internal::rng);
+	}
 }
 
 // Random number in range <a,b>
@@ -99,7 +101,7 @@ template<>
 inline float Random(float a, float b)
 {
 	assert(b >= a);
-	return ((float)Rand() / RAND_MAX)*(b - a) + a;
+	return ((float)Rand() / internal::rng.max())*(b - a) + a;
 }
 
 inline float RandomPart(int parts)
@@ -266,6 +268,11 @@ inline bool NotZero(float a)
 inline bool IsZero(float a)
 {
 	return abs(a) < std::numeric_limits<float>::epsilon();
+}
+
+inline bool AlmostZero(float f)
+{
+	return (absolute_cast<unsigned>(f) & 0x7f800000L) == 0;
 }
 
 // Return sign of value

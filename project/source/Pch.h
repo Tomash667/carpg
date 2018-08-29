@@ -39,7 +39,6 @@
 #include <limits>
 #include <string>
 #include <fstream>
-#include <algorithm>
 #ifndef COMMON_ONLY
 #	include <btBulletCollisionCommon.h>
 #	include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
@@ -50,6 +49,7 @@
 #include <unordered_set>
 #include <functional>
 #include <queue>
+#include <random>
 #include <DirectXMath.h>
 
 //-----------------------------------------------------------------------------

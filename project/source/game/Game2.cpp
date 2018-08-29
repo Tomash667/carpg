@@ -10778,7 +10778,7 @@ void Game::ChangeLevel(int where)
 		game_gui->visible = true;
 	}
 
-	Info("Randomness integrity: %d", RandTmp());
+	Info("Randomness integrity: %d", RandVal());
 }
 
 void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon)

@@ -1,13 +1,6 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Sta³e
-const float PI = 3.14159265358979323846f;
-const float SQRT_2 = 1.41421356237f;
-const float G = 9.8105f;
-const float MAX_ANGLE = PI - FLT_EPSILON;
-
-//-----------------------------------------------------------------------------
 // Makra
 #undef NULL
 #define BIT(bit) (1<<(bit))

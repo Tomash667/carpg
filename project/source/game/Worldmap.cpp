@@ -436,7 +436,7 @@ void Game::GenerateWorld()
 #endif
 	world_pos = locations[current_location]->pos;
 
-	Info("Randomness integrity: %d", RandTmp());
+	Info("Randomness integrity: %d", RandVal());
 }
 
 void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool required)
@@ -1476,7 +1476,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		OnEnterLocation();
 	}
 
-	Info("Randomness integrity: %d", RandTmp());
+	Info("Randomness integrity: %d", RandVal());
 	Info("Entered location.");
 
 	return true;

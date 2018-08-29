@@ -1,10 +1,6 @@
 #include "Pch.h"
 #include "Core.h"
 
-RNG _RNG;
-
-#define FLOAT_ALMOST_ZERO(F) ((absolute_cast<unsigned>(F) & 0x7f800000L) == 0)
-
 const Int2 Int2::Zero = { 0,0 };
 
 const Rect Rect::Zero = { 0,0,0,0 };
@@ -41,6 +37,37 @@ const Matrix Matrix::IdentityMatrix = {
 };
 
 const Quat Quat::Identity = { 0.f, 0.f, 0.f, 1.f };
+
+//=================================================================================================
+// Random number generator
+//=================================================================================================
+std::minstd_rand internal::rng;
+
+struct OStreamGetter final : std::ostream
+{
+	OStreamGetter() : std::ostream(std::_Noinit, false) {}
+
+	void operator << (uint a)
+	{
+		this->a = a;
+	}
+
+	uint a;
+};
+
+int RandVal()
+{
+	// ugly hack
+	static_assert(sizeof(internal::rng) == sizeof(uint), "Failed to get random seed, implementation changed.");
+	uint seed = *(uint*)&internal::rng;
+	return (int)seed;
+}
+
+void Srand()
+{
+	std::random_device rdev;
+	internal::rng.seed(rdev());
+}
 
 //=================================================================================================
 // Zwraca k¹t pomiêdzy dwoma punktami
@@ -281,7 +308,7 @@ bool Plane::Intersect3Planes(const Plane& P1, const Plane& P2, const Plane& P3, 
 
 	fDet = MN[0] * IMN[0] + MN[1] * IMN[3] + MN[2] * IMN[6];
 
-	if(FLOAT_ALMOST_ZERO(fDet))
+	if(AlmostZero(fDet))
 		return false;
 
 	IMN[1] = -(MN[1] * MN[8] - MN[2] * MN[7]);
@@ -569,7 +596,7 @@ bool RayToTriangle(const Vec3& _ray_pos, const Vec3& _ray_dir, const Vec3& _v1, 
 	float det = edge1.Dot(pvec);
 	//if (BackfaceCulling && det < 0.0f)
 	//	return false;
-	if(FLOAT_ALMOST_ZERO(det))
+	if(AlmostZero(det))
 		return false;
 	float inv_det = 1.0f / det;
 

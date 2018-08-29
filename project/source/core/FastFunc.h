@@ -12,8 +12,6 @@
 
 #ifdef _MSC_VER
 
-#define constexpr const
-//#include <yvals.h>
 #define noexcept //_NOEXCEPT
 
 namespace ssvu
