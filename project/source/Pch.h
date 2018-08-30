@@ -11,7 +11,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #define STRICT
-#define _WINSOCKAPI_ 
+#define _WINSOCKAPI_
 
 //-----------------------------------------------------------------------------
 // warning o liœcie inicjalizacyjnej [struct C { C() : elem() {} int elem[10]; ]
@@ -38,7 +38,6 @@
 #include <algorithm>
 #include <limits>
 #include <string>
-#include <fstream>
 #ifndef COMMON_ONLY
 #	include <btBulletCollisionCommon.h>
 #	include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>

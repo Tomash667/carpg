@@ -23,4 +23,3 @@ struct VertexData : Resource
 
 	bool RayToMesh(const Vec3& ray_pos, const Vec3& ray_dir, const Vec3& obj_pos, float obj_rot, float& out_dist) const;
 };
-typedef VertexData* VertexDataPtr;

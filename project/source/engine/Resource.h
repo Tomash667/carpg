@@ -47,7 +47,6 @@ struct Texture : public Resource
 	{
 	}
 };
-typedef Texture* TexturePtr;
 
 //-----------------------------------------------------------------------------
 struct Sound : public Resource
@@ -59,7 +58,6 @@ struct Sound : public Resource
 	{
 	}
 };
-typedef Sound* SoundPtr;
 
 //-----------------------------------------------------------------------------
 // Texture override data
@@ -75,7 +73,3 @@ struct TexId
 	}
 	explicit TexId(const string& id) : id(id), tex(nullptr) {}
 };
-
-//-----------------------------------------------------------------------------
-typedef Mesh* MeshPtr;
-typedef VertexData* VertexDataPtr;

@@ -159,7 +159,7 @@ RoomType* BaseLocation::GetRandomRoomType() const
 
 	int total = 0, co = Rand() % room_total;
 
-	for(int i = 0; i < room_count; ++i)
+	for(uint i = 0; i < room_count; ++i)
 	{
 		total += rooms[i].chance;
 		if(co < total)

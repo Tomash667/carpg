@@ -5,17 +5,25 @@
 
 // Engine types
 struct Font;
-struct Mesh;
 struct MeshInstance;
 struct ParticleEmitter;
-struct Resource;
-struct Sound;
 struct StartupOptions;
 struct Terrain;
 struct TrailParticleEmitter;
 class Engine;
 class ResourceManager;
 class SoundManager;
+
+// Resource types
+struct Mesh;
+struct Resource;
+struct Sound;
+struct Texture;
+struct VertexData;
+typedef Mesh* MeshPtr;
+typedef Sound* SoundPtr;
+typedef Texture* TexturePtr;
+typedef VertexData* VertexDataPtr;
 
 // Gui types
 class DialogBox;

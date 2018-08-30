@@ -573,6 +573,10 @@ public:
 		return file.IsOpen();
 	}
 
+	void Flush()
+	{
+		file.Flush();
+	}
 	void Write(cstring str)
 	{
 		file.Write(str, strlen(str));

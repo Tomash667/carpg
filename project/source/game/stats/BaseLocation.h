@@ -142,7 +142,7 @@ struct BaseLocation
 	Vec2 fog_range, fog_range_lvl;
 	float draw_range, draw_range_lvl;
 	RoomStrChance* rooms;
-	int room_count, room_total;
+	uint room_count, room_total;
 	int door_chance, door_open, bars_chance;
 	SPAWN_GROUP sg1, sg2, sg3;
 	int schance1, schance2, schance3;

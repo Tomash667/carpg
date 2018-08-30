@@ -1,6 +1,8 @@
 #include "Pch.h"
 #include "Core.h"
+#include "File.h"
 
+//-----------------------------------------------------------------------------
 Logger* Logger::global;
 const cstring Logger::level_names[4] = {
 	"INFO ",
@@ -18,9 +20,10 @@ void Logger::Log(Level level, cstring msg)
 	Log(level, msg, tm);
 }
 
+//-----------------------------------------------------------------------------
 ConsoleLogger::~ConsoleLogger()
 {
-	Info("*** End of log.");
+	printf("*** End of log.");
 }
 
 void ConsoleLogger::Log(Level level, cstring text, const tm& time)
@@ -29,27 +32,30 @@ void ConsoleLogger::Log(Level level, cstring text, const tm& time)
 	fflush(stdout);
 }
 
+//-----------------------------------------------------------------------------
 TextLogger::TextLogger(cstring filename) : path(filename)
 {
 	assert(filename);
-	out.open(filename);
+	writer = new TextWriter(filename);
 }
 
 TextLogger::~TextLogger()
 {
-	Info("*** End of log.");
+	*writer << "*** End of log.";
+	delete writer;
 }
 
 void TextLogger::Log(Level level, cstring text, const tm& time)
 {
-	out << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, level_names[level], text);
+	*writer << Format("%02d:%02d:%02d %s - %s\n", time.tm_hour, time.tm_min, time.tm_sec, level_names[level], text);
 }
 
 void TextLogger::Flush()
 {
-	out.flush();
+	writer->Flush();
 }
 
+//-----------------------------------------------------------------------------
 MultiLogger::~MultiLogger()
 {
 	DeleteElements(loggers);
@@ -67,6 +73,7 @@ void MultiLogger::Flush()
 		logger->Flush();
 }
 
+//-----------------------------------------------------------------------------
 void PreLogger::Apply(Logger* logger)
 {
 	assert(logger);

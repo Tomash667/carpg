@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Makra
+// Macros
 #undef NULL
 #define BIT(bit) (1<<(bit))
 #define IS_SET(flaga,bit) (((flaga) & (bit)) != 0)
@@ -28,7 +28,7 @@ template<class T, size_t N>
 constexpr size_t countof(T(&)[N]) { return N; }
 
 //-----------------------------------------------------------------------------
-// Debugowanie
+// Debug helpers
 #ifdef _DEBUG
 #	define DEBUG_DO(x) (x)
 #	define C(x) assert(x)
@@ -46,7 +46,7 @@ constexpr size_t countof(T(&)[N]) { return N; }
 #endif
 
 //-----------------------------------------------------------------------------
-// Typy zmiennych
+// Core variable types
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef unsigned int uint;
@@ -55,32 +55,29 @@ typedef unsigned __int64 uint64;
 typedef const char* cstring;
 
 //-----------------------------------------------------------------------------
-// Inne typy
-struct Mesh;
-struct MeshInstance;
-struct VertexData;
+// Forward declarations
+class Buffer;
+class FileReader;
+class FileWriter;
+class MemoryReader;
+class MemoryWriter;
+class StreamReader;
+class StreamWriter;
+class TextWriter;
+namespace tokenizer
+{
+	class Tokenizer;
+}
+using tokenizer::Tokenizer;
 
 //-----------------------------------------------------------------------------
 // Delegates
 #include "FastFunc.h"
-
 template<typename T>
 using delegate = ssvu::FastFunc<T>;
 typedef delegate<void()> VoidDelegate;
 typedef delegate<void()> VoidF;
 typedef delegate<void(cstring)> PrintMsgFunc;
-
-//-----------------------------------------------------------------------------
-// funkcja do zwalniania obiektów directx
-template<typename T>
-inline void SafeRelease(T& x)
-{
-	if(x)
-	{
-		x->Release();
-		x = nullptr;
-	}
-}
 
 //-----------------------------------------------------------------------------
 // Allocators
@@ -424,20 +421,6 @@ struct FileTime
 		return !operator ==(file_time);
 	}
 };
-
-//-----------------------------------------------------------------------------
-class Buffer;
-class FileReader;
-class FileWriter;
-class MemoryReader;
-class MemoryWriter;
-class StreamReader;
-class StreamWriter;
-namespace tokenizer
-{
-	class Tokenizer;
-}
-using tokenizer::Tokenizer;
 
 //-----------------------------------------------------------------------------
 #include "Containers.h"

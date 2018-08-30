@@ -351,7 +351,7 @@ cstring Escape(Cstring str, string& out, char quote)
 cstring EscapeChar(char c)
 {
 	char* out = format_buf[format_marker];
-	for(int i = 0; i < countof(escape_from); ++i)
+	for(uint i = 0; i < countof(escape_from); ++i)
 	{
 		if(c == escape_from[i])
 		{

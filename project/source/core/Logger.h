@@ -76,7 +76,7 @@ protected:
 // Logger to text file
 class TextLogger : public Logger
 {
-	std::ofstream out;
+	TextWriter* writer;
 	string path;
 
 public:

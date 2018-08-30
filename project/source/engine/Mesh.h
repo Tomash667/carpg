@@ -182,4 +182,3 @@ struct Mesh : public Resource
 	vector<BoneGroup> groups;
 	vector<Split> splits;
 };
-typedef Mesh* MeshPtr;

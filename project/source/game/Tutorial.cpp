@@ -214,7 +214,7 @@ void Game::StartTutorial()
 
 	// pokoje
 	lvl.rooms.resize(countof(t_rooms));
-	for(int i = 0; i < countof(t_rooms); ++i)
+	for(uint i = 0; i < countof(t_rooms); ++i)
 	{
 		RoomInfo& info = t_rooms[i];
 		Room& r = lvl.rooms[i];

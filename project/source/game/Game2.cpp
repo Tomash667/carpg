@@ -5126,7 +5126,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			cstring plotka;
 			do
 			{
-				int co = Rand() % ile;
+				uint co = Rand() % ile;
 				if(co < countof(txRumor))
 					plotka = txRumor[co];
 				else
@@ -10983,7 +10983,7 @@ void Game::SetRoomPointers()
 		if(base.rooms)
 		{
 			base.room_total = 0;
-			for(int j = 0; j < base.room_count; ++j)
+			for(uint j = 0; j < base.room_count; ++j)
 			{
 				base.rooms[j].room = FindRoomType(base.rooms[j].id);
 				base.room_total += base.rooms[j].chance;
@@ -18035,13 +18035,13 @@ bool Game::GenerateMine()
 			Int2(4,2),
 			Int2(2,4)
 		};
-		for(int i = 0; i < countof(p_blokady); ++i)
+		for(uint i = 0; i < countof(p_blokady); ++i)
 		{
 			Pole& p = lvl.map[(pt + p_blokady[i])(lvl.w)];
 			p.type = BLOKADA;
 			p.flags = 0;
 		}
-		for(int i = 0; i < countof(p_zajete); ++i)
+		for(uint i = 0; i < countof(p_zajete); ++i)
 		{
 			Pole& p = lvl.map[(pt + p_zajete[i])(lvl.w)];
 			p.type = ZAJETE;
@@ -18169,12 +18169,12 @@ bool Game::GenerateMine()
 		}
 
 		// ustaw œciany
-		for(int i = 0; i < countof(p_blokady); ++i)
+		for(uint i = 0; i < countof(p_blokady); ++i)
 		{
 			Pole& p = lvl.map[(pt + p_blokady[i])(lvl.w)];
 			p.type = SCIANA;
 		}
-		for(int i = 0; i < countof(p_zajete); ++i)
+		for(uint i = 0; i < countof(p_zajete); ++i)
 		{
 			Pole& p = lvl.map[(pt + p_zajete[i])(lvl.w)];
 			p.type = SCIANA;

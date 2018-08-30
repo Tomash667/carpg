@@ -2035,7 +2035,7 @@ void Game::SetStatsText()
 //=================================================================================================
 void Game::SetGameText()
 {
-#define LOAD_ARRAY(var, str) for(int i=0; i<countof(var); ++i) var[i] = Str(Format(str "%d", i))
+#define LOAD_ARRAY(var, str) for(uint i=0; i<countof(var); ++i) var[i] = Str(Format(str "%d", i))
 
 	txGoldPlus = Str("goldPlus");
 	txQuestCompletedGold = Str("questCompletedGold");
