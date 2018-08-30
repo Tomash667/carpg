@@ -10,6 +10,7 @@
 #include "GameGui.h"
 #include "SoundManager.h"
 #include "GameFile.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_BanditsCollectToll::Start()
@@ -46,7 +47,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 	case Progress::Started:
 		// quest accepted
 		{
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 			name = game->txQuest[51];
 
@@ -69,7 +70,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
-			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[53], sl.name.c_str(), ol.name.c_str(), GetLocationDirName(sl.pos, ol.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -141,7 +142,7 @@ cstring Quest_BanditsCollectToll::FormatString(const string& str)
 //=================================================================================================
 bool Quest_BanditsCollectToll::IsTimedout() const
 {
-	return game->worldtime - start_time > 15;
+	return W.GetWorldtime() - start_time > 15;
 }
 
 //=================================================================================================

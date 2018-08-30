@@ -109,7 +109,7 @@ struct NetChange
 		ENTER_LOCATION, // enter current location []
 		TRAVEL, // leader wants to travel to location [byte(id)-location index]
 		END_TRAVEL, // leader finished travel []
-		WORLD_TIME, // change world time [auto: int-worldtime, byte-day, byte-month, byte-year]
+		WORLD_TIME, // change world time [auto: int-worldtime, byte-day, byte-month, int-year]
 		USE_DOOR, // someone open/close door [int(id)-door netid, bool(ile)-is closing]
 		CREATE_EXPLOSION, // create explosion effect [string1(spell->id), Vec3(pos)]
 		REMOVE_TRAP, // remove trap [int(id)-trap netid]

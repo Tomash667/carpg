@@ -8,6 +8,7 @@
 #include "QuestManager.h"
 #include "GameGui.h"
 #include "GameFile.h"
+#include "World.h"
 
 //-----------------------------------------------------------------------------
 bool SortEntries(const Quest_SpreadNews::Entry& e1, const Quest_SpreadNews::Entry& e2)
@@ -87,7 +88,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		// told info to spread by player
 		{
 			prog = Progress::Started;
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 
 			quest_index = quest_manager.quests.size();
@@ -98,7 +99,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			Location& loc = *game->locations[start_loc];
 			bool is_city = LocationHelper::IsCity(loc);
 			name = game->txQuest[213];
-			msgs.push_back(Format(game->txQuest[3], is_city ? game->txForMayor : game->txForSoltys, loc.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[3], is_city ? game->txForMayor : game->txForSoltys, loc.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[17], Upper(is_city ? game->txForMayor : game->txForSoltys), loc.name.c_str(), FormatString("targets")));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -207,7 +208,7 @@ cstring Quest_SpreadNews::FormatString(const string& str)
 //=================================================================================================
 bool Quest_SpreadNews::IsTimedout() const
 {
-	return game->worldtime - start_time > 60 && prog < Progress::Deliver;
+	return W.GetWorldtime() - start_time > 60 && prog < Progress::Deliver;
 }
 
 //=================================================================================================

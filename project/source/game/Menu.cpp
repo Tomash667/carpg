@@ -29,6 +29,7 @@
 #include "SoundManager.h"
 #include "BitStreamFunc.h"
 #include "Portal.h"
+#include "EntityInterpolator.h"
 
 extern string g_ctime;
 
@@ -1606,7 +1607,7 @@ void Game::UpdateServerTransfer(float dt)
 			}
 			u->player->dialog_ctx->dialog_mode = false;
 			u->player->dialog_ctx->pc = u->player;
-			u->interp = interpolators.Get();
+			u->interp = EntityInterpolator::Pool.Get();
 			u->interp->Reset(u->pos, u->rot);
 		}
 

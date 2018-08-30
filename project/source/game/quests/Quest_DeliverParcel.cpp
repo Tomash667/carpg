@@ -9,6 +9,7 @@
 #include "Encounter.h"
 #include "GameGui.h"
 #include "GameFile.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_DeliverParcel::Start()
@@ -54,7 +55,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			parcel.refid = refid;
 			game->current_dialog->pc->unit->AddItem(&parcel, 1, true);
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 			name = game->txQuest[9];
 
@@ -64,8 +65,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			quest_manager.quests_timeout2.push_back(this);
 
 			Location& loc2 = *game->locations[start_loc];
-			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(),
-				game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[10], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
 				GetLocationDirName(loc2.pos, loc.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -228,7 +228,7 @@ cstring Quest_DeliverParcel::FormatString(const string& str)
 //=================================================================================================
 bool Quest_DeliverParcel::IsTimedout() const
 {
-	return game->worldtime - start_time > 15;
+	return W.GetWorldtime() - start_time > 15;
 }
 
 //=================================================================================================
@@ -248,7 +248,7 @@ bool Quest_DeliverParcel::OnTimeout(TimeoutType ttype)
 bool Quest_DeliverParcel::IfSpecial(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_deliver_parcel_after") == 0)
-		return game->worldtime - start_time < 30 && Rand() % 2 == 0;
+		return W.GetWorldtime() - start_time < 30 && Rand() % 2 == 0;
 	else
 	{
 		assert(0);

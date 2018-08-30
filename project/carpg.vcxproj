@@ -210,6 +210,7 @@
     <ClInclude Include="source\game\GameCore.h" />
     <ClInclude Include="source\game\GameStats.h" />
     <ClInclude Include="source\game\net\BitStreamFunc.h" />
+    <ClInclude Include="source\game\net\EntityInterpolator.h" />
     <ClInclude Include="source\game\net\GamePacket.h" />
     <ClInclude Include="source\game\net\NetChange.h" />
     <ClInclude Include="source\game\net\NetChangePlayer.h" />
@@ -349,6 +350,7 @@
     <ClInclude Include="source\game\system\UnitGroup.h" />
     <ClInclude Include="source\game\Team.h" />
     <ClInclude Include="source\game\TerrainTile.h" />
+    <ClInclude Include="source\game\World.h" />
     <ClInclude Include="source\Pch.h" />
     <ClInclude Include="source\resource\resource1.h" />
     <ClInclude Include="source\Utility.h" />
@@ -423,6 +425,7 @@
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
     <ClCompile Include="source\game\net\BitStreamFunc.cpp" />
+    <ClCompile Include="source\game\net\EntityInterpolator.cpp" />
     <ClCompile Include="source\game\net\PlayerInfo.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
@@ -559,6 +562,7 @@
     <ClCompile Include="source\game\TerrainTile.cpp" />
     <ClCompile Include="source\game\Tournament.cpp" />
     <ClCompile Include="source\game\Tutorial.cpp" />
+    <ClCompile Include="source\game\World.cpp" />
     <ClCompile Include="source\game\Worldmap.cpp" />
     <ClCompile Include="source\game\Worldstate.cpp" />
     <ClCompile Include="source\Main.cpp" />

@@ -28,6 +28,8 @@
 #include "SoundManager.h"
 #include "ScriptManager.h"
 #include "Portal.h"
+#include "EntityInterpolator.h"
+#include "World.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -1628,7 +1630,7 @@ bool Game::ReadUnit(BitStreamReader& f, Unit& unit)
 	unit.timer = 0.f;
 	unit.to_remove = false;
 	unit.bubble = nullptr;
-	unit.interp = interpolators.Get();
+	unit.interp = EntityInterpolator::Pool.Get();
 	unit.interp->Reset(unit.pos, unit.rot);
 	unit.visual_pos = unit.pos;
 	unit.animation_state = 0;
@@ -5060,10 +5062,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f.WriteCasted<char>(c.unit->in_arena);
 			break;
 		case NetChange::WORLD_TIME:
-			f << worldtime;
-			f.WriteCasted<byte>(day);
-			f.WriteCasted<byte>(month);
-			f.WriteCasted<byte>(year);
+			W.WriteTime(f);
 			break;
 		case NetChange::USE_DOOR:
 			f << c.id;
@@ -7006,23 +7005,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			break;
 		// change world time
 		case NetChange::WORLD_TIME:
-			{
-				int new_worldtime;
-				byte new_day, new_month, new_year;
-				f >> new_worldtime;
-				f >> new_day;
-				f >> new_month;
-				f >> new_year;
-				if(!f)
-					StreamError("Update client: Broken WORLD_TIME.");
-				else
-				{
-					worldtime = new_worldtime;
-					day = new_day;
-					month = new_month;
-					year = new_year;
-				}
-			}
+			W.ReadTime(f);
+			if(!f)
+				StreamError("Update client: Broken WORLD_TIME.");
 			break;
 		// someone open/close door
 		case NetChange::USE_DOOR:
@@ -9670,10 +9655,7 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 	f.WriteStringArray<byte, word>(game_gui->journal->GetRumors());
 
 	// time
-	f.WriteCasted<byte>(year);
-	f.WriteCasted<byte>(month);
-	f.WriteCasted<byte>(day);
-	f << worldtime;
+	W.WriteTime(f);
 
 	// stats
 	GameStats::Get().Write(f);
@@ -9856,10 +9838,7 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	}
 
 	// time
-	f.ReadCasted<byte>(year);
-	f.ReadCasted<byte>(month);
-	f.ReadCasted<byte>(day);
-	f >> worldtime;
+	W.ReadTime(f);
 	GameStats::Get().Read(f);
 	if(!f)
 	{
@@ -10037,28 +10016,6 @@ void Game::InterpolatePlayers(float dt)
 		if(info->id != my_id && info->left == PlayerInfo::LEFT_NO)
 			UpdateInterpolator(info->u->interp, dt, info->u->visual_pos, info->u->rot);
 	}
-}
-
-//=================================================================================================
-void EntityInterpolator::Reset(const Vec3& pos, float rot)
-{
-	valid_entries = 1;
-	entries[0].pos = pos;
-	entries[0].rot = rot;
-	entries[0].timer = 0.f;
-}
-
-//=================================================================================================
-void EntityInterpolator::Add(const Vec3& pos, float rot)
-{
-	for(int i = MAX_ENTRIES - 1; i > 0; --i)
-		entries[i] = entries[i - 1];
-
-	entries[0].pos = pos;
-	entries[0].rot = rot;
-	entries[0].timer = 0.f;
-
-	valid_entries = min(valid_entries + 1, MAX_ENTRIES);
 }
 
 //=================================================================================================

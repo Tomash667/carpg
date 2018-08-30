@@ -51,7 +51,9 @@ struct City : public OutsideLocation
 	};
 
 	SettlementType settlement_type;
-	int citizens, citizens_world, quest_mayor_time, quest_captain_time, arena_time, gates, flags, variant;
+	int citizens, citizens_world, quest_mayor_time, quest_captain_time,
+		arena_time, // last arena combat worldtime or -1
+		gates, flags, variant;
 	CityQuestState quest_mayor, quest_captain;
 	vector<CityBuilding> buildings; // when visited this contain buildings to spawn (only type), after entering it is fully filled
 	vector<InsideBuilding*> inside_buildings;

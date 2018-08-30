@@ -233,28 +233,6 @@ struct TutorialText
 
 typedef delegate<void(cstring)> PrintMsgFunc;
 
-struct EntityInterpolator
-{
-	static const int MAX_ENTRIES = 4;
-	struct Entry
-	{
-		Vec3 pos;
-		float rot;
-		float timer;
-
-		void operator = (const Entry& e)
-		{
-			pos = e.pos;
-			rot = e.rot;
-			timer = e.timer;
-		}
-	} entries[MAX_ENTRIES];
-	int valid_entries;
-
-	void Reset(const Vec3& pos, float rot);
-	void Add(const Vec3& pos, float rot);
-};
-
 const float UNIT_VIEW_A = 0.2f;
 const float UNIT_VIEW_B = 0.4f;
 const int UNIT_VIEW_MUL = 5;
@@ -1646,7 +1624,6 @@ public:
 	bool boss_level_mp; // u¿ywane u klienta zamiast boss_levels
 	bool mp_load, mp_load_worldmap, mp_use_interp;
 	float mp_interp;
-	ObjectPool<EntityInterpolator> interpolators;
 	float interpolate_timer;
 	int mp_port;
 	bool paused, pick_autojoin;
@@ -2027,11 +2004,6 @@ public:
 		WPM_SKIP
 	};
 	void WorldProgress(int days, WorldProgressMode mode);
-
-	int year; // rok w grze [zaczyna siê od 100, ustawiane w NewGame]
-	int month; // miesi¹c w grze [od 0 do 11, ustawiane w NewGame]
-	int day; // dzieñ w grze [od 0 do 29, ustawiane w NewGame]
-	int worldtime; // licznik dni [od 0, ustawiane w NewGame]
 
 	Config cfg;
 	void SaveCfg();

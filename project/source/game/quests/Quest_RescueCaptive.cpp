@@ -11,6 +11,7 @@
 #include "AIController.h"
 #include "SaveState.h"
 #include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_RescueCaptive::Start()
@@ -68,12 +69,12 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			unit_event_handler = this;
 			send_spawn_event = true;
 
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 			name = game->txQuest[28];
 			captive = nullptr;
 
-			msgs.push_back(Format(game->txQuest[29], loc.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[29], loc.name.c_str(), W.GetDate()));
 
 			cstring co;
 			switch(group)
@@ -344,7 +345,7 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 //=================================================================================================
 bool Quest_RescueCaptive::IsTimedout() const
 {
-	return game->worldtime - start_time > 30;
+	return W.GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================

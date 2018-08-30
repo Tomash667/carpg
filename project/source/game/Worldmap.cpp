@@ -31,6 +31,7 @@
 #include "Stock.h"
 #include "UnitGroup.h"
 #include "Portal.h"
+#include "World.h"
 #include "DirectX.h"
 
 extern const float TRAVEL_SPEED = 28.f;
@@ -749,7 +750,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		else if(!reenter)
 		{
 			steps += 2; // txGeneratingUnits, txGeneratingPhysics
-			if(l.last_visit != worldtime)
+			if(l.last_visit != W.GetWorldtime())
 				++steps; // txGeneratingItems
 		}
 		if(!reenter)
@@ -921,7 +922,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 				// usuwanie krwii/zw³ok
 				int days;
-				city->CheckUpdate(days, worldtime);
+				city->CheckUpdate(days, W.GetWorldtime());
 				if(days > 0)
 					UpdateLocation(days, 100, false);
 
@@ -1019,7 +1020,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				ApplyContext(forest, local_ctx);
 
 			int days;
-			bool need_reset = forest->CheckUpdate(days, worldtime);
+			bool need_reset = forest->CheckUpdate(days, W.GetWorldtime());
 
 			// ustaw teren
 			if(!reenter)
@@ -1241,7 +1242,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				ApplyContext(camp, local_ctx);
 
 			int days;
-			camp->CheckUpdate(days, worldtime);
+			camp->CheckUpdate(days, W.GetWorldtime());
 
 			// ustaw teren
 			if(!reenter)
@@ -1338,7 +1339,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				ApplyContext(forest, local_ctx);
 
 			int days;
-			bool need_reset = forest->CheckUpdate(days, worldtime);
+			bool need_reset = forest->CheckUpdate(days, W.GetWorldtime());
 
 			// ustaw teren
 			if(!reenter)
@@ -1433,7 +1434,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	bool loaded_resources = RequireLoadingResources(location, nullptr);
 	LoadResources(txLoadingComplete, false);
 
-	l.last_visit = worldtime;
+	l.last_visit = W.GetWorldtime();
 	CheckIfLocationCleared();
 	local_ctx_valid = true;
 	cam.Reset();
@@ -4276,7 +4277,7 @@ int Game::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allow
 	loc->reset = false;
 	loc->spawn = group;
 	loc->pos = pos;
-	loc->create_time = worldtime;
+	loc->create_time = W.GetWorldtime();
 
 	FindPlaceForLocation(loc->pos, range, allow_exact);
 
@@ -4427,7 +4428,9 @@ void Game::DoWorldProgress(int days)
 		if((*it)->type == L_CAMP)
 		{
 			Camp* camp = (Camp*)(*it);
-			if(worldtime - camp->create_time >= 30 && (location != *it || game_state != GS_LEVEL) && (picked_location == -1 || locations[picked_location] != *it))
+			if(W.GetWorldtime() - camp->create_time >= 30
+				&& (location != *it || game_state != GS_LEVEL)
+				&& (picked_location == -1 || locations[picked_location] != *it))
 			{
 				if(location == *it)
 				{
@@ -4462,7 +4465,7 @@ void Game::DoWorldProgress(int days)
 				}
 			}
 		}
-		else if((*it)->last_visit != -1 && worldtime - (*it)->last_visit >= 30)
+		else if((*it)->last_visit != -1 && W.GetWorldtime() - (*it)->last_visit >= 30)
 		{
 			(*it)->reset = true;
 			if((*it)->state == LS_CLEARED)
@@ -4485,7 +4488,7 @@ void Game::DoWorldProgress(int days)
 	bool deleted = false;
 	for(vector<News*>::iterator it = news.begin(), end = news.end(); it != end; ++it)
 	{
-		if(worldtime - (*it)->add_time > 30)
+		if(W.GetWorldtime() - (*it)->add_time > 30)
 		{
 			delete *it;
 			*it = nullptr;
@@ -6699,7 +6702,7 @@ void Game::AbadonLocation(Location* loc)
 	}
 
 	loc->spawn = SG_BRAK;
-	loc->last_visit = worldtime;
+	loc->last_visit = W.GetWorldtime();
 }
 
 void Game::SetLocationVisited(Location& loc)

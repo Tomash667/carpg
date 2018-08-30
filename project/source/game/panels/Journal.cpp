@@ -9,6 +9,7 @@
 #include "QuestManager.h"
 #include "Quest.h"
 #include "ResourceManager.h"
+#include "World.h"
 
 //=================================================================================================
 Journal::Journal() : mode(Quests), game(Game::Get())
@@ -485,7 +486,7 @@ void Journal::OnAddNote(int id)
 {
 	if(id == BUTTON_OK)
 	{
-		notes.push_back(Format(txAddTime, game.day + 1, game.month + 1, game.year, input.c_str()));
+		notes.push_back(Format(txAddTime, W.GetDate(), input.c_str()));
 		Build();
 		if(!Net::IsLocal())
 			Net::PushChange(NetChange::ADD_NOTE);
@@ -531,7 +532,7 @@ void Journal::AddRumor(cstring text)
 		c.id = rumors.size();
 	}
 
-	rumors.push_back(Format(txAddTime, game.day + 1, game.month + 1, game.year, text));
+	rumors.push_back(Format(txAddTime, W.GetDate(), text));
 	NeedUpdate(Journal::Rumors);
 	game.AddGameMsg3(GMS_ADDED_RUMOR);
 }

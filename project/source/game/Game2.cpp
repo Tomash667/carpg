@@ -47,6 +47,8 @@
 #include "Profiler.h"
 #include "Portal.h"
 #include "BitStreamFunc.h"
+#include "EntityInterpolator.h"
+#include "World.h"
 #include "DirectX.h"
 
 const int SAVE_VERSION = V_CURRENT;
@@ -375,7 +377,7 @@ void Game::GenerateItemImage(TaskData& task_data)
 	}
 	else
 		it = item_texture_map.end();
-	
+
 	TEX t = TryGenerateItemImage(item);
 	item.icon = t;
 	if(it != item_texture_map.end())
@@ -485,7 +487,7 @@ SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float ro
 
 	// koniec renderowania
 	V(device->EndScene());
-	
+
 	// kopiuj do tekstury
 	if(surface)
 	{
@@ -549,7 +551,7 @@ void Game::SetupCamera(float dt)
 		{
 			for(int x = minx; x <= maxx; ++x)
 			{
-				if(outside->tiles[x + z*OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
+				if(outside->tiles[x + z * OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
 				{
 					const Box box(float(x) * 2, 0, float(z) * 2, float(x + 1) * 2, 8.f, float(z + 1) * 2);
 					if(RayToBox(to, dist, box, &tout) && tout < min_tout && tout > 0.f)
@@ -586,7 +588,7 @@ void Game::SetupCamera(float dt)
 		{
 			for(int x = minx; x <= maxx; ++x)
 			{
-				Pole& p = lvl.map[x + z*lvl.w];
+				Pole& p = lvl.map[x + z * lvl.w];
 				if(czy_blokuje2(p.type))
 				{
 					const Box box(float(x) * 2, 0, float(z) * 2, float(x + 1) * 2, 4.f, float(z + 1) * 2);
@@ -615,7 +617,7 @@ void Game::SetupCamera(float dt)
 					Vec3 pos(float(x * 2) + 1, 0, float(z * 2) + 1);
 					float rot;
 
-					if(czy_blokuje2(lvl.map[x - 1 + z*lvl.w].type))
+					if(czy_blokuje2(lvl.map[x - 1 + z * lvl.w].type))
 					{
 						rot = 0;
 						int mov = 0;
@@ -632,9 +634,9 @@ void Game::SetupCamera(float dt)
 					{
 						rot = PI / 2;
 						int mov = 0;
-						if(lvl.rooms[lvl.map[x - 1 + z*lvl.w].room].IsCorridor())
+						if(lvl.rooms[lvl.map[x - 1 + z * lvl.w].room].IsCorridor())
 							++mov;
-						if(lvl.rooms[lvl.map[x + 1 + z*lvl.w].room].IsCorridor())
+						if(lvl.rooms[lvl.map[x + 1 + z * lvl.w].room].IsCorridor())
 							--mov;
 						if(mov == 1)
 							pos.x += 0.8229f;
@@ -1140,7 +1142,7 @@ void Game::UpdateGame(float dt)
 			if(allow_input == ALLOW_INPUT || allow_input == ALLOW_MOUSE)
 			{
 				const float c_cam_angle_min = PI + 0.1f;
-				const float c_cam_angle_max = PI*1.8f - 0.1f;
+				const float c_cam_angle_max = PI * 1.8f - 0.1f;
 
 				int div = (pc->unit->action == A_SHOOT ? 800 : 400);
 				cam.real_rot.y += -float(Key.GetMouseDif().y) * mouse_sensitivity_f / div;
@@ -1784,7 +1786,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 			{
 				const float rot_speed_dt = u.GetRotationSpeed() * dt;
 				const float mouse_rot = Clamp(pc_data.rot_buf, -rot_speed_dt, rot_speed_dt);
-				const float val = rot_speed_dt*rotate + mouse_rot;
+				const float val = rot_speed_dt * rotate + mouse_rot;
 
 				pc_data.rot_buf -= mouse_rot;
 				u.rot = Clip(u.rot + Clamp(val, -rot_speed_dt, rot_speed_dt));
@@ -3457,7 +3459,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 			{
 				for(int x = minx; x <= maxx; ++x)
 				{
-					if(tiles[x + z*OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
+					if(tiles[x + z * OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
@@ -3479,7 +3481,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 			{
 				for(int x = minx; x <= maxx; ++x)
 				{
-					POLE co = lvl.map[x + z*lvl.w].type;
+					POLE co = lvl.map[x + z * lvl.w].type;
 					if(czy_blokuje2(co))
 					{
 						CollisionObject& co = Add1(_objects);
@@ -3662,7 +3664,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 			{
 				for(int x = minx; x <= maxx; ++x)
 				{
-					if(tiles[x + z*OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
+					if(tiles[x + z * OutsideLocation::size].mode >= TM_BUILDING_BLOCK)
 					{
 						CollisionObject& co = Add1(_objects);
 						co.pt = Vec2(2.f*x + 1.f, 2.f*z + 1.f);
@@ -3684,7 +3686,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 			{
 				for(int x = minx; x <= maxx; ++x)
 				{
-					POLE co = lvl.map[x + z*lvl.w].type;
+					POLE co = lvl.map[x + z * lvl.w].type;
 					if(czy_blokuje2(co))
 					{
 						CollisionObject& co = Add1(_objects);
@@ -4075,11 +4077,11 @@ void Game::StartNextDialog(DialogContext& ctx, GameDialog* dialog, int& if_level
 }
 
 //							WEAPON	BOW		SHIELD	ARMOR	LETTER	POTION	OTHER	BOOK	GOLD
-bool merchant_buy[] = {    true,	true,	true,	true,	true,	true,	true,	true,	false };
-bool blacksmith_buy[] = {  true,	true,	true,	true,	false,	false,	false,	false,	false };
-bool alchemist_buy[] = {   false,	false,	false,	false,	false,	true,	false,	false,	false };
-bool innkeeper_buy[] = {   false,	false,	false,	false,	false,	true,	false,	false,	false };
-bool foodseller_buy[] = {  false,	false,	false,	false,	false,	true,	false,	false,	false };
+bool merchant_buy[] = { true,	true,	true,	true,	true,	true,	true,	true,	false };
+bool blacksmith_buy[] = { true,	true,	true,	true,	false,	false,	false,	false,	false };
+bool alchemist_buy[] = { false,	false,	false,	false,	false,	true,	false,	false,	false };
+bool innkeeper_buy[] = { false,	false,	false,	false,	false,	true,	false,	false,	false };
+bool foodseller_buy[] = { false,	false,	false,	false,	false,	true,	false,	false,	false };
 
 //=================================================================================================
 void Game::UpdateGameDialog(DialogContext& ctx, float dt)
@@ -4722,7 +4724,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			++ctx.dialog_pos;
 			return true;
 		}
-		else if(worldtime - city_ctx->quest_mayor_time > 30 || city_ctx->quest_mayor_time == -1)
+		else if(W.GetWorldtime() - city_ctx->quest_mayor_time > 30 || city_ctx->quest_mayor_time == -1)
 		{
 			if(city_ctx->quest_mayor == CityQuestState::InProgress)
 			{
@@ -4731,7 +4733,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
-			city_ctx->quest_mayor_time = worldtime;
+			city_ctx->quest_mayor_time = W.GetWorldtime();
 			city_ctx->quest_mayor = CityQuestState::InProgress;
 
 			Quest* quest = QuestManager::Get().GetMayorQuest();
@@ -4786,7 +4788,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			++ctx.dialog_pos;
 			return true;
 		}
-		else if(worldtime - city_ctx->quest_captain_time > 30 || city_ctx->quest_captain_time == -1)
+		else if(W.GetWorldtime() - city_ctx->quest_captain_time > 30 || city_ctx->quest_captain_time == -1)
 		{
 			if(city_ctx->quest_captain == CityQuestState::InProgress)
 			{
@@ -4795,7 +4797,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
-			city_ctx->quest_captain_time = worldtime;
+			city_ctx->quest_captain_time = W.GetWorldtime();
 			city_ctx->quest_captain = CityQuestState::InProgress;
 
 			Quest* quest = QuestManager::Get().GetCaptainQuest();
@@ -5725,97 +5727,49 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "arena_combat") == 0)
-	{
-		int t = city_ctx->arena_time;
-		if(t == -1)
-			return true;
-		else
-		{
-			int rok = t / 360;
-			t -= rok * 360;
-			rok += 100;
-			int miesiac = t / 30;
-			t -= miesiac * 30;
-			int dekadzien = t / 10;
-
-			if(rok != year || miesiac != month || dekadzien != day / 10)
-				return true;
-		}
-	}
+		return !W.IsSameWeek(city_ctx->arena_time);
 	else if(strcmp(msg, "have_team") == 0)
-	{
-		if(Team.HaveTeamMember())
-			return true;
-	}
+		return Team.HaveTeamMember();
 	else if(strcmp(msg, "have_pc_team") == 0)
-	{
-		if(Team.HaveOtherPlayer())
-			return true;
-	}
+		return Team.HaveOtherPlayer();
 	else if(strcmp(msg, "have_npc_team") == 0)
-	{
-		if(Team.HaveActiveNpc())
-			return true;
-	}
+		return Team.HaveActiveNpc();
 	else if(strcmp(msg, "is_drunk") == 0)
-	{
-		if(IS_SET(ctx.talker->data->flags, F_AI_DRUNKMAN) && ctx.talker->in_building != -1)
-			return true;
-	}
+		return IS_SET(ctx.talker->data->flags, F_AI_DRUNKMAN) && ctx.talker->in_building != -1;
 	else if(strcmp(msg, "is_team_member") == 0)
-	{
-		if(Team.IsTeamMember(*ctx.talker))
-			return true;
-	}
+		return Team.IsTeamMember(*ctx.talker);
 	else if(strcmp(msg, "is_not_known") == 0)
 	{
 		assert(ctx.talker->IsHero());
-		if(!ctx.talker->hero->know_name)
-			return true;
+		return !ctx.talker->hero->know_name;
 	}
 	else if(strcmp(msg, "is_inside_dungeon") == 0)
-	{
-		if(local_ctx.type == LevelContext::Inside)
-			return true;
-	}
+		return local_ctx.type == LevelContext::Inside;
 	else if(strcmp(msg, "is_team_full") == 0)
-	{
-		if(Team.GetActiveTeamSize() >= Team.GetMaxSize())
-			return true;
-	}
+		return Team.GetActiveTeamSize() >= Team.GetMaxSize();
 	else if(strcmp(msg, "can_join") == 0)
-	{
-		if(ctx.pc->unit->gold >= ctx.talker->hero->JoinCost())
-			return true;
-	}
+		return ctx.pc->unit->gold >= ctx.talker->hero->JoinCost();
 	else if(strcmp(msg, "is_inside_town") == 0)
-	{
-		if(city_ctx)
-			return true;
-	}
+		return city_ctx != nullptr;
 	else if(strcmp(msg, "is_free") == 0)
 	{
 		assert(ctx.talker->IsHero());
-		if(ctx.talker->hero->mode == HeroData::Wander)
-			return true;
+		return ctx.talker->hero->mode == HeroData::Wander;
 	}
 	else if(strcmp(msg, "is_not_free") == 0)
 	{
 		assert(ctx.talker->IsHero());
-		if(ctx.talker->hero->mode != HeroData::Wander)
-			return true;
+		return ctx.talker->hero->mode != HeroData::Wander;
 	}
 	else if(strcmp(msg, "is_not_follow") == 0)
 	{
 		assert(ctx.talker->IsHero());
-		if(ctx.talker->hero->mode != HeroData::Follow)
-			return true;
+		return ctx.talker->hero->mode != HeroData::Follow;
 	}
 	else if(strcmp(msg, "is_not_waiting") == 0)
 	{
 		assert(ctx.talker->IsHero());
-		if(ctx.talker->hero->mode != HeroData::Wait)
-			return true;
+		return ctx.talker->hero->mode != HeroData::Wait;
 	}
 	else if(strcmp(msg, "is_safe_location") == 0)
 	{
@@ -5848,46 +5802,24 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 		}
 	}
 	else if(strcmp(msg, "is_near_arena") == 0)
-	{
-		if(city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && Vec3::Distance2d(ctx.talker->pos, city_ctx->arena_pos) < 5.f)
-			return true;
-	}
+		return city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && Vec3::Distance2d(ctx.talker->pos, city_ctx->arena_pos) < 5.f;
 	else if(strcmp(msg, "is_lost_pvp") == 0)
 	{
 		assert(ctx.talker->IsHero());
-		if(ctx.talker->hero->lost_pvp)
-			return true;
+		return ctx.talker->hero->lost_pvp;
 	}
 	else if(strcmp(msg, "is_healthy") == 0)
-	{
-		if(ctx.talker->GetHpp() >= 0.75f)
-			return true;
-	}
+		return ctx.talker->GetHpp() >= 0.75f;
 	else if(strcmp(msg, "is_arena_free") == 0)
-	{
-		if(arena_free)
-			return true;
-	}
+		return arena_free;
 	else if(strcmp(msg, "is_bandit") == 0)
-	{
-		if(Team.is_bandit)
-			return true;
-	}
+		return Team.is_bandit;
 	else if(strcmp(msg, "is_ginger") == 0)
-	{
-		if(ctx.pc->unit->human_data->hair_color.Equal(g_hair_colors[8]))
-			return true;
-	}
+		return ctx.pc->unit->human_data->hair_color.Equal(g_hair_colors[8]);
 	else if(strcmp(msg, "is_bald") == 0)
-	{
-		if(ctx.pc->unit->human_data->hair == -1)
-			return true;
-	}
+		return ctx.pc->unit->human_data->hair == -1;
 	else if(strcmp(msg, "is_camp") == 0)
-	{
-		if(target_loc_is_camp)
-			return true;
-	}
+		return target_loc_is_camp;
 	else if(strcmp(msg, "taken_guards_reward") == 0)
 	{
 		if(!guards_enc_reward)
@@ -5898,15 +5830,9 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 		}
 	}
 	else if(strcmp(msg, "dont_have_quest") == 0)
-	{
-		if(ctx.talker->quest_refid == -1)
-			return true;
-	}
+		return ctx.talker->quest_refid == -1;
 	else if(strcmp(msg, "have_unaccepted_quest") == 0)
-	{
-		if(QuestManager::Get().FindUnacceptedQuest(ctx.talker->quest_refid))
-			return true;
-	}
+		return QuestManager::Get().FindUnacceptedQuest(ctx.talker->quest_refid);
 	else if(strcmp(msg, "have_completed_quest") == 0)
 	{
 		Quest* q = QuestManager::Get().FindQuest(ctx.talker->quest_refid, false);
@@ -5914,10 +5840,7 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 			return true;
 	}
 	else if(strcmp(msg, "contest_done") == 0)
-	{
-		if(contest_state == CONTEST_DONE)
-			return true;
-	}
+		return contest_state == CONTEST_DONE;
 	else if(strcmp(msg, "contest_here") == 0)
 	{
 		if(contest_where == current_location)
@@ -6070,12 +5993,15 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 	}
 	else if(strcmp(msg, "ironfist_can_start") == 0)
 	{
-		if(tournament_state == TOURNAMENT_NOT_DONE && tournament_city == current_location && day == 6 && month == 2 && tournament_year != year)
-			return true;
+		return tournament_state == TOURNAMENT_NOT_DONE
+			&& tournament_city == current_location
+			&& W.GetDay() == 6
+			&& W.GetMonth() == 2
+			&& tournament_year != W.GetYear();
 	}
 	else if(strcmp(msg, "ironfist_done") == 0)
 	{
-		if(tournament_year == year)
+		if(tournament_year == W.GetYear())
 			return true;
 	}
 	else if(strcmp(msg, "ironfist_here") == 0)
@@ -7277,7 +7203,7 @@ bool Game::CanSee(Unit& u1, Unit& u2)
 		{
 			for(int x = xmin; x <= xmax; ++x)
 			{
-				if(outside->tiles[x + y*OutsideLocation::size].mode >= TM_BUILDING_BLOCK
+				if(outside->tiles[x + y * OutsideLocation::size].mode >= TM_BUILDING_BLOCK
 					&& LineToRectangle(u1.pos, u2.pos, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
 					return false;
 			}
@@ -7297,9 +7223,9 @@ bool Game::CanSee(Unit& u1, Unit& u2)
 		{
 			for(int x = xmin; x <= xmax; ++x)
 			{
-				if(czy_blokuje2(lvl.map[x + y*lvl.w].type) && LineToRectangle(u1.pos, u2.pos, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
+				if(czy_blokuje2(lvl.map[x + y * lvl.w].type) && LineToRectangle(u1.pos, u2.pos, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
 					return false;
-				if(lvl.map[x + y*lvl.w].type == DRZWI)
+				if(lvl.map[x + y * lvl.w].type == DRZWI)
 				{
 					Door* door = FindDoor(ctx, Int2(x, y));
 					if(door && door->IsBlocking())
@@ -7395,7 +7321,7 @@ bool Game::CanSee(const Vec3& v1, const Vec3& v2)
 		{
 			for(int x = xmin; x <= xmax; ++x)
 			{
-				if(outside->tiles[x + y*OutsideLocation::size].mode >= TM_BUILDING_BLOCK && LineToRectangle(v1, v2, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
+				if(outside->tiles[x + y * OutsideLocation::size].mode >= TM_BUILDING_BLOCK && LineToRectangle(v1, v2, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
 					return false;
 			}
 		}
@@ -7414,9 +7340,9 @@ bool Game::CanSee(const Vec3& v1, const Vec3& v2)
 		{
 			for(int x = xmin; x <= xmax; ++x)
 			{
-				if(czy_blokuje2(lvl.map[x + y*lvl.w].type) && LineToRectangle(v1, v2, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
+				if(czy_blokuje2(lvl.map[x + y * lvl.w].type) && LineToRectangle(v1, v2, Vec2(2.f*x, 2.f*y), Vec2(2.f*(x + 1), 2.f*(y + 1))))
 					return false;
-				if(lvl.map[x + y*lvl.w].type == DRZWI)
+				if(lvl.map[x + y * lvl.w].type == DRZWI)
 				{
 					Door* door = FindDoor(ctx, Int2(x, y));
 					if(door && door->IsBlocking())
@@ -8143,12 +8069,12 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 					{
 						switch(pc->next_action)
 						{
-						// unequip item
+							// unequip item
 						case NA_REMOVE:
 							if(u.slots[pc->next_action_data.slot])
 								game_gui->inventory->RemoveSlotItem(pc->next_action_data.slot);
 							break;
-						// equip item after unequiping old one
+							// equip item after unequiping old one
 						case NA_EQUIP:
 							{
 								int index = pc->GetNextActionItemIndex();
@@ -8156,12 +8082,12 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 									game_gui->inventory->EquipSlotItem(index);
 							}
 							break;
-						// drop item after hiding it
+							// drop item after hiding it
 						case NA_DROP:
 							if(u.slots[pc->next_action_data.slot])
 								game_gui->inventory->DropSlotItem(pc->next_action_data.slot);
 							break;
-						// use consumable
+							// use consumable
 						case NA_CONSUME:
 							{
 								int index = pc->GetNextActionItemIndex();
@@ -8169,22 +8095,22 @@ void Game::UpdateUnits(LevelContext& ctx, float dt)
 									game_gui->inventory->ConsumeItem(index);
 							}
 							break;
-						//  use usable
+							//  use usable
 						case NA_USE:
 							if(!pc->next_action_data.usable->user)
 								PlayerUseUsable(pc->next_action_data.usable, true);
 							break;
-						// sell equipped item
+							// sell equipped item
 						case NA_SELL:
 							if(u.slots[pc->next_action_data.slot])
 								game_gui->inv_trade_mine->SellSlotItem(pc->next_action_data.slot);
 							break;
-						// put equipped item in container
+							// put equipped item in container
 						case NA_PUT:
 							if(u.slots[pc->next_action_data.slot])
 								game_gui->inv_trade_mine->PutSlotItem(pc->next_action_data.slot);
 							break;
-						// give equipped item
+							// give equipped item
 						case NA_GIVE:
 							if(u.slots[pc->next_action_data.slot])
 								game_gui->inv_trade_mine->GiveSlotItem(pc->next_action_data.slot);
@@ -9409,7 +9335,7 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 					backstab_mod = 0.75f;
 				if(IS_SET(hitted->data->flags2, F2_BACKSTAB_RES))
 					backstab_mod /= 2;
-				m += angle_dif / PI*backstab_mod;
+				m += angle_dif / PI * backstab_mod;
 
 				// modyfikator obra¿eñ
 				dmg *= m;
@@ -9652,8 +9578,8 @@ void Game::SpawnDungeonColliders()
 	{
 		for(int x = 1; x < w - 1; ++x)
 		{
-			if(czy_blokuje2(m[x + y*w]) && (!czy_blokuje2(m[x - 1 + (y - 1)*w]) || !czy_blokuje2(m[x + (y - 1)*w]) || !czy_blokuje2(m[x + 1 + (y - 1)*w]) ||
-				!czy_blokuje2(m[x - 1 + y*w]) || !czy_blokuje2(m[x + 1 + y*w]) ||
+			if(czy_blokuje2(m[x + y * w]) && (!czy_blokuje2(m[x - 1 + (y - 1)*w]) || !czy_blokuje2(m[x + (y - 1)*w]) || !czy_blokuje2(m[x + 1 + (y - 1)*w]) ||
+				!czy_blokuje2(m[x - 1 + y * w]) || !czy_blokuje2(m[x + 1 + y * w]) ||
 				!czy_blokuje2(m[x - 1 + (y + 1)*w]) || !czy_blokuje2(m[x + (y + 1)*w]) || !czy_blokuje2(m[x + 1 + (y + 1)*w])))
 			{
 				SpawnDungeonCollider(Vec3(2.f*x + 1.f, 2.f, 2.f*y + 1.f));
@@ -9665,11 +9591,11 @@ void Game::SpawnDungeonColliders()
 	for(int i = 1; i < h - 1; ++i)
 	{
 		// lewa
-		if(czy_blokuje2(m[i*w]) && !czy_blokuje2(m[1 + i*w]))
+		if(czy_blokuje2(m[i*w]) && !czy_blokuje2(m[1 + i * w]))
 			SpawnDungeonCollider(Vec3(1.f, 2.f, 2.f*i + 1.f));
 
 		// prawa
-		if(czy_blokuje2(m[i*w + w - 1]) && !czy_blokuje2(m[w - 2 + i*w]))
+		if(czy_blokuje2(m[i*w + w - 1]) && !czy_blokuje2(m[w - 2 + i * w]))
 			SpawnDungeonCollider(Vec3(2.f*(w - 1) + 1.f, 2.f, 2.f*i + 1.f));
 	}
 
@@ -9839,11 +9765,11 @@ Vec3 Game::PredictTargetPos(const Unit& me, const Unit& target, float bullet_spe
 		Vec3 vel = target.pos - target.prev_pos;
 		vel *= 60;
 
-		float a = bullet_speed*bullet_speed - vel.Dot2d();
+		float a = bullet_speed * bullet_speed - vel.Dot2d();
 		float b = -2 * vel.Dot2d(target.pos - me.pos);
 		float c = -(target.pos - me.pos).Dot2d();
 
-		float delta = b*b - 4 * a*c;
+		float delta = b * b - 4 * a*c;
 		// brak rozwi¹zania, nie mo¿e trafiæ wiêc strzel w aktualn¹ pozycjê
 		if(delta < 0)
 			return target.GetCenter();
@@ -10753,7 +10679,7 @@ void Game::ChangeLevel(int where)
 	}
 
 	local_ctx_valid = true;
-	location->last_visit = worldtime;
+	location->last_visit = W.GetWorldtime();
 	CheckIfLocationCleared();
 	bool loaded_resources = RequireLoadingResources(location, nullptr);
 	LoadResources(txLoadingComplete, false);
@@ -11061,7 +10987,7 @@ Game::ATTACK_RESULT Game::DoGenericAttack(LevelContext& ctx, Unit& attacker, Uni
 		backstab_mod += 0.25f;
 	if(IS_SET(hitted.data->flags2, F2_BACKSTAB_RES))
 		backstab_mod /= 2;
-	m += angle_dif / PI*backstab_mod;
+	m += angle_dif / PI * backstab_mod;
 
 	// apply modifiers
 	float dmg = start_dmg * m;
@@ -11644,7 +11570,7 @@ void Game::CastSpell(LevelContext& ctx, Unit& u)
 			u.target_pos.y += Random(-0.5f, 0.5f);
 			Vec3 dir = u.target_pos - coord;
 			dir.Normalize();
-			Vec3 target = coord + dir*spell.range;
+			Vec3 target = coord + dir * spell.range;
 
 			if(RayTest(coord, target, &u, hitpoint, hitted))
 			{
@@ -13121,10 +13047,7 @@ void Game::ClearGameVarsOnNewGame()
 	game_speed = 1.f;
 	dungeon_level = 0;
 	QuestManager::Get().Reset();
-	year = 100;
-	day = 0;
-	month = 0;
-	worldtime = 0;
+	W.OnNewGame();
 	GameStats::Get().Reset();
 	Team.Reset();
 	dont_wander = false;
@@ -13214,7 +13137,7 @@ void Game::ClearGame()
 			if(unit->bow_instance)
 				bow_instances.push_back(unit->bow_instance);
 			if(unit->interp)
-				interpolators.Free(unit->interp);
+				EntityInterpolator::Pool.Free(unit->interp);
 
 			delete unit->ai;
 			delete unit;
@@ -13832,7 +13755,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	InsideLocation* inside = (InsideLocation*)location;
 	inside->SetActiveLevel(dungeon_level);
 	int days;
-	bool need_reset = inside->CheckUpdate(days, worldtime);
+	bool need_reset = inside->CheckUpdate(days, W.GetWorldtime());
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	BaseLocation& base = g_base_locations[inside->target];
 
@@ -14383,7 +14306,7 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 			unit.talking = false;
 
 			if(unit.interp)
-				interpolators.Free(unit.interp);
+				EntityInterpolator::Pool.Free(unit.interp);
 
 			delete unit.ai;
 			delete *it;
@@ -15402,7 +15325,7 @@ void Game::StartArenaCombat(int level)
 	arena_etap = Arena_OdliczanieDoPrzeniesienia;
 	arena_t = 0.f;
 	arena_poziom = level;
-	city_ctx->arena_time = worldtime;
+	city_ctx->arena_time = W.GetWorldtime();
 	at_arena.clear();
 
 	// dodaj gracza na arenê
@@ -15664,7 +15587,7 @@ void Game::DeleteUnit(Unit* unit)
 	}
 
 	if(unit->interp)
-		interpolators.Free(unit->interp);
+		EntityInterpolator::Pool.Free(unit->interp);
 
 	if(unit->ai)
 	{
@@ -16568,9 +16491,9 @@ void Game::GenerateTraps()
 	{
 		for(int x = 1; x < lvl.w - 1; ++x)
 		{
-			if(lvl.map[x + y*lvl.w].type == PUSTE
-				&& !OR2_EQ(lvl.map[x - 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.map[x + 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+			if(lvl.map[x + y * lvl.w].type == PUSTE
+				&& !OR2_EQ(lvl.map[x - 1 + y * lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + 1 + y * lvl.w].type, SCHODY_DOL, SCHODY_GORA)
 				&& !OR2_EQ(lvl.map[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
 				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
 			{
@@ -16663,9 +16586,9 @@ void Game::RegenerateTraps()
 	{
 		for(int x = 1; x < lvl.w - 1; ++x)
 		{
-			if(lvl.map[x + y*lvl.w].type == PUSTE
-				&& !OR2_EQ(lvl.map[x - 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
-				&& !OR2_EQ(lvl.map[x + 1 + y*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+			if(lvl.map[x + y * lvl.w].type == PUSTE
+				&& !OR2_EQ(lvl.map[x - 1 + y * lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + 1 + y * lvl.w].type, SCHODY_DOL, SCHODY_GORA)
 				&& !OR2_EQ(lvl.map[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
 				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
 			{
@@ -16876,7 +16799,7 @@ void Game::SpawnHeroesInsideDungeon()
 		{
 			for(int x = x1; x < x2; ++x)
 			{
-				Pole& po = lvl.map[x + y*lvl.w];
+				Pole& po = lvl.map[x + y * lvl.w];
 				if(po.type == DRZWI)
 				{
 					Door* door = lvl.FindDoor(Int2(x, y));
@@ -16917,7 +16840,7 @@ void Game::SpawnHeroesInsideDungeon()
 	int gold_per_hero = gold / heroes->size();
 	for(vector<Unit*>::iterator it = heroes->begin(), end = heroes->end(); it != end; ++it)
 		(*it)->gold += gold_per_hero;
-	gold -= gold_per_hero*heroes->size();
+	gold -= gold_per_hero * heroes->size();
 	if(gold)
 		heroes->back()->gold += gold;
 
@@ -17008,7 +16931,7 @@ GroundItem* Game::SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos,
 			float a = Random(), b = Random();
 			if(b < a)
 				std::swap(a, b);
-			pt = Vec3(pos.x + b*radius*cos(2 * PI*a / b), 0, pos.y + b*radius*sin(2 * PI*a / b));
+			pt = Vec3(pos.x + b * radius*cos(2 * PI*a / b), 0, pos.y + b * radius*sin(2 * PI*a / b));
 		}
 		else
 		{
@@ -17207,7 +17130,7 @@ void Game::InitQuests()
 
 	// zawody
 	tournament_year = 0;
-	tournament_city_year = year;
+	tournament_city_year = W.GetYear();
 	tournament_city = GetRandomCity();
 	tournament_state = TOURNAMENT_NOT_DONE;
 	tournament_units.clear();
@@ -17414,7 +17337,8 @@ void Game::GenerateQuestUnits()
 		}
 	}
 
-	if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && current_location == tournament_city && !tournament_generated)
+	if(W.GetDay() == 6 && W.GetMonth() == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena)
+		&& current_location == tournament_city && !tournament_generated)
 		GenerateTournamentUnits();
 }
 
@@ -17546,6 +17470,10 @@ void Game::UpdateQuests(int days)
 		AddGold(income, nullptr, true);
 
 	int stan; // 0 - przed zawodami, 1 - czas na zawody, 2 - po zawodach
+
+	int year = W.GetYear();
+	int month = W.GetMonth();
+	int day = W.GetDay();
 
 	if(month < 8)
 		stan = 0;
@@ -17764,7 +17692,7 @@ void Game::GenerateSawmill(bool in_progress)
 		{
 			if(Vec2::Distance(Vec2(2.f*x + 1.f, 2.f*y + 1.f), Vec2(128, 128)) < 8.f)
 			{
-				wys += h[x + y*_s];
+				wys += h[x + y * _s];
 				tiles.push_back(Int2(x, y));
 			}
 		}
@@ -17942,7 +17870,7 @@ bool Game::GenerateMine()
 		{
 			for(int x = 1; x < lvl.w - 1; ++x)
 			{
-				if(lvl.map[x + y*lvl.w].type == SCIANA)
+				if(lvl.map[x + y * lvl.w].type == SCIANA)
 				{
 #define A(xx,yy) lvl.map[x+(xx)+(y+(yy))*lvl.w].type
 					if(Rand() % 2 == 0 && (!czy_blokuje21(A(-1, 0)) || !czy_blokuje21(A(1, 0)) || !czy_blokuje21(A(0, -1)) || !czy_blokuje21(A(0, 1))) &&
@@ -18057,7 +17985,7 @@ bool Game::GenerateMine()
 		{
 			for(int x = 1; x < lvl.w - 1; ++x)
 			{
-				if(lvl.map[x + y*lvl.w].type == PUSTE)
+				if(lvl.map[x + y * lvl.w].type == PUSTE)
 				{
 					int dist = Int2::Distance(Int2(x, y), center);
 					if(dist < best_dist && dist > 2)
@@ -18380,7 +18308,7 @@ bool Game::GenerateMine()
 				//  ### ### ###
 				//  _?_ #?_ #?#
 				//  ___ #__ #_#
-				if(lvl.map[x + y*lvl.w].type == PUSTE && Rand() % 3 != 0 && !IS_SET(lvl.map[x + y*lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
+				if(lvl.map[x + y * lvl.w].type == PUSTE && Rand() % 3 != 0 && !IS_SET(lvl.map[x + y * lvl.w].flags, Pole::F_DRUGA_TEKSTURA))
 				{
 					int dir = -1;
 
@@ -18707,7 +18635,7 @@ void Game::AddNews(cstring text)
 
 	News* n = new News;
 	n->text = text;
-	n->add_time = worldtime;
+	n->add_time = W.GetWorldtime();
 
 	news.push_back(n);
 }

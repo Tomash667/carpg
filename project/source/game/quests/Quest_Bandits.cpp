@@ -10,6 +10,7 @@
 #include "Encounter.h"
 #include "GameGui.h"
 #include "AIController.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Bandits::Start()
@@ -122,7 +123,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		}
 		else
 		{
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 			name = game->txQuest[153];
 			const Item* item = Item::Get("q_bandyci_paczka");
@@ -145,7 +146,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			msgs.push_back(Format(game->txQuest[154], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[154], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[155], sl.name.c_str(), other.name.c_str(), GetLocationDirName(sl.pos, other.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

@@ -11,6 +11,7 @@
 #include "InsideLocation.h"
 #include "GameGui.h"
 #include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Goblins::Start()
@@ -126,7 +127,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		{
 			state = Quest::Started;
 			name = game->txQuest[212];
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			// usuñ plotkê
 			quest_manager.RemoveQuestRumor(P_GOBLINY);
 			// dodaj lokalizacje
@@ -147,7 +148,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			msgs.push_back(Format(game->txQuest[217], GetStartLocationName(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[217], GetStartLocationName(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[218], GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

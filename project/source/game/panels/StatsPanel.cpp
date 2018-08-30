@@ -7,6 +7,7 @@
 #include "Game.h"
 #include "GameStats.h"
 #include "Language.h"
+#include "World.h"
 
 //-----------------------------------------------------------------------------
 enum Group
@@ -131,8 +132,6 @@ void StatsPanel::Update(float dt)
 //=================================================================================================
 void StatsPanel::SetText()
 {
-	Game& game = Game::Get();
-
 	// attributes
 	flowAttribs.Clear();
 	flowAttribs.Add()->Set(txAttributes);
@@ -155,7 +154,7 @@ void StatsPanel::SetText()
 	flowStats.Add()->Set(Format(txTraitsEnd, (int)pc->unit->CalculateDefense(), blockDesc, (int)pc->unit->CalculateMobility(), float(pc->unit->weight) / 10,
 		float(pc->unit->weight_max) / 10, pc->unit->gold), G_INVALID, -1);
 	flowStats.Add()->Set(txStats);
-	flowStats.Add()->Set(Format(txDate, game.year, game.month + 1, game.day + 1), G_STATS, STATS_DATE);
+	flowStats.Add()->Set(Format(txDate, W.GetDate()), G_STATS, STATS_DATE);
 	GameStats& game_stats = GameStats::Get();
 	flowStats.Add()->Set(Format(txStatsText, game_stats.hour, game_stats.minute, game_stats.second, pc->kills, pc->knocks, pc->dmg_done, pc->dmg_taken,
 		pc->arena_fights), G_INVALID, -1);
@@ -234,9 +233,8 @@ void StatsPanel::GetTooltip(TooltipController*, int group, int id)
 		{
 		case STATS_DATE:
 			{
-				Game& game = Game::Get();
 				tooltip.big_text.clear();
-				tooltip.text = Format(txYearMonthDay, game.year, game.month + 1, game.day + 1);
+				tooltip.text = Format(txYearMonthDay, W.GetYear(), W.GetMonth() + 1, W.GetDay() + 1);
 				tooltip.small_text.clear();
 			}
 			break;

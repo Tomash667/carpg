@@ -13,6 +13,7 @@
 #include "AIController.h"
 #include "Team.h"
 #include "Portal.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Evil::Start()
@@ -98,7 +99,7 @@ void Quest_Evil::SetProgress(int prog2)
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

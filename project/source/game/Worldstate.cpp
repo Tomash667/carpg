@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Quest_Evil.h"
 #include "Team.h"
+#include "World.h"
 
 void Game::WorldProgress(int days, WorldProgressMode mode)
 {
@@ -10,32 +11,23 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 		assert(days == 1);
 
 	// zmiana dnia/miesi¹ca/roku
-	worldtime += days;
-	day += days;
-	if(day >= 30)
+	int prev_year = W.GetYear();
+	W.Update(days);
+	if(prev_year != W.GetYear())
 	{
-		int ile = day / 30;
-		month += ile;
-		day -= ile * 30;
-		if(month >= 12)
+		// nowe miejsce na chlanie
+		contest_where = GetRandomSettlement(contest_where);
+		if(W.GetYear() >= 160)
 		{
-			ile = month / 12;
-			year += ile;
-			month -= ile * 12;
-			// nowe miejsce na chlanie
-			contest_where = GetRandomSettlement(contest_where);
-			if(year >= 160)
+			// koniec gry
+			Info("Game over: you are too old.");
+			CloseAllPanels(true);
+			koniec_gry = true;
+			death_fade = 0.f;
+			if(Net::IsOnline())
 			{
-				// koniec gry
-				Info("Game over: you are too old.");
-				CloseAllPanels(true);
-				koniec_gry = true;
-				death_fade = 0.f;
-				if(Net::IsOnline())
-				{
-					Net::PushChange(NetChange::GAME_STATS);
-					Net::PushChange(NetChange::END_OF_GAME);
-				}
+				Net::PushChange(NetChange::GAME_STATS);
+				Net::PushChange(NetChange::END_OF_GAME);
 			}
 		}
 	}

@@ -85,7 +85,7 @@ struct Location : public ILevel
 	Vec2 pos; // pozycja na mapie œwiata
 	string name; // nazwa lokacji
 	Quest_Dungeon* active_quest; // aktywne zadanie zwi¹zane z t¹ lokacj¹
-	int last_visit; // worldtime from last time when team entered location
+	int last_visit; // worldtime from last time when team entered location or -1
 	int st; // poziom trudnoœci
 	uint seed;
 	SPAWN_GROUP spawn; // rodzaj wrogów w tej lokacji

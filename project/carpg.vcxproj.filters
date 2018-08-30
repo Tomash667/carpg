@@ -691,6 +691,12 @@
     <ClCompile Include="source\game\entity\Camera.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\net\EntityInterpolator.cpp">
+      <Filter>3. game\net</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\World.cpp">
+      <Filter>3. game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1368,6 +1374,12 @@
     </ClInclude>
     <ClInclude Include="source\game\entity\Portal.h">
       <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\World.h">
+      <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\net\EntityInterpolator.h">
+      <Filter>3. game\net</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

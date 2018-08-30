@@ -12,6 +12,7 @@
 #include "GameGui.h"
 #include "AIController.h"
 #include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Orcs::Start()
@@ -93,11 +94,11 @@ void Quest_Orcs::SetProgress(int prog2)
 			// questowe rzeczy
 			state = Quest::Started;
 			name = game->txQuest[191];
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			msgs.push_back(Format(game->txQuest[192], GetStartLocationName(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[192], GetStartLocationName(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[193], GetStartLocationName(), GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -305,13 +306,13 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::Joined:
 		// dodaj questa
 		{
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			name = game->txQuest[214];
 			state = Quest::Started;
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-			msgs.push_back(Format(game->txQuest[170], game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[170], W.GetDate()));
 			msgs.push_back(game->txQuest[197]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

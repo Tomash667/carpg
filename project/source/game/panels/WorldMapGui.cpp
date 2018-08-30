@@ -14,6 +14,7 @@
 #include "MpBox.h"
 #include "GameMessages.h"
 #include "DialogBox.h"
+#include "World.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -26,7 +27,7 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 	visible = false;
 
 	txGameTimeout = Str("gameTimeout");
-	txWorldData = Str("worldData");
+	txWorldDate = Str("worldDate");
 	txCurrentLoc = Str("currentLoc");
 	txCitizens = Str("citizens");
 	txAvailable = Str("available");
@@ -115,7 +116,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		}
 	}
 
-	LocalString s = Format(txWorldData, game.year, game.month + 1, game.day + 1);
+	LocalString s = Format(txWorldDate, W.GetDate());
 
 	// opis aktualnej lokacji
 	if(game.current_location != -1)

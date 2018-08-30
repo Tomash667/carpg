@@ -34,6 +34,7 @@
 #include "Journal.h"
 #include "SoundManager.h"
 #include "ScriptManager.h"
+#include "World.h"
 
 enum SaveFlags
 {
@@ -143,9 +144,9 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 	{
 		SaveSlot& ss = (Net::IsOnline() ? multi_saves[slot - 1] : single_saves[slot - 1]);
 		ss.valid = true;
-		ss.game_day = day;
-		ss.game_month = month;
-		ss.game_year = year;
+		ss.game_day = W.GetDay();
+		ss.game_month = W.GetMonth();
+		ss.game_year = W.GetYear();
 		ss.location = GetCurrentLocationText();
 		ss.player_name = pc->name;
 		ss.player_class = pc->unit->GetClass();
@@ -154,9 +155,9 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 		ss.hardcore = hardcore_mode;
 
 		Config cfg;
-		cfg.Add("game_day", Format("%d", day));
-		cfg.Add("game_month", Format("%d", month));
-		cfg.Add("game_year", Format("%d", year));
+		cfg.Add("game_day", Format("%d", ss.game_day));
+		cfg.Add("game_month", Format("%d", ss.game_month));
+		cfg.Add("game_year", Format("%d", ss.game_year));
 		cfg.Add("location", ss.location.c_str());
 		cfg.Add("player_name", ss.player_name.c_str());
 		cfg.Add("player_class", ClassInfo::classes[(int)ss.player_class].id);
@@ -394,10 +395,7 @@ void Game::SaveGame(GameWriter& f)
 	f << total_kills;
 
 	// world state
-	f << year;
-	f << month;
-	f << day;
-	f << worldtime;
+	W.Save(f);
 	f << game_state;
 	GameStats::Get().Save(f);
 
@@ -734,10 +732,7 @@ void Game::LoadGame(GameReader& f)
 
 	// world state
 	GAME_STATE game_state2;
-	f >> year;
-	f >> month;
-	f >> day;
-	f >> worldtime;
+	W.Load(f);
 	f >> game_state2;
 	GameStats::Get().Load(f);
 

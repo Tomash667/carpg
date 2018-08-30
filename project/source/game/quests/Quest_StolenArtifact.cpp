@@ -7,6 +7,7 @@
 #include "GameFile.h"
 #include "QuestManager.h"
 #include "GameGui.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_StolenArtifact::Start()
@@ -61,7 +62,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 			name = game->txQuest[86];
 
@@ -114,7 +115,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			game->current_dialog->talker->temporary = false;
 
-			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[82], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[93], item->name.c_str(), kto, tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -235,7 +236,7 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 //=================================================================================================
 bool Quest_StolenArtifact::IsTimedout() const
 {
-	return game->worldtime - start_time > 60;
+	return W.GetWorldtime() - start_time > 60;
 }
 
 //=================================================================================================

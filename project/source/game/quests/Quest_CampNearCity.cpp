@@ -8,6 +8,7 @@
 #include "QuestManager.h"
 #include "GameGui.h"
 #include "GameFile.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_CampNearCity::Start()
@@ -58,7 +59,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			Location& sl = *game->locations[start_loc];
 			bool is_city = LocationHelper::IsCity(sl);
 
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 			if(is_city)
 				name = game->txQuest[57];
@@ -98,7 +99,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			quest_manager.quests_timeout.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
-			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[62], gn, GetLocationDirName(sl.pos, tl.pos), sl.name.c_str(),
 				is_city ? game->txQuest[63] : game->txQuest[64]));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -227,7 +228,7 @@ cstring Quest_CampNearCity::FormatString(const string& str)
 //=================================================================================================
 bool Quest_CampNearCity::IsTimedout() const
 {
-	return game->worldtime - start_time > 30;
+	return W.GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================

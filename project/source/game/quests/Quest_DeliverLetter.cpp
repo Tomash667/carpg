@@ -8,6 +8,7 @@
 #include "QuestManager.h"
 #include "GameGui.h"
 #include "GameFile.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_DeliverLetter::Start()
@@ -55,7 +56,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			letter.name = Format(game->txQuest[0], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 			letter.refid = refid;
 			game->current_dialog->pc->unit->AddItem(&letter, 1, true);
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 
 			quest_index = quest_manager.quests.size();
@@ -65,8 +66,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 
 			Location& loc2 = *game->locations[start_loc];
 			name = game->txQuest[2];
-			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(),
-				game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[4], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
 				kierunek_nazwa[GetLocationDir(loc2.pos, loc.pos)]));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -175,7 +175,7 @@ cstring Quest_DeliverLetter::FormatString(const string& str)
 //=================================================================================================
 bool Quest_DeliverLetter::IsTimedout() const
 {
-	return game->worldtime - start_time > 30;
+	return W.GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================

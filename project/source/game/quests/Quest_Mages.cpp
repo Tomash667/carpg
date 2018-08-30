@@ -10,6 +10,7 @@
 #include "GameGui.h"
 #include "AIController.h"
 #include "SoundManager.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Mages::Start()
@@ -39,7 +40,7 @@ void Quest_Mages::SetProgress(int prog2)
 	case Progress::Started:
 		{
 			name = game->txQuest[165];
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 
 			Location& sl = GetStartLocation();
@@ -64,7 +65,7 @@ void Quest_Mages::SetProgress(int prog2)
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
-			msgs.push_back(Format(game->txQuest[166], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[166], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[167], tl.name.c_str(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -103,7 +104,7 @@ void Quest_Mages::SetProgress(int prog2)
 		{
 			Quest_Mages2* q = game->quest_mages2;
 			q->name = game->txQuest[169];
-			q->start_time = game->worldtime;
+			q->start_time = W.GetWorldtime();
 			q->state = Quest::Started;
 			q->mages_state = Quest_Mages2::State::EncounteredGolem;
 			q->quest_index = quest_manager.quests.size();
@@ -111,7 +112,7 @@ void Quest_Mages::SetProgress(int prog2)
 			RemoveElementTry(quest_manager.unaccepted_quests, (Quest*)q);
 			quest_manager.quest_rumor[P_MAGOWIE2] = false;
 			++quest_manager.quest_rumor_counter;
-			q->msgs.push_back(Format(game->txQuest[170], game->day + 1, game->month + 1, game->year));
+			q->msgs.push_back(Format(game->txQuest[170], W.GetDate()));
 			q->msgs.push_back(game->txQuest[171]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, q->quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

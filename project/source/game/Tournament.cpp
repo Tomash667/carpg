@@ -7,11 +7,12 @@
 #include "GameGui.h"
 #include "AIController.h"
 #include "Team.h"
+#include "World.h"
 
 //=================================================================================================
 void Game::StartTournament(Unit* arena_master)
 {
-	tournament_year = year;
+	tournament_year = W.GetYear();
 	tournament_state = TOURNAMENT_STARTING;
 	tournament_timer = 0.f;
 	tournament_state2 = 0;

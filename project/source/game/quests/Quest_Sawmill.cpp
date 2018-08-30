@@ -8,6 +8,7 @@
 #include "SaveState.h"
 #include "QuestManager.h"
 #include "GameGui.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Sawmill::Start()
@@ -48,7 +49,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 	case Progress::Started:
 		// zakceptowano
 		{
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 			name = game->txQuest[124];
 
@@ -73,7 +74,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
-			msgs.push_back(Format(game->txQuest[125], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[125], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[126], tl.name.c_str(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

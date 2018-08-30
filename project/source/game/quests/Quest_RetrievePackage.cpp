@@ -8,6 +8,7 @@
 #include "QuestManager.h"
 #include "GameGui.h"
 #include "GameFile.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_RetrievePackage::Start()
@@ -71,11 +72,11 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			item_to_give[0] = &parcel;
 			at_level = loc2.GetRandomLevel();
 
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 			name = game->txQuest[265];
 
-			msgs.push_back(Format(game->txQuest[3], who, loc.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[3], who, loc.name.c_str(), W.GetDate()));
 			if(loc2.type == L_CAMP)
 			{
 				game->target_loc_is_camp = true;
@@ -178,7 +179,7 @@ cstring Quest_RetrievePackage::FormatString(const string& str)
 //=================================================================================================
 bool Quest_RetrievePackage::IsTimedout() const
 {
-	return game->worldtime - start_time > 30;
+	return W.GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================

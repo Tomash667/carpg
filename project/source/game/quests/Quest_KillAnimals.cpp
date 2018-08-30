@@ -7,6 +7,7 @@
 #include "QuestManager.h"
 #include "City.h"
 #include "GameGui.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_KillAnimals::Start()
@@ -42,7 +43,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 	case Progress::Started:
 		// player accepted quest
 		{
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 			name = game->txQuest[76];
 
@@ -66,7 +67,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			quest_manager.quests_timeout.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
-			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[77], sl.name.c_str(), tl.name.c_str(), GetLocationDirName(sl.pos, tl.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -151,7 +152,7 @@ cstring Quest_KillAnimals::FormatString(const string& str)
 //=================================================================================================
 bool Quest_KillAnimals::IsTimedout() const
 {
-	return game->worldtime - start_time > 30;
+	return W.GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================

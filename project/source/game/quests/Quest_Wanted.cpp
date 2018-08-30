@@ -9,6 +9,7 @@
 #include "QuestManager.h"
 #include "City.h"
 #include "GameGui.h"
+#include "World.h"
 
 //=================================================================================================
 void Quest_Wanted::Start()
@@ -65,7 +66,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			}
 
 			// dane questa
-			start_time = game->worldtime;
+			start_time = W.GetWorldtime();
 			state = Quest::Started;
 			name = game->txQuest[257];
 
@@ -85,7 +86,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 
 			// wpis do dziennika
-			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), game->day + 1, game->month + 1, game->year));
+			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[260], level * 100, unit_name.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -190,7 +191,7 @@ cstring Quest_Wanted::FormatString(const string& str)
 //=================================================================================================
 bool Quest_Wanted::IsTimedout() const
 {
-	return game->worldtime - start_time > 30;
+	return W.GetWorldtime() - start_time > 30;
 }
 
 //=================================================================================================
