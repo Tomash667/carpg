@@ -37,148 +37,6 @@
 extern const float TRAVEL_SPEED = 28.f;
 extern Matrix m1, m2, m3, m4;
 
-//#define START_LOCATION L_VILLAGE
-//#define START_LOCATION2 MAGE_TOWER
-
-// z powodu zmian (po³¹czenie Location i Location2) musze tymczasowo u¿ywaæ tego w add_locations a potem w generate_world ustawiaæ odpowiedni obiekt
-struct TmpLocation : public Location
-{
-	TmpLocation() : Location(false) {}
-
-	void ApplyContext(LevelContext& ctx) {}
-	void BuildRefidTable() {}
-	bool FindUnit(Unit*, int*) { return false; }
-	Unit* FindUnit(UnitData*, int&) { return nullptr; }
-};
-
-Location* Game::CreateLocation(LOCATION type, int levels, bool is_village)
-{
-	switch(type)
-	{
-	case L_CITY:
-		{
-			City* city = new City;
-			if(is_village)
-			{
-				city->settlement_type = City::SettlementType::Village;
-				city->image = LI_VILLAGE;
-			}
-			else
-				city->image = LI_CITY;
-			return city;
-		}
-	case L_CAVE:
-		{
-			CaveLocation* cave = new CaveLocation;
-			cave->image = LI_CAVE;
-			return cave;
-		}
-	case L_CAMP:
-		{
-			Camp* camp = new Camp;
-			camp->image = LI_CAMP;
-			return camp;
-		}
-	case L_FOREST:
-	case L_ENCOUNTER:
-	case L_MOONWELL:
-	case L_ACADEMY:
-		{
-			LOCATION_IMAGE image;
-			switch(type)
-			{
-			case L_FOREST:
-			case L_ENCOUNTER:
-				image = LI_FOREST;
-				break;
-			case L_MOONWELL:
-				image = LI_MOONWELL;
-				break;
-			case L_ACADEMY:
-				image = LI_ACADEMY;
-				break;
-			}
-			OutsideLocation* loc = new OutsideLocation;
-			loc->image = image;
-			return loc;
-		}
-	case L_DUNGEON:
-	case L_CRYPT:
-		{
-			Location* loc;
-			if(levels == -1)
-				loc = new TmpLocation;
-			else
-			{
-				assert(levels != 0);
-				if(levels == 1)
-					loc = new SingleInsideLocation;
-				else
-					loc = new MultiInsideLocation(levels);
-			}
-			loc->image = (type == L_DUNGEON ? LI_DUNGEON : LI_CRYPT);
-			return loc;
-		}
-	default:
-		assert(0);
-		return nullptr;
-	}
-}
-
-void Game::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name)
-{
-	for(uint i = 0; i < count; ++i)
-	{
-		for(uint j = 0; j < 100; ++j)
-		{
-			Vec2 pt = Vec2::Random(16.f, 600.f - 16.f);
-			bool ok = true;
-
-			for(Location* l : locations)
-			{
-				float dist = Vec2::Distance(pt, l->pos);
-				if(dist < valid_dist)
-				{
-					ok = false;
-					break;
-				}
-			}
-
-			if(!ok)
-				continue;
-
-			auto type = clbk(i);
-			Location* l = CreateLocation(type.first, -1, type.second);
-			l->type = type.first;
-			l->pos = pt;
-			l->state = LS_UNKNOWN;
-			l->GenerateName();
-
-			if(unique_name && locations.size() > 1)
-			{
-				bool exists;
-				do
-				{
-					exists = false;
-
-					for(Location* l2 : locations)
-					{
-						if(l2->name == l->name)
-						{
-							exists = true;
-							l->GenerateName();
-							break;
-						}
-					}
-				} while(exists);
-			}
-
-			locations.push_back(l);
-			break;
-		}
-	}
-}
-
 void Game::GenerateWorld()
 {
 	if(next_seed != 0)
@@ -191,491 +49,15 @@ void Game::GenerateWorld()
 
 	Info("Generating world, seed %u.", RandVal());
 
-	// generuj miasta
-	empty_locations = 0;
-	uint ile_miast = Random(3, 5);
-	AddLocations(ile_miast, [](uint index) { return std::make_pair(L_CITY, false); }, 200.f, true);
-
-	// losuj startowe miasto
-	uint startowe = Rand() % ile_miast;
-
-	// generuj wioski
-	uint ile_wiosek = 5 - ile_miast + Random(10, 15);
-	AddLocations(ile_wiosek, [](uint index) { return std::make_pair(L_CITY, true); }, 100.f, true);
-
-	// ustaw miasta i wioski jako znane
-	settlements = locations.size();
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
-		(*it)->state = LS_KNOWN;
-
-	// dodaj gwarantowan¹ liczbê lokalizacji
-	static const LOCATION gwarantowane[] = {
-		L_MOONWELL,
-		L_FOREST,
-		L_CAVE,
-		L_CRYPT, L_CRYPT,
-		L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON, L_DUNGEON
-	};
-	AddLocations(countof(gwarantowane), [](uint index) { return std::make_pair(gwarantowane[index], false); }, 32.f, false);
-
-	// generuj pozosta³e
-	static const LOCATION locs[] = {
-		L_CAVE,
-		L_DUNGEON,
-		L_DUNGEON,
-		L_DUNGEON,
-		L_CRYPT,
-		L_FOREST
-	};
-	AddLocations(100 - locations.size(), [](uint index) { return std::make_pair(locs[Rand() % countof(locs)], false); }, 32.f, false);
-
-	{
-		Location* loc = new OutsideLocation;
-		locations.push_back(loc);
-		loc->pos = Vec2(-1000, -1000);
-		loc->name = txRandomEncounter;
-		loc->state = LS_VISITED;
-		loc->image = LI_FOREST;
-		loc->type = L_ENCOUNTER;
-		encounter_loc = locations.size() - 1;
-	}
-
-	int index = 0, gwarant_podziemia = 0, gwarant_krypta = 0;
-#ifdef START_LOCATION
-	int temp_location;
-#endif
-
-	// ujawnij pobliskie, generuj zawartoœæ
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
-	{
-		if(!*it)
-			continue;
-		if((*it)->state == LS_UNKNOWN && Vec2::Distance(locations[startowe]->pos, (*it)->pos) <= 100.f)
-			(*it)->state = LS_KNOWN;
-
-#ifdef START_LOCATION
-#ifndef START_LOCATION2
-		if((*it)->type == START_LOCATION)
-			temp_location = index;
-#endif
-#endif
-
-		if((*it)->type == L_CITY)
-		{
-			City& city = (City&)**it;
-			city.citizens = 0;
-			city.citizens_world = 0;
-			LocalVector2<Building*> buildings;
-			GenerateCityBuildings(city, buildings.Get(), true);
-			city.buildings.reserve(buildings.size());
-			for(Building* b : buildings)
-			{
-				CityBuilding& cb = Add1(city.buildings);
-				cb.type = b;
-			}
-		}
-		else if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
-		{
-			InsideLocation* inside;
-
-			int cel;
-			if((*it)->type == L_CRYPT)
-			{
-				if(gwarant_krypta == -1)
-					cel = (Rand() % 2 == 0 ? HERO_CRYPT : MONSTER_CRYPT);
-				else if(gwarant_krypta == 0)
-				{
-					cel = HERO_CRYPT;
-					++gwarant_krypta;
-				}
-				else if(gwarant_krypta == 1)
-				{
-					cel = MONSTER_CRYPT;
-					gwarant_krypta = -1;
-				}
-				else
-				{
-					assert(0);
-					cel = HERO_CRYPT;
-				}
-			}
-			else
-			{
-				if(gwarant_podziemia == -1)
-				{
-					switch(Rand() % 14)
-					{
-					case 0:
-					case 1:
-						cel = HUMAN_FORT;
-						break;
-					case 2:
-					case 3:
-						cel = DWARF_FORT;
-						break;
-					case 4:
-					case 5:
-						cel = MAGE_TOWER;
-						break;
-					case 6:
-					case 7:
-						cel = BANDITS_HIDEOUT;
-						break;
-					case 8:
-					case 9:
-						cel = OLD_TEMPLE;
-						break;
-					case 10:
-						cel = VAULT;
-						break;
-					case 11:
-					case 12:
-						cel = NECROMANCER_BASE;
-						break;
-					case 13:
-						cel = LABIRYNTH;
-						break;
-					default:
-						assert(0);
-						cel = HUMAN_FORT;
-						break;
-					}
-				}
-				else
-				{
-					switch(gwarant_podziemia)
-					{
-					case 0:
-						cel = HUMAN_FORT;
-						break;
-					case 1:
-						cel = DWARF_FORT;
-						break;
-					case 2:
-						cel = MAGE_TOWER;
-						break;
-					case 3:
-						cel = BANDITS_HIDEOUT;
-						break;
-					case 4:
-						cel = OLD_TEMPLE;
-						break;
-					case 5:
-						cel = VAULT;
-						break;
-					case 6:
-						cel = NECROMANCER_BASE;
-						break;
-					case 7:
-						cel = LABIRYNTH;
-						break;
-					default:
-						assert(0);
-						cel = HUMAN_FORT;
-						break;
-					}
-
-					++gwarant_podziemia;
-					if(cel == 8)
-						gwarant_podziemia = -1;
-				}
-			}
-
-			BaseLocation& base = g_base_locations[cel];
-			int poziomy = base.levels.Random();
-			Location* loc = *it;
-
-			if(poziomy == 1)
-				inside = new SingleInsideLocation;
-			else
-				inside = new MultiInsideLocation(poziomy);
-
-			inside->type = loc->type;
-			inside->image = loc->image;
-			inside->state = loc->state;
-			inside->pos = loc->pos;
-			inside->name = loc->name;
-			delete loc;
-			*it = inside;
-
-			inside->target = cel;
-			if(cel == LABIRYNTH)
-			{
-				inside->st = Random(8, 15);
-				inside->spawn = SG_NIEUMARLI;
-			}
-			else
-			{
-				inside->spawn = RandomSpawnGroup(base);
-				if(Vec2::Distance(inside->pos, locations[startowe]->pos) < 100)
-					inside->st = Random(3, 6);
-				else
-					inside->st = Random(3, 15);
-			}
-
-#ifdef START_LOCATION2
-			if(inside->cel == START_LOCATION2)
-				temp_location = index;
-#endif
-		}
-		else if((*it)->type == L_CAVE || (*it)->type == L_FOREST || (*it)->type == L_ENCOUNTER)
-		{
-			if(Vec2::Distance((*it)->pos, locations[startowe]->pos) < 100)
-				(*it)->st = Random(3, 6);
-			else
-				(*it)->st = Random(3, 13);
-		}
-		else if((*it)->type == L_MOONWELL)
-			(*it)->st = 10;
-	}
-
-	// koniec generowania
-#ifdef START_LOCATION
-	current_location = temp_location;
-#else
-	current_location = startowe;
-#endif
-	world_pos = locations[current_location]->pos;
+	current_location = W.GenerateWorld();
+	world_pos = W.locations[current_location]->pos;
 
 	Info("Randomness integrity: %d", RandVal());
 }
 
-void Game::GenerateCityBuildings(City& city, vector<Building*>& buildings, bool required)
-{
-	BuildingScript* script = BuildingScript::Get(city.IsVillage() ? "village" : "city");
-	if(city.variant == -1)
-		city.variant = Rand() % script->variants.size();
-
-	BuildingScript::Variant* v = script->variants[city.variant];
-	int* code = v->code.data();
-	int* end = code + v->code.size();
-	for(uint i = 0; i < BuildingScript::MAX_VARS; ++i)
-		script->vars[i] = 0;
-	script->vars[BuildingScript::V_COUNT] = 1;
-	script->vars[BuildingScript::V_CITIZENS] = city.citizens;
-	script->vars[BuildingScript::V_CITIZENS_WORLD] = city.citizens_world;
-	if(!required)
-		code += script->required_offset;
-
-	vector<int> stack;
-	int if_level = 0, if_depth = 0;
-	int shuffle_start = -1;
-	int& building_count = script->vars[BuildingScript::V_COUNT];
-
-	while(code != end)
-	{
-		BuildingScript::Code c = (BuildingScript::Code)*code++;
-		switch(c)
-		{
-		case BuildingScript::BS_ADD_BUILDING:
-			if(if_level == if_depth)
-			{
-				BuildingScript::Code type = (BuildingScript::Code)*code++;
-				if(type == BuildingScript::BS_BUILDING)
-				{
-					Building* b = (Building*)*code++;
-					for(int i = 0; i < building_count; ++i)
-						buildings.push_back(b);
-				}
-				else
-				{
-					BuildingGroup* bg = (BuildingGroup*)*code++;
-					for(int i = 0; i < building_count; ++i)
-						buildings.push_back(random_item(bg->buildings));
-				}
-			}
-			else
-				code += 2;
-			break;
-		case BuildingScript::BS_RANDOM:
-			{
-				uint count = (uint)*code++;
-				if(if_level != if_depth)
-				{
-					code += count * 2;
-					break;
-				}
-
-				for(int i = 0; i < building_count; ++i)
-				{
-					uint index = Rand() % count;
-					BuildingScript::Code type = (BuildingScript::Code)*(code + index * 2);
-					if(type == BuildingScript::BS_BUILDING)
-					{
-						Building* b = (Building*)*(code + index * 2 + 1);
-						buildings.push_back(b);
-					}
-					else
-					{
-						BuildingGroup* bg = (BuildingGroup*)*(code + index * 2 + 1);
-						buildings.push_back(random_item(bg->buildings));
-					}
-				}
-
-				code += count * 2;
-			}
-			break;
-		case BuildingScript::BS_SHUFFLE_START:
-			if(if_level == if_depth)
-				shuffle_start = (int)buildings.size();
-			break;
-		case BuildingScript::BS_SHUFFLE_END:
-			if(if_level == if_depth)
-			{
-				int new_pos = (int)buildings.size();
-				if(new_pos - shuffle_start >= 2)
-					std::random_shuffle(buildings.begin() + shuffle_start, buildings.end(), MyRand);
-				shuffle_start = -1;
-			}
-			break;
-		case BuildingScript::BS_REQUIRED_OFF:
-			if(required)
-				goto cleanup;
-			break;
-		case BuildingScript::BS_PUSH_INT:
-			if(if_level == if_depth)
-				stack.push_back(*code++);
-			else
-				++code;
-			break;
-		case BuildingScript::BS_PUSH_VAR:
-			if(if_level == if_depth)
-				stack.push_back(script->vars[*code++]);
-			else
-				++code;
-			break;
-		case BuildingScript::BS_SET_VAR:
-			if(if_level == if_depth)
-			{
-				script->vars[*code++] = stack.back();
-				stack.pop_back();
-			}
-			else
-				++code;
-			break;
-		case BuildingScript::BS_INC:
-			if(if_level == if_depth)
-				++script->vars[*code++];
-			else
-				++code;
-			break;
-		case BuildingScript::BS_DEC:
-			if(if_level == if_depth)
-				--script->vars[*code++];
-			else
-				++code;
-			break;
-		case BuildingScript::BS_IF:
-			if(if_level == if_depth)
-			{
-				BuildingScript::Code op = (BuildingScript::Code)*code++;
-				int right = stack.back();
-				stack.pop_back();
-				int left = stack.back();
-				stack.pop_back();
-				bool ok = false;
-				switch(op)
-				{
-				case BuildingScript::BS_EQUAL:
-					ok = (left == right);
-					break;
-				case BuildingScript::BS_NOT_EQUAL:
-					ok = (left != right);
-					break;
-				case BuildingScript::BS_GREATER:
-					ok = (left > right);
-					break;
-				case BuildingScript::BS_GREATER_EQUAL:
-					ok = (left >= right);
-					break;
-				case BuildingScript::BS_LESS:
-					ok = (left < right);
-					break;
-				case BuildingScript::BS_LESS_EQUAL:
-					ok = (left <= right);
-					break;
-				}
-				++if_level;
-				if(ok)
-					++if_depth;
-			}
-			else
-			{
-				++code;
-				++if_level;
-			}
-			break;
-		case BuildingScript::BS_IF_RAND:
-			if(if_level == if_depth)
-			{
-				int a = stack.back();
-				stack.pop_back();
-				if(a > 0 && Rand() % a == 0)
-					++if_depth;
-			}
-			++if_level;
-			break;
-		case BuildingScript::BS_ELSE:
-			if(if_level == if_depth)
-				--if_depth;
-			break;
-		case BuildingScript::BS_ENDIF:
-			if(if_level == if_depth)
-				--if_depth;
-			--if_level;
-			break;
-		case BuildingScript::BS_CALL:
-		case BuildingScript::BS_ADD:
-		case BuildingScript::BS_SUB:
-		case BuildingScript::BS_MUL:
-		case BuildingScript::BS_DIV:
-			if(if_level == if_depth)
-			{
-				int b = stack.back();
-				stack.pop_back();
-				int a = stack.back();
-				stack.pop_back();
-				int result = 0;
-				switch(c)
-				{
-				case BuildingScript::BS_CALL:
-					if(a == b)
-						result = a;
-					else if(b > a)
-						result = Random(a, b);
-					break;
-				case BuildingScript::BS_ADD:
-					result = a + b;
-					break;
-				case BuildingScript::BS_SUB:
-					result = a - b;
-					break;
-				case BuildingScript::BS_MUL:
-					result = a * b;
-					break;
-				case BuildingScript::BS_DIV:
-					if(b != 0)
-						result = a / b;
-					break;
-				}
-				stack.push_back(result);
-			}
-			break;
-		case BuildingScript::BS_NEG:
-			if(if_level == if_depth)
-				stack.back() = -stack.back();
-			break;
-		}
-	}
-
-cleanup:
-	city.citizens = script->vars[BuildingScript::V_CITIZENS];
-	city.citizens_world = script->vars[BuildingScript::V_CITIZENS_WORLD];
-}
-
 bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
-	Location& l = *locations[current_location];
+	Location& l = *W.locations[current_location];
 	if(l.type == L_ACADEMY)
 	{
 		ShowAcademyText();
@@ -2518,7 +1900,7 @@ void Game::SpawnUnits(City* city)
 		ais.push_back(ai);
 	}
 
-	UnitData* mieszkaniec = UnitData::Get(LocationHelper::IsCity(locations[current_location]) ? "citizen" : "villager");
+	UnitData* mieszkaniec = UnitData::Get(LocationHelper::IsCity(W.locations[current_location]) ? "citizen" : "villager");
 
 	// pijacy w karczmie
 	for(int i = 0, ile = Random(1, city_ctx->citizens / 3); i < ile; ++i)
@@ -2608,7 +1990,7 @@ void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_
 
 void Game::GenerateStockItems()
 {
-	Location& loc = *locations[current_location];
+	Location& loc = *W.locations[current_location];
 
 	assert(loc.type == L_CITY);
 
@@ -2818,7 +2200,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		}
 		to_remove.clear();
 
-		Location& loc = *locations[open_location];
+		Location& loc = *W.locations[open_location];
 		if(loc.type == L_ENCOUNTER)
 		{
 			OutsideLocation* outside = (OutsideLocation*)location;
@@ -3229,7 +2611,7 @@ void Game::GenerateDungeonObjects2()
 
 void Game::SpawnCityPhysics()
 {
-	City* city = (City*)locations[current_location];
+	City* city = (City*)W.locations[current_location];
 	TerrainTile* tiles = city->tiles;
 
 	for(int z = 0; z < City::size; ++z)
@@ -3708,7 +3090,7 @@ void Game::Event_RandomEncounter(int)
 	dialog_enc = nullptr;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::CLOSE_ENCOUNTER);
-	current_location = encounter_loc;
+	current_location = W.GetEncounterLocationIndex();
 	EnterLocation();
 }
 
@@ -4212,10 +3594,10 @@ Encounter* Game::RecreateEncounter(int id)
 // jeœli nie ma to zak³ada obóz
 int Game::GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range)
 {
-	int best_ok = -1, best_empty = -1, index = settlements;
+	int best_ok = -1, best_empty = -1, index = W.settlements;
 	float ok_range, empty_range, dist;
 
-	for(vector<Location*>::iterator it = locations.begin() + settlements, end = locations.end(); it != end; ++it, ++index)
+	for(vector<Location*>::iterator it = W.locations.begin() + W.settlements, end = W.locations.end(); it != end; ++it, ++index)
 	{
 		if(!*it)
 			continue;
@@ -4250,14 +3632,14 @@ int Game::GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range
 
 	if(best_ok != -1)
 	{
-		locations[best_ok]->reset = true;
+		W.locations[best_ok]->reset = true;
 		return best_ok;
 	}
 
 	if(best_empty != -1)
 	{
-		locations[best_empty]->spawn = group;
-		locations[best_empty]->reset = true;
+		W.locations[best_empty]->spawn = group;
+		W.locations[best_empty]->reset = true;
 		return best_empty;
 	}
 
@@ -4332,7 +3714,7 @@ void Game::DoWorldProgress(int days)
 	{
 		if((*it)->IsTimedout())
 		{
-			Location* loc = locations[(*it)->target_loc];
+			Location* loc = W.locations[(*it)->target_loc];
 			bool in_camp = false;
 
 			if(loc->type == L_CAMP && ((*it)->target_loc == picked_location || (*it)->target_loc == current_location))
@@ -4377,16 +3759,16 @@ void Game::DoWorldProgress(int days)
 				outside->units.clear();
 				delete loc;
 
-				for(vector<Location*>::iterator it2 = locations.begin(), end2 = locations.end(); it2 != end2; ++it2)
+				for(vector<Location*>::iterator it2 = W.locations.begin(), end2 = W.locations.end(); it2 != end2; ++it2)
 				{
 					if((*it2) == loc)
 					{
 						if(it2 + 1 == end2)
-							locations.pop_back();
+							W.locations.pop_back();
 						else
 						{
 							*it2 = nullptr;
-							++empty_locations;
+							++W.empty_locations;
 						}
 						break;
 					}
@@ -4421,7 +3803,7 @@ void Game::DoWorldProgress(int days)
 
 	// resetowanie lokacji / usuwanie obozów po czasie
 	int index = 0;
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
+	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++index)
 	{
 		if(!*it || (*it)->active_quest || (*it)->type == L_ENCOUNTER)
 			continue;
@@ -4430,7 +3812,7 @@ void Game::DoWorldProgress(int days)
 			Camp* camp = (Camp*)(*it);
 			if(W.GetWorldtime() - camp->create_time >= 30
 				&& (location != *it || game_state != GS_LEVEL)
-				&& (picked_location == -1 || locations[picked_location] != *it))
+				&& (picked_location == -1 || W.locations[picked_location] != *it))
 			{
 				if(location == *it)
 				{
@@ -4455,13 +3837,13 @@ void Game::DoWorldProgress(int days)
 
 				if(it + 1 == end)
 				{
-					locations.pop_back();
+					W.locations.pop_back();
 					break;
 				}
 				else
 				{
 					*it = nullptr;
-					++empty_locations;
+					++W.empty_locations;
 				}
 			}
 		}
@@ -4474,7 +3856,7 @@ void Game::DoWorldProgress(int days)
 			{
 				InsideLocation* inside = (InsideLocation*)*it;
 				if(inside->target != LABIRYNTH)
-					inside->spawn = RandomSpawnGroup(g_base_locations[inside->target]);
+					inside->spawn = g_base_locations[inside->target].GetRandomSpawnGroup();
 				if(inside->IsMultilevel())
 					((MultiInsideLocation*)inside)->Reset();
 			}
@@ -5030,7 +4412,7 @@ int Game::GetClosestLocation(LOCATION type, const Vec2& pos, int target)
 	int best = -1, index = 0;
 	float dist, best_dist;
 
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
+	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++index)
 	{
 		if(!*it || (*it)->active_quest || (*it)->type != type)
 			continue;
@@ -5052,7 +4434,7 @@ int Game::GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_ta
 	int best = -1, index = 0;
 	float dist, best_dist;
 
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
+	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++index)
 	{
 		if(!*it || (*it)->active_quest || (*it)->type != type)
 			continue;
@@ -5151,11 +4533,11 @@ int Game::AddLocation(Location* loc)
 {
 	assert(loc);
 
-	if(empty_locations)
+	if(W.empty_locations)
 	{
-		--empty_locations;
-		int index = locations.size() - 1;
-		for(vector<Location*>::reverse_iterator rit = locations.rbegin(), rend = locations.rend(); rit != rend; ++rit, --index)
+		--W.empty_locations;
+		int index = W.locations.size() - 1;
+		for(vector<Location*>::reverse_iterator rit = W.locations.rbegin(), rend = W.locations.rend(); rit != rend; ++rit, --index)
 		{
 			if(!*rit)
 			{
@@ -5178,10 +4560,10 @@ int Game::AddLocation(Location* loc)
 		{
 			NetChange& c = Add1(Net::changes);
 			c.type = NetChange::ADD_LOCATION;
-			c.id = locations.size();
+			c.id = W.locations.size();
 		}
-		locations.push_back(loc);
-		return locations.size() - 1;
+		W.locations.push_back(loc);
+		return W.locations.size() - 1;
 	}
 }
 
@@ -5210,7 +4592,7 @@ int Game::CreateLocation(LOCATION type, const Vec2& pos, float range, int target
 			levels = _levels;
 	}
 
-	Location* loc = CreateLocation(type, levels);
+	Location* loc = W.CreateLocation(type, levels);
 	loc->pos = pt;
 	loc->type = type;
 
@@ -5229,7 +4611,7 @@ int Game::CreateLocation(LOCATION type, const Vec2& pos, float range, int target
 		else
 		{
 			if(spawn == SG_LOSOWO)
-				inside->spawn = RandomSpawnGroup(g_base_locations[target]);
+				inside->spawn = g_base_locations[target].GetRandomSpawnGroup();
 			else
 				inside->spawn = spawn;
 			inside->st = Random(3, 15);
@@ -5259,7 +4641,7 @@ bool Game::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
 	for(int i = 0; i < 20; ++i)
 	{
 		bool valid = true;
-		for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
+		for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it)
 		{
 			if(*it && Vec2::Distance(pt, (*it)->pos) < 24)
 			{
@@ -5287,7 +4669,7 @@ int Game::GetNearestLocation2(const Vec2& pos, int flags, bool not_quest, int fl
 	float best_dist = 999.f;
 	int best_index = -1, index = 0;
 
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
+	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++index)
 	{
 		if(*it && IS_SET(flags, 1 << (*it)->type) && (!not_quest || !(*it)->active_quest))
 		{
@@ -5315,9 +4697,9 @@ int Game::FindLocationId(Location* loc)
 {
 	assert(loc);
 
-	for(int index = 0, size = int(locations.size()); index < size; ++index)
+	for(int index = 0, size = int(W.locations.size()); index < size; ++index)
 	{
-		if(locations[index] == loc)
+		if(W.locations[index] == loc)
 			return index;
 	}
 
@@ -6503,7 +5885,7 @@ void Game::PrepareCityBuildings(City& city, vector<ToBuild>& tobuild)
 
 	// not required buildings
 	LocalVector2<Building*> buildings;
-	GenerateCityBuildings(city, buildings.Get(), false);
+	city.GenerateCityBuildings(buildings.Get(), false);
 	tobuild.reserve(tobuild.size() + buildings.size());
 	for(Building* b : buildings)
 		tobuild.push_back(ToBuild(b, false));
@@ -6621,7 +6003,7 @@ int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
 
 	if(hint_loc != -1)
 	{
-		if(locations[hint_loc]->FindUnit(unit, &level))
+		if(W.locations[hint_loc]->FindUnit(unit, &level))
 		{
 			if(out_level)
 				*out_level = level;
@@ -6631,7 +6013,7 @@ int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
 
 	if(hint_loc2 != -1 && hint_loc != hint_loc2)
 	{
-		if(locations[hint_loc2]->FindUnit(unit, &level))
+		if(W.locations[hint_loc2]->FindUnit(unit, &level))
 		{
 			if(out_level)
 				*out_level = level;
@@ -6639,9 +6021,9 @@ int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
 		}
 	}
 
-	for(uint i = 0; i < locations.size(); ++i)
+	for(uint i = 0; i < W.locations.size(); ++i)
 	{
-		Location* loc = locations[i];
+		Location* loc = W.locations[i];
 		if(loc && i != hint_loc && i != hint_loc2 && loc->state >= LS_ENTERED && loc->FindUnit(unit, &level))
 		{
 			if(out_level)

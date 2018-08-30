@@ -5,6 +5,7 @@
 #include "InsideLocation.h"
 #include "MultiInsideLocation.h"
 #include "SingleInsideLocation.h"
+#include "World.h"
 
 ObjectPool<LevelAreaContext> LevelAreaContextPool;
 
@@ -21,7 +22,7 @@ LevelAreaContext* Game::ForLevel(int loc, int level)
 	lac->entries.clear();
 
 	bool active = (current_location == loc);
-	Location* l = locations[loc];
+	Location* l = W.locations[loc];
 	assert(l->state >= LS_ENTERED);
 
 	switch(l->type)

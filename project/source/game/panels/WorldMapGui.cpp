@@ -15,6 +15,7 @@
 #include "GameMessages.h"
 #include "DialogBox.h"
 #include "World.h"
+#include "GameStats.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -96,7 +97,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	GUI.DrawSpriteTransform(tWorldMap, mat);
 
 	// obrazki lokacji
-	for(vector<Location*>::iterator it = game.locations.begin(), end = game.locations.end(); it != end; ++it)
+	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it)
 	{
 		if(!*it)
 			continue;
@@ -121,7 +122,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	// opis aktualnej lokacji
 	if(game.current_location != -1)
 	{
-		Location& current = *game.locations[game.current_location];
+		Location& current = *W.locations[game.current_location];
 		GUI.DrawSprite(tSelected[1], WorldPosToScreen(Int2(current.pos.x - 32.f, current.pos.y + 32.f)), 0xAAFFFFFF);
 		s += Format("\n\n%s: %s", txCurrentLoc, current.name.c_str());
 		AppendLocationText(current, s.get_ref());
@@ -130,7 +131,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	// opis zaznaczonej lokacji
 	if(game.picked_location != -1)
 	{
-		Location& picked = *game.locations[game.picked_location];
+		Location& picked = *W.locations[game.picked_location];
 
 		if(game.picked_location != game.current_location)
 		{
@@ -158,7 +159,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	// kreska
 	if(game.picked_location != -1 && game.picked_location != game.current_location)
 	{
-		Location& picked = *game.locations[game.picked_location];
+		Location& picked = *W.locations[game.picked_location];
 		Vec2 pts[2] = { WorldPosToScreen(game.world_pos), WorldPosToScreen(picked.pos) };
 
 		GUI.LineBegin();
@@ -183,7 +184,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		GUI.DrawSprite(game.tEmerytura, Center(desc.Width, desc.Height), color);
 
 		// tekst
-		cstring text = Format(txGameTimeout, game.pc->kills, game.total_kills - game.pc->kills);
+		cstring text = Format(txGameTimeout, game.pc->kills, GameStats::Get().total_kills - game.pc->kills);
 		Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 		GUI.DrawText(GUI.default_font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
 	}
@@ -230,7 +231,7 @@ void WorldMapGui::Update(float dt)
 
 		// ruch po mapie
 		game.travel_time += dt;
-		const Vec2& end_pt = game.locations[game.picked_location]->pos;
+		const Vec2& end_pt = W.locations[game.picked_location]->pos;
 		float dist = Vec2::Distance(game.travel_start, end_pt);
 		if(game.travel_time > game.travel_day)
 		{
@@ -249,7 +250,7 @@ void WorldMapGui::Update(float dt)
 					Net::PushChange(NetChange::END_TRAVEL);
 				game.world_state = WS_MAIN;
 				game.current_location = game.picked_location;
-				Location& loc = *game.locations[game.current_location];
+				Location& loc = *W.locations[game.current_location];
 				if(loc.state == LS_KNOWN)
 					game.SetLocationVisited(loc);
 				game.world_pos = end_pt;
@@ -271,7 +272,7 @@ void WorldMapGui::Update(float dt)
 			{
 				game.travel_time2 = 0;
 				int co = -2, enc = -1, index = 0;
-				for(Location* ploc : game.locations)
+				for(Location* ploc : W.locations)
 				{
 					if(!ploc)
 					{
@@ -333,7 +334,7 @@ void WorldMapGui::Update(float dt)
 				if(Rand() % 500 < ((int)game.szansa_na_spotkanie) - 25 || (DEBUG_BOOL && Key.Focus() && Key.Down('E')))
 				{
 					game.szansa_na_spotkanie = 0.f;
-					game.locations[game.encounter_loc]->state = LS_UNKNOWN;
+					W.locations[W.GetEncounterLocationIndex()]->state = LS_UNKNOWN;
 
 					if(enc != -1)
 					{
@@ -530,7 +531,7 @@ void WorldMapGui::Update(float dt)
 
 		if(focus)
 		{
-			for(vector<Location*>::iterator it = game.locations.begin(), end = game.locations.end(); it != end; ++it, ++i)
+			for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++i)
 			{
 				if(!*it || (*it)->state == LS_UNKNOWN || (*it)->state == LS_HIDDEN)
 					continue;
@@ -562,7 +563,7 @@ void WorldMapGui::Update(float dt)
 							game.travel_time = 0.f;
 							game.travel_day = 0;
 							game.travel_start = game.world_pos;
-							Location& l = *game.locations[game.picked_location];
+							Location& l = *W.locations[game.picked_location];
 							game.world_dir = Clip(Angle(game.world_pos.x, game.world_pos.y, l.pos.x, l.pos.y) + PI);
 							game.travel_time2 = 0.f;
 
@@ -596,7 +597,7 @@ void WorldMapGui::Update(float dt)
 					if(game.IsLeader())
 					{
 						game.current_location = game.picked_location;
-						Location& loc = *game.locations[game.current_location];
+						Location& loc = *W.locations[game.current_location];
 						if(loc.state == LS_KNOWN)
 							game.SetLocationVisited(loc);
 						game.world_pos = loc.pos;

@@ -7,6 +7,7 @@
 #include "Object.h"
 #include "Unit.h"
 #include "GameFile.h"
+#include "BuildingScript.h"
 
 //=================================================================================================
 City::~City()
@@ -721,4 +722,238 @@ CityBuilding* City::FindBuilding(Building* type)
 			return &b;
 	}
 	return nullptr;
+}
+
+//=================================================================================================
+void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
+{
+	BuildingScript* script = BuildingScript::Get(IsVillage() ? "village" : "city");
+	if(variant == -1)
+		variant = Rand() % script->variants.size();
+
+	BuildingScript::Variant* v = script->variants[variant];
+	int* code = v->code.data();
+	int* end = code + v->code.size();
+	for(uint i = 0; i < BuildingScript::MAX_VARS; ++i)
+		script->vars[i] = 0;
+	script->vars[BuildingScript::V_COUNT] = 1;
+	script->vars[BuildingScript::V_CITIZENS] = citizens;
+	script->vars[BuildingScript::V_CITIZENS_WORLD] = citizens_world;
+	if(!required)
+		code += script->required_offset;
+
+	vector<int> stack;
+	int if_level = 0, if_depth = 0;
+	int shuffle_start = -1;
+	int& building_count = script->vars[BuildingScript::V_COUNT];
+
+	while(code != end)
+	{
+		BuildingScript::Code c = (BuildingScript::Code)*code++;
+		switch(c)
+		{
+		case BuildingScript::BS_ADD_BUILDING:
+			if(if_level == if_depth)
+			{
+				BuildingScript::Code type = (BuildingScript::Code)*code++;
+				if(type == BuildingScript::BS_BUILDING)
+				{
+					Building* b = (Building*)*code++;
+					for(int i = 0; i < building_count; ++i)
+						buildings.push_back(b);
+				}
+				else
+				{
+					BuildingGroup* bg = (BuildingGroup*)*code++;
+					for(int i = 0; i < building_count; ++i)
+						buildings.push_back(random_item(bg->buildings));
+				}
+			}
+			else
+				code += 2;
+			break;
+		case BuildingScript::BS_RANDOM:
+			{
+				uint count = (uint)*code++;
+				if(if_level != if_depth)
+				{
+					code += count * 2;
+					break;
+				}
+
+				for(int i = 0; i < building_count; ++i)
+				{
+					uint index = Rand() % count;
+					BuildingScript::Code type = (BuildingScript::Code)*(code + index * 2);
+					if(type == BuildingScript::BS_BUILDING)
+					{
+						Building* b = (Building*)*(code + index * 2 + 1);
+						buildings.push_back(b);
+					}
+					else
+					{
+						BuildingGroup* bg = (BuildingGroup*)*(code + index * 2 + 1);
+						buildings.push_back(random_item(bg->buildings));
+					}
+				}
+
+				code += count * 2;
+			}
+			break;
+		case BuildingScript::BS_SHUFFLE_START:
+			if(if_level == if_depth)
+				shuffle_start = (int)buildings.size();
+			break;
+		case BuildingScript::BS_SHUFFLE_END:
+			if(if_level == if_depth)
+			{
+				int new_pos = (int)buildings.size();
+				if(new_pos - shuffle_start >= 2)
+					std::random_shuffle(buildings.begin() + shuffle_start, buildings.end(), MyRand);
+				shuffle_start = -1;
+			}
+			break;
+		case BuildingScript::BS_REQUIRED_OFF:
+			if(required)
+				goto cleanup;
+			break;
+		case BuildingScript::BS_PUSH_INT:
+			if(if_level == if_depth)
+				stack.push_back(*code++);
+			else
+				++code;
+			break;
+		case BuildingScript::BS_PUSH_VAR:
+			if(if_level == if_depth)
+				stack.push_back(script->vars[*code++]);
+			else
+				++code;
+			break;
+		case BuildingScript::BS_SET_VAR:
+			if(if_level == if_depth)
+			{
+				script->vars[*code++] = stack.back();
+				stack.pop_back();
+			}
+			else
+				++code;
+			break;
+		case BuildingScript::BS_INC:
+			if(if_level == if_depth)
+				++script->vars[*code++];
+			else
+				++code;
+			break;
+		case BuildingScript::BS_DEC:
+			if(if_level == if_depth)
+				--script->vars[*code++];
+			else
+				++code;
+			break;
+		case BuildingScript::BS_IF:
+			if(if_level == if_depth)
+			{
+				BuildingScript::Code op = (BuildingScript::Code)*code++;
+				int right = stack.back();
+				stack.pop_back();
+				int left = stack.back();
+				stack.pop_back();
+				bool ok = false;
+				switch(op)
+				{
+				case BuildingScript::BS_EQUAL:
+					ok = (left == right);
+					break;
+				case BuildingScript::BS_NOT_EQUAL:
+					ok = (left != right);
+					break;
+				case BuildingScript::BS_GREATER:
+					ok = (left > right);
+					break;
+				case BuildingScript::BS_GREATER_EQUAL:
+					ok = (left >= right);
+					break;
+				case BuildingScript::BS_LESS:
+					ok = (left < right);
+					break;
+				case BuildingScript::BS_LESS_EQUAL:
+					ok = (left <= right);
+					break;
+				}
+				++if_level;
+				if(ok)
+					++if_depth;
+			}
+			else
+			{
+				++code;
+				++if_level;
+			}
+			break;
+		case BuildingScript::BS_IF_RAND:
+			if(if_level == if_depth)
+			{
+				int a = stack.back();
+				stack.pop_back();
+				if(a > 0 && Rand() % a == 0)
+					++if_depth;
+			}
+			++if_level;
+			break;
+		case BuildingScript::BS_ELSE:
+			if(if_level == if_depth)
+				--if_depth;
+			break;
+		case BuildingScript::BS_ENDIF:
+			if(if_level == if_depth)
+				--if_depth;
+			--if_level;
+			break;
+		case BuildingScript::BS_CALL:
+		case BuildingScript::BS_ADD:
+		case BuildingScript::BS_SUB:
+		case BuildingScript::BS_MUL:
+		case BuildingScript::BS_DIV:
+			if(if_level == if_depth)
+			{
+				int b = stack.back();
+				stack.pop_back();
+				int a = stack.back();
+				stack.pop_back();
+				int result = 0;
+				switch(c)
+				{
+				case BuildingScript::BS_CALL:
+					if(a == b)
+						result = a;
+					else if(b > a)
+						result = Random(a, b);
+					break;
+				case BuildingScript::BS_ADD:
+					result = a + b;
+					break;
+				case BuildingScript::BS_SUB:
+					result = a - b;
+					break;
+				case BuildingScript::BS_MUL:
+					result = a * b;
+					break;
+				case BuildingScript::BS_DIV:
+					if(b != 0)
+						result = a / b;
+					break;
+				}
+				stack.push_back(result);
+			}
+			break;
+		case BuildingScript::BS_NEG:
+			if(if_level == if_depth)
+				stack.back() = -stack.back();
+			break;
+		}
+	}
+
+cleanup:
+	citizens = script->vars[BuildingScript::V_CITIZENS];
+	citizens_world = script->vars[BuildingScript::V_CITIZENS_WORLD];
 }

@@ -1018,7 +1018,7 @@ void Game::UpdateGame(float dt)
 		else
 			text = txWin;
 
-		GUI.SimpleDialog(Format(text, pc->kills, total_kills - pc->kills), nullptr);
+		GUI.SimpleDialog(Format(text, pc->kills, GameStats::Get().total_kills - pc->kills), nullptr);
 	}
 
 	// wyzeruj pobliskie jednostki
@@ -1594,7 +1594,7 @@ void Game::UpdateFallback(float dt)
 			case FALLBACK::USE_PORTAL:
 				{
 					Portal* portal = location->GetPortal(fallback_1);
-					Location* target_loc = locations[portal->target_loc];
+					Location* target_loc = W.locations[portal->target_loc];
 					int at_level = 0;
 					// aktualnie mo¿na siê tepn¹æ z X poziomu na 1 zawsze ale ¿eby z X na X to musi byæ odwiedzony
 					// np w sekrecie z 3 na 1 i spowrotem do
@@ -4937,12 +4937,12 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			case 0:
 				// info o nieznanej lokacji
 				{
-					int id = Rand() % locations.size();
+					int id = Rand() % W.locations.size();
 					int id2 = id;
 					bool ok = false;
 					do
 					{
-						if(locations[id2] && locations[id2]->state == LS_UNKNOWN)
+						if(W.locations[id2] && W.locations[id2]->state == LS_UNKNOWN)
 						{
 							ok = true;
 							break;
@@ -4950,15 +4950,15 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 						else
 						{
 							++id2;
-							if(id2 == locations.size())
+							if(id2 == W.locations.size())
 								id2 = 0;
 						}
 					} while(id != id2);
 					if(ok)
 					{
-						Location& loc = *locations[id2];
+						Location& loc = *W.locations[id2];
 						loc.state = LS_KNOWN;
-						Location& cloc = *locations[current_location];
+						Location& cloc = *W.locations[current_location];
 						cstring s_daleko;
 						float dist = Vec2::Distance(loc.pos, cloc.pos);
 						if(dist <= 300)
@@ -4991,7 +4991,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				{
 					Location* new_camp = nullptr;
 					static vector<Location*> camps;
-					for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
+					for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it)
 					{
 						if(*it && (*it)->type == L_CAMP && (*it)->state != LS_HIDDEN)
 						{
@@ -5009,7 +5009,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 					if(new_camp)
 					{
 						Location& loc = *new_camp;
-						Location& cloc = *locations[current_location];
+						Location& cloc = *W.locations[current_location];
 						cstring s_daleko;
 						float dist = Vec2::Distance(loc.pos, cloc.pos);
 						if(dist <= 300)
@@ -5078,31 +5078,31 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 					switch(co)
 					{
 					case P_TARTAK:
-						ctx.dialog_s_text = Format(txRumorQ[0], locations[quest_sawmill->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[0], W.locations[quest_sawmill->start_loc]->name.c_str());
 						break;
 					case P_KOPALNIA:
-						ctx.dialog_s_text = Format(txRumorQ[1], locations[quest_mine->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[1], W.locations[quest_mine->start_loc]->name.c_str());
 						break;
 					case P_ZAWODY_W_PICIU:
 						ctx.dialog_s_text = txRumorQ[2];
 						break;
 					case P_BANDYCI:
-						ctx.dialog_s_text = Format(txRumorQ[3], locations[quest_bandits->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[3], W.locations[quest_bandits->start_loc]->name.c_str());
 						break;
 					case P_MAGOWIE:
-						ctx.dialog_s_text = Format(txRumorQ[4], locations[quest_mages->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[4], W.locations[quest_mages->start_loc]->name.c_str());
 						break;
 					case P_MAGOWIE2:
 						ctx.dialog_s_text = txRumorQ[5];
 						break;
 					case P_ORKOWIE:
-						ctx.dialog_s_text = Format(txRumorQ[6], locations[quest_orcs->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[6], W.locations[quest_orcs->start_loc]->name.c_str());
 						break;
 					case P_GOBLINY:
-						ctx.dialog_s_text = Format(txRumorQ[7], locations[quest_goblins->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[7], W.locations[quest_goblins->start_loc]->name.c_str());
 						break;
 					case P_ZLO:
-						ctx.dialog_s_text = Format(txRumorQ[8], locations[quest_evil->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[8], W.locations[quest_evil->start_loc]->name.c_str());
 						break;
 					default:
 						assert(0);
@@ -5223,7 +5223,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			ctx.active_locations.clear();
 
 			int index = 0;
-			for(Location* loc : locations)
+			for(Location* loc : W.locations)
 			{
 				if(loc && loc->type != L_CITY && loc->type != L_ACADEMY && Vec2::Distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
 					ctx.active_locations.push_back(std::pair<int, bool>(index, loc->state == LS_UNKNOWN));
@@ -5256,7 +5256,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 
 		int id = ctx.active_locations.back().first;
 		ctx.active_locations.pop_back();
-		Location& loc = *locations[id];
+		Location& loc = *W.locations[id];
 		if(loc.state == LS_UNKNOWN)
 		{
 			loc.state = LS_KNOWN;
@@ -12950,7 +12950,7 @@ void Game::BuildRefidTables()
 	// jednostki i u¿ywalne
 	Unit::refid_table.clear();
 	Usable::refid_table.clear();
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
+	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it)
 	{
 		if(*it)
 			(*it)->BuildRefidTable();
@@ -13062,7 +13062,6 @@ void Game::ClearGameVarsOnNewGame()
 	open_location = -1;
 	picked_location = -1;
 	arena_free = true;
-	total_kills = 0;
 	world_dir = Random(MAX_ANGLE);
 	game_gui->PositionPanels();
 	ClearGui(true);
@@ -13082,43 +13081,6 @@ void Game::ClearGameVarsOnNewGame()
 void Game::ClearGameVarsOnLoad()
 {
 	ClearGameVarsOnNewGameOrLoad();
-}
-
-int Game::GetRandomSettlement(int this_city)
-{
-	int id = Rand() % settlements;
-	if(id == this_city)
-		id = (id + 1) % settlements;
-	return id;
-}
-
-int Game::GetRandomFreeSettlement(int this_city)
-{
-	int id = Rand() % settlements, tries = (int)settlements;
-	while((id == this_city || locations[id]->active_quest) && tries > 0)
-	{
-		id = (id + 1) % settlements;
-		--tries;
-	}
-	return (tries == 0 ? -1 : id);
-}
-
-int Game::GetRandomCity(int this_city)
-{
-	// policz ile jest miast
-	int ile = 0;
-	while(LocationHelper::IsCity(locations[ile]))
-		++ile;
-
-	int id = Rand() % ile;
-	if(id == this_city)
-	{
-		++id;
-		if(id == ile)
-			id = 0;
-	}
-
-	return id;
 }
 
 // czyszczenie gry
@@ -13150,7 +13112,7 @@ void Game::ClearGame()
 		StringPool.Free(net_talk);
 
 	// usuñ lokalizacje
-	DeleteElements(locations);
+	DeleteElements(W.locations);
 	open_location = -1;
 	local_ctx_valid = false;
 	city_ctx = nullptr;
@@ -13172,7 +13134,7 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 	else if(str_part == "mayor")
 		return LocationHelper::IsCity(location) ? "mayor" : "soltys";
 	else if(str_part == "rcitynhere")
-		return locations[GetRandomSettlement(current_location)]->name.c_str();
+		return W.GetRandomSettlement(current_location)->name.c_str();
 	else if(str_part == "name")
 	{
 		assert(ctx.talker->IsHero());
@@ -13194,11 +13156,11 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 		return Format("%d", ctx.team_share_item->value / 2);
 	}
 	else if(str_part == "chlanie_loc")
-		return locations[contest_where]->name.c_str();
+		return W.locations[contest_where]->name.c_str();
 	else if(str_part == "player_name")
 		return current_dialog->pc->name.c_str();
 	else if(str_part == "ironfist_city")
-		return locations[tournament_city]->name.c_str();
+		return W.locations[tournament_city]->name.c_str();
 	else if(str_part == "rhero")
 	{
 		static string str;
@@ -13212,27 +13174,6 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 		assert(0);
 		return "";
 	}
-}
-
-int Game::GetNearestLocation(const Vec2& pos, bool not_quest, bool not_city)
-{
-	float best_dist = 999.f;
-	int best_loc = -1;
-
-	int index = 0;
-	for(vector<Location*>::iterator it = locations.begin() + (not_city ? settlements : 0), end = locations.end(); it != end; ++it, ++index)
-	{
-		if(!*it)
-			continue;
-		float dist = Vec2::Distance((*it)->pos, pos);
-		if(dist < best_dist)
-		{
-			best_loc = index;
-			best_dist = dist;
-		}
-	}
-
-	return best_loc;
 }
 
 void Game::AddGameMsg(cstring msg, float time)
@@ -13534,7 +13475,7 @@ cstring Game::GetCurrentLocationText()
 		}
 	}
 	else
-		return Format(txLocationTextMap, locations[current_location]->name.c_str());
+		return Format(txLocationTextMap, W.locations[current_location]->name.c_str());
 }
 
 void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
@@ -14720,56 +14661,6 @@ LevelContext& Game::GetContext(const Vec3& pos)
 		}
 		return local_ctx;
 	}
-}
-
-SPAWN_GROUP Game::RandomSpawnGroup(const BaseLocation& base)
-{
-	int n = Rand() % 100;
-	int k = base.schance1;
-	SPAWN_GROUP sg = SG_LOSOWO;
-	if(base.schance1 > 0 && n < k)
-		sg = base.sg1;
-	else
-	{
-		k += base.schance2;
-		if(base.schance2 > 0 && n < k)
-			sg = base.sg2;
-		else
-		{
-			k += base.schance3;
-			if(base.schance3 > 0 && n < k)
-				sg = base.sg3;
-		}
-	}
-
-	if(sg == SG_LOSOWO)
-	{
-		switch(Rand() % 10)
-		{
-		case 0:
-		case 1:
-			return SG_GOBLINY;
-		case 2:
-		case 3:
-			return SG_ORKOWIE;
-		case 4:
-		case 5:
-			return SG_BANDYCI;
-		case 6:
-			return SG_MAGOWIE;
-		case 7:
-			return SG_NEKRO;
-		case 8:
-			return SG_ZLO;
-		case 9:
-			return SG_BRAK;
-		default:
-			assert(0);
-			return SG_BRAK;
-		}
-	}
-	else
-		return sg;
 }
 
 int Game::GetDungeonLevel()
@@ -16105,7 +15996,7 @@ void Game::CheckIfLocationCleared()
 			if(location->spawn != SG_BRAK)
 			{
 				if(location->type == L_CAMP)
-					AddNews(Format(txNewsCampCleared, locations[GetNearestSettlement(location->pos)]->name.c_str()));
+					AddNews(Format(txNewsCampCleared, W.locations[GetNearestSettlement(location->pos)]->name.c_str()));
 				else
 					AddNews(Format(txNewsLocCleared, location->name.c_str()));
 			}
@@ -16738,7 +16629,7 @@ void Game::SpawnHeroesInsideDungeon()
 					else
 						blood_to_spawn.push_back(&u);
 					u.hp = 0.f;
-					++total_kills;
+					++GameStats::Get().total_kills;
 
 					// przenieœ fizyke
 					btVector3 a_min, a_max;
@@ -16995,44 +16886,6 @@ GroundItem* Game::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos,
 	return nullptr;
 }
 
-int Game::GetRandomSettlement(const vector<int>& used, int type) const
-{
-	int id = Rand() % settlements;
-
-loop:
-	if(type != 0)
-	{
-		City* city = (City*)locations[id];
-		if(type == 1)
-		{
-			if(city->settlement_type == City::SettlementType::Village)
-			{
-				id = (id + 1) % settlements;
-				goto loop;
-			}
-		}
-		else
-		{
-			if(city->settlement_type == City::SettlementType::City)
-			{
-				id = (id + 1) % settlements;
-				goto loop;
-			}
-		}
-	}
-
-	for(vector<int>::const_iterator it = used.begin(), end = used.end(); it != end; ++it)
-	{
-		if(*it == id)
-		{
-			id = (id + 1) % settlements;
-			goto loop;
-		}
-	}
-
-	return id;
-}
-
 void Game::InitQuests()
 {
 	QuestManager& quest_manager = QuestManager::Get();
@@ -17040,7 +16893,7 @@ void Game::InitQuests()
 
 	// goblins
 	quest_goblins = new Quest_Goblins;
-	quest_goblins->start_loc = GetRandomSettlement(used, 1);
+	quest_goblins->start_loc = W.GetRandomSettlementIndex(used, 1);
 	quest_goblins->refid = quest_manager.quest_counter++;
 	quest_goblins->Start();
 	quest_manager.unaccepted_quests.push_back(quest_goblins);
@@ -17048,7 +16901,7 @@ void Game::InitQuests()
 
 	// bandits
 	quest_bandits = new Quest_Bandits;
-	quest_bandits->start_loc = GetRandomSettlement(used, 1);
+	quest_bandits->start_loc = W.GetRandomSettlementIndex(used, 1);
 	quest_bandits->refid = quest_manager.quest_counter++;
 	quest_bandits->Start();
 	quest_manager.unaccepted_quests.push_back(quest_bandits);
@@ -17056,7 +16909,7 @@ void Game::InitQuests()
 
 	// sawmill
 	quest_sawmill = new Quest_Sawmill;
-	quest_sawmill->start_loc = GetRandomSettlement(used);
+	quest_sawmill->start_loc = W.GetRandomSettlementIndex(used);
 	quest_sawmill->refid = quest_manager.quest_counter++;
 	quest_sawmill->Start();
 	quest_manager.unaccepted_quests.push_back(quest_sawmill);
@@ -17064,8 +16917,8 @@ void Game::InitQuests()
 
 	// mine
 	quest_mine = new Quest_Mine;
-	quest_mine->start_loc = GetRandomSettlement(used);
-	quest_mine->target_loc = GetClosestLocation(L_CAVE, locations[quest_mine->start_loc]->pos);
+	quest_mine->start_loc = W.GetRandomSettlementIndex(used);
+	quest_mine->target_loc = GetClosestLocation(L_CAVE, W.locations[quest_mine->start_loc]->pos);
 	quest_mine->refid = quest_manager.quest_counter++;
 	quest_mine->Start();
 	quest_manager.unaccepted_quests.push_back(quest_mine);
@@ -17073,7 +16926,7 @@ void Game::InitQuests()
 
 	// mages
 	quest_mages = new Quest_Mages;
-	quest_mages->start_loc = GetRandomSettlement(used);
+	quest_mages->start_loc = W.GetRandomSettlementIndex(used);
 	quest_mages->refid = quest_manager.quest_counter++;
 	quest_mages->Start();
 	quest_manager.unaccepted_quests.push_back(quest_mages);
@@ -17089,7 +16942,7 @@ void Game::InitQuests()
 
 	// orcs
 	quest_orcs = new Quest_Orcs;
-	quest_orcs->start_loc = GetRandomSettlement(used);
+	quest_orcs->start_loc = W.GetRandomSettlementIndex(used);
 	quest_orcs->refid = quest_manager.quest_counter++;
 	quest_orcs->Start();
 	quest_manager.unaccepted_quests.push_back(quest_orcs);
@@ -17103,7 +16956,7 @@ void Game::InitQuests()
 
 	// evil
 	quest_evil = new Quest_Evil;
-	quest_evil->start_loc = GetRandomSettlement(used);
+	quest_evil->start_loc = W.GetRandomSettlementIndex(used);
 	quest_evil->refid = quest_manager.quest_counter++;
 	quest_evil->Start();
 	quest_manager.unaccepted_quests.push_back(quest_evil);
@@ -17123,7 +16976,7 @@ void Game::InitQuests()
 
 	// drinking contest
 	contest_state = CONTEST_NOT_DONE;
-	contest_where = GetRandomSettlement();
+	contest_where = W.GetRandomSettlementIndex();
 	contest_units.clear();
 	contest_generated = false;
 	contest_winner = nullptr;
@@ -17131,7 +16984,7 @@ void Game::InitQuests()
 	// zawody
 	tournament_year = 0;
 	tournament_city_year = W.GetYear();
-	tournament_city = GetRandomCity();
+	tournament_city = W.GetRandomCityIndex();
 	tournament_state = TOURNAMENT_NOT_DONE;
 	tournament_units.clear();
 	tournament_winner = nullptr;
@@ -17139,15 +16992,15 @@ void Game::InitQuests()
 
 	if(devmode)
 	{
-		Info("Quest 'Sawmill' - %s.", locations[quest_sawmill->start_loc]->name.c_str());
-		Info("Quest 'Mine' - %s, %s.", locations[quest_mine->start_loc]->name.c_str(), locations[quest_mine->target_loc]->name.c_str());
-		Info("Quest 'Bandits' - %s.", locations[quest_bandits->start_loc]->name.c_str());
-		Info("Quest 'Mages' - %s.", locations[quest_mages->start_loc]->name.c_str());
-		Info("Quest 'Orcs' - %s.", locations[quest_orcs->start_loc]->name.c_str());
-		Info("Quest 'Goblins' - %s.", locations[quest_goblins->start_loc]->name.c_str());
-		Info("Quest 'Evil' - %s.", locations[quest_evil->start_loc]->name.c_str());
-		Info("Tournament - %s.", locations[tournament_city]->name.c_str());
-		Info("Contest - %s.", locations[contest_where]->name.c_str());
+		Info("Quest 'Sawmill' - %s.", W.locations[quest_sawmill->start_loc]->name.c_str());
+		Info("Quest 'Mine' - %s, %s.", W.locations[quest_mine->start_loc]->name.c_str(), W.locations[quest_mine->target_loc]->name.c_str());
+		Info("Quest 'Bandits' - %s.", W.locations[quest_bandits->start_loc]->name.c_str());
+		Info("Quest 'Mages' - %s.", W.locations[quest_mages->start_loc]->name.c_str());
+		Info("Quest 'Orcs' - %s.", W.locations[quest_orcs->start_loc]->name.c_str());
+		Info("Quest 'Goblins' - %s.", W.locations[quest_goblins->start_loc]->name.c_str());
+		Info("Quest 'Evil' - %s.", W.locations[quest_evil->start_loc]->name.c_str());
+		Info("Tournament - %s.", W.locations[tournament_city]->name.c_str());
+		Info("Contest - %s.", W.locations[contest_where]->name.c_str());
 	}
 }
 
@@ -17427,7 +17280,7 @@ void Game::UpdateQuests(int days)
 					{
 						if(Net::IsOnline())
 							Net_SpawnUnit(u);
-						AddNews(Format(txMineBuilt, locations[quest_mine->target_loc]->name.c_str()));
+						AddNews(Format(txMineBuilt, W.locations[quest_mine->target_loc]->name.c_str()));
 						quest_mine->messenger = u;
 						u->StartAutoTalk(true);
 					}
@@ -17436,7 +17289,7 @@ void Game::UpdateQuests(int days)
 			else
 			{
 				// player got gold, don't inform him
-				AddNews(Format(txMineBuilt, locations[quest_mine->target_loc]->name.c_str()));
+				AddNews(Format(txMineBuilt, W.locations[quest_mine->target_loc]->name.c_str()));
 				quest_mine->mine_state2 = Quest_Mine::State2::Built;
 				quest_mine->days -= quest_mine->days_required;
 				quest_mine->days_required = Random(60, 90);
@@ -17495,7 +17348,7 @@ void Game::UpdateQuests(int days)
 		if(contest_state != CONTEST_NOT_DONE)
 		{
 			contest_state = CONTEST_NOT_DONE;
-			contest_where = GetRandomSettlement(contest_where);
+			contest_where = W.GetRandomSettlementIndex(contest_where);
 		}
 		contest_generated = false;
 		contest_units.clear();
@@ -17544,7 +17397,7 @@ void Game::UpdateQuests(int days)
 	if(year != tournament_city_year)
 	{
 		tournament_city_year = year;
-		tournament_city = GetRandomCity(tournament_city);
+		tournament_city = W.GetRandomCityIndex(tournament_city);
 		tournament_master = nullptr;
 	}
 	if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && current_location == tournament_city && !tournament_generated)
@@ -20039,7 +19892,7 @@ void Game::Event_Pvp(int id)
 void Game::Cheat_Reveal()
 {
 	int index = 0;
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
+	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++index)
 	{
 		if(*it && (*it)->state == LS_UNKNOWN)
 		{
@@ -21200,7 +21053,7 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 		AddGameMsg(txSecretAppear, 3.f);
 		secret_state = SECRET_DROPPED_STONE;
 		int loc = CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, SG_WYZWANIE, false, 3);
-		Location& l = *locations[loc];
+		Location& l = *W.locations[loc];
 		l.st = 18;
 		l.active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
 		l.state = LS_UNKNOWN;
@@ -21927,7 +21780,7 @@ void Game::VerifyObjects()
 {
 	int errors = 0, e;
 
-	for(Location* l : locations)
+	for(Location* l : W.locations)
 	{
 		if(!l)
 			continue;

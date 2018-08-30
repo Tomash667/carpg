@@ -1,4 +1,3 @@
-// zapisywanie/wczytywanie gry
 #include "Pch.h"
 #include "GameCore.h"
 #include "Game.h"
@@ -42,7 +41,8 @@ enum SaveFlags
 	SF_ONLINE = 1 << 0,
 	//SF_DEV = 1 << 1,
 	SF_DEBUG = 1 << 2,
-	//SF_BETA = 1 << 3
+	//SF_BETA = 1 << 3,
+	SF_HARDCORE = 1 << 4
 };
 
 //=================================================================================================
@@ -383,21 +383,20 @@ void Game::SaveGame(GameWriter& f)
 	f << start_version;
 	f << content::version;
 
-	// is online / dev
+	// save flags
 	byte flags = (Net::IsOnline() ? SF_ONLINE : 0);
 #ifdef _DEBUG
 	flags |= SF_DEBUG;
 #endif
+	if(hardcore_mode)
+		flags |= SF_HARDCORE;
 	f << flags;
 
-	// is hardcore
-	f << hardcore_mode;
-	f << total_kills;
-
-	// world state
-	W.Save(f);
-	f << game_state;
+	// game stats
 	GameStats::Get().Save(f);
+
+	f << game_state;
+	W.Save(f);
 
 	BuildRefidTables();
 
@@ -406,8 +405,8 @@ void Game::SaveGame(GameWriter& f)
 	// world map
 	f << world_state;
 	f << current_location;
-	f << locations.size();
-	for(Location* loc : locations)
+	f << W.locations.size();
+	for(Location* loc : W.locations)
 	{
 		LOCATION_TOKEN loc_token;
 		if(loc)
@@ -429,13 +428,13 @@ void Game::SaveGame(GameWriter& f)
 		f << check_id;
 		++check_id;
 	}
-	f << empty_locations;
+	f << W.empty_locations;
 	f << create_camp;
 	f << world_pos;
 	f << travel_time2;
 	f << szansa_na_spotkanie;
-	f << settlements;
-	f << encounter_loc;
+	f << W.settlements;
+	f << W.encounter_loc;
 	f << world_dir;
 	if(world_state == WS_TRAVEL)
 	{
@@ -709,7 +708,7 @@ void Game::LoadGame(GameReader& f)
 	if(content::require_update)
 		Info("Loading old system version. Content update required.");
 
-	// is online / dev
+	// save flags
 	byte flags;
 	f >> flags;
 	bool online_save = IS_SET(flags, SF_ONLINE);
@@ -727,15 +726,24 @@ void Game::LoadGame(GameReader& f)
 	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
 		online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0);
 
-	f >> hardcore_mode;
-	f >> total_kills;
-
-	// world state
 	GAME_STATE game_state2;
-	W.Load(f);
-	f >> game_state2;
-	GameStats::Get().Load(f);
+	if(LOAD_VERSION >= V_FEATURE)
+	{
+		hardcore_mode = IS_SET(flags, SF_HARDCORE);
 
+		GameStats::Get().Load(f);
+		f >> game_state2;
+		W.Load(f);
+	}
+	else
+	{
+		f >> hardcore_mode;
+		GameStats::Get().LoadOld(f, 0);
+		W.LoadOld(f, 0);
+		f >> game_state2;
+		GameStats::Get().LoadOld(f, 1);
+	}
+	
 	Unit::refid_table.clear();
 	Usable::refid_table.clear();
 	ParticleEmitter::refid_table.clear();
@@ -748,10 +756,10 @@ void Game::LoadGame(GameReader& f)
 	f >> world_state;
 	f >> current_location;
 	uint count = f.Read<uint>();
-	locations.resize(count);
+	W.locations.resize(count);
 	int index = 0;
 	int step = 0;
-	for(Location*& loc : locations)
+	for(Location*& loc : W.locations)
 	{
 		LOCATION_TOKEN loc_token;
 		f >> loc_token;
@@ -823,13 +831,13 @@ void Game::LoadGame(GameReader& f)
 			throw Format("Error while reading location %s (%d).", loc ? loc->name.c_str() : "nullptr", index);
 		++check_id;
 	}
-	f >> empty_locations;
+	f >> W.empty_locations;
 	f >> create_camp;
 	f >> world_pos;
 	f >> travel_time2;
 	f >> szansa_na_spotkanie;
-	f >> settlements;
-	f >> encounter_loc;
+	f >> W.settlements;
+	f >> W.encounter_loc;
 	f >> world_dir;
 	if(world_state == WS_TRAVEL)
 	{
@@ -842,7 +850,7 @@ void Game::LoadGame(GameReader& f)
 	else if(world_state == WS_ENCOUNTER)
 	{
 		world_state = WS_TRAVEL;
-		travel_start = world_pos = locations[0]->pos;
+		travel_start = world_pos = W.locations[0]->pos;
 		picked_location = 0;
 		travel_time = 1.f;
 		travel_day = 0;
@@ -875,7 +883,7 @@ void Game::LoadGame(GameReader& f)
 	}
 	if(current_location != -1)
 	{
-		location = locations[current_location];
+		location = W.locations[current_location];
 		if(location->type == L_CITY)
 			city_ctx = (City*)location;
 		else

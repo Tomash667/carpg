@@ -119,7 +119,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		// nie zaakceptowano
 		{
 			if(quest_manager.RemoveQuestRumor(P_GOBLINY))
-				game->game_gui->journal->AddRumor(Format(game->txQuest[211], game->locations[start_loc]->name.c_str()));
+				game->game_gui->journal->AddRumor(Format(game->txQuest[211], W.locations[start_loc]->name.c_str()));
 		}
 		break;
 	case Progress::Started:

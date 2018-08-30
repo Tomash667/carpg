@@ -74,9 +74,9 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			unit_to_spawn = g_spawn_groups[group].GetSpawnLeader();
 			unit_spawn_level = -3;
 
-			Location& sl = *game->locations[start_loc];
+			Location& sl = *W.locations[start_loc];
 			target_loc = game->GetRandomSpawnLocation(sl.pos, group);
-			Location& tl = *game->locations[target_loc];
+			Location& tl = *W.locations[target_loc];
 			at_level = tl.GetRandomLevel();
 			tl.active_quest = this;
 			bool now_known = false;
@@ -134,7 +134,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			state = Quest::Completed;
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = *W.locations[target_loc];
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -160,7 +160,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			state = Quest::Failed;
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = *W.locations[target_loc];
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -183,11 +183,11 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 	if(str == "przedmiot")
 		return item->name.c_str();
 	else if(str == "target_loc")
-		return game->locations[target_loc]->name.c_str();
+		return W.locations[target_loc]->name.c_str();
 	else if(str == "target_dir")
-		return GetLocationDirName(game->locations[start_loc]->pos, game->locations[target_loc]->pos);
+		return GetLocationDirName(W.locations[start_loc]->pos, W.locations[target_loc]->pos);
 	else if(str == "random_loc")
-		return game->locations[game->GetRandomSettlement(start_loc)]->name.c_str();
+		return W.GetRandomSettlement(start_loc)->name.c_str();
 	else if(str == "Bandyci_ukradli")
 	{
 		switch(group)

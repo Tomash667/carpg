@@ -42,14 +42,14 @@ void Quest_Orcs::SetProgress(int prog2)
 			if(prog != Progress::None)
 				return;
 			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
-				game->game_gui->journal->AddRumor(Format(game->txQuest[189], game->locations[start_loc]->name.c_str()));
+				game->game_gui->journal->AddRumor(Format(game->txQuest[189], W.locations[start_loc]->name.c_str()));
 			game->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::NotAccepted:
 		{
 			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
-				game->game_gui->journal->AddRumor(Format(game->txQuest[190], game->locations[start_loc]->name.c_str()));
+				game->game_gui->journal->AddRumor(Format(game->txQuest[190], W.locations[start_loc]->name.c_str()));
 			// mark guard to remove
 			Unit*& u = game->quest_orcs2->guard;
 			if(u)
@@ -358,7 +358,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			if(prog == Progress::TalkedWhereIsCamp)
 				break;
 			Location& target = GetTargetLocation();
-			Location& nearl = *game->locations[near_loc];
+			Location& nearl = *W.locations[near_loc];
 			target.state = LS_KNOWN;
 			done = false;
 			location_event_handler = this;
@@ -475,7 +475,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			location_event_handler = nullptr;
 			unit_event_handler = this;
 			near_loc = game->GetNearestSettlement(target.pos);
-			Location& nearl = *game->locations[near_loc];
+			Location& nearl = *W.locations[near_loc];
 			msgs.push_back(Format(game->txQuest[203], GetLocationDirName(nearl.pos, target.pos), nearl.name.c_str(), target.name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -605,9 +605,9 @@ cstring Quest_Orcs2::FormatString(const string& str)
 	if(str == "name")
 		return orc->hero->name.c_str();
 	else if(str == "close")
-		return game->locations[near_loc]->name.c_str();
+		return W.locations[near_loc]->name.c_str();
 	else if(str == "close_dir")
-		return GetLocationDirName(game->locations[near_loc]->pos, GetTargetLocation().pos);
+		return GetLocationDirName(W.locations[near_loc]->pos, GetTargetLocation().pos);
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")

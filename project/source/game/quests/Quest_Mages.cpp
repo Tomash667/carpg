@@ -219,10 +219,10 @@ void Quest_Mages2::SetProgress(int prog2)
 		// porozmawiano ze stra¿nikiem o golemach, wys³a³ do maga
 		{
 			start_loc = game->current_location;
-			mage_loc = game->GetRandomSettlement(start_loc);
+			mage_loc = W.GetRandomSettlementIndex(start_loc);
 
 			Location& sl = GetStartLocation();
-			Location& ml = *game->locations[mage_loc];
+			Location& ml = *W.locations[mage_loc];
 
 			msgs.push_back(Format(game->txQuest[173], sl.name.c_str(), ml.name.c_str(), GetLocationDirName(sl.pos, ml.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -283,7 +283,7 @@ void Quest_Mages2::SetProgress(int prog2)
 		// idzie za tob¹ do pustej wie¿y
 		{
 			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_BRAK, true, 2);
-			Location& loc = *game->locations[target_loc];
+			Location& loc = *W.locations[target_loc];
 			loc.st = 1;
 			loc.state = LS_KNOWN;
 			game->AddTeamMember(game->current_dialog->talker, true);
@@ -520,9 +520,9 @@ cstring Quest_Mages2::FormatString(const string& str)
 	if(str == "start_loc")
 		return GetStartLocationName();
 	else if(str == "mage_loc")
-		return game->locations[mage_loc]->name.c_str();
+		return W.locations[mage_loc]->name.c_str();
 	else if(str == "mage_dir")
-		return GetLocationDirName(GetStartLocation().pos, game->locations[mage_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, W.locations[mage_loc]->pos);
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")

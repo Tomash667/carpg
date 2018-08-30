@@ -17,6 +17,7 @@
 #include "SoundManager.h"
 #include "ScriptManager.h"
 #include "SaveState.h"
+#include "World.h"
 #include "DirectX.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
@@ -325,6 +326,7 @@ void Game::PostconfigureGame()
 	CreateCollisionShapes();
 	create_character->Init();
 	QuestManager::Get().Init();
+	W.Init();
 
 	// load gui textures that require instant loading
 	GUI.GetLayout()->LoadDefault();

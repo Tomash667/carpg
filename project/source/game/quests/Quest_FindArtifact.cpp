@@ -53,7 +53,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			quest_item.id = Format("$%s", item->id.c_str());
 			quest_item.refid = refid;
 
-			Location& sl = *game->locations[start_loc];
+			Location& sl = *W.locations[start_loc];
 
 			// event
 			spawn_item = Quest_Dungeon::Item_InTreasure;
@@ -66,7 +66,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			else
 			{
 				target_loc = game->GetClosestLocation(L_CRYPT, sl.pos);
-				InsideLocation* inside = (InsideLocation*)(game->locations[target_loc]);
+				InsideLocation* inside = (InsideLocation*)(W.locations[target_loc]);
 				if(inside->IsMultilevel())
 				{
 					MultiInsideLocation* multi = (MultiInsideLocation*)inside;
@@ -76,7 +76,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 					at_level = 0;
 			}
 
-			Location& tl = *game->locations[target_loc];
+			Location& tl = *W.locations[target_loc];
 			tl.active_quest = this;
 			bool now_known = false;
 			if(tl.state == LS_UNKNOWN)
@@ -110,7 +110,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			state = Quest::Completed;
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = *W.locations[target_loc];
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -136,7 +136,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			state = Quest::Failed;
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = *W.locations[target_loc];
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -159,11 +159,11 @@ cstring Quest_FindArtifact::FormatString(const string& str)
 	if(str == "przedmiot")
 		return item->name.c_str();
 	else if(str == "target_loc")
-		return game->locations[target_loc]->name.c_str();
+		return W.locations[target_loc]->name.c_str();
 	else if(str == "target_dir")
-		return GetLocationDirName(game->locations[start_loc]->pos, game->locations[target_loc]->pos);
+		return GetLocationDirName(W.locations[start_loc]->pos, W.locations[target_loc]->pos);
 	else if(str == "random_loc")
-		return game->locations[game->GetRandomSettlement(start_loc)]->name.c_str();
+		return W.GetRandomSettlement(start_loc)->name.c_str();
 	else
 	{
 		assert(0);

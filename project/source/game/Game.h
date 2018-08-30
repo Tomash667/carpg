@@ -539,7 +539,7 @@ public:
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],
 		txAiHeroOutsideText[2], txAiDrunkMageText[3], txAiDrunkText[5], txAiDrunkmanText[4];
-	cstring txRandomEncounter, txCamp;
+	cstring txCamp;
 	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics, txRecreatingObjects, txGeneratingMinimap,
 		txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txContestNoWinner, txContestStart, txContestTalk[14], txContestWin, txContestWinNews, txContestDraw, txContestPrize, txContestNoPeople;
@@ -885,7 +885,6 @@ public:
 	bool hardcore_mode, hardcore_option;
 	string hardcore_savename;
 	const Item* crazy_give_item; // dawany przedmiot, nie trzeba zapisywaæ
-	int total_kills;
 	float grayout;
 	bool cl_postfx;
 
@@ -1214,15 +1213,8 @@ public:
 	void ClearGameVarsOnNewGameOrLoad();
 	void ClearGameVarsOnNewGame();
 	void ClearGameVarsOnLoad();
-	// zwraca losowe miasto lub wioskê która nie jest this_city
-	int GetRandomSettlement(int this_city = -1);
-	// zwraca losowe miasto lub wioskê która nie jest this_city i nie ma aktywnego questa
-	int GetRandomFreeSettlement(int this_city = -1);
-	// zwraca losowe miasto które nie jest this_city
-	int GetRandomCity(int this_city = -1);
 	void ClearGame();
 	cstring FormatString(DialogContext& ctx, const string& str_part);
-	int GetNearestLocation(const Vec2& pos, bool not_quest, bool not_city);
 	int GetNearestLocation2(const Vec2& pos, int flags, bool not_quest, int flagi_cel = -1);
 	int GetNearestSettlement(const Vec2& pos) { return GetNearestLocation2(pos, (1 << L_CITY), false); }
 	void AddGameMsg(cstring msg, float time);
@@ -1280,7 +1272,6 @@ public:
 	bool RemoveQuestItem(const Item* item, int refid = -1);
 	bool RemoveItemFromWorld(const Item* item);
 	bool IsBetterItem(Unit& unit, const Item* item, int* value = nullptr);
-	SPAWN_GROUP RandomSpawnGroup(const BaseLocation& base);
 	// to by mog³o byæ globalna funkcj¹
 	void GenerateTreasure(int level, int count, vector<ItemSlot>& items, int& gold, bool extra);
 	void SplitTreasure(vector<ItemSlot>& items, int gold, Chest** chests, int count);
@@ -1346,8 +1337,6 @@ public:
 	void RemoveQuestUnits(bool on_leave);
 	void GenerateSawmill(bool in_progress);
 	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
-	// zwraca losowe miasto/wioskê pomijaj¹c te ju¿ u¿yte, 0-wioska/miasto, 1-miasto, 2-wioska
-	int GetRandomSettlement(const vector<int>& used, int type = 0) const;
 	bool GenerateMine();
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid();
@@ -1865,11 +1854,8 @@ public:
 
 	//-----------------------------------------------------------------
 	// WORLD MAP
-	typedef std::pair<LOCATION, bool>(*AddLocationsCallback)(uint index);
-	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name);
 	bool EnterLocation(int level = 0, int from_portal = -1, bool close_portal = false);
 	void GenerateWorld();
-	void GenerateCityBuildings(City& city, vector<Building*>& buildings, bool required);
 	void ApplyTiles(float* h, TerrainTile* tiles);
 	void SpawnBuildings(vector<CityBuilding>& buildings);
 	void SpawnUnits(City* city);
@@ -1906,7 +1892,6 @@ public:
 	Encounter* RecreateEncounter(int id);
 	int GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range = 160.f);
 	void DoWorldProgress(int days);
-	Location* CreateLocation(LOCATION type, int levels = -1, bool is_village = false);
 	void UpdateLocation(LevelContext& ctx, int days, int open_chance, bool reset);
 	void UpdateLocation(int days, int open_chance, bool reset);
 	void GenerateCamp(Location& loc);
@@ -1955,7 +1940,6 @@ public:
 	void AbadonLocation(Location* loc);
 	void SetLocationVisited(Location& loc);
 
-	vector<Location*> locations; // lokacje w grze, mo¿e byæ nullptr
 	Location* location; // wskaŸnik na aktualn¹ lokacjê [odtwarzany]
 	int current_location; // aktualna lokacja lub -1
 	int picked_location; // zaznaczona lokacja na mapie œwiata, ta do której siê wêdruje lub -1 [tylko jeœli world_state==WS_TRAVEL]
@@ -1964,7 +1948,6 @@ public:
 	int enc_kierunek; // kierunek z której strony nadesz³a dru¿yna w czasie spotkania [tymczasowe]
 	int spotkanie; // rodzaj losowego spotkania [tymczasowe]
 	int enc_tryb; // 0 - losowa walka, 1 - specjalne spotkanie, 2 - questowe spotkanie [tymczasowe]
-	int empty_locations; // liczba pustych lokacji
 	int create_camp; // licznik do stworzenia nowego obozu
 	WORLDMAP_STATE world_state; // stan na mapie œwiata (stoi, podró¿uje)
 	Vec2 world_pos; // pozycja na mapie œwiata
@@ -1975,8 +1958,6 @@ public:
 	float szansa_na_spotkanie; // szansa na spotkanie na mapie œwiata
 	bool far_encounter; // czy dru¿yna gracza jest daleko w czasie spotkania [tymczasowe]
 	bool guards_enc_reward; // czy odebrano nagrodê za uratowanie stra¿ników w czasie spotkania
-	uint settlements; // liczba miast i wiosek
-	uint encounter_loc; // id lokacji spotkania losowego
 	SPAWN_GROUP losowi_wrogowie; // wrogowie w czasie spotkania [tymczasowe]
 	vector<Encounter*> encs; // specjalne spotkania na mapie œwiata [odtwarzane przy wczytywaniu questów]
 	Encounter* game_enc; // spotkanie w czasie podró¿y [tymczasowe]

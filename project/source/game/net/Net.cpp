@@ -4130,7 +4130,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					travel_day = 0;
 					travel_start = world_pos;
 					picked_location = loc;
-					Location& l = *locations[picked_location];
+					Location& l = *W.locations[picked_location];
 					world_dir = Angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
 					travel_time2 = 0.f;
 
@@ -4154,7 +4154,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			{
 				world_state = WS_MAIN;
 				current_location = picked_location;
-				Location& loc = *locations[current_location];
+				Location& loc = *W.locations[current_location];
 				if(loc.state == LS_KNOWN)
 					SetLocationVisited(loc);
 				world_pos = loc.pos;
@@ -4492,12 +4492,12 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: Player %s used CHEAT_TRAVEL without devmode.", info.name.c_str());
 				else if(!Team.IsLeader(unit))
 					StreamError("Update server: CHEAT_TRAVEL from %s, player is not leader.", info.name.c_str());
-				else if(location_index >= locations.size() || !locations[location_index])
+				else if(location_index >= W.locations.size() || !W.locations[location_index])
 					StreamError("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index);
 				else
 				{
 					current_location = location_index;
-					Location& loc = *locations[location_index];
+					Location& loc = *W.locations[location_index];
 					if(loc.state == LS_KNOWN)
 						SetLocationVisited(loc);
 					world_pos = loc.pos;
@@ -5078,7 +5078,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::ADD_LOCATION:
 			{
-				Location& loc = *locations[c.id];
+				Location& loc = *W.locations[c.id];
 				f.WriteCasted<byte>(c.id);
 				f.WriteCasted<byte>(loc.type);
 				if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
@@ -5152,7 +5152,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f << world_pos;
 			break;
 		case NetChange::GAME_STATS:
-			f << total_kills;
+			f << GameStats::Get().total_kills;
 			break;
 		case NetChange::STUN:
 			f << c.unit->netid;
@@ -5457,7 +5457,7 @@ void Game::UpdateClient(float dt)
 				else
 				{
 					current_location = loc;
-					location = locations[loc];
+					location = W.locations[loc];
 					dungeon_level = level;
 					Info("Update client: Level change to %s (%d, level %d).", location->name.c_str(), current_location, dungeon_level);
 					info_box->Show(txGeneratingLocation);
@@ -6306,8 +6306,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 				{
 					Location* loc = nullptr;
-					if(location_index < locations.size())
-						loc = locations[location_index];
+					if(location_index < W.locations.size())
+						loc = W.locations[location_index];
 					if(!loc)
 						StreamError("Update client: CHANGE_LOCATION_STATE, missing location %u.", location_index);
 					else
@@ -6978,7 +6978,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					travel_day = 0;
 					travel_start = world_pos;
 					picked_location = loc;
-					Location& l = *locations[picked_location];
+					Location& l = *W.locations[picked_location];
 					world_dir = Angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
 					travel_time2 = 0.f;
 
@@ -6997,7 +6997,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			{
 				world_state = WS_MAIN;
 				current_location = picked_location;
-				Location& loc = *locations[current_location];
+				Location& loc = *W.locations[current_location];
 				if(loc.state == LS_KNOWN)
 					SetLocationVisited(loc);
 				world_pos = loc.pos;
@@ -7321,9 +7321,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				if(location_index >= locations.size())
-					locations.resize(location_index + 1, nullptr);
-				locations[location_index] = loc;
+				if(location_index >= W.locations.size())
+					W.locations.resize(location_index + 1, nullptr);
+				W.locations[location_index] = loc;
 			}
 			break;
 		// remove camp
@@ -7333,15 +7333,15 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> camp_index;
 				if(!f)
 					StreamError("Update client: Broken REMOVE_CAMP.");
-				else if(camp_index >= locations.size() || !locations[camp_index] || locations[camp_index]->type != L_CAMP)
+				else if(camp_index >= W.locations.size() || !W.locations[camp_index] || W.locations[camp_index]->type != L_CAMP)
 					StreamError("Update client: REMOVE_CAMP, invalid location %u.", camp_index);
 				else
 				{
-					delete locations[camp_index];
-					if(camp_index == locations.size() - 1)
-						locations.pop_back();
+					delete W.locations[camp_index];
+					if(camp_index == W.locations.size() - 1)
+						W.locations.pop_back();
 					else
-						locations[camp_index] = nullptr;
+						W.locations[camp_index] = nullptr;
 				}
 			}
 			break;
@@ -7852,12 +7852,12 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> location_index;
 				if(!f)
 					StreamError("Update client: Broken CHEAT_TRAVEL.");
-				else if(location_index >= locations.size() || !locations[location_index])
+				else if(location_index >= W.locations.size() || !W.locations[location_index])
 					StreamError("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index);
 				else
 				{
 					current_location = location_index;
-					Location& loc = *locations[current_location];
+					Location& loc = *W.locations[current_location];
 					if(loc.state == LS_KNOWN)
 						loc.state = LS_VISITED;
 					world_pos = loc.pos;
@@ -7888,7 +7888,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			break;
 		// game stats showed at end of game
 		case NetChange::GAME_STATS:
-			f >> total_kills;
+			f >> GameStats::Get().total_kills;
 			if(!f)
 				StreamError("Update client: Broken GAME_STATS.");
 			break;
@@ -9620,9 +9620,9 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 
 	f << ID_WORLD_DATA;
 
-	// locations
-	f.WriteCasted<byte>(locations.size());
-	for(Location* loc_ptr : locations)
+	// W.locations
+	f.WriteCasted<byte>(W.locations.size());
+	for(Location* loc_ptr : W.locations)
 	{
 		if(!loc_ptr)
 		{
@@ -9710,9 +9710,9 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	}
 
 	// locations
-	locations.resize(count);
+	W.locations.resize(count);
 	uint index = 0;
-	for(Location*& loc : locations)
+	for(Location*& loc : W.locations)
 	{
 		LOCATION type;
 		f.ReadCasted<byte>(type);
@@ -9816,12 +9816,12 @@ bool Game::ReadWorldData(BitStreamReader& f)
 		Error("Read world: Broken packet for current location.");
 		return false;
 	}
-	if(current_location >= (int)locations.size() || !locations[current_location])
+	if(current_location >= (int)W.locations.size() || !W.locations[current_location])
 	{
 		Error("Read world: Invalid location %d.", current_location);
 		return false;
 	}
-	location = locations[current_location];
+	location = W.locations[current_location];
 	world_pos = location->pos;
 	location->state = LS_VISITED;
 

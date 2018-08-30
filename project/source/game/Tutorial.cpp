@@ -9,6 +9,7 @@
 #include "LoadScreen.h"
 #include "Journal.h"
 #include "SoundManager.h"
+#include "World.h"
 
 char mapa_t[] = {
 	"$$$$$$$$###########$$$"
@@ -198,7 +199,7 @@ void Game::StartTutorial()
 	loc->name = txTutLoc;
 	loc->type = L_DUNGEON;
 	loc->image = LI_DUNGEON;
-	locations.push_back(loc);
+	W.locations.push_back(loc);
 	current_location = 0;
 	open_location = 0;
 	location = loc;

@@ -8,6 +8,7 @@ GameStats Singleton<GameStats>::instance;
 
 void GameStats::Reset()
 {
+	total_kills = 0;
 	hour = 0;
 	minute = 0;
 	second = 0;
@@ -36,6 +37,7 @@ void GameStats::Update(float dt)
 
 void GameStats::Save(GameWriter& f)
 {
+	f << total_kills;
 	f << hour;
 	f << minute;
 	f << second;
@@ -44,10 +46,24 @@ void GameStats::Save(GameWriter& f)
 
 void GameStats::Load(GameReader& f)
 {
+	f >> total_kills;
 	f >> hour;
 	f >> minute;
 	f >> second;
 	f >> tick;
+}
+
+void GameStats::LoadOld(GameReader& f, int part)
+{
+	if(part == 0)
+		f >> total_kills;
+	else
+	{
+		f >> hour;
+		f >> minute;
+		f >> second;
+		f >> tick;
+	}
 }
 
 void GameStats::Write(BitStreamWriter& f)

@@ -20,6 +20,7 @@
 #include "ActionPanel.h"
 #include "BookPanel.h"
 #include "Profiler.h"
+#include "GameStats.h"
 
 //-----------------------------------------------------------------------------
 enum class TooltipGroup
@@ -569,7 +570,7 @@ void GameGui::DrawDeathScreen()
 			Int2 img_size = gui::GetSize(game.tRip);
 			GUI.DrawSprite(game.tRip, Center(img_size), color);
 
-			cstring text = Format(game.death_solo ? txDeathAlone : txDeath, game.pc->kills, game.total_kills - game.pc->kills);
+			cstring text = Format(game.death_solo ? txDeathAlone : txDeath, game.pc->kills, GameStats::Get().total_kills - game.pc->kills);
 			cstring text2 = Format("%s\n\n%s", text, game.death_screen == 3 ? txPressEsc : "\n");
 			Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 			GUI.DrawText(GUI.default_font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);
@@ -593,7 +594,7 @@ void GameGui::DrawEndOfGameScreen()
 	GUI.DrawSprite(game.tEmerytura, sprite_pos, color);
 
 	// tekst
-	cstring text = Format(txGameTimeout, game.pc->kills, game.total_kills - game.pc->kills);
+	cstring text = Format(txGameTimeout, game.pc->kills, GameStats::Get().total_kills - game.pc->kills);
 	cstring text2 = Format("%s\n\n%s", text, game.death_fade >= 1.f ? txPressEsc : "\n");
 	Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 	GUI.DrawText(GUI.default_font, text2, DTF_CENTER | DTF_BOTTOM, color, rect);

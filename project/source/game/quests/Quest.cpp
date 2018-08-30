@@ -6,6 +6,7 @@
 #include "Journal.h"
 #include "QuestManager.h"
 #include "GameFile.h"
+#include "World.h"
 
 Game* Quest::game;
 
@@ -52,13 +53,13 @@ bool Quest::Load(GameReader& f)
 //=================================================================================================
 Location& Quest::GetStartLocation()
 {
-	return *game->locations[start_loc];
+	return *W.locations[start_loc];
 }
 
 //=================================================================================================
 const Location& Quest::GetStartLocation() const
 {
-	return *game->locations[start_loc];
+	return *W.locations[start_loc];
 }
 
 //=================================================================================================
@@ -90,7 +91,7 @@ bool Quest_Dungeon::Load(GameReader& f)
 		at_level = -1;
 	if(LOAD_VERSION < V_0_4 && target_loc != -1)
 	{
-		Location* loc = game->locations[target_loc];
+		Location* loc = W.locations[target_loc];
 		if(loc->outside)
 			at_level = -1;
 	}
@@ -101,13 +102,13 @@ bool Quest_Dungeon::Load(GameReader& f)
 //=================================================================================================
 Location& Quest_Dungeon::GetTargetLocation()
 {
-	return *game->locations[target_loc];
+	return *W.locations[target_loc];
 }
 
 //=================================================================================================
 const Location& Quest_Dungeon::GetTargetLocation() const
 {
-	return *game->locations[target_loc];
+	return *W.locations[target_loc];
 }
 
 //=================================================================================================

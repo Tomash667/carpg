@@ -76,6 +76,7 @@ struct City : public OutsideLocation
 	Unit* FindUnit(UnitData* data, int& at_level) override;
 	LOCATION_TOKEN GetToken() const override { return LT_CITY; }
 
+	void GenerateCityBuildings(vector<Building*>& buildings, bool required);
 	bool IsInsideCity(const Vec3& _pos);
 	InsideBuilding* FindInsideBuilding(Building* type);
 	InsideBuilding* FindInsideBuilding(BuildingGroup* group);

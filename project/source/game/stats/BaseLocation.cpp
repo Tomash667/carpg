@@ -171,6 +171,55 @@ RoomType* BaseLocation::GetRandomRoomType() const
 }
 
 //=================================================================================================
+SPAWN_GROUP BaseLocation::GetRandomSpawnGroup() const
+{
+	int n = Rand() % 100;
+	int k = schance1;
+	SPAWN_GROUP sg = SG_LOSOWO;
+	if(schance1 > 0 && n < k)
+		sg = sg1;
+	else
+	{
+		k += schance2;
+		if(schance2 > 0 && n < k)
+			sg = sg2;
+		else
+		{
+			k += schance3;
+			if(schance3 > 0 && n < k)
+				sg = sg3;
+		}
+	}
+
+	if(sg == SG_LOSOWO)
+	{
+		switch(Rand() % 10)
+		{
+		default:
+		case 0:
+		case 1:
+			return SG_GOBLINY;
+		case 2:
+		case 3:
+			return SG_ORKOWIE;
+		case 4:
+		case 5:
+			return SG_BANDYCI;
+		case 6:
+			return SG_MAGOWIE;
+		case 7:
+			return SG_NEKRO;
+		case 8:
+			return SG_ZLO;
+		case 9:
+			return SG_BRAK;
+		}
+	}
+	else
+		return sg;
+}
+
+//=================================================================================================
 void BaseLocation::PreloadTextures()
 {
 	auto& tex_mgr = ResourceManager::Get<Texture>();

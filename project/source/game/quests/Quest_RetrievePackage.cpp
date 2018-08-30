@@ -16,7 +16,7 @@ void Quest_RetrievePackage::Start()
 	quest_id = Q_RETRIEVE_PACKAGE;
 	type = QuestType::Mayor;
 	start_loc = game->current_location;
-	from_loc = game->GetRandomSettlement(start_loc);
+	from_loc = W.GetRandomSettlementIndex(start_loc);
 }
 
 //=================================================================================================
@@ -45,10 +45,10 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 	case Progress::Started:
 		// received quest from mayor
 		{
-			target_loc = game->GetRandomSpawnLocation((game->locations[start_loc]->pos + game->locations[from_loc]->pos) / 2, SG_BANDYCI);
+			target_loc = game->GetRandomSpawnLocation((W.locations[start_loc]->pos + W.locations[from_loc]->pos) / 2, SG_BANDYCI);
 
-			Location& loc = *game->locations[start_loc];
-			Location& loc2 = *game->locations[target_loc];
+			Location& loc = *W.locations[start_loc];
+			Location& loc2 = *W.locations[target_loc];
 			bool now_known = false;
 			if(loc2.state == LS_UNKNOWN)
 			{
@@ -109,11 +109,11 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 		// player failed to retrieve package in time
 		{
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::Failed;
+			((City*)W.locations[start_loc])->quest_mayor = CityQuestState::Failed;
 
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = *W.locations[target_loc];
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -133,11 +133,11 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			state = Quest::Completed;
 			game->AddReward(500);
 
-			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::None;
+			((City*)W.locations[start_loc])->quest_mayor = CityQuestState::None;
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = *W.locations[target_loc];
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -162,13 +162,13 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 cstring Quest_RetrievePackage::FormatString(const string& str)
 {
 	if(str == "burmistrz_od")
-		return LocationHelper::IsCity(game->locations[from_loc]) ? game->txQuest[26] : game->txQuest[27];
+		return LocationHelper::IsCity(W.locations[from_loc]) ? game->txQuest[26] : game->txQuest[27];
 	else if(str == "locname_od")
-		return game->locations[from_loc]->name.c_str();
+		return W.locations[from_loc]->name.c_str();
 	else if(str == "locname")
-		return game->locations[target_loc]->name.c_str();
+		return W.locations[target_loc]->name.c_str();
 	else if(str == "target_dir")
-		return GetLocationDirName(game->locations[start_loc]->pos, game->locations[target_loc]->pos);
+		return GetLocationDirName(W.locations[start_loc]->pos, W.locations[target_loc]->pos);
 	else
 	{
 		assert(0);
@@ -188,7 +188,7 @@ bool Quest_RetrievePackage::OnTimeout(TimeoutType ttype)
 	if(done)
 	{
 		int at_lvl = at_level;
-		Unit* u = game->locations[target_loc]->FindUnit(g_spawn_groups[SG_BANDYCI].GetSpawnLeader(), at_lvl);
+		Unit* u = W.locations[target_loc]->FindUnit(g_spawn_groups[SG_BANDYCI].GetSpawnLeader(), at_lvl);
 		if(u && u->IsAlive())
 			u->RemoveQuestItem(refid);
 	}
@@ -231,7 +231,7 @@ bool Quest_RetrievePackage::Load(GameReader& f)
 		f >> from_loc;
 
 		const Item* base_item = Item::Get("parcel");
-		Location& loc = *game->locations[start_loc];
+		Location& loc = *W.locations[start_loc];
 		CreateItemCopy(parcel, base_item);
 		parcel.id = "$stolen_parcel";
 		parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());

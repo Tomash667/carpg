@@ -30,6 +30,7 @@
 #include "BitStreamFunc.h"
 #include "Portal.h"
 #include "EntityInterpolator.h"
+#include "World.h"
 
 extern string g_ctime;
 
@@ -1206,14 +1207,14 @@ void Game::UpdateClientTransfer(float dt)
 				reader >> level;
 				if(reader.IsOk())
 				{
-					if(loc < locations.size())
+					if(loc < W.locations.size())
 					{
 						if(game_state == GS_LOAD)
 							LoadingStep("");
 						else
 							LoadingStart(4);
 						current_location = loc;
-						location = locations[loc];
+						location = W.locations[loc];
 						dungeon_level = level;
 						Info("NM_TRANSFER: Level change to %s (id:%d, level:%d).", location->name.c_str(), current_location, dungeon_level);
 						info_box->Show(txGeneratingLocation);

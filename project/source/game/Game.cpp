@@ -2080,7 +2080,6 @@ void Game::SetGameText()
 	LOAD_ARRAY(txAiDrunkmanText, "aiDrunkmanText");
 
 	// nazwy lokacji
-	txRandomEncounter = Str("randomEncounter");
 	txCamp = Str("camp");
 
 	// mapa
@@ -2504,7 +2503,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		}
 
 		// statystyki
-		++total_kills;
+		++GameStats::Get().total_kills;
 		if(killer && killer->IsPlayer())
 		{
 			++killer->player->kills;

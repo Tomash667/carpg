@@ -14,7 +14,7 @@
 void Quest_DeliverLetter::Start()
 {
 	start_loc = game->current_location;
-	end_loc = game->GetRandomSettlement(start_loc);
+	end_loc = W.GetRandomSettlementIndex(start_loc);
 	quest_id = Q_DELIVER_LETTER;
 	type = QuestType::Mayor;
 }
@@ -48,7 +48,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 	case Progress::Started:
 		// give letter to player
 		{
-			Location& loc = *game->locations[end_loc];
+			Location& loc = *W.locations[end_loc];
 			const Item* base_item = Item::Get("letter");
 			game->PreloadItem(base_item);
 			CreateItemCopy(letter, base_item);
@@ -64,7 +64,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			quest_manager.quests_timeout2.push_back(this);
 
-			Location& loc2 = *game->locations[start_loc];
+			Location& loc2 = *W.locations[start_loc];
 			name = game->txQuest[2];
 			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[4], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
@@ -94,7 +94,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			bool removed_item = false;
 
 			state = Quest::Failed;
-			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::Failed;
+			((City*)W.locations[start_loc])->quest_mayor = CityQuestState::Failed;
 			if(game->current_location == end_loc)
 			{
 				game->current_dialog->pc->unit->RemoveQuestItem(refid);
@@ -116,7 +116,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 	case Progress::GotResponse:
 		// given letter, got response
 		{
-			Location& loc = *game->locations[end_loc];
+			Location& loc = *W.locations[end_loc];
 			letter.name = Format(game->txQuest[1], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 
 			msgs.push_back(game->txQuest[6]);
@@ -136,7 +136,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			state = Quest::Completed;
 			game->AddReward(100);
 
-			((City*)game->locations[start_loc])->quest_mayor = CityQuestState::None;
+			((City*)W.locations[start_loc])->quest_mayor = CityQuestState::None;
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 
 			msgs.push_back(game->txQuest[7]);
@@ -158,13 +158,13 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 //=================================================================================================
 cstring Quest_DeliverLetter::FormatString(const string& str)
 {
-	Location& loc = *game->locations[end_loc];
+	Location& loc = *W.locations[end_loc];
 	if(str == "target_burmistrza")
 		return (LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys);
 	else if(str == "target_locname")
 		return loc.name.c_str();
 	else if(str == "target_dir")
-		return kierunek_nazwa[GetLocationDir(game->locations[start_loc]->pos, loc.pos)];
+		return kierunek_nazwa[GetLocationDir(W.locations[start_loc]->pos, loc.pos)];
 	else
 	{
 		assert(0);
@@ -221,7 +221,7 @@ bool Quest_DeliverLetter::Load(GameReader& f)
 	{
 		f >> end_loc;
 
-		Location& loc = *game->locations[end_loc];
+		Location& loc = *W.locations[end_loc];
 
 		const Item* base_item = Item::Get("letter");
 		CreateItemCopy(letter, base_item);

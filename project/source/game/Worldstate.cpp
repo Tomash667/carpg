@@ -16,7 +16,7 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 	if(prev_year != W.GetYear())
 	{
 		// nowe miejsce na chlanie
-		contest_where = GetRandomSettlement(contest_where);
+		contest_where = W.GetRandomSettlementIndex(contest_where);
 		if(W.GetYear() >= 160)
 		{
 			// koniec gry

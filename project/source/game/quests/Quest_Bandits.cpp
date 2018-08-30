@@ -102,7 +102,7 @@ void Quest_Bandits::SetProgress(int prog2)
 					game->AddGameMsg3(GMS_ADDED_ITEM);
 			}
 			Location& sl = GetStartLocation();
-			Location& other = *game->locations[other_loc];
+			Location& other = *W.locations[other_loc];
 			Encounter* e = game->AddEncounter(enc);
 			e->dialog = FindDialog("q_bandits");
 			e->dont_attack = true;
@@ -129,9 +129,9 @@ void Quest_Bandits::SetProgress(int prog2)
 			const Item* item = Item::Get("q_bandyci_paczka");
 			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
-			other_loc = game->GetRandomSettlement(start_loc);
+			other_loc = W.GetRandomSettlementIndex(start_loc);
 			Location& sl = GetStartLocation();
-			Location& other = *game->locations[other_loc];
+			Location& other = *W.locations[other_loc];
 			Encounter* e = game->AddEncounter(enc);
 			e->dialog = FindDialog("q_bandits");
 			e->dont_attack = true;
@@ -194,7 +194,7 @@ void Quest_Bandits::SetProgress(int prog2)
 		// info o obozie
 		{
 			camp_loc = game->CreateCamp(GetStartLocation().pos, SG_BANDYCI);
-			Location& camp = *game->locations[camp_loc];
+			Location& camp = *W.locations[camp_loc];
 			camp.st = 10;
 			camp.state = LS_HIDDEN;
 			camp.active_quest = this;
@@ -212,7 +212,7 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::NeedClearCamp:
 		// pozycja obozu
 		{
-			Location& camp = *game->locations[camp_loc];
+			Location& camp = *W.locations[camp_loc];
 			msgs.push_back(Format(game->txQuest[159], GetLocationDirName(GetStartLocation().pos, camp.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -255,11 +255,11 @@ void Quest_Bandits::SetProgress(int prog2)
 			game->current_dialog->talker->hero->mode = HeroData::Leave;
 			game->current_dialog->talker->event_handler = this;
 			target_loc = game->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, SG_BANDYCI, false);
-			Location& target = *game->locations[target_loc];
+			Location& target = *W.locations[target_loc];
 			target.active_quest = this;
 			target.state = LS_KNOWN;
 			target.st = 10;
-			game->locations[camp_loc]->active_quest = nullptr;
+			W.locations[camp_loc]->active_quest = nullptr;
 			msgs.push_back(Format(game->txQuest[161], target.name.c_str(), GetLocationDirName(GetStartLocation().pos, target.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -341,17 +341,17 @@ cstring Quest_Bandits::FormatString(const string& str)
 	if(str == "start_loc")
 		return GetStartLocationName();
 	else if(str == "other_loc")
-		return game->locations[other_loc]->name.c_str();
+		return W.locations[other_loc]->name.c_str();
 	else if(str == "other_dir")
-		return GetLocationDirName(GetStartLocation().pos, game->locations[other_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, W.locations[other_loc]->pos);
 	else if(str == "camp_dir")
-		return GetLocationDirName(GetStartLocation().pos, game->locations[camp_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, W.locations[camp_loc]->pos);
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "target_dir_camp")
-		return GetLocationDirName(game->locations[camp_loc]->pos, GetTargetLocation().pos);
+		return GetLocationDirName(W.locations[camp_loc]->pos, GetTargetLocation().pos);
 	else
 	{
 		assert(0);
@@ -427,7 +427,7 @@ bool Quest_Bandits::Load(GameReader& f)
 		e->dont_attack = true;
 		e->grupa = SG_BANDYCI;
 		e->location_event_handler = nullptr;
-		e->pos = (GetStartLocation().pos + game->locations[other_loc]->pos) / 2;
+		e->pos = (GetStartLocation().pos + W.locations[other_loc]->pos) / 2;
 		e->quest = (Quest_Encounter*)this;
 		e->szansa = 60;
 		e->text = game->txQuest[11];

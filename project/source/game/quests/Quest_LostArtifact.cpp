@@ -51,7 +51,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			quest_item.id = Format("$%s", item->id.c_str());
 			quest_item.refid = refid;
 
-			Location& sl = *game->locations[start_loc];
+			Location& sl = *W.locations[start_loc];
 
 			// event
 			spawn_item = Quest_Dungeon::Item_OnGround;
@@ -60,7 +60,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 				target_loc = game->GetClosestLocation(L_CRYPT, sl.pos);
 			else
 				target_loc = game->GetClosestLocationNotTarget(L_DUNGEON, sl.pos, LABIRYNTH);
-			Location& tl = *game->locations[target_loc];
+			Location& tl = *W.locations[target_loc];
 			at_level = tl.GetRandomLevel();
 
 			tl.active_quest = this;
@@ -122,7 +122,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			state = Quest::Completed;
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = *W.locations[target_loc];
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -148,7 +148,7 @@ void Quest_LostArtifact::SetProgress(int prog2)
 			state = Quest::Failed;
 			if(target_loc != -1)
 			{
-				Location& loc = *game->locations[target_loc];
+				Location& loc = *W.locations[target_loc];
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -171,11 +171,11 @@ cstring Quest_LostArtifact::FormatString(const string& str)
 	if(str == "przedmiot")
 		return item->name.c_str();
 	else if(str == "target_loc")
-		return game->locations[target_loc]->name.c_str();
+		return W.locations[target_loc]->name.c_str();
 	else if(str == "target_dir")
-		return GetLocationDirName(game->locations[start_loc]->pos, game->locations[target_loc]->pos);
+		return GetLocationDirName(W.locations[start_loc]->pos, W.locations[target_loc]->pos);
 	else if(str == "random_loc")
-		return game->locations[game->GetRandomSettlement(start_loc)]->name.c_str();
+		return W.GetRandomSettlement(start_loc)->name.c_str();
 	else if(str == "poziomie")
 	{
 		switch(at_level)
