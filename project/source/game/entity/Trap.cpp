@@ -6,47 +6,43 @@
 int Trap::netid_counter;
 
 //=================================================================================================
-void Trap::Save(HANDLE file, bool local)
+void Trap::Save(FileWriter& f, bool local)
 {
-	WriteFile(file, &base->type, sizeof(base->type), &tmp, nullptr);
-	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
+	f << base->type;
+	f << pos;
+	f << netid;
 
 	if(base->type == TRAP_ARROW || base->type == TRAP_POISON)
 	{
-		WriteFile(file, &tile, sizeof(tile), &tmp, nullptr);
-		WriteFile(file, &dir, sizeof(dir), &tmp, nullptr);
+		f << tile;
+		f << dir;
 	}
 	else
-		WriteFile(file, &obj.rot.y, sizeof(obj.rot.y), &tmp, nullptr);
+		f << obj.rot.y;
 
 	if(local && base->type != TRAP_FIREBALL)
 	{
-		WriteFile(file, &state, sizeof(state), &tmp, nullptr);
-		WriteFile(file, &time, sizeof(time), &tmp, nullptr);
+		f << state;
+		f << time;
 
 		if(base->type == TRAP_SPEAR)
 		{
-			WriteFile(file, &obj2.pos.y, sizeof(obj2.pos.y), &tmp, nullptr);
-			uint count = hitted->size();
-			WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-			if(count)
-			{
-				for(vector<Unit*>::iterator it = hitted->begin(), end = hitted->end(); it != end; ++it)
-					WriteFile(file, &(*it)->refid, sizeof((*it)->refid), &tmp, nullptr);
-			}
+			f << obj2.pos.y;
+			f << hitted->size();
+			for(Unit* unit : *hitted)
+				f << unit->refid;
 		}
 	}
 }
 
 //=================================================================================================
-void Trap::Load(HANDLE file, bool local)
+void Trap::Load(FileReader& f, bool local)
 {
 	TRAP_TYPE type;
 
-	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
-	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
+	f >> type;
+	f >> pos;
+	f >> netid;
 
 	base = &BaseTrap::traps[type];
 	hitted = nullptr;
@@ -58,11 +54,11 @@ void Trap::Load(HANDLE file, bool local)
 
 	if(type == TRAP_ARROW || type == TRAP_POISON)
 	{
-		ReadFile(file, &tile, sizeof(tile), &tmp, nullptr);
-		ReadFile(file, &dir, sizeof(dir), &tmp, nullptr);
+		f >> tile;
+		f >> dir;
 	}
 	else
-		ReadFile(file, &obj.rot.y, sizeof(obj.rot.y), &tmp, nullptr);
+		f >> obj.rot.y;
 
 	if(type == TRAP_SPEAR)
 	{
@@ -77,24 +73,19 @@ void Trap::Load(HANDLE file, bool local)
 
 	if(local && base->type != TRAP_FIREBALL)
 	{
-		ReadFile(file, &state, sizeof(state), &tmp, nullptr);
-		ReadFile(file, &time, sizeof(time), &tmp, nullptr);
+		f >> state;
+		f >> time;
 
 		if(base->type == TRAP_SPEAR)
 		{
-			ReadFile(file, &obj2.pos.y, sizeof(obj2.pos.y), &tmp, nullptr);
-			uint count;
-			ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+			f >> obj2.pos.y;
+			uint count = f.Read<uint>();
 			hitted = new vector<Unit*>;
 			if(count)
 			{
 				hitted->resize(count);
-				for(vector<Unit*>::iterator it = hitted->begin(), end = hitted->end(); it != end; ++it)
-				{
-					int refid;
-					ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-					*it = Unit::GetByRefid(refid);
-				}
+				for(Unit*& unit : *hitted)
+					unit = Unit::GetByRefid(f.Read<int>());
 			}
 		}
 	}

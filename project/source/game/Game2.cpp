@@ -44,6 +44,10 @@
 #include "UnitGroup.h"
 #include "SoundManager.h"
 #include "ScriptManager.h"
+#include "Profiler.h"
+#include "Portal.h"
+#include "BitStreamFunc.h"
+#include "DirectX.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -836,8 +840,8 @@ void Game::SetupShaders()
 	techGlowMesh = eGlow->GetTechniqueByName("mesh");
 	techGlowAni = eGlow->GetTechniqueByName("ani");
 	techGrass = eGrass->GetTechniqueByName("grass");
-	assert(techAnim && techHair && techAnimDir && techHairDir && techMesh && techMeshDir && techMeshSimple && techMeshSimple2 && techMeshExplo && techParticle
-		&& techTrail && techSkybox && techTerrain && techArea && techGlowMesh && techGlowAni && techGrass);
+	assert(techMesh && techMeshDir && techMeshSimple && techMeshSimple2 && techMeshExplo && techParticle && techTrail && techSkybox && techTerrain && techArea
+		&& techGlowMesh && techGlowAni && techGrass);
 
 	hMeshCombined = eMesh->GetParameterByName(nullptr, "matCombined");
 	hMeshWorld = eMesh->GetParameterByName(nullptr, "matWorld");
@@ -4180,7 +4184,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 		switch(de.type)
 		{
-		case DT_CHOICE:
+		case DTF_CHOICE:
 			if(if_level == ctx.dialog_level)
 			{
 				cstring text = ctx.GetText((int)de.msg);
@@ -4199,13 +4203,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_END_CHOICE:
-		case DT_END_IF:
+		case DTF_END_CHOICE:
+		case DTF_END_IF:
 			if(if_level == ctx.dialog_level)
 				--ctx.dialog_level;
 			--if_level;
 			break;
-		case DT_END:
+		case DTF_END:
 			if(if_level == ctx.dialog_level)
 			{
 				if(ctx.prev.empty())
@@ -4225,14 +4229,14 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 			}
 			break;
-		case DT_END2:
+		case DTF_END2:
 			if(if_level == ctx.dialog_level)
 			{
 				EndDialog(ctx);
 				return;
 			}
 			break;
-		case DT_SHOW_CHOICES:
+		case DTF_SHOW_CHOICES:
 			if(if_level == ctx.dialog_level)
 			{
 				ctx.show_choices = true;
@@ -4251,11 +4255,11 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				return;
 			}
 			break;
-		case DT_RESTART:
+		case DTF_RESTART:
 			if(if_level == ctx.dialog_level)
 				ctx.dialog_pos = -1;
 			break;
-		case DT_TRADE:
+		case DTF_TRADE:
 			if(if_level == ctx.dialog_level)
 			{
 				Unit* t = ctx.talker;
@@ -4319,7 +4323,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				return;
 			}
 			break;
-		case DT_TALK:
+		case DTF_TALK:
 			if(ctx.dialog_level == if_level)
 			{
 				cstring msg = ctx.GetText((int)de.msg);
@@ -4328,7 +4332,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				return;
 			}
 			break;
-		case DT_TALK2:
+		case DTF_TALK2:
 			if(ctx.dialog_level == if_level)
 			{
 				cstring msg = ctx.GetText((int)de.msg);
@@ -4361,7 +4365,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				return;
 			}
 			break;
-		case DT_SPECIAL:
+		case DTF_SPECIAL:
 			if(ctx.dialog_level == if_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
@@ -4369,7 +4373,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					return;
 			}
 			break;
-		case DT_SET_QUEST_PROGRESS:
+		case DTF_SET_QUEST_PROGRESS:
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
@@ -4381,7 +4385,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 			}
 			break;
-		case DT_IF_QUEST_TIMEOUT:
+		case DTF_IF_QUEST_TIMEOUT:
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
@@ -4396,7 +4400,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_IF_RAND:
+		case DTF_IF_RAND:
 			if(if_level == ctx.dialog_level)
 			{
 				bool ok = (Rand() % int(de.msg) == 0);
@@ -4410,7 +4414,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_IF_ONCE:
+		case DTF_IF_ONCE:
 			if(if_level == ctx.dialog_level)
 			{
 				bool ok = ctx.dialog_once;
@@ -4427,17 +4431,17 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_DO_ONCE:
+		case DTF_DO_ONCE:
 			if(if_level == ctx.dialog_level)
 				ctx.dialog_once = false;
 			break;
-		case DT_ELSE:
+		case DTF_ELSE:
 			if(if_level == ctx.dialog_level)
 				--ctx.dialog_level;
 			else if(if_level == ctx.dialog_level + 1)
 				++ctx.dialog_level;
 			break;
-		case DT_CHECK_QUEST_TIMEOUT:
+		case DTF_CHECK_QUEST_TIMEOUT:
 			if(if_level == ctx.dialog_level)
 			{
 				Quest* quest = QuestManager::Get().FindQuest(current_location, (QuestType)(int)de.msg);
@@ -4448,7 +4452,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 			}
 			break;
-		case DT_IF_HAVE_QUEST_ITEM:
+		case DTF_IF_HAVE_QUEST_ITEM:
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
@@ -4464,7 +4468,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_DO_QUEST_ITEM:
+		case DTF_DO_QUEST_ITEM:
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
@@ -4474,7 +4478,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_NEXT), if_level, quest);
 			}
 			break;
-		case DT_IF_QUEST_PROGRESS:
+		case DTF_IF_QUEST_PROGRESS:
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
@@ -4489,7 +4493,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_IF_QUEST_PROGRESS_RANGE:
+		case DTF_IF_QUEST_PROGRESS_RANGE:
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
@@ -4507,7 +4511,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_IF_NEED_TALK:
+		case DTF_IF_NEED_TALK:
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
@@ -4532,7 +4536,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_DO_QUEST:
+		case DTF_DO_QUEST:
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
@@ -4547,11 +4551,11 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 			}
 			break;
-		case DT_ESCAPE_CHOICE:
+		case DTF_ESCAPE_CHOICE:
 			if(if_level == ctx.dialog_level)
 				ctx.dialog_esc = (int)ctx.choices.size() - 1;
 			break;
-		case DT_IF_SPECIAL:
+		case DTF_IF_SPECIAL:
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
@@ -4566,7 +4570,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_IF_CHOICES:
+		case DTF_IF_CHOICES:
 			if(if_level == ctx.dialog_level)
 			{
 				bool ok = (ctx.choices.size() == (int)de.msg);
@@ -4580,7 +4584,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_DO_QUEST2:
+		case DTF_DO_QUEST2:
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
@@ -4608,7 +4612,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 			}
 			break;
-		case DT_IF_HAVE_ITEM:
+		case DTF_IF_HAVE_ITEM:
 			if(if_level == ctx.dialog_level)
 			{
 				const Item* item = (const Item*)de.msg;
@@ -4623,7 +4627,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_IF_QUEST_EVENT:
+		case DTF_IF_QUEST_EVENT:
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
@@ -4638,13 +4642,13 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_END_OF_DIALOG:
+		case DTF_END_OF_DIALOG:
 			assert(0);
 			throw Format("Broken dialog '%s'.", ctx.dialog->id.c_str());
-		case DT_NOT_ACTIVE:
+		case DTF_NOT_ACTIVE:
 			ctx.not_active = true;
 			break;
-		case DT_IF_QUEST_SPECIAL:
+		case DTF_IF_QUEST_SPECIAL:
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
@@ -4660,7 +4664,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			}
 			++if_level;
 			break;
-		case DT_QUEST_SPECIAL:
+		case DTF_QUEST_SPECIAL:
 			if(if_level == ctx.dialog_level)
 			{
 				assert(ctx.dialog_quest);
@@ -4668,11 +4672,11 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				ctx.dialog_quest->Special(ctx, msg);
 			}
 			break;
-		case DT_NOT:
+		case DTF_NOT:
 			if(if_level == ctx.dialog_level)
 				ctx.negate_if = true;
 			break;
-		case DT_SCRIPT:
+		case DTF_SCRIPT:
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
@@ -4680,7 +4684,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				script_mgr->RunScript(msg);
 			}
 			break;
-		case DT_IF_SCRIPT:
+		case DTF_IF_SCRIPT:
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
@@ -5711,7 +5715,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	}
 	else
 	{
-		Warn("DT_SPECIAL: %s", msg);
+		Warn("DTF_SPECIAL: %s", msg);
 		assert(0);
 	}
 
@@ -6146,7 +6150,7 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 	}
 	else
 	{
-		Warn("DT_IF_SPECIAL: %s", msg);
+		Warn("DTF_IF_SPECIAL: %s", msg);
 		assert(0);
 	}
 
@@ -10774,7 +10778,7 @@ void Game::ChangeLevel(int where)
 		game_gui->visible = true;
 	}
 
-	Info("Randomness integrity: %d", RandTmp());
+	Info("Randomness integrity: %d", RandVal());
 }
 
 void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon)
@@ -10873,7 +10877,7 @@ void Game::ExitToMap()
 	// zamknij gui layer
 	CloseAllPanels();
 
-	clear_color = BLACK;
+	clear_color = Color::Black;
 	game_state = GS_WORLDMAP;
 	if(open_location != -1 && location->type == L_ENCOUNTER)
 		LeaveLocation();
@@ -13331,19 +13335,19 @@ void Game::CreateCityMinimap()
 		for(int x = 0; x < OutsideLocation::size; ++x)
 		{
 			const TerrainTile& t = loc->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size];
-			DWORD col;
+			Color col;
 			if(t.mode >= TM_BUILDING)
-				col = COLOR_RGB(128, 64, 0);
+				col = Color(128, 64, 0);
 			else if(t.alpha == 0)
 			{
 				if(t.t == TT_GRASS)
-					col = COLOR_RGB(0, 128, 0);
+					col = Color(0, 128, 0);
 				else if(t.t == TT_ROAD)
-					col = COLOR_RGB(128, 128, 128);
+					col = Color(128, 128, 128);
 				else if(t.t == TT_FIELD)
-					col = COLOR_RGB(200, 200, 100);
+					col = Color(200, 200, 100);
 				else
-					col = COLOR_RGB(128, 128, 64);
+					col = Color(128, 128, 64);
 			}
 			else
 			{
@@ -13397,14 +13401,13 @@ void Game::CreateCityMinimap()
 					break;
 				}
 				const float T = float(t.alpha) / 255;
-				col = COLOR_RGB(Lerp(r, r2, T), Lerp(g, g2, T), Lerp(b, b2, T));
+				col = Color(Lerp(r, r2, T), Lerp(g, g2, T), Lerp(b, b2, T));
 			}
 			if(x < 16 || x > 128 - 16 || y < 16 || y > 128 - 16)
 			{
-				col = ((col & 0xFF) / 2) |
-					((((col & 0xFF00) >> 8) / 2) << 8) |
-					((((col & 0xFF0000) >> 16) / 2) << 16) |
-					0xFF000000;
+				col.r /= 2;
+				col.g /= 2;
+				col.b /= 2;
 			}
 			*pix = col;
 			++pix;
@@ -13432,11 +13435,11 @@ void Game::CreateDungeonMinimap()
 			if(IS_SET(p.flags, Pole::F_ODKRYTE))
 			{
 				if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
-					*pix = COLOR_RGB(100, 100, 100);
+					*pix = Color(100, 100, 100);
 				else if(p.type == DRZWI)
-					*pix = COLOR_RGB(127, 51, 0);
+					*pix = Color(127, 51, 0);
 				else
-					*pix = COLOR_RGB(220, 220, 240);
+					*pix = Color(220, 220, 240);
 			}
 			else
 				*pix = 0;
@@ -13507,11 +13510,11 @@ void Game::UpdateDungeonMinimap(bool send)
 		SET_BIT(p.flags, Pole::F_ODKRYTE);
 		DWORD* pix = ((DWORD*)(((byte*)lock.pBits) + lock.Pitch*it->y)) + it->x;
 		if(OR2_EQ(p.type, SCIANA, BLOKADA_SCIANA))
-			*pix = COLOR_RGB(100, 100, 100);
+			*pix = Color(100, 100, 100);
 		else if(p.type == DRZWI)
-			*pix = COLOR_RGB(127, 51, 0);
+			*pix = Color(127, 51, 0);
 		else
-			*pix = COLOR_RGB(220, 220, 240);
+			*pix = Color(220, 220, 240);
 	}
 
 	if(Net::IsLocal())
@@ -13759,7 +13762,7 @@ void Game::SetDungeonParamsAndTextures(BaseLocation& base)
 	fog_params = Vec4(base.fog_range.x, base.fog_range.y, base.fog_range.y - base.fog_range.x, 0);
 	fog_color = Vec4(base.fog_color, 1);
 	ambient_color = Vec4(base.ambient_color, 1);
-	clear_color2 = COLOR_RGB(int(fog_color.x * 255), int(fog_color.y * 255), int(fog_color.z * 255));
+	clear_color2 = Color(int(fog_color.x * 255), int(fog_color.y * 255), int(fog_color.z * 255));
 
 	// tekstury podziemi
 	ApplyLocationTexturePack(tFloor[0], tWall[0], tCeil[0], base.tex);
@@ -14910,7 +14913,7 @@ void Game::LoadingStart(int steps)
 	loading_cap = 0.66f;
 	loading_steps = steps;
 	loading_index = 0;
-	clear_color = BLACK;
+	clear_color = Color::Black;
 	game_state = GS_LOAD;
 	load_screen->visible = true;
 	main_menu->visible = false;
@@ -15732,19 +15735,19 @@ void Game::CreateForestMinimap()
 		for(int x = 0; x < OutsideLocation::size; ++x)
 		{
 			TERRAIN_TILE t = loc->tiles[x + (OutsideLocation::size - 1 - y)*OutsideLocation::size].t;
-			DWORD col;
+			Color col;
 			if(t == TT_GRASS)
-				col = COLOR_RGB(0, 128, 0);
+				col = Color(0, 128, 0);
 			else if(t == TT_ROAD)
-				col = COLOR_RGB(128, 128, 128);
+				col = Color(128, 128, 128);
 			else if(t == TT_SAND)
-				col = COLOR_RGB(128, 128, 64);
+				col = Color(128, 128, 64);
 			else if(t == TT_GRASS2)
-				col = COLOR_RGB(105, 128, 89);
+				col = Color(105, 128, 89);
 			else if(t == TT_GRASS3)
-				col = COLOR_RGB(127, 51, 0);
+				col = Color(127, 51, 0);
 			else
-				col = COLOR_RGB(255, 0, 0);
+				col = Color(255, 0, 0);
 			if(x < 16 || x > 128 - 16 || y < 16 || y > 128 - 16)
 			{
 				col = ((col & 0xFF) / 2) |
@@ -21806,7 +21809,7 @@ void Game::SpawnDrunkmans()
 void Game::SetOutsideParams()
 {
 	cam.draw_range = 80.f;
-	clear_color2 = WHITE;
+	clear_color2 = Color::White;
 	fog_params = Vec4(40, 80, 40, 0);
 	fog_color = Vec4(0.9f, 0.85f, 0.8f, 1);
 	ambient_color = Vec4(0.5f, 0.5f, 0.5f, 1);

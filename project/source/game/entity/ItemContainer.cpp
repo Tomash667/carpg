@@ -7,45 +7,43 @@
 #include "Content.h"
 
 //=================================================================================================
-void ItemContainer::Save(HANDLE file)
+void ItemContainer::Save(FileWriter& f)
 {
-	uint count = items.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-
+	f << items.size();
 	for(auto& slot : items)
 	{
 		assert(slot.item);
-		WriteString1(file, slot.item->id);
-		WriteFile(file, &slot.count, sizeof(slot.count), &tmp, nullptr);
-		WriteFile(file, &slot.team_count, sizeof(slot.team_count), &tmp, nullptr);
+		f << slot.item->id;
+		f << slot.count;
+		f << slot.team_count;
 		if(slot.item->id[0] == '$')
-			WriteFile(file, &slot.item->refid, sizeof(int), &tmp, nullptr);
+			f << slot.item->refid;
 	}
 }
 
 //=================================================================================================
-void ItemContainer::Load(HANDLE file)
+void ItemContainer::Load(FileReader& f)
 {
 	bool can_sort = true;
 
 	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+	f >> count;
 	if(count == 0u)
 		return;
 
 	items.resize(count);
 	for(auto& slot : items)
 	{
-		ReadString1(file);
-		ReadFile(file, &slot.count, sizeof(slot.count), &tmp, nullptr);
-		ReadFile(file, &slot.team_count, sizeof(slot.team_count), &tmp, nullptr);
-		if(BUF[0] != '$')
-			slot.item = Item::Get(BUF);
+		const string& item_id = f.ReadString1();
+		f >> slot.count;
+		f >> slot.team_count;
+		if(item_id[0] != '$')
+			slot.item = Item::Get(item_id);
 		else
 		{
 			int quest_refid;
-			ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
-			QuestManager::Get().AddQuestItemRequest(&slot.item, BUF, quest_refid, &items);
+			f >> quest_refid;
+			QuestManager::Get().AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &items);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}

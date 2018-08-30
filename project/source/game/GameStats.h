@@ -8,8 +8,8 @@ struct GameStats : public Singleton<GameStats>
 
 	void Reset();
 	void Update(float dt);
-	void Write(BitStream& stream);
-	bool Read(BitStream& stream);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
+	void Write(BitStreamWriter& f);
+	void Read(BitStreamReader& f);
 };

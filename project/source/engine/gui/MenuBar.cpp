@@ -25,7 +25,7 @@ void MenuBar::Draw(ControlDrawData*)
 	for(Item* item : items)
 	{
 		AreaLayout* area_layout;
-		DWORD font_color;
+		Color font_color;
 		switch(item->mode)
 		{
 		case Item::Up:
@@ -47,7 +47,7 @@ void MenuBar::Draw(ControlDrawData*)
 		GUI.DrawArea(item->rect, *area_layout);
 
 		// item text
-		GUI.DrawText(layout->menubar.font, item->text, DT_CENTER | DT_VCENTER, font_color, Rect(item->rect));
+		GUI.DrawText(layout->menubar.font, item->text, DTF_CENTER | DTF_VCENTER, font_color, Rect(item->rect));
 	}
 }
 

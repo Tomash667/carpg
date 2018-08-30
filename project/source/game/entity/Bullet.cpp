@@ -1,4 +1,3 @@
-// pocisk (strza³a, czar)
 #include "Pch.h"
 #include "GameCore.h"
 #include "Bullet.h"
@@ -50,8 +49,7 @@ void Bullet::Load(FileReader& f)
 	f >> rot;
 	if(LOAD_VERSION < V_0_3)
 		f.Skip<float>();
-	f.ReadStringBUF();
-	mesh = ResourceManager::Get<Mesh>().GetLoaded(BUF);
+	mesh = ResourceManager::Get<Mesh>().GetLoaded(f.ReadString1());
 	f >> speed;
 	f >> timer;
 	f >> attack;
@@ -61,18 +59,18 @@ void Bullet::Load(FileReader& f)
 	int refid;
 	f >> refid;
 	owner = Unit::GetByRefid(refid);
-	f.ReadStringBUF();
-	if(BUF[0])
+	const string& spell_id = f.ReadString1();
+	if(!spell_id.empty())
 	{
-		spell = FindSpell(BUF);
+		spell = FindSpell(spell_id.c_str());
 		if(!spell)
-			throw Format("Missing spell '%s' for bullet.", BUF);
+			throw Format("Missing spell '%s' for bullet.", spell_id.c_str());
 	}
 	else
 		spell = nullptr;
-	f.ReadStringBUF();
-	if(BUF[0])
-		tex = ResourceManager::Get<Texture>().GetLoaded(BUF);
+	const string& tex_name = f.ReadString1();
+	if(!tex_name.empty())
+		tex = ResourceManager::Get<Texture>().GetLoaded(tex_name);
 	else
 		tex = nullptr;
 	f >> refid;

@@ -5,10 +5,6 @@
 #include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
-struct NetChangePlayer;
-struct PlayerController;
-
-//-----------------------------------------------------------------------------
 // Server side player info
 struct PlayerInfo
 {
@@ -63,6 +59,6 @@ struct PlayerInfo
 	{
 		update_flags |= PlayerInfo::UF_GOLD;
 	}
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 };

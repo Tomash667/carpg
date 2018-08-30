@@ -1,4 +1,3 @@
-// jaskinia
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -17,8 +16,8 @@ struct CaveLocation : public SingleInsideLocation
 	}
 
 	// from Location
-	void Save(HANDLE file, bool local) override;
-	void Load(HANDLE file, bool local, LOCATION_TOKEN token) override;
+	void Save(GameWriter& f, bool local) override;
+	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
 	LOCATION_TOKEN GetToken() const override { return LT_CAVE; }
 
 	Int2 GetRandomTile() const

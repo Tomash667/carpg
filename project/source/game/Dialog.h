@@ -3,43 +3,43 @@
 //-----------------------------------------------------------------------------
 enum DialogType
 {
-	DT_CHOICE,
-	DT_TRADE,
-	DT_END_CHOICE,
-	DT_TALK,
-	DT_TALK2,
-	DT_RESTART,
-	DT_END,
-	DT_END2,
-	DT_SHOW_CHOICES,
-	DT_SPECIAL,
-	DT_SET_QUEST_PROGRESS,
-	DT_IF_QUEST_TIMEOUT,
-	DT_END_IF,
-	DT_IF_RAND,
-	DT_ELSE,
-	DT_CHECK_QUEST_TIMEOUT,
-	DT_IF_HAVE_QUEST_ITEM,
-	DT_DO_QUEST,
-	DT_DO_QUEST_ITEM,
-	DT_IF_QUEST_PROGRESS,
-	DT_IF_NEED_TALK,
-	DT_ESCAPE_CHOICE,
-	DT_IF_SPECIAL,
-	DT_IF_ONCE,
-	DT_IF_CHOICES,
-	DT_DO_QUEST2,
-	DT_IF_HAVE_ITEM,
-	DT_IF_QUEST_PROGRESS_RANGE,
-	DT_IF_QUEST_EVENT,
-	DT_END_OF_DIALOG,
-	DT_DO_ONCE,
-	DT_NOT_ACTIVE,
-	DT_IF_QUEST_SPECIAL,
-	DT_QUEST_SPECIAL,
-	DT_NOT,
-	DT_SCRIPT,
-	DT_IF_SCRIPT
+	DTF_CHOICE,
+	DTF_TRADE,
+	DTF_END_CHOICE,
+	DTF_TALK,
+	DTF_TALK2,
+	DTF_RESTART,
+	DTF_END,
+	DTF_END2,
+	DTF_SHOW_CHOICES,
+	DTF_SPECIAL,
+	DTF_SET_QUEST_PROGRESS,
+	DTF_IF_QUEST_TIMEOUT,
+	DTF_END_IF,
+	DTF_IF_RAND,
+	DTF_ELSE,
+	DTF_CHECK_QUEST_TIMEOUT,
+	DTF_IF_HAVE_QUEST_ITEM,
+	DTF_DO_QUEST,
+	DTF_DO_QUEST_ITEM,
+	DTF_IF_QUEST_PROGRESS,
+	DTF_IF_NEED_TALK,
+	DTF_ESCAPE_CHOICE,
+	DTF_IF_SPECIAL,
+	DTF_IF_ONCE,
+	DTF_IF_CHOICES,
+	DTF_DO_QUEST2,
+	DTF_IF_HAVE_ITEM,
+	DTF_IF_QUEST_PROGRESS_RANGE,
+	DTF_IF_QUEST_EVENT,
+	DTF_END_OF_DIALOG,
+	DTF_DO_ONCE,
+	DTF_NOT_ACTIVE,
+	DTF_IF_QUEST_SPECIAL,
+	DTF_QUEST_SPECIAL,
+	DTF_NOT,
+	DTF_SCRIPT,
+	DTF_IF_SCRIPT
 };
 
 //-----------------------------------------------------------------------------
@@ -113,7 +113,7 @@ struct DialogContext
 	int choice_selected; // zaznaczona opcja dialogowa
 	int dialog_level; // poziom zagnie¿d¿enia w dialogu
 	int dialog_esc; // opcja dialogowa wybierana po wciœniêciu ESC
-	int dialog_skip; // pomijanie opcji dialogowych u¿ywane przez DT_RANDOM_TEXT
+	int dialog_skip; // pomijanie opcji dialogowych u¿ywane przez DTF_RANDOM_TEXT
 	cstring dialog_text; // tekst dialogu
 	string dialog_s_text; // tekst dialogu zmiennego
 	Quest* dialog_quest; // quest zwi¹zany z dialogiem

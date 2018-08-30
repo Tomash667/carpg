@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Light.h"
+#include "BitStreamFunc.h"
 
 //=================================================================================================
 void Light::Save(FileWriter& f) const
@@ -19,17 +20,17 @@ void Light::Load(FileReader& f)
 }
 
 //=================================================================================================
-void Light::Write(BitStream& stream) const
+void Light::Write(BitStreamWriter& f) const
 {
-	stream.Write(pos);
-	stream.Write(color);
-	stream.Write(range);
+	f << pos;
+	f << color;
+	f << range;
 }
 
 //=================================================================================================
-bool Light::Read(BitStream& stream)
+void Light::Read(BitStreamReader& f)
 {
-	return stream.Read(pos)
-		&& stream.Read(color)
-		&& stream.Read(range);
+	f >> pos;
+	f >> color;
+	f >> range;
 }

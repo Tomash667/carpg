@@ -1,4 +1,3 @@
-// kontekst poziomu
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -6,23 +5,6 @@
 #include "Bullet.h"
 #include "Collision.h"
 #include "SpellEffects.h"
-
-//-----------------------------------------------------------------------------
-struct Blood;
-struct Chest;
-struct Door;
-struct GroundItem;
-struct Item;
-struct Light;
-struct BaseObject;
-struct Object;
-struct ParticleEmitter;
-struct Room;
-struct TrailParticleEmitter;
-struct Trap;
-struct Unit;
-struct UnitData;
-struct Usable;
 
 //-----------------------------------------------------------------------------
 struct TmpLevelContext

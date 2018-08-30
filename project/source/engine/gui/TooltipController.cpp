@@ -85,11 +85,11 @@ void TooltipController::Draw(ControlDrawData*)
 		a2 = int(alpha * 255);
 
 	// box
-	GUI.DrawItem(tDialog, pos, size, COLOR_RGBA(255, 255, 255, a), 12);
+	GUI.DrawItem(tDialog, pos, size, Color::Alpha(a), 12);
 
 	// image
 	if(img)
-		GUI.DrawSprite(img, pos + Int2(12, 12), COLOR_RGBA(255, 255, 255, a2));
+		GUI.DrawSprite(img, pos + Int2(12, 12), Color::Alpha(a2));
 
 	Rect r;
 
@@ -98,7 +98,7 @@ void TooltipController::Draw(ControlDrawData*)
 	{
 		r = r_big_text;
 		r += pos;
-		GUI.DrawText(GUI.fBig, big_text, DT_PARSE_SPECIAL, COLOR_RGBA(0, 0, 0, a2), r);
+		GUI.DrawText(GUI.fBig, big_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
 	}
 
 	// text
@@ -106,7 +106,7 @@ void TooltipController::Draw(ControlDrawData*)
 	{
 		r = r_text;
 		r += pos;
-		GUI.DrawText(GUI.default_font, text, DT_PARSE_SPECIAL, COLOR_RGBA(0, 0, 0, a2), r);
+		GUI.DrawText(GUI.default_font, text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
 	}
 
 	// small text
@@ -114,7 +114,7 @@ void TooltipController::Draw(ControlDrawData*)
 	{
 		r = r_small_text;
 		r += pos;
-		GUI.DrawText(GUI.fSmall, small_text, DT_PARSE_SPECIAL, COLOR_RGBA(0, 0, 0, a2), r);
+		GUI.DrawText(GUI.fSmall, small_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, a2), r);
 	}
 }
 
@@ -130,12 +130,7 @@ void TooltipController::FormatBox()
 
 	Int2 img_size;
 	if(img)
-	{
-		D3DSURFACE_DESC desc;
-		img->GetLevelDesc(0, &desc);
-		img_size.x = desc.Width;
-		img_size.y = desc.Height;
-	}
+		img_size = gui::GetSize(img);
 	else
 	{
 		img_size.x = 0;

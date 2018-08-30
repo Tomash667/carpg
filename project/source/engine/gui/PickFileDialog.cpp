@@ -100,7 +100,7 @@ PickFileDialog::PickFileDialog()
 	label_preview = new Label("Preview not available", false);
 	label_preview->SetSize(Int2(240 - 6, 480 - 100));
 	label_preview->SetPosition(Int2(404, 34));
-	label_preview->SetAlign(DT_CENTER | DT_VCENTER);
+	label_preview->SetAlign(DTF_CENTER | DTF_VCENTER);
 	Add(label_preview);
 
 	tex_dir = ResourceManager::Get<Texture>().GetLoadedRaw("dir.png");
@@ -155,7 +155,7 @@ void PickFileDialog::Draw(ControlDrawData*)
 	Window::Draw();
 
 	if(label_preview->visible)
-		GUI.DrawItem(TextBox::tBox, label_preview->global_pos, label_preview->size, WHITE, 4, 32);
+		GUI.DrawItem(TextBox::tBox, label_preview->global_pos, label_preview->size, Color::White, 4, 32);
 }
 
 void PickFileDialog::Event(GuiEvent e)
@@ -237,17 +237,11 @@ string GetExt(const string& filename)
 
 void PickFileDialog::LoadDir(bool keep_selected)
 {
-	WIN32_FIND_DATA find_data;
-	HANDLE handle = FindFirstFile(Format("%s/*.*", active_dir.c_str()), &find_data);
-	if(handle == INVALID_HANDLE_VALUE)
-		return;
-
 	string old_filename;
 	auto selected = list_box->GetItemCast<PickFileDialogItem>();
 	if(selected)
 		old_filename = selected->filename;
 	tb_path->SetText(Format("%s/", active_dir.c_str()));
-
 	list_box->Reset();
 
 	// add parent dir
@@ -262,15 +256,12 @@ void PickFileDialog::LoadDir(bool keep_selected)
 	}
 
 	// add all files/dirs matching filter
-	do
+	io::FindFiles(Format("%s/*.*", active_dir.c_str()), [this](const io::FileInfo& info)
 	{
-		if(strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
-			continue;
-
-		if(IS_SET(find_data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))
+		if(info.is_dir)
 		{
 			auto item = new PickFileDialogItem;
-			item->filename = find_data.cFileName;
+			item->filename = info.filename;
 			item->path = Format("%s/%s", active_dir.c_str(), item->filename.c_str());
 			item->is_dir = true;
 			item->tex = tex_dir;
@@ -278,7 +269,7 @@ void PickFileDialog::LoadDir(bool keep_selected)
 		}
 		else
 		{
-			string filename = find_data.cFileName;
+			string filename = info.filename;
 			string ext = GetExt(filename);
 
 			bool ok = false;
@@ -305,7 +296,8 @@ void PickFileDialog::LoadDir(bool keep_selected)
 				list_box->Add(item);
 			}
 		}
-	} while(FindNextFile(handle, &find_data) != 0);
+		return true;
+	});
 
 	// sort items
 	auto& items = list_box->GetItemsCast<PickFileDialogItem>();

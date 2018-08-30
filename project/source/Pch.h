@@ -11,6 +11,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #define STRICT
+#define _WINSOCKAPI_ 
 
 //-----------------------------------------------------------------------------
 // warning o liœcie inicjalizacyjnej [struct C { C() : elem() {} int elem[10]; ]
@@ -30,18 +31,7 @@
 #endif
 
 //-----------------------------------------------------------------------------
-#ifndef COMMON_ONLY
-#	include <slikenet/peerinterface.h>
-#	include <slikenet/MessageIdentifiers.h>
-#	include <slikenet/BitStream.h>
-#else
-#	include <cassert>
-#endif
-#ifndef NO_DIRECT_X
-#	include <d3dx9.h>
-#else
-#	include <Windows.h>
-#endif
+#include <cassert>
 #include <ctime>
 #include <vector>
 #include <list>
@@ -49,7 +39,6 @@
 #include <limits>
 #include <string>
 #include <fstream>
-#include <algorithm>
 #ifndef COMMON_ONLY
 #	include <btBulletCollisionCommon.h>
 #	include <BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h>
@@ -60,6 +49,7 @@
 #include <unordered_set>
 #include <functional>
 #include <queue>
+#include <random>
 #include <DirectXMath.h>
 
 //-----------------------------------------------------------------------------
@@ -68,21 +58,3 @@ using std::vector;
 using std::list;
 using std::min;
 using std::max;
-#ifndef COMMON_ONLY
-using namespace SLNet;
-#endif
-
-//-----------------------------------------------------------------------------
-// undef some useless macros
-#undef far
-#undef near
-#undef small
-#undef DrawText
-#undef DialogBox
-#undef IN
-#undef OUT
-#undef ERROR
-
-//-----------------------------------------------------------------------------
-// use rand2
-#pragma deprecated (rand)

@@ -1,4 +1,3 @@
-// skrzynia
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -26,21 +25,17 @@ struct Chest : public ItemContainer
 	float rot;
 	MeshInstance* mesh_inst;
 	ChestEventHandler* handler;
-	bool looted; // czy skrzynia jest ograbiana - nie trzeba zapisywaæ
+	// temporary - not saved
+	bool looted;
 
 	static const int MIN_SIZE = 20;
 	static int netid_counter;
 
-	Chest() : mesh_inst(nullptr)
-	{
-	}
-	~Chest()
-	{
-		delete mesh_inst;
-	}
+	Chest() : mesh_inst(nullptr) {}
+	~Chest() { delete mesh_inst; }
 
-	void Save(HANDLE file, bool local);
-	void Load(HANDLE file, bool local);
+	void Save(FileWriter& f, bool local);
+	void Load(FileReader& f, bool local);
 	Vec3 GetCenter() const
 	{
 		Vec3 p = pos;

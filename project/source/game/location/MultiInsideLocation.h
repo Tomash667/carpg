@@ -1,4 +1,3 @@
-// podziemia z wieloma poziomami
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -23,8 +22,8 @@ struct MultiInsideLocation : public InsideLocation
 	// from ILevel
 	void ApplyContext(LevelContext& ctx) override;
 	// from Location
-	void Save(HANDLE file, bool local) override;
-	void Load(HANDLE file, bool local, LOCATION_TOKEN token) override;
+	void Save(GameWriter& f, bool local) override;
+	void Load(GameReader& f, bool local, LOCATION_TOKEN token) override;
 	void BuildRefidTable() override;
 	bool FindUnit(Unit* unit, int* level) override;
 	Unit* FindUnit(UnitData* unit, int& at_level) override;

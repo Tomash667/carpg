@@ -19,6 +19,7 @@
 #include "QuestManager.h"
 #include "BuildingGroup.h"
 #include "ScriptManager.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 extern string g_ctime;
@@ -637,12 +638,8 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							s += "\n";
 						}
 
-						HANDLE file = CreateFile("commands.txt", GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-						if(file)
-						{
-							WriteFile(file, s.c_str(), s.length(), &tmp, nullptr);
-							CloseHandle(file);
-						}
+						TextWriter f("commands.txt");
+						f << s;
 					}
 					break;
 				case CMD_HELP:
@@ -1062,9 +1059,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 							else
 							{
 								net_stream.Reset();
-								net_stream.Write(ID_WHISPER);
-								net_stream.WriteCasted<byte>(Net::IsServer() ? my_id : info.id);
-								WriteString1(net_stream, text);
+								BitStreamWriter f(net_stream);
+								f << ID_WHISPER;
+								f.WriteCasted<byte>(Net::IsServer() ? my_id : info.id);
+								f << text;
 								peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? info.adr : server, false);
 								StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? info.adr : server);
 								cstring s = Format("@%s: %s", info.name.c_str(), text.c_str());
@@ -1085,8 +1083,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(players > 1)
 						{
 							net_stream.Reset();
-							net_stream.Write(ID_SERVER_SAY);
-							WriteString1(net_stream, text);
+							BitStreamWriter f(net_stream);
+							f << ID_SERVER_SAY;
+							f << text;
 							peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 							StreamWrite(net_stream, Stream_Chat, UNASSIGNED_SYSTEM_ADDRESS);
 						}
@@ -1278,9 +1277,10 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					{
 						const string& text = t.MustGetItem();
 						net_stream.Reset();
-						net_stream.Write(ID_SAY);
-						net_stream.WriteCasted<byte>(my_id);
-						WriteString1(net_stream, text);
+						BitStreamWriter f(net_stream);
+						f << ID_SAY;
+						f.WriteCasted<byte>(my_id);
+						f << text;
 						peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server, Net::IsServer());
 						StreamWrite(net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : server);
 						cstring s = Format("%s: %s", game_players[0]->name.c_str(), text.c_str());

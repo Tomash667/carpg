@@ -61,18 +61,18 @@ MultiplayerPanel::MultiplayerPanel(const DialogInfo& info) : GameDialogBox(info)
 void MultiplayerPanel::Draw(ControlDrawData*)
 {
 	// t³o
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
+	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// tekst
 	Rect r = { global_pos.x + 12, global_pos.y + 8, global_pos.x + size.x - 12, global_pos.y + size.y };
-	GUI.DrawText(GUI.fBig, txMultiplayerGame, DT_TOP | DT_CENTER, BLACK, r);
+	GUI.DrawText(GUI.fBig, txMultiplayerGame, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// tekst nick
 	r.Top() += 60;
-	GUI.DrawText(GUI.default_font, txNick, 0, BLACK, r);
+	GUI.DrawText(GUI.default_font, txNick, 0, Color::Black, r);
 
 	// textbox
 	textbox.Draw();

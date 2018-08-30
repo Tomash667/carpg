@@ -127,9 +127,9 @@
   <ItemGroup>
     <ClInclude Include="source\core\Algorithm.h" />
     <ClInclude Include="source\core\Base64.h" />
+    <ClInclude Include="source\core\Color.h" />
     <ClInclude Include="source\core\Core.h" />
     <ClInclude Include="source\core\Config.h" />
-    <ClInclude Include="source\core\Config2.h" />
     <ClInclude Include="source\core\Containers.h" />
     <ClInclude Include="source\core\CoreMath.h" />
     <ClInclude Include="source\core\Crc.h" />
@@ -140,12 +140,12 @@
     <ClInclude Include="source\core\Perlin.h" />
     <ClInclude Include="source\core\Profiler.h" />
     <ClInclude Include="source\core\QuadTree.h" />
-    <ClInclude Include="source\core\Stream.h" />
     <ClInclude Include="source\core\Text.h" />
-    <ClInclude Include="source\core\TextWriter.h" />
     <ClInclude Include="source\core\Timer.h" />
     <ClInclude Include="source\core\Tokenizer.h" />
-    <ClInclude Include="source\engine\BitStreamFunc.h" />
+    <ClInclude Include="source\core\WindowsIncludes.h" />
+    <ClInclude Include="source\engine\DirectX.h" />
+    <ClInclude Include="source\engine\FileFormat.h" />
     <ClInclude Include="source\engine\Font.h" />
     <ClInclude Include="source\engine\EngineCore.h" />
     <ClInclude Include="source\engine\gui\AreaLayout.h" />
@@ -185,6 +185,7 @@
     <ClInclude Include="source\engine\gui\TooltipController.h" />
     <ClInclude Include="source\engine\gui\TreeView.h" />
     <ClInclude Include="source\engine\gui\Window.h" />
+    <ClInclude Include="source\engine\Key.h" />
     <ClInclude Include="source\engine\Mesh.h" />
     <ClInclude Include="source\engine\Engine.h" />
     <ClInclude Include="source\engine\KeyStates.h" />
@@ -204,13 +205,14 @@
     <ClInclude Include="source\game\Encounter.h" />
     <ClInclude Include="source\game\entity\BloodType.h" />
     <ClInclude Include="source\game\entity\ItemContainer.h" />
+    <ClInclude Include="source\game\entity\Portal.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameCore.h" />
     <ClInclude Include="source\game\GameStats.h" />
+    <ClInclude Include="source\game\net\BitStreamFunc.h" />
     <ClInclude Include="source\game\net\GamePacket.h" />
     <ClInclude Include="source\game\net\NetChange.h" />
     <ClInclude Include="source\game\net\NetChangePlayer.h" />
-    <ClInclude Include="source\game\net\NetStats.h" />
     <ClInclude Include="source\game\net\PlayerInfo.h" />
     <ClInclude Include="source\game\panels\ActionPanel.h" />
     <ClInclude Include="source\game\panels\BookPanel.h" />
@@ -353,19 +355,19 @@
     <ClInclude Include="source\Version.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\core\Color.cpp" />
     <ClCompile Include="source\core\CoreMath.cpp" />
     <ClCompile Include="source\core\BoxToBox.cpp" />
     <ClCompile Include="source\core\Bresenham.cpp" />
     <ClCompile Include="source\core\Config.cpp" />
     <ClCompile Include="source\core\Containers.cpp" />
     <ClCompile Include="source\core\Crc.cpp" />
+    <ClCompile Include="source\core\CriticalSection.cpp" />
     <ClCompile Include="source\core\File.cpp" />
     <ClCompile Include="source\core\Logger.cpp" />
     <ClCompile Include="source\core\Perlin.cpp" />
     <ClCompile Include="source\core\Profiler.cpp" />
-    <ClCompile Include="source\core\Stream.cpp" />
     <ClCompile Include="source\core\Text.cpp" />
-    <ClCompile Include="source\core\TextWriter.cpp" />
     <ClCompile Include="source\core\Timer.cpp" />
     <ClCompile Include="source\core\Tokenizer.cpp" />
     <ClCompile Include="source\engine\Font.cpp" />
@@ -417,9 +419,10 @@
     <ClCompile Include="source\game\ConsoleCommands.cpp" />
     <ClCompile Include="source\game\entity\Camera.cpp" />
     <ClCompile Include="source\game\entity\ItemContainer.cpp" />
+    <ClCompile Include="source\game\entity\Portal.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
-    <ClCompile Include="source\game\net\NetStats.cpp" />
+    <ClCompile Include="source\game\net\BitStreamFunc.cpp" />
     <ClCompile Include="source\game\net\PlayerInfo.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />

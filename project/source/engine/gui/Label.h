@@ -7,8 +7,8 @@ namespace gui
 	struct LabelLayout
 	{
 		Font* font;
-		DWORD color;
-		DWORD align;
+		Color color;
+		uint align;
 		Int2 padding;
 	};
 
@@ -20,8 +20,8 @@ namespace gui
 
 		void Draw(ControlDrawData*) override;
 
-		DWORD GetAlign() const { return GetLayout().align; }
-		DWORD GetColor() const { return GetLayout().color; }
+		uint GetAlign() const { return GetLayout().align; }
+		Color GetColor() const { return GetLayout().color; }
 		Font* GetFont() const { return GetLayout().font; }
 		LabelLayout* GetCustomLayout() const { return custom_layout; }
 		const LabelLayout& GetLayout() const { return custom_layout ? *custom_layout : *layout->label; }
@@ -29,8 +29,8 @@ namespace gui
 		const string& GetText() const { return text; }
 		bool IsAutoSize() const { return auto_size; }
 
-		void SetAlign(DWORD align);
-		void SetColor(DWORD color);
+		void SetAlign(uint align);
+		void SetColor(Color color);
 		void SetCustomLayout(LabelLayout* layout);
 		void SetFont(Font* font);
 		void SetPadding(const Int2& padding);

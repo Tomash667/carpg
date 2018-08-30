@@ -1,4 +1,3 @@
-// wnêtrze budynku
 #pragma once
 
 //-----------------------------------------------------------------------------
@@ -28,7 +27,7 @@ struct InsideBuilding final : public ILevel, public LevelArea
 	~InsideBuilding();
 
 	void ApplyContext(LevelContext& ctx);
-	void Save(HANDLE file, bool local);
-	void Load(HANDLE file, bool local);
+	void Save(GameWriter& f, bool local);
+	void Load(GameReader& f, bool local);
 	Unit* FindUnit(const UnitData* ud) const;
 };

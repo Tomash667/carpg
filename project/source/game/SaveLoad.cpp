@@ -125,16 +125,15 @@ bool Game::SaveGameCommon(cstring filename, int slot, cstring text)
 		MoveFile(filename, bak_filename);
 	}
 
-	HANDLE file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if(file == INVALID_HANDLE_VALUE)
+	GameWriter f(filename);
+	if(!f)
 	{
 		Error(txLoadOpenError, filename, GetLastError());
 		GUI.SimpleDialog(txSaveFailed, saveload->visible ? saveload : nullptr);
 		return false;
 	}
 
-	SaveGame(file);
-	CloseHandle(file);
+	SaveGame(f);
 
 	cstring msg = Format("Game saved '%s'.", filename);
 	AddConsoleMsg(msg);
@@ -214,10 +213,10 @@ void Game::LoadGameFilename(const string& name)
 //=================================================================================================
 void Game::LoadGameCommon(cstring filename, int slot)
 {
-	HANDLE file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if(file == INVALID_HANDLE_VALUE)
+	GameReader f(filename);
+	if(!f)
 	{
-		auto last_error = GetLastError();
+		DWORD last_error = GetLastError();
 		throw SaveException(Format(txLoadOpenError, filename, last_error), Format("Failed to open file '%s' (%d).", filename, last_error), true);
 	}
 
@@ -234,25 +233,22 @@ void Game::LoadGameCommon(cstring filename, int slot)
 
 	try
 	{
-		LoadGame(file);
+		LoadGame(f);
 	}
 	catch(const SaveException&)
 	{
 		prev_game_state = GS_LOAD;
-		CloseHandle(file);
 		ExitToMenu();
 		throw;
 	}
 	catch(cstring msg)
 	{
 		prev_game_state = GS_LOAD;
-		CloseHandle(file);
 		ExitToMenu();
 		throw SaveException(nullptr, msg);
 	}
 
 	prev_game_state = GS_LOAD;
-	CloseHandle(file);
 
 	if(hardcore_mode)
 	{
@@ -363,13 +359,11 @@ void Game::LoadSaveSlots()
 }
 
 //=================================================================================================
-void Game::SaveGame(HANDLE file)
+void Game::SaveGame(GameWriter& f)
 {
 	Info("Saving...");
 
-	GameWriter f(file);
-
-	// przed zapisaniem zaktualizuj minimapê, przenieœ jednostki itp
+	// before saving update minimap, finish unit warps
 	if(Net::IsOnline())
 		Net_PreSave();
 	UpdateDungeonMinimap(false);
@@ -388,101 +382,91 @@ void Game::SaveGame(HANDLE file)
 	f << start_version;
 	f << content::version;
 
-	// czy online / dev
+	// is online / dev
 	byte flags = (Net::IsOnline() ? SF_ONLINE : 0);
 #ifdef _DEBUG
 	flags |= SF_DEBUG;
 #endif
-	WriteFile(file, &flags, sizeof(flags), &tmp, nullptr);
+	f << flags;
 
-	// czy hardcore
-	WriteFile(file, &hardcore_mode, sizeof(hardcore_mode), &tmp, nullptr);
-	WriteFile(file, &total_kills, sizeof(total_kills), &tmp, nullptr);
+	// is hardcore
+	f << hardcore_mode;
+	f << total_kills;
 
 	// world state
-	WriteFile(file, &year, sizeof(year), &tmp, nullptr);
-	WriteFile(file, &month, sizeof(month), &tmp, nullptr);
-	WriteFile(file, &day, sizeof(day), &tmp, nullptr);
-	WriteFile(file, &worldtime, sizeof(worldtime), &tmp, nullptr);
-	WriteFile(file, &game_state, sizeof(game_state), &tmp, nullptr);
-	GameStats::Get().Save(file);
+	f << year;
+	f << month;
+	f << day;
+	f << worldtime;
+	f << game_state;
+	GameStats::Get().Save(f);
 
 	BuildRefidTables();
 
 	byte check_id = 0;
 
 	// world map
-	WriteFile(file, &world_state, sizeof(world_state), &tmp, nullptr);
-	WriteFile(file, &current_location, sizeof(current_location), &tmp, nullptr);
-	uint ile = locations.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
+	f << world_state;
+	f << current_location;
+	f << locations.size();
+	for(Location* loc : locations)
 	{
 		LOCATION_TOKEN loc_token;
-
-		if(*it)
-			loc_token = (*it)->GetToken();
+		if(loc)
+			loc_token = loc->GetToken();
 		else
 			loc_token = LT_NULL;
-
-		WriteFile(file, &loc_token, sizeof(loc_token), &tmp, nullptr);
+		f << loc_token;
 
 		if(loc_token != LT_NULL)
 		{
 			if(loc_token == LT_MULTI_DUNGEON)
 			{
-				int levels = ((MultiInsideLocation*)(*it))->levels.size();
-				WriteFile(file, &levels, sizeof(levels), &tmp, nullptr);
+				int levels = ((MultiInsideLocation*)loc)->levels.size();
+				f << levels;
 			}
-			(*it)->Save(file, (game_state == GS_LEVEL && location == *it));
+			loc->Save(f, (game_state == GS_LEVEL && location == loc));
 		}
 
-		WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
+		f << check_id;
 		++check_id;
 	}
-	WriteFile(file, &empty_locations, sizeof(empty_locations), &tmp, nullptr);
-	WriteFile(file, &create_camp, sizeof(create_camp), &tmp, nullptr);
-	WriteFile(file, &world_pos, sizeof(world_pos), &tmp, nullptr);
-	WriteFile(file, &travel_time2, sizeof(travel_time2), &tmp, nullptr);
-	WriteFile(file, &szansa_na_spotkanie, sizeof(szansa_na_spotkanie), &tmp, nullptr);
-	WriteFile(file, &settlements, sizeof(settlements), &tmp, nullptr);
-	WriteFile(file, &encounter_loc, sizeof(encounter_loc), &tmp, nullptr);
-	WriteFile(file, &world_dir, sizeof(world_dir), &tmp, nullptr);
+	f << empty_locations;
+	f << create_camp;
+	f << world_pos;
+	f << travel_time2;
+	f << szansa_na_spotkanie;
+	f << settlements;
+	f << encounter_loc;
+	f << world_dir;
 	if(world_state == WS_TRAVEL)
 	{
-		WriteFile(file, &picked_location, sizeof(picked_location), &tmp, nullptr);
-		WriteFile(file, &travel_day, sizeof(travel_day), &tmp, nullptr);
-		WriteFile(file, &travel_start, sizeof(travel_start), &tmp, nullptr);
-		WriteFile(file, &travel_time, sizeof(travel_time), &tmp, nullptr);
-		WriteFile(file, &guards_enc_reward, sizeof(guards_enc_reward), &tmp, nullptr);
+		f << picked_location;
+		f << travel_day;
+		f << travel_start;
+		f << travel_time;
+		f << guards_enc_reward;
 	}
-	ile = encs.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
+	f << encs.size();
 	if(game_state == GS_LEVEL)
-	{
-		int location_event_handler_quest_refid = (location_event_handler ? location_event_handler->GetLocationEventHandlerQuestRefid() : -1);
-		WriteFile(file, &location_event_handler_quest_refid, sizeof(location_event_handler_quest_refid), &tmp, nullptr);
-	}
+		f << (location_event_handler ? location_event_handler->GetLocationEventHandlerQuestRefid() : -1);
 	else
 		Team.SaveOnWorldmap(f);
-	WriteFile(file, &first_city, sizeof(first_city), &tmp, nullptr);
-	ile = boss_levels.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	if(ile)
-		WriteFile(file, &boss_levels[0], sizeof(Int2)*ile, &tmp, nullptr);
-	WriteFile(file, &enter_from, sizeof(enter_from), &tmp, nullptr);
-	WriteFile(file, &light_angle, sizeof(light_angle), &tmp, nullptr);
+	f << first_city;
+	f << boss_levels;
+	f << enter_from;
+	f << light_angle;
 
-	// kamera
-	WriteFile(file, &cam.real_rot.y, sizeof(cam.real_rot.y), &tmp, nullptr);
-	WriteFile(file, &cam.dist, sizeof(cam.dist), &tmp, nullptr);
+	// camera
+	f << cam.real_rot.y;
+	f << cam.dist;
 
-	// zapisz ekwipunek sprzedawców w mieœcie
-	SaveStock(file, chest_merchant);
-	SaveStock(file, chest_blacksmith);
-	SaveStock(file, chest_alchemist);
-	SaveStock(file, chest_innkeeper);
-	SaveStock(file, chest_food_seller);
+	// update traders stock
+	SaveStock(f, chest_merchant);
+	SaveStock(f, chest_blacksmith);
+	SaveStock(f, chest_alchemist);
+	SaveStock(f, chest_innkeeper);
+	SaveStock(f, chest_food_seller);
 
 	// vars
 	f << devmode;
@@ -503,186 +487,166 @@ void Game::SaveGame(HANDLE file)
 	f << portal_anim;
 	f << drunk_anim;
 	f << ais.size();
-	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
-		(*it)->Save(file);
+	for(AIController* ai : ais)
+		ai->Save(f);
 
 	// game messages & speech bubbles
 	game_gui->game_messages->Save(f);
 	game_gui->Save(f);
 
 	// rumors/notes
-	game_gui->journal->Save(file);
+	game_gui->journal->Save(f);
 
-	WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
+	f << check_id;
 	++check_id;
 
-	// zapisz dru¿ynê
+	// save team
 	Team.Save(f);
 
 	// save quests
-	QuestManager::Get().Save(file);
-	SaveQuestsData(file);
+	QuestManager::Get().Save(f);
+	SaveQuestsData(f);
 	script_mgr->Save(f);
 
 	// newsy
-	uint count = news.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<News*>::iterator it = news.begin(), end = news.end(); it != end; ++it)
+	f << news.size();
+	for(News* n : news)
 	{
-		WriteFile(file, &(*it)->add_time, sizeof((*it)->add_time), &tmp, nullptr);
-		WriteString2(file, (*it)->text);
+		f << n->add_time;
+		f.WriteString2(n->text);
 	}
 
-	WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
+	f << check_id;
 	++check_id;
 
 	if(game_state == GS_LEVEL)
 	{
-		// gra
-		//-----------------------
-		// cz¹steczki
-		count = local_ctx.pes->size();
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		for(vector<ParticleEmitter*>::iterator it = local_ctx.pes->begin(), end = local_ctx.pes->end(); it != end; ++it)
-			(*it)->Save(file);
+		// particles
+		f << local_ctx.pes->size();
+		for(ParticleEmitter* pe : *local_ctx.pes)
+			pe->Save(f);
 
-		count = local_ctx.tpes->size();
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		for(vector<TrailParticleEmitter*>::iterator it = local_ctx.tpes->begin(), end = local_ctx.tpes->end(); it != end; ++it)
-			(*it)->Save(file);
+		f << local_ctx.tpes->size();
+		for(TrailParticleEmitter* tpe : *local_ctx.tpes)
+			tpe->Save(f);
 
-		// wybuchy
-		count = local_ctx.explos->size();
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		for(vector<Explo*>::iterator it = local_ctx.explos->begin(), end = local_ctx.explos->end(); it != end; ++it)
-			(*it)->Save(file);
+		// explosions
+		f << local_ctx.explos->size();;
+		for(Explo* explo : *local_ctx.explos)
+			explo->Save(f);
 
-		// elektrycznoœæ
-		count = local_ctx.electros->size();
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		for(vector<Electro*>::iterator it = local_ctx.electros->begin(), end = local_ctx.electros->end(); it != end; ++it)
-			(*it)->Save(file);
+		// electric effects
+		f << local_ctx.electros->size();
+		for(Electro* electro : *local_ctx.electros)
+			electro->Save(f);
 
-		// wyssania ¿ycia
-		count = local_ctx.drains->size();
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		for(vector<Drain>::iterator it = local_ctx.drains->begin(), end = local_ctx.drains->end(); it != end; ++it)
-			it->Save(file);
+		// drain effects
+		f << local_ctx.drains->size();
+		for(Drain& drain : *local_ctx.drains)
+			drain.Save(f);
 
-		// pociski
-		FileWriter f(file);
+		// bullets
 		f << local_ctx.bullets->size();
-		for(vector<Bullet>::iterator it = local_ctx.bullets->begin(), end = local_ctx.bullets->end(); it != end; ++it)
-			it->Save(f);
+		for(Bullet& bullet : *local_ctx.bullets)
+			bullet.Save(f);
 
-		WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
+		f << check_id;
 		++check_id;
 	}
 
 	if(Net::IsOnline())
 	{
-		WriteString1(file, server_name);
-		WriteString1(file, server_pswd);
-		WriteFile(file, &players, sizeof(players), &tmp, nullptr);
-		WriteFile(file, &max_players, sizeof(max_players), &tmp, nullptr);
-		WriteFile(file, &last_id, sizeof(last_id), &tmp, nullptr);
+		f << server_name;
+		f << server_pswd;
+		f << players;
+		f << max_players;
+		f << last_id;
 		uint count = 0;
 		for(auto info : game_players)
 		{
 			if(info->left == PlayerInfo::LEFT_NO)
 				++count;
 		}
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		for(auto info : game_players)
+		f << count;
+		for(PlayerInfo* info : game_players)
 		{
 			if(info->left == PlayerInfo::LEFT_NO)
-				info->Save(file);
+				info->Save(f);
 		}
-		WriteFile(file, &kick_id, sizeof(kick_id), &tmp, nullptr);
-		WriteFile(file, &Unit::netid_counter, sizeof(Unit::netid_counter), &tmp, nullptr);
-		WriteFile(file, &GroundItem::netid_counter, sizeof(GroundItem::netid_counter), &tmp, nullptr);
-		WriteFile(file, &Chest::netid_counter, sizeof(Chest::netid_counter), &tmp, nullptr);
-		WriteFile(file, &Usable::netid_counter, sizeof(Usable::netid_counter), &tmp, nullptr);
-		WriteFile(file, &skip_id_counter, sizeof(skip_id_counter), &tmp, nullptr);
-		WriteFile(file, &Trap::netid_counter, sizeof(Trap::netid_counter), &tmp, nullptr);
-		WriteFile(file, &Door::netid_counter, sizeof(Door::netid_counter), &tmp, nullptr);
-		WriteFile(file, &Electro::netid_counter, sizeof(Electro::netid_counter), &tmp, nullptr);
-		WriteFile(file, &mp_use_interp, sizeof(mp_use_interp), &tmp, nullptr);
-		WriteFile(file, &mp_interp, sizeof(mp_interp), &tmp, nullptr);
+		f << kick_id;
+		f << Unit::netid_counter;
+		f << GroundItem::netid_counter;
+		f << Chest::netid_counter;
+		f << Usable::netid_counter;
+		f << skip_id_counter;
+		f << Trap::netid_counter;
+		f << Door::netid_counter;
+		f << Electro::netid_counter;
+		f << mp_use_interp;
+		f << mp_interp;
 
-		WriteFile(file, &check_id, sizeof(check_id), &tmp, nullptr);
+		f << check_id;
 		++check_id;
 
 		Net::PushChange(NetChange::GAME_SAVED);
 		AddMultiMsg(txGameSaved);
 	}
 
-	WriteFile(file, "EOS", 3, &tmp, nullptr);
+	f.Write("EOS", 3);
 }
 
 //=================================================================================================
-void Game::SaveStock(HANDLE file, vector<ItemSlot>& cnt)
+void Game::SaveStock(FileWriter& f, vector<ItemSlot>& cnt)
 {
-	uint count = cnt.size();
-	WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-	for(vector<ItemSlot>::iterator it = cnt.begin(), end = cnt.end(); it != end; ++it)
+	f << cnt.size();
+	for(ItemSlot& slot : cnt)
 	{
-		if(it->item)
+		if(slot.item)
 		{
-			WriteString1(file, it->item->id);
-			WriteFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
-			if(it->item->id[0] == '$')
-				WriteFile(file, &it->item->refid, sizeof(int), &tmp, nullptr);
+			f << slot.item->id;
+			f << slot.count;
+			if(slot.item->id[0] == '$')
+				f << slot.item->refid;
 		}
 		else
-		{
-			byte b = 0;
-			WriteFile(file, &b, sizeof(b), &tmp, nullptr);
-		}
+			f.Write0();
 	}
 }
 
 //=================================================================================================
-void Game::SaveQuestsData(HANDLE file)
+void Game::SaveQuestsData(GameWriter& f)
 {
-	int refid;
-
-	// sekret
-	WriteFile(file, &secret_state, sizeof(secret_state), &tmp, nullptr);
-	WriteString1(file, GetSecretNote()->desc);
-	WriteFile(file, &secret_where, sizeof(secret_where), &tmp, nullptr);
-	WriteFile(file, &secret_where2, sizeof(secret_where2), &tmp, nullptr);
+	// secret
+	f << secret_state;
+	f << GetSecretNote()->desc;
+	f << secret_where;
+	f << secret_where2;
 
 	// drinking contest
-	WriteFile(file, &contest_where, sizeof(contest_where), &tmp, nullptr);
-	WriteFile(file, &contest_state, sizeof(contest_state), &tmp, nullptr);
-	WriteFile(file, &contest_generated, sizeof(contest_generated), &tmp, nullptr);
-	refid = (contest_winner ? contest_winner->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
+	f << contest_where;
+	f << contest_state;
+	f << contest_generated;
+	f << contest_winner;
 	if(contest_state >= CONTEST_STARTING)
 	{
-		WriteFile(file, &contest_state2, sizeof(contest_state2), &tmp, nullptr);
-		WriteFile(file, &contest_time, sizeof(contest_time), &tmp, nullptr);
-		int ile = contest_units.size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
-			WriteFile(file, &(*it)->refid, sizeof((*it)->refid), &tmp, nullptr);
+		f << contest_state2;
+		f << contest_time;
+		f << contest_units.size();
+		for(Unit* unit : contest_units)
+			f << unit->refid;
 	}
 
-	// zawody na arenie
-	WriteFile(file, &tournament_year, sizeof(tournament_year), &tmp, nullptr);
-	WriteFile(file, &tournament_city, sizeof(tournament_city), &tmp, nullptr);
-	WriteFile(file, &tournament_city_year, sizeof(tournament_city_year), &tmp, nullptr);
-	refid = (tournament_winner ? tournament_winner->refid : -1);
-	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	WriteFile(file, &tournament_generated, sizeof(tournament_generated), &tmp, nullptr);
+	// arena tournament
+	f << tournament_year;
+	f << tournament_city;
+	f << tournament_city_year;
+	f << tournament_winner;
+	f << tournament_generated;
 }
 
 //=================================================================================================
-void Game::LoadGame(HANDLE file)
+void Game::LoadGame(GameReader& f)
 {
-	GameReader f(file);
-
 	ClearGame();
 	ClearGameVarsOnLoad();
 	StopAllSounds();
@@ -747,9 +711,9 @@ void Game::LoadGame(HANDLE file)
 	if(content::require_update)
 		Info("Loading old system version. Content update required.");
 
-	// czy online / dev
+	// is online / dev
 	byte flags;
-	ReadFile(file, &flags, sizeof(flags), &tmp, nullptr);
+	f >> flags;
 	bool online_save = IS_SET(flags, SF_ONLINE);
 	if(mp_load)
 	{
@@ -765,17 +729,17 @@ void Game::LoadGame(HANDLE file)
 	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
 		online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0);
 
-	ReadFile(file, &hardcore_mode, sizeof(hardcore_mode), &tmp, nullptr);
-	ReadFile(file, &total_kills, sizeof(total_kills), &tmp, nullptr);
+	f >> hardcore_mode;
+	f >> total_kills;
 
 	// world state
 	GAME_STATE game_state2;
-	ReadFile(file, &year, sizeof(year), &tmp, nullptr);
-	ReadFile(file, &month, sizeof(month), &tmp, nullptr);
-	ReadFile(file, &day, sizeof(day), &tmp, nullptr);
-	ReadFile(file, &worldtime, sizeof(worldtime), &tmp, nullptr);
-	ReadFile(file, &game_state2, sizeof(game_state2), &tmp, nullptr);
-	GameStats::Get().Load(file);
+	f >> year;
+	f >> month;
+	f >> day;
+	f >> worldtime;
+	f >> game_state2;
+	GameStats::Get().Load(f);
 
 	Unit::refid_table.clear();
 	Usable::refid_table.clear();
@@ -786,60 +750,57 @@ void Game::LoadGame(HANDLE file)
 
 	// world map
 	LoadingStep(txLoadingLocations);
-	ReadFile(file, &world_state, sizeof(world_state), &tmp, nullptr);
-	ReadFile(file, &current_location, sizeof(current_location), &tmp, nullptr);
-	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	locations.resize(ile);
+	f >> world_state;
+	f >> current_location;
+	uint count = f.Read<uint>();
+	locations.resize(count);
 	int index = 0;
 	int step = 0;
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
+	for(Location*& loc : locations)
 	{
 		LOCATION_TOKEN loc_token;
-
-		ReadFile(file, &loc_token, sizeof(loc_token), &tmp, nullptr);
-
+		f >> loc_token;
+		
 		if(loc_token != LT_NULL)
 		{
 			switch(loc_token)
 			{
 			case LT_OUTSIDE:
-				*it = new OutsideLocation;
+				loc = new OutsideLocation;
 				break;
 			case LT_CITY:
 			case LT_VILLAGE_OLD:
-				*it = new City;
+				loc = new City;
 				break;
 			case LT_CAVE:
-				*it = new CaveLocation;
+				loc = new CaveLocation;
 				break;
 			case LT_SINGLE_DUNGEON:
-				*it = new SingleInsideLocation;
+				loc = new SingleInsideLocation;
 				break;
 			case LT_MULTI_DUNGEON:
 				{
-					int levels;
-					ReadFile(file, &levels, sizeof(levels), &tmp, nullptr);
-					*it = new MultiInsideLocation(levels);
+					int levels = f.Read<int>();
+					loc = new MultiInsideLocation(levels);
 				}
 				break;
 			case LT_CAMP:
-				*it = new Camp;
+				loc = new Camp;
 				break;
 			default:
 				assert(0);
-				*it = new OutsideLocation;
+				loc = new OutsideLocation;
 				break;
 			}
 
-			(*it)->Load(file, (game_state2 == GS_LEVEL && current_location == index), loc_token);
+			loc->Load(f, (game_state2 == GS_LEVEL && current_location == index), loc_token);
 		}
 		else
-			*it = nullptr;
+			loc = nullptr;
 
 		if(step == 0)
 		{
-			if(index >= int(ile) / 4)
+			if(index >= int(count) / 4)
 			{
 				++step;
 				LoadingStep();
@@ -847,7 +808,7 @@ void Game::LoadGame(HANDLE file)
 		}
 		else if(step == 1)
 		{
-			if(index >= int(ile) / 2)
+			if(index >= int(count) / 2)
 			{
 				++step;
 				LoadingStep();
@@ -855,33 +816,33 @@ void Game::LoadGame(HANDLE file)
 		}
 		else if(step == 2)
 		{
-			if(index >= int(ile) * 3 / 4)
+			if(index >= int(count) * 3 / 4)
 			{
 				++step;
 				LoadingStep();
 			}
 		}
 
-		ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
+		f >> read_id;
 		if(read_id != check_id)
-			throw Format("Error while reading location %s (%d).", *it ? (*it)->name.c_str() : "nullptr", index);
+			throw Format("Error while reading location %s (%d).", loc ? loc->name.c_str() : "nullptr", index);
 		++check_id;
 	}
-	ReadFile(file, &empty_locations, sizeof(empty_locations), &tmp, nullptr);
-	ReadFile(file, &create_camp, sizeof(create_camp), &tmp, nullptr);
-	ReadFile(file, &world_pos, sizeof(world_pos), &tmp, nullptr);
-	ReadFile(file, &travel_time2, sizeof(travel_time2), &tmp, nullptr);
-	ReadFile(file, &szansa_na_spotkanie, sizeof(szansa_na_spotkanie), &tmp, nullptr);
-	ReadFile(file, &settlements, sizeof(settlements), &tmp, nullptr);
-	ReadFile(file, &encounter_loc, sizeof(encounter_loc), &tmp, nullptr);
-	ReadFile(file, &world_dir, sizeof(world_dir), &tmp, nullptr);
+	f >> empty_locations;
+	f >> create_camp;
+	f >> world_pos;
+	f >> travel_time2;
+	f >> szansa_na_spotkanie;
+	f >> settlements;
+	f >> encounter_loc;
+	f >> world_dir;
 	if(world_state == WS_TRAVEL)
 	{
-		ReadFile(file, &picked_location, sizeof(picked_location), &tmp, nullptr);
-		ReadFile(file, &travel_day, sizeof(travel_day), &tmp, nullptr);
-		ReadFile(file, &travel_start, sizeof(travel_start), &tmp, nullptr);
-		ReadFile(file, &travel_time, sizeof(travel_time), &tmp, nullptr);
-		ReadFile(file, &guards_enc_reward, sizeof(guards_enc_reward), &tmp, nullptr);
+		f >> picked_location;
+		f >> travel_day;
+		f >> travel_start;
+		f >> travel_time;
+		f >> guards_enc_reward;
 	}
 	else if(world_state == WS_ENCOUNTER)
 	{
@@ -893,20 +854,19 @@ void Game::LoadGame(HANDLE file)
 	}
 	if(LOAD_VERSION < V_0_3)
 		world_dir = Clip(-world_dir);
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	encs.resize(ile, nullptr);
+	encs.resize(f.Read<uint>(), nullptr);
 	int location_event_handler_quest_refid;
 	if(game_state2 == GS_LEVEL)
-		ReadFile(file, &location_event_handler_quest_refid, sizeof(location_event_handler_quest_refid), &tmp, nullptr);
+		f >> location_event_handler_quest_refid;
 	else
 	{
 		location_event_handler_quest_refid = -1;
-		// wczytaj dru¿ynê
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(uint i = 0; i < ile; ++i)
+		// load team
+		f >> count;
+		for(uint i = 0; i < count; ++i)
 		{
 			Unit* u = new Unit;
-			u->Load(file, false);
+			u->Load(f, false);
 			Unit::AddRefid(u);
 			u->CreateMesh(Unit::CREATE_MESH::ON_WORLDMAP);
 
@@ -931,18 +891,15 @@ void Game::LoadGame(HANDLE file)
 		location = nullptr;
 		city_ctx = nullptr;
 	}
-	ReadFile(file, &first_city, sizeof(first_city), &tmp, nullptr);
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	boss_levels.resize(ile);
-	if(ile)
-		ReadFile(file, &boss_levels[0], sizeof(Int2)*ile, &tmp, nullptr);
-	ReadFile(file, &enter_from, sizeof(enter_from), &tmp, nullptr);
+	f >> first_city;
+	f >> boss_levels;
+	f >> enter_from;
 	if(LOAD_VERSION >= V_0_3)
-		ReadFile(file, &light_angle, sizeof(light_angle), &tmp, nullptr);
+		f >> light_angle;
 	else
 		light_angle = Random(PI * 2);
 
-	// ustaw wskaŸniki postaci/u¿ywalnych
+	// set entities pointers
 	LoadingStep(txLoadingData);
 	for(vector<std::pair<Unit**, int> >::iterator it = Unit::refid_request.begin(), end = Unit::refid_request.end(); it != end; ++it)
 		*(it->first) = Unit::refid_table[it->second];
@@ -961,18 +918,18 @@ void Game::LoadGame(HANDLE file)
 	Usable::refid_request.clear();
 
 	// camera
-	ReadFile(file, &cam.real_rot.y, sizeof(cam.real_rot.y), &tmp, nullptr);
-	ReadFile(file, &cam.dist, sizeof(cam.dist), &tmp, nullptr);
+	f >> cam.real_rot.y;
+	f >> cam.dist;
 	cam.Reset();
 	pc_data.rot_buf = 0.f;
 
-	// ekwipunek sprzedawców w mieœcie
-	LoadStock(file, chest_merchant);
-	LoadStock(file, chest_blacksmith);
-	LoadStock(file, chest_alchemist);
-	LoadStock(file, chest_innkeeper);
+	// traders stock
+	LoadStock(f, chest_merchant);
+	LoadStock(f, chest_blacksmith);
+	LoadStock(f, chest_alchemist);
+	LoadStock(f, chest_innkeeper);
 	if(LOAD_VERSION >= V_0_2_20)
-		LoadStock(file, chest_food_seller);
+		LoadStock(f, chest_food_seller);
 	else
 		chest_food_seller.clear();
 
@@ -1044,12 +1001,11 @@ void Game::LoadGame(HANDLE file)
 		portal_anim = 0.f;
 		drunk_anim = 0.f;
 	}
-	f >> ile;
-	ais.resize(ile);
-	for(vector<AIController*>::iterator it = ais.begin(), end = ais.end(); it != end; ++it)
+	ais.resize(f.Read<uint>());
+	for(AIController*& ai : ais)
 	{
-		*it = new AIController;
-		(*it)->Load(file);
+		ai = new AIController;
+		ai->Load(f);
 	}
 
 	// game messages & speech bubbles
@@ -1057,12 +1013,12 @@ void Game::LoadGame(HANDLE file)
 	game_gui->Load(f);
 
 	// rumors/notes
-	game_gui->journal->Load(file);
+	game_gui->journal->Load(f);
 
 	// arena
 	arena_tryb = Arena_Brak;
 
-	ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
+	f >> read_id;
 	if(read_id != check_id)
 		throw "Error reading data before team.";
 	++check_id;
@@ -1074,7 +1030,7 @@ void Game::LoadGame(HANDLE file)
 	// load quests
 	LoadingStep(txLoadingQuests);
 	QuestManager& quest_manager = QuestManager::Get();
-	quest_manager.Load(file);
+	quest_manager.Load(f);
 
 	quest_sawmill = (Quest_Sawmill*)quest_manager.FindQuestById(Q_SAWMILL);
 	quest_mine = (Quest_Mine*)quest_manager.FindQuestById(Q_MINE);
@@ -1120,21 +1076,20 @@ void Game::LoadGame(HANDLE file)
 		delete *it;
 	}
 	quest_manager.quest_item_requests.clear();
-	LoadQuestsData(file);
+	LoadQuestsData(f);
 	script_mgr->Load(f);
 
-	// newsy
-	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+	// news
+	f >> count;
 	news.resize(count);
-	for(vector<News*>::iterator it = news.begin(), end = news.end(); it != end; ++it)
+	for(News*& n : news)
 	{
-		*it = new News;
-		ReadFile(file, &(*it)->add_time, sizeof((*it)->add_time), &tmp, nullptr);
-		ReadString2(file, (*it)->text);
+		n = new News;
+		f >> n->add_time;
+		f.ReadString2(n->text);
 	}
 
-	ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
+	f >> read_id;
 	if(read_id != check_id)
 		throw "Error reading data after news.";
 	++check_id;
@@ -1186,57 +1141,50 @@ void Game::LoadGame(HANDLE file)
 			CreateDungeonMinimap();
 		}
 
-		// cz¹steczki
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-		local_ctx.pes->resize(count);
-		for(vector<ParticleEmitter*>::iterator it = local_ctx.pes->begin(), end = local_ctx.pes->end(); it != end; ++it)
+		// particles
+		local_ctx.pes->resize(f.Read<uint>());
+		for(ParticleEmitter*& pe : *local_ctx.pes)
 		{
-			*it = new ParticleEmitter;
-			ParticleEmitter::AddRefid(*it);
-			(*it)->Load(file);
+			pe = new ParticleEmitter;
+			ParticleEmitter::AddRefid(pe);
+			pe->Load(f);
 		}
 
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-		local_ctx.tpes->resize(count);
-		for(vector<TrailParticleEmitter*>::iterator it = local_ctx.tpes->begin(), end = local_ctx.tpes->end(); it != end; ++it)
+		local_ctx.tpes->resize(f.Read<uint>());
+		for(TrailParticleEmitter* tpe : *local_ctx.tpes)
 		{
-			*it = new TrailParticleEmitter;
-			TrailParticleEmitter::AddRefid(*it);
-			(*it)->Load(file);
+			tpe = new TrailParticleEmitter;
+			TrailParticleEmitter::AddRefid(tpe);
+			tpe->Load(f);
 		}
 
-		// wybuchy
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-		local_ctx.explos->resize(count);
-		for(vector<Explo*>::iterator it = local_ctx.explos->begin(), end = local_ctx.explos->end(); it != end; ++it)
+		// explosions
+		local_ctx.explos->resize(f.Read<uint>());
+		for(Explo*& explo : *local_ctx.explos)
 		{
-			*it = new Explo;
-			(*it)->Load(file);
+			explo = new Explo;
+			explo->Load(f);
 		}
 
-		// elektrycznoœæ
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-		local_ctx.electros->resize(count);
-		for(vector<Electro*>::iterator it = local_ctx.electros->begin(), end = local_ctx.electros->end(); it != end; ++it)
+		// electric effects
+		local_ctx.electros->resize(f.Read<uint>());
+		for(Electro*& electro : *local_ctx.electros)
 		{
-			*it = new Electro;
-			(*it)->Load(file);
+			electro = new Electro;
+			electro->Load(f);
 		}
 
-		// wyssania ¿ycia
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-		local_ctx.drains->resize(count);
-		for(vector<Drain>::iterator it = local_ctx.drains->begin(), end = local_ctx.drains->end(); it != end; ++it)
-			it->Load(file);
+		// drain effects
+		local_ctx.drains->resize(f.Read<uint>());
+		for(Drain& drain : *local_ctx.drains)
+			drain.Load(f);
 
-		// pociski
-		FileReader f(file);
-		f >> count;
-		local_ctx.bullets->resize(count);
-		for(vector<Bullet>::iterator it = local_ctx.bullets->begin(), end = local_ctx.bullets->end(); it != end; ++it)
-			it->Load(f);
+		// bullets
+		local_ctx.bullets->resize(f.Read<uint>());
+		for(Bullet& bullet : *local_ctx.bullets)
+			bullet.Load(f);
 
-		ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
+		f >> read_id;
 		if(read_id != check_id)
 			throw "Failed to read level data.";
 		++check_id;
@@ -1252,10 +1200,7 @@ void Game::LoadGame(HANDLE file)
 
 	// gui
 	if(LOAD_VERSION <= V_0_3)
-	{
-		FileReader f(file);
 		LoadGui(f);
-	}
 	game_gui->PositionPanels();
 
 	// cele ai
@@ -1382,33 +1327,32 @@ void Game::LoadGame(HANDLE file)
 
 	if(mp_load)
 	{
-		ReadString1(file, server_name);
-		ReadString1(file, server_pswd);
-		ReadFile(file, &players, sizeof(players), &tmp, nullptr);
-		ReadFile(file, &max_players, sizeof(max_players), &tmp, nullptr);
-		ReadFile(file, &last_id, sizeof(last_id), &tmp, nullptr);
-		uint count;
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+		f >> server_name;
+		f >> server_pswd;
+		f >> players;
+		f >> max_players;
+		f >> last_id;
+		f >> count;
 		DeleteElements(old_players);
 		old_players.resize(count);
 		for(uint i = 0; i < count; ++i)
 		{
 			old_players[i] = new PlayerInfo;
-			old_players[i]->Load(file);
+			old_players[i]->Load(f);
 		}
-		ReadFile(file, &kick_id, sizeof(kick_id), &tmp, nullptr);
-		ReadFile(file, &Unit::netid_counter, sizeof(Unit::netid_counter), &tmp, nullptr);
-		ReadFile(file, &GroundItem::netid_counter, sizeof(GroundItem::netid_counter), &tmp, nullptr);
-		ReadFile(file, &Chest::netid_counter, sizeof(Chest::netid_counter), &tmp, nullptr);
-		ReadFile(file, &Usable::netid_counter, sizeof(Usable::netid_counter), &tmp, nullptr);
-		ReadFile(file, &skip_id_counter, sizeof(skip_id_counter), &tmp, nullptr);
-		ReadFile(file, &Trap::netid_counter, sizeof(Trap::netid_counter), &tmp, nullptr);
-		ReadFile(file, &Door::netid_counter, sizeof(Door::netid_counter), &tmp, nullptr);
-		ReadFile(file, &Electro::netid_counter, sizeof(Electro::netid_counter), &tmp, nullptr);
-		ReadFile(file, &mp_use_interp, sizeof(mp_use_interp), &tmp, nullptr);
-		ReadFile(file, &mp_interp, sizeof(mp_interp), &tmp, nullptr);
+		f >> kick_id;
+		f >> Unit::netid_counter;
+		f >> GroundItem::netid_counter;
+		f >> Chest::netid_counter;
+		f >> Usable::netid_counter;
+		f >> skip_id_counter;
+		f >> Trap::netid_counter;
+		f >> Door::netid_counter;
+		f >> Electro::netid_counter;
+		f >> mp_use_interp;
+		f >> mp_interp;
 
-		ReadFile(file, &read_id, sizeof(read_id), &tmp, nullptr);
+		f >> read_id;
 		if(read_id != check_id)
 			throw "Failed to read multiplayer data.";
 		++check_id;
@@ -1420,7 +1364,7 @@ void Game::LoadGame(HANDLE file)
 	if(LOAD_VERSION >= V_0_5)
 	{
 		char eos[3];
-		ReadFile(file, eos, 3, &tmp, nullptr);
+		f.Read(eos);
 		if(eos[0] != 'E' || eos[1] != 'O' || eos[2] != 'S')
 			throw "Missing EOS.";
 	}
@@ -1493,27 +1437,27 @@ void Game::LoadGame(HANDLE file)
 }
 
 //=================================================================================================
-void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
+void Game::LoadStock(FileReader& f, vector<ItemSlot>& cnt)
 {
 	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
+	f >> count;
 	if(count == 0)
 		return;
 
 	bool can_sort = true;
 	cnt.resize(count);
-	for(vector<ItemSlot>::iterator it = cnt.begin(), end = cnt.end(); it != end; ++it)
+	for(ItemSlot& slot : cnt)
 	{
-		ReadString1(file);
-		ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
-		if(BUF[0] != '$')
-			it->item = Item::Get(BUF);
+		const string& item_id = f.ReadString1();
+		f >> slot.count;
+		if(item_id[0] != '$')
+			slot.item = Item::Get(item_id);
 		else
 		{
 			int quest_refid;
-			ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
-			QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_refid, &cnt);
-			it->item = QUEST_ITEM_PLACEHOLDER;
+			f >> quest_refid;
+			QuestManager::Get().AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &cnt);
+			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
 	}
@@ -1523,59 +1467,49 @@ void Game::LoadStock(HANDLE file, vector<ItemSlot>& cnt)
 }
 
 //=================================================================================================
-void Game::LoadQuestsData(HANDLE file)
+void Game::LoadQuestsData(GameReader& f)
 {
-	int refid;
-
 	// load quests old data (now are stored inside quest)
 	if(LOAD_VERSION < V_0_4)
 	{
-		quest_sawmill->LoadOld(file);
-		quest_mine->LoadOld(file);
-		quest_bandits->LoadOld(file);
-		quest_mages2->LoadOld(file);
-		quest_orcs2->LoadOld(file);
-		quest_goblins->LoadOld(file);
-		quest_evil->LoadOld(file);
-		quest_crazies->LoadOld(file);
+		quest_sawmill->LoadOld(f);
+		quest_mine->LoadOld(f);
+		quest_bandits->LoadOld(f);
+		quest_mages2->LoadOld(f);
+		quest_orcs2->LoadOld(f);
+		quest_goblins->LoadOld(f);
+		quest_evil->LoadOld(f);
+		quest_crazies->LoadOld(f);
 	}
 
-	// sekret
-	ReadFile(file, &secret_state, sizeof(secret_state), &tmp, nullptr);
-	ReadString1(file, GetSecretNote()->desc);
-	ReadFile(file, &secret_where, sizeof(secret_where), &tmp, nullptr);
-	ReadFile(file, &secret_where2, sizeof(secret_where2), &tmp, nullptr);
-
+	// secret
+	f >> secret_state;
+	f >> GetSecretNote()->desc;
+	f >> secret_where;
+	f >> secret_where2;
 	if(secret_state > SECRET_NONE && !BaseObject::Get("tomashu_dom")->mesh)
 		throw "Save uses 'data.pak' file which is missing!";
 
 	// drinking contest
-	ReadFile(file, &contest_where, sizeof(contest_where), &tmp, nullptr);
-	ReadFile(file, &contest_state, sizeof(contest_state), &tmp, nullptr);
-	ReadFile(file, &contest_generated, sizeof(contest_generated), &tmp, nullptr);
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	contest_winner = Unit::GetByRefid(refid);
+	f >> contest_where;
+	f >> contest_state;
+	f >> contest_generated;
+	f >> contest_winner;
 	if(contest_state >= CONTEST_STARTING)
 	{
-		ReadFile(file, &contest_state2, sizeof(contest_state2), &tmp, nullptr);
-		ReadFile(file, &contest_time, sizeof(contest_time), &tmp, nullptr);
-		int ile;
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		contest_units.resize(ile);
-		for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
-		{
-			ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-			*it = Unit::GetByRefid(refid);
-		}
+		f >> contest_state2;
+		f >> contest_time;
+		contest_units.resize(f.Read<uint>());
+		for(Unit*& unit : contest_units)
+			f >> unit;
 	}
 
-	// zawody na arenie
-	ReadFile(file, &tournament_year, sizeof(tournament_year), &tmp, nullptr);
-	ReadFile(file, &tournament_city, sizeof(tournament_city), &tmp, nullptr);
-	ReadFile(file, &tournament_city_year, sizeof(tournament_city_year), &tmp, nullptr);
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	tournament_winner = Unit::GetByRefid(refid);
-	ReadFile(file, &tournament_generated, sizeof(tournament_generated), &tmp, nullptr);
+	// arena tournament
+	f >> tournament_year;
+	f >> tournament_city;
+	f >> tournament_city_year;
+	f >> tournament_winner;
+	f >> tournament_generated;
 	tournament_state = TOURNAMENT_NOT_DONE;
 	tournament_units.clear();
 }

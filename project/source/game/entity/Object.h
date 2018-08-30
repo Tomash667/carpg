@@ -36,8 +36,8 @@ struct Object
 	{
 		return base && IS_SET(base->flags, OBJ_BILLBOARD);
 	}
-	void Save(HANDLE file);
-	void Load(HANDLE file);
-	void Write(BitStream& stream) const;
-	bool Read(BitStream& stream);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
+	void Write(BitStreamWriter& f) const;
+	bool Read(BitStreamReader& f);
 };

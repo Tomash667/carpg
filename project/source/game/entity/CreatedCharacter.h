@@ -10,10 +10,6 @@
 #include "ItemSlot.h"
 
 //-----------------------------------------------------------------------------
-struct PlayerController;
-struct Item;
-
-//-----------------------------------------------------------------------------
 struct CreatedCharacter
 {
 	struct AttributeData
@@ -59,9 +55,9 @@ struct CreatedCharacter
 
 	void Clear(Class c);
 	void Random(Class c);
-	void Write(BitStream& stream) const;
+	void Write(BitStreamWriter& f) const;
 	// 0 - ok, 1 - read error, 2 - value error, 3 - validation error
-	int Read(BitStream& stream);
+	int Read(BitStreamReader& f);
 	void Apply(PlayerController& pc);
 	bool HavePerk(Perk perk) const;
 	void GetStartingItems(const Item* (&items)[SLOT_MAX]);
@@ -78,6 +74,6 @@ struct CreatedCharacter
 };
 
 //-----------------------------------------------------------------------------
-void WriteCharacterData(BitStream& stream, Class c, const HumanData& hd, const CreatedCharacter& cc);
+void WriteCharacterData(BitStreamWriter& f, Class c, const HumanData& hd, const CreatedCharacter& cc);
 // 0 - ok, 1 - read error, 2 - value error, 3 - validation error
-int ReadCharacterData(BitStream& stream, Class& c, HumanData& hd, CreatedCharacter& cc);
+int ReadCharacterData(BitStreamReader& f, Class& c, HumanData& hd, CreatedCharacter& cc);

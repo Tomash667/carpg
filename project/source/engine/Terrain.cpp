@@ -2,6 +2,7 @@
 #include "EngineCore.h"
 #include "Terrain.h"
 #include "Resource.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 void CalculateNormal(VTerrain& v1, VTerrain& v2, VTerrain& v3)
@@ -104,7 +105,8 @@ void Terrain::Build(bool smooth)
 {
 	assert(state == 1);
 
-	HRESULT hr = D3DXCreateMeshFVF(n_tris, n_verts, D3DXMESH_MANAGED | D3DXMESH_32BIT, VTerrain::fvf, device, &mesh);
+	const uint fvf = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2;
+	HRESULT hr = D3DXCreateMeshFVF(n_tris, n_verts, D3DXMESH_MANAGED | D3DXMESH_32BIT, fvf, device, &mesh);
 	if(FAILED(hr))
 		throw Format("Failed to create new terrain mesh (%d)!", hr);
 

@@ -402,9 +402,6 @@
     <ClCompile Include="source\game\entity\Light.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
-    <ClCompile Include="source\core\Stream.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\stats\Required.cpp">
       <Filter>3. game\stats</Filter>
     </ClCompile>
@@ -422,9 +419,6 @@
     </ClCompile>
     <ClCompile Include="source\game\quests\Quest.cpp">
       <Filter>3. game\quests</Filter>
-    </ClCompile>
-    <ClCompile Include="source\game\entity\Camera.cpp">
-      <Filter>3. game</Filter>
     </ClCompile>
     <ClCompile Include="source\game\GameFile.cpp">
       <Filter>3. game</Filter>
@@ -613,12 +607,6 @@
     <ClCompile Include="source\game\entity\ItemContainer.cpp">
       <Filter>3. game\entity</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\net\NetStats.cpp">
-      <Filter>3. game\net</Filter>
-    </ClCompile>
-    <ClCompile Include="source\core\TextWriter.cpp">
-      <Filter>1. core</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\system\BaseObject.cpp">
       <Filter>3. game\system\objects</Filter>
     </ClCompile>
@@ -687,6 +675,21 @@
     </ClCompile>
     <ClCompile Include="source\game\script\Var.cpp">
       <Filter>3. game\script</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\Color.cpp">
+      <Filter>1. core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\net\BitStreamFunc.cpp">
+      <Filter>3. game\net</Filter>
+    </ClCompile>
+    <ClCompile Include="source\core\CriticalSection.cpp">
+      <Filter>1. core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\Portal.cpp">
+      <Filter>3. game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\Camera.cpp">
+      <Filter>3. game\entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1020,9 +1023,6 @@
     <ClInclude Include="source\game\entity\Light.h">
       <Filter>3. game\entity</Filter>
     </ClInclude>
-    <ClInclude Include="source\core\Stream.h">
-      <Filter>1. core</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\helpers\UnitHelper.h">
       <Filter>3. game\helpers</Filter>
     </ClInclude>
@@ -1031,9 +1031,6 @@
     </ClInclude>
     <ClInclude Include="source\game\helpers\LocationHelper.h">
       <Filter>3. game\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\Config2.h">
-      <Filter>1. core</Filter>
     </ClInclude>
     <ClInclude Include="source\core\FastFunc.h">
       <Filter>1. core</Filter>
@@ -1061,9 +1058,6 @@
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_RetrievePackage.h">
       <Filter>3. game\quests</Filter>
-    </ClInclude>
-    <ClInclude Include="source\core\TextWriter.h">
-      <Filter>1. core</Filter>
     </ClInclude>
     <ClInclude Include="source\core\Logger.h">
       <Filter>1. core</Filter>
@@ -1270,17 +1264,11 @@
     <ClInclude Include="source\engine\gui\Gui.h">
       <Filter>2. engine\gui</Filter>
     </ClInclude>
-    <ClInclude Include="source\engine\BitStreamFunc.h">
-      <Filter>2. engine</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\panels\BookPanel.h">
       <Filter>3. game\panels</Filter>
     </ClInclude>
     <ClInclude Include="source\game\entity\ItemContainer.h">
       <Filter>3. game\entity</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\net\NetStats.h">
-      <Filter>3. game\net</Filter>
     </ClInclude>
     <ClInclude Include="source\core\Base64.h">
       <Filter>1. core</Filter>
@@ -1359,6 +1347,27 @@
     </ClInclude>
     <ClInclude Include="source\game\script\Var.h">
       <Filter>3. game\script</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\DirectX.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\FileFormat.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\Color.h">
+      <Filter>1. core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\net\BitStreamFunc.h">
+      <Filter>3. game\net</Filter>
+    </ClInclude>
+    <ClInclude Include="source\core\WindowsIncludes.h">
+      <Filter>1. core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\engine\Key.h">
+      <Filter>2. engine</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Portal.h">
+      <Filter>3. game\entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

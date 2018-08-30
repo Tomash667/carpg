@@ -196,21 +196,21 @@ void Quest_Orcs::HandleLocationEvent(LocationEventHandler::Event event)
 }
 
 //=================================================================================================
-void Quest_Orcs::Save(HANDLE file)
+void Quest_Orcs::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
+	Quest_Dungeon::Save(f);
 
-	WriteFile(file, &dungeon_levels, sizeof(dungeon_levels), &tmp, nullptr);
-	WriteFile(file, &levels_cleared, sizeof(levels_cleared), &tmp, nullptr);
+	f << dungeon_levels;
+	f << levels_cleared;
 }
 
 //=================================================================================================
-bool Quest_Orcs::Load(HANDLE file)
+bool Quest_Orcs::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
+	Quest_Dungeon::Load(f);
 
-	ReadFile(file, &dungeon_levels, sizeof(dungeon_levels), &tmp, nullptr);
-	ReadFile(file, &levels_cleared, sizeof(levels_cleared), &tmp, nullptr);
+	f >> dungeon_levels;
+	f >> levels_cleared;
 
 	location_event_handler = this;
 	whole_location_event_handler = true;
@@ -666,11 +666,9 @@ void Quest_Orcs2::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 }
 
 //=================================================================================================
-void Quest_Orcs2::Save(HANDLE file)
+void Quest_Orcs2::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
-
-	GameWriter f(file);
+	Quest_Dungeon::Save(f);
 
 	f << near_loc;
 	f << talked;
@@ -679,15 +677,13 @@ void Quest_Orcs2::Save(HANDLE file)
 	f << guard;
 	f << orc;
 	f << orc_class;
-	game->SaveStock(file, wares);
+	game->SaveStock(f, wares);
 }
 
 //=================================================================================================
-bool Quest_Orcs2::Load(HANDLE file)
+bool Quest_Orcs2::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
-
-	GameReader f(file);
+	Quest_Dungeon::Load(f);
 
 	f >> near_loc;
 	f >> talked;
@@ -699,7 +695,7 @@ bool Quest_Orcs2::Load(HANDLE file)
 		f >> guard;
 		f >> orc;
 		f >> orc_class;
-		game->LoadStock(file, wares);
+		game->LoadStock(f, wares);
 	}
 
 	if(!done)
@@ -720,10 +716,9 @@ bool Quest_Orcs2::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Orcs2::LoadOld(HANDLE file)
+void Quest_Orcs2::LoadOld(GameReader& f)
 {
 	int city, old_refid, old_refid2, where;
-	GameReader f(file);
 
 	f >> orcs_state;
 	f >> city;
@@ -734,7 +729,7 @@ void Quest_Orcs2::LoadOld(HANDLE file)
 	f >> guard;
 	f >> orc;
 	f >> orc_class;
-	game->LoadStock(file, wares);
+	game->LoadStock(f, wares);
 }
 
 //=================================================================================================

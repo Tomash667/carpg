@@ -1,7 +1,4 @@
-// przedmiot na ziemi
 #pragma once
-
-struct Item;
 
 //-----------------------------------------------------------------------------
 struct GroundItem
@@ -15,6 +12,6 @@ struct GroundItem
 	static const int MIN_SIZE = 23;
 	static int netid_counter;
 
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 };

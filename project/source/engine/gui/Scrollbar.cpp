@@ -15,7 +15,7 @@ Scrollbar::Scrollbar(bool hscrollbar, bool is_new) : Control(is_new), clicked(fa
 //=================================================================================================
 void Scrollbar::Draw(ControlDrawData* cdd)
 {
-	GUI.DrawItem(tex, global_pos, size, WHITE, 4, 32);
+	GUI.DrawItem(tex, global_pos, size, Color::White, 4, 32);
 
 	int s_pos, s_size;
 	if(hscrollbar)
@@ -30,7 +30,7 @@ void Scrollbar::Draw(ControlDrawData* cdd)
 			s_pos = int(float(offset) / total*size.x);
 			s_size = int(float(part) / total*size.x);
 		}
-		GUI.DrawItem(tex2, Int2(global_pos.x + s_pos, global_pos.y), Int2(s_size, size.y), WHITE, 4, 32);
+		GUI.DrawItem(tex2, Int2(global_pos.x + s_pos, global_pos.y), Int2(s_size, size.y), Color::White, 4, 32);
 	}
 	else
 	{
@@ -44,7 +44,7 @@ void Scrollbar::Draw(ControlDrawData* cdd)
 			s_pos = int(float(offset) / total*size.y);
 			s_size = int(float(part) / total*size.y);
 		}
-		GUI.DrawItem(tex2, Int2(global_pos.x, global_pos.y + s_pos), Int2(size.x, s_size), WHITE, 4, 32);
+		GUI.DrawItem(tex2, Int2(global_pos.x, global_pos.y + s_pos), Int2(size.x, s_size), Color::White, 4, 32);
 	}
 }
 

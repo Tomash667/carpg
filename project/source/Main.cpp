@@ -369,6 +369,7 @@ void GetCompileTime()
 
 	// read position of header
 	int offset;
+	DWORD tmp;
 	SetFilePointer(file, 0x3C, nullptr, FILE_BEGIN);
 	ReadFile(file, &offset, sizeof(offset), &tmp, nullptr);
 	SetFilePointer(file, offset + 8, nullptr, FILE_BEGIN);
@@ -803,22 +804,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	{
 		const string& screenshot_format = cfg.GetString("screenshot_format", "jpg");
 		if(screenshot_format == "jpg")
-			game.screenshot_format = D3DXIFF_JPG;
+			game.screenshot_format = ImageFormat::JPG;
 		else if(screenshot_format == "bmp")
-			game.screenshot_format = D3DXIFF_BMP;
+			game.screenshot_format = ImageFormat::BMP;
 		else if(screenshot_format == "tga")
-			game.screenshot_format = D3DXIFF_TGA;
+			game.screenshot_format = ImageFormat::TGA;
 		else if(screenshot_format == "png")
-			game.screenshot_format = D3DXIFF_PNG;
+			game.screenshot_format = ImageFormat::PNG;
 		else
 		{
 			Warn("Settings: Unknown screenshot format '%s'. Defaulting to jpg.", screenshot_format.c_str());
-			game.screenshot_format = D3DXIFF_JPG;
+			game.screenshot_format = ImageFormat::JPG;
 		}
 	}
-
-	game.disable_net_stats = cfg.GetBool("disable_net_stats");
-
+	
 	game.SetConfigVarsFromFile();
 	game.ApplyConfigVars();
 

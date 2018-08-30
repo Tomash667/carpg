@@ -28,7 +28,7 @@ GamePanel::GamePanel() : /*resizing(false), draging(false),*/ box_state(BOX_NOT_
 //=================================================================================================
 void GamePanel::Draw(ControlDrawData*)
 {
-	GUI.DrawItem(tBackground, pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+	GUI.DrawItem(tBackground, pos, size, Color::Alpha(222), 16);
 }
 
 //=================================================================================================
@@ -226,18 +226,18 @@ void GamePanel::DrawBoxInternal()
 		alpha2 = int(box_alpha * 255);
 
 	// box
-	GUI.DrawItem(tDialog, box_pos, box_size, COLOR_RGBA(255, 255, 255, alpha), 12);
+	GUI.DrawItem(tDialog, box_pos, box_size, Color::Alpha(alpha), 12);
 
 	// obrazek
 	if(box_img)
-		GUI.DrawSprite(box_img, box_img_pos, COLOR_RGBA(255, 255, 255, alpha2));
+		GUI.DrawSprite(box_img, box_img_pos, Color::Alpha(alpha2));
 
 	// du¿y tekst
-	GUI.DrawText(GUI.default_font, box_text, DT_PARSE_SPECIAL, COLOR_RGBA(0, 0, 0, alpha2), box_big);
+	GUI.DrawText(GUI.default_font, box_text, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), box_big);
 
 	// ma³y tekst
 	if(!box_text_small.empty())
-		GUI.DrawText(GUI.fSmall, box_text_small, DT_PARSE_SPECIAL, COLOR_RGBA(0, 0, 0, alpha2), box_small);
+		GUI.DrawText(GUI.fSmall, box_text_small, DTF_PARSE_SPECIAL, Color(0, 0, 0, alpha2), box_small);
 }
 
 //=================================================================================================
@@ -275,11 +275,7 @@ void GamePanel::UpdateBoxIndex(float dt, int index, int index2, bool refresh)
 		{
 			FormatBox();
 			if(box_img)
-			{
-				D3DSURFACE_DESC desc;
-				box_img->GetLevelDesc(0, &desc);
-				box_img_size = Int2(desc.Width, desc.Height);
-			}
+				box_img_size = gui::GetSize(box_img);
 		}
 	}
 	else

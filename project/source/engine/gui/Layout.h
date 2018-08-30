@@ -19,7 +19,7 @@ namespace gui
 			AreaLayout background;
 			AreaLayout header;
 			Font* font;
-			DWORD font_color;
+			Color font_color;
 			Int2 padding;
 			int header_height;
 		} window;
@@ -33,9 +33,9 @@ namespace gui
 			Font* font;
 			Int2 padding;
 			Int2 item_padding;
-			DWORD font_color;
-			DWORD font_color_hover;
-			DWORD font_color_down;
+			Color font_color;
+			Color font_color_hover;
+			Color font_color_down;
 		} menubar;
 
 		struct MenuStrip
@@ -45,9 +45,9 @@ namespace gui
 			Font* font;
 			Int2 padding;
 			Int2 item_padding;
-			DWORD font_color;
-			DWORD font_color_hover;
-			DWORD font_color_disabled;
+			Color font_color;
+			Color font_color_hover;
+			Color font_color_disabled;
 		} menustrip;
 
 		struct TabControl
@@ -66,9 +66,9 @@ namespace gui
 			Font* font;
 			Int2 padding;
 			Int2 padding_active;
-			DWORD font_color;
-			DWORD font_color_hover;
-			DWORD font_color_down;
+			Color font_color;
+			Color font_color_hover;
+			Color font_color_down;
 		} tabctrl;
 
 		struct TreeView
@@ -80,7 +80,7 @@ namespace gui
 			AreaLayout button_down;
 			AreaLayout button_down_hover;
 			Font* font;
-			DWORD font_color;
+			Color font_color;
 			int level_offset;
 			TEX text_box_background;
 			TEX drag_n_drop;
@@ -102,7 +102,7 @@ namespace gui
 			AreaLayout box;
 			AreaLayout checked;
 			Font* font;
-			DWORD font_color;
+			Color font_color;
 		} check_box_group;
 
 		~Layout();

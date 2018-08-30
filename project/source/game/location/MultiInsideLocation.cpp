@@ -1,8 +1,8 @@
-// podziemia z wieloma poziomami
 #include "Pch.h"
 #include "GameCore.h"
 #include "MultiInsideLocation.h"
 #include "SaveState.h"
+#include "GameFile.h"
 
 //=================================================================================================
 MultiInsideLocation::MultiInsideLocation(int _levels) : active_level(-1), active(nullptr), generated(0)
@@ -37,57 +37,55 @@ void MultiInsideLocation::ApplyContext(LevelContext& ctx)
 }
 
 //=================================================================================================
-void MultiInsideLocation::Save(HANDLE file, bool local)
+void MultiInsideLocation::Save(GameWriter& f, bool local)
 {
-	InsideLocation::Save(file, local);
+	InsideLocation::Save(f, local);
 
-	WriteFile(file, &active_level, sizeof(active_level), &tmp, nullptr);
-	WriteFile(file, &generated, sizeof(generated), &tmp, nullptr);
+	f << active_level;
+	f << generated;
 
-	uint ile = levels.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
+	f << levels.size();
 	for(int i = 0; i < generated; ++i)
-		levels[i].SaveLevel(file, local && i == active_level);
+		levels[i].SaveLevel(f, local && i == active_level);
 
-	for(vector<LevelInfo>::iterator it = infos.begin(), end = infos.end(); it != end; ++it)
+	for(LevelInfo& info : infos)
 	{
-		WriteFile(file, &it->last_visit, sizeof(it->last_visit), &tmp, nullptr);
-		WriteFile(file, &it->seed, sizeof(it->seed), &tmp, nullptr);
-		WriteFile(file, &it->cleared, sizeof(it->cleared), &tmp, nullptr);
-		WriteFile(file, &it->reset, sizeof(it->reset), &tmp, nullptr);
+		f << info.last_visit;
+		f << info.seed;
+		f << info.cleared;
+		f << info.reset;
 	}
 }
 
 //=================================================================================================
-void MultiInsideLocation::Load(HANDLE file, bool local, LOCATION_TOKEN token)
+void MultiInsideLocation::Load(GameReader& f, bool local, LOCATION_TOKEN token)
 {
-	InsideLocation::Load(file, local, token);
+	InsideLocation::Load(f, local, token);
+	
+	f >> active_level;
+	f >> generated;
 
-	ReadFile(file, &active_level, sizeof(active_level), &tmp, nullptr);
-	ReadFile(file, &generated, sizeof(generated), &tmp, nullptr);
-
-	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	levels.resize(ile);
+	uint count = f.Read<uint>();
+	levels.resize(count);
 	for(int i = 0; i < generated; ++i)
-		levels[i].LoadLevel(file, local && active_level == i);
+		levels[i].LoadLevel(f, local && active_level == i);
 
 	if(active_level != -1)
 		active = &levels[active_level];
 	else
 		active = nullptr;
 
-	infos.resize(ile);
-	for(vector<LevelInfo>::iterator it = infos.begin(), end = infos.end(); it != end; ++it)
+	infos.resize(count);
+	for(LevelInfo& info : infos)
 	{
-		ReadFile(file, &it->last_visit, sizeof(it->last_visit), &tmp, nullptr);
+		f >> info.last_visit;
 		if(LOAD_VERSION >= V_0_3)
-			ReadFile(file, &it->seed, sizeof(it->seed), &tmp, nullptr);
+			f >> info.seed;
 		else
-			it->seed = 0;
-		ReadFile(file, &it->cleared, sizeof(it->cleared), &tmp, nullptr);
-		ReadFile(file, &it->reset, sizeof(it->reset), &tmp, nullptr);
-		it->loaded_resources = false;
+			info.seed = 0;
+		f >> info.cleared;
+		f >> info.reset;
+		info.loaded_resources = false;
 	}
 }
 

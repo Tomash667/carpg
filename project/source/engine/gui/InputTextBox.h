@@ -33,7 +33,7 @@ public:
 	Int2 textbox_size, inputbox_size, inputbox_pos;
 	InputEvent event;
 	TEX* background;
-	DWORD background_color;
+	Color background_color;
 	bool added, lose_focus, esc_clear;
 
 private:

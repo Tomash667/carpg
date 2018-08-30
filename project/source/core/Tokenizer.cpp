@@ -1,5 +1,7 @@
 #include "Pch.h"
 #include "Core.h"
+#include "Tokenizer.h"
+#include "File.h"
 
 using namespace tokenizer;
 

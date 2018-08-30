@@ -4,6 +4,7 @@
 #include "ResourceManager.h"
 #include "SoundManager.h"
 #include "StartupOptions.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 const Int2 Engine::MIN_WINDOW_SIZE = Int2(800, 600);
@@ -13,11 +14,14 @@ const Int2 Engine::DEFAULT_WINDOW_SIZE = Int2(1024, 768);
 Engine* Engine::engine;
 KeyStates Key;
 extern string g_system_dir;
+#ifdef _DEBUG
+HRESULT _d_hr;
+#endif
 
 //=================================================================================================
 Engine::Engine() : engine_shutdown(false), timer(false), hwnd(nullptr), d3d(nullptr), device(nullptr), sprite(nullptr), phy_config(nullptr),
 phy_dispatcher(nullptr), phy_broadphase(nullptr), phy_world(nullptr), cursor_visible(true), replace_cursor(false), locked_cursor(true), lost_device(false),
-clear_color(BLACK), res_freed(false), vsync(true), active(false), activation_point(-1, -1), sound_mgr(nullptr)
+clear_color(Color::Black), res_freed(false), vsync(true), active(false), activation_point(-1, -1), sound_mgr(nullptr)
 {
 	engine = this;
 }
@@ -266,34 +270,29 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	{
 		if(!file.Open(filename))
 			throw Format("Engine: Failed to load shader '%s' (%d).", params.name, GetLastError());
-		GetFileTime(file.file, nullptr, nullptr, &params.file_time);
+		params.file_time = file.GetTime();
 	}
 
 	// check if in cache
 	{
 		FileReader cache_file(cache_path);
-		if(cache_file)
+		if(cache_file && params.file_time == cache_file.GetTime())
 		{
-			FILETIME cache_time;
-			GetFileTime(cache_file.file, nullptr, nullptr, &cache_time);
-			if(CompareFileTime(&params.file_time, &cache_time) == 0)
+			// same last modify time, use cache
+			cache_file.ReadToString(g_tmp_string);
+			ID3DXEffect* effect = nullptr;
+			hr = D3DXCreateEffect(device, g_tmp_string.c_str(), g_tmp_string.size(), params.macros, nullptr, flags, params.pool, &effect, &errors);
+			if(FAILED(hr))
 			{
-				// same last modify time, use cache
-				cache_file.ReadToString(g_tmp_string);
-				ID3DXEffect* effect = nullptr;
-				hr = D3DXCreateEffect(device, g_tmp_string.c_str(), g_tmp_string.size(), params.macros, nullptr, flags, params.pool, &effect, &errors);
-				if(FAILED(hr))
-				{
-					Error("Engine: Failed to create effect from cache '%s' (%d).\n%s", params.cache_name, hr,
-						errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
-					SafeRelease(errors);
-					SafeRelease(effect);
-				}
-				else
-				{
-					SafeRelease(errors);
-					return effect;
-				}
+				Error("Engine: Failed to create effect from cache '%s' (%d).\n%s", params.cache_name, hr,
+					errors ? (cstring)errors->GetBufferPointer() : "No errors information.");
+				SafeRelease(errors);
+				SafeRelease(effect);
+			}
+			else
+			{
+				SafeRelease(errors);
+				return effect;
 			}
 		}
 	}
@@ -362,10 +361,8 @@ ID3DXEffect* Engine::CompileShader(CompileShaderParams& params)
 	FileWriter f(cache_path);
 	if(f)
 	{
-		FILETIME fake_time = { 0xFFFFFFFF, 0xFFFFFFFF };
-		SetFileTime(f.file, nullptr, nullptr, &fake_time);
 		f.Write(effect_buffer->GetBufferPointer(), effect_buffer->GetBufferSize());
-		SetFileTime(f.file, nullptr, nullptr, &params.file_time);
+		f.SetTime(params.file_time);
 	}
 	else
 		Warn("Engine: Failed to save effect '%s' to cache (%d).", params.cache_name, GetLastError());
@@ -537,7 +534,7 @@ void Engine::GatherParams(D3DPRESENT_PARAMETERS& d3dpp)
 
 //=================================================================================================
 // Handle windows events
-LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+long Engine::HandleEvent(HWND in_hwnd, uint msg, uint wParam, long lParam)
 {
 	switch(msg)
 	{
@@ -628,7 +625,7 @@ LRESULT Engine::HandleEvent(HWND in_hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 //=================================================================================================
 // Convert message to virtual key
-bool Engine::MsgToKey(UINT msg, WPARAM wParam, byte& key, int& result)
+bool Engine::MsgToKey(uint msg, uint wParam, byte& key, int& result)
 {
 	bool down = false;
 

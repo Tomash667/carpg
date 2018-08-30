@@ -4,43 +4,53 @@
 #include "Unit.h"
 
 //-----------------------------------------------------------------------------
-class GameReader : public FileReader
+class GameReader final : public FileReader
 {
 public:
-	explicit GameReader(HANDLE file) : FileReader(file)
-	{
-	}
-
-	explicit GameReader(cstring filename) : FileReader(filename)
-	{
-	}
+	explicit GameReader(HANDLE file) : FileReader(file) {}
+	explicit GameReader(cstring filename) : FileReader(filename) {}
+	explicit GameReader(const FileReader& f) : FileReader(f.GetHandle()) {}
 
 	using FileReader::operator >> ;
 
 	void LoadArtifact(const Item*& item);
 
-	bool operator >> (Unit*& u)
+	void operator >> (Unit*& unit)
 	{
-		int refid;
-		bool result = (FileReader::operator >> (refid));
-		u = Unit::GetByRefid(refid);
-		return result;
+		int refid = Read<int>();
+		unit = Unit::GetByRefid(refid);
 	}
 
 	void operator >> (HumanData& hd)
 	{
-		hd.Load(file);
+		hd.Load(*this);
 	}
 
 	void operator >> (const Item*& item)
 	{
-		if(ReadStringBUF())
-			item = Item::Get(BUF);
+		const string& id = ReadString1();
+		if(IsOk())
+			item = Item::Get(id);
+	}
+
+	void operator >> (Usable*& usable)
+	{
+		int refid = Read<int>();
+		usable = Usable::GetByRefid(refid);
+	}
+
+	void ReadOptional(const Item*& item)
+	{
+		const string& id = ReadString1();
+		if(id.empty())
+			item = nullptr;
+		else
+			item = Item::Get(id);
 	}
 };
 
 //-----------------------------------------------------------------------------
-class GameWriter : public FileWriter
+class GameWriter final : public FileWriter
 {
 public:
 	explicit GameWriter(HANDLE file) : FileWriter(file)
@@ -61,7 +71,7 @@ public:
 
 	void operator << (const HumanData& hd)
 	{
-		hd.Save(file);
+		hd.Save(*this);
 	}
 
 	void operator << (const Item* item)
@@ -70,5 +80,13 @@ public:
 			WriteString1(item->id);
 		else
 			Write<byte>(0);
+	}
+
+	void WriteOptional(const Item* item)
+	{
+		if(item)
+			WriteString1(item->id);
+		else
+			Write0();
 	}
 };

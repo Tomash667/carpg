@@ -41,9 +41,9 @@ public:
 	bool IfSpecial(DialogContext& ctx, cstring msg) override;
 	void HandleLocationEvent(LocationEventHandler::Event event) override;
 	int GetLocationEventHandlerQuestRefid() override { return refid; }
-	void Save(HANDLE file) override;
-	bool Load(HANDLE file) override;
-	void LoadOld(HANDLE file);
+	void Save(GameWriter& f) override;
+	bool Load(GameReader& f) override;
+	void LoadOld(GameReader& f);
 
 	State sawmill_state;
 	BuildState build_state;

@@ -5,10 +5,6 @@
 #include "ItemContainer.h"
 
 //-----------------------------------------------------------------------------
-struct Unit;
-struct Usable;
-
-//-----------------------------------------------------------------------------
 struct UsableRequest
 {
 	Usable** usable;
@@ -37,10 +33,10 @@ struct Usable
 	Usable() : variant(-1), container(nullptr) {}
 	~Usable() { delete container; }
 
-	void Save(HANDLE file, bool local);
-	void Load(HANDLE file, bool local);
-	void Write(BitStream& stream) const;
-	bool Read(BitStream& stream);
+	void Save(FileWriter& f, bool local);
+	void Load(FileReader& f, bool local);
+	void Write(BitStreamWriter& f) const;
+	bool Read(BitStreamReader& f);
 
 	static Usable* GetByRefid(int _refid)
 	{

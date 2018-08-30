@@ -5,6 +5,9 @@
 #include "City.h"
 #include "InsideLocation.h"
 #include "Action.h"
+#include "Profiler.h"
+#include "Portal.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 ObjectPool<SceneNode> node_pool;
@@ -3759,7 +3762,8 @@ void Game::DrawExplosions(const vector<Explo*>& explos)
 		V(eMesh->SetVector(hMeshTint, (D3DXVECTOR4*)&tint));
 		V(eMesh->CommitChanges());
 
-		aSpellball->DrawSubmesh(device, 0);
+		Mesh::Submesh& sub = aSpellball->subs[0];
+		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
 	}
 
 	V(eMesh->EndPass());

@@ -2,18 +2,11 @@
 
 //-----------------------------------------------------------------------------
 #include "Resource.h"
-#include "Stream.h"
+#include "Timer.h"
+#include "File.h"
 
 //-----------------------------------------------------------------------------
 class LoadScreen;
-
-//-----------------------------------------------------------------------------
-enum class StreamType
-{
-	Memory,
-	FullFileOrMemory,
-	File
-};
 
 //-----------------------------------------------------------------------------
 struct ResourceComparer
@@ -48,7 +41,7 @@ public:
 
 	int version;
 	string path;
-	HANDLE file;
+	FileReader file;
 };
 
 //-----------------------------------------------------------------------------
@@ -425,9 +418,8 @@ public:
 	bool AddPak(cstring path, cstring key = nullptr);
 	ResourceType ExtToResourceType(cstring ext);
 	ResourceType FilenameToResourceType(cstring filename);
-	BufferHandle GetBuffer(Resource* res);
+	Buffer* GetBuffer(Resource* res);
 	cstring GetPath(Resource* res);
-	StreamReader GetStream(Resource* res, StreamType type);
 	void AddTaskCategory(Cstring name);
 	void AddTask(void* ptr, TaskCallback callback);
 	void NextTask(cstring next_category = nullptr);

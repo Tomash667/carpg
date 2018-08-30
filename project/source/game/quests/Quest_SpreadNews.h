@@ -30,8 +30,8 @@ public:
 	bool IsTimedout() const override;
 	bool OnTimeout(TimeoutType ttype) override;
 	bool IfNeedTalk(cstring topic) const override;
-	void Save(HANDLE file) override;
-	bool Load(HANDLE file) override;
+	void Save(GameWriter& f) override;
+	bool Load(GameReader& f) override;
 
 private:
 	vector<Entry> entries;

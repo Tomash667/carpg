@@ -112,8 +112,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 					{
 						// if { ... } else
 						t.Next();
-						dialog->code.push_back({ DT_ELSE, nullptr });
-						crc.Update(DT_ELSE);
+						dialog->code.push_back({ DTF_ELSE, nullptr });
+						crc.Update(DTF_ELSE);
 						if(t.IsSymbol('{'))
 						{
 							if_state.back() = IFS_ELSE;
@@ -124,25 +124,25 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 					}
 					else
 					{
-						dialog->code.push_back({ DT_END_IF, nullptr });
+						dialog->code.push_back({ DTF_END_IF, nullptr });
 						if_state.pop_back();
-						crc.Update(DT_END_IF);
+						crc.Update(DTF_END_IF);
 					}
 					break;
 				case IFS_ELSE:
-					dialog->code.push_back({ DT_END_IF, nullptr });
+					dialog->code.push_back({ DTF_END_IF, nullptr });
 					if_state.pop_back();
-					crc.Update(DT_END_IF);
+					crc.Update(DTF_END_IF);
 					break;
 				case IFS_CHOICE:
-					dialog->code.push_back({ DT_END_CHOICE, nullptr });
+					dialog->code.push_back({ DTF_END_CHOICE, nullptr });
 					if_state.pop_back();
-					crc.Update(DT_END_CHOICE);
+					crc.Update(DTF_END_CHOICE);
 					if(!if_state.empty() && if_state.back() == IFS_ESCAPE)
 					{
-						dialog->code.push_back({ DT_ESCAPE_CHOICE, nullptr });
+						dialog->code.push_back({ DTF_ESCAPE_CHOICE, nullptr });
 						if_state.pop_back();
-						crc.Update(DT_ESCAPE_CHOICE);
+						crc.Update(DTF_ESCAPE_CHOICE);
 					}
 					break;
 				}
@@ -159,7 +159,7 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 					{
 						if(k == K_ESCAPE)
 						{
-							crc.Update(DT_ESCAPE_CHOICE);
+							crc.Update(DTF_ESCAPE_CHOICE);
 							t.AssertKeyword(K_CHOICE, G_KEYWORD);
 							t.Next();
 							if_state.push_back(IFS_ESCAPE);
@@ -169,7 +169,7 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						if(index < 0)
 							t.Throw("Invalid text index %d.", index);
 						t.Next();
-						dialog->code.push_back({ DT_CHOICE, (cstring)index });
+						dialog->code.push_back({ DTF_CHOICE, (cstring)index });
 						if(t.IsSymbol('{'))
 						{
 							if_state.push_back(IFS_CHOICE);
@@ -185,13 +185,13 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						}
 						dialog->texts[index - 1].exists = true;
 						line_block = true;
-						crc.Update(DT_CHOICE);
+						crc.Update(DTF_CHOICE);
 						crc.Update(index);
 					}
 					break;
 				case K_TRADE:
-					dialog->code.push_back({ DT_TRADE, nullptr });
-					crc.Update(DT_TRADE);
+					dialog->code.push_back({ DTF_TRADE, nullptr });
+					crc.Update(DTF_TRADE);
 					break;
 				case K_TALK:
 				case K_TALK2:
@@ -200,7 +200,7 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						if(index < 0)
 							t.Throw("Invalid text index %d.", index);
 						t.Next();
-						dialog->code.push_back({ k == K_TALK ? DT_TALK : DT_TALK2, (cstring)index });
+						dialog->code.push_back({ k == K_TALK ? DTF_TALK : DTF_TALK2, (cstring)index });
 						++index;
 						if(index > dialog->max_index)
 						{
@@ -208,33 +208,33 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 							dialog->max_index = index;
 						}
 						dialog->texts[index - 1].exists = true;
-						crc.Update(k == K_TALK ? DT_TALK : DT_TALK2);
+						crc.Update(k == K_TALK ? DTF_TALK : DTF_TALK2);
 						crc.Update(index);
 					}
 					break;
 				case K_RESTART:
-					dialog->code.push_back({ DT_RESTART, nullptr });
-					crc.Update(DT_RESTART);
+					dialog->code.push_back({ DTF_RESTART, nullptr });
+					crc.Update(DTF_RESTART);
 					break;
 				case K_END:
-					dialog->code.push_back({ DT_END, nullptr });
-					crc.Update(DT_END);
+					dialog->code.push_back({ DTF_END, nullptr });
+					crc.Update(DTF_END);
 					break;
 				case K_END2:
-					dialog->code.push_back({ DT_END2, nullptr });
-					crc.Update(DT_END2);
+					dialog->code.push_back({ DTF_END2, nullptr });
+					crc.Update(DTF_END2);
 					break;
 				case K_SHOW_CHOICES:
-					dialog->code.push_back({ DT_SHOW_CHOICES, nullptr });
-					crc.Update(DT_SHOW_CHOICES);
+					dialog->code.push_back({ DTF_SHOW_CHOICES, nullptr });
+					crc.Update(DTF_SHOW_CHOICES);
 					break;
 				case K_SPECIAL:
 					{
 						int index = dialog->strs.size();
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
-						dialog->code.push_back({ DT_SPECIAL, (cstring)index });
-						crc.Update(DT_SPECIAL);
+						dialog->code.push_back({ DTF_SPECIAL, (cstring)index });
+						crc.Update(DTF_SPECIAL);
 						crc.Update(dialog->strs.back());
 					}
 					break;
@@ -244,8 +244,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						if(p < 0)
 							t.Throw("Invalid quest progress %d.", p);
 						t.Next();
-						dialog->code.push_back({ DT_SET_QUEST_PROGRESS, (cstring)p });
-						crc.Update(DT_SET_QUEST_PROGRESS);
+						dialog->code.push_back({ DTF_SET_QUEST_PROGRESS, (cstring)p });
+						crc.Update(DTF_SET_QUEST_PROGRESS);
 						crc.Update(p);
 					}
 					break;
@@ -256,8 +256,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 
 						if(k == K_NOT)
 						{
-							dialog->code.push_back({ DT_NOT,nullptr });
-							crc.Update(DT_NOT);
+							dialog->code.push_back({ DTF_NOT,nullptr });
+							crc.Update(DTF_NOT);
 							k = (Keyword)t.MustGetKeywordId(G_KEYWORD);
 							t.Next();
 						}
@@ -265,8 +265,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						switch(k)
 						{
 						case K_QUEST_TIMEOUT:
-							dialog->code.push_back({ DT_IF_QUEST_TIMEOUT, nullptr });
-							crc.Update(DT_IF_QUEST_TIMEOUT);
+							dialog->code.push_back({ DTF_IF_QUEST_TIMEOUT, nullptr });
+							crc.Update(DTF_IF_QUEST_TIMEOUT);
 							break;
 						case K_RAND:
 							{
@@ -274,8 +274,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								if(chance <= 0 || chance >= 100)
 									t.Throw("Invalid chance %d.", chance);
 								t.Next();
-								dialog->code.push_back({ DT_IF_RAND, (cstring)chance });
-								crc.Update(DT_IF_RAND);
+								dialog->code.push_back({ DTF_IF_RAND, (cstring)chance });
+								crc.Update(DTF_IF_RAND);
 								crc.Update(chance);
 							}
 							break;
@@ -284,14 +284,14 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								if(t.IsKeyword(K_NOT_ACTIVE, G_KEYWORD))
 								{
 									t.Next();
-									dialog->code.push_back({ DT_NOT_ACTIVE, nullptr });
-									crc.Update(DT_NOT_ACTIVE);
+									dialog->code.push_back({ DTF_NOT_ACTIVE, nullptr });
+									crc.Update(DTF_NOT_ACTIVE);
 								}
 								int index = dialog->strs.size();
 								dialog->strs.push_back(t.MustGetString());
 								t.Next();
-								dialog->code.push_back({ DT_IF_HAVE_QUEST_ITEM, (cstring)index });
-								crc.Update(DT_IF_HAVE_QUEST_ITEM);
+								dialog->code.push_back({ DTF_IF_HAVE_QUEST_ITEM, (cstring)index });
+								crc.Update(DTF_IF_HAVE_QUEST_ITEM);
 								crc.Update(dialog->strs.back());
 							}
 							break;
@@ -301,8 +301,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								if(p < 0)
 									t.Throw("Invalid quest progress %d.", p);
 								t.Next();
-								dialog->code.push_back({ DT_IF_QUEST_PROGRESS, (cstring)p });
-								crc.Update(DT_IF_QUEST_PROGRESS);
+								dialog->code.push_back({ DTF_IF_QUEST_PROGRESS, (cstring)p });
+								crc.Update(DTF_IF_QUEST_PROGRESS);
 								crc.Update(p);
 							}
 							break;
@@ -311,8 +311,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								int index = dialog->strs.size();
 								dialog->strs.push_back(t.MustGetString());
 								t.Next();
-								dialog->code.push_back({ DT_IF_NEED_TALK, (cstring)index });
-								crc.Update(DT_IF_NEED_TALK);
+								dialog->code.push_back({ DTF_IF_NEED_TALK, (cstring)index });
+								crc.Update(DTF_IF_NEED_TALK);
 								crc.Update(dialog->strs.back());
 							}
 							break;
@@ -321,14 +321,14 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								int index = dialog->strs.size();
 								dialog->strs.push_back(t.MustGetString());
 								t.Next();
-								dialog->code.push_back({ DT_IF_SPECIAL, (cstring)index });
-								crc.Update(DT_IF_SPECIAL);
+								dialog->code.push_back({ DTF_IF_SPECIAL, (cstring)index });
+								crc.Update(DTF_IF_SPECIAL);
 								crc.Update(dialog->strs.back());
 							}
 							break;
 						case K_ONCE:
-							dialog->code.push_back({ DT_IF_ONCE, nullptr });
-							crc.Update(DT_IF_ONCE);
+							dialog->code.push_back({ DTF_IF_ONCE, nullptr });
+							crc.Update(DTF_IF_ONCE);
 							break;
 						case K_HAVE_ITEM:
 							{
@@ -337,17 +337,17 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								if(item)
 								{
 									t.Next();
-									dialog->code.push_back({ DT_IF_HAVE_ITEM, (cstring)item });
+									dialog->code.push_back({ DTF_IF_HAVE_ITEM, (cstring)item });
 								}
 								else
 									t.Throw("Invalid item '%s'.", id.c_str());
-								crc.Update(DT_SPECIAL);
+								crc.Update(DTF_SPECIAL);
 								crc.Update(item->id);
 							}
 							break;
 						case K_QUEST_EVENT:
-							dialog->code.push_back({ DT_IF_QUEST_EVENT, nullptr });
-							crc.Update(DT_IF_QUEST_EVENT);
+							dialog->code.push_back({ DTF_IF_QUEST_EVENT, nullptr });
+							crc.Update(DTF_IF_QUEST_EVENT);
 							break;
 						case K_QUEST_PROGRESS_RANGE:
 							{
@@ -358,8 +358,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								if(a < 0 || a >= b)
 									t.Throw("Invalid quest progress range {%d %d}.", a, b);
 								int p = ((a & 0xFFFF) | ((b & 0xFFFF) << 16));
-								dialog->code.push_back({ DT_IF_QUEST_PROGRESS_RANGE, (cstring)p });
-								crc.Update(DT_IF_QUEST_PROGRESS_RANGE);
+								dialog->code.push_back({ DTF_IF_QUEST_PROGRESS_RANGE, (cstring)p });
+								crc.Update(DTF_IF_QUEST_PROGRESS_RANGE);
 								crc.Update(p);
 							}
 							break;
@@ -369,8 +369,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								if(count < 0)
 									t.Throw("Invalid choices count %d.", count);
 								t.Next();
-								dialog->code.push_back({ DT_IF_CHOICES, (cstring)count });
-								crc.Update(DT_IF_CHOICES);
+								dialog->code.push_back({ DTF_IF_CHOICES, (cstring)count });
+								crc.Update(DTF_IF_CHOICES);
 								crc.Update(count);
 							}
 							break;
@@ -379,8 +379,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								int index = dialog->strs.size();
 								dialog->strs.push_back(t.MustGetString());
 								t.Next();
-								dialog->code.push_back({ DT_IF_QUEST_SPECIAL, (cstring)index });
-								crc.Update(DT_IF_QUEST_SPECIAL);
+								dialog->code.push_back({ DTF_IF_QUEST_SPECIAL, (cstring)index });
+								crc.Update(DTF_IF_QUEST_SPECIAL);
 								crc.Update(dialog->strs.back());
 							}
 							break;
@@ -389,9 +389,9 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 								int index = dialog->strs.size();
 								dialog->strs.push_back(t.MustGetString());
 								t.Next();
-								dialog->code.push_back({ DT_IF_SCRIPT, (cstring)index });
+								dialog->code.push_back({ DTF_IF_SCRIPT, (cstring)index });
 								dialog->scripts.push_back({ (uint)index, true });
-								crc.Update(DT_IF_SCRIPT);
+								crc.Update(DTF_IF_SCRIPT);
 								crc.Update(dialog->strs.back());
 							}
 							break;
@@ -416,8 +416,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						if(type < 0 || type > 2)
 							t.Throw("Invalid quest type %d.", type);
 						t.Next();
-						dialog->code.push_back({ DT_CHECK_QUEST_TIMEOUT, (cstring)type });
-						crc.Update(DT_CHECK_QUEST_TIMEOUT);
+						dialog->code.push_back({ DTF_CHECK_QUEST_TIMEOUT, (cstring)type });
+						crc.Update(DTF_CHECK_QUEST_TIMEOUT);
 						crc.Update(type);
 					}
 					break;
@@ -426,8 +426,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						int index = dialog->strs.size();
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
-						dialog->code.push_back({ DT_DO_QUEST, (cstring)index });
-						crc.Update(DT_DO_QUEST);
+						dialog->code.push_back({ DTF_DO_QUEST, (cstring)index });
+						crc.Update(DTF_DO_QUEST);
 						crc.Update(dialog->strs.back());
 					}
 					break;
@@ -436,8 +436,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						int index = dialog->strs.size();
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
-						dialog->code.push_back({ DT_DO_QUEST_ITEM, (cstring)index });
-						crc.Update(DT_DO_QUEST_ITEM);
+						dialog->code.push_back({ DTF_DO_QUEST_ITEM, (cstring)index });
+						crc.Update(DTF_DO_QUEST_ITEM);
 						crc.Update(dialog->strs.back());
 					}
 					break;
@@ -446,22 +446,22 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						int index = dialog->strs.size();
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
-						dialog->code.push_back({ DT_DO_QUEST2, (cstring)index });
-						crc.Update(DT_DO_QUEST2);
+						dialog->code.push_back({ DTF_DO_QUEST2, (cstring)index });
+						crc.Update(DTF_DO_QUEST2);
 						crc.Update(dialog->strs.back());
 					}
 					break;
 				case K_DO_ONCE:
-					dialog->code.push_back({ DT_DO_ONCE, nullptr });
-					crc.Update(DT_DO_ONCE);
+					dialog->code.push_back({ DTF_DO_ONCE, nullptr });
+					crc.Update(DTF_DO_ONCE);
 					break;
 				case K_QUEST_SPECIAL:
 					{
 						int index = dialog->strs.size();
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
-						dialog->code.push_back({ DT_QUEST_SPECIAL, (cstring)index });
-						crc.Update(DT_QUEST_SPECIAL);
+						dialog->code.push_back({ DTF_QUEST_SPECIAL, (cstring)index });
+						crc.Update(DTF_QUEST_SPECIAL);
 						crc.Update(dialog->strs.back());
 					}
 					break;
@@ -470,9 +470,9 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						int index = dialog->strs.size();
 						dialog->strs.push_back(t.MustGetString());
 						t.Next();
-						dialog->code.push_back({ DT_SCRIPT, (cstring)index });
+						dialog->code.push_back({ DTF_SCRIPT, (cstring)index });
 						dialog->scripts.push_back({ (uint)index, false });
-						crc.Update(DT_SCRIPT);
+						crc.Update(DTF_SCRIPT);
 						crc.Update(dialog->strs.back());
 					}
 					break;
@@ -501,8 +501,8 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 					case IFS_INLINE_IF:
 						if(t.IsKeyword(K_ELSE, G_KEYWORD))
 						{
-							dialog->code.push_back({ DT_ELSE, nullptr });
-							crc.Update(DT_ELSE);
+							dialog->code.push_back({ DTF_ELSE, nullptr });
+							crc.Update(DTF_ELSE);
 							t.Next();
 							if(t.IsSymbol('{'))
 							{
@@ -515,24 +515,24 @@ bool LoadDialog(Tokenizer& t, Crc& crc)
 						}
 						else
 						{
-							dialog->code.push_back({ DT_END_IF, nullptr });
+							dialog->code.push_back({ DTF_END_IF, nullptr });
 							if_state.pop_back();
 						}
 						break;
 					case IFS_INLINE_ELSE:
-						dialog->code.push_back({ DT_END_IF, nullptr });
+						dialog->code.push_back({ DTF_END_IF, nullptr });
 						if_state.pop_back();
-						crc.Update(DT_END_IF);
+						crc.Update(DTF_END_IF);
 						break;
 					case IFS_INLINE_CHOICE:
-						dialog->code.push_back({ DT_END_CHOICE, nullptr });
-						crc.Update(DT_END_CHOICE);
+						dialog->code.push_back({ DTF_END_CHOICE, nullptr });
+						crc.Update(DTF_END_CHOICE);
 						if_state.pop_back();
 						if(!if_state.empty() && if_state.back() == IFS_ESCAPE)
 						{
-							dialog->code.push_back({ DT_ESCAPE_CHOICE, nullptr });
+							dialog->code.push_back({ DTF_ESCAPE_CHOICE, nullptr });
 							if_state.pop_back();
-							crc.Update(DT_ESCAPE_CHOICE);
+							crc.Update(DTF_ESCAPE_CHOICE);
 						}
 						break;
 					}

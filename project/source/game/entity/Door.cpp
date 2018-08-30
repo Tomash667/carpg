@@ -1,4 +1,3 @@
-// drzwi
 #include "Pch.h"
 #include "GameCore.h"
 #include "Door.h"
@@ -8,38 +7,40 @@
 int Door::netid_counter;
 
 //=================================================================================================
-void Door::Save(HANDLE file, bool local)
+void Door::Save(FileWriter& f, bool local)
 {
-	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	WriteFile(file, &pt, sizeof(pt), &tmp, nullptr);
-	WriteFile(file, &locked, sizeof(locked), &tmp, nullptr);
-	WriteFile(file, &state, sizeof(state), &tmp, nullptr);
-	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
-	WriteFile(file, &door2, sizeof(door2), &tmp, nullptr);
+	f << pos;
+	f << rot;
+	f << pt;
+	f << locked;
+	f << state;
+	f << netid;
+	f << door2;
 
 	if(local)
-		mesh_inst->Save(file);
+		mesh_inst->Save(f);
 }
 
 //=================================================================================================
-void Door::Load(HANDLE file, bool local)
+void Door::Load(FileReader& f, bool local)
 {
-	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	ReadFile(file, &pt, sizeof(pt), &tmp, nullptr);
-	ReadFile(file, &locked, sizeof(locked), &tmp, nullptr);
-	ReadFile(file, &state, sizeof(state), &tmp, nullptr);
-	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
+	f >> pos;
+	f >> rot;
+	f >> pt;
+	f >> locked;
+	f >> state;
+	f >> netid;
 	if(LOAD_VERSION >= V_0_3)
-		ReadFile(file, &door2, sizeof(door2), &tmp, nullptr);
+		f >> door2;
+	else
+		door2 = false;
 
 	if(local)
 	{
 		Game& game = Game::Get();
 
 		mesh_inst = new MeshInstance(door2 ? game.aDoor2 : game.aDoor);
-		mesh_inst->Load(file);
+		mesh_inst->Load(f);
 
 		phy = new btCollisionObject;
 		phy->setCollisionShape(game.shape_door);

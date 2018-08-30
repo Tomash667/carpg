@@ -1,9 +1,9 @@
-// dane poziomu lokacji
 #include "Pch.h"
 #include "GameCore.h"
 #include "InsideLocationLevel.h"
 #include "Game.h"
 #include "SaveState.h"
+#include "GameFile.h"
 
 //=================================================================================================
 InsideLocationLevel::~InsideLocationLevel()
@@ -163,179 +163,155 @@ bool InsideLocationLevel::GetRandomNearWallTile(const Room& room, Int2& _tile, i
 }
 
 //=================================================================================================
-void InsideLocationLevel::SaveLevel(HANDLE file, bool local)
+void InsideLocationLevel::SaveLevel(GameWriter& f, bool local)
 {
-	WriteFile(file, &w, sizeof(w), &tmp, nullptr);
-	WriteFile(file, &h, sizeof(h), &tmp, nullptr);
-	WriteFile(file, map, sizeof(Pole)*w*h, &tmp, nullptr);
+	f << w;
+	f << h;
+	f.Write(map, sizeof(Pole)*w*h);
+	
+	// units
+	f << units.size();
+	for(Unit* unit : units)
+		unit->Save(f, local);
 
-	uint ile;
+	// chests
+	f << chests.size();
+	for(Chest* chest : chests)
+		chest->Save(f, local);
 
-	// jednostki
-	ile = units.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	// objects
+	f << objects.size();
+	for(Object* object : objects)
+		object->Save(f);
 
-	// skrzynie
-	ile = chests.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	// doors
+	f << doors.size();
+	for(Door* door : doors)
+		door->Save(f, local);
 
-	// obiekty
-	ile = objects.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
-		(*it)->Save(file);
+	// ground items
+	f << items.size();
+	for(GroundItem* item : items)
+		item->Save(f);
 
-	// drzwi
-	ile = doors.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Door*>::iterator it = doors.begin(), end = doors.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	// usable objects
+	f << usables.size();
+	for(Usable* usable : usables)
+		usable->Save(f, local);
 
-	// przedmioty
-	ile = items.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-		(*it)->Save(file);
+	// bloods
+	f << bloods.size();
+	for(Blood& blood : bloods)
+		blood.Save(f);
 
-	// u¿ywalne
-	ile = usables.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
-		(*it)->Save(file, local);
-
-	// krew
-	FileWriter f(file);
-	ile = bloods.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
-		it->Save(f);
-
-	// œwiat³a
+	// lights
 	f << lights.size();
-	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
-		it->Save(f);
+	for(Light& light : lights)
+		light.Save(f);
 
-	// pokoje
-	ile = rooms.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
-		it->Save(file);
+	// rooms
+	f << rooms.size();
+	for(Room& room : rooms)
+		room.Save(f);
 
-	// pu³apki
-	ile = traps.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Trap*>::iterator it = traps.begin(), end = traps.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	// traps
+	f << traps.size();
+	for(Trap* trap : traps)
+		trap->Save(f, local);
 
-	WriteFile(file, &staircase_up, sizeof(staircase_up), &tmp, nullptr);
-	WriteFile(file, &staircase_down, sizeof(staircase_down), &tmp, nullptr);
-	WriteFile(file, &staircase_up_dir, sizeof(staircase_up_dir), &tmp, nullptr);
-	WriteFile(file, &staircase_down_dir, sizeof(staircase_down_dir), &tmp, nullptr);
-	WriteFile(file, &staircase_down_in_wall, sizeof(staircase_down_in_wall), &tmp, nullptr);
+	f << staircase_up;
+	f << staircase_down;
+	f << staircase_up_dir;
+	f << staircase_down_dir;
+	f << staircase_down_in_wall;
 }
 
 //=================================================================================================
-void InsideLocationLevel::LoadLevel(HANDLE file, bool local)
+void InsideLocationLevel::LoadLevel(GameReader& f, bool local)
 {
-	ReadFile(file, &w, sizeof(w), &tmp, nullptr);
-	ReadFile(file, &h, sizeof(h), &tmp, nullptr);
+	f >> w;
+	f >> h;
 	map = new Pole[w*h];
-	ReadFile(file, map, sizeof(Pole)*w*h, &tmp, nullptr);
+	f.Read(map, sizeof(Pole)*w*h);
 
-	// jednostki
-	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	units.resize(ile);
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
+	// units
+	units.resize(f.Read<uint>());
+	for(Unit*& unit : units)
 	{
-		*it = new Unit;
-		Unit::AddRefid(*it);
-		(*it)->Load(file, local);
+		unit = new Unit;
+		Unit::AddRefid(unit);
+		unit->Load(f, local);
 	}
 
-	// skrzynie
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	chests.resize(ile);
-	for(vector<Chest*>::iterator it = chests.begin(), end = chests.end(); it != end; ++it)
+	// chests
+	chests.resize(f.Read<uint>());
+	for(Chest*& chest : chests)
 	{
-		*it = new Chest;
-		(*it)->Load(file, local);
+		chest = new Chest;
+		chest->Load(f, local);
 	}
 
-	// obiekty
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	objects.resize(ile);
-	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
+	// objects
+	objects.resize(f.Read<uint>());
+	for(Object*& object : objects)
 	{
-		*it = new Object;
-		(*it)->Load(file);
+		object = new Object;
+		object->Load(f);
 	}
 
-	// drzwi
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	doors.resize(ile);
-	for(vector<Door*>::iterator it = doors.begin(), end = doors.end(); it != end; ++it)
+	// doors
+	doors.resize(f.Read<uint>());
+	for(Door*& door : doors)
 	{
-		*it = new Door;
-		(*it)->Load(file, local);
+		door = new Door;
+		door->Load(f, local);
 	}
 
-	// przedmioty
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	items.resize(ile);
-	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+	// ground items
+	items.resize(f.Read<int>());
+	for(GroundItem*& item : items)
 	{
-		*it = new GroundItem;
-		(*it)->Load(file);
+		item = new GroundItem;
+		item->Load(f);
 	}
 
-	// u¿ywalne
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	usables.resize(ile);
-	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
+	// usable objects
+	usables.resize(f.Read<uint>());
+	for(Usable*& usable : usables)
 	{
-		*it = new Usable;
-		Usable::AddRefid(*it);
-		(*it)->Load(file, local);
+		usable = new Usable;
+		Usable::AddRefid(usable);
+		usable->Load(f, local);
 	}
 
-	// krew
-	FileReader f(file);
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	bloods.resize(ile);
-	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
-		it->Load(f);
+	// bloods
+	bloods.resize(f.Read<uint>());
+	for(Blood& blood : bloods)
+		blood.Load(f);
 
-	// œwiat³a
-	f >> ile;
-	lights.resize(ile);
-	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
-		it->Load(f);
+	// lights
+	lights.resize(f.Read<uint>());
+	for(Light& light : lights)
+		light.Load(f);
 
-	// pokoje
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	rooms.resize(ile);
-	for(vector<Room>::iterator it = rooms.begin(), end = rooms.end(); it != end; ++it)
-		it->Load(file);
+	// rooms
+	rooms.resize(f.Read<uint>());
+	for(Room& room : rooms)
+		room.Load(f);
 
-	// pu³apki
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	traps.resize(ile);
-	for(vector<Trap*>::iterator it = traps.begin(), end = traps.end(); it != end; ++it)
+	// traps
+	traps.resize(f.Read<uint>());
+	for(Trap*& trap : traps)
 	{
-		*it = new Trap;
-		(*it)->Load(file, local);
+		trap = new Trap;
+		trap->Load(f, local);
 	}
 
-	ReadFile(file, &staircase_up, sizeof(staircase_up), &tmp, nullptr);
-	ReadFile(file, &staircase_down, sizeof(staircase_down), &tmp, nullptr);
-	ReadFile(file, &staircase_up_dir, sizeof(staircase_up_dir), &tmp, nullptr);
-	ReadFile(file, &staircase_down_dir, sizeof(staircase_down_dir), &tmp, nullptr);
-	ReadFile(file, &staircase_down_in_wall, sizeof(staircase_down_in_wall), &tmp, nullptr);
+	f >> staircase_up;
+	f >> staircase_down;
+	f >> staircase_up_dir;
+	f >> staircase_down_dir;
+	f >> staircase_down_in_wall;
 
 	// konwersja ³awy w obrócon¹ ³awê i ustawienie wariantu
 	if(LOAD_VERSION < V_0_2_20)

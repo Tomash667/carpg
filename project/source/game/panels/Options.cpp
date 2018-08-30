@@ -6,6 +6,7 @@
 #include "Game.h"
 #include "MenuList.h"
 #include "SoundManager.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 cstring txQuality, txMsNone;
@@ -245,10 +246,10 @@ Options::Options(const DialogInfo& info) : GameDialogBox(info)
 void Options::Draw(ControlDrawData* /*cdd*/)
 {
 	// t³o
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
+	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// checkboxy
 	for(int i = 0; i < 5; ++i)
@@ -264,36 +265,36 @@ void Options::Draw(ControlDrawData* /*cdd*/)
 
 	// tekst OPCJE
 	Rect r = { global_pos.x, global_pos.y + 8, global_pos.x + size.x, global_pos.y + size.y };
-	GUI.DrawText(GUI.fBig, txOPTIONS, DT_TOP | DT_CENTER, BLACK, r);
+	GUI.DrawText(GUI.fBig, txOPTIONS, DTF_TOP | DTF_CENTER, Color::Black, r);
 
 	// tekst Rozdzielczoœæ:
 	Rect r2 = { global_pos.x + 10, global_pos.y + 50, global_pos.x + size.x, global_pos.y + 75 };
-	GUI.DrawText(GUI.default_font, txResolution, DT_SINGLELINE, BLACK, r2);
+	GUI.DrawText(GUI.default_font, txResolution, DTF_SINGLELINE, Color::Black, r2);
 	// Multisampling:
 	r2.Top() = global_pos.y + 300;
 	r2.Bottom() = r2.Top() + 20;
-	GUI.DrawText(GUI.default_font, txMultisampling, DT_SINGLELINE, BLACK, r2);
+	GUI.DrawText(GUI.default_font, txMultisampling, DTF_SINGLELINE, Color::Black, r2);
 	// Jêzyk:
 	r2.Top() = global_pos.y + 360;
 	r2.Bottom() = r2.Top() + 20;
-	GUI.DrawText(GUI.default_font, txLanguage, DT_SINGLELINE, BLACK, r2);
+	GUI.DrawText(GUI.default_font, txLanguage, DTF_SINGLELINE, Color::Black, r2);
 	// G³oœnoœæ dŸwiêku (0)
 	r2.Left() = global_pos.x + 290;
 	r2.Top() = global_pos.y + 270;
 	r2.Bottom() = r2.Top() + 20;
-	GUI.DrawText(GUI.default_font, Format("%s (%d)", txSoundVolume, sound_volume), DT_SINGLELINE, BLACK, r2);
+	GUI.DrawText(GUI.default_font, Format("%s (%d)", txSoundVolume, sound_volume), DTF_SINGLELINE, Color::Black, r2);
 	// G³oœnoœæ muzyki (0)
 	r2.Top() = global_pos.y + 310;
 	r2.Bottom() = r2.Top() + 20;
-	GUI.DrawText(GUI.default_font, Format("%s (%d)", txMusicVolume, music_volume), DT_SINGLELINE, BLACK, r2);
+	GUI.DrawText(GUI.default_font, Format("%s (%d)", txMusicVolume, music_volume), DTF_SINGLELINE, Color::Black, r2);
 	// Czu³oœæ myszki (0)
 	r2.Top() = global_pos.y + 350;
 	r2.Bottom() = r2.Top() + 20;
-	GUI.DrawText(GUI.default_font, Format("%s (%d)", txMouseSensitivity, mouse_sensitivity), DT_SINGLELINE, BLACK, r2);
+	GUI.DrawText(GUI.default_font, Format("%s (%d)", txMouseSensitivity, mouse_sensitivity), DTF_SINGLELINE, Color::Black, r2);
 	// Zasiêg trawy (0)
 	r2.Top() = global_pos.y + 390;
 	r2.Bottom() = r2.Top() + 20;
-	GUI.DrawText(GUI.default_font, Format("%s (%d)", txGrassRange, grass_range), DT_SINGLELINE, BLACK, r2);
+	GUI.DrawText(GUI.default_font, Format("%s (%d)", txGrassRange, grass_range), DTF_SINGLELINE, Color::Black, r2);
 
 	// listbox z rozdzielczoœciami
 	res.Draw();

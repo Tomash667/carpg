@@ -28,17 +28,15 @@ void BookPanel::Draw(ControlDrawData*)
 	// prev page
 	if(current_page != 0)
 	{
-		D3DSURFACE_DESC desc;
-		tArrowL->GetLevelDesc(0, &desc);
-		GUI.DrawSpriteRect(tArrowL, Rect::Create(book_pos + book->scheme->prev * scale, Int2(desc.Width, desc.Height) * scale));
+		Int2 arrow_size = gui::GetSize(tArrowL);
+		GUI.DrawSpriteRect(tArrowL, Rect::Create(book_pos + book->scheme->prev * scale, arrow_size * scale));
 	}
 
 	// next page
 	if(current_page != max_page)
 	{
-		D3DSURFACE_DESC desc;
-		tArrowR->GetLevelDesc(0, &desc);
-		GUI.DrawSpriteRect(tArrowR, Rect::Create(book_pos + book->scheme->next * scale, Int2(desc.Width, desc.Height) * scale));
+		Int2 arrow_size = gui::GetSize(tArrowR);
+		GUI.DrawSpriteRect(tArrowR, Rect::Create(book_pos + book->scheme->next * scale, arrow_size * scale));
 	}
 
 	// text
@@ -62,7 +60,7 @@ void BookPanel::Draw(ControlDrawData*)
 	{
 		for(auto& rect : book->scheme->regions)
 		{
-			GUI.DrawArea(COLOR_RGBA(255, 0, 0, 128), rect * scale + book_pos);
+			GUI.DrawArea(Color(255, 0, 0, 128), rect * scale + book_pos);
 		}
 	}
 #endif
@@ -84,9 +82,8 @@ void BookPanel::Update(float dt)
 	// prev page
 	if(current_page != 0)
 	{
-		D3DSURFACE_DESC desc;
-		tArrowL->GetLevelDesc(0, &desc);
-		if(Rect::Create(book_pos + book->scheme->prev * scale, Int2(desc.Width, desc.Height) * scale).IsInside(GUI.cursor_pos)
+		Int2 arrow_size = gui::GetSize(tArrowL);
+		if(Rect::Create(book_pos + book->scheme->prev * scale, arrow_size * scale).IsInside(GUI.cursor_pos)
 			&& Key.PressedRelease(VK_LBUTTON))
 			ChangePage(-1);
 	}
@@ -94,9 +91,8 @@ void BookPanel::Update(float dt)
 	// next page
 	if(current_page != max_page)
 	{
-		D3DSURFACE_DESC desc;
-		tArrowR->GetLevelDesc(0, &desc);
-		if(Rect::Create(book_pos + book->scheme->next * scale, Int2(desc.Width, desc.Height) * scale).IsInside(GUI.cursor_pos)
+		Int2 arrow_size = gui::GetSize(tArrowR);
+		if(Rect::Create(book_pos + book->scheme->next * scale, arrow_size * scale).IsInside(GUI.cursor_pos)
 			&& Key.PressedRelease(VK_LBUTTON))
 			ChangePage(+1);
 	}

@@ -25,7 +25,7 @@ void Window::Draw(ControlDrawData*)
 		if(!text.empty())
 		{
 			Rect r(header_rect, layout->window.padding);
-			GUI.DrawText(layout->window.font, text, DT_LEFT | DT_VCENTER, layout->window.font_color, r, &r);
+			GUI.DrawText(layout->window.font, text, DTF_LEFT | DTF_VCENTER, layout->window.font_color, r, &r);
 		}
 	}
 

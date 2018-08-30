@@ -18,7 +18,7 @@ MpBox::MpBox() : have_focus(false)
 	itb.size = Int2(320, 182);
 	itb.event = InputEvent(this, &MpBox::OnInput);
 	itb.background = &GUI.tPix;
-	itb.background_color = COLOR_RGBA(0, 142, 254, 43);
+	itb.background_color = Color(0, 142, 254, 43);
 	itb.Init();
 
 	visible = false;
@@ -85,9 +85,10 @@ void MpBox::OnInput(const string& str)
 		{
 			// send text to server / other players
 			game.net_stream.Reset();
-			game.net_stream.Write(ID_SAY);
-			game.net_stream.WriteCasted<byte>(game.my_id);
-			WriteString1(game.net_stream, str);
+			BitStreamWriter f(game.net_stream);
+			f << ID_SAY;
+			f.WriteCasted<byte>(game.my_id);
+			f << str;
 			game.peer->Send(&game.net_stream, MEDIUM_PRIORITY, RELIABLE, 0, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game.server, Net::IsServer());
 			game.StreamWrite(game.net_stream, Stream_Chat, Net::IsServer() ? UNASSIGNED_SYSTEM_ADDRESS : game.server);
 		}

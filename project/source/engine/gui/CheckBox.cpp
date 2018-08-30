@@ -15,13 +15,13 @@ CheckBox::CheckBox(StringOrCstring text, bool checked) : text(text.c_str()), che
 //=================================================================================================
 void CheckBox::Draw(ControlDrawData* cdd/* =nullptr */)
 {
-	GUI.DrawItem(Button::tex[state], global_pos, bt_size, WHITE, 12);
+	GUI.DrawItem(Button::tex[state], global_pos, bt_size, Color::White, 12);
 
 	if(checked)
 		GUI.DrawSprite(tTick, global_pos);
 
 	Rect r = { global_pos.x + bt_size.x + 4, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
-	GUI.DrawText(GUI.default_font, text, DT_VCENTER, BLACK, r);
+	GUI.DrawText(GUI.default_font, text, DTF_VCENTER, Color::Black, r);
 }
 
 //=================================================================================================

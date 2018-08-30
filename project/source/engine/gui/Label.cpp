@@ -23,14 +23,14 @@ void Label::Draw(ControlDrawData*)
 	GUI.DrawText(l.font, text, l.align, l.color, rect);
 }
 
-void Label::SetAlign(DWORD align)
+void Label::SetAlign(uint align)
 {
 	if(align == GetAlign())
 		return;
 	EnsureLayout()->align = align;
 }
 
-void Label::SetColor(DWORD color)
+void Label::SetColor(Color color)
 {
 	if(color == GetColor())
 		return;

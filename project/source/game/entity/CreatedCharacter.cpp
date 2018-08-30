@@ -7,6 +7,7 @@
 #include "Unit.h"
 #include "Game.h"
 #include "Stock.h"
+#include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
 struct TakeRatio
@@ -112,7 +113,7 @@ void CreatedCharacter::Random(Class c)
 }
 
 //=================================================================================================
-void CreatedCharacter::Write(BitStream& stream) const
+void CreatedCharacter::Write(BitStreamWriter& f) const
 {
 	// picked skills
 	int sk = 0;
@@ -121,25 +122,27 @@ void CreatedCharacter::Write(BitStream& stream) const
 		if(s[i].add)
 			sk |= (1 << i);
 	}
-	stream.Write(sk);
+	f << sk;
 
 	// perks
-	stream.WriteCasted<byte>(taken_perks.size());
+	f.WriteCasted<byte>(taken_perks.size());
 	for(const TakenPerk& tp : taken_perks)
 	{
-		stream.WriteCasted<byte>(tp.perk);
-		stream.Write(tp.value);
+		f.WriteCasted<byte>(tp.perk);
+		f << tp.value;
 	}
 }
 
 //=================================================================================================
-int CreatedCharacter::Read(BitStream& stream)
+int CreatedCharacter::Read(BitStreamReader& f)
 {
 	// picked skills
 	int sk;
 	byte count;
 
-	if(!stream.Read(sk) || !stream.Read(count))
+	f >> sk;
+	f >> count;
+	if(!f)
 		return 1;
 
 	for(int i = 0; i < (int)SkillId::MAX; ++i)
@@ -155,7 +158,9 @@ int CreatedCharacter::Read(BitStream& stream)
 	taken_perks.resize(count);
 	for(TakenPerk& tp : taken_perks)
 	{
-		if(!stream.ReadCasted<byte>(tp.perk) || !stream.Read(tp.value))
+		f.ReadCasted<byte>(tp.perk);
+		f >> tp.value;
+		if(!f)
 			return 1;
 		if(tp.perk >= Perk::Max)
 		{
@@ -396,23 +401,24 @@ void CreatedCharacter::GetStartingItems(const Item* (&items)[SLOT_MAX])
 }
 
 //=================================================================================================
-void WriteCharacterData(BitStream& stream, Class c, const HumanData& hd, const CreatedCharacter& cc)
+void WriteCharacterData(BitStreamWriter& f, Class c, const HumanData& hd, const CreatedCharacter& cc)
 {
-	stream.WriteCasted<byte>(c);
-	hd.Write(stream);
-	cc.Write(stream);
+	f.WriteCasted<byte>(c);
+	hd.Write(f);
+	cc.Write(f);
 }
 
 //=================================================================================================
-int ReadCharacterData(BitStream& stream, Class& c, HumanData& hd, CreatedCharacter& cc)
+int ReadCharacterData(BitStreamReader& f, Class& c, HumanData& hd, CreatedCharacter& cc)
 {
-	if(!stream.ReadCasted<byte>(c))
+	f.ReadCasted<byte>(c);
+	if(!f)
 		return 1;
 	if(!ClassInfo::IsPickable(c))
 		return 2;
 	cc.Clear(c);
 	int result = 1;
-	if((result = hd.Read(stream)) != 0 || (result = cc.Read(stream)) != 0)
+	if((result = hd.Read(f)) != 0 || (result = cc.Read(f)) != 0)
 		return result;
 	return 0;
 }

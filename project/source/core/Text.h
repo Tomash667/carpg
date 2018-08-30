@@ -22,35 +22,35 @@ struct Cstring
 	cstring s;
 };
 
-inline bool operator == (const string& s1, Cstring s2)
+inline bool operator == (const string& s1, const Cstring& s2)
 {
 	return s1 == s2.s;
 }
-inline bool operator == (Cstring s1, const string& s2)
+inline bool operator == (const Cstring& s1, const string& s2)
 {
 	return s2 == s1.s;
 }
-inline bool operator == (cstring s1, Cstring s2)
+inline bool operator == (cstring s1, const Cstring& s2)
 {
 	return strcmp(s1, s2.s) == 0;
 }
-inline bool operator == (Cstring s1, cstring s2)
+inline bool operator == (const Cstring& s1, cstring s2)
 {
 	return strcmp(s1.s, s2) == 0;
 }
-inline bool operator != (const string& s1, Cstring s2)
+inline bool operator != (const string& s1, const Cstring& s2)
 {
 	return s1 != s2.s;
 }
-inline bool operator != (Cstring s1, const string& s2)
+inline bool operator != (const Cstring& s1, const string& s2)
 {
 	return s2 != s1.s;
 }
-inline bool operator != (cstring s1, Cstring s2)
+inline bool operator != (cstring s1, const Cstring& s2)
 {
 	return strcmp(s1, s2.s) != 0;
 }
-inline bool operator != (Cstring s1, cstring s2)
+inline bool operator != (const Cstring& s1, cstring s2)
 {
 	return strcmp(s1.s, s2) != 0;
 }
@@ -79,6 +79,7 @@ inline bool EndsWith(std::string const& value, std::string const& ending)
 		return false;
 	return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
+void MakeDoubleZeroTerminated(char* dest, Cstring src);
 
 // return index of character in cstring
 inline int StrCharIndex(cstring chrs, char c)

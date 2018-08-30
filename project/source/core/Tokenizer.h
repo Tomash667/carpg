@@ -881,8 +881,6 @@ namespace tokenizer
 	};
 }
 
-using tokenizer::Tokenizer;
-
 //-----------------------------------------------------------------------------
 struct FlagGroup
 {

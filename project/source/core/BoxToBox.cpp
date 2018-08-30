@@ -1,5 +1,5 @@
-// wykrywanie kolizji Obbox-Obbox
-// zaimportowane z bulleta, który to wzi¹³ z ODE
+// Obbox-Obbox collision detection
+// copied from bullet which copied from ODE
 
 #include "Pch.h"
 #include "Core.h"

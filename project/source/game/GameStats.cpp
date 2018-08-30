@@ -1,6 +1,8 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "GameStats.h"
+#include "GameFile.h"
+#include "BitStreamFunc.h"
 
 GameStats Singleton<GameStats>::instance;
 
@@ -32,34 +34,32 @@ void GameStats::Update(float dt)
 	}
 }
 
-void GameStats::Write(BitStream& stream)
+void GameStats::Save(GameWriter& f)
 {
-	stream.Write(hour);
-	stream.WriteCasted<byte>(minute);
-	stream.WriteCasted<byte>(second);
+	f << hour;
+	f << minute;
+	f << second;
+	f << tick;
 }
 
-bool GameStats::Read(BitStream& stream)
+void GameStats::Load(GameReader& f)
 {
-	return stream.Read(hour)
-		&& stream.ReadCasted<byte>(minute)
-		&& stream.ReadCasted<byte>(second);
+	f >> hour;
+	f >> minute;
+	f >> second;
+	f >> tick;
 }
 
-void GameStats::Save(HANDLE file)
+void GameStats::Write(BitStreamWriter& f)
 {
-	DWORD tmp;
-	WriteFile(file, &hour, sizeof(hour), &tmp, nullptr);
-	WriteFile(file, &minute, sizeof(minute), &tmp, nullptr);
-	WriteFile(file, &second, sizeof(second), &tmp, nullptr);
-	WriteFile(file, &tick, sizeof(tick), &tmp, nullptr);
+	f << hour;
+	f.WriteCasted<byte>(minute);
+	f.WriteCasted<byte>(second);
 }
 
-void GameStats::Load(HANDLE file)
+void GameStats::Read(BitStreamReader& f)
 {
-	DWORD tmp;
-	ReadFile(file, &hour, sizeof(hour), &tmp, nullptr);
-	ReadFile(file, &minute, sizeof(minute), &tmp, nullptr);
-	ReadFile(file, &second, sizeof(second), &tmp, nullptr);
-	ReadFile(file, &tick, sizeof(tick), &tmp, nullptr);
+	f >> hour;
+	f.ReadCasted<byte>(minute);
+	f.ReadCasted<byte>(second);
 }

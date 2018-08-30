@@ -66,7 +66,7 @@ void TabControl::Draw(ControlDrawData*)
 		Tab* tab = tabs[i];
 		AreaLayout* button;
 		AreaLayout* close;
-		DWORD color;
+		Color color;
 		switch(tab->mode)
 		{
 		default:
@@ -90,11 +90,11 @@ void TabControl::Draw(ControlDrawData*)
 
 		GUI.DrawArea(tab->rect, *button);
 		rect = Rect(tab->rect, layout->tabctrl.padding);
-		GUI.DrawText(layout->tabctrl.font, tab->text, DT_LEFT | DT_VCENTER, color, rect);
+		GUI.DrawText(layout->tabctrl.font, tab->text, DTF_LEFT | DTF_VCENTER, color, rect);
 		GUI.DrawArea(tab->close_rect, *close);
 
 		if(tab->have_changes)
-			GUI.DrawArea(RED, Int2(tab->rect.LeftTop()), Int2(2, (int)tab->rect.SizeY()));
+			GUI.DrawArea(Color::Red, Int2(tab->rect.LeftTop()), Int2(2, (int)tab->rect.SizeY()));
 	}
 
 	if(selected)

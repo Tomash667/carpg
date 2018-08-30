@@ -10,6 +10,7 @@
 #include "Team.h"
 #include "Content.h"
 #include "SoundManager.h"
+#include "GameFile.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -1216,131 +1217,108 @@ int Unit::GetRandomAttack() const
 }
 
 //=================================================================================================
-void Unit::Save(HANDLE file, bool local)
+void Unit::Save(GameWriter& f, bool local)
 {
-	// id postaci
-	WriteString1(file, data->id);
+	// unit data
+	f << data->id;
 
-	// przedmioty
+	// items
 	for(uint i = 0; i < SLOT_MAX; ++i)
+		f.WriteOptional(slots[i]);
+	f << items.size();
+	for(ItemSlot& slot : items)
 	{
-		if(slots[i])
-			WriteString1(file, slots[i]->id);
-		else
+		if(slot.item)
 		{
-			byte zero = 0;
-			WriteFile(file, &zero, sizeof(zero), &tmp, nullptr);
-		}
-	}
-	uint ile = items.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-	{
-		if(it->item)
-		{
-			WriteString1(file, it->item->id);
-			WriteFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
-			WriteFile(file, &it->team_count, sizeof(it->team_count), &tmp, nullptr);
-			if(it->item->id[0] == '$')
-				WriteFile(file, &it->item->refid, sizeof(int), &tmp, nullptr);
+			f << slot.item->id;
+			f << slot.count;
+			f << slot.team_count;
+			if(slot.item->id[0] == '$')
+				f << slot.item->refid;
 		}
 		else
-		{
-			byte b = 0;
-			WriteFile(file, &b, sizeof(b), &tmp, nullptr);
-		}
+			f.Write0();
 	}
 
-	WriteFile(file, &live_state, sizeof(live_state), &tmp, nullptr);
-	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	WriteFile(file, &hp, sizeof(hp), &tmp, nullptr);
-	WriteFile(file, &hpmax, sizeof(hpmax), &tmp, nullptr);
-	WriteFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
-	WriteFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
-	WriteFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
-	WriteFile(file, &stamina_timer, sizeof(stamina_timer), &tmp, nullptr);
-	WriteFile(file, &level, sizeof(level), &tmp, nullptr);
-	FileWriter f(file);
+	f << live_state;
+	f << pos;
+	f << rot;
+	f << hp;
+	f << hpmax;
+	f << stamina;
+	f << stamina_max;
+	f << stamina_action;
+	f << stamina_timer;
+	f << level;
 	stats.Save(f);
 	unmod_stats.Save(f);
-	WriteFile(file, &gold, sizeof(gold), &tmp, nullptr);
-	WriteFile(file, &invisible, sizeof(invisible), &tmp, nullptr);
-	WriteFile(file, &in_building, sizeof(in_building), &tmp, nullptr);
-	WriteFile(file, &to_remove, sizeof(to_remove), &tmp, nullptr);
-	WriteFile(file, &temporary, sizeof(temporary), &tmp, nullptr);
-	WriteFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
-	WriteFile(file, &assist, sizeof(assist), &tmp, nullptr);
+	f << gold;
+	f << invisible;
+	f << in_building;
+	f << to_remove;
+	f << temporary;
+	f << quest_refid;
+	f << assist;
 	f << auto_talk;
 	if(auto_talk != AutoTalkMode::No)
 	{
 		f << (auto_talk_dialog ? auto_talk_dialog->id.c_str() : "");
 		f << auto_talk_timer;
 	}
-	WriteFile(file, &dont_attack, sizeof(dont_attack), &tmp, nullptr);
-	WriteFile(file, &attack_team, sizeof(attack_team), &tmp, nullptr);
-	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
-	int unit_event_handler_quest_refid = (event_handler ? event_handler->GetUnitEventHandlerQuestRefid() : -1);
-	WriteFile(file, &unit_event_handler_quest_refid, sizeof(unit_event_handler_quest_refid), &tmp, nullptr);
-	WriteFile(file, &weight, sizeof(weight), &tmp, nullptr);
-	int guard_refid = (guard_target ? guard_target->refid : -1);
-	WriteFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);
-	int summoner_refid = (summoner ? summoner->refid : -1);
-	WriteFile(file, &summoner_refid, sizeof(summoner_refid), &tmp, nullptr);
+	f << dont_attack;
+	f << attack_team;
+	f << netid;
+	f << (event_handler ? event_handler->GetUnitEventHandlerQuestRefid() : -1);
+	f << weight;
+	f << (guard_target ? guard_target->refid : -1);
+	f << (summoner ? summoner->refid : -1);
 
 	assert((human_data != nullptr) == (data->type == UNIT_TYPE::HUMAN));
 	if(human_data)
 	{
-		byte b = 1;
-		WriteFile(file, &b, sizeof(b), &tmp, nullptr);
-		human_data->Save(file);
+		f.Write1();
+		human_data->Save(f);
 	}
 	else
-	{
-		byte b = 0;
-		WriteFile(file, &b, sizeof(b), &tmp, nullptr);
-	}
+		f.Write0();
 
 	if(local)
 	{
-		mesh_inst->Save(file);
-		WriteFile(file, &animation, sizeof(animation), &tmp, nullptr);
-		WriteFile(file, &current_animation, sizeof(current_animation), &tmp, nullptr);
+		mesh_inst->Save(f);
+		f << animation;
+		f << current_animation;
 
-		WriteFile(file, &prev_pos, sizeof(prev_pos), &tmp, nullptr);
-		WriteFile(file, &speed, sizeof(speed), &tmp, nullptr);
-		WriteFile(file, &prev_speed, sizeof(prev_speed), &tmp, nullptr);
-		WriteFile(file, &animation_state, sizeof(animation_state), &tmp, nullptr);
-		WriteFile(file, &attack_id, sizeof(attack_id), &tmp, nullptr);
-		WriteFile(file, &action, sizeof(action), &tmp, nullptr);
-		WriteFile(file, &weapon_taken, sizeof(weapon_taken), &tmp, nullptr);
-		WriteFile(file, &weapon_hiding, sizeof(weapon_hiding), &tmp, nullptr);
-		WriteFile(file, &weapon_state, sizeof(weapon_state), &tmp, nullptr);
-		WriteFile(file, &hitted, sizeof(hitted), &tmp, nullptr);
-		WriteFile(file, &hurt_timer, sizeof(hurt_timer), &tmp, nullptr);
-		WriteFile(file, &target_pos, sizeof(target_pos), &tmp, nullptr);
-		WriteFile(file, &target_pos2, sizeof(target_pos2), &tmp, nullptr);
-		WriteFile(file, &talking, sizeof(talking), &tmp, nullptr);
-		WriteFile(file, &talk_timer, sizeof(talk_timer), &tmp, nullptr);
-		WriteFile(file, &attack_power, sizeof(attack_power), &tmp, nullptr);
-		WriteFile(file, &run_attack, sizeof(run_attack), &tmp, nullptr);
-		WriteFile(file, &timer, sizeof(timer), &tmp, nullptr);
-		WriteFile(file, &alcohol, sizeof(alcohol), &tmp, nullptr);
-		WriteFile(file, &raise_timer, sizeof(raise_timer), &tmp, nullptr);
+		f << prev_pos;
+		f << speed;
+		f << prev_speed;
+		f << animation_state;
+		f << attack_id;
+		f << action;
+		f << weapon_taken;
+		f << weapon_hiding;
+		f << weapon_state;
+		f << hitted;
+		f << hurt_timer;
+		f << target_pos;
+		f << target_pos2;
+		f << talking;
+		f << talk_timer;
+		f << attack_power;
+		f << run_attack;
+		f << timer;
+		f << alcohol;
+		f << raise_timer;
 
 		if(action == A_DASH)
-			WriteFile(file, &use_rot, sizeof(use_rot), &tmp, nullptr);
+			f << use_rot;
 
 		if(used_item)
 		{
-			WriteString1(file, used_item->id);
-			WriteFile(file, &used_item_is_team, sizeof(used_item_is_team), &tmp, nullptr);
+			f << used_item->id;
+			f << used_item_is_team;
 		}
 		else
-		{
-			byte b = 0;
-			WriteFile(file, &b, sizeof(b), &tmp, nullptr);
-		}
+			f.Write0();
 
 		if(usable && !usable->container)
 		{
@@ -1348,98 +1326,76 @@ void Unit::Save(HANDLE file, bool local)
 			{
 				Warn("Invalid usable %s (%d) user %s.", usable->base->id.c_str(), usable->refid, data->id.c_str());
 				usable = nullptr;
-				int refi = -1;
-				WriteFile(file, &refi, sizeof(refi), &tmp, nullptr);
+				f << -1;
 			}
 			else
-				WriteFile(file, &usable->refid, sizeof(usable->refid), &tmp, nullptr);
+				f << usable->refid;
 		}
 		else
-		{
-			int refi = -1;
-			WriteFile(file, &refi, sizeof(refi), &tmp, nullptr);
-		}
+			f << -1;
 
-		WriteFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
-		WriteFile(file, &moved, sizeof(moved), &tmp, nullptr);
+		f << last_bash;
+		f << moved;
 	}
 
-	// efekty
-	ile = effects.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	if(ile)
-		WriteFile(file, &effects[0], sizeof(Effect)*ile, &tmp, nullptr);
+	f.WriteVector4(effects);
 
 	if(player)
 	{
-		byte b = 1;
-		WriteFile(file, &b, sizeof(b), &tmp, nullptr);
+		f.Write1();
 		player->Save(f);
 	}
 	else
-	{
-		byte b = 0;
-		WriteFile(file, &b, sizeof(b), &tmp, nullptr);
-	}
+		f.Write1();
 
 	if(hero)
 		hero->Save(f);
 }
 
 //=================================================================================================
-void Unit::Load(HANDLE file, bool local)
+void Unit::Load(GameReader& f, bool local)
 {
 	human_data = nullptr;
 
 	// unit data
-	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-	BUF[len] = 0;
-	ReadFile(file, BUF, len, &tmp, nullptr);
-	data = UnitData::Get(BUF);
+	data = UnitData::Get(f.ReadString1());
 
 	// items
 	bool can_sort = true;
 	for(int i = 0; i < SLOT_MAX; ++i)
+		f.ReadOptional(slots[i]);
+	items.resize(f.Read<uint>());
+	for(ItemSlot& slot : items)
 	{
-		ReadString1(file);
-		slots[i] = (BUF[0] ? Item::Get(BUF) : nullptr);
-	}
-	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	items.resize(ile);
-	for(vector<ItemSlot>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-	{
-		ReadString1(file);
-		ReadFile(file, &it->count, sizeof(it->count), &tmp, nullptr);
-		ReadFile(file, &it->team_count, sizeof(it->team_count), &tmp, nullptr);
-		if(BUF[0] != '$')
-			it->item = Item::Get(BUF);
+		const string& item_id = f.ReadString1();
+		f >> slot.count;
+		f >> slot.team_count;
+		if(item_id[0] != '$')
+			slot.item = Item::Get(item_id);
 		else
 		{
-			int quest_item_refid;
-			ReadFile(file, &quest_item_refid, sizeof(quest_item_refid), &tmp, nullptr);
-			QuestManager::Get().AddQuestItemRequest(&it->item, BUF, quest_item_refid, &items, this);
-			it->item = QUEST_ITEM_PLACEHOLDER;
+			int quest_item_refid = f.Read<int>();
+			QuestManager::Get().AddQuestItemRequest(&slot.item, item_id.c_str(), quest_item_refid, &items, this);
+			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
 	}
 
 	// stats
-	ReadFile(file, &live_state, sizeof(live_state), &tmp, nullptr);
+	f >> live_state;
 	if(LOAD_VERSION < V_0_2_20 && live_state != ALIVE)
-		live_state = LiveState(live_state + 2); // kolejnoœæ siê zmieni³a
-	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	ReadFile(file, &hp, sizeof(hp), &tmp, nullptr);
-	ReadFile(file, &hpmax, sizeof(hpmax), &tmp, nullptr);
+		live_state = LiveState(live_state + 2); // order changed
+	f >> pos;
+	f >> rot;
+	f >> hp;
+	f >> hpmax;
 	if(LOAD_VERSION >= V_0_5)
 	{
-		ReadFile(file, &stamina, sizeof(stamina), &tmp, nullptr);
-		ReadFile(file, &stamina_max, sizeof(stamina_max), &tmp, nullptr);
-		ReadFile(file, &stamina_action, sizeof(stamina_action), &tmp, nullptr);
+		f >> stamina;
+		f >> stamina_max;
+		f >> stamina_action;
 		if(LOAD_VERSION >= V_0_7)
-			ReadFile(file, &stamina_timer, sizeof(stamina_timer), &tmp, nullptr);
+			f >> stamina_timer;
 		else
 			stamina_timer = 0;
 	}
@@ -1451,12 +1407,8 @@ void Unit::Load(HANDLE file, bool local)
 		stamina_timer = 0;
 	}
 	if(LOAD_VERSION < V_0_5)
-	{
-		int old_type;
-		ReadFile(file, &old_type, sizeof(old_type), &tmp, nullptr);
-	}
-	ReadFile(file, &level, sizeof(level), &tmp, nullptr);
-	FileReader f(file);
+		f.Skip<int>(); // old type
+	f >> level;
 	if(LOAD_VERSION >= V_0_4)
 	{
 		stats.Load(f);
@@ -1478,19 +1430,18 @@ void Unit::Load(HANDLE file, bool local)
 		unmod_stats.skill[(int)SkillId::LIGHT_ARMOR] = old_skill[(int)OldSkill::LIGHT_ARMOR];
 		unmod_stats.skill[(int)SkillId::HEAVY_ARMOR] = old_skill[(int)OldSkill::HEAVY_ARMOR];
 	}
-	ReadFile(file, &gold, sizeof(gold), &tmp, nullptr);
-	ReadFile(file, &invisible, sizeof(invisible), &tmp, nullptr);
-	ReadFile(file, &in_building, sizeof(in_building), &tmp, nullptr);
-	ReadFile(file, &to_remove, sizeof(to_remove), &tmp, nullptr);
-	ReadFile(file, &temporary, sizeof(temporary), &tmp, nullptr);
-	ReadFile(file, &quest_refid, sizeof(quest_refid), &tmp, nullptr);
+	f >> gold;
+	f >> invisible;
+	f >> in_building;
+	f >> to_remove;
+	f >> temporary;
+	f >> quest_refid;
 	if(LOAD_VERSION < V_0_2_20)
 	{
-		// w nowszych wersjach nie ma tej zmiennej, alkohol dzia³a inaczej
-		bool niesmierc;
-		ReadFile(file, &niesmierc, sizeof(niesmierc), &tmp, nullptr);
+		// old alcohol death flag - now works in other way
+		f.Skip<bool>();
 	}
-	ReadFile(file, &assist, sizeof(assist), &tmp, nullptr);
+	f >> assist;
 
 	// auto talking
 	if(LOAD_VERSION >= V_0_5)
@@ -1498,11 +1449,11 @@ void Unit::Load(HANDLE file, bool local)
 		f >> auto_talk;
 		if(auto_talk != AutoTalkMode::No)
 		{
-			f.ReadStringBUF();
-			if(BUF[0])
-				auto_talk_dialog = FindDialog(BUF);
-			else
+			const string& dialog_id = f.ReadString1();
+			if(dialog_id.empty())
 				auto_talk_dialog = nullptr;
+			else
+				auto_talk_dialog = FindDialog(dialog_id.c_str());
 			f >> auto_talk_timer;
 		}
 	}
@@ -1521,11 +1472,10 @@ void Unit::Load(HANDLE file, bool local)
 		auto_talk = (AutoTalkMode)old_auto_talk;
 	}
 
-	ReadFile(file, &dont_attack, sizeof(dont_attack), &tmp, nullptr);
-	ReadFile(file, &attack_team, sizeof(attack_team), &tmp, nullptr);
-	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
-	int unit_event_handler_quest_refid;
-	ReadFile(file, &unit_event_handler_quest_refid, sizeof(unit_event_handler_quest_refid), &tmp, nullptr);
+	f >> dont_attack;
+	f >> attack_team;
+	f >> netid;
+	int unit_event_handler_quest_refid = f.Read<int>();
 	if(unit_event_handler_quest_refid == -2)
 		event_handler = &Game::Get();
 	else if(unit_event_handler_quest_refid == -1)
@@ -1538,12 +1488,11 @@ void Unit::Load(HANDLE file, bool local)
 	CalculateLoad();
 	if(can_sort && (LOAD_VERSION < V_0_2_20 || content::require_update))
 		SortItems(items);
-	ReadFile(file, &weight, sizeof(weight), &tmp, nullptr);
+	f >> weight;
 	if(can_sort && content::require_update)
 		RecalculateWeight();
 
-	int guard_refid;
-	ReadFile(file, &guard_refid, sizeof(guard_refid), &tmp, nullptr);
+	int guard_refid = f.Read<int>();
 	if(guard_refid == -1)
 		guard_target = nullptr;
 	else
@@ -1551,8 +1500,7 @@ void Unit::Load(HANDLE file, bool local)
 
 	if(LOAD_VERSION >= V_0_5)
 	{
-		int summoner_refid;
-		ReadFile(file, &summoner_refid, sizeof(summoner_refid), &tmp, nullptr);
+		int summoner_refid = f.Read<int>();
 		if(summoner_refid == -1)
 			summoner = nullptr;
 		else
@@ -1566,12 +1514,10 @@ void Unit::Load(HANDLE file, bool local)
 	busy = Busy_No;
 	visual_pos = pos;
 
-	byte b;
-	ReadFile(file, &b, sizeof(b), &tmp, nullptr);
-	if(b == 1)
+	if(f.Read1())
 	{
 		human_data = new Human;
-		human_data->Load(file);
+		human_data->Load(f);
 	}
 	else
 	{
@@ -1582,34 +1528,34 @@ void Unit::Load(HANDLE file, bool local)
 	if(local)
 	{
 		CreateMesh(CREATE_MESH::LOAD);
-		mesh_inst->Load(file);
-		ReadFile(file, &animation, sizeof(animation), &tmp, nullptr);
-		ReadFile(file, &current_animation, sizeof(current_animation), &tmp, nullptr);
+		mesh_inst->Load(f);
+		f >> animation;
+		f >> current_animation;
 
-		ReadFile(file, &prev_pos, sizeof(prev_pos), &tmp, nullptr);
-		ReadFile(file, &speed, sizeof(speed), &tmp, nullptr);
-		ReadFile(file, &prev_speed, sizeof(prev_speed), &tmp, nullptr);
-		ReadFile(file, &animation_state, sizeof(animation_state), &tmp, nullptr);
-		ReadFile(file, &attack_id, sizeof(attack_id), &tmp, nullptr);
-		ReadFile(file, &action, sizeof(action), &tmp, nullptr);
+		f >> prev_pos;
+		f >> speed;
+		f >> prev_speed;
+		f >> animation_state;
+		f >> attack_id;
+		f >> action;
 		if(LOAD_VERSION < V_0_2_20 && action >= A_EAT)
 			action = ACTION(action + 1);
-		ReadFile(file, &weapon_taken, sizeof(weapon_taken), &tmp, nullptr);
-		ReadFile(file, &weapon_hiding, sizeof(weapon_hiding), &tmp, nullptr);
-		ReadFile(file, &weapon_state, sizeof(weapon_state), &tmp, nullptr);
-		ReadFile(file, &hitted, sizeof(hitted), &tmp, nullptr);
-		ReadFile(file, &hurt_timer, sizeof(hurt_timer), &tmp, nullptr);
-		ReadFile(file, &target_pos, sizeof(target_pos), &tmp, nullptr);
-		ReadFile(file, &target_pos2, sizeof(target_pos2), &tmp, nullptr);
-		ReadFile(file, &talking, sizeof(talking), &tmp, nullptr);
-		ReadFile(file, &talk_timer, sizeof(talk_timer), &tmp, nullptr);
-		ReadFile(file, &attack_power, sizeof(attack_power), &tmp, nullptr);
-		ReadFile(file, &run_attack, sizeof(run_attack), &tmp, nullptr);
-		ReadFile(file, &timer, sizeof(timer), &tmp, nullptr);
+		f >> weapon_taken;
+		f >> weapon_hiding;
+		f >> weapon_state;
+		f >> hitted;
+		f >> hurt_timer;
+		f >> target_pos;
+		f >> target_pos2;
+		f >> talking;
+		f >> talk_timer;
+		f >> attack_power;
+		f >> run_attack;
+		f >> timer;
 		if(LOAD_VERSION >= V_0_2_20)
 		{
-			ReadFile(file, &alcohol, sizeof(alcohol), &tmp, nullptr);
-			ReadFile(file, &raise_timer, sizeof(raise_timer), &tmp, nullptr);
+			f >> alcohol;
+			f >> raise_timer;
 		}
 		else
 		{
@@ -1619,27 +1565,23 @@ void Unit::Load(HANDLE file, bool local)
 			raise_timer = timer;
 		}
 
-		if (action == A_DASH)
-			ReadFile(file, &use_rot, sizeof(use_rot), &tmp, nullptr);
+		if(action == A_DASH)
+			f >> use_rot;
 
-		byte len;
-		ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-		if(len)
+		const string& item_id = f.ReadString1();
+		if(!item_id.empty())
 		{
-			BUF[len] = 0;
-			ReadFile(file, BUF, len, &tmp, nullptr);
-			used_item = Item::Get(BUF);
-			ReadFile(file, &used_item_is_team, sizeof(used_item_is_team), &tmp, nullptr);
+			used_item = Item::Get(item_id);
+			f >> used_item_is_team;
 		}
 		else
 			used_item = nullptr;
 
-		int refi;
-		ReadFile(file, &refi, sizeof(refi), &tmp, nullptr);
-		if(refi == -1)
+		int usable_refid = f.Read<int>();
+		if(usable_refid == -1)
 			usable = nullptr;
 		else
-			Usable::AddRequest(&usable, refi, this);
+			Usable::AddRequest(&usable, usable_refid, this);
 
 		if(action == A_SHOOT)
 		{
@@ -1649,9 +1591,9 @@ void Unit::Load(HANDLE file, bool local)
 			bow_instance->groups[0].time = mesh_inst->groups[1].time;
 		}
 
-		ReadFile(file, &last_bash, sizeof(last_bash), &tmp, nullptr);
+		f >> last_bash;
 		if(LOAD_VERSION >= V_0_5)
-			ReadFile(file, &moved, sizeof(moved), &tmp, nullptr);
+			f >> moved;
 	}
 	else
 	{
@@ -1673,14 +1615,9 @@ void Unit::Load(HANDLE file, bool local)
 		moved = false;
 	}
 
-	// efekty
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	effects.resize(ile);
-	if(ile)
-		ReadFile(file, &effects[0], sizeof(Effect)*ile, &tmp, nullptr);
+	f.ReadVector4(effects);
 
-	ReadFile(file, &b, sizeof(b), &tmp, nullptr);
-	if(b == 1)
+	if(f.Read1())
 	{
 		player = new PlayerController;
 		player->unit = this;

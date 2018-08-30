@@ -84,7 +84,7 @@ void MenuStrip::Draw(ControlDrawData*)
 		if(item.hover)
 			GUI.DrawArea(area, layout->menustrip.button_hover);
 
-		DWORD color;
+		Color color;
 		if(!item.enabled)
 			color = layout->menustrip.font_color_disabled;
 		else if(item.hover)
@@ -92,7 +92,7 @@ void MenuStrip::Draw(ControlDrawData*)
 		else
 			color = layout->menustrip.font_color;
 		r = Rect(area, layout->menustrip.item_padding);
-		GUI.DrawText(layout->menustrip.font, item.text, DT_LEFT, color, r);
+		GUI.DrawText(layout->menustrip.font, item.text, DTF_LEFT, color, r);
 
 		area += Vec2(0, offset);
 	}

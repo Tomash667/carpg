@@ -1,4 +1,3 @@
-// skrzynia
 #include "Pch.h"
 #include "GameCore.h"
 #include "Chest.h"
@@ -7,66 +6,59 @@
 int Chest::netid_counter;
 
 //=================================================================================================
-void Chest::Save(HANDLE file, bool local)
+void Chest::Save(FileWriter& f, bool local)
 {
-	ItemContainer::Save(file);
+	ItemContainer::Save(f);
 
-	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
+	f << pos;
+	f << rot;
+	f << netid;
 
 	if(local)
 	{
 		MeshInstance::Group& group = mesh_inst->groups[0];
 		if(group.IsPlaying())
 		{
-			WriteFile(file, &group.state, sizeof(group.state), &tmp, nullptr);
-			WriteFile(file, &group.time, sizeof(group.time), &tmp, nullptr);
-			WriteFile(file, &group.blend_time, sizeof(group.blend_time), &tmp, nullptr);
+			f << group.state;
+			f << group.time;
+			f << group.blend_time;
 		}
 		else
-		{
-			int b = 0;
-			WriteFile(file, &b, sizeof(b), &tmp, nullptr);
-		}
+			f << 0;
 	}
 
-	int chest_event_handler_quest_refid = (handler ? handler->GetChestEventHandlerQuestRefid() : -1);
-	WriteFile(file, &chest_event_handler_quest_refid, sizeof(chest_event_handler_quest_refid), &tmp, nullptr);
+	f << (handler ? handler->GetChestEventHandlerQuestRefid() : -1);
 }
 
 //=================================================================================================
-void Chest::Load(HANDLE file, bool local)
+void Chest::Load(FileReader& f, bool local)
 {
-	ItemContainer::Load(file);
+	ItemContainer::Load(f);
 
-	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
+	f >> pos;
+	f >> rot;
+	f >> netid;
 	looted = false;
 
 	if(local)
 	{
-		int b;
-		ReadFile(file, &b, sizeof(b), &tmp, nullptr);
-
 		mesh_inst = new MeshInstance(Game::Get().aChest);
 
-		if(b != 0)
+		int state = f.Read<int>();
+		if(state != 0)
 		{
 			MeshInstance::Group& group = mesh_inst->groups[0];
 			group.anim = &mesh_inst->mesh->anims[0];
-			group.state = b;
-			ReadFile(file, &group.time, sizeof(group.time), &tmp, nullptr);
-			ReadFile(file, &group.blend_time, sizeof(group.blend_time), &tmp, nullptr);
+			group.state = state;
 			group.used_group = 0;
+			f >> group.time;
+			f >> group.blend_time;
 		}
 	}
 	else
 		mesh_inst = nullptr;
 
-	int refid;
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
+	int refid = f.Read<int>();
 	if(refid == -1)
 		handler = nullptr;
 	else

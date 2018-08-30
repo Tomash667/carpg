@@ -14,6 +14,7 @@
 #include "MpBox.h"
 #include "GameMessages.h"
 #include "DialogBox.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 extern const float TRAVEL_SPEED;
@@ -101,7 +102,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		Location& loc = **it;
 		if(loc.state == LS_UNKNOWN || loc.state == LS_HIDDEN)
 			continue;
-		GUI.DrawSprite(tMapIcon[loc.image], WorldPosToScreen(Int2(loc.pos.x - 16.f, loc.pos.y + 16.f)), loc.state == LS_KNOWN ? 0x70707070 : WHITE);
+		GUI.DrawSprite(tMapIcon[loc.image], WorldPosToScreen(Int2(loc.pos.x - 16.f, loc.pos.y + 16.f)), loc.state == LS_KNOWN ? 0x70707070 : Color::White);
 	}
 
 	// lokacje spotkañ
@@ -151,7 +152,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 
 	// tekst
 	Rect rect(Int2(608, 8), game.GetWindowSize() - Int2(8, 8));
-	GUI.DrawText(GUI.default_font, s, 0, BLACK, rect);
+	GUI.DrawText(GUI.default_font, s, 0, Color::Black, rect);
 
 	// kreska
 	if(game.picked_location != -1 && game.picked_location != game.current_location)
@@ -171,7 +172,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		if(game.death_fade < 1.f)
 			color = (int(game.death_fade * 255) << 24) | 0x00FFFFFF;
 		else
-			color = WHITE;
+			color = Color::White;
 
 		GUI.DrawSpriteFull(game.tCzern, color);
 
@@ -183,7 +184,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 		// tekst
 		cstring text = Format(txGameTimeout, game.pc->kills, game.total_kills - game.pc->kills);
 		Rect rect = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
-		GUI.DrawText(GUI.default_font, text, DT_CENTER | DT_BOTTOM, color, rect);
+		GUI.DrawText(GUI.default_font, text, DTF_CENTER | DTF_BOTTOM, color, rect);
 	}
 
 	if(mp_box->visible)

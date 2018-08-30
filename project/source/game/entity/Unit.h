@@ -13,15 +13,6 @@
 #include "Buff.h"
 
 //-----------------------------------------------------------------------------
-struct PlayerController;
-struct AIController;
-struct Usable;
-struct EntityInterpolator;
-struct UnitEventHandler;
-struct SpeechBubble;
-struct GameDialog;
-
-//-----------------------------------------------------------------------------
 enum Animation
 {
 	ANI_NONE = -1,
@@ -427,8 +418,8 @@ struct Unit
 	}
 	float GetAttackFrame(int frame) const;
 	int GetRandomAttack() const;
-	void Save(HANDLE file, bool local);
-	void Load(HANDLE file, bool local);
+	void Save(GameWriter& f, bool local);
+	void Load(GameReader& f, bool local);
 	Effect* FindEffect(EffectId effect);
 	bool FindEffect(EffectId effect, float* value);
 	Vec3 GetCenter() const

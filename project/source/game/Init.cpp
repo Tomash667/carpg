@@ -13,11 +13,11 @@
 #include "Trap.h"
 #include "QuestManager.h"
 #include "Action.h"
-#include "NetStats.h"
 #include "UnitGroup.h"
 #include "SoundManager.h"
 #include "ScriptManager.h"
 #include "SaveState.h"
+#include "DirectX.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -87,7 +87,7 @@ void Game::CreatePlaceholderResources()
 	V(missing_texture->GetSurfaceLevel(0, &surf));
 	V(surf->LockRect(&rect, nullptr, 0));
 
-	const DWORD col[2] = { COLOR_RGB(255, 0, 255), COLOR_RGB(0, 255, 0) };
+	const DWORD col[2] = { Color(255, 0, 255), Color(0, 255, 0) };
 
 	for(int y = 0; y < ITEM_IMAGE_SIZE; ++y)
 	{
@@ -290,9 +290,6 @@ void Game::ConfigureGame()
 	}
 
 	CreateTextures();
-
-	if(!disable_net_stats)
-		NetStats::Get().Initialize();
 }
 
 //=================================================================================================
@@ -397,7 +394,7 @@ void Game::PostconfigureGame()
 	SaveCfg();
 
 	// end load screen, show menu
-	clear_color = BLACK;
+	clear_color = Color::Black;
 	game_state = GS_MAIN_MENU;
 	game_state = GS_MAIN_MENU;
 	load_screen->visible = false;

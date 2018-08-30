@@ -7,6 +7,7 @@
 #include "LocationHelper.h"
 #include "QuestManager.h"
 #include "GameGui.h"
+#include "GameFile.h"
 
 //-----------------------------------------------------------------------------
 bool SortEntries(const Quest_SpreadNews::Entry& e1, const Quest_SpreadNews::Entry& e2)
@@ -241,30 +242,21 @@ bool Quest_SpreadNews::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-void Quest_SpreadNews::Save(HANDLE file)
+void Quest_SpreadNews::Save(GameWriter& f)
 {
-	Quest::Save(file);
+	Quest::Save(f);
 
 	if(IsActive())
-	{
-		uint count = entries.size();
-		WriteFile(file, &count, sizeof(count), &tmp, nullptr);
-		WriteFile(file, &entries[0], sizeof(Entry)*count, &tmp, nullptr);
-	}
+		f << entries;
 }
 
 //=================================================================================================
-bool Quest_SpreadNews::Load(HANDLE file)
+bool Quest_SpreadNews::Load(GameReader& f)
 {
-	Quest::Load(file);
+	Quest::Load(f);
 
 	if(IsActive())
-	{
-		uint count;
-		ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-		entries.resize(count);
-		ReadFile(file, &entries[0], sizeof(Entry)*count, &tmp, nullptr);
-	}
+		f >> entries;
 
 	return true;
 }

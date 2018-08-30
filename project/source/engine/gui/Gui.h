@@ -119,20 +119,7 @@ namespace gui
 {
 	class Overlay;
 
-	inline Vec4 ColorFromDWORD(DWORD color)
-	{
-		return Vec4(float((color & 0xFF0000) >> 16) / 255,
-			float((color & 0xFF00) >> 8) / 255,
-			float(color & 0xFF) / 255,
-			float((color & 0xFF000000) >> 24) / 255);
-	}
-
-	inline Int2 GetImgSize(TEX img)
-	{
-		D3DSURFACE_DESC desc;
-		img->GetLevelDesc(0, &desc);
-		return Int2(desc.Width, desc.Height);
-	}
+	Int2 GetSize(TEX img);
 }
 
 //-----------------------------------------------------------------------------
@@ -170,7 +157,7 @@ public:
 	Font* CreateFont(cstring name, int size, int weight, int tex_size, int outline = 0);
 	/* zaawansowane renderowanie tekstu (w porównaniu do ID3DXFont)
 	zwraca false je¿eli by³ clipping od do³u (nie kontuuj tekstu w flow)
-	Znak $ oznacza jak¹œ specjaln¹ czynnoœæ (o ile jest ustawiona flaga DT_PARSE_SPECIAL):
+	Znak $ oznacza jak¹œ specjaln¹ czynnoœæ (o ile jest ustawiona flaga DTF_PARSE_SPECIAL):
 		$$ - wstaw $
 		$c? - ustaw kolor (r-czerwony, g-zielony, y-¿ó³ty, b-czarny, w-bia³y, -przywróc domyœlny)
 		$h+ - informacja o hitboxie
@@ -178,12 +165,12 @@ public:
 		/$b - przerwa w tekœcie
 		/$n - nie przerywaj tekstu a¿ do nastêpnego takiego symbolu (np $njakiœ tekst$n - ten tekst nigdy nie zostanie rozdzielony pomiêdzy dwie linijki)
 	*/
-	bool DrawText(Font* font, StringOrCstring str, DWORD flags, DWORD color, const Rect& rect, const Rect* clipping = nullptr,
+	bool DrawText(Font* font, StringOrCstring str, uint flags, Color color, const Rect& rect, const Rect* clipping = nullptr,
 		vector<Hitbox>* hitboxes = nullptr, int* hitbox_counter = nullptr, const vector<TextLine>* lines = nullptr);
 	void Add(Control* ctrl);
-	void DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, DWORD color, int corner = 16, int size = 64, const Box2d* clip_rect = nullptr);
+	void DrawItem(TEX t, const Int2& item_pos, const Int2& item_size, Color color, int corner = 16, int size = 64, const Box2d* clip_rect = nullptr);
 	void Update(float dt, float mouse_speed);
-	void DrawSprite(TEX t, const Int2& pos, DWORD color = WHITE, const Rect* clipping = nullptr);
+	void DrawSprite(TEX t, const Int2& pos, Color color = Color::White, const Rect* clipping = nullptr);
 	void OnReset();
 	void OnReload();
 	void OnClean();
@@ -194,33 +181,33 @@ public:
 	void CloseDialogInternal(DialogBox* d);
 	bool HaveTopDialog(cstring name) const;
 	bool HaveDialog() const;
-	void DrawSpriteFull(TEX t, DWORD color);
+	void DrawSpriteFull(TEX t, Color color);
 	void AddOnCharHandler(OnCharHandler* h) { on_char.push_back(h); }
 	void RemoveOnCharHandler(OnCharHandler* h) { RemoveElement(on_char, h); }
 	void SimpleDialog(cstring text, Control* parent, cstring name = "simple");
-	void DrawSpriteRect(TEX t, const Rect& rect, DWORD color = WHITE);
+	void DrawSpriteRect(TEX t, const Rect& rect, Color color = Color::White);
 	bool HaveDialog(cstring name);
 	bool HaveDialog(DialogBox* dialog);
 	IDirect3DDevice9* GetDevice() { return device; }
 	bool AnythingVisible() const;
 	void OnResize();
-	void DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, DWORD color = WHITE);
-	void DrawSpriteTransform(TEX t, const Matrix& mat, DWORD color = WHITE);
-	void DrawLine(const Vec2* lines, uint count, DWORD color = BLACK, bool strip = true);
+	void DrawSpriteRectPart(TEX t, const Rect& rect, const Rect& part, Color color = Color::White);
+	void DrawSpriteTransform(TEX t, const Matrix& mat, Color color = Color::White);
+	void DrawLine(const Vec2* lines, uint count, Color color = Color::Black, bool strip = true);
 	void LineBegin();
 	void LineEnd();
 	bool NeedCursor();
-	bool DrawText3D(Font* font, StringOrCstring text, DWORD flags, DWORD color, const Vec3& pos, Rect* text_rect = nullptr);
+	bool DrawText3D(Font* font, StringOrCstring text, uint flags, Color color, const Vec3& pos, Rect* text_rect = nullptr);
 	bool To2dPoint(const Vec3& pos, Int2& pt);
 	static bool Intersect(vector<Hitbox>& hitboxes, const Int2& pt, int* index, int* index2 = nullptr);
-	void DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, DWORD color = WHITE);
+	void DrawSpriteTransformPart(TEX t, const Matrix& mat, const Rect& part, Color color = Color::White);
 	void CloseDialogs();
 	bool HavePauseDialog() const;
 	DialogBox* GetDialog(cstring name);
-	void DrawSprite2(TEX t, const Matrix& mat, const Rect* part = nullptr, const Rect* clipping = nullptr, DWORD color = WHITE);
+	void DrawSprite2(TEX t, const Matrix& mat, const Rect* part = nullptr, const Rect* clipping = nullptr, Color color = Color::White);
 	void AddNotification(cstring text, TEX icon, float timer);
-	void DrawArea(DWORD color, const Int2& pos, const Int2& size, const Box2d* clip_rect = nullptr);
-	void DrawArea(DWORD color, const Rect& rect, const Box2d* clip_rect = nullptr)
+	void DrawArea(Color color, const Int2& pos, const Int2& size, const Box2d* clip_rect = nullptr);
+	void DrawArea(Color color, const Rect& rect, const Box2d* clip_rect = nullptr)
 	{
 		DrawArea(color, rect.LeftTop(), rect.Size(), clip_rect);
 	}
@@ -239,8 +226,8 @@ public:
 	{
 		Font* font;
 		cstring str;
-		DWORD flags;
-		DWORD color;
+		uint flags;
+		Color color;
 		Rect rect;
 		const Rect* clipping;
 		vector<Hitbox>* hitboxes;
@@ -251,7 +238,7 @@ public:
 		uint lines_end;
 		uint str_length;
 
-		DrawTextOptions(Font* font, StringOrCstring str) : font(font), str(str.c_str()), rect(rect), flags(DT_LEFT), color(BLACK), clipping(nullptr),
+		DrawTextOptions(Font* font, StringOrCstring str) : font(font), str(str.c_str()), rect(rect), flags(DTF_LEFT), color(Color::Black), clipping(nullptr),
 			hitboxes(nullptr), hitbox_counter(nullptr), lines(nullptr), scale(Vec2::One), lines_start(0), lines_end(UINT_MAX), str_length(str.length())
 		{
 		}

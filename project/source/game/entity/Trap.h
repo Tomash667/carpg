@@ -5,9 +5,6 @@
 #include "Object.h"
 
 //-----------------------------------------------------------------------------
-struct Unit;
-
-//-----------------------------------------------------------------------------
 struct Trap
 {
 	int netid;
@@ -31,6 +28,6 @@ struct Trap
 		delete hitted;
 	}
 
-	void Save(HANDLE file, bool local);
-	void Load(HANDLE file, bool local);
+	void Save(FileWriter& f, bool local);
+	void Load(FileReader& f, bool local);
 };

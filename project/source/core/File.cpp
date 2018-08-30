@@ -1,21 +1,248 @@
 #include "Pch.h"
 #include "Core.h"
+#include "File.h"
+#include "WindowsIncludes.h"
 #include <Shellapi.h>
 
-DWORD tmp;
+//-----------------------------------------------------------------------------
+static DWORD tmp;
+string StreamReader::buf;
 char BUF[256];
+
+
+//-----------------------------------------------------------------------------
+static_assert(sizeof(uint64) == sizeof(FILETIME), "Invalid FileTime size.");
+
+bool FileTime::operator == (const FileTime& file_time) const
+{
+	FILETIME ft1 = union_cast<FILETIME>(time);
+	FILETIME ft2 = union_cast<FILETIME>(file_time);
+	return CompareFileTime(&ft1, &ft2) == 0;
+}
+
+
+//-----------------------------------------------------------------------------
+FileReader::~FileReader()
+{
+	if(own_handle && file != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(file);
+		file = INVALID_HANDLE_VALUE;
+		ok = false;
+	}
+}
+
+void FileReader::operator = (FileReader& f)
+{
+	assert(file == INVALID_HANDLE_VALUE);
+	file = f.file;
+	own_handle = f.own_handle;
+	ok = f.ok;
+	size = f.size;
+	f.file = INVALID_HANDLE_VALUE;
+}
+
+bool FileReader::Open(Cstring filename)
+{
+	file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	own_handle = true;
+	if(file != INVALID_HANDLE_VALUE)
+	{
+		size = GetFileSize(file, nullptr);
+		ok = true;
+	}
+	else
+	{
+		size = 0;
+		ok = false;
+	}
+	return ok;
+}
+
+void FileReader::Read(void* ptr, uint size)
+{
+	BOOL result = ReadFile(file, ptr, size, &tmp, nullptr);
+	assert(result != FALSE);
+	ok = (size == tmp);
+}
+
+void FileReader::ReadToString(string& s)
+{
+	DWORD size = GetFileSize(file, nullptr);
+	s.resize(size);
+	BOOL result = ReadFile(file, (char*)s.c_str(), size, &tmp, nullptr);
+	assert(result != FALSE);
+	assert(size == tmp);
+}
+
+Buffer* FileReader::ReadToBuffer(Cstring path)
+{
+	FileReader f(path);
+	if(!f)
+		return nullptr;
+	Buffer* buffer = BufferPool.Get();
+	buffer->Resize(f.GetSize());
+	f.Read(buffer->Data(), buffer->Size());
+	return buffer;
+}
+
+Buffer* FileReader::ReadToBuffer(Cstring path, uint offset, uint size)
+{
+	FileReader f(path);
+	if(!f)
+		return nullptr;
+	f.Skip(offset);
+	if(!f.Ensure(size))
+		return nullptr;
+	Buffer* buffer = BufferPool.Get();
+	buffer->Resize(size);
+	f.Read(buffer->Data(), size);
+	return buffer;
+}
+
+void FileReader::Skip(uint bytes)
+{
+	ok = (ok && SetFilePointer(file, bytes, nullptr, FILE_CURRENT) != INVALID_SET_FILE_POINTER);
+}
+
+uint FileReader::GetPos() const
+{
+	return (uint)SetFilePointer(file, 0, nullptr, FILE_CURRENT);
+}
+
+FileTime FileReader::GetTime() const
+{
+	FILETIME file_time;
+	GetFileTime((HANDLE)file, nullptr, nullptr, &file_time);
+	return union_cast<FileTime>(file_time);
+}
+
+bool FileReader::SetPos(uint pos)
+{
+	if(!ok || pos > size)
+	{
+		pos = size;
+		ok = false;
+		return false;
+	}
+	SetFilePointer((HANDLE)file, pos, nullptr, FILE_BEGIN);
+	return true;
+}
+
+
+//-----------------------------------------------------------------------------
+MemoryReader::MemoryReader(BufferHandle& buf_handle) : buf(*buf_handle.Pin())
+{
+	ok = true;
+	pos = 0;
+}
+
+MemoryReader::MemoryReader(Buffer* p_buf) : buf(*p_buf)
+{
+	ok = true;
+	pos = 0;
+}
+
+MemoryReader::~MemoryReader()
+{
+	BufferPool.Free(&buf);
+}
+
+void MemoryReader::Read(void* ptr, uint size)
+{
+	if(!ok || GetPos() + size > GetSize())
+		ok = false;
+	else
+	{
+		memcpy(ptr, (byte*)buf.Data() + pos, size);
+		pos += size;
+	}
+}
+
+void MemoryReader::Skip(uint size)
+{
+	if(!ok || GetPos() + size > GetSize())
+		ok = false;
+	else
+		pos += size;
+}
+
+bool MemoryReader::SetPos(uint pos)
+{
+	if(!ok || pos > GetSize())
+		ok = false;
+	else
+		this->pos = pos;
+	return ok;
+}
+
+
+//-----------------------------------------------------------------------------
+FileWriter::~FileWriter()
+{
+	if(own_handle && file != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(file);
+		file = INVALID_HANDLE_VALUE;
+	}
+}
+
+bool FileWriter::Open(cstring filename)
+{
+	assert(filename);
+	file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+	return (file != INVALID_HANDLE_VALUE);
+}
+
+void FileWriter::Write(const void* ptr, uint size)
+{
+	WriteFile(file, ptr, size, &tmp, nullptr);
+	assert(size == tmp);
+}
+
+void FileWriter::Flush()
+{
+	FlushFileBuffers(file);
+}
+
+uint FileWriter::GetSize() const
+{
+	return GetFileSize(file, nullptr);
+}
+
+uint FileWriter::GetPos() const
+{
+	return SetFilePointer(file, 0, nullptr, FILE_CURRENT);
+}
+
+void FileWriter::operator = (FileWriter& f)
+{
+	assert(file == INVALID_FILE_HANDLE && f.file != INVALID_HANDLE_VALUE);
+	file = f.file;
+	own_handle = f.own_handle;
+	f.file = INVALID_FILE_HANDLE;
+}
+
+void FileWriter::SetTime(FileTime file_time)
+{
+	FILETIME ft = union_cast<FILETIME>(file_time);
+	SetFileTime((HANDLE)file, nullptr, nullptr, &ft);
+}
+
+bool FileWriter::SetPos(uint pos)
+{
+	if(pos >= GetFileSize(file, nullptr))
+		return false;
+	SetFilePointer(file, pos, nullptr, FILE_BEGIN);
+	return true;
+}
 
 //=================================================================================================
 bool io::DeleteDirectory(cstring dir)
 {
 	assert(dir);
 
-	char* s = BUF;
-	char c;
-	while((c = *dir++) != 0)
-		*s++ = c;
-	*s++ = 0;
-	*s = 0;
+	MakeDoubleZeroTerminated(BUF, dir);
 
 	SHFILEOPSTRUCT op = {
 		nullptr,
@@ -56,7 +283,7 @@ bool io::FileExists(cstring filename)
 }
 
 //=================================================================================================
-bool io::FindFiles(cstring pattern, const std::function<bool(const WIN32_FIND_DATA&)>& func, bool exclude_special)
+bool io::FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func)
 {
 	assert(pattern);
 
@@ -67,15 +294,20 @@ bool io::FindFiles(cstring pattern, const std::function<bool(const WIN32_FIND_DA
 
 	do
 	{
-		// exclude special files or directories
-		if((exclude_special && (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0))
-			|| IS_SET(find_data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))
+		// exclude special directories
+		if(strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
 			continue;
 
 		// callback
-		if(!func(find_data))
+		FileInfo info =
+		{
+			find_data.cFileName,
+			IS_SET(find_data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY)
+		};
+		if(!func(info))
 			break;
-	} while(FindNextFile(find, &find_data) != 0);
+	}
+	while(FindNextFile(find, &find_data) != 0);
 
 	DWORD result = GetLastError();
 	FindClose(find);

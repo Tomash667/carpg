@@ -2,8 +2,8 @@
 #include "EngineCore.h"
 #include "SoundManager.h"
 #include "StartupOptions.h"
-#include "Stream.h"
 #include "ResourceManager.h"
+#include "WindowsIncludes.h"
 #include <fmod.hpp>
 
 //=================================================================================================

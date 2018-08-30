@@ -266,11 +266,10 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit
 }
 
 //=================================================================================================
-void Quest_Wanted::Save(HANDLE file)
+void Quest_Wanted::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
+	Quest_Dungeon::Save(f);
 
-	GameWriter f(file);
 	f << level;
 	f << crazy;
 	f << clas;
@@ -280,11 +279,10 @@ void Quest_Wanted::Save(HANDLE file)
 }
 
 //=================================================================================================
-bool Quest_Wanted::Load(HANDLE file)
+bool Quest_Wanted::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
+	Quest_Dungeon::Load(f);
 
-	GameReader f(file);
 	f >> level;
 	f >> crazy;
 	f >> clas;

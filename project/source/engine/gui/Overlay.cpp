@@ -25,7 +25,7 @@ void Overlay::Draw(ControlDrawData*)
 
 	for(auto dialog : dialogs)
 	{
-		GUI.DrawSpriteFull(DialogBox::tBackground, COLOR_RGBA(255, 255, 255, 128));
+		GUI.DrawSpriteFull(DialogBox::tBackground, Color::Alpha(128));
 		dialog->Draw();
 	}
 

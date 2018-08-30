@@ -61,10 +61,10 @@ public:
 	void Make(bool smooth = true);
 	void ApplyTextures(ID3DXEffect* effect); // to delete
 	void ApplyStreamSource(); // to delete, create reference leaks
-	void Draw(uint i)
+	/*void Draw(uint i)
 	{
 		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, n_verts, part_tris*i * 3, part_tris));
-	}
+	}*/
 	void SetHeight(float height);
 	void ClearHeight()
 	{
@@ -120,7 +120,7 @@ public:
 	{
 		return pos;
 	}
-	LPD3DXMESH GetMesh()
+	ID3DXMesh* GetMesh()
 	{
 		return mesh;
 	}
@@ -180,7 +180,7 @@ private:
 	uint hszer, hszer2; // n_tiles+1
 	uint n_tris, n_verts, part_tris, part_verts, tex_size;
 	Box box;
-	LPD3DXMESH mesh;
+	ID3DXMesh* mesh;
 	IDirect3DDevice9* device;
 	TEX texSplat;
 	TexturePtr tex[5];

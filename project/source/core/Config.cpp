@@ -2,6 +2,7 @@
 #include "Pch.h"
 #include "Core.h"
 #include "Config.h"
+#include "File.h"
 
 const int CONFIG_VERSION = 1;
 
@@ -260,26 +261,24 @@ Config::Result Config::Save(cstring filename)
 {
 	assert(filename);
 
-	DWORD tmp;
-	HANDLE file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-	if(file == INVALID_HANDLE_VALUE)
+	TextWriter f(filename);
+	if(!f)
 		return CANT_SAVE;
 
-	cstring s = Format("#version %d\n", CONFIG_VERSION);
-	WriteFile(file, s, strlen(s), &tmp, nullptr);
+	f << Format("#version %d\n", CONFIG_VERSION);
 
 	std::sort(entries.begin(), entries.end(), [](const Config::Entry& e1, const Config::Entry& e2) -> bool { return e1.name < e2.name; });
 
 	for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 	{
+		cstring s;
 		if(it->value.find_first_of(" \t,./;'[]-=<>?:\"{}!@#$%^&*()_+") != string::npos)
 			s = Format("%s = \"%s\"\n", it->name.c_str(), Escape(it->value));
 		else
 			s = Format("%s = %s\n", it->name.c_str(), it->value.c_str());
-		WriteFile(file, s, strlen(s), &tmp, nullptr);
+		f << s;
 	}
 
-	CloseHandle(file);
 	return OK;
 }
 

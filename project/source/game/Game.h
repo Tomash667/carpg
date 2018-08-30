@@ -26,34 +26,6 @@
 #include "Unit.h"
 #include "ResourceManager.h"
 
-enum TRAP_TYPE;
-
-struct CameraCollider;
-struct City;
-struct CityBuilding;
-struct Encounter;
-struct InsideBuilding;
-struct InsideLocationLevel;
-struct Quest_Event;
-struct TerrainTile;
-
-class Console;
-class Controls;
-class CreateCharacterPanel;
-class CreateServerPanel;
-class DialogBox;
-class GameGui;
-class GameMenu;
-class InfoBox;
-class MainMenu;
-class MultiplayerPanel;
-class Options;
-class PickServerPanel;
-class SaveLoad;
-class ServerPanel;
-class WorldMapGui;
-class ScriptManager;
-
 //#define DRAW_LOCAL_PATH
 #ifdef DRAW_LOCAL_PATH
 #	ifndef _DEBUG
@@ -368,8 +340,9 @@ struct ConfigVar
 
 typedef std::map<Mesh*, TEX> ItemTextureMap;
 
-struct Game final : public Engine, public UnitEventHandler
+class Game final : public Engine, public UnitEventHandler
 {
+public:
 	Game();
 	~Game();
 
@@ -465,12 +438,11 @@ struct Game final : public Engine, public UnitEventHandler
 
 	QUICKSTART quickstart;
 	int quickstart_slot;
-	bool disable_net_stats;
 	ScriptManager* script_mgr;
 
 	// supershader
 	string sshader_code;
-	FILETIME sshader_edit_time;
+	FileTime sshader_edit_time;
 	ID3DXEffectPool* sshader_pool;
 	vector<SuperShader> sshaders;
 	D3DXHANDLE hSMatCombined, hSMatWorld, hSMatBones, hSTint, hSAmbientColor, hSFogColor, hSFogParams, hSLightDir, hSLightColor, hSLights, hSSpecularColor, hSSpecularIntensity,
@@ -564,13 +536,14 @@ struct Game final : public Engine, public UnitEventHandler
 	TexturePtr tKrew[BLOOD_MAX], tKrewSlad[BLOOD_MAX], tFlare, tFlare2, tIskra, tWoda, tSpawn;
 	TexturePack tFloor[2], tWall[2], tCeil[2], tFloorBase, tWallBase, tCeilBase;
 	ID3DXEffect* eMesh, *eParticle, *eSkybox, *eTerrain, *eArea, *eGui, *ePostFx, *eGlow, *eGrass;
-	D3DXHANDLE techAnim, techHair, techAnimDir, techHairDir, techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox,
-		techTerrain, techArea, techTrail, techGlowMesh, techGlowAni, techGrass;
-	D3DXHANDLE hAniCombined, hAniWorld, hAniBones, hAniTex, hAniFogColor, hAniFogParam, hAniTint, hAniHairColor, hAniAmbientColor, hAniLightDir, hAniLightColor, hAniLights,
-		hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir, hMeshLightColor, hMeshLights,
-		hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange,
-		hTerrainCombined, hTerrainWorld, hTerrainTexBlend, hTerrainTex[5], hTerrainColorAmbient, hTerrainColorDiffuse, hTerrainLightDir, hTerrainFogColor, hTerrainFogParam,
-		hGuiSize, hGuiTex, hPostTex, hPostPower, hPostSkill, hGlowCombined, hGlowBones, hGlowColor, hGlowTex, hGrassViewProj, hGrassTex, hGrassFogColor, hGrassFogParams, hGrassAmbientColor;
+	D3DXHANDLE techMesh, techMeshDir, techMeshSimple, techMeshSimple2, techMeshExplo, techParticle, techSkybox, techTerrain, techArea, techTrail, techGlowMesh,
+		techGlowAni, techGrass;
+	D3DXHANDLE hAniCombined, hAniWorld, hAniBones, hAniTex, hAniFogColor, hAniFogParam, hAniTint, hAniHairColor, hAniAmbientColor, hAniLightDir,
+		hAniLightColor, hAniLights, hMeshCombined, hMeshWorld, hMeshTex, hMeshFogColor, hMeshFogParam, hMeshTint, hMeshAmbientColor, hMeshLightDir,
+		hMeshLightColor, hMeshLights, hParticleCombined, hParticleTex, hSkyboxCombined, hSkyboxTex, hAreaCombined, hAreaColor, hAreaPlayerPos, hAreaRange,
+		hTerrainCombined, hTerrainWorld, hTerrainTexBlend, hTerrainTex[5], hTerrainColorAmbient, hTerrainColorDiffuse, hTerrainLightDir, hTerrainFogColor,
+		hTerrainFogParam, hGuiSize, hGuiTex, hPostTex, hPostPower, hPostSkill, hGlowCombined, hGlowBones, hGlowColor, hGlowTex, hGrassViewProj, hGrassTex,
+		hGrassFogColor, hGrassFogParams, hGrassAmbientColor;
 	SOUND sGulp, sCoins, sBow[2], sDoor[3], sDoorClosed[2], sDoorClose, sItem[8], sTalk[4], sChestOpen, sChestClose, sDoorBudge, sRock, sWood, sCrystal,
 		sMetal, sBody[5], sBone, sSkin, sArenaFight, sArenaWin, sArenaLost, sUnlock, sEvil, sXarTalk, sOrcTalk, sGoblinTalk, sGolemTalk, sEat, sSummon;
 	VB vbParticle;
@@ -711,7 +684,7 @@ public:
 	// SCREENSHOT
 	time_t last_screenshot;
 	uint screenshot_count;
-	D3DXIMAGE_FILEFORMAT screenshot_format;
+	ImageFormat screenshot_format;
 
 	//---------------------------------
 	// DIALOGI
@@ -752,7 +725,7 @@ public:
 	float loading_dt, loading_cap;
 	Timer loading_t;
 	int loading_steps, loading_index;
-	DWORD clear_color2;
+	Color clear_color2;
 
 	//---------------------------------
 	// MINIMAPA
@@ -1223,8 +1196,8 @@ public:
 	void GenerateCave(Location& l);
 	void GenerateCaveObjects();
 	void GenerateCaveUnits();
-	void SaveGame(HANDLE file);
-	void LoadGame(HANDLE file);
+	void SaveGame(GameWriter& f);
+	void LoadGame(GameReader& f);
 	void RemoveUnusedAiAndCheck();
 	void CheckUnitsAi(LevelContext& ctx, int& err_count);
 	void CastSpell(LevelContext& ctx, Unit& unit);
@@ -1285,8 +1258,8 @@ public:
 	void RebuildMinimap();
 	void UpdateDungeonMinimap(bool send);
 	void DungeonReveal(const Int2& tile);
-	void SaveStock(HANDLE file, vector<ItemSlot>& cnt);
-	void LoadStock(HANDLE file, vector<ItemSlot>& cnt);
+	void SaveStock(FileWriter& f, vector<ItemSlot>& cnt);
+	void LoadStock(FileReader& f, vector<ItemSlot>& cnt);
 	Door* FindDoor(LevelContext& ctx, const Int2& pt);
 	void AddGroundItem(LevelContext& ctx, GroundItem* item);
 	void GenerateDungeonObjects2();
@@ -1389,8 +1362,8 @@ public:
 	void GenerateQuestUnits();
 	void GenerateQuestUnits2(bool on_enter);
 	void UpdateQuests(int days);
-	void SaveQuestsData(HANDLE file);
-	void LoadQuestsData(HANDLE file);
+	void SaveQuestsData(GameWriter& f);
+	void LoadQuestsData(GameReader& f);
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);
 	void GenerateSawmill(bool in_progress);
@@ -1606,7 +1579,7 @@ public:
 	void UpdateLobbyNet(float dt);
 	void UpdateLobbyNetClient(float dt);
 	void UpdateLobbyNetServer(float dt);
-	bool DoLobbyUpdate(BitStream& stream);
+	bool DoLobbyUpdate(BitStreamReader& f);
 	void OnCreateCharacter(int id);
 	void OnPlayTutorial(int id);
 	void OnQuit(int);
@@ -1697,34 +1670,34 @@ public:
 	void OnEnterPassword(int id);
 	void ForceRedraw();
 	void PrepareLevelData(BitStream& stream, bool loaded_resources);
-	void WriteUnit(BitStream& stream, Unit& unit);
-	void WriteDoor(BitStream& stream, Door& door);
-	void WriteItem(BitStream& stream, GroundItem& item);
-	void WriteChest(BitStream& stream, Chest& chest);
-	void WriteTrap(BitStream& stream, Trap& trap);
-	bool ReadLevelData(BitStream& stream);
-	bool ReadUnit(BitStream& stream, Unit& unit);
-	bool ReadDoor(BitStream& stream, Door& door);
-	bool ReadItem(BitStream& stream, GroundItem& item);
-	bool ReadChest(BitStream& stream, Chest& chest);
-	bool ReadTrap(BitStream& stream, Trap& trap);
+	void WriteUnit(BitStreamWriter& f, Unit& unit);
+	void WriteDoor(BitStreamWriter& f, Door& door);
+	void WriteItem(BitStreamWriter& f, GroundItem& item);
+	void WriteChest(BitStreamWriter& f, Chest& chest);
+	void WriteTrap(BitStreamWriter& f, Trap& trap);
+	bool ReadLevelData(BitStreamReader& f);
+	bool ReadUnit(BitStreamReader& f, Unit& unit);
+	bool ReadDoor(BitStreamReader& f, Door& door);
+	bool ReadItem(BitStreamReader& f, GroundItem& item);
+	bool ReadChest(BitStreamReader& f, Chest& chest);
+	bool ReadTrap(BitStreamReader& f, Trap& trap);
 	void SendPlayerData(int index);
-	bool ReadPlayerData(BitStream& stream);
+	bool ReadPlayerData(BitStreamReader& stream);
 	Unit* FindUnit(int netid);
 	Unit* FindUnit(delegate<bool(Unit*)> pred);
 	void UpdateServer(float dt);
-	bool ProcessControlMessageServer(BitStream& stream, PlayerInfo& info);
-	void WriteServerChanges(BitStream& stream);
-	void WriteServerChangesForPlayer(BitStream& stream, PlayerInfo& info);
+	bool ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info);
+	void WriteServerChanges(BitStreamWriter& f);
+	void WriteServerChangesForPlayer(BitStreamWriter& f, PlayerInfo& info);
 	void UpdateClient(float dt);
-	bool ProcessControlMessageClient(BitStream& stream, bool& exit_from_server);
-	bool ProcessControlMessageClientForMe(BitStream& stream);
-	void WriteClientChanges(BitStream& stream);
-	void Client_Say(BitStream& stream);
-	void Client_Whisper(BitStream& stream);
-	void Client_ServerSay(BitStream& stream);
+	bool ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_server);
+	bool ProcessControlMessageClientForMe(BitStreamReader& f);
+	void WriteClientChanges(BitStreamWriter& f);
+	void Client_Say(BitStreamReader& f);
+	void Client_Whisper(BitStreamReader& f);
+	void Client_ServerSay(BitStreamReader& f);
 	void Server_Say(BitStream& stream, PlayerInfo& info, Packet* packet);
-	void Server_Whisper(BitStream& stream, PlayerInfo& info, Packet* packet);
+	void Server_Whisper(BitStreamReader& f, PlayerInfo& info, Packet* packet);
 	void ServerProcessUnits(vector<Unit*>& units);
 	GroundItem* FindItemNetid(int netid, LevelContext** ctx = nullptr);
 	PlayerInfo& GetPlayerInfo(int id);
@@ -1852,9 +1825,9 @@ public:
 	//void ConvertPlayerToAI(PlayerInfo& info);
 	Usable* FindUsable(int netid);
 	// read item id and return it (can be quest item or gold), results: -2 read error, -1 not found, 0 empty, 1 ok
-	int ReadItemAndFind(BitStream& stream, const Item*& item) const;
-	bool ReadItemList(BitStream& stream, vector<ItemSlot>& items);
-	bool ReadItemListTeam(BitStream& stream, vector<ItemSlot>& items, bool skip = false);
+	int ReadItemAndFind(BitStreamReader& f, const Item*& item) const;
+	bool ReadItemList(BitStreamReader& f, vector<ItemSlot>& items);
+	bool ReadItemListTeam(BitStreamReader& f, vector<ItemSlot>& items, bool skip = false);
 	Door* FindDoor(int netid);
 	Trap* FindTrap(int netid);
 	bool RemoveTrap(int netid);
@@ -1863,12 +1836,12 @@ public:
 	Electro* FindElectro(int netid);
 	void UseDays(PlayerController* player, int count);
 	PlayerInfo* FindOldPlayer(cstring nick);
-	void PrepareWorldData(BitStream& stream);
-	bool ReadWorldData(BitStream& stream);
-	void WriteNetVars(BitStream& stream);
-	bool ReadNetVars(BitStream& stream);
-	void WritePlayerStartData(BitStream& stream, PlayerInfo& info);
-	bool ReadPlayerStartData(BitStream& stream);
+	void PrepareWorldData(BitStreamWriter& f);
+	bool ReadWorldData(BitStreamReader& f);
+	void WriteNetVars(BitStreamWriter& f);
+	void ReadNetVars(BitStreamReader& f);
+	void WritePlayerStartData(BitStreamWriter& f, PlayerInfo& info);
+	bool ReadPlayerStartData(BitStreamReader& f);
 	bool CheckMoveNet(Unit& unit, const Vec3& pos);
 	void Net_PreSave();
 	bool FilterOut(NetChange& c);

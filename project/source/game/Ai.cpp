@@ -9,6 +9,7 @@
 #include "Spell.h"
 #include "Team.h"
 #include "SoundManager.h"
+#include "Profiler.h"
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
 const float JUMP_BACK_TIMER = 0.2f;

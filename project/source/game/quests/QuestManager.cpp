@@ -3,6 +3,7 @@
 #include "BitStreamFunc.h"
 #include "QuestManager.h"
 #include "SaveState.h"
+#include "GameFile.h"
 
 #include "Quest_Bandits.h"
 #include "Quest_BanditsCollectToll.h"
@@ -272,25 +273,25 @@ void QuestManager::Cleanup()
 }
 
 //=================================================================================================
-void QuestManager::Write(BitStream& stream)
+void QuestManager::Write(BitStreamWriter& f)
 {
-	stream.WriteCasted<word>(quests.size());
+	f.WriteCasted<word>(quests.size());
 	for(Quest* quest : quests)
 	{
-		stream.Write(quest->refid);
-		stream.WriteCasted<byte>(quest->state);
-		WriteString1(stream, quest->name);
-		WriteStringArray<byte, word>(stream, quest->msgs);
+		f << quest->refid;
+		f.WriteCasted<byte>(quest->state);
+		f << quest->name;
+		f.WriteStringArray<byte, word>(quest->msgs);
 	}
 }
 
 //=================================================================================================
-bool QuestManager::Read(BitStream& stream)
+bool QuestManager::Read(BitStreamReader& f)
 {
 	const int QUEST_MIN_SIZE = sizeof(int) + sizeof(byte) * 3;
 	word quest_count;
-	if(!stream.Read(quest_count)
-		|| !EnsureSize(stream, QUEST_MIN_SIZE * quest_count))
+	f >> quest_count;
+	if(!f.Ensure(QUEST_MIN_SIZE * quest_count))
 	{
 		Error("Read world: Broken packet for quests.");
 		return false;
@@ -302,10 +303,11 @@ bool QuestManager::Read(BitStream& stream)
 	{
 		quest = new PlaceholderQuest;
 		quest->quest_index = index;
-		if(!stream.Read(quest->refid) ||
-			!stream.ReadCasted<byte>(quest->state) ||
-			!ReadString1(stream, quest->name) ||
-			!ReadStringArray<byte, word>(stream, quest->msgs))
+		f >> quest->refid;
+		f.ReadCasted<byte>(quest->state);
+		f >> quest->name;
+		f.ReadStringArray<byte, word>(quest->msgs);
+		if(!f)
 		{
 			Error("Read world: Broken packet for quest %d.", index);
 			return false;
@@ -317,17 +319,15 @@ bool QuestManager::Read(BitStream& stream)
 }
 
 //=================================================================================================
-void QuestManager::Save(HANDLE file)
+void QuestManager::Save(GameWriter& f)
 {
-	FileWriter f(file);
-
 	f << quests.size();
-	for(vector<Quest*>::iterator it = quests.begin(), end = quests.end(); it != end; ++it)
-		(*it)->Save(file);
+	for(Quest* quest : quests)
+		quest->Save(f);
 
 	f << unaccepted_quests.size();
-	for(vector<Quest*>::iterator it = unaccepted_quests.begin(), end = unaccepted_quests.end(); it != end; ++it)
-		(*it)->Save(file);
+	for(Quest* quest : unaccepted_quests)
+		quest->Save(f);
 
 	f << quests_timeout.size();
 	for(Quest_Dungeon* q : quests_timeout)
@@ -346,12 +346,10 @@ void QuestManager::Save(HANDLE file)
 }
 
 //=================================================================================================
-void QuestManager::Load(HANDLE file)
+void QuestManager::Load(GameReader& f)
 {
-	FileReader f(file);
-
-	LoadQuests(file, quests);
-	LoadQuests(file, unaccepted_quests);
+	LoadQuests(f, quests);
+	LoadQuests(f, unaccepted_quests);
 
 	quests_timeout.resize(f.Read<uint>());
 	for(Quest_Dungeon*& q : quests_timeout)
@@ -384,25 +382,21 @@ void QuestManager::Load(HANDLE file)
 }
 
 //=================================================================================================
-void QuestManager::LoadQuests(HANDLE file, vector<Quest*>& quests)
+void QuestManager::LoadQuests(GameReader& f, vector<Quest*>& quests)
 {
-	DWORD tmp;
-
-	uint count;
-	ReadFile(file, &count, sizeof(count), &tmp, nullptr);
-	quests.clear();
+	uint count = f.Read<uint>();
 	quests.resize(count, nullptr);
 
 	uint quest_index = 0;
 	for(uint i = 0; i < count; ++i)
 	{
 		QUEST quest_type;
-		ReadFile(file, &quest_type, sizeof(quest_type), &tmp, nullptr);
+		f >> quest_type;
 
 		Quest* quest = CreateQuest(quest_type);
 		quest->quest_id = quest_type;
 		quest->quest_index = quest_index;
-		if(!quest->Load(file))
+		if(!quest->Load(f))
 		{
 			delete quest;
 			continue;

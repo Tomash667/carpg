@@ -6,6 +6,8 @@
 #include "City.h"
 #include "Quest.h"
 #include "BitStreamFunc.h"
+#include "Portal.h"
+#include "GameFile.h"
 
 //-----------------------------------------------------------------------------
 cstring txCamp, txCave, txCity, txCrypt, txDungeon, txForest, txVillage, txMoonwell, txOtherness, txAcademy;
@@ -108,14 +110,12 @@ bool Location::CheckUpdate(int& days_passed, int worldtime)
 }
 
 //=================================================================================================
-void Location::Save(HANDLE file, bool)
+void Location::Save(GameWriter& f, bool)
 {
-	WriteFile(file, &type, sizeof(type), &tmp, nullptr);
-	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	byte len = (byte)name.length();
-	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-	WriteFile(file, name.c_str(), len, &tmp, nullptr);
-	WriteFile(file, &state, sizeof(state), &tmp, nullptr);
+	f << type;
+	f << pos;
+	f << name;
+	f << state;
 	int refid;
 	if(active_quest)
 	{
@@ -126,44 +126,37 @@ void Location::Save(HANDLE file, bool)
 	}
 	else
 		refid = -1;
-	WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	WriteFile(file, &last_visit, sizeof(last_visit), &tmp, nullptr);
-	WriteFile(file, &st, sizeof(st), &tmp, nullptr);
-	WriteFile(file, &outside, sizeof(reset), &tmp, nullptr);
-	WriteFile(file, &reset, sizeof(reset), &tmp, nullptr);
-	WriteFile(file, &spawn, sizeof(spawn), &tmp, nullptr);
-	WriteFile(file, &dont_clean, sizeof(dont_clean), &tmp, nullptr);
-	WriteFile(file, &seed, sizeof(seed), &tmp, nullptr);
-	WriteFile(file, &image, sizeof(image), &tmp, nullptr);
+	f << refid;
+	f << last_visit;
+	f << st;
+	f << outside;
+	f << reset;
+	f << spawn;
+	f << dont_clean;
+	f << seed;
+	f << image;
 
+	// portals
 	Portal* p = portal;
-	const byte jeden = 1;
-
 	while(p)
 	{
-		WriteFile(file, &jeden, sizeof(jeden), &tmp, nullptr);
-		p->Save(file);
+		f.Write1();
+		p->Save(f);
 		p = p->next_portal;
 	}
-
-	const byte zero = 0;
-	WriteFile(file, &zero, sizeof(zero), &tmp, nullptr);
+	f.Write0();
 }
 
 //=================================================================================================
-void Location::Load(HANDLE file, bool, LOCATION_TOKEN token)
+void Location::Load(GameReader& f, bool, LOCATION_TOKEN token)
 {
-	ReadFile(file, &type, sizeof(type), &tmp, nullptr);
+	f >> type;
 	if(LOAD_VERSION < V_0_5 && type == L_VILLAGE_OLD)
 		type = L_CITY;
-	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-	name.resize(len);
-	ReadFile(file, (char*)name.c_str(), len, &tmp, nullptr);
-	ReadFile(file, &state, sizeof(state), &tmp, nullptr);
-	int refid;
-	ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
+	f >> pos;
+	f >> name;
+	f >> state;
+	int refid = f.Read<int>();
 	if(refid == -1)
 		active_quest = nullptr;
 	else if(refid == ACTIVE_QUEST_HOLDER)
@@ -173,18 +166,18 @@ void Location::Load(HANDLE file, bool, LOCATION_TOKEN token)
 		Game::Get().load_location_quest.push_back(this);
 		active_quest = (Quest_Dungeon*)refid;
 	}
-	ReadFile(file, &last_visit, sizeof(last_visit), &tmp, nullptr);
-	ReadFile(file, &st, sizeof(st), &tmp, nullptr);
-	ReadFile(file, &outside, sizeof(reset), &tmp, nullptr);
-	ReadFile(file, &reset, sizeof(reset), &tmp, nullptr);
-	ReadFile(file, &spawn, sizeof(spawn), &tmp, nullptr);
-	ReadFile(file, &dont_clean, sizeof(dont_clean), &tmp, nullptr);
+	f >> last_visit;
+	f >> st;
+	f >> outside;
+	f >> reset;
+	f >> spawn;
+	f >> dont_clean;
 	if(LOAD_VERSION >= V_0_3)
-		ReadFile(file, &seed, sizeof(seed), &tmp, nullptr);
+		f >> seed;
 	else
 		seed = 0;
 	if(LOAD_VERSION >= V_0_5)
-		ReadFile(file, &image, sizeof(image), &tmp, nullptr);
+		f >> image;
 	else
 	{
 		switch(type)
@@ -217,18 +210,15 @@ void Location::Load(HANDLE file, bool, LOCATION_TOKEN token)
 		}
 	}
 
-	byte stan;
-	ReadFile(file, &stan, sizeof(stan), &tmp, nullptr);
-	if(stan == 1)
+	// portals
+	if(f.Read1())
 	{
 		Portal* p = new Portal;
 		portal = p;
-
 		while(true)
 		{
-			p->Load(this, file);
-			ReadFile(file, &stan, sizeof(stan), &tmp, nullptr);
-			if(stan == 1)
+			p->Load(f);
+			if(f.Read1())
 			{
 				Portal* np = new Portal;
 				p->next_portal = np;
@@ -287,7 +277,7 @@ Portal* Location::TryGetPortal(int index) const
 }
 
 //=================================================================================================
-void Location::WritePortals(BitStream& stream) const
+void Location::WritePortals(BitStreamWriter& f) const
 {
 	// count
 	uint count = 0;
@@ -297,25 +287,24 @@ void Location::WritePortals(BitStream& stream) const
 		++count;
 		cportal = cportal->next_portal;
 	}
-	stream.WriteCasted<byte>(count);
+	f.WriteCasted<byte>(count);
 
 	// portals
 	cportal = portal;
 	while(cportal)
 	{
-		stream.Write(cportal->pos);
-		stream.Write(cportal->rot);
-		WriteBool(stream, cportal->target_loc != -1);
+		f << cportal->pos;
+		f << cportal->rot;
+		f << (cportal->target_loc != -1);
 		cportal = cportal->next_portal;
 	}
 }
 
 //=================================================================================================
-bool Location::ReadPortals(BitStream& stream, int at_level)
+bool Location::ReadPortals(BitStreamReader& f, int at_level)
 {
-	byte count;
-	if(!stream.Read(count)
-		|| !EnsureSize(stream, count * Portal::MIN_SIZE))
+	byte count = f.Read<byte>();
+	if(!f.Ensure(count * Portal::MIN_SIZE))
 		return false;
 
 	Portal* cportal = nullptr;
@@ -323,9 +312,10 @@ bool Location::ReadPortals(BitStream& stream, int at_level)
 	{
 		Portal* p = new Portal;
 		bool active;
-		if(!stream.Read(p->pos)
-			|| !stream.Read(p->rot)
-			|| !ReadBool(stream, active))
+		f >> p->pos;
+		f >> p->rot;
+		f >> active;
+		if(!f)
 		{
 			delete p;
 			return false;
@@ -345,24 +335,4 @@ bool Location::ReadPortals(BitStream& stream, int at_level)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-void Portal::Save(HANDLE file)
-{
-	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	WriteFile(file, &at_level, sizeof(at_level), &tmp, nullptr);
-	WriteFile(file, &target, sizeof(target), &tmp, nullptr);
-	WriteFile(file, &target_loc, sizeof(target_loc), &tmp, nullptr);
-}
-
-//=================================================================================================
-void Portal::Load(Location* loc, HANDLE file)
-{
-	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	ReadFile(file, &at_level, sizeof(at_level), &tmp, nullptr);
-	ReadFile(file, &target, sizeof(target), &tmp, nullptr);
-	ReadFile(file, &target_loc, sizeof(target_loc), &tmp, nullptr);
 }

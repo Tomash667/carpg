@@ -8,7 +8,7 @@
 struct TextColor
 {
 	cstring text;
-	DWORD color;
+	Color color;
 };
 
 //-----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ public:
 	Scrollbar scroll;
 	vector<TEX> imgset;
 	SelectionType selection_type;
-	DWORD selection_color;
+	Color selection_color;
 	SelectGridEvent select_event;
 	bool single_line;
 };

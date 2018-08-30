@@ -16,13 +16,12 @@ struct CompileShaderParams
 	cstring name;
 	cstring cache_name;
 	string* input;
-	FILETIME file_time;
+	FileTime file_time;
 	D3DXMACRO* macros;
 	ID3DXEffectPool* pool;
 };
 
 //-----------------------------------------------------------------------------
-// Silnik
 class Engine
 {
 public:
@@ -77,7 +76,7 @@ public:
 	IDirect3D9* d3d;
 	IDirect3DDevice9* device;
 	ID3DXSprite* sprite;
-	DWORD clear_color;
+	Color clear_color;
 	int wnd_hz, used_adapter, shader_version;
 
 	// bullet physics
@@ -110,8 +109,8 @@ private:
 	void Cleanup();
 	void DoTick(bool update_game);
 	void GatherParams(D3DPRESENT_PARAMETERS& d3dpp);
-	LRESULT HandleEvent(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	bool MsgToKey(UINT msg, WPARAM wParam, byte& key, int& result);
+	long HandleEvent(HWND hwnd, uint msg, uint wParam, long lParam);
+	bool MsgToKey(uint msg, uint wParam, byte& key, int& result);
 	void InitPhysics();
 	void InitRender();
 	void InitWindow(StartupOptions& options);

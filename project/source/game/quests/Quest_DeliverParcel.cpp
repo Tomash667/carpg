@@ -8,6 +8,7 @@
 #include "QuestManager.h"
 #include "Encounter.h"
 #include "GameGui.h"
+#include "GameFile.h"
 
 //=================================================================================================
 void Quest_DeliverParcel::Start()
@@ -270,22 +271,22 @@ const Item* Quest_DeliverParcel::GetQuestItem()
 }
 
 //=================================================================================================
-void Quest_DeliverParcel::Save(HANDLE file)
+void Quest_DeliverParcel::Save(GameWriter& f)
 {
-	Quest_Encounter::Save(file);
+	Quest_Encounter::Save(f);
 
 	if(prog != Progress::DeliverAfterTime && prog != Progress::Finished)
-		WriteFile(file, &end_loc, sizeof(end_loc), &tmp, nullptr);
+		f << end_loc;
 }
 
 //=================================================================================================
-bool Quest_DeliverParcel::Load(HANDLE file)
+bool Quest_DeliverParcel::Load(GameReader& f)
 {
-	Quest_Encounter::Load(file);
+	Quest_Encounter::Load(f);
 
 	if(prog != Progress::DeliverAfterTime && prog != Progress::Finished)
 	{
-		ReadFile(file, &end_loc, sizeof(end_loc), &tmp, nullptr);
+		f >> end_loc;
 
 		Location& loc = *game->locations[end_loc];
 		const Item* base_item = Item::Get("parcel");

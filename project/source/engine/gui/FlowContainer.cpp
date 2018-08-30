@@ -138,7 +138,7 @@ void FlowContainer::Update(float dt)
 //=================================================================================================
 void FlowContainer::Draw(ControlDrawData*)
 {
-	GUI.DrawItem(GUI.tBox, global_pos, size - Int2(16, 0), WHITE, 8, 32);
+	GUI.DrawItem(GUI.tBox, global_pos, size - Int2(16, 0), Color::White, 8, 32);
 
 	scroll.Draw();
 
@@ -147,7 +147,7 @@ void FlowContainer::Draw(ControlDrawData*)
 	Rect rect;
 	Rect clip = Rect::Create(global_pos + Int2(2, 2), Int2(sizex - 2, size.y - 2));
 	int offset = (int)scroll.offset;
-	DWORD flags = (word_warp ? 0 : DT_SINGLELINE) | DT_PARSE_SPECIAL;
+	uint flags = (word_warp ? 0 : DTF_SINGLELINE) | DTF_PARSE_SPECIAL;
 
 	for(FlowItem* fi : items)
 	{
@@ -164,11 +164,11 @@ void FlowContainer::Draw(ControlDrawData*)
 				Rect rs = { global_pos.x + 2, rect.Top(), global_pos.x + sizex, rect.Bottom() };
 				Rect out;
 				if(Rect::Intersect(rs, clip, out))
-					GUI.DrawSpriteRect(GUI.tPix, out, COLOR_RGBA(0, 255, 0, 128));
+					GUI.DrawSpriteRect(GUI.tPix, out, Color(0, 255, 0, 128));
 			}
 
 			if(!GUI.DrawText(fi->type == FlowItem::Section ? GUI.fBig : GUI.default_font, fi->text, flags,
-				(fi->state != Button::DISABLED ? BLACK : COLOR_RGB(64, 64, 64)), rect, &clip))
+				(fi->state != Button::DISABLED ? Color::Black : Color(64, 64, 64)), rect, &clip))
 				break;
 		}
 		else
@@ -178,7 +178,7 @@ void FlowContainer::Draw(ControlDrawData*)
 				global_pos.y + fi->pos.y - offset > global_pos.y + size.y)
 				continue;
 
-			GUI.DrawSprite(button_tex[fi->tex_id].tex[fi->state], global_pos + fi->pos - Int2(0, offset), WHITE, &clip);
+			GUI.DrawSprite(button_tex[fi->tex_id].tex[fi->state], global_pos + fi->pos - Int2(0, offset), Color::White, &clip);
 		}
 	}
 }

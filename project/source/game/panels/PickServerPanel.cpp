@@ -44,10 +44,10 @@ PickServerPanel::PickServerPanel(const DialogInfo& info) : GameDialogBox(info)
 void PickServerPanel::Draw(ControlDrawData*)
 {
 	// t³o
-	GUI.DrawSpriteFull(tBackground, COLOR_RGBA(255, 255, 255, 128));
+	GUI.DrawSpriteFull(tBackground, Color::Alpha(128));
 
 	// panel
-	GUI.DrawItem(tDialog, global_pos, size, COLOR_RGBA(255, 255, 255, 222), 16);
+	GUI.DrawItem(tDialog, global_pos, size, Color::Alpha(222), 16);
 
 	// przyciski
 	for(int i = 0; i < 2; ++i)
@@ -92,8 +92,9 @@ void PickServerPanel::Update(float dt)
 	for(packet = game->peer->Receive(); packet; game->peer->DeallocatePacket(packet), packet = game->peer->Receive())
 	{
 		BitStream& stream = game->StreamStart(packet, Stream_PickServer);
+		BitStreamReader reader(stream);
 		byte msg_id;
-		stream.Read(msg_id);
+		reader >> msg_id;
 
 		switch(msg_id)
 		{
@@ -102,8 +103,9 @@ void PickServerPanel::Update(float dt)
 				// header
 				TimeMS time_ms;
 				char sign[2];
-				if(!stream.Read(time_ms)
-					|| !stream.Read<char[2]>(sign))
+				reader >> time_ms;
+				reader >> sign;
+				if(!reader)
 				{
 					game->StreamError("PickServer: Broken packet from %s.", packet->systemAddress.ToString());
 					break;
@@ -119,13 +121,12 @@ void PickServerPanel::Update(float dt)
 				// info about server
 				uint version;
 				byte players, players_max, flags;
-				string server_name;
-
-				if(!stream.Read(version) ||
-					!stream.Read(players) ||
-					!stream.Read(players_max) ||
-					!stream.Read(flags) ||
-					!ReadString1(stream, server_name))
+				reader >> version;
+				reader >> players;
+				reader >> players_max;
+				reader >> flags;
+				const string& server_name = reader.ReadString1();
+				if(!reader)
 				{
 					Warn("PickServer: Broken response from %.", packet->systemAddress.ToString());
 					game->StreamError();
@@ -286,7 +287,7 @@ void PickServerPanel::GetCell(int item, int column, Cell& cell)
 	}
 	else
 	{
-		cell.text_color->color = (server.valid_version ? BLACK : RED);
+		cell.text_color->color = (server.valid_version ? Color::Black : Color::Red);
 		if(column == 1)
 			cell.text_color->text = Format("%d/%d", server.players, server.max_players);
 		else

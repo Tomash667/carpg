@@ -6,22 +6,6 @@
 #include "TooltipController.h"
 
 //-----------------------------------------------------------------------------
-struct Game;
-struct Unit;
-struct DialogContext;
-class GamePanel;
-class GamePanelContainer;
-class Inventory;
-class StatsPanel;
-class TeamPanel;
-class Journal;
-class Minimap;
-class MpBox;
-class GameMessages;
-class ActionPanel;
-class BookPanel;
-
-//-----------------------------------------------------------------------------
 enum class OpenPanel
 {
 	None,

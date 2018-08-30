@@ -5,7 +5,6 @@
 #include "Version.h"
 #include "DialogBox.h"
 #include "Game.h"
-#include "NetStats.h"
 #define far
 #include <wininet.h>
 #include <process.h>
@@ -92,7 +91,7 @@ uint __stdcall CheckVersion(void*)
 
 //=================================================================================================
 MainMenu::MainMenu(Game* game, DialogEvent event, bool check_updates) : check_version(0), check_version_thread(nullptr), check_updates(check_updates),
-game(game), event(event), send_stats(true)
+game(game), event(event)
 {
 	focusable = true;
 	visible = false;
@@ -142,24 +141,24 @@ void MainMenu::LoadData()
 //=================================================================================================
 void MainMenu::Draw(ControlDrawData* /*cdd*/)
 {
-	GUI.DrawSpriteFull(tBackground, WHITE);
+	GUI.DrawSpriteFull(tBackground, Color::White);
 	GUI.DrawSprite(tLogo, Int2(GUI.wnd_size.x - 512 - 16, 16));
 
 	Rect r = { 0, 0, GUI.wnd_size.x, GUI.wnd_size.y };
 	r.Top() = r.Bottom() - 64;
-	GUI.DrawText(GUI.default_font, "Devmode(2013,2018) Tomashu & Leinnan", DT_CENTER | DT_BOTTOM | DT_OUTLINE, WHITE, r);
+	GUI.DrawText(GUI.default_font, "Devmode(2013,2018) Tomashu & Leinnan", DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = GUI.wnd_size.x - 512 - 16;
 	r.Right() = GUI.wnd_size.x - 16;
 	r.Top() = 256 + 24;
 	r.Bottom() = r.Top() + 64;
-	GUI.DrawText(GUI.default_font, Format(txVersion, VERSION_STR), DT_CENTER | DT_OUTLINE, WHITE, r);
+	GUI.DrawText(GUI.default_font, Format(txVersion, VERSION_STR), DTF_CENTER | DTF_OUTLINE, Color::White, r);
 
 	r.Left() = 0;
 	r.Right() = GUI.wnd_size.x;
 	r.Bottom() = GUI.wnd_size.y - 16;
 	r.Top() = r.Bottom() - 64;
-	GUI.DrawText(GUI.default_font, version_text, DT_CENTER | DT_BOTTOM | DT_OUTLINE, WHITE, r);
+	GUI.DrawText(GUI.default_font, version_text, DTF_CENTER | DTF_BOTTOM | DTF_OUTLINE, Color::White, r);
 
 	for(int i = 0; i < BUTTONS; ++i)
 	{
@@ -176,13 +175,7 @@ void MainMenu::Update(float dt)
 		bt[i].mouse_focus = focus;
 		bt[i].Update(dt);
 	}
-
-	if(send_stats)
-	{
-		send_stats = false;
-		NetStats::TryUpdate();
-	}
-
+	
 	if(check_version == 0)
 	{
 #ifdef _DEBUG

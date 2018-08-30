@@ -70,9 +70,9 @@ public:
 	{
 		return refid;
 	}
-	void Save(HANDLE file) override;
-	bool Load(HANDLE file) override;
-	void LoadOld(HANDLE file);
+	void Save(GameWriter& f) override;
+	bool Load(GameReader& f) override;
+	void LoadOld(GameReader& f);
 
 	int GetIncome(int days_passed);
 

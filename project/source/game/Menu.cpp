@@ -27,6 +27,8 @@
 #include "Team.h"
 #include "SaveState.h"
 #include "SoundManager.h"
+#include "BitStreamFunc.h"
+#include "Portal.h"
 
 extern string g_ctime;
 
@@ -715,8 +717,9 @@ void Game::UpdateClientConnectingIp(float dt)
 		for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 		{
 			BitStream& stream = StreamStart(packet, Stream_PingIp);
+			BitStreamReader f(stream);
 			byte msg_id;
-			stream.Read(msg_id);
+			f >> msg_id;
 
 			if(msg_id != ID_UNCONNECTED_PONG)
 			{
@@ -745,8 +748,9 @@ void Game::UpdateClientConnectingIp(float dt)
 			// header
 			TimeMS time_ms;
 			char sign_ca[2];
-			if(!stream.Read(time_ms)
-				|| !stream.Read<char[2]>(sign_ca))
+			f >> time_ms;
+			f >> sign_ca;
+			if(!f)
 			{
 				Warn("NM_CONNECT_IP(0): Broken server response.");
 				StreamError();
@@ -765,11 +769,12 @@ void Game::UpdateClientConnectingIp(float dt)
 			// read data
 			uint version;
 			byte players, max_players, flags;
-			if(!stream.Read(version)
-				|| !stream.Read(players)
-				|| !stream.Read(max_players)
-				|| !stream.Read(flags)
-				|| !ReadString1(stream))
+			f >> version;
+			f >> players;
+			f >> max_players;
+			f >> flags;
+			const string& server_name_r = f.ReadString1();
+			if(!f)
 			{
 				StreamError("NM_CONNECT_IP(0): Broken server message.");
 				peer->DeallocatePacket(packet);
@@ -793,7 +798,7 @@ void Game::UpdateClientConnectingIp(float dt)
 
 			// set server status
 			max_players2 = max_players;
-			server_name2 = BUF;
+			server_name2 = server_name_r;
 			Info("NM_CONNECT_IP(0): Server information. Name:%s; players:%d/%d; flags:%d.", server_name2.c_str(), players, max_players, flags);
 			if(IS_SET(flags, 0xFC))
 				Warn("NM_CONNECT_IP(0): Unknown server flags.");
@@ -841,8 +846,9 @@ void Game::UpdateClientConnectingIp(float dt)
 		for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 		{
 			BitStream& stream = StreamStart(packet, Stream_Connect);
+			BitStreamReader reader(stream);
 			byte msg_id;
-			stream.Read(msg_id);
+			reader >> msg_id;
 
 			switch(msg_id)
 			{
@@ -850,15 +856,16 @@ void Game::UpdateClientConnectingIp(float dt)
 				{
 					// server accepted connecting, send welcome message
 					// byte - ID_HELLO
-					// int - wersja
+					// int - version
 					// crc
 					// string1 - nick
 					Info("NM_CONNECT_IP(2): Connected with server.");
 					net_stream.Reset();
-					net_stream.Write(ID_HELLO);
-					net_stream.Write(VERSION);
-					content::WriteCrc(net_stream);
-					WriteString1(net_stream, player_name);
+					BitStreamWriter f(net_stream);
+					f << ID_HELLO;
+					f << VERSION;
+					content::WriteCrc(f);
+					f << player_name;
 					peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
 					StreamWrite(net_stream, Stream_Connect, server);
 				}
@@ -867,10 +874,11 @@ void Game::UpdateClientConnectingIp(float dt)
 				// server accepted and sent info about players and my id
 				{
 					int count, load_char;
-					if(!stream.ReadCasted<byte>(my_id) ||
-						!stream.ReadCasted<byte>(players) ||
-						!stream.ReadCasted<byte>(leader_id) ||
-						!stream.ReadCasted<byte>(count))
+					reader.ReadCasted<byte>(my_id);
+					reader.ReadCasted<byte>(players);
+					reader.ReadCasted<byte>(leader_id);
+					reader.ReadCasted<byte>(count);
+					if(!reader)
 					{
 						StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN.");
 						peer->DeallocatePacket(packet);
@@ -903,10 +911,11 @@ void Game::UpdateClientConnectingIp(float dt)
 						info2.left = PlayerInfo::LEFT_NO;
 						info2.loaded = false;
 
-						if(!stream.ReadCasted<byte>(info2.id) ||
-							!ReadBool(stream, info2.ready) ||
-							!stream.ReadCasted<byte>(info2.clas) ||
-							!ReadString1(stream, info2.name))
+						reader.ReadCasted<byte>(info2.id);
+						reader >> info2.ready;
+						reader.ReadCasted<byte>(info2.clas);
+						reader >> info2.name;
+						if(!reader)
 						{
 							StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN(2).");
 							peer->DeallocatePacket(packet);
@@ -925,14 +934,16 @@ void Game::UpdateClientConnectingIp(float dt)
 					}
 
 					// read save information
-					if(!stream.ReadCasted<byte>(load_char))
+					reader.ReadCasted<byte>(load_char);
+					if(!reader)
 					{
 						StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN(4).");
 						peer->DeallocatePacket(packet);
 						EndConnecting(txCantJoin, true);
 						return;
 					}
-					if(load_char == 2 && !stream.ReadCasted<byte>(game_players[0]->clas))
+					reader.ReadCasted<byte>(game_players[0]->clas);
+					if(load_char == 2 && !reader)
 					{
 						StreamError("NM_CONNECT_IP(2): Broken packet ID_JOIN(3).");
 						peer->DeallocatePacket(packet);
@@ -1083,8 +1094,9 @@ void Game::UpdateClientTransfer(float dt)
 	for(packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 	{
 		BitStream& stream = StreamStart(packet, Stream_Transfer);
+		BitStreamReader reader(stream);
 		byte msg_id;
-		stream.Read(msg_id);
+		reader >> msg_id;
 
 		switch(msg_id)
 		{
@@ -1101,7 +1113,8 @@ void Game::UpdateClientTransfer(float dt)
 		case ID_STATE:
 			{
 				byte state;
-				if(stream.Read(state) && InRange(state, 0ui8, 2ui8))
+				reader >> state;
+				if(reader.IsOk() && InRange(state, 0ui8, 2ui8))
 				{
 					switch(packet->data[1])
 					{
@@ -1133,7 +1146,7 @@ void Game::UpdateClientTransfer(float dt)
 				fallback_t = -0.5f;
 				net_state = NetState::Client_ReceivedWorldData;
 
-				if(ReadWorldData(stream))
+				if(ReadWorldData(reader))
 				{
 					// odeœlij informacje o gotowoœci
 					byte b[] = { ID_READY, 0 };
@@ -1159,7 +1172,7 @@ void Game::UpdateClientTransfer(float dt)
 			{
 				net_state = NetState::Client_ReceivedPlayerStartData;
 				LoadingStep("");
-				if(ReadPlayerStartData(stream))
+				if(ReadPlayerStartData(reader))
 				{
 					// odeœlij informacje o gotowoœci
 					if(mp_load_worldmap)
@@ -1188,8 +1201,9 @@ void Game::UpdateClientTransfer(float dt)
 			{
 				net_state = NetState::Client_ChangingLevel;
 				byte loc, level;
-				if(stream.Read(loc)
-					&& stream.Read(level))
+				reader >> loc;
+				reader >> level;
+				if(reader.IsOk())
 				{
 					if(loc < locations.size())
 					{
@@ -1218,7 +1232,7 @@ void Game::UpdateClientTransfer(float dt)
 				net_state = NetState::Client_ReceivedLevelData;
 				info_box->Show(txLoadingLocation);
 				LoadingStep("");
-				if(!ReadLevelData(stream))
+				if(!ReadLevelData(reader))
 				{
 					StreamError("NM_TRANSFER: Failed to read location data.");
 					peer->DeallocatePacket(packet);
@@ -1243,7 +1257,7 @@ void Game::UpdateClientTransfer(float dt)
 				net_state = NetState::Client_ReceivedPlayerData;
 				info_box->Show(txLoadingChars);
 				LoadingStep("");
-				if(!ReadPlayerData(stream))
+				if(!ReadPlayerData(reader))
 				{
 					StreamError("NM_TRANSFER: Failed to read player data.");
 					peer->DeallocatePacket(packet);
@@ -1272,7 +1286,7 @@ void Game::UpdateClientTransfer(float dt)
 					mp_load_worldmap = false;
 					net_state = NetState::Client_StartOnWorldmap;
 					Info("NM_TRANSFER: Starting at world map.");
-					clear_color = WHITE;
+					clear_color = Color::White;
 					game_state = GS_WORLDMAP;
 					load_screen->visible = false;
 					main_menu->visible = false;
@@ -1426,8 +1440,8 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						Info("NM_TRANSFER_SERVER: %s read world data.", info.name.c_str());
 						net_stream2.Reset();
-						net_stream2.WriteCasted<byte>(ID_PLAYER_START_DATA);
-						WritePlayerStartData(net_stream2, info);
+						BitStreamWriter f(net_stream2);
+						WritePlayerStartData(f, info);
 						peer->Send(&net_stream2, MEDIUM_PRIORITY, RELIABLE, 0, info.adr, false);
 						StreamWrite(net_stream2, Stream_TransferServer, info.adr);
 					}
@@ -1479,7 +1493,7 @@ void Game::UpdateServerTransfer(float dt)
 			fallback_t = -0.5f;
 			main_menu->visible = false;
 			load_screen->visible = true;
-			clear_color = BLACK;
+			clear_color = Color::Black;
 			GenerateWorld();
 			InitQuests();
 			if(!sound_mgr->IsMusicDisabled())
@@ -1506,7 +1520,8 @@ void Game::UpdateServerTransfer(float dt)
 
 			// prepare & send world data
 			net_stream.Reset();
-			PrepareWorldData(net_stream);
+			BitStreamWriter f(net_stream);
+			PrepareWorldData(f);
 			peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			StreamWrite(net_stream, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 			Info("NM_TRANSFER_SERVER: Send world data, size %d.", net_stream.GetNumberOfBytesUsed());
@@ -1740,7 +1755,7 @@ void Game::UpdateServerTransfer(float dt)
 				game_gui->visible = false;
 				main_menu->visible = false;
 				mp_load = false;
-				clear_color = WHITE;
+				clear_color = Color::White;
 				world_state = WS_MAIN;
 				update_timer = 0.f;
 				SetMusic(MusicType::Travel);
@@ -2316,22 +2331,23 @@ void Game::UpdateLobbyNetClient(float dt)
 	for(Packet* packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 	{
 		BitStream& stream = StreamStart(packet, Stream_UpdateLobbyClient);
+		BitStreamReader reader(stream);
 		byte msg_id;
-		stream.Read(msg_id);
+		reader >> msg_id;
 
 		switch(msg_id)
 		{
 		case ID_SAY:
-			Client_Say(stream);
+			Client_Say(reader);
 			break;
 		case ID_WHISPER:
-			Client_Whisper(stream);
+			Client_Whisper(reader);
 			break;
 		case ID_SERVER_SAY:
-			Client_ServerSay(stream);
+			Client_ServerSay(reader);
 			break;
 		case ID_LOBBY_UPDATE:
-			if(!DoLobbyUpdate(stream))
+			if(!DoLobbyUpdate(reader))
 				StreamError();
 			break;
 		case ID_DISCONNECTION_NOTIFICATION:
@@ -2481,8 +2497,9 @@ void Game::UpdateLobbyNetServer(float dt)
 	for(Packet* packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 	{
 		BitStream& stream = StreamStart(packet, Stream_UpdateLobbyServer);
+		BitStreamReader reader(stream);
 		byte msg_id;
-		stream.Read(msg_id);
+		reader >> msg_id;
 
 		// pobierz informacje o graczu
 		int index = FindPlayerIndex(packet->systemAddress);
@@ -2650,9 +2667,12 @@ void Game::UpdateLobbyNetServer(float dt)
 				cstring type_str;
 				JoinResult reason = JoinResult::Ok;
 
-				if(!stream.Read(version))
+				reader >> version;
+				content::ReadCrc(reader);
+				reader >> info->name;
+				if(!reader)
 				{
-					// failed to read version from packet
+					// failed to read packet
 					reason = JoinResult::BrokenPacket;
 					reason_text = Format("UpdateLobbyNet: Broken packet ID_HELLO from %s.", packet->systemAddress.ToString());
 				}
@@ -2662,13 +2682,6 @@ void Game::UpdateLobbyNetServer(float dt)
 					reason = JoinResult::InvalidVersion;
 					reason_text = Format("UpdateLobbbyNet: Invalid version from %s. Our (%s) vs (%s).", packet->systemAddress.ToString(),
 						VersionToString(version), VERSION_STR);
-				}
-				else if(!content::ReadCrc(stream)
-					|| !ReadString1(stream, info->name))
-				{
-					// failed to read crc or nick
-					reason = JoinResult::BrokenPacket;
-					reason_text = Format("UpdateLobbyNet: Broken packet ID_HELLO(2) from %s.", packet->systemAddress.ToString());
 				}
 				else if(!content::ValidateCrc(type, my_crc, player_crc, type_str))
 				{
@@ -2705,16 +2718,17 @@ void Game::UpdateLobbyNetServer(float dt)
 				}
 
 				net_stream.Reset();
+				BitStreamWriter fw(net_stream);
 				if(reason != JoinResult::Ok)
 				{
 					Warn(reason_text);
 					StreamError();
-					net_stream.Write(ID_CANT_JOIN);
-					net_stream.WriteCasted<byte>(reason);
+					fw << ID_CANT_JOIN;
+					fw.WriteCasted<byte>(reason);
 					if(include_extra != 0)
-						net_stream.Write(my_crc);
+						fw << my_crc;
 					if(include_extra == 2)
-						net_stream.WriteCasted<byte>(type);
+						fw.WriteCasted<byte>(type);
 					peer->Send(&net_stream, MEDIUM_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
 					StreamWrite(net_stream, Stream_UpdateLobbyServer, packet->systemAddress);
 					info->state = PlayerInfo::REMOVING;
@@ -2725,34 +2739,31 @@ void Game::UpdateLobbyNetServer(float dt)
 					// everything is ok, let player join
 					if(players > 2)
 						AddLobbyUpdate(Int2(Lobby_AddPlayer, info->id));
-					net_stream.Write(ID_JOIN);
-					net_stream.WriteCasted<byte>(info->id);
-					net_stream.WriteCasted<byte>(players);
-					net_stream.WriteCasted<byte>(leader_id);
-					net_stream.WriteCasted<byte>(0);
+					fw << ID_JOIN;
+					fw.WriteCasted<byte>(info->id);
+					fw.WriteCasted<byte>(players);
+					fw.WriteCasted<byte>(leader_id);
+					fw.Write0();
 					int count = 0;
 					for(auto info2 : game_players)
 					{
 						if(info2->id == info->id || info2->state != PlayerInfo::IN_LOBBY)
 							continue;
 						++count;
-						net_stream.WriteCasted<byte>(info2->id);
-						net_stream.WriteCasted<byte>(info2->ready ? 1 : 0);
-						net_stream.WriteCasted<byte>(info2->clas);
-						WriteString1(net_stream, info2->name);
+						fw.WriteCasted<byte>(info2->id);
+						fw.WriteCasted<byte>(info2->ready ? 1 : 0);
+						fw.WriteCasted<byte>(info2->clas);
+						fw << info2->name;
 					}
-					int off = net_stream.GetWriteOffset();
-					net_stream.SetWriteOffset(4 * 8);
-					net_stream.WriteCasted<byte>(count);
-					net_stream.SetWriteOffset(off);
+					fw.Patch(4, count);
 					if(mp_load)
 					{
 						// informacja o postaci w zapisie
 						PlayerInfo* old = FindOldPlayer(info->name.c_str());
 						if(old)
 						{
-							net_stream.WriteCasted<byte>(2);
-							net_stream.WriteCasted<byte>(old->clas);
+							fw.WriteCasted<byte>(2);
+							fw.WriteCasted<byte>(old->clas);
 
 							info->clas = old->clas;
 							info->loaded = true;
@@ -2766,10 +2777,10 @@ void Game::UpdateLobbyNetServer(float dt)
 							Info("UpdateLobbyNet: Player %s is using loaded character.", info->name.c_str());
 						}
 						else
-							net_stream.WriteCasted<byte>(1);
+							fw.Write1();
 					}
 					else
-						net_stream.WriteCasted<byte>(0);
+						fw.Write0();
 					peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE, 0, packet->systemAddress, false);
 					StreamWrite(net_stream, Stream_UpdateLobbyServer, packet->systemAddress);
 					info->state = PlayerInfo::IN_LOBBY;
@@ -2787,8 +2798,8 @@ void Game::UpdateLobbyNetServer(float dt)
 			else
 			{
 				bool ready;
-
-				if(!ReadBool(stream, ready))
+				reader >> ready;
+				if(!reader)
 					StreamError("UpdateLobbyNet: Broken packet ID_CHANGE_READY from client %s.", info->name.c_str());
 				else if(ready != info->ready)
 				{
@@ -2809,7 +2820,7 @@ void Game::UpdateLobbyNetServer(float dt)
 			if(!info)
 				Warn("UpdateLobbyNet: Packet ID_WHISPER from unconnected client %s.", packet->systemAddress.ToString());
 			else
-				Server_Whisper(stream, *info, packet);
+				Server_Whisper(reader, *info, packet);
 			break;
 		case ID_LEAVE:
 			if(!info)
@@ -2843,11 +2854,12 @@ void Game::UpdateLobbyNetServer(float dt)
 			{
 				Class old_class = info->clas;
 				bool old_ready = info->ready;
-				int result = ReadCharacterData(stream, info->clas, info->hd, info->cc);
+				int result = ReadCharacterData(reader, info->clas, info->hd, info->cc);
 				byte ok = 0;
 				if(result == 0)
 				{
-					if(ReadBool(stream, info->ready))
+					reader >> info->ready;
+					if(reader)
 					{
 						ok = 1;
 						Info("Received character from '%s'.", info->name.c_str());
@@ -2937,9 +2949,10 @@ void Game::UpdateLobbyNetServer(float dt)
 			{
 				// aktualizacje w lobby
 				net_stream.Reset();
-				net_stream.Write(ID_LOBBY_UPDATE);
-				net_stream.WriteCasted<byte>(0);
-				int ile = 0;
+				BitStreamWriter f(net_stream);
+				f << ID_LOBBY_UPDATE;
+				f.Write0();
+				int count = 0;
 				for(uint i = 0; i < min(lobby_updates.size(), 255u); ++i)
 				{
 					Int2& u = lobby_updates[i];
@@ -2951,11 +2964,11 @@ void Game::UpdateLobbyNetServer(float dt)
 							if(index != -1)
 							{
 								PlayerInfo& info = *game_players[index];
-								++ile;
-								net_stream.WriteCasted<byte>(u.x);
-								net_stream.WriteCasted<byte>(info.id);
-								net_stream.WriteCasted<byte>(info.ready ? 1 : 0);
-								net_stream.WriteCasted<byte>(info.clas);
+								++count;
+								f.WriteCasted<byte>(u.x);
+								f.WriteCasted<byte>(info.id);
+								f << info.ready;
+								f.WriteCasted<byte>(info.clas);
 							}
 						}
 						break;
@@ -2965,38 +2978,35 @@ void Game::UpdateLobbyNetServer(float dt)
 							if(index != -1)
 							{
 								PlayerInfo& info = *game_players[index];
-								++ile;
-								net_stream.WriteCasted<byte>(u.x);
-								net_stream.WriteCasted<byte>(info.id);
-								WriteString1(net_stream, info.name);
+								++count;
+								f.WriteCasted<byte>(u.x);
+								f.WriteCasted<byte>(info.id);
+								f << info.name;
 							}
 						}
 						break;
 					case Lobby_RemovePlayer:
 					case Lobby_KickPlayer:
-						++ile;
-						net_stream.WriteCasted<byte>(u.x);
-						net_stream.WriteCasted<byte>(u.y);
+						++count;
+						f.WriteCasted<byte>(u.x);
+						f.WriteCasted<byte>(u.y);
 						break;
 					case Lobby_ChangeCount:
-						++ile;
-						net_stream.WriteCasted<byte>(u.x);
-						net_stream.WriteCasted<byte>(players);
+						++count;
+						f.WriteCasted<byte>(u.x);
+						f.WriteCasted<byte>(players);
 						break;
 					case Lobby_ChangeLeader:
-						++ile;
-						net_stream.WriteCasted<byte>(u.x);
-						net_stream.WriteCasted<byte>(leader_id);
+						++count;
+						f.WriteCasted<byte>(u.x);
+						f.WriteCasted<byte>(leader_id);
 						break;
 					default:
 						assert(0);
 						break;
 					}
 				}
-				int off = net_stream.GetWriteOffset();
-				net_stream.SetWriteOffset(8);
-				net_stream.WriteCasted<byte>(ile);
-				net_stream.SetWriteOffset(off);
+				f.Patch(1, count);
 				peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 2, UNASSIGNED_SYSTEM_ADDRESS, true);
 				StreamWrite(net_stream, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 			}
@@ -3065,11 +3075,11 @@ void Game::UpdateLobbyNetServer(float dt)
 	}
 }
 
-bool Game::DoLobbyUpdate(BitStream& stream)
+bool Game::DoLobbyUpdate(BitStreamReader& f)
 {
 	byte count;
-
-	if(!stream.Read(count))
+	f >> count;
+	if(!f)
 	{
 		Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE.");
 		return false;
@@ -3078,7 +3088,9 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 	for(int i = 0; i < count; ++i)
 	{
 		byte type, id;
-		if(!stream.Read(type) || !stream.Read(id))
+		f >> type;
+		f >> id;
+		if(!f)
 		{
 			Error("UpdateLobbyNet: Broken packet ID_LOBBY_UPDATE at index %d.", i);
 			return false;
@@ -3095,7 +3107,9 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 					return false;
 				}
 				PlayerInfo& info = *game_players[index];
-				if(!ReadBool(stream, info.ready) || !stream.ReadCasted<byte>(info.clas))
+				f >> info.ready;
+				f.ReadCasted<byte>(info.clas);
+				if(!f)
 				{
 					Error("UpdateLobbyNet: Broken Lobby_UpdatePlayer.");
 					return false;
@@ -3108,25 +3122,28 @@ bool Game::DoLobbyUpdate(BitStream& stream)
 			}
 			break;
 		case Lobby_AddPlayer: // dodaj gracza
-			if(!ReadString1(stream))
 			{
-				Error("UpdateLobbyNet: Broken Lobby_AddPlayer.");
-				return false;
-			}
-			else if(id != my_id)
-			{
-				auto pinfo = new PlayerInfo;
-				game_players.push_back(pinfo);
+				const string& name = f.ReadString1();
+				if(!f)
+				{
+					Error("UpdateLobbyNet: Broken Lobby_AddPlayer.");
+					return false;
+				}
+				else if(id != my_id)
+				{
+					auto pinfo = new PlayerInfo;
+					game_players.push_back(pinfo);
 
-				auto& info = *pinfo;
-				info.state = PlayerInfo::IN_LOBBY;
-				info.id = id;
-				info.loaded = true;
-				info.name = BUF;
-				server_panel->grid.AddItem();
+					auto& info = *pinfo;
+					info.state = PlayerInfo::IN_LOBBY;
+					info.id = id;
+					info.loaded = true;
+					info.name = name;
+					server_panel->grid.AddItem();
 
-				server_panel->AddMsg(Format(server_panel->txJoined, BUF));
-				Info("UpdateLobbyNet: Player %s joined lobby.", BUF);
+					server_panel->AddMsg(Format(server_panel->txJoined, name.c_str()));
+					Info("UpdateLobbyNet: Player %s joined lobby.", name.c_str());
+				}
 			}
 			break;
 		case Lobby_RemovePlayer: // usuñ gracza
@@ -3215,9 +3232,10 @@ void Game::OnCreateCharacter(int id)
 		else
 		{
 			net_stream.Reset();
-			net_stream.WriteCasted<byte>(ID_PICK_CHARACTER);
-			WriteCharacterData(net_stream, info.clas, info.hd, info.cc);
-			WriteBool(net_stream, false);
+			BitStreamWriter f(net_stream);
+			f << ID_PICK_CHARACTER;
+			WriteCharacterData(f, info.clas, info.hd, info.cc);
+			f << false;
 			peer->Send(&net_stream, IMMEDIATE_PRIORITY, RELIABLE, 0, server, false);
 			StreamWrite(net_stream, Stream_UpdateLobbyClient, server);
 			Info("Character sent to server.");

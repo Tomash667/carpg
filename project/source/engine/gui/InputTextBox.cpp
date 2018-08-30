@@ -24,19 +24,19 @@ void InputTextBox::Draw(ControlDrawData*)
 	}
 
 	// box na tekst
-	GUI.DrawItem(TextBox::tBox, global_pos, textbox_size, WHITE, 8, 32);
+	GUI.DrawItem(TextBox::tBox, global_pos, textbox_size, Color::White, 8, 32);
 
 	// box na input
-	GUI.DrawItem(TextBox::tBox, inputbox_pos, inputbox_size, WHITE, 8, 32);
+	GUI.DrawItem(TextBox::tBox, inputbox_pos, inputbox_size, Color::White, 8, 32);
 
 	// tekst
 	Rect rc = { global_pos.x + 4, global_pos.y + 4, global_pos.x + textbox_size.x - 4, global_pos.y + textbox_size.y - 4 };
 	Rect r = { rc.Left(), rc.Top() - int(scrollbar.offset), rc.Right(), rc.Bottom() - int(scrollbar.offset) - 20 };
-	GUI.DrawText(GUI.default_font, text, 0, BLACK, r, &rc, nullptr, nullptr, &lines);
+	GUI.DrawText(GUI.default_font, text, 0, Color::Black, r, &rc, nullptr, nullptr, &lines);
 
 	// input
 	Rect r2 = { inputbox_pos.x + 4, inputbox_pos.y, inputbox_pos.x + inputbox_size.x - 4, inputbox_pos.y + inputbox_size.y };
-	GUI.DrawText(GUI.default_font, caret_blink >= 0.f ? Format("%s|", input.c_str()) : input, DT_LEFT | DT_VCENTER, BLACK, r2, &r2);
+	GUI.DrawText(GUI.default_font, caret_blink >= 0.f ? Format("%s|", input.c_str()) : input, DTF_LEFT | DTF_VCENTER, Color::Black, r2, &r2);
 
 	// scrollbar
 	scrollbar.Draw();

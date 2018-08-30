@@ -1,4 +1,3 @@
-// wnêtrze budynku
 #include "Pch.h"
 #include "GameCore.h"
 #include "InsideBuilding.h"
@@ -7,6 +6,7 @@
 #include "Content.h"
 #include "Door.h"
 #include "BuildingGroup.h"
+#include "GameFile.h"
 
 //=================================================================================================
 InsideBuilding::~InsideBuilding()
@@ -40,226 +40,196 @@ void InsideBuilding::ApplyContext(LevelContext& ctx)
 }
 
 //=================================================================================================
-void InsideBuilding::Save(HANDLE file, bool local)
+void InsideBuilding::Save(GameWriter& f, bool local)
 {
-	WriteFile(file, &offset, sizeof(offset), &tmp, nullptr);
-	WriteFile(file, &inside_spawn, sizeof(inside_spawn), &tmp, nullptr);
-	WriteFile(file, &outside_spawn, sizeof(outside_spawn), &tmp, nullptr);
-	WriteFile(file, &xsphere_pos, sizeof(xsphere_pos), &tmp, nullptr);
-	WriteFile(file, &enter_area, sizeof(enter_area), &tmp, nullptr);
-	WriteFile(file, &exit_area, sizeof(exit_area), &tmp, nullptr);
-	WriteFile(file, &outside_rot, sizeof(outside_rot), &tmp, nullptr);
-	WriteFile(file, &top, sizeof(top), &tmp, nullptr);
-	WriteFile(file, &xsphere_radius, sizeof(xsphere_radius), &tmp, nullptr);
-	WriteString1(file, type->id);
-	WriteFile(file, &level_shift, sizeof(level_shift), &tmp, nullptr);
-	WriteFile(file, &arena1, sizeof(arena1), &tmp, nullptr);
-	WriteFile(file, &arena2, sizeof(arena2), &tmp, nullptr);
-	WriteFile(file, &enter_y, sizeof(enter_y), &tmp, nullptr);
+	f << offset;
+	f << inside_spawn;
+	f << outside_spawn;
+	f << xsphere_pos;
+	f << enter_area;
+	f << exit_area;
+	f << outside_rot;
+	f << top;
+	f << xsphere_radius;
+	f << type->id;
+	f << level_shift;
+	f << arena1;
+	f << arena2;
+	f << enter_y;
 
-	uint ile = units.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	f << units.size();
+	for(Unit* unit : units)
+		unit->Save(f, local);
 
-	ile = doors.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Door*>::iterator it = doors.begin(), end = doors.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	f << doors.size();
+	for(Door* door : doors)
+		door->Save(f, local);
 
-	ile = objects.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
-		(*it)->Save(file);
+	f << objects.size();
+	for(Object* object : objects)
+		object->Save(f);
 
-	ile = items.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
-		(*it)->Save(file);
+	f << items.size();
+	for(GroundItem* item : items)
+		item->Save(f);
 
-	ile = usables.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
-		(*it)->Save(file, local);
+	f << usables.size();
+	for(Usable* usable : usables)
+		usable->Save(f, local);
 
-	FileWriter f(file);
-	ile = bloods.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
-		it->Save(f);
+	f << bloods.size();
+	for(Blood& blood : bloods)
+		blood.Save(f);
 
 	f << lights.size();
-	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
-		it->Save(f);
+	for(Light& light : lights)
+		light.Save(f);
 
 	if(local)
 	{
-		ile = ctx.pes->size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<ParticleEmitter*>::iterator it = ctx.pes->begin(), end = ctx.pes->end(); it != end; ++it)
-			(*it)->Save(file);
+		f << ctx.pes->size();
+		for(ParticleEmitter* pe : *ctx.pes)
+			pe->Save(f);
 
-		ile = ctx.tpes->size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<TrailParticleEmitter*>::iterator it = ctx.tpes->begin(), end = ctx.tpes->end(); it != end; ++it)
-			(*it)->Save(file);
+		f << ctx.tpes->size();
+		for(TrailParticleEmitter* tpe : *ctx.tpes)
+			tpe->Save(f);
 
-		ile = ctx.explos->size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Explo*>::iterator it = ctx.explos->begin(), end = ctx.explos->end(); it != end; ++it)
-			(*it)->Save(file);
+		f << ctx.explos->size();
+		for(Explo* explo : *ctx.explos)
+			explo->Save(f);
 
-		ile = ctx.electros->size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Electro*>::iterator it = ctx.electros->begin(), end = ctx.electros->end(); it != end; ++it)
-			(*it)->Save(file);
+		f << ctx.electros->size();
+		for(Electro* electro : *ctx.electros)
+			electro->Save(f);
 
-		ile = ctx.drains->size();
-		WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		for(vector<Drain>::iterator it = ctx.drains->begin(), end = ctx.drains->end(); it != end; ++it)
-			it->Save(file);
+		f << ctx.drains->size();
+		for(Drain& drain : *ctx.drains)
+			drain.Save(f);
 
 		f << ctx.bullets->size();
-		for(vector<Bullet>::iterator it = ctx.bullets->begin(), end = ctx.bullets->end(); it != end; ++it)
-			it->Save(f);
+		for(Bullet& bullet : *ctx.bullets)
+			bullet.Save(f);
 	}
 }
 
 //=================================================================================================
-void InsideBuilding::Load(HANDLE file, bool local)
+void InsideBuilding::Load(GameReader& f, bool local)
 {
 	ApplyContext(ctx);
 
-	ReadFile(file, &offset, sizeof(offset), &tmp, nullptr);
-	ReadFile(file, &inside_spawn, sizeof(inside_spawn), &tmp, nullptr);
-	ReadFile(file, &outside_spawn, sizeof(outside_spawn), &tmp, nullptr);
-	ReadFile(file, &xsphere_pos, sizeof(xsphere_pos), &tmp, nullptr);
-	ReadFile(file, &enter_area, sizeof(enter_area), &tmp, nullptr);
-	ReadFile(file, &exit_area, sizeof(exit_area), &tmp, nullptr);
-	ReadFile(file, &outside_rot, sizeof(outside_rot), &tmp, nullptr);
-	ReadFile(file, &top, sizeof(top), &tmp, nullptr);
-	ReadFile(file, &xsphere_radius, sizeof(xsphere_radius), &tmp, nullptr);
+	f >> offset;
+	f >> inside_spawn;
+	f >> outside_spawn;
+	f >> xsphere_pos;
+	f >> enter_area;
+	f >> exit_area;
+	f >> outside_rot;
+	f >> top;
+	f >> xsphere_radius;
 	if(LOAD_VERSION >= V_0_5)
-	{
-		ReadString1(file);
-		type = Building::Get(BUF);
-	}
+		type = Building::Get(f.ReadString1());
 	else
 	{
 		OLD_BUILDING old_type;
-		ReadFile(file, &old_type, sizeof(old_type), &tmp, nullptr);
+		f >> old_type;
 		type = Building::GetOld(old_type);
 	}
 	assert(type != nullptr);
-	ReadFile(file, &level_shift, sizeof(level_shift), &tmp, nullptr);
-	ReadFile(file, &arena1, sizeof(arena1), &tmp, nullptr);
-	ReadFile(file, &arena2, sizeof(arena2), &tmp, nullptr);
+	f >> level_shift;
+	f >> arena1;
+	f >> arena2;
 	if(LOAD_VERSION >= V_0_3)
-		ReadFile(file, &enter_y, sizeof(enter_y), &tmp, nullptr);
+		f >> enter_y;
 	else
 		enter_y = 1.1f;
 
-	uint ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	units.resize(ile);
-	for(vector<Unit*>::iterator it = units.begin(), end = units.end(); it != end; ++it)
+	units.resize(f.Read<uint>());
+	for(Unit*& unit : units)
 	{
-		*it = new Unit;
-		Unit::AddRefid(*it);
-		(*it)->Load(file, local);
+		unit = new Unit;
+		Unit::AddRefid(unit);
+		unit->Load(f, local);
 	}
 
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	doors.resize(ile);
-	for(vector<Door*>::iterator it = doors.begin(), end = doors.end(); it != end; ++it)
+	doors.resize(f.Read<uint>());
+	for(Door*& door : doors)
 	{
-		*it = new Door;
-		(*it)->Load(file, local);
+		door = new Door;
+		door->Load(f, local);
 	}
 
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	objects.resize(ile);
-	for(vector<Object*>::iterator it = objects.begin(), end = objects.end(); it != end; ++it)
+	objects.resize(f.Read<uint>());
+	for(Object*& object : objects)
 	{
-		*it = new Object;
-		(*it)->Load(file);
+		object = new Object;
+		object->Load(f);
 	}
 
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	items.resize(ile);
-	for(vector<GroundItem*>::iterator it = items.begin(), end = items.end(); it != end; ++it)
+	items.resize(f.Read<uint>());
+	for(GroundItem*& item : items)
 	{
-		*it = new GroundItem;
-		(*it)->Load(file);
+		item = new GroundItem;
+		item->Load(f);
 	}
 
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	usables.resize(ile);
-	for(vector<Usable*>::iterator it = usables.begin(), end = usables.end(); it != end; ++it)
+	usables.resize(f.Read<uint>());
+	for(Usable*& usable : usables)
 	{
-		*it = new Usable;
-		Usable::AddRefid(*it);
-		(*it)->Load(file, local);
+		usable = new Usable;
+		Usable::AddRefid(usable);
+		usable->Load(f, local);
 	}
 
-	FileReader f(file);
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	bloods.resize(ile);
-	for(vector<Blood>::iterator it = bloods.begin(), end = bloods.end(); it != end; ++it)
-		it->Load(f);
+	bloods.resize(f.Read<uint>());
+	for(Blood& blood : bloods)
+		blood.Load(f);
 
-	f >> ile;
-	lights.resize(ile);
-	for(vector<Light>::iterator it = lights.begin(), end = lights.end(); it != end; ++it)
-		it->Load(f);
+	lights.resize(f.Read<uint>());
+	for(Light& light : lights)
+		light.Load(f);
 
 	if(local)
 	{
 		ctx.SetTmpCtx(Game::Get().tmp_ctx_pool.Get());
 
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		ctx.pes->resize(ile);
-		for(vector<ParticleEmitter*>::iterator it = ctx.pes->begin(), end = ctx.pes->end(); it != end; ++it)
+		ctx.pes->resize(f.Read<uint>());
+		for(ParticleEmitter*& pe : *ctx.pes)
 		{
-			*it = new ParticleEmitter;
-			ParticleEmitter::AddRefid(*it);
-			(*it)->Load(file);
+			pe = new ParticleEmitter;
+			ParticleEmitter::AddRefid(pe);
+			pe->Load(f);
 		}
 
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		ctx.tpes->resize(ile);
-		for(vector<TrailParticleEmitter*>::iterator it = ctx.tpes->begin(), end = ctx.tpes->end(); it != end; ++it)
+		ctx.tpes->resize(f.Read<uint>());
+		for(TrailParticleEmitter*& tpe : *ctx.tpes)
 		{
-			*it = new TrailParticleEmitter;
-			TrailParticleEmitter::AddRefid(*it);
-			(*it)->Load(file);
+			tpe = new TrailParticleEmitter;
+			TrailParticleEmitter::AddRefid(tpe);
+			tpe->Load(f);
 		}
 
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		ctx.explos->resize(ile);
-		for(vector<Explo*>::iterator it = ctx.explos->begin(), end = ctx.explos->end(); it != end; ++it)
+		ctx.explos->resize(f.Read<uint>());
+		for(Explo*& explo : *ctx.explos)
 		{
-			*it = new Explo;
-			(*it)->Load(file);
+			explo = new Explo;
+			explo->Load(f);
 		}
 
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		ctx.electros->resize(ile);
-		for(vector<Electro*>::iterator it = ctx.electros->begin(), end = ctx.electros->end(); it != end; ++it)
+		ctx.electros->resize(f.Read<uint>());
+		for(Electro*& electro : *ctx.electros)
 		{
-			*it = new Electro;
-			(*it)->Load(file);
+			electro = new Electro;
+			electro->Load(f);
 		}
 
-		ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-		ctx.drains->resize(ile);
-		for(vector<Drain>::iterator it = ctx.drains->begin(), end = ctx.drains->end(); it != end; ++it)
-			it->Load(file);
+		ctx.drains->resize(f.Read<uint>());
+		for(Drain& drain : *ctx.drains)
+			drain.Load(f);
 
-		f >> ile;
-		ctx.bullets->resize(ile);
-		for(vector<Bullet>::iterator it = ctx.bullets->begin(), end = ctx.bullets->end(); it != end; ++it)
-			it->Load(f);
+		ctx.bullets->resize(f.Read<uint>());
+		for(Bullet& bullet : *ctx.bullets)
+			bullet.Load(f);
 	}
 }
 

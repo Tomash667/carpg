@@ -1,11 +1,9 @@
-// format modeli
 #pragma once
 
 //-----------------------------------------------------------------------------
 #include "VertexData.h"
 #include "VertexDeclaration.h"
 #include "Resource.h"
-#include "Stream.h"
 
 /*---------------------------
 NASTÊPNA WERSJA:
@@ -170,13 +168,6 @@ struct Mesh : public Resource
 	// jeœli szuka hit to zwróci te¿ dla hit1, hit____ itp (u¿ywane dla boxów broni które siê powtarzaj¹)
 	Point* FindPoint(cstring name);
 	Point* FindNextPoint(cstring name, Point* point);
-
-	void DrawSubmesh(IDirect3DDevice9* device, uint i)
-	{
-		assert(device && i < head.n_subs);
-		Submesh& sub = subs[i];
-		V(device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, sub.min_ind, sub.n_ind, sub.first * 3, sub.tris));
-	}
 
 	Header head;
 	VB vb;

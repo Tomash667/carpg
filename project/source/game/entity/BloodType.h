@@ -1,7 +1,7 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-// Rodzaj krwi postaci
+// Blood types
 enum BLOOD
 {
 	BLOOD_RED,

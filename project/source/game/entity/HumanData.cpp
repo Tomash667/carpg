@@ -70,23 +70,23 @@ void Human::ApplyScale(Mesh* mesh)
 }
 
 //=================================================================================================
-void Human::Save(HANDLE file)
+void Human::Save(FileWriter& f)
 {
-	WriteFile(file, &hair, sizeof(hair), &tmp, nullptr);
-	WriteFile(file, &beard, sizeof(beard), &tmp, nullptr);
-	WriteFile(file, &mustache, sizeof(mustache), &tmp, nullptr);
-	WriteFile(file, &hair_color, sizeof(hair_color), &tmp, nullptr);
-	WriteFile(file, &height, sizeof(height), &tmp, nullptr);
+	f << hair;
+	f << beard;
+	f << mustache;
+	f << hair_color;
+	f << height;
 }
 
 //=================================================================================================
-void Human::Load(HANDLE file)
+void Human::Load(FileReader& f)
 {
-	ReadFile(file, &hair, sizeof(hair), &tmp, nullptr);
-	ReadFile(file, &beard, sizeof(beard), &tmp, nullptr);
-	ReadFile(file, &mustache, sizeof(mustache), &tmp, nullptr);
-	ReadFile(file, &hair_color, sizeof(hair_color), &tmp, nullptr);
-	ReadFile(file, &height, sizeof(height), &tmp, nullptr);
+	f >> hair;
+	f >> beard;
+	f >> mustache;
+	f >> hair_color;
+	f >> height;
 }
 
 //=================================================================================================
@@ -120,47 +120,48 @@ void HumanData::CopyFrom(HumanData& hd)
 }
 
 //=================================================================================================
-void HumanData::Save(HANDLE file) const
+void HumanData::Save(FileWriter& f) const
 {
-	WriteFile(file, &hair, sizeof(hair), &tmp, nullptr);
-	WriteFile(file, &beard, sizeof(beard), &tmp, nullptr);
-	WriteFile(file, &mustache, sizeof(mustache), &tmp, nullptr);
-	WriteFile(file, &hair_color, sizeof(hair_color), &tmp, nullptr);
-	WriteFile(file, &height, sizeof(height), &tmp, nullptr);
+	f << hair;
+	f << beard;
+	f << mustache;
+	f << hair_color;
+	f << height;
 }
 
 //=================================================================================================
-void HumanData::Load(HANDLE file)
+void HumanData::Load(FileReader& f)
 {
-	ReadFile(file, &hair, sizeof(hair), &tmp, nullptr);
-	ReadFile(file, &beard, sizeof(beard), &tmp, nullptr);
-	ReadFile(file, &mustache, sizeof(mustache), &tmp, nullptr);
-	ReadFile(file, &hair_color, sizeof(hair_color), &tmp, nullptr);
-	ReadFile(file, &height, sizeof(height), &tmp, nullptr);
+	f >> hair;
+	f >> beard;
+	f >> mustache;
+	f >> hair_color;
+	f >> height;
 }
 
 //=================================================================================================
-void HumanData::Write(BitStream& stream) const
+void HumanData::Write(BitStreamWriter& f) const
 {
-	stream.WriteCasted<byte>(hair);
-	stream.WriteCasted<byte>(beard);
-	stream.WriteCasted<byte>(mustache);
-	stream.Write(hair_color.x);
-	stream.Write(hair_color.y);
-	stream.Write(hair_color.z);
-	stream.Write(height);
+	f.WriteCasted<byte>(hair);
+	f.WriteCasted<byte>(beard);
+	f.WriteCasted<byte>(mustache);
+	f << hair_color.x;
+	f << hair_color.y;
+	f << hair_color.z;
+	f << height;
 }
 
 //=================================================================================================
-int HumanData::Read(BitStream& stream)
+int HumanData::Read(BitStreamReader& f)
 {
-	if(!stream.ReadCasted<byte>(hair) ||
-		!stream.ReadCasted<byte>(beard) ||
-		!stream.ReadCasted<byte>(mustache) ||
-		!stream.Read(hair_color.x) ||
-		!stream.Read(hair_color.y) ||
-		!stream.Read(hair_color.z) ||
-		!stream.Read(height))
+	f.ReadCasted<byte>(hair);
+	f.ReadCasted<byte>(beard);
+	f.ReadCasted<byte>(mustache);
+	f >> hair_color.x;
+	f >> hair_color.y;
+	f >> hair_color.z;
+	f >> height;
+	if(!f)
 		return 1;
 
 	hair_color.w = 1.f;

@@ -30,8 +30,8 @@ public:
 	bool OnTimeout(TimeoutType ttype) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit) override;
 	bool IfNeedTalk(cstring topic) const override;
-	void Save(HANDLE file) override;
-	bool Load(HANDLE file) override;
+	void Save(GameWriter& f) override;
+	bool Load(GameReader& f) override;
 	int GetUnitEventHandlerQuestRefid() override { return refid; }
 
 private:

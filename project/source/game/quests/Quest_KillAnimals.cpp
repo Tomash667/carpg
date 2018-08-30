@@ -183,9 +183,9 @@ bool Quest_KillAnimals::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-bool Quest_KillAnimals::Load(HANDLE file)
+bool Quest_KillAnimals::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
+	Quest_Dungeon::Load(f);
 
 	location_event_handler = this;
 

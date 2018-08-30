@@ -12,10 +12,10 @@ out_width - szerokoœæ tej linijki
 in_out_index - offset w text
 text - tekst
 text_end - d³ugoœæ tekstu
-flags - flagi (uwzglêdnia tylko DT_SINGLELINE, DT_PARSE_SPECIAL)
+flags - flagi (uwzglêdnia tylko DTF_SINGLELINE, DTF_PARSE_SPECIAL)
 width - maksymalna szerokoœæ tej linijki
 */
-bool Font::SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_out_index, cstring text, uint text_end, DWORD flags, int width) const
+bool Font::SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_out_index, cstring text, uint text_end, uint flags, int width) const
 {
 	// Heh, piszê ten algorytm chyba trzeci raz w ¿yciu.
 	// Za ka¿dym razem idzie mi szybciej i lepiej.
@@ -23,12 +23,12 @@ bool Font::SplitLine(uint& out_begin, uint& out_end, int& out_width, uint& in_ou
 	if(in_out_index >= text_end)
 		return false;
 
-	bool parse_special = IS_SET(flags, DT_PARSE_SPECIAL);
+	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
 	out_begin = in_out_index;
 	out_width = 0;
 
 	// Pojedyncza linia - specjalny szybki tryb
-	if(IS_SET(flags, DT_SINGLELINE))
+	if(IS_SET(flags, DTF_SINGLELINE))
 	{
 		while(in_out_index < text_end)
 		{
@@ -326,14 +326,14 @@ bool Font::HitTest(StringOrCstring str, int limit_width, int flags, const Int2& 
 	if(pos.x < 0 || pos.y < 0)
 		return false;
 
-	bool parse_special = IS_SET(flags, DT_PARSE_SPECIAL);
+	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
 	uint text_end = str.length();
 	cstring text = str.c_str();
 	int width = 0, prev_width = 0;
 	index = 0;
 
 	// simple single line mode
-	if(IS_SET(flags, DT_SINGLELINE))
+	if(IS_SET(flags, DTF_SINGLELINE))
 	{
 		if(pos.y > height)
 			return false;
@@ -418,12 +418,12 @@ Int2 Font::IndexToPos(uint expected_index, StringOrCstring str, int limit_width,
 {
 	assert(expected_index <= str.length());
 
-	bool parse_special = IS_SET(flags, DT_PARSE_SPECIAL);
+	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
 	uint text_end = str.length();
 	cstring text = str.c_str();
 	uint index = 0;
 
-	if(IS_SET(flags, DT_SINGLELINE))
+	if(IS_SET(flags, DTF_SINGLELINE))
 	{
 		int width = 0;
 
@@ -482,12 +482,12 @@ Int2 Font::IndexToPos(const Int2& expected_index, StringOrCstring str, int limit
 {
 	assert(expected_index.x >= 0 && expected_index.y >= 0);
 
-	bool parse_special = IS_SET(flags, DT_PARSE_SPECIAL);
+	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
 	uint text_end = str.length();
 	cstring text = str.c_str();
 	uint index = 0;
 
-	if(IS_SET(flags, DT_SINGLELINE))
+	if(IS_SET(flags, DTF_SINGLELINE))
 	{
 		assert(expected_index.x <= (int)str.length());
 		assert(expected_index.y == 0);
@@ -550,12 +550,12 @@ uint Font::PrecalculateFontLines(vector<FontLine>& font_lines, StringOrCstring s
 {
 	font_lines.clear();
 
-	bool parse_special = IS_SET(flags, DT_PARSE_SPECIAL);
+	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
 	uint text_end = str.length();
 	cstring text = str.c_str();
 	uint index = 0;
 
-	if(IS_SET(flags, DT_SINGLELINE))
+	if(IS_SET(flags, DTF_SINGLELINE))
 	{
 		uint width = GetLineWidth(text, 0, text_end, parse_special);
 		font_lines.push_back({ 0, text_end, text_end, width });
@@ -609,13 +609,13 @@ Int2 Font::IndexToPos(vector<FontLine>& font_lines, const Int2& expected_index, 
 {
 	assert(expected_index.x >= 0 && expected_index.y >= 0);
 
-	bool parse_special = IS_SET(flags, DT_PARSE_SPECIAL);
+	bool parse_special = IS_SET(flags, DTF_PARSE_SPECIAL);
 	uint text_end = str.length();
 	cstring text = str.c_str();
 	uint index = 0;
 	int width = 0;
 
-	if(IS_SET(flags, DT_SINGLELINE))
+	if(IS_SET(flags, DTF_SINGLELINE))
 	{
 		assert(expected_index.x <= (int)str.length());
 		assert(expected_index.y == 0);

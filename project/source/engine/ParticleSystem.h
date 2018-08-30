@@ -50,8 +50,8 @@ struct ParticleEmitter
 	}
 
 	void Init();
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 
 	static ParticleEmitter* GetByRefid(int _refid)
 	{
@@ -93,8 +93,8 @@ struct TrailParticleEmitter
 	int first, last, alive, refid;
 	bool destroy;
 
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(FileWriter& f);
+	void Load(FileReader& f);
 
 	static TrailParticleEmitter* GetByRefid(int _refid)
 	{

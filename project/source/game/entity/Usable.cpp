@@ -38,31 +38,26 @@ Mesh* Usable::GetMesh() const
 }
 
 //=================================================================================================
-void Usable::Save(HANDLE file, bool local)
+void Usable::Save(FileWriter& f, bool local)
 {
-	WriteString1(file, base->id);
-	WriteFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	WriteFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	WriteFile(file, &netid, sizeof(netid), &tmp, nullptr);
+	f << base->id;
+	f << pos;
+	f << rot;
+	f << netid;
 	if(base->variants)
-		WriteFile(file, &variant, sizeof(variant), &tmp, nullptr);
+		f << variant;
 	if(IS_SET(base->use_flags, BaseUsable::CONTAINER))
-		container->Save(file);
-
+		container->Save(f);
 	if(local && !IS_SET(base->use_flags, BaseUsable::CONTAINER))
-	{
-		int refid = (user ? user->refid : -1);
-		WriteFile(file, &refid, sizeof(refid), &tmp, nullptr);
-	}
+		f << (user ? user->refid : -1);
 }
 
 //=================================================================================================
-void Usable::Load(HANDLE file, bool local)
+void Usable::Load(FileReader& f, bool local)
 {
 	if(LOAD_VERSION < V_0_6_2)
 	{
-		int type;
-		ReadFile(file, &type, sizeof(type), &tmp, nullptr);
+		int type = f.Read<int>();
 		cstring id;
 		switch(type)
 		{
@@ -101,22 +96,19 @@ void Usable::Load(HANDLE file, bool local)
 		base = BaseUsable::Get(id);
 	}
 	else
-	{
-		ReadString1(file);
-		base = BaseUsable::Get(BUF);
-	}
-	ReadFile(file, &pos, sizeof(pos), &tmp, nullptr);
-	ReadFile(file, &rot, sizeof(rot), &tmp, nullptr);
-	ReadFile(file, &netid, sizeof(netid), &tmp, nullptr);
+		base = BaseUsable::Get(f.ReadString1());
+	f >> pos;
+	f >> rot;
+	f >> netid;
 	if(LOAD_VERSION >= V_0_2_20 && base->variants)
-		ReadFile(file, &variant, sizeof(variant), &tmp, nullptr);
+		f >> variant;
 	else
 		variant = -1;
 	if(LOAD_VERSION >= V_0_6 && IS_SET(base->use_flags, BaseUsable::CONTAINER))
 	{
 		container = new ItemContainer;
 		if(LOAD_VERSION >= V_0_6)
-			container->Load(file);
+			container->Load(f);
 		else
 		{
 			auto item = Game::Get().GetRandomBook();
@@ -132,16 +124,11 @@ void Usable::Load(HANDLE file, bool local)
 			if(IS_SET(base->use_flags, BaseUsable::CONTAINER))
 				user = nullptr;
 			else
-			{
-				int refid;
-				ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
-				user = Unit::GetByRefid(refid);
-			}
+				user = Unit::GetByRefid(f.Read<int>());
 		}
 		else
 		{
-			int refid;
-			ReadFile(file, &refid, sizeof(refid), &tmp, nullptr);
+			int refid = f.Read<int>();
 			if(IS_SET(base->use_flags, BaseUsable::CONTAINER))
 				user = nullptr;
 			else
@@ -153,29 +140,30 @@ void Usable::Load(HANDLE file, bool local)
 }
 
 //=================================================================================================
-void Usable::Write(BitStream& stream) const
+void Usable::Write(BitStreamWriter& f) const
 {
-	stream.Write(netid);
-	WriteString1(stream, base->id);
-	stream.Write(pos);
-	stream.Write(rot);
-	stream.WriteCasted<byte>(variant);
+	f << netid;
+	f << base->id;
+	f << pos;
+	f << rot;
+	f.WriteCasted<byte>(variant);
 }
 
 //=================================================================================================
-bool Usable::Read(BitStream& stream)
+bool Usable::Read(BitStreamReader& f)
 {
-	if(!stream.Read(netid)
-		|| !ReadString1(stream)
-		|| !stream.Read(pos)
-		|| !stream.Read(rot)
-		|| !stream.ReadCasted<byte>(variant))
+	f >> netid;
+	const string& base_id = f.ReadString1();
+	f >> pos;
+	f >> rot;
+	f.ReadCasted<byte>(variant);
+	if(!f)
 		return false;
 	user = nullptr;
-	base = BaseUsable::TryGet(BUF);
+	base = BaseUsable::TryGet(base_id);
 	if(!base)
 	{
-		Error("Invalid usable type '%s'.", BUF);
+		Error("Invalid usable type '%s'.", base_id.c_str());
 		return false;
 	}
 	if(IS_SET(base->use_flags, BaseUsable::CONTAINER))

@@ -45,7 +45,7 @@ void ActionPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	GUI.DrawText(GUI.fBig, txActions, DT_TOP | DT_CENTER, BLACK, rect);
+	GUI.DrawText(GUI.fBig, txActions, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	// grid
 	int count_w = (size.x - 48) / 63;

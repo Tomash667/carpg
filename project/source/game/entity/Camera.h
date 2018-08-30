@@ -1,9 +1,8 @@
 #pragma once
 
 //-----------------------------------------------------------------------------
-class Camera
+struct Camera
 {
-public:
 	Vec3 from, to, center, real_from, real_to;
 	Vec2 rot, real_rot;
 	Matrix matViewProj, matViewInv;

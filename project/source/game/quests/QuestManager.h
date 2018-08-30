@@ -40,10 +40,10 @@ public:
 	void AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit = nullptr);
 	void Reset();
 	void Cleanup();
-	void Write(BitStream& stream);
-	bool Read(BitStream& stream);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Write(BitStreamWriter& f);
+	bool Read(BitStreamReader& f);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	Quest* FindQuest(int location, QuestType type);
 	Quest* FindQuest(int refid, bool active = true);
 	Quest* FindQuestById(QUEST quest_id);
@@ -68,7 +68,7 @@ public:
 	bool quest_rumor[P_MAX];
 
 private:
-	void LoadQuests(HANDLE file, vector<Quest*>& quests);
+	void LoadQuests(GameReader& f, vector<Quest*>& quests);
 	QUEST GetRandomQuest(QuestType type);
 
 	vector<QuestInfo> infos;

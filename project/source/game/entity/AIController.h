@@ -1,11 +1,4 @@
-// kontroler ai
 #pragma once
-
-//-----------------------------------------------------------------------------
-struct Unit;
-struct Room;
-struct Usable;
-struct Object;
 
 //-----------------------------------------------------------------------------
 struct ObjP
@@ -121,11 +114,12 @@ struct AIController
 	float pf_timer;
 
 	void Init(Unit* unit);
-	void Save(HANDLE file);
-	void Load(HANDLE file);
+	void Save(GameWriter& f);
+	void Load(GameReader& f);
 	bool CheckPotion(bool in_combat = true);
 	void Reset();
 	float GetMorale() const;
+	int GetEscapeRoomId() const;
 };
 
 //-----------------------------------------------------------------------------

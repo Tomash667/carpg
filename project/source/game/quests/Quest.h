@@ -16,13 +16,6 @@ enum QuestDialog
 };
 
 //-----------------------------------------------------------------------------
-struct DialogEntry;
-struct Game;
-struct GameDialog;
-struct Item;
-class QuestManager;
-
-//-----------------------------------------------------------------------------
 enum TimeoutType
 {
 	TIMEOUT_NORMAL,
@@ -72,8 +65,8 @@ struct Quest
 	virtual bool IfSpecial(DialogContext& ctx, cstring msg) { return false; }
 	virtual const Item* GetQuestItem() { return nullptr; }
 
-	virtual void Save(HANDLE file);
-	virtual bool Load(HANDLE file);
+	virtual void Save(GameWriter& f);
+	virtual bool Load(GameReader& f);
 
 	// to powinno byæ inline ale nie wysz³o :/
 	Location& GetStartLocation();
@@ -101,8 +94,8 @@ struct Quest_Encounter : public Quest
 	{
 	}
 
-	void Save(HANDLE file) override;
-	bool Load(HANDLE file) override;
+	void Save(GameWriter& f) override;
+	bool Load(GameReader& f) override;
 	void RemoveEncounter();
 };
 
@@ -156,8 +149,8 @@ struct Quest_Event
 //-----------------------------------------------------------------------------
 struct Quest_Dungeon : public Quest, public Quest_Event
 {
-	virtual void Save(HANDLE file) override;
-	virtual bool Load(HANDLE file) override;
+	virtual void Save(GameWriter& f) override;
+	virtual bool Load(GameReader& f) override;
 
 	// to powinno byæ inline ale nie wysz³o :/
 	Location& GetTargetLocation();

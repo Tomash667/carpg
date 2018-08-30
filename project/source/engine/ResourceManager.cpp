@@ -6,6 +6,7 @@
 #include "Mesh.h"
 #include "Utility.h"
 #include "SoundManager.h"
+#include "DirectX.h"
 
 //-----------------------------------------------------------------------------
 ResourceManager ResourceManager::manager;
@@ -77,7 +78,6 @@ void ResourceManager::Cleanup()
 
 	for(Pak* pak : paks)
 	{
-		CloseHandle(pak->file);
 		if(pak->version == 0)
 			delete (PakV0*)pak;
 		else
@@ -99,50 +99,35 @@ bool ResourceManager::AddDir(cstring dir, bool subdir)
 {
 	assert(dir);
 
-	WIN32_FIND_DATA find_data;
-	HANDLE find = FindFirstFile(Format("%s/*.*", dir), &find_data);
+	int dirlen = strlen(dir) + 1;
 
-	if(find == INVALID_HANDLE_VALUE)
+	bool ok = io::FindFiles(Format("%s/*.*", dir), [=](const io::FileInfo& file_info)
+	{
+		if(file_info.is_dir && subdir)
+		{
+			LocalString path = Format("%s/%s", dir, file_info.filename);
+			AddDir(path);
+		}
+		else
+		{
+			cstring path = Format("%s/%s", dir, file_info.filename);
+			Resource* res = AddResource(file_info.filename, path);
+			if(res)
+			{
+				res->pak_index = INVALID_PAK;
+				res->path = path;
+				res->filename = res->path.c_str() + dirlen;
+			}
+		}
+		return true;
+	});
+
+	if(!ok)
 	{
 		DWORD result = GetLastError();
 		Error("ResourceManager: Failed to add directory '%s' (%u).", dir, result);
 		return false;
 	}
-
-	int dirlen = strlen(dir) + 1;
-
-	do
-	{
-		if(strcmp(find_data.cFileName, ".") != 0 && strcmp(find_data.cFileName, "..") != 0)
-		{
-			if(IS_SET(find_data.dwFileAttributes, FILE_ATTRIBUTE_DIRECTORY))
-			{
-				// subdirectory
-				if(subdir)
-				{
-					LocalString path = Format("%s/%s", dir, find_data.cFileName);
-					AddDir(path);
-				}
-			}
-			else
-			{
-				cstring path = Format("%s/%s", dir, find_data.cFileName);
-				Resource* res = AddResource(find_data.cFileName, path);
-				if(res)
-				{
-					res->pak_index = INVALID_PAK;
-					res->path = path;
-					res->filename = res->path.c_str() + dirlen;
-				}
-			}
-		}
-	} while(FindNextFile(find, &find_data) != 0);
-
-	DWORD result = GetLastError();
-	if(result != ERROR_NO_MORE_FILES)
-		Error("ResourceManager: Failed to add other files in directory '%s' (%u).", dir, result);
-
-	FindClose(find);
 
 	return true;
 }
@@ -152,8 +137,8 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 {
 	assert(path);
 
-	StreamReader stream(path);
-	if(!stream)
+	FileReader f(path);
+	if(!f)
 	{
 		Error("ResourceManager: Failed to open pak '%s' (%u).", path, GetLastError());
 		return false;
@@ -161,7 +146,8 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 
 	// read header
 	Pak::Header header;
-	if(!stream.Read(header))
+	f >> header;
+	if(!f)
 	{
 		Error("ResourceManager: Failed to read pak '%s' header.", path);
 		return false;
@@ -179,14 +165,15 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 
 	Pak* pak;
 	int pak_index = paks.size();
-	uint pak_size = stream.GetSize();
+	uint pak_size = f.GetSize();
 	int total_size = pak_size - sizeof(Pak::Header);
 
 	if(header.version == 0)
 	{
 		// read extra header
 		PakV0::ExtraHeader header2;
-		if(!stream.Read(header2))
+		f >> header2;
+		if(!f)
 		{
 			Error("ResourceManager: Failed to read pak '%s' extra header (%u).", path, GetLastError());
 			return false;
@@ -205,7 +192,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		}
 
 		// read files
-		BufferHandle&& buf = stream.ReadToBuffer(header2.files_size);
+		BufferHandle&& buf = f.ReadToBuffer(header2.files_size);
 		if(!buf)
 		{
 			Error("ResourceManager: Failed to read pak '%s' files (%u).", path);
@@ -227,13 +214,14 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		PakV0* pak0 = new PakV0;
 		pak = pak0;
 		pak0->files.resize(header2.files);
-		StreamReader buf_stream(buf);
+		MemoryReader stream(buf);
 		for(uint i = 0; i < header2.files; ++i)
 		{
 			PakV0::File& file = pak0->files[i];
-			if(!buf_stream.Read(file.name)
-				|| !buf_stream.Read(file.size)
-				|| !buf_stream.Read(file.offset))
+			stream >> file.name;
+			stream >> file.size;
+			stream >> file.offset;
+			if(!stream)
 			{
 				Error("ResourceManager: Failed to read pak '%s', broken file at index %u.", path, i);
 				delete pak0;
@@ -271,7 +259,8 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 	{
 		// read extra header
 		PakV1::ExtraHeader header2;
-		if(!stream.Read(header2))
+		f >> header2;
+		if(!f)
 		{
 			Error("ResourceManager: Failed to read pak '%s' extra header (%u).", path, GetLastError());
 			return false;
@@ -279,14 +268,14 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		total_size -= sizeof(PakV1::ExtraHeader);
 
 		// read table
-		if(!stream.Ensure(header2.file_entry_table_size) || !stream.Ensure(header2.files_count * sizeof(PakV1::File)))
+		if(!f.Ensure(header2.file_entry_table_size) || !f.Ensure(header2.files_count * sizeof(PakV1::File)))
 		{
 			Error("ResourceManager: Failed to read pak '%s' files table (%u).", path, GetLastError());
 			return false;
 		}
 		Buffer* buf = BufferPool.Get();
 		buf->Resize(header2.file_entry_table_size);
-		stream.Read(buf->Data(), header2.file_entry_table_size);
+		f.Read(buf->Data(), header2.file_entry_table_size);
 		total_size -= header2.file_entry_table_size;
 
 		// decrypt table
@@ -348,7 +337,7 @@ bool ResourceManager::AddPak(cstring path, cstring key)
 		}
 	}
 
-	pak->file = stream.PinFile();
+	pak->file = f;
 	pak->version = header.version;
 	pak->path = path;
 	paks.push_back(pak);
@@ -480,12 +469,12 @@ ResourceType ResourceManager::FilenameToResourceType(cstring filename)
 }
 
 //=================================================================================================
-BufferHandle ResourceManager::GetBuffer(Resource* res)
+Buffer* ResourceManager::GetBuffer(Resource* res)
 {
 	assert(res);
 
 	if(res->pak_index == INVALID_PAK)
-		return BufferHandle(StreamReader::LoadToBuffer(res->path));
+		return FileReader::ReadToBuffer(res->path);
 	else
 	{
 		Pak& pak = *paks[res->pak_index];
@@ -493,18 +482,18 @@ BufferHandle ResourceManager::GetBuffer(Resource* res)
 		{
 			PakV0& pak0 = (PakV0&)pak;
 			PakV0::File& file = pak0.files[res->pak_file_index];
-			return BufferHandle(StreamReader::LoadToBuffer(pak0.file, file.offset, file.size));
+			return pak0.file.ReadToBuffer(file.offset, file.size);
 		}
 		else
 		{
 			PakV1& pak1 = (PakV1&)pak;
 			PakV1::File& file = pak1.files[res->pak_file_index];
-			Buffer* buf = StreamReader::LoadToBuffer(pak.file, file.offset, file.compressed_size);
+			Buffer* buf = pak.file.ReadToBuffer(file.offset, file.compressed_size);
 			if(pak1.encrypted)
 				io::Crypt((char*)buf->Data(), buf->Size(), pak1.key.c_str(), pak1.key.length());
 			if(file.compressed_size != file.size)
 				buf = buf->Decompress(file.size);
-			return BufferHandle(buf);
+			return buf;
 		}
 	}
 }
@@ -518,57 +507,6 @@ cstring ResourceManager::GetPath(Resource* res)
 		return res->path.c_str();
 	else
 		return Format("%s/%s", paks[res->pak_index]->path.c_str(), res->filename);
-}
-
-//=================================================================================================
-StreamReader ResourceManager::GetStream(Resource* res, StreamType type)
-{
-	assert(res);
-
-	if(res->pak_index == INVALID_PAK)
-	{
-		if(type == StreamType::Memory)
-			return StreamReader::LoadAsMemoryStream(res->path);
-		else
-			return StreamReader(res->path);
-	}
-	else
-	{
-		Pak& pak = *paks[res->pak_index];
-		uint size, compressed_size, offset;
-		cstring key = nullptr;
-
-		if(pak.version == 0)
-		{
-			PakV0& pak0 = (PakV0&)pak;
-			PakV0::File& file = pak0.files[res->pak_file_index];
-			size = file.size;
-			compressed_size = file.size;
-			offset = file.offset;
-		}
-		else
-		{
-			PakV1& pak1 = (PakV1&)pak;
-			PakV1::File& file = pak1.files[res->pak_file_index];
-			size = file.size;
-			compressed_size = file.compressed_size;
-			offset = file.offset;
-			if(pak1.encrypted)
-				key = pak1.key.c_str();
-		}
-
-		if(type == StreamType::File && size == compressed_size && !key)
-			return StreamReader(pak.file, offset, size);
-		else
-		{
-			Buffer* buf = StreamReader::LoadToBuffer(pak.file, offset, compressed_size);
-			if(key)
-				io::Crypt((char*)buf->Data(), buf->Size(), key, strlen(key));
-			if(size != compressed_size)
-				buf = buf->Decompress(size);
-			return StreamReader(buf);
-		}
-	}
 }
 
 //=================================================================================================
@@ -793,11 +731,18 @@ void ResourceManager::LoadResourceInternal(Resource* res)
 //=================================================================================================
 void ResourceManager::LoadMesh(Mesh* mesh)
 {
-	StreamReader&& reader = GetStream(mesh, StreamType::FullFileOrMemory);
-
 	try
 	{
-		mesh->Load(reader, device);
+		if(mesh->IsFile())
+		{
+			FileReader f(mesh->path);
+			mesh->Load(f, device);
+		}
+		else
+		{
+			MemoryReader f(GetBuffer(mesh));
+			mesh->Load(f, device);
+		}
 	}
 	catch(cstring err)
 	{
@@ -808,11 +753,18 @@ void ResourceManager::LoadMesh(Mesh* mesh)
 //=================================================================================================
 void ResourceManager::LoadMeshMetadata(Mesh* mesh)
 {
-	StreamReader&& reader = GetStream(mesh, StreamType::FullFileOrMemory);
-
 	try
 	{
-		mesh->LoadMetadata(reader);
+		if(mesh->IsFile())
+		{
+			FileReader f(mesh->path);
+			mesh->LoadMetadata(f);
+		}
+		else
+		{
+			MemoryReader f(GetBuffer(mesh));
+			mesh->LoadMetadata(f);
+		}
 	}
 	catch(cstring err)
 	{
@@ -823,11 +775,18 @@ void ResourceManager::LoadMeshMetadata(Mesh* mesh)
 //=================================================================================================
 void ResourceManager::LoadVertexData(VertexData* vd)
 {
-	StreamReader&& reader = GetStream(vd, StreamType::FullFileOrMemory);
-
 	try
 	{
-		Mesh::LoadVertexData(vd, reader);
+		if(vd->IsFile())
+		{
+			FileReader f(vd->path);
+			Mesh::LoadVertexData(vd, f);
+		}
+		else
+		{
+			MemoryReader f(GetBuffer(vd));
+			Mesh::LoadVertexData(vd, f);
+		}
 	}
 	catch(cstring err)
 	{

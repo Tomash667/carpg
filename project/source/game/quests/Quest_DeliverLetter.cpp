@@ -7,6 +7,7 @@
 #include "LocationHelper.h"
 #include "QuestManager.h"
 #include "GameGui.h"
+#include "GameFile.h"
 
 //=================================================================================================
 void Quest_DeliverLetter::Start()
@@ -203,22 +204,22 @@ const Item* Quest_DeliverLetter::GetQuestItem()
 }
 
 //=================================================================================================
-void Quest_DeliverLetter::Save(HANDLE file)
+void Quest_DeliverLetter::Save(GameWriter& f)
 {
-	Quest::Save(file);
+	Quest::Save(f);
 
 	if(prog < Progress::Finished)
-		WriteFile(file, &end_loc, sizeof(end_loc), &tmp, nullptr);
+		f << end_loc;
 }
 
 //=================================================================================================
-bool Quest_DeliverLetter::Load(HANDLE file)
+bool Quest_DeliverLetter::Load(GameReader& f)
 {
-	Quest::Load(file);
+	Quest::Load(f);
 
 	if(prog < Progress::Finished)
 	{
-		ReadFile(file, &end_loc, sizeof(end_loc), &tmp, nullptr);
+		f >> end_loc;
 
 		Location& loc = *game->locations[end_loc];
 

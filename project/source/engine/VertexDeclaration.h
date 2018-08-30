@@ -96,8 +96,6 @@ struct VTerrain
 	Vec3 normal;
 	Vec2 tex;
 	Vec2 tex2;
-
-	static const DWORD fvf = D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2;
 };
 
 //-----------------------------------------------------------------------------

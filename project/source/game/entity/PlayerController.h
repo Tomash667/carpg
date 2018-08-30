@@ -8,14 +8,6 @@
 #include "KeyStates.h"
 
 //-----------------------------------------------------------------------------
-struct Chest;
-struct DialogContext;
-struct Door;
-struct GroundItem;
-struct Usable;
-struct PlayerInfo;
-
-//-----------------------------------------------------------------------------
 enum NextAction
 {
 	NA_NONE,
@@ -164,8 +156,8 @@ struct PlayerController : public HeroPlayerCommon
 
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
-	void Write(BitStream& stream) const;
-	bool Read(BitStream& stream);
+	void Write(BitStreamWriter& f) const;
+	bool Read(BitStreamReader& f);
 
 	bool IsTradingWith(Unit* t) const
 	{

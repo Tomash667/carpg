@@ -32,8 +32,8 @@ public:
 	bool IfNeedTalk(cstring topic) const override;
 	bool IfSpecial(DialogContext& ctx, cstring msg) override;
 	void HandleLocationEvent(LocationEventHandler::Event event) override;
-	void Save(HANDLE file) override;
-	bool Load(HANDLE file) override;
+	void Save(GameWriter& f) override;
+	bool Load(GameReader& f) override;
 	int GetLocationEventHandlerQuestRefid() override
 	{
 		return refid;
@@ -114,9 +114,9 @@ public:
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
 	int GetUnitEventHandlerQuestRefid() override { return refid; }
 	int GetLocationEventHandlerQuestRefid() override { return refid; }
-	void Save(HANDLE file) override;
-	bool Load(HANDLE file) override;
-	void LoadOld(HANDLE file);
+	void Save(GameWriter& f) override;
+	bool Load(GameReader& f) override;
+	void LoadOld(GameReader& f);
 
 	OrcClass GetOrcClass() const { return orc_class; }
 

@@ -85,7 +85,7 @@ void TeamPanel::Draw(ControlDrawData*)
 		pos.x + size.x - 16,
 		pos.y + size.y - 16
 	};
-	GUI.DrawText(GUI.fBig, txTeam, DT_TOP | DT_CENTER, BLACK, rect);
+	GUI.DrawText(GUI.fBig, txTeam, DTF_TOP | DTF_CENTER, Color::Black, rect);
 
 	Int2 offset = global_pos + Int2(8, 40 - scrollbar.offset);
 	rect = Rect::Create(Int2(global_pos.x + 8, global_pos.y + 40), Int2(size.x - 52, size.y - 96));
@@ -109,12 +109,12 @@ void TeamPanel::Draw(ControlDrawData*)
 			Vec2 scale;
 			Control::ResizeImage(t, Int2(32, 32), img_size, scale);
 			mat = Matrix::Transform2D(nullptr, 0.f, &scale, nullptr, 0.f, &Vec2((float)offset.x, (float)offset.y));
-			GUI.DrawSprite2(t, mat, nullptr, &rect, WHITE);
+			GUI.DrawSprite2(t, mat, nullptr, &rect, Color::White);
 		}
 		if(u == Team.leader)
-			GUI.DrawSprite(tKorona, Int2(offset.x + 32, offset.y), WHITE, &rect);
+			GUI.DrawSprite(tKorona, Int2(offset.x + 32, offset.y), Color::White, &rect);
 		if(!u->IsAlive())
-			GUI.DrawSprite(tCzaszka, Int2(offset.x + 64, offset.y), WHITE, &rect);
+			GUI.DrawSprite(tCzaszka, Int2(offset.x + 64, offset.y), Color::White, &rect);
 
 		Rect r2 = {
 			offset.x + 96,
@@ -136,7 +136,7 @@ void TeamPanel::Draw(ControlDrawData*)
 			s += Format(txDays, u->player->free_days);
 		}
 		s += ")$h-";
-		if(!GUI.DrawText(GUI.default_font, s->c_str(), DT_VCENTER | DT_SINGLELINE | DT_PARSE_SPECIAL, (n == picked ? WHITE : BLACK), r2, &rect, &hitboxes, &hitbox_counter))
+		if(!GUI.DrawText(GUI.default_font, s->c_str(), DTF_VCENTER | DTF_SINGLELINE | DTF_PARSE_SPECIAL, (n == picked ? Color::White : Color::Black), r2, &rect, &hitboxes, &hitbox_counter))
 			break;
 
 		offset.y += 32;

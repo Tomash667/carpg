@@ -205,20 +205,18 @@ const Item* Quest_FindArtifact::GetQuestItem()
 }
 
 //=================================================================================================
-void Quest_FindArtifact::Save(HANDLE file)
+void Quest_FindArtifact::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
+	Quest_Dungeon::Save(f);
 
-	GameWriter f(file);
 	f << item;
 }
 
 //=================================================================================================
-bool Quest_FindArtifact::Load(HANDLE file)
+bool Quest_FindArtifact::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
+	Quest_Dungeon::Load(f);
 
-	GameReader f(file);
 	f.LoadArtifact(item);
 
 	CreateItemCopy(quest_item, item);

@@ -17,10 +17,6 @@
 #include "CreatedCharacter.h"
 
 //-----------------------------------------------------------------------------
-struct Unit;
-class PickItemDialog;
-
-//-----------------------------------------------------------------------------
 class CreateCharacterPanel : public GameDialogBox
 {
 public:

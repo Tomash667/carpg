@@ -174,11 +174,9 @@ void Quest_Sawmill::HandleLocationEvent(LocationEventHandler::Event event)
 }
 
 //=================================================================================================
-void Quest_Sawmill::Save(HANDLE file)
+void Quest_Sawmill::Save(GameWriter& f)
 {
-	Quest_Dungeon::Save(file);
-
-	GameWriter f(file);
+	Quest_Dungeon::Save(f);
 
 	f << sawmill_state;
 	f << build_state;
@@ -189,16 +187,14 @@ void Quest_Sawmill::Save(HANDLE file)
 }
 
 //=================================================================================================
-bool Quest_Sawmill::Load(HANDLE file)
+bool Quest_Sawmill::Load(GameReader& f)
 {
-	Quest_Dungeon::Load(file);
+	Quest_Dungeon::Load(f);
 
 	location_event_handler = this;
 
 	if(LOAD_VERSION >= V_0_4)
 	{
-		GameReader f(file);
-
 		f >> sawmill_state;
 		f >> build_state;
 		f >> days;
@@ -211,9 +207,8 @@ bool Quest_Sawmill::Load(HANDLE file)
 }
 
 //=================================================================================================
-void Quest_Sawmill::LoadOld(HANDLE file)
+void Quest_Sawmill::LoadOld(GameReader& f)
 {
-	GameReader f(file);
 	int city, forest;
 
 	f >> city;

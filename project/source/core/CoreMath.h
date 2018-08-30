@@ -3,6 +3,7 @@
 using namespace DirectX;
 
 //-----------------------------------------------------------------------------
+// Declarations
 struct Int2;
 struct Rect;
 struct Vec2;
@@ -17,50 +18,33 @@ struct Quat;
 struct Plane;
 
 //-----------------------------------------------------------------------------
+// Global constants
+const float PI = 3.14159265358979323846f;
+const float SQRT_2 = 1.41421356237f;
+const float G = 9.8105f;
+const float MAX_ANGLE = PI - FLT_EPSILON;
+
+//-----------------------------------------------------------------------------
 // Random numbers
 //-----------------------------------------------------------------------------
-// Pseudo random number generator
-struct RNG
+namespace internal
 {
-	unsigned long val;
-
-	RNG() : val(1)
-	{
-	}
-
-	int Rand()
-	{
-		val = val * 214013L + 2531011L;
-		return ((val >> 16) & 0x7fff);
-	}
-
-	int RandTmp()
-	{
-		int tval = val * 214013L + 2531011L;
-		return ((tval >> 16) & 0x7fff);
-	}
+	extern std::minstd_rand rng;
 };
-extern RNG _RNG;
 
+void Srand();
+inline void Srand(uint seed)
+{
+	internal::rng.seed(seed);
+}
+int RandVal();
 inline int Rand()
 {
-	return _RNG.Rand();
+	return internal::rng();
 }
 inline int Rand(int a)
 {
-	return _RNG.Rand() % a;
-}
-inline void Srand(int x)
-{
-	_RNG.val = x;
-}
-inline uint RandVal()
-{
-	return _RNG.val;
-}
-inline int RandTmp()
-{
-	return _RNG.RandTmp();
+	return Rand() % a;
 }
 inline int MyRand(int a)
 {
@@ -70,7 +54,7 @@ inline int MyRand(int a)
 // Random float number in range <0,1>
 inline float Random()
 {
-	return (float)Rand() / RAND_MAX;
+	return (float)Rand() / internal::rng.max();
 }
 
 // Random number in range <0,a>
@@ -84,7 +68,25 @@ inline T Random(T a)
 template<>
 inline float Random(float a)
 {
-	return ((float)Rand() / RAND_MAX)*a;
+	return ((float)Rand() / internal::rng.max())*a;
+}
+
+inline int RandomNormal(int a)
+{
+	assert(a > 0);
+	std::binomial_distribution<> r(a);
+	return r(internal::rng);
+}
+inline int RandomNormal(int a, int b)
+{
+	if(a == b)
+		return a;
+	else
+	{
+		assert(b > a);
+		std::binomial_distribution<> r(b - a);
+		return a + r(internal::rng);
+	}
 }
 
 // Random number in range <a,b>
@@ -99,7 +101,7 @@ template<>
 inline float Random(float a, float b)
 {
 	assert(b >= a);
-	return ((float)Rand() / RAND_MAX)*(b - a) + a;
+	return ((float)Rand() / internal::rng.max())*(b - a) + a;
 }
 
 inline float RandomPart(int parts)
@@ -230,13 +232,13 @@ inline T Distance(T x1, T y1, T x2, T y2)
 {
 	T x = abs(x1 - x2);
 	T y = abs(y1 - y2);
-	return sqrt(x*x + y*y);
+	return sqrt(x*x + y * y);
 }
 inline float DistanceSqrt(float x1, float y1, float x2, float y2)
 {
 	float x = abs(x1 - x2),
 		y = abs(y1 - y2);
-	return x*x + y*y;
+	return x * x + y * y;
 }
 
 // Clip value to range
@@ -268,6 +270,11 @@ inline bool IsZero(float a)
 	return abs(a) < std::numeric_limits<float>::epsilon();
 }
 
+inline bool AlmostZero(float f)
+{
+	return (absolute_cast<unsigned>(f) & 0x7f800000L) == 0;
+}
+
 // Return sign of value
 template<typename T>
 inline T Sign(T f)
@@ -288,6 +295,11 @@ inline float Lerp(float a, float b, float t)
 inline int Lerp(int a, int b, float t)
 {
 	return int(t*(b - a)) + a;
+}
+template<typename T>
+inline T Lerp(T a, T b, float t)
+{
+	return T(t*(b - a)) + a;
 }
 
 // Return shortes direction between angles
@@ -319,7 +331,7 @@ inline bool InRange(__int64 value)
 inline float Slerp(float a, float b, float t)
 {
 	float angle = ShortestArc(a, b);
-	return a + angle * t;
+	return Clip(a + angle * t);
 }
 
 // Count 1 bits in value
@@ -336,6 +348,20 @@ template <class T>
 inline bool IsPow2(T x)
 {
 	return ((x > 0) && ((x & (x - 1)) == 0));
+}
+
+// Round up to next highest power of 2
+template<typename T>
+inline T NextPow2(T x)
+{
+	x--;
+	x |= x >> 1;
+	x |= x >> 2;
+	x |= x >> 4;
+	x |= x >> 8;
+	x |= x >> 16;
+	x++;
+	return x;
 }
 
 // Return float infinity
@@ -423,6 +449,7 @@ struct Int2
 	// Comparison operators
 	bool operator == (const Int2& i) const;
 	bool operator != (const Int2& i) const;
+	bool operator > (const Int2& i) const;
 
 	// Assignment operators
 	Int2& operator = (const Int2& i);
@@ -449,24 +476,20 @@ struct Int2
 	int Clamp(int d) const;
 	int Lerp(float t) const;
 	int Random() const;
+	Int2 YX() const { return Int2(y, x); }
 
 	// Static functions
 	static int Distance(const Int2& i1, const Int2& i2);
 	static Int2 Lerp(const Int2& i1, const Int2& i2, float t);
 	static Int2 Max(const Int2& i1, const Int2& i2);
 	static Int2 Min(const Int2& i1, const Int2& i2);
+	static void MinMax(Int2& i1, Int2& i2);
+	static void MinMax(const Int2& i1, const Int2& i2, Int2& min, Int2& max);
 	static Int2 Random(const Int2& i1, const Int2& i2);
 
 	// Constants
 	static const Int2 Zero;
-};
-
-//-----------------------------------------------------------------------------
-// 2D int point
-//-----------------------------------------------------------------------------
-struct UINT2
-{
-	uint x, y;
+	static const Int2 MaxValue;
 };
 
 //-----------------------------------------------------------------------------
@@ -477,6 +500,7 @@ struct Rect
 	Int2 p1, p2;
 
 	Rect();
+	Rect(int x, int y);
 	Rect(int x1, int y1, int x2, int y2);
 	Rect(const Int2& p1, const Int2& p2);
 	Rect(const Rect& box);
@@ -539,8 +563,10 @@ struct Rect
 
 	// Static functions
 	static Rect Create(const Int2& pos, const Int2& size);
+	static Rect Create(const Int2& pos, const Int2& size, int pad);
 	static Rect Intersect(const Rect& r1, const Rect& r2);
 	static bool Intersect(const Rect& r1, const Rect& r2, Rect& result);
+	static bool IsInside(const Int2& pos, const Int2& size, const Int2& pt);
 
 	// Constants
 	static const Rect Zero;
@@ -585,6 +611,7 @@ struct Vec2 : XMFLOAT2
 	Vec2 operator * (const Vec2& v) const;
 	Vec2 operator * (float s) const;
 	Vec2 operator / (float s) const;
+	Vec2 operator / (const Int2& i) const;
 	friend Vec2 operator * (float s, const Vec2& v);
 
 	// Methods
@@ -601,14 +628,12 @@ struct Vec2 : XMFLOAT2
 	bool InBounds(const Vec2& bounds) const;
 	float Length() const;
 	float LengthSquared() const;
-	float Lerp(float t) const
-	{
-		return ::Lerp(x, y, t);
-	}
+	float Lerp(float t) const { return ::Lerp(x, y, t); }
 	Vec2& Normalize();
 	void Normalize(Vec2& v) const;
 	Vec2 Normalized() const;
 	float Random() const;
+	void Swap() { std::swap(x, y); }
 	Vec3 XY(float z = 0.f) const;
 	Vec3 XZ(float y = 0.f) const;
 
@@ -669,6 +694,7 @@ struct Vec3 : XMFLOAT3
 	Vec3(const Vec3& v);
 	Vec3(FXMVECTOR v);
 	explicit Vec3(const XMVECTORF32& v);
+	explicit Vec3(const float* f);
 
 	operator XMVECTOR() const;
 	operator float*();
@@ -711,6 +737,9 @@ struct Vec3 : XMFLOAT3
 	bool IsPositive() const;
 	float Length() const;
 	float LengthSquared() const;
+	Vec3 ModX(float value) const;
+	Vec3 ModY(float value) const;
+	Vec3 ModZ(float value) const;
 	Vec3& Normalize();
 	void Normalize(Vec3& result) const;
 	Vec3 Normalized() const;
@@ -832,7 +861,6 @@ struct Vec4 : XMFLOAT4
 	static Vec4 CatmullRom(const Vec4& v1, const Vec4& v2, const Vec4& v3, const Vec4& v4, float t);
 	static float Distance(const Vec4& v1, const Vec4& v2);
 	static float DistanceSquared(const Vec4& v1, const Vec4& v2);
-	static Vec4 FromColor(DWORD color);
 	static void Hermite(const Vec4& v1, const Vec4& t1, const Vec4& v2, const Vec4& t2, float t, Vec4& result);
 	static Vec4 Hermite(const Vec4& v1, const Vec4& t1, const Vec4& v2, const Vec4& t2, float t);
 	static void Lerp(const Vec4& v1, const Vec4& v2, float t, Vec4& result);
@@ -911,9 +939,22 @@ struct Box2d
 		box.Set(pos, size);
 		return box;
 	}
+	static Box2d Create(const Vec2& pos, const Vec2& size)
+	{
+		return Box2d(pos.x, pos.y, pos.x + size.x, pos.y + size.y);
+	}
 
 	// Methods
+	void AddMargin(float margin)
+	{
+		v1.x += margin;
+		v1.y += margin;
+		v2.x -= margin;
+		v2.y -= margin;
+	}
 	Vec2 GetRandomPoint() const;
+	Vec2 GetRandomPoint(float offset) const;
+	Box2d Intersect(const Box2d& b) const;
 	bool IsInside(const Vec2& v) const;
 	bool IsInside(const Vec3& v) const;
 	bool IsInside(const Int2& p) const;
@@ -1002,6 +1043,7 @@ struct Box2d
 		w = (v2.x - v1.x) / 2;
 		h = (v2.y - v1.y) / 2;
 	}
+	Box ToBoxXZ(float y1, float y2) const;
 
 	float& Left() { return v1.x; }
 	float& Right() { return v2.x; }
@@ -1014,6 +1056,14 @@ struct Box2d
 	float Bottom() const { return v2.y; }
 	float MidX() const { return (v2.x - v1.x) / 2 + v1.x; }
 	float MidY() const { return (v2.y - v1.y) / 2 + v1.y; }
+
+	// Static functions
+	static bool Intersect(const Box2d& a, const Box2d& b, Box2d& result);
+	static Box2d Intersect(const Box2d& a, const Box2d& b);
+
+	// Constants
+	static const Box2d Zero;
+	static const Box2d Unit;
 };
 
 //-----------------------------------------------------------------------------
@@ -1062,6 +1112,10 @@ struct Box
 	Vec2 SizeXZ() const;
 	float SizeY() const;
 	float SizeZ() const;
+
+	// Static functions
+	static Box Create(const Vec3& pos, const Vec3& size);
+	static Box CreateXZ(const Box2d& box2d, float y1, float y2);
 };
 
 //-----------------------------------------------------------------------------
@@ -1121,6 +1175,7 @@ struct Matrix : XMFLOAT4X4
 	static Matrix CreateBillboard(const Vec3& object, const Vec3& cameraPosition, const Vec3& cameraUp, const Vec3* cameraForward = nullptr);
 	static Matrix CreateConstrainedBillboard(const Vec3& object, const Vec3& cameraPosition, const Vec3& rotateAxis,
 		const Vec3* cameraForward = nullptr, const Vec3* objectForward = nullptr);
+	static Matrix CreateFromAxes(const Vec3& axisX, const Vec3& axisY, const Vec3& axisZ);
 	static Matrix CreateFromAxisAngle(const Vec3& axis, float angle);
 	static Matrix CreateLookAt(const Vec3& position, const Vec3& target, const Vec3& up = Vec3(0, 1, 0));
 	static Matrix CreateOrthographic(float width, float height, float zNearPlane, float zFarPlane);
@@ -1317,7 +1372,22 @@ struct Oob
 };
 
 //-----------------------------------------------------------------------------
-// KOLIZJE
+// POD types
+//-----------------------------------------------------------------------------
+namespace POD
+{
+	struct Uint2
+	{
+		uint x, y;
+	};
+	struct Vec3
+	{
+		float x, y, z;
+	};
+}
+
+//-----------------------------------------------------------------------------
+// Collisions and functions
 //-----------------------------------------------------------------------------
 // promieñ - AABOX
 bool RayToBox(const Vec3& ray_pos, const Vec3& ray_dir, const Box& box, float* out_t);
@@ -1372,13 +1442,7 @@ float DistanceRectangleToPoint(const Vec2& pos, const Vec2& size, const Vec2& pt
 // x0,y0 - point
 float PointLineDistance(float x0, float y0, float x1, float y1, float x2, float y2);
 float GetClosestPointOnLineSegment(const Vec2& A, const Vec2& B, const Vec2& P, Vec2& result);
+void SphericalToCartesian(Vec3& out, float yaw, float pitch, float r);
 
 //-----------------------------------------------------------------------------
-// POD types
-//-----------------------------------------------------------------------------
-struct VEC3P
-{
-	float x, y, z;
-};
-
 #include "CoreMath.inl"

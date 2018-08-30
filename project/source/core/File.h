@@ -3,10 +3,16 @@
 //-----------------------------------------------------------------------------
 // Bufor
 extern char BUF[256];
-extern DWORD tmp;
 
+//-----------------------------------------------------------------------------
 namespace io
 {
+	struct FileInfo
+	{
+		cstring filename;
+		bool is_dir;
+	};
+
 	// Delete directory.
 	bool DeleteDirectory(cstring dir);
 	// Check if directory exists.
@@ -14,7 +20,7 @@ namespace io
 	// Check if file exists.
 	bool FileExists(cstring filename);
 	// Find files matching pattern, return false from func to stop.
-	bool FindFiles(cstring pattern, const std::function<bool(const WIN32_FIND_DATA&)>& func, bool exclude_special = true);
+	bool FindFiles(cstring pattern, delegate<bool(const FileInfo&)> func);
 	// Call ShellExecute on file
 	void Execute(cstring file);
 	// get filename from path, returned string use same string as argument
@@ -29,370 +35,427 @@ namespace io
 }
 
 //-----------------------------------------------------------------------------
-// Funkcje zapisuj¹ce/wczytuj¹ce z pliku
-//-----------------------------------------------------------------------------
-template<typename T>
-inline void WriteString(HANDLE file, const string& s)
-{
-	assert(s.length() <= std::numeric_limits<T>::max());
-	T len = (T)s.length();
-	WriteFile(file, &len, sizeof(len), &tmp, nullptr);
-	if(len)
-		WriteFile(file, s.c_str(), len, &tmp, nullptr);
-}
-
-template<typename T>
-inline void ReadString(HANDLE file, string& s)
-{
-	T len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-	if(len)
-	{
-		s.resize(len);
-		ReadFile(file, (char*)s.c_str(), len, &tmp, nullptr);
-	}
-	else
-		s.clear();
-}
-
-inline void WriteString1(HANDLE file, const string& s)
-{
-	WriteString<byte>(file, s);
-}
-
-inline void WriteString2(HANDLE file, const string& s)
-{
-	WriteString<word>(file, s);
-}
-
-inline void ReadString1(HANDLE file, string& s)
-{
-	ReadString<byte>(file, s);
-}
-
-inline void ReadString1(HANDLE file)
-{
-	byte len;
-	ReadFile(file, &len, sizeof(len), &tmp, nullptr);
-	if(len == 0)
-		BUF[0] = 0;
-	else
-	{
-		ReadFile(file, BUF, len, &tmp, nullptr);
-		BUF[len] = 0;
-	}
-}
-
-inline void ReadString2(HANDLE file, string& s)
-{
-	ReadString<word>(file, s);
-}
-
-template<typename COUNT_TYPE, typename STRING_SIZE_TYPE>
-inline void WriteStringArray(HANDLE file, vector<string>& strings)
-{
-	COUNT_TYPE ile = (COUNT_TYPE)strings.size();
-	WriteFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	for(vector<string>::iterator it = strings.begin(), end = strings.end(); it != end; ++it)
-		WriteString<STRING_SIZE_TYPE>(file, *it);
-}
-
-template<typename COUNT_TYPE, typename STRING_SIZE_TYPE>
-inline void ReadStringArray(HANDLE file, vector<string>& strings)
-{
-	COUNT_TYPE ile;
-	ReadFile(file, &ile, sizeof(ile), &tmp, nullptr);
-	strings.resize(ile);
-	for(vector<string>::iterator it = strings.begin(), end = strings.end(); it != end; ++it)
-		ReadString<STRING_SIZE_TYPE>(file, *it);
-}
+typedef void* FileHandle;
+const FileHandle INVALID_FILE_HANDLE = (FileHandle)(int*)-1;
 
 //-----------------------------------------------------------------------------
-class FileReader
+class StreamReader
 {
 public:
-	FileReader() : file(INVALID_HANDLE_VALUE), own_handle(false)
-	{
-	}
+	StreamReader() : ok(false) {}
+	StreamReader(const StreamReader&) = delete;
+	virtual ~StreamReader() {}
 
-	explicit FileReader(HANDLE file) : file(file), own_handle(false)
-	{
-	}
+	virtual uint GetSize() const = 0;
+	virtual uint GetPos() const = 0;
+	virtual bool SetPos(uint pos) = 0;
+	virtual void Read(void* ptr, uint size) = 0;
+	virtual void Skip(uint size) = 0;
 
-	explicit FileReader(cstring filename) : own_handle(true)
-	{
-		Open(filename);
-	}
+	bool IsOk() const { return ok; }
+	operator bool() const { return IsOk(); }
+	const string& GetStringBuffer() const { return buf; }
 
-	~FileReader()
+	bool Ensure(uint elements_size) const
 	{
-		if(own_handle && file != INVALID_HANDLE_VALUE)
-		{
-			CloseHandle(file);
-			file = INVALID_HANDLE_VALUE;
-		}
+		auto pos = GetPos();
+		uint offset;
+		return ok && CheckedAdd(pos, elements_size, offset) && offset <= GetSize();
 	}
-
-	bool Open(cstring filename)
+	bool Ensure(uint count, uint element_size) const
 	{
-		assert(filename);
-		file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-		own_handle = true;
-		return (file != INVALID_HANDLE_VALUE);
+		auto pos = GetPos();
+		uint offset;
+		return ok && CheckedMultiplyAdd(count, element_size, pos, offset) && offset <= GetSize();
 	}
-
-	bool IsOpen() const
-	{
-		return file != INVALID_HANDLE_VALUE;
-	}
-
-	bool Read(void* ptr, uint size)
-	{
-		ReadFile(file, ptr, size, &tmp, nullptr);
-		return size == tmp;
-	}
-
-	template<typename T>
-	bool operator >> (T& a)
-	{
-		return Read(&a, sizeof(a));
-	}
-
 	template<typename T>
 	T Read()
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		T a;
 		Read(&a, sizeof(T));
 		return a;
 	}
-
 	template<typename T>
-	bool Read(T& a)
+	void Read(T& a)
 	{
-		return Read(&a, sizeof(a));
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		Read(&a, sizeof(a));
+	}
+	template<typename T>
+	void operator >> (T& a)
+	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		Read(&a, sizeof(a));
 	}
 
 	template<typename T, typename T2>
-	bool ReadCasted(T2& a)
+	void ReadCasted(T2& a)
 	{
-		T b;
-		if(!Read<T>(b))
-			return false;
-		a = (T2)b;
-		return true;
+		static_assert(!std::is_pointer<T>::value && !std::is_pointer<T2>::value, "Value is pointer!");
+		a = (T2)Read<T>();
 	}
 
-	bool ReadStringBUF()
+	template<typename LengthType>
+	const string& ReadString()
 	{
-		byte len = Read<byte>();
-		if(len == 0)
-		{
-			BUF[0] = 0;
-			return true;
-		}
+		LengthType len = Read<LengthType>();
+		if(!ok || len == 0)
+			buf.clear();
 		else
 		{
-			BUF[len] = 0;
-			return Read(BUF, len);
+			buf.resize(len);
+			Read((char*)buf.c_str(), len);
+		}
+		return buf;
+	}
+	const string& ReadString1()
+	{
+		return ReadString<byte>();
+	}
+	const string& ReadString2()
+	{
+		return ReadString<word>();
+	}
+	const string& ReadString4()
+	{
+		return ReadString<uint>();
+	}
+
+	template<typename LengthType>
+	void ReadString(string& s)
+	{
+		LengthType len = Read<LengthType>();
+		if(!ok || len == 0)
+			s.clear();
+		else
+		{
+			s.resize(len);
+			Read((char*)s.c_str(), len);
+		}
+	}
+	void ReadString1(string& s)
+	{
+		ReadString<byte>(s);
+	}
+	void ReadString2(string& s)
+	{
+		ReadString<word>(s);
+	}
+	void ReadString4(string& s)
+	{
+		ReadString<uint>(s);
+	}
+	template<>
+	void Read(string& s)
+	{
+		ReadString1(s);
+	}
+	void operator >> (string& s)
+	{
+		ReadString1(s);
+	}
+
+	template<typename CountType, typename LengthType>
+	void ReadStringArray(vector<string>& strs)
+	{
+		CountType count = Read<CountType>();
+		if(!ok || count == 0)
+			strs.clear();
+		else
+		{
+			strs.resize(count);
+			for(string& str : strs)
+				ReadString<LengthType>(str);
 		}
 	}
 
 	template<typename T>
-	void Skip()
+	void Skip(typename std::enable_if<(sizeof(T) <= 8)>::type* = 0)
 	{
-		SetFilePointer(file, sizeof(T), nullptr, FILE_CURRENT);
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		T val;
+		Read(val);
 	}
-
-	void Skip(int bytes)
-	{
-		SetFilePointer(file, bytes, nullptr, FILE_CURRENT);
-	}
-
-	bool ReadString1(string& s)
-	{
-		byte len;
-		if(!Read(len))
-			return false;
-		s.resize(len);
-		return Read((char*)s.c_str(), len);
-	}
-
-	bool ReadString2(string& s)
-	{
-		word len;
-		if(!Read(len))
-			return false;
-		s.resize(len);
-		return Read((char*)s.c_str(), len);
-	}
-
-	bool operator >> (string& s)
-	{
-		return ReadString1(s);
-	}
-
-	operator bool() const
-	{
-		return file != INVALID_HANDLE_VALUE;
-	}
-
-	void ReadToString(string& s)
-	{
-		DWORD size = GetFileSize(file, nullptr);
-		s.resize(size);
-		ReadFile(file, (char*)s.c_str(), size, &tmp, nullptr);
-		assert(size == tmp);
-	}
-
 	template<typename T>
-	void ReadVector1(vector<T>& v)
+	void Skip(typename std::enable_if<(sizeof(T) > 8)>::type* = 0)
 	{
-		byte count;
-		Read(count);
-		v.resize(count);
-		if(count)
-			Read(&v[0], sizeof(T)*count);
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		Skip(sizeof(T));
 	}
-
-	template<typename T>
-	void ReadVector2(vector<T>& v)
+	template<typename LengthType>
+	void SkipString()
 	{
-		word count;
-		Read(count);
-		v.resize(count);
-		if(count)
-			Read(&v[0], sizeof(T)*count);
+		LengthType len = Read<LengthType>();
+		if(!ok || len == 0)
+			return;
+		Skip(len);
 	}
-
-	uint GetSize() const
+	void SkipString1()
 	{
-		return GetFileSize(file, nullptr);
+		SkipString<byte>();
+	}
+	template<typename CountType, typename LengthType>
+	void SkipStringArray()
+	{
+		CountType count = Read<CountType>();
+		if(!ok || count == 0)
+			return;
+		for(CountType i = 0; i < count; ++i)
+			SkipString<LengthType>();
 	}
 
 	bool Read0()
 	{
-		byte v;
-		return Read(v) && v == 0;
+		return Read<byte>() == 0;
+	}
+	bool Read1()
+	{
+		return Read<byte>() == 1;
 	}
 
-	HANDLE file;
+	template<typename SizeType, typename T>
+	void ReadVector(vector<T>& v)
+	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		SizeType size = Read<SizeType>();
+		if(!ok || size == 0)
+			v.clear();
+		else
+		{
+			v.resize(size);
+			Read(v.data(), sizeof(T) * size);
+		}
+	}
+	template<typename T>
+	void ReadVector1(vector<T>& v)
+	{
+		ReadVector<byte>(v);
+	}
+	template<typename T>
+	void ReadVector2(vector<T>& v)
+	{
+		ReadVector<word>(v);
+	}
+	template<typename T>
+	void ReadVector4(vector<T>& v)
+	{
+		ReadVector<uint>(v);
+	}
+	template<typename T>
+	void Read(vector<T>& v)
+	{
+		ReadVector4(v);
+	}
+	template<typename T>
+	void operator >> (vector<T>& v)
+	{
+		ReadVector4(v);
+	}
+
+	template<typename CastType, typename SizeType = uint, typename T>
+	void ReadVectorCasted(vector<T>& v)
+	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		SizeType size = Read<SizeType>();
+		if(!ok || size == 0)
+			v.clear();
+		else if(!Ensure(sizeof(CastType) * size))
+		{
+			ok = false;
+			v.clear();
+		}
+		else
+		{
+			Read((char*)v.data(), sizeof(CastType)*size);
+			T* to = v.data() + size - 1;
+			CastType* from = ((CastType*)v.data()) + size - 1;
+			while(size > 0)
+			{
+				*to = (T)*from;
+				--to;
+				--from;
+				--size;
+			}
+		}
+	}
+
+	Buffer* ReadToBuffer(uint size)
+	{
+		if(!Ensure(size))
+			return nullptr;
+		Buffer* buf = BufferPool.Get();
+		buf->Resize(size);
+		Read(buf->Data(), size);
+		return buf;
+	}
+	Buffer* ReadToBuffer(uint offset, uint size)
+	{
+		if(!SetPos(offset) || !Ensure(size))
+			return nullptr;
+		Buffer* buf = BufferPool.Get();
+		buf->Resize(size);
+		Read(buf->Data(), size);
+		return buf;
+	}
+
+protected:
+	bool ok;
+	static string buf;
+};
+
+//-----------------------------------------------------------------------------
+class FileReader : public StreamReader
+{
+public:
+	FileReader() : file(INVALID_FILE_HANDLE), own_handle(false) {}
+	explicit FileReader(FileHandle file) : file(file), own_handle(false) {}
+	explicit FileReader(Cstring filename) { Open(filename); }
+	~FileReader();
+	void operator = (FileReader& f);
+
+	bool Open(Cstring filename);
+	using StreamReader::Read;
+	void Read(void* ptr, uint size) override final;
+	void ReadToString(string& s);
+	using StreamReader::ReadToBuffer;
+	static Buffer* ReadToBuffer(Cstring path);
+	static Buffer* ReadToBuffer(Cstring path, uint offset, uint size);
+	using StreamReader::Skip;
+	void Skip(uint size) override final;
+	uint GetSize() const override final { return size; }
+	uint GetPos() const override final;
+	FileHandle GetHandle() const { return file; }
+	FileTime GetTime() const;
+	bool IsOpen() const { return file != INVALID_FILE_HANDLE; }
+	bool SetPos(uint pos) override final;
+
+protected:
+	FileHandle file;
+	uint size;
 	bool own_handle;
 };
 
 //-----------------------------------------------------------------------------
-class FileWriter
+class MemoryReader final : public StreamReader
 {
 public:
-	FileWriter() : file(INVALID_HANDLE_VALUE), own_handle(true)
-	{
-	}
+	MemoryReader(BufferHandle& buf);
+	MemoryReader(Buffer* buf);
+	~MemoryReader();
 
-	explicit FileWriter(HANDLE file) : file(file), own_handle(false)
-	{
-	}
+	using StreamReader::Read;
+	void Read(void* ptr, uint size) override;
+	using StreamReader::Skip;
+	void Skip(uint size) override;
+	uint GetSize() const override { return buf.Size(); }
+	uint GetPos() const override { return pos; }
+	bool SetPos(uint pos) override;
 
-	explicit FileWriter(cstring filename) : own_handle(true)
-	{
-		Open(filename);
-	}
+private:
+	Buffer& buf;
+	uint pos;
+};
 
-	~FileWriter()
-	{
-		if(own_handle && file != INVALID_HANDLE_VALUE)
-		{
-			CloseHandle(file);
-			file = INVALID_HANDLE_VALUE;
-		}
-	}
+//-----------------------------------------------------------------------------
+class StreamWriter
+{
+public:
+	virtual ~StreamWriter() {}
 
-	bool Open(cstring filename)
-	{
-		assert(filename);
-		file = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-		return (file != INVALID_HANDLE_VALUE);
-	}
-
-	bool IsOpen() const
-	{
-		return file != INVALID_HANDLE_VALUE;
-	}
-
-	void Write(const void* ptr, uint size)
-	{
-		WriteFile(file, ptr, size, &tmp, nullptr);
-		assert(size == tmp);
-	}
-
-	template<typename T>
-	void operator << (const T& a)
-	{
-		Write(&a, sizeof(a));
-	}
+	virtual void Write(const void* ptr, uint size) = 0;
+	virtual uint GetPos() const = 0;
+	virtual bool SetPos(uint pos) = 0;
 
 	template<typename T>
 	void Write(const T& a)
 	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		Write(&a, sizeof(a));
+	}
+	template<typename T>
+	void operator << (const T& a)
+	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
 		Write(&a, sizeof(a));
 	}
 
 	template<typename T, typename T2>
 	void WriteCasted(const T2& a)
 	{
+		static_assert(!std::is_pointer<T>::value && !std::is_pointer<T2>::value, "Value is pointer!");
 		Write(&a, sizeof(T));
 	}
 
+	template<typename SizeType>
+	void WriteString(const string& s)
+	{
+		assert(s.length() <= std::numeric_limits<SizeType>::max());
+		SizeType length = (SizeType)s.length();
+		Write(length);
+		Write(s.c_str(), length);
+	}
 	void WriteString1(const string& s)
 	{
-		int length = s.length();
-		assert(length < 256);
-		WriteCasted<byte>(length);
-		if(length)
-			Write(s.c_str(), length);
+		WriteString<byte>(s);
 	}
-
-	void WriteString1(cstring str)
-	{
-		assert(str);
-		int length = strlen(str);
-		assert(length < 256);
-		WriteCasted<byte>(length);
-		if(length)
-			Write(str, length);
-	}
-
 	void WriteString2(const string& s)
 	{
-		int length = s.length();
-		assert(length < 256 * 256);
-		WriteCasted<word>(length);
-		if(length)
-			Write(s.c_str(), length);
+		WriteString<word>(s);
+	}
+	void WriteString4(const string& s)
+	{
+		WriteString<uint>(s);
 	}
 
-	void WriteString2(cstring str)
+	template<typename SizeType>
+	void WriteString(cstring str)
 	{
 		assert(str);
-		int length = strlen(str);
-		assert(length < 256 * 256);
-		Write<word>(length);
-		if(length)
-			Write(str, length);
+		uint length = strlen(str);
+		assert(length <= std::numeric_limits<SizeType>::max());
+		WriteCasted<SizeType>(length);
+		Write(str, length);
+	}
+	void WriteString1(cstring str)
+	{
+		WriteString<byte>(str);
+	}
+	void WriteString2(cstring str)
+	{
+		WriteString<word>(str);
+	}
+	void WriteString4(cstring str)
+	{
+		WriteString<uint>(str);
 	}
 
+	template<typename CountType, typename LengthType>
+	void WriteStringArray(const vector<string>& strs)
+	{
+		assert(strs.size() <= (uint)std::numeric_limits<CountType>::max());
+		WriteCasted<CountType>(strs.size());
+		for(const string& str : strs)
+			WriteString<LengthType>(str);
+	}
+
+	template<>
+	void Write(const string& s)
+	{
+		WriteString1(s);
+	}
+	void Write(cstring str)
+	{
+		WriteString1(str);
+	}
 	void operator << (const string& s)
 	{
 		WriteString1(s);
 	}
-
 	void operator << (cstring str)
 	{
 		assert(str);
 		WriteString1(str);
-	}
-
-	operator bool() const
-	{
-		return file != INVALID_HANDLE_VALUE;
 	}
 
 	void Write0()
@@ -404,637 +467,138 @@ public:
 		WriteCasted<byte>(1);
 	}
 
+	template<typename SizeType, typename T>
+	void WriteVector(const vector<T>& v)
+	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		assert(v.size() <= (size_t)std::numeric_limits<SizeType>::max());
+		SizeType size = (SizeType)v.size();
+		Write(size);
+		Write(v.data(), size * sizeof(T));
+	}
 	template<typename T>
 	void WriteVector1(const vector<T>& v)
 	{
-		WriteCasted<byte>(v.size());
-		if(!v.empty())
-			Write(&v[0], sizeof(T)*v.size());
+		WriteVector<byte>(v);
 	}
-
 	template<typename T>
 	void WriteVector2(const vector<T>& v)
 	{
-		WriteCasted<word>(v.size());
-		if(!v.empty())
-			Write(&v[0], sizeof(T)*v.size());
+		WriteVector<word>(v);
 	}
-
-	void Flush()
+	template<typename T>
+	void WriteVector4(const vector<T>& v)
 	{
-		FlushFileBuffers(file);
+		WriteVector<short>(v);
 	}
-
-	uint GetSize() const
+	template<typename T>
+	void Write(const vector<T>& v)
 	{
-		return GetFileSize(file, nullptr);
+		WriteVector4(v);
+	}
+	template<typename T>
+	void operator << (const vector<T>& v)
+	{
+		WriteVector4(v);
 	}
 
+	template<typename CastType, typename SizeType = uint, typename T>
+	void WriteVectorCasted(const vector<T>& v)
+	{
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		assert(v.size() <= (size_t)std::numeric_limits<SizeType>::max());
+		SizeType size = (SizeType)v.size();
+		Write(size);
+		for(const T& e : v)
+			WriteCasted<CastType>(e);
+	}
 
 	template<typename T>
-	uint BeginPatch(const T& e)
+	uint BeginPatch(const T& a)
 	{
-		uint pos = SetFilePointer(file, 0, nullptr, FILE_CURRENT);
-		Write(e);
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		uint pos = GetPos();
+		Write(a);
 		return pos;
 	}
 
 	template<typename T>
-	void Patch(uint pos, const T& e)
+	void Patch(uint pos, const T& a)
 	{
-		uint prev_pos = SetFilePointer(file, 0, nullptr, FILE_CURRENT);
-		SetFilePointer(file, pos, nullptr, FILE_BEGIN);
-		Write(e);
-		SetFilePointer(file, prev_pos, nullptr, FILE_BEGIN);
+		static_assert(!std::is_pointer<T>::value, "Value is pointer!");
+		uint current_pos = GetPos();
+		SetPos(pos);
+		Write(a);
+		SetPos(current_pos);
 	}
+};
 
-	HANDLE file;
+//-----------------------------------------------------------------------------
+class FileWriter : public StreamWriter
+{
+public:
+	FileWriter() : file(INVALID_FILE_HANDLE), own_handle(true) {}
+	explicit FileWriter(FileHandle file) : file(file), own_handle(false) {}
+	explicit FileWriter(cstring filename) : own_handle(true) { Open(filename); }
+	~FileWriter();
+
+	bool Open(cstring filename);
+	using StreamWriter::Write;
+	void Write(const void* ptr, uint size) override final;
+	void Flush();
+	uint GetPos() const override final;
+	uint GetSize() const;
+	FileHandle GetHandle() const { return file; }
+	bool IsOpen() const { return file != INVALID_FILE_HANDLE; }
+	operator bool() const { return IsOpen(); }
+	void operator = (FileWriter& f);
+	void SetTime(FileTime file_time);
+	bool SetPos(uint pos) override final;
+
+protected:
+	FileHandle file;
 	bool own_handle;
 };
 
 //-----------------------------------------------------------------------------
-// Funkcje do ³atwiejszej edycji bufora
-//-----------------------------------------------------------------------------
-template<typename T, typename T2>
-inline T* ptr_shift(T2* ptr, uint shift)
+class TextWriter
 {
-	return ((T*)(((byte*)ptr) + shift));
-}
-
-template<typename T>
-void* ptr_shift(T* ptr, uint shift)
-{
-	return (((byte*)ptr) + shift);
-}
-
-template<typename T, typename T2>
-inline T& ptr_shiftd(T2* ptr, uint shift)
-{
-	return *((T*)(((byte*)ptr) + shift));
-}
-
-//-----------------------------------------------------------------------------
-// New io reader/writer
-namespace io2
-{
-	//-----------------------------------------------------------------------------
-	// Output source
-	class Source
+public:
+	explicit TextWriter(Cstring filename) : file(filename)
 	{
-	public:
-		virtual ~Source()
-		{
-		}
-		virtual void Write(const void* data, uint size) = 0;
-		virtual bool Read(void* data, uint size) = 0;
-		virtual bool Skip(uint size) = 0;
-		virtual bool Ensure(uint size) = 0;
-		virtual bool IsOk() const = 0;
-	};
+	}
 
-	//-----------------------------------------------------------------------------
-	// File output source
-	class FileSource final : public Source
+	operator bool() const
 	{
-	public:
-		FileSource() : file(INVALID_HANDLE_VALUE), own_handle(true), ok(false)
-		{
-		}
+		return file.IsOpen();
+	}
 
-		explicit FileSource(cstring path, bool write) : own_handle(true)
-		{
-			Open(path, write);
-		}
-
-		explicit FileSource(HANDLE file) : file(file), own_handle(false), ok(true)
-		{
-		}
-
-		explicit FileSource(FileSource&& f) : file(f.file), own_handle(f.own_handle), ok(f.ok)
-		{
-			f.file = INVALID_HANDLE_VALUE;
-			f.ok = false;
-		}
-
-		~FileSource()
-		{
-			if(file != INVALID_HANDLE_VALUE && own_handle)
-			{
-				CloseHandle(file);
-				file = INVALID_HANDLE_VALUE;
-			}
-		}
-
-		bool Open(cstring path, bool write)
-		{
-			assert(path);
-			if(write)
-				file = CreateFile(path, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-			else
-				file = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-			ok = (file != INVALID_HANDLE_VALUE);
-			return ok;
-		}
-
-		void Write(const void* data, uint size) override
-		{
-			DWORD tmp;
-			WriteFile(file, data, size, &tmp, nullptr);
-			assert(size == tmp);
-		}
-
-		bool Read(void* data, uint size) override
-		{
-			DWORD tmp;
-			ReadFile(file, data, size, &tmp, nullptr);
-			ok = (tmp == size && ok);
-			return ok;
-		}
-
-		bool Skip(uint size) override
-		{
-			DWORD pos = SetFilePointer(file, size, nullptr, FILE_CURRENT);
-			ok = !(pos == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR) && ok;
-			return ok;
-		}
-
-		bool Ensure(uint size_required) override
-		{
-			if(!ok)
-				return false;
-			DWORD pos = SetFilePointer(file, 0, nullptr, FILE_CURRENT);
-			DWORD size = GetFileSize(file, nullptr);
-			return (size - pos >= size_required);
-		}
-
-		bool IsOpen() const
-		{
-			return file != INVALID_HANDLE_VALUE;
-		}
-
-		bool IsOk() const override
-		{
-			return ok;
-		}
-
-		void Flush()
-		{
-			FlushFileBuffers(file);
-		}
-
-		uint GetSize() const
-		{
-			return GetFileSize(file, nullptr);
-		}
-
-	private:
-		HANDLE file;
-		bool own_handle, ok;
-	};
-
-	//-----------------------------------------------------------------------------
-	// Generic source, use virtual call to dynamicaly select output source
-	class GenericSource final : public Source
+	void Write(cstring str)
 	{
-	public:
-		GenericSource() : source(nullptr)
-		{
-		}
+		file.Write(str, strlen(str));
+	}
 
-		GenericSource(Source* source, bool owned) : source(source), owned(owned)
-		{
-		}
-
-		~GenericSource()
-		{
-			if(owned)
-				delete source;
-		}
-
-		void Write(const void* data, uint size) override
-		{
-			source->Write(data, size);
-		}
-
-		bool Read(void* data, uint size) override
-		{
-			return source->Read(data, size);
-		}
-
-		bool Skip(uint size) override
-		{
-			return source->Skip(size);
-		}
-
-		bool Ensure(uint size) override
-		{
-			return source->Ensure(size);
-		}
-
-		bool IsOk() const override
-		{
-			return source->IsOk();
-		}
-
-	private:
-		Source* source;
-		bool owned;
-	};
-
-	//-----------------------------------------------------------------------------
-	// Base writer
-	template<typename SourceType>
-	class BaseWriter
+	void operator << (const string& str)
 	{
-	public:
-		SourceType& GetSource()
-		{
-			return source;
-		}
-
-		void Write(const void* data, uint size)
-		{
-			source.Write(data, size);
-		}
-
-		template<typename T>
-		void Write(const T& data)
-		{
-			Write(&data, sizeof(T));
-		}
-		template<>
-		void Write(const string& s)
-		{
-			WriteString1(s);
-		}
-
-		template<typename DestType, typename SourceType>
-		void WriteCasted(const SourceType& a)
-		{
-			DestType val = (DestType)a;
-			Write(&val, sizeof(DestType));
-		}
-
-		template<typename SizeType>
-		void WriteString(const string& s)
-		{
-			assert(s.length() <= std::numeric_limits<SizeType>::max());
-			SizeType len = (SizeType)s.length();
-			Write(len);
-			if(len)
-				Write(s.c_str(), len);
-		}
-		template<typename SizeType>
-		void WriteString(cstring s)
-		{
-			assert(s && strlen(s) <= std::numeric_limits<SizeType>::max());
-			SizeType len = (SizeType)strlen(s);
-			Write(len);
-			if(len)
-				Write(s, len);
-		}
-		void WriteString1(const string& s)
-		{
-			WriteString<byte>(s);
-		}
-		void WriteString1(cstring s)
-		{
-			WriteString<byte>(s);
-		}
-		void WriteString2(const string& s)
-		{
-			WriteString<word>(s);
-		}
-		void WriteString2(cstring s)
-		{
-			WriteString<word>(s);
-		}
-		void WriteString(const string& s)
-		{
-			WriteString<uint>(s);
-		}
-		void WriteString(cstring s)
-		{
-			WriteString<uint>(s);
-		}
-
-		template<typename SizeType, typename T>
-		void WriteVector(const vector<T>& v)
-		{
-			assert(v.count() <= std::numeric_limits<SizeType>::max());
-			WriteCasted<SizeType>(v.size());
-			if(!v.empty())
-				Write(&v[0], sizeof(T)*v.size());
-		}
-		template<typename T>
-		void WriteVector1(const vector<T>& v)
-		{
-			WriteVector<byte>(v);
-		}
-		template<typename T>
-		void WriteVector2(const vector<T>& v)
-		{
-			WriteVector<word>(v);
-		}
-		template<typename T>
-		void WriteVector(const vector<T>& v)
-		{
-			WriteVector<uint>(v);
-		}
-
-		void Write0()
-		{
-			WriteCasted<byte>(0);
-		}
-
-		template<typename T>
-		void operator << (const T& a)
-		{
-			Write(&a, sizeof(T));
-		}
-		void operator << (const string& s)
-		{
-			WriteString1(s);
-		}
-		void operator << (cstring s)
-		{
-			WriteString1(s);
-		}
-		template<typename T>
-		void operator << (vector<T>& v)
-		{
-			WriteVector(v);
-		}
-
-		template<>
-		void operator << (vector<string>& v)
-		{
-			WriteCasted<byte>(v.size());
-			for(string& s : v)
-				WriteString1(s);
-		}
-
-	protected:
-		BaseWriter()
-		{
-		}
-
-		explicit BaseWriter(SourceType&& source) : source(std::move(source))
-		{
-		}
-
-		SourceType source;
-	};
-
-	//-----------------------------------------------------------------------------
-	// File writer
-	class FileWriter final : public BaseWriter<FileSource>
+		file.Write(str.c_str(), str.length());
+	}
+	void operator << (cstring str)
 	{
-	public:
-		FileWriter()
-		{
-		}
-
-		explicit FileWriter(cstring path) : BaseWriter(FileSource(path, true))
-		{
-		}
-
-		void Flush()
-		{
-			source.Flush();
-		}
-
-		uint GetSize() const
-		{
-			return source.GetSize();
-		}
-
-		bool IsOpen() const
-		{
-			return source.IsOpen();
-		}
-
-		bool Open(cstring path)
-		{
-			return source.Open(path, true);
-		}
-
-		operator bool() const
-		{
-			return IsOpen();
-		}
-	};
-
-	//-----------------------------------------------------------------------------
-	// Writer to generic source
-	class StreamWriter final : public BaseWriter<GenericSource>
+		file.Write(str, strlen(str));
+	}
+	void operator << (char c)
 	{
-	public:
-		StreamWriter()
-		{
-		}
-
-		template<typename T>
-		explicit StreamWriter(BaseWriter<T>& writer) : BaseWriter(GenericSource(&writer.GetSource(), false))
-		{
-		}
-	};
-
-	//-----------------------------------------------------------------------------
-	// Base reader
-	template<typename SourceType>
-	class BaseReader
+		file << c;
+	}
+	void operator << (int i)
 	{
-	public:
-		SourceType& GetSource()
-		{
-			return source;
-		}
-
-		bool Read(void* data, uint size)
-		{
-			return source.Read(data, size);
-		}
-
-		template<typename T>
-		bool Read(T& data)
-		{
-			return Read(&data, sizeof(T));
-		}
-
-		template<typename DestType, typename SourceType>
-		bool ReadCasted(SourceType& a)
-		{
-			DestType b;
-			if(!Read<DestType>(b))
-				return false;
-			a = (SourceType)b;
-			return true;
-		}
-
-		template<typename SizeType>
-		bool ReadString(string& s)
-		{
-			SizeType len;
-			if(!Read(len))
-				return false;
-			if(len)
-			{
-				s.resize(len);
-				if(!Read((char*)s.data(), len))
-					return false;
-			}
-			else
-				s.clear();
-			return true;
-		}
-		bool ReadString1(string& s)
-		{
-			return ReadString<byte>(s);
-		}
-		bool ReadString2(string& s)
-		{
-			return ReadString<word>(s);
-		}
-		bool ReadString(string& s)
-		{
-			return ReadString<uint>(s);
-		}
-
-		template<typename SizeType, typename T>
-		bool ReadVector(vector<T>& v)
-		{
-			SizeType count;
-			if(!Read(count))
-				return false;
-			v.resize(count);
-			if(count)
-				return Read(&v[0], sizeof(T)*count);
-			return true;
-		}
-		template<typename T>
-		bool ReadVector1(vector<T>& v)
-		{
-			return ReadVector<byte>(v);
-		}
-		template<typename T>
-		bool ReadVector2(vector<T>& v)
-		{
-			return ReadVector<word>(v);
-		}
-		template<typename T>
-		bool ReadVector(vector<T>& v)
-		{
-			return ReadVector<uint>(v);
-		}
-
-		template<typename T>
-		bool operator >> (T& a)
-		{
-			return Read(&a, sizeof(T));
-		}
-		bool operator >> (string& s)
-		{
-			return ReadString1(s);
-		}
-		template<typename T>
-		bool operator >> (vector<T>& v)
-		{
-			return ReadVector(v);
-		}
-		template<>
-		bool operator >> (vector<string>& v)
-		{
-			byte count;
-			if(!Read(count))
-				return false;
-			v.resize(count);
-			for(string& s : v)
-			{
-				if(!ReadString1(s))
-					return false;
-			}
-			return true;
-		}
-
-		bool Ensure(uint size)
-		{
-			return source.Ensure(size);
-		}
-
-	protected:
-		BaseReader()
-		{
-		}
-
-		BaseReader(SourceType&& source) : source(std::move(source))
-		{
-		}
-
-		SourceType source;
-	};
-
-	//-----------------------------------------------------------------------------
-	// File reader
-	class FileReader final : public BaseReader<FileSource>
+		Write(Format("%d", i));
+	}
+	void operator << (float f)
 	{
-	public:
-		FileReader()
-		{
-		}
+		Write(Format("%g", f));
+	}
 
-		FileReader(cstring path) : BaseReader(FileSource(path, false))
-		{
-		}
-
-		uint GetSize() const
-		{
-			return source.GetSize();
-		}
-
-		bool IsOpen() const
-		{
-			return source.IsOpen();
-		}
-
-		bool IsOk() const
-		{
-			return source.IsOk();
-		}
-
-		bool Open(cstring path)
-		{
-			return source.Open(path, false);
-		}
-
-		bool Skip(uint size)
-		{
-			return source.Skip(size);
-		}
-		template<typename T>
-		bool Skip()
-		{
-			return source.Skip(sizeof(T));
-		}
-
-		operator bool() const
-		{
-			return IsOk();
-		}
-	};
-
-	//-----------------------------------------------------------------------------
-	// Reader from generic source
-	class StreamReader final : public BaseReader<GenericSource>
-	{
-	public:
-		StreamReader()
-		{
-		}
-
-		template<typename T>
-		StreamReader(BaseReader<T>& reader) : BaseReader(GenericSource(&reader.GetSource(), false))
-		{
-		}
-	};
+private:
+	FileWriter file;
 };
