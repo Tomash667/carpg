@@ -69,17 +69,6 @@ enum GAME_STATE
 	GS_QUIT
 };
 
-//-----------------------------------------------------------------------------
-// Stan mapy œwiata
-enum WORLDMAP_STATE
-{
-	WS_MAIN,
-	WS_TRAVEL,
-	WS_ENCOUNTER
-};
-
-struct EntityInterpolator;
-
 enum AllowInput
 {
 	ALLOW_NONE = 0,	// 00
@@ -1940,8 +1929,6 @@ public:
 	void AbadonLocation(Location* loc);
 	void SetLocationVisited(Location& loc);
 
-	Location* location; // wskaŸnik na aktualn¹ lokacjê [odtwarzany]
-	int current_location; // aktualna lokacja lub -1
 	int picked_location; // zaznaczona lokacja na mapie œwiata, ta do której siê wêdruje lub -1 [tylko jeœli world_state==WS_TRAVEL]
 	int open_location; // aktualnie otwarta lokacja (w sensie wczytanych zasobów, utworzonych jednostek itp) lub -1 [odtwarzany]
 	int travel_day; // liczba dni w podró¿y [tylko jeœli world_state==WS_TRAVEL]
@@ -1949,7 +1936,6 @@ public:
 	int spotkanie; // rodzaj losowego spotkania [tymczasowe]
 	int enc_tryb; // 0 - losowa walka, 1 - specjalne spotkanie, 2 - questowe spotkanie [tymczasowe]
 	int create_camp; // licznik do stworzenia nowego obozu
-	WORLDMAP_STATE world_state; // stan na mapie œwiata (stoi, podró¿uje)
 	Vec2 world_pos; // pozycja na mapie œwiata
 	Vec2 travel_start; // punkt startu podró¿y na mapie œwiata [tylko jeœli world_state==WS_TRAVEL]
 	float travel_time; // czas podró¿y na mapie [tylko jeœli world_state==WS_TRAVEL]
@@ -1989,4 +1975,5 @@ public:
 	Config cfg;
 	void SaveCfg();
 	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
+	void PauseGame();
 };

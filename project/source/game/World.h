@@ -7,10 +7,19 @@
 class World
 {
 public:
+	enum class State
+	{
+		ON_MAP, // on worldmap
+		INSIDE_LOCATION,
+		TRAVEL, // traveling on map (current_location is nullptr)
+		ENCOUNTER // shown encounter message, waiting to close & load level (current_location is nullptr)
+	};
+
 	void Init();
 	void OnNewGame();
 	void Update(int days);
 	uint GenerateWorld(int start_location_type = -1, int start_location_target = -1);
+	void ExitToMap();
 
 	Location* CreateLocation(LOCATION type, int levels = -1, bool is_village = false);
 	typedef std::pair<LOCATION, bool>(*AddLocationsCallback)(uint index);
@@ -36,9 +45,12 @@ public:
 	int GetWorldtime() const { return worldtime; }
 	int GetYear() const { return year; }
 
+	Location* current_location; // wskaŸnik na aktualn¹ lokacjê [odtwarzany]
+	int current_location_index; // current location index or -1
 	vector<Location*> locations; // can be nullptr
 
 public: // FIXME
+	State state;
 	uint settlements; // count and index below this value is city/village
 	uint empty_locations; // counter
 	uint encounter_loc; // encounter location index

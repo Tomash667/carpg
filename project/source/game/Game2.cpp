@@ -49,6 +49,7 @@
 #include "BitStreamFunc.h"
 #include "EntityInterpolator.h"
 #include "World.h"
+#include "Level.h"
 #include "DirectX.h"
 
 const int SAVE_VERSION = V_CURRENT;
@@ -535,7 +536,7 @@ void Game::SetupCamera(float dt)
 
 	if(ctx.type == LevelContext::Outside)
 	{
-		OutsideLocation* outside = (OutsideLocation*)location;
+		OutsideLocation* outside = (OutsideLocation*)L.location;
 
 		// terrain
 		tout = terrain->Raytest(to, to + dist);
@@ -562,7 +563,7 @@ void Game::SetupCamera(float dt)
 	}
 	else if(ctx.type == LevelContext::Inside)
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		int minx = max(0, tx - 3),
@@ -1032,9 +1033,9 @@ void Game::UpdateGame(float dt)
 
 	if(devmode && AllowKeyboard())
 	{
-		if(!location->outside)
+		if(!L.location->outside)
 		{
-			InsideLocation* inside = (InsideLocation*)location;
+			InsideLocation* inside = (InsideLocation*)L.location;
 			InsideLocationLevel& lvl = inside->GetLevelData();
 
 			if(Key.Pressed(VK_OEM_COMMA) && Key.Down(VK_SHIFT) && inside->HaveUpStairs())
@@ -1593,7 +1594,7 @@ void Game::UpdateFallback(float dt)
 				break;
 			case FALLBACK::USE_PORTAL:
 				{
-					Portal* portal = location->GetPortal(fallback_1);
+					Portal* portal = L.location->GetPortal(fallback_1);
 					Location* target_loc = W.locations[portal->target_loc];
 					int at_level = 0;
 					// aktualnie mo¿na siê tepn¹æ z X poziomu na 1 zawsze ale ¿eby z X na X to musi byæ odwiedzony
@@ -1601,7 +1602,7 @@ void Game::UpdateFallback(float dt)
 					if(target_loc->portal)
 						at_level = target_loc->portal->at_level;
 					LeaveLocation(false, false);
-					current_location = portal->target_loc;
+					L.location_index = portal->target_loc;
 					EnterLocation(at_level, portal->target);
 				}
 				return;
@@ -1892,7 +1893,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					}
 
 					// revealing minimap
-					if(!location->outside)
+					if(!L.location->outside)
 					{
 						Int2 new_tile(int(u.pos.x / 2), int(u.pos.z / 2));
 						if(new_tile != prev_tile)
@@ -2622,7 +2623,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 				// otwieranie drzwi
 				if(door->locked == LOCK_NONE)
 				{
-					if(!location->outside)
+					if(!L.location->outside)
 						minimap_opened_doors = true;
 					door->state = Door::Opening;
 					door->mesh_inst->Play(&door->mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);
@@ -2659,7 +2660,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					{
 						sound_mgr->PlaySound3d(sUnlock, center, 2.f, 5.f);
 						AddGameMsg3(GMS_UNLOCK_DOOR);
-						if(!location->outside)
+						if(!L.location->outside)
 							minimap_opened_doors = true;
 						door->locked = LOCK_NONE;
 						door->state = Door::Opening;
@@ -3448,9 +3449,9 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 
 	if((!ignore || !ignore->ignore_blocks) && ctx.type != LevelContext::Building)
 	{
-		if(location->outside)
+		if(L.location->outside)
 		{
-			City* city = (City*)location;
+			City* city = (City*)L.location;
 			TerrainTile* tiles = city->tiles;
 			maxx = min(maxx, OutsideLocation::size);
 			maxz = min(maxz, OutsideLocation::size);
@@ -3472,7 +3473,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 		}
 		else
 		{
-			InsideLocation* inside = (InsideLocation*)location;
+			InsideLocation* inside = (InsideLocation*)L.location;
 			InsideLocationLevel& lvl = inside->GetLevelData();
 			maxx = min(maxx, lvl.w);
 			maxz = min(maxz, lvl.h);
@@ -3653,9 +3654,9 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 
 	if((!ignore || !ignore->ignore_blocks) && ctx.type != LevelContext::Building)
 	{
-		if(location->outside)
+		if(L.location->outside)
 		{
-			City* city = (City*)location;
+			City* city = (City*)L.location;
 			TerrainTile* tiles = city->tiles;
 			maxx = min(maxx, OutsideLocation::size);
 			maxz = min(maxz, OutsideLocation::size);
@@ -3677,7 +3678,7 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 		}
 		else
 		{
-			InsideLocation* inside = (InsideLocation*)location;
+			InsideLocation* inside = (InsideLocation*)L.location;
 			InsideLocationLevel& lvl = inside->GetLevelData();
 			maxx = min(maxx, lvl.w);
 			maxz = min(maxz, lvl.h);
@@ -4446,7 +4447,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DTF_CHECK_QUEST_TIMEOUT:
 			if(if_level == ctx.dialog_level)
 			{
-				Quest* quest = QuestManager::Get().FindQuest(current_location, (QuestType)(int)de.msg);
+				Quest* quest = QuestManager::Get().FindQuest(L.location_index, (QuestType)(int)de.msg);
 				if(quest && quest->IsActive() && quest->IsTimedout())
 				{
 					ctx.dialog_once = false;
@@ -4728,7 +4729,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		{
 			if(city_ctx->quest_mayor == CityQuestState::InProgress)
 			{
-				Quest* quest = quest_manager.FindUnacceptedQuest(current_location, QuestType::Mayor);
+				Quest* quest = quest_manager.FindUnacceptedQuest(L.location_index, QuestType::Mayor);
 				DeleteElement(quest_manager.unaccepted_quests, quest);
 			}
 
@@ -4751,7 +4752,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		else if(city_ctx->quest_mayor == CityQuestState::InProgress)
 		{
 			// ju¿ ma przydzielone zadanie ?
-			Quest* quest = quest_manager.FindUnacceptedQuest(current_location, QuestType::Mayor);
+			Quest* quest = quest_manager.FindUnacceptedQuest(L.location_index, QuestType::Mayor);
 			if(quest)
 			{
 				// quest nie zosta³ zaakceptowany
@@ -4759,7 +4760,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			}
 			else
 			{
-				quest = quest_manager.FindQuest(current_location, QuestType::Mayor);
+				quest = quest_manager.FindQuest(L.location_index, QuestType::Mayor);
 				if(quest)
 				{
 					DialogTalk(ctx, random_string(txQuestAlreadyGiven));
@@ -4792,7 +4793,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		{
 			if(city_ctx->quest_captain == CityQuestState::InProgress)
 			{
-				Quest* quest = quest_manager.FindUnacceptedQuest(current_location, QuestType::Captain);
+				Quest* quest = quest_manager.FindUnacceptedQuest(L.location_index, QuestType::Captain);
 				DeleteElement(quest_manager.unaccepted_quests, quest);
 			}
 
@@ -4815,7 +4816,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		else if(city_ctx->quest_captain == CityQuestState::InProgress)
 		{
 			// ju¿ ma przydzielone zadanie
-			Quest* quest = quest_manager.FindUnacceptedQuest(current_location, QuestType::Captain);
+			Quest* quest = quest_manager.FindUnacceptedQuest(L.location_index, QuestType::Captain);
 			if(quest)
 			{
 				// quest nie zosta³ zaakceptowany
@@ -4823,7 +4824,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			}
 			else
 			{
-				quest = quest_manager.FindQuest(current_location, QuestType::Captain);
+				quest = quest_manager.FindQuest(L.location_index, QuestType::Captain);
 				if(quest)
 				{
 					DialogTalk(ctx, random_string(txQuestAlreadyGiven));
@@ -4958,7 +4959,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 					{
 						Location& loc = *W.locations[id2];
 						loc.state = LS_KNOWN;
-						Location& cloc = *W.locations[current_location];
+						Location& cloc = *L.location;
 						cstring s_daleko;
 						float dist = Vec2::Distance(loc.pos, cloc.pos);
 						if(dist <= 300)
@@ -5009,7 +5010,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 					if(new_camp)
 					{
 						Location& loc = *new_camp;
-						Location& cloc = *W.locations[current_location];
+						Location& cloc = *L.location;
 						cstring s_daleko;
 						float dist = Vec2::Distance(loc.pos, cloc.pos);
 						if(dist <= 300)
@@ -5775,14 +5776,14 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 	{
 		if(city_ctx)
 			return true;
-		else if(location->outside)
+		else if(L.location->outside)
 		{
-			if(location->state == LS_CLEARED)
+			if(L.location->state == LS_CLEARED)
 				return true;
 		}
 		else
 		{
-			InsideLocation* inside = (InsideLocation*)location;
+			InsideLocation* inside = (InsideLocation*)L.location;
 			if(inside->IsMultilevel())
 			{
 				MultiInsideLocation* multi = (MultiInsideLocation*)inside;
@@ -5797,7 +5798,7 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 						return true;
 				}
 			}
-			else if(location->state == LS_CLEARED)
+			else if(L.location->state == LS_CLEARED)
 				return true;
 		}
 	}
@@ -5842,25 +5843,13 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "contest_done") == 0)
 		return contest_state == CONTEST_DONE;
 	else if(strcmp(msg, "contest_here") == 0)
-	{
-		if(contest_where == current_location)
-			return true;
-	}
+		return contest_where == L.location_index;
 	else if(strcmp(msg, "contest_today") == 0)
-	{
-		if(contest_state == CONTEST_TODAY)
-			return true;
-	}
+		return contest_state == CONTEST_TODAY;
 	else if(strcmp(msg, "chlanie_trwa") == 0)
-	{
-		if(contest_state == CONTEST_IN_PROGRESS)
-			return true;
-	}
+		return contest_state == CONTEST_IN_PROGRESS;
 	else if(strcmp(msg, "contest_started") == 0)
-	{
-		if(contest_state == CONTEST_STARTING)
-			return true;
-	}
+		return contest_state == CONTEST_STARTING;
 	else if(strcmp(msg, "contest_joined") == 0)
 	{
 		for(Unit* unit : contest_units)
@@ -5870,30 +5859,15 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 		}
 	}
 	else if(strcmp(msg, "contest_winner") == 0)
-	{
-		if(ctx.pc->unit == contest_winner)
-			return true;
-	}
+		return ctx.pc->unit == contest_winner;
 	else if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
-	{
-		if(quest_bandits->prog == Quest_Bandits::Progress::NeedTalkWithCaptain && current_location == quest_bandits->start_loc)
-			return true;
-	}
+		return quest_bandits->prog == Quest_Bandits::Progress::NeedTalkWithCaptain && L.location_index == quest_bandits->start_loc;
 	else if(strcmp(msg, "q_magowie_to_miasto") == 0)
-	{
-		if(quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain && current_location == quest_mages2->start_loc)
-			return true;
-	}
+		return quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain && L.location_index == quest_mages2->start_loc;
 	else if(strcmp(msg, "q_magowie_poinformuj") == 0)
-	{
-		if(quest_mages2->mages_state == Quest_Mages2::State::EncounteredGolem)
-			return true;
-	}
+		return quest_mages2->mages_state == Quest_Mages2::State::EncounteredGolem;
 	else if(strcmp(msg, "q_magowie_kup_miksture") == 0)
-	{
-		if(quest_mages2->mages_state == Quest_Mages2::State::BuyPotion)
-			return true;
-	}
+		return quest_mages2->mages_state == Quest_Mages2::State::BuyPotion;
 	else if(strcmp(msg, "q_magowie_kup") == 0)
 	{
 		if(ctx.pc->unit->gold >= 150)
@@ -5903,50 +5877,35 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 		}
 	}
 	else if(strcmp(msg, "q_orkowie_to_miasto") == 0)
-	{
-		if(current_location == quest_orcs->start_loc)
-			return true;
-	}
+		return L.location_index == quest_orcs->start_loc;
 	else if(strcmp(msg, "q_orkowie_zaakceptowano") == 0)
-	{
-		if(quest_orcs2->orcs_state >= Quest_Orcs2::State::Accepted)
-			return true;
-	}
+		return quest_orcs2->orcs_state >= Quest_Orcs2::State::Accepted;
 	else if(strcmp(msg, "q_magowie_nie_ukonczono") == 0)
-	{
-		if(quest_mages2->mages_state != Quest_Mages2::State::Completed)
-			return true;
-	}
+		return quest_mages2->mages_state != Quest_Mages2::State::Completed;
 	else if(strcmp(msg, "q_orkowie_nie_ukonczono") == 0)
-	{
-		if(quest_orcs2->orcs_state < Quest_Orcs2::State::Completed)
-			return true;
-	}
+		return quest_orcs2->orcs_state < Quest_Orcs2::State::Completed;
 	else if(strcmp(msg, "is_free_recruit") == 0)
-	{
-		if(ctx.talker->level < 6 && Team.free_recruit)
-			return true;
-	}
+		return ctx.talker->level < 6 && Team.free_recruit;
 	else if(strcmp(msg, "have_unique_quest") == 0)
 	{
 		if(((quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted || quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
-			&& quest_orcs->start_loc == current_location)
+			&& quest_orcs->start_loc == L.location_index)
 			|| (quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain
 				&& quest_mages2->mages_state < Quest_Mages2::State::Completed
-				&& quest_mages2->start_loc == current_location))
+				&& quest_mages2->start_loc == L.location_index))
 			return true;
 	}
 	else if(strcmp(msg, "q_gobliny_zapytaj") == 0)
 	{
 		if(quest_goblins->goblins_state >= Quest_Goblins::State::MageTalked
 			&& quest_goblins->goblins_state < Quest_Goblins::State::KnownLocation
-			&& current_location == quest_goblins->start_loc
+			&& L.location_index == quest_goblins->start_loc
 			&& quest_goblins->prog != Quest_Goblins::Progress::TalkedWithInnkeeper)
 			return true;
 	}
 	else if(strcmp(msg, "q_zlo_kapitan") == 0)
 	{
-		if(current_location == quest_evil->mage_loc
+		if(L.location_index == quest_evil->mage_loc
 			&& quest_evil->evil_state >= Quest_Evil::State::GeneratedMage
 			&& quest_evil->evil_state < Quest_Evil::State::ClosingPortals
 			&& InRange((Quest_Evil::Progress)quest_evil->prog, Quest_Evil::Progress::MageToldAboutStolenBook, Quest_Evil::Progress::TalkedWithMayor))
@@ -5954,27 +5913,18 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 	}
 	else if(strcmp(msg, "q_zlo_burmistrz") == 0)
 	{
-		if(current_location == quest_evil->mage_loc
+		if(L.location_index == quest_evil->mage_loc
 			&& quest_evil->evil_state >= Quest_Evil::State::GeneratedMage
 			&& quest_evil->evil_state < Quest_Evil::State::ClosingPortals
 			&& quest_evil->prog == Quest_Evil::Progress::TalkedWithCaptain)
 			return true;
 	}
 	else if(strcmp(msg, "is_not_mage") == 0)
-	{
-		if(ctx.talker->GetClass() != Class::MAGE)
-			return true;
-	}
+		return ctx.talker->GetClass() != Class::MAGE;
 	else if(strcmp(msg, "prefer_melee") == 0)
-	{
-		if(ctx.talker->hero->melee)
-			return true;
-	}
+		return ctx.talker->hero->melee;
 	else if(strcmp(msg, "is_leader") == 0)
-	{
-		if(ctx.pc->unit == Team.leader)
-			return true;
-	}
+		return ctx.pc->unit == Team.leader;
 	else if(strncmp(msg, "have_player", 11) == 0)
 	{
 		int id = int(msg[11] - '1');
@@ -5982,38 +5932,23 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 			return true;
 	}
 	else if(strcmp(msg, "waiting_for_pvp") == 0)
-	{
-		if(pvp_response.ok)
-			return true;
-	}
+		return pvp_response.ok;
 	else if(strcmp(msg, "in_city") == 0)
-	{
-		if(city_ctx)
-			return true;
-	}
+		return city_ctx != nullptr;
 	else if(strcmp(msg, "ironfist_can_start") == 0)
 	{
 		return tournament_state == TOURNAMENT_NOT_DONE
-			&& tournament_city == current_location
+			&& tournament_city == L.location_index
 			&& W.GetDay() == 6
 			&& W.GetMonth() == 2
 			&& tournament_year != W.GetYear();
 	}
 	else if(strcmp(msg, "ironfist_done") == 0)
-	{
-		if(tournament_year == W.GetYear())
-			return true;
-	}
+		return tournament_year == W.GetYear();
 	else if(strcmp(msg, "ironfist_here") == 0)
-	{
-		if(current_location == tournament_city)
-			return true;
-	}
+		return L.location_index == tournament_city;
 	else if(strcmp(msg, "ironfist_preparing") == 0)
-	{
-		if(tournament_state == TOURNAMENT_STARTING)
-			return true;
-	}
+		return tournament_state == TOURNAMENT_STARTING;
 	else if(strcmp(msg, "ironfist_started") == 0)
 	{
 		if(tournament_state == TOURNAMENT_IN_PROGRESS)
@@ -6037,20 +5972,11 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 		}
 	}
 	else if(strcmp(msg, "ironfist_winner") == 0)
-	{
-		if(ctx.pc->unit == tournament_winner)
-			return true;
-	}
+		return ctx.pc->unit == tournament_winner;
 	else if(strcmp(msg, "szaleni_nie_zapytano") == 0)
-	{
-		if(quest_crazies->crazies_state == Quest_Crazies::State::None)
-			return true;
-	}
+		return quest_crazies->crazies_state == Quest_Crazies::State::None;
 	else if(strcmp(msg, "q_szaleni_trzeba_pogadac") == 0)
-	{
-		if(quest_crazies->crazies_state == Quest_Crazies::State::FirstAttack)
-			return true;
-	}
+		return quest_crazies->crazies_state == Quest_Crazies::State::FirstAttack;
 	else if(strcmp(msg, "secret_first_dialog") == 0)
 	{
 		if(secret_state == SECRET_GENERATED2)
@@ -6060,20 +5986,11 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 		}
 	}
 	else if(strcmp(msg, "sekret_can_fight") == 0)
-	{
-		if(secret_state == SECRET_TALKED)
-			return true;
-	}
+		return secret_state == SECRET_TALKED;
 	else if(strcmp(msg, "sekret_win") == 0)
-	{
-		if(secret_state == SECRET_WIN || secret_state == SECRET_REWARD)
-			return true;
-	}
+		return secret_state == SECRET_WIN || secret_state == SECRET_REWARD;
 	else if(strcmp(msg, "sekret_can_get_reward") == 0)
-	{
-		if(secret_state == SECRET_WIN)
-			return true;
-	}
+		return secret_state == SECRET_WIN;
 	else
 	{
 		Warn("DTF_IF_SPECIAL: %s", msg);
@@ -6088,7 +6005,7 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 //=============================================================================
 void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 {
-	if(location->outside)
+	if(L.location->outside)
 	{
 		if(unit.in_building == -1)
 		{
@@ -6129,7 +6046,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							}
 						}
 					}
-					else if(current_location != secret_where2 && (unit.pos.x < 33.f || unit.pos.x > 256.f - 33.f || unit.pos.z < 33.f || unit.pos.z > 256.f - 33.f))
+					else if(L.location_index != secret_where2 && (unit.pos.x < 33.f || unit.pos.x > 256.f - 33.f || unit.pos.z < 33.f || unit.pos.z > 256.f - 33.f))
 					{
 						if(IsLeader())
 						{
@@ -6181,7 +6098,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 			if(warped)
 				return;
 
-			if(unit.IsPlayer() && location->type == L_CITY && WantExitLevel() && unit.frozen == FROZEN::NO && !dash)
+			if(unit.IsPlayer() && L.location->type == L_CITY && WantExitLevel() && unit.frozen == FROZEN::NO && !dash)
 			{
 				int id = 0;
 				for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it, ++id)
@@ -6218,7 +6135,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 
 			// jest w budynku
 			// sprawdŸ czy nie wszed³ na wyjœcie (tylko gracz mo¿e opuszczaæ budynek, na razie)
-			City* city = (City*)location;
+			City* city = (City*)L.location;
 			InsideBuilding& building = *city->inside_buildings[unit.in_building];
 
 			if(unit.IsPlayer() && building.exit_area.IsInside(unit.pos) && WantExitLevel() && unit.frozen == FROZEN::NO && !dash)
@@ -6244,7 +6161,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 	}
 	else
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		Int2 pt = pos_to_pt(unit.pos);
 
@@ -6364,7 +6281,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 	// obs³uga portali
 	if(unit.frozen == FROZEN::NO && unit.IsPlayer() && WantExitLevel() && !dash)
 	{
-		Portal* portal = location->portal;
+		Portal* portal = L.location->portal;
 		int index = 0;
 		while(portal)
 		{
@@ -6418,9 +6335,9 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 //=================================================================================================
 bool Game::CollideWithStairs(const CollisionObject& _co, const Vec3& _pos, float _radius) const
 {
-	assert(_co.type == CollisionObject::CUSTOM && _co.check == &Game::CollideWithStairs && !location->outside && _radius > 0.f);
+	assert(_co.type == CollisionObject::CUSTOM && _co.check == &Game::CollideWithStairs && !L.location->outside && _radius > 0.f);
 
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
 	int dir;
@@ -6463,9 +6380,9 @@ bool Game::CollideWithStairs(const CollisionObject& _co, const Vec3& _pos, float
 //=================================================================================================
 bool Game::CollideWithStairsRect(const CollisionObject& _co, const Box2d& _box) const
 {
-	assert(_co.type == CollisionObject::CUSTOM && _co.check_rect == &Game::CollideWithStairsRect && !location->outside);
+	assert(_co.type == CollisionObject::CUSTOM && _co.check_rect == &Game::CollideWithStairsRect && !L.location->outside);
 
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
 	int dir;
@@ -6793,7 +6710,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 	if(level == -2)
 		u->level = base.level.Random();
 	else if(level == -3)
-		u->level = base.level.Clamp(location->st);
+		u->level = base.level.Clamp(L.location->st);
 	else
 		u->level = base.level.Clamp(level);
 	u->player = nullptr;
@@ -6906,7 +6823,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 		// boss music
 		if(IS_SET(u->data->flags2, F2_BOSS))
-			boss_levels.push_back(Int2(current_location, dungeon_level));
+			boss_levels.push_back(Int2(L.location_index, dungeon_level));
 
 		// physics
 		if(create_physics)
@@ -7192,7 +7109,7 @@ bool Game::CanSee(Unit& u1, Unit& u2)
 
 	if(ctx.type == LevelContext::Outside)
 	{
-		OutsideLocation* outside = (OutsideLocation*)location;
+		OutsideLocation* outside = (OutsideLocation*)L.location;
 
 		int xmin = max(0, min(tile1.x, tile2.x)),
 			xmax = min(OutsideLocation::size, max(tile1.x, tile2.x)),
@@ -7211,7 +7128,7 @@ bool Game::CanSee(Unit& u1, Unit& u2)
 	}
 	else if(ctx.type == LevelContext::Inside)
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		int xmin = max(0, min(tile1.x, tile2.x)),
@@ -7310,7 +7227,7 @@ bool Game::CanSee(const Vec3& v1, const Vec3& v2)
 
 	if(ctx.type == LevelContext::Outside)
 	{
-		OutsideLocation* outside = (OutsideLocation*)location;
+		OutsideLocation* outside = (OutsideLocation*)L.location;
 
 		int xmin = max(0, min(tile1.x, tile2.x)),
 			xmax = min(OutsideLocation::size, max(tile1.x, tile2.x)),
@@ -7328,7 +7245,7 @@ bool Game::CanSee(const Vec3& v1, const Vec3& v2)
 	}
 	else if(ctx.type == LevelContext::Inside)
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		int xmin = max(0, min(tile1.x, tile2.x)),
@@ -9566,9 +9483,9 @@ void Game::UpdateBullets(LevelContext& ctx, float dt)
 
 void Game::SpawnDungeonColliders()
 {
-	assert(!location->outside);
+	assert(!L.location->outside);
 
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Pole* m = lvl.map;
 	int w = lvl.w,
@@ -9846,7 +9763,7 @@ void Game::SpawnTerrainCollider()
 
 void Game::GenerateDungeonObjects()
 {
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	BaseLocation& base = g_base_locations[inside->target];
 	static vector<Chest*> room_chests;
@@ -10354,14 +10271,14 @@ void Game::GenerateDungeonUnits()
 	SPAWN_GROUP spawn_group;
 	int base_level;
 
-	if(location->spawn != SG_WYZWANIE)
+	if(L.location->spawn != SG_WYZWANIE)
 	{
-		spawn_group = location->spawn;
+		spawn_group = L.location->spawn;
 		base_level = GetDungeonLevel();
 	}
 	else
 	{
-		base_level = location->st;
+		base_level = L.location->st;
 		if(dungeon_level == 0)
 			spawn_group = SG_ORKOWIE;
 		else if(dungeon_level == 1)
@@ -10401,7 +10318,7 @@ void Game::GenerateDungeonUnits()
 	int szansa[3] = { szansa_na_brak, szansa_na_brak + szansa_na_1, szansa_na_brak + szansa_na_1 + szansa_na_2 };
 
 	// dodaj jednostki
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Int2 pt = lvl.staircase_up, pt2 = lvl.staircase_down;
 	if(!inside->HaveDownStairs())
@@ -10583,7 +10500,7 @@ void Game::ChangeLevel(int where)
 		{
 			packet_data.resize(3);
 			packet_data[0] = ID_CHANGE_LEVEL;
-			packet_data[1] = (byte)current_location;
+			packet_data[1] = (byte)L.location_index;
 			packet_data[2] = (byte)level;
 			int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			StreamWrite(packet_data.data(), 3, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
@@ -10625,7 +10542,7 @@ void Game::ChangeLevel(int where)
 			LoadingStart(4);
 			LoadingStep(txLevelUp);
 
-			MultiInsideLocation* inside = (MultiInsideLocation*)location;
+			MultiInsideLocation* inside = (MultiInsideLocation*)L.location;
 			LeaveLevel();
 			--dungeon_level;
 			inside->SetActiveLevel(dungeon_level);
@@ -10634,7 +10551,7 @@ void Game::ChangeLevel(int where)
 	}
 	else
 	{
-		MultiInsideLocation* inside = (MultiInsideLocation*)location;
+		MultiInsideLocation* inside = (MultiInsideLocation*)L.location;
 
 		int steps = 3; // txLevelDown, txGeneratingMinimap, txLoadingComplete
 		if(dungeon_level + 1 >= inside->generated)
@@ -10667,11 +10584,11 @@ void Game::ChangeLevel(int where)
 			inside->generated = dungeon_level + 1;
 			inside->infos[dungeon_level].seed = RandVal();
 
-			Info("Generating location '%s', seed %u.", location->name.c_str(), RandVal());
+			Info("Generating location '%s', seed %u.", L.location->name.c_str(), RandVal());
 			Info("Generating dungeon, level %d, target %d.", dungeon_level + 1, inside->target);
 
 			LoadingStep(txGeneratingMap);
-			GenerateDungeon(*location);
+			GenerateDungeon(*L.location);
 			first = true;
 		}
 
@@ -10679,9 +10596,9 @@ void Game::ChangeLevel(int where)
 	}
 
 	local_ctx_valid = true;
-	location->last_visit = W.GetWorldtime();
+	L.location->last_visit = W.GetWorldtime();
 	CheckIfLocationCleared();
-	bool loaded_resources = RequireLoadingResources(location, nullptr);
+	bool loaded_resources = RequireLoadingResources(L.location, nullptr);
 	LoadResources(txLoadingComplete, false);
 
 	SetMusic();
@@ -10760,7 +10677,7 @@ void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_wea
 		WarpNearLocation(local_ctx, u, pos, city_ctx ? 4.f : 2.f, true, 20);
 		u.visual_pos = u.pos;
 
-		if(!location->outside)
+		if(!L.location->outside)
 			DungeonReveal(Int2(int(u.pos.x / 2), int(u.pos.z / 2)));
 
 		if(u.interp)
@@ -10770,7 +10687,7 @@ void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_wea
 
 void Game::OpenDoorsByTeam(const Int2& pt)
 {
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	for(Unit* unit : Team.members)
 	{
@@ -10805,13 +10722,14 @@ void Game::ExitToMap()
 
 	clear_color = Color::Black;
 	game_state = GS_WORLDMAP;
-	if(open_location != -1 && location->type == L_ENCOUNTER)
+	if(open_location != -1 && L.location->type == L_ENCOUNTER)
 		LeaveLocation();
 
-	if(world_state == WS_ENCOUNTER)
-		world_state = WS_TRAVEL;
-	else if(world_state != WS_TRAVEL)
-		world_state = WS_MAIN;
+	//W.ExitToMap();
+	if(L.location_index == W.encounter_loc)
+		W.state = World::State::TRAVEL;
+	else
+		W.state = World::State::ON_MAP;
 
 	SetMusic(MusicType::Travel);
 
@@ -10844,7 +10762,7 @@ void Game::RespawnObjectColliders(LevelContext& ctx, bool spawn_pes)
 	// dotyczy tylko pochodni
 	if(ctx.type == LevelContext::Inside)
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		BaseLocation& base = g_base_locations[inside->target];
 		if(IS_SET(base.options, BLO_MAGIC_LIGHT))
 			flags |= SOE_MAGIC_LIGHT;
@@ -11152,7 +11070,7 @@ void Game::GenerateLabirynthUnits()
 	// ustal jakie jednostki mo¿na tu wygenerowaæ
 	cstring group_id;
 	int count, tries;
-	if(location->spawn == SG_UNK)
+	if(L.location->spawn == SG_UNK)
 	{
 		group_id = "unk";
 		count = 30;
@@ -11170,7 +11088,7 @@ void Game::GenerateLabirynthUnits()
 	t.Fill(level);
 
 	// generuj jednostki
-	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
+	InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
 	for(int added = 0; added < count && tries; --tries)
 	{
 		Int2 pt(Random(1, lvl.w - 2), Random(1, lvl.h - 2));
@@ -11198,7 +11116,7 @@ void Game::GenerateLabirynthUnits()
 	}
 
 	// wrogowie w skarbcu
-	if(location->spawn == SG_UNK)
+	if(L.location->spawn == SG_UNK)
 	{
 		for(int i = 0; i < 3; ++i)
 			SpawnUnitInsideRoom(lvl.rooms[0], *t.entries[0].ud, Random(level / 2, level));
@@ -11217,7 +11135,7 @@ void Game::GenerateCave(Location& l)
 
 void Game::GenerateCaveObjects()
 {
-	CaveLocation* cave = (CaveLocation*)location;
+	CaveLocation* cave = (CaveLocation*)L.location;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 
 	// œwiat³a
@@ -11385,7 +11303,7 @@ void Game::GenerateCaveUnits()
 	};
 
 	static vector<Int2> tiles;
-	CaveLocation* cave = (CaveLocation*)location;
+	CaveLocation* cave = (CaveLocation*)L.location;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 	int level = GetDungeonLevel();
 	tiles.clear();
@@ -12384,7 +12302,7 @@ Trap* Game::CreateTrap(Int2 pt, TRAP_TYPE type, bool timed)
 
 		static vector<TrapLocation> possible;
 
-		InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
+		InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
 
 		// ustal tile i dir
 		for(int i = 0; i < 4; ++i)
@@ -13058,7 +12976,6 @@ void Game::ClearGameVarsOnNewGame()
 	news.clear();
 	pc_data.picking_item_state = 0;
 	arena_tryb = Arena_Brak;
-	world_state = WS_MAIN;
 	open_location = -1;
 	picked_location = -1;
 	arena_free = true;
@@ -13125,16 +13042,16 @@ void Game::ClearGame()
 	DeleteElements(encs);
 
 	ClearGui(true);
-}
+	}
 
 cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 {
 	if(str_part == "burmistrzem")
-		return LocationHelper::IsCity(location) ? "burmistrzem" : "so³tysem";
+		return LocationHelper::IsCity(L.location) ? "burmistrzem" : "so³tysem";
 	else if(str_part == "mayor")
-		return LocationHelper::IsCity(location) ? "mayor" : "soltys";
+		return LocationHelper::IsCity(L.location) ? "mayor" : "soltys";
 	else if(str_part == "rcitynhere")
-		return W.GetRandomSettlement(current_location)->name.c_str();
+		return W.GetRandomSettlement(L.location_index)->name.c_str();
 	else if(str_part == "name")
 	{
 		assert(ctx.talker->IsHero());
@@ -13191,7 +13108,7 @@ void Game::CreateCityMinimap()
 	D3DLOCKED_RECT lock;
 	tMinimap->LockRect(0, &lock, nullptr, 0);
 
-	OutsideLocation* loc = (OutsideLocation*)location;
+	OutsideLocation* loc = (OutsideLocation*)L.location;
 
 	for(int y = 0; y < OutsideLocation::size; ++y)
 	{
@@ -13288,7 +13205,7 @@ void Game::CreateDungeonMinimap()
 	D3DLOCKED_RECT lock;
 	tMinimap->LockRect(0, &lock, nullptr, 0);
 
-	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
+	InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
 
 	for(int y = 0; y < lvl.h; ++y)
 	{
@@ -13334,7 +13251,7 @@ void Game::RebuildMinimap()
 {
 	if(game_state == GS_LEVEL)
 	{
-		switch(location->type)
+		switch(L.location->type)
 		{
 		case L_CITY:
 			CreateCityMinimap();
@@ -13352,7 +13269,7 @@ void Game::RebuildMinimap()
 			break;
 		default:
 			assert(0);
-			Warn("RebuildMinimap: unknown location %d.", location->type);
+			Warn("RebuildMinimap: unknown location %d.", L.location->type);
 			break;
 		}
 	}
@@ -13366,7 +13283,7 @@ void Game::UpdateDungeonMinimap(bool send)
 	D3DLOCKED_RECT lock;
 	tMinimap->LockRect(0, &lock, nullptr, 0);
 
-	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
+	InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
 
 	for(vector<Int2>::iterator it = minimap_reveal.begin(), end = minimap_reveal.end(); it != end; ++it)
 	{
@@ -13463,19 +13380,19 @@ cstring Game::GetCurrentLocationText()
 {
 	if(game_state == GS_LEVEL)
 	{
-		if(location->outside)
-			return location->name.c_str();
+		if(L.location->outside)
+			return L.location->name.c_str();
 		else
 		{
-			InsideLocation* inside = (InsideLocation*)location;
+			InsideLocation* inside = (InsideLocation*)L.location;
 			if(inside->IsMultilevel())
-				return Format(txLocationText, location->name.c_str(), dungeon_level + 1);
+				return Format(txLocationText, L.location->name.c_str(), dungeon_level + 1);
 			else
-				return location->name.c_str();
+				return L.location->name.c_str();
 		}
 	}
 	else
-		return Format(txLocationTextMap, W.locations[current_location]->name.c_str());
+		return Format(txLocationTextMap, W.current_location->name.c_str());
 }
 
 void Game::Unit_StopUsingUsable(LevelContext& ctx, Unit& u, bool send)
@@ -13688,12 +13605,12 @@ void Game::SetDungeonParamsToMeshes()
 void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal, bool from_outside)
 {
 	if(!first)
-		Info("Entering location '%s' level %d.", location->name.c_str(), dungeon_level + 1);
+		Info("Entering location '%s' level %d.", L.location->name.c_str(), dungeon_level + 1);
 
 	show_mp_panel = true;
 	Inventory::lock = nullptr;
 
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	inside->SetActiveLevel(dungeon_level);
 	int days;
 	bool need_reset = inside->CheckUpdate(days, W.GetWorldtime());
@@ -13718,7 +13635,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	// czy to pierwsza wizyta?
 	if(first)
 	{
-		if(location->type == L_CAVE)
+		if(L.location->type == L_CAVE)
 		{
 			LoadingStep(txGeneratingObjects);
 
@@ -13733,7 +13650,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 			local_ctx.objects->push_back(o);
 
 			GenerateCaveObjects();
-			if(current_location == quest_mine->target_loc)
+			if(L.location_index == quest_mine->target_loc)
 				GenerateMine();
 
 			LoadingStep(txGeneratingUnits);
@@ -13859,9 +13776,9 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 		bool respawn_units = true;
 
-		if(location->type == L_CAVE)
+		if(L.location->type == L_CAVE)
 		{
-			if(current_location == quest_mine->target_loc)
+			if(L.location_index == quest_mine->target_loc)
 				respawn_units = GenerateMine();
 			if(days > 0)
 				GenerateMushrooms(min(days, 10));
@@ -13925,7 +13842,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 		if(need_reset)
 		{
 			// nowe jednostki
-			if(location->type == L_CAVE)
+			if(L.location->type == L_CAVE)
 				GenerateCaveUnits();
 			else if(inside->target == LABIRYNTH)
 				GenerateLabirynthUnits();
@@ -13937,7 +13854,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	// questowe rzeczy
 	if(inside->active_quest && inside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER)
 	{
-		Quest_Event* event = inside->active_quest->GetEvent(current_location);
+		Quest_Event* event = inside->active_quest->GetEvent(L.location_index);
 		if(event)
 		{
 			if(event->at_level == dungeon_level)
@@ -13947,7 +13864,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					HandleQuestEvent(event);
 
 					// generowanie orków
-					if(current_location == quest_orcs2->target_loc && quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
+					if(L.location_index == quest_orcs2->target_loc && quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
 					{
 						quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedOrcs;
 						UnitData* ud = UnitData::Get("q_orkowie_slaby");
@@ -13980,8 +13897,8 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 
 	bool debug_do = DEBUG_BOOL;
 
-	if((first || need_reset) && (Rand() % 50 == 0 || (debug_do && Key.Down('C'))) && location->type != L_CAVE && inside->target != LABIRYNTH
-		&& !location->active_quest && dungeon_level == 0)
+	if((first || need_reset) && (Rand() % 50 == 0 || (debug_do && Key.Down('C'))) && L.location->type != L_CAVE && inside->target != LABIRYNTH
+		&& !L.location->active_quest && dungeon_level == 0)
 		SpawnHeroesInsideDungeon();
 
 	// stwórz obiekty kolizji
@@ -13993,7 +13910,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	CreateDungeonMinimap();
 
 	// sekret
-	if(current_location == secret_where && !inside->HaveDownStairs() && secret_state == SECRET_DROPPED_STONE)
+	if(L.location_index == secret_where && !inside->HaveDownStairs() && secret_state == SECRET_DROPPED_STONE)
 	{
 		secret_state = SECRET_GENERATED;
 		if(devmode)
@@ -14665,11 +14582,11 @@ LevelContext& Game::GetContext(const Vec3& pos)
 
 int Game::GetDungeonLevel()
 {
-	if(location->outside)
-		return location->st;
+	if(L.location->outside)
+		return L.location->st;
 	else
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		if(inside->IsMultilevel())
 			return (int)Lerp(max(3.f, float(inside->st) / 2), float(inside->st), float(dungeon_level) / (((MultiInsideLocation*)inside)->levels.size() - 1));
 		else
@@ -14680,7 +14597,7 @@ int Game::GetDungeonLevel()
 int Game::GetDungeonLevelChest()
 {
 	int level = GetDungeonLevel();
-	if(location->spawn == SG_BRAK)
+	if(L.location->spawn == SG_BRAK)
 	{
 		if(level > 10)
 			return 3;
@@ -14804,7 +14721,7 @@ void Game::LoadResources(cstring text, bool worldmap)
 	blood_to_spawn.clear();
 
 	// finished
-	if((Net::IsLocal() || !mp_load_worldmap) && !location->outside)
+	if((Net::IsLocal() || !mp_load_worldmap) && !L.location->outside)
 		SetDungeonParamsToMeshes();
 	LoadingStep(text, 2);
 }
@@ -14887,7 +14804,7 @@ void Game::PreloadResources(bool worldmap)
 		}
 
 		bool new_value = true;
-		if(RequireLoadingResources(location, &new_value) == false)
+		if(RequireLoadingResources(L.location, &new_value) == false)
 		{
 			// load music
 			if(!sound_mgr->IsMusicDisabled())
@@ -15541,7 +15458,7 @@ void Game::CreateForestMinimap()
 	D3DLOCKED_RECT lock;
 	tMinimap->LockRect(0, &lock, nullptr, 0);
 
-	OutsideLocation* loc = (OutsideLocation*)location;
+	OutsideLocation* loc = (OutsideLocation*)L.location;
 
 	for(int y = 0; y < OutsideLocation::size; ++y)
 	{
@@ -15976,9 +15893,9 @@ void Game::CheckIfLocationCleared()
 	if(czysto)
 	{
 		bool cleared = false;
-		if(!location->outside)
+		if(!L.location->outside)
 		{
-			InsideLocation* inside = (InsideLocation*)location;
+			InsideLocation* inside = (InsideLocation*)L.location;
 			if(inside->IsMultilevel())
 			{
 				if(((MultiInsideLocation*)inside)->LevelCleared())
@@ -15992,13 +15909,13 @@ void Game::CheckIfLocationCleared()
 
 		if(cleared)
 		{
-			location->state = LS_CLEARED;
-			if(location->spawn != SG_BRAK)
+			L.location->state = LS_CLEARED;
+			if(L.location->spawn != SG_BRAK)
 			{
-				if(location->type == L_CAMP)
-					AddNews(Format(txNewsCampCleared, W.locations[GetNearestSettlement(location->pos)]->name.c_str()));
+				if(L.location->type == L_CAMP)
+					AddNews(Format(txNewsCampCleared, W.locations[GetNearestSettlement(L.location->pos)]->name.c_str()));
 				else
-					AddNews(Format(txNewsLocCleared, location->name.c_str()));
+					AddNews(Format(txNewsLocCleared, L.location->name.c_str()));
 			}
 		}
 
@@ -16121,7 +16038,7 @@ Vec3 Game::GetExitPos(Unit& u, bool force_border)
 {
 	const Vec3& pos = u.pos;
 
-	if(location->outside)
+	if(L.location->outside)
 	{
 		if(u.in_building != -1)
 			return city_ctx->inside_buildings[u.in_building]->exit_area.Midpoint().XZ();
@@ -16196,7 +16113,7 @@ Vec3 Game::GetExitPos(Unit& u, bool force_border)
 	}
 	else
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		if(dungeon_level == 0 && inside->from_portal)
 			return inside->portal->pos;
 		Int2& pt = inside->GetLevelData().staircase_up;
@@ -16295,7 +16212,7 @@ Game::CanLeaveLocationResult Game::CanLeaveLocation(Unit& unit)
 
 void Game::GenerateTraps()
 {
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	BaseLocation& base = g_base_locations[inside->target];
 
 	if(!IS_SET(base.traps, TRAPS_NORMAL | TRAPS_MAGIC))
@@ -16397,7 +16314,7 @@ void Game::GenerateTraps()
 
 void Game::RegenerateTraps()
 {
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	BaseLocation& base = g_base_locations[inside->target];
 
 	if(!IS_SET(base.traps, TRAPS_MAGIC))
@@ -16528,7 +16445,7 @@ void Game::RegenerateTraps()
 
 void Game::SpawnHeroesInsideDungeon()
 {
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
 	Room* p = lvl.GetUpStairsRoom();
@@ -17006,7 +16923,7 @@ void Game::InitQuests()
 
 void Game::GenerateQuestUnits()
 {
-	if(quest_sawmill->sawmill_state == Quest_Sawmill::State::None && current_location == quest_sawmill->start_loc)
+	if(quest_sawmill->sawmill_state == Quest_Sawmill::State::None && L.location_index == quest_sawmill->start_loc)
 	{
 		Unit* u = SpawnUnitInsideInn(*UnitData::Get("artur_drwal"), -2);
 		assert(u);
@@ -17020,7 +16937,7 @@ void Game::GenerateQuestUnits()
 		}
 	}
 
-	if(current_location == quest_mine->start_loc && quest_mine->mine_state == Quest_Mine::State::None)
+	if(L.location_index == quest_mine->start_loc && quest_mine->mine_state == Quest_Mine::State::None)
 	{
 		Unit* u = SpawnUnitInsideInn(*UnitData::Get("inwestor"), -2);
 		assert(u);
@@ -17033,7 +16950,7 @@ void Game::GenerateQuestUnits()
 		}
 	}
 
-	if(current_location == quest_bandits->start_loc && quest_bandits->bandits_state == Quest_Bandits::State::None)
+	if(L.location_index == quest_bandits->start_loc && quest_bandits->bandits_state == Quest_Bandits::State::None)
 	{
 		Unit* u = SpawnUnitInsideInn(*UnitData::Get("mistrz_agentow"), -2);
 		assert(u);
@@ -17046,7 +16963,7 @@ void Game::GenerateQuestUnits()
 		}
 	}
 
-	if(current_location == quest_mages->start_loc && quest_mages2->mages_state == Quest_Mages2::State::None)
+	if(L.location_index == quest_mages->start_loc && quest_mages2->mages_state == Quest_Mages2::State::None)
 	{
 		Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_magowie_uczony"), -2);
 		assert(u);
@@ -17058,7 +16975,7 @@ void Game::GenerateQuestUnits()
 		}
 	}
 
-	if(current_location == quest_mages2->mage_loc)
+	if(L.location_index == quest_mages2->mage_loc)
 	{
 		if(quest_mages2->mages_state == Quest_Mages2::State::TalkedWithCaptain)
 		{
@@ -17089,7 +17006,7 @@ void Game::GenerateQuestUnits()
 		}
 	}
 
-	if(current_location == quest_orcs->start_loc && quest_orcs2->orcs_state == Quest_Orcs2::State::None)
+	if(L.location_index == quest_orcs->start_loc && quest_orcs2->orcs_state == Quest_Orcs2::State::None)
 	{
 		Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_orkowie_straznik"));
 		assert(u);
@@ -17103,7 +17020,7 @@ void Game::GenerateQuestUnits()
 		}
 	}
 
-	if(current_location == quest_goblins->start_loc && quest_goblins->goblins_state == Quest_Goblins::State::None)
+	if(L.location_index == quest_goblins->start_loc && quest_goblins->goblins_state == Quest_Goblins::State::None)
 	{
 		Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_gobliny_szlachcic"));
 		assert(u);
@@ -17118,7 +17035,7 @@ void Game::GenerateQuestUnits()
 		}
 	}
 
-	if(current_location == quest_evil->start_loc && quest_evil->evil_state == Quest_Evil::State::None)
+	if(L.location_index == quest_evil->start_loc && quest_evil->evil_state == Quest_Evil::State::None)
 	{
 		CityBuilding* b = city_ctx->FindBuilding(BuildingGroup::BG_INN);
 		Unit* u = SpawnUnitNearLocation(local_ctx, b->walk_pt, *UnitData::Get("q_zlo_kaplan"), nullptr, 10);
@@ -17178,7 +17095,7 @@ void Game::GenerateQuestUnits()
 
 	GenerateQuestUnits2(true);
 
-	if(quest_evil->evil_state == Quest_Evil::State::GenerateMage && current_location == quest_evil->mage_loc)
+	if(quest_evil->evil_state == Quest_Evil::State::GenerateMage && L.location_index == quest_evil->mage_loc)
 	{
 		Unit* u = SpawnUnitInsideInn(*UnitData::Get("q_zlo_mag"), -2);
 		assert(u);
@@ -17191,7 +17108,7 @@ void Game::GenerateQuestUnits()
 	}
 
 	if(W.GetDay() == 6 && W.GetMonth() == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena)
-		&& current_location == tournament_city && !tournament_generated)
+		&& L.location_index == tournament_city && !tournament_generated)
 		GenerateTournamentUnits();
 }
 
@@ -17355,7 +17272,7 @@ void Game::UpdateQuests(int days)
 		break;
 	case 1:
 		contest_state = CONTEST_TODAY;
-		if(!contest_generated && game_state == GS_LEVEL && current_location == contest_where)
+		if(!contest_generated && game_state == GS_LEVEL && L.location_index == contest_where)
 			SpawnDrunkmans();
 		break;
 	case 2:
@@ -17400,7 +17317,7 @@ void Game::UpdateQuests(int days)
 		tournament_city = W.GetRandomCityIndex(tournament_city);
 		tournament_master = nullptr;
 	}
-	if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && current_location == tournament_city && !tournament_generated)
+	if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && L.location_index == tournament_city && !tournament_generated)
 		GenerateTournamentUnits();
 	if(month > 2 || (month == 2 && day > 6))
 		tournament_year = year;
@@ -17534,7 +17451,7 @@ void Game::GenerateSawmill(bool in_progress)
 	local_ctx.bloods->clear();
 
 	// wyrównaj teren
-	OutsideLocation* outside = (OutsideLocation*)location;
+	OutsideLocation* outside = (OutsideLocation*)L.location;
 	float* h = outside->h;
 	const int _s = outside->size + 1;
 	vector<Int2> tiles;
@@ -17671,7 +17588,7 @@ bool Game::GenerateMine()
 		return true;
 	}
 
-	CaveLocation* cave = (CaveLocation*)location;
+	CaveLocation* cave = (CaveLocation*)L.location;
 	cave->loaded_resources = false;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 
@@ -18124,7 +18041,7 @@ bool Game::GenerateMine()
 			loc->portal = new Portal;
 			loc->portal->at_level = 0;
 			loc->portal->target = 0;
-			loc->portal->target_loc = current_location;
+			loc->portal->target_loc = L.location_index;
 			loc->portal->next_portal = nullptr;
 		}
 	}
@@ -18529,7 +18446,7 @@ void Game::UpdateGame2(float dt)
 	}
 
 	// quest mages
-	if(quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined && current_location == quest_mages2->target_loc)
+	if(quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined && L.location_index == quest_mages2->target_loc)
 	{
 		quest_mages2->timer += dt;
 		if(quest_mages2->timer >= 30.f && quest_mages2->scholar->auto_talk == AutoTalkMode::No)
@@ -18537,7 +18454,7 @@ void Game::UpdateGame2(float dt)
 	}
 
 	// quest evil
-	if(quest_evil->evil_state == Quest_Evil::State::SpawnedAltar && current_location == quest_evil->target_loc)
+	if(quest_evil->evil_state == Quest_Evil::State::SpawnedAltar && L.location_index == quest_evil->target_loc)
 	{
 		for(Unit* unit : Team.members)
 		{
@@ -18548,7 +18465,7 @@ void Game::UpdateGame2(float dt)
 				sound_mgr->PlaySound2d(sEvil);
 				quest_evil->SetProgress(Quest_Evil::Progress::AltarEvent);
 				// spawn undead
-				InsideLocation* inside = (InsideLocation*)location;
+				InsideLocation* inside = (InsideLocation*)L.location;
 				inside->spawn = SG_NIEUMARLI;
 				uint offset = local_ctx.units->size();
 				GenerateDungeonUnits();
@@ -18562,9 +18479,9 @@ void Game::UpdateGame2(float dt)
 			}
 		}
 	}
-	else if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals && !location->outside && location->GetLastLevel() == dungeon_level)
+	else if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals && !L.location->outside && L.location->GetLastLevel() == dungeon_level)
 	{
-		int d = quest_evil->GetLocId(current_location);
+		int d = quest_evil->GetLocId(L.location_index);
 		if(d != -1)
 		{
 			Quest_Evil::Loc& loc = quest_evil->loc[d];
@@ -18593,15 +18510,15 @@ void Game::UpdateGame2(float dt)
 								loc.state = Quest_Evil::Loc::State::PortalClosed;
 								u->hero->mode = HeroData::Follow;
 								u->ai->idle_action = AIController::Idle_None;
-								quest_evil->msgs.push_back(Format(txPortalClosed, location->name.c_str()));
+								quest_evil->msgs.push_back(Format(txPortalClosed, L.location->name.c_str()));
 								game_gui->journal->NeedUpdate(Journal::Quests, quest_evil->quest_index);
 								AddGameMsg3(GMS_JOURNAL_UPDATED);
 								u->StartAutoTalk();
 								quest_evil->changed = true;
 								++quest_evil->closed;
-								delete location->portal;
-								location->portal = nullptr;
-								AddNews(Format(txPortalClosedNews, location->name.c_str()));
+								delete L.location->portal;
+								L.location->portal = nullptr;
+								AddNews(Format(txPortalClosedNews, L.location->name.c_str()));
 								if(Net::IsOnline())
 								{
 									Net_UpdateQuest(quest_evil->refid);
@@ -19905,9 +19822,9 @@ void Game::Cheat_Reveal()
 
 void Game::Cheat_ShowMinimap()
 {
-	if(!location->outside)
+	if(!L.location->outside)
 	{
-		InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
+		InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
 
 		for(int y = 0; y < lvl.h; ++y)
 		{
@@ -20498,7 +20415,7 @@ void Game::OnEnterLocation()
 	cstring text = nullptr;
 
 	// orc talking after entering location
-	if(quest_orcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && quest_orcs2->target_loc == current_location && quest_orcs2->talked == Quest_Orcs2::Talked::No)
+	if(quest_orcs2->orcs_state == Quest_Orcs2::State::ToldAboutCamp && quest_orcs2->target_loc == L.location_index && quest_orcs2->talked == Quest_Orcs2::Talked::No)
 	{
 		quest_orcs2->talked = Quest_Orcs2::Talked::AboutCamp;
 		talker = quest_orcs2->orc;
@@ -20513,10 +20430,10 @@ void Game::OnEnterLocation()
 
 		if(info.sane_heroes > 0)
 		{
-			switch(location->type)
+			switch(L.location->type)
 			{
 			case L_CITY:
-				if(LocationHelper::IsCity(location))
+				if(LocationHelper::IsCity(L.location))
 					text = random_string(txAiCity);
 				else
 					text = random_string(txAiVillage);
@@ -20528,12 +20445,12 @@ void Game::OnEnterLocation()
 				text = txAiForest;
 				break;
 			case L_CAMP:
-				if(location->state != LS_CLEARED)
+				if(L.location->state != LS_CLEARED)
 				{
 					pewna_szansa = true;
 					cstring co;
 
-					switch(location->spawn)
+					switch(L.location->spawn)
 					{
 					case SG_GOBLINY:
 						co = txSGOGoblins;
@@ -20579,12 +20496,12 @@ void Game::OnEnterLevel()
 	{
 		if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals)
 		{
-			int d = quest_evil->GetLocId(current_location);
+			int d = quest_evil->GetLocId(L.location_index);
 			if(d != -1)
 			{
 				Quest_Evil::Loc& loc = quest_evil->loc[d];
 
-				if(dungeon_level == location->GetLastLevel())
+				if(dungeon_level == L.location->GetLastLevel())
 				{
 					if(loc.state < Quest_Evil::Loc::State::TalkedAfterEnterLevel)
 					{
@@ -20601,7 +20518,7 @@ void Game::OnEnterLevel()
 				}
 			}
 		}
-		else if(current_location == quest_evil->target_loc && !quest_evil->told_about_boss)
+		else if(L.location_index == quest_evil->target_loc && !quest_evil->told_about_boss)
 		{
 			quest_evil->told_about_boss = true;
 			talker = quest_evil->cleric;
@@ -20610,7 +20527,7 @@ void Game::OnEnterLevel()
 	}
 
 	// orc talking after entering level
-	if(!talker && (quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || quest_orcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && current_location == quest_orcs2->target_loc)
+	if(!talker && (quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || quest_orcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && L.location_index == quest_orcs2->target_loc)
 	{
 		if(dungeon_level == 0)
 		{
@@ -20621,7 +20538,7 @@ void Game::OnEnterLevel()
 				text = txGorushDanger;
 			}
 		}
-		else if(dungeon_level == location->GetLastLevel())
+		else if(dungeon_level == L.location->GetLastLevel())
 		{
 			if(quest_orcs2->talked < Quest_Orcs2::Talked::AboutBoss)
 			{
@@ -20635,7 +20552,7 @@ void Game::OnEnterLevel()
 	// old mage talking after entering location
 	if(!talker && (quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined || quest_mages2->mages_state == Quest_Mages2::State::MageRecruited))
 	{
-		if(quest_mages2->target_loc == current_location)
+		if(quest_mages2->target_loc == L.location_index)
 		{
 			if(quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined)
 			{
@@ -20655,7 +20572,7 @@ void Game::OnEnterLevel()
 						text = Format(txMageEnter, quest_mages2->evil_mage_name.c_str());
 					}
 				}
-				else if(dungeon_level == location->GetLastLevel() && quest_mages2->talked < Quest_Mages2::Talked::BeforeBoss)
+				else if(dungeon_level == L.location->GetLastLevel() && quest_mages2->talked < Quest_Mages2::Talked::BeforeBoss)
 				{
 					quest_mages2->talked = Quest_Mages2::Talked::BeforeBoss;
 					text = txMageFinal;
@@ -20677,12 +20594,12 @@ void Game::OnEnterLevel()
 		{
 			LocalString s;
 
-			switch(location->type)
+			switch(L.location->type)
 			{
 			case L_DUNGEON:
 			case L_CRYPT:
 				{
-					InsideLocation* inside = (InsideLocation*)location;
+					InsideLocation* inside = (InsideLocation*)L.location;
 					switch(inside->target)
 					{
 					case HUMAN_FORT:
@@ -20880,9 +20797,9 @@ cstring Game::GetRandomIdleText(Unit& u)
 
 	if(type == 0)
 	{
-		if(location->type == L_CITY)
+		if(L.location->type == L_CITY)
 			return random_string(txAiHeroCityText);
-		else if(location->outside)
+		else if(L.location->outside)
 			return random_string(txAiHeroOutsideText);
 		else
 			return random_string(txAiHeroDungeonText);
@@ -20892,7 +20809,7 @@ cstring Game::GetRandomIdleText(Unit& u)
 		n = Rand() % 100;
 		if(n < 60)
 			return random_string(txAiDefaultText);
-		else if(location->outside)
+		else if(L.location->outside)
 			return random_string(txAiOutsideText);
 		else
 			return random_string(txAiInsideText);
@@ -20935,9 +20852,9 @@ void Game::CheckCraziesStone()
 	if(!Team.FindItemInTeam(kamien, -1, nullptr, nullptr, false))
 	{
 		// usuñ kamieñ z gry o ile to nie encounter bo i tak jest resetowany
-		if(location->type != L_ENCOUNTER)
+		if(L.location->type != L_ENCOUNTER)
 		{
-			if(quest_crazies->target_loc == current_location)
+			if(quest_crazies->target_loc == L.location_index)
 			{
 				// jest w dobrym miejscu, sprawdŸ czy w³o¿y³ kamieñ do skrzyni
 				if(local_ctx.chests && local_ctx.chests->size() > 0)
@@ -21048,7 +20965,7 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 {
 	assert(item);
 
-	if(secret_state == SECRET_NONE && location->type == L_MOONWELL && item->item->id == "krystal" && Vec3::Distance2d(item->pos, Vec3(128.f, 0, 128.f)) < 1.2f)
+	if(secret_state == SECRET_NONE && L.location->type == L_MOONWELL && item->item->id == "krystal" && Vec3::Distance2d(item->pos, Vec3(128.f, 0, 128.f)) < 1.2f)
 	{
 		AddGameMsg(txSecretAppear, 3.f);
 		secret_state = SECRET_DROPPED_STONE;
@@ -21058,7 +20975,7 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 		l.active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
 		l.state = LS_UNKNOWN;
 		secret_where = loc;
-		Vec2& cpos = location->pos;
+		Vec2& cpos = L.location->pos;
 		Item* note = GetSecretNote();
 		note->desc = Format("\"%c %d km, %c %d km\"", cpos.y > l.pos.y ? 'S' : 'N', (int)abs((cpos.y - l.pos.y) / 3), cpos.x > l.pos.x ? 'W' : 'E', (int)abs((cpos.x - l.pos.x) / 3));
 		unit.AddItem(note);
@@ -21488,7 +21405,7 @@ bool Game::RemoveItem(Unit& unit, const Item* item, uint count)
 
 Int2 Game::GetSpawnPoint()
 {
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
 	if(enter_from >= ENTER_FROM_PORTAL)
@@ -21501,8 +21418,8 @@ Int2 Game::GetSpawnPoint()
 
 InsideLocationLevel* Game::TryGetLevelData()
 {
-	if(location->type == L_DUNGEON || location->type == L_CRYPT || location->type == L_CAVE)
-		return &((InsideLocation*)location)->GetLevelData();
+	if(L.location->type == L_DUNGEON || L.location->type == L_CRYPT || L.location->type == L_CAVE)
+		return &((InsideLocation*)L.location)->GetLevelData();
 	else
 		return nullptr;
 }
@@ -21869,7 +21786,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 	InsideLocation* inside = nullptr;
 	if(local_ctx.type == LevelContext::Inside)
 	{
-		inside = (InsideLocation*)location;
+		inside = (InsideLocation*)L.location;
 		lvl = &inside->GetLevelData();
 	}
 
@@ -21878,7 +21795,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 	{
 		if(local_ctx.type == LevelContext::Outside)
 		{
-			if(location->type == L_CITY)
+			if(L.location->type == L_CITY)
 				spawned = SpawnUnitInsideInn(*event->unit_to_spawn, event->unit_spawn_level);
 			else
 			{

@@ -31,6 +31,7 @@
 #include "Portal.h"
 #include "EntityInterpolator.h"
 #include "World.h"
+#include "Level.h"
 
 extern string g_ctime;
 
@@ -1213,10 +1214,12 @@ void Game::UpdateClientTransfer(float dt)
 							LoadingStep("");
 						else
 							LoadingStart(4);
-						current_location = loc;
-						location = W.locations[loc];
+						W.current_location = W.locations[loc];
+						W.current_location_index = loc;
+						L.location = W.current_location;
+						L.location_index = W.current_location_index;
 						dungeon_level = level;
-						Info("NM_TRANSFER: Level change to %s (id:%d, level:%d).", location->name.c_str(), current_location, dungeon_level);
+						Info("NM_TRANSFER: Level change to %s (id:%d, level:%d).", L.location->name.c_str(), L.location_index, dungeon_level);
 						info_box->Show(txGeneratingLocation);
 					}
 					else
@@ -1294,7 +1297,7 @@ void Game::UpdateClientTransfer(float dt)
 					main_menu->visible = false;
 					game_gui->visible = false;
 					world_map->visible = true;
-					world_state = WS_MAIN;
+					W.state = World::State::ON_MAP;
 					info_box->CloseDialog();
 					update_timer = 0.f;
 					leader_id = 0;
@@ -1758,7 +1761,7 @@ void Game::UpdateServerTransfer(float dt)
 				main_menu->visible = false;
 				mp_load = false;
 				clear_color = Color::White;
-				world_state = WS_MAIN;
+				W.state = World::State::ON_MAP;
 				update_timer = 0.f;
 				SetMusic(MusicType::Travel);
 				ProcessLeftPlayers();
@@ -1770,7 +1773,7 @@ void Game::UpdateServerTransfer(float dt)
 
 				packet_data.resize(3);
 				packet_data[0] = ID_CHANGE_LEVEL;
-				packet_data[1] = (byte)current_location;
+				packet_data[1] = (byte)W.current_location_index;
 				packet_data[2] = dungeon_level;
 				int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
@@ -1839,14 +1842,14 @@ void Game::UpdateServerTransfer(float dt)
 
 					if(city_ctx)
 						GetCityEntry(pos, rot);
-					else if(enter_from >= ENTER_FROM_PORTAL && (portal = location->GetPortal(enter_from)) != nullptr)
+					else if(enter_from >= ENTER_FROM_PORTAL && (portal = L.location->GetPortal(enter_from)) != nullptr)
 					{
 						pos = portal->pos + Vec3(sin(portal->rot) * 2, 0, cos(portal->rot) * 2);
 						rot = Clip(portal->rot + PI);
 					}
-					else if(location->type == L_DUNGEON || location->type == L_CRYPT)
+					else if(L.location->type == L_DUNGEON || L.location->type == L_CRYPT)
 					{
-						InsideLocation* inside = (InsideLocation*)location;
+						InsideLocation* inside = (InsideLocation*)L.location;
 						InsideLocationLevel& lvl = inside->GetLevelData();
 						if(enter_from == ENTER_FROM_DOWN_LEVEL)
 						{
@@ -1869,7 +1872,7 @@ void Game::UpdateServerTransfer(float dt)
 						if(!info.loaded)
 						{
 							local_ctx.units->push_back(info.u);
-							WarpNearLocation(local_ctx, *info.u, pos, location->outside ? 4.f : 2.f, false, 20);
+							WarpNearLocation(local_ctx, *info.u, pos, L.location->outside ? 4.f : 2.f, false, 20);
 							info.u->rot = rot;
 							info.u->interp->Reset(info.u->pos, info.u->rot);
 						}

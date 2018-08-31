@@ -53,7 +53,7 @@ bool Game::CanSaveGame() const
 
 	if(game_state == GS_WORLDMAP)
 	{
-		if(world_state == WS_TRAVEL || world_state == WS_ENCOUNTER)
+		if(Any(W.state, World::State::TRAVEL, World::State::ENCOUNTER))
 			return false;
 	}
 	else
@@ -403,7 +403,6 @@ void Game::SaveGame(GameWriter& f)
 	byte check_id = 0;
 
 	// world map
-	f << world_state;
 	f << current_location;
 	f << W.locations.size();
 	for(Location* loc : W.locations)
@@ -436,7 +435,7 @@ void Game::SaveGame(GameWriter& f)
 	f << W.settlements;
 	f << W.encounter_loc;
 	f << world_dir;
-	if(world_state == WS_TRAVEL)
+	if(W.state == World::State::TRAVEL)
 	{
 		f << picked_location;
 		f << travel_day;
@@ -656,6 +655,12 @@ void Game::LoadGame(GameReader& f)
 	load_unit_handler.clear();
 	load_chest_handler.clear();
 	units_mesh_load.clear();
+	Unit::refid_table.clear();
+	Usable::refid_table.clear();
+	ParticleEmitter::refid_table.clear();
+	TrailParticleEmitter::refid_table.clear();
+
+	byte check_id = 0, read_id;
 
 	// signature
 	byte sign[4] = { 'C','R','S','V' };
@@ -731,29 +736,36 @@ void Game::LoadGame(GameReader& f)
 	{
 		hardcore_mode = IS_SET(flags, SF_HARDCORE);
 
+		// game stats
 		GameStats::Get().Load(f);
+
+		// game state
 		f >> game_state2;
+
+		// world state
 		W.Load(f);
 	}
 	else
 	{
+		// game stats (is hardcore, total_kills)
 		f >> hardcore_mode;
 		GameStats::Get().LoadOld(f, 0);
-		W.LoadOld(f, 0);
-		f >> game_state2;
-		GameStats::Get().LoadOld(f, 1);
-	}
-	
-	Unit::refid_table.clear();
-	Usable::refid_table.clear();
-	ParticleEmitter::refid_table.clear();
-	TrailParticleEmitter::refid_table.clear();
 
-	byte check_id = 0, read_id;
+		// world day/month/year/worldtime
+		W.LoadOld(f, 0);
+
+		// game state
+		f >> game_state2;
+
+		// game stats (play time)
+		GameStats::Get().LoadOld(f, 1);
+
+		// world state
+		W.LoadOld(f, 1);
+	}
 
 	// world map
 	LoadingStep(txLoadingLocations);
-	f >> world_state;
 	f >> current_location;
 	uint count = f.Read<uint>();
 	W.locations.resize(count);
@@ -763,7 +775,7 @@ void Game::LoadGame(GameReader& f)
 	{
 		LOCATION_TOKEN loc_token;
 		f >> loc_token;
-		
+
 		if(loc_token != LT_NULL)
 		{
 			switch(loc_token)
@@ -839,7 +851,7 @@ void Game::LoadGame(GameReader& f)
 	f >> W.settlements;
 	f >> W.encounter_loc;
 	f >> world_dir;
-	if(world_state == WS_TRAVEL)
+	if(W.state == World::State::TRAVEL)
 	{
 		f >> picked_location;
 		f >> travel_day;
@@ -847,9 +859,10 @@ void Game::LoadGame(GameReader& f)
 		f >> travel_time;
 		f >> guards_enc_reward;
 	}
-	else if(world_state == WS_ENCOUNTER)
+	// FIXME - in new save/load this is not encouter
+	else if(W.state == World::State::ENCOUNTER)
 	{
-		world_state = WS_TRAVEL;
+		W.state = World::State::TRAVEL;
 		travel_start = world_pos = W.locations[0]->pos;
 		picked_location = 0;
 		travel_time = 1.f;

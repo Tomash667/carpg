@@ -3086,7 +3086,6 @@ void Game::RepositionCityUnits()
 
 void Game::Event_RandomEncounter(int)
 {
-	world_state = WS_TRAVEL;
 	dialog_enc = nullptr;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::CLOSE_ENCOUNTER);

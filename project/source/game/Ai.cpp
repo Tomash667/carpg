@@ -10,6 +10,7 @@
 #include "Team.h"
 #include "SoundManager.h"
 #include "Profiler.h"
+#include "Level.h"
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
 const float JUMP_BACK_TIMER = 0.2f;
@@ -1086,9 +1087,9 @@ void Game::UpdateAi(float dt)
 										ai.timer = Random(2.f, 4.f);
 										ai.idle_action = AIController::Idle_None;
 									}
-									else if(!location->outside)
+									else if(!L.location->outside)
 									{
-										InsideLocation* inside = (InsideLocation*)location;
+										InsideLocation* inside = (InsideLocation*)L.location;
 										if(!inside->GetLevelData().IsValidWalkPos(ai.idle_data.pos, u.GetUnitRadius()))
 										{
 											ai.timer = Random(2.f, 4.f);
@@ -1879,7 +1880,7 @@ void Game::UpdateAi(float dt)
 					if(Vec3::Distance(u.pos, ai.target_last_pos) < 1.f || ai.timer <= 0.f)
 					{
 						// doszed³ do ostatniego widzianego punktu
-						if(location->outside)
+						if(L.location->outside)
 						{
 							// jest na zewn¹trz wiêc nie ma co robiæ
 							ai.state = AIController::Idle;
@@ -1891,7 +1892,7 @@ void Game::UpdateAi(float dt)
 						}
 						else
 						{
-							InsideLocation* inside = (InsideLocation*)location;
+							InsideLocation* inside = (InsideLocation*)L.location;
 							Room* room = inside->FindChaseRoom(u.pos);
 							if(room)
 							{
@@ -1969,7 +1970,7 @@ void Game::UpdateAi(float dt)
 					else if(Vec3::Distance(u.pos, ai.target_last_pos) < 1.f)
 					{
 						// szukaj kolejnego pokoju
-						InsideLocation* inside = (InsideLocation*)location;
+						InsideLocation* inside = (InsideLocation*)L.location;
 						InsideLocationLevel& lvl = inside->GetLevelData();
 						Room* room = lvl.GetNearestRoom(u.pos);
 						int gdzie = room->connected[Rand() % room->connected.size()];
@@ -2005,7 +2006,7 @@ void Game::UpdateAi(float dt)
 					if(enemy)
 					{
 						ai.target_last_pos = enemy->pos;
-						if(location->outside)
+						if(L.location->outside)
 						{
 							// zaawansowane uciekanie tylko w podziemiach, na zewn¹trz uciekaj przed siebie
 							if(Vec3::Distance2d(enemy->pos, u.pos) < 3.f)
@@ -2051,7 +2052,7 @@ void Game::UpdateAi(float dt)
 								mid /= (float)close_enemies.size();
 
 								// które to pomieszczenie?
-								Room* room = ((InsideLocation*)location)->GetLevelData().FindEscapeRoom(u.pos, mid);
+								Room* room = ((InsideLocation*)L.location)->GetLevelData().FindEscapeRoom(u.pos, mid);
 
 								if(room)
 								{
@@ -2546,7 +2547,7 @@ void Game::UpdateAi(float dt)
 						if(door.IsBlocking() && door.state == Door::Closed && door.locked == LOCK_NONE && Vec3::Distance(door.pos, u.pos) < 1.f)
 						{
 							// otwórz magicznie drzwi :o
-							if(!location->outside)
+							if(!L.location->outside)
 								minimap_opened_doors = true;
 							door.state = Door::Opening;
 							door.mesh_inst->Play(&door.mesh_inst->mesh->anims[0], PLAY_ONCE | PLAY_STOP_AT_END | PLAY_NO_BLEND, 0);

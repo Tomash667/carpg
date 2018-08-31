@@ -30,6 +30,7 @@
 #include "Portal.h"
 #include "EntityInterpolator.h"
 #include "World.h"
+#include "Level.h"
 
 vector<NetChange> Net::changes;
 Net::Mode Net::mode;
@@ -333,15 +334,15 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 	f << mp_load;
 	f << loaded_resources;
 
-	if(location->outside)
+	if(L.location->outside)
 	{
 		// outside location
-		OutsideLocation* outside = (OutsideLocation*)location;
+		OutsideLocation* outside = (OutsideLocation*)L.location;
 		f.Write((cstring)outside->tiles, sizeof(TerrainTile)*outside->size*outside->size);
 		f.Write((cstring)outside->h, sizeof(float)*(outside->size + 1)*(outside->size + 1));
-		if(location->type == L_CITY)
+		if(outside->type == L_CITY)
 		{
-			City* city = (City*)location;
+			City* city = (City*)outside;
 			f.WriteCasted<byte>(city->flags);
 			f.WriteCasted<byte>(city->entry_points.size());
 			for(EntryPoint& entry_point : city->entry_points)
@@ -404,7 +405,7 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 	else
 	{
 		// inside location
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		f.WriteCasted<byte>(inside->target);
 		f << inside->from_portal;
@@ -460,7 +461,7 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 	for(Chest* chest : *local_ctx.chests)
 		WriteChest(f, *chest);
 
-	location->WritePortals(f);
+	L.location->WritePortals(f);
 
 	// items preload
 	f << items_load.size();
@@ -698,23 +699,23 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		return false;
 	}
 
-	if(!location->outside)
+	if(!L.location->outside)
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		inside->SetActiveLevel(dungeon_level);
 	}
-	ApplyContext(location, local_ctx);
-	RequireLoadingResources(location, &loaded_resources);
+	ApplyContext(L.location, local_ctx);
+	RequireLoadingResources(L.location, &loaded_resources);
 	local_ctx_valid = true;
 	city_ctx = nullptr;
 
-	if(location->outside)
+	if(L.location->outside)
 	{
 		// outside location
 		SetOutsideParams();
 		SetTerrainTextures();
 
-		OutsideLocation* outside = (OutsideLocation*)location;
+		OutsideLocation* outside = (OutsideLocation*)L.location;
 		int size11 = outside->size*outside->size;
 		int size22 = outside->size + 1;
 		size22 *= size22;
@@ -731,9 +732,9 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		}
 		ApplyTiles(outside->h, outside->tiles);
 		SpawnTerrainCollider();
-		if(location->type == L_CITY)
+		if(outside->type == L_CITY)
 		{
-			City* city = (City*)location;
+			City* city = (City*)outside;
 			city_ctx = city;
 
 			// entry points
@@ -974,7 +975,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	else
 	{
 		// inside location
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		f.ReadCasted<byte>(inside->target);
 		f >> inside->from_portal;
@@ -1188,7 +1189,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	}
 
 	// portals
-	if(!location->ReadPortals(f, dungeon_level))
+	if(!L.location->ReadPortals(f, dungeon_level))
 	{
 		Error("Read level: Broken portals.");
 		return false;
@@ -2267,7 +2268,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				if(player.noclip || unit.usable || CheckMoveNet(unit, new_pos))
 				{
 					// update position
-					if(!unit.pos.Equal(new_pos) && !location->outside)
+					if(!unit.pos.Equal(new_pos) && !L.location->outside)
 					{
 						// reveal minimap
 						Int2 new_tile(int(new_pos.x / 2), int(new_pos.z / 2));
@@ -3996,7 +3997,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 						else
 						{
-							if(location->TryGetPortal(type))
+							if(L.location->TryGetPortal(type))
 							{
 								fallback_co = FALLBACK::USE_PORTAL;
 								fallback_1 = type;
@@ -4124,8 +4125,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else
 				{
 					// start travel
-					world_state = WS_TRAVEL;
-					current_location = -1;
+					W.state = World::State::TRAVEL;
+					W.current_location = nullptr;
+					W.current_location_index = -1;
+					L.location = nullptr;
+					L.location_index = -1;
 					travel_time = 0.f;
 					travel_day = 0;
 					travel_start = world_pos;
@@ -4150,11 +4154,14 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			break;
 		// leader finished travel
 		case NetChange::END_TRAVEL:
-			if(world_state == WS_TRAVEL)
+			if(W.state == World::State::TRAVEL)
 			{
-				world_state = WS_MAIN;
-				current_location = picked_location;
-				Location& loc = *W.locations[current_location];
+				W.state = World::State::ON_MAP;
+				W.current_location_index = picked_location;
+				W.current_location = W.locations[picked_location];
+				L.location_index = W.current_location_index;
+				L.location = W.current_location;
+				Location& loc = *L.location;
 				if(loc.state == LS_KNOWN)
 					SetLocationVisited(loc);
 				world_pos = loc.pos;
@@ -4163,7 +4170,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			break;
 		// enter current location
 		case NetChange::ENTER_LOCATION:
-			if(game_state == GS_WORLDMAP && world_state == WS_MAIN && Team.IsLeader(info.u))
+			if(game_state == GS_WORLDMAP && W.state == World::State::ON_MAP && Team.IsLeader(info.u))
 			{
 				if(EnterLocation())
 				{
@@ -4187,7 +4194,6 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				delete dialog_enc;
 				dialog_enc = nullptr;
 			}
-			world_state = WS_TRAVEL;
 			Net::PushChange(NetChange::CLOSE_ENCOUNTER);
 			Event_RandomEncounter(0);
 			StreamEnd();
@@ -4201,7 +4207,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: Broken CHEAT_CHANGE_LEVEL from %s.", info.name.c_str());
 				else if(!info.devmode)
 					StreamError("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str());
-				else if(location->outside)
+				else if(L.location->outside)
 					StreamError("Update server:CHEAT_CHANGE_LEVEL from %s, outside location.", info.name.c_str());
 				else
 				{
@@ -4222,7 +4228,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: Player %s used CHEAT_CHANGE_LEVEL without devmode.", info.name.c_str());
 				else
 				{
-					InsideLocation* inside = (InsideLocation*)location;
+					InsideLocation* inside = (InsideLocation*)L.location;
 					InsideLocationLevel& lvl = inside->GetLevelData();
 
 					if(!is_down)
@@ -4496,8 +4502,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index);
 				else
 				{
-					current_location = location_index;
-					Location& loc = *W.locations[location_index];
+					W.current_location_index = location_index;
+					W.current_location = W.locations[W.current_location_index];
+					L.location_index = W.current_location_index;
+					L.location = W.current_location;
+					Location& loc = *L.location;
 					if(loc.state == LS_KNOWN)
 						SetLocationVisited(loc);
 					world_pos = loc.pos;
@@ -5456,10 +5465,12 @@ void Game::UpdateClient(float dt)
 					StreamError("Update client: Broken ID_CHANGE_LEVEL.");
 				else
 				{
-					current_location = loc;
-					location = W.locations[loc];
+					W.current_location_index = loc;
+					W.current_location = W.locations[W.current_location_index];
+					L.location_index = W.current_location_index;
+					L.location = W.current_location;
 					dungeon_level = level;
-					Info("Update client: Level change to %s (%d, level %d).", location->name.c_str(), current_location, dungeon_level);
+					Info("Update client: Level change to %s (%d, level %d).", L.location->name.c_str(), L.location_index, dungeon_level);
 					info_box->Show(txGeneratingLocation);
 					LeaveLevel();
 					net_mode = NM_TRANSFER;
@@ -6972,8 +6983,11 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken TRAVEL.");
 				else
 				{
-					world_state = WS_TRAVEL;
-					current_location = -1;
+					W.state = World::State::TRAVEL;
+					W.current_location_index = -1;
+					W.current_location = nullptr;
+					L.location_index = -1;
+					L.location = nullptr;
 					travel_time = 0.f;
 					travel_day = 0;
 					travel_start = world_pos;
@@ -6993,11 +7007,14 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			break;
 		// leader finished travel
 		case NetChange::END_TRAVEL:
-			if(world_state == WS_TRAVEL)
+			if(W.state == World::State::TRAVEL)
 			{
-				world_state = WS_MAIN;
-				current_location = picked_location;
-				Location& loc = *W.locations[current_location];
+				W.state = World::State::ON_MAP;
+				W.current_location_index = picked_location;
+				W.current_location = W.locations[W.current_location_index];
+				L.location_index = W.current_location_index;
+				L.location = W.current_location;
+				Location& loc = *L.location;
 				if(loc.state == LS_KNOWN)
 					SetLocationVisited(loc);
 				world_pos = loc.pos;
@@ -7221,8 +7238,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					dialog_enc = GUI.ShowDialog(info);
 					if(!IsLeader())
 						dialog_enc->bts[0].state = Button::DISABLED;
-					assert(world_state == WS_TRAVEL);
-					world_state = WS_ENCOUNTER;
+					assert(W.state == World::State::TRAVEL);
+					W.state = World::State::ENCOUNTER;
 				}
 			}
 			break;
@@ -7235,14 +7252,13 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				delete dialog_enc;
 				dialog_enc = nullptr;
 			}
-			world_state = WS_TRAVEL;
 			break;
 		// close portal in location
 		case NetChange::CLOSE_PORTAL:
-			if(location->portal)
+			if(L.location && L.location->portal)
 			{
-				delete location->portal;
-				location->portal = nullptr;
+				delete L.location->portal;
+				L.location->portal = nullptr;
 			}
 			else
 				StreamError("Update client: CLOSE_PORTAL, missing portal.");
@@ -7856,8 +7872,11 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index);
 				else
 				{
-					current_location = location_index;
-					Location& loc = *W.locations[current_location];
+					W.current_location_index = location_index;
+					W.current_location = W.locations[W.current_location_index];
+					L.location_index = W.current_location_index;
+					L.location = W.current_location;
+					Location& loc = *L.location;
 					if(loc.state == LS_KNOWN)
 						loc.state = LS_VISITED;
 					world_pos = loc.pos;
@@ -9646,7 +9665,7 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 		f << loc.name;
 		f.WriteCasted<byte>(loc.image);
 	}
-	f.WriteCasted<byte>(current_location);
+	f.WriteCasted<byte>(L.location_index);
 
 	// quests
 	QuestManager::Get().Write(f);
@@ -9681,8 +9700,8 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 	// secret note text
 	f << GetSecretNote()->desc;
 
-	// position on world map
-	if(world_state == WS_TRAVEL)
+	// position on world map when traveling
+	if(W.state == World::State::TRAVEL)
 	{
 		f << true;
 		f << picked_location;
@@ -9810,20 +9829,22 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	}
 
 	// current location
-	f.ReadCasted<byte>(current_location);
+	f.ReadCasted<byte>(L.location_index);
 	if(!f)
 	{
 		Error("Read world: Broken packet for current location.");
 		return false;
 	}
-	if(current_location >= (int)W.locations.size() || !W.locations[current_location])
+	if(L.location_index >= (int)W.locations.size() || !W.locations[L.location_index])
 	{
-		Error("Read world: Invalid location %d.", current_location);
+		Error("Read world: Invalid location %d.", L.location_index);
 		return false;
 	}
-	location = W.locations[current_location];
-	world_pos = location->pos;
-	location->state = LS_VISITED;
+	W.current_location_index = L.location_index;
+	W.current_location = W.locations[W.current_location_index];
+	L.location = W.current_location;
+	world_pos = L.location->pos;
+	L.location->state = LS_VISITED;
 
 	// quests
 	if(!QuestManager::Get().Read(f))
@@ -9908,7 +9929,7 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	}
 	if(in_travel)
 	{
-		world_state = WS_TRAVEL;
+		W.state = World::State::TRAVEL;
 		f >> picked_location;
 		f >> travel_day;
 		f >> travel_time;

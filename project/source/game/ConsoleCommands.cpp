@@ -1,4 +1,3 @@
-// komendy w konsoli
 #include "Pch.h"
 #include "GameCore.h"
 #include "ConsoleCommands.h"
@@ -19,6 +18,8 @@
 #include "QuestManager.h"
 #include "BuildingGroup.h"
 #include "ScriptManager.h"
+#include "World.h"
+#include "Level.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -392,9 +393,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						Net::PushChange(NetChange::CHEAT_REVEAL);
 					break;
 				case CMD_MAP2CONSOLE:
-					if(game_state == GS_LEVEL && !location->outside)
+					if(game_state == GS_LEVEL && !L.location->outside)
 					{
-						InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
+						InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
 						rysuj_mape_konsola(lvl.map, lvl.w, lvl.h);
 					}
 					else
@@ -1380,16 +1381,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					Msg("noai = %d", noai ? 1 : 0);
 					break;
 				case CMD_PAUSE:
-					paused = !paused;
-					if(Net::IsOnline())
-					{
-						AddMultiMsg(paused ? txGamePaused : txGameResumed);
-						NetChange& c = Add1(Net::changes);
-						c.type = NetChange::PAUSED;
-						c.id = (paused ? 1 : 0);
-						if(paused && game_state == GS_WORLDMAP && world_state == WS_TRAVEL)
-							Net::PushChange(NetChange::UPDATE_MAP_POS);
-					}
+					PauseGame();
 					break;
 				case CMD_MULTISAMPLING:
 					if(t.Next())
@@ -1611,9 +1603,9 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						return;
 					break;
 				case CMD_TILE_INFO:
-					if(location->outside && pc->unit->in_building == -1 && terrain->IsInside(pc->unit->pos))
+					if(L.location->outside && pc->unit->in_building == -1 && terrain->IsInside(pc->unit->pos))
 					{
-						OutsideLocation* outside = (OutsideLocation*)location;
+						OutsideLocation* outside = (OutsideLocation*)L.location;
 						const TerrainTile& t = outside->tiles[pos_to_pt(pc->unit->pos)(outside->size)];
 						Msg(t.GetInfo());
 					}

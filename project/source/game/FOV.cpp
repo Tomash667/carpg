@@ -4,6 +4,7 @@
 #include "GameCore.h"
 #include "Game.h"
 #include "InsideLocation.h"
+#include "Level.h"
 
 #define X false,
 #define _ true,
@@ -404,7 +405,7 @@ namespace FOV
 
 void Game::DungeonReveal(const Int2& tile)
 {
-	InsideLocationLevel& lvl = ((InsideLocation*)location)->GetLevelData();
+	InsideLocationLevel& lvl = ((InsideLocation*)L.location)->GetLevelData();
 
 	FOV::source = tile;
 	FOV::extent = Int2(5, 5);

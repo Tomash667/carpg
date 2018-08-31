@@ -428,11 +428,13 @@ uint World::GenerateWorld(int start_location_type, int start_location_target)
 			loc.st = 10;
 	}
 
+	state = State::ON_MAP;
 	return start_location;
 }
 
 void World::Save(FileWriter& f)
 {
+	f << state;
 	f << year;
 	f << month;
 	f << day;
@@ -441,6 +443,7 @@ void World::Save(FileWriter& f)
 
 void World::Load(FileReader& f)
 {
+	f >> state;
 	f >> year;
 	f >> month;
 	f >> day;
@@ -455,6 +458,28 @@ void World::LoadOld(FileReader& f, int part)
 		f >> month;
 		f >> day;
 		f >> worldtime;
+	}
+	else if(part == 1)
+	{
+		enum WORLDMAP_STATE
+		{
+			WS_MAIN,
+			WS_TRAVEL,
+			WS_ENCOUNTER
+		} old_state;
+		f >> old_state;
+		switch(old_state)
+		{
+		case WS_MAIN:
+			state = State::ON_MAP;
+			break;
+		case WS_TRAVEL:
+			state = State::TRAVEL;
+			break;
+		case WS_ENCOUNTER:
+			state = State::ENCOUNTER;
+			break;
+		}
 	}
 }
 
@@ -568,4 +593,14 @@ int World::GetRandomSettlementIndex(const vector<int>& used, int type) const
 	}
 
 	return index;
+}
+
+void World::ExitToMap()
+{
+	/*assert(state == State::INSIDE_LOCATION);
+	if(current_location)
+	if(world_state == WS_ENCOUNTER)
+		world_state = WS_TRAVEL;
+	else if(world_state != WS_TRAVEL)
+		world_state = WS_MAIN;*/
 }

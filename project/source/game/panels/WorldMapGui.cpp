@@ -15,6 +15,7 @@
 #include "GameMessages.h"
 #include "DialogBox.h"
 #include "World.h"
+#include "Level.h"
 #include "GameStats.h"
 #include "DirectX.h"
 
@@ -120,9 +121,9 @@ void WorldMapGui::Draw(ControlDrawData*)
 	LocalString s = Format(txWorldDate, W.GetDate());
 
 	// opis aktualnej lokacji
-	if(game.current_location != -1)
+	if(W.current_location)
 	{
-		Location& current = *W.locations[game.current_location];
+		Location& current = *W.current_location;
 		GUI.DrawSprite(tSelected[1], WorldPosToScreen(Int2(current.pos.x - 32.f, current.pos.y + 32.f)), 0xAAFFFFFF);
 		s += Format("\n\n%s: %s", txCurrentLoc, current.name.c_str());
 		AppendLocationText(current, s.get_ref());
@@ -133,7 +134,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	{
 		Location& picked = *W.locations[game.picked_location];
 
-		if(game.picked_location != game.current_location)
+		if(game.picked_location != W.current_location_index)
 		{
 			float odl = Vec2::Distance(game.world_pos, picked.pos) / 600.f * 200;
 			int koszt = int(ceil(odl / TRAVEL_SPEED));
@@ -145,7 +146,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	}
 
 	// aktualna pozycja dru¿yny w czasie podró¿y
-	if(game.world_state == WS_TRAVEL || game.world_state == WS_ENCOUNTER)
+	if(Any(W.state, World::State::TRAVEL, World::State::ENCOUNTER))
 		GUI.DrawSprite(tMover, WorldPosToScreen(Int2(game.world_pos.x - 8, game.world_pos.y + 8)), 0xBBFFFFFF);
 
 	// szansa na spotkanie
@@ -157,7 +158,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	GUI.DrawText(GUI.default_font, s, 0, Color::Black, rect);
 
 	// kreska
-	if(game.picked_location != -1 && game.picked_location != game.current_location)
+	if(game.picked_location != -1 && game.picked_location != W.current_location_index)
 	{
 		Location& picked = *W.locations[game.picked_location];
 		Vec2 pts[2] = { WorldPosToScreen(game.world_pos), WorldPosToScreen(picked.pos) };
@@ -224,7 +225,7 @@ void WorldMapGui::Update(float dt)
 	if(!GUI.HaveDialog() && !(mp_box->visible && mp_box->itb.focus) && Key.Focus() && game.death_screen == 0 && !journal->visible && GKey.PressedRelease(GK_JOURNAL))
 		journal->Show();
 
-	if(game.world_state == WS_TRAVEL)
+	if(W.state == World::State::TRAVEL)
 	{
 		if(game.paused || (!Net::IsOnline() && GUI.HavePauseDialog()))
 			return;
@@ -248,9 +249,12 @@ void WorldMapGui::Update(float dt)
 				// end of travel
 				if(Net::IsOnline())
 					Net::PushChange(NetChange::END_TRAVEL);
-				game.world_state = WS_MAIN;
-				game.current_location = game.picked_location;
-				Location& loc = *W.locations[game.current_location];
+				W.state = World::State::ON_MAP;
+				W.current_location_index = game.picked_location;
+				W.current_location = W.locations[W.current_location_index];
+				L.location_index = W.current_location_index;
+				L.location = W.current_location;
+				Location& loc = *W.current_location;
 				if(loc.state == LS_KNOWN)
 					game.SetLocationVisited(loc);
 				game.world_pos = end_pt;
@@ -363,7 +367,7 @@ void WorldMapGui::Update(float dt)
 							if(!game.IsLeader())
 								game.dialog_enc->bts[0].state = Button::DISABLED;
 
-							game.world_state = WS_ENCOUNTER;
+							W.state = World::State::ENCOUNTER;
 							Net::PushChange(NetChange::UPDATE_MAP_POS);
 						}
 					}
@@ -469,7 +473,7 @@ void WorldMapGui::Update(float dt)
 								if(!game.IsLeader())
 									game.dialog_enc->bts[0].state = Button::DISABLED;
 
-								game.world_state = WS_ENCOUNTER;
+								W.state = World::State::ENCOUNTER;
 								Net::PushChange(NetChange::UPDATE_MAP_POS);
 							}
 						}
@@ -512,7 +516,7 @@ void WorldMapGui::Update(float dt)
 								if(!game.IsLeader())
 									game.dialog_enc->bts[0].state = Button::DISABLED;
 
-								game.world_state = WS_ENCOUNTER;
+								W.state = World::State::ENCOUNTER;
 								Net::PushChange(NetChange::UPDATE_MAP_POS);
 							}
 						}
@@ -521,7 +525,7 @@ void WorldMapGui::Update(float dt)
 			}
 		}
 	}
-	else if(game.world_state != WS_ENCOUNTER && !journal->visible)
+	else if(W.state != World::State::ENCOUNTER && !journal->visible)
 	{
 	update_worldmap:
 		Vec2 cursor_pos(float(GUI.cursor_pos.x), float(GUI.cursor_pos.y));
@@ -549,17 +553,20 @@ void WorldMapGui::Update(float dt)
 		if(loc)
 		{
 			game.picked_location = index;
-			if(game.world_state == WS_MAIN && Key.Focus())
+			if(W.state == World::State::ON_MAP && Key.Focus())
 			{
 				if(Key.PressedRelease(VK_LBUTTON))
 				{
 					if(game.IsLeader())
 					{
-						if(game.picked_location != game.current_location)
+						if(game.picked_location != W.current_location_index)
 						{
 							// rozpocznij wêdrówkê po mapie œwiata
-							game.world_state = WS_TRAVEL;
-							game.current_location = -1;
+							W.state = World::State::TRAVEL;
+							W.current_location_index = -1;
+							W.current_location = nullptr;
+							L.location_index = -1;
+							L.location = nullptr;
 							game.travel_time = 0.f;
 							game.travel_day = 0;
 							game.travel_start = game.world_pos;
@@ -592,12 +599,15 @@ void WorldMapGui::Update(float dt)
 					else
 						game.AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
-				else if(game.devmode && game.picked_location != game.current_location && Key.PressedRelease('T'))
+				else if(game.devmode && game.picked_location != W.current_location_index && Key.PressedRelease('T'))
 				{
 					if(game.IsLeader())
 					{
-						game.current_location = game.picked_location;
-						Location& loc = *W.locations[game.current_location];
+						W.current_location_index = game.picked_location;
+						W.current_location = W.locations[W.current_location_index];
+						L.location_index = W.current_location_index;
+						L.location = W.current_location;
+						Location& loc = *W.current_location;
 						if(loc.state == LS_KNOWN)
 							game.SetLocationVisited(loc);
 						game.world_pos = loc.pos;

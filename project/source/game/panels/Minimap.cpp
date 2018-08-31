@@ -6,6 +6,7 @@
 #include "City.h"
 #include "Team.h"
 #include "Portal.h"
+#include "Level.h"
 
 //=================================================================================================
 Minimap::Minimap()
@@ -17,7 +18,7 @@ Minimap::Minimap()
 void Minimap::Draw(ControlDrawData* /*cdd*/)
 {
 	Game& game = Game::Get();
-	LOCATION type = game.location->type;
+	LOCATION type = L.location->type;
 
 	// tekstura minimapy
 	Rect r = { global_pos.x, global_pos.y, global_pos.x + size.x, global_pos.y + size.y };
@@ -27,7 +28,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	// schody w podziemiach
 	if(type == L_DUNGEON || type == L_CRYPT || type == L_CAVE)
 	{
-		InsideLocation* inside = (InsideLocation*)game.location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
 		if(inside->HaveDownStairs() && IS_SET(lvl.map[lvl.staircase_down(lvl.w)].flags, Pole::F_ODKRYTE))
@@ -37,7 +38,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	}
 
 	// portale
-	Portal* p = game.location->portal;
+	Portal* p = L.location->portal;
 	InsideLocationLevel* lvl = game.TryGetLevelData();
 	while(p)
 	{

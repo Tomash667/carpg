@@ -28,6 +28,8 @@
 #include "ScriptManager.h"
 #include "Inventory.h"
 #include "Profiler.h"
+#include "World.h"
+#include "Level.h"
 #include "DirectX.h"
 
 // limit fps
@@ -357,21 +359,8 @@ void Game::OnTick(float dt)
 			TakeScreenshot(Key.Down(VK_SHIFT));
 
 		// zatrzymywanie/wznawianie gry
-		if(KeyPressedReleaseAllowed(GK_PAUSE))
-		{
-			if(Net::IsSingleplayer())
-				paused = !paused;
-			else if(Net::IsServer())
-			{
-				paused = !paused;
-				AddMultiMsg(paused ? txGamePaused : txGameResumed);
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::PAUSED;
-				c.id = (paused ? 1 : 0);
-				if(paused && game_state == GS_WORLDMAP && world_state == WS_TRAVEL)
-					Net::PushChange(NetChange::UPDATE_MAP_POS);
-			}
-		}
+		if(KeyPressedReleaseAllowed(GK_PAUSE) && !Net::IsClient())
+			PauseGame();
 	}
 
 	// obs³uga paneli
@@ -883,7 +872,7 @@ bool Game::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int2& _tar
 	if(ctx.type == LevelContext::Outside)
 	{
 		// zewnêtrze
-		OutsideLocation* outside = (OutsideLocation*)location;
+		OutsideLocation* outside = (OutsideLocation*)L.location;
 		const TerrainTile* m = outside->tiles;
 		const int w = OutsideLocation::size;
 
@@ -1028,7 +1017,7 @@ bool Game::FindPath(LevelContext& ctx, const Int2& _start_tile, const Int2& _tar
 	else
 	{
 		// wnêtrze
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		const Pole* m = lvl.map;
 		const int w = lvl.w, h = lvl.h;
@@ -1352,9 +1341,9 @@ Int2 Game::RandomNearTile(const Int2& _tile)
 
 	bool blokuje = true;
 
-	if(location->outside)
+	if(L.location->outside)
 	{
-		OutsideLocation* outside = (OutsideLocation*)location;
+		OutsideLocation* outside = (OutsideLocation*)L.location;
 		const TerrainTile* m = outside->tiles;
 		const int w = OutsideLocation::size;
 
@@ -1381,7 +1370,7 @@ Int2 Game::RandomNearTile(const Int2& _tile)
 	}
 	else
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 		const Pole* m = lvl.map;
 		const int w = lvl.w;
@@ -2490,7 +2479,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		// muzyka bossa
 		if(IS_SET(u.data->flags2, F2_BOSS))
 		{
-			if(RemoveElementTry(boss_levels, Int2(current_location, dungeon_level)))
+			if(RemoveElementTry(boss_levels, Int2(L.location_index, dungeon_level)))
 				SetMusic();
 		}
 
@@ -3182,4 +3171,18 @@ cstring Game::GetShortcutText(GAME_KEYS key, cstring action)
 	}
 	else
 		return action;
+}
+
+void Game::PauseGame()
+{
+	paused = !paused;
+	if(Net::IsOnline())
+	{
+		AddMultiMsg(paused ? txGamePaused : txGameResumed);
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::PAUSED;
+		c.id = (paused ? 1 : 0);
+		if(paused && game_state == GS_WORLDMAP && W.state == World::State::TRAVEL)
+			Net::PushChange(NetChange::UPDATE_MAP_POS);
+	}
 }
