@@ -337,7 +337,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedAboutCamp:
 		// powiedzia³ o obozie
 		{
-			target_loc = game->CreateCamp(game->world_pos, SG_ORKOWIE, 256.f, false);
+			target_loc = game->CreateCamp(W.world_pos, SG_ORKOWIE, 256.f, false);
 			Location& target = GetTargetLocation();
 			target.state = LS_HIDDEN;
 			target.st = 13;
@@ -448,7 +448,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedAboutBase:
 		// pogada³ o bazie
 		{
-			target_loc = game->CreateLocation(L_DUNGEON, game->world_pos, 256.f, THRONE_FORT, SG_ORKOWIE, false);
+			target_loc = game->CreateLocation(L_DUNGEON, W.world_pos, 256.f, THRONE_FORT, SG_ORKOWIE, false);
 			Location& target = GetTargetLocation();
 			done = false;
 			target.st = 15;
@@ -611,7 +611,7 @@ cstring Quest_Orcs2::FormatString(const string& str)
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
-		return GetLocationDirName(game->world_pos, GetTargetLocation().pos);
+		return GetLocationDirName(W.world_pos, GetTargetLocation().pos);
 	else
 	{
 		assert(0);

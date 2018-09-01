@@ -40,7 +40,11 @@ void World::Init()
 
 void World::OnNewGame()
 {
+	travel_location_index = -1;
 	empty_locations = 0;
+	create_camp = 0;
+	encounter_chance = 0.f;
+	travel_dir = Random(MAX_ANGLE);
 	year = start_year;
 	day = 0;
 	month = 0;
@@ -439,6 +443,7 @@ void World::Save(FileWriter& f)
 	f << month;
 	f << day;
 	f << worldtime;
+	f << current_location_index;
 }
 
 void World::Load(FileReader& f)
@@ -448,6 +453,7 @@ void World::Load(FileReader& f)
 	f >> month;
 	f >> day;
 	f >> worldtime;
+	f >> current_location_index;
 }
 
 void World::LoadOld(FileReader& f, int part)
@@ -480,6 +486,7 @@ void World::LoadOld(FileReader& f, int part)
 			state = State::ENCOUNTER;
 			break;
 		}
+		f >> current_location_index;
 	}
 }
 

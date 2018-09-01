@@ -52,9 +52,9 @@ void Game::GenerateWorld()
 
 	W.current_location_index = W.GenerateWorld();
 	W.current_location = W.locations[W.current_location_index];
+	W.world_pos = W.current_location->pos;
 	L.location_index = W.current_location_index;
 	L.location = W.current_location;
-	world_pos = W.current_location->pos;
 
 	Info("Randomness integrity: %d", RandVal());
 }
@@ -2942,32 +2942,32 @@ void Game::GetOutsideSpawnPoint(Vec3& pos, float& dir)
 {
 	const float dist = 40.f;
 
-	if(world_dir < PI / 4 || world_dir > 7.f / 4 * PI)
+	if(W.travel_dir < PI / 4 || W.travel_dir > 7.f / 4 * PI)
 	{
 		// east
 		dir = PI / 2;
-		if(world_dir < PI / 4)
-			pos = Vec3(256.f - dist, 0, Lerp(128.f, 256.f - dist, world_dir / (PI / 4)));
+		if(W.travel_dir < PI / 4)
+			pos = Vec3(256.f - dist, 0, Lerp(128.f, 256.f - dist, W.travel_dir / (PI / 4)));
 		else
-			pos = Vec3(256.f - dist, 0, Lerp(dist, 128.f, (world_dir - (7.f / 4 * PI)) / (PI / 4)));
+			pos = Vec3(256.f - dist, 0, Lerp(dist, 128.f, (W.travel_dir - (7.f / 4 * PI)) / (PI / 4)));
 	}
-	else if(world_dir < 3.f / 4 * PI)
+	else if(W.travel_dir < 3.f / 4 * PI)
 	{
 		// north
 		dir = 0;
-		pos = Vec3(Lerp(dist, 256.f - dist, 1.f - ((world_dir - (1.f / 4 * PI)) / (PI / 2))), 0, 256.f - dist);
+		pos = Vec3(Lerp(dist, 256.f - dist, 1.f - ((W.travel_dir - (1.f / 4 * PI)) / (PI / 2))), 0, 256.f - dist);
 	}
-	else if(world_dir < 5.f / 4 * PI)
+	else if(W.travel_dir < 5.f / 4 * PI)
 	{
 		// west
 		dir = 3.f / 2 * PI;
-		pos = Vec3(dist, 0, Lerp(dist, 256.f - dist, 1.f - ((world_dir - (3.f / 4 * PI)) / (PI / 2))));
+		pos = Vec3(dist, 0, Lerp(dist, 256.f - dist, 1.f - ((W.travel_dir - (3.f / 4 * PI)) / (PI / 2))));
 	}
 	else
 	{
 		// south
 		dir = PI;
-		pos = Vec3(Lerp(dist, 256.f - dist, (world_dir - (5.f / 4 * PI)) / (PI / 2)), 0, dist);
+		pos = Vec3(Lerp(dist, 256.f - dist, (W.travel_dir - (5.f / 4 * PI)) / (PI / 2)), 0, dist);
 	}
 }
 
@@ -3679,10 +3679,10 @@ int Game::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allow
 void Game::DoWorldProgress(int days)
 {
 	// tworzenie obozów
-	create_camp += days;
-	if(create_camp >= 10)
+	W.create_camp += days;
+	if(W.create_camp >= 10)
 	{
-		create_camp = 0;
+		W.create_camp = 0;
 		SPAWN_GROUP group;
 		switch(Rand() % 3)
 		{
@@ -3726,7 +3726,7 @@ void Game::DoWorldProgress(int days)
 			Location* loc = W.locations[(*it)->target_loc];
 			bool in_camp = false;
 
-			if(loc->type == L_CAMP && ((*it)->target_loc == picked_location || (*it)->target_loc == W.current_location_index))
+			if(loc->type == L_CAMP && ((*it)->target_loc == W.travel_location_index || (*it)->target_loc == W.current_location_index))
 				in_camp = true;
 
 			if(!(*it)->timeout)
@@ -3821,7 +3821,7 @@ void Game::DoWorldProgress(int days)
 			Camp* camp = (Camp*)(*it);
 			if(W.GetWorldtime() - camp->create_time >= 30
 				&& W.current_location != *it // don't remove when team is inside
-				&& (picked_location == -1 || W.locations[picked_location] != *it)) // don't remove when traveling to
+				&& (W.travel_location_index == -1 || W.locations[W.travel_location_index] != *it)) // don't remove when traveling to
 			{
 				// usuñ obóz
 				DeleteElements(camp->chests);
@@ -5925,7 +5925,7 @@ void Game::GetCityEntry(Vec3& pos, float& rot)
 		// check which spawn rot i closest to entry rot
 		float best_dif = 999.f;
 		int best_index = -1, index = 0;
-		float dir = Clip(-world_dir + PI / 2);
+		float dir = Clip(-W.travel_dir + PI / 2);
 		for(vector<EntryPoint>::iterator it = city_ctx->entry_points.begin(), end = city_ctx->entry_points.end(); it != end; ++it, ++index)
 		{
 			float dif = AngleDiff(dir, it->spawn_rot);
@@ -5984,18 +5984,18 @@ void Game::SetExitWorldDir()
 	}
 
 	if(close_pt.x < 33.f)
-		world_dir = Lerp(3.f / 4.f*PI, 5.f / 4.f*PI, 1.f - (close_pt.y - 33.f) / (256.f - 66.f));
+		W.travel_dir = Lerp(3.f / 4.f*PI, 5.f / 4.f*PI, 1.f - (close_pt.y - 33.f) / (256.f - 66.f));
 	else if(close_pt.x > 256.f - 33.f)
 	{
 		if(close_pt.y > 128.f)
-			world_dir = Lerp(0.f, 1.f / 4 * PI, (close_pt.y - 128.f) / (256.f - 128.f - 33.f));
+			W.travel_dir = Lerp(0.f, 1.f / 4 * PI, (close_pt.y - 128.f) / (256.f - 128.f - 33.f));
 		else
-			world_dir = Lerp(7.f / 4 * PI, PI * 2, (close_pt.y - 33.f) / (256.f - 128.f - 33.f));
+			W.travel_dir = Lerp(7.f / 4 * PI, PI * 2, (close_pt.y - 33.f) / (256.f - 128.f - 33.f));
 	}
 	else if(close_pt.y < 33.f)
-		world_dir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (close_pt.x - 33.f) / (256.f - 66.f));
+		W.travel_dir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (close_pt.x - 33.f) / (256.f - 66.f));
 	else
-		world_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (close_pt.x - 33.f) / (256.f - 66.f));
+		W.travel_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (close_pt.x - 33.f) / (256.f - 66.f));
 }
 
 int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)

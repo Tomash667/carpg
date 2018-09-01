@@ -302,7 +302,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		// pogadano z karczmarzem
 		{
 			goblins_state = State::KnownLocation;
-			target_loc = game->CreateLocation(L_DUNGEON, game->world_pos, 128.f, THRONE_FORT, SG_GOBLINY, false);
+			target_loc = game->CreateLocation(L_DUNGEON, W.world_pos, 128.f, THRONE_FORT, SG_GOBLINY, false);
 			Location& target = GetTargetLocation();
 			target.st = 13;
 			target.state = LS_KNOWN;

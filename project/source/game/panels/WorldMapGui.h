@@ -31,6 +31,7 @@ public:
 	cstring txGameTimeout, txWorldDate, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel,
 		txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncBanditsAttackTravelers, txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk,
 		txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins;
+	int picked_location;
 
 private:
 	void AppendLocationText(Location& loc, string& s);

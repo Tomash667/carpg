@@ -1930,19 +1930,13 @@ public:
 	void AbadonLocation(Location* loc);
 	void SetLocationVisited(Location& loc);
 
-	int picked_location; // zaznaczona lokacja na mapie œwiata, ta do której siê wêdruje lub -1 [tylko jeœli world_state==WS_TRAVEL]
 	int open_location; // aktualnie otwarta lokacja (w sensie wczytanych zasobów, utworzonych jednostek itp) lub -1 [odtwarzany]
 	int travel_day; // liczba dni w podró¿y [tylko jeœli world_state==WS_TRAVEL]
 	int enc_kierunek; // kierunek z której strony nadesz³a dru¿yna w czasie spotkania [tymczasowe]
 	int spotkanie; // rodzaj losowego spotkania [tymczasowe]
 	int enc_tryb; // 0 - losowa walka, 1 - specjalne spotkanie, 2 - questowe spotkanie [tymczasowe]
-	int create_camp; // licznik do stworzenia nowego obozu
-	Vec2 world_pos; // pozycja na mapie œwiata
 	Vec2 travel_start; // punkt startu podró¿y na mapie œwiata [tylko jeœli world_state==WS_TRAVEL]
 	float travel_time; // czas podró¿y na mapie [tylko jeœli world_state==WS_TRAVEL]
-	float travel_time2; // licznik aktualizacji szansy na spotkanie
-	float world_dir; // kierunek podró¿y/wejœcia na mapê, to jest nowy k¹t (0 w prawo), wskazuje od œrodka do krawêdzi mapy
-	float szansa_na_spotkanie; // szansa na spotkanie na mapie œwiata
 	bool far_encounter; // czy dru¿yna gracza jest daleko w czasie spotkania [tymczasowe]
 	bool guards_enc_reward; // czy odebrano nagrodê za uratowanie stra¿ników w czasie spotkania
 	SPAWN_GROUP losowi_wrogowie; // wrogowie w czasie spotkania [tymczasowe]

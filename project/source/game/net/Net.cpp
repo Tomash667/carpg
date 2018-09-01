@@ -4140,11 +4140,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					L.location_index = -1;
 					travel_time = 0.f;
 					travel_day = 0;
-					travel_start = world_pos;
-					picked_location = loc;
-					Location& l = *W.locations[picked_location];
-					world_dir = Angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
-					travel_time2 = 0.f;
+					travel_start = W.world_pos;
+					W.travel_location_index = loc;
+					Location& l = *W.locations[W.travel_location_index];
+					W.travel_dir = Angle(W.world_pos.x, -W.world_pos.y, l.pos.x, -l.pos.y);
+					W.encounter_timer = 0.f;
 
 					// send info to players
 					NetChange& c = Add1(Net::changes);
@@ -4158,14 +4158,15 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 			if(W.state == World::State::TRAVEL)
 			{
 				W.state = World::State::ON_MAP;
-				W.current_location_index = picked_location;
-				W.current_location = W.locations[picked_location];
+				W.current_location_index = W.travel_location_index;
+				W.current_location = W.locations[W.travel_location_index];
+				W.travel_location_index = -1;
 				L.location_index = W.current_location_index;
 				L.location = W.current_location;
 				Location& loc = *L.location;
 				if(loc.state == LS_KNOWN)
 					SetLocationVisited(loc);
-				world_pos = loc.pos;
+				W.world_pos = loc.pos;
 				Net::PushChange(NetChange::END_TRAVEL);
 			}
 			break;
@@ -4516,7 +4517,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Location& loc = *L.location;
 					if(loc.state == LS_KNOWN)
 						SetLocationVisited(loc);
-					world_pos = loc.pos;
+					W.world_pos = loc.pos;
 
 					// inform other players
 					if(players > 2)
@@ -5161,7 +5162,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f << GetSecretNote()->desc;
 			break;
 		case NetChange::UPDATE_MAP_POS:
-			f << world_pos;
+			f << W.world_pos;
 			break;
 		case NetChange::GAME_STATS:
 			f << GameStats::Get().total_kills;
@@ -7003,11 +7004,11 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					L.location = nullptr;
 					travel_time = 0.f;
 					travel_day = 0;
-					travel_start = world_pos;
-					picked_location = loc;
-					Location& l = *W.locations[picked_location];
-					world_dir = Angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
-					travel_time2 = 0.f;
+					travel_start = W.world_pos;
+					W.travel_location_index = loc;
+					Location& l = *W.locations[W.travel_location_index];
+					W.travel_dir = Angle(W.world_pos.x, -W.world_pos.y, l.pos.x, -l.pos.y);
+					W.encounter_timer = 0.f;
 				}
 			}
 			break;
@@ -7016,14 +7017,15 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			if(W.state == World::State::TRAVEL)
 			{
 				W.state = World::State::ON_MAP;
-				W.current_location_index = picked_location;
+				W.current_location_index = W.travel_location_index;
 				W.current_location = W.locations[W.current_location_index];
+				W.travel_location_index = -1;
 				L.location_index = W.current_location_index;
 				L.location = W.current_location;
 				Location& loc = *L.location;
 				if(loc.state == LS_KNOWN)
 					SetLocationVisited(loc);
-				world_pos = loc.pos;
+				W.world_pos = loc.pos;
 			}
 			break;
 		// change world time
@@ -7864,7 +7866,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(!f)
 					StreamError("Update client: Broken UPDATE_MAP_POS.");
 				else
-					world_pos = pos;
+					W.world_pos = pos;
 			}
 			break;
 		// player used cheat for fast travel on map
@@ -7891,7 +7893,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Location& loc = *L.location;
 					if(loc.state == LS_KNOWN)
 						loc.state = LS_VISITED;
-					world_pos = loc.pos;
+					W.world_pos = loc.pos;
 				}
 			}
 			break;
@@ -9711,11 +9713,11 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 	if(W.state == World::State::INSIDE_ENCOUNTER)
 	{
 		f << true;
-		f << picked_location;
+		f << W.travel_location_index;
 		f << travel_day;
 		f << travel_time;
 		f << travel_start;
-		f << world_pos;
+		f << W.world_pos;
 	}
 	else
 		f << false;
@@ -9849,8 +9851,8 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	}
 	W.current_location_index = L.location_index;
 	W.current_location = W.locations[W.current_location_index];
+	W.world_pos = W.current_location->pos;
 	L.location = W.current_location;
-	world_pos = L.location->pos;
 	L.location->state = LS_VISITED;
 
 	// quests
@@ -9937,11 +9939,11 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	if(inside_encounter)
 	{
 		W.state = World::State::INSIDE_ENCOUNTER;
-		f >> picked_location;
+		f >> W.travel_location_index;
 		f >> travel_day;
 		f >> travel_time;
 		f >> travel_start;
-		f >> world_pos;
+		f >> W.world_pos;
 		if(!f)
 		{
 			Error("Read world: Broken packet for in travel data (2).");

@@ -82,7 +82,7 @@ void Quest_Evil::SetProgress(int prog2)
 			// usuñ plotkê
 			quest_manager.RemoveQuestRumor(P_ZLO);
 			// lokacja
-			target_loc = game->CreateLocation(L_DUNGEON, game->world_pos, 128.f, OLD_TEMPLE, SG_BRAK, false, 1);
+			target_loc = game->CreateLocation(L_DUNGEON, W.world_pos, 128.f, OLD_TEMPLE, SG_BRAK, false, 1);
 			Location& target = GetTargetLocation();
 			bool now_known = false;
 			if(target.state == LS_UNKNOWN)
@@ -396,7 +396,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		{
 			if(loc[i].state != Loc::State::PortalClosed)
 			{
-				float dist = Vec2::Distance(game->world_pos, W.locations[loc[i].target_loc]->pos);
+				float dist = Vec2::Distance(W.world_pos, W.locations[loc[i].target_loc]->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -405,7 +405,7 @@ cstring Quest_Evil::FormatString(const string& str)
 			}
 		}
 		Loc& l = loc[best_index];
-		return GetLocationDirName(game->world_pos, W.locations[l.target_loc]->pos);
+		return GetLocationDirName(W.world_pos, W.locations[l.target_loc]->pos);
 	}
 	else if(str == "close_loc")
 	{
@@ -415,7 +415,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		{
 			if(loc[i].state != Loc::State::PortalClosed)
 			{
-				float dist = Vec2::Distance(game->world_pos, W.locations[loc[i].target_loc]->pos);
+				float dist = Vec2::Distance(W.world_pos, W.locations[loc[i].target_loc]->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;

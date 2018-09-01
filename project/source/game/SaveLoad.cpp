@@ -429,16 +429,16 @@ void Game::SaveGame(GameWriter& f)
 		++check_id;
 	}
 	f << W.empty_locations;
-	f << create_camp;
-	f << world_pos;
-	f << travel_time2;
-	f << szansa_na_spotkanie;
+	f << W.create_camp;
+	f << W.world_pos;
+	f << W.encounter_timer;
+	f << W.encounter_chance;
 	f << W.settlements;
 	f << W.encounter_loc;
-	f << world_dir;
+	f << W.travel_dir;
 	if(W.state == World::State::INSIDE_ENCOUNTER)
 	{
-		f << picked_location;
+		f << W.travel_location_index;
 		f << travel_day;
 		f << travel_start;
 		f << travel_time;
@@ -767,7 +767,7 @@ void Game::LoadGame(GameReader& f)
 
 	// world map
 	LoadingStep(txLoadingLocations);
-	f >> W.current_location_index;
+	
 	uint count = f.Read<uint>();
 	W.locations.resize(count);
 	int index = -1;
@@ -846,16 +846,16 @@ void Game::LoadGame(GameReader& f)
 		++check_id;
 	}
 	f >> W.empty_locations;
-	f >> create_camp;
-	f >> world_pos;
-	f >> travel_time2;
-	f >> szansa_na_spotkanie;
+	f >> W.create_camp;
+	f >> W.world_pos;
+	f >> W.encounter_timer;
+	f >> W.encounter_chance;
 	f >> W.settlements;
 	f >> W.encounter_loc;
-	f >> world_dir;
+	f >> W.travel_dir;
 	if(W.state == World::State::INSIDE_ENCOUNTER)
 	{
-		f >> picked_location;
+		f >> W.travel_location_index;
 		f >> travel_day;
 		f >> travel_start;
 		f >> travel_time;
@@ -865,13 +865,13 @@ void Game::LoadGame(GameReader& f)
 	{
 		// bugfix
 		W.state = World::State::TRAVEL;
-		travel_start = world_pos = W.locations[0]->pos;
-		picked_location = 0;
+		travel_start = W.world_pos = W.locations[0]->pos;
+		W.travel_location_index = 0;
 		travel_time = 1.f;
 		travel_day = 0;
 	}
 	if(LOAD_VERSION < V_0_3)
-		world_dir = Clip(-world_dir);
+		W.travel_dir = Clip(-W.travel_dir);
 	encs.resize(f.Read<uint>(), nullptr);
 	int location_event_handler_quest_refid;
 	if(game_state2 == GS_LEVEL)
@@ -1447,10 +1447,7 @@ void Game::LoadGame(GameReader& f)
 	if(game_state2 == GS_LEVEL)
 		SetMusic();
 	else
-	{
-		picked_location = -1;
 		SetMusic(MusicType::Travel);
-	}
 	game_state = game_state2;
 	clear_color = clear_color2;
 }

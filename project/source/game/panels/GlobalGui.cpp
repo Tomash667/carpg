@@ -31,8 +31,8 @@ void GlobalGui::Draw(ControlDrawData*)
 		state = "TRAVEL";
 		break;
 	}
-	GUI.DrawText(GUI.default_font, Format("state:%s\nlocation: %p %s\nindex: %d", state, W.current_location,
-		W.current_location ? W.current_location->name.c_str() : "", W.current_location_index),
+	GUI.DrawText(GUI.default_font, Format("state:%s\nlocation: %p %s\nindex: %d\ntravel index:%d", state, W.current_location,
+		W.current_location ? W.current_location->name.c_str() : "", W.current_location_index, W.travel_location_index),
 		0, Color::Black, Rect(0, 0, 500, 200));
 	assert(W.current_location == L.location);
 	assert(W.current_location_index == L.location_index);

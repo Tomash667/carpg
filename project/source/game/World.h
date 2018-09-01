@@ -47,14 +47,20 @@ public:
 	int GetYear() const { return year; }
 
 	Location* current_location; // wskaŸnik na aktualn¹ lokacjê [odtwarzany]
-	int current_location_index; // current location index or -1
+	int current_location_index, // current location index or -1
+		travel_location_index; // travel target where state is TRAVEL, ENCOUNTER or INSIDE_ENCOUNTER (-1 otherwise)
 	vector<Location*> locations; // can be nullptr
 
 public: // FIXME
 	State state;
-	uint settlements; // count and index below this value is city/village
-	uint empty_locations; // counter
-	uint encounter_loc; // encounter location index
+	uint settlements, // count and index below this value is city/village
+		empty_locations, // counter
+		encounter_loc, // encounter location index
+		create_camp; // counter to create new random camps
+	Vec2 world_pos;
+	float encounter_timer, // increase chance for encounter every 0.25 sec
+		encounter_chance,
+		travel_dir; // from which direction team will enter level after travel
 private:
 	int year; // in game year, starts at 100
 	int month; // in game month, 0 to 11

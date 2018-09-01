@@ -5229,7 +5229,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			int index = 0;
 			for(Location* loc : W.locations)
 			{
-				if(loc && loc->type != L_CITY && loc->type != L_ACADEMY && Vec2::Distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
+				if(loc && loc->type != L_CITY && loc->type != L_ACADEMY && Vec2::Distance(loc->pos, W.world_pos) <= 150.f && loc->state != LS_HIDDEN)
 					ctx.active_locations.push_back(std::pair<int, bool>(index, loc->state == LS_UNKNOWN));
 				++index;
 			}
@@ -5267,7 +5267,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			if(Net::IsOnline())
 				Net_ChangeLocationState(id, false);
 		}
-		ctx.dialog_s_text = Format(txNearLoc, GetLocationDirName(world_pos, loc.pos), loc.name.c_str());
+		ctx.dialog_s_text = Format(txNearLoc, GetLocationDirName(W.world_pos, loc.pos), loc.name.c_str());
 		if(loc.spawn == SG_BRAK)
 		{
 			if(loc.type != L_CAVE && loc.type != L_FOREST && loc.type != L_MOONWELL)
@@ -6061,18 +6061,18 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 									allow_exit = true;
 									// opuszczanie otwartego terenu (las/droga/obóz)
 									if(unit.pos.x < 33.f)
-										world_dir = Lerp(3.f / 4.f*PI, 5.f / 4.f*PI, 1.f - (unit.pos.z - 33.f) / (256.f - 66.f));
+										W.travel_dir = Lerp(3.f / 4.f*PI, 5.f / 4.f*PI, 1.f - (unit.pos.z - 33.f) / (256.f - 66.f));
 									else if(unit.pos.x > 256.f - 33.f)
 									{
 										if(unit.pos.z > 128.f)
-											world_dir = Lerp(0.f, 1.f / 4 * PI, (unit.pos.z - 128.f) / (256.f - 128.f - 33.f));
+											W.travel_dir = Lerp(0.f, 1.f / 4 * PI, (unit.pos.z - 128.f) / (256.f - 128.f - 33.f));
 										else
-											world_dir = Lerp(7.f / 4 * PI, PI * 2, (unit.pos.z - 33.f) / (256.f - 128.f - 33.f));
+											W.travel_dir = Lerp(7.f / 4 * PI, PI * 2, (unit.pos.z - 33.f) / (256.f - 128.f - 33.f));
 									}
 									else if(unit.pos.z < 33.f)
-										world_dir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (unit.pos.x - 33.f) / (256.f - 66.f));
+										W.travel_dir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (unit.pos.x - 33.f) / (256.f - 66.f));
 									else
-										world_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit.pos.x - 33.f) / (256.f - 66.f));
+										W.travel_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit.pos.x - 33.f) / (256.f - 66.f));
 								}
 								else
 									AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
@@ -12938,7 +12938,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	dialog_pvp = nullptr;
 	game_gui->visible = false;
 	Inventory::lock = nullptr;
-	picked_location = -1;
+	world_map->picked_location = -1;
 	post_effects.clear();
 	grayout = 0.f;
 	cam.Reset();
@@ -12977,17 +12977,13 @@ void Game::ClearGameVarsOnNewGame()
 	GameStats::Get().Reset();
 	Team.Reset();
 	dont_wander = false;
-	szansa_na_spotkanie = 0.f;
-	create_camp = 0;
 	arena_fighter = nullptr;
 	first_city = true;
 	news.clear();
 	pc_data.picking_item_state = 0;
 	arena_tryb = Arena_Brak;
 	open_location = -1;
-	picked_location = -1;
 	arena_free = true;
-	world_dir = Random(MAX_ANGLE);
 	game_gui->PositionPanels();
 	ClearGui(true);
 	game_gui->mp_box->visible = Net::IsOnline();
