@@ -762,7 +762,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 			// buildings
 			const int BUILDING_MIN_SIZE = 10;
 			f >> count;
-			if(f.Ensure(BUILDING_MIN_SIZE * count))
+			if(!f.Ensure(BUILDING_MIN_SIZE * count))
 			{
 				Error("Read level: Broken packet for buildings count.");
 				return false;
@@ -820,7 +820,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 
 				// usable objects
 				f >> count;
-				if(f.Ensure(Usable::MIN_SIZE * count))
+				if(!f.Ensure(Usable::MIN_SIZE * count))
 				{
 					Error("Read level: Broken packet for usable object in %d inside building.", index);
 					return false;
@@ -990,6 +990,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		lvl.h = lvl.w;
 		if(!lvl.map)
 			lvl.map = new Pole[lvl.w * lvl.h];
+		f.Read(lvl.map, lvl.w * lvl.w * sizeof(Pole));
 
 		// lights
 		byte count;
@@ -4124,6 +4125,13 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: LEAVE_LOCATION from %s, player is not leader.", info.name.c_str());
 				else
 				{
+					// leave current location
+					if(open_location != -1)
+					{
+						LeaveLocation();
+						open_location = -1;
+					}
+
 					// start travel
 					W.state = World::State::TRAVEL;
 					W.current_location = nullptr;
@@ -4137,13 +4145,6 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					Location& l = *W.locations[picked_location];
 					world_dir = Angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
 					travel_time2 = 0.f;
-
-					// leave current location
-					if(open_location != -1)
-					{
-						LeaveLocation();
-						open_location = -1;
-					}
 
 					// send info to players
 					NetChange& c = Add1(Net::changes);
@@ -4502,6 +4503,12 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index);
 				else
 				{
+					if(open_location != -1)
+					{
+						LeaveLocation(false, false);
+						open_location = -1;
+					}
+
 					W.current_location_index = location_index;
 					W.current_location = W.locations[W.current_location_index];
 					L.location_index = W.current_location_index;
@@ -4510,11 +4517,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					if(loc.state == LS_KNOWN)
 						SetLocationVisited(loc);
 					world_pos = loc.pos;
-					if(open_location != -1)
-					{
-						LeaveLocation(false, false);
-						open_location = -1;
-					}
+
 					// inform other players
 					if(players > 2)
 					{
@@ -5459,12 +5462,15 @@ void Game::UpdateClient(float dt)
 		case ID_CHANGE_LEVEL:
 			{
 				byte loc, level;
+				bool encounter;
 				reader >> loc;
 				reader >> level;
+				reader >> encounter;
 				if(!reader)
 					StreamError("Update client: Broken ID_CHANGE_LEVEL.");
 				else
 				{
+					W.state = encounter ? World::State::INSIDE_ENCOUNTER : World::State::INSIDE_LOCATION;
 					W.current_location_index = loc;
 					W.current_location = W.locations[W.current_location_index];
 					L.location_index = W.current_location_index;
@@ -6983,6 +6989,13 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken TRAVEL.");
 				else
 				{
+					// leave current location
+					if(open_location != -1)
+					{
+						LeaveLocation();
+						open_location = -1;
+					}
+
 					W.state = World::State::TRAVEL;
 					W.current_location_index = -1;
 					W.current_location = nullptr;
@@ -6995,13 +7008,6 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					Location& l = *W.locations[picked_location];
 					world_dir = Angle(world_pos.x, -world_pos.y, l.pos.x, -l.pos.y);
 					travel_time2 = 0.f;
-
-					// leave current location
-					if(open_location != -1)
-					{
-						LeaveLocation();
-						open_location = -1;
-					}
 				}
 			}
 			break;
@@ -7872,6 +7878,12 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index);
 				else
 				{
+					if(open_location != -1)
+					{
+						LeaveLocation(false, false);
+						open_location = -1;
+					}
+
 					W.current_location_index = location_index;
 					W.current_location = W.locations[W.current_location_index];
 					L.location_index = W.current_location_index;
@@ -7880,11 +7892,6 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					if(loc.state == LS_KNOWN)
 						loc.state = LS_VISITED;
 					world_pos = loc.pos;
-					if(open_location != -1)
-					{
-						LeaveLocation(false, false);
-						open_location = -1;
-					}
 				}
 			}
 			break;
@@ -9700,8 +9707,8 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 	// secret note text
 	f << GetSecretNote()->desc;
 
-	// position on world map when traveling
-	if(W.state == World::State::TRAVEL)
+	// position on world map when inside encounter location
+	if(W.state == World::State::INSIDE_ENCOUNTER)
 	{
 		f << true;
 		f << picked_location;
@@ -9879,7 +9886,7 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	const int QUEST_ITEM_MIN_SIZE = 7;
 	word quest_items_count;
 	f >> quest_items_count;
-	if(f.Ensure(QUEST_ITEM_MIN_SIZE * quest_items_count))
+	if(!f.Ensure(QUEST_ITEM_MIN_SIZE * quest_items_count))
 	{
 		Error("Read world: Broken packet for quest items.");
 		return false;
@@ -9919,17 +9926,17 @@ bool Game::ReadWorldData(BitStreamReader& f)
 		return false;
 	}
 
-	// position on world map
-	bool in_travel;
-	f >> in_travel;
+	// position on world map when inside encounter locations
+	bool inside_encounter;
+	f >> inside_encounter;
 	if(!f)
 	{
 		Error("Read world: Broken packet for in travel data.");
 		return false;
 	}
-	if(in_travel)
+	if(inside_encounter)
 	{
-		W.state = World::State::TRAVEL;
+		W.state = World::State::INSIDE_ENCOUNTER;
 		f >> picked_location;
 		f >> travel_day;
 		f >> travel_time;

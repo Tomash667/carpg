@@ -141,6 +141,7 @@ enum GamePacket : byte
 	/* Info about changing location level
 	byte - location id
 	byte - dungeon level
+	bool - is encounter location
 	Client send ack response
 	*/
 	ID_CHANGE_LEVEL,

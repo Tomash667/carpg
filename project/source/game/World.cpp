@@ -242,7 +242,7 @@ uint World::GenerateWorld(int start_location_type, int start_location_target)
 		loc->state = LS_VISITED;
 		loc->image = LI_FOREST;
 		loc->type = L_ENCOUNTER;
-		encounter_loc = locations.size() - 1;
+		encounter_loc = locations.size();
 		locations.push_back(loc);
 	}
 
@@ -474,7 +474,7 @@ void World::LoadOld(FileReader& f, int part)
 			state = State::ON_MAP;
 			break;
 		case WS_TRAVEL:
-			state = State::TRAVEL;
+			state = State::INSIDE_ENCOUNTER;
 			break;
 		case WS_ENCOUNTER:
 			state = State::ENCOUNTER;

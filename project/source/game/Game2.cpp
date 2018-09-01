@@ -1594,6 +1594,7 @@ void Game::UpdateFallback(float dt)
 				break;
 			case FALLBACK::USE_PORTAL:
 				{
+					LeaveLocation(false, false);
 					Portal* portal = L.location->GetPortal(fallback_1);
 					Location* target_loc = W.locations[portal->target_loc];
 					int at_level = 0;
@@ -1601,8 +1602,10 @@ void Game::UpdateFallback(float dt)
 					// np w sekrecie z 3 na 1 i spowrotem do
 					if(target_loc->portal)
 						at_level = target_loc->portal->at_level;
-					LeaveLocation(false, false);
-					L.location_index = portal->target_loc;
+					W.current_location_index = portal->target_loc;
+					W.current_location = W.locations[W.current_location_index];
+					L.location_index = W.current_location_index;
+					L.location = W.current_location;
 					EnterLocation(at_level, portal->target);
 				}
 				return;
@@ -10498,11 +10501,12 @@ void Game::ChangeLevel(int where)
 			++level;
 		if(level >= 0)
 		{
-			packet_data.resize(3);
+			packet_data.resize(4);
 			packet_data[0] = ID_CHANGE_LEVEL;
 			packet_data[1] = (byte)L.location_index;
 			packet_data[2] = (byte)level;
-			int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+			packet_data[3] = 0;
+			int ack = peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 			StreamWrite(packet_data.data(), 3, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 			for(auto info : game_players)
 			{
@@ -10725,12 +10729,16 @@ void Game::ExitToMap()
 	if(open_location != -1 && L.location->type == L_ENCOUNTER)
 		LeaveLocation();
 
-	//W.ExitToMap();
-	if(L.location_index == W.encounter_loc)
+	if(W.state == World::State::INSIDE_ENCOUNTER)
+	{
 		W.state = World::State::TRAVEL;
+		W.current_location_index = -1;
+		W.current_location = nullptr;
+		L.location_index = -1;
+		L.location = nullptr;
+	}
 	else
 		W.state = World::State::ON_MAP;
-
 	SetMusic(MusicType::Travel);
 
 	if(Net::IsServer())
@@ -14228,9 +14236,12 @@ void Game::LeaveLevel(LevelContext& ctx, bool clear)
 			DeleteElements(ctx.items);
 	}
 
-	// maksymalny rozmiar plamy krwi
-	for(vector<Blood>::iterator it = ctx.bloods->begin(), end = ctx.bloods->end(); it != end; ++it)
-		it->size = 1.f;
+	if(!clear)
+	{
+		// maksymalny rozmiar plamy krwi
+		for(vector<Blood>::iterator it = ctx.bloods->begin(), end = ctx.bloods->end(); it != end; ++it)
+			it->size = 1.f;
+	}
 }
 
 void Game::CreateBlood(LevelContext& ctx, const Unit& u, bool fully_created)
@@ -17948,19 +17959,8 @@ bool Game::GenerateMine()
 			door->pos = o->pos;
 			door->rot = o->rot.y;
 			door->state = Door::Closed;
-			door->mesh_inst = new MeshInstance(aDoor);
-			door->mesh_inst->groups[0].speed = 2.f;
-			door->phy = new btCollisionObject;
-			door->phy->setCollisionShape(shape_door);
-			door->phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
 			door->locked = LOCK_MINE;
 			door->netid = Door::netid_counter++;
-			btTransform& tr = door->phy->getWorldTransform();
-			Vec3 pos = door->pos;
-			pos.y += 1.319f;
-			tr.setOrigin(ToVector3(pos));
-			tr.setRotation(btQuaternion(door->rot, 0, 0));
-			phy_world->addCollisionObject(door->phy, CG_DOOR);
 		}
 
 		// pochodnia

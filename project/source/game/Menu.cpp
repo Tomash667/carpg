@@ -1204,8 +1204,10 @@ void Game::UpdateClientTransfer(float dt)
 			{
 				net_state = NetState::Client_ChangingLevel;
 				byte loc, level;
+				bool encounter;
 				reader >> loc;
 				reader >> level;
+				reader >> encounter;
 				if(reader.IsOk())
 				{
 					if(loc < W.locations.size())
@@ -1214,6 +1216,7 @@ void Game::UpdateClientTransfer(float dt)
 							LoadingStep("");
 						else
 							LoadingStart(4);
+						W.state = encounter ? World::State::INSIDE_ENCOUNTER : World::State::INSIDE_LOCATION;
 						W.current_location = W.locations[loc];
 						W.current_location_index = loc;
 						L.location = W.current_location;
@@ -1771,11 +1774,12 @@ void Game::UpdateServerTransfer(float dt)
 			{
 				LoadingStart(1);
 
-				packet_data.resize(3);
+				packet_data.resize(4);
 				packet_data[0] = ID_CHANGE_LEVEL;
 				packet_data[1] = (byte)W.current_location_index;
 				packet_data[2] = dungeon_level;
-				int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+				packet_data[3] = (W.state == World::State::INSIDE_ENCOUNTER ? 1 : 0);
+				int ack = peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 				for(auto info : game_players)
 				{
@@ -2760,7 +2764,7 @@ void Game::UpdateLobbyNetServer(float dt)
 						fw.WriteCasted<byte>(info2->clas);
 						fw << info2->name;
 					}
-					fw.Patch(4, count);
+					fw.Patch<byte>(4, count);
 					if(mp_load)
 					{
 						// informacja o postaci w zapisie
@@ -3011,7 +3015,7 @@ void Game::UpdateLobbyNetServer(float dt)
 						break;
 					}
 				}
-				f.Patch(1, count);
+				f.Patch<byte>(1, count);
 				peer->Send(&net_stream, HIGH_PRIORITY, RELIABLE_ORDERED, 2, UNASSIGNED_SYSTEM_ADDRESS, true);
 				StreamWrite(net_stream, Stream_UpdateLobbyServer, UNASSIGNED_SYSTEM_ADDRESS);
 			}

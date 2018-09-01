@@ -3,13 +3,16 @@
 #include "BitStreamFunc.h"
 
 //-----------------------------------------------------------------------------
-BitStreamWriter::BitStreamWriter(BitStream& bitstream) : bitstream(bitstream)
+BitStreamWriter::BitStreamWriter(BitStream& bitstream) : bitstream(bitstream), total_size(bitstream.GetNumberOfBytesUsed())
 {
 }
 
 void BitStreamWriter::Write(const void* ptr, uint size)
 {
 	bitstream.Write((const char*)ptr, size);
+	uint new_size = GetPos() + size;
+	if(new_size > total_size)
+		total_size = new_size;
 }
 
 uint BitStreamWriter::GetPos() const
@@ -19,8 +22,7 @@ uint BitStreamWriter::GetPos() const
 
 bool BitStreamWriter::SetPos(uint pos)
 {
-	uint size = bitstream.GetNumberOfBytesUsed();
-	if(pos > size)
+	if(pos > total_size)
 		return false;
 	bitstream.SetWriteOffset(BYTES_TO_BITS(pos));
 	return true;

@@ -73,7 +73,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	bool reenter = (open_location == L.location_index);
 	open_location = L.location_index;
-	W.state = World::State::INSIDE_LOCATION;
+	if(W.state != World::State::INSIDE_ENCOUNTER)
+		W.state = World::State::INSIDE_LOCATION;
 	if(from_portal != -1)
 		enter_from = ENTER_FROM_PORTAL + from_portal;
 	else
@@ -104,11 +105,12 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	if(Net::IsOnline() && players > 1)
 	{
-		packet_data.resize(3);
+		packet_data.resize(4);
 		packet_data[0] = ID_CHANGE_LEVEL;
 		packet_data[1] = (byte)L.location_index;
 		packet_data[2] = 0;
-		int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
+		packet_data[3] = (W.state == World::State::INSIDE_ENCOUNTER ? 1 : 0);
+		int ack = peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 		for(auto info : game_players)
 		{
@@ -2236,7 +2238,6 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 			unit->EndEffects();
 	}
 
-	W.state = World::State::ON_MAP;
 	open_location = -1;
 	city_ctx = nullptr;
 }
@@ -3094,6 +3095,7 @@ void Game::Event_RandomEncounter(int)
 	dialog_enc = nullptr;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::CLOSE_ENCOUNTER);
+	W.state = World::State::INSIDE_ENCOUNTER;
 	W.current_location_index = W.encounter_loc;
 	W.current_location = W.locations[W.current_location_index];
 	L.location_index = W.current_location_index;
@@ -3818,17 +3820,9 @@ void Game::DoWorldProgress(int days)
 		{
 			Camp* camp = (Camp*)(*it);
 			if(W.GetWorldtime() - camp->create_time >= 30
-				&& (W.current_location != *it || game_state != GS_LEVEL)
-				&& (picked_location == -1 || W.locations[picked_location] != *it))
+				&& W.current_location != *it // don't remove when team is inside
+				&& (picked_location == -1 || W.locations[picked_location] != *it)) // don't remove when traveling to
 			{
-				if(W.current_location == *it)
-				{
-					W.current_location_index = -1;
-					W.current_location = nullptr;
-					L.location_index = -1;
-					L.location = nullptr;
-				}
-
 				// usuñ obóz
 				DeleteElements(camp->chests);
 				DeleteElements(camp->items);

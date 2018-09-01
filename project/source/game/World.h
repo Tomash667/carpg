@@ -9,8 +9,9 @@ class World
 public:
 	enum class State
 	{
-		ON_MAP, // on worldmap
-		INSIDE_LOCATION,
+		ON_MAP, // on map (current_location set)
+		INSIDE_LOCATION, // inside location (current_location set)
+		INSIDE_ENCOUNTER, // inside encounter location (current_location set)
 		TRAVEL, // traveling on map (current_location is nullptr)
 		ENCOUNTER // shown encounter message, waiting to close & load level (current_location is nullptr)
 	};

@@ -96,7 +96,7 @@ bool Game::SaveGameSlot(int slot, cstring text)
 	}
 
 	cstring filename = Format(Net::IsOnline() ? "saves/multi/%d.sav" : "saves/single/%d.sav", slot);
-	return SaveGameCommon(filename, true, text);
+	return SaveGameCommon(filename, slot, text);
 }
 
 //=================================================================================================
@@ -436,7 +436,7 @@ void Game::SaveGame(GameWriter& f)
 	f << W.settlements;
 	f << W.encounter_loc;
 	f << world_dir;
-	if(W.state == World::State::TRAVEL)
+	if(W.state == World::State::INSIDE_ENCOUNTER)
 	{
 		f << picked_location;
 		f << travel_day;
@@ -770,10 +770,11 @@ void Game::LoadGame(GameReader& f)
 	f >> W.current_location_index;
 	uint count = f.Read<uint>();
 	W.locations.resize(count);
-	int index = 0;
+	int index = -1;
 	int step = 0;
 	for(Location*& loc : W.locations)
 	{
+		++index;
 		LOCATION_TOKEN loc_token;
 		f >> loc_token;
 
@@ -852,7 +853,7 @@ void Game::LoadGame(GameReader& f)
 	f >> W.settlements;
 	f >> W.encounter_loc;
 	f >> world_dir;
-	if(W.state == World::State::TRAVEL)
+	if(W.state == World::State::INSIDE_ENCOUNTER)
 	{
 		f >> picked_location;
 		f >> travel_day;
@@ -860,9 +861,9 @@ void Game::LoadGame(GameReader& f)
 		f >> travel_time;
 		f >> guards_enc_reward;
 	}
-	// FIXME - in new save/load this is not encouter
-	else if(W.state == World::State::ENCOUNTER)
+	if(LOAD_VERSION < V_FEATURE && W.state == World::State::ENCOUNTER)
 	{
+		// bugfix
 		W.state = World::State::TRAVEL;
 		travel_start = world_pos = W.locations[0]->pos;
 		picked_location = 0;
@@ -1146,6 +1147,7 @@ void Game::LoadGame(GameReader& f)
 			}
 
 			InitQuadTree();
+			CalculateQuadtree();
 		}
 		else
 		{
@@ -1417,9 +1419,6 @@ void Game::LoadGame(GameReader& f)
 		else
 			enter_from = ENTER_FROM_OUTSIDE;
 	}
-
-	if(L.location->outside)
-		CalculateQuadtree();
 
 	// load music
 	LoadingStep(txLoadMusic);

@@ -1346,7 +1346,7 @@ void Unit::Save(GameWriter& f, bool local)
 		player->Save(f);
 	}
 	else
-		f.Write1();
+		f.Write0();
 
 	if(hero)
 		hero->Save(f);

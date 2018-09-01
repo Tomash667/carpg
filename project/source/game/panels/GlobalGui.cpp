@@ -3,9 +3,14 @@
 #include "GlobalGui.h"
 #include "World.h"
 #include "Level.h"
+#include "Game.h"
 
 void GlobalGui::Draw(ControlDrawData*)
 {
+	FIXME;
+	if(!Any(Game::Get().game_state, GS_LEVEL, GS_WORLDMAP))
+		return;
+
 	cstring state;
 	switch(W.state)
 	{
@@ -18,6 +23,9 @@ void GlobalGui::Draw(ControlDrawData*)
 		break;
 	case World::State::INSIDE_LOCATION:
 		state = "INSIDE_LOCATION";
+		break;
+	case World::State::INSIDE_ENCOUNTER:
+		state = "INSIDE_ENCOUNTER";
 		break;
 	case World::State::TRAVEL:
 		state = "TRAVEL";

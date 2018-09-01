@@ -343,6 +343,7 @@ void WorldMapGui::Update(float dt)
 					if(enc != -1)
 					{
 						// questowe spotkanie
+						W.state = World::State::ENCOUNTER;
 						game.game_enc = game.encs[enc];
 						game.enc_tryb = 2;
 
@@ -367,7 +368,6 @@ void WorldMapGui::Update(float dt)
 							if(!game.IsLeader())
 								game.dialog_enc->bts[0].state = Button::DISABLED;
 
-							W.state = World::State::ENCOUNTER;
 							Net::PushChange(NetChange::UPDATE_MAP_POS);
 						}
 					}
@@ -462,6 +462,7 @@ void WorldMapGui::Update(float dt)
 							}
 							info.type = DIALOG_OK;
 							game.dialog_enc = GUI.ShowDialog(info);
+							W.state = World::State::ENCOUNTER;
 
 							if(Net::IsOnline())
 							{
@@ -473,7 +474,6 @@ void WorldMapGui::Update(float dt)
 								if(!game.IsLeader())
 									game.dialog_enc->bts[0].state = Button::DISABLED;
 
-								W.state = World::State::ENCOUNTER;
 								Net::PushChange(NetChange::UPDATE_MAP_POS);
 							}
 						}
@@ -505,6 +505,7 @@ void WorldMapGui::Update(float dt)
 							}
 							info.type = DIALOG_OK;
 							game.dialog_enc = GUI.ShowDialog(info);
+							W.state = World::State::ENCOUNTER;
 
 							if(Net::IsOnline())
 							{
@@ -516,7 +517,6 @@ void WorldMapGui::Update(float dt)
 								if(!game.IsLeader())
 									game.dialog_enc->bts[0].state = Button::DISABLED;
 
-								W.state = World::State::ENCOUNTER;
 								Net::PushChange(NetChange::UPDATE_MAP_POS);
 							}
 						}
@@ -561,6 +561,13 @@ void WorldMapGui::Update(float dt)
 					{
 						if(game.picked_location != W.current_location_index)
 						{
+							// opuœæ aktualn¹ lokalizacje
+							if(game.open_location != -1)
+							{
+								game.LeaveLocation();
+								game.open_location = -1;
+							}
+
 							// rozpocznij wêdrówkê po mapie œwiata
 							W.state = World::State::TRAVEL;
 							W.current_location_index = -1;
@@ -573,13 +580,6 @@ void WorldMapGui::Update(float dt)
 							Location& l = *W.locations[game.picked_location];
 							game.world_dir = Clip(Angle(game.world_pos.x, game.world_pos.y, l.pos.x, l.pos.y) + PI);
 							game.travel_time2 = 0.f;
-
-							// opuœæ aktualn¹ lokalizacje
-							if(game.open_location != -1)
-							{
-								game.LeaveLocation();
-								game.open_location = -1;
-							}
 
 							if(Net::IsOnline())
 							{
@@ -603,6 +603,12 @@ void WorldMapGui::Update(float dt)
 				{
 					if(game.IsLeader())
 					{
+						if(game.open_location != -1)
+						{
+							game.LeaveLocation(false, false);
+							game.open_location = -1;
+						}
+
 						W.current_location_index = game.picked_location;
 						W.current_location = W.locations[W.current_location_index];
 						L.location_index = W.current_location_index;
@@ -611,11 +617,7 @@ void WorldMapGui::Update(float dt)
 						if(loc.state == LS_KNOWN)
 							game.SetLocationVisited(loc);
 						game.world_pos = loc.pos;
-						if(game.open_location != -1)
-						{
-							game.LeaveLocation(false, false);
-							game.open_location = -1;
-						}
+						
 						if(Net::IsOnline())
 						{
 							NetChange& c = Add1(Net::changes);
