@@ -18,7 +18,7 @@ void Quest_RescueCaptive::Start()
 {
 	quest_id = Q_RESCUE_CAPTIVE;
 	type = QuestType::Captain;
-	start_loc = game->current_location;
+	start_loc = W.current_location_index;
 	group = GetRandomGroup();
 }
 
@@ -392,7 +392,7 @@ bool Quest_RescueCaptive::IfNeedTalk(cstring topic) const
 {
 	if(strcmp(topic, "captive") != 0)
 		return false;
-	if(game->current_location == start_loc)
+	if(W.current_location_index == start_loc)
 	{
 		if(prog == Progress::CaptiveDie || prog == Progress::CaptiveEscape || prog == Progress::CaptiveLeftInCity)
 			return true;
@@ -401,7 +401,7 @@ bool Quest_RescueCaptive::IfNeedTalk(cstring topic) const
 		else
 			return false;
 	}
-	else if(game->current_location == target_loc && prog == Progress::Started)
+	else if(W.current_location_index == target_loc && prog == Progress::Started)
 		return true;
 	else
 		return false;

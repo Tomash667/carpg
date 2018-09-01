@@ -10,6 +10,7 @@
 #include "Journal.h"
 #include "SoundManager.h"
 #include "World.h"
+#include "Level.h"
 
 char mapa_t[] = {
 	"$$$$$$$$###########$$$"
@@ -200,9 +201,12 @@ void Game::StartTutorial()
 	loc->type = L_DUNGEON;
 	loc->image = LI_DUNGEON;
 	W.locations.push_back(loc);
-	current_location = 0;
+	W.current_location_index = 0;
+	W.current_location = loc;
+	W.state = World::State::INSIDE_LOCATION;
+	L.location_index = 0;
+	L.location = loc;
 	open_location = 0;
-	location = loc;
 	city_ctx = nullptr;
 	local_ctx_valid = true;
 	InsideLocationLevel& lvl = loc->GetLevelData();

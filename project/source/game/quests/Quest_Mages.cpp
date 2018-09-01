@@ -218,7 +218,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::Started:
 		// porozmawiano ze stra¿nikiem o golemach, wys³a³ do maga
 		{
-			start_loc = game->current_location;
+			start_loc = W.current_location_index;
 			mage_loc = W.GetRandomSettlementIndex(start_loc);
 
 			Location& sl = GetStartLocation();
@@ -287,8 +287,8 @@ void Quest_Mages2::SetProgress(int prog2)
 			loc.st = 1;
 			loc.state = LS_KNOWN;
 			game->AddTeamMember(game->current_dialog->talker, true);
-			msgs.push_back(Format(game->txQuest[177], game->current_dialog->talker->hero->name.c_str(), GetTargetLocationName(), GetLocationDirName(game->location->pos, GetTargetLocation().pos),
-				game->location->name.c_str()));
+			msgs.push_back(Format(game->txQuest[177], game->current_dialog->talker->hero->name.c_str(), GetTargetLocationName(),
+				GetLocationDirName(W.current_location->pos, GetTargetLocation().pos), W.current_location->name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			mages_state = State::OldMageJoined;
@@ -399,7 +399,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			good_mage_name = u->hero->name;
 			hd_mage.Get(*u->human_data);
 
-			if(game->current_location == mage_loc)
+			if(W.current_location_index == mage_loc)
 			{
 				// idŸ do karczmy
 				u->ai->goto_inn = true;
@@ -528,7 +528,7 @@ cstring Quest_Mages2::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "target_dir2")
-		return GetLocationDirName(game->location->pos, GetTargetLocation().pos);
+		return GetLocationDirName(W.current_location->pos, GetTargetLocation().pos);
 	else if(str == "name")
 		return game->current_dialog->talker->hero->name.c_str();
 	else if(str == "enemy")
@@ -552,9 +552,9 @@ bool Quest_Mages2::IfNeedTalk(cstring topic) const
 bool Quest_Mages2::IfSpecial(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_magowie_u_bossa") == 0)
-		return target_loc == game->current_location;
+		return target_loc == W.current_location_index;
 	else if(strcmp(msg, "q_magowie_u_siebie") == 0)
-		return game->current_location == target_loc;
+		return target_loc == W.current_location_index;
 	else if(strcmp(msg, "q_magowie_czas") == 0)
 		return timer >= 30.f;
 	else

@@ -567,7 +567,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 				}
 			}
 			// zak³ada ¿e gadamy na ostatnim levelu, mam nadzieje ¿e gracz z tamt¹d nie spierdoli przed pogadaniem :3
-			MultiInsideLocation* multi = (MultiInsideLocation*)game->location;
+			MultiInsideLocation* multi = (MultiInsideLocation*)W.current_location;
 			for(vector<InsideLocationLevel>::iterator it = multi->levels.begin(), end = multi->levels.end() - 1; it != end; ++it)
 			{
 				for(vector<Unit*>::iterator it2 = it->units.begin(), end2 = it->units.end(); it2 != end2; ++it2)
@@ -639,7 +639,7 @@ bool Quest_Orcs2::IfSpecial(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "q_orkowie_lowca") == 0)
 		return orc_class == OrcClass::Hunter;
 	else if(strcmp(msg, "q_orkowie_na_miejscu") == 0)
-		return game->current_location == target_loc;
+		return W.current_location_index == target_loc;
 	else
 	{
 		assert(0);

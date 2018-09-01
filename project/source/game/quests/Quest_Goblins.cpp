@@ -78,7 +78,7 @@ void DodajStraznikow()
 	game.WarpUnit(*u, use->pos);
 
 	// usuñ pozosta³e osoby z pomieszczenia
-	InsideLocation* inside = (InsideLocation*)game.location;
+	InsideLocation* inside = (InsideLocation*)W.current_location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Room* room = lvl.GetNearestRoom(u->pos);
 	assert(room);

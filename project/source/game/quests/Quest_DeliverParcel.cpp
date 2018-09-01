@@ -14,7 +14,7 @@
 //=================================================================================================
 void Quest_DeliverParcel::Start()
 {
-	start_loc = game->current_location;
+	start_loc = W.current_location_index;
 	end_loc = W.GetRandomSettlementIndex(start_loc);
 	quest_id = Q_DELIVER_PARCEL;
 	type = QuestType::Mayor;
@@ -259,9 +259,9 @@ bool Quest_DeliverParcel::IfSpecial(DialogContext& ctx, cstring msg)
 //=================================================================================================
 bool Quest_DeliverParcel::IfHaveQuestItem() const
 {
-	if(game->current_location == W.GetEncounterLocationIndex() && prog == Progress::Started)
+	if(W.current_location_index == W.GetEncounterLocationIndex() && prog == Progress::Started)
 		return true;
-	return game->current_location == end_loc && (prog == Progress::Started || prog == Progress::ParcelGivenToBandits);
+	return W.current_location_index == end_loc && (prog == Progress::Started || prog == Progress::ParcelGivenToBandits);
 }
 
 //=================================================================================================

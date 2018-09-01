@@ -1464,6 +1464,7 @@ public:
 	GameGui* game_gui;
 	MainMenu* main_menu;
 	WorldMapGui* world_map;
+	GlobalGui* global_gui;
 	// dialogi
 	Console* console;
 	GameMenu* game_menu;

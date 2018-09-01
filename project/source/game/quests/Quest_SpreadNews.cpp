@@ -21,7 +21,7 @@ void Quest_SpreadNews::Start()
 {
 	type = QuestType::Mayor;
 	quest_id = Q_SPREAD_NEWS;
-	start_loc = game->current_location;
+	start_loc = W.current_location_index;
 	Vec2 pos = W.locations[start_loc]->pos;
 	bool sorted = false;
 	for(uint i = 0, count = W.settlements; i < count; ++i)
@@ -114,7 +114,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			uint ile = 0;
 			for(vector<Entry>::iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 			{
-				if(game->current_location == it->location)
+				if(W.current_location_index == it->location)
 				{
 					it->given = true;
 					++ile;
@@ -123,7 +123,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 					++ile;
 			}
 
-			Location& loc = *W.locations[game->current_location];
+			Location& loc = *W.current_location;
 			msgs.push_back(Format(game->txQuest[18], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str()));
 
 			if(ile == entries.size())
@@ -230,15 +230,13 @@ bool Quest_SpreadNews::IfNeedTalk(cstring topic) const
 		{
 			for(vector<Entry>::const_iterator it = entries.begin(), end = entries.end(); it != end; ++it)
 			{
-				if(it->location == game->current_location)
+				if(it->location == W.current_location_index)
 					return !it->given;
 			}
 		}
 	}
 	else if(strcmp(topic, "tell_news_end") == 0)
-	{
-		return prog == Progress::Deliver && game->current_location == start_loc;
-	}
+		return prog == Progress::Deliver && W.current_location_index == start_loc;
 	return false;
 }
 

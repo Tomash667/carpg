@@ -4,6 +4,7 @@
 #include "Terrain.h"
 #include "LocationHelper.h"
 #include "Profiler.h"
+#include "Level.h"
 #include "DirectX.h"
 
 enum QuadPartType
@@ -255,7 +256,7 @@ void Game::ListGrass()
 		return;
 
 	PROFILER_BLOCK("ListGrass");
-	OutsideLocation* outside = (OutsideLocation*)location;
+	OutsideLocation* outside = (OutsideLocation*)L.location;
 	Vec3 pos, angle;
 	Vec2 from = cam.from.XZ();
 	float in_dist = grass_range * grass_range;
@@ -340,7 +341,7 @@ void Game::ListGrass()
 void Game::SetTerrainTextures()
 {
 	TexturePtr tex[5] = { tTrawa, tTrawa2, tTrawa3, tZiemia, tDroga };
-	if(LocationHelper::IsVillage(location))
+	if(LocationHelper::IsVillage(L.location))
 		tex[2] = tPole;
 
 	auto& tex_mgr = ResourceManager::Get<Texture>();

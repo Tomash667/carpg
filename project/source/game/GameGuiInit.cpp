@@ -28,6 +28,7 @@
 #include "GameMessages.h"
 #include "MpBox.h"
 #include "PickFileDialog.h"
+#include "GlobalGui.h"
 
 //=================================================================================================
 void Game::OnResize()
@@ -113,6 +114,7 @@ void Game::InitGui()
 			mp_box
 			journal
 			game_messages
+		global_gui
 	GUI.dialog_layers
 		console
 		game_menu
@@ -137,6 +139,10 @@ void Game::InitGui()
 	// worldmap
 	world_map = new WorldMapGui;
 	GUI.Add(world_map);
+
+	// global gui
+	global_gui = new GlobalGui;
+	GUI.Add(global_gui);
 
 	// konsola
 	DialogInfo info;
@@ -246,6 +252,7 @@ void Game::NullGui()
 	main_menu = nullptr;
 	world_map = nullptr;
 	game_gui = nullptr;
+	global_gui = nullptr;
 	console = nullptr;
 	game_menu = nullptr;
 	options = nullptr;
@@ -263,6 +270,7 @@ void Game::NullGui()
 //=================================================================================================
 void Game::RemoveGui()
 {
+	delete global_gui;
 	delete game_gui;
 	delete main_menu;
 	delete world_map;

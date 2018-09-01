@@ -17,7 +17,7 @@ void Quest_BanditsCollectToll::Start()
 {
 	quest_id = Q_BANDITS_COLLECT_TOLL;
 	type = QuestType::Captain;
-	start_loc = game->current_location;
+	start_loc = W.current_location_index;
 	other_loc = W.GetRandomSettlementIndex(start_loc);
 }
 

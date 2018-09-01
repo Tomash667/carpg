@@ -13,7 +13,7 @@
 //=================================================================================================
 void Quest_DeliverLetter::Start()
 {
-	start_loc = game->current_location;
+	start_loc = W.current_location_index;
 	end_loc = W.GetRandomSettlementIndex(start_loc);
 	quest_id = Q_DELIVER_LETTER;
 	type = QuestType::Mayor;
@@ -95,7 +95,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 
 			state = Quest::Failed;
 			((City*)W.locations[start_loc])->quest_mayor = CityQuestState::Failed;
-			if(game->current_location == end_loc)
+			if(W.current_location_index == end_loc)
 			{
 				game->current_dialog->pc->unit->RemoveQuestItem(refid);
 				removed_item = true;
@@ -192,9 +192,9 @@ bool Quest_DeliverLetter::OnTimeout(TimeoutType ttype)
 bool Quest_DeliverLetter::IfHaveQuestItem() const
 {
 	if(prog == Progress::Started)
-		return game->current_location == end_loc;
+		return W.current_location_index == end_loc;
 	else
-		return game->current_location == start_loc && prog == Progress::GotResponse;
+		return W.current_location_index == start_loc && prog == Progress::GotResponse;
 }
 
 //=================================================================================================

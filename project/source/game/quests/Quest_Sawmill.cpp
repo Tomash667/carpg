@@ -159,7 +159,7 @@ bool Quest_Sawmill::IfNeedTalk(cstring topic) const
 bool Quest_Sawmill::IfSpecial(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "czy_tartak") == 0)
-		return game->current_location == target_loc;
+		return W.current_location_index == target_loc;
 	else
 	{
 		assert(0);

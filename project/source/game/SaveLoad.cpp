@@ -34,6 +34,7 @@
 #include "SoundManager.h"
 #include "ScriptManager.h"
 #include "World.h"
+#include "Level.h"
 
 enum SaveFlags
 {
@@ -403,7 +404,7 @@ void Game::SaveGame(GameWriter& f)
 	byte check_id = 0;
 
 	// world map
-	f << current_location;
+	f << W.current_location_index;
 	f << W.locations.size();
 	for(Location* loc : W.locations)
 	{
@@ -421,7 +422,7 @@ void Game::SaveGame(GameWriter& f)
 				int levels = ((MultiInsideLocation*)loc)->levels.size();
 				f << levels;
 			}
-			loc->Save(f, (game_state == GS_LEVEL && location == loc));
+			loc->Save(f, (game_state == GS_LEVEL && W.current_location == loc));
 		}
 
 		f << check_id;
@@ -766,7 +767,7 @@ void Game::LoadGame(GameReader& f)
 
 	// world map
 	LoadingStep(txLoadingLocations);
-	f >> current_location;
+	f >> W.current_location_index;
 	uint count = f.Read<uint>();
 	W.locations.resize(count);
 	int index = 0;
@@ -808,7 +809,7 @@ void Game::LoadGame(GameReader& f)
 				break;
 			}
 
-			loc->Load(f, (game_state2 == GS_LEVEL && current_location == index), loc_token);
+			loc->Load(f, (game_state2 == GS_LEVEL && W.current_location_index == index), loc_token);
 		}
 		else
 			loc = nullptr;
@@ -894,17 +895,20 @@ void Game::LoadGame(GameReader& f)
 			}
 		}
 	}
-	if(current_location != -1)
+	L.location_index = W.current_location_index;
+	if(W.current_location_index != -1)
 	{
-		location = W.locations[current_location];
-		if(location->type == L_CITY)
-			city_ctx = (City*)location;
+		W.current_location = W.locations[W.current_location_index];
+		L.location = W.current_location;
+		if(L.location->type == L_CITY)
+			city_ctx = (City*)L.location;
 		else
 			city_ctx = nullptr;
 	}
 	else
 	{
-		location = nullptr;
+		W.current_location = nullptr;
+		L.location = nullptr;
 		city_ctx = nullptr;
 	}
 	f >> first_city;
@@ -1114,16 +1118,16 @@ void Game::LoadGame(GameReader& f)
 
 	if(game_state2 == GS_LEVEL)
 	{
-		open_location = current_location;
+		open_location = L.location_index;
 
-		if(location->outside)
+		if(L.location->outside)
 		{
-			OutsideLocation* outside = (OutsideLocation*)location;
+			OutsideLocation* outside = (OutsideLocation*)L.location;
 
 			SetOutsideParams();
 			SetTerrainTextures();
 
-			ApplyContext(location, local_ctx);
+			ApplyContext(L.location, local_ctx);
 			ApplyTiles(outside->h, outside->tiles);
 
 			RespawnObjectColliders(false);
@@ -1145,7 +1149,7 @@ void Game::LoadGame(GameReader& f)
 		}
 		else
 		{
-			InsideLocation* inside = (InsideLocation*)location;
+			InsideLocation* inside = (InsideLocation*)L.location;
 			inside->SetActiveLevel(dungeon_level);
 			BaseLocation& base = g_base_locations[inside->target];
 
@@ -1388,11 +1392,11 @@ void Game::LoadGame(GameReader& f)
 	if(enter_from == ENTER_FROM_UNKNOWN && game_state2 == GS_LEVEL)
 	{
 		// zgadnij sk¹d przysz³a dru¿yna
-		if(current_location == secret_where2)
+		if(L.location_index == secret_where2)
 			enter_from = ENTER_FROM_PORTAL;
-		else if(location->type == L_DUNGEON)
+		else if(L.location->type == L_DUNGEON)
 		{
-			InsideLocation* inside = (InsideLocation*)location;
+			InsideLocation* inside = (InsideLocation*)L.location;
 			if(inside->from_portal)
 				enter_from = ENTER_FROM_PORTAL;
 			else
@@ -1403,7 +1407,7 @@ void Game::LoadGame(GameReader& f)
 					enter_from = ENTER_FROM_UP_LEVEL;
 			}
 		}
-		else if(location->type == L_CRYPT)
+		else if(L.location->type == L_CRYPT)
 		{
 			if(dungeon_level == 0)
 				enter_from = ENTER_FROM_OUTSIDE;
@@ -1414,7 +1418,7 @@ void Game::LoadGame(GameReader& f)
 			enter_from = ENTER_FROM_OUTSIDE;
 	}
 
-	if(location->outside)
+	if(L.location->outside)
 		CalculateQuadtree();
 
 	// load music

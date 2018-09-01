@@ -7,6 +7,7 @@
 #include "Action.h"
 #include "Profiler.h"
 #include "Portal.h"
+#include "Level.h"
 #include "DirectX.h"
 
 //-----------------------------------------------------------------------------
@@ -970,17 +971,17 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 	// portals
 	if(IS_SET(draw_flags, DF_PORTALS) && ctx.type != LevelContext::Building)
 	{
-		Portal* portal = location->portal;
+		Portal* portal = L.location->portal;
 		while(portal)
 		{
-			if(location->outside || dungeon_level == portal->at_level)
+			if(L.location->outside || dungeon_level == portal->at_level)
 				draw_batch.portals.push_back(portal);
 			portal = portal->next_portal;
 		}
 	}
 
 	// areas
-	if (IS_SET(draw_flags, DF_AREA))
+	if(IS_SET(draw_flags, DF_AREA))
 		ListAreas(ctx);
 
 	// colliders
@@ -1114,7 +1115,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 
 	std::sort(draw_batch.nodes.begin(), draw_batch.nodes.end(), [](const SceneNode* node1, const SceneNode* node2)
 	{
-		if (node1->flags == node2->flags)
+		if(node1->flags == node2->flags)
 			return node1->mesh_inst > node2->mesh_inst;
 		else
 			return node1->flags < node2->flags;
@@ -1705,13 +1706,13 @@ void Game::AddObjectToDrawBatch(LevelContext& ctx, const Object& o, FrustumPlane
 //=================================================================================================
 void Game::ListAreas(LevelContext& ctx)
 {
-	if (ctx.type == LevelContext::Outside)
+	if(ctx.type == LevelContext::Outside)
 	{
-		if (city_ctx)
+		if(city_ctx)
 		{
-			if (IS_SET(city_ctx->flags, City::HaveExit))
+			if(IS_SET(city_ctx->flags, City::HaveExit))
 			{
-				for (vector<EntryPoint>::const_iterator entry_it = city_ctx->entry_points.begin(), entry_end = city_ctx->entry_points.end();
+				for(vector<EntryPoint>::const_iterator entry_it = city_ctx->entry_points.begin(), entry_end = city_ctx->entry_points.end();
 					entry_it != entry_end; ++entry_it)
 				{
 					const EntryPoint& e = *entry_it;
@@ -1723,7 +1724,7 @@ void Game::ListAreas(LevelContext& ctx)
 				}
 			}
 
-			for (vector<InsideBuilding*>::const_iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+			for(vector<InsideBuilding*>::const_iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
 			{
 				const InsideBuilding& ib = **it;
 				Area& a = Add1(draw_batch.areas);
@@ -1734,7 +1735,7 @@ void Game::ListAreas(LevelContext& ctx)
 			}
 		}
 
-		if (!city_ctx || !IS_SET(city_ctx->flags, City::HaveExit))
+		if(!city_ctx || !IS_SET(city_ctx->flags, City::HaveExit))
 		{
 			const float H1 = -10.f;
 			const float H2 = 30.f;
@@ -1777,16 +1778,16 @@ void Game::ListAreas(LevelContext& ctx)
 		}
 		draw_batch.area_range = 10.f;
 	}
-	else if (ctx.type == LevelContext::Inside)
+	else if(ctx.type == LevelContext::Inside)
 	{
-		InsideLocation* inside = (InsideLocation*)location;
+		InsideLocation* inside = (InsideLocation*)L.location;
 		InsideLocationLevel& lvl = inside->GetLevelData();
 
-		if (inside->HaveUpStairs())
+		if(inside->HaveUpStairs())
 		{
 			Area& a = Add1(draw_batch.areas);
 			a.v[0] = a.v[1] = a.v[2] = a.v[3] = pt_to_pos(lvl.staircase_up);
-			switch (lvl.staircase_up_dir)
+			switch(lvl.staircase_up_dir)
 			{
 			case GDIR_DOWN:
 				a.v[0] += Vec3(-0.85f, 2.87f, 0.85f);
@@ -1814,11 +1815,11 @@ void Game::ListAreas(LevelContext& ctx)
 				break;
 			}
 		}
-		if (inside->HaveDownStairs())
+		if(inside->HaveDownStairs())
 		{
 			Area& a = Add1(draw_batch.areas);
 			a.v[0] = a.v[1] = a.v[2] = a.v[3] = pt_to_pos(lvl.staircase_down);
-			switch (lvl.staircase_down_dir)
+			switch(lvl.staircase_down_dir)
 			{
 			case GDIR_DOWN:
 				a.v[0] += Vec3(-0.85f, 0.45f, 0.85f);
@@ -1878,7 +1879,7 @@ void Game::PrepareAreaPath()
 	const Vec3& pos = pc->unit->pos;
 	Vec3 from = pc->unit->GetPhysicsPos();
 
-	if (action.area == Action::LINE)
+	if(action.area == Action::LINE)
 	{
 		float rot = Clip(pc->unit->rot + PI + pc_data.action_rot);
 		const int steps = 10;
@@ -1890,16 +1891,16 @@ void Game::PrepareAreaPath()
 		LineTest(pc->unit->cobj->getCollisionShape(), from, dir, [this, ignore_units](btCollisionObject* obj, bool)
 		{
 			int flags = obj->getCollisionFlags();
-			if (IS_SET(flags, CG_TERRAIN))
+			if(IS_SET(flags, CG_TERRAIN))
 				return LT_IGNORE;
-			if (IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit || ignore_units)
+			if(IS_SET(flags, CG_UNIT) && obj->getUserPointer() == pc->unit || ignore_units)
 				return LT_IGNORE;
 			return LT_COLLIDE;
 		}, t);
 
 		float len = action.area_size.x * t;
 
-		if (location->outside && pc->unit->in_building == -1)
+		if(L.location->outside && pc->unit->in_building == -1)
 		{
 			// build line on terrain
 			area.points.clear();
@@ -1911,7 +1912,7 @@ void Game::PrepareAreaPath()
 			float len_step = len / steps;
 			float active_step = 0;
 			Matrix mat = Matrix::RotationY(rot);
-			for (int i = 0; i < steps; ++i)
+			for(int i = 0; i < steps; ++i)
 			{
 				float current_h = terrain->GetH(active_pos) + h;
 				area.points.push_back(Vec3::Transform(Vec3(-action.area_size.y, current_h, active_step), mat) + unit_offset);
@@ -1921,7 +1922,7 @@ void Game::PrepareAreaPath()
 				active_step += len_step;
 			}
 
-			for (int i = 0; i < steps - 1; ++i)
+			for(int i = 0; i < steps - 1; ++i)
 			{
 				area.faces.push_back(i * 2);
 				area.faces.push_back((i + 1) * 2);
@@ -1941,7 +1942,7 @@ void Game::PrepareAreaPath()
 			area.points[3] = Vec3(action.area_size.y, h, len);
 
 			Matrix mat = Matrix::RotationY(rot);
-			for (int i = 0; i < 4; ++i)
+			for(int i = 0; i < 4; ++i)
 				area.points[i] = Vec3::Transform(area.points[i], mat) + pc->unit->pos;
 
 			area.faces.clear();
@@ -2080,7 +2081,7 @@ void Game::PrepareAreaPath()
 			pc_data.action_ok = true;
 		}
 
-		bool outside = (location->outside && pc->unit->in_building == -1);
+		bool outside = (L.location->outside && pc->unit->in_building == -1);
 
 		// build circle
 		PrepareAreaPathCircle(area, radius, t * range, rot, outside);
@@ -2134,7 +2135,7 @@ void Game::PrepareAreaPathCircle(Area2& area, float radius, float range, float r
 //=================================================================================================
 void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 {
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	BaseLocation& base = g_base_locations[inside->target];
 	Box box;
@@ -2513,7 +2514,7 @@ void Game::FillDrawBatchDungeonParts(FrustumPlanes& frustum)
 
 	std::sort(draw_batch.dungeon_parts.begin(), draw_batch.dungeon_parts.end(), [](const DungeonPart& p1, const DungeonPart& p2)
 	{
-		if (p1.tp != p2.tp)
+		if(p1.tp != p2.tp)
 			return p1.tp->GetIndex() < p2.tp->GetIndex();
 		else
 			return false;
@@ -2925,7 +2926,7 @@ void Game::DrawScene(bool outside)
 		DrawStunEffects(draw_batch.stuns);
 
 	// portale
-	if (!draw_batch.portals.empty())
+	if(!draw_batch.portals.empty())
 		DrawPortals(draw_batch.portals);
 
 	// obszary
@@ -3645,23 +3646,23 @@ void Game::DrawBloods(bool outside, const vector<Blood*>& bloods, const vector<L
 			v_z = blood.normal.Cross(right);
 			if(v_x.x > 0.f)
 			{
-				v_rx = v_x*s;
-				v_lx = -v_x*s;
+				v_rx = v_x * s;
+				v_lx = -v_x * s;
 			}
 			else
 			{
-				v_rx = -v_x*s;
-				v_lx = v_x*s;
+				v_rx = -v_x * s;
+				v_lx = v_x * s;
 			}
 			if(v_z.z > 0.f)
 			{
-				v_rz = v_z*s;
-				v_lz = -v_z*s;
+				v_rz = v_z * s;
+				v_lz = -v_z * s;
 			}
 			else
 			{
-				v_rz = -v_z*s;
-				v_lz = v_z*s;
+				v_rz = -v_z * s;
+				v_lz = v_z * s;
 			}
 
 			blood_v[0].pos = v_lx + v_lz;
@@ -4009,7 +4010,7 @@ void Game::DrawLightings(const vector<Electro*>& electros)
 				v[2].pos = next[0];
 				v[3].pos = next[1];
 
-				float a = float(ile - min(ile, (int)abs(j - ile*(it2->t / 0.25f)))) / ile;
+				float a = float(ile - min(ile, (int)abs(j - ile * (it2->t / 0.25f)))) / ile;
 				float b = min(0.5f, a * a);
 
 				for(int i = 0; i < 4; ++i)
@@ -4098,7 +4099,7 @@ void Game::DrawPortals(const vector<Portal*>& portals)
 	for(vector<Portal*>::const_iterator it = portals.begin(), end = portals.end(); it != end; ++it)
 	{
 		const Portal& portal = **it;
-		m2 = Matrix::Rotation(portal.rot, 0, -portal_anim*PI * 2)
+		m2 = Matrix::Rotation(portal.rot, 0, -portal_anim * PI * 2)
 			* Matrix::Translation(portal.pos + Vec3(0, 0.67f + 0.305f, 0))
 			* cam.matViewProj;
 		V(eParticle->SetMatrix(hParticleCombined, (D3DXMATRIX*)&m2));
@@ -4136,7 +4137,7 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 	V(eArea->EndPass());
 	V(eArea->End());
 
-	if (!areas2.empty())
+	if(!areas2.empty())
 	{
 		V(eArea->Begin(&passes, 0));
 		V(eArea->BeginPass(0));
@@ -4148,7 +4149,7 @@ void Game::DrawAreas(const vector<Area>& areas, float range, const vector<Area2*
 			Vec4(0, 0.58f, 1.f, 0.5f)
 		};
 
-		for (auto* area2 : areas2)
+		for(auto* area2 : areas2)
 		{
 			V(eArea->SetVector(hAreaColor, (D3DXVECTOR4*)&colors[area2->ok]));
 			V(eArea->CommitChanges());

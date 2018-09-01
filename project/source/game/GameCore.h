@@ -33,6 +33,7 @@ class GamePanel;
 class GamePanelContainer;
 class GameReader;
 class GameWriter;
+class GlobalGui;
 class InfoBox;
 class Inventory;
 class Journal;

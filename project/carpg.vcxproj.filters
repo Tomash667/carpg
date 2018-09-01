@@ -700,6 +700,9 @@
     <ClCompile Include="source\game\Level.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\panels\GlobalGui.cpp">
+      <Filter>3. game\panels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1386,6 +1389,9 @@
     </ClInclude>
     <ClInclude Include="source\game\Level.h">
       <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\panels\GlobalGui.h">
+      <Filter>3. game\panels</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

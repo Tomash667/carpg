@@ -32,6 +32,7 @@
 #include "UnitGroup.h"
 #include "Portal.h"
 #include "World.h"
+#include "Level.h"
 #include "DirectX.h"
 
 extern const float TRAVEL_SPEED = 28.f;
@@ -49,15 +50,18 @@ void Game::GenerateWorld()
 
 	Info("Generating world, seed %u.", RandVal());
 
-	current_location = W.GenerateWorld();
-	world_pos = W.locations[current_location]->pos;
+	W.current_location_index = W.GenerateWorld();
+	W.current_location = W.locations[W.current_location_index];
+	L.location_index = W.current_location_index;
+	L.location = W.current_location;
+	world_pos = W.current_location->pos;
 
 	Info("Randomness integrity: %d", RandVal());
 }
 
 bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 {
-	Location& l = *W.locations[current_location];
+	Location& l = *L.location;
 	if(l.type == L_ACADEMY)
 	{
 		ShowAcademyText();
@@ -67,8 +71,9 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	world_map->visible = false;
 	game_gui->visible = true;
 
-	bool reenter = (open_location == current_location);
-	open_location = current_location;
+	bool reenter = (open_location == L.location_index);
+	open_location = L.location_index;
+	W.state = World::State::INSIDE_LOCATION;
 	if(from_portal != -1)
 		enter_from = ENTER_FROM_PORTAL + from_portal;
 	else
@@ -76,7 +81,6 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(!reenter)
 		light_angle = Random(PI * 2);
 
-	location = &l;
 	dungeon_level = level;
 	location_event_handler = nullptr;
 	pc_data.before_player = BP_NONE;
@@ -102,7 +106,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	{
 		packet_data.resize(3);
 		packet_data[0] = ID_CHANGE_LEVEL;
-		packet_data[1] = (byte)current_location;
+		packet_data[1] = (byte)L.location_index;
 		packet_data[2] = 0;
 		int ack = peer->Send((cstring)&packet_data[0], 3, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
@@ -190,7 +194,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		l.seed = RandVal();
 		if(!l.outside)
 		{
-			InsideLocation* inside = (InsideLocation*)location;
+			InsideLocation* inside = (InsideLocation*)L.location;
 			if(inside->IsMultilevel())
 			{
 				MultiInsideLocation* multi = (MultiInsideLocation*)inside;
@@ -214,7 +218,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		case L_DUNGEON:
 		case L_CRYPT:
 			{
-				InsideLocation* inside = (InsideLocation*)location;
+				InsideLocation* inside = (InsideLocation*)L.location;
 				inside->SetActiveLevel(0);
 				if(inside->IsMultilevel())
 				{
@@ -230,7 +234,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			GenerateCave(l);
 			break;
 		case L_FOREST:
-			if(current_location == secret_where2)
+			if(L.location_index == secret_where2)
 				GenerateSecretLocation(l);
 			else
 				GenerateForest(l);
@@ -259,7 +263,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	case L_CITY:
 		{
 			// ustaw wskaŸniki
-			City* city = (City*)location;
+			City* city = (City*)L.location;
 			city_ctx = city;
 			arena_free = true;
 
@@ -358,8 +362,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			}
 
 			// pojawianie sie questowej jednostki
-			if(location->active_quest && location->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && !location->active_quest->done)
-				HandleQuestEvent(location->active_quest);
+			if(L.location->active_quest && L.location->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && !L.location->active_quest->done)
+				HandleQuestEvent(L.location->active_quest);
 
 			// generuj minimapê
 			LoadingStep(txGeneratingMinimap);
@@ -384,7 +388,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			arena_free = true;
 
-			if(!contest_generated && current_location == contest_where && contest_state == CONTEST_TODAY)
+			if(!contest_generated && L.location_index == contest_where && contest_state == CONTEST_TODAY)
 				SpawnDrunkmans();
 		}
 		break;
@@ -396,7 +400,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	case L_FOREST:
 		{
 			// ustaw wskaŸniki
-			OutsideLocation* forest = (OutsideLocation*)location;
+			OutsideLocation* forest = (OutsideLocation*)L.location;
 			city_ctx = nullptr;
 			if(!reenter)
 				ApplyContext(forest, local_ctx);
@@ -410,7 +414,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			SetOutsideParams();
 
-			if(secret_where2 == current_location)
+			if(secret_where2 == L.location_index)
 			{
 				// czy to pierwsza wizyta?
 				if(first)
@@ -497,7 +501,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 					LoadingStep(txGeneratingUnits);
 					bool have_sawmill = false;
-					if(current_location == quest_sawmill->target_loc)
+					if(L.location_index == quest_sawmill->target_loc)
 					{
 						// sawmill quest
 						if(quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
@@ -505,14 +509,14 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 						{
 							GenerateSawmill(true);
 							have_sawmill = true;
-							location->loaded_resources = false;
+							L.location->loaded_resources = false;
 						}
 						else if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working
 							&& quest_sawmill->build_state != Quest_Sawmill::BuildState::Finished)
 						{
 							GenerateSawmill(false);
 							have_sawmill = true;
-							location->loaded_resources = false;
+							L.location->loaded_resources = false;
 						}
 						else
 							RespawnUnits();
@@ -550,7 +554,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				// questowe rzeczy
 				if(forest->active_quest && forest->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER)
 				{
-					Quest_Event* event = forest->active_quest->GetEvent(current_location);
+					Quest_Event* event = forest->active_quest->GetEvent(L.location_index);
 					if(event)
 					{
 						if(!event->done)
@@ -571,7 +575,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	case L_ENCOUNTER:
 		{
 			// ustaw wskaŸniki
-			OutsideLocation* enc = (OutsideLocation*)location;
+			OutsideLocation* enc = (OutsideLocation*)L.location;
 			enc->loaded_resources = false;
 			city_ctx = nullptr;
 			ApplyContext(enc, local_ctx);
@@ -618,7 +622,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	case L_CAMP:
 		{
 			// ustaw wskaŸniki
-			OutsideLocation* camp = (OutsideLocation*)location;
+			OutsideLocation* camp = (OutsideLocation*)L.location;
 			city_ctx = nullptr;
 			if(!reenter)
 				ApplyContext(camp, local_ctx);
@@ -681,7 +685,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			// questowe rzeczy
 			if(camp->active_quest && camp->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER)
 			{
-				Quest_Event* event = camp->active_quest->GetEvent(current_location);
+				Quest_Event* event = camp->active_quest->GetEvent(L.location_index);
 				if(event)
 				{
 					if(!event->done)
@@ -698,7 +702,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			AddPlayerTeam(pos, dir, reenter, true);
 
 			// generate guards for bandits quest
-			if(quest_bandits->bandits_state == Quest_Bandits::State::GenerateGuards && current_location == quest_bandits->target_loc)
+			if(quest_bandits->bandits_state == Quest_Bandits::State::GenerateGuards && L.location_index == quest_bandits->target_loc)
 			{
 				quest_bandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
 				UnitData* ud = UnitData::Get("guard_q_bandyci");
@@ -715,7 +719,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	case L_MOONWELL:
 		{
 			// ustaw wskaŸniki
-			OutsideLocation* forest = (OutsideLocation*)location;
+			OutsideLocation* forest = (OutsideLocation*)L.location;
 			city_ctx = nullptr;
 			if(!reenter)
 				ApplyContext(forest, local_ctx);
@@ -807,13 +811,13 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		break;
 	}
 
-	if(location->outside)
+	if(L.location->outside)
 	{
 		SetTerrainTextures();
 		CalculateQuadtree();
 	}
 
-	bool loaded_resources = RequireLoadingResources(location, nullptr);
+	bool loaded_resources = RequireLoadingResources(L.location, nullptr);
 	LoadResources(txLoadingComplete, false);
 
 	l.last_visit = W.GetWorldtime();
@@ -825,8 +829,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	if(close_portal)
 	{
-		delete location->portal;
-		location->portal = nullptr;
+		delete L.location->portal;
+		L.location->portal = nullptr;
 	}
 
 	if(Net::IsOnline())
@@ -853,7 +857,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		game_gui->visible = true;
 	}
 
-	if(location->outside)
+	if(L.location->outside)
 	{
 		OnEnterLevelOrLocation();
 		OnEnterLocation();
@@ -1024,7 +1028,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 				// extra code for bench
 				if(IS_SET(base_use->use_flags, BaseUsable::IS_BENCH))
 				{
-					switch(location->type)
+					switch(L.location->type)
 					{
 					case L_CITY:
 						variant = 0;
@@ -1088,7 +1092,7 @@ Game::ObjectEntity Game::SpawnObjectEntity(LevelContext& ctx, BaseObject* base, 
 
 void Game::SpawnBuildings(vector<CityBuilding>& _buildings)
 {
-	City* city = (City*)location;
+	City* city = (City*)L.location;
 
 	const int mur1 = int(0.15f*OutsideLocation::size);
 	const int mur2 = int(0.85f*OutsideLocation::size);
@@ -1900,12 +1904,12 @@ void Game::SpawnUnits(City* city)
 		ais.push_back(ai);
 	}
 
-	UnitData* mieszkaniec = UnitData::Get(LocationHelper::IsCity(W.locations[current_location]) ? "citizen" : "villager");
+	UnitData* dweller = UnitData::Get(LocationHelper::IsCity(L.location) ? "citizen" : "villager");
 
 	// pijacy w karczmie
 	for(int i = 0, ile = Random(1, city_ctx->citizens / 3); i < ile; ++i)
 	{
-		if(!SpawnUnitInsideInn(*mieszkaniec, -2))
+		if(!SpawnUnitInsideInn(*dweller, -2))
 			break;
 	}
 
@@ -1920,7 +1924,7 @@ void Game::SpawnUnits(City* city)
 			Int2 pt(Random(a, b), Random(a, b));
 			if(city->tiles[pt(OutsideLocation::size)].IsRoadOrPath())
 			{
-				SpawnUnitNearLocation(local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *mieszkaniec, nullptr, -2, 2.f);
+				SpawnUnitNearLocation(local_ctx, Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1), *dweller, nullptr, -2, 2.f);
 				break;
 			}
 		}
@@ -1990,7 +1994,7 @@ void InsertRandomItem(vector<ItemSlot>& container, vector<T*>& items, int price_
 
 void Game::GenerateStockItems()
 {
-	Location& loc = *W.locations[current_location];
+	Location& loc = *L.location;
 
 	assert(loc.type == L_CITY);
 
@@ -2170,7 +2174,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	}
 
 	// clear blood & bodies from orc base
-	if(Net::IsLocal() && quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && current_location == quest_orcs2->target_loc)
+	if(Net::IsLocal() && quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && L.location_index == quest_orcs2->target_loc)
 	{
 		quest_orcs2->orcs_state = Quest_Orcs2::State::End;
 		UpdateLocation(31, 100, false);
@@ -2203,7 +2207,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		Location& loc = *W.locations[open_location];
 		if(loc.type == L_ENCOUNTER)
 		{
-			OutsideLocation* outside = (OutsideLocation*)location;
+			OutsideLocation* outside = (OutsideLocation*)L.location;
 			outside->bloods.clear();
 			DeleteElements(outside->objects);
 			DeleteElements(outside->chests);
@@ -2232,6 +2236,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 			unit->EndEffects();
 	}
 
+	W.state = World::State::ON_MAP;
 	open_location = -1;
 	city_ctx = nullptr;
 }
@@ -2283,7 +2288,7 @@ void Game::GenerateDungeon(Location& _loc)
 			r.pos.y = (opcje.w - 7) / 2;
 			inside->special_room = 0;
 		}
-		else if(current_location == secret_where && secret_state == SECRET_DROPPED_STONE && !inside->HaveDownStairs())
+		else if(L.location_index == secret_where && secret_state == SECRET_DROPPED_STONE && !inside->HaveDownStairs())
 		{
 			// sekret
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
@@ -2293,13 +2298,13 @@ void Game::GenerateDungeon(Location& _loc)
 			r.pos.x = r.pos.y = (opcje.w - 7) / 2;
 			inside->special_room = 0;
 		}
-		else if(current_location == quest_evil->target_loc && quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
+		else if(L.location_index == quest_evil->target_loc && quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
 		{
 			// schody w krypcie 0 jak najdalej od œrodka
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
 		}
 
-		if(quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && current_location == quest_orcs->target_loc && dungeon_level == location->GetLastLevel())
+		if(quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && L.location_index == quest_orcs->target_loc && dungeon_level == L.location->GetLastLevel())
 		{
 			opcje.stop = true;
 			bool first = true;
@@ -2476,7 +2481,7 @@ void Game::GenerateDungeon(Location& _loc)
 
 void Game::GenerateDungeonObjects2()
 {
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	BaseLocation& base = g_base_locations[inside->target];
 
@@ -2611,7 +2616,7 @@ void Game::GenerateDungeonObjects2()
 
 void Game::SpawnCityPhysics()
 {
-	City* city = (City*)W.locations[current_location];
+	City* city = (City*)L.location;
 	TerrainTile* tiles = city->tiles;
 
 	for(int z = 0; z < City::size; ++z)
@@ -2689,7 +2694,7 @@ void Game::SpawnCityObjects()
 		SpawnObjectEntity(local_ctx, BaseObject::Get("coveredwell"), pos, PI / 2 * (Rand() % 4), 1.f, 0, nullptr);
 	}
 
-	TerrainTile* tiles = ((City*)location)->tiles;
+	TerrainTile* tiles = ((City*)L.location)->tiles;
 
 	for(int i = 0; i < 512; ++i)
 	{
@@ -2805,7 +2810,7 @@ void Game::SpawnForestObjects(int road_dir)
 			misc[i].obj = BaseObject::Get(misc[i].name);
 	}
 
-	TerrainTile* tiles = ((OutsideLocation*)location)->tiles;
+	TerrainTile* tiles = ((OutsideLocation*)L.location)->tiles;
 
 	// obelisk
 	if(Rand() % (road_dir == -1 ? 10 : 15) == 0)
@@ -2912,7 +2917,7 @@ void Game::SpawnForestItems(int count_mod)
 		Item::Get("green_herb"), green_herbs,
 		Item::Get("healing_herb"), herbs
 	};
-	TerrainTile* tiles = ((OutsideLocation*)location)->tiles;
+	TerrainTile* tiles = ((OutsideLocation*)L.location)->tiles;
 	Vec2 region_size(2.f, 2.f);
 	for(const ItemToSpawn& to_spawn : items_to_spawn)
 	{
@@ -2978,7 +2983,7 @@ void Game::SpawnForestUnits(const Vec3& team_pos)
 	const int level = GetDungeonLevel();
 	static vector<Vec2> poss;
 	poss.clear();
-	OutsideLocation* outside = (OutsideLocation*)location;
+	OutsideLocation* outside = (OutsideLocation*)L.location;
 	poss.push_back(Vec2(team_pos.x, team_pos.z));
 
 	// ustal wrogów
@@ -3089,7 +3094,10 @@ void Game::Event_RandomEncounter(int)
 	dialog_enc = nullptr;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::CLOSE_ENCOUNTER);
-	current_location = W.GetEncounterLocationIndex();
+	W.current_location_index = W.encounter_loc;
+	W.current_location = W.locations[W.current_location_index];
+	L.location_index = W.current_location_index;
+	L.location = W.current_location;
 	EnterLocation();
 }
 
@@ -3716,7 +3724,7 @@ void Game::DoWorldProgress(int days)
 			Location* loc = W.locations[(*it)->target_loc];
 			bool in_camp = false;
 
-			if(loc->type == L_CAMP && ((*it)->target_loc == picked_location || (*it)->target_loc == current_location))
+			if(loc->type == L_CAMP && ((*it)->target_loc == picked_location || (*it)->target_loc == W.current_location_index))
 				in_camp = true;
 
 			if(!(*it)->timeout)
@@ -3810,13 +3818,15 @@ void Game::DoWorldProgress(int days)
 		{
 			Camp* camp = (Camp*)(*it);
 			if(W.GetWorldtime() - camp->create_time >= 30
-				&& (location != *it || game_state != GS_LEVEL)
+				&& (W.current_location != *it || game_state != GS_LEVEL)
 				&& (picked_location == -1 || W.locations[picked_location] != *it))
 			{
-				if(location == *it)
+				if(W.current_location == *it)
 				{
-					current_location = -1;
-					location = nullptr;
+					W.current_location_index = -1;
+					W.current_location = nullptr;
+					L.location_index = -1;
+					L.location = nullptr;
 				}
 
 				// usuñ obóz
@@ -4193,9 +4203,9 @@ void Game::SpawnCampObjects()
 		{
 			BaseObject* obj = camp_objs_ptrs[Rand() % n_camp_objs];
 			auto e = SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
-			if(e.IsChest() && location->spawn != SG_BRAK) // empty chests for empty camps
+			if(e.IsChest() && L.location->spawn != SG_BRAK) // empty chests for empty camps
 			{
-				int gold, level = location->st;
+				int gold, level = L.location->st;
 				Chest* chest = (Chest*)e;
 
 				GenerateTreasure(level, 5, chest->items, gold, false);
@@ -4211,7 +4221,7 @@ void Game::SpawnCampUnits()
 	static TmpUnitGroup group;
 	static vector<Vec2> poss;
 	poss.clear();
-	OutsideLocation* outside = (OutsideLocation*)location;
+	OutsideLocation* outside = (OutsideLocation*)L.location;
 	int level = outside->st;
 	cstring group_name;
 
@@ -4795,7 +4805,7 @@ void Game::SpawnMoonwellObjects()
 			misc[i].obj = BaseObject::Get(misc[i].name);
 	}
 
-	TerrainTile* tiles = ((OutsideLocation*)location)->tiles;
+	TerrainTile* tiles = ((OutsideLocation*)L.location)->tiles;
 
 	// drzewa
 	for(int i = 0; i < 1024; ++i)
@@ -4856,7 +4866,7 @@ void Game::SpawnMoonwellUnits(const Vec3& team_pos)
 	int level = GetDungeonLevel();
 	static vector<Vec2> poss;
 	poss.clear();
-	OutsideLocation* outside = (OutsideLocation*)location;
+	OutsideLocation* outside = (OutsideLocation*)L.location;
 	poss.push_back(Vec2(team_pos.x, team_pos.z));
 
 	// ustal wrogów
@@ -5288,7 +5298,7 @@ void Game::SpawnSecretLocationObjects()
 	portal->rot = 0.f;
 	portal->target = 0;
 	portal->target_loc = secret_where;
-	location->portal = portal;
+	L.location->portal = portal;
 
 	if(!trees[0].obj)
 	{
@@ -5300,7 +5310,7 @@ void Game::SpawnSecretLocationObjects()
 			misc[i].obj = BaseObject::Get(misc[i].name);
 	}
 
-	TerrainTile* tiles = ((OutsideLocation*)location)->tiles;
+	TerrainTile* tiles = ((OutsideLocation*)L.location)->tiles;
 
 	// drzewa
 	for(int i = 0; i < 1024; ++i)
@@ -5352,7 +5362,7 @@ void Game::SpawnSecretLocationObjects()
 
 void Game::SpawnSecretLocationUnits()
 {
-	OutsideLocation* outside = (OutsideLocation*)location;
+	OutsideLocation* outside = (OutsideLocation*)L.location;
 	UnitData* golem = UnitData::Get("golem_adamantine");
 	static vector<Vec2> poss;
 
@@ -5391,7 +5401,7 @@ void Game::SpawnTeamSecretLocation()
 
 void Game::GenerateMushrooms(int days_since)
 {
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Int2 pt;
 	Vec2 pos;
@@ -5623,13 +5633,13 @@ void Game::GenerateDungeonFood()
 {
 	// determine how much food to spawn
 	int mod = 3;
-	InsideLocation* inside = (InsideLocation*)location;
+	InsideLocation* inside = (InsideLocation*)L.location;
 	BaseLocation& base = g_base_locations[inside->target];
 
 	if(IS_SET(base.options, BLO_LESS_FOOD))
 		--mod;
 
-	SPAWN_GROUP spawn = location->spawn;
+	SPAWN_GROUP spawn = L.location->spawn;
 	if(spawn == SG_WYZWANIE)
 	{
 		if(dungeon_level == 0)
@@ -5696,7 +5706,7 @@ void Game::GenerateCityMap(Location& loc)
 {
 	Info("Generating city map.");
 
-	City* city = (City*)location;
+	City* city = (City*)L.location;
 	if(!city->tiles)
 	{
 		city->tiles = new TerrainTile[OutsideLocation::size*OutsideLocation::size];
@@ -5780,7 +5790,7 @@ void Game::GenerateVillageMap(Location& loc)
 {
 	Info("Generating village map.");
 
-	City* village = (City*)location;
+	City* village = (City*)L.location;
 	CLEAR_BIT(village->flags, City::HaveExit);
 	if(!village->tiles)
 	{
@@ -5858,7 +5868,7 @@ void Game::GenerateVillageMap(Location& loc)
 
 	g_have_well = false;
 
-	City* city = (City*)location;
+	City* city = (City*)L.location;
 
 	// budynki
 	city->buildings.resize(tobuild.size());
@@ -6044,7 +6054,7 @@ void Game::AbadonLocation(Location* loc)
 	OutsideLocation* outside = (OutsideLocation*)loc;
 
 	// if location is open
-	if(loc == location)
+	if(loc == L.location)
 	{
 		// remove units
 		for(Unit*& u : outside->units)

@@ -219,6 +219,7 @@
     <ClInclude Include="source\game\panels\ActionPanel.h" />
     <ClInclude Include="source\game\panels\BookPanel.h" />
     <ClInclude Include="source\game\panels\GameDialogBox.h" />
+    <ClInclude Include="source\game\panels\GlobalGui.h" />
     <ClInclude Include="source\game\quests\QuestConsts.h" />
     <ClInclude Include="source\game\script\TypeBuilder.h" />
     <ClInclude Include="source\game\script\ScriptManager.h" />
@@ -431,6 +432,7 @@
     <ClCompile Include="source\game\net\PlayerInfo.cpp" />
     <ClCompile Include="source\game\panels\ActionPanel.cpp" />
     <ClCompile Include="source\game\panels\BookPanel.cpp" />
+    <ClCompile Include="source\game\panels\GlobalGui.cpp" />
     <ClCompile Include="source\game\script\ScriptManager.cpp" />
     <ClCompile Include="source\game\script\Var.cpp" />
     <ClCompile Include="source\game\stats\Action.cpp" />

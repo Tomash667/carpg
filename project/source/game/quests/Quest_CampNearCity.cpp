@@ -15,7 +15,7 @@ void Quest_CampNearCity::Start()
 {
 	quest_id = Q_CAMP_NEAR_CITY;
 	type = QuestType::Captain;
-	start_loc = game->current_location;
+	start_loc = W.current_location_index;
 	switch(Rand() % 3)
 	{
 	case 0:
