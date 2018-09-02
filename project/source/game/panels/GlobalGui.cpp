@@ -12,7 +12,7 @@ void GlobalGui::Draw(ControlDrawData*)
 		return;
 
 	cstring state;
-	switch(W.state)
+	switch(W.GetState())
 	{
 	default:
 	case World::State::ON_MAP:

@@ -60,12 +60,12 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			item_to_give[0] = &quest_item;
 			if(Rand() % 4 == 0)
 			{
-				target_loc = game->GetClosestLocation(L_DUNGEON, sl.pos, LABIRYNTH);
+				target_loc = W.GetClosestLocation(L_DUNGEON, sl.pos, LABIRYNTH);
 				at_level = 0;
 			}
 			else
 			{
-				target_loc = game->GetClosestLocation(L_CRYPT, sl.pos);
+				target_loc = W.GetClosestLocation(L_CRYPT, sl.pos);
 				InsideLocation* inside = (InsideLocation*)(W.locations[target_loc]);
 				if(inside->IsMultilevel())
 				{

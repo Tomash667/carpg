@@ -19,13 +19,13 @@ void Quest_CampNearCity::Start()
 	switch(Rand() % 3)
 	{
 	case 0:
-		group = SG_BANDYCI;
+		group = SG_BANDITS;
 		break;
 	case 1:
-		group = SG_GOBLINY;
+		group = SG_GOBLINS;
 		break;
 	case 2:
-		group = SG_ORKOWIE;
+		group = SG_ORCS;
 		break;
 	}
 }
@@ -67,7 +67,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 				name = game->txQuest[58];
 
 			// event
-			target_loc = game->CreateCamp(sl.pos, group);
+			target_loc = W.CreateCamp(sl.pos, group);
 			location_event_handler = this;
 
 			Location& tl = *W.locations[target_loc];
@@ -82,14 +82,14 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			cstring gn;
 			switch(group)
 			{
-			case SG_BANDYCI:
+			case SG_BANDITS:
 			default:
 				gn = game->txQuest[59];
 				break;
-			case SG_ORKOWIE:
+			case SG_ORCS:
 				gn = game->txQuest[60];
 				break;
-			case SG_GOBLINY:
+			case SG_GOBLINS:
 				gn = game->txQuest[61];
 				break;
 			}
@@ -176,11 +176,11 @@ cstring Quest_CampNearCity::FormatString(const string& str)
 	{
 		switch(group)
 		{
-		case SG_BANDYCI:
+		case SG_BANDITS:
 			return game->txQuest[68];
-		case SG_ORKOWIE:
+		case SG_ORCS:
 			return game->txQuest[69];
-		case SG_GOBLINY:
+		case SG_GOBLINS:
 			return game->txQuest[70];
 		default:
 			assert(0);
@@ -207,11 +207,11 @@ cstring Quest_CampNearCity::FormatString(const string& str)
 	{
 		switch(group)
 		{
-		case SG_BANDYCI:
+		case SG_BANDITS:
 			return game->txQuest[74];
-		case SG_ORKOWIE:
+		case SG_ORCS:
 			return game->txQuest[75];
-		case SG_GOBLINY:
+		case SG_GOBLINS:
 			return game->txQuest[266];
 		default:
 			assert(0);

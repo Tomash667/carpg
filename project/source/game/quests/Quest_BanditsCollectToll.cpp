@@ -54,16 +54,16 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			Location& sl = *W.locations[start_loc];
 			Location& ol = *W.locations[other_loc];
 
-			Encounter* e = game->AddEncounter(enc);
+			Encounter* e = W.AddEncounter(enc);
 			e->dialog = FindDialog("q_bandits_collect_toll_talk");
 			e->dont_attack = true;
-			e->grupa = SG_BANDYCI;
+			e->group = SG_BANDITS;
 			e->pos = (sl.pos + ol.pos) / 2;
 			e->quest = this;
-			e->szansa = 50;
+			e->chance = 50;
 			e->text = game->txQuest[52];
 			e->timed = true;
-			e->zasieg = 64;
+			e->range = 64;
 			e->location_event_handler = this;
 
 			quest_index = quest_manager.quests.size();
@@ -202,16 +202,16 @@ bool Quest_BanditsCollectToll::Load(GameReader& f)
 		Location& sl = *W.locations[start_loc];
 		Location& ol = *W.locations[other_loc];
 
-		Encounter* e = game->RecreateEncounter(enc);
+		Encounter* e = W.RecreateEncounter(enc);
 		e->dialog = FindDialog("q_bandits_collect_toll_talk");
 		e->dont_attack = true;
-		e->grupa = SG_BANDYCI;
+		e->group = SG_BANDITS;
 		e->pos = (sl.pos + ol.pos) / 2;
 		e->quest = this;
-		e->szansa = 50;
+		e->chance = 50;
 		e->text = game->txQuest[52];
 		e->timed = true;
-		e->zasieg = 64;
+		e->range = 64;
 		e->location_event_handler = this;
 	}
 

@@ -200,13 +200,7 @@ void Game::StartTutorial()
 	loc->name = txTutLoc;
 	loc->type = L_DUNGEON;
 	loc->image = LI_DUNGEON;
-	W.locations.push_back(loc);
-	W.current_location_index = 0;
-	W.current_location = loc;
-	W.state = World::State::INSIDE_LOCATION;
-	L.location_index = 0;
-	L.location = loc;
-	L.is_open = true;
+	W.StartInLocation(loc);
 	city_ctx = nullptr;
 	local_ctx_valid = true;
 	InsideLocationLevel& lvl = loc->GetLevelData();

@@ -96,7 +96,7 @@ struct Location : public ILevel
 	bool dont_clean;
 	bool loaded_resources;
 
-	Location(bool outside) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), spawn(SG_BRAK),
+	Location(bool outside) : active_quest(nullptr), last_visit(-1), reset(false), state(LS_UNKNOWN), outside(outside), st(0), spawn(SG_NONE),
 		portal(nullptr), dont_clean(false), loaded_resources(false)
 	{
 	}
@@ -119,6 +119,11 @@ struct Location : public ILevel
 	Portal* TryGetPortal(int index) const;
 	void WritePortals(BitStreamWriter& f) const;
 	bool ReadPortals(BitStreamReader& f, int at_level);
+	void SetVisited()
+	{
+		if(state == LS_KNOWN)
+			state = LS_VISITED;
+	}
 };
 
 //-----------------------------------------------------------------------------

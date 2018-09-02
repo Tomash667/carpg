@@ -153,16 +153,16 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			// encounter
-			Encounter* e = game->AddEncounter(enc);
+			Encounter* e = W.AddEncounter(enc);
 			e->check_func = CzyMajaStaryLuk;
 			e->dialog = FindDialog("q_goblins_encounter");
 			e->dont_attack = true;
-			e->grupa = SG_GOBLINY;
+			e->group = SG_GOBLINS;
 			e->location_event_handler = nullptr;
 			e->pos = GetStartLocation().pos;
 			e->quest = (Quest_Encounter*)this;
-			e->szansa = 10000;
-			e->zasieg = 32.f;
+			e->chance = 10000;
+			e->range = 32.f;
 			e->text = game->txQuest[219];
 			e->timed = false;
 
@@ -181,7 +181,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[220]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->RemoveEncounter(enc);
+			W.RemoveEncounter(enc);
 			enc = -1;
 			GetTargetLocation().active_quest = nullptr;
 			game->AddNews(game->txQuest[221]);
@@ -208,7 +208,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		// pos³aniec dostarczy³ info o bazie goblinów
 		{
 			state = Quest::Started;
-			target_loc = game->GetRandomSpawnLocation(GetStartLocation().pos, SG_GOBLINY);
+			target_loc = game->GetRandomSpawnLocation(GetStartLocation().pos, SG_GOBLINS);
 			Location& target = GetTargetLocation();
 			bool now_known = false;
 			if(target.state == LS_UNKNOWN)
@@ -221,7 +221,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			target.active_quest = this;
 			done = false;
 			spawn_item = Quest_Event::Item_GiveSpawned;
-			unit_to_spawn = g_spawn_groups[SG_GOBLINY].GetSpawnLeader();
+			unit_to_spawn = g_spawn_groups[SG_GOBLINS].GetSpawnLeader();
 			unit_spawn_level = -3;
 			item_to_give[0] = Item::Get("q_gobliny_luk");
 			at_level = target.GetLastLevel();
@@ -302,7 +302,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		// pogadano z karczmarzem
 		{
 			goblins_state = State::KnownLocation;
-			target_loc = game->CreateLocation(L_DUNGEON, W.world_pos, 128.f, THRONE_FORT, SG_GOBLINY, false);
+			target_loc = game->CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, THRONE_FORT, SG_GOBLINS, false);
 			Location& target = GetTargetLocation();
 			target.st = 13;
 			target.state = LS_KNOWN;
@@ -419,7 +419,7 @@ bool Quest_Goblins::Load(GameReader& f)
 		else if(prog == Progress::InfoAboutGoblinBase)
 		{
 			spawn_item = Quest_Event::Item_GiveSpawned;
-			unit_to_spawn = g_spawn_groups[SG_GOBLINY].GetSpawnLeader();
+			unit_to_spawn = g_spawn_groups[SG_GOBLINS].GetSpawnLeader();
 			unit_spawn_level = -3;
 			item_to_give[0] = Item::Get("q_gobliny_luk");
 		}
@@ -437,16 +437,16 @@ bool Quest_Goblins::Load(GameReader& f)
 
 	if(enc != -1)
 	{
-		Encounter* e = game->RecreateEncounter(enc);
+		Encounter* e = W.RecreateEncounter(enc);
 		e->check_func = CzyMajaStaryLuk;
 		e->dialog = FindDialog("q_goblins_encounter");
 		e->dont_attack = true;
-		e->grupa = SG_GOBLINY;
+		e->group = SG_GOBLINS;
 		e->location_event_handler = nullptr;
 		e->pos = GetStartLocation().pos;
 		e->quest = (Quest_Encounter*)this;
-		e->szansa = 10000;
-		e->zasieg = 32.f;
+		e->chance = 10000;
+		e->range = 32.f;
 		e->text = game->txQuest[219];
 		e->timed = false;
 	}

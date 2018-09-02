@@ -55,7 +55,7 @@ bool Game::CanSaveGame() const
 
 	if(game_state == GS_WORLDMAP)
 	{
-		if(Any(W.state, World::State::TRAVEL, World::State::ENCOUNTER))
+		if(Any(W.GetState(), World::State::TRAVEL, World::State::ENCOUNTER))
 			return false;
 	}
 	else

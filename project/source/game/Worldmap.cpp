@@ -37,7 +37,6 @@
 #include "ScriptManager.h"
 #include "Var.h"
 
-extern const float TRAVEL_SPEED = 28.f;
 extern Matrix m1, m2, m3, m4;
 
 void Game::GenerateWorld()
@@ -52,11 +51,7 @@ void Game::GenerateWorld()
 
 	Info("Generating world, seed %u.", RandVal());
 
-	W.current_location_index = W.GenerateWorld();
-	W.current_location = W.locations[W.current_location_index];
-	W.world_pos = W.current_location->pos;
-	L.location_index = W.current_location_index;
-	L.location = W.current_location;
+	W.GenerateWorld();
 
 	Info("Randomness integrity: %d", RandVal());
 }
@@ -75,8 +70,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 	const bool reenter = L.is_open;
 	L.is_open = true;
-	if(W.state != World::State::INSIDE_ENCOUNTER)
-		W.state = World::State::INSIDE_LOCATION;
+	if(W.GetState() != World::State::INSIDE_ENCOUNTER)
+		W.SetState(World::State::INSIDE_LOCATION);
 	if(from_portal != -1)
 		L.enter_from = ENTER_FROM_PORTAL + from_portal;
 	else
@@ -111,7 +106,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		packet_data[0] = ID_CHANGE_LEVEL;
 		packet_data[1] = (byte)L.location_index;
 		packet_data[2] = 0;
-		packet_data[3] = (W.state == World::State::INSIDE_ENCOUNTER ? 1 : 0);
+		packet_data[3] = (W.GetState() == World::State::INSIDE_ENCOUNTER ? 1 : 0);
 		int ack = peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 		StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 		for(auto info : game_players)
@@ -467,7 +462,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			{
 				Vec3 pos;
 				float dir;
-				GetOutsideSpawnPoint(pos, dir);
+				W.GetOutsideSpawnPoint(pos, dir);
 
 				// czy to pierwsza wizyta?
 				if(first)
@@ -640,7 +635,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			Vec3 pos;
 			float dir;
-			GetOutsideSpawnPoint(pos, dir);
+			W.GetOutsideSpawnPoint(pos, dir);
 
 			SetOutsideParams();
 
@@ -737,7 +732,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			Vec3 pos;
 			float dir;
-			GetOutsideSpawnPoint(pos, dir);
+			W.GetOutsideSpawnPoint(pos, dir);
 			SetOutsideParams();
 
 			// czy to pierwsza wizyta?
@@ -2939,39 +2934,6 @@ void Game::SpawnForestItems(int count_mod)
 	}
 }
 
-void Game::GetOutsideSpawnPoint(Vec3& pos, float& dir)
-{
-	const float dist = 40.f;
-
-	if(W.travel_dir < PI / 4 || W.travel_dir > 7.f / 4 * PI)
-	{
-		// east
-		dir = PI / 2;
-		if(W.travel_dir < PI / 4)
-			pos = Vec3(256.f - dist, 0, Lerp(128.f, 256.f - dist, W.travel_dir / (PI / 4)));
-		else
-			pos = Vec3(256.f - dist, 0, Lerp(dist, 128.f, (W.travel_dir - (7.f / 4 * PI)) / (PI / 4)));
-	}
-	else if(W.travel_dir < 3.f / 4 * PI)
-	{
-		// north
-		dir = 0;
-		pos = Vec3(Lerp(dist, 256.f - dist, 1.f - ((W.travel_dir - (1.f / 4 * PI)) / (PI / 2))), 0, 256.f - dist);
-	}
-	else if(W.travel_dir < 5.f / 4 * PI)
-	{
-		// west
-		dir = 3.f / 2 * PI;
-		pos = Vec3(dist, 0, Lerp(dist, 256.f - dist, 1.f - ((W.travel_dir - (3.f / 4 * PI)) / (PI / 2))));
-	}
-	else
-	{
-		// south
-		dir = PI;
-		pos = Vec3(Lerp(dist, 256.f - dist, (W.travel_dir - (5.f / 4 * PI)) / (PI / 2)), 0, dist);
-	}
-}
-
 void Game::SpawnForestUnits(const Vec3& team_pos)
 {
 	// zbierz grupy
@@ -3096,11 +3058,7 @@ void Game::Event_RandomEncounter(int)
 	dialog_enc = nullptr;
 	if(Net::IsOnline())
 		Net::PushChange(NetChange::CLOSE_ENCOUNTER);
-	W.state = World::State::INSIDE_ENCOUNTER;
-	W.current_location_index = W.encounter_loc;
-	W.current_location = W.locations[W.current_location_index];
-	L.location_index = W.current_location_index;
-	L.location = W.current_location;
+	W.StartEncounter();
 	EnterLocation();
 }
 
@@ -3260,15 +3218,15 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 				essential = UnitData::Get("wild_hunter");
 			group_name = "animals";
 			break;
-		case SG_BANDYCI:
+		case SG_BANDITS:
 			group_name = "bandits";
 			dont_attack = true;
 			dialog = FindDialog("bandits");
 			break;
-		case SG_GOBLINY:
+		case SG_GOBLINS:
 			group_name = "goblins";
 			break;
-		case SG_ORKOWIE:
+		case SG_ORCS:
 			group_name = "orcs";
 			break;
 		}
@@ -3399,20 +3357,20 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 	}
 	else
 	{
-		switch(game_enc->grupa)
+		switch(game_enc->group)
 		{
 		case -1:
 			if(Rand() % 3 != 0)
 				essential = UnitData::Get("wild_hunter");
 			group_name = "animals";
 			break;
-		case SG_BANDYCI:
+		case SG_BANDITS:
 			group_name = "bandits";
 			break;
-		case SG_GOBLINY:
+		case SG_GOBLINS:
 			group_name = "goblins";
 			break;
-		case SG_ORKOWIE:
+		case SG_ORCS:
 			group_name = "orcs";
 			break;
 		}
@@ -3560,45 +3518,6 @@ void Game::SpawnEncounterTeam()
 	AddPlayerTeam(pos, dir, false, true);
 }
 
-Encounter* Game::AddEncounter(int& id)
-{
-	for(int i = 0, size = (int)W.encounters.size(); i < size; ++i)
-	{
-		if(!W.encounters[i])
-		{
-			id = i;
-			W.encounters[i] = new Encounter;
-			return W.encounters[i];
-		}
-	}
-
-	Encounter* enc = new Encounter;
-	id = W.encounters.size();
-	W.encounters.push_back(enc);
-	return enc;
-}
-
-void Game::RemoveEncounter(int id)
-{
-	assert(InRange(id, 0, (int)W.encounters.size() - 1) && W.encounters[id]);
-	delete W.encounters[id];
-	W.encounters[id] = nullptr;
-}
-
-Encounter* Game::GetEncounter(int id)
-{
-	assert(InRange(id, 0, (int)W.encounters.size() - 1) && W.encounters[id]);
-	return W.encounters[id];
-}
-
-Encounter* Game::RecreateEncounter(int id)
-{
-	assert(InRange(id, 0, (int)W.encounters.size() - 1));
-	Encounter* e = new Encounter;
-	W.encounters[id] = e;
-	return e;
-}
-
 // znajduje poblisk¹ lokacje wktórej s¹ tacy wrogowie
 // jeœli jest pusta oczyszczona to siê tam pojawiaj¹
 // jeœli nie ma to zak³ada obóz
@@ -3614,7 +3533,7 @@ int Game::GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range
 		if(!(*it)->active_quest && ((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT))
 		{
 			InsideLocation* inside = (InsideLocation*)*it;
-			if((*it)->state == LS_CLEARED || inside->spawn == group || inside->spawn == SG_BRAK)
+			if((*it)->state == LS_CLEARED || inside->spawn == group || inside->spawn == SG_NONE)
 			{
 				dist = Vec2::Distance(pos, (*it)->pos);
 				if(dist <= range)
@@ -3653,27 +3572,7 @@ int Game::GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range
 		return best_empty;
 	}
 
-	return CreateCamp(pos, group, range / 2);
-}
-
-int Game::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allow_exact)
-{
-	Camp* loc = new Camp;
-	loc->state = LS_UNKNOWN;
-	loc->active_quest = nullptr;
-	loc->name = txCamp;
-	loc->type = L_CAMP;
-	loc->image = LI_CAMP;
-	loc->last_visit = -1;
-	loc->st = Random(3, 15);
-	loc->reset = false;
-	loc->spawn = group;
-	loc->pos = pos;
-	loc->create_time = W.GetWorldtime();
-
-	FindPlaceForLocation(loc->pos, range, allow_exact);
-
-	return AddLocation(loc);
+	return W.CreateCamp(pos, group, range / 2);
 }
 
 // po 30 dniach od odwiedzin oznacza lokacje do zresetowania
@@ -3688,35 +3587,19 @@ void Game::DoWorldProgress(int days)
 		switch(Rand() % 3)
 		{
 		case 0:
-			group = SG_BANDYCI;
+			group = SG_BANDITS;
 			break;
 		case 1:
-			group = SG_ORKOWIE;
+			group = SG_ORCS;
 			break;
 		case 2:
-			group = SG_GOBLINY;
+			group = SG_GOBLINS;
 			break;
 		}
-		CreateCamp(Vec2::Random(16.f, 600 - 16.f), group, 128.f);
+		W.CreateCamp(Vec2::Random(16.f, 600 - 16.f), group, 128.f);
 	}
 
-	// zanikanie questowych spotkañ
-	for(vector<Encounter*>::iterator it = W.encounters.begin(), end = W.encounters.end(); it != end; ++it)
-	{
-		if(*it && (*it)->timed && (*it)->quest->IsTimedout())
-		{
-			(*it)->quest->OnTimeout(TIMEOUT_ENCOUNTER);
-			(*it)->quest->enc = -1;
-			delete *it;
-			if(it + 1 == end)
-			{
-				W.encounters.pop_back();
-				break;
-			}
-			else
-				*it = nullptr;
-		}
-	}
+	W.RemoveTimedEncounters();
 
 	// ustawianie podziemi jako nie questowych po czasie / usuwanie obozów questowych
 	QuestManager& quest_manager = QuestManager::Get();
@@ -3769,20 +3652,7 @@ void Game::DoWorldProgress(int days)
 				outside->units.clear();
 				delete loc;
 
-				for(vector<Location*>::iterator it2 = W.locations.begin(), end2 = W.locations.end(); it2 != end2; ++it2)
-				{
-					if((*it2) == loc)
-					{
-						if(it2 + 1 == end2)
-							W.locations.pop_back();
-						else
-						{
-							*it2 = nullptr;
-							++W.empty_locations;
-						}
-						break;
-					}
-				}
+				W.RemoveLocation(loc);
 			}
 
 			it = quest_manager.quests_timeout.erase(it);
@@ -3811,61 +3681,7 @@ void Game::DoWorldProgress(int days)
 			++it;
 	}
 
-	// resetowanie lokacji / usuwanie obozów po czasie
-	int index = 0;
-	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++index)
-	{
-		if(!*it || (*it)->active_quest || (*it)->type == L_ENCOUNTER)
-			continue;
-		if((*it)->type == L_CAMP)
-		{
-			Camp* camp = (Camp*)(*it);
-			if(W.GetWorldtime() - camp->create_time >= 30
-				&& W.current_location != *it // don't remove when team is inside
-				&& (W.travel_location_index == -1 || W.locations[W.travel_location_index] != *it)) // don't remove when traveling to
-			{
-				// usuñ obóz
-				DeleteElements(camp->chests);
-				DeleteElements(camp->items);
-				for(vector<Unit*>::iterator it2 = camp->units.begin(), end2 = camp->units.end(); it2 != end2; ++it2)
-					delete *it2;
-				camp->units.clear();
-				delete *it;
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::REMOVE_CAMP;
-					c.id = index;
-				}
-
-				if(it + 1 == end)
-				{
-					W.locations.pop_back();
-					break;
-				}
-				else
-				{
-					*it = nullptr;
-					++W.empty_locations;
-				}
-			}
-		}
-		else if((*it)->last_visit != -1 && W.GetWorldtime() - (*it)->last_visit >= 30)
-		{
-			(*it)->reset = true;
-			if((*it)->state == LS_CLEARED)
-				(*it)->state = LS_ENTERED;
-			if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
-			{
-				InsideLocation* inside = (InsideLocation*)*it;
-				if(inside->target != LABIRYNTH)
-					inside->spawn = g_base_locations[inside->target].GetRandomSpawnGroup();
-				if(inside->IsMultilevel())
-					((MultiInsideLocation*)inside)->Reset();
-			}
-		}
-	}
+	W.DoWorldProgress(days);
 
 	if(Net::IsLocal())
 		UpdateQuests(days);
@@ -4198,7 +4014,7 @@ void Game::SpawnCampObjects()
 		{
 			BaseObject* obj = camp_objs_ptrs[Rand() % n_camp_objs];
 			auto e = SpawnObjectNearLocation(local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
-			if(e.IsChest() && L.location->spawn != SG_BRAK) // empty chests for empty camps
+			if(e.IsChest() && L.location->spawn != SG_NONE) // empty chests for empty camps
 			{
 				int gold, level = L.location->st;
 				Chest* chest = (Chest*)e;
@@ -4224,22 +4040,22 @@ void Game::SpawnCampUnits()
 	{
 	default:
 		assert(0);
-	case SG_BANDYCI:
+	case SG_BANDITS:
 		group_name = "bandits";
 		break;
-	case SG_ORKOWIE:
+	case SG_ORCS:
 		group_name = "orcs";
 		break;
-	case SG_GOBLINY:
+	case SG_GOBLINS:
 		group_name = "goblins";
 		break;
-	case SG_MAGOWIE:
+	case SG_MAGES:
 		group_name = "mages";
 		break;
-	case SG_ZLO:
+	case SG_EVIL:
 		group_name = "evil";
 		break;
-	case SG_BRAK:
+	case SG_NONE:
 		// spawn empty camp, no units
 		return;
 	}
@@ -4411,50 +4227,6 @@ Game::ObjectEntity Game::SpawnObjectNearLocation(LevelContext& ctx, BaseObject* 
 	}
 }
 
-int Game::GetClosestLocation(LOCATION type, const Vec2& pos, int target)
-{
-	int best = -1, index = 0;
-	float dist, best_dist;
-
-	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++index)
-	{
-		if(!*it || (*it)->active_quest || (*it)->type != type)
-			continue;
-		if(target != -1 && ((InsideLocation*)(*it))->target != target)
-			continue;
-		dist = Vec2::Distance((*it)->pos, pos);
-		if(best == -1 || dist < best_dist)
-		{
-			best = index;
-			best_dist = dist;
-		}
-	}
-
-	return best;
-}
-
-int Game::GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target)
-{
-	int best = -1, index = 0;
-	float dist, best_dist;
-
-	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++index)
-	{
-		if(!*it || (*it)->active_quest || (*it)->type != type)
-			continue;
-		if(((InsideLocation*)(*it))->target == not_target)
-			continue;
-		dist = Vec2::Distance((*it)->pos, pos);
-		if(best == -1 || dist < best_dist)
-		{
-			best = index;
-			best_dist = dist;
-		}
-	}
-
-	return best;
-}
-
 void Game::SpawnTmpUnits(City* city)
 {
 	InsideBuilding* inn = city->FindInn();
@@ -4533,44 +4305,6 @@ void Game::RemoveTmpUnits(LevelContext& ctx)
 	}
 }
 
-int Game::AddLocation(Location* loc)
-{
-	assert(loc);
-
-	if(W.empty_locations)
-	{
-		--W.empty_locations;
-		int index = W.locations.size() - 1;
-		for(vector<Location*>::reverse_iterator rit = W.locations.rbegin(), rend = W.locations.rend(); rit != rend; ++rit, --index)
-		{
-			if(!*rit)
-			{
-				*rit = loc;
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::ADD_LOCATION;
-					c.id = index;
-				}
-				return index;
-			}
-		}
-		assert(0);
-		return -1;
-	}
-	else
-	{
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::ADD_LOCATION;
-			c.id = W.locations.size();
-		}
-		W.locations.push_back(loc);
-		return W.locations.size() - 1;
-	}
-}
-
 int Game::CreateLocation(LOCATION type, const Vec2& pos, float range, int target, SPAWN_GROUP spawn, bool allow_exact, int _levels)
 {
 	Vec2 pt = pos;
@@ -4579,7 +4313,7 @@ int Game::CreateLocation(LOCATION type, const Vec2& pos, float range, int target
 		pt = Vec2::Random(16.f, 600 - 16.f);
 		range = -range;
 	}
-	if(!FindPlaceForLocation(pt, range, allow_exact))
+	if(!W.FindPlaceForLocation(pt, range, allow_exact))
 		return -1;
 
 	int levels = -1;
@@ -4606,15 +4340,15 @@ int Game::CreateLocation(LOCATION type, const Vec2& pos, float range, int target
 		inside->target = target;
 		if(target == LABIRYNTH)
 		{
-			if(spawn == SG_LOSOWO)
-				inside->spawn = SG_NIEUMARLI;
+			if(spawn == SG_RANDOM)
+				inside->spawn = SG_UNDEAD;
 			else
 				inside->spawn = spawn;
 			inside->st = Random(8, 15);
 		}
 		else
 		{
-			if(spawn == SG_LOSOWO)
+			if(spawn == SG_RANDOM)
 				inside->spawn = g_base_locations[target].GetRandomSpawnGroup();
 			else
 				inside->spawn = spawn;
@@ -4624,46 +4358,13 @@ int Game::CreateLocation(LOCATION type, const Vec2& pos, float range, int target
 	else
 	{
 		loc->st = Random(3, 13);
-		if(spawn != SG_LOSOWO)
+		if(spawn != SG_RANDOM)
 			loc->spawn = spawn;
 	}
 
 	loc->GenerateName();
 
-	return AddLocation(loc);
-}
-
-bool Game::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
-{
-	Vec2 pt;
-
-	if(allow_exact)
-		pt = pos;
-	else
-		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(16, 16), Vec2(600.f - 16.f, 600.f - 16.f));
-
-	for(int i = 0; i < 20; ++i)
-	{
-		bool valid = true;
-		for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it)
-		{
-			if(*it && Vec2::Distance(pt, (*it)->pos) < 24)
-			{
-				valid = false;
-				break;
-			}
-		}
-
-		if(valid)
-		{
-			pos = pt;
-			return true;
-		}
-		else
-			pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(16, 16), Vec2(600.f - 16.f, 600.f - 16.f));
-	}
-
-	return false;
+	return W.AddLocation(loc);
 }
 
 int Game::GetNearestLocation2(const Vec2& pos, int flags, bool not_quest, int flagi_cel)
@@ -5635,14 +5336,14 @@ void Game::GenerateDungeonFood()
 		--mod;
 
 	SPAWN_GROUP spawn = L.location->spawn;
-	if(spawn == SG_WYZWANIE)
+	if(spawn == SG_CHALLANGE)
 	{
 		if(dungeon_level == 0)
-			spawn = SG_ORKOWIE;
+			spawn = SG_ORCS;
 		else if(dungeon_level == 1)
-			spawn = SG_MAGOWIE_I_GOLEMY;
+			spawn = SG_MAGES_AND_GOLEMS;
 		else
-			spawn = SG_ZLO;
+			spawn = SG_EVIL;
 	}
 	SpawnGroup& sg = g_spawn_groups[spawn];
 	mod += sg.food_mod;
@@ -5926,7 +5627,7 @@ void Game::GetCityEntry(Vec3& pos, float& rot)
 		// check which spawn rot i closest to entry rot
 		float best_dif = 999.f;
 		int best_index = -1, index = 0;
-		float dir = Clip(-W.travel_dir + PI / 2);
+		float dir = Clip(-W.GetTravelDir() +PI / 2);
 		for(vector<EntryPoint>::iterator it = city_ctx->entry_points.begin(), end = city_ctx->entry_points.end(); it != end; ++it, ++index)
 		{
 			float dif = AngleDiff(dir, it->spawn_rot);
@@ -5941,62 +5642,6 @@ void Game::GetCityEntry(Vec3& pos, float& rot)
 	}
 
 	terrain->SetH(pos);
-}
-
-void Game::SetExitWorldDir()
-{
-	// set world_dir
-	const float mini = 32.f;
-	const float maxi = 256 - 32.f;
-	//GAME_DIR best_dir = (GAME_DIR)-1;
-	float best_dist = 999.f, dist;
-	Vec2 close_pt, pt;
-	// check right
-	dist = GetClosestPointOnLineSegment(Vec2(maxi, mini), Vec2(maxi, maxi), Vec2(Team.leader->pos.x, Team.leader->pos.z), pt);
-	if(dist < best_dist)
-	{
-		best_dist = dist;
-		//best_dir = GDIR_RIGHT;
-		close_pt = pt;
-	}
-	// check left
-	dist = GetClosestPointOnLineSegment(Vec2(mini, mini), Vec2(mini, maxi), Vec2(Team.leader->pos.x, Team.leader->pos.z), pt);
-	if(dist < best_dist)
-	{
-		best_dist = dist;
-		//best_dir = GDIR_LEFT;
-		close_pt = pt;
-	}
-	// check bottom
-	dist = GetClosestPointOnLineSegment(Vec2(mini, mini), Vec2(maxi, mini), Vec2(Team.leader->pos.x, Team.leader->pos.z), pt);
-	if(dist < best_dist)
-	{
-		best_dist = dist;
-		//best_dir = GDIR_DOWN;
-		close_pt = pt;
-	}
-	// check top
-	dist = GetClosestPointOnLineSegment(Vec2(mini, maxi), Vec2(maxi, maxi), Vec2(Team.leader->pos.x, Team.leader->pos.z), pt);
-	if(dist < best_dist)
-	{
-		//best_dist = dist;
-		//best_dir = GDIR_UP;
-		close_pt = pt;
-	}
-
-	if(close_pt.x < 33.f)
-		W.travel_dir = Lerp(3.f / 4.f*PI, 5.f / 4.f*PI, 1.f - (close_pt.y - 33.f) / (256.f - 66.f));
-	else if(close_pt.x > 256.f - 33.f)
-	{
-		if(close_pt.y > 128.f)
-			W.travel_dir = Lerp(0.f, 1.f / 4 * PI, (close_pt.y - 128.f) / (256.f - 128.f - 33.f));
-		else
-			W.travel_dir = Lerp(7.f / 4 * PI, PI * 2, (close_pt.y - 33.f) / (256.f - 128.f - 33.f));
-	}
-	else if(close_pt.y < 33.f)
-		W.travel_dir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (close_pt.x - 33.f) / (256.f - 66.f));
-	else
-		W.travel_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (close_pt.x - 33.f) / (256.f - 66.f));
 }
 
 int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
@@ -6087,16 +5732,6 @@ void Game::AbadonLocation(Location* loc)
 			chest->items.clear();
 	}
 
-	loc->spawn = SG_BRAK;
+	loc->spawn = SG_NONE;
 	loc->last_visit = W.GetWorldtime();
-}
-
-void Game::SetLocationVisited(Location& loc)
-{
-	loc.state = LS_VISITED;
-
-	if(loc.type == L_CITY && Net::IsLocal())
-	{
-		// generate buildings
-	}
 }

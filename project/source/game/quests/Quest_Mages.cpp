@@ -44,11 +44,11 @@ void Quest_Mages::SetProgress(int prog2)
 			state = Quest::Started;
 
 			Location& sl = GetStartLocation();
-			target_loc = game->GetClosestLocation(L_CRYPT, sl.pos);
+			target_loc = W.GetClosestLocation(L_CRYPT, sl.pos);
 			Location& tl = GetTargetLocation();
 			tl.active_quest = this;
 			tl.reset = true;
-			tl.spawn = SG_NIEUMARLI;
+			tl.spawn = SG_UNDEAD;
 			tl.st = 8;
 			bool now_known = false;
 			if(tl.state == LS_UNKNOWN)
@@ -282,7 +282,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::GotoTower:
 		// idzie za tob¹ do pustej wie¿y
 		{
-			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_BRAK, true, 2);
+			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_NONE, true, 2);
 			Location& loc = *W.locations[target_loc];
 			loc.st = 1;
 			loc.state = LS_KNOWN;
@@ -368,7 +368,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			GetTargetLocation().active_quest = nullptr;
-			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_MAGOWIE_I_GOLEMY);
+			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_MAGES_AND_GOLEMS);
 			Location& loc = GetTargetLocation();
 			loc.state = LS_HIDDEN;
 			loc.st = 15;

@@ -143,7 +143,7 @@ void Quest_Encounter::RemoveEncounter()
 {
 	if(enc == -1)
 		return;
-	game->RemoveEncounter(enc);
+	W.RemoveEncounter(enc);
 	enc = -1;
 }
 

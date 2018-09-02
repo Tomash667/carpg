@@ -1210,17 +1210,12 @@ void Game::UpdateClientTransfer(float dt)
 				reader >> encounter;
 				if(reader.IsOk())
 				{
-					if(loc < W.locations.size())
+					if(W.ChangeLevel(loc, encounter))
 					{
 						if(game_state == GS_LOAD)
 							LoadingStep("");
 						else
 							LoadingStart(4);
-						W.state = encounter ? World::State::INSIDE_ENCOUNTER : World::State::INSIDE_LOCATION;
-						W.current_location = W.locations[loc];
-						W.current_location_index = loc;
-						L.location = W.current_location;
-						L.location_index = W.current_location_index;
 						dungeon_level = level;
 						Info("NM_TRANSFER: Level change to %s (id:%d, level:%d).", L.location->name.c_str(), L.location_index, dungeon_level);
 						info_box->Show(txGeneratingLocation);
@@ -1300,7 +1295,7 @@ void Game::UpdateClientTransfer(float dt)
 					main_menu->visible = false;
 					game_gui->visible = false;
 					world_map->visible = true;
-					W.state = World::State::ON_MAP;
+					W.SetState(World::State::ON_MAP);
 					info_box->CloseDialog();
 					update_timer = 0.f;
 					leader_id = 0;
@@ -1764,7 +1759,7 @@ void Game::UpdateServerTransfer(float dt)
 				main_menu->visible = false;
 				mp_load = false;
 				clear_color = Color::White;
-				W.state = World::State::ON_MAP;
+				W.SetState(World::State::ON_MAP);
 				update_timer = 0.f;
 				SetMusic(MusicType::Travel);
 				ProcessLeftPlayers();
@@ -1778,7 +1773,7 @@ void Game::UpdateServerTransfer(float dt)
 				packet_data[0] = ID_CHANGE_LEVEL;
 				packet_data[1] = (byte)W.current_location_index;
 				packet_data[2] = dungeon_level;
-				packet_data[3] = (W.state == World::State::INSIDE_ENCOUNTER ? 1 : 0);
+				packet_data[3] = (W.GetState() == World::State::INSIDE_ENCOUNTER ? 1 : 0);
 				int ack = peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
 				for(auto info : game_players)
@@ -1867,7 +1862,7 @@ void Game::UpdateServerTransfer(float dt)
 						}
 					}
 					else
-						GetOutsideSpawnPoint(pos, rot);
+						W.GetOutsideSpawnPoint(pos, rot);
 
 					// warp
 					for(auto pinfo : game_players)

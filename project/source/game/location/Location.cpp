@@ -49,7 +49,7 @@ void Location::GenerateName()
 	{
 	case L_CAMP:
 		name = txCamp;
-		break;
+		return;
 	case L_CAVE:
 		name = txCave;
 		break;

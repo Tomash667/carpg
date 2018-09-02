@@ -79,14 +79,14 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			cstring co;
 			switch(group)
 			{
-			case SG_BANDYCI:
+			case SG_BANDITS:
 			default:
 				co = game->txQuest[30];
 				break;
-			case SG_ORKOWIE:
+			case SG_ORCS:
 				co = game->txQuest[31];
 				break;
-			case SG_GOBLINY:
+			case SG_GOBLINS:
 				co = game->txQuest[32];
 				break;
 			}
@@ -303,11 +303,11 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 	{
 		switch(group)
 		{
-		case SG_BANDYCI:
+		case SG_BANDITS:
 			return game->txQuest[43];
-		case SG_ORKOWIE:
+		case SG_ORCS:
 			return game->txQuest[44];
-		case SG_GOBLINY:
+		case SG_GOBLINS:
 			return game->txQuest[45];
 		default:
 			assert(0);
@@ -318,11 +318,11 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 	{
 		switch(group)
 		{
-		case SG_BANDYCI:
+		case SG_BANDITS:
 			return game->txQuest[47];
-		case SG_ORKOWIE:
+		case SG_ORCS:
 			return game->txQuest[48];
-		case SG_GOBLINY:
+		case SG_GOBLINS:
 			return game->txQuest[49];
 		default:
 			assert(0);
@@ -451,11 +451,11 @@ SPAWN_GROUP Quest_RescueCaptive::GetRandomGroup() const
 	default:
 	case 0:
 	case 1:
-		return SG_BANDYCI;
+		return SG_BANDITS;
 	case 2:
-		return SG_ORKOWIE;
+		return SG_ORCS;
 		break;
 	case 3:
-		return SG_GOBLINY;
+		return SG_GOBLINS;
 	}
 }

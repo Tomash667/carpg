@@ -102,6 +102,7 @@ struct PlayerController;
 struct PlayerInfo;
 struct Portal;
 struct Quest_Dungeon;
+struct Quest_Encounter;
 struct Quest_Event;
 struct Room;
 struct Shield;

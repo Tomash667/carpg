@@ -82,7 +82,7 @@ void Quest_Evil::SetProgress(int prog2)
 			// usuñ plotkê
 			quest_manager.RemoveQuestRumor(P_ZLO);
 			// lokacja
-			target_loc = game->CreateLocation(L_DUNGEON, W.world_pos, 128.f, OLD_TEMPLE, SG_BRAK, false, 1);
+			target_loc = game->CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, OLD_TEMPLE, SG_NONE, false, 1);
 			Location& target = GetTargetLocation();
 			bool now_known = false;
 			if(target.state == LS_UNKNOWN)
@@ -209,9 +209,9 @@ void Quest_Evil::SetProgress(int prog2)
 				SPAWN_GROUP spawn;
 				int st;
 			} l_info[3] = {
-				L_DUNGEON, OLD_TEMPLE, SG_ZLO, 15,
-				L_DUNGEON, NECROMANCER_BASE, SG_NEKRO, 14,
-				L_CRYPT, MONSTER_CRYPT, SG_NIEUMARLI, 13
+				L_DUNGEON, OLD_TEMPLE, SG_EVIL, 15,
+				L_DUNGEON, NECROMANCER_BASE, SG_NECROMANCERS, 14,
+				L_CRYPT, MONSTER_CRYPT, SG_UNDEAD, 13
 			};
 
 			msgs.push_back(game->txQuest[245]);
@@ -277,7 +277,7 @@ void Quest_Evil::SetProgress(int prog2)
 			at_level = 0;
 			Location& target = *W.locations[target_loc];
 			target.st = 15;
-			target.spawn = SG_ZLO;
+			target.spawn = SG_EVIL;
 			target.reset = true;
 			evil_state = State::KillBoss;
 			msgs.push_back(Format(game->txQuest[248], GetTargetLocationName()));
@@ -396,7 +396,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		{
 			if(loc[i].state != Loc::State::PortalClosed)
 			{
-				float dist = Vec2::Distance(W.world_pos, W.locations[loc[i].target_loc]->pos);
+				float dist = Vec2::Distance(W.GetWorldPos(), W.locations[loc[i].target_loc]->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -405,7 +405,7 @@ cstring Quest_Evil::FormatString(const string& str)
 			}
 		}
 		Loc& l = loc[best_index];
-		return GetLocationDirName(W.world_pos, W.locations[l.target_loc]->pos);
+		return GetLocationDirName(W.GetWorldPos(), W.locations[l.target_loc]->pos);
 	}
 	else if(str == "close_loc")
 	{
@@ -415,7 +415,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		{
 			if(loc[i].state != Loc::State::PortalClosed)
 			{
-				float dist = Vec2::Distance(W.world_pos, W.locations[loc[i].target_loc]->pos);
+				float dist = Vec2::Distance(W.GetWorldPos(), W.locations[loc[i].target_loc]->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;

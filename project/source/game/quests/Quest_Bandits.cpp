@@ -103,17 +103,17 @@ void Quest_Bandits::SetProgress(int prog2)
 			}
 			Location& sl = GetStartLocation();
 			Location& other = *W.locations[other_loc];
-			Encounter* e = game->AddEncounter(enc);
+			Encounter* e = W.AddEncounter(enc);
 			e->dialog = FindDialog("q_bandits");
 			e->dont_attack = true;
-			e->grupa = SG_BANDYCI;
+			e->group = SG_BANDITS;
 			e->location_event_handler = nullptr;
 			e->pos = (sl.pos + other.pos) / 2;
 			e->quest = (Quest_Encounter*)this;
-			e->szansa = 60;
+			e->chance = 60;
 			e->text = game->txQuest[11];
 			e->timed = false;
-			e->zasieg = 72;
+			e->range = 72;
 			msgs.push_back(game->txQuest[152]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -132,17 +132,17 @@ void Quest_Bandits::SetProgress(int prog2)
 			other_loc = W.GetRandomSettlementIndex(start_loc);
 			Location& sl = GetStartLocation();
 			Location& other = *W.locations[other_loc];
-			Encounter* e = game->AddEncounter(enc);
+			Encounter* e = W.AddEncounter(enc);
 			e->dialog = FindDialog("q_bandits");
 			e->dont_attack = true;
-			e->grupa = SG_BANDYCI;
+			e->group = SG_BANDITS;
 			e->location_event_handler = nullptr;
 			e->pos = (sl.pos + other.pos) / 2;
 			e->quest = (Quest_Encounter*)this;
-			e->szansa = 60;
+			e->chance = 60;
 			e->text = game->txQuest[11];
 			e->timed = false;
-			e->zasieg = 72;
+			e->range = 72;
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
@@ -181,7 +181,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[157]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->RemoveEncounter(enc);
+			W.RemoveEncounter(enc);
 			enc = -1;
 
 			if(Net::IsOnline())
@@ -193,7 +193,7 @@ void Quest_Bandits::SetProgress(int prog2)
 	case Progress::NeedTalkWithCaptain:
 		// info o obozie
 		{
-			camp_loc = game->CreateCamp(GetStartLocation().pos, SG_BANDYCI);
+			camp_loc = W.CreateCamp(GetStartLocation().pos, SG_BANDITS);
 			Location& camp = *W.locations[camp_loc];
 			camp.st = 10;
 			camp.state = LS_HIDDEN;
@@ -254,7 +254,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			bandits_state = State::AgentTalked;
 			game->current_dialog->talker->hero->mode = HeroData::Leave;
 			game->current_dialog->talker->event_handler = this;
-			target_loc = game->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, SG_BANDYCI, false);
+			target_loc = game->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, SG_BANDITS, false);
 			Location& target = *W.locations[target_loc];
 			target.active_quest = this;
 			target.state = LS_KNOWN;
@@ -422,17 +422,17 @@ bool Quest_Bandits::Load(GameReader& f)
 
 	if(enc != -1)
 	{
-		Encounter* e = game->RecreateEncounter(enc);
+		Encounter* e = W.RecreateEncounter(enc);
 		e->dialog = FindDialog("q_bandits");
 		e->dont_attack = true;
-		e->grupa = SG_BANDYCI;
+		e->group = SG_BANDITS;
 		e->location_event_handler = nullptr;
 		e->pos = (GetStartLocation().pos + W.locations[other_loc]->pos) / 2;
 		e->quest = (Quest_Encounter*)this;
-		e->szansa = 60;
+		e->chance = 60;
 		e->text = game->txQuest[11];
 		e->timed = false;
-		e->zasieg = 72;
+		e->range = 72;
 	}
 
 	if(prog == Progress::NeedTalkWithCaptain || prog == Progress::NeedClearCamp)

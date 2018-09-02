@@ -5034,13 +5034,13 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 						cstring co;
 						switch(loc.spawn)
 						{
-						case SG_ORKOWIE:
+						case SG_ORCS:
 							co = txSGOOrcs;
 							break;
-						case SG_BANDYCI:
+						case SG_BANDITS:
 							co = txSGOBandits;
 							break;
-						case SG_GOBLINY:
+						case SG_GOBLINS:
 							co = txSGOGoblins;
 							break;
 						default:
@@ -5233,10 +5233,11 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		{
 			ctx.active_locations.clear();
 
+			const Vec2& world_pos = W.GetWorldPos();
 			int index = 0;
 			for(Location* loc : W.locations)
 			{
-				if(loc && loc->type != L_CITY && loc->type != L_ACADEMY && Vec2::Distance(loc->pos, W.world_pos) <= 150.f && loc->state != LS_HIDDEN)
+				if(loc && loc->type != L_CITY && loc->type != L_ACADEMY && Vec2::Distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
 					ctx.active_locations.push_back(std::pair<int, bool>(index, loc->state == LS_UNKNOWN));
 				++index;
 			}
@@ -5274,8 +5275,8 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			if(Net::IsOnline())
 				Net_ChangeLocationState(id, false);
 		}
-		ctx.dialog_s_text = Format(txNearLoc, GetLocationDirName(W.world_pos, loc.pos), loc.name.c_str());
-		if(loc.spawn == SG_BRAK)
+		ctx.dialog_s_text = Format(txNearLoc, GetLocationDirName(W.GetWorldPos(), loc.pos), loc.name.c_str());
+		if(loc.spawn == SG_NONE)
 		{
 			if(loc.type != L_CAVE && loc.type != L_FOREST && loc.type != L_MOONWELL)
 				ctx.dialog_s_text += random_string(txNearLocEmpty);
@@ -6047,7 +6048,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 										if(result == CanLeaveLocationResult::Yes)
 										{
 											allow_exit = true;
-											SetExitWorldDir();
+											W.SetTravelDir(unit.pos);
 										}
 										else
 											AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
@@ -6061,37 +6062,21 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 					}
 					else if(L.location_index != secret_where2 && (unit.pos.x < 33.f || unit.pos.x > 256.f - 33.f || unit.pos.z < 33.f || unit.pos.z > 256.f - 33.f))
 					{
-						if(IsLeader())
+						if(!IsLeader())
+							AddGameMsg3(GMS_NOT_LEADER);
+						else if(!Net::IsLocal())
+							Net_LeaveLocation(WHERE_OUTSIDE);
+						else
 						{
-							if(Net::IsLocal())
+							auto result = CanLeaveLocation(unit);
+							if(result == CanLeaveLocationResult::Yes)
 							{
-								auto result = CanLeaveLocation(unit);
-								if(result == CanLeaveLocationResult::Yes)
-								{
-									allow_exit = true;
-									// opuszczanie otwartego terenu (las/droga/obóz)
-									if(unit.pos.x < 33.f)
-										W.travel_dir = Lerp(3.f / 4.f*PI, 5.f / 4.f*PI, 1.f - (unit.pos.z - 33.f) / (256.f - 66.f));
-									else if(unit.pos.x > 256.f - 33.f)
-									{
-										if(unit.pos.z > 128.f)
-											W.travel_dir = Lerp(0.f, 1.f / 4 * PI, (unit.pos.z - 128.f) / (256.f - 128.f - 33.f));
-										else
-											W.travel_dir = Lerp(7.f / 4 * PI, PI * 2, (unit.pos.z - 33.f) / (256.f - 128.f - 33.f));
-									}
-									else if(unit.pos.z < 33.f)
-										W.travel_dir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (unit.pos.x - 33.f) / (256.f - 66.f));
-									else
-										W.travel_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit.pos.x - 33.f) / (256.f - 66.f));
-								}
-								else
-									AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
+								allow_exit = true;
+								W.SetTravelDir(unit.pos);
 							}
 							else
-								Net_LeaveLocation(WHERE_OUTSIDE);
+								AddGameMsg3(result == CanLeaveLocationResult::TeamTooFar ? GMS_GATHER_TEAM : GMS_NOT_IN_COMBAT);
 						}
-						else
-							AddGameMsg3(GMS_NOT_LEADER);
 					}
 
 					if(allow_exit)
@@ -10284,7 +10269,7 @@ void Game::GenerateDungeonUnits()
 	SPAWN_GROUP spawn_group;
 	int base_level;
 
-	if(L.location->spawn != SG_WYZWANIE)
+	if(L.location->spawn != SG_CHALLANGE)
 	{
 		spawn_group = L.location->spawn;
 		base_level = GetDungeonLevel();
@@ -10293,11 +10278,11 @@ void Game::GenerateDungeonUnits()
 	{
 		base_level = L.location->st;
 		if(dungeon_level == 0)
-			spawn_group = SG_ORKOWIE;
+			spawn_group = SG_ORCS;
 		else if(dungeon_level == 1)
-			spawn_group = SG_MAGOWIE_I_GOLEMY;
+			spawn_group = SG_MAGES_AND_GOLEMS;
 		else
-			spawn_group = SG_ZLO;
+			spawn_group = SG_EVIL;
 	}
 
 	SpawnGroup& spawn = g_spawn_groups[spawn_group];
@@ -10739,16 +10724,7 @@ void Game::ExitToMap()
 	if(L.is_open && L.location->type == L_ENCOUNTER)
 		LeaveLocation();
 
-	if(W.state == World::State::INSIDE_ENCOUNTER)
-	{
-		W.state = World::State::TRAVEL;
-		W.current_location_index = -1;
-		W.current_location = nullptr;
-		L.location_index = -1;
-		L.location = nullptr;
-	}
-	else
-		W.state = World::State::ON_MAP;
+	W.ExitToMap();
 	SetMusic(MusicType::Travel);
 
 	if(Net::IsServer())
@@ -11088,7 +11064,7 @@ void Game::GenerateLabirynthUnits()
 	// ustal jakie jednostki mo¿na tu wygenerowaæ
 	cstring group_id;
 	int count, tries;
-	if(L.location->spawn == SG_UNK)
+	if(L.location->spawn == SG_UNKNOWN)
 	{
 		group_id = "unk";
 		count = 30;
@@ -11134,7 +11110,7 @@ void Game::GenerateLabirynthUnits()
 	}
 
 	// wrogowie w skarbcu
-	if(L.location->spawn == SG_UNK)
+	if(L.location->spawn == SG_UNKNOWN)
 	{
 		for(int i = 0; i < 3; ++i)
 			SpawnUnitInsideRoom(lvl.rooms[0], *t.entries[0].ud, Random(level / 2, level));
@@ -13052,7 +13028,7 @@ void Game::ClearGame()
 	DeleteElements(quest_items);
 
 	DeleteElements(news);
-	DeleteElements(W.encounters);
+	W.Reset();
 
 	ClearGui(true);
 }
@@ -13942,7 +13918,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 			loc->name = txHiddenPlace;
 			loc->type = L_FOREST;
 			loc->image = LI_FOREST;
-			int loc_id = AddLocation(loc);
+			int loc_id = W.AddLocation(loc);
 
 			Portal* portal = new Portal;
 			portal->at_level = 2;
@@ -14613,7 +14589,7 @@ int Game::GetDungeonLevel()
 int Game::GetDungeonLevelChest()
 {
 	int level = GetDungeonLevel();
-	if(L.location->spawn == SG_BRAK)
+	if(L.location->spawn == SG_NONE)
 	{
 		if(level > 10)
 			return 3;
@@ -15926,7 +15902,7 @@ void Game::CheckIfLocationCleared()
 		if(cleared)
 		{
 			L.location->state = LS_CLEARED;
-			if(L.location->spawn != SG_BRAK)
+			if(L.location->spawn != SG_NONE)
 			{
 				if(L.location->type == L_CAMP)
 					AddNews(Format(txNewsCampCleared, W.locations[GetNearestSettlement(L.location->pos)]->name.c_str()));
@@ -16851,7 +16827,7 @@ void Game::InitQuests()
 	// mine
 	quest_mine = new Quest_Mine;
 	quest_mine->start_loc = W.GetRandomSettlementIndex(used);
-	quest_mine->target_loc = GetClosestLocation(L_CAVE, W.locations[quest_mine->start_loc]->pos);
+	quest_mine->target_loc = W.GetClosestLocation(L_CAVE, W.locations[quest_mine->start_loc]->pos);
 	quest_mine->refid = quest_manager.quest_counter++;
 	quest_mine->Start();
 	quest_manager.unaccepted_quests.push_back(quest_mine);
@@ -18027,11 +18003,11 @@ bool Game::GenerateMine()
 			loc->from_portal = true;
 			loc->name = txAncientArmory;
 			loc->pos = Vec2(-999, -999);
-			loc->spawn = SG_GOLEMY;
+			loc->spawn = SG_GOLEMS;
 			loc->st = 14;
 			loc->type = L_DUNGEON;
 			loc->image = LI_DUNGEON;
-			int loc_id = AddLocation(loc);
+			int loc_id = W.AddLocation(loc);
 			quest_mine->sub.target_loc = quest_mine->dungeon_loc = loc_id;
 
 			// funkcjonalnoœæ portalu
@@ -18472,7 +18448,7 @@ void Game::UpdateGame2(float dt)
 				quest_evil->SetProgress(Quest_Evil::Progress::AltarEvent);
 				// spawn undead
 				InsideLocation* inside = (InsideLocation*)L.location;
-				inside->spawn = SG_NIEUMARLI;
+				inside->spawn = SG_UNDEAD;
 				uint offset = local_ctx.units->size();
 				GenerateDungeonUnits();
 				if(Net::IsOnline())
@@ -20458,13 +20434,13 @@ void Game::OnEnterLocation()
 
 					switch(L.location->spawn)
 					{
-					case SG_GOBLINY:
+					case SG_GOBLINS:
 						co = txSGOGoblins;
 						break;
-					case SG_BANDYCI:
+					case SG_BANDITS:
 						co = txSGOBandits;
 						break;
-					case SG_ORKOWIE:
+					case SG_ORCS:
 						co = txSGOOrcs;
 						break;
 					default:
@@ -20644,7 +20620,7 @@ void Game::OnEnterLevel()
 						break;
 					}
 
-					if(inside->spawn == SG_BRAK)
+					if(inside->spawn == SG_NONE)
 						s += txAiNoEnemies;
 					else
 					{
@@ -20652,33 +20628,33 @@ void Game::OnEnterLevel()
 
 						switch(inside->spawn)
 						{
-						case SG_GOBLINY:
+						case SG_GOBLINS:
 							co = txSGOGoblins;
 							break;
-						case SG_ORKOWIE:
+						case SG_ORCS:
 							co = txSGOOrcs;
 							break;
-						case SG_BANDYCI:
+						case SG_BANDITS:
 							co = txSGOBandits;
 							break;
-						case SG_NIEUMARLI:
-						case SG_NEKRO:
-						case SG_ZLO:
+						case SG_UNDEAD:
+						case SG_NECROMANCERS:
+						case SG_EVIL:
 							co = txSGOUndead;
 							break;
-						case SG_MAGOWIE:
+						case SG_MAGES:
 							co = txSGOMages;
 							break;
-						case SG_GOLEMY:
+						case SG_GOLEMS:
 							co = txSGOGolems;
 							break;
-						case SG_MAGOWIE_I_GOLEMY:
+						case SG_MAGES_AND_GOLEMS:
 							co = txSGOMagesAndGolems;
 							break;
-						case SG_UNK:
+						case SG_UNKNOWN:
 							co = txSGOUnk;
 							break;
-						case SG_WYZWANIE:
+						case SG_CHALLANGE:
 							co = txSGOPowerfull;
 							break;
 						default:
@@ -20975,7 +20951,7 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 	{
 		AddGameMsg(txSecretAppear, 3.f);
 		secret_state = SECRET_DROPPED_STONE;
-		int loc = CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, SG_WYZWANIE, false, 3);
+		int loc = CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, SG_CHALLANGE, false, 3);
 		Location& l = *W.locations[loc];
 		l.st = 18;
 		l.active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;

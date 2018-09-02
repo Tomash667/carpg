@@ -4132,47 +4132,17 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						L.is_open = false;
 					}
 
-					// start travel
-					W.state = World::State::TRAVEL;
-					W.current_location = nullptr;
-					W.current_location_index = -1;
-					L.location = nullptr;
-					L.location_index = -1;
-					W.travel_timer = 0.f;
-					W.travel_day = 0;
-					W.travel_start_pos = W.world_pos;
-					W.travel_location_index = loc;
-					Location& l = *W.locations[W.travel_location_index];
-					W.travel_dir = Angle(W.world_pos.x, -W.world_pos.y, l.pos.x, -l.pos.y);
-					W.encounter_timer = 0.f;
-
-					// send info to players
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::TRAVEL;
-					c.id = loc;
+					W.Travel(loc);
 				}
 			}
 			break;
 		// leader finished travel
 		case NetChange::END_TRAVEL:
-			if(W.state == World::State::TRAVEL)
-			{
-				W.state = World::State::ON_MAP;
-				W.current_location_index = W.travel_location_index;
-				W.current_location = W.locations[W.travel_location_index];
-				W.travel_location_index = -1;
-				L.location_index = W.current_location_index;
-				L.location = W.current_location;
-				Location& loc = *L.location;
-				if(loc.state == LS_KNOWN)
-					SetLocationVisited(loc);
-				W.world_pos = loc.pos;
-				Net::PushChange(NetChange::END_TRAVEL);
-			}
+			W.EndTravel();
 			break;
 		// enter current location
 		case NetChange::ENTER_LOCATION:
-			if(game_state == GS_WORLDMAP && W.state == World::State::ON_MAP && Team.IsLeader(info.u))
+			if(game_state == GS_WORLDMAP && W.GetState() == World::State::ON_MAP && Team.IsLeader(info.u))
 			{
 				if(EnterLocation())
 				{
@@ -4510,14 +4480,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						L.is_open = false;
 					}
 
-					W.current_location_index = location_index;
-					W.current_location = W.locations[W.current_location_index];
-					L.location_index = W.current_location_index;
-					L.location = W.current_location;
-					Location& loc = *L.location;
-					if(loc.state == LS_KNOWN)
-						SetLocationVisited(loc);
-					W.world_pos = loc.pos;
+					W.Warp(location_index);
 
 					// inform other players
 					if(players > 2)
@@ -5162,7 +5125,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			f << GetSecretNote()->desc;
 			break;
 		case NetChange::UPDATE_MAP_POS:
-			f << W.world_pos;
+			f << W.GetWorldPos();
 			break;
 		case NetChange::GAME_STATS:
 			f << GameStats::Get().total_kills;
@@ -5471,11 +5434,7 @@ void Game::UpdateClient(float dt)
 					StreamError("Update client: Broken ID_CHANGE_LEVEL.");
 				else
 				{
-					W.state = encounter ? World::State::INSIDE_ENCOUNTER : World::State::INSIDE_LOCATION;
-					W.current_location_index = loc;
-					W.current_location = W.locations[W.current_location_index];
-					L.location_index = W.current_location_index;
-					L.location = W.current_location;
+					W.ChangeLevel(loc, encounter);
 					dungeon_level = level;
 					Info("Update client: Level change to %s (%d, level %d).", L.location->name.c_str(), L.location_index, dungeon_level);
 					info_box->Show(txGeneratingLocation);
@@ -6997,36 +6956,13 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						L.is_open = false;
 					}
 
-					W.state = World::State::TRAVEL;
-					W.current_location_index = -1;
-					W.current_location = nullptr;
-					L.location_index = -1;
-					L.location = nullptr;
-					W.travel_timer = 0.f;
-					W.travel_day = 0;
-					W.travel_start_pos = W.world_pos;
-					W.travel_location_index = loc;
-					Location& l = *W.locations[W.travel_location_index];
-					W.travel_dir = Angle(W.world_pos.x, -W.world_pos.y, l.pos.x, -l.pos.y);
-					W.encounter_timer = 0.f;
+					W.Travel(loc);
 				}
 			}
 			break;
 		// leader finished travel
 		case NetChange::END_TRAVEL:
-			if(W.state == World::State::TRAVEL)
-			{
-				W.state = World::State::ON_MAP;
-				W.current_location_index = W.travel_location_index;
-				W.current_location = W.locations[W.current_location_index];
-				W.travel_location_index = -1;
-				L.location_index = W.current_location_index;
-				L.location = W.current_location;
-				Location& loc = *L.location;
-				if(loc.state == LS_KNOWN)
-					SetLocationVisited(loc);
-				W.world_pos = loc.pos;
-			}
+			W.EndTravel();
 			break;
 		// change world time
 		case NetChange::WORLD_TIME:
@@ -7246,8 +7182,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					dialog_enc = GUI.ShowDialog(info);
 					if(!IsLeader())
 						dialog_enc->bts[0].state = Button::DISABLED;
-					assert(W.state == World::State::TRAVEL);
-					W.state = World::State::ENCOUNTER;
+					assert(W.GetState() == World::State::TRAVEL);
+					W.SetState(World::State::ENCOUNTER);
 				}
 			}
 			break;
@@ -7866,7 +7802,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				if(!f)
 					StreamError("Update client: Broken UPDATE_MAP_POS.");
 				else
-					W.world_pos = pos;
+					W.SetWorldPos(pos);
 			}
 			break;
 		// player used cheat for fast travel on map
@@ -7886,14 +7822,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						L.is_open = false;
 					}
 
-					W.current_location_index = location_index;
-					W.current_location = W.locations[W.current_location_index];
-					L.location_index = W.current_location_index;
-					L.location = W.current_location;
-					Location& loc = *L.location;
-					if(loc.state == LS_KNOWN)
-						loc.state = LS_VISITED;
-					W.world_pos = loc.pos;
+					W.Warp(location_index);
 				}
 			}
 			break;
@@ -9648,43 +9577,15 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 
 	f << ID_WORLD_DATA;
 
-	// W.locations
-	f.WriteCasted<byte>(W.locations.size());
-	for(Location* loc_ptr : W.locations)
-	{
-		if(!loc_ptr)
-		{
-			f.WriteCasted<byte>(L_NULL);
-			continue;
-		}
-
-		Location& loc = *loc_ptr;
-		f.WriteCasted<byte>(loc.type);
-		if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
-			f.WriteCasted<byte>(loc.GetLastLevel() + 1);
-		else if(loc.type == L_CITY)
-		{
-			City& city = (City&)loc;
-			f.WriteCasted<byte>(city.citizens);
-			f.WriteCasted<word>(city.citizens_world);
-			f.WriteCasted<byte>(city.settlement_type);
-		}
-		f.WriteCasted<byte>(loc.state);
-		f << loc.pos;
-		f << loc.name;
-		f.WriteCasted<byte>(loc.image);
-	}
-	f.WriteCasted<byte>(L.location_index);
+	// world
+	W.Write(f);
 
 	// quests
 	QuestManager::Get().Write(f);
 
 	// rumors
 	f.WriteStringArray<byte, word>(game_gui->journal->GetRumors());
-
-	// time
-	W.WriteTime(f);
-
+	
 	// stats
 	GameStats::Get().Write(f);
 
@@ -9709,151 +9610,18 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 	// secret note text
 	f << GetSecretNote()->desc;
 
-	// position on world map when inside encounter location
-	if(W.state == World::State::INSIDE_ENCOUNTER)
-	{
-		f << true;
-		f << W.travel_location_index;
-		f << W.travel_day;
-		f << W.travel_timer;
-		f << W.travel_start_pos;
-		f << W.world_pos;
-	}
-	else
-		f << false;
-
 	f.WriteCasted<byte>(0xFF);
 }
 
 //=================================================================================================
 bool Game::ReadWorldData(BitStreamReader& f)
 {
-	// count of locations
-	byte count;
-	f >> count;
-	if(!f.Ensure(count))
+	// world
+	if(!W.Read(f))
 	{
-		Error("Read world: Broken packet.");
+		Error("Read world: Broken packet for world data.");
 		return false;
 	}
-
-	// locations
-	W.locations.resize(count);
-	uint index = 0;
-	for(Location*& loc : W.locations)
-	{
-		LOCATION type;
-		f.ReadCasted<byte>(type);
-		if(!f)
-		{
-			Error("Read world: Broken packet for location %u.", index);
-			return false;
-		}
-
-		if(type == L_NULL)
-		{
-			loc = nullptr;
-			++index;
-			continue;
-		}
-
-		switch(type)
-		{
-		case L_DUNGEON:
-		case L_CRYPT:
-			{
-				byte levels;
-				f >> levels;
-				if(!f)
-				{
-					Error("Read world: Broken packet for dungeon location %u.", index);
-					return false;
-				}
-				else if(levels == 0)
-				{
-					Error("Read world: Location %d with 0 levels.", index);
-					return false;
-				}
-
-				if(levels == 1)
-					loc = new SingleInsideLocation;
-				else
-					loc = new MultiInsideLocation(levels);
-			}
-			break;
-		case L_CAVE:
-			loc = new CaveLocation;
-			break;
-		case L_FOREST:
-		case L_ENCOUNTER:
-		case L_CAMP:
-		case L_MOONWELL:
-		case L_ACADEMY:
-			loc = new OutsideLocation;
-			break;
-		case L_CITY:
-			{
-				byte citizens;
-				word world_citizens;
-				byte type;
-				f >> citizens;
-				f >> world_citizens;
-				f >> type;
-				if(!f)
-				{
-					Error("Read world: Broken packet for city location %u.", index);
-					return false;
-				}
-
-				City* city = new City;
-				loc = city;
-				city->citizens = citizens;
-				city->citizens_world = world_citizens;
-				city->settlement_type = (City::SettlementType)type;
-			}
-			break;
-		default:
-			Error("Read world: Unknown location type %d for location %u.", type, index);
-			return false;
-		}
-
-		// location data
-		f.ReadCasted<byte>(loc->state);
-		f >> loc->pos;
-		f >> loc->name;
-		f.ReadCasted<byte>(loc->image);
-		if(!f)
-		{
-			Error("Read world: Broken packet(2) for location %u.", index);
-			return false;
-		}
-		loc->type = type;
-		if(loc->state > LS_CLEARED)
-		{
-			Error("Read world: Invalid state %d for location %u.", loc->state, index);
-			return false;
-		}
-
-		++index;
-	}
-
-	// current location
-	f.ReadCasted<byte>(L.location_index);
-	if(!f)
-	{
-		Error("Read world: Broken packet for current location.");
-		return false;
-	}
-	if(L.location_index >= (int)W.locations.size() || !W.locations[L.location_index])
-	{
-		Error("Read world: Invalid location %d.", L.location_index);
-		return false;
-	}
-	W.current_location_index = L.location_index;
-	W.current_location = W.locations[W.current_location_index];
-	W.world_pos = W.current_location->pos;
-	L.location = W.current_location;
-	L.location->state = LS_VISITED;
 
 	// quests
 	if(!QuestManager::Get().Read(f))
@@ -9867,12 +9635,11 @@ bool Game::ReadWorldData(BitStreamReader& f)
 		return false;
 	}
 
-	// time
+	// game stats
 	W.ReadTime(f);
-	GameStats::Get().Read(f);
 	if(!f)
 	{
-		Error("Read world: Broken packet for time.");
+		Error("Read world: Broken packet for game stats.");
 		return false;
 	}
 
@@ -9926,29 +9693,6 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	{
 		Error("Read world: Broken packet for secret note text.");
 		return false;
-	}
-
-	// position on world map when inside encounter locations
-	bool inside_encounter;
-	f >> inside_encounter;
-	if(!f)
-	{
-		Error("Read world: Broken packet for in travel data.");
-		return false;
-	}
-	if(inside_encounter)
-	{
-		W.state = World::State::INSIDE_ENCOUNTER;
-		f >> W.travel_location_index;
-		f >> W.travel_day;
-		f >> W.travel_timer;
-		f >> W.travel_start_pos;
-		f >> W.world_pos;
-		if(!f)
-		{
-			Error("Read world: Broken packet for in travel data (2).");
-			return false;
-		}
 	}
 
 	// checksum

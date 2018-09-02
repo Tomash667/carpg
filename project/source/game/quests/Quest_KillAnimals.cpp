@@ -50,7 +50,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			Location& sl = *W.locations[start_loc];
 
 			// event
-			target_loc = game->GetClosestLocation(Rand() % 2 == 0 ? L_FOREST : L_CAVE, sl.pos);
+			target_loc = W.GetClosestLocation(Rand() % 2 == 0 ? L_FOREST : L_CAVE, sl.pos);
 			location_event_handler = this;
 
 			Location& tl = *W.locations[target_loc];

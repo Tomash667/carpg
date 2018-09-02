@@ -45,7 +45,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 	case Progress::Started:
 		// received quest from mayor
 		{
-			target_loc = game->GetRandomSpawnLocation((W.locations[start_loc]->pos + W.locations[from_loc]->pos) / 2, SG_BANDYCI);
+			target_loc = game->GetRandomSpawnLocation((W.locations[start_loc]->pos + W.locations[from_loc]->pos) / 2, SG_BANDITS);
 
 			Location& loc = *W.locations[start_loc];
 			Location& loc2 = *W.locations[target_loc];
@@ -66,7 +66,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			parcel.id = "$stolen_parcel";
 			parcel.name = Format(game->txQuest[8], who, loc.name.c_str());
 			parcel.refid = refid;
-			unit_to_spawn = g_spawn_groups[SG_BANDYCI].GetSpawnLeader();
+			unit_to_spawn = g_spawn_groups[SG_BANDITS].GetSpawnLeader();
 			unit_spawn_level = -3;
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
 			item_to_give[0] = &parcel;
@@ -188,7 +188,7 @@ bool Quest_RetrievePackage::OnTimeout(TimeoutType ttype)
 	if(done)
 	{
 		int at_lvl = at_level;
-		Unit* u = W.locations[target_loc]->FindUnit(g_spawn_groups[SG_BANDYCI].GetSpawnLeader(), at_lvl);
+		Unit* u = W.locations[target_loc]->FindUnit(g_spawn_groups[SG_BANDITS].GetSpawnLeader(), at_lvl);
 		if(u && u->IsAlive())
 			u->RemoveQuestItem(refid);
 	}
@@ -241,7 +241,7 @@ bool Quest_RetrievePackage::Load(GameReader& f)
 			game->Net_RegisterItem(&parcel, base_item);
 
 		item_to_give[0] = &parcel;
-		unit_to_spawn = g_spawn_groups[SG_BANDYCI].GetSpawnLeader();
+		unit_to_spawn = g_spawn_groups[SG_BANDITS].GetSpawnLeader();
 		unit_spawn_level = -3;
 		spawn_item = Quest_Dungeon::Item_GiveSpawned;
 	}

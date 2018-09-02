@@ -73,13 +73,13 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 
 			if(Rand() % 4 != 0)
 			{
-				Encounter* e = game->AddEncounter(enc);
+				Encounter* e = W.AddEncounter(enc);
 				e->pos = (loc.pos + loc2.pos) / 2;
-				e->zasieg = 64;
-				e->szansa = 45;
+				e->range = 64;
+				e->chance = 45;
 				e->dont_attack = true;
 				e->dialog = FindDialog("q_deliver_parcel_bandits");
-				e->grupa = SG_BANDYCI;
+				e->group = SG_BANDITS;
 				e->text = game->txQuest[11];
 				e->quest = this;
 				e->timed = true;
@@ -302,13 +302,13 @@ bool Quest_DeliverParcel::Load(GameReader& f)
 	{
 		Location& loc = *W.locations[end_loc];
 		Location& loc2 = *W.locations[start_loc];
-		Encounter* e = game->RecreateEncounter(enc);
+		Encounter* e = W.RecreateEncounter(enc);
 		e->pos = (loc.pos + loc2.pos) / 2;
-		e->zasieg = 64;
-		e->szansa = 45;
+		e->range = 64;
+		e->chance = 45;
 		e->dont_attack = true;
 		e->dialog = FindDialog("q_deliver_parcel_bandits");
-		e->grupa = SG_BANDYCI;
+		e->group = SG_BANDITS;
 		e->text = game->txQuest[11];
 		e->quest = this;
 		e->timed = true;

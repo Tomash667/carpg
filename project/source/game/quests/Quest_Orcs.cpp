@@ -74,7 +74,7 @@ void Quest_Orcs::SetProgress(int prog2)
 				u = nullptr;
 			}
 			// generate location
-			target_loc = game->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, HUMAN_FORT, SG_ORKOWIE, false);
+			target_loc = game->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, HUMAN_FORT, SG_ORCS, false);
 			Location& tl = GetTargetLocation();
 			tl.state = LS_KNOWN;
 			tl.st = 10;
@@ -87,7 +87,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			item_to_give[0] = Item::Get("q_orkowie_klucz");
 			spawn_item = Quest_Event::Item_GiveSpawned2;
 			unit_to_spawn = UnitData::Get("q_orkowie_gorush");
-			unit_to_spawn2 = g_spawn_groups[SG_ORKOWIE].GetSpawnLeader();
+			unit_to_spawn2 = g_spawn_groups[SG_ORCS].GetSpawnLeader();
 			unit_spawn_level2 = -3;
 			spawn_unit_room = RoomTarget::Prison;
 			game->quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
@@ -221,7 +221,7 @@ bool Quest_Orcs::Load(GameReader& f)
 		item_to_give[0] = Item::Get("q_orkowie_klucz");
 		spawn_item = Quest_Event::Item_GiveSpawned2;
 		unit_to_spawn = UnitData::Get("q_orkowie_gorush");
-		unit_to_spawn2 = g_spawn_groups[SG_ORKOWIE].GetSpawnLeader();
+		unit_to_spawn2 = g_spawn_groups[SG_ORCS].GetSpawnLeader();
 		unit_spawn_level2 = -3;
 		spawn_unit_room = RoomTarget::Prison;
 	}
@@ -337,7 +337,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedAboutCamp:
 		// powiedzia³ o obozie
 		{
-			target_loc = game->CreateCamp(W.world_pos, SG_ORKOWIE, 256.f, false);
+			target_loc = W.CreateCamp(W.GetWorldPos(), SG_ORCS, 256.f, false);
 			Location& target = GetTargetLocation();
 			target.state = LS_HIDDEN;
 			target.st = 13;
@@ -448,7 +448,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedAboutBase:
 		// pogada³ o bazie
 		{
-			target_loc = game->CreateLocation(L_DUNGEON, W.world_pos, 256.f, THRONE_FORT, SG_ORKOWIE, false);
+			target_loc = game->CreateLocation(L_DUNGEON, W.GetWorldPos(), 256.f, THRONE_FORT, SG_ORCS, false);
 			Location& target = GetTargetLocation();
 			done = false;
 			target.st = 15;
@@ -611,7 +611,7 @@ cstring Quest_Orcs2::FormatString(const string& str)
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")
-		return GetLocationDirName(W.world_pos, GetTargetLocation().pos);
+		return GetLocationDirName(W.GetWorldPos(), GetTargetLocation().pos);
 	else
 	{
 		assert(0);

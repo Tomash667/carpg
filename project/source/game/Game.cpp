@@ -2066,9 +2066,6 @@ void Game::SetGameText()
 	LOAD_ARRAY(txAiDrunkText, "aiDrunkText");
 	LOAD_ARRAY(txAiDrunkmanText, "aiDrunkmanText");
 
-	// nazwy lokacji
-	txCamp = Str("camp");
-
 	// mapa
 	txEnteringLocation = Str("enteringLocation");
 	txGeneratingMap = Str("generatingMap");
@@ -3180,7 +3177,7 @@ void Game::PauseGame()
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::PAUSED;
 		c.id = (paused ? 1 : 0);
-		if(paused && game_state == GS_WORLDMAP && W.state == World::State::TRAVEL)
+		if(paused && game_state == GS_WORLDMAP && W.GetState() == World::State::TRAVEL)
 			Net::PushChange(NetChange::UPDATE_MAP_POS);
 	}
 }

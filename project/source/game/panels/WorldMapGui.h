@@ -20,7 +20,7 @@ public:
 	{
 		return Int2(pt.x, 600 - pt.y);
 	}
-	Vec2 WorldPosToScreen(Vec2& pt) const
+	Vec2 WorldPosToScreen(const Vec2& pt) const
 	{
 		return Vec2(pt.x, 600.f - pt.y);
 	}

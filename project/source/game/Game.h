@@ -526,7 +526,6 @@ public:
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],
 		txAiHeroOutsideText[2], txAiDrunkMageText[3], txAiDrunkText[5], txAiDrunkmanText[4];
-	cstring txCamp;
 	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics, txRecreatingObjects, txGeneratingMinimap,
 		txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txContestNoWinner, txContestStart, txContestTalk[14], txContestWin, txContestWinNews, txContestDraw, txContestPrize, txContestNoPeople;
@@ -1146,7 +1145,6 @@ public:
 	void AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_weapon);
 	void OpenDoorsByTeam(const Int2& pt);
 	void ExitToMap();
-	void SetExitWorldDir();
 	void RespawnObjectColliders(bool spawn_pes = true);
 	void RespawnObjectColliders(LevelContext& ctx, bool spawn_pes = true);
 	void SetRoomPointers();
@@ -1865,7 +1863,6 @@ public:
 	void SpawnForestItems(int count_mod);
 	void CreateForestMinimap();
 	void SpawnOutsideBariers();
-	void GetOutsideSpawnPoint(Vec3& pos, float& dir);
 	void SpawnForestUnits(const Vec3& team_pos);
 	void RepositionCityUnits();
 	void Event_RandomEncounter(int id);
@@ -1874,10 +1871,6 @@ public:
 	void SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
 	void SpawnEncounterObjects();
 	void SpawnEncounterTeam();
-	Encounter* AddEncounter(int& id);
-	void RemoveEncounter(int id);
-	Encounter* GetEncounter(int id);
-	Encounter* RecreateEncounter(int id);
 	int GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range = 160.f);
 	void DoWorldProgress(int days);
 	void UpdateLocation(LevelContext& ctx, int days, int open_chance, bool reset);
@@ -1889,17 +1882,12 @@ public:
 		float scale = 1.f);
 	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range = 2.f, float margin = 0.3f,
 		float scale = 1.f);
-	int GetClosestLocation(LOCATION type, const Vec2& pos, int target = -1);
-	int GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target);
-	int CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range = 64.f, bool allow_exact = true);
 	void SpawnTmpUnits(City* city);
 	void RemoveTmpUnits(City* city);
 	void RemoveTmpUnits(LevelContext& ctx);
-	int AddLocation(Location* loc);
 	// tworzy lokacjê (jeœli range<0 to pozycja jest dowolna a range=-range, level=-1 - losowy poziom, =0 - minimalny, =9 maksymalny, =liczba - okreœlony)
-	int CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_LOSOWO, bool allow_exact = true,
+	int CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_RANDOM, bool allow_exact = true,
 		int levels = -1);
-	bool FindPlaceForLocation(Vec2& pos, float range = 64.f, bool allow_exact = true);
 	int FindLocationId(Location* loc);
 	void Event_StartEncounter(int id);
 	void GenerateMoonwell(Location& loc);
@@ -1926,7 +1914,6 @@ public:
 	void PrepareCityBuildings(City& city, vector<ToBuild>& tobuild);
 	void GetCityEntry(Vec3& pos, float& rot);
 	void AbadonLocation(Location* loc);
-	void SetLocationVisited(Location& loc);
 
 	int enc_kierunek; // kierunek z której strony nadesz³a dru¿yna w czasie spotkania [tymczasowe]
 	int spotkanie; // rodzaj losowego spotkania [tymczasowe]

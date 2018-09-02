@@ -19,20 +19,20 @@ void Quest_StolenArtifact::Start()
 	switch(Rand() % 6)
 	{
 	case 0:
-		group = SG_BANDYCI;
+		group = SG_BANDITS;
 		break;
 	case 1:
-		group = SG_ORKOWIE;
+		group = SG_ORCS;
 		break;
 	case 2:
-		group = SG_GOBLINY;
+		group = SG_GOBLINS;
 		break;
 	case 3:
 	case 4:
-		group = SG_MAGOWIE;
+		group = SG_MAGES;
 		break;
 	case 5:
-		group = SG_ZLO;
+		group = SG_EVIL;
 		break;
 	}
 }
@@ -89,19 +89,19 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			cstring kto;
 			switch(group)
 			{
-			case SG_BANDYCI:
+			case SG_BANDITS:
 				kto = game->txQuest[87];
 				break;
-			case SG_GOBLINY:
+			case SG_GOBLINS:
 				kto = game->txQuest[88];
 				break;
-			case SG_ORKOWIE:
+			case SG_ORCS:
 				kto = game->txQuest[89];
 				break;
-			case SG_MAGOWIE:
+			case SG_MAGES:
 				kto = game->txQuest[90];
 				break;
-			case SG_ZLO:
+			case SG_EVIL:
 				kto = game->txQuest[91];
 				break;
 			default:
@@ -192,15 +192,15 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 	{
 		switch(group)
 		{
-		case SG_BANDYCI:
+		case SG_BANDITS:
 			return game->txQuest[96];
-		case SG_ORKOWIE:
+		case SG_ORCS:
 			return game->txQuest[97];
-		case SG_GOBLINY:
+		case SG_GOBLINS:
 			return game->txQuest[98];
-		case SG_MAGOWIE:
+		case SG_MAGES:
 			return game->txQuest[99];
-		case SG_ZLO:
+		case SG_EVIL:
 			return game->txQuest[100];
 		default:
 			assert(0);
@@ -211,15 +211,15 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 	{
 		switch(group)
 		{
-		case SG_BANDYCI:
+		case SG_BANDITS:
 			return game->txQuest[101];
-		case SG_ORKOWIE:
+		case SG_ORCS:
 			return game->txQuest[102];
-		case SG_GOBLINY:
+		case SG_GOBLINS:
 			return game->txQuest[103];
-		case SG_MAGOWIE:
+		case SG_MAGES:
 			return game->txQuest[104];
-		case SG_ZLO:
+		case SG_EVIL:
 			return game->txQuest[105];
 		default:
 			assert(0);
