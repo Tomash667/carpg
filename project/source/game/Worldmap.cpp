@@ -3518,63 +3518,6 @@ void Game::SpawnEncounterTeam()
 	AddPlayerTeam(pos, dir, false, true);
 }
 
-// znajduje poblisk¹ lokacje wktórej s¹ tacy wrogowie
-// jeœli jest pusta oczyszczona to siê tam pojawiaj¹
-// jeœli nie ma to zak³ada obóz
-int Game::GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range)
-{
-	int best_ok = -1, best_empty = -1, index = W.settlements;
-	float ok_range, empty_range, dist;
-
-	for(vector<Location*>::iterator it = W.locations.begin() + W.settlements, end = W.locations.end(); it != end; ++it, ++index)
-	{
-		if(!*it)
-			continue;
-		if(!(*it)->active_quest && ((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT))
-		{
-			InsideLocation* inside = (InsideLocation*)*it;
-			if((*it)->state == LS_CLEARED || inside->spawn == group || inside->spawn == SG_NONE)
-			{
-				dist = Vec2::Distance(pos, (*it)->pos);
-				if(dist <= range)
-				{
-					if(inside->spawn == group)
-					{
-						if(best_ok == -1 || dist < ok_range)
-						{
-							best_ok = index;
-							ok_range = dist;
-						}
-					}
-					else
-					{
-						if(best_empty == -1 || dist < empty_range)
-						{
-							best_empty = index;
-							empty_range = dist;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	if(best_ok != -1)
-	{
-		W.locations[best_ok]->reset = true;
-		return best_ok;
-	}
-
-	if(best_empty != -1)
-	{
-		W.locations[best_empty]->spawn = group;
-		W.locations[best_empty]->reset = true;
-		return best_empty;
-	}
-
-	return W.CreateCamp(pos, group, range / 2);
-}
-
 // po 30 dniach od odwiedzin oznacza lokacje do zresetowania
 void Game::DoWorldProgress(int days)
 {

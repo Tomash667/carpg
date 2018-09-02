@@ -80,6 +80,7 @@ enum LOCATION_STATE
 // struktura opisuj¹ca lokacje na mapie œwiata
 struct Location : public ILevel
 {
+	int index;
 	LOCATION type; // typ lokacji
 	LOCATION_STATE state; // stan lokacji
 	Vec2 pos; // pozycja na mapie œwiata

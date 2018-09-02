@@ -1210,12 +1210,13 @@ void Game::UpdateClientTransfer(float dt)
 				reader >> encounter;
 				if(reader.IsOk())
 				{
-					if(W.ChangeLevel(loc, encounter))
+					if(W.VerifyLocation(loc))
 					{
 						if(game_state == GS_LOAD)
 							LoadingStep("");
 						else
 							LoadingStart(4);
+						W.ChangeLevel(loc, encounter);
 						dungeon_level = level;
 						Info("NM_TRANSFER: Level change to %s (id:%d, level:%d).", L.location->name.c_str(), L.location_index, dungeon_level);
 						info_box->Show(txGeneratingLocation);

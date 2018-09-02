@@ -45,7 +45,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 	case Progress::Started:
 		// received quest from mayor
 		{
-			target_loc = game->GetRandomSpawnLocation((W.locations[start_loc]->pos + W.locations[from_loc]->pos) / 2, SG_BANDITS);
+			target_loc = W.GetRandomSpawnLocation((W.locations[start_loc]->pos + W.locations[from_loc]->pos) / 2, SG_BANDITS);
 
 			Location& loc = *W.locations[start_loc];
 			Location& loc2 = *W.locations[target_loc];

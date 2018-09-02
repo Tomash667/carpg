@@ -128,7 +128,7 @@ void Quest_Evil::SetProgress(int prog2)
 		// powiedzia³ o ksiêdze
 		{
 			mage_loc = W.GetRandomSettlementIndex(start_loc);
-			Location& mage = *W.locations[mage_loc];
+			Location& mage = *W.GetLocation(mage_loc);
 			msgs.push_back(Format(game->txQuest[238], mage.name.c_str(), GetLocationDirName(GetStartLocation().pos, mage.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -144,7 +144,7 @@ void Quest_Evil::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[239]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(Format(game->txQuest[240], W.locations[mage_loc]->name.c_str()));
+			game->AddNews(Format(game->txQuest[240], W.GetLocation(mage_loc)->name.c_str()));
 			game->current_dialog->talker->temporary = true;
 
 			if(Net::IsOnline())
@@ -223,18 +223,18 @@ void Quest_Evil::SetProgress(int prog2)
 				Int2 levels = g_base_locations[l_info[i].target].levels;
 				loc[i].target_loc = game->CreateLocation(l_info[i].type, Vec2(0, 0), -128.f, l_info[i].target, l_info[i].spawn, true,
 					Random(max(levels.x, 2), max(levels.y, 2)));
-				Location& target = *W.locations[loc[i].target_loc];
+				Location& target = *W.GetLocation(loc[i].target_loc);
 				target.st = l_info[i].st;
 				target.state = LS_KNOWN;
 				target.active_quest = this;
 				loc[i].near_loc = game->GetNearestSettlement(target.pos);
 				loc[i].at_level = target.GetLastLevel();
 				loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
-				msgs.push_back(Format(game->txQuest[247], W.locations[loc[i].target_loc]->name.c_str(),
-					GetLocationDirName(W.locations[loc[i].near_loc]->pos, W.locations[loc[i].target_loc]->pos),
-					W.locations[loc[i].near_loc]->name.c_str()));
+				msgs.push_back(Format(game->txQuest[247], W.GetLocation(loc[i].target_loc)->name.c_str(),
+					GetLocationDirName(W.GetLocation(loc[i].near_loc)->pos, W.GetLocation(loc[i].target_loc)->pos),
+					GetLocation(loc[i].near_loc)->name.c_str()));
 				game->AddNews(Format(game->txQuest[246],
-					W.locations[loc[i].target_loc]->name.c_str()));
+					GetLocation(loc[i].target_loc)->name.c_str()));
 			}
 
 			next_event = &loc[0];
@@ -275,7 +275,7 @@ void Quest_Evil::SetProgress(int prog2)
 			unit_auto_talk = true;
 			callback = VoidDelegate(this, &Quest_Evil::WarpEvilBossToAltar);
 			at_level = 0;
-			Location& target = *W.locations[target_loc];
+			Location& target = GetTargetLocation();
 			target.st = 15;
 			target.spawn = SG_EVIL;
 			target.reset = true;

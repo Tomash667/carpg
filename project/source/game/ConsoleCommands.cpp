@@ -388,7 +388,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_REVEAL:
 					if(Net::IsLocal())
-						Cheat_Reveal();
+						W.Reveal();
 					else
 						Net::PushChange(NetChange::CHEAT_REVEAL);
 					break;

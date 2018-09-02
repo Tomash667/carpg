@@ -51,7 +51,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 	case Progress::Started:
 		// received quest
 		{
-			target_loc = game->GetRandomSpawnLocation(W.locations[start_loc]->pos, group);
+			target_loc = W.GetRandomSpawnLocation(W.locations[start_loc]->pos, group);
 
 			Location& loc = *W.locations[start_loc];
 			Location& loc2 = *W.locations[target_loc];

@@ -1352,7 +1352,6 @@ public:
 	LevelContext& GetContextFromInBuilding(int in_building);
 	bool Cheat_KillAll(int typ, Unit& unit, Unit* ignore);
 	void Event_Pvp(int id);
-	void Cheat_Reveal();
 	void Cheat_ShowMinimap();
 	void StartPvp(PlayerController* player, Unit* unit);
 	void UpdateGameNet(float dt);
@@ -1871,7 +1870,6 @@ public:
 	void SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
 	void SpawnEncounterObjects();
 	void SpawnEncounterTeam();
-	int GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range = 160.f);
 	void DoWorldProgress(int days);
 	void UpdateLocation(LevelContext& ctx, int days, int open_chance, bool reset);
 	void UpdateLocation(int days, int open_chance, bool reset);

@@ -75,7 +75,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			unit_spawn_level = -3;
 
 			Location& sl = *W.locations[start_loc];
-			target_loc = game->GetRandomSpawnLocation(sl.pos, group);
+			target_loc = W.GetRandomSpawnLocation(sl.pos, group);
 			Location& tl = *W.locations[target_loc];
 			at_level = tl.GetRandomLevel();
 			tl.active_quest = this;

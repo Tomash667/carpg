@@ -3710,7 +3710,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// player used cheat 'reveal'
 		case NetChange::CHEAT_REVEAL:
 			if(info.devmode)
-				Cheat_Reveal();
+				W.Reveal();
 			else
 				StreamError("Update server: Player %s used CHEAT_REVEAL without devmode.", info.name.c_str());
 			break;
@@ -4470,7 +4470,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: Player %s used CHEAT_TRAVEL without devmode.", info.name.c_str());
 				else if(!Team.IsLeader(unit))
 					StreamError("Update server: CHEAT_TRAVEL from %s, player is not leader.", info.name.c_str());
-				else if(location_index >= W.locations.size() || !W.locations[location_index])
+				else if(!W.VerifyLocation(location_index))
 					StreamError("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index);
 				else
 				{
@@ -5054,7 +5054,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::ADD_LOCATION:
 			{
-				Location& loc = *W.locations[c.id];
+				Location& loc = *W.GetLocation(c.id);
 				f.WriteCasted<byte>(c.id);
 				f.WriteCasted<byte>(loc.type);
 				if(loc.type == L_DUNGEON || loc.type == L_CRYPT)
@@ -6280,20 +6280,15 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> state;
 				if(!f)
 					StreamError("Update client: Broken CHANGE_LOCATION_STATE.");
+				else if(!W.VerifyLocation(location_index))
+					StreamError("Update client: CHANGE_LOCATION_STATE, invalid location %u.", location_index);
 				else
 				{
-					Location* loc = nullptr;
-					if(location_index < W.locations.size())
-						loc = W.locations[location_index];
-					if(!loc)
-						StreamError("Update client: CHANGE_LOCATION_STATE, missing location %u.", location_index);
-					else
-					{
-						if(state == 0)
-							loc->state = LS_KNOWN;
-						else if(state == 1)
-							loc->state = LS_VISITED;
-					}
+					Location* loc = W.GetLocation(location_index);
+					if(state == 0)
+						loc->state = LS_KNOWN;
+					else if(state == 1)
+						loc->state = LS_VISITED;
 				}
 			}
 			break;
@@ -7269,6 +7264,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 					loc = new OutsideLocation;
 				loc->type = type;
+				loc->index = location_index;
 
 				f.ReadCasted<byte>(loc->state);
 				f >> loc->pos;
@@ -7281,9 +7277,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				if(location_index >= W.locations.size())
-					W.locations.resize(location_index + 1, nullptr);
-				W.locations[location_index] = loc;
+				W.AddLocationAtIndex(loc);
 			}
 			break;
 		// remove camp
@@ -7293,16 +7287,10 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> camp_index;
 				if(!f)
 					StreamError("Update client: Broken REMOVE_CAMP.");
-				else if(camp_index >= W.locations.size() || !W.locations[camp_index] || W.locations[camp_index]->type != L_CAMP)
+				else if(!W.VerifyLocation(camp_index) || W.GetLocation(camp_index)->type != L_CAMP)
 					StreamError("Update client: REMOVE_CAMP, invalid location %u.", camp_index);
 				else
-				{
-					delete W.locations[camp_index];
-					if(camp_index == W.locations.size() - 1)
-						W.locations.pop_back();
-					else
-						W.locations[camp_index] = nullptr;
-				}
+					W.RemoveLocation(camp_index);
 			}
 			break;
 		// change unit ai mode
@@ -7812,7 +7800,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				f >> location_index;
 				if(!f)
 					StreamError("Update client: Broken CHEAT_TRAVEL.");
-				else if(location_index >= W.locations.size() || !W.locations[location_index])
+				else if(W.VerifyLocation(location_index))
 					StreamError("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index);
 				else
 				{

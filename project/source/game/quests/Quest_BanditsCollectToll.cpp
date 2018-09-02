@@ -51,8 +51,8 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			state = Quest::Started;
 			name = game->txQuest[51];
 
-			Location& sl = *W.locations[start_loc];
-			Location& ol = *W.locations[other_loc];
+			Location& sl = GetStartLocation();
+			Location& ol = *W.GetLocation(other_loc);
 
 			Encounter* e = W.AddEncounter(enc);
 			e->dialog = FindDialog("q_bandits_collect_toll_talk");
@@ -84,7 +84,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 		{
 			state = Quest::Failed;
 			RemoveEncounter();
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::Failed;
+			((City&)GetStartLocation())->quest_captain = CityQuestState::Failed;
 			msgs.push_back(game->txQuest[54]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -113,7 +113,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddReward(400);
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::None;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			game->AddNews(game->txQuest[278]);
 
 			if(Net::IsOnline())
@@ -127,11 +127,11 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 cstring Quest_BanditsCollectToll::FormatString(const string& str)
 {
 	if(str == "start_loc")
-		return W.locations[start_loc]->name.c_str();
+		return GetStartLocationName();
 	else if(str == "other_loc")
-		return W.locations[other_loc]->name.c_str();
+		return W.GetLocation(other_loc)->name.c_str();
 	else if(str == "other_dir")
-		return GetLocationDirName(W.locations[start_loc]->pos, W.locations[other_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, W.GetLocation(other_loc)->pos);
 	else
 	{
 		assert(0);
@@ -199,8 +199,8 @@ bool Quest_BanditsCollectToll::Load(GameReader& f)
 
 	if(enc != -1)
 	{
-		Location& sl = *W.locations[start_loc];
-		Location& ol = *W.locations[other_loc];
+		Location& sl = GetStartLocation();
+		Location& ol = *W.GetLocation(other_loc);
 
 		Encounter* e = W.RecreateEncounter(enc);
 		e->dialog = FindDialog("q_bandits_collect_toll_talk");

@@ -22,7 +22,7 @@ LevelAreaContext* Game::ForLevel(int loc, int level)
 	lac->entries.clear();
 
 	bool active = (W.current_location_index == loc);
-	Location* l = W.locations[loc];
+	Location* l = W.GetLocation(loc);
 	assert(l->state >= LS_ENTERED);
 
 	switch(l->type)

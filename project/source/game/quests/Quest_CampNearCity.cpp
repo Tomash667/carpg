@@ -56,7 +56,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 	case Progress::Started:
 		// player accepted quest
 		{
-			Location& sl = *W.locations[start_loc];
+			Location& sl = GetStartLocation();
 			bool is_city = LocationHelper::IsCity(sl);
 
 			start_time = W.GetWorldtime();
@@ -70,7 +70,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			target_loc = W.CreateCamp(sl.pos, group);
 			location_event_handler = this;
 
-			Location& tl = *W.locations[target_loc];
+			Location& tl = GetTargetLocation();
 			tl.active_quest = this;
 			bool now_known = false;
 			if(tl.state == LS_UNKNOWN)
@@ -118,7 +118,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 		{
 			if(target_loc != -1)
 			{
-				Location& loc = *W.locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -135,7 +135,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 		// player talked with captain, end of quest
 		{
 			state = Quest::Completed;
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::None;
+			((City&)GetStartLocation())->quest_captain = CityQuestState::None;
 			game->AddReward(2500);
 			msgs.push_back(game->txQuest[66]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -149,14 +149,14 @@ void Quest_CampNearCity::SetProgress(int prog2)
 		// player failed to clear camp on time
 		{
 			state = Quest::Failed;
-			City* city = (City*)W.locations[start_loc];
+			City& city = (City&)GetStartLocation();
 			city->quest_captain = CityQuestState::Failed;
 			msgs.push_back(Format(game->txQuest[67], LocationHelper::IsCity(city) ? game->txQuest[63] : game->txQuest[64]));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			if(target_loc != -1)
 			{
-				Location& loc = *W.locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -189,20 +189,20 @@ cstring Quest_CampNearCity::FormatString(const string& str)
 	}
 	else if(str == "naszego_miasta")
 	{
-		if(LocationHelper::IsCity(W.locations[start_loc]))
+		if(LocationHelper::IsCity(GetStartLocation()))
 			return game->txQuest[72];
 		else
 			return game->txQuest[73];
 	}
 	else if(str == "miasto")
 	{
-		if(LocationHelper::IsCity(W.locations[start_loc]))
+		if(LocationHelper::IsCity(GetStartLocation()))
 			return game->txQuest[63];
 		else
 			return game->txQuest[64];
 	}
 	else if(str == "dir")
-		return GetLocationDirName(W.locations[start_loc]->pos, W.locations[target_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
 	else if(str == "bandyci_zaatakowali")
 	{
 		switch(group)
@@ -241,7 +241,7 @@ bool Quest_CampNearCity::OnTimeout(TimeoutType ttype)
 		game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 		if(ttype == TIMEOUT_CAMP)
-			game->AbadonLocation(W.locations[target_loc]);
+			game->AbadonLocation(&GetTargetLocation());
 	}
 
 	return true;

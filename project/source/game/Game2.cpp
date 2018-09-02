@@ -1597,16 +1597,12 @@ void Game::UpdateFallback(float dt)
 				{
 					LeaveLocation(false, false);
 					Portal* portal = L.location->GetPortal(fallback_1);
-					Location* target_loc = W.locations[portal->target_loc];
-					int at_level = 0;
+					W.ChangeLevel(portal->target_loc, false);
 					// aktualnie mo¿na siê tepn¹æ z X poziomu na 1 zawsze ale ¿eby z X na X to musi byæ odwiedzony
 					// np w sekrecie z 3 na 1 i spowrotem do
-					if(target_loc->portal)
-						at_level = target_loc->portal->at_level;
-					W.current_location_index = portal->target_loc;
-					W.current_location = W.locations[W.current_location_index];
-					L.location_index = W.current_location_index;
-					L.location = W.current_location;
+					int at_level = 0;
+					if(L.location->portal)
+						at_level = L.location->portal->at_level;
 					EnterLocation(at_level, portal->target);
 				}
 				return;
@@ -4941,17 +4937,18 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				else if(Key.Down('3'))
 					co = 2;
 			}
+			const vector<Location*>& locations = W.GetLocations();
 			switch(co)
 			{
 			case 0:
 				// info o nieznanej lokacji
 				{
-					int id = Rand() % W.locations.size();
+					int id = Rand() % locations.size();
 					int id2 = id;
 					bool ok = false;
 					do
 					{
-						if(W.locations[id2] && W.locations[id2]->state == LS_UNKNOWN)
+						if(locations[id2] && locations[id2]->state == LS_UNKNOWN)
 						{
 							ok = true;
 							break;
@@ -4959,14 +4956,14 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 						else
 						{
 							++id2;
-							if(id2 == W.locations.size())
+							if(id2 == locations.size())
 								id2 = 0;
 						}
 					}
 					while(id != id2);
 					if(ok)
 					{
-						Location& loc = *W.locations[id2];
+						Location& loc = *locations[id2];
 						loc.state = LS_KNOWN;
 						Location& cloc = *L.location;
 						cstring s_daleko;
@@ -5001,7 +4998,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				{
 					Location* new_camp = nullptr;
 					static vector<Location*> camps;
-					for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it)
+					for(vector<Location*>::const_iterator it = locations.begin(), end = locations.end(); it != end; ++it)
 					{
 						if(*it && (*it)->type == L_CAMP && (*it)->state != LS_HIDDEN)
 						{
@@ -5088,31 +5085,31 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 					switch(co)
 					{
 					case P_TARTAK:
-						ctx.dialog_s_text = Format(txRumorQ[0], W.locations[quest_sawmill->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[0], locations[quest_sawmill->start_loc]->name.c_str());
 						break;
 					case P_KOPALNIA:
-						ctx.dialog_s_text = Format(txRumorQ[1], W.locations[quest_mine->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[1], locations[quest_mine->start_loc]->name.c_str());
 						break;
 					case P_ZAWODY_W_PICIU:
 						ctx.dialog_s_text = txRumorQ[2];
 						break;
 					case P_BANDYCI:
-						ctx.dialog_s_text = Format(txRumorQ[3], W.locations[quest_bandits->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[3], locations[quest_bandits->start_loc]->name.c_str());
 						break;
 					case P_MAGOWIE:
-						ctx.dialog_s_text = Format(txRumorQ[4], W.locations[quest_mages->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[4], locations[quest_mages->start_loc]->name.c_str());
 						break;
 					case P_MAGOWIE2:
 						ctx.dialog_s_text = txRumorQ[5];
 						break;
 					case P_ORKOWIE:
-						ctx.dialog_s_text = Format(txRumorQ[6], W.locations[quest_orcs->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[6], locations[quest_orcs->start_loc]->name.c_str());
 						break;
 					case P_GOBLINY:
-						ctx.dialog_s_text = Format(txRumorQ[7], W.locations[quest_goblins->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[7], locations[quest_goblins->start_loc]->name.c_str());
 						break;
 					case P_ZLO:
-						ctx.dialog_s_text = Format(txRumorQ[8], W.locations[quest_evil->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[8], locations[quest_evil->start_loc]->name.c_str());
 						break;
 					default:
 						assert(0);
@@ -5229,13 +5226,14 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	}
 	else if(strcmp(msg, "near_loc") == 0)
 	{
+		const vector<Location*>& locations = W.GetLocations();
 		if(ctx.update_locations == 1)
 		{
 			ctx.active_locations.clear();
-
 			const Vec2& world_pos = W.GetWorldPos();
+
 			int index = 0;
-			for(Location* loc : W.locations)
+			for(Location* loc : locations)
 			{
 				if(loc && loc->type != L_CITY && loc->type != L_ACADEMY && Vec2::Distance(loc->pos, world_pos) <= 150.f && loc->state != LS_HIDDEN)
 					ctx.active_locations.push_back(std::pair<int, bool>(index, loc->state == LS_UNKNOWN));
@@ -5268,7 +5266,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 
 		int id = ctx.active_locations.back().first;
 		ctx.active_locations.pop_back();
-		Location& loc = *W.locations[id];
+		Location& loc = *locations[id];
 		if(loc.state == LS_UNKNOWN)
 		{
 			loc.state = LS_KNOWN;
@@ -12862,10 +12860,10 @@ void Game::BuildRefidTables()
 	// jednostki i u¿ywalne
 	Unit::refid_table.clear();
 	Usable::refid_table.clear();
-	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it)
+	for(Location* loc : W.GetLocations())
 	{
-		if(*it)
-			(*it)->BuildRefidTable();
+		if(loc)
+			loc->BuildRefidTable();
 	}
 
 	// cz¹steczki
@@ -13018,7 +13016,6 @@ void Game::ClearGame()
 		StringPool.Free(net_talk);
 
 	// usuñ lokalizacje
-	DeleteElements(W.locations);
 	L.is_open = false;
 	local_ctx_valid = false;
 	city_ctx = nullptr;
@@ -13062,11 +13059,11 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 		return Format("%d", ctx.team_share_item->value / 2);
 	}
 	else if(str_part == "chlanie_loc")
-		return W.locations[contest_where]->name.c_str();
+		return W.GetLocation(contest_where)->name.c_str();
 	else if(str_part == "player_name")
 		return current_dialog->pc->name.c_str();
 	else if(str_part == "ironfist_city")
-		return W.locations[tournament_city]->name.c_str();
+		return W.GetLocation(tournament_city)->name.c_str();
 	else if(str_part == "rhero")
 	{
 		static string str;
@@ -15905,7 +15902,7 @@ void Game::CheckIfLocationCleared()
 			if(L.location->spawn != SG_NONE)
 			{
 				if(L.location->type == L_CAMP)
-					AddNews(Format(txNewsCampCleared, W.locations[GetNearestSettlement(L.location->pos)]->name.c_str()));
+					AddNews(Format(txNewsCampCleared, W.GetLocation(GetNearestSettlement(L.location->pos))->name.c_str()));
 				else
 					AddNews(Format(txNewsLocCleared, L.location->name.c_str()));
 			}
@@ -16827,7 +16824,7 @@ void Game::InitQuests()
 	// mine
 	quest_mine = new Quest_Mine;
 	quest_mine->start_loc = W.GetRandomSettlementIndex(used);
-	quest_mine->target_loc = W.GetClosestLocation(L_CAVE, W.locations[quest_mine->start_loc]->pos);
+	quest_mine->target_loc = W.GetClosestLocation(L_CAVE, W.GetLocation(quest_mine->start_loc)->pos);
 	quest_mine->refid = quest_manager.quest_counter++;
 	quest_mine->Start();
 	quest_manager.unaccepted_quests.push_back(quest_mine);
@@ -16901,15 +16898,15 @@ void Game::InitQuests()
 
 	if(devmode)
 	{
-		Info("Quest 'Sawmill' - %s.", W.locations[quest_sawmill->start_loc]->name.c_str());
-		Info("Quest 'Mine' - %s, %s.", W.locations[quest_mine->start_loc]->name.c_str(), W.locations[quest_mine->target_loc]->name.c_str());
-		Info("Quest 'Bandits' - %s.", W.locations[quest_bandits->start_loc]->name.c_str());
-		Info("Quest 'Mages' - %s.", W.locations[quest_mages->start_loc]->name.c_str());
-		Info("Quest 'Orcs' - %s.", W.locations[quest_orcs->start_loc]->name.c_str());
-		Info("Quest 'Goblins' - %s.", W.locations[quest_goblins->start_loc]->name.c_str());
-		Info("Quest 'Evil' - %s.", W.locations[quest_evil->start_loc]->name.c_str());
-		Info("Tournament - %s.", W.locations[tournament_city]->name.c_str());
-		Info("Contest - %s.", W.locations[contest_where]->name.c_str());
+		Info("Quest 'Sawmill' - %s.", W.GetLocation(quest_sawmill->start_loc)->name.c_str());
+		Info("Quest 'Mine' - %s, %s.", W.GetLocation(quest_mine->start_loc)->name.c_str(), W.GetLocation(quest_mine->target_loc)->name.c_str());
+		Info("Quest 'Bandits' - %s.", W.GetLocation(quest_bandits->start_loc)->name.c_str());
+		Info("Quest 'Mages' - %s.", W.GetLocation(quest_mages->start_loc)->name.c_str());
+		Info("Quest 'Orcs' - %s.", W.GetLocation(quest_orcs->start_loc)->name.c_str());
+		Info("Quest 'Goblins' - %s.", W.GetLocation(quest_goblins->start_loc)->name.c_str());
+		Info("Quest 'Evil' - %s.", W.GetLocation(quest_evil->start_loc)->name.c_str());
+		Info("Tournament - %s.", W.GetLocation(tournament_city)->name.c_str());
+		Info("Contest - %s.", W.GetLocation(contest_where)->name.c_str());
 	}
 }
 
@@ -17189,7 +17186,7 @@ void Game::UpdateQuests(int days)
 					{
 						if(Net::IsOnline())
 							Net_SpawnUnit(u);
-						AddNews(Format(txMineBuilt, W.locations[quest_mine->target_loc]->name.c_str()));
+						AddNews(Format(txMineBuilt, W.GetLocation(quest_mine->target_loc)->name.c_str()));
 						quest_mine->messenger = u;
 						u->StartAutoTalk(true);
 					}
@@ -17198,7 +17195,7 @@ void Game::UpdateQuests(int days)
 			else
 			{
 				// player got gold, don't inform him
-				AddNews(Format(txMineBuilt, W.locations[quest_mine->target_loc]->name.c_str()));
+				AddNews(Format(txMineBuilt, W.GetLocation(quest_mine->target_loc)->name.c_str()));
 				quest_mine->mine_state2 = Quest_Mine::State2::Built;
 				quest_mine->days -= quest_mine->days_required;
 				quest_mine->days_required = Random(60, 90);
@@ -19788,20 +19785,6 @@ void Game::Event_Pvp(int id)
 	pvp_response.ok = false;
 }
 
-void Game::Cheat_Reveal()
-{
-	int index = 0;
-	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++index)
-	{
-		if(*it && (*it)->state == LS_UNKNOWN)
-		{
-			(*it)->state = LS_KNOWN;
-			if(Net::IsOnline())
-				Net_ChangeLocationState(index, false);
-		}
-	}
-}
-
 void Game::Cheat_ShowMinimap()
 {
 	if(!L.location->outside)
@@ -20952,7 +20935,7 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 		AddGameMsg(txSecretAppear, 3.f);
 		secret_state = SECRET_DROPPED_STONE;
 		int loc = CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, SG_CHALLANGE, false, 3);
-		Location& l = *W.locations[loc];
+		Location& l = *W.GetLocation(loc);
 		l.st = 18;
 		l.active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
 		l.state = LS_UNKNOWN;
@@ -21679,7 +21662,7 @@ void Game::VerifyObjects()
 {
 	int errors = 0, e;
 
-	for(Location* l : W.locations)
+	for(Location* l : W.GetLocations())
 	{
 		if(!l)
 			continue;

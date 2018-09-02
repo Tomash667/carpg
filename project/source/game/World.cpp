@@ -49,7 +49,7 @@ void World::Init()
 
 void World::Cleanup()
 {
-	DeleteElements(encounters);
+	Reset();
 }
 
 void World::OnNewGame()
@@ -68,6 +68,7 @@ void World::OnNewGame()
 
 void World::Reset()
 {
+	DeleteElements(locations);
 	DeleteElements(encounters);
 }
 
@@ -293,6 +294,7 @@ void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist
 				while(exists);
 			}
 
+			l->index = locations.size();
 			locations.push_back(l);
 			break;
 		}
@@ -332,9 +334,19 @@ int World::AddLocation(Location* loc)
 			c.type = NetChange::ADD_LOCATION;
 			c.id = locations.size();
 		}
+		loc->index = locations.size();
 		locations.push_back(loc);
-		return locations.size() - 1;
+		return loc->index;
 	}
+}
+
+void World::AddLocationAtIndex(Location* loc)
+{
+	assert(loc && loc->index >= 0);
+	if(loc->index >= (int)locations.size())
+		locations.resize(loc->index + 1, nullptr);
+	assert(!locations[loc->index]);
+	locations[loc->index] = loc;
 }
 
 void World::RemoveLocation(Location* loc)
@@ -354,6 +366,19 @@ void World::RemoveLocation(Location* loc)
 			}
 			break;
 		}
+	}
+}
+
+void World::RemoveLocation(int index)
+{
+	assert(VerifyLocation(index));
+	delete locations[index];
+	if(index == locations.size() - 1)
+		locations.pop_back();
+	else
+	{
+		locations[index] = nullptr;
+		++empty_locations;
 	}
 }
 
@@ -399,12 +424,13 @@ void World::GenerateWorld(int start_location_type, int start_location_target)
 	// create location for random encounter
 	{
 		Location* loc = new OutsideLocation;
+		loc->index = locations.size();
 		loc->pos = Vec2(-1000, -1000);
 		loc->name = txRandomEncounter;
 		loc->state = LS_VISITED;
 		loc->image = LI_FOREST;
 		loc->type = L_ENCOUNTER;
-		encounter_loc = locations.size();
+		encounter_loc = loc->index;
 		locations.push_back(loc);
 	}
 
@@ -718,6 +744,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 				break;
 			}
 
+			loc->index = index;
 			loc->Load(f, current_index == index, loc_token);
 		}
 		else
@@ -981,6 +1008,7 @@ bool World::Read(BitStreamReader& f)
 		}
 
 		// location data
+		loc->index = index;
 		f.ReadCasted<byte>(loc->state);
 		f >> loc->pos;
 		f >> loc->name;
@@ -1227,6 +1255,63 @@ bool World::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
 	return false;
 }
 
+// Searches for location with selected spawn group
+// If cleared respawns enemies
+// If nothing found creates camp
+int World::GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range)
+{
+	int best_ok = -1, best_empty = -1, index = settlements;
+	float ok_range, empty_range, dist;
+
+	for(vector<Location*>::iterator it = locations.begin() + settlements, end = locations.end(); it != end; ++it, ++index)
+	{
+		if(!*it)
+			continue;
+		if(!(*it)->active_quest && ((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT))
+		{
+			InsideLocation* inside = (InsideLocation*)*it;
+			if((*it)->state == LS_CLEARED || inside->spawn == group || inside->spawn == SG_NONE)
+			{
+				dist = Vec2::Distance(pos, (*it)->pos);
+				if(dist <= range)
+				{
+					if(inside->spawn == group)
+					{
+						if(best_ok == -1 || dist < ok_range)
+						{
+							best_ok = index;
+							ok_range = dist;
+						}
+					}
+					else
+					{
+						if(best_empty == -1 || dist < empty_range)
+						{
+							best_empty = index;
+							empty_range = dist;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if(best_ok != -1)
+	{
+		locations[best_ok]->reset = true;
+		return best_ok;
+	}
+
+	if(best_empty != -1)
+	{
+		locations[best_empty]->spawn = group;
+		locations[best_empty]->reset = true;
+		return best_empty;
+	}
+
+	return CreateCamp(pos, group, range / 2);
+}
+
 void World::ExitToMap()
 {
 	if(state == State::INSIDE_ENCOUNTER)
@@ -1241,16 +1326,13 @@ void World::ExitToMap()
 		state = State::ON_MAP;
 }
 
-bool World::ChangeLevel(int index, bool encounter)
+void World::ChangeLevel(int index, bool encounter)
 {
-	if(index < 0 || index >= (int)locations.size())
-		return false;
 	state = encounter ? State::INSIDE_ENCOUNTER : State::INSIDE_LOCATION;
 	current_location_index = index;
 	current_location = locations[index];
 	L.location_index = current_location_index;
 	L.location = current_location;
-	return true;
 }
 
 void World::StartInLocation(Location* loc)
@@ -1259,6 +1341,7 @@ void World::StartInLocation(Location* loc)
 	current_location_index = locations.size() - 1;
 	current_location = loc;
 	state = State::INSIDE_LOCATION;
+	loc->index = current_location_index;
 	L.location_index = current_location_index;
 	L.location = loc;
 	L.is_open = true;
@@ -1479,4 +1562,23 @@ void World::SetTravelDir(const Vec3& pos)
 		travel_dir = Lerp(5.f / 4 * PI, 7.f / 4 * PI, (unit_pos.x - border) / (map_size - border * 2));
 	else
 		travel_dir = Lerp(1.f / 4 * PI, 3.f / 4 * PI, 1.f - (unit_pos.x - border) / (map_size - border * 2));
+}
+
+// Mark all locations as known
+void World::Reveal()
+{
+	for(Location* loc : locations)
+	{
+		if(loc && loc->state == LS_UNKNOWN)
+		{
+			loc->state = LS_KNOWN;
+			if(Net::IsOnline())
+			{
+				NetChange& c = Add1(Net::changes);
+				c.type = NetChange::CHANGE_LOCATION_STATE;
+				c.id = id;
+				c.ile = 0;
+			}
+		}
+	}
 }

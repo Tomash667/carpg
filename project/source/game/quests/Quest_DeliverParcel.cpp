@@ -47,7 +47,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 	case Progress::Started:
 		// give parcel to player
 		{
-			Location& loc = *W.locations[end_loc];
+			Location& loc = *W.GetLocation(end_loc);
 			const Item* base_item = Item::Get("parcel");
 			game->PreloadItem(base_item);
 			CreateItemCopy(parcel, base_item);
@@ -64,7 +64,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			quest_manager.quests_timeout2.push_back(this);
 
-			Location& loc2 = *W.locations[start_loc];
+			Location& loc2 = GetStartLocation();
 			msgs.push_back(Format(game->txQuest[3], LocationHelper::IsCity(loc2) ? game->txForMayor : game->txForSoltys, loc2.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[10], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str(),
 				GetLocationDirName(loc2.pos, loc.pos)));
@@ -106,7 +106,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// player failed to deliver parcel in time, but gain some gold anyway
 		{
 			state = Quest::Failed;
-			((City*)W.locations[start_loc])->quest_mayor = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 			game->AddReward(125);
@@ -130,7 +130,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// player failed to deliver parcel in time
 		{
 			state = Quest::Failed;
-			((City*)W.locations[start_loc])->quest_mayor = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 
 			msgs.push_back(game->txQuest[13]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -147,7 +147,7 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 		// parcel delivered, end of quest
 		{
 			state = Quest::Completed;
-			((City*)W.locations[start_loc])->quest_mayor = CityQuestState::None;
+			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 
 			game->current_dialog->pc->unit->RemoveQuestItem(refid);
 			game->AddReward(250);
@@ -211,13 +211,13 @@ void Quest_DeliverParcel::SetProgress(int prog2)
 //=================================================================================================
 cstring Quest_DeliverParcel::FormatString(const string& str)
 {
-	Location& loc = *W.locations[end_loc];
+	Location& loc = *W.GetLocation(end_loc);
 	if(str == "target_burmistrza")
 		return (LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys);
 	else if(str == "target_locname")
 		return loc.name.c_str();
 	else if(str == "target_dir")
-		return GetLocationDirName(W.locations[start_loc]->pos, loc.pos);
+		return GetLocationDirName(GetStartLocation().pos, loc.pos);
 	else
 	{
 		assert(0);
@@ -288,7 +288,7 @@ bool Quest_DeliverParcel::Load(GameReader& f)
 	{
 		f >> end_loc;
 
-		Location& loc = *W.locations[end_loc];
+		Location& loc = *W.GetLocation(end_loc);
 		const Item* base_item = Item::Get("parcel");
 		CreateItemCopy(parcel, base_item);
 		parcel.id = "$parcel";
@@ -300,8 +300,8 @@ bool Quest_DeliverParcel::Load(GameReader& f)
 
 	if(enc != -1)
 	{
-		Location& loc = *W.locations[end_loc];
-		Location& loc2 = *W.locations[start_loc];
+		Location& loc = *W.GetLocation(end_loc);
+		Location& loc2 = GetStartLocation();
 		Encounter* e = W.RecreateEncounter(enc);
 		e->pos = (loc.pos + loc2.pos) / 2;
 		e->range = 64;

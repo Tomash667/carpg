@@ -208,7 +208,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		// pos³aniec dostarczy³ info o bazie goblinów
 		{
 			state = Quest::Started;
-			target_loc = game->GetRandomSpawnLocation(GetStartLocation().pos, SG_GOBLINS);
+			target_loc = W.GetRandomSpawnLocation(GetStartLocation().pos, SG_GOBLINS);
 			Location& target = GetTargetLocation();
 			bool now_known = false;
 			if(target.state == LS_UNKNOWN)

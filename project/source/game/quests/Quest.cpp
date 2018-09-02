@@ -53,13 +53,13 @@ bool Quest::Load(GameReader& f)
 //=================================================================================================
 Location& Quest::GetStartLocation()
 {
-	return *W.locations[start_loc];
+	return *W.GetLocation(start_loc);
 }
 
 //=================================================================================================
 const Location& Quest::GetStartLocation() const
 {
-	return *W.locations[start_loc];
+	return *W.GetLocation(start_loc);
 }
 
 //=================================================================================================
@@ -89,12 +89,8 @@ bool Quest_Dungeon::Load(GameReader& f)
 		f >> at_level;
 	else
 		at_level = -1;
-	if(LOAD_VERSION < V_0_4 && target_loc != -1)
-	{
-		Location* loc = W.locations[target_loc];
-		if(loc->outside)
-			at_level = -1;
-	}
+	if(LOAD_VERSION < V_0_4 && target_loc != -1 && GetTargetLocation().outside)
+		at_level = -1;
 
 	return true;
 }
@@ -102,13 +98,13 @@ bool Quest_Dungeon::Load(GameReader& f)
 //=================================================================================================
 Location& Quest_Dungeon::GetTargetLocation()
 {
-	return *W.locations[target_loc];
+	return *W.GetLocation(target_loc);
 }
 
 //=================================================================================================
 const Location& Quest_Dungeon::GetTargetLocation() const
 {
-	return *W.locations[target_loc];
+	return *W.GetLocation(target_loc);
 }
 
 //=================================================================================================

@@ -27,12 +27,13 @@ public:
 	void DoWorldProgress(int days);
 	void GenerateWorld(int start_location_type = -1, int start_location_target = -1);
 	void ExitToMap();
-	bool ChangeLevel(int index, bool encounter);
+	void ChangeLevel(int index, bool encounter);
 	void StartInLocation(Location* loc);
 	void StartEncounter();
 	void Travel(int index);
 	void EndTravel();
 	void Warp(int index);
+	void Reveal();
 
 	// encounters
 	Encounter* AddEncounter(int& index);
@@ -47,7 +48,10 @@ public:
 	typedef std::pair<LOCATION, bool>(*AddLocationsCallback)(uint index);
 	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name);
 	int AddLocation(Location* loc);
+	void AddLocationAtIndex(Location* loc);
 	void RemoveLocation(Location* loc);
+	void RemoveLocation(int index);
+	bool VerifyLocation(int index) const { return index >= 0 && index < (int)locations.size() && locations[index]; }
 
 	void Save(GameWriter& f);
 	void Load(GameReader& f, LoadingHandler& loading);
@@ -70,6 +74,7 @@ public:
 	int GetClosestLocation(LOCATION type, const Vec2& pos, int target = -1);
 	int GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target);
 	bool FindPlaceForLocation(Vec2& pos, float range = 64.f, bool allow_exact = true);
+	int GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range = 160.f);
 	int GetEncounterLocationIndex() const { return encounter_loc; } // FIXME remove?
 	int GetWorldtime() const { return worldtime; }
 	int GetYear() const { return year; }
@@ -78,8 +83,10 @@ public:
 	float GetEncounterChance() const { return encounter_chance; }
 	float GetTravelDir() const { return travel_dir; }
 	void GetOutsideSpawnPoint(Vec3& pos, float& dir) const;
-	void SetTravelDir(const Vec3& pos);
+	const vector<Location*>& GetLocations() const { return locations; }
+	Location* GetLocation(int index) const { assert(index >= 0 && index < (int)locations.size()); return locations[index]; }
 
+	void SetTravelDir(const Vec3& pos);
 	void SetState(State state) { this->state = state; }
 	void SetWorldPos(const Vec2& world_pos) { this->world_pos = world_pos; }
 
@@ -89,8 +96,8 @@ public: // FIXME
 	Location* current_location; // wskaŸnik na aktualn¹ lokacjê [odtwarzany]
 	int current_location_index, // current location index or -1
 		travel_location_index; // travel target where state is TRAVEL, ENCOUNTER or INSIDE_ENCOUNTER (-1 otherwise)
-	vector<Location*> locations; // can be nullptr
 private:
+	vector<Location*> locations; // can be nullptr
 	vector<Encounter*> encounters;
 public:
 	vector<Int2> boss_levels; // levels with boss music (x-location index, y-dungeon level)
