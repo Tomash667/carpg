@@ -111,7 +111,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	// lokacje spotkañ
 	if(game.devmode)
 	{
-		for(vector<Encounter*>::iterator it = game.encs.begin(), end = game.encs.end(); it != end; ++it)
+		for(vector<Encounter*>::iterator it = W.encounters.begin(), end = W.encounters.end(); it != end; ++it)
 		{
 			if(*it)
 				GUI.DrawSprite(tEnc, WorldPosToScreen(Int2((*it)->pos.x - 16.f, (*it)->pos.y + 16.f)));
@@ -234,18 +234,18 @@ void WorldMapGui::Update(float dt)
 			return;
 
 		// ruch po mapie
-		game.travel_time += dt;
+		W.travel_timer += dt;
 		const Vec2& end_pt = W.locations[W.travel_location_index]->pos;
-		float dist = Vec2::Distance(game.travel_start, end_pt);
-		if(game.travel_time > game.travel_day)
+		float dist = Vec2::Distance(W.travel_start_pos, end_pt);
+		if(W.travel_timer > W.travel_day)
 		{
 			// min¹³ kolejny dzieñ w podró¿y
-			++game.travel_day;
+			++W.travel_day;
 			if(Net::IsLocal())
 				game.WorldProgress(1, Game::WPM_TRAVEL);
 		}
 
-		if(game.travel_time * 3 >= dist / TRAVEL_SPEED)
+		if(W.travel_timer * 3 >= dist / TRAVEL_SPEED)
 		{
 			if(game.IsLeader())
 			{
@@ -270,8 +270,8 @@ void WorldMapGui::Update(float dt)
 		else
 		{
 			// ruch
-			Vec2 dir = end_pt - game.travel_start;
-			W.world_pos = game.travel_start + dir * (game.travel_time / dist * TRAVEL_SPEED * 3);
+			Vec2 dir = end_pt - W.travel_start_pos;
+			W.world_pos = W.travel_start_pos + dir * (W.travel_timer / dist * TRAVEL_SPEED * 3);
 
 			W.encounter_timer += dt;
 
@@ -322,7 +322,7 @@ void WorldMapGui::Update(float dt)
 				}
 
 				int id = 0;
-				for(vector<Encounter*>::iterator it = game.encs.begin(), end = game.encs.end(); it != end; ++it, ++id)
+				for(vector<Encounter*>::iterator it = W.encounters.begin(), end = W.encounters.end(); it != end; ++it, ++id)
 				{
 					if(!*it)
 						continue;
@@ -348,7 +348,7 @@ void WorldMapGui::Update(float dt)
 					{
 						// questowe spotkanie
 						W.state = World::State::ENCOUNTER;
-						game.game_enc = game.encs[enc];
+						game.game_enc = W.encounters[enc];
 						game.enc_tryb = 2;
 
 						DialogInfo info;
@@ -566,10 +566,10 @@ void WorldMapGui::Update(float dt)
 						if(picked_location != W.current_location_index)
 						{
 							// opuœæ aktualn¹ lokalizacje
-							if(game.open_location != -1)
+							if(L.is_open)
 							{
 								game.LeaveLocation();
-								game.open_location = -1;
+								L.is_open = false;
 							}
 
 							// rozpocznij wêdrówkê po mapie œwiata
@@ -579,9 +579,9 @@ void WorldMapGui::Update(float dt)
 							W.travel_location_index = picked_location;
 							L.location_index = -1;
 							L.location = nullptr;
-							game.travel_time = 0.f;
-							game.travel_day = 0;
-							game.travel_start = W.world_pos;
+							W.travel_timer = 0.f;
+							W.travel_day = 0;
+							W.travel_start_pos = W.world_pos;
 							Location& l = *W.locations[picked_location];
 							W.travel_dir = Clip(Angle(W.world_pos.x, W.world_pos.y, l.pos.x, l.pos.y) + PI);
 							W.encounter_timer = 0.f;
@@ -608,10 +608,10 @@ void WorldMapGui::Update(float dt)
 				{
 					if(game.IsLeader())
 					{
-						if(game.open_location != -1)
+						if(L.is_open)
 						{
 							game.LeaveLocation(false, false);
-							game.open_location = -1;
+							L.is_open = false;
 						}
 
 						W.current_location_index = picked_location;

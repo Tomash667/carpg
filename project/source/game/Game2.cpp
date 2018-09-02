@@ -51,6 +51,7 @@
 #include "World.h"
 #include "Level.h"
 #include "DirectX.h"
+#include "Var.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -984,7 +985,7 @@ void Game::UpdateGame(float dt)
 	portal_anim += dt;
 	if(portal_anim >= 1.f)
 		portal_anim -= 1.f;
-	light_angle = Clip(light_angle + dt / 100);
+	L.light_angle = Clip(L.light_angle + dt / 100);
 
 	LevelContext& player_ctx = (pc->unit->in_building == -1 ? local_ctx : city_ctx->inside_buildings[pc->unit->in_building]->ctx);
 
@@ -3538,7 +3539,8 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 				if(*u == *it)
 					goto jest;
 				++u;
-			} while(1);
+			}
+			while(1);
 
 			radius = (*it)->GetUnitRadius();
 			pos = (*it)->GetColliderPos();
@@ -3609,7 +3611,8 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 						break;
 					else
 						++objs;
-				} while(1);
+				}
+				while(1);
 			}
 
 			if(it->type == CollisionObject::RECTANGLE)
@@ -3745,7 +3748,8 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 				if(*u == *it)
 					goto jest;
 				++u;
-			} while(1);
+			}
+			while(1);
 
 			radius = (*it)->GetUnitRadius();
 			if(CircleToRectangle((*it)->pos.x, (*it)->pos.z, radius, rectpos.x, rectpos.y, rectsize.x, rectsize.y))
@@ -3814,7 +3818,8 @@ void Game::GatherCollisionObjects(LevelContext& ctx, vector<CollisionObject>& _o
 						break;
 					else
 						++objs;
-				} while(1);
+				}
+				while(1);
 			}
 
 			if(it->type == CollisionObject::RECTANGLE)
@@ -4686,16 +4691,16 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-				script_mgr->SetContext(ctx.pc, ctx.talker);
-				script_mgr->RunScript(msg);
+				SM.SetContext(ctx.pc, ctx.talker);
+				SM.RunScript(msg);
 			}
 			break;
 		case DTF_IF_SCRIPT:
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-				script_mgr->SetContext(ctx.pc, ctx.talker);
-				bool ok = script_mgr->RunIfScript(msg);
+				SM.SetContext(ctx.pc, ctx.talker);
+				bool ok = SM.RunIfScript(msg);
 				if(ctx.negate_if)
 				{
 					ctx.negate_if = false;
@@ -4957,7 +4962,8 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 							if(id2 == W.locations.size())
 								id2 = 0;
 						}
-					} while(id != id2);
+					}
+					while(id != id2);
 					if(ok)
 					{
 						Location& loc = *W.locations[id2];
@@ -5137,7 +5143,8 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 					plotka = txRumor[co];
 				else
 					plotka = txRumorD[co - countof(txRumor)];
-			} while(ctx.ostatnia_plotka == plotka);
+			}
+			while(ctx.ostatnia_plotka == plotka);
 			ctx.ostatnia_plotka = plotka;
 
 			static string str, str_part;
@@ -5478,7 +5485,8 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			do
 			{
 				ctx.pc->unit->human_data->hair_color = g_hair_colors[Rand() % n_hair_colors];
-			} while(kolor.Equal(ctx.pc->unit->human_data->hair_color));
+			}
+			while(kolor.Equal(ctx.pc->unit->human_data->hair_color));
 		}
 		else
 		{
@@ -5486,7 +5494,8 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			do
 			{
 				ctx.pc->unit->human_data->hair_color = Vec4(Random(0.f, 1.f), Random(0.f, 1.f), Random(0.f, 1.f), 1.f);
-			} while(kolor.Equal(ctx.pc->unit->human_data->hair_color));
+			}
+			while(kolor.Equal(ctx.pc->unit->human_data->hair_color));
 		}
 		if(Net::IsServer())
 		{
@@ -5826,10 +5835,11 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 		return target_loc_is_camp;
 	else if(strcmp(msg, "taken_guards_reward") == 0)
 	{
-		if(!guards_enc_reward)
+		Var& var = SM.GetVar("guards_enc_reward");
+		if(var != true)
 		{
 			AddGold(250, nullptr, true);
-			guards_enc_reward = true;
+			var = true;
 			return true;
 		}
 	}
@@ -6826,7 +6836,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 		// boss music
 		if(IS_SET(u->data->flags2, F2_BOSS))
-			boss_levels.push_back(Int2(L.location_index, dungeon_level));
+			W.boss_levels.push_back(Int2(L.location_index, dungeon_level));
 
 		// physics
 		if(create_physics)
@@ -9082,7 +9092,7 @@ Vec4 Game::GetLightDir()
 	// 	D3DXVec3Normalize(&light_dir, &light_dir);
 	// 	return Vec4(light_dir, 1);
 
-	Vec3 light_dir(sin(light_angle), 2.f, cos(light_angle));
+	Vec3 light_dir(sin(L.light_angle), 2.f, cos(L.light_angle));
 	light_dir.Normalize();
 	return Vec4(light_dir, 1);
 }
@@ -10486,7 +10496,7 @@ void Game::ChangeLevel(int where)
 
 	Info(where == 1 ? "Changing level to lower." : "Changing level to upper.");
 
-	location_event_handler = nullptr;
+	L.event_handler = nullptr;
 	UpdateDungeonMinimap(false);
 
 	if(!in_tutorial && quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && quest_crazies->crazies_state < Quest_Crazies::State::End)
@@ -10726,7 +10736,7 @@ void Game::ExitToMap()
 
 	clear_color = Color::Black;
 	game_state = GS_WORLDMAP;
-	if(open_location != -1 && L.location->type == L_ENCOUNTER)
+	if(L.is_open && L.location->type == L_ENCOUNTER)
 		LeaveLocation();
 
 	if(W.state == World::State::INSIDE_ENCOUNTER)
@@ -12885,7 +12895,7 @@ void Game::BuildRefidTables()
 	// cz¹steczki
 	ParticleEmitter::refid_table.clear();
 	TrailParticleEmitter::refid_table.clear();
-	if(open_location != -1)
+	if(L.is_open)
 	{
 		for(vector<ParticleEmitter*>::iterator it2 = local_ctx.pes->begin(), end2 = local_ctx.pes->end(); it2 != end2; ++it2)
 		{
@@ -12944,7 +12954,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	cam.Reset();
 	lights_dt = 1.f;
 	pc_data.Reset();
-	script_mgr->Clear();
+	SM.Reset();
 
 #ifdef DRAW_LOCAL_PATH
 	marked = nullptr;
@@ -12978,17 +12988,16 @@ void Game::ClearGameVarsOnNewGame()
 	Team.Reset();
 	dont_wander = false;
 	arena_fighter = nullptr;
-	first_city = true;
 	news.clear();
 	pc_data.picking_item_state = 0;
 	arena_tryb = Arena_Brak;
-	open_location = -1;
+	L.is_open = false;
 	arena_free = true;
 	game_gui->PositionPanels();
 	ClearGui(true);
 	game_gui->mp_box->visible = Net::IsOnline();
 	drunk_anim = 0.f;
-	light_angle = Random(PI * 2);
+	L.light_angle = Random(PI * 2);
 	cam.Reset();
 	pc_data.rot_buf = 0.f;
 	start_version = VERSION;
@@ -13013,7 +13022,7 @@ void Game::ClearGame()
 
 	LeaveLocation(true, false);
 
-	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && open_location == -1 && Net::IsLocal() && !was_client)
+	if((game_state == GS_WORLDMAP || prev_game_state == GS_WORLDMAP) && !L.is_open && Net::IsLocal() && !was_client)
 	{
 		for(Unit* unit : Team.members)
 		{
@@ -13034,7 +13043,7 @@ void Game::ClearGame()
 
 	// usuñ lokalizacje
 	DeleteElements(W.locations);
-	open_location = -1;
+	L.is_open = false;
 	local_ctx_valid = false;
 	city_ctx = nullptr;
 
@@ -13043,10 +13052,10 @@ void Game::ClearGame()
 	DeleteElements(quest_items);
 
 	DeleteElements(news);
-	DeleteElements(encs);
+	DeleteElements(W.encounters);
 
 	ClearGui(true);
-	}
+}
 
 cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 {
@@ -13622,13 +13631,13 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	BaseLocation& base = g_base_locations[inside->target];
 
 	if(from_portal != -1)
-		enter_from = ENTER_FROM_PORTAL + from_portal;
+		L.enter_from = ENTER_FROM_PORTAL + from_portal;
 	else if(from_outside)
-		enter_from = ENTER_FROM_OUTSIDE;
+		L.enter_from = ENTER_FROM_OUTSIDE;
 	else if(from_lower)
-		enter_from = ENTER_FROM_DOWN_LEVEL;
+		L.enter_from = ENTER_FROM_DOWN_LEVEL;
 	else
-		enter_from = ENTER_FROM_UP_LEVEL;
+		L.enter_from = ENTER_FROM_UP_LEVEL;
 
 	// ustaw wskaŸniki
 	if(!reenter)
@@ -13892,10 +13901,10 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					}
 				}
 
-				location_event_handler = event->location_event_handler;
+				L.event_handler = event->location_event_handler;
 			}
 			else if(inside->active_quest->whole_location_event_handler)
-				location_event_handler = event->location_event_handler;
+				L.event_handler = event->location_event_handler;
 		}
 	}
 
@@ -15926,8 +15935,8 @@ void Game::CheckIfLocationCleared()
 			}
 		}
 
-		if(location_event_handler)
-			location_event_handler->HandleLocationEvent(LocationEventHandler::CLEARED);
+		if(L.event_handler)
+			L.event_handler->HandleLocationEvent(LocationEventHandler::CLEARED);
 	}
 }
 
@@ -17362,7 +17371,8 @@ void Game::RemoveQuestUnits(bool on_leave)
 			quest_mine->messenger = nullptr;
 		}
 
-		if(open_location == quest_sawmill->start_loc && quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild && quest_sawmill->build_state == Quest_Sawmill::BuildState::None)
+		if(L.is_open && L.location_index == quest_sawmill->start_loc && quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
+			&& quest_sawmill->build_state == Quest_Sawmill::BuildState::None)
 		{
 			Unit* u = city_ctx->FindInn()->FindUnit(UnitData::Get("artur_drwal"));
 			if(u && u->IsAlive())
@@ -20581,7 +20591,7 @@ void Game::OnEnterLevel()
 	}
 
 	// default talking about location
-	if(!talker && dungeon_level == 0 && (enter_from == ENTER_FROM_OUTSIDE || enter_from >= ENTER_FROM_PORTAL))
+	if(!talker && dungeon_level == 0 && (L.enter_from == ENTER_FROM_OUTSIDE || L.enter_from >= ENTER_FROM_PORTAL))
 	{
 		TeamInfo info;
 		Team.GetTeamInfo(info);
@@ -21404,9 +21414,9 @@ Int2 Game::GetSpawnPoint()
 	InsideLocation* inside = (InsideLocation*)L.location;
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
-	if(enter_from >= ENTER_FROM_PORTAL)
-		return pos_to_pt(inside->GetPortal(enter_from)->GetSpawnPos());
-	else if(enter_from == ENTER_FROM_DOWN_LEVEL)
+	if(L.enter_from >= ENTER_FROM_PORTAL)
+		return pos_to_pt(inside->GetPortal(L.enter_from)->GetSpawnPos());
+	else if(L.enter_from == ENTER_FROM_DOWN_LEVEL)
 		return lvl.GetDownStairsFrontTile();
 	else
 		return lvl.GetUpStairsFrontTile();

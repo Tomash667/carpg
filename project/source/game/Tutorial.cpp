@@ -206,7 +206,7 @@ void Game::StartTutorial()
 	W.state = World::State::INSIDE_LOCATION;
 	L.location_index = 0;
 	L.location = loc;
-	open_location = 0;
+	L.is_open = true;
 	city_ctx = nullptr;
 	local_ctx_valid = true;
 	InsideLocationLevel& lvl = loc->GetLevelData();
@@ -376,7 +376,7 @@ void Game::StartTutorial()
 	SpawnDungeonColliders();
 	CreateDungeonMinimap();
 	AddPlayerTeam(Vec3(2.f*start_tile.x + 1, 0, 2.f*start_tile.y + 1), 0, false, true);
-	location_event_handler = nullptr;
+	L.event_handler = nullptr;
 	SetMusic();
 	load_screen->visible = false;
 	main_menu->visible = false;

@@ -92,7 +92,9 @@ struct InsideBuilding;
 struct InsideLocationLevel;
 struct LeveledItemList;
 struct Light;
+struct LoadingHandler;
 struct Location;
+struct LocationEventHandler;
 struct NetChangePlayer;
 struct Object;
 struct OtherItem;
@@ -111,6 +113,8 @@ struct Unit;
 struct UnitData;
 struct UnitEventHandler;
 struct Usable;
+struct Var;
+struct VarsContainer;
 struct Weapon;
 
 //-----------------------------------------------------------------------------

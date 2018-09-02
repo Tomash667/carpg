@@ -1554,7 +1554,7 @@ void Game::UpdateServerTransfer(float dt)
 			prev_team = Team.members;
 		Team.members.clear();
 		Team.active_members.clear();
-		const bool in_level = (open_location != -1);
+		const bool in_level = L.is_open;
 		int leader_perk = 0;
 		for(auto pinfo : game_players)
 		{
@@ -1747,7 +1747,7 @@ void Game::UpdateServerTransfer(float dt)
 			EnterLocation();
 		else
 		{
-			if(open_location == -1)
+			if(!L.is_open)
 			{
 				// saved on worldmap
 				byte b = ID_START;
@@ -1846,7 +1846,7 @@ void Game::UpdateServerTransfer(float dt)
 
 					if(city_ctx)
 						GetCityEntry(pos, rot);
-					else if(enter_from >= ENTER_FROM_PORTAL && (portal = L.location->GetPortal(enter_from)) != nullptr)
+					else if(L.enter_from >= ENTER_FROM_PORTAL && (portal = L.location->GetPortal(L.enter_from)) != nullptr)
 					{
 						pos = portal->pos + Vec3(sin(portal->rot) * 2, 0, cos(portal->rot) * 2);
 						rot = Clip(portal->rot + PI);
@@ -1855,7 +1855,7 @@ void Game::UpdateServerTransfer(float dt)
 					{
 						InsideLocation* inside = (InsideLocation*)L.location;
 						InsideLocationLevel& lvl = inside->GetLevelData();
-						if(enter_from == ENTER_FROM_DOWN_LEVEL)
+						if(L.enter_from == ENTER_FROM_DOWN_LEVEL)
 						{
 							pos = pt_to_pos(lvl.GetDownStairsFrontTile());
 							rot = dir_to_rot(lvl.staircase_down_dir);
@@ -3071,7 +3071,7 @@ void Game::UpdateLobbyNetServer(float dt)
 			if(d == 0)
 			{
 				b[0] = ID_STARTUP;
-				b[1] = (mp_load && open_location == -1 ? 1 : 0);
+				b[1] = (mp_load && !L.is_open ? 1 : 0);
 			}
 			else
 			{
@@ -3346,7 +3346,7 @@ void Game::OnPickServer(int id)
 
 void Game::DeleteOldPlayers()
 {
-	const bool in_level = (open_location != -1);
+	const bool in_level = L.is_open;
 	for(vector<PlayerInfo*>::iterator it = old_players.begin(), end = old_players.end(); it != end; ++it)
 	{
 		auto& info = **it;

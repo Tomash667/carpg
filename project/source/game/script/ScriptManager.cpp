@@ -10,17 +10,20 @@
 #include "SaveState.h"
 #include "Game.h"
 
+
 #ifdef _DEBUG
 #	define CHECKED(x) { int _r = (x); assert(_r >= 0); }
 #else
 #	define CHECKED(x) x
 #endif
 
-static ScriptManager* SM;
+
+ScriptManager SM;
+
 
 ScriptException::ScriptException(cstring msg)
 {
-	SM->SetException(msg);
+	SM.SetException(msg);
 }
 
 void MessageCallback(const asSMessageInfo* msg, void* param)
@@ -39,19 +42,12 @@ void MessageCallback(const asSMessageInfo* msg, void* param)
 		level = Logger::L_INFO;
 		break;
 	}
-	SM->Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
+	SM.Log(level, Format("(%d:%d) %s", msg->row, msg->col, msg->message));
 }
+
 
 ScriptManager::ScriptManager() : engine(nullptr), module(nullptr)
 {
-	SM = this;
-}
-
-ScriptManager::~ScriptManager()
-{
-	if(engine)
-		engine->ShutDownAndRelease();
-	DeleteElements(unit_vars);
 }
 
 void ScriptManager::Init()
@@ -68,6 +64,13 @@ void ScriptManager::Init()
 	RegisterStdStringUtils(engine);
 	RegisterCommon();
 	RegisterGame();
+}
+
+void ScriptManager::Cleanup()
+{
+	if(engine)
+		engine->ShutDownAndRelease();
+	DeleteElements(unit_vars);
 }
 
 static void FormatStrGeneric(asIScriptGeneric* gen)
@@ -191,15 +194,15 @@ static void FormatStrGeneric(asIScriptGeneric* gen)
 
 static void ScriptInfo(const string& str)
 {
-	SM->Log(Logger::L_INFO, str.c_str());
+	SM.Log(Logger::L_INFO, str.c_str());
 }
 static void ScriptWarn(const string& str)
 {
-	SM->Log(Logger::L_WARN, str.c_str());
+	SM.Log(Logger::L_WARN, str.c_str());
 }
 static void ScriptError(const string& str)
 {
-	SM->Log(Logger::L_ERROR, str.c_str());
+	SM.Log(Logger::L_ERROR, str.c_str());
 }
 
 void ScriptManager::RegisterCommon()
@@ -251,7 +254,7 @@ VarsContainer* p_globals = &globals;
 
 VarsContainer* Unit_GetVars(Unit* unit)
 {
-	return SM->GetVars(unit);
+	return SM.GetVars(unit);
 }
 
 void Unit_RemoveItem(Unit* unit, const string& id)
@@ -485,13 +488,23 @@ VarsContainer* ScriptManager::GetVars(Unit* unit)
 		return it->second;
 }
 
-void ScriptManager::Clear()
+Var& ScriptManager::GetVar(cstring name)
 {
+	return *globals.Get(name);
+}
+
+void ScriptManager::Reset()
+{
+	globals.Clear();
 	DeleteElements(unit_vars);
 }
 
 void ScriptManager::Save(FileWriter& f)
 {
+	// global vars
+	globals.Save(f);
+
+	// unit vars
 	uint count = 0;
 	uint pos = f.BeginPatch(count);
 	for(auto& e : unit_vars)
@@ -511,11 +524,13 @@ void ScriptManager::Load(FileReader& f)
 	if(LOAD_VERSION < V_0_7)
 		return;
 
+	// global vars
+	if(LOAD_VERSION >= V_FEATURE)
+		globals.Load(f);
+
+	// unit vars
 	uint count;
 	f >> count;
-	if(count == 0)
-		return;
-
 	for(uint i = 0; i < count; ++i)
 	{
 		Unit* unit = Unit::refid_table[f.Read<int>()];

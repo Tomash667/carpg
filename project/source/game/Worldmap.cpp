@@ -34,6 +34,8 @@
 #include "World.h"
 #include "Level.h"
 #include "DirectX.h"
+#include "ScriptManager.h"
+#include "Var.h"
 
 extern const float TRAVEL_SPEED = 28.f;
 extern Matrix m1, m2, m3, m4;
@@ -71,19 +73,19 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	world_map->visible = false;
 	game_gui->visible = true;
 
-	bool reenter = (open_location == L.location_index);
-	open_location = L.location_index;
+	const bool reenter = L.is_open;
+	L.is_open = true;
 	if(W.state != World::State::INSIDE_ENCOUNTER)
 		W.state = World::State::INSIDE_LOCATION;
 	if(from_portal != -1)
-		enter_from = ENTER_FROM_PORTAL + from_portal;
+		L.enter_from = ENTER_FROM_PORTAL + from_portal;
 	else
-		enter_from = ENTER_FROM_OUTSIDE;
+		L.enter_from = ENTER_FROM_OUTSIDE;
 	if(!reenter)
-		light_angle = Random(PI * 2);
+		L.light_angle = Random(PI * 2);
 
 	dungeon_level = level;
-	location_event_handler = nullptr;
+	L.event_handler = nullptr;
 	pc_data.before_player = BP_NONE;
 	arena_free = true; //zabezpieczenie :3
 	unit_views.clear();
@@ -561,7 +563,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 					{
 						if(!event->done)
 							HandleQuestEvent(event);
-						location_event_handler = event->location_event_handler;
+						L.event_handler = event->location_event_handler;
 					}
 				}
 
@@ -692,7 +694,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 				{
 					if(!event->done)
 						HandleQuestEvent(event);
-					location_event_handler = event->location_event_handler;
+					L.event_handler = event->location_event_handler;
 				}
 			}
 
@@ -2137,12 +2139,12 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 	if(clear)
 	{
-		if(open_location != -1)
+		if(L.is_open)
 			LeaveLevel(true);
 		return;
 	}
 
-	if(open_location == -1)
+	if(!L.is_open)
 		return;
 
 	Info("Leaving location.");
@@ -2190,7 +2192,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 	LeaveLevel();
 
-	if(open_location != -1)
+	if(L.is_open)
 	{
 		if(Net::IsLocal())
 		{
@@ -2206,8 +2208,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		}
 		to_remove.clear();
 
-		Location& loc = *W.locations[open_location];
-		if(loc.type == L_ENCOUNTER)
+		if(L.location->type == L_ENCOUNTER)
 		{
 			OutsideLocation* outside = (OutsideLocation*)L.location;
 			outside->bloods.clear();
@@ -2238,7 +2239,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 			unit->EndEffects();
 	}
 
-	open_location = -1;
+	L.is_open = false;
 	city_ctx = nullptr;
 }
 
@@ -3324,7 +3325,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 					InsertItemBare(chest->items, gold_item_ptr, (uint)gold);
 					SortItems(chest->items);
 				}
-				guards_enc_reward = false;
+				SM.GetVar("guards_enc_reward") = false;
 			}
 			break;
 		case 5: // bohaterowie walcz¹
@@ -3421,7 +3422,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		dialog = game_enc->dialog;
 		dont_attack = game_enc->dont_attack;
 		quest = game_enc->quest;
-		location_event_handler = game_enc->location_event_handler;
+		L.event_handler = game_enc->location_event_handler;
 	}
 
 	talker = nullptr;
@@ -3561,40 +3562,40 @@ void Game::SpawnEncounterTeam()
 
 Encounter* Game::AddEncounter(int& id)
 {
-	for(int i = 0, size = (int)encs.size(); i < size; ++i)
+	for(int i = 0, size = (int)W.encounters.size(); i < size; ++i)
 	{
-		if(!encs[i])
+		if(!W.encounters[i])
 		{
 			id = i;
-			encs[i] = new Encounter;
-			return encs[i];
+			W.encounters[i] = new Encounter;
+			return W.encounters[i];
 		}
 	}
 
 	Encounter* enc = new Encounter;
-	id = encs.size();
-	encs.push_back(enc);
+	id = W.encounters.size();
+	W.encounters.push_back(enc);
 	return enc;
 }
 
 void Game::RemoveEncounter(int id)
 {
-	assert(InRange(id, 0, (int)encs.size() - 1) && encs[id]);
-	delete encs[id];
-	encs[id] = nullptr;
+	assert(InRange(id, 0, (int)W.encounters.size() - 1) && W.encounters[id]);
+	delete W.encounters[id];
+	W.encounters[id] = nullptr;
 }
 
 Encounter* Game::GetEncounter(int id)
 {
-	assert(InRange(id, 0, (int)encs.size() - 1) && encs[id]);
-	return encs[id];
+	assert(InRange(id, 0, (int)W.encounters.size() - 1) && W.encounters[id]);
+	return W.encounters[id];
 }
 
 Encounter* Game::RecreateEncounter(int id)
 {
-	assert(InRange(id, 0, (int)encs.size() - 1));
+	assert(InRange(id, 0, (int)W.encounters.size() - 1));
 	Encounter* e = new Encounter;
-	encs[id] = e;
+	W.encounters[id] = e;
 	return e;
 }
 
@@ -3700,7 +3701,7 @@ void Game::DoWorldProgress(int days)
 	}
 
 	// zanikanie questowych spotkañ
-	for(vector<Encounter*>::iterator it = encs.begin(), end = encs.end(); it != end; ++it)
+	for(vector<Encounter*>::iterator it = W.encounters.begin(), end = W.encounters.end(); it != end; ++it)
 	{
 		if(*it && (*it)->timed && (*it)->quest->IsTimedout())
 		{
@@ -3709,7 +3710,7 @@ void Game::DoWorldProgress(int days)
 			delete *it;
 			if(it + 1 == end)
 			{
-				encs.pop_back();
+				W.encounters.pop_back();
 				break;
 			}
 			else
@@ -4463,9 +4464,9 @@ void Game::SpawnTmpUnits(City* city)
 	uint count;
 	Int2 level;
 
-	if(first_city)
+	if(W.first_city)
 	{
-		first_city = false;
+		W.first_city = false;
 		count = 4;
 		level = Int2(2, 5);
 	}

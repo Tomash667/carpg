@@ -182,12 +182,12 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 			cstring code = t.GetTextRest();
 			if(Net::IsLocal())
 			{
-				string& output = script_mgr->OpenOutput();
-				script_mgr->SetContext(pc, pc_data.selected_target);
-				script_mgr->RunScript(code);
+				string& output = SM.OpenOutput();
+				SM.SetContext(pc, pc_data.selected_target);
+				SM.RunScript(code);
 				if(!output.empty())
 					Msg(output.c_str());
-				script_mgr->CloseOutput();
+				SM.CloseOutput();
 			}
 			else
 			{

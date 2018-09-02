@@ -4,6 +4,7 @@
 #include "Content.h"
 #include "SoundManager.h"
 #include "Level.h"
+#include "World.h"
 
 //-----------------------------------------------------------------------------
 vector<Music*> Music::musics;
@@ -121,7 +122,7 @@ void Game::SetMusic()
 		return;
 	}
 
-	for(vector<Int2>::iterator it = boss_levels.begin(), end = boss_levels.end(); it != end; ++it)
+	for(vector<Int2>::iterator it = W.boss_levels.begin(), end = W.boss_levels.end(); it != end; ++it)
 	{
 		if(L.location_index == it->x && dungeon_level == it->y)
 		{

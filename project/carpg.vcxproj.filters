@@ -703,6 +703,9 @@
     <ClCompile Include="source\game\panels\GlobalGui.cpp">
       <Filter>3. game\panels</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\helpers\LoadingHandler.cpp">
+      <Filter>3. game\helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1392,6 +1395,9 @@
     </ClInclude>
     <ClInclude Include="source\game\panels\GlobalGui.h">
       <Filter>3. game\panels</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\helpers\LoadingHandler.h">
+      <Filter>3. game\helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

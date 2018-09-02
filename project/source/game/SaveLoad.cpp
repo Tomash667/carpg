@@ -35,6 +35,7 @@
 #include "ScriptManager.h"
 #include "World.h"
 #include "Level.h"
+#include "LoadingHandler.h"
 
 enum SaveFlags
 {
@@ -371,8 +372,9 @@ void Game::SaveGame(GameWriter& f)
 	UpdateDungeonMinimap(false);
 	ProcessUnitWarps();
 	ProcessRemoveUnits();
-	if(game_state == GS_WORLDMAP && open_location != -1)
+	if(game_state == GS_WORLDMAP && L.is_open)
 		LeaveLocation(false, false);
+	BuildRefidTables();
 
 	// signature
 	byte sign[4] = { 'C','R','S','V' };
@@ -399,60 +401,17 @@ void Game::SaveGame(GameWriter& f)
 	f << game_state;
 	W.Save(f);
 
-	BuildRefidTables();
 
 	byte check_id = 0;
 
-	// world map
-	f << W.current_location_index;
-	f << W.locations.size();
-	for(Location* loc : W.locations)
-	{
-		LOCATION_TOKEN loc_token;
-		if(loc)
-			loc_token = loc->GetToken();
-		else
-			loc_token = LT_NULL;
-		f << loc_token;
-
-		if(loc_token != LT_NULL)
-		{
-			if(loc_token == LT_MULTI_DUNGEON)
-			{
-				int levels = ((MultiInsideLocation*)loc)->levels.size();
-				f << levels;
-			}
-			loc->Save(f, (game_state == GS_LEVEL && W.current_location == loc));
-		}
-
-		f << check_id;
-		++check_id;
-	}
-	f << W.empty_locations;
-	f << W.create_camp;
-	f << W.world_pos;
-	f << W.encounter_timer;
-	f << W.encounter_chance;
-	f << W.settlements;
-	f << W.encounter_loc;
-	f << W.travel_dir;
-	if(W.state == World::State::INSIDE_ENCOUNTER)
-	{
-		f << W.travel_location_index;
-		f << travel_day;
-		f << travel_start;
-		f << travel_time;
-		f << guards_enc_reward;
-	}
-	f << encs.size();
 	if(game_state == GS_LEVEL)
-		f << (location_event_handler ? location_event_handler->GetLocationEventHandlerQuestRefid() : -1);
+		f << (L.event_handler ? L.event_handler->GetLocationEventHandlerQuestRefid() : -1);
 	else
 		Team.SaveOnWorldmap(f);
-	f << first_city;
-	f << boss_levels;
-	f << enter_from;
-	f << light_angle;
+	f << W.first_city;
+	f << W.boss_levels;
+	f << L.enter_from;
+	f << L.light_angle;
 
 	// camera
 	f << cam.real_rot.y;
@@ -503,7 +462,7 @@ void Game::SaveGame(GameWriter& f)
 	// save quests
 	QuestManager::Get().Save(f);
 	SaveQuestsData(f);
-	script_mgr->Save(f);
+	SM.Save(f);
 
 	// newsy
 	f << news.size();
@@ -732,6 +691,7 @@ void Game::LoadGame(GameReader& f)
 	Info("Loading save. Version %s, start %s, format %d, mp %d, debug %d.", VersionToString(version), VersionToString(start_version), LOAD_VERSION,
 		online_save ? 1 : 0, IS_SET(flags, SF_DEBUG) ? 1 : 0);
 
+	LoadingHandler loading;
 	GAME_STATE game_state2;
 	if(LOAD_VERSION >= V_FEATURE)
 	{
@@ -743,8 +703,9 @@ void Game::LoadGame(GameReader& f)
 		// game state
 		f >> game_state2;
 
-		// world state
-		W.Load(f);
+		// world map
+		LoadingStep(txLoadingLocations);
+		W.Load(f, loading);
 	}
 	else
 	{
@@ -753,7 +714,7 @@ void Game::LoadGame(GameReader& f)
 		GameStats::Get().LoadOld(f, 0);
 
 		// world day/month/year/worldtime
-		W.LoadOld(f, 0);
+		W.LoadOld(f, loading, 0);
 
 		// game state
 		f >> game_state2;
@@ -761,118 +722,12 @@ void Game::LoadGame(GameReader& f)
 		// game stats (play time)
 		GameStats::Get().LoadOld(f, 1);
 
-		// world state
-		W.LoadOld(f, 1);
+		// world map
+		LoadingStep(txLoadingLocations);
+		W.LoadOld(f, loading, 1);
 	}
 
-	// world map
-	LoadingStep(txLoadingLocations);
-	
-	uint count = f.Read<uint>();
-	W.locations.resize(count);
-	int index = -1;
-	int step = 0;
-	for(Location*& loc : W.locations)
-	{
-		++index;
-		LOCATION_TOKEN loc_token;
-		f >> loc_token;
-
-		if(loc_token != LT_NULL)
-		{
-			switch(loc_token)
-			{
-			case LT_OUTSIDE:
-				loc = new OutsideLocation;
-				break;
-			case LT_CITY:
-			case LT_VILLAGE_OLD:
-				loc = new City;
-				break;
-			case LT_CAVE:
-				loc = new CaveLocation;
-				break;
-			case LT_SINGLE_DUNGEON:
-				loc = new SingleInsideLocation;
-				break;
-			case LT_MULTI_DUNGEON:
-				{
-					int levels = f.Read<int>();
-					loc = new MultiInsideLocation(levels);
-				}
-				break;
-			case LT_CAMP:
-				loc = new Camp;
-				break;
-			default:
-				assert(0);
-				loc = new OutsideLocation;
-				break;
-			}
-
-			loc->Load(f, (game_state2 == GS_LEVEL && W.current_location_index == index), loc_token);
-		}
-		else
-			loc = nullptr;
-
-		if(step == 0)
-		{
-			if(index >= int(count) / 4)
-			{
-				++step;
-				LoadingStep();
-			}
-		}
-		else if(step == 1)
-		{
-			if(index >= int(count) / 2)
-			{
-				++step;
-				LoadingStep();
-			}
-		}
-		else if(step == 2)
-		{
-			if(index >= int(count) * 3 / 4)
-			{
-				++step;
-				LoadingStep();
-			}
-		}
-
-		f >> read_id;
-		if(read_id != check_id)
-			throw Format("Error while reading location %s (%d).", loc ? loc->name.c_str() : "nullptr", index);
-		++check_id;
-	}
-	f >> W.empty_locations;
-	f >> W.create_camp;
-	f >> W.world_pos;
-	f >> W.encounter_timer;
-	f >> W.encounter_chance;
-	f >> W.settlements;
-	f >> W.encounter_loc;
-	f >> W.travel_dir;
-	if(W.state == World::State::INSIDE_ENCOUNTER)
-	{
-		f >> W.travel_location_index;
-		f >> travel_day;
-		f >> travel_start;
-		f >> travel_time;
-		f >> guards_enc_reward;
-	}
-	if(LOAD_VERSION < V_FEATURE && W.state == World::State::ENCOUNTER)
-	{
-		// bugfix
-		W.state = World::State::TRAVEL;
-		travel_start = W.world_pos = W.locations[0]->pos;
-		W.travel_location_index = 0;
-		travel_time = 1.f;
-		travel_day = 0;
-	}
-	if(LOAD_VERSION < V_0_3)
-		W.travel_dir = Clip(-W.travel_dir);
-	encs.resize(f.Read<uint>(), nullptr);
+	uint count;
 	int location_event_handler_quest_refid;
 	if(game_state2 == GS_LEVEL)
 		f >> location_event_handler_quest_refid;
@@ -912,13 +767,13 @@ void Game::LoadGame(GameReader& f)
 		L.location = nullptr;
 		city_ctx = nullptr;
 	}
-	f >> first_city;
-	f >> boss_levels;
-	f >> enter_from;
+	f >> W.first_city;
+	f >> W.boss_levels;
+	f >> L.enter_from;
 	if(LOAD_VERSION >= V_0_3)
-		f >> light_angle;
+		f >> L.light_angle;
 	else
-		light_angle = Random(PI * 2);
+		L.light_angle = Random(PI * 2);
 
 	// set entities pointers
 	LoadingStep(txLoadingData);
@@ -1098,7 +953,7 @@ void Game::LoadGame(GameReader& f)
 	}
 	quest_manager.quest_item_requests.clear();
 	LoadQuestsData(f);
-	script_mgr->Load(f);
+	SM.Load(f);
 
 	// news
 	f >> count;
@@ -1119,7 +974,7 @@ void Game::LoadGame(GameReader& f)
 
 	if(game_state2 == GS_LEVEL)
 	{
-		open_location = L.location_index;
+		L.is_open = true;
 
 		if(L.location->outside)
 		{
@@ -1216,7 +1071,7 @@ void Game::LoadGame(GameReader& f)
 	}
 	else
 	{
-		open_location = -1;
+		L.is_open = false;
 		local_ctx_valid = false;
 	}
 
@@ -1332,9 +1187,9 @@ void Game::LoadGame(GameReader& f)
 	minimap_reveal.clear();
 	dialog_context.dialog_mode = false;
 	if(location_event_handler_quest_refid != -1)
-		location_event_handler = dynamic_cast<LocationEventHandler*>(quest_manager.FindQuest(location_event_handler_quest_refid));
+		L.event_handler = dynamic_cast<LocationEventHandler*>(quest_manager.FindQuest(location_event_handler_quest_refid));
 	else
-		location_event_handler = nullptr;
+		L.event_handler = nullptr;
 	team_shares.clear();
 	team_share_id = -1;
 	fallback_co = FALLBACK::NONE;
@@ -1391,33 +1246,33 @@ void Game::LoadGame(GameReader& f)
 			throw "Missing EOS.";
 	}
 
-	if(enter_from == ENTER_FROM_UNKNOWN && game_state2 == GS_LEVEL)
+	if(L.enter_from == ENTER_FROM_UNKNOWN && game_state2 == GS_LEVEL)
 	{
 		// zgadnij sk¹d przysz³a dru¿yna
 		if(L.location_index == secret_where2)
-			enter_from = ENTER_FROM_PORTAL;
+			L.enter_from = ENTER_FROM_PORTAL;
 		else if(L.location->type == L_DUNGEON)
 		{
 			InsideLocation* inside = (InsideLocation*)L.location;
 			if(inside->from_portal)
-				enter_from = ENTER_FROM_PORTAL;
+				L.enter_from = ENTER_FROM_PORTAL;
 			else
 			{
 				if(dungeon_level == 0)
-					enter_from = ENTER_FROM_OUTSIDE;
+					L.enter_from = ENTER_FROM_OUTSIDE;
 				else
-					enter_from = ENTER_FROM_UP_LEVEL;
+					L.enter_from = ENTER_FROM_UP_LEVEL;
 			}
 		}
 		else if(L.location->type == L_CRYPT)
 		{
 			if(dungeon_level == 0)
-				enter_from = ENTER_FROM_OUTSIDE;
+				L.enter_from = ENTER_FROM_OUTSIDE;
 			else
-				enter_from = ENTER_FROM_UP_LEVEL;
+				L.enter_from = ENTER_FROM_UP_LEVEL;
 		}
 		else
-			enter_from = ENTER_FROM_OUTSIDE;
+			L.enter_from = ENTER_FROM_OUTSIDE;
 	}
 
 	// load music

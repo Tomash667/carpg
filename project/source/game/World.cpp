@@ -4,6 +4,11 @@
 #include "BitStreamFunc.h"
 #include "Language.h"
 #include "LocationHelper.h"
+#include "GameFile.h"
+#include "SaveState.h"
+#include "LoadingHandler.h"
+#include "ScriptManager.h"
+#include "Var.h"
 
 #include "Camp.h"
 #include "CaveLocation.h"
@@ -49,6 +54,7 @@ void World::OnNewGame()
 	day = 0;
 	month = 0;
 	worldtime = 0;
+	first_city = true;
 }
 
 void World::Update(int days)
@@ -436,7 +442,7 @@ uint World::GenerateWorld(int start_location_type, int start_location_target)
 	return start_location;
 }
 
-void World::Save(FileWriter& f)
+void World::Save(GameWriter& f)
 {
 	f << state;
 	f << year;
@@ -444,9 +450,56 @@ void World::Save(FileWriter& f)
 	f << day;
 	f << worldtime;
 	f << current_location_index;
+
+	f << locations.size();
+	Location* current;
+	if(state == State::INSIDE_LOCATION || state == State::INSIDE_ENCOUNTER)
+		current = current_location;
+	else
+		current = nullptr;
+	byte check_id = 0;
+	for(Location* loc : locations)
+	{
+		LOCATION_TOKEN loc_token;
+		if(loc)
+			loc_token = loc->GetToken();
+		else
+			loc_token = LT_NULL;
+		f << loc_token;
+
+		if(loc_token != LT_NULL)
+		{
+			if(loc_token == LT_MULTI_DUNGEON)
+			{
+				int levels = ((MultiInsideLocation*)loc)->levels.size();
+				f << levels;
+			}
+			loc->Save(f, current == loc);
+		}
+
+		f << check_id;
+		++check_id;
+	}
+
+	f << empty_locations;
+	f << create_camp;
+	f << world_pos;
+	f << encounter_timer;
+	f << encounter_chance;
+	f << settlements;
+	f << encounter_loc;
+	f << travel_dir;
+	if(state == State::INSIDE_ENCOUNTER)
+	{
+		f << travel_location_index;
+		f << travel_day;
+		f << travel_start_pos;
+		f << travel_timer;
+	}
+	f << encounters.size();
 }
 
-void World::Load(FileReader& f)
+void World::Load(GameReader& f, LoadingHandler& loading)
 {
 	f >> state;
 	f >> year;
@@ -454,9 +507,115 @@ void World::Load(FileReader& f)
 	f >> day;
 	f >> worldtime;
 	f >> current_location_index;
+	LoadLocations(f, loading);
 }
 
-void World::LoadOld(FileReader& f, int part)
+void World::LoadLocations(GameReader& f, LoadingHandler& loading)
+{
+	byte read_id,
+		check_id = 0;
+
+	uint count = f.Read<uint>();
+	locations.resize(count);
+	int index = -1;
+	int current_index;
+	if(state == State::INSIDE_LOCATION || state == State::INSIDE_ENCOUNTER)
+		current_index = current_location_index;
+	else
+		current_index = -1;
+	int step = 0;
+	for(Location*& loc : locations)
+	{
+		++index;
+		LOCATION_TOKEN loc_token;
+		f >> loc_token;
+
+		if(loc_token != LT_NULL)
+		{
+			switch(loc_token)
+			{
+			case LT_OUTSIDE:
+				loc = new OutsideLocation;
+				break;
+			case LT_CITY:
+			case LT_VILLAGE_OLD:
+				loc = new City;
+				break;
+			case LT_CAVE:
+				loc = new CaveLocation;
+				break;
+			case LT_SINGLE_DUNGEON:
+				loc = new SingleInsideLocation;
+				break;
+			case LT_MULTI_DUNGEON:
+				{
+					int levels = f.Read<int>();
+					loc = new MultiInsideLocation(levels);
+				}
+				break;
+			case LT_CAMP:
+				loc = new Camp;
+				break;
+			default:
+				assert(0);
+				loc = new OutsideLocation;
+				break;
+			}
+
+			loc->Load(f, current_index == index, loc_token);
+		}
+		else
+			loc = nullptr;
+
+		if(step == 0)
+		{
+			if(index >= int(count) / 4)
+			{
+				++step;
+				loading.Step();
+			}
+		}
+		else if(step == 1)
+		{
+			if(index >= int(count) / 2)
+			{
+				++step;
+				loading.Step();
+			}
+		}
+		else if(step == 2)
+		{
+			if(index >= int(count) * 3 / 4)
+			{
+				++step;
+				loading.Step();
+			}
+		}
+
+		f >> read_id;
+		if(read_id != check_id)
+			throw Format("Error while reading location %s (%d).", loc ? loc->name.c_str() : "nullptr", index);
+		++check_id;
+	}
+	f >> empty_locations;
+	f >> create_camp;
+	f >> world_pos;
+	f >> encounter_timer;
+	f >> encounter_chance;
+	f >> settlements;
+	f >> encounter_loc;
+	f >> travel_dir;
+	if(state == State::INSIDE_ENCOUNTER)
+	{
+		f >> travel_location_index;
+		f >> travel_day;
+		f >> travel_start_pos;
+		f >> travel_timer;
+	}
+	encounters.resize(f.Read<uint>(), nullptr);
+}
+
+void World::LoadOld(GameReader& f, LoadingHandler& loading, int part)
 {
 	if(part == 0)
 	{
@@ -487,6 +646,27 @@ void World::LoadOld(FileReader& f, int part)
 			break;
 		}
 		f >> current_location_index;
+		LoadLocations(f, loading);
+		if(state == State::INSIDE_ENCOUNTER)
+		{
+			// random encounter - should guards give team reward
+			bool guards_enc_reward;
+			f >> guards_enc_reward;
+			if(guards_enc_reward)
+				SM.GetVar("guards_enc_reward") = true;
+		}
+		else if(state == State::ENCOUNTER)
+		{
+			// bugfix
+			state = State::TRAVEL;
+			travel_start_pos = world_pos = locations[0]->pos;
+			travel_location_index = 0;
+			travel_timer = 1.f;
+			travel_day = 0;
+		}
+		if(LOAD_VERSION < V_0_3)
+			travel_dir = Clip(-travel_dir);
+		encounters.resize(f.Read<uint>(), nullptr);
 	}
 }
 

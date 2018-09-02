@@ -26,9 +26,9 @@ public:
 	typedef std::pair<LOCATION, bool>(*AddLocationsCallback)(uint index);
 	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name);
 
-	void Save(FileWriter& f);
-	void Load(FileReader& f);
-	void LoadOld(FileReader& f, int part);
+	void Save(GameWriter& f);
+	void Load(GameReader& f, LoadingHandler& loading);
+	void LoadOld(GameReader& f, LoadingHandler& loading, int part);
 	void WriteTime(BitStreamWriter& f);
 	void ReadTime(BitStreamReader& f);
 
@@ -50,22 +50,30 @@ public:
 	int current_location_index, // current location index or -1
 		travel_location_index; // travel target where state is TRAVEL, ENCOUNTER or INSIDE_ENCOUNTER (-1 otherwise)
 	vector<Location*> locations; // can be nullptr
+	vector<Encounter*> encounters;
+	vector<Int2> boss_levels; // levels with boss music (x-location index, y-dungeon level)
 
 public: // FIXME
 	State state;
 	uint settlements, // count and index below this value is city/village
 		empty_locations, // counter
 		encounter_loc, // encounter location index
-		create_camp; // counter to create new random camps
-	Vec2 world_pos;
-	float encounter_timer, // increase chance for encounter every 0.25 sec
+		create_camp, // counter to create new random camps
+		travel_day;
+	Vec2 world_pos,
+		travel_start_pos;
+	float travel_timer,
+		encounter_timer, // increase chance for encounter every 0.25 sec
 		encounter_chance,
 		travel_dir; // from which direction team will enter level after travel
+	bool first_city; // spawn more low level heroes in first city
 private:
 	int year; // in game year, starts at 100
 	int month; // in game month, 0 to 11
 	int day; // in game day, 0 to 29
 	int worldtime; // number of passed game days, starts at 0
 	cstring txDate, txRandomEncounter;
+
+	void LoadLocations(GameReader& f, LoadingHandler& loading);
 };
 extern World W;

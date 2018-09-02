@@ -45,3 +45,8 @@ void VarsContainer::Load(FileReader& f)
 		vars[var_name] = v;
 	}
 }
+
+void VarsContainer::Clear()
+{
+	DeleteElements(vars);
+}

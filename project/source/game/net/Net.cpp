@@ -400,7 +400,7 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 				f << ib.enter_y;
 			}
 		}
-		f << light_angle;
+		f << L.light_angle;
 	}
 	else
 	{
@@ -688,7 +688,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	pc_data.rot_buf = 0.f;
 	show_mp_panel = true;
 	boss_level_mp = false;
-	open_location = 0;
+	L.is_open = true;
 
 	bool loaded_resources;
 	f >> mp_load;
@@ -964,7 +964,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		}
 		else
 			CreateForestMinimap();
-		f >> light_angle;
+		f >> L.light_angle;
 		if(!f)
 		{
 			Error("Read level: Broken packet for light angle.");
@@ -4126,10 +4126,10 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else
 				{
 					// leave current location
-					if(open_location != -1)
+					if(L.is_open)
 					{
 						LeaveLocation();
-						open_location = -1;
+						L.is_open = false;
 					}
 
 					// start travel
@@ -4138,9 +4138,9 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					W.current_location_index = -1;
 					L.location = nullptr;
 					L.location_index = -1;
-					travel_time = 0.f;
-					travel_day = 0;
-					travel_start = W.world_pos;
+					W.travel_timer = 0.f;
+					W.travel_day = 0;
+					W.travel_start_pos = W.world_pos;
 					W.travel_location_index = loc;
 					Location& l = *W.locations[W.travel_location_index];
 					W.travel_dir = Angle(W.world_pos.x, -W.world_pos.y, l.pos.x, -l.pos.y);
@@ -4504,10 +4504,10 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: CHEAT_TRAVEL from %s, invalid location index %u.", info.name.c_str(), location_index);
 				else
 				{
-					if(open_location != -1)
+					if(L.is_open)
 					{
 						LeaveLocation(false, false);
-						open_location = -1;
+						L.is_open = false;
 					}
 
 					W.current_location_index = location_index;
@@ -4659,9 +4659,9 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 
-				string& output = script_mgr->OpenOutput();
-				script_mgr->SetContext(info.pc, target);
-				script_mgr->RunScript(code->c_str());
+				string& output = SM.OpenOutput();
+				SM.SetContext(info.pc, target);
+				SM.RunScript(code->c_str());
 
 				NetChangePlayer& c = Add1(info.changes);
 				c.type = NetChangePlayer::RUN_SCRIPT_RESULT;
@@ -4673,7 +4673,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					*c.str = output;
 				}
 
-				script_mgr->CloseOutput();
+				SM.CloseOutput();
 			}
 			break;
 		// player set next action
@@ -6991,10 +6991,10 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 				{
 					// leave current location
-					if(open_location != -1)
+					if(L.is_open)
 					{
 						LeaveLocation();
-						open_location = -1;
+						L.is_open = false;
 					}
 
 					W.state = World::State::TRAVEL;
@@ -7002,9 +7002,9 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					W.current_location = nullptr;
 					L.location_index = -1;
 					L.location = nullptr;
-					travel_time = 0.f;
-					travel_day = 0;
-					travel_start = W.world_pos;
+					W.travel_timer = 0.f;
+					W.travel_day = 0;
+					W.travel_start_pos = W.world_pos;
 					W.travel_location_index = loc;
 					Location& l = *W.locations[W.travel_location_index];
 					W.travel_dir = Angle(W.world_pos.x, -W.world_pos.y, l.pos.x, -l.pos.y);
@@ -7880,10 +7880,10 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: CHEAT_TRAVEL, invalid location index %u.", location_index);
 				else
 				{
-					if(open_location != -1)
+					if(L.is_open)
 					{
 						LeaveLocation(false, false);
-						open_location = -1;
+						L.is_open = false;
 					}
 
 					W.current_location_index = location_index;
@@ -9714,9 +9714,9 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 	{
 		f << true;
 		f << W.travel_location_index;
-		f << travel_day;
-		f << travel_time;
-		f << travel_start;
+		f << W.travel_day;
+		f << W.travel_timer;
+		f << W.travel_start_pos;
 		f << W.world_pos;
 	}
 	else
@@ -9940,9 +9940,9 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	{
 		W.state = World::State::INSIDE_ENCOUNTER;
 		f >> W.travel_location_index;
-		f >> travel_day;
-		f >> travel_time;
-		f >> travel_start;
+		f >> W.travel_day;
+		f >> W.travel_timer;
+		f >> W.travel_start_pos;
 		f >> W.world_pos;
 		if(!f)
 		{
@@ -10280,7 +10280,7 @@ void Game::RemovePlayer(PlayerInfo& info)
 	RemoveElement(Team.active_members, unit);
 	if(game_state == GS_WORLDMAP)
 	{
-		if(Net::IsLocal() && open_location == -1)
+		if(Net::IsLocal() && !L.is_open)
 			DeleteUnit(unit);
 	}
 	else

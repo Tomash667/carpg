@@ -64,7 +64,7 @@ sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cur
 cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
 grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM),
 autopick_class(Class::INVALID), current_packet(nullptr), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false),
-script_mgr(nullptr), quickstart_slot(MAX_SAVE_SLOTS), tournament_state(TOURNAMENT_NOT_DONE), arena_free(true), autoready(false)
+quickstart_slot(MAX_SAVE_SLOTS), tournament_state(TOURNAMENT_NOT_DONE), arena_free(true), autoready(false)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -83,7 +83,6 @@ script_mgr(nullptr), quickstart_slot(MAX_SAVE_SLOTS), tournament_state(TOURNAMEN
 	ClearPointers();
 	NullGui();
 
-	light_angle = 0.f;
 	uv_mod = Terrain::DEFAULT_UV_MOD;
 	cam.draw_range = 80.f;
 
@@ -1807,8 +1806,7 @@ void Game::OnCleanup()
 	free_cave_data();
 	DeleteElements(game_players);
 	DeleteElements(old_players);
-
-	delete script_mgr;
+	SM.Cleanup();
 
 	if(peer)
 		SLNet::RakPeerInterface::DestroyInstance(peer);
@@ -2479,7 +2477,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		// muzyka bossa
 		if(IS_SET(u.data->flags2, F2_BOSS))
 		{
-			if(RemoveElementTry(boss_levels, Int2(L.location_index, dungeon_level)))
+			if(RemoveElementTry(W.boss_levels, Int2(L.location_index, dungeon_level)))
 				SetMusic();
 		}
 
@@ -3038,7 +3036,7 @@ uint Game::ValidateGameData(bool major)
 	PerkInfo::Validate(err);
 	RoomType::Validate(err);
 	if(major)
-		VerifyDialogs(script_mgr, err);
+		VerifyDialogs(err);
 
 	if(err == 0)
 		Info("Test: Validation succeeded.");

@@ -405,7 +405,6 @@ public:
 
 	QUICKSTART quickstart;
 	int quickstart_slot;
-	ScriptManager* script_mgr;
 
 	// supershader
 	string sshader_code;
@@ -419,7 +418,6 @@ public:
 	SuperShader* GetSuperShader(uint id);
 	SuperShader* CompileSuperShader(uint id);
 
-	float light_angle;
 	bool dungeon_tex_wrap;
 
 	void SetupSuperShader();
@@ -1930,30 +1928,12 @@ public:
 	void AbadonLocation(Location* loc);
 	void SetLocationVisited(Location& loc);
 
-	int open_location; // aktualnie otwarta lokacja (w sensie wczytanych zasobów, utworzonych jednostek itp) lub -1 [odtwarzany]
-	int travel_day; // liczba dni w podró¿y [tylko jeœli world_state==WS_TRAVEL]
 	int enc_kierunek; // kierunek z której strony nadesz³a dru¿yna w czasie spotkania [tymczasowe]
 	int spotkanie; // rodzaj losowego spotkania [tymczasowe]
 	int enc_tryb; // 0 - losowa walka, 1 - specjalne spotkanie, 2 - questowe spotkanie [tymczasowe]
-	Vec2 travel_start; // punkt startu podró¿y na mapie œwiata [tylko jeœli world_state==WS_TRAVEL]
-	float travel_time; // czas podró¿y na mapie [tylko jeœli world_state==WS_TRAVEL]
 	bool far_encounter; // czy dru¿yna gracza jest daleko w czasie spotkania [tymczasowe]
-	bool guards_enc_reward; // czy odebrano nagrodê za uratowanie stra¿ników w czasie spotkania
 	SPAWN_GROUP losowi_wrogowie; // wrogowie w czasie spotkania [tymczasowe]
-	vector<Encounter*> encs; // specjalne spotkania na mapie œwiata [odtwarzane przy wczytywaniu questów]
 	Encounter* game_enc; // spotkanie w czasie podró¿y [tymczasowe]
-	LocationEventHandler* location_event_handler; // obs³uga wydarzeñ lokacji
-	bool first_city;
-	vector<Int2> boss_levels; // dla oznaczenia gdzie graæ muzykê (x-lokacja, y-poziom)
-	enum EnterFrom
-	{
-		ENTER_FROM_PORTAL = 0,
-		ENTER_FROM_OUTSIDE = -1,
-		ENTER_FROM_UP_LEVEL = -2,
-		ENTER_FROM_DOWN_LEVEL = -3,
-		ENTER_FROM_UNKNOWN = -4
-	};
-	int enter_from; // sk¹d siê przysz³o (u¿ywane przy wczytywanie w MP gdy do³¹cza nowa postaæ)
 	bool g_have_well;
 	Int2 g_well_pt;
 

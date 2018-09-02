@@ -10,7 +10,6 @@ class asIScriptEngine;
 class asIScriptModule;
 class TypeBuilder;
 struct asSFuncPtr;
-struct VarsContainer;
 
 struct ScriptException
 {
@@ -24,8 +23,8 @@ class ScriptManager
 {
 public:
 	ScriptManager();
-	~ScriptManager();
 	void Init();
+	void Cleanup();
 	void RegisterCommon();
 	void RegisterGame();
 	void SetContext(PlayerController* pc, Unit* target);
@@ -39,7 +38,8 @@ public:
 	TypeBuilder AddType(cstring name);
 	TypeBuilder ForType(cstring name);
 	VarsContainer* GetVars(Unit* unit);
-	void Clear();
+	Var& GetVar(cstring name);
+	void Reset();
 	void Save(FileWriter& f);
 	void Load(FileReader& f);
 
@@ -55,3 +55,5 @@ private:
 	PlayerController* pc;
 	Unit* target;
 };
+
+extern ScriptManager SM;
