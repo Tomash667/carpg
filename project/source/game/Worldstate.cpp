@@ -78,7 +78,4 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 
 	// aktualizacja mapy œwiata
 	DoWorldProgress(days);
-
-	if(Net::IsOnline())
-		Net::PushChange(NetChange::WORLD_TIME);
 }

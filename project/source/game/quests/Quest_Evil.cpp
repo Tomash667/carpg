@@ -82,12 +82,12 @@ void Quest_Evil::SetProgress(int prog2)
 			// usuñ plotkê
 			quest_manager.RemoveQuestRumor(P_ZLO);
 			// lokacja
-			target_loc = game->CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, OLD_TEMPLE, SG_NONE, false, 1);
-			Location& target = GetTargetLocation();
+			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, OLD_TEMPLE, SG_NONE, false, 1);
 			target.SetKnown();
 			target.st = 8;
 			target.active_quest = this;
 			target.dont_clean = true;
+			target_loc = target.index;
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 			at_level = 0;
 			// questowe rzeczy
@@ -109,7 +109,7 @@ void Quest_Evil::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[236]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(Format(game->txQuest[237], GetTargetLocationName()));
+			W.AddNews(Format(game->txQuest[237], GetTargetLocationName()));
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -135,7 +135,7 @@ void Quest_Evil::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[239]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(Format(game->txQuest[240], W.GetLocation(mage_loc)->name.c_str()));
+			W.AddNews(Format(game->txQuest[240], W.GetLocation(mage_loc)->name.c_str()));
 			game->current_dialog->talker->temporary = true;
 
 			if(Net::IsOnline())
@@ -145,7 +145,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::TalkedWithCaptain:
 		// pogadano z kapitanem
 		{
-			msgs.push_back(Format(game->txQuest[241], LocationHelper::IsCity(W.current_location) ? game->txForMayor : game->txForSoltys));
+			msgs.push_back(Format(game->txQuest[241], LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -156,7 +156,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::TalkedWithMayor:
 		// pogadano z burmistrzem
 		{
-			msgs.push_back(Format(game->txQuest[242], LocationHelper::IsCity(W.current_location) ? game->txForMayor : game->txForSoltys));
+			msgs.push_back(Format(game->txQuest[242], LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -212,20 +212,19 @@ void Quest_Evil::SetProgress(int prog2)
 			for(int i = 0; i < 3; ++i)
 			{
 				Int2 levels = g_base_locations[l_info[i].target].levels;
-				loc[i].target_loc = game->CreateLocation(l_info[i].type, Vec2(0, 0), -128.f, l_info[i].target, l_info[i].spawn, true,
+				Location& target = *W.CreateLocation(l_info[i].type, Vec2(0, 0), -128.f, l_info[i].target, l_info[i].spawn, true,
 					Random(max(levels.x, 2), max(levels.y, 2)));
-				Location& target = *W.GetLocation(loc[i].target_loc);
 				target.st = l_info[i].st;
 				target.SetKnown();
 				target.active_quest = this;
+				loc[i].target_loc = target.index;
 				loc[i].near_loc = W.GetNearestSettlement(target.pos);
 				loc[i].at_level = target.GetLastLevel();
 				loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
 				msgs.push_back(Format(game->txQuest[247], W.GetLocation(loc[i].target_loc)->name.c_str(),
 					GetLocationDirName(W.GetLocation(loc[i].near_loc)->pos, W.GetLocation(loc[i].target_loc)->pos),
 					W.GetLocation(loc[i].near_loc)->name.c_str()));
-				game->AddNews(Format(game->txQuest[246],
-					W.GetLocation(loc[i].target_loc)->name.c_str()));
+				W.AddNews(Format(game->txQuest[246], W.GetLocation(loc[i].target_loc)->name.c_str()));
 			}
 
 			next_event = &loc[0];
@@ -317,7 +316,7 @@ void Quest_Evil::SetProgress(int prog2)
 
 			quest_manager.EndUniqueQuest();
 			evil_state = State::ClericWantTalk;
-			game->AddNews(game->txQuest[250]);
+			W.AddNews(game->txQuest[250]);
 
 			if(Net::IsOnline())
 			{
@@ -354,9 +353,9 @@ cstring Quest_Evil::FormatString(const string& str)
 	else if(str == "mage_dir")
 		return GetLocationDirName(GetStartLocation().pos, W.GetLocation(mage_loc)->pos);
 	else if(str == "burmistrza")
-		return LocationHelper::IsCity(W.current_location) ? game->txForMayor : game->txForSoltys;
+		return LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txForMayor : game->txForSoltys;
 	else if(str == "burmistrzem")
-		return LocationHelper::IsCity(W.current_location) ? game->txQuest[251] : game->txQuest[252];
+		return LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txQuest[251] : game->txQuest[252];
 	else if(str == "t1")
 		return W.GetLocation(loc[0].target_loc)->name.c_str();
 	else if(str == "t2")
@@ -444,7 +443,7 @@ bool Quest_Evil::IfSpecial(DialogContext& ctx, cstring msg)
 	{
 		if(prog == Progress::GivenBook)
 		{
-			int d = GetLocId(W.current_location_index);
+			int d = GetLocId(W.GetCurrentLocationIndex());
 			if(d != -1)
 			{
 				if(loc[d].state != 3)
@@ -453,7 +452,7 @@ bool Quest_Evil::IfSpecial(DialogContext& ctx, cstring msg)
 		}
 		else if(prog == Progress::AllPortalsClosed)
 		{
-			if(W.current_location_index == target_loc)
+			if(W.GetCurrentLocationIndex() == target_loc)
 				return true;
 		}
 		return false;
@@ -569,7 +568,7 @@ void Quest_Evil::LoadOld(GameReader& f)
 //=================================================================================================
 void Quest_Evil::GenerateBloodyAltar()
 {
-	InsideLocation* inside = (InsideLocation*)W.current_location;
+	InsideLocation* inside = (InsideLocation*)W.GetCurrentLocation();
 	InsideLocationLevel& lvl = inside->GetLevelData();
 
 	// szukaj zwyk³ego o³tarza blisko œrodka
@@ -659,7 +658,7 @@ void Quest_Evil::GenerateBloodyAltar()
 //=================================================================================================
 void Quest_Evil::GeneratePortal()
 {
-	InsideLocation* inside = (InsideLocation*)W.current_location;
+	InsideLocation* inside = (InsideLocation*)W.GetCurrentLocation();
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Vec3 srodek(float(lvl.w), 0, float(lvl.h));
 
@@ -708,7 +707,7 @@ void Quest_Evil::GeneratePortal()
 	inside->portal->pos = portal_pos;
 	inside->portal->at_level = game->dungeon_level;
 
-	int d = GetLocId(W.current_location_index);
+	int d = GetLocId(W.GetCurrentLocationIndex());
 	loc[d].pos = portal_pos;
 	loc[d].state = Quest_Evil::Loc::State::None;
 

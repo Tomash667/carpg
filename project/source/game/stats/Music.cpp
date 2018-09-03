@@ -116,19 +116,10 @@ void Game::SetMusic()
 	if(sound_mgr->IsMusicDisabled())
 		return;
 
-	if(!Net::IsLocal() && boss_level_mp)
+	if(W.IsBossLevel(Int2(L.location_index, dungeon_level)))
 	{
 		SetMusic(MusicType::Boss);
 		return;
-	}
-
-	for(vector<Int2>::iterator it = W.boss_levels.begin(), end = W.boss_levels.end(); it != end; ++it)
-	{
-		if(L.location_index == it->x && dungeon_level == it->y)
-		{
-			SetMusic(MusicType::Boss);
-			return;
-		}
 	}
 
 	SetMusic(GetLocationMusic());

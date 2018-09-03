@@ -4,6 +4,7 @@
 #include "QuestManager.h"
 #include "SaveState.h"
 #include "GameFile.h"
+#include "World.h"
 
 #include "Quest_Bandits.h"
 #include "Quest_BanditsCollectToll.h"
@@ -270,6 +271,56 @@ void QuestManager::Cleanup()
 	DeleteElements(quests);
 	DeleteElements(unaccepted_quests);
 	DeleteElements(quest_item_requests);
+}
+
+//=================================================================================================
+void QuestManager::Update(int days)
+{
+	// mark quest locations as not quest / remove quest camps
+	LoopAndRemove(quests_timeout, [this](Quest_Dungeon* quest)
+	{
+		if(!quest->IsTimedout())
+			return false;
+
+		Location* loc = W.GetLocation(quest->target_loc);
+		bool in_camp = false;
+
+		if(loc->type == L_CAMP && (quest->target_loc == W.GetTravelLocationIndex() || quest->target_loc == W.GetCurrentLocationIndex()))
+			in_camp = true;
+
+		if(!quest->timeout)
+		{
+			bool ok = quest->OnTimeout(in_camp ? TIMEOUT_CAMP : TIMEOUT_NORMAL);
+			if(ok)
+				quest->timeout = true;
+			else
+				return false;
+		}
+
+		if(in_camp)
+			return false;
+
+		loc->active_quest = nullptr;
+
+		if(loc->type == L_CAMP)
+		{
+			quest->target_loc = -1;
+			W.DeleteCamp((Camp*)loc);
+		}
+
+		return true;
+	});
+
+	// quest timeouts, not attached to location
+	LoopAndRemove(quests_timeout2, [](Quest* quest)
+	{
+		if(quest->IsTimedout() && quest->OnTimeout(TIMEOUT2))
+		{
+			quest->timeout = true;
+			return true;
+		}
+		return false;
+	});
 }
 
 //=================================================================================================

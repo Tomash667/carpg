@@ -17,7 +17,7 @@ void Quest_BanditsCollectToll::Start()
 {
 	quest_id = Q_BANDITS_COLLECT_TOLL;
 	type = QuestType::Captain;
-	start_loc = W.current_location_index;
+	start_loc = W.GetCurrentLocationIndex();
 	other_loc = W.GetRandomSettlementIndex(start_loc);
 }
 
@@ -114,7 +114,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddReward(400);
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
-			game->AddNews(game->txQuest[278]);
+			W.AddNews(game->txQuest[278]);
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -170,10 +170,11 @@ void Quest_BanditsCollectToll::Special(DialogContext& ctx, cstring msg)
 }
 
 //=================================================================================================
-void Quest_BanditsCollectToll::HandleLocationEvent(LocationEventHandler::Event event)
+bool Quest_BanditsCollectToll::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
 		SetProgress(Progress::KilledBandits);
+	return false;
 }
 
 //=================================================================================================

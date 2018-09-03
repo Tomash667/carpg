@@ -119,9 +119,9 @@ void WorldMapGui::Draw(ControlDrawData*)
 	const Vec2& world_pos = W.GetWorldPos();
 
 	// opis aktualnej lokacji
-	if(W.current_location)
+	if(W.GetCurrentLocation())
 	{
-		Location& current = *W.current_location;
+		Location& current = *W.GetCurrentLocation();
 		GUI.DrawSprite(tSelected[1], WorldPosToScreen(Int2(current.pos.x - 32.f, current.pos.y + 32.f)), 0xAAFFFFFF);
 		s += Format("\n\n%s: %s", txCurrentLoc, current.name.c_str());
 		AppendLocationText(current, s.get_ref());
@@ -132,7 +132,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	{
 		Location& picked = *W.locations[picked_location];
 
-		if(picked_location != W.current_location_index)
+		if(picked_location != W.GetCurrentLocationIndex())
 		{
 			float distance = Vec2::Distance(world_pos, picked.pos) / 600.f * 200;
 			int days_cost = int(ceil(distance / World::TRAVEL_SPEED));
@@ -156,7 +156,7 @@ void WorldMapGui::Draw(ControlDrawData*)
 	GUI.DrawText(GUI.default_font, s, 0, Color::Black, rect);
 
 	// kreska
-	if(picked_location != -1 && picked_location != W.current_location_index)
+	if(picked_location != -1 && picked_location != W.GetCurrentLocationIndex())
 	{
 		Location& picked = *W.locations[picked_location];
 		Vec2 pts[2] = { WorldPosToScreen(world_pos), WorldPosToScreen(picked.pos) };
@@ -540,7 +540,7 @@ void WorldMapGui::Update(float dt)
 				{
 					if(game.IsLeader())
 					{
-						if(picked_location != W.current_location_index)
+						if(picked_location != W.GetCurrentLocationIndex())
 						{
 							// opuœæ aktualn¹ lokalizacje
 							if(L.is_open)
@@ -562,7 +562,7 @@ void WorldMapGui::Update(float dt)
 					else
 						game.AddGameMsg2(txOnlyLeaderCanTravel, 3.f, GMS_ONLY_LEADER_CAN_TRAVEL);
 				}
-				else if(game.devmode && picked_location != W.current_location_index && Key.PressedRelease('T'))
+				else if(game.devmode && picked_location != W.GetCurrentLocationIndex() && Key.PressedRelease('T'))
 				{
 					if(game.IsLeader())
 					{

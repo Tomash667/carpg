@@ -1399,6 +1399,9 @@
     <ClInclude Include="source\game\helpers\LoadingHandler.h">
       <Filter>3. game\helpers</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\entity\News.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">

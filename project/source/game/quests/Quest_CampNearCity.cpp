@@ -15,7 +15,7 @@ void Quest_CampNearCity::Start()
 {
 	quest_id = Q_CAMP_NEAR_CITY;
 	type = QuestType::Captain;
-	start_loc = W.current_location_index;
+	start_loc = W.GetCurrentLocationIndex();
 	switch(Rand() % 3)
 	{
 	case 0:
@@ -239,10 +239,11 @@ bool Quest_CampNearCity::OnTimeout(TimeoutType ttype)
 }
 
 //=================================================================================================
-void Quest_CampNearCity::HandleLocationEvent(LocationEventHandler::Event event)
+bool Quest_CampNearCity::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started && !timeout)
 		SetProgress(Progress::ClearedLocation);
+	return false;
 }
 
 //=================================================================================================

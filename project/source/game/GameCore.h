@@ -1,5 +1,6 @@
 #pragma once
 
+//-----------------------------------------------------------------------------
 #include "EngineCore.h"
 #include "File.h"
 #include "WindowsIncludes.h"
@@ -14,6 +15,7 @@
 #undef OUT
 #undef NULL
 
+//-----------------------------------------------------------------------------
 using namespace SLNet;
 
 //-----------------------------------------------------------------------------
@@ -66,6 +68,7 @@ struct BuildingScript;
 struct Bullet;
 struct Camera;
 struct CameraCollider;
+struct Camp;
 struct Chest;
 struct City;
 struct CityBuilding;
@@ -96,11 +99,13 @@ struct LoadingHandler;
 struct Location;
 struct LocationEventHandler;
 struct NetChangePlayer;
+struct News;
 struct Object;
 struct OtherItem;
 struct PlayerController;
 struct PlayerInfo;
 struct Portal;
+struct Quest;
 struct Quest_Dungeon;
 struct Quest_Encounter;
 struct Quest_Event;

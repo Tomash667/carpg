@@ -14,7 +14,7 @@
 //=================================================================================================
 void Quest_Wanted::Start()
 {
-	start_loc = W.current_location_index;
+	start_loc = W.GetCurrentLocationIndex();
 	quest_id = Q_WANTED;
 	type = QuestType::Captain;
 	level = Random(5, 15);
@@ -239,7 +239,7 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit
 		unit->hero->name = unit_name;
 		GetTargetLocation().active_quest = nullptr;
 		target_unit = unit;
-		in_location = W.current_location_index;
+		in_location = W.GetCurrentLocationIndex();
 		break;
 	case UnitEventHandler::DIE:
 		if(!unit->hero->team_member)
@@ -256,7 +256,7 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit
 	case UnitEventHandler::KICK:
 		// kicked from team, can be killed now, don't dissapear
 		unit->temporary = false;
-		in_location = W.current_location_index;
+		in_location = W.GetCurrentLocationIndex();
 		break;
 	case UnitEventHandler::LEAVE:
 		if(state == Quest::Failed)
@@ -296,7 +296,7 @@ bool Quest_Wanted::Load(GameReader& f)
 	else if(!target_unit || target_unit->hero->team_member)
 		in_location = -1;
 	else
-		in_location = game->FindWorldUnit(target_unit, target_loc, W.current_location_index);
+		in_location = game->FindWorldUnit(target_unit, target_loc, W.GetCurrentLocationIndex());
 
 	if(!done)
 	{

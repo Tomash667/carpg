@@ -151,7 +151,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			quest_manager.RemoveQuestRumor(P_BANDYCI);
-			game->AddNews(Format(game->txQuest[156], GetStartLocationName()));
+			W.AddNews(Format(game->txQuest[156], GetStartLocationName()));
 
 			if(Net::IsOnline())
 			{
@@ -239,10 +239,7 @@ void Quest_Bandits::SetProgress(int prog2)
 				}
 			}
 
-			// news, remove auto created news
-			delete game->news.back();
-			game->news.pop_back();
-			game->AddNews(Format(game->txQuest[160], GetStartLocationName()));
+			W.AddNews(Format(game->txQuest[160], GetStartLocationName()));
 		}
 		break;
 	case Progress::TalkedWithAgent:
@@ -251,11 +248,11 @@ void Quest_Bandits::SetProgress(int prog2)
 			bandits_state = State::AgentTalked;
 			game->current_dialog->talker->hero->mode = HeroData::Leave;
 			game->current_dialog->talker->event_handler = this;
-			target_loc = game->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, SG_BANDITS, false);
-			Location& target = GetTargetLocation();
+			Location& target = *W.CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, SG_BANDITS, false);
 			target.active_quest = this;
 			target.SetKnown();
 			target.st = 10;
+			target_loc = target.index;
 			W.GetLocation(camp_loc)->active_quest = nullptr;
 			msgs.push_back(Format(game->txQuest[161], target.name.c_str(), GetLocationDirName(GetStartLocation().pos, target.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -281,7 +278,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[162], GetStartLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(game->txQuest[163]);
+			W.AddNews(game->txQuest[163]);
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -354,10 +351,14 @@ cstring Quest_Bandits::FormatString(const string& str)
 }
 
 //=================================================================================================
-void Quest_Bandits::HandleLocationEvent(LocationEventHandler::Event event)
+bool Quest_Bandits::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(prog == Progress::NeedClearCamp && event == LocationEventHandler::CLEARED)
+	{
 		SetProgress(Progress::KilledBandits);
+		return true;
+	}
+	return false;
 }
 
 //=================================================================================================

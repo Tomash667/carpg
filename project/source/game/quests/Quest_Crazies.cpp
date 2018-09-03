@@ -52,16 +52,16 @@ void Quest_Crazies::SetProgress(int prog2)
 		break;
 	case Progress::KnowLocation: // trener powiedzia³ o labiryncie
 		{
-			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, LABIRYNTH, SG_UNKNOWN, false);
-			start_loc = W.current_location_index;
-			Location& loc = GetTargetLocation();
+			start_loc = W.GetCurrentLocationIndex();
+			Location& loc = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, LABIRYNTH, SG_UNKNOWN, false);
 			loc.active_quest = this;
 			loc.SetKnown();
 			loc.st = 13;
+			target_loc = loc.index;
 
 			crazies_state = State::TalkedTrainer;
 
-			msgs.push_back(Format(game->txQuest[255], W.current_location->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
+			msgs.push_back(Format(game->txQuest[255], W.GetCurrentLocation()->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 

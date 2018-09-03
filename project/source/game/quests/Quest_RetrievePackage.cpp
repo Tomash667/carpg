@@ -15,7 +15,7 @@ void Quest_RetrievePackage::Start()
 {
 	quest_id = Q_RETRIEVE_PACKAGE;
 	type = QuestType::Mayor;
-	start_loc = W.current_location_index;
+	start_loc = W.GetCurrentLocationIndex();
 	from_loc = W.GetRandomSettlementIndex(start_loc);
 }
 
@@ -196,7 +196,7 @@ bool Quest_RetrievePackage::OnTimeout(TimeoutType ttype)
 //=================================================================================================
 bool Quest_RetrievePackage::IfHaveQuestItem() const
 {
-	return W.current_location_index == start_loc && prog == Progress::Started;
+	return W.GetCurrentLocationIndex() == start_loc && prog == Progress::Started;
 }
 
 //=================================================================================================

@@ -14,7 +14,7 @@ void Quest_KillAnimals::Start()
 {
 	quest_id = Q_KILL_ANIMALS;
 	type = QuestType::Captain;
-	start_loc = W.current_location_index;
+	start_loc = W.GetCurrentLocationIndex();
 }
 
 //=================================================================================================
@@ -162,10 +162,11 @@ bool Quest_KillAnimals::OnTimeout(TimeoutType ttype)
 }
 
 //=================================================================================================
-void Quest_KillAnimals::HandleLocationEvent(LocationEventHandler::Event event)
+bool Quest_KillAnimals::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started && !timeout)
 		SetProgress(Progress::ClearedLocation);
+	return false;
 }
 
 //=================================================================================================

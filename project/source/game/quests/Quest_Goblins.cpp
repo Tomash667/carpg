@@ -78,7 +78,7 @@ void DodajStraznikow()
 	game.WarpUnit(*u, use->pos);
 
 	// usuñ pozosta³e osoby z pomieszczenia
-	InsideLocation* inside = (InsideLocation*)W.current_location;
+	InsideLocation* inside = (InsideLocation*)W.GetCurrentLocation();
 	InsideLocationLevel& lvl = inside->GetLevelData();
 	Room* room = lvl.GetNearestRoom(u->pos);
 	assert(room);
@@ -175,7 +175,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			W.RemoveEncounter(enc);
 			enc = -1;
 			GetTargetLocation().active_quest = nullptr;
-			game->AddNews(game->txQuest[221]);
+			W.AddNews(game->txQuest[221]);
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -234,7 +234,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			goblins_state = State::GivenBow;
 			GetTargetLocation().active_quest = nullptr;
 			target_loc = -1;
-			game->AddNews(game->txQuest[225]);
+			W.AddNews(game->txQuest[225]);
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -284,11 +284,11 @@ void Quest_Goblins::SetProgress(int prog2)
 		// pogadano z karczmarzem
 		{
 			goblins_state = State::KnownLocation;
-			target_loc = game->CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, THRONE_FORT, SG_GOBLINS, false);
-			Location& target = GetTargetLocation();
+			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, THRONE_FORT, SG_GOBLINS, false);
 			target.st = 13;
 			target.SetKnown();
 			target.active_quest = this;
+			target_loc = target.index;
 			done = false;
 			unit_to_spawn = UnitData::Get("q_gobliny_szlachcic2");
 			spawn_unit_room = RoomTarget::Throne;
@@ -316,7 +316,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			GetTargetLocation().active_quest = nullptr;
 			quest_manager.EndUniqueQuest();
-			game->AddNews(game->txQuest[231]);
+			W.AddNews(game->txQuest[231]);
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);

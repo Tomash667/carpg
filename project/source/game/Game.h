@@ -842,10 +842,6 @@ public:
 	//
 	vector<Unit*> warp_to_inn;
 
-	// game news
-	vector<News*> news;
-	void AddNews(cstring text);
-
 	bool show_mp_panel;
 	int draw_flags;
 	bool in_tutorial, finished_tutorial;
@@ -1593,7 +1589,6 @@ public:
 	// u¿ywane u klienta który nie zapamiêtuje zmiennej 'pc'
 	bool godmode, noclip, invisible;
 	vector<Int2> minimap_reveal_mp;
-	bool boss_level_mp; // u¿ywane u klienta zamiast boss_levels
 	bool mp_load, mp_load_worldmap, mp_use_interp;
 	float mp_interp;
 	float interpolate_timer;
@@ -1874,9 +1869,6 @@ public:
 	void SpawnTmpUnits(City* city);
 	void RemoveTmpUnits(City* city);
 	void RemoveTmpUnits(LevelContext& ctx);
-	// tworzy lokacjê (jeœli range<0 to pozycja jest dowolna a range=-range, level=-1 - losowy poziom, =0 - minimalny, =9 maksymalny, =liczba - okreœlony)
-	int CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_RANDOM, bool allow_exact = true,
-		int levels = -1);
 	void Event_StartEncounter(int id);
 	void GenerateMoonwell(Location& loc);
 	void SpawnMoonwellObjects();

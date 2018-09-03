@@ -17,6 +17,7 @@
 #include "Net.h"
 #include "Encounter.h"
 #include "Quest.h"
+#include "News.h"
 
 
 //-----------------------------------------------------------------------------
@@ -24,6 +25,7 @@ const float World::TRAVEL_SPEED = 28.f;
 const int start_year = 100;
 const float world_size = 600.f;
 const float world_border = 16.f;
+const Vec2 world_bounds = Vec2(world_border, world_size - 16.f);
 World W;
 
 
@@ -70,6 +72,7 @@ void World::Reset()
 {
 	DeleteElements(locations);
 	DeleteElements(encounters);
+	DeleteElements(news);
 }
 
 void World::Update(int days)
@@ -88,49 +91,68 @@ void World::Update(int days)
 			month -= count * 12;
 		}
 	}
+
+	if(Net::IsOnline())
+		Net::PushChange(NetChange::WORLD_TIME);
 }
 
 void World::DoWorldProgress(int days)
 {
-	// remove old camps / reset locations
-	int index = 0;
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
+	// spawn new camps
+	create_camp += days;
+	if(create_camp >= 10)
 	{
-		Location* loc = *it;
+		create_camp = 0;
+		SPAWN_GROUP group;
+		switch(Rand() % 3)
+		{
+		case 0:
+			group = SG_BANDITS;
+			break;
+		case 1:
+			group = SG_ORCS;
+			break;
+		case 2:
+			group = SG_GOBLINS;
+			break;
+		}
+		CreateCamp(Vec2::Random(world_bounds.x, world_bounds.y), group, 128.f);
+	}
+
+	// remove timed encounters
+	for(vector<Encounter*>::iterator it = encounters.begin(), end = encounters.end(); it != end; ++it)
+	{
+		Encounter* e = *it;
+		if(e && e->timed && e->quest->IsTimedout())
+		{
+			e->quest->OnTimeout(TIMEOUT_ENCOUNTER);
+			e->quest->enc = -1;
+			delete *it;
+			if(it + 1 == end)
+			{
+				encounters.pop_back();
+				break;
+			}
+			else
+				*it = nullptr;
+		}
+	}
+
+	// remove old camps / reset locations
+	LoopAndRemove(locations, [this](Location* loc)
+	{
 		if(!loc || loc->active_quest || loc->type == L_ENCOUNTER)
-			continue;
+			return false;
 		if(loc->type == L_CAMP)
 		{
-			Camp* camp = (Camp*)(*it);
-			if(GetWorldtime() - camp->create_time >= 30
-				&& current_location != *it // don't remove when team is inside
-				&& (travel_location_index == -1 || locations[travel_location_index] != *it)) // don't remove when traveling to
+			Camp* camp = (Camp*)loc;
+			if(worldtime - camp->create_time >= 30
+				&& current_location != loc // don't remove when team is inside
+				&& (travel_location_index == -1 || locations[travel_location_index] != loc)) // don't remove when traveling to
 			{
 				// remove camp
-				DeleteElements(camp->chests);
-				DeleteElements(camp->items);
-				for(vector<Unit*>::iterator unit_it = camp->units.begin(), unit_end = camp->units.end(); unit_it != unit_end; ++unit_it)
-					delete *unit_it;
-				camp->units.clear();
-				delete *it;
-
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::REMOVE_CAMP;
-					c.id = index;
-				}
-
-				if(it + 1 == end)
-				{
-					locations.pop_back();
-					break;
-				}
-				else
-				{
-					*it = nullptr;
-					++empty_locations;
-				}
+				DeleteCamp(camp, false);
+				return true;
 			}
 		}
 		else if(loc->last_visit != -1 && worldtime - loc->last_visit >= 30)
@@ -147,7 +169,19 @@ void World::DoWorldProgress(int days)
 					((MultiInsideLocation*)inside)->Reset();
 			}
 		}
-	}
+		return false;
+	});
+
+	// remove news older then 30 days
+	LoopAndRemove(news, [this](News* news)
+	{
+		if(worldtime - news->add_time > 30)
+		{
+			delete news;
+			return true;
+		}
+		return false;
+	});
 }
 
 int World::CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range, bool allow_exact)
@@ -242,6 +276,75 @@ Location* World::CreateLocation(LOCATION type, int levels, bool is_village)
 		assert(0);
 		return nullptr;
 	}
+}
+
+// Create location
+// If range<0 then position is random and range is positive
+// Dungeon levels
+//	-1 - random count
+//	0 - minimum randomly generated
+//	9 - maximum randomly generated
+//	other - used number
+Location* World::CreateLocation(LOCATION type, const Vec2& pos, float range, int target, SPAWN_GROUP spawn, bool allow_exact, int dungeon_levels)
+{
+	Vec2 pt = pos;
+	if(range < 0.f)
+	{
+		pt = Vec2::Random(world_bounds.x, world_bounds.y);
+		range = -range;
+	}
+	if(!FindPlaceForLocation(pt, range, allow_exact))
+		return nullptr;
+
+	int levels = -1;
+	if(type == L_DUNGEON || type == L_CRYPT)
+	{
+		BaseLocation& base = g_base_locations[target];
+		if(dungeon_levels == -1)
+			levels = base.levels.Random();
+		else if(dungeon_levels == 0)
+			levels = base.levels.x;
+		else if(dungeon_levels == 9)
+			levels = base.levels.y;
+		else
+			levels = dungeon_levels;
+	}
+
+	Location* loc = CreateLocation(type, levels);
+	loc->pos = pt;
+	loc->type = type;
+
+	if(type == L_DUNGEON || type == L_CRYPT)
+	{
+		InsideLocation* inside = (InsideLocation*)loc;
+		inside->target = target;
+		if(target == LABIRYNTH)
+		{
+			if(spawn == SG_RANDOM)
+				inside->spawn = SG_UNDEAD;
+			else
+				inside->spawn = spawn;
+			inside->st = Random(8, 15);
+		}
+		else
+		{
+			if(spawn == SG_RANDOM)
+				inside->spawn = g_base_locations[target].GetRandomSpawnGroup();
+			else
+				inside->spawn = spawn;
+			inside->st = Random(3, 15);
+		}
+	}
+	else
+	{
+		loc->st = Random(3, 13);
+		if(spawn != SG_RANDOM)
+			loc->spawn = spawn;
+	}
+
+	loc->GenerateName();
+	AddLocation(loc);
+	return loc;
 }
 
 void World::AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name)
@@ -659,6 +762,16 @@ void World::Save(GameWriter& f)
 		f << travel_timer;
 	}
 	f << encounters.size();
+
+	f << news.size();
+	for(News* n : news)
+	{
+		f << n->add_time;
+		f.WriteString2(n->text);
+	}
+
+	f << first_city;
+	f << boss_levels;
 }
 
 void World::Load(GameReader& f, LoadingHandler& loading)
@@ -670,6 +783,9 @@ void World::Load(GameReader& f, LoadingHandler& loading)
 	f >> worldtime;
 	f >> current_location_index;
 	LoadLocations(f, loading);
+	LoadNews(f);
+	f >> first_city;
+	f >> boss_levels;
 }
 
 void World::LoadLocations(GameReader& f, LoadingHandler& loading)
@@ -781,12 +897,25 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	if(current_location_index != -1)
 	{
 		current_location = locations[current_location_index];
-		L.location = W.current_location;
+		L.location = current_location;
 	}
 	else
 	{
 		current_location = nullptr;
 		L.location = nullptr;
+	}
+}
+
+void World::LoadNews(GameReader& f)
+{
+	uint count;
+	f >> count;
+	news.resize(count);
+	for(News*& n : news)
+	{
+		n = new News;
+		f >> n->add_time;
+		f.ReadString2(n->text);
 	}
 }
 
@@ -842,6 +971,13 @@ void World::LoadOld(GameReader& f, LoadingHandler& loading, int part)
 		if(LOAD_VERSION < V_0_3)
 			travel_dir = Clip(-travel_dir);
 		encounters.resize(f.Read<uint>(), nullptr);
+	}
+	else if(part == 2)
+		LoadNews(f);
+	else if(part == 3)
+	{
+		f >> first_city;
+		f >> boss_levels;
 	}
 }
 
@@ -1123,6 +1259,7 @@ int World::GetRandomCityIndex(int excluded) const
 	return index;
 }
 
+// Get random 0-settlement, 1-city, 2-village; excluded from used list
 int World::GetRandomSettlementIndex(const vector<int>& used, int type) const
 {
 	int index = Rand() % settlements;
@@ -1221,7 +1358,7 @@ bool World::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
 	if(allow_exact)
 		pt = pos;
 	else
-		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(16, 16), Vec2(600.f - 16.f, 600.f - 16.f));
+		pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(world_bounds.x, world_bounds.x), Vec2(world_bounds.y, world_bounds.y));
 
 	for(int i = 0; i < 20; ++i)
 	{
@@ -1241,7 +1378,7 @@ bool World::FindPlaceForLocation(Vec2& pos, float range, bool allow_exact)
 			return true;
 		}
 		else
-			pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(16, 16), Vec2(600.f - 16.f, 600.f - 16.f));
+			pt = (pos + Vec2::RandomCirclePt(range)).Clamped(Vec2(world_bounds.x, world_bounds.x), Vec2(world_bounds.y, world_bounds.y));
 	}
 
 	return false;
@@ -1311,7 +1448,7 @@ int World::GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int ta
 	float best_dist = 999.f;
 	int best_index = -1, index = 0;
 
-	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++index)
+	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it, ++index)
 	{
 		if(*it && IS_SET(flags, 1 << (*it)->type) && (!not_quest || !(*it)->active_quest))
 		{
@@ -1469,27 +1606,6 @@ Encounter* World::RecreateEncounter(int index)
 	return e;
 }
 
-void World::RemoveTimedEncounters()
-{
-	for(vector<Encounter*>::iterator it = encounters.begin(), end = encounters.end(); it != end; ++it)
-	{
-		Encounter* e = *it;
-		if(e && e->timed && e->quest->IsTimedout())
-		{
-			e->quest->OnTimeout(TIMEOUT_ENCOUNTER);
-			e->quest->enc = -1;
-			delete *it;
-			if(it + 1 == end)
-			{
-				encounters.pop_back();
-				break;
-			}
-			else
-				*it = nullptr;
-		}
-	}
-}
-
 //=================================================================================================
 // Set unit pos, dir according to travel_dir
 void World::GetOutsideSpawnPoint(Vec3& pos, float& dir) const
@@ -1595,4 +1711,81 @@ void World::Reveal()
 		if(loc)
 			loc->SetKnown();
 	}
+}
+
+void World::AddNews(cstring text)
+{
+	assert(text);
+
+	News* n = new News;
+	n->text = text;
+	n->add_time = worldtime;
+
+	news.push_back(n);
+}
+
+void World::AddBossLevel(const Int2& pos)
+{
+	if(Net::IsLocal())
+		boss_levels.push_back(pos);
+	else
+		boss_level_mp = true;
+}
+
+bool World::RemoveBossLevel(const Int2& pos)
+{
+	if(Net::IsLocal())
+	{
+		if(boss_level_mp)
+		{
+			boss_level_mp = false;
+			return true;
+		}
+		return false;
+	}
+	return RemoveElementTry(boss_levels, pos);
+}
+
+bool World::IsBossLevel(const Int2& pos) const
+{
+	if(Net::IsLocal())
+		return boss_level_mp;
+	for(const Int2& boss_pos : boss_levels)
+	{
+		if(boss_pos == pos)
+			return true;
+	}
+	return false;
+}
+
+bool World::CheckFirstCity()
+{
+	if(first_city)
+	{
+		first_city = false;
+		return true;
+	}
+	return false;
+}
+
+void World::DeleteCamp(Camp* camp, bool remove)
+{
+	assert(camp);
+
+	int index = camp->index;
+
+	if(Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::REMOVE_CAMP;
+		c.id = index;
+	}
+
+	DeleteElements(camp->chests);
+	DeleteElements(camp->items);
+	DeleteElements(camp->units);
+	delete camp;
+
+	if(remove)
+		RemoveLocation(index);
 }

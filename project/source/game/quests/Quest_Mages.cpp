@@ -107,7 +107,7 @@ void Quest_Mages::SetProgress(int prog2)
 			q->msgs.push_back(game->txQuest[171]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, q->quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(game->txQuest[172]);
+			W.AddNews(game->txQuest[172]);
 
 			if(Net::IsOnline())
 				game->Net_AddQuest(q->refid);
@@ -209,7 +209,7 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::Started:
 		// porozmawiano ze stra¿nikiem o golemach, wys³a³ do maga
 		{
-			start_loc = W.current_location_index;
+			start_loc = W.GetCurrentLocationIndex();
 			mage_loc = W.GetRandomSettlementIndex(start_loc);
 
 			Location& sl = GetStartLocation();
@@ -273,13 +273,13 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::GotoTower:
 		// idzie za tob¹ do pustej wie¿y
 		{
-			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_NONE, true, 2);
-			Location& loc = GetTargetLocation();
+			Location& loc = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_NONE, true, 2);
 			loc.st = 1;
 			loc.SetKnown();
+			target_loc = loc.index;
 			game->AddTeamMember(game->current_dialog->talker, true);
 			msgs.push_back(Format(game->txQuest[177], game->current_dialog->talker->hero->name.c_str(), GetTargetLocationName(),
-				GetLocationDirName(W.current_location->pos, GetTargetLocation().pos), W.current_location->name.c_str()));
+				GetLocationDirName(W.GetCurrentLocation()->pos, GetTargetLocation().pos), W.GetCurrentLocation()->name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			mages_state = State::OldMageJoined;
@@ -356,11 +356,11 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			GetTargetLocation().active_quest = nullptr;
-			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_MAGES_AND_GOLEMS);
-			Location& loc = GetTargetLocation();
+			Location& loc = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_MAGES_AND_GOLEMS);
 			loc.state = LS_HIDDEN;
 			loc.st = 15;
 			loc.active_quest = this;
+			target_loc = loc.index;
 			do
 			{
 				game->GenerateHeroName(Class::MAGE, false, evil_mage_name);
@@ -387,7 +387,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			good_mage_name = u->hero->name;
 			hd_mage.Get(*u->human_data);
 
-			if(W.current_location_index == mage_loc)
+			if(W.GetCurrentLocationIndex() == mage_loc)
 			{
 				// idŸ do karczmy
 				u->ai->goto_inn = true;
@@ -447,7 +447,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[185]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(game->txQuest[186]);
+			W.AddNews(game->txQuest[186]);
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -509,7 +509,7 @@ cstring Quest_Mages2::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "target_dir2")
-		return GetLocationDirName(W.current_location->pos, GetTargetLocation().pos);
+		return GetLocationDirName(W.GetCurrentLocation()->pos, GetTargetLocation().pos);
 	else if(str == "name")
 		return game->current_dialog->talker->hero->name.c_str();
 	else if(str == "enemy")
@@ -533,9 +533,9 @@ bool Quest_Mages2::IfNeedTalk(cstring topic) const
 bool Quest_Mages2::IfSpecial(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_magowie_u_bossa") == 0)
-		return target_loc == W.current_location_index;
+		return target_loc == W.GetCurrentLocationIndex();
 	else if(strcmp(msg, "q_magowie_u_siebie") == 0)
-		return target_loc == W.current_location_index;
+		return target_loc == W.GetCurrentLocationIndex();
 	else if(strcmp(msg, "q_magowie_czas") == 0)
 		return timer >= 30.f;
 	else

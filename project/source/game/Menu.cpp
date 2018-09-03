@@ -1772,7 +1772,7 @@ void Game::UpdateServerTransfer(float dt)
 
 				packet_data.resize(4);
 				packet_data[0] = ID_CHANGE_LEVEL;
-				packet_data[1] = (byte)W.current_location_index;
+				packet_data[1] = (byte)W.GetCurrentLocationIndex();
 				packet_data[2] = dungeon_level;
 				packet_data[3] = (W.GetState() == World::State::INSIDE_ENCOUNTER ? 1 : 0);
 				int ack = peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);

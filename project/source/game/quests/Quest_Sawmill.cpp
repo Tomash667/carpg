@@ -117,7 +117,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			game->AddReward(400);
 			quest_manager.EndUniqueQuest();
-			game->AddNews(Format(game->txQuest[130], GetTargetLocationName()));
+			W.AddNews(Format(game->txQuest[130], GetTargetLocationName()));
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -150,7 +150,7 @@ bool Quest_Sawmill::IfNeedTalk(cstring topic) const
 bool Quest_Sawmill::IfSpecial(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "czy_tartak") == 0)
-		return W.current_location_index == target_loc;
+		return W.GetCurrentLocationIndex() == target_loc;
 	else
 	{
 		assert(0);
@@ -159,10 +159,11 @@ bool Quest_Sawmill::IfSpecial(DialogContext& ctx, cstring msg)
 }
 
 //=================================================================================================
-void Quest_Sawmill::HandleLocationEvent(LocationEventHandler::Event event)
+bool Quest_Sawmill::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(prog == Progress::Started && event == LocationEventHandler::CLEARED)
 		SetProgress(Progress::ClearedLocation);
+	return false;
 }
 
 //=================================================================================================

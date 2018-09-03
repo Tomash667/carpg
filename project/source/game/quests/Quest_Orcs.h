@@ -31,7 +31,7 @@ public:
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
 	bool IfSpecial(DialogContext& ctx, cstring msg) override;
-	void HandleLocationEvent(LocationEventHandler::Event event) override;
+	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	int GetLocationEventHandlerQuestRefid() override
@@ -110,7 +110,7 @@ public:
 	bool IfNeedTalk(cstring topic) const override;
 	bool IfQuestEvent() const override;
 	bool IfSpecial(DialogContext& ctx, cstring msg) override;
-	void HandleLocationEvent(LocationEventHandler::Event event) override;
+	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
 	int GetUnitEventHandlerQuestRefid() override { return refid; }
 	int GetLocationEventHandlerQuestRefid() override { return refid; }
