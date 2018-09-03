@@ -239,10 +239,11 @@ bool Quest_CampNearCity::OnTimeout(TimeoutType ttype)
 }
 
 //=================================================================================================
-void Quest_CampNearCity::HandleLocationEvent(LocationEventHandler::Event event)
+bool Quest_CampNearCity::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started && !timeout)
 		SetProgress(Progress::ClearedLocation);
+	return false;
 }
 
 //=================================================================================================

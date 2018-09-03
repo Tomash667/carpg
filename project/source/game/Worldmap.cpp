@@ -2169,7 +2169,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		innkeeper->busy = Unit::Busy_No;
 		contest_state = CONTEST_DONE;
 		contest_units.clear();
-		AddNews(txContestNoWinner);
+		W.AddNews(txContestNoWinner);
 	}
 
 	// clear blood & bodies from orc base
@@ -3521,125 +3521,12 @@ void Game::SpawnEncounterTeam()
 // po 30 dniach od odwiedzin oznacza lokacje do zresetowania
 void Game::DoWorldProgress(int days)
 {
-	// tworzenie obozów
-	W.create_camp += days;
-	if(W.create_camp >= 10)
-	{
-		W.create_camp = 0;
-		SPAWN_GROUP group;
-		switch(Rand() % 3)
-		{
-		case 0:
-			group = SG_BANDITS;
-			break;
-		case 1:
-			group = SG_ORCS;
-			break;
-		case 2:
-			group = SG_GOBLINS;
-			break;
-		}
-		W.CreateCamp(Vec2::Random(16.f, 600 - 16.f), group, 128.f);
-	}
-
-	W.RemoveTimedEncounters();
-
-	// ustawianie podziemi jako nie questowych po czasie / usuwanie obozów questowych
-	QuestManager& quest_manager = QuestManager::Get();
-	for(vector<Quest_Dungeon*>::iterator it = quest_manager.quests_timeout.begin(), end = quest_manager.quests_timeout.end(); it != end;)
-	{
-		if((*it)->IsTimedout())
-		{
-			Location* loc = W.GetLocation((*it)->target_loc);
-			bool in_camp = false;
-
-			if(loc->type == L_CAMP && ((*it)->target_loc == W.travel_location_index || (*it)->target_loc == W.current_location_index))
-				in_camp = true;
-
-			if(!(*it)->timeout)
-			{
-				bool ok = (*it)->OnTimeout(in_camp ? TIMEOUT_CAMP : TIMEOUT_NORMAL);
-				if(ok)
-					(*it)->timeout = true;
-				else
-				{
-					++it;
-					continue;
-				}
-			}
-
-			if(in_camp)
-			{
-				++it;
-				continue;
-			}
-
-			loc->active_quest = nullptr;
-
-			if(loc->type == L_CAMP)
-			{
-				if(Net::IsOnline())
-				{
-					NetChange& c = Add1(Net::changes);
-					c.type = NetChange::REMOVE_CAMP;
-					c.id = (*it)->target_loc;
-				}
-
-				(*it)->target_loc = -1;
-
-				OutsideLocation* outside = (OutsideLocation*)loc;
-				DeleteElements(outside->chests);
-				DeleteElements(outside->items);
-				for(vector<Unit*>::iterator it2 = outside->units.begin(), end2 = outside->units.end(); it2 != end2; ++it2)
-					delete *it2;
-				outside->units.clear();
-				W.RemoveLocation(loc->index);
-			}
-
-			it = quest_manager.quests_timeout.erase(it);
-			end = quest_manager.quests_timeout.end();
-		}
-		else
-			++it;
-	}
-
-	// quest timeouts, not attached to location
-	for(vector<Quest*>::iterator it = quest_manager.quests_timeout2.begin(), end = quest_manager.quests_timeout2.end(); it != end;)
-	{
-		Quest* q = *it;
-		if(q->IsTimedout())
-		{
-			if(q->OnTimeout(TIMEOUT2))
-			{
-				q->timeout = true;
-				it = quest_manager.quests_timeout2.erase(it);
-				end = quest_manager.quests_timeout2.end();
-			}
-			else
-				++it;
-		}
-		else
-			++it;
-	}
+	QuestManager::Get().Update(days);
 
 	W.DoWorldProgress(days);
 
 	if(Net::IsLocal())
 		UpdateQuests(days);
-
-	// aktualizuj newsy
-	bool deleted = false;
-	for(vector<News*>::iterator it = news.begin(), end = news.end(); it != end; ++it)
-	{
-		if(W.GetWorldtime() - (*it)->add_time > 30)
-		{
-			delete *it;
-			*it = nullptr;
-			deleted = true;
-		}
-	}
-	if(deleted)
-		RemoveNullElements(news);
 }
 
 // up³yw czasu
@@ -4176,10 +4063,8 @@ void Game::SpawnTmpUnits(City* city)
 	// heroes
 	uint count;
 	Int2 level;
-
-	if(W.first_city)
+	if(W.CheckFirstCity())
 	{
-		W.first_city = false;
 		count = 4;
 		level = Int2(2, 5);
 	}
@@ -4244,68 +4129,6 @@ void Game::RemoveTmpUnits(LevelContext& ctx)
 		else
 			++it;
 	}
-}
-
-int Game::CreateLocation(LOCATION type, const Vec2& pos, float range, int target, SPAWN_GROUP spawn, bool allow_exact, int _levels)
-{
-	Vec2 pt = pos;
-	if(range < 0.f)
-	{
-		pt = Vec2::Random(16.f, 600 - 16.f);
-		range = -range;
-	}
-	if(!W.FindPlaceForLocation(pt, range, allow_exact))
-		return -1;
-
-	int levels = -1;
-	if(type == L_DUNGEON || type == L_CRYPT)
-	{
-		BaseLocation& base = g_base_locations[target];
-		if(_levels == -1)
-			levels = base.levels.Random();
-		else if(_levels == 0)
-			levels = base.levels.x;
-		else if(_levels == 9)
-			levels = base.levels.y;
-		else
-			levels = _levels;
-	}
-
-	Location* loc = W.CreateLocation(type, levels);
-	loc->pos = pt;
-	loc->type = type;
-
-	if(type == L_DUNGEON || type == L_CRYPT)
-	{
-		InsideLocation* inside = (InsideLocation*)loc;
-		inside->target = target;
-		if(target == LABIRYNTH)
-		{
-			if(spawn == SG_RANDOM)
-				inside->spawn = SG_UNDEAD;
-			else
-				inside->spawn = spawn;
-			inside->st = Random(8, 15);
-		}
-		else
-		{
-			if(spawn == SG_RANDOM)
-				inside->spawn = g_base_locations[target].GetRandomSpawnGroup();
-			else
-				inside->spawn = spawn;
-			inside->st = Random(3, 15);
-		}
-	}
-	else
-	{
-		loc->st = Random(3, 13);
-		if(spawn != SG_RANDOM)
-			loc->spawn = spawn;
-	}
-
-	loc->GenerateName();
-
-	return W.AddLocation(loc);
 }
 
 void Game::GenerateMoonwell(Location& loc)

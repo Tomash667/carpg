@@ -162,10 +162,11 @@ bool Quest_KillAnimals::OnTimeout(TimeoutType ttype)
 }
 
 //=================================================================================================
-void Quest_KillAnimals::HandleLocationEvent(LocationEventHandler::Event event)
+bool Quest_KillAnimals::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started && !timeout)
 		SetProgress(Progress::ClearedLocation);
+	return false;
 }
 
 //=================================================================================================

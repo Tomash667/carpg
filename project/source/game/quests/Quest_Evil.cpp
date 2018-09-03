@@ -82,12 +82,12 @@ void Quest_Evil::SetProgress(int prog2)
 			// usuñ plotkê
 			quest_manager.RemoveQuestRumor(P_ZLO);
 			// lokacja
-			target_loc = game->CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, OLD_TEMPLE, SG_NONE, false, 1);
-			Location& target = GetTargetLocation();
+			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, OLD_TEMPLE, SG_NONE, false, 1);
 			target.SetKnown();
 			target.st = 8;
 			target.active_quest = this;
 			target.dont_clean = true;
+			target_loc = target.index;
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 			at_level = 0;
 			// questowe rzeczy
@@ -109,7 +109,7 @@ void Quest_Evil::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[236]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(Format(game->txQuest[237], GetTargetLocationName()));
+			W.AddNews(Format(game->txQuest[237], GetTargetLocationName()));
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -135,7 +135,7 @@ void Quest_Evil::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[239]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(Format(game->txQuest[240], W.GetLocation(mage_loc)->name.c_str()));
+			W.AddNews(Format(game->txQuest[240], W.GetLocation(mage_loc)->name.c_str()));
 			game->current_dialog->talker->temporary = true;
 
 			if(Net::IsOnline())
@@ -212,20 +212,19 @@ void Quest_Evil::SetProgress(int prog2)
 			for(int i = 0; i < 3; ++i)
 			{
 				Int2 levels = g_base_locations[l_info[i].target].levels;
-				loc[i].target_loc = game->CreateLocation(l_info[i].type, Vec2(0, 0), -128.f, l_info[i].target, l_info[i].spawn, true,
+				Location& target = *W.CreateLocation(l_info[i].type, Vec2(0, 0), -128.f, l_info[i].target, l_info[i].spawn, true,
 					Random(max(levels.x, 2), max(levels.y, 2)));
-				Location& target = *W.GetLocation(loc[i].target_loc);
 				target.st = l_info[i].st;
 				target.SetKnown();
 				target.active_quest = this;
+				loc[i].target_loc = target.index;
 				loc[i].near_loc = W.GetNearestSettlement(target.pos);
 				loc[i].at_level = target.GetLastLevel();
 				loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
 				msgs.push_back(Format(game->txQuest[247], W.GetLocation(loc[i].target_loc)->name.c_str(),
 					GetLocationDirName(W.GetLocation(loc[i].near_loc)->pos, W.GetLocation(loc[i].target_loc)->pos),
 					W.GetLocation(loc[i].near_loc)->name.c_str()));
-				game->AddNews(Format(game->txQuest[246],
-					W.GetLocation(loc[i].target_loc)->name.c_str()));
+				W.AddNews(Format(game->txQuest[246], W.GetLocation(loc[i].target_loc)->name.c_str()));
 			}
 
 			next_event = &loc[0];
@@ -317,7 +316,7 @@ void Quest_Evil::SetProgress(int prog2)
 
 			quest_manager.EndUniqueQuest();
 			evil_state = State::ClericWantTalk;
-			game->AddNews(game->txQuest[250]);
+			W.AddNews(game->txQuest[250]);
 
 			if(Net::IsOnline())
 			{

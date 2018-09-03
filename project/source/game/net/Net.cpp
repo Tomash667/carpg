@@ -687,7 +687,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	cam.Reset();
 	pc_data.rot_buf = 0.f;
 	show_mp_panel = true;
-	boss_level_mp = false;
+	W.RemoveBossLevel();
 	L.is_open = true;
 
 	bool loaded_resources;
@@ -1436,7 +1436,9 @@ bool Game::ReadLevelData(BitStreamReader& f)
 
 	RespawnObjectColliders();
 	local_ctx_valid = true;
-	if(!boss_level_mp)
+	if(W.IsBossLevel())
+		SetMusic();
+	else
 		SetMusic(music);
 
 	InitQuadTree();
@@ -1704,11 +1706,8 @@ bool Game::ReadUnit(BitStreamReader& f, Unit& unit)
 	CreateUnitPhysics(unit, true);
 
 	// boss music
-	if(IS_SET(unit.data->flags2, F2_BOSS) && !boss_level_mp)
-	{
-		boss_level_mp = true;
-		SetMusic();
-	}
+	if(IS_SET(unit.data->flags2, F2_BOSS))
+		W.AddBossLevel();
 
 	unit.prev_pos = unit.pos;
 	unit.speed = unit.prev_speed = 0.f;

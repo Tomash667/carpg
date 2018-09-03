@@ -4,6 +4,10 @@
 #include "Location.h"
 
 //-----------------------------------------------------------------------------
+// World handling
+// General notes:
+// + don't create settlements after GenerateWorld (currently it is hardcoded that they are before other locations - here and in Quest_SpreadNews)
+// + currently only camps can be removed
 class World
 {
 	friend class WorldMapGui;
@@ -40,11 +44,14 @@ public:
 	void RemoveEncounter(int index);
 	Encounter* GetEncounter(int index);
 	Encounter* RecreateEncounter(int index);
-	void RemoveTimedEncounters();
 	const vector<Encounter*>& GetEncounters() const { return encounters; }
+	int GetEncounterLocationIndex() const { return encounter_loc; } // FIXME remove?
+	float GetEncounterChance() const { return encounter_chance; }
 
 	int CreateCamp(const Vec2& pos, SPAWN_GROUP group, float range = 64.f, bool allow_exact = true);
 	Location* CreateLocation(LOCATION type, int levels = -1, bool is_village = false);
+	Location* CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_RANDOM, bool allow_exact = true,
+		int dungeon_levels = -1);
 	typedef std::pair<LOCATION, bool>(*AddLocationsCallback)(uint index);
 	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name);
 	int AddLocation(Location* loc);
@@ -76,12 +83,10 @@ public:
 	int GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range = 160.f);
 	int GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int target_flags = -1);
 	int GetNearestSettlement(const Vec2& pos) { return GetNearestLocation(pos, (1 << L_CITY), false); }
-	int GetEncounterLocationIndex() const { return encounter_loc; } // FIXME remove?
 	int GetWorldtime() const { return worldtime; }
 	int GetYear() const { return year; }
 	State GetState() const { return state; }
 	const Vec2& GetWorldPos() const { return world_pos; }
-	float GetEncounterChance() const { return encounter_chance; }
 	float GetTravelDir() const { return travel_dir; }
 	void GetOutsideSpawnPoint(Vec3& pos, float& dir) const;
 	const vector<Location*>& GetLocations() const { return locations; }
@@ -91,41 +96,53 @@ public:
 	void SetState(State state) { this->state = state; }
 	void SetWorldPos(const Vec2& world_pos) { this->world_pos = world_pos; }
 
+	// travel
+	int GetTravelLocationIndex() const { return travel_location_index; }
+
+	// news
+	void AddNews(cstring text);
+	const vector<News*>& GetNews() const { return news; }
+
+	// boss levels
+	void AddBossLevel(const Int2& pos = Int2::Zero);
+	bool RemoveBossLevel(const Int2& pos = Int2::Zero);
+	bool IsBossLevel(const Int2& pos = Int2::Zero) const;
+
+	bool CheckFirstCity();
+
+	void DeleteCamp(Camp* camp, bool remove = true);
+
 private:
 	State state;
 public: // FIXME
-	Location* current_location; // wskaŸnik na aktualn¹ lokacjê [odtwarzany]
-	int current_location_index, // current location index or -1
-		travel_location_index; // travel target where state is TRAVEL, ENCOUNTER or INSIDE_ENCOUNTER (-1 otherwise)
-private:
+	Location* current_location; // current location or nullptr
+	int current_location_index; // current location index or -1
+	private:
+	int travel_location_index; // travel target where state is TRAVEL, ENCOUNTER or INSIDE_ENCOUNTER (-1 otherwise)
 	vector<Location*> locations; // can be nullptr
 	vector<Encounter*> encounters;
-public:
 	vector<Int2> boss_levels; // levels with boss music (x-location index, y-dungeon level)
-	uint settlements; // count and index below this value is city/village
-	private:
-	uint
-		empty_locations; // counter
-public:
-	uint	encounter_loc, // encounter location index
+	uint settlements, // count and index below this value is city/village
+		empty_locations, // counter
+		encounter_loc, // encounter location index
 		create_camp, // counter to create new random camps
 		travel_day;
-private:
 	Vec2 world_pos,
 		travel_start_pos;
 	float travel_timer,
 		encounter_timer, // increase chance for encounter every 0.25 sec
 		encounter_chance,
 		travel_dir; // from which direction team will enter level after travel
-public:
-	bool first_city; // spawn more low level heroes in first city
-private:
-	int year; // in game year, starts at 100
-	int month; // in game month, 0 to 11
-	int day; // in game day, 0 to 29
-	int worldtime; // number of passed game days, starts at 0
+	int year, // in game year, starts at 100
+		month, // in game month, 0 to 11
+		day, // in game day, 0 to 29
+		worldtime; // number of passed game days, starts at 0
+	vector<News*> news;
 	cstring txDate, txRandomEncounter;
+	bool first_city, // spawn more low level heroes in first city
+		boss_level_mp; // used by clients instead boss_levels
 
 	void LoadLocations(GameReader& f, LoadingHandler& loading);
+	void LoadNews(GameReader& f);
 };
 extern World W;

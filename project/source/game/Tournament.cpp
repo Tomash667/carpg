@@ -405,7 +405,7 @@ void Game::UpdateTournament(float dt)
 								// there is winner
 								TournamentTalk(Format(txTour[16], tournament_winner->GetRealName()));
 								tournament_state3 = 0;
-								AddNews(Format(txTour[18], tournament_winner->GetRealName()));
+								W.AddNews(Format(txTour[18], tournament_winner->GetRealName()));
 							}
 
 							tournament_units.clear();
@@ -542,7 +542,7 @@ void Game::UpdateTournament(float dt)
 				else if(tournament_state3 == 2)
 				{
 					// no winner
-					AddNews(txTour[17]);
+					W.AddNews(txTour[17]);
 					CleanTournament();
 				}
 			}

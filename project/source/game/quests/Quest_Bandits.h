@@ -42,7 +42,7 @@ public:
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
 	void Special(DialogContext& ctx, cstring msg) override;
-	void HandleLocationEvent(LocationEventHandler::Event event) override;
+	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit) override;
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;

@@ -175,7 +175,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			mine_state2 = State2::CanExpand;
-			game->AddNews(Format(game->txQuest[139], GetTargetLocationName()));
+			W.AddNews(Format(game->txQuest[139], GetTargetLocationName()));
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -231,7 +231,7 @@ void Quest_Mine::SetProgress(int prog2)
 			if(days >= days_required)
 				days = days_required - 1;
 			days_gold = 0;
-			game->AddNews(Format(game->txQuest[144], GetTargetLocationName()));
+			W.AddNews(Format(game->txQuest[144], GetTargetLocationName()));
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -244,7 +244,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			mine_state2 = State2::FoundPortal;
-			game->AddNews(Format(game->txQuest[146], GetTargetLocationName()));
+			W.AddNews(Format(game->txQuest[146], GetTargetLocationName()));
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -281,7 +281,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			quest_manager.EndUniqueQuest();
-			game->AddNews(game->txQuest[149]);
+			W.AddNews(game->txQuest[149]);
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -327,10 +327,11 @@ bool Quest_Mine::IfSpecial(DialogContext& ctx, cstring msg)
 }
 
 //=================================================================================================
-void Quest_Mine::HandleLocationEvent(LocationEventHandler::Event event)
+bool Quest_Mine::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(prog == Progress::Started && event == LocationEventHandler::CLEARED)
 		SetProgress(Progress::ClearedLocation);
+	return false;
 }
 
 //=================================================================================================

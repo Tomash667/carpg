@@ -205,6 +205,7 @@
     <ClInclude Include="source\game\Encounter.h" />
     <ClInclude Include="source\game\entity\BloodType.h" />
     <ClInclude Include="source\game\entity\ItemContainer.h" />
+    <ClInclude Include="source\game\entity\News.h" />
     <ClInclude Include="source\game\entity\Portal.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameCore.h" />

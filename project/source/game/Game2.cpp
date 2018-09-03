@@ -52,6 +52,7 @@
 #include "Level.h"
 #include "DirectX.h"
 #include "Var.h"
+#include "News.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -5532,7 +5533,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		if(ctx.update_news)
 		{
 			ctx.update_news = false;
-			ctx.active_news = news;
+			ctx.active_news = W.GetNews();
 			if(ctx.active_news.empty())
 			{
 				DialogTalk(ctx, random_string(txNoNews));
@@ -6807,7 +6808,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 		// boss music
 		if(IS_SET(u->data->flags2, F2_BOSS))
-			W.boss_levels.push_back(Int2(L.location_index, dungeon_level));
+			W.AddBossLevel(Int2(L.location_index, dungeon_level));
 
 		// physics
 		if(create_physics)
@@ -12950,7 +12951,6 @@ void Game::ClearGameVarsOnNewGame()
 	Team.Reset();
 	dont_wander = false;
 	arena_fighter = nullptr;
-	news.clear();
 	pc_data.picking_item_state = 0;
 	arena_tryb = Arena_Brak;
 	L.is_open = false;
@@ -13012,7 +13012,6 @@ void Game::ClearGame()
 	QuestManager::Get().Cleanup();
 	DeleteElements(quest_items);
 
-	DeleteElements(news);
 	W.Reset();
 
 	ClearGui(true);
@@ -15857,17 +15856,17 @@ void Game::CheckIfLocationCleared()
 	if(city_ctx)
 		return;
 
-	bool czysto = true;
+	bool is_clear = true;
 	for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
 	{
 		if((*it)->IsAlive() && IsEnemy(*pc->unit, **it, true))
 		{
-			czysto = false;
+			is_clear = false;
 			break;
 		}
 	}
 
-	if(czysto)
+	if(is_clear)
 	{
 		bool cleared = false;
 		if(!L.location->outside)
@@ -15885,19 +15884,19 @@ void Game::CheckIfLocationCleared()
 			cleared = true;
 
 		if(cleared)
-		{
 			L.location->state = LS_CLEARED;
-			if(L.location->spawn != SG_NONE)
-			{
-				if(L.location->type == L_CAMP)
-					AddNews(Format(txNewsCampCleared, W.GetLocation(W.GetNearestSettlement(L.location->pos))->name.c_str()));
-				else
-					AddNews(Format(txNewsLocCleared, L.location->name.c_str()));
-			}
-		}
 
+		bool prevent = false;
 		if(L.event_handler)
-			L.event_handler->HandleLocationEvent(LocationEventHandler::CLEARED);
+			prevent = L.event_handler->HandleLocationEvent(LocationEventHandler::CLEARED);
+
+		if(cleared && prevent && L.location->spawn != SG_NONE)
+		{
+			if(L.location->type == L_CAMP)
+				W.AddNews(Format(txNewsCampCleared, W.GetLocation(W.GetNearestSettlement(L.location->pos))->name.c_str()));
+			else
+				W.AddNews(Format(txNewsLocCleared, L.location->name.c_str()));
+		}
 	}
 }
 
@@ -17174,7 +17173,7 @@ void Game::UpdateQuests(int days)
 					{
 						if(Net::IsOnline())
 							Net_SpawnUnit(u);
-						AddNews(Format(txMineBuilt, W.GetLocation(quest_mine->target_loc)->name.c_str()));
+						W.AddNews(Format(txMineBuilt, W.GetLocation(quest_mine->target_loc)->name.c_str()));
 						quest_mine->messenger = u;
 						u->StartAutoTalk(true);
 					}
@@ -17183,7 +17182,7 @@ void Game::UpdateQuests(int days)
 			else
 			{
 				// player got gold, don't inform him
-				AddNews(Format(txMineBuilt, W.GetLocation(quest_mine->target_loc)->name.c_str()));
+				W.AddNews(Format(txMineBuilt, W.GetLocation(quest_mine->target_loc)->name.c_str()));
 				quest_mine->mine_state2 = Quest_Mine::State2::Built;
 				quest_mine->days -= quest_mine->days_required;
 				quest_mine->days_required = Random(60, 90);
@@ -18366,17 +18365,6 @@ Room& Game::GetRoom(InsideLocationLevel& lvl, RoomTarget target, bool down_stair
 	}
 }
 
-void Game::AddNews(cstring text)
-{
-	assert(text);
-
-	News* n = new News;
-	n->text = text;
-	n->add_time = W.GetWorldtime();
-
-	news.push_back(n);
-}
-
 void Game::UpdateGame2(float dt)
 {
 	// arena
@@ -18485,7 +18473,7 @@ void Game::UpdateGame2(float dt)
 								++quest_evil->closed;
 								delete L.location->portal;
 								L.location->portal = nullptr;
-								AddNews(Format(txPortalClosedNews, L.location->name.c_str()));
+								W.AddNews(Format(txPortalClosedNews, L.location->name.c_str()));
 								if(Net::IsOnline())
 								{
 									Net_UpdateQuest(quest_evil->refid);
@@ -19145,14 +19133,14 @@ void Game::UpdateContest(float dt)
 					contest_state = CONTEST_FINISH;
 					contest_state2 = 0;
 					innkeeper.look_target = contest_units.back();
-					AddNews(Format(txContestWinNews, contest_units.back()->GetName()));
+					W.AddNews(Format(txContestWinNews, contest_units.back()->GetName()));
 					UnitTalk(innkeeper, txContestWin);
 				}
 				else
 				{
 					contest_state = CONTEST_FINISH;
 					contest_state2 = 1;
-					AddNews(txContestNoWinner);
+					W.AddNews(txContestNoWinner);
 					UnitTalk(innkeeper, txContestNoWinner);
 				}
 			}
@@ -20922,12 +20910,11 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 	{
 		AddGameMsg(txSecretAppear, 3.f);
 		secret_state = SECRET_DROPPED_STONE;
-		int loc = CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, SG_CHALLANGE, false, 3);
-		Location& l = *W.GetLocation(loc);
+		Location& l = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, SG_CHALLANGE, false, 3);
 		l.st = 18;
 		l.active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
 		l.state = LS_UNKNOWN;
-		secret_where = loc;
+		secret_where = l.index;
 		Vec2& cpos = L.location->pos;
 		Item* note = GetSecretNote();
 		note->desc = Format("\"%c %d km, %c %d km\"", cpos.y > l.pos.y ? 'S' : 'N', (int)abs((cpos.y - l.pos.y) / 3), cpos.x > l.pos.x ? 'W' : 'E', (int)abs((cpos.x - l.pos.x) / 3));

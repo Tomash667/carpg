@@ -52,12 +52,12 @@ void Quest_Crazies::SetProgress(int prog2)
 		break;
 	case Progress::KnowLocation: // trener powiedzia³ o labiryncie
 		{
-			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, LABIRYNTH, SG_UNKNOWN, false);
 			start_loc = W.current_location_index;
-			Location& loc = GetTargetLocation();
+			Location& loc = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, LABIRYNTH, SG_UNKNOWN, false);
 			loc.active_quest = this;
 			loc.SetKnown();
 			loc.st = 13;
+			target_loc = loc.index;
 
 			crazies_state = State::TalkedTrainer;
 

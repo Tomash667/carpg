@@ -107,7 +107,7 @@ void Quest_Mages::SetProgress(int prog2)
 			q->msgs.push_back(game->txQuest[171]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, q->quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(game->txQuest[172]);
+			W.AddNews(game->txQuest[172]);
 
 			if(Net::IsOnline())
 				game->Net_AddQuest(q->refid);
@@ -273,10 +273,10 @@ void Quest_Mages2::SetProgress(int prog2)
 	case Progress::GotoTower:
 		// idzie za tob¹ do pustej wie¿y
 		{
-			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_NONE, true, 2);
-			Location& loc = GetTargetLocation();
+			Location& loc = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_NONE, true, 2);
 			loc.st = 1;
 			loc.SetKnown();
+			target_loc = loc.index;
 			game->AddTeamMember(game->current_dialog->talker, true);
 			msgs.push_back(Format(game->txQuest[177], game->current_dialog->talker->hero->name.c_str(), GetTargetLocationName(),
 				GetLocationDirName(W.current_location->pos, GetTargetLocation().pos), W.current_location->name.c_str()));
@@ -356,11 +356,11 @@ void Quest_Mages2::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			GetTargetLocation().active_quest = nullptr;
-			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_MAGES_AND_GOLEMS);
-			Location& loc = GetTargetLocation();
+			Location& loc = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_MAGES_AND_GOLEMS);
 			loc.state = LS_HIDDEN;
 			loc.st = 15;
 			loc.active_quest = this;
+			target_loc = loc.index;
 			do
 			{
 				game->GenerateHeroName(Class::MAGE, false, evil_mage_name);
@@ -447,7 +447,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[185]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(game->txQuest[186]);
+			W.AddNews(game->txQuest[186]);
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);

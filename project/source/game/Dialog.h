@@ -61,19 +61,6 @@ struct DialogChoice
 };
 
 //-----------------------------------------------------------------------------
-struct Unit;
-struct Quest;
-struct Item;
-struct PlayerController;
-
-//-----------------------------------------------------------------------------
-struct News
-{
-	string text;
-	int add_time;
-};
-
-//-----------------------------------------------------------------------------
 struct GameDialog
 {
 	struct Text

@@ -2471,13 +2471,6 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 		if(u.event_handler)
 			u.event_handler->HandleUnitEvent(UnitEventHandler::DIE, &u);
 
-		// muzyka bossa
-		if(IS_SET(u.data->flags2, F2_BOSS))
-		{
-			if(RemoveElementTry(W.boss_levels, Int2(L.location_index, dungeon_level)))
-				SetMusic();
-		}
-
 		// komunikat
 		if(Net::IsOnline())
 		{
@@ -2516,14 +2509,11 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 			u.raise_timer = Random(5.f, 7.f);
 			pc_data.before_player = BP_NONE;
 		}
-
-		// muzyka bossa
-		if(IS_SET(u.data->flags2, F2_BOSS) && boss_level_mp)
-		{
-			boss_level_mp = false;
-			SetMusic();
-		}
 	}
+
+	// end boss music
+	if(IS_SET(u.data->flags2, F2_BOSS) && W.RemoveBossLevel(Int2(L.location_index, dungeon_level)))
+		SetMusic();
 
 	if(prev_action == A_ANIMATION)
 	{

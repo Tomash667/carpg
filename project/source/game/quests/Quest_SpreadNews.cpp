@@ -24,13 +24,14 @@ void Quest_SpreadNews::Start()
 	start_loc = W.current_location_index;
 	Vec2 pos = GetStartLocation().pos;
 	bool sorted = false;
-	for(uint i = 0, count = W.settlements; i < count; ++i)
+	const vector<Location*>& locations = W.GetLocations();
+	for(uint i = 0, count = locations.size(); i < count; ++i)
 	{
+		if(!locations[i] || locations[i]->type != L_CITY)
+			break;
 		if(i == start_loc)
 			continue;
-		Location& loc = *W.GetLocation(i);
-		if(loc.type != L_CITY)
-			continue;
+		Location& loc = *locations[i];
 		float dist = Vec2::Distance(pos, loc.pos);
 		bool ok = false;
 		if(entries.size() < 5)

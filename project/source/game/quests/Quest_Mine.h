@@ -60,7 +60,7 @@ public:
 	cstring FormatString(const string& str) override;
 	bool IfNeedTalk(cstring topic) const override;
 	bool IfSpecial(DialogContext& ctx, cstring msg) override;
-	void HandleLocationEvent(LocationEventHandler::Event event) override;
+	bool HandleLocationEvent(LocationEventHandler::Event event) override;
 	void HandleChestEvent(ChestEventHandler::Event event) override;
 	int GetLocationEventHandlerQuestRefid() override
 	{

@@ -74,11 +74,11 @@ void Quest_Orcs::SetProgress(int prog2)
 				u = nullptr;
 			}
 			// generate location
-			target_loc = game->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, HUMAN_FORT, SG_ORCS, false);
-			Location& tl = GetTargetLocation();
+			Location& tl = *W.CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, HUMAN_FORT, SG_ORCS, false);
 			tl.SetKnown();
 			tl.st = 10;
 			tl.active_quest = this;
+			target_loc = tl.index;
 			location_event_handler = this;
 			at_level = tl.GetLastLevel();
 			dungeon_levels = at_level + 1;
@@ -127,7 +127,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[195]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(Format(game->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
+			W.AddNews(Format(game->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
 
 			if(game->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
 			{
@@ -183,7 +183,7 @@ bool Quest_Orcs::IfSpecial(DialogContext& ctx, cstring msg)
 }
 
 //=================================================================================================
-void Quest_Orcs::HandleLocationEvent(LocationEventHandler::Event event)
+bool Quest_Orcs::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
 	{
@@ -191,6 +191,7 @@ void Quest_Orcs::HandleLocationEvent(LocationEventHandler::Event event)
 		if(CountBits(levels_cleared) == dungeon_levels)
 			SetProgress(Progress::ClearedLocation);
 	}
+	return false;
 }
 
 //=================================================================================================
@@ -371,9 +372,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// oczyszczono obóz orków
 		{
 			orc->StartAutoTalk();
-			delete game->news.back();
-			game->news.pop_back();
-			game->AddNews(game->txQuest[200]);
+			W.AddNews(game->txQuest[200]);
 		}
 		break;
 	case Progress::TalkedAfterClearingCamp:
@@ -442,12 +441,12 @@ void Quest_Orcs2::SetProgress(int prog2)
 	case Progress::TalkedAboutBase:
 		// pogada³ o bazie
 		{
-			target_loc = game->CreateLocation(L_DUNGEON, W.GetWorldPos(), 256.f, THRONE_FORT, SG_ORCS, false);
-			Location& target = GetTargetLocation();
 			done = false;
+			Location& target = *W.CreateLocation(L_DUNGEON, W.GetWorldPos(), 256.f, THRONE_FORT, SG_ORCS, false);
 			target.st = 15;
 			target.active_quest = this;
 			target.state = LS_HIDDEN;
+			target_loc = target.index;
 			msgs.push_back(game->txQuest[202]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -487,7 +486,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			msgs.push_back(game->txQuest[204]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			game->AddNews(game->txQuest[205]);
+			W.AddNews(game->txQuest[205]);
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -639,10 +638,14 @@ bool Quest_Orcs2::IfSpecial(DialogContext& ctx, cstring msg)
 }
 
 //=================================================================================================
-void Quest_Orcs2::HandleLocationEvent(LocationEventHandler::Event event)
+bool Quest_Orcs2::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::TalkedWhereIsCamp)
+	{
 		SetProgress(Progress::ClearedCamp);
+		return true;
+	}
+	return false;
 }
 
 //=================================================================================================

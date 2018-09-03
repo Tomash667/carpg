@@ -408,8 +408,6 @@ void Game::SaveGame(GameWriter& f)
 		f << (L.event_handler ? L.event_handler->GetLocationEventHandlerQuestRefid() : -1);
 	else
 		Team.SaveOnWorldmap(f);
-	f << W.first_city;
-	f << W.boss_levels;
 	f << L.enter_from;
 	f << L.light_angle;
 
@@ -463,14 +461,6 @@ void Game::SaveGame(GameWriter& f)
 	QuestManager::Get().Save(f);
 	SaveQuestsData(f);
 	SM.Save(f);
-
-	// newsy
-	f << news.size();
-	for(News* n : news)
-	{
-		f << n->add_time;
-		f.WriteString2(n->text);
-	}
 
 	f << check_id;
 	++check_id;
@@ -755,8 +745,8 @@ void Game::LoadGame(GameReader& f)
 		city_ctx = (City*)L.location;
 	else
 		city_ctx = nullptr;
-	f >> W.first_city;
-	f >> W.boss_levels;
+	if(LOAD_VERSION < V_FEATURE)
+		W.LoadOld(f, loading, 3);
 	f >> L.enter_from;
 	if(LOAD_VERSION >= V_0_3)
 		f >> L.light_angle;
@@ -943,15 +933,8 @@ void Game::LoadGame(GameReader& f)
 	LoadQuestsData(f);
 	SM.Load(f);
 
-	// news
-	f >> count;
-	news.resize(count);
-	for(News*& n : news)
-	{
-		n = new News;
-		f >> n->add_time;
-		f.ReadString2(n->text);
-	}
+	if(LOAD_VERSION < V_FEATURE)
+		W.LoadOld(f, loading, 2);
 
 	f >> read_id;
 	if(read_id != check_id)

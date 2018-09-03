@@ -40,6 +40,7 @@ public:
 	void AddQuestItemRequest(const Item** item, cstring name, int quest_refid, vector<ItemSlot>* items, Unit* unit = nullptr);
 	void Reset();
 	void Cleanup();
+	void Update(int days);
 	void Write(BitStreamWriter& f);
 	bool Read(BitStreamReader& f);
 	void Save(GameWriter& f);
