@@ -72,12 +72,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 
 			Location& tl = GetTargetLocation();
 			tl.active_quest = this;
-			bool now_known = false;
-			if(tl.state == LS_UNKNOWN)
-			{
-				tl.state = LS_KNOWN;
-				now_known = true;
-			}
+			tl.SetKnown();
 
 			cstring gn;
 			switch(group)
@@ -106,11 +101,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(Net::IsOnline())
-			{
 				game->Net_AddQuest(refid);
-				if(now_known)
-					game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::ClearedLocation:
@@ -135,7 +126,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 		// player talked with captain, end of quest
 		{
 			state = Quest::Completed;
-			((City&)GetStartLocation())->quest_captain = CityQuestState::None;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			game->AddReward(2500);
 			msgs.push_back(game->txQuest[66]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -150,7 +141,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 		{
 			state = Quest::Failed;
 			City& city = (City&)GetStartLocation();
-			city->quest_captain = CityQuestState::Failed;
+			city.quest_captain = CityQuestState::Failed;
 			msgs.push_back(Format(game->txQuest[67], LocationHelper::IsCity(city) ? game->txQuest[63] : game->txQuest[64]));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

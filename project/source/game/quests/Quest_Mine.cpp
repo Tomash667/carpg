@@ -89,13 +89,8 @@ void Quest_Mine::SetProgress(int prog2)
 			Location& tl = GetTargetLocation();
 			at_level = 0;
 			tl.active_quest = this;
-			bool now_known = false;
-			if(tl.state == LS_UNKNOWN)
-			{
-				tl.state = LS_KNOWN;
-				now_known = true;
-			}
-			else if(tl.state >= LS_ENTERED)
+			tl.SetKnown();
+			if(tl.state >= LS_ENTERED)
 				tl.reset = true;
 			tl.st = 10;
 
@@ -111,11 +106,7 @@ void Quest_Mine::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(Net::IsOnline())
-			{
 				game->Net_AddQuest(refid);
-				if(now_known)
-					game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::ClearedLocation:

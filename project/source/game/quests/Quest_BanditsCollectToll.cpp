@@ -84,7 +84,7 @@ void Quest_BanditsCollectToll::SetProgress(int prog2)
 		{
 			state = Quest::Failed;
 			RemoveEncounter();
-			((City&)GetStartLocation())->quest_captain = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
 			msgs.push_back(game->txQuest[54]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);

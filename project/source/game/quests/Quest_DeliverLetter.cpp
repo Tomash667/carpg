@@ -94,7 +94,7 @@ void Quest_DeliverLetter::SetProgress(int prog2)
 			bool removed_item = false;
 
 			state = Quest::Failed;
-			((City&)GetStartLocation())->quest_mayor = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 			if(W.current_location_index == end_loc)
 			{
 				game->current_dialog->pc->unit->RemoveQuestItem(refid);

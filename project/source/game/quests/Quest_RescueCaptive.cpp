@@ -51,16 +51,11 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 	case Progress::Started:
 		// received quest
 		{
-			target_loc = W.GetRandomSpawnLocation(W.locations[start_loc]->pos, group);
+			target_loc = W.GetRandomSpawnLocation(W.GetLocation(start_loc)->pos, group);
 
-			Location& loc = *W.locations[start_loc];
-			Location& loc2 = *W.locations[target_loc];
-			bool now_known = false;
-			if(loc2.state == LS_UNKNOWN)
-			{
-				loc2.state = LS_KNOWN;
-				now_known = true;
-			}
+			Location& loc = GetStartLocation();
+			Location& loc2 = GetTargetLocation();
+			loc2.SetKnown();
 
 			loc2.active_quest = this;
 			unit_to_spawn = UnitData::Get("captive");
@@ -111,11 +106,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(Net::IsOnline())
-			{
 				game->Net_AddQuest(refid);
-				if(now_known)
-					game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::FoundCaptive:
@@ -151,10 +142,10 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 		{
 			state = Quest::Failed;
 
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
 			if(target_loc != -1)
 			{
-				Location& loc = *W.locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -179,10 +170,10 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 			state = Quest::Completed;
 			game->AddReward(1000);
 
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::None;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			if(target_loc != -1)
 			{
-				Location& loc = *W.locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -191,7 +182,7 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 
 			game->RemoveUnit(captive);
 			captive->event_handler = nullptr;
-			msgs.push_back(Format(game->txQuest[38], W.locations[start_loc]->name.c_str()));
+			msgs.push_back(Format(game->txQuest[38], GetStartLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -228,10 +219,10 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				captive = nullptr;
 			}
 
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
 			if(target_loc != -1)
 			{
-				Location& loc = *W.locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -256,15 +247,15 @@ void Quest_RescueCaptive::SetProgress(int prog2)
 				captive = nullptr;
 			}
 
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::None;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			if(target_loc != -1)
 			{
-				Location& loc = *W.locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
 
-			msgs.push_back(Format(game->txQuest[41], W.locations[start_loc]->name.c_str()));
+			msgs.push_back(Format(game->txQuest[41], GetStartLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
@@ -330,11 +321,11 @@ cstring Quest_RescueCaptive::FormatString(const string& str)
 		}
 	}
 	else if(str == "locname")
-		return W.locations[target_loc]->name.c_str();
+		return GetTargetLocationName();
 	else if(str == "target_dir")
-		return GetLocationDirName(W.locations[start_loc]->pos, W.locations[target_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
 	else if(str == "start_loc")
-		return W.locations[start_loc]->name.c_str();
+		return GetStartLocationName();
 	else
 	{
 		assert(0);

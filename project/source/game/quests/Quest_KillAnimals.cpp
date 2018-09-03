@@ -47,20 +47,15 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			state = Quest::Started;
 			name = game->txQuest[76];
 
-			Location& sl = *W.locations[start_loc];
+			Location& sl = GetStartLocation();
 
 			// event
 			target_loc = W.GetClosestLocation(Rand() % 2 == 0 ? L_FOREST : L_CAVE, sl.pos);
 			location_event_handler = this;
 
-			Location& tl = *W.locations[target_loc];
+			Location& tl = GetTargetLocation();
 			tl.active_quest = this;
-			bool now_known = false;
-			if(tl.state == LS_UNKNOWN)
-			{
-				tl.state = LS_KNOWN;
-				now_known = true;
-			}
+			tl.SetKnown();
 
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
@@ -73,11 +68,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(Net::IsOnline())
-			{
 				game->Net_AddQuest(refid);
-				if(now_known)
-					game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::ClearedLocation:
@@ -85,12 +76,12 @@ void Quest_KillAnimals::SetProgress(int prog2)
 		{
 			if(target_loc != -1)
 			{
-				Location& loc = *W.locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
-			msgs.push_back(Format(game->txQuest[78], W.locations[target_loc]->name.c_str()));
+			msgs.push_back(Format(game->txQuest[78], GetTargetLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
@@ -102,7 +93,7 @@ void Quest_KillAnimals::SetProgress(int prog2)
 		// player talked with captain, end of quest
 		{
 			state = Quest::Completed;
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::None;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			game->AddReward(1200);
 			msgs.push_back(game->txQuest[79]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -116,13 +107,13 @@ void Quest_KillAnimals::SetProgress(int prog2)
 		// player failed to clear location in time
 		{
 			state = Quest::Failed;
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
 			msgs.push_back(game->txQuest[80]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			if(target_loc != -1)
 			{
-				Location& loc = *W.locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -139,9 +130,9 @@ void Quest_KillAnimals::SetProgress(int prog2)
 cstring Quest_KillAnimals::FormatString(const string& str)
 {
 	if(str == "target_loc")
-		return W.locations[target_loc]->name.c_str();
+		return GetTargetLocationName();
 	else if(str == "target_dir")
-		return GetLocationDirName(W.locations[start_loc]->pos, W.locations[target_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
 	else
 	{
 		assert(0);
@@ -164,7 +155,7 @@ bool Quest_KillAnimals::OnTimeout(TimeoutType ttype)
 		game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 		game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-		game->AbadonLocation(W.locations[target_loc]);
+		game->AbadonLocation(&GetTargetLocation());
 	}
 
 	return true;

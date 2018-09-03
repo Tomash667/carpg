@@ -349,26 +349,6 @@ void World::AddLocationAtIndex(Location* loc)
 	locations[loc->index] = loc;
 }
 
-void World::RemoveLocation(Location* loc)
-{
-	assert(loc);
-
-	for(vector<Location*>::iterator it = locations.begin(), end = locations.end(); it != end; ++it)
-	{
-		if((*it) == loc)
-		{
-			if(it + 1 == end)
-				locations.pop_back();
-			else
-			{
-				*it = nullptr;
-				++empty_locations;
-			}
-			break;
-		}
-	}
-}
-
 void World::RemoveLocation(int index)
 {
 	assert(VerifyLocation(index));
@@ -796,6 +776,18 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 		f >> travel_timer;
 	}
 	encounters.resize(f.Read<uint>(), nullptr);
+
+	L.location_index = current_location_index;
+	if(current_location_index != -1)
+	{
+		current_location = locations[current_location_index];
+		L.location = W.current_location;
+	}
+	else
+	{
+		current_location = nullptr;
+		L.location = nullptr;
+	}
 }
 
 void World::LoadOld(GameReader& f, LoadingHandler& loading, int part)
@@ -1312,6 +1304,37 @@ int World::GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float rang
 	return CreateCamp(pos, group, range / 2);
 }
 
+int World::GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int target_flags)
+{
+	assert(flags);
+
+	float best_dist = 999.f;
+	int best_index = -1, index = 0;
+
+	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++index)
+	{
+		if(*it && IS_SET(flags, 1 << (*it)->type) && (!not_quest || !(*it)->active_quest))
+		{
+			if(target_flags != -1)
+			{
+				if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
+				{
+					if(!IS_SET(target_flags, 1 << ((InsideLocation*)(*it))->target))
+						break;
+				}
+			}
+			float dist = Vec2::Distance(pos, (*it)->pos);
+			if(dist < best_dist)
+			{
+				best_dist = dist;
+				best_index = index;
+			}
+		}
+	}
+
+	return best_index;
+}
+
 void World::ExitToMap()
 {
 	if(state == State::INSIDE_ENCOUNTER)
@@ -1569,16 +1592,7 @@ void World::Reveal()
 {
 	for(Location* loc : locations)
 	{
-		if(loc && loc->state == LS_UNKNOWN)
-		{
-			loc->state = LS_KNOWN;
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_LOCATION_STATE;
-				c.id = id;
-				c.ile = 0;
-			}
-		}
+		if(loc)
+			loc->SetKnown();
 	}
 }

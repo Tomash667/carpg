@@ -216,14 +216,11 @@ void Quest_Bandits::SetProgress(int prog2)
 			msgs.push_back(Format(game->txQuest[159], GetLocationDirName(GetStartLocation().pos, camp.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			camp.state = LS_KNOWN;
+			camp.SetKnown();
 			bandits_state = State::GenerateGuards;
 
 			if(Net::IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				game->Net_ChangeLocationState(camp_loc, false);
-			}
 		}
 		break;
 	case Progress::KilledBandits:
@@ -257,7 +254,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			target_loc = game->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, THRONE_VAULT, SG_BANDITS, false);
 			Location& target = GetTargetLocation();
 			target.active_quest = this;
-			target.state = LS_KNOWN;
+			target.SetKnown();
 			target.st = 10;
 			W.GetLocation(camp_loc)->active_quest = nullptr;
 			msgs.push_back(Format(game->txQuest[161], target.name.c_str(), GetLocationDirName(GetStartLocation().pos, target.pos)));
@@ -274,10 +271,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			callback = WarpToThroneBanditBoss;
 
 			if(Net::IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::KilledBoss:

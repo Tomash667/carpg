@@ -336,3 +336,17 @@ bool Location::ReadPortals(BitStreamReader& f, int at_level)
 
 	return true;
 }
+
+void Location::SetKnown()
+{
+	if(state == LS_UNKNOWN)
+	{
+		state = LS_KNOWN;
+		if(Net::IsServer())
+		{
+			NetChange& c = Add1(Net::changes);
+			c.type = NetChange::CHANGE_LOCATION_STATE;
+			c.id = index;
+		}
+	}
+}

@@ -56,7 +56,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			start_loc = W.current_location_index;
 			Location& loc = GetTargetLocation();
 			loc.active_quest = this;
-			loc.state = LS_KNOWN;
+			loc.SetKnown();
 			loc.st = 13;
 
 			crazies_state = State::TalkedTrainer;
@@ -66,10 +66,7 @@ void Quest_Crazies::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(Net::IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::Finished: // schowano kamieñ do skrzyni

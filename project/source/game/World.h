@@ -49,7 +49,6 @@ public:
 	void AddLocations(uint count, AddLocationsCallback clbk, float valid_dist, bool unique_name);
 	int AddLocation(Location* loc);
 	void AddLocationAtIndex(Location* loc);
-	void RemoveLocation(Location* loc);
 	void RemoveLocation(int index);
 	bool VerifyLocation(int index) const { return index >= 0 && index < (int)locations.size() && locations[index]; }
 
@@ -75,6 +74,8 @@ public:
 	int GetClosestLocationNotTarget(LOCATION type, const Vec2& pos, int not_target);
 	bool FindPlaceForLocation(Vec2& pos, float range = 64.f, bool allow_exact = true);
 	int GetRandomSpawnLocation(const Vec2& pos, SPAWN_GROUP group, float range = 160.f);
+	int GetNearestLocation(const Vec2& pos, int flags, bool not_quest, int target_flags = -1);
+	int GetNearestSettlement(const Vec2& pos) { return GetNearestLocation(pos, (1 << L_CITY), false); }
 	int GetEncounterLocationIndex() const { return encounter_loc; } // FIXME remove?
 	int GetWorldtime() const { return worldtime; }
 	int GetYear() const { return year; }

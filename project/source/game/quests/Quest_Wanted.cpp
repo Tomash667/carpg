@@ -110,7 +110,7 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Timeout: // czas min¹³
 		{
 			state = Quest::Failed;
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
 
 			Location& target = GetTargetLocation();
 			if(target.active_quest == this)
@@ -142,7 +142,7 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Finished: // wykonano
 		{
 			state = Quest::Completed;
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::None;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 
 			game->AddReward(level * 100);
 
@@ -200,7 +200,7 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 	if(target_unit)
 	{
 		if(state == Quest::Failed)
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
 		if(!target_unit->hero->team_member)
 		{
 			// not a team member, remove
@@ -260,7 +260,7 @@ void Quest_Wanted::HandleUnitEvent(UnitEventHandler::TYPE event_type, Unit* unit
 		break;
 	case UnitEventHandler::LEAVE:
 		if(state == Quest::Failed)
-			((City*)W.locations[start_loc])->quest_captain = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_captain = CityQuestState::Failed;
 		target_unit = nullptr;
 		break;
 	}

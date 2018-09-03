@@ -4943,7 +4943,6 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::CHANGE_LOCATION_STATE:
 			f.WriteCasted<byte>(c.id);
-			f.WriteCasted<byte>(c.ile);
 			break;
 		case NetChange::ADD_RUMOR:
 			f << game_gui->journal->GetRumors()[c.id];
@@ -6275,9 +6274,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 		// change location state
 		case NetChange::CHANGE_LOCATION_STATE:
 			{
-				byte location_index, state;
+				byte location_index;
 				f >> location_index;
-				f >> state;
 				if(!f)
 					StreamError("Update client: Broken CHANGE_LOCATION_STATE.");
 				else if(!W.VerifyLocation(location_index))
@@ -6285,10 +6283,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 				{
 					Location* loc = W.GetLocation(location_index);
-					if(state == 0)
-						loc->state = LS_KNOWN;
-					else if(state == 1)
-						loc->state = LS_VISITED;
+					loc->SetKnown();
 				}
 			}
 			break;

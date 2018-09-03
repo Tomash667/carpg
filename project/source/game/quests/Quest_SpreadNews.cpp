@@ -22,13 +22,13 @@ void Quest_SpreadNews::Start()
 	type = QuestType::Mayor;
 	quest_id = Q_SPREAD_NEWS;
 	start_loc = W.current_location_index;
-	Vec2 pos = W.locations[start_loc]->pos;
+	Vec2 pos = GetStartLocation().pos;
 	bool sorted = false;
 	for(uint i = 0, count = W.settlements; i < count; ++i)
 	{
 		if(i == start_loc)
 			continue;
-		Location& loc = *W.locations[i];
+		Location& loc = *W.GetLocation(i);
 		if(loc.type != L_CITY)
 			continue;
 		float dist = Vec2::Distance(pos, loc.pos);
@@ -96,7 +96,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			quest_manager.quests_timeout2.push_back(this);
 
-			Location& loc = *W.locations[start_loc];
+			Location& loc = GetStartLocation();
 			bool is_city = LocationHelper::IsCity(loc);
 			name = game->txQuest[213];
 			msgs.push_back(Format(game->txQuest[3], is_city ? game->txForMayor : game->txForSoltys, loc.name.c_str(), W.GetDate()));
@@ -129,7 +129,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			if(ile == entries.size())
 			{
 				prog = Progress::Deliver;
-				msgs.push_back(Format(game->txQuest[19], W.locations[start_loc]->name.c_str()));
+				msgs.push_back(Format(game->txQuest[19], GetStartLocationName()));
 			}
 
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -150,7 +150,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		{
 			prog = Progress::Timeout;
 			state = Quest::Failed;
-			((City*)W.locations[start_loc])->quest_mayor = CityQuestState::Failed;
+			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 
 			msgs.push_back(game->txQuest[20]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -165,7 +165,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 		{
 			prog = Progress::Finished;
 			state = Quest::Completed;
-			((City*)W.locations[start_loc])->quest_mayor = CityQuestState::None;
+			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 			game->AddReward(200);
 
 			msgs.push_back(game->txQuest[21]);
@@ -188,7 +188,7 @@ cstring Quest_SpreadNews::FormatString(const string& str)
 		s.clear();
 		for(uint i = 0, count = entries.size(); i < count; ++i)
 		{
-			s += W.locations[entries[i].location]->name;
+			s += W.GetLocation(entries[i].location)->name;
 			if(i == count - 2)
 				s += game->txQuest[264];
 			else if(i != count - 1)
@@ -197,7 +197,7 @@ cstring Quest_SpreadNews::FormatString(const string& str)
 		return s.c_str();
 	}
 	else if(str == "start_loc")
-		return W.locations[start_loc]->name.c_str();
+		return GetStartLocationName();
 	else
 	{
 		assert(0);

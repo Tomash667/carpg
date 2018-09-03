@@ -3550,7 +3550,7 @@ void Game::DoWorldProgress(int days)
 	{
 		if((*it)->IsTimedout())
 		{
-			Location* loc = W.locations[(*it)->target_loc];
+			Location* loc = W.GetLocation((*it)->target_loc);
 			bool in_camp = false;
 
 			if(loc->type == L_CAMP && ((*it)->target_loc == W.travel_location_index || (*it)->target_loc == W.current_location_index))
@@ -3593,9 +3593,7 @@ void Game::DoWorldProgress(int days)
 				for(vector<Unit*>::iterator it2 = outside->units.begin(), end2 = outside->units.end(); it2 != end2; ++it2)
 					delete *it2;
 				outside->units.clear();
-				delete loc;
-
-				W.RemoveLocation(loc);
+				W.RemoveLocation(loc->index);
 			}
 
 			it = quest_manager.quests_timeout.erase(it);
@@ -4308,50 +4306,6 @@ int Game::CreateLocation(LOCATION type, const Vec2& pos, float range, int target
 	loc->GenerateName();
 
 	return W.AddLocation(loc);
-}
-
-int Game::GetNearestLocation2(const Vec2& pos, int flags, bool not_quest, int flagi_cel)
-{
-	assert(flags);
-
-	float best_dist = 999.f;
-	int best_index = -1, index = 0;
-
-	for(vector<Location*>::iterator it = W.locations.begin(), end = W.locations.end(); it != end; ++it, ++index)
-	{
-		if(*it && IS_SET(flags, 1 << (*it)->type) && (!not_quest || !(*it)->active_quest))
-		{
-			if(flagi_cel != -1)
-			{
-				if((*it)->type == L_DUNGEON || (*it)->type == L_CRYPT)
-				{
-					if(!IS_SET(flagi_cel, 1 << ((InsideLocation*)(*it))->target))
-						break;
-				}
-			}
-			float dist = Vec2::Distance(pos, (*it)->pos);
-			if(dist < best_dist)
-			{
-				best_dist = dist;
-				best_index = index;
-			}
-		}
-	}
-
-	return best_index;
-}
-
-int Game::FindLocationId(Location* loc)
-{
-	assert(loc);
-
-	for(int index = 0, size = int(W.locations.size()); index < size; ++index)
-	{
-		if(W.locations[index] == loc)
-			return index;
-	}
-
-	return -1;
 }
 
 void Game::GenerateMoonwell(Location& loc)
@@ -5595,7 +5549,7 @@ int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
 
 	if(hint_loc != -1)
 	{
-		if(W.locations[hint_loc]->FindUnit(unit, &level))
+		if(W.GetLocation(hint_loc)->FindUnit(unit, &level))
 		{
 			if(out_level)
 				*out_level = level;
@@ -5605,7 +5559,7 @@ int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
 
 	if(hint_loc2 != -1 && hint_loc != hint_loc2)
 	{
-		if(W.locations[hint_loc2]->FindUnit(unit, &level))
+		if(W.GetLocation(hint_loc2)->FindUnit(unit, &level))
 		{
 			if(out_level)
 				*out_level = level;
@@ -5613,9 +5567,10 @@ int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
 		}
 	}
 
-	for(uint i = 0; i < W.locations.size(); ++i)
+	const vector<Location*>& locations = W.GetLocations();
+	for(uint i = 0; i < locations.size(); ++i)
 	{
-		Location* loc = W.locations[i];
+		Location* loc = locations[i];
 		if(loc && i != hint_loc && i != hint_loc2 && loc->state >= LS_ENTERED && loc->FindUnit(unit, &level))
 		{
 			if(out_level)

@@ -84,12 +84,7 @@ void Quest_Evil::SetProgress(int prog2)
 			// lokacja
 			target_loc = game->CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, OLD_TEMPLE, SG_NONE, false, 1);
 			Location& target = GetTargetLocation();
-			bool now_known = false;
-			if(target.state == LS_UNKNOWN)
-			{
-				target.state = LS_KNOWN;
-				now_known = true;
-			}
+			target.SetKnown();
 			target.st = 8;
 			target.active_quest = this;
 			target.dont_clean = true;
@@ -105,11 +100,7 @@ void Quest_Evil::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(Net::IsOnline())
-			{
 				game->Net_AddQuest(refid);
-				if(now_known)
-					game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::AltarEvent:
@@ -225,16 +216,16 @@ void Quest_Evil::SetProgress(int prog2)
 					Random(max(levels.x, 2), max(levels.y, 2)));
 				Location& target = *W.GetLocation(loc[i].target_loc);
 				target.st = l_info[i].st;
-				target.state = LS_KNOWN;
+				target.SetKnown();
 				target.active_quest = this;
-				loc[i].near_loc = game->GetNearestSettlement(target.pos);
+				loc[i].near_loc = W.GetNearestSettlement(target.pos);
 				loc[i].at_level = target.GetLastLevel();
 				loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
 				msgs.push_back(Format(game->txQuest[247], W.GetLocation(loc[i].target_loc)->name.c_str(),
 					GetLocationDirName(W.GetLocation(loc[i].near_loc)->pos, W.GetLocation(loc[i].target_loc)->pos),
-					GetLocation(loc[i].near_loc)->name.c_str()));
+					W.GetLocation(loc[i].near_loc)->name.c_str()));
 				game->AddNews(Format(game->txQuest[246],
-					GetLocation(loc[i].target_loc)->name.c_str()));
+					W.GetLocation(loc[i].target_loc)->name.c_str()));
 			}
 
 			next_event = &loc[0];
@@ -251,11 +242,7 @@ void Quest_Evil::SetProgress(int prog2)
 			evil_state = State::ClosingPortals;
 
 			if(Net::IsOnline())
-			{
 				game->Net_UpdateQuestMulti(refid, 4);
-				for(int i = 0; i < 3; ++i)
-					game->Net_ChangeLocationState(loc[i].target_loc, false);
-			}
 		}
 		break;
 	case Progress::PortalClosed:
@@ -284,7 +271,7 @@ void Quest_Evil::SetProgress(int prog2)
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			for(int i = 0; i < 3; ++i)
-				W.locations[loc[i].target_loc]->active_quest = nullptr;
+				W.GetLocation(loc[i].target_loc)->active_quest = nullptr;
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuestMulti(refid, 2);
@@ -363,31 +350,31 @@ cstring Quest_Evil::FormatString(const string& str)
 	else if(str == "target_dir")
 		return GetTargetLocationDir();
 	else if(str == "mage_loc")
-		return W.locations[mage_loc]->name.c_str();
+		return W.GetLocation(mage_loc)->name.c_str();
 	else if(str == "mage_dir")
-		return GetLocationDirName(GetStartLocation().pos, W.locations[mage_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, W.GetLocation(mage_loc)->pos);
 	else if(str == "burmistrza")
 		return LocationHelper::IsCity(W.current_location) ? game->txForMayor : game->txForSoltys;
 	else if(str == "burmistrzem")
 		return LocationHelper::IsCity(W.current_location) ? game->txQuest[251] : game->txQuest[252];
 	else if(str == "t1")
-		return W.locations[loc[0].target_loc]->name.c_str();
+		return W.GetLocation(loc[0].target_loc)->name.c_str();
 	else if(str == "t2")
-		return W.locations[loc[1].target_loc]->name.c_str();
+		return W.GetLocation(loc[1].target_loc)->name.c_str();
 	else if(str == "t3")
-		return W.locations[loc[2].target_loc]->name.c_str();
+		return W.GetLocation(loc[2].target_loc)->name.c_str();
 	else if(str == "t1n")
-		return W.locations[loc[0].near_loc]->name.c_str();
+		return W.GetLocation(loc[0].near_loc)->name.c_str();
 	else if(str == "t2n")
-		return W.locations[loc[1].near_loc]->name.c_str();
+		return W.GetLocation(loc[1].near_loc)->name.c_str();
 	else if(str == "t3n")
-		return W.locations[loc[2].near_loc]->name.c_str();
+		return W.GetLocation(loc[2].near_loc)->name.c_str();
 	else if(str == "t1d")
-		return GetLocationDirName(W.locations[loc[0].near_loc]->pos, W.locations[loc[0].target_loc]->pos);
+		return GetLocationDirName(W.GetLocation(loc[0].near_loc)->pos, W.GetLocation(loc[0].target_loc)->pos);
 	else if(str == "t2d")
-		return GetLocationDirName(W.locations[loc[1].near_loc]->pos, W.locations[loc[1].target_loc]->pos);
+		return GetLocationDirName(W.GetLocation(loc[1].near_loc)->pos, W.GetLocation(loc[1].target_loc)->pos);
 	else if(str == "t3d")
-		return GetLocationDirName(W.locations[loc[2].near_loc]->pos, W.locations[loc[2].target_loc]->pos);
+		return GetLocationDirName(W.GetLocation(loc[2].near_loc)->pos, W.GetLocation(loc[2].target_loc)->pos);
 	else if(str == "close_dir")
 	{
 		float best_dist = 999.f;
@@ -396,7 +383,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		{
 			if(loc[i].state != Loc::State::PortalClosed)
 			{
-				float dist = Vec2::Distance(W.GetWorldPos(), W.locations[loc[i].target_loc]->pos);
+				float dist = Vec2::Distance(W.GetWorldPos(), W.GetLocation(loc[i].target_loc)->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -405,7 +392,7 @@ cstring Quest_Evil::FormatString(const string& str)
 			}
 		}
 		Loc& l = loc[best_index];
-		return GetLocationDirName(W.GetWorldPos(), W.locations[l.target_loc]->pos);
+		return GetLocationDirName(W.GetWorldPos(), W.GetLocation(l.target_loc)->pos);
 	}
 	else if(str == "close_loc")
 	{
@@ -415,7 +402,7 @@ cstring Quest_Evil::FormatString(const string& str)
 		{
 			if(loc[i].state != Loc::State::PortalClosed)
 			{
-				float dist = Vec2::Distance(W.GetWorldPos(), W.locations[loc[i].target_loc]->pos);
+				float dist = Vec2::Distance(W.GetWorldPos(), W.GetLocation(loc[i].target_loc)->pos);
 				if(dist < best_dist)
 				{
 					best_dist = dist;
@@ -423,7 +410,7 @@ cstring Quest_Evil::FormatString(const string& str)
 				}
 			}
 		}
-		return W.locations[best_index]->name.c_str();
+		return W.GetLocation(best_index)->name.c_str();
 	}
 	else if(str == "start_loc")
 		return GetStartLocationName();

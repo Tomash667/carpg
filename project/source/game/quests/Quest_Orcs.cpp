@@ -42,14 +42,14 @@ void Quest_Orcs::SetProgress(int prog2)
 			if(prog != Progress::None)
 				return;
 			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
-				game->game_gui->journal->AddRumor(Format(game->txQuest[189], W.locations[start_loc]->name.c_str()));
+				game->game_gui->journal->AddRumor(Format(game->txQuest[189], GetStartLocationName()));
 			game->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::NotAccepted:
 		{
 			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
-				game->game_gui->journal->AddRumor(Format(game->txQuest[190], W.locations[start_loc]->name.c_str()));
+				game->game_gui->journal->AddRumor(Format(game->txQuest[190], GetStartLocationName()));
 			// mark guard to remove
 			Unit*& u = game->quest_orcs2->guard;
 			if(u)
@@ -76,7 +76,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			// generate location
 			target_loc = game->CreateLocation(L_DUNGEON, GetStartLocation().pos, 64.f, HUMAN_FORT, SG_ORCS, false);
 			Location& tl = GetTargetLocation();
-			tl.state = LS_KNOWN;
+			tl.SetKnown();
 			tl.st = 10;
 			tl.active_quest = this;
 			location_event_handler = this;
@@ -104,10 +104,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(Net::IsOnline())
-			{
 				game->Net_AddQuest(refid);
-				game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::ClearedLocation:
@@ -342,7 +339,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			target.state = LS_HIDDEN;
 			target.st = 13;
 			target.active_quest = this;
-			near_loc = game->GetNearestSettlement(target.pos);
+			near_loc = W.GetNearestSettlement(target.pos);
 			msgs.push_back(game->txQuest[198]);
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -358,8 +355,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 			if(prog == Progress::TalkedWhereIsCamp)
 				break;
 			Location& target = GetTargetLocation();
-			Location& nearl = *W.locations[near_loc];
-			target.state = LS_KNOWN;
+			Location& nearl = *W.GetLocation(near_loc);
+			target.SetKnown();
 			done = false;
 			location_event_handler = this;
 			msgs.push_back(Format(game->txQuest[199], GetLocationDirName(nearl.pos, target.pos), nearl.name.c_str()));
@@ -367,10 +364,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(Net::IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::ClearedCamp:
@@ -467,15 +461,15 @@ void Quest_Orcs2::SetProgress(int prog2)
 		// powiedzia³ gdzie baza
 		{
 			Location& target = GetTargetLocation();
-			target.state = LS_KNOWN;
+			target.SetKnown();
 			unit_to_spawn = UnitData::Get("q_orkowie_boss");
 			spawn_unit_room = RoomTarget::Throne;
 			callback = WarpToThroneOrcBoss;
 			at_level = target.GetLastLevel();
 			location_event_handler = nullptr;
 			unit_event_handler = this;
-			near_loc = game->GetNearestSettlement(target.pos);
-			Location& nearl = *W.locations[near_loc];
+			near_loc = W.GetNearestSettlement(target.pos);
+			Location& nearl = *W.GetLocation(near_loc);
 			msgs.push_back(Format(game->txQuest[203], GetLocationDirName(nearl.pos, target.pos), nearl.name.c_str(), target.name.c_str()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -483,10 +477,7 @@ void Quest_Orcs2::SetProgress(int prog2)
 			orcs_state = State::GenerateOrcs;
 
 			if(Net::IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::KilledBoss:
@@ -605,9 +596,9 @@ cstring Quest_Orcs2::FormatString(const string& str)
 	if(str == "name")
 		return orc->hero->name.c_str();
 	else if(str == "close")
-		return W.locations[near_loc]->name.c_str();
+		return W.GetLocation(near_loc)->name.c_str();
 	else if(str == "close_dir")
-		return GetLocationDirName(W.locations[near_loc]->pos, GetTargetLocation().pos);
+		return GetLocationDirName(W.GetLocation(near_loc)->pos, GetTargetLocation().pos);
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")

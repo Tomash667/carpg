@@ -53,7 +53,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			quest_item.id = Format("$%s", item->id.c_str());
 			quest_item.refid = refid;
 
-			Location& sl = *W.locations[start_loc];
+			Location& sl = GetStartLocation();
 
 			// event
 			spawn_item = Quest_Dungeon::Item_InTreasure;
@@ -66,24 +66,19 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			else
 			{
 				target_loc = W.GetClosestLocation(L_CRYPT, sl.pos);
-				InsideLocation* inside = (InsideLocation*)(W.locations[target_loc]);
-				if(inside->IsMultilevel())
+				InsideLocation& inside = (InsideLocation&)GetTargetLocation();
+				if(inside.IsMultilevel())
 				{
-					MultiInsideLocation* multi = (MultiInsideLocation*)inside;
-					at_level = multi->levels.size() - 1;
+					MultiInsideLocation& multi = (MultiInsideLocation&)inside;
+					at_level = multi.levels.size() - 1;
 				}
 				else
 					at_level = 0;
 			}
 
-			Location& tl = *W.locations[target_loc];
+			Location& tl = GetTargetLocation();
 			tl.active_quest = this;
-			bool now_known = false;
-			if(tl.state == LS_UNKNOWN)
-			{
-				tl.state = LS_KNOWN;
-				now_known = true;
-			}
+			tl.SetKnown();
 
 			quest_index = quest_manager.quests.size();
 			quest_manager.quests.push_back(this);
@@ -100,8 +95,6 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			{
 				game->Net_AddQuest(refid);
 				game->Net_RegisterItem(&quest_item, item);
-				if(now_known)
-					game->Net_ChangeLocationState(target_loc, false);
 			}
 		}
 		break;
@@ -110,7 +103,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			state = Quest::Completed;
 			if(target_loc != -1)
 			{
-				Location& loc = *W.locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -136,7 +129,7 @@ void Quest_FindArtifact::SetProgress(int prog2)
 			state = Quest::Failed;
 			if(target_loc != -1)
 			{
-				Location& loc = *W.locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -159,9 +152,9 @@ cstring Quest_FindArtifact::FormatString(const string& str)
 	if(str == "przedmiot")
 		return item->name.c_str();
 	else if(str == "target_loc")
-		return W.locations[target_loc]->name.c_str();
+		return GetTargetLocationName();
 	else if(str == "target_dir")
-		return GetLocationDirName(W.locations[start_loc]->pos, W.locations[target_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
 	else if(str == "random_loc")
 		return W.GetRandomSettlement(start_loc)->name.c_str();
 	else

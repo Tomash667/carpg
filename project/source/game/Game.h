@@ -1200,8 +1200,6 @@ public:
 	void ClearGameVarsOnLoad();
 	void ClearGame();
 	cstring FormatString(DialogContext& ctx, const string& str_part);
-	int GetNearestLocation2(const Vec2& pos, int flags, bool not_quest, int flagi_cel = -1);
-	int GetNearestSettlement(const Vec2& pos) { return GetNearestLocation2(pos, (1 << L_CITY), false); }
 	void AddGameMsg(cstring msg, float time);
 	void AddGameMsg2(cstring msg, float time, int id = -1);
 	void AddGameMsg3(GMS id);
@@ -1714,13 +1712,6 @@ public:
 		c.type = NetChangePlayer::REMOVE_QUEST_ITEM;
 		c.id = refid;
 	}
-	void Net_ChangeLocationState(int id, bool visited)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::CHANGE_LOCATION_STATE;
-		c.id = id;
-		c.ile = (visited ? 1 : 0);
-	}
 	void Net_RecruitNpc(Unit* unit)
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1886,7 +1877,6 @@ public:
 	// tworzy lokacjê (jeœli range<0 to pozycja jest dowolna a range=-range, level=-1 - losowy poziom, =0 - minimalny, =9 maksymalny, =liczba - okreœlony)
 	int CreateLocation(LOCATION type, const Vec2& pos, float range = 64.f, int target = -1, SPAWN_GROUP spawn = SG_RANDOM, bool allow_exact = true,
 		int levels = -1);
-	int FindLocationId(Location* loc);
 	void Event_StartEncounter(int id);
 	void GenerateMoonwell(Location& loc);
 	void SpawnMoonwellObjects();

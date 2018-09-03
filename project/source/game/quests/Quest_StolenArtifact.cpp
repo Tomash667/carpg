@@ -74,17 +74,12 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			unit_to_spawn = g_spawn_groups[group].GetSpawnLeader();
 			unit_spawn_level = -3;
 
-			Location& sl = *W.locations[start_loc];
+			Location& sl = GetStartLocation();
 			target_loc = W.GetRandomSpawnLocation(sl.pos, group);
-			Location& tl = *W.locations[target_loc];
+			Location& tl = GetTargetLocation();
 			at_level = tl.GetRandomLevel();
 			tl.active_quest = this;
-			bool now_known = false;
-			if(tl.state == LS_UNKNOWN)
-			{
-				tl.state = LS_KNOWN;
-				now_known = true;
-			}
+			tl.SetKnown();
 
 			cstring kto;
 			switch(group)
@@ -124,8 +119,6 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			{
 				game->Net_AddQuest(refid);
 				game->Net_RegisterItem(&quest_item, item);
-				if(now_known)
-					game->Net_ChangeLocationState(target_loc, false);
 			}
 		}
 		break;
@@ -134,7 +127,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			state = Quest::Completed;
 			if(target_loc != -1)
 			{
-				Location& loc = *W.locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -160,7 +153,7 @@ void Quest_StolenArtifact::SetProgress(int prog2)
 			state = Quest::Failed;
 			if(target_loc != -1)
 			{
-				Location& loc = *W.locations[target_loc];
+				Location& loc = GetTargetLocation();
 				if(loc.active_quest == this)
 					loc.active_quest = nullptr;
 			}
@@ -183,9 +176,9 @@ cstring Quest_StolenArtifact::FormatString(const string& str)
 	if(str == "przedmiot")
 		return item->name.c_str();
 	else if(str == "target_loc")
-		return W.locations[target_loc]->name.c_str();
+		return GetTargetLocationName();
 	else if(str == "target_dir")
-		return GetLocationDirName(W.locations[start_loc]->pos, W.locations[target_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, GetTargetLocation().pos);
 	else if(str == "random_loc")
 		return W.GetRandomSettlement(start_loc)->name.c_str();
 	else if(str == "Bandyci_ukradli")

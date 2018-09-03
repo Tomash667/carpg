@@ -294,12 +294,7 @@ void WorldMapGui::Update(float dt)
 							W.encounter_chance += szansa;
 						}
 
-						if(loc.state == LS_UNKNOWN)
-						{
-							loc.state = LS_KNOWN;
-							if(Net::IsOnline())
-								game.Net_ChangeLocationState(index, false);
-						}
+						loc.SetKnown();
 					}
 					++index;
 				}

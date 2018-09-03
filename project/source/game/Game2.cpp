@@ -4964,7 +4964,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 					if(ok)
 					{
 						Location& loc = *locations[id2];
-						loc.state = LS_KNOWN;
+						loc.SetKnown();
 						Location& cloc = *L.location;
 						cstring s_daleko;
 						float dist = Vec2::Distance(loc.pos, cloc.pos);
@@ -4981,8 +4981,6 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 						DialogTalk(ctx, ctx.dialog_s_text.c_str());
 						++ctx.dialog_pos;
 
-						if(Net::IsOnline())
-							Net_ChangeLocationState(id2, false);
 						return true;
 					}
 					else
@@ -5046,12 +5044,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 							break;
 						}
 
-						if(loc.state == LS_UNKNOWN)
-						{
-							loc.state = LS_KNOWN;
-							if(Net::IsOnline())
-								Net_ChangeLocationState(FindLocationId(new_camp), false);
-						}
+						loc.SetKnown();
 
 						ctx.dialog_s_text = Format(random_string(txCampDiscovered), s_daleko, GetLocationDirName(cloc.pos, loc.pos), co);
 						DialogTalk(ctx, ctx.dialog_s_text.c_str());
@@ -5267,12 +5260,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		int id = ctx.active_locations.back().first;
 		ctx.active_locations.pop_back();
 		Location& loc = *locations[id];
-		if(loc.state == LS_UNKNOWN)
-		{
-			loc.state = LS_KNOWN;
-			if(Net::IsOnline())
-				Net_ChangeLocationState(id, false);
-		}
+		loc.SetKnown();
 		ctx.dialog_s_text = Format(txNearLoc, GetLocationDirName(W.GetWorldPos(), loc.pos), loc.name.c_str());
 		if(loc.spawn == SG_NONE)
 		{
@@ -15902,7 +15890,7 @@ void Game::CheckIfLocationCleared()
 			if(L.location->spawn != SG_NONE)
 			{
 				if(L.location->type == L_CAMP)
-					AddNews(Format(txNewsCampCleared, W.GetLocation(GetNearestSettlement(L.location->pos))->name.c_str()));
+					AddNews(Format(txNewsCampCleared, W.GetLocation(W.GetNearestSettlement(L.location->pos))->name.c_str()));
 				else
 					AddNews(Format(txNewsLocCleared, L.location->name.c_str()));
 			}

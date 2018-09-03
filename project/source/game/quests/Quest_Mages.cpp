@@ -50,12 +50,7 @@ void Quest_Mages::SetProgress(int prog2)
 			tl.reset = true;
 			tl.spawn = SG_UNDEAD;
 			tl.st = 8;
-			bool now_known = false;
-			if(tl.state == LS_UNKNOWN)
-			{
-				tl.state = LS_KNOWN;
-				now_known = true;
-			}
+			tl.SetKnown();
 
 			at_level = tl.GetLastLevel();
 			item_to_give[0] = Item::Get("q_magowie_kula");
@@ -71,11 +66,7 @@ void Quest_Mages::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(Net::IsOnline())
-			{
 				game->Net_AddQuest(refid);
-				if(now_known)
-					game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::Finished:
@@ -222,7 +213,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			mage_loc = W.GetRandomSettlementIndex(start_loc);
 
 			Location& sl = GetStartLocation();
-			Location& ml = *W.locations[mage_loc];
+			Location& ml = *W.GetLocation(mage_loc);
 
 			msgs.push_back(Format(game->txQuest[173], sl.name.c_str(), ml.name.c_str(), GetLocationDirName(sl.pos, ml.pos)));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
@@ -283,9 +274,9 @@ void Quest_Mages2::SetProgress(int prog2)
 		// idzie za tob¹ do pustej wie¿y
 		{
 			target_loc = game->CreateLocation(L_DUNGEON, Vec2(0, 0), -64.f, MAGE_TOWER, SG_NONE, true, 2);
-			Location& loc = *W.locations[target_loc];
+			Location& loc = GetTargetLocation();
 			loc.st = 1;
-			loc.state = LS_KNOWN;
+			loc.SetKnown();
 			game->AddTeamMember(game->current_dialog->talker, true);
 			msgs.push_back(Format(game->txQuest[177], game->current_dialog->talker->hero->name.c_str(), GetTargetLocationName(),
 				GetLocationDirName(W.current_location->pos, GetTargetLocation().pos), W.current_location->name.c_str()));
@@ -296,10 +287,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			scholar = game->current_dialog->talker;
 
 			if(Net::IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::MageTalkedAboutTower:
@@ -413,17 +401,14 @@ void Quest_Mages2::SetProgress(int prog2)
 			}
 
 			Location& target = GetTargetLocation();
-			target.state = LS_KNOWN;
+			target.SetKnown();
 
 			msgs.push_back(Format(game->txQuest[182], u->hero->name.c_str(), evil_mage_name.c_str(), target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(Net::IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::RecruitMage:
@@ -434,7 +419,7 @@ void Quest_Mages2::SetProgress(int prog2)
 
 			if(prog == Progress::MageDrinkPotion)
 			{
-				target.state = LS_KNOWN;
+				target.SetKnown();
 				msgs.push_back(Format(game->txQuest[183], u->hero->name.c_str(), evil_mage_name.c_str(), target.name.c_str(), GetTargetLocationDir(), GetStartLocationName()));
 			}
 			else
@@ -446,11 +431,7 @@ void Quest_Mages2::SetProgress(int prog2)
 			}
 
 			if(Net::IsOnline())
-			{
-				if(prog == Progress::MageDrinkPotion)
-					game->Net_ChangeLocationState(target_loc, false);
 				game->Net_UpdateQuest(refid);
-			}
 
 			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
@@ -520,9 +501,9 @@ cstring Quest_Mages2::FormatString(const string& str)
 	if(str == "start_loc")
 		return GetStartLocationName();
 	else if(str == "mage_loc")
-		return W.locations[mage_loc]->name.c_str();
+		return W.GetLocation(mage_loc)->name.c_str();
 	else if(str == "mage_dir")
-		return GetLocationDirName(GetStartLocation().pos, W.locations[mage_loc]->pos);
+		return GetLocationDirName(GetStartLocation().pos, W.GetLocation(mage_loc)->pos);
 	else if(str == "target_loc")
 		return GetTargetLocationName();
 	else if(str == "target_dir")

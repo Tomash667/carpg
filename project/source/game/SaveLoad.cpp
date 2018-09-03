@@ -751,22 +751,10 @@ void Game::LoadGame(GameReader& f)
 			}
 		}
 	}
-	L.location_index = W.current_location_index;
-	if(W.current_location_index != -1)
-	{
-		W.current_location = W.locations[W.current_location_index];
-		L.location = W.current_location;
-		if(L.location->type == L_CITY)
-			city_ctx = (City*)L.location;
-		else
-			city_ctx = nullptr;
-	}
+	if(L.location != nullptr && L.location->type == L_CITY)
+		city_ctx = (City*)L.location;
 	else
-	{
-		W.current_location = nullptr;
-		L.location = nullptr;
 		city_ctx = nullptr;
-	}
 	f >> W.first_city;
 	f >> W.boss_levels;
 	f >> L.enter_from;

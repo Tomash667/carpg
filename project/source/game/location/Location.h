@@ -125,6 +125,7 @@ struct Location : public ILevel
 		if(state == LS_KNOWN)
 			state = LS_VISITED;
 	}
+	void SetKnown();
 };
 
 //-----------------------------------------------------------------------------

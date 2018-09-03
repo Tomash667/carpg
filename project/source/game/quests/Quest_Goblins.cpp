@@ -119,7 +119,7 @@ void Quest_Goblins::SetProgress(int prog2)
 		// nie zaakceptowano
 		{
 			if(quest_manager.RemoveQuestRumor(P_GOBLINY))
-				game->game_gui->journal->AddRumor(Format(game->txQuest[211], W.locations[start_loc]->name.c_str()));
+				game->game_gui->journal->AddRumor(Format(game->txQuest[211], GetStartLocationName()));
 		}
 		break;
 	case Progress::Started:
@@ -131,14 +131,9 @@ void Quest_Goblins::SetProgress(int prog2)
 			// usuñ plotkê
 			quest_manager.RemoveQuestRumor(P_GOBLINY);
 			// dodaj lokalizacje
-			target_loc = game->GetNearestLocation2(GetStartLocation().pos, 1 << L_FOREST, true);
+			target_loc = W.GetNearestLocation(GetStartLocation().pos, 1 << L_FOREST, true);
 			Location& target = GetTargetLocation();
-			bool not_known = false;
-			if(target.state == LS_UNKNOWN)
-			{
-				target.state = LS_KNOWN;
-				not_known = true;
-			}
+			target.SetKnown();
 			target.reset = true;
 			target.active_quest = this;
 			target.st = 7;
@@ -167,11 +162,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			e->timed = false;
 
 			if(Net::IsOnline())
-			{
 				game->Net_AddQuest(refid);
-				if(not_known)
-					game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::BowStolen:
@@ -210,12 +201,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			state = Quest::Started;
 			target_loc = W.GetRandomSpawnLocation(GetStartLocation().pos, SG_GOBLINS);
 			Location& target = GetTargetLocation();
-			bool now_known = false;
-			if(target.state == LS_UNKNOWN)
-			{
-				target.state = LS_KNOWN;
-				now_known = true;
-			}
+			target.state = LS_KNOWN;
 			target.st = 11;
 			target.reset = true;
 			target.active_quest = this;
@@ -231,11 +217,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			goblins_state = State::MessengerTalked;
 
 			if(Net::IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				if(now_known)
-					game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::GivenBow:
@@ -305,7 +287,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			target_loc = game->CreateLocation(L_DUNGEON, W.GetWorldPos(), 128.f, THRONE_FORT, SG_GOBLINS, false);
 			Location& target = GetTargetLocation();
 			target.st = 13;
-			target.state = LS_KNOWN;
+			target.SetKnown();
 			target.active_quest = this;
 			done = false;
 			unit_to_spawn = UnitData::Get("q_gobliny_szlachcic2");
@@ -322,10 +304,7 @@ void Quest_Goblins::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 			if(Net::IsOnline())
-			{
 				game->Net_UpdateQuest(refid);
-				game->Net_ChangeLocationState(target_loc, false);
-			}
 		}
 		break;
 	case Progress::KilledBoss:
