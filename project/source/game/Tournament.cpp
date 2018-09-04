@@ -38,7 +38,7 @@ bool Game::IfUnitJoinTournament(Unit& u)
 	{
 		if(IS_SET(u.data->flags2, F2_TOURNAMENT))
 			return true;
-		else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE) && quest_mages2->mages_state >= Quest_Mages2::State::MageCured)
+		else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE) && QM.quest_mages2->mages_state >= Quest_Mages2::State::MageCured)
 		{
 			if(!u.IsTeamMember())
 			{

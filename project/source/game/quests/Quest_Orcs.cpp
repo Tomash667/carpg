@@ -43,7 +43,7 @@ void Quest_Orcs::SetProgress(int prog2)
 				return;
 			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
 				game->game_gui->journal->AddRumor(Format(game->txQuest[189], GetStartLocationName()));
-			game->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
+			QM.quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::NotAccepted:
@@ -51,14 +51,14 @@ void Quest_Orcs::SetProgress(int prog2)
 			if(quest_manager.RemoveQuestRumor(P_ORKOWIE))
 				game->game_gui->journal->AddRumor(Format(game->txQuest[190], GetStartLocationName()));
 			// mark guard to remove
-			Unit*& u = game->quest_orcs2->guard;
+			Unit*& u = QM.quest_orcs2->guard;
 			if(u)
 			{
 				u->auto_talk = AutoTalkMode::No;
 				u->temporary = true;
 				u = nullptr;
 			}
-			game->quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
+			QM.quest_orcs2->orcs_state = Quest_Orcs2::State::GuardTalked;
 		}
 		break;
 	case Progress::Started:
@@ -66,7 +66,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			// remove rumor from pool
 			quest_manager.RemoveQuestRumor(P_ORKOWIE);
 			// mark guard to remove
-			Unit*& u = game->quest_orcs2->guard;
+			Unit*& u = QM.quest_orcs2->guard;
 			if(u)
 			{
 				u->auto_talk = AutoTalkMode::No;
@@ -90,7 +90,7 @@ void Quest_Orcs::SetProgress(int prog2)
 			unit_to_spawn2 = g_spawn_groups[SG_ORCS].GetSpawnLeader();
 			unit_spawn_level2 = -3;
 			spawn_unit_room = RoomTarget::Prison;
-			game->quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
+			QM.quest_orcs2->orcs_state = Quest_Orcs2::State::Accepted;
 			// questowe rzeczy
 			state = Quest::Started;
 			name = game->txQuest[191];
@@ -129,15 +129,15 @@ void Quest_Orcs::SetProgress(int prog2)
 			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			W.AddNews(Format(game->txQuest[196], GetTargetLocationName(), GetStartLocationName()));
 
-			if(game->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
+			if(QM.quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined)
 			{
-				game->quest_orcs2->orcs_state = Quest_Orcs2::State::CompletedJoined;
-				game->quest_orcs2->days = Random(30, 60);
+				QM.quest_orcs2->orcs_state = Quest_Orcs2::State::CompletedJoined;
+				QM.quest_orcs2->days = Random(30, 60);
 				GetTargetLocation().active_quest = nullptr;
 				target_loc = -1;
 			}
 			else
-				game->quest_orcs2->orcs_state = Quest_Orcs2::State::Completed;
+				QM.quest_orcs2->orcs_state = Quest_Orcs2::State::Completed;
 
 			if(Net::IsOnline())
 				game->Net_UpdateQuest(refid);
@@ -174,7 +174,7 @@ bool Quest_Orcs::IfNeedTalk(cstring topic) const
 bool Quest_Orcs::IfSpecial(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_orkowie_dolaczyl") == 0)
-		return game->quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || game->quest_orcs2->orcs_state == Quest_Orcs2::State::CompletedJoined;
+		return QM.quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || QM.quest_orcs2->orcs_state == Quest_Orcs2::State::CompletedJoined;
 	else
 	{
 		assert(0);
@@ -321,8 +321,8 @@ void Quest_Orcs2::SetProgress(int prog2)
 			{
 				orcs_state = Quest_Orcs2::State::CompletedJoined;
 				days = Random(30, 60);
-				game->quest_orcs->GetTargetLocation().active_quest = nullptr;
-				game->quest_orcs->target_loc = -1;
+				QM.quest_orcs->GetTargetLocation().active_quest = nullptr;
+				QM.quest_orcs->target_loc = -1;
 			}
 			// do³¹cz do dru¿yny
 			game->AddTeamMember(game->current_dialog->talker, true);
@@ -618,7 +618,7 @@ bool Quest_Orcs2::IfNeedTalk(cstring topic) const
 //=================================================================================================
 bool Quest_Orcs2::IfQuestEvent() const
 {
-	return (In(orcs_state, { State::CompletedJoined, State::CampCleared, State::PickedClass }) && days <= 0);
+	return Any(orcs_state, State::CompletedJoined, State::CampCleared, State::PickedClass) && days <= 0;
 }
 
 //=================================================================================================

@@ -810,8 +810,8 @@ void Game::UpdateAi(float dt)
 									goto normal_idle_action;
 							}
 							else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE)
-								&& quest_mages2->mages_state >= Quest_Mages2::State::OldMageJoined
-								&& quest_mages2->mages_state < Quest_Mages2::State::MageCured
+								&& QM.quest_mages2->mages_state >= Quest_Mages2::State::OldMageJoined
+								&& QM.quest_mages2->mages_state < Quest_Mages2::State::MageCured
 								&& Rand() % 3 == 0)
 							{
 								// drink something

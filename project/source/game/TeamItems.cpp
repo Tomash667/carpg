@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "Game.h"
+#include "QuestManager.h"
 #include "Quest_Mages.h"
 #include "Quest_Orcs.h"
 #include "Quest_Evil.h"
@@ -594,22 +595,23 @@ void Game::BuyTeamItems()
 	}
 
 	// buying potions by old mage
-	if(quest_mages2->scholar && In(quest_mages2->mages_state, { Quest_Mages2::State::MageRecruited, Quest_Mages2::State::OldMageJoined,
-		Quest_Mages2::State::OldMageRemembers, Quest_Mages2::State::BuyPotion }))
+	if(QM.quest_mages2->scholar && Any(QM.quest_mages2->mages_state, Quest_Mages2::State::MageRecruited, Quest_Mages2::State::OldMageJoined,
+		Quest_Mages2::State::OldMageRemembers, Quest_Mages2::State::BuyPotion))
 	{
-		int ile = max(0, 3 - quest_mages2->scholar->CountItem(hp2));
+		int ile = max(0, 3 - QM.quest_mages2->scholar->CountItem(hp2));
 		if(ile)
 		{
-			quest_mages2->scholar->AddItem(hp2, ile, false);
-			quest_mages2->scholar->ai->have_potion = 2;
+			QM.quest_mages2->scholar->AddItem(hp2, ile, false);
+			QM.quest_mages2->scholar->ai->have_potion = 2;
 		}
 	}
 
 	// buying potions by orc
-	if(quest_orcs2->orc && (quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || quest_orcs2->orcs_state >= Quest_Orcs2::State::CompletedJoined))
+	if(QM.quest_orcs2->orc
+		&& (QM.quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || QM.quest_orcs2->orcs_state >= Quest_Orcs2::State::CompletedJoined))
 	{
 		int ile1, ile2;
-		switch(quest_orcs2->GetOrcClass())
+		switch(QM.quest_orcs2->GetOrcClass())
 		{
 		case Quest_Orcs2::OrcClass::None:
 			ile1 = 6;
@@ -629,22 +631,22 @@ void Game::BuyTeamItems()
 			break;
 		}
 
-		int ile = max(0, ile1 - quest_orcs2->orc->CountItem(hp2));
+		int ile = max(0, ile1 - QM.quest_orcs2->orc->CountItem(hp2));
 		if(ile)
-			quest_orcs2->orc->AddItem(hp2, ile, false);
+			QM.quest_orcs2->orc->AddItem(hp2, ile, false);
 
 		if(ile2)
 		{
-			ile = max(0, ile2 - quest_orcs2->orc->CountItem(hp3));
+			ile = max(0, ile2 - QM.quest_orcs2->orc->CountItem(hp3));
 			if(ile)
-				quest_orcs2->orc->AddItem(hp3, ile, false);
+				QM.quest_orcs2->orc->AddItem(hp3, ile, false);
 		}
 
-		quest_orcs2->orc->ai->have_potion = 2;
+		QM.quest_orcs2->orc->ai->have_potion = 2;
 	}
 
 	// buying points for cleric
-	if(quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_evil->evil_state == Quest_Evil::State::KillBoss)
+	if(QM.quest_evil->evil_state == Quest_Evil::State::ClosingPortals || QM.quest_evil->evil_state == Quest_Evil::State::KillBoss)
 	{
 		Unit* u = Team.FindTeamMember("q_zlo_kaplan");
 

@@ -2361,7 +2361,7 @@ bool Game::IsDrunkman(Unit& u)
 	if(IS_SET(u.data->flags, F_AI_DRUNKMAN))
 		return true;
 	else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE))
-		return quest_mages2->mages_state < Quest_Mages2::State::MageCured;
+		return QM.quest_mages2->mages_state < Quest_Mages2::State::MageCured;
 	else if(IS_SET(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
 		return QM.quest_contest->state == Quest_Contest::CONTEST_DONE;
 	else

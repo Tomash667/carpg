@@ -38,7 +38,7 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 
 	if(mode == WPM_TRAVEL)
 	{
-		bool autoheal = (quest_evil->evil_state == Quest_Evil::State::ClosingPortals || quest_evil->evil_state == Quest_Evil::State::KillBoss);
+		bool autoheal = (QM.quest_evil->evil_state == Quest_Evil::State::ClosingPortals || QM.quest_evil->evil_state == Quest_Evil::State::KillBoss);
 
 		// regeneracja hp / trenowanie
 		for(Unit* unit : Team.members)

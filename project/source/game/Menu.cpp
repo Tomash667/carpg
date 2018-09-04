@@ -32,6 +32,7 @@
 #include "EntityInterpolator.h"
 #include "World.h"
 #include "Level.h"
+#include "QuestManager.h"
 
 extern string g_ctime;
 
@@ -407,7 +408,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	if(!tutorial)
 	{
 		GenerateWorld();
-		InitQuests();
+		QM.InitQuests(devmode);
 		if(!sound_mgr->IsMusicDisabled())
 		{
 			LoadMusic(MusicType::Boss, false);
@@ -1499,7 +1500,7 @@ void Game::UpdateServerTransfer(float dt)
 			load_screen->visible = true;
 			clear_color = Color::Black;
 			GenerateWorld();
-			InitQuests();
+			QM.InitQuests(devmode);
 			if(!sound_mgr->IsMusicDisabled())
 			{
 				LoadMusic(MusicType::Boss, false);

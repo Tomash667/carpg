@@ -504,18 +504,18 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 					LoadingStep(txGeneratingUnits);
 					bool have_sawmill = false;
-					if(L.location_index == quest_sawmill->target_loc)
+					if(L.location_index == QM.quest_sawmill->target_loc)
 					{
 						// sawmill quest
-						if(quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
-							&& quest_sawmill->build_state == Quest_Sawmill::BuildState::LumberjackLeft)
+						if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::InBuild
+							&& QM.quest_sawmill->build_state == Quest_Sawmill::BuildState::LumberjackLeft)
 						{
 							GenerateSawmill(true);
 							have_sawmill = true;
 							L.location->loaded_resources = false;
 						}
-						else if(quest_sawmill->sawmill_state == Quest_Sawmill::State::Working
-							&& quest_sawmill->build_state != Quest_Sawmill::BuildState::Finished)
+						else if(QM.quest_sawmill->sawmill_state == Quest_Sawmill::State::Working
+							&& QM.quest_sawmill->build_state != Quest_Sawmill::BuildState::Finished)
 						{
 							GenerateSawmill(false);
 							have_sawmill = true;
@@ -705,9 +705,9 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			AddPlayerTeam(pos, dir, reenter, true);
 
 			// generate guards for bandits quest
-			if(quest_bandits->bandits_state == Quest_Bandits::State::GenerateGuards && L.location_index == quest_bandits->target_loc)
+			if(QM.quest_bandits->bandits_state == Quest_Bandits::State::GenerateGuards && L.location_index == QM.quest_bandits->target_loc)
 			{
-				quest_bandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
+				QM.quest_bandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
 				UnitData* ud = UnitData::Get("guard_q_bandyci");
 				int ile = Random(4, 5);
 				pos += Vec3(sin(dir + PI) * 8, 0, cos(dir + PI) * 8);
@@ -2151,7 +2151,8 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	pvp_response.ok = false;
 	QM.quest_tournament->generated = false;
 
-	if(Net::IsLocal() && (quest_crazies->check_stone || (quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && quest_crazies->crazies_state < Quest_Crazies::State::End)))
+	if(Net::IsLocal() && (QM.quest_crazies->check_stone
+		|| (QM.quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && QM.quest_crazies->crazies_state < Quest_Crazies::State::End)))
 		CheckCraziesStone();
 
 	// drinking contest
@@ -2178,9 +2179,9 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	}
 
 	// clear blood & bodies from orc base
-	if(Net::IsLocal() && quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && L.location_index == quest_orcs2->target_loc)
+	if(Net::IsLocal() && QM.quest_orcs2->orcs_state == Quest_Orcs2::State::ClearDungeon && L.location_index == QM.quest_orcs2->target_loc)
 	{
-		quest_orcs2->orcs_state = Quest_Orcs2::State::End;
+		QM.quest_orcs2->orcs_state = Quest_Orcs2::State::End;
 		UpdateLocation(31, 100, false);
 	}
 
@@ -2300,13 +2301,13 @@ void Game::GenerateDungeon(Location& _loc)
 			r.pos.x = r.pos.y = (opcje.w - 7) / 2;
 			inside->special_room = 0;
 		}
-		else if(L.location_index == quest_evil->target_loc && quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
+		else if(L.location_index == QM.quest_evil->target_loc && QM.quest_evil->evil_state == Quest_Evil::State::GeneratedCleric)
 		{
 			// schody w krypcie 0 jak najdalej od œrodka
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
 		}
 
-		if(quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && L.location_index == quest_orcs->target_loc && dungeon_level == L.location->GetLastLevel())
+		if(QM.quest_orcs2->orcs_state == Quest_Orcs2::State::Accepted && L.location_index == QM.quest_orcs->target_loc && dungeon_level == L.location->GetLastLevel())
 		{
 			opcje.stop = true;
 			bool first = true;
@@ -3335,18 +3336,18 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			dont_attack = true;
 			dialog = FindDialog("q_crazies");
 			count = 1;
-			quest_crazies->check_stone = true;
+			QM.quest_crazies->check_stone = true;
 			kamien = true;
 			break;
 		case 8:
 			group_name = "unk";
 			level = 13;
 			od_tylu = true;
-			if(quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
+			if(QM.quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
 			{
-				quest_crazies->crazies_state = Quest_Crazies::State::FirstAttack;
+				QM.quest_crazies->crazies_state = Quest_Crazies::State::FirstAttack;
 				count = 1;
-				quest_crazies->SetProgress(Quest_Crazies::Progress::Started);
+				QM.quest_crazies->SetProgress(Quest_Crazies::Progress::Started);
 			}
 			else
 				count = Random(1, 3);

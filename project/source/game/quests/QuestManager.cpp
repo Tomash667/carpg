@@ -5,6 +5,7 @@
 #include "SaveState.h"
 #include "GameFile.h"
 #include "World.h"
+#include "Content.h"
 
 #include "Quest_Bandits.h"
 #include "Quest_BanditsCollectToll.h"
@@ -81,11 +82,104 @@ void QuestManager::Cleanup()
 }
 
 //=================================================================================================
-void QuestManager::InitQuests()
+void QuestManager::InitQuests(bool devmode)
 {
+	vector<int> used;
+
+	// goblins
+	quest_goblins = new Quest_Goblins;
+	quest_goblins->start_loc = W.GetRandomSettlementIndex(used, 1);
+	quest_goblins->refid = quest_counter++;
+	quest_goblins->Start();
+	unaccepted_quests.push_back(quest_goblins);
+	used.push_back(quest_goblins->start_loc);
+
+	// bandits
+	quest_bandits = new Quest_Bandits;
+	quest_bandits->start_loc = W.GetRandomSettlementIndex(used, 1);
+	quest_bandits->refid = quest_counter++;
+	quest_bandits->Start();
+	unaccepted_quests.push_back(quest_bandits);
+	used.push_back(quest_bandits->start_loc);
+
+	// sawmill
+	quest_sawmill = new Quest_Sawmill;
+	quest_sawmill->start_loc = W.GetRandomSettlementIndex(used);
+	quest_sawmill->refid = quest_counter++;
+	quest_sawmill->Start();
+	unaccepted_quests.push_back(quest_sawmill);
+	used.push_back(quest_sawmill->start_loc);
+
+	// mine
+	quest_mine = new Quest_Mine;
+	quest_mine->start_loc = W.GetRandomSettlementIndex(used);
+	quest_mine->target_loc = W.GetClosestLocation(L_CAVE, W.GetLocation(quest_mine->start_loc)->pos);
+	quest_mine->refid = quest_counter++;
+	quest_mine->Start();
+	unaccepted_quests.push_back(quest_mine);
+	used.push_back(quest_mine->start_loc);
+
+	// mages
+	quest_mages = new Quest_Mages;
+	quest_mages->start_loc = W.GetRandomSettlementIndex(used);
+	quest_mages->refid = quest_counter++;
+	quest_mages->Start();
+	unaccepted_quests.push_back(quest_mages);
+	used.push_back(quest_mages->start_loc);
+
+	// mages2
+	quest_mages2 = new Quest_Mages2;
+	quest_mages2->refid = quest_counter++;
+	quest_mages2->Start();
+	unaccepted_quests.push_back(quest_mages2);
+	quest_rumor[P_MAGOWIE2] = true;
+	--quest_rumor_counter;
+
+	// orcs
+	quest_orcs = new Quest_Orcs;
+	quest_orcs->start_loc = W.GetRandomSettlementIndex(used);
+	quest_orcs->refid = quest_counter++;
+	quest_orcs->Start();
+	unaccepted_quests.push_back(quest_orcs);
+	used.push_back(quest_orcs->start_loc);
+
+	// orcs2
+	quest_orcs2 = new Quest_Orcs2;
+	quest_orcs2->refid = quest_counter++;
+	quest_orcs2->Start();
+	unaccepted_quests.push_back(quest_orcs2);
+
+	// evil
+	quest_evil = new Quest_Evil;
+	quest_evil->start_loc = W.GetRandomSettlementIndex(used);
+	quest_evil->refid = quest_counter++;
+	quest_evil->Start();
+	unaccepted_quests.push_back(quest_evil);
+	used.push_back(quest_evil->start_loc);
+
+	// crazies
+	quest_crazies = new Quest_Crazies;
+	quest_crazies->refid = quest_counter++;
+	quest_crazies->Start();
+	unaccepted_quests.push_back(quest_crazies);
+
+	// pseudo quests
 	quest_contest->Init();
 	quest_secret->Init();
 	quest_tournament->Init();
+
+	if(devmode)
+	{
+		Info("Quest 'Sawmill' - %s.", W.GetLocation(quest_sawmill->start_loc)->name.c_str());
+		Info("Quest 'Mine' - %s, %s.", W.GetLocation(quest_mine->start_loc)->name.c_str(), W.GetLocation(quest_mine->target_loc)->name.c_str());
+		Info("Quest 'Bandits' - %s.", W.GetLocation(quest_bandits->start_loc)->name.c_str());
+		Info("Quest 'Mages' - %s.", W.GetLocation(quest_mages->start_loc)->name.c_str());
+		Info("Quest 'Orcs' - %s.", W.GetLocation(quest_orcs->start_loc)->name.c_str());
+		Info("Quest 'Goblins' - %s.", W.GetLocation(quest_goblins->start_loc)->name.c_str());
+		Info("Quest 'Evil' - %s.", W.GetLocation(quest_evil->start_loc)->name.c_str());
+		Info("Tournament - %s.", W.GetLocation(quest_tournament->city)->name.c_str());
+		Info("Contest - %s.", W.GetLocation(quest_contest->where)->name.c_str());
+	}
 }
 
 //=================================================================================================

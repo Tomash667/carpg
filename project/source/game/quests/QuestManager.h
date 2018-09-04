@@ -46,7 +46,7 @@ class QuestManager
 {
 public:
 	void Init();
-	void InitQuests();
+	void InitQuests(bool devmode);
 	Quest* CreateQuest(QUEST quest_id);
 	Quest* GetMayorQuest();
 	Quest* GetCaptainQuest();

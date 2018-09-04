@@ -1254,7 +1254,6 @@ public:
 	GroundItem* SpawnGroundItemInsideRoom(Room& room, const Item* item);
 	GroundItem* SpawnGroundItemInsideRadius(const Item* item, const Vec2& pos, float radius, bool try_exact = false);
 	GroundItem* SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos, const Vec2& region_size, bool try_exact);
-	void InitQuests();
 	void GenerateQuestUnits();
 	void GenerateQuestUnits2(bool on_enter);
 	void UpdateQuests(int days);

@@ -1036,18 +1036,6 @@ inline int GetIndex(const vector<T>& items, Pred pred)
 }
 
 //-----------------------------------------------------------------------------
-template<typename T, typename U>
-inline bool In(T val, const std::initializer_list<U>& lis)
-{
-	for(U t : lis)
-	{
-		if(t == (T)val)
-			return true;
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
 template<typename T>
 class SafeVector
 {

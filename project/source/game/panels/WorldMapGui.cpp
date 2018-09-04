@@ -5,6 +5,7 @@
 #include "Language.h"
 #include "Journal.h"
 #include "Version.h"
+#include "QuestManager.h"
 #include "Quest_Mages.h"
 #include "Quest_Crazies.h"
 #include "Encounter.h"
@@ -355,13 +356,13 @@ void WorldMapGui::Update(float dt)
 					}
 					else
 					{
-						Quest_Crazies::State c_state = game.quest_crazies->crazies_state;
+						Quest_Crazies::State c_state = QM.quest_crazies->crazies_state;
 
-						bool golemy = (game.quest_mages2->mages_state >= Quest_Mages2::State::Encounter && game.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0)
+						bool golemy = (QM.quest_mages2->mages_state >= Quest_Mages2::State::Encounter && QM.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0)
 							|| (DEBUG_BOOL && Key.Focus() && Key.Down('G'));
 						bool szalony = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand() % 2 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
 						bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand() % 3 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
-						if(game.quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand() % 2 == 0)
+						if(QM.quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand() % 2 == 0)
 							golemy = true;
 						if(c_state == Quest_Crazies::State::PickedStone && Rand() % 2 == 0)
 							unk = true;
@@ -387,7 +388,7 @@ void WorldMapGui::Update(float dt)
 							else if(golemy)
 							{
 								game.spotkanie = 6;
-								game.quest_mages2->paid = false;
+								QM.quest_mages2->paid = false;
 							}
 							else if(DEBUG_BOOL && Key.Focus())
 							{

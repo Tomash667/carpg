@@ -76,8 +76,8 @@ void Quest_Mages::SetProgress(int prog2)
 			const Item* item = Item::Get("q_magowie_kula");
 			game->current_dialog->talker->AddItem(item, 1, true);
 			game->RemoveItem(*game->current_dialog->pc->unit, item, 1);
-			game->quest_mages2->scholar = game->current_dialog->talker;
-			game->quest_mages2->mages_state = Quest_Mages2::State::ScholarWaits;
+			QM.quest_mages2->scholar = game->current_dialog->talker;
+			QM.quest_mages2->mages_state = Quest_Mages2::State::ScholarWaits;
 
 			GetTargetLocation().active_quest = nullptr;
 
@@ -93,7 +93,7 @@ void Quest_Mages::SetProgress(int prog2)
 		break;
 	case Progress::EncounteredGolem:
 		{
-			Quest_Mages2* q = game->quest_mages2;
+			Quest_Mages2* q = QM.quest_mages2;
 			q->name = game->txQuest[169];
 			q->start_time = W.GetWorldtime();
 			q->state = Quest::Started;
@@ -143,7 +143,7 @@ void Quest_Mages::Special(DialogContext& ctx, cstring msg)
 	{
 		ctx.talker->gold += ctx.pc->unit->gold;
 		ctx.pc->unit->SetGold(0);
-		game->quest_mages2->paid = true;
+		QM.quest_mages2->paid = true;
 	}
 	else
 	{
@@ -155,7 +155,7 @@ void Quest_Mages::Special(DialogContext& ctx, cstring msg)
 bool Quest_Mages::IfSpecial(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_magowie_zaplacono") == 0)
-		return game->quest_mages2->paid;
+		return QM.quest_mages2->paid;
 	else
 	{
 		assert(0);
