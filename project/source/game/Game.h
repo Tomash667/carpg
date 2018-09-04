@@ -766,16 +766,6 @@ public:
 
 	//--------------------------------------
 	// QUESTS
-	Quest_Sawmill* quest_sawmill;
-	Quest_Mine* quest_mine;
-	Quest_Bandits* quest_bandits;
-	Quest_Mages* quest_mages;
-	Quest_Mages2* quest_mages2;
-	Quest_Orcs* quest_orcs;
-	Quest_Orcs2* quest_orcs2;
-	Quest_Goblins* quest_goblins;
-	Quest_Evil* quest_evil;
-	Quest_Crazies* quest_crazies;
 	void CheckCraziesStone();
 	void ShowAcademyText();
 
@@ -1268,7 +1258,6 @@ public:
 	void GenerateQuestUnits();
 	void GenerateQuestUnits2(bool on_enter);
 	void UpdateQuests(int days);
-	void LoadQuestsData(GameReader& f);
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);
 	void GenerateSawmill(bool in_progress);

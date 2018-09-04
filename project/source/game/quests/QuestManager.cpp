@@ -453,6 +453,71 @@ void QuestManager::Load(GameReader& f)
 		f >> force;
 	else
 		force = Q_FORCE_DISABLED;
+
+	// get quest pointers
+	quest_sawmill = (Quest_Sawmill*)FindQuestById(Q_SAWMILL);
+	quest_mine = (Quest_Mine*)FindQuestById(Q_MINE);
+	quest_bandits = (Quest_Bandits*)FindQuestById(Q_BANDITS);
+	quest_goblins = (Quest_Goblins*)FindQuestById(Q_GOBLINS);
+	quest_mages = (Quest_Mages*)FindQuestById(Q_MAGES);
+	quest_mages2 = (Quest_Mages2*)FindQuestById(Q_MAGES2);
+	quest_orcs = (Quest_Orcs*)FindQuestById(Q_ORCS);
+	quest_orcs2 = (Quest_Orcs2*)FindQuestById(Q_ORCS2);
+	quest_evil = (Quest_Evil*)FindQuestById(Q_EVIL);
+	quest_crazies = (Quest_Crazies*)FindQuestById(Q_CRAZIES);
+
+	if(LOAD_VERSION < V_FEATURE && !quest_mages2)
+	{
+		quest_mages2 = new Quest_Mages2;
+		quest_mages2->refid = quest_counter++;
+		quest_mages2->Start();
+		unaccepted_quests.push_back(quest_mages2);
+	}
+
+	// process quest item requests
+	for(vector<QuestItemRequest*>::iterator it = quest_item_requests.begin(), end = quest_item_requests.end(); it != end; ++it)
+	{
+		QuestItemRequest* qir = *it;
+		*qir->item = FindQuestItem(qir->name.c_str(), qir->quest_refid);
+		if(qir->items)
+		{
+			bool ok = true;
+			for(vector<ItemSlot>::iterator it2 = qir->items->begin(), end2 = qir->items->end(); it2 != end2; ++it2)
+			{
+				if(it2->item == QUEST_ITEM_PLACEHOLDER)
+				{
+					ok = false;
+					break;
+				}
+			}
+			if(ok && (LOAD_VERSION < V_0_7_1 || content::require_update))
+			{
+				SortItems(*qir->items);
+				if(qir->unit)
+					qir->unit->RecalculateWeight();
+			}
+		}
+		delete *it;
+	}
+	quest_item_requests.clear();
+
+	// load quests old data (now are stored inside quest)
+	if(LOAD_VERSION < V_0_4)
+	{
+		quest_sawmill->LoadOld(f);
+		quest_mine->LoadOld(f);
+		quest_bandits->LoadOld(f);
+		quest_mages2->LoadOld(f);
+		quest_orcs2->LoadOld(f);
+		quest_goblins->LoadOld(f);
+		quest_evil->LoadOld(f);
+		quest_crazies->LoadOld(f);
+	}
+
+	// load pseudo-quests
+	quest_secret->Load(f);
+	quest_contest->Load(f);
+	quest_tournament->Load(f);
 }
 
 //=================================================================================================

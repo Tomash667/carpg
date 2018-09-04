@@ -4,21 +4,14 @@
 #include "SaveState.h"
 #include "Version.h"
 #include "QuestManager.h"
-#include "Quest_Sawmill.h"
-#include "Quest_Bandits.h"
-#include "Quest_Mine.h"
-#include "Quest_Goblins.h"
-#include "Quest_Mages.h"
-#include "Quest_Orcs.h"
-#include "Quest_Evil.h"
-#include "Quest_Crazies.h"
+#include "Quest.h"
+#include "Quest_Contest.h"
+#include "Quest_Secret.h"
+#include "Quest_Tournament.h"
 #include "GameFile.h"
 #include "GameStats.h"
-#include "MultiInsideLocation.h"
-#include "OutsideLocation.h"
 #include "City.h"
 #include "CaveLocation.h"
-#include "Camp.h"
 #include "Gui.h"
 #include "SaveLoadPanel.h"
 #include "MultiplayerPanel.h"
@@ -36,9 +29,6 @@
 #include "World.h"
 #include "Level.h"
 #include "LoadingHandler.h"
-#include "Quest_Contest.h"
-#include "Quest_Secret.h"
-#include "Quest_Tournament.h"
 
 enum SaveFlags
 {
@@ -858,51 +848,6 @@ void Game::LoadGame(GameReader& f)
 	QuestManager& quest_manager = QM;
 	quest_manager.Load(f);
 
-	quest_sawmill = (Quest_Sawmill*)quest_manager.FindQuestById(Q_SAWMILL);
-	quest_mine = (Quest_Mine*)quest_manager.FindQuestById(Q_MINE);
-	quest_bandits = (Quest_Bandits*)quest_manager.FindQuestById(Q_BANDITS);
-	quest_goblins = (Quest_Goblins*)quest_manager.FindQuestById(Q_GOBLINS);
-	quest_mages = (Quest_Mages*)quest_manager.FindQuestById(Q_MAGES);
-	quest_mages2 = (Quest_Mages2*)quest_manager.FindQuestById(Q_MAGES2);
-	quest_orcs = (Quest_Orcs*)quest_manager.FindQuestById(Q_ORCS);
-	quest_orcs2 = (Quest_Orcs2*)quest_manager.FindQuestById(Q_ORCS2);
-	quest_evil = (Quest_Evil*)quest_manager.FindQuestById(Q_EVIL);
-	quest_crazies = (Quest_Crazies*)quest_manager.FindQuestById(Q_CRAZIES);
-
-	if(!quest_mages2)
-	{
-		quest_mages2 = new Quest_Mages2;
-		quest_mages2->refid = quest_manager.quest_counter++;
-		quest_mages2->Start();
-		quest_manager.unaccepted_quests.push_back(quest_mages2);
-	}
-
-	for(vector<QuestItemRequest*>::iterator it = quest_manager.quest_item_requests.begin(), end = quest_manager.quest_item_requests.end(); it != end; ++it)
-	{
-		QuestItemRequest* qir = *it;
-		*qir->item = quest_manager.FindQuestItem(qir->name.c_str(), qir->quest_refid);
-		if(qir->items)
-		{
-			bool ok = true;
-			for(vector<ItemSlot>::iterator it2 = qir->items->begin(), end2 = qir->items->end(); it2 != end2; ++it2)
-			{
-				if(it2->item == QUEST_ITEM_PLACEHOLDER)
-				{
-					ok = false;
-					break;
-				}
-			}
-			if(ok && (LOAD_VERSION < V_0_7_1 || content::require_update))
-			{
-				SortItems(*qir->items);
-				if(qir->unit)
-					qir->unit->RecalculateWeight();
-			}
-		}
-		delete *it;
-	}
-	quest_manager.quest_item_requests.clear();
-	LoadQuestsData(f);
 	SM.Load(f);
 
 	if(LOAD_VERSION < V_FEATURE)
@@ -1250,27 +1195,6 @@ void Game::LoadStock(FileReader& f, vector<ItemSlot>& cnt)
 
 	if(can_sort && (LOAD_VERSION < V_0_2_20 || content::require_update))
 		SortItems(cnt);
-}
-
-//=================================================================================================
-void Game::LoadQuestsData(GameReader& f)
-{
-	// load quests old data (now are stored inside quest)
-	if(LOAD_VERSION < V_0_4)
-	{
-		quest_sawmill->LoadOld(f);
-		quest_mine->LoadOld(f);
-		quest_bandits->LoadOld(f);
-		quest_mages2->LoadOld(f);
-		quest_orcs2->LoadOld(f);
-		quest_goblins->LoadOld(f);
-		quest_evil->LoadOld(f);
-		quest_crazies->LoadOld(f);
-	}
-
-	QM.quest_secret->Load(f);
-	QM.quest_contest->Load(f);
-	QM.quest_tournament->Load(f);
 }
 
 //=================================================================================================

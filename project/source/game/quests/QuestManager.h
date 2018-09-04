@@ -4,7 +4,17 @@
 #include "QuestConsts.h"
 
 //-----------------------------------------------------------------------------
+class Quest_Bandits;
 class Quest_Contest;
+class Quest_Crazies;
+class Quest_Evil;
+class Quest_Goblins;
+class Quest_Mages;
+class Quest_Mages2;
+class Quest_Mine;
+class Quest_Orcs;
+class Quest_Orcs2;
+class Quest_Sawmill;
 class Quest_Secret;
 class Quest_Tournament;
 struct Item;
@@ -66,6 +76,16 @@ public:
 	vector<Quest_Dungeon*> quests_timeout;
 	vector<Quest*> quests_timeout2;
 	vector<QuestItemRequest*> quest_item_requests;
+	Quest_Sawmill* quest_sawmill;
+	Quest_Mine* quest_mine;
+	Quest_Bandits* quest_bandits;
+	Quest_Mages* quest_mages;
+	Quest_Mages2* quest_mages2;
+	Quest_Orcs* quest_orcs;
+	Quest_Orcs2* quest_orcs2;
+	Quest_Goblins* quest_goblins;
+	Quest_Evil* quest_evil;
+	Quest_Crazies* quest_crazies;
 	Quest_Contest* quest_contest;
 	Quest_Secret* quest_secret;
 	Quest_Tournament* quest_tournament;

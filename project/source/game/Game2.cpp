@@ -4303,7 +4303,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 				}
 				else if(id == "q_orkowie_kowal")
 				{
-					ctx.pc->chest_trade = &quest_orcs2->wares;
+					ctx.pc->chest_trade = &QM.quest_orcs2->wares;
 					trader_buy = blacksmith_buy;
 				}
 				else if(id == "food_seller")
@@ -5077,31 +5077,31 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 					switch(co)
 					{
 					case P_TARTAK:
-						ctx.dialog_s_text = Format(txRumorQ[0], locations[quest_sawmill->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[0], locations[QM.quest_sawmill->start_loc]->name.c_str());
 						break;
 					case P_KOPALNIA:
-						ctx.dialog_s_text = Format(txRumorQ[1], locations[quest_mine->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[1], locations[QM.quest_mine->start_loc]->name.c_str());
 						break;
 					case P_ZAWODY_W_PICIU:
 						ctx.dialog_s_text = txRumorQ[2];
 						break;
 					case P_BANDYCI:
-						ctx.dialog_s_text = Format(txRumorQ[3], locations[quest_bandits->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[3], locations[QM.quest_bandits->start_loc]->name.c_str());
 						break;
 					case P_MAGOWIE:
-						ctx.dialog_s_text = Format(txRumorQ[4], locations[quest_mages->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[4], locations[QM.quest_mages->start_loc]->name.c_str());
 						break;
 					case P_MAGOWIE2:
 						ctx.dialog_s_text = txRumorQ[5];
 						break;
 					case P_ORKOWIE:
-						ctx.dialog_s_text = Format(txRumorQ[6], locations[quest_orcs->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[6], locations[QM.quest_orcs->start_loc]->name.c_str());
 						break;
 					case P_GOBLINY:
-						ctx.dialog_s_text = Format(txRumorQ[7], locations[quest_goblins->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[7], locations[QM.quest_goblins->start_loc]->name.c_str());
 						break;
 					case P_ZLO:
-						ctx.dialog_s_text = Format(txRumorQ[8], locations[quest_evil->start_loc]->name.c_str());
+						ctx.dialog_s_text = Format(txRumorQ[8], locations[QM.quest_evil->start_loc]->name.c_str());
 						break;
 					default:
 						assert(0);
@@ -5644,7 +5644,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	else if(strcmp(msg, "szaleni_powiedzial") == 0)
 	{
 		ctx.talker->ai->morale = -100.f;
-		quest_crazies->crazies_state = Quest_Crazies::State::TalkedWithCrazy;
+		QM.quest_crazies->crazies_state = Quest_Crazies::State::TalkedWithCrazy;
 	}
 	else if(strcmp(msg, "szaleni_sprzedaj") == 0)
 	{
@@ -5845,29 +5845,29 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "contest_winner") == 0)
 		return QM.quest_contest->winner == ctx.pc->unit;
 	else if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
-		return quest_bandits->prog == Quest_Bandits::Progress::NeedTalkWithCaptain && L.location_index == quest_bandits->start_loc;
+		return QM.quest_bandits->prog == Quest_Bandits::Progress::NeedTalkWithCaptain && L.location_index == QM.quest_bandits->start_loc;
 	else if(strcmp(msg, "q_magowie_to_miasto") == 0)
-		return quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain && L.location_index == quest_mages2->start_loc;
+		return QM.quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain && L.location_index == QM.quest_mages2->start_loc;
 	else if(strcmp(msg, "q_magowie_poinformuj") == 0)
-		return quest_mages2->mages_state == Quest_Mages2::State::EncounteredGolem;
+		return QM.quest_mages2->mages_state == Quest_Mages2::State::EncounteredGolem;
 	else if(strcmp(msg, "q_magowie_kup_miksture") == 0)
-		return quest_mages2->mages_state == Quest_Mages2::State::BuyPotion;
+		return QM.quest_mages2->mages_state == Quest_Mages2::State::BuyPotion;
 	else if(strcmp(msg, "q_magowie_kup") == 0)
 	{
 		if(ctx.pc->unit->gold >= 150)
 		{
-			quest_mages2->SetProgress(Quest_Mages2::Progress::BoughtPotion);
+			QM.quest_mages2->SetProgress(Quest_Mages2::Progress::BoughtPotion);
 			return true;
 		}
 	}
 	else if(strcmp(msg, "q_orkowie_to_miasto") == 0)
-		return L.location_index == quest_orcs->start_loc;
+		return L.location_index == QM.quest_orcs->start_loc;
 	else if(strcmp(msg, "q_orkowie_zaakceptowano") == 0)
-		return quest_orcs2->orcs_state >= Quest_Orcs2::State::Accepted;
+		return QM.quest_orcs2->orcs_state >= Quest_Orcs2::State::Accepted;
 	else if(strcmp(msg, "q_magowie_nie_ukonczono") == 0)
-		return quest_mages2->mages_state != Quest_Mages2::State::Completed;
+		return QM.quest_mages2->mages_state != Quest_Mages2::State::Completed;
 	else if(strcmp(msg, "q_orkowie_nie_ukonczono") == 0)
-		return quest_orcs2->orcs_state < Quest_Orcs2::State::Completed;
+		return QM.quest_orcs2->orcs_state < Quest_Orcs2::State::Completed;
 	else if(strcmp(msg, "is_free_recruit") == 0)
 		return ctx.talker->level < 6 && Team.free_recruit;
 	else if(strcmp(msg, "have_unique_quest") == 0)
