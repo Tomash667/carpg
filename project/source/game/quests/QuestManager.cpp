@@ -28,6 +28,7 @@
 #include "Quest_Secret.h"
 #include "Quest_SpreadNews.h"
 #include "Quest_StolenArtifact.h"
+#include "Quest_Tournament.h"
 #include "Quest_Wanted.h"
 
 //-----------------------------------------------------------------------------
@@ -65,6 +66,18 @@ void QuestManager::Init()
 	// create pseudo quests
 	quest_contest = new Quest_Contest;
 	quest_secret = new Quest_Secret;
+	quest_tournament = new Quest_Tournament;
+}
+
+//=================================================================================================
+void QuestManager::Cleanup()
+{
+	DeleteElements(quests);
+	DeleteElements(unaccepted_quests);
+	DeleteElements(quest_item_requests);
+	delete quest_contest;
+	delete quest_secret;
+	delete quest_tournament;
 }
 
 //=================================================================================================
@@ -72,6 +85,7 @@ void QuestManager::InitQuests()
 {
 	quest_contest->Init();
 	quest_secret->Init();
+	quest_tournament->Init();
 }
 
 //=================================================================================================
@@ -279,14 +293,6 @@ void QuestManager::Reset()
 }
 
 //=================================================================================================
-void QuestManager::Cleanup()
-{
-	DeleteElements(quests);
-	DeleteElements(unaccepted_quests);
-	DeleteElements(quest_item_requests);
-}
-
-//=================================================================================================
 void QuestManager::Update(int days)
 {
 	// mark quest locations as not quest / remove quest camps
@@ -407,6 +413,10 @@ void QuestManager::Save(GameWriter& f)
 	f << quest_rumor_counter;
 	f << quest_rumor;
 	f << force;
+
+	quest_contest->Save(f);
+	quest_secret->Save(f);
+	quest_tournament->Save(f);
 }
 
 //=================================================================================================

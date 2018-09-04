@@ -38,6 +38,7 @@
 #include "Var.h"
 #include "Quest_Contest.h"
 #include "Quest_Secret.h"
+#include "Quest_Tournament.h"
 
 extern Matrix m1, m2, m3, m4;
 
@@ -2128,7 +2129,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	if(Net::IsLocal())
 	{
 		// zawody
-		if(tournament_state != TOURNAMENT_NOT_DONE)
+		if(QM.quest_tournament->state != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			CleanTournament();
 		// arena
 		if(!arena_free)
@@ -2148,7 +2149,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	Info("Leaving location.");
 
 	pvp_response.ok = false;
-	tournament_generated = false;
+	QM.quest_tournament->generated = false;
 
 	if(Net::IsLocal() && (quest_crazies->check_stone || (quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && quest_crazies->crazies_state < Quest_Crazies::State::End)))
 		CheckCraziesStone();

@@ -55,6 +55,7 @@
 #include "News.h"
 #include "Quest_Contest.h"
 #include "Quest_Secret.h"
+#include "Quest_Tournament.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -5609,19 +5610,19 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	else if(strcmp(msg, "ironfist_start") == 0)
 	{
 		StartTournament(ctx.talker);
-		tournament_units.push_back(ctx.pc->unit);
+		QM.quest_tournament->units.push_back(ctx.pc->unit);
 		ctx.pc->unit->ModGold(-100);
 		ctx.pc->leaving_event = false;
 	}
 	else if(strcmp(msg, "ironfist_join") == 0)
 	{
-		tournament_units.push_back(ctx.pc->unit);
+		QM.quest_tournament->units.push_back(ctx.pc->unit);
 		ctx.pc->unit->ModGold(-100);
 		ctx.pc->leaving_event = false;
 	}
 	else if(strcmp(msg, "ironfist_train") == 0)
 	{
-		tournament_winner = nullptr;
+		QM.quest_tournament->winner = nullptr;
 		ctx.pc->unit->frozen = FROZEN::YES;
 		if(ctx.is_local)
 		{
@@ -5920,42 +5921,38 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 		return city_ctx != nullptr;
 	else if(strcmp(msg, "ironfist_can_start") == 0)
 	{
-		return tournament_state == TOURNAMENT_NOT_DONE
-			&& tournament_city == L.location_index
+		Quest_Tournament* tournament = QM.quest_tournament;
+		return tournament->state == Quest_Tournament::TOURNAMENT_NOT_DONE
+			&& tournament->city == L.location_index
 			&& W.GetDay() == 6
 			&& W.GetMonth() == 2
-			&& tournament_year != W.GetYear();
+			&& tournament->year != W.GetYear();
 	}
 	else if(strcmp(msg, "ironfist_done") == 0)
-		return tournament_year == W.GetYear();
+		return QM.quest_tournament->year == W.GetYear();
 	else if(strcmp(msg, "ironfist_here") == 0)
-		return L.location_index == tournament_city;
+		return QM.quest_tournament->city == L.location_index;
 	else if(strcmp(msg, "ironfist_preparing") == 0)
-		return tournament_state == TOURNAMENT_STARTING;
+		return QM.quest_tournament->state == Quest_Tournament::TOURNAMENT_STARTING;
 	else if(strcmp(msg, "ironfist_started") == 0)
 	{
-		if(tournament_state == TOURNAMENT_IN_PROGRESS)
+		Quest_Tournament* tournament = QM.quest_tournament;
+		if(tournament->state == Quest_Tournament::TOURNAMENT_IN_PROGRESS)
 		{
 			// zwyciêzca mo¿e pogadaæ i przerwaæ gadanie
-			if(tournament_winner == dialog_context.pc->unit && tournament_state2 == 2 && tournament_state3 == 1)
+			if(tournament->winner == dialog_context.pc->unit && tournament->state2 == 2 && tournament->state3 == 1)
 			{
-				tournament_master->look_target = nullptr;
-				tournament_state = TOURNAMENT_NOT_DONE;
+				tournament->master->look_target = nullptr;
+				tournament->state = Quest_Tournament::TOURNAMENT_NOT_DONE;
 			}
 			else
 				return true;
 		}
 	}
 	else if(strcmp(msg, "ironfist_joined") == 0)
-	{
-		for(auto& unit : tournament_units)
-		{
-			if(unit == ctx.pc->unit)
-				return true;
-		}
-	}
+		return QM.quest_tournament->HaveJoined(ctx.pc->unit);
 	else if(strcmp(msg, "ironfist_winner") == 0)
-		return ctx.pc->unit == tournament_winner;
+		return QM.quest_tournament->winner == ctx.pc->unit;
 	else if(strcmp(msg, "szaleni_nie_zapytano") == 0)
 		return quest_crazies->crazies_state == Quest_Crazies::State::None;
 	else if(strcmp(msg, "q_szaleni_trzeba_pogadac") == 0)
@@ -13033,7 +13030,7 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 	else if(str_part == "player_name")
 		return current_dialog->pc->name.c_str();
 	else if(str_part == "ironfist_city")
-		return W.GetLocation(tournament_city)->name.c_str();
+		return W.GetLocation(QM.quest_tournament->city)->name.c_str();
 	else if(str_part == "rhero")
 	{
 		static string str;
@@ -15937,7 +15934,7 @@ bool Game::CanWander(Unit& u)
 		{
 			if(u.hero->team_member && u.hero->mode != HeroData::Wander)
 				return false;
-			else if(tournament_generated)
+			else if(QM.quest_tournament->generated)
 				return false;
 			else
 				return true;
@@ -16846,15 +16843,6 @@ void Game::InitQuests()
 
 	QM.InitQuests();
 
-	// zawody
-	tournament_year = 0;
-	tournament_city_year = W.GetYear();
-	tournament_city = W.GetRandomCityIndex();
-	tournament_state = TOURNAMENT_NOT_DONE;
-	tournament_units.clear();
-	tournament_winner = nullptr;
-	tournament_generated = false;
-
 	if(devmode)
 	{
 		Info("Quest 'Sawmill' - %s.", W.GetLocation(quest_sawmill->start_loc)->name.c_str());
@@ -16864,7 +16852,7 @@ void Game::InitQuests()
 		Info("Quest 'Orcs' - %s.", W.GetLocation(quest_orcs->start_loc)->name.c_str());
 		Info("Quest 'Goblins' - %s.", W.GetLocation(quest_goblins->start_loc)->name.c_str());
 		Info("Quest 'Evil' - %s.", W.GetLocation(quest_evil->start_loc)->name.c_str());
-		Info("Tournament - %s.", W.GetLocation(tournament_city)->name.c_str());
+		Info("Tournament - %s.", W.GetLocation(QM.quest_tournament->city)->name.c_str());
 		Info("Contest - %s.", W.GetLocation(QM.quest_contest->where)->name.c_str());
 	}
 }
@@ -17056,7 +17044,7 @@ void Game::GenerateQuestUnits()
 	}
 
 	if(W.GetDay() == 6 && W.GetMonth() == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena)
-		&& L.location_index == tournament_city && !tournament_generated)
+		&& L.location_index == QM.quest_tournament->city && !QM.quest_tournament->generated)
 		GenerateTournamentUnits();
 }
 
@@ -17261,16 +17249,17 @@ void Game::UpdateQuests(int days)
 		quest_crazies->days -= days;
 
 	// zawody
-	if(year != tournament_city_year)
+	Quest_Tournament* tournament = QM.quest_tournament;
+	if(year != tournament->city_year)
 	{
-		tournament_city_year = year;
-		tournament_city = W.GetRandomCityIndex(tournament_city);
-		tournament_master = nullptr;
+		tournament->city_year = year;
+		tournament->city = W.GetRandomCityIndex(tournament->city);
+		tournament->master = nullptr;
 	}
-	if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && L.location_index == tournament_city && !tournament_generated)
+	if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && L.location_index == tournament->city && !tournament->generated)
 		GenerateTournamentUnits();
 	if(month > 2 || (month == 2 && day > 6))
-		tournament_year = year;
+		tournament->year = year;
 
 	if(city_ctx)
 		GenerateQuestUnits2(false);
@@ -18346,7 +18335,7 @@ void Game::UpdateGame2(float dt)
 		UpdateArena(dt);
 
 	// tournament
-	if(tournament_state != TOURNAMENT_NOT_DONE)
+	if(QM.quest_tournament->state != Quest_Tournament::TOURNAMENT_NOT_DONE)
 		UpdateTournament(dt);
 
 	// sharing of team items between team members
@@ -18829,7 +18818,7 @@ void Game::UpdateArena(float dt)
 				at_arena.clear();
 			}
 			else
-				tournament_state3 = 5;
+				QM.quest_tournament->state3 = 5;
 			arena_tryb = Arena_Brak;
 			arena_free = true;
 		}
@@ -20665,7 +20654,7 @@ cstring Game::GetRandomIdleText(Unit& u)
 				int id;
 				if(city_ctx->FindInn(id) && id == u.in_building)
 				{
-					if(IS_SET(u.data->flags, F_AI_DRUNKMAN) || tournament_state != 1)
+					if(IS_SET(u.data->flags, F_AI_DRUNKMAN) || QM.quest_tournament->state != Quest_Tournament::TOURNAMENT_STARTING)
 					{
 						if(Rand() % 3 == 0)
 							return random_string(txAiDrunkText);

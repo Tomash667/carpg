@@ -742,19 +742,7 @@ public:
 
 	//--------------------------------------
 	// TOURNAMENT
-	enum TOURNAMENT_STATE
-	{
-		TOURNAMENT_NOT_DONE,
-		TOURNAMENT_STARTING,
-		TOURNAMENT_IN_PROGRESS
-	} tournament_state;
-	int tournament_year, tournament_city_year, tournament_city, tournament_state2, tournament_state3, tournament_round, tournament_arena;
-	vector<SmartPtr<Unit>> tournament_units;
-	float tournament_timer;
-	Unit* tournament_master;
-	SmartPtr<Unit> tournament_skipped_unit, tournament_other_fighter, tournament_winner;
-	vector<std::pair<SmartPtr<Unit>, SmartPtr<Unit>>> tournament_pairs;
-	bool tournament_generated;
+	
 
 	void StartTournament(Unit* arena_master);
 	bool IfUnitJoinTournament(Unit& u);
@@ -1280,7 +1268,6 @@ public:
 	void GenerateQuestUnits();
 	void GenerateQuestUnits2(bool on_enter);
 	void UpdateQuests(int days);
-	void SaveQuestsData(GameWriter& f);
 	void LoadQuestsData(GameReader& f);
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);

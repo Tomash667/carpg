@@ -38,6 +38,7 @@
 #include "LoadingHandler.h"
 #include "Quest_Contest.h"
 #include "Quest_Secret.h"
+#include "Quest_Tournament.h"
 
 enum SaveFlags
 {
@@ -62,7 +63,8 @@ bool Game::CanSaveGame() const
 	}
 	else
 	{
-		if(in_tutorial || arena_tryb != Arena_Brak || QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING || tournament_state != TOURNAMENT_NOT_DONE)
+		if(in_tutorial || arena_tryb != Arena_Brak || QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING
+			|| QM.quest_tournament->state != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			return false;
 	}
 
@@ -461,7 +463,6 @@ void Game::SaveGame(GameWriter& f)
 
 	// save quests
 	QM.Save(f);
-	SaveQuestsData(f);
 	SM.Save(f);
 
 	f << check_id;
@@ -559,20 +560,6 @@ void Game::SaveStock(FileWriter& f, vector<ItemSlot>& cnt)
 		else
 			f.Write0();
 	}
-}
-
-//=================================================================================================
-void Game::SaveQuestsData(GameWriter& f)
-{
-	QM.quest_secret->Save(f);
-	QM.quest_contest->Save(f);
-
-	// arena tournament
-	f << tournament_year;
-	f << tournament_city;
-	f << tournament_city_year;
-	f << tournament_winner;
-	f << tournament_generated;
 }
 
 //=================================================================================================
@@ -1135,10 +1122,11 @@ void Game::LoadGame(GameReader& f)
 		assert((*it)->handler);
 	}
 
-	if(tournament_generated)
-		tournament_master = FindUnitByIdLocal("arena_master");
+	Quest_Tournament* tournament = QM.quest_tournament;
+	if(tournament->generated)
+		tournament->master = FindUnitByIdLocal("arena_master");
 	else
-		tournament_master = nullptr;
+		tournament->master = nullptr;
 
 	minimap_reveal.clear();
 	dialog_context.dialog_mode = false;
@@ -1282,15 +1270,7 @@ void Game::LoadQuestsData(GameReader& f)
 
 	QM.quest_secret->Load(f);
 	QM.quest_contest->Load(f);
-
-	// arena tournament
-	f >> tournament_year;
-	f >> tournament_city;
-	f >> tournament_city_year;
-	f >> tournament_winner;
-	f >> tournament_generated;
-	tournament_state = TOURNAMENT_NOT_DONE;
-	tournament_units.clear();
+	QM.quest_tournament->Load(f);
 }
 
 //=================================================================================================
