@@ -1375,7 +1375,7 @@ void Unit::Load(GameReader& f, bool local)
 		else
 		{
 			int quest_item_refid = f.Read<int>();
-			QuestManager::Get().AddQuestItemRequest(&slot.item, item_id.c_str(), quest_item_refid, &items, this);
+			QM.AddQuestItemRequest(&slot.item, item_id.c_str(), quest_item_refid, &items, this);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}

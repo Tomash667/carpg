@@ -4967,7 +4967,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::ADD_QUEST:
 			{
-				Quest* q = QuestManager::Get().FindQuest(c.id, false);
+				Quest* q = QM.FindQuest(c.id, false);
 				f << q->refid;
 				f << q->name;
 				f.WriteString2(q->msgs[0]);
@@ -4976,7 +4976,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::UPDATE_QUEST:
 			{
-				Quest* q = QuestManager::Get().FindQuest(c.id, false);
+				Quest* q = QM.FindQuest(c.id, false);
 				f << q->refid;
 				f.WriteCasted<byte>(q->state);
 				f.WriteString2(q->msgs.back());
@@ -4992,7 +4992,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 			break;
 		case NetChange::UPDATE_QUEST_MULTI:
 			{
-				Quest* q = QuestManager::Get().FindQuest(c.id, false);
+				Quest* q = QM.FindQuest(c.id, false);
 				f << q->refid;
 				f.WriteCasted<byte>(q->state);
 				f.WriteCasted<byte>(c.ile);
@@ -6211,7 +6211,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			break;
 		// info about completing all unique quests
 		case NetChange::ALL_QUESTS_COMPLETED:
-			QuestManager::Get().unique_completed_show = true;
+			QM.unique_completed_show = true;
 			break;
 		// unit talks
 		case NetChange::TALK:
@@ -6469,7 +6469,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				QuestManager& quest_manager = QuestManager::Get();
+				QuestManager& quest_manager = QM;
 
 				PlaceholderQuest* quest = new PlaceholderQuest;
 				quest->quest_index = quest_manager.quests.size();
@@ -6506,7 +6506,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				Quest* quest = QuestManager::Get().FindQuest(refid, false);
+				Quest* quest = QM.FindQuest(refid, false);
 				if(!quest)
 					StreamError("Update client: UPDATE_QUEST, missing quest %d.", refid);
 				else
@@ -6562,7 +6562,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				Quest* quest = QuestManager::Get().FindQuest(refid, false);
+				Quest* quest = QM.FindQuest(refid, false);
 				if(!quest)
 				{
 					StreamError("Update client: UPDATE_QUEST_MULTI, missing quest %d.", refid);
@@ -9563,11 +9563,11 @@ void Game::PrepareWorldData(BitStreamWriter& f)
 	W.Write(f);
 
 	// quests
-	QuestManager::Get().Write(f);
+	QM.Write(f);
 
 	// rumors
 	f.WriteStringArray<byte, word>(game_gui->journal->GetRumors());
-	
+
 	// stats
 	GameStats::Get().Write(f);
 
@@ -9606,7 +9606,7 @@ bool Game::ReadWorldData(BitStreamReader& f)
 	}
 
 	// quests
-	if(!QuestManager::Get().Read(f))
+	if(!QM.Read(f))
 		return false;
 
 	// rumors

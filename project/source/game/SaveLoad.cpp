@@ -36,6 +36,7 @@
 #include "World.h"
 #include "Level.h"
 #include "LoadingHandler.h"
+#include "Quest_Contest.h"
 
 enum SaveFlags
 {
@@ -60,7 +61,7 @@ bool Game::CanSaveGame() const
 	}
 	else
 	{
-		if(in_tutorial || arena_tryb != Arena_Brak || contest_state >= CONTEST_STARTING || tournament_state != TOURNAMENT_NOT_DONE)
+		if(in_tutorial || arena_tryb != Arena_Brak || QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING || tournament_state != TOURNAMENT_NOT_DONE)
 			return false;
 	}
 
@@ -458,7 +459,7 @@ void Game::SaveGame(GameWriter& f)
 	Team.Save(f);
 
 	// save quests
-	QuestManager::Get().Save(f);
+	QM.Save(f);
 	SaveQuestsData(f);
 	SM.Save(f);
 
@@ -568,19 +569,7 @@ void Game::SaveQuestsData(GameWriter& f)
 	f << secret_where;
 	f << secret_where2;
 
-	// drinking contest
-	f << contest_where;
-	f << contest_state;
-	f << contest_generated;
-	f << contest_winner;
-	if(contest_state >= CONTEST_STARTING)
-	{
-		f << contest_state2;
-		f << contest_time;
-		f << contest_units.size();
-		for(Unit* unit : contest_units)
-			f << unit->refid;
-	}
+	QM.quest_contest->Save(f);
 
 	// arena tournament
 	f << tournament_year;
@@ -883,7 +872,7 @@ void Game::LoadGame(GameReader& f)
 
 	// load quests
 	LoadingStep(txLoadingQuests);
-	QuestManager& quest_manager = QuestManager::Get();
+	QuestManager& quest_manager = QM;
 	quest_manager.Load(f);
 
 	quest_sawmill = (Quest_Sawmill*)quest_manager.FindQuestById(Q_SAWMILL);
@@ -1298,7 +1287,7 @@ void Game::LoadStock(FileReader& f, vector<ItemSlot>& cnt)
 		{
 			int quest_refid;
 			f >> quest_refid;
-			QuestManager::Get().AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &cnt);
+			QM.AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &cnt);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}
@@ -1332,19 +1321,7 @@ void Game::LoadQuestsData(GameReader& f)
 	if(secret_state > SECRET_NONE && !BaseObject::Get("tomashu_dom")->mesh)
 		throw "Save uses 'data.pak' file which is missing!";
 
-	// drinking contest
-	f >> contest_where;
-	f >> contest_state;
-	f >> contest_generated;
-	f >> contest_winner;
-	if(contest_state >= CONTEST_STARTING)
-	{
-		f >> contest_state2;
-		f >> contest_time;
-		contest_units.resize(f.Read<uint>());
-		for(Unit*& unit : contest_units)
-			f >> unit;
-	}
+	QM.quest_contest->Load(f);
 
 	// arena tournament
 	f >> tournament_year;

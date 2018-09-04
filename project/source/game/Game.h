@@ -791,21 +791,6 @@ public:
 	void CheckCraziesStone();
 	void ShowAcademyText();
 
-	// drinking contest
-	enum ContestState
-	{
-		CONTEST_NOT_DONE,
-		CONTEST_DONE,
-		CONTEST_TODAY,
-		CONTEST_STARTING,
-		CONTEST_IN_PROGRESS,
-		CONTEST_FINISH
-	} contest_state;
-	int contest_where, contest_state2;
-	vector<Unit*> contest_units;
-	float contest_time;
-	bool contest_generated;
-	Unit* contest_winner;
 	void UpdateContest(float dt);
 
 	// secret quest

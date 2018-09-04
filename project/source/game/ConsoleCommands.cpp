@@ -1622,21 +1622,20 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_FORCE_QUEST:
 					{
-						auto& qm = QuestManager::Get();
 						if(t.Next())
 						{
 							const string& id = t.MustGetItem();
-							if(!qm.SetForcedQuest(id))
+							if(!QM.SetForcedQuest(id))
 								Msg("Invalid quest id '%s'.", id.c_str());
 						}
-						auto force = qm.GetForcedQuest();
+						auto force = QM.GetForcedQuest();
 						cstring name;
 						if(force == Q_FORCE_DISABLED)
 							name = "disabled";
 						else if(force == Q_FORCE_NONE)
 							name = "none";
 						else
-							name = qm.GetQuestInfos()[force].name;
+							name = QM.GetQuestInfos()[force].name;
 						Msg("Forced quest: %s", name);
 					}
 					break;
@@ -1884,7 +1883,7 @@ void Game::CmdList(Tokenizer& t)
 	case LIST_QUEST:
 		{
 			LocalVector2<const QuestInfo*> quests;
-			for(auto& info : QuestManager::Get().GetQuestInfos())
+			for(auto& info : QM.GetQuestInfos())
 			{
 				if(match.empty() || _strnicmp(match.c_str(), info.name, match.length()) == 0)
 					quests.push_back(&info);

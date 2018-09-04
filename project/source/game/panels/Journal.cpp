@@ -76,7 +76,7 @@ void Journal::Update(float dt)
 		return;
 
 	Mode new_mode = Invalid;
-	QuestManager& quest_manager = QuestManager::Get();
+	QuestManager& quest_manager = QM;
 
 	if(Key.Focus())
 	{
@@ -359,7 +359,7 @@ void Journal::Build()
 	if(mode == Quests)
 	{
 		// quests
-		QuestManager& quest_manager = QuestManager::Get();
+		QuestManager& quest_manager = QM;
 		if(!details)
 		{
 			// list of quests

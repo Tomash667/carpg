@@ -4,6 +4,8 @@
 #include "Quest_Evil.h"
 #include "Team.h"
 #include "World.h"
+#include "QuestManager.h"
+#include "Quest_Contest.h"
 
 void Game::WorldProgress(int days, WorldProgressMode mode)
 {
@@ -15,11 +17,13 @@ void Game::WorldProgress(int days, WorldProgressMode mode)
 	W.Update(days);
 	if(prev_year != W.GetYear())
 	{
-		// nowe miejsce na chlanie
-		contest_where = W.GetRandomSettlementIndex(contest_where);
+		// new contest city
+		Quest_Contest* contest = QM.quest_contest;
+		contest->where = W.GetRandomSettlementIndex(contest->where);
+
+		// end of game
 		if(W.GetYear() >= 160)
 		{
-			// koniec gry
 			Info("Game over: you are too old.");
 			CloseAllPanels(true);
 			koniec_gry = true;

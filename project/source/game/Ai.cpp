@@ -11,6 +11,8 @@
 #include "SoundManager.h"
 #include "Profiler.h"
 #include "Level.h"
+#include "QuestManager.h"
+#include "Quest_Contest.h"
 
 const float JUMP_BACK_MIN_RANGE = 4.f;
 const float JUMP_BACK_TIMER = 0.2f;
@@ -936,7 +938,7 @@ void Game::UpdateAi(float dt)
 
 								// nie glêdzenie przez karczmarza/mistrza w czasie zawodów
 								if(co == I_GADAJ && IS_SET(u.data->flags3, F3_TALK_AT_COMPETITION)
-									&& (contest_state >= CONTEST_STARTING || tournament_state >= TOURNAMENT_STARTING))
+									&& (QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING || tournament_state >= TOURNAMENT_STARTING))
 								{
 									co = I_PATRZ;
 								}

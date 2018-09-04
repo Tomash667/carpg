@@ -36,6 +36,7 @@
 #include "DirectX.h"
 #include "ScriptManager.h"
 #include "Var.h"
+#include "Quest_Contest.h"
 
 extern Matrix m1, m2, m3, m4;
 
@@ -387,7 +388,8 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			arena_free = true;
 
-			if(!contest_generated && L.location_index == contest_where && contest_state == CONTEST_TODAY)
+			Quest_Contest* contest = QM.quest_contest;
+			if(!contest->generated && L.location_index == contest->where && contest->state == Quest_Contest::CONTEST_TODAY)
 				SpawnDrunkmans();
 		}
 		break;
@@ -2151,9 +2153,10 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		CheckCraziesStone();
 
 	// drinking contest
-	if(contest_state >= CONTEST_STARTING)
+	Quest_Contest* contest = QM.quest_contest;
+	if(contest->state >= Quest_Contest::CONTEST_STARTING)
 	{
-		for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = contest->units.begin(), end = contest->units.end(); it != end; ++it)
 		{
 			Unit& u = **it;
 			u.busy = Unit::Busy_No;
@@ -2167,8 +2170,8 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 		innkeeper->talking = false;
 		innkeeper->mesh_inst->need_update = true;
 		innkeeper->busy = Unit::Busy_No;
-		contest_state = CONTEST_DONE;
-		contest_units.clear();
+		contest->state = Quest_Contest::CONTEST_DONE;
+		contest->units.clear();
 		W.AddNews(txContestNoWinner);
 	}
 
@@ -3436,7 +3439,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			}
 		});
 	}
-	
+
 	// second group of units
 	if(group_name2)
 	{
@@ -3521,7 +3524,7 @@ void Game::SpawnEncounterTeam()
 // po 30 dniach od odwiedzin oznacza lokacje do zresetowania
 void Game::DoWorldProgress(int days)
 {
-	QuestManager::Get().Update(days);
+	QM.Update(days);
 
 	W.DoWorldProgress(days);
 

@@ -4,6 +4,7 @@
 #include "QuestConsts.h"
 
 //-----------------------------------------------------------------------------
+class Quest_Contest;
 struct Item;
 struct ItemSlot;
 struct Quest;
@@ -29,10 +30,11 @@ struct QuestInfo
 };
 
 //-----------------------------------------------------------------------------
-class QuestManager : public Singleton<QuestManager>
+class QuestManager
 {
 public:
 	void Init();
+	void InitQuests();
 	Quest* CreateQuest(QUEST quest_id);
 	Quest* GetMayorQuest();
 	Quest* GetCaptainQuest();
@@ -62,6 +64,7 @@ public:
 	vector<Quest_Dungeon*> quests_timeout;
 	vector<Quest*> quests_timeout2;
 	vector<QuestItemRequest*> quest_item_requests;
+	Quest_Contest* quest_contest;
 	int quest_counter;
 	int unique_quests_completed;
 	bool unique_completed_show;
@@ -75,3 +78,4 @@ private:
 	vector<QuestInfo> infos;
 	QUEST force;
 };
+extern QuestManager QM;

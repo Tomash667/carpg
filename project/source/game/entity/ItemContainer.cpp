@@ -43,7 +43,7 @@ void ItemContainer::Load(FileReader& f)
 		{
 			int quest_refid;
 			f >> quest_refid;
-			QuestManager::Get().AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &items);
+			QM.AddQuestItemRequest(&slot.item, item_id.c_str(), quest_refid, &items);
 			slot.item = QUEST_ITEM_PLACEHOLDER;
 			can_sort = false;
 		}

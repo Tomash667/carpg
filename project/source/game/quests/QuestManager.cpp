@@ -9,6 +9,7 @@
 #include "Quest_Bandits.h"
 #include "Quest_BanditsCollectToll.h"
 #include "Quest_CampNearCity.h"
+#include "Quest_Contest.h"
 #include "Quest_Crazies.h"
 #include "Quest_DeliverLetter.h"
 #include "Quest_DeliverParcel.h"
@@ -29,7 +30,7 @@
 #include "Quest_Wanted.h"
 
 //-----------------------------------------------------------------------------
-QuestManager Singleton<QuestManager>::instance;
+QuestManager QM;
 
 //=================================================================================================
 void QuestManager::Init()
@@ -59,6 +60,15 @@ void QuestManager::Init()
 	infos.push_back({ Q_CRAZIES, QuestType::Unique, "crazies" });
 	infos.push_back({ Q_WANTED, QuestType::Captain, "wanted" });
 	infos.push_back({ Q_MAIN, QuestType::Unique, "main" });
+
+	// create pseudo quests
+	quest_contest = new Quest_Contest;
+}
+
+//=================================================================================================
+void QuestManager::InitQuests()
+{
+	quest_contest->Init();
 }
 
 //=================================================================================================

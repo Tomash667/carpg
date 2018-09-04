@@ -33,7 +33,7 @@ void GroundItem::Load(FileReader& f)
 	else
 	{
 		int quest_refid = f.Read<int>();
-		QuestManager::Get().AddQuestItemRequest(&item, item_id.c_str(), quest_refid, nullptr);
+		QM.AddQuestItemRequest(&item, item_id.c_str(), quest_refid, nullptr);
 		item = QUEST_ITEM_PLACEHOLDER;
 	}
 	f >> netid;

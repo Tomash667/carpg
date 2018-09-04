@@ -11,6 +11,8 @@
 #include "SoundManager.h"
 #include "World.h"
 #include "Level.h"
+#include "QuestManager.h"
+#include "Quest_Contest.h"
 
 char mapa_t[] = {
 	"$$$$$$$$###########$$$"
@@ -180,7 +182,7 @@ void Game::StartTutorial()
 	ttexts.clear();
 	tut_shield = nullptr;
 	tut_shield2 = nullptr;
-	contest_state = CONTEST_NOT_DONE;
+	QM.quest_contest->state = Quest_Contest::CONTEST_NOT_DONE;
 	pc_data.autowalk = false;
 
 	// ekwipunek

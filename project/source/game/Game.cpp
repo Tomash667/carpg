@@ -30,6 +30,8 @@
 #include "Profiler.h"
 #include "World.h"
 #include "Level.h"
+#include "QuestManager.h"
+#include "Quest_Contest.h"
 #include "DirectX.h"
 
 // limit fps
@@ -58,7 +60,7 @@ Game::Game() : have_console(false), vbParticle(nullptr), peer(nullptr), quicksta
 cl_lighting(true), draw_particle_sphere(false), draw_unit_radius(false), draw_hitbox(false), noai(false), testing(false), game_speed(1.f), devmode(false),
 draw_phy(false), draw_col(false), force_seed(0), next_seed(0), force_seed_all(false), alpha_test_state(-1), debug_info(false), dont_wander(false),
 local_ctx_valid(false), city_ctx(nullptr), check_updates(true), skip_tutorial(false), portal_anim(0), debug_info2(false), music_type(MusicType::None),
-contest_state(CONTEST_NOT_DONE), koniec_gry(false), net_stream(64 * 1024), net_stream2(64 * 1024), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT),
+koniec_gry(false), net_stream(64 * 1024), net_stream2(64 * 1024), mp_interp(0.05f), mp_use_interp(true), mp_port(PORT),
 paused(false), pick_autojoin(false), draw_flags(0xFFFFFFFF), tMiniSave(nullptr), prev_game_state(GS_LOAD), tSave(nullptr), sItemRegion(nullptr),
 sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cursor_allow_move(true), mp_load(false), was_client(false), sCustom(nullptr),
 cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
@@ -837,7 +839,6 @@ void Game::DoExitToMenu()
 	was_client = false;
 
 	SetMusic(MusicType::Title);
-	contest_state = CONTEST_NOT_DONE;
 	koniec_gry = false;
 
 	CloseAllPanels();
@@ -2362,7 +2363,7 @@ bool Game::IsDrunkman(Unit& u)
 	else if(IS_SET(u.data->flags3, F3_DRUNK_MAGE))
 		return quest_mages2->mages_state < Quest_Mages2::State::MageCured;
 	else if(IS_SET(u.data->flags3, F3_DRUNKMAN_AFTER_CONTEST))
-		return contest_state == CONTEST_DONE;
+		return QM.quest_contest->state == Quest_Contest::CONTEST_DONE;
 	else
 		return false;
 }

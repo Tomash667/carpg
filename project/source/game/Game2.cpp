@@ -53,6 +53,7 @@
 #include "DirectX.h"
 #include "Var.h"
 #include "News.h"
+#include "Quest_Contest.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -1001,11 +1002,10 @@ void Game::UpdateGame(float dt)
 	// info o uczoñczeniu wszystkich unikalnych questów
 	if(CanShowEndScreen())
 	{
-		QuestManager& quest_manager = QuestManager::Get();
 		if(Net::IsLocal())
-			quest_manager.unique_completed_show = true;
+			QM.unique_completed_show = true;
 		else
-			quest_manager.unique_completed_show = false;
+			QM.unique_completed_show = false;
 
 		cstring text;
 
@@ -4452,7 +4452,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 		case DTF_CHECK_QUEST_TIMEOUT:
 			if(if_level == ctx.dialog_level)
 			{
-				Quest* quest = QuestManager::Get().FindQuest(L.location_index, (QuestType)(int)de.msg);
+				Quest* quest = QM.FindQuest(L.location_index, (QuestType)(int)de.msg);
 				if(quest && quest->IsActive() && quest->IsTimedout())
 				{
 					ctx.dialog_once = false;
@@ -4530,7 +4530,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 					negate = true;
 				}
 
-				for(Quest* quest : QuestManager::Get().quests)
+				for(Quest* quest : QM.quests)
 				{
 					bool ok = (quest->IsActive() && quest->IfNeedTalk(msg));
 					if(negate)
@@ -4549,7 +4549,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
 
-				for(Quest* quest : QuestManager::Get().quests)
+				for(Quest* quest : QM.quests)
 				{
 					if(quest->IsActive() && quest->IfNeedTalk(msg))
 					{
@@ -4596,9 +4596,8 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-				QuestManager& quest_manager = QuestManager::Get();
 
-				for(Quest* quest : quest_manager.quests)
+				for(Quest* quest : QM.quests)
 				{
 					if(quest->IfNeedTalk(msg))
 					{
@@ -4609,7 +4608,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 				if(ctx.dialog_pos != -1)
 				{
-					for(Quest* quest : quest_manager.unaccepted_quests)
+					for(Quest* quest : QM.unaccepted_quests)
 					{
 						if(quest->IfNeedTalk(msg))
 						{
@@ -4719,8 +4718,6 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level)
 {
-	QuestManager& quest_manager = QuestManager::Get();
-
 	if(strcmp(msg, "burmistrz_quest") == 0)
 	{
 		bool have_quest = true;
@@ -4734,21 +4731,21 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		{
 			if(city_ctx->quest_mayor == CityQuestState::InProgress)
 			{
-				Quest* quest = quest_manager.FindUnacceptedQuest(L.location_index, QuestType::Mayor);
-				DeleteElement(quest_manager.unaccepted_quests, quest);
+				Quest* quest = QM.FindUnacceptedQuest(L.location_index, QuestType::Mayor);
+				DeleteElement(QM.unaccepted_quests, quest);
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
 			city_ctx->quest_mayor_time = W.GetWorldtime();
 			city_ctx->quest_mayor = CityQuestState::InProgress;
 
-			Quest* quest = QuestManager::Get().GetMayorQuest();
+			Quest* quest = QM.GetMayorQuest();
 			if(quest)
 			{
 				// add new quest
-				quest->refid = quest_manager.quest_counter++;
+				quest->refid = QM.quest_counter++;
 				quest->Start();
-				quest_manager.unaccepted_quests.push_back(quest);
+				QM.unaccepted_quests.push_back(quest);
 				StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 			}
 			else
@@ -4757,7 +4754,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		else if(city_ctx->quest_mayor == CityQuestState::InProgress)
 		{
 			// ju¿ ma przydzielone zadanie ?
-			Quest* quest = quest_manager.FindUnacceptedQuest(L.location_index, QuestType::Mayor);
+			Quest* quest = QM.FindUnacceptedQuest(L.location_index, QuestType::Mayor);
 			if(quest)
 			{
 				// quest nie zosta³ zaakceptowany
@@ -4765,7 +4762,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			}
 			else
 			{
-				quest = quest_manager.FindQuest(L.location_index, QuestType::Mayor);
+				quest = QM.FindQuest(L.location_index, QuestType::Mayor);
 				if(quest)
 				{
 					DialogTalk(ctx, random_string(txQuestAlreadyGiven));
@@ -4798,21 +4795,21 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		{
 			if(city_ctx->quest_captain == CityQuestState::InProgress)
 			{
-				Quest* quest = quest_manager.FindUnacceptedQuest(L.location_index, QuestType::Captain);
-				DeleteElement(quest_manager.unaccepted_quests, quest);
+				Quest* quest = QM.FindUnacceptedQuest(L.location_index, QuestType::Captain);
+				DeleteElement(QM.unaccepted_quests, quest);
 			}
 
 			// jest nowe zadanie (mo¿e), czas starego min¹³
 			city_ctx->quest_captain_time = W.GetWorldtime();
 			city_ctx->quest_captain = CityQuestState::InProgress;
 
-			Quest* quest = QuestManager::Get().GetCaptainQuest();
+			Quest* quest = QM.GetCaptainQuest();
 			if(quest)
 			{
 				// add new quest
-				quest->refid = quest_manager.quest_counter++;
+				quest->refid = QM.quest_counter++;
 				quest->Start();
-				quest_manager.unaccepted_quests.push_back(quest);
+				QM.unaccepted_quests.push_back(quest);
 				StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 			}
 			else
@@ -4821,7 +4818,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		else if(city_ctx->quest_captain == CityQuestState::InProgress)
 		{
 			// ju¿ ma przydzielone zadanie
-			Quest* quest = quest_manager.FindUnacceptedQuest(L.location_index, QuestType::Captain);
+			Quest* quest = QM.FindUnacceptedQuest(L.location_index, QuestType::Captain);
 			if(quest)
 			{
 				// quest nie zosta³ zaakceptowany
@@ -4829,7 +4826,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			}
 			else
 			{
-				quest = quest_manager.FindQuest(L.location_index, QuestType::Captain);
+				quest = QM.FindQuest(L.location_index, QuestType::Captain);
 				if(quest)
 				{
 					DialogTalk(ctx, random_string(txQuestAlreadyGiven));
@@ -4853,16 +4850,16 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	{
 		if(ctx.talker->quest_refid == -1)
 		{
-			Quest* quest = QuestManager::Get().GetAdventurerQuest();
-			quest->refid = quest_manager.quest_counter++;
+			Quest* quest = QM.GetAdventurerQuest();
+			quest->refid = QM.quest_counter++;
 			ctx.talker->quest_refid = quest->refid;
 			quest->Start();
-			quest_manager.unaccepted_quests.push_back(quest);
+			QM.unaccepted_quests.push_back(quest);
 			StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 		}
 		else
 		{
-			Quest* quest = quest_manager.FindUnacceptedQuest(ctx.talker->quest_refid);
+			Quest* quest = QM.FindUnacceptedQuest(ctx.talker->quest_refid);
 			StartNextDialog(ctx, quest->GetDialog(QUEST_DIALOG_START), if_level, quest);
 		}
 	}
@@ -4922,12 +4919,11 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	}
 	else if(strcmp(msg, "gossip") == 0 || strcmp(msg, "gossip_drunk") == 0)
 	{
-		QuestManager& quest_manager = QuestManager::Get();
 		bool pijak = (strcmp(msg, "gossip_drunk") == 0);
 		if(!pijak && (Rand() % 3 == 0 || (Key.Down(VK_SHIFT) && devmode)))
 		{
 			int co = Rand() % 3;
-			if(quest_manager.quest_rumor_counter != 0 && Rand() % 2 == 0)
+			if(QM.quest_rumor_counter != 0 && Rand() % 2 == 0)
 				co = 2;
 			if(devmode)
 			{
@@ -5062,7 +5058,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				break;
 			case 2:
 				// plotka o quescie
-				if(quest_manager.quest_rumor_counter == 0)
+				if(QM.quest_rumor_counter == 0)
 				{
 					DialogTalk(ctx, random_string(txNoQRumors));
 					++ctx.dialog_pos;
@@ -5071,10 +5067,10 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				else
 				{
 					co = Rand() % P_MAX;
-					while(quest_manager.quest_rumor[co])
+					while(QM.quest_rumor[co])
 						co = (co + 1) % P_MAX;
-					--quest_manager.quest_rumor_counter;
-					quest_manager.quest_rumor[co] = true;
+					--QM.quest_rumor_counter;
+					QM.quest_rumor[co] = true;
 
 					switch(co)
 					{
@@ -5507,21 +5503,12 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	else if(strcmp(msg, "use_arena") == 0)
 		arena_free = false;
 	else if(strcmp(msg, "chlanie_start") == 0)
-	{
-		contest_state = CONTEST_STARTING;
-		contest_time = 0;
-		contest_units.clear();
-		contest_units.push_back(ctx.pc->unit);
-		ctx.pc->leaving_event = false;
-	}
+		QM.quest_contest->Start(ctx.pc);
 	else if(strcmp(msg, "chlanie_udzial") == 0)
-	{
-		contest_units.push_back(ctx.pc->unit);
-		ctx.pc->leaving_event = false;
-	}
+		QM.quest_contest->AddPlayer(ctx.pc);
 	else if(strcmp(msg, "chlanie_nagroda") == 0)
 	{
-		contest_winner = nullptr;
+		QM.quest_contest->winner = nullptr;
 		AddItem(*ctx.pc->unit, ItemList::GetItem("contest_reward"), 1, false);
 		if(ctx.is_local)
 			AddGameMsg3(GMS_ADDED_ITEM);
@@ -5834,33 +5821,27 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 	else if(strcmp(msg, "dont_have_quest") == 0)
 		return ctx.talker->quest_refid == -1;
 	else if(strcmp(msg, "have_unaccepted_quest") == 0)
-		return QuestManager::Get().FindUnacceptedQuest(ctx.talker->quest_refid);
+		return QM.FindUnacceptedQuest(ctx.talker->quest_refid);
 	else if(strcmp(msg, "have_completed_quest") == 0)
 	{
-		Quest* q = QuestManager::Get().FindQuest(ctx.talker->quest_refid, false);
+		Quest* q = QM.FindQuest(ctx.talker->quest_refid, false);
 		if(q && !q->IsActive())
 			return true;
 	}
 	else if(strcmp(msg, "contest_done") == 0)
-		return contest_state == CONTEST_DONE;
+		return QM.quest_contest->state == Quest_Contest::CONTEST_DONE;
 	else if(strcmp(msg, "contest_here") == 0)
-		return contest_where == L.location_index;
+		return QM.quest_contest->where == L.location_index;
 	else if(strcmp(msg, "contest_today") == 0)
-		return contest_state == CONTEST_TODAY;
+		return QM.quest_contest->state == Quest_Contest::CONTEST_TODAY;
 	else if(strcmp(msg, "chlanie_trwa") == 0)
-		return contest_state == CONTEST_IN_PROGRESS;
+		return QM.quest_contest->state == Quest_Contest::CONTEST_IN_PROGRESS;
 	else if(strcmp(msg, "contest_started") == 0)
-		return contest_state == CONTEST_STARTING;
+		return QM.quest_contest->state == Quest_Contest::CONTEST_STARTING;
 	else if(strcmp(msg, "contest_joined") == 0)
-	{
-		for(Unit* unit : contest_units)
-		{
-			if(unit == ctx.pc->unit)
-				return true;
-		}
-	}
+		return QM.quest_contest->HaveJoined(ctx.pc->unit);
 	else if(strcmp(msg, "contest_winner") == 0)
-		return ctx.pc->unit == contest_winner;
+		return QM.quest_contest->winner == ctx.pc->unit;
 	else if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
 		return quest_bandits->prog == Quest_Bandits::Progress::NeedTalkWithCaptain && L.location_index == quest_bandits->start_loc;
 	else if(strcmp(msg, "q_magowie_to_miasto") == 0)
@@ -12945,7 +12926,7 @@ void Game::ClearGameVarsOnNewGame()
 	cam.dist = 3.5f;
 	game_speed = 1.f;
 	dungeon_level = 0;
-	QuestManager::Get().Reset();
+	QM.Reset();
 	W.OnNewGame();
 	GameStats::Get().Reset();
 	Team.Reset();
@@ -13009,7 +12990,7 @@ void Game::ClearGame()
 	city_ctx = nullptr;
 
 	// usuñ quest
-	QuestManager::Get().Cleanup();
+	QM.Cleanup();
 	DeleteElements(quest_items);
 
 	W.Reset();
@@ -13046,7 +13027,7 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 		return Format("%d", ctx.team_share_item->value / 2);
 	}
 	else if(str_part == "chlanie_loc")
-		return W.GetLocation(contest_where)->name.c_str();
+		return W.GetLocation(QM.quest_contest->where)->name.c_str();
 	else if(str_part == "player_name")
 		return current_dialog->pc->name.c_str();
 	else if(str_part == "ironfist_city")
@@ -14756,7 +14737,7 @@ void Game::PreloadResources(bool worldmap)
 			PreloadItems(chest_alchemist);
 			PreloadItems(chest_innkeeper);
 			PreloadItems(chest_food_seller);
-			auto quest = (Quest_Orcs2*)QuestManager::Get().FindQuestById(Q_ORCS2);
+			auto quest = (Quest_Orcs2*)QM.FindQuestById(Q_ORCS2);
 			if(quest)
 				PreloadItems(quest->wares);
 		}
@@ -15351,8 +15332,8 @@ void Game::DeleteUnit(Unit* unit)
 			}
 		}
 
-		if(contest_state >= CONTEST_STARTING)
-			RemoveElementTry(contest_units, unit);
+		if(QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING)
+			RemoveElementTry(QM.quest_contest->units, unit);
 		if(!arena_free)
 		{
 			RemoveElementTry(at_arena, unit);
@@ -16781,85 +16762,84 @@ GroundItem* Game::SpawnGroundItemInsideRegion(const Item* item, const Vec2& pos,
 
 void Game::InitQuests()
 {
-	QuestManager& quest_manager = QuestManager::Get();
 	vector<int> used;
 
 	// goblins
 	quest_goblins = new Quest_Goblins;
 	quest_goblins->start_loc = W.GetRandomSettlementIndex(used, 1);
-	quest_goblins->refid = quest_manager.quest_counter++;
+	quest_goblins->refid = QM.quest_counter++;
 	quest_goblins->Start();
-	quest_manager.unaccepted_quests.push_back(quest_goblins);
+	QM.unaccepted_quests.push_back(quest_goblins);
 	used.push_back(quest_goblins->start_loc);
 
 	// bandits
 	quest_bandits = new Quest_Bandits;
 	quest_bandits->start_loc = W.GetRandomSettlementIndex(used, 1);
-	quest_bandits->refid = quest_manager.quest_counter++;
+	quest_bandits->refid = QM.quest_counter++;
 	quest_bandits->Start();
-	quest_manager.unaccepted_quests.push_back(quest_bandits);
+	QM.unaccepted_quests.push_back(quest_bandits);
 	used.push_back(quest_bandits->start_loc);
 
 	// sawmill
 	quest_sawmill = new Quest_Sawmill;
 	quest_sawmill->start_loc = W.GetRandomSettlementIndex(used);
-	quest_sawmill->refid = quest_manager.quest_counter++;
+	quest_sawmill->refid = QM.quest_counter++;
 	quest_sawmill->Start();
-	quest_manager.unaccepted_quests.push_back(quest_sawmill);
+	QM.unaccepted_quests.push_back(quest_sawmill);
 	used.push_back(quest_sawmill->start_loc);
 
 	// mine
 	quest_mine = new Quest_Mine;
 	quest_mine->start_loc = W.GetRandomSettlementIndex(used);
 	quest_mine->target_loc = W.GetClosestLocation(L_CAVE, W.GetLocation(quest_mine->start_loc)->pos);
-	quest_mine->refid = quest_manager.quest_counter++;
+	quest_mine->refid = QM.quest_counter++;
 	quest_mine->Start();
-	quest_manager.unaccepted_quests.push_back(quest_mine);
+	QM.unaccepted_quests.push_back(quest_mine);
 	used.push_back(quest_mine->start_loc);
 
 	// mages
 	quest_mages = new Quest_Mages;
 	quest_mages->start_loc = W.GetRandomSettlementIndex(used);
-	quest_mages->refid = quest_manager.quest_counter++;
+	quest_mages->refid = QM.quest_counter++;
 	quest_mages->Start();
-	quest_manager.unaccepted_quests.push_back(quest_mages);
+	QM.unaccepted_quests.push_back(quest_mages);
 	used.push_back(quest_mages->start_loc);
 
 	// mages2
 	quest_mages2 = new Quest_Mages2;
-	quest_mages2->refid = quest_manager.quest_counter++;
+	quest_mages2->refid = QM.quest_counter++;
 	quest_mages2->Start();
-	quest_manager.unaccepted_quests.push_back(quest_mages2);
-	quest_manager.quest_rumor[P_MAGOWIE2] = true;
-	--quest_manager.quest_rumor_counter;
+	QM.unaccepted_quests.push_back(quest_mages2);
+	QM.quest_rumor[P_MAGOWIE2] = true;
+	--QM.quest_rumor_counter;
 
 	// orcs
 	quest_orcs = new Quest_Orcs;
 	quest_orcs->start_loc = W.GetRandomSettlementIndex(used);
-	quest_orcs->refid = quest_manager.quest_counter++;
+	quest_orcs->refid = QM.quest_counter++;
 	quest_orcs->Start();
-	quest_manager.unaccepted_quests.push_back(quest_orcs);
+	QM.unaccepted_quests.push_back(quest_orcs);
 	used.push_back(quest_orcs->start_loc);
 
 	// orcs2
 	quest_orcs2 = new Quest_Orcs2;
-	quest_orcs2->refid = quest_manager.quest_counter++;
+	quest_orcs2->refid = QM.quest_counter++;
 	quest_orcs2->Start();
-	quest_manager.unaccepted_quests.push_back(quest_orcs2);
+	QM.unaccepted_quests.push_back(quest_orcs2);
 
 	// evil
 	quest_evil = new Quest_Evil;
 	quest_evil->start_loc = W.GetRandomSettlementIndex(used);
-	quest_evil->refid = quest_manager.quest_counter++;
+	quest_evil->refid = QM.quest_counter++;
 	quest_evil->Start();
-	quest_manager.unaccepted_quests.push_back(quest_evil);
+	QM.unaccepted_quests.push_back(quest_evil);
 	used.push_back(quest_evil->start_loc);
 
 	// crazies
 	quest_crazies = new Quest_Crazies;
-	quest_crazies->refid = quest_manager.quest_counter++;
+	quest_crazies->refid = QM.quest_counter++;
 	quest_crazies->Start();
-	quest_manager.unaccepted_quests.push_back(quest_crazies);
+	QM.unaccepted_quests.push_back(quest_crazies);
 
 	// sekret
 	secret_state = (BaseObject::Get("tomashu_dom")->mesh ? SECRET_NONE : SECRET_OFF);
@@ -16867,12 +16847,7 @@ void Game::InitQuests()
 	secret_where = -1;
 	secret_where2 = -1;
 
-	// drinking contest
-	contest_state = CONTEST_NOT_DONE;
-	contest_where = W.GetRandomSettlementIndex();
-	contest_units.clear();
-	contest_generated = false;
-	contest_winner = nullptr;
+	QM.InitQuests();
 
 	// zawody
 	tournament_year = 0;
@@ -16893,7 +16868,7 @@ void Game::InitQuests()
 		Info("Quest 'Goblins' - %s.", W.GetLocation(quest_goblins->start_loc)->name.c_str());
 		Info("Quest 'Evil' - %s.", W.GetLocation(quest_evil->start_loc)->name.c_str());
 		Info("Tournament - %s.", W.GetLocation(tournament_city)->name.c_str());
-		Info("Contest - %s.", W.GetLocation(contest_where)->name.c_str());
+		Info("Contest - %s.", W.GetLocation(QM.quest_contest->where)->name.c_str());
 	}
 }
 
@@ -17215,7 +17190,8 @@ void Game::UpdateQuests(int days)
 	if(income != 0)
 		AddGold(income, nullptr, true);
 
-	int stan; // 0 - przed zawodami, 1 - czas na zawody, 2 - po zawodach
+	// update contest
+	int stan; // 0 - before contest, 1 - time for contest, 2 - after contest
 
 	int year = W.GetYear();
 	int month = W.GetMonth();
@@ -17235,26 +17211,27 @@ void Game::UpdateQuests(int days)
 	else
 		stan = 2;
 
+	Quest_Contest* contest = QM.quest_contest;
 	switch(stan)
 	{
 	case 0:
-		if(contest_state != CONTEST_NOT_DONE)
+		if(contest->state != Quest_Contest::CONTEST_NOT_DONE)
 		{
-			contest_state = CONTEST_NOT_DONE;
-			contest_where = W.GetRandomSettlementIndex(contest_where);
+			contest->state = Quest_Contest::CONTEST_NOT_DONE;
+			contest->where = W.GetRandomSettlementIndex(contest->where);
 		}
-		contest_generated = false;
-		contest_units.clear();
+		contest->generated = false;
+		contest->units.clear();
 		break;
 	case 1:
-		contest_state = CONTEST_TODAY;
-		if(!contest_generated && game_state == GS_LEVEL && L.location_index == contest_where)
+		contest->state = Quest_Contest::CONTEST_TODAY;
+		if(!contest->generated && game_state == GS_LEVEL && L.location_index == contest->where)
 			SpawnDrunkmans();
 		break;
 	case 2:
-		contest_state = CONTEST_DONE;
-		contest_generated = false;
-		contest_units.clear();
+		contest->state = Quest_Contest::CONTEST_DONE;
+		contest->generated = false;
+		contest->units.clear();
 		break;
 	}
 
@@ -18295,7 +18272,7 @@ void Game::HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit)
 		unit->look_target = nullptr;
 		unit->busy = Unit::Busy_No;
 		unit->event_handler = nullptr;
-		RemoveElement(contest_units, unit);
+		RemoveElement(QM.quest_contest->units, unit);
 
 		if(Net::IsOnline() && unit->IsPlayer() && unit->player != pc)
 		{
@@ -18863,7 +18840,8 @@ void Game::UpdateArena(float dt)
 
 void Game::UpdateContest(float dt)
 {
-	if(Any(contest_state, CONTEST_NOT_DONE, CONTEST_DONE, CONTEST_TODAY))
+	Quest_Contest* contest = QM.quest_contest;
+	if(Any(contest->state, Quest_Contest::CONTEST_NOT_DONE, Quest_Contest::CONTEST_DONE, Quest_Contest::CONTEST_TODAY))
 		return;
 
 	int id;
@@ -18872,7 +18850,7 @@ void Game::UpdateContest(float dt)
 
 	if(!innkeeper.IsAlive())
 	{
-		for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
+		for(vector<Unit*>::iterator it = contest->units.begin(), end = contest->units.end(); it != end; ++it)
 		{
 			Unit& u = **it;
 			u.busy = Unit::Busy_No;
@@ -18889,15 +18867,15 @@ void Game::UpdateContest(float dt)
 				}
 			}
 		}
-		contest_state = CONTEST_DONE;
+		contest->state = Quest_Contest::CONTEST_DONE;
 		innkeeper.busy = Unit::Busy_No;
 		return;
 	}
 
-	if(contest_state == CONTEST_STARTING)
+	if(contest->state == Quest_Contest::CONTEST_STARTING)
 	{
 		// info about getting out of range
-		for(Unit* unit : contest_units)
+		for(Unit* unit : contest->units)
 		{
 			if(!unit->IsPlayer())
 				continue;
@@ -18914,16 +18892,16 @@ void Game::UpdateContest(float dt)
 		// update timer
 		if(innkeeper.busy == Unit::Busy_No && innkeeper.IsStanding() && innkeeper.ai->state == AIController::Idle)
 		{
-			float prev = contest_time;
-			contest_time += dt;
-			if(prev < 5.f && contest_time >= 5.f)
+			float prev = contest->time;
+			contest->time += dt;
+			if(prev < 5.f && contest->time >= 5.f)
 				UnitTalk(innkeeper, txContestStart);
 		}
 
-		if(contest_time >= 15.f && innkeeper.busy != Unit::Busy_Talking)
+		if(contest->time >= 15.f && innkeeper.busy != Unit::Busy_Talking)
 		{
 			// start contest
-			contest_state = CONTEST_IN_PROGRESS;
+			contest->state = Quest_Contest::CONTEST_IN_PROGRESS;
 
 			// gather units
 			for(vector<Unit*>::iterator it = inn->ctx.units->begin(), end = inn->ctx.units->end(); it != end; ++it)
@@ -18951,14 +18929,14 @@ void Game::UpdateContest(float dt)
 					}
 
 					if(ok)
-						contest_units.push_back(*it);
+						contest->units.push_back(*it);
 				}
 			}
-			contest_state2 = 0;
+			contest->state2 = 0;
 
 			// start looking at innkeeper, remove busy units/players out of range
 			bool removed = false;
-			for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
+			for(vector<Unit*>::iterator it = contest->units.begin(), end = contest->units.end(); it != end; ++it)
 			{
 				Unit& u = **it;
 				bool kick = false;
@@ -18989,13 +18967,13 @@ void Game::UpdateContest(float dt)
 				}
 			}
 			if(removed)
-				RemoveNullElements(contest_units);
+				RemoveNullElements(contest->units);
 
 			// jeœli jest za ma³o ludzi
-			if(contest_units.size() <= 1u)
+			if(contest->units.size() <= 1u)
 			{
-				contest_state = CONTEST_FINISH;
-				contest_state2 = 3;
+				contest->state = Quest_Contest::CONTEST_FINISH;
+				contest->state2 = 3;
 				innkeeper.ai->idle_action = AIController::Idle_Rot;
 				innkeeper.ai->idle_data.rot = innkeeper.ai->start_rot;
 				innkeeper.ai->timer = 3.f;
@@ -19012,12 +18990,12 @@ void Game::UpdateContest(float dt)
 			}
 		}
 	}
-	else if(contest_state == CONTEST_IN_PROGRESS)
+	else if(contest->state == Quest_Contest::CONTEST_IN_PROGRESS)
 	{
 		bool talking = true;
 		cstring next_text = nullptr, next_drink = nullptr;
 
-		switch(contest_state2)
+		switch(contest->state2)
 		{
 		case 0:
 			next_text = txContestTalk[1];
@@ -19088,9 +19066,9 @@ void Game::UpdateContest(float dt)
 			next_text = txContestTalk[12];
 			break;
 		default:
-			if((contest_state2 - 20) % 2 == 0)
+			if((contest->state2 - 20) % 2 == 0)
 			{
-				if(contest_state2 != 20)
+				if(contest->state2 != 20)
 					talking = false;
 				next_text = txContestTalk[13];
 			}
@@ -19108,74 +19086,74 @@ void Game::UpdateContest(float dt)
 				else
 				{
 					assert(next_drink);
-					contest_time = 0.f;
+					contest->time = 0.f;
 					const Consumable& drink = Item::Get(next_drink)->ToConsumable();
-					for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
+					for(vector<Unit*>::iterator it = contest->units.begin(), end = contest->units.end(); it != end; ++it)
 						(*it)->ConsumeItem(drink, true);
 				}
 
-				++contest_state2;
+				++contest->state2;
 			}
 		}
 		else
 		{
-			contest_time += dt;
-			if(contest_time >= 5.f)
+			contest->time += dt;
+			if(contest->time >= 5.f)
 			{
-				if(contest_units.size() >= 2)
+				if(contest->units.size() >= 2)
 				{
 					assert(next_text);
 					UnitTalk(innkeeper, next_text);
-					++contest_state2;
+					++contest->state2;
 				}
-				else if(contest_units.size() == 1)
+				else if(contest->units.size() == 1)
 				{
-					contest_state = CONTEST_FINISH;
-					contest_state2 = 0;
-					innkeeper.look_target = contest_units.back();
-					W.AddNews(Format(txContestWinNews, contest_units.back()->GetName()));
+					contest->state = Quest_Contest::CONTEST_FINISH;
+					contest->state2 = 0;
+					innkeeper.look_target = contest->units.back();
+					W.AddNews(Format(txContestWinNews, contest->units.back()->GetName()));
 					UnitTalk(innkeeper, txContestWin);
 				}
 				else
 				{
-					contest_state = CONTEST_FINISH;
-					contest_state2 = 1;
+					contest->state = Quest_Contest::CONTEST_FINISH;
+					contest->state2 = 1;
 					W.AddNews(txContestNoWinner);
 					UnitTalk(innkeeper, txContestNoWinner);
 				}
 			}
 		}
 	}
-	else if(contest_state == CONTEST_FINISH)
+	else if(contest->state == Quest_Contest::CONTEST_FINISH)
 	{
 		if(innkeeper.CanAct())
 		{
-			switch(contest_state2)
+			switch(contest->state2)
 			{
 			case 0: // wygrana
-				contest_state2 = 2;
+				contest->state2 = 2;
 				UnitTalk(innkeeper, txContestPrize);
 				break;
 			case 1: // remis
 				innkeeper.busy = Unit::Busy_No;
 				innkeeper.look_target = nullptr;
-				contest_state = CONTEST_DONE;
-				contest_generated = false;
-				contest_winner = nullptr;
+				contest->state = Quest_Contest::CONTEST_DONE;
+				contest->generated = false;
+				contest->winner = nullptr;
 				break;
 			case 2: // wygrana2
 				innkeeper.busy = Unit::Busy_No;
 				innkeeper.look_target = nullptr;
-				contest_winner = contest_units.back();
-				contest_units.clear();
-				contest_state = CONTEST_DONE;
-				contest_generated = false;
-				contest_winner->look_target = nullptr;
-				contest_winner->busy = Unit::Busy_No;
-				contest_winner->event_handler = nullptr;
+				contest->winner = contest->units.back();
+				contest->units.clear();
+				contest->state = Quest_Contest::CONTEST_DONE;
+				contest->generated = false;
+				contest->winner->look_target = nullptr;
+				contest->winner->busy = Unit::Busy_No;
+				contest->winner->event_handler = nullptr;
 				break;
 			case 3: // brak ludzi
-				for(vector<Unit*>::iterator it = contest_units.begin(), end = contest_units.end(); it != end; ++it)
+				for(vector<Unit*>::iterator it = contest->units.begin(), end = contest->units.end(); it != end; ++it)
 				{
 					Unit& u = **it;
 					u.busy = Unit::Busy_No;
@@ -19192,7 +19170,7 @@ void Game::UpdateContest(float dt)
 						}
 					}
 				}
-				contest_state = CONTEST_DONE;
+				contest->state = Quest_Contest::CONTEST_DONE;
 				innkeeper.busy = Unit::Busy_No;
 				break;
 			}
@@ -19544,11 +19522,10 @@ void Game::CloseAllPanels(bool close_mp_box)
 
 bool Game::CanShowEndScreen()
 {
-	QuestManager& quest_manager = QuestManager::Get();
 	if(Net::IsLocal())
-		return !quest_manager.unique_completed_show && quest_manager.unique_quests_completed == UNIQUE_QUESTS && city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
+		return !QM.unique_completed_show && QM.unique_quests_completed == UNIQUE_QUESTS && city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
 	else
-		return quest_manager.unique_completed_show && city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
+		return QM.unique_completed_show && city_ctx && !dialog_context.dialog_mode && pc->unit->IsStanding();
 }
 
 void Game::UpdateGameDialogClient()
@@ -19589,7 +19566,6 @@ LevelContext& Game::GetContextFromInBuilding(int in_building)
 bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_index, bool not_active)
 {
 	assert(unit && id);
-	QuestManager& quest_manager = QuestManager::Get();
 
 	if(id[1] == '$')
 	{
@@ -19598,7 +19574,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 		{
 			if(unit->slots[i] && unit->slots[i]->IsQuest())
 			{
-				Quest* quest = quest_manager.FindQuest(unit->slots[i]->refid, !not_active);
+				Quest* quest = QM.FindQuest(unit->slots[i]->refid, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
 				{
 					if(i_index)
@@ -19616,7 +19592,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 		{
 			if(it2->item && it2->item->IsQuest())
 			{
-				Quest* quest = quest_manager.FindQuest(it2->item->refid, !not_active);
+				Quest* quest = QM.FindQuest(it2->item->refid, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem2(id))
 				{
 					if(i_index)
@@ -19635,7 +19611,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 		{
 			if(unit->slots[i] && unit->slots[i]->IsQuest() && unit->slots[i]->id == id)
 			{
-				Quest* quest = quest_manager.FindQuest(unit->slots[i]->refid, !not_active);
+				Quest* quest = QM.FindQuest(unit->slots[i]->refid, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
 				{
 					if(i_index)
@@ -19653,7 +19629,7 @@ bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_inde
 		{
 			if(it2->item && it2->item->IsQuest() && it2->item->id == id)
 			{
-				Quest* quest = quest_manager.FindQuest(it2->item->refid, !not_active);
+				Quest* quest = QM.FindQuest(it2->item->refid, !not_active);
 				if(quest && (not_active || quest->IsActive()) && quest->IfHaveQuestItem())
 				{
 					if(i_index)
@@ -21433,7 +21409,7 @@ Unit* Game::SpawnUnitInsideInn(UnitData& ud, int level, InsideBuilding* inn, int
 void Game::SpawnDrunkmans()
 {
 	InsideBuilding* inn = city_ctx->FindInn();
-	contest_generated = true;
+	QM.quest_contest->generated = true;
 	UnitData& pijak = *UnitData::Get("pijak");
 	int ile = Random(4, 6);
 	for(int i = 0; i < ile; ++i)

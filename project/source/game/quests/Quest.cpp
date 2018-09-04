@@ -11,7 +11,7 @@
 Game* Quest::game;
 
 //=================================================================================================
-Quest::Quest() : quest_manager(QuestManager::Get()), state(Hidden), prog(0), timeout(false)
+Quest::Quest() : quest_manager(QM), state(Hidden), prog(0), timeout(false)
 {
 }
 
