@@ -434,6 +434,13 @@ void QuestManager::Update(int days)
 		}
 		return false;
 	});
+
+	// update contest
+	if(quest_contest->year != W.GetYear())
+	{
+		quest_contest->year = W.GetYear();
+		quest_contest->where = W.GetRandomSettlementIndex(quest_contest->where);
+	}
 }
 
 //=================================================================================================

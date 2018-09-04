@@ -1814,7 +1814,6 @@ public:
 	void SpawnTmpUnits(City* city);
 	void RemoveTmpUnits(City* city);
 	void RemoveTmpUnits(LevelContext& ctx);
-	void Event_StartEncounter(int id);
 	void GenerateMoonwell(Location& loc);
 	void SpawnMoonwellObjects();
 	void SpawnMoonwellUnits(const Vec3& team_pos);
@@ -1837,27 +1836,12 @@ public:
 	void GenerateCityMap(Location& loc);
 	void GenerateVillageMap(Location& loc);
 	void PrepareCityBuildings(City& city, vector<ToBuild>& tobuild);
-	void GetCityEntry(Vec3& pos, float& rot);
 	void AbadonLocation(Location* loc);
 
 	int enc_kierunek; // kierunek z której strony nadesz³a dru¿yna w czasie spotkania [tymczasowe]
-	int spotkanie; // rodzaj losowego spotkania [tymczasowe]
-	int enc_tryb; // 0 - losowa walka, 1 - specjalne spotkanie, 2 - questowe spotkanie [tymczasowe]
 	bool far_encounter; // czy dru¿yna gracza jest daleko w czasie spotkania [tymczasowe]
-	SPAWN_GROUP losowi_wrogowie; // wrogowie w czasie spotkania [tymczasowe]
-	Encounter* game_enc; // spotkanie w czasie podró¿y [tymczasowe]
 	bool g_have_well;
 	Int2 g_well_pt;
-
-	//-----------------------------------------------------------------
-	// WORLD STATE
-	enum WorldProgressMode
-	{
-		WPM_NORMAL,
-		WPM_TRAVEL,
-		WPM_SKIP
-	};
-	void WorldProgress(int days, WorldProgressMode mode);
 
 	Config cfg;
 	void SaveCfg();

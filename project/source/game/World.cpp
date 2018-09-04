@@ -18,6 +18,11 @@
 #include "Encounter.h"
 #include "Quest.h"
 #include "News.h"
+#include "Team.h"
+#include "QuestManager.h"
+#include "Quest_Crazies.h"
+#include "Quest_Mages.h"
+#include "Game.h"
 
 
 //-----------------------------------------------------------------------------
@@ -43,10 +48,24 @@ struct TmpLocation : public Location
 
 
 //-----------------------------------------------------------------------------
-void World::Init()
+void World::InitOnce()
 {
 	txDate = Str("dateFormat");
 	txRandomEncounter = Str("randomEncounter");
+	txEncCrazyMage = Str("encCrazyMage");
+	txEncCrazyHeroes = Str("encCrazyHeroes");
+	txEncCrazyCook = Str("encCrazyCook");
+	txEncMerchant = Str("encMerchant");
+	txEncHeroes = Str("encHeroes");
+	txEncBanditsAttackTravelers = Str("encBanditsAttackTravelers");
+	txEncHeroesAttack = Str("encHeroesAttack");
+	txEncGolem = Str("encGolem");
+	txEncCrazy = Str("encCrazy");
+	txEncUnk = Str("encUnk");
+	txEncBandits = Str("encBandits");
+	txEncAnimals = Str("encAnimals");
+	txEncOrcs = Str("encOrcs");
+	txEncGoblins = Str("encGoblins");
 }
 
 void World::Cleanup()
@@ -75,7 +94,29 @@ void World::Reset()
 	DeleteElements(news);
 }
 
-void World::Update(int days)
+void World::Update(int days, UpdateMode mode)
+{
+	assert(days > 0);
+	if(mode == UM_TRAVEL)
+		assert(days == 1);
+
+	UpdateDate(days);
+	SpawnCamps(days);
+	UpdateEncounters();
+	UpdateLocations();
+	UpdateNews();
+	QM.Update(days);
+
+	if(Net::IsLocal())
+		Game::Get().UpdateQuests(days);
+
+	if(mode == UM_TRAVEL)
+		Team.Update(1, true);
+	else if(mode == UM_NORMAL)
+		Team.Update(days, false);
+}
+
+void World::UpdateDate(int days)
 {
 	worldtime += days;
 	day += days;
@@ -96,9 +137,8 @@ void World::Update(int days)
 		Net::PushChange(NetChange::WORLD_TIME);
 }
 
-void World::DoWorldProgress(int days)
+void World::SpawnCamps(int days)
 {
-	// spawn new camps
 	create_camp += days;
 	if(create_camp >= 10)
 	{
@@ -118,8 +158,10 @@ void World::DoWorldProgress(int days)
 		}
 		CreateCamp(Vec2::Random(world_bounds.x, world_bounds.y), group, 128.f);
 	}
+}
 
-	// remove timed encounters
+void World::UpdateEncounters()
+{
 	for(vector<Encounter*>::iterator it = encounters.begin(), end = encounters.end(); it != end; ++it)
 	{
 		Encounter* e = *it;
@@ -137,8 +179,10 @@ void World::DoWorldProgress(int days)
 				*it = nullptr;
 		}
 	}
+}
 
-	// remove old camps / reset locations
+void World::UpdateLocations()
+{
 	LoopAndRemove(locations, [this](Location* loc)
 	{
 		if(!loc || loc->active_quest || loc->type == L_ENCOUNTER)
@@ -171,8 +215,10 @@ void World::DoWorldProgress(int days)
 		}
 		return false;
 	});
+}
 
-	// remove news older then 30 days
+void World::UpdateNews()
+{
 	LoopAndRemove(news, [this](News* news)
 	{
 		if(worldtime - news->add_time > 30)
@@ -749,7 +795,7 @@ void World::Save(GameWriter& f)
 	f << empty_locations;
 	f << create_camp;
 	f << world_pos;
-	f << encounter_timer;
+	f << reveal_timer;
 	f << encounter_chance;
 	f << settlements;
 	f << encounter_loc;
@@ -879,7 +925,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 	f >> empty_locations;
 	f >> create_camp;
 	f >> world_pos;
-	f >> encounter_timer;
+	f >> reveal_timer;
 	f >> encounter_chance;
 	f >> settlements;
 	f >> encounter_loc;
@@ -1529,7 +1575,7 @@ void World::Travel(int index)
 	travel_location_index = index;
 	const Vec2& target_pos = locations[travel_location_index]->pos;
 	travel_dir = Angle(world_pos.x, -world_pos.y, target_pos.x, -target_pos.y);
-	encounter_timer = 0.f;
+	reveal_timer = 0.f;
 
 	if(Net::IsServer())
 	{
@@ -1537,6 +1583,228 @@ void World::Travel(int index)
 		c.type = NetChange::TRAVEL;
 		c.id = index;
 	}
+}
+
+void World::UpdateTravel(float dt)
+{
+	Game& game = Game::Get();
+
+	travel_timer += dt;
+	const Vec2& end_pt = locations[travel_location_index]->pos;
+	float dist = Vec2::Distance(travel_start_pos, end_pt);
+	if(travel_timer > travel_day)
+	{
+		// another day passed
+		++travel_day;
+		if(Net::IsLocal())
+			Update(1, UM_TRAVEL);
+	}
+
+	if(travel_timer * 3 >= dist / TRAVEL_SPEED)
+	{
+		// end of travel
+		if(game.IsLeader())
+			EndTravel();
+		else
+			world_pos = end_pt;
+	}
+	else
+	{
+		Vec2 dir = end_pt - travel_start_pos;
+		world_pos = travel_start_pos + dir * (travel_timer / dist * TRAVEL_SPEED * 3);
+
+		// reveal nearby locations, check encounters
+		reveal_timer += dt;
+		if(Net::IsLocal() && reveal_timer >= 0.25f)
+		{
+			reveal_timer = 0;
+
+			int what = -2;
+			for(Location* ploc : locations)
+			{
+				if(!ploc)
+					continue;
+				Location& loc = *ploc;
+				if(Vec2::Distance(world_pos, loc.pos) <= 32.f)
+				{
+					if(loc.state != LS_CLEARED)
+					{
+						int chance = 0;
+						if(loc.type == L_FOREST)
+						{
+							chance = 1;
+							what = -1;
+						}
+						else if(loc.spawn == SG_BANDITS)
+						{
+							chance = 3;
+							what = loc.spawn;
+						}
+						else if(loc.spawn == SG_ORCS || loc.spawn == SG_GOBLINS)
+						{
+							chance = 2;
+							what = loc.spawn;
+						}
+						encounter_chance += chance;
+					}
+
+					loc.SetKnown();
+				}
+			}
+
+			int enc = -1, index = -1;
+			for(Encounter* encounter : encounters)
+			{
+				++index;
+				if(!encounter)
+					continue;
+				if(Vec2::Distance(encounter->pos, world_pos) < encounter->range)
+				{
+					if(!encounter->check_func || encounter->check_func())
+					{
+						encounter_chance += encounter->chance;
+						enc = index;
+					}
+				}
+			}
+
+			encounter_chance += 1;
+
+			if(Rand() % 500 < ((int)encounter_chance) - 25 || (DEBUG_BOOL && Key.Focus() && Key.Down('E')))
+			{
+				encounter_chance = 0.f;
+				StartEncounter(enc, what);
+			}
+		}
+	}
+}
+
+void World::StartEncounter(int enc, int what)
+{
+	state = State::ENCOUNTER;
+	locations[encounter_loc]->state = LS_UNKNOWN;
+	if(Net::IsOnline())
+		Net::PushChange(NetChange::UPDATE_MAP_POS);
+
+	cstring text;
+
+	if(enc != -1)
+	{
+		// quest encounter
+		encounter.mode = ENCOUNTER_QUEST;
+		encounter.encounter = GetEncounter(enc);
+		text = encounter.encounter->text;
+	}
+	else
+	{
+		Quest_Crazies::State c_state = QM.quest_crazies->crazies_state;
+
+		bool golem = (QM.quest_mages2->mages_state >= Quest_Mages2::State::Encounter && QM.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0)
+			|| (DEBUG_BOOL && Key.Focus() && Key.Down('G'));
+		bool crazy = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand() % 2 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
+		bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand() % 3 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
+		if(QM.quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand() % 2 == 0)
+			golem = true;
+		if(c_state == Quest_Crazies::State::PickedStone && Rand() % 2 == 0)
+			unk = true;
+
+		if(what == -2)
+		{
+			if(Rand() % 6 == 0)
+				what = SG_BANDITS;
+			else
+				what = -3;
+		}
+		else if(Rand() % 3 == 0)
+			what = -3;
+
+		if(crazy || unk || golem || what == -3 || (DEBUG_BOOL && Key.Focus() && Key.Down(VK_SHIFT)))
+		{
+			// special encounter
+			encounter.mode = ENCOUNTER_SPECIAL;
+			encounter.special = (SpecialEncounter)(Rand() % 6);
+			if(unk)
+				encounter.special = SE_UNK;
+			else if(crazy)
+				encounter.special = SE_CRAZY;
+			else if(golem)
+			{
+				encounter.special = SE_GOLEM;
+				QM.quest_mages2->paid = false;
+			}
+			else if(DEBUG_BOOL && Key.Focus())
+			{
+				if(Key.Down('I'))
+					encounter.special = SE_CRAZY_HEROES;
+				else if(Key.Down('B'))
+					encounter.special = SE_BANDITS_VS_TRAVELERS;
+				else if(Key.Down('C'))
+					encounter.special = SE_CRAZY_COOK;
+			}
+
+			if((encounter.special == SE_CRAZY_MAGE || encounter.special == SE_CRAZY_HEROES) && Rand() % 10 == 0)
+				encounter.special = SE_CRAZY_COOK;
+
+			switch(encounter.special)
+			{
+			case SE_CRAZY_MAGE:
+				text = txEncCrazyMage;
+				break;
+			case SE_CRAZY_HEROES:
+				text = txEncCrazyHeroes;
+				break;
+			case SE_MERCHANT:
+				text = txEncMerchant;
+				break;
+			case SE_HEROES:
+				text = txEncHeroes;
+				break;
+			case SE_BANDITS_VS_TRAVELERS:
+				text = txEncBanditsAttackTravelers;
+				break;
+			case SE_HEROES_VS_ENEMIES:
+				text = txEncHeroesAttack;
+				break;
+			case SE_GOLEM:
+				text = txEncGolem;
+				break;
+			case SE_CRAZY:
+				text = txEncCrazy;
+				break;
+			case SE_UNK:
+				text = txEncUnk;
+				break;
+			case SE_CRAZY_COOK:
+				text = txEncCrazyCook;
+				break;
+			}
+		}
+		else
+		{
+			// combat encounter
+			encounter.mode = ENCOUNTER_COMBAT;
+			encounter.enemy = (SPAWN_GROUP)what;
+
+			switch(what)
+			{
+			default:
+			case SG_BANDITS:
+				text = txEncBandits;
+				break;
+			case -1:
+				text = txEncAnimals;
+				break;
+			case SG_ORCS:
+				text = txEncOrcs;
+				break;
+			case SG_GOBLINS:
+				text = txEncGoblins;
+				break;
+			}
+		}
+	}
+
+	gui->ShowEncounterMessage(text);
 }
 
 void World::EndTravel()

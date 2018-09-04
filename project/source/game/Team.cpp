@@ -4,6 +4,9 @@
 #include "Unit.h"
 #include "SaveState.h"
 #include "GameFile.h"
+#include "QuestManager.h"
+#include "Quest_Evil.h"
+#include "Net.h"
 
 TeamSingleton Team;
 
@@ -307,5 +310,52 @@ void TeamSingleton::SaveOnWorldmap(GameWriter& f)
 		unit->Save(f, false);
 		unit->refid = (int)Unit::refid_table.size();
 		Unit::refid_table.push_back(unit);
+	}
+}
+
+void TeamSingleton::Update(int days, bool travel)
+{
+	if(travel)
+	{
+		for(Unit* unit : members)
+		{
+			if(unit->IsHero())
+				unit->hero->PassTime(days);
+		}
+	}
+	else
+	{
+		bool autoheal = (QM.quest_evil->evil_state == Quest_Evil::State::ClosingPortals || QM.quest_evil->evil_state == Quest_Evil::State::KillBoss);
+
+		// regeneracja hp / trenowanie
+		for(Unit* unit : members)
+		{
+			if(autoheal)
+				unit->hp = unit->hpmax;
+			if(unit->IsPlayer())
+				unit->player->TravelTick();
+			else
+				unit->hero->PassTime(1, true);
+		}
+
+		// ubywanie wolnych dni
+		if(Net::IsOnline())
+		{
+			int maks = 0;
+			for(Unit* unit : active_members)
+			{
+				if(unit->IsPlayer() && unit->player->free_days > maks)
+					maks = unit->player->free_days;
+			}
+
+			if(maks > 0)
+			{
+				for(Unit* unit : active_members)
+				{
+					if(unit->IsPlayer() && unit->player->free_days == maks)
+						--unit->player->free_days;
+				}
+			}
+		}
 	}
 }

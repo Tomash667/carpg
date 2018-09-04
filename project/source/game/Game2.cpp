@@ -1552,7 +1552,7 @@ void Game::UpdateFallback(float dt)
 					if(Net::IsOnline())
 						UseDays(pc, 10);
 					else
-						WorldProgress(10, WPM_NORMAL);
+						W.Update(10, World::UM_NORMAL);
 				}
 				else
 				{
@@ -1571,7 +1571,7 @@ void Game::UpdateFallback(float dt)
 					if(Net::IsOnline())
 						UseDays(pc, fallback_1);
 					else
-						WorldProgress(fallback_1, WPM_NORMAL);
+						W.Update(fallback_1, World::UM_NORMAL);
 				}
 				else
 				{

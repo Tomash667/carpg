@@ -21,7 +21,7 @@ public:
 	void Load(GameReader& f);
 
 	State state;
-	int where, state2;
+	int where, state2, year;
 	vector<Unit*> units;
 	Unit* winner;
 	float time;

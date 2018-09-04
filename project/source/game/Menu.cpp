@@ -1842,7 +1842,7 @@ void Game::UpdateServerTransfer(float dt)
 					Portal* portal;
 
 					if(city_ctx)
-						GetCityEntry(pos, rot);
+						city_ctx->GetEntry(pos, rot);
 					else if(L.enter_from >= ENTER_FROM_PORTAL && (portal = L.location->GetPortal(L.enter_from)) != nullptr)
 					{
 						pos = portal->pos + Vec3(sin(portal->rot) * 2, 0, cos(portal->rot) * 2);

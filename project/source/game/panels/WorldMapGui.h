@@ -24,13 +24,12 @@ public:
 	{
 		return Vec2(pt.x, 600.f - pt.y);
 	}
+	void ShowEncounterMessage(cstring text);
 
 	MpBox* mp_box;
 	Journal* journal;
 	GameMessages* game_messages;
-	cstring txGameTimeout, txWorldDate, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel,
-		txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncBanditsAttackTravelers, txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk,
-		txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins;
+	cstring txGameTimeout, txWorldDate, txCurrentLoc, txCitizens, txAvailable, txTarget, txDistance, txTravelTime, txDay, txDays, txOnlyLeaderCanTravel;
 	int picked_location;
 
 private:

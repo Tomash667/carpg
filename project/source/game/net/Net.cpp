@@ -3794,7 +3794,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else if(!info.devmode)
 					StreamError("Update server: Player %s used CHEAT_SKIP_DAYS without devmode.", info.name.c_str());
 				else
-					WorldProgress(count, WPM_SKIP);
+					W.Update(count, World::UM_SKIP);
 			}
 			break;
 		// player used cheat 'warp'
@@ -7160,7 +7160,11 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 				{
 					DialogInfo info;
-					info.event = DialogEvent(this, &Game::Event_StartEncounter);
+					info.event = [this](int)
+					{
+						dialog_enc = nullptr;
+						Net::PushChange(NetChange::CLOSE_ENCOUNTER); 
+					};
 					info.name = "encounter";
 					info.order = ORDER_TOP;
 					info.parent = nullptr;
@@ -9532,7 +9536,7 @@ void Game::UseDays(PlayerController* player, int count)
 				info->pc->free_days += count;
 		}
 
-		WorldProgress(count, WPM_NORMAL);
+		W.Update(count, World::UM_NORMAL);
 	}
 
 	Net::PushChange(NetChange::UPDATE_FREE_DAYS);

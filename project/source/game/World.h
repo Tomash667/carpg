@@ -4,6 +4,18 @@
 #include "Location.h"
 
 //-----------------------------------------------------------------------------
+struct EncounterData
+{
+	EncounterMode mode;
+	union
+	{
+		Encounter* encounter;
+		SPAWN_GROUP enemy;
+		SpecialEncounter special;
+	};
+};
+
+//-----------------------------------------------------------------------------
 // World handling
 // General notes:
 // + don't create settlements after GenerateWorld (currently it is hardcoded that they are before other locations - here and in Quest_SpreadNews)
@@ -21,15 +33,21 @@ public:
 		ENCOUNTER // shown encounter message, waiting to close & load level (current_location is nullptr)
 	};
 
+	enum UpdateMode
+	{
+		UM_NORMAL,
+		UM_TRAVEL,
+		UM_SKIP
+	};
+
 	static const float TRAVEL_SPEED;
 
 	// general
-	void Init();
+	void InitOnce();
 	void Cleanup();
 	void OnNewGame();
 	void Reset();
-	void Update(int days);
-	void DoWorldProgress(int days);
+	void Update(int days, UpdateMode mode);
 	void ExitToMap();
 	void ChangeLevel(int index, bool encounter);
 	void StartInLocation(Location* loc);
@@ -90,6 +108,7 @@ public:
 
 	// travel
 	void Travel(int index);
+	void UpdateTravel(float dt);
 	void EndTravel();
 	int GetTravelLocationIndex() const { return travel_location_index; }
 	float GetTravelDir() const { return travel_dir; }
@@ -125,6 +144,7 @@ private:
 	int travel_location_index; // travel target where state is TRAVEL, ENCOUNTER or INSIDE_ENCOUNTER (-1 otherwise)
 	vector<Location*> locations; // can be nullptr
 	vector<Encounter*> encounters;
+	EncounterData encounter;
 	vector<Int2> boss_levels; // levels with boss music (x-location index, y-dungeon level)
 	uint settlements, // count and index below this value is city/village
 		empty_locations, // counter
@@ -134,18 +154,26 @@ private:
 	Vec2 world_pos,
 		travel_start_pos;
 	float travel_timer,
-		encounter_timer, // increase chance for encounter every 0.25 sec
+		reveal_timer, // increase chance for encounter every 0.25 sec
 		encounter_chance,
 		travel_dir; // from which direction team will enter level after travel
+	EncounterMode encounter_mode;
 	int year, // in game year, starts at 100
 		month, // in game month, 0 to 11
 		day, // in game day, 0 to 29
 		worldtime; // number of passed game days, starts at 0
 	vector<News*> news;
-	cstring txDate, txRandomEncounter;
+	cstring txDate, txRandomEncounter, txEncCrazyMage, txEncCrazyHeroes, txEncCrazyCook, txEncMerchant, txEncHeroes, txEncBanditsAttackTravelers,
+		txEncHeroesAttack, txEncGolem, txEncCrazy, txEncUnk, txEncBandits, txEncAnimals, txEncOrcs, txEncGoblins;
 	bool first_city, // spawn more low level heroes in first city
 		boss_level_mp; // used by clients instead boss_levels
 
+	void UpdateDate(int days);
+	void SpawnCamps(int days);
+	void UpdateEncounters();
+	void UpdateLocations();
+	void UpdateNews();
+	void StartEncounter(int enc, int what);
 	void LoadLocations(GameReader& f, LoadingHandler& loading);
 	void LoadNews(GameReader& f);
 };

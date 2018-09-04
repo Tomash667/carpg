@@ -124,5 +124,7 @@ struct VarsContainer;
 struct Weapon;
 
 //-----------------------------------------------------------------------------
+enum EncounterMode;
 enum TRAP_TYPE;
+enum SpecialEncounter;
 enum class OLD_BUILDING;

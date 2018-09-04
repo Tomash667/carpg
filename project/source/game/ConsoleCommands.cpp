@@ -992,7 +992,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(ile > 0)
 						{
 							if(Net::IsLocal())
-								WorldProgress(ile, WPM_SKIP);
+								W.Update(ile, World::UM_SKIP);
 							else
 							{
 								NetChange& c = Add1(Net::changes);

@@ -8,6 +8,7 @@
 #include "Unit.h"
 #include "GameFile.h"
 #include "BuildingScript.h"
+#include "World.h"
 
 //=================================================================================================
 City::~City()
@@ -956,4 +957,32 @@ void City::GenerateCityBuildings(vector<Building*>& buildings, bool required)
 cleanup:
 	citizens = script->vars[BuildingScript::V_CITIZENS];
 	citizens_world = script->vars[BuildingScript::V_CITIZENS_WORLD];
+}
+
+//=================================================================================================
+void City::GetEntry(Vec3& pos, float& rot)
+{
+	if(entry_points.size() == 1)
+	{
+		pos = entry_points[0].spawn_area.Midpoint().XZ();
+		rot = entry_points[0].spawn_rot;
+	}
+	else
+	{
+		// check which spawn rot i closest to entry rot
+		float best_dif = 999.f;
+		int best_index = -1, index = 0;
+		float dir = Clip(-W.GetTravelDir() + PI / 2);
+		for(vector<EntryPoint>::iterator it = entry_points.begin(), end = entry_points.end(); it != end; ++it, ++index)
+		{
+			float dif = AngleDiff(dir, it->spawn_rot);
+			if(dif < best_dif)
+			{
+				best_dif = dif;
+				best_index = index;
+			}
+		}
+		pos = entry_points[best_index].spawn_area.Midpoint().XZ();
+		rot = entry_points[best_index].spawn_rot;
+	}
 }

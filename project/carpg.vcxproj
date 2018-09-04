@@ -577,7 +577,6 @@
     <ClCompile Include="source\game\Tutorial.cpp" />
     <ClCompile Include="source\game\World.cpp" />
     <ClCompile Include="source\game\Worldmap.cpp" />
-    <ClCompile Include="source\game\Worldstate.cpp" />
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="source\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

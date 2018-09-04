@@ -2,6 +2,27 @@
 
 typedef bool(*BoolFunc)();
 
+enum EncounterMode
+{
+	ENCOUNTER_COMBAT,
+	ENCOUNTER_SPECIAL,
+	ENCOUNTER_QUEST
+};
+
+enum SpecialEncounter
+{
+	SE_CRAZY_MAGE,
+	SE_CRAZY_HEROES,
+	SE_MERCHANT,
+	SE_HEROES,
+	SE_BANDITS_VS_TRAVELERS,
+	SE_HEROES_VS_ENEMIES,
+	SE_GOLEM,
+	SE_CRAZY,
+	SE_UNK,
+	SE_CRAZY_COOK
+};
+
 struct Encounter
 {
 	Vec2 pos;

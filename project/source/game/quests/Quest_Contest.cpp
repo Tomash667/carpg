@@ -12,6 +12,7 @@ void Quest_Contest::Init()
 	units.clear();
 	winner = nullptr;
 	generated = false;
+	year = W.GetYear();
 }
 
 void Quest_Contest::Start(PlayerController* pc)
@@ -69,4 +70,5 @@ void Quest_Contest::Load(GameReader& f)
 		for(Unit*& unit : units)
 			f >> unit;
 	}
+	year = W.GetYear();
 }

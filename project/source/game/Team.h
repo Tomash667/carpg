@@ -46,6 +46,7 @@ public:
 	void Reset();
 	void Save(GameWriter& f);
 	void SaveOnWorldmap(GameWriter& f);
+	void Update(int days, bool travel);
 
 	vector<Unit*> members; // all team members
 	vector<Unit*> active_members; // team members that get gold (without quest units)

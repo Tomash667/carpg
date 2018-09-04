@@ -86,4 +86,5 @@ struct City : public OutsideLocation
 	CityBuilding* FindBuilding(BuildingGroup* group);
 	CityBuilding* FindBuilding(Building* type);
 	bool IsVillage() const { return settlement_type == SettlementType::Village; }
+	void GetEntry(Vec3& pos, float& rot);
 };

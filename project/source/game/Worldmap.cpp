@@ -374,7 +374,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			// dodaj gracza i jego dru¿ynê
 			Vec3 spawn_pos;
 			float spawn_dir;
-			GetCityEntry(spawn_pos, spawn_dir);
+			city->GetEntry(spawn_pos, spawn_dir);
 			AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
 
 			if(!reenter)
@@ -3068,12 +3068,6 @@ void Game::Event_RandomEncounter(int)
 	EnterLocation();
 }
 
-void Game::Event_StartEncounter(int)
-{
-	dialog_enc = nullptr;
-	Net::PushChange(NetChange::CLOSE_ENCOUNTER);
-}
-
 void Game::GenerateEncounterMap(Location& loc)
 {
 	OutsideLocation* outside = (OutsideLocation*)&loc;
@@ -3522,17 +3516,6 @@ void Game::SpawnEncounterTeam()
 	}
 
 	AddPlayerTeam(pos, dir, false, true);
-}
-
-// po 30 dniach od odwiedzin oznacza lokacje do zresetowania
-void Game::DoWorldProgress(int days)
-{
-	QM.Update(days);
-
-	W.DoWorldProgress(days);
-
-	if(Net::IsLocal())
-		UpdateQuests(days);
 }
 
 // up³yw czasu
@@ -5339,35 +5322,6 @@ void Game::PrepareCityBuildings(City& city, vector<ToBuild>& tobuild)
 		else if(tb.type->group == BuildingGroup::BG_ARENA)
 			city.flags |= City::HaveArena;
 	}
-}
-
-void Game::GetCityEntry(Vec3& pos, float& rot)
-{
-	if(city_ctx->entry_points.size() == 1)
-	{
-		pos = city_ctx->entry_points[0].spawn_area.Midpoint().XZ();
-		rot = city_ctx->entry_points[0].spawn_rot;
-	}
-	else
-	{
-		// check which spawn rot i closest to entry rot
-		float best_dif = 999.f;
-		int best_index = -1, index = 0;
-		float dir = Clip(-W.GetTravelDir() +PI / 2);
-		for(vector<EntryPoint>::iterator it = city_ctx->entry_points.begin(), end = city_ctx->entry_points.end(); it != end; ++it, ++index)
-		{
-			float dif = AngleDiff(dir, it->spawn_rot);
-			if(dif < best_dif)
-			{
-				best_dif = dif;
-				best_index = index;
-			}
-		}
-		pos = city_ctx->entry_points[best_index].spawn_area.Midpoint().XZ();
-		rot = city_ctx->entry_points[best_index].spawn_rot;
-	}
-
-	terrain->SetH(pos);
 }
 
 int Game::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)

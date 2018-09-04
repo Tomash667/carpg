@@ -37,20 +37,6 @@ WorldMapGui::WorldMapGui() : game(Game::Get())
 	txDay = Str("day");
 	txDays = Str("days");
 	txOnlyLeaderCanTravel = Str("onlyLeaderCanTravel");
-	txEncCrazyMage = Str("encCrazyMage");
-	txEncCrazyHeroes = Str("encCrazyHeroes");
-	txEncCrazyCook = Str("encCrazyCook");
-	txEncMerchant = Str("encMerchant");
-	txEncHeroes = Str("encHeroes");
-	txEncBanditsAttackTravelers = Str("encBanditsAttackTravelers");
-	txEncHeroesAttack = Str("encHeroesAttack");
-	txEncGolem = Str("encGolem");
-	txEncCrazy = Str("encCrazy");
-	txEncUnk = Str("encUnk");
-	txEncBandits = Str("encBandits");
-	txEncAnimals = Str("encAnimals");
-	txEncOrcs = Str("encOrcs");
-	txEncGoblins = Str("encGoblins");
 	txBuildings = Str("buildings");
 
 	mp_box = game.game_gui->mp_box;
@@ -232,281 +218,7 @@ void WorldMapGui::Update(float dt)
 		if(game.paused || (!Net::IsOnline() && GUI.HavePauseDialog()))
 			return;
 
-		// ruch po mapie
-		W.travel_timer += dt;
-		const Vec2& end_pt = W.locations[W.travel_location_index]->pos;
-		float dist = Vec2::Distance(W.travel_start_pos, end_pt);
-		if(W.travel_timer > W.travel_day)
-		{
-			// min¹³ kolejny dzieñ w podró¿y
-			++W.travel_day;
-			if(Net::IsLocal())
-				game.WorldProgress(1, Game::WPM_TRAVEL);
-		}
-
-		if(W.travel_timer * 3 >= dist / World::TRAVEL_SPEED)
-		{
-			if(game.IsLeader())
-				W.EndTravel();
-			else
-				W.world_pos = end_pt;
-		}
-		else
-		{
-			// ruch
-			Vec2 dir = end_pt - W.travel_start_pos;
-			W.world_pos = W.travel_start_pos + dir * (W.travel_timer / dist * World::TRAVEL_SPEED * 3);
-
-			W.encounter_timer += dt;
-
-			// odkryj pobliskie miejsca / ataki
-			if(Net::IsLocal() && W.encounter_timer >= 0.25f)
-			{
-				W.encounter_timer = 0;
-				int co = -2, enc = -1, index = 0;
-				for(Location* ploc : W.locations)
-				{
-					if(!ploc)
-					{
-						++index;
-						continue;
-					}
-					Location& loc = *ploc;
-					if(Vec2::Distance(W.world_pos, loc.pos) <= 32.f)
-					{
-						if(loc.state != LS_CLEARED)
-						{
-							int szansa = 0;
-							if(loc.type == L_FOREST)
-							{
-								szansa = 1;
-								co = -1;
-							}
-							else if(loc.spawn == SG_BANDITS)
-							{
-								szansa = 3;
-								co = loc.spawn;
-							}
-							else if(loc.spawn == SG_ORCS || loc.spawn == SG_GOBLINS)
-							{
-								szansa = 2;
-								co = loc.spawn;
-							}
-							W.encounter_chance += szansa;
-						}
-
-						loc.SetKnown();
-					}
-					++index;
-				}
-
-				index = -1;
-				for(Encounter* encounter : W.GetEncounters())
-				{
-					++index;
-					if(!encounter)
-						continue;
-					if(Vec2::Distance(encounter->pos, W.world_pos) < encounter->range)
-					{
-						if(!encounter->check_func || encounter->check_func())
-						{
-							W.encounter_chance += encounter->chance;
-							enc = index;
-						}
-					}
-				}
-
-				W.encounter_chance += 1;
-
-				if(Rand() % 500 < ((int)W.encounter_chance) - 25 || (DEBUG_BOOL && Key.Focus() && Key.Down('E')))
-				{
-					W.encounter_chance = 0.f;
-					W.locations[W.GetEncounterLocationIndex()]->state = LS_UNKNOWN;
-
-					if(enc != -1)
-					{
-						// questowe spotkanie
-						W.SetState(World::State::ENCOUNTER);
-						game.game_enc = W.GetEncounter(enc);
-						game.enc_tryb = 2;
-
-						DialogInfo info;
-						info.event = DialogEvent(&game, &Game::Event_RandomEncounter);
-						info.name = "encounter";
-						info.order = ORDER_TOPMOST;
-						info.parent = this;
-						info.pause = true;
-						info.text = game.game_enc->text;
-						info.type = DIALOG_OK;
-						game.dialog_enc = GUI.ShowDialog(info);
-
-						if(Net::IsOnline())
-						{
-							NetChange& c = Add1(Net::changes);
-							c.type = NetChange::ENCOUNTER;
-							c.str = StringPool.Get();
-							*c.str = game.game_enc->text;
-
-							// jeœli gracz nie jest przywódc¹ to nie mo¿e wcisn¹æ przycisku
-							if(!game.IsLeader())
-								game.dialog_enc->bts[0].state = Button::DISABLED;
-
-							Net::PushChange(NetChange::UPDATE_MAP_POS);
-						}
-					}
-					else
-					{
-						Quest_Crazies::State c_state = QM.quest_crazies->crazies_state;
-
-						bool golemy = (QM.quest_mages2->mages_state >= Quest_Mages2::State::Encounter && QM.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0)
-							|| (DEBUG_BOOL && Key.Focus() && Key.Down('G'));
-						bool szalony = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand() % 2 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
-						bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand() % 3 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
-						if(QM.quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand() % 2 == 0)
-							golemy = true;
-						if(c_state == Quest_Crazies::State::PickedStone && Rand() % 2 == 0)
-							unk = true;
-
-						if(co == -2)
-						{
-							if(Rand() % 6 == 0)
-								co = SG_BANDITS;
-							else
-								co = -3;
-						}
-						else if(Rand() % 3 == 0)
-							co = -3;
-
-						if(szalony || unk || golemy || co == -3 || (DEBUG_BOOL && Key.Focus() && Key.Down(VK_SHIFT)))
-						{
-							// losowe spotkanie
-							game.spotkanie = Rand() % 6;
-							if(unk)
-								game.spotkanie = 8;
-							else if(szalony)
-								game.spotkanie = 7;
-							else if(golemy)
-							{
-								game.spotkanie = 6;
-								QM.quest_mages2->paid = false;
-							}
-							else if(DEBUG_BOOL && Key.Focus())
-							{
-								if(Key.Down('I'))
-									game.spotkanie = 1;
-								else if(Key.Down('B'))
-									game.spotkanie = 4;
-								else if(Key.Down('C'))
-									game.spotkanie = 9;
-							}
-							game.enc_tryb = 1;
-
-							if((game.spotkanie == 0 || game.spotkanie == 1) && Rand() % 10 == 0)
-								game.spotkanie = 9;
-
-							DialogInfo info;
-							info.event = DialogEvent(&game, &Game::Event_RandomEncounter);
-							info.name = "encounter";
-							info.order = ORDER_TOPMOST;
-							info.parent = this;
-							info.pause = true;
-							switch(game.spotkanie)
-							{
-							case 0:
-								info.text = txEncCrazyMage;
-								break;
-							case 1:
-								info.text = txEncCrazyHeroes;
-								break;
-							case 2:
-								info.text = txEncMerchant;
-								break;
-							case 3:
-								info.text = txEncHeroes;
-								break;
-							case 4:
-								info.text = txEncBanditsAttackTravelers;
-								break;
-							case 5:
-								info.text = txEncHeroesAttack;
-								break;
-							case 6:
-								info.text = txEncGolem;
-								break;
-							case 7:
-								info.text = txEncCrazy;
-								break;
-							case 8:
-								info.text = txEncUnk;
-								break;
-							case 9:
-								info.text = txEncCrazyCook;
-								break;
-							}
-							info.type = DIALOG_OK;
-							game.dialog_enc = GUI.ShowDialog(info);
-							W.SetState(World::State::ENCOUNTER);
-
-							if(Net::IsOnline())
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::ENCOUNTER;
-								c.str = StringPool.Get();
-								*c.str = info.text;
-
-								if(!game.IsLeader())
-									game.dialog_enc->bts[0].state = Button::DISABLED;
-
-								Net::PushChange(NetChange::UPDATE_MAP_POS);
-							}
-						}
-						else
-						{
-							// spotkanie z wrogami
-							game.losowi_wrogowie = (SPAWN_GROUP)co;
-							game.enc_tryb = 0;
-							DialogInfo info;
-							info.event = DialogEvent(&game, &Game::Event_RandomEncounter);
-							info.name = "encounter";
-							info.order = ORDER_TOPMOST;
-							info.parent = this;
-							info.pause = true;
-							switch(co)
-							{
-							case SG_BANDITS:
-								info.text = txEncBandits;
-								break;
-							case -1:
-								info.text = txEncAnimals;
-								break;
-							case SG_ORCS:
-								info.text = txEncOrcs;
-								break;
-							case SG_GOBLINS:
-								info.text = txEncGoblins;
-								break;
-							}
-							info.type = DIALOG_OK;
-							game.dialog_enc = GUI.ShowDialog(info);
-							W.SetState(World::State::ENCOUNTER);
-
-							if(Net::IsOnline())
-							{
-								NetChange& c = Add1(Net::changes);
-								c.type = NetChange::ENCOUNTER;
-								c.str = StringPool.Get();
-								*c.str = info.text;
-
-								if(!game.IsLeader())
-									game.dialog_enc->bts[0].state = Button::DISABLED;
-
-								Net::PushChange(NetChange::UPDATE_MAP_POS);
-							}
-						}
-					}
-				}
-			}
-		}
+		W.UpdateTravel(dt);
 	}
 	else if(W.GetState() != World::State::ENCOUNTER && !journal->visible)
 	{
@@ -681,4 +393,30 @@ void WorldMapGui::GetCityText(City& city, string& s)
 	// cleanup
 	for(auto& i : items)
 		StringPool.Free(i.first);
+}
+
+//=================================================================================================
+void WorldMapGui::ShowEncounterMessage(cstring text)
+{
+	DialogInfo info;
+	info.event = DialogEvent(&game, &Game::Event_RandomEncounter);
+	info.name = "encounter";
+	info.order = ORDER_TOPMOST;
+	info.parent = this;
+	info.pause = true;
+	info.text = text;
+	info.type = DIALOG_OK;
+	game.dialog_enc = GUI.ShowDialog(info);
+
+	if(Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::ENCOUNTER;
+		c.str = StringPool.Get();
+		*c.str = text;
+
+		// disable button when server is not leader
+		if(!game.IsLeader())
+			game.dialog_enc->bts[0].state = Button::DISABLED;
+	}
 }
