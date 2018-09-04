@@ -37,6 +37,7 @@
 #include "Level.h"
 #include "LoadingHandler.h"
 #include "Quest_Contest.h"
+#include "Quest_Secret.h"
 
 enum SaveFlags
 {
@@ -51,7 +52,7 @@ enum SaveFlags
 //=================================================================================================
 bool Game::CanSaveGame() const
 {
-	if(game_state == GS_MAIN_MENU || secret_state == SECRET_FIGHT)
+	if(game_state == GS_MAIN_MENU || QM.quest_secret->state == Quest_Secret::SECRET_FIGHT)
 		return false;
 
 	if(game_state == GS_WORLDMAP)
@@ -563,12 +564,7 @@ void Game::SaveStock(FileWriter& f, vector<ItemSlot>& cnt)
 //=================================================================================================
 void Game::SaveQuestsData(GameWriter& f)
 {
-	// secret
-	f << secret_state;
-	f << GetSecretNote()->desc;
-	f << secret_where;
-	f << secret_where2;
-
+	QM.quest_secret->Save(f);
 	QM.quest_contest->Save(f);
 
 	// arena tournament
@@ -1206,35 +1202,6 @@ void Game::LoadGame(GameReader& f)
 			throw "Missing EOS.";
 	}
 
-	if(L.enter_from == ENTER_FROM_UNKNOWN && game_state2 == GS_LEVEL)
-	{
-		// zgadnij sk¹d przysz³a dru¿yna
-		if(L.location_index == secret_where2)
-			L.enter_from = ENTER_FROM_PORTAL;
-		else if(L.location->type == L_DUNGEON)
-		{
-			InsideLocation* inside = (InsideLocation*)L.location;
-			if(inside->from_portal)
-				L.enter_from = ENTER_FROM_PORTAL;
-			else
-			{
-				if(dungeon_level == 0)
-					L.enter_from = ENTER_FROM_OUTSIDE;
-				else
-					L.enter_from = ENTER_FROM_UP_LEVEL;
-			}
-		}
-		else if(L.location->type == L_CRYPT)
-		{
-			if(dungeon_level == 0)
-				L.enter_from = ENTER_FROM_OUTSIDE;
-			else
-				L.enter_from = ENTER_FROM_UP_LEVEL;
-		}
-		else
-			L.enter_from = ENTER_FROM_OUTSIDE;
-	}
-
 	// load music
 	LoadingStep(txLoadMusic);
 	if(!sound_mgr->IsMusicDisabled())
@@ -1313,14 +1280,7 @@ void Game::LoadQuestsData(GameReader& f)
 		quest_crazies->LoadOld(f);
 	}
 
-	// secret
-	f >> secret_state;
-	f >> GetSecretNote()->desc;
-	f >> secret_where;
-	f >> secret_where2;
-	if(secret_state > SECRET_NONE && !BaseObject::Get("tomashu_dom")->mesh)
-		throw "Save uses 'data.pak' file which is missing!";
-
+	QM.quest_secret->Load(f);
 	QM.quest_contest->Load(f);
 
 	// arena tournament

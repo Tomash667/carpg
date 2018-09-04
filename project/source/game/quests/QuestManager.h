@@ -5,6 +5,7 @@
 
 //-----------------------------------------------------------------------------
 class Quest_Contest;
+class Quest_Secret;
 struct Item;
 struct ItemSlot;
 struct Quest;
@@ -65,6 +66,7 @@ public:
 	vector<Quest*> quests_timeout2;
 	vector<QuestItemRequest*> quest_item_requests;
 	Quest_Contest* quest_contest;
+	Quest_Secret* quest_secret;
 	int quest_counter;
 	int unique_quests_completed;
 	bool unique_completed_show;

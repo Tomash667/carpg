@@ -25,6 +25,7 @@
 #include "Quest_RescueCaptive.h"
 #include "Quest_RetrievePackage.h"
 #include "Quest_Sawmill.h"
+#include "Quest_Secret.h"
 #include "Quest_SpreadNews.h"
 #include "Quest_StolenArtifact.h"
 #include "Quest_Wanted.h"
@@ -63,12 +64,14 @@ void QuestManager::Init()
 
 	// create pseudo quests
 	quest_contest = new Quest_Contest;
+	quest_secret = new Quest_Secret;
 }
 
 //=================================================================================================
 void QuestManager::InitQuests()
 {
 	quest_contest->Init();
+	quest_secret->Init();
 }
 
 //=================================================================================================

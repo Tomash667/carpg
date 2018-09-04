@@ -37,6 +37,7 @@
 #include "ScriptManager.h"
 #include "Var.h"
 #include "Quest_Contest.h"
+#include "Quest_Secret.h"
 
 extern Matrix m1, m2, m3, m4;
 
@@ -234,7 +235,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			GenerateCave(l);
 			break;
 		case L_FOREST:
-			if(L.location_index == secret_where2)
+			if(L.location_index == QM.quest_secret->where2)
 				GenerateSecretLocation(l);
 			else
 				GenerateForest(l);
@@ -415,7 +416,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 			SetOutsideParams();
 
-			if(secret_where2 == L.location_index)
+			if(QM.quest_secret->where2 == L.location_index)
 			{
 				// czy to pierwsza wizyta?
 				if(first)
@@ -2288,7 +2289,7 @@ void Game::GenerateDungeon(Location& _loc)
 			r.pos.y = (opcje.w - 7) / 2;
 			inside->special_room = 0;
 		}
-		else if(L.location_index == secret_where && secret_state == SECRET_DROPPED_STONE && !inside->HaveDownStairs())
+		else if(L.location_index == QM.quest_secret->where && QM.quest_secret->state == Quest_Secret::SECRET_DROPPED_STONE && !inside->HaveDownStairs())
 		{
 			// sekret
 			opcje.schody_gora = OpcjeMapy::NAJDALEJ;
@@ -4610,7 +4611,7 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 
 void Game::GenerateSecretLocation(Location& loc)
 {
-	secret_state = SECRET_GENERATED2;
+	QM.quest_secret->state = Quest_Secret::SECRET_GENERATED2;
 
 	OutsideLocation* outside = (OutsideLocation*)&loc;
 
@@ -4716,7 +4717,7 @@ void Game::SpawnSecretLocationObjects()
 	portal->pos = pos;
 	portal->rot = 0.f;
 	portal->target = 0;
-	portal->target_loc = secret_where;
+	portal->target_loc = QM.quest_secret->where;
 	L.location->portal = portal;
 
 	if(!trees[0].obj)

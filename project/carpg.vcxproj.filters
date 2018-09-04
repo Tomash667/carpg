@@ -709,6 +709,9 @@
     <ClCompile Include="source\game\quests\Quest_Contest.cpp">
       <Filter>3. game\quests</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\quests\Quest_Secret.cpp">
+      <Filter>3. game\quests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1406,6 +1409,9 @@
       <Filter>3. game\entity</Filter>
     </ClInclude>
     <ClInclude Include="source\game\quests\Quest_Contest.h">
+      <Filter>3. game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\quests\Quest_Secret.h">
       <Filter>3. game\quests</Filter>
     </ClInclude>
   </ItemGroup>

@@ -794,26 +794,11 @@ public:
 	void UpdateContest(float dt);
 
 	// secret quest
-	enum SecretState
-	{
-		SECRET_OFF,
-		SECRET_NONE,
-		SECRET_DROPPED_STONE,
-		SECRET_GENERATED,
-		SECRET_CLOSED,
-		SECRET_GENERATED2,
-		SECRET_TALKED,
-		SECRET_FIGHT,
-		SECRET_LOST,
-		SECRET_WIN,
-		SECRET_REWARD
-	} secret_state;
 	bool CheckMoonStone(GroundItem* item, Unit& unit);
 	Item* GetSecretNote()
 	{
 		return Item::Get("sekret_kartka");
 	}
-	int secret_where, secret_where2;
 
 	// tutorial
 	int tut_state;

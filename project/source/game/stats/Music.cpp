@@ -5,6 +5,8 @@
 #include "SoundManager.h"
 #include "Level.h"
 #include "World.h"
+#include "QuestManager.h"
+#include "Quest_Secret.h"
 
 //-----------------------------------------------------------------------------
 vector<Music*> Music::musics;
@@ -24,7 +26,7 @@ MusicType Game::GetLocationMusic()
 		return MusicType::Dungeon;
 	case L_FOREST:
 	case L_CAMP:
-		if(L.location_index == secret_where2)
+		if(L.location_index == QM.quest_secret->where2)
 			return MusicType::Moonwell;
 		else
 			return MusicType::Forest;

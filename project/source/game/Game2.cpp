@@ -54,6 +54,7 @@
 #include "Var.h"
 #include "News.h"
 #include "Quest_Contest.h"
+#include "Quest_Secret.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -5665,7 +5666,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	}
 	else if(strcmp(msg, "sekret_atak") == 0)
 	{
-		secret_state = SECRET_FIGHT;
+		QM.quest_secret->state = Quest_Secret::SECRET_FIGHT;
 		at_arena.clear();
 
 		ctx.talker->in_arena = 1;
@@ -5691,7 +5692,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	}
 	else if(strcmp(msg, "sekret_daj") == 0)
 	{
-		secret_state = SECRET_REWARD;
+		QM.quest_secret->state = Quest_Secret::SECRET_REWARD;
 		const Item* item = Item::Get("sword_forbidden");
 		PreloadItem(item);
 		ctx.pc->unit->AddItem(item, 1, true);
@@ -5961,18 +5962,18 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 		return quest_crazies->crazies_state == Quest_Crazies::State::FirstAttack;
 	else if(strcmp(msg, "secret_first_dialog") == 0)
 	{
-		if(secret_state == SECRET_GENERATED2)
+		if(QM.quest_secret->state == Quest_Secret::SECRET_GENERATED2)
 		{
-			secret_state = SECRET_TALKED;
+			QM.quest_secret->state = Quest_Secret::SECRET_TALKED;
 			return true;
 		}
 	}
 	else if(strcmp(msg, "sekret_can_fight") == 0)
-		return secret_state == SECRET_TALKED;
+		return QM.quest_secret->state == Quest_Secret::SECRET_TALKED;
 	else if(strcmp(msg, "sekret_win") == 0)
-		return secret_state == SECRET_WIN || secret_state == SECRET_REWARD;
+		return Any(QM.quest_secret->state, Quest_Secret::SECRET_WIN, Quest_Secret::SECRET_REWARD);
 	else if(strcmp(msg, "sekret_can_get_reward") == 0)
-		return secret_state == SECRET_WIN;
+		return QM.quest_secret->state == Quest_Secret::SECRET_WIN;
 	else
 	{
 		Warn("DTF_IF_SPECIAL: %s", msg);
@@ -6028,7 +6029,8 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							}
 						}
 					}
-					else if(L.location_index != secret_where2 && (unit.pos.x < 33.f || unit.pos.x > 256.f - 33.f || unit.pos.z < 33.f || unit.pos.z > 256.f - 33.f))
+					else if(L.location_index != QM.quest_secret->where2
+						&& (unit.pos.x < 33.f || unit.pos.x > 256.f - 33.f || unit.pos.z < 33.f || unit.pos.z > 256.f - 33.f))
 					{
 						if(!IsLeader())
 							AddGameMsg3(GMS_NOT_LEADER);
@@ -13864,9 +13866,10 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 	CreateDungeonMinimap();
 
 	// sekret
-	if(L.location_index == secret_where && !inside->HaveDownStairs() && secret_state == SECRET_DROPPED_STONE)
+	Quest_Secret* secret = QM.quest_secret;
+	if(L.location_index == secret->where && !inside->HaveDownStairs() && secret->state == Quest_Secret::SECRET_DROPPED_STONE)
 	{
-		secret_state = SECRET_GENERATED;
+		secret->state = Quest_Secret::SECRET_GENERATED;
 		if(devmode)
 			Info("Generated secret room.");
 
@@ -13894,7 +13897,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 			portal->target_loc = loc_id;
 
 			inside->portal = portal;
-			secret_where2 = loc_id;
+			secret->where2 = loc_id;
 		}
 		else
 		{
@@ -13924,7 +13927,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 					SpawnGroundItemInsideRoom(r, kartka);
 			}
 
-			secret_state = SECRET_CLOSED;
+			secret->state = Quest_Secret::SECRET_CLOSED;
 		}
 	}
 
@@ -16116,7 +16119,7 @@ void Game::AttackReaction(Unit& attacked, Unit& attacker)
 
 Game::CanLeaveLocationResult Game::CanLeaveLocation(Unit& unit)
 {
-	if(secret_state == SECRET_FIGHT)
+	if(QM.quest_secret->state == Quest_Secret::SECRET_FIGHT)
 		return CanLeaveLocationResult::InCombat;
 
 	if(city_ctx)
@@ -16840,12 +16843,6 @@ void Game::InitQuests()
 	quest_crazies->refid = QM.quest_counter++;
 	quest_crazies->Start();
 	QM.unaccepted_quests.push_back(quest_crazies);
-
-	// sekret
-	secret_state = (BaseObject::Get("tomashu_dom")->mesh ? SECRET_NONE : SECRET_OFF);
-	GetSecretNote()->desc.clear();
-	secret_where = -1;
-	secret_where2 = -1;
 
 	QM.InitQuests();
 
@@ -18468,8 +18465,9 @@ void Game::UpdateGame2(float dt)
 		}
 	}
 
-	// sekret
-	if(secret_state == SECRET_FIGHT)
+	// secret quest
+	Quest_Secret* secret = QM.quest_secret;
+	if(secret->state == Quest_Secret::SECRET_FIGHT)
 	{
 		int ile[2] = { 0 };
 
@@ -18525,13 +18523,13 @@ void Game::UpdateGame2(float dt)
 			if(ile[0])
 			{
 				// gracz wygra³
-				secret_state = SECRET_WIN;
+				secret->state = Quest_Secret::SECRET_WIN;
 				at_arena[0]->StartAutoTalk();
 			}
 			else
 			{
 				// gracz przegra³
-				secret_state = SECRET_LOST;
+				secret->state = Quest_Secret::SECRET_LOST;
 			}
 
 			at_arena.clear();
@@ -20882,15 +20880,17 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 {
 	assert(item);
 
-	if(secret_state == SECRET_NONE && L.location->type == L_MOONWELL && item->item->id == "krystal" && Vec3::Distance2d(item->pos, Vec3(128.f, 0, 128.f)) < 1.2f)
+	Quest_Secret* secret = QM.quest_secret;
+	if(secret->state == Quest_Secret::SECRET_NONE && L.location->type == L_MOONWELL && item->item->id == "krystal"
+		&& Vec3::Distance2d(item->pos, Vec3(128.f, 0, 128.f)) < 1.2f)
 	{
 		AddGameMsg(txSecretAppear, 3.f);
-		secret_state = SECRET_DROPPED_STONE;
+		secret->state = Quest_Secret::SECRET_DROPPED_STONE;
 		Location& l = *W.CreateLocation(L_DUNGEON, Vec2(0, 0), -128.f, DWARF_FORT, SG_CHALLANGE, false, 3);
 		l.st = 18;
 		l.active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
 		l.state = LS_UNKNOWN;
-		secret_where = l.index;
+		secret->where = l.index;
 		Vec2& cpos = L.location->pos;
 		Item* note = GetSecretNote();
 		note->desc = Format("\"%c %d km, %c %d km\"", cpos.y > l.pos.y ? 'S' : 'N', (int)abs((cpos.y - l.pos.y) / 3), cpos.x > l.pos.x ? 'W' : 'E', (int)abs((cpos.x - l.pos.x) / 3));
