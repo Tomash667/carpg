@@ -315,7 +315,7 @@ bool Quest_Mine::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-bool Quest_Mine::IfSpecial(DialogContext& ctx, cstring msg)
+bool Quest_Mine::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "udzialy_w_kopalni") == 0)
 		return mine_state == State::Shares;

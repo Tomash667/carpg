@@ -152,7 +152,7 @@ void Quest_Mages::Special(DialogContext& ctx, cstring msg)
 }
 
 //=================================================================================================
-bool Quest_Mages::IfSpecial(DialogContext& ctx, cstring msg)
+bool Quest_Mages::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_magowie_zaplacono") == 0)
 		return QM.quest_mages2->paid;
@@ -530,7 +530,7 @@ bool Quest_Mages2::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-bool Quest_Mages2::IfSpecial(DialogContext& ctx, cstring msg)
+bool Quest_Mages2::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_magowie_u_bossa") == 0)
 		return target_loc == W.GetCurrentLocationIndex();

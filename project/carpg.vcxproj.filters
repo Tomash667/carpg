@@ -1071,9 +1071,6 @@
     <ClInclude Include="source\game\quests\QuestConsts.h">
       <Filter>3. game\quests</Filter>
     </ClInclude>
-    <ClInclude Include="source\game\Encounter.h">
-      <Filter>3. game</Filter>
-    </ClInclude>
     <ClInclude Include="source\game\Team.h">
       <Filter>3. game</Filter>
     </ClInclude>
@@ -1419,6 +1416,12 @@
     </ClInclude>
     <ClInclude Include="source\game\Debug.h">
       <Filter>3. game</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Encounter.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\quests\QuestHandler.h">
+      <Filter>3. game\quests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

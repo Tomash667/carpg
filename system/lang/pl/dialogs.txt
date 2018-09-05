@@ -234,7 +234,7 @@ dialog innkeeper {
 	37 "Nie"
 	38 "¯a³uj..."
 	39 "Zawody odbywaj¹ siê tutaj 21.09. Jeœli chcesz, przyjdŸ wtedy."
-	40 "Zawody odbywaj¹ siê 21.09 w $chlanie_loc$."
+	40 "Zawody odbywaj¹ siê 21.09 w $contest_loc$."
 	41 "Czym siê zajmujesz?"
 	42 "Jestem w³aœcicielem tej karczmy. Sprzedajê napoje i jedzenie oraz wynajmujê pokoje dla wêdrowców."
 	43 "Plotki"

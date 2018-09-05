@@ -4663,7 +4663,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			{
 				assert(ctx.dialog_quest);
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-				bool ok = ctx.dialog_quest->IfSpecial(ctx, msg);
+				bool ok = ctx.dialog_quest->SpecialIf(ctx, msg);
 				if(ctx.negate_if)
 				{
 					ctx.negate_if = false;
@@ -4721,6 +4721,9 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 
 bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level)
 {
+	if(QM.HandleSpecial(ctx, msg))
+		return false;
+
 	if(strcmp(msg, "burmistrz_quest") == 0)
 	{
 		bool have_quest = true;
@@ -5505,19 +5508,6 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	}
 	else if(strcmp(msg, "use_arena") == 0)
 		arena_free = false;
-	else if(strcmp(msg, "chlanie_start") == 0)
-		QM.quest_contest->Start(ctx.pc);
-	else if(strcmp(msg, "chlanie_udzial") == 0)
-		QM.quest_contest->AddPlayer(ctx.pc);
-	else if(strcmp(msg, "chlanie_nagroda") == 0)
-	{
-		QM.quest_contest->winner = nullptr;
-		AddItem(*ctx.pc->unit, ItemList::GetItem("contest_reward"), 1, false);
-		if(ctx.is_local)
-			AddGameMsg3(GMS_ADDED_ITEM);
-		else
-			Net_AddedItemMsg(ctx.pc);
-	}
 	else if(strcmp(msg, "news") == 0)
 	{
 		if(ctx.update_news)
@@ -5717,6 +5707,10 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 
 bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 {
+	bool result;
+	if(QM.HandleSpecialIf(ctx, msg, result))
+		return result;
+
 	if(strcmp(msg, "arena_combat") == 0)
 		return !W.IsSameWeek(city_ctx->arena_time);
 	else if(strcmp(msg, "have_team") == 0)
@@ -5831,20 +5825,6 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 		if(q && !q->IsActive())
 			return true;
 	}
-	else if(strcmp(msg, "contest_done") == 0)
-		return QM.quest_contest->state == Quest_Contest::CONTEST_DONE;
-	else if(strcmp(msg, "contest_here") == 0)
-		return QM.quest_contest->where == L.location_index;
-	else if(strcmp(msg, "contest_today") == 0)
-		return QM.quest_contest->state == Quest_Contest::CONTEST_TODAY;
-	else if(strcmp(msg, "chlanie_trwa") == 0)
-		return QM.quest_contest->state == Quest_Contest::CONTEST_IN_PROGRESS;
-	else if(strcmp(msg, "contest_started") == 0)
-		return QM.quest_contest->state == Quest_Contest::CONTEST_STARTING;
-	else if(strcmp(msg, "contest_joined") == 0)
-		return QM.quest_contest->HaveJoined(ctx.pc->unit);
-	else if(strcmp(msg, "contest_winner") == 0)
-		return QM.quest_contest->winner == ctx.pc->unit;
 	else if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
 		return QM.quest_bandits->prog == Quest_Bandits::Progress::NeedTalkWithCaptain && L.location_index == QM.quest_bandits->start_loc;
 	else if(strcmp(msg, "q_magowie_to_miasto") == 0)
@@ -13000,6 +12980,10 @@ void Game::ClearGame()
 
 cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 {
+	cstring result;
+	if(QM.HandleFormatString(str_part, result))
+		return result;
+
 	if(str_part == "burmistrzem")
 		return LocationHelper::IsCity(L.location) ? "burmistrzem" : "so³tysem";
 	else if(str_part == "mayor")
@@ -13026,8 +13010,6 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 		assert(ctx.team_share_id != -1);
 		return Format("%d", ctx.team_share_item->value / 2);
 	}
-	else if(str_part == "chlanie_loc")
-		return W.GetLocation(QM.quest_contest->where)->name.c_str();
 	else if(str_part == "player_name")
 		return current_dialog->pc->name.c_str();
 	else if(str_part == "ironfist_city")

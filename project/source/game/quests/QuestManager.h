@@ -70,6 +70,12 @@ public:
 	bool SetForcedQuest(const string& name);
 	QUEST GetForcedQuest() const { return force; }
 	const vector<QuestInfo>& GetQuestInfos() const { return infos; }
+	void RegisterSpecialHandler(QuestHandler* handler, cstring msg) { special_handlers[msg] = handler; }
+	void RegisterSpecialIfHandler(QuestHandler* handler, cstring msg) { special_if_handlers[msg] = handler; }
+	void RegisterFormatString(QuestHandler* handler, cstring msg) { format_str_handlers[msg] = handler; }
+	bool HandleSpecial(DialogContext& ctx, cstring msg);
+	bool HandleSpecialIf(DialogContext& ctx, cstring msg, bool& result);
+	bool HandleFormatString(const string& str, cstring& result);
 
 	vector<Quest*> unaccepted_quests;
 	vector<Quest*> quests;
@@ -101,5 +107,6 @@ private:
 
 	vector<QuestInfo> infos;
 	QUEST force;
+	std::map<string, QuestHandler*> special_handlers, special_if_handlers, format_str_handlers;
 };
 extern QuestManager QM;

@@ -171,7 +171,7 @@ bool Quest_Orcs::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-bool Quest_Orcs::IfSpecial(DialogContext& ctx, cstring msg)
+bool Quest_Orcs::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_orkowie_dolaczyl") == 0)
 		return QM.quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || QM.quest_orcs2->orcs_state == Quest_Orcs2::State::CompletedJoined;
@@ -622,7 +622,7 @@ bool Quest_Orcs2::IfQuestEvent() const
 }
 
 //=================================================================================================
-bool Quest_Orcs2::IfSpecial(DialogContext& ctx, cstring msg)
+bool Quest_Orcs2::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_orkowie_woj") == 0)
 		return orc_class == OrcClass::Warrior;

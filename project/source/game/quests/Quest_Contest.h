@@ -1,6 +1,8 @@
 #pragma once
 
-class Quest_Contest
+#include "QuestHandler.h"
+
+class Quest_Contest : public QuestHandler
 {
 public:
 	enum State
@@ -13,12 +15,13 @@ public:
 		CONTEST_FINISH
 	};
 
+	void InitOnce();
 	void Init();
-	void Start(PlayerController* pc);
-	void AddPlayer(PlayerController* pc);
-	bool HaveJoined(Unit* unit);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
+	void Special(DialogContext& ctx, cstring msg) override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
+	cstring FormatString(const string& str) override;
 
 	State state;
 	int where, state2, year;

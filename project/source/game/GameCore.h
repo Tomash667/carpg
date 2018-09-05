@@ -109,6 +109,7 @@ struct Quest;
 struct Quest_Dungeon;
 struct Quest_Encounter;
 struct Quest_Event;
+struct QuestHandler;
 struct Room;
 struct Shield;
 struct SpeechBubble;

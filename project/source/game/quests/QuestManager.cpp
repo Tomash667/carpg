@@ -66,6 +66,7 @@ void QuestManager::InitOnce()
 
 	// create pseudo quests
 	quest_contest = new Quest_Contest;
+	quest_contest->InitOnce();
 	quest_secret = new Quest_Secret;
 	quest_tournament = new Quest_Tournament;
 }
@@ -772,4 +773,35 @@ bool QuestManager::SetForcedQuest(const string& name)
 	}
 
 	return false;
+}
+
+//=================================================================================================
+bool QuestManager::HandleSpecial(DialogContext& ctx, cstring msg)
+{
+	auto it = special_handlers.find(msg);
+	if(it == special_handlers.end())
+		return false;
+	it->second->Special(ctx, msg);
+	return true;
+}
+
+//=================================================================================================
+bool QuestManager::HandleSpecialIf(DialogContext& ctx, cstring msg, bool& result)
+{
+	auto it = special_if_handlers.find(msg);
+	if(it == special_if_handlers.end())
+		return false;
+	result = it->second->SpecialIf(ctx, msg);
+	return true;
+}
+
+//=================================================================================================
+bool QuestManager::HandleFormatString(const string& str, cstring& result)
+{
+	auto it = format_str_handlers.find(str);
+	if(it == format_str_handlers.end())
+		return false;
+	result = it->second->FormatString(str);
+	assert(result);
+	return true;
 }

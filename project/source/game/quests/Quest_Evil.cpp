@@ -433,7 +433,7 @@ bool Quest_Evil::IfQuestEvent() const
 }
 
 //=================================================================================================
-bool Quest_Evil::IfSpecial(DialogContext& ctx, cstring msg)
+bool Quest_Evil::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_zlo_clear1") == 0)
 		return evil_state == State::ClosingPortals && closed == 1;

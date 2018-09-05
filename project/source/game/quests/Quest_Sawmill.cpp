@@ -147,7 +147,7 @@ bool Quest_Sawmill::IfNeedTalk(cstring topic) const
 }
 
 //=================================================================================================
-bool Quest_Sawmill::IfSpecial(DialogContext& ctx, cstring msg)
+bool Quest_Sawmill::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "czy_tartak") == 0)
 		return W.GetCurrentLocationIndex() == target_loc;
