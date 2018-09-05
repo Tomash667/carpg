@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LocationGenerator.h"
 #include "GameCommon.h"
 #include "TerrainTile.h"
 #include "Building.h"
@@ -92,7 +93,7 @@ struct Road2
 	}
 };
 
-class CityGenerator
+class CityGenerator : public LocationGenerator
 {
 public:
 	CityGenerator() : sorter(grid)
@@ -125,6 +126,9 @@ public:
 		r.end = end;
 		r.flags = flags;
 	}
+
+	int GetNumberOfSteps() override;
+	void Generate() override;
 
 private:
 	void CreateRoadLineLeftRight(TERRAIN_TILE t, vector<EntryPoint>& entry_points);

@@ -90,7 +90,6 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	Inventory::lock = nullptr;
 
 	bool first = false;
-	int steps;
 
 	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
 	{
@@ -126,51 +125,10 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		Net_FilterServerChanges();
 	}
 
-	// calculate number of loading steps for drawing progress bar
-	steps = 3; // common txEnteringLocation, txGeneratingMinimap, txLoadingComplete
-	if(l.state != LS_ENTERED && l.state != LS_CLEARED)
-		++steps; // txGeneratingMap
-	switch(l.type)
-	{
-	case L_CITY:
-		if(first)
-			steps += 4; // txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems
-		else if(!reenter)
-		{
-			steps += 2; // txGeneratingUnits, txGeneratingPhysics
-			if(l.last_visit != W.GetWorldtime())
-				++steps; // txGeneratingItems
-		}
-		if(!reenter)
-			++steps; // txRecreatingObjects
-		break;
-	case L_DUNGEON:
-	case L_CRYPT:
-	case L_CAVE:
-		if(first)
-			steps += 2; // txGeneratingObjects, txGeneratingUnits
-		else if(!reenter)
-			++steps; // txRegeneratingLevel
-		break;
-	case L_FOREST:
-	case L_CAMP:
-	case L_MOONWELL:
-		if(first)
-			steps += 3; // txGeneratingObjects, txGeneratingUnits, txGeneratingItems
-		else if(!reenter)
-			steps += 2; // txGeneratingUnits, txGeneratingPhysics
-		if(!reenter)
-			++steps; // txRecreatingObjects
-		break;
-	case L_ENCOUNTER:
-		steps += 4; // txGeneratingObjects, txRecreatingObjects, txGeneratingUnits, txGeneratingItems
-		break;
-	default:
-		assert(0);
-		steps = 10;
-		break;
-	}
+	LocationGenerator* loc_gen = loc_gen_factory->Get(&l);
 
+	// calculate number of loading steps for drawing progress bar
+	int steps = loc_gen->GetNumberOfSteps();
 	LoadingStart(steps);
 	LoadingStep(txEnteringLocation);
 
@@ -208,6 +166,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		l.state = LS_ENTERED;
 
 		LoadingStep(txGeneratingMap);
+		loc_gen->Generate();
 
 		switch(l.type)
 		{

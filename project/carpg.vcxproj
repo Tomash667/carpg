@@ -211,6 +211,11 @@
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameCore.h" />
     <ClInclude Include="source\game\GameStats.h" />
+    <ClInclude Include="source\game\generator\DungeonGenerator.h" />
+    <ClInclude Include="source\game\generator\EncounterGenerator.h" />
+    <ClInclude Include="source\game\generator\ForestGenerator.h" />
+    <ClInclude Include="source\game\generator\LocationGenerator.h" />
+    <ClInclude Include="source\game\generator\LocationGeneratorFactory.h" />
     <ClInclude Include="source\game\helpers\LoadingHandler.h" />
     <ClInclude Include="source\game\Level.h" />
     <ClInclude Include="source\game\net\BitStreamFunc.h" />
@@ -433,6 +438,11 @@
     <ClCompile Include="source\game\entity\Portal.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
+    <ClCompile Include="source\game\generator\DungeonGenerator.cpp" />
+    <ClCompile Include="source\game\generator\EncounterGenerator.cpp" />
+    <ClCompile Include="source\game\generator\ForestGenerator.cpp" />
+    <ClCompile Include="source\game\generator\LocationGenerator.cpp" />
+    <ClCompile Include="source\game\generator\LocationGeneratorFactory.cpp" />
     <ClCompile Include="source\game\helpers\LoadingHandler.cpp" />
     <ClCompile Include="source\game\Level.cpp" />
     <ClCompile Include="source\game\net\BitStreamFunc.cpp" />

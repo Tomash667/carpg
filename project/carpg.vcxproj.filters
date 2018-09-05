@@ -712,6 +712,21 @@
     <ClCompile Include="source\game\quests\Quest_Tournament.cpp">
       <Filter>3. game\quests</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\generator\LocationGeneratorFactory.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\LocationGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\EncounterGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\ForestGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\DungeonGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1422,6 +1437,21 @@
     </ClInclude>
     <ClInclude Include="source\game\quests\QuestHandler.h">
       <Filter>3. game\quests</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\LocationGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\LocationGeneratorFactory.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\EncounterGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\ForestGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\DungeonGenerator.h">
+      <Filter>3. game\generator</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

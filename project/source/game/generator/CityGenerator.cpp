@@ -2025,3 +2025,26 @@ bool CityGenerator::IsPointNearRoad(int x, int y)
 
 	return false;
 }
+
+//=================================================================================================
+int CityGenerator::GetNumberOfSteps()
+{
+	int steps = LocationGenerator::GetNumberOfSteps();
+	if(first)
+		steps += 4; // txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems
+	else if(!reenter)
+	{
+		steps += 2; // txGeneratingUnits, txGeneratingPhysics
+		if(loc->last_visit != W.GetWorldtime())
+			++steps; // txGeneratingItems
+	}
+	if(!reenter)
+		++steps; // txRecreatingObjects
+	return steps;
+}
+
+//=================================================================================================
+void CityGenerator::Generate()
+{
+
+}

@@ -1836,4 +1836,9 @@ public:
 	void SaveCfg();
 	cstring GetShortcutText(GAME_KEYS key, cstring action = nullptr);
 	void PauseGame();
+
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+	// NEW
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+	LocationGeneratorFactory* loc_gen_factory;
 };

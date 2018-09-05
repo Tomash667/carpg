@@ -125,6 +125,15 @@ struct VarsContainer;
 struct Weapon;
 
 //-----------------------------------------------------------------------------
+// Location generators
+class CityGenerator;
+class DungeonGenerator;
+class EncounterGenerator;
+class ForestGenerator;
+class LocationGenerator;
+class LocationGeneratorFactory;
+
+//-----------------------------------------------------------------------------
 enum EncounterMode;
 enum TRAP_TYPE;
 enum SpecialEncounter;
