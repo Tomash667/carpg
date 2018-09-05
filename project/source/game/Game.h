@@ -148,12 +148,6 @@ enum GMS
 	GMS_LEFT_EVENT
 };
 
-struct UnitWarpData
-{
-	Unit* unit;
-	int where;
-};
-
 enum class FALLBACK
 {
 	NO = -1,
@@ -635,11 +629,9 @@ public:
 	vector<AttachedSound> attached_sounds;
 	SaveSlot single_saves[MAX_SAVE_SLOTS], multi_saves[MAX_SAVE_SLOTS];
 	vector<UnitView> unit_views;
-	vector<UnitWarpData> unit_warp_data;
 	LevelContext local_ctx;
 	ObjectPool<TmpLevelContext> tmp_ctx_pool;
 	City* city_ctx; // jeøeli jest w mieúcie/wiosce to ten wskaünik jest ok, takto nullptr
-	vector<Unit*> to_remove;
 	CityGenerator* gen;
 
 	MeshInstance* GetBowInstance(Mesh* mesh);
@@ -1169,8 +1161,6 @@ public:
 	void LeaveLevel(LevelContext& ctx, bool clear);
 	void CreateBlood(LevelContext& ctx, const Unit& unit, bool fully_created = false);
 	void WarpUnit(Unit& unit, const Vec3& pos);
-	void ProcessUnitWarps();
-	void ProcessRemoveUnits();
 	void ApplyContext(ILevel* level, LevelContext& ctx);
 	void UpdateContext(LevelContext& ctx, float dt);
 	LevelContext& GetContext(Unit& unit);

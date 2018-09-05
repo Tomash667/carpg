@@ -2201,13 +2201,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 			RemoveQuestUnits(true);
 		}
 
-		for(vector<Unit*>::iterator it = to_remove.begin(), end = to_remove.end(); it != end; ++it)
-		{
-			Unit* unit = *it;
-			RemoveElement(GetContext(*unit).units, unit);
-			delete unit;
-		}
-		to_remove.clear();
+		L.ProcessRemoveUnits(true);
 
 		if(L.location->type == L_ENCOUNTER)
 		{
@@ -5385,7 +5379,7 @@ void Game::AbadonLocation(Location* loc)
 			if(u->IsAlive() && IsEnemy(*pc->unit, *u))
 			{
 				u->to_remove = true;
-				to_remove.push_back(u);
+				L.to_remove.push_back(u);
 			}
 		}
 

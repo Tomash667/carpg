@@ -12,6 +12,7 @@
 #include "GameGui.h"
 #include "Team.h"
 #include "World.h"
+#include "Level.h"
 
 //=================================================================================================
 void Quest_Goblins::Start()
@@ -87,7 +88,7 @@ void DodajStraznikow()
 		if((*it)->data != ud && room->IsInside((*it)->pos))
 		{
 			(*it)->to_remove = true;
-			game.to_remove.push_back(*it);
+			L.to_remove.push_back(*it);
 		}
 	}
 

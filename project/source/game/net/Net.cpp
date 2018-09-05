@@ -9192,18 +9192,12 @@ void Game::UpdateWarpData(float dt)
 	{
 		if((it->timer -= dt * 2) <= 0.f)
 		{
-			UnitWarpData& uwd = Add1(unit_warp_data);
-			uwd.unit = it->u;
-			uwd.where = it->where;
+			L.WarpUnit(it->u, it->where);
 
 			for(Unit* unit : Team.members)
 			{
 				if(unit->IsHero() && unit->hero->following == it->u)
-				{
-					UnitWarpData& uwd = Add1(unit_warp_data);
-					uwd.unit = unit;
-					uwd.where = it->where;
-				}
+					L.WarpUnit(unit, it->where);
 			}
 
 			NetChangePlayer& c = Add1(it->u->player->player_info->changes);
@@ -10015,7 +10009,7 @@ void Game::RemovePlayer(PlayerInfo& info)
 	}
 	else
 	{
-		to_remove.push_back(unit);
+		L.to_remove.push_back(unit);
 		unit->to_remove = true;
 	}
 	info.u = nullptr;

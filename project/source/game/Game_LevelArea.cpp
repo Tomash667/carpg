@@ -6,6 +6,7 @@
 #include "MultiInsideLocation.h"
 #include "SingleInsideLocation.h"
 #include "World.h"
+#include "Level.h"
 
 ObjectPool<LevelAreaContext> LevelAreaContextPool;
 
@@ -307,7 +308,7 @@ bool Game::RemoveUnit(LevelAreaContext* lac, Unit* unit)
 		if(entry->active)
 		{
 			unit->to_remove = true;
-			to_remove.push_back(unit);
+			L.to_remove.push_back(unit);
 		}
 		else
 			RemoveElementIndex(entry->area->units, unit_index);

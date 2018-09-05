@@ -1479,11 +1479,11 @@ void Game::UpdateGame(float dt)
 	{
 		if(Net::IsOnline())
 			UpdateWarpData(dt);
-		ProcessUnitWarps();
+		L.ProcessUnitWarps();
 	}
 
 	// usuñ jednostki
-	ProcessRemoveUnits();
+	L.ProcessRemoveUnits(false);
 
 	if(Net::IsOnline())
 	{
@@ -1583,13 +1583,8 @@ void Game::UpdateFallback(float dt)
 					c.id = fallback_1;
 				}
 				break;
-			case FALLBACK::ENTER:
-				// wejœcie/wyjœcie z budynku
-				{
-					UnitWarpData& uwd = Add1(unit_warp_data);
-					uwd.unit = pc->unit;
-					uwd.where = fallback_1;
-				}
+			case FALLBACK::ENTER: // enter/exit building
+				L.WarpUnit(pc->unit, fallback_1);
 				break;
 			case FALLBACK::EXIT:
 				ExitToMap();
@@ -12741,7 +12736,6 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	team_share_id = -1;
 	draw_flags = 0xFFFFFFFF;
 	unit_views.clear();
-	to_remove.clear();
 	game_gui->journal->Reset();
 	arena_viewers.clear();
 	debug_info = false;
@@ -12757,6 +12751,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 	lights_dt = 1.f;
 	pc_data.Reset();
 	SM.Reset();
+	L.Reset();
 
 #ifdef DRAW_LOCAL_PATH
 	marked = nullptr;
@@ -14133,129 +14128,6 @@ void Game::WarpUnit(Unit& unit, const Vec3& pos)
 	}
 }
 
-void Game::ProcessUnitWarps()
-{
-	bool warped_to_arena = false;
-
-	for(auto& warp : unit_warp_data)
-	{
-		if(warp.where == -1)
-		{
-			if(city_ctx && warp.unit->in_building != -1)
-			{
-				// powróæ na g³ówn¹ mapê
-				InsideBuilding& building = *city_ctx->inside_buildings[warp.unit->in_building];
-				RemoveElement(building.units, warp.unit);
-				warp.unit->in_building = -1;
-				warp.unit->rot = building.outside_rot;
-				WarpUnit(*warp.unit, building.outside_spawn);
-				local_ctx.units->push_back(warp.unit);
-			}
-			else
-			{
-				// jednostka opuœci³a podziemia
-				if(warp.unit->event_handler)
-					warp.unit->event_handler->HandleUnitEvent(UnitEventHandler::LEAVE, warp.unit);
-				RemoveUnit(warp.unit);
-			}
-		}
-		else if(warp.where == -2)
-		{
-			// na arene
-			InsideBuilding& building = *GetArena();
-			RemoveElement(GetContext(*warp.unit).units, warp.unit);
-			warp.unit->in_building = building.ctx.building_id;
-			Vec3 pos;
-			if(!WarpToArea(building.ctx, (warp.unit->in_arena == 0 ? building.arena1 : building.arena2), warp.unit->GetUnitRadius(), pos, 20))
-			{
-				// nie uda³o siê, wrzuæ go z areny
-				warp.unit->in_building = -1;
-				warp.unit->rot = building.outside_rot;
-				WarpUnit(*warp.unit, building.outside_spawn);
-				local_ctx.units->push_back(warp.unit);
-				RemoveElement(at_arena, warp.unit);
-			}
-			else
-			{
-				warp.unit->rot = (warp.unit->in_arena == 0 ? PI : 0);
-				WarpUnit(*warp.unit, pos);
-				building.units.push_back(warp.unit);
-				warped_to_arena = true;
-			}
-		}
-		else
-		{
-			// wejdŸ do budynku
-			InsideBuilding& building = *city_ctx->inside_buildings[warp.where];
-			if(warp.unit->in_building == -1)
-				RemoveElement(local_ctx.units, warp.unit);
-			else
-				RemoveElement(city_ctx->inside_buildings[warp.unit->in_building]->units, warp.unit);
-			warp.unit->in_building = warp.where;
-			warp.unit->rot = PI;
-			WarpUnit(*warp.unit, building.inside_spawn);
-			building.units.push_back(warp.unit);
-		}
-
-		if(warp.unit == pc->unit)
-		{
-			cam.Reset();
-			pc_data.rot_buf = 0.f;
-
-			if(fallback_type == FALLBACK::ARENA)
-			{
-				pc->unit->frozen = FROZEN::ROTATE;
-				fallback_type = FALLBACK::ARENA2;
-			}
-			else if(fallback_type == FALLBACK::ARENA_EXIT)
-			{
-				pc->unit->frozen = FROZEN::NO;
-				fallback_type = FALLBACK::NONE;
-			}
-		}
-	}
-
-	unit_warp_data.clear();
-
-	if(warped_to_arena)
-	{
-		Vec3 pt1(0, 0, 0), pt2(0, 0, 0);
-		int count1 = 0, count2 = 0;
-
-		for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-		{
-			if((*it)->in_arena == 0)
-			{
-				pt1 += (*it)->pos;
-				++count1;
-			}
-			else
-			{
-				pt2 += (*it)->pos;
-				++count2;
-			}
-		}
-
-		if(count1 > 0)
-			pt1 /= (float)count1;
-		else
-		{
-			InsideBuilding& building = *GetArena();
-			pt1 = ((building.arena1.Midpoint() + building.arena2.Midpoint()) / 2).XZ();
-		}
-		if(count2 > 0)
-			pt2 /= (float)count2;
-		else
-		{
-			InsideBuilding& building = *GetArena();
-			pt2 = ((building.arena1.Midpoint() + building.arena2.Midpoint()) / 2).XZ();
-		}
-
-		for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
-			(*it)->rot = Vec3::LookAtAngle((*it)->pos, (*it)->in_arena == 0 ? pt2 : pt1);
-	}
-}
-
 void Game::ApplyContext(ILevel* level, LevelContext& ctx)
 {
 	assert(level);
@@ -15130,7 +15002,7 @@ void Game::RemoveUnit(Unit* unit, bool notify)
 	if(unit->action == A_DESPAWN)
 		SpawnUnitEffect(*unit);
 	unit->to_remove = true;
-	to_remove.push_back(unit);
+	L.to_remove.push_back(unit);
 	if(notify && Net::IsServer())
 		Net_RemoveUnit(unit);
 }
@@ -18303,21 +18175,13 @@ void Game::UpdateArena(float dt)
 				for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
 				{
 					if((*it)->in_arena == 0)
-					{
-						UnitWarpData& uwd = Add1(unit_warp_data);
-						uwd.unit = *it;
-						uwd.where = -2;
-					}
+						L.WarpUnit(*it, WARP_ARENA);
 				}
 			}
 			else
 			{
 				for(auto unit : at_arena)
-				{
-					UnitWarpData& uwd = Add1(unit_warp_data);
-					uwd.unit = unit;
-					uwd.where = -2;
-				}
+					L.WarpUnit(unit, WARP_ARENA);
 
 				if(!at_arena.empty())
 				{
@@ -18521,9 +18385,7 @@ void Game::UpdateArena(float dt)
 						}
 					}
 
-					UnitWarpData& warp_data = Add1(unit_warp_data);
-					warp_data.unit = unit;
-					warp_data.where = -1;
+					L.WarpUnit(unit, WARP_OUTSIDE);
 
 					if(Net::IsOnline())
 					{
@@ -18557,9 +18419,7 @@ void Game::UpdateArena(float dt)
 						}
 					}
 
-					UnitWarpData& warp_data = Add1(unit_warp_data);
-					warp_data.unit = unit;
-					warp_data.where = -1;
+					L.WarpUnit(unit, WARP_OUTSIDE);
 
 					if(Net::IsOnline())
 					{
@@ -19711,13 +19571,6 @@ void Game::WarpNearLocation(LevelContext& ctx, Unit& unit, const Vec3& pos, floa
 
 	if(unit.cobj)
 		UpdateUnitPhysics(unit, unit.pos);
-}
-
-void Game::ProcessRemoveUnits()
-{
-	for(vector<Unit*>::iterator it = to_remove.begin(), end = to_remove.end(); it != end; ++it)
-		DeleteUnit(*it);
-	to_remove.clear();
 }
 
 /* mode: 0 - normal training

@@ -1461,9 +1461,7 @@ void Game::UpdateAi(float dt)
 										if(ai.idle_data.area.id == -2)
 											ai.idle_data.area.id = -1;
 										ai.idle_action = AIController::Idle_None;
-										UnitWarpData& warp = Add1(unit_warp_data);
-										warp.unit = &u;
-										warp.where = ai.idle_data.area.id;
+										L.WarpUnit(&u, ai.idle_data.area.id);
 										if(ai.idle_data.area.id == -1 || (u.IsFollower() && u.hero->mode == HeroData::Follow))
 										{
 											ai.loc_timer = -1.f;

@@ -516,7 +516,7 @@ void Game::OnTick(float dt)
 				{
 					if (Net::IsOnline())
 						UpdateWarpData(dt);
-					ProcessUnitWarps();
+					L.ProcessUnitWarps();
 				}
 				SetupCamera(dt);
 				if(Net::IsOnline())
@@ -533,7 +533,7 @@ void Game::OnTick(float dt)
 					{
 						if (Net::IsOnline())
 							UpdateWarpData(dt);
-						ProcessUnitWarps();
+						L.ProcessUnitWarps();
 					}
 					SetupCamera(dt);
 				}

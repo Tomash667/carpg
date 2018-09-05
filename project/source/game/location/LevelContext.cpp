@@ -3,6 +3,7 @@
 #include "LevelContext.h"
 #include "Game.h"
 #include "Chest.h"
+#include "Level.h"
 
 //=================================================================================================
 void TmpLevelContext::Clear()
@@ -24,7 +25,7 @@ void LevelContext::RemoveDeadUnits()
 		if((*it)->live_state == Unit::DEAD && (*it)->IsAI())
 		{
 			(*it)->to_remove = true;
-			Game::Get().to_remove.push_back(*it);
+			L.to_remove.push_back(*it);
 			if(it + 1 == end)
 			{
 				units->pop_back();

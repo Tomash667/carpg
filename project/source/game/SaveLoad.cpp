@@ -364,8 +364,8 @@ void Game::SaveGame(GameWriter& f)
 	if(Net::IsOnline())
 		Net_PreSave();
 	UpdateDungeonMinimap(false);
-	ProcessUnitWarps();
-	ProcessRemoveUnits();
+	L.ProcessUnitWarps();
+	L.ProcessRemoveUnits(false);
 	if(game_state == GS_WORLDMAP && L.is_open)
 		LeaveLocation(false, false);
 	BuildRefidTables();
