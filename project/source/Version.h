@@ -6,15 +6,6 @@
 #define VERSION_PATCH 1
 
 //-----------------------------------------------------------------------------
-#ifdef _DEBUG
-#	define DEBUG_VALUE 0
-#	define DEBUG_BOOL true
-#else
-#	define DEBUG_VALUE 1
-#	define DEBUG_BOOL false
-#endif
-
-//-----------------------------------------------------------------------------
 #define GET_MAJOR(x) (((x)&(0xFF<<16))>>16)
 #define GET_MINOR(x) (((x)&(0xFF<<8))>>8)
 #define GET_PATCH(x) ((x)&0xFF)

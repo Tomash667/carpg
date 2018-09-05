@@ -3201,6 +3201,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		break;
 	}
 
+	EncounterData encounter = W.GetCurrentEncounter();
 	UnitData* essential = nullptr;
 	cstring group_name = nullptr, group_name2 = nullptr;
 	bool dont_attack = false, od_tylu = false, kamien = false;
@@ -3209,9 +3210,9 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 	quest = nullptr;
 	far_encounter = false;
 
-	if(enc_tryb == 0)
+	if(encounter.mode == ENCOUNTER_COMBAT)
 	{
-		switch(losowi_wrogowie)
+		switch(encounter.enemy)
 		{
 		case -1:
 			if(Rand() % 3 != 0)
@@ -3234,24 +3235,24 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 		count = Random(3, 5);
 		level = Random(6, 12);
 	}
-	else if(enc_tryb == 1)
+	else if(encounter.mode == ENCOUNTER_SPECIAL)
 	{
-		switch(spotkanie)
+		switch(encounter.special)
 		{
-		case 0: // mag
+		case SE_CRAZY_MAGE:
 			essential = UnitData::Get("crazy_mage");
 			group_name = nullptr;
 			count = 1;
 			level = Random(10, 16);
 			dialog = FindDialog("crazy_mage_encounter");
 			break;
-		case 1: // szaleñcy
+		case SE_CRAZY_HEROES:
 			group_name = "crazies";
 			count = Random(2, 4);
 			level = Random(2, 15);
 			dialog = FindDialog("crazies_encounter");
 			break;
-		case 2: // kupiec
+		case SE_MERCHANT:
 			{
 				essential = UnitData::Get("merchant");
 				group_name = "merchant_guards";
@@ -3260,12 +3261,12 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 				GenerateMerchantItems(chest_merchant, 1000);
 			}
 			break;
-		case 3: // bohaterowie
+		case SE_HEROES:
 			group_name = "heroes";
 			count = Random(2, 4);
 			level = Random(2, 15);
 			break;
-		case 4: // bandyci i wóz
+		case SE_BANDITS_VS_TRAVELERS:
 			{
 				far_encounter = true;
 				group_name = "bandits";
@@ -3286,7 +3287,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 				SM.GetVar("guards_enc_reward") = false;
 			}
 			break;
-		case 5: // bohaterowie walcz¹
+		case SE_HEROES_VS_ENEMIES:
 			far_encounter = true;
 			group_name = "heroes";
 			count = Random(2, 4);
@@ -3315,7 +3316,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 				break;
 			}
 			break;
-		case 6:
+		case SE_GOLEM:
 			group_name = nullptr;
 			essential = UnitData::Get("q_magowie_golem");
 			level = 8;
@@ -3323,7 +3324,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			dialog = FindDialog("q_mages");
 			count = 1;
 			break;
-		case 7:
+		case SE_CRAZY:
 			group_name = nullptr;
 			essential = UnitData::Get("q_szaleni_szaleniec");
 			level = 13;
@@ -3333,7 +3334,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			QM.quest_crazies->check_stone = true;
 			kamien = true;
 			break;
-		case 8:
+		case SE_UNK:
 			group_name = "unk";
 			level = 13;
 			od_tylu = true;
@@ -3346,7 +3347,7 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 			else
 				count = Random(1, 3);
 			break;
-		case 9:
+		case SE_CRAZY_COOK:
 			group_name = nullptr;
 			essential = UnitData::Get("crazy_cook");
 			level = -2;
@@ -3357,7 +3358,8 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 	}
 	else
 	{
-		switch(game_enc->group)
+		Encounter* enc = encounter.encounter;
+		switch(enc->group)
 		{
 		case -1:
 			if(Rand() % 3 != 0)
@@ -3377,10 +3379,10 @@ void Game::SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest
 
 		count = Random(3, 5);
 		level = Random(6, 12);
-		dialog = game_enc->dialog;
-		dont_attack = game_enc->dont_attack;
-		quest = game_enc->quest;
-		L.event_handler = game_enc->location_event_handler;
+		dialog = enc->dialog;
+		dont_attack = enc->dont_attack;
+		quest = enc->quest;
+		L.event_handler = enc->location_event_handler;
 	}
 
 	talker = nullptr;

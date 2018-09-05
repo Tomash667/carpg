@@ -43,7 +43,7 @@ public:
 	static const float TRAVEL_SPEED;
 
 	// general
-	void InitOnce();
+	void InitOnce(WorldMapGui* gui);
 	void Cleanup();
 	void OnNewGame();
 	void Reset();
@@ -124,6 +124,7 @@ public:
 	const vector<Encounter*>& GetEncounters() const { return encounters; }
 	int GetEncounterLocationIndex() const { return encounter_loc; }
 	float GetEncounterChance() const { return encounter_chance; }
+	EncounterData GetCurrentEncounter() const { return encounter; }
 
 	// news
 	void AddNews(cstring text);
@@ -138,6 +139,7 @@ public:
 	bool CheckFirstCity();
 
 private:
+	WorldMapGui* gui;
 	State state;
 	Location* current_location; // current location or nullptr
 	int current_location_index; // current location index or -1

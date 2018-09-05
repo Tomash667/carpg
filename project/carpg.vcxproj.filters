@@ -1417,6 +1417,9 @@
     <ClInclude Include="source\game\quests\Quest_Tournament.h">
       <Filter>3. game\quests</Filter>
     </ClInclude>
+    <ClInclude Include="source\game\Debug.h">
+      <Filter>3. game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc">

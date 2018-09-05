@@ -56,6 +56,7 @@
 #include "Quest_Contest.h"
 #include "Quest_Secret.h"
 #include "Quest_Tournament.h"
+#include "Debug.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -13848,9 +13849,7 @@ void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal
 		}
 	}
 
-	bool debug_do = DEBUG_BOOL;
-
-	if((first || need_reset) && (Rand() % 50 == 0 || (debug_do && Key.Down('C'))) && L.location->type != L_CAVE && inside->target != LABIRYNTH
+	if((first || need_reset) && (Rand() % 50 == 0 || DebugKey('C')) && L.location->type != L_CAVE && inside->target != LABIRYNTH
 		&& !L.location->active_quest && dungeon_level == 0)
 		SpawnHeroesInsideDungeon();
 

@@ -324,8 +324,8 @@ void Game::PostconfigureGame()
 	LockCursor();
 	CreateCollisionShapes();
 	create_character->Init();
-	QM.Init();
-	W.Init();
+	QM.InitOnce();
+	W.InitOnce(world_map);
 
 	// load gui textures that require instant loading
 	GUI.GetLayout()->LoadDefault();

@@ -202,6 +202,7 @@
     <ClInclude Include="source\ErrorHandler.h" />
     <ClInclude Include="source\game\Collision.h" />
     <ClInclude Include="source\game\ConsoleCommands.h" />
+    <ClInclude Include="source\game\Debug.h" />
     <ClInclude Include="source\game\Encounter.h" />
     <ClInclude Include="source\game\entity\BloodType.h" />
     <ClInclude Include="source\game\entity\ItemContainer.h" />

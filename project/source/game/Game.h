@@ -742,7 +742,7 @@ public:
 
 	//--------------------------------------
 	// TOURNAMENT
-	
+
 
 	void StartTournament(Unit* arena_master);
 	bool IfUnitJoinTournament(Unit& u);

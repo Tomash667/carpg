@@ -45,7 +45,7 @@ struct QuestInfo
 class QuestManager
 {
 public:
-	void Init();
+	void InitOnce();
 	void InitQuests(bool devmode);
 	Quest* CreateQuest(QUEST quest_id);
 	Quest* GetMayorQuest();

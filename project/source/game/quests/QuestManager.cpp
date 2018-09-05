@@ -36,7 +36,7 @@
 QuestManager QM;
 
 //=================================================================================================
-void QuestManager::Init()
+void QuestManager::InitOnce()
 {
 	force = Q_FORCE_DISABLED;
 

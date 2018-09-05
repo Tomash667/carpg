@@ -23,6 +23,8 @@
 #include "Quest_Crazies.h"
 #include "Quest_Mages.h"
 #include "Game.h"
+#include "Debug.h"
+#include "WorldMapGui.h"
 
 
 //-----------------------------------------------------------------------------
@@ -48,8 +50,10 @@ struct TmpLocation : public Location
 
 
 //-----------------------------------------------------------------------------
-void World::InitOnce()
+void World::InitOnce(WorldMapGui* gui)
 {
+	assert(gui); // FIXME - remove if working
+	this->gui = gui;
 	txDate = Str("dateFormat");
 	txRandomEncounter = Str("randomEncounter");
 	txEncCrazyMage = Str("encCrazyMage");
@@ -1670,7 +1674,7 @@ void World::UpdateTravel(float dt)
 
 			encounter_chance += 1;
 
-			if(Rand() % 500 < ((int)encounter_chance) - 25 || (DEBUG_BOOL && Key.Focus() && Key.Down('E')))
+			if(Rand() % 500 < ((int)encounter_chance) - 25 || DebugKey('E'))
 			{
 				encounter_chance = 0.f;
 				StartEncounter(enc, what);
@@ -1699,10 +1703,10 @@ void World::StartEncounter(int enc, int what)
 	{
 		Quest_Crazies::State c_state = QM.quest_crazies->crazies_state;
 
-		bool golem = (QM.quest_mages2->mages_state >= Quest_Mages2::State::Encounter && QM.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0)
-			|| (DEBUG_BOOL && Key.Focus() && Key.Down('G'));
-		bool crazy = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand() % 2 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
-		bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand() % 3 == 0 || (DEBUG_BOOL && Key.Focus() && Key.Down('S'))));
+		bool golem = (QM.quest_mages2->mages_state >= Quest_Mages2::State::Encounter
+			&& QM.quest_mages2->mages_state < Quest_Mages2::State::Completed && Rand() % 3 == 0) || DebugKey('G');
+		bool crazy = (c_state == Quest_Crazies::State::TalkedWithCrazy && (Rand() % 2 == 0 || DebugKey('S')));
+		bool unk = (c_state >= Quest_Crazies::State::PickedStone && c_state < Quest_Crazies::State::End && (Rand() % 3 == 0 || DebugKey('S')));
 		if(QM.quest_mages2->mages_state == Quest_Mages2::State::Encounter && Rand() % 2 == 0)
 			golem = true;
 		if(c_state == Quest_Crazies::State::PickedStone && Rand() % 2 == 0)
@@ -1718,7 +1722,7 @@ void World::StartEncounter(int enc, int what)
 		else if(Rand() % 3 == 0)
 			what = -3;
 
-		if(crazy || unk || golem || what == -3 || (DEBUG_BOOL && Key.Focus() && Key.Down(VK_SHIFT)))
+		if(crazy || unk || golem || what == -3 || DebugKey(VK_SHIFT))
 		{
 			// special encounter
 			encounter.mode = ENCOUNTER_SPECIAL;
@@ -1747,6 +1751,8 @@ void World::StartEncounter(int enc, int what)
 
 			switch(encounter.special)
 			{
+			default:
+				assert(0);
 			case SE_CRAZY_MAGE:
 				text = txEncCrazyMage;
 				break;
@@ -1788,6 +1794,7 @@ void World::StartEncounter(int enc, int what)
 			switch(what)
 			{
 			default:
+				assert(0);
 			case SG_BANDITS:
 				text = txEncBandits;
 				break;
