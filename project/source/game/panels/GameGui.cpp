@@ -484,12 +484,12 @@ void GameGui::DrawFront()
 	}
 
 	// œciemnianie
-	if(game.fallback_co != FALLBACK::NO)
+	if(game.fallback_type != FALLBACK::NO)
 	{
 		int alpha;
 		if(game.fallback_t < 0.f)
 		{
-			if(game.fallback_co == FALLBACK::NONE)
+			if(game.fallback_type == FALLBACK::NONE)
 				alpha = 255;
 			else
 				alpha = int((1.f + game.fallback_t) * 255);

@@ -68,6 +68,7 @@ void QuestManager::InitOnce()
 	quest_contest = new Quest_Contest;
 	quest_contest->InitOnce();
 	quest_secret = new Quest_Secret;
+	quest_secret->InitOnce();
 	quest_tournament = new Quest_Tournament;
 }
 

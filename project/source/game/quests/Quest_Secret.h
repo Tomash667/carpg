@@ -1,6 +1,8 @@
 #pragma once
 
-class Quest_Secret
+#include "QuestHandler.h"
+
+class Quest_Secret : public QuestHandler
 {
 public:
 	enum SecretState
@@ -18,9 +20,12 @@ public:
 		SECRET_REWARD
 	};
 
+	void InitOnce();
 	void Init();
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
+	void Special(DialogContext& ctx, cstring msg) override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 
 	SecretState state;
 	int where, where2;

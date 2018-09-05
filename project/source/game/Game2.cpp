@@ -1531,7 +1531,7 @@ void Game::UpdateGame(float dt)
 //=================================================================================================
 void Game::UpdateFallback(float dt)
 {
-	if(fallback_co == FALLBACK::NO)
+	if(fallback_type == FALLBACK::NO)
 		return;
 
 	if(fallback_t <= 0.f)
@@ -1540,7 +1540,7 @@ void Game::UpdateFallback(float dt)
 
 		if(fallback_t > 0.f)
 		{
-			switch(fallback_co)
+			switch(fallback_type)
 			{
 			case FALLBACK::TRAIN:
 				if(Net::IsLocal())
@@ -1557,7 +1557,7 @@ void Game::UpdateFallback(float dt)
 				}
 				else
 				{
-					fallback_co = FALLBACK::CLIENT;
+					fallback_type = FALLBACK::CLIENT;
 					fallback_t = 0.f;
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::TRAIN;
@@ -1576,7 +1576,7 @@ void Game::UpdateFallback(float dt)
 				}
 				else
 				{
-					fallback_co = FALLBACK::CLIENT;
+					fallback_type = FALLBACK::CLIENT;
 					fallback_t = 0.f;
 					NetChange& c = Add1(Net::changes);
 					c.type = NetChange::REST;
@@ -1634,9 +1634,9 @@ void Game::UpdateFallback(float dt)
 		{
 			if(Net::IsLocal())
 			{
-				if(fallback_co != FALLBACK::ARENA2)
+				if(fallback_type != FALLBACK::ARENA2)
 				{
-					if(fallback_co == FALLBACK::CHANGE_LEVEL || fallback_co == FALLBACK::USE_PORTAL || fallback_co == FALLBACK::EXIT)
+					if(fallback_type == FALLBACK::CHANGE_LEVEL || fallback_type == FALLBACK::USE_PORTAL || fallback_type == FALLBACK::EXIT)
 					{
 						for(Unit* unit : Team.members)
 							unit->frozen = FROZEN::NO;
@@ -1644,12 +1644,12 @@ void Game::UpdateFallback(float dt)
 					pc->unit->frozen = FROZEN::NO;
 				}
 			}
-			else if(fallback_co == FALLBACK::CLIENT2)
+			else if(fallback_type == FALLBACK::CLIENT2)
 			{
 				pc->unit->frozen = FROZEN::NO;
 				Net::PushChange(NetChange::END_FALLBACK);
 			}
-			fallback_co = FALLBACK::NO;
+			fallback_type = FALLBACK::NO;
 		}
 	}
 }
@@ -4570,7 +4570,7 @@ void Game::UpdateGameDialog(DialogContext& ctx, float dt)
 			if(if_level == ctx.dialog_level)
 			{
 				cstring msg = ctx.dialog->strs[(int)de.msg].c_str();
-				bool ok = ExecuteGameDialogIfSpecial(ctx, msg);
+				bool ok = ExecuteGameDialogSpecialIf(ctx, msg);
 				if(ctx.negate_if)
 				{
 					ctx.negate_if = false;
@@ -4912,7 +4912,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		ctx.pc->unit->frozen = FROZEN::YES;
 		if(ctx.is_local)
 		{
-			fallback_co = FALLBACK::REST;
+			fallback_type = FALLBACK::REST;
 			fallback_t = -1.f;
 			fallback_1 = days;
 		}
@@ -5207,7 +5207,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		ctx.pc->unit->frozen = FROZEN::YES;
 		if(ctx.is_local)
 		{
-			fallback_co = FALLBACK::TRAIN;
+			fallback_type = FALLBACK::TRAIN;
 			fallback_t = -1.f;
 			fallback_1 = (is_skill ? 1 : 0);
 			fallback_2 = what;
@@ -5598,40 +5598,6 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			pvp_response.timer = 0.f;
 		}
 	}
-	else if(strcmp(msg, "ironfist_start") == 0)
-	{
-		StartTournament(ctx.talker);
-		QM.quest_tournament->units.push_back(ctx.pc->unit);
-		ctx.pc->unit->ModGold(-100);
-		ctx.pc->leaving_event = false;
-	}
-	else if(strcmp(msg, "ironfist_join") == 0)
-	{
-		QM.quest_tournament->units.push_back(ctx.pc->unit);
-		ctx.pc->unit->ModGold(-100);
-		ctx.pc->leaving_event = false;
-	}
-	else if(strcmp(msg, "ironfist_train") == 0)
-	{
-		QM.quest_tournament->winner = nullptr;
-		ctx.pc->unit->frozen = FROZEN::YES;
-		if(ctx.is_local)
-		{
-			// lokalny fallback
-			fallback_co = FALLBACK::TRAIN;
-			fallback_t = -1.f;
-			fallback_1 = 2;
-			fallback_2 = 0;
-		}
-		else
-		{
-			// wyœlij info o trenowaniu
-			NetChangePlayer& c = Add1(ctx.pc->player_info->changes);
-			c.type = NetChangePlayer::TRAIN;
-			c.id = 2;
-			c.ile = 0;
-		}
-	}
 	else if(strcmp(msg, "szaleni_powiedzial") == 0)
 	{
 		ctx.talker->ai->morale = -100.f;
@@ -5656,46 +5622,6 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		else
 			AddGameMsg3(GMS_ADDED_ITEM);
 	}
-	else if(strcmp(msg, "sekret_atak") == 0)
-	{
-		QM.quest_secret->state = Quest_Secret::SECRET_FIGHT;
-		at_arena.clear();
-
-		ctx.talker->in_arena = 1;
-		at_arena.push_back(ctx.talker);
-		if(Net::IsOnline())
-		{
-			NetChange& c = Add1(Net::changes);
-			c.type = NetChange::CHANGE_ARENA_STATE;
-			c.unit = ctx.talker;
-		}
-
-		for(Unit* unit : Team.members)
-		{
-			unit->in_arena = 0;
-			at_arena.push_back(unit);
-			if(Net::IsOnline())
-			{
-				NetChange& c = Add1(Net::changes);
-				c.type = NetChange::CHANGE_ARENA_STATE;
-				c.unit = unit;
-			}
-		}
-	}
-	else if(strcmp(msg, "sekret_daj") == 0)
-	{
-		QM.quest_secret->state = Quest_Secret::SECRET_REWARD;
-		const Item* item = Item::Get("sword_forbidden");
-		PreloadItem(item);
-		ctx.pc->unit->AddItem(item, 1, true);
-		if(!ctx.is_local)
-		{
-			Net_AddItem(ctx.pc, item, true);
-			Net_AddedItemMsg(ctx.pc);
-		}
-		else
-			AddGameMsg3(GMS_ADDED_ITEM);
-	}
 	else
 	{
 		Warn("DTF_SPECIAL: %s", msg);
@@ -5705,7 +5631,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 	return false;
 }
 
-bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
+bool Game::ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg)
 {
 	bool result;
 	if(QM.HandleSpecialIf(ctx, msg, result))
@@ -5900,58 +5826,10 @@ bool Game::ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg)
 		return pvp_response.ok;
 	else if(strcmp(msg, "in_city") == 0)
 		return city_ctx != nullptr;
-	else if(strcmp(msg, "ironfist_can_start") == 0)
-	{
-		Quest_Tournament* tournament = QM.quest_tournament;
-		return tournament->state == Quest_Tournament::TOURNAMENT_NOT_DONE
-			&& tournament->city == L.location_index
-			&& W.GetDay() == 6
-			&& W.GetMonth() == 2
-			&& tournament->year != W.GetYear();
-	}
-	else if(strcmp(msg, "ironfist_done") == 0)
-		return QM.quest_tournament->year == W.GetYear();
-	else if(strcmp(msg, "ironfist_here") == 0)
-		return QM.quest_tournament->city == L.location_index;
-	else if(strcmp(msg, "ironfist_preparing") == 0)
-		return QM.quest_tournament->state == Quest_Tournament::TOURNAMENT_STARTING;
-	else if(strcmp(msg, "ironfist_started") == 0)
-	{
-		Quest_Tournament* tournament = QM.quest_tournament;
-		if(tournament->state == Quest_Tournament::TOURNAMENT_IN_PROGRESS)
-		{
-			// zwyciêzca mo¿e pogadaæ i przerwaæ gadanie
-			if(tournament->winner == dialog_context.pc->unit && tournament->state2 == 2 && tournament->state3 == 1)
-			{
-				tournament->master->look_target = nullptr;
-				tournament->state = Quest_Tournament::TOURNAMENT_NOT_DONE;
-			}
-			else
-				return true;
-		}
-	}
-	else if(strcmp(msg, "ironfist_joined") == 0)
-		return QM.quest_tournament->HaveJoined(ctx.pc->unit);
-	else if(strcmp(msg, "ironfist_winner") == 0)
-		return QM.quest_tournament->winner == ctx.pc->unit;
 	else if(strcmp(msg, "szaleni_nie_zapytano") == 0)
 		return QM.quest_crazies->crazies_state == Quest_Crazies::State::None;
 	else if(strcmp(msg, "q_szaleni_trzeba_pogadac") == 0)
 		return QM.quest_crazies->crazies_state == Quest_Crazies::State::FirstAttack;
-	else if(strcmp(msg, "secret_first_dialog") == 0)
-	{
-		if(QM.quest_secret->state == Quest_Secret::SECRET_GENERATED2)
-		{
-			QM.quest_secret->state = Quest_Secret::SECRET_TALKED;
-			return true;
-		}
-	}
-	else if(strcmp(msg, "sekret_can_fight") == 0)
-		return QM.quest_secret->state == Quest_Secret::SECRET_TALKED;
-	else if(strcmp(msg, "sekret_win") == 0)
-		return Any(QM.quest_secret->state, Quest_Secret::SECRET_WIN, Quest_Secret::SECRET_REWARD);
-	else if(strcmp(msg, "sekret_can_get_reward") == 0)
-		return QM.quest_secret->state == Quest_Secret::SECRET_WIN;
 	else
 	{
 		Warn("DTF_IF_SPECIAL: %s", msg);
@@ -6029,7 +5907,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 
 					if(allow_exit)
 					{
-						fallback_co = FALLBACK::EXIT;
+						fallback_type = FALLBACK::EXIT;
 						fallback_t = -1.f;
 						for(Unit* unit : Team.members)
 							unit->frozen = FROZEN::YES;
@@ -6054,7 +5932,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						if(Net::IsLocal())
 						{
 							// wejdŸ do budynku
-							fallback_co = FALLBACK::ENTER;
+							fallback_type = FALLBACK::ENTER;
 							fallback_t = -1.f;
 							fallback_1 = id;
 							unit.frozen = FROZEN::YES;
@@ -6062,7 +5940,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						else
 						{
 							// info do serwera
-							fallback_co = FALLBACK::WAIT_FOR_WARP;
+							fallback_type = FALLBACK::WAIT_FOR_WARP;
 							fallback_t = -1.f;
 							unit.frozen = FROZEN::YES;
 							NetChange& c = Add1(Net::changes);
@@ -6089,7 +5967,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 				if(Net::IsLocal())
 				{
 					// opuœæ budynek
-					fallback_co = FALLBACK::ENTER;
+					fallback_type = FALLBACK::ENTER;
 					fallback_t = -1.f;
 					fallback_1 = -1;
 					unit.frozen = FROZEN::YES;
@@ -6097,7 +5975,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 				else
 				{
 					// info do serwera
-					fallback_co = FALLBACK::WAIT_FOR_WARP;
+					fallback_type = FALLBACK::WAIT_FOR_WARP;
 					fallback_t = -1.f;
 					unit.frozen = FROZEN::YES;
 					Net::PushChange(NetChange::EXIT_BUILDING);
@@ -6146,7 +6024,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						auto result = CanLeaveLocation(unit);
 						if(result == CanLeaveLocationResult::Yes)
 						{
-							fallback_co = FALLBACK::CHANGE_LEVEL;
+							fallback_type = FALLBACK::CHANGE_LEVEL;
 							fallback_t = -1.f;
 							fallback_1 = -1;
 							for(Unit* unit : Team.members)
@@ -6199,7 +6077,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 						auto result = CanLeaveLocation(unit);
 						if(result == CanLeaveLocationResult::Yes)
 						{
-							fallback_co = FALLBACK::CHANGE_LEVEL;
+							fallback_type = FALLBACK::CHANGE_LEVEL;
 							fallback_t = -1.f;
 							fallback_1 = +1;
 							for(Unit* unit : Team.members)
@@ -6242,7 +6120,7 @@ void Game::MoveUnit(Unit& unit, bool warped, bool dash)
 							auto result = CanLeaveLocation(unit);
 							if(result == CanLeaveLocationResult::Yes)
 							{
-								fallback_co = FALLBACK::USE_PORTAL;
+								fallback_type = FALLBACK::USE_PORTAL;
 								fallback_t = -1.f;
 								fallback_1 = index;
 								for(Unit* unit : Team.members)
@@ -10475,7 +10353,7 @@ void Game::ChangeLevel(int where)
 			if(in_tutorial)
 			{
 				TutEvent(3);
-				fallback_co = FALLBACK::CLIENT;
+				fallback_type = FALLBACK::CLIENT;
 				fallback_t = 0.f;
 				return;
 			}
@@ -12885,7 +12763,7 @@ void Game::ClearGameVarsOnNewGameOrLoad()
 #endif
 
 	// odciemnianie na pocz¹tku
-	fallback_co = FALLBACK::NONE;
+	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
 }
 
@@ -14324,15 +14202,15 @@ void Game::ProcessUnitWarps()
 			cam.Reset();
 			pc_data.rot_buf = 0.f;
 
-			if(fallback_co == FALLBACK::ARENA)
+			if(fallback_type == FALLBACK::ARENA)
 			{
 				pc->unit->frozen = FROZEN::ROTATE;
-				fallback_co = FALLBACK::ARENA2;
+				fallback_type = FALLBACK::ARENA2;
 			}
-			else if(fallback_co == FALLBACK::ARENA_EXIT)
+			else if(fallback_type == FALLBACK::ARENA_EXIT)
 			{
 				pc->unit->frozen = FROZEN::NO;
-				fallback_co = FALLBACK::NONE;
+				fallback_type = FALLBACK::NONE;
 			}
 		}
 	}
@@ -15077,7 +14955,7 @@ void Game::StartArenaCombat(int level)
 	// dodaj gracza na arenê
 	if(current_dialog->is_local)
 	{
-		fallback_co = FALLBACK::ARENA;
+		fallback_type = FALLBACK::ARENA;
 		fallback_t = -1.f;
 	}
 	else
@@ -15118,7 +14996,7 @@ void Game::StartArenaCombat(int level)
 
 				if(unit->player == pc)
 				{
-					fallback_co = FALLBACK::ARENA;
+					fallback_type = FALLBACK::ARENA;
 					fallback_t = -1.f;
 				}
 				else
@@ -18574,7 +18452,7 @@ void Game::UpdateArena(float dt)
 				{
 					if((*it)->player == pc)
 					{
-						fallback_co = FALLBACK::ARENA_EXIT;
+						fallback_type = FALLBACK::ARENA_EXIT;
 						fallback_t = -1.f;
 					}
 					else
@@ -19641,7 +19519,7 @@ void Game::StartPvp(PlayerController* player, Unit* unit)
 	// fallback gracza
 	if(player == pc)
 	{
-		fallback_co = FALLBACK::ARENA;
+		fallback_type = FALLBACK::ARENA;
 		fallback_t = -1.f;
 	}
 	else
@@ -19655,7 +19533,7 @@ void Game::StartPvp(PlayerController* player, Unit* unit)
 	{
 		if(unit->player == pc)
 		{
-			fallback_co = FALLBACK::ARENA;
+			fallback_type = FALLBACK::ARENA;
 			fallback_t = -1.f;
 		}
 		else
@@ -21316,7 +21194,7 @@ void Game::OnEnterLevelOrLocation()
 	lights_dt = 1.f;
 	pc_data.autowalk = false;
 	fallback_t = -0.5f;
-	fallback_co = FALLBACK::NONE;
+	fallback_type = FALLBACK::NONE;
 	if(Net::IsLocal())
 	{
 		for(auto unit : Team.members)

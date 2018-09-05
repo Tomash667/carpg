@@ -698,7 +698,7 @@ public:
 
 	//---------------------------------
 	// FALLBACK
-	FALLBACK fallback_co;
+	FALLBACK fallback_type;
 	int fallback_1, fallback_2;
 	float fallback_t;
 
@@ -1004,7 +1004,7 @@ public:
 	void EndDialog(DialogContext& ctx);
 	void UpdateGameDialog(DialogContext& ctx, float dt);
 	bool ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_level);
-	bool ExecuteGameDialogIfSpecial(DialogContext& ctx, cstring msg);
+	bool ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg);
 	void GenerateStockItems();
 	void GenerateMerchantItems(vector<ItemSlot>& items, int price_limit);
 	void ApplyLocationTexturePack(TexturePack& floor, TexturePack& wall, TexturePack& ceil, LocationTexturePack& tex);
@@ -1801,7 +1801,6 @@ public:
 	void SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
 	void SpawnEncounterObjects();
 	void SpawnEncounterTeam();
-	void DoWorldProgress(int days);
 	void UpdateLocation(LevelContext& ctx, int days, int open_chance, bool reset);
 	void UpdateLocation(int days, int open_chance, bool reset);
 	void GenerateCamp(Location& loc);

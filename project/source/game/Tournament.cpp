@@ -326,7 +326,7 @@ void Game::UpdateTournament(float dt)
 								p.first->player->stat_flags |= STAT_ARENA_FIGHTS;
 							if(p.first->player == pc)
 							{
-								fallback_co = FALLBACK::ARENA;
+								fallback_type = FALLBACK::ARENA;
 								fallback_t = -1.f;
 							}
 							else
@@ -345,7 +345,7 @@ void Game::UpdateTournament(float dt)
 								p.second->player->stat_flags |= STAT_ARENA_FIGHTS;
 							if(p.second->player == pc)
 							{
-								fallback_co = FALLBACK::ARENA;
+								fallback_type = FALLBACK::ARENA;
 								fallback_t = -1.f;
 							}
 							else

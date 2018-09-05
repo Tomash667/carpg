@@ -3984,22 +3984,22 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					{
 						Net::PushChange(NetChange::LEAVE_LOCATION);
 						if(type == WHERE_OUTSIDE)
-							fallback_co = FALLBACK::EXIT;
+							fallback_type = FALLBACK::EXIT;
 						else if(type == WHERE_LEVEL_UP)
 						{
-							fallback_co = FALLBACK::CHANGE_LEVEL;
+							fallback_type = FALLBACK::CHANGE_LEVEL;
 							fallback_1 = -1;
 						}
 						else if(type == WHERE_LEVEL_DOWN)
 						{
-							fallback_co = FALLBACK::CHANGE_LEVEL;
+							fallback_type = FALLBACK::CHANGE_LEVEL;
 							fallback_1 = +1;
 						}
 						else
 						{
 							if(L.location->TryGetPortal(type))
 							{
-								fallback_co = FALLBACK::USE_PORTAL;
+								fallback_type = FALLBACK::USE_PORTAL;
 								fallback_1 = type;
 							}
 							else
@@ -6391,17 +6391,17 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 				if(unit == pc->unit)
 				{
-					if(fallback_co == FALLBACK::WAIT_FOR_WARP)
-						fallback_co = FALLBACK::NONE;
-					else if(fallback_co == FALLBACK::ARENA)
+					if(fallback_type == FALLBACK::WAIT_FOR_WARP)
+						fallback_type = FALLBACK::NONE;
+					else if(fallback_type == FALLBACK::ARENA)
 					{
 						pc->unit->frozen = FROZEN::ROTATE;
-						fallback_co = FALLBACK::NONE;
+						fallback_type = FALLBACK::NONE;
 					}
-					else if(fallback_co == FALLBACK::ARENA_EXIT)
+					else if(fallback_type == FALLBACK::ARENA_EXIT)
 					{
 						pc->unit->frozen = FROZEN::NO;
-						fallback_co = FALLBACK::NONE;
+						fallback_type = FALLBACK::NONE;
 
 						if(pc->unit->hp <= 0.f)
 						{
@@ -6921,7 +6921,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 			break;
 		// leaving notification
 		case NetChange::LEAVE_LOCATION:
-			fallback_co = FALLBACK::WAIT_FOR_WARP;
+			fallback_type = FALLBACK::WAIT_FOR_WARP;
 			fallback_t = -1.f;
 			pc->unit->frozen = FROZEN::YES;
 			break;
@@ -8391,13 +8391,13 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 				break;
 			// preparing to warp
 			case NetChangePlayer::PREPARE_WARP:
-				fallback_co = FALLBACK::WAIT_FOR_WARP;
+				fallback_type = FALLBACK::WAIT_FOR_WARP;
 				fallback_t = -1.f;
 				pc->unit->frozen = (pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
 				break;
 			// entering arena
 			case NetChangePlayer::ENTER_ARENA:
-				fallback_co = FALLBACK::ARENA;
+				fallback_type = FALLBACK::ARENA;
 				fallback_t = -1.f;
 				pc->unit->frozen = FROZEN::YES;
 				break;
@@ -8407,7 +8407,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 				break;
 			// exit from arena
 			case NetChangePlayer::EXIT_ARENA:
-				fallback_co = FALLBACK::ARENA_EXIT;
+				fallback_type = FALLBACK::ARENA_EXIT;
 				fallback_t = -1.f;
 				pc->unit->frozen = FROZEN::YES;
 				break;
@@ -8465,8 +8465,8 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 				break;
 			// end of fallback
 			case NetChangePlayer::END_FALLBACK:
-				if(fallback_co == FALLBACK::CLIENT)
-					fallback_co = FALLBACK::CLIENT2;
+				if(fallback_type == FALLBACK::CLIENT)
+					fallback_type = FALLBACK::CLIENT2;
 				break;
 			// response to rest in inn
 			case NetChangePlayer::REST:
@@ -8477,7 +8477,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						StreamError("Update single client: Broken REST.");
 					else
 					{
-						fallback_co = FALLBACK::REST;
+						fallback_type = FALLBACK::REST;
 						fallback_t = -1.f;
 						fallback_1 = days;
 						pc->unit->frozen = FROZEN::YES;
@@ -8494,7 +8494,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						StreamError("Update single client: Broken TRAIN.");
 					else
 					{
-						fallback_co = FALLBACK::TRAIN;
+						fallback_type = FALLBACK::TRAIN;
 						fallback_t = -1.f;
 						fallback_1 = type;
 						fallback_2 = stat_type;

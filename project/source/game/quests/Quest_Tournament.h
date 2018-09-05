@@ -1,6 +1,8 @@
 #pragma once
 
-class Quest_Tournament
+#include "QuestHandler.h"
+
+class Quest_Tournament : public QuestHandler
 {
 public:
 	enum TOURNAMENT_STATE
@@ -10,10 +12,12 @@ public:
 		TOURNAMENT_IN_PROGRESS
 	};
 
+	void InitOnce();
 	void Init();
-	bool HaveJoined(Unit* unit);
 	void Save(GameWriter& f);
 	void Load(GameReader& f);
+	void Special(DialogContext& ctx, cstring msg) override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 
 	TOURNAMENT_STATE state;
 	int year, city_year, city, state2, state3, round, arena;

@@ -1940,10 +1940,10 @@ dialog crazies_encounter
 //==============================================================================
 dialog tomashu
 {
-	if special "sekret_can_get_reward"
+	if special "secret_can_get_reward"
 	{
 		talk 0
-		special "sekret_daj"
+		special "secret_reward"
 		talk 1
 		end
 	}
@@ -1970,7 +1970,7 @@ dialog tomashu
 	}
 	choice 10
 	{
-		if special "sekret_can_fight"
+		if special "secret_can_fight"
 		{
 			talk 11
 			talk 12
@@ -1978,7 +1978,7 @@ dialog tomashu
 			talk 14
 			choice 15
 			{
-				special "sekret_atak"
+				special "secret_attack"
 				end
 			}
 			escape choice 16
@@ -1991,7 +1991,7 @@ dialog tomashu
 		else
 		{
 			talk 18
-			if special "sekret_win"
+			if special "secret_win"
 				talk 19
 			else
 				talk 20

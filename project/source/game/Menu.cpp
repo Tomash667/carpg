@@ -400,7 +400,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 	}
 	game_gui->Setup();
 
-	fallback_co = FALLBACK::NONE;
+	fallback_type = FALLBACK::NONE;
 	fallback_t = -0.5f;
 	if(change_title_a)
 		ChangeTitle();
@@ -1146,7 +1146,7 @@ void Game::UpdateClientTransfer(float dt)
 				ClearGameVarsOnNewGame();
 				Net_OnNewGameClient();
 
-				fallback_co = FALLBACK::NONE;
+				fallback_type = FALLBACK::NONE;
 				fallback_t = -0.5f;
 				net_state = NetState::Client_ReceivedWorldData;
 
@@ -1330,7 +1330,7 @@ void Game::UpdateClientTransfer(float dt)
 					world_map->visible = false;
 					info_box->CloseDialog();
 					update_timer = 0.f;
-					fallback_co = FALLBACK::NONE;
+					fallback_type = FALLBACK::NONE;
 					fallback_t = -0.5f;
 					cam.Reset();
 					pc_data.rot_buf = 0.f;
@@ -1494,7 +1494,7 @@ void Game::UpdateServerTransfer(float dt)
 			// do it
 			ClearGameVarsOnNewGame();
 			Team.free_recruit = false;
-			fallback_co = FALLBACK::NONE;
+			fallback_type = FALLBACK::NONE;
 			fallback_t = -0.5f;
 			main_menu->visible = false;
 			load_screen->visible = true;

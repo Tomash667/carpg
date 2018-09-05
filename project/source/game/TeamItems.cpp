@@ -167,7 +167,7 @@ bool Game::CheckTeamShareItem(TeamShareItem& tsi)
 //=================================================================================================
 void Game::UpdateTeamItemShares()
 {
-	if(fallback_co != FALLBACK::NO || team_share_id == -1)
+	if(fallback_type != FALLBACK::NO || team_share_id == -1)
 		return;
 
 	if(team_share_id >= (int)team_shares.size())

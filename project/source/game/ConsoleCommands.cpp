@@ -1023,7 +1023,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 								// wejdŸ do budynku
 								if(Net::IsLocal())
 								{
-									fallback_co = FALLBACK::ENTER;
+									fallback_type = FALLBACK::ENTER;
 									fallback_t = -1.f;
 									fallback_1 = index;
 									pc->unit->frozen = (pc->unit->usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
