@@ -270,8 +270,3 @@ void ustaw_flagi(Pole* mapa, uint wh);
 
 //-----------------------------------------------------------------------------
 void generate_labirynth(Pole*& mapa, const Int2& size, const Int2& room_size, Int2& stairs, int& stairs_dir, Int2& room_pos, int kratki_szansa, bool devmode);
-
-//-----------------------------------------------------------------------------
-void generate_cave(Pole*& mapa, int size, Int2& stairs, int& stairs_dir, vector<Int2>& holes, Rect* ext, bool devmode);
-void regenerate_cave_flags(Pole* mapa, int size);
-void free_cave_data();

@@ -1091,7 +1091,6 @@ public:
 	void GenerateLabirynthUnits();
 	int GetDungeonLevel();
 	int GetDungeonLevelChest();
-	void GenerateCave(Location& l);
 	void GenerateCaveObjects();
 	void GenerateCaveUnits();
 	void SaveGame(GameWriter& f);
@@ -1778,7 +1777,6 @@ public:
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
 	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, int roti,
 		const Vec3& shift, Building* type, CityBuilding* building, bool recreate = false, Vec3* out_point = nullptr);
-	void GenerateForest(Location& loc);
 	void SpawnForestObjects(int road_dir = -1); //-1 brak, 0 -, 1 |
 	void SpawnForestItems(int count_mod);
 	void CreateForestMinimap();
@@ -1786,14 +1784,12 @@ public:
 	void SpawnForestUnits(const Vec3& team_pos);
 	void RepositionCityUnits();
 	void Event_RandomEncounter(int id);
-	void GenerateEncounterMap(Location& loc);
 	void SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest);
 	void SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
 	void SpawnEncounterObjects();
 	void SpawnEncounterTeam();
 	void UpdateLocation(LevelContext& ctx, int days, int open_chance, bool reset);
 	void UpdateLocation(int days, int open_chance, bool reset);
-	void GenerateCamp(Location& loc);
 	void SpawnCampObjects();
 	void SpawnCampUnits();
 	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range = 2.f, float margin = 0.3f,
@@ -1803,7 +1799,6 @@ public:
 	void SpawnTmpUnits(City* city);
 	void RemoveTmpUnits(City* city);
 	void RemoveTmpUnits(LevelContext& ctx);
-	void GenerateMoonwell(Location& loc);
 	void SpawnMoonwellObjects();
 	void SpawnMoonwellUnits(const Vec3& team_pos);
 	enum SpawnObjectExtrasFlags
@@ -1813,7 +1808,6 @@ public:
 		SOE_DONT_CREATE_LIGHT = 1 << 2
 	};
 	void SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale = 1.f, int flags = 0);
-	void GenerateSecretLocation(Location& loc);
 	void SpawnSecretLocationObjects();
 	void SpawnSecretLocationUnits();
 	void SpawnTeamSecretLocation();
@@ -1822,9 +1816,6 @@ public:
 	void PickableItemBegin(LevelContext& ctx, Object& o);
 	void PickableItemAdd(const Item* item);
 	void GenerateDungeonFood();
-	void GenerateCityMap(Location& loc);
-	void GenerateVillageMap(Location& loc);
-	void PrepareCityBuildings(City& city, vector<ToBuild>& tobuild);
 	void AbadonLocation(Location* loc);
 
 	int enc_kierunek; // kierunek z której strony nadesz³a dru¿yna w czasie spotkania [tymczasowe]

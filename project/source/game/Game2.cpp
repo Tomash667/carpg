@@ -10938,16 +10938,6 @@ void Game::GenerateLabirynthUnits()
 	}
 }
 
-void Game::GenerateCave(Location& l)
-{
-	CaveLocation* cave = (CaveLocation*)&l;
-	InsideLocationLevel& lvl = cave->GetLevelData();
-
-	generate_cave(lvl.map, 52, lvl.staircase_up, lvl.staircase_up_dir, cave->holes, &cave->ext, devmode);
-
-	lvl.w = lvl.h = 52;
-}
-
 void Game::GenerateCaveObjects()
 {
 	CaveLocation* cave = (CaveLocation*)L.location;

@@ -727,6 +727,9 @@
     <ClCompile Include="source\game\generator\DungeonGenerator.cpp">
       <Filter>3. game\generator</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\generator\CaveGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1451,6 +1454,9 @@
       <Filter>3. game\generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\DungeonGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\CaveGenerator.h">
       <Filter>3. game\generator</Filter>
     </ClInclude>
   </ItemGroup>

@@ -126,6 +126,7 @@ struct Weapon;
 
 //-----------------------------------------------------------------------------
 // Location generators
+class CaveGenerator;
 class CityGenerator;
 class DungeonGenerator;
 class EncounterGenerator;

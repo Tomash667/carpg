@@ -118,6 +118,21 @@ void World::Update(int days, UpdateMode mode)
 		Team.Update(1, true);
 	else if(mode == UM_NORMAL)
 		Team.Update(days, false);
+
+	// end of game
+	if(year >= 160)
+	{
+		Info("Game over: you are too old.");
+		Game& game = Game::Get();
+		game.CloseAllPanels(true);
+		game.koniec_gry = true;
+		game.death_fade = 0.f;
+		if(Net::IsOnline())
+		{
+			Net::PushChange(NetChange::GAME_STATS);
+			Net::PushChange(NetChange::END_OF_GAME);
+		}
+	}
 }
 
 void World::UpdateDate(int days)

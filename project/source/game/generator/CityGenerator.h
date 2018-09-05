@@ -158,4 +158,5 @@ private:
 	vector<int> road_ids;
 	TERRAIN_TILE road_tile;
 	vector<BuildPt> valid_pts;
+
 };

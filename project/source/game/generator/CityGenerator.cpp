@@ -1,6 +1,11 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "CityGenerator.h"
+#include "Location.h"
+#include "City.h"
+#include "World.h"
+#include "Terrain.h"
+#include "Game.h"
 
 const float SPAWN_RATIO = 0.2f;
 const float SPAWN_RANGE = 4.f;
@@ -2046,5 +2051,153 @@ int CityGenerator::GetNumberOfSteps()
 //=================================================================================================
 void CityGenerator::Generate()
 {
+	Game& game = Game::Get();
+	City* city = (City*)loc;
+	bool village = city->IsVillage();
+	if(village)
+	{
+		Info("Generating village map.");
+		CLEAR_BIT(city->flags, City::HaveExit);
+	}
+	else
+		Info("Generating city map.");
 
+	Init(city->tiles, city->h, OutsideLocation::size, OutsideLocation::size);
+	SetRoadSize(3, 32);
+	SetTerrainNoise(Random(3, 5), Random(3.f, 8.f), 1.f, village ? Random(2.f, 10.f) : Random(1.f, 2.f));
+	RandomizeHeight();
+
+	vector<ToBuild> tobuild;
+	if(village)
+	{
+		RoadType rtype;
+		int roads, swap = 0;
+		bool plaza;
+		GAME_DIR dir = (GAME_DIR)(Rand() % 4);
+		bool extra_roads;
+
+		switch(Rand() % 6)
+		{
+		case 0:
+			rtype = RoadType_Line;
+			roads = Random(0, 2);
+			plaza = (Rand() % 3 == 0);
+			extra_roads = true;
+			break;
+		case 1:
+			rtype = RoadType_Curve;
+			roads = (Rand() % 4 == 0 ? 1 : 0);
+			plaza = false;
+			extra_roads = false;
+			break;
+		case 2:
+			rtype = RoadType_Oval;
+			roads = (Rand() % 4 == 0 ? 1 : 0);
+			plaza = false;
+			extra_roads = false;
+			break;
+		case 3:
+			rtype = RoadType_Three;
+			roads = Random(0, 3);
+			plaza = (Rand() % 3 == 0);
+			swap = Rand() % 6;
+			extra_roads = true;
+			break;
+		case 4:
+			rtype = RoadType_Sin;
+			roads = (Rand() % 4 == 0 ? 1 : 0);
+			plaza = (Rand() % 3 == 0);
+			extra_roads = false;
+			break;
+		case 5:
+			rtype = RoadType_Part;
+			roads = (Rand() % 3 == 0 ? 1 : 0);
+			plaza = (Rand() % 3 != 0);
+			extra_roads = true;
+			break;
+		}
+
+		GenerateMainRoad(rtype, dir, roads, plaza, swap, city->entry_points, city->gates, extra_roads);
+		if(extra_roads)
+			GenerateRoads(TT_SAND, 5);
+		FlattenRoadExits();
+		for(int i = 0; i < 2; ++i)
+			FlattenRoad();
+
+		city->PrepareCityBuildings(tobuild);
+
+		GenerateBuildings(tobuild);
+		GenerateFields();
+		SmoothTerrain();
+		FlattenRoad();
+
+		game.g_have_well = false;
+	}
+	else
+	{
+		RoadType rtype;
+		int swap = 0;
+		bool plaza = (Rand() % 2 == 0);
+		GAME_DIR dir = (GAME_DIR)(Rand() % 4);
+
+		switch(Rand() % 4)
+		{
+		case 0:
+			rtype = RoadType_Plus;
+			break;
+		case 1:
+			rtype = RoadType_Line;
+			break;
+		case 2:
+		case 3:
+			rtype = RoadType_Three;
+			swap = Rand() % 6;
+			break;
+		}
+		
+		GenerateMainRoad(rtype, dir, 4, plaza, swap, city->entry_points, city->gates, true);
+		FlattenRoadExits();
+		GenerateRoads(TT_ROAD, 25);
+		for(int i = 0; i < 2; ++i)
+			FlattenRoad();
+
+		city->PrepareCityBuildings(tobuild);
+
+		GenerateBuildings(tobuild);
+		ApplyWallTiles(city->gates);
+
+		SmoothTerrain();
+		FlattenRoad();
+
+		if(plaza && Rand() % 4 != 0)
+		{
+			game.g_have_well = true;
+			game.g_well_pt = Int2(64, 64);
+		}
+		else
+			game.g_have_well = false;
+	}
+
+	// budynki
+	city->buildings.resize(tobuild.size());
+	vector<ToBuild>::iterator build_it = tobuild.begin();
+	for(vector<CityBuilding>::iterator it = city->buildings.begin(), end = city->buildings.end(); it != end; ++it, ++build_it)
+	{
+		it->type = build_it->type;
+		it->pt = build_it->pt;
+		it->rot = build_it->rot;
+		it->unit_pt = build_it->unit_pt;
+	}
+
+	if(!village)
+	{
+		// set exits y
+		Terrain* terrain = Game::Get().terrain;
+		terrain->SetHeightMap(city->h);
+		for(vector<EntryPoint>::iterator entry_it = city->entry_points.begin(), entry_end = city->entry_points.end(); entry_it != entry_end; ++entry_it)
+			entry_it->exit_y = terrain->GetH(entry_it->exit_area.Midpoint()) + 0.1f;
+		terrain->RemoveHeightMap();
+	}
+
+	CleanBorders();
 }

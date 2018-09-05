@@ -8,6 +8,7 @@ public:
 	LocationGenerator* Get(Location* loc);
 
 private:
+	CaveGenerator* cave;
 	CityGenerator* city;
 	DungeonGenerator* dungeon;
 	EncounterGenerator* encounter;

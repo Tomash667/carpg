@@ -211,6 +211,7 @@
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameCore.h" />
     <ClInclude Include="source\game\GameStats.h" />
+    <ClInclude Include="source\game\generator\CaveGenerator.h" />
     <ClInclude Include="source\game\generator\DungeonGenerator.h" />
     <ClInclude Include="source\game\generator\EncounterGenerator.h" />
     <ClInclude Include="source\game\generator\ForestGenerator.h" />
@@ -438,6 +439,7 @@
     <ClCompile Include="source\game\entity\Portal.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
+    <ClCompile Include="source\game\generator\CaveGenerator.cpp" />
     <ClCompile Include="source\game\generator\DungeonGenerator.cpp" />
     <ClCompile Include="source\game\generator\EncounterGenerator.cpp" />
     <ClCompile Include="source\game\generator\ForestGenerator.cpp" />

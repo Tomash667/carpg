@@ -576,23 +576,6 @@ void City::BuildRefidTable()
 }
 
 //=================================================================================================
-/*Unit* City::FindUnitInsideBuilding(const UnitData* ud, BUILDING building_type) const
-{
-	assert(ud);
-
-	for(vector<InsideBuilding*>::const_iterator it = inside_buildings.begin(), end = inside_buildings.end(); it != end; ++it)
-	{
-		if((*it)->type == building_type)
-		{
-			return (*it)->FindUnit(ud);
-		}
-	}
-
-	assert(0);
-	return nullptr;
-}*/
-
-//=================================================================================================
 bool City::FindUnit(Unit* unit, int* level)
 {
 	assert(unit);
@@ -984,5 +967,41 @@ void City::GetEntry(Vec3& pos, float& rot)
 		}
 		pos = entry_points[best_index].spawn_area.Midpoint().XZ();
 		rot = entry_points[best_index].spawn_rot;
+	}
+}
+
+//=================================================================================================
+void City::PrepareCityBuildings(vector<ToBuild>& tobuild)
+{
+	// required buildings
+	tobuild.reserve(buildings.size());
+	for(CityBuilding& cb : buildings)
+		tobuild.push_back(ToBuild(cb.type, true));
+	buildings.clear();
+
+	// not required buildings
+	LocalVector2<Building*> buildings;
+	GenerateCityBuildings(buildings.Get(), false);
+	tobuild.reserve(tobuild.size() + buildings.size());
+	for(Building* b : buildings)
+		tobuild.push_back(ToBuild(b, false));
+
+	// set flags
+	for(ToBuild& tb : tobuild)
+	{
+		if(tb.type->group == BuildingGroup::BG_TRAINING_GROUNDS)
+			flags |= HaveTrainingGrounds;
+		else if(tb.type->group == BuildingGroup::BG_BLACKSMITH)
+			flags |= HaveBlacksmith;
+		else if(tb.type->group == BuildingGroup::BG_MERCHANT)
+			flags |= HaveMerchant;
+		else if(tb.type->group == BuildingGroup::BG_ALCHEMIST)
+			flags |= HaveAlchemist;
+		else if(tb.type->group == BuildingGroup::BG_FOOD_SELLER)
+			flags |= HaveFoodSeller;
+		else if(tb.type->group == BuildingGroup::BG_INN)
+			flags |= HaveInn;
+		else if(tb.type->group == BuildingGroup::BG_ARENA)
+			flags |= HaveArena;
 	}
 }
