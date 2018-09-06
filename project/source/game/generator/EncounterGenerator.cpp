@@ -4,6 +4,7 @@
 #include "OutsideLocation.h"
 #include "Perlin.h"
 #include "Terrain.h"
+#include "Team.h"
 #include "Game.h"
 
 int EncounterGenerator::GetNumberOfSteps()
@@ -132,47 +133,45 @@ void EncounterGenerator::Generate()
 
 void EncounterGenerator::OnEnter()
 {
-	// ustaw wskaŸniki
-	OutsideLocation* enc = (OutsideLocation*)L.location;
+	Game& game = Game::Get();
+	OutsideLocation* enc = (OutsideLocation*)loc;
 	enc->loaded_resources = false;
-	city_ctx = nullptr;
-	ApplyContext(enc, local_ctx);
+	game.city_ctx = nullptr;
+	game.ApplyContext(enc, game.local_ctx);
 
-	// ustaw teren
-	ApplyTiles(enc->h, enc->tiles);
+	game.ApplyTiles(enc->h, enc->tiles);
+	game.SetOutsideParams();
 
-	SetOutsideParams();
+	// generate objects
+	game.LoadingStep(game.txGeneratingObjects);
+	game.SpawnEncounterObjects();
 
-	// generuj obiekty
-	LoadingStep(txGeneratingObjects);
-	SpawnEncounterObjects();
+	// create colliders
+	game.LoadingStep(game.txRecreatingObjects);
+	game.SpawnTerrainCollider();
+	game.SpawnOutsideBariers();
 
-	// stwórz obiekt kolizji terenu
-	LoadingStep(txRecreatingObjects);
-	SpawnTerrainCollider();
-	SpawnOutsideBariers();
-
-	// generuj jednostki
-	LoadingStep(txGeneratingUnits);
+	// generate units
+	game.LoadingStep(game.txGeneratingUnits);
 	GameDialog* dialog;
 	Unit* talker;
 	Quest* quest;
-	SpawnEncounterUnits(dialog, talker, quest);
+	game.SpawnEncounterUnits(dialog, talker, quest);
 
 	// generate items
-	LoadingStep(txGeneratingItems);
-	SpawnForestItems(-1);
+	game.LoadingStep(game.txGeneratingItems);
+	game.SpawnForestItems(-1);
 
-	// generuj minimapê
-	LoadingStep(txGeneratingMinimap);
-	CreateForestMinimap();
+	// generate minimap
+	game.LoadingStep(game.txGeneratingMinimap);
+	game.CreateForestMinimap();
 
-	// dodaj gracza i jego dru¿ynê
-	SpawnEncounterTeam();
+	// add team
+	game.SpawnEncounterTeam();
 	if(dialog)
 	{
 		DialogContext& ctx = *Team.leader->player->dialog_ctx;
-		StartDialog2(Team.leader->player, talker, dialog);
+		game.StartDialog2(Team.leader->player, talker, dialog);
 		ctx.dialog_quest = quest;
 	}
 }

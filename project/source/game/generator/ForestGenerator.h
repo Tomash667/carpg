@@ -16,6 +16,7 @@ public:
 	void Init() override;
 	int GetNumberOfSteps() override;
 	void Generate() override;
+	void OnEnter() override;
 
 private:
 	Type type;

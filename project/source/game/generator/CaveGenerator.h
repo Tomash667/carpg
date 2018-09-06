@@ -1,14 +1,18 @@
 #pragma once
 
-#include "LocationGenerator.h"
+#include "InsideLocationGenerator.h"
 
-class CaveGenerator : public LocationGenerator
+class CaveGenerator : public InsideLocationGenerator
 {
 public:
 	CaveGenerator();
 	~CaveGenerator();
 	int GetNumberOfSteps() override;
 	void Generate() override;
+	void GenerateObjects() override;
+	void GenerateUnits() override;
+	void GenerateItems() override;
+	bool HandleUpdate(int days) override;
 
 private:
 	void FillMap(bool* m);

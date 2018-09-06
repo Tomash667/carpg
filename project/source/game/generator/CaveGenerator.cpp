@@ -3,6 +3,9 @@
 #include "CaveGenerator.h"
 #include "CaveLocation.h"
 #include "Tile.h"
+#include "Level.h"
+#include "QuestManager.h"
+#include "Quest_Mine.h"
 #include "Game.h"
 
 CaveGenerator::CaveGenerator() : m1(nullptr), m2(nullptr)
@@ -361,4 +364,42 @@ void CaveGenerator::DebugDraw()
 		printf("\n");
 	}
 	printf("\n");
+}
+
+void CaveGenerator::GenerateObjects()
+{
+	Game& game = Game::Get();
+	InsideLocationLevel& lvl = GetLevelData();
+
+	Object* o = new Object;
+	o->mesh = game.aStairsUp;
+	o->pos = pt_to_pos(lvl.staircase_up);
+	o->rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
+	o->scale = 1;
+	o->base = nullptr;
+	game.local_ctx.objects->push_back(o);
+
+	game.GenerateCaveObjects();
+	if(L.location_index == QM.quest_mine->target_loc)
+		game.GenerateMine();
+}
+
+void CaveGenerator::GenerateUnits()
+{
+	Game::Get().GenerateCaveUnits();
+}
+
+void CaveGenerator::GenerateItems()
+{
+	Game::Get().GenerateMushrooms();
+}
+
+bool CaveGenerator::HandleUpdate(int days)
+{
+	bool respawn_units;
+	if(L.location_index == QM.quest_mine->target_loc)
+		respawn_units = Game::Get().GenerateMine();
+	if(days > 0)
+		Game::Get().GenerateMushrooms(min(days, 10));
+	return respawn_units;
 }

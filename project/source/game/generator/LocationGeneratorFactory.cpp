@@ -54,9 +54,9 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc)
 			InsideLocation* inside = (InsideLocation*)loc;
 			BaseLocation& base = g_base_locations[inside->target];
 			if(IS_SET(base.options, BLO_LABIRYNTH))
-				loc = labyrinth;
+				loc_gen = labyrinth;
 			else
-				loc = dungeon;
+				loc_gen = dungeon;
 		}
 		break;
 	case L_CAVE:

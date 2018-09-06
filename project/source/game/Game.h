@@ -1030,7 +1030,7 @@ public:
 	cstring GetCurrentLocationText();
 	void Unit_StopUsingUsable(LevelContext& ctx, Unit& unit, bool send = true);
 	void OnReenterLevel(LevelContext& ctx);
-	void EnterLevel(bool first, bool reenter, bool from_lower, int from_portal, bool from_outside);
+	void EnterLevel(LocationGenerator* loc_gen);
 	void LeaveLevel(bool clear = false);
 	void LeaveLevel(LevelContext& ctx, bool clear);
 	void CreateBlood(LevelContext& ctx, const Unit& unit, bool fully_created = false);
@@ -1642,7 +1642,6 @@ public:
 	void RespawnUnits();
 	void RespawnUnits(LevelContext& ctx);
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
-	void GenerateDungeon(Location& loc);
 	void SpawnCityPhysics();
 	// for object rot must be 0, PI/2, PI or PI*3/2
 	ObjectEntity SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale = 1.f, int flags = 0,

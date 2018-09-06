@@ -57,6 +57,8 @@
 #include "Quest_Secret.h"
 #include "Quest_Tournament.h"
 #include "Debug.h"
+#include "LocationGeneratorFactory.h"
+#include "LocationGenerator.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -10368,7 +10370,12 @@ void Game::ChangeLevel(int where)
 			LeaveLevel();
 			--dungeon_level;
 			inside->SetActiveLevel(dungeon_level);
-			EnterLevel(false, false, true, -1, false);
+			LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
+			loc_gen->first = false;
+			loc_gen->reenter = false;
+			loc_gen->dungeon_level = dungeon_level;
+			L.enter_from = ENTER_FROM_DOWN_LEVEL;
+			EnterLevel(loc_gen);
 		}
 	}
 	else
@@ -10390,7 +10397,10 @@ void Game::ChangeLevel(int where)
 
 		inside->SetActiveLevel(dungeon_level);
 
-		bool first = false;
+		LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
+		loc_gen->first = false;
+		loc_gen->reenter = false;
+		loc_gen->dungeon_level = dungeon_level;
 
 		// czy to pierwsza wizyta?
 		if(dungeon_level >= inside->generated)
@@ -10410,11 +10420,13 @@ void Game::ChangeLevel(int where)
 			Info("Generating dungeon, level %d, target %d.", dungeon_level + 1, inside->target);
 
 			LoadingStep(txGeneratingMap);
-			GenerateDungeon(*L.location);
-			first = true;
+			
+			loc_gen->first = true;
+			loc_gen->Generate();
 		}
 
-		EnterLevel(first, false, false, -1, false);
+		L.enter_from = ENTER_FROM_UP_LEVEL;
+		EnterLevel(loc_gen);
 	}
 
 	local_ctx_valid = true;
@@ -13403,410 +13415,20 @@ void Game::SetDungeonParamsToMeshes()
 	ApplyTexturePackToSubmesh(aDoorWall2->subs[0], tWall[1]);
 }
 
-void Game::EnterLevel(bool first, bool reenter, bool from_lower, int from_portal, bool from_outside)
+void Game::EnterLevel(LocationGenerator* loc_gen)
 {
-	if(!first)
+	if(!loc_gen->first)
 		Info("Entering location '%s' level %d.", L.location->name.c_str(), dungeon_level + 1);
 
 	show_mp_panel = true;
 	Inventory::lock = nullptr;
 
-	InsideLocation* inside = (InsideLocation*)L.location;
-	inside->SetActiveLevel(dungeon_level);
-	int days;
-	bool need_reset = inside->CheckUpdate(days, W.GetWorldtime());
-	InsideLocationLevel& lvl = inside->GetLevelData();
-	BaseLocation& base = g_base_locations[inside->target];
-
-	if(from_portal != -1)
-		L.enter_from = ENTER_FROM_PORTAL + from_portal;
-	else if(from_outside)
-		L.enter_from = ENTER_FROM_OUTSIDE;
-	else if(from_lower)
-		L.enter_from = ENTER_FROM_DOWN_LEVEL;
-	else
-		L.enter_from = ENTER_FROM_UP_LEVEL;
-
-	// ustaw wskaŸniki
-	if(!reenter)
-		ApplyContext(inside, local_ctx);
-
-	SetDungeonParamsAndTextures(base);
-
-	// czy to pierwsza wizyta?
-	if(first)
-	{
-		if(L.location->type == L_CAVE)
-		{
-			LoadingStep(txGeneratingObjects);
-
-			// jaskinia
-			// schody w górê
-			Object* o = new Object;
-			o->mesh = aStairsUp;
-			o->pos = pt_to_pos(lvl.staircase_up);
-			o->rot = Vec3(0, dir_to_rot(lvl.staircase_up_dir), 0);
-			o->scale = 1;
-			o->base = nullptr;
-			local_ctx.objects->push_back(o);
-
-			GenerateCaveObjects();
-			if(L.location_index == QM.quest_mine->target_loc)
-				GenerateMine();
-
-			LoadingStep(txGeneratingUnits);
-			GenerateCaveUnits();
-			GenerateMushrooms();
-		}
-		else
-		{
-			// podziemia, wygeneruj schody, drzwi, kratki
-			LoadingStep(txGeneratingObjects);
-			GenerateDungeonObjects2();
-			GenerateDungeonObjects();
-			GenerateTraps();
-
-			if(!IS_SET(base.options, BLO_LABIRYNTH))
-			{
-				LoadingStep(txGeneratingUnits);
-				GenerateDungeonUnits();
-				GenerateDungeonFood();
-			}
-			else
-			{
-				BaseObject* obj = BaseObject::Get("torch");
-
-				// pochodnia przy œcianie
-				{
-					Object* o = new Object;
-					o->base = obj;
-					o->rot = Vec3(0, Random(MAX_ANGLE), 0);
-					o->scale = 1.f;
-					o->mesh = obj->mesh;
-					lvl.objects.push_back(o);
-
-					Int2 pt = lvl.GetUpStairsFrontTile();
-					if(czy_blokuje2(lvl.map[pt.x - 1 + pt.y*lvl.w].type))
-						o->pos = Vec3(2.f*pt.x + obj->size.x + 0.1f, 0.f, 2.f*pt.y + 1.f);
-					else if(czy_blokuje2(lvl.map[pt.x + 1 + pt.y*lvl.w].type))
-						o->pos = Vec3(2.f*(pt.x + 1) - obj->size.x - 0.1f, 0.f, 2.f*pt.y + 1.f);
-					else if(czy_blokuje2(lvl.map[pt.x + (pt.y - 1)*lvl.w].type))
-						o->pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*pt.y + obj->size.y + 0.1f);
-					else if(czy_blokuje2(lvl.map[pt.x + (pt.y + 1)*lvl.w].type))
-						o->pos = Vec3(2.f*pt.x + 1.f, 0.f, 2.f*(pt.y + 1) + obj->size.y - 0.1f);
-
-					Light& s = Add1(lvl.lights);
-					s.pos = o->pos;
-					s.pos.y += obj->centery;
-					s.range = 5;
-					s.color = Vec3(1.f, 0.9f, 0.9f);
-
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = tFlare;
-					pe->alpha = 0.8f;
-					pe->emision_interval = 0.1f;
-					pe->emisions = -1;
-					pe->life = -1;
-					pe->max_particles = 50;
-					pe->op_alpha = POP_LINEAR_SHRINK;
-					pe->op_size = POP_LINEAR_SHRINK;
-					pe->particle_life = 0.5f;
-					pe->pos = s.pos;
-					pe->pos_min = Vec3(0, 0, 0);
-					pe->pos_max = Vec3(0, 0, 0);
-					pe->size = IS_SET(obj->flags, OBJ_CAMPFIRE_EFFECT) ? .7f : .5f;
-					pe->spawn_min = 1;
-					pe->spawn_max = 3;
-					pe->speed_min = Vec3(-1, 3, -1);
-					pe->speed_max = Vec3(1, 4, 1);
-					pe->mode = 1;
-					pe->Init();
-					local_ctx.pes->push_back(pe);
-				}
-
-				// pochodnia w skarbie
-				{
-					Object* o = new Object;
-					o->base = obj;
-					o->rot = Vec3(0, Random(MAX_ANGLE), 0);
-					o->scale = 1.f;
-					o->mesh = obj->mesh;
-					o->pos = lvl.rooms[0].Center();
-					lvl.objects.push_back(o);
-
-					Light& s = Add1(lvl.lights);
-					s.pos = o->pos;
-					s.pos.y += obj->centery;
-					s.range = 5;
-					s.color = Vec3(1.f, 0.9f, 0.9f);
-
-					ParticleEmitter* pe = new ParticleEmitter;
-					pe->tex = tFlare;
-					pe->alpha = 0.8f;
-					pe->emision_interval = 0.1f;
-					pe->emisions = -1;
-					pe->life = -1;
-					pe->max_particles = 50;
-					pe->op_alpha = POP_LINEAR_SHRINK;
-					pe->op_size = POP_LINEAR_SHRINK;
-					pe->particle_life = 0.5f;
-					pe->pos = s.pos;
-					pe->pos_min = Vec3(0, 0, 0);
-					pe->pos_max = Vec3(0, 0, 0);
-					pe->size = IS_SET(obj->flags, OBJ_CAMPFIRE_EFFECT) ? .7f : .5f;
-					pe->spawn_min = 1;
-					pe->spawn_max = 3;
-					pe->speed_min = Vec3(-1, 3, -1);
-					pe->speed_max = Vec3(1, 4, 1);
-					pe->mode = 1;
-					pe->Init();
-					local_ctx.pes->push_back(pe);
-				}
-
-				LoadingStep(txGeneratingUnits);
-				GenerateLabirynthUnits();
-			}
-		}
-	}
-	else if(!reenter)
-	{
-		LoadingStep(txRegeneratingLevel);
-
-		if(days > 0)
-			UpdateLocation(local_ctx, days, base.door_open, need_reset);
-
-		bool respawn_units = true;
-
-		if(L.location->type == L_CAVE)
-		{
-			if(L.location_index == QM.quest_mine->target_loc)
-				respawn_units = GenerateMine();
-			if(days > 0)
-				GenerateMushrooms(min(days, 10));
-		}
-		else if(days >= 10 && IS_SET(base.options, BLO_LABIRYNTH))
-			GenerateDungeonFood();
-
-		if(need_reset)
-		{
-			// usuñ ¿ywe jednostki
-			if(days != 0)
-			{
-				for(vector<Unit*>::iterator it = local_ctx.units->begin(), end = local_ctx.units->end(); it != end; ++it)
-				{
-					if((*it)->IsAlive())
-					{
-						delete *it;
-						*it = nullptr;
-					}
-				}
-				RemoveNullElements(local_ctx.units);
-			}
-
-			// usuñ zawartoœæ skrzyni
-			for(vector<Chest*>::iterator it = local_ctx.chests->begin(), end = local_ctx.chests->end(); it != end; ++it)
-				(*it)->items.clear();
-
-			// nowa zawartoœæ skrzyni
-			int dlevel = GetDungeonLevel();
-			for(vector<Chest*>::iterator it = local_ctx.chests->begin(), end = local_ctx.chests->end(); it != end; ++it)
-			{
-				Chest& chest = **it;
-				if(!chest.items.empty())
-					continue;
-				Room* r = lvl.GetNearestRoom(chest.pos);
-				static vector<Chest*> room_chests;
-				room_chests.push_back(&chest);
-				for(vector<Chest*>::iterator it2 = it + 1; it2 != end; ++it2)
-				{
-					if(r->IsInside((*it2)->pos))
-						room_chests.push_back(*it2);
-				}
-				GenerateDungeonTreasure(room_chests, dlevel);
-				room_chests.clear();
-			}
-
-			// nowe jednorazowe pu³apki
-			RegenerateTraps();
-		}
-
-		OnReenterLevel(local_ctx);
-
-		// odtwórz jednostki
-		if(respawn_units)
-			RespawnUnits();
-		RespawnTraps();
-
-		// odtwórz fizykê
-		RespawnObjectColliders();
-
-		if(need_reset)
-		{
-			// nowe jednostki
-			if(L.location->type == L_CAVE)
-				GenerateCaveUnits();
-			else if(inside->target == LABIRYNTH)
-				GenerateLabirynthUnits();
-			else
-				GenerateDungeonUnits();
-		}
-	}
-
-	// questowe rzeczy
-	if(inside->active_quest && inside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER)
-	{
-		Quest_Event* event = inside->active_quest->GetEvent(L.location_index);
-		if(event)
-		{
-			if(event->at_level == dungeon_level)
-			{
-				if(!event->done)
-				{
-					HandleQuestEvent(event);
-
-					// generowanie orków
-					if(L.location_index == QM.quest_orcs2->target_loc && QM.quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs)
-					{
-						QM.quest_orcs2->orcs_state = Quest_Orcs2::State::GeneratedOrcs;
-						UnitData* ud = UnitData::Get("q_orkowie_slaby");
-						for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
-						{
-							if(!it->IsCorridor() && Rand() % 2 == 0)
-							{
-								Unit* u = SpawnUnitInsideRoom(*it, *ud, -2, Int2(-999, -999), Int2(-999, -999));
-								if(u)
-									u->dont_attack = true;
-							}
-						}
-
-						Unit* u = SpawnUnitInsideRoom(lvl.GetFarRoom(false), *UnitData::Get("q_orkowie_kowal"), -2, Int2(-999, -999), Int2(-999, -999));
-						if(u)
-							u->dont_attack = true;
-
-						vector<ItemSlot>& items = QM.quest_orcs2->wares;
-						Stock::Get("orc_blacksmith")->Parse(0, false, items);
-						SortItems(items);
-					}
-				}
-
-				L.event_handler = event->location_event_handler;
-			}
-			else if(inside->active_quest->whole_location_event_handler)
-				L.event_handler = event->location_event_handler;
-		}
-	}
-
-	if((first || need_reset) && (Rand() % 50 == 0 || DebugKey('C')) && L.location->type != L_CAVE && inside->target != LABIRYNTH
-		&& !L.location->active_quest && dungeon_level == 0)
-		SpawnHeroesInsideDungeon();
-
-	// stwórz obiekty kolizji
-	if(!reenter)
-		SpawnDungeonColliders();
-
-	// generuj minimapê
-	LoadingStep(txGeneratingMinimap);
-	CreateDungeonMinimap();
-
-	// sekret
-	Quest_Secret* secret = QM.quest_secret;
-	if(L.location_index == secret->where && !inside->HaveDownStairs() && secret->state == Quest_Secret::SECRET_DROPPED_STONE)
-	{
-		secret->state = Quest_Secret::SECRET_GENERATED;
-		if(devmode)
-			Info("Generated secret room.");
-
-		Room& r = inside->GetLevelData().rooms[0];
-
-		if(hardcore_mode)
-		{
-			Object* o = local_ctx.FindObject(BaseObject::Get("portal"));
-
-			OutsideLocation* loc = new OutsideLocation;
-			loc->active_quest = (Quest_Dungeon*)ACTIVE_QUEST_HOLDER;
-			loc->pos = Vec2(-999, -999);
-			loc->st = 20;
-			loc->name = txHiddenPlace;
-			loc->type = L_FOREST;
-			loc->image = LI_FOREST;
-			int loc_id = W.AddLocation(loc);
-
-			Portal* portal = new Portal;
-			portal->at_level = 2;
-			portal->next_portal = nullptr;
-			portal->pos = o->pos;
-			portal->rot = o->rot.y;
-			portal->target = 0;
-			portal->target_loc = loc_id;
-
-			inside->portal = portal;
-			secret->where2 = loc_id;
-		}
-		else
-		{
-			// dodaj kartkê (overkill sprawdzania!)
-			const Item* kartka = Item::Get("sekret_kartka2");
-			assert(kartka);
-			Chest* c = local_ctx.FindChestInRoom(r);
-			assert(c);
-			if(c)
-				c->AddItem(kartka, 1, 1);
-			else
-			{
-				Object* o = local_ctx.FindObject(BaseObject::Get("portal"));
-				assert(0);
-				if(o)
-				{
-					GroundItem* item = new GroundItem;
-					item->count = 1;
-					item->team_count = 1;
-					item->item = kartka;
-					item->netid = GroundItem::netid_counter++;
-					item->pos = o->pos;
-					item->rot = Random(MAX_ANGLE);
-					local_ctx.items->push_back(item);
-				}
-				else
-					SpawnGroundItemInsideRoom(r, kartka);
-			}
-
-			secret->state = Quest_Secret::SECRET_CLOSED;
-		}
-	}
-
-	// dodaj gracza i jego dru¿ynê
-	Int2 spawn_pt;
-	Vec3 spawn_pos;
-	float spawn_rot;
-
-	if(from_portal == -1)
-	{
-		if(from_lower)
-		{
-			spawn_pt = lvl.GetDownStairsFrontTile();
-			spawn_rot = dir_to_rot(lvl.staircase_down_dir);
-		}
-		else
-		{
-			spawn_pt = lvl.GetUpStairsFrontTile();
-			spawn_rot = dir_to_rot(lvl.staircase_up_dir);
-		}
-		spawn_pos = pt_to_pos(spawn_pt);
-	}
-	else
-	{
-		Portal* portal = inside->GetPortal(from_portal);
-		spawn_pos = portal->GetSpawnPos();
-		spawn_rot = Clip(portal->rot + PI);
-		spawn_pt = pos_to_pt(spawn_pos);
-	}
-
-	AddPlayerTeam(spawn_pos, spawn_rot, reenter, from_outside);
-	OpenDoorsByTeam(spawn_pt);
+	loc_gen->OnEnter();
+	
 	OnEnterLevelOrLocation();
 	OnEnterLevel();
 
-	if(!first)
+	if(!loc_gen->first)
 		Info("Entered level.");
 }
 

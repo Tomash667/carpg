@@ -1,10 +1,14 @@
 #pragma once
 
-#include "LocationGenerator.h"
+#include "InsideLocationGenerator.h"
 
-class DungeonGenerator : public LocationGenerator
+class DungeonGenerator : public InsideLocationGenerator
 {
 public:
 	int GetNumberOfSteps() override;
 	void Generate() override;
+	void GenerateObjects() override;
+	void GenerateUnits() override;
+	void GenerateItems() override;
+	bool HandleUpdate(int days) override;
 };

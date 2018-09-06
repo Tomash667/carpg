@@ -1,12 +1,14 @@
 #pragma once
 
-#include "LocationGenerator.h"
+#include "InsideLocationGenerator.h"
 
-class LabyrinthGenerator : public LocationGenerator
+class LabyrinthGenerator : public InsideLocationGenerator
 {
 public:
 	int GetNumberOfSteps() override;
 	void Generate() override;
+	void GenerateObjects() override;
+	void GenerateUnits() override;
 
 private:
 	int TryGenerate(const Int2& maze_size, const Int2& room_size, Int2& room_pos, Int2& doors);

@@ -254,3 +254,28 @@ void DungeonGenerator::Generate()
 		lvl.GetRoom(pt.first)->target = RoomTarget::Portal;
 	}
 }
+
+void DungeonGenerator::GenerateObjects()
+{
+	Game& game = Game::Get();
+	game.GenerateDungeonObjects2();
+	game.GenerateDungeonObjects();
+	game.GenerateTraps();
+}
+
+void DungeonGenerator::GenerateUnits()
+{
+	Game::Get().GenerateDungeonUnits();
+}
+
+void DungeonGenerator::GenerateItems()
+{
+	Game::Get().GenerateDungeonFood();
+}
+
+bool DungeonGenerator::HandleUpdate(int days)
+{
+	if(days >= 10)
+		Game::Get().GenerateDungeonFood();
+	return true;
+}

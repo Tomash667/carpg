@@ -4,7 +4,12 @@
 #include "Location.h"
 #include "City.h"
 #include "World.h"
+#include "Level.h"
 #include "Terrain.h"
+#include "QuestManager.h"
+#include "Quest.h"
+#include "Quest_Contest.h"
+#include "Team.h"
 #include "Game.h"
 
 const float SPAWN_RATIO = 0.2f;
@@ -2252,11 +2257,11 @@ void CityGenerator::OnEnter()
 		if(days > 0)
 			game.UpdateLocation(days, 100, false);
 
-		// FIXME -> ApplyContext
-		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+		// apply temp context
+		for(InsideBuilding* inside : city->inside_buildings)
 		{
-			if((*it)->ctx.require_tmp_ctx && !(*it)->ctx.tmp_ctx)
-				(*it)->ctx.SetTmpCtx(tmp_ctx_pool.Get());
+			if(inside->ctx.require_tmp_ctx && !inside->ctx.tmp_ctx)
+				inside->ctx.SetTmpCtx(game.tmp_ctx_pool.Get());
 		}
 
 		// recreate units
@@ -2288,36 +2293,36 @@ void CityGenerator::OnEnter()
 			}
 		}
 
-		game.OnReenterLevel(local_ctx);
-		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
-			game.OnReenterLevel((*it)->ctx);
+		game.OnReenterLevel(game.local_ctx);
+		for(InsideBuilding* inside : city->inside_buildings)
+			game.OnReenterLevel(inside->ctx);
 	}
 
 	if(!reenter)
 	{
-		// stwórz obiekt kolizji terenu
-		LoadingStep(txRecreatingObjects);
-		SpawnTerrainCollider();
-		SpawnCityPhysics();
-		SpawnOutsideBariers();
+		// create colliders
+		game.LoadingStep(game.txRecreatingObjects);
+		game.SpawnTerrainCollider();
+		game.SpawnCityPhysics();
+		game.SpawnOutsideBariers();
 	}
 
-	// pojawianie sie questowej jednostki
+	// spawn quest units
 	if(L.location->active_quest && L.location->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && !L.location->active_quest->done)
-		HandleQuestEvent(L.location->active_quest);
+		game.HandleQuestEvent(L.location->active_quest);
 
-	// generuj minimapê
-	LoadingStep(txGeneratingMinimap);
-	CreateCityMinimap();
+	// generate minimap
+	game.LoadingStep(game.txGeneratingMinimap);
+	game.CreateCityMinimap();
 
 	// dodaj gracza i jego dru¿ynê
 	Vec3 spawn_pos;
 	float spawn_dir;
 	city->GetEntry(spawn_pos, spawn_dir);
-	AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
+	game.AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
 
 	if(!reenter)
-		GenerateQuestUnits();
+		game.GenerateQuestUnits();
 
 	for(Unit* unit : Team.members)
 	{
@@ -2325,11 +2330,9 @@ void CityGenerator::OnEnter()
 			unit->hero->lost_pvp = false;
 	}
 
-	CheckTeamItemShares();
-
-	arena_free = true;
+	game.CheckTeamItemShares();
 
 	Quest_Contest* contest = QM.quest_contest;
 	if(!contest->generated && L.location_index == contest->where && contest->state == Quest_Contest::CONTEST_TODAY)
-		SpawnDrunkmans();
+		game.SpawnDrunkmans();
 }

@@ -217,6 +217,7 @@
     <ClInclude Include="source\game\generator\DungeonGenerator.h" />
     <ClInclude Include="source\game\generator\EncounterGenerator.h" />
     <ClInclude Include="source\game\generator\ForestGenerator.h" />
+    <ClInclude Include="source\game\generator\InsideLocationGenerator.h" />
     <ClInclude Include="source\game\generator\LabyrinthGenerator.h" />
     <ClInclude Include="source\game\generator\LocationGenerator.h" />
     <ClInclude Include="source\game\generator\LocationGeneratorFactory.h" />
@@ -448,6 +449,7 @@
     <ClCompile Include="source\game\generator\DungeonGenerator.cpp" />
     <ClCompile Include="source\game\generator\EncounterGenerator.cpp" />
     <ClCompile Include="source\game\generator\ForestGenerator.cpp" />
+    <ClCompile Include="source\game\generator\InsideLocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\LabyrinthGenerator.cpp" />
     <ClCompile Include="source\game\generator\LocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\LocationGeneratorFactory.cpp" />
