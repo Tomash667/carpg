@@ -1,12 +1,14 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "LocationGeneratorFactory.h"
-#include "Location.h"
+#include "InsideLocation.h"
 #include "CaveGenerator.h"
 #include "CityGenerator.h"
 #include "DungeonGenerator.h"
 #include "EncounterGenerator.h"
 #include "ForestGenerator.h"
+#include "LabyrinthGenerator.h"
+#include "BaseLocation.h"
 
 void LocationGeneratorFactory::InitOnce()
 {
@@ -15,6 +17,7 @@ void LocationGeneratorFactory::InitOnce()
 	dungeon = new DungeonGenerator;
 	encounter = new EncounterGenerator;
 	forest = new ForestGenerator;
+	labyrinth = new LabyrinthGenerator;
 }
 
 void LocationGeneratorFactory::Clear()
@@ -24,6 +27,7 @@ void LocationGeneratorFactory::Clear()
 	delete dungeon;
 	delete encounter;
 	delete forest;
+	delete labyrinth;
 }
 
 LocationGenerator* LocationGeneratorFactory::Get(Location* loc)
@@ -46,7 +50,14 @@ LocationGenerator* LocationGeneratorFactory::Get(Location* loc)
 		break;
 	case L_DUNGEON:
 	case L_CRYPT:
-		loc_gen = dungeon;
+		{
+			InsideLocation* inside = (InsideLocation*)loc;
+			BaseLocation& base = g_base_locations[inside->target];
+			if(IS_SET(base.options, BLO_LABIRYNTH))
+				loc = labyrinth;
+			else
+				loc = dungeon;
+		}
 		break;
 	case L_CAVE:
 		loc_gen = cave;

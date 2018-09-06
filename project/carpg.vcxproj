@@ -208,6 +208,8 @@
     <ClInclude Include="source\game\entity\ItemContainer.h" />
     <ClInclude Include="source\game\entity\News.h" />
     <ClInclude Include="source\game\entity\Portal.h" />
+    <ClInclude Include="source\game\entity\Room.h" />
+    <ClInclude Include="source\game\entity\Tile.h" />
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameCore.h" />
     <ClInclude Include="source\game\GameStats.h" />
@@ -215,6 +217,7 @@
     <ClInclude Include="source\game\generator\DungeonGenerator.h" />
     <ClInclude Include="source\game\generator\EncounterGenerator.h" />
     <ClInclude Include="source\game\generator\ForestGenerator.h" />
+    <ClInclude Include="source\game\generator\LabyrinthGenerator.h" />
     <ClInclude Include="source\game\generator\LocationGenerator.h" />
     <ClInclude Include="source\game\generator\LocationGeneratorFactory.h" />
     <ClInclude Include="source\game\helpers\LoadingHandler.h" />
@@ -437,12 +440,15 @@
     <ClCompile Include="source\game\entity\Camera.cpp" />
     <ClCompile Include="source\game\entity\ItemContainer.cpp" />
     <ClCompile Include="source\game\entity\Portal.cpp" />
+    <ClCompile Include="source\game\entity\Room.cpp" />
+    <ClCompile Include="source\game\entity\Tile.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
     <ClCompile Include="source\game\generator\CaveGenerator.cpp" />
     <ClCompile Include="source\game\generator\DungeonGenerator.cpp" />
     <ClCompile Include="source\game\generator\EncounterGenerator.cpp" />
     <ClCompile Include="source\game\generator\ForestGenerator.cpp" />
+    <ClCompile Include="source\game\generator\LabyrinthGenerator.cpp" />
     <ClCompile Include="source\game\generator\LocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\LocationGeneratorFactory.cpp" />
     <ClCompile Include="source\game\helpers\LoadingHandler.cpp" />

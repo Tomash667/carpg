@@ -170,8 +170,3 @@ void ForestGenerator::Generate()
 
 	terrain->RemoveHeightMap();
 }
-
-void ForestGenerator::CreateTiles()
-{
-
-}

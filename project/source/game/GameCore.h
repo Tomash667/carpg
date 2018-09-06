@@ -102,6 +102,7 @@ struct NetChangePlayer;
 struct News;
 struct Object;
 struct OtherItem;
+struct Pole;
 struct PlayerController;
 struct PlayerInfo;
 struct Portal;
@@ -131,6 +132,7 @@ class CityGenerator;
 class DungeonGenerator;
 class EncounterGenerator;
 class ForestGenerator;
+class LabyrinthGenerator;
 class LocationGenerator;
 class LocationGeneratorFactory;
 

@@ -1,6 +1,9 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "CaveGenerator.h"
+#include "CaveLocation.h"
+#include "Tile.h"
+#include "Game.h"
 
 CaveGenerator::CaveGenerator() : m1(nullptr), m2(nullptr)
 {
@@ -34,17 +37,17 @@ void CaveGenerator::Make(bool* m1, bool* m2)
 	{
 		for(int x = 1; x < size - 1; ++x)
 		{
-			int ile = 0;
+			int count = 0;
 			for(int yy = -1; yy <= 1; ++yy)
 			{
 				for(int xx = -1; xx <= 1; ++xx)
 				{
 					if(m1[x + xx + (y + yy)*size])
-						++ile;
+						++count;
 				}
 			}
 
-			m2[x + y * size] = (ile >= 5);
+			m2[x + y * size] = (count >= 5);
 		}
 	}
 
@@ -59,7 +62,7 @@ void CaveGenerator::Make(bool* m1, bool* m2)
 
 int CaveGenerator::CalculateFill(bool* m, bool* m2, int start)
 {
-	int ile = 0;
+	int count = 0;
 	v.push_back(start);
 	m2[start] = true;
 
@@ -67,7 +70,7 @@ int CaveGenerator::CalculateFill(bool* m, bool* m2, int start)
 	{
 		int i = v.back();
 		v.pop_back();
-		++ile;
+		++count;
 		m2[i] = true;
 
 		int x = i % size;
@@ -88,7 +91,7 @@ int CaveGenerator::CalculateFill(bool* m, bool* m2, int start)
 	}
 	while(!v.empty());
 
-	return ile;
+	return count;
 }
 
 int CaveGenerator::FillCave(bool* m, bool* m2, int start)
@@ -138,44 +141,41 @@ int CaveGenerator::Finish(bool* m, bool* m2)
 	memset(m2, 0, sizeof(bool)*size2);
 	int top = -1, topi = -1;
 
-	// znajdŸ najwiêkszy obszar
+	// find bigest area
 	for(int i = 0; i < size2; ++i)
 	{
 		if(!m[i] || m2[i])
 			continue;
 
-		int ile = calc_fill(m, m2, i);
-		if(ile > top)
+		int count = CalculateFill(m, m2, i);
+		if(count > top)
 		{
-			top = ile;
+			top = count;
 			topi = i;
 		}
 	}
 
-	// wype³nij obszar
+	// fill area
 	minx = size;
 	miny = size;
 	maxx = 0;
 	maxy = 0;
-	return fill_cave(m, m2, topi);
+	return FillCave(m, m2, topi);
 }
 
 int CaveGenerator::TryGenerate()
 {
-	// wype³nij losowo
-	fill_map(m1);
-	//draw_map(m1);
-	//_getch();
+	FillMap(m1);
 
 	// celluar automata
 	for(int i = 0; i < iter; ++i)
 	{
-		make(m1, m2);
+		Make(m1, m2);
 		bool* m = m1;
 		m1 = m2;
 		m2 = m;
 
-		// krawêdzie
+		// borders
 		for(int j = 0; j < size; ++j)
 		{
 			m1[j] = true;
@@ -183,24 +183,19 @@ int CaveGenerator::TryGenerate()
 			m1[j*size + size - 1] = true;
 			m1[j*size] = true;
 		}
-
-		//draw_map(m1);
-		//_getch();
 	}
 
-	// wybierz najwiêkszy obszar i go wype³nij
-	return finish(m1, m2);
+	// select biggest area and fill it
+	return Finish(m1, m2);
 }
 
-void CaveGenerator::GenerateCave(Pole*& mapa, int size, Int2& stairs, int& stairs_dir, vector<Int2>& holes, Rect* ext, bool devmode)
+void CaveGenerator::GenerateCave(Pole*& tiles, int size, Int2& stairs, int& stairs_dir, vector<Int2>& holes, Rect* ext)
 {
 	assert(InRange(size, 10, 100));
 
-	int size2 = size * size;
+	size2 = size * size;
 
-	size2 = _size * _size;
-
-	if(!m1 || _size > size)
+	if(!m1 || this->size > size)
 	{
 		delete[] m1;
 		delete[] m2;
@@ -208,22 +203,33 @@ void CaveGenerator::GenerateCave(Pole*& mapa, int size, Int2& stairs, int& stair
 		m2 = new bool[size2];
 	}
 
-	size = _size;
+	this->size = size;
 
-	while(Cave::generate(size) < 200);
+	while(TryGenerate() < 200);
 
-	mapa = new Pole[size2];
-	memset(mapa, 0, sizeof(Pole)*size2);
+	tiles = new Pole[size2];
+	memset(tiles, 0, sizeof(Pole)*size2);
 
-	// rozmiar
+	// set size
 	if(ext)
-		ext->Set(Cave::minx, Cave::miny, Cave::maxx + 1, Cave::maxy + 1);
+		ext->Set(minx, miny, maxx + 1, maxy + 1);
 
-	// kopiuj
+	// copy tiles
 	for(int i = 0; i < size2; ++i)
-		mapa[i].type = (Cave::m2[i] ? SCIANA : PUSTE);
+		tiles[i].type = (m2[i] ? SCIANA : PUSTE);
 
-	// schody
+	CreateStairs(tiles, stairs, stairs_dir);
+	CreateHoles(tiles, holes);
+
+	Pole::SetupFlags(tiles, Int2(size, size));
+
+	// rysuj
+	if(Game::Get().devmode)
+		DebugDraw();
+}
+
+void CaveGenerator::CreateStairs(Pole* tiles, Int2& stairs, int& stairs_dir)
+{
 	do
 	{
 		Int2 pt, dir;
@@ -253,54 +259,52 @@ void CaveGenerator::GenerateCave(Pole*& mapa, int size, Int2& stairs, int& stair
 			pt += dir;
 			if(pt.x == -1 || pt.x == size || pt.y == -1 || pt.y == size)
 				break;
-			if(mapa[pt.x + pt.y*size].type == PUSTE)
+			if(tiles[pt.x + pt.y*size].type == PUSTE)
 			{
 				pt -= dir;
 				// sprawdŸ z ilu stron jest puste pole
-				int ile = 0, dir2;
-				if(mapa[pt.x - 1 + pt.y*size].type == PUSTE)
+				int count = 0, dir2;
+				if(tiles[pt.x - 1 + pt.y*size].type == PUSTE)
 				{
-					++ile;
+					++count;
 					dir2 = 1;
 				}
-				if(mapa[pt.x + 1 + pt.y*size].type == PUSTE)
+				if(tiles[pt.x + 1 + pt.y*size].type == PUSTE)
 				{
-					++ile;
+					++count;
 					dir2 = 3;
 				}
-				if(mapa[pt.x + (pt.y - 1)*size].type == PUSTE)
+				if(tiles[pt.x + (pt.y - 1)*size].type == PUSTE)
 				{
-					++ile;
+					++count;
 					dir2 = 0;
 				}
-				if(mapa[pt.x + (pt.y + 1)*size].type == PUSTE)
+				if(tiles[pt.x + (pt.y + 1)*size].type == PUSTE)
 				{
-					++ile;
+					++count;
 					dir2 = 2;
 				}
 
-				if(ile == 1)
+				if(count == 1)
 				{
 					stairs = pt;
 					stairs_dir = dir2;
-					mapa[pt.x + pt.y*size].type = SCHODY_GORA;
-					goto dalej;
+					tiles[pt.x + pt.y*size].type = SCHODY_GORA;
+					return;
 				}
 				else
 					break;
 			}
-		}
-		while(1);
-	}
-	while(1);
+		} while(1);
+	} while(1);
+}
 
-dalej:
-
-	// losowe dziury w suficie
+void CaveGenerator::CreateHoles(Pole* tiles, vector<Int2>& holes)
+{
 	for(int count = 0, tries = 50; tries > 0 && count < 15; --tries)
 	{
 		Int2 pt(Random(1, size - 1), Random(1, size - 1));
-		if(mapa[pt.x + pt.y*size].type == PUSTE)
+		if(tiles[pt.x + pt.y*size].type == PUSTE)
 		{
 			bool ok = true;
 			for(vector<Int2>::iterator it = holes.begin(), end = holes.end(); it != end; ++it)
@@ -314,57 +318,46 @@ dalej:
 
 			if(ok)
 			{
-				mapa[pt.x + pt.y*size].type = KRATKA_SUFIT;
+				tiles[pt.x + pt.y*size].type = KRATKA_SUFIT;
 				holes.push_back(pt);
 				++count;
 			}
 		}
 	}
-
-	// flagi
-	Mapa::mapa = mapa;
-	OpcjeMapy opcje;
-	opcje.w = opcje.h = size;
-	Mapa::opcje = &opcje;
-	Mapa::ustaw_flagi();
-
-	// rysuj
-	if(devmode)
-		Mapa::rysuj();
 }
 
 void CaveGenerator::Generate()
 {
-	CaveLocation* cave = (CaveLocation*)&l;
+	CaveLocation* cave = (CaveLocation*)loc;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 
-	generate_cave(lvl.map, 52, lvl.staircase_up, lvl.staircase_up_dir, cave->holes, &cave->ext, devmode);
+	GenerateCave(lvl.map, 52, lvl.staircase_up, lvl.staircase_up_dir, cave->holes, &cave->ext);
 
 	lvl.w = lvl.h = 52;
 }
 
-void regenerate_cave_flags(Pole* mapa, int size)
-{
-	assert(mapa && InRange(size, 10, 100));
+//void regenerate_cave_flags(Pole* mapa, int size)
+//{
+//	assert(mapa && InRange(size, 10, 100));
+//
+//	// clear all flags (except F_NISKI_SUFIT, F_DRUGA_TEKSTURA, F_ODKRYTE)
+//	for(int i = 0, s = size * size; i < s; ++i)
+//		CLEAR_BIT(mapa[i].flags, 0xFFFFFFFF & ~Pole::F_NISKI_SUFIT & ~Pole::F_DRUGA_TEKSTURA & ~Pole::F_ODKRYTE);
+//
+//	// ustaw flagi
+//	Mapa::mapa = mapa;
+//	OpcjeMapy opcje;
+//	opcje.w = opcje.h = size;
+//	Mapa::opcje = &opcje;
+//	Mapa::ustaw_flagi();
+//}
 
-	// clear all flags (except F_NISKI_SUFIT, F_DRUGA_TEKSTURA, F_ODKRYTE)
-	for(int i = 0, s = size * size; i < s; ++i)
-		CLEAR_BIT(mapa[i].flags, 0xFFFFFFFF & ~Pole::F_NISKI_SUFIT & ~Pole::F_DRUGA_TEKSTURA & ~Pole::F_ODKRYTE);
-
-	// ustaw flagi
-	Mapa::mapa = mapa;
-	OpcjeMapy opcje;
-	opcje.w = opcje.h = size;
-	Mapa::opcje = &opcje;
-	Mapa::ustaw_flagi();
-}
-
-void draw_map(bool* m)
+void CaveGenerator::DebugDraw()
 {
 	for(int y = 0; y < size; ++y)
 	{
 		for(int x = 0; x < size; ++x)
-			printf("%c", m[x + y * size] ? '#' : ' ');
+			printf("%c", m1[x + y * size] ? '#' : ' ');
 		printf("\n");
 	}
 	printf("\n");

@@ -730,6 +730,15 @@
     <ClCompile Include="source\game\generator\CaveGenerator.cpp">
       <Filter>3. game\generator</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\entity\Room.cpp">
+      <Filter>3. game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\entity\Tile.cpp">
+      <Filter>3. game\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\LabyrinthGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1457,6 +1466,15 @@
       <Filter>3. game\generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\CaveGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Tile.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\Room.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\LabyrinthGenerator.h">
       <Filter>3. game\generator</Filter>
     </ClInclude>
   </ItemGroup>

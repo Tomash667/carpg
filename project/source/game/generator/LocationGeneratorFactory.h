@@ -13,4 +13,5 @@ private:
 	DungeonGenerator* dungeon;
 	EncounterGenerator* encounter;
 	ForestGenerator* forest;
+	LabyrinthGenerator* labyrinth;
 };
