@@ -71,6 +71,24 @@ struct GameKey
 class GameKeys
 {
 public:
+	enum AllowInput
+	{
+		ALLOW_NONE = 0,	// 00
+		ALLOW_KEYBOARD = 1,	// 01
+		ALLOW_MOUSE = 2,	// 10
+		ALLOW_INPUT = 3	// 11
+	};
+
+	int KeyAllowState(byte k)
+	{
+		if(k > 7)
+			return ALLOW_KEYBOARD;
+		else if(k != 0)
+			return ALLOW_MOUSE;
+		else
+			return ALLOW_NONE;
+	}
+
 	bool Down(GAME_KEYS gk) const
 	{
 		return Key.Down(keys[gk][0]) || Key.Down(keys[gk][1]);
@@ -103,6 +121,116 @@ public:
 	{
 		return keys[n];
 	}
+
+	bool AllowKeyboard() const { return IS_SET(allow_input, ALLOW_KEYBOARD); }
+	bool AllowMouse() const { return IS_SET(allow_input, ALLOW_MOUSE); }
+	bool KeyAllowed(byte k)
+	{
+		return IS_SET(allow_input, KeyAllowState(k));
+	}
+	byte KeyDoReturn(GAME_KEYS gk, KeyF f)
+	{
+		GameKey& k = keys[gk];
+		if(k[0])
+		{
+			if(KeyAllowed(k[0]) && (Key.*f)(k[0]))
+				return k[0];
+		}
+		if(k[1])
+		{
+			if(KeyAllowed(k[1]) && (Key.*f)(k[1]))
+				return k[1];
+		}
+		return VK_NONE;
+	}
+	byte KeyDoReturn(GAME_KEYS gk, KeyFC f)
+	{
+		return KeyDoReturn(gk, (KeyF)f);
+	}
+	byte KeyDoReturnIgnore(GAME_KEYS gk, KeyF f, byte ignored_key)
+	{
+		GameKey& k = keys[gk];
+		if(k[0] && k[0] != ignored_key)
+		{
+			if(KeyAllowed(k[0]) && (Key.*f)(k[0]))
+				return k[0];
+		}
+		if(k[1] && k[1] != ignored_key)
+		{
+			if(KeyAllowed(k[1]) && (Key.*f)(k[1]))
+				return k[1];
+		}
+		return VK_NONE;
+	}
+	byte KeyDoReturnIgnore(GAME_KEYS gk, KeyFC f, byte ignored_key)
+	{
+		return KeyDoReturnIgnore(gk, (KeyF)f, ignored_key);
+	}
+	bool KeyDo(GAME_KEYS gk, KeyF f)
+	{
+		return KeyDoReturn(gk, f) != VK_NONE;
+	}
+	bool KeyDo(GAME_KEYS gk, KeyFC f)
+	{
+		return KeyDo(gk, (KeyF)f);
+	}
+	bool KeyDownAllowed(GAME_KEYS gk)
+	{
+		return KeyDo(gk, &KeyStates::Down);
+	}
+	bool KeyPressedReleaseAllowed(GAME_KEYS gk)
+	{
+		return KeyDo(gk, &KeyStates::PressedRelease);
+	}
+	bool KeyDownUpAllowed(GAME_KEYS gk)
+	{
+		return KeyDo(gk, &KeyStates::DownUp);
+	}
+	bool KeyDownUp(GAME_KEYS gk)
+	{
+		GameKey& k = keys[gk];
+		if(k[0])
+		{
+			if(Key.DownUp(k[0]))
+				return true;
+		}
+		if(k[1])
+		{
+			if(Key.DownUp(k[1]))
+				return true;
+		}
+		return false;
+	}
+	bool KeyPressedUpAllowed(GAME_KEYS gk)
+	{
+		return KeyDo(gk, &KeyStates::PressedUp);
+	}
+	// Zwraca czy dany klawisze jest wyciœniêty, jeœli nie jest to dozwolone to traktuje jak wyciœniêty
+	bool KeyUpAllowed(byte key)
+	{
+		if(KeyAllowed(key))
+			return Key.Up(key);
+		else
+			return true;
+	}
+	bool KeyPressedReleaseSpecial(GAME_KEYS gk, bool special)
+	{
+		if(special)
+		{
+			GameKey& k = keys[gk];
+			for(int i = 0; i < 2; ++i)
+			{
+				if(k.key[i] >= VK_F1 && k.key[i] <= VK_F12)
+				{
+					if(Key.PressedRelease(k.key[i]))
+						return true;
+				}
+			}
+		}
+		return KeyPressedReleaseAllowed(gk);
+	}
+
+	AllowInput allow_input;
 
 private:
 	GameKey keys[GK_MAX];

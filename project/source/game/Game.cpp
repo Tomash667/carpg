@@ -66,7 +66,7 @@ sItemRegionRot(nullptr), sChar(nullptr), sSave(nullptr), in_tutorial(false), cur
 cl_postfx(true), mp_timeout(10.f), sshader_pool(nullptr), cl_normalmap(true), cl_specularmap(true), dungeon_tex_wrap(true), profiler_mode(0),
 grass_range(40.f), vbInstancing(nullptr), vb_instancing_max(0), screenshot_format(ImageFormat::JPG), quickstart_class(Class::RANDOM),
 autopick_class(Class::INVALID), current_packet(nullptr), game_state(GS_LOAD), default_devmode(false), default_player_devmode(false), finished_tutorial(false),
-quickstart_slot(MAX_SAVE_SLOTS), arena_free(true), autoready(false)
+quickstart_slot(MAX_SAVE_SLOTS), arena_free(true), autoready(false), loc_gen_factory(nullptr)
 {
 #ifdef _DEBUG
 	default_devmode = true;
@@ -305,7 +305,7 @@ void Game::OnTick(float dt)
 			GameStats::Get().Update(dt);
 	}
 
-	allow_input = ALLOW_INPUT;
+	GKey.allow_input = GameKeys::ALLOW_INPUT;
 
 	// utracono urz¹dzenie directx lub okno nie aktywne
 	if(IsLostDevice() || !IsActive() || !IsCursorLocked())
@@ -332,19 +332,19 @@ void Game::OnTick(float dt)
 	if(koniec_gry)
 	{
 		death_fade += dt;
-		if(death_fade >= 1.f && AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
+		if(death_fade >= 1.f && GKey.AllowKeyboard() && Key.PressedRelease(VK_ESCAPE))
 		{
 			ExitToMenu();
 			koniec_gry = false;
 		}
-		allow_input = ALLOW_NONE;
+		GKey.allow_input = GameKeys::ALLOW_NONE;
 	}
 
 	// globalna obs³uga klawiszy
-	if(allow_input == ALLOW_INPUT)
+	if(GKey.allow_input == GameKeys::ALLOW_INPUT)
 	{
 		// konsola
-		if(!GUI.HaveTopDialog("dialog_alt_f4") && !GUI.HaveDialog("console") && KeyDownUpAllowed(GK_CONSOLE))
+		if(!GUI.HaveTopDialog("dialog_alt_f4") && !GUI.HaveDialog("console") && GKey.KeyDownUpAllowed(GK_CONSOLE))
 			GUI.ShowDialog(console);
 
 		// uwolnienie myszki
@@ -360,14 +360,14 @@ void Game::OnTick(float dt)
 			TakeScreenshot(Key.Down(VK_SHIFT));
 
 		// zatrzymywanie/wznawianie gry
-		if(KeyPressedReleaseAllowed(GK_PAUSE) && !Net::IsClient())
+		if(GKey.KeyPressedReleaseAllowed(GK_PAUSE) && !Net::IsClient())
 			PauseGame();
 	}
 
 	// obs³uga paneli
 	if(GUI.HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
-		allow_input = ALLOW_NONE;
-	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
+		GKey.allow_input = GameKeys::ALLOW_NONE;
+	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
 		OpenPanel open = game_gui->GetOpenPanel(),
 			to_open = OpenPanel::None;
@@ -396,7 +396,7 @@ void Game::OnTick(float dt)
 		case OpenPanel::Minimap:
 		default:
 			if(game_gui->use_cursor)
-				allow_input = ALLOW_KEYBOARD;
+				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
 		case OpenPanel::Inventory:
@@ -404,21 +404,21 @@ void Game::OnTick(float dt)
 		case OpenPanel::Trade:
 		case OpenPanel::Action:
 		case OpenPanel::Journal:
-			allow_input = ALLOW_KEYBOARD;
+			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		}
 	}
 
 	// quicksave, quickload
 	bool console_open = GUI.HaveTopDialog("console");
-	bool special_key_allowed = (allow_input == ALLOW_KEYBOARD || allow_input == ALLOW_INPUT || (!GUI.HaveDialog() || console_open));
-	if(KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
+	bool special_key_allowed = (GKey.allow_input == GameKeys::ALLOW_KEYBOARD || GKey.allow_input == GameKeys::ALLOW_INPUT || (!GUI.HaveDialog() || console_open));
+	if(GKey.KeyPressedReleaseSpecial(GK_QUICKSAVE, special_key_allowed))
 		Quicksave(console_open);
-	if(KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
+	if(GKey.KeyPressedReleaseSpecial(GK_QUICKLOAD, special_key_allowed))
 		Quickload(console_open);
 
 	// mp box
-	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && KeyPressedReleaseAllowed(GK_TALK_BOX))
+	if((game_state == GS_LEVEL || game_state == GS_WORLDMAP) && GKey.KeyPressedReleaseAllowed(GK_TALK_BOX))
 		game_gui->mp_box->visible = !game_gui->mp_box->visible;
 
 	// update gui
@@ -437,8 +437,8 @@ void Game::OnTick(float dt)
 
 	// handle blocking input by gui
 	if(GUI.HaveDialog() || (game_gui->mp_box->visible && game_gui->mp_box->itb.focus))
-		allow_input = ALLOW_NONE;
-	else if(AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
+		GKey.allow_input = GameKeys::ALLOW_NONE;
+	else if(GKey.AllowKeyboard() && game_state == GS_LEVEL && death_screen == 0 && !dialog_context.dialog_mode)
 	{
 		switch(game_gui->GetOpenPanel())
 		{
@@ -446,7 +446,7 @@ void Game::OnTick(float dt)
 		case OpenPanel::Minimap:
 		default:
 			if(game_gui->use_cursor)
-				allow_input = ALLOW_KEYBOARD;
+				GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		case OpenPanel::Stats:
 		case OpenPanel::Inventory:
@@ -454,15 +454,15 @@ void Game::OnTick(float dt)
 		case OpenPanel::Trade:
 		case OpenPanel::Action:
 		case OpenPanel::Journal:
-			allow_input = ALLOW_KEYBOARD;
+			GKey.allow_input = GameKeys::ALLOW_KEYBOARD;
 			break;
 		}
 	}
 	else
-		allow_input = ALLOW_INPUT;
+		GKey.allow_input = GameKeys::ALLOW_INPUT;
 
 	// otwórz menu
-	if(AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
+	if(GKey.AllowKeyboard() && CanShowMenu() && Key.PressedRelease(VK_ESCAPE))
 		ShowMenu();
 
 	if(game_menu->visible)
@@ -556,7 +556,7 @@ void Game::OnTick(float dt)
 		UpdateGameNet(dt);
 
 	// aktywacja mp_box
-	if(AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
+	if(GKey.AllowKeyboard() && game_state == GS_LEVEL && game_gui->mp_box->visible && !game_gui->mp_box->itb.focus && Key.PressedRelease(VK_RETURN))
 	{
 		game_gui->mp_box->itb.focus = true;
 		game_gui->mp_box->Event(GuiEvent_GainFocus);
@@ -1804,7 +1804,6 @@ void Game::OnCleanup()
 	delete dungeon_shape_data;
 
 	draw_batch.Clear();
-	free_cave_data();
 	DeleteElements(game_players);
 	DeleteElements(old_players);
 	SM.Cleanup();
@@ -2014,9 +2013,9 @@ void Game::RestartGame()
 void Game::SetStatsText()
 {
 	// typ broni
-	WeaponTypeInfo::info[WT_SHORT].name = Str("wt_shortBlade");
-	WeaponTypeInfo::info[WT_LONG].name = Str("wt_longBlade");
-	WeaponTypeInfo::info[WT_MACE].name = Str("wt_blunt");
+	WeaponTypeInfo::info[WT_SHORT_BLADE].name = Str("wt_shortBlade");
+	WeaponTypeInfo::info[WT_LONG_BLADE].name = Str("wt_longBlade");
+	WeaponTypeInfo::info[WT_BLUNT].name = Str("wt_blunt");
 	WeaponTypeInfo::info[WT_AXE].name = Str("wt_axe");
 }
 

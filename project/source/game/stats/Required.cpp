@@ -99,16 +99,16 @@ void CheckBaseItems(uint& errors)
 			{
 				switch(item->ToWeapon().weapon_type)
 				{
-				case WT_SHORT:
+				case WT_SHORT_BLADE:
 					++have_short_blade;
 					break;
-				case WT_LONG:
+				case WT_LONG_BLADE:
 					++have_long_blade;
 					break;
 				case WT_AXE:
 					++have_axe;
 					break;
-				case WT_MACE:
+				case WT_BLUNT:
 					++have_blunt;
 					break;
 				}

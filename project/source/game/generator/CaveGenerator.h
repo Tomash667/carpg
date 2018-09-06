@@ -19,7 +19,7 @@ private:
 	int TryGenerate();
 	void GenerateCave();
 
-	bool* m1, bool* m2;
+	bool* m1, *m2;
 	vector<int> v;
 	int size, size2;
 	int minx, miny, maxx, maxy;

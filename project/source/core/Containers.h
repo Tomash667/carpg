@@ -467,7 +467,7 @@ public:
 	static void Free(vector<T*>& ts) { GetPool().Free(ts); }
 	static void SafeFree(vector <T*>& ts) { GetPool().SafeFree(ts); }
 	static void Cleanup() { GetPool().Cleanup(); }
-	virtual void Free() { Free((T*)this); }
+	virtual void Free() { Free((T*)this); } // FIXME nie virtual?
 
 private:
 	static ObjectPool<T>& GetPool() { static ObjectPool<T> pool; return pool; }

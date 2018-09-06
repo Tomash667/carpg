@@ -69,24 +69,6 @@ enum GAME_STATE
 	GS_QUIT
 };
 
-enum AllowInput
-{
-	ALLOW_NONE = 0,	// 00
-	ALLOW_KEYBOARD = 1,	// 01
-	ALLOW_MOUSE = 2,	// 10
-	ALLOW_INPUT = 3	// 11
-};
-
-inline int KeyAllowState(byte k)
-{
-	if(k > 7)
-		return ALLOW_KEYBOARD;
-	else if(k != 0)
-		return ALLOW_MOUSE;
-	else
-		return ALLOW_NONE;
-}
-
 enum COLLISION_GROUP
 {
 	CG_TERRAIN = 1 << 7,
@@ -617,7 +599,6 @@ public:
 	GAME_STATE game_state, prev_game_state;
 	LocalPlayerData pc_data;
 	PlayerController* pc;
-	AllowInput allow_input;
 	bool testing, force_seed_all, koniec_gry, local_ctx_valid, target_loc_is_camp, death_solo;
 	int death_screen, dungeon_level;
 	float death_fade, game_speed;
@@ -827,111 +808,7 @@ public:
 	void ResetGameKeys();
 	void SaveGameKeys();
 	void LoadGameKeys();
-	bool KeyAllowed(byte k)
-	{
-		return IS_SET(allow_input, KeyAllowState(k));
-	}
-	byte KeyDoReturn(GAME_KEYS gk, KeyF f)
-	{
-		GameKey& k = GKey[gk];
-		if(k[0])
-		{
-			if(KeyAllowed(k[0]) && (Key.*f)(k[0]))
-				return k[0];
-		}
-		if(k[1])
-		{
-			if(KeyAllowed(k[1]) && (Key.*f)(k[1]))
-				return k[1];
-		}
-		return VK_NONE;
-	}
-	byte KeyDoReturn(GAME_KEYS gk, KeyFC f)
-	{
-		return KeyDoReturn(gk, (KeyF)f);
-	}
-	byte KeyDoReturnIgnore(GAME_KEYS gk, KeyF f, byte ignored_key)
-	{
-		GameKey& k = GKey[gk];
-		if(k[0] && k[0] != ignored_key)
-		{
-			if(KeyAllowed(k[0]) && (Key.*f)(k[0]))
-				return k[0];
-		}
-		if(k[1] && k[1] != ignored_key)
-		{
-			if(KeyAllowed(k[1]) && (Key.*f)(k[1]))
-				return k[1];
-		}
-		return VK_NONE;
-	}
-	byte KeyDoReturnIgnore(GAME_KEYS gk, KeyFC f, byte ignored_key)
-	{
-		return KeyDoReturnIgnore(gk, (KeyF)f, ignored_key);
-	}
-	bool KeyDo(GAME_KEYS gk, KeyF f)
-	{
-		return KeyDoReturn(gk, f) != VK_NONE;
-	}
-	bool KeyDo(GAME_KEYS gk, KeyFC f)
-	{
-		return KeyDo(gk, (KeyF)f);
-	}
-	bool KeyDownAllowed(GAME_KEYS gk)
-	{
-		return KeyDo(gk, &KeyStates::Down);
-	}
-	bool KeyPressedReleaseAllowed(GAME_KEYS gk)
-	{
-		return KeyDo(gk, &KeyStates::PressedRelease);
-	}
-	bool KeyDownUpAllowed(GAME_KEYS gk)
-	{
-		return KeyDo(gk, &KeyStates::DownUp);
-	}
-	bool KeyDownUp(GAME_KEYS gk)
-	{
-		GameKey& k = GKey[gk];
-		if(k[0])
-		{
-			if(Key.DownUp(k[0]))
-				return true;
-		}
-		if(k[1])
-		{
-			if(Key.DownUp(k[1]))
-				return true;
-		}
-		return false;
-	}
-	bool KeyPressedUpAllowed(GAME_KEYS gk)
-	{
-		return KeyDo(gk, &KeyStates::PressedUp);
-	}
-	// Zwraca czy dany klawisze jest wyciœniêty, jeœli nie jest to dozwolone to traktuje jak wyciœniêty
-	bool KeyUpAllowed(byte key)
-	{
-		if(KeyAllowed(key))
-			return Key.Up(key);
-		else
-			return true;
-	}
-	bool KeyPressedReleaseSpecial(GAME_KEYS gk, bool special)
-	{
-		if(special)
-		{
-			GameKey& k = GKey[gk];
-			for(int i = 0; i < 2; ++i)
-			{
-				if(k.key[i] >= VK_F1 && k.key[i] <= VK_F12)
-				{
-					if(Key.PressedRelease(k.key[i]))
-						return true;
-				}
-			}
-		}
-		return KeyPressedReleaseAllowed(gk);
-	}
+	
 	// przedmioty w czasie grabienia itp s¹ tu przechowywane indeksy
 	// ujemne wartoœci odnosz¹ siê do slotów (SLOT_WEAPON = -SLOT_WEAPON-1), pozytywne do zwyk³ych przedmiotów
 	vector<int> tmp_inventory[2];
@@ -1053,8 +930,6 @@ public:
 	void SpawnDungeonCollider(const Vec3& pos);
 	void RemoveColliders();
 	void CreateCollisionShapes();
-	bool AllowKeyboard() const { return IS_SET(allow_input, ALLOW_KEYBOARD); }
-	bool AllowMouse() const { return IS_SET(allow_input, ALLOW_MOUSE); }
 	Vec3 PredictTargetPos(const Unit& me, const Unit& target, float bullet_speed) const;
 	bool CanShootAtLocation(const Unit& me, const Unit& target, const Vec3& pos) const { return CanShootAtLocation2(me, &target, pos); }
 	bool CanShootAtLocation(const Vec3& from, const Vec3& to) const;
@@ -1217,7 +1092,7 @@ public:
 	void GenerateHeroName(Class clas, bool crazy, string& name);
 	bool WantExitLevel()
 	{
-		return !KeyDownAllowed(GK_WALK);
+		return !GKey.KeyDownAllowed(GK_WALK);
 	}
 	Vec2 GetMapPosition(Unit& unit);
 	void EventTakeItem(int id);

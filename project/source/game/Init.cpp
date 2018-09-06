@@ -19,6 +19,7 @@
 #include "SaveState.h"
 #include "World.h"
 #include "DirectX.h"
+#include "LocationGeneratorFactory.h"
 
 extern void HumanPredraw(void* ptr, Matrix* mat, int n);
 extern const int ITEM_IMAGE_SIZE;
@@ -340,6 +341,10 @@ void Game::PostconfigureGame()
 	terrain->Init(device, terrain_options);
 	terrain->Build();
 	terrain->RemoveHeightMap(true);
+
+	// location generator factory
+	loc_gen_factory = new LocationGeneratorFactory;
+	loc_gen_factory->InitOnce();
 
 	// get pointer to gold item
 	gold_item_ptr = Item::Get("gold");

@@ -42,7 +42,7 @@ struct Mesh : public Resource
 
 	struct Submesh
 	{
-		word first; // pierwszy strójk¹t do narysowania
+		word first; // pierwszy trójk¹t do narysowania
 		word tris; // ile trójk¹tów narysowaæ
 		word min_ind; // odpowiednik parametru DrawIndexedPrimitive - MinIndex (tylko wyra¿ony w trójk¹tach)
 		word n_ind; // odpowiednik parametru DrawIndexedPrimitive - NumVertices (tylko wyra¿ony w trójk¹tach)

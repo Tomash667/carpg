@@ -1187,13 +1187,13 @@ int Unit::GetRandomAttack() const
 
 		switch(GetWeapon().weapon_type)
 		{
-		case WT_LONG:
+		case WT_LONG_BLADE:
 			a = A_LONG_BLADE;
 			break;
-		case WT_SHORT:
+		case WT_SHORT_BLADE:
 			a = A_SHORT_BLADE;
 			break;
-		case WT_MACE:
+		case WT_BLUNT:
 			a = A_BLUNT;
 			break;
 		case WT_AXE:
