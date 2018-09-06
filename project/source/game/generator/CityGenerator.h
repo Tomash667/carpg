@@ -129,6 +129,7 @@ public:
 
 	int GetNumberOfSteps() override;
 	void Generate() override;
+	void OnEnter() override;
 
 private:
 	void CreateRoadLineLeftRight(TERRAIN_TILE t, vector<EntryPoint>& entry_points);
@@ -158,5 +159,4 @@ private:
 	vector<int> road_ids;
 	TERRAIN_TILE road_tile;
 	vector<BuildPt> valid_pts;
-
 };

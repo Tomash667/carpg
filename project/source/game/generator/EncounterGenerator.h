@@ -7,4 +7,5 @@ class EncounterGenerator : public LocationGenerator
 public:
 	int GetNumberOfSteps() override;
 	void Generate() override;
+	void OnEnter() override;
 };

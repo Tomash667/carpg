@@ -2154,7 +2154,7 @@ void CityGenerator::Generate()
 			swap = Rand() % 6;
 			break;
 		}
-		
+
 		GenerateMainRoad(rtype, dir, 4, plaza, swap, city->entry_points, city->gates, true);
 		FlattenRoadExits();
 		GenerateRoads(TT_ROAD, 25);
@@ -2200,4 +2200,136 @@ void CityGenerator::Generate()
 	}
 
 	CleanBorders();
+}
+
+//=================================================================================================
+void CityGenerator::OnEnter()
+{
+	Game& game = Game::Get();
+	City* city = (City*)loc;
+	game.city_ctx = city;
+	game.arena_free = true;
+
+	if(!reenter)
+	{
+		game.ApplyContext(city, game.local_ctx);
+		game.ApplyTiles(city->h, city->tiles);
+	}
+
+	game.SetOutsideParams();
+
+	if(first)
+	{
+		// generate buildings
+		game.LoadingStep(game.txGeneratingBuildings);
+		game.SpawnBuildings(city->buildings);
+
+		// generate objects
+		game.LoadingStep(game.txGeneratingObjects);
+		game.SpawnCityObjects();
+
+		// generate units
+		game.LoadingStep(game.txGeneratingUnits);
+		game.SpawnUnits(city);
+		game.SpawnTmpUnits(city);
+
+		// generate items
+		game.LoadingStep(game.txGeneratingItems);
+		game.GenerateStockItems();
+		game.GenerateCityPickableItems();
+		if(city->IsVillage())
+			game.SpawnForestItems(-2);
+	}
+	else if(!reenter)
+	{
+		// remove temporary/quest units
+		if(city->reset)
+			game.RemoveTmpUnits(city);
+
+		// remove blood/corpses
+		int days;
+		city->CheckUpdate(days, W.GetWorldtime());
+		if(days > 0)
+			game.UpdateLocation(days, 100, false);
+
+		// FIXME -> ApplyContext
+		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+		{
+			if((*it)->ctx.require_tmp_ctx && !(*it)->ctx.tmp_ctx)
+				(*it)->ctx.SetTmpCtx(tmp_ctx_pool.Get());
+		}
+
+		// recreate units
+		game.LoadingStep(game.txGeneratingUnits);
+		game.RespawnUnits();
+		game.RepositionCityUnits();
+
+		// recreate physics
+		game.LoadingStep(game.txGeneratingPhysics);
+		game.RespawnObjectColliders();
+		game.RespawnBuildingPhysics();
+
+		if(city->reset)
+		{
+			game.SpawnTmpUnits(city);
+			city->reset = false;
+		}
+
+		// generate items
+		if(days > 0)
+		{
+			game.LoadingStep(game.txGeneratingItems);
+			game.GenerateStockItems();
+			if(days >= 10)
+			{
+				game.GenerateCityPickableItems();
+				if(city->IsVillage())
+					game.SpawnForestItems(-2);
+			}
+		}
+
+		game.OnReenterLevel(local_ctx);
+		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+			game.OnReenterLevel((*it)->ctx);
+	}
+
+	if(!reenter)
+	{
+		// stwórz obiekt kolizji terenu
+		LoadingStep(txRecreatingObjects);
+		SpawnTerrainCollider();
+		SpawnCityPhysics();
+		SpawnOutsideBariers();
+	}
+
+	// pojawianie sie questowej jednostki
+	if(L.location->active_quest && L.location->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && !L.location->active_quest->done)
+		HandleQuestEvent(L.location->active_quest);
+
+	// generuj minimapê
+	LoadingStep(txGeneratingMinimap);
+	CreateCityMinimap();
+
+	// dodaj gracza i jego dru¿ynê
+	Vec3 spawn_pos;
+	float spawn_dir;
+	city->GetEntry(spawn_pos, spawn_dir);
+	AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
+
+	if(!reenter)
+		GenerateQuestUnits();
+
+	for(Unit* unit : Team.members)
+	{
+		if(unit->IsHero())
+			unit->hero->lost_pvp = false;
+	}
+
+	CheckTeamItemShares();
+
+	arena_free = true;
+
+	Quest_Contest* contest = QM.quest_contest;
+	if(!contest->generated && L.location_index == contest->where && contest->state == Quest_Contest::CONTEST_TODAY)
+		SpawnDrunkmans();
 }

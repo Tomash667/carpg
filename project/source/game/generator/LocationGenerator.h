@@ -7,8 +7,10 @@ public:
 	virtual void Init() {}
 	virtual int GetNumberOfSteps();
 	virtual void Generate() = 0;
+	virtual void OnEnter() = 0;
 
 //protected:
 	Location* loc;
+	int dungeon_level;
 	bool first, reenter;
 };

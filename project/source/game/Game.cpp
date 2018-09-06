@@ -1804,7 +1804,6 @@ void Game::OnCleanup()
 	delete dungeon_shape_data;
 
 	draw_batch.Clear();
-	free_cave_data();
 	DeleteElements(game_players);
 	DeleteElements(old_players);
 	SM.Cleanup();

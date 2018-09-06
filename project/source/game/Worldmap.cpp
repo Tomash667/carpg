@@ -39,6 +39,7 @@
 #include "Quest_Contest.h"
 #include "Quest_Secret.h"
 #include "Quest_Tournament.h"
+#include "LocationGeneratorFactory.h"
 
 extern Matrix m1, m2, m3, m4;
 
@@ -126,6 +127,9 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	}
 
 	LocationGenerator* loc_gen = loc_gen_factory->Get(&l);
+	loc_gen->dungeon_level = 0;
+	loc_gen->first = first;
+	loc_gen->reenter = reenter;
 
 	// calculate number of loading steps for drawing progress bar
 	int steps = loc_gen->GetNumberOfSteps();
@@ -167,35 +171,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 
 		LoadingStep(txGeneratingMap);
 
-		switch(l.type)
-		{
-		case L_CITY:
-		case L_FOREST:
-		case L_MOONWELL:
-		case L_CAMP:
-		case L_ENCOUNTER:
-		case L_CAVE:
-			loc_gen->Generate();
-			break;
-		case L_DUNGEON:
-		case L_CRYPT:
-			{
-				InsideLocation* inside = (InsideLocation*)L.location;
-				inside->SetActiveLevel(0);
-				if(inside->IsMultilevel())
-				{
-					MultiInsideLocation* multi = (MultiInsideLocation*)inside;
-					if(multi->generated == 0)
-						++multi->generated;
-				}
-				Info("Generating dungeon, target %d.", inside->target);
-				GenerateDungeon(l);
-			}
-			break;
-		default:
-			assert(0);
-			break;
-		}
+		loc_gen->Generate();
 	}
 	else if(l.type != L_DUNGEON && l.type != L_CRYPT)
 		Info("Entering location '%s'.", l.name.c_str());
@@ -205,137 +181,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	switch(l.type)
 	{
 	case L_CITY:
-		{
-			// ustaw wskaŸniki
-			City* city = (City*)L.location;
-			city_ctx = city;
-			arena_free = true;
-
-			if(!reenter)
-			{
-				// ustaw kontekst
-				ApplyContext(city, local_ctx);
-				// ustaw teren
-				ApplyTiles(city->h, city->tiles);
-			}
-
-			SetOutsideParams();
-
-			// czy to pierwsza wizyta?
-			if(first)
-			{
-				// stwórz budynki
-				LoadingStep(txGeneratingBuildings);
-				SpawnBuildings(city->buildings);
-
-				// generuj obiekty
-				LoadingStep(txGeneratingObjects);
-				SpawnCityObjects();
-
-				// generuj jednostki
-				LoadingStep(txGeneratingUnits);
-				SpawnUnits(city);
-				SpawnTmpUnits(city);
-
-				// generuj przedmioty
-				LoadingStep(txGeneratingItems);
-				GenerateStockItems();
-				GenerateCityPickableItems();
-				if(city->IsVillage())
-					SpawnForestItems(-2);
-			}
-			else if(!reenter)
-			{
-				// resetowanie bohaterów/questowych postaci
-				if(city->reset)
-					RemoveTmpUnits(city);
-
-				// usuwanie krwii/zw³ok
-				int days;
-				city->CheckUpdate(days, W.GetWorldtime());
-				if(days > 0)
-					UpdateLocation(days, 100, false);
-
-				for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
-				{
-					if((*it)->ctx.require_tmp_ctx && !(*it)->ctx.tmp_ctx)
-						(*it)->ctx.SetTmpCtx(tmp_ctx_pool.Get());
-				}
-
-				// odtwórz jednostki
-				LoadingStep(txGeneratingUnits);
-				RespawnUnits();
-				RepositionCityUnits();
-
-				// odtwórz fizykê
-				LoadingStep(txGeneratingPhysics);
-				RespawnObjectColliders();
-				RespawnBuildingPhysics();
-
-				if(city->reset)
-				{
-					SpawnTmpUnits(city);
-					city->reset = false;
-				}
-
-				// generuj przedmioty
-				if(days > 0)
-				{
-					LoadingStep(txGeneratingItems);
-					GenerateStockItems();
-					if(days >= 10)
-					{
-						GenerateCityPickableItems();
-						if(city->IsVillage())
-							SpawnForestItems(-2);
-					}
-				}
-
-				OnReenterLevel(local_ctx);
-				for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
-					OnReenterLevel((*it)->ctx);
-			}
-
-			if(!reenter)
-			{
-				// stwórz obiekt kolizji terenu
-				LoadingStep(txRecreatingObjects);
-				SpawnTerrainCollider();
-				SpawnCityPhysics();
-				SpawnOutsideBariers();
-			}
-
-			// pojawianie sie questowej jednostki
-			if(L.location->active_quest && L.location->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER && !L.location->active_quest->done)
-				HandleQuestEvent(L.location->active_quest);
-
-			// generuj minimapê
-			LoadingStep(txGeneratingMinimap);
-			CreateCityMinimap();
-
-			// dodaj gracza i jego dru¿ynê
-			Vec3 spawn_pos;
-			float spawn_dir;
-			city->GetEntry(spawn_pos, spawn_dir);
-			AddPlayerTeam(spawn_pos, spawn_dir, reenter, true);
-
-			if(!reenter)
-				GenerateQuestUnits();
-
-			for(Unit* unit : Team.members)
-			{
-				if(unit->IsHero())
-					unit->hero->lost_pvp = false;
-			}
-
-			CheckTeamItemShares();
-
-			arena_free = true;
-
-			Quest_Contest* contest = QM.quest_contest;
-			if(!contest->generated && L.location_index == contest->where && contest->state == Quest_Contest::CONTEST_TODAY)
-				SpawnDrunkmans();
-		}
+		loc_gen->OnEnter();
 		break;
 	case L_DUNGEON:
 	case L_CRYPT:
@@ -518,51 +364,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 		}
 		break;
 	case L_ENCOUNTER:
-		{
-			// ustaw wskaŸniki
-			OutsideLocation* enc = (OutsideLocation*)L.location;
-			enc->loaded_resources = false;
-			city_ctx = nullptr;
-			ApplyContext(enc, local_ctx);
-
-			// ustaw teren
-			ApplyTiles(enc->h, enc->tiles);
-
-			SetOutsideParams();
-
-			// generuj obiekty
-			LoadingStep(txGeneratingObjects);
-			SpawnEncounterObjects();
-
-			// stwórz obiekt kolizji terenu
-			LoadingStep(txRecreatingObjects);
-			SpawnTerrainCollider();
-			SpawnOutsideBariers();
-
-			// generuj jednostki
-			LoadingStep(txGeneratingUnits);
-			GameDialog* dialog;
-			Unit* talker;
-			Quest* quest;
-			SpawnEncounterUnits(dialog, talker, quest);
-
-			// generate items
-			LoadingStep(txGeneratingItems);
-			SpawnForestItems(-1);
-
-			// generuj minimapê
-			LoadingStep(txGeneratingMinimap);
-			CreateForestMinimap();
-
-			// dodaj gracza i jego dru¿ynê
-			SpawnEncounterTeam();
-			if(dialog)
-			{
-				DialogContext& ctx = *Team.leader->player->dialog_ctx;
-				StartDialog2(Team.leader->player, talker, dialog);
-				ctx.dialog_quest = quest;
-			}
-		}
+		loc_gen->OnEnter();
 		break;
 	case L_CAMP:
 		{

@@ -6,4 +6,5 @@ class DungeonGenerator : public LocationGenerator
 {
 public:
 	int GetNumberOfSteps() override;
+	void Generate() override;
 };
