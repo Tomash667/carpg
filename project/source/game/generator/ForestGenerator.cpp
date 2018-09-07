@@ -204,9 +204,10 @@ void ForestGenerator::OnEnter()
 		switch(type)
 		{
 		case FOREST:
-			game.SpawnForestObjects();
+			SpawnForestObjects();
 			break;
 		case CAMP:
+			SpawnForestObjects();
 			game.SpawnCampObjects();
 			break;
 		case MOONWELL:
@@ -241,13 +242,13 @@ void ForestGenerator::OnEnter()
 		{
 		case FOREST:
 		case SECRET:
-			game.SpawnForestItems(0);
+			SpawnForestItems(0);
 			break;
 		case CAMP:
-			game.SpawnForestItems(-1);
+			SpawnForestItems(-1);
 			break;
 		case MOONWELL:
-			game.SpawnForestItems(1);
+			SpawnForestItems(1);
 			break;
 		}
 	}
@@ -323,13 +324,13 @@ void ForestGenerator::OnEnter()
 			{
 			case FOREST:
 			case SECRET:
-				game.SpawnForestItems(have_sawmill ? -1 : 0);
+				SpawnForestItems(have_sawmill ? -1 : 0);
 				break;
 			case CAMP:
-				game.SpawnForestItems(-1);
+				SpawnForestItems(-1);
 				break;
 			case MOONWELL:
-				game.SpawnForestItems(1);
+				SpawnForestItems(1);
 				break;
 			}
 		}
@@ -342,7 +343,7 @@ void ForestGenerator::OnEnter()
 	{
 		game.LoadingStep(game.txRecreatingObjects);
 		game.SpawnTerrainCollider();
-		game.SpawnOutsideBariers();
+		L.SpawnOutsideBariers();
 	}
 
 	// handle quest event

@@ -155,3 +155,85 @@ void Level::ProcessRemoveUnits(bool clear)
 	}
 	to_remove.clear();
 }
+
+void Level::SpawnOutsideBariers()
+{
+	Game& game = Game::Get();
+
+	const float size = 256.f;
+	const float size2 = size / 2;
+	const float border = 32.f;
+	const float border2 = border / 2;
+
+	// top
+	{
+		CollisionObject& cobj = Add1(game.local_ctx.colliders);
+		cobj.type = CollisionObject::RECTANGLE;
+		cobj.pt = Vec2(size2, border2);
+		cobj.w = size2;
+		cobj.h = border2;
+
+		btCollisionObject* obj = new btCollisionObject;
+		obj->setCollisionShape(game.shape_barrier);
+		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
+		btTransform tr;
+		tr.setIdentity();
+		tr.setOrigin(btVector3(size2, 40.f, border2));
+		obj->setWorldTransform(tr);
+		game.phy_world->addCollisionObject(obj, CG_BARRIER);
+	}
+
+	// bottom
+	{
+		CollisionObject& cobj = Add1(game.local_ctx.colliders);
+		cobj.type = CollisionObject::RECTANGLE;
+		cobj.pt = Vec2(size2, size - border2);
+		cobj.w = size2;
+		cobj.h = border2;
+
+		btCollisionObject* obj = new btCollisionObject;
+		obj->setCollisionShape(game.shape_barrier);
+		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
+		btTransform tr;
+		tr.setIdentity();
+		tr.setOrigin(btVector3(size2, 40.f, size - border2));
+		obj->setWorldTransform(tr);
+		game.phy_world->addCollisionObject(obj, CG_BARRIER);
+	}
+
+	// left
+	{
+		CollisionObject& cobj = Add1(game.local_ctx.colliders);
+		cobj.type = CollisionObject::RECTANGLE;
+		cobj.pt = Vec2(border2, size2);
+		cobj.w = border2;
+		cobj.h = size2;
+
+		btCollisionObject* obj = new btCollisionObject;
+		obj->setCollisionShape(game.shape_barrier);
+		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
+		btTransform tr;
+		tr.setOrigin(btVector3(border2, 40.f, size2));
+		tr.setRotation(btQuaternion(PI / 2, 0, 0));
+		obj->setWorldTransform(tr);
+		game.phy_world->addCollisionObject(obj, CG_BARRIER);
+	}
+
+	// right
+	{
+		CollisionObject& cobj = Add1(game.local_ctx.colliders);
+		cobj.type = CollisionObject::RECTANGLE;
+		cobj.pt = Vec2(size - border2, size2);
+		cobj.w = border2;
+		cobj.h = size2;
+
+		btCollisionObject* obj = new btCollisionObject;
+		obj->setCollisionShape(game.shape_barrier);
+		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
+		btTransform tr;
+		tr.setOrigin(btVector3(size - border2, 40.f, size2));
+		tr.setRotation(btQuaternion(PI / 2, 0, 0));
+		obj->setWorldTransform(tr);
+		game.phy_world->addCollisionObject(obj, CG_BARRIER);
+	}
+}

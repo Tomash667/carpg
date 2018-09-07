@@ -885,7 +885,7 @@ void Game::LoadGame(GameReader& f)
 			}
 			else
 			{
-				SpawnOutsideBariers();
+				L.SpawnOutsideBariers();
 				CreateForestMinimap();
 			}
 

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Mapa2.h"
+#include "Tile.h"
+#include "Room.h"
+#include "Light.h"
 #include "Unit.h"
 #include "Chest.h"
 #include "Trap.h"

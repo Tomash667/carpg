@@ -76,6 +76,7 @@ public:
 	void RemoveLocation(int index);
 	bool VerifyLocation(int index) const { return index >= 0 && index < (int)locations.size() && locations[index]; }
 	void DeleteCamp(Camp* camp, bool remove = true);
+	void AbadonLocation(Location* loc);
 
 	// datetime
 	bool IsSameWeek(int worldtime2) const;
@@ -137,6 +138,7 @@ public:
 
 	// misc
 	bool CheckFirstCity();
+	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
 
 private:
 	WorldMapGui* gui;

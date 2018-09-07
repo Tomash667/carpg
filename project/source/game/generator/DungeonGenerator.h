@@ -11,4 +11,7 @@ public:
 	void GenerateUnits() override;
 	void GenerateItems() override;
 	bool HandleUpdate(int days) override;
+
+private:
+	void GenerateDungeonItems();
 };

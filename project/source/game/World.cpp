@@ -2079,3 +2079,96 @@ void World::DeleteCamp(Camp* camp, bool remove)
 	if(remove)
 		RemoveLocation(index);
 }
+
+void World::AbadonLocation(Location* loc)
+{
+	assert(loc);
+
+	// only works for OutsideLocation for now!
+	assert(loc->outside && loc->type != L_CITY);
+
+	Game& game = Game::Get();
+	OutsideLocation* outside = (OutsideLocation*)loc;
+
+	// if location is open
+	if(loc == current_location)
+	{
+		// remove units
+		for(Unit*& u : outside->units)
+		{
+			if(u->IsAlive() && game.IsEnemy(*game.pc->unit, *u))
+			{
+				u->to_remove = true;
+				L.to_remove.push_back(u);
+			}
+		}
+
+		// remove items from chests
+		for(Chest* chest : outside->chests)
+		{
+			if(!chest->looted)
+				chest->items.clear();
+		}
+	}
+	else
+	{
+		// delete units
+		for(Unit*& u : outside->units)
+		{
+			__assume(u != nullptr);
+			if(u->IsAlive() && game.IsEnemy(*game.pc->unit, *u))
+			{
+				delete u;
+				u = nullptr;
+			}
+		}
+		RemoveNullElements(outside->units);
+
+		// remove items from chests
+		for(Chest* chest : outside->chests)
+			chest->items.clear();
+	}
+
+	loc->spawn = SG_NONE;
+	loc->last_visit = worldtime;
+}
+
+int World::FindWorldUnit(Unit* unit, int hint_loc, int hint_loc2, int* out_level)
+{
+	assert(unit);
+
+	int level;
+
+	if(hint_loc != -1)
+	{
+		if(GetLocation(hint_loc)->FindUnit(unit, &level))
+		{
+			if(out_level)
+				*out_level = level;
+			return hint_loc;
+		}
+	}
+
+	if(hint_loc2 != -1 && hint_loc != hint_loc2)
+	{
+		if(GetLocation(hint_loc2)->FindUnit(unit, &level))
+		{
+			if(out_level)
+				*out_level = level;
+			return hint_loc2;
+		}
+	}
+
+	for(uint i = 0; i < locations.size(); ++i)
+	{
+		Location* loc = locations[i];
+		if(loc && i != hint_loc && i != hint_loc2 && loc->state >= LS_ENTERED && loc->FindUnit(unit, &level))
+		{
+			if(out_level)
+				*out_level = level;
+			return i;
+		}
+	}
+
+	return -1;
+}

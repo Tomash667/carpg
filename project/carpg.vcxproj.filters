@@ -742,6 +742,10 @@
     <ClCompile Include="source\game\generator\InsideLocationGenerator.cpp">
       <Filter>3. game\generator</Filter>
     </ClCompile>
+    <ClCompile Include="source\game\generator\OutsideLocationGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="T.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -1481,6 +1485,12 @@
       <Filter>3. game\generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\generator\InsideLocationGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\entity\OutsideObject.h">
+      <Filter>3. game\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\OutsideLocationGenerator.h">
       <Filter>3. game\generator</Filter>
     </ClInclude>
   </ItemGroup>

@@ -79,7 +79,5 @@ struct OpcjeMapy
 bool generuj_mape2(OpcjeMapy& opcje, bool recreate = false);
 bool kontynuuj_generowanie_mapy(OpcjeMapy& opcje);
 bool generuj_schody(OpcjeMapy& opcje);
-void rysuj_mape_konsola(Pole* mapa, uint w, uint h);
 // zwraca pole które ³¹czy dwa pomieszczenia, zak³ada ¿e po³¹czenie istnieje!, operuje na danych u¿ytych w generuj_mape2
 Int2 pole_laczace(int pokoj1, int pokoj2);
-void ustaw_flagi(Pole* mapa, uint wh);

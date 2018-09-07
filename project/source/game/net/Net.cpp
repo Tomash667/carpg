@@ -970,7 +970,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 			Error("Read level: Broken packet for light angle.");
 			return false;
 		}
-		SpawnOutsideBariers();
+		L.SpawnOutsideBariers();
 	}
 	else
 	{

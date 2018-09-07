@@ -270,12 +270,87 @@ void DungeonGenerator::GenerateUnits()
 
 void DungeonGenerator::GenerateItems()
 {
-	Game::Get().GenerateDungeonFood();
+	GenerateDungeonItems();
 }
 
 bool DungeonGenerator::HandleUpdate(int days)
 {
 	if(days >= 10)
-		Game::Get().GenerateDungeonFood();
+		GenerateDungeonItems();
 	return true;
+}
+
+void DungeonGenerator::GenerateDungeonItems()
+{
+	Game& game = Game::Get();
+
+	// determine how much food to spawn
+	int mod = 3;
+	InsideLocation* inside = (InsideLocation*)loc;
+	BaseLocation& base = g_base_locations[inside->target];
+
+	if(IS_SET(base.options, BLO_LESS_FOOD))
+		--mod;
+
+	SPAWN_GROUP spawn = loc->spawn;
+	if(spawn == SG_CHALLANGE)
+	{
+		if(dungeon_level == 0)
+			spawn = SG_ORCS;
+		else if(dungeon_level == 1)
+			spawn = SG_MAGES_AND_GOLEMS;
+		else
+			spawn = SG_EVIL;
+	}
+	SpawnGroup& sg = g_spawn_groups[spawn];
+	mod += sg.food_mod;
+
+	if(mod <= 0)
+		return;
+
+	// get food list and base objects
+	const ItemList& lis = *ItemList::Get(sg.orc_food ? "orc_food" : "normal_food").lis;
+	BaseObject* table = BaseObject::Get("table"),
+		*shelves = BaseObject::Get("shelves");
+	const Item* plate = Item::Get("plate");
+	const Item* cup = Item::Get("cup");
+	bool spawn_golden_cup = Rand() % 100 == 0;
+
+	// spawn food
+	for(vector<Object*>::iterator it = game.local_ctx.objects->begin(), end = game.local_ctx.objects->end(); it != end; ++it)
+	{
+		Object& obj = **it;
+		if(obj.base == table)
+		{
+			game.PickableItemBegin(game.local_ctx, obj);
+			if(spawn_golden_cup)
+			{
+				spawn_golden_cup = false;
+				game.PickableItemAdd(Item::Get("golden_cup"));
+			}
+			else
+			{
+				int count = Random(mod / 2, mod);
+				if(count)
+				{
+					for(int i = 0; i < count; ++i)
+						game.PickableItemAdd(lis.Get());
+				}
+			}
+			if(Rand() % 3 == 0)
+				game.PickableItemAdd(plate);
+			if(Rand() % 3 == 0)
+				game.PickableItemAdd(cup);
+		}
+		else if(obj.base == shelves)
+		{
+			int count = Random(mod, mod * 3 / 2);
+			if(count)
+			{
+				game.PickableItemBegin(game.local_ctx, obj);
+				for(int i = 0; i < count; ++i)
+					game.PickableItemAdd(lis.Get());
+			}
+		}
+	}
 }

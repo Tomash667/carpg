@@ -1,8 +1,8 @@
 #pragma once
 
-#include "LocationGenerator.h"
+#include "OutsideLocationGenerator.h"
 
-class ForestGenerator : public LocationGenerator
+class ForestGenerator : public OutsideLocationGenerator
 {
 	enum Type
 	{

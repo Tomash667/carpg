@@ -59,6 +59,7 @@
 #include "Debug.h"
 #include "LocationGeneratorFactory.h"
 #include "LocationGenerator.h"
+#include "CaveGenerator.h"
 
 const int SAVE_VERSION = V_CURRENT;
 int LOAD_VERSION;
@@ -10420,7 +10421,7 @@ void Game::ChangeLevel(int where)
 			Info("Generating dungeon, level %d, target %d.", dungeon_level + 1, inside->target);
 
 			LoadingStep(txGeneratingMap);
-			
+
 			loc_gen->first = true;
 			loc_gen->Generate();
 		}
@@ -11110,83 +11111,6 @@ void Game::GenerateCaveObjects()
 		}
 	}
 	sta.clear();
-}
-
-void Game::GenerateCaveUnits()
-{
-	// zbierz grupy
-	static TmpUnitGroup e[3] = {
-		{ UnitGroup::TryGet("wolfs") },
-		{ UnitGroup::TryGet("spiders") },
-		{ UnitGroup::TryGet("rats") }
-	};
-
-	static vector<Int2> tiles;
-	CaveLocation* cave = (CaveLocation*)L.location;
-	InsideLocationLevel& lvl = cave->GetLevelData();
-	int level = GetDungeonLevel();
-	tiles.clear();
-	tiles.push_back(lvl.staircase_up);
-
-	// ustal wrogów
-	for(int i = 0; i < 3; ++i)
-		e[i].Fill(level);
-
-	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
-	{
-		Int2 pt = cave->GetRandomTile();
-		if(lvl.map[pt.x + pt.y*lvl.w].type != PUSTE)
-			continue;
-
-		bool ok = true;
-		for(vector<Int2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
-		{
-			if(Int2::Distance(pt, *it) < 10)
-			{
-				ok = false;
-				break;
-			}
-		}
-
-		if(ok)
-		{
-			// losuj grupe
-			TmpUnitGroup& group = e[Rand() % 3];
-			if(group.total == 0)
-				continue;
-
-			tiles.push_back(pt);
-			++added;
-
-			// postaw jednostki
-			int levels = level * 2;
-			while(levels > 0)
-			{
-				int k = Rand() % group.total, l = 0;
-				UnitData* ud = nullptr;
-
-				for(auto& entry : group.entries)
-				{
-					l += entry.count;
-					if(k < l)
-					{
-						ud = entry.ud;
-						break;
-					}
-				}
-
-				assert(ud);
-
-				if(!ud || ud->level.x > levels)
-					break;
-
-				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
-				if(!SpawnUnitNearLocation(local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *ud, nullptr, enemy_level, 3.f))
-					break;
-				levels -= enemy_level;
-			}
-		}
-	}
 }
 
 void Game::CastSpell(LevelContext& ctx, Unit& u)
@@ -13424,7 +13348,7 @@ void Game::EnterLevel(LocationGenerator* loc_gen)
 	Inventory::lock = nullptr;
 
 	loc_gen->OnEnter();
-	
+
 	OnEnterLevelOrLocation();
 	OnEnterLevel();
 
@@ -14797,86 +14721,6 @@ void Game::CreateForestMinimap()
 	tMinimap->UnlockRect(0);
 
 	game_gui->minimap->minimap_size = OutsideLocation::size;
-}
-
-void Game::SpawnOutsideBariers()
-{
-	const float size = 256.f;
-	const float size2 = size / 2;
-	const float border = 32.f;
-	const float border2 = border / 2;
-
-	// top
-	{
-		CollisionObject& cobj = Add1(local_ctx.colliders);
-		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(size2, border2);
-		cobj.w = size2;
-		cobj.h = border2;
-
-		btCollisionObject* obj = new btCollisionObject;
-		obj->setCollisionShape(shape_barrier);
-		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
-		btTransform tr;
-		tr.setIdentity();
-		tr.setOrigin(btVector3(size2, 40.f, border2));
-		obj->setWorldTransform(tr);
-		phy_world->addCollisionObject(obj, CG_BARRIER);
-	}
-
-	// bottom
-	{
-		CollisionObject& cobj = Add1(local_ctx.colliders);
-		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(size2, size - border2);
-		cobj.w = size2;
-		cobj.h = border2;
-
-		btCollisionObject* obj = new btCollisionObject;
-		obj->setCollisionShape(shape_barrier);
-		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
-		btTransform tr;
-		tr.setIdentity();
-		tr.setOrigin(btVector3(size2, 40.f, size - border2));
-		obj->setWorldTransform(tr);
-		phy_world->addCollisionObject(obj, CG_BARRIER);
-	}
-
-	// left
-	{
-		CollisionObject& cobj = Add1(local_ctx.colliders);
-		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(border2, size2);
-		cobj.w = border2;
-		cobj.h = size2;
-
-		btCollisionObject* obj = new btCollisionObject;
-		obj->setCollisionShape(shape_barrier);
-		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
-		btTransform tr;
-		tr.setOrigin(btVector3(border2, 40.f, size2));
-		tr.setRotation(btQuaternion(PI / 2, 0, 0));
-		obj->setWorldTransform(tr);
-		phy_world->addCollisionObject(obj, CG_BARRIER);
-	}
-
-	// right
-	{
-		CollisionObject& cobj = Add1(local_ctx.colliders);
-		cobj.type = CollisionObject::RECTANGLE;
-		cobj.pt = Vec2(size - border2, size2);
-		cobj.w = border2;
-		cobj.h = size2;
-
-		btCollisionObject* obj = new btCollisionObject;
-		obj->setCollisionShape(shape_barrier);
-		obj->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_BARRIER);
-		btTransform tr;
-		tr.setOrigin(btVector3(size - border2, 40.f, size2));
-		tr.setRotation(btQuaternion(PI / 2, 0, 0));
-		obj->setWorldTransform(tr);
-		phy_world->addCollisionObject(obj, CG_BARRIER);
-	}
 }
 
 Vec2 Game::GetMapPosition(Unit& unit)
@@ -16747,7 +16591,7 @@ void Game::GenerateSawmill(bool in_progress)
 	}
 }
 
-bool Game::GenerateMine()
+bool Game::GenerateMine(CaveGenerator* cave_gen)
 {
 	Quest_Mine* quest_mine = QM.quest_mine;
 	switch(quest_mine->mine_state3)
@@ -17227,10 +17071,10 @@ bool Game::GenerateMine()
 	}
 
 	if(!nowe.empty())
-		regenerate_cave_flags(lvl.map, lvl.w);
+		cave_gen->RegenerateFlags();
 
 	if(rysuj_m && devmode)
-		rysuj_mape_konsola(lvl.map, lvl.w, lvl.h);
+		cave_gen->DebugDraw();
 
 	// generuj rudê
 	if(generuj_rude)

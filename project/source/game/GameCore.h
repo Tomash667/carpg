@@ -139,5 +139,6 @@ class LocationGeneratorFactory;
 //-----------------------------------------------------------------------------
 enum EncounterMode;
 enum TRAP_TYPE;
+enum SPAWN_GROUP;
 enum SpecialEncounter;
 enum class OLD_BUILDING;

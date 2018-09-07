@@ -155,7 +155,7 @@ bool Quest_KillAnimals::OnTimeout(TimeoutType ttype)
 		game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
 		game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-		game->AbadonLocation(&GetTargetLocation());
+		W.AbadonLocation(&GetTargetLocation());
 	}
 
 	return true;

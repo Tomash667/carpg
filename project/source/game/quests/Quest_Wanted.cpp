@@ -296,7 +296,7 @@ bool Quest_Wanted::Load(GameReader& f)
 	else if(!target_unit || target_unit->hero->team_member)
 		in_location = -1;
 	else
-		in_location = game->FindWorldUnit(target_unit, target_loc, W.GetCurrentLocationIndex());
+		in_location = W.FindWorldUnit(target_unit, target_loc, W.GetCurrentLocationIndex());
 
 	if(!done)
 	{

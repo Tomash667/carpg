@@ -6,6 +6,7 @@
 #include "Level.h"
 #include "QuestManager.h"
 #include "Quest_Mine.h"
+#include "UnitGroup.h"
 #include "Game.h"
 
 CaveGenerator::CaveGenerator() : m1(nullptr), m2(nullptr)
@@ -339,21 +340,11 @@ void CaveGenerator::Generate()
 	lvl.w = lvl.h = 52;
 }
 
-//void regenerate_cave_flags(Pole* mapa, int size)
-//{
-//	assert(mapa && InRange(size, 10, 100));
-//
-//	// clear all flags (except F_NISKI_SUFIT, F_DRUGA_TEKSTURA, F_ODKRYTE)
-//	for(int i = 0, s = size * size; i < s; ++i)
-//		CLEAR_BIT(mapa[i].flags, 0xFFFFFFFF & ~Pole::F_NISKI_SUFIT & ~Pole::F_DRUGA_TEKSTURA & ~Pole::F_ODKRYTE);
-//
-//	// ustaw flagi
-//	Mapa::mapa = mapa;
-//	OpcjeMapy opcje;
-//	opcje.w = opcje.h = size;
-//	Mapa::opcje = &opcje;
-//	Mapa::ustaw_flagi();
-//}
+void CaveGenerator::RegenerateFlags()
+{
+	InsideLocationLevel& lvl = GetLevelData();
+	Pole::SetupFlags(lvl.map, Int2(lvl.w, lvl.h));
+}
 
 void CaveGenerator::DebugDraw()
 {
@@ -381,25 +372,139 @@ void CaveGenerator::GenerateObjects()
 
 	game.GenerateCaveObjects();
 	if(L.location_index == QM.quest_mine->target_loc)
-		game.GenerateMine();
+		game.GenerateMine(this);
 }
 
 void CaveGenerator::GenerateUnits()
 {
-	Game::Get().GenerateCaveUnits();
+	Game& game = Game::Get();
+
+	// zbierz grupy
+	static TmpUnitGroup e[3] = {
+		{ UnitGroup::TryGet("wolfs") },
+		{ UnitGroup::TryGet("spiders") },
+		{ UnitGroup::TryGet("rats") }
+	};
+
+	static vector<Int2> tiles;
+	CaveLocation* cave = (CaveLocation*)loc;
+	InsideLocationLevel& lvl = cave->GetLevelData();
+	int level = game.GetDungeonLevel();
+	tiles.clear();
+	tiles.push_back(lvl.staircase_up);
+
+	// ustal wrogów
+	for(int i = 0; i < 3; ++i)
+		e[i].Fill(level);
+
+	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
+	{
+		Int2 pt = cave->GetRandomTile();
+		if(lvl.map[pt.x + pt.y*lvl.w].type != PUSTE)
+			continue;
+
+		bool ok = true;
+		for(vector<Int2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
+		{
+			if(Int2::Distance(pt, *it) < 10)
+			{
+				ok = false;
+				break;
+			}
+		}
+
+		if(ok)
+		{
+			// losuj grupe
+			TmpUnitGroup& group = e[Rand() % 3];
+			if(group.total == 0)
+				continue;
+
+			tiles.push_back(pt);
+			++added;
+
+			// postaw jednostki
+			int levels = level * 2;
+			while(levels > 0)
+			{
+				int k = Rand() % group.total, l = 0;
+				UnitData* ud = nullptr;
+
+				for(auto& entry : group.entries)
+				{
+					l += entry.count;
+					if(k < l)
+					{
+						ud = entry.ud;
+						break;
+					}
+				}
+
+				assert(ud);
+
+				if(!ud || ud->level.x > levels)
+					break;
+
+				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
+				if(!game.SpawnUnitNearLocation(game.local_ctx, Vec3(2.f*pt.x + 1.f, 0, 2.f*pt.y + 1.f), *ud, nullptr, enemy_level, 3.f))
+					break;
+				levels -= enemy_level;
+			}
+		}
+	}
 }
 
 void CaveGenerator::GenerateItems()
 {
-	Game::Get().GenerateMushrooms();
+	GenerateMushrooms();
 }
 
 bool CaveGenerator::HandleUpdate(int days)
 {
 	bool respawn_units;
 	if(L.location_index == QM.quest_mine->target_loc)
-		respawn_units = Game::Get().GenerateMine();
+		respawn_units = Game::Get().GenerateMine(this);
 	if(days > 0)
-		Game::Get().GenerateMushrooms(min(days, 10));
+		GenerateMushrooms(min(days, 10));
 	return respawn_units;
+}
+
+void CaveGenerator::GenerateMushrooms(int days_since)
+{
+	Game& game = Game::Get();
+	InsideLocationLevel& lvl = GetLevelData();
+	Int2 pt;
+	Vec2 pos;
+	int dir;
+	const Item* shroom = Item::Get("mushroom");
+
+	for(int i = 0; i < days_since * 20; ++i)
+	{
+		pt = Int2::Random(Int2(1, 1), Int2(lvl.w - 2, lvl.h - 2));
+		if(OR2_EQ(lvl.map[pt.x + pt.y*lvl.w].type, PUSTE, KRATKA_SUFIT) && lvl.IsTileNearWall(pt, dir))
+		{
+			pos.x = 2.f*pt.x;
+			pos.y = 2.f*pt.y;
+			switch(dir)
+			{
+			case GDIR_LEFT:
+				pos.x += 0.5f;
+				pos.y += Random(-1.f, 1.f);
+				break;
+			case GDIR_RIGHT:
+				pos.x += 1.5f;
+				pos.y += Random(-1.f, 1.f);
+				break;
+			case GDIR_UP:
+				pos.x += Random(-1.f, 1.f);
+				pos.y += 1.5f;
+				break;
+			case GDIR_DOWN:
+				pos.x += Random(-1.f, 1.f);
+				pos.y += 0.5f;
+				break;
+			}
+			game.SpawnGroundItemInsideRadius(shroom, pos, 0.5f);
+		}
+	}
 }

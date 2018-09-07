@@ -59,23 +59,6 @@ namespace Mapa
 		DODAJ_KORYTARZ
 	};
 
-	//-----------------------------------------------------------------------------
-	// Graficzna reprezentacja pola mapy
-	const char znak[] = {
-		' ', // NIEUZYTE
-		'_', // PUSTE
-		'<', // SCHODY_GORA
-		'>', // SCHODY_DOL
-		'+', // DRZWI
-		'-', // OTWOR_NA_DRZWI
-		'/', // KRATKA_PODLOGA
-		'^', // KRATKA_SUFIT
-		'|', // KRATKA
-		'#', // SCIANA
-		'@', // BLOKADA
-		'$' // BLOKADA_SCIANA
-	};
-
 	bool czy_sciana_laczaca(int x, int y, int id1, int id2);
 	void dodaj_pokoj(int x, int y, int w, int h, DODAJ dodaj, int id = -1);
 	void dodaj_pokoj(const Room& pokoj, int id = -1) { dodaj_pokoj(pokoj.pos.x, pokoj.pos.y, pokoj.size.x, pokoj.size.y, NIE_DODAWAJ, id); }
@@ -83,11 +66,9 @@ namespace Mapa
 	void oznacz_korytarze();
 	void polacz_korytarze();
 	void polacz_pokoje();
-	void rysuj();
 	bool sprawdz_pokoj(int x, int y, int w, int h);
 	void stworz_korytarz(Int2& pt, DIR dir);
 	void szukaj_polaczenia(int x, int y, int id);
-	void ustaw_flagi();
 	void ustaw_sciane(POLE& pole);
 	void ustaw_wzor();
 	DIR wolna_droga(int id);
@@ -328,7 +309,7 @@ namespace Mapa
 			generuj_schody(*opcje);
 
 		// generuj flagi pól
-		ustaw_flagi();
+		Pole::SetupFlags(opcje->mapa, Int2(opcje->w, opcje->h));
 	}
 
 	//=================================================================================================
@@ -507,19 +488,6 @@ namespace Mapa
 					}
 				}
 			}
-		}
-	}
-
-	//=================================================================================================
-	// Rysuje podziemia
-	//=================================================================================================
-	void rysuj()
-	{
-		for(int y = opcje->h - 1; y >= 0; --y)
-		{
-			for(int x = 0; x < opcje->w; ++x)
-				putchar(znak[mapa[x + y*opcje->w].type]);
-			putchar('\n');
 		}
 	}
 
@@ -907,7 +875,7 @@ bool generuj_mape2(OpcjeMapy& _opcje, bool recreate)
 		return (_opcje.blad == 0);
 
 	if(_opcje.devmode)
-		Mapa::rysuj();
+		Pole::DebugDraw(_opcje.mapa, Int2(_opcje.w, _opcje.h));
 
 	return (_opcje.blad == 0);
 }
@@ -926,7 +894,7 @@ bool kontynuuj_generowanie_mapy(OpcjeMapy& _opcje)
 	Mapa::ustaw_flagi();
 
 	if(_opcje.devmode)
-		Mapa::rysuj();
+		Pole::DebugDraw(_opcje.mapa, Int2(_opcje.w, _opcje.h));
 
 	return (_opcje.blad == 0);
 }
@@ -1327,20 +1295,6 @@ bool generuj_schody(OpcjeMapy& _opcje)
 	return true;
 }
 
-void rysuj_mape_konsola(Pole* _mapa, uint _w, uint _h)
-{
-	assert(_mapa && _w && _h);
-
-	OpcjeMapy opcje;
-	opcje.mapa = _mapa;
-	opcje.w = _w;
-	opcje.h = _h;
-
-	Mapa::mapa = _mapa;
-	Mapa::opcje = &opcje;
-	Mapa::rysuj();
-}
-
 inline bool IsInside(const Int2& pt, const Int2& start, const Int2& size)
 {
 	return (pt.x >= start.x && pt.y >= start.y && pt.x < start.x + size.x && pt.y < start.y + size.y);
@@ -1391,18 +1345,4 @@ ok:
 
 	assert(0 && "Brak pola ³¹cz¹cego!");
 	return Int2(-1, -1);
-}
-
-void ustaw_flagi(Pole* mapa, uint wh)
-{
-	assert(mapa && wh > 0);
-
-	OpcjeMapy opcje;
-	opcje.mapa = mapa;
-	opcje.w = wh;
-	opcje.h = wh;
-
-	Mapa::opcje = &opcje;
-	Mapa::mapa = mapa;
-	Mapa::ustaw_flagi();
 }

@@ -352,7 +352,7 @@ void Game::StartTutorial()
 	}
 
 	// obiekty
-	ustaw_flagi(lvl.map, 22);
+	Pole::SetupFlags(lvl.map, Int2(22, 22));
 	GenerateDungeonObjects2();
 	GenerateDungeonObjects();
 

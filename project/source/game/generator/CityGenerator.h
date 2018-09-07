@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LocationGenerator.h"
+#include "OutsideLocationGenerator.h"
 #include "GameCommon.h"
 #include "TerrainTile.h"
 #include "Building.h"
@@ -93,7 +93,7 @@ struct Road2
 	}
 };
 
-class CityGenerator : public LocationGenerator
+class CityGenerator : public OutsideLocationGenerator
 {
 public:
 	CityGenerator() : sorter(grid)
@@ -144,6 +144,10 @@ private:
 	void GeneratePath(const Int2& pt);
 	void CreateEntry(vector<EntryPoint>& entry_points, EntryDir dir);
 	bool IsPointNearRoad(int x, int y);
+	void SpawnObjects();
+	void SpawnBuildings();
+	void SpawnUnits();
+	void GeneratePickableItems();
 
 	TerrainTile* tiles;
 	int w, h, road_part, road_size;
@@ -159,4 +163,6 @@ private:
 	vector<int> road_ids;
 	TERRAIN_TILE road_tile;
 	vector<BuildPt> valid_pts;
+	Int2 well_pt;
+	bool have_well;
 };

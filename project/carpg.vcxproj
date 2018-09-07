@@ -207,6 +207,7 @@
     <ClInclude Include="source\game\entity\Encounter.h" />
     <ClInclude Include="source\game\entity\ItemContainer.h" />
     <ClInclude Include="source\game\entity\News.h" />
+    <ClInclude Include="source\game\entity\OutsideObject.h" />
     <ClInclude Include="source\game\entity\Portal.h" />
     <ClInclude Include="source\game\entity\Room.h" />
     <ClInclude Include="source\game\entity\Tile.h" />
@@ -221,6 +222,7 @@
     <ClInclude Include="source\game\generator\LabyrinthGenerator.h" />
     <ClInclude Include="source\game\generator\LocationGenerator.h" />
     <ClInclude Include="source\game\generator\LocationGeneratorFactory.h" />
+    <ClInclude Include="source\game\generator\OutsideLocationGenerator.h" />
     <ClInclude Include="source\game\helpers\LoadingHandler.h" />
     <ClInclude Include="source\game\Level.h" />
     <ClInclude Include="source\game\net\BitStreamFunc.h" />
@@ -453,6 +455,7 @@
     <ClCompile Include="source\game\generator\LabyrinthGenerator.cpp" />
     <ClCompile Include="source\game\generator\LocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\LocationGeneratorFactory.cpp" />
+    <ClCompile Include="source\game\generator\OutsideLocationGenerator.cpp" />
     <ClCompile Include="source\game\helpers\LoadingHandler.cpp" />
     <ClCompile Include="source\game\Level.cpp" />
     <ClCompile Include="source\game\net\BitStreamFunc.cpp" />
@@ -608,6 +611,7 @@
     </ClCompile>
     <ClCompile Include="source\resource\PickLanguage.cpp" />
     <ClCompile Include="source\Utility.cpp" />
+    <ClCompile Include="T.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc" />

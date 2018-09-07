@@ -21,7 +21,7 @@
 #include "UnitEventHandler.h"
 #include "LevelArea.h"
 #include "SaveSlot.h"
-#include "Mapa2.h"
+#include "Room.h"
 #include "Location.h"
 #include "Unit.h"
 #include "ResourceManager.h"
@@ -808,7 +808,7 @@ public:
 	void ResetGameKeys();
 	void SaveGameKeys();
 	void LoadGameKeys();
-	
+
 	// przedmioty w czasie grabienia itp s¹ tu przechowywane indeksy
 	// ujemne wartoœci odnosz¹ siê do slotów (SLOT_WEAPON = -SLOT_WEAPON-1), pozytywne do zwyk³ych przedmiotów
 	vector<int> tmp_inventory[2];
@@ -915,7 +915,6 @@ public:
 	void UpdateUnits(LevelContext& ctx, float dt);
 	void UpdateUnitInventory(Unit& unit, bool notify = true);
 	bool FindPath(LevelContext& ctx, const Int2& start_tile, const Int2& target_tile, vector<Int2>& path, bool can_open_doors = true, bool wedrowanie = false, vector<Int2>* blocked = nullptr);
-	Int2 RandomNearTile(const Int2& tile);
 	bool CanLoadGame() const;
 	bool CanSaveGame() const;
 	int FindLocalPath(LevelContext& ctx, vector<Int2>& path, const Int2& my_tile, const Int2& target_tile, const Unit* me, const Unit* other, const void* usable = nullptr, bool is_end_point = false);
@@ -967,7 +966,6 @@ public:
 	int GetDungeonLevel();
 	int GetDungeonLevelChest();
 	void GenerateCaveObjects();
-	void GenerateCaveUnits();
 	void SaveGame(GameWriter& f);
 	void LoadGame(GameReader& f);
 	void RemoveUnusedAiAndCheck();
@@ -1124,8 +1122,7 @@ public:
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);
 	void GenerateSawmill(bool in_progress);
-	int FindWorldUnit(Unit* unit, int hint_loc = -1, int hint_loc2 = -1, int* level = nullptr);
-	bool GenerateMine();
+	bool GenerateMine(CaveGenerator* cave_gen);
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid();
 	Room& GetRoom(InsideLocationLevel& lvl, RoomTarget target, bool down_stairs);
@@ -1637,8 +1634,6 @@ public:
 	bool EnterLocation(int level = 0, int from_portal = -1, bool close_portal = false);
 	void GenerateWorld();
 	void ApplyTiles(float* h, TerrainTile* tiles);
-	void SpawnBuildings(vector<CityBuilding>& buildings);
-	void SpawnUnits(City* city);
 	void RespawnUnits();
 	void RespawnUnits(LevelContext& ctx);
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
@@ -1647,21 +1642,14 @@ public:
 	ObjectEntity SpawnObjectEntity(LevelContext& ctx, BaseObject* base, const Vec3& pos, float rot, float scale = 1.f, int flags = 0,
 		Vec3* out_point = nullptr, int variant = -1);
 	void RespawnBuildingPhysics();
-	void SpawnCityObjects();
 	// roti jest u¿ywane tylko do ustalenia czy k¹t jest zerowy czy nie, mo¿na przerobiæ t¹ funkcjê ¿eby tego nie u¿ywa³a wogóle
 	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, int roti,
 		const Vec3& shift, Building* type, CityBuilding* building, bool recreate = false, Vec3* out_point = nullptr);
-	void SpawnForestObjects(int road_dir = -1); //-1 brak, 0 -, 1 |
-	void SpawnForestItems(int count_mod);
 	void CreateForestMinimap();
-	void SpawnOutsideBariers();
 	void SpawnForestUnits(const Vec3& team_pos);
 	void RepositionCityUnits();
 	void Event_RandomEncounter(int id);
-	void SpawnEncounterUnits(GameDialog*& dialog, Unit*& talker, Quest*& quest);
 	void SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
-	void SpawnEncounterObjects();
-	void SpawnEncounterTeam();
 	void UpdateLocation(LevelContext& ctx, int days, int open_chance, bool reset);
 	void UpdateLocation(int days, int open_chance, bool reset);
 	void SpawnCampObjects();
@@ -1685,17 +1673,8 @@ public:
 	void SpawnSecretLocationObjects();
 	void SpawnSecretLocationUnits();
 	void SpawnTeamSecretLocation();
-	void GenerateMushrooms(int days_since = 10);
-	void GenerateCityPickableItems();
 	void PickableItemBegin(LevelContext& ctx, Object& o);
 	void PickableItemAdd(const Item* item);
-	void GenerateDungeonFood();
-	void AbadonLocation(Location* loc);
-
-	int enc_kierunek; // kierunek z której strony nadesz³a dru¿yna w czasie spotkania [tymczasowe]
-	bool far_encounter; // czy dru¿yna gracza jest daleko w czasie spotkania [tymczasowe]
-	bool g_have_well;
-	Int2 g_well_pt;
 
 	Config cfg;
 	void SaveCfg();

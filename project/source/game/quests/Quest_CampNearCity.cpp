@@ -232,7 +232,7 @@ bool Quest_CampNearCity::OnTimeout(TimeoutType ttype)
 		game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
 		if(ttype == TIMEOUT_CAMP)
-			game->AbadonLocation(&GetTargetLocation());
+			W.AbadonLocation(&GetTargetLocation());
 	}
 
 	return true;
