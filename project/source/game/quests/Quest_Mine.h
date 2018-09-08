@@ -73,8 +73,8 @@ public:
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	void LoadOld(GameReader& f);
-
 	int GetIncome(int days_passed);
+	bool GenerateMine(CaveGenerator* cave_gen);
 
 	Quest_Event sub;
 	int dungeon_loc;

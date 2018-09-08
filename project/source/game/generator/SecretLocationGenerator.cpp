@@ -11,6 +11,7 @@
 #include "Level.h"
 #include "Game.h"
 
+//=================================================================================================
 void SecretLocationGenerator::Generate()
 {
 	QM.quest_secret->state = Quest_Secret::SECRET_GENERATED2;
@@ -76,6 +77,7 @@ void SecretLocationGenerator::Generate()
 	terrain->RemoveHeightMap();
 }
 
+//=================================================================================================
 void SecretLocationGenerator::GenerateObjects()
 {
 	Game& game = Game::Get();
@@ -150,17 +152,50 @@ void SecretLocationGenerator::GenerateObjects()
 	}
 }
 
+//=================================================================================================
 void SecretLocationGenerator::GenerateUnits()
 {
-	Game::Get().SpawnSecretLocationUnits();
+	Game& game = Game::Get();
+
+	UnitData* golem = UnitData::Get("golem_adamantine");
+	static vector<Vec2> poss;
+
+	poss.push_back(Vec2(128.f, 64.f));
+	poss.push_back(Vec2(128.f, 256.f - 64.f));
+
+	for(int added = 0, tries = 50; added < 10 && tries>0; --tries)
+	{
+		Vec2 pos = outside->GetRandomPos();
+
+		bool ok = true;
+		for(vector<Vec2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
+		{
+			if(Vec2::Distance(pos, *it) < 32.f)
+			{
+				ok = false;
+				break;
+			}
+		}
+
+		if(ok)
+		{
+			game.SpawnUnitNearLocation(game.local_ctx, Vec3(pos.x, 0, pos.y), *golem, nullptr, -2);
+			poss.push_back(pos);
+			++added;
+		}
+	}
+
+	poss.clear();
 }
 
+//=================================================================================================
 void SecretLocationGenerator::GenerateItems()
 {
 	SpawnForestItems(0);
 }
 
+//=================================================================================================
 void SecretLocationGenerator::SpawnTeam()
 {
-	Game::Get().SpawnTeamSecretLocation();
+	Game::Get().AddPlayerTeam(Vec3(128.f, 0.f, 66.f), PI, false, false);
 }

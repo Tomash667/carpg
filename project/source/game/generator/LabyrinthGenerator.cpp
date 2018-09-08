@@ -408,7 +408,7 @@ void LabyrinthGenerator::GenerateObjects()
 
 	game.GenerateDungeonObjects2();
 	game.GenerateDungeonObjects();
-	game.GenerateTraps();
+	GenerateTraps();
 
 	BaseObject* obj = BaseObject::Get("torch");
 

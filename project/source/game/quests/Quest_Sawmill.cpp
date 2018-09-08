@@ -9,6 +9,9 @@
 #include "QuestManager.h"
 #include "GameGui.h"
 #include "World.h"
+#include "Level.h"
+#include "OutsideLocation.h"
+#include "Terrain.h"
 
 //=================================================================================================
 void Quest_Sawmill::Start()
@@ -221,5 +224,132 @@ void Quest_Sawmill::LoadOld(GameReader& f)
 			hd_lumberjack.Get(*u->human_data);
 		else
 			hd_lumberjack.Random();
+	}
+}
+
+//=================================================================================================
+cstring tartak_objs[] = {
+	"barrel",
+	"barrels",
+	"box",
+	"boxes",
+	"torch",
+	"torch_off",
+	"firewood"
+};
+const uint n_tartak_objs = countof(tartak_objs);
+BaseObject* tartak_objs_ptrs[n_tartak_objs];
+
+void Quest_Sawmill::GenerateSawmill(bool in_progress)
+{
+	for(vector<Unit*>::iterator it = game->local_ctx.units->begin(), end = game->local_ctx.units->end(); it != end; ++it)
+		delete *it;
+	game->local_ctx.units->clear();
+	game->local_ctx.bloods->clear();
+
+	// wyrównaj teren
+	OutsideLocation* outside = (OutsideLocation*)L.location;
+	float* h = outside->h;
+	const int _s = outside->size + 1;
+	vector<Int2> tiles;
+	float wys = 0.f;
+	for(int y = 64 - 6; y < 64 + 6; ++y)
+	{
+		for(int x = 64 - 6; x < 64 + 6; ++x)
+		{
+			if(Vec2::Distance(Vec2(2.f*x + 1.f, 2.f*y + 1.f), Vec2(128, 128)) < 8.f)
+			{
+				wys += h[x + y * _s];
+				tiles.push_back(Int2(x, y));
+			}
+		}
+	}
+	wys /= tiles.size();
+	for(vector<Int2>::iterator it = tiles.begin(), end = tiles.end(); it != end; ++it)
+		h[it->x + it->y*_s] = wys;
+	game->terrain->Rebuild(true);
+
+	// usuñ obiekty
+	LoopAndRemove(*game->local_ctx.objects, [](const Object* obj)
+	{
+		if(Vec3::Distance2d(obj->pos, Vec3(128, 0, 128)) < 16.f)
+		{
+			delete obj;
+			return true;
+		}
+		return false;
+	});
+
+	if(!tartak_objs_ptrs[0])
+	{
+		for(uint i = 0; i < n_tartak_objs; ++i)
+			tartak_objs_ptrs[i] = BaseObject::Get(tartak_objs[i]);
+	}
+
+	UnitData& ud = *UnitData::Get("artur_drwal");
+	UnitData& ud2 = *UnitData::Get("drwal");
+
+	if(in_progress)
+	{
+		// artur drwal
+		Unit* u = game->SpawnUnitNearLocation(game->local_ctx, Vec3(128, 0, 128), ud, nullptr, -2);
+		assert(u);
+		u->rot = Random(MAX_ANGLE);
+		u->hero->name = game->txArthur;
+		u->hero->know_name = true;
+		u->ApplyHumanData(hd_lumberjack);
+
+		// generuj obiekty
+		for(int i = 0; i < 25; ++i)
+		{
+			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
+			BaseObject* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
+			game->SpawnObjectNearLocation(game->local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
+		}
+
+		// generuj innych drwali
+		int ile = Random(5, 10);
+		for(int i = 0; i < ile; ++i)
+		{
+			Unit* u = game->SpawnUnitNearLocation(game->local_ctx, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
+			if(u)
+				u->rot = Random(MAX_ANGLE);
+		}
+
+		build_state = BuildState::InProgress;
+	}
+	else
+	{
+		// budynek
+		Vec3 spawn_pt;
+		float rot = PI / 2 * (Rand() % 4);
+		game->SpawnObjectEntity(game->local_ctx, BaseObject::Get("tartak"), Vec3(128, wys, 128), rot, 1.f, 0, &spawn_pt);
+
+		// artur drwal
+		Unit* u = game->SpawnUnitNearLocation(game->local_ctx, spawn_pt, ud, nullptr, -2);
+		assert(u);
+		u->rot = rot;
+		u->hero->name = game->txArthur;
+		u->hero->know_name = true;
+		u->ApplyHumanData(hd_lumberjack);
+
+		// obiekty
+		for(int i = 0; i < 25; ++i)
+		{
+			Vec2 pt = Vec2::Random(Vec2(128 - 16, 128 - 16), Vec2(128 + 16, 128 + 16));
+			BaseObject* obj = tartak_objs_ptrs[Rand() % n_tartak_objs];
+			game->SpawnObjectNearLocation(game->local_ctx, obj, pt, Random(MAX_ANGLE), 2.f);
+		}
+
+		// inni drwale
+		int ile = Random(5, 10);
+		for(int i = 0; i < ile; ++i)
+		{
+			Unit* u = game->SpawnUnitNearLocation(game->local_ctx, Vec3::Random(Vec3(128 - 16, 0, 128 - 16), Vec3(128 + 16, 0, 128 + 16)), ud2, nullptr, -2);
+			if(u)
+				u->rot = Random(MAX_ANGLE);
+		}
+
+		build_state = BuildState::Finished;
 	}
 }

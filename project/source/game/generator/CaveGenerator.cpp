@@ -9,16 +9,19 @@
 #include "UnitGroup.h"
 #include "Game.h"
 
+//=================================================================================================
 CaveGenerator::CaveGenerator() : m1(nullptr), m2(nullptr)
 {
 }
 
+//=================================================================================================
 CaveGenerator::~CaveGenerator()
 {
 	delete[] m1;
 	delete[] m2;
 }
 
+//=================================================================================================
 int CaveGenerator::GetNumberOfSteps()
 {
 	int steps = LocationGenerator::GetNumberOfSteps();
@@ -29,12 +32,14 @@ int CaveGenerator::GetNumberOfSteps()
 	return steps;
 }
 
+//=================================================================================================
 void CaveGenerator::FillMap(bool* m)
 {
 	for(int i = 0; i < size2; ++i)
 		m[i] = (Rand() % 100 < fill);
 }
 
+//=================================================================================================
 void CaveGenerator::Make(bool* m1, bool* m2)
 {
 	for(int y = 1; y < size - 1; ++y)
@@ -64,6 +69,7 @@ void CaveGenerator::Make(bool* m1, bool* m2)
 	}
 }
 
+//=================================================================================================
 int CaveGenerator::CalculateFill(bool* m, bool* m2, int start)
 {
 	int count = 0;
@@ -98,6 +104,7 @@ int CaveGenerator::CalculateFill(bool* m, bool* m2, int start)
 	return count;
 }
 
+//=================================================================================================
 int CaveGenerator::FillCave(bool* m, bool* m2, int start)
 {
 	v.push_back(start);
@@ -140,6 +147,7 @@ int CaveGenerator::FillCave(bool* m, bool* m2, int start)
 	return c;
 }
 
+//=================================================================================================
 int CaveGenerator::Finish(bool* m, bool* m2)
 {
 	memset(m2, 0, sizeof(bool)*size2);
@@ -167,6 +175,7 @@ int CaveGenerator::Finish(bool* m, bool* m2)
 	return FillCave(m, m2, topi);
 }
 
+//=================================================================================================
 int CaveGenerator::TryGenerate()
 {
 	FillMap(m1);
@@ -193,6 +202,7 @@ int CaveGenerator::TryGenerate()
 	return Finish(m1, m2);
 }
 
+//=================================================================================================
 void CaveGenerator::GenerateCave(Pole*& tiles, int size, Int2& stairs, int& stairs_dir, vector<Int2>& holes, Rect* ext)
 {
 	assert(InRange(size, 10, 100));
@@ -232,6 +242,7 @@ void CaveGenerator::GenerateCave(Pole*& tiles, int size, Int2& stairs, int& stai
 		DebugDraw();
 }
 
+//=================================================================================================
 void CaveGenerator::CreateStairs(Pole* tiles, Int2& stairs, int& stairs_dir)
 {
 	do
@@ -303,6 +314,7 @@ void CaveGenerator::CreateStairs(Pole* tiles, Int2& stairs, int& stairs_dir)
 	} while(1);
 }
 
+//=================================================================================================
 void CaveGenerator::CreateHoles(Pole* tiles, vector<Int2>& holes)
 {
 	for(int count = 0, tries = 50; tries > 0 && count < 15; --tries)
@@ -330,6 +342,7 @@ void CaveGenerator::CreateHoles(Pole* tiles, vector<Int2>& holes)
 	}
 }
 
+//=================================================================================================
 void CaveGenerator::Generate()
 {
 	Cave* cave = (Cave*)loc;
@@ -340,12 +353,14 @@ void CaveGenerator::Generate()
 	lvl.w = lvl.h = 52;
 }
 
+//=================================================================================================
 void CaveGenerator::RegenerateFlags()
 {
 	InsideLocationLevel& lvl = GetLevelData();
 	Pole::SetupFlags(lvl.map, Int2(lvl.w, lvl.h));
 }
 
+//=================================================================================================
 void CaveGenerator::DebugDraw()
 {
 	for(int y = 0; y < size; ++y)
@@ -357,6 +372,7 @@ void CaveGenerator::DebugDraw()
 	printf("\n");
 }
 
+//=================================================================================================
 void CaveGenerator::GenerateObjects()
 {
 	Game& game = Game::Get();
@@ -372,9 +388,10 @@ void CaveGenerator::GenerateObjects()
 
 	game.GenerateCaveObjects();
 	if(L.location_index == QM.quest_mine->target_loc)
-		game.GenerateMine(this);
+		QM.quest_mine->GenerateMine(this);
 }
 
+//=================================================================================================
 void CaveGenerator::GenerateUnits()
 {
 	Game& game = Game::Get();
@@ -454,21 +471,24 @@ void CaveGenerator::GenerateUnits()
 	}
 }
 
+//=================================================================================================
 void CaveGenerator::GenerateItems()
 {
 	GenerateMushrooms();
 }
 
+//=================================================================================================
 bool CaveGenerator::HandleUpdate(int days)
 {
 	bool respawn_units;
 	if(L.location_index == QM.quest_mine->target_loc)
-		respawn_units = Game::Get().GenerateMine(this);
+		respawn_units = QM.quest_mine->GenerateMine(this);
 	if(days > 0)
 		GenerateMushrooms(min(days, 10));
 	return respawn_units;
 }
 
+//=================================================================================================
 void CaveGenerator::GenerateMushrooms(int days_since)
 {
 	Game& game = Game::Get();

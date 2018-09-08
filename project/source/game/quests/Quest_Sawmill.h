@@ -44,6 +44,7 @@ public:
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	void LoadOld(GameReader& f);
+	void GenerateSawmill(bool in_progress);
 
 	State sawmill_state;
 	BuildState build_state;

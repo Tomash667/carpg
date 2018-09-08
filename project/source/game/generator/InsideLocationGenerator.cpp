@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "InsideLocationGenerator.h"
-#include "InsideLocation.h"
+#include "MultiInsideLocation.h"
 #include "OutsideLocation.h"
 #include "World.h"
 #include "Level.h"
@@ -13,10 +13,14 @@
 #include "Portal.h"
 #include "Game.h"
 
+void InsideLocationGenerator::Init()
+{
+	inside = (InsideLocation*)loc;
+}
+
 void InsideLocationGenerator::OnEnter()
 {
 	Game& game = Game::Get();
-	InsideLocation* inside = (InsideLocation*)loc;
 	inside->SetActiveLevel(dungeon_level);
 	int days;
 	bool need_reset = inside->CheckUpdate(days, W.GetWorldtime());
@@ -88,7 +92,7 @@ void InsideLocationGenerator::OnEnter()
 			}
 
 			// nowe jednorazowe pu³apki
-			game.RegenerateTraps();
+			RegenerateTraps();
 		}
 
 		game.OnReenterLevel(game.local_ctx);
@@ -169,7 +173,7 @@ void InsideLocationGenerator::OnEnter()
 		if(game.devmode)
 			Info("Generated secret room.");
 
-		Room& r = inside->GetLevelData().rooms[0];
+		Room& r = GetLevelData().rooms[0];
 
 		if(game.hardcore_mode)
 		{
@@ -260,6 +264,238 @@ void InsideLocationGenerator::OnEnter()
 
 InsideLocationLevel& InsideLocationGenerator::GetLevelData()
 {
-	InsideLocation* inside = (InsideLocation*)loc;
 	return inside->GetLevelData();
+}
+
+void InsideLocationGenerator::GenerateTraps()
+{
+	Game& game = Game::Get();
+	BaseLocation& base = g_base_locations[inside->target];
+
+	if(!IS_SET(base.traps, TRAPS_NORMAL | TRAPS_MAGIC))
+		return;
+
+	InsideLocationLevel& lvl = GetLevelData();
+
+	int szansa;
+	Int2 pt(-1000, -1000);
+	if(IS_SET(base.traps, TRAPS_NEAR_ENTRANCE))
+	{
+		if(dungeon_level != 0)
+			return;
+		szansa = 10;
+		pt = lvl.staircase_up;
+	}
+	else if(IS_SET(base.traps, TRAPS_NEAR_END))
+	{
+		if(inside->IsMultilevel())
+		{
+			MultiInsideLocation* multi = (MultiInsideLocation*)inside;
+			int size = int(multi->levels.size());
+			switch(size)
+			{
+			case 0:
+				szansa = 25;
+				break;
+			case 1:
+				if(dungeon_level == 1)
+					szansa = 25;
+				else
+					szansa = 0;
+				break;
+			case 2:
+				if(dungeon_level == 2)
+					szansa = 25;
+				else if(dungeon_level == 1)
+					szansa = 15;
+				else
+					szansa = 0;
+				break;
+			case 3:
+				if(dungeon_level == 3)
+					szansa = 25;
+				else if(dungeon_level == 2)
+					szansa = 15;
+				else if(dungeon_level == 1)
+					szansa = 10;
+				else
+					szansa = 0;
+				break;
+			default:
+				if(dungeon_level == size - 1)
+					szansa = 25;
+				else if(dungeon_level == size - 2)
+					szansa = 15;
+				else if(dungeon_level == size - 3)
+					szansa = 10;
+				else
+					szansa = 0;
+				break;
+			}
+
+			if(szansa == 0)
+				return;
+		}
+		else
+			szansa = 20;
+	}
+	else
+		szansa = 20;
+
+	vector<TRAP_TYPE> traps;
+	if(IS_SET(base.traps, TRAPS_NORMAL))
+	{
+		traps.push_back(TRAP_ARROW);
+		traps.push_back(TRAP_POISON);
+		traps.push_back(TRAP_SPEAR);
+	}
+	if(IS_SET(base.traps, TRAPS_MAGIC))
+		traps.push_back(TRAP_FIREBALL);
+
+	for(int y = 1; y < lvl.h - 1; ++y)
+	{
+		for(int x = 1; x < lvl.w - 1; ++x)
+		{
+			if(lvl.map[x + y * lvl.w].type == PUSTE
+				&& !OR2_EQ(lvl.map[x - 1 + y * lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + 1 + y * lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
+			{
+				if(Rand() % 500 < szansa + max(0, 30 - Int2::Distance(pt, Int2(x, y))))
+					game.CreateTrap(Int2(x, y), traps[Rand() % traps.size()]);
+			}
+		}
+	}
+}
+
+void InsideLocationGenerator::RegenerateTraps()
+{
+	Game& game = Game::Get();
+	BaseLocation& base = g_base_locations[inside->target];
+
+	if(!IS_SET(base.traps, TRAPS_MAGIC))
+		return;
+
+	InsideLocationLevel& lvl = GetLevelData();
+
+	int szansa;
+	Int2 pt(-1000, -1000);
+	if(IS_SET(base.traps, TRAPS_NEAR_ENTRANCE))
+	{
+		if(dungeon_level != 0)
+			return;
+		szansa = 0;
+		pt = lvl.staircase_up;
+	}
+	else if(IS_SET(base.traps, TRAPS_NEAR_END))
+	{
+		if(inside->IsMultilevel())
+		{
+			MultiInsideLocation* multi = (MultiInsideLocation*)inside;
+			int size = int(multi->levels.size());
+			switch(size)
+			{
+			case 0:
+				szansa = 25;
+				break;
+			case 1:
+				if(dungeon_level == 1)
+					szansa = 25;
+				else
+					szansa = 0;
+				break;
+			case 2:
+				if(dungeon_level == 2)
+					szansa = 25;
+				else if(dungeon_level == 1)
+					szansa = 15;
+				else
+					szansa = 0;
+				break;
+			case 3:
+				if(dungeon_level == 3)
+					szansa = 25;
+				else if(dungeon_level == 2)
+					szansa = 15;
+				else if(dungeon_level == 1)
+					szansa = 10;
+				else
+					szansa = 0;
+				break;
+			default:
+				if(dungeon_level == size - 1)
+					szansa = 25;
+				else if(dungeon_level == size - 2)
+					szansa = 15;
+				else if(dungeon_level == size - 3)
+					szansa = 10;
+				else
+					szansa = 0;
+				break;
+			}
+
+			if(szansa == 0)
+				return;
+		}
+		else
+			szansa = 20;
+	}
+	else
+		szansa = 20;
+
+	vector<Trap*>& traps = *game.local_ctx.traps;
+	int id = 0, topid = traps.size();
+
+	for(int y = 1; y < lvl.h - 1; ++y)
+	{
+		for(int x = 1; x < lvl.w - 1; ++x)
+		{
+			if(lvl.map[x + y * lvl.w].type == PUSTE
+				&& !OR2_EQ(lvl.map[x - 1 + y * lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + 1 + y * lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + (y - 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA)
+				&& !OR2_EQ(lvl.map[x + (y + 1)*lvl.w].type, SCHODY_DOL, SCHODY_GORA))
+			{
+				int s = szansa + max(0, 30 - Int2::Distance(pt, Int2(x, y)));
+				if(IS_SET(base.traps, TRAPS_NORMAL))
+					s /= 4;
+				if(Rand() % 500 < s)
+				{
+					bool ok = false;
+					if(id == -1)
+						ok = true;
+					else if(id == topid)
+					{
+						id = -1;
+						ok = true;
+					}
+					else
+					{
+						while(id != topid)
+						{
+							if(traps[id]->tile.y > y || (traps[id]->tile.y == y && traps[id]->tile.x > x))
+							{
+								ok = true;
+								break;
+							}
+							else if(traps[id]->tile.x == x && traps[id]->tile.y == y)
+							{
+								++id;
+								break;
+							}
+							else
+								++id;
+						}
+					}
+
+					if(ok)
+						game.CreateTrap(Int2(x, y), TRAP_FIREBALL);
+				}
+			}
+		}
+	}
+
+	if(game.devmode)
+		Info("Traps: %d", game.local_ctx.traps->size());
 }

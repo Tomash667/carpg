@@ -11,8 +11,10 @@
 #include "Quest_Evil.h"
 #include "Quest_Orcs.h"
 #include "Portal.h"
+#include "UnitGroup.h"
 #include "Game.h"
 
+//=================================================================================================
 int DungeonGenerator::GetNumberOfSteps()
 {
 	int steps = LocationGenerator::GetNumberOfSteps();
@@ -23,6 +25,7 @@ int DungeonGenerator::GetNumberOfSteps()
 	return steps;
 }
 
+//=================================================================================================
 void DungeonGenerator::Generate()
 {
 	InsideLocation* inside = (InsideLocation*)loc;
@@ -255,24 +258,139 @@ void DungeonGenerator::Generate()
 	}
 }
 
+//=================================================================================================
 void DungeonGenerator::GenerateObjects()
 {
 	Game& game = Game::Get();
 	game.GenerateDungeonObjects2();
 	game.GenerateDungeonObjects();
-	game.GenerateTraps();
+	GenerateTraps();
 }
 
+//=================================================================================================
 void DungeonGenerator::GenerateUnits()
 {
-	Game::Get().GenerateDungeonUnits();
+	Game& game = Game::Get();
+
+	SPAWN_GROUP spawn_group;
+	int base_level;
+
+	if(L.location->spawn != SG_CHALLANGE)
+	{
+		spawn_group = L.location->spawn;
+		base_level = game.GetDungeonLevel();
+	}
+	else
+	{
+		base_level = L.location->st;
+		if(dungeon_level == 0)
+			spawn_group = SG_ORCS;
+		else if(dungeon_level == 1)
+			spawn_group = SG_MAGES_AND_GOLEMS;
+		else
+			spawn_group = SG_EVIL;
+	}
+
+	SpawnGroup& spawn = g_spawn_groups[spawn_group];
+	if(!spawn.unit_group)
+		return;
+	UnitGroup& group = *spawn.unit_group;
+	static vector<TmpUnitGroup> groups;
+
+	int level = base_level;
+
+	// poziomy 1..3
+	for(int i = 0; i < 3; ++i)
+	{
+		TmpUnitGroup& part = Add1(groups);
+		part.group = &group;
+		part.Fill(level);
+		level = min(base_level - i - 1, base_level * 4 / (i + 5));
+	}
+
+	// opcje wejœciowe (póki co tu)
+	// musi byæ w sumie 100%
+	int szansa_na_brak = 10,
+		szansa_na_1 = 20,
+		szansa_na_2 = 30,
+		szansa_na_3 = 40,
+		szansa_na_wrog_w_korytarz = 25;
+
+	assert(InRange(szansa_na_brak, 0, 100) && InRange(szansa_na_1, 0, 100) && InRange(szansa_na_2, 0, 100) && InRange(szansa_na_3, 0, 100)
+		&& InRange(szansa_na_wrog_w_korytarz, 0, 100) && szansa_na_brak + szansa_na_1 + szansa_na_2 + szansa_na_3 == 100);
+
+	int szansa[3] = { szansa_na_brak, szansa_na_brak + szansa_na_1, szansa_na_brak + szansa_na_1 + szansa_na_2 };
+
+	// dodaj jednostki
+	InsideLocation* inside = (InsideLocation*)L.location;
+	InsideLocationLevel& lvl = inside->GetLevelData();
+	Int2 pt = lvl.staircase_up, pt2 = lvl.staircase_down;
+	if(!inside->HaveDownStairs())
+		pt2 = Int2(-1000, -1000);
+	if(inside->from_portal)
+		pt = pos_to_pt(inside->portal->pos);
+
+	for(vector<Room>::iterator it = lvl.rooms.begin(), end = lvl.rooms.end(); it != end; ++it)
+	{
+		int ile;
+
+		if(it->target == RoomTarget::Treasury || it->target == RoomTarget::Prison)
+			continue;
+
+		if(it->IsCorridor())
+		{
+			if(Rand() % 100 < szansa_na_wrog_w_korytarz)
+				ile = 1;
+			else
+				continue;
+		}
+		else
+		{
+			int x = Rand() % 100;
+			if(x < szansa[0])
+				continue;
+			else if(x < szansa[1])
+				ile = 1;
+			else if(x < szansa[2])
+				ile = 2;
+			else
+				ile = 3;
+		}
+
+		TmpUnitGroup& part = groups[ile - 1];
+		if(part.total == 0)
+			continue;
+
+		for(int i = 0; i < ile; ++i)
+		{
+			int x = Rand() % part.total,
+				y = 0;
+
+			for(auto& entry : part.entries)
+			{
+				y += entry.count;
+
+				if(x < y)
+				{
+					// dodaj
+					game.SpawnUnitInsideRoom(*it, *entry.ud, Random(part.max_level / 2, part.max_level), pt, pt2);
+					break;
+				}
+			}
+		}
+	}
+
+	// posprz¹taj
+	groups.clear();
 }
 
+//=================================================================================================
 void DungeonGenerator::GenerateItems()
 {
 	GenerateDungeonItems();
 }
 
+//=================================================================================================
 bool DungeonGenerator::HandleUpdate(int days)
 {
 	if(days >= 10)
@@ -280,6 +398,7 @@ bool DungeonGenerator::HandleUpdate(int days)
 	return true;
 }
 
+//=================================================================================================
 void DungeonGenerator::GenerateDungeonItems()
 {
 	Game& game = Game::Get();

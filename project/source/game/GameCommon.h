@@ -12,6 +12,8 @@ enum GAME_DIR
 	GDIR_RIGHT
 };
 
+extern const Int2 g_kierunek2[4];
+
 //-----------------------------------------------------------------------------
 inline float dir_to_rot(int _dir)
 {

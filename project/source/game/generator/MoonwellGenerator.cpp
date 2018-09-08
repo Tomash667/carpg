@@ -6,8 +6,10 @@
 #include "Terrain.h"
 #include "Perlin.h"
 #include "Level.h"
+#include "UnitGroup.h"
 #include "Game.h"
 
+//=================================================================================================
 void MoonwellGenerator::Generate()
 {
 	CreateMap();
@@ -56,6 +58,7 @@ void MoonwellGenerator::Generate()
 	terrain->RemoveHeightMap();
 }
 
+//=================================================================================================
 void MoonwellGenerator::GenerateObjects()
 {
 	Game& game = Game::Get();
@@ -114,11 +117,94 @@ void MoonwellGenerator::GenerateObjects()
 	}
 }
 
+//=================================================================================================
 void MoonwellGenerator::GenerateUnits()
 {
-	Game::Get().SpawnMoonwellUnits(team_pos);
+	Game& game = Game::Get();
+
+	// zbierz grupy
+	static TmpUnitGroup groups[4] = {
+		{ UnitGroup::TryGet("wolfs") },
+		{ UnitGroup::TryGet("spiders") },
+		{ UnitGroup::TryGet("rats") },
+		{ UnitGroup::TryGet("animals") }
+	};
+	UnitData* ud_hunter = UnitData::Get("wild_hunter");
+	int level = game.GetDungeonLevel();
+	static vector<Vec2> poss;
+	poss.clear();
+	poss.push_back(Vec2(team_pos.x, team_pos.z));
+
+	// ustal wrogów
+	for(int i = 0; i < 4; ++i)
+		groups[i].Fill(level);
+
+	for(int added = 0, tries = 50; added < 8 && tries>0; --tries)
+	{
+		Vec2 pos = outside->GetRandomPos();
+		if(Vec2::Distance(pos, Vec2(128.f, 128.f)) < 12.f)
+			continue;
+
+		bool ok = true;
+		for(vector<Vec2>::iterator it = poss.begin(), end = poss.end(); it != end; ++it)
+		{
+			if(Vec2::Distance(pos, *it) < 24.f)
+			{
+				ok = false;
+				break;
+			}
+		}
+
+		if(ok)
+		{
+			// losuj grupe
+			TmpUnitGroup& group = groups[Rand() % 4];
+			if(group.entries.empty())
+				continue;
+
+			poss.push_back(pos);
+			++added;
+
+			Vec3 pos3(pos.x, 0, pos.y);
+
+			// postaw jednostki
+			int levels = level * 2;
+			if(Rand() % 5 == 0 && ud_hunter->level.x <= level)
+			{
+				int enemy_level = Random(ud_hunter->level.x, Min(ud_hunter->level.y, levels, level));
+				if(game.SpawnUnitNearLocation(game.local_ctx, pos3, *ud_hunter, nullptr, enemy_level, 6.f))
+					levels -= enemy_level;
+			}
+			while(levels > 0)
+			{
+				int k = Rand() % group.total, l = 0;
+				UnitData* ud = nullptr;
+
+				for(auto& entry : group.entries)
+				{
+					l += entry.count;
+					if(k < l)
+					{
+						ud = entry.ud;
+						break;
+					}
+				}
+
+				assert(ud);
+
+				if(!ud || ud->level.x > levels)
+					break;
+
+				int enemy_level = Random(ud->level.x, Min(ud->level.y, levels, level));
+				if(!game.SpawnUnitNearLocation(game.local_ctx, pos3, *ud, nullptr, enemy_level, 6.f))
+					break;
+				levels -= enemy_level;
+			}
+		}
+	}
 }
 
+//=================================================================================================
 void MoonwellGenerator::GenerateItems()
 {
 	SpawnForestItems(1);

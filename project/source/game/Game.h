@@ -939,7 +939,6 @@ public:
 	ObjectEntity GenerateDungeonObject(InsideLocationLevel& lvl, Room& room, BaseObject* base, vector<Vec3>& on_wall, vector<Int2>& blocks, int flags);
 	void AddRoomColliders(InsideLocationLevel& lvl, Room& room, vector<Int2>& blocks);
 	void GenerateDungeonTreasure(vector<Chest*>& chests, int level, bool extra = false);
-	void GenerateDungeonUnits();
 	Unit* SpawnUnitInsideRoom(Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
 	Unit* SpawnUnitInsideRoomOrNear(InsideLocationLevel& lvl, Room& room, UnitData& unit, int level = -1, const Int2& pt = Int2(-1000, -1000), const Int2& pt2 = Int2(-1000, -1000));
 	Unit* SpawnUnitNearLocation(LevelContext& ctx, const Vec3& pos, UnitData& unit, const Vec3* look_at = nullptr, int level = -1, float extra_radius = 2.f);
@@ -1109,8 +1108,6 @@ public:
 		InCombat
 	};
 	CanLeaveLocationResult CanLeaveLocation(Unit& unit);
-	void GenerateTraps();
-	void RegenerateTraps();
 	void SpawnHeroesInsideDungeon();
 	GroundItem* SpawnGroundItemInsideAnyRoom(InsideLocationLevel& lvl, const Item* item);
 	GroundItem* SpawnGroundItemInsideRoom(Room& room, const Item* item);
@@ -1121,8 +1118,6 @@ public:
 	void UpdateQuests(int days);
 	void RemoveQuestUnit(UnitData* ud, bool on_leave);
 	void RemoveQuestUnits(bool on_leave);
-	void GenerateSawmill(bool in_progress);
-	bool GenerateMine(CaveGenerator* cave_gen);
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid();
 	Room& GetRoom(InsideLocationLevel& lvl, RoomTarget target, bool down_stairs);
@@ -1646,14 +1641,11 @@ public:
 	void ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding* inside, Mesh* mesh, Mesh* inside_mesh, float rot, int roti,
 		const Vec3& shift, Building* type, CityBuilding* building, bool recreate = false, Vec3* out_point = nullptr);
 	void CreateForestMinimap();
-	void SpawnForestUnits(const Vec3& team_pos);
 	void RepositionCityUnits();
 	void Event_RandomEncounter(int id);
 	void SpawnUnitsGroup(LevelContext& ctx, const Vec3& pos, const Vec3* look_at, uint count, UnitGroup* group, int level, delegate<void(Unit*)> callback);
 	void UpdateLocation(LevelContext& ctx, int days, int open_chance, bool reset);
 	void UpdateLocation(int days, int open_chance, bool reset);
-	void SpawnCampObjects();
-	void SpawnCampUnits();
 	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, float rot, float range = 2.f, float margin = 0.3f,
 		float scale = 1.f);
 	ObjectEntity SpawnObjectNearLocation(LevelContext& ctx, BaseObject* obj, const Vec2& pos, const Vec2& rot_target, float range = 2.f, float margin = 0.3f,
@@ -1661,7 +1653,6 @@ public:
 	void SpawnTmpUnits(City* city);
 	void RemoveTmpUnits(City* city);
 	void RemoveTmpUnits(LevelContext& ctx);
-	void SpawnMoonwellUnits(const Vec3& team_pos);
 	enum SpawnObjectExtrasFlags
 	{
 		SOE_DONT_SPAWN_PARTICLES = 1 << 0,
@@ -1669,8 +1660,6 @@ public:
 		SOE_DONT_CREATE_LIGHT = 1 << 2
 	};
 	void SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale = 1.f, int flags = 0);
-	void SpawnSecretLocationUnits();
-	void SpawnTeamSecretLocation();
 	void PickableItemBegin(LevelContext& ctx, Object& o);
 	void PickableItemAdd(const Item* item);
 
