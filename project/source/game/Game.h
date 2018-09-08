@@ -1661,7 +1661,6 @@ public:
 	void SpawnTmpUnits(City* city);
 	void RemoveTmpUnits(City* city);
 	void RemoveTmpUnits(LevelContext& ctx);
-	void SpawnMoonwellObjects();
 	void SpawnMoonwellUnits(const Vec3& team_pos);
 	enum SpawnObjectExtrasFlags
 	{
@@ -1670,7 +1669,6 @@ public:
 		SOE_DONT_CREATE_LIGHT = 1 << 2
 	};
 	void SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos, float rot, void* user_ptr, float scale = 1.f, int flags = 0);
-	void SpawnSecretLocationObjects();
 	void SpawnSecretLocationUnits();
 	void SpawnTeamSecretLocation();
 	void PickableItemBegin(LevelContext& ctx, Object& o);

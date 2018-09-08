@@ -2198,7 +2198,6 @@ void CityGenerator::Generate()
 	if(!village)
 	{
 		// set exits y
-		Terrain* terrain = Game::Get().terrain;
 		terrain->SetHeightMap(city->h);
 		for(vector<EntryPoint>::iterator entry_it = city->entry_points.begin(), entry_end = city->entry_points.end(); entry_it != entry_end; ++entry_it)
 			entry_it->exit_y = terrain->GetH(entry_it->exit_area.Midpoint()) + 0.1f;
@@ -2343,7 +2342,6 @@ void CityGenerator::SpawnBuildings()
 {
 	Game& game = Game::Get();
 	City* city = (City*)loc;
-	Terrain* terrain = game.terrain;
 
 	const int mur1 = int(0.15f*OutsideLocation::size);
 	const int mur2 = int(0.85f*OutsideLocation::size);
@@ -2618,7 +2616,6 @@ void CityGenerator::SpawnObjects()
 	}
 
 	Game& game = Game::Get();
-	Terrain* terrain = game.terrain;
 
 	// well
 	if(have_well)
@@ -2656,7 +2653,6 @@ void CityGenerator::SpawnUnits()
 {
 	Game& game = Game::Get();
 	City* city = (City*)loc;
-	Terrain* terrain = game.terrain;
 
 	for(CityBuilding& b : city->buildings)
 	{

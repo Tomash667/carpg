@@ -5,12 +5,12 @@
 #include "BaseLocation.h"
 
 //-----------------------------------------------------------------------------
-struct CaveLocation : public SingleInsideLocation
+struct Cave : public SingleInsideLocation
 {
 	vector<Int2> holes;
 	Rect ext;
 
-	CaveLocation()
+	Cave()
 	{
 		target = CAVE;
 	}

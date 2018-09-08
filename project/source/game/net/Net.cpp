@@ -14,7 +14,7 @@
 #include "City.h"
 #include "InsideLocation.h"
 #include "MultiInsideLocation.h"
-#include "CaveLocation.h"
+#include "Cave.h"
 #include "ServerPanel.h"
 #include "InfoBox.h"
 #include "LoadScreen.h"
@@ -7258,7 +7258,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						loc = new MultiInsideLocation(levels);
 				}
 				else if(type == L_CAVE)
-					loc = new CaveLocation;
+					loc = new Cave;
 				else
 					loc = new OutsideLocation;
 				loc->type = type;

@@ -1,7 +1,7 @@
 #include "Pch.h"
 #include "GameCore.h"
 #include "CaveGenerator.h"
-#include "CaveLocation.h"
+#include "Cave.h"
 #include "Tile.h"
 #include "Level.h"
 #include "QuestManager.h"
@@ -332,7 +332,7 @@ void CaveGenerator::CreateHoles(Pole* tiles, vector<Int2>& holes)
 
 void CaveGenerator::Generate()
 {
-	CaveLocation* cave = (CaveLocation*)loc;
+	Cave* cave = (Cave*)loc;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 
 	GenerateCave(lvl.map, 52, lvl.staircase_up, lvl.staircase_up_dir, cave->holes, &cave->ext);
@@ -387,7 +387,7 @@ void CaveGenerator::GenerateUnits()
 	};
 
 	static vector<Int2> tiles;
-	CaveLocation* cave = (CaveLocation*)loc;
+	Cave* cave = (Cave*)loc;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 	int level = game.GetDungeonLevel();
 	tiles.clear();

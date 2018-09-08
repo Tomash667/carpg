@@ -2,15 +2,12 @@
 
 #include "OutsideLocationGenerator.h"
 
-class ForestGenerator : public OutsideLocationGenerator
+class SecretLocationGenerator : public OutsideLocationGenerator
 {
 public:
 	void Generate() override;
-	int HandleUpdate() override;
 	void GenerateObjects() override;
 	void GenerateUnits() override;
 	void GenerateItems() override;
-
-private:
-	bool have_sawmill;
+	void SpawnTeam() override;
 };

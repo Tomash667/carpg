@@ -25,38 +25,10 @@ int EncounterGenerator::GetNumberOfSteps()
 
 void EncounterGenerator::Generate()
 {
-	Game& game = Game::Get();
-	OutsideLocation* outside = (OutsideLocation*)&loc;
-	Terrain* terrain = game.terrain;
-
 	// 0 - right, 1 - up, 2 - left, 3 - down
 	enc_kierunek = Rand() % 4;
 
-	// create map
-	const int s = OutsideLocation::size;
-	if(!outside->tiles)
-	{
-		outside->tiles = new TerrainTile[s*s];
-		outside->h = new float[(s + 1)*(s + 1)];
-		memset(outside->tiles, 0, sizeof(TerrainTile)*s*s);
-	}
-
-	// set random grass texture
-	Perlin perlin2(4, 4, 1);
-	for(int i = 0, y = 0; y < s; ++y)
-	{
-		for(int x = 0; x < s; ++x, ++i)
-		{
-			int v = int((perlin2.Get(1.f / 256 * float(x), 1.f / 256 * float(y)) + 1.f) * 50);
-			TERRAIN_TILE& t = outside->tiles[i].t;
-			if(v < 42)
-				t = TT_GRASS;
-			else if(v < 58)
-				t = TT_GRASS2;
-			else
-				t = TT_GRASS3;
-		}
-	}
+	CreateMap();
 
 	// randomize height
 	terrain->SetHeightMap(outside->h);
@@ -75,15 +47,15 @@ void EncounterGenerator::Generate()
 	// create road
 	if(enc_kierunek == 0 || enc_kierunek == 2)
 	{
-		for(int y = 62; y < 66; ++y)
+		for(uint y = 62; y < 66; ++y)
 		{
-			for(int x = 0; x < s; ++x)
+			for(uint x = 0; x < s; ++x)
 			{
 				outside->tiles[x + y * s].Set(TT_SAND, TM_ROAD);
 				h[x + y * (s + 1)] = 1.f;
 			}
 		}
-		for(int x = 0; x < s; ++x)
+		for(uint x = 0; x < s; ++x)
 		{
 			h[x + 61 * (s + 1)] = 1.f;
 			h[x + 66 * (s + 1)] = 1.f;
@@ -92,15 +64,15 @@ void EncounterGenerator::Generate()
 	}
 	else
 	{
-		for(int y = 0; y < s; ++y)
+		for(uint y = 0; y < s; ++y)
 		{
-			for(int x = 62; x < 66; ++x)
+			for(uint x = 62; x < 66; ++x)
 			{
 				outside->tiles[x + y * s].Set(TT_SAND, TM_ROAD);
 				h[x + y * (s + 1)] = 1.f;
 			}
 		}
-		for(int y = 0; y < s; ++y)
+		for(uint y = 0; y < s; ++y)
 		{
 			h[61 + y * (s + 1)] = 1.f;
 			h[66 + y * (s + 1)] = 1.f;
@@ -121,17 +93,17 @@ void EncounterGenerator::Generate()
 	// flatten road
 	if(enc_kierunek == 0 || enc_kierunek == 2)
 	{
-		for(int y = 61; y <= 67; ++y)
+		for(uint y = 61; y <= 67; ++y)
 		{
-			for(int x = 1; x < s - 1; ++x)
+			for(uint x = 1; x < s - 1; ++x)
 				h[x + y * (s + 1)] = (h[x + y * (s + 1)] + h[x + 1 + y * (s + 1)] + h[x - 1 + y * (s + 1)] + h[x + (y - 1)*(s + 1)] + h[x + (y + 1)*(s + 1)]) / 5;
 		}
 	}
 	else
 	{
-		for(int y = 1; y < s - 1; ++y)
+		for(uint y = 1; y < s - 1; ++y)
 		{
-			for(int x = 61; x <= 67; ++x)
+			for(uint x = 61; x <= 67; ++x)
 				h[x + y * (s + 1)] = (h[x + y * (s + 1)] + h[x + 1 + y * (s + 1)] + h[x - 1 + y * (s + 1)] + h[x + (y - 1)*(s + 1)] + h[x + (y + 1)*(s + 1)]) / 5;
 		}
 	}
@@ -143,12 +115,11 @@ void EncounterGenerator::Generate()
 void EncounterGenerator::OnEnter()
 {
 	Game& game = Game::Get();
-	OutsideLocation* enc = (OutsideLocation*)loc;
-	enc->loaded_resources = false;
+	outside->loaded_resources = false;
 	game.city_ctx = nullptr;
-	game.ApplyContext(enc, game.local_ctx);
+	game.ApplyContext(outside, game.local_ctx);
 
-	game.ApplyTiles(enc->h, enc->tiles);
+	game.ApplyTiles(outside->h, outside->tiles);
 	game.SetOutsideParams();
 
 	// generate objects

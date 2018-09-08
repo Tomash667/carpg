@@ -11,7 +11,7 @@
 #include "Var.h"
 #include "Level.h"
 #include "Camp.h"
-#include "CaveLocation.h"
+#include "Cave.h"
 #include "City.h"
 #include "MultiInsideLocation.h"
 #include "Net.h"
@@ -287,7 +287,7 @@ Location* World::CreateLocation(LOCATION type, int levels, bool is_village)
 		}
 	case L_CAVE:
 		{
-			CaveLocation* cave = new CaveLocation;
+			Cave* cave = new Cave;
 			cave->image = LI_CAVE;
 			return cave;
 		}
@@ -885,7 +885,7 @@ void World::LoadLocations(GameReader& f, LoadingHandler& loading)
 				loc = new City;
 				break;
 			case LT_CAVE:
-				loc = new CaveLocation;
+				loc = new Cave;
 				break;
 			case LT_SINGLE_DUNGEON:
 				loc = new SingleInsideLocation;
@@ -1165,7 +1165,7 @@ bool World::Read(BitStreamReader& f)
 			}
 			break;
 		case L_CAVE:
-			loc = new CaveLocation;
+			loc = new Cave;
 			break;
 		case L_FOREST:
 		case L_ENCOUNTER:

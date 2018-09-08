@@ -14,7 +14,7 @@
 #include "Content.h"
 #include "QuestManager.h"
 #include "Encounter.h"
-#include "CaveLocation.h"
+#include "Cave.h"
 #include "Camp.h"
 #include "MultiInsideLocation.h"
 #include "WorldMapGui.h"
@@ -128,9 +128,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	}
 
 	LocationGenerator* loc_gen = loc_gen_factory->Get(&l);
-	loc_gen->dungeon_level = 0;
-	loc_gen->first = first;
-	loc_gen->reenter = reenter;
+	loc_gen->Init(first, reenter);
 
 	// calculate number of loading steps for drawing progress bar
 	int steps = loc_gen->GetNumberOfSteps();
@@ -2141,72 +2139,6 @@ void Game::RemoveTmpUnits(LevelContext& ctx)
 	}
 }
 
-void Game::SpawnMoonwellObjects()
-{
-	Vec3 pos(128.f, 0, 128.f);
-	terrain->SetH(pos);
-	pos.y -= 0.2f;
-	SpawnObjectEntity(local_ctx, BaseObject::Get("moonwell"), pos, 0.f);
-	SpawnObjectEntity(local_ctx, BaseObject::Get("moonwell_phy"), pos, 0.f);
-
-	if(!trees[0].obj)
-	{
-		for(uint i = 0; i < n_trees; ++i)
-			trees[i].obj = BaseObject::Get(trees[i].name);
-		for(uint i = 0; i < n_trees2; ++i)
-			trees2[i].obj = BaseObject::Get(trees2[i].name);
-		for(uint i = 0; i < n_misc; ++i)
-			misc[i].obj = BaseObject::Get(misc[i].name);
-	}
-
-	TerrainTile* tiles = ((OutsideLocation*)L.location)->tiles;
-
-	// drzewa
-	for(int i = 0; i < 1024; ++i)
-	{
-		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
-		if(Distance(float(pt.x), float(pt.y), 64.f, 64.f) > 5.f)
-		{
-			TERRAIN_TILE co = tiles[pt.x + pt.y*OutsideLocation::size].t;
-			if(co == TT_GRASS)
-			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
-				pos.y = terrain->GetH(pos);
-				OutsideObject& o = trees[Rand() % n_trees];
-				SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
-			}
-			else if(co == TT_GRASS3)
-			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
-				pos.y = terrain->GetH(pos);
-				int co;
-				if(Rand() % 12 == 0)
-					co = 3;
-				else
-					co = Rand() % 3;
-				OutsideObject& o = trees2[co];
-				SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
-			}
-		}
-	}
-
-	// inne
-	for(int i = 0; i < 512; ++i)
-	{
-		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
-		if(Distance(float(pt.x), float(pt.y), 64.f, 64.f) > 5.f)
-		{
-			if(tiles[pt.x + pt.y*OutsideLocation::size].t != TT_SAND)
-			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
-				pos.y = terrain->GetH(pos);
-				OutsideObject& o = misc[Rand() % n_misc];
-				SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
-			}
-		}
-	}
-}
-
 void Game::SpawnMoonwellUnits(const Vec3& team_pos)
 {
 	// zbierz grupy
@@ -2539,88 +2471,6 @@ void Game::SpawnObjectExtras(LevelContext& ctx, BaseObject* obj, const Vec3& pos
 			cc.box.v2.z = pos2.z + h;
 			cc.box.v1.y = pos2.y - pt.size.y;
 			cc.box.v2.y = pos2.y + pt.size.y;
-		}
-	}
-}
-
-void Game::SpawnSecretLocationObjects()
-{
-	Vec3 pos(128.f, 0, 96.f * 2);
-	terrain->SetH(pos);
-	BaseObject* o = BaseObject::Get("tomashu_dom");
-	pos.y += 0.05f;
-	SpawnObjectEntity(local_ctx, o, pos, 0);
-	ProcessBuildingObjects(local_ctx, nullptr, nullptr, o->mesh, nullptr, 0.f, 0, Vec3(0, 0, 0), nullptr, nullptr, false);
-
-	pos.z = 64.f;
-	terrain->SetH(pos);
-	SpawnObjectEntity(local_ctx, BaseObject::Get("portal"), pos, 0);
-
-	Portal* portal = new Portal;
-	portal->at_level = 0;
-	portal->next_portal = nullptr;
-	portal->pos = pos;
-	portal->rot = 0.f;
-	portal->target = 0;
-	portal->target_loc = QM.quest_secret->where;
-	L.location->portal = portal;
-
-	if(!trees[0].obj)
-	{
-		for(uint i = 0; i < n_trees; ++i)
-			trees[i].obj = BaseObject::Get(trees[i].name);
-		for(uint i = 0; i < n_trees2; ++i)
-			trees2[i].obj = BaseObject::Get(trees2[i].name);
-		for(uint i = 0; i < n_misc; ++i)
-			misc[i].obj = BaseObject::Get(misc[i].name);
-	}
-
-	TerrainTile* tiles = ((OutsideLocation*)L.location)->tiles;
-
-	// drzewa
-	for(int i = 0; i < 1024; ++i)
-	{
-		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
-		if(Distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f
-			&& Distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
-		{
-			TERRAIN_TILE co = tiles[pt.x + pt.y*OutsideLocation::size].t;
-			if(co == TT_GRASS)
-			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
-				pos.y = terrain->GetH(pos);
-				OutsideObject& o = trees[Rand() % n_trees];
-				SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
-			}
-			else if(co == TT_GRASS3)
-			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
-				pos.y = terrain->GetH(pos);
-				int co;
-				if(Rand() % 12 == 0)
-					co = 3;
-				else
-					co = Rand() % 3;
-				OutsideObject& o = trees2[co];
-				SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
-			}
-		}
-	}
-
-	// inne
-	for(int i = 0; i < 512; ++i)
-	{
-		Int2 pt(Random(1, OutsideLocation::size - 2), Random(1, OutsideLocation::size - 2));
-		if(Distance(float(pt.x), float(pt.y), 64.f, 32.f) > 4.f
-			&& Distance(float(pt.x), float(pt.y), 64.f, 96.f) > 12.f)
-		{
-			if(tiles[pt.x + pt.y*OutsideLocation::size].t != TT_SAND)
-			{
-				Vec3 pos(Random(2.f) + 2.f*pt.x, 0, Random(2.f) + 2.f*pt.y);
-				pos.y = terrain->GetH(pos);
-				OutsideObject& o = misc[Rand() % n_misc];
-				SpawnObjectEntity(local_ctx, o.obj, pos, Random(MAX_ANGLE), o.scale.Random());
-			}
 		}
 	}
 }

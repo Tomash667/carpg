@@ -25,7 +25,7 @@
 #include "LocationHelper.h"
 #include "InsideLocation.h"
 #include "MultiInsideLocation.h"
-#include "CaveLocation.h"
+#include "Cave.h"
 #include "Encounter.h"
 #include "GameGui.h"
 #include "Console.h"
@@ -10372,9 +10372,7 @@ void Game::ChangeLevel(int where)
 			--dungeon_level;
 			inside->SetActiveLevel(dungeon_level);
 			LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
-			loc_gen->first = false;
-			loc_gen->reenter = false;
-			loc_gen->dungeon_level = dungeon_level;
+			loc_gen->Init(false, false, dungeon_level);
 			L.enter_from = ENTER_FROM_DOWN_LEVEL;
 			EnterLevel(loc_gen);
 		}
@@ -10399,9 +10397,7 @@ void Game::ChangeLevel(int where)
 		inside->SetActiveLevel(dungeon_level);
 
 		LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
-		loc_gen->first = false;
-		loc_gen->reenter = false;
-		loc_gen->dungeon_level = dungeon_level;
+		loc_gen->Init(false, false, dungeon_level);
 
 		// czy to pierwsza wizyta?
 		if(dungeon_level >= inside->generated)
@@ -10955,7 +10951,7 @@ void Game::GenerateLabirynthUnits()
 
 void Game::GenerateCaveObjects()
 {
-	CaveLocation* cave = (CaveLocation*)L.location;
+	Cave* cave = (Cave*)L.location;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 
 	// œwiat³a
@@ -16623,7 +16619,7 @@ bool Game::GenerateMine(CaveGenerator* cave_gen)
 		return true;
 	}
 
-	CaveLocation* cave = (CaveLocation*)L.location;
+	Cave* cave = (Cave*)L.location;
 	cave->loaded_resources = false;
 	InsideLocationLevel& lvl = cave->GetLevelData();
 

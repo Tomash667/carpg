@@ -168,9 +168,6 @@
     <ClCompile Include="source\game\location\Camp.cpp">
       <Filter>3. game\location</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\location\CaveLocation.cpp">
-      <Filter>3. game\location</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\location\InsideBuilding.cpp">
       <Filter>3. game\location</Filter>
     </ClCompile>
@@ -745,7 +742,18 @@
     <ClCompile Include="source\game\generator\OutsideLocationGenerator.cpp">
       <Filter>3. game\generator</Filter>
     </ClCompile>
-    <ClCompile Include="T.cpp" />
+    <ClCompile Include="source\game\generator\MoonwellGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\CampGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\generator\SecretLocationGenerator.cpp">
+      <Filter>3. game\generator</Filter>
+    </ClCompile>
+    <ClCompile Include="source\game\location\Cave.cpp">
+      <Filter>3. game\location</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\resource\resource1.h">
@@ -836,9 +844,6 @@
       <Filter>3. game\generator</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\Camp.h">
-      <Filter>3. game\location</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game\location\CaveLocation.h">
       <Filter>3. game\location</Filter>
     </ClInclude>
     <ClInclude Include="source\game\location\EntryPoint.h">
@@ -1492,6 +1497,18 @@
     </ClInclude>
     <ClInclude Include="source\game\generator\OutsideLocationGenerator.h">
       <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\MoonwellGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\CampGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\generator\SecretLocationGenerator.h">
+      <Filter>3. game\generator</Filter>
+    </ClInclude>
+    <ClInclude Include="source\game\location\Cave.h">
+      <Filter>3. game\location</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

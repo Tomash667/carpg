@@ -11,7 +11,7 @@
 #include "GameFile.h"
 #include "GameStats.h"
 #include "City.h"
-#include "CaveLocation.h"
+#include "Cave.h"
 #include "Gui.h"
 #include "SaveLoadPanel.h"
 #include "MultiplayerPanel.h"

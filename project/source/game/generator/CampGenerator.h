@@ -2,7 +2,7 @@
 
 #include "OutsideLocationGenerator.h"
 
-class ForestGenerator : public OutsideLocationGenerator
+class CampGenerator : public OutsideLocationGenerator
 {
 public:
 	void Generate() override;
@@ -10,7 +10,4 @@ public:
 	void GenerateObjects() override;
 	void GenerateUnits() override;
 	void GenerateItems() override;
-
-private:
-	bool have_sawmill;
 };

@@ -68,9 +68,7 @@ struct BuildingScript;
 struct Bullet;
 struct Camera;
 struct CameraCollider;
-struct Camp;
 struct Chest;
-struct City;
 struct CityBuilding;
 struct CollisionObject;
 struct Consumable;
@@ -91,16 +89,14 @@ struct Item;
 struct ItemList;
 struct ItemListResult;
 struct ItemSlot;
-struct InsideBuilding;
-struct InsideLocationLevel;
 struct LeveledItemList;
 struct Light;
 struct LoadingHandler;
-struct Location;
 struct LocationEventHandler;
 struct NetChangePlayer;
 struct News;
 struct Object;
+struct OutsideObject;
 struct OtherItem;
 struct Pole;
 struct PlayerController;
@@ -126,7 +122,21 @@ struct VarsContainer;
 struct Weapon;
 
 //-----------------------------------------------------------------------------
+// Locations
+struct Camp;
+struct Cave;
+struct City;
+struct InsideBuilding;
+struct InsideLocation;
+struct InsideLocationLevel;
+struct Location;
+struct MultiInsideLocation;
+struct OutsideLocation;
+struct SingleInsideLocation;
+
+//-----------------------------------------------------------------------------
 // Location generators
+class CampGenerator;
 class CaveGenerator;
 class CityGenerator;
 class DungeonGenerator;
@@ -135,6 +145,8 @@ class ForestGenerator;
 class LabyrinthGenerator;
 class LocationGenerator;
 class LocationGeneratorFactory;
+class MoonwellGenerator;
+class SecretLocationGenerator;
 
 //-----------------------------------------------------------------------------
 enum EncounterMode;

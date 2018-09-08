@@ -214,6 +214,7 @@
     <ClInclude Include="source\game\entity\UnitEventHandler.h" />
     <ClInclude Include="source\game\GameCore.h" />
     <ClInclude Include="source\game\GameStats.h" />
+    <ClInclude Include="source\game\generator\CampGenerator.h" />
     <ClInclude Include="source\game\generator\CaveGenerator.h" />
     <ClInclude Include="source\game\generator\DungeonGenerator.h" />
     <ClInclude Include="source\game\generator\EncounterGenerator.h" />
@@ -222,7 +223,9 @@
     <ClInclude Include="source\game\generator\LabyrinthGenerator.h" />
     <ClInclude Include="source\game\generator\LocationGenerator.h" />
     <ClInclude Include="source\game\generator\LocationGeneratorFactory.h" />
+    <ClInclude Include="source\game\generator\MoonwellGenerator.h" />
     <ClInclude Include="source\game\generator\OutsideLocationGenerator.h" />
+    <ClInclude Include="source\game\generator\SecretLocationGenerator.h" />
     <ClInclude Include="source\game\helpers\LoadingHandler.h" />
     <ClInclude Include="source\game\Level.h" />
     <ClInclude Include="source\game\net\BitStreamFunc.h" />
@@ -283,7 +286,7 @@
     <ClInclude Include="source\game\helpers\UnitHelper.h" />
     <ClInclude Include="source\game\Language.h" />
     <ClInclude Include="source\game\location\Camp.h" />
-    <ClInclude Include="source\game\location\CaveLocation.h" />
+    <ClInclude Include="source\game\location\Cave.h" />
     <ClInclude Include="source\game\location\City.h" />
     <ClInclude Include="source\game\location\EntryPoint.h" />
     <ClInclude Include="source\game\location\InsideBuilding.h" />
@@ -447,6 +450,7 @@
     <ClCompile Include="source\game\entity\Tile.cpp" />
     <ClCompile Include="source\game\GameFile.cpp" />
     <ClCompile Include="source\game\GameStats.cpp" />
+    <ClCompile Include="source\game\generator\CampGenerator.cpp" />
     <ClCompile Include="source\game\generator\CaveGenerator.cpp" />
     <ClCompile Include="source\game\generator\DungeonGenerator.cpp" />
     <ClCompile Include="source\game\generator\EncounterGenerator.cpp" />
@@ -455,7 +459,9 @@
     <ClCompile Include="source\game\generator\LabyrinthGenerator.cpp" />
     <ClCompile Include="source\game\generator\LocationGenerator.cpp" />
     <ClCompile Include="source\game\generator\LocationGeneratorFactory.cpp" />
+    <ClCompile Include="source\game\generator\MoonwellGenerator.cpp" />
     <ClCompile Include="source\game\generator\OutsideLocationGenerator.cpp" />
+    <ClCompile Include="source\game\generator\SecretLocationGenerator.cpp" />
     <ClCompile Include="source\game\helpers\LoadingHandler.cpp" />
     <ClCompile Include="source\game\Level.cpp" />
     <ClCompile Include="source\game\net\BitStreamFunc.cpp" />
@@ -508,7 +514,7 @@
     <ClCompile Include="source\game\Init.cpp" />
     <ClCompile Include="source\game\Language.cpp" />
     <ClCompile Include="source\game\location\Camp.cpp" />
-    <ClCompile Include="source\game\location\CaveLocation.cpp" />
+    <ClCompile Include="source\game\location\Cave.cpp" />
     <ClCompile Include="source\game\location\City.cpp" />
     <ClCompile Include="source\game\location\InsideBuilding.cpp" />
     <ClCompile Include="source\game\location\InsideLocation.cpp" />
@@ -611,7 +617,6 @@
     </ClCompile>
     <ClCompile Include="source\resource\PickLanguage.cpp" />
     <ClCompile Include="source\Utility.cpp" />
-    <ClCompile Include="T.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="source\resource\resource.rc" />

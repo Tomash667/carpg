@@ -5,24 +5,33 @@
 #include "OutsideObject.h"
 #include "Item.h"
 #include "Terrain.h"
+#include "Perlin.h"
+#include "World.h"
+#include "Level.h"
+#include "QuestManager.h"
+#include "Quest_Bandits.h"
+#include "Team.h"
 #include "Game.h"
 
-OutsideObject trees[] = {
+
+const uint OutsideLocationGenerator::s = OutsideLocation::size;
+
+OutsideObject OutsideLocationGenerator::trees[] = {
 	"tree", nullptr, Vec2(2,6),
 	"tree2", nullptr, Vec2(2,6),
 	"tree3", nullptr, Vec2(2,6)
 };
-const uint n_trees = countof(trees);
+const uint OutsideLocationGenerator::n_trees = countof(trees);
 
-OutsideObject trees2[] = {
+OutsideObject OutsideLocationGenerator::trees2[] = {
 	"tree", nullptr, Vec2(4,8),
 	"tree2", nullptr, Vec2(4,8),
 	"tree3", nullptr, Vec2(4,8),
 	"withered_tree", nullptr, Vec2(1,4)
 };
-const uint n_trees2 = countof(trees2);
+const uint OutsideLocationGenerator::n_trees2 = countof(trees2);
 
-OutsideObject misc[] = {
+OutsideObject OutsideLocationGenerator::misc[] = {
 	"grass", nullptr, Vec2(1.f,1.5f),
 	"grass", nullptr, Vec2(1.f,1.5f),
 	"plant", nullptr, Vec2(1.0f,2.f),
@@ -30,23 +39,179 @@ OutsideObject misc[] = {
 	"rock", nullptr, Vec2(1.f,1.f),
 	"fern", nullptr, Vec2(1,2)
 };
-const uint n_misc = countof(misc);
+const uint OutsideLocationGenerator::n_misc = countof(misc);
+
+
+void OutsideLocationGenerator::InitOnce()
+{
+	for(uint i = 0; i < n_trees; ++i)
+		trees[i].obj = BaseObject::Get(trees[i].name);
+	for(uint i = 0; i < n_trees2; ++i)
+		trees2[i].obj = BaseObject::Get(trees2[i].name);
+	for(uint i = 0; i < n_misc; ++i)
+		misc[i].obj = BaseObject::Get(misc[i].name);
+}
+
+void OutsideLocationGenerator::Init()
+{
+	outside = (OutsideLocation*)loc;
+	terrain = Game::Get().terrain;
+}
+
+int OutsideLocationGenerator::GetNumberOfSteps()
+{
+	int steps = LocationGenerator::GetNumberOfSteps();
+	if(first)
+		steps += 3; // txGeneratingObjects, txGeneratingUnits, txGeneratingItems
+	else if(!reenter)
+		steps += 2; // txGeneratingUnits, txGeneratingPhysics
+	if(!reenter)
+		++steps; // txRecreatingObjects
+	return steps;
+}
+
+void OutsideLocationGenerator::CreateMap()
+{
+	// create map
+	if(!outside->tiles)
+	{
+		outside->tiles = new TerrainTile[s*s];
+		outside->h = new float[(s + 1)*(s + 1)];
+		memset(outside->tiles, 0, sizeof(TerrainTile)*s*s);
+	}
+
+	// set random grass texture
+	Perlin perlin2(4, 4, 1);
+	for(int i = 0, y = 0; y < s; ++y)
+	{
+		for(int x = 0; x < s; ++x, ++i)
+		{
+			int v = int((perlin2.Get(1.f / 256 * float(x), 1.f / 256 * float(y)) + 1.f) * 50);
+			TERRAIN_TILE& t = outside->tiles[i].t;
+			if(v < 42)
+				t = TT_GRASS;
+			else if(v < 58)
+				t = TT_GRASS2;
+			else
+				t = TT_GRASS3;
+		}
+	}
+}
+
+void OutsideLocationGenerator::OnEnter()
+{
+	Game& game = Game::Get();
+	game.city_ctx = nullptr;
+	if(!reenter)
+		game.ApplyContext(outside, game.local_ctx);
+
+	int days;
+	bool need_reset = outside->CheckUpdate(days, W.GetWorldtime());
+	int update = HandleUpdate();
+	if(update != 1)
+		need_reset = false;
+
+	if(!reenter)
+		game.ApplyTiles(outside->h, outside->tiles);
+
+	game.SetOutsideParams();
+
+	W.GetOutsideSpawnPoint(team_pos, team_dir);
+
+	if(first)
+	{
+		// generate objects
+		game.LoadingStep(game.txGeneratingObjects);
+		GenerateObjects();
+
+		// generate units
+		game.LoadingStep(game.txGeneratingUnits);
+		GenerateUnits();
+
+		// generate items
+		game.LoadingStep(game.txGeneratingItems);
+		GenerateItems();
+	}
+	else if(!reenter)
+	{
+		if(days > 0)
+			game.UpdateLocation(days, 100, false);
+
+		if(need_reset)
+		{
+			// remove alive units
+			for(vector<Unit*>::iterator it = game.local_ctx.units->begin(), end = game.local_ctx.units->end(); it != end; ++it)
+			{
+				if((*it)->IsAlive())
+				{
+					delete *it;
+					*it = nullptr;
+				}
+			}
+			RemoveNullElements(game.local_ctx.units);
+		}
+
+		// recreate colliders
+		game.LoadingStep(game.txGeneratingPhysics);
+		game.RespawnObjectColliders();
+
+		// respawn units
+		game.LoadingStep(game.txGeneratingUnits);
+		if(update >= 0)
+			game.RespawnUnits();
+		if(need_reset)
+			GenerateUnits();
+
+		if(days > 10)
+			GenerateItems();
+
+		game.OnReenterLevel(game.local_ctx);
+	}
+
+	// create colliders
+	if(!reenter)
+	{
+		game.LoadingStep(game.txRecreatingObjects);
+		game.SpawnTerrainCollider();
+		L.SpawnOutsideBariers();
+	}
+
+	// handle quest event
+	if(outside->active_quest && outside->active_quest != (Quest_Dungeon*)ACTIVE_QUEST_HOLDER)
+	{
+		Quest_Event* event = outside->active_quest->GetEvent(L.location_index);
+		if(event)
+		{
+			if(!event->done)
+				game.HandleQuestEvent(event);
+			L.event_handler = event->location_event_handler;
+		}
+	}
+
+	// generate minimap
+	game.LoadingStep(game.txGeneratingMinimap);
+	game.CreateForestMinimap();
+
+	SpawnTeam();
+
+	// generate guards for bandits quest
+	if(QM.quest_bandits->bandits_state == Quest_Bandits::State::GenerateGuards && L.location_index == QM.quest_bandits->target_loc)
+	{
+		QM.quest_bandits->bandits_state = Quest_Bandits::State::GeneratedGuards;
+		UnitData* ud = UnitData::Get("guard_q_bandyci");
+		int ile = Random(4, 5);
+		Vec3 pos = team_pos + Vec3(sin(team_dir + PI) * 8, 0, cos(team_dir + PI) * 8);
+		for(int i = 0; i < ile; ++i)
+		{
+			Unit* u = game.SpawnUnitNearLocation(game.local_ctx, pos, *ud, &Team.leader->pos, 6, 4.f);
+			u->assist = true;
+		}
+	}
+}
 
 void OutsideLocationGenerator::SpawnForestObjects(int road_dir)
 {
 	Game& game = Game::Get();
-	Terrain* terrain = game.terrain;
-
-	if(!trees[0].obj)
-	{
-		for(uint i = 0; i < n_trees; ++i)
-			trees[i].obj = BaseObject::Get(trees[i].name);
-		for(uint i = 0; i < n_trees2; ++i)
-			trees2[i].obj = BaseObject::Get(trees2[i].name);
-		for(uint i = 0; i < n_misc; ++i)
-			misc[i].obj = BaseObject::Get(misc[i].name);
-	}
-
 	TerrainTile* tiles = ((OutsideLocation*)loc)->tiles;
 
 	// obelisk
@@ -174,4 +339,14 @@ void OutsideLocationGenerator::SpawnForestItems(int count_mod)
 			}
 		}
 	}
+}
+
+int OutsideLocationGenerator::HandleUpdate()
+{
+	return 1;
+}
+
+void OutsideLocationGenerator::SpawnTeam()
+{
+	Game::Get().AddPlayerTeam(team_pos, team_dir, reenter, true);
 }
