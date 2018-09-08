@@ -7,7 +7,6 @@
 #include "SaveState.h"
 #include "GameFile.h"
 #include "QuestManager.h"
-#include "GameGui.h"
 #include "World.h"
 #include "Level.h"
 #include "AIController.h"
@@ -28,7 +27,6 @@ void Quest_Crazies::Start()
 	type = QuestType::Unique;
 	quest_id = Q_CRAZIES;
 	target_loc = -1;
-	name = game->txQuest[253];
 	crazies_state = State::None;
 	days = 0;
 	check_stone = false;
@@ -48,18 +46,9 @@ void Quest_Crazies::SetProgress(int prog2)
 	{
 	case Progress::Started: // zaatakowano przez unk
 		{
-			state = Quest::Started;
-
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
+			OnStart(game->txQuest[253]);
 			msgs.push_back(Format(game->txQuest[170], W.GetDate()));
 			msgs.push_back(game->txQuest[254]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_AddQuest(refid);
 		}
 		break;
 	case Progress::KnowLocation: // trener powiedzia³ o labiryncie
@@ -73,12 +62,7 @@ void Quest_Crazies::SetProgress(int prog2)
 
 			crazies_state = State::TalkedTrainer;
 
-			msgs.push_back(Format(game->txQuest[255], W.GetCurrentLocation()->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(Format(game->txQuest[255], W.GetCurrentLocation()->name.c_str(), loc.name.c_str(), GetTargetLocationDir()));
 		}
 		break;
 	case Progress::Finished: // schowano kamieñ do skrzyni
@@ -88,13 +72,8 @@ void Quest_Crazies::SetProgress(int prog2)
 
 			crazies_state = State::End;
 
-			msgs.push_back(game->txQuest[256]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[256]);
 			quest_manager.EndUniqueQuest();
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 	}
 }

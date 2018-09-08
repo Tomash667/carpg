@@ -66,7 +66,13 @@ struct Quest : public QuestHandler
 	virtual void Save(GameWriter& f);
 	virtual bool Load(GameReader& f);
 
-	// to powinno byæ inline ale nie wysz³o :/
+	void OnStart(cstring name);
+	void OnUpdate(const std::initializer_list<cstring>& msgs);
+	template<typename ...Args>
+	void OnUpdate(Args... args)
+	{
+		OnUpdate({ args... });
+	}
 	Location& GetStartLocation();
 	const Location& GetStartLocation() const;
 	cstring GetStartLocationName() const;

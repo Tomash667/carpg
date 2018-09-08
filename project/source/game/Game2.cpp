@@ -16189,9 +16189,7 @@ void Game::UpdateGame2(float dt)
 								loc.state = Quest_Evil::Loc::State::PortalClosed;
 								u->hero->mode = HeroData::Follow;
 								u->ai->idle_action = AIController::Idle_None;
-								QM.quest_evil->msgs.push_back(Format(txPortalClosed, L.location->name.c_str()));
-								game_gui->journal->NeedUpdate(Journal::Quests, QM.quest_evil->quest_index);
-								AddGameMsg3(GMS_JOURNAL_UPDATED);
+								QM.quest_evil->OnUpdate(Format(txPortalClosed, L.location->name.c_str()));
 								u->StartAutoTalk();
 								QM.quest_evil->changed = true;
 								++QM.quest_evil->closed;
@@ -16199,10 +16197,7 @@ void Game::UpdateGame2(float dt)
 								L.location->portal = nullptr;
 								W.AddNews(Format(txPortalClosedNews, L.location->name.c_str()));
 								if(Net::IsOnline())
-								{
-									Net_UpdateQuest(QM.quest_evil->refid);
 									Net::PushChange(NetChange::CLOSE_PORTAL);
-								}
 							}
 						}
 						else
@@ -17607,7 +17602,11 @@ void Game::StartDialog2(PlayerController* player, Unit* talker, GameDialog* dial
 	assert(!ctx.dialog_mode);
 
 	if(player != pc)
-		Net_StartDialog(player, talker);
+	{
+		NetChangePlayer& c = Add1(player->player_info->changes);
+		c.type = NetChangePlayer::START_DIALOG;
+		c.id = talker->netid;
+	}
 	StartDialog(ctx, talker, dialog);
 }
 
@@ -18722,7 +18721,11 @@ void Game::RemoveTeamMember(Unit* unit)
 
 	// send info to other players
 	if(Net::IsOnline())
-		Net_KickNpc(unit);
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::KICK_NPC;
+		c.id = unit->netid;
+	}
 
 	if(unit->event_handler)
 		unit->event_handler->HandleUnitEvent(UnitEventHandler::KICK, unit);

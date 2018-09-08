@@ -187,6 +187,10 @@ struct Item
 		return float(value) / weight;
 	}
 
+	void CreateCopy(Item& item) const;
+	Item* CreateCopy() const;
+	void Rename(cstring name);
+
 	string id, mesh_id, name, desc;
 	int weight, value, flags, refid;
 	ITEM_TYPE type;
@@ -518,8 +522,6 @@ struct StartItem
 //-----------------------------------------------------------------------------
 bool ItemCmp(const Item* a, const Item* b);
 const Item* FindItemOrList(Cstring id, ItemListResult& lis);
-void CreateItemCopy(Item& item, const Item* base_item);
-Item* CreateItemCopy(const Item* item);
 
 //-----------------------------------------------------------------------------
 extern std::map<const Item*, Item*> better_items;

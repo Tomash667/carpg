@@ -8,7 +8,6 @@
 #include "SaveState.h"
 #include "QuestManager.h"
 #include "Encounter.h"
-#include "GameGui.h"
 #include "AIController.h"
 #include "World.h"
 
@@ -120,18 +119,13 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->text = game->txQuest[11];
 			e->timed = false;
 			e->range = 72;
-			msgs.push_back(game->txQuest[152]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(game->txQuest[152]);
 		}
 		else
 		{
-			start_time = W.GetWorldtime();
-			state = Quest::Started;
-			name = game->txQuest[153];
+			OnStart(game->txQuest[153]);
+			quest_manager.RemoveQuestRumor(P_BANDYCI);
+
 			const Item* item = Item::Get("q_bandyci_paczka");
 			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
@@ -149,26 +143,14 @@ void Quest_Bandits::SetProgress(int prog2)
 			e->text = game->txQuest[11];
 			e->timed = false;
 			e->range = 72;
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[154], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[155], sl.name.c_str(), other.name.c_str(), GetLocationDirName(sl.pos, other.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-			quest_manager.RemoveQuestRumor(P_BANDYCI);
 			W.AddNews(Format(game->txQuest[156], GetStartLocationName()));
 
-			if(Net::IsOnline())
+			if(Net::IsOnline() && !game->current_dialog->is_local)
 			{
-				game->Net_AddQuest(refid);
-				if(!game->current_dialog->is_local)
-				{
-					game->Net_AddItem(game->current_dialog->pc, item, true);
-					game->Net_AddedItemMsg(game->current_dialog->pc);
-				}
-				else
-					game->AddGameMsg3(GMS_ADDED_ITEM);
+				game->Net_AddItem(game->current_dialog->pc, item, true);
+				game->Net_AddedItemMsg(game->current_dialog->pc);
 			}
 			else
 				game->AddGameMsg3(GMS_ADDED_ITEM);
@@ -184,14 +166,9 @@ void Quest_Bandits::SetProgress(int prog2)
 				game->current_dialog->talker->AddItem(item, 1, true);
 			}
 			get_letter = true;
-			msgs.push_back(game->txQuest[157]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[157]);
 			W.RemoveEncounter(enc);
 			enc = -1;
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::TalkAboutLetter:
@@ -204,29 +181,19 @@ void Quest_Bandits::SetProgress(int prog2)
 			camp.st = 10;
 			camp.state = LS_HIDDEN;
 			camp.active_quest = this;
-			msgs.push_back(game->txQuest[158]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[158]);
 			target_loc = camp_loc;
 			location_event_handler = this;
 			game->RemoveItem(*game->current_dialog->pc->unit, Item::Get("q_bandyci_list"), 1);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::NeedClearCamp:
 		// pozycja obozu
 		{
 			Location& camp = *W.GetLocation(camp_loc);
-			msgs.push_back(Format(game->txQuest[159], GetLocationDirName(GetStartLocation().pos, camp.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(Format(game->txQuest[159], GetLocationDirName(GetStartLocation().pos, camp.pos)));
 			camp.SetKnown();
 			bandits_state = State::GenerateGuards;
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::KilledBandits:
@@ -260,9 +227,7 @@ void Quest_Bandits::SetProgress(int prog2)
 			target.st = 10;
 			target_loc = target.index;
 			W.GetLocation(camp_loc)->active_quest = nullptr;
-			msgs.push_back(Format(game->txQuest[161], target.name.c_str(), GetLocationDirName(GetStartLocation().pos, target.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(Format(game->txQuest[161], target.name.c_str(), GetLocationDirName(GetStartLocation().pos, target.pos)));
 			done = false;
 			at_level = 0;
 			unit_to_spawn = UnitData::Get("q_bandyci_szef");
@@ -272,38 +237,25 @@ void Quest_Bandits::SetProgress(int prog2)
 			unit_event_handler = this;
 			unit_auto_talk = true;
 			callback = WarpToThroneBanditBoss;
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::KilledBoss:
 		// zabito szefa
 		{
 			camp_loc = -1;
-			msgs.push_back(Format(game->txQuest[162], GetStartLocationName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(Format(game->txQuest[162], GetStartLocationName()));
 			W.AddNews(game->txQuest[163]);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::Finished:
 		// ukoñczono
 		{
 			state = Quest::Completed;
-			msgs.push_back(game->txQuest[164]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[164]);
 			// ustaw arto na temporary ¿eby sobie poszed³
 			game->current_dialog->talker->temporary = true;
 			game->AddReward(5000);
 			quest_manager.EndUniqueQuest();
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	}

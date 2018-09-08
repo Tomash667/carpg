@@ -1446,19 +1446,6 @@ public:
 	PlayerInfo& GetPlayerInfo(int id);
 	PlayerInfo* GetPlayerInfoTry(int id);
 	void UpdateWarpData(float dt);
-	void Net_AddQuest(int refid)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::ADD_QUEST;
-		c.id = refid;
-	}
-	void Net_RegisterItem(const Item* item, const Item* base_item)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::REGISTER_ITEM;
-		c.item2 = item;
-		c.base_item = base_item;
-	}
 	void Net_AddItem(PlayerController* player, const Item* item, bool is_team)
 	{
 		NetChangePlayer& c = Add1(player->player_info->changes);
@@ -1481,31 +1468,6 @@ public:
 		c.id = (is_team ? ile : 0);
 		c.ile = ile;
 	}
-	void Net_UpdateQuest(int refid)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UPDATE_QUEST;
-		c.id = refid;
-	}
-	void Net_UpdateQuestMulti(int refid, int ile)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::UPDATE_QUEST_MULTI;
-		c.id = refid;
-		c.ile = ile;
-	}
-	void Net_RenameItem(const Item* item)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::RENAME_ITEM;
-		c.base_item = item;
-	}
-	void Net_RemoveQuestItem(PlayerController* player, int refid)
-	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = NetChangePlayer::REMOVE_QUEST_ITEM;
-		c.id = refid;
-	}
 	void Net_RecruitNpc(Unit* unit)
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1518,12 +1480,6 @@ public:
 		c.type = NetChange::REMOVE_UNIT;
 		c.id = unit->netid;
 	}
-	void Net_KickNpc(Unit* unit)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::KICK_NPC;
-		c.id = unit->netid;
-	}
 	void Net_SpawnUnit(Unit* unit)
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1534,12 +1490,6 @@ public:
 	{
 		NetChangePlayer& c = Add1(player->player_info->changes);
 		c.type = NetChangePlayer::PREPARE_WARP;
-	}
-	void Net_StartDialog(PlayerController* player, Unit* talker)
-	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = NetChangePlayer::START_DIALOG;
-		c.id = talker->netid;
 	}
 	enum Where
 	{

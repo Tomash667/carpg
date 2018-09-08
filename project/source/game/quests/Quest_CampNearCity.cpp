@@ -6,7 +6,6 @@
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
-#include "GameGui.h"
 #include "GameFile.h"
 #include "World.h"
 
@@ -59,12 +58,8 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			Location& sl = GetStartLocation();
 			bool is_city = LocationHelper::IsCity(sl);
 
-			start_time = W.GetWorldtime();
-			state = Quest::Started;
-			if(is_city)
-				name = game->txQuest[57];
-			else
-				name = game->txQuest[58];
+			OnStart(game->txQuest[is_city ? 57 : 58]);
+			quest_manager.quests_timeout.push_back(this);
 
 			// event
 			target_loc = W.CreateCamp(sl.pos, group);
@@ -89,19 +84,9 @@ void Quest_CampNearCity::SetProgress(int prog2)
 				break;
 			}
 
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			quest_manager.quests_timeout.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-
 			msgs.push_back(Format(game->txQuest[29], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[62], gn, GetLocationDirName(sl.pos, tl.pos), sl.name.c_str(),
 				is_city ? game->txQuest[63] : game->txQuest[64]));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_AddQuest(refid);
 		}
 		break;
 	case Progress::ClearedLocation:
@@ -114,12 +99,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
-			msgs.push_back(game->txQuest[65]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(game->txQuest[65]);
 		}
 		break;
 	case Progress::Finished:
@@ -128,12 +108,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			state = Quest::Completed;
 			((City&)GetStartLocation()).quest_captain = CityQuestState::None;
 			game->AddReward(2500);
-			msgs.push_back(game->txQuest[66]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(game->txQuest[66]);
 		}
 		break;
 	case Progress::Timeout:
@@ -142,9 +117,7 @@ void Quest_CampNearCity::SetProgress(int prog2)
 			state = Quest::Failed;
 			City& city = (City&)GetStartLocation();
 			city.quest_captain = CityQuestState::Failed;
-			msgs.push_back(Format(game->txQuest[67], LocationHelper::IsCity(city) ? game->txQuest[63] : game->txQuest[64]));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(Format(game->txQuest[67], LocationHelper::IsCity(city) ? game->txQuest[63] : game->txQuest[64]));
 			if(target_loc != -1)
 			{
 				Location& loc = GetTargetLocation();
@@ -152,9 +125,6 @@ void Quest_CampNearCity::SetProgress(int prog2)
 					loc.active_quest = nullptr;
 			}
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	}
@@ -227,10 +197,7 @@ bool Quest_CampNearCity::OnTimeout(TimeoutType ttype)
 {
 	if(prog == Progress::Started)
 	{
-		msgs.push_back(game->txQuest[277]);
-		game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-		game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
+		OnUpdate(game->txQuest[277]);
 		if(ttype == TIMEOUT_CAMP)
 			W.AbadonLocation(&GetTargetLocation());
 	}

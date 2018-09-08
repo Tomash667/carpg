@@ -72,6 +72,20 @@ void Journal::Draw(ControlDrawData* /*cdd*/)
 //=================================================================================================
 void Journal::Update(float dt)
 {
+	for(std::pair<Mode, int>& change : changes)
+	{
+		if(mode == change.first)
+		{
+			if(mode == Quests && details)
+			{
+				if(change.second == open_quest)
+					Build();
+			}
+			else
+				Build();
+		}
+	}
+
 	if(!focus)
 		return;
 
@@ -496,16 +510,7 @@ void Journal::OnAddNote(int id)
 //=================================================================================================
 void Journal::NeedUpdate(Mode at_mode, int quest_id)
 {
-	if(mode == at_mode)
-	{
-		if(mode == Quests && details)
-		{
-			if(quest_id == open_quest)
-				Build();
-		}
-		else
-			Build();
-	}
+	changes.push_back(std::make_pair(at_mode, quest_id));
 }
 
 //=================================================================================================

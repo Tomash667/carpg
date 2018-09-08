@@ -6,7 +6,6 @@
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
-#include "GameGui.h"
 #include "GameFile.h"
 #include "World.h"
 
@@ -88,25 +87,15 @@ void Quest_SpreadNews::SetProgress(int prog2)
 	case Progress::Started:
 		// told info to spread by player
 		{
-			prog = Progress::Started;
-			start_time = W.GetWorldtime();
-			state = Quest::Started;
-
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
+			OnStart(game->txQuest[213]);
 			quest_manager.quests_timeout2.push_back(this);
+
+			prog = Progress::Started;
 
 			Location& loc = GetStartLocation();
 			bool is_city = LocationHelper::IsCity(loc);
-			name = game->txQuest[213];
 			msgs.push_back(Format(game->txQuest[3], is_city ? game->txForMayor : game->txForSoltys, loc.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[17], Upper(is_city ? game->txForMayor : game->txForSoltys), loc.name.c_str(), FormatString("targets")));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_AddQuest(refid);
 		}
 		break;
 	case Progress::Deliver:
@@ -125,25 +114,17 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			}
 
 			Location& loc = *W.GetCurrentLocation();
-			msgs.push_back(Format(game->txQuest[18], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str()));
+			cstring msg = Format(game->txQuest[18], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 
 			if(ile == entries.size())
 			{
 				prog = Progress::Deliver;
-				msgs.push_back(Format(game->txQuest[19], GetStartLocationName()));
+				OnUpdate({ msg, Format(game->txQuest[19], GetStartLocationName()) });
 			}
+			else
+				OnUpdate(msg);
 
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 			RemoveElementTry(quest_manager.quests_timeout2, (Quest*)this);
-
-			if(Net::IsOnline())
-			{
-				if(prog == Progress::Deliver)
-					game->Net_UpdateQuestMulti(refid, 2);
-				else
-					game->Net_UpdateQuest(refid);
-			}
 		}
 		break;
 	case Progress::Timeout:
@@ -153,12 +134,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			state = Quest::Failed;
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::Failed;
 
-			msgs.push_back(game->txQuest[20]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(game->txQuest[20]);
 		}
 		break;
 	case Progress::Finished:
@@ -169,12 +145,7 @@ void Quest_SpreadNews::SetProgress(int prog2)
 			((City&)GetStartLocation()).quest_mayor = CityQuestState::None;
 			game->AddReward(200);
 
-			msgs.push_back(game->txQuest[21]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(game->txQuest[21]);
 		}
 		break;
 	}
@@ -215,10 +186,7 @@ bool Quest_SpreadNews::IsTimedout() const
 //=================================================================================================
 bool Quest_SpreadNews::OnTimeout(TimeoutType ttype)
 {
-	msgs.push_back(game->txQuest[277]);
-	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
+	OnUpdate(game->txQuest[277]);
 	return true;
 }
 

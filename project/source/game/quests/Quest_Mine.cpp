@@ -8,7 +8,6 @@
 #include "SaveState.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
-#include "GameGui.h"
 #include "World.h"
 #include "Level.h"
 #include "Cave.h"
@@ -84,9 +83,7 @@ void Quest_Mine::SetProgress(int prog2)
 	{
 	case Progress::Started:
 		{
-			start_time = W.GetWorldtime();
-			state = Quest::Started;
-			name = game->txQuest[131];
+			OnStart(game->txQuest[131]);
 
 			location_event_handler = this;
 
@@ -101,50 +98,29 @@ void Quest_Mine::SetProgress(int prog2)
 
 			InitSub();
 
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-
 			msgs.push_back(Format(game->txQuest[132], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[133], tl.name.c_str(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_AddQuest(refid);
 		}
 		break;
 	case Progress::ClearedLocation:
 		{
-			msgs.push_back(game->txQuest[134]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(game->txQuest[134]);
 		}
 		break;
 	case Progress::SelectedShares:
 		{
-			msgs.push_back(game->txQuest[135]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[135]);
 			mine_state = State::Shares;
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
 			quest_manager.RemoveQuestRumor(P_KOPALNIA);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::GotFirstGold:
 		{
 			state = Quest::Completed;
-			msgs.push_back(game->txQuest[136]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[136]);
 			game->AddReward(500);
 			mine_state2 = State2::Built;
 			days -= days_required;
@@ -152,82 +128,52 @@ void Quest_Mine::SetProgress(int prog2)
 			if(days >= days_required)
 				days = days_required - 1;
 			days_gold = 0;
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::SelectedGold:
 		{
 			state = Quest::Completed;
-			msgs.push_back(game->txQuest[137]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[137]);
 			game->AddReward(3000);
 			mine_state2 = State2::InBuild;
 			days = 0;
 			days_required = Random(30, 45);
 			quest_manager.RemoveQuestRumor(P_KOPALNIA);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::NeedTalk:
 		{
 			state = Quest::Started;
-			msgs.push_back(game->txQuest[138]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[138]);
 			mine_state2 = State2::CanExpand;
 			W.AddNews(Format(game->txQuest[139], GetTargetLocationName()));
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::Talked:
 		{
-			msgs.push_back(Format(game->txQuest[140], mine_state == State::Shares ? 10000 : 12000));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(Format(game->txQuest[140], mine_state == State::Shares ? 10000 : 12000));
 		}
 		break;
 	case Progress::NotInvested:
 		{
 			state = Quest::Completed;
-			msgs.push_back(game->txQuest[141]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[141]);
 			quest_manager.EndUniqueQuest();
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::Invested:
 		{
 			game->current_dialog->pc->unit->ModGold(mine_state == State::Shares ? -10000 : -12000);
-			msgs.push_back(game->txQuest[142]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[142]);
 			mine_state2 = State2::InExpand;
 			days = 0;
 			days_required = Random(30, 45);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::UpgradedMine:
 		{
 			state = Quest::Completed;
-			msgs.push_back(game->txQuest[143]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[143]);
 			game->AddReward(1000);
 			mine_state = State::BigShares;
 			mine_state2 = State2::Expanded;
@@ -237,43 +183,27 @@ void Quest_Mine::SetProgress(int prog2)
 				days = days_required - 1;
 			days_gold = 0;
 			W.AddNews(Format(game->txQuest[144], GetTargetLocationName()));
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::InfoAboutPortal:
 		{
 			state = Quest::Started;
-			msgs.push_back(game->txQuest[145]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[145]);
 			mine_state2 = State2::FoundPortal;
 			W.AddNews(Format(game->txQuest[146], GetTargetLocationName()));
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::TalkedWithMiner:
 		{
-			msgs.push_back(game->txQuest[147]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[147]);
 			const Item* item = Item::Get("key_kopalnia");
 			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
 
-			if(Net::IsOnline())
+			if(Net::IsOnline() && !game->current_dialog->is_local)
 			{
-				game->Net_UpdateQuest(refid);
-				if(!game->current_dialog->is_local)
-				{
-					game->Net_AddItem(game->current_dialog->pc, item, true);
-					game->Net_AddedItemMsg(game->current_dialog->pc);
-				}
-				else
-					game->AddGameMsg3(GMS_ADDED_ITEM);
+				game->Net_AddItem(game->current_dialog->pc, item, true);
+				game->Net_AddedItemMsg(game->current_dialog->pc);
 			}
 			else
 				game->AddGameMsg3(GMS_ADDED_ITEM);
@@ -282,14 +212,9 @@ void Quest_Mine::SetProgress(int prog2)
 	case Progress::Finished:
 		{
 			state = Quest::Completed;
-			msgs.push_back(game->txQuest[148]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[148]);
 			quest_manager.EndUniqueQuest();
 			W.AddNews(game->txQuest[149]);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	}

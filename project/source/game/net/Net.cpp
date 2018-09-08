@@ -6443,8 +6443,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					}
 					else
 					{
-						PreloadItem(base);
-						Item* item = CreateItemCopy(base);
+						Item* item = base->CreateCopy();
 						f >> item->id;
 						f >> item->name;
 						f >> item->desc;
@@ -9651,7 +9650,7 @@ bool Game::ReadWorldData(BitStreamReader& f)
 		}
 		else
 		{
-			Item* item = CreateItemCopy(base_item);
+			Item* item = base_item->CreateCopy();
 			f >> item->id;
 			f >> item->name;
 			f >> item->desc;

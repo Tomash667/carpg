@@ -6,7 +6,6 @@
 #include "Journal.h"
 #include "LocationHelper.h"
 #include "QuestManager.h"
-#include "GameGui.h"
 #include "GameFile.h"
 #include "World.h"
 
@@ -45,6 +44,9 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 	case Progress::Started:
 		// received quest from mayor
 		{
+			OnStart(game->txQuest[265]);
+			quest_manager.quests_timeout.push_back(this);
+
 			target_loc = W.GetRandomSpawnLocation((GetStartLocation().pos + W.GetLocation(from_loc)->pos) / 2, SG_BANDITS);
 
 			Location& loc = GetStartLocation();
@@ -55,9 +57,7 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 
 			cstring who = (LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys);
 
-			const Item* base_item = Item::Get("parcel");
-			game->PreloadItem(base_item);
-			CreateItemCopy(parcel, base_item);
+			Item::Get("parcel")->CreateCopy(parcel);
 			parcel.id = "$stolen_parcel";
 			parcel.name = Format(game->txQuest[8], who, loc.name.c_str());
 			parcel.refid = refid;
@@ -66,10 +66,6 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			spawn_item = Quest_Dungeon::Item_GiveSpawned;
 			item_to_give[0] = &parcel;
 			at_level = loc2.GetRandomLevel();
-
-			start_time = W.GetWorldtime();
-			state = Quest::Started;
-			name = game->txQuest[265];
 
 			msgs.push_back(Format(game->txQuest[3], who, loc.name.c_str(), W.GetDate()));
 			if(loc2.type == L_CAMP)
@@ -81,20 +77,6 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 			{
 				game->target_loc_is_camp = false;
 				msgs.push_back(Format(game->txQuest[23], who, loc.name.c_str(), loc2.name.c_str(), GetLocationDirName(loc.pos, loc2.pos)));
-			}
-
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			quest_manager.quests_timeout.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-			{
-				game->Net_AddQuest(refid);
-				game->Net_RegisterItem(&parcel, base_item);
 			}
 		}
 		break;
@@ -111,13 +93,8 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 					loc.active_quest = nullptr;
 			}
 
-			msgs.push_back(game->txQuest[24]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[24]);
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::Finished:
@@ -135,17 +112,8 @@ void Quest_RetrievePackage::SetProgress(int prog2)
 					loc.active_quest = nullptr;
 			}
 
-			msgs.push_back(game->txQuest[25]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[25]);
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
-
-			if(Net::IsOnline())
-			{
-				game->Net_UpdateQuest(refid);
-				if(!game->current_dialog->is_local)
-					game->Net_RemoveQuestItem(game->current_dialog->pc, refid);
-			}
 		}
 		break;
 	}
@@ -186,10 +154,7 @@ bool Quest_RetrievePackage::OnTimeout(TimeoutType ttype)
 			u->RemoveQuestItem(refid);
 	}
 
-	msgs.push_back(game->txQuest[277]);
-	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
+	OnUpdate(game->txQuest[277]);
 	return true;
 }
 
@@ -223,15 +188,11 @@ bool Quest_RetrievePackage::Load(GameReader& f)
 	{
 		f >> from_loc;
 
-		const Item* base_item = Item::Get("parcel");
 		Location& loc = GetStartLocation();
-		CreateItemCopy(parcel, base_item);
+		Item::Get("parcel")->CreateCopy(parcel);
 		parcel.id = "$stolen_parcel";
 		parcel.name = Format(game->txQuest[8], LocationHelper::IsCity(loc) ? game->txForMayor : game->txForSoltys, loc.name.c_str());
 		parcel.refid = refid;
-
-		if(game->mp_load)
-			game->Net_RegisterItem(&parcel, base_item);
 
 		item_to_give[0] = &parcel;
 		unit_to_spawn = g_spawn_groups[SG_BANDITS].GetSpawnLeader();

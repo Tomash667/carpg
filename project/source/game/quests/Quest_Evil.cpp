@@ -84,8 +84,7 @@ void Quest_Evil::SetProgress(int prog2)
 	case Progress::Talked:
 		// zaakceptowano
 		{
-			name = game->txQuest[233];
-			state = Quest::Started;
+			OnStart(game->txQuest[233]);
 			// usuñ plotkê
 			quest_manager.RemoveQuestRumor(P_ZLO);
 			// lokacja
@@ -98,28 +97,15 @@ void Quest_Evil::SetProgress(int prog2)
 			callback = VoidDelegate(this, &Quest_Evil::GenerateBloodyAltar);
 			at_level = 0;
 			// questowe rzeczy
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
 			msgs.push_back(Format(game->txQuest[234], GetStartLocationName(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[235], GetTargetLocationName(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_AddQuest(refid);
 		}
 		break;
 	case Progress::AltarEvent:
 		// zdarzenie
 		{
-			msgs.push_back(game->txQuest[236]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[236]);
 			W.AddNews(Format(game->txQuest[237], GetTargetLocationName()));
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::TalkedAboutBook:
@@ -127,70 +113,42 @@ void Quest_Evil::SetProgress(int prog2)
 		{
 			mage_loc = W.GetRandomSettlementIndex(start_loc);
 			Location& mage = *W.GetLocation(mage_loc);
-			msgs.push_back(Format(game->txQuest[238], mage.name.c_str(), GetLocationDirName(GetStartLocation().pos, mage.pos)));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(Format(game->txQuest[238], mage.name.c_str(), GetLocationDirName(GetStartLocation().pos, mage.pos)));
 			evil_state = State::GenerateMage;
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::MageToldAboutStolenBook:
 		// mag powiedzia³ ¿e mu zabrali ksiêge
 		{
-			msgs.push_back(game->txQuest[239]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[239]);
 			W.AddNews(Format(game->txQuest[240], W.GetLocation(mage_loc)->name.c_str()));
 			game->current_dialog->talker->temporary = true;
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::TalkedWithCaptain:
 		// pogadano z kapitanem
 		{
-			msgs.push_back(Format(game->txQuest[241], LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(Format(game->txQuest[241], LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
 		}
 		break;
 	case Progress::TalkedWithMayor:
 		// pogadano z burmistrzem
 		{
-			msgs.push_back(Format(game->txQuest[242], LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(Format(game->txQuest[242], LocationHelper::IsCity(W.GetCurrentLocation()) ? game->txForMayor : game->txForSoltys));
 		}
 		break;
 	case Progress::GotBook:
 		// dosta³eœ ksi¹¿ke
 		{
-			msgs.push_back(game->txQuest[243]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[243]);
 			const Item* item = Item::Get("q_zlo_ksiega");
 			game->PreloadItem(item);
 			game->current_dialog->pc->unit->AddItem(item, 1, true);
 
-			if(Net::IsOnline())
+			if(Net::IsOnline() && !game->current_dialog->is_local)
 			{
-				game->Net_UpdateQuest(refid);
-				if(!game->current_dialog->is_local)
-				{
-					game->Net_AddItem(game->current_dialog->pc, item, true);
-					game->Net_AddedItemMsg(game->current_dialog->pc);
-				}
-				else
-					game->AddGameMsg3(GMS_ADDED_ITEM);
+				game->Net_AddItem(game->current_dialog->pc, item, true);
+				game->Net_AddedItemMsg(game->current_dialog->pc);
 			}
 			else
 				game->AddGameMsg3(GMS_ADDED_ITEM);
@@ -212,9 +170,8 @@ void Quest_Evil::SetProgress(int prog2)
 				L_CRYPT, MONSTER_CRYPT, SG_UNDEAD, 13
 			};
 
-			msgs.push_back(game->txQuest[245]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			cstring new_msgs[4];
+			new_msgs[0] = game->txQuest[245];
 
 			for(int i = 0; i < 3; ++i)
 			{
@@ -228,11 +185,13 @@ void Quest_Evil::SetProgress(int prog2)
 				loc[i].near_loc = W.GetNearestSettlement(target.pos);
 				loc[i].at_level = target.GetLastLevel();
 				loc[i].callback = VoidDelegate(this, &Quest_Evil::GeneratePortal);
-				msgs.push_back(Format(game->txQuest[247], W.GetLocation(loc[i].target_loc)->name.c_str(),
+				new_msgs[i + 1] = Format(game->txQuest[247], W.GetLocation(loc[i].target_loc)->name.c_str(),
 					GetLocationDirName(W.GetLocation(loc[i].near_loc)->pos, W.GetLocation(loc[i].target_loc)->pos),
-					W.GetLocation(loc[i].near_loc)->name.c_str()));
+					W.GetLocation(loc[i].near_loc)->name.c_str());
 				W.AddNews(Format(game->txQuest[246], W.GetLocation(loc[i].target_loc)->name.c_str()));
 			}
+
+			OnUpdate({ new_msgs[0], new_msgs[1], new_msgs[2], new_msgs[3] });
 
 			next_event = &loc[0];
 			loc[0].next_event = &loc[1];
@@ -246,9 +205,6 @@ void Quest_Evil::SetProgress(int prog2)
 			game->AddTeamMember(&u, true);
 
 			evil_state = State::ClosingPortals;
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuestMulti(refid, 4);
 		}
 		break;
 	case Progress::PortalClosed:
@@ -273,23 +229,16 @@ void Quest_Evil::SetProgress(int prog2)
 			target.spawn = SG_EVIL;
 			target.reset = true;
 			evil_state = State::KillBoss;
-			msgs.push_back(Format(game->txQuest[248], GetTargetLocationName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(Format(game->txQuest[248], GetTargetLocationName()));
 			for(int i = 0; i < 3; ++i)
 				W.GetLocation(loc[i].target_loc)->active_quest = nullptr;
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuestMulti(refid, 2);
 		}
 		break;
 	case Progress::KilledBoss:
 		// zabito bossa
 		{
 			state = Quest::Completed;
-			msgs.push_back(game->txQuest[249]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[249]);
 			// przywróæ stary o³tarz
 			Location& target = GetTargetLocation();
 			target.active_quest = nullptr;
@@ -326,10 +275,7 @@ void Quest_Evil::SetProgress(int prog2)
 			W.AddNews(game->txQuest[250]);
 
 			if(Net::IsOnline())
-			{
 				Net::PushChange(NetChange::CLEAN_ALTAR);
-				game->Net_UpdateQuest(refid);
-			}
 		}
 		break;
 	case Progress::Finished:

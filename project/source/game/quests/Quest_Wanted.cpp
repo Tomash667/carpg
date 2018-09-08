@@ -8,7 +8,6 @@
 #include "GameFile.h"
 #include "QuestManager.h"
 #include "City.h"
-#include "GameGui.h"
 #include "World.h"
 
 //=================================================================================================
@@ -49,6 +48,9 @@ void Quest_Wanted::SetProgress(int prog2)
 	{
 	case Progress::Started: // zaakceptowano
 		{
+			OnStart(game->txQuest[257]);
+			quest_manager.quests_timeout.push_back(this);
+
 			game->GenerateHeroName(clas, crazy, unit_name);
 			target_loc = W.GetRandomFreeSettlementIndex(start_loc);
 			// jeœli nie ma wolnego miasta to powie jakieœ ale go tam nie bêdzie...
@@ -65,43 +67,22 @@ void Quest_Wanted::SetProgress(int prog2)
 				unit_spawn_level = level;
 			}
 
-			// dane questa
-			start_time = W.GetWorldtime();
-			state = Quest::Started;
-			name = game->txQuest[257];
-
 			// dodaj list
-			const Item* base_item = Item::Get("wanted_letter");
-			game->PreloadItem(base_item);
-			CreateItemCopy(letter, base_item);
+			Item::Get("wanted_letter")->CreateCopy(letter);
 			letter.id = "$wanted_letter";
 			letter.name = game->txQuest[258];
 			letter.refid = refid;
 			letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
 			game->current_dialog->pc->unit->AddItem(&letter, 1, true);
 
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			quest_manager.quests_timeout.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-
 			// wpis do dziennika
 			msgs.push_back(Format(game->txQuest[29], GetStartLocationName(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[260], level * 100, unit_name.c_str(), GetTargetLocationName(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
 
-			if(Net::IsOnline())
+			if(Net::IsOnline() && !game->current_dialog->is_local)
 			{
-				game->Net_AddQuest(refid);
-				game->Net_RegisterItem(&letter, base_item);
-				if(!game->current_dialog->is_local)
-				{
-					game->Net_AddItem(game->current_dialog->pc, &letter, true);
-					game->Net_AddedItemMsg(game->current_dialog->pc);
-				}
-				else
-					game->AddGameMsg3(GMS_ADDED_ITEM);
+				game->Net_AddItem(game->current_dialog->pc, &letter, true);
+				game->Net_AddedItemMsg(game->current_dialog->pc);
 			}
 			else
 				game->AddGameMsg3(GMS_ADDED_ITEM);
@@ -116,12 +97,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			if(target.active_quest == this)
 				target.active_quest = nullptr;
 
-			msgs.push_back(Format(game->txQuest[261], unit_name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(Format(game->txQuest[261], unit_name.c_str()));
 
 			done = false;
 		}
@@ -129,14 +105,8 @@ void Quest_Wanted::SetProgress(int prog2)
 	case Progress::Killed: // zabito
 		{
 			state = Quest::Started; // if recruited that will change it to in progress
-			msgs.push_back(Format(game->txQuest[262], unit_name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
+			OnUpdate(Format(game->txQuest[262], unit_name.c_str()));
 			RemoveElementTry<Quest_Dungeon*>(quest_manager.quests_timeout, this);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	case Progress::Finished: // wykonano
@@ -146,23 +116,13 @@ void Quest_Wanted::SetProgress(int prog2)
 
 			game->AddReward(level * 100);
 
-			msgs.push_back(Format(game->txQuest[263], unit_name.c_str()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(Format(game->txQuest[263], unit_name.c_str()));
 		}
 		break;
 	case Progress::Recruited:
 		{
 			state = Quest::Failed;
-			msgs.push_back(Format(game->txQuest[276], target_unit->GetName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(Format(game->txQuest[276], target_unit->GetName()));
 		}
 		break;
 	}
@@ -211,9 +171,7 @@ bool Quest_Wanted::OnTimeout(TimeoutType ttype)
 		target_unit = nullptr;
 	}
 
-	msgs.push_back(game->txQuest[277]);
-	game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-	game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+	OnUpdate(game->txQuest[277]);
 
 	return true;
 }
@@ -308,15 +266,11 @@ bool Quest_Wanted::Load(GameReader& f)
 	}
 
 	// list
-	const Item* base_item = Item::Get("wanted_letter");
-	CreateItemCopy(letter, base_item);
+	Item::Get("wanted_letter")->CreateCopy(letter);
 	letter.id = "$wanted_letter";
 	letter.name = game->txQuest[258];
 	letter.refid = refid;
 	letter.desc = Format(game->txQuest[259], level * 100, unit_name.c_str());
-
-	if(game->mp_load)
-		game->Net_RegisterItem(&letter, base_item);
 
 	return true;
 }

@@ -1,9 +1,10 @@
-// przedmiot
 #include "Pch.h"
 #include "GameCore.h"
 #include "Item.h"
 #include "Crc.h"
 #include "ResourceManager.h"
+#include "Net.h"
+#include "Game.h"
 
 extern string g_system_dir;
 ItemsMap Item::items;
@@ -216,14 +217,17 @@ bool ItemCmp(const Item* a, const Item* b)
 }
 
 //=================================================================================================
-void CreateItemCopy(Item& item, const Item* base_item)
+void Item::CreateCopy(Item& item) const
 {
-	switch(base_item->type)
+	Game& game = Game::Get();
+	game.PreloadItem(this);
+
+	switch(type)
 	{
 	case IT_OTHER:
 		{
 			OtherItem& o = (OtherItem&)item;
-			const OtherItem& o2 = base_item->ToOther();
+			const OtherItem& o2 = ToOther();
 			o.mesh = o2.mesh;
 			o.desc = o2.desc;
 			o.flags = o2.flags;
@@ -244,17 +248,25 @@ void CreateItemCopy(Item& item, const Item* base_item)
 		assert(0); // not implemented
 		break;
 	}
+
+	if(Net::IsServer() || game.mp_load)
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::REGISTER_ITEM;
+		c.item2 = &item;
+		c.base_item = this;
+	}
 }
 
 //=================================================================================================
-Item* CreateItemCopy(const Item* item)
+Item* Item::CreateCopy() const
 {
-	switch(item->type)
+	switch(type)
 	{
 	case IT_OTHER:
 		{
 			OtherItem* o = new OtherItem;
-			CreateItemCopy(*o, item);
+			CreateCopy(*o);
 			return o;
 		}
 		break;
@@ -269,6 +281,19 @@ Item* CreateItemCopy(const Item* item)
 		// not implemented yet, YAGNI!
 		assert(0);
 		return nullptr;
+	}
+}
+
+//=================================================================================================
+void Item::Rename(cstring name)
+{
+	assert(name);
+	this->name = name;
+	if(Net::IsOnline())
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::RENAME_ITEM;
+		c.base_item = this;
 	}
 }
 

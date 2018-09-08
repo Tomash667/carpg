@@ -7,7 +7,6 @@
 #include "GameFile.h"
 #include "SaveState.h"
 #include "QuestManager.h"
-#include "GameGui.h"
 #include "World.h"
 #include "Level.h"
 #include "OutsideLocation.h"
@@ -52,9 +51,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 	case Progress::Started:
 		// zakceptowano
 		{
-			start_time = W.GetWorldtime();
-			state = Quest::Started;
-			name = game->txQuest[124];
+			OnStart(game->txQuest[124]);
 
 			location_event_handler = this;
 
@@ -68,28 +65,14 @@ void Quest_Sawmill::SetProgress(int prog2)
 				tl.reset = true;
 			tl.st = 8;
 
-			quest_index = quest_manager.quests.size();
-			quest_manager.quests.push_back(this);
-			RemoveElement<Quest*>(quest_manager.unaccepted_quests, this);
-
 			msgs.push_back(Format(game->txQuest[125], sl.name.c_str(), W.GetDate()));
 			msgs.push_back(Format(game->txQuest[126], tl.name.c_str(), GetTargetLocationDir()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_AddQuest(refid);
 		}
 		break;
 	case Progress::ClearedLocation:
 		// oczyszczono
 		{
-			msgs.push_back(Format(game->txQuest[127], GetTargetLocationName()));
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(Format(game->txQuest[127], GetTargetLocationName()));
 		}
 		break;
 	case Progress::Talked:
@@ -100,12 +83,7 @@ void Quest_Sawmill::SetProgress(int prog2)
 
 			quest_manager.RemoveQuestRumor(P_TARTAK);
 
-			msgs.push_back(game->txQuest[128]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
+			OnUpdate(game->txQuest[128]);
 		}
 		break;
 	case Progress::Finished:
@@ -115,15 +93,10 @@ void Quest_Sawmill::SetProgress(int prog2)
 			sawmill_state = State::Working;
 			days = 0;
 
-			msgs.push_back(game->txQuest[129]);
-			game->game_gui->journal->NeedUpdate(Journal::Quests, quest_index);
-			game->AddGameMsg3(GMS_JOURNAL_UPDATED);
+			OnUpdate(game->txQuest[129]);
 			game->AddReward(400);
 			quest_manager.EndUniqueQuest();
 			W.AddNews(Format(game->txQuest[130], GetTargetLocationName()));
-
-			if(Net::IsOnline())
-				game->Net_UpdateQuest(refid);
 		}
 		break;
 	}

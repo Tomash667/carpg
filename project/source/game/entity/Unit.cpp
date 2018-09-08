@@ -1823,6 +1823,12 @@ void Unit::RemoveQuestItem(int quest_refid)
 		{
 			weight -= it->item->weight;
 			items.erase(it);
+			if(IsClient())
+			{
+				NetChangePlayer& c = Add1(player->player_info->changes);
+				c.type = NetChangePlayer::REMOVE_QUEST_ITEM;
+				c.id = quest_refid;
+			}
 			return;
 		}
 	}
