@@ -7,6 +7,7 @@
 #include "QuestManager.h"
 #include "Game.h"
 
+//=================================================================================================
 void Quest_Tournament::InitOnce()
 {
 	QM.RegisterSpecialHandler(this, "ironfist_start");
@@ -21,6 +22,7 @@ void Quest_Tournament::InitOnce()
 	QM.RegisterSpecialIfHandler(this, "ironfist_winner");
 }
 
+//=================================================================================================
 void Quest_Tournament::Init()
 {
 	year = 0;
@@ -32,6 +34,7 @@ void Quest_Tournament::Init()
 	generated = false;
 }
 
+//=================================================================================================
 void Quest_Tournament::Save(GameWriter& f)
 {
 	f << year;
@@ -41,6 +44,7 @@ void Quest_Tournament::Save(GameWriter& f)
 	f << generated;
 }
 
+//=================================================================================================
 void Quest_Tournament::Load(GameReader& f)
 {
 	f >> year;
@@ -52,6 +56,7 @@ void Quest_Tournament::Load(GameReader& f)
 	units.clear();
 }
 
+//=================================================================================================
 void Quest_Tournament::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "ironfist_start") == 0)
@@ -91,6 +96,7 @@ void Quest_Tournament::Special(DialogContext& ctx, cstring msg)
 	}
 }
 
+//=================================================================================================
 bool Quest_Tournament::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "ironfist_can_start") == 0)

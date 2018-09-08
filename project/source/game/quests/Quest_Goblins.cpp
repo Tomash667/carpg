@@ -15,6 +15,12 @@
 #include "Level.h"
 
 //=================================================================================================
+void Quest_Goblins::Init()
+{
+	QM.RegisterSpecialIfHandler(this, "q_gobliny_zapytaj");
+}
+
+//=================================================================================================
 void Quest_Goblins::Start()
 {
 	type = QuestType::Unique;
@@ -446,4 +452,18 @@ void Quest_Goblins::LoadOld(GameReader& f)
 	f >> nobleman;
 	f >> messenger;
 	f >> hd_nobleman;
+}
+
+//=================================================================================================
+bool Quest_Goblins::SpecialIf(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "q_gobliny_zapytaj") == 0)
+	{
+		if(goblins_state >= State::MageTalked
+			&& goblins_state < State::KnownLocation
+			&& L.location_index == start_loc
+			&& prog != Progress::TalkedWithInnkeeper)
+			return true;
+	}
+	return false;
 }

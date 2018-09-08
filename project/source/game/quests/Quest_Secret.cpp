@@ -8,11 +8,13 @@
 #include "Team.h"
 #include "Game.h"
 
+//=================================================================================================
 inline Item& GetNote()
 {
 	return *Item::Get("sekret_kartka");
 }
 
+//=================================================================================================
 void Quest_Secret::InitOnce()
 {
 	QM.RegisterSpecialHandler(this, "secret_attack");
@@ -23,6 +25,7 @@ void Quest_Secret::InitOnce()
 	QM.RegisterSpecialIfHandler(this, "secret_can_get_reward");
 }
 
+//=================================================================================================
 void Quest_Secret::Init()
 {
 	state = (BaseObject::Get("tomashu_dom")->mesh ? SECRET_NONE : SECRET_OFF);
@@ -31,6 +34,7 @@ void Quest_Secret::Init()
 	where2 = -1;
 }
 
+//=================================================================================================
 void Quest_Secret::Save(GameWriter& f)
 {
 	f << state;
@@ -39,6 +43,7 @@ void Quest_Secret::Save(GameWriter& f)
 	f << where2;
 }
 
+//=================================================================================================
 void Quest_Secret::Load(GameReader& f)
 {
 	f >> state;
@@ -49,6 +54,7 @@ void Quest_Secret::Load(GameReader& f)
 		throw "Save uses 'data.pak' file which is missing!";
 }
 
+//=================================================================================================
 void Quest_Secret::Special(DialogContext& ctx, cstring msg)
 {
 	Game& game = Game::Get();
@@ -94,6 +100,7 @@ void Quest_Secret::Special(DialogContext& ctx, cstring msg)
 	}
 }
 
+//=================================================================================================
 bool Quest_Secret::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "secret_first_dialog") == 0)

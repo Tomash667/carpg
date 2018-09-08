@@ -36,6 +36,7 @@ public:
 		AgentLeft
 	};
 
+	void Init();
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
@@ -47,14 +48,9 @@ public:
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	void LoadOld(GameReader& f);
-	int GetUnitEventHandlerQuestRefid() override
-	{
-		return refid;
-	}
-	int GetLocationEventHandlerQuestRefid() override
-	{
-		return refid;
-	}
+	int GetUnitEventHandlerQuestRefid() override { return refid; }
+	int GetLocationEventHandlerQuestRefid() override { return refid; }
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
 
 	State bandits_state;
 	float timer;

@@ -178,6 +178,16 @@ bool Quest_Mages::Load(GameReader& f)
 }
 
 //=================================================================================================
+void Quest_Mages2::Init()
+{
+	QM.RegisterSpecialIfHandler(this, "q_magowie_to_miasto");
+	QM.RegisterSpecialIfHandler(this, "q_magowie_poinformuj");
+	QM.RegisterSpecialIfHandler(this, "q_magowie_kup_miksture");
+	QM.RegisterSpecialIfHandler(this, "q_magowie_kup");
+	QM.RegisterSpecialIfHandler(this, "q_magowie_nie_ukonczono");
+}
+
+//=================================================================================================
 void Quest_Mages2::Start()
 {
 	type = QuestType::Unique;
@@ -538,11 +548,23 @@ bool Quest_Mages2::SpecialIf(DialogContext& ctx, cstring msg)
 		return target_loc == W.GetCurrentLocationIndex();
 	else if(strcmp(msg, "q_magowie_czas") == 0)
 		return timer >= 30.f;
-	else
+	else if(strcmp(msg, "q_magowie_to_miasto") == 0)
+		return mages_state >= State::TalkedWithCaptain && W.GetCurrentLocationIndex() == start_loc;
+	else if(strcmp(msg, "q_magowie_poinformuj") == 0)
+		return mages_state == State::EncounteredGolem;
+	else if(strcmp(msg, "q_magowie_kup_miksture") == 0)
+		return mages_state == State::BuyPotion;
+	else if(strcmp(msg, "q_magowie_kup") == 0)
 	{
-		assert(0);
-		return false;
+		if(ctx.pc->unit->gold >= 150)
+		{
+			SetProgress(Progress::BoughtPotion);
+			return true;
+		}
 	}
+	else if(strcmp(msg, "q_magowie_nie_ukonczono") == 0)
+		return mages_state != State::Completed;
+	return false;
 }
 
 //=================================================================================================

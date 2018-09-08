@@ -1314,7 +1314,7 @@ void Game::UpdateGame(float dt)
 			}
 			else if(inventory_mode == I_TRADE || inventory_mode == I_SHARE || inventory_mode == I_GIVE)
 			{
-				if(!pc->action_unit->IsStanding() || !IsUnitIdle(*pc->action_unit))
+				if(!pc->action_unit->IsStanding() || !pc->action_unit->IsIdle())
 				{
 					// handlarz umar³ / zaatakowany
 					CloseInventory();
@@ -1323,7 +1323,7 @@ void Game::UpdateGame(float dt)
 		}
 		else if(dialog_context.dialog_mode && Net::IsLocal())
 		{
-			if(!dialog_context.talker->IsStanding() || !IsUnitIdle(*dialog_context.talker) || dialog_context.talker->to_remove
+			if(!dialog_context.talker->IsStanding() || !dialog_context.talker->IsIdle() || dialog_context.talker->to_remove
 				|| dialog_context.talker->frozen != FROZEN::NO)
 			{
 				// rozmówca umar³ / jest usuwany / zaatakowa³ kogoœ
@@ -1458,7 +1458,7 @@ void Game::UpdateGame(float dt)
 			DialogContext& ctx = *info->u->player->dialog_ctx;
 			if(ctx.dialog_mode)
 			{
-				if(!ctx.talker->IsStanding() || !IsUnitIdle(*ctx.talker) || ctx.talker->to_remove || ctx.talker->frozen != FROZEN::NO)
+				if(!ctx.talker->IsStanding() || !ctx.talker->IsIdle() || ctx.talker->to_remove || ctx.talker->frozen != FROZEN::NO)
 					EndDialog(ctx);
 				else
 					UpdateGameDialog(ctx, dt);
@@ -2523,7 +2523,7 @@ void Game::UpdatePlayer(LevelContext& ctx, float dt)
 					pc->chest_trade = &u2->items;
 				}
 			}
-			else if(u2->IsAI() && IsUnitIdle(*u2) && u2->in_arena == -1 && u2->data->dialog && !IsEnemy(u, *u2))
+			else if(u2->IsAI() && u2->IsIdle() && u2->in_arena == -1 && u2->data->dialog && !IsEnemy(u, *u2))
 			{
 				if(Net::IsLocal())
 				{
@@ -5592,17 +5592,6 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			pvp_response.timer = 0.f;
 		}
 	}
-	else if(strcmp(msg, "szaleni_powiedzial") == 0)
-	{
-		ctx.talker->ai->morale = -100.f;
-		QM.quest_crazies->crazies_state = Quest_Crazies::State::TalkedWithCrazy;
-	}
-	else if(strcmp(msg, "szaleni_sprzedaj") == 0)
-	{
-		const Item* kamien = Item::Get("q_szaleni_kamien");
-		RemoveItem(*ctx.pc->unit, kamien, 1);
-		ctx.pc->unit->ModGold(10);
-	}
 	else if(strcmp(msg, "crazy_give_item") == 0)
 	{
 		crazy_give_item = GetRandomItem(100);
@@ -5745,30 +5734,6 @@ bool Game::ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg)
 		if(q && !q->IsActive())
 			return true;
 	}
-	else if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
-		return QM.quest_bandits->prog == Quest_Bandits::Progress::NeedTalkWithCaptain && L.location_index == QM.quest_bandits->start_loc;
-	else if(strcmp(msg, "q_magowie_to_miasto") == 0)
-		return QM.quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain && L.location_index == QM.quest_mages2->start_loc;
-	else if(strcmp(msg, "q_magowie_poinformuj") == 0)
-		return QM.quest_mages2->mages_state == Quest_Mages2::State::EncounteredGolem;
-	else if(strcmp(msg, "q_magowie_kup_miksture") == 0)
-		return QM.quest_mages2->mages_state == Quest_Mages2::State::BuyPotion;
-	else if(strcmp(msg, "q_magowie_kup") == 0)
-	{
-		if(ctx.pc->unit->gold >= 150)
-		{
-			QM.quest_mages2->SetProgress(Quest_Mages2::Progress::BoughtPotion);
-			return true;
-		}
-	}
-	else if(strcmp(msg, "q_orkowie_to_miasto") == 0)
-		return L.location_index == QM.quest_orcs->start_loc;
-	else if(strcmp(msg, "q_orkowie_zaakceptowano") == 0)
-		return QM.quest_orcs2->orcs_state >= Quest_Orcs2::State::Accepted;
-	else if(strcmp(msg, "q_magowie_nie_ukonczono") == 0)
-		return QM.quest_mages2->mages_state != Quest_Mages2::State::Completed;
-	else if(strcmp(msg, "q_orkowie_nie_ukonczono") == 0)
-		return QM.quest_orcs2->orcs_state < Quest_Orcs2::State::Completed;
 	else if(strcmp(msg, "is_free_recruit") == 0)
 		return ctx.talker->level < 6 && Team.free_recruit;
 	else if(strcmp(msg, "have_unique_quest") == 0)
@@ -5778,30 +5743,6 @@ bool Game::ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg)
 			|| (QM.quest_mages2->mages_state >= Quest_Mages2::State::TalkedWithCaptain
 				&& QM.quest_mages2->mages_state < Quest_Mages2::State::Completed
 				&& QM.quest_mages2->start_loc == L.location_index))
-			return true;
-	}
-	else if(strcmp(msg, "q_gobliny_zapytaj") == 0)
-	{
-		if(QM.quest_goblins->goblins_state >= Quest_Goblins::State::MageTalked
-			&& QM.quest_goblins->goblins_state < Quest_Goblins::State::KnownLocation
-			&& L.location_index == QM.quest_goblins->start_loc
-			&& QM.quest_goblins->prog != Quest_Goblins::Progress::TalkedWithInnkeeper)
-			return true;
-	}
-	else if(strcmp(msg, "q_zlo_kapitan") == 0)
-	{
-		if(L.location_index == QM.quest_evil->mage_loc
-			&& QM.quest_evil->evil_state >= Quest_Evil::State::GeneratedMage
-			&& QM.quest_evil->evil_state < Quest_Evil::State::ClosingPortals
-			&& InRange((Quest_Evil::Progress)QM.quest_evil->prog, Quest_Evil::Progress::MageToldAboutStolenBook, Quest_Evil::Progress::TalkedWithMayor))
-			return true;
-	}
-	else if(strcmp(msg, "q_zlo_burmistrz") == 0)
-	{
-		if(L.location_index == QM.quest_evil->mage_loc
-			&& QM.quest_evil->evil_state >= Quest_Evil::State::GeneratedMage
-			&& QM.quest_evil->evil_state < Quest_Evil::State::ClosingPortals
-			&& QM.quest_evil->prog == Quest_Evil::Progress::TalkedWithCaptain)
 			return true;
 	}
 	else if(strcmp(msg, "is_not_mage") == 0)
@@ -5820,10 +5761,6 @@ bool Game::ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg)
 		return pvp_response.ok;
 	else if(strcmp(msg, "in_city") == 0)
 		return city_ctx != nullptr;
-	else if(strcmp(msg, "szaleni_nie_zapytano") == 0)
-		return QM.quest_crazies->crazies_state == Quest_Crazies::State::None;
-	else if(strcmp(msg, "q_szaleni_trzeba_pogadac") == 0)
-		return QM.quest_crazies->crazies_state == Quest_Crazies::State::FirstAttack;
 	else
 	{
 		Warn("DTF_IF_SPECIAL: %s", msg);
@@ -10191,7 +10128,7 @@ void Game::ChangeLevel(int where)
 	UpdateDungeonMinimap(false);
 
 	if(!in_tutorial && QM.quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && QM.quest_crazies->crazies_state < Quest_Crazies::State::End)
-		CheckCraziesStone();
+		QM.quest_crazies->CheckStone();
 
 	if(Net::IsOnline() && players > 1)
 	{
@@ -15013,46 +14950,9 @@ bool Game::CanWander(Unit& u)
 		return false;
 }
 
-bool Game::IsUnitIdle(Unit& u)
-{
-	if(Net::IsLocal())
-		return u.ai->state == AIController::Idle;
-	else
-		return !IS_SET(u.ai_mode, 0x04);
-}
-
 float Game::PlayerAngleY()
 {
-	//const float c_cam_angle_min = PI+0.1f;
-	//const float c_cam_angle_max = PI*1.8f-0.1f;
 	const float pt0 = 4.6662526f;
-
-	/*if(rotY < pt0)
-	{
-		if(rotY < pt0-0.6f)
-			return -1.f;
-		else
-			return lerp(0.f, -1.f, (pt0 - rotY)/0.6f);
-	}
-	else
-	{
-		if(rotY > pt0+0.6f)
-			return 1.f;
-		else
-			return lerp(0.f, 1.f, (rotY-pt0)/0.6f);
-	}*/
-
-	/*if(rotY < c_cam_angle_min+range/4)
-		return -1.f;
-	else if(rotY > c_cam_angle_max-range/4)
-		return 1.f;
-	else
-		return lerp(-1.f, 1.f, (rotY - (c_cam_angle_min+range/4)) / (range/2));*/
-
-		// 	if(rotY < pt0)
-		// 	{
-		// 		return rotY - pt0;
-		// 	}
 	return cam.rot.y - pt0;
 }
 
@@ -18592,48 +18492,6 @@ UnitData* Game::GetRandomHeroData()
 	}
 
 	return UnitData::Get(id);
-}
-
-void Game::CheckCraziesStone()
-{
-	Quest_Crazies* quest_crazies = QM.quest_crazies;
-	quest_crazies->check_stone = false;
-
-	const Item* kamien = Item::Get("q_szaleni_kamien");
-	if(!Team.FindItemInTeam(kamien, -1, nullptr, nullptr, false))
-	{
-		// usuñ kamieñ z gry o ile to nie encounter bo i tak jest resetowany
-		if(L.location->type != L_ENCOUNTER)
-		{
-			if(quest_crazies->target_loc == L.location_index)
-			{
-				// jest w dobrym miejscu, sprawdŸ czy w³o¿y³ kamieñ do skrzyni
-				if(local_ctx.chests && local_ctx.chests->size() > 0)
-				{
-					Chest* chest;
-					int slot;
-					if(local_ctx.FindItemInChest(kamien, &chest, &slot))
-					{
-						// w³o¿y³ kamieñ, koniec questa
-						chest->items.erase(chest->items.begin() + slot);
-						quest_crazies->SetProgress(Quest_Crazies::Progress::Finished);
-						return;
-					}
-				}
-			}
-
-			RemoveItemFromWorld(kamien);
-		}
-
-		// dodaj kamieñ przywódcy
-		Team.leader->AddItem(kamien, 1, false);
-	}
-
-	if(quest_crazies->crazies_state == Quest_Crazies::State::TalkedWithCrazy)
-	{
-		quest_crazies->crazies_state = Quest_Crazies::State::PickedStone;
-		quest_crazies->days = 13;
-	}
 }
 
 // usuwa podany przedmiot ze œwiata

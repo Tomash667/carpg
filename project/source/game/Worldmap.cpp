@@ -1180,7 +1180,7 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 
 	if(Net::IsLocal() && (QM.quest_crazies->check_stone
 		|| (QM.quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && QM.quest_crazies->crazies_state < Quest_Crazies::State::End)))
-		CheckCraziesStone();
+		QM.quest_crazies->CheckStone();
 
 	// drinking contest
 	Quest_Contest* contest = QM.quest_contest;

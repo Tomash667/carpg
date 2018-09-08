@@ -61,6 +61,7 @@ public:
 		ClericLeft
 	};
 
+	void Init();
 	void Start();
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
@@ -73,7 +74,6 @@ public:
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	void LoadOld(GameReader& f);
-
 	int GetLocId(int location_id);
 
 	Loc loc[3];

@@ -3056,3 +3056,12 @@ void Unit::RevealName(bool set_name)
 		c.id = set_name ? 1 : 0;
 	}
 }
+
+//=================================================================================================
+bool Unit::IsIdle() const
+{
+	if(Net::IsLocal())
+		return ai->state == AIController::Idle;
+	else
+		return !IS_SET(ai_mode, 0x04);
+}

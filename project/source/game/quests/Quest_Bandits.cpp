@@ -13,6 +13,12 @@
 #include "World.h"
 
 //=================================================================================================
+void Quest_Bandits::Init()
+{
+	QM.RegisterSpecialIfHandler(this, "q_bandyci_straznikow_daj");
+}
+
+//=================================================================================================
 void Quest_Bandits::Start()
 {
 	quest_id = Q_BANDITS;
@@ -460,4 +466,12 @@ void Quest_Bandits::LoadOld(GameReader& f)
 	f >> bandits_state;
 	f >> timer;
 	f >> agent;
+}
+
+//=================================================================================================
+bool Quest_Bandits::SpecialIf(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "q_bandyci_straznikow_daj") == 0)
+		return prog == Progress::NeedTalkWithCaptain && W.GetCurrentLocationIndex() == start_loc;
+	return false;
 }

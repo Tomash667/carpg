@@ -739,7 +739,6 @@ public:
 
 	//--------------------------------------
 	// QUESTS
-	void CheckCraziesStone();
 	void ShowAcademyText();
 
 	void UpdateContest(float dt);
@@ -1136,7 +1135,6 @@ public:
 		else
 			return IS_SET(u.ai_mode, 0x02);
 	}
-	bool IsUnitIdle(Unit& u);
 	void SetUnitWeaponState(Unit& unit, bool wyjmuje, WeaponType co);
 	void UpdatePlayerView();
 	void OnCloseInventory();

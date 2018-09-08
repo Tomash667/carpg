@@ -8,6 +8,7 @@
 #include "Dialog.h"
 #include "Game.h"
 
+//=================================================================================================
 void Quest_Contest::InitOnce()
 {
 	QM.RegisterSpecialHandler(this, "contest_start");
@@ -23,6 +24,7 @@ void Quest_Contest::InitOnce()
 	QM.RegisterFormatString(this, "contest_loc");
 }
 
+//=================================================================================================
 void Quest_Contest::Init()
 {
 	state = CONTEST_NOT_DONE;
@@ -33,6 +35,7 @@ void Quest_Contest::Init()
 	year = W.GetYear();
 }
 
+//=================================================================================================
 void Quest_Contest::Save(GameWriter& f)
 {
 	f << where;
@@ -49,6 +52,7 @@ void Quest_Contest::Save(GameWriter& f)
 	}
 }
 
+//=================================================================================================
 void Quest_Contest::Load(GameReader& f)
 {
 	f >> where;
@@ -66,6 +70,7 @@ void Quest_Contest::Load(GameReader& f)
 	year = W.GetYear();
 }
 
+//=================================================================================================
 void Quest_Contest::Special(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "contest_start") == 0)
@@ -93,6 +98,7 @@ void Quest_Contest::Special(DialogContext& ctx, cstring msg)
 	}
 }
 
+//=================================================================================================
 bool Quest_Contest::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "contest_done") == 0)
@@ -119,6 +125,7 @@ bool Quest_Contest::SpecialIf(DialogContext& ctx, cstring msg)
 	return false;
 }
 
+//=================================================================================================
 cstring Quest_Contest::FormatString(const string& str)
 {
 	if(str == "contest_loc")

@@ -90,6 +90,7 @@ void QuestManager::InitQuests(bool devmode)
 
 	// goblins
 	quest_goblins = new Quest_Goblins;
+	quest_goblins->Init();
 	quest_goblins->start_loc = W.GetRandomSettlementIndex(used, 1);
 	quest_goblins->refid = quest_counter++;
 	quest_goblins->Start();
@@ -98,6 +99,7 @@ void QuestManager::InitQuests(bool devmode)
 
 	// bandits
 	quest_bandits = new Quest_Bandits;
+	quest_bandits->Init();
 	quest_bandits->start_loc = W.GetRandomSettlementIndex(used, 1);
 	quest_bandits->refid = quest_counter++;
 	quest_bandits->Start();
@@ -131,6 +133,7 @@ void QuestManager::InitQuests(bool devmode)
 
 	// mages2
 	quest_mages2 = new Quest_Mages2;
+	quest_mages2->Init();
 	quest_mages2->refid = quest_counter++;
 	quest_mages2->Start();
 	unaccepted_quests.push_back(quest_mages2);
@@ -139,6 +142,7 @@ void QuestManager::InitQuests(bool devmode)
 
 	// orcs
 	quest_orcs = new Quest_Orcs;
+	quest_orcs->Init();
 	quest_orcs->start_loc = W.GetRandomSettlementIndex(used);
 	quest_orcs->refid = quest_counter++;
 	quest_orcs->Start();
@@ -147,12 +151,14 @@ void QuestManager::InitQuests(bool devmode)
 
 	// orcs2
 	quest_orcs2 = new Quest_Orcs2;
+	quest_orcs2->Init();
 	quest_orcs2->refid = quest_counter++;
 	quest_orcs2->Start();
 	unaccepted_quests.push_back(quest_orcs2);
 
 	// evil
 	quest_evil = new Quest_Evil;
+	quest_evil->Init();
 	quest_evil->start_loc = W.GetRandomSettlementIndex(used);
 	quest_evil->refid = quest_counter++;
 	quest_evil->Start();
@@ -161,6 +167,7 @@ void QuestManager::InitQuests(bool devmode)
 
 	// crazies
 	quest_crazies = new Quest_Crazies;
+	quest_crazies->Init();
 	quest_crazies->refid = quest_counter++;
 	quest_crazies->Start();
 	unaccepted_quests.push_back(quest_crazies);
@@ -561,13 +568,19 @@ void QuestManager::Load(GameReader& f)
 	quest_sawmill = (Quest_Sawmill*)FindQuestById(Q_SAWMILL);
 	quest_mine = (Quest_Mine*)FindQuestById(Q_MINE);
 	quest_bandits = (Quest_Bandits*)FindQuestById(Q_BANDITS);
+	quest_bandits->Init();
 	quest_goblins = (Quest_Goblins*)FindQuestById(Q_GOBLINS);
+	quest_goblins->Init();
 	quest_mages = (Quest_Mages*)FindQuestById(Q_MAGES);
 	quest_mages2 = (Quest_Mages2*)FindQuestById(Q_MAGES2);
 	quest_orcs = (Quest_Orcs*)FindQuestById(Q_ORCS);
+	quest_orcs->Init();
 	quest_orcs2 = (Quest_Orcs2*)FindQuestById(Q_ORCS2);
+	quest_orcs2->Init();
 	quest_evil = (Quest_Evil*)FindQuestById(Q_EVIL);
+	quest_evil->Init();
 	quest_crazies = (Quest_Crazies*)FindQuestById(Q_CRAZIES);
+	quest_crazies->Init();
 
 	if(LOAD_VERSION < V_FEATURE && !quest_mages2)
 	{
@@ -576,6 +589,7 @@ void QuestManager::Load(GameReader& f)
 		quest_mages2->Start();
 		unaccepted_quests.push_back(quest_mages2);
 	}
+	quest_mages2->Init();
 
 	// process quest item requests
 	for(vector<QuestItemRequest*>::iterator it = quest_item_requests.begin(), end = quest_item_requests.end(); it != end; ++it)

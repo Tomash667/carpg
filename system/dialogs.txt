@@ -42,7 +42,7 @@ dialog merchant
 			talk 5
 			choice 6
 			{
-				special "szaleni_sprzedaj"
+				special "crazies_sell_stone"
 				talk 7
 				restart
 			}
@@ -326,7 +326,7 @@ dialog trainer
 	{
 		choice 24
 		{
-			if special "q_szaleni_trzeba_pogadac"
+			if special "crazies_need_talk"
 			{
 				do_quest2 "szaleni"
 				restart
@@ -1359,13 +1359,13 @@ dialog crazy
 			special "hero_about"
 			restart
 		}
-		if special "szaleni_nie_zapytano"
+		if special "crazies_not_asked"
 		{
 			choice 44
 			{
 				talk 45
 				talk 46
-				special "szaleni_powiedzial"
+				special "crazies_talked"
 				special "attack"
 				end
 			}

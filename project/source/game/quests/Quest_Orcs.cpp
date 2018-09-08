@@ -15,6 +15,12 @@
 #include "World.h"
 
 //=================================================================================================
+void Quest_Orcs::Init()
+{
+	QM.RegisterSpecialIfHandler(this, "q_orkowie_to_miasto");
+}
+
+//=================================================================================================
 void Quest_Orcs::Start()
 {
 	quest_id = Q_ORCS;
@@ -175,11 +181,9 @@ bool Quest_Orcs::SpecialIf(DialogContext& ctx, cstring msg)
 {
 	if(strcmp(msg, "q_orkowie_dolaczyl") == 0)
 		return QM.quest_orcs2->orcs_state == Quest_Orcs2::State::OrcJoined || QM.quest_orcs2->orcs_state == Quest_Orcs2::State::CompletedJoined;
-	else
-	{
-		assert(0);
-		return false;
-	}
+	else if(strcmp(msg, "q_orkowie_to_miasto") == 0)
+		return W.GetCurrentLocationIndex() == start_loc;
+	return false;
 }
 
 //=================================================================================================
@@ -225,6 +229,14 @@ bool Quest_Orcs::Load(GameReader& f)
 	}
 
 	return true;
+}
+
+
+//=================================================================================================
+void Quest_Orcs2::Init()
+{
+	QM.RegisterSpecialIfHandler(this, "q_orkowie_zaakceptowano");
+	QM.RegisterSpecialIfHandler(this, "q_orkowie_nie_ukonczono");
 }
 
 //=================================================================================================
@@ -630,11 +642,11 @@ bool Quest_Orcs2::SpecialIf(DialogContext& ctx, cstring msg)
 		return orc_class == OrcClass::Hunter;
 	else if(strcmp(msg, "q_orkowie_na_miejscu") == 0)
 		return W.GetCurrentLocationIndex() == target_loc;
-	else
-	{
-		assert(0);
-		return false;
-	}
+	else if(strcmp(msg, "q_orkowie_zaakceptowano") == 0)
+		return orcs_state >= State::Accepted;
+	else if(strcmp(msg, "q_orkowie_nie_ukonczono") == 0)
+		return orcs_state < State::Completed;
+	return false;
 }
 
 //=================================================================================================

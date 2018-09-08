@@ -9,6 +9,18 @@
 #include "QuestManager.h"
 #include "GameGui.h"
 #include "World.h"
+#include "Level.h"
+#include "AIController.h"
+#include "Team.h"
+
+//=================================================================================================
+void Quest_Crazies::Init()
+{
+	QM.RegisterSpecialHandler(this, "crazies_talked");
+	QM.RegisterSpecialHandler(this, "crazies_sell_stone");
+	QM.RegisterSpecialIfHandler(this, "crazies_not_asked");
+	QM.RegisterSpecialIfHandler(this, "crazies_need_talk");
+}
 
 //=================================================================================================
 void Quest_Crazies::Start()
@@ -142,4 +154,72 @@ void Quest_Crazies::LoadOld(GameReader& f)
 
 	// days was missing in save!
 	days = 13;
+}
+
+//=================================================================================================
+void Quest_Crazies::Special(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "crazies_talked") == 0)
+	{
+		ctx.talker->ai->morale = -100.f;
+		crazies_state = State::TalkedWithCrazy;
+	}
+	else if(strcmp(msg, "crazies_sell_stone") == 0)
+	{
+		const Item* kamien = Item::Get("q_szaleni_kamien");
+		game->RemoveItem(*ctx.pc->unit, kamien, 1);
+		ctx.pc->unit->ModGold(10);
+	}
+}
+
+//=================================================================================================
+bool Quest_Crazies::SpecialIf(DialogContext& ctx, cstring msg)
+{
+	if(strcmp(msg, "crazies_not_asked") == 0)
+		return crazies_state == State::None;
+	else if(strcmp(msg, "crazies_need_talk") == 0)
+		return crazies_state == State::FirstAttack;
+	return false;
+}
+
+//=================================================================================================
+void Quest_Crazies::CheckStone()
+{
+	check_stone = false;
+
+	const Item* kamien = Item::Get("q_szaleni_kamien");
+	if(!Team.FindItemInTeam(kamien, -1, nullptr, nullptr, false))
+	{
+		// usuñ kamieñ z gry o ile to nie encounter bo i tak jest resetowany
+		if(L.location->type != L_ENCOUNTER)
+		{
+			if(target_loc == L.location_index)
+			{
+				// jest w dobrym miejscu, sprawdŸ czy w³o¿y³ kamieñ do skrzyni
+				if(game->local_ctx.chests && game->local_ctx.chests->size() > 0)
+				{
+					Chest* chest;
+					int slot;
+					if(game->local_ctx.FindItemInChest(kamien, &chest, &slot))
+					{
+						// w³o¿y³ kamieñ, koniec questa
+						chest->items.erase(chest->items.begin() + slot);
+						SetProgress(Progress::Finished);
+						return;
+					}
+				}
+			}
+
+			game->RemoveItemFromWorld(kamien);
+		}
+
+		// dodaj kamieñ przywódcy
+		Team.leader->AddItem(kamien, 1, false);
+	}
+
+	if(crazies_state == State::TalkedWithCrazy)
+	{
+		crazies_state = State::PickedStone;
+		days = 13;
+	}
 }

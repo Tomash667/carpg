@@ -24,6 +24,7 @@ public:
 		End
 	};
 
+	void Init();
 	void Start() override;
 	GameDialog* GetDialog(int type2) override;
 	void SetProgress(int prog2) override;
@@ -32,6 +33,9 @@ public:
 	void Save(GameWriter& f) override;
 	bool Load(GameReader& f) override;
 	void LoadOld(GameReader& f);
+	void Special(DialogContext& ctx, cstring msg) override;
+	bool SpecialIf(DialogContext& ctx, cstring msg) override;
+	void CheckStone();
 
 	State crazies_state;
 	int days;

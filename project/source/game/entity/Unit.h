@@ -219,6 +219,7 @@ struct Unit
 	bool IsStanding() const { return live_state == ALIVE; }
 	// czy ¿yje
 	bool IsAlive() const { return live_state < DYING; }
+	bool IsIdle() const;
 	void RecalculateWeight();
 	// konsumuje przedmiot (zwraca 0-u¿yto ostatni, 1-u¿yto nie ostatni, 2-chowa broñ, 3-zajêty)
 	int ConsumeItem(int index);

@@ -16,6 +16,13 @@
 #include "World.h"
 
 //=================================================================================================
+void Quest_Evil::Init()
+{
+	QM.RegisterSpecialIfHandler(this, "q_zlo_kapitan");
+	QM.RegisterSpecialIfHandler(this, "q_zlo_burmistrz");
+}
+
+//=================================================================================================
 void Quest_Evil::Start()
 {
 	type = QuestType::Unique;
@@ -457,11 +464,23 @@ bool Quest_Evil::SpecialIf(DialogContext& ctx, cstring msg)
 		}
 		return false;
 	}
-	else
+	else if(strcmp(msg, "q_zlo_kapitan") == 0)
 	{
-		assert(0);
-		return false;
+		if(W.GetCurrentLocationIndex() == mage_loc
+			&& evil_state >= State::GeneratedMage
+			&& evil_state < State::ClosingPortals
+			&& InRange((Progress)prog, Progress::MageToldAboutStolenBook, Progress::TalkedWithMayor))
+			return true;
 	}
+	else if(strcmp(msg, "q_zlo_burmistrz") == 0)
+	{
+		if(W.GetCurrentLocationIndex() == mage_loc
+			&& evil_state >= State::GeneratedMage
+			&& evil_state < State::ClosingPortals
+			&& prog == Progress::TalkedWithCaptain)
+			return true;
+	}
+	return false;
 }
 
 //=================================================================================================
