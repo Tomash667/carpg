@@ -103,7 +103,7 @@ void InsideLocationGenerator::OnEnter()
 		// odtwórz jednostki
 		if(respawn_units)
 			game.RespawnUnits();
-		game.RespawnTraps();
+		RespawnTraps();
 
 		// odtwórz fizykê
 		game.RespawnObjectColliders();
@@ -504,6 +504,25 @@ void InsideLocationGenerator::RegenerateTraps()
 
 	if(game.devmode)
 		Info("Traps: %d", game.local_ctx.traps->size());
+}
+
+//=================================================================================================
+void InsideLocationGenerator::RespawnTraps()
+{
+	Game& game = Game::Get();
+	for(vector<Trap*>::iterator it = game.local_ctx.traps->begin(), end = game.local_ctx.traps->end(); it != end; ++it)
+	{
+		Trap& trap = **it;
+
+		trap.state = 0;
+		if(trap.base->type == TRAP_SPEAR)
+		{
+			if(trap.hitted)
+				trap.hitted->clear();
+			else
+				trap.hitted = new vector<Unit*>;
+		}
+	}
 }
 
 //=================================================================================================

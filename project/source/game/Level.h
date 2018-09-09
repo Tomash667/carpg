@@ -1,5 +1,7 @@
 #pragma once
 
+#include "LevelContext.h"
+
 enum EnterFrom
 {
 	ENTER_FROM_PORTAL = 0,
@@ -33,6 +35,7 @@ public:
 	void ProcessUnitWarps();
 	void ProcessRemoveUnits(bool clear);
 	void SpawnOutsideBariers();
+	LevelContextEnumerator ForEachContext() { return LevelContextEnumerator(location); }
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index

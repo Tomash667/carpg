@@ -2763,7 +2763,7 @@ void CityGenerator::SpawnTemporaryUnits()
 
 	for(uint i = 0; i < count; ++i)
 	{
-		UnitData& ud = game.GetHero(ClassInfo::GetRandom());
+		UnitData& ud = ClassInfo::GetRandomData();
 
 		if(Rand() % 2 == 0 || !training_grounds)
 		{
@@ -2788,7 +2788,7 @@ void CityGenerator::SpawnTemporaryUnits()
 //=================================================================================================
 void CityGenerator::RemoveTemporaryUnits()
 {
-	for(LevelContext& ctx : ForEachContext())
+	for(LevelContext& ctx : L.ForEachContext())
 	{
 		LoopAndRemove(*ctx.units, [](Unit* u)
 		{

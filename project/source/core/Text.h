@@ -216,3 +216,9 @@ struct CstringEqualComparer
 
 // convert \r \r\n -> \n or remove all
 void RemoveEndOfLine(string& str, bool remove);
+
+template<int N>
+inline cstring RandomString(cstring(&strs)[N])
+{
+	return strs[Rand() % N];
+}

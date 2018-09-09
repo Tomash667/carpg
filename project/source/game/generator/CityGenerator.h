@@ -153,7 +153,6 @@ private:
 	void RemoveTemporaryUnits();
 	void RepositionUnits();
 	void GeneratePickableItems();
-	LevelContextEnumerator ForEachContext() { return LevelContextEnumerator(city); }
 	void CreateMinimap() override;
 
 	City* city;

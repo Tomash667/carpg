@@ -524,3 +524,21 @@ Chest* InsideLocationLevel::FindChestWithQuestItem(int quest_refid, int* index)
 
 	return nullptr;
 }
+
+//=================================================================================================
+Room& InsideLocationLevel::GetRoom(RoomTarget target, bool down_stairs)
+{
+	if(target == RoomTarget::None)
+		return GetFarRoom(down_stairs, true);
+	else
+	{
+		int id = FindRoomId(target);
+		if(id == -1)
+		{
+			assert(0);
+			id = 0;
+		}
+
+		return rooms[id];
+	}
+}

@@ -60,7 +60,7 @@ void Quest_Wanted::SetProgress(int prog2)
 			if(!target.active_quest)
 			{
 				target.active_quest = this;
-				unit_to_spawn = game->GetUnitDataFromClass(clas, crazy);
+				unit_to_spawn = &ClassInfo::GetUnitData(clas, crazy);
 				unit_dont_attack = true;
 				unit_event_handler = this;
 				send_spawn_event = true;
@@ -250,7 +250,7 @@ bool Quest_Wanted::Load(GameReader& f)
 
 	if(!done)
 	{
-		unit_to_spawn = game->GetUnitDataFromClass(clas, crazy);
+		unit_to_spawn = &ClassInfo::GetUnitData(clas, crazy);
 		unit_dont_attack = true;
 		unit_event_handler = this;
 		send_spawn_event = true;

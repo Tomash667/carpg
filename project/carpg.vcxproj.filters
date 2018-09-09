@@ -114,9 +114,6 @@
     <ClCompile Include="source\game\Scene.cpp">
       <Filter>3. game</Filter>
     </ClCompile>
-    <ClCompile Include="source\game\Tournament.cpp">
-      <Filter>3. game</Filter>
-    </ClCompile>
     <ClCompile Include="source\game\Tutorial.cpp">
       <Filter>3. game</Filter>
     </ClCompile>

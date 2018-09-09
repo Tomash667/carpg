@@ -5,7 +5,7 @@
 class Quest_Tournament : public QuestHandler
 {
 public:
-	enum TOURNAMENT_STATE
+	enum State
 	{
 		TOURNAMENT_NOT_DONE,
 		TOURNAMENT_STARTING,
@@ -18,8 +18,27 @@ public:
 	void Load(GameReader& f);
 	void Special(DialogContext& ctx, cstring msg) override;
 	bool SpecialIf(DialogContext& ctx, cstring msg) override;
+	cstring FormatString(const string& str) override;
+	void Progress();
+	void Update(float dt);
+	bool IsGenerated() const { return generated; }
+	Unit* GetMaster() const { return master; }
+	State GetState() const { return state; }
+	int GetCity() const { return city; }
+	void Train(Unit& u);
+	void GenerateUnits();
+	void Clean();
+	void FinishCombat() { state3 = 5; }
 
-	TOURNAMENT_STATE state;
+private:
+	UnitData& GetRandomHeroData();
+	void StartTournament(Unit* arena_master);
+	bool ShouldJoin(Unit& u);
+	void VerifyUnit(Unit* unit);
+	void StartRound();
+	void Talk(cstring text);
+
+	State state;
 	int year, city_year, city, state2, state3, round, arena;
 	vector<SmartPtr<Unit>> units;
 	float timer;
@@ -27,4 +46,5 @@ public:
 	SmartPtr<Unit> skipped_unit, other_fighter, winner;
 	vector<std::pair<SmartPtr<Unit>, SmartPtr<Unit>>> pairs;
 	bool generated;
+	cstring txTour[23], txAiJoinTour[4];
 };

@@ -465,7 +465,7 @@ void Game::UpdateAi(float dt)
 					else
 					{
 						// chodzenie do karczmy
-						if(ai.goto_inn && !(u.IsHero() && tournament->generated))
+						if(ai.goto_inn && !(u.IsHero() && tournament->IsGenerated()))
 						{
 							if(u.usable)
 							{
@@ -836,22 +836,22 @@ void Game::UpdateAi(float dt)
 								int co;
 								if(u.busy != Unit::Busy_No && u.busy != Unit::Busy_Tournament)
 									co = Rand() % 3;
-								else if((u.busy == Unit::Busy_Tournament || (u.IsHero() && !u.IsFollowingTeamMember() && tournament->generated))
-									&& tournament->master
-									&& ((dist = Vec3::Distance2d(u.pos, tournament->master->pos)) > 16.f || dist < 4.f))
+								else if((u.busy == Unit::Busy_Tournament || (u.IsHero() && !u.IsFollowingTeamMember() && tournament->IsGenerated()))
+									&& tournament->GetMaster()
+									&& ((dist = Vec3::Distance2d(u.pos, tournament->GetMaster()->pos)) > 16.f || dist < 4.f))
 								{
 									co = -1;
 									if(dist > 16.f)
 									{
 										ai.timer = Random(5.f, 10.f);
 										ai.idle_action = AIController::Idle_WalkNearUnit;
-										ai.idle_data.unit = tournament->master;
+										ai.idle_data.unit = tournament->GetMaster();
 									}
 									else
 									{
 										ai.timer = Random(4.f, 8.f);
 										ai.idle_action = AIController::Idle_Move;
-										ai.idle_data.pos = tournament->master->pos + Vec3::Random(Vec3(-10, 0, -10), Vec3(10, 0, 10));
+										ai.idle_data.pos = tournament->GetMaster()->pos + Vec3::Random(Vec3(-10, 0, -10), Vec3(10, 0, 10));
 									}
 								}
 								else if(IS_SET(u.data->flags2, F2_SIT_ON_THRONE) && !u.IsFollower())
@@ -941,7 +941,7 @@ void Game::UpdateAi(float dt)
 
 								// nie glêdzenie przez karczmarza/mistrza w czasie zawodów
 								if(co == I_GADAJ && IS_SET(u.data->flags3, F3_TALK_AT_COMPETITION)
-									&& (QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING || tournament->state >= Quest_Tournament::TOURNAMENT_STARTING))
+									&& (QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING || tournament->GetState() >= Quest_Tournament::TOURNAMENT_STARTING))
 								{
 									co = I_PATRZ;
 								}
@@ -1007,11 +1007,11 @@ void Game::UpdateAi(float dt)
 									break;
 								case I_PATRZ:
 									//patrz na poblisk¹ postaæ
-									if(u.busy == Unit::Busy_Tournament && Rand() % 2 == 0 && tournament->master)
+									if(u.busy == Unit::Busy_Tournament && Rand() % 2 == 0 && tournament->GetMaster())
 									{
 										ai.timer = Random(1.5f, 2.5f);
 										ai.idle_action = AIController::Idle_Look;
-										ai.idle_data.unit = tournament->master;
+										ai.idle_data.unit = tournament->GetMaster();
 										break;
 									}
 									else

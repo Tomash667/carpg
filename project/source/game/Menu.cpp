@@ -390,7 +390,7 @@ void Game::NewGameCommon(Class clas, cstring name, HumanData& hd, CreatedCharact
 
 	if(!tutorial && cc.HavePerk(Perk::Leader))
 	{
-		Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2, nullptr, nullptr, false);
+		Unit* npc = CreateUnit(ClassInfo::GetRandomData(), 2, nullptr, nullptr, false);
 		npc->ai = new AIController;
 		npc->ai->Init(npc);
 		npc->hero->know_name = true;
@@ -1657,7 +1657,7 @@ void Game::UpdateServerTransfer(float dt)
 
 		if(!mp_load && leader_perk > 0 && Team.GetActiveTeamSize() < Team.GetMaxSize())
 		{
-			Unit* npc = CreateUnit(GetHero(ClassInfo::GetRandom()), 2 * leader_perk, nullptr, nullptr, false);
+			Unit* npc = CreateUnit(ClassInfo::GetRandomData(), 2 * leader_perk, nullptr, nullptr, false);
 			npc->ai = new AIController;
 			npc->ai->Init(npc);
 			npc->hero->know_name = true;

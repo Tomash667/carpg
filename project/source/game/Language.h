@@ -44,3 +44,9 @@ inline cstring Str(cstring str)
 	cstring s = Language::TryGetString(str);
 	return s ? s : "";
 }
+template<int N>
+inline void LoadArray(cstring (&var)[N], cstring str)
+{
+	for(uint i = 0; i < N; ++i)
+		var[i] = Str(Format("%s%u", str, i));
+}

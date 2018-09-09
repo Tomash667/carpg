@@ -267,13 +267,13 @@ LevelContext& LevelContextEnumerator::Iterator::operator * () const
 	if(index == -1)
 		return Game::Get().local_ctx;
 	else
-		return city->inside_buildings[index]->ctx;
+		return ((City*)loc)->inside_buildings[index]->ctx;
 }
 
 LevelContextEnumerator::Iterator& LevelContextEnumerator::Iterator::operator ++ ()
 {
 	++index;
-	if(index >= (int)city->inside_buildings.size())
+	if(loc->type != L_CITY || index >= (int)((City*)loc)->inside_buildings.size())
 		index = -2;
 	return *this;
 }

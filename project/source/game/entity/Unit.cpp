@@ -3089,5 +3089,46 @@ bool Unit::IsIdle() const
 	if(Net::IsLocal())
 		return ai->state == AIController::Idle;
 	else
-		return !IS_SET(ai_mode, 0x04);
+		return !IS_SET(ai_mode, AI_MODE_IDLE);
+}
+
+//=================================================================================================
+bool Unit::IsAssist() const
+{
+	if(Net::IsLocal())
+		return assist;
+	else
+		return IS_SET(ai_mode, AI_MODE_ASSIST);
+}
+
+//=================================================================================================
+bool Unit::IsDontAttack() const
+{
+	if(Net::IsLocal())
+		return dont_attack;
+	else
+		return IS_SET(ai_mode, AI_MODE_DONT_ATTACK);
+}
+
+//=================================================================================================
+bool Unit::WantAttackTeam() const
+{
+	if(Net::IsLocal())
+		return attack_team;
+	else
+		return IS_SET(ai_mode, AI_MODE_ATTACK_TEAM);
+}
+
+byte Unit::GetAiMode() const
+{
+	byte mode = 0;
+	if(dont_attack)
+		mode |= AI_MODE_DONT_ATTACK;
+	if(assist)
+		mode |= AI_MODE_ASSIST;
+	if(ai->state != AIController::Idle)
+		mode |= AI_MODE_IDLE;
+	if(attack_team)
+		mode |= AI_MODE_ATTACK_TEAM;
+	return mode;
 }

@@ -101,6 +101,32 @@ Class ClassInfo::OldToNew(Class c)
 }
 
 //=================================================================================================
+UnitData& ClassInfo::GetUnitData(Class clas, bool crazy)
+{
+	cstring id = nullptr;
+
+	switch(clas)
+	{
+	default:
+		assert(0);
+	case Class::WARRIOR:
+		id = (crazy ? "crazy_warrior" : "hero_warrior");
+		break;
+	case Class::HUNTER:
+		id = (crazy ? "crazy_hunter" : "hero_hunter");
+		break;
+	case Class::ROGUE:
+		id = (crazy ? "crazy_rogue" : "hero_rogue");
+		break;
+	case Class::MAGE:
+		id = (crazy ? "crazy_mage" : "hero_mage");
+		break;
+	}
+
+	return *UnitData::Get(id);
+}
+
+//=================================================================================================
 Class ClassInfo::GetRandom()
 {
 	// get Random hero class, ignore new one for now

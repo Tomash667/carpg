@@ -289,7 +289,7 @@ bool AIController::CheckPotion(bool in_combat)
 				if(unit->busy == Unit::Busy_No && unit->IsFollower() && !unit->summoner)
 				{
 					Game& game = Game::Get();
-					game.UnitTalk(*unit, random_string(game.txAiNoHpPot));
+					game.UnitTalk(*unit, RandomString(game.txAiNoHpPot));
 				}
 				have_potion = 0;
 				return false;

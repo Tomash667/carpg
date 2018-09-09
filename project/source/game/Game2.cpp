@@ -1542,7 +1542,7 @@ void Game::UpdateFallback(float dt)
 				if(Net::IsLocal())
 				{
 					if(fallback_1 == 2)
-						TournamentTrain(*pc->unit);
+						QM.quest_tournament->Train(*pc->unit);
 					else
 						Train(*pc->unit, fallback_1 == 1, fallback_2);
 					pc->Rest(10, false);
@@ -4722,7 +4722,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		bool have_quest = true;
 		if(city_ctx->quest_mayor == CityQuestState::Failed)
 		{
-			DialogTalk(ctx, random_string(txMayorQFailed));
+			DialogTalk(ctx, RandomString(txMayorQFailed));
 			++ctx.dialog_pos;
 			return true;
 		}
@@ -4764,7 +4764,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				quest = QM.FindQuest(L.location_index, QuestType::Mayor);
 				if(quest)
 				{
-					DialogTalk(ctx, random_string(txQuestAlreadyGiven));
+					DialogTalk(ctx, RandomString(txQuestAlreadyGiven));
 					++ctx.dialog_pos;
 					return true;
 				}
@@ -4776,7 +4776,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			have_quest = false;
 		if(!have_quest)
 		{
-			DialogTalk(ctx, random_string(txMayorNoQ));
+			DialogTalk(ctx, RandomString(txMayorNoQ));
 			++ctx.dialog_pos;
 			return true;
 		}
@@ -4786,7 +4786,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		bool have_quest = true;
 		if(city_ctx->quest_captain == CityQuestState::Failed)
 		{
-			DialogTalk(ctx, random_string(txCaptainQFailed));
+			DialogTalk(ctx, RandomString(txCaptainQFailed));
 			++ctx.dialog_pos;
 			return true;
 		}
@@ -4828,7 +4828,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				quest = QM.FindQuest(L.location_index, QuestType::Captain);
 				if(quest)
 				{
-					DialogTalk(ctx, random_string(txQuestAlreadyGiven));
+					DialogTalk(ctx, RandomString(txQuestAlreadyGiven));
 					++ctx.dialog_pos;
 					return true;
 				}
@@ -4840,7 +4840,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			have_quest = false;
 		if(!have_quest)
 		{
-			DialogTalk(ctx, random_string(txCaptainNoQ));
+			DialogTalk(ctx, RandomString(txCaptainNoQ));
 			++ctx.dialog_pos;
 			return true;
 		}
@@ -4973,7 +4973,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 						else
 							s_daleko = txVeryFar;
 
-						ctx.dialog_s_text = Format(random_string(txLocationDiscovered), s_daleko, GetLocationDirName(cloc.pos, loc.pos), loc.name.c_str());
+						ctx.dialog_s_text = Format(RandomString(txLocationDiscovered), s_daleko, GetLocationDirName(cloc.pos, loc.pos), loc.name.c_str());
 						DialogTalk(ctx, ctx.dialog_s_text.c_str());
 						++ctx.dialog_pos;
 
@@ -4981,7 +4981,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 					}
 					else
 					{
-						DialogTalk(ctx, random_string(txAllDiscovered));
+						DialogTalk(ctx, RandomString(txAllDiscovered));
 						++ctx.dialog_pos;
 						return true;
 					}
@@ -5042,14 +5042,14 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 
 						loc.SetKnown();
 
-						ctx.dialog_s_text = Format(random_string(txCampDiscovered), s_daleko, GetLocationDirName(cloc.pos, loc.pos), co);
+						ctx.dialog_s_text = Format(RandomString(txCampDiscovered), s_daleko, GetLocationDirName(cloc.pos, loc.pos), co);
 						DialogTalk(ctx, ctx.dialog_s_text.c_str());
 						++ctx.dialog_pos;
 						return true;
 					}
 					else
 					{
-						DialogTalk(ctx, random_string(txAllCampDiscovered));
+						DialogTalk(ctx, RandomString(txAllCampDiscovered));
 						++ctx.dialog_pos;
 						return true;
 					}
@@ -5059,7 +5059,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				// plotka o quescie
 				if(QM.quest_rumor_counter == 0)
 				{
-					DialogTalk(ctx, random_string(txNoQRumors));
+					DialogTalk(ctx, RandomString(txNoQRumors));
 					++ctx.dialog_pos;
 					return true;
 				}
@@ -5261,7 +5261,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 		if(loc.spawn == SG_NONE)
 		{
 			if(loc.type != L_CAVE && loc.type != L_FOREST && loc.type != L_MOONWELL)
-				ctx.dialog_s_text += random_string(txNearLocEmpty);
+				ctx.dialog_s_text += RandomString(txNearLocEmpty);
 		}
 		else if(loc.state == LS_CLEARED)
 			ctx.dialog_s_text += Format(txNearLocCleared, g_spawn_groups[loc.spawn].name);
@@ -5304,7 +5304,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 				else
 					jacy = txELvlStrong[1];
 			}
-			ctx.dialog_s_text += Format(random_string(txNearLocEnemy), jacy, g_spawn_groups[loc.spawn].name);
+			ctx.dialog_s_text += Format(RandomString(txNearLocEnemy), jacy, g_spawn_groups[loc.spawn].name);
 		}
 
 		DialogTalk(ctx, ctx.dialog_s_text.c_str());
@@ -5509,7 +5509,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 			ctx.active_news = W.GetNews();
 			if(ctx.active_news.empty())
 			{
-				DialogTalk(ctx, random_string(txNoNews));
+				DialogTalk(ctx, RandomString(txNoNews));
 				++ctx.dialog_pos;
 				return true;
 			}
@@ -5517,7 +5517,7 @@ bool Game::ExecuteGameDialogSpecial(DialogContext& ctx, cstring msg, int& if_lev
 
 		if(ctx.active_news.empty())
 		{
-			DialogTalk(ctx, random_string(txAllNews));
+			DialogTalk(ctx, RandomString(txAllNews));
 			++ctx.dialog_pos;
 			return true;
 		}
@@ -6754,9 +6754,9 @@ bool Game::IsEnemy(Unit &u1, Unit &u2, bool ignore_dont_attack)
 	{
 		if(!ignore_dont_attack)
 		{
-			if(u1.IsAI() && IsUnitDontAttack(u1))
+			if(u1.IsAI() && u1.IsDontAttack())
 				return false;
-			if(u2.IsAI() && IsUnitDontAttack(u2))
+			if(u2.IsAI() && u2.IsDontAttack())
 				return false;
 		}
 
@@ -6775,7 +6775,7 @@ bool Game::IsEnemy(Unit &u1, Unit &u2, bool ignore_dont_attack)
 			if(g2 == G_CRAZIES)
 				return true;
 			else if(g2 == G_TEAM)
-				return Team.is_bandit || WantAttackTeam(u1);
+				return Team.is_bandit || u1.WantAttackTeam();
 			else
 				return true;
 		}
@@ -6784,13 +6784,13 @@ bool Game::IsEnemy(Unit &u1, Unit &u2, bool ignore_dont_attack)
 			if(g2 == G_CITIZENS)
 				return true;
 			else if(g2 == G_TEAM)
-				return Team.crazies_attack || WantAttackTeam(u1);
+				return Team.crazies_attack || u1.WantAttackTeam();
 			else
 				return true;
 		}
 		else if(g1 == G_TEAM)
 		{
-			if(WantAttackTeam(u2))
+			if(u2.WantAttackTeam())
 				return true;
 			else if(g2 == G_CITIZENS)
 				return Team.is_bandit;
@@ -6821,14 +6821,14 @@ bool Game::IsFriend(Unit& u1, Unit& u2)
 		{
 			if(u2.IsTeamMember())
 				return true;
-			else if(u2.IsAI() && !Team.is_bandit && IsUnitAssist(u2))
+			else if(u2.IsAI() && !Team.is_bandit && u2.IsAssist())
 				return true;
 			else
 				return false;
 		}
 		else if(u2.IsTeamMember())
 		{
-			if(u1.IsAI() && !Team.is_bandit && IsUnitAssist(u1))
+			if(u1.IsAI() && !Team.is_bandit && u1.IsAssist())
 				return true;
 			else
 				return false;
@@ -12617,8 +12617,6 @@ cstring Game::FormatString(DialogContext& ctx, const string& str_part)
 	}
 	else if(str_part == "player_name")
 		return current_dialog->pc->name.c_str();
-	else if(str_part == "ironfist_city")
-		return W.GetLocation(QM.quest_tournament->city)->name.c_str();
 	else if(str_part == "rhero")
 	{
 		static string str;
@@ -14307,23 +14305,6 @@ void Game::DialogTalk(DialogContext& ctx, cstring msg)
 	}
 }
 
-Vec2 Game::GetMapPosition(Unit& unit)
-{
-	if(unit.in_building == -1)
-		return Vec2(unit.pos.x, unit.pos.z);
-	else
-	{
-		Building* type = city_ctx->inside_buildings[unit.in_building]->type;
-		for(CityBuilding& b : city_ctx->buildings)
-		{
-			if(b.type == type)
-				return Vec2(float(b.pt.x * 2), float(b.pt.y * 2));
-		}
-	}
-	assert(0);
-	return Vec2(-1000, -1000);
-}
-
 //=============================================================================
 // Rozdziela z³oto pomiêdzy cz³onków dru¿yny
 //=============================================================================
@@ -14695,6 +14676,8 @@ void Game::RemoveArenaViewers()
 		if((*it)->data == ud)
 			RemoveUnit(*it);
 	}
+
+	arena_viewers.clear();
 }
 
 bool Game::CanWander(Unit& u)
@@ -14707,7 +14690,7 @@ bool Game::CanWander(Unit& u)
 		{
 			if(u.hero->team_member && u.hero->mode != HeroData::Wander)
 				return false;
-			else if(QM.quest_tournament->generated)
+			else if(QM.quest_tournament->IsGenerated())
 				return false;
 			else
 				return true;
@@ -15091,7 +15074,7 @@ void Game::SpawnHeroesInsideDungeon()
 	for(int i = 0; i < count; ++i)
 	{
 		int level = team_level + Random(-2, 2);
-		Unit* u = SpawnUnitInsideRoom(*p, GetHero(ClassInfo::GetRandom()), level);
+		Unit* u = SpawnUnitInsideRoom(*p, ClassInfo::GetRandomData(), level);
 		if(u)
 			heroes->push_back(u);
 		else
@@ -15450,8 +15433,8 @@ void Game::GenerateQuestUnits()
 	}
 
 	if(W.GetDay() == 6 && W.GetMonth() == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena)
-		&& L.location_index == QM.quest_tournament->city && !QM.quest_tournament->generated)
-		GenerateTournamentUnits();
+		&& L.location_index == QM.quest_tournament->GetCity() && !QM.quest_tournament->IsGenerated())
+		QM.quest_tournament->GenerateUnits();
 }
 
 void Game::GenerateQuestUnits2(bool on_enter)
@@ -15585,8 +15568,6 @@ void Game::UpdateQuests(int days)
 
 	// update contest
 	int stan; // 0 - before contest, 1 - time for contest, 2 - after contest
-
-	int year = W.GetYear();
 	int month = W.GetMonth();
 	int day = W.GetDay();
 
@@ -15656,19 +15637,8 @@ void Game::UpdateQuests(int days)
 	if(QM.quest_crazies->crazies_state == Quest_Crazies::State::PickedStone)
 		QM.quest_crazies->days -= days;
 
-	// tournament
-	Quest_Tournament* tournament = QM.quest_tournament;
-	if(year != tournament->city_year)
-	{
-		tournament->city_year = year;
-		tournament->city = W.GetRandomCityIndex(tournament->city);
-		tournament->master = nullptr;
-	}
-	if(day == 6 && month == 2 && city_ctx && IS_SET(city_ctx->flags, City::HaveArena) && L.location_index == tournament->city && !tournament->generated)
-		GenerateTournamentUnits();
-	if(month > 2 || (month == 2 && day > 6))
-		tournament->year = year;
-
+	QM.quest_tournament->Progress();
+	
 	if(city_ctx)
 		GenerateQuestUnits2(false);
 }
@@ -15842,23 +15812,6 @@ bool Game::RemoveQuestItem(const Item* item, int refid)
 		return false;
 }
 
-Room& Game::GetRoom(InsideLocationLevel& lvl, RoomTarget target, bool down_stairs)
-{
-	if(target == RoomTarget::None)
-		return lvl.GetFarRoom(down_stairs, true);
-	else
-	{
-		int id = lvl.FindRoomId(target);
-		if(id == -1)
-		{
-			assert(0);
-			id = 0;
-		}
-
-		return lvl.rooms[id];
-	}
-}
-
 void Game::UpdateGame2(float dt)
 {
 	// arena
@@ -15866,8 +15819,8 @@ void Game::UpdateGame2(float dt)
 		UpdateArena(dt);
 
 	// tournament
-	if(QM.quest_tournament->state != Quest_Tournament::TOURNAMENT_NOT_DONE)
-		UpdateTournament(dt);
+	if(QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
+		QM.quest_tournament->Update(dt);
 
 	// sharing of team items between team members
 	UpdateTeamItemShares();
@@ -16053,6 +16006,7 @@ void Game::UpdateGame2(float dt)
 	}
 }
 
+//=================================================================================================
 void Game::UpdateArena(float dt)
 {
 	if(arena_etap == Arena_OdliczanieDoPrzeniesienia)
@@ -16144,9 +16098,9 @@ void Game::UpdateArena(float dt)
 
 				cstring text;
 				if(Rand() % 2 == 0)
-					text = random_string(txArenaText);
+					text = RandomString(txArenaText);
 				else
-					text = Format(random_string(txArenaTextU), GetRandomArenaHero()->GetRealName());
+					text = Format(RandomString(txArenaTextU), GetRandomArenaHero()->GetRealName());
 
 				UnitTalk(u, text);
 			}
@@ -16329,15 +16283,42 @@ void Game::UpdateArena(float dt)
 			if(arena_tryb != Arena_Zawody)
 			{
 				RemoveArenaViewers();
-				arena_viewers.clear();
 				at_arena.clear();
 			}
 			else
-				QM.quest_tournament->state3 = 5;
+				QM.quest_tournament->FinishCombat();
 			arena_tryb = Arena_Brak;
 			arena_free = true;
 		}
 	}
+}
+
+//=================================================================================================
+void Game::CleanArena()
+{
+	InsideBuilding* arena = city_ctx->FindInsideBuilding(BuildingGroup::BG_ARENA);
+
+	// wyrzuæ ludzi z areny
+	for(vector<Unit*>::iterator it = at_arena.begin(), end = at_arena.end(); it != end; ++it)
+	{
+		Unit& u = **it;
+		u.frozen = FROZEN::NO;
+		u.in_arena = -1;
+		u.in_building = -1;
+		u.busy = Unit::Busy_No;
+		if(u.hp <= 0.f)
+		{
+			u.HealPoison();
+			u.live_state = Unit::ALIVE;
+		}
+		if(u.IsAI())
+			u.ai->Reset();
+		WarpUnit(u, arena->outside_spawn);
+		u.rot = arena->outside_rot;
+	}
+	RemoveArenaViewers();
+	arena_free = true;
+	arena_tryb = Arena_Brak;
 }
 
 void Game::UpdateContest(float dt)
@@ -17574,23 +17555,6 @@ void Game::ActivateChangeLeaderButton(bool activate)
 	game_gui->team_panel->bt[2].state = (activate ? Button::NONE : Button::DISABLED);
 }
 
-void Game::RespawnTraps()
-{
-	for(vector<Trap*>::iterator it = local_ctx.traps->begin(), end = local_ctx.traps->end(); it != end; ++it)
-	{
-		Trap& trap = **it;
-
-		trap.state = 0;
-		if(trap.base->type == TRAP_SPEAR)
-		{
-			if(trap.hitted)
-				trap.hitted->clear();
-			else
-				trap.hitted = new vector<Unit*>;
-		}
-	}
-}
-
 // zmienia tylko pozycjê bo ta funkcja jest wywo³ywana przy opuszczaniu miasta
 void Game::WarpToInn(Unit& unit)
 {
@@ -17851,9 +17815,9 @@ void Game::OnEnterLocation()
 			{
 			case L_CITY:
 				if(LocationHelper::IsCity(L.location))
-					text = random_string(txAiCity);
+					text = RandomString(txAiCity);
 				else
-					text = random_string(txAiVillage);
+					text = RandomString(txAiVillage);
 				break;
 			case L_MOONWELL:
 				text = txAiMoonwell;
@@ -18134,11 +18098,11 @@ Unit* Game::GetRandomArenaHero()
 cstring Game::GetRandomIdleText(Unit& u)
 {
 	if(IS_SET(u.data->flags3, F3_DRUNK_MAGE) && QM.quest_mages2->mages_state < Quest_Mages2::State::MageCured)
-		return random_string(txAiDrunkMageText);
+		return RandomString(txAiDrunkMageText);
 
 	int n = Rand() % 100;
 	if(n == 0)
-		return random_string(txAiSecretText);
+		return RandomString(txAiSecretText);
 
 	int type = 1; // 0 - tekst hero, 1 - normalny tekst
 
@@ -18148,7 +18112,7 @@ cstring Game::GetRandomIdleText(Unit& u)
 		if(u.IsTeamMember())
 		{
 			if(n < 33)
-				return random_string(txAiInsaneText);
+				return RandomString(txAiInsaneText);
 			else if(n < 66)
 				type = 0;
 			else
@@ -18157,7 +18121,7 @@ cstring Game::GetRandomIdleText(Unit& u)
 		else
 		{
 			if(n < 50)
-				return random_string(txAiInsaneText);
+				return RandomString(txAiInsaneText);
 			else
 				type = 1;
 		}
@@ -18170,17 +18134,17 @@ cstring Game::GetRandomIdleText(Unit& u)
 				int id;
 				if(city_ctx->FindInn(id) && id == u.in_building)
 				{
-					if(IS_SET(u.data->flags, F_AI_DRUNKMAN) || QM.quest_tournament->state != Quest_Tournament::TOURNAMENT_STARTING)
+					if(IS_SET(u.data->flags, F_AI_DRUNKMAN) || QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_STARTING)
 					{
 						if(Rand() % 3 == 0)
-							return random_string(txAiDrunkText);
+							return RandomString(txAiDrunkText);
 					}
 					else
-						return random_string(txAiDrunkmanText);
+						return RandomString(txAiDrunkmanText);
 				}
 			}
 			if(n < 10)
-				return random_string(txAiHumanText);
+				return RandomString(txAiHumanText);
 			else if(n < 55)
 				type = 0;
 			else
@@ -18191,25 +18155,25 @@ cstring Game::GetRandomIdleText(Unit& u)
 		break;
 	case G_BANDITS:
 		if(n < 50)
-			return random_string(txAiBanditText);
+			return RandomString(txAiBanditText);
 		else
 			type = 1;
 		break;
 	case G_MAGES:
 		if(IS_SET(u.data->flags, F_MAGE) && n < 50)
-			return random_string(txAiMageText);
+			return RandomString(txAiMageText);
 		else
 			type = 1;
 		break;
 	case G_GOBLINS:
 		if(n < 50 && !IS_SET(u.data->flags2, F2_NOT_GOBLIN))
-			return random_string(txAiGoblinText);
+			return RandomString(txAiGoblinText);
 		else
 			type = 1;
 		break;
 	case G_ORCS:
 		if(n < 50)
-			return random_string(txAiOrcText);
+			return RandomString(txAiOrcText);
 		else
 			type = 1;
 		break;
@@ -18218,50 +18182,22 @@ cstring Game::GetRandomIdleText(Unit& u)
 	if(type == 0)
 	{
 		if(L.location->type == L_CITY)
-			return random_string(txAiHeroCityText);
+			return RandomString(txAiHeroCityText);
 		else if(L.location->outside)
-			return random_string(txAiHeroOutsideText);
+			return RandomString(txAiHeroOutsideText);
 		else
-			return random_string(txAiHeroDungeonText);
+			return RandomString(txAiHeroDungeonText);
 	}
 	else
 	{
 		n = Rand() % 100;
 		if(n < 60)
-			return random_string(txAiDefaultText);
+			return RandomString(txAiDefaultText);
 		else if(L.location->outside)
-			return random_string(txAiOutsideText);
+			return RandomString(txAiOutsideText);
 		else
-			return random_string(txAiInsideText);
+			return RandomString(txAiInsideText);
 	}
-}
-
-UnitData* Game::GetRandomHeroData()
-{
-	cstring id;
-
-	switch(Rand() % 8)
-	{
-	case 0:
-	case 1:
-	case 2:
-		id = "hero_warrior";
-		break;
-	case 3:
-	case 4:
-		id = "hero_hunter";
-		break;
-	case 5:
-	case 6:
-		id = "hero_rogue";
-		break;
-	case 7:
-	default:
-		id = "hero_mage";
-		break;
-	}
-
-	return UnitData::Get(id);
 }
 
 // usuwa podany przedmiot ze œwiata
@@ -18368,32 +18304,6 @@ bool Game::CheckMoonStone(GroundItem* item, Unit& unit)
 	return false;
 }
 
-UnitData* Game::GetUnitDataFromClass(Class clas, bool crazy)
-{
-	cstring id = nullptr;
-
-	switch(clas)
-	{
-	case Class::WARRIOR:
-		id = (crazy ? "crazy_warrior" : "hero_warrior");
-		break;
-	case Class::HUNTER:
-		id = (crazy ? "crazy_hunter" : "hero_hunter");
-		break;
-	case Class::ROGUE:
-		id = (crazy ? "crazy_rogue" : "hero_rogue");
-		break;
-	case Class::MAGE:
-		id = (crazy ? "crazy_mage" : "hero_mage");
-		break;
-	}
-
-	if(id)
-		return UnitData::TryGet(id);
-	else
-		return nullptr;
-}
-
 int xdif(int a, int b)
 {
 	if(a == b)
@@ -18465,7 +18375,11 @@ void Game::AddTeamMember(Unit* unit, bool free)
 
 	// send info to other players
 	if(Net::IsOnline())
-		Net_RecruitNpc(unit);
+	{
+		NetChange& c = Add1(Net::changes);
+		c.type = NetChange::RECRUIT_NPC;
+		c.unit = unit;
+	}
 
 	if(unit->event_handler)
 		unit->event_handler->HandleUnitEvent(UnitEventHandler::RECRUIT, unit);
@@ -18999,30 +18913,6 @@ void Game::StartTrade(InventoryMode mode, vector<ItemSlot>& items, Unit* unit)
 	game_gui->gp_trade->Show();
 }
 
-UnitData& Game::GetHero(Class clas, bool crazy)
-{
-	cstring id;
-
-	switch(clas)
-	{
-	default:
-	case Class::WARRIOR:
-		id = (crazy ? "crazy_warrior" : "hero_warrior");
-		break;
-	case Class::HUNTER:
-		id = (crazy ? "crazy_hunter" : "hero_hunter");
-		break;
-	case Class::ROGUE:
-		id = (crazy ? "crazy_rogue" : "hero_rogue");
-		break;
-	case Class::MAGE:
-		id = (crazy ? "crazy_mage" : "hero_mage");
-		break;
-	}
-
-	return *UnitData::Get(id);
-}
-
 void Game::ShowAcademyText()
 {
 	if(GUI.GetDialog("academy") == nullptr)
@@ -19196,7 +19086,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		}
 		else
 		{
-			Room& room = GetRoom(*lvl, event->spawn_unit_room, inside->HaveDownStairs());
+			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
 			spawned = SpawnUnitInsideRoomOrNear(*lvl, room, *event->unit_to_spawn, event->unit_spawn_level);
 		}
 		if(!spawned)
@@ -19213,7 +19103,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		// mark near units as guards if guarded (only in dungeon)
 		if(IS_SET(spawned->data->flags2, F2_GUARDED) && lvl)
 		{
-			Room& room = GetRoom(*lvl, event->spawn_unit_room, inside->HaveDownStairs());
+			Room& room = lvl->GetRoom(event->spawn_unit_room, inside->HaveDownStairs());
 			for(Unit* unit : *local_ctx.units)
 			{
 				if(unit != spawned && IsFriend(*unit, *spawned) && lvl->GetRoom(pos_to_pt(unit->pos)) == &room)
@@ -19232,7 +19122,7 @@ void Game::HandleQuestEvent(Quest_Event* event)
 		if(spawned && event->spawn_2_guard_1)
 			room = lvl->GetRoom(pos_to_pt(spawned->pos));
 		else
-			room = &GetRoom(*lvl, event->spawn_unit_room2, inside->HaveDownStairs());
+			room = &lvl->GetRoom(event->spawn_unit_room2, inside->HaveDownStairs());
 		spawned2 = SpawnUnitInsideRoomOrNear(*lvl, *room, *event->unit_to_spawn2, event->unit_spawn_level2);
 		if(!spawned2)
 			throw "Failed to spawn quest unit 2!";

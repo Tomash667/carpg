@@ -606,7 +606,6 @@
     <ClCompile Include="source\game\Team.cpp" />
     <ClCompile Include="source\game\TeamItems.cpp" />
     <ClCompile Include="source\game\TerrainTile.cpp" />
-    <ClCompile Include="source\game\Tournament.cpp" />
     <ClCompile Include="source\game\Tutorial.cpp" />
     <ClCompile Include="source\game\World.cpp" />
     <ClCompile Include="source\game\Worldmap.cpp" />

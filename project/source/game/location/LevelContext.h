@@ -88,20 +88,20 @@ struct LevelContextEnumerator
 {
 	struct Iterator
 	{
-		Iterator(City* city, int index) : city(city), index(index) {}
+		Iterator(Location* loc, int index) : loc(loc), index(index) {}
 		bool operator != (const Iterator& it) const { return index != it.index; }
 		LevelContext& operator * () const;
 		Iterator& operator ++ ();
 
 	private:
-		City* city;
+		Location* loc;
 		int index;
 	};
 
-	LevelContextEnumerator(City* city) : city(city) {}
-	Iterator begin() { return Iterator(city, -1); }
-	Iterator end() { return Iterator(city, -2); }
+	LevelContextEnumerator(Location* loc) : loc(loc) {}
+	Iterator begin() { return Iterator(loc, -1); }
+	Iterator end() { return Iterator(loc, -2); }
 
 private:
-	City* city;
+	Location* loc;
 };

@@ -18,6 +18,7 @@ public:
 	void Hide();
 	void Build();
 	void LoadData();
+	Vec2 GetMapPosition(Unit& unit);
 
 	// przekszata³ca z pozycji œwiata do punktu na mapie (gdzie punkt (0,0) to lewy dolny róg mapy, a (1,1) to prawy górny)
 	Vec2 TransformCoord(const Vec2& pt)

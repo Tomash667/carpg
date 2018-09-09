@@ -10,6 +10,7 @@
 #include "ErrorHandler.h"
 #include "Content.h"
 #include "QuestManager.h"
+#include "Quest_Tournament.h"
 #include "Quest.h"
 #include "City.h"
 #include "InsideLocation.h"
@@ -595,18 +596,7 @@ void Game::WriteUnit(BitStreamWriter& f, Unit& unit)
 		f << unit.player->free_days;
 	}
 	if(unit.IsAI())
-	{
-		b = 0;
-		if(unit.dont_attack)
-			b |= 0x01;
-		if(unit.assist)
-			b |= 0x02;
-		if(unit.ai->state != AIController::Idle)
-			b |= 0x04;
-		if(unit.attack_team)
-			b |= 0x08;
-		f << b;
-	}
+		f << unit.GetAiMode();
 
 	// loaded data
 	if(mp_load)
@@ -3817,7 +3807,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					warp.where = building_index;
 					warp.timer = 1.f;
 					unit.frozen = (unit.usable ? FROZEN::YES_NO_ANIM : FROZEN::YES);
-					Net_PrepareWarp(info.u->player);
+					NetChangePlayer& c = Add1(info.u->player->player_info->changes);
+					c.type = NetChangePlayer::PREPARE_WARP;
 				}
 			}
 			break;
@@ -4265,7 +4256,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 				else
 				{
 					if(type == 2)
-						TournamentTrain(unit);
+						QM.quest_tournament->Train(unit);
 					else
 					{
 						cstring error = nullptr;
@@ -5066,16 +5057,7 @@ void Game::WriteServerChanges(BitStreamWriter& f)
 		case NetChange::CHANGE_AI_MODE:
 			{
 				f << c.unit->netid;
-				byte mode = 0;
-				if(c.unit->dont_attack)
-					mode |= 0x01;
-				if(c.unit->assist)
-					mode |= 0x02;
-				if(c.unit->ai->state != AIController::Idle)
-					mode |= 0x04;
-				if(c.unit->attack_team)
-					mode |= 0x08;
-				f << mode;
+				f << c.unit->GetAiMode();
 			}
 			break;
 		case NetChange::CHANGE_UNIT_BASE:

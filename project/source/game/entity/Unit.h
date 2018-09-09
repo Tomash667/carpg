@@ -134,6 +134,15 @@ struct Unit
 		LS_MAX_OVERLOADED // >= 200%
 	};
 
+	// used in mp by clients
+	enum AiMode
+	{
+		AI_MODE_DONT_ATTACK = 1 << 0,
+		AI_MODE_ASSIST = 1 << 1,
+		AI_MODE_IDLE = 1 << 3,
+		AI_MODE_ATTACK_TEAM = 1 << 4
+	};
+
 	enum class CREATE_MESH
 	{
 		NORMAL,
@@ -180,7 +189,7 @@ struct Unit
 	SpeechBubble* bubble;
 	SmartPtr<Unit> look_target;
 	Unit *guard_target, *summoner;
-	int ai_mode; // u klienta w MP (0x01-dont_attack, 0x02-assist, 0x04-not_idle)
+	int ai_mode;
 	enum Busy
 	{
 		Busy_No,
@@ -220,6 +229,10 @@ struct Unit
 	// czy ¿yje
 	bool IsAlive() const { return live_state < DYING; }
 	bool IsIdle() const;
+	bool IsAssist() const;
+	bool IsDontAttack() const;
+	bool WantAttackTeam() const;
+	byte GetAiMode() const;
 	void RecalculateWeight();
 	// konsumuje przedmiot (zwraca 0-u¿yto ostatni, 1-u¿yto nie ostatni, 2-chowa broñ, 3-zajêty)
 	int ConsumeItem(int index);

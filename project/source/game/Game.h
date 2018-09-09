@@ -485,14 +485,14 @@ public:
 	//-----------------------------------------------------------------
 	cstring txCreatingListOfFiles, txConfiguringGame, txLoadingItems, txLoadingObjects, txLoadingSpells, txLoadingUnits, txLoadingMusics, txLoadingBuildings,
 		txLoadingRequires, txLoadingShaders, txLoadingDialogs, txLoadingLanguageFiles, txPreloadAssets;
-	cstring txAiNoHpPot[2], txAiJoinTour[4], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
+	cstring txAiNoHpPot[2], txAiCity[2], txAiVillage[2], txAiMoonwell, txAiForest, txAiCampEmpty, txAiCampFull, txAiFort, txAiDwarfFort, txAiTower, txAiArmory, txAiHideout,
 		txAiVault, txAiCrypt, txAiTemple, txAiNecromancerBase, txAiLabirynth, txAiNoEnemies, txAiNearEnemies, txAiCave, txAiInsaneText[11], txAiDefaultText[9], txAiOutsideText[3],
 		txAiInsideText[2], txAiHumanText[2], txAiOrcText[7], txAiGoblinText[5], txAiMageText[4], txAiSecretText[3], txAiHeroDungeonText[4], txAiHeroCityText[5], txAiBanditText[6],
 		txAiHeroOutsideText[2], txAiDrunkMageText[3], txAiDrunkText[5], txAiDrunkmanText[4];
 	cstring txEnteringLocation, txGeneratingMap, txGeneratingBuildings, txGeneratingObjects, txGeneratingUnits, txGeneratingItems, txGeneratingPhysics, txRecreatingObjects, txGeneratingMinimap,
 		txLoadingComplete, txWaitingForPlayers, txLoadingResources;
 	cstring txContestNoWinner, txContestStart, txContestTalk[14], txContestWin, txContestWinNews, txContestDraw, txContestPrize, txContestNoPeople;
-	cstring txTut[10], txTutNote, txTutLoc, txTour[23], txTutPlay, txTutTick;
+	cstring txTut[10], txTutNote, txTutLoc, txTutPlay, txTutTick;
 	cstring txCantSaveGame, txSaveFailed, txSavedGameN, txLoadFailed, txQuickSave, txGameSaved, txLoadingLocations, txLoadingData, txLoadingQuests, txEndOfLoading,
 		txCantSaveNow, txOnlyServerCanSave, txCantLoadGame, txOnlyServerCanLoad, txLoadSignature, txLoadVersion, txLoadSaveVersionOld, txLoadMP, txLoadSP, txLoadError,
 		txLoadErrorGeneric, txLoadOpenError;
@@ -701,20 +701,6 @@ public:
 	void CleanArena();
 
 	//--------------------------------------
-	// TOURNAMENT
-
-
-	void StartTournament(Unit* arena_master);
-	bool IfUnitJoinTournament(Unit& u);
-	void GenerateTournamentUnits();
-	void UpdateTournament(float dt);
-	void VerifyTournamentUnit(Unit* unit);
-	void StartTournamentRound();
-	void TournamentTalk(cstring text);
-	void TournamentTrain(Unit& u);
-	void CleanTournament();
-
-	//--------------------------------------
 	// DRU¯YNA
 	int take_item_id; // u¿ywane przy wymianie ekwipunku ai [tymczasowe]
 	int team_share_id; // u¿ywane przy wymianie ekwipunku ai [tymczasowe]
@@ -776,14 +762,6 @@ public:
 	const Item* crazy_give_item; // dawany przedmiot, nie trzeba zapisywaæ
 	float grayout;
 	bool cl_postfx;
-
-	bool WantAttackTeam(Unit& u)
-	{
-		if(Net::IsLocal())
-			return u.attack_team;
-		else
-			return IS_SET(u.ai_mode, 0x08);
-	}
 
 	// zwraca losowy przedmiot o maksymalnej cenie, ta funkcja jest powolna!
 	// mo¿e zwróciæ questowy przedmiot jeœli bêdzie wystarczaj¹co tani, lub unikat!
@@ -1074,7 +1052,6 @@ public:
 	{
 		return !GKey.KeyDownAllowed(GK_WALK);
 	}
-	Vec2 GetMapPosition(Unit& unit);
 	void EventTakeItem(int id);
 	const Item* GetBetterItem(const Item* item);
 	void CheckIfLocationCleared();
@@ -1103,22 +1080,7 @@ public:
 	void RemoveQuestUnits(bool on_leave);
 	void HandleUnitEvent(UnitEventHandler::TYPE event, Unit* unit);
 	int GetUnitEventHandlerQuestRefid();
-	Room& GetRoom(InsideLocationLevel& lvl, RoomTarget target, bool down_stairs);
 	void UpdateGame2(float dt);
-	bool IsUnitDontAttack(Unit& u)
-	{
-		if(Net::IsLocal())
-			return u.dont_attack;
-		else
-			return IS_SET(u.ai_mode, 0x01);
-	}
-	bool IsUnitAssist(Unit& u)
-	{
-		if(Net::IsLocal())
-			return u.assist;
-		else
-			return IS_SET(u.ai_mode, 0x02);
-	}
 	void SetUnitWeaponState(Unit& unit, bool wyjmuje, WeaponType co);
 	void UpdatePlayerView();
 	void OnCloseInventory();
@@ -1139,7 +1101,6 @@ public:
 	void Train(Unit& unit, bool is_skill, int co, int mode = 0);
 	void ShowStatGain(bool is_skill, int what, int value);
 	void ActivateChangeLeaderButton(bool activate);
-	void RespawnTraps();
 	void WarpToInn(Unit& unit);
 	void PayCredit(PlayerController* player, int ile);
 	void CreateSaveImage(cstring filename);
@@ -1167,8 +1128,6 @@ public:
 	}
 	Unit* GetRandomArenaHero();
 	cstring GetRandomIdleText(Unit& u);
-	UnitData* GetRandomHeroData();
-	UnitData* GetUnitDataFromClass(Class clas, bool crazy);
 	void HandleQuestEvent(Quest_Event* event);
 
 	void DropGold(int count);
@@ -1216,7 +1175,6 @@ public:
 	void PlayerYell(Unit& u);
 	bool CanBuySell(const Item* item);
 	void SetOutsideParams();
-	UnitData& GetHero(Class clas, bool crazy = false);
 	const Item* GetRandomBook();
 
 	// level area
@@ -1430,12 +1388,6 @@ public:
 	PlayerInfo& GetPlayerInfo(int id);
 	PlayerInfo* GetPlayerInfoTry(int id);
 	void UpdateWarpData(float dt);
-	void Net_RecruitNpc(Unit* unit)
-	{
-		NetChange& c = Add1(Net::changes);
-		c.type = NetChange::RECRUIT_NPC;
-		c.unit = unit;
-	}
 	void Net_RemoveUnit(Unit* unit)
 	{
 		NetChange& c = Add1(Net::changes);
@@ -1447,11 +1399,6 @@ public:
 		NetChange& c = Add1(Net::changes);
 		c.type = NetChange::SPAWN_UNIT;
 		c.unit = unit;
-	}
-	void Net_PrepareWarp(PlayerController* player)
-	{
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = NetChangePlayer::PREPARE_WARP;
 	}
 	enum Where
 	{
@@ -1540,7 +1487,6 @@ public:
 	void GenerateWorld();
 	void ApplyTiles(float* h, TerrainTile* tiles);
 	void RespawnUnits();
-	void RespawnUnits(LevelContext& ctx);
 	void LeaveLocation(bool clear = false, bool end_buffs = true);
 	void SpawnCityPhysics();
 	// for object rot must be 0, PI/2, PI or PI*3/2

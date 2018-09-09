@@ -1932,16 +1932,13 @@ void Game::SetStatsText()
 //=================================================================================================
 void Game::SetGameText()
 {
-#define LOAD_ARRAY(var, str) for(uint i=0; i<countof(var); ++i) var[i] = Str(Format(str "%d", i))
-
 	txGoldPlus = Str("goldPlus");
 	txQuestCompletedGold = Str("questCompletedGold");
 
 	// ai
-	LOAD_ARRAY(txAiNoHpPot, "aiNoHpPot");
-	LOAD_ARRAY(txAiJoinTour, "aiJoinTour");
-	LOAD_ARRAY(txAiCity, "aiCity");
-	LOAD_ARRAY(txAiVillage, "aiVillage");
+	LoadArray(txAiNoHpPot, "aiNoHpPot");
+	LoadArray(txAiCity, "aiCity");
+	LoadArray(txAiVillage, "aiVillage");
 	txAiMoonwell = Str("aiMoonwell");
 	txAiForest = Str("aiForest");
 	txAiCampEmpty = Str("aiCampEmpty");
@@ -1959,22 +1956,22 @@ void Game::SetGameText()
 	txAiNoEnemies = Str("aiNoEnemies");
 	txAiNearEnemies = Str("aiNearEnemies");
 	txAiCave = Str("aiCave");
-	LOAD_ARRAY(txAiInsaneText, "aiInsaneText");
-	LOAD_ARRAY(txAiDefaultText, "aiDefaultText");
-	LOAD_ARRAY(txAiOutsideText, "aiOutsideText");
-	LOAD_ARRAY(txAiInsideText, "aiInsideText");
-	LOAD_ARRAY(txAiHumanText, "aiHumanText");
-	LOAD_ARRAY(txAiOrcText, "aiOrcText");
-	LOAD_ARRAY(txAiGoblinText, "aiGoblinText");
-	LOAD_ARRAY(txAiMageText, "aiMageText");
-	LOAD_ARRAY(txAiSecretText, "aiSecretText");
-	LOAD_ARRAY(txAiHeroDungeonText, "aiHeroDungeonText");
-	LOAD_ARRAY(txAiHeroCityText, "aiHeroCityText");
-	LOAD_ARRAY(txAiBanditText, "aiBanditText");
-	LOAD_ARRAY(txAiHeroOutsideText, "aiHeroOutsideText");
-	LOAD_ARRAY(txAiDrunkMageText, "aiDrunkMageText");
-	LOAD_ARRAY(txAiDrunkText, "aiDrunkText");
-	LOAD_ARRAY(txAiDrunkmanText, "aiDrunkmanText");
+	LoadArray(txAiInsaneText, "aiInsaneText");
+	LoadArray(txAiDefaultText, "aiDefaultText");
+	LoadArray(txAiOutsideText, "aiOutsideText");
+	LoadArray(txAiInsideText, "aiInsideText");
+	LoadArray(txAiHumanText, "aiHumanText");
+	LoadArray(txAiOrcText, "aiOrcText");
+	LoadArray(txAiGoblinText, "aiGoblinText");
+	LoadArray(txAiMageText, "aiMageText");
+	LoadArray(txAiSecretText, "aiSecretText");
+	LoadArray(txAiHeroDungeonText, "aiHeroDungeonText");
+	LoadArray(txAiHeroCityText, "aiHeroCityText");
+	LoadArray(txAiBanditText, "aiBanditText");
+	LoadArray(txAiHeroOutsideText, "aiHeroOutsideText");
+	LoadArray(txAiDrunkMageText, "aiDrunkMageText");
+	LoadArray(txAiDrunkText, "aiDrunkText");
+	LoadArray(txAiDrunkmanText, "aiDrunkmanText");
 
 	// mapa
 	txEnteringLocation = Str("enteringLocation");
@@ -1993,7 +1990,7 @@ void Game::SetGameText()
 	// zawody w piciu
 	txContestNoWinner = Str("contestNoWinner");
 	txContestStart = Str("contestStart");
-	LOAD_ARRAY(txContestTalk, "contestTalk");
+	LoadArray(txContestTalk, "contestTalk");
 	txContestWin = Str("contestWin");
 	txContestWinNews = Str("contestWinNews");
 	txContestDraw = Str("contestDraw");
@@ -2001,14 +1998,11 @@ void Game::SetGameText()
 	txContestNoPeople = Str("contestNoPeople");
 
 	// samouczek
-	LOAD_ARRAY(txTut, "tut");
+	LoadArray(txTut, "tut");
 	txTutNote = Str("tutNote");
 	txTutLoc = Str("tutLoc");
 	txTutPlay = Str("tutPlay");
 	txTutTick = Str("tutTick");
-
-	// zawody
-	LOAD_ARRAY(txTour, "tour");
 
 	txCantSaveGame = Str("cantSaveGame");
 	txSaveFailed = Str("saveFailed");
@@ -2067,47 +2061,47 @@ void Game::SetGameText()
 	txGmsLeftEvent = Str("gmsLeftEvent");
 
 	// plotki
-	LOAD_ARRAY(txRumor, "rumor_");
-	LOAD_ARRAY(txRumorD, "rumor_d_");
+	LoadArray(txRumor, "rumor_");
+	LoadArray(txRumorD, "rumor_d_");
 
 	// dialogi 1
-	LOAD_ARRAY(txMayorQFailed, "mayorQFailed");
-	LOAD_ARRAY(txQuestAlreadyGiven, "questAlreadyGiven");
-	LOAD_ARRAY(txMayorNoQ, "mayorNoQ");
-	LOAD_ARRAY(txCaptainQFailed, "captainQFailed");
-	LOAD_ARRAY(txCaptainNoQ, "captainNoQ");
-	LOAD_ARRAY(txLocationDiscovered, "locationDiscovered");
-	LOAD_ARRAY(txAllDiscovered, "allDiscovered");
-	LOAD_ARRAY(txCampDiscovered, "campDiscovered");
-	LOAD_ARRAY(txAllCampDiscovered, "allCampDiscovered");
-	LOAD_ARRAY(txNoQRumors, "noQRumors");
-	LOAD_ARRAY(txRumorQ, "rumorQ");
+	LoadArray(txMayorQFailed, "mayorQFailed");
+	LoadArray(txQuestAlreadyGiven, "questAlreadyGiven");
+	LoadArray(txMayorNoQ, "mayorNoQ");
+	LoadArray(txCaptainQFailed, "captainQFailed");
+	LoadArray(txCaptainNoQ, "captainNoQ");
+	LoadArray(txLocationDiscovered, "locationDiscovered");
+	LoadArray(txAllDiscovered, "allDiscovered");
+	LoadArray(txCampDiscovered, "campDiscovered");
+	LoadArray(txAllCampDiscovered, "allCampDiscovered");
+	LoadArray(txNoQRumors, "noQRumors");
+	LoadArray(txRumorQ, "rumorQ");
 	txNeedMoreGold = Str("needMoreGold");
 	txNoNearLoc = Str("noNearLoc");
 	txNearLoc = Str("nearLoc");
-	LOAD_ARRAY(txNearLocEmpty, "nearLocEmpty");
+	LoadArray(txNearLocEmpty, "nearLocEmpty");
 	txNearLocCleared = Str("nearLocCleared");
-	LOAD_ARRAY(txNearLocEnemy, "nearLocEnemy");
-	LOAD_ARRAY(txNoNews, "noNews");
-	LOAD_ARRAY(txAllNews, "allNews");
+	LoadArray(txNearLocEnemy, "nearLocEnemy");
+	LoadArray(txNoNews, "noNews");
+	LoadArray(txAllNews, "allNews");
 	txPvpTooFar = Str("pvpTooFar");
 	txPvp = Str("pvp");
 	txPvpWith = Str("pvpWith");
 	txNewsCampCleared = Str("newsCampCleared");
 	txNewsLocCleared = Str("newsLocCleared");
-	LOAD_ARRAY(txArenaText, "arenaText");
-	LOAD_ARRAY(txArenaTextU, "arenaTextU");
+	LoadArray(txArenaText, "arenaText");
+	LoadArray(txArenaTextU, "arenaTextU");
 	txAllNearLoc = Str("allNearLoc");
 
 	// dystans / si³a
 	txNear = Str("near");
 	txFar = Str("far");
 	txVeryFar = Str("veryFar");
-	LOAD_ARRAY(txELvlVeryWeak, "eLvlVeryWeak");
-	LOAD_ARRAY(txELvlWeak, "eLvlWeak");
-	LOAD_ARRAY(txELvlAverage, "eLvlAverage");
-	LOAD_ARRAY(txELvlQuiteStrong, "eLvlQuiteStrong");
-	LOAD_ARRAY(txELvlStrong, "eLvlStrong");
+	LoadArray(txELvlVeryWeak, "eLvlVeryWeak");
+	LoadArray(txELvlWeak, "eLvlWeak");
+	LoadArray(txELvlAverage, "eLvlAverage");
+	LoadArray(txELvlQuiteStrong, "eLvlQuiteStrong");
+	LoadArray(txELvlStrong, "eLvlStrong");
 
 	// questy
 	txArthur = Str("arthur");
@@ -2125,7 +2119,7 @@ void Game::SetGameText()
 	txMageHere = Str("mageHere");
 	txMageEnter = Str("mageEnter");
 	txMageFinal = Str("mageFinal");
-	LOAD_ARRAY(txQuest, "quest");
+	LoadArray(txQuest, "quest");
 	txForMayor = Str("forMayor");
 	txForSoltys = Str("forSoltys");
 
@@ -2220,7 +2214,7 @@ void Game::SetGameText()
 	}
 
 	// dialogi
-	LOAD_ARRAY(txYell, "yell");
+	LoadArray(txYell, "yell");
 
 	TakenPerk::LoadText();
 }
@@ -2606,7 +2600,7 @@ void Game::UpdatePostEffects(float dt)
 //=================================================================================================
 void Game::PlayerYell(Unit& u)
 {
-	UnitTalk(u, random_string(txYell));
+	UnitTalk(u, RandomString(txYell));
 
 	LevelContext& ctx = GetContext(u);
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)

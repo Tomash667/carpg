@@ -14,6 +14,7 @@ protected:
 	InsideLocationLevel& GetLevelData();
 	void GenerateTraps();
 	void RegenerateTraps();
+	void RespawnTraps();
 
 	InsideLocation* inside;
 };

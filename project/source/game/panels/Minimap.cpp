@@ -71,7 +71,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 	// obrazek postaci
 	for(Unit* unit : Team.members)
 	{
-		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit->rot, &(PosToPoint(game.GetMapPosition(*unit)) - Vec2(16, 16)));
+		m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), unit->rot, &(PosToPoint(GetMapPosition(*unit)) - Vec2(16, 16)));
 		GUI.DrawSpriteTransform(tMiniunit[unit == game.pc->unit ? 0 : 1], m1, Color::Alpha(140));
 	}
 
@@ -81,7 +81,7 @@ void Minimap::Draw(ControlDrawData* /*cdd*/)
 		Unit& u = **it;
 		if((u.IsAlive() || IS_SET(u.data->flags2, F2_MARK)) && !u.IsTeamMember() && (!lvl || lvl->IsTileVisible(u.pos)))
 		{
-			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), (*it)->rot, &(PosToPoint(game.GetMapPosition(u)) - Vec2(16, 16)));
+			m1 = Matrix::Transform2D(&Vec2(16, 16), 0.f, &Vec2(0.25f, 0.25f), &Vec2(16, 16), (*it)->rot, &(PosToPoint(GetMapPosition(u)) - Vec2(16, 16)));
 			GUI.DrawSpriteTransform(tMiniunit[u.IsAlive() ? (game.IsEnemy(u, *game.pc->unit) ? 2 : 3) : 4], m1, Color::Alpha(140));
 		}
 	}
@@ -214,4 +214,23 @@ void Minimap::LoadData()
 	tex_mgr.AddLoadTask("mini_bag.png", tMinibag);
 	tex_mgr.AddLoadTask("mini_bag2.png", tMinibag2);
 	tex_mgr.AddLoadTask("mini_portal.png", tMiniportal);
+}
+
+//=================================================================================================
+Vec2 Minimap::GetMapPosition(Unit& unit)
+{
+	if(unit.in_building == -1)
+		return Vec2(unit.pos.x, unit.pos.z);
+	else
+	{
+		Game& game = Game::Get();
+		Building* type = game.city_ctx->inside_buildings[unit.in_building]->type;
+		for(CityBuilding& b : game.city_ctx->buildings)
+		{
+			if(b.type == type)
+				return Vec2(float(b.pt.x * 2), float(b.pt.y * 2));
+		}
+	}
+	assert(0);
+	return Vec2(-1000, -1000);
 }

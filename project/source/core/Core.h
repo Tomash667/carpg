@@ -15,7 +15,6 @@
 #define FLT100(x) (float(int((x)*100))/100)
 #define OR2_EQ(var,val1,val2) (((var) == (val1)) || ((var) == (val2)))
 #define OR3_EQ(var,val1,val2,val3) (((var) == (val1)) || ((var) == (val2)) || ((var) == (val3)))
-#define random_string(ss) ((cstring)((ss)[Rand()%countof(ss)]))
 #ifndef STRING
 #	define _STRING(str) #str
 #	define STRING(str) _STRING(str)

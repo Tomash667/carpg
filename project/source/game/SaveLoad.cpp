@@ -55,7 +55,7 @@ bool Game::CanSaveGame() const
 	else
 	{
 		if(in_tutorial || arena_tryb != Arena_Brak || QM.quest_contest->state >= Quest_Contest::CONTEST_STARTING
-			|| QM.quest_tournament->state != Quest_Tournament::TOURNAMENT_NOT_DONE)
+			|| QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
 			return false;
 	}
 
@@ -1065,12 +1065,6 @@ void Game::LoadGame(GameReader& f)
 		(*it)->handler = dynamic_cast<ChestEventHandler*>(quest_manager.FindQuest((int)(*it)->handler, false));
 		assert((*it)->handler);
 	}
-
-	Quest_Tournament* tournament = QM.quest_tournament;
-	if(tournament->generated)
-		tournament->master = FindUnitByIdLocal("arena_master");
-	else
-		tournament->master = nullptr;
 
 	minimap_reveal.clear();
 	dialog_context.dialog_mode = false;

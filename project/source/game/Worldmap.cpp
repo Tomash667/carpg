@@ -974,34 +974,27 @@ void Game::ProcessBuildingObjects(LevelContext& ctx, City* city, InsideBuilding*
 
 void Game::RespawnUnits()
 {
-	RespawnUnits(local_ctx);
-	if(city_ctx)
+	for(LevelContext& ctx : L.ForEachContext())
 	{
-		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
-			RespawnUnits((*it)->ctx);
-	}
-}
+		for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
+		{
+			Unit* u = *it;
+			if(u->player)
+				continue;
 
-void Game::RespawnUnits(LevelContext& ctx)
-{
-	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
-	{
-		Unit* u = *it;
-		if(u->player)
-			continue;
+			// model
+			u->action = A_NONE;
+			u->talking = false;
+			u->CreateMesh(Unit::CREATE_MESH::NORMAL);
 
-		// model
-		u->action = A_NONE;
-		u->talking = false;
-		u->CreateMesh(Unit::CREATE_MESH::NORMAL);
+			// fizyka
+			CreateUnitPhysics(*u, true);
 
-		// fizyka
-		CreateUnitPhysics(*u, true);
-
-		// ai
-		AIController* ai = new AIController;
-		ai->Init(u);
-		ais.push_back(ai);
+			// ai
+			AIController* ai = new AIController;
+			ai->Init(u);
+			ais.push_back(ai);
+		}
 	}
 }
 
@@ -1152,8 +1145,8 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	if(Net::IsLocal())
 	{
 		// zawody
-		if(QM.quest_tournament->state != Quest_Tournament::TOURNAMENT_NOT_DONE)
-			CleanTournament();
+		if(QM.quest_tournament->GetState() != Quest_Tournament::TOURNAMENT_NOT_DONE)
+			QM.quest_tournament->Clean();
 		// arena
 		if(!arena_free)
 			CleanArena();
@@ -1172,7 +1165,6 @@ void Game::LeaveLocation(bool clear, bool end_buffs)
 	Info("Leaving location.");
 
 	pvp_response.ok = false;
-	QM.quest_tournament->generated = false;
 
 	if(Net::IsLocal() && (QM.quest_crazies->check_stone
 		|| (QM.quest_crazies->crazies_state >= Quest_Crazies::State::PickedStone && QM.quest_crazies->crazies_state < Quest_Crazies::State::End)))

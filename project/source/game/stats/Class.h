@@ -49,6 +49,8 @@ struct ClassInfo
 	static Class GetRandomEvil();
 	static void Validate(uint &err);
 	static Class OldToNew(Class c);
+	static UnitData& GetUnitData(Class clas, bool crazy = false);
+	static UnitData& GetRandomData() { return GetUnitData(GetRandom()); }
 
 	static ClassInfo classes[(int)Class::MAX];
 };

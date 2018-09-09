@@ -186,7 +186,7 @@ void QuestManager::InitQuests(bool devmode)
 		Info("Quest 'Orcs' - %s.", W.GetLocation(quest_orcs->start_loc)->name.c_str());
 		Info("Quest 'Goblins' - %s.", W.GetLocation(quest_goblins->start_loc)->name.c_str());
 		Info("Quest 'Evil' - %s.", W.GetLocation(quest_evil->start_loc)->name.c_str());
-		Info("Tournament - %s.", W.GetLocation(quest_tournament->city)->name.c_str());
+		Info("Tournament - %s.", W.GetLocation(quest_tournament->GetCity())->name.c_str());
 		Info("Contest - %s.", W.GetLocation(quest_contest->where)->name.c_str());
 	}
 }
