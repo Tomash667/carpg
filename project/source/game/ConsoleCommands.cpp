@@ -684,7 +684,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 
 							if(Net::IsLocal())
 							{
-								LevelContext& ctx = GetContext(*pc->unit);
+								LevelContext& ctx = L.GetContext(*pc->unit);
 
 								for(int i = 0; i < ile; ++i)
 								{
@@ -738,7 +738,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					if(pc_data.selected_target)
 					{
 						if(Net::IsLocal())
-							GiveDmg(GetContext(*pc->unit), nullptr, pc_data.selected_target->hpmax, *pc_data.selected_target);
+							GiveDmg(L.GetContext(*pc->unit), nullptr, pc_data.selected_target->hpmax, *pc_data.selected_target);
 						else
 						{
 							NetChange& c = Add1(Net::changes);
@@ -782,7 +782,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 					break;
 				case CMD_SUICIDE:
 					if(Net::IsLocal())
-						GiveDmg(GetContext(*pc->unit), nullptr, pc->unit->hpmax, *pc->unit);
+						GiveDmg(L.GetContext(*pc->unit), nullptr, pc->unit->hpmax, *pc->unit);
 					else
 						Net::PushChange(NetChange::CHEAT_SUICIDE);
 					break;
@@ -1578,7 +1578,7 @@ void Game::ParseCommand(const string& _str, PrintMsgFunc print_func, PARSE_SOURC
 						if(Net::IsLocal())
 						{
 							if(it->cmd == CMD_HURT)
-								GiveDmg(GetContext(*u), nullptr, 100.f, *u);
+								GiveDmg(L.GetContext(*u), nullptr, 100.f, *u);
 							else if(it->cmd == CMD_BREAK_ACTION)
 								BreakUnitAction(*u, BREAK_ACTION_MODE::NORMAL, true);
 							else

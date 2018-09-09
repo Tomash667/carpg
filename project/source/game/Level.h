@@ -36,9 +36,20 @@ public:
 	void ProcessRemoveUnits(bool clear);
 	void SpawnOutsideBariers();
 	LevelContextEnumerator ForEachContext() { return LevelContextEnumerator(location); }
+	LevelContext& GetContext(Unit& unit);
+	LevelContext& GetContext(const Vec3& pos);
+	LevelContext& GetContextFromInBuilding(int in_building);
+	Unit* FindUnit(int netid);
+	Unit* FindUnit(delegate<bool(Unit*)> pred);
+	Usable* FindUsable(int netid);
+	Door* FindDoor(int netid);
+	Trap* FindTrap(int netid);
+	Chest* FindChest(int netid);
+	Electro* FindElectro(int netid);
 
 	Location* location; // same as W.current_location
 	int location_index; // same as W.current_location_index
+	int dungeon_level;
 	LocationEventHandler* event_handler;
 	LevelContext local_ctx;
 	City* city_ctx; // pointer to city or nullptr when not inside city

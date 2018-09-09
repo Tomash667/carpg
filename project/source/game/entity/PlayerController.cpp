@@ -7,6 +7,7 @@
 #include "BitStreamFunc.h"
 #include "Class.h"
 #include "Action.h"
+#include "Level.h"
 
 //=================================================================================================
 PlayerController::~PlayerController()
@@ -205,12 +206,14 @@ void PlayerController::Train(SkillId skill, int points)
 			game.ShowStatGain(true, s, gained);
 		else
 		{
-			NetChangePlayer& c = game.AddChange(NetChangePlayer::GAIN_STAT, this);
+			NetChangePlayer& c = Add1(player_info->changes);
+			c.type = NetChangePlayer::GAIN_STAT;
 			c.id = 1;
 			c.a = s;
 			c.ile = gained;
 
-			NetChangePlayer& c2 = game.AddChange(NetChangePlayer::STAT_CHANGED, this);
+			NetChangePlayer& c2 = Add1(player_info->changes);
+			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = (int)ChangedStatType::SKILL;
 			c2.a = s;
 			c2.ile = value;
@@ -254,12 +257,14 @@ void PlayerController::Train(AttributeId attrib, int points)
 			game.ShowStatGain(false, a, gained);
 		else
 		{
-			NetChangePlayer& c = game.AddChange(NetChangePlayer::GAIN_STAT, this);
+			NetChangePlayer& c = Add1(player_info->changes);
+			c.type = NetChangePlayer::GAIN_STAT;
 			c.id = 0;
 			c.a = a;
 			c.ile = gained;
 
-			NetChangePlayer& c2 = game.AddChange(NetChangePlayer::STAT_CHANGED, this);
+			NetChangePlayer& c2 = Add1(player_info->changes);
+			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = (int)ChangedStatType::ATTRIBUTE;
 			c2.a = a;
 			c2.ile = value;
@@ -861,7 +866,7 @@ bool PlayerController::Read(BitStreamReader& f)
 			int index = f.Read<int>();
 			if(!f)
 				return false;
-			next_action_data.usable = Game::Get().FindUsable(index);
+			next_action_data.usable = L.FindUsable(index);
 		}
 		break;
 	default:

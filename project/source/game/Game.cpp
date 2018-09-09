@@ -2236,7 +2236,7 @@ bool Game::ValidateTarget(Unit& u, Unit* target)
 {
 	assert(target);
 
-	LevelContext& ctx = GetContext(u);
+	LevelContext& ctx = L.GetContext(u);
 
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
@@ -2337,7 +2337,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	if(u.live_state == Unit::FALL)
 	{
 		// postaæ ju¿ le¿y na ziemi, dodaj krew
-		CreateBlood(GetContext(u), u);
+		CreateBlood(L.GetContext(u), u);
 		u.live_state = Unit::DEAD;
 	}
 	else
@@ -2416,7 +2416,7 @@ void Game::UnitDie(Unit& u, LevelContext* ctx, Unit* killer)
 	}
 
 	// end boss music
-	if(IS_SET(u.data->flags2, F2_BOSS) && W.RemoveBossLevel(Int2(L.location_index, dungeon_level)))
+	if(IS_SET(u.data->flags2, F2_BOSS) && W.RemoveBossLevel(Int2(L.location_index, L.dungeon_level)))
 		SetMusic();
 
 	if(prev_action == A_ANIMATION)
@@ -2470,7 +2470,7 @@ void Game::UnitTryStandup(Unit& u, float dt)
 				else
 				{
 					// sprawdŸ czy nie ma wrogów
-					LevelContext& ctx = GetContext(u);
+					LevelContext& ctx = L.GetContext(u);
 					ok = true;
 					for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 					{
@@ -2602,7 +2602,7 @@ void Game::PlayerYell(Unit& u)
 {
 	UnitTalk(u, RandomString(txYell));
 
-	LevelContext& ctx = GetContext(u);
+	LevelContext& ctx = L.GetContext(u);
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
 	{
 		Unit& u2 = **it;

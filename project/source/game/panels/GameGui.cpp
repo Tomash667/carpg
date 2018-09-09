@@ -21,6 +21,7 @@
 #include "BookPanel.h"
 #include "Profiler.h"
 #include "GameStats.h"
+#include "Level.h"
 
 //-----------------------------------------------------------------------------
 enum class TooltipGroup
@@ -169,7 +170,7 @@ void GameGui::DrawFront()
 	if(game.debug_info)
 	{
 		sorted_units.clear();
-		vector<Unit*>& units = *game.GetContext(*game.pc->unit).units;
+		vector<Unit*>& units = *L.GetContext(*game.pc->unit).units;
 		for(auto unit : units)
 		{
 			if(!unit->IsAlive())

@@ -587,7 +587,7 @@ public:
 	LocalPlayerData pc_data;
 	PlayerController* pc;
 	bool testing, force_seed_all, koniec_gry, target_loc_is_camp, death_solo;
-	int death_screen, dungeon_level;
+	int death_screen;
 	float death_fade, game_speed;
 	vector<MeshInstance*> bow_instances;
 	Pak* pak;
@@ -992,8 +992,6 @@ public:
 	void WarpUnit(Unit& unit, const Vec3& pos);
 	void ApplyContext(ILevel* level, LevelContext& ctx);
 	void UpdateContext(LevelContext& ctx, float dt);
-	LevelContext& GetContext(Unit& unit);
-	LevelContext& GetContext(const Vec3& pos);
 	// dru¿yna
 	bool IsLeader()
 	{
@@ -1085,7 +1083,6 @@ public:
 	void CloseAllPanels(bool close_mp_box = false);
 	bool CanShowEndScreen();
 	void UpdateGameDialogClient();
-	LevelContext& GetContextFromInBuilding(int in_building);
 	bool Cheat_KillAll(int typ, Unit& unit, Unit* ignore);
 	void Event_Pvp(int id);
 	void Cheat_ShowMinimap();
@@ -1337,20 +1334,16 @@ public:
 	void ForceRedraw();
 	void PrepareLevelData(BitStream& stream, bool loaded_resources);
 	void WriteUnit(BitStreamWriter& f, Unit& unit);
-	void WriteDoor(BitStreamWriter& f, Door& door);
 	void WriteItem(BitStreamWriter& f, GroundItem& item);
 	void WriteChest(BitStreamWriter& f, Chest& chest);
 	void WriteTrap(BitStreamWriter& f, Trap& trap);
 	bool ReadLevelData(BitStreamReader& f);
 	bool ReadUnit(BitStreamReader& f, Unit& unit);
-	bool ReadDoor(BitStreamReader& f, Door& door);
 	bool ReadItem(BitStreamReader& f, GroundItem& item);
 	bool ReadChest(BitStreamReader& f, Chest& chest);
 	bool ReadTrap(BitStreamReader& f, Trap& trap);
 	void SendPlayerData(int index);
 	bool ReadPlayerData(BitStreamReader& stream);
-	Unit* FindUnit(int netid);
-	Unit* FindUnit(delegate<bool(Unit*)> pred);
 	void UpdateServer(float dt);
 	bool ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info);
 	void WriteServerChanges(BitStreamWriter& f);
@@ -1398,18 +1391,12 @@ public:
 	void Net_OnNewGameClient();
 	// szuka questowych przedmiotów u klienta
 	const Item* FindQuestItemClient(cstring id, int refid) const;
-	//void ConvertPlayerToAI(PlayerInfo& info);
-	Usable* FindUsable(int netid);
 	// read item id and return it (can be quest item or gold), results: -2 read error, -1 not found, 0 empty, 1 ok
 	int ReadItemAndFind(BitStreamReader& f, const Item*& item) const;
 	bool ReadItemList(BitStreamReader& f, vector<ItemSlot>& items);
 	bool ReadItemListTeam(BitStreamReader& f, vector<ItemSlot>& items, bool skip = false);
-	Door* FindDoor(int netid);
-	Trap* FindTrap(int netid);
 	bool RemoveTrap(int netid);
-	Chest* FindChest(int netid);
 	void ReequipItemsMP(Unit& unit); // zak³ada przedmioty które ma w ekipunku, dostaje broñ jeœli nie ma, podnosi z³oto
-	Electro* FindElectro(int netid);
 	void UseDays(PlayerController* player, int count);
 	PlayerInfo* FindOldPlayer(cstring nick);
 	void PrepareWorldData(BitStreamWriter& f);
@@ -1428,13 +1415,6 @@ public:
 	void RemovePlayer(PlayerInfo& info);
 	void ClosePeer(bool wait = false);
 	void DeleteOldPlayers();
-	NetChangePlayer& AddChange(NetChangePlayer::TYPE type, PlayerController* player)
-	{
-		assert(player);
-		NetChangePlayer& c = Add1(player->player_info->changes);
-		c.type = type;
-		return c;
-	}
 
 	BitStream& StreamStart(Packet* packet, StreamLogType type);
 	void StreamEnd();

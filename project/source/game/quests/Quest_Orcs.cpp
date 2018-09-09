@@ -172,7 +172,7 @@ bool Quest_Orcs::HandleLocationEvent(LocationEventHandler::Event event)
 {
 	if(event == LocationEventHandler::CLEARED && prog == Progress::Started)
 	{
-		levels_cleared |= (1 << game->dungeon_level);
+		levels_cleared |= (1 << L.dungeon_level);
 		if(CountBits(levels_cleared) == dungeon_levels)
 			SetProgress(Progress::ClearedLocation);
 	}

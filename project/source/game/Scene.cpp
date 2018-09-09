@@ -974,7 +974,7 @@ void Game::ListDrawObjects(LevelContext& ctx, FrustumPlanes& frustum, bool outsi
 		Portal* portal = L.location->portal;
 		while(portal)
 		{
-			if(L.location->outside || dungeon_level == portal->at_level)
+			if(L.location->outside || L.dungeon_level == portal->at_level)
 				draw_batch.portals.push_back(portal);
 			portal = portal->next_portal;
 		}

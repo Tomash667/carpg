@@ -207,7 +207,7 @@ void Game::StartTutorial()
 	L.city_ctx = nullptr;
 	InsideLocationLevel& lvl = loc->GetLevelData();
 	lvl.w = lvl.h = 22;
-	dungeon_level = 0;
+	L.dungeon_level = 0;
 	loc->SetActiveLevel(0);
 	BaseLocation& base = g_base_locations[TUTORIAL_FORT];
 	ApplyContext(loc, L.local_ctx);

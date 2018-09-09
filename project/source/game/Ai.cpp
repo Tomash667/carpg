@@ -118,7 +118,7 @@ void Game::UpdateAi(float dt)
 		else if(u.HaveEffect(EffectId::Stun) || u.action == A_STAND_UP)
 			continue;
 
-		LevelContext& ctx = GetContext(u);
+		LevelContext& ctx = L.GetContext(u);
 
 		// aktualizuj czas
 		u.prev_pos = u.pos;

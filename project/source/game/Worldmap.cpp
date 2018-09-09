@@ -83,7 +83,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 	if(!reenter)
 		L.light_angle = Random(PI * 2);
 
-	dungeon_level = level;
+	L.dungeon_level = level;
 	L.event_handler = nullptr;
 	pc_data.before_player = BP_NONE;
 	arena_free = true; //zabezpieczenie :3
@@ -160,7 +160,7 @@ bool Game::EnterLocation(int level, int from_portal, bool close_portal)
 			if(inside->IsMultilevel())
 			{
 				MultiInsideLocation* multi = (MultiInsideLocation*)inside;
-				multi->infos[dungeon_level].seed = l.seed;
+				multi->infos[L.dungeon_level].seed = l.seed;
 			}
 		}
 

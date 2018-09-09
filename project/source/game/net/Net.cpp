@@ -376,7 +376,7 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 				// doors
 				f.WriteCasted<byte>(ib.doors.size());
 				for(Door* door : ib.doors)
-					WriteDoor(f, *door);
+					door->Write(f);
 				// ground items
 				f.WriteCasted<byte>(ib.items.size());
 				for(GroundItem* item : ib.items)
@@ -429,7 +429,7 @@ void Game::PrepareLevelData(BitStream& stream, bool loaded_resources)
 		// doors
 		f.WriteCasted<byte>(lvl.doors.size());
 		for(Door* door : lvl.doors)
-			WriteDoor(f, *door);
+			door->Write(f);
 		// stairs
 		f << lvl.staircase_up;
 		f << lvl.staircase_down;
@@ -623,18 +623,6 @@ void Game::WriteUnit(BitStreamWriter& f, Unit& unit)
 }
 
 //=================================================================================================
-void Game::WriteDoor(BitStreamWriter& f, Door& door)
-{
-	f << door.pos;
-	f << door.rot;
-	f << door.pt;
-	f.WriteCasted<byte>(door.locked);
-	f.WriteCasted<byte>(door.state);
-	f << door.netid;
-	f << door.door2;
-}
-
-//=================================================================================================
 void Game::WriteItem(BitStreamWriter& f, GroundItem& item)
 {
 	f << item.netid;
@@ -693,7 +681,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	if(!L.location->outside)
 	{
 		InsideLocation* inside = (InsideLocation*)L.location;
-		inside->SetActiveLevel(dungeon_level);
+		inside->SetActiveLevel(L.dungeon_level);
 	}
 	ApplyContext(L.location, L.local_ctx);
 	RequireLoadingResources(L.location, &loaded_resources);
@@ -856,7 +844,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 				for(Door*& door : ib.doors)
 				{
 					door = new Door;
-					if(!ReadDoor(f, *door))
+					if(!door->Read(f))
 					{
 						Error("Read level: Broken packet for door in %d inside building.", index);
 						return false;
@@ -1041,7 +1029,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 		for(Door*& door : lvl.doors)
 		{
 			door = new Door;
-			if(!ReadDoor(f, *door))
+			if(!door->Read(f))
 			{
 				Error("Read level: Broken packet for inside location door.");
 				return false;
@@ -1179,7 +1167,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 	}
 
 	// portals
-	if(!L.location->ReadPortals(f, dungeon_level))
+	if(!L.location->ReadPortals(f, L.dungeon_level))
 	{
 		Error("Read level: Broken portals.");
 		return false;
@@ -1334,7 +1322,7 @@ bool Game::ReadLevelData(BitStreamReader& f)
 
 			if(netid != -1)
 			{
-				bullet.owner = FindUnit(netid);
+				bullet.owner = L.FindUnit(netid);
 				if(!bullet.owner)
 				{
 					Error("Read level: Missing bullet owner %d.", netid);
@@ -1667,7 +1655,7 @@ bool Game::ReadUnit(BitStreamReader& f, Unit& unit)
 			unit.usable = nullptr;
 		else
 		{
-			unit.usable = FindUsable(usable_netid);
+			unit.usable = L.FindUsable(usable_netid);
 			if(unit.usable)
 			{
 				unit.use_rot = Vec3::LookAtAngle(unit.pos, unit.usable->pos);
@@ -1700,48 +1688,6 @@ bool Game::ReadUnit(BitStreamReader& f, Unit& unit)
 	unit.prev_pos = unit.pos;
 	unit.speed = unit.prev_speed = 0.f;
 	unit.talking = false;
-
-	return true;
-}
-
-//=================================================================================================
-bool Game::ReadDoor(BitStreamReader& f, Door& door)
-{
-	f >> door.pos;
-	f >> door.rot;
-	f >> door.pt;
-	f.ReadCasted<byte>(door.locked);
-	f.ReadCasted<byte>(door.state);
-	f >> door.netid;
-	f >> door.door2;
-	if(!f)
-		return false;
-
-	if(door.state >= Door::Max)
-	{
-		Error("Invalid door state %d.", door.state);
-		return false;
-	}
-
-	door.mesh_inst = new MeshInstance(door.door2 ? aDoor2 : aDoor);
-	door.mesh_inst->groups[0].speed = 2.f;
-	door.phy = new btCollisionObject;
-	door.phy->setCollisionShape(shape_door);
-	door.phy->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT | CG_DOOR);
-
-	btTransform& tr = door.phy->getWorldTransform();
-	Vec3 pos = door.pos;
-	pos.y += 1.319f;
-	tr.setOrigin(ToVector3(pos));
-	tr.setRotation(btQuaternion(door.rot, 0, 0));
-	phy_world->addCollisionObject(door.phy, CG_DOOR);
-
-	if(door.state == Door::Open)
-	{
-		btVector3& pos = door.phy->getWorldTransform().getOrigin();
-		pos.setY(pos.y() - 100.f);
-		door.mesh_inst->SetToEnd(door.mesh_inst->mesh->anims[0].name.c_str());
-	}
 
 	return true;
 }
@@ -1884,7 +1830,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 		return false;
 	}
 
-	Unit* unit = FindUnit(netid);
+	Unit* unit = L.FindUnit(netid);
 	if(!unit)
 	{
 		Error("Read player data: Missing unit %d.", netid);
@@ -1963,7 +1909,7 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	for(byte i = 0; i < count; ++i)
 	{
 		f >> netid;
-		Unit* team_member = FindUnit(netid);
+		Unit* team_member = L.FindUnit(netid);
 		if(!team_member)
 		{
 			Error("Read player data: Missing team member %d.", netid);
@@ -2018,57 +1964,6 @@ bool Game::ReadPlayerData(BitStreamReader& f)
 	}
 
 	return true;
-}
-
-//=================================================================================================
-Unit* Game::FindUnit(int netid)
-{
-	if(netid == -1)
-		return nullptr;
-
-	for(vector<Unit*>::iterator it = L.local_ctx.units->begin(), end = L.local_ctx.units->end(); it != end; ++it)
-	{
-		if((*it)->netid == netid)
-			return *it;
-	}
-
-	if(L.city_ctx)
-	{
-		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
-		{
-			for(vector<Unit*>::iterator it2 = (*it)->units.begin(), end2 = (*it)->units.end(); it2 != end2; ++it2)
-			{
-				if((*it2)->netid == netid)
-					return *it2;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
-Unit* Game::FindUnit(delegate<bool(Unit*)> pred)
-{
-	for(auto u : *L.local_ctx.units)
-	{
-		if(pred(u))
-			return u;
-	}
-
-	if(L.city_ctx)
-	{
-		for(auto inside : L.city_ctx->inside_buildings)
-		{
-			for(auto u : inside->units)
-			{
-				if(pred(u))
-					return u;
-			}
-		}
-	}
-
-	return nullptr;
 }
 
 //=================================================================================================
@@ -2643,7 +2538,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					item->pos.z -= cos(unit.rot)*0.25f;
 					item->rot = Random(MAX_ANGLE);
 					if(!CheckMoonStone(item, unit))
-						AddGroundItem(GetContext(unit), item);
+						AddGroundItem(L.GetContext(unit), item);
 
 					// send to other players
 					if(players > 2)
@@ -2733,7 +2628,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 
-				Unit* looted_unit = FindUnit(netid);
+				Unit* looted_unit = L.FindUnit(netid);
 				if(!looted_unit)
 				{
 					StreamError("Update server: LOOT_UNIT from %s, missing unit %d.", info.name.c_str(), netid);
@@ -2769,7 +2664,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 
-				Chest* chest = FindChest(netid);
+				Chest* chest = L.FindChest(netid);
 				if(!chest)
 				{
 					StreamError("Update server: LOOT_CHEST from %s, missing chest %d.", info.name.c_str(), netid);
@@ -3249,7 +3144,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 
-				Unit* talk_to = FindUnit(netid);
+				Unit* talk_to = L.FindUnit(netid);
 				if(!talk_to)
 				{
 					StreamError("Update server: TALK from %s, missing unit %d.", info.name.c_str(), netid);
@@ -3381,7 +3276,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 
-				Usable* usable = FindUsable(usable_netid);
+				Usable* usable = L.FindUsable(usable_netid);
 				if(!usable)
 				{
 					StreamError("Update server: USE_USABLE from %s, missing usable %d.", info.name.c_str(), usable_netid);
@@ -3468,7 +3363,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 		// player used cheat 'suicide'
 		case NetChange::CHEAT_SUICIDE:
 			if(info.devmode)
-				GiveDmg(GetContext(unit), nullptr, unit.hpmax, unit);
+				GiveDmg(L.GetContext(unit), nullptr, unit.hpmax, unit);
 			else
 				StreamError("Update server: Player %s used CHEAT_SUICIDE without devmode.", info.name.c_str());
 			break;
@@ -3562,7 +3457,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					ignored = nullptr;
 				else
 				{
-					ignored = FindUnit(ignored_netid);
+					ignored = L.FindUnit(ignored_netid);
 					if(!ignored)
 					{
 						StreamError("Update server: CHEAT_KILLALL from %s, missing unit %d.", info.name.c_str(), ignored_netid);
@@ -3651,11 +3546,11 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: Player %s used CHEAT_KILL without devmode.", info.name.c_str());
 				else
 				{
-					Unit* target = FindUnit(netid);
+					Unit* target = L.FindUnit(netid);
 					if(!target)
 						StreamError("Update server: CHEAT_KILL from %s, missing unit %d.", info.name.c_str(), netid);
 					else
-						GiveDmg(GetContext(*target), nullptr, target->hpmax, *target);
+						GiveDmg(L.GetContext(*target), nullptr, target->hpmax, *target);
 				}
 			}
 			break;
@@ -3670,7 +3565,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: Player %s used CHEAT_HEAL_UNIT without devmode.", info.name.c_str());
 				else
 				{
-					Unit* target = FindUnit(netid);
+					Unit* target = L.FindUnit(netid);
 					if(!target)
 						StreamError("Update server: CHEAT_HEAL_UNIT from %s, missing unit %d.", info.name.c_str(), netid);
 					else
@@ -3833,7 +3728,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(in_arena < -1 || in_arena > 1)
 							in_arena = -1;
 
-						LevelContext& ctx = GetContext(*info.u);
+						LevelContext& ctx = L.GetContext(*info.u);
 						Vec3 pos = info.u->GetFrontPos();
 
 						for(byte i = 0; i < count; ++i)
@@ -3883,7 +3778,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(v != info.u->unmod_stats.skill[what])
 						{
 							info.u->Set((SkillId)what, v);
-							NetChangePlayer& c = AddChange(NetChangePlayer::STAT_CHANGED, info.pc);
+							NetChangePlayer& c = Add1(info.pc->player_info->changes);
+							c.type = NetChangePlayer::STAT_CHANGED;
 							c.id = (int)ChangedStatType::SKILL;
 							c.a = what;
 							c.ile = v;
@@ -3903,7 +3799,8 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						if(v != info.u->unmod_stats.attrib[what])
 						{
 							info.u->Set((AttributeId)what, v);
-							NetChangePlayer& c = AddChange(NetChangePlayer::STAT_CHANGED, info.pc);
+							NetChangePlayer& c = Add1(info.pc->player_info->changes);
+							c.type = NetChangePlayer::STAT_CHANGED;
 							c.id = (int)ChangedStatType::ATTRIBUTE;
 							c.a = what;
 							c.ile = v;
@@ -4025,7 +3922,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 
-				Door* door = FindDoor(netid);
+				Door* door = L.FindDoor(netid);
 				if(!door)
 				{
 					StreamError("Update server: USE_DOOR from %s, missing door %d.", info.name.c_str(), netid);
@@ -4412,7 +4309,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					item->pos.x -= sin(unit.rot)*0.25f;
 					item->pos.z -= cos(unit.rot)*0.25f;
 					item->rot = Random(MAX_ANGLE);
-					AddGroundItem(GetContext(*info.u), item);
+					AddGroundItem(L.GetContext(*info.u), item);
 
 					// send info to other players
 					if(players > 2)
@@ -4491,9 +4388,9 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: Player %s used CHEAT_HURT without devmode.", info.name.c_str());
 				else
 				{
-					Unit* target = FindUnit(netid);
+					Unit* target = L.FindUnit(netid);
 					if(target)
-						GiveDmg(GetContext(*target), nullptr, 100.f, *target);
+						GiveDmg(L.GetContext(*target), nullptr, 100.f, *target);
 					else
 						StreamError("Update server: CHEAT_HURT from %s, missing unit %d.", info.name.c_str(), netid);
 				}
@@ -4510,7 +4407,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: Player %s used CHEAT_BREAK_ACTION without devmode.", info.name.c_str());
 				else
 				{
-					Unit* target = FindUnit(netid);
+					Unit* target = L.FindUnit(netid);
 					if(target)
 						BreakUnitAction(*target, BREAK_ACTION_MODE::NORMAL, true);
 					else
@@ -4529,7 +4426,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: Player %s used CHEAT_FALL without devmode.", info.name.c_str());
 				else
 				{
-					Unit* target = FindUnit(netid);
+					Unit* target = L.FindUnit(netid);
 					if(target)
 						UnitFall(*target);
 					else
@@ -4554,7 +4451,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					StreamError("Update server: Player %s used CHEAT_STUN without devmode.", info.name.c_str());
 				else
 				{
-					Unit* target = FindUnit(netid);
+					Unit* target = L.FindUnit(netid);
 					if(target && length > 0)
 						target->ApplyStun(length);
 					else
@@ -4603,7 +4500,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 					break;
 				}
 
-				Unit* target = FindUnit(target_netid);
+				Unit* target = L.FindUnit(target_netid);
 				if(!target && target_netid != -1)
 				{
 					StreamError("Update server: RUN_SCRIPT, invalid target %d from %s.", target_netid, info.name.c_str());
@@ -4692,7 +4589,7 @@ bool Game::ProcessControlMessageServer(BitStreamReader& f, PlayerInfo& info)
 						}
 						else
 						{
-							info.pc->next_action_data.usable = FindUsable(netid);
+							info.pc->next_action_data.usable = L.FindUsable(netid);
 							if(!info.pc->next_action_data.usable)
 							{
 								StreamError("Update server: SET_NEXT_ACTION, invalid usable %d from '%s'.", netid, info.name.c_str());
@@ -5413,8 +5310,8 @@ void Game::UpdateClient(float dt)
 				else
 				{
 					W.ChangeLevel(loc, encounter);
-					dungeon_level = level;
-					Info("Update client: Level change to %s (%d, level %d).", L.location->name.c_str(), L.location_index, dungeon_level);
+					L.dungeon_level = level;
+					Info("Update client: Level change to %s (%d, level %d).", L.location->name.c_str(), L.location_index, L.dungeon_level);
 					info_box->Show(txGeneratingLocation);
 					LeaveLevel();
 					net_mode = NM_TRANSFER;
@@ -5545,7 +5442,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				Unit* unit = FindUnit(netid);
+				Unit* unit = L.FindUnit(netid);
 				if(!unit)
 					StreamError("Update client: UNIT_POS, missing unit %d.", netid);
 				else if(unit != pc->unit)
@@ -5575,7 +5472,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: CHANGE_EQUIPMENT, invalid slot %d.", type);
 				else
 				{
-					Unit* target = FindUnit(netid);
+					Unit* target = L.FindUnit(netid);
 					if(!target)
 						StreamError("Update client: CHANGE_EQUIPMENT, missing unit %d.", netid);
 					else
@@ -5600,7 +5497,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken TAKE_WEAPON.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: TAKE_WEAPON, missing unit %d.", netid);
 					else if(unit != pc->unit)
@@ -5627,7 +5524,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				Unit* unit_ptr = FindUnit(netid);
+				Unit* unit_ptr = L.FindUnit(netid);
 				if(!unit_ptr)
 				{
 					StreamError("Update client: ATTACK, missing unit %d.", netid);
@@ -5765,7 +5662,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken UPDATE_HP.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: UPDATE_HP, missing unit %d.", netid);
 					else if(unit == pc->unit)
@@ -5821,7 +5718,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					pe->op_alpha = POP_LINEAR_SHRINK;
 					pe->mode = 0;
 					pe->Init();
-					GetContext(pos).pes->push_back(pe);
+					L.GetContext(pos).pes->push_back(pe);
 				}
 			}
 			break;
@@ -5834,7 +5731,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken HURT_SOUND.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: HURT_SOUND, missing unit %d.", netid);
 					else if(unit->data->sounds->sound[SOUND_PAIN])
@@ -5851,7 +5748,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken DIE.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: DIE, missing unit %d.", netid);
 					else
@@ -5868,7 +5765,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken FALL.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: FALL, missing unit %d.", netid);
 					else
@@ -5885,7 +5782,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken DROP_ITEM.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: DROP_ITEM, missing unit %d.", netid);
 					else if(unit != pc->unit)
@@ -5910,7 +5807,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				else
 				{
 					PreloadItem(item->item);
-					GetContext(item->pos).items->push_back(item);
+					L.GetContext(item->pos).items->push_back(item);
 				}
 			}
 			break;
@@ -5925,7 +5822,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken PICKUP_ITEM.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: PICKUP_ITEM, missing unit %d.", netid);
 					else if(unit != pc->unit)
@@ -5978,7 +5875,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken CONSUME_ITEM.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: CONSUME_ITEM, missing unit %d.", netid);
 					else if(item->type != IT_CONSUMABLE)
@@ -6014,7 +5911,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken STUNNED.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: STUNNED, missing unit %d.", netid);
 					else
@@ -6063,7 +5960,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						owner = nullptr;
 					else
 					{
-						owner = FindUnit(netid);
+						owner = L.FindUnit(netid);
 						if(!owner)
 						{
 							StreamError("Update client: SHOOT_ARROW, missing unit %d.", netid);
@@ -6071,7 +5968,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						}
 					}
 
-					LevelContext& ctx = GetContext(pos);
+					LevelContext& ctx = L.GetContext(pos);
 
 					Bullet& b = Add1(ctx.bullets);
 					b.mesh = aArrow;
@@ -6127,7 +6024,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 							StreamError("Update client: Broken UPDATE_CREDIT(2).");
 						else
 						{
-							Unit* unit = FindUnit(netid);
+							Unit* unit = L.FindUnit(netid);
 							if(!unit)
 								StreamError("Update client: UPDATE_CREDIT, missing unit %d.", netid);
 							else
@@ -6153,7 +6050,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken IDLE.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: IDLE, missing unit %d.", netid);
 					else if(animation_index >= unit->data->idles->anims.size())
@@ -6177,7 +6074,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken HELLO.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: BROKEN, missing unit %d.", netid);
 					else
@@ -6206,7 +6103,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken TALK.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: TALK, missing unit %d.", netid);
 					else
@@ -6293,7 +6190,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken TELL_NAME.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: TELL_NAME, missing unit %d.", netid);
 					else if(!unit->IsHero())
@@ -6318,7 +6215,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken HAIR_COLOR.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: HAIR_COLOR, missing unit %d.", netid);
 					else if(unit->data->type != UNIT_TYPE::HUMAN)
@@ -6346,7 +6243,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				Unit* unit = FindUnit(netid);
+				Unit* unit = L.FindUnit(netid);
 				if(!unit)
 				{
 					StreamError("Update client: WARP, missing unit %d.", netid);
@@ -6366,8 +6263,8 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 
 				if(old_in_building != unit->in_building)
 				{
-					RemoveElement(GetContextFromInBuilding(old_in_building).units, unit);
-					GetContextFromInBuilding(unit->in_building).units->push_back(unit);
+					RemoveElement(L.GetContextFromInBuilding(old_in_building).units, unit);
+					L.GetContextFromInBuilding(unit->in_building).units->push_back(unit);
 				}
 				if(unit == pc->unit)
 				{
@@ -6652,14 +6549,14 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					break;
 				}
 
-				Unit* unit = FindUnit(netid);
+				Unit* unit = L.FindUnit(netid);
 				if(!unit)
 				{
 					StreamError("Update client: USE_USABLE, missing unit %d.", netid);
 					break;
 				}
 
-				Usable* usable = FindUsable(usable_netid);
+				Usable* usable = L.FindUsable(usable_netid);
 				if(!usable)
 				{
 					StreamError("Update client: USE_USABLE, missing usable %d.", usable_netid);
@@ -6726,7 +6623,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken STAND_UP.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: STAND_UP, missing unit %d.", netid);
 					else
@@ -6755,7 +6652,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken RECRUIT_NPC.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: RECRUIT_NPC, missing unit %d.", netid);
 					else if(!unit->IsHero())
@@ -6783,7 +6680,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken KICK_NPC.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: KICK_NPC, missing unit %d.", netid);
 					else if(!unit->IsHero() || !unit->hero->team_member)
@@ -6809,7 +6706,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken REMOVE_UNIT.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: REMOVE_UNIT, missing unit %d.", netid);
 					else
@@ -6828,7 +6725,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				}
 				else
 				{
-					LevelContext& ctx = GetContext(unit->pos);
+					LevelContext& ctx = L.GetContext(unit->pos);
 					ctx.units->push_back(unit);
 					unit->in_building = ctx.building_id;
 					if(unit->summoner != nullptr)
@@ -6847,7 +6744,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken CHANGE_ARENA_STATE.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: CHANGE_ARENA_STATE, missing unit %d.", netid);
 					else
@@ -6890,7 +6787,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken SHOUT.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: SHOUT, missing unit %d.", netid);
 					else if(unit->data->sounds->sound[SOUND_SEE_ENEMY])
@@ -6949,7 +6846,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken USE_DOOR.");
 				else
 				{
-					Door* door = FindDoor(netid);
+					Door* door = L.FindDoor(netid);
 					if(!door)
 						StreamError("Update client: USE_DOOR, missing door %d.", netid);
 					else
@@ -7029,7 +6926,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken CHEST_OPEN.");
 				else
 				{
-					Chest* chest = FindChest(netid);
+					Chest* chest = L.FindChest(netid);
 					if(!chest)
 						StreamError("Update client: CHEST_OPEN, missing chest %d.", netid);
 					else
@@ -7049,7 +6946,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken CHEST_CLOSE.");
 				else
 				{
-					Chest* chest = FindChest(netid);
+					Chest* chest = L.FindChest(netid);
 					if(!chest)
 						StreamError("Update client: CHEST_CLOSE, missing chest %d.", netid);
 					else
@@ -7095,7 +6992,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 
 				sound_mgr->PlaySound3d(spell.sound_hit, explo->pos, spell.sound_hit_dist.x, spell.sound_hit_dist.y);
 
-				GetContext(pos).explos->push_back(explo);
+				L.GetContext(pos).explos->push_back(explo);
 			}
 			break;
 		// remove trap
@@ -7118,7 +7015,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken TRIGGER_TRAP.");
 				else
 				{
-					Trap* trap = FindTrap(netid);
+					Trap* trap = L.FindTrap(netid);
 					if(trap)
 						trap->trigger = true;
 					else
@@ -7281,7 +7178,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken CHANGE_AI_MODE.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: CHANGE_AI_MODE, missing unit %d.", netid);
 					else
@@ -7299,7 +7196,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken CHANGE_UNIT_BASE.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					UnitData* ud = UnitData::TryGet(unit_id);
 					if(unit && ud)
 						unit->data = ud;
@@ -7321,7 +7218,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken CAST_SPELL.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: CAST_SPELL, missing unit %d.", netid);
 					else
@@ -7373,13 +7270,13 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 				Unit* unit = nullptr;
 				if(netid != -1)
 				{
-					unit = FindUnit(netid);
+					unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: CREATE_SPELL_BALL, missing unit %d.", netid);
 				}
 
 				Spell& spell = *spell_ptr;
-				LevelContext& ctx = GetContext(pos);
+				LevelContext& ctx = L.GetContext(pos);
 
 				Bullet& b = Add1(ctx.bullets);
 
@@ -7458,12 +7355,12 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken CREATE_DRAIN.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: CREATE_DRAIN, missing unit %d.", netid);
 					else
 					{
-						LevelContext& ctx = GetContext(*unit);
+						LevelContext& ctx = L.GetContext(*unit);
 						if(ctx.pes->empty())
 							StreamError("Update client: CREATE_DRAIN, missing blood.");
 						else
@@ -7499,7 +7396,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					e->netid = netid;
 					e->AddLine(p1, p2);
 					e->valid = true;
-					GetContext(p1).electros->push_back(e);
+					L.GetContext(p1).electros->push_back(e);
 				}
 			}
 			break;
@@ -7514,7 +7411,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken UPDATE_ELECTRO.");
 				else
 				{
-					Electro* e = FindElectro(netid);
+					Electro* e = L.FindElectro(netid);
 					if(!e)
 						StreamError("Update client: UPDATE_ELECTRO, missing electro %d.", netid);
 					else
@@ -7564,7 +7461,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						pe->mode = 1;
 						pe->Init();
 
-						GetContext(pos).pes->push_back(pe);
+						L.GetContext(pos).pes->push_back(pe);
 					}
 				}
 			}
@@ -7601,7 +7498,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					pe->mode = 1;
 					pe->Init();
 
-					GetContext(pos).pes->push_back(pe);
+					L.GetContext(pos).pes->push_back(pe);
 				}
 			}
 			break;
@@ -7637,7 +7534,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					pe->mode = 1;
 					pe->Init();
 
-					GetContext(pos).pes->push_back(pe);
+					L.GetContext(pos).pes->push_back(pe);
 				}
 			}
 			break;
@@ -7698,7 +7595,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 						f >> netid;
 						f >> days;
 
-						Unit* unit = FindUnit(netid);
+						Unit* unit = L.FindUnit(netid);
 						if(!unit || !unit->IsPlayer())
 						{
 							StreamError("Update client: UPDATE_FREE_DAYS, missing unit %d or is not a player (0x%p).", netid, unit);
@@ -7731,7 +7628,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken HERO_LEAVE.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: HERO_LEAVE, missing unit %d.", netid);
 					else
@@ -7800,7 +7697,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken REMOVE_USED_ITEM.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: REMOVE_USED_ITEM, missing unit %d.", netid);
 					else
@@ -7823,7 +7720,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken USABLE_SOUND.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: USABLE_SOUND, missing unit %d.", netid);
 					else if(!unit->usable)
@@ -7846,7 +7743,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken BREAK_ACTION.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(unit)
 						BreakUnitAction(*unit);
 					else
@@ -7863,7 +7760,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken PLAYER_ACTION.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(unit && unit->player)
 					{
 						if(unit->player != pc)
@@ -7885,7 +7782,7 @@ bool Game::ProcessControlMessageClient(BitStreamReader& f, bool& exit_from_serve
 					StreamError("Update client: Broken STUN.");
 				else
 				{
-					Unit* unit = FindUnit(netid);
+					Unit* unit = L.FindUnit(netid);
 					if(!unit)
 						StreamError("Update client: STUN, missing unit %d.", netid);
 					else
@@ -8051,7 +7948,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 					else
 					{
 						// start dialog
-						Unit* unit = FindUnit(netid);
+						Unit* unit = L.FindUnit(netid);
 						if(!unit)
 							StreamError("Update single client: START_DIALOG, missing unit %d.", netid);
 						else
@@ -8124,7 +8021,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						break;
 					}
 
-					Unit* trader = FindUnit(netid);
+					Unit* trader = L.FindUnit(netid);
 					if(!trader)
 					{
 						StreamError("Update single client: START_TRADE, missing unit %d.", netid);
@@ -8179,7 +8076,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						StreamError("Update single client: ADD_ITEMS_TRADER, invalid count %d or team count %d.", count, team_count);
 					else
 					{
-						Unit* unit = FindUnit(netid);
+						Unit* unit = L.FindUnit(netid);
 						if(!unit)
 							StreamError("Update single client: ADD_ITEMS_TRADER, missing unit %d.", netid);
 						else if(!pc->IsTradingWith(unit))
@@ -8206,7 +8103,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						StreamError("Update single client: ADD_ITEMS_CHEST, invalid count %d or team count %d.", count, team_count);
 					else
 					{
-						Chest* chest = FindChest(netid);
+						Chest* chest = L.FindChest(netid);
 						if(!chest)
 							StreamError("Update single client: ADD_ITEMS_CHEST, missing chest %d.", netid);
 						else if(pc->action != PlayerController::Action_LootChest || pc->action_chest != chest)
@@ -8246,7 +8143,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						StreamError("Update single client: REMOVE_ITEMS_TRADE, invalid count %d.", count);
 					else
 					{
-						Unit* unit = FindUnit(netid);
+						Unit* unit = L.FindUnit(netid);
 						if(!unit)
 							StreamError("Update single client: REMOVE_ITEMS_TRADER, missing unit %d.", netid);
 						else if(!pc->IsTradingWith(unit))
@@ -8433,7 +8330,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 							pc->unit->look_target = nullptr;
 						else
 						{
-							Unit* unit = FindUnit(netid);
+							Unit* unit = L.FindUnit(netid);
 							if(!unit)
 								StreamError("Update single client: LOOK_AT, missing unit %d.", netid);
 							else
@@ -8545,7 +8442,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						StreamError("Update single client: UPDATE_TRADER_GOLD, invalid count %d.", count);
 					else
 					{
-						Unit* unit = FindUnit(netid);
+						Unit* unit = L.FindUnit(netid);
 						if(!unit)
 							StreamError("Update single client: UPDATE_TRADER_GOLD, missing unit %d.", netid);
 						else if(!pc->IsTradingWith(unit))
@@ -8564,7 +8461,7 @@ bool Game::ProcessControlMessageClientForMe(BitStreamReader& f)
 						StreamError("Update single client: Broken UPDATE_TRADER_INVENTORY.");
 					else
 					{
-						Unit* unit = FindUnit(netid);
+						Unit* unit = L.FindUnit(netid);
 						bool ok = true;
 						if(!unit)
 						{
@@ -9297,33 +9194,6 @@ const Item* Game::FindQuestItemClient(cstring id, int refid) const
 }
 
 //=================================================================================================
-Usable* Game::FindUsable(int netid)
-{
-	for(vector<Usable*>::iterator it = L.local_ctx.usables->begin(), end = L.local_ctx.usables->end(); it != end; ++it)
-	{
-		if((*it)->netid == netid)
-			return *it;
-	}
-
-	if(L.city_ctx)
-	{
-		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
-		{
-			if(*it)
-			{
-				for(vector<Usable*>::iterator it2 = (*it)->usables.begin(), end2 = (*it)->usables.end(); it2 != end2; ++it2)
-				{
-					if((*it2)->netid == netid)
-						return *it2;
-				}
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
 // -2 read error, -1 not found, 0 empty, 1 found
 int Game::ReadItemAndFind(BitStreamReader& f, const Item*& item) const
 {
@@ -9365,63 +9235,6 @@ int Game::ReadItemAndFind(BitStreamReader& f, const Item*& item) const
 }
 
 //=================================================================================================
-Door* Game::FindDoor(int netid)
-{
-	if(L.local_ctx.doors)
-	{
-		for(vector<Door*>::iterator it = L.local_ctx.doors->begin(), end = L.local_ctx.doors->end(); it != end; ++it)
-		{
-			if((*it)->netid == netid)
-				return *it;
-		}
-	}
-
-	if(L.city_ctx)
-	{
-		for(vector<InsideBuilding*>::iterator it2 = L.city_ctx->inside_buildings.begin(), end2 = L.city_ctx->inside_buildings.end(); it2 != end2; ++it2)
-		{
-			for(vector<Door*>::iterator it = (*it2)->doors.begin(), end = (*it2)->doors.end(); it != end; ++it)
-			{
-				if((*it)->netid == netid)
-					return *it;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
-Trap* Game::FindTrap(int netid)
-{
-	if(L.local_ctx.traps)
-	{
-		for(vector<Trap*>::iterator it = L.local_ctx.traps->begin(), end = L.local_ctx.traps->end(); it != end; ++it)
-		{
-			if((*it)->netid == netid)
-				return *it;
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
-Chest* Game::FindChest(int netid)
-{
-	if(L.local_ctx.chests)
-	{
-		for(vector<Chest*>::iterator it = L.local_ctx.chests->begin(), end = L.local_ctx.chests->end(); it != end; ++it)
-		{
-			if((*it)->netid == netid)
-				return *it;
-		}
-	}
-
-	return nullptr;
-}
-
-//=================================================================================================
 bool Game::RemoveTrap(int netid)
 {
 	if(L.local_ctx.traps)
@@ -9438,30 +9251,6 @@ bool Game::RemoveTrap(int netid)
 	}
 
 	return false;
-}
-
-//=================================================================================================
-Electro* Game::FindElectro(int netid)
-{
-	for(vector<Electro*>::iterator it = L.local_ctx.electros->begin(), end = L.local_ctx.electros->end(); it != end; ++it)
-	{
-		if((*it)->netid == netid)
-			return *it;
-	}
-
-	if(L.city_ctx)
-	{
-		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
-		{
-			for(vector<Electro*>::iterator it2 = (*it)->ctx.electros->begin(), end2 = (*it)->ctx.electros->end(); it2 != end2; ++it2)
-			{
-				if((*it2)->netid == netid)
-					return *it2;
-			}
-		}
-	}
-
-	return nullptr;
 }
 
 //=================================================================================================
@@ -9879,7 +9668,7 @@ bool Game::CheckMoveNet(Unit& unit, const Vec3& pos)
 	ignore.ignored_units = (const Unit**)ignored;
 	ignore.ignored_objects = ignored_objects;
 
-	GatherCollisionObjects(GetContext(unit), global_col, pos, radius, &ignore);
+	GatherCollisionObjects(L.GetContext(unit), global_col, pos, radius, &ignore);
 
 	if(global_col.empty())
 		return true;

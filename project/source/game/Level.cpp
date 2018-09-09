@@ -3,6 +3,9 @@
 #include "Level.h"
 #include "City.h"
 #include "InsideBuilding.h"
+#include "Door.h"
+#include "Trap.h"
+#include "Chest.h"
 #include "Game.h"
 
 Level L;
@@ -22,15 +25,15 @@ void Level::ProcessUnitWarps()
 	{
 		if(warp.where == WARP_OUTSIDE)
 		{
-			if(L.city_ctx && warp.unit->in_building != -1)
+			if(city_ctx && warp.unit->in_building != -1)
 			{
 				// exit from building
-				InsideBuilding& building = *L.city_ctx->inside_buildings[warp.unit->in_building];
+				InsideBuilding& building = *city_ctx->inside_buildings[warp.unit->in_building];
 				RemoveElement(building.units, warp.unit);
 				warp.unit->in_building = -1;
 				warp.unit->rot = building.outside_rot;
 				game.WarpUnit(*warp.unit, building.outside_spawn);
-				L.local_ctx.units->push_back(warp.unit);
+				local_ctx.units->push_back(warp.unit);
 			}
 			else
 			{
@@ -44,7 +47,7 @@ void Level::ProcessUnitWarps()
 		{
 			// warp to arena
 			InsideBuilding& building = *game.GetArena();
-			RemoveElement(game.GetContext(*warp.unit).units, warp.unit);
+			RemoveElement(GetContext(*warp.unit).units, warp.unit);
 			warp.unit->in_building = building.ctx.building_id;
 			Vec3 pos;
 			if(!game.WarpToArea(building.ctx, (warp.unit->in_arena == 0 ? building.arena1 : building.arena2), warp.unit->GetUnitRadius(), pos, 20))
@@ -53,7 +56,7 @@ void Level::ProcessUnitWarps()
 				warp.unit->in_building = -1;
 				warp.unit->rot = building.outside_rot;
 				game.WarpUnit(*warp.unit, building.outside_spawn);
-				L.local_ctx.units->push_back(warp.unit);
+				local_ctx.units->push_back(warp.unit);
 				RemoveElement(game.at_arena, warp.unit);
 			}
 			else
@@ -67,11 +70,11 @@ void Level::ProcessUnitWarps()
 		else
 		{
 			// enter building
-			InsideBuilding& building = *L.city_ctx->inside_buildings[warp.where];
+			InsideBuilding& building = *city_ctx->inside_buildings[warp.where];
 			if(warp.unit->in_building == -1)
-				RemoveElement(L.local_ctx.units, warp.unit);
+				RemoveElement(local_ctx.units, warp.unit);
 			else
-				RemoveElement(L.city_ctx->inside_buildings[warp.unit->in_building]->units, warp.unit);
+				RemoveElement(city_ctx->inside_buildings[warp.unit->in_building]->units, warp.unit);
 			warp.unit->in_building = warp.where;
 			warp.unit->rot = PI;
 			game.WarpUnit(*warp.unit, building.inside_spawn);
@@ -149,7 +152,7 @@ void Level::ProcessRemoveUnits(bool clear)
 	{
 		for(Unit* unit : to_remove)
 		{
-			RemoveElement(game.GetContext(*unit).units, unit);
+			RemoveElement(GetContext(*unit).units, unit);
 			delete unit;
 		}
 	}
@@ -167,7 +170,7 @@ void Level::SpawnOutsideBariers()
 
 	// top
 	{
-		CollisionObject& cobj = Add1(L.local_ctx.colliders);
+		CollisionObject& cobj = Add1(local_ctx.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(size2, border2);
 		cobj.w = size2;
@@ -185,7 +188,7 @@ void Level::SpawnOutsideBariers()
 
 	// bottom
 	{
-		CollisionObject& cobj = Add1(L.local_ctx.colliders);
+		CollisionObject& cobj = Add1(local_ctx.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(size2, size - border2);
 		cobj.w = size2;
@@ -203,7 +206,7 @@ void Level::SpawnOutsideBariers()
 
 	// left
 	{
-		CollisionObject& cobj = Add1(L.local_ctx.colliders);
+		CollisionObject& cobj = Add1(local_ctx.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(border2, size2);
 		cobj.w = border2;
@@ -221,7 +224,7 @@ void Level::SpawnOutsideBariers()
 
 	// right
 	{
-		CollisionObject& cobj = Add1(L.local_ctx.colliders);
+		CollisionObject& cobj = Add1(local_ctx.colliders);
 		cobj.type = CollisionObject::RECTANGLE;
 		cobj.pt = Vec2(size - border2, size2);
 		cobj.w = border2;
@@ -236,4 +239,154 @@ void Level::SpawnOutsideBariers()
 		obj->setWorldTransform(tr);
 		game.phy_world->addCollisionObject(obj, CG_BARRIER);
 	}
+}
+
+LevelContext& Level::GetContext(Unit& unit)
+{
+	if(unit.in_building == -1)
+		return local_ctx;
+	else
+	{
+		assert(city_ctx);
+		return city_ctx->inside_buildings[unit.in_building]->ctx;
+	}
+}
+
+LevelContext& Level::GetContext(const Vec3& pos)
+{
+	if(!city_ctx)
+		return local_ctx;
+	else
+	{
+		Int2 offset(int((pos.x - 256.f) / 256.f), int((pos.z - 256.f) / 256.f));
+		if(offset.x % 2 == 1)
+			++offset.x;
+		if(offset.y % 2 == 1)
+			++offset.y;
+		offset /= 2;
+		for(vector<InsideBuilding*>::iterator it = city_ctx->inside_buildings.begin(), end = city_ctx->inside_buildings.end(); it != end; ++it)
+		{
+			if((*it)->level_shift == offset)
+				return (*it)->ctx;
+		}
+		return local_ctx;
+	}
+}
+
+LevelContext& Level::GetContextFromInBuilding(int in_building)
+{
+	if(in_building == -1)
+		return local_ctx;
+	assert(city_ctx);
+	return city_ctx->inside_buildings[in_building]->ctx;
+}
+
+//=================================================================================================
+Unit* Level::FindUnit(int netid)
+{
+	if(netid == -1)
+		return nullptr;
+
+	for(LevelContext& ctx : ForEachContext())
+	{
+		for(Unit* unit : *ctx.units)
+		{
+			if(unit->netid == netid)
+				return unit;
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+Unit* Level::FindUnit(delegate<bool(Unit*)> pred)
+{
+	for(LevelContext& ctx : ForEachContext())
+	{
+		for(Unit* unit : *ctx.units)
+		{
+			if(pred(unit))
+				return unit;
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+Usable* Level::FindUsable(int netid)
+{
+	for(LevelContext& ctx : ForEachContext())
+	{
+		for(Usable* usable : *ctx.usables)
+		{
+			if(usable->netid == netid)
+				return usable;
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+Door* Level::FindDoor(int netid)
+{
+	for(LevelContext& ctx : ForEachContext())
+	{
+		if(!ctx.doors)
+			continue;
+		for(Door* door : *ctx.doors)
+		{
+			if(door->netid == netid)
+				return door;
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+Trap* Level::FindTrap(int netid)
+{
+	if(local_ctx.traps)
+	{
+		for(vector<Trap*>::iterator it = local_ctx.traps->begin(), end = local_ctx.traps->end(); it != end; ++it)
+		{
+			if((*it)->netid == netid)
+				return *it;
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+Chest* Level::FindChest(int netid)
+{
+	if(local_ctx.chests)
+	{
+		for(vector<Chest*>::iterator it = local_ctx.chests->begin(), end = local_ctx.chests->end(); it != end; ++it)
+		{
+			if((*it)->netid == netid)
+				return *it;
+		}
+	}
+
+	return nullptr;
+}
+
+//=================================================================================================
+Electro* Level::FindElectro(int netid)
+{
+	for(LevelContext& ctx : ForEachContext())
+	{
+		for(Electro* electro : *ctx.electros)
+		{
+			if(electro->netid == netid)
+				return electro;
+		}
+	}
+
+	return nullptr;
 }

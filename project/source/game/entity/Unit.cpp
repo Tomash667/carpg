@@ -11,6 +11,7 @@
 #include "Content.h"
 #include "SoundManager.h"
 #include "GameFile.h"
+#include "Level.h"
 
 const float Unit::AUTO_TALK_WAIT = 0.333f;
 const float Unit::STAMINA_BOW_ATTACK = 100.f;
@@ -217,7 +218,7 @@ bool Unit::DropItem(int index)
 			items.erase(items.begin() + index);
 		}
 		if(!game.CheckMoonStone(item, *this))
-			game.AddGroundItem(game.GetContext(*this), item);
+			game.AddGroundItem(L.GetContext(*this), item);
 
 		if(Net::IsServer())
 		{
@@ -270,7 +271,7 @@ void Unit::DropItem(ITEM_SLOT slot)
 		item->pos.z -= cos(rot)*0.25f;
 		item->rot = Random(MAX_ANGLE);
 		item2 = nullptr;
-		game.AddGroundItem(game.GetContext(*this), item);
+		game.AddGroundItem(L.GetContext(*this), item);
 
 		if(Net::IsOnline())
 		{
@@ -330,7 +331,7 @@ bool Unit::DropItems(int index, uint count)
 			no_more = true;
 			items.erase(items.begin() + index);
 		}
-		game.AddGroundItem(game.GetContext(*this), item);
+		game.AddGroundItem(L.GetContext(*this), item);
 
 		if(Net::IsServer())
 		{
@@ -850,7 +851,7 @@ void Unit::UpdateEffects(float dt)
 
 	// update poison damage
 	if(poison_dmg != 0.f)
-		game.GiveDmg(game.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, Game::DMG_NO_BLOOD);
+		game.GiveDmg(L.GetContext(*this), nullptr, poison_dmg * dt, *this, nullptr, Game::DMG_NO_BLOOD);
 	if(IsPlayer())
 	{
 		if(Net::IsOnline() && !player->is_local && player->last_dmg_poison != poison_dmg)

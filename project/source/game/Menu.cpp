@@ -1218,8 +1218,8 @@ void Game::UpdateClientTransfer(float dt)
 						else
 							LoadingStart(4);
 						W.ChangeLevel(loc, encounter);
-						dungeon_level = level;
-						Info("NM_TRANSFER: Level change to %s (id:%d, level:%d).", L.location->name.c_str(), L.location_index, dungeon_level);
+						L.dungeon_level = level;
+						Info("NM_TRANSFER: Level change to %s (id:%d, level:%d).", L.location->name.c_str(), L.location_index, L.dungeon_level);
 						info_box->Show(txGeneratingLocation);
 					}
 					else
@@ -1774,7 +1774,7 @@ void Game::UpdateServerTransfer(float dt)
 				packet_data.resize(4);
 				packet_data[0] = ID_CHANGE_LEVEL;
 				packet_data[1] = (byte)W.GetCurrentLocationIndex();
-				packet_data[2] = dungeon_level;
+				packet_data[2] = L.dungeon_level;
 				packet_data[3] = (W.GetState() == World::State::INSIDE_ENCOUNTER ? 1 : 0);
 				int ack = peer->Send((cstring)&packet_data[0], 4, HIGH_PRIORITY, RELIABLE_WITH_ACK_RECEIPT, 0, UNASSIGNED_SYSTEM_ADDRESS, true);
 				StreamWrite(packet_data, Stream_TransferServer, UNASSIGNED_SYSTEM_ADDRESS);
@@ -3350,7 +3350,7 @@ void Game::DeleteOldPlayers()
 		if(!info.loaded && info.u)
 		{
 			if(in_level)
-				RemoveElement(GetContext(*info.u).units, info.u);
+				RemoveElement(L.GetContext(*info.u).units, info.u);
 			if(info.u->cobj)
 			{
 				delete info.u->cobj->getCollisionShape();

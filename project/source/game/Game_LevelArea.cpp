@@ -81,7 +81,7 @@ LevelAreaContext* Game::ForLevel(int loc, int level)
 					for(int i = 0; i < multi->generated; ++i)
 					{
 						LevelAreaContext::Entry& e = lac->entries[i];
-						e.active = (active && dungeon_level == i);
+						e.active = (active && L.dungeon_level == i);
 						e.area = &multi->levels[i];
 						e.level = i;
 						e.loc = loc;
@@ -91,7 +91,7 @@ LevelAreaContext* Game::ForLevel(int loc, int level)
 				{
 					assert(level >= 0 && level < multi->generated);
 					LevelAreaContext::Entry& e = Add1(lac->entries);
-					e.active = (active && dungeon_level == level);
+					e.active = (active && L.dungeon_level == level);
 					e.area = &multi->levels[level];
 					e.level = level;
 					e.loc = loc;

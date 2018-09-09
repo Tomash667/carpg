@@ -206,7 +206,7 @@ void Game::BreakUnitAction(Unit& unit, BREAK_ACTION_MODE mode, bool notify, bool
 		{
 			unit.target_pos2 = unit.target_pos = unit.pos;
 			const Item* prev_used_item = unit.used_item;
-			Unit_StopUsingUsable(GetContext(unit), unit, mode != BREAK_ACTION_MODE::FALL && notify);
+			Unit_StopUsingUsable(L.GetContext(unit), unit, mode != BREAK_ACTION_MODE::FALL && notify);
 			if(prev_used_item && unit.slots[SLOT_WEAPON] == prev_used_item && !unit.HaveShield())
 			{
 				unit.weapon_state = WS_TAKEN;
@@ -290,7 +290,7 @@ void Game::Draw()
 {
 	PROFILER_BLOCK("Draw");
 
-	LevelContext& ctx = GetContext(*pc->unit);
+	LevelContext& ctx = L.GetContext(*pc->unit);
 	bool outside;
 	if(ctx.type == LevelContext::Outside)
 		outside = true;
@@ -518,7 +518,7 @@ SURFACE Game::DrawItemImage(const Item& item, TEX tex, SURFACE surface, float ro
 void Game::SetupCamera(float dt)
 {
 	Unit* target = pc->unit;
-	LevelContext& ctx = GetContext(*target);
+	LevelContext& ctx = L.GetContext(*target);
 
 	float rotX;
 	if(cam.free_rot)
@@ -3161,7 +3161,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 		if(Net::IsLocal())
 		{
 			// despawn old
-			auto existing_unit = FindUnit([=](Unit* u) { return u->summoner == p->unit; });
+			Unit* existing_unit = L.FindUnit([=](Unit* u) { return u->summoner == p->unit; });
 			if(existing_unit)
 			{
 				RemoveTeamMember(existing_unit);
@@ -3177,7 +3177,7 @@ void Game::UseAction(PlayerController* p, bool from_server, const Vec3* pos)
 				assert(pos);
 				spawn_pos = *pos;
 			}
-			auto unit = SpawnUnitNearLocation(GetContext(*p->unit), spawn_pos, *UnitData::Get("white_wolf_sum"), nullptr, p->unit->level);
+			auto unit = SpawnUnitNearLocation(L.GetContext(*p->unit), spawn_pos, *UnitData::Get("white_wolf_sum"), nullptr, p->unit->level);
 			if(unit)
 			{
 				unit->summoner = p->unit;
@@ -3241,7 +3241,7 @@ void Game::SpawnUnitEffect(Unit& unit)
 	pe->op_alpha = POP_LINEAR_SHRINK;
 	pe->mode = 0;
 	pe->Init();
-	GetContext(unit).pes->push_back(pe);
+	L.GetContext(unit).pes->push_back(pe);
 }
 
 //=================================================================================================
@@ -3313,7 +3313,7 @@ int Game::CheckMove(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me, bool
 	IgnoreObjects ignore = { 0 };
 	Unit* ignored[] = { _me, nullptr };
 	ignore.ignored_units = (const Unit**)ignored;
-	GatherCollisionObjects(GetContext(*_me), global_col, gather_pos, gather_radius, &ignore);
+	GatherCollisionObjects(L.GetContext(*_me), global_col, gather_pos, gather_radius, &ignore);
 
 	if(global_col.empty())
 	{
@@ -3373,7 +3373,7 @@ int Game::CheckMovePhase(Vec3& _pos, const Vec3& _dir, float _radius, Unit* _me,
 	Unit* ignored[] = { _me, nullptr };
 	ignore.ignored_units = (const Unit**)ignored;
 	ignore.ignore_objects = true;
-	GatherCollisionObjects(GetContext(*_me), global_col, gather_pos, gather_radius, &ignore);
+	GatherCollisionObjects(L.GetContext(*_me), global_col, gather_pos, gather_radius, &ignore);
 
 	if(global_col.empty())
 	{
@@ -5669,7 +5669,7 @@ bool Game::ExecuteGameDialogSpecialIf(DialogContext& ctx, cstring msg)
 				MultiInsideLocation* multi = (MultiInsideLocation*)inside;
 				if(multi->IsLevelClear())
 				{
-					if(dungeon_level == 0)
+					if(L.dungeon_level == 0)
 					{
 						if(!multi->from_portal)
 							return true;
@@ -6565,7 +6565,7 @@ Unit* Game::CreateUnit(UnitData& base, int level, Human* human_data, Unit* test_
 
 		// boss music
 		if(IS_SET(u->data->flags2, F2_BOSS))
-			W.AddBossLevel(Int2(L.location_index, dungeon_level));
+			W.AddBossLevel(Int2(L.location_index, L.dungeon_level));
 
 		// physics
 		if(create_physics)
@@ -6847,7 +6847,7 @@ bool Game::CanSee(Unit& u1, Unit& u2)
 	if(tile1 == tile2)
 		return true;
 
-	LevelContext& ctx = GetContext(u1);
+	LevelContext& ctx = L.GetContext(u1);
 
 	if(ctx.type == LevelContext::Outside)
 	{
@@ -10119,7 +10119,7 @@ void Game::ChangeLevel(int where)
 
 	if(Net::IsOnline() && players > 1)
 	{
-		int level = dungeon_level;
+		int level = L.dungeon_level;
 		if(where == -1)
 			--level;
 		else
@@ -10152,7 +10152,7 @@ void Game::ChangeLevel(int where)
 	if(where == -1)
 	{
 		// poziom w górê
-		if(dungeon_level == 0)
+		if(L.dungeon_level == 0)
 		{
 			if(in_tutorial)
 			{
@@ -10173,10 +10173,10 @@ void Game::ChangeLevel(int where)
 
 			MultiInsideLocation* inside = (MultiInsideLocation*)L.location;
 			LeaveLevel();
-			--dungeon_level;
-			inside->SetActiveLevel(dungeon_level);
+			--L.dungeon_level;
+			inside->SetActiveLevel(L.dungeon_level);
 			LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
-			loc_gen->Init(false, false, dungeon_level);
+			loc_gen->Init(false, false, L.dungeon_level);
 			L.enter_from = ENTER_FROM_DOWN_LEVEL;
 			EnterLevel(loc_gen);
 		}
@@ -10186,7 +10186,7 @@ void Game::ChangeLevel(int where)
 		MultiInsideLocation* inside = (MultiInsideLocation*)L.location;
 
 		int steps = 3; // txLevelDown, txGeneratingMinimap, txLoadingComplete
-		if(dungeon_level + 1 >= inside->generated)
+		if(L.dungeon_level + 1 >= inside->generated)
 			steps += 3; // txGeneratingMap, txGeneratingObjects, txGeneratingUnits
 		else
 			++steps; // txRegeneratingLevel
@@ -10196,15 +10196,15 @@ void Game::ChangeLevel(int where)
 
 		// poziom w dó³
 		LeaveLevel();
-		++dungeon_level;
+		++L.dungeon_level;
 
-		inside->SetActiveLevel(dungeon_level);
+		inside->SetActiveLevel(L.dungeon_level);
 
 		LocationGenerator* loc_gen = loc_gen_factory->Get(inside);
-		loc_gen->Init(false, false, dungeon_level);
+		loc_gen->Init(false, false, L.dungeon_level);
 
 		// czy to pierwsza wizyta?
-		if(dungeon_level >= inside->generated)
+		if(L.dungeon_level >= inside->generated)
 		{
 			if(next_seed != 0)
 			{
@@ -10214,11 +10214,11 @@ void Game::ChangeLevel(int where)
 			else if(force_seed != 0 && force_seed_all)
 				Srand(force_seed);
 
-			inside->generated = dungeon_level + 1;
-			inside->infos[dungeon_level].seed = RandVal();
+			inside->generated = L.dungeon_level + 1;
+			inside->infos[L.dungeon_level].seed = RandVal();
 
 			Info("Generating location '%s', seed %u.", L.location->name.c_str(), RandVal());
-			Info("Generating dungeon, level %d, target %d.", dungeon_level + 1, inside->target);
+			Info("Generating dungeon, level %d, target %d.", L.dungeon_level + 1, inside->target);
 
 			LoadingStep(txGeneratingMap);
 
@@ -10293,7 +10293,7 @@ void Game::AddPlayerTeam(const Vec3& pos, float rot, bool reenter, bool hide_wea
 		{
 			if(reenter)
 			{
-				RemoveElement(GetContext(u).units, &u);
+				RemoveElement(L.GetContext(u).units, &u);
 				L.local_ctx.units->push_back(&u);
 			}
 			u.in_building = -1;
@@ -12473,7 +12473,7 @@ void Game::ClearGameVarsOnNewGame()
 	cam.real_rot = Vec2(0, 4.2875104f);
 	cam.dist = 3.5f;
 	game_speed = 1.f;
-	dungeon_level = 0;
+	L.dungeon_level = 0;
 	QM.Reset();
 	W.OnNewGame();
 	GameStats::Get().Reset();
@@ -12711,7 +12711,7 @@ cstring Game::GetCurrentLocationText()
 		{
 			InsideLocation* inside = (InsideLocation*)L.location;
 			if(inside->IsMultilevel())
-				return Format(txLocationText, L.location->name.c_str(), dungeon_level + 1);
+				return Format(txLocationText, L.location->name.c_str(), L.dungeon_level + 1);
 			else
 				return L.location->name.c_str();
 		}
@@ -12930,7 +12930,7 @@ void Game::SetDungeonParamsToMeshes()
 void Game::EnterLevel(LocationGenerator* loc_gen)
 {
 	if(!loc_gen->first)
-		Info("Entering location '%s' level %d.", L.location->name.c_str(), dungeon_level + 1);
+		Info("Entering location '%s' level %d.", L.location->name.c_str(), L.dungeon_level + 1);
 
 	show_mp_panel = true;
 	Inventory::lock = nullptr;
@@ -13193,7 +13193,7 @@ void Game::WarpUnit(Unit& unit, const Vec3& pos)
 	BreakUnitAction(unit, BREAK_ACTION_MODE::INSTANT, false, true);
 
 	global_col.clear();
-	LevelContext& ctx = GetContext(unit);
+	LevelContext& ctx = L.GetContext(unit);
 	IgnoreObjects ignore = { 0 };
 	const Unit* ignore_units[2] = { &unit, nullptr };
 	ignore.ignored_units = ignore_units;
@@ -13351,38 +13351,6 @@ void Game::UpdateContext(LevelContext& ctx, float dt)
 	}
 }
 
-LevelContext& Game::GetContext(Unit& unit)
-{
-	if(unit.in_building == -1)
-		return L.local_ctx;
-	else
-	{
-		assert(L.city_ctx);
-		return L.city_ctx->inside_buildings[unit.in_building]->ctx;
-	}
-}
-
-LevelContext& Game::GetContext(const Vec3& pos)
-{
-	if(!L.city_ctx)
-		return L.local_ctx;
-	else
-	{
-		Int2 offset(int((pos.x - 256.f) / 256.f), int((pos.z - 256.f) / 256.f));
-		if(offset.x % 2 == 1)
-			++offset.x;
-		if(offset.y % 2 == 1)
-			++offset.y;
-		offset /= 2;
-		for(vector<InsideBuilding*>::iterator it = L.city_ctx->inside_buildings.begin(), end = L.city_ctx->inside_buildings.end(); it != end; ++it)
-		{
-			if((*it)->level_shift == offset)
-				return (*it)->ctx;
-		}
-		return L.local_ctx;
-	}
-}
-
 int Game::GetDungeonLevel()
 {
 	if(L.location->outside)
@@ -13391,7 +13359,7 @@ int Game::GetDungeonLevel()
 	{
 		InsideLocation* inside = (InsideLocation*)L.location;
 		if(inside->IsMultilevel())
-			return (int)Lerp(max(3.f, float(inside->st) / 2), float(inside->st), float(dungeon_level) / (((MultiInsideLocation*)inside)->levels.size() - 1));
+			return (int)Lerp(max(3.f, float(inside->st) / 2), float(inside->st), float(L.dungeon_level) / (((MultiInsideLocation*)inside)->levels.size() - 1));
 		else
 			return inside->st;
 	}
@@ -13520,7 +13488,7 @@ void Game::LoadResources(cstring text, bool worldmap)
 
 	// spawn blood for units that are dead and their mesh just loaded
 	for(Unit* unit : blood_to_spawn)
-		CreateBlood(GetContext(*unit), *unit, true);
+		CreateBlood(L.GetContext(*unit), *unit, true);
 	blood_to_spawn.clear();
 
 	// finished
@@ -13542,7 +13510,7 @@ bool Game::RequireLoadingResources(Location* loc, bool* to_set)
 	else
 	{
 		MultiInsideLocation* multi = (MultiInsideLocation*)loc;
-		auto& info = multi->infos[dungeon_level];
+		auto& info = multi->infos[L.dungeon_level];
 		result = info.loaded_resources;
 		if(to_set)
 			info.loaded_resources = *to_set;
@@ -14128,7 +14096,7 @@ void Game::DeleteUnit(Unit* unit)
 
 	if(game_state != GS_WORLDMAP)
 	{
-		RemoveElement(GetContext(*unit).units, unit);
+		RemoveElement(L.GetContext(*unit).units, unit);
 		for(vector<UnitView>::iterator it = unit_views.begin(), end = unit_views.end(); it != end; ++it)
 		{
 			if(it->unit == unit)
@@ -14741,7 +14709,7 @@ Vec3 Game::GetExitPos(Unit& u, bool force_border)
 	else
 	{
 		InsideLocation* inside = (InsideLocation*)L.location;
-		if(dungeon_level == 0 && inside->from_portal)
+		if(L.dungeon_level == 0 && inside->from_portal)
 			return inside->portal->pos;
 		Int2& pt = inside->GetLevelData().staircase_up;
 		return Vec3(2.f*pt.x + 1, 0, 2.f*pt.y + 1);
@@ -15337,7 +15305,7 @@ void Game::GenerateQuestUnits()
 		if(QM.quest_sawmill->days >= 30 && L.city_ctx)
 		{
 			QM.quest_sawmill->days = 29;
-			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
+			Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				QM.quest_sawmill->messenger = u;
@@ -15361,7 +15329,7 @@ void Game::GenerateQuestUnits()
 			QM.quest_mine->mine_state2 == Quest_Mine::State2::InExpand || // inform player about finished mine expanding
 			QM.quest_mine->mine_state2 == Quest_Mine::State2::Expanded)) // inform player about finding portal
 	{
-		Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+		Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
 			QM.quest_mine->messenger = u;
@@ -15392,7 +15360,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 {
 	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::Counting && QM.quest_goblins->days <= 0)
 	{
-		Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
+		Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_poslaniec"), &Team.leader->pos, -2, 2.f);
 		if(u)
 		{
 			if(Net::IsOnline() && !on_enter)
@@ -15406,7 +15374,7 @@ void Game::GenerateQuestUnits2(bool on_enter)
 
 	if(QM.quest_goblins->goblins_state == Quest_Goblins::State::NoblemanLeft && QM.quest_goblins->days <= 0)
 	{
-		Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
+		Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("q_gobliny_mag"), &Team.leader->pos, 5, 2.f);
 		if(u)
 		{
 			if(Net::IsOnline() && !on_enter)
@@ -15436,7 +15404,7 @@ void Game::UpdateQuests(int days)
 		if(QM.quest_sawmill->days >= 30 && L.city_ctx && game_state == GS_LEVEL)
 		{
 			QM.quest_sawmill->days = 29;
-			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
+			Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_tartak"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(Net::IsOnline())
@@ -15468,7 +15436,7 @@ void Game::UpdateQuests(int days)
 				// player invesetd in mine, inform him about finishing
 				if(L.city_ctx && game_state == GS_LEVEL)
 				{
-					Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+					Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 					if(u)
 					{
 						if(Net::IsOnline())
@@ -15500,7 +15468,7 @@ void Game::UpdateQuests(int days)
 		QM.quest_mine->days += days;
 		if(QM.quest_mine->days >= QM.quest_mine->days_required && L.city_ctx && game_state == GS_LEVEL)
 		{
-			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
+			Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("poslaniec_kopalnia"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(Net::IsOnline())
@@ -15598,7 +15566,7 @@ void Game::RemoveQuestUnit(UnitData* ud, bool on_leave)
 {
 	assert(ud);
 
-	auto unit = FindUnit([=](Unit* unit)
+	Unit* unit = L.FindUnit([=](Unit* unit)
 	{
 		return unit->data == ud && unit->IsAlive();
 	});
@@ -15786,7 +15754,7 @@ void Game::UpdateGame2(float dt)
 		if(QM.quest_bandits->timer <= 0.f)
 		{
 			// spawn agent
-			Unit* u = SpawnUnitNearLocation(GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("agent"), &Team.leader->pos, -2, 2.f);
+			Unit* u = SpawnUnitNearLocation(L.GetContext(*Team.leader), Team.leader->pos, *UnitData::Get("agent"), &Team.leader->pos, -2, 2.f);
 			if(u)
 			{
 				if(Net::IsOnline())
@@ -15833,7 +15801,7 @@ void Game::UpdateGame2(float dt)
 			}
 		}
 	}
-	else if(QM.quest_evil->evil_state == Quest_Evil::State::ClosingPortals && !L.location->outside && L.location->GetLastLevel() == dungeon_level)
+	else if(QM.quest_evil->evil_state == Quest_Evil::State::ClosingPortals && !L.location->outside && L.location->GetLastLevel() == L.dungeon_level)
 	{
 		int d = QM.quest_evil->GetLocId(L.location_index);
 		if(d != -1)
@@ -16819,7 +16787,7 @@ void Game::AddGameMsg3(PlayerController* player, GMS id)
 
 void Game::UpdatePlayerView()
 {
-	LevelContext& ctx = GetContext(*pc->unit);
+	LevelContext& ctx = L.GetContext(*pc->unit);
 	Unit& u = *pc->unit;
 
 	for(vector<Unit*>::iterator it = ctx.units->begin(), end = ctx.units->end(); it != end; ++it)
@@ -16987,14 +16955,6 @@ void Game::UpdateGameDialogClient()
 			dialog_context.skip_id = -1;
 		}
 	}
-}
-
-LevelContext& Game::GetContextFromInBuilding(int in_building)
-{
-	if(in_building == -1)
-		return L.local_ctx;
-	assert(L.city_ctx);
-	return L.city_ctx->inside_buildings[in_building]->ctx;
 }
 
 bool Game::FindQuestItem2(Unit* unit, cstring id, Quest** out_quest, int* i_index, bool not_active)
@@ -17456,12 +17416,14 @@ void Game::Train(Unit& unit, bool is_skill, int co, int mode)
 			ShowStatGain(is_skill, co, ile);
 		else
 		{
-			NetChangePlayer&c = AddChange(NetChangePlayer::GAIN_STAT, unit.player);
+			NetChangePlayer& c = Add1(unit.player->player_info->changes);
+			c.type = NetChangePlayer::GAIN_STAT;
 			c.id = (is_skill ? 1 : 0);
 			c.a = co;
 			c.ile = ile;
 
-			NetChangePlayer& c2 = AddChange(NetChangePlayer::STAT_CHANGED, unit.player);
+			NetChangePlayer& c2 = Add1(unit.player->player_info->changes);
+			c2.type = NetChangePlayer::STAT_CHANGED;
 			c2.id = int(is_skill ? ChangedStatType::SKILL : ChangedStatType::ATTRIBUTE);
 			c2.a = co;
 			c2.ile = value;
@@ -17834,7 +17796,7 @@ void Game::OnEnterLevel()
 			{
 				Quest_Evil::Loc& loc = quest_evil->loc[d];
 
-				if(dungeon_level == L.location->GetLastLevel())
+				if(L.dungeon_level == L.location->GetLastLevel())
 				{
 					if(loc.state < Quest_Evil::Loc::State::TalkedAfterEnterLevel)
 					{
@@ -17843,7 +17805,7 @@ void Game::OnEnterLevel()
 						loc.state = Quest_Evil::Loc::State::TalkedAfterEnterLevel;
 					}
 				}
-				else if(dungeon_level == 0 && loc.state == Quest_Evil::Loc::State::None)
+				else if(L.dungeon_level == 0 && loc.state == Quest_Evil::Loc::State::None)
 				{
 					talker = quest_evil->cleric;
 					text = txPortalClose;
@@ -17863,7 +17825,7 @@ void Game::OnEnterLevel()
 	Quest_Orcs2* quest_orcs2 = QM.quest_orcs2;
 	if(!talker && (quest_orcs2->orcs_state == Quest_Orcs2::State::GenerateOrcs || quest_orcs2->orcs_state == Quest_Orcs2::State::GeneratedOrcs) && L.location_index == quest_orcs2->target_loc)
 	{
-		if(dungeon_level == 0)
+		if(L.dungeon_level == 0)
 		{
 			if(quest_orcs2->talked < Quest_Orcs2::Talked::AboutBase)
 			{
@@ -17872,7 +17834,7 @@ void Game::OnEnterLevel()
 				text = txGorushDanger;
 			}
 		}
-		else if(dungeon_level == L.location->GetLastLevel())
+		else if(L.dungeon_level == L.location->GetLastLevel())
 		{
 			if(quest_orcs2->talked < Quest_Orcs2::Talked::AboutBoss)
 			{
@@ -17891,7 +17853,7 @@ void Game::OnEnterLevel()
 		{
 			if(quest_mages2->mages_state == Quest_Mages2::State::OldMageJoined)
 			{
-				if(dungeon_level == 0 && quest_mages2->talked == Quest_Mages2::Talked::No)
+				if(L.dungeon_level == 0 && quest_mages2->talked == Quest_Mages2::Talked::No)
 				{
 					quest_mages2->talked = Quest_Mages2::Talked::AboutHisTower;
 					text = txMageHere;
@@ -17899,7 +17861,7 @@ void Game::OnEnterLevel()
 			}
 			else
 			{
-				if(dungeon_level == 0)
+				if(L.dungeon_level == 0)
 				{
 					if(quest_mages2->talked < Quest_Mages2::Talked::AfterEnter)
 					{
@@ -17907,7 +17869,7 @@ void Game::OnEnterLevel()
 						text = Format(txMageEnter, quest_mages2->evil_mage_name.c_str());
 					}
 				}
-				else if(dungeon_level == L.location->GetLastLevel() && quest_mages2->talked < Quest_Mages2::Talked::BeforeBoss)
+				else if(L.dungeon_level == L.location->GetLastLevel() && quest_mages2->talked < Quest_Mages2::Talked::BeforeBoss)
 				{
 					quest_mages2->talked = Quest_Mages2::Talked::BeforeBoss;
 					text = txMageFinal;
@@ -17920,7 +17882,7 @@ void Game::OnEnterLevel()
 	}
 
 	// default talking about location
-	if(!talker && dungeon_level == 0 && (L.enter_from == ENTER_FROM_OUTSIDE || L.enter_from >= ENTER_FROM_PORTAL))
+	if(!talker && L.dungeon_level == 0 && (L.enter_from == ENTER_FROM_OUTSIDE || L.enter_from >= ENTER_FROM_PORTAL))
 	{
 		TeamInfo info;
 		Team.GetTeamInfo(info);
@@ -18389,7 +18351,7 @@ void Game::DropGold(int ile)
 		item->pos.x -= sin(pc->unit->rot)*0.25f;
 		item->pos.z -= cos(pc->unit->rot)*0.25f;
 		item->rot = Random(MAX_ANGLE);
-		AddGroundItem(GetContext(*pc->unit), item);
+		AddGroundItem(L.GetContext(*pc->unit), item);
 
 		// wyœlij info o animacji
 		if(Net::IsServer())

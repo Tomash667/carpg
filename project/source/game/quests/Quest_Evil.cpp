@@ -662,7 +662,7 @@ void Quest_Evil::GeneratePortal()
 	inside->portal->next_portal = nullptr;
 	inside->portal->rot = rot;
 	inside->portal->pos = portal_pos;
-	inside->portal->at_level = game->dungeon_level;
+	inside->portal->at_level = L.dungeon_level;
 
 	int d = GetLocId(W.GetCurrentLocationIndex());
 	loc[d].pos = portal_pos;

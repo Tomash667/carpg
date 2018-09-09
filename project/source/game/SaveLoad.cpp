@@ -432,7 +432,7 @@ void Game::SaveGame(GameWriter& f)
 	f << next_seed;
 	f << draw_flags;
 	f << pc->unit->refid;
-	f << dungeon_level;
+	f << L.dungeon_level;
 	f << portal_anim;
 	f << drunk_anim;
 	f << ais.size();
@@ -807,7 +807,7 @@ void Game::LoadGame(GameReader& f)
 	pc->dialog_ctx = &dialog_context;
 	dialog_context.dialog_mode = false;
 	dialog_context.is_local = true;
-	f >> dungeon_level;
+	f >> L.dungeon_level;
 	if(LOAD_VERSION >= V_0_2_20)
 	{
 		f >> portal_anim;
@@ -892,7 +892,7 @@ void Game::LoadGame(GameReader& f)
 		else
 		{
 			InsideLocation* inside = (InsideLocation*)L.location;
-			inside->SetActiveLevel(dungeon_level);
+			inside->SetActiveLevel(L.dungeon_level);
 			BaseLocation& base = g_base_locations[inside->target];
 
 			ApplyContext(inside, L.local_ctx);
@@ -970,7 +970,7 @@ void Game::LoadGame(GameReader& f)
 		for(vector<AIController*>::iterator it = ai_bow_targets.begin(), end = ai_bow_targets.end(); it != end; ++it)
 		{
 			AIController& ai = **it;
-			LevelContext& ctx = Game::Get().GetContext(*ai.unit);
+			LevelContext& ctx = L.GetContext(*ai.unit);
 			Object* ptr = nullptr;
 			float dist, best_dist;
 			for(vector<Object*>::iterator it = ctx.objects->begin(), end = ctx.objects->end(); it != end; ++it)
@@ -999,7 +999,7 @@ void Game::LoadGame(GameReader& f)
 		if(refid == -1)
 		{
 			// zapis z wersji < 2, szukaj w pobli¿u punktu
-			LevelContext& ctx = GetContext(*ai.unit);
+			LevelContext& ctx = L.GetContext(*ai.unit);
 			Spell* spell = ai.unit->data->spells->spell[ai.unit->attack_id];
 			float dist2, best_dist2 = spell->range;
 			ai.cast_target = nullptr;

@@ -118,7 +118,7 @@ void Game::SetMusic()
 	if(sound_mgr->IsMusicDisabled())
 		return;
 
-	if(W.IsBossLevel(Int2(L.location_index, dungeon_level)))
+	if(W.IsBossLevel(Int2(L.location_index, L.dungeon_level)))
 	{
 		SetMusic(MusicType::Boss);
 		return;
